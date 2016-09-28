@@ -14,4 +14,4 @@ g++ src/game.cpp -o build/game \
 
 cd build/
 
-./game
+./game >> /dev/tty
