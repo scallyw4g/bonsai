@@ -162,11 +162,19 @@ void BufferVertexData( glm::vec3 worldP, GLfloat* vertexData, int *vertCount)
   *vertCount += ArrayCount(localVertexData);
 }
 
-void DrawChunk(v4* VoxelBuffer, int voxelBufferLength, GLfloat* vertexData, int vertexDataLength, GLuint &colorbuffer, GLuint &vertexbuffer)
+void DrawChunk(
+    v4* VoxelBuffer,
+    int numVoxels,
+
+    GLfloat* vertexData,
+    int sizeofVertexData,
+
+    GLuint &colorbuffer,
+    GLuint &vertexbuffer)
 {
   int vertCount = 0;
 
-  for ( int i = 0; i < voxelBufferLength; ++i )
+  for ( int i = 0; i < numVoxels; ++i )
   {
     if ( VoxelBuffer[i].w == 1 )
     {
@@ -181,7 +189,7 @@ void DrawChunk(v4* VoxelBuffer, int voxelBufferLength, GLfloat* vertexData, int 
   /* exit(0); */
 
   glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-  glBufferData(GL_ARRAY_BUFFER, vertCount, vertexData, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, sizeofVertexData, vertexData, GL_STATIC_DRAW);
 
   glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
   glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertexColorData), g_vertexColorData, GL_STATIC_DRAW);
@@ -305,7 +313,7 @@ int main( void )
       VoxelBuffer,
       ArrayCount(VoxelBuffer),
       vertexData,
-      ArrayCount(vertexData),
+      sizeof(vertexData),
       vertexbuffer,
       colorbuffer
     );
