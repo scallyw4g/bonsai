@@ -278,7 +278,7 @@ int main( void )
 
   for ( int i = 0; i < CHUNK_VOL; ++i )
   {
-    memcpy( &g_vertexColorData[i*VERT_PER_VOXEL*3], g_color_buffer_data, ArrayCount(g_color_buffer_data) );
+    memcpy( &g_vertexColorData[i*VERT_PER_VOXEL*3], g_color_buffer_data, sizeof(g_color_buffer_data) );
   }
 
   GenChunk( VoxelBuffer, ArrayCount(VoxelBuffer), V3(0,0,0) );
