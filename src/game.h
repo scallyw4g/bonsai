@@ -3,16 +3,6 @@
 
 #define ArrayCount(a) (sizeof(a)/sizeof(a[0]))
 
-#define CHUNK_WIDTH  4
-#define CHUNK_HEIGHT 4
-#define CHUNK_DEPTH  4
-
-#define VERT_PER_VOXEL (6*6) // 6 verticies per face, 6 faces per voxel
-
-#define CHUNK_VOL (CHUNK_HEIGHT*CHUNK_WIDTH*CHUNK_DEPTH)
-
-#define VERTEX_COUNT (VERT_PER_VOXEL*CHUNK_VOL*3) // number of verticies*3 (for each x, y, z)
-
 static GLfloat g_vertexColorData[VERTEX_COUNT] = {};
 
 struct v2 {
