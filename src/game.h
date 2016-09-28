@@ -3,7 +3,7 @@
 
 #define ArrayCount(a) (sizeof(a)/sizeof(a[0]))
 
-static GLfloat g_vertexColorData[VERTEX_COUNT] = {};
+static GLfloat g_vertexColorData[WORLD_VERTEX_COUNT] = {};
 
 struct v2 {
    int x;

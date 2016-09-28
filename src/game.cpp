@@ -210,7 +210,7 @@ void DrawChunk(v4* VoxelBuffer, int voxelBufferLength, GLfloat* vertexData, int 
     (void*)0            // array buffer offset
   );
 
-  glDrawArrays(GL_TRIANGLES, 0, VERTEX_COUNT);
+  glDrawArrays(GL_TRIANGLES, 0, WORLD_VERTEX_COUNT);
 }
 
 int main( void )
@@ -266,7 +266,7 @@ int main( void )
   bool res = loadOBJ("cube.obj", vertices, uvs, normals);
 
   v4 VoxelBuffer[CHUNK_VOL];
-  GLfloat vertexData[VERTEX_COUNT] = {};
+  GLfloat vertexData[WORLD_VERTEX_COUNT] = {};
 
   for ( int i = 0; i < CHUNK_VOL; ++i )
   {
