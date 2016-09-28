@@ -158,7 +158,7 @@ void BufferVertexData( glm::vec3 worldP, GLfloat* vertexData, int *vertCount)
     worldP.x + -VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS
   };
 
-  memcpy( &vertexData[*vertCount], localVertexData, ArrayCount(localVertexData) );
+  memcpy( &vertexData[*vertCount], localVertexData, sizeof(localVertexData) );
   *vertCount += ArrayCount(localVertexData);
 }
 
