@@ -192,7 +192,7 @@ void DrawChunk(
   glBufferData(GL_ARRAY_BUFFER, sizeofVertexData, vertexData, GL_STATIC_DRAW);
 
   glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertexColorData), g_vertexColorData, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(g_WorldVertexColorData), g_WorldVertexColorData, GL_STATIC_DRAW);
 
   // 1rst attribute buffer : vertices
   glEnableVertexAttribArray(0);
@@ -278,7 +278,7 @@ int main( void )
 
   for ( int i = 0; i < CHUNK_VOL; ++i )
   {
-    memcpy( &g_vertexColorData[i*VERT_PER_VOXEL*3], g_color_buffer_data, sizeof(g_color_buffer_data) );
+    memcpy( &g_WorldVertexColorData[i*VERT_PER_VOXEL*3], g_VoxelColorBuffer, sizeof(g_VoxelColorBuffer) );
   }
 
   GenChunk( VoxelBuffer, ArrayCount(VoxelBuffer), V3(0,0,0) );
