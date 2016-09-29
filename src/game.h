@@ -72,6 +72,24 @@ v2 operator*(float f, v2 P)
   P.y *= f;
 }
 
+v4 operator*(v4 A, int B)
+{
+  v4 Result = V4(0,0,0,0);
+
+  Result.x = A.x * B;
+  Result.y = A.y * B;
+  Result.z = A.z * B;
+  Result.w = A.w * B;
+
+  return Result;
+}
+
+v4 operator*=(v4 A, int B)
+{
+  A = A * B;
+  return A;
+}
+
 v4 operator+(v4 A, v4 B)
 {
   v4 Result = V4(0,0,0,0);

@@ -195,8 +195,6 @@ void DrawChunk(
     }
   }
 
-  /* exit(0); */
-
   glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
   glBufferData(GL_ARRAY_BUFFER, sizeofVertexData, worldVertexData, GL_STATIC_DRAW);
 
@@ -330,7 +328,7 @@ int main( void )
     }
 
     // Clear the screen
-   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     DrawChunk(
       VoxelBuffer,
