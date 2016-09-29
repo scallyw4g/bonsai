@@ -3,7 +3,8 @@
 
 #define ArrayCount(a) (sizeof(a)/sizeof(a[0]))
 
-static GLfloat g_WorldVertexColorData[WORLD_VERTEX_COUNT] = {};
+// Keep track of triangle count for debugging
+static int triCount = 0;
 
 struct v2 {
    int x;
@@ -29,7 +30,6 @@ v2 V2(int x,int y)
 
   Result.x = x;
   Result.y = y;
-
   return Result;
 }
 
@@ -70,6 +70,18 @@ v2 operator*(float f, v2 P)
 {
   P.x *= f;
   P.y *= f;
+}
+
+v4 operator+(v4 A, v4 B)
+{
+  v4 Result = V4(0,0,0,0);
+
+  Result.x = A.x + B.x;
+  Result.y = A.y + B.y;
+  Result.z = A.z + B.z;
+  Result.w = A.w + B.w;
+
+  return Result;
 }
 
 #endif

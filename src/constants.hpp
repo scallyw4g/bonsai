@@ -1,9 +1,9 @@
 #ifndef GAME_CONSTANTS
 #define GAME_CONSTANTS
 
-#define CHUNK_WIDTH  40
-#define CHUNK_HEIGHT 40
-#define CHUNK_DEPTH  5
+#define CHUNK_WIDTH  16
+#define CHUNK_HEIGHT 16
+#define CHUNK_DEPTH  16
 
 
 #define CHUNK_VOL (CHUNK_HEIGHT*CHUNK_WIDTH*CHUNK_DEPTH)
@@ -18,6 +18,9 @@
 
 #define VOXEL_DIAMETER 1.0f
 #define VOXEL_RADIUS VOXEL_DIAMETER/2.0f
+
+
+static GLfloat g_WorldVertexColorData[WORLD_VERTEX_COUNT] = {};
 
 static const GLfloat g_VoxelColorBuffer[VERT_DATA_POINTS_PER_VOXEL] = {
     // Bottom

@@ -80,6 +80,8 @@ void GenChunk( v4* Buffer, int numVoxels, v3 Offset )
   srand(time(NULL));
   PerlinNoise pn(rand());
 
+  triCount = 0;
+
   for ( int i = 0; i < numVoxels; ++i )
   {
     Buffer[i].x = i%CHUNK_WIDTH + Offset.x;
@@ -90,16 +92,21 @@ void GenChunk( v4* Buffer, int numVoxels, v3 Offset )
     double InY = (double)Buffer[i].y/(double)CHUNK_HEIGHT;
     double InZ = (double)Buffer[i].z/(double)CHUNK_DEPTH;
 
-    /* double l = pn.noise(InX, InY, InZ); */
-    /* Buffer[i].w = floor(l + 0.5); */
+    double l = pn.noise(InX, InY, InZ);
+    Buffer[i].w = floor(l + 0.5);
 
-    Buffer[i].w = 1;
+    if ( Buffer[i].w == 1 )
+    {
+      triCount += 12;
+    }
+
+/* 1   Buffer[i].w = 1; */
   }
 
   return;
 }
 
-void BufferVertexData( glm::vec3 worldP, GLfloat* vertexData, int *vertCount)
+void BufferVertexData( glm::vec3 worldP, GLfloat* worldVertexData, int *vertCount)
 {
   float localVertexData[] =
   {
@@ -158,7 +165,7 @@ void BufferVertexData( glm::vec3 worldP, GLfloat* vertexData, int *vertCount)
     worldP.x + -VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS
   };
 
-  memcpy( &vertexData[*vertCount], localVertexData, sizeof(localVertexData) );
+  memcpy( &worldVertexData[*vertCount], localVertexData, sizeof(localVertexData) );
   *vertCount += ArrayCount(localVertexData);
 }
 
@@ -166,7 +173,7 @@ void DrawChunk(
     v4* VoxelBuffer,
     int numVoxels,
 
-    GLfloat* vertexData,
+    GLfloat* worldVertexData,
     int sizeofVertexData,
 
     GLuint &colorbuffer,
@@ -174,13 +181,15 @@ void DrawChunk(
 {
   int vertCount = 0;
 
+  memset( worldVertexData, 0, sizeofVertexData );
+
   for ( int i = 0; i < numVoxels; ++i )
   {
     if ( VoxelBuffer[i].w == 1 )
     {
       BufferVertexData(
         glm::vec3( VoxelBuffer[i].x, VoxelBuffer[i].y, VoxelBuffer[i].z),
-        vertexData,
+        worldVertexData,
         &vertCount
       );
     }
@@ -189,7 +198,7 @@ void DrawChunk(
   /* exit(0); */
 
   glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-  glBufferData(GL_ARRAY_BUFFER, sizeofVertexData, vertexData, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, sizeofVertexData, worldVertexData, GL_STATIC_DRAW);
 
   glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
   glBufferData(GL_ARRAY_BUFFER, sizeof(g_WorldVertexColorData), g_WorldVertexColorData, GL_STATIC_DRAW);
@@ -223,6 +232,7 @@ void DrawChunk(
 
 int main( void )
 {
+
   int width, height;
 
   width = 1024;
@@ -241,12 +251,19 @@ int main( void )
       glm::radians(45.0f),  // FOV
       (float)width / (float)height,  // display ratio
       0.1f,     // near margin
-      200.0f);  // far margin
+      500.0f);  // far margin
 
   // Camera matrix
   glm::mat4 View = glm::lookAt(
-    glm::vec3(CHUNK_WIDTH*3, CHUNK_HEIGHT*2,-(CHUNK_WIDTH+CHUNK_HEIGHT)),  // CameraP in World Space
-    glm::vec3(CHUNK_WIDTH/2,CHUNK_HEIGHT/2,CHUNK_DEPTH/2),
+
+    glm::vec3(   // CameraP in World Space
+      CHUNK_WIDTH+CHUNK_HEIGHT+CHUNK_DEPTH  *0.3,
+      CHUNK_WIDTH+CHUNK_HEIGHT+CHUNK_DEPTH  *0.3,
+      -(CHUNK_WIDTH+CHUNK_HEIGHT+CHUNK_DEPTH*0.3)
+    ),
+
+    glm::vec3(CHUNK_WIDTH/2,CHUNK_HEIGHT/2,CHUNK_DEPTH/2), // Look-at P
+
     glm::vec3(0,1,0) );    // Head is up (set to 0,-1,0 to look upside-down)
 
   // Model matrix : an identity matrix (model will be at the origin)
@@ -262,7 +279,8 @@ int main( void )
   glGenBuffers(1, &vertexbuffer);
   glGenBuffers(1, &colorbuffer);
 
-  double lastTime = glfwGetTime();
+  double lastPrintTime = glfwGetTime();
+  double lastFrameTime = lastPrintTime;
   int nbFrames = 0;
 
   glfwWindowHint(GLFW_SAMPLES, 4);
@@ -273,15 +291,15 @@ int main( void )
 
   bool res = loadOBJ("cube.obj", vertices, uvs, normals);
 
-  v4 VoxelBuffer[CHUNK_VOL];
-  GLfloat vertexData[WORLD_VERTEX_COUNT] = {};
+  v4* VoxelBuffer = (v4*)malloc(CHUNK_VOL*sizeof(v4));
+  GLfloat *worldVertexData = (GLfloat *)malloc(WORLD_VERTEX_COUNT*sizeof(GLfloat));
 
   for ( int i = 0; i < CHUNK_VOL; ++i )
   {
     memcpy( &g_WorldVertexColorData[i*VERT_PER_VOXEL*3], g_VoxelColorBuffer, sizeof(g_VoxelColorBuffer) );
   }
 
-  GenChunk( VoxelBuffer, ArrayCount(VoxelBuffer), V3(0,0,0) );
+  GenChunk( VoxelBuffer, CHUNK_VOL, V3(0,0,0) );
 
   /*
    *  Main Render loop
@@ -290,33 +308,41 @@ int main( void )
 
     // computeMatricesFromInputs();
 
-    // Clear the screen
-    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     // Measure speed
     double currentTime = glfwGetTime();
+    double dtForFrame = currentTime - lastFrameTime;
+    lastFrameTime = currentTime;
+
     nbFrames++;
 
-    if ( currentTime - lastTime >= 3.0 ) // If last prinf() was more than 1 sec ago
-    {                                    // printf and reset timer
-      printf("%f ms/frame\n", 1000.0/double(nbFrames));
+    if ( currentTime - lastPrintTime >= 1.0 )
+    {
+      printf("%f ms/frame\n", 1000.0/(double)nbFrames );
+      printf("%d triangles/frame\n", triCount );
       nbFrames = 0;
-      lastTime += 1.0;
+      lastPrintTime += 1.0;
+
     }
 
     if ( glfwGetKey(window, GLFW_KEY_ENTER ) == GLFW_PRESS )
     {
-       GenChunk( VoxelBuffer, ArrayCount(VoxelBuffer), V3(0,0,0) );
+       GenChunk( VoxelBuffer, CHUNK_VOL, V3(0,0,0) );
     }
+
+    // Clear the screen
+   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     DrawChunk(
       VoxelBuffer,
-      ArrayCount(VoxelBuffer),
-      vertexData,
-      sizeof(vertexData),
+      CHUNK_VOL,
+
+      worldVertexData,
+      WORLD_VERTEX_COUNT*sizeof(GLfloat),
+
       vertexbuffer,
       colorbuffer
     );
+
 
     // Get a handle for our "MVP" uniform
     // Only during the initialisation
@@ -348,5 +374,9 @@ int main( void )
   // Close OpenGL window and terminate GLFW
   glfwTerminate();
 
+  free(worldVertexData);
+  free(VoxelBuffer);
+
   return 0;
 }
+
