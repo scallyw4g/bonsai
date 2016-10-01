@@ -92,15 +92,16 @@ void GenChunk( v4* Buffer, int numVoxels, v3 Offset )
     double InY = (double)Buffer[i].y/(double)CHUNK_HEIGHT;
     double InZ = (double)Buffer[i].z/(double)CHUNK_DEPTH;
 
-    double l = pn.noise(InX, InY, InZ);
-    Buffer[i].w = floor(l + 0.5);
+    /* double l = pn.noise(InX, InY, InZ); */
+    /* Buffer[i].w = floor(l + 0.5); */
+
+    Buffer[i].w = 1;
 
     if ( Buffer[i].w == 1 )
     {
       triCount += 12;
     }
 
-/* 1   Buffer[i].w = 1; */
   }
 
   return;
@@ -233,8 +234,8 @@ int main( void )
 
   int width, height;
 
-  width = 1024;
-  height = 768;
+  width = 1920;
+  height = 1080;
 
   initWindow(width, height);
 
@@ -251,24 +252,12 @@ int main( void )
       0.1f,     // near margin
       500.0f);  // far margin
 
-  // Camera matrix
-  glm::mat4 View = glm::lookAt(
-
-    glm::vec3(   // CameraP in World Space
-      CHUNK_WIDTH+CHUNK_HEIGHT+CHUNK_DEPTH  *0.3,
-      CHUNK_WIDTH+CHUNK_HEIGHT+CHUNK_DEPTH  *0.3,
-      -(CHUNK_WIDTH+CHUNK_HEIGHT+CHUNK_DEPTH*0.3)
-    ),
-
-    glm::vec3(CHUNK_WIDTH/2,CHUNK_HEIGHT/2,CHUNK_DEPTH/2), // Look-at P
-
-    glm::vec3(0,1,0) );    // Head is up (set to 0,-1,0 to look upside-down)
-
-  // Model matrix : an identity matrix (model will be at the origin)
-  glm::mat4 Model = glm::mat4(1.0f);
-
-  // Our ModelViewProjection : multiplication of our 3 matrices
-  glm::mat4 mvp = Projection * View * Model; // Remember, matrix multiplication is the other way around
+  // CameraP in world space
+  glm::vec3 CameraP = glm::vec3(
+      CHUNK_WIDTH+CHUNK_HEIGHT+CHUNK_DEPTH*0.3,
+      CHUNK_WIDTH+CHUNK_HEIGHT+CHUNK_DEPTH*0.3,
+      CHUNK_WIDTH+CHUNK_HEIGHT+CHUNK_DEPTH*0.3
+    );
 
   GLuint vertexbuffer;
   GLuint normalbuffer;
@@ -290,7 +279,7 @@ int main( void )
   bool res = loadOBJ("cube.obj", vertices, uvs, normals);
 
   v4* VoxelBuffer = (v4*)malloc(CHUNK_VOL*sizeof(v4));
-  GLfloat *worldVertexData = (GLfloat *)malloc(WORLD_VERTEX_COUNT*sizeof(GLfloat));
+  GLfloat *worldVertexData = (GLfloat *)malloc(WORLD_VERTEX_BUFFER_SIZE);
 
   for ( int i = 0; i < CHUNK_VOL; ++i )
   {
@@ -304,7 +293,12 @@ int main( void )
    */
  do {
 
-    // computeMatricesFromInputs();
+    computeMatricesFromInputs(&CameraP);
+
+    glm::mat4 ProjectionMatrix = getProjectionMatrix();
+    glm::mat4 ViewMatrix = getViewMatrix();
+    glm::mat4 ModelMatrix = glm::mat4(1.0);
+    glm::mat4 mvp = ProjectionMatrix * ViewMatrix * ModelMatrix;
 
     // Measure speed
     double currentTime = glfwGetTime();
@@ -335,7 +329,7 @@ int main( void )
       CHUNK_VOL,
 
       worldVertexData,
-      WORLD_VERTEX_COUNT*sizeof(GLfloat),
+      WORLD_VERTEX_BUFFER_SIZE,
 
       vertexbuffer,
       colorbuffer

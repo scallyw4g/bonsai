@@ -1,9 +1,9 @@
 #ifndef GAME_CONSTANTS
 #define GAME_CONSTANTS
 
-#define CHUNK_WIDTH  32
-#define CHUNK_HEIGHT 8
-#define CHUNK_DEPTH  32
+#define CHUNK_WIDTH  2
+#define CHUNK_HEIGHT 2
+#define CHUNK_DEPTH  2
 
 
 #define CHUNK_VOL (CHUNK_HEIGHT*CHUNK_WIDTH*CHUNK_DEPTH)
@@ -15,6 +15,9 @@
 
 // number of verticies*3 (for each x, y, z)
 #define WORLD_VERTEX_COUNT (VERT_DATA_POINTS_PER_VOXEL*CHUNK_VOL)
+
+// length of worldvertexbuffer in bytes
+#define WORLD_VERTEX_BUFFER_SIZE (WORLD_VERTEX_COUNT*sizeof(GLfloat))
 
 #define VOXEL_DIAMETER 1.0f
 #define VOXEL_RADIUS VOXEL_DIAMETER/2.0f
