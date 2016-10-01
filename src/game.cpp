@@ -80,8 +80,6 @@ void GenChunk( v4* Buffer, int numVoxels, v3 Offset )
   srand(time(NULL));
   PerlinNoise pn(rand());
 
-  triCount = 0;
-
   for ( int i = 0; i < numVoxels; ++i )
   {
     Buffer[i].x = i%CHUNK_WIDTH + Offset.x;
@@ -92,16 +90,10 @@ void GenChunk( v4* Buffer, int numVoxels, v3 Offset )
     double InY = (double)Buffer[i].y/(double)CHUNK_HEIGHT;
     double InZ = (double)Buffer[i].z/(double)CHUNK_DEPTH;
 
-    /* double l = pn.noise(InX, InY, InZ); */
-    /* Buffer[i].w = floor(l + 0.5); */
+    double l = pn.noise(InX, InY, InZ);
+    Buffer[i].w = floor(l + 0.5);
 
-    Buffer[i].w = 1;
-
-    if ( Buffer[i].w == 1 )
-    {
-      triCount += 12;
-    }
-
+   /* Buffer[i].w = 1; */
   }
 
   return;
@@ -109,6 +101,8 @@ void GenChunk( v4* Buffer, int numVoxels, v3 Offset )
 
 void BufferVertexData( glm::vec3 worldP, GLfloat* worldVertexData, int *vertCount)
 {
+  triCount += 12;
+
   float localVertexData[] =
   {
     // Bottom
@@ -170,6 +164,21 @@ void BufferVertexData( glm::vec3 worldP, GLfloat* worldVertexData, int *vertCoun
   *vertCount += ArrayCount(localVertexData);
 }
 
+bool IsFilled( v4* VoxelBuffer, int chunkVol, int chunkWidth, int chunkHeight, int idx )
+{
+  bool isFilled = false;
+
+  if ( idx < 0 ) return isFilled;
+  if ( idx > chunkVol ) return isFilled;
+
+  if ( VoxelBuffer[idx].w == 1 )
+  {
+    isFilled = true;
+  }
+
+  return isFilled;
+}
+
 void DrawChunk(
     v4* VoxelBuffer,
     int numVoxels,
@@ -184,15 +193,70 @@ void DrawChunk(
 
   memset( worldVertexData, 0, sizeofVertexData );
 
+  triCount=0;
+
   for ( int i = 0; i < numVoxels; ++i )
   {
     if ( VoxelBuffer[i].w == 1 )
     {
-      BufferVertexData(
-        glm::vec3( VoxelBuffer[i].x, VoxelBuffer[i].y, VoxelBuffer[i].z),
-        worldVertexData,
-        &vertCount
-      );
+      bool currIsVisible = false;
+
+      // If the current voxel is on a chunk boundary it's visible by default
+      if (i % CHUNK_WIDTH == 0 ||
+          (i/CHUNK_WIDTH) % CHUNK_HEIGHT == 0 ||
+          (i+1) % CHUNK_WIDTH == 0 ||
+          ((i/CHUNK_WIDTH)+1) % CHUNK_HEIGHT == 0
+
+         )
+      {
+        currIsVisible = true;
+      }
+
+      int nextIdx  = i+1;
+      int prevIdx  = i-1;
+      int botIdx   = i-CHUNK_WIDTH;
+      int topIdx   = i+CHUNK_WIDTH;
+      int backIdx  = i + (CHUNK_WIDTH*CHUNK_HEIGHT);
+      int frontIdx = i - (CHUNK_WIDTH*CHUNK_HEIGHT);
+
+      if ( ! currIsVisible )
+      {
+        currIsVisible = !IsFilled( VoxelBuffer, CHUNK_VOL, CHUNK_WIDTH, CHUNK_HEIGHT, nextIdx  );
+      }
+
+      if ( ! currIsVisible )
+      {
+        currIsVisible = !IsFilled( VoxelBuffer, CHUNK_VOL, CHUNK_WIDTH, CHUNK_HEIGHT, prevIdx  );
+      }
+
+      if ( ! currIsVisible )
+      {
+        currIsVisible = !IsFilled( VoxelBuffer, CHUNK_VOL, CHUNK_WIDTH, CHUNK_HEIGHT, botIdx   );
+      }
+
+      if ( ! currIsVisible )
+      {
+        currIsVisible = !IsFilled( VoxelBuffer, CHUNK_VOL, CHUNK_WIDTH, CHUNK_HEIGHT, topIdx   );
+      }
+
+      if ( ! currIsVisible )
+      {
+        currIsVisible = !IsFilled( VoxelBuffer, CHUNK_VOL, CHUNK_WIDTH, CHUNK_HEIGHT, backIdx  );
+      }
+
+      if ( ! currIsVisible )
+      {
+        currIsVisible = !IsFilled( VoxelBuffer, CHUNK_VOL, CHUNK_WIDTH, CHUNK_HEIGHT, frontIdx );
+      }
+
+      if ( currIsVisible )
+      {
+        BufferVertexData(
+          glm::vec3( VoxelBuffer[i].x, VoxelBuffer[i].y, VoxelBuffer[i].z),
+          worldVertexData,
+          &vertCount
+        );
+      }
     }
   }
 
@@ -313,7 +377,6 @@ int main( void )
       printf("%d triangles/frame\n", triCount );
       nbFrames = 0;
       lastPrintTime += 1.0;
-
     }
 
     if ( glfwGetKey(window, GLFW_KEY_ENTER ) == GLFW_PRESS )
@@ -334,7 +397,6 @@ int main( void )
       vertexbuffer,
       colorbuffer
     );
-
 
     // Get a handle for our "MVP" uniform
     // Only during the initialisation

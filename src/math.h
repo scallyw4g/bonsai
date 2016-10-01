@@ -1,5 +1,13 @@
 #include <game.h>
 
+int clamp0(int i)
+{
+  if (i < 0)
+    i = 0;
+
+  return i;
+}
+
 int floor(float f)
 {
   int Result = (int)(f);
