@@ -6,6 +6,8 @@
 // Keep track of triangle count for debugging
 static int triCount = 0;
 
+static int n_count = 0;
+
 struct v2 {
    int x;
    int y;

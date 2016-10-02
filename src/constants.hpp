@@ -5,7 +5,6 @@
 #define CHUNK_HEIGHT 64
 #define CHUNK_DEPTH  64
 
-
 #define CHUNK_VOL (CHUNK_HEIGHT*CHUNK_WIDTH*CHUNK_DEPTH)
 
 // 6 verticies per face, 6 faces per voxel
@@ -21,7 +20,6 @@
 
 #define VOXEL_DIAMETER 1.0f
 #define VOXEL_RADIUS VOXEL_DIAMETER/2.0f
-
 
 static GLfloat g_WorldVertexColorData[WORLD_VERTEX_COUNT] = {};
 

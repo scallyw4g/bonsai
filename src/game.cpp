@@ -93,75 +93,10 @@ void GenChunk( v4* Buffer, int numVoxels, v3 Offset )
     double l = pn.noise(InX, InY, InZ);
     Buffer[i].w = floor(l + 0.5);
 
-   /* Buffer[i].w = 1; */
+    /* Buffer[i].w = 1; */
   }
 
   return;
-}
-
-void BufferVertexData( glm::vec3 worldP, GLfloat* worldVertexData, int *vertCount)
-{
-  triCount += 12;
-
-  float localVertexData[] =
-  {
-    // Bottom
-    worldP.x +  VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
-    worldP.x + -VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
-    worldP.x +  VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
-
-    worldP.x +  VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
-    worldP.x + -VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
-    worldP.x + -VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
-
-    // Let
-    worldP.x + -VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
-    worldP.x + -VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
-    worldP.x + -VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
-
-    worldP.x + -VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
-    worldP.x + -VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
-    worldP.x + -VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
-
-    // Back
-    worldP.x +  VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
-    worldP.x + -VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
-    worldP.x + -VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
-
-    worldP.x +  VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
-    worldP.x +  VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
-    worldP.x + -VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
-
-    // Front
-    worldP.x + -VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
-    worldP.x + -VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
-    worldP.x +  VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
-
-    worldP.x +  VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
-    worldP.x + -VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
-    worldP.x +  VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
-
-    // Right
-    worldP.x +  VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
-    worldP.x +  VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
-    worldP.x +  VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
-
-    worldP.x +  VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
-    worldP.x +  VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
-    worldP.x +  VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
-
-    // Top
-    worldP.x +  VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
-    worldP.x +  VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
-    worldP.x + -VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
-
-    worldP.x +  VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
-    worldP.x + -VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
-    worldP.x + -VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS
-  };
-
-  memcpy( &worldVertexData[*vertCount], localVertexData, sizeof(localVertexData) );
-  *vertCount += ArrayCount(localVertexData);
 }
 
 bool IsFilled( v4* VoxelBuffer, int chunkVol, int chunkWidth, int chunkHeight, int idx )
@@ -179,9 +114,158 @@ bool IsFilled( v4* VoxelBuffer, int chunkVol, int chunkWidth, int chunkHeight, i
   return isFilled;
 }
 
+void BufferFace( GLfloat* worldVertexData, float* Verts, int sizeofVerts, int numVerts, int *worldVertCount)
+{
+  triCount += 2;
+
+  memcpy( &worldVertexData[*worldVertCount], Verts, sizeofVerts );
+  *worldVertCount += numVerts;
+}
+
+void BufferRightFace( glm::vec3 worldP, GLfloat* worldVertexData, int *worldVertCount)
+{
+  float localVertexData[] =
+  {
+    // Right
+    worldP.x +  VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
+    worldP.x +  VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
+    worldP.x +  VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
+
+    worldP.x +  VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
+    worldP.x +  VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
+    worldP.x +  VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS
+  };
+
+  BufferFace( worldVertexData,
+      localVertexData,
+      sizeof(localVertexData),
+      ArrayCount(localVertexData),
+      worldVertCount);
+}
+
+void BufferLeftFace( glm::vec3 worldP, GLfloat* worldVertexData, int *worldVertCount)
+{
+  float localVertexData[] = {
+    // Left
+    worldP.x + -VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
+    worldP.x + -VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
+    worldP.x + -VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
+
+    worldP.x + -VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
+    worldP.x + -VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
+    worldP.x + -VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS
+  };
+
+  BufferFace( worldVertexData,
+      localVertexData,
+      sizeof(localVertexData),
+      ArrayCount(localVertexData),
+      worldVertCount);
+}
+
+void BufferTopFace( glm::vec3 worldP, GLfloat* worldVertexData, int *worldVertCount)
+{
+  float localVertexData[] = {
+    // Top
+    worldP.x +  VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
+    worldP.x +  VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
+    worldP.x + -VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
+
+    worldP.x +  VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
+    worldP.x + -VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
+    worldP.x + -VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS
+  };
+
+  BufferFace( worldVertexData,
+      localVertexData,
+      sizeof(localVertexData),
+      ArrayCount(localVertexData),
+      worldVertCount);
+}
+
+void BufferBottomFace( glm::vec3 worldP, GLfloat* worldVertexData, int *worldVertCount)
+{
+  float localVertexData[] = {
+    // Bottom
+    worldP.x +  VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
+    worldP.x + -VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
+    worldP.x +  VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
+
+    worldP.x +  VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
+    worldP.x + -VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
+    worldP.x + -VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS
+  };
+
+  BufferFace( worldVertexData,
+      localVertexData,
+      sizeof(localVertexData),
+      ArrayCount(localVertexData),
+      worldVertCount);
+}
+
+void BufferFrontFace( glm::vec3 worldP, GLfloat* worldVertexData, int *worldVertCount)
+{
+  float localVertexData[] = {
+    // Front
+    worldP.x + -VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
+    worldP.x + -VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
+    worldP.x +  VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
+
+    worldP.x +  VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
+    worldP.x + -VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
+    worldP.x +  VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
+  };
+
+  BufferFace( worldVertexData,
+      localVertexData,
+      sizeof(localVertexData),
+      ArrayCount(localVertexData),
+      worldVertCount);
+}
+
+void BufferBackFace( glm::vec3 worldP, GLfloat* worldVertexData, int *worldVertCount)
+{
+  float localVertexData[] = {
+    // Back
+    worldP.x +  VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
+    worldP.x + -VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
+    worldP.x + -VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
+
+    worldP.x +  VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
+    worldP.x +  VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
+    worldP.x + -VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
+  };
+
+  BufferFace( worldVertexData,
+      localVertexData,
+      sizeof(localVertexData),
+      ArrayCount(localVertexData),
+      worldVertCount);
+}
+
+bool IsRightChunkBoundary( v3 ChunkDim, int idx )
+{
+  return (idx+1) % ChunkDim.x == 0;
+}
+
+bool IsLeftChunkBoundary( v3 ChunkDim, int idx )
+{
+  return (idx) % ChunkDim.x == 0;
+}
+
+bool IsTopChunkBoundary( v3 ChunkDim, int idx )
+{
+  return ((idx/ChunkDim.x)+1) % ChunkDim.y == 0;
+}
+
+bool IsBottomChunkBoundary( v3 ChunkDim, int idx )
+{
+  return (idx/ChunkDim.x) % ChunkDim.y == 0;
+}
+
 void DrawChunk(
     v4* VoxelBuffer,
-    int numVoxels,
+    v3 ChunkDim,
 
     GLfloat* worldVertexData,
     int sizeofVertexData,
@@ -189,29 +273,17 @@ void DrawChunk(
     GLuint &colorbuffer,
     GLuint &vertexbuffer)
 {
-  int vertCount = 0;
-
-  memset( worldVertexData, 0, sizeofVertexData );
-
   triCount=0;
+  int worldVertCount = 0;
+  int numVoxels = ChunkDim.x * ChunkDim.y * ChunkDim.z;
+
+  // Clear out render from last frame
+  memset( worldVertexData, 0, sizeofVertexData );
 
   for ( int i = 0; i < numVoxels; ++i )
   {
     if ( VoxelBuffer[i].w == 1 )
     {
-      bool currIsVisible = false;
-
-      // If the current voxel is on a chunk boundary it's visible by default
-      if (i % CHUNK_WIDTH == 0 ||
-          (i/CHUNK_WIDTH) % CHUNK_HEIGHT == 0 ||
-          (i+1) % CHUNK_WIDTH == 0 ||
-          ((i/CHUNK_WIDTH)+1) % CHUNK_HEIGHT == 0
-
-         )
-      {
-        currIsVisible = true;
-      }
-
       int nextIdx  = i+1;
       int prevIdx  = i-1;
       int botIdx   = i-CHUNK_WIDTH;
@@ -219,42 +291,61 @@ void DrawChunk(
       int backIdx  = i + (CHUNK_WIDTH*CHUNK_HEIGHT);
       int frontIdx = i - (CHUNK_WIDTH*CHUNK_HEIGHT);
 
-      if ( ! currIsVisible )
+      if ( ! IsFilled(VoxelBuffer, CHUNK_VOL, CHUNK_WIDTH, CHUNK_HEIGHT, nextIdx) ||
+           IsRightChunkBoundary(ChunkDim, i) )
       {
-        currIsVisible = !IsFilled( VoxelBuffer, CHUNK_VOL, CHUNK_WIDTH, CHUNK_HEIGHT, nextIdx  );
-      }
-
-      if ( ! currIsVisible )
-      {
-        currIsVisible = !IsFilled( VoxelBuffer, CHUNK_VOL, CHUNK_WIDTH, CHUNK_HEIGHT, prevIdx  );
-      }
-
-      if ( ! currIsVisible )
-      {
-        currIsVisible = !IsFilled( VoxelBuffer, CHUNK_VOL, CHUNK_WIDTH, CHUNK_HEIGHT, botIdx   );
-      }
-
-      if ( ! currIsVisible )
-      {
-        currIsVisible = !IsFilled( VoxelBuffer, CHUNK_VOL, CHUNK_WIDTH, CHUNK_HEIGHT, topIdx   );
-      }
-
-      if ( ! currIsVisible )
-      {
-        currIsVisible = !IsFilled( VoxelBuffer, CHUNK_VOL, CHUNK_WIDTH, CHUNK_HEIGHT, backIdx  );
-      }
-
-      if ( ! currIsVisible )
-      {
-        currIsVisible = !IsFilled( VoxelBuffer, CHUNK_VOL, CHUNK_WIDTH, CHUNK_HEIGHT, frontIdx );
-      }
-
-      if ( currIsVisible )
-      {
-        BufferVertexData(
-          glm::vec3( VoxelBuffer[i].x, VoxelBuffer[i].y, VoxelBuffer[i].z),
+        BufferRightFace(
+          glm::vec3(VoxelBuffer[i].x, VoxelBuffer[i].y, VoxelBuffer[i].z),
           worldVertexData,
-          &vertCount
+          &worldVertCount
+        );
+      }
+
+      if ( ! IsFilled(VoxelBuffer, CHUNK_VOL, CHUNK_WIDTH, CHUNK_HEIGHT, prevIdx) ||
+           IsLeftChunkBoundary(ChunkDim, i) )
+      {
+        BufferLeftFace(
+          glm::vec3(VoxelBuffer[i].x, VoxelBuffer[i].y, VoxelBuffer[i].z),
+          worldVertexData,
+          &worldVertCount
+        );
+      }
+
+      if ( ! IsFilled(VoxelBuffer, CHUNK_VOL, CHUNK_WIDTH, CHUNK_HEIGHT, botIdx) ||
+           IsBottomChunkBoundary(ChunkDim, i) )
+      {
+        BufferBottomFace(
+          glm::vec3(VoxelBuffer[i].x, VoxelBuffer[i].y, VoxelBuffer[i].z),
+          worldVertexData,
+          &worldVertCount
+        );
+      }
+
+      if ( ! IsFilled(VoxelBuffer, CHUNK_VOL, CHUNK_WIDTH, CHUNK_HEIGHT, topIdx) ||
+           IsTopChunkBoundary(ChunkDim, i) )
+      {
+        BufferTopFace(
+          glm::vec3(VoxelBuffer[i].x, VoxelBuffer[i].y, VoxelBuffer[i].z),
+          worldVertexData,
+          &worldVertCount
+        );
+      }
+
+      if ( ! IsFilled(VoxelBuffer, CHUNK_VOL, CHUNK_WIDTH, CHUNK_HEIGHT, backIdx) )
+      {
+        BufferFrontFace(
+          glm::vec3(VoxelBuffer[i].x, VoxelBuffer[i].y, VoxelBuffer[i].z),
+          worldVertexData,
+          &worldVertCount
+        );
+      }
+
+      if ( ! IsFilled(VoxelBuffer, CHUNK_VOL, CHUNK_WIDTH, CHUNK_HEIGHT, frontIdx) )
+      {
+        BufferBackFace(
+          glm::vec3(VoxelBuffer[i].x, VoxelBuffer[i].y, VoxelBuffer[i].z),
+          worldVertexData,
+          &worldVertCount
         );
       }
     }
@@ -291,10 +382,12 @@ void DrawChunk(
   );
 
   glDrawArrays(GL_TRIANGLES, 0, WORLD_VERTEX_COUNT);
+  /* printf("Draw Complete\n"); */
 }
 
 int main( void )
 {
+  static int count = 0;
 
   int width, height;
 
@@ -302,6 +395,8 @@ int main( void )
   height = 1080;
 
   initWindow(width, height);
+
+  v3 ChunkDim = V3( CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH);
 
   GLuint VertexArrayID;
   glGenVertexArrays(1, &VertexArrayID);
@@ -389,7 +484,7 @@ int main( void )
 
     DrawChunk(
       VoxelBuffer,
-      CHUNK_VOL,
+      ChunkDim,
 
       worldVertexData,
       WORLD_VERTEX_BUFFER_SIZE,
