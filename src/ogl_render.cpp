@@ -24,11 +24,12 @@ bool IsFilled( v4* VoxelBuffer, int chunkVol, int chunkWidth, int chunkHeight, i
 }
 
 void BufferFace(
-    GLfloat* worldVertexData,
+    WorldVertexBlock *worldVertexData,
+    WorldVertexBlock *worldColorData,
+
     float* VertsPositions,
     int sizeofVertPositions,
 
-    GLfloat* worldColorData,
     float* VertColors,
     int sizeofVertColors,
 
@@ -38,15 +39,15 @@ void BufferFace(
 {
   triCount += 2;
 
-  memcpy( &worldVertexData[*worldVertCount], VertsPositions, sizeofVertPositions );
-  memcpy( &worldColorData[*worldVertCount], VertColors, sizeofVertColors );
+  memcpy( &worldVertexData->Data[*worldVertCount], VertsPositions, sizeofVertPositions );
+  memcpy( &worldColorData->Data[*worldVertCount], VertColors, sizeofVertColors );
   *worldVertCount += numVerts;
 }
 
 void BufferRightFace(
     glm::vec3 worldP,
-    GLfloat* worldVertexData,
-    GLfloat* worldColorData,
+    WorldVertexBlock *worldVertexData,
+    WorldVertexBlock *worldColorData,
     int *worldVertCount )
 {
   float localVertexData[] =
@@ -75,10 +76,11 @@ void BufferRightFace(
 
   BufferFace(
       worldVertexData,
+      worldColorData,
+
       localVertexData,
       sizeof(localVertexData),
 
-      worldColorData,
       localColorData,
       sizeof(localColorData),
 
@@ -88,8 +90,8 @@ void BufferRightFace(
 
 void BufferLeftFace(
     glm::vec3 worldP,
-    GLfloat* worldVertexData,
-    GLfloat* worldColorData,
+    WorldVertexBlock *worldVertexData,
+    WorldVertexBlock *worldColorData,
     int *worldVertCount )
 {
   float localVertexData[] =
@@ -113,15 +115,16 @@ void BufferLeftFace(
 
     1.0f,  0.0f,  1.0f,
     1.0f,  0.0f,  1.0f,
-    1.0f,  0.0f,  1.0f,
+    1.0f,  0.0f,  1.0f
   };
 
   BufferFace(
       worldVertexData,
+      worldColorData,
+
       localVertexData,
       sizeof(localVertexData),
 
-      worldColorData,
       localColorData,
       sizeof(localColorData),
 
@@ -131,8 +134,8 @@ void BufferLeftFace(
 
 void BufferBottomFace(
     glm::vec3 worldP,
-    GLfloat* worldVertexData,
-    GLfloat* worldColorData,
+    WorldVertexBlock *worldVertexData,
+    WorldVertexBlock *worldColorData,
     int *worldVertCount)
 {
   float localVertexData[] =
@@ -156,15 +159,16 @@ void BufferBottomFace(
 
     0.0f,  1.0f,  1.0f,
     0.0f,  1.0f,  1.0f,
-    0.0f,  1.0f,  1.0f,
+    0.0f,  1.0f,  1.0f
   };
 
   BufferFace(
       worldVertexData,
+      worldColorData,
+
       localVertexData,
       sizeof(localVertexData),
 
-      worldColorData,
       localColorData,
       sizeof(localColorData),
 
@@ -174,8 +178,8 @@ void BufferBottomFace(
 
 void BufferTopFace(
     glm::vec3 worldP,
-    GLfloat* worldVertexData,
-    GLfloat* worldColorData,
+    WorldVertexBlock *worldVertexData,
+    WorldVertexBlock *worldColorData,
     int *worldVertCount)
 {
   float localVertexData[] =
@@ -204,10 +208,11 @@ void BufferTopFace(
 
   BufferFace(
       worldVertexData,
+      worldColorData,
+
       localVertexData,
       sizeof(localVertexData),
 
-      worldColorData,
       localColorData,
       sizeof(localColorData),
 
@@ -217,8 +222,8 @@ void BufferTopFace(
 
 void BufferFrontFace(
     glm::vec3 worldP,
-    GLfloat* worldVertexData,
-    GLfloat* worldColorData,
+    WorldVertexBlock *worldVertexData,
+    WorldVertexBlock *worldColorData,
     int *worldVertCount)
 {
   float localVertexData[] =
@@ -247,10 +252,11 @@ void BufferFrontFace(
 
   BufferFace(
       worldVertexData,
+      worldColorData,
+
       localVertexData,
       sizeof(localVertexData),
 
-      worldColorData,
       localColorData,
       sizeof(localColorData),
 
@@ -260,8 +266,8 @@ void BufferFrontFace(
 
 void BufferBackFace(
     glm::vec3 worldP,
-    GLfloat* worldVertexData,
-    GLfloat* worldColorData,
+    WorldVertexBlock *worldVertexData,
+    WorldVertexBlock *worldColorData,
     int *worldVertCount)
 {
   float localVertexData[] =
@@ -290,10 +296,11 @@ void BufferBackFace(
 
   BufferFace(
       worldVertexData,
+      worldColorData,
+
       localVertexData,
       sizeof(localVertexData),
 
-      worldColorData,
       localColorData,
       sizeof(localColorData),
 
@@ -325,11 +332,8 @@ void DrawChunk(
     v4* VoxelBuffer,
     v3 ChunkDim,
 
-    GLfloat* worldVertexData,
-    int sizeofVertexData,
-
-    GLfloat* worldColorData,
-    int sizeofColorData,
+    WorldVertexBlock *worldVertexData,
+    WorldVertexBlock *worldColorData,
 
     GLuint &colorbuffer,
     GLuint &vertexbuffer)
@@ -339,7 +343,7 @@ void DrawChunk(
   int numVoxels = ChunkDim.x * ChunkDim.y * ChunkDim.z;
 
   // Clear out render from last frame
-  memset( worldVertexData, 0, sizeofVertexData );
+  memset( worldVertexData->Data, 0, worldVertexData->allocated );
 
   for ( int i = 0; i < numVoxels; ++i )
   {
@@ -419,10 +423,10 @@ void DrawChunk(
   }
 
   glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-  glBufferData(GL_ARRAY_BUFFER, sizeofVertexData, worldVertexData, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, worldVertexData->allocated, worldVertexData, GL_STATIC_DRAW);
 
   glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
-  glBufferData(GL_ARRAY_BUFFER, sizeofColorData, worldColorData, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, worldColorData->allocated, worldColorData, GL_STATIC_DRAW);
 
   // 1rst attribute buffer : vertices
   glEnableVertexAttribArray(0);

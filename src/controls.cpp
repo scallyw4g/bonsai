@@ -21,9 +21,9 @@ glm::mat4 getProjectionMatrix(){
 
 
 // Initial horizontal angle : toward -Z
-float horizontalAngle = 0.0f;
+float horizontalAngle = 179.9f;
 // Initial vertical angle : none
-float verticalAngle = 0.0f;
+float verticalAngle = -0.6f;
 // Initial Field of View
 float initialFoV = 45.0f;
 
@@ -55,7 +55,7 @@ void computeMatricesFromInputs(glm::vec3* position)
 
 	// Direction : Spherical coordinates to Cartesian coordinates conversion
 	glm::vec3 direction(
-		cos(verticalAngle) * sin(horizontalAngle), 
+		cos(verticalAngle) * sin(horizontalAngle),
 		sin(verticalAngle),
 		cos(verticalAngle) * cos(horizontalAngle)
 	);

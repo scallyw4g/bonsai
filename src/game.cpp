@@ -90,6 +90,17 @@ void GenChunk( v4* Buffer, int numVoxels, v3 Offset )
   return;
 }
 
+Chunk AllocateChunk(v3 Dim, v3 WorldP)
+{
+  Chunk Result;
+
+  Result.Voxels = (v4*)malloc(Dim.x*Dim.y*Dim.z*sizeof(v4));
+  Result.Dim = Dim;
+  Result.WorldP = WorldP;
+
+  return Result;
+}
+
 int main( void )
 {
   int width, height;
@@ -134,17 +145,27 @@ int main( void )
 
   glfwWindowHint(GLFW_SAMPLES, 4);
 
-  std::vector<glm::vec3> vertices;
-  std::vector<glm::vec2> uvs;
-  std::vector<glm::vec3> normals;
+  Chunk WorldChunks[9] = {};
+  v3 ChunkOrigin = V3( 0, 0, 0 );
 
-  bool res = loadOBJ("cube.obj", vertices, uvs, normals);
+  // Allocate Chunks of Voxels
+  for ( int i = 0; i < ArrayCount(WorldChunks); ++ i )
+  {
+    ChunkOrigin += ChunkDim;
+    WorldChunks[i] = AllocateChunk( ChunkDim, ChunkOrigin );
+  }
 
-  v4* VoxelBuffer = (v4*)malloc(CHUNK_VOL*sizeof(v4));
-  GLfloat *worldVertexData = (GLfloat *)malloc(WORLD_VERTEX_BUFFER_SIZE);
-  GLfloat *worldColorData = (GLfloat *)malloc(WORLD_VERTEX_BUFFER_SIZE);
+  WorldVertexBlock worldVertexData;
+  WorldVertexBlock worldColorData;
 
-  GenChunk( VoxelBuffer, CHUNK_VOL, V3(0,0,0) );
+  // TODO(Jesse): This is getting out of hand
+  worldVertexData.allocated =  WORLD_VERTEX_BUFFER_SIZE*ArrayCount(WorldChunks);
+  worldColorData.allocated =  WORLD_VERTEX_BUFFER_SIZE*ArrayCount(WorldChunks);
+
+  worldVertexData.Data = (GLfloat *)malloc(worldVertexData.allocated);
+  worldColorData.Data = (GLfloat *)malloc(worldColorData.allocated);
+
+  GenChunk( WorldChunks[0].Voxels, CHUNK_VOL, V3(0,0,0) );
 
   /*
    *  Main Render loop
@@ -175,21 +196,18 @@ int main( void )
 
     if ( glfwGetKey(window, GLFW_KEY_ENTER ) == GLFW_PRESS )
     {
-       GenChunk( VoxelBuffer, CHUNK_VOL, V3(0,0,0) );
+       GenChunk( WorldChunks[0].Voxels, CHUNK_VOL, V3(0,0,0) );
     }
 
     // Clear the screen
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     DrawChunk(
-      VoxelBuffer,
-      ChunkDim,
+      WorldChunks[0].Voxels,
+      WorldChunks[0].Dim,
 
-      worldVertexData,
-      WORLD_VERTEX_BUFFER_SIZE,
-
-      worldColorData,
-      WORLD_VERTEX_BUFFER_SIZE,
+      &worldVertexData,
+      &worldColorData,
 
       vertexbuffer,
       colorbuffer
@@ -225,8 +243,13 @@ int main( void )
   // Close OpenGL window and terminate GLFW
   glfwTerminate();
 
-  free(worldVertexData);
-  free(VoxelBuffer);
+  free(worldVertexData.Data);
+  free(worldColorData.Data);
+
+  for ( int i = 0; i < ArrayCount(WorldChunks); ++ i )
+  {
+    free( WorldChunks[i].Voxels );
+  }
 
   return 0;
 }

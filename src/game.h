@@ -3,6 +3,7 @@
 
 #define ArrayCount(a) (sizeof(a)/sizeof(a[0]))
 
+
 // Keep track of triangle count for debugging
 static int triCount = 0;
 
@@ -58,6 +59,16 @@ v4 V4(int x,int y,int z,int w)
   return Result;
 }
 
+v2 operator+=(v2 P1, v2 P2)
+{
+  v2 Result;
+
+  Result.x = P1.x + P2.x;
+  Result.y = P1.y + P2.y;
+
+  return Result;
+}
+
 v2 operator+(v2 P1, v2 P2)
 {
   v2 Result;
@@ -72,6 +83,16 @@ v2 operator*(float f, v2 P)
 {
   P.x *= f;
   P.y *= f;
+}
+
+v3 operator+=(v3 P1, v3 P2)
+{
+  v3 Result;
+
+  Result.x = P1.x + P2.x;
+  Result.y = P1.y + P2.y;
+
+  return Result;
 }
 
 v4 operator*(v4 A, int B)
@@ -103,5 +124,19 @@ v4 operator+(v4 A, v4 B)
 
   return Result;
 }
+
+struct WorldVertexBlock
+{
+  GLfloat *Data;
+  int allocated;
+  int filled;
+};
+
+struct Chunk
+{
+  v4 *Voxels;
+  v3 Dim;
+  v3 WorldP;
+};
 
 #endif
