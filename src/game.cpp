@@ -159,11 +159,11 @@ int main( void )
   WorldVertexBlock worldColorData;
 
   // TODO(Jesse): This is getting out of hand
-  worldVertexData.allocated =  WORLD_VERTEX_BUFFER_SIZE*ArrayCount(WorldChunks);
-  worldColorData.allocated =  WORLD_VERTEX_BUFFER_SIZE*ArrayCount(WorldChunks);
+  worldVertexData.bytesAllocd =  WORLD_VERTEX_BUFFER_BYTES*ArrayCount(WorldChunks);
+  worldColorData.bytesAllocd =  WORLD_VERTEX_BUFFER_BYTES*ArrayCount(WorldChunks);
 
-  worldVertexData.Data = (GLfloat *)malloc(worldVertexData.allocated);
-  worldColorData.Data = (GLfloat *)malloc(worldColorData.allocated);
+  worldVertexData.Data = (GLfloat *)malloc(worldVertexData.bytesAllocd);
+  worldColorData.Data = (GLfloat *)malloc(worldColorData.bytesAllocd);
 
   GenChunk( WorldChunks[0].Voxels, CHUNK_VOL, V3(0,0,0) );
 

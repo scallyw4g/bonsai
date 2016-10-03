@@ -16,7 +16,7 @@
 #define WORLD_VERTEX_COUNT (VERT_DATA_POINTS_PER_VOXEL*CHUNK_VOL)
 
 // length of worldvertexbuffer in bytes
-#define WORLD_VERTEX_BUFFER_SIZE (WORLD_VERTEX_COUNT*sizeof(GLfloat))
+#define WORLD_VERTEX_BUFFER_BYTES (WORLD_VERTEX_COUNT*sizeof(GLfloat))
 
 #define VOXEL_DIAMETER 1.0f
 #define VOXEL_RADIUS VOXEL_DIAMETER/2.0f

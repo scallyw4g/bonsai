@@ -128,7 +128,7 @@ v4 operator+(v4 A, v4 B)
 struct WorldVertexBlock
 {
   GLfloat *Data;
-  int allocated;
+  int bytesAllocd;
   int filled;
 };
 

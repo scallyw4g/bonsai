@@ -1,4 +1,5 @@
 #include <cstring>
+#include <csignal>
 
 #include <GL/glew.h>
 
@@ -33,16 +34,29 @@ void BufferFace(
     float* VertColors,
     int sizeofVertColors,
 
-    int numVerts,
+    int numFaceVerts,
     int *worldVertCount
   )
 {
   triCount += 2;
 
+  // std::raise(SIGINT);
+
   memcpy( &worldVertexData->Data[*worldVertCount], VertsPositions, sizeofVertPositions );
   memcpy( &worldColorData->Data[*worldVertCount], VertColors, sizeofVertColors );
-  *worldVertCount += numVerts;
+  *worldVertCount += numFaceVerts;
 }
+
+#define BufferLocalFace \
+  BufferFace( \
+      worldVertexData, \
+      worldColorData, \
+      localVertexData, \
+      sizeof(localVertexData), \
+      localColorData, \
+      sizeof(localColorData), \
+      ArrayCount(localVertexData), \
+      worldVertCount)
 
 void BufferRightFace(
     glm::vec3 worldP,
@@ -74,18 +88,7 @@ void BufferRightFace(
     1.0f,  0.0f,  0.0f
   };
 
-  BufferFace(
-      worldVertexData,
-      worldColorData,
-
-      localVertexData,
-      sizeof(localVertexData),
-
-      localColorData,
-      sizeof(localColorData),
-
-      ArrayCount(localVertexData),
-      worldVertCount);
+  BufferLocalFace;
 }
 
 void BufferLeftFace(
@@ -118,18 +121,7 @@ void BufferLeftFace(
     1.0f,  0.0f,  1.0f
   };
 
-  BufferFace(
-      worldVertexData,
-      worldColorData,
-
-      localVertexData,
-      sizeof(localVertexData),
-
-      localColorData,
-      sizeof(localColorData),
-
-      ArrayCount(localVertexData),
-      worldVertCount);
+  BufferLocalFace;
 }
 
 void BufferBottomFace(
@@ -162,18 +154,7 @@ void BufferBottomFace(
     0.0f,  1.0f,  1.0f
   };
 
-  BufferFace(
-      worldVertexData,
-      worldColorData,
-
-      localVertexData,
-      sizeof(localVertexData),
-
-      localColorData,
-      sizeof(localColorData),
-
-      ArrayCount(localVertexData),
-      worldVertCount);
+  BufferLocalFace;
 }
 
 void BufferTopFace(
@@ -206,18 +187,7 @@ void BufferTopFace(
     0.0f,  1.0f,  0.0f
   };
 
-  BufferFace(
-      worldVertexData,
-      worldColorData,
-
-      localVertexData,
-      sizeof(localVertexData),
-
-      localColorData,
-      sizeof(localColorData),
-
-      ArrayCount(localVertexData),
-      worldVertCount);
+  BufferLocalFace;
 }
 
 void BufferFrontFace(
@@ -250,18 +220,7 @@ void BufferFrontFace(
     1.0f,  1.0f,  1.0f
   };
 
-  BufferFace(
-      worldVertexData,
-      worldColorData,
-
-      localVertexData,
-      sizeof(localVertexData),
-
-      localColorData,
-      sizeof(localColorData),
-
-      ArrayCount(localVertexData),
-      worldVertCount);
+  BufferLocalFace;
 }
 
 void BufferBackFace(
@@ -294,18 +253,7 @@ void BufferBackFace(
     1.0f,  1.0f,  0.0f
   };
 
-  BufferFace(
-      worldVertexData,
-      worldColorData,
-
-      localVertexData,
-      sizeof(localVertexData),
-
-      localColorData,
-      sizeof(localColorData),
-
-      ArrayCount(localVertexData),
-      worldVertCount);
+  BufferLocalFace;
 }
 
 bool IsRightChunkBoundary( v3 ChunkDim, int idx )
@@ -343,7 +291,8 @@ void DrawChunk(
   int numVoxels = ChunkDim.x * ChunkDim.y * ChunkDim.z;
 
   // Clear out render from last frame
-  memset( worldVertexData->Data, 0, worldVertexData->allocated );
+  memset( worldVertexData->Data, 0, worldVertexData->bytesAllocd );
+  memset( worldColorData->Data, 0, worldColorData->bytesAllocd );
 
   for ( int i = 0; i < numVoxels; ++i )
   {
@@ -423,10 +372,10 @@ void DrawChunk(
   }
 
   glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-  glBufferData(GL_ARRAY_BUFFER, worldVertexData->allocated, worldVertexData, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, worldVertexData->bytesAllocd, worldVertexData->Data, GL_STATIC_DRAW);
 
   glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
-  glBufferData(GL_ARRAY_BUFFER, worldColorData->allocated, worldColorData, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, worldColorData->bytesAllocd, worldColorData->Data, GL_STATIC_DRAW);
 
   // 1rst attribute buffer : vertices
   glEnableVertexAttribArray(0);
