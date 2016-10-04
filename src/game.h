@@ -85,6 +85,17 @@ v2 operator*(float f, v2 P)
   P.y *= f;
 }
 
+v3 operator*=(v3 P1, int n)
+{
+  v3 Result;
+
+  Result.x = P1.x * n;
+  Result.y = P1.y * n;
+  Result.z = P1.z * n;
+
+  return Result;
+}
+
 v3 operator+=(v3 P1, v3 P2)
 {
   v3 Result;

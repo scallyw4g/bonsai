@@ -66,25 +66,24 @@ void initWindow( int width, int height )
   glDepthFunc(GL_LESS);
 }
 
-void GenChunk( v4* Buffer, int numVoxels, v3 Offset )
+void GenChunk( Chunk Chunk, PerlinNoise* Noise)
 {
-  srand(time(NULL));
-  PerlinNoise pn(rand());
+  int ChunkVol = Chunk.Dim.x*Chunk.Dim.y*Chunk.Dim.z;
 
-  for ( int i = 0; i < numVoxels; ++i )
+  for ( int i = 0; i < ChunkVol; ++i )
   {
-    Buffer[i].x = i%CHUNK_WIDTH + Offset.x;
-    Buffer[i].y = (i/CHUNK_WIDTH) % CHUNK_HEIGHT + Offset.y;
-    Buffer[i].z = i/(CHUNK_WIDTH*CHUNK_HEIGHT) + Offset.z;
+    Chunk.Voxels[i].x = i%Chunk.Dim.x + Chunk.WorldP.x;
+    Chunk.Voxels[i].y = (i/Chunk.Dim.x) % Chunk.Dim.y + Chunk.WorldP.y;
+    Chunk.Voxels[i].z = i/(Chunk.Dim.x*Chunk.Dim.y) + Chunk.WorldP.z;
 
-    double InX = (double)Buffer[i].x/(double)CHUNK_WIDTH;
-    double InY = (double)Buffer[i].y/(double)CHUNK_HEIGHT;
-    double InZ = (double)Buffer[i].z/(double)CHUNK_DEPTH;
+    double InX = (double)Chunk.Voxels[i].x/(double)Chunk.Dim.x;
+    double InY = (double)Chunk.Voxels[i].y/(double)Chunk.Dim.y;
+    double InZ = (double)Chunk.Voxels[i].z/(double)Chunk.Dim.z;
 
-    double l = pn.noise(InX, InY, InZ);
-    Buffer[i].w = floor(l + 0.5);
+    double l = Noise->noise(InX, InY, InZ);
+    Chunk.Voxels[i].w = floor(l + 0.5);
 
-    /* Buffer[i].w = 1; */
+    /* Chunk.Voxels[i].w = 1; */
   }
 
   return;
@@ -145,13 +144,18 @@ int main( void )
 
   glfwWindowHint(GLFW_SAMPLES, 4);
 
-  Chunk WorldChunks[9] = {};
+  Chunk WorldChunks[27] = {};
   v3 ChunkOrigin = V3( 0, 0, 0 );
 
   // Allocate Chunks of Voxels
   for ( int i = 0; i < ArrayCount(WorldChunks); ++ i )
   {
-    ChunkOrigin += ChunkDim;
+    ChunkOrigin.x = (i*ChunkDim.x) % (ChunkDim.x*3) ;
+    ChunkOrigin.z = (i/3) * ChunkDim.z % (ChunkDim.x*3);
+    ChunkOrigin.y = (i/9) * ChunkDim.y;
+
+    // printf("x %d z %d y %d \n", ChunkOrigin.x, ChunkOrigin.z, ChunkOrigin.y);
+
     WorldChunks[i] = AllocateChunk( ChunkDim, ChunkOrigin );
   }
 
@@ -165,7 +169,13 @@ int main( void )
   worldVertexData.Data = (GLfloat *)malloc(worldVertexData.bytesAllocd);
   worldColorData.Data = (GLfloat *)malloc(worldColorData.bytesAllocd);
 
-  GenChunk( WorldChunks[0].Voxels, CHUNK_VOL, V3(0,0,0) );
+  srand(time(NULL));
+  PerlinNoise Noise(rand());
+
+  for ( int i = 0; i < ArrayCount(WorldChunks); ++ i )
+  {
+    GenChunk( WorldChunks[i], &Noise );
+  }
 
   /*
    *  Main Render loop
@@ -196,22 +206,31 @@ int main( void )
 
     if ( glfwGetKey(window, GLFW_KEY_ENTER ) == GLFW_PRESS )
     {
-       GenChunk( WorldChunks[0].Voxels, CHUNK_VOL, V3(0,0,0) );
+      srand(time(NULL));
+      PerlinNoise Noise(rand());
+
+      for ( int i = 0; i < ArrayCount(WorldChunks); ++ i )
+      {
+        GenChunk( WorldChunks[i], &Noise );
+      }
     }
 
     // Clear the screen
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    DrawChunk(
-      WorldChunks[0].Voxels,
-      WorldChunks[0].Dim,
+      for ( int i = 0; i < ArrayCount(WorldChunks); ++ i )
+      {
+        DrawChunk(
+          WorldChunks[i].Voxels,
+          WorldChunks[i].Dim,
 
-      &worldVertexData,
-      &worldColorData,
+          &worldVertexData,
+          &worldColorData,
 
-      vertexbuffer,
-      colorbuffer
-    );
+          vertexbuffer,
+          colorbuffer
+        );
+      }
 
     // Get a handle for our "MVP" uniform
     // Only during the initialisation
