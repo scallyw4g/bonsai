@@ -91,7 +91,7 @@ void GenChunk( Chunk Chunk, PerlinNoise* Noise)
   return;
 }
 
-Chunk AllocateChunk(v3 Dim, v3 WorldP)
+Chunk AllocateChunk(v3 Dim)
 {
   Chunk Result;
 
@@ -213,35 +213,34 @@ int main( void )
 
   Entity Player = {};
 
-  Player.Model = AllocateChunk( V3(1,1,1), V3(0,0,0) );
+  Player.Model = AllocateChunk( V3(1,1,1) );
+  Player.Model.WorldP = glm::vec3(0,0,0);
 
   LoadModel( &Player.Model );
 
   Chunk WorldChunks[27] = {};
   v3 ChunkOrigin = V3( 0, 0, 0 );
 
-  // Allocate Chunks of Voxels
+  srand(time(NULL));
+  PerlinNoise Noise(rand());
+
+  // Allocate and generate chunks of Voxels
   for ( int i = 0; i < ArrayCount(WorldChunks); ++ i )
   {
     ChunkOrigin.x = (i*ChunkDim.x) % (ChunkDim.x*3) ;
     ChunkOrigin.z = (i/3) * ChunkDim.z % (ChunkDim.x*3);
     ChunkOrigin.y = (i/9) * ChunkDim.y;
 
-    printf("x %d z %d y %d \n", ChunkOrigin.x, ChunkOrigin.z, ChunkOrigin.y);
+    WorldChunks[i] = AllocateChunk( ChunkDim );
 
-    WorldChunks[i] = AllocateChunk( ChunkDim, ChunkOrigin );
-  }
+    WorldChunks[i].WorldP = glm::vec3(ChunkOrigin.x, ChunkOrigin.y, ChunkOrigin.z);
 
-  srand(time(NULL));
-  PerlinNoise Noise(rand());
-
-  for ( int i = 0; i < ArrayCount(WorldChunks); ++ i )
-  {
     GenChunk( WorldChunks[i], &Noise );
   }
 
   /*
    *  Main Render loop
+   *
    */
  do {
 
@@ -275,6 +274,9 @@ int main( void )
     float len = glm::length(Offset);
 
 #if 1
+    if ( len > 0.001 )
+    {
+      // Position logging
       printf("camera\n");
       printf("%f %f %f\n", CameraP.x, CameraP.y, CameraP.z);
       printf("player.model.worldp\n");
@@ -284,6 +286,7 @@ int main( void )
       printf("length\n");
       printf("%f\n",len);
       printf("---- \n\n");
+    }
 #endif
 
 #if 0
@@ -341,8 +344,7 @@ int main( void )
 
 #if 0
         DrawChunk(
-          WorldChunks[1].Voxels,
-          WorldChunks[1].Dim,
+          &WorldChunks[1],
 
           &WorldChunks[1].VertexData,
           &WorldChunks[1].ColorData,
@@ -350,12 +352,12 @@ int main( void )
           vertexbuffer,
           colorbuffer
         );
-        DrawChunk(
-          WorldChunks[3].Voxels,
-          WorldChunks[3].Dim,
 
-          &WorldChunks[3].VertexData,
-          &WorldChunks[3].ColorData,
+        DrawChunk(
+          &WorldChunks[22],
+
+          &WorldChunks[22].VertexData,
+          &WorldChunks[22].ColorData,
 
           vertexbuffer,
           colorbuffer
