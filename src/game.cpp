@@ -9,7 +9,6 @@ GLFWwindow* window;
 
 #include <shader.cpp>
 #include <objloader.cpp>
-#include <controls.cpp>
 
 #include <simplex.cpp>
 #include <perlin.cpp>
@@ -80,10 +79,13 @@ void GenChunk( Chunk Chunk, PerlinNoise* Noise)
     double InY = (double)Chunk.Voxels[i].y/(double)Chunk.Dim.y;
     double InZ = (double)Chunk.Voxels[i].z/(double)Chunk.Dim.z;
 
+#if 1
     double l = Noise->noise(InX, InY, InZ);
-    Chunk.Voxels[i].w = floor(l + 0.5);
+    Chunk.Voxels[i].w = (float)floor(l + 0.5);
+#else
+    Chunk.Voxels[i].w = 1;
+#endif
 
-    /* Chunk.Voxels[i].w = 1; */
   }
 
   return;
@@ -93,11 +95,80 @@ Chunk AllocateChunk(v3 Dim, v3 WorldP)
 {
   Chunk Result;
 
-  Result.Voxels = (v4*)malloc(Dim.x*Dim.y*Dim.z*sizeof(v4));
+  Result.Voxels = (glm::vec4*)malloc(Dim.x*Dim.y*Dim.z*sizeof(v4));
   Result.Dim = Dim;
-  Result.WorldP = WorldP;
+
+  int BufferSize = Dim.x*Dim.y*Dim.z * BYTES_PER_VOXEL;
+
+  Result.VertexData.bytesAllocd = BufferSize;
+  Result.ColorData.bytesAllocd = BufferSize;
+
+  Result.VertexData.Data = (GLfloat *)malloc(Result.VertexData.bytesAllocd);
+  Result.ColorData.Data = (GLfloat *)malloc(Result.ColorData.bytesAllocd);
 
   return Result;
+}
+
+void LoadModel( Chunk* Model )
+{
+  Model->Voxels[0].w = 1;
+
+  Model->Voxels[0].x = 1;
+  Model->Voxels[0].y = 1;
+  Model->Voxels[0].z = 1;
+}
+
+glm::vec3 CalculateMove(float speed, float deltaTime)
+{
+  glm::vec3 right(-1,0,0);
+  glm::vec3 up(0,1,0);
+  glm::vec3 forward(0,0,1);
+
+  glm::vec3 moveDir(0,0,0);
+
+  // Move forward
+  if (glfwGetKey( window, GLFW_KEY_KP_8 ) == GLFW_PRESS){
+    moveDir += forward * deltaTime;
+  }
+  // Move backward
+  if (glfwGetKey( window, GLFW_KEY_KP_5 ) == GLFW_PRESS){
+    moveDir -= forward * deltaTime;
+  }
+  // Strafe right
+  if (glfwGetKey( window, GLFW_KEY_KP_6 ) == GLFW_PRESS){
+    moveDir += right * deltaTime;
+  }
+  // Strafe left
+  if (glfwGetKey( window, GLFW_KEY_KP_4 ) == GLFW_PRESS){
+    moveDir -= right * deltaTime;
+  }
+  // Strafe up
+  if (glfwGetKey( window, GLFW_KEY_KP_7 ) == GLFW_PRESS){
+    moveDir += up * deltaTime;
+  }
+  // Strafe down
+  if (glfwGetKey( window, GLFW_KEY_KP_9 ) == GLFW_PRESS){
+    moveDir -= up * deltaTime;
+  }
+
+  moveDir *= speed;
+
+  return moveDir;
+}
+
+void UpdateChunkP(Chunk* chunk, glm::vec3 Offset)
+{
+  int chunkVol = chunk->Dim.x*chunk->Dim.y*chunk->Dim.z;
+
+  chunk->WorldP += Offset;
+
+  for ( int i = 0; i < chunkVol; ++i )
+  {
+
+    chunk->Voxels[i].x += (float)Offset.x;
+    chunk->Voxels[i].y += (float)Offset.y;
+    chunk->Voxels[i].z += (float)Offset.z;
+  }
 }
 
 int main( void )
@@ -124,12 +195,8 @@ int main( void )
       0.1f,     // near margin
       500.0f);  // far margin
 
-  // CameraP in world space
-  glm::vec3 CameraP = glm::vec3(
-      CHUNK_WIDTH+CHUNK_HEIGHT+CHUNK_DEPTH*0.3,
-      CHUNK_WIDTH+CHUNK_HEIGHT+CHUNK_DEPTH*0.3,
-      CHUNK_WIDTH+CHUNK_HEIGHT+CHUNK_DEPTH*0.3
-    );
+  glm::mat4 ModelMatrix = glm::mat4(1.0);
+  glm::mat4 mvp;
 
   GLuint vertexbuffer;
   GLuint normalbuffer;
@@ -144,6 +211,12 @@ int main( void )
 
   glfwWindowHint(GLFW_SAMPLES, 4);
 
+  Entity Player = {};
+
+  Player.Model = AllocateChunk( V3(1,1,1), V3(0,0,0) );
+
+  LoadModel( &Player.Model );
+
   Chunk WorldChunks[27] = {};
   v3 ChunkOrigin = V3( 0, 0, 0 );
 
@@ -154,20 +227,10 @@ int main( void )
     ChunkOrigin.z = (i/3) * ChunkDim.z % (ChunkDim.x*3);
     ChunkOrigin.y = (i/9) * ChunkDim.y;
 
-    // printf("x %d z %d y %d \n", ChunkOrigin.x, ChunkOrigin.z, ChunkOrigin.y);
+    printf("x %d z %d y %d \n", ChunkOrigin.x, ChunkOrigin.z, ChunkOrigin.y);
 
     WorldChunks[i] = AllocateChunk( ChunkDim, ChunkOrigin );
   }
-
-  WorldVertexBlock worldVertexData;
-  WorldVertexBlock worldColorData;
-
-  // TODO(Jesse): This is getting out of hand
-  worldVertexData.bytesAllocd =  WORLD_VERTEX_BUFFER_BYTES*ArrayCount(WorldChunks);
-  worldColorData.bytesAllocd =  WORLD_VERTEX_BUFFER_BYTES*ArrayCount(WorldChunks);
-
-  worldVertexData.Data = (GLfloat *)malloc(worldVertexData.bytesAllocd);
-  worldColorData.Data = (GLfloat *)malloc(worldColorData.bytesAllocd);
 
   srand(time(NULL));
   PerlinNoise Noise(rand());
@@ -182,20 +245,50 @@ int main( void )
    */
  do {
 
-    computeMatricesFromInputs(&CameraP);
+    // glfwGetTime is called only once, the first time this function is called
+    static double lastTime = glfwGetTime();
 
-    glm::mat4 ProjectionMatrix = getProjectionMatrix();
-    glm::mat4 ViewMatrix = getViewMatrix();
-    glm::mat4 ModelMatrix = glm::mat4(1.0);
-    glm::mat4 mvp = ProjectionMatrix * ViewMatrix * ModelMatrix;
-
-    // Measure speed
+    // Compute time difference between current and last frame
     double currentTime = glfwGetTime();
-    double dtForFrame = currentTime - lastFrameTime;
-    lastFrameTime = currentTime;
+    float deltaTime = float(currentTime - lastTime);
 
+    float speed = 10.0f;
+
+    glm::vec3 Offset = CalculateMove(speed, deltaTime);
+    UpdateChunkP( &Player.Model, Offset );
+
+    glm::vec3 CameraP = Player.Model.WorldP + glm::vec3(0,10,-10);
+
+    glm::vec3 up(0, 1, 0);
+    glm::vec3 CameraFront = ( CameraP - Player.Model.WorldP );
+    glm::vec3 CameraRight = glm::normalize( glm::cross(up, CameraFront) );
+    glm::vec3 CameraUp = glm::normalize( glm::cross(CameraFront, CameraRight) );
+
+    glm::mat4 ViewMatrix = glm::lookAt(
+      CameraP,
+      Player.Model.WorldP,
+      CameraUp
+    );
+
+    mvp = Projection * ViewMatrix * ModelMatrix;
+
+    float len = glm::length(Offset);
+
+#if 1
+      printf("camera\n");
+      printf("%f %f %f\n", CameraP.x, CameraP.y, CameraP.z);
+      printf("player.model.worldp\n");
+      printf("%f %f %f\n", Player.Model.WorldP.x, Player.Model.WorldP.y, Player.Model.WorldP.z);
+      printf("offset\n");
+      printf("%f %f %f\n", Offset.x, Offset.y, Offset.z);
+      printf("length\n");
+      printf("%f\n",len);
+      printf("---- \n\n");
+#endif
+
+#if 0
+    // Framerate logging
     nbFrames++;
-
     if ( currentTime - lastPrintTime >= 1.0 )
     {
       printf("%f ms/frame\n", 1000.0/(double)nbFrames );
@@ -203,6 +296,7 @@ int main( void )
       nbFrames = 0;
       lastPrintTime += 1.0;
     }
+#endif
 
     if ( glfwGetKey(window, GLFW_KEY_ENTER ) == GLFW_PRESS )
     {
@@ -218,19 +312,55 @@ int main( void )
     // Clear the screen
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+#if 1
+    DrawChunk(
+      &Player.Model,
+
+      &Player.Model.VertexData,
+      &Player.Model.ColorData,
+
+      vertexbuffer,
+      colorbuffer
+    );
+#endif
+
+#if 1
       for ( int i = 0; i < ArrayCount(WorldChunks); ++ i )
       {
         DrawChunk(
-          WorldChunks[i].Voxels,
-          WorldChunks[i].Dim,
+          &WorldChunks[i],
 
-          &worldVertexData,
-          &worldColorData,
+          &WorldChunks[i].VertexData,
+          &WorldChunks[i].ColorData,
 
           vertexbuffer,
           colorbuffer
         );
       }
+#endif
+
+#if 0
+        DrawChunk(
+          WorldChunks[1].Voxels,
+          WorldChunks[1].Dim,
+
+          &WorldChunks[1].VertexData,
+          &WorldChunks[1].ColorData,
+
+          vertexbuffer,
+          colorbuffer
+        );
+        DrawChunk(
+          WorldChunks[3].Voxels,
+          WorldChunks[3].Dim,
+
+          &WorldChunks[3].VertexData,
+          &WorldChunks[3].ColorData,
+
+          vertexbuffer,
+          colorbuffer
+        );
+#endif
 
     // Get a handle for our "MVP" uniform
     // Only during the initialisation
@@ -249,6 +379,7 @@ int main( void )
     glfwSwapBuffers(window);
     glfwPollEvents();
 
+  lastTime = currentTime;
   } // Check if the ESC key was pressed or the window was closed
   while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
          glfwGetKey(window, GLFW_KEY_Q )      != GLFW_PRESS &&
@@ -262,13 +393,13 @@ int main( void )
   // Close OpenGL window and terminate GLFW
   glfwTerminate();
 
-  free(worldVertexData.Data);
-  free(worldColorData.Data);
-
   for ( int i = 0; i < ArrayCount(WorldChunks); ++ i )
   {
     free( WorldChunks[i].Voxels );
   }
+
+  free(Player.Model.VertexData.Data);
+  free(Player.Model.ColorData.Data);
 
   return 0;
 }

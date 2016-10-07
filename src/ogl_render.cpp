@@ -9,7 +9,7 @@ using namespace glm;
 
 #include <game.h>
 
-bool IsFilled( v4* VoxelBuffer, int chunkVol, int chunkWidth, int chunkHeight, int idx )
+bool IsFilled( glm::vec4* VoxelBuffer, int chunkVol, int chunkWidth, int chunkHeight, int idx )
 {
   bool isFilled = false;
 
@@ -24,9 +24,9 @@ bool IsFilled( v4* VoxelBuffer, int chunkVol, int chunkWidth, int chunkHeight, i
   return isFilled;
 }
 
-void BufferFace(
-    WorldVertexBlock *worldVertexData,
-    WorldVertexBlock *worldColorData,
+void BufferFace (
+    VertexBlock *worldVertexData,
+    VertexBlock *worldColorData,
 
     float* VertsPositions,
     int sizeofVertPositions,
@@ -60,20 +60,20 @@ void BufferFace(
 
 void BufferRightFace(
     glm::vec3 worldP,
-    WorldVertexBlock *worldVertexData,
-    WorldVertexBlock *worldColorData,
+    VertexBlock *worldVertexData,
+    VertexBlock *worldColorData,
     int *worldVertCount )
 {
   float localVertexData[] =
   {
     // Right
-    worldP.x +  VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
-    worldP.x +  VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
-    worldP.x +  VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
+    worldP.x + VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
+    worldP.x + VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
+    worldP.x + VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
 
-    worldP.x +  VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
-    worldP.x +  VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
-    worldP.x +  VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS
+    worldP.x + VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
+    worldP.x + VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
+    worldP.x + VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS
   };
 
   float localColorData[] =
@@ -93,8 +93,8 @@ void BufferRightFace(
 
 void BufferLeftFace(
     glm::vec3 worldP,
-    WorldVertexBlock *worldVertexData,
-    WorldVertexBlock *worldColorData,
+    VertexBlock *worldVertexData,
+    VertexBlock *worldColorData,
     int *worldVertCount )
 {
   float localVertexData[] =
@@ -126,8 +126,8 @@ void BufferLeftFace(
 
 void BufferBottomFace(
     glm::vec3 worldP,
-    WorldVertexBlock *worldVertexData,
-    WorldVertexBlock *worldColorData,
+    VertexBlock *worldVertexData,
+    VertexBlock *worldColorData,
     int *worldVertCount)
 {
   float localVertexData[] =
@@ -159,8 +159,8 @@ void BufferBottomFace(
 
 void BufferTopFace(
     glm::vec3 worldP,
-    WorldVertexBlock *worldVertexData,
-    WorldVertexBlock *worldColorData,
+    VertexBlock *worldVertexData,
+    VertexBlock *worldColorData,
     int *worldVertCount)
 {
   float localVertexData[] =
@@ -192,8 +192,8 @@ void BufferTopFace(
 
 void BufferFrontFace(
     glm::vec3 worldP,
-    WorldVertexBlock *worldVertexData,
-    WorldVertexBlock *worldColorData,
+    VertexBlock *worldVertexData,
+    VertexBlock *worldColorData,
     int *worldVertCount)
 {
   float localVertexData[] =
@@ -225,8 +225,8 @@ void BufferFrontFace(
 
 void BufferBackFace(
     glm::vec3 worldP,
-    WorldVertexBlock *worldVertexData,
-    WorldVertexBlock *worldColorData,
+    VertexBlock *worldVertexData,
+    VertexBlock *worldColorData,
     int *worldVertCount)
 {
   float localVertexData[] =
@@ -277,22 +277,23 @@ bool IsBottomChunkBoundary( v3 ChunkDim, int idx )
 }
 
 void DrawChunk(
-    v4* VoxelBuffer,
-    v3 ChunkDim,
+    Chunk *chunk,
 
-    WorldVertexBlock *worldVertexData,
-    WorldVertexBlock *worldColorData,
+    VertexBlock *worldVertexData,
+    VertexBlock *worldColorData,
 
     GLuint &colorbuffer,
     GLuint &vertexbuffer)
 {
   triCount=0;
   int worldVertCount = 0;
-  int numVoxels = ChunkDim.x * ChunkDim.y * ChunkDim.z;
+  int numVoxels = chunk->Dim.x * chunk->Dim.y * chunk->Dim.z;
 
   // Clear out render from last frame
   memset( worldVertexData->Data, 0, worldVertexData->bytesAllocd );
   memset( worldColorData->Data, 0, worldColorData->bytesAllocd );
+
+  glm::vec4 *VoxelBuffer = chunk->Voxels;
 
   for ( int i = 0; i < numVoxels; ++i )
   {
@@ -306,7 +307,7 @@ void DrawChunk(
       int frontIdx = i - (CHUNK_WIDTH*CHUNK_HEIGHT);
 
       if ( ! IsFilled(VoxelBuffer, CHUNK_VOL, CHUNK_WIDTH, CHUNK_HEIGHT, nextIdx) ||
-           IsRightChunkBoundary(ChunkDim, i) )
+           IsRightChunkBoundary(chunk->Dim, i) )
       {
         BufferRightFace(
           glm::vec3(VoxelBuffer[i].x, VoxelBuffer[i].y, VoxelBuffer[i].z),
@@ -317,7 +318,7 @@ void DrawChunk(
       }
 
       if ( ! IsFilled(VoxelBuffer, CHUNK_VOL, CHUNK_WIDTH, CHUNK_HEIGHT, prevIdx) ||
-           IsLeftChunkBoundary(ChunkDim, i) )
+           IsLeftChunkBoundary(chunk->Dim, i) )
       {
         BufferLeftFace(
           glm::vec3(VoxelBuffer[i].x, VoxelBuffer[i].y, VoxelBuffer[i].z),
@@ -328,7 +329,7 @@ void DrawChunk(
       }
 
       if ( ! IsFilled(VoxelBuffer, CHUNK_VOL, CHUNK_WIDTH, CHUNK_HEIGHT, botIdx) ||
-           IsBottomChunkBoundary(ChunkDim, i) )
+           IsBottomChunkBoundary(chunk->Dim, i) )
       {
         BufferBottomFace(
           glm::vec3(VoxelBuffer[i].x, VoxelBuffer[i].y, VoxelBuffer[i].z),
@@ -339,7 +340,7 @@ void DrawChunk(
       }
 
       if ( ! IsFilled(VoxelBuffer, CHUNK_VOL, CHUNK_WIDTH, CHUNK_HEIGHT, topIdx) ||
-           IsTopChunkBoundary(ChunkDim, i) )
+           IsTopChunkBoundary(chunk->Dim, i) )
       {
         BufferTopFace(
           glm::vec3(VoxelBuffer[i].x, VoxelBuffer[i].y, VoxelBuffer[i].z),

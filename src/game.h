@@ -136,7 +136,7 @@ v4 operator+(v4 A, v4 B)
   return Result;
 }
 
-struct WorldVertexBlock
+struct VertexBlock
 {
   GLfloat *Data;
   int bytesAllocd;
@@ -145,9 +145,18 @@ struct WorldVertexBlock
 
 struct Chunk
 {
-  v4 *Voxels;
+  glm::vec4 *Voxels;
   v3 Dim;
-  v3 WorldP;
+
+  glm::vec3 WorldP;
+
+  VertexBlock VertexData;
+  VertexBlock ColorData;
+};
+
+struct Entity
+{
+  Chunk Model;
 };
 
 #endif
