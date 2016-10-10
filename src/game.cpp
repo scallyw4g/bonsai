@@ -65,6 +65,41 @@ void initWindow( int width, int height )
   glDepthFunc(GL_LESS);
 }
 
+
+void Logging( int len )
+{
+#if 0
+
+#if 1
+  if ( len > 0.001 )
+  {
+    // Position logging
+    printf("camera\n");
+    printf("%f %f %f\n", CameraP.x, CameraP.y, CameraP.z);
+    printf("player.model.worldp\n");
+    printf("%f %f %f\n", Player.Model.WorldP.x, Player.Model.WorldP.y, Player.Model.WorldP.z);
+    printf("offset\n");
+    printf("%f %f %f\n", Offset.x, Offset.y, Offset.z);
+    printf("length\n");
+    printf("%f\n",len);
+    printf("---- \n\n");
+  }
+#endif
+
+#if 0
+  // Framerate logging
+  nbFrames++;
+  if ( currentTime - lastPrintTime >= 1.0 )
+  {
+    printf("%f ms/frame\n", 1000.0/(double)nbFrames );
+    printf("%d triangles/frame\n", triCount );
+    nbFrames = 0;
+    lastPrintTime += 1.0;
+  }
+#endif
+#endif
+}
+
 void GenChunk( Chunk Chunk, PerlinNoise* Noise)
 {
   int ChunkVol = Chunk.Dim.x*Chunk.Dim.y*Chunk.Dim.z;
@@ -91,20 +126,23 @@ void GenChunk( Chunk Chunk, PerlinNoise* Noise)
   return;
 }
 
-Chunk AllocateChunk(v3 Dim)
+Chunk AllocateChunk(chunk_dim Dim)
 {
   Chunk Result;
 
-  Result.Voxels = (glm::vec4*)malloc(Dim.x*Dim.y*Dim.z*sizeof(v4));
+  Result.Voxels = (v4*)malloc(Dim.x*Dim.y*Dim.z*sizeof(v4));
   Result.Dim = Dim;
 
   int BufferSize = Dim.x*Dim.y*Dim.z * BYTES_PER_VOXEL;
 
+  Result.VertexData.Data = (GLfloat *)malloc(BufferSize);
+  Result.ColorData.Data = (GLfloat *)malloc(BufferSize);
+
   Result.VertexData.bytesAllocd = BufferSize;
   Result.ColorData.bytesAllocd = BufferSize;
 
-  Result.VertexData.Data = (GLfloat *)malloc(Result.VertexData.bytesAllocd);
-  Result.ColorData.Data = (GLfloat *)malloc(Result.ColorData.bytesAllocd);
+  Result.VertexData.filled = 0;
+  Result.ColorData.filled = 0;
 
   return Result;
 }
@@ -116,15 +154,17 @@ void LoadModel( Chunk* Model )
   Model->Voxels[0].x = 1;
   Model->Voxels[0].y = 1;
   Model->Voxels[0].z = 1;
+
+
 }
 
-glm::vec3 CalculateMove(float speed, float deltaTime)
+v3 CalculateMove(float speed, float deltaTime)
 {
-  glm::vec3 right(-1,0,0);
-  glm::vec3 up(0,1,0);
-  glm::vec3 forward(0,0,1);
+  v3 right = V3(-1,0,0);
+  v3 up = V3(0,1,0);
+  v3 forward = V3(0,0,1);
 
-  glm::vec3 moveDir(0,0,0);
+  v3 moveDir = V3(0,0,0);
 
   // Move forward
   if (glfwGetKey( window, GLFW_KEY_KP_8 ) == GLFW_PRESS){
@@ -156,19 +196,9 @@ glm::vec3 CalculateMove(float speed, float deltaTime)
   return moveDir;
 }
 
-void UpdateChunkP(Chunk* chunk, glm::vec3 Offset)
+void UpdateChunkP(Chunk* chunk, v3 Offset)
 {
-  int chunkVol = chunk->Dim.x*chunk->Dim.y*chunk->Dim.z;
-
-  chunk->WorldP += Offset;
-
-  for ( int i = 0; i < chunkVol; ++i )
-  {
-
-    chunk->Voxels[i].x += (float)Offset.x;
-    chunk->Voxels[i].y += (float)Offset.y;
-    chunk->Voxels[i].z += (float)Offset.z;
-  }
+  chunk->Offset += Offset;
 }
 
 int main( void )
@@ -180,7 +210,7 @@ int main( void )
 
   initWindow(width, height);
 
-  v3 ChunkDim = V3( CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH);
+  chunk_dim ChunkDim = Chunk_Position( CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH);
 
   GLuint VertexArrayID;
   glGenVertexArrays(1, &VertexArrayID);
@@ -213,13 +243,14 @@ int main( void )
 
   Entity Player = {};
 
-  Player.Model = AllocateChunk( V3(1,1,1) );
-  Player.Model.WorldP = glm::vec3(0,0,0);
+  Player.Model = AllocateChunk( Chunk_Dim(1,1,1) );
+  Player.Model.WorldP = Chunk_Position(0,0,0);
+  Player.Model.Offset = V3(0,0,0);
 
   LoadModel( &Player.Model );
 
   Chunk WorldChunks[27] = {};
-  v3 ChunkOrigin = V3( 0, 0, 0 );
+  chunk_position ChunkOrigin = Chunk_Position( 0, 0, 0 );
 
   srand(time(NULL));
   PerlinNoise Noise(rand());
@@ -233,19 +264,20 @@ int main( void )
 
     WorldChunks[i] = AllocateChunk( ChunkDim );
 
-    WorldChunks[i].WorldP = glm::vec3(ChunkOrigin.x, ChunkOrigin.y, ChunkOrigin.z);
+    WorldChunks[i].WorldP = ChunkOrigin;
 
     GenChunk( WorldChunks[i], &Noise );
   }
+
+  // glfwGetTime is called only once, the first time this function is called
+  static double lastTime = glfwGetTime();
 
   /*
    *  Main Render loop
    *
    */
- do {
-
-    // glfwGetTime is called only once, the first time this function is called
-    static double lastTime = glfwGetTime();
+  do
+  {
 
     // Compute time difference between current and last frame
     double currentTime = glfwGetTime();
@@ -253,53 +285,29 @@ int main( void )
 
     float speed = 10.0f;
 
-    glm::vec3 Offset = CalculateMove(speed, deltaTime);
+    v3 Offset = CalculateMove(speed, deltaTime);
+
     UpdateChunkP( &Player.Model, Offset );
 
-    glm::vec3 CameraP = Player.Model.WorldP + glm::vec3(0,10,-10);
+    // printf("%f %f %f \n", Offset.x, Offset.y, Offset.z);
+
+    chunk_position CameraWorldP = Player.Model.WorldP + Chunk_Position(0,10,-10);
+    v3 CameraP = V3(CameraWorldP) + Player.Model.Offset;
+
+    glm::vec3 CameraOffset = V3(CameraP);
 
     glm::vec3 up(0, 1, 0);
-    glm::vec3 CameraFront = ( CameraP - Player.Model.WorldP );
+    glm::vec3 CameraFront = V3( CameraP - V3(Player.Model.WorldP) );
     glm::vec3 CameraRight = glm::normalize( glm::cross(up, CameraFront) );
     glm::vec3 CameraUp = glm::normalize( glm::cross(CameraFront, CameraRight) );
 
     glm::mat4 ViewMatrix = glm::lookAt(
-      CameraP,
-      Player.Model.WorldP,
+      CameraOffset,
+      V3(Player.Model.Offset),
       CameraUp
     );
 
     mvp = Projection * ViewMatrix * ModelMatrix;
-
-    float len = glm::length(Offset);
-
-#if 1
-    if ( len > 0.001 )
-    {
-      // Position logging
-      printf("camera\n");
-      printf("%f %f %f\n", CameraP.x, CameraP.y, CameraP.z);
-      printf("player.model.worldp\n");
-      printf("%f %f %f\n", Player.Model.WorldP.x, Player.Model.WorldP.y, Player.Model.WorldP.z);
-      printf("offset\n");
-      printf("%f %f %f\n", Offset.x, Offset.y, Offset.z);
-      printf("length\n");
-      printf("%f\n",len);
-      printf("---- \n\n");
-    }
-#endif
-
-#if 0
-    // Framerate logging
-    nbFrames++;
-    if ( currentTime - lastPrintTime >= 1.0 )
-    {
-      printf("%f ms/frame\n", 1000.0/(double)nbFrames );
-      printf("%d triangles/frame\n", triCount );
-      nbFrames = 0;
-      lastPrintTime += 1.0;
-    }
-#endif
 
     if ( glfwGetKey(window, GLFW_KEY_ENTER ) == GLFW_PRESS )
     {
@@ -315,7 +323,8 @@ int main( void )
     // Clear the screen
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-#if 1
+    // Draw Player
+#if 0
     DrawChunk(
       &Player.Model,
 
@@ -327,6 +336,7 @@ int main( void )
     );
 #endif
 
+      // Draw world
 #if 1
       for ( int i = 0; i < ArrayCount(WorldChunks); ++ i )
       {
@@ -342,6 +352,7 @@ int main( void )
       }
 #endif
 
+      // dbg draw world
 #if 0
         DrawChunk(
           &WorldChunks[1],
