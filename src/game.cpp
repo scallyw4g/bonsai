@@ -66,24 +66,18 @@ void initWindow( int width, int height )
 }
 
 
-void Logging( int len )
+void Logging(v3 CameraP, v3 PlayerP, glm::vec3 LookAt )
 {
-#if 0
-
 #if 1
-  if ( len > 0.001 )
-  {
-    // Position logging
-    printf("camera\n");
-    printf("%f %f %f\n", CameraP.x, CameraP.y, CameraP.z);
-    printf("player.model.worldp\n");
-    printf("%f %f %f\n", Player.Model.WorldP.x, Player.Model.WorldP.y, Player.Model.WorldP.z);
-    printf("offset\n");
-    printf("%f %f %f\n", Offset.x, Offset.y, Offset.z);
-    printf("length\n");
-    printf("%f\n",len);
-    printf("---- \n\n");
-  }
+  // Position logging
+  printf("\ncamera\n");
+  printf("%f %f %f\n", CameraP.x, CameraP.y, CameraP.z);
+
+  printf("player\n");
+  printf("%f %f %f\n", PlayerP.x, PlayerP.y, PlayerP.z);
+
+  printf("Lookat\n");
+  printf("%f %f %f\n", LookAt.x, LookAt.y, LookAt.z);
 #endif
 
 #if 0
@@ -96,7 +90,6 @@ void Logging( int len )
     nbFrames = 0;
     lastPrintTime += 1.0;
   }
-#endif
 #endif
 }
 
@@ -114,11 +107,16 @@ void GenChunk( Chunk Chunk, PerlinNoise* Noise)
     double InY = (double)Chunk.Voxels[i].y/(double)Chunk.Dim.y;
     double InZ = (double)Chunk.Voxels[i].z/(double)Chunk.Dim.z;
 
-#if 1
+#if 0
     double l = Noise->noise(InX, InY, InZ);
     Chunk.Voxels[i].w = (float)floor(l + 0.5);
 #else
-    Chunk.Voxels[i].w = 1;
+    if ( ( Chunk.Voxels[i].x == 0 && Chunk.Voxels[i].y == 0 ) ||
+         ( Chunk.Voxels[i].y == 0 && Chunk.Voxels[i].z == 0 ) ||
+         ( Chunk.Voxels[i].x == 0 && Chunk.Voxels[i].z == 0 ) )
+    {
+      Chunk.Voxels[i].w = 1;
+    }
 #endif
 
   }
@@ -161,9 +159,9 @@ void LoadModel( Chunk* Model )
 
 v3 CalculateMove(float speed, float deltaTime)
 {
-  v3 right = V3(-1,0,0);
+  v3 right = V3(1,0,0);
   v3 up = V3(0,1,0);
-  v3 forward = V3(0,0,1);
+  v3 forward = V3(0,0,-1);
 
   v3 moveDir = V3(0,0,0);
 
@@ -200,6 +198,17 @@ v3 CalculateMove(float speed, float deltaTime)
 void UpdateChunkP(Chunk* chunk, v3 Offset)
 {
   chunk->Offset += Offset;
+}
+
+void GenerateWorld( Chunk* WorldChunks, int TotalChunks )
+{
+  srand(time(NULL));
+  PerlinNoise Noise(rand());
+
+  for ( int i = 0; i < TotalChunks; ++ i )
+  {
+    GenChunk( WorldChunks[i], &Noise );
+  }
 }
 
 int main( void )
@@ -250,9 +259,6 @@ int main( void )
   Chunk WorldChunks[27] = {};
   chunk_position ChunkOrigin = Chunk_Position( 0, 0, 0 );
 
-  srand(time(NULL));
-  PerlinNoise Noise(rand());
-
   // Allocate and generate chunks of Voxels
   for ( int i = 0; i < ArrayCount(WorldChunks); ++ i )
   {
@@ -261,9 +267,9 @@ int main( void )
     ChunkOrigin.y = (i/9) * ChunkDim.y;
 
     WorldChunks[i] = AllocateChunk( ChunkDim, ChunkOrigin );
-
-    GenChunk( WorldChunks[i], &Noise );
   }
+
+  GenerateWorld( &WorldChunks[0], ArrayCount(WorldChunks) );
 
   // glfwGetTime is called only once, the first time this function is called
   static double lastTime = glfwGetTime();
@@ -285,42 +291,39 @@ int main( void )
 
     UpdateChunkP( &Player.Model, Offset );
 
-    // printf("%f %f %f \n", Offset.x, Offset.y, Offset.z);
-
-    chunk_position CameraWorldP = Player.Model.WorldP + Chunk_Position(0,10,-10);
+    chunk_position CameraWorldP = Player.Model.WorldP + Chunk_Position(0,10,10);
     v3 CameraP = V3(CameraWorldP) + Player.Model.Offset;
 
     glm::vec3 CameraOffset = V3(CameraP);
 
     glm::vec3 up(0, 1, 0);
-    glm::vec3 CameraFront = V3( CameraP - V3(Player.Model.WorldP) );
+    glm::vec3 CameraFront = V3( CameraP - Player.Model.Offset );
     glm::vec3 CameraRight = glm::normalize( glm::cross(up, CameraFront) );
     glm::vec3 CameraUp = glm::normalize( glm::cross(CameraFront, CameraRight) );
 
+    glm::vec3 PlayerP = V3(Player.Model.Offset);
+
     glm::mat4 ViewMatrix = glm::lookAt(
       CameraOffset,
-      V3(Player.Model.Offset),
+      PlayerP,
       CameraUp
     );
+
+    Logging( CameraP, Player.Model.Offset, PlayerP );
 
     mvp = Projection * ViewMatrix * ModelMatrix;
 
     if ( glfwGetKey(window, GLFW_KEY_ENTER ) == GLFW_PRESS )
     {
-      srand(time(NULL));
-      PerlinNoise Noise(rand());
 
-      for ( int i = 0; i < ArrayCount(WorldChunks); ++ i )
-      {
-        GenChunk( WorldChunks[i], &Noise );
-      }
+      GenerateWorld( &WorldChunks[0], ArrayCount(WorldChunks) );
     }
 
     // Clear the screen
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Draw Player
-#if 0
+#if 1
     DrawChunk(
       &Player.Model,
 

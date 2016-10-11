@@ -66,7 +66,6 @@ void BufferRightFace(
 {
   float localVertexData[] =
   {
-    // Right
     worldP.x + VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
     worldP.x + VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
     worldP.x + VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
@@ -76,9 +75,8 @@ void BufferRightFace(
     worldP.x + VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS
   };
 
-  float localColorData[] =
+  float localColorData[] = // Red
   {
-    // Right
     1.0f,  0.0f,  0.0f,
     1.0f,  0.0f,  0.0f,
     1.0f,  0.0f,  0.0f,
@@ -99,7 +97,6 @@ void BufferLeftFace(
 {
   float localVertexData[] =
   {
-    // Left
     worldP.x + -VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
     worldP.x + -VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
     worldP.x + -VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
@@ -109,9 +106,8 @@ void BufferLeftFace(
     worldP.x + -VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS
   };
 
-  float localColorData[] =
+  float localColorData[] = // Yellow
   {
-    // Left
     1.0f,  0.0f,  1.0f,
     1.0f,  0.0f,  1.0f,
     1.0f,  0.0f,  1.0f,
@@ -132,7 +128,6 @@ void BufferBottomFace(
 {
   float localVertexData[] =
   {
-    // Bottom
     worldP.x +  VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
     worldP.x + -VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
     worldP.x +  VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
@@ -142,9 +137,8 @@ void BufferBottomFace(
     worldP.x + -VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS
   };
 
-  float localColorData[] =
+  float localColorData[] = // Teal
   {
-    // Bottom
     0.0f,  1.0f,  1.0f,
     0.0f,  1.0f,  1.0f,
     0.0f,  1.0f,  1.0f,
@@ -165,7 +159,6 @@ void BufferTopFace(
 {
   float localVertexData[] =
   {
-    // Top
     worldP.x +  VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
     worldP.x +  VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
     worldP.x + -VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
@@ -175,9 +168,8 @@ void BufferTopFace(
     worldP.x + -VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS
   };
 
-  float localColorData[] =
+  float localColorData[] = // Green
   {
-    // Top
     0.0f,  1.0f,  0.0f,
     0.0f,  1.0f,  0.0f,
     0.0f,  1.0f,  0.0f,
@@ -198,7 +190,6 @@ void BufferFrontFace(
 {
   float localVertexData[] =
   {
-    // Front
     worldP.x + -VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
     worldP.x + -VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
     worldP.x +  VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
@@ -208,9 +199,8 @@ void BufferFrontFace(
     worldP.x +  VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
   };
 
-  float localColorData[] =
+  float localColorData[] =  // White
   {
-    // Front
     1.0f,  1.0f,  1.0f,
     1.0f,  1.0f,  1.0f,
     1.0f,  1.0f,  1.0f,
@@ -231,7 +221,6 @@ void BufferBackFace(
 {
   float localVertexData[] =
   {
-    // Back
     worldP.x +  VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
     worldP.x + -VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
     worldP.x + -VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
@@ -241,9 +230,8 @@ void BufferBackFace(
     worldP.x + -VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
   };
 
-  float localColorData[] =
+  float localColorData[] = // Purple
   {
-    // Back
     1.0f,  1.0f,  0.0f,
     1.0f,  1.0f,  0.0f,
     1.0f,  1.0f,  0.0f,
