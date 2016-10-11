@@ -126,7 +126,7 @@ void GenChunk( Chunk Chunk, PerlinNoise* Noise)
   return;
 }
 
-Chunk AllocateChunk(chunk_dim Dim)
+Chunk AllocateChunk(chunk_dim Dim, chunk_position WorldP)
 {
   Chunk Result;
 
@@ -144,6 +144,9 @@ Chunk AllocateChunk(chunk_dim Dim)
   Result.VertexData.filled = 0;
   Result.ColorData.filled = 0;
 
+  Result.WorldP = WorldP;
+  Result.Offset = V3(0,0,0);
+
   return Result;
 }
 
@@ -154,8 +157,6 @@ void LoadModel( Chunk* Model )
   Model->Voxels[0].x = 1;
   Model->Voxels[0].y = 1;
   Model->Voxels[0].z = 1;
-
-
 }
 
 v3 CalculateMove(float speed, float deltaTime)
@@ -243,10 +244,7 @@ int main( void )
 
   Entity Player = {};
 
-  Player.Model = AllocateChunk( Chunk_Dim(1,1,1) );
-  Player.Model.WorldP = Chunk_Position(0,0,0);
-  Player.Model.Offset = V3(0,0,0);
-
+  Player.Model = AllocateChunk( Chunk_Dim(1,1,1), Chunk_Position(0,0,0) );
   LoadModel( &Player.Model );
 
   Chunk WorldChunks[27] = {};
@@ -262,9 +260,7 @@ int main( void )
     ChunkOrigin.z = (i/3) * ChunkDim.z % (ChunkDim.x*3);
     ChunkOrigin.y = (i/9) * ChunkDim.y;
 
-    WorldChunks[i] = AllocateChunk( ChunkDim );
-
-    WorldChunks[i].WorldP = ChunkOrigin;
+    WorldChunks[i] = AllocateChunk( ChunkDim, ChunkOrigin );
 
     GenChunk( WorldChunks[i], &Noise );
   }
