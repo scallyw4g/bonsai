@@ -66,9 +66,9 @@ void initWindow( int width, int height )
 }
 
 
-void Logging(v3 CameraP, v3 PlayerP, glm::vec3 LookAt )
+void Logging(v3 CameraP, v3 PlayerP, glm::vec3 LookAt, double *lastFrameTime, int *numFrames )
 {
-#if 1
+#if 0
   // Position logging
   printf("\ncamera\n");
   printf("%f %f %f\n", CameraP.x, CameraP.y, CameraP.z);
@@ -80,15 +80,16 @@ void Logging(v3 CameraP, v3 PlayerP, glm::vec3 LookAt )
   printf("%f %f %f\n", LookAt.x, LookAt.y, LookAt.z);
 #endif
 
-#if 0
+#if 1
   // Framerate logging
-  nbFrames++;
-  if ( currentTime - lastPrintTime >= 1.0 )
+  *numFrames += 1;
+  int currentTime = glfwGetTime();
+  if ( currentTime - *lastFrameTime >= 1.0 )
   {
-    printf("%f ms/frame\n", 1000.0/(double)nbFrames );
+    printf("%f ms/frame, %d frames since last write\n", 1000.0/(double)(*numFrames), *numFrames );
     printf("%d triangles/frame\n", triCount );
-    nbFrames = 0;
-    lastPrintTime += 1.0;
+    *numFrames = 0;
+    *lastFrameTime += 1.0;
   }
 #endif
 }
@@ -107,7 +108,7 @@ void GenChunk( Chunk Chunk, PerlinNoise* Noise)
     double InY = (double)Chunk.Voxels[i].y/(double)Chunk.Dim.y;
     double InZ = (double)Chunk.Voxels[i].z/(double)Chunk.Dim.z;
 
-#if 0
+#if 1
     double l = Noise->noise(InX, InY, InZ);
     Chunk.Voxels[i].w = (float)floor(l + 0.5);
 #else
@@ -198,6 +199,7 @@ v3 CalculateMove(float speed, float deltaTime)
 void UpdateChunkP(Chunk* chunk, v3 Offset)
 {
   chunk->Offset += Offset;
+  chunk->redraw = true;
 }
 
 void GenerateWorld( Chunk* WorldChunks, int TotalChunks )
@@ -246,8 +248,7 @@ int main( void )
   glGenBuffers(1, &colorbuffer);
 
   double lastPrintTime = glfwGetTime();
-  double lastFrameTime = lastPrintTime;
-  int nbFrames = 0;
+  int numFrames = 0;
 
   glfwWindowHint(GLFW_SAMPLES, 4);
 
@@ -309,7 +310,7 @@ int main( void )
       CameraUp
     );
 
-    Logging( CameraP, Player.Model.Offset, PlayerP );
+    Logging( CameraP, Player.Model.Offset, PlayerP, &lastPrintTime, &numFrames);
 
     mvp = Projection * ViewMatrix * ModelMatrix;
 
@@ -326,10 +327,6 @@ int main( void )
 #if 1
     DrawChunk(
       &Player.Model,
-
-      &Player.Model.VertexData,
-      &Player.Model.ColorData,
-
       vertexbuffer,
       colorbuffer
     );
@@ -341,10 +338,6 @@ int main( void )
       {
         DrawChunk(
           &WorldChunks[i],
-
-          &WorldChunks[i].VertexData,
-          &WorldChunks[i].ColorData,
-
           vertexbuffer,
           colorbuffer
         );
@@ -415,4 +408,3 @@ int main( void )
 
   return 0;
 }
-

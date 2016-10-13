@@ -278,6 +278,24 @@ glm::vec3 V3( v3 Vec )
   return Result;
 }
 
+float LengthSq( v3 Vec )
+{
+  int Result;
+  Result = Vec.x*Vec.x + Vec.y*Vec.y + Vec.z*Vec.z;
+  return Result;
+}
+
+v3 Normalize( v3 Vec, float length)
+{
+  v3 Result;
+
+  Result.x = Result.x/length;
+  Result.y = Result.y/length;
+  Result.z = Result.z/length;
+
+  return Result;
+}
+
 struct VertexBlock
 {
   GLfloat *Data;
@@ -306,6 +324,9 @@ struct Chunk
 
   // Position within the chunk
   v3 Offset;
+
+  // Should we redraw this?
+  bool redraw;
 
   VertexBlock VertexData;
   VertexBlock ColorData;

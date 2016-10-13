@@ -9,6 +9,19 @@ using namespace glm;
 
 #include <game.h>
 
+#include <cstdio>
+
+#define BufferLocalFace \
+  BufferFace( \
+      worldVertexData, \
+      worldColorData, \
+      localVertexData, \
+      sizeof(localVertexData), \
+      localColorData, \
+      sizeof(localColorData), \
+      ArrayCount(localVertexData), \
+      chunkVertCount)
+
 bool IsFilled( v4* VoxelBuffer, int chunkVol, int chunkWidth, int chunkHeight, int idx )
 {
   bool isFilled = false;
@@ -35,34 +48,40 @@ void BufferFace (
     int sizeofVertColors,
 
     int numFaceVerts,
-    int *worldVertCount
+    int *chunkVertCount
   )
 {
   triCount += 2;
 
-  // std::raise(SIGINT);
+  worldVertexData->filled += sizeofVertPositions;
+  worldColorData->filled += sizeofVertColors;
 
-  memcpy( &worldVertexData->Data[*worldVertCount], VertsPositions, sizeofVertPositions );
-  memcpy( &worldColorData->Data[*worldVertCount], VertColors, sizeofVertColors );
-  *worldVertCount += numFaceVerts;
+  if ( worldVertexData->filled > worldVertexData->bytesAllocd ||
+       worldColorData->filled > worldColorData->bytesAllocd )
+  {
+    printf("\ncamera\n");
+    printf("%d %d %d %d \n",
+        worldVertexData->filled,
+        worldVertexData->bytesAllocd,
+        worldColorData->filled,
+        worldColorData->bytesAllocd );
+
+    assert(false); // Out of memory
+    worldVertexData->filled -= sizeofVertPositions;
+    worldColorData->filled -= sizeofVertColors;
+    return;
+  }
+
+  memcpy( &worldVertexData->Data[*chunkVertCount], VertsPositions, sizeofVertPositions );
+  memcpy( &worldColorData->Data[*chunkVertCount], VertColors, sizeofVertColors );
+  *chunkVertCount += numFaceVerts;
 }
-
-#define BufferLocalFace \
-  BufferFace( \
-      worldVertexData, \
-      worldColorData, \
-      localVertexData, \
-      sizeof(localVertexData), \
-      localColorData, \
-      sizeof(localColorData), \
-      ArrayCount(localVertexData), \
-      worldVertCount)
 
 void BufferRightFace(
     v3 worldP,
     VertexBlock *worldVertexData,
     VertexBlock *worldColorData,
-    int *worldVertCount )
+    int *chunkVertCount )
 {
   float localVertexData[] =
   {
@@ -93,7 +112,7 @@ void BufferLeftFace(
     v3 worldP,
     VertexBlock *worldVertexData,
     VertexBlock *worldColorData,
-    int *worldVertCount )
+    int *chunkVertCount )
 {
   float localVertexData[] =
   {
@@ -124,7 +143,7 @@ void BufferBottomFace(
     v3 worldP,
     VertexBlock *worldVertexData,
     VertexBlock *worldColorData,
-    int *worldVertCount)
+    int *chunkVertCount)
 {
   float localVertexData[] =
   {
@@ -155,7 +174,7 @@ void BufferTopFace(
     v3 worldP,
     VertexBlock *worldVertexData,
     VertexBlock *worldColorData,
-    int *worldVertCount)
+    int *chunkVertCount)
 {
   float localVertexData[] =
   {
@@ -186,7 +205,7 @@ void BufferFrontFace(
     v3 worldP,
     VertexBlock *worldVertexData,
     VertexBlock *worldColorData,
-    int *worldVertCount)
+    int *chunkVertCount)
 {
   float localVertexData[] =
   {
@@ -217,7 +236,7 @@ void BufferBackFace(
     v3 worldP,
     VertexBlock *worldVertexData,
     VertexBlock *worldColorData,
-    int *worldVertCount)
+    int *chunkVertCount)
 {
   float localVertexData[] =
   {
@@ -264,22 +283,17 @@ bool IsBottomChunkBoundary( chunk_dim ChunkDim, int idx )
   return (idx/(int)ChunkDim.x) % (int)ChunkDim.y == 0;
 }
 
-void DrawChunk(
-    Chunk *chunk,
-
-    VertexBlock *worldVertexData,
-    VertexBlock *worldColorData,
-
-    GLuint &colorbuffer,
-    GLuint &vertexbuffer)
+void BuildChunkMesh(Chunk *chunk)
 {
-  triCount=0;
-  int worldVertCount = 0;
+  int chunkVertCount = 0;
   int numVoxels = chunk->Dim.x * chunk->Dim.y * chunk->Dim.z;
 
   // Clear out render from last frame
-  memset( worldVertexData->Data, 0, worldVertexData->bytesAllocd );
-  memset( worldColorData->Data, 0, worldColorData->bytesAllocd );
+  memset( chunk->VertexData.Data, 0, chunk->VertexData.bytesAllocd );
+  memset( chunk->ColorData.Data, 0, chunk->ColorData.bytesAllocd );
+
+  chunk->VertexData.filled = 0;
+  chunk->ColorData.filled = 0;
 
   v4 *VoxelBuffer = chunk->Voxels;
 
@@ -300,9 +314,9 @@ void DrawChunk(
         v3 VoxelP = VoxelBuffer[i].xyz + chunk->Offset;
         BufferRightFace(
           VoxelP,
-          worldVertexData,
-          worldColorData,
-          &worldVertCount
+          &chunk->VertexData,
+          &chunk->ColorData,
+          &chunkVertCount
         );
       }
 
@@ -312,9 +326,9 @@ void DrawChunk(
         v3 VoxelP = VoxelBuffer[i].xyz + chunk->Offset;
         BufferLeftFace(
           VoxelP,
-          worldVertexData,
-          worldColorData,
-          &worldVertCount
+          &chunk->VertexData,
+          &chunk->ColorData,
+          &chunkVertCount
         );
       }
 
@@ -324,9 +338,9 @@ void DrawChunk(
         v3 VoxelP = VoxelBuffer[i].xyz + chunk->Offset;
         BufferBottomFace(
           VoxelP,
-          worldVertexData,
-          worldColorData,
-          &worldVertCount
+          &chunk->VertexData,
+          &chunk->ColorData,
+          &chunkVertCount
         );
       }
 
@@ -336,9 +350,9 @@ void DrawChunk(
         v3 VoxelP = VoxelBuffer[i].xyz + chunk->Offset;
         BufferTopFace(
           VoxelP,
-          worldVertexData,
-          worldColorData,
-          &worldVertCount
+          &chunk->VertexData,
+          &chunk->ColorData,
+          &chunkVertCount
         );
       }
 
@@ -347,9 +361,9 @@ void DrawChunk(
         v3 VoxelP = VoxelBuffer[i].xyz + chunk->Offset;
         BufferFrontFace(
           VoxelP,
-          worldVertexData,
-          worldColorData,
-          &worldVertCount
+          &chunk->VertexData,
+          &chunk->ColorData,
+          &chunkVertCount
         );
       }
 
@@ -358,19 +372,34 @@ void DrawChunk(
         v3 VoxelP = VoxelBuffer[i].xyz + chunk->Offset;
         BufferBackFace(
           VoxelP,
-          worldVertexData,
-          worldColorData,
-          &worldVertCount
+          &chunk->VertexData,
+          &chunk->ColorData,
+          &chunkVertCount
         );
       }
     }
   }
 
+}
+
+void DrawChunk(
+    Chunk *chunk,
+    GLuint &colorbuffer,
+    GLuint &vertexbuffer)
+{
+  triCount=0;
+
+  if ( chunk->redraw )
+  {
+    BuildChunkMesh( chunk );
+    chunk->redraw = false;
+  }
+
   glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-  glBufferData(GL_ARRAY_BUFFER, worldVertexData->bytesAllocd, worldVertexData->Data, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, chunk->VertexData.bytesAllocd, chunk->VertexData.Data, GL_STATIC_DRAW);
 
   glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
-  glBufferData(GL_ARRAY_BUFFER, worldColorData->bytesAllocd, worldColorData->Data, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, chunk->ColorData.bytesAllocd, chunk->ColorData.Data, GL_STATIC_DRAW);
 
   // 1rst attribute buffer : vertices
   glEnableVertexAttribArray(0);
