@@ -285,6 +285,7 @@ bool IsBottomChunkBoundary( chunk_dim ChunkDim, int idx )
 
 void BuildChunkMesh(Chunk *chunk)
 {
+
   int chunkVertCount = 0;
   int numVoxels = chunk->Dim.x * chunk->Dim.y * chunk->Dim.z;
 

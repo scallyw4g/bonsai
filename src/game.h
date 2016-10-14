@@ -66,7 +66,6 @@ chunk_position operator+(chunk_position P1, chunk_position const P2)
 
 typedef chunk_position chunk_dim;
 
-
 chunk_position Chunk_Position(int x, int y, int z)
 {
   chunk_position Result;
@@ -187,7 +186,6 @@ operator+=(v3& A, float f)
 
   return(A);
 }
-
 
 inline v3&
 operator+=(v3& A, v3 B)

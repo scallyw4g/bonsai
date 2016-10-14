@@ -65,7 +65,6 @@ void initWindow( int width, int height )
   glDepthFunc(GL_LESS);
 }
 
-
 void Logging(v3 CameraP, v3 PlayerP, glm::vec3 LookAt, double *lastFrameTime, int *numFrames )
 {
 #if 0
@@ -94,9 +93,11 @@ void Logging(v3 CameraP, v3 PlayerP, glm::vec3 LookAt, double *lastFrameTime, in
 #endif
 }
 
-void GenChunk( Chunk Chunk, PerlinNoise* Noise)
+void GenChunk( Chunk &Chunk, PerlinNoise* Noise)
 {
   int ChunkVol = Chunk.Dim.x*Chunk.Dim.y*Chunk.Dim.z;
+
+  Chunk.redraw = true;
 
   for ( int i = 0; i < ChunkVol; ++i )
   {
@@ -316,7 +317,7 @@ int main( void )
 
     if ( glfwGetKey(window, GLFW_KEY_ENTER ) == GLFW_PRESS )
     {
-
+      printf("regenerating world\n");
       GenerateWorld( &WorldChunks[0], ArrayCount(WorldChunks) );
     }
 
