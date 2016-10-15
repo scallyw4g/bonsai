@@ -64,7 +64,7 @@ chunk_position operator+(chunk_position P1, chunk_position const P2)
   return Result;
 }
 
-typedef chunk_position chunk_dim;
+typedef chunk_position chunk_dimension;
 
 chunk_position Chunk_Position(int x, int y, int z)
 {
@@ -77,9 +77,9 @@ chunk_position Chunk_Position(int x, int y, int z)
   return Result;
 };
 
-chunk_dim Chunk_Dim(int x, int y, int z)
+chunk_dimension Chunk_Dimension(int x, int y, int z)
 {
-  chunk_dim Result = Chunk_Position(x,y,z);
+  chunk_dimension Result = Chunk_Position(x,y,z);
 
   return Result;
 }
@@ -315,7 +315,7 @@ v3 ToV3(chunk_position chunkP)
 struct Chunk
 {
   v4 *Voxels;
-  chunk_dim Dim;
+  chunk_dimension Dim;
 
   // Position in absolute world coordinates.  A chunk is one world coordinate
   chunk_position WorldP;
@@ -328,6 +328,15 @@ struct Chunk
 
   VertexBlock VertexData;
   VertexBlock ColorData;
+};
+
+struct World
+{
+  // This is the number of chunks in xyz we're going to update and render
+  chunk_dimension VisibleRegion = Chunk_Dimension(3,3,3);
+  Chunk *FirstChunk;
+
+  chunk_dimension ChunkDim;
 };
 
 struct Entity

@@ -86,9 +86,12 @@ void Logging(v3 CameraP, v3 PlayerP, glm::vec3 LookAt, double *lastFrameTime, in
   if ( currentTime - *lastFrameTime >= 1.0 )
   {
     printf("%f ms/frame, %d frames since last write\n", 1000.0/(double)(*numFrames), *numFrames );
-    printf("%d triangles/frame\n", triCount );
+
+    printf("%d triangles buffered since frame\n", triCount );
     *numFrames = 0;
     *lastFrameTime += 1.0;
+
+    triCount=0;
   }
 #endif
 }
@@ -126,7 +129,7 @@ void GenChunk( Chunk &Chunk, PerlinNoise* Noise)
   return;
 }
 
-Chunk AllocateChunk(chunk_dim Dim, chunk_position WorldP)
+Chunk AllocateChunk(chunk_dimension Dim, chunk_position WorldP)
 {
   Chunk Result;
 
@@ -159,7 +162,7 @@ void LoadModel( Chunk* Model )
   Model->Voxels[0].z = 1;
 }
 
-v3 CalculateMove(float speed, float deltaTime)
+v3 GetPlayerUpdateVector(float speed, float deltaTime)
 {
   v3 right = V3(1,0,0);
   v3 up = V3(0,1,0);
@@ -197,9 +200,16 @@ v3 CalculateMove(float speed, float deltaTime)
   return moveDir;
 }
 
+Chunk* GetWorldChunk( chunk_position WorldP )
+{
+}
+
 void UpdateChunkP(Chunk* chunk, v3 Offset)
 {
   chunk->Offset += Offset;
+
+  Chunk* worldChunk = GetWorldChunk( chunk->WorldP );
+
   chunk->redraw = true;
 }
 
@@ -214,6 +224,85 @@ void GenerateWorld( Chunk* WorldChunks, int TotalChunks )
   }
 }
 
+void GAME_UPDATE_AND_RENDER(
+    World *world,
+    Entity *Player,
+    float deltaTime,
+    glm::mat4 Projection,
+    glm::mat4 ModelMatrix
+  )
+{
+  float speed = 10.0f;
+
+  v3 Offset = GetPlayerUpdateVector(speed, deltaTime);
+  UpdateChunkP( &Player->Model, Offset );
+
+  chunk_position CameraWorldP = Player->Model.WorldP + Chunk_Position(0,10,10);
+  v3 CameraP = V3(CameraWorldP) + Player->Model.Offset;
+
+  glm::vec3 CameraOffset = V3(CameraP);
+
+  glm::vec3 up(0, 1, 0);
+  glm::vec3 CameraFront = V3( CameraP - Player->Model.Offset );
+  glm::vec3 CameraRight = glm::normalize( glm::cross(up, CameraFront) );
+  glm::vec3 CameraUp = glm::normalize( glm::cross(CameraFront, CameraRight) );
+
+  glm::vec3 PlayerP = V3(Player->Model.Offset);
+
+  glm::mat4 ViewMatrix = glm::lookAt(
+    CameraOffset,
+    PlayerP,
+    CameraUp
+  );
+
+  glm::mat4 mvp = Projection * ViewMatrix * ModelMatrix;
+
+  if ( glfwGetKey(window, GLFW_KEY_ENTER ) == GLFW_PRESS )
+  {
+    printf("regenerating world\n");
+    GenerateWorld( &WorldChunks[0], ArrayCount(WorldChunks) );
+  }
+
+  // Clear the screen
+  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  // Draw Player
+#if 1
+  DrawChunk(
+    &Player->Model,
+    vertexbuffer,
+    colorbuffer
+  );
+#endif
+
+    // Draw world
+#if 1
+    for ( int i = 0; i < ArrayCount(WorldChunks); ++ i )
+    {
+      DrawChunk(
+        &WorldChunks[i],
+        vertexbuffer,
+        colorbuffer
+      );
+    }
+#endif
+
+  // Get a handle for our "MVP" uniform
+  // Only during the initialisation
+  GLuint MatrixID = glGetUniformLocation(programID, "MVP");
+
+  // Send our transformation to the currently bound shader, in the "MVP" uniform
+  // This is done in the main loop since each model will have a different MVP matrix (At least for the M part)
+  glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp[0][0]);
+
+  // Use our shader
+  glUseProgram(programID);
+
+  // Swap buffers
+  glfwSwapBuffers(window);
+  glfwPollEvents();
+}
+
 int main( void )
 {
   int width, height;
@@ -223,7 +312,8 @@ int main( void )
 
   initWindow(width, height);
 
-  chunk_dim ChunkDim = Chunk_Position( CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH);
+  World world;
+  world.ChunkDim = Chunk_Dimension( CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH );
 
   GLuint VertexArrayID;
   glGenVertexArrays(1, &VertexArrayID);
@@ -239,7 +329,6 @@ int main( void )
       500.0f);  // far margin
 
   glm::mat4 ModelMatrix = glm::mat4(1.0);
-  glm::mat4 mvp;
 
   GLuint vertexbuffer;
   GLuint normalbuffer;
@@ -255,8 +344,8 @@ int main( void )
 
   Entity Player = {};
 
-  Player.Model = AllocateChunk( Chunk_Dim(1,1,1), Chunk_Position(0,0,0) );
-  LoadModel( &Player.Model );
+  Player->Model = AllocateChunk( Chunk_Dimension(1,1,1), Chunk_Position(0,0,0) );
+  LoadModel( &Player->Model );
 
   Chunk WorldChunks[27] = {};
   chunk_position ChunkOrigin = Chunk_Position( 0, 0, 0 );
@@ -264,11 +353,11 @@ int main( void )
   // Allocate and generate chunks of Voxels
   for ( int i = 0; i < ArrayCount(WorldChunks); ++ i )
   {
-    ChunkOrigin.x = (i*ChunkDim.x) % (ChunkDim.x*3) ;
-    ChunkOrigin.z = (i/3) * ChunkDim.z % (ChunkDim.x*3);
-    ChunkOrigin.y = (i/9) * ChunkDim.y;
+    ChunkOrigin.x = (i*world.ChunkDim.x) % (world.ChunkDim.x*3) ;
+    ChunkOrigin.z = (i/3) * world.ChunkDim.z % (world.ChunkDim.x*3);
+    ChunkOrigin.y = (i/9) * world.ChunkDim.y;
 
-    WorldChunks[i] = AllocateChunk( ChunkDim, ChunkOrigin );
+    WorldChunks[i] = AllocateChunk( world.ChunkDim, ChunkOrigin );
   }
 
   GenerateWorld( &WorldChunks[0], ArrayCount(WorldChunks) );
@@ -282,108 +371,12 @@ int main( void )
    */
   do
   {
-
-    // Compute time difference between current and last frame
     double currentTime = glfwGetTime();
     float deltaTime = float(currentTime - lastTime);
 
-    float speed = 10.0f;
-
-    v3 Offset = CalculateMove(speed, deltaTime);
-
-    UpdateChunkP( &Player.Model, Offset );
-
-    chunk_position CameraWorldP = Player.Model.WorldP + Chunk_Position(0,10,10);
-    v3 CameraP = V3(CameraWorldP) + Player.Model.Offset;
-
-    glm::vec3 CameraOffset = V3(CameraP);
-
-    glm::vec3 up(0, 1, 0);
-    glm::vec3 CameraFront = V3( CameraP - Player.Model.Offset );
-    glm::vec3 CameraRight = glm::normalize( glm::cross(up, CameraFront) );
-    glm::vec3 CameraUp = glm::normalize( glm::cross(CameraFront, CameraRight) );
-
-    glm::vec3 PlayerP = V3(Player.Model.Offset);
-
-    glm::mat4 ViewMatrix = glm::lookAt(
-      CameraOffset,
-      PlayerP,
-      CameraUp
-    );
+    GAME_UPDATE_AND_RENDER( world, &Player, deltaTime, Projection, ModelMatrix);
 
     Logging( CameraP, Player.Model.Offset, PlayerP, &lastPrintTime, &numFrames);
-
-    mvp = Projection * ViewMatrix * ModelMatrix;
-
-    if ( glfwGetKey(window, GLFW_KEY_ENTER ) == GLFW_PRESS )
-    {
-      printf("regenerating world\n");
-      GenerateWorld( &WorldChunks[0], ArrayCount(WorldChunks) );
-    }
-
-    // Clear the screen
-    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    // Draw Player
-#if 1
-    DrawChunk(
-      &Player.Model,
-      vertexbuffer,
-      colorbuffer
-    );
-#endif
-
-      // Draw world
-#if 1
-      for ( int i = 0; i < ArrayCount(WorldChunks); ++ i )
-      {
-        DrawChunk(
-          &WorldChunks[i],
-          vertexbuffer,
-          colorbuffer
-        );
-      }
-#endif
-
-      // dbg draw world
-#if 0
-        DrawChunk(
-          &WorldChunks[1],
-
-          &WorldChunks[1].VertexData,
-          &WorldChunks[1].ColorData,
-
-          vertexbuffer,
-          colorbuffer
-        );
-
-        DrawChunk(
-          &WorldChunks[22],
-
-          &WorldChunks[22].VertexData,
-          &WorldChunks[22].ColorData,
-
-          vertexbuffer,
-          colorbuffer
-        );
-#endif
-
-    // Get a handle for our "MVP" uniform
-    // Only during the initialisation
-    GLuint MatrixID = glGetUniformLocation(programID, "MVP");
-
-    // Send our transformation to the currently bound shader, in the "MVP" uniform
-    // This is done in the main loop since each model will have a different MVP matrix (At least for the M part)
-    glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp[0][0]);
-
-    // Use our shader
-    glUseProgram(programID);
-
-    glDisableVertexAttribArray(0);
-
-    // Swap buffers
-    glfwSwapBuffers(window);
-    glfwPollEvents();
 
   lastTime = currentTime;
   } // Check if the ESC key was pressed or the window was closed

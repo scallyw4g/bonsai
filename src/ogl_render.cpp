@@ -263,22 +263,22 @@ void BufferBackFace(
   BufferLocalFace;
 }
 
-bool IsRightChunkBoundary( chunk_dim ChunkDim, int idx )
+bool IsRightChunkBoundary( chunk_dimension ChunkDim, int idx )
 {
   return (idx+1) % (int)ChunkDim.x == 0;
 }
 
-bool IsLeftChunkBoundary( chunk_dim ChunkDim, int idx )
+bool IsLeftChunkBoundary( chunk_dimension ChunkDim, int idx )
 {
   return (idx) % (int)ChunkDim.x == 0;
 }
 
-bool IsTopChunkBoundary( chunk_dim ChunkDim, int idx )
+bool IsTopChunkBoundary( chunk_dimension ChunkDim, int idx )
 {
   return ((idx/(int)ChunkDim.x)+1) % (int)ChunkDim.y == 0;
 }
 
-bool IsBottomChunkBoundary( chunk_dim ChunkDim, int idx )
+bool IsBottomChunkBoundary( chunk_dimension ChunkDim, int idx )
 {
   return (idx/(int)ChunkDim.x) % (int)ChunkDim.y == 0;
 }
@@ -388,8 +388,6 @@ void DrawChunk(
     GLuint &colorbuffer,
     GLuint &vertexbuffer)
 {
-  triCount=0;
-
   if ( chunk->redraw )
   {
     BuildChunkMesh( chunk );
@@ -427,5 +425,8 @@ void DrawChunk(
   );
 
   glDrawArrays(GL_TRIANGLES, 0, WORLD_VERTEX_COUNT);
-  /* printf("Draw Complete\n"); */
+
+  glDisableVertexAttribArray(0);
+  glDisableVertexAttribArray(1);
+
 }
