@@ -9,7 +9,7 @@ using namespace glm;
 
 #include <game.h>
 
-#include <cstdio>
+/* #include <cstdio> */
 
 #define BufferLocalFace \
   BufferFace( \
@@ -59,12 +59,12 @@ void BufferFace (
   if ( worldVertexData->filled > worldVertexData->bytesAllocd ||
        worldColorData->filled > worldColorData->bytesAllocd )
   {
-    printf("\ncamera\n");
-    printf("%d %d %d %d \n",
-        worldVertexData->filled,
-        worldVertexData->bytesAllocd,
-        worldColorData->filled,
-        worldColorData->bytesAllocd );
+    /* printf("\ncamera\n"); */
+    /* printf("%d %d %d %d \n", */
+        /* worldVertexData->filled, */
+        /* worldVertexData->bytesAllocd, */
+        /* worldColorData->filled, */
+        /* worldColorData->bytesAllocd ); */
 
     assert(false); // Out of memory
     worldVertexData->filled -= sizeofVertPositions;

@@ -84,6 +84,12 @@ chunk_dimension Chunk_Dimension(int x, int y, int z)
   return Result;
 }
 
+inline int
+Volume(chunk_dimension Dim)
+{
+  return (Dim.x*Dim.y*Dim.z);
+}
+
 v2 V2(int x,int y)
 {
   v2 Result = {};
@@ -332,10 +338,10 @@ struct Chunk
 
 struct World
 {
+  Chunk *Chunks;
+
   // This is the number of chunks in xyz we're going to update and render
   chunk_dimension VisibleRegion = Chunk_Dimension(3,3,3);
-  Chunk *FirstChunk;
-
   chunk_dimension ChunkDim;
 };
 

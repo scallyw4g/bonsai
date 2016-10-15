@@ -96,31 +96,31 @@ void Logging(v3 CameraP, v3 PlayerP, glm::vec3 LookAt, double *lastFrameTime, in
 #endif
 }
 
-void GenChunk( Chunk &Chunk, PerlinNoise* Noise)
+void GenChunk( Chunk *Chunk, PerlinNoise* Noise)
 {
-  int ChunkVol = Chunk.Dim.x*Chunk.Dim.y*Chunk.Dim.z;
+  int ChunkVol = Chunk->Dim.x*Chunk->Dim.y*Chunk->Dim.z;
 
-  Chunk.redraw = true;
+  Chunk->redraw = true;
 
   for ( int i = 0; i < ChunkVol; ++i )
   {
-    Chunk.Voxels[i].x = i%Chunk.Dim.x + Chunk.WorldP.x;
-    Chunk.Voxels[i].y = (i/Chunk.Dim.x) % Chunk.Dim.y + Chunk.WorldP.y;
-    Chunk.Voxels[i].z = i/(Chunk.Dim.x*Chunk.Dim.y) + Chunk.WorldP.z;
+    Chunk->Voxels[i].x = i%Chunk->Dim.x + Chunk->WorldP.x;
+    Chunk->Voxels[i].y = (i/Chunk->Dim.x) % Chunk->Dim.y + Chunk->WorldP.y;
+    Chunk->Voxels[i].z = i/(Chunk->Dim.x*Chunk->Dim.y) + Chunk->WorldP.z;
 
-    double InX = (double)Chunk.Voxels[i].x/(double)Chunk.Dim.x;
-    double InY = (double)Chunk.Voxels[i].y/(double)Chunk.Dim.y;
-    double InZ = (double)Chunk.Voxels[i].z/(double)Chunk.Dim.z;
+    double InX = (double)Chunk->Voxels[i].x/(double)Chunk->Dim.x;
+    double InY = (double)Chunk->Voxels[i].y/(double)Chunk->Dim.y;
+    double InZ = (double)Chunk->Voxels[i].z/(double)Chunk->Dim.z;
 
-#if 1
+#if 0
     double l = Noise->noise(InX, InY, InZ);
-    Chunk.Voxels[i].w = (float)floor(l + 0.5);
+    Chunk->Voxels[i].w = (float)floor(l + 0.5);
 #else
-    if ( ( Chunk.Voxels[i].x == 0 && Chunk.Voxels[i].y == 0 ) ||
-         ( Chunk.Voxels[i].y == 0 && Chunk.Voxels[i].z == 0 ) ||
-         ( Chunk.Voxels[i].x == 0 && Chunk.Voxels[i].z == 0 ) )
+    if ( ( Chunk->Voxels[i].x == 0 && Chunk->Voxels[i].y == 0 ) ||
+         ( Chunk->Voxels[i].y == 0 && Chunk->Voxels[i].z == 0 ) ||
+         ( Chunk->Voxels[i].x == 0 && Chunk->Voxels[i].z == 0 ) )
     {
-      Chunk.Voxels[i].w = 1;
+      Chunk->Voxels[i].w = 1;
     }
 #endif
 
@@ -213,14 +213,14 @@ void UpdateChunkP(Chunk* chunk, v3 Offset)
   chunk->redraw = true;
 }
 
-void GenerateWorld( Chunk* WorldChunks, int TotalChunks )
+void GenerateWorld( World *world )
 {
   srand(time(NULL));
   PerlinNoise Noise(rand());
 
-  for ( int i = 0; i < TotalChunks; ++ i )
+  for ( int i = 0; i < Volume(world->VisibleRegion); ++ i )
   {
-    GenChunk( WorldChunks[i], &Noise );
+    GenChunk( &world->Chunks[i], &Noise );
   }
 }
 
@@ -229,7 +229,11 @@ void GAME_UPDATE_AND_RENDER(
     Entity *Player,
     float deltaTime,
     glm::mat4 Projection,
-    glm::mat4 ModelMatrix
+    glm::mat4 ModelMatrix,
+
+    GLuint vertexbuffer,
+    GLuint colorbuffer,
+    GLuint programID
   )
 {
   float speed = 10.0f;
@@ -260,7 +264,7 @@ void GAME_UPDATE_AND_RENDER(
   if ( glfwGetKey(window, GLFW_KEY_ENTER ) == GLFW_PRESS )
   {
     printf("regenerating world\n");
-    GenerateWorld( &WorldChunks[0], ArrayCount(WorldChunks) );
+    GenerateWorld( world );
   }
 
   // Clear the screen
@@ -277,10 +281,10 @@ void GAME_UPDATE_AND_RENDER(
 
     // Draw world
 #if 1
-    for ( int i = 0; i < ArrayCount(WorldChunks); ++ i )
+    for ( int i = 0; i < Volume(world->VisibleRegion); ++ i )
     {
       DrawChunk(
-        &WorldChunks[i],
+        &world->Chunks[i],
         vertexbuffer,
         colorbuffer
       );
@@ -303,6 +307,30 @@ void GAME_UPDATE_AND_RENDER(
   glfwPollEvents();
 }
 
+void InitializeWorld( World *world )
+{
+  world->ChunkDim = Chunk_Dimension( CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH );
+  world->VisibleRegion = Chunk_Dimension(3,3,3);
+
+  world->Chunks = (Chunk*)malloc( sizeof(Chunk)*Volume(world->VisibleRegion) );
+
+  int ChunksAllocated = 0;
+
+  for ( int x = 0; x < world->VisibleRegion.x; ++ x )
+  {
+    for ( int y = 0; y < world->VisibleRegion.y; ++ y )
+    {
+      for ( int z = 0; z < world->VisibleRegion.z; ++ z )
+      {
+        world->Chunks[ChunksAllocated] = AllocateChunk( world->ChunkDim, Chunk_Position(x,y,z) );
+        ++ ChunksAllocated;
+      }
+    }
+  }
+
+  GenerateWorld(world);
+}
+
 int main( void )
 {
   int width, height;
@@ -311,9 +339,6 @@ int main( void )
   height = 1080;
 
   initWindow(width, height);
-
-  World world;
-  world.ChunkDim = Chunk_Dimension( CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH );
 
   GLuint VertexArrayID;
   glGenVertexArrays(1, &VertexArrayID);
@@ -344,23 +369,12 @@ int main( void )
 
   Entity Player = {};
 
-  Player->Model = AllocateChunk( Chunk_Dimension(1,1,1), Chunk_Position(0,0,0) );
-  LoadModel( &Player->Model );
+  Player.Model = AllocateChunk( Chunk_Dimension(1,1,1), Chunk_Position(0,0,0) );
+  LoadModel( &Player.Model );
 
-  Chunk WorldChunks[27] = {};
-  chunk_position ChunkOrigin = Chunk_Position( 0, 0, 0 );
 
-  // Allocate and generate chunks of Voxels
-  for ( int i = 0; i < ArrayCount(WorldChunks); ++ i )
-  {
-    ChunkOrigin.x = (i*world.ChunkDim.x) % (world.ChunkDim.x*3) ;
-    ChunkOrigin.z = (i/3) * world.ChunkDim.z % (world.ChunkDim.x*3);
-    ChunkOrigin.y = (i/9) * world.ChunkDim.y;
-
-    WorldChunks[i] = AllocateChunk( world.ChunkDim, ChunkOrigin );
-  }
-
-  GenerateWorld( &WorldChunks[0], ArrayCount(WorldChunks) );
+  World world;
+  InitializeWorld(&world);
 
   // glfwGetTime is called only once, the first time this function is called
   static double lastTime = glfwGetTime();
@@ -374,9 +388,19 @@ int main( void )
     double currentTime = glfwGetTime();
     float deltaTime = float(currentTime - lastTime);
 
-    GAME_UPDATE_AND_RENDER( world, &Player, deltaTime, Projection, ModelMatrix);
+    GAME_UPDATE_AND_RENDER(
+      &world,
+      &Player,
+      deltaTime,
+      Projection,
+      ModelMatrix,
 
-    Logging( CameraP, Player.Model.Offset, PlayerP, &lastPrintTime, &numFrames);
+      vertexbuffer,
+      colorbuffer,
+      programID
+    );
+
+    // Logging( CameraP, Player.Model.Offset, PlayerP, &lastPrintTime, &numFrames);
 
   lastTime = currentTime;
   } // Check if the ESC key was pressed or the window was closed
@@ -392,13 +416,13 @@ int main( void )
   // Close OpenGL window and terminate GLFW
   glfwTerminate();
 
-  for ( int i = 0; i < ArrayCount(WorldChunks); ++ i )
-  {
-    free( WorldChunks[i].Voxels );
-  }
+  /* for ( int i = 0; i < ArrayCount(WorldChunks); ++ i ) */
+  /* { */
+  /*   free( WorldChunks[i].Voxels ); */
+  /* } */
 
-  free(Player.Model.VertexData.Data);
-  free(Player.Model.ColorData.Data);
+  /* free(Player.Model.VertexData.Data); */
+  /* free(Player.Model.ColorData.Data); */
 
   return 0;
 }
