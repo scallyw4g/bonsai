@@ -9,8 +9,6 @@ using namespace glm;
 
 #include <game.h>
 
-/* #include <cstdio> */
-
 #define BufferLocalFace \
   BufferFace( \
       worldVertexData, \
@@ -26,6 +24,7 @@ bool IsFilled( v4* VoxelBuffer, int chunkVol, int chunkWidth, int chunkHeight, i
 {
   bool isFilled = false;
 
+  // negattive values here are totally valid to check
   if ( idx < 0 ) return isFilled;
   if ( idx > chunkVol ) return isFilled;
 
@@ -59,13 +58,6 @@ void BufferFace (
   if ( worldVertexData->filled > worldVertexData->bytesAllocd ||
        worldColorData->filled > worldColorData->bytesAllocd )
   {
-    /* printf("\ncamera\n"); */
-    /* printf("%d %d %d %d \n", */
-        /* worldVertexData->filled, */
-        /* worldVertexData->bytesAllocd, */
-        /* worldColorData->filled, */
-        /* worldColorData->bytesAllocd ); */
-
     assert(false); // Out of memory
     worldVertexData->filled -= sizeofVertPositions;
     worldColorData->filled -= sizeofVertColors;

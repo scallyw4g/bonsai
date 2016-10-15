@@ -18,7 +18,8 @@ GLFWwindow* window;
 
 // #include <common/controls.hpp>
 
-void initWindow( int width, int height )
+void
+initWindow( int width, int height )
 {
   // Initialise GLFW
   if( !glfwInit() )
@@ -65,7 +66,8 @@ void initWindow( int width, int height )
   glDepthFunc(GL_LESS);
 }
 
-void Logging(v3 CameraP, v3 PlayerP, glm::vec3 LookAt, double *lastFrameTime, int *numFrames )
+void
+Logging(v3 CameraP, v3 PlayerP, glm::vec3 LookAt, double *lastFrameTime, int *numFrames )
 {
 #if 0
   // Position logging
@@ -96,40 +98,41 @@ void Logging(v3 CameraP, v3 PlayerP, glm::vec3 LookAt, double *lastFrameTime, in
 #endif
 }
 
-void GenChunk( Chunk *Chunk, PerlinNoise* Noise)
+void
+GenChunk( Chunk *chunk, PerlinNoise* Noise)
 {
-  int ChunkVol = Chunk->Dim.x*Chunk->Dim.y*Chunk->Dim.z;
+  chunk->redraw = true;
 
-  Chunk->redraw = true;
-
-  for ( int i = 0; i < ChunkVol; ++i )
+  for ( int i = 0; i < Volume(chunk->Dim); ++i )
   {
-    Chunk->Voxels[i].x = i%Chunk->Dim.x + Chunk->WorldP.x;
-    Chunk->Voxels[i].y = (i/Chunk->Dim.x) % Chunk->Dim.y + Chunk->WorldP.y;
-    Chunk->Voxels[i].z = i/(Chunk->Dim.x*Chunk->Dim.y) + Chunk->WorldP.z;
+    chunk->Voxels[i].x = i%chunk->Dim.x + (chunk->WorldP.x * chunk->Dim.x);
+    chunk->Voxels[i].y = (i/chunk->Dim.x) % chunk->Dim.y + (chunk->WorldP.y * chunk->Dim.y);
+    chunk->Voxels[i].z = i/(chunk->Dim.x*chunk->Dim.y) + (chunk->WorldP.z * chunk->Dim.z);
 
-    double InX = (double)Chunk->Voxels[i].x/(double)Chunk->Dim.x;
-    double InY = (double)Chunk->Voxels[i].y/(double)Chunk->Dim.y;
-    double InZ = (double)Chunk->Voxels[i].z/(double)Chunk->Dim.z;
+    double InX = (double)chunk->Voxels[i].x/(double)chunk->Dim.x;
+    double InY = (double)chunk->Voxels[i].y/(double)chunk->Dim.y;
+    double InZ = (double)chunk->Voxels[i].z/(double)chunk->Dim.z;
 
 #if 0
     double l = Noise->noise(InX, InY, InZ);
-    Chunk->Voxels[i].w = (float)floor(l + 0.5);
+    chunk->Voxels[i].w = (float)floor(l + 0.5);
 #else
-    if ( ( Chunk->Voxels[i].x == 0 && Chunk->Voxels[i].y == 0 ) ||
-         ( Chunk->Voxels[i].y == 0 && Chunk->Voxels[i].z == 0 ) ||
-         ( Chunk->Voxels[i].x == 0 && Chunk->Voxels[i].z == 0 ) )
+    if ( ( chunk->Voxels[i].x == 0 && chunk->Voxels[i].y == 0 ) ||
+         ( chunk->Voxels[i].y == 0 && chunk->Voxels[i].z == 0 ) ||
+         ( chunk->Voxels[i].x == 0 && chunk->Voxels[i].z == 0 ) )
     {
-      Chunk->Voxels[i].w = 1;
+      chunk->Voxels[i].w = 1;
     }
 #endif
 
+    /* chunk->Voxels[i].w = 1; */
   }
 
   return;
 }
 
-Chunk AllocateChunk(chunk_dimension Dim, chunk_position WorldP)
+Chunk
+AllocateChunk(chunk_dimension Dim, chunk_position WorldP)
 {
   Chunk Result;
 
@@ -153,16 +156,20 @@ Chunk AllocateChunk(chunk_dimension Dim, chunk_position WorldP)
   return Result;
 }
 
-void LoadModel( Chunk* Model )
+void
+LoadModel( Chunk *Model )
 {
   Model->Voxels[0].w = 1;
 
-  Model->Voxels[0].x = 1;
-  Model->Voxels[0].y = 1;
-  Model->Voxels[0].z = 1;
+  Model->Voxels[0].x = 0;
+  Model->Voxels[0].y = 0;
+  Model->Voxels[0].z = 0;
+
+  Model->Offset = V3(2,2,2);
 }
 
-v3 GetPlayerUpdateVector(float speed, float deltaTime)
+v3
+GetPlayerUpdateVector(float speed, float deltaTime)
 {
   v3 right = V3(1,0,0);
   v3 up = V3(0,1,0);
@@ -200,20 +207,63 @@ v3 GetPlayerUpdateVector(float speed, float deltaTime)
   return moveDir;
 }
 
-Chunk* GetWorldChunk( chunk_position WorldP )
+inline chunk_position
+OffsetToVoxelP( v3 P )
 {
+  chunk_position Result;
+
+  Result.x = (int)P.x;
+  Result.y = (int)P.y;
+  Result.z = (int)P.z;
+
+  return Result;
 }
 
-void UpdateChunkP(Chunk* chunk, v3 Offset)
+inline bool
+IsFilled( Chunk *chunk, chunk_position Offset )
 {
-  chunk->Offset += Offset;
+  int i = Offset.x +
+    (Offset.y*chunk->Dim.x) +
+    (Offset.z*chunk->Dim.y*chunk->Dim.y);
 
-  Chunk* worldChunk = GetWorldChunk( chunk->WorldP );
-
-  chunk->redraw = true;
+  bool isFilled = (chunk->Voxels[i].w == 1);
+  return isFilled;
 }
 
-void GenerateWorld( World *world )
+Chunk*
+GetWorldChunk( World *world, chunk_position WorldP )
+{
+  Chunk *Result;
+
+  int i =
+    WorldP.x +
+    (WorldP.y * world->VisibleRegion.x) +
+    (WorldP.z * world->VisibleRegion.x * world->VisibleRegion.y);
+
+  Result = &world->Chunks[i];
+
+  return Result;
+}
+
+void
+UpdatePlayerP(World *world, Chunk *model, v3 Offset)
+{
+  model->redraw = true;
+
+  model->Offset += Offset;
+
+  chunk_dimension UpdatedP = OffsetToVoxelP(model->Offset) + model->WorldP;
+
+  Chunk *WorldChunk = GetWorldChunk( world, model->WorldP );
+
+  if ( IsFilled( WorldChunk, UpdatedP ) )
+  {
+    model->Offset -= Offset;
+  }
+}
+
+void
+GenerateWorld( World *world )
 {
   srand(time(NULL));
   PerlinNoise Noise(rand());
@@ -224,7 +274,8 @@ void GenerateWorld( World *world )
   }
 }
 
-void GAME_UPDATE_AND_RENDER(
+void
+GAME_UPDATE_AND_RENDER(
     World *world,
     Entity *Player,
     float deltaTime,
@@ -236,10 +287,10 @@ void GAME_UPDATE_AND_RENDER(
     GLuint programID
   )
 {
-  float speed = 10.0f;
+  float speed = 5.0f;
 
   v3 Offset = GetPlayerUpdateVector(speed, deltaTime);
-  UpdateChunkP( &Player->Model, Offset );
+  UpdatePlayerP( world, &Player->Model, Offset );
 
   chunk_position CameraWorldP = Player->Model.WorldP + Chunk_Position(0,10,10);
   v3 CameraP = V3(CameraWorldP) + Player->Model.Offset;
@@ -307,10 +358,11 @@ void GAME_UPDATE_AND_RENDER(
   glfwPollEvents();
 }
 
-void InitializeWorld( World *world )
+void
+InitializeWorld( World *world )
 {
   world->ChunkDim = Chunk_Dimension( CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH );
-  world->VisibleRegion = Chunk_Dimension(3,3,3);
+  world->VisibleRegion = Chunk_Dimension(1,1,1);
 
   world->Chunks = (Chunk*)malloc( sizeof(Chunk)*Volume(world->VisibleRegion) );
 
@@ -331,7 +383,8 @@ void InitializeWorld( World *world )
   GenerateWorld(world);
 }
 
-int main( void )
+int
+main( void )
 {
   int width, height;
 
@@ -416,13 +469,17 @@ int main( void )
   // Close OpenGL window and terminate GLFW
   glfwTerminate();
 
-  /* for ( int i = 0; i < ArrayCount(WorldChunks); ++ i ) */
-  /* { */
-  /*   free( WorldChunks[i].Voxels ); */
-  /* } */
+  for ( int i = 0; i < Volume(world.VisibleRegion) ; ++ i )
+  {
+    free( world.Chunks[i].Voxels );
+    free( world.Chunks[i].VertexData.Data );
+    free( world.Chunks[i].ColorData.Data );
+  }
 
-  /* free(Player.Model.VertexData.Data); */
-  /* free(Player.Model.ColorData.Data); */
+  free( world.Chunks );
+
+  free(Player.Model.VertexData.Data);
+  free(Player.Model.ColorData.Data);
 
   return 0;
 }
