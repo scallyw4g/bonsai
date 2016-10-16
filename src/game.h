@@ -53,6 +53,28 @@ struct chunk_position
   int z;
 };
 
+chunk_position operator*(chunk_position P1, chunk_position const P2)
+{
+  chunk_position Result;
+
+  Result.x = P2.x * P1.x;
+  Result.y = P2.y * P1.y;
+  Result.z = P2.z * P1.z;
+
+  return Result;
+}
+
+glm::vec3 operator+(glm::vec3 Vec, chunk_position Pos)
+{
+  glm::vec3 Result;
+
+  Result.x = Vec.x + Pos.x;
+  Result.y = Vec.y + Pos.y;
+  Result.z = Vec.z + Pos.z;
+
+  return Result;
+}
+
 chunk_position operator+(chunk_position P1, chunk_position const P2)
 {
   chunk_position Result;
@@ -100,7 +122,8 @@ v2 V2(int x,int y)
   return Result;
 }
 
-v3 V3(chunk_position wp)
+inline v3
+V3(chunk_position wp)
 {
   v3 Result;
 
@@ -111,7 +134,8 @@ v3 V3(chunk_position wp)
   return Result;
 }
 
-v3 V3(glm::vec3 vec)
+inline v3
+V3(glm::vec3 vec)
 {
   v3 Result;
 
@@ -122,7 +146,8 @@ v3 V3(glm::vec3 vec)
   return Result;
 }
 
-v3 V3(int x,int y,int z)
+inline v3
+V3(int x,int y,int z)
 {
   v3 Result = {};
 
@@ -169,6 +194,18 @@ v2 operator*(float f, v2 P)
 {
   P.x *= f;
   P.y *= f;
+}
+
+inline v3
+operator+(v3 A, chunk_position B)
+{
+  v3 Result;
+
+  Result.x = A.x + B.x;
+  Result.y = A.y + B.y;
+  Result.z = A.z + B.z;
+
+  return Result;
 }
 
 inline v3

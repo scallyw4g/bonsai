@@ -99,15 +99,15 @@ Logging(v3 CameraP, v3 PlayerP, glm::vec3 LookAt, double *lastFrameTime, int *nu
 }
 
 void
-GenChunk( Chunk *chunk, PerlinNoise* Noise)
+GenerateVoxels( Chunk *chunk, PerlinNoise* Noise)
 {
   chunk->redraw = true;
 
   for ( int i = 0; i < Volume(chunk->Dim); ++i )
   {
-    chunk->Voxels[i].x = i%chunk->Dim.x + (chunk->WorldP.x * chunk->Dim.x);
-    chunk->Voxels[i].y = (i/chunk->Dim.x) % chunk->Dim.y + (chunk->WorldP.y * chunk->Dim.y);
-    chunk->Voxels[i].z = i/(chunk->Dim.x*chunk->Dim.y) + (chunk->WorldP.z * chunk->Dim.z);
+    chunk->Voxels[i].x = i%chunk->Dim.x;
+    chunk->Voxels[i].y = (i/chunk->Dim.x) % chunk->Dim.y;
+    chunk->Voxels[i].z = i/(chunk->Dim.x*chunk->Dim.y);
 
     double InX = (double)chunk->Voxels[i].x/(double)chunk->Dim.x;
     double InY = (double)chunk->Voxels[i].y/(double)chunk->Dim.y;
@@ -208,25 +208,36 @@ GetPlayerUpdateVector(float speed, float deltaTime)
 }
 
 inline chunk_position
-OffsetToVoxelP( v3 P )
+RealToVoxelP( v3 RealP )
 {
   chunk_position Result;
 
-  Result.x = (int)P.x;
-  Result.y = (int)P.y;
-  Result.z = (int)P.z;
+  Result.x = (int)RealP.x;
+  Result.y = (int)RealP.y;
+  Result.z = (int)RealP.z;
 
   return Result;
 }
 
 inline bool
-IsFilled( Chunk *chunk, chunk_position Offset )
+IsFilled( Chunk *chunk, chunk_position VoxelP )
 {
-  int i = Offset.x +
-    (Offset.y*chunk->Dim.x) +
-    (Offset.z*chunk->Dim.y*chunk->Dim.y);
+  bool isFilled = true;
 
-  bool isFilled = (chunk->Voxels[i].w == 1);
+  if (chunk)
+  {
+    if ( VoxelP.x < chunk->Dim.x ||
+         VoxelP.y < chunk->Dim.y ||
+         VoxelP.z < chunk->Dim.z )
+    {
+      int i = VoxelP.x +
+        (VoxelP.y*chunk->Dim.x) +
+        (VoxelP.z*chunk->Dim.y*chunk->Dim.y);
+
+      isFilled = (chunk->Voxels[i].w == 1);
+    }
+  }
+
   return isFilled;
 }
 
@@ -234,6 +245,19 @@ Chunk*
 GetWorldChunk( World *world, chunk_position WorldP )
 {
   Chunk *Result;
+
+  if (
+    WorldP.x < 0 ||
+    WorldP.x > world->VisibleRegion.x-1 ||
+
+    WorldP.y < 0 ||
+    WorldP.y > world->VisibleRegion.y-1 ||
+
+    WorldP.z < 0 ||
+    WorldP.z > world->VisibleRegion.z-1 )
+  {
+    return nullptr;
+  }
 
   int i =
     WorldP.x +
@@ -250,13 +274,47 @@ UpdatePlayerP(World *world, Chunk *model, v3 Offset)
 {
   model->redraw = true;
 
-  model->Offset += Offset;
+  v3 TestOffset = model->Offset + Offset;
 
-  chunk_dimension UpdatedP = OffsetToVoxelP(model->Offset) + model->WorldP;
+  if ( TestOffset.x > world->ChunkDim.x )
+  {
+    TestOffset.x -= world->ChunkDim.x;
+    model->WorldP.x ++;
+  }
+  if ( TestOffset.y > world->ChunkDim.y )
+  {
+    TestOffset.y -= world->ChunkDim.y;
+    model->WorldP.y ++;
+  }
+  if ( TestOffset.z > world->ChunkDim.z )
+  {
+    TestOffset.z -= world->ChunkDim.z;
+    model->WorldP.z ++;
+  }
+
+  if ( TestOffset.x < 0 )
+  {
+    TestOffset.x += world->ChunkDim.x;
+    model->WorldP.x --;
+  }
+  if ( TestOffset.y < 0 )
+  {
+    TestOffset.y += world->ChunkDim.y;
+    model->WorldP.y --;
+  }
+  if ( TestOffset.z < 0 )
+  {
+    TestOffset.z += world->ChunkDim.z;
+    model->WorldP.z --;
+  }
+
+  model->Offset = TestOffset;
+
+  chunk_dimension PlayerVoxelP = RealToVoxelP(model->Offset) + model->WorldP;
 
   Chunk *WorldChunk = GetWorldChunk( world, model->WorldP );
 
-  if ( IsFilled( WorldChunk, UpdatedP ) )
+  if ( IsFilled( WorldChunk, PlayerVoxelP ) )
   {
     model->Offset -= Offset;
   }
@@ -270,7 +328,7 @@ GenerateWorld( World *world )
 
   for ( int i = 0; i < Volume(world->VisibleRegion); ++ i )
   {
-    GenChunk( &world->Chunks[i], &Noise );
+    GenerateVoxels( &world->Chunks[i], &Noise );
   }
 }
 
@@ -291,21 +349,17 @@ GAME_UPDATE_AND_RENDER(
 
   v3 Offset = GetPlayerUpdateVector(speed, deltaTime);
   UpdatePlayerP( world, &Player->Model, Offset );
+  glm::vec3 PlayerP = V3(Player->Model.Offset) + (Player->Model.WorldP * world->ChunkDim);
 
-  chunk_position CameraWorldP = Player->Model.WorldP + Chunk_Position(0,10,10);
-  v3 CameraP = V3(CameraWorldP) + Player->Model.Offset;
-
-  glm::vec3 CameraOffset = V3(CameraP);
+  glm::vec3 CameraP = PlayerP + glm::vec3(0,10,10);
 
   glm::vec3 up(0, 1, 0);
-  glm::vec3 CameraFront = V3( CameraP - Player->Model.Offset );
+  glm::vec3 CameraFront = CameraP - PlayerP;
   glm::vec3 CameraRight = glm::normalize( glm::cross(up, CameraFront) );
   glm::vec3 CameraUp = glm::normalize( glm::cross(CameraFront, CameraRight) );
 
-  glm::vec3 PlayerP = V3(Player->Model.Offset);
-
   glm::mat4 ViewMatrix = glm::lookAt(
-    CameraOffset,
+    CameraP,
     PlayerP,
     CameraUp
   );
@@ -324,6 +378,7 @@ GAME_UPDATE_AND_RENDER(
   // Draw Player
 #if 1
   DrawChunk(
+    world,
     &Player->Model,
     vertexbuffer,
     colorbuffer
@@ -335,6 +390,7 @@ GAME_UPDATE_AND_RENDER(
     for ( int i = 0; i < Volume(world->VisibleRegion); ++ i )
     {
       DrawChunk(
+        world,
         &world->Chunks[i],
         vertexbuffer,
         colorbuffer
@@ -362,7 +418,7 @@ void
 InitializeWorld( World *world )
 {
   world->ChunkDim = Chunk_Dimension( CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH );
-  world->VisibleRegion = Chunk_Dimension(1,1,1);
+  world->VisibleRegion = Chunk_Dimension(5,5,5);
 
   world->Chunks = (Chunk*)malloc( sizeof(Chunk)*Volume(world->VisibleRegion) );
 

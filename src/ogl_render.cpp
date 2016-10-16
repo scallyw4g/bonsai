@@ -9,6 +9,8 @@ using namespace glm;
 
 #include <game.h>
 
+#include <stdio.h>
+
 #define BufferLocalFace \
   BufferFace( \
       worldVertexData, \
@@ -275,9 +277,9 @@ bool IsBottomChunkBoundary( chunk_dimension ChunkDim, int idx )
   return (idx/(int)ChunkDim.x) % (int)ChunkDim.y == 0;
 }
 
-void BuildChunkMesh(Chunk *chunk)
+#define GetVoxelP()  VoxelBuffer[i].xyz + chunk->Offset + (chunk->WorldP * world->ChunkDim);
+void BuildChunkMesh(World *world, Chunk *chunk)
 {
-
   int chunkVertCount = 0;
   int numVoxels = chunk->Dim.x * chunk->Dim.y * chunk->Dim.z;
 
@@ -304,7 +306,7 @@ void BuildChunkMesh(Chunk *chunk)
       if ( ! IsFilled(VoxelBuffer, CHUNK_VOL, CHUNK_WIDTH, CHUNK_HEIGHT, nextIdx) ||
            IsRightChunkBoundary(chunk->Dim, i) )
       {
-        v3 VoxelP = VoxelBuffer[i].xyz + chunk->Offset;
+        v3 VoxelP = GetVoxelP();
         BufferRightFace(
           VoxelP,
           &chunk->VertexData,
@@ -316,7 +318,7 @@ void BuildChunkMesh(Chunk *chunk)
       if ( ! IsFilled(VoxelBuffer, CHUNK_VOL, CHUNK_WIDTH, CHUNK_HEIGHT, prevIdx) ||
            IsLeftChunkBoundary(chunk->Dim, i) )
       {
-        v3 VoxelP = VoxelBuffer[i].xyz + chunk->Offset;
+        v3 VoxelP = GetVoxelP();
         BufferLeftFace(
           VoxelP,
           &chunk->VertexData,
@@ -328,7 +330,7 @@ void BuildChunkMesh(Chunk *chunk)
       if ( ! IsFilled(VoxelBuffer, CHUNK_VOL, CHUNK_WIDTH, CHUNK_HEIGHT, botIdx) ||
            IsBottomChunkBoundary(chunk->Dim, i) )
       {
-        v3 VoxelP = VoxelBuffer[i].xyz + chunk->Offset;
+        v3 VoxelP = GetVoxelP();
         BufferBottomFace(
           VoxelP,
           &chunk->VertexData,
@@ -340,7 +342,7 @@ void BuildChunkMesh(Chunk *chunk)
       if ( ! IsFilled(VoxelBuffer, CHUNK_VOL, CHUNK_WIDTH, CHUNK_HEIGHT, topIdx) ||
            IsTopChunkBoundary(chunk->Dim, i) )
       {
-        v3 VoxelP = VoxelBuffer[i].xyz + chunk->Offset;
+        v3 VoxelP = GetVoxelP();
         BufferTopFace(
           VoxelP,
           &chunk->VertexData,
@@ -351,7 +353,7 @@ void BuildChunkMesh(Chunk *chunk)
 
       if ( ! IsFilled(VoxelBuffer, CHUNK_VOL, CHUNK_WIDTH, CHUNK_HEIGHT, backIdx) )
       {
-        v3 VoxelP = VoxelBuffer[i].xyz + chunk->Offset;
+        v3 VoxelP = GetVoxelP();
         BufferFrontFace(
           VoxelP,
           &chunk->VertexData,
@@ -362,7 +364,7 @@ void BuildChunkMesh(Chunk *chunk)
 
       if ( ! IsFilled(VoxelBuffer, CHUNK_VOL, CHUNK_WIDTH, CHUNK_HEIGHT, frontIdx) )
       {
-        v3 VoxelP = VoxelBuffer[i].xyz + chunk->Offset;
+        v3 VoxelP = GetVoxelP();
         BufferBackFace(
           VoxelP,
           &chunk->VertexData,
@@ -376,13 +378,14 @@ void BuildChunkMesh(Chunk *chunk)
 }
 
 void DrawChunk(
+    World *world,
     Chunk *chunk,
     GLuint &colorbuffer,
     GLuint &vertexbuffer)
 {
   if ( chunk->redraw )
   {
-    BuildChunkMesh( chunk );
+    BuildChunkMesh( world, chunk );
     chunk->redraw = false;
   }
 
