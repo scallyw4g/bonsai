@@ -18,6 +18,25 @@ GLFWwindow* window;
 
 // #include <common/controls.hpp>
 
+inline void
+Print( canonical_position P )
+{
+  printf("Offset: %f %f %f \n", P.Offset.x, P.Offset.y, P.Offset.z );
+  printf("WorldP: %d %d %d \n", P.WorldP.x, P.WorldP.y, P.WorldP.z );
+}
+
+inline void
+Print( chunk_position P )
+{
+  printf(" %d %d %d \n", P.x, P.y, P.z );
+}
+
+inline void
+Print( v3 P )
+{
+  printf(" %f %f %f \n", P.x, P.y, P.z );
+}
+
 void
 initWindow( int width, int height )
 {
@@ -226,8 +245,8 @@ IsFilled( Chunk *chunk, chunk_position VoxelP )
 
   if (chunk)
   {
-    if ( VoxelP.x < chunk->Dim.x ||
-         VoxelP.y < chunk->Dim.y ||
+    if ( VoxelP.x < chunk->Dim.x &&
+         VoxelP.y < chunk->Dim.y &&
          VoxelP.z < chunk->Dim.z )
     {
       int i = VoxelP.x +
@@ -242,19 +261,19 @@ IsFilled( Chunk *chunk, chunk_position VoxelP )
 }
 
 Chunk*
-GetWorldChunk( World *world, chunk_position WorldP )
+GetWorldChunk( World *world, world_position WorldP )
 {
   Chunk *Result;
 
   if (
     WorldP.x < 0 ||
-    WorldP.x > world->VisibleRegion.x-1 ||
+    WorldP.x >= world->VisibleRegion.x ||
 
     WorldP.y < 0 ||
-    WorldP.y > world->VisibleRegion.y-1 ||
+    WorldP.y >= world->VisibleRegion.y ||
 
     WorldP.z < 0 ||
-    WorldP.z > world->VisibleRegion.z-1 )
+    WorldP.z >= world->VisibleRegion.z )
   {
     return nullptr;
   }
@@ -269,54 +288,126 @@ GetWorldChunk( World *world, chunk_position WorldP )
   return Result;
 }
 
+canonical_position Canonicalize( World *world, v3 Offset, world_position WorldP )
+{
+  canonical_position Result;
+
+  Result.Offset = Offset;
+  Result.WorldP = WorldP;
+
+  if ( Result.Offset.x >= world->ChunkDim.x )
+  {
+    Result.Offset.x -= world->ChunkDim.x;
+    Result.WorldP.x ++;
+  }
+  if ( Result.Offset.y >= world->ChunkDim.y )
+  {
+    Result.Offset.y -= world->ChunkDim.y;
+    Result.WorldP.y ++;
+  }
+  if ( Result.Offset.z >= world->ChunkDim.z )
+  {
+    Result.Offset.z -= world->ChunkDim.z;
+    Result.WorldP.z ++;
+  }
+
+  if ( Result.Offset.x < 0 )
+  {
+    Result.Offset.x += world->ChunkDim.x;
+    Result.WorldP.x --;
+  }
+  if ( Result.Offset.y < 0 )
+  {
+    Result.Offset.y += world->ChunkDim.y;
+    Result.WorldP.y --;
+  }
+  if ( Result.Offset.z < 0 )
+  {
+    Result.Offset.z += world->ChunkDim.z;
+    Result.WorldP.z --;
+  }
+
+  return Result;
+}
+
+bool GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
+{
+  bool collision = false;
+  v3 ModelHalfDim = ModelDim * 0.5f;
+
+  v3 MaxP = TestP.Offset + ModelHalfDim;
+  v3 MinP = TestP.Offset - ModelHalfDim;
+
+  int minX = (int)MinP.x;
+  int minY = (int)MinP.y;
+  int minZ = (int)MinP.z;
+
+  int maxX = (int)(1.0f + MinP.x);
+  int maxY = (int)(1.0f + MinP.y);
+  int maxZ = (int)(1.0f + MinP.z);
+
+  for ( int x = minX; x <= maxX; x++ )
+  {
+    for ( int y = minY; y <= maxY; y++ )
+    {
+      for ( int z = minZ; z <= maxZ; z++ )
+      {
+        world_position TestVoxelP = World_Position(x,y,z);
+        chunk_position TestWorldP = TestP.WorldP;
+
+        if ( TestVoxelP.x >= world->ChunkDim.x )
+        {
+          TestWorldP.x ++;
+          TestVoxelP.x = 0;
+        }
+        if ( TestVoxelP.y >= world->ChunkDim.y )
+        {
+          TestWorldP.y ++;
+          TestVoxelP.y = 0;
+        }
+        if ( TestVoxelP.z >= world->ChunkDim.z )
+        {
+          TestWorldP.z ++;
+          TestVoxelP.z = 0;
+        }
+
+        Chunk *chunk = GetWorldChunk( world, TestWorldP );
+
+        if ( IsFilled(chunk, TestVoxelP ) )
+        {
+          collision = true;
+          goto end;
+        }
+      }
+    }
+  }
+end: ;
+
+  return collision;
+}
+
 void
 UpdatePlayerP(World *world, Chunk *model, v3 Offset)
 {
   model->redraw = true;
 
-  v3 TestOffset = model->Offset + Offset;
+  v3 TestPoint = model->Offset + Offset;
+  world_position TestWorldP = model->WorldP;
 
-  if ( TestOffset.x > world->ChunkDim.x )
-  {
-    TestOffset.x -= world->ChunkDim.x;
-    model->WorldP.x ++;
-  }
-  if ( TestOffset.y > world->ChunkDim.y )
-  {
-    TestOffset.y -= world->ChunkDim.y;
-    model->WorldP.y ++;
-  }
-  if ( TestOffset.z > world->ChunkDim.z )
-  {
-    TestOffset.z -= world->ChunkDim.z;
-    model->WorldP.z ++;
-  }
+  canonical_position TestP = Canonicalize(world, TestPoint, TestWorldP );
 
-  if ( TestOffset.x < 0 )
+  // Print( TestP );
+
+  bool collision = GetCollision( world, TestP, model->Dim);
+
+  if ( collision )
   {
-    TestOffset.x += world->ChunkDim.x;
-    model->WorldP.x --;
+    // .. Collision response ?
   }
-  if ( TestOffset.y < 0 )
+  else
   {
-    TestOffset.y += world->ChunkDim.y;
-    model->WorldP.y --;
-  }
-  if ( TestOffset.z < 0 )
-  {
-    TestOffset.z += world->ChunkDim.z;
-    model->WorldP.z --;
-  }
-
-  model->Offset = TestOffset;
-
-  chunk_dimension PlayerVoxelP = RealToVoxelP(model->Offset) + model->WorldP;
-
-  Chunk *WorldChunk = GetWorldChunk( world, model->WorldP );
-
-  if ( IsFilled( WorldChunk, PlayerVoxelP ) )
-  {
-    model->Offset -= Offset;
+    model->Offset = TestPoint;
+    model->WorldP = TestWorldP;
   }
 }
 
@@ -345,7 +436,7 @@ GAME_UPDATE_AND_RENDER(
     GLuint programID
   )
 {
-  float speed = 5.0f;
+  float speed = 1.0f;
 
   v3 Offset = GetPlayerUpdateVector(speed, deltaTime);
   UpdatePlayerP( world, &Player->Model, Offset );
@@ -418,7 +509,7 @@ void
 InitializeWorld( World *world )
 {
   world->ChunkDim = Chunk_Dimension( CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH );
-  world->VisibleRegion = Chunk_Dimension(5,5,5);
+  world->VisibleRegion = Chunk_Dimension(2,2,2);
 
   world->Chunks = (Chunk*)malloc( sizeof(Chunk)*Volume(world->VisibleRegion) );
 

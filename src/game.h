@@ -53,7 +53,8 @@ struct chunk_position
   int z;
 };
 
-chunk_position operator*(chunk_position P1, chunk_position const P2)
+inline chunk_position
+operator*(chunk_position P1, chunk_position const P2)
 {
   chunk_position Result;
 
@@ -64,7 +65,8 @@ chunk_position operator*(chunk_position P1, chunk_position const P2)
   return Result;
 }
 
-glm::vec3 operator+(glm::vec3 Vec, chunk_position Pos)
+inline glm::vec3
+operator+(glm::vec3 Vec, chunk_position Pos)
 {
   glm::vec3 Result;
 
@@ -75,7 +77,8 @@ glm::vec3 operator+(glm::vec3 Vec, chunk_position Pos)
   return Result;
 }
 
-chunk_position operator+(chunk_position P1, chunk_position const P2)
+inline chunk_position
+operator+(chunk_position P1, chunk_position const P2)
 {
   chunk_position Result;
 
@@ -86,9 +89,39 @@ chunk_position operator+(chunk_position P1, chunk_position const P2)
   return Result;
 }
 
-typedef chunk_position chunk_dimension;
+inline v3
+operator*(chunk_position P1, float f)
+{
+  v3 Result;
 
-chunk_position Chunk_Position(int x, int y, int z)
+  Result.x = P1.x * f;
+  Result.y = P1.y * f;
+  Result.z = P1.z * f;
+}
+
+typedef chunk_position chunk_dimension;
+typedef chunk_position world_position;
+
+struct canonical_position
+{
+  v3 Offset;
+  world_position WorldP;
+};
+
+inline chunk_position
+Chunk_Position(v3 Offset)
+{
+  chunk_position Result;
+
+  Result.x = (int)Offset.x;
+  Result.y = (int)Offset.y;
+  Result.z = (int)Offset.z;
+
+  return Result;
+}
+
+inline chunk_position
+Chunk_Position(int x, int y, int z)
 {
   chunk_position Result;
 
@@ -99,10 +132,17 @@ chunk_position Chunk_Position(int x, int y, int z)
   return Result;
 };
 
-chunk_dimension Chunk_Dimension(int x, int y, int z)
+inline world_position
+World_Position(int x, int y, int z)
 {
   chunk_dimension Result = Chunk_Position(x,y,z);
+  return Result;
+}
 
+inline chunk_dimension
+Chunk_Dimension(int x, int y, int z)
+{
+  chunk_dimension Result = Chunk_Position(x,y,z);
   return Result;
 }
 
@@ -235,6 +275,30 @@ operator+=(v3& A, v3 B)
 {
   A = A + B;
   return(A);
+}
+
+inline v3
+operator-(v3 A, float f)
+{
+  v3 Result;
+
+  Result.x = A.x - f;
+  Result.y = A.y - f;
+  Result.z = A.z - f;
+
+  return Result;
+}
+
+inline v3
+operator+(v3 A, float f)
+{
+  v3 Result;
+
+  Result.x = A.x + f;
+  Result.y = A.y + f;
+  Result.z = A.z + f;
+
+  return Result;
 }
 
 inline v3
