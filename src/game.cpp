@@ -132,7 +132,7 @@ GenerateVoxels( Chunk *chunk, PerlinNoise* Noise)
     double InY = (double)chunk->Voxels[i].y/(double)chunk->Dim.y;
     double InZ = (double)chunk->Voxels[i].z/(double)chunk->Dim.z;
 
-#if 0
+#if 1
     double l = Noise->noise(InX, InY, InZ);
     chunk->Voxels[i].w = (float)floor(l + 0.5);
 #else
@@ -251,7 +251,7 @@ IsFilled( Chunk *chunk, chunk_position VoxelP )
     {
       int i = VoxelP.x +
         (VoxelP.y*chunk->Dim.x) +
-        (VoxelP.z*chunk->Dim.y*chunk->Dim.y);
+        (VoxelP.z*chunk->Dim.x*chunk->Dim.y);
 
       isFilled = (chunk->Voxels[i].w == 1);
     }
@@ -373,15 +373,20 @@ bool GetCollision( World *world, canonical_position TestP, chunk_dimension Model
 
         Chunk *chunk = GetWorldChunk( world, TestWorldP );
 
+        Print( TestVoxelP );
+        Print( TestWorldP );
+
         if ( IsFilled(chunk, TestVoxelP ) )
         {
+          printf( "Collision\n" );
           collision = true;
           goto end;
         }
+
       }
     }
   }
-end: ;
+end:
 
   return collision;
 }
@@ -436,13 +441,13 @@ GAME_UPDATE_AND_RENDER(
     GLuint programID
   )
 {
-  float speed = 1.0f;
+  float speed = 8.0f;
 
   v3 Offset = GetPlayerUpdateVector(speed, deltaTime);
   UpdatePlayerP( world, &Player->Model, Offset );
   glm::vec3 PlayerP = V3(Player->Model.Offset) + (Player->Model.WorldP * world->ChunkDim);
 
-  glm::vec3 CameraP = PlayerP + glm::vec3(0,10,10);
+  glm::vec3 CameraP = PlayerP + glm::vec3(0,3,5);
 
   glm::vec3 up(0, 1, 0);
   glm::vec3 CameraFront = CameraP - PlayerP;
