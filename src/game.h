@@ -53,6 +53,26 @@ struct chunk_position
   int z;
 };
 
+inline bool
+operator==(chunk_position P1, chunk_position P2)
+{
+  bool Result;
+
+  Result = (
+    P1.x == P2.x &&
+    P1.y == P2.y &&
+    P1.z == P2.z );
+
+  return Result;
+}
+
+inline bool
+operator!=(chunk_position P1, chunk_position P2)
+{
+  bool Result = !(P1 == P2);
+  return Result;
+}
+
 inline chunk_position
 operator*(chunk_position P1, chunk_position const P2)
 {
@@ -77,6 +97,18 @@ operator+(glm::vec3 Vec, chunk_position Pos)
   return Result;
 }
 
+inline v3
+operator-(v3 Vec, chunk_position Pos)
+{
+  v3 Result;
+
+  Result.x = Vec.x - Pos.x;
+  Result.y = Vec.y - Pos.y;
+  Result.z = Vec.z - Pos.z;
+
+  return Result;
+}
+
 inline chunk_position
 operator+(chunk_position P1, chunk_position const P2)
 {
@@ -97,6 +129,8 @@ operator*(chunk_position P1, float f)
   Result.x = P1.x * f;
   Result.y = P1.y * f;
   Result.z = P1.z * f;
+
+  return Result;
 }
 
 typedef chunk_position chunk_dimension;
@@ -383,15 +417,19 @@ glm::vec3 V3( v3 Vec )
   return Result;
 }
 
-float LengthSq( v3 Vec )
+inline float
+LengthSq( v3 Vec )
 {
-  int Result;
+  float Result;
   Result = Vec.x*Vec.x + Vec.y*Vec.y + Vec.z*Vec.z;
   return Result;
 }
 
-v3 Normalize( v3 Vec, float length)
+inline v3
+Normalize( v3 Vec, float length)
 {
+  if (length == 0) return V3(0,0,0);
+
   v3 Result;
 
   Result.x = Result.x/length;

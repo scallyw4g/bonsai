@@ -5,6 +5,9 @@
 #define CHUNK_HEIGHT 8
 #define CHUNK_DEPTH  16
 
+static int numFrames = 0;
+static float accumulatedTime = 0;
+
 #define CHUNK_VOL (CHUNK_HEIGHT*CHUNK_WIDTH*CHUNK_DEPTH)
 
 // 6 verticies per face, 6 faces per voxel
@@ -20,5 +23,7 @@
 
 #define VOXEL_DIAMETER 1.0f
 #define VOXEL_RADIUS (VOXEL_DIAMETER/2.0f)
+
+#define NULL_POSITION Chunk_Position(INT_MAX, INT_MAX, INT_MAX)
 
 #endif

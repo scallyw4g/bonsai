@@ -37,6 +37,12 @@ Print( v3 P )
   printf(" %f %f %f \n", P.x, P.y, P.z );
 }
 
+inline void
+Print( glm::vec3 P )
+{
+  printf(" %f %f %f \n", P.x, P.y, P.z );
+}
+
 void
 initWindow( int width, int height )
 {
@@ -187,7 +193,7 @@ LoadModel( Chunk *Model )
   Model->Offset = V3(2,2,2);
 }
 
-v3
+inline v3
 GetPlayerUpdateVector(float speed, float deltaTime)
 {
   v3 right = V3(1,0,0);
@@ -198,32 +204,32 @@ GetPlayerUpdateVector(float speed, float deltaTime)
 
   // Move forward
   if (glfwGetKey( window, GLFW_KEY_KP_8 ) == GLFW_PRESS){
-    moveDir += forward * deltaTime;
+    moveDir += forward;
   }
   // Move backward
   if (glfwGetKey( window, GLFW_KEY_KP_5 ) == GLFW_PRESS){
-    moveDir -= forward * deltaTime;
+    moveDir -= forward;
   }
   // Strafe right
   if (glfwGetKey( window, GLFW_KEY_KP_6 ) == GLFW_PRESS){
-    moveDir += right * deltaTime;
+    moveDir += right;
   }
   // Strafe left
   if (glfwGetKey( window, GLFW_KEY_KP_4 ) == GLFW_PRESS){
-    moveDir -= right * deltaTime;
+    moveDir -= right;
   }
   // Strafe up
   if (glfwGetKey( window, GLFW_KEY_KP_7 ) == GLFW_PRESS){
-    moveDir += up * deltaTime;
+    moveDir += up;
   }
   // Strafe down
   if (glfwGetKey( window, GLFW_KEY_KP_9 ) == GLFW_PRESS){
-    moveDir -= up * deltaTime;
+    moveDir -= up;
   }
 
-  moveDir *= speed;
+  v3 NormalDir = Normalize(moveDir, LengthSq(moveDir) ) * speed * deltaTime;
 
-  return moveDir;
+  return NormalDir;
 }
 
 inline chunk_position
@@ -275,6 +281,7 @@ GetWorldChunk( World *world, world_position WorldP )
     WorldP.z < 0 ||
     WorldP.z >= world->VisibleRegion.z )
   {
+    printf("edge of world\n");
     return nullptr;
   }
 
@@ -288,7 +295,8 @@ GetWorldChunk( World *world, world_position WorldP )
   return Result;
 }
 
-canonical_position Canonicalize( World *world, v3 Offset, world_position WorldP )
+canonical_position
+Canonicalize( World *world, v3 Offset, world_position WorldP )
 {
   canonical_position Result;
 
@@ -330,21 +338,25 @@ canonical_position Canonicalize( World *world, v3 Offset, world_position WorldP 
   return Result;
 }
 
-bool GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
+chunk_position
+GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
 {
-  bool collision = false;
+  chunk_position CollisionPoint = NULL_POSITION;
   v3 ModelHalfDim = ModelDim * 0.5f;
 
-  v3 MaxP = TestP.Offset + ModelHalfDim;
-  v3 MinP = TestP.Offset - ModelHalfDim;
+  v3 MaxP = TestP.Offset;
+  v3 MinP = TestP.Offset;
 
   int minX = (int)MinP.x;
   int minY = (int)MinP.y;
   int minZ = (int)MinP.z;
 
-  int maxX = (int)(1.0f + MinP.x);
-  int maxY = (int)(1.0f + MinP.y);
-  int maxZ = (int)(1.0f + MinP.z);
+  int maxX = (int)(1.0f + MaxP.x);
+  int maxY = (int)(1.0f + MaxP.y);
+  int maxZ = (int)(1.0f + MaxP.z);
+
+  Print( MaxP );
+  Print( MinP );
 
   for ( int x = minX; x <= maxX; x++ )
   {
@@ -373,13 +385,11 @@ bool GetCollision( World *world, canonical_position TestP, chunk_dimension Model
 
         Chunk *chunk = GetWorldChunk( world, TestWorldP );
 
-        Print( TestVoxelP );
-        Print( TestWorldP );
-
         if ( IsFilled(chunk, TestVoxelP ) )
         {
-          printf( "Collision\n" );
-          collision = true;
+          CollisionPoint = TestVoxelP;
+          Print(CollisionPoint);
+          printf ("\n\n");
           goto end;
         }
 
@@ -388,7 +398,7 @@ bool GetCollision( World *world, canonical_position TestP, chunk_dimension Model
   }
 end:
 
-  return collision;
+  return CollisionPoint;
 }
 
 void
@@ -396,23 +406,27 @@ UpdatePlayerP(World *world, Chunk *model, v3 Offset)
 {
   model->redraw = true;
 
+  if ( LengthSq(Offset) == 0 )
+  {
+    return;
+  }
+
   v3 TestPoint = model->Offset + Offset;
   world_position TestWorldP = model->WorldP;
 
   canonical_position TestP = Canonicalize(world, TestPoint, TestWorldP );
 
-  // Print( TestP );
+  chunk_position collision = GetCollision(world, TestP, model->Dim);
 
-  bool collision = GetCollision( world, TestP, model->Dim);
-
-  if ( collision )
-  {
-    // .. Collision response ?
-  }
-  else
+  if ( collision == NULL_POSITION )
   {
     model->Offset = TestPoint;
     model->WorldP = TestWorldP;
+  }
+  else
+  {
+    printf("collision\n");
+    // .. Collision response ?
   }
 }
 
@@ -429,7 +443,8 @@ GenerateWorld( World *world )
 }
 
 void
-GAME_UPDATE_AND_RENDER(
+GAME_UPDATE_AND_RENDER
+(
     World *world,
     Entity *Player,
     float deltaTime,
@@ -441,10 +456,12 @@ GAME_UPDATE_AND_RENDER(
     GLuint programID
   )
 {
-  float speed = 8.0f;
+  float speed = 5.0f;
 
   v3 Offset = GetPlayerUpdateVector(speed, deltaTime);
+
   UpdatePlayerP( world, &Player->Model, Offset );
+
   glm::vec3 PlayerP = V3(Player->Model.Offset) + (Player->Model.WorldP * world->ChunkDim);
 
   glm::vec3 CameraP = PlayerP + glm::vec3(0,3,5);
@@ -461,6 +478,14 @@ GAME_UPDATE_AND_RENDER(
   );
 
   glm::mat4 mvp = Projection * ViewMatrix * ModelMatrix;
+
+  if (accumulatedTime > 1.0f)
+  {
+    /* printf("frame %d/%f seconds\n", numFrames, accumulatedTime); */
+    accumulatedTime = 0;
+    numFrames = 0;
+  }
+
 
   if ( glfwGetKey(window, GLFW_KEY_ENTER ) == GLFW_PRESS )
   {
@@ -567,9 +592,6 @@ main( void )
   glGenBuffers(1, &vertexbuffer);
   glGenBuffers(1, &colorbuffer);
 
-  double lastPrintTime = glfwGetTime();
-  int numFrames = 0;
-
   glfwWindowHint(GLFW_SAMPLES, 4);
 
   Entity Player = {};
@@ -582,7 +604,7 @@ main( void )
   InitializeWorld(&world);
 
   // glfwGetTime is called only once, the first time this function is called
-  static double lastTime = glfwGetTime();
+  double lastTime = glfwGetTime();
 
   /*
    *  Main Render loop
@@ -591,7 +613,11 @@ main( void )
   do
   {
     double currentTime = glfwGetTime();
-    float deltaTime = float(currentTime - lastTime);
+    float deltaTime = (float)(currentTime - lastTime);
+    lastTime = currentTime;
+
+    accumulatedTime += deltaTime;
+    numFrames ++;
 
     GAME_UPDATE_AND_RENDER(
       &world,
@@ -605,9 +631,6 @@ main( void )
       programID
     );
 
-    // Logging( CameraP, Player.Model.Offset, PlayerP, &lastPrintTime, &numFrames);
-
-  lastTime = currentTime;
   } // Check if the ESC key was pressed or the window was closed
   while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
          glfwGetKey(window, GLFW_KEY_Q )      != GLFW_PRESS &&
