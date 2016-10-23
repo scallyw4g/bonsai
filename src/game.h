@@ -1,6 +1,8 @@
 #ifndef PLAYGROUNDH
 #define PLAYGROUNDH
 
+#include <stdio.h>
+
 #define ArrayCount(a) (sizeof(a)/sizeof(a[0]))
 
 // Keep track of triangle count for debugging
@@ -121,6 +123,18 @@ operator+(chunk_position P1, chunk_position const P2)
   return Result;
 }
 
+inline chunk_position
+operator-(chunk_position P1, chunk_position const P2)
+{
+  chunk_position Result;
+
+  Result.x = P2.x - P1.x;
+  Result.y = P2.y - P1.y;
+  Result.z = P2.z - P1.z;
+
+  return Result;
+}
+
 inline v3
 operator*(chunk_position P1, float f)
 {
@@ -141,6 +155,18 @@ struct canonical_position
   v3 Offset;
   world_position WorldP;
 };
+
+
+inline canonical_position
+Canonical_Position( v3 Offset, world_position WorldP )
+{
+  canonical_position Result;
+
+  Result.Offset = Offset;
+  Result.WorldP = WorldP;
+
+  return Result;
+}
 
 inline chunk_position
 Chunk_Position(v3 Offset)
@@ -264,7 +290,8 @@ v2 operator+(v2 P1, v2 P2)
   return Result;
 }
 
-v2 operator*(float f, v2 P)
+v2
+operator*(float f, v2 P)
 {
   P.x *= f;
   P.y *= f;
@@ -435,6 +462,37 @@ Normalize( v3 Vec, float length)
   Result.x = Result.x/length;
   Result.y = Result.y/length;
   Result.z = Result.z/length;
+
+  return Result;
+}
+
+inline v3
+Cross( v3 A, v3 B )
+{
+  v3 Result = {
+    (A.y*B.z)-(A.z*B.y),
+    (A.z*B.x)-(A.x*B.z),
+    (A.x*B.y)-(A.y*B.x)
+  };
+
+  return Result;
+}
+
+enum Sign { Zero, Positive, Negative };
+
+inline Sign
+GetSign( float f )
+{
+  Sign Result = Zero;
+
+  if ( f > 0.0f )
+  {
+    Result = Positive;
+  }
+  else if ( f < 0.0f )
+  {
+    Result = Negative;
+  }
 
   return Result;
 }

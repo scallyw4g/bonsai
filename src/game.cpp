@@ -18,29 +18,32 @@ GLFWwindow* window;
 
 // #include <common/controls.hpp>
 
+#define Print(Pos) \
+  Print_P( Pos, #Pos )
+
 inline void
-Print( canonical_position P )
+Print_P( canonical_position P, const char* name)
 {
   printf("Offset: %f %f %f \n", P.Offset.x, P.Offset.y, P.Offset.z );
   printf("WorldP: %d %d %d \n", P.WorldP.x, P.WorldP.y, P.WorldP.z );
 }
 
 inline void
-Print( chunk_position P )
+Print_P( chunk_position P, const char* name)
 {
-  printf(" %d %d %d \n", P.x, P.y, P.z );
+  printf(" %s %d %d %d \n", name, P.x, P.y, P.z );
 }
 
 inline void
-Print( v3 P )
+Print_P( v3 P, const char* name)
 {
-  printf(" %f %f %f \n", P.x, P.y, P.z );
+  printf(" %s %f %f %f \n", name, P.x, P.y, P.z );
 }
 
 inline void
-Print( glm::vec3 P )
+Print_P( glm::vec3 P, const char* name)
 {
-  printf(" %f %f %f \n", P.x, P.y, P.z );
+  printf(" %s %f %f %f \n", name, P.x, P.y, P.z );
 }
 
 void
@@ -138,7 +141,7 @@ GenerateVoxels( Chunk *chunk, PerlinNoise* Noise)
     double InY = (double)chunk->Voxels[i].y/(double)chunk->Dim.y;
     double InZ = (double)chunk->Voxels[i].z/(double)chunk->Dim.z;
 
-#if 1
+#if 0
     double l = Noise->noise(InX, InY, InZ);
     chunk->Voxels[i].w = (float)floor(l + 0.5);
 #else
@@ -148,6 +151,7 @@ GenerateVoxels( Chunk *chunk, PerlinNoise* Noise)
     {
       chunk->Voxels[i].w = 1;
     }
+
 #endif
 
     /* chunk->Voxels[i].w = 1; */
@@ -193,6 +197,7 @@ LoadModel( Chunk *Model )
   Model->Offset = V3(2,2,2);
 }
 
+// FIXME : Problem with multiple keypresses ( 8 then 7 then 4 won't move left )
 inline v3
 GetPlayerUpdateVector(float speed, float deltaTime)
 {
@@ -281,7 +286,7 @@ GetWorldChunk( World *world, world_position WorldP )
     WorldP.z < 0 ||
     WorldP.z >= world->VisibleRegion.z )
   {
-    printf("edge of world\n");
+    printf("edge of world \n");
     return nullptr;
   }
 
@@ -341,7 +346,7 @@ Canonicalize( World *world, v3 Offset, world_position WorldP )
 chunk_position
 GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
 {
-  chunk_position CollisionPoint = NULL_POSITION;
+  chunk_position CollisionPoint = NO_COLLISION;
   v3 ModelHalfDim = ModelDim * 0.5f;
 
   v3 MaxP = TestP.Offset;
@@ -355,17 +360,14 @@ GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
   int maxY = (int)(1.0f + MaxP.y);
   int maxZ = (int)(1.0f + MaxP.z);
 
-  Print( MaxP );
-  Print( MinP );
-
   for ( int x = minX; x <= maxX; x++ )
   {
     for ( int y = minY; y <= maxY; y++ )
     {
       for ( int z = minZ; z <= maxZ; z++ )
       {
-        world_position TestVoxelP = World_Position(x,y,z);
-        chunk_position TestWorldP = TestP.WorldP;
+        chunk_position TestVoxelP = Chunk_Position(x,y,z);
+        world_position TestWorldP = TestP.WorldP;
 
         if ( TestVoxelP.x >= world->ChunkDim.x )
         {
@@ -388,8 +390,6 @@ GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
         if ( IsFilled(chunk, TestVoxelP ) )
         {
           CollisionPoint = TestVoxelP;
-          Print(CollisionPoint);
-          printf ("\n\n");
           goto end;
         }
 
@@ -402,32 +402,70 @@ end:
 }
 
 void
-UpdatePlayerP(World *world, Chunk *model, v3 Offset)
+UpdatePlayerP(World *world, Chunk *model, v3 UpdateVector)
 {
   model->redraw = true;
 
-  if ( LengthSq(Offset) == 0 )
+  if ( LengthSq(UpdateVector) == 0 )
   {
     return;
   }
 
-  v3 TestPoint = model->Offset + Offset;
-  world_position TestWorldP = model->WorldP;
+  v3 CollisionOffset = model->Offset + UpdateVector;
+  world_position CollisionWorldP = model->WorldP;
 
-  canonical_position TestP = Canonicalize(world, TestPoint, TestWorldP );
+  canonical_position TestP = Canonicalize(world, CollisionOffset, CollisionWorldP );
 
-  chunk_position collision = GetCollision(world, TestP, model->Dim);
+  chunk_position CollisionVoxel = GetCollision( world, TestP, model->Dim);
 
-  if ( collision == NULL_POSITION )
+  if ( CollisionVoxel == NO_COLLISION )
   {
-    model->Offset = TestPoint;
-    model->WorldP = TestWorldP;
   }
-  else
+  else  // Collision response
   {
-    printf("collision\n");
-    // .. Collision response ?
+    Chunk *chunk = GetWorldChunk( world, TestP.WorldP );
+    chunk_position ModelVoxelP = Chunk_Position( model->Offset );
+    v3 ModelOffset = model->Offset;
+
+    // Build a new CollisionOffset based on the contents of each voxel we're trying
+    // to move through
+
+    v3 SingleAxisOffset;
+    canonical_position CanP;
+
+    SingleAxisOffset = ModelOffset;
+    SingleAxisOffset.x += UpdateVector.x;
+    CanP = Canonicalize( world, SingleAxisOffset, CollisionWorldP );
+    if ( GetCollision( world, CanP, model->Dim ) != NO_COLLISION )
+    {
+      CollisionOffset.x = model->Offset.x;
+    }
+
+    SingleAxisOffset = ModelOffset;
+    SingleAxisOffset.y += UpdateVector.y;
+    CanP = Canonicalize( world, SingleAxisOffset, CollisionWorldP );
+    if ( GetCollision( world, CanP, model->Dim ) != NO_COLLISION )
+    {
+      CollisionOffset.y = model->Offset.y;
+    }
+
+    SingleAxisOffset = ModelOffset;
+    SingleAxisOffset.z += UpdateVector.z;
+    CanP = Canonicalize( world, SingleAxisOffset, CollisionWorldP );
+    if ( GetCollision( world, CanP, model->Dim ) != NO_COLLISION )
+    {
+      CollisionOffset.z = model->Offset.z;
+    }
   }
+
+  // Finished collision detection, recanonicalize and update player p
+
+  canonical_position FinalP = Canonicalize( world, CollisionOffset, CollisionWorldP );
+
+  model->Offset = FinalP.Offset;
+  model->WorldP = FinalP.WorldP;
+
+  Print( model->Offset );
 }
 
 void
@@ -456,7 +494,7 @@ GAME_UPDATE_AND_RENDER
     GLuint programID
   )
 {
-  float speed = 5.0f;
+  float speed = 2.0f;
 
   v3 Offset = GetPlayerUpdateVector(speed, deltaTime);
 
@@ -489,7 +527,7 @@ GAME_UPDATE_AND_RENDER
 
   if ( glfwGetKey(window, GLFW_KEY_ENTER ) == GLFW_PRESS )
   {
-    printf("regenerating world\n");
+    printf("\n\n\n\n\n");
     GenerateWorld( world );
   }
 
