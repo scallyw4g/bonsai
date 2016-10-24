@@ -494,7 +494,7 @@ GAME_UPDATE_AND_RENDER
     GLuint programID
   )
 {
-  float speed = 2.0f;
+  float speed = 1.7f;
 
   v3 Offset = GetPlayerUpdateVector(speed, deltaTime);
 
@@ -520,6 +520,7 @@ GAME_UPDATE_AND_RENDER
   if (accumulatedTime > 1.0f)
   {
     /* printf("frame %d/%f seconds\n", numFrames, accumulatedTime); */
+    /* printf(" %f ms/frame \n", (float)(accumulatedTime*1000/numFrames) ); */
     accumulatedTime = 0;
     numFrames = 0;
   }
@@ -533,6 +534,17 @@ GAME_UPDATE_AND_RENDER
 
   // Clear the screen
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  // Get a handle for our "MVP" uniform
+  // Only during the initialisation
+  GLuint MatrixID = glGetUniformLocation(programID, "MVP");
+
+  // Send our transformation to the currently bound shader, in the "MVP" uniform
+  // This is done in the main loop since each model will have a different MVP matrix (At least for the M part)
+  glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp[0][0]);
+
+  // Use our shader
+  glUseProgram(programID);
 
   // Draw Player
 #if 1
@@ -557,16 +569,6 @@ GAME_UPDATE_AND_RENDER
     }
 #endif
 
-  // Get a handle for our "MVP" uniform
-  // Only during the initialisation
-  GLuint MatrixID = glGetUniformLocation(programID, "MVP");
-
-  // Send our transformation to the currently bound shader, in the "MVP" uniform
-  // This is done in the main loop since each model will have a different MVP matrix (At least for the M part)
-  glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp[0][0]);
-
-  // Use our shader
-  glUseProgram(programID);
 
   // Swap buffers
   glfwSwapBuffers(window);
@@ -641,7 +643,6 @@ main( void )
   World world;
   InitializeWorld(&world);
 
-  // glfwGetTime is called only once, the first time this function is called
   double lastTime = glfwGetTime();
 
   /*
