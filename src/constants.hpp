@@ -24,6 +24,4 @@ static float accumulatedTime = 0;
 #define VOXEL_DIAMETER 1.0f
 #define VOXEL_RADIUS (VOXEL_DIAMETER/2.0f)
 
-#define NO_COLLISION Chunk_Position(INT_MAX, INT_MAX, INT_MAX)
-
 #endif

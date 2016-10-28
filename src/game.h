@@ -5,6 +5,8 @@
 
 #define ArrayCount(a) (sizeof(a)/sizeof(a[0]))
 
+#define InvalidDefaultCase default: { assert(false); break; }
+
 // Keep track of triangle count for debugging
 static int triCount = 0;
 
@@ -48,7 +50,7 @@ union v4 {
   float E[4];
 };
 
-struct chunk_position
+struct voxel_position
 {
   int x;
   int y;
@@ -56,7 +58,7 @@ struct chunk_position
 };
 
 inline bool
-operator==(chunk_position P1, chunk_position P2)
+operator==(voxel_position P1, voxel_position P2)
 {
   bool Result;
 
@@ -69,16 +71,16 @@ operator==(chunk_position P1, chunk_position P2)
 }
 
 inline bool
-operator!=(chunk_position P1, chunk_position P2)
+operator!=(voxel_position P1, voxel_position P2)
 {
   bool Result = !(P1 == P2);
   return Result;
 }
 
-inline chunk_position
-operator*(chunk_position P1, chunk_position const P2)
+inline voxel_position
+operator*(voxel_position P1, voxel_position const P2)
 {
-  chunk_position Result;
+  voxel_position Result;
 
   Result.x = P2.x * P1.x;
   Result.y = P2.y * P1.y;
@@ -88,7 +90,7 @@ operator*(chunk_position P1, chunk_position const P2)
 }
 
 inline glm::vec3
-operator+(glm::vec3 Vec, chunk_position Pos)
+operator+(glm::vec3 Vec, voxel_position Pos)
 {
   glm::vec3 Result;
 
@@ -100,7 +102,7 @@ operator+(glm::vec3 Vec, chunk_position Pos)
 }
 
 inline v3
-operator-(v3 Vec, chunk_position Pos)
+operator-(v3 Vec, voxel_position Pos)
 {
   v3 Result;
 
@@ -111,10 +113,10 @@ operator-(v3 Vec, chunk_position Pos)
   return Result;
 }
 
-inline chunk_position
-operator+(chunk_position P1, chunk_position const P2)
+inline voxel_position
+operator+(voxel_position P1, voxel_position const P2)
 {
-  chunk_position Result;
+  voxel_position Result;
 
   Result.x = P2.x + P1.x;
   Result.y = P2.y + P1.y;
@@ -123,10 +125,10 @@ operator+(chunk_position P1, chunk_position const P2)
   return Result;
 }
 
-inline chunk_position
-operator-(chunk_position P1, chunk_position const P2)
+inline voxel_position
+operator-(voxel_position P1, voxel_position const P2)
 {
-  chunk_position Result;
+  voxel_position Result;
 
   Result.x = P2.x - P1.x;
   Result.y = P2.y - P1.y;
@@ -136,7 +138,7 @@ operator-(chunk_position P1, chunk_position const P2)
 }
 
 inline v3
-operator*(chunk_position P1, float f)
+operator*(voxel_position P1, float f)
 {
   v3 Result;
 
@@ -147,8 +149,8 @@ operator*(chunk_position P1, float f)
   return Result;
 }
 
-typedef chunk_position chunk_dimension;
-typedef chunk_position world_position;
+typedef voxel_position chunk_dimension;
+typedef voxel_position world_position;
 
 struct canonical_position
 {
@@ -168,10 +170,10 @@ Canonical_Position( v3 Offset, world_position WorldP )
   return Result;
 }
 
-inline chunk_position
-Chunk_Position(v3 Offset)
+inline voxel_position
+Voxel_Position(v3 Offset)
 {
-  chunk_position Result;
+  voxel_position Result;
 
   Result.x = (int)Offset.x;
   Result.y = (int)Offset.y;
@@ -180,10 +182,10 @@ Chunk_Position(v3 Offset)
   return Result;
 }
 
-inline chunk_position
-Chunk_Position(int x, int y, int z)
+inline voxel_position
+Voxel_Position(int x, int y, int z)
 {
-  chunk_position Result;
+  voxel_position Result;
 
   Result.x = x;
   Result.y = y;
@@ -195,14 +197,14 @@ Chunk_Position(int x, int y, int z)
 inline world_position
 World_Position(int x, int y, int z)
 {
-  chunk_dimension Result = Chunk_Position(x,y,z);
+  chunk_dimension Result = Voxel_Position(x,y,z);
   return Result;
 }
 
 inline chunk_dimension
 Chunk_Dimension(int x, int y, int z)
 {
-  chunk_dimension Result = Chunk_Position(x,y,z);
+  chunk_dimension Result = Voxel_Position(x,y,z);
   return Result;
 }
 
@@ -223,7 +225,7 @@ v2 V2(int x,int y)
 }
 
 inline v3
-V3(chunk_position wp)
+V3(voxel_position wp)
 {
   v3 Result;
 
@@ -298,7 +300,7 @@ operator*(float f, v2 P)
 }
 
 inline v3
-operator+(v3 A, chunk_position B)
+operator+(v3 A, voxel_position B)
 {
   v3 Result;
 
@@ -478,7 +480,7 @@ Cross( v3 A, v3 B )
   return Result;
 }
 
-enum Sign { Zero, Positive, Negative };
+enum Sign { Negative = -1, Zero = 0, Positive = 1 };
 
 inline Sign
 GetSign( float f )
@@ -504,7 +506,7 @@ struct VertexBlock
   int filled;
 };
 
-v3 ToV3(chunk_position chunkP)
+v3 ToV3(voxel_position chunkP)
 {
   v3 Result;
 
@@ -521,7 +523,7 @@ struct Chunk
   chunk_dimension Dim;
 
   // Position in absolute world coordinates.  A chunk is one world coordinate
-  chunk_position WorldP;
+  voxel_position WorldP;
 
   // Position within the chunk
   v3 Offset;
@@ -545,6 +547,12 @@ struct World
 struct Entity
 {
   Chunk Model;
+};
+
+struct collision_event
+{
+  canonical_position CP;
+  bool didCollide;
 };
 
 #endif
