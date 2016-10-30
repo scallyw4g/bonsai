@@ -186,18 +186,6 @@ AllocateChunk(chunk_dimension Dim, voxel_position WorldP)
   return Result;
 }
 
-void
-LoadModel( Chunk *Model )
-{
-  Model->Voxels[0].w = 1;
-
-  Model->Voxels[0].x = 0;
-  Model->Voxels[0].y = 0;
-  Model->Voxels[0].z = 0;
-
-  Model->Offset = V3(2,2,2);
-}
-
 // FIXME : Problem with multiple keypresses ( 8 then 7 then 4 won't move left )
 inline v3
 GetPlayerUpdateVector(float speed, float deltaTime)
@@ -409,6 +397,43 @@ end:
   return Collision;
 }
 
+void
+SpawnPlayer( World *world, Chunk *Model )
+{
+  Model->Voxels[0].w = 1;
+
+  Model->Voxels[0].x = 0;
+  Model->Voxels[0].y = 0;
+  Model->Voxels[0].z = 0;
+
+  canonical_position TestP;
+  collision_event Collision;
+
+  do
+  {
+    int rX = rand() % (world->ChunkDim.x - 1);
+    int rY = rand() % (world->ChunkDim.y - 1);
+    int rZ = rand() % (world->ChunkDim.z - 1);
+
+    v3 Offset = V3( rX, rY, rZ );
+
+    rX = rand() % (world->VisibleRegion.x - 1);
+    rY = rand() % (world->VisibleRegion.y - 1);
+    rZ = rand() % (world->VisibleRegion.z - 1);
+
+    world_position WP = World_Position( rX, rY, rZ );
+
+    TestP = Canonicalize(world, Offset, WP);
+
+    Collision = GetCollision( world, TestP, Model->Dim);
+
+  } while ( Collision.didCollide == true );
+
+  Model->Offset = TestP.Offset;
+  Model->WorldP = TestP.WorldP;
+
+}
+
 // FIXME : At high speeds an entity can still tunnel through geometry!
 void
 UpdatePlayerP(World *world, Chunk *model, v3 UpdateVector)
@@ -604,6 +629,7 @@ GAME_UPDATE_AND_RENDER
   {
     printf("\n\n\n\n\n");
     GenerateWorld( world );
+    SpawnPlayer( world, &Player->Model );
   }
 
   // Clear the screen
@@ -710,12 +736,12 @@ main( void )
 
   Entity Player = {};
 
-  Player.Model = AllocateChunk( Chunk_Dimension(1,1,1), Voxel_Position(0,0,0) );
-  LoadModel( &Player.Model );
-
-
   World world;
   InitializeWorld(&world);
+
+  Player.Model = AllocateChunk( Chunk_Dimension(1,1,1), Voxel_Position(0,0,0) );
+  SpawnPlayer( &world, &Player.Model );
+
 
   double lastTime = glfwGetTime();
 
