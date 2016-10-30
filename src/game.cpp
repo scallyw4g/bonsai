@@ -24,6 +24,7 @@ GLFWwindow* window;
 inline void
 Print_P( canonical_position P, const char* name)
 {
+  printf("%s\n", name);
   printf("Offset: %f %f %f \n", P.Offset.x, P.Offset.y, P.Offset.z );
   printf("WorldP: %d %d %d \n", P.WorldP.x, P.WorldP.y, P.WorldP.z );
 }
@@ -141,7 +142,7 @@ GenerateVoxels( Chunk *chunk, PerlinNoise* Noise)
     double InY = (double)chunk->Voxels[i].y/(double)chunk->Dim.y;
     double InZ = (double)chunk->Voxels[i].z/(double)chunk->Dim.z;
 
-#if 0
+#if 1
     double l = Noise->noise(InX, InY, InZ);
     chunk->Voxels[i].w = (float)floor(l + 0.5);
 #else
@@ -356,19 +357,20 @@ GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
   collision_event Collision;
   Collision.didCollide = false;
 
-  int minX = (int)TestP.Offset.x;
-  int minY = (int)TestP.Offset.y;
-  int minZ = (int)TestP.Offset.z;
+  // This is necessary because if the model maxP is precicesly on a voxel boundary
+  // the maxP will incorrectly include the next voxel.
+  float epsilon = 0.00001f;
 
-  int maxX = (int)(1.0f + TestP.Offset.x);
-  int maxY = (int)(1.0f + TestP.Offset.y);
-  int maxZ = (int)(1.0f + TestP.Offset.z);
+  v3 ModelHalfDim = ModelDim * 0.5f;
 
-  for ( int x = minX; x <= maxX; x++ )
+  v3 MinP = TestP.Offset;
+  v3 MaxP = (TestP.Offset + ModelHalfDim + 0.5f) - epsilon;
+
+  for ( int x = MinP.x; x <= MaxP.x; x++ )
   {
-    for ( int y = minY; y <= maxY; y++ )
+    for ( int y = MinP.y; y <= MaxP.y; y++ )
     {
-      for ( int z = minZ; z <= maxZ; z++ )
+      for ( int z = MinP.z; z <= MaxP.z; z++ )
       {
         voxel_position TestVoxelP = Voxel_Position(x,y,z);
         world_position TestWorldP = TestP.WorldP;
@@ -396,7 +398,6 @@ GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
           Collision.CP.Offset = V3(TestVoxelP);
           Collision.CP.WorldP = TestWorldP;
           Collision.didCollide = true;
-          /* Print ( Collision.CP ); */
           goto end;
         }
 
@@ -440,15 +441,13 @@ UpdatePlayerP(World *world, Chunk *model, v3 UpdateVector)
     // Build a new LegalPos based on the contents of each voxel we're trying
     // to move through
 
-
-    SA_Offset = ModelOffset;
+    SA_Offset = LegalPos.Offset;
     SA_Offset.x += UpdateVector.x;
     SA_TestP = Canonicalize( world, SA_Offset, LegalPos.WorldP );
     SA_Collision = GetCollision( world, SA_TestP, model->Dim );
-
     if ( SA_Collision.didCollide )
     {
-
+      SA_Collision.CP = Canonicalize(world, SA_Collision.CP);
       switch ( GetSign(UpdateVector.x) )
       {
         case Positive:
@@ -456,36 +455,29 @@ UpdatePlayerP(World *world, Chunk *model, v3 UpdateVector)
           LegalPos.Offset.x = SA_Collision.CP.Offset.x - 1.0f;
           LegalPos.WorldP.x = SA_Collision.CP.WorldP.x;
         } break;
-
         case Negative:
         {
           LegalPos.Offset.x = SA_Collision.CP.Offset.x + 1.0f;
           LegalPos.WorldP.x = SA_Collision.CP.WorldP.x;
         } break;
-
-        case Zero:
-        {
-          printf("ZERO COLLISION, SHOULDN'T HAPPEN!!\n");
-        } break;
-
         InvalidDefaultCase;
       }
-
       LegalPos = Canonicalize( world, LegalPos );
     }
     else
     {
       LegalPos.Offset.x = SA_TestP.Offset.x;
-    }
+      LegalPos.WorldP = SA_TestP.WorldP;
+      LegalPos = Canonicalize(world, LegalPos);
+   }
 
-    SA_Offset = ModelOffset;
+    SA_Offset = LegalPos.Offset;
     SA_Offset.y += UpdateVector.y;
     SA_TestP = Canonicalize( world, SA_Offset, LegalPos.WorldP );
     SA_Collision = GetCollision( world, SA_TestP, model->Dim );
-
     if ( SA_Collision.didCollide )
     {
-
+      SA_Collision.CP = Canonicalize(world, SA_Collision.CP);
       switch ( GetSign(UpdateVector.y) )
       {
         case Positive:
@@ -493,36 +485,29 @@ UpdatePlayerP(World *world, Chunk *model, v3 UpdateVector)
           LegalPos.Offset.y = SA_Collision.CP.Offset.y - 1.0f;
           LegalPos.WorldP.y = SA_Collision.CP.WorldP.y;
         } break;
-
         case Negative:
         {
           LegalPos.Offset.y = SA_Collision.CP.Offset.y + 1.0f;
           LegalPos.WorldP.y = SA_Collision.CP.WorldP.y;
         } break;
-
-        case Zero:
-        {
-          printf("ZERO COLLISION, SHOULDN'T HAPPEN!!\n");
-        } break;
-
         InvalidDefaultCase;
       }
-
       LegalPos = Canonicalize( world, LegalPos );
     }
     else
     {
       LegalPos.Offset.y = SA_TestP.Offset.y;
-    }
+      LegalPos.WorldP = SA_TestP.WorldP;
+      LegalPos = Canonicalize(world, LegalPos);
+   }
 
-    SA_Offset = ModelOffset;
+    SA_Offset = LegalPos.Offset;
     SA_Offset.z += UpdateVector.z;
     SA_TestP = Canonicalize( world, SA_Offset, LegalPos.WorldP );
     SA_Collision = GetCollision( world, SA_TestP, model->Dim );
-
     if ( SA_Collision.didCollide )
     {
-
+      SA_Collision.CP = Canonicalize(world, SA_Collision.CP);
       switch ( GetSign(UpdateVector.z) )
       {
         case Positive:
@@ -530,27 +515,22 @@ UpdatePlayerP(World *world, Chunk *model, v3 UpdateVector)
           LegalPos.Offset.z = SA_Collision.CP.Offset.z - 1.0f;
           LegalPos.WorldP.z = SA_Collision.CP.WorldP.z;
         } break;
-
         case Negative:
         {
           LegalPos.Offset.z = SA_Collision.CP.Offset.z + 1.0f;
           LegalPos.WorldP.z = SA_Collision.CP.WorldP.z;
         } break;
-
-        case Zero:
-        {
-          printf("ZERO COLLISION, SHOULDN'T HAPPEN!!\n");
-        } break;
-
         InvalidDefaultCase;
       }
-
       LegalPos = Canonicalize( world, LegalPos );
     }
     else
     {
       LegalPos.Offset.z = SA_TestP.Offset.z;
-    }
+      LegalPos.WorldP = SA_TestP.WorldP;
+      LegalPos = Canonicalize(world, LegalPos);
+   }
+
 
   }
 
@@ -588,7 +568,7 @@ GAME_UPDATE_AND_RENDER
     GLuint programID
   )
 {
-  float speed = 5.0f;
+  float speed = 2.5f;
 
   v3 Offset = GetPlayerUpdateVector(speed, deltaTime);
 
