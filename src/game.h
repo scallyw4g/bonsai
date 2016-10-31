@@ -454,6 +454,21 @@ LengthSq( v3 Vec )
   return Result;
 }
 
+inline float
+Length( v3 Vec )
+{
+  float Result;
+  Result = sqrt(LengthSq(Vec));
+  return Result;
+}
+
+inline float
+Square( float f )
+{
+  float Result = f*f;
+  return Result;
+}
+
 inline v3
 Normalize( v3 Vec, float length)
 {
@@ -540,13 +555,17 @@ struct World
   Chunk *Chunks;
 
   // This is the number of chunks in xyz we're going to update and render
-  chunk_dimension VisibleRegion = Chunk_Dimension(3,3,3);
+  chunk_dimension VisibleRegion;
   chunk_dimension ChunkDim;
+
+  v3 Gravity;
 };
 
 struct Entity
 {
   Chunk Model;
+  v3 Velocity;
+  v3 Acceleration;
 };
 
 struct collision_event

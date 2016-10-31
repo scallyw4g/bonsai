@@ -187,43 +187,44 @@ AllocateChunk(chunk_dimension Dim, voxel_position WorldP)
 }
 
 // FIXME : Problem with multiple keypresses ( 8 then 7 then 4 won't move left )
+
 inline v3
-GetPlayerUpdateVector(float speed, float deltaTime)
+GetInputsFromController(World *world)
 {
   v3 right = V3(1,0,0);
   v3 up = V3(0,1,0);
   v3 forward = V3(0,0,-1);
 
-  v3 moveDir = V3(0,0,0);
+  v3 UpdateDir = V3(0,0,0);
 
   // Move forward
   if (glfwGetKey( window, GLFW_KEY_KP_8 ) == GLFW_PRESS){
-    moveDir += forward;
+    UpdateDir += forward;
   }
   // Move backward
   if (glfwGetKey( window, GLFW_KEY_KP_5 ) == GLFW_PRESS){
-    moveDir -= forward;
+    UpdateDir -= forward;
   }
   // Strafe right
   if (glfwGetKey( window, GLFW_KEY_KP_6 ) == GLFW_PRESS){
-    moveDir += right;
+    UpdateDir += right;
   }
   // Strafe left
   if (glfwGetKey( window, GLFW_KEY_KP_4 ) == GLFW_PRESS){
-    moveDir -= right;
+    UpdateDir -= right;
   }
   // Strafe up
   if (glfwGetKey( window, GLFW_KEY_KP_7 ) == GLFW_PRESS){
-    moveDir += up;
+    UpdateDir += up;
   }
   // Strafe down
   if (glfwGetKey( window, GLFW_KEY_KP_9 ) == GLFW_PRESS){
-    moveDir -= up;
+    UpdateDir -= up;
   }
 
-  v3 NormalDir = Normalize(moveDir, LengthSq(moveDir) ) * speed * deltaTime;
+  UpdateDir = Normalize(UpdateDir, Length(UpdateDir));
 
-  return NormalDir;
+  return UpdateDir;
 }
 
 inline voxel_position
@@ -398,13 +399,18 @@ end:
 }
 
 void
-SpawnPlayer( World *world, Chunk *Model )
+SpawnPlayer( World *world, Entity *Player )
 {
+  Chunk *Model = &Player->Model;
+
   Model->Voxels[0].w = 1;
 
   Model->Voxels[0].x = 0;
   Model->Voxels[0].y = 0;
   Model->Voxels[0].z = 0;
+
+  Player->Acceleration = V3(0,0,0);
+  Player->Velocity = V3(0,0,0);
 
   canonical_position TestP;
   collision_event Collision;
@@ -436,8 +442,9 @@ SpawnPlayer( World *world, Chunk *Model )
 
 // FIXME : At high speeds an entity can still tunnel through geometry!
 void
-UpdatePlayerP(World *world, Chunk *model, v3 UpdateVector)
+UpdatePlayerP(World *world, Entity *Player, v3 UpdateVector)
 {
+  Chunk *model = &Player->Model;
   model->redraw = true;
 
   if ( LengthSq(UpdateVector) == 0 )
@@ -584,7 +591,7 @@ GAME_UPDATE_AND_RENDER
 (
     World *world,
     Entity *Player,
-    float deltaTime,
+    float dt,
     glm::mat4 Projection,
     glm::mat4 ModelMatrix,
 
@@ -593,14 +600,17 @@ GAME_UPDATE_AND_RENDER
     GLuint programID
   )
 {
-  float speed = 2.5f;
+  // TODO : Bake these into the terrain/model ?
+  float drag = 0.80f;
+  float accelerationMultiplier = 11.0f;
 
-  v3 Offset = GetPlayerUpdateVector(speed, deltaTime);
+  Player->Acceleration = GetInputsFromController(world) * accelerationMultiplier; // m/s2
+  Player->Velocity = (Player->Acceleration*dt + Player->Velocity) * drag; // m/s
+  v3 PlayerDelta = Player->Velocity * dt;
 
-  UpdatePlayerP( world, &Player->Model, Offset );
+  UpdatePlayerP( world, Player, PlayerDelta );
 
   glm::vec3 PlayerP = V3(Player->Model.Offset) + (Player->Model.WorldP * world->ChunkDim);
-
   glm::vec3 CameraP = PlayerP + glm::vec3(0,3,5);
 
   glm::vec3 up(0, 1, 0);
@@ -618,8 +628,8 @@ GAME_UPDATE_AND_RENDER
 
   if (accumulatedTime > 1.0f)
   {
-    /* printf("frame %d/%f seconds\n", numFrames, accumulatedTime); */
-    /* printf(" %f ms/frame \n", (float)(accumulatedTime*1000/numFrames) ); */
+    /* printf("frame %d/%f seconds\n", numFrames, accumulatedtime); */
+    /* printf(" %f ms/frame \n", (float)(accumulatedtime*1000/numFrames) ); */
     accumulatedTime = 0;
     numFrames = 0;
   }
@@ -629,7 +639,7 @@ GAME_UPDATE_AND_RENDER
   {
     printf("\n\n\n\n\n");
     GenerateWorld( world );
-    SpawnPlayer( world, &Player->Model );
+    SpawnPlayer( world, Player );
   }
 
   // Clear the screen
@@ -680,6 +690,7 @@ InitializeWorld( World *world )
 {
   world->ChunkDim = Chunk_Dimension( CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH );
   world->VisibleRegion = Chunk_Dimension(2,2,2);
+  world->Gravity = V3(0, -4.9, 0);
 
   world->Chunks = (Chunk*)malloc( sizeof(Chunk)*Volume(world->VisibleRegion) );
 
@@ -740,7 +751,7 @@ main( void )
   InitializeWorld(&world);
 
   Player.Model = AllocateChunk( Chunk_Dimension(1,1,1), Voxel_Position(0,0,0) );
-  SpawnPlayer( &world, &Player.Model );
+  SpawnPlayer( &world, &Player );
 
 
   double lastTime = glfwGetTime();
@@ -752,16 +763,16 @@ main( void )
   do
   {
     double currentTime = glfwGetTime();
-    float deltaTime = (float)(currentTime - lastTime);
+    float dt = (float)(currentTime - lastTime);
     lastTime = currentTime;
 
-    accumulatedTime += deltaTime;
+    accumulatedTime += dt;
     numFrames ++;
 
     GAME_UPDATE_AND_RENDER(
       &world,
       &Player,
-      deltaTime,
+      dt,
       Projection,
       ModelMatrix,
 
