@@ -1,9 +1,9 @@
 #ifndef GAME_CONSTANTS
 #define GAME_CONSTANTS
 
-#define CHUNK_WIDTH  16
+#define CHUNK_WIDTH  32
 #define CHUNK_HEIGHT 8
-#define CHUNK_DEPTH  16
+#define CHUNK_DEPTH  32
 
 static int numFrames = 0;
 static float accumulatedTime = 0;

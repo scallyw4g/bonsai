@@ -249,7 +249,7 @@ V3(glm::vec3 vec)
 }
 
 inline v3
-V3(int x,int y,int z)
+V3(float x, float y, float z)
 {
   v3 Result = {};
 
@@ -381,6 +381,18 @@ operator-=(v3& A, v3 B)
 {
   A = A - B;
   return(A);
+}
+
+inline v3
+operator*(v3 A, v3 B)
+{
+  v3 Result;
+
+  Result.x = A.x * B.x;
+  Result.y = A.y * B.y;
+  Result.z = A.z * B.z;
+
+  return Result;
 }
 
 inline v3

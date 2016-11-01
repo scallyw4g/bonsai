@@ -84,7 +84,7 @@ initWindow( int width, int height )
   }
 
   // Ensure we can capture the escape key being pressed below
-  glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+  glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_FALSE);
 
   glClearColor(0.35f, 0.0f, 0.5f, 0.0f);
 
@@ -189,7 +189,7 @@ AllocateChunk(chunk_dimension Dim, voxel_position WorldP)
 // FIXME : Problem with multiple keypresses ( 8 then 7 then 4 won't move left )
 
 inline v3
-GetInputsFromController(World *world)
+GetInputsFromController()
 {
   v3 right = V3(1,0,0);
   v3 up = V3(0,1,0);
@@ -212,14 +212,6 @@ GetInputsFromController(World *world)
   // Strafe left
   if (glfwGetKey( window, GLFW_KEY_KP_4 ) == GLFW_PRESS){
     UpdateDir -= right;
-  }
-  // Strafe up
-  if (glfwGetKey( window, GLFW_KEY_KP_7 ) == GLFW_PRESS){
-    UpdateDir += up;
-  }
-  // Strafe down
-  if (glfwGetKey( window, GLFW_KEY_KP_9 ) == GLFW_PRESS){
-    UpdateDir -= up;
   }
 
   UpdateDir = Normalize(UpdateDir, Length(UpdateDir));
@@ -417,15 +409,15 @@ SpawnPlayer( World *world, Entity *Player )
 
   do
   {
-    int rX = rand() % (world->ChunkDim.x - 1);
-    int rY = rand() % (world->ChunkDim.y - 1);
-    int rZ = rand() % (world->ChunkDim.z - 1);
+    int rX = rand() % (world->ChunkDim.x);
+    int rY = rand() % (world->ChunkDim.y);
+    int rZ = rand() % (world->ChunkDim.z);
 
     v3 Offset = V3( rX, rY, rZ );
 
-    rX = rand() % (world->VisibleRegion.x - 1);
-    rY = rand() % (world->VisibleRegion.y - 1);
-    rZ = rand() % (world->VisibleRegion.z - 1);
+    rX = rand() % (world->VisibleRegion.x);
+    rY = rand() % (world->VisibleRegion.y);
+    rZ = rand() % (world->VisibleRegion.z);
 
     world_position WP = World_Position( rX, rY, rZ );
 
@@ -479,6 +471,7 @@ UpdatePlayerP(World *world, Entity *Player, v3 UpdateVector)
     SA_Collision = GetCollision( world, SA_TestP, model->Dim );
     if ( SA_Collision.didCollide )
     {
+      Player->Velocity.x = 0;
       SA_Collision.CP = Canonicalize(world, SA_Collision.CP);
       switch ( GetSign(UpdateVector.x) )
       {
@@ -509,6 +502,7 @@ UpdatePlayerP(World *world, Entity *Player, v3 UpdateVector)
     SA_Collision = GetCollision( world, SA_TestP, model->Dim );
     if ( SA_Collision.didCollide )
     {
+      Player->Velocity.y = 0;
       SA_Collision.CP = Canonicalize(world, SA_Collision.CP);
       switch ( GetSign(UpdateVector.y) )
       {
@@ -539,6 +533,7 @@ UpdatePlayerP(World *world, Entity *Player, v3 UpdateVector)
     SA_Collision = GetCollision( world, SA_TestP, model->Dim );
     if ( SA_Collision.didCollide )
     {
+      Player->Velocity.z = 0;
       SA_Collision.CP = Canonicalize(world, SA_Collision.CP);
       switch ( GetSign(UpdateVector.z) )
       {
@@ -586,6 +581,17 @@ GenerateWorld( World *world )
   }
 }
 
+bool IsGrounded( World *world, Entity *entity)
+{
+  v3 groundTolerance = V3(0, 0.01f, 0);
+  canonical_position TestP = Canonicalize(world, entity->Model.Offset - groundTolerance, entity->Model.WorldP);
+  collision_event c = GetCollision(world, TestP, entity->Model.Dim );
+
+  printf("%d\n", c.didCollide);
+
+  return c.didCollide;
+}
+
 void
 GAME_UPDATE_AND_RENDER
 (
@@ -601,11 +607,22 @@ GAME_UPDATE_AND_RENDER
   )
 {
   // TODO : Bake these into the terrain/model ?
-  float drag = 0.80f;
-  float accelerationMultiplier = 11.0f;
+  v3 drag = V3(0.6f, 1.0f, 0.6f);
+  float accelerationMultiplier = 33.0f;
 
-  Player->Acceleration = GetInputsFromController(world) * accelerationMultiplier; // m/s2
+  Player->Acceleration = GetInputsFromController() * accelerationMultiplier; // m/s2
+  Player->Acceleration += world->Gravity;
+
   Player->Velocity = (Player->Acceleration*dt + Player->Velocity) * drag; // m/s
+
+  if (IsGrounded(world, Player))
+  {
+    if (glfwGetKey( window, GLFW_KEY_SPACE ) == GLFW_PRESS)
+    {
+      Player->Velocity.y += 7.5f;
+    }
+  }
+
   v3 PlayerDelta = Player->Velocity * dt;
 
   UpdatePlayerP( world, Player, PlayerDelta );
@@ -689,8 +706,8 @@ void
 InitializeWorld( World *world )
 {
   world->ChunkDim = Chunk_Dimension( CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH );
-  world->VisibleRegion = Chunk_Dimension(2,2,2);
-  world->Gravity = V3(0, -4.9, 0);
+  world->VisibleRegion = Chunk_Dimension(2,1,2);
+  world->Gravity = V3(0, -9.8, 0);
 
   world->Chunks = (Chunk*)malloc( sizeof(Chunk)*Volume(world->VisibleRegion) );
 
@@ -745,11 +762,10 @@ main( void )
 
   glfwWindowHint(GLFW_SAMPLES, 4);
 
-  Entity Player = {};
-
   World world;
   InitializeWorld(&world);
 
+  Entity Player = {};
   Player.Model = AllocateChunk( Chunk_Dimension(1,1,1), Voxel_Position(0,0,0) );
   SpawnPlayer( &world, &Player );
 
