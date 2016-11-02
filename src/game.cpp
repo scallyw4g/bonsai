@@ -432,133 +432,179 @@ SpawnPlayer( World *world, Entity *Player )
 
 }
 
-// FIXME : At high speeds an entity can still tunnel through geometry!
+v3
+GetAtomicUpdateVector( v3 Gross, float length )
+{
+  v3 Result = Gross;
+
+  if ( Gross.x > 1.0f )
+  {
+    Result.x = 1.0f;
+  }
+  if ( Gross.x < -1.0f )
+  {
+    Result.x = -1.0f;
+  }
+
+
+  if ( Gross.y > 1.0f )
+  {
+    Result.y = 1.0f;
+  }
+  if ( Gross.y < -1.0f )
+  {
+    Result.y = -1.0f;
+  }
+
+
+  if ( Gross.z > 1.0f )
+  {
+    Result.z = 1.0f;
+  }
+  if ( Gross.z < -1.0f )
+  {
+    Result.z = -1.0f;
+  }
+
+  return Result;
+}
+
 void
-UpdatePlayerP(World *world, Entity *Player, v3 UpdateVector)
+UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
 {
   Chunk *model = &Player->Model;
   model->redraw = true;
 
-  if ( LengthSq(UpdateVector) == 0 )
+  float GrossUpdateDistance = Length(GrossUpdateVector);
+
+  if ( GrossUpdateDistance == 0.0f )
   {
     return;
   }
 
+  v3 Remaining = GrossUpdateVector;
+
   canonical_position LegalPos;
-  LegalPos.Offset = model->Offset + UpdateVector;
+
+  LegalPos.Offset = model->Offset;
   LegalPos.WorldP = model->WorldP;
 
-  canonical_position TestP = Canonicalize(world, LegalPos);
-  collision_event CollisionVoxel = GetCollision( world, TestP, model->Dim);
-
-  if ( CollisionVoxel.didCollide ) // Collision response
+  while ( Remaining != V3(0,0,0) )
   {
-    v3 SA_Offset;
-    canonical_position SA_TestP;
-    collision_event SA_Collision;
+    v3 UpdateVector = GetAtomicUpdateVector(Remaining, Length(Remaining));
 
-    voxel_position ModelVoxelP = Voxel_Position( model->Offset );
-    v3 ModelOffset = model->Offset;
-    LegalPos.Offset = model->Offset;
+    Remaining -= UpdateVector;
+    LegalPos.Offset += UpdateVector;
 
+    canonical_position TestP = Canonicalize(world, LegalPos);
+    collision_event CollisionVoxel = GetCollision( world, TestP, model->Dim);
 
-    // Build a new LegalPos based on the contents of each voxel we're trying
-    // to move through
-
-    SA_Offset = LegalPos.Offset;
-    SA_Offset.x += UpdateVector.x;
-    SA_TestP = Canonicalize( world, SA_Offset, LegalPos.WorldP );
-    SA_Collision = GetCollision( world, SA_TestP, model->Dim );
-    if ( SA_Collision.didCollide )
+    if ( CollisionVoxel.didCollide ) // Collision response
     {
-      Player->Velocity.x = 0;
-      SA_Collision.CP = Canonicalize(world, SA_Collision.CP);
-      switch ( GetSign(UpdateVector.x) )
+      v3 SA_Offset;
+      canonical_position SA_TestP;
+      collision_event SA_Collision;
+
+      LegalPos.Offset -= UpdateVector;
+
+      // Build a new LegalPos based on the contents of each voxel we're trying
+      // to move through
+
+      SA_Offset = LegalPos.Offset;
+      SA_Offset.x += UpdateVector.x;
+      SA_TestP = Canonicalize( world, SA_Offset, LegalPos.WorldP );
+      SA_Collision = GetCollision( world, SA_TestP, model->Dim );
+      if ( SA_Collision.didCollide )
       {
-        case Positive:
+        Player->Velocity.x = 0;
+        SA_Collision.CP = Canonicalize(world, SA_Collision.CP);
+        switch ( GetSign(UpdateVector.x) )
         {
-          LegalPos.Offset.x = SA_Collision.CP.Offset.x - 1.0f;
-          LegalPos.WorldP.x = SA_Collision.CP.WorldP.x;
-        } break;
-        case Negative:
-        {
-          LegalPos.Offset.x = SA_Collision.CP.Offset.x + 1.0f;
-          LegalPos.WorldP.x = SA_Collision.CP.WorldP.x;
-        } break;
-        InvalidDefaultCase;
+          case Positive:
+          {
+            LegalPos.Offset.x = SA_Collision.CP.Offset.x - 1.0f;
+            LegalPos.WorldP.x = SA_Collision.CP.WorldP.x;
+          } break;
+          case Negative:
+          {
+            LegalPos.Offset.x = SA_Collision.CP.Offset.x + 1.0f;
+            LegalPos.WorldP.x = SA_Collision.CP.WorldP.x;
+          } break;
+          InvalidDefaultCase;
+        }
+        LegalPos = Canonicalize( world, LegalPos );
       }
-      LegalPos = Canonicalize( world, LegalPos );
-    }
-    else
-    {
-      LegalPos.Offset.x = SA_TestP.Offset.x;
-      LegalPos.WorldP = SA_TestP.WorldP;
-      LegalPos = Canonicalize(world, LegalPos);
-   }
-
-    SA_Offset = LegalPos.Offset;
-    SA_Offset.y += UpdateVector.y;
-    SA_TestP = Canonicalize( world, SA_Offset, LegalPos.WorldP );
-    SA_Collision = GetCollision( world, SA_TestP, model->Dim );
-    if ( SA_Collision.didCollide )
-    {
-      Player->Velocity.y = 0;
-      SA_Collision.CP = Canonicalize(world, SA_Collision.CP);
-      switch ( GetSign(UpdateVector.y) )
+      else
       {
-        case Positive:
-        {
-          LegalPos.Offset.y = SA_Collision.CP.Offset.y - 1.0f;
-          LegalPos.WorldP.y = SA_Collision.CP.WorldP.y;
-        } break;
-        case Negative:
-        {
-          LegalPos.Offset.y = SA_Collision.CP.Offset.y + 1.0f;
-          LegalPos.WorldP.y = SA_Collision.CP.WorldP.y;
-        } break;
-        InvalidDefaultCase;
-      }
-      LegalPos = Canonicalize( world, LegalPos );
-    }
-    else
-    {
-      LegalPos.Offset.y = SA_TestP.Offset.y;
-      LegalPos.WorldP = SA_TestP.WorldP;
-      LegalPos = Canonicalize(world, LegalPos);
-   }
+        LegalPos.Offset.x = SA_TestP.Offset.x;
+        LegalPos.WorldP = SA_TestP.WorldP;
+        LegalPos = Canonicalize(world, LegalPos);
+     }
 
-    SA_Offset = LegalPos.Offset;
-    SA_Offset.z += UpdateVector.z;
-    SA_TestP = Canonicalize( world, SA_Offset, LegalPos.WorldP );
-    SA_Collision = GetCollision( world, SA_TestP, model->Dim );
-    if ( SA_Collision.didCollide )
-    {
-      Player->Velocity.z = 0;
-      SA_Collision.CP = Canonicalize(world, SA_Collision.CP);
-      switch ( GetSign(UpdateVector.z) )
+      SA_Offset = LegalPos.Offset;
+      SA_Offset.y += UpdateVector.y;
+      SA_TestP = Canonicalize( world, SA_Offset, LegalPos.WorldP );
+      SA_Collision = GetCollision( world, SA_TestP, model->Dim );
+      if ( SA_Collision.didCollide )
       {
-        case Positive:
+        Player->Velocity.y = 0;
+        SA_Collision.CP = Canonicalize(world, SA_Collision.CP);
+        switch ( GetSign(UpdateVector.y) )
         {
-          LegalPos.Offset.z = SA_Collision.CP.Offset.z - 1.0f;
-          LegalPos.WorldP.z = SA_Collision.CP.WorldP.z;
-        } break;
-        case Negative:
-        {
-          LegalPos.Offset.z = SA_Collision.CP.Offset.z + 1.0f;
-          LegalPos.WorldP.z = SA_Collision.CP.WorldP.z;
-        } break;
-        InvalidDefaultCase;
+          case Positive:
+          {
+            LegalPos.Offset.y = SA_Collision.CP.Offset.y - 1.0f;
+            LegalPos.WorldP.y = SA_Collision.CP.WorldP.y;
+          } break;
+          case Negative:
+          {
+            LegalPos.Offset.y = SA_Collision.CP.Offset.y + 1.0f;
+            LegalPos.WorldP.y = SA_Collision.CP.WorldP.y;
+          } break;
+          InvalidDefaultCase;
+        }
+        LegalPos = Canonicalize( world, LegalPos );
       }
-      LegalPos = Canonicalize( world, LegalPos );
+      else
+      {
+        LegalPos.Offset.y = SA_TestP.Offset.y;
+        LegalPos.WorldP = SA_TestP.WorldP;
+        LegalPos = Canonicalize(world, LegalPos);
+     }
+
+      SA_Offset = LegalPos.Offset;
+      SA_Offset.z += UpdateVector.z;
+      SA_TestP = Canonicalize( world, SA_Offset, LegalPos.WorldP );
+      SA_Collision = GetCollision( world, SA_TestP, model->Dim );
+      if ( SA_Collision.didCollide )
+      {
+        Player->Velocity.z = 0;
+        SA_Collision.CP = Canonicalize(world, SA_Collision.CP);
+        switch ( GetSign(UpdateVector.z) )
+        {
+          case Positive:
+          {
+            LegalPos.Offset.z = SA_Collision.CP.Offset.z - 1.0f;
+            LegalPos.WorldP.z = SA_Collision.CP.WorldP.z;
+          } break;
+          case Negative:
+          {
+            LegalPos.Offset.z = SA_Collision.CP.Offset.z + 1.0f;
+            LegalPos.WorldP.z = SA_Collision.CP.WorldP.z;
+          } break;
+          InvalidDefaultCase;
+        }
+        LegalPos = Canonicalize( world, LegalPos );
+      }
+      else
+      {
+        LegalPos.Offset.z = SA_TestP.Offset.z;
+        LegalPos.WorldP = SA_TestP.WorldP;
+        LegalPos = Canonicalize(world, LegalPos);
+     }
+
+
     }
-    else
-    {
-      LegalPos.Offset.z = SA_TestP.Offset.z;
-      LegalPos.WorldP = SA_TestP.WorldP;
-      LegalPos = Canonicalize(world, LegalPos);
-   }
-
-
   }
 
   // Finished collision detection, recanonicalize and update player p
@@ -586,9 +632,6 @@ bool IsGrounded( World *world, Entity *entity)
   v3 groundTolerance = V3(0, 0.01f, 0);
   canonical_position TestP = Canonicalize(world, entity->Model.Offset - groundTolerance, entity->Model.WorldP);
   collision_event c = GetCollision(world, TestP, entity->Model.Dim );
-
-  printf("%d\n", c.didCollide);
-
   return c.didCollide;
 }
 
@@ -619,7 +662,7 @@ GAME_UPDATE_AND_RENDER
   {
     if (glfwGetKey( window, GLFW_KEY_SPACE ) == GLFW_PRESS)
     {
-      Player->Velocity.y += 7.5f;
+      Player->Velocity.y += 25.0f;
     }
   }
 
@@ -706,7 +749,7 @@ void
 InitializeWorld( World *world )
 {
   world->ChunkDim = Chunk_Dimension( CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH );
-  world->VisibleRegion = Chunk_Dimension(2,1,2);
+  world->VisibleRegion = Chunk_Dimension(1,3,1);
   world->Gravity = V3(0, -9.8, 0);
 
   world->Chunks = (Chunk*)malloc( sizeof(Chunk)*Volume(world->VisibleRegion) );
@@ -824,3 +867,4 @@ main( void )
 
   return 0;
 }
+

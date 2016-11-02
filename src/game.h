@@ -58,6 +58,26 @@ struct voxel_position
 };
 
 inline bool
+operator==(v3 P1, v3 P2)
+{
+  bool Result;
+
+  Result = (
+    P1.x == P2.x &&
+    P1.y == P2.y &&
+    P1.z == P2.z );
+
+  return Result;
+}
+
+inline bool
+operator!=(v3 P1, v3 P2)
+{
+  bool Result = !(P1 == P2);
+  return Result;
+}
+
+inline bool
 operator==(voxel_position P1, voxel_position P2)
 {
   bool Result;
@@ -532,17 +552,6 @@ struct VertexBlock
   int bytesAllocd;
   int filled;
 };
-
-v3 ToV3(voxel_position chunkP)
-{
-  v3 Result;
-
-  Result.x = chunkP.x;
-  Result.y = chunkP.y;
-  Result.z = chunkP.z;
-
-  return Result;
-}
 
 struct Chunk
 {
