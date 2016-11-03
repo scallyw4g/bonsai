@@ -208,14 +208,25 @@ GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
   collision_event Collision;
   Collision.didCollide = false;
 
-  // This is necessary because if the model maxP is precicesly on a voxel boundary
-  // the maxP will incorrectly include the next voxel.
-  float epsilon = 0.00001f;
-
   v3 ModelHalfDim = ModelDim * 0.5f;
 
   v3 MinP = TestP.Offset;
-  v3 MaxP = (TestP.Offset + ModelHalfDim + 0.5f) - epsilon;
+  v3 MaxP = (TestP.Offset + ModelHalfDim + 0.5f);
+
+  if ( TestP.Offset.x == Floor(TestP.Offset.x) )
+  {
+    MaxP.x -= 1.0f;
+  }
+
+  if ( TestP.Offset.y == Floor(TestP.Offset.y) )
+  {
+    MaxP.y -= 1.0f;
+  }
+
+  if ( TestP.Offset.z == Floor(TestP.Offset.z) )
+  {
+    MaxP.z -= 1.0f;
+  }
 
   for ( int x = MinP.x; x <= MaxP.x; x++ )
   {
