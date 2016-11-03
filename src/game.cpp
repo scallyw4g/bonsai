@@ -213,6 +213,8 @@ GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
   v3 MinP = TestP.Offset;
   v3 MaxP = (TestP.Offset + ModelHalfDim + 0.5f);
 
+  // We need to check if the TestP is exactly on a voxel boundary.
+  // if it is, don't include the next voxel in our detection.
   if ( TestP.Offset.x == Floor(TestP.Offset.x) )
   {
     MaxP.x -= 1.0f;
@@ -237,25 +239,11 @@ GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
         voxel_position TestVoxelP = Voxel_Position(x,y,z);
         world_position TestWorldP = TestP.WorldP;
 
-        if ( TestVoxelP.x >= world->ChunkDim.x )
-        {
-          TestWorldP.x ++;
-          TestVoxelP.x = 0;
-        }
-        if ( TestVoxelP.y >= world->ChunkDim.y )
-        {
-          TestWorldP.y ++;
-          TestVoxelP.y = 0;
-        }
-        if ( TestVoxelP.z >= world->ChunkDim.z )
-        {
-          TestWorldP.z ++;
-          TestVoxelP.z = 0;
-        }
+        canonical_position LoopTestP = Canonicalize( world, V3(x,y,z), TestP.WorldP );
 
-        Chunk *chunk = GetWorldChunk( world, TestWorldP );
+        Chunk *chunk = GetWorldChunk( world, LoopTestP.WorldP );
 
-        if ( IsFilled(chunk, TestVoxelP ) )
+        if ( IsFilled(world, chunk, LoopTestP ) )
         {
           Collision.CP.Offset = V3(TestVoxelP);
           Collision.CP.WorldP = TestWorldP;
