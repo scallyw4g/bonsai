@@ -101,7 +101,7 @@ Logging(v3 CameraP, v3 PlayerP, glm::vec3 LookAt, double *lastFrameTime, int *nu
 void
 GenerateVoxels( Chunk *chunk, PerlinNoise* Noise)
 {
-  chunk->redraw = true;
+  chunk->flags |= Chunk_Redraw;
 
   for ( int i = 0; i < Volume(chunk->Dim); ++i )
   {
@@ -113,7 +113,7 @@ GenerateVoxels( Chunk *chunk, PerlinNoise* Noise)
     double InY = (double)chunk->Voxels[i].y/(double)chunk->Dim.y;
     double InZ = (double)chunk->Voxels[i].z/(double)chunk->Dim.z;
 
-#if 1
+#if 0
     double l = Noise->noise(InX, InY, InZ);
     chunk->Voxels[i].w = (float)floor(l + 0.5);
 #else
@@ -153,6 +153,9 @@ AllocateChunk(chunk_dimension Dim, voxel_position WorldP)
 
   Result.WorldP = WorldP;
   Result.Offset = V3(0,0,0);
+
+  Result.flags = 0;
+  Result.flags |= Chunk_Redraw;
 
   return Result;
 }
@@ -342,14 +345,7 @@ void
 UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
 {
   Chunk *model = &Player->Model;
-  model->redraw = true;
-
-  float GrossUpdateDistance = Length(GrossUpdateVector);
-
-  if ( GrossUpdateDistance == 0.0f )
-  {
-    return;
-  }
+  model->flags |= Chunk_Redraw;
 
   v3 Remaining = GrossUpdateVector;
 
@@ -537,6 +533,7 @@ GAME_UPDATE_AND_RENDER
 
   v3 PlayerDelta = Player->Velocity * dt;
 
+  // Currently we apply Gravity every frame so we can't conditionally UpdatePlayerP
   UpdatePlayerP( world, Player, PlayerDelta );
 
   glm::vec3 PlayerP = V3(Player->Model.Offset) + (Player->Model.WorldP * world->ChunkDim);
@@ -632,7 +629,6 @@ InitializeWorld( World *world )
       for ( int z = 0; z < world->VisibleRegion.z; ++ z )
       {
         world->Chunks[ChunksAllocated] = AllocateChunk( world->ChunkDim, Voxel_Position(x,y,z) );
-        Print(world->Chunks[ChunksAllocated].WorldP);
         ++ ChunksAllocated;
       }
     }

@@ -275,15 +275,13 @@ void BuildChunkMesh(World *world, Chunk *chunk)
 
   v4 *VoxelBuffer = chunk->Voxels;
 
-  Print(chunk->WorldP);
-
   for ( int x = 0; x < chunk->Dim.x; ++x )
   {
     for ( int y = 0; y < chunk->Dim.y; ++y )
     {
       for ( int z = 0; z < chunk->Dim.z; ++z )
       {
-        canonical_position VoxelP = Canonical_Position( V3(x,y,z), chunk->WorldP);
+        canonical_position VoxelP = Canonicalize(world, Canonical_Position( V3(x,y,z) + chunk->Offset, chunk->WorldP));
 
         canonical_position nextVoxel  = Canonicalize( world, VoxelP + V3(1.0f,0,0) );
         canonical_position prevVoxel  = Canonicalize( world, VoxelP - V3(1.0f,0,0) );
@@ -296,9 +294,7 @@ void BuildChunkMesh(World *world, Chunk *chunk)
 
         if ( IsFilled(world, chunk, VoxelP) )
         {
-          v3 WorldOffset = VoxelP.Offset + (world->ChunkDim * VoxelP.WorldP);
-          Print(VoxelP);
-          Print(WorldOffset);
+          v3 WorldOffset = VoxelP.Offset + (VoxelP.WorldP * world->ChunkDim);
 
           if ( ! IsFilled( world, chunk, nextVoxel ) )
           {
@@ -372,10 +368,11 @@ void DrawChunk(
     GLuint &colorbuffer,
     GLuint &vertexbuffer)
 {
-  if ( chunk->redraw )
+  if ( chunk->flags & Chunk_Redraw )
   {
+    printf("chunk->flags %d \n", chunk->flags);
     BuildChunkMesh( world, chunk );
-    chunk->redraw = false;
+    chunk->flags &= ~Chunk_Redraw;
   }
 
   glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);

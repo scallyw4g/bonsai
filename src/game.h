@@ -608,6 +608,10 @@ struct VertexBlock
   int filled;
 };
 
+enum ChunkFlags {
+  Chunk_Redraw = 1 << 0
+};
+
 struct Chunk
 {
   v4 *Voxels;
@@ -619,8 +623,7 @@ struct Chunk
   // Position within the chunk
   v3 Offset;
 
-  // Should we redraw this?
-  bool redraw;
+  int flags;
 
   VertexBlock VertexData;
   VertexBlock ColorData;
