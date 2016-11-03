@@ -292,11 +292,13 @@ void BuildChunkMesh(World *world, Chunk *chunk)
         canonical_position frontVoxel = Canonicalize( world, VoxelP + V3(0,0,1.0f) );
         canonical_position backVoxel  = Canonicalize( world, VoxelP - V3(0,0,1.0f) );
 
-        if ( IsFilled(world, chunk, VoxelP) )
+        if ( IsFilled(world, chunk, VoxelP) ||
+            chunk->flags & Chunk_Entity)
         {
           v3 WorldOffset = VoxelP.Offset + (VoxelP.WorldP * world->ChunkDim);
 
-          if ( ! IsFilled( world, chunk, nextVoxel ) )
+          if ( ! IsFilled( world, chunk, nextVoxel ) ||
+              chunk->flags & Chunk_Entity)
           {
             BufferRightFace(
               WorldOffset,
@@ -306,7 +308,8 @@ void BuildChunkMesh(World *world, Chunk *chunk)
             );
           }
 
-          if ( ! IsFilled( world, chunk, prevVoxel) )
+          if ( ! IsFilled( world, chunk, prevVoxel) ||
+              chunk->flags & Chunk_Entity)
           {
             BufferLeftFace(
               WorldOffset,
@@ -316,7 +319,8 @@ void BuildChunkMesh(World *world, Chunk *chunk)
             );
           }
 
-          if ( ! IsFilled( world, chunk, botVoxel ) )
+          if ( ! IsFilled( world, chunk, botVoxel ) ||
+              chunk->flags & Chunk_Entity)
           {
             BufferBottomFace(
               WorldOffset,
@@ -326,7 +330,8 @@ void BuildChunkMesh(World *world, Chunk *chunk)
             );
           }
 
-          if ( ! IsFilled( world, chunk, topVoxel ) )
+          if ( ! IsFilled( world, chunk, topVoxel ) ||
+              chunk->flags & Chunk_Entity)
           {
             BufferTopFace(
               WorldOffset,
@@ -336,7 +341,8 @@ void BuildChunkMesh(World *world, Chunk *chunk)
             );
           }
 
-          if ( ! IsFilled( world, chunk, frontVoxel ) )
+          if ( ! IsFilled( world, chunk, frontVoxel ) ||
+              chunk->flags & Chunk_Entity)
           {
             BufferFrontFace(
               WorldOffset,
@@ -346,7 +352,8 @@ void BuildChunkMesh(World *world, Chunk *chunk)
             );
           }
 
-          if ( ! IsFilled( world, chunk, backVoxel ) )
+          if ( ! IsFilled( world, chunk, backVoxel ) ||
+              chunk->flags & Chunk_Entity)
           {
             BufferBackFace(
               WorldOffset,
@@ -370,7 +377,6 @@ void DrawChunk(
 {
   if ( chunk->flags & Chunk_Redraw )
   {
-    printf("chunk->flags %d \n", chunk->flags);
     BuildChunkMesh( world, chunk );
     chunk->flags &= ~Chunk_Redraw;
   }

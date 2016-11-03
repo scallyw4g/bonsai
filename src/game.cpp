@@ -113,7 +113,7 @@ GenerateVoxels( Chunk *chunk, PerlinNoise* Noise)
     double InY = (double)chunk->Voxels[i].y/(double)chunk->Dim.y;
     double InZ = (double)chunk->Voxels[i].z/(double)chunk->Dim.z;
 
-#if 0
+#if 1
     double l = Noise->noise(InX, InY, InZ);
     chunk->Voxels[i].w = (float)floor(l + 0.5);
 #else
@@ -629,6 +629,7 @@ InitializeWorld( World *world )
       for ( int z = 0; z < world->VisibleRegion.z; ++ z )
       {
         world->Chunks[ChunksAllocated] = AllocateChunk( world->ChunkDim, Voxel_Position(x,y,z) );
+        world->Chunks[ChunksAllocated].flags |= Chunk_World;
         ++ ChunksAllocated;
       }
     }
@@ -676,6 +677,7 @@ main( void )
 
   Entity Player = {};
   Player.Model = AllocateChunk( Chunk_Dimension(1,1,1), Voxel_Position(0,0,0) );
+  Player.Model.flags |= Chunk_Entity;
   SpawnPlayer( &world, &Player );
 
 

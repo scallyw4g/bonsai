@@ -609,7 +609,10 @@ struct VertexBlock
 };
 
 enum ChunkFlags {
-  Chunk_Redraw = 1 << 0
+  Chunk_Redraw = 1 << 0,
+
+  Chunk_Entity = 1 << 1,
+  Chunk_World  = 1 << 2
 };
 
 struct Chunk
