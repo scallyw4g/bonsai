@@ -18,35 +18,6 @@ GLFWwindow* window;
 
 // #include <common/controls.hpp>
 
-#define Print(Pos) \
-  Print_P( Pos, #Pos )
-
-inline void
-Print_P( canonical_position P, const char* name)
-{
-  printf("%s\n", name);
-  printf("Offset: %f %f %f \n", P.Offset.x, P.Offset.y, P.Offset.z );
-  printf("WorldP: %d %d %d \n", P.WorldP.x, P.WorldP.y, P.WorldP.z );
-}
-
-inline void
-Print_P( voxel_position P, const char* name)
-{
-  printf(" %s %d %d %d \n", name, P.x, P.y, P.z );
-}
-
-inline void
-Print_P( v3 P, const char* name)
-{
-  printf(" %s %f %f %f \n", name, P.x, P.y, P.z );
-}
-
-inline void
-Print_P( glm::vec3 P, const char* name)
-{
-  printf(" %s %f %f %f \n", name, P.x, P.y, P.z );
-}
-
 void
 initWindow( int width, int height )
 {
@@ -228,107 +199,6 @@ RealToVoxelP( v3 RealP )
   Result.y = (int)RealP.y;
   Result.z = (int)RealP.z;
 
-  return Result;
-}
-
-inline bool
-IsFilled( Chunk *chunk, voxel_position VoxelP )
-{
-  bool isFilled = true;
-
-  if (chunk)
-  {
-    if ( VoxelP.x < chunk->Dim.x &&
-         VoxelP.y < chunk->Dim.y &&
-         VoxelP.z < chunk->Dim.z )
-    {
-      int i = VoxelP.x +
-        (VoxelP.y*chunk->Dim.x) +
-        (VoxelP.z*chunk->Dim.x*chunk->Dim.y);
-
-      isFilled = (chunk->Voxels[i].w == 1);
-    }
-  }
-
-  return isFilled;
-}
-
-Chunk*
-GetWorldChunk( World *world, world_position WorldP )
-{
-  Chunk *Result;
-
-  if (
-    WorldP.x < 0 ||
-    WorldP.x >= world->VisibleRegion.x ||
-
-    WorldP.y < 0 ||
-    WorldP.y >= world->VisibleRegion.y ||
-
-    WorldP.z < 0 ||
-    WorldP.z >= world->VisibleRegion.z )
-  {
-    printf("edge of world \n");
-    return nullptr;
-  }
-
-  int i =
-    WorldP.x +
-    (WorldP.y * world->VisibleRegion.x) +
-    (WorldP.z * world->VisibleRegion.x * world->VisibleRegion.y);
-
-  Result = &world->Chunks[i];
-
-  return Result;
-}
-
-canonical_position
-Canonicalize( World *world, v3 Offset, world_position WorldP )
-{
-  canonical_position Result;
-
-  Result.Offset = Offset;
-  Result.WorldP = WorldP;
-
-  if ( Result.Offset.x >= world->ChunkDim.x )
-  {
-    Result.Offset.x -= world->ChunkDim.x;
-    Result.WorldP.x ++;
-  }
-  if ( Result.Offset.y >= world->ChunkDim.y )
-  {
-    Result.Offset.y -= world->ChunkDim.y;
-    Result.WorldP.y ++;
-  }
-  if ( Result.Offset.z >= world->ChunkDim.z )
-  {
-    Result.Offset.z -= world->ChunkDim.z;
-    Result.WorldP.z ++;
-  }
-
-  if ( Result.Offset.x < 0 )
-  {
-    Result.Offset.x += world->ChunkDim.x;
-    Result.WorldP.x --;
-  }
-  if ( Result.Offset.y < 0 )
-  {
-    Result.Offset.y += world->ChunkDim.y;
-    Result.WorldP.y --;
-  }
-  if ( Result.Offset.z < 0 )
-  {
-    Result.Offset.z += world->ChunkDim.z;
-    Result.WorldP.z --;
-  }
-
-  return Result;
-}
-
-inline canonical_position
-Canonicalize( World *world, canonical_position CP )
-{
-  canonical_position Result = Canonicalize( world, CP.Offset, CP.WorldP );
   return Result;
 }
 
@@ -763,6 +633,7 @@ InitializeWorld( World *world )
       for ( int z = 0; z < world->VisibleRegion.z; ++ z )
       {
         world->Chunks[ChunksAllocated] = AllocateChunk( world->ChunkDim, Voxel_Position(x,y,z) );
+        Print(world->Chunks[ChunksAllocated].WorldP);
         ++ ChunksAllocated;
       }
     }

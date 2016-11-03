@@ -22,22 +22,6 @@ using namespace glm;
       ArrayCount(localVertexData), \
       chunkVertCount)
 
-bool IsFilled( v4* VoxelBuffer, int chunkVol, int chunkWidth, int chunkHeight, int idx )
-{
-  bool isFilled = false;
-
-  // negattive values here are totally valid to check
-  if ( idx < 0 ) return isFilled;
-  if ( idx > chunkVol ) return isFilled;
-
-  if ( VoxelBuffer[idx].w == 1 )
-  {
-    isFilled = true;
-  }
-
-  return isFilled;
-}
-
 void BufferFace (
     VertexBlock *worldVertexData,
     VertexBlock *worldColorData,
@@ -277,7 +261,6 @@ bool IsBottomChunkBoundary( chunk_dimension ChunkDim, int idx )
   return (idx/(int)ChunkDim.x) % (int)ChunkDim.y == 0;
 }
 
-#define GetVoxelP()  VoxelBuffer[i].xyz + chunk->Offset + (chunk->WorldP * world->ChunkDim);
 void BuildChunkMesh(World *world, Chunk *chunk)
 {
   int chunkVertCount = 0;
@@ -292,85 +275,91 @@ void BuildChunkMesh(World *world, Chunk *chunk)
 
   v4 *VoxelBuffer = chunk->Voxels;
 
-  for ( int i = 0; i < numVoxels; ++i )
+  Print(chunk->WorldP);
+
+  for ( int x = 0; x < chunk->Dim.x; ++x )
   {
-    if ( VoxelBuffer[i].w == 1 )
+    for ( int y = 0; y < chunk->Dim.y; ++y )
     {
-      int nextIdx  = i+1;
-      int prevIdx  = i-1;
-      int botIdx   = i-CHUNK_WIDTH;
-      int topIdx   = i+CHUNK_WIDTH;
-      int backIdx  = i + (CHUNK_WIDTH*CHUNK_HEIGHT);
-      int frontIdx = i - (CHUNK_WIDTH*CHUNK_HEIGHT);
-
-      if ( ! IsFilled(VoxelBuffer, CHUNK_VOL, CHUNK_WIDTH, CHUNK_HEIGHT, nextIdx) ||
-           IsRightChunkBoundary(chunk->Dim, i) )
+      for ( int z = 0; z < chunk->Dim.z; ++z )
       {
-        v3 VoxelP = GetVoxelP();
-        BufferRightFace(
-          VoxelP,
-          &chunk->VertexData,
-          &chunk->ColorData,
-          &chunkVertCount
-        );
-      }
+        canonical_position VoxelP = Canonical_Position( V3(x,y,z), chunk->WorldP);
 
-      if ( ! IsFilled(VoxelBuffer, CHUNK_VOL, CHUNK_WIDTH, CHUNK_HEIGHT, prevIdx) ||
-           IsLeftChunkBoundary(chunk->Dim, i) )
-      {
-        v3 VoxelP = GetVoxelP();
-        BufferLeftFace(
-          VoxelP,
-          &chunk->VertexData,
-          &chunk->ColorData,
-          &chunkVertCount
-        );
-      }
+        canonical_position nextVoxel  = Canonicalize( world, VoxelP + V3(1.0f,0,0) );
+        canonical_position prevVoxel  = Canonicalize( world, VoxelP - V3(1.0f,0,0) );
 
-      if ( ! IsFilled(VoxelBuffer, CHUNK_VOL, CHUNK_WIDTH, CHUNK_HEIGHT, botIdx) ||
-           IsBottomChunkBoundary(chunk->Dim, i) )
-      {
-        v3 VoxelP = GetVoxelP();
-        BufferBottomFace(
-          VoxelP,
-          &chunk->VertexData,
-          &chunk->ColorData,
-          &chunkVertCount
-        );
-      }
+        canonical_position topVoxel   = Canonicalize( world, VoxelP + V3(0,1.0f,0) );
+        canonical_position botVoxel   = Canonicalize( world, VoxelP - V3(0,1.0f,0) );
 
-      if ( ! IsFilled(VoxelBuffer, CHUNK_VOL, CHUNK_WIDTH, CHUNK_HEIGHT, topIdx) ||
-           IsTopChunkBoundary(chunk->Dim, i) )
-      {
-        v3 VoxelP = GetVoxelP();
-        BufferTopFace(
-          VoxelP,
-          &chunk->VertexData,
-          &chunk->ColorData,
-          &chunkVertCount
-        );
-      }
+        canonical_position frontVoxel = Canonicalize( world, VoxelP + V3(0,0,1.0f) );
+        canonical_position backVoxel  = Canonicalize( world, VoxelP - V3(0,0,1.0f) );
 
-      if ( ! IsFilled(VoxelBuffer, CHUNK_VOL, CHUNK_WIDTH, CHUNK_HEIGHT, backIdx) )
-      {
-        v3 VoxelP = GetVoxelP();
-        BufferFrontFace(
-          VoxelP,
-          &chunk->VertexData,
-          &chunk->ColorData,
-          &chunkVertCount
-        );
-      }
+        if ( IsFilled(world, chunk, VoxelP) )
+        {
+          v3 WorldOffset = VoxelP.Offset + (world->ChunkDim * VoxelP.WorldP);
+          Print(VoxelP);
+          Print(WorldOffset);
 
-      if ( ! IsFilled(VoxelBuffer, CHUNK_VOL, CHUNK_WIDTH, CHUNK_HEIGHT, frontIdx) )
-      {
-        v3 VoxelP = GetVoxelP();
-        BufferBackFace(
-          VoxelP,
-          &chunk->VertexData,
-          &chunk->ColorData,
-          &chunkVertCount
-        );
+          if ( ! IsFilled( world, chunk, nextVoxel ) )
+          {
+            BufferRightFace(
+              WorldOffset,
+              &chunk->VertexData,
+              &chunk->ColorData,
+              &chunkVertCount
+            );
+          }
+
+          if ( ! IsFilled( world, chunk, prevVoxel) )
+          {
+            BufferLeftFace(
+              WorldOffset,
+              &chunk->VertexData,
+              &chunk->ColorData,
+              &chunkVertCount
+            );
+          }
+
+          if ( ! IsFilled( world, chunk, botVoxel ) )
+          {
+            BufferBottomFace(
+              WorldOffset,
+              &chunk->VertexData,
+              &chunk->ColorData,
+              &chunkVertCount
+            );
+          }
+
+          if ( ! IsFilled( world, chunk, topVoxel ) )
+          {
+            BufferTopFace(
+              WorldOffset,
+              &chunk->VertexData,
+              &chunk->ColorData,
+              &chunkVertCount
+            );
+          }
+
+          if ( ! IsFilled( world, chunk, frontVoxel ) )
+          {
+            BufferFrontFace(
+              WorldOffset,
+              &chunk->VertexData,
+              &chunk->ColorData,
+              &chunkVertCount
+            );
+          }
+
+          if ( ! IsFilled( world, chunk, backVoxel ) )
+          {
+            BufferBackFace(
+              WorldOffset,
+              &chunk->VertexData,
+              &chunk->ColorData,
+              &chunkVertCount
+            );
+          }
+        }
       }
     }
   }

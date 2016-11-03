@@ -8,9 +8,11 @@ int clamp0(int i)
   return i;
 }
 
-int floor(float f)
+float Floor(float f)
 {
-  int Result = (int)(f);
+  float Result;
+  int i =  (int)(f);
+  Result = (float)i;
   return Result;
 }
 

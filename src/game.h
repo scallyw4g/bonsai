@@ -319,6 +319,30 @@ operator*(float f, v2 P)
   P.y *= f;
 }
 
+inline canonical_position
+operator-(canonical_position A, v3 B)
+{
+  canonical_position Result = A;
+
+  Result.Offset.x = A.Offset.x - B.x;
+  Result.Offset.y = A.Offset.y - B.y;
+  Result.Offset.z = A.Offset.z - B.z;
+
+  return Result;
+}
+
+inline canonical_position
+operator+(canonical_position A, v3 B)
+{
+  canonical_position Result = A;
+
+  Result.Offset.x = A.Offset.x + B.x;
+  Result.Offset.y = A.Offset.y + B.y;
+  Result.Offset.z = A.Offset.z + B.z;
+
+  return Result;
+}
+
 inline v3
 operator+(v3 A, voxel_position B)
 {
@@ -478,6 +502,37 @@ glm::vec3 V3( v3 Vec )
   return Result;
 }
 
+#define Print(Pos) \
+  Print_P( Pos, #Pos )
+
+inline void
+Print_P( canonical_position P, const char* name)
+{
+  printf("%s\n", name);
+  printf("Offset: %f %f %f \n", P.Offset.x, P.Offset.y, P.Offset.z );
+  printf("WorldP: %d %d %d \n", P.WorldP.x, P.WorldP.y, P.WorldP.z );
+}
+
+inline void
+Print_P( voxel_position P, const char* name)
+{
+  printf(" %s %d %d %d \n", name, P.x, P.y, P.z );
+}
+
+inline void
+Print_P( v3 P, const char* name)
+{
+  printf(" %s %f %f %f \n", name, P.x, P.y, P.z );
+}
+
+inline void
+Print_P( glm::vec3 P, const char* name)
+{
+  printf(" %s %f %f %f \n", name, P.x, P.y, P.z );
+}
+
+
+
 inline float
 LengthSq( v3 Vec )
 {
@@ -594,5 +649,127 @@ struct collision_event
   canonical_position CP;
   bool didCollide;
 };
+
+Chunk*
+GetWorldChunk( World *world, world_position WorldP )
+{
+  Chunk *Result;
+
+  if (
+    WorldP.x < 0 ||
+    WorldP.x >= world->VisibleRegion.x ||
+
+    WorldP.y < 0 ||
+    WorldP.y >= world->VisibleRegion.y ||
+
+    WorldP.z < 0 ||
+    WorldP.z >= world->VisibleRegion.z )
+  {
+    return nullptr;
+  }
+
+  int i =
+    WorldP.x +
+    (WorldP.y * world->VisibleRegion.x) +
+    (WorldP.z * world->VisibleRegion.x * world->VisibleRegion.y);
+
+  Result = &world->Chunks[i];
+
+  return Result;
+}
+
+inline bool
+IsFilled( Chunk *chunk, voxel_position VoxelP )
+{
+  bool isFilled = true;
+
+  if (chunk)
+  {
+    if ( VoxelP.x < chunk->Dim.x &&
+         VoxelP.y < chunk->Dim.y &&
+         VoxelP.z < chunk->Dim.z )
+    {
+      int i = VoxelP.x +
+        (VoxelP.y*chunk->Dim.x) +
+        (VoxelP.z*chunk->Dim.x*chunk->Dim.y);
+
+      isFilled = (chunk->Voxels[i].w == 1);
+    }
+  }
+
+  return isFilled;
+}
+
+inline bool
+IsFilled( World *world, Chunk *chunk, canonical_position VoxelP )
+{
+  bool isFilled = true;
+
+  if ( chunk )
+  {
+    Chunk *localChunk = chunk;
+
+    if ( chunk->WorldP != VoxelP.WorldP )
+    {
+      localChunk = GetWorldChunk(world, VoxelP.WorldP);
+    }
+
+    isFilled = IsFilled( localChunk, Voxel_Position(VoxelP.Offset) );
+  }
+
+  return isFilled;
+
+}
+
+canonical_position
+Canonicalize( World *world, v3 Offset, world_position WorldP )
+{
+  canonical_position Result;
+
+  Result.Offset = Offset;
+  Result.WorldP = WorldP;
+
+  if ( Result.Offset.x >= world->ChunkDim.x )
+  {
+    Result.Offset.x -= world->ChunkDim.x;
+    Result.WorldP.x ++;
+  }
+  if ( Result.Offset.y >= world->ChunkDim.y )
+  {
+    Result.Offset.y -= world->ChunkDim.y;
+    Result.WorldP.y ++;
+  }
+  if ( Result.Offset.z >= world->ChunkDim.z )
+  {
+    Result.Offset.z -= world->ChunkDim.z;
+    Result.WorldP.z ++;
+  }
+
+  if ( Result.Offset.x < 0 )
+  {
+    Result.Offset.x += world->ChunkDim.x;
+    Result.WorldP.x --;
+  }
+  if ( Result.Offset.y < 0 )
+  {
+    Result.Offset.y += world->ChunkDim.y;
+    Result.WorldP.y --;
+  }
+  if ( Result.Offset.z < 0 )
+  {
+    Result.Offset.z += world->ChunkDim.z;
+    Result.WorldP.z --;
+  }
+
+  return Result;
+}
+
+inline canonical_position
+Canonicalize( World *world, canonical_position CP )
+{
+  canonical_position Result = Canonicalize( world, CP.Offset, CP.WorldP );
+  return Result;
+}
+
 
 #endif
