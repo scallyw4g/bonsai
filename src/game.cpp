@@ -99,7 +99,7 @@ Logging(v3 CameraP, v3 PlayerP, glm::vec3 LookAt, double *lastFrameTime, int *nu
 }
 
 void
-GenerateVoxels( Chunk *chunk, PerlinNoise* Noise)
+GenerateVoxels( World *world, Chunk *chunk, PerlinNoise* Noise)
 {
   chunk->flags |= Chunk_Redraw;
 
@@ -109,9 +109,13 @@ GenerateVoxels( Chunk *chunk, PerlinNoise* Noise)
     chunk->Voxels[i].y = (i/chunk->Dim.x) % chunk->Dim.y;
     chunk->Voxels[i].z = i/(chunk->Dim.x*chunk->Dim.y);
 
-    double InX = (double)chunk->Voxels[i].x/(double)chunk->Dim.x;
-    double InY = (double)chunk->Voxels[i].y/(double)chunk->Dim.y;
-    double InZ = (double)chunk->Voxels[i].z/(double)chunk->Dim.z;
+    v3 NoiseInputs = (chunk->Voxels[i].xyz + (chunk->WorldP * world->ChunkDim)) / (world->ChunkDim * world->VisibleRegion);
+
+    double InX = (double)NoiseInputs.x;
+    double InY = (double)NoiseInputs.y;
+    double InZ = (double)NoiseInputs.z;
+
+    printf("%f %f %f\n", InX, InY, InZ);
 
 #if 1
     double l = Noise->noise(InX, InY, InZ);
@@ -243,6 +247,7 @@ GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
         world_position TestWorldP = TestP.WorldP;
 
         canonical_position LoopTestP = Canonicalize( world, V3(x,y,z), TestP.WorldP );
+        Print(LoopTestP);
 
         Chunk *chunk = GetWorldChunk( world, LoopTestP.WorldP );
 
@@ -478,6 +483,8 @@ UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
 
   model->Offset = FinalP.Offset;
   model->WorldP = FinalP.WorldP;
+  Print(model->Offset);
+  Print(model->WorldP);
 }
 
 void
@@ -488,7 +495,7 @@ GenerateWorld( World *world )
 
   for ( int i = 0; i < Volume(world->VisibleRegion); ++ i )
   {
-    GenerateVoxels( &world->Chunks[i], &Noise );
+    GenerateVoxels( world, &world->Chunks[i], &Noise );
   }
 }
 
@@ -615,7 +622,7 @@ void
 InitializeWorld( World *world )
 {
   world->ChunkDim = Chunk_Dimension( CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH );
-  world->VisibleRegion = Chunk_Dimension(1,3,1);
+  world->VisibleRegion = Chunk_Dimension(3,3,3);
   world->Gravity = V3(0, -9.8, 0);
 
   world->Chunks = (Chunk*)malloc( sizeof(Chunk)*Volume(world->VisibleRegion) );
