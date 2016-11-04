@@ -668,6 +668,8 @@ struct collision_event
   bool didCollide;
 };
 
+
+
 Chunk*
 GetWorldChunk( World *world, world_position WorldP )
 {

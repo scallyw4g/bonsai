@@ -103,34 +103,53 @@ GenerateVoxels( World *world, Chunk *chunk, PerlinNoise* Noise)
 {
   chunk->flags |= Chunk_Redraw;
 
-  for ( int i = 0; i < Volume(chunk->Dim); ++i )
+  for ( int x = 0; x < chunk->Dim.x; ++ x)
   {
-    chunk->Voxels[i].x = i%chunk->Dim.x;
-    chunk->Voxels[i].y = (i/chunk->Dim.x) % chunk->Dim.y;
-    chunk->Voxels[i].z = i/(chunk->Dim.x*chunk->Dim.y);
+    for ( int y = 0; y < chunk->Dim.y; ++ y)
+    {
+      for ( int z = 0; z < chunk->Dim.z; ++ z)
+      {
+        int i =
+          (x) +
+          (y*chunk->Dim.x) +
+          (z*chunk->Dim.x*chunk->Dim.y);
 
-    v3 NoiseInputs = (chunk->Voxels[i].xyz + (chunk->WorldP * world->ChunkDim)) / (world->ChunkDim * world->VisibleRegion);
+        chunk->Voxels[i].x = x;
+        chunk->Voxels[i].y = y;
+        chunk->Voxels[i].z = z;
 
-    double InX = (double)NoiseInputs.x;
-    double InY = (double)NoiseInputs.y;
-    double InZ = (double)NoiseInputs.z;
+        v3 NoiseInputs = (chunk->Voxels[i].xyz + (chunk->WorldP * world->ChunkDim)) / (world->ChunkDim * world->VisibleRegion);
 
-    printf("%f %f %f\n", InX, InY, InZ);
+        double InX = (double)NoiseInputs.x;
+        double InY = (double)NoiseInputs.y;
+        double InZ = (double)NoiseInputs.z;
+
+        /* printf("%f %f %f\n", InX, InY, InZ); */
 
 #if 1
-    double l = Noise->noise(InX, InY, InZ);
-    chunk->Voxels[i].w = (float)floor(l + 0.5);
+        double l = Noise->noise(InX, InY, InZ);
+        chunk->Voxels[i].w = (float)floor(l + 0.5);
 #else
-    if ( ( chunk->Voxels[i].x == 0 && chunk->Voxels[i].y == 0 ) ||
-         ( chunk->Voxels[i].y == 0 && chunk->Voxels[i].z == 0 ) ||
-         ( chunk->Voxels[i].x == 0 && chunk->Voxels[i].z == 0 ) )
-    {
-      chunk->Voxels[i].w = 1;
-    }
+        if (
+             ( chunk->Voxels[i].x == 0 && chunk->Voxels[i].y == 0 ) ||
+             ( chunk->Voxels[i].y == 0 && chunk->Voxels[i].z == 0 ) ||
+             ( chunk->Voxels[i].x == 0 && chunk->Voxels[i].z == 0 ) ||
+
+             ( chunk->WorldP.x == 1 && chunk->Voxels[i].x == 5 && chunk->Voxels[i].z == 5 )
+
+             )
+        {
+          chunk->Voxels[i].w = 1;
+          printf("%d %d %d\n", x, y, z);
+          printf("%d\n", i );
+        }
 
 #endif
 
-    /* chunk->Voxels[i].w = 1; */
+        /* chunk->Voxels[i].w = 1; */
+
+      }
+    }
   }
 
   return;
@@ -218,24 +237,24 @@ GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
   v3 ModelHalfDim = ModelDim * 0.5f;
 
   v3 MinP = TestP.Offset;
-  v3 MaxP = (TestP.Offset + ModelHalfDim + 0.5f);
+  v3 MaxP = (TestP.Offset + ModelHalfDim + 0.5f) - 0.000001f;
 
   // We need to check if the TestP is exactly on a voxel boundary.
   // if it is, don't include the next voxel in our detection.
-  if ( TestP.Offset.x == Floor(TestP.Offset.x) )
-  {
-    MaxP.x -= 1.0f;
-  }
+  /* if ( TestP.Offset.x == Floor(TestP.Offset.x) ) */
+  /* { */
+  /*   MaxP.x -= 1.0f; */
+  /* } */
 
-  if ( TestP.Offset.y == Floor(TestP.Offset.y) )
-  {
-    MaxP.y -= 1.0f;
-  }
+  /* if ( TestP.Offset.y == Floor(TestP.Offset.y) ) */
+  /* { */
+  /*   MaxP.y -= 1.0f; */
+  /* } */
 
-  if ( TestP.Offset.z == Floor(TestP.Offset.z) )
-  {
-    MaxP.z -= 1.0f;
-  }
+  /* if ( TestP.Offset.z == Floor(TestP.Offset.z) ) */
+  /* { */
+  /*   MaxP.z -= 1.0f; */
+  /* } */
 
   for ( int x = MinP.x; x <= MaxP.x; x++ )
   {
@@ -247,11 +266,10 @@ GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
         world_position TestWorldP = TestP.WorldP;
 
         canonical_position LoopTestP = Canonicalize( world, V3(x,y,z), TestP.WorldP );
-        Print(LoopTestP);
 
         Chunk *chunk = GetWorldChunk( world, LoopTestP.WorldP );
 
-        if ( IsFilled(world, chunk, LoopTestP ) )
+        if ( IsFilled(chunk, Voxel_Position(LoopTestP.Offset) ) )
         {
           Collision.CP.Offset = V3(TestVoxelP);
           Collision.CP.WorldP = TestWorldP;
@@ -483,8 +501,6 @@ UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
 
   model->Offset = FinalP.Offset;
   model->WorldP = FinalP.WorldP;
-  Print(model->Offset);
-  Print(model->WorldP);
 }
 
 void
@@ -493,9 +509,16 @@ GenerateWorld( World *world )
   srand(time(NULL));
   PerlinNoise Noise(rand());
 
-  for ( int i = 0; i < Volume(world->VisibleRegion); ++ i )
+  for ( int x = 0; x < world->VisibleRegion.x; ++ x )
   {
-    GenerateVoxels( world, &world->Chunks[i], &Noise );
+    for ( int y = 0; y < world->VisibleRegion.y; ++ y )
+    {
+      for ( int z = 0; z < world->VisibleRegion.z; ++ z )
+      {
+        Chunk *chunk = GetWorldChunk(world, World_Position(x,y,z) );
+        GenerateVoxels( world, chunk, &Noise );
+      }
+    }
   }
 }
 
@@ -622,12 +645,10 @@ void
 InitializeWorld( World *world )
 {
   world->ChunkDim = Chunk_Dimension( CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH );
-  world->VisibleRegion = Chunk_Dimension(3,3,3);
+  world->VisibleRegion = Chunk_Dimension(2,3,2);
   world->Gravity = V3(0, -9.8, 0);
 
   world->Chunks = (Chunk*)malloc( sizeof(Chunk)*Volume(world->VisibleRegion) );
-
-  int ChunksAllocated = 0;
 
   for ( int x = 0; x < world->VisibleRegion.x; ++ x )
   {
@@ -635,9 +656,12 @@ InitializeWorld( World *world )
     {
       for ( int z = 0; z < world->VisibleRegion.z; ++ z )
       {
-        world->Chunks[ChunksAllocated] = AllocateChunk( world->ChunkDim, Voxel_Position(x,y,z) );
+        int ChunksAllocated = x +
+          (y*world->VisibleRegion.x) +
+          (z*world->VisibleRegion.x*world->VisibleRegion.y);
+
+        world->Chunks[ChunksAllocated] = AllocateChunk( world->ChunkDim, World_Position(x,y,z) );
         world->Chunks[ChunksAllocated].flags |= Chunk_World;
-        ++ ChunksAllocated;
       }
     }
   }
@@ -683,7 +707,7 @@ main( void )
   InitializeWorld(&world);
 
   Entity Player = {};
-  Player.Model = AllocateChunk( Chunk_Dimension(1,1,1), Voxel_Position(0,0,0) );
+  Player.Model = AllocateChunk( Chunk_Dimension(1,1,1), World_Position(0,0,0) );
   Player.Model.flags |= Chunk_Entity;
   SpawnPlayer( &world, &Player );
 

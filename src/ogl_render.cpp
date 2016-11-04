@@ -281,7 +281,11 @@ void BuildChunkMesh(World *world, Chunk *chunk)
     {
       for ( int z = 0; z < chunk->Dim.z; ++z )
       {
-        canonical_position VoxelP = Canonicalize(world, Canonical_Position( V3(x,y,z) + chunk->Offset, chunk->WorldP));
+        canonical_position VoxelP = Canonicalize(world,
+            Canonical_Position(
+              V3(x,y,z) + chunk->Offset,
+              chunk->WorldP)
+            );
 
         canonical_position nextVoxel  = Canonicalize( world, VoxelP + V3(1.0f,0,0) );
         canonical_position prevVoxel  = Canonicalize( world, VoxelP - V3(1.0f,0,0) );
