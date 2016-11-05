@@ -741,6 +741,8 @@ IsFilled( World *world, Chunk *chunk, canonical_position VoxelP )
 
 }
 
+// NOTE : The maximum bound is non-inclusive; 0 is part of the chunk
+// while the furthest point in x,y or z is the next chunk
 canonical_position
 Canonicalize( World *world, v3 Offset, world_position WorldP )
 {
@@ -749,33 +751,33 @@ Canonicalize( World *world, v3 Offset, world_position WorldP )
   Result.Offset = Offset;
   Result.WorldP = WorldP;
 
-  if ( Result.Offset.x >= world->ChunkDim.x )
+  if ( Offset.x >= world->ChunkDim.x )
   {
     Result.Offset.x -= world->ChunkDim.x;
     Result.WorldP.x ++;
   }
-  if ( Result.Offset.y >= world->ChunkDim.y )
+  if ( Offset.y >= world->ChunkDim.y )
   {
     Result.Offset.y -= world->ChunkDim.y;
     Result.WorldP.y ++;
   }
-  if ( Result.Offset.z >= world->ChunkDim.z )
+  if ( Offset.z >= world->ChunkDim.z )
   {
     Result.Offset.z -= world->ChunkDim.z;
     Result.WorldP.z ++;
   }
 
-  if ( Result.Offset.x < 0 )
+  if ( Offset.x < 0 )
   {
     Result.Offset.x += world->ChunkDim.x;
     Result.WorldP.x --;
   }
-  if ( Result.Offset.y < 0 )
+  if ( Offset.y < 0 )
   {
     Result.Offset.y += world->ChunkDim.y;
     Result.WorldP.y --;
   }
-  if ( Result.Offset.z < 0 )
+  if ( Offset.z < 0 )
   {
     Result.Offset.z += world->ChunkDim.z;
     Result.WorldP.z --;
