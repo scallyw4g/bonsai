@@ -99,7 +99,7 @@ Logging(v3 CameraP, v3 PlayerP, glm::vec3 LookAt, double *lastFrameTime, int *nu
 }
 
 void
-GenerateVoxels( World *world, Chunk *chunk, PerlinNoise* Noise)
+GenerateVoxels( World *world, Chunk *chunk )
 {
   chunk->flags |= Chunk_Redraw;
 
@@ -118,14 +118,17 @@ GenerateVoxels( World *world, Chunk *chunk, PerlinNoise* Noise)
         chunk->Voxels[i].y = y;
         chunk->Voxels[i].z = z;
 
-        v3 NoiseInputs = (chunk->Voxels[i].xyz + (chunk->WorldP * world->ChunkDim)) / (world->ChunkDim * world->VisibleRegion);
+        v3 NoiseInputs =
+          ( ( (chunk->Voxels[i].xyz) + (world->ChunkDim*(chunk->WorldP+world->VisibleRegionOrigin))) % WORLD_SIZE )
+          /
+          WORLD_SIZE;
 
         double InX = (double)NoiseInputs.x;
         double InY = (double)NoiseInputs.y;
         double InZ = (double)NoiseInputs.z;
 
-#if 0
-        double l = Noise->noise(InX, InY, InZ);
+#if PERLIN_NOISE_GENERATION
+        double l = world->Noise.noise(InX, InY, InZ);
         chunk->Voxels[i].w = (float)floor(l + 0.5);
 #else
         if (
@@ -283,6 +286,15 @@ end:
   return Collision;
 }
 
+inline bool
+IsGrounded( World *world, Entity *entity)
+{
+  v3 groundTolerance = V3(0, 0.01f, 0);
+  canonical_position TestP = Canonicalize(world, entity->Model.Offset - groundTolerance, entity->Model.WorldP);
+  collision_event c = GetCollision(world, TestP, entity->Model.Dim );
+  return c.didCollide;
+}
+
 void
 SpawnPlayer( World *world, Entity *Player )
 {
@@ -308,11 +320,7 @@ SpawnPlayer( World *world, Entity *Player )
 
     v3 Offset = V3( rX, rY, rZ );
 
-    rX = rand() % (world->VisibleRegion.x);
-    rY = rand() % (world->VisibleRegion.y);
-    rZ = rand() % (world->VisibleRegion.z);
-
-    world_position WP = World_Position( rX, rY, rZ );
+    world_position WP = World_Position(world->VisibleRegion.x/2, world->VisibleRegion.y/2, world->VisibleRegion.z/2);
 
     TestP = Canonicalize(world, Offset, WP);
 
@@ -360,6 +368,22 @@ GetAtomicUpdateVector( v3 Gross, float length )
   }
 
   return Result;
+}
+
+void
+GenerateWorld( World *world )
+{
+  for ( int x = 0; x < world->VisibleRegion.x; ++ x )
+  {
+    for ( int y = 0; y < world->VisibleRegion.y; ++ y )
+    {
+      for ( int z = 0; z < world->VisibleRegion.z; ++ z )
+      {
+        Chunk *chunk = GetWorldChunk(world, World_Position(x,y,z) );
+        GenerateVoxels( world, chunk );
+      }
+    }
+  }
 }
 
 void
@@ -465,38 +489,17 @@ UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
   }
 
   // Finished collision detection, recanonicalize and update player p
-
   canonical_position FinalP = Canonicalize( world, LegalPos );
+
+  if ( FinalP.WorldP != Player->Model.WorldP ) // We moved to the next chunk
+  {
+    world->VisibleRegionOrigin -= ( FinalP.WorldP - Player->Model.WorldP );
+    FinalP.WorldP = Player->Model.WorldP;
+    GenerateWorld(world);
+  }
 
   model->Offset = FinalP.Offset;
   model->WorldP = FinalP.WorldP;
-}
-
-void
-GenerateWorld( World *world )
-{
-  srand(time(NULL));
-  PerlinNoise Noise(rand());
-
-  for ( int x = 0; x < world->VisibleRegion.x; ++ x )
-  {
-    for ( int y = 0; y < world->VisibleRegion.y; ++ y )
-    {
-      for ( int z = 0; z < world->VisibleRegion.z; ++ z )
-      {
-        Chunk *chunk = GetWorldChunk(world, World_Position(x,y,z) );
-        GenerateVoxels( world, chunk, &Noise );
-      }
-    }
-  }
-}
-
-bool IsGrounded( World *world, Entity *entity)
-{
-  v3 groundTolerance = V3(0, 0.01f, 0);
-  canonical_position TestP = Canonicalize(world, entity->Model.Offset - groundTolerance, entity->Model.WorldP);
-  collision_event c = GetCollision(world, TestP, entity->Model.Dim );
-  return c.didCollide;
 }
 
 void
@@ -536,7 +539,7 @@ GAME_UPDATE_AND_RENDER
   UpdatePlayerP( world, Player, PlayerDelta );
 
   glm::vec3 PlayerP = V3(Player->Model.Offset) + (Player->Model.WorldP * world->ChunkDim);
-  glm::vec3 CameraP = PlayerP + glm::vec3(0,3,5);
+  glm::vec3 CameraP = PlayerP + glm::vec3(0,10,15);
 
   glm::vec3 up(0, 1, 0);
   glm::vec3 CameraFront = CameraP - PlayerP;
@@ -559,10 +562,15 @@ GAME_UPDATE_AND_RENDER
     numFrames = 0;
   }
 
-
   if ( glfwGetKey(window, GLFW_KEY_ENTER ) == GLFW_PRESS )
   {
     printf("\n\n\n\n\n");
+
+    srand(time(NULL));
+    PerlinNoise Noise(rand());
+    world->Noise = Noise;
+    world->VisibleRegionOrigin = World_Position(0,0,0);
+
     GenerateWorld( world );
     SpawnPlayer( world, Player );
   }
@@ -614,10 +622,16 @@ void
 InitializeWorld( World *world )
 {
   world->ChunkDim = Chunk_Dimension( CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH );
-  world->VisibleRegion = Chunk_Dimension(2,2,2);
+  world->VisibleRegion = Chunk_Dimension(6,6,6);  // Must be > (3,3,3)
   world->Gravity = V3(0, -9.8, 0);
 
+  srand(time(NULL));
+  PerlinNoise Noise(rand());
+  world->Noise = Noise;
+
   world->Chunks = (Chunk*)malloc( sizeof(Chunk)*Volume(world->VisibleRegion) );
+
+  world->VisibleRegionOrigin = World_Position(0,0,0);
 
   for ( int x = 0; x < world->VisibleRegion.x; ++ x )
   {
@@ -680,6 +694,8 @@ main( void )
   Player.Model.flags |= Chunk_Entity;
   SpawnPlayer( &world, &Player );
 
+  srand(time(NULL));
+  PerlinNoise Noise(rand());
 
   double lastTime = glfwGetTime();
 

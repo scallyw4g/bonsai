@@ -1,9 +1,13 @@
 #ifndef GAME_CONSTANTS
 #define GAME_CONSTANTS
 
-#define CHUNK_WIDTH  16
-#define CHUNK_HEIGHT 16
-#define CHUNK_DEPTH  16
+#define CHUNK_WIDTH  8
+#define CHUNK_HEIGHT 8
+#define CHUNK_DEPTH  8
+
+#define PERLIN_NOISE_GENERATION 1
+
+#define WORLD_SIZE 1000
 
 static int numFrames = 0;
 static float accumulatedTime = 0;

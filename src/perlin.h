@@ -1,3 +1,8 @@
+#ifndef PERLIN
+#define PERLIN
+
+#include <vector>
+
 class PerlinNoise {
   // The permutation vector
   std::vector<int> p;
@@ -14,3 +19,5 @@ class PerlinNoise {
   double lerp(double t, double a, double b);
   double grad(int hash, double x, double y, double z);
 };
+
+#endif

@@ -1,6 +1,7 @@
 #ifndef PLAYGROUNDH
 #define PLAYGROUNDH
 
+#include <perlin.h>
 #include <stdio.h>
 
 #define ArrayCount(a) (sizeof(a)/sizeof(a[0]))
@@ -109,6 +110,18 @@ operator*(voxel_position P1, voxel_position const P2)
   return Result;
 }
 
+inline v3
+operator*(v3 P1, voxel_position const P2)
+{
+  v3 Result;
+
+  Result.x = (float)P2.x * P1.x;
+  Result.y = (float)P2.y * P1.y;
+  Result.z = (float)P2.z * P1.z;
+
+  return Result;
+}
+
 inline glm::vec3
 operator+(glm::vec3 Vec, voxel_position Pos)
 {
@@ -133,6 +146,17 @@ operator-(v3 Vec, voxel_position Pos)
   return Result;
 }
 
+inline voxel_position
+operator+(voxel_position P1, int i)
+{
+  voxel_position Result;
+
+  Result.x = P1.x + i;
+  Result.y = P1.y + i;
+  Result.z = P1.z + i;
+
+  return Result;
+}
 inline voxel_position
 operator+(voxel_position P1, voxel_position const P2)
 {
@@ -177,7 +201,6 @@ struct canonical_position
   v3 Offset;
   world_position WorldP;
 };
-
 
 inline canonical_position
 Canonical_Position( v3 Offset, world_position WorldP )
@@ -344,6 +367,18 @@ operator+(canonical_position A, v3 B)
 }
 
 inline v3
+operator%(v3 A, int i)
+{
+  v3 Result;
+
+  Result.x = (int)A.x % i;
+  Result.y = (int)A.y % i;
+  Result.z = (int)A.z % i;
+
+  return Result;
+}
+
+inline v3
 operator+(v3 A, voxel_position B)
 {
   v3 Result;
@@ -351,6 +386,18 @@ operator+(v3 A, voxel_position B)
   Result.x = A.x + B.x;
   Result.y = A.y + B.y;
   Result.z = A.z + B.z;
+
+  return Result;
+}
+
+inline v3
+operator/(v3 A, int B)
+{
+  v3 Result;
+
+  Result.x = A.x / (float)B;
+  Result.y = A.y / (float)B;
+  Result.z = A.z / (float)B;
 
   return Result;
 }
@@ -365,6 +412,26 @@ operator/(v3 A, voxel_position B)
   Result.z = A.z / B.z;
 
   return Result;
+}
+
+inline voxel_position&
+operator-=(voxel_position& A, voxel_position B)
+{
+  A.x -= B.x;
+  A.y -= B.y;
+  A.z -= B.z;
+
+  return(A);
+}
+
+inline voxel_position&
+operator+=(voxel_position& A, voxel_position B)
+{
+  A.x += B.x;
+  A.y += B.y;
+  A.z += B.z;
+
+  return(A);
 }
 
 inline v3
@@ -543,8 +610,6 @@ Print_P( glm::vec3 P, const char* name)
   printf(" %s %f %f %f \n", name, P.x, P.y, P.z );
 }
 
-
-
 inline float
 LengthSq( v3 Vec )
 {
@@ -627,6 +692,11 @@ enum ChunkFlags {
   Chunk_World  = 1 << 2
 };
 
+
+
+
+
+
 struct Chunk
 {
   v4 *Voxels;
@@ -650,7 +720,12 @@ struct World
 
   // This is the number of chunks in xyz we're going to update and render
   chunk_dimension VisibleRegion;
+
   chunk_dimension ChunkDim;
+
+  world_position VisibleRegionOrigin;
+
+  PerlinNoise Noise;
 
   v3 Gravity;
 };
@@ -792,6 +867,5 @@ Canonicalize( World *world, canonical_position CP )
   canonical_position Result = Canonicalize( world, CP.Offset, CP.WorldP );
   return Result;
 }
-
 
 #endif
