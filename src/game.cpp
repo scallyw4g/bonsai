@@ -114,12 +114,11 @@ GenerateVoxels( World *world, Chunk *chunk )
           (y*chunk->Dim.x) +
           (z*chunk->Dim.x*chunk->Dim.y);
 
-        chunk->Voxels[i].x = x;
-        chunk->Voxels[i].y = y;
-        chunk->Voxels[i].z = z;
+        chunk->Voxels[i].Offset = V3(x,y,z);
+        chunk->Voxels[i].flags = 0;
 
         v3 NoiseInputs =
-          ( ( (chunk->Voxels[i].xyz) + (world->ChunkDim*(chunk->WorldP+world->VisibleRegionOrigin))) % WORLD_SIZE )
+          ( ( (chunk->Voxels[i].Offset) + (world->ChunkDim*(chunk->WorldP+world->VisibleRegionOrigin))) % WORLD_SIZE )
           /
           WORLD_SIZE;
 
@@ -129,25 +128,25 @@ GenerateVoxels( World *world, Chunk *chunk )
 
 #if PERLIN_NOISE_GENERATION
         double l = world->Noise.noise(InX, InY, InZ);
-        chunk->Voxels[i].w = (float)floor(l + 0.5);
+        chunk->Voxels[i].flags |= Floori(l + 0.5);
 #else
         if (
-             ( chunk->Voxels[i].x == 0 && chunk->Voxels[i].y == 0 ) ||
-             ( chunk->Voxels[i].y == 0 && chunk->Voxels[i].z == 0 ) ||
-             ( chunk->Voxels[i].x == 0 && chunk->Voxels[i].z == 0 ) ||
+             ( chunk->Voxels[i].Offset.x == 0 && chunk->Voxels[i].Offset.y == 0 ) ||
+             ( chunk->Voxels[i].Offset.y == 0 && chunk->Voxels[i].Offset.z == 0 ) ||
+             ( chunk->Voxels[i].Offset.x == 0 && chunk->Voxels[i].Offset.z == 0 ) ||
 
-             ( chunk->WorldP.x == 1 && chunk->Voxels[i].x == 5 && chunk->Voxels[i].z == 5 ) ||
+             ( chunk->WorldP.x == 1 && chunk->Voxels[i].Offset.x == 5 && chunk->Voxels[i].Offset.z == 5 ) ||
 
-             ( chunk->WorldP.y == 0 && chunk->WorldP.x == 0 && chunk->Voxels[i].y == 6 )
+             ( chunk->WorldP.y == 0 && chunk->WorldP.x == 0 && chunk->Voxels[i].Offset.y == 6 )
 
              )
         {
-          chunk->Voxels[i].w = 1;
+          chunk->Voxels[i].flags |= Voxel_Filled;
         }
 
 #endif
 
-        /* chunk->Voxels[i].w = 1; */
+          /* chunk->Voxels[i].flags |= Voxel_Filled; */
 
       }
     }
@@ -161,7 +160,7 @@ AllocateChunk(chunk_dimension Dim, voxel_position WorldP)
 {
   Chunk Result;
 
-  Result.Voxels = (v4*)malloc(Dim.x*Dim.y*Dim.z*sizeof(v4));
+  Result.Voxels = (Voxel*)malloc(Dim.x*Dim.y*Dim.z*sizeof(Voxel));
   Result.Dim = Dim;
 
   int BufferSize = Dim.x*Dim.y*Dim.z * BYTES_PER_VOXEL;
@@ -242,17 +241,17 @@ GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
 
   // We need to check if the TestP is exactly on a voxel boundary.
   // if it is, don't include the next voxel in our detection.
-  if ( TestP.Offset.x == Floor(TestP.Offset.x) )
+  if ( TestP.Offset.x == Floorf(TestP.Offset.x) )
   {
     MaxP.x -= 1.0f;
   }
 
-  if ( TestP.Offset.y == Floor(TestP.Offset.y) )
+  if ( TestP.Offset.y == Floorf(TestP.Offset.y) )
   {
     MaxP.y -= 1.0f;
   }
 
-  if ( TestP.Offset.z == Floor(TestP.Offset.z) )
+  if ( TestP.Offset.z == Floorf(TestP.Offset.z) )
   {
     MaxP.z -= 1.0f;
   }
@@ -300,11 +299,9 @@ SpawnPlayer( World *world, Entity *Player )
 {
   Chunk *Model = &Player->Model;
 
-  Model->Voxels[0].w = 1;
+  Model->Voxels[0].flags |= 1;
 
-  Model->Voxels[0].x = 0;
-  Model->Voxels[0].y = 0;
-  Model->Voxels[0].z = 0;
+  Model->Voxels[0].Offset= V3(0,0,0);
 
   Player->Acceleration = V3(0,0,0);
   Player->Velocity = V3(0,0,0);
@@ -518,7 +515,7 @@ GAME_UPDATE_AND_RENDER
 {
   // TODO : Bake these into the terrain/model ?
   v3 drag = V3(0.6f, 1.0f, 0.6f);
-  float accelerationMultiplier = 33.0f;
+  float accelerationMultiplier = 13.0f;
 
   Player->Acceleration = GetInputsFromController() * accelerationMultiplier; // m/s2
   Player->Acceleration += world->Gravity;
@@ -529,7 +526,7 @@ GAME_UPDATE_AND_RENDER
   {
     if (glfwGetKey( window, GLFW_KEY_SPACE ) == GLFW_PRESS)
     {
-      Player->Velocity.y += 25.0f;
+      Player->Velocity.y += 7.0f;
     }
   }
 

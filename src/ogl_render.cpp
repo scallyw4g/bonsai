@@ -11,14 +11,15 @@ using namespace glm;
 
 #include <stdio.h>
 
+#include <colors.h>
+
 #define BufferLocalFace \
   BufferFace( \
       worldVertexData, \
       worldColorData, \
       localVertexData, \
       sizeof(localVertexData), \
-      localColorData, \
-      sizeof(localColorData), \
+      FaceColor, \
       ArrayCount(localVertexData), \
       chunkVertCount)
 
@@ -29,8 +30,7 @@ void BufferFace (
     float* VertsPositions,
     int sizeofVertPositions,
 
-    float* VertColors,
-    int sizeofVertColors,
+    const float* VertColors,
 
     int numFaceVerts,
     int *chunkVertCount
@@ -39,19 +39,19 @@ void BufferFace (
   triCount += 2;
 
   worldVertexData->filled += sizeofVertPositions;
-  worldColorData->filled += sizeofVertColors;
+  worldColorData->filled += FACE_COLOR_SIZE;
 
   if ( worldVertexData->filled > worldVertexData->bytesAllocd ||
        worldColorData->filled > worldColorData->bytesAllocd )
   {
     assert(false); // Out of memory
     worldVertexData->filled -= sizeofVertPositions;
-    worldColorData->filled -= sizeofVertColors;
+    worldColorData->filled -= FACE_COLOR_SIZE;
     return;
   }
 
   memcpy( &worldVertexData->Data[*chunkVertCount], VertsPositions, sizeofVertPositions );
-  memcpy( &worldColorData->Data[*chunkVertCount], VertColors, sizeofVertColors );
+  memcpy( &worldColorData->Data[*chunkVertCount], VertColors, FACE_COLOR_SIZE );
   *chunkVertCount += numFaceVerts;
 }
 
@@ -59,6 +59,7 @@ void BufferRightFace(
     v3 worldP,
     VertexBlock *worldVertexData,
     VertexBlock *worldColorData,
+    const float* FaceColor,
     int *chunkVertCount )
 {
   float localVertexData[] =
@@ -72,17 +73,6 @@ void BufferRightFace(
     worldP.x + VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS
   };
 
-  float localColorData[] = // Red
-  {
-    1.0f,  0.0f,  0.0f,
-    1.0f,  0.0f,  0.0f,
-    1.0f,  0.0f,  0.0f,
-
-    1.0f,  0.0f,  0.0f,
-    1.0f,  0.0f,  0.0f,
-    1.0f,  0.0f,  0.0f
-  };
-
   BufferLocalFace;
 }
 
@@ -90,6 +80,7 @@ void BufferLeftFace(
     v3 worldP,
     VertexBlock *worldVertexData,
     VertexBlock *worldColorData,
+    const float* FaceColor,
     int *chunkVertCount )
 {
   float localVertexData[] =
@@ -103,17 +94,6 @@ void BufferLeftFace(
     worldP.x + -VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS
   };
 
-  float localColorData[] = // Yellow
-  {
-    1.0f,  0.0f,  1.0f,
-    1.0f,  0.0f,  1.0f,
-    1.0f,  0.0f,  1.0f,
-
-    1.0f,  0.0f,  1.0f,
-    1.0f,  0.0f,  1.0f,
-    1.0f,  0.0f,  1.0f
-  };
-
   BufferLocalFace;
 }
 
@@ -121,6 +101,7 @@ void BufferBottomFace(
     v3 worldP,
     VertexBlock *worldVertexData,
     VertexBlock *worldColorData,
+    const float* FaceColor,
     int *chunkVertCount)
 {
   float localVertexData[] =
@@ -134,17 +115,6 @@ void BufferBottomFace(
     worldP.x + -VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS
   };
 
-  float localColorData[] = // Teal
-  {
-    0.0f,  1.0f,  1.0f,
-    0.0f,  1.0f,  1.0f,
-    0.0f,  1.0f,  1.0f,
-
-    0.0f,  1.0f,  1.0f,
-    0.0f,  1.0f,  1.0f,
-    0.0f,  1.0f,  1.0f
-  };
-
   BufferLocalFace;
 }
 
@@ -152,6 +122,7 @@ void BufferTopFace(
     v3 worldP,
     VertexBlock *worldVertexData,
     VertexBlock *worldColorData,
+    const float* FaceColor,
     int *chunkVertCount)
 {
   float localVertexData[] =
@@ -165,17 +136,6 @@ void BufferTopFace(
     worldP.x + -VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS
   };
 
-  float localColorData[] = // Green
-  {
-    0.0f,  1.0f,  0.0f,
-    0.0f,  1.0f,  0.0f,
-    0.0f,  1.0f,  0.0f,
-
-    0.0f,  1.0f,  0.0f,
-    0.0f,  1.0f,  0.0f,
-    0.0f,  1.0f,  0.0f
-  };
-
   BufferLocalFace;
 }
 
@@ -183,6 +143,7 @@ void BufferFrontFace(
     v3 worldP,
     VertexBlock *worldVertexData,
     VertexBlock *worldColorData,
+    const float* FaceColor,
     int *chunkVertCount)
 {
   float localVertexData[] =
@@ -196,17 +157,6 @@ void BufferFrontFace(
     worldP.x +  VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS,
   };
 
-  float localColorData[] =  // White
-  {
-    1.0f,  1.0f,  1.0f,
-    1.0f,  1.0f,  1.0f,
-    1.0f,  1.0f,  1.0f,
-
-    1.0f,  1.0f,  1.0f,
-    1.0f,  1.0f,  1.0f,
-    1.0f,  1.0f,  1.0f
-  };
-
   BufferLocalFace;
 }
 
@@ -214,6 +164,7 @@ void BufferBackFace(
     v3 worldP,
     VertexBlock *worldVertexData,
     VertexBlock *worldColorData,
+    const float* FaceColor,
     int *chunkVertCount)
 {
   float localVertexData[] =
@@ -225,17 +176,6 @@ void BufferBackFace(
     worldP.x +  VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
     worldP.x +  VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
     worldP.x + -VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS,
-  };
-
-  float localColorData[] = // Purple
-  {
-    1.0f,  1.0f,  0.0f,
-    1.0f,  1.0f,  0.0f,
-    1.0f,  1.0f,  0.0f,
-
-    1.0f,  1.0f,  0.0f,
-    1.0f,  1.0f,  0.0f,
-    1.0f,  1.0f,  0.0f
   };
 
   BufferLocalFace;
@@ -273,7 +213,7 @@ void BuildChunkMesh(World *world, Chunk *chunk)
   chunk->VertexData.filled = 0;
   chunk->ColorData.filled = 0;
 
-  v4 *VoxelBuffer = chunk->Voxels;
+  Voxel *VoxelBuffer = chunk->Voxels;
 
   for ( int x = 0; x < chunk->Dim.x; ++x )
   {
@@ -281,11 +221,11 @@ void BuildChunkMesh(World *world, Chunk *chunk)
     {
       for ( int z = 0; z < chunk->Dim.z; ++z )
       {
-        canonical_position VoxelP = Canonicalize(world,
-            Canonical_Position(
-              V3(x,y,z) + chunk->Offset,
-              chunk->WorldP)
-            );
+        canonical_position VoxelP = Canonicalize(
+          world,
+          V3(x,y,z) + chunk->Offset,
+          chunk->WorldP
+        );
 
         canonical_position nextVoxel  = Canonicalize( world, VoxelP + V3(1.0f,0,0) );
         canonical_position prevVoxel  = Canonicalize( world, VoxelP - V3(1.0f,0,0) );
@@ -301,13 +241,19 @@ void BuildChunkMesh(World *world, Chunk *chunk)
         {
           v3 WorldOffset = VoxelP.Offset + (VoxelP.WorldP * world->ChunkDim);
 
+          int i = x + (y*chunk->Dim.x) + (z*chunk->Dim.x*chunk->Dim.y);
+
+          // const float* FaceColors = GetColorData( chunk->Voxels[i].flags );
+
           if ( ! IsFilled( world, chunk, nextVoxel ) ||
               chunk->flags & Chunk_Entity)
           {
+            const float* FaceColors = GetColorData( Voxel_Red );
             BufferRightFace(
               WorldOffset,
               &chunk->VertexData,
               &chunk->ColorData,
+              FaceColors,
               &chunkVertCount
             );
           }
@@ -315,10 +261,12 @@ void BuildChunkMesh(World *world, Chunk *chunk)
           if ( ! IsFilled( world, chunk, prevVoxel) ||
               chunk->flags & Chunk_Entity)
           {
+            const float* FaceColors = GetColorData( Voxel_Yellow );
             BufferLeftFace(
               WorldOffset,
               &chunk->VertexData,
               &chunk->ColorData,
+              FaceColors,
               &chunkVertCount
             );
           }
@@ -326,10 +274,12 @@ void BuildChunkMesh(World *world, Chunk *chunk)
           if ( ! IsFilled( world, chunk, botVoxel ) ||
               chunk->flags & Chunk_Entity)
           {
+            const float* FaceColors = GetColorData( Voxel_Teal );
             BufferBottomFace(
               WorldOffset,
               &chunk->VertexData,
               &chunk->ColorData,
+              FaceColors,
               &chunkVertCount
             );
           }
@@ -337,10 +287,12 @@ void BuildChunkMesh(World *world, Chunk *chunk)
           if ( ! IsFilled( world, chunk, topVoxel ) ||
               chunk->flags & Chunk_Entity)
           {
+            const float* FaceColors = GetColorData( Voxel_Green );
             BufferTopFace(
               WorldOffset,
               &chunk->VertexData,
               &chunk->ColorData,
+              FaceColors,
               &chunkVertCount
             );
           }
@@ -348,10 +300,12 @@ void BuildChunkMesh(World *world, Chunk *chunk)
           if ( ! IsFilled( world, chunk, frontVoxel ) ||
               chunk->flags & Chunk_Entity)
           {
+            const float* FaceColors = GetColorData( Voxel_White );
             BufferFrontFace(
               WorldOffset,
               &chunk->VertexData,
               &chunk->ColorData,
+              FaceColors,
               &chunkVertCount
             );
           }
@@ -359,10 +313,12 @@ void BuildChunkMesh(World *world, Chunk *chunk)
           if ( ! IsFilled( world, chunk, backVoxel ) ||
               chunk->flags & Chunk_Entity)
           {
+            const float* FaceColors = GetColorData( Voxel_Purple );
             BufferBackFace(
               WorldOffset,
               &chunk->VertexData,
               &chunk->ColorData,
+              FaceColors,
               &chunkVertCount
             );
           }

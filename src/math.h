@@ -8,7 +8,14 @@ int clamp0(int i)
   return i;
 }
 
-float Floor(float f)
+int Floori(float f)
+{
+  int Result;
+  Result = (int)(f);
+  return Result;
+}
+
+float Floorf(float f)
 {
   float Result;
   int i =  (int)(f);

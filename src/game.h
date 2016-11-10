@@ -693,13 +693,30 @@ enum ChunkFlags {
 };
 
 
+enum VoxelFlags {
+  Voxel_Filled  = 1 << 0,
+
+  Voxel_Yellow  = 1 << 1,
+  Voxel_Red     = 1 << 2,
+  Voxel_Green   = 1 << 3,
+  Voxel_Teal    = 1 << 4,
+  Voxel_White   = 1 << 5,
+  Voxel_Purple  = 1 << 6
+};
 
 
 
+
+
+struct Voxel
+{
+  v3 Offset;
+  int flags;
+};
 
 struct Chunk
 {
-  v4 *Voxels;
+  Voxel *Voxels;
   chunk_dimension Dim;
 
   // Position in absolute world coordinates.  A chunk is one world coordinate
@@ -788,7 +805,7 @@ IsFilled( Chunk *chunk, voxel_position VoxelP )
         (VoxelP.y*chunk->Dim.x) +
         (VoxelP.z*chunk->Dim.x*chunk->Dim.y);
 
-      isFilled = (chunk->Voxels[i].w == 1);
+      isFilled = (chunk->Voxels[i].flags & Voxel_Filled);
     }
   }
 
