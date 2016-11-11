@@ -66,13 +66,6 @@ const float PURPLE[] =
   1.0f,  1.0f,  0.0f
 };
 
-inline bool
-IsSet( int Flags, int Flag )
-{
-  bool Result = ( (Flags & Flag) != 0 );
-  return Result;
-}
-
 const float*
 GetColorData( int VoxelFlags )
 {
