@@ -99,7 +99,7 @@ Logging(v3 CameraP, v3 PlayerP, glm::vec3 LookAt, double *lastFrameTime, int *nu
 }
 
 void
-GenerateVoxels( World *world, Chunk *chunk )
+FillVisibleVoxels( World *world, Chunk *chunk )
 {
   chunk->flags |= Chunk_Redraw;
 
@@ -294,7 +294,7 @@ IsGrounded( World *world, Entity *entity)
   return c.didCollide;
 }
 
-void
+bool
 SpawnPlayer( World *world, Entity *Player )
 {
   Chunk *Model = &Player->Model;
@@ -309,16 +309,22 @@ SpawnPlayer( World *world, Entity *Player )
   canonical_position TestP;
   collision_event Collision;
 
+  int count = 0;
+
   do
   {
+    if ( ++count > 100 )
+    {
+      return false;
+    }
+
     int rX = rand() % (world->ChunkDim.x);
     int rY = rand() % (world->ChunkDim.y);
     int rZ = rand() % (world->ChunkDim.z);
 
     v3 Offset = V3( rX, rY, rZ );
-
+    /* Print(Offset); */
     world_position WP = World_Position(world->VisibleRegion.x/2, world->VisibleRegion.y/2, world->VisibleRegion.z/2);
-
     TestP = Canonicalize(world, Offset, WP);
 
     Collision = GetCollision( world, TestP, Model->Dim);
@@ -328,6 +334,7 @@ SpawnPlayer( World *world, Entity *Player )
   Model->Offset = TestP.Offset;
   Model->WorldP = TestP.WorldP;
 
+  return true;
 }
 
 v3
@@ -367,8 +374,9 @@ GetAtomicUpdateVector( v3 Gross, float length )
   return Result;
 }
 
+
 void
-GenerateWorld( World *world )
+GenerateVisibleRegion( World *world )
 {
   for ( int x = 0; x < world->VisibleRegion.x; ++ x )
   {
@@ -377,11 +385,12 @@ GenerateWorld( World *world )
       for ( int z = 0; z < world->VisibleRegion.z; ++ z )
       {
         Chunk *chunk = GetWorldChunk(world, World_Position(x,y,z) );
-        GenerateVoxels( world, chunk );
+        FillVisibleVoxels( world, chunk );
       }
     }
   }
 }
+
 
 void
 UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
@@ -492,7 +501,7 @@ UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
   {
     world->VisibleRegionOrigin -= ( FinalP.WorldP - Player->Model.WorldP );
     FinalP.WorldP = Player->Model.WorldP;
-    GenerateWorld(world);
+    GenerateVisibleRegion(world);
   }
 
   model->Offset = FinalP.Offset;
@@ -513,6 +522,25 @@ GAME_UPDATE_AND_RENDER
     GLuint programID
   )
 {
+
+  if ( glfwGetKey(window, GLFW_KEY_ENTER ) == GLFW_PRESS )
+  {
+    printf("\n\n\n\n\n");
+
+    srand(time(NULL));
+
+    world->VisibleRegionOrigin = World_Position(0,0,0);
+
+    do
+    {
+      PerlinNoise Noise(rand());
+      world->Noise = Noise;
+
+      GenerateVisibleRegion( world );
+      printf("generated\n");
+    } while (!SpawnPlayer( world, Player ) );
+  }
+
   // TODO : Bake these into the terrain/model ?
   v3 drag = V3(0.6f, 1.0f, 0.6f);
   float accelerationMultiplier = 13.0f;
@@ -557,19 +585,6 @@ GAME_UPDATE_AND_RENDER
     /* printf(" %f ms/frame \n", (float)(accumulatedtime*1000/numFrames) ); */
     accumulatedTime = 0;
     numFrames = 0;
-  }
-
-  if ( glfwGetKey(window, GLFW_KEY_ENTER ) == GLFW_PRESS )
-  {
-    printf("\n\n\n\n\n");
-
-    srand(time(NULL));
-    PerlinNoise Noise(rand());
-    world->Noise = Noise;
-    world->VisibleRegionOrigin = World_Position(0,0,0);
-
-    GenerateWorld( world );
-    SpawnPlayer( world, Player );
   }
 
   // Clear the screen
@@ -622,10 +637,6 @@ InitializeWorld( World *world )
   world->VisibleRegion = Chunk_Dimension(6,6,6);  // Must be > (3,3,3)
   world->Gravity = V3(0, -9.8, 0);
 
-  srand(time(NULL));
-  PerlinNoise Noise(rand());
-  world->Noise = Noise;
-
   world->Chunks = (Chunk*)malloc( sizeof(Chunk)*Volume(world->VisibleRegion) );
 
   world->VisibleRegionOrigin = World_Position(0,0,0);
@@ -646,7 +657,7 @@ InitializeWorld( World *world )
     }
   }
 
-  GenerateWorld(world);
+  return;
 }
 
 int
@@ -689,10 +700,16 @@ main( void )
   Entity Player = {};
   Player.Model = AllocateChunk( Chunk_Dimension(1,1,1), World_Position(0,0,0) );
   Player.Model.flags |= Chunk_Entity;
-  SpawnPlayer( &world, &Player );
 
-  srand(time(NULL));
-  PerlinNoise Noise(rand());
+  do
+  {
+    srand(time(NULL));
+    PerlinNoise Noise(rand());
+    world.Noise = Noise;
+
+    GenerateVisibleRegion( &world );
+    printf("generated\n");
+  } while (!SpawnPlayer( &world, &Player ) );
 
   double lastTime = glfwGetTime();
 
