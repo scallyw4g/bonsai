@@ -7,7 +7,7 @@
 
 #define PERLIN_NOISE_GENERATION 1
 
-#define WORLD_SIZE 1000
+#define WORLD_SIZE 100
 
 static int numFrames = 0;
 static float accumulatedTime = 0;

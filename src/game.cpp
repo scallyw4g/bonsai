@@ -167,6 +167,7 @@ AllocateChunk(chunk_dimension Dim, voxel_position WorldP)
 
   Result.VertexData.Data = (GLfloat *)malloc(BufferSize);
   Result.ColorData.Data = (GLfloat *)malloc(BufferSize);
+  Result.NormalData.Data = (GLfloat *)malloc(BufferSize);
 
   Result.VertexData.bytesAllocd = BufferSize;
   Result.ColorData.bytesAllocd = BufferSize;
@@ -519,6 +520,7 @@ GAME_UPDATE_AND_RENDER
 
     GLuint vertexbuffer,
     GLuint colorbuffer,
+    GLuint normalbuffer,
     GLuint programID
   )
 {
@@ -564,7 +566,7 @@ GAME_UPDATE_AND_RENDER
   UpdatePlayerP( world, Player, PlayerDelta );
 
   glm::vec3 PlayerP = V3(Player->Model.Offset) + (Player->Model.WorldP * world->ChunkDim);
-  glm::vec3 CameraP = PlayerP + glm::vec3(0,10,15);
+  glm::vec3 CameraP = PlayerP + glm::vec3(0,20,25);
 
   glm::vec3 up(0, 1, 0);
   glm::vec3 CameraFront = CameraP - PlayerP;
@@ -607,7 +609,8 @@ GAME_UPDATE_AND_RENDER
     world,
     &Player->Model,
     vertexbuffer,
-    colorbuffer
+    colorbuffer,
+    normalbuffer
   );
 #endif
 
@@ -619,7 +622,8 @@ GAME_UPDATE_AND_RENDER
         world,
         &world->Chunks[i],
         vertexbuffer,
-        colorbuffer
+        colorbuffer,
+        normalbuffer
       );
     }
 #endif
@@ -686,11 +690,12 @@ main( void )
   glm::mat4 ModelMatrix = glm::mat4(1.0);
 
   GLuint vertexbuffer;
-  GLuint normalbuffer;
   GLuint colorbuffer;
+  GLuint normalbuffer;
 
   glGenBuffers(1, &vertexbuffer);
   glGenBuffers(1, &colorbuffer);
+  glGenBuffers(1, &normalbuffer);
 
   glfwWindowHint(GLFW_SAMPLES, 4);
 
@@ -735,6 +740,8 @@ main( void )
 
       vertexbuffer,
       colorbuffer,
+      normalbuffer,
+
       programID
     );
 
@@ -745,6 +752,8 @@ main( void )
 
   glDeleteBuffers(1, &vertexbuffer);
   glDeleteBuffers(1, &colorbuffer);
+  glDeleteBuffers(1, &normalbuffer);
+
   glDeleteVertexArrays(1, &VertexArrayID);
   glDeleteProgram(programID);
 
