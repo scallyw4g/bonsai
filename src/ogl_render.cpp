@@ -46,13 +46,17 @@ void BufferFace (
   triCount += 2;
 
   worldVertexData->filled += sizeofVertPositions;
+  worldNormalData->filled += sizeofNormals;
   worldColorData->filled += FACE_COLOR_SIZE;
 
   if ( worldVertexData->filled > worldVertexData->bytesAllocd ||
-       worldColorData->filled > worldColorData->bytesAllocd )
+       worldColorData->filled > worldColorData->bytesAllocd ||
+       worldNormalData->filled > worldNormalData->bytesAllocd
+     )
   {
     assert(false); // Out of memory
     worldVertexData->filled -= sizeofVertPositions;
+    worldNormalData->filled -= sizeofNormals;
     worldColorData->filled -= FACE_COLOR_SIZE;
     return;
   }
@@ -289,9 +293,11 @@ void BuildChunkMesh(World *world, Chunk *chunk)
   // Clear out render from last frame
   memset( chunk->VertexData.Data, 0, chunk->VertexData.bytesAllocd );
   memset( chunk->ColorData.Data, 0, chunk->ColorData.bytesAllocd );
+  memset( chunk->NormalData.Data, 0, chunk->NormalData.bytesAllocd );
 
   chunk->VertexData.filled = 0;
   chunk->ColorData.filled = 0;
+  chunk->NormalData.filled = 0;
 
   Voxel *VoxelBuffer = chunk->Voxels;
 

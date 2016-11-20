@@ -1,11 +1,48 @@
 #version 330 core
 
-in vec3 fragmentColor;
-in vec3 fragmentNormal;
+in vec3 vertexP_worldspace;
+in vec3 vertexNormal_cameraspace;
+in vec3 eyeDirection_cameraspace;
+in vec3 lightDirection_cameraspace;
+in vec3 MaterialColor;
+
+uniform vec3 LightP_worldspace;
 
 out vec3 color;
 
+uniform mat4 MVP;
+
 void main()
 {
-  color = fragmentColor;
+  // Light emission properties
+  // You probably want to put them as uniforms
+  vec3 LightColor = vec3(1,1,1);
+  float LightPower = 7.0f;
+
+  // Material properties
+  vec3 MaterialAmbientColor = vec3(0.1,0.1,0.1) * MaterialColor;
+
+  // Distance to the light
+  float distance = length( LightP_worldspace - vertexP_worldspace );
+
+  // Normal of the computed fragment, in camera space
+  vec3 n = normalize( vertexNormal_cameraspace );
+
+  // Direction of the light (from the fragment to the light)
+  vec3 l = normalize( lightDirection_cameraspace );
+
+  // Cosine of the angle between the normal and the light direction,
+  // clamped above 0
+  //  - light is at the vertical of the triangle -> 1
+  //  - light is perpendicular to the triangle -> 0
+  //  - light is behind the triangle -> 0
+  float cosTheta = clamp( dot( n,l ), 0,1 );
+
+  color =
+    // Ambient : simulates indirect lighting
+    MaterialAmbientColor +
+
+    // Diffuse : "color" of the object
+    MaterialColor * LightColor * LightPower * cosTheta / (distance*distance);
+
 }

@@ -133,13 +133,8 @@ FillVisibleVoxels( World *world, Chunk *chunk )
         if (
              ( chunk->Voxels[i].Offset.x == 0 && chunk->Voxels[i].Offset.y == 0 ) ||
              ( chunk->Voxels[i].Offset.y == 0 && chunk->Voxels[i].Offset.z == 0 ) ||
-             ( chunk->Voxels[i].Offset.x == 0 && chunk->Voxels[i].Offset.z == 0 ) ||
-
-             ( chunk->WorldP.x == 1 && chunk->Voxels[i].Offset.x == 5 && chunk->Voxels[i].Offset.z == 5 ) ||
-
-             ( chunk->WorldP.y == 0 && chunk->WorldP.x == 0 && chunk->Voxels[i].Offset.y == 6 )
-
-             )
+             ( chunk->Voxels[i].Offset.x == 0 && chunk->Voxels[i].Offset.z == 0 ) 
+           )
         {
           chunk->Voxels[i].flags |= Voxel_Filled;
         }
@@ -171,9 +166,11 @@ AllocateChunk(chunk_dimension Dim, voxel_position WorldP)
 
   Result.VertexData.bytesAllocd = BufferSize;
   Result.ColorData.bytesAllocd = BufferSize;
+  Result.NormalData.bytesAllocd = BufferSize;
 
   Result.VertexData.filled = 0;
   Result.ColorData.filled = 0;
+  Result.NormalData.filled = 0;
 
   Result.WorldP = WorldP;
   Result.Offset = V3(0,0,0);
@@ -185,7 +182,6 @@ AllocateChunk(chunk_dimension Dim, voxel_position WorldP)
 }
 
 // FIXME : Problem with multiple keypresses ( 8 then 7 then 4 won't move left )
-
 inline v3
 GetInputsFromController()
 {
@@ -521,7 +517,13 @@ GAME_UPDATE_AND_RENDER
     GLuint vertexbuffer,
     GLuint colorbuffer,
     GLuint normalbuffer,
-    GLuint programID
+
+    GLuint MatrixID,
+    GLuint ViewMatrixID,
+    GLuint ModelMatrixID,
+    GLuint PlayerPID,
+    GLuint CameraPID
+
   )
 {
 
@@ -545,14 +547,14 @@ GAME_UPDATE_AND_RENDER
 
   // TODO : Bake these into the terrain/model ?
   v3 drag = V3(0.6f, 1.0f, 0.6f);
-  float accelerationMultiplier = 13.0f;
+  float accelerationMultiplier = 63.0f;
 
   Player->Acceleration = GetInputsFromController() * accelerationMultiplier; // m/s2
   Player->Acceleration += world->Gravity;
 
   Player->Velocity = (Player->Acceleration*dt + Player->Velocity) * drag; // m/s
 
-  if (IsGrounded(world, Player))
+  if (IsGrounded(world, Player) && Player->Velocity.y < 0 )
   {
     if (glfwGetKey( window, GLFW_KEY_SPACE ) == GLFW_PRESS)
     {
@@ -566,7 +568,7 @@ GAME_UPDATE_AND_RENDER
   UpdatePlayerP( world, Player, PlayerDelta );
 
   glm::vec3 PlayerP = V3(Player->Model.Offset) + (Player->Model.WorldP * world->ChunkDim);
-  glm::vec3 CameraP = PlayerP + glm::vec3(0,20,25);
+  glm::vec3 CameraP = PlayerP + glm::vec3(0,10,15);
 
   glm::vec3 up(0, 1, 0);
   glm::vec3 CameraFront = CameraP - PlayerP;
@@ -592,19 +594,19 @@ GAME_UPDATE_AND_RENDER
   // Clear the screen
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  // Get a handle for our "MVP" uniform
-  // Only during the initialisation
-  GLuint MatrixID = glGetUniformLocation(programID, "MVP");
-
   // Send our transformation to the currently bound shader, in the "MVP" uniform
   // This is done in the main loop since each model will have a different MVP matrix (At least for the M part)
   glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp[0][0]);
+  glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+  glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
 
-  // Use our shader
-  glUseProgram(programID);
+  glm::vec3 LightP = PlayerP; //+ glm::vec3(0,3,0);
+  glUniform3fv(PlayerPID, 1, &LightP[0]);
+
+  glUniform3fv(CameraPID, 1, &CameraP[0]);
 
   // Draw Player
-#if 1
+#if 0
   DrawChunk(
     world,
     &Player->Model,
@@ -638,7 +640,7 @@ void
 InitializeWorld( World *world )
 {
   world->ChunkDim = Chunk_Dimension( CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH );
-  world->VisibleRegion = Chunk_Dimension(6,6,6);  // Must be > (3,3,3)
+  world->VisibleRegion = Chunk_Dimension(3,3,3);  // Must be > (3,3,3)
   world->Gravity = V3(0, -9.8, 0);
 
   world->Chunks = (Chunk*)malloc( sizeof(Chunk)*Volume(world->VisibleRegion) );
@@ -718,6 +720,9 @@ main( void )
 
   double lastTime = glfwGetTime();
 
+  // Use our shader
+  glUseProgram(programID);
+
   /*
    *  Main Render loop
    *
@@ -731,6 +736,15 @@ main( void )
     accumulatedTime += dt;
     numFrames ++;
 
+    // Get a handle for our "MVP" uniform
+    // Only during the initialisation
+    GLuint MatrixID = glGetUniformLocation(programID, "MVP");
+    GLuint ModelMatrixID = glGetUniformLocation(programID, "M");
+    GLuint ViewMatrixID = glGetUniformLocation(programID, "V");
+    GLuint PlayerPID = glGetUniformLocation(programID, "LightP_worldspace");
+    GLuint CameraPID = glGetUniformLocation(programID, "CameraP_worldspace");
+
+
     GAME_UPDATE_AND_RENDER(
       &world,
       &Player,
@@ -742,7 +756,11 @@ main( void )
       colorbuffer,
       normalbuffer,
 
-      programID
+      MatrixID,
+      ViewMatrixID,
+      ModelMatrixID,
+      PlayerPID,
+      CameraPID
     );
 
   } // Check if the ESC key was pressed or the window was closed
@@ -763,14 +781,17 @@ main( void )
   for ( int i = 0; i < Volume(world.VisibleRegion) ; ++ i )
   {
     free( world.Chunks[i].Voxels );
+
     free( world.Chunks[i].VertexData.Data );
     free( world.Chunks[i].ColorData.Data );
+    free( world.Chunks[i].NormalData.Data );
   }
 
   free( world.Chunks );
 
   free(Player.Model.VertexData.Data);
   free(Player.Model.ColorData.Data);
+  free(Player.Model.NormalData.Data);
 
   return 0;
 }
