@@ -4,13 +4,12 @@ layout(location = 0) in vec3 vertexPosition_worldspace;
 layout(location = 1) in vec3 vertexColor;
 layout(location = 2) in vec3 vertexNormal_worldspace;
 
-// Passthroughs
 out vec3 vertexP_worldspace;
+out vec3 vertexN_worldspace;
+
 out vec3 MaterialColor;
 
-out vec3 vertexNormal_cameraspace;
-out vec3 eyeDirection_cameraspace;
-out vec3 lightDirection_cameraspace;
+out vec3 lightDirection_worldspace;
 
 
 uniform mat4 MVP;
@@ -20,22 +19,16 @@ uniform mat4 V;
 uniform vec3 LightP_worldspace;
 uniform vec3 CameraP_worldspace;
 
-float lightIntensity = 7.0f;
-
 void main()
 {
   MaterialColor = vertexColor;
+
   vertexP_worldspace = vertexPosition_worldspace;
+  vertexN_worldspace = vertexNormal_worldspace - vertexPosition_worldspace ;
 
-  vec3 vertexP_cameraspace      = ( V * vec4(      vertexP_worldspace , 1)).xyz;
-  vec3 lightP_cameraspace       = ( V * vec4(       LightP_worldspace , 1)).xyz;
-  vertexNormal_cameraspace      = ( V * vec4( vertexNormal_worldspace , 1)).xyz;
-
-  eyeDirection_cameraspace      = vec3(0,0,0)        - vertexP_cameraspace;
-  lightDirection_cameraspace    = lightP_cameraspace + eyeDirection_cameraspace;
-
+  lightDirection_worldspace = LightP_worldspace - vertexPosition_worldspace;
 
   // Output position of the vertex, in clip space : MVP * position
-  gl_Position = MVP * vec4(vertexP_worldspace, 1);
+  gl_Position = MVP * vec4(vertexPosition_worldspace, 1);
 }
 

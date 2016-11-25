@@ -494,7 +494,7 @@ UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
   // Finished collision detection, recanonicalize and update player p
   canonical_position FinalP = Canonicalize( world, LegalPos );
 
-  if ( FinalP.WorldP != Player->Model.WorldP ) // We moved to the next chunk
+  if ( FinalP.WorldP != Player->Model.WorldP && DEBUG_SCROLL_WORLD ) // We moved to the next chunk
   {
     world->VisibleRegionOrigin -= ( FinalP.WorldP - Player->Model.WorldP );
     FinalP.WorldP = Player->Model.WorldP;
@@ -600,13 +600,13 @@ GAME_UPDATE_AND_RENDER
   glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
   glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
 
-  glm::vec3 LightP = PlayerP; //+ glm::vec3(0,3,0);
+  glm::vec3 LightP = PlayerP; // + glm::vec3(0,3,0);
   glUniform3fv(PlayerPID, 1, &LightP[0]);
 
   glUniform3fv(CameraPID, 1, &CameraP[0]);
 
   // Draw Player
-#if 0
+#if 1
   DrawChunk(
     world,
     &Player->Model,

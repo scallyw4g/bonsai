@@ -9,6 +9,8 @@
 
 #define WORLD_SIZE 100
 
+#define DEBUG_SCROLL_WORLD 1
+
 static int numFrames = 0;
 static float accumulatedTime = 0;
 
