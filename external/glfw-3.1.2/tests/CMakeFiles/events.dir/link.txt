@@ -1,0 +1,1 @@
+/usr/bin/cc     CMakeFiles/events.dir/events.c.o CMakeFiles/events.dir/__/deps/getopt.c.o  -o events -rdynamic ../src/libglfw3.a -lrt -lm -lX11 -lpthread -lXrandr -lXinerama -lXi -lXxf86vm -lXcursor -lGL -ldl 

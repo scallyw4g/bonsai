@@ -1,0 +1,1 @@
+/usr/bin/cc     CMakeFiles/gamma.dir/gamma.c.o CMakeFiles/gamma.dir/__/deps/getopt.c.o  -o gamma -rdynamic ../src/libglfw3.a -lrt -lm -lX11 -lpthread -lXrandr -lXinerama -lXi -lXxf86vm -lXcursor -lGL -ldl 
