@@ -1,2 +1,4 @@
 build/*
 Session.vim
+
+external/CMakeFiles
