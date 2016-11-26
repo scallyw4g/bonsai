@@ -5,6 +5,8 @@
 #define CHUNK_HEIGHT 8
 #define CHUNK_DEPTH  8
 
+#define VISIBLE_REGION Chunk_Dimension(8,8,8) // Must be > (3,3,3)
+
 #define PERLIN_NOISE_GENERATION 1
 
 #define WORLD_SIZE 100

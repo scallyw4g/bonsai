@@ -172,6 +172,8 @@ AllocateChunk(chunk_dimension Dim, voxel_position WorldP)
   Result.ColorData.filled = 0;
   Result.NormalData.filled = 0;
 
+	Result.Verticies = 0;
+
   Result.WorldP = WorldP;
   Result.Offset = V3(0,0,0);
 
@@ -640,7 +642,7 @@ void
 InitializeWorld( World *world )
 {
   world->ChunkDim = Chunk_Dimension( CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH );
-  world->VisibleRegion = Chunk_Dimension(3,3,3);  // Must be > (3,3,3)
+  world->VisibleRegion = VISIBLE_REGION;
   world->Gravity = V3(0, -9.8, 0);
 
   world->Chunks = (Chunk*)malloc( sizeof(Chunk)*Volume(world->VisibleRegion) );

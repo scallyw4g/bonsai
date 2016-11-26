@@ -287,7 +287,6 @@ bool IsBottomChunkBoundary( chunk_dimension ChunkDim, int idx )
 
 void BuildChunkMesh(World *world, Chunk *chunk)
 {
-  int chunkVertCount = 0;
   int numVoxels = chunk->Dim.x * chunk->Dim.y * chunk->Dim.z;
 
   // Clear out render from last frame
@@ -298,6 +297,8 @@ void BuildChunkMesh(World *world, Chunk *chunk)
   chunk->VertexData.filled = 0;
   chunk->ColorData.filled = 0;
   chunk->NormalData.filled = 0;
+
+	chunk->Verticies = 0;
 
   Voxel *VoxelBuffer = chunk->Voxels;
 
@@ -341,7 +342,7 @@ void BuildChunkMesh(World *world, Chunk *chunk)
               &chunk->ColorData,
               &chunk->NormalData,
               FaceColors,
-              &chunkVertCount
+              &chunk->Verticies
             );
           }
 
@@ -355,7 +356,7 @@ void BuildChunkMesh(World *world, Chunk *chunk)
               &chunk->ColorData,
               &chunk->NormalData,
               FaceColors,
-              &chunkVertCount
+              &chunk->Verticies
             );
           }
 
@@ -369,7 +370,7 @@ void BuildChunkMesh(World *world, Chunk *chunk)
               &chunk->ColorData,
               &chunk->NormalData,
               FaceColors,
-              &chunkVertCount
+              &chunk->Verticies
             );
           }
 
@@ -383,7 +384,7 @@ void BuildChunkMesh(World *world, Chunk *chunk)
               &chunk->ColorData,
               &chunk->NormalData,
               FaceColors,
-              &chunkVertCount
+              &chunk->Verticies
             );
           }
 
@@ -397,7 +398,7 @@ void BuildChunkMesh(World *world, Chunk *chunk)
               &chunk->ColorData,
               &chunk->NormalData,
               FaceColors,
-              &chunkVertCount
+              &chunk->Verticies
             );
           }
 
@@ -411,7 +412,7 @@ void BuildChunkMesh(World *world, Chunk *chunk)
               &chunk->ColorData,
               &chunk->NormalData,
               FaceColors,
-              &chunkVertCount
+              &chunk->Verticies
             );
           }
         }
@@ -479,7 +480,7 @@ void DrawChunk(
     (void*)0            // array buffer offset
   );
 
-  glDrawArrays(GL_TRIANGLES, 0, WORLD_VERTEX_COUNT);
+  glDrawArrays(GL_TRIANGLES, 0, chunk->Verticies);
 
   glDisableVertexAttribArray(0);
   glDisableVertexAttribArray(1);

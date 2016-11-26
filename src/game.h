@@ -96,6 +96,8 @@ struct Chunk
   VertexBlock VertexData;
   VertexBlock ColorData;
   VertexBlock NormalData;
+
+	int Verticies;
 };
 
 struct World
