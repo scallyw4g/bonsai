@@ -570,7 +570,7 @@ GAME_UPDATE_AND_RENDER
   UpdatePlayerP( world, Player, PlayerDelta );
 
   glm::vec3 PlayerP = V3(Player->Model.Offset) + (Player->Model.WorldP * world->ChunkDim);
-  glm::vec3 CameraP = PlayerP + glm::vec3(0,10,15);
+  glm::vec3 CameraP = PlayerP + glm::vec3(0,20,25);
 
   glm::vec3 up(0, 1, 0);
   glm::vec3 CameraFront = CameraP - PlayerP;
@@ -593,8 +593,6 @@ GAME_UPDATE_AND_RENDER
     numFrames = 0;
   }
 
-  // Clear the screen
-  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   // Send our transformation to the currently bound shader, in the "MVP" uniform
   // This is done in the main loop since each model will have a different MVP matrix (At least for the M part)
@@ -607,11 +605,15 @@ GAME_UPDATE_AND_RENDER
 
   glUniform3fv(CameraPID, 1, &CameraP[0]);
 
+  // Clear the screen
+  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
   // Draw Player
 #if 1
   DrawChunk(
     world,
     &Player->Model,
+    V3(CameraP),
     vertexbuffer,
     colorbuffer,
     normalbuffer
@@ -625,12 +627,14 @@ GAME_UPDATE_AND_RENDER
       DrawChunk(
         world,
         &world->Chunks[i],
+        V3(CameraP),
         vertexbuffer,
         colorbuffer,
         normalbuffer
       );
     }
 #endif
+
 
 
   // Swap buffers

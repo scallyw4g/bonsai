@@ -4,6 +4,7 @@
 #include <perlin.h>
 #include <stdio.h>
 #include <types.h>
+#include <math.h>
 
 #define ArrayCount(a) (sizeof(a)/sizeof(a[0]))
 
@@ -160,6 +161,19 @@ GetWorldChunk( World *world, world_position WorldP )
 }
 
 inline bool
+IsFacingCamera( v3 FaceToCamera, v3 FacingDirection )
+{
+  bool Result = false;
+
+  if ( Dot(FaceToCamera, FacingDirection) > 0 )
+  {
+    Result = true;
+  }
+
+  return Result;
+}
+
+inline bool
 IsFilled( Chunk *chunk, voxel_position VoxelP )
 {
   bool isFilled = true;
@@ -201,6 +215,16 @@ IsFilled( World *world, Chunk *chunk, canonical_position VoxelP )
   return isFilled;
 
 }
+
+inline bool
+NotFilled( World *world, Chunk *chunk, canonical_position VoxelP )
+{
+  bool Result;
+  Result = !(IsFilled(world,chunk,VoxelP));
+
+  return Result;
+}
+
 
 // NOTE : The maximum bound is non-inclusive; 0 is part of the chunk
 // while the furthest point in x,y or z is the next chunk

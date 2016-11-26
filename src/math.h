@@ -1,3 +1,6 @@
+#ifndef MATH_H
+#define MATH_H
+
 #include <game.h>
 
 int clamp0(int i)
@@ -71,6 +74,22 @@ Normalize( v3 Vec, float length)
 }
 
 inline v3
+Normalize(v3 A)
+{
+  v3 Result;
+  Result = Normalize(A, Length(A));
+  return Result;
+}
+
+inline float
+Dot( v3 A, v3 B)
+{
+  float Result;
+  Result = (A.x*B.x) + (A.y*B.y) + (A.z*B.z);
+  return Result;
+}
+
+inline v3
 Cross( v3 A, v3 B )
 {
   v3 Result = {
@@ -101,3 +120,4 @@ GetSign( float f )
   return Result;
 }
 
+#endif
