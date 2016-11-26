@@ -23,12 +23,6 @@ static float accumulatedTime = 0;
 // Number of array elements required to render a voxel
 #define BYTES_PER_VOXEL (VERT_PER_VOXEL*3*sizeof(GLfloat))
 
-// number of verticies*3 (for each x, y, z)
-#define WORLD_VERTEX_COUNT (BYTES_PER_VOXEL*CHUNK_VOL)
-
-// length of worldvertexbuffer in bytes
-#define WORLD_VERTEX_BUFFER_BYTES (WORLD_VERTEX_COUNT*sizeof(GLfloat))
-
 #define VOXEL_DIAMETER 1.0f
 #define VOXEL_RADIUS (VOXEL_DIAMETER/2.0f)
 
