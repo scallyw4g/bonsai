@@ -67,38 +67,6 @@ initWindow( int width, int height )
 }
 
 void
-Logging(v3 CameraP, v3 PlayerP, glm::vec3 LookAt, double *lastFrameTime, int *numFrames )
-{
-#if 0
-  // Position logging
-  printf("\ncamera\n");
-  printf("%f %f %f\n", CameraP.x, CameraP.y, CameraP.z);
-
-  printf("player\n");
-  printf("%f %f %f\n", PlayerP.x, PlayerP.y, PlayerP.z);
-
-  printf("Lookat\n");
-  printf("%f %f %f\n", LookAt.x, LookAt.y, LookAt.z);
-#endif
-
-#if 1
-  // Framerate logging
-  *numFrames += 1;
-  int currentTime = glfwGetTime();
-  if ( currentTime - *lastFrameTime >= 1.0 )
-  {
-    printf("%f ms/frame, %d frames since last write\n", 1000.0/(double)(*numFrames), *numFrames );
-
-    printf("%d triangles buffered since frame\n", triCount );
-    *numFrames = 0;
-    *lastFrameTime += 1.0;
-
-    triCount=0;
-  }
-#endif
-}
-
-void
 FillVisibleVoxels( World *world, Chunk *chunk )
 {
   chunk->flags |= Chunk_Redraw;
@@ -511,11 +479,53 @@ UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
   model->WorldP = FinalP.WorldP;
 }
 
+glm::vec3
+GetGLRenderP(World *world, canonical_position P)
+{
+  P = Canonicalize(world, P); // TODO : Does this matter?
+  glm::vec3 Result = V3(P.Offset + (P.WorldP * world->ChunkDim));
+  return Result;
+}
+
+void
+UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera )
+{
+  Camera->Target =
+    GetGLRenderP(
+      world,
+      Canonical_Position(Player->Model.Offset, Player->Model.WorldP)
+    );
+
+  Camera->RenderP = Camera->Target + glm::vec3(0,10,15);
+  Camera->Front = Camera->Target - Camera->RenderP;
+}
+
+glm::mat4
+GetViewMatrix(Camera_Object *Camera)
+{
+  glm::mat4 Result;
+
+  glm::vec3 up(0, 1, 0);
+
+  glm::vec3 CameraRight = glm::normalize( glm::cross(up, Camera->Front) );
+  glm::vec3 CameraUp = glm::normalize( glm::cross( Camera->Front, CameraRight) );
+
+  Result = glm::lookAt(
+    Camera->RenderP,
+    Camera->Target,
+    CameraUp
+  );
+
+  return Result;
+}
+
+
 void
 GAME_UPDATE_AND_RENDER
 (
     World *world,
     Entity *Player,
+    Camera_Object *Camera,
     float dt,
     glm::mat4 Projection,
     glm::mat4 ModelMatrix,
@@ -529,7 +539,6 @@ GAME_UPDATE_AND_RENDER
     GLuint ModelMatrixID,
     GLuint PlayerPID,
     GLuint CameraPID
-
   )
 {
 
@@ -572,31 +581,11 @@ GAME_UPDATE_AND_RENDER
 
   // Currently we apply Gravity every frame so we can't conditionally UpdatePlayerP
   UpdatePlayerP( world, Player, PlayerDelta );
+  UpdateCameraP( world, Player, Camera );
 
-  glm::vec3 PlayerP = V3(Player->Model.Offset) + (Player->Model.WorldP * world->ChunkDim);
-  glm::vec3 CameraP = PlayerP + glm::vec3(0,20,25);
-
-  glm::vec3 up(0, 1, 0);
-  glm::vec3 CameraFront = CameraP - PlayerP;
-  glm::vec3 CameraRight = glm::normalize( glm::cross(up, CameraFront) );
-  glm::vec3 CameraUp = glm::normalize( glm::cross(CameraFront, CameraRight) );
-
-  glm::mat4 ViewMatrix = glm::lookAt(
-    CameraP,
-    PlayerP,
-    CameraUp
-  );
+  glm::mat4 ViewMatrix = GetViewMatrix(Camera);
 
   glm::mat4 mvp = Projection * ViewMatrix * ModelMatrix;
-
-  if (accumulatedTime > 1.0f)
-  {
-    /* printf("frame %d/%f seconds\n", numFrames, accumulatedtime); */
-    /* printf(" %f ms/frame \n", (float)(accumulatedtime*1000/numFrames) ); */
-    accumulatedTime = 0;
-    numFrames = 0;
-  }
-
 
   // Send our transformation to the currently bound shader, in the "MVP" uniform
   // This is done in the main loop since each model will have a different MVP matrix (At least for the M part)
@@ -604,42 +593,35 @@ GAME_UPDATE_AND_RENDER
   glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
   glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
 
-  glm::vec3 LightP = PlayerP; // + glm::vec3(0,3,0);
-  glUniform3fv(PlayerPID, 1, &LightP[0]);
+  /* glUniform3fv(PlayerPID, 1, &LightP[0]); */
 
-  glUniform3fv(CameraPID, 1, &CameraP[0]);
+  glUniform3fv( CameraPID, 1, &Camera->RenderP[0] );
 
   // Clear the screen
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   // Draw Player
-#if 1
   DrawChunk(
     world,
     &Player->Model,
-    V3(CameraP),
+    V3(Camera->RenderP),
     vertexbuffer,
     colorbuffer,
     normalbuffer
   );
-#endif
 
-    // Draw world
-#if 1
-    for ( int i = 0; i < Volume(world->VisibleRegion); ++ i )
-    {
-      DrawChunk(
-        world,
-        &world->Chunks[i],
-        V3(CameraP),
-        vertexbuffer,
-        colorbuffer,
-        normalbuffer
-      );
-    }
-#endif
-
-
+  // Draw world
+  for ( int i = 0; i < Volume(world->VisibleRegion); ++ i )
+  {
+    DrawChunk(
+      world,
+      &world->Chunks[i],
+      V3(Camera->RenderP),
+      vertexbuffer,
+      colorbuffer,
+      normalbuffer
+    );
+  }
 
   // Swap buffers
   glfwSwapBuffers(window);
@@ -692,13 +674,6 @@ main( void )
 
   GLuint programID = LoadShaders( "SimpleVertexShader.vertexshader", "SimpleFragmentShader.fragmentshader" );
 
-  // Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
-  glm::mat4 Projection = glm::perspective(
-      glm::radians(45.0f),  // FOV
-      (float)width / (float)height,  // display ratio
-      0.1f,     // near margin
-      500.0f);  // far margin
-
   glm::mat4 ModelMatrix = glm::mat4(1.0);
 
   GLuint vertexbuffer;
@@ -717,6 +692,18 @@ main( void )
   Entity Player = {};
   Player.Model = AllocateChunk( Chunk_Dimension(1,1,1), World_Position(0,0,0) );
   Player.Model.flags |= Chunk_Entity;
+
+  Camera_Object Camera = {};
+  Camera.Frust.farClip = 500.0f;
+  Camera.Frust.nearClip = 0.1f;
+  Camera.Frust.FOV = 45.0f;
+
+  glm::mat4 Projection = glm::perspective(
+      glm::radians(Camera.Frust.FOV),
+      (float)width/(float)height, // display ratio
+      Camera.Frust.nearClip,
+      Camera.Frust.farClip);
+
 
   do
   {
@@ -758,6 +745,7 @@ main( void )
     GAME_UPDATE_AND_RENDER(
       &world,
       &Player,
+      &Camera,
       dt,
       Projection,
       ModelMatrix,

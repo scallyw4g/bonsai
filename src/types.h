@@ -19,6 +19,14 @@ union v3 {
   };
 
   float E[3];
+
+  inline v3
+  operator=(glm::vec3 A)
+  {
+    v3 Result = { A.x, A.y, A.z };
+    return Result;
+  }
+
 };
 
 union v4 {
@@ -110,6 +118,30 @@ operator*(v3 P1, voxel_position const P2)
   return Result;
 }
 
+inline v3
+operator+(v3 P2, glm::vec3 P1)
+{
+  v3 Result;
+
+  Result.x = P1.x + P2.x;
+  Result.y = P1.y + P2.y;
+  Result.z = P1.z + P2.z;
+
+  return Result;
+}
+
+inline v3
+operator+(glm::vec3 P1, v3 P2)
+{
+  v3 Result;
+
+  Result.x = P1.x + P2.x;
+  Result.y = P1.y + P2.y;
+  Result.z = P1.z + P2.z;
+
+  return Result;
+}
+
 inline glm::vec3
 operator+(glm::vec3 Vec, voxel_position Pos)
 {
@@ -190,6 +222,54 @@ struct canonical_position
   world_position WorldP;
 };
 
+inline v3
+V3(voxel_position wp)
+{
+  v3 Result;
+
+  Result.x = (float)wp.x;
+  Result.y = (float)wp.y;
+  Result.z = (float)wp.z;
+
+  return Result;
+}
+
+inline v3
+V3(glm::vec3 vec)
+{
+  v3 Result;
+
+  Result.x = vec.x;
+  Result.y = vec.y;
+  Result.z = vec.z;
+
+  return Result;
+}
+
+inline v3
+V3(float x, float y, float z)
+{
+  v3 Result = {};
+
+  Result.x = x;
+  Result.y = y;
+  Result.z = z;
+
+  return Result;
+}
+
+
+inline canonical_position
+Canonical_Position( glm::vec3 Offset, world_position WorldP )
+{
+  canonical_position Result;
+
+  Result.Offset = V3(Offset);
+  Result.WorldP = WorldP;
+
+  return Result;
+}
+
 inline canonical_position
 Canonical_Position( v3 Offset, world_position WorldP )
 {
@@ -251,42 +331,6 @@ v2 V2(int x,int y)
 
   Result.x = x;
   Result.y = y;
-
-  return Result;
-}
-
-inline v3
-V3(voxel_position wp)
-{
-  v3 Result;
-
-  Result.x = (float)wp.x;
-  Result.y = (float)wp.y;
-  Result.z = (float)wp.z;
-
-  return Result;
-}
-
-inline v3
-V3(glm::vec3 vec)
-{
-  v3 Result;
-
-  Result.x = vec.x;
-  Result.y = vec.y;
-  Result.z = vec.z;
-
-  return Result;
-}
-
-inline v3
-V3(float x, float y, float z)
-{
-  v3 Result = {};
-
-  Result.x = x;
-  Result.y = y;
-  Result.z = z;
 
   return Result;
 }
@@ -557,6 +601,7 @@ v4 operator+(v4 A, v4 B)
 
   return Result;
 }
+
 
 glm::vec3 V3( v3 Vec )
 {

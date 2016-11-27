@@ -124,6 +124,22 @@ struct Chunk
 	int Verticies; // How many verticies are we drawing
 };
 
+struct Frustum
+{
+  float farClip;
+  float nearClip;
+  float FOV;
+};
+
+struct Camera_Object
+{
+  Frustum Frust;
+  // These are in render-space (VisibleRegionOrigin is the origin of render-space)
+  glm::vec3 RenderP;
+  glm::vec3 Front;
+  glm::vec3 Target;
+};
+
 struct World
 {
   Chunk *Chunks;
