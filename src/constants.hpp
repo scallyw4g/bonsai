@@ -1,9 +1,9 @@
 #ifndef GAME_CONSTANTS
 #define GAME_CONSTANTS
 
-#define CHUNK_WIDTH  8
-#define CHUNK_HEIGHT 8
-#define CHUNK_DEPTH  8
+#define CHUNK_WIDTH  16
+#define CHUNK_HEIGHT 16
+#define CHUNK_DEPTH  16
 
 #define VISIBLE_REGION Chunk_Dimension(6,6,6) // Must be > (3,3,3)
 
@@ -15,6 +15,7 @@
 
 static int numFrames = 0;
 static float accumulatedTime = 0;
+static int tris = 0;
 
 #define CHUNK_VOL (CHUNK_HEIGHT*CHUNK_WIDTH*CHUNK_DEPTH)
 

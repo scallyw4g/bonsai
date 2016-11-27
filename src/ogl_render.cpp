@@ -43,7 +43,7 @@ void BufferFace (
     int *chunkVertCount
   )
 {
-  triCount += 2;
+  tris += 2;
 
   worldVertexData->filled += sizeofVertPositions;
   worldNormalData->filled += sizeofNormals;
@@ -293,8 +293,29 @@ GetGLRenderP(World *world, canonical_position P)
   return Result;
 }
 
+inline bool
+IsInFrustum(World *world, Camera_Object *Camera, canonical_position P)
+{
+  bool Result = false;
 
-void BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
+  v3 VoxelRenderP = V3(GetGLRenderP( world, P ));
+  v3 CameraRenderP = V3(GetGLRenderP( world, Camera->P ));
+
+  v3 CameraToVoxel = Normalize(VoxelRenderP - CameraRenderP);
+
+  float cosTheta = Dot( CameraToVoxel , Camera->Front );
+  float cos23 = 0.92050485f;
+
+  if ( cosTheta > cos23 )
+  {
+    Result = true;
+  }
+
+  return Result;
+}
+
+void
+BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
 {
   int numVoxels = chunk->Dim.x * chunk->Dim.y * chunk->Dim.z;
 
@@ -317,6 +338,9 @@ void BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
     {
       for ( int z = 0; z < chunk->Dim.z; ++z )
       {
+        if ( ! IsInFrustum(world, Camera, Canonical_Position( V3(x,y,z), chunk->WorldP ) ) )
+          continue;
+
         int i = x + (y*chunk->Dim.x) + (z*chunk->Dim.x*chunk->Dim.y);
 
         // Loop if this voxel isn't a boundary voxel

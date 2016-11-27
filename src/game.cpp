@@ -484,7 +484,7 @@ UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera )
 {
   Camera->Target = Canonical_Position(Player->Model.Offset, Player->Model.WorldP);
   Camera->P = Camera->Target + V3(0,10,15);
-  Camera->Front = Camera->Target.Offset - Camera->P.Offset;
+  Camera->Front = Normalize(Camera->Target.Offset - Camera->P.Offset);
 }
 
 glm::mat4
@@ -608,6 +608,9 @@ GAME_UPDATE_AND_RENDER
       normalbuffer
     );
   }
+
+  printf("%d Triangles drawn\n", tris );
+  tris=0;
 
   // Swap buffers
   glfwSwapBuffers(window);
