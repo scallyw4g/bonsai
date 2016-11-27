@@ -4,6 +4,7 @@
 [ ] Add BoundaryVoxels buffer and remove Volume_Boundary voxel flag.
 [ ] Add Shadow maps
 [ ] Ambient Occlusion ?
+[ ] Better frustum culling
 
 
 
