@@ -506,7 +506,6 @@ GetViewMatrix(World *world, Camera_Object *Camera)
   return Result;
 }
 
-
 void
 GAME_UPDATE_AND_RENDER
 (
