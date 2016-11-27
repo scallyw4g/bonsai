@@ -17,7 +17,6 @@ uniform mat4 M;
 uniform mat4 V;
 
 uniform vec3 LightP_worldspace;
-uniform vec3 CameraP_worldspace;
 
 void main()
 {

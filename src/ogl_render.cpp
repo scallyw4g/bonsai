@@ -68,7 +68,7 @@ void BufferFace (
 }
 
 void BufferRightFace(
-    v3 worldP,
+    glm::vec3 worldP,
     VertexBlock *worldVertexData,
     VertexBlock *worldColorData,
     VertexBlock *worldNormalData,
@@ -101,7 +101,7 @@ void BufferRightFace(
 }
 
 void BufferLeftFace(
-    v3 worldP,
+    glm::vec3 worldP,
     VertexBlock *worldVertexData,
     VertexBlock *worldColorData,
     VertexBlock *worldNormalData,
@@ -134,7 +134,7 @@ void BufferLeftFace(
 }
 
 void BufferBottomFace(
-    v3 worldP,
+    glm::vec3 worldP,
     VertexBlock *worldVertexData,
     VertexBlock *worldColorData,
     VertexBlock *worldNormalData,
@@ -167,7 +167,7 @@ void BufferBottomFace(
 }
 
 void BufferTopFace(
-    v3 worldP,
+    glm::vec3 worldP,
     VertexBlock *worldVertexData,
     VertexBlock *worldColorData,
     VertexBlock *worldNormalData,
@@ -200,7 +200,7 @@ void BufferTopFace(
 }
 
 void BufferFrontFace(
-    v3 worldP,
+    glm::vec3 worldP,
     VertexBlock *worldVertexData,
     VertexBlock *worldColorData,
     VertexBlock *worldNormalData,
@@ -233,7 +233,7 @@ void BufferFrontFace(
 }
 
 void BufferBackFace(
-    v3 worldP,
+    glm::vec3 worldP,
     VertexBlock *worldVertexData,
     VertexBlock *worldColorData,
     VertexBlock *worldNormalData,
@@ -285,7 +285,16 @@ bool IsBottomChunkBoundary( chunk_dimension ChunkDim, int idx )
   return (idx/(int)ChunkDim.x) % (int)ChunkDim.y == 0;
 }
 
-void BuildChunkMesh(World *world, Chunk *chunk, v3 WorldCameraOffset )
+glm::vec3
+GetGLRenderP(World *world, canonical_position P)
+{
+  P = Canonicalize(world, P); // TODO : Does this matter?
+  glm::vec3 Result = V3(P.Offset + (P.WorldP * world->ChunkDim));
+  return Result;
+}
+
+
+void BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
 {
   int numVoxels = chunk->Dim.x * chunk->Dim.y * chunk->Dim.z;
 
@@ -337,20 +346,21 @@ void BuildChunkMesh(World *world, Chunk *chunk, v3 WorldCameraOffset )
         canonical_position frontVoxel = Canonicalize( world, VoxelP + V3(0,0,1.0f) );
         canonical_position backVoxel  = Canonicalize( world, VoxelP - V3(0,0,1.0f) );
 
-        v3 WorldVoxelOffset = VoxelP.Offset + (VoxelP.WorldP * world->ChunkDim);
+        glm::vec3 VoxRenderP = GetGLRenderP(world, VoxelP);
+        glm::vec3 CamRenderP = GetGLRenderP(world, Camera->P);
 
-        v3 VoxelToCamera = Normalize(WorldCameraOffset - WorldVoxelOffset);
+        glm::vec3 VoxelToCamera = glm::normalize(CamRenderP - VoxRenderP);
 
         // const float* FaceColors = GetColorData( chunk->Voxels[i].flags );
 
         if ( NotFilled( world, chunk, nextVoxel  ) || chunk->flags & Chunk_Entity)
         {
           VoxelBuffer[i].flags = SetFlag( VoxelBuffer[i].flags, Volume_Boundary );
-          if ( IsFacingCamera(VoxelToCamera, V3(1,0,0)) )
+          if ( IsFacingPoint(VoxelToCamera, V3(1,0,0)) )
           {
             const float* FaceColors = GetColorData( Voxel_Red );
             BufferRightFace(
-              WorldVoxelOffset,
+              VoxRenderP,
               &chunk->VertexData,
               &chunk->ColorData,
               &chunk->NormalData,
@@ -363,11 +373,11 @@ void BuildChunkMesh(World *world, Chunk *chunk, v3 WorldCameraOffset )
         if ( NotFilled( world, chunk, prevVoxel ) || chunk->flags & Chunk_Entity)
         {
           VoxelBuffer[i].flags = SetFlag( VoxelBuffer[i].flags, Volume_Boundary );
-          if ( IsFacingCamera(VoxelToCamera, V3(-1,0,0)) )
+          if ( IsFacingPoint(VoxelToCamera, V3(-1,0,0)) )
           {
             const float* FaceColors = GetColorData( Voxel_Yellow );
             BufferLeftFace(
-              WorldVoxelOffset,
+              VoxRenderP,
               &chunk->VertexData,
               &chunk->ColorData,
               &chunk->NormalData,
@@ -380,11 +390,11 @@ void BuildChunkMesh(World *world, Chunk *chunk, v3 WorldCameraOffset )
         if ( NotFilled( world, chunk, botVoxel  ) || chunk->flags & Chunk_Entity)
         {
           VoxelBuffer[i].flags = SetFlag( VoxelBuffer[i].flags, Volume_Boundary );
-          if ( IsFacingCamera(VoxelToCamera, V3(0,-1,0)) )
+          if ( IsFacingPoint(VoxelToCamera, V3(0,-1,0)) )
           {
             const float* FaceColors = GetColorData( Voxel_Teal );
             BufferBottomFace(
-              WorldVoxelOffset,
+              VoxRenderP,
               &chunk->VertexData,
               &chunk->ColorData,
               &chunk->NormalData,
@@ -397,11 +407,11 @@ void BuildChunkMesh(World *world, Chunk *chunk, v3 WorldCameraOffset )
         if ( NotFilled( world, chunk, topVoxel  ) || chunk->flags & Chunk_Entity)
         {
           VoxelBuffer[i].flags = SetFlag( VoxelBuffer[i].flags, Volume_Boundary );
-          if ( IsFacingCamera(VoxelToCamera, V3(0,1,0)) )
+          if ( IsFacingPoint(VoxelToCamera, V3(0,1,0)) )
           {
             const float* FaceColors = GetColorData( Voxel_Green );
             BufferTopFace(
-              WorldVoxelOffset,
+              VoxRenderP,
               &chunk->VertexData,
               &chunk->ColorData,
               &chunk->NormalData,
@@ -414,11 +424,11 @@ void BuildChunkMesh(World *world, Chunk *chunk, v3 WorldCameraOffset )
         if ( NotFilled( world, chunk, frontVoxel  ) || chunk->flags & Chunk_Entity)
         {
           VoxelBuffer[i].flags = SetFlag( VoxelBuffer[i].flags, Volume_Boundary );
-          if ( IsFacingCamera(VoxelToCamera, V3(0,0,1)) )
+          if ( IsFacingPoint(VoxelToCamera, V3(0,0,1)) )
           {
             const float* FaceColors = GetColorData( Voxel_White );
             BufferFrontFace(
-              WorldVoxelOffset,
+              VoxRenderP,
               &chunk->VertexData,
               &chunk->ColorData,
               &chunk->NormalData,
@@ -431,11 +441,11 @@ void BuildChunkMesh(World *world, Chunk *chunk, v3 WorldCameraOffset )
         if ( NotFilled( world, chunk, backVoxel  ) || chunk->flags & Chunk_Entity)
         {
           VoxelBuffer[i].flags = SetFlag( VoxelBuffer[i].flags, Volume_Boundary );
-          if ( IsFacingCamera(VoxelToCamera, V3(0,0,-1)) )
+          if ( IsFacingPoint(VoxelToCamera, V3(0,0,-1)) )
           {
             const float* FaceColors = GetColorData( Voxel_Purple );
             BufferBackFace(
-              WorldVoxelOffset,
+              VoxRenderP,
               &chunk->VertexData,
               &chunk->ColorData,
               &chunk->NormalData,
@@ -454,12 +464,12 @@ void BuildChunkMesh(World *world, Chunk *chunk, v3 WorldCameraOffset )
 void DrawChunk(
     World *world,
     Chunk *chunk,
-    v3 WorldCameraOffset,
+    Camera_Object *Camera,
     GLuint &colorbuffer,
     GLuint &vertexbuffer,
     GLuint &normalbuffer)
 {
-  BuildChunkMesh( world, chunk, WorldCameraOffset );
+  BuildChunkMesh( world, chunk, Camera );
 
   glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
   glBufferData(GL_ARRAY_BUFFER, chunk->VertexData.bytesAllocd, chunk->VertexData.Data, GL_STATIC_DRAW);

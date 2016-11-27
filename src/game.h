@@ -134,10 +134,11 @@ struct Frustum
 struct Camera_Object
 {
   Frustum Frust;
-  // These are in render-space (VisibleRegionOrigin is the origin of render-space)
-  glm::vec3 RenderP;
-  glm::vec3 Front;
-  glm::vec3 Target;
+
+  canonical_position P;
+  canonical_position Target; // TODO : Can this just be a v3?
+
+  v3 Front;
 };
 
 struct World
@@ -200,15 +201,22 @@ GetWorldChunk( World *world, world_position WorldP )
 }
 
 inline bool
-IsFacingCamera( v3 FaceToCamera, v3 FacingDirection )
+IsFacingPoint( v3 FaceToPoint, v3 FaceNormal )
 {
   bool Result = false;
 
-  if ( Dot(FaceToCamera, FacingDirection) > 0 )
+  if ( Dot(FaceToPoint, FaceNormal) > 0 )
   {
     Result = true;
   }
 
+  return Result;
+}
+
+inline bool
+IsFacingPoint( glm::vec3 FaceToPoint, v3 FaceNormal )
+{
+  bool Result = IsFacingPoint(V3(FaceToPoint), FaceNormal);
   return Result;
 }
 

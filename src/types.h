@@ -20,13 +20,6 @@ union v3 {
 
   float E[3];
 
-  inline v3
-  operator=(glm::vec3 A)
-  {
-    v3 Result = { A.x, A.y, A.z };
-    return Result;
-  }
-
 };
 
 union v4 {

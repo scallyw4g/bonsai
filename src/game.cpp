@@ -479,40 +479,27 @@ UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
   model->WorldP = FinalP.WorldP;
 }
 
-glm::vec3
-GetGLRenderP(World *world, canonical_position P)
-{
-  P = Canonicalize(world, P); // TODO : Does this matter?
-  glm::vec3 Result = V3(P.Offset + (P.WorldP * world->ChunkDim));
-  return Result;
-}
-
 void
 UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera )
 {
-  Camera->Target =
-    GetGLRenderP(
-      world,
-      Canonical_Position(Player->Model.Offset, Player->Model.WorldP)
-    );
-
-  Camera->RenderP = Camera->Target + glm::vec3(0,10,15);
-  Camera->Front = Camera->Target - Camera->RenderP;
+  Camera->Target = Canonical_Position(Player->Model.Offset, Player->Model.WorldP);
+  Camera->P = Camera->Target + V3(0,10,15);
+  Camera->Front = Camera->Target.Offset - Camera->P.Offset;
 }
 
 glm::mat4
-GetViewMatrix(Camera_Object *Camera)
+GetViewMatrix(World *world, Camera_Object *Camera)
 {
   glm::mat4 Result;
 
   glm::vec3 up(0, 1, 0);
 
-  glm::vec3 CameraRight = glm::normalize( glm::cross(up, Camera->Front) );
-  glm::vec3 CameraUp = glm::normalize( glm::cross( Camera->Front, CameraRight) );
+  glm::vec3 CameraRight = glm::normalize( glm::cross(up, V3(Camera->Front)) );
+  glm::vec3 CameraUp = glm::normalize( glm::cross( V3(Camera->Front), CameraRight) );
 
   Result = glm::lookAt(
-    Camera->RenderP,
-    Camera->Target,
+    GetGLRenderP(world, Camera->P),
+    GetGLRenderP(world, Camera->Target),
     CameraUp
   );
 
@@ -583,7 +570,7 @@ GAME_UPDATE_AND_RENDER
   UpdatePlayerP( world, Player, PlayerDelta );
   UpdateCameraP( world, Player, Camera );
 
-  glm::mat4 ViewMatrix = GetViewMatrix(Camera);
+  glm::mat4 ViewMatrix = GetViewMatrix(world, Camera);
 
   glm::mat4 mvp = Projection * ViewMatrix * ModelMatrix;
 
@@ -593,9 +580,9 @@ GAME_UPDATE_AND_RENDER
   glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
   glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
 
-  /* glUniform3fv(PlayerPID, 1, &LightP[0]); */
+  glm::vec3 LightP = GetGLRenderP(world, Canonical_Position( Player->Model.Offset, Player->Model.WorldP) );
 
-  glUniform3fv( CameraPID, 1, &Camera->RenderP[0] );
+  glUniform3fv(PlayerPID, 1, &LightP[0]);
 
   // Clear the screen
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -604,7 +591,7 @@ GAME_UPDATE_AND_RENDER
   DrawChunk(
     world,
     &Player->Model,
-    V3(Camera->RenderP),
+    Camera,
     vertexbuffer,
     colorbuffer,
     normalbuffer
@@ -616,7 +603,7 @@ GAME_UPDATE_AND_RENDER
     DrawChunk(
       world,
       &world->Chunks[i],
-      V3(Camera->RenderP),
+      Camera,
       vertexbuffer,
       colorbuffer,
       normalbuffer
