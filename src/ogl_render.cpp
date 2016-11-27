@@ -308,6 +308,16 @@ void BuildChunkMesh(World *world, Chunk *chunk, v3 WorldCameraOffset )
     {
       for ( int z = 0; z < chunk->Dim.z; ++z )
       {
+        int i = x + (y*chunk->Dim.x) + (z*chunk->Dim.x*chunk->Dim.y);
+
+        // Loop if this voxel isn't a boundary voxel
+        if ( NotSet( VoxelBuffer[i].flags, Volume_Boundary ) )
+          continue;
+
+        // Unset the Boundary flag, and re-set it only if we render a face
+        // This is only useful for the first pass; all voxels have Volume_Boundary set
+        VoxelBuffer[i].flags = UnSetFlag( VoxelBuffer[i].flags, Volume_Boundary );
+
         canonical_position VoxelP = Canonicalize(
           world,
           V3(x,y,z) + chunk->Offset,
@@ -323,6 +333,7 @@ void BuildChunkMesh(World *world, Chunk *chunk, v3 WorldCameraOffset )
         canonical_position frontVoxel = Canonicalize( world, VoxelP + V3(0,0,1.0f) );
         canonical_position backVoxel  = Canonicalize( world, VoxelP - V3(0,0,1.0f) );
 
+        // This has to be called because on the first pass every voxel has Volume_Boundary set
         if ( IsFilled(world, chunk, VoxelP) ||
             chunk->flags & Chunk_Entity)
         {
@@ -330,92 +341,108 @@ void BuildChunkMesh(World *world, Chunk *chunk, v3 WorldCameraOffset )
 
           v3 VoxelToCamera = Normalize(WorldCameraOffset - WorldVoxelOffset);
 
-          int i = x + (y*chunk->Dim.x) + (z*chunk->Dim.x*chunk->Dim.y);
-
           // const float* FaceColors = GetColorData( chunk->Voxels[i].flags );
 
-          if ( (NotFilled( world, chunk, nextVoxel ) && IsFacingCamera(VoxelToCamera, V3(1,0,0))) ||
-              chunk->flags & Chunk_Entity)
+          if ( NotFilled( world, chunk, nextVoxel  ) || chunk->flags & Chunk_Entity)
           {
-            const float* FaceColors = GetColorData( Voxel_Red );
-            BufferRightFace(
-              WorldVoxelOffset,
-              &chunk->VertexData,
-              &chunk->ColorData,
-              &chunk->NormalData,
-              FaceColors,
-              &chunk->Verticies
-            );
+            VoxelBuffer[i].flags = SetFlag( VoxelBuffer[i].flags, Volume_Boundary );
+            if ( IsFacingCamera(VoxelToCamera, V3(1,0,0)) )
+            {
+              const float* FaceColors = GetColorData( Voxel_Red );
+              BufferRightFace(
+                WorldVoxelOffset,
+                &chunk->VertexData,
+                &chunk->ColorData,
+                &chunk->NormalData,
+                FaceColors,
+                &chunk->Verticies
+              );
+            }
           }
 
-          if ( (NotFilled( world, chunk, prevVoxel) && IsFacingCamera(VoxelToCamera, V3(-1,0,0))) ||
-              chunk->flags & Chunk_Entity)
+          if ( NotFilled( world, chunk, prevVoxel ) || chunk->flags & Chunk_Entity)
           {
-            const float* FaceColors = GetColorData( Voxel_Yellow );
-            BufferLeftFace(
-              WorldVoxelOffset,
-              &chunk->VertexData,
-              &chunk->ColorData,
-              &chunk->NormalData,
-              FaceColors,
-              &chunk->Verticies
-            );
+            VoxelBuffer[i].flags = SetFlag( VoxelBuffer[i].flags, Volume_Boundary );
+            if ( IsFacingCamera(VoxelToCamera, V3(-1,0,0)) )
+            {
+              const float* FaceColors = GetColorData( Voxel_Yellow );
+              BufferLeftFace(
+                WorldVoxelOffset,
+                &chunk->VertexData,
+                &chunk->ColorData,
+                &chunk->NormalData,
+                FaceColors,
+                &chunk->Verticies
+              );
+            }
           }
 
-          if ( (NotFilled( world, chunk, botVoxel ) && IsFacingCamera(VoxelToCamera, V3(0,-1,0))) ||
-              chunk->flags & Chunk_Entity)
+          if ( NotFilled( world, chunk, botVoxel  ) || chunk->flags & Chunk_Entity)
           {
-            const float* FaceColors = GetColorData( Voxel_Teal );
-            BufferBottomFace(
-              WorldVoxelOffset,
-              &chunk->VertexData,
-              &chunk->ColorData,
-              &chunk->NormalData,
-              FaceColors,
-              &chunk->Verticies
-            );
+            VoxelBuffer[i].flags = SetFlag( VoxelBuffer[i].flags, Volume_Boundary );
+            if ( IsFacingCamera(VoxelToCamera, V3(0,-1,0)) )
+            {
+              const float* FaceColors = GetColorData( Voxel_Teal );
+              BufferBottomFace(
+                WorldVoxelOffset,
+                &chunk->VertexData,
+                &chunk->ColorData,
+                &chunk->NormalData,
+                FaceColors,
+                &chunk->Verticies
+              );
+            }
           }
 
-          if ( (NotFilled( world, chunk, topVoxel ) && IsFacingCamera(VoxelToCamera, V3(0,1,0))) ||
-              chunk->flags & Chunk_Entity)
+          if ( NotFilled( world, chunk, topVoxel  ) || chunk->flags & Chunk_Entity)
           {
-            const float* FaceColors = GetColorData( Voxel_Green );
-            BufferTopFace(
-              WorldVoxelOffset,
-              &chunk->VertexData,
-              &chunk->ColorData,
-              &chunk->NormalData,
-              FaceColors,
-              &chunk->Verticies
-            );
+            VoxelBuffer[i].flags = SetFlag( VoxelBuffer[i].flags, Volume_Boundary );
+            if ( IsFacingCamera(VoxelToCamera, V3(0,1,0)) )
+            {
+              const float* FaceColors = GetColorData( Voxel_Green );
+              BufferTopFace(
+                WorldVoxelOffset,
+                &chunk->VertexData,
+                &chunk->ColorData,
+                &chunk->NormalData,
+                FaceColors,
+                &chunk->Verticies
+              );
+            }
           }
 
-          if ( (NotFilled( world, chunk, frontVoxel ) && IsFacingCamera(VoxelToCamera, V3(0,0,1))) ||
-              chunk->flags & Chunk_Entity)
+          if ( NotFilled( world, chunk, frontVoxel  ) || chunk->flags & Chunk_Entity)
           {
-            const float* FaceColors = GetColorData( Voxel_White );
-            BufferFrontFace(
-              WorldVoxelOffset,
-              &chunk->VertexData,
-              &chunk->ColorData,
-              &chunk->NormalData,
-              FaceColors,
-              &chunk->Verticies
-            );
+            VoxelBuffer[i].flags = SetFlag( VoxelBuffer[i].flags, Volume_Boundary );
+            if ( IsFacingCamera(VoxelToCamera, V3(0,0,1)) )
+            {
+              const float* FaceColors = GetColorData( Voxel_White );
+              BufferFrontFace(
+                WorldVoxelOffset,
+                &chunk->VertexData,
+                &chunk->ColorData,
+                &chunk->NormalData,
+                FaceColors,
+                &chunk->Verticies
+              );
+            }
           }
 
-          if ( (NotFilled( world, chunk, backVoxel ) && IsFacingCamera(VoxelToCamera, V3(0,0,-1))) ||
-              chunk->flags & Chunk_Entity)
+          if ( NotFilled( world, chunk, backVoxel  ) || chunk->flags & Chunk_Entity)
           {
-            const float* FaceColors = GetColorData( Voxel_Purple );
-            BufferBackFace(
-              WorldVoxelOffset,
-              &chunk->VertexData,
-              &chunk->ColorData,
-              &chunk->NormalData,
-              FaceColors,
-              &chunk->Verticies
-            );
+            VoxelBuffer[i].flags = SetFlag( VoxelBuffer[i].flags, Volume_Boundary );
+            if ( IsFacingCamera(VoxelToCamera, V3(0,0,-1)) )
+            {
+              const float* FaceColors = GetColorData( Voxel_Purple );
+              BufferBackFace(
+                WorldVoxelOffset,
+                &chunk->VertexData,
+                &chunk->ColorData,
+                &chunk->NormalData,
+                FaceColors,
+                &chunk->Verticies
+              );
+            }
           }
         }
       }
@@ -433,7 +460,6 @@ void DrawChunk(
     GLuint &normalbuffer)
 {
   BuildChunkMesh( world, chunk, WorldCameraOffset );
-  chunk->flags &= ~Chunk_Redraw;
 
   glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
   glBufferData(GL_ARRAY_BUFFER, chunk->VertexData.bytesAllocd, chunk->VertexData.Data, GL_STATIC_DRAW);

@@ -141,6 +141,10 @@ FillVisibleVoxels( World *world, Chunk *chunk )
 
 #endif
 
+        chunk->Voxels[i].flags |= Floori(l + 0.5);
+        chunk->Voxels[i].flags = SetFlag(chunk->Voxels[i].flags, Volume_Boundary);
+
+
           /* chunk->Voxels[i].flags |= Voxel_Filled; */
 
       }

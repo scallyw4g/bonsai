@@ -42,10 +42,31 @@ Print_P( glm::vec3 P, const char* name)
   printf(" %s %f %f %f \n", name, P.x, P.y, P.z );
 }
 
+inline int
+UnSetFlag( int Flags, int Flag )
+{
+  int Result = Flags &= ~Flag;
+  return Result;
+}
+
+inline int
+SetFlag( int Flags, int Flag )
+{
+  int Result = Flags |= Flag;
+  return Result;
+}
+
 inline bool
 IsSet( int Flags, int Flag )
 {
   bool Result = ( (Flags & Flag) != 0 );
+  return Result;
+}
+
+inline bool
+NotSet( int Flags, int Flag )
+{
+  bool Result = !(IsSet(Flags, Flag));
   return Result;
 }
 
@@ -58,14 +79,15 @@ enum ChunkFlags {
 
 
 enum VoxelFlags {
-  Voxel_Filled  = 1 << 0,
+  Voxel_Filled    = 1 << 0,
+  Volume_Boundary = 1 << 1,
 
-  Voxel_Yellow  = 1 << 1,
-  Voxel_Red     = 1 << 2,
-  Voxel_Green   = 1 << 3,
-  Voxel_Teal    = 1 << 4,
-  Voxel_White   = 1 << 5,
-  Voxel_Purple  = 1 << 6
+  Voxel_Yellow    = 1 << 2,
+  Voxel_Red       = 1 << 3,
+  Voxel_Green     = 1 << 4,
+  Voxel_Teal      = 1 << 5,
+  Voxel_White     = 1 << 6,
+  Voxel_Purple    = 1 << 7
 };
 
 struct Voxel
@@ -84,12 +106,13 @@ struct VertexBlock
 struct Chunk
 {
   Voxel *Voxels;
+
   chunk_dimension Dim;
 
   // Position in absolute world coordinates.  A chunk is one world coordinate
   voxel_position WorldP;
 
-  // Position within the chunk
+  // Position within the chunk this is contained in, if applicable
   v3 Offset;
 
   int flags;
@@ -98,7 +121,7 @@ struct Chunk
   VertexBlock ColorData;
   VertexBlock NormalData;
 
-	int Verticies;
+	int Verticies; // How many verticies are we drawing
 };
 
 struct World
