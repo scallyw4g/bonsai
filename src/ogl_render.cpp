@@ -1,6 +1,10 @@
 #include <cstring>
 #include <csignal>
 
+#include <sstream>
+#include <string>
+using namespace std;
+
 #include <GL/glew.h>
 
 #include <glm/glm.hpp>
@@ -49,15 +53,24 @@ void BufferFace (
   worldNormalData->filled += sizeofNormals;
   worldColorData->filled += FACE_COLOR_SIZE;
 
-  if ( worldVertexData->filled > worldVertexData->bytesAllocd ||
-       worldColorData->filled > worldColorData->bytesAllocd ||
-       worldNormalData->filled > worldNormalData->bytesAllocd
-     )
+  if ( worldVertexData->filled > worldVertexData->bytesAllocd )
   {
-    assert(false); // Out of memory
-    worldVertexData->filled -= sizeofVertPositions;
-    worldNormalData->filled -= sizeofNormals;
-    worldColorData->filled -= FACE_COLOR_SIZE;
+    printf("Out of Vertex Memory\n");
+    assert(false);
+    return;
+  }
+
+  if ( worldColorData->filled > worldColorData->bytesAllocd )
+  {
+    printf("Out of Color Memory\n");
+    assert(false);
+    return;
+  }
+
+  if (worldNormalData->filled > worldNormalData->bytesAllocd )
+  {
+    printf("Out of Normal Memory\n");
+    assert(false);
     return;
   }
 
@@ -304,7 +317,7 @@ IsInFrustum(World *world, Camera_Object *Camera, canonical_position P)
   v3 CameraToVoxel = Normalize(VoxelRenderP - CameraRenderP);
 
   float cosTheta = Dot( CameraToVoxel , Camera->Front );
-  float cos23 = 0.92050485f;
+  float cos23 = 0.92050485f; // This results in a conical frustum .. make it a 6 planed geometric object
 
   if ( cosTheta > cos23 )
   {
@@ -315,22 +328,14 @@ IsInFrustum(World *world, Camera_Object *Camera, canonical_position P)
 }
 
 void
-BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
+BufferVoxel()
 {
-  int numVoxels = chunk->Dim.x * chunk->Dim.y * chunk->Dim.z;
+}
 
-  // Clear out render from last frame
-  memset( chunk->VertexData.Data, 0, chunk->VertexData.bytesAllocd );
-  memset( chunk->ColorData.Data, 0, chunk->ColorData.bytesAllocd );
-  memset( chunk->NormalData.Data, 0, chunk->NormalData.bytesAllocd );
-
-  chunk->VertexData.filled = 0;
-  chunk->ColorData.filled = 0;
-  chunk->NormalData.filled = 0;
-
-	chunk->Verticies = 0;
-
-  Voxel *VoxelBuffer = chunk->Voxels;
+void
+BuildBoundaryVoxels(World *world, Chunk *chunk, Camera_Object *Camera)
+{
+  chunk->BoundaryVoxelCount = 0;
 
   for ( int x = 0; x < chunk->Dim.x; ++x )
   {
@@ -338,18 +343,7 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
     {
       for ( int z = 0; z < chunk->Dim.z; ++z )
       {
-        if ( ! IsInFrustum(world, Camera, Canonical_Position( V3(x,y,z), chunk->WorldP ) ) )
-          continue;
-
         int i = x + (y*chunk->Dim.x) + (z*chunk->Dim.x*chunk->Dim.y);
-
-        // Loop if this voxel isn't a boundary voxel
-        if ( NotSet( VoxelBuffer[i].flags, Volume_Boundary ) )
-          continue;
-
-        // Unset the Boundary flag, and re-set it only if we render a face
-        // This is only useful for the first pass; all voxels have Volume_Boundary set
-        VoxelBuffer[i].flags = UnSetFlag( VoxelBuffer[i].flags, Volume_Boundary );
 
         canonical_position VoxelP = Canonicalize(
           world,
@@ -357,7 +351,6 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
           chunk->WorldP
         );
 
-        // This has to be called because on the first pass every voxel has Volume_Boundary set
         if ( NotFilled(world, chunk, VoxelP) )
           continue;
 
@@ -377,111 +370,175 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
 
         // const float* FaceColors = GetColorData( chunk->Voxels[i].flags );
 
-        if ( NotFilled( world, chunk, nextVoxel  ) || chunk->flags & Chunk_Entity)
+        // Check if any of the surrounding voxels are empty
+        if ( NotFilled( world, chunk, nextVoxel  ) ||
+             NotFilled( world, chunk, prevVoxel  ) ||
+             NotFilled( world, chunk, botVoxel   ) ||
+             NotFilled( world, chunk, topVoxel   ) ||
+             NotFilled( world, chunk, frontVoxel ) ||
+             NotFilled( world, chunk, backVoxel  )
+           )
         {
-          VoxelBuffer[i].flags = SetFlag( VoxelBuffer[i].flags, Volume_Boundary );
-          if ( IsFacingPoint(VoxelToCamera, V3(1,0,0)) )
-          {
-            const float* FaceColors = GetColorData( Voxel_Red );
-            BufferRightFace(
-              VoxRenderP,
-              &chunk->VertexData,
-              &chunk->ColorData,
-              &chunk->NormalData,
-              FaceColors,
-              &chunk->Verticies
-            );
-          }
-        }
+          Voxel voxel = {};
 
-        if ( NotFilled( world, chunk, prevVoxel ) || chunk->flags & Chunk_Entity)
-        {
-          VoxelBuffer[i].flags = SetFlag( VoxelBuffer[i].flags, Volume_Boundary );
-          if ( IsFacingPoint(VoxelToCamera, V3(-1,0,0)) )
-          {
-            const float* FaceColors = GetColorData( Voxel_Yellow );
-            BufferLeftFace(
-              VoxRenderP,
-              &chunk->VertexData,
-              &chunk->ColorData,
-              &chunk->NormalData,
-              FaceColors,
-              &chunk->Verticies
-            );
-          }
-        }
+          voxel.Offset.x = x;
+          voxel.Offset.y = y;
+          voxel.Offset.z = z;
 
-        if ( NotFilled( world, chunk, botVoxel  ) || chunk->flags & Chunk_Entity)
-        {
-          VoxelBuffer[i].flags = SetFlag( VoxelBuffer[i].flags, Volume_Boundary );
-          if ( IsFacingPoint(VoxelToCamera, V3(0,-1,0)) )
-          {
-            const float* FaceColors = GetColorData( Voxel_Teal );
-            BufferBottomFace(
-              VoxRenderP,
-              &chunk->VertexData,
-              &chunk->ColorData,
-              &chunk->NormalData,
-              FaceColors,
-              &chunk->Verticies
-            );
-          }
-        }
-
-        if ( NotFilled( world, chunk, topVoxel  ) || chunk->flags & Chunk_Entity)
-        {
-          VoxelBuffer[i].flags = SetFlag( VoxelBuffer[i].flags, Volume_Boundary );
-          if ( IsFacingPoint(VoxelToCamera, V3(0,1,0)) )
-          {
-            const float* FaceColors = GetColorData( Voxel_Green );
-            BufferTopFace(
-              VoxRenderP,
-              &chunk->VertexData,
-              &chunk->ColorData,
-              &chunk->NormalData,
-              FaceColors,
-              &chunk->Verticies
-            );
-          }
-        }
-
-        if ( NotFilled( world, chunk, frontVoxel  ) || chunk->flags & Chunk_Entity)
-        {
-          VoxelBuffer[i].flags = SetFlag( VoxelBuffer[i].flags, Volume_Boundary );
-          if ( IsFacingPoint(VoxelToCamera, V3(0,0,1)) )
-          {
-            const float* FaceColors = GetColorData( Voxel_White );
-            BufferFrontFace(
-              VoxRenderP,
-              &chunk->VertexData,
-              &chunk->ColorData,
-              &chunk->NormalData,
-              FaceColors,
-              &chunk->Verticies
-            );
-          }
-        }
-
-        if ( NotFilled( world, chunk, backVoxel  ) || chunk->flags & Chunk_Entity)
-        {
-          VoxelBuffer[i].flags = SetFlag( VoxelBuffer[i].flags, Volume_Boundary );
-          if ( IsFacingPoint(VoxelToCamera, V3(0,0,-1)) )
-          {
-            const float* FaceColors = GetColorData( Voxel_Purple );
-            BufferBackFace(
-              VoxRenderP,
-              &chunk->VertexData,
-              &chunk->ColorData,
-              &chunk->NormalData,
-              FaceColors,
-              &chunk->Verticies
-            );
-          }
+          chunk->BoundaryVoxels[chunk->BoundaryVoxelCount] = voxel;
+          chunk->BoundaryVoxelCount++;
         }
 
       }
     }
   }
+}
+
+void
+BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
+{
+  int numVoxels = chunk->Dim.x * chunk->Dim.y * chunk->Dim.z;
+
+  // Clear out render from last frame
+  memset( chunk->VertexData.Data, 0, chunk->VertexData.bytesAllocd );
+  memset( chunk->ColorData.Data, 0, chunk->ColorData.bytesAllocd );
+  memset( chunk->NormalData.Data, 0, chunk->NormalData.bytesAllocd );
+
+  chunk->VertexData.filled = 0;
+  chunk->ColorData.filled = 0;
+  chunk->NormalData.filled = 0;
+
+  chunk->Verticies = 0;
+
+  if ( chunk->BoundaryVoxelCount == BOUNDARY_VOXELS_UNINITIALIZED )
+  {
+    BuildBoundaryVoxels( world, chunk, Camera );
+  }
+
+  for ( int i = 0; i < chunk->BoundaryVoxelCount; ++i )
+  {
+    VoxelsIndexed ++;
+
+    Voxel voxel = chunk->BoundaryVoxels[i];
+
+      canonical_position VoxelP = Canonicalize(
+        world,
+        voxel.Offset + chunk->Offset,
+        chunk->WorldP
+      );
+
+    if ( ! IsInFrustum(world, Camera, Canonical_Position( voxel.Offset, chunk->WorldP ) ) )
+      continue;
+
+    canonical_position nextVoxel  = Canonicalize( world, VoxelP + V3(1.0f,0,0) );
+    canonical_position prevVoxel  = Canonicalize( world, VoxelP - V3(1.0f,0,0) );
+
+    canonical_position topVoxel   = Canonicalize( world, VoxelP + V3(0,1.0f,0) );
+    canonical_position botVoxel   = Canonicalize( world, VoxelP - V3(0,1.0f,0) );
+
+    canonical_position frontVoxel = Canonicalize( world, VoxelP + V3(0,0,1.0f) );
+    canonical_position backVoxel  = Canonicalize( world, VoxelP - V3(0,0,1.0f) );
+
+    glm::vec3 VoxRenderP = GetGLRenderP(world, VoxelP);
+    glm::vec3 CamRenderP = GetGLRenderP(world, Camera->P);
+
+    glm::vec3 VoxelToCamera = glm::normalize(CamRenderP - VoxRenderP);
+
+    // const float* FaceColors = GetColorData( chunk->Voxels[i].flags );
+
+    if ( IsFacingPoint(VoxelToCamera, V3(1,0,0))
+         && NotFilled(world, chunk, nextVoxel)
+       )
+    {
+      const float* FaceColors = GetColorData( Voxel_Red );
+      BufferRightFace(
+        VoxRenderP,
+        &chunk->VertexData,
+        &chunk->ColorData,
+        &chunk->NormalData,
+        FaceColors,
+        &chunk->Verticies
+      );
+    }
+
+    if ( IsFacingPoint(VoxelToCamera, V3(-1,0,0))
+         && NotFilled(world, chunk, prevVoxel)
+       )
+    {
+      const float* FaceColors = GetColorData( Voxel_Yellow );
+      BufferLeftFace(
+        VoxRenderP,
+        &chunk->VertexData,
+        &chunk->ColorData,
+        &chunk->NormalData,
+        FaceColors,
+        &chunk->Verticies
+      );
+    }
+
+    if ( IsFacingPoint(VoxelToCamera, V3(0,-1,0))
+         && NotFilled(world, chunk, botVoxel)
+       )
+    {
+      const float* FaceColors = GetColorData( Voxel_Teal );
+      BufferBottomFace(
+        VoxRenderP,
+        &chunk->VertexData,
+        &chunk->ColorData,
+        &chunk->NormalData,
+        FaceColors,
+        &chunk->Verticies
+      );
+    }
+
+    if ( IsFacingPoint(VoxelToCamera, V3(0,1,0))
+         && NotFilled(world, chunk, topVoxel)
+       )
+    {
+      const float* FaceColors = GetColorData( Voxel_Green );
+      BufferTopFace(
+        VoxRenderP,
+        &chunk->VertexData,
+        &chunk->ColorData,
+        &chunk->NormalData,
+        FaceColors,
+        &chunk->Verticies
+      );
+    }
+
+    if ( IsFacingPoint(VoxelToCamera, V3(0,0,1))
+         && NotFilled(world, chunk, frontVoxel)
+       )
+    {
+      const float* FaceColors = GetColorData( Voxel_White );
+      BufferFrontFace(
+        VoxRenderP,
+        &chunk->VertexData,
+        &chunk->ColorData,
+        &chunk->NormalData,
+        FaceColors,
+        &chunk->Verticies
+      );
+    }
+
+    if ( IsFacingPoint(VoxelToCamera, V3(0,0,-1))
+         && NotFilled(world, chunk, backVoxel)
+       )
+    {
+      const float* FaceColors = GetColorData( Voxel_Purple );
+      BufferBackFace(
+        VoxRenderP,
+        &chunk->VertexData,
+        &chunk->ColorData,
+        &chunk->NormalData,
+        FaceColors,
+        &chunk->Verticies
+      );
+    }
+
+
+}
+
 
 }
 

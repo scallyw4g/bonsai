@@ -80,14 +80,13 @@ enum ChunkFlags {
 
 enum VoxelFlags {
   Voxel_Filled    = 1 << 0,
-  Volume_Boundary = 1 << 1,
 
-  Voxel_Yellow    = 1 << 2,
-  Voxel_Red       = 1 << 3,
-  Voxel_Green     = 1 << 4,
-  Voxel_Teal      = 1 << 5,
-  Voxel_White     = 1 << 6,
-  Voxel_Purple    = 1 << 7
+  Voxel_Yellow    = 1 << 1,
+  Voxel_Red       = 1 << 2,
+  Voxel_Green     = 1 << 3,
+  Voxel_Teal      = 1 << 4,
+  Voxel_White     = 1 << 5,
+  Voxel_Purple    = 1 << 6
 };
 
 struct Voxel
@@ -106,6 +105,9 @@ struct VertexBlock
 struct Chunk
 {
   Voxel *Voxels;
+
+  Voxel *BoundaryVoxels;
+  int BoundaryVoxelCount;
 
   chunk_dimension Dim;
 

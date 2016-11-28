@@ -70,6 +70,7 @@ void
 FillVisibleVoxels( World *world, Chunk *chunk )
 {
   chunk->flags |= Chunk_Redraw;
+  chunk->BoundaryVoxelCount = BOUNDARY_VOXELS_UNINITIALIZED;
 
   for ( int x = 0; x < chunk->Dim.x; ++ x)
   {
@@ -110,9 +111,6 @@ FillVisibleVoxels( World *world, Chunk *chunk )
 #endif
 
         chunk->Voxels[i].flags |= Floori(l + 0.5);
-        chunk->Voxels[i].flags = SetFlag(chunk->Voxels[i].flags, Volume_Boundary);
-
-
           /* chunk->Voxels[i].flags |= Voxel_Filled; */
 
       }
@@ -128,6 +126,10 @@ AllocateChunk(chunk_dimension Dim, voxel_position WorldP)
   Chunk Result;
 
   Result.Voxels = (Voxel*)malloc(Dim.x*Dim.y*Dim.z*sizeof(Voxel));
+
+  Result.BoundaryVoxels = (Voxel*)malloc(Dim.x*Dim.y*Dim.z*sizeof(Voxel));
+  Result.BoundaryVoxelCount = BOUNDARY_VOXELS_UNINITIALIZED;
+
   Result.Dim = Dim;
 
   int BufferSize = Dim.x*Dim.y*Dim.z * BYTES_PER_VOXEL;
@@ -144,7 +146,7 @@ AllocateChunk(chunk_dimension Dim, voxel_position WorldP)
   Result.ColorData.filled = 0;
   Result.NormalData.filled = 0;
 
-	Result.Verticies = 0;
+  Result.Verticies = 0;
 
   Result.WorldP = WorldP;
   Result.Offset = V3(0,0,0);
@@ -611,6 +613,9 @@ GAME_UPDATE_AND_RENDER
 
   printf("%d Triangles drawn\n", tris );
   tris=0;
+
+  printf("%d Voxels Indexed\n", VoxelsIndexed );
+  VoxelsIndexed=0;
 
   // Swap buffers
   glfwSwapBuffers(window);

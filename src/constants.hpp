@@ -1,11 +1,11 @@
 #ifndef GAME_CONSTANTS
 #define GAME_CONSTANTS
 
-#define CHUNK_WIDTH  16
-#define CHUNK_HEIGHT 16
-#define CHUNK_DEPTH  16
+#define CHUNK_WIDTH  4
+#define CHUNK_HEIGHT 4
+#define CHUNK_DEPTH  4
 
-#define VISIBLE_REGION Chunk_Dimension(6,6,6) // Must be > (3,3,3)
+#define VISIBLE_REGION Chunk_Dimension(16,16,16) // Must be > (3,3,3)
 
 #define PERLIN_NOISE_GENERATION 1
 
@@ -13,9 +13,12 @@
 
 #define DEBUG_SCROLL_WORLD 1
 
+#define BOUNDARY_VOXELS_UNINITIALIZED INT_MAX
+
 static int numFrames = 0;
 static float accumulatedTime = 0;
 static int tris = 0;
+static int VoxelsIndexed = 0;
 
 #define CHUNK_VOL (CHUNK_HEIGHT*CHUNK_WIDTH*CHUNK_DEPTH)
 
