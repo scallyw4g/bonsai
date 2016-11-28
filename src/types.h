@@ -88,6 +88,18 @@ operator!=(voxel_position P1, voxel_position P2)
 }
 
 inline voxel_position
+operator-(voxel_position P1, int i)
+{
+  voxel_position Result;
+
+  Result.x = P1.x - i;
+  Result.y = P1.y - i;
+  Result.z = P1.z - i;
+
+  return Result;
+}
+
+inline voxel_position
 operator*(voxel_position P1, voxel_position const P2)
 {
   voxel_position Result;

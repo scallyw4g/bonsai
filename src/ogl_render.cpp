@@ -394,6 +394,25 @@ BuildBoundaryVoxels(World *world, Chunk *chunk, Camera_Object *Camera)
   }
 }
 
+bool
+IsInFrustum( World *world, Camera_Object *Camera, Chunk *chunk )
+{
+  canonical_position MinP = Canonical_Position( V3(0,0,0), chunk->WorldP );
+  canonical_position MaxP = Canonical_Position( V3(chunk->Dim - 1), chunk->WorldP );
+
+  if (IsInFrustum(world, Camera, MinP ))
+  {
+    return true;
+  }
+
+  if (IsInFrustum(world, Camera, MaxP ))
+  {
+    return true;
+  }
+
+  return false;
+}
+
 void
 BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
 {
@@ -409,6 +428,12 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
   chunk->NormalData.filled = 0;
 
   chunk->Verticies = 0;
+
+
+  if ( ! IsInFrustum( world, Camera, chunk ) )
+  {
+    return;
+  }
 
   if ( chunk->BoundaryVoxelCount == BOUNDARY_VOXELS_UNINITIALIZED )
   {
@@ -536,9 +561,7 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
       );
     }
 
-
-}
-
+  }
 
 }
 
