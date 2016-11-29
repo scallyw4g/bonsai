@@ -1,5 +1,7 @@
 #include <GL/glew.h>
 
+#include "/usr/include/valgrind/callgrind.h"
+
 #include <glfw3.h>
 GLFWwindow* window;
 
@@ -485,7 +487,7 @@ void
 UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera )
 {
   Camera->Target = Canonical_Position(Player->Model.Offset, Player->Model.WorldP);
-  Camera->P = Camera->Target + V3(0,10,15);
+  Camera->P = Camera->Target + CAMERA_OFFSET;
   Camera->Front = Normalize(Camera->Target.Offset - Camera->P.Offset);
 }
 
@@ -496,8 +498,8 @@ GetViewMatrix(World *world, Camera_Object *Camera)
 
   glm::vec3 up(0, 1, 0);
 
-  glm::vec3 CameraRight = glm::normalize( glm::cross(up, V3(Camera->Front)) );
-  glm::vec3 CameraUp = glm::normalize( glm::cross( V3(Camera->Front), CameraRight) );
+  glm::vec3 CameraRight = glm::normalize( glm::cross(up, GLV3(Camera->Front)) );
+  glm::vec3 CameraUp = glm::normalize( glm::cross( GLV3(Camera->Front), CameraRight) );
 
   Result = glm::lookAt(
     GetGLRenderP(world, Camera->P),
@@ -553,23 +555,30 @@ GAME_UPDATE_AND_RENDER
   float accelerationMultiplier = 63.0f;
 
   Player->Acceleration = GetInputsFromController() * accelerationMultiplier; // m/s2
-  Player->Acceleration += world->Gravity;
 
   Player->Velocity = (Player->Acceleration*dt + Player->Velocity) * drag; // m/s
+
+  bool grounded = false;
 
   if (IsGrounded(world, Player) && Player->Velocity.y < 0 )
   {
     if (glfwGetKey( window, GLFW_KEY_SPACE ) == GLFW_PRESS)
     {
-      Player->Velocity.y += 7.0f;
+      Player->Velocity.y += 7.0f; // Jump
     }
+  }
+  else
+  {
+    Player->Acceleration += world->Gravity; // Apply Gravity
   }
 
   v3 PlayerDelta = Player->Velocity * dt;
 
-  // Currently we apply Gravity every frame so we can't conditionally UpdatePlayerP
-  UpdatePlayerP( world, Player, PlayerDelta );
-  UpdateCameraP( world, Player, Camera );
+  if ( Length(PlayerDelta) > 0 )
+  {
+    UpdatePlayerP( world, Player, PlayerDelta );
+    UpdateCameraP( world, Player, Camera );
+  }
 
   glm::mat4 ViewMatrix = GetViewMatrix(world, Camera);
 
@@ -616,6 +625,9 @@ GAME_UPDATE_AND_RENDER
 
   printf("%d Voxels Indexed\n", VoxelsIndexed );
   VoxelsIndexed=0;
+
+  printf("%d Boundary Voxels Indexed\n", BoundaryVoxelsIndexed );
+  BoundaryVoxelsIndexed=0;
 
   // Swap buffers
   glfwSwapBuffers(window);
@@ -714,6 +726,14 @@ main( void )
   // Use our shader
   glUseProgram(programID);
 
+  // Get a handle for our "MVP" uniform
+  // Only during the initialisation
+  GLuint MatrixID = glGetUniformLocation(programID, "MVP");
+  GLuint ModelMatrixID = glGetUniformLocation(programID, "M");
+  GLuint ViewMatrixID = glGetUniformLocation(programID, "V");
+  GLuint PlayerPID = glGetUniformLocation(programID, "LightP_worldspace");
+  GLuint CameraPID = glGetUniformLocation(programID, "CameraP_worldspace");
+
   /*
    *  Main Render loop
    *
@@ -727,14 +747,7 @@ main( void )
     accumulatedTime += dt;
     numFrames ++;
 
-    // Get a handle for our "MVP" uniform
-    // Only during the initialisation
-    GLuint MatrixID = glGetUniformLocation(programID, "MVP");
-    GLuint ModelMatrixID = glGetUniformLocation(programID, "M");
-    GLuint ViewMatrixID = glGetUniformLocation(programID, "V");
-    GLuint PlayerPID = glGetUniformLocation(programID, "LightP_worldspace");
-    GLuint CameraPID = glGetUniformLocation(programID, "CameraP_worldspace");
-
+    CALLGRIND_TOGGLE_COLLECT;
 
     GAME_UPDATE_AND_RENDER(
       &world,
@@ -755,10 +768,15 @@ main( void )
       CameraPID
     );
 
+    CALLGRIND_TOGGLE_COLLECT;
+
+
   } // Check if the ESC key was pressed or the window was closed
   while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
          glfwGetKey(window, GLFW_KEY_Q )      != GLFW_PRESS &&
          glfwWindowShouldClose(window) == 0 );
+
+  CALLGRIND_DUMP_STATS;
 
   glDeleteBuffers(1, &vertexbuffer);
   glDeleteBuffers(1, &colorbuffer);
@@ -769,10 +787,12 @@ main( void )
 
   // Close OpenGL window and terminate GLFW
   glfwTerminate();
+  /* glfwDestroyWindow(window); */
 
   for ( int i = 0; i < Volume(world.VisibleRegion) ; ++ i )
   {
     free( world.Chunks[i].Voxels );
+    free( world.Chunks[i].BoundaryVoxels );
 
     free( world.Chunks[i].VertexData.Data );
     free( world.Chunks[i].ColorData.Data );
@@ -780,6 +800,9 @@ main( void )
   }
 
   free( world.Chunks );
+
+  free(Player.Model.Voxels);
+  free(Player.Model.BoundaryVoxels);
 
   free(Player.Model.VertexData.Data);
   free(Player.Model.ColorData.Data);

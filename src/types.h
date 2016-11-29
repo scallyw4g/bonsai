@@ -240,7 +240,7 @@ V3(voxel_position wp)
 }
 
 inline v3
-V3(glm::vec3 vec)
+GLV3(glm::vec3 vec)
 {
   v3 Result;
 
@@ -269,7 +269,7 @@ Canonical_Position( glm::vec3 Offset, world_position WorldP )
 {
   canonical_position Result;
 
-  Result.Offset = V3(Offset);
+  Result.Offset = GLV3(Offset);
   Result.WorldP = WorldP;
 
   return Result;
@@ -435,6 +435,18 @@ operator/(v3 A, int B)
   Result.x = A.x / (float)B;
   Result.y = A.y / (float)B;
   Result.z = A.z / (float)B;
+
+  return Result;
+}
+
+inline v3
+operator/(voxel_position A, int i)
+{
+  v3 Result;
+
+  Result.x = A.x / (float)i;
+  Result.y = A.y / (float)i;
+  Result.z = A.z / (float)i;
 
   return Result;
 }
@@ -608,7 +620,8 @@ v4 operator+(v4 A, v4 B)
 }
 
 
-glm::vec3 V3( v3 Vec )
+inline glm::vec3
+GLV3( v3 Vec )
 {
   glm::vec3 Result;
 

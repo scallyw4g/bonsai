@@ -27,7 +27,6 @@ using namespace glm;
       localNormalData, \
       sizeof(localNormalData), \
       FaceColor, \
-      ArrayCount(localVertexData), \
       chunkVertCount)
 
 void BufferFace (
@@ -43,7 +42,6 @@ void BufferFace (
 
     const float* VertColors,
 
-    int numFaceVerts,
     int *chunkVertCount
   )
 {
@@ -74,10 +72,10 @@ void BufferFace (
     return;
   }
 
-  memcpy( &worldVertexData->Data[*chunkVertCount], VertsPositions, sizeofVertPositions );
-  memcpy( &worldNormalData->Data[*chunkVertCount], Normals, sizeofNormals );
-  memcpy( &worldColorData->Data[*chunkVertCount], VertColors, FACE_COLOR_SIZE );
-  *chunkVertCount += numFaceVerts;
+  memcpy( &worldVertexData->Data[(*chunkVertCount)*3], VertsPositions, sizeofVertPositions );
+  memcpy( &worldNormalData->Data[(*chunkVertCount)*3], Normals, sizeofNormals );
+  memcpy( &worldColorData->Data[(*chunkVertCount)*3], VertColors, FACE_COLOR_SIZE );
+  *chunkVertCount += 6;
 }
 
 void BufferRightFace(
@@ -298,11 +296,18 @@ bool IsBottomChunkBoundary( chunk_dimension ChunkDim, int idx )
   return (idx/(int)ChunkDim.x) % (int)ChunkDim.y == 0;
 }
 
-glm::vec3
+inline glm::vec3
 GetGLRenderP(World *world, canonical_position P)
 {
-  P = Canonicalize(world, P); // TODO : Does this matter?
-  glm::vec3 Result = V3(P.Offset + (P.WorldP * world->ChunkDim));
+  // P = Canonicalize(world, P); // TODO : Does this matter?
+  glm::vec3 Result = GLV3(P.Offset + (P.WorldP * world->ChunkDim));
+  return Result;
+}
+
+inline v3
+GetRenderP( World *world, canonical_position P)
+{
+  v3 Result = GLV3(GetGLRenderP( world, P ) );
   return Result;
 }
 
@@ -311,13 +316,13 @@ IsInFrustum(World *world, Camera_Object *Camera, canonical_position P)
 {
   bool Result = false;
 
-  v3 VoxelRenderP = V3(GetGLRenderP( world, P ));
-  v3 CameraRenderP = V3(GetGLRenderP( world, Camera->P ));
+  v3 VoxelRenderP = GetRenderP( world, P );
+  v3 CameraRenderP = GetRenderP( world, Camera->P );
 
   v3 CameraToVoxel = Normalize(VoxelRenderP - CameraRenderP);
 
   float cosTheta = Dot( CameraToVoxel , Camera->Front );
-  float cos23 = 0.92050485f; // This results in a conical frustum .. make it a 6 planed geometric object
+  float cos23 = 0.92050485f/1.2; // This results in a conical frustum .. make it a 6 planed geometric object
 
   if ( cosTheta > cos23 )
   {
@@ -325,11 +330,6 @@ IsInFrustum(World *world, Camera_Object *Camera, canonical_position P)
   }
 
   return Result;
-}
-
-void
-BufferVoxel()
-{
 }
 
 void
@@ -363,14 +363,7 @@ BuildBoundaryVoxels(World *world, Chunk *chunk, Camera_Object *Camera)
         canonical_position frontVoxel = Canonicalize( world, VoxelP + V3(0,0,1.0f) );
         canonical_position backVoxel  = Canonicalize( world, VoxelP - V3(0,0,1.0f) );
 
-        glm::vec3 VoxRenderP = GetGLRenderP(world, VoxelP);
-        glm::vec3 CamRenderP = GetGLRenderP(world, Camera->P);
-
-        glm::vec3 VoxelToCamera = glm::normalize(CamRenderP - VoxRenderP);
-
-        // const float* FaceColors = GetColorData( chunk->Voxels[i].flags );
-
-        // Check if any of the surrounding voxels are empty
+        // TODO : Cache this check in the flags so we don't have to to it again when rendering
         if ( NotFilled( world, chunk, nextVoxel  ) ||
              NotFilled( world, chunk, prevVoxel  ) ||
              NotFilled( world, chunk, botVoxel   ) ||
@@ -392,20 +385,18 @@ BuildBoundaryVoxels(World *world, Chunk *chunk, Camera_Object *Camera)
       }
     }
   }
+
+  BoundaryVoxelsIndexed += chunk->BoundaryVoxelCount;
 }
 
 bool
 IsInFrustum( World *world, Camera_Object *Camera, Chunk *chunk )
 {
-  canonical_position MinP = Canonical_Position( V3(0,0,0), chunk->WorldP );
-  canonical_position MaxP = Canonical_Position( V3(chunk->Dim - 1), chunk->WorldP );
+  v3 ChunkMid = V3(chunk->Dim.x/2, chunk->Dim.y/2, chunk->Dim.z/2);
 
-  if (IsInFrustum(world, Camera, MinP ))
-  {
-    return true;
-  }
+  canonical_position P1 = Canonical_Position( ChunkMid, chunk->WorldP );
 
-  if (IsInFrustum(world, Camera, MaxP ))
+  if (IsInFrustum(world, Camera, P1 ))
   {
     return true;
   }
@@ -418,10 +409,7 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
 {
   int numVoxels = chunk->Dim.x * chunk->Dim.y * chunk->Dim.z;
 
-  // Clear out render from last frame
-  memset( chunk->VertexData.Data, 0, chunk->VertexData.bytesAllocd );
-  memset( chunk->ColorData.Data, 0, chunk->ColorData.bytesAllocd );
-  memset( chunk->NormalData.Data, 0, chunk->NormalData.bytesAllocd );
+  /* printf("builchunkmesh %d\n", thing++); */
 
   chunk->VertexData.filled = 0;
   chunk->ColorData.filled = 0;
@@ -429,6 +417,12 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
 
   chunk->Verticies = 0;
 
+  v3 ChunkCenterRenderP  = GetRenderP(world, Canonical_Position(chunk->Dim / 2, chunk->WorldP) );
+  v3 CameraTargetRenderP = GetRenderP(world, Camera->Target );
+
+  int ChunkWidths = Length( ChunkCenterRenderP - CameraTargetRenderP ) / world->ChunkDim.x;
+
+  int LOD = 1+(ChunkWidths*100);
 
   if ( ! IsInFrustum( world, Camera, chunk ) )
   {
@@ -440,20 +434,23 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
     BuildBoundaryVoxels( world, chunk, Camera );
   }
 
-  for ( int i = 0; i < chunk->BoundaryVoxelCount; ++i )
+  glm::vec3 GLCameraRenderP = GetGLRenderP(world, Camera->P);
+
+  for ( int i = 0; i < chunk->BoundaryVoxelCount; i += LOD )
   {
     VoxelsIndexed ++;
 
     Voxel voxel = chunk->BoundaryVoxels[i];
 
-      canonical_position VoxelP = Canonicalize(
-        world,
-        voxel.Offset + chunk->Offset,
-        chunk->WorldP
-      );
+    canonical_position VoxelP = Canonical_Position(
+      voxel.Offset + chunk->Offset,
+      chunk->WorldP
+    );
 
-    if ( ! IsInFrustum(world, Camera, Canonical_Position( voxel.Offset, chunk->WorldP ) ) )
-      continue;
+    /* if ( ! IsInFrustum( world, Camera, VoxelP ) ) */
+    /* { */
+    /*   continue; */
+    /* } */
 
     canonical_position nextVoxel  = Canonicalize( world, VoxelP + V3(1.0f,0,0) );
     canonical_position prevVoxel  = Canonicalize( world, VoxelP - V3(1.0f,0,0) );
@@ -465,13 +462,11 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
     canonical_position backVoxel  = Canonicalize( world, VoxelP - V3(0,0,1.0f) );
 
     glm::vec3 VoxRenderP = GetGLRenderP(world, VoxelP);
-    glm::vec3 CamRenderP = GetGLRenderP(world, Camera->P);
 
-    glm::vec3 VoxelToCamera = glm::normalize(CamRenderP - VoxRenderP);
+    glm::vec3 VoxelToCamera = glm::normalize(GLCameraRenderP - VoxRenderP);
 
-    // const float* FaceColors = GetColorData( chunk->Voxels[i].flags );
-
-    if ( IsFacingPoint(VoxelToCamera, V3(1,0,0))
+    if (
+         IsFacingPoint(VoxelToCamera, V3(1,0,0))
          && NotFilled(world, chunk, nextVoxel)
        )
     {
@@ -486,7 +481,8 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
       );
     }
 
-    if ( IsFacingPoint(VoxelToCamera, V3(-1,0,0))
+    if (
+         IsFacingPoint(VoxelToCamera, V3(-1,0,0))
          && NotFilled(world, chunk, prevVoxel)
        )
     {
@@ -501,7 +497,8 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
       );
     }
 
-    if ( IsFacingPoint(VoxelToCamera, V3(0,-1,0))
+    if (
+         IsFacingPoint(VoxelToCamera, V3(0,-1,0))
          && NotFilled(world, chunk, botVoxel)
        )
     {
@@ -516,7 +513,8 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
       );
     }
 
-    if ( IsFacingPoint(VoxelToCamera, V3(0,1,0))
+    if (
+         IsFacingPoint(VoxelToCamera, V3(0,1,0))
          && NotFilled(world, chunk, topVoxel)
        )
     {
@@ -531,7 +529,8 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
       );
     }
 
-    if ( IsFacingPoint(VoxelToCamera, V3(0,0,1))
+    if (
+         IsFacingPoint(VoxelToCamera, V3(0,0,1))
          && NotFilled(world, chunk, frontVoxel)
        )
     {
@@ -546,7 +545,8 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
       );
     }
 
-    if ( IsFacingPoint(VoxelToCamera, V3(0,0,-1))
+    if (
+         IsFacingPoint(VoxelToCamera, V3(0,0,-1))
          && NotFilled(world, chunk, backVoxel)
        )
     {
@@ -575,55 +575,59 @@ void DrawChunk(
 {
   BuildChunkMesh( world, chunk, Camera );
 
-  glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-  glBufferData(GL_ARRAY_BUFFER, chunk->VertexData.bytesAllocd, chunk->VertexData.Data, GL_STATIC_DRAW);
+  if ( chunk->Verticies > 0 )
+  {
 
-  glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
-  glBufferData(GL_ARRAY_BUFFER, chunk->ColorData.bytesAllocd, chunk->ColorData.Data, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+    glBufferData(GL_ARRAY_BUFFER, chunk->VertexData.bytesAllocd, chunk->VertexData.Data, GL_STATIC_DRAW);
 
-  glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
-  glBufferData(GL_ARRAY_BUFFER, chunk->NormalData.bytesAllocd, chunk->NormalData.Data, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
+    glBufferData(GL_ARRAY_BUFFER, chunk->ColorData.bytesAllocd, chunk->ColorData.Data, GL_STATIC_DRAW);
 
-  // Vertices
-  glEnableVertexAttribArray(0);
-  glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-  glVertexAttribPointer(
-    0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-    3,                  // size
-    GL_FLOAT,           // type
-    GL_FALSE,           // normalized?
-    0,                  // stride
-    (void*)0            // array buffer offset
-  );
+    glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
+    glBufferData(GL_ARRAY_BUFFER, chunk->NormalData.bytesAllocd, chunk->NormalData.Data, GL_STATIC_DRAW);
 
-  // Colors
-  glEnableVertexAttribArray(1);
-  glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
-  glVertexAttribPointer(
-    1,                  // attribute 1. No particular reason for 1, but must match the layout in the shader.
-    3,                  // size
-    GL_FLOAT,           // type
-    GL_FALSE,           // normalized?
-    0,                  // stride
-    (void*)0            // array buffer offset
-  );
+    // Vertices
+    glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+    glVertexAttribPointer(
+      0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+      3,                  // size
+      GL_FLOAT,           // type
+      GL_FALSE,           // normalized?
+      0,                  // stride
+      (void*)0            // array buffer offset
+    );
 
-  // Normals
-  glEnableVertexAttribArray(2);
-  glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
-  glVertexAttribPointer(
-    2,
-    3,                  // size
-    GL_FLOAT,           // type
-    GL_FALSE,           // normalized?
-    0,                  // stride
-    (void*)0            // array buffer offset
-  );
+    // Colors
+    glEnableVertexAttribArray(1);
+    glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
+    glVertexAttribPointer(
+      1,                  // attribute 1. No particular reason for 1, but must match the layout in the shader.
+      3,                  // size
+      GL_FLOAT,           // type
+      GL_FALSE,           // normalized?
+      0,                  // stride
+      (void*)0            // array buffer offset
+    );
 
-  glDrawArrays(GL_TRIANGLES, 0, chunk->Verticies);
+    // Normals
+    glEnableVertexAttribArray(2);
+    glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
+    glVertexAttribPointer(
+      2,
+      3,                  // size
+      GL_FLOAT,           // type
+      GL_FALSE,           // normalized?
+      0,                  // stride
+      (void*)0            // array buffer offset
+    );
 
-  glDisableVertexAttribArray(0);
-  glDisableVertexAttribArray(1);
-  glDisableVertexAttribArray(2);
+    glDrawArrays(GL_TRIANGLES, 0, chunk->Verticies);
 
+    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
+    glDisableVertexAttribArray(2);
+
+  }
 }

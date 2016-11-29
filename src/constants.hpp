@@ -1,9 +1,9 @@
 #ifndef GAME_CONSTANTS
 #define GAME_CONSTANTS
 
-#define CHUNK_WIDTH  16
-#define CHUNK_HEIGHT 16
-#define CHUNK_DEPTH  16
+#define CHUNK_WIDTH  32
+#define CHUNK_HEIGHT 32
+#define CHUNK_DEPTH  32
 
 #define VISIBLE_REGION Chunk_Dimension(6,6,6) // Must be > (3,3,3)
 
@@ -15,10 +15,16 @@
 
 #define BOUNDARY_VOXELS_UNINITIALIZED INT_MAX
 
+#define CAMERA_OFFSET V3(0,20,25)
+
 static int numFrames = 0;
 static float accumulatedTime = 0;
+
 static int tris = 0;
 static int VoxelsIndexed = 0;
+static int BoundaryVoxelsIndexed = 0;
+
+static int thing = 0;
 
 #define CHUNK_VOL (CHUNK_HEIGHT*CHUNK_WIDTH*CHUNK_DEPTH)
 

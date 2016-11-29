@@ -218,7 +218,7 @@ IsFacingPoint( v3 FaceToPoint, v3 FaceNormal )
 inline bool
 IsFacingPoint( glm::vec3 FaceToPoint, v3 FaceNormal )
 {
-  bool Result = IsFacingPoint(V3(FaceToPoint), FaceNormal);
+  bool Result = IsFacingPoint(GLV3(FaceToPoint), FaceNormal);
   return Result;
 }
 
