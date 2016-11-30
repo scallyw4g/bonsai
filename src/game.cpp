@@ -552,25 +552,26 @@ GAME_UPDATE_AND_RENDER
 
   // TODO : Bake these into the terrain/model ?
   v3 drag = V3(0.6f, 1.0f, 0.6f);
-  float accelerationMultiplier = 63.0f;
+  float accelerationMultiplier = 5.0f;
 
   Player->Acceleration = GetInputsFromController() * accelerationMultiplier; // m/s2
 
-  Player->Velocity = (Player->Acceleration*dt + Player->Velocity) * drag; // m/s
 
   bool grounded = false;
 
-  if (IsGrounded(world, Player) && Player->Velocity.y < 0 )
+  if (IsGrounded(world, Player))
   {
     if (glfwGetKey( window, GLFW_KEY_SPACE ) == GLFW_PRESS)
     {
-      Player->Velocity.y += 7.0f; // Jump
+      Player->Velocity.y += 40.0f; // Jump
     }
   }
   else
   {
-    Player->Acceleration += world->Gravity; // Apply Gravity
+    Player->Acceleration += world->Gravity * dt; // Apply Gravity
   }
+
+  Player->Velocity = (Player->Velocity + (Player->Acceleration )) * drag; // m/s
 
   v3 PlayerDelta = Player->Velocity * dt;
 
@@ -620,14 +621,14 @@ GAME_UPDATE_AND_RENDER
     );
   }
 
-  printf("%d Triangles drawn\n", tris );
-  tris=0;
+  /* printf("%d Triangles drawn\n", tris ); */
+  /* tris=0; */
 
-  printf("%d Voxels Indexed\n", VoxelsIndexed );
-  VoxelsIndexed=0;
+  /* printf("%d Voxels Indexed\n", VoxelsIndexed ); */
+  /* VoxelsIndexed=0; */
 
-  printf("%d Boundary Voxels Indexed\n", BoundaryVoxelsIndexed );
-  BoundaryVoxelsIndexed=0;
+  /* printf("%d Boundary Voxels Indexed\n", BoundaryVoxelsIndexed ); */
+  /* BoundaryVoxelsIndexed=0; */
 
   // Swap buffers
   glfwSwapBuffers(window);

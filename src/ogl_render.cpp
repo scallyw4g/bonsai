@@ -314,22 +314,28 @@ GetRenderP( World *world, canonical_position P)
 inline bool
 IsInFrustum(World *world, Camera_Object *Camera, canonical_position P)
 {
-  bool Result = false;
+  v3 MaxP = Camera->Front * Camera->Frust.farClip;
+  MaxP.x += world->ChunkDim.x*3;
+  MaxP.y += world->ChunkDim.y*3;
 
-  v3 VoxelRenderP = GetRenderP( world, P );
-  v3 CameraRenderP = GetRenderP( world, Camera->P );
+  v3 MinP = Camera->P.Offset;
+  MinP.x -= world->ChunkDim.x*3;
+  MinP.y -= world->ChunkDim.y*3;
 
-  v3 CameraToVoxel = Normalize(VoxelRenderP - CameraRenderP);
+  v3 MaxRenderP = GetRenderP(world, Canonical_Position(MaxP, Camera->P.WorldP));
+  v3 MinRenderP = GetRenderP(world, Canonical_Position(MinP, Camera->P.WorldP));
 
-  float cosTheta = Dot( CameraToVoxel , Camera->Front );
-  float cos23 = 0.92050485f/1.2; // This results in a conical frustum .. make it a 6 planed geometric object
+  v3 TestRenderP = GetRenderP(world, P);
 
-  if ( cosTheta > cos23 )
+  if ( (TestRenderP.x < MinRenderP.x || TestRenderP.x > MaxRenderP.x) &&
+       (TestRenderP.y < MinRenderP.y || TestRenderP.y > MaxRenderP.y) &&
+       (TestRenderP.z < MinRenderP.z || TestRenderP.z > MaxRenderP.z)
+     )
   {
-    Result = true;
+    return false;
   }
 
-  return Result;
+  return true;
 }
 
 void
@@ -420,9 +426,9 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
   v3 ChunkCenterRenderP  = GetRenderP(world, Canonical_Position(chunk->Dim / 2, chunk->WorldP) );
   v3 CameraTargetRenderP = GetRenderP(world, Camera->Target );
 
-  int ChunkWidths = Length( ChunkCenterRenderP - CameraTargetRenderP ) / world->ChunkDim.x;
+  int ChunkWidths = Length( ChunkCenterRenderP - CameraTargetRenderP ) / (world->ChunkDim.x*3);
 
-  int LOD = 1+(ChunkWidths*100);
+  int LOD = 1+(ChunkWidths);
 
   if ( ! IsInFrustum( world, Camera, chunk ) )
   {

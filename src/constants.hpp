@@ -1,11 +1,11 @@
 #ifndef GAME_CONSTANTS
 #define GAME_CONSTANTS
 
-#define CHUNK_WIDTH  32
-#define CHUNK_HEIGHT 32
-#define CHUNK_DEPTH  32
+#define CHUNK_WIDTH  8
+#define CHUNK_HEIGHT 8
+#define CHUNK_DEPTH  8
 
-#define VISIBLE_REGION Chunk_Dimension(6,6,6) // Must be > (3,3,3)
+#define VISIBLE_REGION Chunk_Dimension(10,10,10) // Must be > (3,3,3)
 
 #define PERLIN_NOISE_GENERATION 1
 
@@ -15,7 +15,7 @@
 
 #define BOUNDARY_VOXELS_UNINITIALIZED INT_MAX
 
-#define CAMERA_OFFSET V3(0,20,25)
+#define CAMERA_OFFSET V3(0,40,45)
 
 static int numFrames = 0;
 static float accumulatedTime = 0;
