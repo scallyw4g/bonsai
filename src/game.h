@@ -71,10 +71,10 @@ NotSet( int Flags, int Flag )
 }
 
 enum ChunkFlags {
-  Chunk_Redraw = 1 << 0,
+  Chunk_Uninitialized = 1 << 0,
 
-  Chunk_Entity = 1 << 1,
-  Chunk_World  = 1 << 2
+  Chunk_Entity        = 1 << 1,
+  Chunk_World         = 1 << 2
 };
 
 
@@ -124,6 +124,28 @@ struct Chunk
   VertexBlock NormalData;
 
 	int Verticies; // How many verticies are we drawing
+};
+
+struct ChunkStack
+{
+  Chunk chunks[CHUNK_STACK_SIZE];
+  int count = 0;
+};
+
+Chunk
+PopChunkStack(ChunkStack *stack)
+{
+  assert(stack->count > 0);
+  return stack->chunks[--stack->count];
+};
+
+void
+PushChunkStack(ChunkStack *stack, Chunk chunk)
+{
+  assert(stack->count + 1 < CHUNK_STACK_SIZE);
+
+  stack->chunks[stack->count++] = chunk;
+  return;
 };
 
 struct Frustum
@@ -189,6 +211,7 @@ GetWorldChunk( World *world, world_position WorldP )
     WorldP.z < 0 ||
     WorldP.z >= world->VisibleRegion.z )
   {
+    /* assert(false); // Requesting outside the initialized world; no bueno? */
     return nullptr;
   }
 
@@ -198,6 +221,8 @@ GetWorldChunk( World *world, world_position WorldP )
     (WorldP.z * world->VisibleRegion.x * world->VisibleRegion.y);
 
   Result = &world->Chunks[i];
+
+  assert( Result->WorldP == WorldP );
 
   return Result;
 }
@@ -237,7 +262,7 @@ IsFilled( Chunk *chunk, voxel_position VoxelP )
         (VoxelP.y*chunk->Dim.x) +
         (VoxelP.z*chunk->Dim.x*chunk->Dim.y);
 
-      isFilled = (chunk->Voxels[i].flags & Voxel_Filled);
+      isFilled = IsSet(chunk->Voxels[i].flags, Voxel_Filled);
     }
   }
 

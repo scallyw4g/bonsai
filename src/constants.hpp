@@ -1,11 +1,9 @@
 #ifndef GAME_CONSTANTS
 #define GAME_CONSTANTS
 
-#define CHUNK_WIDTH  8
-#define CHUNK_HEIGHT 8
-#define CHUNK_DEPTH  8
+#define CHUNK_DIMENSION Chunk_Dimension(16,16,16)
 
-#define VISIBLE_REGION Chunk_Dimension(10,10,10) // Must be > (3,3,3)
+#define VISIBLE_REGION Chunk_Dimension(8,8,8) // Must be > (3,3,3)
 
 #define PERLIN_NOISE_GENERATION 1
 
@@ -13,7 +11,9 @@
 
 #define DEBUG_SCROLL_WORLD 1
 
-#define BOUNDARY_VOXELS_UNINITIALIZED INT_MAX
+#define BOUNDARY_VOXELS_UNINITIALIZED -1 // THIS MUST BE NEGATIVE
+
+#define CHUNK_STACK_SIZE 512
 
 #define CAMERA_OFFSET V3(0,40,45)
 

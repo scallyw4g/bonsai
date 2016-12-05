@@ -69,10 +69,13 @@ initWindow( int width, int height )
 }
 
 void
-FillVisibleVoxels( World *world, Chunk *chunk )
+InitializeVoxels( World *world, Chunk *chunk )
 {
-  chunk->flags |= Chunk_Redraw;
-  chunk->BoundaryVoxelCount = BOUNDARY_VOXELS_UNINITIALIZED;
+
+  if ( !chunk )
+  {
+    assert(false);
+  }
 
   for ( int x = 0; x < chunk->Dim.x; ++ x)
   {
@@ -99,8 +102,10 @@ FillVisibleVoxels( World *world, Chunk *chunk )
 
 #if PERLIN_NOISE_GENERATION
         double l = world->Noise.noise(InX, InY, InZ);
+        chunk->Voxels[i].flags = 0;
         chunk->Voxels[i].flags |= Floori(l + 0.5);
 #else
+
         if (
              ( chunk->Voxels[i].Offset.x == 0 && chunk->Voxels[i].Offset.y == 0 ) ||
              ( chunk->Voxels[i].Offset.y == 0 && chunk->Voxels[i].Offset.z == 0 ) ||
@@ -111,10 +116,51 @@ FillVisibleVoxels( World *world, Chunk *chunk )
         }
 
 #endif
+      }
+    }
+  }
 
-        chunk->Voxels[i].flags |= Floori(l + 0.5);
-          /* chunk->Voxels[i].flags |= Voxel_Filled; */
 
+  chunk->flags = UnSetFlag(chunk->flags, Chunk_Uninitialized);
+
+  return;
+}
+
+void
+ZeroChunk( Chunk * chunk )
+{
+  chunk->BoundaryVoxelCount = BOUNDARY_VOXELS_UNINITIALIZED;
+
+  for ( int i = 0; i < Volume(chunk->Dim); ++ i)
+  {
+    chunk->Voxels[i].flags = 0;
+  }
+
+  for ( int i = 0; i < chunk->BoundaryVoxelCount; ++ i)
+  {
+    chunk->BoundaryVoxels[i].flags = 0;
+  }
+
+  chunk->flags = Chunk_Uninitialized;
+
+  chunk->VertexData.filled = 0;
+  chunk->ColorData.filled = 0;
+  chunk->NormalData.filled = 0;
+
+  chunk->Verticies = 0;
+}
+
+void
+ZeroWorldChunks( World *world )
+{
+  for ( int x = 0; x < world->VisibleRegion.x; ++x )
+  {
+    for ( int y = 0; y < world->VisibleRegion.y; ++y )
+    {
+      for ( int z = 0; z < world->VisibleRegion.z; ++z )
+      {
+        Chunk *chunk = GetWorldChunk(world, World_Position(x,y,z));
+        ZeroChunk(chunk);
       }
     }
   }
@@ -122,19 +168,21 @@ FillVisibleVoxels( World *world, Chunk *chunk )
   return;
 }
 
+
 Chunk
 AllocateChunk(chunk_dimension Dim, voxel_position WorldP)
 {
   Chunk Result;
 
-  Result.Voxels = (Voxel*)malloc(Dim.x*Dim.y*Dim.z*sizeof(Voxel));
-
-  Result.BoundaryVoxels = (Voxel*)malloc(Dim.x*Dim.y*Dim.z*sizeof(Voxel));
-  Result.BoundaryVoxelCount = BOUNDARY_VOXELS_UNINITIALIZED;
+  int BufferSize = Dim.x*Dim.y*Dim.z * BYTES_PER_VOXEL;
 
   Result.Dim = Dim;
 
-  int BufferSize = Dim.x*Dim.y*Dim.z * BYTES_PER_VOXEL;
+  Result.WorldP = WorldP;
+  Result.Offset = V3(0,0,0);
+
+  Result.Voxels = (Voxel*)malloc(Dim.x*Dim.y*Dim.z*sizeof(Voxel));
+  Result.BoundaryVoxels = (Voxel*)malloc(Dim.x*Dim.y*Dim.z*sizeof(Voxel));
 
   Result.VertexData.Data = (GLfloat *)malloc(BufferSize);
   Result.ColorData.Data = (GLfloat *)malloc(BufferSize);
@@ -144,17 +192,7 @@ AllocateChunk(chunk_dimension Dim, voxel_position WorldP)
   Result.ColorData.bytesAllocd = BufferSize;
   Result.NormalData.bytesAllocd = BufferSize;
 
-  Result.VertexData.filled = 0;
-  Result.ColorData.filled = 0;
-  Result.NormalData.filled = 0;
-
-  Result.Verticies = 0;
-
-  Result.WorldP = WorldP;
-  Result.Offset = V3(0,0,0);
-
-  Result.flags = 0;
-  Result.flags |= Chunk_Redraw;
+  ZeroChunk(&Result);
 
   return Result;
 }
@@ -298,7 +336,6 @@ SpawnPlayer( World *world, Entity *Player )
     int rZ = rand() % (world->ChunkDim.z);
 
     v3 Offset = V3( rX, rY, rZ );
-    /* Print(Offset); */
     world_position WP = World_Position(world->VisibleRegion.x/2, world->VisibleRegion.y/2, world->VisibleRegion.z/2);
     TestP = Canonicalize(world, Offset, WP);
 
@@ -349,29 +386,141 @@ GetAtomicUpdateVector( v3 Gross, float length )
   return Result;
 }
 
-
-void
-GenerateVisibleRegion( World *world )
+inline voxel_position
+ClampPositive( voxel_position V )
 {
-  for ( int x = 0; x < world->VisibleRegion.x; ++ x )
+  voxel_position Result = V;
+
+  if ( V.x < 0 )
+    Result.x = 0;
+
+  if ( V.y < 0 )
+    Result.y = 0;
+
+  if ( V.z < 0 )
+    Result.z = 0;
+
+  return Result;
+}
+
+// GrossUpdateVector can be 0,0,0, in which case we should regen the entire world
+void
+GenerateVisibleRegion( World *world, voxel_position GrossUpdateVector )
+{
+  printf("Generating Visible Region \n");
+
+  // Clamp magnitude to 1
+  GrossUpdateVector.x = GetSign(GrossUpdateVector.x);
+  GrossUpdateVector.y = GetSign(GrossUpdateVector.y);
+  GrossUpdateVector.z = GetSign(GrossUpdateVector.z);
+
+  voxel_position UpdateVector = GrossUpdateVector;
+
+  if ( GrossUpdateVector.x == 0 )
+    UpdateVector.x = 1;
+
+  if ( GrossUpdateVector.y == 0 )
+    UpdateVector.y = 1;
+
+  if ( GrossUpdateVector.z == 0 )
+    UpdateVector.z = 1;
+
+
+
+  voxel_position UpdateMax = ClampPositive( UpdateVector * world->VisibleRegion );
+  voxel_position UpdateMin = ClampPositive( -1 * UpdateVector * world->VisibleRegion );
+
+
+
+  if ( UpdateMax.x == 0 )
+    UpdateMax.x = -1;
+
+  if ( UpdateMax.y == 0 )
+    UpdateMax.y = -1;
+
+  if ( UpdateMax.z == 0 )
+    UpdateMax.z = -1;
+
+
+
+
+  if ( UpdateMin.x == world->VisibleRegion.x )
+    UpdateMin.x = world->VisibleRegion.x-1;
+
+  if ( UpdateMin.y == world->VisibleRegion.y )
+    UpdateMin.y = world->VisibleRegion.y-1;
+
+  if ( UpdateMin.z == world->VisibleRegion.z )
+    UpdateMin.z = world->VisibleRegion.z-1;
+
+
+  ChunkStack FreeChunks;
+
+
+  for ( int x = UpdateMin.x; x != UpdateMax.x; x += UpdateVector.x )
   {
-    for ( int y = 0; y < world->VisibleRegion.y; ++ y )
+    for ( int y = UpdateMin.y; y != UpdateMax.y; y += UpdateVector.y )
     {
-      for ( int z = 0; z < world->VisibleRegion.z; ++ z )
+      for ( int z = UpdateMin.z; z != UpdateMax.z; z += UpdateVector.z )
       {
-        Chunk *chunk = GetWorldChunk(world, World_Position(x,y,z) );
-        FillVisibleVoxels( world, chunk );
+        world_position CurrentP = World_Position(x,y,z);
+
+        Chunk *chunk = GetWorldChunk(world, CurrentP);
+        Chunk *NextChunk = GetWorldChunk(world, CurrentP + GrossUpdateVector );
+
+        // We're initializing the world
+        if ( IsSet(chunk->flags, Chunk_Uninitialized) )
+        {
+          ZeroChunk(chunk);
+          InitializeVoxels( world, chunk );
+          continue;
+        }
+
+        bool TransposePointers = false;
+        if (x == UpdateMin.x && GrossUpdateVector.x != 0)
+        {
+          TransposePointers = true;
+        }
+        if (y == UpdateMin.y && GrossUpdateVector.y != 0)
+        {
+          TransposePointers = true;
+        }
+        if (z == UpdateMin.z && GrossUpdateVector.z != 0)
+        {
+          TransposePointers = true;
+        }
+
+        if ( TransposePointers )
+        {
+          PushChunkStack( &FreeChunks, *chunk);
+        }
+
+        if ( NextChunk ) // We're copying chunks
+        {
+          memcpy( chunk, NextChunk, sizeof(Chunk) );
+          chunk->WorldP = CurrentP;
+          /* continue; */
+        }
+        else // We're on the boundary
+        {
+          *chunk = PopChunkStack(&FreeChunks);
+          chunk->WorldP = CurrentP;
+          ZeroChunk(chunk);
+          InitializeVoxels( world, chunk );
+          /* continue; */
+        }
+
       }
     }
   }
-}
 
+  printf("Done \n\n");
+}
 
 void
 UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
 {
   Chunk *model = &Player->Model;
-  model->flags |= Chunk_Redraw;
 
   v3 Remaining = GrossUpdateVector;
 
@@ -474,9 +623,12 @@ UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
 
   if ( FinalP.WorldP != Player->Model.WorldP && DEBUG_SCROLL_WORLD ) // We moved to the next chunk
   {
-    world->VisibleRegionOrigin -= ( FinalP.WorldP - Player->Model.WorldP );
+    voxel_position WorldDisp = ( FinalP.WorldP - Player->Model.WorldP );
+
+    world->VisibleRegionOrigin += WorldDisp;
+    GenerateVisibleRegion(world, WorldDisp);
+
     FinalP.WorldP = Player->Model.WorldP;
-    GenerateVisibleRegion(world);
   }
 
   model->Offset = FinalP.Offset;
@@ -545,8 +697,8 @@ GAME_UPDATE_AND_RENDER
       PerlinNoise Noise(rand());
       world->Noise = Noise;
 
-      GenerateVisibleRegion( world );
-      printf("generated\n");
+      ZeroWorldChunks(world);
+      GenerateVisibleRegion( world , Voxel_Position(0,0,0) );
     } while (!SpawnPlayer( world, Player ) );
   }
 
@@ -638,8 +790,9 @@ GAME_UPDATE_AND_RENDER
 void
 InitializeWorld( World *world )
 {
-  world->ChunkDim = Chunk_Dimension( CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH );
+  world->ChunkDim = CHUNK_DIMENSION;
   world->VisibleRegion = VISIBLE_REGION;
+
   world->Gravity = V3(0, -9.8, 0);
 
   world->Chunks = (Chunk*)malloc( sizeof(Chunk)*Volume(world->VisibleRegion) );
@@ -655,6 +808,8 @@ InitializeWorld( World *world )
         int ChunksAllocated = x +
           (y*world->VisibleRegion.x) +
           (z*world->VisibleRegion.x*world->VisibleRegion.y);
+
+        printf("%d Chunks Allocated\n", ChunksAllocated);
 
         world->Chunks[ChunksAllocated] = AllocateChunk( world->ChunkDim, World_Position(x,y,z) );
         world->Chunks[ChunksAllocated].flags |= Chunk_World;
@@ -718,8 +873,8 @@ main( void )
     PerlinNoise Noise(rand());
     world.Noise = Noise;
 
-    GenerateVisibleRegion( &world );
-    printf("generated\n");
+    ZeroWorldChunks(&world);
+    GenerateVisibleRegion( &world , Voxel_Position(0,0,0) );
   } while (!SpawnPlayer( &world, &Player ) );
 
   double lastTime = glfwGetTime();

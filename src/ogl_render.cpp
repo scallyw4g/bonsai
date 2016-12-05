@@ -413,32 +413,37 @@ IsInFrustum( World *world, Camera_Object *Camera, Chunk *chunk )
 void
 BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
 {
-  int numVoxels = chunk->Dim.x * chunk->Dim.y * chunk->Dim.z;
-
-  /* printf("builchunkmesh %d\n", thing++); */
-
   chunk->VertexData.filled = 0;
   chunk->ColorData.filled = 0;
   chunk->NormalData.filled = 0;
 
   chunk->Verticies = 0;
 
-  v3 ChunkCenterRenderP  = GetRenderP(world, Canonical_Position(chunk->Dim / 2, chunk->WorldP) );
-  v3 CameraTargetRenderP = GetRenderP(world, Camera->Target );
-
-  int ChunkWidths = Length( ChunkCenterRenderP - CameraTargetRenderP ) / (world->ChunkDim.x*3);
-
-  int LOD = 1+(ChunkWidths);
 
   if ( ! IsInFrustum( world, Camera, chunk ) )
   {
     return;
   }
 
+  /* chunk->BoundaryVoxelCount = BOUNDARY_VOXELS_UNINITIALIZED; */
+
   if ( chunk->BoundaryVoxelCount == BOUNDARY_VOXELS_UNINITIALIZED )
   {
     BuildBoundaryVoxels( world, chunk, Camera );
   }
+
+
+
+
+  // LOD calculations
+  v3 ChunkCenterRenderP  = GetRenderP(world, Canonical_Position(chunk->Dim / 2, chunk->WorldP) );
+  v3 CameraTargetRenderP = GetRenderP(world, Camera->Target );
+  int ChunkWidths = Length( ChunkCenterRenderP - CameraTargetRenderP ) / (world->ChunkDim.x*3);
+  int LOD = 1; // +(ChunkWidths*5);
+
+
+
+
 
   glm::vec3 GLCameraRenderP = GetGLRenderP(world, Camera->P);
 
@@ -453,6 +458,7 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
       chunk->WorldP
     );
 
+    // Pretty sure this isn't worth the cost
     /* if ( ! IsInFrustum( world, Camera, VoxelP ) ) */
     /* { */
     /*   continue; */
@@ -472,8 +478,9 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
     glm::vec3 VoxelToCamera = glm::normalize(GLCameraRenderP - VoxRenderP);
 
     if (
-         IsFacingPoint(VoxelToCamera, V3(1,0,0))
-         && NotFilled(world, chunk, nextVoxel)
+        true
+         /* IsFacingPoint(VoxelToCamera, V3(1,0,0)) */
+         /* && NotFilled(world, chunk, nextVoxel) */
        )
     {
       const float* FaceColors = GetColorData( Voxel_Red );
@@ -488,8 +495,9 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
     }
 
     if (
-         IsFacingPoint(VoxelToCamera, V3(-1,0,0))
-         && NotFilled(world, chunk, prevVoxel)
+        true
+         /* IsFacingPoint(VoxelToCamera, V3(-1,0,0)) */
+         /* && NotFilled(world, chunk, prevVoxel) */
        )
     {
       const float* FaceColors = GetColorData( Voxel_Yellow );
@@ -504,8 +512,9 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
     }
 
     if (
-         IsFacingPoint(VoxelToCamera, V3(0,-1,0))
-         && NotFilled(world, chunk, botVoxel)
+        true
+         /* IsFacingPoint(VoxelToCamera, V3(0,-1,0)) */
+         /* && NotFilled(world, chunk, botVoxel) */
        )
     {
       const float* FaceColors = GetColorData( Voxel_Teal );
@@ -520,8 +529,9 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
     }
 
     if (
-         IsFacingPoint(VoxelToCamera, V3(0,1,0))
-         && NotFilled(world, chunk, topVoxel)
+        true
+         /* IsFacingPoint(VoxelToCamera, V3(0,1,0)) */
+         /* && NotFilled(world, chunk, topVoxel) */
        )
     {
       const float* FaceColors = GetColorData( Voxel_Green );
@@ -536,8 +546,9 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
     }
 
     if (
-         IsFacingPoint(VoxelToCamera, V3(0,0,1))
-         && NotFilled(world, chunk, frontVoxel)
+        true
+         /* IsFacingPoint(VoxelToCamera, V3(0,0,1)) */
+         /* && NotFilled(world, chunk, frontVoxel) */
        )
     {
       const float* FaceColors = GetColorData( Voxel_White );
@@ -552,8 +563,9 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
     }
 
     if (
-         IsFacingPoint(VoxelToCamera, V3(0,0,-1))
-         && NotFilled(world, chunk, backVoxel)
+        true
+         /* IsFacingPoint(VoxelToCamera, V3(0,0,-1)) */
+         /* && NotFilled(world, chunk, backVoxel) */
        )
     {
       const float* FaceColors = GetColorData( Voxel_Purple );
