@@ -315,12 +315,12 @@ inline bool
 IsInFrustum(World *world, Camera_Object *Camera, canonical_position P)
 {
   v3 MaxP = Camera->Front * Camera->Frust.farClip;
-  MaxP.x += world->ChunkDim.x*3;
-  MaxP.y += world->ChunkDim.y*3;
+  MaxP.x += world->ChunkDim.x*5;
+  MaxP.y += world->ChunkDim.y*5;
 
   v3 MinP = Camera->P.Offset;
-  MinP.x -= world->ChunkDim.x*3;
-  MinP.y -= world->ChunkDim.y*3;
+  MinP.x -= world->ChunkDim.x*5;
+  MinP.y -= world->ChunkDim.y*5;
 
   v3 MaxRenderP = GetRenderP(world, Canonical_Position(MaxP, Camera->P.WorldP));
   v3 MinRenderP = GetRenderP(world, Canonical_Position(MinP, Camera->P.WorldP));
@@ -439,7 +439,7 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
   v3 ChunkCenterRenderP  = GetRenderP(world, Canonical_Position(chunk->Dim / 2, chunk->WorldP) );
   v3 CameraTargetRenderP = GetRenderP(world, Camera->Target );
   int ChunkWidths = Length( ChunkCenterRenderP - CameraTargetRenderP ) / (world->ChunkDim.x*3);
-  int LOD = 1; // +(ChunkWidths*5);
+  int LOD = 1+(ChunkWidths*5);
 
 
 
@@ -478,9 +478,8 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
     glm::vec3 VoxelToCamera = glm::normalize(GLCameraRenderP - VoxRenderP);
 
     if (
-        true
-         /* IsFacingPoint(VoxelToCamera, V3(1,0,0)) */
-         /* && NotFilled(world, chunk, nextVoxel) */
+         IsFacingPoint(VoxelToCamera, V3(1,0,0))
+         && NotFilled(world, chunk, nextVoxel)
        )
     {
       const float* FaceColors = GetColorData( Voxel_Red );
@@ -495,9 +494,8 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
     }
 
     if (
-        true
-         /* IsFacingPoint(VoxelToCamera, V3(-1,0,0)) */
-         /* && NotFilled(world, chunk, prevVoxel) */
+         IsFacingPoint(VoxelToCamera, V3(-1,0,0))
+         && NotFilled(world, chunk, prevVoxel)
        )
     {
       const float* FaceColors = GetColorData( Voxel_Yellow );
@@ -512,9 +510,8 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
     }
 
     if (
-        true
-         /* IsFacingPoint(VoxelToCamera, V3(0,-1,0)) */
-         /* && NotFilled(world, chunk, botVoxel) */
+         IsFacingPoint(VoxelToCamera, V3(0,-1,0))
+         && NotFilled(world, chunk, botVoxel)
        )
     {
       const float* FaceColors = GetColorData( Voxel_Teal );
@@ -529,9 +526,8 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
     }
 
     if (
-        true
-         /* IsFacingPoint(VoxelToCamera, V3(0,1,0)) */
-         /* && NotFilled(world, chunk, topVoxel) */
+         IsFacingPoint(VoxelToCamera, V3(0,1,0))
+         && NotFilled(world, chunk, topVoxel)
        )
     {
       const float* FaceColors = GetColorData( Voxel_Green );
@@ -546,9 +542,8 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
     }
 
     if (
-        true
-         /* IsFacingPoint(VoxelToCamera, V3(0,0,1)) */
-         /* && NotFilled(world, chunk, frontVoxel) */
+         IsFacingPoint(VoxelToCamera, V3(0,0,1))
+         && NotFilled(world, chunk, frontVoxel)
        )
     {
       const float* FaceColors = GetColorData( Voxel_White );
@@ -563,9 +558,8 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
     }
 
     if (
-        true
-         /* IsFacingPoint(VoxelToCamera, V3(0,0,-1)) */
-         /* && NotFilled(world, chunk, backVoxel) */
+         IsFacingPoint(VoxelToCamera, V3(0,0,-1))
+         && NotFilled(world, chunk, backVoxel)
        )
     {
       const float* FaceColors = GetColorData( Voxel_Purple );

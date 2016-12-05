@@ -317,7 +317,7 @@ SpawnPlayer( World *world, Entity *Player )
   Model->Voxels[0].Offset= V3(0,0,0);
 
   Player->Acceleration = V3(0,0,0);
-  Player->Velocity = V3(0,0,0);
+  Player->Velocity = V3(0,-40,0);
 
   canonical_position TestP;
   collision_event Collision;
@@ -403,70 +403,55 @@ ClampPositive( voxel_position V )
   return Result;
 }
 
-// GrossUpdateVector can be 0,0,0, in which case we should regen the entire world
+inline voxel_position
+ClampMinus1toInfinity( voxel_position V )
+{
+  voxel_position Result = V;
+
+  if ( V.x < 0 )
+    Result.x = -1;
+
+  if ( V.y < 0 )
+    Result.y = -1;
+
+  if ( V.z < 0 )
+    Result.z = -1;
+
+  return Result;
+}
+
 void
 GenerateVisibleRegion( World *world, voxel_position GrossUpdateVector )
 {
   printf("Generating Visible Region \n");
+  Print(GrossUpdateVector);
+
+  voxel_position IterVector = GrossUpdateVector + GrossUpdateVector + 1;
 
   // Clamp magnitude to 1
-  GrossUpdateVector.x = GetSign(GrossUpdateVector.x);
-  GrossUpdateVector.y = GetSign(GrossUpdateVector.y);
-  GrossUpdateVector.z = GetSign(GrossUpdateVector.z);
+  IterVector.x = GetSign(IterVector.x);
+  IterVector.y = GetSign(IterVector.y);
+  IterVector.z = GetSign(IterVector.z);
 
-  voxel_position UpdateVector = GrossUpdateVector;
+  // Max includes -1 so we can iterate all the way to 0 if we're going down
+  voxel_position UpdateMax = ClampMinus1toInfinity( IterVector * world->VisibleRegion );
+  voxel_position UpdateMin = ClampPositive( -1 * IterVector * (world->VisibleRegion -1) );
 
-  if ( GrossUpdateVector.x == 0 )
-    UpdateVector.x = 1;
-
-  if ( GrossUpdateVector.y == 0 )
-    UpdateVector.y = 1;
-
-  if ( GrossUpdateVector.z == 0 )
-    UpdateVector.z = 1;
+  voxel_position UpdateInnerMin = UpdateMin;
 
 
 
-  voxel_position UpdateMax = ClampPositive( UpdateVector * world->VisibleRegion );
-  voxel_position UpdateMin = ClampPositive( -1 * UpdateVector * world->VisibleRegion );
-
-
-
-  if ( UpdateMax.x == 0 )
-    UpdateMax.x = -1;
-
-  if ( UpdateMax.y == 0 )
-    UpdateMax.y = -1;
-
-  if ( UpdateMax.z == 0 )
-    UpdateMax.z = -1;
-
-
-
-
-  if ( UpdateMin.x == world->VisibleRegion.x )
-    UpdateMin.x = world->VisibleRegion.x-1;
-
-  if ( UpdateMin.y == world->VisibleRegion.y )
-    UpdateMin.y = world->VisibleRegion.y-1;
-
-  if ( UpdateMin.z == world->VisibleRegion.z )
-    UpdateMin.z = world->VisibleRegion.z-1;
-
-
-  ChunkStack FreeChunks;
-
-
-  for ( int x = UpdateMin.x; x != UpdateMax.x; x += UpdateVector.x )
+  for ( int x = UpdateMin.x; x != UpdateMax.x; x += IterVector.x )
   {
-    for ( int y = UpdateMin.y; y != UpdateMax.y; y += UpdateVector.y )
+    for ( int y = UpdateMin.y; y != UpdateMax.y; y += IterVector.y )
     {
-      for ( int z = UpdateMin.z; z != UpdateMax.z; z += UpdateVector.z )
+      for ( int z = UpdateMin.z; z != UpdateMax.z; z += IterVector.z )
       {
         world_position CurrentP = World_Position(x,y,z);
 
         Chunk *chunk = GetWorldChunk(world, CurrentP);
         Chunk *NextChunk = GetWorldChunk(world, CurrentP + GrossUpdateVector );
+        Chunk *PrevChunk = GetWorldChunk(world, CurrentP - GrossUpdateVector );
 
         // We're initializing the world
         if ( IsSet(chunk->flags, Chunk_Uninitialized) )
@@ -476,45 +461,31 @@ GenerateVisibleRegion( World *world, voxel_position GrossUpdateVector )
           continue;
         }
 
-        bool TransposePointers = false;
-        if (x == UpdateMin.x && GrossUpdateVector.x != 0)
-        {
-          TransposePointers = true;
-        }
-        if (y == UpdateMin.y && GrossUpdateVector.y != 0)
-        {
-          TransposePointers = true;
-        }
-        if (z == UpdateMin.z && GrossUpdateVector.z != 0)
-        {
-          TransposePointers = true;
-        }
+        if ( !PrevChunk ) PushChunkStack( &FreeChunks, *chunk);
 
-        if ( TransposePointers )
-        {
-          PushChunkStack( &FreeChunks, *chunk);
-        }
 
         if ( NextChunk ) // We're copying chunks
         {
           memcpy( chunk, NextChunk, sizeof(Chunk) );
           chunk->WorldP = CurrentP;
-          /* continue; */
         }
-        else // We're on the boundary
+        else // We're inside the maximum boundary
         {
           *chunk = PopChunkStack(&FreeChunks);
           chunk->WorldP = CurrentP;
           ZeroChunk(chunk);
           InitializeVoxels( world, chunk );
-          /* continue; */
         }
 
       }
     }
   }
 
+
+  printf("Free Chunks %d \n", FreeChunks.count);
   printf("Done \n\n");
+
+  assert(FreeChunks.count == 0);
 }
 
 void
@@ -788,7 +759,7 @@ GAME_UPDATE_AND_RENDER
 }
 
 void
-InitializeWorld( World *world )
+AllocateWorld( World *world )
 {
   world->ChunkDim = CHUNK_DIMENSION;
   world->VisibleRegion = VISIBLE_REGION;
@@ -796,6 +767,9 @@ InitializeWorld( World *world )
   world->Gravity = V3(0, -9.8, 0);
 
   world->Chunks = (Chunk*)malloc( sizeof(Chunk)*Volume(world->VisibleRegion) );
+
+  // Allocate a second chunks buffer for when we're updating visible region
+  world->FreeChunks = (Chunk*)malloc( sizeof(Chunk)*Volume(world->VisibleRegion) );
 
   world->VisibleRegionOrigin = World_Position(0,0,0);
 
@@ -849,7 +823,7 @@ main( void )
   glfwWindowHint(GLFW_SAMPLES, 4);
 
   World world;
-  InitializeWorld(&world);
+  AllocateWorld(&world);
 
   Entity Player = {};
   Player.Model = AllocateChunk( Chunk_Dimension(1,1,1), World_Position(0,0,0) );
@@ -903,6 +877,7 @@ main( void )
     accumulatedTime += dt;
     numFrames ++;
 
+    CALLGRIND_START_INSTRUMENTATION;
     CALLGRIND_TOGGLE_COLLECT;
 
     GAME_UPDATE_AND_RENDER(

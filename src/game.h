@@ -135,8 +135,10 @@ struct ChunkStack
 Chunk
 PopChunkStack(ChunkStack *stack)
 {
-  assert(stack->count > 0);
-  return stack->chunks[--stack->count];
+  Chunk Result = stack->chunks[--stack->count];
+
+  assert(stack->count >= 0);
+  return Result;
 };
 
 void
