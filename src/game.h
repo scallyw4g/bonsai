@@ -128,7 +128,7 @@ struct Chunk
 
 struct ChunkStack
 {
-  Chunk chunks[CHUNK_STACK_SIZE];
+  Chunk *chunks; // This should be Volume(VisibleRegion) chunks
   int count = 0;
 };
 
@@ -170,6 +170,8 @@ struct Camera_Object
 struct World
 {
   Chunk *Chunks;
+
+  ChunkStack FreeChunks;
 
   // This is the number of chunks in xyz we're going to update and render
   chunk_dimension VisibleRegion;
@@ -256,16 +258,11 @@ IsFilled( Chunk *chunk, voxel_position VoxelP )
 
   if (chunk)
   {
-    if ( VoxelP.x < chunk->Dim.x &&
-         VoxelP.y < chunk->Dim.y &&
-         VoxelP.z < chunk->Dim.z )
-    {
-      int i = VoxelP.x +
-        (VoxelP.y*chunk->Dim.x) +
-        (VoxelP.z*chunk->Dim.x*chunk->Dim.y);
+    int i = VoxelP.x +
+      (VoxelP.y*chunk->Dim.x) +
+      (VoxelP.z*chunk->Dim.x*chunk->Dim.y);
 
-      isFilled = IsSet(chunk->Voxels[i].flags, Voxel_Filled);
-    }
+    isFilled = IsSet(chunk->Voxels[i].flags, Voxel_Filled);
   }
 
   return isFilled;

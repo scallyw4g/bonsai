@@ -6,9 +6,9 @@
 #define CD_Z 8
 
 // Visible Region XYZ - Must be > (3,3,3)
-#define VR_X 32
-#define VR_Y 32
-#define VR_Z 32
+#define VR_X 16
+#define VR_Y 16
+#define VR_Z 16
 
 #define CHUNK_DIMENSION Chunk_Dimension(CD_X,CD_Y,CD_Z)
 
@@ -23,8 +23,6 @@
 #define BOUNDARY_VOXELS_UNINITIALIZED -1 // THIS MUST BE NEGATIVE
 
 #define CHUNK_STACK_SIZE (VR_X*VR_X*VR_X)
-
-static ChunkStack FreeChunks;
 
 #define CAMERA_OFFSET V3(0,40,45)
 

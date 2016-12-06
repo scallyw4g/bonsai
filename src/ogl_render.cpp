@@ -349,15 +349,9 @@ BuildBoundaryVoxels(World *world, Chunk *chunk, Camera_Object *Camera)
     {
       for ( int z = 0; z < chunk->Dim.z; ++z )
       {
-        int i = x + (y*chunk->Dim.x) + (z*chunk->Dim.x*chunk->Dim.y);
+        canonical_position VoxelP = Canonical_Position(V3(x,y,z), chunk->WorldP);
 
-        canonical_position VoxelP = Canonicalize(
-          world,
-          V3(x,y,z) + chunk->Offset,
-          chunk->WorldP
-        );
-
-        if ( NotFilled(world, chunk, VoxelP) )
+        if ( NotFilled(world, chunk, VoxelP ) )
           continue;
 
         canonical_position nextVoxel  = Canonicalize( world, VoxelP + V3(1.0f,0,0) );

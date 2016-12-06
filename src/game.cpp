@@ -1,3 +1,5 @@
+#include <time.h>
+
 #include <GL/glew.h>
 
 #include "/usr/include/valgrind/callgrind.h"
@@ -423,9 +425,6 @@ ClampMinus1toInfinity( voxel_position V )
 void
 GenerateVisibleRegion( World *world, voxel_position GrossUpdateVector )
 {
-  printf("Generating Visible Region \n");
-  Print(GrossUpdateVector);
-
   voxel_position IterVector = GrossUpdateVector + GrossUpdateVector + 1;
 
   // Clamp magnitude to 1
@@ -438,8 +437,6 @@ GenerateVisibleRegion( World *world, voxel_position GrossUpdateVector )
   voxel_position UpdateMin = ClampPositive( -1 * IterVector * (world->VisibleRegion -1) );
 
   voxel_position UpdateInnerMin = UpdateMin;
-
-
 
   for ( int x = UpdateMin.x; x != UpdateMax.x; x += IterVector.x )
   {
@@ -461,7 +458,7 @@ GenerateVisibleRegion( World *world, voxel_position GrossUpdateVector )
           continue;
         }
 
-        if ( !PrevChunk ) PushChunkStack( &FreeChunks, *chunk);
+        if ( !PrevChunk ) PushChunkStack( &world->FreeChunks, *chunk);
 
 
         if ( NextChunk ) // We're copying chunks
@@ -471,7 +468,7 @@ GenerateVisibleRegion( World *world, voxel_position GrossUpdateVector )
         }
         else // We're inside the maximum boundary
         {
-          *chunk = PopChunkStack(&FreeChunks);
+          *chunk = PopChunkStack(&world->FreeChunks);
           chunk->WorldP = CurrentP;
           ZeroChunk(chunk);
           InitializeVoxels( world, chunk );
@@ -481,11 +478,7 @@ GenerateVisibleRegion( World *world, voxel_position GrossUpdateVector )
     }
   }
 
-
-  printf("Free Chunks %d \n", FreeChunks.count);
-  printf("Done \n\n");
-
-  assert(FreeChunks.count == 0);
+  assert(world->FreeChunks.count == 0);
 }
 
 void
@@ -769,7 +762,7 @@ AllocateWorld( World *world )
   world->Chunks = (Chunk*)malloc( sizeof(Chunk)*Volume(world->VisibleRegion) );
 
   // Allocate a second chunks buffer for when we're updating visible region
-  world->FreeChunks = (Chunk*)malloc( sizeof(Chunk)*Volume(world->VisibleRegion) );
+  world->FreeChunks.chunks = (Chunk*)malloc( sizeof(Chunk)*Volume(world->VisibleRegion) );
 
   world->VisibleRegionOrigin = World_Position(0,0,0);
 
@@ -782,8 +775,6 @@ AllocateWorld( World *world )
         int ChunksAllocated = x +
           (y*world->VisibleRegion.x) +
           (z*world->VisibleRegion.x*world->VisibleRegion.y);
-
-        printf("%d Chunks Allocated\n", ChunksAllocated);
 
         world->Chunks[ChunksAllocated] = AllocateChunk( world->ChunkDim, World_Position(x,y,z) );
         world->Chunks[ChunksAllocated].flags |= Chunk_World;
@@ -877,6 +868,15 @@ main( void )
     accumulatedTime += dt;
     numFrames ++;
 
+
+    timespec T1;
+    int time_err = clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &T1);
+
+    if ( time_err )
+    {
+      printf(" Error getting clocktime %d ", time_err);
+    }
+
     CALLGRIND_START_INSTRUMENTATION;
     CALLGRIND_TOGGLE_COLLECT;
 
@@ -901,6 +901,17 @@ main( void )
 
     CALLGRIND_TOGGLE_COLLECT;
 
+    timespec T2;
+    time_err = clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &T2);
+
+    if ( time_err )
+    {
+      printf(" Error getting clocktime %d ", time_err);
+    }
+
+    if ( T2.tv_sec - T1.tv_sec > 0 ) T1.tv_nsec -= 1000000000;
+    printf(" %d ms this frame \n",
+        (T2.tv_nsec -T1.tv_nsec)/1000000 );
 
   } // Check if the ESC key was pressed or the window was closed
   while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
@@ -931,6 +942,7 @@ main( void )
   }
 
   free( world.Chunks );
+  free( world.FreeChunks.chunks );
 
   free(Player.Model.Voxels);
   free(Player.Model.BoundaryVoxels);
