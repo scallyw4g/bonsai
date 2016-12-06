@@ -339,37 +339,52 @@ IsInFrustum(World *world, Camera_Object *Camera, canonical_position P)
 }
 
 void
+BuildExteriorBoundaryVoxels( World *world, Chunk *chunk, voxel_position ChunkP )
+{
+}
+
+void
 BuildBoundaryVoxels(World *world, Chunk *chunk, Camera_Object *Camera)
 {
   chunk->BoundaryVoxelCount = 0;
 
-  for ( int x = 0; x < chunk->Dim.x; ++x )
+  /* BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(0,1,0) );  // Top */
+  /* BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(0,-1,0) ); // Bottom */
+
+  /* BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(1,0,0) );  // Right */
+  /* BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(-1,0,0) ); // Left */
+
+  /* BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(0,0,1) );  // Front */
+  /* BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(0,0,-1) ); // Back */
+
+
+  for ( int x = 1; x < chunk->Dim.x -1; ++x )
   {
-    for ( int y = 0; y < chunk->Dim.y; ++y )
+    for ( int y = 1; y < chunk->Dim.y -1; ++y )
     {
-      for ( int z = 0; z < chunk->Dim.z; ++z )
+      for ( int z = 1; z < chunk->Dim.z -1; ++z )
       {
         canonical_position VoxelP = Canonical_Position(V3(x,y,z), chunk->WorldP);
 
         if ( NotFilled(world, chunk, VoxelP ) )
           continue;
 
-        canonical_position nextVoxel  = Canonicalize( world, VoxelP + V3(1.0f,0,0) );
-        canonical_position prevVoxel  = Canonicalize( world, VoxelP - V3(1.0f,0,0) );
+        voxel_position nextVoxel  = Voxel_Position( VoxelP.Offset + V3(1.0f,0,0) );
+        voxel_position prevVoxel  = Voxel_Position( VoxelP.Offset - V3(1.0f,0,0) );
 
-        canonical_position topVoxel   = Canonicalize( world, VoxelP + V3(0,1.0f,0) );
-        canonical_position botVoxel   = Canonicalize( world, VoxelP - V3(0,1.0f,0) );
+        voxel_position topVoxel   = Voxel_Position( VoxelP.Offset + V3(0,1.0f,0) );
+        voxel_position botVoxel   = Voxel_Position( VoxelP.Offset - V3(0,1.0f,0) );
 
-        canonical_position frontVoxel = Canonicalize( world, VoxelP + V3(0,0,1.0f) );
-        canonical_position backVoxel  = Canonicalize( world, VoxelP - V3(0,0,1.0f) );
+        voxel_position frontVoxel = Voxel_Position( VoxelP.Offset + V3(0,0,1.0f) );
+        voxel_position backVoxel  = Voxel_Position( VoxelP.Offset - V3(0,0,1.0f) );
 
         // TODO : Cache this check in the flags so we don't have to to it again when rendering
-        if ( NotFilled( world, chunk, nextVoxel  ) ||
-             NotFilled( world, chunk, prevVoxel  ) ||
-             NotFilled( world, chunk, botVoxel   ) ||
-             NotFilled( world, chunk, topVoxel   ) ||
-             NotFilled( world, chunk, frontVoxel ) ||
-             NotFilled( world, chunk, backVoxel  )
+        if ( !IsFilled( chunk, nextVoxel  ) ||
+             !IsFilled( chunk, prevVoxel  ) ||
+             !IsFilled( chunk, botVoxel   ) ||
+             !IsFilled( chunk, topVoxel   ) ||
+             !IsFilled( chunk, frontVoxel ) ||
+             !IsFilled( chunk, backVoxel  )
            )
         {
           Voxel voxel = {};
