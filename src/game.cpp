@@ -176,23 +176,23 @@ AllocateChunk(chunk_dimension Dim, voxel_position WorldP)
 {
   Chunk Result;
 
-  int BufferSize = Dim.x*Dim.y*Dim.z * BYTES_PER_VOXEL;
+  int BufferVerticies = Dim.x*Dim.y*Dim.z * VERT_PER_VOXEL * 3;
 
   Result.Dim = Dim;
 
   Result.WorldP = WorldP;
   Result.Offset = V3(0,0,0);
 
-  Result.Voxels = (Voxel*)malloc(Dim.x*Dim.y*Dim.z*sizeof(Voxel));
-  Result.BoundaryVoxels = (Voxel*)malloc(Dim.x*Dim.y*Dim.z*sizeof(Voxel));
+  Result.Voxels = (Voxel*)calloc(Dim.x*Dim.y*Dim.z, sizeof(Voxel));
+  Result.BoundaryVoxels = (Voxel*)calloc(Dim.x*Dim.y*Dim.z, sizeof(Voxel));
 
-  Result.VertexData.Data = (GLfloat *)malloc(BufferSize);
-  Result.ColorData.Data = (GLfloat *)malloc(BufferSize);
-  Result.NormalData.Data = (GLfloat *)malloc(BufferSize);
+  Result.VertexData.Data = (GLfloat *)calloc(BufferVerticies, sizeof(GLfloat) );
+  Result.ColorData.Data = (GLfloat *)calloc(BufferVerticies, sizeof(GLfloat) );
+  Result.NormalData.Data = (GLfloat *)calloc(BufferVerticies, sizeof(GLfloat) );
 
-  Result.VertexData.bytesAllocd = BufferSize;
-  Result.ColorData.bytesAllocd = BufferSize;
-  Result.NormalData.bytesAllocd = BufferSize;
+  Result.VertexData.bytesAllocd = BufferVerticies*sizeof(GLfloat);
+  Result.ColorData.bytesAllocd = BufferVerticies*sizeof(GLfloat);
+  Result.NormalData.bytesAllocd = BufferVerticies*sizeof(GLfloat);
 
   ZeroChunk(&Result);
 
@@ -759,10 +759,10 @@ AllocateWorld( World *world )
 
   world->Gravity = V3(0, -9.8, 0);
 
-  world->Chunks = (Chunk*)malloc( sizeof(Chunk)*Volume(world->VisibleRegion) );
+  world->Chunks = (Chunk*)calloc( Volume(world->VisibleRegion), sizeof(Chunk));
 
   // Allocate a second chunks buffer for when we're updating visible region
-  world->FreeChunks.chunks = (Chunk*)malloc( sizeof(Chunk)*Volume(world->VisibleRegion) );
+  world->FreeChunks.chunks = (Chunk*)calloc( Volume(world->VisibleRegion), sizeof(Chunk) );
 
   world->VisibleRegionOrigin = World_Position(0,0,0);
 

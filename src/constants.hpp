@@ -39,8 +39,6 @@ static int thing = 0;
 
 // 6 verticies per face, 6 faces per voxel
 #define VERT_PER_VOXEL (6*6)
-// Number of array elements required to render a voxel
-#define BYTES_PER_VOXEL (VERT_PER_VOXEL*3*sizeof(GLfloat))
 
 #define VOXEL_DIAMETER 1.0f
 #define VOXEL_RADIUS (VOXEL_DIAMETER/2.0f)
