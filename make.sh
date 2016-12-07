@@ -1,17 +1,28 @@
 #! /bin/bash
 
-g++ \
+WarningLevel="-Wall"
+
+Optimizations="" # "-O2"
+
+DebuggerSymbols="-ggdb"
+
+Source="src/game.cpp -o build/game"
+
+LinkerFlags="-lglfw -lGLEW -lGLU -lGL"
+
+IncludeDirectories="
+-I/home/scallywag/game/external/glfw-3.1.2/include/GLFW/
+-I/home/scallywag/game/external/glm-0.9.7.1/
+-I/home/scallywag/game/common/
+-I/home/scallywag/game/src/
+"
+
+g++ $Optimizations $WarningLevel $DebuggerSymbols \
 \
--Wall \
--ggdb \
--O2 \
-src/game.cpp \
--o build/game \
--lglfw -lGLEW -lGLU -lGL \
--I/home/scallywag/game/external/glfw-3.1.2/include/GLFW/ \
--I/home/scallywag/game/external/glm-0.9.7.1/ \
--I/home/scallywag/game/common/ \
--I/home/scallywag/game/src/ \
+  $Source \
+  $LinkerFlags \
+  $IncludeDirectories
+
 
 # Successful build, launch the thing!
 if [ $? -eq 0 ]; then
