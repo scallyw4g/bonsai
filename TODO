@@ -1,7 +1,7 @@
 
 --- Renderer ------------------------------------------------------------------
 
-[ ] Add BoundaryVoxels buffer and remove Volume_Boundary voxel flag.
+[X] Add BoundaryVoxels buffer and remove Volume_Boundary voxel flag.
 [ ] Add Shadow maps
 [ ] Ambient Occlusion ?
 [ ] Better frustum culling
@@ -17,4 +17,6 @@
 --- Misc ----------------------------------------------------------------------
 
 [ ] Write keypress callbacks instead of checking if (key == down) .. do thing
-[ ] Fix Canonicalize to work across multiple chunks
+[ ] Fix - If you're going really fast and try to update your position outside the VisibleRegion you collide with the edge of the world and stop moving
+
+[X] Fix Canonicalize to work across multiple chunks

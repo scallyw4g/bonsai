@@ -296,7 +296,6 @@ NotFilled( World *world, Chunk *chunk, canonical_position VoxelP )
 }
 
 
-// TODO : Make this work across multiple WorldP chunks
 // NOTE : The maximum bound is non-inclusive; 0 is part of the chunk
 // while the furthest point in x,y or z is the next chunk
 inline canonical_position
@@ -309,34 +308,40 @@ Canonicalize( World *world, v3 Offset, world_position WorldP )
 
   if ( Result.Offset.x >= world->ChunkDim.x )
   {
-    Result.Offset.x -= world->ChunkDim.x;
-    Result.WorldP.x ++;
+    int ChunkWidths = Result.Offset.x / world->ChunkDim.x;
+    Result.Offset.x -= world->ChunkDim.x*ChunkWidths;
+    Result.WorldP.x += ChunkWidths;
   }
   if ( Result.Offset.y >= world->ChunkDim.y )
   {
-    Result.Offset.y -= world->ChunkDim.y;
-    Result.WorldP.y ++;
+    int ChunkWidths = Result.Offset.y / world->ChunkDim.y;
+    Result.Offset.y -= world->ChunkDim.y*ChunkWidths;
+    Result.WorldP.y += ChunkWidths;
   }
   if ( Result.Offset.z >= world->ChunkDim.z )
   {
-    Result.Offset.z -= world->ChunkDim.z;
-    Result.WorldP.z ++;
+    int ChunkWidths = Result.Offset.z / world->ChunkDim.z;
+    Result.Offset.z -= world->ChunkDim.z*ChunkWidths;
+    Result.WorldP.z += ChunkWidths;
   }
 
   if ( Result.Offset.x < 0 )
   {
-    Result.Offset.x += world->ChunkDim.x;
-    Result.WorldP.x --;
+    int ChunkWidths = (Result.Offset.x-world->ChunkDim.x) / -world->ChunkDim.x;
+    Result.Offset.x += world->ChunkDim.x*ChunkWidths;
+    Result.WorldP.x -= ChunkWidths;
   }
   if ( Result.Offset.y < 0 )
   {
-    Result.Offset.y += world->ChunkDim.y;
-    Result.WorldP.y --;
+    int ChunkWidths = (Result.Offset.y-world->ChunkDim.y) / -world->ChunkDim.y;
+    Result.Offset.y += world->ChunkDim.y*ChunkWidths;
+    Result.WorldP.y -= ChunkWidths;
   }
   if ( Result.Offset.z < 0 )
   {
-    Result.Offset.z += world->ChunkDim.z;
-    Result.WorldP.z --;
+    int ChunkWidths = (Result.Offset.z-world->ChunkDim.z) / -world->ChunkDim.z;
+    Result.Offset.z += world->ChunkDim.z*ChunkWidths;
+    Result.WorldP.z -= ChunkWidths;
   }
 
   return Result;
