@@ -10,18 +10,15 @@
 
 #define InvalidDefaultCase default: { assert(false); break; }
 
-// Keep track of triangle count for debugging
-static int triCount = 0;
-
 #define Print(Pos) \
   Print_P( Pos, #Pos )
 
 inline void
 Print_P( canonical_position P, const char* name)
 {
-  printf("%s\n", name);
-  printf("Offset: %f %f %f \n", P.Offset.x, P.Offset.y, P.Offset.z );
-  printf("WorldP: %d %d %d \n", P.WorldP.x, P.WorldP.y, P.WorldP.z );
+  printf(" -- %s\n", name);
+  printf(" Offset: %f %f %f \n", P.Offset.x, P.Offset.y, P.Offset.z );
+  printf(" WorldP: %d %d %d \n", P.WorldP.x, P.WorldP.y, P.WorldP.z );
 }
 
 inline void
@@ -118,12 +115,6 @@ struct Chunk
   v3 Offset;
 
   int flags;
-
-  VertexBlock VertexData;
-  VertexBlock ColorData;
-  VertexBlock NormalData;
-
-	int Verticies; // How many verticies are we drawing
 };
 
 struct ChunkStack
@@ -183,6 +174,12 @@ struct World
   PerlinNoise Noise;
 
   v3 Gravity;
+
+  VertexBlock VertexData;
+  VertexBlock ColorData;
+  VertexBlock NormalData;
+
+  int VertexCount; // How many verticies are we drawing
 };
 
 struct Entity
@@ -299,9 +296,10 @@ NotFilled( World *world, Chunk *chunk, canonical_position VoxelP )
 }
 
 
+// TODO : Make this work across multiple WorldP chunks
 // NOTE : The maximum bound is non-inclusive; 0 is part of the chunk
 // while the furthest point in x,y or z is the next chunk
-canonical_position
+inline canonical_position
 Canonicalize( World *world, v3 Offset, world_position WorldP )
 {
   canonical_position Result;
@@ -309,33 +307,33 @@ Canonicalize( World *world, v3 Offset, world_position WorldP )
   Result.Offset = Offset;
   Result.WorldP = WorldP;
 
-  if ( Offset.x >= world->ChunkDim.x )
+  if ( Result.Offset.x >= world->ChunkDim.x )
   {
     Result.Offset.x -= world->ChunkDim.x;
     Result.WorldP.x ++;
   }
-  if ( Offset.y >= world->ChunkDim.y )
+  if ( Result.Offset.y >= world->ChunkDim.y )
   {
     Result.Offset.y -= world->ChunkDim.y;
     Result.WorldP.y ++;
   }
-  if ( Offset.z >= world->ChunkDim.z )
+  if ( Result.Offset.z >= world->ChunkDim.z )
   {
     Result.Offset.z -= world->ChunkDim.z;
     Result.WorldP.z ++;
   }
 
-  if ( Offset.x < 0 )
+  if ( Result.Offset.x < 0 )
   {
     Result.Offset.x += world->ChunkDim.x;
     Result.WorldP.x --;
   }
-  if ( Offset.y < 0 )
+  if ( Result.Offset.y < 0 )
   {
     Result.Offset.y += world->ChunkDim.y;
     Result.WorldP.y --;
   }
-  if ( Offset.z < 0 )
+  if ( Result.Offset.z < 0 )
   {
     Result.Offset.z += world->ChunkDim.z;
     Result.WorldP.z --;

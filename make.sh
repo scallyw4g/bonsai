@@ -1,6 +1,12 @@
 #! /bin/bash
 
-g++ -g3 -o2 src/game.cpp -o build/game \
+g++ \
+\
+-Wall \
+-ggdb \
+-O2 \
+src/game.cpp \
+-o build/game \
 -lglfw -lGLEW -lGLU -lGL \
 -I/home/scallywag/game/external/glfw-3.1.2/include/GLFW/ \
 -I/home/scallywag/game/external/glm-0.9.7.1/ \

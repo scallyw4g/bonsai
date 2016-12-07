@@ -19,20 +19,90 @@ using namespace glm;
 
 #define BufferLocalFace \
   BufferFace( \
-      worldVertexData, \
-      worldColorData, \
-      worldNormalData, \
+      world, \
       localVertexData, \
       sizeof(localVertexData), \
       localNormalData, \
       sizeof(localNormalData), \
-      FaceColor, \
-      chunkVertCount)
+      FaceColor)
 
-void BufferFace (
-    VertexBlock *worldVertexData,
-    VertexBlock *worldColorData,
-    VertexBlock *worldNormalData,
+void
+FlushVertexBuffer(
+    World *world,
+    GLuint &colorbuffer,
+    GLuint &vertexbuffer,
+    GLuint &normalbuffer
+  )
+{
+
+  /* printf("Flushing %d vertices from Vertex Buffer \n", world->VertexCount); */
+
+  glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+  glBufferData(GL_ARRAY_BUFFER, world->VertexData.filled, world->VertexData.Data, GL_STATIC_DRAW);
+
+  glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
+  glBufferData(GL_ARRAY_BUFFER, world->ColorData.filled, world->ColorData.Data, GL_STATIC_DRAW);
+
+  glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
+  glBufferData(GL_ARRAY_BUFFER, world->NormalData.filled, world->NormalData.Data, GL_STATIC_DRAW);
+
+  // Vertices
+  glEnableVertexAttribArray(0);
+  glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+  glVertexAttribPointer(
+    0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+    3,                  // size
+    GL_FLOAT,           // type
+    GL_FALSE,           // normalized?
+    0,                  // stride
+    (void*)0            // array buffer offset
+  );
+
+  // Colors
+  glEnableVertexAttribArray(1);
+  glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
+  glVertexAttribPointer(
+    1,                  // attribute 1. No particular reason for 1, but must match the layout in the shader.
+    3,                  // size
+    GL_FLOAT,           // type
+    GL_FALSE,           // normalized?
+    0,                  // stride
+    (void*)0            // array buffer offset
+  );
+
+  // Normals
+  glEnableVertexAttribArray(2);
+  glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
+  glVertexAttribPointer(
+    2,
+    3,                  // size
+    GL_FLOAT,           // type
+    GL_FALSE,           // normalized?
+    0,                  // stride
+    (void*)0            // array buffer offset
+  );
+
+  glDrawArrays(GL_TRIANGLES, 0, world->VertexCount);
+
+  glDisableVertexAttribArray(0);
+  glDisableVertexAttribArray(1);
+  glDisableVertexAttribArray(2);
+
+
+  world->VertexCount = 0;
+
+  world->VertexData.filled = 0;
+  world->NormalData.filled = 0;
+  world->ColorData.filled = 0;
+
+  /* printf("VertexBufferFlushed \n"); */
+
+  return;
+}
+
+bool
+BufferFace (
+    World *world,
 
     float* VertsPositions,
     int sizeofVertPositions,
@@ -40,51 +110,58 @@ void BufferFace (
     float* Normals,
     int sizeofNormals,
 
-    const float* VertColors,
-
-    int *chunkVertCount
+    const float* VertColors
   )
 {
   tris += 2;
 
-  worldVertexData->filled += sizeofVertPositions;
-  worldNormalData->filled += sizeofNormals;
-  worldColorData->filled += FACE_COLOR_SIZE;
+  world->VertexData.filled += sizeofVertPositions;
+  world->NormalData.filled += sizeofNormals;
+  world->ColorData.filled += FACE_COLOR_SIZE;
 
-  if ( worldVertexData->filled > worldVertexData->bytesAllocd )
+  bool DidBufferFace = true;
+
+  if ( world->VertexData.filled > world->VertexData.bytesAllocd )
   {
-    printf("Out of Vertex Memory\n");
-    assert(false);
-    return;
+    /* printf("Flushing Render Buffer - Vertex memory\n"); */
+    DidBufferFace = false;
   }
 
-  if ( worldColorData->filled > worldColorData->bytesAllocd )
+  if ( world->ColorData.filled > world->ColorData.bytesAllocd )
   {
-    printf("Out of Color Memory\n");
-    assert(false);
-    return;
+    /* printf("Flushing Render Buffer - Color memory\n"); */
+    DidBufferFace = false;
   }
 
-  if (worldNormalData->filled > worldNormalData->bytesAllocd )
+  if (world->NormalData.filled > world->NormalData.bytesAllocd )
   {
-    printf("Out of Normal Memory\n");
-    assert(false);
-    return;
+    /* printf("Flushing Render Buffer - Normal memory\n"); */
+    DidBufferFace = false;
   }
 
-  memcpy( &worldVertexData->Data[(*chunkVertCount)*3], VertsPositions, sizeofVertPositions );
-  memcpy( &worldNormalData->Data[(*chunkVertCount)*3], Normals, sizeofNormals );
-  memcpy( &worldColorData->Data[(*chunkVertCount)*3], VertColors, FACE_COLOR_SIZE );
-  *chunkVertCount += 6;
+  if ( DidBufferFace == false )
+  {
+    world->VertexData.filled -= sizeofVertPositions;
+    world->NormalData.filled -= sizeofNormals;
+    world->ColorData.filled -= FACE_COLOR_SIZE;
+  }
+  else
+  {
+    memcpy( &world->VertexData.Data[world->VertexCount*3], VertsPositions, sizeofVertPositions );
+    memcpy( &world->NormalData.Data[world->VertexCount*3], Normals, sizeofNormals );
+    memcpy( &world->ColorData.Data[world->VertexCount*3],  VertColors, FACE_COLOR_SIZE );
+
+    world->VertexCount += 6;
+  }
+
+  return DidBufferFace;
 }
 
-void BufferRightFace(
+bool BufferRightFace(
+    World *world,
     glm::vec3 worldP,
-    VertexBlock *worldVertexData,
-    VertexBlock *worldColorData,
-    VertexBlock *worldNormalData,
-    const float* FaceColor,
-    int *chunkVertCount )
+    const float* FaceColor
+    )
 {
   float localVertexData[] =
   {
@@ -108,16 +185,14 @@ void BufferRightFace(
     worldP.x + VOXEL_RADIUS+1, worldP.y + -VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS  // ( 2,-1, 1)
   };
 
-  BufferLocalFace;
+  return BufferLocalFace;
 }
 
-void BufferLeftFace(
+bool BufferLeftFace(
+    World *world,
     glm::vec3 worldP,
-    VertexBlock *worldVertexData,
-    VertexBlock *worldColorData,
-    VertexBlock *worldNormalData,
-    const float* FaceColor,
-    int *chunkVertCount )
+    const float* FaceColor
+    )
 {
   float localVertexData[] =
   {
@@ -141,16 +216,14 @@ void BufferLeftFace(
     worldP.x + -VOXEL_RADIUS-1, worldP.y +  VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS  // (-2, 1, 1)
   };
 
-  BufferLocalFace;
+  return BufferLocalFace;
 }
 
-void BufferBottomFace(
+bool BufferBottomFace(
+    World *world,
     glm::vec3 worldP,
-    VertexBlock *worldVertexData,
-    VertexBlock *worldColorData,
-    VertexBlock *worldNormalData,
-    const float* FaceColor,
-    int *chunkVertCount)
+    const float* FaceColor
+    )
 {
   float localVertexData[] =
   {
@@ -174,16 +247,14 @@ void BufferBottomFace(
     worldP.x + -VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS-1, worldP.z + -VOXEL_RADIUS  // (-1,-2,-1)
   };
 
-  BufferLocalFace;
+  return BufferLocalFace;
 }
 
-void BufferTopFace(
+bool BufferTopFace(
+    World *world,
     glm::vec3 worldP,
-    VertexBlock *worldVertexData,
-    VertexBlock *worldColorData,
-    VertexBlock *worldNormalData,
-    const float* FaceColor,
-    int *chunkVertCount)
+    const float* FaceColor
+    )
 {
   float localVertexData[] =
   {
@@ -207,16 +278,14 @@ void BufferTopFace(
     worldP.x + -VOXEL_RADIUS, worldP.y +  VOXEL_RADIUS+1, worldP.z +  VOXEL_RADIUS  // (-1, 2, 1)
   };
 
-  BufferLocalFace;
+  return BufferLocalFace;
 }
 
-void BufferFrontFace(
+bool BufferFrontFace(
+    World *world,
     glm::vec3 worldP,
-    VertexBlock *worldVertexData,
-    VertexBlock *worldColorData,
-    VertexBlock *worldNormalData,
-    const float* FaceColor,
-    int *chunkVertCount)
+    const float* FaceColor
+    )
 {
   float localVertexData[] =
   {
@@ -240,16 +309,14 @@ void BufferFrontFace(
     worldP.x +  VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z +  VOXEL_RADIUS+1  // ( 1,-1, 2)
   };
 
-  BufferLocalFace;
+  return BufferLocalFace;
 }
 
-void BufferBackFace(
+bool BufferBackFace(
+    World *world,
     glm::vec3 worldP,
-    VertexBlock *worldVertexData,
-    VertexBlock *worldColorData,
-    VertexBlock *worldNormalData,
-    const float* FaceColor,
-    int *chunkVertCount)
+    const float* FaceColor
+    )
 {
   float localVertexData[] =
   {
@@ -273,7 +340,7 @@ void BufferBackFace(
     worldP.x + -VOXEL_RADIUS, worldP.y + -VOXEL_RADIUS, worldP.z + -VOXEL_RADIUS-1, // (-1,-1,-2)
   };
 
-  BufferLocalFace;
+  return BufferLocalFace;
 }
 
 bool IsRightChunkBoundary( chunk_dimension ChunkDim, int idx )
@@ -420,14 +487,8 @@ IsInFrustum( World *world, Camera_Object *Camera, Chunk *chunk )
 }
 
 void
-BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
+BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera, GLuint &colorbuffer, GLuint &vertexbuffer, GLuint &normalbuffer )
 {
-  chunk->VertexData.filled = 0;
-  chunk->ColorData.filled = 0;
-  chunk->NormalData.filled = 0;
-
-  chunk->Verticies = 0;
-
 
   if ( ! IsInFrustum( world, Camera, chunk ) )
   {
@@ -492,14 +553,14 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
        )
     {
       const float* FaceColors = GetColorData( Voxel_Red );
-      BufferRightFace(
-        VoxRenderP,
-        &chunk->VertexData,
-        &chunk->ColorData,
-        &chunk->NormalData,
-        FaceColors,
-        &chunk->Verticies
-      );
+      if ( !BufferRightFace(
+              world,
+              VoxRenderP,
+              FaceColors)
+         )
+      {
+        FlushVertexBuffer (world, colorbuffer, vertexbuffer, normalbuffer );
+      }
     }
 
     if (
@@ -508,14 +569,13 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
        )
     {
       const float* FaceColors = GetColorData( Voxel_Yellow );
-      BufferLeftFace(
-        VoxRenderP,
-        &chunk->VertexData,
-        &chunk->ColorData,
-        &chunk->NormalData,
-        FaceColors,
-        &chunk->Verticies
-      );
+      if (! BufferLeftFace(
+                            world,VoxRenderP,
+                            FaceColors)
+         )
+      {
+        FlushVertexBuffer( world, colorbuffer, vertexbuffer, normalbuffer);
+      }
     }
 
     if (
@@ -524,14 +584,14 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
        )
     {
       const float* FaceColors = GetColorData( Voxel_Teal );
-      BufferBottomFace(
-        VoxRenderP,
-        &chunk->VertexData,
-        &chunk->ColorData,
-        &chunk->NormalData,
-        FaceColors,
-        &chunk->Verticies
-      );
+      if ( !BufferBottomFace(
+                                world,
+                                VoxRenderP,
+                                FaceColors )
+        )
+      {
+        FlushVertexBuffer( world, colorbuffer, vertexbuffer, normalbuffer);
+      }
     }
 
     if (
@@ -540,14 +600,14 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
        )
     {
       const float* FaceColors = GetColorData( Voxel_Green );
-      BufferTopFace(
-        VoxRenderP,
-        &chunk->VertexData,
-        &chunk->ColorData,
-        &chunk->NormalData,
-        FaceColors,
-        &chunk->Verticies
-      );
+      if ( !BufferTopFace(
+                                world,
+                                VoxRenderP,
+                            FaceColors )
+        )
+      {
+        FlushVertexBuffer( world, colorbuffer, vertexbuffer, normalbuffer);
+      }
     }
 
     if (
@@ -556,14 +616,14 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
        )
     {
       const float* FaceColors = GetColorData( Voxel_White );
-      BufferFrontFace(
-        VoxRenderP,
-        &chunk->VertexData,
-        &chunk->ColorData,
-        &chunk->NormalData,
-        FaceColors,
-        &chunk->Verticies
-      );
+      if ( !BufferFrontFace(
+                            world,
+                            VoxRenderP,
+                            FaceColors)
+        )
+      {
+        FlushVertexBuffer( world, colorbuffer, vertexbuffer, normalbuffer);
+      }
     }
 
     if (
@@ -572,83 +632,30 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera )
        )
     {
       const float* FaceColors = GetColorData( Voxel_Purple );
-      BufferBackFace(
-        VoxRenderP,
-        &chunk->VertexData,
-        &chunk->ColorData,
-        &chunk->NormalData,
-        FaceColors,
-        &chunk->Verticies
-      );
+      if ( !BufferBackFace(
+                            world,
+                            VoxRenderP,
+                            FaceColors)
+        )
+      {
+        FlushVertexBuffer( world, colorbuffer, vertexbuffer, normalbuffer);
+      }
     }
 
   }
 
 }
 
-void DrawChunk(
+
+void
+DrawChunk(
     World *world,
     Chunk *chunk,
     Camera_Object *Camera,
     GLuint &colorbuffer,
     GLuint &vertexbuffer,
-    GLuint &normalbuffer)
+    GLuint &normalbuffer
+  )
 {
-  BuildChunkMesh( world, chunk, Camera );
-
-  if ( chunk->Verticies > 0 )
-  {
-
-    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-    glBufferData(GL_ARRAY_BUFFER, chunk->VertexData.bytesAllocd, chunk->VertexData.Data, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
-    glBufferData(GL_ARRAY_BUFFER, chunk->ColorData.bytesAllocd, chunk->ColorData.Data, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
-    glBufferData(GL_ARRAY_BUFFER, chunk->NormalData.bytesAllocd, chunk->NormalData.Data, GL_STATIC_DRAW);
-
-    // Vertices
-    glEnableVertexAttribArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-    glVertexAttribPointer(
-      0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-      3,                  // size
-      GL_FLOAT,           // type
-      GL_FALSE,           // normalized?
-      0,                  // stride
-      (void*)0            // array buffer offset
-    );
-
-    // Colors
-    glEnableVertexAttribArray(1);
-    glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
-    glVertexAttribPointer(
-      1,                  // attribute 1. No particular reason for 1, but must match the layout in the shader.
-      3,                  // size
-      GL_FLOAT,           // type
-      GL_FALSE,           // normalized?
-      0,                  // stride
-      (void*)0            // array buffer offset
-    );
-
-    // Normals
-    glEnableVertexAttribArray(2);
-    glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
-    glVertexAttribPointer(
-      2,
-      3,                  // size
-      GL_FLOAT,           // type
-      GL_FALSE,           // normalized?
-      0,                  // stride
-      (void*)0            // array buffer offset
-    );
-
-    glDrawArrays(GL_TRIANGLES, 0, chunk->Verticies);
-
-    glDisableVertexAttribArray(0);
-    glDisableVertexAttribArray(1);
-    glDisableVertexAttribArray(2);
-
-  }
+  BuildChunkMesh( world, chunk, Camera, colorbuffer, vertexbuffer, normalbuffer );
 }

@@ -39,16 +39,14 @@ v2 Lerp(float t, v2 p1, v2 p2)
 inline float
 LengthSq( v3 Vec )
 {
-  float Result;
-  Result = Vec.x*Vec.x + Vec.y*Vec.y + Vec.z*Vec.z;
+  float Result = Vec.x*Vec.x + Vec.y*Vec.y + Vec.z*Vec.z;
   return Result;
 }
 
 inline float
 Length( v3 Vec )
 {
-  float Result;
-  Result = sqrt(LengthSq(Vec));
+  float Result = sqrt(LengthSq(Vec));
   return Result;
 }
 
@@ -64,7 +62,7 @@ Normalize( v3 Vec, float length)
 {
   if (length == 0) return V3(0,0,0);
 
-  v3 Result;
+  v3 Result = Vec;
 
   Result.x = Result.x/length;
   Result.y = Result.y/length;
@@ -76,8 +74,7 @@ Normalize( v3 Vec, float length)
 inline v3
 Normalize(v3 A)
 {
-  v3 Result;
-  Result = Normalize(A, Length(A));
+  v3 Result = Normalize(A, Length(A));
   return Result;
 }
 

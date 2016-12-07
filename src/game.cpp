@@ -144,17 +144,12 @@ ZeroChunk( Chunk * chunk )
   }
 
   chunk->flags = Chunk_Uninitialized;
-
-  chunk->VertexData.filled = 0;
-  chunk->ColorData.filled = 0;
-  chunk->NormalData.filled = 0;
-
-  chunk->Verticies = 0;
 }
 
 void
 ZeroWorldChunks( World *world )
 {
+  world->VertexCount = 0;
   for ( int x = 0; x < world->VisibleRegion.x; ++x )
   {
     for ( int y = 0; y < world->VisibleRegion.y; ++y )
@@ -176,8 +171,6 @@ AllocateChunk(chunk_dimension Dim, voxel_position WorldP)
 {
   Chunk Result;
 
-  int BufferVerticies = Dim.x*Dim.y*Dim.z * VERT_PER_VOXEL * 3;
-
   Result.Dim = Dim;
 
   Result.WorldP = WorldP;
@@ -185,14 +178,6 @@ AllocateChunk(chunk_dimension Dim, voxel_position WorldP)
 
   Result.Voxels = (Voxel*)calloc(Dim.x*Dim.y*Dim.z, sizeof(Voxel));
   Result.BoundaryVoxels = (Voxel*)calloc(Dim.x*Dim.y*Dim.z, sizeof(Voxel));
-
-  Result.VertexData.Data = (GLfloat *)calloc(BufferVerticies, sizeof(GLfloat) );
-  Result.ColorData.Data = (GLfloat *)calloc(BufferVerticies, sizeof(GLfloat) );
-  Result.NormalData.Data = (GLfloat *)calloc(BufferVerticies, sizeof(GLfloat) );
-
-  Result.VertexData.bytesAllocd = BufferVerticies*sizeof(GLfloat);
-  Result.ColorData.bytesAllocd = BufferVerticies*sizeof(GLfloat);
-  Result.NormalData.bytesAllocd = BufferVerticies*sizeof(GLfloat);
 
   ZeroChunk(&Result);
 
@@ -204,7 +189,6 @@ inline v3
 GetInputsFromController()
 {
   v3 right = V3(1,0,0);
-  v3 up = V3(0,1,0);
   v3 forward = V3(0,0,-1);
 
   v3 UpdateDir = V3(0,0,0);
@@ -248,8 +232,6 @@ GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
 {
   collision_event Collision;
   Collision.didCollide = false;
-
-  v3 ModelHalfDim = ModelDim * 0.5f;
 
   v3 MinP = TestP.Offset;
   v3 MaxP = (TestP.Offset + ModelDim);
@@ -436,8 +418,6 @@ GenerateVisibleRegion( World *world, voxel_position GrossUpdateVector )
   voxel_position UpdateMax = ClampMinus1toInfinity( IterVector * world->VisibleRegion );
   voxel_position UpdateMin = ClampPositive( -1 * IterVector * (world->VisibleRegion -1) );
 
-  voxel_position UpdateInnerMin = UpdateMin;
-
   for ( int x = UpdateMin.x; x != UpdateMax.x; x += IterVector.x )
   {
     for ( int y = UpdateMin.y; y != UpdateMax.y; y += IterVector.y )
@@ -602,9 +582,9 @@ UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
 void
 UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera )
 {
-  Camera->Target = Canonical_Position(Player->Model.Offset, Player->Model.WorldP);
-  Camera->P = Camera->Target + CAMERA_OFFSET;
-  Camera->Front = Normalize(Camera->Target.Offset - Camera->P.Offset);
+  Camera->Target = Canonicalize(world, Player->Model.Offset, Player->Model.WorldP);
+  Camera->P = Canonicalize(world, Camera->Target.Offset + CAMERA_OFFSET, Camera->Target.WorldP);;
+  Camera->Front = Normalize( GetRenderP(world, Camera->Target) - GetRenderP(world, Camera->P) );
 }
 
 glm::mat4
@@ -672,9 +652,6 @@ GAME_UPDATE_AND_RENDER
 
   Player->Acceleration = GetInputsFromController() * accelerationMultiplier; // m/s2
 
-
-  bool grounded = false;
-
   if (IsGrounded(world, Player))
   {
     if (glfwGetKey( window, GLFW_KEY_SPACE ) == GLFW_PRESS)
@@ -691,11 +668,8 @@ GAME_UPDATE_AND_RENDER
 
   v3 PlayerDelta = Player->Velocity * dt;
 
-  if ( Length(PlayerDelta) > 0 )
-  {
-    UpdatePlayerP( world, Player, PlayerDelta );
-    UpdateCameraP( world, Player, Camera );
-  }
+  UpdatePlayerP( world, Player, PlayerDelta );
+  UpdateCameraP( world, Player, Camera );
 
   glm::mat4 ViewMatrix = GetViewMatrix(world, Camera);
 
@@ -737,6 +711,9 @@ GAME_UPDATE_AND_RENDER
     );
   }
 
+  // Ensure we flush the draw buffer if it's dirty
+  FlushVertexBuffer (world, colorbuffer, vertexbuffer, normalbuffer );
+
   /* printf("%d Triangles drawn\n", tris ); */
   /* tris=0; */
 
@@ -763,6 +740,21 @@ AllocateWorld( World *world )
 
   // Allocate a second chunks buffer for when we're updating visible region
   world->FreeChunks.chunks = (Chunk*)calloc( Volume(world->VisibleRegion), sizeof(Chunk) );
+
+  { // Allocate an entire chunk worth of vertices for the render buffer
+    int BufferVertices = world->ChunkDim.x*world->ChunkDim.y*world->ChunkDim.z * VERT_PER_VOXEL * 3;
+
+    world->VertexData.Data = (GLfloat *)calloc(BufferVertices, sizeof(GLfloat) );
+    world->ColorData.Data = (GLfloat *)calloc(BufferVertices, sizeof(GLfloat) );
+    world->NormalData.Data = (GLfloat *)calloc(BufferVertices, sizeof(GLfloat) );
+
+    world->VertexData.bytesAllocd = BufferVertices*sizeof(GLfloat);
+    world->ColorData.bytesAllocd = BufferVertices*sizeof(GLfloat);
+    world->NormalData.bytesAllocd = BufferVertices*sizeof(GLfloat);
+
+    world->VertexCount = 0;
+  }
+
 
   world->VisibleRegionOrigin = World_Position(0,0,0);
 
@@ -910,8 +902,8 @@ main( void )
     }
 
     if ( T2.tv_sec - T1.tv_sec > 0 ) T1.tv_nsec -= 1000000000;
-    printf(" %d ms this frame \n",
-        (T2.tv_nsec -T1.tv_nsec)/1000000 );
+    printf(" %d ms this frame \n\n\n",
+        (int)(T2.tv_nsec -T1.tv_nsec)/1000000 );
 
   } // Check if the ESC key was pressed or the window was closed
   while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
@@ -935,21 +927,17 @@ main( void )
   {
     free( world.Chunks[i].Voxels );
     free( world.Chunks[i].BoundaryVoxels );
-
-    free( world.Chunks[i].VertexData.Data );
-    free( world.Chunks[i].ColorData.Data );
-    free( world.Chunks[i].NormalData.Data );
   }
+
+  free( world.VertexData.Data );
+  free( world.ColorData.Data );
+  free( world.NormalData.Data );
 
   free( world.Chunks );
   free( world.FreeChunks.chunks );
 
   free(Player.Model.Voxels);
   free(Player.Model.BoundaryVoxels);
-
-  free(Player.Model.VertexData.Data);
-  free(Player.Model.ColorData.Data);
-  free(Player.Model.NormalData.Data);
 
   return 0;
 }

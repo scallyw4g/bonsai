@@ -394,8 +394,12 @@ v2 operator+(v2 P1, v2 P2)
 v2
 operator*(float f, v2 P)
 {
-  P.x *= f;
-  P.y *= f;
+  v2 Result;
+
+  Result.x = P.x *= f;
+  Result.y = P.y *= f;
+
+  return Result;
 }
 
 inline canonical_position
@@ -642,12 +646,7 @@ v4 operator+(v4 A, v4 B)
 inline glm::vec3
 GLV3( v3 Vec )
 {
-  glm::vec3 Result;
-
-  Result.x = Vec.x;
-  Result.y = Vec.y;
-  Result.z = Vec.z;
-
+  glm::vec3 Result = vec3( Vec.x, Vec.y, Vec.z);
   return Result;
 }
 

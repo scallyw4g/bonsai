@@ -17,3 +17,4 @@
 --- Misc ----------------------------------------------------------------------
 
 [ ] Write keypress callbacks instead of checking if (key == down) .. do thing
+[ ] Fix Canonicalize to work across multiple chunks

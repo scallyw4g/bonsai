@@ -6,9 +6,9 @@
 #define CD_Z 8
 
 // Visible Region XYZ - Must be > (3,3,3)
-#define VR_X 16
-#define VR_Y 16
-#define VR_Z 16
+#define VR_X 32
+#define VR_Y 32
+#define VR_Z 32
 
 #define CHUNK_DIMENSION Chunk_Dimension(CD_X,CD_Y,CD_Z)
 
@@ -32,8 +32,6 @@ static float accumulatedTime = 0;
 static int tris = 0;
 static int VoxelsIndexed = 0;
 static int BoundaryVoxelsIndexed = 0;
-
-static int thing = 0;
 
 #define CHUNK_VOL (CHUNK_HEIGHT*CHUNK_WIDTH*CHUNK_DEPTH)
 
