@@ -20,11 +20,13 @@
 
 #define WORLD_SIZE 100
 
-#define DEBUG_SCROLL_WORLD 1
+#define DEBUG_SCROLL_WORLD        1
+#define DEBUG_CHUNK_AABB          1
+#define DEBUG_CAMERA_FOCUS_ORIGIN 0
 
 #define CHUNK_STACK_SIZE (VR_X*VR_X*VR_X)
 
-#define CAMERA_OFFSET V3(0,40,45)
+#define CAMERA_OFFSET V3(0,10,15)
 
 static int numFrames = 0;
 static float accumulatedTime = 0;

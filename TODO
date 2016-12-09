@@ -1,11 +1,12 @@
 
 --- Renderer ------------------------------------------------------------------
 
-[X] Add BoundaryVoxels buffer and remove Volume_Boundary voxel flag.
 [ ] Add Shadow maps
 [ ] Ambient Occlusion ?
 [ ] Better frustum culling
+[ ] Normal data should go through pipe relative to vertex instead of being corrected in shader
 
+[X] Add BoundaryVoxels buffer and remove Volume_Boundary voxel flag.
 
 
 --- World Generation -----------------------------------------------------------

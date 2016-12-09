@@ -178,6 +178,30 @@ operator+(glm::vec3 Vec, voxel_position Pos)
   return Result;
 }
 
+inline voxel_position
+operator+(voxel_position Pos, v3 Vec)
+{
+  voxel_position Result;
+
+  Result.x = Pos.x+Vec.x;
+  Result.y = Pos.y+Vec.y;
+  Result.z = Pos.z+Vec.z;
+
+  return Result;
+}
+
+inline voxel_position
+operator-(voxel_position Pos, v3 Vec)
+{
+  voxel_position Result;
+
+  Result.x = Pos.x-Vec.x;
+  Result.y = Pos.y-Vec.y;
+  Result.z = Pos.z-Vec.z;
+
+  return Result;
+}
+
 inline v3
 operator-(v3 Vec, voxel_position Pos)
 {
@@ -316,6 +340,18 @@ Voxel_Position(v3 Offset)
 
   return Result;
 }
+
+inline world_position
+World_Position(v3 V)
+{
+  voxel_position Result;
+
+  Result.x = (int)V.x;
+  Result.y = (int)V.y;
+  Result.z = (int)V.z;
+
+  return Result;
+};
 
 inline voxel_position
 Voxel_Position(int x, int y, int z)

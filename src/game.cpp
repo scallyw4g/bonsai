@@ -565,7 +565,12 @@ UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
 void
 UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera )
 {
-  Camera->Target = Canonicalize(world, Player->Model.Offset, Player->Model.WorldP);
+#if DEBUG_CAMERA_FOCUS_ORIGIN
+  Camera->Target = Canonical_Position( V3(0,0,0), World_Position(0,0,0) );
+#else
+  Camera->Target =Canonicalize(world, Player->Model.Offset, Player->Model.WorldP);
+#endif
+
   Camera->P = Canonicalize(world, Camera->Target.Offset + CAMERA_OFFSET, Camera->Target.WorldP);;
   Camera->Front = Normalize( GetRenderP(world, Camera->Target) - GetRenderP(world, Camera->P) );
 }

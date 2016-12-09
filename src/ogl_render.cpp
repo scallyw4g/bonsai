@@ -37,18 +37,11 @@ FlushVertexBuffer(
 
   /* printf("Flushing %d vertices from Vertex Buffer \n", world->VertexCount); */
 
-  glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-  glBufferData(GL_ARRAY_BUFFER, world->VertexData.filled, world->VertexData.Data, GL_STATIC_DRAW);
-
-  glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
-  glBufferData(GL_ARRAY_BUFFER, world->ColorData.filled, world->ColorData.Data, GL_STATIC_DRAW);
-
-  glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
-  glBufferData(GL_ARRAY_BUFFER, world->NormalData.filled, world->NormalData.Data, GL_STATIC_DRAW);
 
   // Vertices
   glEnableVertexAttribArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+  glBufferData(GL_ARRAY_BUFFER, world->VertexData.filled, world->VertexData.Data, GL_STATIC_DRAW);
   glVertexAttribPointer(
     0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
     3,                  // size
@@ -61,6 +54,7 @@ FlushVertexBuffer(
   // Colors
   glEnableVertexAttribArray(1);
   glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
+  glBufferData(GL_ARRAY_BUFFER, world->ColorData.filled, world->ColorData.Data, GL_STATIC_DRAW);
   glVertexAttribPointer(
     1,                  // attribute 1. No particular reason for 1, but must match the layout in the shader.
     3,                  // size
@@ -73,6 +67,7 @@ FlushVertexBuffer(
   // Normals
   glEnableVertexAttribArray(2);
   glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
+  glBufferData(GL_ARRAY_BUFFER, world->NormalData.filled, world->NormalData.Data, GL_STATIC_DRAW);
   glVertexAttribPointer(
     2,
     3,                  // size
@@ -722,4 +717,120 @@ DrawChunk(
   )
 {
   BuildChunkMesh( world, chunk, Camera, colorbuffer, vertexbuffer, normalbuffer );
+
+#if DEBUG_CHUNK_AABB
+
+  if ( chunk->BoundaryVoxelCount == 0 ) return;
+
+  // 24 lines, 2 verts per line, 3 floats per vert
+  GLfloat *LineData = (GLfloat *)calloc(24*2*3, sizeof(GLfloat) );
+  GLfloat *LineColors = (GLfloat *)calloc(24*2*3, sizeof(GLfloat) );
+
+  for ( int i = 0; i < 100; ++ i )
+  {
+    LineColors[i] = 20;
+  }
+
+  GLuint AABB_Buffer;
+  glGenBuffers(1, &AABB_Buffer);
+
+  GLuint AABB_Colors;
+  glGenBuffers(1, &AABB_Colors);
+
+#if 1
+  v3 MinP = GetRenderP(world, Canonical_Position(V3(0,0,0), chunk->WorldP ));
+  v3 MaxP = GetRenderP(world, Canonical_Position(V3(0,0,0)+(world->ChunkDim), chunk->WorldP ));
+
+
+  v3 TopRL = V3(MinP.x, MaxP.y, MinP.z);
+  v3 TopRR = V3(MaxP.x,  MaxP.y, MinP.z);
+
+  v3 TopFL = V3(MinP.x, MaxP.y, MaxP.z);
+  v3 TopFR = V3(MaxP.x,  MaxP.y, MaxP.z);
+
+  v3 BotRL = V3(MinP.x, MinP.y, MinP.z);
+  v3 BotRR = V3(MaxP.x,  MinP.y, MinP.z);
+
+  v3 BotFL = V3(MinP.x, MinP.y, MaxP.z);
+  v3 BotFR = V3(MaxP.x,  MinP.y, MaxP.z);
+
+
+
+  // Top
+  memcpy( LineData,    &TopRL, sizeof(v3) );
+  memcpy( LineData+3,  &TopRR, sizeof(v3) );
+
+  memcpy( LineData+6,  &TopFL, sizeof(v3) );
+  memcpy( LineData+9,  &TopFR, sizeof(v3) );
+
+  memcpy( LineData+12, &TopFL, sizeof(v3) );
+  memcpy( LineData+15, &TopRL, sizeof(v3) );
+
+  memcpy( LineData+18, &TopFR, sizeof(v3) );
+  memcpy( LineData+21, &TopRR, sizeof(v3) );
+
+  // Right
+  memcpy( LineData+24, &TopFR, sizeof(v3) );
+  memcpy( LineData+27, &BotFR, sizeof(v3) );
+
+  memcpy( LineData+30, &TopRR, sizeof(v3) );
+  memcpy( LineData+33, &BotRR, sizeof(v3) );
+
+  // Left
+  memcpy( LineData+36, &TopFL, sizeof(v3) );
+  memcpy( LineData+39, &BotFL, sizeof(v3) );
+
+  memcpy( LineData+42, &TopRL, sizeof(v3) );
+  memcpy( LineData+45, &BotRL, sizeof(v3) );
+
+
+  // Bottom
+  memcpy( LineData+48, &BotRL, sizeof(v3) );
+  memcpy( LineData+51, &BotRR, sizeof(v3) );
+
+  memcpy( LineData+54, &BotFL, sizeof(v3) );
+  memcpy( LineData+57, &BotFR, sizeof(v3) );
+
+  memcpy( LineData+60, &BotFL, sizeof(v3) );
+  memcpy( LineData+63, &BotRL, sizeof(v3) );
+
+  memcpy( LineData+66, &BotFR, sizeof(v3) );
+  memcpy( LineData+69, &BotRR, sizeof(v3) );
+#endif
+
+  // Colors
+  glEnableVertexAttribArray(0);
+  glBindBuffer(GL_ARRAY_BUFFER, AABB_Colors);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(v3)*24*2, LineColors, GL_STATIC_DRAW);
+  glVertexAttribPointer(
+    1,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+    3,                  // size
+    GL_FLOAT,           // type
+    GL_FALSE,           // normalized?
+    0,                  // stride
+    (void*)0            // array buffer offset
+  );
+
+  // Vertices
+  glEnableVertexAttribArray(1);
+  glBindBuffer(GL_ARRAY_BUFFER, AABB_Buffer);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(v3)*24*2, LineData, GL_STATIC_DRAW);
+  glVertexAttribPointer(
+    0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+    3,                  // size
+    GL_FLOAT,           // type
+    GL_FALSE,           // normalized?
+    0,                  // stride
+    (void*)0            // array buffer offset
+  );
+
+  glDrawArrays(GL_LINES, 0, 24);
+
+  glDeleteBuffers(1, &AABB_Buffer);
+  glDeleteBuffers(1, &AABB_Colors);
+
+  free( LineData );
+  free( LineColors );
+
+#endif
 }
