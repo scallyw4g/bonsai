@@ -133,19 +133,17 @@ InitializeVoxels( World *world, Chunk *chunk )
 void
 ZeroChunk( Chunk * chunk )
 {
-  chunk->BoundaryVoxelCount = BOUNDARY_VOXELS_UNINITIALIZED;
-
   for ( int i = 0; i < Volume(chunk->Dim); ++ i)
   {
     chunk->Voxels[i].flags = 0;
   }
 
-  for ( int i = 0; i < chunk->BoundaryVoxelCount; ++ i)
-  {
-    chunk->BoundaryVoxels[i].flags = 0;
-  }
+  chunk->BoundaryVoxelCount = 0;
 
-  chunk->flags = Chunk_Uninitialized;
+  chunk->flags = 0;
+  chunk->flags = SetFlag( chunk->flags, Chunk_Uninitialized );
+  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildInteriorBoundary );
+  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorBoundary );
 }
 
 void

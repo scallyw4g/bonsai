@@ -68,10 +68,12 @@ NotSet( int Flags, int Flag )
 }
 
 enum ChunkFlags {
-  Chunk_Uninitialized = 1 << 0,
+  Chunk_Uninitialized           = 1 << 0,
 
-  Chunk_Entity        = 1 << 1,
-  Chunk_World         = 1 << 2
+  Chunk_Entity                  = 1 << 1,
+  Chunk_World                   = 1 << 2,
+  Chunk_RebuildExteriorBoundary = 1 << 3,
+  Chunk_RebuildInteriorBoundary = 1 << 4
 };
 
 

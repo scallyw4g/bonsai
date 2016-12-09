@@ -432,7 +432,15 @@ PushBoundaryVoxel( Chunk *chunk, Voxel voxel )
 void
 BuildExteriorBoundaryVoxels( World *world, Chunk *chunk, voxel_position NeighborVector )
 {
+
   Chunk *Neighbor = GetWorldChunk( world, chunk->WorldP + NeighborVector );
+
+  if ( !Neighbor )
+  {
+    return; // We're on the edge of the world, we'll need to rebuild again when this chunk knows about all of its neighbors
+  }
+
+  chunk->flags = UnSetFlag( chunk->flags, Chunk_RebuildExteriorBoundary );
 
   voxel_position AbsInvNeighborVector = ((NeighborVector*NeighborVector-1)*(NeighborVector*NeighborVector-1));
   voxel_position LocalPlane = ClampPositive(chunk->Dim-1) * AbsInvNeighborVector + 1;
@@ -447,8 +455,7 @@ BuildExteriorBoundaryVoxels( World *world, Chunk *chunk, voxel_position Neighbor
           continue;
 
         voxel_position NeighborP = ClampPositive( (Voxel_Position(x,y,z) - (chunk->Dim * NeighborVector) ) );
-        Print(NeighborP);
-        if ( Neighbor && ! IsFilled( Neighbor, NeighborP) )
+        if ( ! IsFilled( Neighbor, NeighborP) )
         {
           Voxel voxel = {};
 
@@ -466,20 +473,12 @@ BuildExteriorBoundaryVoxels( World *world, Chunk *chunk, voxel_position Neighbor
 }
 
 void
-BuildBoundaryVoxels(World *world, Chunk *chunk, Camera_Object *Camera)
+BuildInternalBoundaryVoxels(World *world, Chunk *chunk, Camera_Object *Camera)
 {
   chunk->BoundaryVoxelCount = 0;
 
-#if 1
-  BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(0,1,0) );  // Top
-  BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(0,-1,0) ); // Bottom
-
-  BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(1,0,0) );  // Right
-  BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(-1,0,0) ); // Left
-
-  BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(0,0,1) );  // Front
-  BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(0,0,-1) ); // Back
-#endif
+  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorBoundary );
+  chunk->flags = UnSetFlag( chunk->flags, Chunk_RebuildInteriorBoundary );
 
 
 #if 1
@@ -525,8 +524,6 @@ BuildBoundaryVoxels(World *world, Chunk *chunk, Camera_Object *Camera)
     }
   }
 #endif
-
-  BoundaryVoxelsIndexed += chunk->BoundaryVoxelCount;
 }
 
 bool
@@ -553,12 +550,48 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera, GLuint &colorb
     return;
   }
 
-  /* chunk->BoundaryVoxelCount = BOUNDARY_VOXELS_UNINITIALIZED; */
+  /* chunk->flags = SetFlag( chunk->flags, Chunk_RebuildInteriorBoundary ); */
 
-  if ( chunk->BoundaryVoxelCount == BOUNDARY_VOXELS_UNINITIALIZED )
+  if ( IsSet(chunk->flags, Chunk_RebuildInteriorBoundary) )
   {
-    BuildBoundaryVoxels( world, chunk, Camera );
+    BuildInternalBoundaryVoxels( world, chunk, Camera );
   }
+
+#if 0
+
+  if ( IsSet(chunk->flags, Chunk_RebuildExteriorBoundary ) )
+  {
+    BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(0,1,0) );  // Top
+  }
+
+  if ( IsSet(chunk->flags, Chunk_RebuildExteriorBoundary ) )
+  {
+    BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(0,-1,0) ); // Bottom
+
+  }
+
+  if ( IsSet(chunk->flags, Chunk_RebuildExteriorBoundary ) )
+  {
+    BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(1,0,0) );  // Right
+  }
+
+  if ( IsSet(chunk->flags, Chunk_RebuildExteriorBoundary ) )
+  {
+    BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(-1,0,0) ); // Left
+
+  }
+
+  if ( IsSet(chunk->flags, Chunk_RebuildExteriorBoundary ) )
+  {
+    BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(0,0,1) );  // Front
+  }
+
+  if ( IsSet(chunk->flags, Chunk_RebuildExteriorBoundary ) )
+  {
+    BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(0,0,-1) ); // Back
+  }
+
+#endif
 
 
 #if OPTIMIZE_TRI_COUNT
