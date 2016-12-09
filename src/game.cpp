@@ -93,6 +93,9 @@ InitializeVoxels( World *world, Chunk *chunk )
         chunk->Voxels[i].Offset = V3(x,y,z);
         chunk->Voxels[i].flags = 0;
 
+
+
+#if PERLIN_NOISE_GENERATION
         v3 NoiseInputs =
           ( ( (chunk->Voxels[i].Offset) + (world->ChunkDim*(chunk->WorldP+world->VisibleRegionOrigin))) % WORLD_SIZE )
           /
@@ -102,7 +105,6 @@ InitializeVoxels( World *world, Chunk *chunk )
         double InY = (double)NoiseInputs.y;
         double InZ = (double)NoiseInputs.z;
 
-#if PERLIN_NOISE_GENERATION
         double l = world->Noise.noise(InX, InY, InZ);
         chunk->Voxels[i].flags = 0;
         chunk->Voxels[i].flags |= Floori(l + 0.5);
@@ -176,8 +178,8 @@ AllocateChunk(chunk_dimension Dim, voxel_position WorldP)
   Result.WorldP = WorldP;
   Result.Offset = V3(0,0,0);
 
-  Result.Voxels = (Voxel*)calloc(Dim.x*Dim.y*Dim.z, sizeof(Voxel));
-  Result.BoundaryVoxels = (Voxel*)calloc(Dim.x*Dim.y*Dim.z, sizeof(Voxel));
+  Result.Voxels = (Voxel*)calloc(Volume(Dim), sizeof(Voxel));
+  Result.BoundaryVoxels = (Voxel*)calloc(Volume(Dim), sizeof(Voxel));
 
   ZeroChunk(&Result);
 
@@ -366,23 +368,6 @@ GetAtomicUpdateVector( v3 Gross, float length )
   {
     Result.z = -1.0f;
   }
-
-  return Result;
-}
-
-inline voxel_position
-ClampPositive( voxel_position V )
-{
-  voxel_position Result = V;
-
-  if ( V.x < 0 )
-    Result.x = 0;
-
-  if ( V.y < 0 )
-    Result.y = 0;
-
-  if ( V.z < 0 )
-    Result.z = 0;
 
   return Result;
 }
@@ -689,14 +674,14 @@ GAME_UPDATE_AND_RENDER
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   // Draw Player
-  DrawChunk(
-    world,
-    &Player->Model,
-    Camera,
-    vertexbuffer,
-    colorbuffer,
-    normalbuffer
-  );
+  /* DrawChunk( */
+  /*   world, */
+  /*   &Player->Model, */
+  /*   Camera, */
+  /*   vertexbuffer, */
+  /*   colorbuffer, */
+  /*   normalbuffer */
+  /* ); */
 
   // Draw world
   for ( int i = 0; i < Volume(world->VisibleRegion); ++ i )

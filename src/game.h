@@ -259,6 +259,7 @@ IsFilled( Chunk *chunk, voxel_position VoxelP )
       (VoxelP.y*chunk->Dim.x) +
       (VoxelP.z*chunk->Dim.x*chunk->Dim.y);
 
+    assert(i > -1);
     isFilled = IsSet(chunk->Voxels[i].flags, Voxel_Filled);
   }
 
@@ -291,6 +292,23 @@ NotFilled( World *world, Chunk *chunk, canonical_position VoxelP )
 {
   bool Result;
   Result = !(IsFilled(world,chunk,VoxelP));
+
+  return Result;
+}
+
+inline voxel_position
+ClampPositive( voxel_position V )
+{
+  voxel_position Result = V;
+
+  if ( V.x < 0 )
+    Result.x = 0;
+
+  if ( V.y < 0 )
+    Result.y = 0;
+
+  if ( V.z < 0 )
+    Result.z = 0;
 
   return Result;
 }

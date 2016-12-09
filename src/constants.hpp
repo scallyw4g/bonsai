@@ -6,15 +6,17 @@
 #define CD_Z 8
 
 // Visible Region XYZ - Must be > (3,3,3)
-#define VR_X 32
-#define VR_Y 32
-#define VR_Z 32
+#define VR_X 8
+#define VR_Y 8
+#define VR_Z 8
 
 #define CHUNK_DIMENSION Chunk_Dimension(CD_X,CD_Y,CD_Z)
 
 #define VISIBLE_REGION Chunk_Dimension(VR_X,VR_Y,VR_Z)
 
 #define PERLIN_NOISE_GENERATION 1
+
+#define OPTIMIZE_TRI_COUNT 0
 
 #define WORLD_SIZE 100
 

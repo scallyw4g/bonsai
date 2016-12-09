@@ -405,9 +405,64 @@ IsInFrustum(World *world, Camera_Object *Camera, canonical_position P)
   return true;
 }
 
-void
-BuildExteriorBoundaryVoxels( World *world, Chunk *chunk, voxel_position ChunkP )
+voxel_position
+Clamp01( voxel_position V )
 {
+  voxel_position Result = V;
+  if (Result.x < 0) Result.x = 0;
+  if (Result.y < 0) Result.y = 0;
+  if (Result.z < 0) Result.z = 0;
+
+  if (Result.x > 1) Result.x = 1;
+  if (Result.y > 1) Result.y = 1;
+  if (Result.z > 1) Result.z = 1;
+
+  return Result;
+}
+
+void
+PushBoundaryVoxel( Chunk *chunk, Voxel voxel )
+{
+  assert( chunk->BoundaryVoxelCount < Volume(chunk->Dim) );
+
+  chunk->BoundaryVoxels[chunk->BoundaryVoxelCount] = voxel;
+  chunk->BoundaryVoxelCount++;
+}
+
+void
+BuildExteriorBoundaryVoxels( World *world, Chunk *chunk, voxel_position NeighborVector )
+{
+  Chunk *Neighbor = GetWorldChunk( world, chunk->WorldP + NeighborVector );
+
+  voxel_position AbsInvNeighborVector = ((NeighborVector*NeighborVector-1)*(NeighborVector*NeighborVector-1));
+  voxel_position LocalPlane = ClampPositive(chunk->Dim-1) * AbsInvNeighborVector + 1;
+
+  for ( int x = 0; x < LocalPlane.x; ++x )
+  {
+    for ( int y = 0; y < LocalPlane.y; ++y )
+    {
+      for ( int z = 0; z < LocalPlane.z; ++z )
+      {
+        if ( !IsFilled( chunk, Voxel_Position(x,y,z) ) )
+          continue;
+
+        voxel_position NeighborP = ClampPositive( (Voxel_Position(x,y,z) - (chunk->Dim * NeighborVector) ) );
+        Print(NeighborP);
+        if ( Neighbor && ! IsFilled( Neighbor, NeighborP) )
+        {
+          Voxel voxel = {};
+
+          voxel.Offset.x = x;
+          voxel.Offset.y = y;
+          voxel.Offset.z = z;
+
+          PushBoundaryVoxel( chunk, voxel );
+        }
+      }
+    }
+  }
+
+
 }
 
 void
@@ -415,16 +470,19 @@ BuildBoundaryVoxels(World *world, Chunk *chunk, Camera_Object *Camera)
 {
   chunk->BoundaryVoxelCount = 0;
 
-  /* BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(0,1,0) );  // Top */
-  /* BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(0,-1,0) ); // Bottom */
+#if 1
+  BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(0,1,0) );  // Top
+  BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(0,-1,0) ); // Bottom
 
-  /* BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(1,0,0) );  // Right */
-  /* BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(-1,0,0) ); // Left */
+  BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(1,0,0) );  // Right
+  BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(-1,0,0) ); // Left
 
-  /* BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(0,0,1) );  // Front */
-  /* BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(0,0,-1) ); // Back */
+  BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(0,0,1) );  // Front
+  BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(0,0,-1) ); // Back
+#endif
 
 
+#if 1
   for ( int x = 1; x < chunk->Dim.x -1; ++x )
   {
     for ( int y = 1; y < chunk->Dim.y -1; ++y )
@@ -460,13 +518,13 @@ BuildBoundaryVoxels(World *world, Chunk *chunk, Camera_Object *Camera)
           voxel.Offset.y = y;
           voxel.Offset.z = z;
 
-          chunk->BoundaryVoxels[chunk->BoundaryVoxelCount] = voxel;
-          chunk->BoundaryVoxelCount++;
+          PushBoundaryVoxel( chunk, voxel);
         }
 
       }
     }
   }
+#endif
 
   BoundaryVoxelsIndexed += chunk->BoundaryVoxelCount;
 }
@@ -503,13 +561,15 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera, GLuint &colorb
   }
 
 
-
-
+#if OPTIMIZE_TRI_COUNT
   // LOD calculations
   v3 ChunkCenterRenderP  = GetRenderP(world, Canonical_Position(chunk->Dim / 2, chunk->WorldP) );
   v3 CameraTargetRenderP = GetRenderP(world, Camera->Target );
   int ChunkWidths = Length( ChunkCenterRenderP - CameraTargetRenderP ) / (world->ChunkDim.x*3);
   int LOD = 1+(ChunkWidths*5);
+#else
+  int LOD = 1;
+#endif
 
 
 
@@ -547,98 +607,69 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera, GLuint &colorb
 
     glm::vec3 VoxelToCamera = glm::normalize(GLCameraRenderP - VoxRenderP);
 
-    if (
-         IsFacingPoint(VoxelToCamera, V3(1,0,0))
-         && NotFilled(world, chunk, nextVoxel)
-       )
+    if ( IsFacingPoint(VoxelToCamera, V3(1,0,0)) &&
+         NotFilled(world, chunk, nextVoxel) )
     {
       const float* FaceColors = GetColorData( Voxel_Red );
-      if ( !BufferRightFace(
-              world,
-              VoxRenderP,
-              FaceColors)
-         )
+      if ( !BufferRightFace(world, VoxRenderP, FaceColors) )
       {
         FlushVertexBuffer (world, colorbuffer, vertexbuffer, normalbuffer );
+        BufferRightFace(world, VoxRenderP, FaceColors);
       }
     }
 
-    if (
-         IsFacingPoint(VoxelToCamera, V3(-1,0,0))
-         && NotFilled(world, chunk, prevVoxel)
-       )
+    if ( IsFacingPoint(VoxelToCamera, V3(-1,0,0)) &&
+         NotFilled(world, chunk, prevVoxel) )
     {
       const float* FaceColors = GetColorData( Voxel_Yellow );
-      if (! BufferLeftFace(
-                            world,VoxRenderP,
-                            FaceColors)
-         )
+      if (! BufferLeftFace(world, VoxRenderP, FaceColors) )
       {
         FlushVertexBuffer( world, colorbuffer, vertexbuffer, normalbuffer);
+        BufferLeftFace(world, VoxRenderP, FaceColors);
       }
     }
 
-    if (
-         IsFacingPoint(VoxelToCamera, V3(0,-1,0))
-         && NotFilled(world, chunk, botVoxel)
-       )
+    if ( IsFacingPoint(VoxelToCamera, V3(0,-1,0)) &&
+         NotFilled(world, chunk, botVoxel) )
     {
       const float* FaceColors = GetColorData( Voxel_Teal );
-      if ( !BufferBottomFace(
-                                world,
-                                VoxRenderP,
-                                FaceColors )
-        )
+      if ( !BufferBottomFace(world, VoxRenderP, FaceColors) )
       {
         FlushVertexBuffer( world, colorbuffer, vertexbuffer, normalbuffer);
+        BufferBottomFace(world, VoxRenderP, FaceColors);
       }
     }
 
-    if (
-         IsFacingPoint(VoxelToCamera, V3(0,1,0))
-         && NotFilled(world, chunk, topVoxel)
-       )
+    if ( IsFacingPoint(VoxelToCamera, V3(0,1,0)) &&
+         NotFilled(world, chunk, topVoxel) )
     {
       const float* FaceColors = GetColorData( Voxel_Green );
-      if ( !BufferTopFace(
-                                world,
-                                VoxRenderP,
-                            FaceColors )
-        )
+      if ( !BufferTopFace(world, VoxRenderP, FaceColors) )
       {
         FlushVertexBuffer( world, colorbuffer, vertexbuffer, normalbuffer);
+        BufferTopFace(world, VoxRenderP, FaceColors);
       }
     }
 
-    if (
-         IsFacingPoint(VoxelToCamera, V3(0,0,1))
-         && NotFilled(world, chunk, frontVoxel)
-       )
+    if ( IsFacingPoint(VoxelToCamera, V3(0,0,1)) &&
+         NotFilled(world, chunk, frontVoxel) )
     {
       const float* FaceColors = GetColorData( Voxel_White );
-      if ( !BufferFrontFace(
-                            world,
-                            VoxRenderP,
-                            FaceColors)
-        )
+      if ( !BufferFrontFace(world, VoxRenderP, FaceColors) )
       {
         FlushVertexBuffer( world, colorbuffer, vertexbuffer, normalbuffer);
+        BufferFrontFace(world, VoxRenderP, FaceColors);
       }
     }
 
-    if (
-         IsFacingPoint(VoxelToCamera, V3(0,0,-1))
-         && NotFilled(world, chunk, backVoxel)
-       )
+    if ( IsFacingPoint(VoxelToCamera, V3(0,0,-1)) &&
+         NotFilled(world, chunk, backVoxel) )
     {
       const float* FaceColors = GetColorData( Voxel_Purple );
-      if ( !BufferBackFace(
-                            world,
-                            VoxRenderP,
-                            FaceColors)
-        )
+      if ( !BufferBackFace(world, VoxRenderP, FaceColors) )
       {
         FlushVertexBuffer( world, colorbuffer, vertexbuffer, normalbuffer);
+        BufferBackFace(world, VoxRenderP, FaceColors);
       }
     }
 
