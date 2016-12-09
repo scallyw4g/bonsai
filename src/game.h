@@ -235,10 +235,14 @@ IsFacingPoint( v3 FaceToPoint, v3 FaceNormal )
 {
   bool Result = false;
 
+#if DEBUG_OPTIMIZE_TRI_COUNT
   if ( Dot(FaceToPoint, FaceNormal) > 0 )
   {
     Result = true;
   }
+#else
+  Result=true;
+#endif
 
   return Result;
 }
@@ -262,6 +266,8 @@ IsFilled( Chunk *chunk, voxel_position VoxelP )
       (VoxelP.z*chunk->Dim.x*chunk->Dim.y);
 
     assert(i > -1);
+    assert(i < Volume(chunk->Dim));
+
     isFilled = IsSet(chunk->Voxels[i].flags, Voxel_Filled);
   }
 

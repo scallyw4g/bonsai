@@ -418,7 +418,7 @@ Clamp01( voxel_position V )
 void
 PushBoundaryVoxel( Chunk *chunk, Voxel voxel )
 {
-  assert( chunk->BoundaryVoxelCount < Volume(chunk->Dim) );
+  /* assert( chunk->BoundaryVoxelCount < Volume(chunk->Dim) ); */
 
   chunk->BoundaryVoxels[chunk->BoundaryVoxelCount] = voxel;
   chunk->BoundaryVoxelCount++;
@@ -431,25 +431,36 @@ BuildExteriorBoundaryVoxels( World *world, Chunk *chunk, voxel_position Neighbor
   Chunk *Neighbor = GetWorldChunk( world, chunk->WorldP + NeighborVector );
 
   if ( !Neighbor )
-  {
     return; // We're on the edge of the world, we'll need to rebuild again when this chunk knows about all of its neighbors
-  }
 
   chunk->flags = UnSetFlag( chunk->flags, Chunk_RebuildExteriorBoundary );
 
   voxel_position AbsInvNeighborVector = ((NeighborVector*NeighborVector-1)*(NeighborVector*NeighborVector-1));
+
   voxel_position LocalPlane = ClampPositive(chunk->Dim-1) * AbsInvNeighborVector + 1;
 
-  for ( int x = 0; x < LocalPlane.x; ++x )
+  voxel_position Thing = ClampPositive(chunk->Dim*NeighborVector - (NeighborVector*NeighborVector)) ;
+
+  voxel_position Start = Voxel_Position(0,0,0);
+
+  Print(Start);
+  Print(LocalPlane);
+  printf("\n\n");
+
+  for ( int x = Start.x; x < LocalPlane.x; ++x )
   {
-    for ( int y = 0; y < LocalPlane.y; ++y )
+    for ( int y = Start.y; y < LocalPlane.y; ++y )
     {
-      for ( int z = 0; z < LocalPlane.z; ++z )
+      for ( int z = Start.z; z < LocalPlane.z; ++z )
       {
         if ( !IsFilled( chunk, Voxel_Position(x,y,z) ) )
           continue;
 
-        voxel_position NeighborP = ClampPositive( (Voxel_Position(x,y,z) - (chunk->Dim * NeighborVector) ) );
+        voxel_position NeighborP = ClampPositive(
+            (Voxel_Position(x,y,z) -
+            (chunk->Dim * NeighborVector) ) -
+            (NeighborVector*NeighborVector));
+
         if ( ! IsFilled( Neighbor, NeighborP) )
         {
           Voxel voxel = {};
@@ -457,6 +468,8 @@ BuildExteriorBoundaryVoxels( World *world, Chunk *chunk, voxel_position Neighbor
           voxel.Offset.x = x;
           voxel.Offset.y = y;
           voxel.Offset.z = z;
+
+          voxel.flags = INT_MAX;
 
           PushBoundaryVoxel( chunk, voxel );
         }
@@ -467,21 +480,36 @@ BuildExteriorBoundaryVoxels( World *world, Chunk *chunk, voxel_position Neighbor
 
 }
 
+inline bool
+IsInsideChunk( Chunk *chunk, voxel_position P )
+{
+  bool Result = false;
+
+  Result = (
+              P.x >= 0 &&
+              P.y >= 0 &&
+              P.z >= 0 &&
+
+              P.x < chunk->Dim.x &&
+              P.y < chunk->Dim.y &&
+              P.z < chunk->Dim.z
+           );
+
+  return Result;
+}
+
 void
 BuildInternalBoundaryVoxels(World *world, Chunk *chunk, Camera_Object *Camera)
 {
-  chunk->BoundaryVoxelCount = 0;
-
-  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorBoundary );
   chunk->flags = UnSetFlag( chunk->flags, Chunk_RebuildInteriorBoundary );
 
 
 #if 1
-  for ( int x = 1; x < chunk->Dim.x -1; ++x )
+  for ( int x = 0; x < chunk->Dim.x ; ++x )
   {
-    for ( int y = 1; y < chunk->Dim.y -1; ++y )
+    for ( int y = 0; y < chunk->Dim.y ; ++y )
     {
-      for ( int z = 1; z < chunk->Dim.z -1; ++z )
+      for ( int z = 0; z < chunk->Dim.z ; ++z )
       {
         canonical_position VoxelP = Canonical_Position(V3(x,y,z), chunk->WorldP);
 
@@ -498,12 +526,12 @@ BuildInternalBoundaryVoxels(World *world, Chunk *chunk, Camera_Object *Camera)
         voxel_position backVoxel  = Voxel_Position( VoxelP.Offset - V3(0,0,1.0f) );
 
         // TODO : Cache this check in the flags so we don't have to to it again when rendering
-        if ( !IsFilled( chunk, nextVoxel  ) ||
-             !IsFilled( chunk, prevVoxel  ) ||
-             !IsFilled( chunk, botVoxel   ) ||
-             !IsFilled( chunk, topVoxel   ) ||
-             !IsFilled( chunk, frontVoxel ) ||
-             !IsFilled( chunk, backVoxel  )
+        if ( (IsInsideChunk( chunk, nextVoxel  ) && !IsFilled( chunk, nextVoxel  )) ||
+             (IsInsideChunk( chunk, prevVoxel  ) && !IsFilled( chunk, prevVoxel  )) ||
+             (IsInsideChunk( chunk, botVoxel   ) && !IsFilled( chunk, botVoxel   )) ||
+             (IsInsideChunk( chunk, topVoxel   ) && !IsFilled( chunk, topVoxel   )) ||
+             (IsInsideChunk( chunk, frontVoxel ) && !IsFilled( chunk, frontVoxel )) ||
+             (IsInsideChunk( chunk, backVoxel  ) && !IsFilled( chunk, backVoxel  ))
            )
         {
           Voxel voxel = {};
@@ -545,51 +573,34 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera, GLuint &colorb
     return;
   }
 
-  /* chunk->flags = SetFlag( chunk->flags, Chunk_RebuildInteriorBoundary ); */
+  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildInteriorBoundary );
+  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorBoundary );
 
   if ( IsSet(chunk->flags, Chunk_RebuildInteriorBoundary) )
   {
+    chunk->BoundaryVoxelCount = 0;
+    chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorBoundary );
+
     BuildInternalBoundaryVoxels( world, chunk, Camera );
   }
 
-#if 0
+#if 1
 
   if ( IsSet(chunk->flags, Chunk_RebuildExteriorBoundary ) )
   {
     BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(0,1,0) );  // Top
-  }
-
-  if ( IsSet(chunk->flags, Chunk_RebuildExteriorBoundary ) )
-  {
     BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(0,-1,0) ); // Bottom
 
-  }
-
-  if ( IsSet(chunk->flags, Chunk_RebuildExteriorBoundary ) )
-  {
     BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(1,0,0) );  // Right
-  }
-
-  if ( IsSet(chunk->flags, Chunk_RebuildExteriorBoundary ) )
-  {
     BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(-1,0,0) ); // Left
 
-  }
-
-  if ( IsSet(chunk->flags, Chunk_RebuildExteriorBoundary ) )
-  {
     BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(0,0,1) );  // Front
-  }
-
-  if ( IsSet(chunk->flags, Chunk_RebuildExteriorBoundary ) )
-  {
     BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(0,0,-1) ); // Back
   }
-
 #endif
 
 
-#if OPTIMIZE_TRI_COUNT
+#if DEBUG_OPTIMIZE_TRI_COUNT
   // LOD calculations
   v3 ChunkCenterRenderP  = GetRenderP(world, Canonical_Position(chunk->Dim / 2, chunk->WorldP) );
   v3 CameraTargetRenderP = GetRenderP(world, Camera->Target );

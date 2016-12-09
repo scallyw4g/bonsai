@@ -14,15 +14,15 @@
 
 #define VISIBLE_REGION Chunk_Dimension(VR_X,VR_Y,VR_Z)
 
-#define PERLIN_NOISE_GENERATION 1
-
-#define OPTIMIZE_TRI_COUNT 0
 
 #define WORLD_SIZE 100
 
 #define DEBUG_SCROLL_WORLD        1
 #define DEBUG_CHUNK_AABB          1
 #define DEBUG_CAMERA_FOCUS_ORIGIN 0
+#define DEBUG_OPTIMIZE_TRI_COUNT  0
+#define DEBUG_WORLD_GENERATION    1
+
 
 #define CHUNK_STACK_SIZE (VR_X*VR_X*VR_X)
 

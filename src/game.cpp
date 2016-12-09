@@ -95,7 +95,7 @@ InitializeVoxels( World *world, Chunk *chunk )
 
 
 
-#if PERLIN_NOISE_GENERATION
+#if DEBUG_WORLD_GENERATION
         v3 NoiseInputs =
           ( ( (chunk->Voxels[i].Offset) + (world->ChunkDim*(chunk->WorldP+world->VisibleRegionOrigin))) % WORLD_SIZE )
           /
@@ -111,9 +111,9 @@ InitializeVoxels( World *world, Chunk *chunk )
 #else
 
         if (
-             ( chunk->Voxels[i].Offset.x == 0 && chunk->Voxels[i].Offset.y == 0 ) ||
-             ( chunk->Voxels[i].Offset.y == 0 && chunk->Voxels[i].Offset.z == 0 ) ||
-             ( chunk->Voxels[i].Offset.x == 0 && chunk->Voxels[i].Offset.z == 0 ) 
+             ( chunk->Voxels[i].Offset.x == 0  ) ||
+             ( chunk->Voxels[i].Offset.y == 0  ) ||
+             ( chunk->Voxels[i].Offset.x == 0  ) 
            )
         {
           chunk->Voxels[i].flags |= Voxel_Filled;
@@ -177,7 +177,7 @@ AllocateChunk(chunk_dimension Dim, voxel_position WorldP)
   Result.Offset = V3(0,0,0);
 
   Result.Voxels = (Voxel*)calloc(Volume(Dim), sizeof(Voxel));
-  Result.BoundaryVoxels = (Voxel*)calloc(Volume(Dim), sizeof(Voxel));
+  Result.BoundaryVoxels = (Voxel*)calloc(Volume(Dim)*45, sizeof(Voxel));
 
   ZeroChunk(&Result);
 
@@ -890,8 +890,12 @@ main( void )
     }
 
     if ( T2.tv_sec - T1.tv_sec > 0 ) T1.tv_nsec -= 1000000000;
+
     printf(" %d ms this frame \n\n\n",
         (int)(T2.tv_nsec -T1.tv_nsec)/1000000 );
+
+    printf(" %d triangles \n", tris);
+    tris=0;
 
   } // Check if the ESC key was pressed or the window was closed
   while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
