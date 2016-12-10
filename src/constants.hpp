@@ -6,9 +6,9 @@
 #define CD_Z 8
 
 // Visible Region XYZ - Must be > (3,3,3)
-#define VR_X 16
-#define VR_Y 16
-#define VR_Z 16
+#define VR_X 32
+#define VR_Y 32
+#define VR_Z 32
 
 #define CHUNK_DIMENSION Chunk_Dimension(CD_X,CD_Y,CD_Z)
 
@@ -18,9 +18,9 @@
 #define WORLD_SIZE 100
 
 #define DEBUG_SCROLL_WORLD        1
-#define DEBUG_CHUNK_AABB          1
+#define DEBUG_CHUNK_AABB          0
 #define DEBUG_CAMERA_FOCUS_ORIGIN 0
-#define DEBUG_OPTIMIZE_TRI_COUNT  0
+#define DEBUG_OPTIMIZE_TRI_COUNT  1
 #define DEBUG_WORLD_GENERATION    1
 
 

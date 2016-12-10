@@ -418,7 +418,7 @@ Clamp01( voxel_position V )
 void
 PushBoundaryVoxel( Chunk *chunk, Voxel voxel )
 {
-  /* assert( chunk->BoundaryVoxelCount < Volume(chunk->Dim) ); */
+  assert( chunk->BoundaryVoxelCount < Volume(chunk->Dim) );
 
   chunk->BoundaryVoxels[chunk->BoundaryVoxelCount] = voxel;
   chunk->BoundaryVoxelCount++;
@@ -443,21 +443,19 @@ BuildExteriorBoundaryVoxels( World *world, Chunk *chunk, voxel_position Neighbor
 
   voxel_position Start = Voxel_Position(0,0,0);
 
-  Print(Start);
-  Print(LocalPlane);
-  printf("\n\n");
-
   for ( int x = Start.x; x < LocalPlane.x; ++x )
   {
     for ( int y = Start.y; y < LocalPlane.y; ++y )
     {
       for ( int z = Start.z; z < LocalPlane.z; ++z )
       {
-        if ( !IsFilled( chunk, Voxel_Position(x,y,z) ) )
+        voxel_position V = Voxel_Position(x+Thing.x, y+Thing.y, z+Thing.z);
+
+        if ( !IsFilled( chunk, V ) )
           continue;
 
         voxel_position NeighborP = ClampPositive(
-            (Voxel_Position(x,y,z) -
+            (V -
             (chunk->Dim * NeighborVector) ) -
             (NeighborVector*NeighborVector));
 
@@ -465,9 +463,9 @@ BuildExteriorBoundaryVoxels( World *world, Chunk *chunk, voxel_position Neighbor
         {
           Voxel voxel = {};
 
-          voxel.Offset.x = x;
-          voxel.Offset.y = y;
-          voxel.Offset.z = z;
+          voxel.Offset.x = V.x;
+          voxel.Offset.y = V.y;
+          voxel.Offset.z = V.z;
 
           voxel.flags = INT_MAX;
 
