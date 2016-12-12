@@ -5,7 +5,7 @@
 [ ] Ambient Occlusion ?
 [ ] Better frustum culling
 [ ] Normal data should go through pipe relative to vertex instead of being corrected in shader
-[ ] BoundaryVoxel buffer contains possible duplicates on the corners and edges
+[ ] BoundaryVoxel buffer can contain duplicates on the corners and edges
 
 [X] Add BoundaryVoxels buffer and remove Volume_Boundary voxel flag.
 
@@ -18,7 +18,8 @@
 
 --- Misc ----------------------------------------------------------------------
 
-[ ] Write keypress callbacks instead of checking if (key == down) .. do thing
+[ ] Write keypress callbacks instead of checking if (key == down) { do thing }
 [ ] Fix - If you're going really fast and try to update your position outside the VisibleRegion you collide with the edge of the world and stop moving
+[ ] Make bit-packed voxel positions less hard-coded ( currently chunk size is indirectly hard-coded to 8*8*8 by bit-shifts that assume 9 bits for position )
 
 [X] Fix Canonicalize to work across multiple chunks
