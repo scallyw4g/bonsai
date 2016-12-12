@@ -711,18 +711,8 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera, GLuint &colorb
 
 
 void
-DrawChunk(
-    World *world,
-    Chunk *chunk,
-    Camera_Object *Camera,
-    GLuint &colorbuffer,
-    GLuint &vertexbuffer,
-    GLuint &normalbuffer
-  )
+DrawChunkAABB( World *world, Chunk *chunk )
 {
-  BuildChunkMesh( world, chunk, Camera, colorbuffer, vertexbuffer, normalbuffer );
-
-#if DEBUG_CHUNK_AABB
 
   if ( chunk->BoundaryVoxelCount == 0 ) return;
 
@@ -836,5 +826,21 @@ DrawChunk(
   free( LineData );
   free( LineColors );
 
+}
+
+void
+DrawChunk(
+    World *world,
+    Chunk *chunk,
+    Camera_Object *Camera,
+    GLuint &colorbuffer,
+    GLuint &vertexbuffer,
+    GLuint &normalbuffer
+  )
+{
+  BuildChunkMesh( world, chunk, Camera, colorbuffer, vertexbuffer, normalbuffer );
+
+#if DEBUG_CHUNK_AABB
+  DrawChunkAABB( world, chunk );
 #endif
 }
