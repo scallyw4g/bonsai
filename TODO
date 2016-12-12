@@ -5,6 +5,7 @@
 [ ] Ambient Occlusion ?
 [ ] Better frustum culling
 [ ] Normal data should go through pipe relative to vertex instead of being corrected in shader
+[ ] BoundaryVoxel buffer contains possible duplicates on the corners and edges
 
 [X] Add BoundaryVoxels buffer and remove Volume_Boundary voxel flag.
 

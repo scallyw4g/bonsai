@@ -73,6 +73,7 @@ initWindow( int width, int height )
 void
 InitializeVoxels( World *world, Chunk *chunk )
 {
+  CALLGRIND_TOGGLE_COLLECT;
 
   if ( !chunk )
   {
@@ -90,14 +91,13 @@ InitializeVoxels( World *world, Chunk *chunk )
           (y*chunk->Dim.x) +
           (z*chunk->Dim.x*chunk->Dim.y);
 
-        chunk->Voxels[i].Offset = V3(x,y,z);
-        chunk->Voxels[i].flags = 0;
+        chunk->Voxels[i] = SetVoxelP(chunk->Voxels[i], Voxel_Position(x,y,z));
 
 
 
 #if DEBUG_WORLD_GENERATION
         v3 NoiseInputs =
-          ( ( (chunk->Voxels[i].Offset) + (world->ChunkDim*(chunk->WorldP+world->VisibleRegionOrigin))) % WORLD_SIZE )
+          ( ( V3(x,y,z) + (world->ChunkDim*(chunk->WorldP+world->VisibleRegionOrigin))) % WORLD_SIZE )
           /
           WORLD_SIZE;
 
@@ -105,18 +105,18 @@ InitializeVoxels( World *world, Chunk *chunk )
         double InY = (double)NoiseInputs.y;
         double InZ = (double)NoiseInputs.z;
 
-        double l = world->Noise.noise(InX, InY, InZ);
-        chunk->Voxels[i].flags = 0;
-        chunk->Voxels[i].flags |= Floori(l + 0.5);
-#else
+        double noiseValue = world->Noise.noise(InX, InY, InZ);
 
+        chunk->Voxels[i].flags = SetFlag( chunk->Voxels[i].flags, Floori(noiseValue + 0.5) * Voxel_Filled );
+
+#else
         if (
-             ( chunk->Voxels[i].Offset.x == 0  ) ||
-             ( chunk->Voxels[i].Offset.y == 0  ) ||
-             ( chunk->Voxels[i].Offset.x == 0  ) 
+             ( x == 0  ) ||
+             ( y == 0  ) ||
+             ( x == 0  )
            )
         {
-          chunk->Voxels[i].flags |= Voxel_Filled;
+          chunk->Voxels[i].flags = SetFlag(chunk->Voxels[i].flags, Voxel_Filled);
         }
 
 #endif
@@ -126,6 +126,8 @@ InitializeVoxels( World *world, Chunk *chunk )
 
 
   chunk->flags = UnSetFlag(chunk->flags, Chunk_Uninitialized);
+
+  CALLGRIND_TOGGLE_COLLECT;
 
   return;
 }
@@ -177,7 +179,7 @@ AllocateChunk(chunk_dimension Dim, voxel_position WorldP)
   Result.Offset = V3(0,0,0);
 
   Result.Voxels = (Voxel*)calloc(Volume(Dim), sizeof(Voxel));
-  Result.BoundaryVoxels = (Voxel*)calloc(Volume(Dim)*45, sizeof(Voxel));
+  Result.BoundaryVoxels = (Voxel*)calloc(Volume(Dim), sizeof(Voxel));
 
   ZeroChunk(&Result);
 
@@ -296,9 +298,10 @@ SpawnPlayer( World *world, Entity *Player )
 {
   Chunk *Model = &Player->Model;
 
-  Model->Voxels[0].flags |= 1;
+  Model->Voxels[0].flags = 0;
+  Model->Voxels[0].flags = SetFlag( Model->Voxels[0].flags, Voxel_Filled);
 
-  Model->Voxels[0].Offset= V3(0,0,0);
+  Model->Voxels[0] = SetVoxelP( Model->Voxels[0], Voxel_Position(0,0,0) );
 
   Player->Acceleration = V3(0,0,0);
   Player->Velocity = V3(0,-40,0);
@@ -310,7 +313,7 @@ SpawnPlayer( World *world, Entity *Player )
 
   do
   {
-    if ( ++count > 100 )
+    if ( ++count > 50 )
     {
       return false;
     }
@@ -757,7 +760,7 @@ AllocateWorld( World *world )
           (z*world->VisibleRegion.x*world->VisibleRegion.y);
 
         world->Chunks[ChunksAllocated] = AllocateChunk( world->ChunkDim, World_Position(x,y,z) );
-        world->Chunks[ChunksAllocated].flags |= Chunk_World;
+        world->Chunks[ChunksAllocated].flags = SetFlag( world->Chunks[ChunksAllocated].flags, Chunk_World);
       }
     }
   }
@@ -798,7 +801,7 @@ main( void )
 
   Entity Player = {};
   Player.Model = AllocateChunk( Chunk_Dimension(1,1,1), World_Position(0,0,0) );
-  Player.Model.flags |= Chunk_Entity;
+  Player.Model.flags = SetFlag( Player.Model.flags, Chunk_Entity);
 
   Camera_Object Camera = {};
   Camera.Frust.farClip = 500.0f;

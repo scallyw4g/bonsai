@@ -377,12 +377,12 @@ inline bool
 IsInFrustum(World *world, Camera_Object *Camera, canonical_position P)
 {
   v3 MaxP = Camera->Front * Camera->Frust.farClip;
-  MaxP.x += world->ChunkDim.x*5;
-  MaxP.y += world->ChunkDim.y*5;
+  MaxP.x += world->ChunkDim.x*10;
+  MaxP.y += world->ChunkDim.y*10;
 
   v3 MinP = Camera->P.Offset;
-  MinP.x -= world->ChunkDim.x*5;
-  MinP.y -= world->ChunkDim.y*5;
+  MinP.x -= world->ChunkDim.x*10;
+  MinP.y -= world->ChunkDim.y*10;
 
   v3 MaxRenderP = GetRenderP(world, Canonical_Position(MaxP, Camera->P.WorldP));
   v3 MinRenderP = GetRenderP(world, Canonical_Position(MinP, Camera->P.WorldP));
@@ -427,7 +427,6 @@ PushBoundaryVoxel( Chunk *chunk, Voxel voxel )
 void
 BuildExteriorBoundaryVoxels( World *world, Chunk *chunk, voxel_position NeighborVector )
 {
-
   Chunk *Neighbor = GetWorldChunk( world, chunk->WorldP + NeighborVector );
 
   if ( !Neighbor )
@@ -435,11 +434,13 @@ BuildExteriorBoundaryVoxels( World *world, Chunk *chunk, voxel_position Neighbor
 
   chunk->flags = UnSetFlag( chunk->flags, Chunk_RebuildExteriorBoundary );
 
-  voxel_position AbsInvNeighborVector = ((NeighborVector*NeighborVector-1)*(NeighborVector*NeighborVector-1));
+  voxel_position nvSq = (NeighborVector*NeighborVector);
+
+  voxel_position AbsInvNeighborVector = ((nvSq-1)*(nvSq-1));
 
   voxel_position LocalPlane = ClampPositive(chunk->Dim-1) * AbsInvNeighborVector + 1;
 
-  voxel_position Thing = ClampPositive(chunk->Dim*NeighborVector - (NeighborVector*NeighborVector)) ;
+  voxel_position LocalOffset = ClampPositive(chunk->Dim*NeighborVector - nvSq);
 
   voxel_position Start = Voxel_Position(0,0,0);
 
@@ -449,25 +450,20 @@ BuildExteriorBoundaryVoxels( World *world, Chunk *chunk, voxel_position Neighbor
     {
       for ( int z = Start.z; z < LocalPlane.z; ++z )
       {
-        voxel_position V = Voxel_Position(x+Thing.x, y+Thing.y, z+Thing.z);
+        voxel_position LocalVoxelP = Voxel_Position(x+LocalOffset.x, y+LocalOffset.y, z+LocalOffset.z);
 
-        if ( !IsFilled( chunk, V ) )
+        if ( !IsFilled( chunk, LocalVoxelP ) )
           continue;
 
         voxel_position NeighborP = ClampPositive(
-            (V -
+            (LocalVoxelP -
             (chunk->Dim * NeighborVector) ) -
             (NeighborVector*NeighborVector));
 
         if ( ! IsFilled( Neighbor, NeighborP) )
         {
-          Voxel voxel = {};
-
-          voxel.Offset.x = V.x;
-          voxel.Offset.y = V.y;
-          voxel.Offset.z = V.z;
-
-          voxel.flags = INT_MAX;
+          Voxel voxel = {0};
+          voxel = SetVoxelP( voxel, LocalVoxelP );
 
           PushBoundaryVoxel( chunk, voxel );
         }
@@ -478,8 +474,8 @@ BuildExteriorBoundaryVoxels( World *world, Chunk *chunk, voxel_position Neighbor
 
 }
 
-inline bool
-IsInsideChunk( Chunk *chunk, voxel_position P )
+bool
+IsInsideChunk( voxel_position Dim, voxel_position P )
 {
   bool Result = false;
 
@@ -488,9 +484,9 @@ IsInsideChunk( Chunk *chunk, voxel_position P )
               P.y >= 0 &&
               P.z >= 0 &&
 
-              P.x < chunk->Dim.x &&
-              P.y < chunk->Dim.y &&
-              P.z < chunk->Dim.z
+              P.x < Dim.x &&
+              P.y < Dim.y &&
+              P.z < Dim.z
            );
 
   return Result;
@@ -524,19 +520,16 @@ BuildInternalBoundaryVoxels(World *world, Chunk *chunk, Camera_Object *Camera)
         voxel_position backVoxel  = Voxel_Position( VoxelP.Offset - V3(0,0,1.0f) );
 
         // TODO : Cache this check in the flags so we don't have to to it again when rendering
-        if ( (IsInsideChunk( chunk, nextVoxel  ) && !IsFilled( chunk, nextVoxel  )) ||
-             (IsInsideChunk( chunk, prevVoxel  ) && !IsFilled( chunk, prevVoxel  )) ||
-             (IsInsideChunk( chunk, botVoxel   ) && !IsFilled( chunk, botVoxel   )) ||
-             (IsInsideChunk( chunk, topVoxel   ) && !IsFilled( chunk, topVoxel   )) ||
-             (IsInsideChunk( chunk, frontVoxel ) && !IsFilled( chunk, frontVoxel )) ||
-             (IsInsideChunk( chunk, backVoxel  ) && !IsFilled( chunk, backVoxel  ))
+        if ( ( IsInsideChunk( world->ChunkDim, nextVoxel  ) && !IsFilled( chunk, nextVoxel  )) ||
+             ( IsInsideChunk( world->ChunkDim, prevVoxel  ) && !IsFilled( chunk, prevVoxel  )) ||
+             ( IsInsideChunk( world->ChunkDim, botVoxel   ) && !IsFilled( chunk, botVoxel   )) ||
+             ( IsInsideChunk( world->ChunkDim, topVoxel   ) && !IsFilled( chunk, topVoxel   )) ||
+             ( IsInsideChunk( world->ChunkDim, frontVoxel ) && !IsFilled( chunk, frontVoxel )) ||
+             ( IsInsideChunk( world->ChunkDim, backVoxel  ) && !IsFilled( chunk, backVoxel  ))
            )
         {
-          Voxel voxel = {};
-
-          voxel.Offset.x = x;
-          voxel.Offset.y = y;
-          voxel.Offset.z = z;
+          Voxel voxel = {0};
+          voxel = SetVoxelP( voxel, Voxel_Position(x,y,z) );
 
           PushBoundaryVoxel( chunk, voxel);
         }
@@ -571,8 +564,8 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera, GLuint &colorb
     return;
   }
 
-  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildInteriorBoundary );
-  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorBoundary );
+  /* chunk->flags = SetFlag( chunk->flags, Chunk_RebuildInteriorBoundary ); */
+  /* chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorBoundary ); */
 
   if ( IsSet(chunk->flags, Chunk_RebuildInteriorBoundary) )
   {
@@ -598,12 +591,12 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera, GLuint &colorb
 #endif
 
 
-#if DEBUG_OPTIMIZE_TRI_COUNT
+#if LOD_RENDER
   // LOD calculations
   v3 ChunkCenterRenderP  = GetRenderP(world, Canonical_Position(chunk->Dim / 2, chunk->WorldP) );
   v3 CameraTargetRenderP = GetRenderP(world, Camera->Target );
   int ChunkWidths = Length( ChunkCenterRenderP - CameraTargetRenderP ) / (world->ChunkDim.x*3);
-  int LOD = 1+(ChunkWidths*5);
+  int LOD = 1+(ChunkWidths*ChunkWidths);
 #else
   int LOD = 1;
 #endif
@@ -620,8 +613,10 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera, GLuint &colorb
 
     Voxel voxel = chunk->BoundaryVoxels[i];
 
+    voxel_position Offset = GetVoxelP(voxel);
+
     canonical_position VoxelP = Canonical_Position(
-      voxel.Offset + chunk->Offset,
+      V3(Offset) + chunk->Offset,
       chunk->WorldP
     );
 

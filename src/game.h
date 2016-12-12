@@ -78,21 +78,48 @@ enum ChunkFlags {
 
 
 enum VoxelFlags {
-  Voxel_Filled    = 1 << 0,
+  Voxel_Filled    = 1 << 9,
 
-  Voxel_Yellow    = 1 << 1,
-  Voxel_Red       = 1 << 2,
-  Voxel_Green     = 1 << 3,
-  Voxel_Teal      = 1 << 4,
-  Voxel_White     = 1 << 5,
-  Voxel_Purple    = 1 << 6
+  Voxel_Yellow    = 1 << 10,
+  Voxel_Red       = 1 << 11,
+  Voxel_Green     = 1 << 12,
+  Voxel_Teal      = 1 << 13,
+  Voxel_White     = 1 << 14,
+  Voxel_Purple    = 1 << 15
 };
+
 
 struct Voxel
 {
-  v3 Offset;
   int flags;
 };
+
+inline Voxel
+SetVoxelP(Voxel V, voxel_position P)
+{
+  Voxel Result = V;
+
+  Result.flags &= 0xFFFFF000 >> 3;
+
+  Result.flags |= P.x << 0;
+  Result.flags |= P.y << 3;
+  Result.flags |= P.z << 6;
+
+  return Result;
+
+}
+
+inline voxel_position
+GetVoxelP(Voxel V)
+{
+    voxel_position Offset = Voxel_Position(
+      V.flags >> 0 & 0x000000FF >> 5,
+      V.flags >> 3 & 0x000000FF >> 5,
+      V.flags >> 6 & 0x000000FF >> 5
+    );
+
+    return Offset;
+}
 
 struct VertexBlock
 {
