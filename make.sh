@@ -12,10 +12,11 @@ Source="src/game.cpp -o build/game"
 LinkerFlags="-lglfw -lGLEW -lGLU -lGL"
 
 IncludeDirectories="
--I/home/scallywag/game/external/glfw-3.1.2/include/GLFW/
--I/home/scallywag/game/external/glm-0.9.7.1/
--I/home/scallywag/game/common/
--I/home/scallywag/game/src/
+-I./external/glfw-3.1.2/include/GLFW/
+-I./external/glfw-3.1.2/include/GLFW/
+-I./external/glm-0.9.7.1/
+-I./common/
+-I./src/
 "
 
 g++ $Optimizations $WarningLevel $DebuggerSymbols \
