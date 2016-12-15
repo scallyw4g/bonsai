@@ -1,25 +1,39 @@
 
---- Renderer ------------------------------------------------------------------
+--- Renderer
+-------------------------------------------------------------------------------
 
 [ ] Add Shadow maps
+
 [ ] Ambient Occlusion ?
+
 [ ] Better frustum culling
-[ ] Normal data should go through pipe relative to vertex instead of being corrected in shader
+
+[ ] Normal data should go through pipe relative to vertex instead of being
+corrected in shader
+
 [ ] BoundaryVoxel buffer can contain duplicates on the corners and edges
 
 [X] Add BoundaryVoxels buffer and remove Volume_Boundary voxel flag.
 
 
---- World Generation -----------------------------------------------------------
+--- World
+-------------------------------------------------------------------------------
 
 [ ] Better world!
 
+[ ] Model Loading
 
 
---- Misc ----------------------------------------------------------------------
+
+--- Misc
+-------------------------------------------------------------------------------
 
 [ ] Write keypress callbacks instead of checking if (key == down) { do thing }
-[ ] Fix - If you're going really fast and try to update your position outside the VisibleRegion you collide with the edge of the world and stop moving
-[ ] Make bit-packed voxel positions less hard-coded ( currently chunk size is indirectly hard-coded to 8*8*8 by bit-shifts that assume 9 bits for position )
+
+[ ] Fix - If you're going really fast and try to update your position outside
+the VisibleRegion you collide with the edge of the world and stop moving
+
+[ ] Make bit-packed voxel positions less hard-coded ( currently chunk size is
+indirectly hard-coded to 8*8*8 by bit-shifts that assume 9 bits for position )
 
 [X] Fix Canonicalize to work across multiple chunks
