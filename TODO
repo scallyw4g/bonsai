@@ -13,6 +13,8 @@ corrected in shader
 
 [ ] BoundaryVoxel buffer can contain duplicates on the corners and edges
 
+[ ] Cache which faces are visible so we don't have to check twice
+
 [X] Add BoundaryVoxels buffer and remove Volume_Boundary voxel flag.
 
 

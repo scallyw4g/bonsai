@@ -564,9 +564,6 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera, GLuint &colorb
     return;
   }
 
-  /* chunk->flags = SetFlag( chunk->flags, Chunk_RebuildInteriorBoundary ); */
-  /* chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorBoundary ); */
-
   if ( IsSet(chunk->flags, Chunk_RebuildInteriorBoundary) )
   {
     chunk->BoundaryVoxelCount = 0;
@@ -574,8 +571,6 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera, GLuint &colorb
 
     BuildInternalBoundaryVoxels( world, chunk, Camera );
   }
-
-#if 1
 
   if ( IsSet(chunk->flags, Chunk_RebuildExteriorBoundary ) )
   {
@@ -588,7 +583,6 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera, GLuint &colorb
     BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(0,0,1) );  // Front
     BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(0,0,-1) ); // Back
   }
-#endif
 
 
 #if LOD_RENDER

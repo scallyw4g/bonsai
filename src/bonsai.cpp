@@ -70,12 +70,8 @@ initWindow( int width, int height )
 void
 InitializeVoxels( World *world, Chunk *chunk )
 {
+  assert(chunk);
   CALLGRIND_TOGGLE_COLLECT;
-
-  if ( !chunk )
-  {
-    assert(false);
-  }
 
   for ( int x = 0; x < chunk->Dim.x; ++ x)
   {
@@ -163,7 +159,6 @@ ZeroWorldChunks( World *world )
 
   return;
 }
-
 
 Chunk
 AllocateChunk(chunk_dimension Dim, voxel_position WorldP)
