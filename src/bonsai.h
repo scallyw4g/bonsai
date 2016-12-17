@@ -6,6 +6,10 @@
 #include <types.h>
 #include <math.h>
 
+#include <render.h>
+
+#include <constants.hpp>
+
 #define ArrayCount(a) (sizeof(a)/sizeof(a[0]))
 
 #define InvalidDefaultCase default: { assert(false); break; }
@@ -120,13 +124,6 @@ GetVoxelP(Voxel V)
 
     return Offset;
 }
-
-struct VertexBlock
-{
-  GLfloat *Data;
-  int bytesAllocd;
-  int filled;
-};
 
 struct Chunk
 {

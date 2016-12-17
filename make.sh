@@ -7,7 +7,7 @@ Optimizations="-Ofast"
 
 DebuggerSymbols="-ggdb"
 
-Source="src/game.cpp -o build/game"
+Source="src/game.cpp -o build/bonsai"
 
 LinkerFlags="-lglfw -lGLEW -lGLU -lGL"
 
@@ -31,7 +31,7 @@ if [ $? -eq 0 ]; then
 
   cd build/
 
-  ./game >> /dev/tty
+  ./bonsai >> /dev/tty
 
 fi
 

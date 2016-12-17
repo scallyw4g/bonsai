@@ -1,7 +1,7 @@
 #ifndef MATH_H
 #define MATH_H
 
-#include <game.h>
+#include <bonsai.h>
 
 int clamp0(int i)
 {

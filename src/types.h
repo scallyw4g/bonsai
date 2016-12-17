@@ -1,3 +1,7 @@
+#ifndef TYPES_H
+#define TYPES_H
+
+#include <glm/glm.hpp>
 
 struct v2 {
    int x;
@@ -682,7 +686,8 @@ v4 operator+(v4 A, v4 B)
 inline glm::vec3
 GLV3( v3 Vec )
 {
-  glm::vec3 Result = vec3( Vec.x, Vec.y, Vec.z);
+  glm::vec3 Result = glm::vec3( Vec.x, Vec.y, Vec.z);
   return Result;
 }
 
+#endif
