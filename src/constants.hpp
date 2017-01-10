@@ -6,9 +6,9 @@
 #define CD_Z 8
 
 // Visible Region XYZ - Must be > (3,3,3)
-#define VR_X 64
-#define VR_Y 64
-#define VR_Z 64
+#define VR_X 8
+#define VR_Y 8
+#define VR_Z 8
 
 #define CHUNK_DIMENSION Chunk_Dimension(CD_X,CD_Y,CD_Z)
 
@@ -22,12 +22,13 @@
 #define DEBUG_CAMERA_FOCUS_ORIGIN 0
 #define DEBUG_OPTIMIZE_TRI_COUNT  1
 #define DEBUG_WORLD_GENERATION    1
+#define DEBUG_FRAMES_TO_RUN       -1
 
 #define LOD_RENDER 0
 
 #define CHUNK_STACK_SIZE (VR_X*VR_X*VR_X)
 
-#define CAMERA_OFFSET V3(0,10,15)
+#define CAMERA_OFFSET V3(0,30,35)
 
 static int numFrames = 0;
 static float accumulatedTime = 0;

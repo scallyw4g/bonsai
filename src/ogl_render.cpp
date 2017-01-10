@@ -725,9 +725,8 @@ DrawChunkAABB( World *world, Chunk *chunk )
   GLuint AABB_Colors;
   glGenBuffers(1, &AABB_Colors);
 
-#if 1
-  v3 MinP = GetRenderP(world, Canonical_Position(V3(0,0,0), chunk->WorldP ));
-  v3 MaxP = GetRenderP(world, Canonical_Position(V3(0,0,0)+(world->ChunkDim), chunk->WorldP ));
+  v3 MinP = GetRenderP(world, Canonical_Position(chunk->Offset, chunk->WorldP ));
+  v3 MaxP = GetRenderP(world, Canonical_Position(chunk->Offset+(world->ChunkDim), chunk->WorldP ));
 
 
   v3 TopRL = V3(MinP.x, MaxP.y, MinP.z);
@@ -784,7 +783,6 @@ DrawChunkAABB( World *world, Chunk *chunk )
 
   memcpy( LineData+66, &BotFR, sizeof(v3) );
   memcpy( LineData+69, &BotRR, sizeof(v3) );
-#endif
 
   // Colors
   glEnableVertexAttribArray(0);
@@ -832,7 +830,15 @@ DrawChunk(
     GLuint &normalbuffer
   )
 {
-  BuildChunkMesh( world, chunk, Camera, colorbuffer, vertexbuffer, normalbuffer );
+  if ( IsSet( chunk->flags, Chunk_Entity) )
+  {
+    chunk->BoundaryVoxelCount = 1;
+    DrawChunkAABB( world, chunk );
+  }
+  else
+  {
+    BuildChunkMesh( world, chunk, Camera, colorbuffer, vertexbuffer, normalbuffer );
+  }
 
 #if DEBUG_CHUNK_AABB
   DrawChunkAABB( world, chunk );

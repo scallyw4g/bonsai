@@ -143,6 +143,40 @@ struct Chunk
   int flags;
 };
 
+void
+ZeroChunk( Chunk * chunk )
+{
+  for ( int i = 0; i < Volume(chunk->Dim); ++ i)
+  {
+    chunk->Voxels[i].flags = 0;
+  }
+
+  chunk->BoundaryVoxelCount = 0;
+
+  chunk->flags = 0;
+  chunk->flags = SetFlag( chunk->flags, Chunk_Uninitialized );
+  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildInteriorBoundary );
+  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorBoundary );
+}
+
+Chunk
+AllocateChunk(chunk_dimension Dim, voxel_position WorldP)
+{
+  Chunk Result;
+
+  Result.Dim = Dim;
+
+  Result.WorldP = WorldP;
+  Result.Offset = V3(0,0,0);
+
+  Result.Voxels = (Voxel*)calloc(Volume(Dim), sizeof(Voxel));
+  Result.BoundaryVoxels = (Voxel*)calloc(Volume(Dim), sizeof(Voxel));
+
+  ZeroChunk(&Result);
+
+  return Result;
+}
+
 struct ChunkStack
 {
   Chunk *chunks; // This should be Volume(VisibleRegion) chunks
@@ -296,6 +330,17 @@ IsFilled( Chunk *chunk, voxel_position VoxelP )
   }
 
   return isFilled;
+}
+
+int
+GetIndex(voxel_position P, Chunk *chunk)
+{
+  int i =
+    (P.x) +
+    (P.y*chunk->Dim.x) +
+    (P.z*chunk->Dim.x*chunk->Dim.y);
+
+  return i;
 }
 
 inline bool

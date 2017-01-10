@@ -9,8 +9,10 @@ GLFWwindow* window;
 
 #include <constants.hpp>
 
+
 #include <ogl_render.cpp>
 
+#include <platform.cpp>
 #include <shader.cpp>
 #include <objloader.cpp>
 
@@ -79,11 +81,7 @@ InitializeVoxels( World *world, Chunk *chunk )
     {
       for ( int z = 0; z < chunk->Dim.z; ++ z)
       {
-        int i =
-          (x) +
-          (y*chunk->Dim.x) +
-          (z*chunk->Dim.x*chunk->Dim.y);
-
+        int i = GetIndex(Voxel_Position(x,y,z), chunk);
         chunk->Voxels[i] = SetVoxelP(chunk->Voxels[i], Voxel_Position(x,y,z));
 
 
@@ -126,22 +124,6 @@ InitializeVoxels( World *world, Chunk *chunk )
 }
 
 void
-ZeroChunk( Chunk * chunk )
-{
-  for ( int i = 0; i < Volume(chunk->Dim); ++ i)
-  {
-    chunk->Voxels[i].flags = 0;
-  }
-
-  chunk->BoundaryVoxelCount = 0;
-
-  chunk->flags = 0;
-  chunk->flags = SetFlag( chunk->flags, Chunk_Uninitialized );
-  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildInteriorBoundary );
-  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorBoundary );
-}
-
-void
 ZeroWorldChunks( World *world )
 {
   world->VertexCount = 0;
@@ -158,24 +140,6 @@ ZeroWorldChunks( World *world )
   }
 
   return;
-}
-
-Chunk
-AllocateChunk(chunk_dimension Dim, voxel_position WorldP)
-{
-  Chunk Result;
-
-  Result.Dim = Dim;
-
-  Result.WorldP = WorldP;
-  Result.Offset = V3(0,0,0);
-
-  Result.Voxels = (Voxel*)calloc(Volume(Dim), sizeof(Voxel));
-  Result.BoundaryVoxels = (Voxel*)calloc(Volume(Dim), sizeof(Voxel));
-
-  ZeroChunk(&Result);
-
-  return Result;
 }
 
 // FIXME : Problem with multiple keypresses ( 8 then 7 then 4 won't move left )

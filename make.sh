@@ -2,8 +2,8 @@
 
 WarningLevel="-Wall"
 
-#Optimizations=""
-Optimizations="-Ofast"
+Optimizations=""
+#Optimizations="-Ofast"
 
 DebuggerSymbols="-ggdb"
 

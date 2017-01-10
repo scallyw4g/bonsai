@@ -87,14 +87,14 @@ GAME_UPDATE_AND_RENDER
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   // Draw Player
-  /* DrawChunk( */
-  /*   world, */
-  /*   &Player->Model, */
-  /*   Camera, */
-  /*   vertexbuffer, */
-  /*   colorbuffer, */
-  /*   normalbuffer */
-  /* ); */
+  DrawChunk(
+    world,
+    &Player->Model,
+    Camera,
+    vertexbuffer,
+    colorbuffer,
+    normalbuffer
+  );
 
   // Draw world
   for ( int i = 0; i < Volume(world->VisibleRegion); ++ i )
@@ -158,7 +158,7 @@ main( void )
   AllocateWorld(&world);
 
   Entity Player = {};
-  Player.Model = AllocateChunk( Chunk_Dimension(1,1,1), World_Position(0,0,0) );
+  Player.Model = LoadVox("./alien_bot2.vox");
   Player.Model.flags = SetFlag( Player.Model.flags, Chunk_Entity);
 
   Camera_Object Camera = {};
@@ -261,7 +261,8 @@ main( void )
   } // Check if the ESC key was pressed or the window was closed
   while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
          glfwGetKey(window, GLFW_KEY_Q )      != GLFW_PRESS &&
-         glfwWindowShouldClose(window) == 0 );
+         glfwWindowShouldClose(window) == 0                 &&
+         DEBUG_FRAMES_TO_RUN != numFrames );
 
   CALLGRIND_DUMP_STATS;
 
