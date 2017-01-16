@@ -24,6 +24,8 @@
 #define DEBUG_WORLD_GENERATION    1
 #define DEBUG_FRAMES_TO_RUN       -1
 
+#define PLAYER_STEP_MAX 1
+
 #define LOD_RENDER 0
 
 #define CHUNK_STACK_SIZE (VR_X*VR_X*VR_X)

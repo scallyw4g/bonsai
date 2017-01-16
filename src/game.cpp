@@ -46,7 +46,7 @@ GAME_UPDATE_AND_RENDER
 
   // TODO : Bake these into the terrain/model ?
   v3 drag = V3(0.6f, 1.0f, 0.6f);
-  float accelerationMultiplier = 3.0f;
+  float accelerationMultiplier = 12.0f;
 
   Player->Acceleration = GetInputsFromController() * accelerationMultiplier; // m/s2
 
@@ -79,7 +79,7 @@ GAME_UPDATE_AND_RENDER
   glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
   glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
 
-  glm::vec3 LightP = GetGLRenderP(world, Canonical_Position( Player->Model.Offset, Player->Model.WorldP) );
+  glm::vec3 LightP = GetGLRenderP(world, Canonical_Position( Player->Model.Offset + (Player->Model.Dim/2) -1, Player->Model.WorldP) );
 
   glUniform3fv(PlayerPID, 1, &LightP[0]);
 
