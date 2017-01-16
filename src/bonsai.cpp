@@ -102,9 +102,9 @@ InitializeVoxels( World *world, Chunk *chunk )
 
 #else
         if (
-             ( x == 0  ) ||
-             ( y == 0  ) ||
-             ( x == 0  )
+             ( x == 1  && z == 1 &&
+               chunk->WorldP.x % 2 == 0 &&
+               chunk->WorldP.z % 2 == 0)
            )
         {
           chunk->Voxels[i].flags = SetFlag(chunk->Voxels[i].flags, Voxel_Filled);
@@ -217,18 +217,15 @@ GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
     {
       for ( int z = MinP.z; z <= MaxP.z; z++ )
       {
-        voxel_position TestVoxelP = Voxel_Position(x,y,z);
-        world_position TestWorldP = TestP.WorldP;
-
         canonical_position LoopTestP = Canonicalize( world, V3(x,y,z), TestP.WorldP );
 
         Chunk *chunk = GetWorldChunk( world, LoopTestP.WorldP );
 
-        if ( IsFilled(chunk, Voxel_Position(LoopTestP.Offset) ) )
+        if ( IsFilled(chunk, Voxel_Position(LoopTestP.Offset)) )
         {
-          Collision.CP.Offset = V3(TestVoxelP);
-          Collision.CP.WorldP = TestWorldP;
+          Collision.CP = LoopTestP;
           Collision.didCollide = true;
+          Print(Collision.CP);
           goto end;
         }
 
@@ -328,6 +325,18 @@ GetAtomicUpdateVector( v3 Gross, float length )
 
   return Result;
 }
+inline float
+ClampMinus1toInfinity( float f )
+{
+  float Result = f;
+
+  if (Result < -1 )
+  {
+    Result = -1;
+  }
+
+  return Result;
+}
 
 inline voxel_position
 ClampMinus1toInfinity( voxel_position V )
@@ -406,6 +415,7 @@ GenerateVisibleRegion( World *world, voxel_position GrossUpdateVector )
 void
 UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
 {
+  Print(GrossUpdateVector);
   Chunk *model = &Player->Model;
 
   v3 Remaining = GrossUpdateVector;
@@ -417,6 +427,8 @@ UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
 
   while ( Remaining != V3(0,0,0) )
   {
+    assert(LengthSq(Remaining) >= 0);
+
     v3 UpdateVector = GetAtomicUpdateVector(Remaining, Length(Remaining));
     Remaining -= UpdateVector;
 
@@ -425,77 +437,77 @@ UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
 
     if ( TestPCollision.didCollide ) // Collision response
     {
-      v3 SA_Offset;
-      canonical_position SA_TestP;
-      collision_event SA_Collision;
+      v3 SAX_Offset;
+      canonical_position SAX_TestP;
+      collision_event SAX_Collision;
+
+      v3 SAY_Offset;
+      canonical_position SAY_TestP;
+      collision_event SAY_Collision;
+
+      v3 SAZ_Offset;
+      canonical_position SAZ_TestP;
+      collision_event SAZ_Collision;
 
       // Build a new LegalPos based on the contents of each voxel we're trying
       // to move through
 
-      SA_Offset = LegalPos.Offset;
-      SA_Offset.x += UpdateVector.x;
-      SA_TestP = Canonicalize( world, SA_Offset, LegalPos.WorldP );
-      SA_Collision = GetCollision( world, SA_TestP, model->Dim );
-      if ( SA_Collision.didCollide )
+      SAX_Offset = LegalPos.Offset;
+      SAX_Offset.x += UpdateVector.x;
+      SAX_TestP = Canonicalize( world, SAX_Offset, LegalPos.WorldP );
+      SAX_Collision = GetCollision( world, SAX_TestP, model->Dim );
+      if ( SAX_Collision.didCollide )
       {
-        Player->Velocity.x = 0;
-        SA_Collision.CP = Canonicalize(world, SA_Collision.CP);
-
         assert( GetSign(UpdateVector.x) != Zero );
 
-        LegalPos.Offset.x = SA_Collision.CP.Offset.x - (1.0f*GetSign(UpdateVector.x));
-        LegalPos.WorldP.x = SA_Collision.CP.WorldP.x;
-
+        Player->Velocity.x = 0;
+        LegalPos.Offset.x = SAX_Collision.CP.Offset.x - ClampMinus1toInfinity(model->Dim.x*GetSign(UpdateVector.x));
+        LegalPos.WorldP.x = SAX_Collision.CP.WorldP.x;
       }
       else
       {
-        LegalPos.Offset.x = SA_TestP.Offset.x;
-        LegalPos.WorldP = SA_TestP.WorldP;
+        LegalPos.Offset.x = SAX_TestP.Offset.x;
+        LegalPos.WorldP = SAX_TestP.WorldP;
       }
-
       LegalPos = Canonicalize( world, LegalPos );
 
-      SA_Offset = LegalPos.Offset;
-      SA_Offset.y += UpdateVector.y;
-      SA_TestP = Canonicalize( world, SA_Offset, LegalPos.WorldP );
-      SA_Collision = GetCollision( world, SA_TestP, model->Dim );
-      if ( SA_Collision.didCollide )
+      SAY_Offset = LegalPos.Offset;
+      SAY_Offset.y += UpdateVector.y;
+      SAY_TestP = Canonicalize( world, SAY_Offset, LegalPos.WorldP );
+      SAY_Collision = GetCollision( world, SAY_TestP, model->Dim );
+      if ( SAY_Collision.didCollide )
       {
-        Player->Velocity.y = 0;
-        SA_Collision.CP = Canonicalize(world, SA_Collision.CP);
-
         assert( GetSign(UpdateVector.y) != Zero );
 
-        LegalPos.Offset.y = SA_Collision.CP.Offset.y - (1.0f*GetSign(UpdateVector.y));
-        LegalPos.WorldP.y = SA_Collision.CP.WorldP.y;
+        Player->Velocity.y = 0;
+        LegalPos.Offset.y = SAY_Collision.CP.Offset.y - ClampMinus1toInfinity(model->Dim.y*GetSign(UpdateVector.y));
+        LegalPos.WorldP.y = SAY_Collision.CP.WorldP.y;
       }
       else
       {
-        LegalPos.Offset.y = SA_TestP.Offset.y;
-        LegalPos.WorldP = SA_TestP.WorldP;
+        LegalPos.Offset.y = SAY_TestP.Offset.y;
+        LegalPos.WorldP.y = SAY_TestP.WorldP.y;
       }
       LegalPos = Canonicalize(world, LegalPos);
 
-      SA_Offset = LegalPos.Offset;
-      SA_Offset.z += UpdateVector.z;
-      SA_TestP = Canonicalize( world, SA_Offset, LegalPos.WorldP );
-      SA_Collision = GetCollision( world, SA_TestP, model->Dim );
-      if ( SA_Collision.didCollide )
+      SAZ_Offset = LegalPos.Offset;
+      SAZ_Offset.z += UpdateVector.z;
+      SAZ_TestP = Canonicalize( world, SAZ_Offset, LegalPos.WorldP );
+      SAZ_Collision = GetCollision( world, SAZ_TestP, model->Dim );
+      if ( SAZ_Collision.didCollide )
       {
-        Player->Velocity.z = 0;
-        SA_Collision.CP = Canonicalize(world, SA_Collision.CP);
-
         assert( GetSign(UpdateVector.z) != Zero );
 
-        LegalPos.Offset.z = SA_Collision.CP.Offset.z - (1.0f*GetSign(UpdateVector.z));
-        LegalPos.WorldP.z = SA_Collision.CP.WorldP.z;
+        Player->Velocity.z = 0;
+        LegalPos.Offset.z = SAZ_Collision.CP.Offset.z - ClampMinus1toInfinity(model->Dim.z*GetSign(UpdateVector.z));
+        LegalPos.WorldP.z = SAZ_Collision.CP.WorldP.z;
       }
       else
       {
-        LegalPos.Offset.z = SA_TestP.Offset.z;
-        LegalPos.WorldP = SA_TestP.WorldP;
-     }
-     LegalPos = Canonicalize(world, LegalPos);
+        LegalPos.Offset.z = SAZ_TestP.Offset.z;
+        LegalPos.WorldP.z = SAZ_TestP.WorldP.z;
+      }
+      LegalPos = Canonicalize(world, LegalPos);
 
     }
     else // Didn't collide with anything, update Player
@@ -507,6 +519,11 @@ UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
   // Finished collision detection, recanonicalize and update player p
   canonical_position FinalP = Canonicalize( world, LegalPos );
 
+  float DisplacementSq = LengthSq( GetRenderP(world, FinalP) - GetRenderP(world, Canonical_Position(model->Offset, model->WorldP)) );
+  float GrossUpdateLenghtSq = LengthSq(GrossUpdateVector);
+  float tolerance = 0.01;
+  assert(DisplacementSq - tolerance <= GrossUpdateLenghtSq);
+
   if ( FinalP.WorldP != Player->Model.WorldP && DEBUG_SCROLL_WORLD ) // We moved to the next chunk
   {
     voxel_position WorldDisp = ( FinalP.WorldP - Player->Model.WorldP );
@@ -516,6 +533,8 @@ UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
 
     FinalP.WorldP = Player->Model.WorldP;
   }
+
+  assert ( GetCollision(world, FinalP, model->Dim ).didCollide == false );
 
   model->Offset = FinalP.Offset;
   model->WorldP = FinalP.WorldP;

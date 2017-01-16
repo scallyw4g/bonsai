@@ -6,9 +6,9 @@
 #define CD_Z 8
 
 // Visible Region XYZ - Must be > (3,3,3)
-#define VR_X 8
-#define VR_Y 8
-#define VR_Z 8
+#define VR_X 16
+#define VR_Y 16
+#define VR_Z 16
 
 #define CHUNK_DIMENSION Chunk_Dimension(CD_X,CD_Y,CD_Z)
 

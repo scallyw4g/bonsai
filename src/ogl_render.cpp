@@ -725,8 +725,8 @@ DrawChunkAABB( World *world, Chunk *chunk )
   GLuint AABB_Colors;
   glGenBuffers(1, &AABB_Colors);
 
-  v3 MinP = GetRenderP(world, Canonical_Position(chunk->Offset, chunk->WorldP ));
-  v3 MaxP = GetRenderP(world, Canonical_Position(chunk->Offset+(world->ChunkDim), chunk->WorldP ));
+  v3 MinP = GetRenderP(world, Canonical_Position(chunk->Offset, chunk->WorldP )) - VOXEL_RADIUS;
+  v3 MaxP = GetRenderP(world, Canonical_Position(chunk->Offset+(chunk->Dim), chunk->WorldP )) - VOXEL_RADIUS;
 
 
   v3 TopRL = V3(MinP.x, MaxP.y, MinP.z);

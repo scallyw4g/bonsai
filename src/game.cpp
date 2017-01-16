@@ -46,7 +46,7 @@ GAME_UPDATE_AND_RENDER
 
   // TODO : Bake these into the terrain/model ?
   v3 drag = V3(0.6f, 1.0f, 0.6f);
-  float accelerationMultiplier = 5.0f;
+  float accelerationMultiplier = 3.0f;
 
   Player->Acceleration = GetInputsFromController() * accelerationMultiplier; // m/s2
 
@@ -66,6 +66,7 @@ GAME_UPDATE_AND_RENDER
 
   v3 PlayerDelta = Player->Velocity * dt;
 
+  Print( Canonical_Position(Player->Model.Offset, Player->Model.WorldP) );
   UpdatePlayerP( world, Player, PlayerDelta );
   UpdateCameraP( world, Player, Camera );
 
@@ -158,7 +159,9 @@ main( void )
   AllocateWorld(&world);
 
   Entity Player = {};
-  Player.Model = LoadVox("./alien_bot2.vox");
+
+  Player.Model = AllocateChunk(Chunk_Dimension(8,8,8), World_Position(0,0,0));
+  // Player.Model = LoadVox("./alien_bot2.vox");
   Player.Model.flags = SetFlag( Player.Model.flags, Chunk_Entity);
 
   Camera_Object Camera = {};
