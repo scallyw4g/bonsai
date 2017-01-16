@@ -66,7 +66,6 @@ GAME_UPDATE_AND_RENDER
 
   v3 PlayerDelta = Player->Velocity * dt;
 
-  Print( Canonical_Position(Player->Model.Offset, Player->Model.WorldP) );
   UpdatePlayerP( world, Player, PlayerDelta );
   UpdateCameraP( world, Player, Camera );
 
@@ -160,8 +159,8 @@ main( void )
 
   Entity Player = {};
 
-  Player.Model = AllocateChunk(Chunk_Dimension(8,8,8), World_Position(0,0,0));
-  // Player.Model = LoadVox("./alien_bot2.vox");
+  // Player.Model = AllocateChunk(Chunk_Dimension(8,8,8), World_Position(0,0,0));
+  Player.Model = LoadVox("./8x8x8.vox");
   Player.Model.flags = SetFlag( Player.Model.flags, Chunk_Entity);
 
   Camera_Object Camera = {};

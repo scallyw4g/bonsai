@@ -493,7 +493,7 @@ IsInsideChunk( voxel_position Dim, voxel_position P )
 }
 
 void
-BuildInternalBoundaryVoxels(World *world, Chunk *chunk, Camera_Object *Camera)
+BuildInteriorBoundaryVoxels(World *world, Chunk *chunk, Camera_Object *Camera)
 {
   chunk->flags = UnSetFlag( chunk->flags, Chunk_RebuildInteriorBoundary );
 
@@ -567,9 +567,7 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera, GLuint &colorb
   if ( IsSet(chunk->flags, Chunk_RebuildInteriorBoundary) )
   {
     chunk->BoundaryVoxelCount = 0;
-    chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorBoundary );
-
-    BuildInternalBoundaryVoxels( world, chunk, Camera );
+    BuildInteriorBoundaryVoxels( world, chunk, Camera );
   }
 
   if ( IsSet(chunk->flags, Chunk_RebuildExteriorBoundary ) )
@@ -832,13 +830,11 @@ DrawChunk(
 {
   if ( IsSet( chunk->flags, Chunk_Entity) )
   {
-    chunk->BoundaryVoxelCount = 1;
-    DrawChunkAABB( world, chunk );
+    chunk->flags = SetFlag(chunk->flags, Chunk_RebuildInteriorBoundary);
+    chunk->flags = UnSetFlag(chunk->flags, Chunk_RebuildExteriorBoundary);
   }
-  else
-  {
-    BuildChunkMesh( world, chunk, Camera, colorbuffer, vertexbuffer, normalbuffer );
-  }
+
+  BuildChunkMesh( world, chunk, Camera, colorbuffer, vertexbuffer, normalbuffer );
 
 #if DEBUG_CHUNK_AABB
   DrawChunkAABB( world, chunk );

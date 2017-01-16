@@ -225,7 +225,6 @@ GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
         {
           Collision.CP = LoopTestP;
           Collision.didCollide = true;
-          Print(Collision.CP);
           goto end;
         }
 
@@ -415,7 +414,6 @@ GenerateVisibleRegion( World *world, voxel_position GrossUpdateVector )
 void
 UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
 {
-  Print(GrossUpdateVector);
   Chunk *model = &Player->Model;
 
   v3 Remaining = GrossUpdateVector;
