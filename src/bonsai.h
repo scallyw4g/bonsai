@@ -335,6 +335,8 @@ GetIndex(voxel_position P, Chunk *chunk)
     (P.y*chunk->Dim.x) +
     (P.z*chunk->Dim.x*chunk->Dim.y);
 
+  assert(i < Volume(chunk->Dim));
+
   return i;
 }
 

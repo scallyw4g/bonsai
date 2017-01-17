@@ -164,6 +164,8 @@ LoadVox(char const *filepath)
 
           bytesRemaining -= VOX_INT_BYTES *2;
 
+          unsigned char maxX, maxY, maxZ;
+
           for( int i = 0; i < numVoxels; ++ i)
           {
             unsigned char X = ReadChar(ModelFile);
@@ -171,16 +173,26 @@ LoadVox(char const *filepath)
             unsigned char Z = ReadChar(ModelFile);
             /* unsigned char color = */ ReadChar(ModelFile);
 
+            maxX = X > maxX ? X : maxX;
+            maxY = Y > maxY ? Y : maxY;
+            maxZ = Z > maxZ ? Z : maxZ;
+
             bytesRemaining -= VOX_CHAR_BYTES *4;
 
             printf("Filled: x %d, y %d, z %d\n", X, Y, Z);
 
             int Index = GetIndex( Voxel_Position(X, Y, Z), &Result);
-            assert(Index < Volume(Result.Dim));
-            Result.Voxels[Index] = SetVoxelP( Result.Voxels[Index], Voxel_Position(X,Y,Z) );
-            Result.Voxels[Index].flags = SetFlag(Result.Voxels[Index].flags, Voxel_Filled);
 
+            Voxel V = Result.Voxels[Index];
+
+            V = SetVoxelP( V, Voxel_Position(X,Y,Z) );
+            V.flags = SetFlag(V.flags, Voxel_Filled);
+
+            Result.Voxels[Index] = V;
           }
+
+          Result.Dim = Chunk_Dimension(maxX, maxY, maxZ);
+
           goto loaded;
         } break;
 
