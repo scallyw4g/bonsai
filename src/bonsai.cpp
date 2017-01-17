@@ -221,7 +221,7 @@ GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
 
         Chunk *chunk = GetWorldChunk( world, LoopTestP.WorldP );
 
-        if ( IsWorldChunkFilled(chunk, Voxel_Position(LoopTestP.Offset)) )
+        if ( IsFilledInWorld(chunk, Voxel_Position(LoopTestP.Offset)) )
         {
           Collision.CP = LoopTestP;
           Collision.didCollide = true;

@@ -22,7 +22,7 @@
 #define DEBUG_CAMERA_FOCUS_ORIGIN  0
 #define DEBUG_OPTIMIZE_TRI_COUNT   1
 #define DEBUG_WORLD_GENERATION     1
-#define DEBUG_LOD_RENDER           1
+#define DEBUG_LOD_RENDER           0
 
 #define DEBUG_FRAMES_TO_RUN       -1
 
@@ -31,7 +31,7 @@
 
 #define CHUNK_STACK_SIZE (VR_X*VR_X*VR_X)
 
-#define CAMERA_OFFSET V3(0,30,35)
+#define CAMERA_OFFSET V3(0,50,55)
 
 static int numFrames = 0;
 static float accumulatedTime = 0;

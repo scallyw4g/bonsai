@@ -86,17 +86,15 @@ ReadMainChunk(FILE *File)
 chunk_dimension
 ReadSizeChunk(FILE *File)
 {
-  int size, sizeChild, chunkX, chunkY, chunkZ;
+  // Is throwing the chunk size away okay?
+  ReadInt(File);
+  ReadInt(File);
 
-  size = ReadInt(File);
-  sizeChild = ReadInt(File);
-
-  chunkX = ReadInt(File);
-  chunkY = ReadInt(File);
-  chunkZ = ReadInt(File);
+  int chunkX = ReadInt(File);
+  int chunkY = ReadInt(File);
+  int chunkZ = ReadInt(File);
 
   chunk_dimension Result = Chunk_Dimension(chunkX+1, chunkY+1, chunkZ+1);
-
   return Result;
 }
 
@@ -104,11 +102,9 @@ void
 ReadPackChunk(FILE *File)
 {
   // TODO(Jesse) : What is this chunk for?
-  int Gargbage;
-
-  Gargbage = ReadInt(File);
-  Gargbage = ReadInt(File);
-  Gargbage = ReadInt(File);
+  ReadInt(File);
+  ReadInt(File);
+  ReadInt(File);
 
   return;
 }
@@ -116,12 +112,11 @@ ReadPackChunk(FILE *File)
 int
 ReadXYZIChunk(FILE *File)
 {
-  int size, sizeChild, nVoxels;
+  // Is throwing the chunk size away okay?
+  ReadInt(File);
+  ReadInt(File);
 
-  size = ReadInt(File);
-  sizeChild = ReadInt(File);
-
-  nVoxels = ReadInt(File);
+  int nVoxels = ReadInt(File);
   return nVoxels;
 }
 
@@ -164,7 +159,6 @@ LoadVox(char const *filepath)
 
         case ID_XYZI:
         {
-          unsigned char X, Y, Z, color;
           int numVoxels = ReadXYZIChunk(ModelFile);
           printf(" Voxels in model : %d \n", numVoxels);
 
@@ -172,10 +166,10 @@ LoadVox(char const *filepath)
 
           for( int i = 0; i < numVoxels; ++ i)
           {
-            X = ReadChar(ModelFile);
-            Y = ReadChar(ModelFile);
-            Z = ReadChar(ModelFile);
-            color = ReadChar(ModelFile);
+            unsigned char X = ReadChar(ModelFile);
+            unsigned char Y = ReadChar(ModelFile);
+            unsigned char Z = ReadChar(ModelFile);
+            /* unsigned char color = */ ReadChar(ModelFile);
 
             bytesRemaining -= VOX_CHAR_BYTES *4;
 
@@ -183,6 +177,7 @@ LoadVox(char const *filepath)
 
             int Index = GetIndex( Voxel_Position(X, Y, Z), &Result);
             assert(Index < Volume(Result.Dim));
+            Result.Voxels[Index] = SetVoxelP( Result.Voxels[Index], Voxel_Position(X,Y,Z) );
             Result.Voxels[Index].flags = SetFlag(Result.Voxels[Index].flags, Voxel_Filled);
 
           }

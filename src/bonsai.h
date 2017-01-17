@@ -312,27 +312,22 @@ IsFacingPoint( glm::vec3 FaceToPoint, v3 FaceNormal )
   return Result;
 }
 
-inline bool
-IsWorldChunkFilled( Chunk *chunk, voxel_position VoxelP )
+inline voxel_position
+GetVoxelP(chunk_dimension Dim, int i)
 {
-  bool isFilled = true;
+  int x = i % Dim.x;
+  int y = (i/Dim.x) % Dim.y ;
+  int z = i / (Dim.x*Dim.y);
 
-  if (chunk)
-  {
-    int i = VoxelP.x +
-      (VoxelP.y*chunk->Dim.x) +
-      (VoxelP.z*chunk->Dim.x*chunk->Dim.y);
+  assert(x <= Dim.x);
+  assert(y <= Dim.y);
+  assert(z <= Dim.z);
 
-    assert(i > -1);
-    assert(i < Volume(chunk->Dim));
-
-    isFilled = IsSet(chunk->Voxels[i].flags, Voxel_Filled);
-  }
-
-  return isFilled;
+  voxel_position Result = Voxel_Position(x,y,z);
+  return Result;
 }
 
-int
+inline int
 GetIndex(voxel_position P, Chunk *chunk)
 {
   int i =
@@ -344,7 +339,25 @@ GetIndex(voxel_position P, Chunk *chunk)
 }
 
 inline bool
-IsWorldChunkFilled( World *world, Chunk *chunk, canonical_position VoxelP )
+IsFilledInWorld( Chunk *chunk, voxel_position VoxelP )
+{
+  bool isFilled = true;
+
+  if (chunk)
+  {
+    int i = GetIndex(VoxelP, chunk);
+
+    assert(i > -1);
+    assert(i < Volume(chunk->Dim));
+
+    isFilled = IsSet(chunk->Voxels[i].flags, Voxel_Filled);
+  }
+
+  return isFilled;
+}
+
+inline bool
+IsFilledInWorld( World *world, Chunk *chunk, canonical_position VoxelP )
 {
   bool isFilled = true;
 
@@ -357,19 +370,29 @@ IsWorldChunkFilled( World *world, Chunk *chunk, canonical_position VoxelP )
       localChunk = GetWorldChunk(world, VoxelP.WorldP);
     }
 
-    isFilled = IsWorldChunkFilled( localChunk, Voxel_Position(VoxelP.Offset) );
+    isFilled = IsFilledInWorld( localChunk, Voxel_Position(VoxelP.Offset) );
   }
 
   return isFilled;
 }
 
 inline bool
-NotFilled( World *world, Chunk *chunk, canonical_position VoxelP )
+NotFilledInWorld( World *world, Chunk *chunk, canonical_position VoxelP )
 {
-  bool Result;
-  Result = !(IsWorldChunkFilled(world,chunk,VoxelP));
-
+  bool Result = !(IsFilledInWorld(world,chunk,VoxelP));
   return Result;
+}
+
+bool
+IsFilled( Chunk *chunk, voxel_position VoxelP )
+{
+  int i = GetIndex( VoxelP, chunk);
+
+  assert(i > -1);
+  assert(i < Volume(chunk->Dim));
+
+  bool isFilled = IsSet(chunk->Voxels[i].flags, Voxel_Filled);
+  return isFilled;
 }
 
 inline voxel_position

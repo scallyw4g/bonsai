@@ -452,7 +452,7 @@ BuildExteriorBoundaryVoxels( World *world, Chunk *chunk, voxel_position Neighbor
       {
         voxel_position LocalVoxelP = Voxel_Position(x+LocalOffset.x, y+LocalOffset.y, z+LocalOffset.z);
 
-        if ( !IsWorldChunkFilled( chunk, LocalVoxelP ) )
+        if ( !IsFilledInWorld( chunk, LocalVoxelP ) )
           continue;
 
         voxel_position NeighborP = ClampPositive(
@@ -460,7 +460,7 @@ BuildExteriorBoundaryVoxels( World *world, Chunk *chunk, voxel_position Neighbor
             (chunk->Dim * NeighborVector) ) -
             (NeighborVector*NeighborVector));
 
-        if ( ! IsWorldChunkFilled( Neighbor, NeighborP) )
+        if ( ! IsFilledInWorld( Neighbor, NeighborP) )
         {
           Voxel voxel = {0};
           voxel = SetVoxelP( voxel, LocalVoxelP );
@@ -497,8 +497,6 @@ BuildInteriorBoundaryVoxels(World *world, Chunk *chunk, Camera_Object *Camera)
 {
   chunk->flags = UnSetFlag( chunk->flags, Chunk_RebuildInteriorBoundary );
 
-
-#if 1
   for ( int x = 0; x < chunk->Dim.x ; ++x )
   {
     for ( int y = 0; y < chunk->Dim.y ; ++y )
@@ -508,7 +506,7 @@ BuildInteriorBoundaryVoxels(World *world, Chunk *chunk, Camera_Object *Camera)
         canonical_position VoxelP = Canonical_Position(V3(x,y,z), chunk->WorldP);
         VoxelP = Canonicalize(world, VoxelP);
 
-        if ( NotFilled(world, chunk, VoxelP ) )
+        if ( !IsFilled( chunk, Voxel_Position(VoxelP.Offset) ) )
           continue;
 
         voxel_position nextVoxel  = Voxel_Position( VoxelP.Offset + V3(1.0f,0,0) );
@@ -521,12 +519,12 @@ BuildInteriorBoundaryVoxels(World *world, Chunk *chunk, Camera_Object *Camera)
         voxel_position backVoxel  = Voxel_Position( VoxelP.Offset - V3(0,0,1.0f) );
 
         // TODO : Cache this check in the flags so we don't have to to it again when rendering
-        if ( ( IsInsideChunk( world->ChunkDim, nextVoxel  ) && !IsWorldChunkFilled( chunk, nextVoxel  )) ||
-             ( IsInsideChunk( world->ChunkDim, prevVoxel  ) && !IsWorldChunkFilled( chunk, prevVoxel  )) ||
-             ( IsInsideChunk( world->ChunkDim, botVoxel   ) && !IsWorldChunkFilled( chunk, botVoxel   )) ||
-             ( IsInsideChunk( world->ChunkDim, topVoxel   ) && !IsWorldChunkFilled( chunk, topVoxel   )) ||
-             ( IsInsideChunk( world->ChunkDim, frontVoxel ) && !IsWorldChunkFilled( chunk, frontVoxel )) ||
-             ( IsInsideChunk( world->ChunkDim, backVoxel  ) && !IsWorldChunkFilled( chunk, backVoxel  ))
+        if ( ( IsInsideChunk( chunk->Dim, nextVoxel  ) && !IsFilled( chunk, nextVoxel  )) ||
+             ( IsInsideChunk( chunk->Dim, prevVoxel  ) && !IsFilled( chunk, prevVoxel  )) ||
+             ( IsInsideChunk( chunk->Dim, botVoxel   ) && !IsFilled( chunk, botVoxel   )) ||
+             ( IsInsideChunk( chunk->Dim, topVoxel   ) && !IsFilled( chunk, topVoxel   )) ||
+             ( IsInsideChunk( chunk->Dim, frontVoxel ) && !IsFilled( chunk, frontVoxel )) ||
+             ( IsInsideChunk( chunk->Dim, backVoxel  ) && !IsFilled( chunk, backVoxel  ))
            )
         {
           Voxel voxel = {0};
@@ -538,7 +536,6 @@ BuildInteriorBoundaryVoxels(World *world, Chunk *chunk, Camera_Object *Camera)
       }
     }
   }
-#endif
 }
 
 bool
@@ -557,7 +554,7 @@ IsInFrustum( World *world, Camera_Object *Camera, Chunk *chunk )
 }
 
 void
-BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera, GLuint &colorbuffer, GLuint &vertexbuffer, GLuint &normalbuffer )
+BuildAndBufferChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera, GLuint &colorbuffer, GLuint &vertexbuffer, GLuint &normalbuffer )
 {
 
   if ( ! IsInFrustum( world, Camera, chunk ) )
@@ -619,22 +616,19 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera, GLuint &colorb
     /*   continue; */
     /* } */
 
-    canonical_position nextVoxel  = Canonicalize( world, VoxelP + V3(1.0f,0,0) );
-    canonical_position prevVoxel  = Canonicalize( world, VoxelP - V3(1.0f,0,0) );
+    /* canonical_position nextVoxel  = Canonicalize( world, VoxelP + V3(1.0f,0,0) ); */
+    /* canonical_position prevVoxel  = Canonicalize( world, VoxelP - V3(1.0f,0,0) ); */
 
-    canonical_position topVoxel   = Canonicalize( world, VoxelP + V3(0,1.0f,0) );
-    canonical_position botVoxel   = Canonicalize( world, VoxelP - V3(0,1.0f,0) );
+    /* canonical_position topVoxel   = Canonicalize( world, VoxelP + V3(0,1.0f,0) ); */
+    /* canonical_position botVoxel   = Canonicalize( world, VoxelP - V3(0,1.0f,0) ); */
 
-    canonical_position frontVoxel = Canonicalize( world, VoxelP + V3(0,0,1.0f) );
-    canonical_position backVoxel  = Canonicalize( world, VoxelP - V3(0,0,1.0f) );
+    /* canonical_position frontVoxel = Canonicalize( world, VoxelP + V3(0,0,1.0f) ); */
+    /* canonical_position backVoxel  = Canonicalize( world, VoxelP - V3(0,0,1.0f) ); */
 
     glm::vec3 VoxRenderP = GetGLRenderP(world, VoxelP);
-
     glm::vec3 VoxelToCamera = glm::normalize(GLCameraRenderP - VoxRenderP);
 
-    if ( IsFacingPoint(VoxelToCamera, V3(1,0,0)) &&
-         IsInsideChunk( chunk->Dim, Voxel_Position(nextVoxel.Offset)  ) &&
-         NotFilled(world, chunk, nextVoxel) )
+    if ( IsFacingPoint(VoxelToCamera, V3(1,0,0)) )
     {
       const float* FaceColors = GetColorData( Voxel_Red );
       if ( !BufferRightFace(world, VoxRenderP, FaceColors) )
@@ -644,9 +638,7 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera, GLuint &colorb
       }
     }
 
-    if ( IsFacingPoint(VoxelToCamera, V3(-1,0,0)) &&
-         IsInsideChunk( chunk->Dim, Voxel_Position(prevVoxel.Offset)  ) &&
-         NotFilled(world, chunk, prevVoxel) )
+    if ( IsFacingPoint(VoxelToCamera, V3(-1,0,0)) )
     {
       const float* FaceColors = GetColorData( Voxel_Yellow );
       if (! BufferLeftFace(world, VoxRenderP, FaceColors) )
@@ -656,9 +648,7 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera, GLuint &colorb
       }
     }
 
-    if ( IsFacingPoint(VoxelToCamera, V3(0,-1,0)) &&
-         IsInsideChunk( chunk->Dim, Voxel_Position(botVoxel.Offset)  ) &&
-         NotFilled(world, chunk, botVoxel) )
+    if ( IsFacingPoint(VoxelToCamera, V3(0,-1,0)) )
     {
       const float* FaceColors = GetColorData( Voxel_Teal );
       if ( !BufferBottomFace(world, VoxRenderP, FaceColors) )
@@ -668,9 +658,7 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera, GLuint &colorb
       }
     }
 
-    if ( IsFacingPoint(VoxelToCamera, V3(0,1,0)) &&
-         IsInsideChunk( chunk->Dim, Voxel_Position(topVoxel.Offset)  ) &&
-         NotFilled(world, chunk, topVoxel) )
+    if ( IsFacingPoint(VoxelToCamera, V3(0,1,0)) )
     {
       const float* FaceColors = GetColorData( Voxel_Green );
       if ( !BufferTopFace(world, VoxRenderP, FaceColors) )
@@ -680,9 +668,7 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera, GLuint &colorb
       }
     }
 
-    if ( IsFacingPoint(VoxelToCamera, V3(0,0,1)) &&
-         IsInsideChunk( chunk->Dim, Voxel_Position(frontVoxel.Offset)  ) &&
-         NotFilled(world, chunk, frontVoxel) )
+    if ( IsFacingPoint(VoxelToCamera, V3(0,0,1)) )
     {
       const float* FaceColors = GetColorData( Voxel_White );
       if ( !BufferFrontFace(world, VoxRenderP, FaceColors) )
@@ -692,9 +678,7 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera, GLuint &colorb
       }
     }
 
-    if ( IsFacingPoint(VoxelToCamera, V3(0,0,-1)) &&
-         IsInsideChunk( chunk->Dim, Voxel_Position(backVoxel.Offset)  ) &&
-         NotFilled(world, chunk, backVoxel) )
+    if ( IsFacingPoint(VoxelToCamera, V3(0,0,-1)) )
     {
       const float* FaceColors = GetColorData( Voxel_Purple );
       if ( !BufferBackFace(world, VoxRenderP, FaceColors) )
@@ -837,11 +821,28 @@ DrawChunk(
 {
   if ( IsSet( chunk->flags, Chunk_Entity) )
   {
-    chunk->flags = SetFlag(chunk->flags, Chunk_RebuildInteriorBoundary);
+    chunk->flags = UnSetFlag(chunk->flags, Chunk_RebuildInteriorBoundary);
     chunk->flags = UnSetFlag(chunk->flags, Chunk_RebuildExteriorBoundary);
+    DrawChunkAABB( world, chunk );
+
+    if ( chunk->BoundaryVoxelCount == 0 )
+    {
+      for (int i = 0; i < Volume(chunk->Dim); ++i)
+      {
+        Voxel v = chunk->Voxels[i];
+        if ( IsSet( v.flags, Voxel_Filled ) )
+        {
+          PushBoundaryVoxel( chunk, v );
+          chunk->BoundaryVoxelCount++;
+          voxel_position P = GetVoxelP(chunk->Dim, i);
+          printf("Buffering Boundary Voxel: x %d y %d z %d \n", P.x, P.y, P.z);
+        }
+      }
+    }
+
   }
 
-  BuildChunkMesh( world, chunk, Camera, colorbuffer, vertexbuffer, normalbuffer );
+  BuildAndBufferChunkMesh( world, chunk, Camera, colorbuffer, vertexbuffer, normalbuffer );
 
 #if DEBUG_CHUNK_AABB
   DrawChunkAABB( world, chunk );
