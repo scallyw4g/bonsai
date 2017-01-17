@@ -452,7 +452,7 @@ BuildExteriorBoundaryVoxels( World *world, Chunk *chunk, voxel_position Neighbor
       {
         voxel_position LocalVoxelP = Voxel_Position(x+LocalOffset.x, y+LocalOffset.y, z+LocalOffset.z);
 
-        if ( !IsFilled( chunk, LocalVoxelP ) )
+        if ( !IsWorldChunkFilled( chunk, LocalVoxelP ) )
           continue;
 
         voxel_position NeighborP = ClampPositive(
@@ -460,7 +460,7 @@ BuildExteriorBoundaryVoxels( World *world, Chunk *chunk, voxel_position Neighbor
             (chunk->Dim * NeighborVector) ) -
             (NeighborVector*NeighborVector));
 
-        if ( ! IsFilled( Neighbor, NeighborP) )
+        if ( ! IsWorldChunkFilled( Neighbor, NeighborP) )
         {
           Voxel voxel = {0};
           voxel = SetVoxelP( voxel, LocalVoxelP );
@@ -521,12 +521,12 @@ BuildInteriorBoundaryVoxels(World *world, Chunk *chunk, Camera_Object *Camera)
         voxel_position backVoxel  = Voxel_Position( VoxelP.Offset - V3(0,0,1.0f) );
 
         // TODO : Cache this check in the flags so we don't have to to it again when rendering
-        if ( ( IsInsideChunk( world->ChunkDim, nextVoxel  ) && !IsFilled( chunk, nextVoxel  )) ||
-             ( IsInsideChunk( world->ChunkDim, prevVoxel  ) && !IsFilled( chunk, prevVoxel  )) ||
-             ( IsInsideChunk( world->ChunkDim, botVoxel   ) && !IsFilled( chunk, botVoxel   )) ||
-             ( IsInsideChunk( world->ChunkDim, topVoxel   ) && !IsFilled( chunk, topVoxel   )) ||
-             ( IsInsideChunk( world->ChunkDim, frontVoxel ) && !IsFilled( chunk, frontVoxel )) ||
-             ( IsInsideChunk( world->ChunkDim, backVoxel  ) && !IsFilled( chunk, backVoxel  ))
+        if ( ( IsInsideChunk( world->ChunkDim, nextVoxel  ) && !IsWorldChunkFilled( chunk, nextVoxel  )) ||
+             ( IsInsideChunk( world->ChunkDim, prevVoxel  ) && !IsWorldChunkFilled( chunk, prevVoxel  )) ||
+             ( IsInsideChunk( world->ChunkDim, botVoxel   ) && !IsWorldChunkFilled( chunk, botVoxel   )) ||
+             ( IsInsideChunk( world->ChunkDim, topVoxel   ) && !IsWorldChunkFilled( chunk, topVoxel   )) ||
+             ( IsInsideChunk( world->ChunkDim, frontVoxel ) && !IsWorldChunkFilled( chunk, frontVoxel )) ||
+             ( IsInsideChunk( world->ChunkDim, backVoxel  ) && !IsWorldChunkFilled( chunk, backVoxel  ))
            )
         {
           Voxel voxel = {0};

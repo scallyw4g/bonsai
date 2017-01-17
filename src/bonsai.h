@@ -313,7 +313,7 @@ IsFacingPoint( glm::vec3 FaceToPoint, v3 FaceNormal )
 }
 
 inline bool
-IsFilled( Chunk *chunk, voxel_position VoxelP )
+IsWorldChunkFilled( Chunk *chunk, voxel_position VoxelP )
 {
   bool isFilled = true;
 
@@ -344,7 +344,7 @@ GetIndex(voxel_position P, Chunk *chunk)
 }
 
 inline bool
-IsFilled( World *world, Chunk *chunk, canonical_position VoxelP )
+IsWorldChunkFilled( World *world, Chunk *chunk, canonical_position VoxelP )
 {
   bool isFilled = true;
 
@@ -357,7 +357,7 @@ IsFilled( World *world, Chunk *chunk, canonical_position VoxelP )
       localChunk = GetWorldChunk(world, VoxelP.WorldP);
     }
 
-    isFilled = IsFilled( localChunk, Voxel_Position(VoxelP.Offset) );
+    isFilled = IsWorldChunkFilled( localChunk, Voxel_Position(VoxelP.Offset) );
   }
 
   return isFilled;
@@ -367,7 +367,7 @@ inline bool
 NotFilled( World *world, Chunk *chunk, canonical_position VoxelP )
 {
   bool Result;
-  Result = !(IsFilled(world,chunk,VoxelP));
+  Result = !(IsWorldChunkFilled(world,chunk,VoxelP));
 
   return Result;
 }
