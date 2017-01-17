@@ -12,7 +12,7 @@
 
 #define ArrayCount(a) (sizeof(a)/sizeof(a[0]))
 
-#define InvalidDefaultCase default: { assert(false); break; }
+#define InvalidDefaultCase default: {assert(false);} break
 
 #define Print(Pos) \
   Print_P( Pos, #Pos )
@@ -361,7 +361,6 @@ IsFilled( World *world, Chunk *chunk, canonical_position VoxelP )
   }
 
   return isFilled;
-
 }
 
 inline bool

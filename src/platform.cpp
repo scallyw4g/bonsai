@@ -4,103 +4,96 @@
 
 // Number of bytes per int according to .vox file format
 #define VOX_INT_BYTES 4
+#define VOX_CHAR_BYTES 1
 
-#define VOX_ID_LENGTH 4
+constexpr int
+MV_ID( const int a, const int b, const int c, const int d ) {
+  return ( a ) | ( b << 8 ) | ( c << 16 ) | ( d << 24 );
+}
 
-enum Chunk_HeaderType
+enum Chunk_ID
 {
-  Header_Uninitialized,
+  ID_NONE = 0,
 
-  Header_PACK,
-  Header_SIZE,
-  Header_XYZI
+  ID_VOX  = MV_ID( 'V', 'O', 'X', ' ' ),
+  ID_MAIN = MV_ID( 'M', 'A', 'I', 'N' ),
+  ID_PACK = MV_ID( 'P', 'A', 'C', 'K' ),
+  ID_SIZE = MV_ID( 'S', 'I', 'Z', 'E' ),
+  ID_XYZI = MV_ID( 'X', 'Y', 'Z', 'I' ),
+  ID_RGBA = MV_ID( 'R', 'G', 'B', 'A' )
 };
 
-Chunk_HeaderType
+unsigned char
+ReadChar(FILE* File)
+{
+  unsigned char c;
+  fread(&c, 1, VOX_CHAR_BYTES, File);
+  return c;
+}
+
+int
+ReadInt(FILE* File)
+{
+  int i;
+  fread(&i, 1, VOX_INT_BYTES, File);
+  return i;
+}
+
+Chunk_ID
 GetHeaderType(FILE* File)
 {
-  fpos_t initialP;
-  fgetpos( File, &initialP);
+  int ID = ReadInt(File);
 
-  char chunkID[VOX_ID_LENGTH+1] = {};
+  assert( ID == ID_VOX  ||
+          ID == ID_MAIN ||
+          ID == ID_PACK ||
+          ID == ID_SIZE ||
+          ID == ID_XYZI ||
+          ID == ID_RGBA );
 
-  fsetpos( File, &initialP);
-
-  fread(chunkID, 1, VOX_ID_LENGTH, File);
-
-  if (memcmp(chunkID, "PACK", VOX_ID_LENGTH) == 0 )
-  {
-    return Header_PACK;
-  }
-  else if (memcmp(chunkID, "SIZE", VOX_ID_LENGTH) == 0 )
-  {
-    return Header_SIZE;
-  }
-  else if (memcmp(chunkID, "XYZI", VOX_ID_LENGTH) == 0 )
-  {
-    return Header_XYZI;
-  }
-  else
-  { assert(false); }
-
-  return Header_Uninitialized;
-}
-void
-ReadChunkHeader(char *header, FILE* File)
-{
-  fread(header, 1, VOX_ID_LENGTH, File);
-  return;
+  return (Chunk_ID)ID;
 }
 
 void
 ReadVoxChunk(FILE *File)
 {
-  char chunkID[VOX_ID_LENGTH+1] = {};
-  int version = INT_MAX;
+  int ID, Version = INT_MAX;
 
-  ReadChunkHeader( chunkID, File);
-  assert( memcmp(chunkID, "VOX ", VOX_ID_LENGTH) == 0 );
-  fread(&version, VOX_INT_BYTES, 1, File);
+  ID = ReadInt(File);
+  assert( ID == ID_VOX );
+
+  Version = ReadInt(File);
+  assert(Version == 150);
 
   return;
 }
 
-void
-ReadMainChunk(FILE *File, int *chunkBytes, int *childBytes)
+int
+ReadMainChunk(FILE *File)
 {
-  char chunkID[VOX_ID_LENGTH+1] = {};
+  int ID = ReadInt(File);
+  assert( ID == ID_MAIN );
 
-  *chunkBytes = INT_MAX;
-  *childBytes = INT_MAX;
+  int selfSize = ReadInt(File);
+  assert(selfSize == 0 );
 
-  ReadChunkHeader( chunkID, File);
-  assert( memcmp(chunkID, "MAIN", VOX_ID_LENGTH) == 0 );
+  int childSize = ReadInt(File);
+  assert(childSize > 0 );
 
-  fread(chunkBytes, VOX_INT_BYTES, 1, File);
-  assert( *chunkBytes != INT_MAX );
-
-  fread( childBytes, VOX_INT_BYTES, 1, File);
-  assert( *childBytes != INT_MAX );
-
-  return;
+  return childSize;
 }
 
 chunk_dimension
 ReadSizeChunk(FILE *File)
 {
-  char chunkID[VOX_ID_LENGTH+1] = {};
+  int size, sizeChild, chunkX, chunkY, chunkZ;
 
-  int  size, sizeChild, chunkX, chunkY, chunkZ = INT_MAX;
+  size = ReadInt(File);
+  sizeChild = ReadInt(File);
 
-  ReadChunkHeader(chunkID, File);
-  assert( memcmp(chunkID, "SIZE", VOX_ID_LENGTH) == 0 );
-
-  fread(&size, VOX_INT_BYTES, 1, File);
-  fread(&sizeChild, VOX_INT_BYTES, 1, File);
-
-  fread(&chunkX, VOX_INT_BYTES, 1, File);
-  fread(&chunkY, VOX_INT_BYTES, 1, File);
-  fread(&chunkZ, VOX_INT_BYTES, 1, File);
+  chunkX = ReadInt(File);
+  chunkY = ReadInt(File);
+  chunkZ = ReadInt(File);
 
   chunk_dimension Result = Chunk_Dimension(chunkX+1, chunkY+1, chunkZ+1);
 
@@ -110,16 +103,12 @@ ReadSizeChunk(FILE *File)
 void
 ReadPackChunk(FILE *File)
 {
-  char chunkID[VOX_ID_LENGTH+1] = {};
-
-  ReadChunkHeader( chunkID, File);
-  assert( memcmp(chunkID, "PACK", VOX_ID_LENGTH) == 0 );
-
   // TODO(Jesse) : What is this chunk for?
   int Gargbage;
-  fread(&Gargbage, VOX_INT_BYTES, 1, File);
-  fread(&Gargbage, VOX_INT_BYTES, 1, File);
-  fread(&Gargbage, VOX_INT_BYTES, 1, File);
+
+  Gargbage = ReadInt(File);
+  Gargbage = ReadInt(File);
+  Gargbage = ReadInt(File);
 
   return;
 }
@@ -127,59 +116,82 @@ ReadPackChunk(FILE *File)
 int
 ReadXYZIChunk(FILE *File)
 {
-  char chunkID[VOX_ID_LENGTH+1] = {};
+  int size, sizeChild, nVoxels;
 
-  int Result = INT_MAX;
+  size = ReadInt(File);
+  sizeChild = ReadInt(File);
 
-  ReadChunkHeader(chunkID, File);
-  assert( memcmp(chunkID, "XYZI", VOX_ID_LENGTH) == 0 );
-
-  fread(&Result, VOX_INT_BYTES, 1, File);
-
-  return Result;
+  nVoxels = ReadInt(File);
+  return nVoxels;
 }
 
 Chunk
 LoadVox(char const *filepath)
 {
   Chunk Result;
-
-  int chunkBytes = INT_MAX;
-  int childChunkBytes = INT_MAX;
+  int totalChunkBytes;
 
   FILE * ModelFile = fopen(filepath, "r");
-
   if (ModelFile)
   {
     // Ensure we're dealing with a .vox file
-    ReadVoxChunk( ModelFile );
-    ReadMainChunk( ModelFile, &chunkBytes, &childChunkBytes );
-    ReadPackChunk( ModelFile);
+    ReadVoxChunk(ModelFile );
 
-    chunk_dimension Dim = ReadSizeChunk(ModelFile);
-    Result = AllocateChunk(Dim, World_Position(0,0,0));
+    totalChunkBytes = ReadMainChunk(ModelFile);
+    int bytesRemaining = totalChunkBytes;
 
-    unsigned char X, Y, Z, color;
-
-    int numVoxels = ReadXYZIChunk(ModelFile);
-
-    for( int i = 0; i < numVoxels; ++ i)
+    // TODO(Jesse) : Actually read all the data!
+    while (bytesRemaining > 0)
     {
-      fread(&X, 1, 1, ModelFile);
-      fread(&Y, 1, 1, ModelFile);
-      fread(&Z, 1, 1, ModelFile);
-      fread(&color, 1, 1, ModelFile);
+      switch ( GetHeaderType(ModelFile) )
+      {
+        bytesRemaining -= VOX_INT_BYTES;
 
-      printf("Filled: x %d, y %d, z %d\n", X, Y, Z);
+        case ID_PACK:
+        {
+          ReadPackChunk(ModelFile);
+          bytesRemaining -= VOX_INT_BYTES *4;
+        } break;
 
-      int Index = GetIndex( Voxel_Position(X, Y, Z), &Result);
-      assert(Index < Volume(Result.Dim));
-      Result.Voxels[Index].flags = SetFlag(Result.Voxels[Index].flags, Voxel_Filled);
+        case ID_SIZE:
+        {
+          chunk_dimension Dim = ReadSizeChunk(ModelFile);
+          printf(" Chunk Allocated : x %d y %d z %d\n", Dim.x, Dim.y, Dim.z);
 
+          Result = AllocateChunk(Dim, World_Position(0,0,0));
+          bytesRemaining -= VOX_INT_BYTES *5;
+        } break;
+
+        case ID_XYZI:
+        {
+          unsigned char X, Y, Z, color;
+          int numVoxels = ReadXYZIChunk(ModelFile);
+          printf(" Voxels in model : %d \n", numVoxels);
+
+          bytesRemaining -= VOX_INT_BYTES *2;
+
+          for( int i = 0; i < numVoxels; ++ i)
+          {
+            X = ReadChar(ModelFile);
+            Y = ReadChar(ModelFile);
+            Z = ReadChar(ModelFile);
+            color = ReadChar(ModelFile);
+
+            bytesRemaining -= VOX_CHAR_BYTES *4;
+
+            printf("Filled: x %d, y %d, z %d\n", X, Y, Z);
+
+            int Index = GetIndex( Voxel_Position(X, Y, Z), &Result);
+            assert(Index < Volume(Result.Dim));
+            Result.Voxels[Index].flags = SetFlag(Result.Voxels[Index].flags, Voxel_Filled);
+
+          }
+          goto loaded;
+        } break;
+
+        InvalidDefaultCase;
+      }
     }
-
-    printf(" Dim %d %d %d\n", Dim.x, Dim.y, Dim.z);
-    printf(" Voxels %d/%d \n", numVoxels, Dim.x*Dim.y*Dim.z);
 
 
   }
@@ -188,5 +200,6 @@ LoadVox(char const *filepath)
     printf("Couldn't read model file '%s' .", filepath);
   }
 
+  loaded:
   return Result;
 }

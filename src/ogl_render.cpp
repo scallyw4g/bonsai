@@ -118,19 +118,19 @@ BufferFace (
 
   if ( world->VertexData.filled > world->VertexData.bytesAllocd )
   {
-    /* printf("Flushing Render Buffer - Vertex memory\n"); */
+    printf("Flushing Render Buffer - Vertex memory\n");
     DidBufferFace = false;
   }
 
   if ( world->ColorData.filled > world->ColorData.bytesAllocd )
   {
-    /* printf("Flushing Render Buffer - Color memory\n"); */
+    printf("Flushing Render Buffer - Color memory\n");
     DidBufferFace = false;
   }
 
   if (world->NormalData.filled > world->NormalData.bytesAllocd )
   {
-    /* printf("Flushing Render Buffer - Normal memory\n"); */
+    printf("Flushing Render Buffer - Normal memory\n");
     DidBufferFace = false;
   }
 
@@ -506,6 +506,7 @@ BuildInteriorBoundaryVoxels(World *world, Chunk *chunk, Camera_Object *Camera)
       for ( int z = 0; z < chunk->Dim.z ; ++z )
       {
         canonical_position VoxelP = Canonical_Position(V3(x,y,z), chunk->WorldP);
+        VoxelP = Canonicalize(world, VoxelP);
 
         if ( NotFilled(world, chunk, VoxelP ) )
           continue;
@@ -583,7 +584,7 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera, GLuint &colorb
   }
 
 
-#if LOD_RENDER
+#if DEBUG_LOD_RENDER
   // LOD calculations
   v3 ChunkCenterRenderP  = GetRenderP(world, Canonical_Position(chunk->Dim / 2, chunk->WorldP) );
   v3 CameraTargetRenderP = GetRenderP(world, Camera->Target );
@@ -632,6 +633,7 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera, GLuint &colorb
     glm::vec3 VoxelToCamera = glm::normalize(GLCameraRenderP - VoxRenderP);
 
     if ( IsFacingPoint(VoxelToCamera, V3(1,0,0)) &&
+         IsInsideChunk( chunk->Dim, Voxel_Position(nextVoxel.Offset)  ) &&
          NotFilled(world, chunk, nextVoxel) )
     {
       const float* FaceColors = GetColorData( Voxel_Red );
@@ -643,6 +645,7 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera, GLuint &colorb
     }
 
     if ( IsFacingPoint(VoxelToCamera, V3(-1,0,0)) &&
+         IsInsideChunk( chunk->Dim, Voxel_Position(prevVoxel.Offset)  ) &&
          NotFilled(world, chunk, prevVoxel) )
     {
       const float* FaceColors = GetColorData( Voxel_Yellow );
@@ -654,6 +657,7 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera, GLuint &colorb
     }
 
     if ( IsFacingPoint(VoxelToCamera, V3(0,-1,0)) &&
+         IsInsideChunk( chunk->Dim, Voxel_Position(botVoxel.Offset)  ) &&
          NotFilled(world, chunk, botVoxel) )
     {
       const float* FaceColors = GetColorData( Voxel_Teal );
@@ -665,6 +669,7 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera, GLuint &colorb
     }
 
     if ( IsFacingPoint(VoxelToCamera, V3(0,1,0)) &&
+         IsInsideChunk( chunk->Dim, Voxel_Position(topVoxel.Offset)  ) &&
          NotFilled(world, chunk, topVoxel) )
     {
       const float* FaceColors = GetColorData( Voxel_Green );
@@ -676,6 +681,7 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera, GLuint &colorb
     }
 
     if ( IsFacingPoint(VoxelToCamera, V3(0,0,1)) &&
+         IsInsideChunk( chunk->Dim, Voxel_Position(frontVoxel.Offset)  ) &&
          NotFilled(world, chunk, frontVoxel) )
     {
       const float* FaceColors = GetColorData( Voxel_White );
@@ -687,6 +693,7 @@ BuildChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera, GLuint &colorb
     }
 
     if ( IsFacingPoint(VoxelToCamera, V3(0,0,-1)) &&
+         IsInsideChunk( chunk->Dim, Voxel_Position(backVoxel.Offset)  ) &&
          NotFilled(world, chunk, backVoxel) )
     {
       const float* FaceColors = GetColorData( Voxel_Purple );

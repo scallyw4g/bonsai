@@ -587,8 +587,8 @@ AllocateWorld( World *world )
   // Allocate a second chunks buffer for when we're updating visible region
   world->FreeChunks.chunks = (Chunk*)calloc( Volume(world->VisibleRegion), sizeof(Chunk) );
 
-  { // Allocate an entire chunk worth of vertices for the render buffer
-    int BufferVertices = world->ChunkDim.x*world->ChunkDim.y*world->ChunkDim.z * VERT_PER_VOXEL * 3;
+  { // Allocate five chunks worth of vertices for the render buffer
+    int BufferVertices = 5* (world->ChunkDim.x*world->ChunkDim.y*world->ChunkDim.z * VERT_PER_VOXEL * 3);
 
     world->VertexData.Data = (GLfloat *)calloc(BufferVertices, sizeof(GLfloat) );
     world->ColorData.Data = (GLfloat *)calloc(BufferVertices, sizeof(GLfloat) );
