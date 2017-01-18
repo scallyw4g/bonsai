@@ -3,6 +3,13 @@
 
 #include <bonsai.h>
 
+int
+Pow2(int p)
+{
+  int Result = 1 << p;
+  return Result;
+}
+
 int clamp0(int i)
 {
   if (i < 0)

@@ -833,9 +833,10 @@ DrawChunk(
         if ( IsSet( v.flags, Voxel_Filled ) )
         {
           PushBoundaryVoxel( chunk, v );
-          chunk->BoundaryVoxelCount++;
+
+          // debug
           voxel_position P = GetVoxelP(chunk->Dim, i);
-          printf("Buffering Boundary Voxel: x %d y %d z %d \n", P.x, P.y, P.z);
+          printf("Buffering Boundary Voxel %d : %d %d %d \n", i, P.x, P.y, P.z);
         }
       }
     }

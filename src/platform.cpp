@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <bonsai.h>
+#include <math.h>
 
 // Number of bytes per int according to .vox file format
 #define VOX_INT_BYTES 4
@@ -23,7 +24,7 @@ enum Chunk_ID
   ID_RGBA = MV_ID( 'R', 'G', 'B', 'A' )
 };
 
-unsigned char
+inline unsigned char
 ReadChar(FILE* File)
 {
   unsigned char c;
@@ -31,7 +32,7 @@ ReadChar(FILE* File)
   return c;
 }
 
-int
+inline int
 ReadInt(FILE* File)
 {
   int i;
@@ -39,7 +40,7 @@ ReadInt(FILE* File)
   return i;
 }
 
-Chunk_ID
+inline Chunk_ID
 GetHeaderType(FILE* File)
 {
   int ID = ReadInt(File);
@@ -54,7 +55,7 @@ GetHeaderType(FILE* File)
   return (Chunk_ID)ID;
 }
 
-void
+inline void
 ReadVoxChunk(FILE *File)
 {
   int ID, Version = INT_MAX;
@@ -68,7 +69,7 @@ ReadVoxChunk(FILE *File)
   return;
 }
 
-int
+inline int
 ReadMainChunk(FILE *File)
 {
   int ID = ReadInt(File);
@@ -83,7 +84,7 @@ ReadMainChunk(FILE *File)
   return childSize;
 }
 
-chunk_dimension
+inline chunk_dimension
 ReadSizeChunk(FILE *File)
 {
   // Is throwing the chunk size away okay?
@@ -98,23 +99,27 @@ ReadSizeChunk(FILE *File)
   return Result;
 }
 
-void
+inline int
 ReadPackChunk(FILE *File)
-{
-  // TODO(Jesse) : What is this chunk for?
-  ReadInt(File);
-  ReadInt(File);
-  ReadInt(File);
-
-  return;
-}
-
-int
-ReadXYZIChunk(FILE *File)
 {
   // Is throwing the chunk size away okay?
   ReadInt(File);
   ReadInt(File);
+
+  int nChunks = ReadInt(File);
+
+  return nChunks;
+}
+
+inline int
+ReadXYZIChunk(FILE *File)
+{
+  // Is throwing the chunk size away okay?
+  int size = ReadInt(File);
+  printf("size1 %d\n", size);
+
+  size = ReadInt(File);
+  printf("size2 %d\n", size);
 
   int nVoxels = ReadInt(File);
   return nVoxels;
@@ -144,14 +149,15 @@ LoadVox(char const *filepath)
 
         case ID_PACK:
         {
-          ReadPackChunk(ModelFile);
+          int nChunks = ReadPackChunk(ModelFile);
+          printf("nChunks %d\n", nChunks);
           bytesRemaining -= VOX_INT_BYTES *4;
         } break;
 
         case ID_SIZE:
         {
           chunk_dimension Dim = ReadSizeChunk(ModelFile);
-          printf(" Chunk Allocated : x %d y %d z %d\n", Dim.x, Dim.y, Dim.z);
+          /* printf(" Chunk Allocated : x %d y %d z %d\n", Dim.x, Dim.y, Dim.z); */
 
           Result = AllocateChunk(Dim, World_Position(0,0,0));
           bytesRemaining -= VOX_INT_BYTES *5;
@@ -160,7 +166,7 @@ LoadVox(char const *filepath)
         case ID_XYZI:
         {
           int numVoxels = ReadXYZIChunk(ModelFile);
-          printf(" Voxels in model : %d \n", numVoxels);
+          /* printf(" Voxels in model : %d \n", numVoxels); */
 
           bytesRemaining -= VOX_INT_BYTES *2;
 
@@ -168,9 +174,9 @@ LoadVox(char const *filepath)
 
           for( int i = 0; i < numVoxels; ++ i)
           {
-            unsigned char X = ReadChar(ModelFile);
-            unsigned char Y = ReadChar(ModelFile);
-            unsigned char Z = ReadChar(ModelFile);
+            int X = (int)ReadChar(ModelFile);
+            int Y = (int)ReadChar(ModelFile);
+            int Z = (int)ReadChar(ModelFile);
             /* unsigned char color = */ ReadChar(ModelFile);
 
             maxX = X > maxX ? X : maxX;
@@ -179,19 +185,24 @@ LoadVox(char const *filepath)
 
             bytesRemaining -= VOX_CHAR_BYTES *4;
 
-            printf("Filled: x %d, y %d, z %d\n", X, Y, Z);
-
             int Index = GetIndex( Voxel_Position(X, Y, Z), &Result);
+            Voxel *V = &Result.Voxels[Index];
+            V->flags = SetFlag(V->flags, Voxel_Filled);
 
-            Voxel V = Result.Voxels[Index];
-
-            V = SetVoxelP( V, Voxel_Position(X,Y,Z) );
-            V.flags = SetFlag(V.flags, Voxel_Filled);
-
-            Result.Voxels[Index] = V;
+            voxel_position P = GetVoxelP(*V);
+            assert(P.x == X);
+            assert(P.y == Y);
+            assert(P.z == Z);
           }
 
-          Result.Dim = Chunk_Dimension(maxX, maxY, maxZ);
+          // TODO (Jesse) : This is trimming the chunk to the observed
+          // dimension when loading it.  This throws away memory, maybe we
+          // should reallocate the chunk?
+
+          // Turns out this MUST be reallocated because resizing the chunks
+          // dimension after initializing the voxels screws up indexing
+          //
+          /* Result.Dim = Chunk_Dimension(maxX + 1, maxY + 1, maxZ + 1); */
 
           goto loaded;
         } break;

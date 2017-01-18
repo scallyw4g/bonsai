@@ -54,7 +54,7 @@ GAME_UPDATE_AND_RENDER
   {
     if (glfwGetKey( window, GLFW_KEY_SPACE ) == GLFW_PRESS)
     {
-      Player->Velocity.y += 40.0f; // Jump
+      Player->Velocity.y += 8.0f; // Jump
     }
   }
   else
@@ -126,6 +126,16 @@ GAME_UPDATE_AND_RENDER
   glfwPollEvents();
 }
 
+void
+FillChunk(Chunk *chunk)
+{
+  for (int i = 0; i < Volume(chunk->Dim); ++i)
+  {
+    chunk->Voxels[i].flags = SetFlag(chunk->Voxels[i].flags , Voxel_Filled);
+    Print(GetVoxelP(chunk->Voxels[i]));
+  }
+}
+
 int
 main( void )
 {
@@ -159,17 +169,20 @@ main( void )
 
   Entity Player = {};
 
-  /* Player.Model = AllocateChunk(Chunk_Dimension(8,8,8), World_Position(0,0,0)); */
   /* Player.Model = LoadVox("./chr_knight.vox"); */
   /* Player.Model = LoadVox("./3x3x3.vox"); */
+  Player.Model = LoadVox("./8x8x8.vox");
   /* Player.Model = LoadVox("./alien_bot2.vox"); */
-  Player.Model = LoadVox("./chr_old.vox");
+  /* Player.Model = LoadVox("./chr_old.vox"); */
+  /* Player.Model = AllocateChunk(Chunk_Dimension(13,7,7), World_Position(0,0,0)); */
+  /* FillChunk(&Player.Model); */
   Player.Model.flags = SetFlag( Player.Model.flags, Chunk_Entity);
 
   Camera_Object Camera = {};
   Camera.Frust.farClip = 500.0f;
   Camera.Frust.nearClip = 0.1f;
   Camera.Frust.FOV = 45.0f;
+  Camera.P = CAMERA_INITIAL_P;
 
   glm::mat4 Projection = glm::perspective(
       glm::radians(Camera.Frust.FOV),
@@ -186,6 +199,7 @@ main( void )
 
     ZeroWorldChunks(&world);
     GenerateVisibleRegion( &world , Voxel_Position(0,0,0) );
+    /* printf("spawning plyawer\n"); */
   } while (!SpawnPlayer( &world, &Player ) );
 
   double lastTime = glfwGetTime();
@@ -216,12 +230,7 @@ main( void )
 
 
     timespec T1;
-    int time_err = clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &T1);
-
-    if ( time_err )
-    {
-      printf(" Error getting clocktime %d ", time_err);
-    }
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &T1);
 
     CALLGRIND_START_INSTRUMENTATION;
     CALLGRIND_TOGGLE_COLLECT;
@@ -248,19 +257,14 @@ main( void )
     CALLGRIND_TOGGLE_COLLECT;
 
     timespec T2;
-    time_err = clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &T2);
-
-    if ( time_err )
-    {
-      printf(" Error getting clocktime %d ", time_err);
-    }
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &T2);
 
     if ( T2.tv_sec - T1.tv_sec > 0 ) T1.tv_nsec -= 1000000000;
 
-    printf(" %d ms this frame \n\n\n",
-        (int)(T2.tv_nsec -T1.tv_nsec)/1000000 );
+    /* printf(" %d ms this frame \n\n\n", */
+    /*     (int)(T2.tv_nsec -T1.tv_nsec)/1000000 ); */
 
-    printf(" %d triangles \n", tris);
+    /* printf(" %d triangles \n", tris); */
     tris=0;
 
   } // Check if the ESC key was pressed or the window was closed

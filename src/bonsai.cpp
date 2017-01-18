@@ -75,6 +75,8 @@ InitializeVoxels( World *world, Chunk *chunk )
   assert(chunk);
   CALLGRIND_TOGGLE_COLLECT;
 
+  chunk->flags = UnSetFlag(chunk->flags, Chunk_Uninitialized);
+
   for ( int x = 0; x < chunk->Dim.x; ++ x)
   {
     for ( int y = 0; y < chunk->Dim.y; ++ y)
@@ -99,7 +101,6 @@ InitializeVoxels( World *world, Chunk *chunk )
         double noiseValue = world->Noise.noise(InX, InY, InZ);
 
         chunk->Voxels[i].flags = SetFlag( chunk->Voxels[i].flags, Floori(noiseValue + 0.5) * Voxel_Filled );
-
 #else
         if (
              ( x == 1  && z == 1 &&
@@ -109,14 +110,10 @@ InitializeVoxels( World *world, Chunk *chunk )
         {
           chunk->Voxels[i].flags = SetFlag(chunk->Voxels[i].flags, Voxel_Filled);
         }
-
 #endif
       }
     }
   }
-
-
-  chunk->flags = UnSetFlag(chunk->flags, Chunk_Uninitialized);
 
   CALLGRIND_TOGGLE_COLLECT;
 
@@ -250,10 +247,10 @@ SpawnPlayer( World *world, Entity *Player )
 {
   Chunk *Model = &Player->Model;
 
-  Model->Voxels[0].flags = 0;
-  Model->Voxels[0].flags = SetFlag( Model->Voxels[0].flags, Voxel_Filled);
+  /* Model->Voxels[0].flags = 0; */
+  /* Model->Voxels[0].flags = SetFlag( Model->Voxels[0].flags, Voxel_Filled); */
 
-  Model->Voxels[0] = SetVoxelP( Model->Voxels[0], Voxel_Position(0,0,0) );
+  /* Model->Voxels[0] = SetVoxelP( Model->Voxels[0], Voxel_Position(0,0,0) ); */
 
   Player->Acceleration = V3(0,0,0);
   Player->Velocity = V3(0,-40,0);
@@ -265,7 +262,7 @@ SpawnPlayer( World *world, Entity *Player )
 
   do
   {
-    if ( ++count > 50 )
+    if ( ++count > 5 )
     {
       return false;
     }
@@ -437,8 +434,6 @@ GetCollisionForUpdate(World* world, canonical_position *LegalP, v3 UpdateVector,
   return Result;
 }
 
-
-
 void
 UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
 {
@@ -548,10 +543,32 @@ UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera )
 #if DEBUG_CAMERA_FOCUS_ORIGIN
   Camera->Target = Canonical_Position( V3(0,0,0), World_Position(0,0,0) );
 #else
-  Camera->Target =Canonicalize(world, Player->Model.Offset, Player->Model.WorldP);
+  Camera->Target = Canonicalize(world, Player->Model.Offset, Player->Model.WorldP);
 #endif
 
-  Camera->P = Canonicalize(world, Camera->Target.Offset + CAMERA_OFFSET, Camera->Target.WorldP);;
+  float FocalLength = 50.0f;
+  float mouseSpeed = 0.10f;
+
+  double X, Y;
+  glfwGetCursorPos(window, &X, &Y);
+  glfwSetCursorPos(window, 1024/2, 768/2);
+
+  // Compute new orientation
+  X = mouseSpeed * float(1024/2 - X );
+  Y = mouseSpeed * float( 768/2 - Y );
+
+  // Update the camera with new xy coords
+  Camera->P.Offset += V3(X, Y, 0);
+  Camera->P = Canonicalize(world, Camera->P);
+
+  v3 TargetToCamera = Normalize(GetRenderP(world, Camera->P) - GetRenderP(world, Camera->Target));
+
+  Camera->P = Camera->Target + (TargetToCamera*FocalLength);
+  Camera->P = Canonicalize(world, Camera->P);
+
+  /* printf(" %f %f \n", X, Y); */
+  /* Print(Camera->P); */
+
   Camera->Front = Normalize( GetRenderP(world, Camera->Target) - GetRenderP(world, Camera->P) );
 }
 
@@ -560,14 +577,13 @@ GetViewMatrix(World *world, Camera_Object *Camera)
 {
   glm::mat4 Result;
 
-  glm::vec3 up(0, 1, 0);
-
+  glm::vec3 up = glm::vec3(0, 1, 0);
   glm::vec3 CameraRight = glm::normalize( glm::cross(up, GLV3(Camera->Front)) );
   glm::vec3 CameraUp = glm::normalize( glm::cross( GLV3(Camera->Front), CameraRight) );
 
   Result = glm::lookAt(
     GetGLRenderP(world, Camera->P),
-    GetGLRenderP(world, Camera->Target),
+    GetGLRenderP(world, Camera->Target ),
     CameraUp
   );
 

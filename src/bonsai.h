@@ -82,14 +82,15 @@ enum ChunkFlags {
 
 
 enum VoxelFlags {
-  Voxel_Filled    = 1 << 9,
 
-  Voxel_Yellow    = 1 << 10,
-  Voxel_Red       = 1 << 11,
-  Voxel_Green     = 1 << 12,
-  Voxel_Teal      = 1 << 13,
-  Voxel_White     = 1 << 14,
-  Voxel_Purple    = 1 << 15
+  Voxel_Filled    = 1 << ((N_VOXEL_STORAGE_BITS*3) + 1),
+
+  Voxel_Yellow    = 1 << ((N_VOXEL_STORAGE_BITS*3) + 2),
+  Voxel_Red       = 1 << ((N_VOXEL_STORAGE_BITS*3) + 3),
+  Voxel_Green     = 1 << ((N_VOXEL_STORAGE_BITS*3) + 4),
+  Voxel_Teal      = 1 << ((N_VOXEL_STORAGE_BITS*3) + 5),
+  Voxel_White     = 1 << ((N_VOXEL_STORAGE_BITS*3) + 6),
+  Voxel_Purple    = 1 << ((N_VOXEL_STORAGE_BITS*3) + 7)
 };
 
 
@@ -101,28 +102,47 @@ struct Voxel
 inline Voxel
 SetVoxelP(Voxel V, voxel_position P)
 {
+  assert( P.x < Pow2(N_VOXEL_STORAGE_BITS) );
+  assert( P.y < Pow2(N_VOXEL_STORAGE_BITS) );
+  assert( P.z < Pow2(N_VOXEL_STORAGE_BITS) );
+
   Voxel Result = V;
 
-  Result.flags &= 0xFFFFF000 >> 3;
+  Result.flags &= 0xFFFF0000 >> (8 - N_VOXEL_STORAGE_BITS);
 
-  Result.flags |= P.x << 0;
-  Result.flags |= P.y << 3;
-  Result.flags |= P.z << 6;
+  Result.flags |= P.x << (N_VOXEL_STORAGE_BITS * 0);
+  Result.flags |= P.y << (N_VOXEL_STORAGE_BITS * 1);
+  Result.flags |= P.z << (N_VOXEL_STORAGE_BITS * 2);
 
   return Result;
 
 }
 
 inline voxel_position
+GetVoxelP(chunk_dimension Dim, int i)
+{
+  int x = i % Dim.x;
+  int y = (i/Dim.x) % Dim.y ;
+  int z = i / (Dim.x*Dim.y);
+
+  assert(x <= Dim.x);
+  assert(y <= Dim.y);
+  assert(z <= Dim.z);
+
+  voxel_position Result = Voxel_Position(x,y,z);
+  return Result;
+}
+
+inline voxel_position
 GetVoxelP(Voxel V)
 {
-    voxel_position Offset = Voxel_Position(
-      V.flags >> 0 & 0x000000FF >> 5,
-      V.flags >> 3 & 0x000000FF >> 5,
-      V.flags >> 6 & 0x000000FF >> 5
-    );
+  voxel_position P = Voxel_Position(
+    V.flags >> (N_VOXEL_STORAGE_BITS * 0) & 0x000000FF >> (8 - N_VOXEL_STORAGE_BITS),
+    V.flags >> (N_VOXEL_STORAGE_BITS * 1) & 0x000000FF >> (8 - N_VOXEL_STORAGE_BITS),
+    V.flags >> (N_VOXEL_STORAGE_BITS * 2) & 0x000000FF >> (8 - N_VOXEL_STORAGE_BITS)
+  );
 
-    return Offset;
+  return P;
 }
 
 struct Chunk
@@ -173,6 +193,11 @@ AllocateChunk(chunk_dimension Dim, voxel_position WorldP)
   Result.BoundaryVoxels = (Voxel*)calloc(Volume(Dim), sizeof(Voxel));
 
   ZeroChunk(&Result);
+
+  for (int i = 0; i < Volume(Result.Dim); ++i)
+  {
+    Result.Voxels[i] = SetVoxelP( Result.Voxels[i], GetVoxelP(Dim, i) );
+  }
 
   return Result;
 }
@@ -312,21 +337,6 @@ IsFacingPoint( glm::vec3 FaceToPoint, v3 FaceNormal )
   return Result;
 }
 
-inline voxel_position
-GetVoxelP(chunk_dimension Dim, int i)
-{
-  int x = i % Dim.x;
-  int y = (i/Dim.x) % Dim.y ;
-  int z = i / (Dim.x*Dim.y);
-
-  assert(x <= Dim.x);
-  assert(y <= Dim.y);
-  assert(z <= Dim.z);
-
-  voxel_position Result = Voxel_Position(x,y,z);
-  return Result;
-}
-
 inline int
 GetIndex(voxel_position P, Chunk *chunk)
 {
@@ -351,6 +361,7 @@ IsFilledInWorld( Chunk *chunk, voxel_position VoxelP )
 
     assert(i > -1);
     assert(i < Volume(chunk->Dim));
+    assert(VoxelP == GetVoxelP(chunk->Voxels[i]));
 
     isFilled = IsSet(chunk->Voxels[i].flags, Voxel_Filled);
   }

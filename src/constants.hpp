@@ -1,9 +1,11 @@
 #ifndef GAME_CONSTANTS
 #define GAME_CONSTANTS
 
-#define CD_X 8
-#define CD_Y 8
-#define CD_Z 8
+#define DEBUG_GLOBAL static
+
+#define CD_X 16
+#define CD_Y 16
+#define CD_Z 16
 
 // Visible Region XYZ - Must be > (3,3,3)
 #define VR_X 8
@@ -28,16 +30,17 @@
 
 #define PLAYER_STEP_MAX 1
 
-
 #define CHUNK_STACK_SIZE (VR_X*VR_X*VR_X)
 
-#define CAMERA_OFFSET V3(0,50,55)
+#define CAMERA_INITIAL_P Canonical_Position(V3(0,50,55), World_Position(world.VisibleRegion/2))
 
-static int numFrames = 0;
-static float accumulatedTime = 0;
+#define N_VOXEL_STORAGE_BITS 8
 
-static int tris = 0;
-static int VoxelsIndexed = 0;
+DEBUG_GLOBAL int numFrames = 0;
+DEBUG_GLOBAL float accumulatedTime = 0;
+
+DEBUG_GLOBAL int tris = 0;
+DEBUG_GLOBAL int VoxelsIndexed = 0;
 
 #define CHUNK_VOL (CHUNK_HEIGHT*CHUNK_WIDTH*CHUNK_DEPTH)
 
