@@ -4,14 +4,14 @@
 
 [ ] Add Shadow maps
 
-[ ] Ambient Occlusion ?
+[ ] Ambient Occlusion ..?
 
 [ ] Better frustum culling
 
 [ ] Normal data should go through pipe relative to vertex instead of being
 corrected in shader
 
-[ ] BoundaryVoxel buffer can contain duplicates on the corners and edges
+[ ] FIXME: BoundaryVoxel buffer can contain duplicates on the corners and edges
 
 [ ] Cache which faces are visible so we don't have to check twice
 
@@ -23,7 +23,10 @@ corrected in shader
 
 [ ] Better world!
 
-[ ] Model Loading
+[X] Model Loading
+
+[ ] FIXME: There's a collision detection bug when the world is small and a
+model is pretty big.  Think 3^3 8^3 chunks with a 16^3 model
 
 
 
@@ -32,10 +35,10 @@ corrected in shader
 
 [ ] Write keypress callbacks instead of checking if (key == down) { do thing }
 
-[ ] Fix - If you're going really fast and try to update your position outside
+[ ] FIXME: If you're going really fast and try to update your position outside
 the VisibleRegion you collide with the edge of the world and stop moving
 
-[ ] Make bit-packed voxel positions less hard-coded ( currently chunk size is
+[X] Make bit-packed voxel positions less hard-coded ( currently chunk size is
 indirectly hard-coded to 8*8*8 by bit-shifts that assume 9 bits for position )
 
 [X] Fix Canonicalize to work across multiple chunks
