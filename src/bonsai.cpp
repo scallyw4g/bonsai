@@ -558,7 +558,7 @@ UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera )
   Y = mouseSpeed * float( 768/2 - Y );
 
   // Update the camera with new xy coords
-  Camera->P.Offset += V3(X, Y, 0);
+  Camera->P.Offset += V3(X, -Y, 0);
   Camera->P = Canonicalize(world, Camera->P);
 
   v3 TargetToCamera = Normalize(GetRenderP(world, Camera->P) - GetRenderP(world, Camera->Target));
@@ -569,6 +569,7 @@ UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera )
   /* printf(" %f %f \n", X, Y); */
   /* Print(Camera->P); */
 
+  // Camera->P = Canonicalize(world, Camera->Target.Offset + V3(0,0,0), Camera->Target.WorldP);;
   Camera->Front = Normalize( GetRenderP(world, Camera->Target) - GetRenderP(world, Camera->P) );
 }
 

@@ -3,6 +3,12 @@
 
 #include <glm/glm.hpp>
 
+struct World;
+struct canonical_position;
+
+inline canonical_position
+Canonicalize( World *world, canonical_position CP );
+
 struct v2 {
    int x;
    int y;
@@ -63,7 +69,6 @@ operator==(v3 P1, v3 P2)
 
   return Result;
 }
-
 inline bool
 operator!=(v3 P1, v3 P2)
 {
@@ -310,6 +315,18 @@ V3(float x, float y, float z)
   return Result;
 }
 
+inline canonical_position
+Canonical_Position(World *world, v3 Offset, world_position WorldP )
+{
+  canonical_position Result;
+
+  Result.Offset = Offset;
+  Result.WorldP = WorldP;
+
+  Result = Canonicalize(world, Result);
+
+  return Result;
+}
 
 inline canonical_position
 Canonical_Position( glm::vec3 Offset, world_position WorldP )

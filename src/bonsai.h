@@ -230,6 +230,7 @@ struct Frustum
 {
   float farClip;
   float nearClip;
+  float width;
   float FOV;
 };
 
@@ -424,6 +425,7 @@ ClampPositive( voxel_position V )
 
   return Result;
 }
+
 
 
 // NOTE : The maximum bound is non-inclusive; 0 is part of the chunk

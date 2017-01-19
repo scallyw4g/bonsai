@@ -376,16 +376,14 @@ GetRenderP( World *world, canonical_position P)
 inline bool
 IsInFrustum(World *world, Camera_Object *Camera, canonical_position P)
 {
-  v3 MaxP = Camera->Front * Camera->Frust.farClip;
-  MaxP.x += world->ChunkDim.x*10;
-  MaxP.y += world->ChunkDim.y*10;
+  v3 CameraRight = Cross(Camera->Front, WORLD_UP);
 
-  v3 MinP = Camera->P.Offset;
-  MinP.x -= world->ChunkDim.x*10;
-  MinP.y -= world->ChunkDim.y*10;
+  v3 MinP = (Camera->Front * Camera->Frust.farClip) - (CameraRight * Camera->Frust.width);
 
-  v3 MaxRenderP = GetRenderP(world, Canonical_Position(MaxP, Camera->P.WorldP));
-  v3 MinRenderP = GetRenderP(world, Canonical_Position(MinP, Camera->P.WorldP));
+  v3 MaxP  = Camera->P.Offset + (CameraRight * Camera->Frust.width);
+
+  v3 MaxRenderP = GetRenderP(world, Canonical_Position(world, MaxP, Camera->P.WorldP));
+  v3 MinRenderP = GetRenderP(world, Canonical_Position(world, MinP, Camera->P.WorldP));
 
   v3 TestRenderP = GetRenderP(world, P);
 
@@ -595,6 +593,7 @@ BuildAndBufferChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera, GLuin
 
 
 
+  const float* FaceColors = 0;
   glm::vec3 GLCameraRenderP = GetGLRenderP(world, Camera->P);
 
   for ( int i = 0; i < chunk->BoundaryVoxelCount; i += LOD )
@@ -610,82 +609,49 @@ BuildAndBufferChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera, GLuin
       chunk->WorldP
     );
 
-    // Pretty sure this isn't worth the cost
-    /* if ( ! IsInFrustum( world, Camera, VoxelP ) ) */
-    /* { */
-    /*   continue; */
-    /* } */
-
-    /* canonical_position nextVoxel  = Canonicalize( world, VoxelP + V3(1.0f,0,0) ); */
-    /* canonical_position prevVoxel  = Canonicalize( world, VoxelP - V3(1.0f,0,0) ); */
-
-    /* canonical_position topVoxel   = Canonicalize( world, VoxelP + V3(0,1.0f,0) ); */
-    /* canonical_position botVoxel   = Canonicalize( world, VoxelP - V3(0,1.0f,0) ); */
-
-    /* canonical_position frontVoxel = Canonicalize( world, VoxelP + V3(0,0,1.0f) ); */
-    /* canonical_position backVoxel  = Canonicalize( world, VoxelP - V3(0,0,1.0f) ); */
-
     glm::vec3 VoxRenderP = GetGLRenderP(world, VoxelP);
-    glm::vec3 VoxelToCamera = glm::normalize(GLCameraRenderP - VoxRenderP);
+    /* glm::vec3 VoxelToCamera = glm::normalize(GLCameraRenderP - VoxRenderP); */
 
-    if ( IsFacingPoint(VoxelToCamera, V3(1,0,0)) )
+    FaceColors = GetColorData( Voxel_Red );
+    if ( !BufferRightFace(world, VoxRenderP, FaceColors) )
     {
-      const float* FaceColors = GetColorData( Voxel_Red );
-      if ( !BufferRightFace(world, VoxRenderP, FaceColors) )
-      {
-        FlushVertexBuffer (world, colorbuffer, vertexbuffer, normalbuffer );
-        BufferRightFace(world, VoxRenderP, FaceColors);
-      }
+      FlushVertexBuffer (world, colorbuffer, vertexbuffer, normalbuffer );
+      BufferRightFace(world, VoxRenderP, FaceColors);
     }
 
-    if ( IsFacingPoint(VoxelToCamera, V3(-1,0,0)) )
+    FaceColors = GetColorData( Voxel_Yellow );
+    if (! BufferLeftFace(world, VoxRenderP, FaceColors) )
     {
-      const float* FaceColors = GetColorData( Voxel_Yellow );
-      if (! BufferLeftFace(world, VoxRenderP, FaceColors) )
-      {
-        FlushVertexBuffer( world, colorbuffer, vertexbuffer, normalbuffer);
-        BufferLeftFace(world, VoxRenderP, FaceColors);
-      }
+      FlushVertexBuffer( world, colorbuffer, vertexbuffer, normalbuffer);
+      BufferLeftFace(world, VoxRenderP, FaceColors);
     }
 
-    if ( IsFacingPoint(VoxelToCamera, V3(0,-1,0)) )
+    FaceColors = GetColorData( Voxel_Teal );
+    if ( !BufferBottomFace(world, VoxRenderP, FaceColors) )
     {
-      const float* FaceColors = GetColorData( Voxel_Teal );
-      if ( !BufferBottomFace(world, VoxRenderP, FaceColors) )
-      {
-        FlushVertexBuffer( world, colorbuffer, vertexbuffer, normalbuffer);
-        BufferBottomFace(world, VoxRenderP, FaceColors);
-      }
+      FlushVertexBuffer( world, colorbuffer, vertexbuffer, normalbuffer);
+      BufferBottomFace(world, VoxRenderP, FaceColors);
     }
 
-    if ( IsFacingPoint(VoxelToCamera, V3(0,1,0)) )
+    FaceColors = GetColorData( Voxel_Green );
+    if ( !BufferTopFace(world, VoxRenderP, FaceColors) )
     {
-      const float* FaceColors = GetColorData( Voxel_Green );
-      if ( !BufferTopFace(world, VoxRenderP, FaceColors) )
-      {
-        FlushVertexBuffer( world, colorbuffer, vertexbuffer, normalbuffer);
-        BufferTopFace(world, VoxRenderP, FaceColors);
-      }
+      FlushVertexBuffer( world, colorbuffer, vertexbuffer, normalbuffer);
+      BufferTopFace(world, VoxRenderP, FaceColors);
     }
 
-    if ( IsFacingPoint(VoxelToCamera, V3(0,0,1)) )
+    FaceColors = GetColorData( Voxel_White );
+    if ( !BufferFrontFace(world, VoxRenderP, FaceColors) )
     {
-      const float* FaceColors = GetColorData( Voxel_White );
-      if ( !BufferFrontFace(world, VoxRenderP, FaceColors) )
-      {
-        FlushVertexBuffer( world, colorbuffer, vertexbuffer, normalbuffer);
-        BufferFrontFace(world, VoxRenderP, FaceColors);
-      }
+      FlushVertexBuffer( world, colorbuffer, vertexbuffer, normalbuffer);
+      BufferFrontFace(world, VoxRenderP, FaceColors);
     }
 
-    if ( IsFacingPoint(VoxelToCamera, V3(0,0,-1)) )
+    FaceColors = GetColorData( Voxel_Purple );
+    if ( !BufferBackFace(world, VoxRenderP, FaceColors) )
     {
-      const float* FaceColors = GetColorData( Voxel_Purple );
-      if ( !BufferBackFace(world, VoxRenderP, FaceColors) )
-      {
-        FlushVertexBuffer( world, colorbuffer, vertexbuffer, normalbuffer);
-        BufferBackFace(world, VoxRenderP, FaceColors);
-      }
+      FlushVertexBuffer( world, colorbuffer, vertexbuffer, normalbuffer);
+      BufferBackFace(world, VoxRenderP, FaceColors);
     }
 
   }

@@ -181,6 +181,7 @@ main( void )
   Camera_Object Camera = {};
   Camera.Frust.farClip = 500.0f;
   Camera.Frust.nearClip = 0.1f;
+  Camera.Frust.width = 30.0f;
   Camera.Frust.FOV = 45.0f;
   Camera.P = CAMERA_INITIAL_P;
 
