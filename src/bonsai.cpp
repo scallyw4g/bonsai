@@ -141,10 +141,10 @@ ZeroWorldChunks( World *world )
 
 // FIXME : Problem with multiple keypresses ( 8 then 7 then 4 won't move left )
 inline v3
-GetInputsFromController()
+GetInputsFromController(Camera_Object *Camera)
 {
-  v3 right = V3(1,0,0);
-  v3 forward = V3(0,0,-1);
+  v3 right = Cross(Camera->Front, WORLD_UP);
+  v3 forward = Camera->Front;
 
   v3 UpdateDir = V3(0,0,0);
 
@@ -543,11 +543,11 @@ UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera )
 #if DEBUG_CAMERA_FOCUS_ORIGIN
   canonical_position NewTarget = Canonical_Position( V3(0,0,0), World_Position(0,0,0) );
 #else
-  canonical_position NewTarget = Canonicalize(world, Player->Model.Offset, Player->Model.WorldP);
+  canonical_position NewTarget = Canonicalize(world, Player->Model.Offset, Player->Model.WorldP) + (Player->Model.Dim/2);
 #endif
 
   float FocalLength = 50.0f;
-  float mouseSpeed = 1.0f;
+  float mouseSpeed = 0.20f;
 
   double X, Y;
   glfwGetCursorPos(window, &X, &Y);
@@ -581,14 +581,11 @@ UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera )
 
   Camera->Front = Normalize( GetRenderP(world, Camera->Target) - GetRenderP(world, Camera->P) );
 
-
-
-  printf("dX dY %f %f\n", dX, dY);
-  Print(Camera->P);
-  Print(TargetDelta);
-  Print(UpdateRight);
-  Print(UpdateUp);
-
+  /* printf("dX dY %f %f\n", dX, dY); */
+  /* Print(Camera->P); */
+  /* Print(TargetDelta); */
+  /* Print(UpdateRight); */
+  /* Print(UpdateUp); */
 }
 
 glm::mat4

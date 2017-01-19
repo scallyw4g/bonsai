@@ -46,9 +46,8 @@ GAME_UPDATE_AND_RENDER
 
   // TODO : Bake these into the terrain/model ?
   v3 drag = V3(0.6f, 1.0f, 0.6f);
-  float accelerationMultiplier = 5.0f;
 
-  Player->Acceleration = GetInputsFromController() * accelerationMultiplier; // m/s2
+  Player->Acceleration = GetInputsFromController(Camera) * PLAYER_ACCEL_MULTIPLIER; // m/s2
 
   if (IsGrounded(world, Player))
   {
@@ -132,7 +131,6 @@ FillChunk(Chunk *chunk)
   for (int i = 0; i < Volume(chunk->Dim); ++i)
   {
     chunk->Voxels[i].flags = SetFlag(chunk->Voxels[i].flags , Voxel_Filled);
-    Print(GetVoxelP(chunk->Voxels[i]));
   }
 }
 
@@ -169,10 +167,11 @@ main( void )
 
   Entity Player = {};
 
-  Player.Model = LoadVox("./chr_knight.vox");
+  /* Player.Model = LoadVox("./chr_knight.vox"); */
   /* Player.Model = LoadVox("./3x3x3.vox"); */
   /* Player.Model = LoadVox("./8x8x8.vox"); */
   /* Player.Model = LoadVox("./alien_bot2.vox"); */
+  Player.Model = LoadVox("./chr_rain.vox");
   /* Player.Model = LoadVox("./chr_old.vox"); */
   /* Player.Model = AllocateChunk(Chunk_Dimension(13,7,7), World_Position(0,0,0)); */
   /* FillChunk(&Player.Model); */

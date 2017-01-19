@@ -37,6 +37,8 @@
 
 #define N_VOXEL_STORAGE_BITS 8
 
+DEBUG_GLOBAL float PLAYER_ACCEL_MULTIPLIER = 5.0f;
+
 DEBUG_GLOBAL int numFrames = 0;
 DEBUG_GLOBAL float accumulatedTime = 0;
 
