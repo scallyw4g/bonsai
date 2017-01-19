@@ -541,36 +541,54 @@ void
 UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera )
 {
 #if DEBUG_CAMERA_FOCUS_ORIGIN
-  Camera->Target = Canonical_Position( V3(0,0,0), World_Position(0,0,0) );
+  canonical_position NewTarget = Canonical_Position( V3(0,0,0), World_Position(0,0,0) );
 #else
-  Camera->Target = Canonicalize(world, Player->Model.Offset, Player->Model.WorldP);
+  canonical_position NewTarget = Canonicalize(world, Player->Model.Offset, Player->Model.WorldP);
 #endif
 
   float FocalLength = 50.0f;
-  float mouseSpeed = 0.10f;
+  float mouseSpeed = 1.0f;
 
   double X, Y;
   glfwGetCursorPos(window, &X, &Y);
   glfwSetCursorPos(window, 1024/2, 768/2);
 
-  // Compute new orientation
-  X = mouseSpeed * float(1024/2 - X );
-  Y = mouseSpeed * float( 768/2 - Y );
+  float dX = mouseSpeed * float(1024/2 - X );
+  float dY = mouseSpeed * float( 768/2 - Y );
 
-  // Update the camera with new xy coords
-  Camera->P.Offset += V3(X, -Y, 0);
+  v3 TargetDelta = GetRenderP(world, NewTarget) - GetRenderP(world, Camera->Target);
+
+  v3 CamRight = Normalize(Cross(Camera->Front, WORLD_UP));
+  v3 CamUp = Normalize(Cross(Camera->Front, CamRight));
+
+  v3 UpdateRight = CamRight * dX;
+  v3 UpdateUp = CamUp * dY;
+
+  Camera->P.Offset += (TargetDelta + UpdateRight + (UpdateUp));
+  Camera->Target.Offset += TargetDelta;
+
   Camera->P = Canonicalize(world, Camera->P);
+  Camera->Target = Canonicalize(world, Camera->Target);
+
 
   v3 TargetToCamera = Normalize(GetRenderP(world, Camera->P) - GetRenderP(world, Camera->Target));
+  Camera->P.Offset = Camera->Target.Offset + (TargetToCamera * FocalLength);
+  Camera->P.WorldP = Camera->Target.WorldP;
 
-  Camera->P = Camera->Target + (TargetToCamera*FocalLength);
   Camera->P = Canonicalize(world, Camera->P);
+  Camera->Target = Canonicalize(world, Camera->Target);
 
-  /* printf(" %f %f \n", X, Y); */
-  /* Print(Camera->P); */
 
-  // Camera->P = Canonicalize(world, Camera->Target.Offset + V3(0,0,0), Camera->Target.WorldP);;
   Camera->Front = Normalize( GetRenderP(world, Camera->Target) - GetRenderP(world, Camera->P) );
+
+
+
+  printf("dX dY %f %f\n", dX, dY);
+  Print(Camera->P);
+  Print(TargetDelta);
+  Print(UpdateRight);
+  Print(UpdateUp);
+
 }
 
 glm::mat4

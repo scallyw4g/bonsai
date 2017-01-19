@@ -118,19 +118,19 @@ BufferFace (
 
   if ( world->VertexData.filled > world->VertexData.bytesAllocd )
   {
-    printf("Flushing Render Buffer - Vertex memory\n");
+    /* printf("Flushing Render Buffer - Vertex memory\n"); */
     DidBufferFace = false;
   }
 
   if ( world->ColorData.filled > world->ColorData.bytesAllocd )
   {
-    printf("Flushing Render Buffer - Color memory\n");
+    /* printf("Flushing Render Buffer - Color memory\n"); */
     DidBufferFace = false;
   }
 
   if (world->NormalData.filled > world->NormalData.bytesAllocd )
   {
-    printf("Flushing Render Buffer - Normal memory\n");
+    /* printf("Flushing Render Buffer - Normal memory\n"); */
     DidBufferFace = false;
   }
 
@@ -594,7 +594,7 @@ BuildAndBufferChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera, GLuin
 
 
   const float* FaceColors = 0;
-  glm::vec3 GLCameraRenderP = GetGLRenderP(world, Camera->P);
+  /* glm::vec3 GLCameraRenderP = GetGLRenderP(world, Camera->P); */
 
   for ( int i = 0; i < chunk->BoundaryVoxelCount; i += LOD )
   {

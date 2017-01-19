@@ -3,21 +3,20 @@
 
 #define DEBUG_GLOBAL static
 
-#define CD_X 16
-#define CD_Y 16
-#define CD_Z 16
+#define CD_X 8
+#define CD_Y 8
+#define CD_Z 8
 
 // Visible Region XYZ - Must be > (3,3,3)
-#define VR_X 4
-#define VR_Y 4
-#define VR_Z 4
+#define VR_X 8
+#define VR_Y 8
+#define VR_Z 8
 
 #define WORLD_UP V3(0,1,0)
 
 #define CHUNK_DIMENSION Chunk_Dimension(CD_X,CD_Y,CD_Z)
 
 #define VISIBLE_REGION Chunk_Dimension(VR_X,VR_Y,VR_Z)
-
 
 #define WORLD_SIZE 200
 

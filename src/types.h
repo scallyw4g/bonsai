@@ -592,6 +592,14 @@ operator+=(v3& A, v3 B)
   return(A);
 }
 
+inline canonical_position&
+operator+=(canonical_position& A, canonical_position B)
+{
+  A.Offset += B.Offset;
+  A.WorldP += B.WorldP;
+  return(A);
+}
+
 inline v3
 operator-(v3 A, float f)
 {
@@ -695,6 +703,17 @@ v4 operator+(v4 A, v4 B)
   Result.y = A.y + B.y;
   Result.z = A.z + B.z;
   Result.w = A.w + B.w;
+
+  return Result;
+}
+
+inline canonical_position
+operator-(canonical_position P1, canonical_position P2)
+{
+  canonical_position Result;
+
+  Result.Offset = P1.Offset - P2.Offset;
+  Result.WorldP = P1.WorldP - P2.WorldP;
 
   return Result;
 }
