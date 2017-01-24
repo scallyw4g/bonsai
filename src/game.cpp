@@ -1,4 +1,5 @@
 #include <bonsai.h>
+#include <render.h>
 #include <bonsai.cpp>
 #include <constants.hpp>
 
@@ -68,6 +69,9 @@ GAME_UPDATE_AND_RENDER
   UpdatePlayerP( world, Player, PlayerDelta );
   UpdateCameraP( world, Player, Camera );
 
+  Player->Rotation.xyz = Camera->Front;
+  Player->Rotation.w = 0;
+
   glm::mat4 ViewMatrix = GetViewMatrix(world, Camera);
 
   glm::mat4 mvp = Projection * ViewMatrix * ModelMatrix;
@@ -85,10 +89,9 @@ GAME_UPDATE_AND_RENDER
   // Clear the screen
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  // Draw Player
-  DrawChunk(
+  DrawEntity(
     world,
-    &Player->Model,
+    Player,
     Camera,
     vertexbuffer,
     colorbuffer,
@@ -165,13 +168,13 @@ main( void )
   World world;
   AllocateWorld(&world);
 
-  Entity Player = {};
+  Entity Player;
 
-  /* Player.Model = LoadVox("./chr_knight.vox"); */
+  Player.Model = LoadVox("./chr_knight.vox");
   /* Player.Model = LoadVox("./3x3x3.vox"); */
   /* Player.Model = LoadVox("./8x8x8.vox"); */
   /* Player.Model = LoadVox("./alien_bot2.vox"); */
-  Player.Model = LoadVox("./chr_rain.vox");
+  /* Player.Model = LoadVox("./chr_rain.vox"); */
   /* Player.Model = LoadVox("./chr_old.vox"); */
   /* Player.Model = AllocateChunk(Chunk_Dimension(13,7,7), World_Position(0,0,0)); */
   /* FillChunk(&Player.Model); */

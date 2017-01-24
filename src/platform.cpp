@@ -175,8 +175,8 @@ LoadVox(char const *filepath)
           for( int i = 0; i < numVoxels; ++ i)
           {
             int X = (int)ReadChar(ModelFile);
-            int Y = (int)ReadChar(ModelFile);
             int Z = (int)ReadChar(ModelFile);
+            int Y = (int)ReadChar(ModelFile);
             /* unsigned char color = */ ReadChar(ModelFile);
 
             maxX = X > maxX ? X : maxX;

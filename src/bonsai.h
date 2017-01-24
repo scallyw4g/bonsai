@@ -1,47 +1,19 @@
 #ifndef PLAYGROUNDH
 #define PLAYGROUNDH
 
+#include <GL/glew.h>
+
 #include <perlin.h>
 #include <stdio.h>
 #include <types.h>
 #include <math.h>
-
-#include <render.h>
+#include <debug.h>
 
 #include <constants.hpp>
 
 #define ArrayCount(a) (sizeof(a)/sizeof(a[0]))
 
 #define InvalidDefaultCase default: {assert(false);} break
-
-#define Print(Pos) \
-  Print_P( Pos, #Pos )
-
-inline void
-Print_P( canonical_position P, const char* name)
-{
-  printf(" -- %s\n", name);
-  printf(" Offset: %f %f %f \n", P.Offset.x, P.Offset.y, P.Offset.z );
-  printf(" WorldP: %d %d %d \n", P.WorldP.x, P.WorldP.y, P.WorldP.z );
-}
-
-inline void
-Print_P( voxel_position P, const char* name)
-{
-  printf(" %s %d %d %d \n", name, P.x, P.y, P.z );
-}
-
-inline void
-Print_P( v3 P, const char* name)
-{
-  printf(" %s %f %f %f \n", name, P.x, P.y, P.z );
-}
-
-inline void
-Print_P( glm::vec3 P, const char* name)
-{
-  printf(" %s %f %f %f \n", name, P.x, P.y, P.z );
-}
 
 inline int
 UnSetFlag( int Flags, int Flag )
@@ -242,6 +214,15 @@ struct Camera_Object
   canonical_position Target; // TODO : Can this just be a v3?
 
   v3 Front;
+  v3 Right;
+  v3 Up;
+};
+
+struct VertexBlock
+{
+  GLfloat *Data;
+  int bytesAllocd;
+  int filled;
 };
 
 struct World
@@ -273,6 +254,8 @@ struct Entity
   Chunk Model;
   v3 Velocity;
   v3 Acceleration;
+
+  Quaternion Rotation = Quaternion(0,0,0,0);
 };
 
 struct collision_event
@@ -280,7 +263,6 @@ struct collision_event
   canonical_position CP;
   bool didCollide;
 };
-
 
 
 Chunk*

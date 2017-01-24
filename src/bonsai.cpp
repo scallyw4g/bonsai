@@ -143,7 +143,7 @@ ZeroWorldChunks( World *world )
 inline v3
 GetInputsFromController(Camera_Object *Camera)
 {
-  v3 right = Cross(Camera->Front, WORLD_UP);
+  v3 right = Cross(Camera->Front, WORLD_Y);
   v3 forward = Camera->Front;
 
   v3 UpdateDir = V3(0,0,0);
@@ -558,11 +558,11 @@ UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera )
 
   v3 TargetDelta = GetRenderP(world, NewTarget) - GetRenderP(world, Camera->Target);
 
-  v3 CamRight = Normalize(Cross(Camera->Front, WORLD_UP));
-  v3 CamUp = Normalize(Cross(Camera->Front, CamRight));
+  Camera->Right = Normalize(Cross(Camera->Front, WORLD_Y));
+  Camera->Up = Normalize(Cross(Camera->Front, Camera->Right));
 
-  v3 UpdateRight = CamRight * dX;
-  v3 UpdateUp = CamUp * dY;
+  v3 UpdateRight = Camera->Right * dX;
+  v3 UpdateUp = Camera->Up * dY;
 
   Camera->P.Offset += (TargetDelta + UpdateRight + (UpdateUp));
   Camera->Target.Offset += TargetDelta;
@@ -574,10 +574,6 @@ UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera )
   v3 TargetToCamera = Normalize(GetRenderP(world, Camera->P) - GetRenderP(world, Camera->Target));
   Camera->P.Offset = Camera->Target.Offset + (TargetToCamera * FocalLength);
   Camera->P.WorldP = Camera->Target.WorldP;
-
-  Camera->P = Canonicalize(world, Camera->P);
-  Camera->Target = Canonicalize(world, Camera->Target);
-
 
   Camera->Front = Normalize( GetRenderP(world, Camera->Target) - GetRenderP(world, Camera->P) );
 

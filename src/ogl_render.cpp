@@ -12,6 +12,7 @@ using namespace std;
 using namespace glm;
 
 #include <bonsai.h>
+#include <render.h>
 
 #include <stdio.h>
 
@@ -358,44 +359,319 @@ bool IsBottomChunkBoundary( chunk_dimension ChunkDim, int idx )
   return (idx/(int)ChunkDim.x) % (int)ChunkDim.y == 0;
 }
 
-inline glm::vec3
-GetGLRenderP(World *world, canonical_position P)
+Quaternion
+LookAt( v3 ObjectFront, v3 P )
 {
-  // P = Canonicalize(world, P); // TODO : Does this matter?
-  glm::vec3 Result = GLV3(P.Offset + (P.WorldP * world->ChunkDim));
+  printf("%f %f \n", Length(ObjectFront), Length(P));
+
+  v3 NegZ = WORLD_Z * -1.0f;
+  v3 ObjectToP = Normalize(P - ObjectFront);
+  v3 RotAxis = Normalize(Cross( NegZ, ObjectToP ));
+  float theta = acos( Dot(NegZ, ObjectToP) );
+  float signTheta = Dot( Cross(RotAxis, NegZ), ObjectToP);
+  theta = signTheta > 0 ? theta : -theta;
+
+  Quaternion Result( cos(theta/2), RotAxis*sin(theta/2) );
   return Result;
 }
 
-inline v3
-GetRenderP( World *world, canonical_position P)
+Quaternion
+RotateAround( v3 Axis )
 {
-  v3 Result = GLV3(GetGLRenderP( world, P ) );
+  /* Axis = V3(0,1,0); */
+
+  static float theta = 0.01f;
+
+  theta+= 0.1f;
+  printf("theta %f\n", theta);
+
+  Quaternion Result( cos(theta/2), Axis*sin(theta/2) );
   return Result;
 }
+
+void
+DEBUG_DrawLine(World *world, canonical_position P1, canonical_position P2)
+{
+  // 24 lines, 2 verts per line, 3 floats per vert
+  GLfloat *LineData = (GLfloat *)calloc(24*2*3, sizeof(GLfloat) );
+  GLfloat *LineColors = (GLfloat *)calloc(24*2*3, sizeof(GLfloat) );
+
+  for ( int i = 0;
+        i < 100;
+      )
+  {
+    float color = 1.0f;;
+    LineColors[i++] = color;
+    LineColors[i++] = color;
+    LineColors[i++] = color;
+  }
+
+  GLuint AABB_Buffer;
+  glGenBuffers(1, &AABB_Buffer);
+
+  GLuint AABB_Colors;
+  glGenBuffers(1, &AABB_Colors);
+
+
+  // Top
+  v3 rp1 = GetRenderP(world, P1);
+  v3 rp2 = GetRenderP(world, P2);
+  memcpy( LineData,    &rp1, sizeof(v3) );
+  memcpy( LineData+3,  &rp2, sizeof(v3) );
+
+  // Colors
+  glEnableVertexAttribArray(0);
+  glBindBuffer(GL_ARRAY_BUFFER, AABB_Colors);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(v3)*24*2, LineColors, GL_STATIC_DRAW);
+  glVertexAttribPointer(
+    1,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+    3,                  // size
+    GL_FLOAT,           // type
+    GL_FALSE,           // normalized?
+    0,                  // stride
+    (void*)0            // array buffer offset
+  );
+
+  // Vertices
+  glEnableVertexAttribArray(1);
+  glBindBuffer(GL_ARRAY_BUFFER, AABB_Buffer);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(v3)*24*2, LineData, GL_STATIC_DRAW);
+  glVertexAttribPointer(
+    0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+    3,                  // size
+    GL_FLOAT,           // type
+    GL_FALSE,           // normalized?
+    0,                  // stride
+    (void*)0            // array buffer offset
+  );
+
+  glDrawArrays(GL_LINES, 0, 24);
+
+  glDeleteBuffers(1, &AABB_Buffer);
+  glDeleteBuffers(1, &AABB_Colors);
+
+  free( LineData );
+  free( LineColors );
+}
+
+void
+DEBUG_DrawAABB( World *world, canonical_position MinCP, canonical_position MaxCP, v3 LookAtP = V3(1,1,-1) )
+{
+  LookAtP = Normalize(LookAtP);
+
+  Print(LookAtP);
+
+  v3 MinP = MinCP.Offset;
+  v3 MaxP = MaxCP.Offset;
+
+  v3 TopRL = V3(MinP.x, MaxP.y, MinP.z);
+  v3 TopRR = V3(MaxP.x, MaxP.y, MinP.z);
+
+  v3 TopFL = V3(MinP.x, MaxP.y, MaxP.z);
+  v3 TopFR = V3(MaxP.x, MaxP.y, MaxP.z);
+
+  v3 BotRL = V3(MinP.x, MinP.y, MinP.z);
+  v3 BotRR = V3(MaxP.x, MinP.y, MinP.z);
+
+  v3 BotFL = V3(MinP.x, MinP.y, MaxP.z);
+  v3 BotFR = V3(MaxP.x, MinP.y, MaxP.z);
+
+
+  v3 ModelSpaceUp = V3( MinP.x/2, MinP.y/2, MinP.z/2);
+
+  DEBUG_DrawLine(world, MinCP, MaxCP);
+
+  v3 Front = V3(0,0,1);
+  Quaternion Look = RotateAround(Normalize(ModelSpaceUp));
+
+  TopRL = ((Look * Quaternion(1, TopRL)) * Conjugate(Look)).xyz;
+  TopRR = ((Look * Quaternion(1, TopRR)) * Conjugate(Look)).xyz;
+  TopFL = ((Look * Quaternion(1, TopFL)) * Conjugate(Look)).xyz;
+  TopFR = ((Look * Quaternion(1, TopFR)) * Conjugate(Look)).xyz;
+  BotRL = ((Look * Quaternion(1, BotRL)) * Conjugate(Look)).xyz;
+  BotRR = ((Look * Quaternion(1, BotRR)) * Conjugate(Look)).xyz;
+  BotFL = ((Look * Quaternion(1, BotFL)) * Conjugate(Look)).xyz;
+  BotFR = ((Look * Quaternion(1, BotFR)) * Conjugate(Look)).xyz;
+
+
+  TopRL = GetRenderP(world, Canonical_Position(TopRL, MinCP.WorldP));
+  TopRR = GetRenderP(world, Canonical_Position(TopRR, MinCP.WorldP));
+  TopFL = GetRenderP(world, Canonical_Position(TopFL, MinCP.WorldP));
+  TopFR = GetRenderP(world, Canonical_Position(TopFR, MinCP.WorldP));
+  BotRL = GetRenderP(world, Canonical_Position(BotRL, MinCP.WorldP));
+  BotRR = GetRenderP(world, Canonical_Position(BotRR, MinCP.WorldP));
+  BotFL = GetRenderP(world, Canonical_Position(BotFL, MinCP.WorldP));
+  BotFR = GetRenderP(world, Canonical_Position(BotFR, MinCP.WorldP));
+
+
+  // 24 lines, 2 verts per line, 3 floats per vert
+  GLfloat *LineData = (GLfloat *)calloc(24*2*3, sizeof(GLfloat) );
+  GLfloat *LineColors = (GLfloat *)calloc(24*2*3, sizeof(GLfloat) );
+
+  for ( int i = 0;
+        i < 100;
+      )
+  {
+    float color = i*0.2f;
+    LineColors[i++] = color;
+    LineColors[i++] = 0;
+    LineColors[i++] = 0;
+  }
+
+  GLuint AABB_Buffer;
+  glGenBuffers(1, &AABB_Buffer);
+
+  GLuint AABB_Colors;
+  glGenBuffers(1, &AABB_Colors);
+
+
+  // Top
+  memcpy( LineData,    &TopRL, sizeof(v3) );
+  memcpy( LineData+3,  &TopRR, sizeof(v3) );
+
+  memcpy( LineData+6,  &TopFL, sizeof(v3) );
+  memcpy( LineData+9,  &TopFR, sizeof(v3) );
+
+  memcpy( LineData+12, &TopFL, sizeof(v3) );
+  memcpy( LineData+15, &TopRL, sizeof(v3) );
+
+  memcpy( LineData+18, &TopFR, sizeof(v3) );
+  memcpy( LineData+21, &TopRR, sizeof(v3) );
+
+  // Right
+  memcpy( LineData+24, &TopFR, sizeof(v3) );
+  memcpy( LineData+27, &BotFR, sizeof(v3) );
+
+  memcpy( LineData+30, &TopRR, sizeof(v3) );
+  memcpy( LineData+33, &BotRR, sizeof(v3) );
+
+  // Left
+  memcpy( LineData+36, &TopFL, sizeof(v3) );
+  memcpy( LineData+39, &BotFL, sizeof(v3) );
+
+  memcpy( LineData+42, &TopRL, sizeof(v3) );
+  memcpy( LineData+45, &BotRL, sizeof(v3) );
+
+
+  // Bottom
+  memcpy( LineData+48, &BotRL, sizeof(v3) );
+  memcpy( LineData+51, &BotRR, sizeof(v3) );
+
+  memcpy( LineData+54, &BotFL, sizeof(v3) );
+  memcpy( LineData+57, &BotFR, sizeof(v3) );
+
+  memcpy( LineData+60, &BotFL, sizeof(v3) );
+  memcpy( LineData+63, &BotRL, sizeof(v3) );
+
+  memcpy( LineData+66, &BotFR, sizeof(v3) );
+  memcpy( LineData+69, &BotRR, sizeof(v3) );
+
+  // Colors
+  glEnableVertexAttribArray(0);
+  glBindBuffer(GL_ARRAY_BUFFER, AABB_Colors);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(v3)*24*2, LineColors, GL_STATIC_DRAW);
+  glVertexAttribPointer(
+    1,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+    3,                  // size
+    GL_FLOAT,           // type
+    GL_FALSE,           // normalized?
+    0,                  // stride
+    (void*)0            // array buffer offset
+  );
+
+  // Vertices
+  glEnableVertexAttribArray(1);
+  glBindBuffer(GL_ARRAY_BUFFER, AABB_Buffer);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(v3)*24*2, LineData, GL_STATIC_DRAW);
+  glVertexAttribPointer(
+    0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+    3,                  // size
+    GL_FLOAT,           // type
+    GL_FALSE,           // normalized?
+    0,                  // stride
+    (void*)0            // array buffer offset
+  );
+
+  glDrawArrays(GL_LINES, 0, 24);
+
+  glDeleteBuffers(1, &AABB_Buffer);
+  glDeleteBuffers(1, &AABB_Colors);
+
+  free( LineData );
+  free( LineColors );
+
+}
+
+
+void
+DrawChunkAABB( World *world, Chunk *chunk, v3 LookAtP )
+{
+  if ( chunk->BoundaryVoxelCount == 0 ) return;
+
+  /* v3 MinP = GetRenderP(world, Canonical_Position(chunk->Offset, chunk->WorldP )) - VOXEL_RADIUS; */
+  /* v3 MaxP = GetRenderP(world, Canonical_Position(chunk->Offset+(chunk->Dim), chunk->WorldP )) - VOXEL_RADIUS; */
+
+  canonical_position MinP = Canonical_Position(chunk->Offset, chunk->WorldP);
+  canonical_position MaxP = Canonical_Position(chunk->Offset+(chunk->Dim), chunk->WorldP);
+
+/*   Print(MinP); */
+/*   Print(MaxP); */
+
+/*   Print(RotatedMinP.xyz); */
+/*   Print(RotatedMaxP.xyz); */
+
+/*   Print(FinalMinP); */
+/*   Print(FinalMaxP); */
+
+/*   printf("\n\n"); */
+
+
+  DEBUG_DrawAABB(world, MinP, MaxP, LookAtP );
+  /* DEBUG_DrawAABB(world, MinP, MaxP ); */
+  printf("\n\n--\n\n");
+}
+
 
 inline bool
 IsInFrustum(World *world, Camera_Object *Camera, canonical_position P)
 {
-  v3 CameraRight = Cross(Camera->Front, WORLD_UP);
+  v3 CameraRight = Cross( WORLD_Y, Camera->Front);
 
-  v3 MinP = (Camera->Front * Camera->Frust.farClip) - (CameraRight * Camera->Frust.width);
+  v3 CameraRenderP = GetRenderP(world, Canonicalize(world, Camera->P));
 
-  v3 MaxP  = Camera->P.Offset + (CameraRight * Camera->Frust.width);
+  v3 MinFrustP = CameraRenderP + (Camera->Front * Camera->Frust.farClip) - (CameraRight * (Camera->Frust.width/2));
+  v3 MaxFrustP = CameraRenderP + (CameraRight * (Camera->Frust.width/2));
 
-  v3 MaxRenderP = GetRenderP(world, Canonical_Position(world, MaxP, Camera->P.WorldP));
-  v3 MinRenderP = GetRenderP(world, Canonical_Position(world, MinP, Camera->P.WorldP));
+  if ( MinFrustP.x > MaxFrustP.x )
+  {
+    int tmp = MinFrustP.x;
+    MinFrustP.x = MaxFrustP.x;
+    MaxFrustP.x = tmp;
+  }
+  if ( MinFrustP.y > MaxFrustP.y )
+  {
+    int tmp = MinFrustP.y;
+    MinFrustP.y = MaxFrustP.y;
+    MaxFrustP.y = tmp;
+  }
+  if ( MinFrustP.z > MaxFrustP.z )
+  {
+    int tmp = MinFrustP.z;
+    MinFrustP.z = MaxFrustP.z;
+    MaxFrustP.z = tmp;
+  }
 
   v3 TestRenderP = GetRenderP(world, P);
 
-  if ( (TestRenderP.x < MinRenderP.x || TestRenderP.x > MaxRenderP.x) &&
-       (TestRenderP.y < MinRenderP.y || TestRenderP.y > MaxRenderP.y) &&
-       (TestRenderP.z < MinRenderP.z || TestRenderP.z > MaxRenderP.z)
+  if (((TestRenderP.x > MinFrustP.x && TestRenderP.x < MaxFrustP.x) &&
+       (TestRenderP.y > MinFrustP.y && TestRenderP.y < MaxFrustP.y) &&
+       (TestRenderP.z > MinFrustP.z && TestRenderP.z < MaxFrustP.z))
      )
   {
-    return false;
+    return true;
   }
 
-  return true;
+  return false;
 }
 
 voxel_position
@@ -660,122 +936,6 @@ BuildAndBufferChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera, GLuin
 
 
 void
-DrawChunkAABB( World *world, Chunk *chunk )
-{
-
-  if ( chunk->BoundaryVoxelCount == 0 ) return;
-
-  // 24 lines, 2 verts per line, 3 floats per vert
-  GLfloat *LineData = (GLfloat *)calloc(24*2*3, sizeof(GLfloat) );
-  GLfloat *LineColors = (GLfloat *)calloc(24*2*3, sizeof(GLfloat) );
-
-  for ( int i = 0; i < 100; ++ i )
-  {
-    LineColors[i] = 20;
-  }
-
-  GLuint AABB_Buffer;
-  glGenBuffers(1, &AABB_Buffer);
-
-  GLuint AABB_Colors;
-  glGenBuffers(1, &AABB_Colors);
-
-  v3 MinP = GetRenderP(world, Canonical_Position(chunk->Offset, chunk->WorldP )) - VOXEL_RADIUS;
-  v3 MaxP = GetRenderP(world, Canonical_Position(chunk->Offset+(chunk->Dim), chunk->WorldP )) - VOXEL_RADIUS;
-
-
-  v3 TopRL = V3(MinP.x, MaxP.y, MinP.z);
-  v3 TopRR = V3(MaxP.x,  MaxP.y, MinP.z);
-
-  v3 TopFL = V3(MinP.x, MaxP.y, MaxP.z);
-  v3 TopFR = V3(MaxP.x,  MaxP.y, MaxP.z);
-
-  v3 BotRL = V3(MinP.x, MinP.y, MinP.z);
-  v3 BotRR = V3(MaxP.x,  MinP.y, MinP.z);
-
-  v3 BotFL = V3(MinP.x, MinP.y, MaxP.z);
-  v3 BotFR = V3(MaxP.x,  MinP.y, MaxP.z);
-
-
-
-  // Top
-  memcpy( LineData,    &TopRL, sizeof(v3) );
-  memcpy( LineData+3,  &TopRR, sizeof(v3) );
-
-  memcpy( LineData+6,  &TopFL, sizeof(v3) );
-  memcpy( LineData+9,  &TopFR, sizeof(v3) );
-
-  memcpy( LineData+12, &TopFL, sizeof(v3) );
-  memcpy( LineData+15, &TopRL, sizeof(v3) );
-
-  memcpy( LineData+18, &TopFR, sizeof(v3) );
-  memcpy( LineData+21, &TopRR, sizeof(v3) );
-
-  // Right
-  memcpy( LineData+24, &TopFR, sizeof(v3) );
-  memcpy( LineData+27, &BotFR, sizeof(v3) );
-
-  memcpy( LineData+30, &TopRR, sizeof(v3) );
-  memcpy( LineData+33, &BotRR, sizeof(v3) );
-
-  // Left
-  memcpy( LineData+36, &TopFL, sizeof(v3) );
-  memcpy( LineData+39, &BotFL, sizeof(v3) );
-
-  memcpy( LineData+42, &TopRL, sizeof(v3) );
-  memcpy( LineData+45, &BotRL, sizeof(v3) );
-
-
-  // Bottom
-  memcpy( LineData+48, &BotRL, sizeof(v3) );
-  memcpy( LineData+51, &BotRR, sizeof(v3) );
-
-  memcpy( LineData+54, &BotFL, sizeof(v3) );
-  memcpy( LineData+57, &BotFR, sizeof(v3) );
-
-  memcpy( LineData+60, &BotFL, sizeof(v3) );
-  memcpy( LineData+63, &BotRL, sizeof(v3) );
-
-  memcpy( LineData+66, &BotFR, sizeof(v3) );
-  memcpy( LineData+69, &BotRR, sizeof(v3) );
-
-  // Colors
-  glEnableVertexAttribArray(0);
-  glBindBuffer(GL_ARRAY_BUFFER, AABB_Colors);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(v3)*24*2, LineColors, GL_STATIC_DRAW);
-  glVertexAttribPointer(
-    1,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-    3,                  // size
-    GL_FLOAT,           // type
-    GL_FALSE,           // normalized?
-    0,                  // stride
-    (void*)0            // array buffer offset
-  );
-
-  // Vertices
-  glEnableVertexAttribArray(1);
-  glBindBuffer(GL_ARRAY_BUFFER, AABB_Buffer);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(v3)*24*2, LineData, GL_STATIC_DRAW);
-  glVertexAttribPointer(
-    0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-    3,                  // size
-    GL_FLOAT,           // type
-    GL_FALSE,           // normalized?
-    0,                  // stride
-    (void*)0            // array buffer offset
-  );
-
-  glDrawArrays(GL_LINES, 0, 24);
-
-  glDeleteBuffers(1, &AABB_Buffer);
-  glDeleteBuffers(1, &AABB_Colors);
-
-  free( LineData );
-  free( LineColors );
-
-}
-
-void
 DrawChunk(
     World *world,
     Chunk *chunk,
@@ -785,33 +945,51 @@ DrawChunk(
     GLuint &normalbuffer
   )
 {
-  if ( IsSet( chunk->flags, Chunk_Entity) )
-  {
-    chunk->flags = UnSetFlag(chunk->flags, Chunk_RebuildInteriorBoundary);
-    chunk->flags = UnSetFlag(chunk->flags, Chunk_RebuildExteriorBoundary);
-    DrawChunkAABB( world, chunk );
-
-    if ( chunk->BoundaryVoxelCount == 0 )
-    {
-      for (int i = 0; i < Volume(chunk->Dim); ++i)
-      {
-        Voxel v = chunk->Voxels[i];
-        if ( IsSet( v.flags, Voxel_Filled ) )
-        {
-          PushBoundaryVoxel( chunk, v );
-
-          // debug
-          voxel_position P = GetVoxelP(chunk->Dim, i);
-          printf("Buffering Boundary Voxel %d : %d %d %d \n", i, P.x, P.y, P.z);
-        }
-      }
-    }
-
-  }
-
-  BuildAndBufferChunkMesh( world, chunk, Camera, colorbuffer, vertexbuffer, normalbuffer );
-
 #if DEBUG_CHUNK_AABB
   DrawChunkAABB( world, chunk );
 #endif
+
+  BuildAndBufferChunkMesh( world, chunk, Camera, colorbuffer, vertexbuffer, normalbuffer );
+}
+
+void
+DrawEntity(
+    World *world,
+    Entity *entity,
+    Camera_Object *Camera,
+    GLuint &colorbuffer,
+    GLuint &vertexbuffer,
+    GLuint &normalbuffer
+  )
+{
+  assert(IsSet( entity->Model.flags, Chunk_Entity));
+  entity->Model.flags = UnSetFlag(entity->Model.flags, Chunk_RebuildInteriorBoundary);
+  entity->Model.flags = UnSetFlag(entity->Model.flags, Chunk_RebuildExteriorBoundary);
+
+  DrawChunkAABB( world, &entity->Model, Camera->Front);
+
+  if ( entity->Model.BoundaryVoxelCount == 0 )
+  {
+    for (int i = 0; i < Volume(entity->Model.Dim); ++i)
+    {
+      Voxel v = entity->Model.Voxels[i];
+      if ( IsSet( v.flags, Voxel_Filled ) )
+      {
+        PushBoundaryVoxel( &entity->Model, v );
+
+        // debug
+        /* voxel_position P = GetVoxelP(chunk->Dim, i); */
+        /* printf("Buffering Boundary Voxel %d : %d %d %d \n", i, P.x, P.y, P.z); */
+      }
+    }
+  }
+
+  DrawChunk(
+      world,
+      &entity->Model,
+      Camera,
+      colorbuffer,
+      vertexbuffer,
+      normalbuffer
+    );
 }

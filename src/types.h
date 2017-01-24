@@ -10,8 +10,8 @@ inline canonical_position
 Canonicalize( World *world, canonical_position CP );
 
 struct v2 {
-   int x;
-   int y;
+   float x;
+   float y;
 };
 
 union v3 {
@@ -48,7 +48,49 @@ union v4 {
   };
 
   float E[4];
+
+
+  v4()
+  {
+    *this = v4(1,0,0,0);
+  }
+
+  v4(v3 v, float w)
+  {
+    this->x = v.x;
+    this->y = v.y;
+    this->z = v.z;
+    this->w = w;
+  }
+
+  v4(float w, v3 v)
+  {
+    *this = v4(v, w);
+  }
+
+  v4(float x, float y, float z, float w)
+  {
+    this->x = x;
+    this->y = y;
+    this->z = z;
+    this->w = w;
+  }
 };
+
+typedef v4 Quaternion;
+
+Quaternion
+operator*(Quaternion A, Quaternion B)
+{
+  Quaternion Result(0,0,0,0);
+
+  Result.w = A.w*B.w - A.x*B.x - A.y*B.y - A.z*B.z;
+  Result.x = A.w*B.x + A.x*B.w + A.y*B.z - A.z*B.y;
+  Result.y = A.w*B.y + A.y*B.w + A.z*B.x - A.x*B.z;
+  Result.z = A.w*B.z + A.z*B.w + A.x*B.y - A.y*B.x;
+
+  return Result;
+}
 
 struct voxel_position
 {
@@ -406,7 +448,7 @@ Volume(chunk_dimension Dim)
   return (Dim.x*Dim.y*Dim.z);
 }
 
-v2 V2(int x,int y)
+v2 V2(float x,float y)
 {
   v2 Result = {};
 
@@ -416,17 +458,15 @@ v2 V2(int x,int y)
   return Result;
 }
 
-v4 V4(int x,int y,int z,int w)
-{
-  v4 Result = {};
+/* v4 V4(int x,int y,int z,int w) */
+/* { */
+/*   Result.x = x; */
+/*   Result.y = y; */
+/*   Result.z = z; */
+/*   Result.w = w; */
 
-  Result.x = x;
-  Result.y = y;
-  Result.z = z;
-  Result.w = w;
-
-  return Result;
-}
+/*   return Result; */
+/* } */
 
 v2 operator+=(v2 P1, v2 P2)
 {
@@ -679,25 +719,25 @@ operator*=(v3& A, float f)
 
 v4 operator*(v4 A, int B)
 {
-  v4 Result = V4(0,0,0,0);
+  v4 Result(0,0,0,0);
 
-  Result.x = A.x * B;
-  Result.y = A.y * B;
-  Result.z = A.z * B;
-  Result.w = A.w * B;
+  Result.x = A.x * (float)B;
+  Result.y = A.y * (float)B;
+  Result.z = A.z * (float)B;
+  Result.w = A.w * (float)B;
 
   return Result;
 }
 
 v4 operator*=(v4 A, int B)
 {
-  A = A * B;
+  A = A * (float)B;
   return A;
 }
 
 v4 operator+(v4 A, v4 B)
 {
-  v4 Result = V4(0,0,0,0);
+  v4 Result(0,0,0,0);
 
   Result.x = A.x + B.x;
   Result.y = A.y + B.y;
@@ -718,11 +758,17 @@ operator-(canonical_position P1, canonical_position P2)
   return Result;
 }
 
-
 inline glm::vec3
 GLV3( v3 Vec )
 {
   glm::vec3 Result = glm::vec3( Vec.x, Vec.y, Vec.z);
+  return Result;
+}
+
+inline Quaternion
+Conjugate( Quaternion q )
+{
+  Quaternion Result(-q.x, -q.y, -q.z, q.w);
   return Result;
 }
 
