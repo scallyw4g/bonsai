@@ -165,6 +165,8 @@ GetInputsFromController(Camera_Object *Camera)
     UpdateDir -= right;
   }
 
+  UpdateDir.y = 0;
+
   UpdateDir = Normalize(UpdateDir, Length(UpdateDir));
 
   return UpdateDir;

@@ -18,14 +18,14 @@
 inline int
 UnSetFlag( int Flags, int Flag )
 {
-  int Result = Flags &= ~Flag;
+  int Result = (Flags & ~Flag);
   return Result;
 }
 
 inline int
 SetFlag( int Flags, int Flag )
 {
-  int Result = Flags |= Flag;
+  int Result = (Flags | Flag);
   return Result;
 }
 
@@ -115,6 +115,14 @@ GetVoxelP(Voxel V)
   );
 
   return P;
+}
+
+Voxel
+GetVoxel(int x, int y, int z)
+{
+  Voxel Result = {};
+  Result = SetVoxelP(Result, Voxel_Position(x,y,z) );
+  return Result;
 }
 
 struct Chunk

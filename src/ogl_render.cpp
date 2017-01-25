@@ -382,8 +382,8 @@ RotateAround( v3 Axis )
 
   static float theta = 0.01f;
 
-  theta+= 0.1f;
-  printf("theta %f\n", theta);
+  /* theta+= 0.05f; */
+  /* printf("theta %f\n", theta); */
 
   Quaternion Result( cos(theta/2), Axis*sin(theta/2) );
   return Result;
@@ -396,14 +396,10 @@ DEBUG_DrawLine(World *world, canonical_position P1, canonical_position P2)
   GLfloat *LineData = (GLfloat *)calloc(24*2*3, sizeof(GLfloat) );
   GLfloat *LineColors = (GLfloat *)calloc(24*2*3, sizeof(GLfloat) );
 
-  for ( int i = 0;
-        i < 100;
-      )
+  for ( int i = 0; i < 100; i++)
   {
-    float color = 1.0f;;
-    LineColors[i++] = color;
-    LineColors[i++] = color;
-    LineColors[i++] = color;
+    float color = 5.5f;;
+    LineColors[i] = color;
   }
 
   GLuint AABB_Buffer;
@@ -416,6 +412,7 @@ DEBUG_DrawLine(World *world, canonical_position P1, canonical_position P2)
   // Top
   v3 rp1 = GetRenderP(world, P1);
   v3 rp2 = GetRenderP(world, P2);
+
   memcpy( LineData,    &rp1, sizeof(v3) );
   memcpy( LineData+3,  &rp2, sizeof(v3) );
 
@@ -454,15 +451,28 @@ DEBUG_DrawLine(World *world, canonical_position P1, canonical_position P2)
   free( LineColors );
 }
 
+v3
+HalfDim( v3 P1 )
+{
+  v3 Result = P1 / 2;
+  return Result;
+}
+
 void
 DEBUG_DrawAABB( World *world, canonical_position MinCP, canonical_position MaxCP, v3 LookAtP = V3(1,1,-1) )
 {
-  LookAtP = Normalize(LookAtP);
+  v3 HalfDim = (GetRenderP(world, MaxCP) - GetRenderP(world, MinCP)) / 2;
 
-  Print(LookAtP);
+  /* v3 MinP = MinCP.Offset - HalfDim; */
+  /* v3 MaxP = MaxCP.Offset - HalfDim; */
 
-  v3 MinP = MinCP.Offset;
-  v3 MaxP = MaxCP.Offset;
+  v3 MinP = HalfDim * -1;
+  v3 MaxP = HalfDim;
+
+  // Debug
+  canonical_position RotationAxis = MinCP + V3(HalfDim.x, 0, HalfDim.y);
+  DEBUG_DrawLine(world, RotationAxis,RotationAxis + V3(0,20,0) );
+  // Debug
 
   v3 TopRL = V3(MinP.x, MaxP.y, MinP.z);
   v3 TopRR = V3(MaxP.x, MaxP.y, MinP.z);
@@ -476,12 +486,8 @@ DEBUG_DrawAABB( World *world, canonical_position MinCP, canonical_position MaxCP
   v3 BotFL = V3(MinP.x, MinP.y, MaxP.z);
   v3 BotFR = V3(MaxP.x, MinP.y, MaxP.z);
 
-
-  v3 ModelSpaceUp = V3( MinP.x/2, MinP.y/2, MinP.z/2);
-
-  DEBUG_DrawLine(world, MinCP, MaxCP);
-
-  v3 Front = V3(0,0,1);
+  /* v3 ModelSpaceUp = V3( MinP.x/2, MinP.y/2, MinP.z/2); */
+  v3 ModelSpaceUp = V3(0,1,0);
   Quaternion Look = RotateAround(Normalize(ModelSpaceUp));
 
   TopRL = ((Look * Quaternion(1, TopRL)) * Conjugate(Look)).xyz;
@@ -493,6 +499,14 @@ DEBUG_DrawAABB( World *world, canonical_position MinCP, canonical_position MaxCP
   BotFL = ((Look * Quaternion(1, BotFL)) * Conjugate(Look)).xyz;
   BotFR = ((Look * Quaternion(1, BotFR)) * Conjugate(Look)).xyz;
 
+  TopRL += HalfDim + MinCP.Offset;
+  TopRR += HalfDim + MinCP.Offset;
+  TopFL += HalfDim + MinCP.Offset;
+  TopFR += HalfDim + MinCP.Offset;
+  BotRL += HalfDim + MinCP.Offset;
+  BotRR += HalfDim + MinCP.Offset;
+  BotFL += HalfDim + MinCP.Offset;
+  BotFR += HalfDim + MinCP.Offset;
 
   TopRL = GetRenderP(world, Canonical_Position(TopRL, MinCP.WorldP));
   TopRR = GetRenderP(world, Canonical_Position(TopRR, MinCP.WorldP));
@@ -831,10 +845,10 @@ void
 BuildAndBufferChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera, GLuint &colorbuffer, GLuint &vertexbuffer, GLuint &normalbuffer )
 {
 
-  if ( ! IsInFrustum( world, Camera, chunk ) )
-  {
-    return;
-  }
+  /* if ( ! IsInFrustum( world, Camera, chunk ) ) */
+  /* { */
+  /*   return; */
+  /* } */
 
   if ( IsSet(chunk->flags, Chunk_RebuildInteriorBoundary) )
   {

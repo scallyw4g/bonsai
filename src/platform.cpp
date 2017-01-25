@@ -156,22 +156,21 @@ LoadVox(char const *filepath)
 
         case ID_SIZE:
         {
-          chunk_dimension Dim = ReadSizeChunk(ModelFile);
+          /* chunk_dimension Dim = */ ReadSizeChunk(ModelFile);
           /* printf(" Chunk Allocated : x %d y %d z %d\n", Dim.x, Dim.y, Dim.z); */
-
-          Result = AllocateChunk(Dim, World_Position(0,0,0));
           bytesRemaining -= VOX_INT_BYTES *5;
         } break;
 
         case ID_XYZI:
         {
           int numVoxels = ReadXYZIChunk(ModelFile);
-          /* printf(" Voxels in model : %d \n", numVoxels); */
 
           bytesRemaining -= VOX_INT_BYTES *2;
 
-          unsigned char maxX, maxY, maxZ;
+          int maxX = 0, maxY = 0, maxZ = 0;
+          int minX = INT_MAX, minY = INT_MAX, minZ = INT_MAX;
 
+          Voxel *Voxels = (Voxel *)calloc(numVoxels, sizeof(Voxel) );
           for( int i = 0; i < numVoxels; ++ i)
           {
             int X = (int)ReadChar(ModelFile);
@@ -183,26 +182,31 @@ LoadVox(char const *filepath)
             maxY = Y > maxY ? Y : maxY;
             maxZ = Z > maxZ ? Z : maxZ;
 
+            minX = X < minX ? X : minX;
+            minY = Y < minY ? Y : minY;
+            minZ = Z < minZ ? Z : minZ;
+
+            Voxels[i] = GetVoxel(X,Y,Z);
+          }
+
+
+          v3 Min = V3(minX, minY, minZ);
+          chunk_dimension Dim = Chunk_Dimension(maxX, maxY, maxZ) - Min;
+
+          Result = AllocateChunk(Dim + Voxel_Position(1,1,1), World_Position(0,0,0));
+
+          for( int i = 0; i < numVoxels; ++ i)
+          {
             bytesRemaining -= VOX_CHAR_BYTES *4;
 
-            int Index = GetIndex( Voxel_Position(X, Y, Z), &Result);
+            int Index = GetIndex( GetVoxelP(Voxels[i])-Min, &Result);
+
             Voxel *V = &Result.Voxels[Index];
             V->flags = SetFlag(V->flags, Voxel_Filled);
 
-            voxel_position P = GetVoxelP(*V);
-            assert(P.x == X);
-            assert(P.y == Y);
-            assert(P.z == Z);
           }
 
-          // TODO (Jesse) : This is trimming the chunk to the observed
-          // dimension when loading it.  This throws away memory, maybe we
-          // should reallocate the chunk?
-
-          // Turns out this MUST be reallocated because resizing the chunks
-          // dimension after initializing the voxels screws up indexing
-          //
-          /* Result.Dim = Chunk_Dimension(maxX + 1, maxY + 1, maxZ + 1); */
+          free(Voxels);
 
           goto loaded;
         } break;
