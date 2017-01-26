@@ -772,4 +772,11 @@ Conjugate( Quaternion q )
   return Result;
 }
 
+v3
+HalfDim( v3 P1 )
+{
+  v3 Result = P1 / 2;
+  return Result;
+}
+
 #endif

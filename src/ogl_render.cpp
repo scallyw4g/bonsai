@@ -360,18 +360,30 @@ bool IsBottomChunkBoundary( chunk_dimension ChunkDim, int idx )
 }
 
 Quaternion
-LookAt( v3 ObjectFront, v3 P )
+LookAt( v3 P )
 {
-  printf("%f %f \n", Length(ObjectFront), Length(P));
+  P.y = 0;
+  P = Normalize(P);
 
   v3 NegZ = WORLD_Z * -1.0f;
+
+  v3 ObjectFront = NegZ;
+  v3 RotAxis = V3(0,1,0); // Normalize(Cross( NegZ, ObjectToP ));
+
+  /* printf("%f %f \n", Length(ObjectFront), Length(P)); */
+
   v3 ObjectToP = Normalize(P - ObjectFront);
-  v3 RotAxis = Normalize(Cross( NegZ, ObjectToP ));
+  Print ( ObjectToP );
+
   float theta = acos( Dot(NegZ, ObjectToP) );
   float signTheta = Dot( Cross(RotAxis, NegZ), ObjectToP);
   theta = signTheta > 0 ? theta : -theta;
 
-  Quaternion Result( cos(theta/2), RotAxis*sin(theta/2) );
+  printf(" theta %f\n", theta );
+
+  // Apparently theta is supposed to be divided by 2 here (according to some
+  // dude on SO), but that seems to yield a half rotation, so I took it out..
+  Quaternion Result( cos(theta), RotAxis*sin(theta) );
   return Result;
 }
 
@@ -451,13 +463,6 @@ DEBUG_DrawLine(World *world, canonical_position P1, canonical_position P2)
   free( LineColors );
 }
 
-v3
-HalfDim( v3 P1 )
-{
-  v3 Result = P1 / 2;
-  return Result;
-}
-
 void
 DEBUG_DrawAABB( World *world, canonical_position MinCP, canonical_position MaxCP, v3 LookAtP = V3(1,1,-1) )
 {
@@ -470,8 +475,8 @@ DEBUG_DrawAABB( World *world, canonical_position MinCP, canonical_position MaxCP
   v3 MaxP = HalfDim;
 
   // Debug
-  canonical_position RotationAxis = MinCP + V3(HalfDim.x, 0, HalfDim.y);
-  DEBUG_DrawLine(world, RotationAxis,RotationAxis + V3(0,20,0) );
+  /* canonical_position RotationAxis = MinCP + V3(HalfDim.x, 0, HalfDim.y); */
+  /* DEBUG_DrawLine(world, RotationAxis,RotationAxis + V3(0,20,0) ); */
   // Debug
 
   v3 TopRL = V3(MinP.x, MaxP.y, MinP.z);
@@ -488,7 +493,9 @@ DEBUG_DrawAABB( World *world, canonical_position MinCP, canonical_position MaxCP
 
   /* v3 ModelSpaceUp = V3( MinP.x/2, MinP.y/2, MinP.z/2); */
   v3 ModelSpaceUp = V3(0,1,0);
-  Quaternion Look = RotateAround(Normalize(ModelSpaceUp));
+  Print(LookAtP);
+  Quaternion Look = LookAt( LookAtP );
+  /* Quaternion Look = RotateAround(Normalize(ModelSpaceUp)); */
 
   TopRL = ((Look * Quaternion(1, TopRL)) * Conjugate(Look)).xyz;
   TopRR = ((Look * Quaternion(1, TopRR)) * Conjugate(Look)).xyz;
