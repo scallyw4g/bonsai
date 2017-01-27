@@ -548,7 +548,7 @@ UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera )
   canonical_position NewTarget = Canonicalize(world, Player->Model.Offset, Player->Model.WorldP) + (Player->Model.Dim/2);
 #endif
 
-  float FocalLength = 50.0f;
+  float FocalLength = CAMERA_FOCAL_LENGTH;
   float mouseSpeed = 0.20f;
 
   double X, Y;

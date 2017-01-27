@@ -13,7 +13,6 @@ GAME_UPDATE_AND_RENDER
     Camera_Object *Camera,
     float dt,
     glm::mat4 Projection,
-    glm::mat4 ModelMatrix,
 
     GLuint vertexbuffer,
     GLuint colorbuffer,
@@ -69,25 +68,35 @@ GAME_UPDATE_AND_RENDER
   UpdatePlayerP( world, Player, PlayerDelta );
   UpdateCameraP( world, Player, Camera );
 
-  Player->Rotation.xyz = Camera->Front;
-  Player->Rotation.w = 0;
+  /* glm::vec3 LightP = GLV3(Player->Model.Offset); */
+  /* glUniform3fv(PlayerPID, 1, &LightP[0]); */
 
-  glm::mat4 ViewMatrix = GetViewMatrix(world, Camera);
 
-  glm::mat4 mvp = Projection * ViewMatrix * ModelMatrix;
 
-  // Send our transformation to the currently bound shader, in the "MVP" uniform
-  // This is done in the main loop since each model will have a different MVP matrix (At least for the M part)
-  glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp[0][0]);
-  glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-  glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
 
-  glm::vec3 LightP = GetGLRenderP(world, Canonical_Position( Player->Model.Offset + (Player->Model.Dim/2) -1, Player->Model.WorldP) );
 
-  glUniform3fv(PlayerPID, 1, &LightP[0]);
 
   // Clear the screen
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+  Player->Rotation = LookAt(Camera->Front);
+  glm::mat4 ModelMatrix =
+    Translate(
+      GetRenderP(world,
+        Canonical_Position(Player->Model.Offset, Player->Model.WorldP)
+      )
+    ) * ToGLMat4(Player->Rotation);
+
+  glm::mat4 ViewMatrix = GetViewMatrix(world, Camera);
+
+  // Send our transformation to the currently bound shader, in the "MVP" uniform
+  //
+  // This is done in the main loop since each model will have a different MVP matrix (At least for the M part)
+  glm::mat4 mvp = Projection * ViewMatrix * ModelMatrix;
+  glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp[0][0]);
+  glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+  glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
 
   DrawEntity(
     world,
@@ -98,18 +107,42 @@ GAME_UPDATE_AND_RENDER
     normalbuffer
   );
 
+  FlushVertexBuffer (world, colorbuffer, vertexbuffer, normalbuffer );
+
   // Draw world
   for ( int i = 0; i < Volume(world->VisibleRegion); ++ i )
   {
+    Chunk *chunk = &world->Chunks[i];
+
+    ModelMatrix =
+      Translate(
+        GetRenderP(world,
+          Canonical_Position(chunk->Offset, chunk->WorldP)
+        )
+      );
+
+    mvp = Projection * ViewMatrix * ModelMatrix;
+    glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp[0][0]);
+    glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+    glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
+
     DrawChunk(
       world,
-      &world->Chunks[i],
+      chunk,
       Camera,
       vertexbuffer,
       colorbuffer,
       normalbuffer
     );
+
+    // Draw player with so we can reset model matrix
+    FlushVertexBuffer (world, colorbuffer, vertexbuffer, normalbuffer );
   }
+
+  /* DEBUG_DrawAABB( world, */
+  /*   Canonical_Position(world, V3(0,0,0), Voxel_Position(0,0,0)), */
+  /*   Canonical_Position(world, V3(world->VisibleRegionOrigin ), world->VisibleRegion) */
+  /* ); */
 
   // Ensure we flush the draw buffer if it's dirty
   FlushVertexBuffer (world, colorbuffer, vertexbuffer, normalbuffer );
@@ -152,8 +185,6 @@ main( void )
   glBindVertexArray(VertexArrayID);
 
   GLuint programID = LoadShaders( "SimpleVertexShader.vertexshader", "SimpleFragmentShader.fragmentshader" );
-
-  glm::mat4 ModelMatrix = glm::mat4(1.0);
 
   GLuint vertexbuffer;
   GLuint colorbuffer;
@@ -244,7 +275,6 @@ main( void )
       &Camera,
       dt,
       Projection,
-      ModelMatrix,
 
       vertexbuffer,
       colorbuffer,

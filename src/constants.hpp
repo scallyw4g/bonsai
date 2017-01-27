@@ -31,11 +31,13 @@
 
 #define DEBUG_FRAMES_TO_RUN       -1
 
-#define PLAYER_STEP_MAX 1
+#define PLAYER_STEP_MAX            1
 
 #define CHUNK_STACK_SIZE (VR_X*VR_X*VR_X)
 
-#define CAMERA_INITIAL_P Canonical_Position(V3(0,50,55), World_Position(world.VisibleRegion/2))
+#define CAMERA_FOCAL_LENGTH 40.0f;
+
+#define CAMERA_INITIAL_P Canonical_Position(V3(1,1,1), World_Position(world.VisibleRegion/2))
 
 #define N_VOXEL_STORAGE_BITS 8
 

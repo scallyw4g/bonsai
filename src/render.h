@@ -3,6 +3,18 @@
 
 #include <GL/glew.h>
 
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
+
+inline glm::mat4
+ToGLMat4(Quaternion q)
+{
+  glm::quat glmQuat = glm::quat(q.w, q.x, q.y, q.z);
+  glm::mat4 RotationMatrix = glm::toMat4(glmQuat);
+
+  return RotationMatrix;
+}
+
 inline glm::vec3
 GetGLRenderP(World *world, canonical_position P)
 {

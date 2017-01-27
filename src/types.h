@@ -2,6 +2,7 @@
 #define TYPES_H
 
 #include <glm/glm.hpp>
+#include <glm/gtx/transform.hpp>
 
 struct World;
 struct canonical_position;
@@ -342,6 +343,13 @@ GLV3(glm::vec3 vec)
   Result.y = vec.y;
   Result.z = vec.z;
 
+  return Result;
+}
+
+inline glm::mat4
+Translate( v3 v)
+{
+  glm::mat4 Result = glm::translate( glm::vec3(v.x, v.y, v.z) );
   return Result;
 }
 

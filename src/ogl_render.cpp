@@ -452,24 +452,23 @@ DEBUG_DrawLine(World *world, v3 RenderSpaceP1, v3 RenderSpaceP2)
   free( LineColors );
 }
 
+/* void */
+/* DEBUG_DrawLine(World *world, canonical_position P1, canonical_position P2) */
+/* { */
+/*   v3 rp1 = GetRenderP(world, P1); */
+/*   v3 rp2 = GetRenderP(world, P2); */
+/*   DEBUG_DrawLine(world, rp1, rp2); */
+/* } */
+
+
 void
-DEBUG_DrawLine(World *world, canonical_position P1, canonical_position P2)
+DEBUG_DrawAABB( World *world, v3 MinP, v3 MaxP, Quaternion Rotation = Quaternion(0,0,0,1) )
 {
-  v3 rp1 = GetRenderP(world, P1);
-  v3 rp2 = GetRenderP(world, P2);
-
-  DEBUG_DrawLine(world, rp1, rp2);
-}
-
-
-void
-DEBUG_DrawAABB( World *world, canonical_position MinCP, canonical_position MaxCP, Quaternion Rotation = Quaternion(0,0,0,1) )
-{
-  v3 HalfDim = (GetRenderP(world, MaxCP) - GetRenderP(world, MinCP)) / 2;
+  /* v3 HalfDim = (GetRenderP(world, MaxCP) - GetRenderP(world, MinCP)) / 2; */
 
   // Start in model space
-  v3 MinP = HalfDim * -1;
-  v3 MaxP = HalfDim;
+  /* v3 MinP = HalfDim * -1; */
+  /* v3 MaxP = HalfDim; */
 
   // Compute verticies
   v3 TopRL = V3(MinP.x, MaxP.y, MinP.z);
@@ -481,35 +480,35 @@ DEBUG_DrawAABB( World *world, canonical_position MinCP, canonical_position MaxCP
   v3 BotFL = V3(MinP.x, MinP.y, MaxP.z);
   v3 BotFR = V3(MaxP.x, MinP.y, MaxP.z);
 
-  // Apply rotation to verts
-  TopRL = ((Rotation * Quaternion(1, TopRL)) * Conjugate(Rotation)).xyz;
-  TopRR = ((Rotation * Quaternion(1, TopRR)) * Conjugate(Rotation)).xyz;
-  TopFL = ((Rotation * Quaternion(1, TopFL)) * Conjugate(Rotation)).xyz;
-  TopFR = ((Rotation * Quaternion(1, TopFR)) * Conjugate(Rotation)).xyz;
-  BotRL = ((Rotation * Quaternion(1, BotRL)) * Conjugate(Rotation)).xyz;
-  BotRR = ((Rotation * Quaternion(1, BotRR)) * Conjugate(Rotation)).xyz;
-  BotFL = ((Rotation * Quaternion(1, BotFL)) * Conjugate(Rotation)).xyz;
-  BotFR = ((Rotation * Quaternion(1, BotFR)) * Conjugate(Rotation)).xyz;
+  /* // Apply rotation to verts */
+  /* TopRL = ((Rotation * Quaternion(1, TopRL)) * Conjugate(Rotation)).xyz; */
+  /* TopRR = ((Rotation * Quaternion(1, TopRR)) * Conjugate(Rotation)).xyz; */
+  /* TopFL = ((Rotation * Quaternion(1, TopFL)) * Conjugate(Rotation)).xyz; */
+  /* TopFR = ((Rotation * Quaternion(1, TopFR)) * Conjugate(Rotation)).xyz; */
+  /* BotRL = ((Rotation * Quaternion(1, BotRL)) * Conjugate(Rotation)).xyz; */
+  /* BotRR = ((Rotation * Quaternion(1, BotRR)) * Conjugate(Rotation)).xyz; */
+  /* BotFL = ((Rotation * Quaternion(1, BotFL)) * Conjugate(Rotation)).xyz; */
+  /* BotFR = ((Rotation * Quaternion(1, BotFR)) * Conjugate(Rotation)).xyz; */
 
-  // Translate into world space
-  TopRL += HalfDim + MinCP.Offset;
-  TopRR += HalfDim + MinCP.Offset;
-  TopFL += HalfDim + MinCP.Offset;
-  TopFR += HalfDim + MinCP.Offset;
-  BotRL += HalfDim + MinCP.Offset;
-  BotRR += HalfDim + MinCP.Offset;
-  BotFL += HalfDim + MinCP.Offset;
-  BotFR += HalfDim + MinCP.Offset;
+  /* // Translate into world space */
+  /* TopRL += HalfDim + MinCP.Offset; */
+  /* TopRR += HalfDim + MinCP.Offset; */
+  /* TopFL += HalfDim + MinCP.Offset; */
+  /* TopFR += HalfDim + MinCP.Offset; */
+  /* BotRL += HalfDim + MinCP.Offset; */
+  /* BotRR += HalfDim + MinCP.Offset; */
+  /* BotFL += HalfDim + MinCP.Offset; */
+  /* BotFR += HalfDim + MinCP.Offset; */
 
-  // Translate into render space
-  TopRL = GetRenderP(world, Canonical_Position(TopRL, MinCP.WorldP));
-  TopRR = GetRenderP(world, Canonical_Position(TopRR, MinCP.WorldP));
-  TopFL = GetRenderP(world, Canonical_Position(TopFL, MinCP.WorldP));
-  TopFR = GetRenderP(world, Canonical_Position(TopFR, MinCP.WorldP));
-  BotRL = GetRenderP(world, Canonical_Position(BotRL, MinCP.WorldP));
-  BotRR = GetRenderP(world, Canonical_Position(BotRR, MinCP.WorldP));
-  BotFL = GetRenderP(world, Canonical_Position(BotFL, MinCP.WorldP));
-  BotFR = GetRenderP(world, Canonical_Position(BotFR, MinCP.WorldP));
+  /* // Translate into render space */
+  /* TopRL = GetRenderP(world, Canonical_Position(TopRL, MinCP.WorldP)); */
+  /* TopRR = GetRenderP(world, Canonical_Position(TopRR, MinCP.WorldP)); */
+  /* TopFL = GetRenderP(world, Canonical_Position(TopFL, MinCP.WorldP)); */
+  /* TopFR = GetRenderP(world, Canonical_Position(TopFR, MinCP.WorldP)); */
+  /* BotRL = GetRenderP(world, Canonical_Position(BotRL, MinCP.WorldP)); */
+  /* BotRR = GetRenderP(world, Canonical_Position(BotRR, MinCP.WorldP)); */
+  /* BotFL = GetRenderP(world, Canonical_Position(BotFL, MinCP.WorldP)); */
+  /* BotFR = GetRenderP(world, Canonical_Position(BotFR, MinCP.WorldP)); */
 
   // Render
   //
@@ -539,10 +538,10 @@ DEBUG_DrawChunkAABB( World *world, Chunk *chunk, Quaternion Rotation )
 {
   if ( chunk->BoundaryVoxelCount == 0 ) return;
 
-  canonical_position MinP = Canonical_Position(chunk->Offset, chunk->WorldP);
-  canonical_position MaxP = Canonical_Position(chunk->Offset + chunk->Dim,  chunk->WorldP);
+  /* canonical_position MinP = Canonical_Position(chunk->Offset, chunk->WorldP); */
+  /* canonical_position MaxP = Canonical_Position(chunk->Offset + chunk->Dim,  chunk->WorldP); */
 
-  DEBUG_DrawAABB(world, MinP, MaxP, Rotation );
+  DEBUG_DrawAABB(world, V3(0,0,0), V3(chunk->Dim), Rotation );
 }
 
 inline bool
@@ -741,7 +740,14 @@ IsInFrustum( World *world, Camera_Object *Camera, Chunk *chunk )
 }
 
 void
-BuildAndBufferChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera, GLuint &colorbuffer, GLuint &vertexbuffer, GLuint &normalbuffer )
+BuildAndBufferChunkMesh(
+    World *world,
+    Chunk *chunk,
+    Camera_Object *Camera,
+    GLuint &colorbuffer,
+    GLuint &vertexbuffer,
+    GLuint &normalbuffer
+  )
 {
 
   /* if ( ! IsInFrustum( world, Camera, chunk ) ) */
@@ -768,6 +774,8 @@ BuildAndBufferChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera, GLuin
   }
 
 
+
+
 #if DEBUG_LOD_RENDER
   // LOD calculations
   v3 ChunkCenterRenderP  = GetRenderP(world, Canonical_Position(chunk->Dim / 2, chunk->WorldP) );
@@ -781,7 +789,6 @@ BuildAndBufferChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera, GLuin
 
 
 
-
   const float* FaceColors = 0;
   /* glm::vec3 GLCameraRenderP = GetGLRenderP(world, Camera->P); */
 
@@ -789,16 +796,14 @@ BuildAndBufferChunkMesh(World *world, Chunk *chunk, Camera_Object *Camera, GLuin
   {
     VoxelsIndexed ++;
 
-    Voxel voxel = chunk->BoundaryVoxels[i];
+    voxel_position Offset = GetVoxelP(chunk->BoundaryVoxels[i]);
 
-    voxel_position Offset = GetVoxelP(voxel);
+    /* canonical_position VoxelP = Canonical_Position( */
+    /*   V3(Offset) + chunk->Offset, */
+    /*   chunk->WorldP */
+    /* ); */
 
-    canonical_position VoxelP = Canonical_Position(
-      V3(Offset) + chunk->Offset,
-      chunk->WorldP
-    );
-
-    glm::vec3 VoxRenderP = GetGLRenderP(world, VoxelP);
+    glm::vec3 VoxRenderP = GLV3(V3(Offset));
     /* glm::vec3 VoxelToCamera = glm::normalize(GLCameraRenderP - VoxRenderP); */
 
     FaceColors = GetColorData( Voxel_Red );
@@ -859,7 +864,7 @@ DrawChunk(
   )
 {
 #if DEBUG_CHUNK_AABB
-  DEBUG_DrawChunkAABB( world, chunk );
+  DEBUG_DrawChunkAABB( world, chunk, Quaternion(1,0,0,0) );
 #endif
 
   BuildAndBufferChunkMesh( world, chunk, Camera, colorbuffer, vertexbuffer, normalbuffer );
@@ -876,10 +881,12 @@ DrawEntity(
   )
 {
   assert(IsSet( entity->Model.flags, Chunk_Entity));
+
   entity->Model.flags = UnSetFlag(entity->Model.flags, Chunk_RebuildInteriorBoundary);
   entity->Model.flags = UnSetFlag(entity->Model.flags, Chunk_RebuildExteriorBoundary);
 
-  DEBUG_DrawChunkAABB( world, &entity->Model, LookAt(Camera->Front) );
+  /* DEBUG_DrawChunkAABB( world, &entity->Model, entity->Rotation ); */
+  DEBUG_DrawChunkAABB( world, &entity->Model, Quaternion(1,0,0,0) );
 
   if ( entity->Model.BoundaryVoxelCount == 0 )
   {
