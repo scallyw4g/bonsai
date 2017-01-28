@@ -8,7 +8,7 @@
 
 [ ] Better frustum culling
 
-[ ] Normal data should go through pipe relative to vertex instead of being
+[X] Normal data should go through pipe relative to vertex instead of being
 corrected in shader
 
 [ ] FIXME: BoundaryVoxel buffer can contain duplicates on the corners and edges
@@ -33,7 +33,7 @@ model is pretty big.  Think 3^3 8^3 chunks with a 16^3 model
 --- Misc
 -------------------------------------------------------------------------------
 
-[ ] Write keypress callbacks instead of checking if (key == down) { do thing }
+[ ] Write keypress callbacks instead of checking if (key == down) { do_thing }
 
 [ ] FIXME: If you're going really fast and try to update your position outside
 the VisibleRegion you collide with the edge of the world and stop moving
