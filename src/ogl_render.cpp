@@ -161,13 +161,13 @@ bool BufferRightFace(
 {
   float localVertexData[] =
   {
-    worldP.x + VOXEL_DIAMETER, worldP.y +  VOXEL_DIAMETER, worldP.z +  VOXEL_DIAMETER, // ( 1, 1, 1)
-    worldP.x + VOXEL_DIAMETER, worldP.y                  , worldP.z                  , // ( 1,-1,-1)
-    worldP.x + VOXEL_DIAMETER, worldP.y +  VOXEL_DIAMETER, worldP.z                  , // ( 1, 1,-1)
+    worldP.x + VOXEL_DIAMETER, worldP.y +  VOXEL_DIAMETER, worldP.z +  VOXEL_DIAMETER,
+    worldP.x + VOXEL_DIAMETER, worldP.y                  , worldP.z                  ,
+    worldP.x + VOXEL_DIAMETER, worldP.y +  VOXEL_DIAMETER, worldP.z                  ,
 
-    worldP.x + VOXEL_DIAMETER, worldP.y                  , worldP.z                  , // ( 1,-1,-1)
-    worldP.x + VOXEL_DIAMETER, worldP.y +  VOXEL_DIAMETER, worldP.z +  VOXEL_DIAMETER, // ( 1, 1, 1)
-    worldP.x + VOXEL_DIAMETER, worldP.y                  , worldP.z +  VOXEL_DIAMETER  // ( 1,-1, 1)
+    worldP.x + VOXEL_DIAMETER, worldP.y                  , worldP.z                  ,
+    worldP.x + VOXEL_DIAMETER, worldP.y +  VOXEL_DIAMETER, worldP.z +  VOXEL_DIAMETER,
+    worldP.x + VOXEL_DIAMETER, worldP.y                  , worldP.z +  VOXEL_DIAMETER
   };
 
   float localNormalData[] =
@@ -192,13 +192,13 @@ bool BufferLeftFace(
 {
   float localVertexData[] =
   {
-    worldP.x                  , worldP.y                  , worldP.z                  , // (-1,-1,-1)
-    worldP.x                  , worldP.y +  VOXEL_DIAMETER, worldP.z +  VOXEL_DIAMETER, // (-1, 1, 1)
-    worldP.x                  , worldP.y +  VOXEL_DIAMETER, worldP.z                  , // (-1, 1,-1)
+    worldP.x                  , worldP.y                  , worldP.z                  ,
+    worldP.x                  , worldP.y +  VOXEL_DIAMETER, worldP.z +  VOXEL_DIAMETER,
+    worldP.x                  , worldP.y +  VOXEL_DIAMETER, worldP.z                  ,
 
-    worldP.x                  , worldP.y                  , worldP.z                  , // (-1,-1,-1)
-    worldP.x                  , worldP.y                  , worldP.z +  VOXEL_DIAMETER, // (-1,-1, 1)
-    worldP.x                  , worldP.y +  VOXEL_DIAMETER, worldP.z +  VOXEL_DIAMETER  // (-1, 1, 1)
+    worldP.x                  , worldP.y                  , worldP.z                  ,
+    worldP.x                  , worldP.y                  , worldP.z +  VOXEL_DIAMETER,
+    worldP.x                  , worldP.y +  VOXEL_DIAMETER, worldP.z +  VOXEL_DIAMETER
   };
 
   float localNormalData[] =
@@ -223,13 +223,13 @@ bool BufferBottomFace(
 {
   float localVertexData[] =
   {
-    worldP.x +  VOXEL_DIAMETER, worldP.y                  , worldP.z +  VOXEL_DIAMETER, // ( 1,-1, 1)
-    worldP.x                  , worldP.y                  , worldP.z                  , // (-1,-1,-1)
-    worldP.x +  VOXEL_DIAMETER, worldP.y                  , worldP.z                  , // ( 1,-1,-1)
+    worldP.x +  VOXEL_DIAMETER, worldP.y                  , worldP.z +  VOXEL_DIAMETER,
+    worldP.x                  , worldP.y                  , worldP.z                  ,
+    worldP.x +  VOXEL_DIAMETER, worldP.y                  , worldP.z                  ,
 
-    worldP.x +  VOXEL_DIAMETER, worldP.y                  , worldP.z +  VOXEL_DIAMETER, // ( 1,-1, 1)
-    worldP.x                  , worldP.y                  , worldP.z +  VOXEL_DIAMETER, // (-1,-1, 1)
-    worldP.x                  , worldP.y                  , worldP.z                    // (-1,-1,-1)
+    worldP.x +  VOXEL_DIAMETER, worldP.y                  , worldP.z +  VOXEL_DIAMETER,
+    worldP.x                  , worldP.y                  , worldP.z +  VOXEL_DIAMETER,
+    worldP.x                  , worldP.y                  , worldP.z
   };
 
   float localNormalData[] =
@@ -254,13 +254,13 @@ bool BufferTopFace(
 {
   float localVertexData[] =
   {
-    worldP.x +  VOXEL_DIAMETER, worldP.y +  VOXEL_DIAMETER, worldP.z +  VOXEL_DIAMETER, // ( 1, 1, 1)
-    worldP.x +  VOXEL_DIAMETER, worldP.y +  VOXEL_DIAMETER, worldP.z                  , // ( 1, 1,-1)
-    worldP.x                  , worldP.y +  VOXEL_DIAMETER, worldP.z                  , // (-1, 1,-1)
+    worldP.x +  VOXEL_DIAMETER, worldP.y +  VOXEL_DIAMETER, worldP.z +  VOXEL_DIAMETER,
+    worldP.x +  VOXEL_DIAMETER, worldP.y +  VOXEL_DIAMETER, worldP.z                  ,
+    worldP.x                  , worldP.y +  VOXEL_DIAMETER, worldP.z                  ,
 
-    worldP.x +  VOXEL_DIAMETER, worldP.y +  VOXEL_DIAMETER, worldP.z +  VOXEL_DIAMETER, // ( 1, 1, 1)
-    worldP.x                  , worldP.y +  VOXEL_DIAMETER, worldP.z                  , // (-1, 1,-1)
-    worldP.x                  , worldP.y +  VOXEL_DIAMETER, worldP.z +  VOXEL_DIAMETER  // (-1, 1, 1)
+    worldP.x +  VOXEL_DIAMETER, worldP.y +  VOXEL_DIAMETER, worldP.z +  VOXEL_DIAMETER,
+    worldP.x                  , worldP.y +  VOXEL_DIAMETER, worldP.z                  ,
+    worldP.x                  , worldP.y +  VOXEL_DIAMETER, worldP.z +  VOXEL_DIAMETER
   };
 
   float localNormalData[] =
@@ -285,13 +285,13 @@ bool BufferFrontFace(
 {
   float localVertexData[] =
   {
-    worldP.x                  , worldP.y +  VOXEL_DIAMETER, worldP.z +  VOXEL_DIAMETER, // (-1, 1, 1)
-    worldP.x                  , worldP.y                  , worldP.z +  VOXEL_DIAMETER, // (-1,-1, 1)
-    worldP.x +  VOXEL_DIAMETER, worldP.y                  , worldP.z +  VOXEL_DIAMETER, // ( 1,-1, 1)
+    worldP.x                  , worldP.y +  VOXEL_DIAMETER, worldP.z +  VOXEL_DIAMETER,
+    worldP.x                  , worldP.y                  , worldP.z +  VOXEL_DIAMETER,
+    worldP.x +  VOXEL_DIAMETER, worldP.y                  , worldP.z +  VOXEL_DIAMETER,
 
-    worldP.x +  VOXEL_DIAMETER, worldP.y +  VOXEL_DIAMETER, worldP.z +  VOXEL_DIAMETER, // ( 1, 1, 1)
-    worldP.x                  , worldP.y +  VOXEL_DIAMETER, worldP.z +  VOXEL_DIAMETER, // (-1, 1, 1)
-    worldP.x +  VOXEL_DIAMETER, worldP.y                  , worldP.z +  VOXEL_DIAMETER  // ( 1,-1, 1)
+    worldP.x +  VOXEL_DIAMETER, worldP.y +  VOXEL_DIAMETER, worldP.z +  VOXEL_DIAMETER,
+    worldP.x                  , worldP.y +  VOXEL_DIAMETER, worldP.z +  VOXEL_DIAMETER,
+    worldP.x +  VOXEL_DIAMETER, worldP.y                  , worldP.z +  VOXEL_DIAMETER
   };
 
   float localNormalData[] =
@@ -316,13 +316,13 @@ bool BufferBackFace(
 {
   float localVertexData[] =
   {
-    worldP.x +  VOXEL_DIAMETER, worldP.y +  VOXEL_DIAMETER, worldP.z                  , // ( 1, 1,-1)
-    worldP.x                  , worldP.y                  , worldP.z                  , // (-1,-1,-1)
-    worldP.x                  , worldP.y +  VOXEL_DIAMETER, worldP.z                  , // (-1, 1,-1)
+    worldP.x +  VOXEL_DIAMETER, worldP.y +  VOXEL_DIAMETER, worldP.z                  ,
+    worldP.x                  , worldP.y                  , worldP.z                  ,
+    worldP.x                  , worldP.y +  VOXEL_DIAMETER, worldP.z                  ,
 
-    worldP.x +  VOXEL_DIAMETER, worldP.y +  VOXEL_DIAMETER, worldP.z                  , // ( 1, 1,-1)
-    worldP.x +  VOXEL_DIAMETER, worldP.y                  , worldP.z                  , // ( 1,-1,-1)
-    worldP.x                  , worldP.y                  , worldP.z                  , // (-1,-1,-1)
+    worldP.x +  VOXEL_DIAMETER, worldP.y +  VOXEL_DIAMETER, worldP.z                  ,
+    worldP.x +  VOXEL_DIAMETER, worldP.y                  , worldP.z                  ,
+    worldP.x                  , worldP.y                  , worldP.z                  ,
   };
 
   float localNormalData[] =
