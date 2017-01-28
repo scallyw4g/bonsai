@@ -55,14 +55,14 @@ enum ChunkFlags {
 
 enum VoxelFlags {
 
-  Voxel_Filled    = 1 << ((N_VOXEL_STORAGE_BITS*3) + 1),
+  Voxel_Filled    = 1 << (FINAL_COLOR_BIT + 1),
 
-  Voxel_Yellow    = 1 << ((N_VOXEL_STORAGE_BITS*3) + 2),
-  Voxel_Red       = 1 << ((N_VOXEL_STORAGE_BITS*3) + 3),
-  Voxel_Green     = 1 << ((N_VOXEL_STORAGE_BITS*3) + 4),
-  Voxel_Teal      = 1 << ((N_VOXEL_STORAGE_BITS*3) + 5),
-  Voxel_White     = 1 << ((N_VOXEL_STORAGE_BITS*3) + 6),
-  Voxel_Purple    = 1 << ((N_VOXEL_STORAGE_BITS*3) + 7)
+  Voxel_Yellow    = 1 << (FINAL_COLOR_BIT + 2),
+  Voxel_Red       = 1 << (FINAL_COLOR_BIT + 3),
+  Voxel_Green     = 1 << (FINAL_COLOR_BIT + 4),
+  Voxel_Teal      = 1 << (FINAL_COLOR_BIT + 5),
+  Voxel_White     = 1 << (FINAL_COLOR_BIT + 6),
+  Voxel_Purple    = 1 << (FINAL_COLOR_BIT + 7)
 };
 
 
@@ -71,20 +71,45 @@ struct Voxel
   int flags;
 };
 
+inline int
+GetVoxelColor(Voxel V)
+{
+  int Color = (V.flags >> (FINAL_POSITION_BIT) );
+  printf("%d\n", Color);
+  return Color;
+}
+
+inline Voxel
+SetVoxelColor(Voxel V, int w)
+{
+  Voxel Result = V;
+
+  unsigned int flagMask = (0xFFFFFFFF << FINAL_COLOR_BIT);
+  unsigned int colorMask = ( flagMask | ~(0xFFFFFFFF << (FINAL_POSITION_BIT)) );
+
+  int currentFlags = Result.flags & colorMask;
+
+  Result.flags = currentFlags;
+  Result.flags |= (w << (FINAL_POSITION_BIT));
+
+  return Result;
+}
+
 inline Voxel
 SetVoxelP(Voxel V, voxel_position P)
 {
-  assert( P.x < Pow2(N_VOXEL_STORAGE_BITS) );
-  assert( P.y < Pow2(N_VOXEL_STORAGE_BITS) );
-  assert( P.z < Pow2(N_VOXEL_STORAGE_BITS) );
+  assert( P.x < Pow2(POSITION_BIT_WIDTH) );
+  assert( P.y < Pow2(POSITION_BIT_WIDTH) );
+  assert( P.z < Pow2(POSITION_BIT_WIDTH) );
 
   Voxel Result = V;
 
-  Result.flags &= 0xFFFF0000 >> (8 - N_VOXEL_STORAGE_BITS);
+  int currentFlags = ( Result.flags & (0xFFFFFFFF << FINAL_POSITION_BIT));
+  Result.flags = currentFlags;
 
-  Result.flags |= P.x << (N_VOXEL_STORAGE_BITS * 0);
-  Result.flags |= P.y << (N_VOXEL_STORAGE_BITS * 1);
-  Result.flags |= P.z << (N_VOXEL_STORAGE_BITS * 2);
+  Result.flags |= P.x << (POSITION_BIT_WIDTH * 0);
+  Result.flags |= P.y << (POSITION_BIT_WIDTH * 1);
+  Result.flags |= P.z << (POSITION_BIT_WIDTH * 2);
 
   return Result;
 
@@ -109,19 +134,28 @@ inline voxel_position
 GetVoxelP(Voxel V)
 {
   voxel_position P = Voxel_Position(
-    V.flags >> (N_VOXEL_STORAGE_BITS * 0) & 0x000000FF >> (8 - N_VOXEL_STORAGE_BITS),
-    V.flags >> (N_VOXEL_STORAGE_BITS * 1) & 0x000000FF >> (8 - N_VOXEL_STORAGE_BITS),
-    V.flags >> (N_VOXEL_STORAGE_BITS * 2) & 0x000000FF >> (8 - N_VOXEL_STORAGE_BITS)
+    V.flags >> (POSITION_BIT_WIDTH * 0) & 0x000000FF >> (8 - POSITION_BIT_WIDTH),
+    V.flags >> (POSITION_BIT_WIDTH * 1) & 0x000000FF >> (8 - POSITION_BIT_WIDTH),
+    V.flags >> (POSITION_BIT_WIDTH * 2) & 0x000000FF >> (8 - POSITION_BIT_WIDTH)
   );
 
   return P;
 }
 
 Voxel
-GetVoxel(int x, int y, int z)
+GetVoxel(int x, int y, int z, int w)
 {
   Voxel Result = {};
-  Result = SetVoxelP(Result, Voxel_Position(x,y,z) );
+  voxel_position P = Voxel_Position(x,y,z);
+
+  Result = SetVoxelP(Result, P );
+  Result = SetVoxelColor(Result, w);
+
+  int c = GetVoxelColor(Result);
+
+  assert(GetVoxelP(Result) == P);
+  assert(c == w);
+
   return Result;
 }
 

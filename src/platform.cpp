@@ -25,10 +25,11 @@ enum Chunk_ID
 };
 
 inline unsigned char
-ReadChar(FILE* File)
+ReadChar(FILE* File, int* byteCounter)
 {
   unsigned char c;
   fread(&c, 1, VOX_CHAR_BYTES, File);
+  *byteCounter -= VOX_CHAR_BYTES;
   return c;
 }
 
@@ -40,10 +41,17 @@ ReadInt(FILE* File)
   return i;
 }
 
-inline Chunk_ID
-GetHeaderType(FILE* File)
+inline int
+ReadInt(FILE* File, int* byteCounter)
 {
-  int ID = ReadInt(File);
+  *byteCounter -= VOX_INT_BYTES;
+  return ReadInt(File);
+}
+
+inline Chunk_ID
+GetHeaderType(FILE* File, int* byteCounter)
+{
+  int ID = ReadInt(File, byteCounter);
 
   assert( ID == ID_VOX  ||
           ID == ID_MAIN ||
@@ -85,43 +93,40 @@ ReadMainChunk(FILE *File)
 }
 
 inline chunk_dimension
-ReadSizeChunk(FILE *File)
+ReadSizeChunk(FILE *File, int* byteCounter)
 {
   // Is throwing the chunk size away okay?
-  ReadInt(File);
-  ReadInt(File);
+  ReadInt(File, byteCounter);
+  ReadInt(File, byteCounter);
 
-  int chunkX = ReadInt(File);
-  int chunkY = ReadInt(File);
-  int chunkZ = ReadInt(File);
+  int chunkX = ReadInt(File, byteCounter);
+  int chunkY = ReadInt(File, byteCounter);
+  int chunkZ = ReadInt(File, byteCounter);
 
   chunk_dimension Result = Chunk_Dimension(chunkX+1, chunkY+1, chunkZ+1);
   return Result;
 }
 
 inline int
-ReadPackChunk(FILE *File)
+ReadPackChunk(FILE *File, int* byteCounter)
 {
   // Is throwing the chunk size away okay?
-  ReadInt(File);
-  ReadInt(File);
+  ReadInt(File, byteCounter);
+  ReadInt(File, byteCounter);
 
-  int nChunks = ReadInt(File);
+  int nChunks = ReadInt(File, byteCounter);
 
   return nChunks;
 }
 
 inline int
-ReadXYZIChunk(FILE *File)
+ReadXYZIChunk(FILE *File, int* byteCounter)
 {
-  // Is throwing the chunk size away okay?
-  int size = ReadInt(File);
-  printf("size1 %d\n", size);
+  // This is the size of teh XYZI chunk .. should always be 1 int (nVoxels)
+  ReadInt(File, byteCounter);
+  ReadInt(File, byteCounter);
 
-  size = ReadInt(File);
-  printf("size2 %d\n", size);
-
-  int nVoxels = ReadInt(File);
+  int nVoxels = ReadInt(File, byteCounter);
   return nVoxels;
 }
 
@@ -135,48 +140,52 @@ LoadVox(char const *filepath)
   if (ModelFile)
   {
     // Ensure we're dealing with a .vox file
-    ReadVoxChunk(ModelFile );
+    ReadVoxChunk(ModelFile);
 
     totalChunkBytes = ReadMainChunk(ModelFile);
+
     int bytesRemaining = totalChunkBytes;
 
     // TODO(Jesse) : Actually read all the data!
     while (bytesRemaining > 0)
     {
-      switch ( GetHeaderType(ModelFile) )
+      printf("%d\n", bytesRemaining);
+
+      switch ( GetHeaderType(ModelFile, &bytesRemaining) )
       {
-        bytesRemaining -= VOX_INT_BYTES;
+        case ID_RGBA:
+        {
+        } break;
 
         case ID_PACK:
         {
-          int nChunks = ReadPackChunk(ModelFile);
-          printf("nChunks %d\n", nChunks);
-          bytesRemaining -= VOX_INT_BYTES *4;
+          /* int nChunks = */ ReadPackChunk(ModelFile, &bytesRemaining);
+          /* printf("nChunks %d\n", nChunks); */
         } break;
 
         case ID_SIZE:
         {
-          /* chunk_dimension Dim = */ ReadSizeChunk(ModelFile);
-          /* printf(" Chunk Allocated : x %d y %d z %d\n", Dim.x, Dim.y, Dim.z); */
-          bytesRemaining -= VOX_INT_BYTES *5;
+          // Instead of trusting the model (they're always wrong), we'll loop
+          // through the data and figure it out ourselves.
+
+          /* chunk_dimension Dim = */ ReadSizeChunk(ModelFile, &bytesRemaining);
         } break;
 
         case ID_XYZI:
         {
-          int numVoxels = ReadXYZIChunk(ModelFile);
-
-          bytesRemaining -= VOX_INT_BYTES *2;
+          int numVoxels = ReadXYZIChunk(ModelFile, &bytesRemaining);
 
           int maxX = 0, maxY = 0, maxZ = 0;
           int minX = INT_MAX, minY = INT_MAX, minZ = INT_MAX;
 
-          Voxel *Voxels = (Voxel *)calloc(numVoxels, sizeof(Voxel) );
+          Voxel *LocalVoxelCache = (Voxel *)calloc(numVoxels, sizeof(Voxel) );
           for( int i = 0; i < numVoxels; ++ i)
           {
-            int X = (int)ReadChar(ModelFile);
-            int Z = (int)ReadChar(ModelFile);
-            int Y = (int)ReadChar(ModelFile);
-            /* unsigned char color = */ ReadChar(ModelFile);
+            int X = (int)ReadChar(ModelFile, &bytesRemaining);
+            int Z = (int)ReadChar(ModelFile, &bytesRemaining);
+            int Y = (int)ReadChar(ModelFile, &bytesRemaining);
+            int W = (int)ReadChar(ModelFile, &bytesRemaining); // Color
+
 
             maxX = X > maxX ? X : maxX;
             maxY = Y > maxY ? Y : maxY;
@@ -186,7 +195,7 @@ LoadVox(char const *filepath)
             minY = Y < minY ? Y : minY;
             minZ = Z < minZ ? Z : minZ;
 
-            Voxels[i] = GetVoxel(X,Y,Z);
+            LocalVoxelCache[i] = GetVoxel(X,Y,Z,W);
           }
 
 
@@ -197,18 +206,15 @@ LoadVox(char const *filepath)
 
           for( int i = 0; i < numVoxels; ++ i)
           {
-            bytesRemaining -= VOX_CHAR_BYTES *4;
-
-            int Index = GetIndex( GetVoxelP(Voxels[i])-Min, &Result);
+            int Index = GetIndex( GetVoxelP(LocalVoxelCache[i])-Min, &Result);
 
             Voxel *V = &Result.Voxels[Index];
             V->flags = SetFlag(V->flags, Voxel_Filled);
 
           }
 
-          free(Voxels);
+          free(LocalVoxelCache);
 
-          goto loaded;
         } break;
 
         InvalidDefaultCase;
@@ -222,6 +228,5 @@ LoadVox(char const *filepath)
     printf("Couldn't read model file '%s' .", filepath);
   }
 
-  loaded:
   return Result;
 }

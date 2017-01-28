@@ -4,6 +4,26 @@
 #define Print(Pos) \
   Print_P( Pos, #Pos )
 
+void
+Print_Binary( unsigned int input )
+{
+  printf("High bit --> ");
+  for (int i = (sizeof(int)*8)-1; i >= 0; --i)
+  {
+    if ( ((input >> i) & 1) == 1 )
+    {
+      printf("1");
+    }
+    else
+    {
+      printf("0");
+    }
+    if ( (i % 8) == 0 ) { printf(" "); }
+  }
+
+  printf("<-- Low bit \n");
+}
+
 inline void
 Print_P( canonical_position P, const char* name)
 {
