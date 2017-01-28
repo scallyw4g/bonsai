@@ -81,12 +81,13 @@ GAME_UPDATE_AND_RENDER
 
 
   Player->Rotation = LookAt(Camera->Front);
+
   glm::mat4 ModelMatrix =
     Translate(
       GetRenderP(world,
         Canonical_Position(Player->Model.Offset, Player->Model.WorldP)
       )
-    ) * ToGLMat4(Player->Rotation);
+    ); // * ToGLMat4(Player->Rotation);
 
   glm::mat4 ViewMatrix = GetViewMatrix(world, Camera);
 
