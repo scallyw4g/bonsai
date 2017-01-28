@@ -21,8 +21,8 @@ GAME_UPDATE_AND_RENDER
     GLuint MatrixID,
     GLuint ViewMatrixID,
     GLuint ModelMatrixID,
-    GLuint PlayerPID,
-    GLuint CameraPID
+    GLuint LightPID,
+    GLuint LightTransformPID
   )
 {
 
@@ -68,13 +68,7 @@ GAME_UPDATE_AND_RENDER
   UpdatePlayerP( world, Player, PlayerDelta );
   UpdateCameraP( world, Player, Camera );
 
-  /* glm::vec3 LightP = GLV3(Player->Model.Offset); */
-  /* glUniform3fv(PlayerPID, 1, &LightP[0]); */
-
-
-
-
-
+  glm::vec3 LightP = GLV3(V3(0,0,0));
 
   // Clear the screen
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -82,7 +76,7 @@ GAME_UPDATE_AND_RENDER
 
   Player->Rotation = LookAt(Camera->Front);
 
-  glm::mat4 ModelMatrix =
+  glm::mat4 PlayerTransform =
     Translate(
       GetRenderP(world,
         Canonical_Position(Player->Model.Offset, Player->Model.WorldP)
@@ -94,10 +88,15 @@ GAME_UPDATE_AND_RENDER
   // Send our transformation to the currently bound shader, in the "MVP" uniform
   //
   // This is done in the main loop since each model will have a different MVP matrix (At least for the M part)
+  glm::mat4 ModelMatrix = PlayerTransform;
   glm::mat4 mvp = Projection * ViewMatrix * ModelMatrix;
-  glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp[0][0]);
-  glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-  glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
+
+  glUniformMatrix4fv(MatrixID,          1, GL_FALSE, &mvp[0][0]);
+  glUniformMatrix4fv(ModelMatrixID,     1, GL_FALSE, &ModelMatrix[0][0]);
+  glUniformMatrix4fv(ViewMatrixID,      1, GL_FALSE, &ViewMatrix[0][0]);
+  glUniformMatrix4fv(LightTransformPID, 1, GL_FALSE, &PlayerTransform[0][0]);
+
+  glUniform3fv(LightPID, 1, &LightP[0]);
 
   DrawEntity(
     world,
@@ -242,13 +241,11 @@ main( void )
   // Use our shader
   glUseProgram(programID);
 
-  // Get a handle for our "MVP" uniform
-  // Only during the initialisation
-  GLuint MatrixID = glGetUniformLocation(programID, "MVP");
-  GLuint ModelMatrixID = glGetUniformLocation(programID, "M");
-  GLuint ViewMatrixID = glGetUniformLocation(programID, "V");
-  GLuint PlayerPID = glGetUniformLocation(programID, "LightP_worldspace");
-  GLuint CameraPID = glGetUniformLocation(programID, "CameraP_worldspace");
+  GLuint MatrixID           = glGetUniformLocation(programID, "MVP");
+  GLuint ModelMatrixID      = glGetUniformLocation(programID, "M");
+  GLuint ViewMatrixID       = glGetUniformLocation(programID, "V");
+  GLuint LightTransformPID  = glGetUniformLocation(programID, "LightTransform");
+  GLuint LightPID           = glGetUniformLocation(programID, "LightP_in");
 
   /*
    *  Main Render loop
@@ -284,8 +281,8 @@ main( void )
       MatrixID,
       ViewMatrixID,
       ModelMatrixID,
-      PlayerPID,
-      CameraPID
+      LightPID,
+      LightTransformPID
     );
 
     CALLGRIND_TOGGLE_COLLECT;

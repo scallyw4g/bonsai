@@ -1,11 +1,11 @@
 #version 330 core
 
 in vec3 vertexP_worldspace;
-in vec3 vertexN_worldspace;
-in vec3 lightDirection_worldspace;
+in vec3 vertexN_modelspace;
+in vec3 LightDirection_worldspace;
 in vec3 MaterialColor;
 
-uniform vec3 LightP_worldspace;
+in vec3 LightP_worldspace;
 
 out vec3 color;
 
@@ -18,8 +18,8 @@ void main()
 
   vec3 AmbientColor = MaterialColor * vec3(0.15f);
 
-  vec3 N = normalize( vertexN_worldspace );
-  vec3 L = normalize( lightDirection_worldspace );
+  vec3 N = normalize( vertexN_modelspace );
+  vec3 L = normalize( LightDirection_worldspace );
 
   float cosTheta =  clamp( dot( N, L ), 0, 1);
 
