@@ -8,9 +8,9 @@
 #define CD_Z 8
 
 // Visible Region XYZ - Must be > (3,3,3)
-#define VR_X 8
-#define VR_Y 8
-#define VR_Z 8
+#define VR_X 16
+#define VR_Y 16
+#define VR_Z 16
 
 #define WORLD_X V3(1,0,0)
 #define WORLD_Y V3(0,1,0)
@@ -39,7 +39,7 @@
 
 #define CAMERA_INITIAL_P Canonical_Position(V3(1,1,1), World_Position(world.VisibleRegion/2))
 
-#define POSITION_BIT_WIDTH 4
+#define POSITION_BIT_WIDTH 6
 #define COLOR_BIT_WIDTH 8
 
 #define FINAL_POSITION_BIT (POSITION_BIT_WIDTH*3)
@@ -60,5 +60,8 @@ DEBUG_GLOBAL int VoxelsIndexed = 0;
 
 #define VOXEL_DIAMETER 1.0f
 #define VOXEL_RADIUS (VOXEL_DIAMETER/2.0f)
+
+#define FACE_COLOR_SIZE 32
+#define PALETTE_SIZE 256
 
 #endif

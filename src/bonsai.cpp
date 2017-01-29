@@ -85,6 +85,7 @@ InitializeVoxels( World *world, Chunk *chunk )
       {
         int i = GetIndex(Voxel_Position(x,y,z), chunk);
         chunk->Voxels[i] = SetVoxelP(chunk->Voxels[i], Voxel_Position(x,y,z));
+        chunk->Voxels[i] = SetVoxelColor(chunk->Voxels[i], 42);
 
 
 

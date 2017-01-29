@@ -54,15 +54,7 @@ enum ChunkFlags {
 
 
 enum VoxelFlags {
-
-  Voxel_Filled    = 1 << (FINAL_COLOR_BIT + 1),
-
-  Voxel_Yellow    = 1 << (FINAL_COLOR_BIT + 2),
-  Voxel_Red       = 1 << (FINAL_COLOR_BIT + 3),
-  Voxel_Green     = 1 << (FINAL_COLOR_BIT + 4),
-  Voxel_Teal      = 1 << (FINAL_COLOR_BIT + 5),
-  Voxel_White     = 1 << (FINAL_COLOR_BIT + 6),
-  Voxel_Purple    = 1 << (FINAL_COLOR_BIT + 7)
+  Voxel_Filled    = 1 << (FINAL_COLOR_BIT + 0)
 };
 
 
@@ -74,8 +66,9 @@ struct Voxel
 inline int
 GetVoxelColor(Voxel V)
 {
-  int Color = (V.flags >> (FINAL_POSITION_BIT) );
-  printf("%d\n", Color);
+  int Color = (V.flags >> (FINAL_POSITION_BIT) ) & ~( 0xFFFFFFFF << (COLOR_BIT_WIDTH));
+
+  assert(Color < PALETTE_SIZE);
   return Color;
 }
 
@@ -92,7 +85,37 @@ SetVoxelColor(Voxel V, int w)
   Result.flags = currentFlags;
   Result.flags |= (w << (FINAL_POSITION_BIT));
 
+  assert(GetVoxelColor(Result) == w);
+
   return Result;
+}
+
+// This is buggy
+/* inline voxel_position */
+/* GetVoxelP(chunk_dimension Dim, int i) */
+/* { */
+/*   int x = i % Dim.x; */
+/*   int y = (i/Dim.x) % Dim.y ; */
+/*   int z = i / (Dim.x*Dim.y); */
+
+  /* assert(x <= Dim.x); */
+  /* assert(y <= Dim.y); */
+  /* assert(z <= Dim.z); */
+
+  /* voxel_position Result = Voxel_Position(x,y,z); */
+  /* return Result; */
+/* } */
+
+inline voxel_position
+GetVoxelP(Voxel V)
+{
+  voxel_position P = Voxel_Position(
+    V.flags >> (POSITION_BIT_WIDTH * 0) & 0x000000FF >> (8 - POSITION_BIT_WIDTH),
+    V.flags >> (POSITION_BIT_WIDTH * 1) & 0x000000FF >> (8 - POSITION_BIT_WIDTH),
+    V.flags >> (POSITION_BIT_WIDTH * 2) & 0x000000FF >> (8 - POSITION_BIT_WIDTH)
+  );
+
+  return P;
 }
 
 inline Voxel
@@ -111,35 +134,10 @@ SetVoxelP(Voxel V, voxel_position P)
   Result.flags |= P.y << (POSITION_BIT_WIDTH * 1);
   Result.flags |= P.z << (POSITION_BIT_WIDTH * 2);
 
+  assert(GetVoxelP(Result) == P);
+
   return Result;
 
-}
-
-inline voxel_position
-GetVoxelP(chunk_dimension Dim, int i)
-{
-  int x = i % Dim.x;
-  int y = (i/Dim.x) % Dim.y ;
-  int z = i / (Dim.x*Dim.y);
-
-  assert(x <= Dim.x);
-  assert(y <= Dim.y);
-  assert(z <= Dim.z);
-
-  voxel_position Result = Voxel_Position(x,y,z);
-  return Result;
-}
-
-inline voxel_position
-GetVoxelP(Voxel V)
-{
-  voxel_position P = Voxel_Position(
-    V.flags >> (POSITION_BIT_WIDTH * 0) & 0x000000FF >> (8 - POSITION_BIT_WIDTH),
-    V.flags >> (POSITION_BIT_WIDTH * 1) & 0x000000FF >> (8 - POSITION_BIT_WIDTH),
-    V.flags >> (POSITION_BIT_WIDTH * 2) & 0x000000FF >> (8 - POSITION_BIT_WIDTH)
-  );
-
-  return P;
 }
 
 Voxel
@@ -151,10 +149,8 @@ GetVoxel(int x, int y, int z, int w)
   Result = SetVoxelP(Result, P );
   Result = SetVoxelColor(Result, w);
 
-  int c = GetVoxelColor(Result);
-
   assert(GetVoxelP(Result) == P);
-  assert(c == w);
+  assert(GetVoxelColor(Result) == w);
 
   return Result;
 }
@@ -193,6 +189,19 @@ ZeroChunk( Chunk * chunk )
   chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorBoundary );
 }
 
+inline int
+GetIndex(voxel_position P, Chunk *chunk)
+{
+  int i =
+    (P.x) +
+    (P.y*chunk->Dim.x) +
+    (P.z*chunk->Dim.x*chunk->Dim.y);
+
+  assert(i < Volume(chunk->Dim));
+
+  return i;
+}
+
 Chunk
 AllocateChunk(chunk_dimension Dim, voxel_position WorldP)
 {
@@ -208,9 +217,17 @@ AllocateChunk(chunk_dimension Dim, voxel_position WorldP)
 
   ZeroChunk(&Result);
 
-  for (int i = 0; i < Volume(Result.Dim); ++i)
+  for (int x = 0; x < Result.Dim.x; ++x)
   {
-    Result.Voxels[i] = SetVoxelP( Result.Voxels[i], GetVoxelP(Dim, i) );
+    for (int y = 0; y < Result.Dim.y; ++y)
+    {
+      for (int z = 0; z < Result.Dim.z; ++z)
+      {
+        voxel_position P = Voxel_Position(x,y,z);
+        int i = GetIndex(P, &Result);
+        Result.Voxels[i] = SetVoxelP( Result.Voxels[i], P );
+      }
+    }
   }
 
   return Result;
@@ -360,19 +377,6 @@ IsFacingPoint( glm::vec3 FaceToPoint, v3 FaceNormal )
 {
   bool Result = IsFacingPoint(GLV3(FaceToPoint), FaceNormal);
   return Result;
-}
-
-inline int
-GetIndex(voxel_position P, Chunk *chunk)
-{
-  int i =
-    (P.x) +
-    (P.y*chunk->Dim.x) +
-    (P.z*chunk->Dim.x*chunk->Dim.y);
-
-  assert(i < Volume(chunk->Dim));
-
-  return i;
 }
 
 inline bool

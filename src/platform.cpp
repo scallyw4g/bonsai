@@ -2,6 +2,8 @@
 #include <string.h>
 #include <bonsai.h>
 #include <math.h>
+#include <types.h>
+#include <assert.h>
 
 // Number of bytes per int according to .vox file format
 #define VOX_INT_BYTES 4
@@ -196,25 +198,36 @@ LoadVox(char const *filepath)
             minZ = Z < minZ ? Z : minZ;
 
             LocalVoxelCache[i] = GetVoxel(X,Y,Z,W);
+            printf("%d\n", W);
           }
 
 
           v3 Min = V3(minX, minY, minZ);
-          chunk_dimension Dim = Chunk_Dimension(maxX, maxY, maxZ) - Min;
+          chunk_dimension Dim = Chunk_Dimension(maxX+1, maxY+1, maxZ+1) - Min;
 
-          Result = AllocateChunk(Dim + Voxel_Position(1,1,1), World_Position(0,0,0));
+          Result = AllocateChunk(Dim, World_Position(0,0,0));
 
           for( int i = 0; i < numVoxels; ++ i)
           {
-            int Index = GetIndex( GetVoxelP(LocalVoxelCache[i])-Min, &Result);
+            Voxel V = {};
+            V.flags = SetFlag(V.flags, Voxel_Filled);
 
-            Voxel *V = &Result.Voxels[Index];
-            V->flags = SetFlag(V->flags, Voxel_Filled);
+            voxel_position RealP = GetVoxelP(LocalVoxelCache[i])-Min;
+            V = SetVoxelP(V, RealP);
 
+            V = SetVoxelColor(V, GetVoxelColor(LocalVoxelCache[i]));
+
+            int Index = GetIndex( RealP, &Result);
+            Result.Voxels[Index] = V;
+
+            assert(GetVoxelColor(V) < PALETTE_SIZE);
+            printf("%d\n", GetVoxelColor(V));
+            /* assert(GetVoxelColor(*V) == 121); */
           }
 
           free(LocalVoxelCache);
 
+          goto loaded;
         } break;
 
         InvalidDefaultCase;
@@ -228,5 +241,6 @@ LoadVox(char const *filepath)
     printf("Couldn't read model file '%s' .", filepath);
   }
 
+loaded:
   return Result;
 }

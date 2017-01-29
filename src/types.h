@@ -466,15 +466,17 @@ v2 V2(float x,float y)
   return Result;
 }
 
-/* v4 V4(int x,int y,int z,int w) */
-/* { */
-/*   Result.x = x; */
-/*   Result.y = y; */
-/*   Result.z = z; */
-/*   Result.w = w; */
+v4 V4(int x,int y,int z,int w)
+{
+  v4 Result;
 
-/*   return Result; */
-/* } */
+  Result.x = x;
+  Result.y = y;
+  Result.z = z;
+  Result.w = w;
+
+  return Result;
+}
 
 v2 operator+=(v2 P1, v2 P2)
 {

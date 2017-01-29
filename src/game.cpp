@@ -47,7 +47,8 @@ GAME_UPDATE_AND_RENDER
   // TODO : Bake these into the terrain/model ?
   v3 drag = V3(0.6f, 1.0f, 0.6f);
 
-  Player->Acceleration = GetInputsFromController(Camera) * PLAYER_ACCEL_MULTIPLIER; // m/s2
+  v3 Input = GetInputsFromController(Camera);
+  Player->Acceleration = Input * PLAYER_ACCEL_MULTIPLIER; // m/s2
 
   if (IsGrounded(world, Player))
   {
@@ -74,14 +75,17 @@ GAME_UPDATE_AND_RENDER
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-  Player->Rotation = LookAt(Camera->Front);
+  if (Length(Input) > 0)
+  {
+    Player->Rotation = LookAt(Input);
+  }
 
   glm::mat4 PlayerTransform =
     Translate(
       GetRenderP(world,
         Canonical_Position(Player->Model.Offset, Player->Model.WorldP)
       )
-    ); // * ToGLMat4(Player->Rotation);
+    ) * ToGLMat4(Player->Rotation);
 
   glm::mat4 ViewMatrix = GetViewMatrix(world, Camera);
 
@@ -106,8 +110,6 @@ GAME_UPDATE_AND_RENDER
     colorbuffer,
     normalbuffer
   );
-
-  FlushVertexBuffer (world, colorbuffer, vertexbuffer, normalbuffer );
 
   // Draw world
   for ( int i = 0; i < Volume(world->VisibleRegion); ++ i )
@@ -134,18 +136,8 @@ GAME_UPDATE_AND_RENDER
       colorbuffer,
       normalbuffer
     );
-
-    // Draw player with so we can reset model matrix
-    FlushVertexBuffer (world, colorbuffer, vertexbuffer, normalbuffer );
   }
 
-  /* DEBUG_DrawAABB( world, */
-  /*   Canonical_Position(world, V3(0,0,0), Voxel_Position(0,0,0)), */
-  /*   Canonical_Position(world, V3(world->VisibleRegionOrigin ), world->VisibleRegion) */
-  /* ); */
-
-  // Ensure we flush the draw buffer if it's dirty
-  FlushVertexBuffer (world, colorbuffer, vertexbuffer, normalbuffer );
 
   /* printf("%d Triangles drawn\n", tris ); */
   /* tris=0; */
@@ -202,8 +194,11 @@ main( void )
   Entity Player;
 
   /* Player.Model = LoadVox("./chr_knight.vox"); */
+  /* Player.Model = LoadVox("./ephtracy.vox"); */
+  Player.Model = LoadVox("./chr_sword.vox");
+  /* Player.Model = LoadVox("./shelf.vox"); */
   /* Player.Model = LoadVox("./3x3x3.vox"); */
-  Player.Model = LoadVox("./8x8x8.vox");
+  /* Player.Model = LoadVox("./8x8x8.vox"); */
   /* Player.Model = LoadVox("./alien_bot2.vox"); */
   /* Player.Model = LoadVox("./chr_rain.vox"); */
   /* Player.Model = LoadVox("./chr_old.vox"); */

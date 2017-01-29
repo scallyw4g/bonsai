@@ -113,7 +113,7 @@ BufferFace (
 
   world->VertexData.filled += sizeofVertPositions;
   world->NormalData.filled += sizeofNormals;
-  world->ColorData.filled += FACE_COLOR_SIZE;
+  world->ColorData.filled += sizeofNormals;
 
   bool DidBufferFace = true;
 
@@ -139,13 +139,13 @@ BufferFace (
   {
     world->VertexData.filled -= sizeofVertPositions;
     world->NormalData.filled -= sizeofNormals;
-    world->ColorData.filled -= FACE_COLOR_SIZE;
+    world->ColorData.filled -= sizeofNormals;
   }
   else
   {
     memcpy( &world->VertexData.Data[world->VertexCount*3], VertsPositions, sizeofVertPositions );
     memcpy( &world->NormalData.Data[world->VertexCount*3], Normals, sizeofNormals );
-    memcpy( &world->ColorData.Data[world->VertexCount*3],  VertColors, FACE_COLOR_SIZE );
+    memcpy( &world->ColorData.Data[world->VertexCount*3],  VertColors, sizeofNormals );
 
     world->VertexCount += 6;
   }
@@ -531,6 +531,8 @@ DEBUG_DrawAABB( World *world, v3 MinP, v3 MaxP, Quaternion Rotation = Quaternion
   DEBUG_DrawLine(world, BotFL, BotFR);
   DEBUG_DrawLine(world, BotFL, BotRL);
   DEBUG_DrawLine(world, BotFR, BotRR);
+
+  return;
 }
 
 void
@@ -538,10 +540,10 @@ DEBUG_DrawChunkAABB( World *world, Chunk *chunk, Quaternion Rotation )
 {
   if ( chunk->BoundaryVoxelCount == 0 ) return;
 
-  /* canonical_position MinP = Canonical_Position(chunk->Offset, chunk->WorldP); */
-  /* canonical_position MaxP = Canonical_Position(chunk->Offset + chunk->Dim,  chunk->WorldP); */
+  v3 HD = chunk->Dim/2;
+  v3 Offset = V3(HD.x, 0, HD.z);;
 
-  DEBUG_DrawAABB(world, V3(0,0,0), V3(chunk->Dim), Rotation );
+  DEBUG_DrawAABB(world, Offset*-1, V3(chunk->Dim)-Offset, Rotation );
 }
 
 inline bool
@@ -648,9 +650,8 @@ BuildExteriorBoundaryVoxels( World *world, Chunk *chunk, voxel_position Neighbor
 
         if ( ! IsFilledInWorld( Neighbor, NeighborP) )
         {
-          Voxel voxel = {0};
-          voxel = SetVoxelP( voxel, LocalVoxelP );
-
+          Voxel voxel = chunk->Voxels[GetIndex(LocalVoxelP, chunk)];
+          assert(GetVoxelP(voxel) == LocalVoxelP);
           PushBoundaryVoxel( chunk, voxel );
         }
       }
@@ -713,10 +714,9 @@ BuildInteriorBoundaryVoxels(World *world, Chunk *chunk, Camera_Object *Camera)
              ( IsInsideChunk( chunk->Dim, backVoxel  ) && !IsFilled( chunk, backVoxel  ))
            )
         {
-          Voxel voxel = {0};
-          voxel = SetVoxelP( voxel, Voxel_Position(x,y,z) );
-
-          PushBoundaryVoxel( chunk, voxel);
+          Voxel voxel = chunk->Voxels[GetIndex(Voxel_Position(x,y,z), chunk)];
+          assert(GetVoxelP(voxel) == Voxel_Position(x,y,z));
+          PushBoundaryVoxel(chunk, voxel);
         }
 
       }
@@ -789,14 +789,19 @@ BuildAndBufferChunkMesh(
 
 
 
-  const float* FaceColors = 0;
   /* glm::vec3 GLCameraRenderP = GetGLRenderP(world, Camera->P); */
 
+  float FaceColors[FACE_COLOR_SIZE];
   for ( int i = 0; i < chunk->BoundaryVoxelCount; i += LOD )
   {
     VoxelsIndexed ++;
 
-    voxel_position Offset = GetVoxelP(chunk->BoundaryVoxels[i]);
+    Voxel V = chunk->BoundaryVoxels[i];
+
+    GetColorData(GetVoxelColor(V), &FaceColors[0]);;
+
+    v3 HD = chunk->Dim/2;
+    voxel_position Offset = GetVoxelP(V) - V3(HD.x, 0, HD.z);;
 
     /* canonical_position VoxelP = Canonical_Position( */
     /*   V3(Offset) + chunk->Offset, */
@@ -806,42 +811,36 @@ BuildAndBufferChunkMesh(
     glm::vec3 VoxRenderP = GLV3(V3(Offset));
     /* glm::vec3 VoxelToCamera = glm::normalize(GLCameraRenderP - VoxRenderP); */
 
-    FaceColors = GetColorData( Voxel_Red );
     if ( !BufferRightFace(world, VoxRenderP, FaceColors) )
     {
       FlushVertexBuffer (world, colorbuffer, vertexbuffer, normalbuffer );
       BufferRightFace(world, VoxRenderP, FaceColors);
     }
 
-    FaceColors = GetColorData( Voxel_Yellow );
     if (! BufferLeftFace(world, VoxRenderP, FaceColors) )
     {
       FlushVertexBuffer( world, colorbuffer, vertexbuffer, normalbuffer);
       BufferLeftFace(world, VoxRenderP, FaceColors);
     }
 
-    FaceColors = GetColorData( Voxel_Teal );
     if ( !BufferBottomFace(world, VoxRenderP, FaceColors) )
     {
       FlushVertexBuffer( world, colorbuffer, vertexbuffer, normalbuffer);
       BufferBottomFace(world, VoxRenderP, FaceColors);
     }
 
-    FaceColors = GetColorData( Voxel_Green );
     if ( !BufferTopFace(world, VoxRenderP, FaceColors) )
     {
       FlushVertexBuffer( world, colorbuffer, vertexbuffer, normalbuffer);
       BufferTopFace(world, VoxRenderP, FaceColors);
     }
 
-    FaceColors = GetColorData( Voxel_White );
     if ( !BufferFrontFace(world, VoxRenderP, FaceColors) )
     {
       FlushVertexBuffer( world, colorbuffer, vertexbuffer, normalbuffer);
       BufferFrontFace(world, VoxRenderP, FaceColors);
     }
 
-    FaceColors = GetColorData( Voxel_Purple );
     if ( !BufferBackFace(world, VoxRenderP, FaceColors) )
     {
       FlushVertexBuffer( world, colorbuffer, vertexbuffer, normalbuffer);
@@ -868,6 +867,7 @@ DrawChunk(
 #endif
 
   BuildAndBufferChunkMesh( world, chunk, Camera, colorbuffer, vertexbuffer, normalbuffer );
+  FlushVertexBuffer (world, colorbuffer, vertexbuffer, normalbuffer );
 }
 
 void
@@ -882,11 +882,15 @@ DrawEntity(
 {
   assert(IsSet( entity->Model.flags, Chunk_Entity));
 
-  entity->Model.flags = UnSetFlag(entity->Model.flags, Chunk_RebuildInteriorBoundary);
-  entity->Model.flags = UnSetFlag(entity->Model.flags, Chunk_RebuildExteriorBoundary);
-
   /* DEBUG_DrawChunkAABB( world, &entity->Model, entity->Rotation ); */
   DEBUG_DrawChunkAABB( world, &entity->Model, Quaternion(1,0,0,0) );
+
+
+
+  //
+  // Don't flush models down this path because it implies world chunks
+  entity->Model.flags = UnSetFlag(entity->Model.flags, Chunk_RebuildInteriorBoundary);
+  entity->Model.flags = UnSetFlag(entity->Model.flags, Chunk_RebuildExteriorBoundary);
 
   if ( entity->Model.BoundaryVoxelCount == 0 )
   {
@@ -896,14 +900,9 @@ DrawEntity(
       if ( IsSet( v.flags, Voxel_Filled ) )
       {
         PushBoundaryVoxel( &entity->Model, v );
-
-        // debug
-        /* voxel_position P = GetVoxelP(chunk->Dim, i); */
-        /* printf("Buffering Boundary Voxel %d : %d %d %d \n", i, P.x, P.y, P.z); */
       }
     }
   }
-
   DrawChunk(
       world,
       &entity->Model,

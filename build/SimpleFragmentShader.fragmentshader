@@ -13,7 +13,7 @@ uniform mat4 MVP;
 
 void main()
 {
-  float Intensity = 6.0f;
+  float Intensity = 32.0f;
   float distance = length( LightP_worldspace - vertexP_worldspace);
 
   vec3 AmbientColor = MaterialColor * vec3(0.15f);
