@@ -15,6 +15,18 @@
 
 #define InvalidDefaultCase default: {assert(false);} break
 
+enum ChunkFlags {
+  Chunk_Uninitialized           = 1 << 0,
+
+  Chunk_Entity                  = 1 << 1,
+  Chunk_World                   = 1 << 2,
+  Chunk_RebuildExteriorBoundary = 1 << 3,
+  Chunk_RebuildInteriorBoundary = 1 << 4
+};
+enum VoxelFlags {
+  Voxel_Filled    = 1 << (FINAL_COLOR_BIT + 0)
+};
+
 inline int
 UnSetFlag( int Flags, int Flag )
 {
@@ -42,21 +54,6 @@ NotSet( int Flags, int Flag )
   bool Result = !(IsSet(Flags, Flag));
   return Result;
 }
-
-enum ChunkFlags {
-  Chunk_Uninitialized           = 1 << 0,
-
-  Chunk_Entity                  = 1 << 1,
-  Chunk_World                   = 1 << 2,
-  Chunk_RebuildExteriorBoundary = 1 << 3,
-  Chunk_RebuildInteriorBoundary = 1 << 4
-};
-
-
-enum VoxelFlags {
-  Voxel_Filled    = 1 << (FINAL_COLOR_BIT + 0)
-};
-
 
 struct Voxel
 {
@@ -90,21 +87,21 @@ SetVoxelColor(Voxel V, int w)
   return Result;
 }
 
-// This is buggy
-/* inline voxel_position */
-/* GetVoxelP(chunk_dimension Dim, int i) */
-/* { */
-/*   int x = i % Dim.x; */
-/*   int y = (i/Dim.x) % Dim.y ; */
-/*   int z = i / (Dim.x*Dim.y); */
+// TODO(Jesse): Is this buggy?
+inline voxel_position
+GetVoxelP(chunk_dimension Dim, int i)
+{
+ int x = i % Dim.x;
+ int y = (i/Dim.x) % Dim.y ;
+ int z = i / (Dim.x*Dim.y);
 
-  /* assert(x <= Dim.x); */
-  /* assert(y <= Dim.y); */
-  /* assert(z <= Dim.z); */
+ assert(x <= Dim.x);
+ assert(y <= Dim.y);
+ assert(z <= Dim.z);
 
-  /* voxel_position Result = Voxel_Position(x,y,z); */
-  /* return Result; */
-/* } */
+ voxel_position Result = Voxel_Position(x,y,z);
+ return Result;
+}
 
 inline voxel_position
 GetVoxelP(Voxel V)
@@ -323,7 +320,6 @@ struct collision_event
   bool didCollide;
 };
 
-
 Chunk*
 GetWorldChunk( World *world, world_position WorldP )
 {
@@ -453,8 +449,6 @@ ClampPositive( voxel_position V )
 
   return Result;
 }
-
-
 
 // NOTE : The maximum bound is non-inclusive; 0 is part of the chunk
 // while the furthest point in x,y or z is the next chunk
