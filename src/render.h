@@ -6,6 +6,28 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
 
+struct RenderBasis
+{
+  glm::mat4 ModelMatrix;
+  glm::mat4 ViewMatrix;
+  glm::mat4 ProjectionMatrix;
+};
+
+struct RenderGroup
+{
+  GLuint colorbuffer;
+  GLuint vertexbuffer;
+  GLuint normalbuffer;
+
+  GLuint MVPID;
+  GLuint ModelMatrixID;
+
+  GLuint LightPID;
+  GLuint LightTransformID;
+
+  RenderBasis Basis;
+};
+
 inline glm::mat4
 ToGLMat4(Quaternion q)
 {
@@ -29,5 +51,11 @@ GetRenderP( World *world, canonical_position P)
   return Result;
 }
 
+inline v3
+GetRenderP( World *world, Chunk *chunk)
+{
+  v3 Result = GetRenderP( world, Canonical_Position( chunk->Offset, chunk->WorldP) );
+  return Result;
+}
 
 #endif

@@ -151,7 +151,7 @@ LoadVox(char const *filepath)
     // TODO(Jesse) : Actually read all the data!
     while (bytesRemaining > 0)
     {
-      printf("%d\n", bytesRemaining);
+      /* printf("%d\n", bytesRemaining); */
 
       switch ( GetHeaderType(ModelFile, &bytesRemaining) )
       {
@@ -198,7 +198,7 @@ LoadVox(char const *filepath)
             minZ = Z < minZ ? Z : minZ;
 
             LocalVoxelCache[i] = GetVoxel(X,Y,Z,W);
-            printf("%d\n", W);
+            /* printf("%d\n", W); */
           }
 
 
@@ -221,7 +221,7 @@ LoadVox(char const *filepath)
             Result.Voxels[Index] = V;
 
             assert(GetVoxelColor(V) < PALETTE_SIZE);
-            printf("%d\n", GetVoxelColor(V));
+            /* printf("%d\n", GetVoxelColor(V)); */
             /* assert(GetVoxelColor(*V) == 121); */
           }
 

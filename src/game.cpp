@@ -12,33 +12,23 @@ GAME_UPDATE_AND_RENDER
     Entity *Player,
     Camera_Object *Camera,
     float dt,
-    glm::mat4 Projection,
 
-    GLuint vertexbuffer,
-    GLuint colorbuffer,
-    GLuint normalbuffer,
-
-    GLuint MatrixID,
-    GLuint ViewMatrixID,
-    GLuint ModelMatrixID,
-    GLuint LightPID,
-    GLuint LightTransformPID
+    RenderGroup *RG
   )
 {
+  //
+  // Clear the screen
+  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   if ( glfwGetKey(window, GLFW_KEY_ENTER ) == GLFW_PRESS )
   {
     printf("\n\n\n\n\n");
-
     srand(time(NULL));
-
     world->VisibleRegionOrigin = World_Position(0,0,0);
-
     do
     {
       PerlinNoise Noise(rand());
       world->Noise = Noise;
-
       ZeroWorldChunks(world);
       GenerateVisibleRegion( world , Voxel_Position(0,0,0) );
     } while (!SpawnPlayer( world, Player ) );
@@ -49,7 +39,6 @@ GAME_UPDATE_AND_RENDER
 
   v3 Input = GetInputsFromController(Camera);
   Player->Acceleration = Input * PLAYER_ACCEL_MULTIPLIER; // m/s2
-
   if (IsGrounded(world, Player))
   {
     if (glfwGetKey( window, GLFW_KEY_SPACE ) == GLFW_PRESS)
@@ -69,46 +58,16 @@ GAME_UPDATE_AND_RENDER
   UpdatePlayerP( world, Player, PlayerDelta );
   UpdateCameraP( world, Player, Camera );
 
-  glm::vec3 LightP = GLV3(V3(0,0,0));
-
-  // Clear the screen
-  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+  RG->Basis.ViewMatrix = GetViewMatrix(world, Camera);
 
   if (Length(Input) > 0)
-  {
     Player->Rotation = LookAt(Input);
-  }
-
-  glm::mat4 PlayerTransform =
-    Translate(
-      GetRenderP(world,
-        Canonical_Position(Player->Model.Offset, Player->Model.WorldP)
-      )
-    ) * ToGLMat4(Player->Rotation);
-
-  glm::mat4 ViewMatrix = GetViewMatrix(world, Camera);
-
-  // Send our transformation to the currently bound shader, in the "MVP" uniform
-  //
-  // This is done in the main loop since each model will have a different MVP matrix (At least for the M part)
-  glm::mat4 ModelMatrix = PlayerTransform;
-  glm::mat4 mvp = Projection * ViewMatrix * ModelMatrix;
-
-  glUniformMatrix4fv(MatrixID,          1, GL_FALSE, &mvp[0][0]);
-  glUniformMatrix4fv(ModelMatrixID,     1, GL_FALSE, &ModelMatrix[0][0]);
-  glUniformMatrix4fv(ViewMatrixID,      1, GL_FALSE, &ViewMatrix[0][0]);
-  glUniformMatrix4fv(LightTransformPID, 1, GL_FALSE, &PlayerTransform[0][0]);
-
-  glUniform3fv(LightPID, 1, &LightP[0]);
 
   DrawEntity(
     world,
     Player,
     Camera,
-    vertexbuffer,
-    colorbuffer,
-    normalbuffer
+    RG
   );
 
   // Draw world
@@ -116,25 +75,11 @@ GAME_UPDATE_AND_RENDER
   {
     Chunk *chunk = &world->Chunks[i];
 
-    ModelMatrix =
-      Translate(
-        GetRenderP(world,
-          Canonical_Position(chunk->Offset, chunk->WorldP)
-        )
-      );
-
-    mvp = Projection * ViewMatrix * ModelMatrix;
-    glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp[0][0]);
-    glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-    glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
-
-    DrawChunk(
+    DrawWorldChunk(
       world,
       chunk,
       Camera,
-      vertexbuffer,
-      colorbuffer,
-      normalbuffer
+      RG
     );
   }
 
@@ -236,11 +181,18 @@ main( void )
   // Use our shader
   glUseProgram(programID);
 
-  GLuint MatrixID           = glGetUniformLocation(programID, "MVP");
-  GLuint ModelMatrixID      = glGetUniformLocation(programID, "M");
-  GLuint ViewMatrixID       = glGetUniformLocation(programID, "V");
-  GLuint LightTransformPID  = glGetUniformLocation(programID, "LightTransform");
-  GLuint LightPID           = glGetUniformLocation(programID, "LightP_in");
+  RenderGroup RG;
+
+  GLuint MVPID             = glGetUniformLocation(programID, "MVP");
+  GLuint ModelMatrixID     = glGetUniformLocation(programID, "M");
+  GLuint LightTransformID  = glGetUniformLocation(programID, "LightTransform");
+  GLuint LightPID          = glGetUniformLocation(programID, "LightP_in");
+
+  RG.MVPID            = MVPID;
+  RG.ModelMatrixID    = ModelMatrixID;
+  RG.LightTransformID = LightTransformID;
+  RG.LightPID         = LightPID;
+
 
   /*
    *  Main Render loop
@@ -262,22 +214,19 @@ main( void )
     CALLGRIND_START_INSTRUMENTATION;
     CALLGRIND_TOGGLE_COLLECT;
 
+    RG.vertexbuffer = vertexbuffer;
+    RG.colorbuffer = colorbuffer;
+    RG.normalbuffer = normalbuffer;
+
+    RG.Basis.ProjectionMatrix = Projection;
+
     GAME_UPDATE_AND_RENDER(
       &world,
       &Player,
       &Camera,
       dt,
-      Projection,
 
-      vertexbuffer,
-      colorbuffer,
-      normalbuffer,
-
-      MatrixID,
-      ViewMatrixID,
-      ModelMatrixID,
-      LightPID,
-      LightTransformPID
+      &RG
     );
 
     CALLGRIND_TOGGLE_COLLECT;

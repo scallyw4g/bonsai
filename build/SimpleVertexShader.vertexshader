@@ -15,9 +15,7 @@ out vec3 LightDirection_worldspace;
 
 uniform mat4 MVP;
 uniform mat4 M;
-uniform mat4 V;
 uniform mat4 LightTransform;
-
 uniform vec3 LightP_in;
 
 void main()
