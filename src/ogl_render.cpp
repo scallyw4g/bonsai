@@ -294,13 +294,13 @@ bool BufferFrontFace(
 
   float localNormalData[] =
   {
-    1, 0, 0,
-    1, 0, 0,
-    1, 0, 0,
+    0, 0, -1,
+    0, 0, -1,
+    0, 0, -1,
 
-    1, 0, 0,
-    1, 0, 0,
-    1, 0, 0
+    0, 0, -1,
+    0, 0, -1,
+    0, 0, -1
   };
 
   return BufferLocalFace;
@@ -377,7 +377,8 @@ LookAt( v3 P )
 
   // Apparently theta is supposed to be divided by 2 here (according to the
   // internet) but that seems to yield a half rotation, so I took it out..
-  Quaternion Result( cos(theta), RotAxis*sin(theta) );
+  // Quaternion Result( cos(theta/2), (RotAxis*sin(theta/2)) );
+  Quaternion Result( cos(theta), (RotAxis*sin(theta)) );
   return Result;
 }
 
@@ -459,7 +460,7 @@ DEBUG_DrawLine(World *world, v3 RenderSpaceP1, v3 RenderSpaceP2)
 /* } */
 
 void
-DEBUG_DrawAABB( World *world, v3 MinP, v3 MaxP, Quaternion Rotation = Quaternion(0,0,0,1) )
+DEBUG_DrawAABB( World *world, v3 MinP, v3 MaxP, Quaternion Rotation = Quaternion(1,0,0,0) )
 {
   /* v3 HalfDim = (GetRenderP(world, MaxCP) - GetRenderP(world, MinCP)) / 2; */
 
@@ -544,32 +545,28 @@ FlushMVPToHardware(RenderGroup *RG)
 }
 
 void
-ComputeAndFlushMVP(World *world, RenderGroup *RG, v3 ModelToWorldSpace )
+ComputeAndFlushMVP(World *world, RenderGroup *RG, v3 ModelToWorldSpace, Quaternion Rotation = Quaternion(1,0,0,0) )
 {
-  RG->Basis.ModelMatrix = Translate(ModelToWorldSpace);
-
+  RG->Basis.ModelMatrix = Translate(ModelToWorldSpace) * ToGLMat4(Rotation);
   FlushMVPToHardware(RG);
-
-  return;
-}
-
-void
-ComputeAndFlushMVP(World *world, RenderGroup *RG, v3 ModelToWorldSpace, Quaternion Rotation)
-{
-  ComputeAndFlushMVP(world, RG, ModelToWorldSpace);
-
-  RG->Basis.ModelMatrix *= ToGLMat4(Rotation);
-
-  FlushMVPToHardware(RG);
-
   return;
 }
 
 void
 ComputeAndFlushMVP(World *world, RenderGroup *RG, Chunk *chunk, Quaternion Rotation )
 {
-  ComputeAndFlushMVP( world, RG, GetRenderP(world, chunk) , Rotation );
+  v3 HalfDim = chunk->Dim/2;
+  ComputeAndFlushMVP( world, RG, GetRenderP(world, chunk) + HalfDim, Rotation );
   return;
+}
+
+v3
+GetModelSpaceP(Chunk *chunk, v3 P)
+{
+  v3 HalfDim = chunk->Dim/2;
+  v3 Result = P - HalfDim;
+
+  return Result;
 }
 
 void
@@ -577,11 +574,11 @@ DEBUG_DrawChunkAABB( World *world, RenderGroup *RG, Chunk *chunk, Quaternion Rot
 {
   if ( chunk->BoundaryVoxelCount == 0 ) return;
 
-  v3 HD = chunk->Dim/2;
-  v3 Offset = V3(HD.x, 0, HD.z);;
+  v3 MinP = GetModelSpaceP(chunk, V3(0,0,0));
+  v3 MaxP = GetModelSpaceP(chunk, V3(chunk->Dim));
 
   ComputeAndFlushMVP(world, RG, chunk, Rotation );
-  DEBUG_DrawAABB(world, Offset*-1, V3(chunk->Dim)-Offset, Rotation );
+  DEBUG_DrawAABB(world, MinP, MaxP , Rotation );
 }
 
 inline bool
@@ -838,20 +835,18 @@ BuildAndBufferChunkMesh(
 
     GetColorData(GetVoxelColor(V), &FaceColors[0]);;
 
-    v3 HD = chunk->Dim/2;
-    voxel_position Offset = GetVoxelP(V) - V3(HD.x, 0, HD.z);;
-    glm::vec3 VoxRenderP = GLV3(V3(Offset));
+    glm::vec3 ModelSpaceP = GLV3(GetModelSpaceP(chunk, V3(GetVoxelP(V))));
 
-    /* glm::vec3 VoxelToCamera = glm::normalize(GLCameraRenderP - VoxRenderP); */
+    /* glm::vec3 VoxelToCamera = glm::normalize(GLCameraRenderP - ModelSpaceP); */
 
-    BufferRightFace(world, VoxRenderP, FaceColors);
-    BufferLeftFace(world, VoxRenderP, FaceColors);
+    BufferRightFace(world, ModelSpaceP, FaceColors);
+    BufferLeftFace(world, ModelSpaceP, FaceColors);
 
-    BufferBottomFace(world, VoxRenderP, FaceColors);
-    BufferTopFace(world, VoxRenderP, FaceColors);
+    BufferBottomFace(world, ModelSpaceP, FaceColors);
+    BufferTopFace(world, ModelSpaceP, FaceColors);
 
-    BufferFrontFace(world, VoxRenderP, FaceColors);
-    BufferBackFace(world, VoxRenderP, FaceColors);
+    BufferFrontFace(world, ModelSpaceP, FaceColors);
+    BufferBackFace(world, ModelSpaceP, FaceColors);
   }
 
   return;
@@ -866,12 +861,13 @@ DrawWorldChunk(
   )
 {
 #if DEBUG_CHUNK_AABB
-  DEBUG_DrawChunkAABB( world, chunk, RG, Quaternion(0,0,0,1) );
+  DEBUG_DrawChunkAABB( world, chunk, RG, Quaternion(1,0,0,0) );
 #endif
 
+
+  ComputeAndFlushMVP( world, RG, chunk, Quaternion(1,0,0,0) );
   BuildAndBufferChunkMesh( world, chunk, Camera, RG );
 
-  ComputeAndFlushMVP( world, RG, chunk, Quaternion(0,0,0,1) );
   FlushVertexBuffer(world, RG );
 }
 
@@ -886,7 +882,7 @@ DrawEntity(
   assert(IsSet( entity->Model.flags, Chunk_Entity));
 
   /* DEBUG_DrawChunkAABB( world, RG, &entity->Model, entity->Rotation ); */
-  DEBUG_DrawChunkAABB( world, RG, &entity->Model, Quaternion(0,0,0,1) );
+  DEBUG_DrawChunkAABB( world, RG, &entity->Model, Quaternion(1,0,0,0) );
 
   //
   // Don't flush models down this path because it implies world chunks
@@ -905,12 +901,13 @@ DrawEntity(
     }
   }
 
-  ComputeAndFlushMVP(world, RG, &entity->Model, entity->Rotation);
-
   // Debug light code
   glm::vec3 LightP = GLV3(V3(0,0,0));
   glUniform3fv(RG->LightPID, 1, &LightP[0]);
   glUniformMatrix4fv(RG->LightTransformID, 1, GL_FALSE, &RG->Basis.ModelMatrix[0][0]);
+  //
+
+  ComputeAndFlushMVP(world, RG, &entity->Model, entity->Rotation);
 
   BuildAndBufferChunkMesh( world, &entity->Model, Camera, RG );
   FlushVertexBuffer (world, RG );

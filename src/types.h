@@ -34,7 +34,7 @@ union v3 {
 };
 
 union v4 {
-  struct { float x, y, z, w; };
+  struct { float w, x, y, z; };
   struct { float r, g, b, a; };
 
   struct {
@@ -58,10 +58,10 @@ union v4 {
 
   v4(v3 v, float w)
   {
+    this->w = w;
     this->x = v.x;
     this->y = v.y;
     this->z = v.z;
-    this->w = w;
   }
 
   v4(float w, v3 v)
@@ -69,7 +69,7 @@ union v4 {
     *this = v4(v, w);
   }
 
-  v4(float x, float y, float z, float w)
+  v4(float w, float x, float y, float z)
   {
     this->x = x;
     this->y = y;
@@ -466,7 +466,7 @@ v2 V2(float x,float y)
   return Result;
 }
 
-v4 V4(int x,int y,int z,int w)
+v4 V4(int w, int x, int y, int z)
 {
   v4 Result;
 
@@ -778,7 +778,7 @@ GLV3( v3 Vec )
 inline Quaternion
 Conjugate( Quaternion q )
 {
-  Quaternion Result(-q.x, -q.y, -q.z, q.w);
+  Quaternion Result(q.w, -q.x, -q.y, -q.z);
   return Result;
 }
 
