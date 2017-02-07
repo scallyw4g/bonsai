@@ -671,11 +671,11 @@ BuildExteriorBoundaryVoxels( World *world, World_Chunk *chunk, voxel_position Ne
 
   voxel_position Start = Voxel_Position(0,0,0);
 
-  for ( int x = Start.x; x < LocalPlane.x; ++x )
+  for ( int z = Start.z; z < LocalPlane.z; ++z )
   {
     for ( int y = Start.y; y < LocalPlane.y; ++y )
     {
-      for ( int z = Start.z; z < LocalPlane.z; ++z )
+      for ( int x = Start.x; x < LocalPlane.x; ++x )
       {
         voxel_position LocalVoxelP = Voxel_Position(x+LocalOffset.x, y+LocalOffset.y, z+LocalOffset.z);
 
@@ -725,11 +725,11 @@ BuildInteriorBoundaryVoxels(World *world, World_Chunk *WorldChunk)
 
   chunk->flags = UnSetFlag( chunk->flags, Chunk_RebuildInteriorBoundary );
 
-  for ( int x = 0; x < chunk->Dim.x ; ++x )
+  for ( int z = 0; z < chunk->Dim.z ; ++z )
   {
     for ( int y = 0; y < chunk->Dim.y ; ++y )
     {
-      for ( int z = 0; z < chunk->Dim.z ; ++z )
+      for ( int x = 0; x < chunk->Dim.x ; ++x )
       {
         canonical_position VoxelP = Canonical_Position(V3(x,y,z), WorldChunk->WorldP);
         VoxelP = Canonicalize(world, VoxelP);

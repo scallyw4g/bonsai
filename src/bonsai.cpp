@@ -79,11 +79,11 @@ InitializeVoxels( World *world, World_Chunk *WorldChunk )
 
   chunk->flags = UnSetFlag(chunk->flags, Chunk_Uninitialized);
 
-  for ( int x = 0; x < chunk->Dim.x; ++ x)
+  for ( int z = 0; z < chunk->Dim.z; ++ z)
   {
     for ( int y = 0; y < chunk->Dim.y; ++ y)
     {
-      for ( int z = 0; z < chunk->Dim.z; ++ z)
+      for ( int x = 0; x < chunk->Dim.x; ++ x)
       {
         int i = GetIndex(Voxel_Position(x,y,z), chunk);
         chunk->Voxels[i] = SetVoxelP(chunk->Voxels[i], Voxel_Position(x,y,z));
@@ -127,11 +127,11 @@ void
 ZeroWorldChunks( World *world )
 {
   world->VertexCount = 0;
-  for ( int x = 0; x < world->VisibleRegion.x; ++x )
+  for ( int z = 0; z < world->VisibleRegion.z; ++z )
   {
     for ( int y = 0; y < world->VisibleRegion.y; ++y )
     {
-      for ( int z = 0; z < world->VisibleRegion.z; ++z )
+      for ( int x = 0; x < world->VisibleRegion.x; ++x )
       {
         World_Chunk *chunk = GetWorldChunk(world, World_Position(x,y,z));
         ZeroChunk(&chunk->Data);
@@ -175,18 +175,6 @@ GetInputsFromController(Camera_Object *Camera)
   return UpdateDir;
 }
 
-inline voxel_position
-RealToVoxelP( v3 RealP )
-{
-  voxel_position Result;
-
-  Result.x = (int)RealP.x;
-  Result.y = (int)RealP.y;
-  Result.z = (int)RealP.z;
-
-  return Result;
-}
-
 collision_event
 GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
 {
@@ -209,11 +197,11 @@ GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
   if ( TestP.Offset.z == Floorf(TestP.Offset.z) )
     MaxP.z -= 1.0f;
 
-  for ( int x = MinP.x; x <= MaxP.x; x++ )
+  for ( int z = MinP.z; z <= MaxP.z; z++ )
   {
     for ( int y = MinP.y; y <= MaxP.y; y++ )
     {
-      for ( int z = MinP.z; z <= MaxP.z; z++ )
+      for ( int x = MinP.x; x <= MaxP.x; x++ )
       {
         canonical_position LoopTestP = Canonicalize( world, V3(x,y,z), TestP.WorldP );
 
@@ -335,6 +323,7 @@ GetAtomicUpdateVector( v3 Gross )
 
   return Result;
 }
+
 inline float
 ClampMinus1toInfinity( float f )
 {
@@ -379,11 +368,11 @@ GenerateVisibleRegion( World *world, voxel_position GrossUpdateVector )
   voxel_position UpdateMax = ClampMinus1toInfinity( IterVector * world->VisibleRegion );
   voxel_position UpdateMin = ClampPositive( -1 * IterVector * (world->VisibleRegion -1) );
 
-  for ( int x = UpdateMin.x; x != UpdateMax.x; x += IterVector.x )
+  for ( int z = UpdateMin.z; z != UpdateMax.z; z += IterVector.z )
   {
     for ( int y = UpdateMin.y; y != UpdateMax.y; y += IterVector.y )
     {
-      for ( int z = UpdateMin.z; z != UpdateMax.z; z += IterVector.z )
+      for ( int x = UpdateMin.x; x != UpdateMax.x; x += IterVector.x )
       {
         world_position CurrentP = World_Position(x,y,z);
 
@@ -607,11 +596,11 @@ AllocateWorld( World *world )
 
   world->VisibleRegionOrigin = World_Position(0,0,0);
 
-  for ( int x = 0; x < world->VisibleRegion.x; ++ x )
+  for ( int z = 0; z < world->VisibleRegion.z; ++ z )
   {
     for ( int y = 0; y < world->VisibleRegion.y; ++ y )
     {
-      for ( int z = 0; z < world->VisibleRegion.z; ++ z )
+      for ( int x = 0; x < world->VisibleRegion.x; ++ x )
       {
         int ChunksAllocated = x +
           (y*world->VisibleRegion.x) +

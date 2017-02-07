@@ -205,11 +205,11 @@ AllocateChunk(chunk_dimension Dim)
 
   ZeroChunk(&Result);
 
-  for (int x = 0; x < Result.Dim.x; ++x)
+  for (int z = 0; z < Result.Dim.z; ++z)
   {
     for (int y = 0; y < Result.Dim.y; ++y)
     {
-      for (int z = 0; z < Result.Dim.z; ++z)
+      for (int x = 0; x < Result.Dim.x; ++x)
       {
         voxel_position P = Voxel_Position(x,y,z);
         int i = GetIndex(P, &Result);

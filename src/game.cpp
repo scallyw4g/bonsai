@@ -233,8 +233,8 @@ main( void )
 
     if ( T2.tv_sec - T1.tv_sec > 0 ) T1.tv_nsec -= 1000000000;
 
-    /* printf(" %d ms this frame \n\n\n", */
-    /*     (int)(T2.tv_nsec -T1.tv_nsec)/1000000 ); */
+    printf(" %d ms this frame \n\n\n",
+        (int)(T2.tv_nsec -T1.tv_nsec)/1000000 );
 
     /* printf(" %d triangles \n", tris); */
     tris=0;
