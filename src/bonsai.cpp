@@ -201,19 +201,13 @@ GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
   // We need to check if the TestP is exactly on a voxel boundary.
   // if it is, don't include the next voxel in our detection.
   if ( TestP.Offset.x == Floorf(TestP.Offset.x) )
-  {
     MaxP.x -= 1.0f;
-  }
 
   if ( TestP.Offset.y == Floorf(TestP.Offset.y) )
-  {
     MaxP.y -= 1.0f;
-  }
 
   if ( TestP.Offset.z == Floorf(TestP.Offset.z) )
-  {
     MaxP.z -= 1.0f;
-  }
 
   for ( int x = MinP.x; x <= MaxP.x; x++ )
   {
@@ -257,7 +251,6 @@ GetCollision(World *world, Entity *entity, v3 Offset = V3(0,0,0) )
   return C;
 }
 
-
 inline bool
 IsGrounded( World *world, Entity *entity)
 {
@@ -272,7 +265,6 @@ SpawnPlayer( World *world, Entity *Player )
 
   /* Model->Voxels[0].flags = 0; */
   /* Model->Voxels[0].flags = SetFlag( Model->Voxels[0].flags, Voxel_Filled); */
-
   /* Model->Voxels[0] = SetVoxelP( Model->Voxels[0], Voxel_Position(0,0,0) ); */
 
   Player->Acceleration = V3(0,0,0);

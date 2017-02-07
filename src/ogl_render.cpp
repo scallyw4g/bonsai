@@ -891,7 +891,7 @@ DrawEntity(
     RenderGroup *RG
   )
 {
-  assert(IsSet( entity->Model.flags, Chunk_Entity));
+  assert( IsSet(entity->Model.flags, Chunk_Entity) );
 
   /* DEBUG_DrawChunkAABB( world, RG, &entity->Model, entity->Rotation ); */
   /* DEBUG_DrawChunkAABB( world, RG, &entity->Model, Quaternion(1,0,0,0) ); */
@@ -901,12 +901,10 @@ DrawEntity(
   v3 HalfDim = V3(0,0,0);
   ComputeAndFlushMVP( world, RG, GetRenderP(world, entity->P ) + HalfDim, Quaternion(1,0,0,0) );
 
-  v3 MinP = GetModelSpaceP(&entity->Model, V3(0,0,0));
-  v3 MaxP = GetModelSpaceP(&entity->Model, V3(entity->Model.Dim));
-
+  /* v3 MinP = GetModelSpaceP(&entity->Model, V3(0,0,0)); */
+  /* v3 MaxP = GetModelSpaceP(&entity->Model, V3(entity->Model.Dim)); */
   /* DEBUG_DrawAABB(world, MinP, MaxP , Quaternion(1,0,0,0) ); */
 
-  //
   // Don't flush models down this path because it implies world chunks
   entity->Model.flags = UnSetFlag(entity->Model.flags, Chunk_RebuildInteriorBoundary);
   entity->Model.flags = UnSetFlag(entity->Model.flags, Chunk_RebuildExteriorBoundary);

@@ -28,6 +28,8 @@ corrected in shader
 [ ] FIXME: There's a collision detection bug when the world is small and a
 model is pretty big.  Think 3^3 8^3 chunks with a 16^3 model
 
+[ ] FIXME: Change world iterations to go from index 0->max instead of all over
+the map
 
 
 --- Misc
