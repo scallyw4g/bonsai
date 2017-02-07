@@ -46,11 +46,8 @@ GAME_UPDATE_AND_RENDER
       Player->Velocity.y += 8.0f; // Jump
     }
   }
-  else
-  {
-    Player->Acceleration += world->Gravity * dt; // Apply Gravity
-  }
 
+  Player->Acceleration += world->Gravity * dt; // Apply Gravity
   Player->Velocity = (Player->Velocity + (Player->Acceleration )) * drag; // m/s
 
   v3 PlayerDelta = Player->Velocity * dt;
@@ -73,7 +70,7 @@ GAME_UPDATE_AND_RENDER
   // Draw world
   for ( int i = 0; i < Volume(world->VisibleRegion); ++ i )
   {
-    Chunk *chunk = &world->Chunks[i];
+    World_Chunk *chunk = &world->Chunks[i];
 
     DrawWorldChunk(
       world,
@@ -263,8 +260,8 @@ main( void )
 
   for ( int i = 0; i < Volume(world.VisibleRegion) ; ++ i )
   {
-    free( world.Chunks[i].Voxels );
-    free( world.Chunks[i].BoundaryVoxels );
+    free( world.Chunks[i].Data.Voxels );
+    free( world.Chunks[i].Data.BoundaryVoxels );
   }
 
   free( world.VertexData.Data );

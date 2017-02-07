@@ -154,20 +154,14 @@ GetVoxel(int x, int y, int z, int w)
 
 struct Chunk
 {
+  int flags;
+  int BoundaryVoxelCount;
+
   Voxel *Voxels;
 
   Voxel *BoundaryVoxels;
-  int BoundaryVoxelCount;
 
   chunk_dimension Dim;
-
-  // Position in absolute world coordinates.  A chunk is one world coordinate
-  voxel_position WorldP;
-
-  // Position within the chunk this is contained in, if applicable
-  v3 Offset;
-
-  int flags;
 };
 
 void
@@ -200,14 +194,11 @@ GetIndex(voxel_position P, Chunk *chunk)
 }
 
 Chunk
-AllocateChunk(chunk_dimension Dim, voxel_position WorldP)
+AllocateChunk(chunk_dimension Dim)
 {
   Chunk Result;
 
   Result.Dim = Dim;
-
-  Result.WorldP = WorldP;
-  Result.Offset = V3(0,0,0);
 
   Result.Voxels = (Voxel*)calloc(Volume(Dim), sizeof(Voxel));
   Result.BoundaryVoxels = (Voxel*)calloc(Volume(Dim), sizeof(Voxel));
@@ -230,29 +221,22 @@ AllocateChunk(chunk_dimension Dim, voxel_position WorldP)
   return Result;
 }
 
-struct ChunkStack
+struct World_Chunk
 {
-  Chunk *chunks; // This should be Volume(VisibleRegion) chunks
-  int count = 0;
+  Chunk Data;
+  world_position WorldP;
 };
 
-Chunk
-PopChunkStack(ChunkStack *stack)
+World_Chunk
+AllocateWorldChunk(chunk_dimension Dim, voxel_position WorldP)
 {
-  Chunk Result = stack->chunks[--stack->count];
+  World_Chunk Result;
+  Result.Data = AllocateChunk(Dim);
 
-  assert(stack->count >= 0);
+  Result.WorldP = WorldP;
+
   return Result;
-};
-
-void
-PushChunkStack(ChunkStack *stack, Chunk chunk)
-{
-  assert(stack->count + 1 < CHUNK_STACK_SIZE);
-
-  stack->chunks[stack->count++] = chunk;
-  return;
-};
+}
 
 struct Frustum
 {
@@ -281,9 +265,45 @@ struct VertexBlock
   int filled;
 };
 
+struct Entity
+{
+  Chunk Model;
+  v3 Velocity;
+  v3 Acceleration;
+
+  canonical_position P;
+
+  Quaternion Rotation = Quaternion(1,0,0,0);
+};
+
+struct ChunkStack
+{
+  World_Chunk *chunks; // This should be Volume(VisibleRegion) chunks
+  int count = 0;
+};
+
+World_Chunk
+PopChunkStack(ChunkStack *stack)
+{
+  World_Chunk Result = stack->chunks[--stack->count];
+
+  assert(stack->count >= 0);
+  return Result;
+};
+
+void
+PushChunkStack(ChunkStack *stack, World_Chunk chunk)
+{
+  assert(stack->count + 1 < CHUNK_STACK_SIZE);
+
+  stack->chunks[stack->count++] = chunk;
+  return;
+};
+
+
 struct World
 {
-  Chunk *Chunks;
+  World_Chunk *Chunks;
 
   ChunkStack FreeChunks;
 
@@ -305,25 +325,16 @@ struct World
   int VertexCount; // How many verticies are we drawing
 };
 
-struct Entity
-{
-  Chunk Model;
-  v3 Velocity;
-  v3 Acceleration;
-
-  Quaternion Rotation = Quaternion(0,0,0,0);
-};
-
 struct collision_event
 {
   canonical_position CP;
   bool didCollide;
 };
 
-Chunk*
+World_Chunk*
 GetWorldChunk( World *world, world_position WorldP )
 {
-  Chunk *Result;
+  World_Chunk *Result;
 
   if (
     WorldP.x < 0 ||
@@ -376,32 +387,32 @@ IsFacingPoint( glm::vec3 FaceToPoint, v3 FaceNormal )
 }
 
 inline bool
-IsFilledInWorld( Chunk *chunk, voxel_position VoxelP )
+IsFilledInWorld( World_Chunk *chunk, voxel_position VoxelP )
 {
   bool isFilled = true;
 
   if (chunk)
   {
-    int i = GetIndex(VoxelP, chunk);
+    int i = GetIndex(VoxelP, &chunk->Data);
 
     assert(i > -1);
-    assert(i < Volume(chunk->Dim));
-    assert(VoxelP == GetVoxelP(chunk->Voxels[i]));
+    assert(i < Volume(chunk->Data.Dim));
+    assert(VoxelP == GetVoxelP(chunk->Data.Voxels[i]));
 
-    isFilled = IsSet(chunk->Voxels[i].flags, Voxel_Filled);
+    isFilled = IsSet(chunk->Data.Voxels[i].flags, Voxel_Filled);
   }
 
   return isFilled;
 }
 
 inline bool
-IsFilledInWorld( World *world, Chunk *chunk, canonical_position VoxelP )
+IsFilledInWorld( World *world, World_Chunk *chunk, canonical_position VoxelP )
 {
   bool isFilled = true;
 
   if ( chunk )
   {
-    Chunk *localChunk = chunk;
+    World_Chunk *localChunk = chunk;
 
     if ( chunk->WorldP != VoxelP.WorldP )
     {
@@ -415,7 +426,7 @@ IsFilledInWorld( World *world, Chunk *chunk, canonical_position VoxelP )
 }
 
 inline bool
-NotFilledInWorld( World *world, Chunk *chunk, canonical_position VoxelP )
+NotFilledInWorld( World *world, World_Chunk *chunk, canonical_position VoxelP )
 {
   bool Result = !(IsFilledInWorld(world,chunk,VoxelP));
   return Result;
@@ -424,7 +435,7 @@ NotFilledInWorld( World *world, Chunk *chunk, canonical_position VoxelP )
 bool
 IsFilled( Chunk *chunk, voxel_position VoxelP )
 {
-  int i = GetIndex( VoxelP, chunk);
+  int i = GetIndex(VoxelP, chunk);
 
   assert(i > -1);
   assert(i < Volume(chunk->Dim));

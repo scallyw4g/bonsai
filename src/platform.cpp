@@ -205,7 +205,7 @@ LoadVox(char const *filepath)
           v3 Min = V3(minX, minY, minZ);
           chunk_dimension Dim = Chunk_Dimension(maxX+1, maxY+1, maxZ+1) - Min;
 
-          Result = AllocateChunk(Dim, World_Position(0,0,0));
+          Result = AllocateChunk(Dim);
 
           for( int i = 0; i < numVoxels; ++ i)
           {

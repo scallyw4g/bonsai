@@ -70,9 +70,11 @@ initWindow( int width, int height )
 }
 
 void
-InitializeVoxels( World *world, Chunk *chunk )
+InitializeVoxels( World *world, World_Chunk *WorldChunk )
 {
-  assert(chunk);
+  assert(WorldChunk);
+
+  Chunk *chunk = &WorldChunk->Data;
   CALLGRIND_TOGGLE_COLLECT;
 
   chunk->flags = UnSetFlag(chunk->flags, Chunk_Uninitialized);
@@ -91,7 +93,7 @@ InitializeVoxels( World *world, Chunk *chunk )
 
 #if DEBUG_WORLD_GENERATION
         v3 NoiseInputs =
-          ( ( V3(x,y,z) + (world->ChunkDim*(chunk->WorldP+world->VisibleRegionOrigin))) % WORLD_SIZE )
+          ( ( V3(x,y,z) + (world->ChunkDim*(WorldChunk->WorldP+world->VisibleRegionOrigin))) % WORLD_SIZE )
           /
           WORLD_SIZE;
 
@@ -131,8 +133,8 @@ ZeroWorldChunks( World *world )
     {
       for ( int z = 0; z < world->VisibleRegion.z; ++z )
       {
-        Chunk *chunk = GetWorldChunk(world, World_Position(x,y,z));
-        ZeroChunk(chunk);
+        World_Chunk *chunk = GetWorldChunk(world, World_Position(x,y,z));
+        ZeroChunk(&chunk->Data);
       }
     }
   }
@@ -191,6 +193,8 @@ GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
   collision_event Collision;
   Collision.didCollide = false;
 
+  TestP = Canonicalize(world, TestP);
+
   v3 MinP = TestP.Offset;
   v3 MaxP = (TestP.Offset + ModelDim);
 
@@ -219,7 +223,7 @@ GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
       {
         canonical_position LoopTestP = Canonicalize( world, V3(x,y,z), TestP.WorldP );
 
-        Chunk *chunk = GetWorldChunk( world, LoopTestP.WorldP );
+        World_Chunk *chunk = GetWorldChunk( world, LoopTestP.WorldP );
 
         if ( IsFilledInWorld(chunk, Voxel_Position(LoopTestP.Offset)) )
         {
@@ -236,12 +240,28 @@ end:
   return Collision;
 }
 
+collision_event
+GetCollision(World *world, Entity *entity, v3 Offset = V3(0,0,0) )
+{
+  collision_event C;
+
+  for (int i = 0; i < entity->Model.BoundaryVoxelCount; ++i)
+  {
+    canonical_position CP = Canonical_Position( V3(GetVoxelP(entity->Model.BoundaryVoxels[i])) + entity->P.Offset + Offset, entity->P.WorldP);
+    C = GetCollision(world, CP, Chunk_Dimension(1,1,1) );
+
+    if (C.didCollide)
+      return C;
+  }
+
+  return C;
+}
+
+
 inline bool
 IsGrounded( World *world, Entity *entity)
 {
-  v3 groundTolerance = V3(0, 0.01f, 0);
-  canonical_position TestP = Canonicalize(world, entity->Model.Offset - groundTolerance, entity->Model.WorldP);
-  collision_event c = GetCollision(world, TestP, entity->Model.Dim );
+  collision_event c = GetCollision(world, entity, V3(0,-0.001, 0));
   return c.didCollide;
 }
 
@@ -282,14 +302,13 @@ SpawnPlayer( World *world, Entity *Player )
 
   } while ( Collision.didCollide == true );
 
-  Model->Offset = TestP.Offset;
-  Model->WorldP = TestP.WorldP;
+  Player->P = TestP;
 
   return true;
 }
 
 v3
-GetAtomicUpdateVector( v3 Gross, float length )
+GetAtomicUpdateVector( v3 Gross )
 {
   v3 Result = Gross;
 
@@ -376,14 +395,14 @@ GenerateVisibleRegion( World *world, voxel_position GrossUpdateVector )
       {
         world_position CurrentP = World_Position(x,y,z);
 
-        Chunk *chunk = GetWorldChunk(world, CurrentP);
-        Chunk *NextChunk = GetWorldChunk(world, CurrentP + GrossUpdateVector );
-        Chunk *PrevChunk = GetWorldChunk(world, CurrentP - GrossUpdateVector );
+        World_Chunk *chunk = GetWorldChunk(world, CurrentP);
+        World_Chunk *NextChunk = GetWorldChunk(world, CurrentP + GrossUpdateVector );
+        World_Chunk *PrevChunk = GetWorldChunk(world, CurrentP - GrossUpdateVector );
 
         // We're initializing the world
-        if ( IsSet(chunk->flags, Chunk_Uninitialized) )
+        if ( IsSet(chunk->Data.flags, Chunk_Uninitialized) )
         {
-          ZeroChunk(chunk);
+          ZeroChunk(&chunk->Data);
           InitializeVoxels( world, chunk );
           continue;
         }
@@ -400,7 +419,7 @@ GenerateVisibleRegion( World *world, voxel_position GrossUpdateVector )
         {
           *chunk = PopChunkStack(&world->FreeChunks);
           chunk->WorldP = CurrentP;
-          ZeroChunk(chunk);
+          ZeroChunk(&chunk->Data);
           InitializeVoxels( world, chunk );
         }
 
@@ -412,17 +431,17 @@ GenerateVisibleRegion( World *world, voxel_position GrossUpdateVector )
 }
 
 inline collision_event
-GetCollisionForUpdate(World* world, canonical_position *LegalP, v3 UpdateVector, int Sign, Chunk *model)
+GetCollisionForUpdate(World* world, canonical_position *LegalP, v3 UpdateVector, int Sign, Entity *entity)
 {
   collision_event Result;
 
   v3 Offset = LegalP->Offset + UpdateVector;
   canonical_position TestP = Canonicalize( world, Offset, LegalP->WorldP );
-  collision_event Collision = GetCollision( world, TestP, model->Dim );
+  collision_event Collision = GetCollision( world, entity );
   if ( Collision.didCollide )
   {
     assert( GetSign(Sign) != Zero );
-    Result.CP.Offset = Collision.CP.Offset - ClampMinus1toInfinity(model->Dim.x*Sign);
+    Result.CP.Offset = Collision.CP.Offset - ClampMinus1toInfinity(entity->Model.Dim.x*Sign);
     Result.CP.WorldP = Collision.CP.WorldP;
     Result.didCollide = true;
   }
@@ -440,104 +459,65 @@ GetCollisionForUpdate(World* world, canonical_position *LegalP, v3 UpdateVector,
 void
 UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
 {
-  Chunk *model = &Player->Model;
-
   v3 Remaining = GrossUpdateVector;
-
-  canonical_position LegalP;
-
-  LegalP.Offset = model->Offset;
-  LegalP.WorldP = model->WorldP;
+  canonical_position OriginalPlayerP = Player->P;
 
   while ( Remaining != V3(0,0,0) )
   {
     assert(LengthSq(Remaining) >= 0);
 
-    v3 UpdateVector = GetAtomicUpdateVector(Remaining, Length(Remaining));
+    v3 UpdateVector = GetAtomicUpdateVector(Remaining);
     Remaining -= UpdateVector;
 
-    canonical_position TestP = Canonicalize( world, LegalP + UpdateVector);
-    collision_event TestPCollision = GetCollision( world, TestP, model->Dim);
-
-    if ( TestPCollision.didCollide ) // Collision response
+    Player->P.Offset.x += UpdateVector.x;
+    Player->P = Canonicalize(world, Player->P);
+    if (GetCollision(world, Player).didCollide)
     {
-      collision_event C;
-
-      for (int i = 0; i < PLAYER_STEP_MAX + 1; ++i)
-      {
-        C = GetCollisionForUpdate(world, &LegalP, V3(UpdateVector.x,i,0), GetSign(UpdateVector.x), model);
-        LegalP.Offset.x = C.CP.Offset.x;
-        LegalP.WorldP.x = C.CP.WorldP.x;
-        if (C.didCollide)
-        {
-          if ( i == PLAYER_STEP_MAX)
-            Player->Velocity.x = 0;
-
-          continue;
-        }
-        else
-        {
-          LegalP.Offset.y += i;
-          break;
-        }
-      }
-
-      for (int i = 0; i < PLAYER_STEP_MAX + 1; ++i)
-      {
-        C = GetCollisionForUpdate(world, &LegalP, V3(0,i,UpdateVector.z), GetSign(UpdateVector.z), model);
-        LegalP.Offset.z = C.CP.Offset.z;
-        LegalP.WorldP.z = C.CP.WorldP.z;
-        if (C.didCollide)
-        {
-          if ( i == PLAYER_STEP_MAX)
-            Player->Velocity.z = 0;
-
-          continue;
-        }
-        else
-        {
-          LegalP.Offset.y += i;
-          break;
-        }
-      }
-
-      C = GetCollisionForUpdate(world, &LegalP, V3(0,UpdateVector.y,0), GetSign(UpdateVector.y), model);
-      LegalP.Offset.y = C.CP.Offset.y;
-      LegalP.WorldP.y = C.CP.WorldP.y;
-      if (C.didCollide)
-        Player->Velocity.y = 0;
-
+      Player->P.Offset.x -= UpdateVector.x;
+      Player->Velocity.x = 0;
+      Player->P = Canonicalize(world, Player->P);
     }
-    else // Didn't collide with anything, update Player
+
+
+    Player->P.Offset.y += UpdateVector.y;
+    Player->P = Canonicalize(world, Player->P);
+    if (GetCollision(world, Player).didCollide)
     {
-      LegalP = TestP;
+      Player->P.Offset.y -= UpdateVector.y;
+      Player->Velocity.y = 0;
+      Player->P = Canonicalize(world, Player->P);
+    }
+
+
+    Player->P.Offset.z += UpdateVector.z;
+    Player->P = Canonicalize(world, Player->P);
+    if (GetCollision(world, Player).didCollide)
+    {
+      Player->P.Offset.z -= UpdateVector.z;
+      Player->Velocity.z = 0;
+      Player->P = Canonicalize(world, Player->P);
     }
   }
 
-  // Finished collision detection, recanonicalize and update player p
-  canonical_position FinalP = Canonicalize( world, LegalP );
-
   // TODO(Jesse) : Can we still do some sanity checking here ?
   //
-  /* float DisplacementSq = LengthSq( GetRenderP(world, FinalP) - GetRenderP(world, Canonical_Position(model->Offset, model->WorldP)) ); */
+  /* float DisplacementSq = LengthSq( GetRenderP(world, Player->P) - GetRenderP(world, Canonical_Position(model->Offset, model->WorldP)) ); */
   /* float GrossUpdateLenghtSq = LengthSq(GrossUpdateVector); */
   /* float tolerance = PLAYER_STEP_MAX*PLAYER_STEP_MAX + 0.1; */
   /* assert(DisplacementSq - tolerance <= GrossUpdateLenghtSq); */
 
-  if ( FinalP.WorldP != Player->Model.WorldP && DEBUG_SCROLL_WORLD ) // We moved to the next chunk
+  if ( OriginalPlayerP.WorldP != Player->P.WorldP && DEBUG_SCROLL_WORLD ) // We moved to the next chunk
   {
-    voxel_position WorldDisp = ( FinalP.WorldP - Player->Model.WorldP );
+    voxel_position WorldDisp = (  Player->P.WorldP - OriginalPlayerP.WorldP );
 
     world->VisibleRegionOrigin += WorldDisp;
     GenerateVisibleRegion(world, WorldDisp);
 
-    FinalP.WorldP = Player->Model.WorldP;
+    Player->P.WorldP = OriginalPlayerP.WorldP ;
   }
 
-  assert ( GetCollision(world, FinalP, model->Dim ).didCollide == false );
-
-  model->Offset = FinalP.Offset;
-  model->WorldP = FinalP.WorldP;
+  Player->P = Canonicalize(world, Player->P);
+  assert ( GetCollision(world, Player ).didCollide == false );
 }
 
 void
@@ -546,7 +526,7 @@ UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera )
 #if DEBUG_CAMERA_FOCUS_ORIGIN
   canonical_position NewTarget = Canonical_Position( V3(0,0,0), World_Position(0,0,0) );
 #else
-  canonical_position NewTarget = Canonicalize(world, Player->Model.Offset, Player->Model.WorldP) + (Player->Model.Dim/2);
+  canonical_position NewTarget = Canonicalize(world, Player->P.Offset, Player->P.WorldP) + (Player->Model.Dim/2);
 #endif
 
   float FocalLength = CAMERA_FOCAL_LENGTH;
@@ -613,10 +593,10 @@ AllocateWorld( World *world )
 
   world->Gravity = V3(0, -9.8, 0);
 
-  world->Chunks = (Chunk*)calloc( Volume(world->VisibleRegion), sizeof(Chunk));
+  world->Chunks = (World_Chunk*)calloc( Volume(world->VisibleRegion), sizeof(World_Chunk));
 
   // Allocate a second chunks buffer for when we're updating visible region
-  world->FreeChunks.chunks = (Chunk*)calloc( Volume(world->VisibleRegion), sizeof(Chunk) );
+  world->FreeChunks.chunks = (World_Chunk*)calloc( Volume(world->VisibleRegion), sizeof(World_Chunk) );
 
   { // Allocate five chunks worth of vertices for the render buffer
     int BufferVertices = 5* (world->ChunkDim.x*world->ChunkDim.y*world->ChunkDim.z * VERT_PER_VOXEL * 3);
@@ -645,8 +625,8 @@ AllocateWorld( World *world )
           (y*world->VisibleRegion.x) +
           (z*world->VisibleRegion.x*world->VisibleRegion.y);
 
-        world->Chunks[ChunksAllocated] = AllocateChunk( world->ChunkDim, World_Position(x,y,z) );
-        world->Chunks[ChunksAllocated].flags = SetFlag( world->Chunks[ChunksAllocated].flags, Chunk_World);
+        world->Chunks[ChunksAllocated] = AllocateWorldChunk( world->ChunkDim, World_Position(x,y,z) );
+        world->Chunks[ChunksAllocated].Data.flags = SetFlag( world->Chunks[ChunksAllocated].Data.flags, Chunk_World);
       }
     }
   }

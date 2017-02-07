@@ -52,9 +52,9 @@ GetRenderP( World *world, canonical_position P)
 }
 
 inline v3
-GetRenderP( World *world, Chunk *chunk)
+GetRenderP( World *world, Entity *entity)
 {
-  v3 Result = GetRenderP( world, Canonical_Position( chunk->Offset, chunk->WorldP) );
+  v3 Result = GetRenderP(world, entity->P);
   return Result;
 }
 

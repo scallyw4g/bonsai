@@ -553,75 +553,79 @@ ComputeAndFlushMVP(World *world, RenderGroup *RG, v3 ModelToWorldSpace, Quaterni
 }
 
 void
-ComputeAndFlushMVP(World *world, RenderGroup *RG, Chunk *chunk, Quaternion Rotation )
+ComputeAndFlushMVP(World *world, RenderGroup *RG, Entity* entity)
 {
-  v3 HalfDim = chunk->Dim/2;
-  ComputeAndFlushMVP( world, RG, GetRenderP(world, chunk) + HalfDim, Rotation );
+  /* v3 HalfDim = entity->Model.Dim/2; */
+  v3 HalfDim = V3(0,0,0);
+  ComputeAndFlushMVP( world, RG, GetRenderP(world, entity->P ) + HalfDim /*, entity->Rotation*/ );
   return;
 }
 
 v3
 GetModelSpaceP(Chunk *chunk, v3 P)
 {
-  v3 HalfDim = chunk->Dim/2;
-  v3 Result = P - HalfDim;
+  /* v3 HalfDim = chunk->Dim/2; */
+  /* v3 Result = P - HalfDim; */
+
+  v3 Result = P;
 
   return Result;
 }
 
 void
-DEBUG_DrawChunkAABB( World *world, RenderGroup *RG, Chunk *chunk, Quaternion Rotation )
+DEBUG_DrawChunkAABB( World *world, RenderGroup *RG, World_Chunk *chunk, Quaternion Rotation )
 {
-  if ( chunk->BoundaryVoxelCount == 0 ) return;
+  if ( chunk->Data.BoundaryVoxelCount == 0 ) return;
 
-  v3 MinP = GetModelSpaceP(chunk, V3(0,0,0));
-  v3 MaxP = GetModelSpaceP(chunk, V3(chunk->Dim));
+  ComputeAndFlushMVP(world, RG, GetRenderP( world, Canonicalize(world, V3(0,0,0), chunk->WorldP)), Rotation);
 
-  ComputeAndFlushMVP(world, RG, chunk, Rotation );
+  v3 MinP = GetModelSpaceP(&chunk->Data, V3(0,0,0));
+  v3 MaxP = GetModelSpaceP(&chunk->Data, V3(chunk->Data.Dim));
+
   DEBUG_DrawAABB(world, MinP, MaxP , Rotation );
 }
 
-inline bool
-IsInFrustum(World *world, Camera_Object *Camera, canonical_position P)
-{
-  v3 CameraRight = Cross( WORLD_Y, Camera->Front);
+/* inline bool */
+/* IsInFrustum(World *world, Camera_Object *Camera, canonical_position P) */
+/* { */
+/*   v3 CameraRight = Cross( WORLD_Y, Camera->Front); */
 
-  v3 CameraRenderP = GetRenderP(world, Canonicalize(world, Camera->P));
+/*   v3 CameraRenderP = GetRenderP(world, Canonicalize(world, Camera->P)); */
 
-  v3 MinFrustP = CameraRenderP + (Camera->Front * Camera->Frust.farClip) - (CameraRight * (Camera->Frust.width/2));
-  v3 MaxFrustP = CameraRenderP + (CameraRight * (Camera->Frust.width/2));
+/*   v3 MinFrustP = CameraRenderP + (Camera->Front * Camera->Frust.farClip) - (CameraRight * (Camera->Frust.width/2)); */
+/*   v3 MaxFrustP = CameraRenderP + (CameraRight * (Camera->Frust.width/2)); */
 
-  if ( MinFrustP.x > MaxFrustP.x )
-  {
-    int tmp = MinFrustP.x;
-    MinFrustP.x = MaxFrustP.x;
-    MaxFrustP.x = tmp;
-  }
-  if ( MinFrustP.y > MaxFrustP.y )
-  {
-    int tmp = MinFrustP.y;
-    MinFrustP.y = MaxFrustP.y;
-    MaxFrustP.y = tmp;
-  }
-  if ( MinFrustP.z > MaxFrustP.z )
-  {
-    int tmp = MinFrustP.z;
-    MinFrustP.z = MaxFrustP.z;
-    MaxFrustP.z = tmp;
-  }
+/*   if ( MinFrustP.x > MaxFrustP.x ) */
+/*   { */
+/*     int tmp = MinFrustP.x; */
+/*     MinFrustP.x = MaxFrustP.x; */
+/*     MaxFrustP.x = tmp; */
+/*   } */
+/*   if ( MinFrustP.y > MaxFrustP.y ) */
+/*   { */
+/*     int tmp = MinFrustP.y; */
+/*     MinFrustP.y = MaxFrustP.y; */
+/*     MaxFrustP.y = tmp; */
+/*   } */
+/*   if ( MinFrustP.z > MaxFrustP.z ) */
+/*   { */
+/*     int tmp = MinFrustP.z; */
+/*     MinFrustP.z = MaxFrustP.z; */
+/*     MaxFrustP.z = tmp; */
+/*   } */
 
-  v3 TestRenderP = GetRenderP(world, P);
+/*   v3 TestRenderP = GetRenderP(world, P); */
 
-  if (((TestRenderP.x > MinFrustP.x && TestRenderP.x < MaxFrustP.x) &&
-       (TestRenderP.y > MinFrustP.y && TestRenderP.y < MaxFrustP.y) &&
-       (TestRenderP.z > MinFrustP.z && TestRenderP.z < MaxFrustP.z))
-     )
-  {
-    return true;
-  }
+/*   if (((TestRenderP.x > MinFrustP.x && TestRenderP.x < MaxFrustP.x) && */
+/*        (TestRenderP.y > MinFrustP.y && TestRenderP.y < MaxFrustP.y) && */
+/*        (TestRenderP.z > MinFrustP.z && TestRenderP.z < MaxFrustP.z)) */
+/*      ) */
+/*   { */
+/*     return true; */
+/*   } */
 
-  return false;
-}
+/*   return false; */
+/* } */
 
 voxel_position
 Clamp01( voxel_position V )
@@ -648,22 +652,22 @@ PushBoundaryVoxel( Chunk *chunk, Voxel voxel )
 }
 
 void
-BuildExteriorBoundaryVoxels( World *world, Chunk *chunk, voxel_position NeighborVector )
+BuildExteriorBoundaryVoxels( World *world, World_Chunk *chunk, voxel_position NeighborVector )
 {
-  Chunk *Neighbor = GetWorldChunk( world, chunk->WorldP + NeighborVector );
+  World_Chunk *Neighbor = GetWorldChunk( world, chunk->WorldP + NeighborVector );
 
   if ( !Neighbor )
     return; // We're on the edge of the world, we'll need to rebuild again when this chunk knows about all of its neighbors
 
-  chunk->flags = UnSetFlag( chunk->flags, Chunk_RebuildExteriorBoundary );
+  chunk->Data.flags = UnSetFlag( chunk->Data.flags, Chunk_RebuildExteriorBoundary );
 
   voxel_position nvSq = (NeighborVector*NeighborVector);
 
   voxel_position AbsInvNeighborVector = ((nvSq-1)*(nvSq-1));
 
-  voxel_position LocalPlane = ClampPositive(chunk->Dim-1) * AbsInvNeighborVector + 1;
+  voxel_position LocalPlane = ClampPositive(chunk->Data.Dim-1) * AbsInvNeighborVector + 1;
 
-  voxel_position LocalOffset = ClampPositive(chunk->Dim*NeighborVector - nvSq);
+  voxel_position LocalOffset = ClampPositive(chunk->Data.Dim*NeighborVector - nvSq);
 
   voxel_position Start = Voxel_Position(0,0,0);
 
@@ -680,14 +684,14 @@ BuildExteriorBoundaryVoxels( World *world, Chunk *chunk, voxel_position Neighbor
 
         voxel_position NeighborP = ClampPositive(
             (LocalVoxelP -
-            (chunk->Dim * NeighborVector) ) -
+            (chunk->Data.Dim * NeighborVector) ) -
             (NeighborVector*NeighborVector));
 
         if ( ! IsFilledInWorld( Neighbor, NeighborP) )
         {
-          Voxel voxel = chunk->Voxels[GetIndex(LocalVoxelP, chunk)];
+          Voxel voxel = chunk->Data.Voxels[GetIndex(LocalVoxelP, &chunk->Data)];
           assert(GetVoxelP(voxel) == LocalVoxelP);
-          PushBoundaryVoxel( chunk, voxel );
+          PushBoundaryVoxel( &chunk->Data, voxel );
         }
       }
     }
@@ -715,8 +719,10 @@ IsInsideChunk( voxel_position Dim, voxel_position P )
 }
 
 void
-BuildInteriorBoundaryVoxels(World *world, Chunk *chunk, Camera_Object *Camera)
+BuildInteriorBoundaryVoxels(World *world, World_Chunk *WorldChunk)
 {
+  Chunk *chunk = &WorldChunk->Data;
+
   chunk->flags = UnSetFlag( chunk->flags, Chunk_RebuildInteriorBoundary );
 
   for ( int x = 0; x < chunk->Dim.x ; ++x )
@@ -725,7 +731,7 @@ BuildInteriorBoundaryVoxels(World *world, Chunk *chunk, Camera_Object *Camera)
     {
       for ( int z = 0; z < chunk->Dim.z ; ++z )
       {
-        canonical_position VoxelP = Canonical_Position(V3(x,y,z), chunk->WorldP);
+        canonical_position VoxelP = Canonical_Position(V3(x,y,z), WorldChunk->WorldP);
         VoxelP = Canonicalize(world, VoxelP);
 
         if ( !IsFilled( chunk, Voxel_Position(VoxelP.Offset) ) )
@@ -759,56 +765,29 @@ BuildInteriorBoundaryVoxels(World *world, Chunk *chunk, Camera_Object *Camera)
   }
 }
 
-bool
-IsInFrustum( World *world, Camera_Object *Camera, Chunk *chunk )
-{
-  v3 ChunkMid = V3(chunk->Dim.x/2, chunk->Dim.y/2, chunk->Dim.z/2);
+/* bool */
+/* IsInFrustum( World *world, Camera_Object *Camera, Chunk *chunk ) */
+/* { */
+/*   v3 ChunkMid = V3(chunk->Dim.x/2, chunk->Dim.y/2, chunk->Dim.z/2); */
 
-  canonical_position P1 = Canonical_Position( ChunkMid, chunk->WorldP );
+/*   canonical_position P1 = Canonical_Position( ChunkMid, chunk->WorldP ); */
 
-  if (IsInFrustum(world, Camera, P1 ))
-  {
-    return true;
-  }
+/*   if (IsInFrustum(world, Camera, P1 )) */
+/*   { */
+/*     return true; */
+/*   } */
 
-  return false;
-}
+/*   return false; */
+/* } */
 
 void
-BuildAndBufferChunkMesh(
+BufferChunkMesh(
     World *world,
     Chunk *chunk,
     Camera_Object *Camera,
     RenderGroup *RG
   )
 {
-
-  /* if ( ! IsInFrustum( world, Camera, chunk ) ) */
-  /* { */
-  /*   return; */
-  /* } */
-
-
-  if ( IsSet(chunk->flags, Chunk_RebuildInteriorBoundary) )
-  {
-    chunk->BoundaryVoxelCount = 0;
-    BuildInteriorBoundaryVoxels( world, chunk, Camera );
-  }
-
-  if ( IsSet(chunk->flags, Chunk_RebuildExteriorBoundary ) )
-  {
-    BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(0,1,0) );  // Top
-    BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(0,-1,0) ); // Bottom
-
-    BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(1,0,0) );  // Right
-    BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(-1,0,0) ); // Left
-
-    BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(0,0,1) );  // Front
-    BuildExteriorBoundaryVoxels( world, chunk, Voxel_Position(0,0,-1) ); // Back
-  }
-
-
-
 
 #if DEBUG_LOD_RENDER
   // LOD calculations
@@ -819,9 +798,6 @@ BuildAndBufferChunkMesh(
 #else
   int LOD = 1;
 #endif
-
-
-
 
   /* glm::vec3 GLCameraRenderP = GetGLRenderP(world, Camera->P); */
 
@@ -852,21 +828,57 @@ BuildAndBufferChunkMesh(
   return;
 }
 
+
+void
+BuildBoundaryVoxels( World *world, World_Chunk *WorldChunk)
+{
+  Chunk *chunk = &WorldChunk->Data;
+
+  /* if ( ! IsInFrustum( world, Camera, chunk ) ) */
+  /* { */
+  /*   return; */
+  /* } */
+
+
+  if ( IsSet(chunk->flags, Chunk_RebuildInteriorBoundary) )
+  {
+    chunk->BoundaryVoxelCount = 0;
+    BuildInteriorBoundaryVoxels( world, WorldChunk );
+  }
+
+  if ( IsSet(chunk->flags, Chunk_RebuildExteriorBoundary ) )
+  {
+    BuildExteriorBoundaryVoxels( world, WorldChunk, Voxel_Position(0,1,0) );  // Top
+    BuildExteriorBoundaryVoxels( world, WorldChunk, Voxel_Position(0,-1,0) ); // Bottom
+
+    BuildExteriorBoundaryVoxels( world, WorldChunk, Voxel_Position(1,0,0) );  // Right
+    BuildExteriorBoundaryVoxels( world, WorldChunk, Voxel_Position(-1,0,0) ); // Left
+
+    BuildExteriorBoundaryVoxels( world, WorldChunk, Voxel_Position(0,0,1) );  // Front
+    BuildExteriorBoundaryVoxels( world, WorldChunk, Voxel_Position(0,0,-1) ); // Back
+  }
+
+
+  return;
+}
+
 void
 DrawWorldChunk(
     World *world,
-    Chunk *chunk,
+    World_Chunk *WorldChunk,
     Camera_Object *Camera,
     RenderGroup *RG
   )
 {
 #if DEBUG_CHUNK_AABB
-  DEBUG_DrawChunkAABB( world, chunk, RG, Quaternion(1,0,0,0) );
+  Chunk *chunk = WorldChunk->Data;
+  DEBUG_DrawChunkAABB( world, RG, chunk, Quaternion(1,0,0,0) );
 #endif
 
 
-  ComputeAndFlushMVP( world, RG, chunk, Quaternion(1,0,0,0) );
-  BuildAndBufferChunkMesh( world, chunk, Camera, RG );
+  ComputeAndFlushMVP( world, RG, GetRenderP( world, Canonicalize(world,V3(0,0,0), WorldChunk->WorldP)), Quaternion(1,0,0,0) );
+  BuildBoundaryVoxels(world, WorldChunk);
+  BufferChunkMesh(world, &WorldChunk->Data, Camera, RG);
 
   FlushVertexBuffer(world, RG );
 }
@@ -882,7 +894,17 @@ DrawEntity(
   assert(IsSet( entity->Model.flags, Chunk_Entity));
 
   /* DEBUG_DrawChunkAABB( world, RG, &entity->Model, entity->Rotation ); */
-  DEBUG_DrawChunkAABB( world, RG, &entity->Model, Quaternion(1,0,0,0) );
+  /* DEBUG_DrawChunkAABB( world, RG, &entity->Model, Quaternion(1,0,0,0) ); */
+
+  /* ComputeAndFlushMVP(world, RG, entity); */
+  /* v3 HalfDim = entity->Model.Dim/2; */
+  v3 HalfDim = V3(0,0,0);
+  ComputeAndFlushMVP( world, RG, GetRenderP(world, entity->P ) + HalfDim, Quaternion(1,0,0,0) );
+
+  v3 MinP = GetModelSpaceP(&entity->Model, V3(0,0,0));
+  v3 MaxP = GetModelSpaceP(&entity->Model, V3(entity->Model.Dim));
+
+  /* DEBUG_DrawAABB(world, MinP, MaxP , Quaternion(1,0,0,0) ); */
 
   //
   // Don't flush models down this path because it implies world chunks
@@ -907,9 +929,9 @@ DrawEntity(
   glUniformMatrix4fv(RG->LightTransformID, 1, GL_FALSE, &RG->Basis.ModelMatrix[0][0]);
   //
 
-  ComputeAndFlushMVP(world, RG, &entity->Model, entity->Rotation);
+  ComputeAndFlushMVP(world, RG, entity);
 
-  BuildAndBufferChunkMesh( world, &entity->Model, Camera, RG );
+  BufferChunkMesh(world, &entity->Model, Camera, RG);
   FlushVertexBuffer (world, RG );
 
   return;
