@@ -11,19 +11,28 @@ out vec3 color;
 
 uniform mat4 MVP;
 
+vec3 GlobalIllumination = normalize( vec3( 1, 1, 1) );
+float GlobalIntensity = 0.20f;
+
 void main()
 {
-  float Intensity = 30.0f;
+  float Intensity = 60.0f;
   float distance = length( LightP_worldspace - vertexP_worldspace);
-
-  vec3 AmbientColor = MaterialColor * vec3(0.15f);
 
   vec3 N = normalize( vertexN_modelspace );
   vec3 L = normalize( LightDirection_worldspace );
 
-  float cosTheta =  clamp( dot( N, L ), 0, 1);
+  float cosGlobalTheta = clamp( dot( N, GlobalIllumination), 0, 1);
+
+  vec3 AmbientColor = MaterialColor * vec3(0.15f);
+
+  // vec3 AmbientColor = AmbientColor + (GlobalIntensity * cosGlobalTheta);
+
+  float cosDirectionalTheta =  clamp( dot( N, L ), 0, 1);
+
 
   color =
     AmbientColor +
-    ( MaterialColor * Intensity * cosTheta / (distance*distance) );
+    ( MaterialColor * GlobalIntensity * cosGlobalTheta) +
+    ( MaterialColor * Intensity * cosDirectionalTheta / (distance*distance) );
 }
