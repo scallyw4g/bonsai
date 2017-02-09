@@ -28,6 +28,17 @@ struct RenderGroup
   RenderBasis Basis;
 };
 
+struct ShadowGroup
+{
+  GLuint MVP_ID;
+  GLuint DepthBiasID;
+  GLuint ShadowMapID;
+
+  GLuint TextureID;
+  GLuint ShaderID;
+  GLuint FramebufferName;
+};
+
 inline glm::mat4
 ToGLMat4(Quaternion q)
 {

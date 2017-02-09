@@ -69,6 +69,57 @@ initWindow( int width, int height )
   glDepthFunc(GL_LESS);
 }
 
+bool
+InitializeShadowBuffer(ShadowGroup *Group)
+{
+  // The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
+  GLuint FramebufferName = 0;
+  glGenFramebuffers(1, &FramebufferName);
+
+  /* glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName); */
+
+  // Depth texture. Slower than a depth buffer, but you can sample it later in your shader
+  GLuint depthTexture;
+  glGenTextures(1, &depthTexture);
+  glBindTexture(GL_TEXTURE_2D, depthTexture);
+  glTexImage2D(GL_TEXTURE_2D, 0,GL_DEPTH_COMPONENT16, 1024, 1024, 0,GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+
+  glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture, 0);
+
+  // No color output in the bound framebuffer, only depth.
+  glDrawBuffer(GL_NONE);
+
+  // Always check that our framebuffer is ok
+  if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    return false;
+
+  // Create and compile our GLSL program from the shaders
+  GLuint ShaderID = LoadShaders( "ShadowMapping_SimpleVersion.vertexshader", "ShadowMapping_SimpleVersion.fragmentshader" );
+
+  // Get a handle for our "myTextureSampler" uniform
+  GLuint TextureID  = glGetUniformLocation(ShaderID, "myTextureSampler");
+
+  // Get a handle for our "MVP" uniform
+  GLuint MVP_ID = glGetUniformLocation(ShaderID, "MVP");
+  GLuint DepthBiasID = glGetUniformLocation(ShaderID, "DepthBiasMVP");
+  GLuint ShadowMapID = glGetUniformLocation(ShaderID, "shadowMap");
+
+  Group->MVP_ID          = MVP_ID;
+  Group->DepthBiasID     = DepthBiasID;
+  Group->ShadowMapID     = ShadowMapID;
+  Group->TextureID       = TextureID;
+  Group->ShaderID        = ShaderID;
+  Group->FramebufferName = FramebufferName;
+
+ return true;
+}
+
 void
 InitializeVoxels( World *world, World_Chunk *WorldChunk )
 {
@@ -242,7 +293,7 @@ GetCollision(World *world, Entity *entity, v3 Offset = V3(0,0,0) )
 inline bool
 IsGrounded( World *world, Entity *entity)
 {
-  collision_event c = GetCollision(world, entity, V3(0,-0.001, 0));
+  collision_event c = GetCollision(world, entity, V3(0,-0.01, 0));
   return c.didCollide;
 }
 

@@ -1,6 +1,9 @@
 #ifndef GAME_CONSTANTS
 #define GAME_CONSTANTS
 
+#define True 0
+#define False 1
+
 #define DEBUG_GLOBAL static
 
 #define CD_X 8
@@ -35,7 +38,7 @@
 
 #define CHUNK_STACK_SIZE (VR_X*VR_X*VR_X)
 
-#define CAMERA_FOCAL_LENGTH 40.0f;
+#define CAMERA_FOCAL_LENGTH 80.0f;
 
 #define CAMERA_INITIAL_P Canonical_Position(V3(1,1,1), World_Position(world.VisibleRegion/2))
 

@@ -30,11 +30,58 @@ using namespace glm;
 void
 FlushVertexBuffer(
     World *world,
-    RenderGroup *RG
+    RenderGroup *RG,
+    ShadowGroup *SG
   )
 {
 
-  /* printf("Flushing %d vertices from Vertex Buffer \n", world->VertexCount); */
+  //
+  // Render Shadow depth texture
+  glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
+  glViewport(0,0,1024,1024); // Render on the whole framebuffer, complete from the lower left corner to the upper right
+
+  // Use our shader
+  glUseProgram(SG->ShaderID);
+
+  glm::vec3 lightInvDir = glm::vec3(0.5f,2,2);
+
+  // Compute the MVP matrix from the light's point of view
+  glm::mat4 depthProjectionMatrix = glm::ortho<float>(-10,10, -10,10, -10,10);
+  glm::mat4 depthViewMatrix = glm::lookAt(lightInvDir, glm::vec3(0,0,0), glm::vec3(0,1,0));
+
+  glm::mat4 depthModelMatrix = glm::mat4(1.0);
+  glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
+
+  // Send our transformation to the currently bound shader, in the "MVP" uniform
+  glUniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &depthMVP[0][0]);
+
+  // 1rst attribute buffer : vertices
+  glEnableVertexAttribArray(0);
+  glBindBuffer(GL_ARRAY_BUFFER, RG->vertexbuffer);
+
+  glVertexAttribPointer(
+    0,                  // The attribute we want to configure
+    3,                  // size
+    GL_FLOAT,           // type
+    GL_FALSE,           // normalized?
+    0,                  // stride
+    (void*)0            // array buffer offset
+  );
+
+  glDrawArrays(GL_TRIANGLES, 0, world->VertexCount);
+
+  glDisableVertexAttribArray(0);
+
+  //
+  // End drawing to shadow texture
+
+
+
+
+
+  //
+  // Render to screen
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 
   // Vertices
@@ -867,7 +914,8 @@ DrawWorldChunk(
     World *world,
     World_Chunk *WorldChunk,
     Camera_Object *Camera,
-    RenderGroup *RG
+    RenderGroup *RG,
+    ShadowGroup *SG
   )
 {
 #if DEBUG_CHUNK_AABB
@@ -880,7 +928,7 @@ DrawWorldChunk(
   BuildBoundaryVoxels(world, WorldChunk);
   BufferChunkMesh(world, &WorldChunk->Data, Camera, RG);
 
-  FlushVertexBuffer(world, RG );
+  FlushVertexBuffer(world, RG, SG);
 }
 
 void
@@ -888,7 +936,8 @@ DrawEntity(
     World *world,
     Entity *entity,
     Camera_Object *Camera,
-    RenderGroup *RG
+    RenderGroup *RG,
+    ShadowGroup *SG
   )
 {
   assert( IsSet(entity->Model.flags, Chunk_Entity) );
@@ -930,7 +979,7 @@ DrawEntity(
   ComputeAndFlushMVP(world, RG, entity);
 
   BufferChunkMesh(world, &entity->Model, Camera, RG);
-  FlushVertexBuffer (world, RG );
+  FlushVertexBuffer(world, RG, SG);
 
   return;
 }

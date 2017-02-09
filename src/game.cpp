@@ -13,12 +13,18 @@ GAME_UPDATE_AND_RENDER
     Camera_Object *Camera,
     float dt,
 
-    RenderGroup *RG
+    RenderGroup *RG,
+    ShadowGroup *SG
   )
 {
   //
   // Clear the screen
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+
+
+
 
   if ( glfwGetKey(window, GLFW_KEY_ENTER ) == GLFW_PRESS )
   {
@@ -64,7 +70,8 @@ GAME_UPDATE_AND_RENDER
     world,
     Player,
     Camera,
-    RG
+    RG,
+    SG
   );
 
   // Draw world
@@ -76,7 +83,8 @@ GAME_UPDATE_AND_RENDER
       world,
       chunk,
       Camera,
-      RG
+      RG,
+      SG
     );
   }
 
@@ -114,6 +122,12 @@ main( void )
 
   initWindow(width, height);
 
+  ShadowGroup SG = {};
+  if (!InitializeShadowBuffer(&SG)) { printf("Error initializing Shadow Buffer\n"); return False; }
+
+  glEnable(GL_CULL_FACE);
+  glCullFace(GL_BACK); // Cull back-facing triangles -> draw only front-facing triangles
+
   GLuint VertexArrayID;
   glGenVertexArrays(1, &VertexArrayID);
   glBindVertexArray(VertexArrayID);
@@ -142,8 +156,8 @@ main( void )
   /* Player.Model = LoadVox("./3x3x3.vox"); */
   /* Player.Model = LoadVox("./8x8x8.vox"); */
   /* Player.Model = LoadVox("./alien_bot2.vox"); */
-  Player.Model = LoadVox("./chr_rain.vox");
-  /* Player.Model = LoadVox("./chr_old.vox"); */
+  /* Player.Model = LoadVox("./chr_rain.vox"); */
+  Player.Model = LoadVox("./chr_old.vox");
   /* Player.Model = AllocateChunk(Chunk_Dimension(13,7,7), World_Position(0,0,0)); */
   /* FillChunk(&Player.Model); */
   Player.Model.flags = SetFlag( Player.Model.flags, Chunk_Entity);
@@ -223,7 +237,8 @@ main( void )
       &Camera,
       dt,
 
-      &RG
+      &RG,
+      &SG
     );
 
     CALLGRIND_TOGGLE_COLLECT;
