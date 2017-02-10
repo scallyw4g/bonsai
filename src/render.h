@@ -6,6 +6,53 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
 
+#include <shader.cpp>
+
+#ifdef BONSAI_INTERNAL
+
+struct DebugRenderGroup
+{
+  GLuint quad_vertexBuffer;
+  GLuint TextureUniform;
+  GLuint ShaderID;
+
+  bool initialized = false;
+};
+
+
+DEBUG_GLOBAL DebugRenderGroup DG = {};
+DEBUG_GLOBAL GLfloat g_quad_vertex_buffer_data[] =
+{
+  -1.0f, -1.0f, -1.0f,
+   1.0f, -1.0f, -1.0f,
+  -1.0f,  1.0f, -1.0f,
+  -1.0f,  1.0f, -1.0f,
+   1.0f, -1.0f, -1.0f,
+   1.0f,  1.0f, -1.0f,
+};
+
+DebugRenderGroup*
+GetDebugRenderGroup()
+{
+  if (!DG.initialized)
+  {
+    DG.ShaderID = LoadShaders( "Passthrough.vertexshader",
+                               "SimpleTexture.fragmentshader");
+
+    DG.TextureUniform = glGetUniformLocation(DG.ShaderID, "Texture");
+    glGenBuffers(1, &DG.quad_vertexBuffer);
+
+    DG.initialized = true;
+  }
+
+  glBindBuffer(GL_ARRAY_BUFFER, DG.quad_vertexBuffer);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
+  return &DG;
+}
+
+#endif
+
+
 struct RenderBasis
 {
   glm::mat4 ModelMatrix;
@@ -24,11 +71,12 @@ struct RenderGroup
 
   GLuint LightPID;
   GLuint LightTransformID;
+  GLuint ShaderID;
 
   RenderBasis Basis;
 };
 
-struct ShadowGroup
+struct ShadowRenderGroup
 {
   GLuint MVP_ID;
   GLuint DepthBiasID;
@@ -37,7 +85,9 @@ struct ShadowGroup
   GLuint TextureID;
   GLuint ShaderID;
   GLuint FramebufferName;
+  GLuint Texture;
 };
+
 
 inline glm::mat4
 ToGLMat4(Quaternion q)

@@ -1,5 +1,6 @@
 #include <bonsai.h>
 #include <render.h>
+
 #include <bonsai.cpp>
 #include <constants.hpp>
 
@@ -14,14 +15,12 @@ GAME_UPDATE_AND_RENDER
     float dt,
 
     RenderGroup *RG,
-    ShadowGroup *SG
+    ShadowRenderGroup *SG
   )
 {
   //
   // Clear the screen
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
 
 
 
@@ -77,8 +76,8 @@ GAME_UPDATE_AND_RENDER
   // Draw world
   for ( int i = 0; i < Volume(world->VisibleRegion); ++ i )
   {
-    World_Chunk *chunk = &world->Chunks[i];
 
+    World_Chunk *chunk = &world->Chunks[i];
     DrawWorldChunk(
       world,
       chunk,
@@ -86,6 +85,7 @@ GAME_UPDATE_AND_RENDER
       RG,
       SG
     );
+
   }
 
 
@@ -122,17 +122,16 @@ main( void )
 
   initWindow(width, height);
 
-  ShadowGroup SG = {};
+  ShadowRenderGroup SG = {};
   if (!InitializeShadowBuffer(&SG)) { printf("Error initializing Shadow Buffer\n"); return False; }
 
   glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK); // Cull back-facing triangles -> draw only front-facing triangles
 
+  // This is necessary!
   GLuint VertexArrayID;
   glGenVertexArrays(1, &VertexArrayID);
   glBindVertexArray(VertexArrayID);
-
-  GLuint programID = LoadShaders( "SimpleVertexShader.vertexshader", "SimpleFragmentShader.fragmentshader" );
 
   GLuint vertexbuffer;
   GLuint colorbuffer;
@@ -175,7 +174,6 @@ main( void )
       Camera.Frust.nearClip,
       Camera.Frust.farClip);
 
-
   do
   {
     srand(time(NULL));
@@ -189,20 +187,16 @@ main( void )
 
   double lastTime = glfwGetTime();
 
-  // Use our shader
-  glUseProgram(programID);
-
   RenderGroup RG;
 
-  GLuint MVPID             = glGetUniformLocation(programID, "MVP");
-  GLuint ModelMatrixID     = glGetUniformLocation(programID, "M");
-  GLuint LightTransformID  = glGetUniformLocation(programID, "LightTransform");
-  GLuint LightPID          = glGetUniformLocation(programID, "LightP_in");
+  RG.ShaderID = LoadShaders(
+      "SimpleVertexShader.vertexshader",
+      "SimpleFragmentShader.fragmentshader" );
 
-  RG.MVPID            = MVPID;
-  RG.ModelMatrixID    = ModelMatrixID;
-  RG.LightTransformID = LightTransformID;
-  RG.LightPID         = LightPID;
+  RG.MVPID            = glGetUniformLocation(RG.ShaderID, "MVP");
+  RG.ModelMatrixID    = glGetUniformLocation(RG.ShaderID, "M");
+  RG.LightTransformID = glGetUniformLocation(RG.ShaderID, "LightTransform");
+  RG.LightPID         = glGetUniformLocation(RG.ShaderID, "LightP_in");
 
 
   /*
@@ -267,7 +261,7 @@ main( void )
   glDeleteBuffers(1, &normalbuffer);
 
   glDeleteVertexArrays(1, &VertexArrayID);
-  glDeleteProgram(programID);
+  glDeleteProgram(RG.ShaderID);
 
   // Close OpenGL window and terminate GLFW
   glfwTerminate();

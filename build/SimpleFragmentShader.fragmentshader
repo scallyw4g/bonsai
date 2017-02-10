@@ -5,11 +5,14 @@ in vec3 vertexN_modelspace;
 in vec3 LightDirection_worldspace;
 in vec3 MaterialColor;
 
+in vec4 ShadowCoord;
+
 in vec3 LightP_worldspace;
 
 out vec3 color;
 
 uniform mat4 MVP;
+uniform sampler2DShadow shadowMap;
 
 vec3 GlobalIllumination = normalize( vec3( 1, 1, 1) );
 float GlobalIntensity = 0.20f;
@@ -30,9 +33,11 @@ void main()
 
   float cosDirectionalTheta =  clamp( dot( N, L ), 0, 1);
 
+  float visibility = texture( shadowMap, vec3(ShadowCoord.xy, (ShadowCoord.z)/ShadowCoord.w) );
 
   color =
-    AmbientColor +
-    ( MaterialColor * GlobalIntensity * cosGlobalTheta) +
-    ( MaterialColor * Intensity * cosDirectionalTheta / (distance*distance) );
+      AmbientColor +
+      ( visibility * MaterialColor * GlobalIntensity * cosGlobalTheta) +
+      ( visibility * MaterialColor * Intensity * cosDirectionalTheta / (distance*distance) );
+
 }

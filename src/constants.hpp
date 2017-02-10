@@ -6,6 +6,8 @@
 
 #define DEBUG_GLOBAL static
 
+#define BONSAI_INTERNAL 1
+
 #define CD_X 8
 #define CD_Y 8
 #define CD_Z 8
@@ -29,7 +31,7 @@
 #define DEBUG_CHUNK_AABB           0
 #define DEBUG_CAMERA_FOCUS_ORIGIN  0
 #define DEBUG_OPTIMIZE_TRI_COUNT   1
-#define DEBUG_WORLD_GENERATION     1
+#define DEBUG_WORLD_GENERATION     0
 #define DEBUG_LOD_RENDER           0
 
 #define DEBUG_FRAMES_TO_RUN       -1

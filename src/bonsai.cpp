@@ -13,7 +13,6 @@ GLFWwindow* window;
 #include <ogl_render.cpp>
 
 #include <platform.cpp>
-#include <shader.cpp>
 #include <objloader.cpp>
 
 #include <simplex.cpp>
@@ -70,13 +69,12 @@ initWindow( int width, int height )
 }
 
 bool
-InitializeShadowBuffer(ShadowGroup *Group)
+InitializeShadowBuffer(ShadowRenderGroup *Group)
 {
   // The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
   GLuint FramebufferName = 0;
   glGenFramebuffers(1, &FramebufferName);
-
-  /* glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName); */
+  glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
 
   // Depth texture. Slower than a depth buffer, but you can sample it later in your shader
   GLuint depthTexture;
@@ -88,34 +86,32 @@ InitializeShadowBuffer(ShadowGroup *Group)
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+  /* glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE); */
 
   glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture, 0);
 
   // No color output in the bound framebuffer, only depth.
   glDrawBuffer(GL_NONE);
 
+
+  Group->ShaderID        = LoadShaders( "DepthRTT.vertexshader", "DepthRTT.fragmentshader");
+  Group->MVP_ID          = glGetUniformLocation(Group->ShaderID, "depthMVP");
+  Group->FramebufferName = FramebufferName;
+  Group->Texture         = depthTexture;
+
+
+  // Get a handle for our "myTextureSampler" uniform
+  /* GLuint TextureID   = glGetUniformLocation(ShaderID, "myTextureSampler"); */
+  /* GLuint DepthBiasID = glGetUniformLocation(ShaderID, "DepthBiasMVP"); */
+  /* GLuint ShadowMapID = glGetUniformLocation(ShaderID, "shadowMap"); */
+  /* Group->TextureID       = TextureID; */
+  /* Group->DepthBiasID     = DepthBiasID; */
+  /* Group->ShadowMapID     = ShadowMapID; */
+
+
   // Always check that our framebuffer is ok
   if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     return false;
-
-  // Create and compile our GLSL program from the shaders
-  GLuint ShaderID = LoadShaders( "ShadowMapping_SimpleVersion.vertexshader", "ShadowMapping_SimpleVersion.fragmentshader" );
-
-  // Get a handle for our "myTextureSampler" uniform
-  GLuint TextureID  = glGetUniformLocation(ShaderID, "myTextureSampler");
-
-  // Get a handle for our "MVP" uniform
-  GLuint MVP_ID = glGetUniformLocation(ShaderID, "MVP");
-  GLuint DepthBiasID = glGetUniformLocation(ShaderID, "DepthBiasMVP");
-  GLuint ShadowMapID = glGetUniformLocation(ShaderID, "shadowMap");
-
-  Group->MVP_ID          = MVP_ID;
-  Group->DepthBiasID     = DepthBiasID;
-  Group->ShadowMapID     = ShadowMapID;
-  Group->TextureID       = TextureID;
-  Group->ShaderID        = ShaderID;
-  Group->FramebufferName = FramebufferName;
 
  return true;
 }
@@ -156,11 +152,7 @@ InitializeVoxels( World *world, World_Chunk *WorldChunk )
 
         chunk->Voxels[i].flags = SetFlag( chunk->Voxels[i].flags, Floori(noiseValue + 0.5) * Voxel_Filled );
 #else
-        if (
-             ( x == 1  && z == 1 &&
-               chunk->WorldP.x % 2 == 0 &&
-               chunk->WorldP.z % 2 == 0)
-           )
+        if ( y == 0  && WorldChunk->WorldP.y == 0 )
         {
           chunk->Voxels[i].flags = SetFlag(chunk->Voxels[i].flags, Voxel_Filled);
         }

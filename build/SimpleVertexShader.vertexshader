@@ -7,6 +7,8 @@ layout(location = 2) in vec3 vertexNormal_modelspace;
 out vec3 vertexP_worldspace;
 out vec3 vertexN_modelspace;
 
+out vec4 ShadowCoord;
+
 out vec3 MaterialColor;
 
 out vec3 LightP_worldspace;
@@ -28,6 +30,9 @@ void main()
   LightP_worldspace = vec4(LightTransform * vec4(LightP_in,1) ).xyz;
 
   LightDirection_worldspace = LightP_worldspace - vertexP_worldspace;
+
+  // TODO(Jesse): Multiply this by a depth bias matrix to eliminate acne
+  ShadowCoord = MVP * vec4(vertexPosition_modelspace, 1);
 
   // Output position of the vertex, in clip space : MVP * position
   gl_Position = MVP * vec4(vertexPosition_modelspace, 1);

@@ -28,25 +28,67 @@ using namespace glm;
       FaceColor)
 
 void
+FlushMVPToHardware(RenderGroup *RG)
+{
+  glm::mat4 mvp = RG->Basis.ProjectionMatrix * RG->Basis.ViewMatrix * RG->Basis.ModelMatrix;
+
+  glUniformMatrix4fv(RG->MVPID,         1, GL_FALSE, &mvp[0][0]);
+  glUniformMatrix4fv(RG->ModelMatrixID, 1, GL_FALSE, &RG->Basis.ModelMatrix[0][0]);
+
+  return;
+}
+
+void
+DEBUG_DrawTextureToQuad(DebugRenderGroup *DG, GLuint Texture)
+{
+  glViewport(0,0,512,512);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+  glUseProgram(DG->ShaderID);
+
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, Texture);
+  glUniform1i(DG->TextureUniform, 0);
+
+  glEnableVertexAttribArray(0);
+  glBindBuffer(GL_ARRAY_BUFFER, DG->quad_vertexBuffer);
+  glVertexAttribPointer(
+    0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+    3,                  // size
+    GL_FLOAT,           // type
+    GL_FALSE,           // normalized?
+    0,                  // stride
+    (void*)0            // array buffer offset
+  );
+
+  glDrawArrays(GL_TRIANGLES, 0, 6); // 2*3 indices starting at 0 -> 2 triangles
+
+  glDisableVertexAttribArray(0);
+
+}
+
+void
 FlushVertexBuffer(
     World *world,
     RenderGroup *RG,
-    ShadowGroup *SG
+    ShadowRenderGroup *SG
   )
 {
+  FlushMVPToHardware(RG);
 
   //
   // Render Shadow depth texture
-  glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
-  glViewport(0,0,1024,1024); // Render on the whole framebuffer, complete from the lower left corner to the upper right
 
-  // Use our shader
+  glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
+  glViewport(0,0,512,512);
   glUseProgram(SG->ShaderID);
 
-  glm::vec3 lightInvDir = glm::vec3(0.5f,2,2);
+  glBindTexture(GL_TEXTURE_2D, SG->Texture);
+
+  glm::vec3 lightInvDir = glm::vec3(0.2, 2.0, 2.0);
 
   // Compute the MVP matrix from the light's point of view
-  glm::mat4 depthProjectionMatrix = glm::ortho<float>(-10,10, -10,10, -10,10);
+  glm::mat4 depthProjectionMatrix = glm::ortho<float>(-5,5, -5,5, -5,5);
   glm::mat4 depthViewMatrix = glm::lookAt(lightInvDir, glm::vec3(0,0,0), glm::vec3(0,1,0));
 
   glm::mat4 depthModelMatrix = glm::mat4(1.0);
@@ -55,10 +97,12 @@ FlushVertexBuffer(
   // Send our transformation to the currently bound shader, in the "MVP" uniform
   glUniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &depthMVP[0][0]);
 
+  /* glTexImage2D(GL_TEXTURE_2D, 0,GL_DEPTH_COMPONENT16, 1024, 1024, 0,GL_DEPTH_COMPONENT, GL_FLOAT, 0); */
+  glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, SG->Texture, 0);
+
   // 1rst attribute buffer : vertices
   glEnableVertexAttribArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, RG->vertexbuffer);
-
   glVertexAttribPointer(
     0,                  // The attribute we want to configure
     3,                  // size
@@ -76,13 +120,23 @@ FlushVertexBuffer(
   // End drawing to shadow texture
 
 
+  DEBUG_DrawTextureToQuad(GetDebugRenderGroup(), SG->Texture);
+
 
 
 
   //
   // Render to screen
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glUseProgram(RG->ShaderID);
+  glViewport(0,0,1920,1080); // Render on the whole framebuffer, complete from the lower left corner to the upper right
+
+  /* glActiveTexture(GL_TEXTURE0); */
+  /* glBindTexture(GL_TEXTURE_2D, SG->Texture); */
+  /* glUniform1i(SG->ShadowMapID, 1); */
+
+  FlushMVPToHardware(RG);
 
   // Vertices
   glEnableVertexAttribArray(0);
@@ -581,17 +635,6 @@ DEBUG_DrawAABB( World *world, v3 MinP, v3 MaxP, Quaternion Rotation = Quaternion
 }
 
 void
-FlushMVPToHardware(RenderGroup *RG)
-{
-  glm::mat4 mvp = RG->Basis.ProjectionMatrix * RG->Basis.ViewMatrix * RG->Basis.ModelMatrix;
-
-  glUniformMatrix4fv(RG->MVPID,         1, GL_FALSE, &mvp[0][0]);
-  glUniformMatrix4fv(RG->ModelMatrixID, 1, GL_FALSE, &RG->Basis.ModelMatrix[0][0]);
-
-  return;
-}
-
-void
 ComputeAndFlushMVP(World *world, RenderGroup *RG, v3 ModelToWorldSpace, Quaternion Rotation = Quaternion(1,0,0,0) )
 {
   RG->Basis.ModelMatrix = Translate(ModelToWorldSpace) * ToGLMat4(Rotation);
@@ -915,7 +958,7 @@ DrawWorldChunk(
     World_Chunk *WorldChunk,
     Camera_Object *Camera,
     RenderGroup *RG,
-    ShadowGroup *SG
+    ShadowRenderGroup *SG
   )
 {
 #if DEBUG_CHUNK_AABB
@@ -937,7 +980,7 @@ DrawEntity(
     Entity *entity,
     Camera_Object *Camera,
     RenderGroup *RG,
-    ShadowGroup *SG
+    ShadowRenderGroup *SG
   )
 {
   assert( IsSet(entity->Model.flags, Chunk_Entity) );
