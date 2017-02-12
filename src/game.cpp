@@ -77,14 +77,14 @@ GAME_UPDATE_AND_RENDER
   for ( int i = 0; i < Volume(world->VisibleRegion); ++ i )
   {
 
-    World_Chunk *chunk = &world->Chunks[i];
-    DrawWorldChunk(
-      world,
-      chunk,
-      Camera,
-      RG,
-      SG
-    );
+    /* World_Chunk *chunk = &world->Chunks[i]; */
+    /* DrawWorldChunk( */
+    /*   world, */
+    /*   chunk, */
+    /*   Camera, */
+    /*   RG, */
+    /*   SG */
+    /* ); */
 
   }
 
@@ -197,6 +197,8 @@ main( void )
   RG.ModelMatrixID    = glGetUniformLocation(RG.ShaderID, "M");
   RG.LightTransformID = glGetUniformLocation(RG.ShaderID, "LightTransform");
   RG.LightPID         = glGetUniformLocation(RG.ShaderID, "LightP_in");
+  RG.ShadowMapID      = glGetUniformLocation(RG.ShaderID, "shadowMap");
+  RG.DepthBiasID      = glGetUniformLocation(RG.ShaderID, "DepthBiasMVP");
 
 
   /*

@@ -14,11 +14,12 @@ out vec3 MaterialColor;
 out vec3 LightP_worldspace;
 out vec3 LightDirection_worldspace;
 
-
 uniform mat4 MVP;
 uniform mat4 M;
 uniform mat4 LightTransform;
 uniform vec3 LightP_in;
+
+uniform mat4 DepthBiasMVP;
 
 void main()
 {
@@ -31,8 +32,7 @@ void main()
 
   LightDirection_worldspace = LightP_worldspace - vertexP_worldspace;
 
-  // TODO(Jesse): Multiply this by a depth bias matrix to eliminate acne
-  ShadowCoord = MVP * vec4(vertexPosition_modelspace, 1);
+  ShadowCoord = DepthBiasMVP * vec4(vertexPosition_modelspace, 1);
 
   // Output position of the vertex, in clip space : MVP * position
   gl_Position = MVP * vec4(vertexPosition_modelspace, 1);

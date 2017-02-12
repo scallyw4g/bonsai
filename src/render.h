@@ -68,9 +68,11 @@ struct RenderGroup
 
   GLuint MVPID;
   GLuint ModelMatrixID;
+  GLuint DepthBiasID;
 
   GLuint LightPID;
   GLuint LightTransformID;
+  GLuint ShadowMapID;
   GLuint ShaderID;
 
   RenderBasis Basis;
@@ -79,7 +81,6 @@ struct RenderGroup
 struct ShadowRenderGroup
 {
   GLuint MVP_ID;
-  GLuint DepthBiasID;
   GLuint ShadowMapID;
 
   GLuint TextureID;

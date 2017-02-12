@@ -41,7 +41,7 @@ FlushMVPToHardware(RenderGroup *RG)
 void
 DEBUG_DrawTextureToQuad(DebugRenderGroup *DG, GLuint Texture)
 {
-  glViewport(0,0,512,512);
+  glViewport(0,0,256,256);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
   glUseProgram(DG->ShaderID);
@@ -74,8 +74,6 @@ FlushVertexBuffer(
     ShadowRenderGroup *SG
   )
 {
-  FlushMVPToHardware(RG);
-
   //
   // Render Shadow depth texture
 
@@ -88,11 +86,9 @@ FlushVertexBuffer(
   glm::vec3 lightInvDir = glm::vec3(0.2, 2.0, 2.0);
 
   // Compute the MVP matrix from the light's point of view
-  glm::mat4 depthProjectionMatrix = glm::ortho<float>(-5,5, -5,5, -5,5);
+  glm::mat4 depthProjectionMatrix = glm::ortho<float>(-10,10, -10,10, -10,10);
   glm::mat4 depthViewMatrix = glm::lookAt(lightInvDir, glm::vec3(0,0,0), glm::vec3(0,1,0));
-
-  glm::mat4 depthModelMatrix = glm::mat4(1.0);
-  glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
+  glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix;
 
   // Send our transformation to the currently bound shader, in the "MVP" uniform
   glUniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &depthMVP[0][0]);
@@ -120,8 +116,6 @@ FlushVertexBuffer(
   // End drawing to shadow texture
 
 
-  DEBUG_DrawTextureToQuad(GetDebugRenderGroup(), SG->Texture);
-
 
 
 
@@ -130,11 +124,21 @@ FlushVertexBuffer(
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glUseProgram(RG->ShaderID);
-  glViewport(0,0,1920,1080); // Render on the whole framebuffer, complete from the lower left corner to the upper right
+  glViewport(0,0,1920,1080);
 
-  /* glActiveTexture(GL_TEXTURE0); */
-  /* glBindTexture(GL_TEXTURE_2D, SG->Texture); */
-  /* glUniform1i(SG->ShadowMapID, 1); */
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, SG->Texture);
+  glUniform1i(RG->ShadowMapID, 0);
+
+  glm::mat4 biasMatrix(
+    0.5, 0.0, 0.0, 0.0,
+    0.0, 0.5, 0.0, 0.0,
+    0.0, 0.0, 0.5, 0.0,
+    0.5, 0.5, 0.5, 1.0
+  );
+
+  glm::mat4 depthBiasMVP = biasMatrix*depthMVP;
+  glUniformMatrix4fv(RG->DepthBiasID, 1, GL_FALSE, &depthBiasMVP[0][0]);
 
   FlushMVPToHardware(RG);
 
@@ -191,6 +195,8 @@ FlushVertexBuffer(
   world->ColorData.filled = 0;
 
   /* printf("VertexBufferFlushed \n"); */
+
+  DEBUG_DrawTextureToQuad(GetDebugRenderGroup(), SG->Texture);
 
   return;
 }
@@ -395,13 +401,13 @@ bool BufferFrontFace(
 
   float localNormalData[] =
   {
-    0, 0, -1,
-    0, 0, -1,
-    0, 0, -1,
+    0, 0, 1,
+    0, 0, 1,
+    0, 0, 1,
 
-    0, 0, -1,
-    0, 0, -1,
-    0, 0, -1
+    0, 0, 1,
+    0, 0, 1,
+    0, 0, 1
   };
 
   return BufferLocalFace;

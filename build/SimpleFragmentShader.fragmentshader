@@ -14,8 +14,11 @@ out vec3 color;
 uniform mat4 MVP;
 uniform sampler2DShadow shadowMap;
 
-vec3 GlobalIllumination = normalize( vec3( 1, 1, 1) );
-float GlobalIntensity = 0.20f;
+vec3 GlobalIllumination = normalize( vec3( 0.2, 2, 2) );
+float GlobalIntensity = 0.50f;
+
+// Fix acne
+float bias = 0.05f;
 
 void main()
 {
@@ -33,11 +36,12 @@ void main()
 
   float cosDirectionalTheta =  clamp( dot( N, L ), 0, 1);
 
-  float visibility = texture( shadowMap, vec3(ShadowCoord.xy, (ShadowCoord.z)/ShadowCoord.w) );
+  float visibility = texture( shadowMap, vec3(ShadowCoord.xy, (ShadowCoord.z-bias)/ShadowCoord.w) );
 
   color =
-      AmbientColor +
-      ( visibility * MaterialColor * GlobalIntensity * cosGlobalTheta) +
-      ( visibility * MaterialColor * Intensity * cosDirectionalTheta / (distance*distance) );
+      AmbientColor
+      + ( visibility * MaterialColor * GlobalIntensity * cosGlobalTheta)
+      + ( visibility * MaterialColor * Intensity * cosDirectionalTheta / (distance*distance) )
+      ;
 
 }

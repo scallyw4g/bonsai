@@ -13,9 +13,9 @@
 #define CD_Z 8
 
 // Visible Region XYZ - Must be > (3,3,3)
-#define VR_X 16
-#define VR_Y 16
-#define VR_Z 16
+#define VR_X 8
+#define VR_Y 8
+#define VR_Z 8
 
 #define WORLD_X V3(1,0,0)
 #define WORLD_Y V3(0,1,0)
