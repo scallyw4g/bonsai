@@ -69,6 +69,54 @@ DEBUG_DrawTextureToQuad(DebugRenderGroup *DG, GLuint Texture)
 }
 
 void
+RenderShadowMap(World *world, ShadowRenderGroup *SG)
+{
+  glClear(GL_DEPTH_BUFFER_BIT);
+
+  glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
+  glViewport(0,0,SHADOW_MAP_RESOULUTION,SHADOW_MAP_RESOULUTION);
+  glUseProgram(SG->ShaderID);
+  glBindTexture(GL_TEXTURE_2D, SG->Texture);
+
+  glm::vec3 GlobalLightDirection = glm::normalize( glm::vec3( sin(GlobalLightTheta), 2.0, -2.0));
+
+  // Compute the MVP matrix from the light's point of view
+  glm::mat4 depthProjectionMatrix = glm::ortho<float>(-20,20, -20,20, -20,20);
+  glm::mat4 depthViewMatrix = glm::lookAt(GlobalLightDirection, glm::vec3(0,0,0), glm::vec3(0,1,0));
+  glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix;
+
+  // Send our transformation to the currently bound shader, in the "MVP" uniform
+  glUniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &depthMVP[0][0]);
+
+  /* glTexImage2D(GL_TEXTURE_2D, 0,GL_DEPTH_COMPONENT16, 1024, 1024, 0,GL_DEPTH_COMPONENT, GL_FLOAT, 0); */
+  glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, SG->Texture, 0);
+
+  glEnableVertexAttribArray(0);
+
+  //
+  // Render Shadow depth texture
+  for ( int i = 0; i < Volume(world->VisibleRegion); ++ i )
+  {
+    /* glBindBuffer(GL_ARRAY_BUFFER, RG->vertexbuffer); */
+    /* glVertexAttribPointer( */
+    /*   0,                  // The attribute we want to configure */
+    /*   3,                  // size */
+    /*   GL_FLOAT,           // type */
+    /*   GL_FALSE,           // normalized? */
+    /*   0,                  // stride */
+    /*   (void*)0            // array buffer offset */
+    /* ); */
+
+    /* glDrawArrays(GL_TRIANGLES, 0, world->VertexCount); */
+  }
+
+  //
+  // End drawing to shadow texture
+
+  glDisableVertexAttribArray(0);
+}
+
+void
 FlushVertexBuffer(
     World *world,
     RenderGroup *RG,
