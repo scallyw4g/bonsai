@@ -44,6 +44,7 @@
 #define DEBUG_DRAW_SHADOWS            1
 #define DEBUG_DRAW_SHADOW_MAP_TEXTURE 1
 #define DEBUG_FRAMES_TO_RUN          -1
+#define DEBUG_SUSPEND_DRAWING_WORLD   1
 
 #define DEBUG_TEXTURE_SIZE          512
 

@@ -123,6 +123,8 @@ FlushVertexBuffer(
     ShadowRenderGroup *SG
   )
 {
+  RenderShadowMap(world, SG);
+
 #if DEBUG_DRAW_SHADOWS
   //
   // Render Shadow depth texture
@@ -131,7 +133,6 @@ FlushVertexBuffer(
   glUseProgram(SG->ShaderID);
 
   glClear(GL_DEPTH_BUFFER_BIT);
-
 
   glBindTexture(GL_TEXTURE_2D, SG->Texture);
 
@@ -548,9 +549,9 @@ LookAt( v3 P )
 Quaternion
 RotateAround( v3 Axis )
 {
-  /* Axis = V3(0,1,0); */
+  static
+    float theta = 0.01f;
 
-  static float theta = 0.01f;
   theta+= 0.05f;
 
   Quaternion Result( cos(theta/2), Axis*sin(theta/2) );
@@ -933,8 +934,7 @@ void
 BufferChunkMesh(
     World *world,
     Chunk *chunk,
-    Camera_Object *Camera,
-    RenderGroup *RG
+    Camera_Object *Camera
   )
 {
 
@@ -1021,7 +1021,7 @@ DrawWorldChunk(
 
 
   BuildBoundaryVoxels(world, WorldChunk);
-  BufferChunkMesh(world, &WorldChunk->Data, Camera, RG);
+  BufferChunkMesh(world, &WorldChunk->Data, Camera);
 
   if ( WorldChunk->Data.BoundaryVoxelCount > 0 )
   {
@@ -1065,7 +1065,7 @@ DrawEntity(
     BuildInteriorBoundaryVoxels(world, &entity->Model, entity->P.WorldP);
   }
 
-  BufferChunkMesh(world, &entity->Model, Camera, RG);
+  BufferChunkMesh(world, &entity->Model, Camera);
   FlushVertexBuffer(world, RG, SG);
 
   return;

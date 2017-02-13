@@ -71,15 +71,16 @@ GAME_UPDATE_AND_RENDER
   // Draw world
   for ( int i = 0; i < Volume(world->VisibleRegion); ++ i )
   {
-
-    /* World_Chunk *chunk = &world->Chunks[i]; */
-    /* DrawWorldChunk( */
-    /*   world, */
-    /*   chunk, */
-    /*   Camera, */
-    /*   RG, */
-    /*   SG */
-    /* ); */
+#if DEBUG_SUSPEND_DRAWING_WORLD
+    World_Chunk *chunk = &world->Chunks[i];
+    DrawWorldChunk(
+      world,
+      chunk,
+      Camera,
+      RG,
+      SG
+    );
+#endif
 
   }
 
