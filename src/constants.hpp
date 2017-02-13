@@ -8,14 +8,22 @@
 
 #define BONSAI_INTERNAL 1
 
+#define CHUNK_VOL (CHUNK_HEIGHT*CHUNK_WIDTH*CHUNK_DEPTH)
+
+// 6 verticies per face, 6 faces per voxel
+#define VERT_PER_VOXEL (6*6)
+
+#define VOXEL_DIAMETER (1.0f)
+#define VOXEL_RADIUS (VOXEL_DIAMETER/2.0f)
+
 #define CD_X 8
 #define CD_Y 8
 #define CD_Z 8
 
 // Visible Region XYZ - Must be > (3,3,3)
-#define VR_X 16
+#define VR_X 8
 #define VR_Y 8
-#define VR_Z 16
+#define VR_Z 8
 
 #define WORLD_X V3(1,0,0)
 #define WORLD_Y V3(0,1,0)
@@ -27,17 +35,19 @@
 
 #define WORLD_SIZE 200
 
-#define DEBUG_SCROLL_WORLD         1
-#define DEBUG_CHUNK_AABB           0
-#define DEBUG_CAMERA_FOCUS_ORIGIN  0
-#define DEBUG_OPTIMIZE_TRI_COUNT   1
-#define DEBUG_WORLD_GENERATION     0
-#define DEBUG_LOD_RENDER           0
+#define DEBUG_SCROLL_WORLD            1
+#define DEBUG_CHUNK_AABB              0
+#define DEBUG_CAMERA_FOCUS_ORIGIN     0
+#define DEBUG_OPTIMIZE_TRI_COUNT      1
+#define DEBUG_WORLD_GENERATION        0
+#define DEBUG_LOD_RENDER              0
+#define DEBUG_DRAW_SHADOWS            1
+#define DEBUG_DRAW_SHADOW_MAP_TEXTURE 1
+#define DEBUG_FRAMES_TO_RUN          -1
 
-#define DEBUG_TEXTURE_SIZE         512
-#define DEBUG_FRAMES_TO_RUN       -1
+#define DEBUG_TEXTURE_SIZE          512
 
-#define PLAYER_STEP_MAX            1
+#define PLAYER_STEP_MAX               1
 
 #define CHUNK_STACK_SIZE (VR_X*VR_X*VR_X)
 
@@ -61,17 +71,9 @@ DEBUG_GLOBAL int VoxelsIndexed = 0;
 
 DEBUG_GLOBAL float GlobalLightTheta = 0;
 
-#define CHUNK_VOL (CHUNK_HEIGHT*CHUNK_WIDTH*CHUNK_DEPTH)
-
-// 6 verticies per face, 6 faces per voxel
-#define VERT_PER_VOXEL (6*6)
-
-#define VOXEL_DIAMETER 1.0f
-#define VOXEL_RADIUS (VOXEL_DIAMETER/2.0f)
-
 #define FACE_COLOR_SIZE 32
 #define PALETTE_SIZE 256
 
-#define SHADOW_MAP_RESOULUTION 1024
+#define SHADOW_MAP_RESOLUTION 1024
 
 #endif

@@ -74,7 +74,7 @@ RenderShadowMap(World *world, ShadowRenderGroup *SG)
   glClear(GL_DEPTH_BUFFER_BIT);
 
   glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
-  glViewport(0,0,SHADOW_MAP_RESOULUTION,SHADOW_MAP_RESOULUTION);
+  glViewport(0,0,SHADOW_MAP_RESOLUTION,SHADOW_MAP_RESOLUTION);
   glUseProgram(SG->ShaderID);
   glBindTexture(GL_TEXTURE_2D, SG->Texture);
 
@@ -123,11 +123,11 @@ FlushVertexBuffer(
     ShadowRenderGroup *SG
   )
 {
+#if DEBUG_DRAW_SHADOWS
   //
   // Render Shadow depth texture
-
   glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
-  glViewport(0,0,SHADOW_MAP_RESOULUTION,SHADOW_MAP_RESOULUTION);
+  glViewport(0,0,SHADOW_MAP_RESOLUTION,SHADOW_MAP_RESOLUTION);
   glUseProgram(SG->ShaderID);
 
   glClear(GL_DEPTH_BUFFER_BIT);
@@ -166,7 +166,7 @@ FlushVertexBuffer(
 
   //
   // End drawing to shadow texture
-
+#endif
 
 
 
@@ -178,6 +178,7 @@ FlushVertexBuffer(
   glUseProgram(RG->ShaderID);
   glViewport(0,0,1920,1080);
 
+#if DEBUG_DRAW_SHADOWS
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, SG->Texture);
   glUniform1i(RG->ShadowMapID, 0);
@@ -188,9 +189,10 @@ FlushVertexBuffer(
     0.0, 0.0, 0.5, 0.0,
     0.5, 0.5, 0.5, 1.0
   );
-
   glm::mat4 depthBiasMVP = biasMatrix*depthMVP;
   glUniformMatrix4fv(RG->DepthBiasID, 1, GL_FALSE, &depthBiasMVP[0][0]);
+  glUniform3fv(RG->GlobalIlluminationID, 1, &GlobalLightDirection[0]);
+#endif
 
   FlushMVPToHardware(RG);
 
@@ -248,9 +250,9 @@ FlushVertexBuffer(
 
   /* printf("VertexBufferFlushed \n"); */
 
-  glUniform3fv(RG->GlobalIlluminationID, 1, &GlobalLightDirection[0]);
-
+#if DEBUG_DRAW_SHADOW_MAP_TEXTURE
   DEBUG_DrawTextureToQuad(GetDebugRenderGroup(), SG->Texture);
+#endif
 
   return;
 }
@@ -869,10 +871,8 @@ IsInsideChunk( voxel_position Dim, voxel_position P )
 }
 
 void
-BuildInteriorBoundaryVoxels(World *world, World_Chunk *WorldChunk)
+BuildInteriorBoundaryVoxels(World *world, Chunk *chunk, world_position WorldP)
 {
-  Chunk *chunk = &WorldChunk->Data;
-
   chunk->flags = UnSetFlag( chunk->flags, Chunk_RebuildInteriorBoundary );
 
   for ( int z = 0; z < chunk->Dim.z ; ++z )
@@ -881,20 +881,19 @@ BuildInteriorBoundaryVoxels(World *world, World_Chunk *WorldChunk)
     {
       for ( int x = 0; x < chunk->Dim.x ; ++x )
       {
-        canonical_position VoxelP = Canonical_Position(V3(x,y,z), WorldChunk->WorldP);
-        VoxelP = Canonicalize(world, VoxelP);
+        v3 Offset = V3(x,y,z);
 
-        if ( !IsFilled( chunk, Voxel_Position(VoxelP.Offset) ) )
+        if ( !IsFilled( chunk, Voxel_Position(Offset) ) )
           continue;
 
-        voxel_position nextVoxel  = Voxel_Position( VoxelP.Offset + V3(1.0f,0,0) );
-        voxel_position prevVoxel  = Voxel_Position( VoxelP.Offset - V3(1.0f,0,0) );
+        voxel_position nextVoxel  = Voxel_Position( Offset + V3(1.0f,0,0) );
+        voxel_position prevVoxel  = Voxel_Position( Offset - V3(1.0f,0,0) );
 
-        voxel_position topVoxel   = Voxel_Position( VoxelP.Offset + V3(0,1.0f,0) );
-        voxel_position botVoxel   = Voxel_Position( VoxelP.Offset - V3(0,1.0f,0) );
+        voxel_position topVoxel   = Voxel_Position( Offset + V3(0,1.0f,0) );
+        voxel_position botVoxel   = Voxel_Position( Offset - V3(0,1.0f,0) );
 
-        voxel_position frontVoxel = Voxel_Position( VoxelP.Offset + V3(0,0,1.0f) );
-        voxel_position backVoxel  = Voxel_Position( VoxelP.Offset - V3(0,0,1.0f) );
+        voxel_position frontVoxel = Voxel_Position( Offset + V3(0,0,1.0f) );
+        voxel_position backVoxel  = Voxel_Position( Offset - V3(0,0,1.0f) );
 
         // TODO : Cache this check in the flags so we don't have to to it again when rendering
         if ( ( IsInsideChunk( chunk->Dim, nextVoxel  ) && !IsFilled( chunk, nextVoxel  )) ||
@@ -982,18 +981,12 @@ BufferChunkMesh(
 void
 BuildBoundaryVoxels( World *world, World_Chunk *WorldChunk)
 {
-  Chunk *chunk = &WorldChunk->Data;
-
-  /* if ( ! IsInFrustum( world, Camera, chunk ) ) */
-  /* { */
-  /*   return; */
-  /* } */
-
-
+  Chunk* chunk = &WorldChunk->Data;
   if ( IsSet(chunk->flags, Chunk_RebuildInteriorBoundary) )
   {
     chunk->BoundaryVoxelCount = 0;
-    BuildInteriorBoundaryVoxels( world, WorldChunk );
+
+    BuildInteriorBoundaryVoxels( world, chunk, WorldChunk->WorldP );
   }
 
   if ( IsSet(chunk->flags, Chunk_RebuildExteriorBoundary ) )
@@ -1022,7 +1015,7 @@ DrawWorldChunk(
   )
 {
 #if DEBUG_CHUNK_AABB
-  Chunk *chunk = WorldChunk->Data;
+  Chunk *chunk = &WorldChunk->Data;
   DEBUG_DrawChunkAABB( world, RG, chunk, Quaternion(1,0,0,0) );
 #endif
 
@@ -1051,30 +1044,9 @@ DrawEntity(
   /* DEBUG_DrawChunkAABB( world, RG, &entity->Model, entity->Rotation ); */
   /* DEBUG_DrawChunkAABB( world, RG, &entity->Model, Quaternion(1,0,0,0) ); */
 
-  /* ComputeAndFlushMVP(world, RG, entity); */
-  /* v3 HalfDim = entity->Model.Dim/2; */
-  v3 HalfDim = V3(0,0,0);
-  ComputeAndFlushMVP( world, RG, GetRenderP(world, entity->P ) + HalfDim, Quaternion(1,0,0,0) );
-
   /* v3 MinP = GetModelSpaceP(&entity->Model, V3(0,0,0)); */
   /* v3 MaxP = GetModelSpaceP(&entity->Model, V3(entity->Model.Dim)); */
   /* DEBUG_DrawAABB(world, MinP, MaxP , Quaternion(1,0,0,0) ); */
-
-  // Don't flush models down this path because it implies world chunks
-  entity->Model.flags = UnSetFlag(entity->Model.flags, Chunk_RebuildInteriorBoundary);
-  entity->Model.flags = UnSetFlag(entity->Model.flags, Chunk_RebuildExteriorBoundary);
-
-  if ( entity->Model.BoundaryVoxelCount == 0 )
-  {
-    for (int i = 0; i < Volume(entity->Model.Dim); ++i)
-    {
-      Voxel v = entity->Model.Voxels[i];
-      if ( IsSet( v.flags, Voxel_Filled ) )
-      {
-        PushBoundaryVoxel( &entity->Model, v );
-      }
-    }
-  }
 
   // Debug light code
   glm::vec3 LightP = GLV3(V3(entity->Model.Dim) - V3(0,0,15));
@@ -1082,7 +1054,16 @@ DrawEntity(
   glUniformMatrix4fv(RG->LightTransformID, 1, GL_FALSE, &RG->Basis.ModelMatrix[0][0]);
   //
 
-  ComputeAndFlushMVP(world, RG, entity);
+  /* ComputeAndFlushMVP(world, RG, entity); */
+  /* v3 HalfDim = entity->Model.Dim/2; */
+
+  v3 HalfDim = V3(0,0,0);
+  ComputeAndFlushMVP( world, RG, GetRenderP(world, entity->P ) + HalfDim, Quaternion(1,0,0,0) );
+
+  if ( IsSet(entity->Model.flags, Chunk_RebuildInteriorBoundary) )
+  {
+    BuildInteriorBoundaryVoxels(world, &entity->Model, entity->P.WorldP);
+  }
 
   BufferChunkMesh(world, &entity->Model, Camera, RG);
   FlushVertexBuffer(world, RG, SG);
