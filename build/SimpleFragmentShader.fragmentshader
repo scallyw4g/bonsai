@@ -11,14 +11,11 @@ in vec3 LightP_worldspace;
 
 out vec3 color;
 
+uniform vec3 GlobalIllumination;
 uniform mat4 MVP;
 uniform sampler2DShadow shadowMap;
 
-vec3 GlobalIllumination = normalize( vec3( 0.2, 2, 2) );
 float GlobalIntensity = 0.50f;
-
-// Fix acne
-float bias = 0.02f;
 
 void main()
 {
@@ -29,6 +26,10 @@ void main()
   vec3 L = normalize( LightDirection_worldspace );
 
   float cosGlobalTheta = clamp( dot( N, GlobalIllumination), 0, 1);
+
+  // TODO(Jesse): This is an epsilon to fix shadow acne.. can we do this better?
+  // I notice a lot of peter-panning on corners using this technique
+  float bias = clamp(0.005*tan(acos(cosGlobalTheta)), 0, 0.015);
 
   vec3 AmbientColor = MaterialColor * vec3(0.15f);
 

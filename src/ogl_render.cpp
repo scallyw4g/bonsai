@@ -50,6 +50,7 @@ DEBUG_DrawTextureToQuad(DebugRenderGroup *DG, GLuint Texture)
   glBindTexture(GL_TEXTURE_2D, Texture);
   glUniform1i(DG->TextureUniform, 0);
 
+
   glEnableVertexAttribArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, DG->quad_vertexBuffer);
   glVertexAttribPointer(
@@ -81,13 +82,16 @@ FlushVertexBuffer(
   glViewport(0,0,SHADOW_MAP_RESOULUTION,SHADOW_MAP_RESOULUTION);
   glUseProgram(SG->ShaderID);
 
+  glClear(GL_DEPTH_BUFFER_BIT);
+
+
   glBindTexture(GL_TEXTURE_2D, SG->Texture);
 
-  glm::vec3 lightInvDir = glm::vec3(0.2, 2.0, 2.0);
+  glm::vec3 GlobalLightDirection = glm::normalize( glm::vec3( sin(GlobalLightTheta), 2.0, -2.0));
 
   // Compute the MVP matrix from the light's point of view
-  glm::mat4 depthProjectionMatrix = glm::ortho<float>(-10,10, -10,10, -10,10);
-  glm::mat4 depthViewMatrix = glm::lookAt(lightInvDir, glm::vec3(0,0,0), glm::vec3(0,1,0));
+  glm::mat4 depthProjectionMatrix = glm::ortho<float>(-20,20, -20,20, -20,20);
+  glm::mat4 depthViewMatrix = glm::lookAt(GlobalLightDirection, glm::vec3(0,0,0), glm::vec3(0,1,0));
   glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix;
 
   // Send our transformation to the currently bound shader, in the "MVP" uniform
@@ -195,6 +199,8 @@ FlushVertexBuffer(
   world->ColorData.filled = 0;
 
   /* printf("VertexBufferFlushed \n"); */
+
+  glUniform3fv(RG->GlobalIlluminationID, 1, &GlobalLightDirection[0]);
 
   DEBUG_DrawTextureToQuad(GetDebugRenderGroup(), SG->Texture);
 
@@ -973,11 +979,14 @@ DrawWorldChunk(
 #endif
 
 
-  ComputeAndFlushMVP( world, RG, GetRenderP( world, Canonicalize(world,V3(0,0,0), WorldChunk->WorldP)), Quaternion(1,0,0,0) );
   BuildBoundaryVoxels(world, WorldChunk);
   BufferChunkMesh(world, &WorldChunk->Data, Camera, RG);
 
-  FlushVertexBuffer(world, RG, SG);
+  if ( WorldChunk->Data.BoundaryVoxelCount > 0 )
+  {
+    ComputeAndFlushMVP( world, RG, GetRenderP( world, Canonicalize(world,V3(0,0,0), WorldChunk->WorldP)), Quaternion(1,0,0,0) );
+    FlushVertexBuffer(world, RG, SG);
+  }
 }
 
 void

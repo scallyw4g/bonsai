@@ -13,9 +13,9 @@
 #define CD_Z 8
 
 // Visible Region XYZ - Must be > (3,3,3)
-#define VR_X 8
+#define VR_X 16
 #define VR_Y 8
-#define VR_Z 8
+#define VR_Z 16
 
 #define WORLD_X V3(1,0,0)
 #define WORLD_Y V3(0,1,0)
@@ -34,14 +34,14 @@
 #define DEBUG_WORLD_GENERATION     0
 #define DEBUG_LOD_RENDER           0
 
-#define DEBUG_TEXTURE_SIZE         256
+#define DEBUG_TEXTURE_SIZE         512
 #define DEBUG_FRAMES_TO_RUN       -1
 
 #define PLAYER_STEP_MAX            1
 
 #define CHUNK_STACK_SIZE (VR_X*VR_X*VR_X)
 
-#define CAMERA_FOCAL_LENGTH (30.0f);
+#define CAMERA_FOCAL_LENGTH (50.0f);
 
 #define CAMERA_INITIAL_P Canonical_Position(V3(1,1,1), World_Position(world.VisibleRegion/2))
 
@@ -59,6 +59,8 @@ DEBUG_GLOBAL float accumulatedTime = 0;
 DEBUG_GLOBAL int tris = 0;
 DEBUG_GLOBAL int VoxelsIndexed = 0;
 
+DEBUG_GLOBAL float GlobalLightTheta = 0;
+
 #define CHUNK_VOL (CHUNK_HEIGHT*CHUNK_WIDTH*CHUNK_DEPTH)
 
 // 6 verticies per face, 6 faces per voxel
@@ -70,6 +72,6 @@ DEBUG_GLOBAL int VoxelsIndexed = 0;
 #define FACE_COLOR_SIZE 32
 #define PALETTE_SIZE 256
 
-#define SHADOW_MAP_RESOULUTION 512
+#define SHADOW_MAP_RESOULUTION 1024
 
 #endif

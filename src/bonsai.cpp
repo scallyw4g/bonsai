@@ -68,46 +68,6 @@ initWindow( int width, int height )
   glDepthFunc(GL_LESS);
 }
 
-bool
-InitializeShadowBuffer(ShadowRenderGroup *ShadowGroup)
-{
-  // The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
-  GLuint FramebufferName = 0;
-  glGenFramebuffers(1, &FramebufferName);
-  glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
-
-  // Depth texture. Slower than a depth buffer, but you can sample it later in your shader
-  GLuint depthTexture;
-  glGenTextures(1, &depthTexture);
-  glBindTexture(GL_TEXTURE_2D, depthTexture);
-  glTexImage2D(GL_TEXTURE_2D, 0,GL_DEPTH_COMPONENT16, SHADOW_MAP_RESOULUTION, SHADOW_MAP_RESOULUTION, 0,GL_DEPTH_COMPONENT, GL_FLOAT, 0);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
-
-  glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture, 0);
-
-  // No color output in the bound framebuffer, only depth.
-  glDrawBuffer(GL_NONE);
-  glReadBuffer(GL_NONE);
-
-
-  ShadowGroup->ShaderID        = LoadShaders( "DepthRTT.vertexshader", "DepthRTT.fragmentshader");
-  ShadowGroup->MVP_ID          = glGetUniformLocation(ShadowGroup->ShaderID, "depthMVP");
-
-  ShadowGroup->FramebufferName = FramebufferName;
-  ShadowGroup->Texture         = depthTexture;
-
-  // Always check that our framebuffer is ok
-  if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-    return false;
-
- return true;
-}
-
 void
 InitializeVoxels( World *world, World_Chunk *WorldChunk )
 {
@@ -131,6 +91,11 @@ InitializeVoxels( World *world, World_Chunk *WorldChunk )
 
 
 #if DEBUG_WORLD_GENERATION
+        if ( (y == 0 && WorldChunk->WorldP.y == 2) )
+        {
+          chunk->Voxels[i].flags = SetFlag(chunk->Voxels[i].flags, Voxel_Filled);
+        }
+#else
         v3 NoiseInputs =
           ( ( V3(x,y,z) + (world->ChunkDim*(WorldChunk->WorldP+world->VisibleRegionOrigin))) % WORLD_SIZE )
           /
@@ -143,12 +108,6 @@ InitializeVoxels( World *world, World_Chunk *WorldChunk )
         double noiseValue = world->Noise.noise(InX, InY, InZ);
 
         chunk->Voxels[i].flags = SetFlag( chunk->Voxels[i].flags, Floori(noiseValue + 0.5) * Voxel_Filled );
-#else
-        if ( (y == 0 && WorldChunk->WorldP.y == 3) ||
-             (x == 0 && z == 0 && WorldChunk->WorldP.x == 3 && WorldChunk->WorldP.y == 3) )
-        {
-          chunk->Voxels[i].flags = SetFlag(chunk->Voxels[i].flags, Voxel_Filled);
-        }
 #endif
       }
     }

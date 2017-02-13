@@ -1,3 +1,4 @@
+
 #include <bonsai.h>
 #include <render.h>
 
@@ -65,13 +66,7 @@ GAME_UPDATE_AND_RENDER
   if (Length(Input) > 0)
     Player->Rotation = LookAt(Input);
 
-  DrawEntity(
-    world,
-    Player,
-    Camera,
-    RG,
-    SG
-  );
+  GlobalLightTheta += 0.025;
 
   // Draw world
   for ( int i = 0; i < Volume(world->VisibleRegion); ++ i )
@@ -87,6 +82,14 @@ GAME_UPDATE_AND_RENDER
     /* ); */
 
   }
+
+  DrawEntity(
+    world,
+    Player,
+    Camera,
+    RG,
+    SG
+  );
 
 
   /* printf("%d Triangles drawn\n", tris ); */
@@ -150,13 +153,13 @@ main( void )
 
   /* Player.Model = LoadVox("./chr_knight.vox"); */
   /* Player.Model = LoadVox("./ephtracy.vox"); */
-  /* Player.Model = LoadVox("./chr_sword.vox"); */
+  Player.Model = LoadVox("./chr_sword.vox");
   /* Player.Model = LoadVox("./shelf.vox"); */
   /* Player.Model = LoadVox("./3x3x3.vox"); */
   /* Player.Model = LoadVox("./8x8x8.vox"); */
   /* Player.Model = LoadVox("./alien_bot2.vox"); */
   /* Player.Model = LoadVox("./chr_rain.vox"); */
-  Player.Model = LoadVox("./chr_old.vox");
+  /* Player.Model = LoadVox("./chr_old.vox"); */
   /* Player.Model = AllocateChunk(Chunk_Dimension(13,7,7), World_Position(0,0,0)); */
   /* FillChunk(&Player.Model); */
   Player.Model.flags = SetFlag( Player.Model.flags, Chunk_Entity);
@@ -193,12 +196,13 @@ main( void )
       "SimpleVertexShader.vertexshader",
       "SimpleFragmentShader.fragmentshader" );
 
-  RG.MVPID            = glGetUniformLocation(RG.ShaderID, "MVP");
-  RG.ModelMatrixID    = glGetUniformLocation(RG.ShaderID, "M");
-  RG.LightTransformID = glGetUniformLocation(RG.ShaderID, "LightTransform");
-  RG.LightPID         = glGetUniformLocation(RG.ShaderID, "LightP_in");
-  RG.ShadowMapID      = glGetUniformLocation(RG.ShaderID, "shadowMap");
-  RG.DepthBiasID      = glGetUniformLocation(RG.ShaderID, "DepthBiasMVP");
+  RG.MVPID                = glGetUniformLocation(RG.ShaderID, "MVP");
+  RG.ModelMatrixID        = glGetUniformLocation(RG.ShaderID, "M");
+  RG.LightTransformID     = glGetUniformLocation(RG.ShaderID, "LightTransform");
+  RG.LightPID             = glGetUniformLocation(RG.ShaderID, "LightP_in");
+  RG.ShadowMapID          = glGetUniformLocation(RG.ShaderID, "shadowMap");
+  RG.DepthBiasID          = glGetUniformLocation(RG.ShaderID, "DepthBiasMVP");
+  RG.GlobalIlluminationID = glGetUniformLocation(RG.ShaderID, "GlobalIllumination");
 
 
   /*
