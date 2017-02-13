@@ -34,13 +34,14 @@
 #define DEBUG_WORLD_GENERATION     0
 #define DEBUG_LOD_RENDER           0
 
+#define DEBUG_TEXTURE_SIZE         256
 #define DEBUG_FRAMES_TO_RUN       -1
 
 #define PLAYER_STEP_MAX            1
 
 #define CHUNK_STACK_SIZE (VR_X*VR_X*VR_X)
 
-#define CAMERA_FOCAL_LENGTH 80.0f;
+#define CAMERA_FOCAL_LENGTH (30.0f);
 
 #define CAMERA_INITIAL_P Canonical_Position(V3(1,1,1), World_Position(world.VisibleRegion/2))
 
@@ -68,5 +69,7 @@ DEBUG_GLOBAL int VoxelsIndexed = 0;
 
 #define FACE_COLOR_SIZE 32
 #define PALETTE_SIZE 256
+
+#define SHADOW_MAP_RESOULUTION 512
 
 #endif

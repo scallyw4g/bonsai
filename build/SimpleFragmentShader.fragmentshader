@@ -18,7 +18,7 @@ vec3 GlobalIllumination = normalize( vec3( 0.2, 2, 2) );
 float GlobalIntensity = 0.50f;
 
 // Fix acne
-float bias = 0.05f;
+float bias = 0.02f;
 
 void main()
 {

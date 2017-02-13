@@ -41,7 +41,7 @@ FlushMVPToHardware(RenderGroup *RG)
 void
 DEBUG_DrawTextureToQuad(DebugRenderGroup *DG, GLuint Texture)
 {
-  glViewport(0,0,256,256);
+  glViewport(0,0,DEBUG_TEXTURE_SIZE,DEBUG_TEXTURE_SIZE);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
   glUseProgram(DG->ShaderID);
@@ -78,7 +78,7 @@ FlushVertexBuffer(
   // Render Shadow depth texture
 
   glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
-  glViewport(0,0,512,512);
+  glViewport(0,0,SHADOW_MAP_RESOULUTION,SHADOW_MAP_RESOULUTION);
   glUseProgram(SG->ShaderID);
 
   glBindTexture(GL_TEXTURE_2D, SG->Texture);
