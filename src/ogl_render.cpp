@@ -50,7 +50,6 @@ DEBUG_DrawTextureToQuad(DebugRenderGroup *DG, GLuint Texture)
   glBindTexture(GL_TEXTURE_2D, Texture);
   glUniform1i(DG->TextureUniform, 0);
 
-
   glEnableVertexAttribArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, DG->quad_vertexBuffer);
   glVertexAttribPointer(
@@ -65,7 +64,6 @@ DEBUG_DrawTextureToQuad(DebugRenderGroup *DG, GLuint Texture)
   glDrawArrays(GL_TRIANGLES, 0, 6); // 2*3 indices starting at 0 -> 2 triangles
 
   glDisableVertexAttribArray(0);
-
 }
 
 void
@@ -123,7 +121,7 @@ FlushVertexBuffer(
     ShadowRenderGroup *SG
   )
 {
-  RenderShadowMap(world, SG);
+  /* RenderShadowMap(world, SG); */
 
 #if DEBUG_DRAW_SHADOWS
   //
@@ -139,7 +137,7 @@ FlushVertexBuffer(
   glm::vec3 GlobalLightDirection = glm::normalize( glm::vec3( sin(GlobalLightTheta), 2.0, -2.0));
 
   // Compute the MVP matrix from the light's point of view
-  glm::mat4 depthProjectionMatrix = glm::ortho<float>(-20,20, -20,20, -20,20);
+  glm::mat4 depthProjectionMatrix = glm::ortho<float>(-50,0, -50,50, -50,0);
   glm::mat4 depthViewMatrix = glm::lookAt(GlobalLightDirection, glm::vec3(0,0,0), glm::vec3(0,1,0));
   glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix;
 
@@ -169,6 +167,12 @@ FlushVertexBuffer(
   // End drawing to shadow texture
 #endif
 
+  //FIXME(Jesse): If this is below the screen rendering call, everything breaks.. wtf?
+#if DEBUG_DRAW_SHADOW_MAP_TEXTURE
+  DEBUG_DrawTextureToQuad(GetDebugRenderGroup(), SG->Texture);
+#endif
+
+
 
 
 
@@ -194,8 +198,6 @@ FlushVertexBuffer(
   glUniformMatrix4fv(RG->DepthBiasID, 1, GL_FALSE, &depthBiasMVP[0][0]);
   glUniform3fv(RG->GlobalIlluminationID, 1, &GlobalLightDirection[0]);
 #endif
-
-  FlushMVPToHardware(RG);
 
   // Vertices
   glEnableVertexAttribArray(0);
@@ -250,10 +252,6 @@ FlushVertexBuffer(
   world->ColorData.filled = 0;
 
   /* printf("VertexBufferFlushed \n"); */
-
-#if DEBUG_DRAW_SHADOW_MAP_TEXTURE
-  DEBUG_DrawTextureToQuad(GetDebugRenderGroup(), SG->Texture);
-#endif
 
   return;
 }
@@ -730,7 +728,7 @@ DEBUG_DrawChunkAABB( World *world, RenderGroup *RG, World_Chunk *chunk, Quaterni
 {
   if ( chunk->Data.BoundaryVoxelCount == 0 ) return;
 
-  ComputeAndFlushMVP(world, RG, GetRenderP( world, Canonicalize(world, V3(0,0,0), chunk->WorldP)), Rotation);
+  /* ComputeAndFlushMVP(world, RG, GetRenderP( world, Canonicalize(world, V3(0,0,0), chunk->WorldP)), Rotation); */
 
   v3 MinP = GetModelSpaceP(&chunk->Data, V3(0,0,0));
   v3 MaxP = GetModelSpaceP(&chunk->Data, V3(chunk->Data.Dim));
@@ -934,25 +932,12 @@ void
 BufferChunkMesh(
     World *world,
     Chunk *chunk,
-    Camera_Object *Camera
+    world_position WorldP
   )
 {
-
-#if DEBUG_LOD_RENDER
-  // LOD calculations
-  v3 ChunkCenterRenderP  = GetRenderP(world, Canonical_Position(chunk->Dim / 2, chunk->WorldP) );
-  v3 CameraTargetRenderP = GetRenderP(world, Camera->Target );
-  int ChunkWidths = Length( ChunkCenterRenderP - CameraTargetRenderP ) / (world->ChunkDim.x*3);
-  int LOD = 1+(ChunkWidths*ChunkWidths);
-#else
-  int LOD = 1;
-#endif
-
-  /* glm::vec3 GLCameraRenderP = GetGLRenderP(world, Camera->P); */
-
   float FaceColors[FACE_COLOR_SIZE];
 
-  for ( int i = 0; i < chunk->BoundaryVoxelCount; i += LOD )
+  for ( int i = 0; i < chunk->BoundaryVoxelCount; ++i )
   {
     VoxelsIndexed ++;
 
@@ -960,18 +945,14 @@ BufferChunkMesh(
 
     GetColorData(GetVoxelColor(V), &FaceColors[0]);;
 
-    glm::vec3 ModelSpaceP = GLV3(GetModelSpaceP(chunk, V3(GetVoxelP(V))));
+    glm::vec3 RenderP = GetGLRenderP(world, Canonical_Position(GetVoxelP(V), WorldP));
 
-    /* glm::vec3 VoxelToCamera = glm::normalize(GLCameraRenderP - ModelSpaceP); */
-
-    BufferRightFace(world, ModelSpaceP, FaceColors);
-    BufferLeftFace(world, ModelSpaceP, FaceColors);
-
-    BufferBottomFace(world, ModelSpaceP, FaceColors);
-    BufferTopFace(world, ModelSpaceP, FaceColors);
-
-    BufferFrontFace(world, ModelSpaceP, FaceColors);
-    BufferBackFace(world, ModelSpaceP, FaceColors);
+    BufferRightFace(world,   RenderP,  FaceColors);
+    BufferLeftFace(world,    RenderP,  FaceColors);
+    BufferBottomFace(world,  RenderP,  FaceColors);
+    BufferTopFace(world,     RenderP,  FaceColors);
+    BufferFrontFace(world,   RenderP,  FaceColors);
+    BufferBackFace(world,    RenderP,  FaceColors);
   }
 
   return;
@@ -1021,13 +1002,7 @@ DrawWorldChunk(
 
 
   BuildBoundaryVoxels(world, WorldChunk);
-  BufferChunkMesh(world, &WorldChunk->Data, Camera);
-
-  if ( WorldChunk->Data.BoundaryVoxelCount > 0 )
-  {
-    ComputeAndFlushMVP( world, RG, GetRenderP( world, Canonicalize(world,V3(0,0,0), WorldChunk->WorldP)), Quaternion(1,0,0,0) );
-    FlushVertexBuffer(world, RG, SG);
-  }
+  BufferChunkMesh(world, &WorldChunk->Data, WorldChunk->WorldP);
 }
 
 void
@@ -1054,19 +1029,11 @@ DrawEntity(
   glUniformMatrix4fv(RG->LightTransformID, 1, GL_FALSE, &RG->Basis.ModelMatrix[0][0]);
   //
 
-  /* ComputeAndFlushMVP(world, RG, entity); */
-  /* v3 HalfDim = entity->Model.Dim/2; */
-
-  v3 HalfDim = V3(0,0,0);
-  ComputeAndFlushMVP( world, RG, GetRenderP(world, entity->P ) + HalfDim, Quaternion(1,0,0,0) );
-
   if ( IsSet(entity->Model.flags, Chunk_RebuildInteriorBoundary) )
   {
     BuildInteriorBoundaryVoxels(world, &entity->Model, entity->P.WorldP);
   }
 
-  BufferChunkMesh(world, &entity->Model, Camera);
-  FlushVertexBuffer(world, RG, SG);
-
+  BufferChunkMesh(world, &entity->Model, entity->P.WorldP);
   return;
 }

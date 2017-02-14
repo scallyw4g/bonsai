@@ -400,6 +400,27 @@ Canonical_Position( v3 Offset, world_position WorldP )
   return Result;
 }
 
+inline canonical_position
+Canonical_Position(voxel_position Offset, world_position WorldP )
+{
+  canonical_position Result;
+  Result.Offset = V3(Offset);
+  Result.WorldP = WorldP;
+  return Result;
+}
+
+inline canonical_position
+Canonical_Position(World *world, voxel_position Offset, world_position WorldP )
+{
+  canonical_position Result;
+  Result.Offset = V3(Offset);
+  Result.WorldP = WorldP;
+
+  Result = Canonicalize(world, Result);
+
+  return Result;
+}
+
 inline voxel_position
 Voxel_Position(v3 Offset)
 {

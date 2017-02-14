@@ -92,6 +92,8 @@ GAME_UPDATE_AND_RENDER
     SG
   );
 
+  ComputeAndFlushMVP(world, RG, V3(0,0,0));
+  FlushVertexBuffer(world, RG, SG);
 
   /* printf("%d Triangles drawn\n", tris ); */
   /* tris=0; */
