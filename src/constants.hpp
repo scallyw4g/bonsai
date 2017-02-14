@@ -52,7 +52,7 @@
 
 #define CHUNK_STACK_SIZE (VR_X*VR_X*VR_X)
 
-#define CAMERA_FOCAL_LENGTH (50.0f);
+#define CAMERA_FOCAL_LENGTH (70.0f);
 
 #define CAMERA_INITIAL_P Canonical_Position(V3(1,1,1), World_Position(world.VisibleRegion/2))
 

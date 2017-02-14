@@ -41,8 +41,8 @@ FlushMVPToHardware(RenderGroup *RG)
 void
 DEBUG_DrawTextureToQuad(DebugRenderGroup *DG, GLuint Texture)
 {
-  glViewport(0,0,DEBUG_TEXTURE_SIZE,DEBUG_TEXTURE_SIZE);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glViewport(0,0,DEBUG_TEXTURE_SIZE,DEBUG_TEXTURE_SIZE);
 
   glUseProgram(DG->ShaderID);
 
@@ -69,56 +69,68 @@ DEBUG_DrawTextureToQuad(DebugRenderGroup *DG, GLuint Texture)
 void
 RenderShadowMap(World *world, ShadowRenderGroup *SG)
 {
-  glClear(GL_DEPTH_BUFFER_BIT);
+  /* glClear(GL_DEPTH_BUFFER_BIT); */
 
-  glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
-  glViewport(0,0,SHADOW_MAP_RESOLUTION,SHADOW_MAP_RESOLUTION);
-  glUseProgram(SG->ShaderID);
-  glBindTexture(GL_TEXTURE_2D, SG->Texture);
+  /* glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName); */
+  /* glViewport(0,0,SHADOW_MAP_RESOLUTION,SHADOW_MAP_RESOLUTION); */
+  /* glUseProgram(SG->ShaderID); */
+  /* glBindTexture(GL_TEXTURE_2D, SG->Texture); */
 
-  glm::vec3 GlobalLightDirection = glm::normalize( glm::vec3( sin(GlobalLightTheta), 2.0, -2.0));
+  /* glm::vec3 GlobalLightDirection = glm::normalize( glm::vec3( sin(GlobalLightTheta), 2.0, -2.0)); */
 
-  // Compute the MVP matrix from the light's point of view
-  glm::mat4 depthProjectionMatrix = glm::ortho<float>(-20,20, -20,20, -20,20);
-  glm::mat4 depthViewMatrix = glm::lookAt(GlobalLightDirection, glm::vec3(0,0,0), glm::vec3(0,1,0));
-  glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix;
+  /* // Compute the MVP matrix from the light's point of view */
+  /* glm::mat4 depthProjectionMatrix = glm::ortho<float>(-20,20, -20,20, -20,20); */
 
-  // Send our transformation to the currently bound shader, in the "MVP" uniform
-  glUniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &depthMVP[0][0]);
+  /* /1* glm::mat4 depthViewMatrix = *1/ */
+  /* /1*   glm::lookAt( *1/ */
+  /* /1*       GetGLRenderP(world, Camera->Target ) - GlobalLightDirection, *1/ */
+  /* /1*       GetGLRenderP(world, Camera->Target ), *1/ */
+  /* /1*       glm::vec3(0,1,0) *1/ */
+  /* /1*     ); *1/ */
 
-  /* glTexImage2D(GL_TEXTURE_2D, 0,GL_DEPTH_COMPONENT16, 1024, 1024, 0,GL_DEPTH_COMPONENT, GL_FLOAT, 0); */
-  glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, SG->Texture, 0);
+  /*   /1* , *1/ */
+  /*   /1* , *1/ */
+  /*   /1* CameraUp *1/ */
 
-  glEnableVertexAttribArray(0);
+  /* glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix; */
 
-  //
-  // Render Shadow depth texture
-  for ( int i = 0; i < Volume(world->VisibleRegion); ++ i )
-  {
-    /* glBindBuffer(GL_ARRAY_BUFFER, RG->vertexbuffer); */
-    /* glVertexAttribPointer( */
-    /*   0,                  // The attribute we want to configure */
-    /*   3,                  // size */
-    /*   GL_FLOAT,           // type */
-    /*   GL_FALSE,           // normalized? */
-    /*   0,                  // stride */
-    /*   (void*)0            // array buffer offset */
-    /* ); */
+  /* // Send our transformation to the currently bound shader, in the "MVP" uniform */
+  /* glUniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &depthMVP[0][0]); */
 
-    /* glDrawArrays(GL_TRIANGLES, 0, world->VertexCount); */
-  }
+  /* /1* glTexImage2D(GL_TEXTURE_2D, 0,GL_DEPTH_COMPONENT16, 1024, 1024, 0,GL_DEPTH_COMPONENT, GL_FLOAT, 0); *1/ */
+  /* glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, SG->Texture, 0); */
 
-  //
-  // End drawing to shadow texture
+  /* glEnableVertexAttribArray(0); */
 
-  glDisableVertexAttribArray(0);
+  /* // */
+  /* // Render Shadow depth texture */
+  /* for ( int i = 0; i < Volume(world->VisibleRegion); ++ i ) */
+  /* { */
+  /*   /1* glBindBuffer(GL_ARRAY_BUFFER, RG->vertexbuffer); *1/ */
+  /*   /1* glVertexAttribPointer( *1/ */
+  /*   /1*   0,                  // The attribute we want to configure *1/ */
+  /*   /1*   3,                  // size *1/ */
+  /*   /1*   GL_FLOAT,           // type *1/ */
+  /*   /1*   GL_FALSE,           // normalized? *1/ */
+  /*   /1*   0,                  // stride *1/ */
+  /*   /1*   (void*)0            // array buffer offset *1/ */
+  /*   /1* ); *1/ */
+
+  /*   /1* glDrawArrays(GL_TRIANGLES, 0, world->VertexCount); *1/ */
+  /* } */
+
+  /* // */
+  /* // End drawing to shadow texture */
+
+  /* glDisableVertexAttribArray(0); */
 }
 
 void
 FlushVertexBuffer(
     World *world,
     RenderGroup *RG,
-    ShadowRenderGroup *SG
+    ShadowRenderGroup *SG,
+    Camera_Object *Camera
   )
 {
   /* RenderShadowMap(world, SG); */
@@ -134,11 +146,24 @@ FlushVertexBuffer(
 
   glBindTexture(GL_TEXTURE_2D, SG->Texture);
 
-  glm::vec3 GlobalLightDirection = glm::normalize( glm::vec3( sin(GlobalLightTheta), 2.0, -2.0));
+  glm::vec3 GlobalLightDirection =  glm::vec3( cos(GlobalLightTheta), 2.0, -2.0);
+  GlobalLightDirection = glm::normalize( GlobalLightDirection );
 
+#define Proj_XY 50
+#define Proj_Z  40
   // Compute the MVP matrix from the light's point of view
-  glm::mat4 depthProjectionMatrix = glm::ortho<float>(-50,0, -50,50, -50,0);
-  glm::mat4 depthViewMatrix = glm::lookAt(GlobalLightDirection, glm::vec3(0,0,0), glm::vec3(0,1,0));
+  glm::mat4 depthProjectionMatrix = glm::ortho<float>(-Proj_XY,Proj_XY, -Proj_XY,Proj_XY, -Proj_Z,Proj_Z);
+  glm::mat4 depthViewMatrix =
+    glm::lookAt(
+        GetGLRenderP(world, Camera->Target ) + GlobalLightDirection,
+        GetGLRenderP(world, Camera->Target ),
+        glm::vec3(0,1,0)
+      );
+
+    /* GetGLRenderP(world, Camera->P), */
+    /* GetGLRenderP(world, Camera->Target ), */
+    /* CameraUp */
+
   glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix;
 
   // Send our transformation to the currently bound shader, in the "MVP" uniform
@@ -194,8 +219,13 @@ FlushVertexBuffer(
     0.0, 0.0, 0.5, 0.0,
     0.5, 0.5, 0.5, 1.0
   );
+
   glm::mat4 depthBiasMVP = biasMatrix*depthMVP;
   glUniformMatrix4fv(RG->DepthBiasID, 1, GL_FALSE, &depthBiasMVP[0][0]);
+
+  /* glm::vec3 GlobalLight_cameraspace = glm::normalize( glm::vec3(glm::vec4(GlobalLightDirection,0) * RG->Basis.ViewMatrix) ); */
+  /* glUniform3fv(RG->GlobalIlluminationID, 1, &GlobalLight_cameraspace[0]); */
+
   glUniform3fv(RG->GlobalIlluminationID, 1, &GlobalLightDirection[0]);
 #endif
 
@@ -932,7 +962,8 @@ void
 BufferChunkMesh(
     World *world,
     Chunk *chunk,
-    world_position WorldP
+    world_position WorldP,
+    v3 Offset = V3(0,0,0)
   )
 {
   float FaceColors[FACE_COLOR_SIZE];
@@ -945,7 +976,7 @@ BufferChunkMesh(
 
     GetColorData(GetVoxelColor(V), &FaceColors[0]);;
 
-    glm::vec3 RenderP = GetGLRenderP(world, Canonical_Position(GetVoxelP(V), WorldP));
+    glm::vec3 RenderP = GetGLRenderP(world, Canonical_Position( Offset+GetVoxelP(V), WorldP));
 
     BufferRightFace(world,   RenderP,  FaceColors);
     BufferLeftFace(world,    RenderP,  FaceColors);
@@ -1016,24 +1047,17 @@ DrawEntity(
 {
   assert( IsSet(entity->Model.flags, Chunk_Entity) );
 
-  /* DEBUG_DrawChunkAABB( world, RG, &entity->Model, entity->Rotation ); */
-  /* DEBUG_DrawChunkAABB( world, RG, &entity->Model, Quaternion(1,0,0,0) ); */
-
-  /* v3 MinP = GetModelSpaceP(&entity->Model, V3(0,0,0)); */
-  /* v3 MaxP = GetModelSpaceP(&entity->Model, V3(entity->Model.Dim)); */
-  /* DEBUG_DrawAABB(world, MinP, MaxP , Quaternion(1,0,0,0) ); */
-
-  // Debug light code
-  glm::vec3 LightP = GLV3(V3(entity->Model.Dim) - V3(0,0,15));
-  glUniform3fv(RG->LightPID, 1, &LightP[0]);
-  glUniformMatrix4fv(RG->LightTransformID, 1, GL_FALSE, &RG->Basis.ModelMatrix[0][0]);
-  //
+  /* // Debug light code */
+  /* glm::vec3 LightP = GLV3(V3(entity->Model.Dim) - V3(0,0,15)); */
+  /* glUniform3fv(RG->LightPID, 1, &LightP[0]); */
+  /* glUniformMatrix4fv(RG->LightTransformID, 1, GL_FALSE, &RG->Basis.ModelMatrix[0][0]); */
+  /* // */
 
   if ( IsSet(entity->Model.flags, Chunk_RebuildInteriorBoundary) )
   {
     BuildInteriorBoundaryVoxels(world, &entity->Model, entity->P.WorldP);
   }
 
-  BufferChunkMesh(world, &entity->Model, entity->P.WorldP);
+  BufferChunkMesh(world, &entity->Model, entity->P.WorldP, entity->P.Offset);
   return;
 }

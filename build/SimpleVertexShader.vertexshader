@@ -5,7 +5,7 @@ layout(location = 1) in vec3 vertexColor;
 layout(location = 2) in vec3 vertexNormal_modelspace;
 
 out vec3 vertexP_worldspace;
-out vec3 vertexN_modelspace;
+out vec3 vertexN_worldspace;
 
 out vec4 ShadowCoord;
 
@@ -26,7 +26,7 @@ void main()
   MaterialColor = vertexColor;
 
   vertexP_worldspace = vec4(M * vec4(vertexPosition_modelspace, 1)).xyz;
-  vertexN_modelspace = vertexNormal_modelspace;
+  vertexN_worldspace = vec4(M * vec4(vertexNormal_modelspace, 1)).xyz;
 
   LightP_worldspace = vec4(LightTransform * vec4(LightP_in,1) ).xyz;
 

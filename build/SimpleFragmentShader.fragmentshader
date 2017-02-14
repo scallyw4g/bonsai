@@ -1,7 +1,7 @@
 #version 330 core
 
 in vec3 vertexP_worldspace;
-in vec3 vertexN_modelspace;
+in vec3 vertexN_worldspace;
 in vec3 LightDirection_worldspace;
 in vec3 MaterialColor;
 
@@ -11,27 +11,28 @@ in vec3 LightP_worldspace;
 
 out vec3 color;
 
-uniform vec3 GlobalIllumination;
+uniform vec3 GlobalLight_cameraspace;
 uniform mat4 MVP;
 uniform sampler2DShadow shadowMap;
 
-float GlobalIntensity = 0.50f;
+float GlobalIntensity = 1.00f;
 
 void main()
 {
   float Intensity = 60.0f;
   float distance = length( LightP_worldspace - vertexP_worldspace);
 
-  vec3 N = normalize( vertexN_modelspace );
+  vec3 N = normalize( vertexN_worldspace );
   vec3 L = normalize( LightDirection_worldspace );
 
-  float cosGlobalTheta = clamp( dot( N, GlobalIllumination), 0, 1);
+  float cosGlobalTheta = clamp( dot( N, GlobalLight_cameraspace), 0, 1);
 
   // TODO(Jesse): This is an epsilon to fix shadow acne.. can we do this better?
   // I notice a lot of peter-panning on corners using this technique
-  float bias = clamp(0.005*tan(acos(cosGlobalTheta)), 0, 0.015);
+  float bias = clamp(0.005*tan(acos(cosGlobalTheta)), 0, 0.025);
+  /* float bias = 0.0f; */
 
-  vec3 AmbientColor = MaterialColor * vec3(0.15f);
+  vec3 AmbientColor = MaterialColor * vec3(0.35f);
 
   // vec3 AmbientColor = AmbientColor + (GlobalIntensity * cosGlobalTheta);
 
@@ -41,8 +42,9 @@ void main()
 
   color =
       AmbientColor
-      + ( visibility * MaterialColor * GlobalIntensity * cosGlobalTheta)
-      + ( visibility * MaterialColor * Intensity * cosDirectionalTheta / (distance*distance) )
+      + ( visibility * MaterialColor * cosGlobalTheta)
+      /* + ( visibility * MaterialColor * Intensity * cosDirectionalTheta / (distance*distance) ) */
+      /* vec3(cosGlobalTheta); */
       ;
 
 }

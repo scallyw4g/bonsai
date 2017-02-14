@@ -91,7 +91,7 @@ InitializeVoxels( World *world, World_Chunk *WorldChunk )
 
 
 #if DEBUG_WORLD_GENERATION
-        if ( (y == 0 && WorldChunk->WorldP.y == 2) )
+        if ( (y == 0 && WorldChunk->WorldP.y == 3) )
         {
           chunk->Voxels[i].flags = SetFlag(chunk->Voxels[i].flags, Voxel_Filled);
         }
@@ -575,7 +575,7 @@ AllocateWorld( World *world )
   world->FreeChunks.chunks = (World_Chunk*)calloc( Volume(world->VisibleRegion), sizeof(World_Chunk) );
 
   { // Allocate five chunks worth of vertices for the render buffer
-    int BufferVertices = 10* (world->ChunkDim.x*world->ChunkDim.y*world->ChunkDim.z * VERT_PER_VOXEL * 3);
+    int BufferVertices = 15* (world->ChunkDim.x*world->ChunkDim.y*world->ChunkDim.z * VERT_PER_VOXEL * 3);
 
     world->VertexData.Data = (GLfloat *)calloc(BufferVertices, sizeof(GLfloat) );
     world->ColorData.Data = (GLfloat *)calloc(BufferVertices, sizeof(GLfloat) );

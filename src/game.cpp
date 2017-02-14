@@ -93,7 +93,7 @@ GAME_UPDATE_AND_RENDER
   );
 
   ComputeAndFlushMVP(world, RG, V3(0,0,0));
-  FlushVertexBuffer(world, RG, SG);
+  FlushVertexBuffer(world, RG, SG, Camera);
 
   /* printf("%d Triangles drawn\n", tris ); */
   /* tris=0; */
@@ -205,7 +205,7 @@ main( void )
   RG.LightPID             = glGetUniformLocation(RG.ShaderID, "LightP_in");
   RG.ShadowMapID          = glGetUniformLocation(RG.ShaderID, "shadowMap");
   RG.DepthBiasID          = glGetUniformLocation(RG.ShaderID, "DepthBiasMVP");
-  RG.GlobalIlluminationID = glGetUniformLocation(RG.ShaderID, "GlobalIllumination");
+  RG.GlobalIlluminationID = glGetUniformLocation(RG.ShaderID, "GlobalLight_cameraspace");
 
 
   /*
