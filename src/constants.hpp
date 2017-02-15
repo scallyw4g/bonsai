@@ -46,6 +46,9 @@
 #define DEBUG_FRAMES_TO_RUN          -1
 #define DEBUG_SUSPEND_DRAWING_WORLD   1
 
+#define Proj_XY 50
+#define Proj_Z  40
+
 #define DEBUG_TEXTURE_SIZE          512
 
 #define PLAYER_STEP_MAX               1
@@ -75,6 +78,6 @@ DEBUG_GLOBAL float GlobalLightTheta = 0;
 #define FACE_COLOR_SIZE 32
 #define PALETTE_SIZE 256
 
-#define SHADOW_MAP_RESOLUTION 1024
+#define SHADOW_MAP_RESOLUTION 2048
 
 #endif

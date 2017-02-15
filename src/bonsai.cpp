@@ -529,18 +529,13 @@ UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera )
   Camera->P = Canonicalize(world, Camera->P);
   Camera->Target = Canonicalize(world, Camera->Target);
 
-
   v3 TargetToCamera = Normalize(GetRenderP(world, Camera->P) - GetRenderP(world, Camera->Target));
   Camera->P.Offset = Camera->Target.Offset + (TargetToCamera * FocalLength);
   Camera->P.WorldP = Camera->Target.WorldP;
 
   Camera->Front = Normalize( GetRenderP(world, Camera->Target) - GetRenderP(world, Camera->P) );
 
-  /* printf("dX dY %f %f\n", dX, dY); */
-  /* Print(Camera->P); */
-  /* Print(TargetDelta); */
-  /* Print(UpdateRight); */
-  /* Print(UpdateUp); */
+  return;
 }
 
 glm::mat4

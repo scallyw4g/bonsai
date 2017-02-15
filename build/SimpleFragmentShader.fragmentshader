@@ -30,9 +30,8 @@ void main()
   // TODO(Jesse): This is an epsilon to fix shadow acne.. can we do this better?
   // I notice a lot of peter-panning on corners using this technique
   float bias = clamp(0.005*tan(acos(cosGlobalTheta)), 0, 0.025);
-  /* float bias = 0.0f; */
 
-  vec3 AmbientColor = MaterialColor * vec3(0.35f);
+  vec3 AmbientColor = MaterialColor * vec3(0.30f);
 
   // vec3 AmbientColor = AmbientColor + (GlobalIntensity * cosGlobalTheta);
 

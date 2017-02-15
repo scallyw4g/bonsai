@@ -49,7 +49,7 @@ GAME_UPDATE_AND_RENDER
   {
     if (glfwGetKey( window, GLFW_KEY_SPACE ) == GLFW_PRESS)
     {
-      Player->Velocity.y += 8.0f; // Jump
+      Player->Velocity.y += 20.0f; // Jump
     }
   }
 
@@ -60,13 +60,12 @@ GAME_UPDATE_AND_RENDER
 
   UpdatePlayerP( world, Player, PlayerDelta );
   UpdateCameraP( world, Player, Camera );
-
   RG->Basis.ViewMatrix = GetViewMatrix(world, Camera);
 
   if (Length(Input) > 0)
     Player->Rotation = LookAt(Input);
 
-  GlobalLightTheta += 0.025;
+  GlobalLightTheta += dt;
 
   // Draw world
   for ( int i = 0; i < Volume(world->VisibleRegion); ++ i )
@@ -251,8 +250,8 @@ main( void )
 
     if ( T2.tv_sec - T1.tv_sec > 0 ) T1.tv_nsec -= 1000000000;
 
-    printf(" %d ms this frame \n\n\n",
-        (int)(T2.tv_nsec -T1.tv_nsec)/1000000 );
+    /* printf(" %d ms this frame \n\n\n", */
+    /*     (int)(T2.tv_nsec -T1.tv_nsec)/1000000 ); */
 
     /* printf(" %d triangles \n", tris); */
     tris=0;

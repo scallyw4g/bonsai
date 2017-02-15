@@ -42,7 +42,7 @@ void
 DEBUG_DrawTextureToQuad(DebugRenderGroup *DG, GLuint Texture)
 {
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  glViewport(0,0,DEBUG_TEXTURE_SIZE,DEBUG_TEXTURE_SIZE);
+  glViewport(0, 0, DEBUG_TEXTURE_SIZE, DEBUG_TEXTURE_SIZE);
 
   glUseProgram(DG->ShaderID);
 
@@ -67,75 +67,9 @@ DEBUG_DrawTextureToQuad(DebugRenderGroup *DG, GLuint Texture)
 }
 
 void
-RenderShadowMap(World *world, ShadowRenderGroup *SG)
+RenderShadowMap(World *world, ShadowRenderGroup *SG, RenderGroup *RG, glm::mat4 depthMVP)
 {
-  /* glClear(GL_DEPTH_BUFFER_BIT); */
 
-  /* glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName); */
-  /* glViewport(0,0,SHADOW_MAP_RESOLUTION,SHADOW_MAP_RESOLUTION); */
-  /* glUseProgram(SG->ShaderID); */
-  /* glBindTexture(GL_TEXTURE_2D, SG->Texture); */
-
-  /* glm::vec3 GlobalLightDirection = glm::normalize( glm::vec3( sin(GlobalLightTheta), 2.0, -2.0)); */
-
-  /* // Compute the MVP matrix from the light's point of view */
-  /* glm::mat4 depthProjectionMatrix = glm::ortho<float>(-20,20, -20,20, -20,20); */
-
-  /* /1* glm::mat4 depthViewMatrix = *1/ */
-  /* /1*   glm::lookAt( *1/ */
-  /* /1*       GetGLRenderP(world, Camera->Target ) - GlobalLightDirection, *1/ */
-  /* /1*       GetGLRenderP(world, Camera->Target ), *1/ */
-  /* /1*       glm::vec3(0,1,0) *1/ */
-  /* /1*     ); *1/ */
-
-  /*   /1* , *1/ */
-  /*   /1* , *1/ */
-  /*   /1* CameraUp *1/ */
-
-  /* glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix; */
-
-  /* // Send our transformation to the currently bound shader, in the "MVP" uniform */
-  /* glUniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &depthMVP[0][0]); */
-
-  /* /1* glTexImage2D(GL_TEXTURE_2D, 0,GL_DEPTH_COMPONENT16, 1024, 1024, 0,GL_DEPTH_COMPONENT, GL_FLOAT, 0); *1/ */
-  /* glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, SG->Texture, 0); */
-
-  /* glEnableVertexAttribArray(0); */
-
-  /* // */
-  /* // Render Shadow depth texture */
-  /* for ( int i = 0; i < Volume(world->VisibleRegion); ++ i ) */
-  /* { */
-  /*   /1* glBindBuffer(GL_ARRAY_BUFFER, RG->vertexbuffer); *1/ */
-  /*   /1* glVertexAttribPointer( *1/ */
-  /*   /1*   0,                  // The attribute we want to configure *1/ */
-  /*   /1*   3,                  // size *1/ */
-  /*   /1*   GL_FLOAT,           // type *1/ */
-  /*   /1*   GL_FALSE,           // normalized? *1/ */
-  /*   /1*   0,                  // stride *1/ */
-  /*   /1*   (void*)0            // array buffer offset *1/ */
-  /*   /1* ); *1/ */
-
-  /*   /1* glDrawArrays(GL_TRIANGLES, 0, world->VertexCount); *1/ */
-  /* } */
-
-  /* // */
-  /* // End drawing to shadow texture */
-
-  /* glDisableVertexAttribArray(0); */
-}
-
-void
-FlushVertexBuffer(
-    World *world,
-    RenderGroup *RG,
-    ShadowRenderGroup *SG,
-    Camera_Object *Camera
-  )
-{
-  /* RenderShadowMap(world, SG); */
-
-#if DEBUG_DRAW_SHADOWS
   //
   // Render Shadow depth texture
   glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
@@ -145,26 +79,6 @@ FlushVertexBuffer(
   glClear(GL_DEPTH_BUFFER_BIT);
 
   glBindTexture(GL_TEXTURE_2D, SG->Texture);
-
-  glm::vec3 GlobalLightDirection =  glm::vec3( cos(GlobalLightTheta), 2.0, -2.0);
-  GlobalLightDirection = glm::normalize( GlobalLightDirection );
-
-#define Proj_XY 50
-#define Proj_Z  40
-  // Compute the MVP matrix from the light's point of view
-  glm::mat4 depthProjectionMatrix = glm::ortho<float>(-Proj_XY,Proj_XY, -Proj_XY,Proj_XY, -Proj_Z,Proj_Z);
-  glm::mat4 depthViewMatrix =
-    glm::lookAt(
-        GetGLRenderP(world, Camera->Target ) + GlobalLightDirection,
-        GetGLRenderP(world, Camera->Target ),
-        glm::vec3(0,1,0)
-      );
-
-    /* GetGLRenderP(world, Camera->P), */
-    /* GetGLRenderP(world, Camera->Target ), */
-    /* CameraUp */
-
-  glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix;
 
   // Send our transformation to the currently bound shader, in the "MVP" uniform
   glUniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &depthMVP[0][0]);
@@ -190,10 +104,41 @@ FlushVertexBuffer(
 
   //
   // End drawing to shadow texture
+
+}
+
+void
+FlushVertexBuffer(
+    World *world,
+    RenderGroup *RG,
+    ShadowRenderGroup *SG,
+    Camera_Object *Camera
+  )
+{
+
+#if DEBUG_DRAW_SHADOWS
+  glm::vec3 GlobalLightDirection =  glm::vec3( 2.0, 2.0, -2.0);
+  GlobalLightDirection = glm::normalize( GlobalLightDirection );
+
+  // Compute the MVP matrix from the light's point of view
+  glm::mat4 depthProjectionMatrix = glm::ortho<float>(-Proj_XY,Proj_XY, -Proj_XY,Proj_XY, -Proj_Z,Proj_Z);
+  Print(Camera->Target);
+  glm::mat4 depthViewMatrix =
+    glm::lookAt(
+        GetGLRenderP(world, Camera->Target ) + GlobalLightDirection ,
+        GetGLRenderP(world, Camera->Target ),
+        glm::vec3(0,1,0)
+      );
+
+  glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix;
+
+  RenderShadowMap(world, SG, RG, depthMVP);
 #endif
 
-  //FIXME(Jesse): If this is below the screen rendering call, everything breaks.. wtf?
+
+
 #if DEBUG_DRAW_SHADOW_MAP_TEXTURE
+  //FIXME(Jesse): If this is below the screen rendering call, everything breaks.. wtf?
   DEBUG_DrawTextureToQuad(GetDebugRenderGroup(), SG->Texture);
 #endif
 
@@ -222,9 +167,6 @@ FlushVertexBuffer(
 
   glm::mat4 depthBiasMVP = biasMatrix*depthMVP;
   glUniformMatrix4fv(RG->DepthBiasID, 1, GL_FALSE, &depthBiasMVP[0][0]);
-
-  /* glm::vec3 GlobalLight_cameraspace = glm::normalize( glm::vec3(glm::vec4(GlobalLightDirection,0) * RG->Basis.ViewMatrix) ); */
-  /* glUniform3fv(RG->GlobalIlluminationID, 1, &GlobalLight_cameraspace[0]); */
 
   glUniform3fv(RG->GlobalIlluminationID, 1, &GlobalLightDirection[0]);
 #endif
@@ -274,7 +216,6 @@ FlushVertexBuffer(
   glDisableVertexAttribArray(1);
   glDisableVertexAttribArray(2);
 
-
   world->VertexCount = 0;
 
   world->VertexData.filled = 0;
@@ -309,19 +250,19 @@ BufferFace (
 
   if ( world->VertexData.filled > world->VertexData.bytesAllocd )
   {
-    /* printf("Flushing Render Buffer - Vertex memory\n"); */
+    printf("Flushing Render Buffer - Vertex memory\n");
     DidBufferFace = false;
   }
 
   if ( world->ColorData.filled > world->ColorData.bytesAllocd )
   {
-    /* printf("Flushing Render Buffer - Color memory\n"); */
+    printf("Flushing Render Buffer - Color memory\n");
     DidBufferFace = false;
   }
 
   if (world->NormalData.filled > world->NormalData.bytesAllocd )
   {
-    /* printf("Flushing Render Buffer - Normal memory\n"); */
+    printf("Flushing Render Buffer - Normal memory\n");
     DidBufferFace = false;
   }
 
