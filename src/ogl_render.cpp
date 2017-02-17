@@ -74,21 +74,22 @@ RenderShadowMap(World *world, ShadowRenderGroup *SG, RenderGroup *RG, glm::mat4 
   // Render Shadow depth texture
   glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
   glViewport(0,0,SHADOW_MAP_RESOLUTION,SHADOW_MAP_RESOLUTION);
+
   glUseProgram(SG->ShaderID);
+
+  glUniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &depthMVP[0][0]);
 
   glClear(GL_DEPTH_BUFFER_BIT);
 
   glBindTexture(GL_TEXTURE_2D, SG->Texture);
 
-  // Send our transformation to the currently bound shader, in the "MVP" uniform
-  glUniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &depthMVP[0][0]);
-
+  /* glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, SG->Texture, 0); */
   /* glTexImage2D(GL_TEXTURE_2D, 0,GL_DEPTH_COMPONENT16, 1024, 1024, 0,GL_DEPTH_COMPONENT, GL_FLOAT, 0); */
-  glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, SG->Texture, 0);
 
   // 1rst attribute buffer : vertices
   glEnableVertexAttribArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, RG->vertexbuffer);
+  glBufferData(GL_ARRAY_BUFFER, world->VertexData.filled, world->VertexData.Data, GL_STATIC_DRAW);
   glVertexAttribPointer(
     0,                  // The attribute we want to configure
     3,                  // size
@@ -104,7 +105,6 @@ RenderShadowMap(World *world, ShadowRenderGroup *SG, RenderGroup *RG, glm::mat4 
 
   //
   // End drawing to shadow texture
-
 }
 
 void
@@ -117,18 +117,21 @@ FlushVertexBuffer(
 {
 
 #if DEBUG_DRAW_SHADOWS
-  glm::vec3 GlobalLightDirection =  glm::vec3( 2.0, 2.0, -2.0);
+  glm::vec3 GlobalLightDirection =  glm::vec3( sin(GlobalLightTheta), 1.0, -2.0);
   GlobalLightDirection = glm::normalize( GlobalLightDirection );
 
   // Compute the MVP matrix from the light's point of view
   glm::mat4 depthProjectionMatrix = glm::ortho<float>(-Proj_XY,Proj_XY, -Proj_XY,Proj_XY, -Proj_Z,Proj_Z);
-  Print(Camera->Target);
+
+  glm::vec3 P = GetGLRenderP(world, Camera->Target + ( GLV3(GlobalLightDirection) * 5.0f ) );
+  glm::vec3 Target = GetGLRenderP(world, Camera->Target );
+
+  glm::vec3 Front = glm::normalize(Target-P);
+  glm::vec3 Right = glm::cross( Front, glm::vec3(0,1,0) );
+  glm::vec3 Up = glm::cross(Right, Front);
+
   glm::mat4 depthViewMatrix =
-    glm::lookAt(
-        GetGLRenderP(world, Camera->Target ) + GlobalLightDirection ,
-        GetGLRenderP(world, Camera->Target ),
-        glm::vec3(0,1,0)
-      );
+    glm::lookAt(P, Target, Up);
 
   glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix;
 
@@ -549,6 +552,8 @@ DEBUG_DrawLine(World *world, v3 RenderSpaceP1, v3 RenderSpaceP2)
   memcpy( LineData,    &RenderSpaceP1, sizeof(v3) );
   memcpy( LineData+3,  &RenderSpaceP2, sizeof(v3) );
 
+  glViewport(0,0,1920,1080);
+
   // Colors
   glEnableVertexAttribArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, AABB_Colors);
@@ -583,14 +588,6 @@ DEBUG_DrawLine(World *world, v3 RenderSpaceP1, v3 RenderSpaceP2)
   free( LineData );
   free( LineColors );
 }
-
-/* void */
-/* DEBUG_DrawLine(World *world, canonical_position P1, canonical_position P2) */
-/* { */
-/*   v3 rp1 = GetRenderP(world, P1); */
-/*   v3 rp2 = GetRenderP(world, P2); */
-/*   DEBUG_DrawLine(world, rp1, rp2); */
-/* } */
 
 void
 DEBUG_DrawAABB( World *world, v3 MinP, v3 MaxP, Quaternion Rotation = Quaternion(1,0,0,0) )
@@ -701,8 +698,8 @@ DEBUG_DrawChunkAABB( World *world, RenderGroup *RG, World_Chunk *chunk, Quaterni
 
   /* ComputeAndFlushMVP(world, RG, GetRenderP( world, Canonicalize(world, V3(0,0,0), chunk->WorldP)), Rotation); */
 
-  v3 MinP = GetModelSpaceP(&chunk->Data, V3(0,0,0));
-  v3 MaxP = GetModelSpaceP(&chunk->Data, V3(chunk->Data.Dim));
+  v3 MinP = GetRenderP(world, Canonical_Position(world, V3(0,0,0), chunk->WorldP));
+  v3 MaxP = GetRenderP(world, Canonical_Position(world, V3(chunk->Data.Dim), chunk->WorldP));
 
   DEBUG_DrawAABB(world, MinP, MaxP , Rotation );
 }
@@ -917,14 +914,15 @@ BufferChunkMesh(
 
     GetColorData(GetVoxelColor(V), &FaceColors[0]);;
 
-    glm::vec3 RenderP = GetGLRenderP(world, Canonical_Position( Offset+GetVoxelP(V), WorldP));
+    glm::vec3 RenderP =
+      GetGLRenderP(world, Canonical_Position(world, Offset+GetVoxelP(V), WorldP));
 
-    BufferRightFace(world,   RenderP,  FaceColors);
-    BufferLeftFace(world,    RenderP,  FaceColors);
-    BufferBottomFace(world,  RenderP,  FaceColors);
-    BufferTopFace(world,     RenderP,  FaceColors);
-    BufferFrontFace(world,   RenderP,  FaceColors);
-    BufferBackFace(world,    RenderP,  FaceColors);
+    BufferRightFace(  world, RenderP, FaceColors);
+    BufferLeftFace(   world, RenderP, FaceColors);
+    BufferBottomFace( world, RenderP, FaceColors);
+    BufferTopFace(    world, RenderP, FaceColors);
+    BufferFrontFace(  world, RenderP, FaceColors);
+    BufferBackFace(   world, RenderP, FaceColors);
   }
 
   return;
@@ -968,8 +966,7 @@ DrawWorldChunk(
   )
 {
 #if DEBUG_CHUNK_AABB
-  Chunk *chunk = &WorldChunk->Data;
-  DEBUG_DrawChunkAABB( world, RG, chunk, Quaternion(1,0,0,0) );
+  DEBUG_DrawChunkAABB( world, RG, WorldChunk, Quaternion(1,0,0,0) );
 #endif
 
 
@@ -986,8 +983,6 @@ DrawEntity(
     ShadowRenderGroup *SG
   )
 {
-  assert( IsSet(entity->Model.flags, Chunk_Entity) );
-
   /* // Debug light code */
   /* glm::vec3 LightP = GLV3(V3(entity->Model.Dim) - V3(0,0,15)); */
   /* glUniform3fv(RG->LightPID, 1, &LightP[0]); */
@@ -1000,5 +995,6 @@ DrawEntity(
   }
 
   BufferChunkMesh(world, &entity->Model, entity->P.WorldP, entity->P.Offset);
+
   return;
 }

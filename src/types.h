@@ -379,33 +379,15 @@ Canonical_Position(World *world, v3 Offset, world_position WorldP )
 }
 
 inline canonical_position
-Canonical_Position( glm::vec3 Offset, world_position WorldP )
+Canonical_Position(World *world, glm::vec3 Offset, world_position WorldP )
 {
   canonical_position Result;
 
   Result.Offset = GLV3(Offset);
   Result.WorldP = WorldP;
 
-  return Result;
-}
+  Result = Canonicalize(world, Result);
 
-inline canonical_position
-Canonical_Position( v3 Offset, world_position WorldP )
-{
-  canonical_position Result;
-
-  Result.Offset = Offset;
-  Result.WorldP = WorldP;
-
-  return Result;
-}
-
-inline canonical_position
-Canonical_Position(voxel_position Offset, world_position WorldP )
-{
-  canonical_position Result;
-  Result.Offset = V3(Offset);
-  Result.WorldP = WorldP;
   return Result;
 }
 

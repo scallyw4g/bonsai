@@ -224,7 +224,10 @@ GetCollision(World *world, Entity *entity, v3 Offset = V3(0,0,0) )
 
   for (int i = 0; i < entity->Model.BoundaryVoxelCount; ++i)
   {
-    canonical_position CP = Canonical_Position( V3(GetVoxelP(entity->Model.BoundaryVoxels[i])) + entity->P.Offset + Offset, entity->P.WorldP);
+    canonical_position CP;
+    CP.Offset = V3(GetVoxelP(entity->Model.BoundaryVoxels[i])) + entity->P.Offset + Offset;
+    CP.WorldP = entity->P.WorldP;
+
     C = GetCollision(world, CP, Chunk_Dimension(1,1,1) );
 
     if (C.didCollide)
@@ -497,13 +500,15 @@ UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
 }
 
 void
-UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera )
+UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera)
 {
 #if DEBUG_CAMERA_FOCUS_ORIGIN
   canonical_position NewTarget = Canonical_Position( V3(0,0,0), World_Position(0,0,0) );
 #else
   canonical_position NewTarget = Canonicalize(world, Player->P.Offset, Player->P.WorldP) + (Player->Model.Dim/2);
 #endif
+
+  v3 TargetDelta = GetRenderP(world, NewTarget) - GetRenderP(world, Camera->Target);
 
   float FocalLength = CAMERA_FOCAL_LENGTH;
   float mouseSpeed = 0.20f;
@@ -514,8 +519,6 @@ UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera )
 
   float dX = mouseSpeed * float(1024/2 - X );
   float dY = mouseSpeed * float( 768/2 - Y );
-
-  v3 TargetDelta = GetRenderP(world, NewTarget) - GetRenderP(world, Camera->Target);
 
   Camera->Right = Normalize(Cross(Camera->Front, WORLD_Y));
   Camera->Up = Normalize(Cross(Camera->Front, Camera->Right));
@@ -570,7 +573,7 @@ AllocateWorld( World *world )
   world->FreeChunks.chunks = (World_Chunk*)calloc( Volume(world->VisibleRegion), sizeof(World_Chunk) );
 
   { // Allocate five chunks worth of vertices for the render buffer
-    int BufferVertices = 15* (world->ChunkDim.x*world->ChunkDim.y*world->ChunkDim.z * VERT_PER_VOXEL * 3);
+    int BufferVertices = 100* (world->ChunkDim.x*world->ChunkDim.y*world->ChunkDim.z * VERT_PER_VOXEL * 3);
 
     world->VertexData.Data = (GLfloat *)calloc(BufferVertices, sizeof(GLfloat) );
     world->ColorData.Data = (GLfloat *)calloc(BufferVertices, sizeof(GLfloat) );

@@ -8,6 +8,21 @@
 #include <time.h>
 
 void
+RegenerateGameWorld( World *world, Entity *Player )
+{
+  printf("\n\n\n\n\n");
+  srand(time(NULL));
+  world->VisibleRegionOrigin = World_Position(0,0,0);
+  do
+  {
+    PerlinNoise Noise(rand());
+    world->Noise = Noise;
+    ZeroWorldChunks(world);
+    GenerateVisibleRegion( world , Voxel_Position(0,0,0) );
+  } while (!SpawnPlayer( world, Player ) );
+}
+
+void
 GAME_UPDATE_AND_RENDER
 (
     World *world,
@@ -19,39 +34,17 @@ GAME_UPDATE_AND_RENDER
     ShadowRenderGroup *SG
   )
 {
-  //
-  // Clear the screen
-  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
-
-
   if ( glfwGetKey(window, GLFW_KEY_ENTER ) == GLFW_PRESS )
-  {
-    printf("\n\n\n\n\n");
-    srand(time(NULL));
-    world->VisibleRegionOrigin = World_Position(0,0,0);
-    do
-    {
-      PerlinNoise Noise(rand());
-      world->Noise = Noise;
-      ZeroWorldChunks(world);
-      GenerateVisibleRegion( world , Voxel_Position(0,0,0) );
-    } while (!SpawnPlayer( world, Player ) );
-  }
+    RegenerateGameWorld(world, Player);
 
   // TODO : Bake these into the terrain/model ?
   v3 drag = V3(0.6f, 1.0f, 0.6f);
 
   v3 Input = GetInputsFromController(Camera);
   Player->Acceleration = Input * PLAYER_ACCEL_MULTIPLIER; // m/s2
-  if (IsGrounded(world, Player))
-  {
-    if (glfwGetKey( window, GLFW_KEY_SPACE ) == GLFW_PRESS)
-    {
-      Player->Velocity.y += 20.0f; // Jump
-    }
-  }
+
+  if (IsGrounded(world, Player) && (glfwGetKey( window, GLFW_KEY_SPACE ) == GLFW_PRESS))
+      Player->Velocity.y += PLAYER_JUMP_STRENGTH; // Jump
 
   Player->Acceleration += world->Gravity * dt; // Apply Gravity
   Player->Velocity = (Player->Velocity + (Player->Acceleration )) * drag; // m/s
@@ -66,8 +59,12 @@ GAME_UPDATE_AND_RENDER
     Player->Rotation = LookAt(Input);
 
   GlobalLightTheta += dt;
-
   // Draw world
+  //
+
+  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  ComputeAndFlushMVP(world, RG, V3(0,0,0));
+
   for ( int i = 0; i < Volume(world->VisibleRegion); ++ i )
   {
 #if DEBUG_SUSPEND_DRAWING_WORLD
@@ -91,8 +88,12 @@ GAME_UPDATE_AND_RENDER
     SG
   );
 
-  ComputeAndFlushMVP(world, RG, V3(0,0,0));
+
   FlushVertexBuffer(world, RG, SG, Camera);
+
+  glfwSwapBuffers(window);
+  glfwPollEvents();
+
 
   /* printf("%d Triangles drawn\n", tris ); */
   /* tris=0; */
@@ -104,8 +105,9 @@ GAME_UPDATE_AND_RENDER
   /* BoundaryVoxelsIndexed=0; */
 
   // Swap buffers
-  glfwSwapBuffers(window);
-  glfwPollEvents();
+
+  /* glfwSwapBuffers(window); */
+  /* glfwPollEvents(); */
 }
 
 void
