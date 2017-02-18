@@ -201,8 +201,7 @@ main( void )
 
   RG.MVPID                = glGetUniformLocation(RG.ShaderID, "MVP");
   RG.ModelMatrixID        = glGetUniformLocation(RG.ShaderID, "M");
-  RG.LightTransformID     = glGetUniformLocation(RG.ShaderID, "LightTransform");
-  RG.LightPID             = glGetUniformLocation(RG.ShaderID, "LightP_in");
+  RG.LightPID             = glGetUniformLocation(RG.ShaderID, "LightP_worldspace");
   RG.ShadowMapID          = glGetUniformLocation(RG.ShaderID, "shadowMap");
   RG.DepthBiasID          = glGetUniformLocation(RG.ShaderID, "DepthBiasMVP");
   RG.GlobalIlluminationID = glGetUniformLocation(RG.ShaderID, "GlobalLight_cameraspace");

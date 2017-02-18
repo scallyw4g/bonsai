@@ -11,13 +11,11 @@ out vec4 ShadowCoord;
 
 out vec3 MaterialColor;
 
-out vec3 LightP_worldspace;
 out vec3 LightDirection_worldspace;
 
 uniform mat4 MVP;
 uniform mat4 M;
-uniform mat4 LightTransform;
-uniform vec3 LightP_in;
+uniform vec3 LightP_worldspace;
 
 uniform mat4 DepthBiasMVP;
 
@@ -27,8 +25,6 @@ void main()
 
   vertexP_worldspace = vec4(M * vec4(vertexPosition_modelspace, 1)).xyz;
   vertexN_worldspace = vec4(M * vec4(vertexNormal_modelspace, 1)).xyz;
-
-  LightP_worldspace = vec4(LightTransform * vec4(LightP_in,1) ).xyz;
 
   LightDirection_worldspace = LightP_worldspace - vertexP_worldspace;
 

@@ -71,7 +71,6 @@ struct RenderGroup
   GLuint DepthBiasID;
 
   GLuint LightPID;
-  GLuint LightTransformID;
   GLuint ShadowMapID;
   GLuint ShaderID;
   GLuint GlobalIlluminationID;

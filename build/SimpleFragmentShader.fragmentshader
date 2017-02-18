@@ -7,15 +7,15 @@ in vec3 MaterialColor;
 
 in vec4 ShadowCoord;
 
-in vec3 LightP_worldspace;
-
 out vec3 color;
 
 uniform vec3 GlobalLight_cameraspace;
 uniform mat4 MVP;
 uniform sampler2DShadow shadowMap;
+uniform vec3 LightP_worldspace;
 
 float GlobalIntensity = 5.0f;
+float Intensity = 600.0f;
 
 vec2 poissonDisk[16] = vec2[](
    vec2( -0.94201624,   -0.39906216 ),
@@ -45,7 +45,6 @@ float random(vec3 seed, int i){
 
 void main()
 {
-  float Intensity = 60.0f;
   float distance = length( LightP_worldspace - vertexP_worldspace);
 
   vec3 N = normalize( vertexN_worldspace );
@@ -72,8 +71,8 @@ void main()
 
   color =
       AmbientColor
-      + ( visibility * AmbientColor * cosGlobalTheta)
-      /* + ( visibility * MaterialColor * Intensity * cosDirectionalTheta / (distance*distance) ) */
+      /* + ( visibility * AmbientColor * cosGlobalTheta) */
+      + ( MaterialColor * Intensity * cosDirectionalTheta / (distance*distance) )
       ;
 
 }

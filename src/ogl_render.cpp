@@ -971,9 +971,8 @@ DrawEntity(
   )
 {
   /* // Debug light code */
-  /* glm::vec3 LightP = GLV3(V3(entity->Model.Dim) - V3(0,0,15)); */
-  /* glUniform3fv(RG->LightPID, 1, &LightP[0]); */
-  /* glUniformMatrix4fv(RG->LightTransformID, 1, GL_FALSE, &RG->Basis.ModelMatrix[0][0]); */
+  glm::vec3 LightP = GetGLRenderP(world, entity->P + entity->Model.Dim/2);
+  glUniform3fv(RG->LightPID, 1, &LightP[0]);
   /* // */
 
   if ( IsSet(entity->Model.flags, Chunk_RebuildInteriorBoundary) )
