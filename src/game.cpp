@@ -196,9 +196,8 @@ main( void )
 
   RenderGroup RG;
 
-  RG.ShaderID = LoadShaders(
-      "SimpleVertexShader.vertexshader",
-      "SimpleFragmentShader.fragmentshader" );
+  RG.ShaderID = LoadShaders( "SimpleVertexShader.vertexshader",
+                             "SimpleFragmentShader.fragmentshader" );
 
   RG.MVPID                = glGetUniformLocation(RG.ShaderID, "MVP");
   RG.ModelMatrixID        = glGetUniformLocation(RG.ShaderID, "M");

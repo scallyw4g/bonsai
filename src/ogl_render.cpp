@@ -69,22 +69,14 @@ DEBUG_DrawTextureToQuad(DebugRenderGroup *DG, GLuint Texture)
 void
 RenderShadowMap(World *world, ShadowRenderGroup *SG, RenderGroup *RG, glm::mat4 depthMVP)
 {
-
-  //
-  // Render Shadow depth texture
   glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
   glViewport(0,0,SHADOW_MAP_RESOLUTION,SHADOW_MAP_RESOLUTION);
-
-  glUseProgram(SG->ShaderID);
-
-  glUniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &depthMVP[0][0]);
-
   glClear(GL_DEPTH_BUFFER_BIT);
 
-  glBindTexture(GL_TEXTURE_2D, SG->Texture);
+  glUseProgram(SG->ShaderID);
+  glUniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &depthMVP[0][0]);
 
-  /* glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, SG->Texture, 0); */
-  /* glTexImage2D(GL_TEXTURE_2D, 0,GL_DEPTH_COMPONENT16, 1024, 1024, 0,GL_DEPTH_COMPONENT, GL_FLOAT, 0); */
+  glBindTexture(GL_TEXTURE_2D, SG->Texture);
 
   // 1rst attribute buffer : vertices
   glEnableVertexAttribArray(0);
@@ -103,8 +95,7 @@ RenderShadowMap(World *world, ShadowRenderGroup *SG, RenderGroup *RG, glm::mat4 
 
   glDisableVertexAttribArray(0);
 
-  //
-  // End drawing to shadow texture
+  return;
 }
 
 void
@@ -116,7 +107,6 @@ FlushVertexBuffer(
   )
 {
 
-#if DEBUG_DRAW_SHADOWS
   glm::vec3 GlobalLightDirection =  glm::vec3( sin(GlobalLightTheta), 1.0, -2.0);
   GlobalLightDirection = glm::normalize( GlobalLightDirection );
 
@@ -136,7 +126,6 @@ FlushVertexBuffer(
   glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix;
 
   RenderShadowMap(world, SG, RG, depthMVP);
-#endif
 
 
 
@@ -156,7 +145,6 @@ FlushVertexBuffer(
   glUseProgram(RG->ShaderID);
   glViewport(0,0,1920,1080);
 
-#if DEBUG_DRAW_SHADOWS
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, SG->Texture);
   glUniform1i(RG->ShadowMapID, 0);
@@ -172,7 +160,6 @@ FlushVertexBuffer(
   glUniformMatrix4fv(RG->DepthBiasID, 1, GL_FALSE, &depthBiasMVP[0][0]);
 
   glUniform3fv(RG->GlobalIlluminationID, 1, &GlobalLightDirection[0]);
-#endif
 
   // Vertices
   glEnableVertexAttribArray(0);
