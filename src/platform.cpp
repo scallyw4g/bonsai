@@ -221,6 +221,7 @@ LoadVox(char const *filepath)
             Result.Voxels[Index] = V;
 
             assert(GetVoxelColor(V) < PALETTE_SIZE);
+
             /* printf("%d\n", GetVoxelColor(V)); */
             /* assert(GetVoxelColor(*V) == 121); */
           }

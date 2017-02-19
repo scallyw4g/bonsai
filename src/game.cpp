@@ -157,12 +157,12 @@ main( void )
 
   /* Player.Model = LoadVox("./chr_knight.vox"); */
   /* Player.Model = LoadVox("./ephtracy.vox"); */
-  Player.Model = LoadVox("./chr_sword.vox");
+  /* Player.Model = LoadVox("./chr_sword.vox"); */
   /* Player.Model = LoadVox("./shelf.vox"); */
   /* Player.Model = LoadVox("./3x3x3.vox"); */
   /* Player.Model = LoadVox("./8x8x8.vox"); */
   /* Player.Model = LoadVox("./alien_bot2.vox"); */
-  /* Player.Model = LoadVox("./chr_rain.vox"); */
+  Player.Model = LoadVox("./chr_rain.vox");
   /* Player.Model = LoadVox("./chr_old.vox"); */
   /* Player.Model = AllocateChunk(Chunk_Dimension(13,7,7), World_Position(0,0,0)); */
   /* FillChunk(&Player.Model); */
