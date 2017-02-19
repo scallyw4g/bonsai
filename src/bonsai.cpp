@@ -565,7 +565,7 @@ AllocateWorld( World *world )
   world->ChunkDim = CHUNK_DIMENSION;
   world->VisibleRegion = VISIBLE_REGION;
 
-  world->Gravity = V3(0, -9.8, 0);
+  world->Gravity = WORLD_GRAVITY;
 
   world->Chunks = (World_Chunk*)calloc( Volume(world->VisibleRegion), sizeof(World_Chunk));
 

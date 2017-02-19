@@ -34,6 +34,12 @@
 #define VISIBLE_REGION Chunk_Dimension(VR_X,VR_Y,VR_Z)
 
 #define WORLD_SIZE 200
+#define WORLD_GRAVITY V3(0, -20.0f, 0)
+
+#define PLAYER_STEP_MAX          1
+#define PLAYER_JUMP_STRENGTH     20.0f
+#define PLAYER_ACCEL_MULTIPLIER  10.0f
+
 
 #define DEBUG_SCROLL_WORLD            1
 #define DEBUG_CHUNK_AABB              0
@@ -41,7 +47,7 @@
 #define DEBUG_OPTIMIZE_TRI_COUNT      1
 #define DEBUG_WORLD_GENERATION        0
 #define DEBUG_LOD_RENDER              0
-#define DEBUG_DRAW_SHADOW_MAP_TEXTURE 1
+#define DEBUG_DRAW_SHADOW_MAP_TEXTURE 0
 #define DEBUG_FRAMES_TO_RUN          -1
 #define DEBUG_SUSPEND_DRAWING_WORLD   1
 
@@ -49,9 +55,6 @@
 #define Proj_Z  50
 #define SHADOW_MAP_RESOLUTION 4096
 #define DEBUG_TEXTURE_SIZE          512
-
-#define PLAYER_STEP_MAX               1
-#define PLAYER_JUMP_STRENGTH 12.0f
 
 #define CHUNK_STACK_SIZE (VR_X*VR_X*VR_X)
 
@@ -65,7 +68,6 @@
 #define FINAL_POSITION_BIT (POSITION_BIT_WIDTH*3)
 #define FINAL_COLOR_BIT ((FINAL_POSITION_BIT+COLOR_BIT_WIDTH))
 
-DEBUG_GLOBAL float PLAYER_ACCEL_MULTIPLIER = 5.0f;
 
 DEBUG_GLOBAL int numFrames = 0;
 DEBUG_GLOBAL float accumulatedTime = 0;

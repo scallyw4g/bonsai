@@ -99,7 +99,7 @@ RenderShadowMap(World *world, ShadowRenderGroup *SG, RenderGroup *RG, glm::mat4 
 }
 
 void
-FlushVertexBuffer(
+DrawVertexBuffer(
     World *world,
     RenderGroup *RG,
     ShadowRenderGroup *SG,

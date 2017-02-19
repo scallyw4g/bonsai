@@ -89,7 +89,7 @@ GAME_UPDATE_AND_RENDER
   );
 
 
-  FlushVertexBuffer(world, RG, SG, Camera);
+  DrawVertexBuffer(world, RG, SG, Camera);
 
   glfwSwapBuffers(window);
   glfwPollEvents();
