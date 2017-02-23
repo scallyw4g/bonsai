@@ -59,6 +59,7 @@ GAME_UPDATE_AND_RENDER
     Player->Rotation = LookAt(Input);
 
   GlobalLightTheta += dt;
+
   // Draw world
   //
 

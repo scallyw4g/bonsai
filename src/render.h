@@ -1,12 +1,12 @@
 #ifndef RENDER_H
 #define RENDER_H
 
-#include <GL/glew.h>
-
-#include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include <shader.cpp>
+
+using namespace glm;
 
 #ifdef BONSAI_INTERNAL
 
@@ -62,6 +62,10 @@ struct RenderBasis
 
 struct RenderGroup
 {
+  GLuint FBO;
+  GLuint ColorBuffer;
+  GLuint DepthBuffer;
+
   GLuint colorbuffer;
   GLuint vertexbuffer;
   GLuint normalbuffer;
@@ -92,6 +96,27 @@ struct ShadowRenderGroup
 bool
 InitializeRenderGroup( RenderGroup *RG )
 {
+  glGenFramebuffers(1, &RG->FBO);
+
+  glGenTextures(1, &RG->ColorBuffer);
+  glBindTexture(GL_TEXTURE_2D, RG->ColorBuffer);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  glGenRenderbuffers(1, &RG->DepthBuffer);
+  glBindRenderbuffer(GL_RENDERBUFFER, RG->DepthBuffer);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, SCR_WIDTH, SCR_HEIGHT);
+
+  glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, RG->ColorBuffer, 0);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, RG->DepthBuffer);
+
+  if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    return false;
+
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
   RG->ShaderID = LoadShaders( "SimpleVertexShader.vertexshader",
                               "SimpleFragmentShader.fragmentshader" );
 

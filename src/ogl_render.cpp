@@ -3,13 +3,11 @@
 
 #include <sstream>
 #include <string>
-using namespace std;
 
 #include <GL/glew.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-using namespace glm;
 
 #include <bonsai.h>
 #include <render.h>
@@ -17,6 +15,8 @@ using namespace glm;
 #include <stdio.h>
 
 #include <colors.h>
+
+using namespace std;
 
 #define BufferLocalFace \
   BufferFace( \

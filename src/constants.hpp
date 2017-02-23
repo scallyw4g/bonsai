@@ -25,6 +25,9 @@
 #define VR_Y 16
 #define VR_Z 16
 
+#define SCR_WIDTH 2048
+#define SCR_HEIGHT 1024
+
 #define WORLD_X V3(1,0,0)
 #define WORLD_Y V3(0,1,0)
 #define WORLD_Z V3(0,0,1)
