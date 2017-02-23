@@ -132,6 +132,9 @@ main( void )
   ShadowRenderGroup SG = {};
   if (!InitializeShadowBuffer(&SG)) { printf("Error initializing Shadow Buffer\n"); return False; }
 
+  RenderGroup RG = {};
+  if (!InitializeRenderGroup(&RG)) { printf("Error initializing RenderGroup\n"); return False; }
+
   glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK); // Cull back-facing triangles -> draw only front-facing triangles
 
@@ -139,14 +142,6 @@ main( void )
   GLuint VertexArrayID;
   glGenVertexArrays(1, &VertexArrayID);
   glBindVertexArray(VertexArrayID);
-
-  GLuint vertexbuffer;
-  GLuint colorbuffer;
-  GLuint normalbuffer;
-
-  glGenBuffers(1, &vertexbuffer);
-  glGenBuffers(1, &colorbuffer);
-  glGenBuffers(1, &normalbuffer);
 
   glfwWindowHint(GLFW_SAMPLES, 4);
 
@@ -194,18 +189,6 @@ main( void )
 
   double lastTime = glfwGetTime();
 
-  RenderGroup RG;
-
-  RG.ShaderID = LoadShaders( "SimpleVertexShader.vertexshader",
-                             "SimpleFragmentShader.fragmentshader" );
-
-  RG.MVPID                = glGetUniformLocation(RG.ShaderID, "MVP");
-  RG.ModelMatrixID        = glGetUniformLocation(RG.ShaderID, "M");
-  RG.LightPID             = glGetUniformLocation(RG.ShaderID, "LightP_worldspace");
-  RG.ShadowMapID          = glGetUniformLocation(RG.ShaderID, "shadowMap");
-  RG.DepthBiasID          = glGetUniformLocation(RG.ShaderID, "DepthBiasMVP");
-  RG.GlobalIlluminationID = glGetUniformLocation(RG.ShaderID, "GlobalLight_cameraspace");
-
 
   /*
    *  Main Render loop
@@ -226,10 +209,6 @@ main( void )
 
     CALLGRIND_START_INSTRUMENTATION;
     CALLGRIND_TOGGLE_COLLECT;
-
-    RG.vertexbuffer = vertexbuffer;
-    RG.colorbuffer = colorbuffer;
-    RG.normalbuffer = normalbuffer;
 
     RG.Basis.ProjectionMatrix = Projection;
 
@@ -264,9 +243,9 @@ main( void )
 
   CALLGRIND_DUMP_STATS;
 
-  glDeleteBuffers(1, &vertexbuffer);
-  glDeleteBuffers(1, &colorbuffer);
-  glDeleteBuffers(1, &normalbuffer);
+  glDeleteBuffers(1, &RG.vertexbuffer);
+  glDeleteBuffers(1, &RG.colorbuffer);
+  glDeleteBuffers(1, &RG.normalbuffer);
 
   glDeleteVertexArrays(1, &VertexArrayID);
   glDeleteProgram(RG.ShaderID);

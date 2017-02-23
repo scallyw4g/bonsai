@@ -90,6 +90,34 @@ struct ShadowRenderGroup
 };
 
 bool
+InitializeRenderGroup( RenderGroup *RG )
+{
+  RG->ShaderID = LoadShaders( "SimpleVertexShader.vertexshader",
+                              "SimpleFragmentShader.fragmentshader" );
+
+  RG->MVPID                = glGetUniformLocation(RG->ShaderID, "MVP");
+  RG->ModelMatrixID        = glGetUniformLocation(RG->ShaderID, "M");
+  RG->LightPID             = glGetUniformLocation(RG->ShaderID, "LightP_worldspace");
+  RG->ShadowMapID          = glGetUniformLocation(RG->ShaderID, "shadowMap");
+  RG->DepthBiasID          = glGetUniformLocation(RG->ShaderID, "DepthBiasMVP");
+  RG->GlobalIlluminationID = glGetUniformLocation(RG->ShaderID, "GlobalLight_cameraspace");
+
+  GLuint vertexbuffer;
+  GLuint colorbuffer;
+  GLuint normalbuffer;
+
+  glGenBuffers(1, &vertexbuffer);
+  glGenBuffers(1, &colorbuffer);
+  glGenBuffers(1, &normalbuffer);
+
+  RG->vertexbuffer = vertexbuffer;
+  RG->colorbuffer  = colorbuffer;
+  RG->normalbuffer = normalbuffer;
+
+  return true;
+}
+
+bool
 InitializeShadowBuffer(ShadowRenderGroup *ShadowGroup)
 {
   // The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
