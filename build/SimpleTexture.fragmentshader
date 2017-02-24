@@ -1,0 +1,24 @@
+#version 330 core
+out vec4 color;
+in vec2 UV;
+
+uniform sampler2D Texture;
+
+float exposure = 1.0f;
+
+void main()
+{
+    const float gamma = 2.2;
+    color = texture(Texture, UV);
+    /* color = vec4(TexCoords.x, TexCoords.y, 0, 1); */
+    /* color = vec4(UV.x, UV.y, 0, 1); */
+
+    /* // reinhard */
+    /* /1* vec3 result = hdrColor / (hdrColor + vec3(1.0)); *1/ */
+    /* // exposure */
+    /* vec3 result = vec3(1.0) - exp(-hdrColor * exposure); */
+    /* // also gamma correct while we're at it */
+    /* result = pow(result, vec3(1.0 / gamma)); */
+    /* color = vec4(result, 1.0f); */
+
+}

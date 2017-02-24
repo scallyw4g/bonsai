@@ -1,4 +1,7 @@
-build/*
+build/bonsai
+build/*.vox
+build/callgrind*
+
 Session.vim
 tags
 
