@@ -63,8 +63,9 @@ GAME_UPDATE_AND_RENDER
   // Draw world
   //
 
+  assert( glGetError() == GL_NO_ERROR );
+
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  ComputeAndFlushMVP(world, RG, V3(0,0,0));
 
   for ( int i = 0; i < Volume(world->VisibleRegion); ++ i )
   {

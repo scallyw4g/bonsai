@@ -25,9 +25,6 @@
 #define VR_Y 16
 #define VR_Z 16
 
-#define SCR_WIDTH 2048
-#define SCR_HEIGHT 1024
-
 #define WORLD_X V3(1,0,0)
 #define WORLD_Y V3(0,1,0)
 #define WORLD_Z V3(0,0,1)
@@ -53,6 +50,9 @@
 #define DEBUG_DRAW_SHADOW_MAP_TEXTURE 0
 #define DEBUG_FRAMES_TO_RUN          -1
 #define DEBUG_SUSPEND_DRAWING_WORLD   1
+
+#define SCR_WIDTH 1920
+#define SCR_HEIGHT 1080
 
 #define Proj_XY 50
 #define Proj_Z  50

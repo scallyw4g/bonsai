@@ -39,10 +39,29 @@ FlushMVPToHardware(RenderGroup *RG)
 }
 
 void
+ComputeAndFlushMVP(World *world, RenderGroup *RG, v3 ModelToWorldSpace, Quaternion Rotation = Quaternion(1,0,0,0) )
+{
+  RG->Basis.ModelMatrix = Translate(ModelToWorldSpace) * ToGLMat4(Rotation);
+  FlushMVPToHardware(RG);
+  return;
+}
+
+void
+ComputeAndFlushMVP(World *world, RenderGroup *RG, Entity* entity)
+{
+  /* v3 HalfDim = entity->Model.Dim/2; */
+  v3 HalfDim = V3(0,0,0);
+  ComputeAndFlushMVP( world, RG, GetRenderP(world, entity->P ) + HalfDim /*, entity->Rotation*/ );
+  return;
+}
+
+void
 DEBUG_DrawTextureToQuad(DebugRenderGroup *DG, GLuint Texture)
 {
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  glViewport(0, 0, DEBUG_TEXTURE_SIZE, DEBUG_TEXTURE_SIZE);
+  glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+  glClearColor(0.0f, 1.0f, 0.0f, 0.0f);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   glUseProgram(DG->ShaderID);
 
@@ -71,12 +90,13 @@ RenderShadowMap(World *world, ShadowRenderGroup *SG, RenderGroup *RG, glm::mat4 
 {
   glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
   glViewport(0,0,SHADOW_MAP_RESOLUTION,SHADOW_MAP_RESOLUTION);
-  glClear(GL_DEPTH_BUFFER_BIT);
+  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   glUseProgram(SG->ShaderID);
   glUniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &depthMVP[0][0]);
 
-  glBindTexture(GL_TEXTURE_2D, SG->Texture);
+  /* glBindTexture(GL_TEXTURE_2D, SG->Texture); */
 
   // 1rst attribute buffer : vertices
   glEnableVertexAttribArray(0);
@@ -95,71 +115,19 @@ RenderShadowMap(World *world, ShadowRenderGroup *SG, RenderGroup *RG, glm::mat4 
 
   glDisableVertexAttribArray(0);
 
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
   return;
 }
 
 void
-DrawVertexBuffer(
-    World *world,
-    RenderGroup *RG,
-    ShadowRenderGroup *SG,
-    Camera_Object *Camera
-  )
+RenderWorld(World *world, RenderGroup *RG)
 {
+  ComputeAndFlushMVP(world, RG, V3(0,0,0));
 
-  glm::vec3 GlobalLightDirection =  glm::vec3( sin(GlobalLightTheta), 1.0, -2.0);
-  GlobalLightDirection = glm::normalize( GlobalLightDirection );
+  glClearColor(1.0f, 0.0f, 1.0f, 0.0f);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  // Compute the MVP matrix from the light's point of view
-  glm::mat4 depthProjectionMatrix = glm::ortho<float>(-Proj_XY,Proj_XY, -Proj_XY,Proj_XY, -Proj_Z,Proj_Z);
-
-  glm::vec3 P = GetGLRenderP(world, Camera->Target + ( GLV3(GlobalLightDirection) * 5.0f ) );
-  glm::vec3 Target = GetGLRenderP(world, Camera->Target );
-
-  glm::vec3 Front = glm::normalize(Target-P);
-  glm::vec3 Right = glm::cross( Front, glm::vec3(0,1,0) );
-  glm::vec3 Up = glm::cross(Right, Front);
-
-  glm::mat4 depthViewMatrix =
-    glm::lookAt(P, Target, Up);
-
-  glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix;
-
-  RenderShadowMap(world, SG, RG, depthMVP);
-
-
-
-#if DEBUG_DRAW_SHADOW_MAP_TEXTURE
-  //FIXME(Jesse): If this is below the screen rendering call, everything breaks.. wtf?
-  DEBUG_DrawTextureToQuad(GetDebugRenderGroup(), SG->Texture);
-#endif
-
-
-
-
-
-  //
-  // Render to screen
-
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  glUseProgram(RG->ShaderID);
-  glViewport(0,0,1920,1080);
-
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, SG->Texture);
-  glUniform1i(RG->ShadowMapID, 0);
-
-  glm::mat4 biasMatrix(
-    0.5, 0.0, 0.0, 0.0,
-    0.0, 0.5, 0.0, 0.0,
-    0.0, 0.0, 0.5, 0.0,
-    0.5, 0.5, 0.5, 1.0
-  );
-
-  glm::mat4 depthBiasMVP = biasMatrix*depthMVP;
-  glUniformMatrix4fv(RG->DepthBiasID, 1, GL_FALSE, &depthBiasMVP[0][0]);
-
-  glUniform3fv(RG->GlobalIlluminationID, 1, &GlobalLightDirection[0]);
 
   // Vertices
   glEnableVertexAttribArray(0);
@@ -206,14 +174,91 @@ DrawVertexBuffer(
   glDisableVertexAttribArray(1);
   glDisableVertexAttribArray(2);
 
+}
+
+void
+DrawVertexBuffer(
+    World *world,
+    RenderGroup *RG,
+    ShadowRenderGroup *SG,
+    Camera_Object *Camera
+  )
+{
+
+  glm::vec3 GlobalLightDirection =  glm::vec3( sin(GlobalLightTheta), 1.0, -2.0);
+  GlobalLightDirection = glm::normalize( GlobalLightDirection );
+
+  // Compute the MVP matrix from the light's point of view
+  glm::mat4 depthProjectionMatrix = glm::ortho<float>(-Proj_XY,Proj_XY, -Proj_XY,Proj_XY, -Proj_Z,Proj_Z);
+
+  glm::vec3 P = GetGLRenderP(world, Camera->Target + ( GLV3(GlobalLightDirection) * 5.0f ) );
+  glm::vec3 Target = GetGLRenderP(world, Camera->Target );
+
+  glm::vec3 Front = glm::normalize(Target-P);
+  glm::vec3 Right = glm::cross( Front, glm::vec3(0,1,0) );
+  glm::vec3 Up = glm::cross(Right, Front);
+
+  glm::mat4 depthViewMatrix =
+    glm::lookAt(P, Target, Up);
+
+  glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix;
+
+  RenderShadowMap(world, SG, RG, depthMVP);
+
+
+
+#if DEBUG_DRAW_SHADOW_MAP_TEXTURE
+  //FIXME(Jesse): If this is below the screen rendering call, everything breaks.. wtf?
+  DEBUG_DrawTextureToQuad(GetDebugRenderGroup(), SG->Texture);
+#endif
+
+
+
+
+
+  //
+  // Render to Framebuffer
+
+  glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO);
+  glClearColor(0.0f, 0.0f, 1.0f, 0.0f);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  glUseProgram(RG->ShaderID);
+  glViewport(0,0,SCR_WIDTH,SCR_HEIGHT);
+
+  // Bind Shadow Map
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, SG->Texture);
+  glUniform1i(RG->ShadowMapID, 0);
+
+  glm::mat4 biasMatrix(
+    0.5, 0.0, 0.0, 0.0,
+    0.0, 0.5, 0.0, 0.0,
+    0.0, 0.0, 0.5, 0.0,
+    0.5, 0.5, 0.5, 1.0
+  );
+
+  glm::mat4 depthBiasMVP = biasMatrix*depthMVP;
+  glUniformMatrix4fv(RG->DepthBiasID, 1, GL_FALSE, &depthBiasMVP[0][0]);
+  glUniform3fv(RG->GlobalIlluminationID, 1, &GlobalLightDirection[0]);
+
+  RenderWorld(world, RG);
+
+  glUseProgram(RG->ShaderID);
+  glViewport(0,0,SCR_WIDTH,SCR_HEIGHT);
+  RenderWorld(world, RG);
+
+  DEBUG_DrawTextureToQuad(GetDebugRenderGroup(), RG->ColorBuffer);
+
+
   world->VertexCount = 0;
 
   world->VertexData.filled = 0;
   world->NormalData.filled = 0;
   world->ColorData.filled = 0;
 
-  /* printf("VertexBufferFlushed \n"); */
-
+  assert( glGetError() == GL_NO_ERROR );
+  printf("Frame\n");
   return;
 }
 
@@ -539,7 +584,7 @@ DEBUG_DrawLine(World *world, v3 RenderSpaceP1, v3 RenderSpaceP2)
   memcpy( LineData,    &RenderSpaceP1, sizeof(v3) );
   memcpy( LineData+3,  &RenderSpaceP2, sizeof(v3) );
 
-  glViewport(0,0,1920,1080);
+  glViewport(0,0,SCR_WIDTH,SCR_HEIGHT);
 
   // Colors
   glEnableVertexAttribArray(0);
@@ -647,23 +692,6 @@ DEBUG_DrawAABB( World *world, v3 MinP, v3 MaxP, Quaternion Rotation = Quaternion
   DEBUG_DrawLine(world, BotFL, BotRL);
   DEBUG_DrawLine(world, BotFR, BotRR);
 
-  return;
-}
-
-void
-ComputeAndFlushMVP(World *world, RenderGroup *RG, v3 ModelToWorldSpace, Quaternion Rotation = Quaternion(1,0,0,0) )
-{
-  RG->Basis.ModelMatrix = Translate(ModelToWorldSpace) * ToGLMat4(Rotation);
-  FlushMVPToHardware(RG);
-  return;
-}
-
-void
-ComputeAndFlushMVP(World *world, RenderGroup *RG, Entity* entity)
-{
-  /* v3 HalfDim = entity->Model.Dim/2; */
-  v3 HalfDim = V3(0,0,0);
-  ComputeAndFlushMVP( world, RG, GetRenderP(world, entity->P ) + HalfDim /*, entity->Rotation*/ );
   return;
 }
 
@@ -912,6 +940,7 @@ BufferChunkMesh(
     BufferBackFace(   world, RenderP, FaceColors);
   }
 
+
   return;
 }
 
@@ -970,10 +999,10 @@ DrawEntity(
     ShadowRenderGroup *SG
   )
 {
-  /* // Debug light code */
+  // Debug light code
   glm::vec3 LightP = GetGLRenderP(world, entity->P + entity->Model.Dim/2);
   glUniform3fv(RG->LightPID, 1, &LightP[0]);
-  /* // */
+  //
 
   if ( IsSet(entity->Model.flags, Chunk_RebuildInteriorBoundary) )
   {
