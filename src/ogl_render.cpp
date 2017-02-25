@@ -86,7 +86,6 @@ RenderShadowMap(World *world, ShadowRenderGroup *SG, RenderGroup *RG, glm::mat4 
 {
   glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   glUseProgram(SG->ShaderID);
   glUniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &depthMVP[0][0]);
@@ -121,7 +120,6 @@ RenderWorld(World *world, RenderGroup *RG)
   ComputeAndFlushMVP(world, RG, V3(0,0,0));
 
   glClearColor(1.0f, 0.0f, 1.0f, 0.0f);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
   // Vertices
@@ -172,7 +170,7 @@ RenderWorld(World *world, RenderGroup *RG)
 }
 
 void
-DrawVertexBuffer(
+FlushRenderBuffers(
     World *world,
     RenderGroup *RG,
     ShadowRenderGroup *SG,
@@ -211,7 +209,6 @@ DrawVertexBuffer(
 
   glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO);
   glClearColor(0.0f, 0.0f, 1.0f, 0.0f);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   glUseProgram(RG->ShaderID);
   glViewport(0,0,SCR_WIDTH,SCR_HEIGHT);
@@ -233,18 +230,6 @@ DrawVertexBuffer(
   glUniform3fv(RG->GlobalIlluminationID, 1, &GlobalLightDirection[0]);
 
   RenderWorld(world, RG);
-
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  glUseProgram(RG->HdrShaderID);
-
-  glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
-  RenderQuad( RG, RG->ColorBuffer);
-
-#if DEBUG_DRAW_SHADOW_MAP_TEXTURE
-  glViewport(0, 0, DEBUG_TEXTURE_SIZE, DEBUG_TEXTURE_SIZE);
-  RenderQuad( RG, SG->Texture);
-#endif
-
   world->VertexCount = 0;
 
   world->VertexData.filled = 0;
@@ -252,11 +237,12 @@ DrawVertexBuffer(
   world->ColorData.filled = 0;
 
   assert( glGetError() == GL_NO_ERROR );
-  printf("Frame\n");
+
+  printf("Draw\n");
   return;
 }
 
-bool
+inline void
 BufferFace (
     World *world,
 
@@ -269,51 +255,31 @@ BufferFace (
     const float* VertColors
   )
 {
-  tris += 2;
-
   world->VertexData.filled += sizeofVertPositions;
   world->NormalData.filled += sizeofNormals;
   world->ColorData.filled += sizeofNormals;
 
-  bool DidBufferFace = true;
-
-  if ( world->VertexData.filled > world->VertexData.bytesAllocd )
+  if ( world->VertexData.filled > world->VertexData.bytesAllocd ||
+       world->ColorData.filled > world->ColorData.bytesAllocd ||
+       world->NormalData.filled > world->NormalData.bytesAllocd )
   {
-    printf("Flushing Render Buffer - Vertex memory\n");
-    DidBufferFace = false;
+    // Out of memory, panic!
+    assert(false);
+    return;
   }
 
-  if ( world->ColorData.filled > world->ColorData.bytesAllocd )
-  {
-    printf("Flushing Render Buffer - Color memory\n");
-    DidBufferFace = false;
-  }
+  memcpy( &world->VertexData.Data[world->VertexCount*3], VertsPositions, sizeofVertPositions );
+  memcpy( &world->NormalData.Data[world->VertexCount*3], Normals, sizeofNormals );
+  memcpy( &world->ColorData.Data[world->VertexCount*3],  VertColors, sizeofNormals );
 
-  if (world->NormalData.filled > world->NormalData.bytesAllocd )
-  {
-    printf("Flushing Render Buffer - Normal memory\n");
-    DidBufferFace = false;
-  }
+  tris += 2;
+  world->VertexCount += 6;
 
-  if ( DidBufferFace == false )
-  {
-    world->VertexData.filled -= sizeofVertPositions;
-    world->NormalData.filled -= sizeofNormals;
-    world->ColorData.filled -= sizeofNormals;
-  }
-  else
-  {
-    memcpy( &world->VertexData.Data[world->VertexCount*3], VertsPositions, sizeofVertPositions );
-    memcpy( &world->NormalData.Data[world->VertexCount*3], Normals, sizeofNormals );
-    memcpy( &world->ColorData.Data[world->VertexCount*3],  VertColors, sizeofNormals );
-
-    world->VertexCount += 6;
-  }
-
-  return DidBufferFace;
+  return;
 }
 
-bool BufferRightFace(
+inline void
+BufferRightFace(
     World *world,
     glm::vec3 worldP,
     const float* FaceColor
@@ -341,10 +307,12 @@ bool BufferRightFace(
      1, 0, 0
   };
 
-  return BufferLocalFace;
+  BufferLocalFace;
+  return;
 }
 
-bool BufferLeftFace(
+inline void
+BufferLeftFace(
     World *world,
     glm::vec3 worldP,
     const float* FaceColor
@@ -372,10 +340,12 @@ bool BufferLeftFace(
      -1, 0, 0
   };
 
-  return BufferLocalFace;
+  BufferLocalFace;
+  return;
 }
 
-bool BufferBottomFace(
+inline void
+BufferBottomFace(
     World *world,
     glm::vec3 worldP,
     const float* FaceColor
@@ -403,10 +373,12 @@ bool BufferBottomFace(
      0,-1, 0
   };
 
-  return BufferLocalFace;
+  BufferLocalFace;
+  return;
 }
 
-bool BufferTopFace(
+inline void
+BufferTopFace(
     World *world,
     glm::vec3 worldP,
     const float* FaceColor
@@ -434,10 +406,12 @@ bool BufferTopFace(
     0, 1, 0
   };
 
-  return BufferLocalFace;
+  BufferLocalFace;
+  return;
 }
 
-bool BufferFrontFace(
+inline void
+BufferFrontFace(
     World *world,
     glm::vec3 worldP,
     const float* FaceColor
@@ -465,10 +439,12 @@ bool BufferFrontFace(
     0, 0, 1
   };
 
-  return BufferLocalFace;
+  BufferLocalFace;
+  return;
 }
 
-bool BufferBackFace(
+inline void
+BufferBackFace(
     World *world,
     glm::vec3 worldP,
     const float* FaceColor
@@ -496,7 +472,8 @@ bool BufferBackFace(
     0, 0, -1,
   };
 
-  return BufferLocalFace;
+  BufferLocalFace;
+  return;
 }
 
 bool IsRightChunkBoundary( chunk_dimension ChunkDim, int idx )
@@ -906,14 +883,38 @@ BuildInteriorBoundaryVoxels(World *world, Chunk *chunk, world_position WorldP)
 /* } */
 
 void
+ClearFramebuffers(RenderGroup *RG, ShadowRenderGroup *SG)
+{
+  glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
+  glClear(GL_DEPTH_BUFFER_BIT);
+
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  return;
+}
+
+void
 BufferChunkMesh(
     World *world,
     Chunk *chunk,
     world_position WorldP,
+    RenderGroup *RG,
+    ShadowRenderGroup *SG,
+    Camera_Object *Camera,
     v3 Offset = V3(0,0,0)
   )
 {
   float FaceColors[FACE_COLOR_SIZE];
+
+  int MaxChunkMeshBytes = chunk->BoundaryVoxelCount * VERT_PER_VOXEL * BYTES_PER_VERT;
+  if (world->VertexData.filled + MaxChunkMeshBytes > world->VertexData.bytesAllocd )
+  {
+    FlushRenderBuffers( world, RG, SG, Camera);
+  }
 
   for ( int i = 0; i < chunk->BoundaryVoxelCount; ++i )
   {
@@ -981,7 +982,7 @@ DrawWorldChunk(
 
 
   BuildBoundaryVoxels(world, WorldChunk);
-  BufferChunkMesh(world, &WorldChunk->Data, WorldChunk->WorldP);
+  BufferChunkMesh(world, &WorldChunk->Data, WorldChunk->WorldP, RG, SG, Camera);
 }
 
 void
@@ -1003,7 +1004,7 @@ DrawEntity(
     BuildInteriorBoundaryVoxels(world, &entity->Model, entity->P.WorldP);
   }
 
-  BufferChunkMesh(world, &entity->Model, entity->P.WorldP, entity->P.Offset);
+  BufferChunkMesh(world, &entity->Model, entity->P.WorldP, RG, SG, Camera, entity->P.Offset);
 
   return;
 }

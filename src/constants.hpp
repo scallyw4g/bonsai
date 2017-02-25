@@ -13,6 +13,9 @@
 // 6 verticies per face, 6 faces per voxel
 #define VERT_PER_VOXEL (6*6)
 
+// 3 floats per vert
+#define BYTES_PER_VERT (sizeof(float)*3)
+
 #define VOXEL_DIAMETER (1.0f)
 #define VOXEL_RADIUS (VOXEL_DIAMETER/2.0f)
 
@@ -44,12 +47,12 @@
 #define DEBUG_SCROLL_WORLD            1
 #define DEBUG_CHUNK_AABB              0
 #define DEBUG_CAMERA_FOCUS_ORIGIN     0
-#define DEBUG_OPTIMIZE_TRI_COUNT      1
 #define DEBUG_WORLD_GENERATION        0
 #define DEBUG_LOD_RENDER              0
 #define DEBUG_DRAW_SHADOW_MAP_TEXTURE 0
-#define DEBUG_FRAMES_TO_RUN          -1
 #define DEBUG_SUSPEND_DRAWING_WORLD   1
+
+#define DEBUG_FRAMES_TO_RUN          -1
 
 #define SCR_WIDTH 1920
 #define SCR_HEIGHT 1080

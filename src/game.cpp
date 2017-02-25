@@ -65,7 +65,7 @@ GAME_UPDATE_AND_RENDER
 
   assert( glGetError() == GL_NO_ERROR );
 
-  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  ClearFramebuffers(RG, SG);
 
   for ( int i = 0; i < Volume(world->VisibleRegion); ++ i )
   {
@@ -90,26 +90,33 @@ GAME_UPDATE_AND_RENDER
     SG
   );
 
+  FlushRenderBuffers(world, RG, SG, Camera);
 
-  DrawVertexBuffer(world, RG, SG, Camera);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+  glUseProgram(RG->HdrShaderID);
+
+  glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+  RenderQuad( RG, RG->ColorBuffer);
+
+#if DEBUG_DRAW_SHADOW_MAP_TEXTURE
+  glViewport(0, 0, DEBUG_TEXTURE_SIZE, DEBUG_TEXTURE_SIZE);
+  RenderQuad( RG, SG->Texture);
+#endif
+
 
   glfwSwapBuffers(window);
   glfwPollEvents();
 
 
-  /* printf("%d Triangles drawn\n", tris ); */
-  /* tris=0; */
+  printf("%d Triangles drawn\n", tris );
+  tris=0;
 
-  /* printf("%d Voxels Indexed\n", VoxelsIndexed ); */
-  /* VoxelsIndexed=0; */
+  printf("%d Voxels Indexed\n", VoxelsIndexed );
+  VoxelsIndexed=0;
 
   /* printf("%d Boundary Voxels Indexed\n", BoundaryVoxelsIndexed ); */
   /* BoundaryVoxelsIndexed=0; */
-
-  // Swap buffers
-
-  /* glfwSwapBuffers(window); */
-  /* glfwPollEvents(); */
 }
 
 void
