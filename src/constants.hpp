@@ -55,8 +55,8 @@
 #define SCR_HEIGHT 1080
 
 #define Proj_XY 50
-#define Proj_Z  50
-#define SHADOW_MAP_RESOLUTION 4096
+#define Proj_Z  100
+#define SHADOW_MAP_RESOLUTION 1024
 #define DEBUG_TEXTURE_SIZE          512
 
 #define CHUNK_STACK_SIZE (VR_X*VR_X*VR_X)

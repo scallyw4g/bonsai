@@ -56,21 +56,17 @@ ComputeAndFlushMVP(World *world, RenderGroup *RG, Entity* entity)
 }
 
 void
-DEBUG_DrawTextureToQuad(DebugRenderGroup *DG, GLuint Texture)
+RenderQuad(RenderGroup *RG, GLuint Texture)
 {
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
-  glClearColor(0.0f, 1.0f, 0.0f, 0.0f);
+  // TODO(Jesse): Please explain to me why I cannot draw two of these to the screen between clears
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-  glUseProgram(DG->ShaderID);
 
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, Texture);
-  glUniform1i(DG->TextureUniform, 0);
+  glUniform1i(RG->TextureUniform, 0);
 
   glEnableVertexAttribArray(0);
-  glBindBuffer(GL_ARRAY_BUFFER, DG->quad_vertexBuffer);
+  glBindBuffer(GL_ARRAY_BUFFER, RG->quad_vertexbuffer);
   glVertexAttribPointer(
     0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
     3,                  // size
@@ -89,7 +85,6 @@ void
 RenderShadowMap(World *world, ShadowRenderGroup *SG, RenderGroup *RG, glm::mat4 depthMVP)
 {
   glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
-  glViewport(0,0,SHADOW_MAP_RESOLUTION,SHADOW_MAP_RESOLUTION);
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -191,7 +186,7 @@ DrawVertexBuffer(
   // Compute the MVP matrix from the light's point of view
   glm::mat4 depthProjectionMatrix = glm::ortho<float>(-Proj_XY,Proj_XY, -Proj_XY,Proj_XY, -Proj_Z,Proj_Z);
 
-  glm::vec3 P = GetGLRenderP(world, Camera->Target + ( GLV3(GlobalLightDirection) * 5.0f ) );
+  glm::vec3 P = GetGLRenderP(world, Camera->Target+GLV3(GlobalLightDirection) );
   glm::vec3 Target = GetGLRenderP(world, Camera->Target );
 
   glm::vec3 Front = glm::normalize(Target-P);
@@ -203,14 +198,9 @@ DrawVertexBuffer(
 
   glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix;
 
+  glViewport(0, 0, SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
   RenderShadowMap(world, SG, RG, depthMVP);
 
-
-
-#if DEBUG_DRAW_SHADOW_MAP_TEXTURE
-  //FIXME(Jesse): If this is below the screen rendering call, everything breaks.. wtf?
-  DEBUG_DrawTextureToQuad(GetDebugRenderGroup(), SG->Texture);
-#endif
 
 
 
@@ -244,12 +234,16 @@ DrawVertexBuffer(
 
   RenderWorld(world, RG);
 
-  glUseProgram(RG->ShaderID);
-  glViewport(0,0,SCR_WIDTH,SCR_HEIGHT);
-  RenderWorld(world, RG);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glUseProgram(RG->HdrShaderID);
 
-  DEBUG_DrawTextureToQuad(GetDebugRenderGroup(), RG->ColorBuffer);
+  glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+  RenderQuad( RG, RG->ColorBuffer);
 
+#if DEBUG_DRAW_SHADOW_MAP_TEXTURE
+  glViewport(0, 0, DEBUG_TEXTURE_SIZE, DEBUG_TEXTURE_SIZE);
+  RenderQuad( RG, SG->Texture);
+#endif
 
   world->VertexCount = 0;
 
@@ -1000,8 +994,8 @@ DrawEntity(
   )
 {
   // Debug light code
-  glm::vec3 LightP = GetGLRenderP(world, entity->P + entity->Model.Dim/2);
-  glUniform3fv(RG->LightPID, 1, &LightP[0]);
+  /* glm::vec3 LightP = GetGLRenderP(world, entity->P + entity->Model.Dim/2); */
+  /* glUniform3fv(RG->LightPID, 1, &LightP[0]); */
   //
 
   if ( IsSet(entity->Model.flags, Chunk_RebuildInteriorBoundary) )

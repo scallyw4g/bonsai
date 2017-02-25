@@ -8,19 +8,6 @@
 
 using namespace glm;
 
-#ifdef BONSAI_INTERNAL
-
-struct DebugRenderGroup
-{
-  GLuint quad_vertexBuffer;
-  GLuint TextureUniform;
-  GLuint ShaderID;
-
-  bool initialized = false;
-};
-
-
-DEBUG_GLOBAL DebugRenderGroup DG = {};
 DEBUG_GLOBAL GLfloat g_quad_vertex_buffer_data[] =
 {
   -1.0f, -1.0f, -1.0f,
@@ -30,27 +17,6 @@ DEBUG_GLOBAL GLfloat g_quad_vertex_buffer_data[] =
    1.0f, -1.0f, -1.0f,
    1.0f,  1.0f, -1.0f,
 };
-
-DebugRenderGroup*
-GetDebugRenderGroup()
-{
-  if (!DG.initialized)
-  {
-    DG.ShaderID = LoadShaders( "Passthrough.vertexshader",
-                               "SimpleTexture.fragmentshader");
-
-    DG.TextureUniform = glGetUniformLocation(DG.ShaderID, "Texture");
-    glGenBuffers(1, &DG.quad_vertexBuffer);
-
-    DG.initialized = true;
-  }
-
-  glBindBuffer(GL_ARRAY_BUFFER, DG.quad_vertexBuffer);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
-  return &DG;
-}
-
-#endif
 
 
 struct RenderBasis
@@ -70,14 +36,20 @@ struct RenderGroup
   GLuint vertexbuffer;
   GLuint normalbuffer;
 
+  GLuint quad_vertexbuffer;
+
   GLuint MVPID;
   GLuint ModelMatrixID;
   GLuint DepthBiasID;
 
   GLuint LightPID;
   GLuint ShadowMapID;
-  GLuint ShaderID;
   GLuint GlobalIlluminationID;
+
+  GLuint TextureUniform;
+
+  GLuint ShaderID;
+  GLuint HdrShaderID;
 
   RenderBasis Basis;
 };
@@ -127,6 +99,22 @@ InitializeRenderGroup( RenderGroup *RG )
   RG->DepthBiasID          = glGetUniformLocation(RG->ShaderID, "DepthBiasMVP");
   RG->GlobalIlluminationID = glGetUniformLocation(RG->ShaderID, "GlobalLight_cameraspace");
 
+  RG->HdrShaderID = LoadShaders( "Passthrough.vertexshader",
+                               "SimpleTexture.fragmentshader" );
+
+  RG->TextureUniform = glGetUniformLocation(RG->HdrShaderID, "Texture");
+
+
+  //
+  // Quad vertex buffer
+  glGenBuffers(1, &RG->quad_vertexbuffer);
+  glBindBuffer(GL_ARRAY_BUFFER, RG->quad_vertexbuffer);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
+
+
+
+  //
+  // World Data buffers
   GLuint vertexbuffer;
   GLuint colorbuffer;
   GLuint normalbuffer;
