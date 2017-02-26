@@ -3,6 +3,7 @@ build/*.vox
 build/callgrind*
 
 Session.vim
+.exrc
 tags
 
 external/CMakeFiles
