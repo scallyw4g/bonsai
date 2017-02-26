@@ -109,11 +109,11 @@ GAME_UPDATE_AND_RENDER
   glfwPollEvents();
 
 
-  printf("%d Triangles drawn\n", tris );
-  tris=0;
+  /* printf("%d Triangles drawn\n", tris ); */
+  /* tris=0; */
 
-  printf("%d Voxels Indexed\n", VoxelsIndexed );
-  VoxelsIndexed=0;
+  /* printf("%d Voxels Indexed\n", VoxelsIndexed ); */
+  /* VoxelsIndexed=0; */
 
   /* printf("%d Boundary Voxels Indexed\n", BoundaryVoxelsIndexed ); */
   /* BoundaryVoxelsIndexed=0; */

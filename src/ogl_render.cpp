@@ -238,7 +238,6 @@ FlushRenderBuffers(
 
   assert( glGetError() == GL_NO_ERROR );
 
-  printf("Draw\n");
   return;
 }
 
