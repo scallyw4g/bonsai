@@ -73,6 +73,8 @@ GetDepthMVP(World *world, Camera_Object *Camera)
 void
 RenderShadowMap(World *world, ShadowRenderGroup *SG, RenderGroup *RG, Camera_Object *Camera)
 {
+  glViewport(0, 0, SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
+
   glm::mat4 depthMVP = GetDepthMVP(world, Camera);
 
   glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
@@ -108,6 +110,11 @@ RenderShadowMap(World *world, ShadowRenderGroup *SG, RenderGroup *RG, Camera_Obj
 void
 RenderWorld(World *world, RenderGroup *RG)
 {
+  glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO);
+
+  glUseProgram(RG->ShaderID);
+  glViewport(0,0,SCR_WIDTH,SCR_HEIGHT);
+
   glm::mat4 mvp = RG->Basis.ProjectionMatrix * RG->Basis.ViewMatrix * mat4(1);
 
   glUniformMatrix4fv(RG->MVPID,         1, GL_FALSE, &mvp[0][0]);
@@ -166,41 +173,42 @@ RenderWorld(World *world, RenderGroup *RG)
 void
 AssertNoGlErrors()
 {
-  switch ( glGetError() )
+  int Error = glGetError();
+  switch (Error)
   {
     case GL_INVALID_ENUM:
     {
-      printf("An unacceptable value is specified for an enumerated argument. The offending command is ignored and has no other side effect than to set the error flag.\n");
+      printf(" GL_INVALID_ENUM: An unacceptable value is specified for an enumerated argument. The offending command is ignored and has no other side effect than to set the error flag.\n");
     } break;
 
     case GL_INVALID_VALUE:
     {
-      printf("A numeric argument is out of range. The offending command is ignored and has no other side effect than to set the error flag.\n");
+      printf(" GL_INVALID_VALUE: A numeric argument is out of range. The offending command is ignored and has no other side effect than to set the error flag.\n");
     } break;
 
     case GL_INVALID_OPERATION:
     {
-      printf("The specified operation is not allowed in the current state. The offending command is ignored and has no other side effect than to set the error flag.\n");
+      printf(" GL_INVALID_OPERATION: The specified operation is not allowed in the current state. The offending command is ignored and has no other side effect than to set the error flag.\n");
     } break;
 
     case GL_INVALID_FRAMEBUFFER_OPERATION:
     {
-      printf("The framebuffer object is not complete. The offending command is ignored and has no other side effect than to set the error flag.\n");
+      printf(" GL_INVALID_FRAMEBUFFER_OPERATION: The framebuffer object is not complete. The offending command is ignored and has no other side effect than to set the error flag.\n");
     } break;
 
     case GL_OUT_OF_MEMORY:
     {
-      printf("There is not enough memory left to execute the command. The state of the GL is undefined, except for the state of the error flags, after this error is recorded.\n");
+      printf(" GL_OUT_OF_MEMORY: There is not enough memory left to execute the command. The state of the GL is undefined, except for the state of the error flags, after this error is recorded.\n");
     } break;
 
     case GL_STACK_UNDERFLOW:
     {
-      printf("An attempt has been made to perform an operation that would cause an internal stack to underflow.\n");
+      printf(" GL_STACK_UNDERFLOW: An attempt has been made to perform an operation that would cause an internal stack to underflow.\n");
     } break;
 
     case GL_STACK_OVERFLOW:
     {
-      printf("An attempt has been made to perform an operation that would cause an internal stack to overflow.\n");
+      printf(" GL_STACK_OVERFLOW: An attempt has been made to perform an operation that would cause an internal stack to overflow.\n");
     } break;
 
     case GL_NO_ERROR:
@@ -214,6 +222,8 @@ AssertNoGlErrors()
     } break;
   }
 
+  assert(Error == GL_NO_ERROR);
+  return;
 }
 
 
@@ -225,34 +235,18 @@ FlushRenderBuffers(
     Camera_Object *Camera
   )
 {
-  glViewport(0, 0, SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
+
   RenderShadowMap(world, SG, RG, Camera);
 
-
-
-
-  //
-  // Render to Framebuffer
-
-  glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO);
-  glClearColor(0.0f, 0.0f, 1.0f, 0.0f);
-
-  glUseProgram(RG->ShaderID);
-  glViewport(0,0,SCR_WIDTH,SCR_HEIGHT);
-
-  // Bind Shadow Map
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, SG->Texture);
-  glUniform1i(RG->ShadowMapTextureUniform, 0);
-
   RenderWorld(world, RG);
+
+  AssertNoGlErrors();
+
   world->VertexCount = 0;
 
   world->VertexData.filled = 0;
   world->NormalData.filled = 0;
   world->ColorData.filled = 0;
-
-  AssertNoGlErrors();
 
   return;
 }

@@ -60,8 +60,8 @@ GAME_UPDATE_AND_RENDER
 
   GlobalLightTheta += dt;
 
-  // Draw world
   //
+  // Draw world
 
   ClearFramebuffers(RG, SG);
 
@@ -91,9 +91,7 @@ GAME_UPDATE_AND_RENDER
   FlushRenderBuffers(world, RG, SG, Camera);
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
   glUseProgram(RG->LightingShader);
-
   glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 
   glm::vec3 GlobalLightDirection =  glm::vec3( sin(GlobalLightTheta), 1.0, -2.0);
