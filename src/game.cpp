@@ -97,11 +97,29 @@ GAME_UPDATE_AND_RENDER
   glUseProgram(RG->HdrShaderID);
 
   glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
-  RenderQuad( RG, RG->PositionTexture);
+
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, RG->ColorTexture);
+  glUniform1i(RG->ColorTextureUniform, 0);
+
+  glActiveTexture(GL_TEXTURE1);
+  glBindTexture(GL_TEXTURE_2D, RG->NormalTexture);
+  glUniform1i(RG->NormalTextureUniform, 1);
+
+  glActiveTexture(GL_TEXTURE2);
+  glBindTexture(GL_TEXTURE_2D, RG->PositionTexture);
+  glUniform1i(RG->PositionTextureUniform, 2);
+
+  RenderQuad(RG);
 
 #if DEBUG_DRAW_SHADOW_MAP_TEXTURE
   glViewport(0, 0, DEBUG_TEXTURE_SIZE, DEBUG_TEXTURE_SIZE);
-  RenderQuad( RG, SG->Texture);
+
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, SG->Texture);
+  glUniform1i(RG->ColorTextureUniform, 0);
+
+  RenderQuad(RG);
 #endif
 
 

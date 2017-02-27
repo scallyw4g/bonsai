@@ -55,15 +55,12 @@ ComputeAndFlushMVP(World *world, RenderGroup *RG, Entity* entity)
   return;
 }
 
+
 void
-RenderQuad(RenderGroup *RG, GLuint Texture)
+RenderQuad(RenderGroup *RG)
 {
   // TODO(Jesse): Please explain to me why I cannot draw two of these to the screen between clears
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, Texture);
-  glUniform1i(RG->TextureUniform, 0);
+  /* glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); */
 
   glEnableVertexAttribArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, RG->quad_vertexbuffer);

@@ -48,7 +48,9 @@ struct RenderGroup
   GLuint ShadowMapID;
   GLuint GlobalIlluminationID;
 
-  GLuint TextureUniform;
+  GLuint ColorTextureUniform;
+  GLuint NormalTextureUniform;
+  GLuint PositionTextureUniform;
 
   GLuint ShaderID;
   GLuint HdrShaderID;
@@ -120,10 +122,13 @@ InitializeRenderGroup( RenderGroup *RG )
   RG->DepthBiasID          = glGetUniformLocation(RG->ShaderID, "DepthBiasMVP");
   RG->GlobalIlluminationID = glGetUniformLocation(RG->ShaderID, "GlobalLight_cameraspace");
 
-  RG->HdrShaderID = LoadShaders( "Passthrough.vertexshader",
-                               "SimpleTexture.fragmentshader" );
 
-  RG->TextureUniform = glGetUniformLocation(RG->HdrShaderID, "Texture");
+  RG->HdrShaderID = LoadShaders( "Lighting.vertexshader",
+                                 "Lighting.fragmentshader" );
+
+  RG->ColorTextureUniform = glGetUniformLocation(RG->HdrShaderID, "gColor");
+  RG->NormalTextureUniform = glGetUniformLocation(RG->HdrShaderID, "gNormal");
+  RG->PositionTextureUniform = glGetUniformLocation(RG->HdrShaderID, "gPosition");
 
 
   //
