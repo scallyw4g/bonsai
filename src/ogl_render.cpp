@@ -28,35 +28,6 @@ using namespace std;
       FaceColor)
 
 void
-FlushMVPToHardware(RenderGroup *RG)
-{
-  glm::mat4 mvp = RG->Basis.ProjectionMatrix * RG->Basis.ViewMatrix * RG->Basis.ModelMatrix;
-
-  glUniformMatrix4fv(RG->MVPID,         1, GL_FALSE, &mvp[0][0]);
-  glUniformMatrix4fv(RG->ModelMatrixID, 1, GL_FALSE, &RG->Basis.ModelMatrix[0][0]);
-
-  return;
-}
-
-void
-ComputeAndFlushMVP(World *world, RenderGroup *RG, v3 ModelToWorldSpace, Quaternion Rotation = Quaternion(1,0,0,0) )
-{
-  RG->Basis.ModelMatrix = Translate(ModelToWorldSpace) * ToGLMat4(Rotation);
-  FlushMVPToHardware(RG);
-  return;
-}
-
-void
-ComputeAndFlushMVP(World *world, RenderGroup *RG, Entity* entity)
-{
-  /* v3 HalfDim = entity->Model.Dim/2; */
-  v3 HalfDim = V3(0,0,0);
-  ComputeAndFlushMVP( world, RG, GetRenderP(world, entity->P ) + HalfDim /*, entity->Rotation*/ );
-  return;
-}
-
-
-void
 RenderQuad(RenderGroup *RG)
 {
   // TODO(Jesse): Please explain to me why I cannot draw two of these to the screen between clears
@@ -137,7 +108,10 @@ RenderShadowMap(World *world, ShadowRenderGroup *SG, RenderGroup *RG, Camera_Obj
 void
 RenderWorld(World *world, RenderGroup *RG)
 {
-  ComputeAndFlushMVP(world, RG, V3(0,0,0));
+  glm::mat4 mvp = RG->Basis.ProjectionMatrix * RG->Basis.ViewMatrix * mat4(1);
+
+  glUniformMatrix4fv(RG->MVPID,         1, GL_FALSE, &mvp[0][0]);
+  glUniformMatrix4fv(RG->ModelMatrixID, 1, GL_FALSE, &RG->Basis.ModelMatrix[0][0]);
 
   glClearColor(1.0f, 0.0f, 1.0f, 0.0f);
 

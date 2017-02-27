@@ -127,7 +127,7 @@ InitializeRenderGroup( RenderGroup *RG )
 
 
   RG->LightingShader = LoadShaders( "Lighting.vertexshader",
-                                 "Lighting.fragmentshader" );
+                                    "Lighting.fragmentshader" );
 
 
   RG->DepthBiasMVPID          = glGetUniformLocation(RG->LightingShader, "DepthBiasMVP");
