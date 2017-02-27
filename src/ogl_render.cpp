@@ -167,6 +167,60 @@ RenderWorld(World *world, RenderGroup *RG)
 }
 
 void
+AssertNoGlErrors()
+{
+  switch ( glGetError() )
+  {
+    case GL_INVALID_ENUM:
+    {
+      printf("An unacceptable value is specified for an enumerated argument. The offending command is ignored and has no other side effect than to set the error flag.\n");
+    } break;
+
+    case GL_INVALID_VALUE:
+    {
+      printf("A numeric argument is out of range. The offending command is ignored and has no other side effect than to set the error flag.\n");
+    } break;
+
+    case GL_INVALID_OPERATION:
+    {
+      printf("The specified operation is not allowed in the current state. The offending command is ignored and has no other side effect than to set the error flag.\n");
+    } break;
+
+    case GL_INVALID_FRAMEBUFFER_OPERATION:
+    {
+      printf("The framebuffer object is not complete. The offending command is ignored and has no other side effect than to set the error flag.\n");
+    } break;
+
+    case GL_OUT_OF_MEMORY:
+    {
+      printf("There is not enough memory left to execute the command. The state of the GL is undefined, except for the state of the error flags, after this error is recorded.\n");
+    } break;
+
+    case GL_STACK_UNDERFLOW:
+    {
+      printf("An attempt has been made to perform an operation that would cause an internal stack to underflow.\n");
+    } break;
+
+    case GL_STACK_OVERFLOW:
+    {
+      printf("An attempt has been made to perform an operation that would cause an internal stack to overflow.\n");
+    } break;
+
+    case GL_NO_ERROR:
+    {
+      // Happy days :D
+    } break;
+
+    default :
+    {
+      printf("Some weird OpenGL shit happened\n");
+    } break;
+  }
+
+}
+
+
+void
 FlushRenderBuffers(
     World *world,
     RenderGroup *RG,
@@ -224,7 +278,6 @@ FlushRenderBuffers(
 
   glm::mat4 depthBiasMVP = biasMatrix*depthMVP;
   glUniformMatrix4fv(RG->DepthBiasID, 1, GL_FALSE, &depthBiasMVP[0][0]);
-  glUniform3fv(RG->GlobalIlluminationID, 1, &GlobalLightDirection[0]);
 
   RenderWorld(world, RG);
   world->VertexCount = 0;
@@ -233,11 +286,10 @@ FlushRenderBuffers(
   world->NormalData.filled = 0;
   world->ColorData.filled = 0;
 
-  assert( glGetError() == GL_NO_ERROR );
+  AssertNoGlErrors();
 
   return;
 }
-
 inline void
 BufferFace (
     World *world,

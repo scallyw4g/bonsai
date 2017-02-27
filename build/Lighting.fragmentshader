@@ -1,17 +1,40 @@
 #version 330 core
-out vec4 color;
+
+out vec3 color;
+
 in vec2 UV;
 
 uniform sampler2D gColor;
 uniform sampler2D gNormal;
 uniform sampler2D gPosition;
 
+uniform vec3 GlobalLightDirection;
+
 float exposure = 1.0f;
+float gamma = 2.2f;
+
+float GlobalLightIntensity = 1.0f;
 
 void main()
 {
-  vec4 normal = texture(gNormal, UV);
-  vec4 position = texture(gPosition, UV);
+  vec3 Diffuse = texture(gColor, UV).rgb;
+  vec3 fragNormal = texture(gNormal, UV).rgb;
+  vec3 fragPosition = texture(gPosition, UV).rgb;
 
-  color = texture(gColor, UV);
+  vec3 Ambient = Diffuse * GlobalLightIntensity * 0.1f;
+
+  float GlobalLightCosTheta = clamp( dot( fragNormal, GlobalLightDirection), 0, 1);
+
+  vec3 hdrColor =
+    Ambient
+    + Diffuse * GlobalLightCosTheta * GlobalLightIntensity
+  ;
+
+  // Reinhard tone mapping
+  vec3 mapped = hdrColor / (hdrColor + vec3(1.0));
+
+  // Gamma correction 
+  mapped = pow(mapped, vec3(1.0 / gamma));
+
+  color = mapped;
 }

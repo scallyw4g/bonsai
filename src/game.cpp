@@ -63,8 +63,6 @@ GAME_UPDATE_AND_RENDER
   // Draw world
   //
 
-  assert( glGetError() == GL_NO_ERROR );
-
   ClearFramebuffers(RG, SG);
 
   for ( int i = 0; i < Volume(world->VisibleRegion); ++ i )
@@ -97,6 +95,10 @@ GAME_UPDATE_AND_RENDER
   glUseProgram(RG->HdrShaderID);
 
   glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+
+  glm::vec3 GlobalLightDirection =  glm::vec3( sin(GlobalLightTheta), 1.0, -2.0);
+  GlobalLightDirection = glm::normalize( GlobalLightDirection );
+  glUniform3fv(RG->GlobalLightDirectionID, 1, &GlobalLightDirection[0]);
 
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, RG->ColorTexture);

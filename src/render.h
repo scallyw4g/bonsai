@@ -42,11 +42,13 @@ struct RenderGroup
 
   GLuint MVPID;
   GLuint ModelMatrixID;
+
+  /* GLuint LightPID; */
   GLuint DepthBiasID;
 
-  GLuint LightPID;
   GLuint ShadowMapID;
-  GLuint GlobalIlluminationID;
+
+  GLuint GlobalLightDirectionID;
 
   GLuint ColorTextureUniform;
   GLuint NormalTextureUniform;
@@ -117,18 +119,19 @@ InitializeRenderGroup( RenderGroup *RG )
 
   RG->MVPID                = glGetUniformLocation(RG->ShaderID, "MVP");
   RG->ModelMatrixID        = glGetUniformLocation(RG->ShaderID, "M");
-  RG->LightPID             = glGetUniformLocation(RG->ShaderID, "LightP_worldspace");
+  /* RG->LightPID             = glGetUniformLocation(RG->ShaderID, "LightP_worldspace"); */
+
   RG->ShadowMapID          = glGetUniformLocation(RG->ShaderID, "shadowMap");
   RG->DepthBiasID          = glGetUniformLocation(RG->ShaderID, "DepthBiasMVP");
-  RG->GlobalIlluminationID = glGetUniformLocation(RG->ShaderID, "GlobalLight_cameraspace");
 
 
   RG->HdrShaderID = LoadShaders( "Lighting.vertexshader",
                                  "Lighting.fragmentshader" );
 
-  RG->ColorTextureUniform = glGetUniformLocation(RG->HdrShaderID, "gColor");
-  RG->NormalTextureUniform = glGetUniformLocation(RG->HdrShaderID, "gNormal");
+  RG->ColorTextureUniform    = glGetUniformLocation(RG->HdrShaderID, "gColor");
+  RG->NormalTextureUniform   = glGetUniformLocation(RG->HdrShaderID, "gNormal");
   RG->PositionTextureUniform = glGetUniformLocation(RG->HdrShaderID, "gPosition");
+  RG->GlobalLightDirectionID = glGetUniformLocation(RG->HdrShaderID, "GlobalLightDirection");
 
 
   //
