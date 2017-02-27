@@ -29,8 +29,10 @@ struct RenderBasis
 struct RenderGroup
 {
   GLuint FBO;
-  GLuint ColorBuffer;
-  GLuint DepthBuffer;
+  GLuint ColorTexture;
+  GLuint DepthTexture;
+  GLuint NormalTexture;
+  GLuint PositionTexture;
 
   GLuint colorbuffer;
   GLuint vertexbuffer;
@@ -70,19 +72,36 @@ InitializeRenderGroup( RenderGroup *RG )
 {
   glGenFramebuffers(1, &RG->FBO);
 
-  glGenTextures(1, &RG->ColorBuffer);
-  glBindTexture(GL_TEXTURE_2D, RG->ColorBuffer);
+  glGenTextures(1, &RG->ColorTexture);
+  glBindTexture(GL_TEXTURE_2D, RG->ColorTexture);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-  glGenRenderbuffers(1, &RG->DepthBuffer);
-  glBindRenderbuffer(GL_RENDERBUFFER, RG->DepthBuffer);
+  glGenTextures(1, &RG->NormalTexture);
+  glBindTexture(GL_TEXTURE_2D, RG->NormalTexture);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  glGenTextures(1, &RG->PositionTexture);
+  glBindTexture(GL_TEXTURE_2D, RG->PositionTexture);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  glGenRenderbuffers(1, &RG->DepthTexture);
+  glBindRenderbuffer(GL_RENDERBUFFER, RG->DepthTexture);
   glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, SCR_WIDTH, SCR_HEIGHT);
 
   glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, RG->ColorBuffer, 0);
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, RG->DepthBuffer);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, RG->ColorTexture, 0);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, RG->NormalTexture, 0);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, RG->PositionTexture, 0);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, RG->DepthTexture);
+
+  GLuint attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+  glDrawBuffers(3, attachments);
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

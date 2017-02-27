@@ -97,7 +97,7 @@ GAME_UPDATE_AND_RENDER
   glUseProgram(RG->HdrShaderID);
 
   glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
-  RenderQuad( RG, RG->ColorBuffer);
+  RenderQuad( RG, RG->PositionTexture);
 
 #if DEBUG_DRAW_SHADOW_MAP_TEXTURE
   glViewport(0, 0, DEBUG_TEXTURE_SIZE, DEBUG_TEXTURE_SIZE);
