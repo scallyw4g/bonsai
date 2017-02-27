@@ -1,0 +1,17 @@
+#version 330 core
+out vec4 color;
+in vec2 UV;
+
+uniform sampler2D gColor;
+uniform sampler2D gNormal;
+uniform sampler2D gPosition;
+
+float exposure = 1.0f;
+
+void main()
+{
+  vec4 normal = texture(gNormal, UV);
+  vec4 position = texture(gPosition, UV);
+
+  color = texture(gColor, UV);
+}
