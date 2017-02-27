@@ -689,47 +689,49 @@ DEBUG_DrawChunkAABB( World *world, RenderGroup *RG, World_Chunk *chunk, Quaterni
   DEBUG_DrawAABB(world, MinP, MaxP , Rotation );
 }
 
-/* inline bool */
-/* IsInFrustum(World *world, Camera_Object *Camera, canonical_position P) */
-/* { */
-/*   v3 CameraRight = Cross( WORLD_Y, Camera->Front); */
+#if 0
+inline bool
+IsInFrustum(World *world, Camera_Object *Camera, canonical_position P)
+{
+  v3 CameraRight = Cross( WORLD_Y, Camera->Front);
 
-/*   v3 CameraRenderP = GetRenderP(world, Canonicalize(world, Camera->P)); */
+  v3 CameraRenderP = GetRenderP(world, Canonicalize(world, Camera->P));
 
-/*   v3 MinFrustP = CameraRenderP + (Camera->Front * Camera->Frust.farClip) - (CameraRight * (Camera->Frust.width/2)); */
-/*   v3 MaxFrustP = CameraRenderP + (CameraRight * (Camera->Frust.width/2)); */
+  v3 MinFrustP = CameraRenderP + (Camera->Front * Camera->Frust.farClip) - (CameraRight * (Camera->Frust.width/2));
+  v3 MaxFrustP = CameraRenderP + (CameraRight * (Camera->Frust.width/2));
 
-/*   if ( MinFrustP.x > MaxFrustP.x ) */
-/*   { */
-/*     int tmp = MinFrustP.x; */
-/*     MinFrustP.x = MaxFrustP.x; */
-/*     MaxFrustP.x = tmp; */
-/*   } */
-/*   if ( MinFrustP.y > MaxFrustP.y ) */
-/*   { */
-/*     int tmp = MinFrustP.y; */
-/*     MinFrustP.y = MaxFrustP.y; */
-/*     MaxFrustP.y = tmp; */
-/*   } */
-/*   if ( MinFrustP.z > MaxFrustP.z ) */
-/*   { */
-/*     int tmp = MinFrustP.z; */
-/*     MinFrustP.z = MaxFrustP.z; */
-/*     MaxFrustP.z = tmp; */
-/*   } */
+  if ( MinFrustP.x > MaxFrustP.x )
+  {
+    int tmp = MinFrustP.x;
+    MinFrustP.x = MaxFrustP.x;
+    MaxFrustP.x = tmp;
+  }
+  if ( MinFrustP.y > MaxFrustP.y )
+  {
+    int tmp = MinFrustP.y;
+    MinFrustP.y = MaxFrustP.y;
+    MaxFrustP.y = tmp;
+  }
+  if ( MinFrustP.z > MaxFrustP.z )
+  {
+    int tmp = MinFrustP.z;
+    MinFrustP.z = MaxFrustP.z;
+    MaxFrustP.z = tmp;
+  }
 
-/*   v3 TestRenderP = GetRenderP(world, P); */
+  v3 TestRenderP = GetRenderP(world, P);
 
-/*   if (((TestRenderP.x > MinFrustP.x && TestRenderP.x < MaxFrustP.x) && */
-/*        (TestRenderP.y > MinFrustP.y && TestRenderP.y < MaxFrustP.y) && */
-/*        (TestRenderP.z > MinFrustP.z && TestRenderP.z < MaxFrustP.z)) */
-/*      ) */
-/*   { */
-/*     return true; */
-/*   } */
+  if (((TestRenderP.x > MinFrustP.x && TestRenderP.x < MaxFrustP.x) &&
+       (TestRenderP.y > MinFrustP.y && TestRenderP.y < MaxFrustP.y) &&
+       (TestRenderP.z > MinFrustP.z && TestRenderP.z < MaxFrustP.z))
+     )
+  {
+    return true;
+  }
 
-/*   return false; */
-/* } */
+  return false;
+}
+#endif
 
 voxel_position
 Clamp01( voxel_position V )
@@ -866,20 +868,22 @@ BuildInteriorBoundaryVoxels(World *world, Chunk *chunk, world_position WorldP)
   }
 }
 
-/* bool */
-/* IsInFrustum( World *world, Camera_Object *Camera, Chunk *chunk ) */
-/* { */
-/*   v3 ChunkMid = V3(chunk->Dim.x/2, chunk->Dim.y/2, chunk->Dim.z/2); */
+#if 0
+bool
+IsInFrustum( World *world, Camera_Object *Camera, Chunk *chunk )
+{
+  v3 ChunkMid = V3(chunk->Dim.x/2, chunk->Dim.y/2, chunk->Dim.z/2);
 
-/*   canonical_position P1 = Canonical_Position( ChunkMid, chunk->WorldP ); */
+  canonical_position P1 = Canonical_Position( ChunkMid, chunk->WorldP );
 
-/*   if (IsInFrustum(world, Camera, P1 )) */
-/*   { */
-/*     return true; */
-/*   } */
+  if (IsInFrustum(world, Camera, P1 ))
+  {
+    return true;
+  }
 
-/*   return false; */
-/* } */
+  return false;
+}
+#endif
 
 void
 ClearFramebuffers(RenderGroup *RG, ShadowRenderGroup *SG)
@@ -937,7 +941,6 @@ BufferChunkMesh(
 
   return;
 }
-
 
 void
 BuildBoundaryVoxels( World *world, World_Chunk *WorldChunk)
