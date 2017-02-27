@@ -40,22 +40,26 @@ struct RenderGroup
 
   GLuint quad_vertexbuffer;
 
+  GLuint ShaderID;
   GLuint MVPID;
   GLuint ModelMatrixID;
-
   /* GLuint LightPID; */
-  GLuint DepthBiasID;
 
-  GLuint ShadowMapID;
 
   GLuint GlobalLightDirectionID;
 
+  // Lighting Shader
+  GLuint LightingShader;
   GLuint ColorTextureUniform;
   GLuint NormalTextureUniform;
   GLuint PositionTextureUniform;
 
-  GLuint ShaderID;
-  GLuint HdrShaderID;
+  GLuint ShadowMapTextureUniform;
+  GLuint DepthBiasMVPID;
+  //
+
+  GLuint SimpleTextureShaderID;
+  GLuint SimpleTextureUniform;
 
   RenderBasis Basis;
 };
@@ -121,19 +125,23 @@ InitializeRenderGroup( RenderGroup *RG )
   RG->ModelMatrixID        = glGetUniformLocation(RG->ShaderID, "M");
   /* RG->LightPID             = glGetUniformLocation(RG->ShaderID, "LightP_worldspace"); */
 
-  RG->ShadowMapID          = glGetUniformLocation(RG->ShaderID, "shadowMap");
-  RG->DepthBiasID          = glGetUniformLocation(RG->ShaderID, "DepthBiasMVP");
 
-
-  RG->HdrShaderID = LoadShaders( "Lighting.vertexshader",
+  RG->LightingShader = LoadShaders( "Lighting.vertexshader",
                                  "Lighting.fragmentshader" );
 
-  RG->ColorTextureUniform    = glGetUniformLocation(RG->HdrShaderID, "gColor");
-  RG->NormalTextureUniform   = glGetUniformLocation(RG->HdrShaderID, "gNormal");
-  RG->PositionTextureUniform = glGetUniformLocation(RG->HdrShaderID, "gPosition");
-  RG->GlobalLightDirectionID = glGetUniformLocation(RG->HdrShaderID, "GlobalLightDirection");
+
+  RG->DepthBiasMVPID          = glGetUniformLocation(RG->LightingShader, "DepthBiasMVP");
+  RG->ShadowMapTextureUniform = glGetUniformLocation(RG->LightingShader, "shadowMap");
+  RG->ColorTextureUniform     = glGetUniformLocation(RG->LightingShader, "gColor");
+  RG->NormalTextureUniform    = glGetUniformLocation(RG->LightingShader, "gNormal");
+  RG->PositionTextureUniform  = glGetUniformLocation(RG->LightingShader, "gPosition");
+  RG->GlobalLightDirectionID  = glGetUniformLocation(RG->LightingShader, "GlobalLightDirection");
 
 
+  RG->SimpleTextureShaderID = LoadShaders( "Passthrough.vertexshader",
+                                           "SimpleTexture.fragmentshader" );
+
+  RG->SimpleTextureUniform = glGetUniformLocation(RG->SimpleTextureShaderID, "Texture");
   //
   // Quad vertex buffer
   glGenBuffers(1, &RG->quad_vertexbuffer);

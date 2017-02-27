@@ -59,12 +59,12 @@
 
 #define Proj_XY 50
 #define Proj_Z  100
-#define SHADOW_MAP_RESOLUTION 1024
-#define DEBUG_TEXTURE_SIZE          512
+#define SHADOW_MAP_RESOLUTION 2048
+#define DEBUG_TEXTURE_SIZE    512
 
 #define CHUNK_STACK_SIZE (VR_X*VR_X*VR_X)
 
-#define CAMERA_FOCAL_LENGTH (70.0f);
+#define CAMERA_FOCAL_LENGTH (40.0f);
 
 #define CAMERA_INITIAL_P Canonical_Position(&world, V3(1,1,1), World_Position(world.VisibleRegion/2))
 

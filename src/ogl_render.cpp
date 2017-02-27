@@ -78,9 +78,32 @@ RenderQuad(RenderGroup *RG)
   glDisableVertexAttribArray(0);
 }
 
-void
-RenderShadowMap(World *world, ShadowRenderGroup *SG, RenderGroup *RG, glm::mat4 depthMVP)
+glm::mat4
+GetDepthMVP(World *world, Camera_Object *Camera)
 {
+  glm::vec3 GlobalLightDirection =  glm::vec3( sin(GlobalLightTheta), 1.0, -2.0);
+  GlobalLightDirection = glm::normalize( GlobalLightDirection );
+
+  // Compute the MVP matrix from the light's point of view
+  glm::mat4 depthProjectionMatrix = glm::ortho<float>(-Proj_XY,Proj_XY, -Proj_XY,Proj_XY, -Proj_Z,Proj_Z);
+
+  glm::vec3 P = GetGLRenderP(world, Camera->Target+GLV3(GlobalLightDirection) );
+  glm::vec3 Target = GetGLRenderP(world, Camera->Target );
+
+  glm::vec3 Front = glm::normalize(Target-P);
+  glm::vec3 Right = glm::cross( Front, glm::vec3(0,1,0) );
+  glm::vec3 Up = glm::cross(Right, Front);
+
+  glm::mat4 depthViewMatrix = glm::lookAt(P, Target, Up);
+
+  return depthProjectionMatrix * depthViewMatrix;
+}
+
+void
+RenderShadowMap(World *world, ShadowRenderGroup *SG, RenderGroup *RG, Camera_Object *Camera)
+{
+  glm::mat4 depthMVP = GetDepthMVP(world, Camera);
+
   glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
@@ -228,29 +251,8 @@ FlushRenderBuffers(
     Camera_Object *Camera
   )
 {
-
-  glm::vec3 GlobalLightDirection =  glm::vec3( sin(GlobalLightTheta), 1.0, -2.0);
-  GlobalLightDirection = glm::normalize( GlobalLightDirection );
-
-  // Compute the MVP matrix from the light's point of view
-  glm::mat4 depthProjectionMatrix = glm::ortho<float>(-Proj_XY,Proj_XY, -Proj_XY,Proj_XY, -Proj_Z,Proj_Z);
-
-  glm::vec3 P = GetGLRenderP(world, Camera->Target+GLV3(GlobalLightDirection) );
-  glm::vec3 Target = GetGLRenderP(world, Camera->Target );
-
-  glm::vec3 Front = glm::normalize(Target-P);
-  glm::vec3 Right = glm::cross( Front, glm::vec3(0,1,0) );
-  glm::vec3 Up = glm::cross(Right, Front);
-
-  glm::mat4 depthViewMatrix =
-    glm::lookAt(P, Target, Up);
-
-  glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix;
-
   glViewport(0, 0, SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
-  RenderShadowMap(world, SG, RG, depthMVP);
-
-
+  RenderShadowMap(world, SG, RG, Camera);
 
 
 
@@ -267,17 +269,7 @@ FlushRenderBuffers(
   // Bind Shadow Map
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, SG->Texture);
-  glUniform1i(RG->ShadowMapID, 0);
-
-  glm::mat4 biasMatrix(
-    0.5, 0.0, 0.0, 0.0,
-    0.0, 0.5, 0.0, 0.0,
-    0.0, 0.0, 0.5, 0.0,
-    0.5, 0.5, 0.5, 1.0
-  );
-
-  glm::mat4 depthBiasMVP = biasMatrix*depthMVP;
-  glUniformMatrix4fv(RG->DepthBiasID, 1, GL_FALSE, &depthBiasMVP[0][0]);
+  glUniform1i(RG->ShadowMapTextureUniform, 0);
 
   RenderWorld(world, RG);
   world->VertexCount = 0;

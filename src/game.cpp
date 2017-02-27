@@ -92,13 +92,24 @@ GAME_UPDATE_AND_RENDER
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-  glUseProgram(RG->HdrShaderID);
+  glUseProgram(RG->LightingShader);
 
   glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 
   glm::vec3 GlobalLightDirection =  glm::vec3( sin(GlobalLightTheta), 1.0, -2.0);
   GlobalLightDirection = glm::normalize( GlobalLightDirection );
+
   glUniform3fv(RG->GlobalLightDirectionID, 1, &GlobalLightDirection[0]);
+
+  glm::mat4 biasMatrix(
+    0.5, 0.0, 0.0, 0.0,
+    0.0, 0.5, 0.0, 0.0,
+    0.0, 0.0, 0.5, 0.0,
+    0.5, 0.5, 0.5, 1.0
+  );
+
+  glm::mat4 depthBiasMVP = biasMatrix * GetDepthMVP(world, Camera);
+  glUniformMatrix4fv(RG->DepthBiasMVPID, 1, GL_FALSE, &depthBiasMVP[0][0]);
 
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, RG->ColorTexture);
@@ -112,17 +123,20 @@ GAME_UPDATE_AND_RENDER
   glBindTexture(GL_TEXTURE_2D, RG->PositionTexture);
   glUniform1i(RG->PositionTextureUniform, 2);
 
-  RenderQuad(RG);
+  glActiveTexture(GL_TEXTURE3);
+  glBindTexture(GL_TEXTURE_2D, SG->Texture);
+  glUniform1i(RG->ShadowMapTextureUniform, 3);
 
 #if DEBUG_DRAW_SHADOW_MAP_TEXTURE
-  glViewport(0, 0, DEBUG_TEXTURE_SIZE, DEBUG_TEXTURE_SIZE);
+  glUseProgram(RG->SimpleTextureShaderID);
 
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, SG->Texture);
-  glUniform1i(RG->ColorTextureUniform, 0);
+  glUniform1i(RG->SimpleTextureUniform, 0);
+
+#endif
 
   RenderQuad(RG);
-#endif
 
 
   glfwSwapBuffers(window);

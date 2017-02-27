@@ -2,7 +2,6 @@
 
 in vec3 vertexP_worldspace;
 in vec3 vertexN_worldspace;
-in vec3 LightDirection_worldspace;
 in vec3 MaterialColor;
 
 in vec4 ShadowCoord;
@@ -13,51 +12,10 @@ layout (location = 2) out vec3 gPosition;
 
 uniform vec3 GlobalLight_cameraspace;
 uniform mat4 MVP;
-uniform sampler2DShadow shadowMap;
-uniform vec3 LightP_worldspace;
-
-float GlobalIntensity = 3.0f;
-float Intensity = 20.0f;
 
 void main()
 {
   gPosition = vertexP_worldspace;
   gNormal = vertexN_worldspace;
   gColor = MaterialColor;
-
-/*   float distance = length( LightP_worldspace - vertexP_worldspace); */
-
-/*   vec3 N = normalize( vertexN_worldspace ); */
-/*   vec3 L = normalize( LightDirection_worldspace ); */
-
-/*   /1* float cosGlobalTheta      = clamp( dot( N, GlobalLight_cameraspace), 0, 1); *1/ */
-/*   /1* float cosDirectionalTheta = clamp( dot( N, L ), 0, 1); *1/ */
-
-/*   // TODO(Jesse): This is an epsilon to fix shadow acne.. can we do this better? */
-/*   // I notice a lot of peter-panning on corners using this technique */
-/*   float bias = clamp(0.005*tan(acos(cosGlobalTheta)), 0, 0.025); */
-
-/*   vec3 AmbientColor = MaterialColor * (GlobalIntensity/15.0f); */
-
-/*   float visibility = 1; */
-
-/*   for (int i=0;i<4;i++){ */
-/*     int index = int(16.0*random(floor(vertexP_worldspace.xyz*1000.0), i))%16; */
-/*     visibility -= 0.2*( 1.0 - texture( shadowMap, vec3(ShadowCoord.xy + poissonDisk[index]/1000.0,  (ShadowCoord.z-bias)/ShadowCoord.w) )); */
-/*   } */
-
-/*   float gamma = 2.2f; */
-/*   float attenuation = 1.0f/(distance*distance); */
-
-/*   vec3 hdrColor = */
-/*       AmbientColor */
-/*       + ( visibility * AmbientColor * cosGlobalTheta) */
-/*       + ( MaterialColor * Intensity * cosDirectionalTheta * attenuation ) */
-/*     ; */
-
-/*   // Reinhard tone mapping */
-/*   vec3 mapped = hdrColor / (hdrColor + vec3(1.0)); */
-/*   // Gamma correction */ 
-/*   mapped = pow(mapped, vec3(1.0 / gamma)); */
-/*   color = mapped; */
 }
