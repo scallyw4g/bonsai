@@ -254,7 +254,7 @@ SpawnPlayer( World *world, Entity *Player )
   /* Model->Voxels[0] = SetVoxelP( Model->Voxels[0], Voxel_Position(0,0,0) ); */
 
   Player->Acceleration = V3(0,0,0);
-  Player->Velocity = V3(0,-40,0);
+  Player->Velocity = V3(0,0,0);
 
   canonical_position TestP;
   collision_event Collision;

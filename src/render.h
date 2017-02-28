@@ -53,6 +53,7 @@ struct RenderGroup
   GLuint ColorTextureUniform;
   GLuint NormalTextureUniform;
   GLuint PositionTextureUniform;
+  GLuint DepthTextureUniform;
 
   GLuint ShadowMapTextureUniform;
   GLuint DepthBiasMVPID;
@@ -72,13 +73,14 @@ struct ShadowRenderGroup
   GLuint TextureID;
   GLuint ShaderID;
   GLuint FramebufferName;
-  GLuint Texture;
+  GLuint DepthTexture;
 };
 
 bool
 InitializeRenderGroup( RenderGroup *RG )
 {
   glGenFramebuffers(1, &RG->FBO);
+  glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO);
 
   glGenTextures(1, &RG->ColorTexture);
   glBindTexture(GL_TEXTURE_2D, RG->ColorTexture);
@@ -98,24 +100,34 @@ InitializeRenderGroup( RenderGroup *RG )
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-  glGenRenderbuffers(1, &RG->DepthTexture);
-  glBindRenderbuffer(GL_RENDERBUFFER, RG->DepthTexture);
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, SCR_WIDTH, SCR_HEIGHT);
+  // Depth texture
+  glGenTextures(1, &RG->DepthTexture);
+  glBindTexture(GL_TEXTURE_2D, RG->DepthTexture);
 
-  glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, RG->ColorTexture, 0);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, RG->NormalTexture, 0);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32,
+      SCR_WIDTH, SCR_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+  //
+
+  glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, RG->DepthTexture, 0);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, RG->ColorTexture,    0);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, RG->NormalTexture,   0);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, RG->PositionTexture, 0);
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, RG->DepthTexture);
 
   GLuint attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
   glDrawBuffers(3, attachments);
 
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     return false;
 
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
   RG->ShaderID = LoadShaders( "SimpleVertexShader.vertexshader",
@@ -135,6 +147,7 @@ InitializeRenderGroup( RenderGroup *RG )
   RG->ColorTextureUniform     = glGetUniformLocation(RG->LightingShader, "gColor");
   RG->NormalTextureUniform    = glGetUniformLocation(RG->LightingShader, "gNormal");
   RG->PositionTextureUniform  = glGetUniformLocation(RG->LightingShader, "gPosition");
+  RG->DepthTextureUniform     = glGetUniformLocation(RG->LightingShader, "gDepth");
   RG->GlobalLightDirectionID  = glGetUniformLocation(RG->LightingShader, "GlobalLightDirection");
 
 
@@ -171,16 +184,16 @@ bool
 InitializeShadowBuffer(ShadowRenderGroup *ShadowGroup)
 {
   // The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
-  GLuint FramebufferName = 0;
-  glGenFramebuffers(1, &FramebufferName);
-  glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
+  glGenFramebuffers(1, &ShadowGroup->FramebufferName);
+  glBindFramebuffer(GL_FRAMEBUFFER, ShadowGroup->FramebufferName);
 
   // Depth texture. Slower than a depth buffer, but you can sample it later in your shader
-  GLuint depthTexture;
-  glGenTextures(1, &depthTexture);
-  glBindTexture(GL_TEXTURE_2D, depthTexture);
+  glGenTextures(1, &ShadowGroup->DepthTexture);
+  glBindTexture(GL_TEXTURE_2D, ShadowGroup->DepthTexture);
 
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16,
+      SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -188,24 +201,22 @@ InitializeShadowBuffer(ShadowRenderGroup *ShadowGroup)
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
 
-  glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture, 0);
+  glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, ShadowGroup->DepthTexture, 0);
 
   // No color output in the bound framebuffer, only depth.
   glDrawBuffer(GL_NONE);
   glReadBuffer(GL_NONE);
 
-
   ShadowGroup->ShaderID        = LoadShaders( "DepthRTT.vertexshader", "DepthRTT.fragmentshader");
   ShadowGroup->MVP_ID          = glGetUniformLocation(ShadowGroup->ShaderID, "depthMVP");
 
-  ShadowGroup->FramebufferName = FramebufferName;
-  ShadowGroup->Texture         = depthTexture;
-
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   // Always check that our framebuffer is ok
   if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     return false;
+
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
  return true;
 }
