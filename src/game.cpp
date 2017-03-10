@@ -90,52 +90,7 @@ GAME_UPDATE_AND_RENDER
 
   FlushRenderBuffers(world, RG, SG, Camera);
 
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  glUseProgram(RG->LightingShader);
-  glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
-
-  glm::vec3 GlobalLightDirection =  glm::vec3( sin(GlobalLightTheta), 1.0, -2.0);
-  GlobalLightDirection = glm::normalize( GlobalLightDirection );
-
-  glUniform3fv(RG->GlobalLightDirectionID, 1, &GlobalLightDirection[0]);
-
-  glm::mat4 biasMatrix(
-    0.5, 0.0, 0.0, 0.0,
-    0.0, 0.5, 0.0, 0.0,
-    0.0, 0.0, 0.5, 0.0,
-    0.5, 0.5, 0.5, 1.0
-  );
-
-  glm::mat4 depthBiasMVP = biasMatrix * GetDepthMVP(world, Camera);
-  glUniformMatrix4fv(RG->DepthBiasMVPID, 1, GL_FALSE, &depthBiasMVP[0][0]);
-
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, RG->ColorTexture);
-  glUniform1i(RG->ColorTextureUniform, 0);
-
-  glActiveTexture(GL_TEXTURE1);
-  glBindTexture(GL_TEXTURE_2D, RG->NormalTexture);
-  glUniform1i(RG->NormalTextureUniform, 1);
-
-  glActiveTexture(GL_TEXTURE2);
-  glBindTexture(GL_TEXTURE_2D, RG->PositionTexture);
-  glUniform1i(RG->PositionTextureUniform, 2);
-
-  glActiveTexture(GL_TEXTURE3);
-  glBindTexture(GL_TEXTURE_2D, SG->Texture);
-  glUniform1i(RG->ShadowMapTextureUniform, 3);
-
-#if DEBUG_DRAW_SHADOW_MAP_TEXTURE
-  glUseProgram(RG->SimpleTextureShaderID);
-
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, SG->Texture);
-  glUniform1i(RG->SimpleTextureUniform, 0);
-
-#endif
-
-  RenderQuad(RG);
-
+  DrawWorldToFullscreenQuad(world, RG, SG, Camera);
 
   glfwSwapBuffers(window);
   glfwPollEvents();
@@ -163,12 +118,12 @@ FillChunk(Chunk *chunk)
 int
 main( void )
 {
-  int width, height;
+  int WindowWidth, WindowHeight;
 
-  width = 1920;
-  height = 1080;
+  WindowWidth = 1920;
+  WindowHeight = 1080;
 
-  initWindow(width, height);
+  initWindow(WindowWidth, WindowHeight);
 
   ShadowRenderGroup SG = {};
   if (!InitializeShadowBuffer(&SG)) { printf("Error initializing Shadow Buffer\n"); return False; }
@@ -211,12 +166,6 @@ main( void )
   Camera.Frust.FOV = 45.0f;
   Camera.P = CAMERA_INITIAL_P;
 
-  glm::mat4 Projection = glm::perspective(
-      glm::radians(Camera.Frust.FOV),
-      (float)width/(float)height, // display ratio
-      Camera.Frust.nearClip,
-      Camera.Frust.farClip);
-
   do
   {
     srand(time(NULL));
@@ -251,7 +200,7 @@ main( void )
     CALLGRIND_START_INSTRUMENTATION;
     CALLGRIND_TOGGLE_COLLECT;
 
-    RG.Basis.ProjectionMatrix = Projection;
+    RG.Basis.ProjectionMatrix = GetProjectionMatrix(&Camera, WindowWidth, WindowHeight);
 
     GAME_UPDATE_AND_RENDER(
       &world,

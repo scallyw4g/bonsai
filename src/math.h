@@ -3,6 +3,38 @@
 
 #include <bonsai.h>
 
+#include <math.h>
+#include <time.h>
+
+// TODO(Jesse): Write actual/working fModf!
+float
+myFmodf( float F, float mod )
+{
+  int intF = (int)F;
+  int intMod = (int)mod;
+
+  int mask = (0x0FFFFFFF << 3) | 0xFF;
+  int invMask = ~mask;
+
+  int Fmantissa = (intF & mask);
+  int ModMantissa = (intMod & mask);
+
+  int ResultMantissa = Fmantissa % ModMantissa;
+
+  float Result = ResultMantissa | ( intF & invMask );
+
+  return Result;
+}
+
+float
+RandomInRange(float Min, float Max)
+{
+  float Range = Max - Min;
+  float Rand = rand() * 0.00001;
+  float Result = fmodf(Rand, Range);
+  return Result;
+}
+
 int
 Pow2(int p)
 {

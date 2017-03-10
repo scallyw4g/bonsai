@@ -21,7 +21,7 @@ GLFWwindow* window;
 #include <math.h>
 
 void
-initWindow( int width, int height )
+initWindow( int WindowWidth, int WindowHeight )
 {
   // Initialise GLFW
   if( !glfwInit() )
@@ -38,7 +38,7 @@ initWindow( int width, int height )
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
   // Open a window and create its OpenGL context
-  window = glfwCreateWindow( width, height, "Playground", NULL, NULL);
+  window = glfwCreateWindow( WindowWidth, WindowHeight, "Playground", NULL, NULL);
   if( window == NULL ){
     fprintf( stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n" );
     getchar();
@@ -539,24 +539,6 @@ UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera)
   Camera->Front = Normalize( GetRenderP(world, Camera->Target) - GetRenderP(world, Camera->P) );
 
   return;
-}
-
-glm::mat4
-GetViewMatrix(World *world, Camera_Object *Camera)
-{
-  glm::mat4 Result;
-
-  glm::vec3 up = glm::vec3(0, 1, 0);
-  glm::vec3 CameraRight = glm::normalize( glm::cross(up, GLV3(Camera->Front)) );
-  glm::vec3 CameraUp = glm::normalize( glm::cross( GLV3(Camera->Front), CameraRight) );
-
-  Result = glm::lookAt(
-    GetGLRenderP(world, Camera->P),
-    GetGLRenderP(world, Camera->Target ),
-    CameraUp
-  );
-
-  return Result;
 }
 
 void

@@ -210,14 +210,16 @@ InitializeShadowBuffer(ShadowRenderGroup *ShadowGroup)
  return true;
 }
 
-
 inline glm::mat4
-ToGLMat4(Quaternion q)
+GetProjectionMatrix(Camera_Object *Camera, int WindowWidth, int WindowHeight)
 {
-  glm::quat glmQuat = glm::quat(q.w, q.x, q.y, q.z);
-  glm::mat4 RotationMatrix = glm::toMat4(glmQuat);
+  glm::mat4 Projection = glm::perspective(
+      glm::radians(Camera->Frust.FOV),
+      (float)WindowWidth/(float)WindowHeight, // display ratio
+      Camera->Frust.nearClip,
+      Camera->Frust.farClip);
 
-  return RotationMatrix;
+  return Projection;
 }
 
 inline glm::vec3
@@ -241,4 +243,30 @@ GetRenderP( World *world, Entity *entity)
   return Result;
 }
 
+inline glm::mat4
+GetViewMatrix(World *world, Camera_Object *Camera)
+{
+  glm::mat4 Result;
+
+  glm::vec3 up = glm::vec3(0, 1, 0);
+  glm::vec3 CameraRight = glm::normalize( glm::cross(up, GLV3(Camera->Front)) );
+  glm::vec3 CameraUp = glm::normalize( glm::cross( GLV3(Camera->Front), CameraRight) );
+
+  Result = glm::lookAt(
+    GetGLRenderP(world, Camera->P),
+    GetGLRenderP(world, Camera->Target ),
+    CameraUp
+  );
+
+  return Result;
+}
+
+inline glm::mat4
+ToGLMat4(Quaternion q)
+{
+  glm::quat glmQuat = glm::quat(q.w, q.x, q.y, q.z);
+  glm::mat4 RotationMatrix = glm::toMat4(glmQuat);
+
+  return RotationMatrix;
+}
 #endif

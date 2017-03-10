@@ -380,13 +380,6 @@ IsFacingPoint( v3 FaceToPoint, v3 FaceNormal )
 }
 
 inline bool
-IsFacingPoint( glm::vec3 FaceToPoint, v3 FaceNormal )
-{
-  bool Result = IsFacingPoint(GLV3(FaceToPoint), FaceNormal);
-  return Result;
-}
-
-inline bool
 IsFilledInWorld( World_Chunk *chunk, voxel_position VoxelP )
 {
   bool isFilled = true;
