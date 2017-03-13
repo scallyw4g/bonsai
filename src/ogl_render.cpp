@@ -112,13 +112,13 @@ DrawWorldToFullscreenQuad(World *world, RenderGroup *RG, ShadowRenderGroup *SG, 
   glUseProgram(RG->SimpleTextureShaderID);
 
   glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, SG->DepthTexture);
+  glBindTexture(GL_TEXTURE_2D, RG->DepthTexture);
   glUniform1i(RG->SimpleTextureUniform, 0);
-
 #endif
 
   RenderQuad(RG);
 
+  return;
 }
 
 void
@@ -856,6 +856,25 @@ BuildExteriorBoundaryVoxels( World *world, World_Chunk *chunk, voxel_position Ne
         if ( ! IsFilledInWorld( Neighbor, NeighborP) )
         {
           Voxel voxel = chunk->Data.Voxels[GetIndex(LocalVoxelP, &chunk->Data)];
+
+          if (NeighborVector.x > 0)
+            voxel.flags = SetFlag(voxel.flags, Voxel_RightFace);
+
+          if (NeighborVector.x < 0)
+            voxel.flags = SetFlag(voxel.flags, Voxel_LeftFace);
+
+          if (NeighborVector.y > 0)
+            voxel.flags = SetFlag(voxel.flags, Voxel_TopFace);
+
+          if (NeighborVector.y < 0)
+            voxel.flags = SetFlag(voxel.flags, Voxel_BottomFace);
+
+          if (NeighborVector.z > 0)
+            voxel.flags = SetFlag(voxel.flags, Voxel_FrontFace);
+
+          if (NeighborVector.z < 0)
+            voxel.flags = SetFlag(voxel.flags, Voxel_BackFace);
+
           assert(GetVoxelP(voxel) == LocalVoxelP);
           PushBoundaryVoxel( &chunk->Data, voxel );
         }
@@ -900,8 +919,8 @@ BuildInteriorBoundaryVoxels(World *world, Chunk *chunk, world_position WorldP)
         if ( !IsFilled( chunk, Voxel_Position(Offset) ) )
           continue;
 
-        voxel_position nextVoxel  = Voxel_Position( Offset + V3(1.0f,0,0) );
-        voxel_position prevVoxel  = Voxel_Position( Offset - V3(1.0f,0,0) );
+        voxel_position rightVoxel  = Voxel_Position( Offset + V3(1.0f,0,0) );
+        voxel_position leftVoxel  = Voxel_Position( Offset - V3(1.0f,0,0) );
 
         voxel_position topVoxel   = Voxel_Position( Offset + V3(0,1.0f,0) );
         voxel_position botVoxel   = Voxel_Position( Offset - V3(0,1.0f,0) );
@@ -909,16 +928,43 @@ BuildInteriorBoundaryVoxels(World *world, Chunk *chunk, world_position WorldP)
         voxel_position frontVoxel = Voxel_Position( Offset + V3(0,0,1.0f) );
         voxel_position backVoxel  = Voxel_Position( Offset - V3(0,0,1.0f) );
 
-        // TODO : Cache this check in the flags so we don't have to to it again when rendering
-        if ( ( IsInsideChunk( chunk->Dim, nextVoxel  ) && !IsFilled( chunk, nextVoxel  )) ||
-             ( IsInsideChunk( chunk->Dim, prevVoxel  ) && !IsFilled( chunk, prevVoxel  )) ||
-             ( IsInsideChunk( chunk->Dim, botVoxel   ) && !IsFilled( chunk, botVoxel   )) ||
-             ( IsInsideChunk( chunk->Dim, topVoxel   ) && !IsFilled( chunk, topVoxel   )) ||
-             ( IsInsideChunk( chunk->Dim, frontVoxel ) && !IsFilled( chunk, frontVoxel )) ||
-             ( IsInsideChunk( chunk->Dim, backVoxel  ) && !IsFilled( chunk, backVoxel  ))
-           )
+        Voxel voxel = chunk->Voxels[GetIndex(Voxel_Position(x,y,z), chunk)];
+
+        bool DidPushVoxel = false;
+
+        if ( IsInsideChunk( chunk->Dim, rightVoxel  ) && !IsFilled( chunk, rightVoxel  ))
         {
-          Voxel voxel = chunk->Voxels[GetIndex(Voxel_Position(x,y,z), chunk)];
+          voxel.flags = SetFlag(voxel.flags, Voxel_RightFace);
+          DidPushVoxel = true;
+        }
+        if ( IsInsideChunk( chunk->Dim, leftVoxel  ) && !IsFilled( chunk, leftVoxel  ))
+        {
+          voxel.flags = SetFlag(voxel.flags, Voxel_LeftFace);
+          DidPushVoxel = true;
+        }
+        if ( IsInsideChunk( chunk->Dim, botVoxel   ) && !IsFilled( chunk, botVoxel   ))
+        {
+          voxel.flags = SetFlag(voxel.flags, Voxel_BottomFace);
+          DidPushVoxel = true;
+        }
+        if ( IsInsideChunk( chunk->Dim, topVoxel   ) && !IsFilled( chunk, topVoxel   ))
+        {
+          voxel.flags = SetFlag(voxel.flags, Voxel_TopFace);
+          DidPushVoxel = true;
+        }
+        if ( IsInsideChunk( chunk->Dim, frontVoxel ) && !IsFilled( chunk, frontVoxel ))
+        {
+          voxel.flags = SetFlag(voxel.flags, Voxel_FrontFace);
+          DidPushVoxel = true;
+        }
+        if ( IsInsideChunk( chunk->Dim, backVoxel  ) && !IsFilled( chunk, backVoxel  ))
+        {
+          voxel.flags = SetFlag(voxel.flags, Voxel_BackFace);
+          DidPushVoxel = true;
+        }
+
+        if (DidPushVoxel)
+        {
           assert(GetVoxelP(voxel) == Voxel_Position(x,y,z));
           PushBoundaryVoxel(chunk, voxel);
         }
@@ -997,12 +1043,30 @@ BufferChunkMesh(
     glm::vec3 RenderP =
       GetGLRenderP(world, Canonical_Position(world, Offset+GetVoxelP(V), WorldP));
 
-    BufferRightFace(  world, RenderP, FaceColors);
-    BufferLeftFace(   world, RenderP, FaceColors);
-    BufferBottomFace( world, RenderP, FaceColors);
-    BufferTopFace(    world, RenderP, FaceColors);
-    BufferFrontFace(  world, RenderP, FaceColors);
-    BufferBackFace(   world, RenderP, FaceColors);
+    if ( IsSet( V.flags, Voxel_RightFace ) )
+    {
+      BufferRightFace(  world, RenderP, FaceColors);
+    }
+    if ( IsSet( V.flags, Voxel_LeftFace ) )
+    {
+      BufferLeftFace(   world, RenderP, FaceColors);
+    }
+    if ( IsSet( V.flags, Voxel_BottomFace ) )
+    {
+      BufferBottomFace( world, RenderP, FaceColors);
+    }
+    if ( IsSet( V.flags, Voxel_TopFace ) )
+    {
+      BufferTopFace(    world, RenderP, FaceColors);
+    }
+    if ( IsSet( V.flags, Voxel_FrontFace ) )
+    {
+      BufferFrontFace(  world, RenderP, FaceColors);
+    }
+    if ( IsSet( V.flags, Voxel_BackFace ) )
+    {
+      BufferBackFace(   world, RenderP, FaceColors);
+    }
   }
 
 

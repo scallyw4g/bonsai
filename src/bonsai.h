@@ -24,7 +24,14 @@ enum ChunkFlags {
   Chunk_RebuildInteriorBoundary = 1 << 4
 };
 enum VoxelFlags {
-  Voxel_Filled    = 1 << (FINAL_COLOR_BIT + 0)
+  Voxel_Filled     = 1 << (FINAL_COLOR_BIT + 0),
+
+  Voxel_LeftFace   = 1 << (FINAL_COLOR_BIT + 1),
+  Voxel_RightFace  = 1 << (FINAL_COLOR_BIT + 2),
+  Voxel_TopFace    = 1 << (FINAL_COLOR_BIT + 3),
+  Voxel_BottomFace = 1 << (FINAL_COLOR_BIT + 4),
+  Voxel_FrontFace  = 1 << (FINAL_COLOR_BIT + 5),
+  Voxel_BackFace   = 1 << (FINAL_COLOR_BIT + 6)
 };
 
 inline int

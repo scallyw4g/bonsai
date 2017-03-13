@@ -68,7 +68,9 @@
 
 #define CAMERA_INITIAL_P Canonical_Position(&world, V3(1,1,1), World_Position(world.VisibleRegion/2))
 
-#define POSITION_BIT_WIDTH 6
+// NOTE(Jesse): The position storage needs to be as large as the largest model
+// that will ever be loaded. Can we load models in chunks as well?
+#define POSITION_BIT_WIDTH 5
 #define COLOR_BIT_WIDTH 8
 
 #define FINAL_POSITION_BIT (POSITION_BIT_WIDTH*3)

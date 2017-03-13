@@ -204,6 +204,10 @@ LoadVox(char const *filepath)
           v3 Min = V3(minX, minY, minZ);
           chunk_dimension Dim = Chunk_Dimension(maxX+1, maxY+1, maxZ+1) - Min;
 
+          // TODO(Jesse): Load models in multiple chunks instead of one
+          // monolithic one. The storage for chunks must be as large as the
+          // largest chunk we will EVER load, which should definately not be
+          // decided at compile time.
           Result = AllocateChunk(Dim);
 
           for( int i = 0; i < numVoxels; ++ i)
@@ -216,8 +220,7 @@ LoadVox(char const *filepath)
 
             V = SetVoxelColor(V, GetVoxelColor(LocalVoxelCache[i]));
 
-            int Index = GetIndex( RealP, &Result);
-            Result.Voxels[Index] = V;
+            Result.Voxels[GetIndex(RealP, &Result)] = V;
 
             assert(GetVoxelColor(V) < PALETTE_SIZE);
 

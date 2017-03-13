@@ -131,8 +131,8 @@ main( void )
   RenderGroup RG = {};
   if (!InitializeRenderGroup(&RG)) { Log("Error initializing RenderGroup\n"); return False; }
 
-  glEnable(GL_CULL_FACE);
-  glCullFace(GL_BACK); // Cull back-facing triangles -> draw only front-facing triangles
+  /* glEnable(GL_CULL_FACE); */
+  /* glCullFace(GL_BACK); // Cull back-facing triangles -> draw only front-facing triangles */
 
   // This is necessary!
   GLuint VertexArrayID;
