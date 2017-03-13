@@ -196,13 +196,17 @@ LoadVox(char const *filepath)
             minY = Y < minY ? Y : minY;
             minZ = Z < minZ ? Z : minZ;
 
-            LocalVoxelCache[i] = GetVoxel(X,Y,Z,W);
-            /* Log("%d\n", W); */
+            // Offset info the chunk by 1 to avoid having to call BuildExteriorBoundaryVoxels
+            LocalVoxelCache[i] = GetVoxel(X+1,Y+1,Z+1,W);
           }
 
-
           v3 Min = V3(minX, minY, minZ);
-          chunk_dimension Dim = Chunk_Dimension(maxX+1, maxY+1, maxZ+1) - Min;
+
+          // Add 3 to the max dimension because the max values are indicies,
+          // and we need a 1 voxel buffer around the model because
+          // BuildExteriorBoundaryVoxels doesn't handle models correctly.
+          // +1 to convert from index, +2 for a 1vox buffer on each side.
+          chunk_dimension Dim = Chunk_Dimension(maxX+3, maxY+3, maxZ+3) - Min;
 
           // TODO(Jesse): Load models in multiple chunks instead of one
           // monolithic one. The storage for chunks must be as large as the
@@ -230,6 +234,7 @@ LoadVox(char const *filepath)
 
           free(LocalVoxelCache);
 
+          // TODO(Jesse): Are we really done?
           goto loaded;
         } break;
 
