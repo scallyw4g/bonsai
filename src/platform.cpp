@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <bonsai.h>
-#include <math.h>
-#include <types.h>
+#include <bonsai_math.h>
+#include <bonsai_types.h>
 #include <assert.h>
 
 // Number of bytes per int according to .vox file format

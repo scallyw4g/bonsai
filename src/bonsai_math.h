@@ -1,8 +1,9 @@
-#ifndef MATH_H
-#define MATH_H
+#ifndef BONSAI_MATH_H
+#define BONSAI_MATH_H
 
 #include <bonsai.h>
 
+#include <cmath>
 #include <math.h>
 #include <time.h>
 

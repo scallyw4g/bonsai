@@ -5,8 +5,8 @@
 
 #include <perlin.h>
 #include <stdio.h>
-#include <types.h>
-#include <math.h>
+#include <bonsai_types.h>
+#include <bonsai_math.h>
 #include <debug.h>
 
 #include <constants.hpp>

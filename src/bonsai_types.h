@@ -1,5 +1,5 @@
-#ifndef TYPES_H
-#define TYPES_H
+#ifndef BONSAI_TYPES_H
+#define BONSAI_TYPES_H
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
