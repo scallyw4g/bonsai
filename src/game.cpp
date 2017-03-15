@@ -10,7 +10,7 @@
 void
 RegenerateGameWorld( World *world, Entity *Player )
 {
-  printf("\n\n\n\n\n");
+  Log("\n\n\n\n\n");
   srand(time(NULL));
   world->VisibleRegionOrigin = World_Position(0,0,0);
   do
@@ -96,13 +96,13 @@ GAME_UPDATE_AND_RENDER
   glfwPollEvents();
 
 
-  /* printf("%d Triangles drawn\n", tris ); */
+  /* Log("%d Triangles drawn\n", tris ); */
   /* tris=0; */
 
-  /* printf("%d Voxels Indexed\n", VoxelsIndexed ); */
+  /* Log("%d Voxels Indexed\n", VoxelsIndexed ); */
   /* VoxelsIndexed=0; */
 
-  /* printf("%d Boundary Voxels Indexed\n", BoundaryVoxelsIndexed ); */
+  /* Log("%d Boundary Voxels Indexed\n", BoundaryVoxelsIndexed ); */
   /* BoundaryVoxelsIndexed=0; */
 }
 
@@ -126,10 +126,10 @@ main( void )
   initWindow(WindowWidth, WindowHeight);
 
   ShadowRenderGroup SG = {};
-  if (!InitializeShadowBuffer(&SG)) { printf("Error initializing Shadow Buffer\n"); return False; }
+  if (!InitializeShadowBuffer(&SG)) { Log("Error initializing Shadow Buffer\n"); return False; }
 
   RenderGroup RG = {};
-  if (!InitializeRenderGroup(&RG)) { printf("Error initializing RenderGroup\n"); return False; }
+  if (!InitializeRenderGroup(&RG)) { Log("Error initializing RenderGroup\n"); return False; }
 
   glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK); // Cull back-facing triangles -> draw only front-facing triangles
@@ -138,6 +138,7 @@ main( void )
   GLuint VertexArrayID;
   glGenVertexArrays(1, &VertexArrayID);
   glBindVertexArray(VertexArrayID);
+
 
   glfwWindowHint(GLFW_SAMPLES, 4);
 
@@ -176,7 +177,7 @@ main( void )
 
     ZeroWorldChunks(&world);
     GenerateVisibleRegion( &world , Voxel_Position(0,0,0) );
-    /* printf("spawning plyawer\n"); */
+    /* Log("spawning plyawer\n"); */
   } while (!SpawnPlayer( &world, &Player ) );
 
   double lastTime = glfwGetTime();
@@ -221,10 +222,10 @@ main( void )
 
     /* if ( T2.tv_sec - T1.tv_sec > 0 ) T1.tv_nsec -= 1000000000; */
 
-    /* printf(" %d ms this frame \n\n\n", */
+    /* Log(" %d ms this frame \n\n\n", */
     /*     (int)(T2.tv_nsec -T1.tv_nsec)/1000000 ); */
 
-    /* printf(" %d triangles \n", tris); */
+    /* Log(" %d triangles \n", tris); */
     tris=0;
 
   } // Check if the ESC key was pressed or the window was closed

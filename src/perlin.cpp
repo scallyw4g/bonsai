@@ -71,8 +71,6 @@ double PerlinNoise::noise(double x, double y, double z) {
 	double v = fade(y);
 	double w = fade(z);
 
-  // printf( "%f %f %f \n", u, v, w);
-
 	// Hash coordinates of the 8 cube corners
 	int A = p[X] + Y;
 	int AA = p[A] + Z;
@@ -81,11 +79,8 @@ double PerlinNoise::noise(double x, double y, double z) {
 	int BA = p[B] + Z;
 	int BB = p[B + 1] + Z;
 
-  // printf("%d, %d, %d, %d, %d, %d", A, AA, AB, B, BA, BB);
-
 	// Add blended results from 8 corners of cube
 	double res = lerp(w, lerp(v, lerp(u, grad(p[AA], x, y, z), grad(p[BA], x-1, y, z)), lerp(u, grad(p[AB], x, y-1, z), grad(p[BB], x-1, y-1, z))),	lerp(v, lerp(u, grad(p[AA+1], x, y, z-1), grad(p[BA+1], x-1, y, z-1)), lerp(u, grad(p[AB+1], x, y-1, z-1),	grad(p[BB+1], x-1, y-1, z-1))));
-  // printf("%f returning side\n", res);
   res = (res + 1.0)/2.0;
 	return res;
 }

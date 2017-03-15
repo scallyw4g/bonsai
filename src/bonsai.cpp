@@ -18,7 +18,6 @@ GLFWwindow* window;
 #include <platform.cpp>
 #include <objloader.cpp>
 
-#include <simplex.cpp>
 #include <perlin.cpp>
 
 #include <math.h>

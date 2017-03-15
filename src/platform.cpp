@@ -150,7 +150,7 @@ LoadVox(char const *filepath)
     // TODO(Jesse) : Actually read all the data!
     while (bytesRemaining > 0)
     {
-      /* printf("%d\n", bytesRemaining); */
+      /* Log("%d\n", bytesRemaining); */
 
       switch ( GetHeaderType(ModelFile, &bytesRemaining) )
       {
@@ -161,7 +161,7 @@ LoadVox(char const *filepath)
         case ID_PACK:
         {
           /* int nChunks = */ ReadPackChunk(ModelFile, &bytesRemaining);
-          /* printf("nChunks %d\n", nChunks); */
+          /* Log("nChunks %d\n", nChunks); */
         } break;
 
         case ID_SIZE:
@@ -197,7 +197,7 @@ LoadVox(char const *filepath)
             minZ = Z < minZ ? Z : minZ;
 
             LocalVoxelCache[i] = GetVoxel(X,Y,Z,W);
-            /* printf("%d\n", W); */
+            /* Log("%d\n", W); */
           }
 
 
@@ -221,7 +221,7 @@ LoadVox(char const *filepath)
 
             assert(GetVoxelColor(V) < PALETTE_SIZE);
 
-            /* printf("%d\n", GetVoxelColor(V)); */
+            /* Log("%d\n", GetVoxelColor(V)); */
             /* assert(GetVoxelColor(*V) == 121); */
           }
 
@@ -238,7 +238,7 @@ LoadVox(char const *filepath)
   }
   else
   {
-    printf("Couldn't read model file '%s' .", filepath);
+    Log("Couldn't read model file '%s' .", filepath);
   }
 
 loaded:
