@@ -140,8 +140,6 @@ main( void )
   glBindVertexArray(VertexArrayID);
 
 
-  glfwWindowHint(GLFW_SAMPLES, 4);
-
   World world;
   AllocateWorld(&world);
 
