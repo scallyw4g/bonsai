@@ -32,6 +32,9 @@ if [ $WIN32 -eq 1 ]; then
       Shell32.lib               \
       Opengl32.lib
 
+  cp game.exe build/bonsai.exe
+  rm game.*
+
 else
 
   Source="src/game.cpp -o build/bonsai"
