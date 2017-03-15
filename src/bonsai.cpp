@@ -2,7 +2,9 @@
 
 #include <GL/glew.h>
 
+#if LINUX
 #include "/usr/include/valgrind/callgrind.h"
+#endif
 
 #include <glfw3.h>
 GLFWwindow* window;

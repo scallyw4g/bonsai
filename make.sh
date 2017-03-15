@@ -23,6 +23,7 @@ if [ $WIN32 -eq 1 ]; then
   "
 
   cl /MD /EHsc                  \
+      /D_WIN32=1                \
       /DGLEW_BUILD=GLEW_STATIC  \
       $Source                   \
       $IncludeDirectories       \
@@ -47,11 +48,12 @@ else
   -I./src/
   "
 
-  g++ $Optimizations   \
-      $WarningLevel    \
-      $DebuggerSymbols \
-      $Source          \
-      $LinkerFlags     \
+  g++ -DLINUX=1         \
+      $Optimizations    \
+      $WarningLevel     \
+      $DebuggerSymbols  \
+      $Source           \
+      $LinkerFlags      \
       $IncludeDirectories
 
 
