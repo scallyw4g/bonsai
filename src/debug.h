@@ -4,24 +4,42 @@
 #include <iostream>
 #include <cstdarg>
 
+using namespace std;
+
 void Log(const char* fmt...)
 {
   va_list args;
   va_start(args, fmt);
 
-  while (*fmt != '\0') {
-    if (*fmt == 'd') {
-      int i = va_arg(args, int);
-      std::cout << i << '\n';
-    } else if (*fmt == 'c') {
-      int c = va_arg(args, int); // automatic conversion to integral type
-      std::cout << static_cast<char>(c) << '\n';
-    } else if (*fmt == 'f') {
-      double d = va_arg(args, double);
-      std::cout << d << '\n';
+  while (*fmt != '\0')
+  {
+
+    if ( *fmt == '%' )
+    {
+      ++fmt;
+
+      if (*fmt == 'd')
+      {
+        cout << va_arg(args, int);
+      }
+      else if (*fmt == 's')
+      {
+        cout << va_arg(args, char*);
+      }
+      else if (*fmt == 'f')
+      {
+        cout << va_arg(args, double);
+      }
     }
+    else
+    {
+      cout << (char)(*fmt);
+    }
+
     ++fmt;
   }
+
+  cout << endl;
 
   va_end(args);
 }
