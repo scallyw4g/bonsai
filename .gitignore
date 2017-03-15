@@ -1,4 +1,4 @@
-build/bonsai
+build/bonsai.*
 build/*.vox
 build/callgrind*
 
