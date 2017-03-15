@@ -7,7 +7,7 @@ Optimizations=""
 
 DebuggerSymbols="-ggdb"
 
-if [ $WIN32 -eq 1 ]; then
+if [ "$WIN32" == "1" ]; then
 
   Source="src/game.cpp"
 
@@ -42,10 +42,9 @@ else
   LinkerFlags="-lglfw -lGLEW -lGLU -lGL"
 
   IncludeDirectories="
-  -I./external/glfw-3.1.2/include/GLFW/
-  -I./external/glfw-3.1.2/include/GLFW/
   -I./external/glm-0.9.7.1/
   -I./common/
+  -I./src/GLFW/
   -I./src/
   "
 
