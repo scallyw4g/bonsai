@@ -7,24 +7,55 @@ Optimizations=""
 
 DebuggerSymbols="-ggdb"
 
-Source="src/game.cpp -o build/bonsai"
+if [ $WIN32 -eq 1 ]; then
 
-LinkerFlags="-lglfw -lGLEW -lGLU -lGL"
+  Source="src/game.cpp"
 
-IncludeDirectories="
--I./external/glfw-3.1.2/include/GLFW/
--I./external/glfw-3.1.2/include/GLFW/
--I./external/glm-0.9.7.1/
--I./common/
--I./src/
-"
+  LinkerDirectories="
+  /link /LIBPATH:./lib/
+  "
 
-g++ $Optimizations $WarningLevel $DebuggerSymbols \
-\
-  $Source \
-  $LinkerFlags \
-  $IncludeDirectories
+  IncludeDirectories="
+  /I external/glm-0.9.7.1/
+  /I src
+  /I src/GLFW
+  /I src/GL
+  "
 
+  cl /MD /EHsc                  \
+      /DGLEW_BUILD=GLEW_STATIC  \
+      $Source                   \
+      $IncludeDirectories       \
+      $LinkerDirectories        \
+      lib/glfw3.lib             \
+      Gdi32.lib                 \
+      User32.lib                \
+      Shell32.lib               \
+      Opengl32.lib
+
+else
+
+  Source="src/game.cpp -o build/bonsai"
+
+  LinkerFlags="-lglfw -lGLEW -lGLU -lGL"
+
+  IncludeDirectories="
+  -I./external/glfw-3.1.2/include/GLFW/
+  -I./external/glfw-3.1.2/include/GLFW/
+  -I./external/glm-0.9.7.1/
+  -I./common/
+  -I./src/
+  "
+
+  g++ $Optimizations   \
+      $WarningLevel    \
+      $DebuggerSymbols \
+      $Source          \
+      $LinkerFlags     \
+      $IncludeDirectories
+
+
+fi
 
 # Successful build, launch the thing!
 if [ $? -eq 0 ]; then
