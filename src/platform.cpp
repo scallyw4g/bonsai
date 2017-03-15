@@ -9,10 +9,9 @@
 #define VOX_INT_BYTES 4
 #define VOX_CHAR_BYTES 1
 
-constexpr int
-MV_ID( const int a, const int b, const int c, const int d ) {
-  return ( a ) | ( b << 8 ) | ( c << 16 ) | ( d << 24 );
-}
+
+#define MV_ID( a, b, c, d ) \
+  (( a ) | ( b << 8 ) | ( c << 16 ) | ( d << 24 ))
 
 enum Chunk_ID
 {
