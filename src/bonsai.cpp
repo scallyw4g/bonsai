@@ -76,7 +76,7 @@ InitializeVoxels( World *world, World_Chunk *WorldChunk )
   assert(WorldChunk);
 
   Chunk *chunk = &WorldChunk->Data;
-  CALLGRIND_TOGGLE_COLLECT;
+  /* CALLGRIND_TOGGLE_COLLECT; */
 
   chunk->flags = UnSetFlag(chunk->flags, Chunk_Uninitialized);
 
@@ -115,7 +115,7 @@ InitializeVoxels( World *world, World_Chunk *WorldChunk )
     }
   }
 
-  CALLGRIND_TOGGLE_COLLECT;
+  /* CALLGRIND_TOGGLE_COLLECT; */
 
   return;
 }

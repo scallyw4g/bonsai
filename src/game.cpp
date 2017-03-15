@@ -196,11 +196,11 @@ main( void )
     numFrames ++;
 
 
-    timespec T1;
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &T1);
+    /* timespec T1; */
+    /* clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &T1); */
 
-    CALLGRIND_START_INSTRUMENTATION;
-    CALLGRIND_TOGGLE_COLLECT;
+    /* CALLGRIND_START_INSTRUMENTATION; */
+    /* CALLGRIND_TOGGLE_COLLECT; */
 
     RG.Basis.ProjectionMatrix = GetProjectionMatrix(&Camera, WindowWidth, WindowHeight);
 
@@ -214,12 +214,12 @@ main( void )
       &SG
     );
 
-    CALLGRIND_TOGGLE_COLLECT;
+    /* CALLGRIND_TOGGLE_COLLECT; */
 
-    timespec T2;
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &T2);
+    /* timespec T2; */
+    /* clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &T2); */
 
-    if ( T2.tv_sec - T1.tv_sec > 0 ) T1.tv_nsec -= 1000000000;
+    /* if ( T2.tv_sec - T1.tv_sec > 0 ) T1.tv_nsec -= 1000000000; */
 
     /* printf(" %d ms this frame \n\n\n", */
     /*     (int)(T2.tv_nsec -T1.tv_nsec)/1000000 ); */
@@ -233,7 +233,7 @@ main( void )
          glfwWindowShouldClose(window) == 0                 &&
          DEBUG_FRAMES_TO_RUN != numFrames );
 
-  CALLGRIND_DUMP_STATS;
+  /* CALLGRIND_DUMP_STATS; */
 
   glDeleteBuffers(1, &RG.vertexbuffer);
   glDeleteBuffers(1, &RG.colorbuffer);
