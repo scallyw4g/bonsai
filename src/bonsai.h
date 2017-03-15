@@ -273,13 +273,13 @@ struct Entity
 
   canonical_position P;
 
-  Quaternion Rotation = Quaternion(1,0,0,0);
+  Quaternion Rotation;
 };
 
 struct ChunkStack
 {
   World_Chunk *chunks; // This should be Volume(VisibleRegion) chunks
-  int count = 0;
+  int count;
 };
 
 World_Chunk
@@ -347,7 +347,7 @@ GetWorldChunk( World *world, world_position WorldP )
     WorldP.z >= world->VisibleRegion.z )
   {
     /* assert(false); // Requesting outside the initialized world; no bueno? */
-    return nullptr;
+    return 0;
   }
 
   int i =

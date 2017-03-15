@@ -555,6 +555,7 @@ AllocateWorld( World *world )
 
   // Allocate a second chunks buffer for when we're updating visible region
   world->FreeChunks.chunks = (World_Chunk*)calloc( Volume(world->VisibleRegion), sizeof(World_Chunk) );
+  world->FreeChunks.count = 0;
 
   { // Allocate five chunks worth of vertices for the render buffer
     int BufferVertices = 100*(world->ChunkDim.x*world->ChunkDim.y*world->ChunkDim.z * VERT_PER_VOXEL * 3);

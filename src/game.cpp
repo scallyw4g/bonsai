@@ -157,7 +157,9 @@ main( void )
   /* Player.Model = LoadVox("./chr_old.vox"); */
   /* Player.Model = AllocateChunk(Chunk_Dimension(13,7,7), World_Position(0,0,0)); */
   /* FillChunk(&Player.Model); */
+
   Player.Model.flags = SetFlag( Player.Model.flags, Chunk_Entity);
+  Player.Rotation = Quaternion(1,0,0,0);
 
   Camera_Object Camera = {};
   Camera.Frust.farClip = 500.0f;
