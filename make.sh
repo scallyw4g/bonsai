@@ -11,15 +11,13 @@ if [ $WIN32 -eq 1 ]; then
 
   Source="src/game.cpp"
 
-  LinkerDirectories="
-  /link /LIBPATH:./lib/
-  "
+  LinkerDirectories="/link /LIBPATH:./lib/"
 
   IncludeDirectories="
-  /I external/glm-0.9.7.1/
-  /I src
-  /I src/GLFW
-  /I src/GL
+    /I external/glm-0.9.7.1/
+    /I src
+    /I src/GLFW
+    /I src/GL
   "
 
   cl /MD /EHsc                  \

@@ -1,6 +1,7 @@
 #include <time.h>
 
 #include <GL/glew.h>
+#include <GL/glew.c>
 
 #if LINUX
 #include "/usr/include/valgrind/callgrind.h"
