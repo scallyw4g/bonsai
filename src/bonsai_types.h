@@ -235,9 +235,9 @@ operator+(voxel_position Pos, v3 Vec)
 {
   voxel_position Result;
 
-  Result.x = Pos.x+Vec.x;
-  Result.y = Pos.y+Vec.y;
-  Result.z = Pos.z+Vec.z;
+  Result.x = Pos.x+ (int)Vec.x;
+  Result.y = Pos.y+ (int)Vec.y;
+  Result.z = Pos.z+ (int)Vec.z;
 
   return Result;
 }
@@ -247,9 +247,9 @@ operator-(voxel_position Pos, v3 Vec)
 {
   voxel_position Result;
 
-  Result.x = Pos.x-Vec.x;
-  Result.y = Pos.y-Vec.y;
-  Result.z = Pos.z-Vec.z;
+  Result.x = Pos.x- (int)Vec.x;
+  Result.y = Pos.y- (int)Vec.y;
+  Result.z = Pos.z- (int)Vec.z;
 
   return Result;
 }
@@ -473,10 +473,10 @@ v4 V4(int w, int x, int y, int z)
 {
   v4 Result;
 
-  Result.x = x;
-  Result.y = y;
-  Result.z = z;
-  Result.w = w;
+  Result.x = (float)x;
+  Result.y = (float)y;
+  Result.z = (float)z;
+  Result.w = (float)w;
 
   return Result;
 }
@@ -541,9 +541,9 @@ operator%(v3 A, int i)
 {
   v3 Result;
 
-  Result.x = (int)A.x % i;
-  Result.y = (int)A.y % i;
-  Result.z = (int)A.z % i;
+  Result.x = (float)((int)A.x % i);
+  Result.y = (float)((int)A.y % i);
+  Result.z = (float)((int)A.z % i);
 
   return Result;
 }
@@ -744,7 +744,7 @@ v4 operator*(v4 A, int B)
 
 v4 operator*=(v4 A, int B)
 {
-  A = A * (float)B;
+  A = A * B;
   return A;
 }
 

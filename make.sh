@@ -1,17 +1,9 @@
 #! /bin/bash
 
-WarningLevel="-Wall"
-
-Optimizations=""
-#Optimizations="-Ofast"
-
-DebuggerSymbols="-ggdb"
 
 if [ "$WIN32" == "1" ]; then
 
   Source="src/game.cpp"
-
-  LinkerDirectories="/link /LIBPATH:./lib/"
 
   IncludeDirectories="
     /I external/glm-0.9.7.1/
@@ -26,7 +18,6 @@ if [ "$WIN32" == "1" ]; then
       $Source                   \
       $Optimizations            \
       $IncludeDirectories       \
-      $LinkerDirectories        \
       lib/glfw3.lib             \
       Gdi32.lib                 \
       User32.lib                \
@@ -39,6 +30,13 @@ if [ "$WIN32" == "1" ]; then
 else
 
   Source="src/game.cpp -o build/bonsai"
+
+  WarningLevel="-Wall"
+
+  Optimizations=""
+  # Optimizations="-Ofast"
+
+  DebuggerSymbols="-ggdb"
 
   LinkerFlags="-lglfw -lGLEW -lGLU -lGL"
 

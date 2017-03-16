@@ -473,38 +473,38 @@ Canonicalize( World *world, v3 Offset, world_position WorldP )
 
   if ( Result.Offset.x >= world->ChunkDim.x )
   {
-    int ChunkWidths = Result.Offset.x / world->ChunkDim.x;
+    int ChunkWidths = (int)(Result.Offset.x / world->ChunkDim.x);
     Result.Offset.x -= world->ChunkDim.x*ChunkWidths;
     Result.WorldP.x += ChunkWidths;
   }
   if ( Result.Offset.y >= world->ChunkDim.y )
   {
-    int ChunkWidths = Result.Offset.y / world->ChunkDim.y;
+    int ChunkWidths = (int)(Result.Offset.y / world->ChunkDim.y);
     Result.Offset.y -= world->ChunkDim.y*ChunkWidths;
     Result.WorldP.y += ChunkWidths;
   }
   if ( Result.Offset.z >= world->ChunkDim.z )
   {
-    int ChunkWidths = Result.Offset.z / world->ChunkDim.z;
+    int ChunkWidths = (int)(Result.Offset.z / world->ChunkDim.z);
     Result.Offset.z -= world->ChunkDim.z*ChunkWidths;
     Result.WorldP.z += ChunkWidths;
   }
 
   if ( Result.Offset.x < 0 )
   {
-    int ChunkWidths = (Result.Offset.x-world->ChunkDim.x) / -world->ChunkDim.x;
+    int ChunkWidths = (int)((Result.Offset.x-world->ChunkDim.x) / -world->ChunkDim.x);
     Result.Offset.x += world->ChunkDim.x*ChunkWidths;
     Result.WorldP.x -= ChunkWidths;
   }
   if ( Result.Offset.y < 0 )
   {
-    int ChunkWidths = (Result.Offset.y-world->ChunkDim.y) / -world->ChunkDim.y;
+    int ChunkWidths = (int)((Result.Offset.y-world->ChunkDim.y) / -world->ChunkDim.y);
     Result.Offset.y += world->ChunkDim.y*ChunkWidths;
     Result.WorldP.y -= ChunkWidths;
   }
   if ( Result.Offset.z < 0 )
   {
-    int ChunkWidths = (Result.Offset.z-world->ChunkDim.z) / -world->ChunkDim.z;
+    int ChunkWidths = (int)((Result.Offset.z-world->ChunkDim.z) / -world->ChunkDim.z);
     Result.Offset.z += world->ChunkDim.z*ChunkWidths;
     Result.WorldP.z -= ChunkWidths;
   }

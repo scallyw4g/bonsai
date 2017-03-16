@@ -7,6 +7,7 @@
 #include <math.h>
 #include <time.h>
 
+#if 0
 // TODO(Jesse): Write actual/working fModf!
 float
 myFmodf( float F, float mod )
@@ -26,12 +27,13 @@ myFmodf( float F, float mod )
 
   return Result;
 }
+#endif
 
 float
 RandomInRange(float Min, float Max)
 {
   float Range = Max - Min;
-  float Rand = rand() * 0.00001;
+  float Rand = (float)rand() * 0.00001f;
   float Result = fmodf(Rand, Range);
   return Result;
 }

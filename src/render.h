@@ -7,10 +7,10 @@
 #include <shader.cpp>
 
 // Wrapper so assertions give us file/line numbers
-#define AssertNoGlErrors            \
-  int ErrorNo = glGetError();       \
-  DumpGlErrorEnum(ErrorNo);         \
-  assert(ErrorNo == GL_NO_ERROR)
+#define AssertNoGlErrors {            \
+  int glErrorNo = glGetError();       \
+  DumpGlErrorEnum(glErrorNo);         \
+  assert(glErrorNo == GL_NO_ERROR); }
 
 using namespace glm;
 

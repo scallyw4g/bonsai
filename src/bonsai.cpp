@@ -7,7 +7,7 @@
 #include "/usr/include/valgrind/callgrind.h"
 #endif
 
-#include <glfw3.h>
+#include <GLFW/glfw3.h>
 GLFWwindow* window;
 
 #include <constants.hpp>
@@ -240,6 +240,7 @@ collision_event
 GetCollision(World *world, Entity *entity, v3 Offset = V3(0,0,0) )
 {
   collision_event C;
+  C.didCollide = false;
 
   for (int i = 0; i < entity->Model.BoundaryVoxelCount; ++i)
   {
@@ -575,7 +576,7 @@ AllocateWorld( World *world )
   world->FreeChunks.count = 0;
 
   { // Allocate five chunks worth of vertices for the render buffer
-    int BufferVertices = 100*(world->ChunkDim.x*world->ChunkDim.y*world->ChunkDim.z * VERT_PER_VOXEL * 3);
+    int BufferVertices = 10*(world->ChunkDim.x*world->ChunkDim.y*world->ChunkDim.z * VERT_PER_VOXEL * 3);
 
     world->VertexData.Data = (GLfloat *)calloc(BufferVertices, sizeof(GLfloat) );
     world->ColorData.Data  = (GLfloat *)calloc(BufferVertices, sizeof(GLfloat) );
@@ -584,6 +585,10 @@ AllocateWorld( World *world )
     world->VertexData.bytesAllocd = BufferVertices*sizeof(GLfloat);
     world->ColorData.bytesAllocd  = BufferVertices*sizeof(GLfloat);
     world->NormalData.bytesAllocd = BufferVertices*sizeof(GLfloat);
+
+    world->VertexData.filled = 0;
+    world->ColorData.filled = 0;
+    world->NormalData.filled = 0;
 
     world->VertexCount = 0;
   }
