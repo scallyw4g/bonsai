@@ -1,4 +1,5 @@
 
+
 #include <bonsai.h>
 #include <render.h>
 
@@ -77,7 +78,6 @@ GAME_UPDATE_AND_RENDER
       SG
     );
 #endif
-
   }
 
   DrawEntity(
@@ -91,6 +91,8 @@ GAME_UPDATE_AND_RENDER
   FlushRenderBuffers(world, RG, SG, Camera);
 
   DrawWorldToFullscreenQuad(world, RG, SG, Camera);
+
+  AssertNoGlErrors;
 
   glfwSwapBuffers(window);
   glfwPollEvents();
@@ -139,9 +141,9 @@ main( void )
   glGenVertexArrays(1, &VertexArrayID);
   glBindVertexArray(VertexArrayID);
 
-
   World world;
   AllocateWorld(&world);
+
 
   Entity Player;
 

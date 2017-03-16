@@ -235,7 +235,7 @@ FlushRenderBuffers(
 
   RenderWorld(world, RG);
 
-  AssertNoGlErrors();
+  AssertNoGlErrors;
 
   world->VertexCount = 0;
 
@@ -267,7 +267,7 @@ BufferFace (
        world->NormalData.filled > world->NormalData.bytesAllocd )
   {
     // Out of memory, panic!
-    assert(false);
+    assert(!"Out of memory");
     return;
   }
 

@@ -578,11 +578,11 @@ AllocateWorld( World *world )
     int BufferVertices = 100*(world->ChunkDim.x*world->ChunkDim.y*world->ChunkDim.z * VERT_PER_VOXEL * 3);
 
     world->VertexData.Data = (GLfloat *)calloc(BufferVertices, sizeof(GLfloat) );
-    world->ColorData.Data = (GLfloat *)calloc(BufferVertices, sizeof(GLfloat) );
+    world->ColorData.Data  = (GLfloat *)calloc(BufferVertices, sizeof(GLfloat) );
     world->NormalData.Data = (GLfloat *)calloc(BufferVertices, sizeof(GLfloat) );
 
     world->VertexData.bytesAllocd = BufferVertices*sizeof(GLfloat);
-    world->ColorData.bytesAllocd = BufferVertices*sizeof(GLfloat);
+    world->ColorData.bytesAllocd  = BufferVertices*sizeof(GLfloat);
     world->NormalData.bytesAllocd = BufferVertices*sizeof(GLfloat);
 
     world->VertexCount = 0;

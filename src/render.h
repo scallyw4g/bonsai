@@ -6,6 +6,12 @@
 
 #include <shader.cpp>
 
+// Wrapper so assertions give us file/line numbers
+#define AssertNoGlErrors            \
+  int ErrorNo = glGetError();       \
+  DumpGlErrorEnum(ErrorNo);         \
+  assert(ErrorNo == GL_NO_ERROR)
+
 using namespace glm;
 
 DEBUG_GLOBAL GLfloat g_quad_vertex_buffer_data[] =
@@ -77,9 +83,13 @@ struct ShadowRenderGroup
 };
 
 void
-AssertNoGlErrors()
+DumpGlErrorEnum(int Error)
 {
-  int Error = glGetError();
+  if ( Error != 0 )
+  {
+    Log("%d", Error);
+  }
+
   switch (Error)
   {
     case GL_INVALID_ENUM:
@@ -128,7 +138,6 @@ AssertNoGlErrors()
     } break;
   }
 
-  assert(Error == GL_NO_ERROR);
   return;
 }
 

@@ -24,6 +24,7 @@ if [ "$WIN32" == "1" ]; then
       /D_WIN32=1                \
       /DGLEW_BUILD=GLEW_STATIC  \
       $Source                   \
+      $Optimizations            \
       $IncludeDirectories       \
       $LinkerDirectories        \
       lib/glfw3.lib             \
