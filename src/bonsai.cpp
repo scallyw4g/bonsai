@@ -166,19 +166,27 @@ GetInputsFromController(Camera_Object *Camera)
   v3 UpdateDir = V3(0,0,0);
 
   // Move forward
-  if (glfwGetKey( window, GLFW_KEY_KP_8 ) == GLFW_PRESS){
+  if (glfwGetKey( window, GLFW_KEY_KP_8 ) == GLFW_PRESS ||
+      glfwGetKey( window, GLFW_KEY_W ) == GLFW_PRESS )
+  {
     UpdateDir += forward;
   }
   // Move backward
-  if (glfwGetKey( window, GLFW_KEY_KP_5 ) == GLFW_PRESS){
+  if (glfwGetKey( window, GLFW_KEY_KP_5 ) == GLFW_PRESS ||
+      glfwGetKey( window, GLFW_KEY_S ) == GLFW_PRESS )
+  {
     UpdateDir -= forward;
   }
   // Strafe right
-  if (glfwGetKey( window, GLFW_KEY_KP_6 ) == GLFW_PRESS){
+  if (glfwGetKey( window, GLFW_KEY_KP_6 ) == GLFW_PRESS ||
+      glfwGetKey( window, GLFW_KEY_D ) == GLFW_PRESS )
+  {
     UpdateDir += right;
   }
   // Strafe left
-  if (glfwGetKey( window, GLFW_KEY_KP_4 ) == GLFW_PRESS){
+  if (glfwGetKey( window, GLFW_KEY_KP_4 ) == GLFW_PRESS ||
+      glfwGetKey( window, GLFW_KEY_A ) == GLFW_PRESS )
+  {
     UpdateDir -= right;
   }
 
