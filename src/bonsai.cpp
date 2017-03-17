@@ -461,6 +461,8 @@ UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
   v3 Remaining = GrossUpdateVector;
   canonical_position OriginalPlayerP = Player->P;
 
+  Print(Player->Velocity);
+  collision_event C;
   while ( Remaining != V3(0,0,0) )
   {
     assert(LengthSq(Remaining) >= 0);
@@ -470,30 +472,51 @@ UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
 
     Player->P.Offset.x += UpdateVector.x;
     Player->P = Canonicalize(world, Player->P);
-    if (GetCollision(world, Player).didCollide)
+    C = GetCollision(world, Player);
+    if (C.didCollide)
     {
-      Player->P.Offset.x -= UpdateVector.x;
       Player->Velocity.x = 0;
+
+      Player->P.Offset.x = C.CP.Offset.x;
+      Player->P.WorldP.x = C.CP.WorldP.x;
+
+      if (UpdateVector.x > 0)
+        Player->P.Offset.x -= (Player->Model.Dim.x-1);
+
       Player->P = Canonicalize(world, Player->P);
     }
 
 
     Player->P.Offset.y += UpdateVector.y;
     Player->P = Canonicalize(world, Player->P);
-    if (GetCollision(world, Player).didCollide)
+    C = GetCollision(world, Player);
+    if (C.didCollide)
     {
-      Player->P.Offset.y -= UpdateVector.y;
       Player->Velocity.y = 0;
+
+      Player->P.Offset.y = C.CP.Offset.y;
+      Player->P.WorldP.y = C.CP.WorldP.y;
+
+      if (UpdateVector.y > 0)
+        Player->P.Offset.y -= (Player->Model.Dim.y-1);
+
       Player->P = Canonicalize(world, Player->P);
     }
 
 
     Player->P.Offset.z += UpdateVector.z;
     Player->P = Canonicalize(world, Player->P);
-    if (GetCollision(world, Player).didCollide)
+    C = GetCollision(world, Player);
+    if (C.didCollide)
     {
-      Player->P.Offset.z -= UpdateVector.z;
       Player->Velocity.z = 0;
+
+      Player->P.Offset.z = C.CP.Offset.z;
+      Player->P.WorldP.z = C.CP.WorldP.z;
+
+      if (UpdateVector.z > 0)
+        Player->P.Offset.z -= (Player->Model.Dim.z-1);
+
       Player->P = Canonicalize(world, Player->P);
     }
   }

@@ -48,7 +48,7 @@ GAME_UPDATE_AND_RENDER
       Player->Velocity.y += PLAYER_JUMP_STRENGTH; // Jump
 
   Player->Acceleration += world->Gravity * dt; // Apply Gravity
-  Player->Velocity = (Player->Velocity + (Player->Acceleration )) * drag; // m/s
+  Player->Velocity = (Player->Velocity + (Player->Acceleration)) * drag; // m/s
 
   v3 PlayerDelta = Player->Velocity * dt;
 
