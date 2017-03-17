@@ -13,7 +13,7 @@ configure_file (
 include_directories(${PROJECT_SOURCE_DIR}/src)
 include_directories(${PROJECT_SOURCE_DIR}/external/glm-0.9.7.1)
 
-add_subdirectory( glfw )
+add_subdirectory( external/glfw )
 
 add_executable(Bonsai ${PROJECT_SOURCE_DIR}/src/game.cpp)
 
@@ -34,13 +34,12 @@ elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
 
   add_definitions( /MDd /EHsc /NODEFAULTLIB:LIBCMTD.lib )
 
-  target_link_libraries(Bonsai ${PROJECT_SOURCE_DIR}/lib/glfw3.lib)
   target_link_libraries(Bonsai Gdi32.lib)
   target_link_libraries(Bonsai User32.lib)
   target_link_libraries(Bonsai Shell32.lib)
   target_link_libraries(Bonsai Opengl32.lib)
 
-  # target_link_libraries(Bonsai vcruntime.lib)
+  target_link_libraries(Bonsai ${PROJECT_SOURCE_DIR}/build/external/glfw/src/Debug/glfw3.lib)
 
   # this is only valid/necessary on VS2015 because MS refactored the CRT, which
   # leaves GLFW broken for the moment
