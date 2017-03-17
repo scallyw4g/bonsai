@@ -537,62 +537,73 @@ RotateAround( v3 Axis )
 }
 
 void
-DEBUG_DrawLine(World *world, v3 RenderSpaceP1, v3 RenderSpaceP2)
+DEBUG_DrawLine(World *world, v3 P1, v3 P2, float Thickness = 0.1f )
 {
-  // 24 lines, 2 verts per line, 3 floats per vert
-  GLfloat *LineData = (GLfloat *)calloc(24*2*3, sizeof(GLfloat) );
-  GLfloat *LineColors = (GLfloat *)calloc(24*2*3, sizeof(GLfloat) );
+  // 2 verts per line, 3 floats per vert
 
-  for ( int i = 0; i < 100; i++)
+  float localNormalData[] =
   {
-    float color = 5.5f;;
-    LineColors[i] = color;
+     0, 0, 0,
+     0, 0, 0,
+     0, 0, 0,
+
+     0, 0, 0,
+     0, 0, 0,
+     0, 0, 0
+  };
+
+  float FaceColors[] =
+  {
+     1, 1, 1,
+     1, 1, 1,
+     1, 1, 1,
+
+     1, 1, 1,
+     1, 1, 1,
+     1, 1, 1
+  };
+
+  {
+    float localVertexData[] =
+    {
+      P1.x, P1.y, P1.z,
+      P2.x, P2.y, P2.z,
+      P1.x + Thickness, P1.y + Thickness, P1.z + Thickness,
+
+      P2.x, P2.y, P2.z,
+      P1.x, P1.y, P1.z,
+      P2.x + Thickness, P2.y + Thickness, P2.z + Thickness
+    };
+
+
+    BufferFace(world,
+        localVertexData,
+        sizeof(localVertexData),
+        localNormalData,
+        sizeof(localNormalData),
+        FaceColors);
   }
 
-  GLuint AABB_Buffer;
-  glGenBuffers(1, &AABB_Buffer);
+  {
+    float localVertexData[] =
+    {
+      P1.x + Thickness, P1.y + Thickness, P1.z + Thickness,
+      P2.x, P2.y, P2.z,
+      P2.x + Thickness, P2.y + Thickness, P2.z + Thickness,
 
-  GLuint AABB_Colors;
-  glGenBuffers(1, &AABB_Colors);
+      P2.x + Thickness, P2.y + Thickness, P2.z + Thickness,
+      P1.x + Thickness, P1.y + Thickness, P1.z + Thickness,
+      P1.x, P1.y, P1.z,
+    };
 
-  memcpy( LineData,    &RenderSpaceP1, sizeof(v3) );
-  memcpy( LineData+3,  &RenderSpaceP2, sizeof(v3) );
+    BufferFace(world,
+        localVertexData,
+        sizeof(localVertexData),
+        localNormalData,
+        sizeof(localNormalData),
+        FaceColors);
+  }
 
-  glViewport(0,0,SCR_WIDTH,SCR_HEIGHT);
-
-  // Colors
-  glEnableVertexAttribArray(0);
-  glBindBuffer(GL_ARRAY_BUFFER, AABB_Colors);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(v3)*24*2, LineColors, GL_STATIC_DRAW);
-  glVertexAttribPointer(
-    1,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-    3,                  // size
-    GL_FLOAT,           // type
-    GL_FALSE,           // normalized?
-    0,                  // stride
-    (void*)0            // array buffer offset
-  );
-
-  // Vertices
-  glEnableVertexAttribArray(1);
-  glBindBuffer(GL_ARRAY_BUFFER, AABB_Buffer);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(v3)*24*2, LineData, GL_STATIC_DRAW);
-  glVertexAttribPointer(
-    0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-    3,                  // size
-    GL_FLOAT,           // type
-    GL_FALSE,           // normalized?
-    0,                  // stride
-    (void*)0            // array buffer offset
-  );
-
-  glDrawArrays(GL_LINES, 0, 24);
-
-  glDeleteBuffers(1, &AABB_Buffer);
-  glDeleteBuffers(1, &AABB_Colors);
-
-  free( LineData );
-  free( LineColors );
 }
 
 void
