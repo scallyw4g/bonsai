@@ -42,7 +42,7 @@ if (${CMAKE_CXX_COMPILER_ID} STREQUAL Clang)    # LLVM
 
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)  # g++
   add_definitions( -DLINUX=1 )
-  add_definitions( -lGLEW -lGLU -lGL )
+  add_definitions( -ggdb -lGLEW -lGLU -lGL )
   target_link_libraries( Bonsai glfw )
 
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
