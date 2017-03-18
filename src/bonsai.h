@@ -20,9 +20,15 @@ enum ChunkFlags {
 
   Chunk_Entity                  = 1 << 1,
   Chunk_World                   = 1 << 2,
-  Chunk_RebuildExteriorBoundary = 1 << 3,
-  Chunk_RebuildInteriorBoundary = 1 << 4
+  Chunk_RebuildInteriorBoundary = 1 << 3,
+  Chunk_RebuildExteriorTop      = 1 << 4,
+  Chunk_RebuildExteriorBot      = 1 << 5,
+  Chunk_RebuildExteriorLeft     = 1 << 6,
+  Chunk_RebuildExteriorRight    = 1 << 7,
+  Chunk_RebuildExteriorFront    = 1 << 8,
+  Chunk_RebuildExteriorBack     = 1 << 9,
 };
+
 enum VoxelFlags {
   Voxel_Filled     = 1 << (FINAL_COLOR_BIT + 0),
 
@@ -184,7 +190,12 @@ ZeroChunk( Chunk * chunk )
   chunk->flags = 0;
   chunk->flags = SetFlag( chunk->flags, Chunk_Uninitialized );
   chunk->flags = SetFlag( chunk->flags, Chunk_RebuildInteriorBoundary );
-  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorBoundary );
+  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorTop   );
+  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorBot   );
+  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorLeft  );
+  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorRight );
+  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorFront );
+  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorBack  );
 }
 
 inline int

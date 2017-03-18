@@ -127,8 +127,6 @@ main( void )
 
   initWindow(WindowWidth, WindowHeight);
 
-  glEnable (GL_BLEND);
-
   ShadowRenderGroup SG = {};
   if (!InitializeShadowBuffer(&SG)) { Log("Error initializing Shadow Buffer\n"); return False; }
 
