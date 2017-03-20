@@ -61,18 +61,17 @@ Ensure you have [CMake](https://cmake.org/download) and either g++ or VS2015
 ```
 git clone https://github.com/jjbandit/bonsai
 cd bonsai/
-make_deps.sh && make.sh
+mkdir build
+cmake .
+make
 ```
 
 ## On Windows:
-NOTE(Jesse): I ran into problems building with VS2012, so I recommend VS2015
+NOTE(Jesse): Tested on VS2012, and there are known problems with VS2015
 
-### Build deps
-- Clone the repo
-- Run CMake - Set source code to $BONSAI_DIRECTORY/external and "Where to build the binaries" to $BONSAI_DIRECTORY/external/build
+- git clone https://github.com/jjbandit/bonsai
+- Run CMake - Set source code to $BONSAI_DIRECTORY and "Where to build the binaries" to $BONSAI_DIRECTORY/build
 - Click "Configure" followed by "Generate" and finally "Open Project"
 - Build with Visual Studio `F7` should do it
 
-### Build Engine
-- TODO(Jesse): How do we actually build the engine?
 
