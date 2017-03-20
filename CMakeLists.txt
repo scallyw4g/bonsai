@@ -19,6 +19,13 @@ include_directories(${PROJECT_SOURCE_DIR}/src)
 include_directories(${PROJECT_SOURCE_DIR}/external/glm-0.9.7.1)
 
 
+if (CYGWIN)
+  set(WIN32 1)
+  add_definitions(-D_WIN32=1)
+else()
+  add_definitions( -DLINUX=1 )
+endif()
+
 
 
 find_package(OpenGL REQUIRED)
@@ -41,8 +48,8 @@ if (${CMAKE_CXX_COMPILER_ID} STREQUAL Clang)    # LLVM
   # Does Clang work?
 
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)  # g++
-  add_definitions( -DLINUX=1 )
-  add_definitions( -ggdb -lGLEW -lGLU -lGL )
+  add_definitions( -std=c++11 -ggdb -lGLEW -lGLU -lGL )
+
   target_link_libraries( Bonsai glfw )
 
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
