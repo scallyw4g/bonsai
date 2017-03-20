@@ -45,7 +45,7 @@
 
 
 #define DEBUG_SCROLL_WORLD            1
-#define DEBUG_CHUNK_AABB              1
+#define DEBUG_CHUNK_AABB              0
 #define DEBUG_CAMERA_FOCUS_ORIGIN     0
 #define DEBUG_WORLD_GENERATION        0
 #define DEBUG_LOD_RENDER              0

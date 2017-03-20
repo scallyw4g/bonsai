@@ -268,7 +268,7 @@ GetCollision(World *world, Entity *entity, v3 Offset = V3(0,0,0) )
 inline bool
 IsGrounded( World *world, Entity *entity)
 {
-  collision_event c = GetCollision(world, entity, V3(0,-0.1, 0));
+  collision_event c = GetCollision(world, entity, V3(0,-0.001, 0));
   return c.didCollide;
 }
 
