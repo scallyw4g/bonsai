@@ -54,10 +54,7 @@ target_link_libraries( Bonsai glfw )
 
 # Platform specific
 
-if (${CMAKE_CXX_COMPILER_ID} STREQUAL Clang)    # LLVM
-  # Does Clang work?
-
-elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)  # g++
+if (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)  # g++
   message(STATUS "Compiling with g++")
 
   add_definitions( -std=c++11 )
@@ -69,6 +66,10 @@ elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
   # this is only valid/necessary on VS2015 because MS refactored the CRT, which
   # leaves GLFW broken for the moment
   # target_link_libraries(Bonsai legacy_stdio_definitions.lib)
+
+else()
+
+  message(FATAL_ERROR "Unsupported Compiler")
 
 endif()
 
