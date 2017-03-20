@@ -19,19 +19,25 @@ include_directories(${PROJECT_SOURCE_DIR}/src)
 include_directories(${PROJECT_SOURCE_DIR}/external/glm-0.9.7.1)
 
 
-if (CYGWIN)
+if (CYGWIN OR WIN32)
   set(WIN32 1)
   add_definitions(-D_WIN32=1)
+
+  # /usr/lib/w32api/libgdi32.a
+  target_link_libraries(Bonsai Gdi32)
+  target_link_libraries(Bonsai User32)
+  target_link_libraries(Bonsai Shell32)
+  target_link_libraries(Bonsai Opengl32)
+
 else()
-  add_definitions( -DLINUX=1 )
+  add_definitions( -DLINUX=1 -ggdb )
+  add_definitions( -lGLEW -lGLU -lGL )
 endif()
 
 
 
 find_package(OpenGL REQUIRED)
 include_directories( ${OPENGL_INCLUDE_DIRS} )
-target_link_libraries(Bonsai ${OPENGL_LIBRARIES} )
-
 
 
 add_subdirectory( external/glfw )
@@ -42,27 +48,23 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
 add_definitions( -DGLEW_BUILD=GLEW_STATIC )
 
+
+target_link_libraries( Bonsai ${OPENGL_LIBRARIES} )
+target_link_libraries( Bonsai glfw )
+
 # Platform specific
 
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL Clang)    # LLVM
   # Does Clang work?
 
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)  # g++
-  add_definitions( -std=c++11 -ggdb -lGLEW -lGLU -lGL )
+  message(STATUS "Compiling with g++")
 
-  target_link_libraries( Bonsai glfw )
+  add_definitions( -std=c++11 )
 
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
-  add_definitions( -D_WIN32=1 )
 
-  add_definitions( /MDd /EHsc /NODEFAULTLIB:LIBCMTD.lib )
-
-  target_link_libraries(Bonsai Gdi32.lib)
-  target_link_libraries(Bonsai User32.lib)
-  target_link_libraries(Bonsai Shell32.lib)
-  target_link_libraries(Bonsai Opengl32.lib)
-
-  target_link_libraries(Bonsai ${PROJECT_SOURCE_DIR}/build/external/glfw/src/Debug/glfw3.lib)
+  add_definitions( /MDd /EHsc )
 
   # this is only valid/necessary on VS2015 because MS refactored the CRT, which
   # leaves GLFW broken for the moment
