@@ -437,31 +437,31 @@ GenerateVisibleRegion( World *world, voxel_position GrossUpdateVector )
   assert(world->FreeChunks.count == 0);
 }
 
-inline collision_event
-GetCollisionForUpdate(World* world, canonical_position *LegalP, v3 UpdateVector, int Sign, Entity *entity)
-{
-  collision_event Result;
+/* inline collision_event */
+/* GetCollisionForUpdate(World* world, canonical_position *LegalP, v3 UpdateVector, int Sign, Entity *entity) */
+/* { */
+/*   collision_event Result; */
 
-  v3 Offset = LegalP->Offset + UpdateVector;
-  canonical_position TestP = Canonicalize( world, Offset, LegalP->WorldP );
-  collision_event Collision = GetCollision( world, entity );
-  if ( Collision.didCollide )
-  {
-    assert( GetSign(Sign) != Zero );
-    Result.CP.Offset = Collision.CP.Offset - ClampMinus1toInfinity(entity->Model.Dim.x*Sign);
-    Result.CP.WorldP = Collision.CP.WorldP;
-    Result.didCollide = true;
-  }
-  else
-  {
-    Result.CP = TestP;
-    Result.didCollide = false;
-  }
+/*   v3 Offset = LegalP->Offset + UpdateVector; */
+/*   canonical_position TestP = Canonicalize( world, Offset, LegalP->WorldP ); */
+/*   collision_event Collision = GetCollision( world, entity ); */
+/*   if ( Collision.didCollide ) */
+/*   { */
+/*     assert( GetSign(Sign) != Zero ); */
+/*     Result.CP.Offset = Collision.CP.Offset - ClampMinus1toInfinity(entity->Model.Dim.x*Sign); */
+/*     Result.CP.WorldP = Collision.CP.WorldP; */
+/*     Result.didCollide = true; */
+/*   } */
+/*   else */
+/*   { */
+/*     Result.CP = TestP; */
+/*     Result.didCollide = false; */
+/*   } */
 
-  Result.CP = Canonicalize( world, Result.CP );
+/*   Result.CP = Canonicalize( world, Result.CP ); */
 
-  return Result;
-}
+/*   return Result; */
+/* } */
 
 void
 UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
@@ -469,7 +469,6 @@ UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
   v3 Remaining = GrossUpdateVector;
   canonical_position OriginalPlayerP = Player->P;
 
-  Print(Player->Velocity);
   collision_event C;
   while ( Remaining != V3(0,0,0) )
   {
@@ -483,14 +482,22 @@ UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
     C = GetCollision(world, Player);
     if (C.didCollide)
     {
-      Player->Velocity.x = 0;
+      C = GetCollision(world, Player, V3(0,1,0));
 
-      Player->P.Offset.x = C.CP.Offset.x;
-      Player->P.WorldP.x = C.CP.WorldP.x;
+      if (C.didCollide)
+      {
+        Player->Velocity.x = 0;
 
-      if (UpdateVector.x > 0)
-        Player->P.Offset.x -= (Player->Model.Dim.x-1);
+        Player->P.Offset.x = C.CP.Offset.x;
+        Player->P.WorldP.x = C.CP.WorldP.x;
 
+        if (UpdateVector.x > 0)
+          Player->P.Offset.x -= (Player->Model.Dim.x-1);
+      }
+      else
+      {
+        Player->P.Offset += V3(0,1,0);
+      }
       Player->P = Canonicalize(world, Player->P);
     }
 
@@ -517,14 +524,21 @@ UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
     C = GetCollision(world, Player);
     if (C.didCollide)
     {
-      Player->Velocity.z = 0;
+      C = GetCollision(world, Player, V3(0,1,0));
+      if (C.didCollide)
+      {
+        Player->Velocity.z = 0;
 
-      Player->P.Offset.z = C.CP.Offset.z;
-      Player->P.WorldP.z = C.CP.WorldP.z;
+        Player->P.Offset.z = C.CP.Offset.z;
+        Player->P.WorldP.z = C.CP.WorldP.z;
 
-      if (UpdateVector.z > 0)
-        Player->P.Offset.z -= (Player->Model.Dim.z-1);
-
+        if (UpdateVector.z > 0)
+          Player->P.Offset.z -= (Player->Model.Dim.z-1);
+      }
+      else
+      {
+        Player->P.Offset += V3(0,1,0);
+      }
       Player->P = Canonicalize(world, Player->P);
     }
   }
