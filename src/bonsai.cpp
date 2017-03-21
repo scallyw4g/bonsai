@@ -419,7 +419,7 @@ GenerateVisibleRegion( World *world, voxel_position GrossUpdateVector )
 
         if ( NextChunk ) // We're copying chunks
         {
-          memcpy( chunk, NextChunk, sizeof(Chunk) );
+          *chunk = *NextChunk;
           chunk->WorldP = CurrentP;
         }
         else // We're inside the maximum boundary
