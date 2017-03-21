@@ -477,6 +477,24 @@ UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
     v3 UpdateVector = GetAtomicUpdateVector(Remaining);
     Remaining -= UpdateVector;
 
+
+    Player->P.Offset.y += UpdateVector.y;
+    Player->P = Canonicalize(world, Player->P);
+    C = GetCollision(world, Player);
+    if (C.didCollide)
+    {
+      Player->Velocity.y = 0;
+
+      Player->P.Offset.y = C.CP.Offset.y;
+      Player->P.WorldP.y = C.CP.WorldP.y;
+
+      if (UpdateVector.y > 0)
+        Player->P.Offset.y -= (Player->Model.Dim.y-1);
+
+      Player->P = Canonicalize(world, Player->P);
+    }
+
+
     Player->P.Offset.x += UpdateVector.x;
     Player->P = Canonicalize(world, Player->P);
     C = GetCollision(world, Player);
@@ -498,23 +516,6 @@ UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
       {
         Player->P.Offset += V3(0,1,0);
       }
-      Player->P = Canonicalize(world, Player->P);
-    }
-
-
-    Player->P.Offset.y += UpdateVector.y;
-    Player->P = Canonicalize(world, Player->P);
-    C = GetCollision(world, Player);
-    if (C.didCollide)
-    {
-      Player->Velocity.y = 0;
-
-      Player->P.Offset.y = C.CP.Offset.y;
-      Player->P.WorldP.y = C.CP.WorldP.y;
-
-      if (UpdateVector.y > 0)
-        Player->P.Offset.y -= (Player->Model.Dim.y-1);
-
       Player->P = Canonicalize(world, Player->P);
     }
 
@@ -541,6 +542,7 @@ UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
       }
       Player->P = Canonicalize(world, Player->P);
     }
+
   }
 
   // TODO(Jesse) : Can we still do some sanity checking here ?
