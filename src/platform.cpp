@@ -3,7 +3,6 @@
 #include <bonsai.h>
 #include <bonsai_math.h>
 #include <bonsai_types.h>
-#include <assert.h>
 
 // Number of bytes per int according to .vox file format
 #define VOX_INT_BYTES 4
@@ -54,7 +53,7 @@ GetHeaderType(FILE* File, int* byteCounter)
 {
   int ID = ReadInt(File, byteCounter);
 
-  assert( ID == ID_VOX  ||
+  Assert( ID == ID_VOX  ||
           ID == ID_MAIN ||
           ID == ID_PACK ||
           ID == ID_SIZE ||
@@ -70,10 +69,10 @@ ReadVoxChunk(FILE *File)
   int ID, Version = INT_MAX;
 
   ID = ReadInt(File);
-  assert( ID == ID_VOX );
+  Assert( ID == ID_VOX );
 
   Version = ReadInt(File);
-  assert(Version == 150);
+  Assert(Version == 150);
 
   return;
 }
@@ -82,13 +81,13 @@ inline int
 ReadMainChunk(FILE *File)
 {
   int ID = ReadInt(File);
-  assert( ID == ID_MAIN );
+  Assert( ID == ID_MAIN );
 
   int selfSize = ReadInt(File);
-  assert(selfSize == 0 );
+  Assert(selfSize == 0 );
 
   int childSize = ReadInt(File);
-  assert(childSize > 0 );
+  Assert(childSize > 0 );
 
   return childSize;
 }
@@ -226,10 +225,10 @@ LoadVox(char const *filepath)
 
             Result.Voxels[GetIndex(RealP, &Result)] = V;
 
-            assert(GetVoxelColor(V) < PALETTE_SIZE);
+            Assert(GetVoxelColor(V) < PALETTE_SIZE);
 
             /* Log("%d\n", GetVoxelColor(V)); */
-            /* assert(GetVoxelColor(*V) == 121); */
+            /* Assert(GetVoxelColor(*V) == 121); */
           }
 
           free(LocalVoxelCache);

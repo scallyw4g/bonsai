@@ -267,7 +267,7 @@ static v4 default_palette[PALETTE_SIZE] = {
 void
 GetColorData( int colorIndex, float *Colors)
 {
-  assert(colorIndex < PALETTE_SIZE);
+  Assert(colorIndex < PALETTE_SIZE);
 
   v4 Color = default_palette[colorIndex];
 

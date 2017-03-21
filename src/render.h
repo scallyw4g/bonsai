@@ -10,7 +10,7 @@
 #define AssertNoGlErrors {            \
   int glErrorNo = glGetError();       \
   DumpGlErrorEnum(glErrorNo);         \
-  assert(glErrorNo == GL_NO_ERROR); }
+  Assert(glErrorNo == GL_NO_ERROR); }
 
 using namespace glm;
 

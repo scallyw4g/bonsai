@@ -13,7 +13,7 @@
 
 #define ArrayCount(a) (sizeof(a)/sizeof(a[0]))
 
-#define InvalidDefaultCase default: {assert(false);} break
+#define InvalidDefaultCase default: {Assert(false);} break
 
 enum ChunkFlags {
   Chunk_Uninitialized           = 1 << 0,
@@ -173,7 +173,7 @@ GetVoxelColor(Voxel V)
 {
   int Color = (V.flags >> (FINAL_POSITION_BIT) ) & ~( 0xFFFFFFFF << (COLOR_BIT_WIDTH));
 
-  assert(Color < PALETTE_SIZE);
+  Assert(Color < PALETTE_SIZE);
   return Color;
 }
 
@@ -190,7 +190,7 @@ SetVoxelColor(Voxel V, int w)
   Result.flags = currentFlags;
   Result.flags |= (w << (FINAL_POSITION_BIT));
 
-  assert(GetVoxelColor(Result) == w);
+  Assert(GetVoxelColor(Result) == w);
 
   return Result;
 }
@@ -203,9 +203,9 @@ GetVoxelP(chunk_dimension Dim, int i)
  int y = (i/Dim.x) % Dim.y ;
  int z = i / (Dim.x*Dim.y);
 
- assert(x <= Dim.x);
- assert(y <= Dim.y);
- assert(z <= Dim.z);
+ Assert(x <= Dim.x);
+ Assert(y <= Dim.y);
+ Assert(z <= Dim.z);
 
  voxel_position Result = Voxel_Position(x,y,z);
  return Result;
@@ -226,9 +226,9 @@ GetVoxelP(Voxel V)
 inline Voxel
 SetVoxelP(Voxel V, voxel_position P)
 {
-  assert( P.x < Pow2(POSITION_BIT_WIDTH) );
-  assert( P.y < Pow2(POSITION_BIT_WIDTH) );
-  assert( P.z < Pow2(POSITION_BIT_WIDTH) );
+  Assert( P.x < Pow2(POSITION_BIT_WIDTH) );
+  Assert( P.y < Pow2(POSITION_BIT_WIDTH) );
+  Assert( P.z < Pow2(POSITION_BIT_WIDTH) );
 
   Voxel Result = V;
 
@@ -239,7 +239,7 @@ SetVoxelP(Voxel V, voxel_position P)
   Result.flags |= P.y << (POSITION_BIT_WIDTH * 1);
   Result.flags |= P.z << (POSITION_BIT_WIDTH * 2);
 
-  assert(GetVoxelP(Result) == P);
+  Assert(GetVoxelP(Result) == P);
 
   return Result;
 
@@ -254,8 +254,8 @@ GetVoxel(int x, int y, int z, int w)
   Result = SetVoxelP(Result, P );
   Result = SetVoxelColor(Result, w);
 
-  assert(GetVoxelP(Result) == P);
-  assert(GetVoxelColor(Result) == w);
+  Assert(GetVoxelP(Result) == P);
+  Assert(GetVoxelColor(Result) == w);
 
   return Result;
 }
@@ -299,7 +299,7 @@ GetIndex(voxel_position P, Chunk *chunk)
     (P.y*chunk->Dim.x) +
     (P.z*chunk->Dim.x*chunk->Dim.y);
 
-  assert(i < Volume(chunk->Dim));
+  Assert(i < Volume(chunk->Dim));
 
   return i;
 }
@@ -348,14 +348,14 @@ PopChunkStack(ChunkStack *stack)
 {
   World_Chunk Result = stack->chunks[--stack->count];
 
-  assert(stack->count >= 0);
+  Assert(stack->count >= 0);
   return Result;
 };
 
 void
 PushChunkStack(ChunkStack *stack, World_Chunk chunk)
 {
-  assert(stack->count + 1 < CHUNK_STACK_SIZE);
+  Assert(stack->count + 1 < CHUNK_STACK_SIZE);
 
   stack->chunks[stack->count++] = chunk;
   return;
@@ -377,7 +377,7 @@ GetWorldChunk( World *world, world_position WorldP )
     WorldP.z < 0 ||
     WorldP.z >= world->VisibleRegion.z )
   {
-    /* assert(false); // Requesting outside the initialized world; no bueno? */
+    /* Assert(false); // Requesting outside the initialized world; no bueno? */
     return 0;
   }
 
@@ -388,7 +388,7 @@ GetWorldChunk( World *world, world_position WorldP )
 
   Result = &world->Chunks[i];
 
-  assert( Result->WorldP == WorldP );
+  Assert( Result->WorldP == WorldP );
 
   return Result;
 }
@@ -419,9 +419,9 @@ IsFilledInWorld( World_Chunk *chunk, voxel_position VoxelP )
   {
     int i = GetIndex(VoxelP, &chunk->Data);
 
-    assert(i > -1);
-    assert(i < Volume(chunk->Data.Dim));
-    assert(VoxelP == GetVoxelP(chunk->Data.Voxels[i]));
+    Assert(i > -1);
+    Assert(i < Volume(chunk->Data.Dim));
+    Assert(VoxelP == GetVoxelP(chunk->Data.Voxels[i]));
 
     isFilled = IsSet(chunk->Data.Voxels[i].flags, Voxel_Filled);
   }
@@ -461,8 +461,8 @@ IsFilled( Chunk *chunk, voxel_position VoxelP )
 {
   int i = GetIndex(VoxelP, chunk);
 
-  assert(i > -1);
-  assert(i < Volume(chunk->Dim));
+  Assert(i > -1);
+  Assert(i < Volume(chunk->Dim));
 
   bool isFilled = IsSet(chunk->Voxels[i].flags, Voxel_Filled);
   return isFilled;

@@ -267,7 +267,7 @@ BufferFace (
        world->NormalData.filled > world->NormalData.bytesAllocd )
   {
     // Out of memory, panic!
-    assert(!"Out of memory");
+    Assert(!"Out of memory");
     return;
   }
 
@@ -766,7 +766,7 @@ Clamp01( voxel_position V )
 void
 PushBoundaryVoxel( Chunk *chunk, Voxel voxel )
 {
-  assert( chunk->BoundaryVoxelCount < Volume(chunk->Dim) );
+  Assert( chunk->BoundaryVoxelCount < Volume(chunk->Dim) );
 
   chunk->BoundaryVoxels[chunk->BoundaryVoxelCount] = voxel;
   chunk->BoundaryVoxelCount++;
@@ -823,7 +823,7 @@ BuildExteriorBoundaryVoxels( World *world, World_Chunk *chunk, World_Chunk *Neig
           if (NeighborVector.z < 0)
             voxel.flags = SetFlag(voxel.flags, Voxel_BackFace);
 
-          assert(GetVoxelP(voxel) == LocalVoxelP);
+          Assert(GetVoxelP(voxel) == LocalVoxelP);
           PushBoundaryVoxel( &chunk->Data, voxel );
         }
       }
@@ -914,7 +914,7 @@ BuildInteriorBoundaryVoxels(World *world, Chunk *chunk, world_position WorldP)
 
         if (DidPushVoxel)
         {
-          assert(GetVoxelP(voxel) == Voxel_Position(x,y,z));
+          Assert(GetVoxelP(voxel) == Voxel_Position(x,y,z));
           PushBoundaryVoxel(chunk, voxel);
         }
 

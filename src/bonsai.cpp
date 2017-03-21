@@ -70,7 +70,7 @@ initWindow( int WindowWidth, int WindowHeight )
   }
   else
   {
-    assert(false); // We hit a real error
+    Assert(false); // We hit a real error
   }
 
   // Ensure we can capture the escape key being pressed below
@@ -90,7 +90,7 @@ initWindow( int WindowWidth, int WindowHeight )
 void
 InitializeVoxels( World *world, World_Chunk *WorldChunk )
 {
-  assert(WorldChunk);
+  Assert(WorldChunk);
 
   Chunk *chunk = &WorldChunk->Data;
   /* CALLGRIND_TOGGLE_COLLECT; */
@@ -431,7 +431,7 @@ GenerateVisibleRegion( World *world, voxel_position GrossUpdateVector )
     }
   }
 
-  assert(world->FreeChunks.count == 0);
+  Assert(world->FreeChunks.count == 0);
 }
 
 /* inline collision_event */
@@ -444,7 +444,7 @@ GenerateVisibleRegion( World *world, voxel_position GrossUpdateVector )
 /*   collision_event Collision = GetCollision( world, entity ); */
 /*   if ( Collision.didCollide ) */
 /*   { */
-/*     assert( GetSign(Sign) != Zero ); */
+/*     Assert( GetSign(Sign) != Zero ); */
 /*     Result.CP.Offset = Collision.CP.Offset - ClampMinus1toInfinity(entity->Model.Dim.x*Sign); */
 /*     Result.CP.WorldP = Collision.CP.WorldP; */
 /*     Result.didCollide = true; */
@@ -469,7 +469,7 @@ UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
   collision_event C;
   while ( Remaining != V3(0,0,0) )
   {
-    assert(LengthSq(Remaining) >= 0);
+    Assert(LengthSq(Remaining) >= 0);
 
     v3 UpdateVector = GetAtomicUpdateVector(Remaining);
     Remaining -= UpdateVector;
@@ -547,7 +547,7 @@ UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
   /* float DisplacementSq = LengthSq( GetRenderP(world, Player->P) - GetRenderP(world, Canonical_Position(model->Offset, model->WorldP)) ); */
   /* float GrossUpdateLenghtSq = LengthSq(GrossUpdateVector); */
   /* float tolerance = PLAYER_STEP_MAX*PLAYER_STEP_MAX + 0.1; */
-  /* assert(DisplacementSq - tolerance <= GrossUpdateLenghtSq); */
+  /* Assert(DisplacementSq - tolerance <= GrossUpdateLenghtSq); */
 
   if ( OriginalPlayerP.WorldP != Player->P.WorldP && DEBUG_SCROLL_WORLD ) // We moved to the next chunk
   {
@@ -560,7 +560,7 @@ UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
   }
 
   Player->P = Canonicalize(world, Player->P);
-  assert ( GetCollision(world, Player ).didCollide == false );
+  Assert ( GetCollision(world, Player ).didCollide == false );
 }
 
 void
