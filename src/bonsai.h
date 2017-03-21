@@ -117,6 +117,8 @@ struct ChunkStack
 struct World
 {
   World_Chunk *Chunks;
+  World_Chunk **UninitChunks;
+  int UninitChunkCount;
 
   ChunkStack FreeChunks;
 
@@ -270,6 +272,7 @@ ZeroChunk( Chunk *chunk )
 
   chunk->flags = 0;
   chunk->flags = SetFlag( chunk->flags, Chunk_Uninitialized );
+
   chunk->flags = SetFlag( chunk->flags, Chunk_RebuildInteriorBoundary );
   chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorTop   );
   chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorBot   );

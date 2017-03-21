@@ -6,6 +6,8 @@
 
 using namespace std;
 
+#define Assert(condition) if (!(condition)) DebugBreak()
+
 void Log(const char* fmt...)
 {
   va_list args;

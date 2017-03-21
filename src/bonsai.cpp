@@ -406,15 +406,13 @@ GenerateVisibleRegion( World *world, voxel_position GrossUpdateVector )
         World_Chunk *NextChunk = GetWorldChunk(world, CurrentP + GrossUpdateVector );
         World_Chunk *PrevChunk = GetWorldChunk(world, CurrentP - GrossUpdateVector );
 
-        // We're initializing the world
-        if ( IsSet(chunk->Data.flags, Chunk_Uninitialized) )
-        {
-          ZeroWorldChunk(world, chunk);
-          InitializeVoxels( world, chunk );
-          continue;
-        }
+        if ( chunk && IsSet(chunk->Data.flags, Chunk_Uninitialized) )
+          InitializeVoxels(world, chunk);
 
-        if ( !PrevChunk ) PushChunkStack( &world->FreeChunks, *chunk);
+        if ( NextChunk && IsSet(NextChunk->Data.flags, Chunk_Uninitialized) )
+          InitializeVoxels(world, NextChunk);
+
+        if ( !PrevChunk )PushChunkStack( &world->FreeChunks, *chunk);
 
         if ( NextChunk ) // We're copying chunks
         {
@@ -616,6 +614,7 @@ AllocateWorld( World *world )
   world->Gravity = WORLD_GRAVITY;
 
   world->Chunks = (World_Chunk*)calloc( Volume(world->VisibleRegion), sizeof(World_Chunk));
+  world->UninitChunks = (World_Chunk**)calloc( Volume(world->VisibleRegion), sizeof(World_Chunk*));
 
   // Allocate a second chunks buffer for when we're updating visible region
   world->FreeChunks.chunks = (World_Chunk*)calloc( Volume(world->VisibleRegion), sizeof(World_Chunk) );

@@ -11,16 +11,12 @@
 void
 RegenerateGameWorld( World *world, Entity *Player )
 {
-  Log("\n\n\n\n\n");
-  srand(time(NULL));
-  world->VisibleRegionOrigin = World_Position(0,0,0);
-  do
-  {
-    PerlinNoise Noise(rand());
-    world->Noise = Noise;
-    ZeroWorldChunks(world);
-    GenerateVisibleRegion( world , Voxel_Position(0,0,0) );
-  } while (!SpawnPlayer( world, Player ) );
+  PerlinNoise Noise(rand());
+  world->Noise = Noise;
+
+  ZeroWorldChunks(world);
+  GenerateVisibleRegion( world , Voxel_Position(0,0,0) );
+  SpawnPlayer( world, Player );
 }
 
 void
@@ -169,16 +165,7 @@ main( void )
   Camera.Frust.FOV = 45.0f;
   Camera.P = CAMERA_INITIAL_P;
 
-  do
-  {
-    srand(time(NULL));
-    PerlinNoise Noise(rand());
-    world.Noise = Noise;
-
-    ZeroWorldChunks(&world);
-    GenerateVisibleRegion( &world , Voxel_Position(0,0,0) );
-    /* Log("spawning plyawer\n"); */
-  } while (!SpawnPlayer( &world, &Player ) );
+  RegenerateGameWorld(&world, &Player);
 
   double lastTime = glfwGetTime();
 
