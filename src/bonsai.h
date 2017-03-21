@@ -40,6 +40,104 @@ enum VoxelFlags {
   Voxel_BackFace   = 1 << (FINAL_COLOR_BIT + 6)
 };
 
+
+struct Voxel
+{
+  int flags;
+};
+
+struct Chunk
+{
+  int flags;
+  int BoundaryVoxelCount;
+
+  Voxel *Voxels;
+
+  Voxel *BoundaryVoxels;
+
+  chunk_dimension Dim;
+};
+
+struct World_Chunk
+{
+  Chunk Data;
+  world_position WorldP;
+};
+
+struct collision_event
+{
+  canonical_position CP;
+  bool didCollide;
+};
+
+struct Frustum
+{
+  float farClip;
+  float nearClip;
+  float width;
+  float FOV;
+};
+
+struct Camera_Object
+{
+  Frustum Frust;
+
+  canonical_position P;
+  canonical_position Target; // TODO : Can this just be a v3?
+
+  v3 Front;
+  v3 Right;
+  v3 Up;
+};
+
+struct VertexBlock
+{
+  GLfloat *Data;
+  int bytesAllocd;
+  int filled;
+};
+
+struct Entity
+{
+  Chunk Model;
+  v3 Velocity;
+  v3 Acceleration;
+
+  canonical_position P;
+
+  Quaternion Rotation;
+};
+
+struct ChunkStack
+{
+  World_Chunk *chunks; // This should be Volume(VisibleRegion) chunks
+  int count;
+};
+
+struct World
+{
+  World_Chunk *Chunks;
+
+  ChunkStack FreeChunks;
+
+  // This is the number of chunks in xyz we're going to update and render
+  chunk_dimension VisibleRegion;
+
+  chunk_dimension ChunkDim;
+
+  world_position VisibleRegionOrigin;
+
+  PerlinNoise Noise;
+
+  v3 Gravity;
+
+  VertexBlock VertexData;
+  VertexBlock ColorData;
+  VertexBlock NormalData;
+
+  int VertexCount; // How many verticies are we drawing
+};
+
 inline int
 UnSetFlag( int Flags, int Flag )
 {
@@ -67,11 +165,6 @@ NotSet( int Flags, int Flag )
   bool Result = !(IsSet(Flags, Flag));
   return Result;
 }
-
-struct Voxel
-{
-  int flags;
-};
 
 inline int
 GetVoxelColor(Voxel V)
@@ -165,20 +258,8 @@ GetVoxel(int x, int y, int z, int w)
   return Result;
 }
 
-struct Chunk
-{
-  int flags;
-  int BoundaryVoxelCount;
-
-  Voxel *Voxels;
-
-  Voxel *BoundaryVoxels;
-
-  chunk_dimension Dim;
-};
-
 void
-ZeroChunk( Chunk * chunk )
+ZeroChunk( Chunk *chunk )
 {
   for ( int i = 0; i < Volume(chunk->Dim); ++ i)
   {
@@ -196,6 +277,15 @@ ZeroChunk( Chunk * chunk )
   chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorRight );
   chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorFront );
   chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorBack  );
+
+  return;
+}
+
+void
+ZeroWorldChunk(World *world, World_Chunk *chunk)
+{
+  ZeroChunk(&chunk->Data);
+  return;
 }
 
 inline int
@@ -239,12 +329,6 @@ AllocateChunk(chunk_dimension Dim)
   return Result;
 }
 
-struct World_Chunk
-{
-  Chunk Data;
-  world_position WorldP;
-};
-
 World_Chunk
 AllocateWorldChunk(chunk_dimension Dim, voxel_position WorldP)
 {
@@ -255,50 +339,6 @@ AllocateWorldChunk(chunk_dimension Dim, voxel_position WorldP)
 
   return Result;
 }
-
-struct Frustum
-{
-  float farClip;
-  float nearClip;
-  float width;
-  float FOV;
-};
-
-struct Camera_Object
-{
-  Frustum Frust;
-
-  canonical_position P;
-  canonical_position Target; // TODO : Can this just be a v3?
-
-  v3 Front;
-  v3 Right;
-  v3 Up;
-};
-
-struct VertexBlock
-{
-  GLfloat *Data;
-  int bytesAllocd;
-  int filled;
-};
-
-struct Entity
-{
-  Chunk Model;
-  v3 Velocity;
-  v3 Acceleration;
-
-  canonical_position P;
-
-  Quaternion Rotation;
-};
-
-struct ChunkStack
-{
-  World_Chunk *chunks; // This should be Volume(VisibleRegion) chunks
-  int count;
-};
 
 World_Chunk
 PopChunkStack(ChunkStack *stack)
@@ -318,36 +358,6 @@ PushChunkStack(ChunkStack *stack, World_Chunk chunk)
   return;
 };
 
-
-struct World
-{
-  World_Chunk *Chunks;
-
-  ChunkStack FreeChunks;
-
-  // This is the number of chunks in xyz we're going to update and render
-  chunk_dimension VisibleRegion;
-
-  chunk_dimension ChunkDim;
-
-  world_position VisibleRegionOrigin;
-
-  PerlinNoise Noise;
-
-  v3 Gravity;
-
-  VertexBlock VertexData;
-  VertexBlock ColorData;
-  VertexBlock NormalData;
-
-  int VertexCount; // How many verticies are we drawing
-};
-
-struct collision_event
-{
-  canonical_position CP;
-  bool didCollide;
-};
 
 World_Chunk*
 GetWorldChunk( World *world, world_position WorldP )

@@ -148,7 +148,7 @@ ZeroWorldChunks( World *world )
       for ( int x = 0; x < world->VisibleRegion.x; ++x )
       {
         World_Chunk *chunk = GetWorldChunk(world, World_Position(x,y,z));
-        ZeroChunk(&chunk->Data);
+        ZeroWorldChunk(world, chunk);
       }
     }
   }
@@ -409,13 +409,12 @@ GenerateVisibleRegion( World *world, voxel_position GrossUpdateVector )
         // We're initializing the world
         if ( IsSet(chunk->Data.flags, Chunk_Uninitialized) )
         {
-          ZeroChunk(&chunk->Data);
+          ZeroWorldChunk(world, chunk);
           InitializeVoxels( world, chunk );
           continue;
         }
 
         if ( !PrevChunk ) PushChunkStack( &world->FreeChunks, *chunk);
-
 
         if ( NextChunk ) // We're copying chunks
         {
@@ -426,7 +425,7 @@ GenerateVisibleRegion( World *world, voxel_position GrossUpdateVector )
         {
           *chunk = PopChunkStack(&world->FreeChunks);
           chunk->WorldP = CurrentP;
-          ZeroChunk(&chunk->Data);
+          ZeroWorldChunk(world, chunk);
           InitializeVoxels( world, chunk );
         }
 
