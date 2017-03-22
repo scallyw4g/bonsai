@@ -106,6 +106,8 @@ struct Entity
   canonical_position P;
 
   Quaternion Rotation;
+
+  bool Spawned;
 };
 
 struct ChunkStack

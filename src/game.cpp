@@ -19,6 +19,24 @@ RegenerateGameWorld( World *world, Entity *Player )
   SpawnPlayer( world, Player );
 }
 
+v3
+GetEntityDelta(World *world, Entity *Player, v3 Input, float dt)
+{
+  // TODO : Bake these into the terrain/model ?
+  v3 drag = V3(0.6f, 1.0f, 0.6f);
+
+  Player->Acceleration = Input * PLAYER_ACCEL_MULTIPLIER; // m/s2
+
+  if (IsGrounded(world, Player) && (glfwGetKey( window, GLFW_KEY_SPACE ) == GLFW_PRESS))
+      Player->Velocity.y += PLAYER_JUMP_STRENGTH; // Jump
+
+  Player->Acceleration += world->Gravity * dt; // Apply Gravity
+  Player->Velocity = (Player->Velocity + (Player->Acceleration)) * drag; // m/s
+
+  v3 PlayerDelta = Player->Velocity * dt;
+  return PlayerDelta;
+}
+
 void
 GAME_UPDATE_AND_RENDER
 (
@@ -34,26 +52,23 @@ GAME_UPDATE_AND_RENDER
   if ( glfwGetKey(window, GLFW_KEY_ENTER ) == GLFW_PRESS )
     RegenerateGameWorld(world, Player);
 
-  // TODO : Bake these into the terrain/model ?
-  v3 drag = V3(0.6f, 1.0f, 0.6f);
-
   v3 Input = GetInputsFromController(Camera);
-  Player->Acceleration = Input * PLAYER_ACCEL_MULTIPLIER; // m/s2
 
-  if (IsGrounded(world, Player) && (glfwGetKey( window, GLFW_KEY_SPACE ) == GLFW_PRESS))
-      Player->Velocity.y += PLAYER_JUMP_STRENGTH; // Jump
-
-  Player->Acceleration += world->Gravity * dt; // Apply Gravity
-  Player->Velocity = (Player->Velocity + (Player->Acceleration)) * drag; // m/s
-
-  v3 PlayerDelta = Player->Velocity * dt;
-
-  UpdatePlayerP( world, Player, PlayerDelta );
-  UpdateCameraP( world, Player, Camera );
-  RG->Basis.ViewMatrix = GetViewMatrix(world, Camera);
+  if (Player->Spawned)
+  {
+    v3 PlayerDelta = GetEntityDelta(world, Player, Input, dt);
+    UpdatePlayerP( world, Player, PlayerDelta );
+    UpdateCameraP( world, Player, Camera );
+  }
+  else
+  {
+    RegenerateGameWorld(world, Player);
+  }
 
   if (Length(Input) > 0)
     Player->Rotation = LookAt(Input);
+
+  RG->Basis.ViewMatrix = GetViewMatrix(world, Camera);
 
   GlobalLightTheta += dt;
 
@@ -142,6 +157,7 @@ main( void )
 
 
   Entity Player;
+  Player.Spawned = false;
 
   /* Player.Model = LoadVox("./chr_knight.vox"); */
   /* Player.Model = LoadVox("./ephtracy.vox"); */

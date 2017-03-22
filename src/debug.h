@@ -6,7 +6,7 @@
 
 using namespace std;
 
-#define Assert(condition) if (!(condition)) DebugBreak()
+#define Assert(condition) if (!(condition)) assert(condition)
 
 void Log(const char* fmt...)
 {

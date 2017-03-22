@@ -2,6 +2,7 @@
 #define BONSAI_MATH_H
 
 #include <bonsai.h>
+#include <debug.h>
 
 #include <cmath>
 #include <math.h>

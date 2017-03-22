@@ -272,7 +272,7 @@ IsGrounded( World *world, Entity *entity)
   return c.didCollide;
 }
 
-bool
+void
 SpawnPlayer( World *world, Entity *Player )
 {
   Chunk *Model = &Player->Model;
@@ -287,30 +287,23 @@ SpawnPlayer( World *world, Entity *Player )
   canonical_position TestP;
   collision_event Collision;
 
-  int count = 0;
+  int rX = rand() % (world->ChunkDim.x);
+  int rY = rand() % (world->ChunkDim.y);
+  int rZ = rand() % (world->ChunkDim.z);
 
-  do
+  v3 Offset = V3( rX, rY, rZ );
+  world_position WP = World_Position(world->VisibleRegion.x/2, world->VisibleRegion.y/2, world->VisibleRegion.z/2);
+  TestP = Canonicalize(world, Offset, WP);
+
+  Collision = GetCollision( world, Player );
+
+  if (!Collision.didCollide)
   {
-    if ( ++count > 5 )
-    {
-      return false;
-    }
+    Player->P = TestP;
+    Player->Spawned = true;
+  }
 
-    int rX = rand() % (world->ChunkDim.x);
-    int rY = rand() % (world->ChunkDim.y);
-    int rZ = rand() % (world->ChunkDim.z);
-
-    v3 Offset = V3( rX, rY, rZ );
-    world_position WP = World_Position(world->VisibleRegion.x/2, world->VisibleRegion.y/2, world->VisibleRegion.z/2);
-    TestP = Canonicalize(world, Offset, WP);
-
-    Collision = GetCollision( world, TestP, Model->Dim);
-
-  } while ( Collision.didCollide == true );
-
-  Player->P = TestP;
-
-  return true;
+  return;
 }
 
 v3
