@@ -156,6 +156,26 @@ ZeroWorldChunks( World *world )
   return;
 }
 
+void
+InitializeWorldChunks( World *world )
+{
+  world->VertexCount = 0;
+  for ( int z = 0; z < world->VisibleRegion.z; ++z )
+  {
+    for ( int y = 0; y < world->VisibleRegion.y; ++y )
+    {
+      for ( int x = 0; x < world->VisibleRegion.x; ++x )
+      {
+        World_Chunk *chunk = GetWorldChunk(world, World_Position(x,y,z));
+        if ( IsSet(chunk->Data.flags, Chunk_Uninitialized) )
+        {
+          InitializeVoxels(world, chunk);
+        }
+      }
+    }
+  }
+}
+
 // FIXME : Problem with multiple keypresses ( 8 then 7 then 4 won't move left )
 inline v3
 GetInputsFromController(Camera_Object *Camera)
@@ -374,8 +394,10 @@ ClampMinus1toInfinity( voxel_position V )
 }
 
 void
-GenerateVisibleRegion( World *world, voxel_position GrossUpdateVector )
+UpdateVisibleRegionPosition( World *world, voxel_position GrossUpdateVector )
 {
+  world->VisibleRegionOrigin += GrossUpdateVector;
+
   voxel_position IterVector = GrossUpdateVector + GrossUpdateVector + 1;
 
   // Clamp magnitude to 1
@@ -405,10 +427,10 @@ GenerateVisibleRegion( World *world, voxel_position GrossUpdateVector )
         World_Chunk *PrevChunk = GetWorldChunk(world, CurrentP - GrossUpdateVector );
 
         if ( chunk && IsSet(chunk->Data.flags, Chunk_Uninitialized) )
-          InitializeVoxels( world, chunk );
+          continue;
 
         if ( NextChunk && IsSet(NextChunk->Data.flags, Chunk_Uninitialized) )
-          InitializeVoxels( world, NextChunk );
+          continue;
 
         if ( !PrevChunk )
         {
@@ -427,14 +449,16 @@ GenerateVisibleRegion( World *world, voxel_position GrossUpdateVector )
         {
           chunk->Data.Voxels = FreeVoxelPointers[--FreeVoxels];
           chunk->Data.BoundaryVoxels = FreeBoundaryPointers[--FreeBoundaries];
+
           chunk->WorldP = CurrentP;
           ZeroWorldChunk(world, chunk);
-          InitializeVoxels( world, chunk );
         }
 
       }
     }
   }
+
+  InitializeWorldChunks( world );
 
   Assert(FreeVoxels == 0);
   Assert(FreeBoundaries == 0);
@@ -559,8 +583,7 @@ UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
   {
     voxel_position WorldDisp = (  Player->P.WorldP - OriginalPlayerP.WorldP );
 
-    world->VisibleRegionOrigin += WorldDisp;
-    GenerateVisibleRegion(world, WorldDisp);
+    UpdateVisibleRegionPosition(world, WorldDisp);
 
     Player->P.WorldP = OriginalPlayerP.WorldP ;
   }

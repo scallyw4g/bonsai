@@ -9,13 +9,14 @@
 #include <time.h>
 
 void
-RegenerateGameWorld( World *world, Entity *Player )
+InitializeWorldAndSpawnPlayer( World *world, Entity *Player )
 {
   PerlinNoise Noise(rand());
   world->Noise = Noise;
 
   ZeroWorldChunks(world);
-  GenerateVisibleRegion( world , Voxel_Position(0,0,0) );
+  InitializeWorldChunks( world );
+
   SpawnPlayer( world, Player );
 }
 
@@ -50,7 +51,7 @@ GAME_UPDATE_AND_RENDER
   )
 {
   if ( glfwGetKey(window, GLFW_KEY_ENTER ) == GLFW_PRESS )
-    RegenerateGameWorld(world, Player);
+    InitializeWorldAndSpawnPlayer(world, Player);
 
   v3 Input = GetInputsFromController(Camera);
 
@@ -62,7 +63,7 @@ GAME_UPDATE_AND_RENDER
   }
   else
   {
-    RegenerateGameWorld(world, Player);
+    InitializeWorldAndSpawnPlayer(world, Player);
   }
 
   if (Length(Input) > 0)
@@ -180,8 +181,6 @@ main( void )
   Camera.Frust.width = 30.0f;
   Camera.Frust.FOV = 45.0f;
   Camera.P = CAMERA_INITIAL_P;
-
-  RegenerateGameWorld(&world, &Player);
 
   double lastTime = glfwGetTime();
 

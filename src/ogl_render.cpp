@@ -823,7 +823,8 @@ BuildExteriorBoundaryVoxels( World *world, World_Chunk *chunk, World_Chunk *Neig
           if (NeighborVector.z < 0)
             voxel.flags = SetFlag(voxel.flags, Voxel_BackFace);
 
-          Assert(GetVoxelP(voxel) == LocalVoxelP);
+		  voxel_position P = GetVoxelP(voxel);
+          Assert( P == LocalVoxelP);
           PushBoundaryVoxel( &chunk->Data, voxel );
         }
       }
