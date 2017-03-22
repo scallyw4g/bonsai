@@ -261,7 +261,6 @@ main( void )
   free( world.NormalData.Data );
 
   free( world.Chunks );
-  free( world.FreeChunks.chunks );
 
   free(Player.Model.Voxels);
   free(Player.Model.BoundaryVoxels);

@@ -62,6 +62,7 @@ if (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)  # g++
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
 
   add_definitions( /MDd /EHsc )
+  add_definitions( -DMSVC=1 )
 
   # this is only valid/necessary on VS2015 because MS refactored the CRT, which
   # leaves GLFW broken for the moment

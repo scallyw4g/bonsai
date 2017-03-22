@@ -110,19 +110,11 @@ struct Entity
   bool Spawned;
 };
 
-struct ChunkStack
-{
-  World_Chunk *chunks; // This should be Volume(VisibleRegion) chunks
-  int count;
-};
-
 struct World
 {
   World_Chunk *Chunks;
   World_Chunk **UninitChunks;
   int UninitChunkCount;
-
-  ChunkStack FreeChunks;
 
   // This is the number of chunks in xyz we're going to update and render
   chunk_dimension VisibleRegion;
@@ -345,25 +337,6 @@ AllocateWorldChunk(chunk_dimension Dim, voxel_position WorldP)
   return Result;
 }
 
-World_Chunk
-PopChunkStack(ChunkStack *stack)
-{
-  World_Chunk Result = stack->chunks[--stack->count];
-
-  Assert(stack->count >= 0);
-  return Result;
-};
-
-void
-PushChunkStack(ChunkStack *stack, World_Chunk chunk)
-{
-  Assert(stack->count + 1 < CHUNK_STACK_SIZE);
-
-  stack->chunks[stack->count++] = chunk;
-  return;
-};
-
-
 World_Chunk*
 GetWorldChunk( World *world, world_position WorldP )
 {
@@ -417,10 +390,9 @@ IsFilledInWorld( World_Chunk *chunk, voxel_position VoxelP )
 {
   bool isFilled = true;
 
-  if (chunk)
+  if (chunk && !IsSet(chunk->Data.flags, Chunk_Uninitialized) )
   {
     int i = GetIndex(VoxelP, &chunk->Data);
-
     Assert(i > -1);
     Assert(i < Volume(chunk->Data.Dim));
     Assert(VoxelP == GetVoxelP(chunk->Data.Voxels[i]));

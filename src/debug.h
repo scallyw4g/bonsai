@@ -6,7 +6,11 @@
 
 using namespace std;
 
-#define Assert(condition) if (!(condition)) assert(condition)
+#if(MSVC)
+#define Assert(condition) if (!(condition)) __debugbreak();
+#else
+#define Assert(condition) assert(condition)
+#endif
 
 void Log(const char* fmt...)
 {

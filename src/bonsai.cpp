@@ -387,6 +387,11 @@ GenerateVisibleRegion( World *world, voxel_position GrossUpdateVector )
   voxel_position UpdateMax = ClampMinus1toInfinity( IterVector * world->VisibleRegion );
   voxel_position UpdateMin = ClampPositive( -1 * IterVector * (world->VisibleRegion -1) );
 
+  Voxel *FreeVoxelPointers[256] = {};
+  Voxel *FreeBoundaryPointers[256] = {};
+  int FreeVoxels = 0;
+  int FreeBoundaries = 0;
+
   for ( int z = UpdateMin.z; z != UpdateMax.z; z += IterVector.z )
   {
     for ( int y = UpdateMin.y; y != UpdateMax.y; y += IterVector.y )
@@ -400,12 +405,18 @@ GenerateVisibleRegion( World *world, voxel_position GrossUpdateVector )
         World_Chunk *PrevChunk = GetWorldChunk(world, CurrentP - GrossUpdateVector );
 
         if ( chunk && IsSet(chunk->Data.flags, Chunk_Uninitialized) )
-          InitializeVoxels(world, chunk);
+          InitializeVoxels( world, chunk );
 
         if ( NextChunk && IsSet(NextChunk->Data.flags, Chunk_Uninitialized) )
-          InitializeVoxels(world, NextChunk);
+          InitializeVoxels( world, NextChunk );
 
-        if ( !PrevChunk )PushChunkStack( &world->FreeChunks, *chunk);
+        if ( !PrevChunk )
+        {
+          chunk->Data.flags = Chunk_Uninitialized;
+
+          FreeVoxelPointers[FreeVoxels++] = chunk->Data.Voxels;
+          FreeBoundaryPointers[FreeBoundaries++] = chunk->Data.BoundaryVoxels;
+        }
 
         if ( NextChunk ) // We're copying chunks
         {
@@ -414,7 +425,8 @@ GenerateVisibleRegion( World *world, voxel_position GrossUpdateVector )
         }
         else // We're inside the maximum boundary
         {
-          *chunk = PopChunkStack(&world->FreeChunks);
+          chunk->Data.Voxels = FreeVoxelPointers[--FreeVoxels];
+          chunk->Data.BoundaryVoxels = FreeBoundaryPointers[--FreeBoundaries];
           chunk->WorldP = CurrentP;
           ZeroWorldChunk(world, chunk);
           InitializeVoxels( world, chunk );
@@ -424,7 +436,8 @@ GenerateVisibleRegion( World *world, voxel_position GrossUpdateVector )
     }
   }
 
-  Assert(world->FreeChunks.count == 0);
+  Assert(FreeVoxels == 0);
+  Assert(FreeBoundaries == 0);
 }
 
 /* inline collision_event */
@@ -608,10 +621,6 @@ AllocateWorld( World *world )
 
   world->Chunks = (World_Chunk*)calloc( Volume(world->VisibleRegion), sizeof(World_Chunk));
   world->UninitChunks = (World_Chunk**)calloc( Volume(world->VisibleRegion), sizeof(World_Chunk*));
-
-  // Allocate a second chunks buffer for when we're updating visible region
-  world->FreeChunks.chunks = (World_Chunk*)calloc( Volume(world->VisibleRegion), sizeof(World_Chunk) );
-  world->FreeChunks.count = 0;
 
   { // Allocate five chunks worth of vertices for the render buffer
     int BufferVertices = 10*(world->ChunkDim.x*world->ChunkDim.y*world->ChunkDim.z * VERT_PER_VOXEL * 3);
