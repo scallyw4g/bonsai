@@ -1111,13 +1111,16 @@ DrawWorldChunk(
     ShadowRenderGroup *SG
   )
 {
+  if (NotSet(WorldChunk->Data.flags, Chunk_Uninitialized) )
+  {
+
 #if DEBUG_CHUNK_AABB
-  DEBUG_DrawChunkAABB( world, RG, WorldChunk, Quaternion(1,0,0,0) );
+    DEBUG_DrawChunkAABB( world, RG, WorldChunk, Quaternion(1,0,0,0) );
 #endif
 
-
-  BuildBoundaryVoxels(world, WorldChunk);
-  BufferChunkMesh(world, &WorldChunk->Data, WorldChunk->WorldP, RG, SG, Camera);
+    BuildBoundaryVoxels(world, WorldChunk);
+    BufferChunkMesh(world, &WorldChunk->Data, WorldChunk->WorldP, RG, SG, Camera);
+  }
 }
 
 void
@@ -1134,12 +1137,16 @@ DrawEntity(
   /* glUniform3fv(RG->LightPID, 1, &LightP[0]); */
   //
 
-  if ( IsSet(entity->Model.flags, Chunk_RebuildInteriorBoundary) )
+  if ( NotSet(entity->Model.flags, Chunk_Uninitialized) )
   {
-    BuildInteriorBoundaryVoxels(world, &entity->Model, entity->P.WorldP);
-  }
 
-  BufferChunkMesh(world, &entity->Model, entity->P.WorldP, RG, SG, Camera, entity->P.Offset);
+    if ( IsSet(entity->Model.flags, Chunk_RebuildInteriorBoundary) )
+    {
+      BuildInteriorBoundaryVoxels(world, &entity->Model, entity->P.WorldP);
+    }
+
+    BufferChunkMesh(world, &entity->Model, entity->P.WorldP, RG, SG, Camera, entity->P.Offset);
+  }
 
   return;
 }

@@ -9,15 +9,12 @@
 #include <time.h>
 
 void
-InitializeWorldAndSpawnPlayer( World *world, Entity *Player )
+ZeroAndSeedWorld( World *world, Entity *Player )
 {
   PerlinNoise Noise(rand());
   world->Noise = Noise;
-
+  Player->Spawned = false;
   ZeroWorldChunks(world);
-  InitializeWorldChunks( world );
-
-  SpawnPlayer( world, Player );
 }
 
 v3
@@ -51,23 +48,23 @@ GAME_UPDATE_AND_RENDER
   )
 {
   if ( glfwGetKey(window, GLFW_KEY_ENTER ) == GLFW_PRESS )
-    InitializeWorldAndSpawnPlayer(world, Player);
-
-  v3 Input = GetInputsFromController(Camera);
+    ZeroAndSeedWorld(world, Player);
 
   if (Player->Spawned)
   {
+    v3 Input = GetInputsFromController(Camera);
     v3 PlayerDelta = GetEntityDelta(world, Player, Input, dt);
     UpdatePlayerP( world, Player, PlayerDelta );
-    UpdateCameraP( world, Player, Camera );
+    if (Length(Input) > 0) Player->Rotation = LookAt(Input);
   }
-  else
+  else // Try to respawn the player until enough of the world has been initialized to do so
   {
-    InitializeWorldAndSpawnPlayer(world, Player);
+    SpawnPlayer( world, Player );
   }
 
-  if (Length(Input) > 0)
-    Player->Rotation = LookAt(Input);
+  InitializeWorldChunks( world );
+
+  UpdateCameraP( world, Player, Camera );
 
   RG->Basis.ViewMatrix = GetViewMatrix(world, Camera);
 
@@ -154,11 +151,11 @@ main( void )
   glBindVertexArray(VertexArrayID);
 
   World world;
-  AllocateWorld(&world);
-
-
   Entity Player;
-  Player.Spawned = false;
+
+  AllocateWorld(&world);
+  ZeroAndSeedWorld(&world, &Player);
+
 
   /* Player.Model = LoadVox("./chr_knight.vox"); */
   /* Player.Model = LoadVox("./ephtracy.vox"); */
@@ -174,6 +171,9 @@ main( void )
 
   Player.Model.flags = SetFlag( Player.Model.flags, Chunk_Entity);
   Player.Rotation = Quaternion(1,0,0,0);
+  Player.P.Offset = V3(0,0,0);
+  Player.P.WorldP = World_Position(world.VisibleRegion/2);
+  Player.Spawned = false;
 
   Camera_Object Camera = {};
   Camera.Frust.farClip = 500.0f;

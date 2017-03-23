@@ -233,6 +233,8 @@ LoadVox(char const *filepath)
 
           free(LocalVoxelCache);
 
+          Result.flags = UnSetFlag(Result.flags, Chunk_Uninitialized);
+
           // TODO(Jesse): Are we really done?
           goto loaded;
         } break;

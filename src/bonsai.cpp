@@ -170,6 +170,7 @@ InitializeWorldChunks( World *world )
         if ( IsSet(chunk->Data.flags, Chunk_Uninitialized) )
         {
           InitializeVoxels(world, chunk);
+          // return; // DEBUG initialize one chunk per frame
         }
       }
     }
@@ -267,6 +268,8 @@ end:
 collision_event
 GetCollision(World *world, Entity *entity, v3 Offset = V3(0,0,0) )
 {
+  Assert( entity->Spawned );
+
   collision_event C;
   C.didCollide = false;
 
@@ -315,7 +318,7 @@ SpawnPlayer( World *world, Entity *Player )
   world_position WP = World_Position(world->VisibleRegion.x/2, world->VisibleRegion.y/2, world->VisibleRegion.z/2);
   TestP = Canonicalize(world, Offset, WP);
 
-  Collision = GetCollision( world, Player );
+  Collision = GetCollision( world, TestP, Player->Model.Dim);
 
   if (!Collision.didCollide)
   {
@@ -432,7 +435,7 @@ UpdateVisibleRegionPosition( World *world, voxel_position GrossUpdateVector )
         if ( NextChunk && IsSet(NextChunk->Data.flags, Chunk_Uninitialized) )
           continue;
 
-        if ( !PrevChunk )
+        if ( !PrevChunk ) // Add chunk pointers to free lists
         {
           chunk->Data.flags = Chunk_Uninitialized;
 
@@ -440,13 +443,16 @@ UpdateVisibleRegionPosition( World *world, voxel_position GrossUpdateVector )
           FreeBoundaryPointers[FreeBoundaries++] = chunk->Data.BoundaryVoxels;
         }
 
-        if ( NextChunk ) // We're copying chunks
+        if ( NextChunk ) // Copy current chunk 'over' in the world
         {
           *chunk = *NextChunk;
           chunk->WorldP = CurrentP;
         }
-        else // We're inside the maximum boundary
+
+        else // Copy in voxel pointers from the freed chunks
         {
+          Assert(FreeBoundaries > 0);
+
           chunk->Data.Voxels = FreeVoxelPointers[--FreeVoxels];
           chunk->Data.BoundaryVoxels = FreeBoundaryPointers[--FreeBoundaries];
 
@@ -457,8 +463,6 @@ UpdateVisibleRegionPosition( World *world, voxel_position GrossUpdateVector )
       }
     }
   }
-
-  InitializeWorldChunks( world );
 
   Assert(FreeVoxels == 0);
   Assert(FreeBoundaries == 0);
