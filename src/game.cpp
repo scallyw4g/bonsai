@@ -75,27 +75,19 @@ GAME_UPDATE_AND_RENDER
 
   ClearFramebuffers(RG, SG);
 
-  for ( int i = 0; i < Volume(world->VisibleRegion); ++ i )
+  for ( int z = 0; z < Volume(world->VisibleRegion); ++ z )
   {
-#if DEBUG_SUSPEND_DRAWING_WORLD
-    World_Chunk *chunk = &world->Chunks[i];
-    DrawWorldChunk(
-      world,
-      chunk,
-      Camera,
-      RG,
-      SG
-    );
-#endif
+    for ( int y = 0; y < Volume(world->VisibleRegion); ++ y )
+    {
+      for ( int x = 0; x < Volume(world->VisibleRegion); ++ x )
+      {
+        World_Chunk *chunk = GetWorldChunk(world, World_Position(x,y,z);
+        DrawWorldChunk( world, chunk, Camera, RG, SG);
+      }
+    }
   }
 
-  DrawEntity(
-    world,
-    Player,
-    Camera,
-    RG,
-    SG
-  );
+  DrawEntity( world, Player, Camera, RG, SG);
 
   FlushRenderBuffers(world, RG, SG, Camera);
 
@@ -249,20 +241,7 @@ main( void )
   glfwTerminate();
   /* glfwDestroyWindow(window); */
 
-  for ( int i = 0; i < Volume(world.VisibleRegion) ; ++ i )
-  {
-    free( world.Chunks[i].Data.Voxels );
-    free( world.Chunks[i].Data.BoundaryVoxels );
-  }
-
-  free( world.VertexData.Data );
-  free( world.ColorData.Data );
-  free( world.NormalData.Data );
-
-  free( world.Chunks );
-
-  free(Player.Model.Voxels);
-  free(Player.Model.BoundaryVoxels);
+  // TODO(Jesse): Manual memory management instead of leaking everything !!!!
 
   return 0;
 }

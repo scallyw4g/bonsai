@@ -50,7 +50,6 @@
 #define DEBUG_WORLD_GENERATION        0
 #define DEBUG_LOD_RENDER              0
 #define DEBUG_DRAW_SHADOW_MAP_TEXTURE 0
-#define DEBUG_SUSPEND_DRAWING_WORLD   1
 
 #define DEBUG_FRAMES_TO_RUN          -1
 
