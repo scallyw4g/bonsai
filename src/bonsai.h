@@ -16,17 +16,17 @@
 #define InvalidDefaultCase default: {Assert(false);} break
 
 enum ChunkFlags {
-  Chunk_Uninitialized           = 1 << 0,
+  Chunk_Initialized             = 1 << 1,
 
-  Chunk_Entity                  = 1 << 1,
-  Chunk_World                   = 1 << 2,
-  Chunk_RebuildInteriorBoundary = 1 << 3,
-  Chunk_RebuildExteriorTop      = 1 << 4,
-  Chunk_RebuildExteriorBot      = 1 << 5,
-  Chunk_RebuildExteriorLeft     = 1 << 6,
-  Chunk_RebuildExteriorRight    = 1 << 7,
-  Chunk_RebuildExteriorFront    = 1 << 8,
-  Chunk_RebuildExteriorBack     = 1 << 9,
+  Chunk_Entity                  = 1 << 2,
+  Chunk_World                   = 1 << 3,
+  Chunk_RebuildInteriorBoundary = 1 << 4,
+  Chunk_RebuildExteriorTop      = 1 << 5,
+  Chunk_RebuildExteriorBot      = 1 << 6,
+  Chunk_RebuildExteriorLeft     = 1 << 7,
+  Chunk_RebuildExteriorRight    = 1 << 8,
+  Chunk_RebuildExteriorFront    = 1 << 9,
+  Chunk_RebuildExteriorBack     = 1 << 10,
 };
 
 enum VoxelFlags {
@@ -60,8 +60,19 @@ struct Chunk
 
 struct World_Chunk
 {
-  Chunk Data;
+  Chunk *Data;
   world_position WorldP;
+
+  // TODO(Jesse): This is only for looking up chunks in the hashtable and
+  // should be factored out of this struct somehow as it's 'cold' data
+  World_Chunk *Next;
+  /* World_Chunk *Prev; */
+};
+
+struct free_world_chunk
+{
+  World_Chunk *Chunk;
+  World_Chunk *Next;
 };
 
 struct collision_event
@@ -99,7 +110,7 @@ struct VertexBlock
 
 struct Entity
 {
-  Chunk Model;
+  Chunk *Model;
   v3 Velocity;
   v3 Acceleration;
 
@@ -112,9 +123,11 @@ struct Entity
 
 struct World
 {
-  World_Chunk *Chunks;
-  World_Chunk **UninitChunks;
-  int UninitChunkCount;
+  World_Chunk **ChunkHash;
+
+  World_Chunk **ChunksToInit;
+  int nChunksToInit;
+
 
   // This is the number of chunks in xyz we're going to update and render
   chunk_dimension VisibleRegion;
@@ -255,7 +268,7 @@ GetVoxel(int x, int y, int z, int w)
 }
 
 void
-ZeroChunk( Chunk *chunk )
+FreeChunk( Chunk *chunk )
 {
   for ( int i = 0; i < Volume(chunk->Dim); ++ i)
   {
@@ -265,7 +278,7 @@ ZeroChunk( Chunk *chunk )
   chunk->BoundaryVoxelCount = 0;
 
   chunk->flags = 0;
-  chunk->flags = SetFlag( chunk->flags, Chunk_Uninitialized );
+  chunk->flags = UnSetFlag( chunk->flags, Chunk_Initialized );
 
   chunk->flags = SetFlag( chunk->flags, Chunk_RebuildInteriorBoundary );
   chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorTop   );
@@ -279,9 +292,10 @@ ZeroChunk( Chunk *chunk )
 }
 
 void
-ZeroWorldChunk(World *world, World_Chunk *chunk)
+FreeWorldChunk(World *world, World_Chunk *chunk)
 {
-  ZeroChunk(&chunk->Data);
+  chunk->Data->flags = UnSetFlag(chunk->Data->flags, Chunk_Initialized);
+  FreeChunk(chunk->Data);
   return;
 }
 
@@ -298,27 +312,27 @@ GetIndex(voxel_position P, Chunk *chunk)
   return i;
 }
 
-Chunk
+Chunk*
 AllocateChunk(chunk_dimension Dim)
 {
-  Chunk Result;
+  Chunk *Result = (Chunk*)calloc(1, sizeof(Chunk));
 
-  Result.Dim = Dim;
+  Result->Dim = Dim;
 
-  Result.Voxels = (Voxel*)calloc(Volume(Dim), sizeof(Voxel));
-  Result.BoundaryVoxels = (Voxel*)calloc(Volume(Dim), sizeof(Voxel));
+  Result->Voxels = (Voxel*)calloc(Volume(Dim), sizeof(Voxel));
+  Result->BoundaryVoxels = (Voxel*)calloc(Volume(Dim), sizeof(Voxel));
 
-  ZeroChunk(&Result);
+  FreeChunk(Result);
 
-  for (int z = 0; z < Result.Dim.z; ++z)
+  for (int z = 0; z < Result->Dim.z; ++z)
   {
-    for (int y = 0; y < Result.Dim.y; ++y)
+    for (int y = 0; y < Result->Dim.y; ++y)
     {
-      for (int x = 0; x < Result.Dim.x; ++x)
+      for (int x = 0; x < Result->Dim.x; ++x)
       {
         voxel_position P = Voxel_Position(x,y,z);
-        int i = GetIndex(P, &Result);
-        Result.Voxels[i] = SetVoxelP( Result.Voxels[i], P );
+        int i = GetIndex(P, Result);
+        Result->Voxels[i] = SetVoxelP( Result->Voxels[i], P );
       }
     }
   }
@@ -326,44 +340,50 @@ AllocateChunk(chunk_dimension Dim)
   return Result;
 }
 
-World_Chunk
-AllocateWorldChunk(chunk_dimension Dim, voxel_position WorldP)
+unsigned int
+GetWorldChunkHash(world_position P)
 {
-  World_Chunk Result;
-  Result.Data = AllocateChunk(Dim);
+  // TODO(Jesse): Better hash function!
+  unsigned int HashIndex = ( ((unsigned)P.x + (unsigned)P.y + (unsigned)P.z) * 42 * 13 * 233) % WORLD_HASH_SIZE;
+  Assert(HashIndex < WORLD_HASH_SIZE);
 
-  Result.WorldP = WorldP;
+  return HashIndex;
+}
 
-  return Result;
+void
+InsertChunkIntoWorld(World *world, World_Chunk *chunk)
+{
+  unsigned int HashIndex = GetWorldChunkHash(chunk->WorldP);
+  World_Chunk *Last = world->ChunkHash[HashIndex];;
+
+  if (Last)
+  {
+    Assert(Last->WorldP != chunk->WorldP);
+    while (Last->Next)
+    {
+      Assert(Last->WorldP != chunk->WorldP);
+      Last = Last->Next;
+    }
+
+    Last->Next = chunk;
+  }
+  else
+  {
+    world->ChunkHash[HashIndex] = chunk;
+  }
+
+  return;
 }
 
 World_Chunk*
-GetWorldChunk( World *world, world_position WorldP )
+AllocateWorldChunk(World *world, world_position WorldP)
 {
-  World_Chunk *Result;
+  World_Chunk *Result = (World_Chunk*)calloc(1, sizeof(World_Chunk));
+  Result->Data = AllocateChunk(Chunk_Dimension(CD_X, CD_Y, CD_Z));
 
-  if (
-    WorldP.x < 0 ||
-    WorldP.x >= world->VisibleRegion.x ||
+  Result->WorldP = WorldP;
 
-    WorldP.y < 0 ||
-    WorldP.y >= world->VisibleRegion.y ||
-
-    WorldP.z < 0 ||
-    WorldP.z >= world->VisibleRegion.z )
-  {
-    /* Assert(false); // Requesting outside the initialized world; no bueno? */
-    return 0;
-  }
-
-  int i =
-    WorldP.x +
-    (WorldP.y * world->VisibleRegion.x) +
-    (WorldP.z * world->VisibleRegion.x * world->VisibleRegion.y);
-
-  Result = &world->Chunks[i];
-
-  Assert( Result->WorldP == WorldP );
+  InsertChunkIntoWorld(world, Result);
 
   return Result;
 }
@@ -390,18 +410,48 @@ IsFilledInWorld( World_Chunk *chunk, voxel_position VoxelP )
 {
   bool isFilled = true;
 
-  if (chunk && !IsSet(chunk->Data.flags, Chunk_Uninitialized) )
+  if (chunk && IsSet(chunk->Data->flags, Chunk_Initialized) )
   {
-    int i = GetIndex(VoxelP, &chunk->Data);
+    int i = GetIndex(VoxelP, chunk->Data);
     Assert(i > -1);
-    Assert(i < Volume(chunk->Data.Dim));
-    Assert(VoxelP == GetVoxelP(chunk->Data.Voxels[i]));
+    Assert(i < Volume(chunk->Data->Dim));
+    Assert(VoxelP == GetVoxelP(chunk->Data->Voxels[i]));
 
-    isFilled = IsSet(chunk->Data.Voxels[i].flags, Voxel_Filled);
+    isFilled = IsSet(chunk->Data->Voxels[i].flags, Voxel_Filled);
   }
 
   return isFilled;
 }
+
+World_Chunk*
+GetWorldChunk( World *world, world_position P )
+{
+  unsigned int HashIndex = GetWorldChunkHash(P);
+  World_Chunk *Result = world->ChunkHash[HashIndex];
+
+  while (Result)
+  {
+
+    if ( Result->WorldP == P )
+    {
+      break;
+    }
+    else
+    {
+      Result = Result->Next;
+    }
+
+  }
+
+  /* if (!Result) */
+  /* { */
+  /*   Result = AllocateWorldChunk(world, P); */
+  /* } */
+
+  return Result;
+}
+
+
 
 inline bool
 IsFilledInWorld( World *world, World_Chunk *chunk, canonical_position VoxelP )
@@ -426,7 +476,7 @@ IsFilledInWorld( World *world, World_Chunk *chunk, canonical_position VoxelP )
 inline bool
 NotFilledInWorld( World *world, World_Chunk *chunk, canonical_position VoxelP )
 {
-  bool Result = !(IsFilledInWorld(world,chunk,VoxelP));
+  bool Result = !(IsFilledInWorld(world, chunk, VoxelP));
   return Result;
 }
 

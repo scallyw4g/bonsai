@@ -130,10 +130,10 @@ ReadXYZIChunk(FILE *File, int* byteCounter)
   return nVoxels;
 }
 
-Chunk
+Chunk*
 LoadVox(char const *filepath)
 {
-  Chunk Result;
+  Chunk *Result;
   int totalChunkBytes;
 
   FILE * ModelFile = fopen(filepath, "r");
@@ -223,7 +223,7 @@ LoadVox(char const *filepath)
 
             V = SetVoxelColor(V, GetVoxelColor(LocalVoxelCache[i]));
 
-            Result.Voxels[GetIndex(RealP, &Result)] = V;
+            Result->Voxels[GetIndex(RealP, Result)] = V;
 
             Assert(GetVoxelColor(V) < PALETTE_SIZE);
 
@@ -233,7 +233,7 @@ LoadVox(char const *filepath)
 
           free(LocalVoxelCache);
 
-          Result.flags = UnSetFlag(Result.flags, Chunk_Uninitialized);
+          Result->flags = SetFlag(Result->flags, Chunk_Initialized);
 
           // TODO(Jesse): Are we really done?
           goto loaded;

@@ -9,12 +9,14 @@
 #include <time.h>
 
 void
-ZeroAndSeedWorld( World *world, Entity *Player )
+SeedWorldAndUnspawnPlayer( World *world, Entity *Player )
 {
   PerlinNoise Noise(rand());
   world->Noise = Noise;
+
   Player->Spawned = false;
-  ZeroWorldChunks(world);
+
+  /* ZeroWorldChunks(world); */
 }
 
 v3
@@ -47,8 +49,9 @@ GAME_UPDATE_AND_RENDER
     ShadowRenderGroup *SG
   )
 {
+
   if ( glfwGetKey(window, GLFW_KEY_ENTER ) == GLFW_PRESS )
-    ZeroAndSeedWorld(world, Player);
+    SeedWorldAndUnspawnPlayer(world, Player);
 
   if (Player->Spawned)
   {
@@ -75,14 +78,15 @@ GAME_UPDATE_AND_RENDER
 
   ClearFramebuffers(RG, SG);
 
-  for ( int z = 0; z < Volume(world->VisibleRegion); ++ z )
+  for ( int z = 0; z < world->VisibleRegion.z; ++ z )
   {
-    for ( int y = 0; y < Volume(world->VisibleRegion); ++ y )
+    for ( int y = 0; y < world->VisibleRegion.y; ++ y )
     {
-      for ( int x = 0; x < Volume(world->VisibleRegion); ++ x )
+      for ( int x = 0; x < world->VisibleRegion.x; ++ x )
       {
-        World_Chunk *chunk = GetWorldChunk(world, World_Position(x,y,z);
-        DrawWorldChunk( world, chunk, Camera, RG, SG);
+        World_Chunk *chunk = GetWorldChunk(world, World_Position(x,y,z));
+        if (chunk)
+          DrawWorldChunk( world, chunk, Camera, RG, SG);
       }
     }
   }
@@ -146,7 +150,8 @@ main( void )
   Entity Player;
 
   AllocateWorld(&world);
-  ZeroAndSeedWorld(&world, &Player);
+  SeedWorldAndUnspawnPlayer(&world, &Player);
+  InitializeWorldChunks( &world );
 
 
   /* Player.Model = LoadVox("./chr_knight.vox"); */
@@ -161,7 +166,7 @@ main( void )
   /* Player.Model = AllocateChunk(Chunk_Dimension(13,7,7), World_Position(0,0,0)); */
   /* FillChunk(&Player.Model); */
 
-  Player.Model.flags = SetFlag( Player.Model.flags, Chunk_Entity);
+  Player.Model->flags = SetFlag( Player.Model->flags, Chunk_Entity);
   Player.Rotation = Quaternion(1,0,0,0);
   Player.P.Offset = V3(0,0,0);
   Player.P.WorldP = World_Position(world.VisibleRegion/2);

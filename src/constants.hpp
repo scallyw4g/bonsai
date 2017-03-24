@@ -28,6 +28,8 @@
 #define VR_Y 8
 #define VR_Z 8
 
+#define VOLUME_VISIBLE_REGION (VR_X*VR_X*VR_X)
+
 #define WORLD_X V3(1,0,0)
 #define WORLD_Y V3(0,1,0)
 #define WORLD_Z V3(0,0,1)
@@ -37,6 +39,8 @@
 #define VISIBLE_REGION Chunk_Dimension(VR_X,VR_Y,VR_Z)
 
 #define WORLD_SIZE 200
+
+#define WORLD_HASH_SIZE VOLUME_VISIBLE_REGION
 #define WORLD_GRAVITY V3(0, -20.0f, 0)
 
 #define PLAYER_STEP_MAX          1
@@ -60,8 +64,6 @@
 #define Proj_Z  100
 #define SHADOW_MAP_RESOLUTION 2048
 #define DEBUG_TEXTURE_SIZE    512
-
-#define CHUNK_STACK_SIZE (VR_X*VR_X*VR_X)
 
 #define CAMERA_FOCAL_LENGTH (40.0f);
 

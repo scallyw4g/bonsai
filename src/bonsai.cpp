@@ -92,10 +92,10 @@ InitializeVoxels( World *world, World_Chunk *WorldChunk )
 {
   Assert(WorldChunk);
 
-  Chunk *chunk = &WorldChunk->Data;
+  Chunk *chunk = WorldChunk->Data;
   /* CALLGRIND_TOGGLE_COLLECT; */
 
-  chunk->flags = UnSetFlag(chunk->flags, Chunk_Uninitialized);
+  chunk->flags = SetFlag(chunk->flags, Chunk_Initialized);
 
   for ( int z = 0; z < chunk->Dim.z; ++ z)
   {
@@ -137,6 +137,8 @@ InitializeVoxels( World *world, World_Chunk *WorldChunk )
   return;
 }
 
+// This is incompatible with hash-table method of looking up world chunks
+#if 0
 void
 ZeroWorldChunks( World *world )
 {
@@ -148,33 +150,28 @@ ZeroWorldChunks( World *world )
       for ( int x = 0; x < world->VisibleRegion.x; ++x )
       {
         World_Chunk *chunk = GetWorldChunk(world, World_Position(x,y,z));
-        ZeroWorldChunk(world, chunk);
+        FreeWorldChunk(world, chunk);
       }
     }
   }
 
   return;
 }
+#endif
 
 void
 InitializeWorldChunks( World *world )
 {
-  world->VertexCount = 0;
-  for ( int z = 0; z < world->VisibleRegion.z; ++z )
+  while ( world->nChunksToInit > 0 )
   {
-    for ( int y = 0; y < world->VisibleRegion.y; ++y )
-    {
-      for ( int x = 0; x < world->VisibleRegion.x; ++x )
-      {
-        World_Chunk *chunk = GetWorldChunk(world, World_Position(x,y,z));
-        if ( IsSet(chunk->Data.flags, Chunk_Uninitialized) )
-        {
-          InitializeVoxels(world, chunk);
-          // return; // DEBUG initialize one chunk per frame
-        }
-      }
-    }
+    World_Chunk *chunk = world->ChunksToInit[--world->nChunksToInit];
+
+    Assert( NotSet(chunk->Data->flags, Chunk_Initialized) );
+    InitializeVoxels(world, chunk);
+    return;
   }
+
+  return;
 }
 
 // FIXME : Problem with multiple keypresses ( 8 then 7 then 4 won't move left )
@@ -273,10 +270,10 @@ GetCollision(World *world, Entity *entity, v3 Offset = V3(0,0,0) )
   collision_event C;
   C.didCollide = false;
 
-  for (int i = 0; i < entity->Model.BoundaryVoxelCount; ++i)
+  for (int i = 0; i < entity->Model->BoundaryVoxelCount; ++i)
   {
     canonical_position CP;
-    CP.Offset = V3(GetVoxelP(entity->Model.BoundaryVoxels[i])) + entity->P.Offset + Offset;
+    CP.Offset = V3(GetVoxelP(entity->Model->BoundaryVoxels[i])) + entity->P.Offset + Offset;
     CP.WorldP = entity->P.WorldP;
 
     C = GetCollision(world, CP, Chunk_Dimension(1,1,1) );
@@ -298,7 +295,7 @@ IsGrounded( World *world, Entity *entity)
 void
 SpawnPlayer( World *world, Entity *Player )
 {
-  Chunk *Model = &Player->Model;
+  Chunk *Model = Player->Model;
 
   /* Model->Voxels[0].flags = 0; */
   /* Model->Voxels[0].flags = SetFlag( Model->Voxels[0].flags, Voxel_Filled); */
@@ -318,7 +315,7 @@ SpawnPlayer( World *world, Entity *Player )
   world_position WP = World_Position(world->VisibleRegion.x/2, world->VisibleRegion.y/2, world->VisibleRegion.z/2);
   TestP = Canonicalize(world, Offset, WP);
 
-  Collision = GetCollision( world, TestP, Player->Model.Dim);
+  Collision = GetCollision( world, TestP, Player->Model->Dim);
 
   if (!Collision.didCollide)
   {
@@ -397,6 +394,19 @@ ClampMinus1toInfinity( voxel_position V )
 }
 
 void
+QueueForInitialization(World *world, World_Chunk *chunk)
+{
+  if ( IsSet(chunk->Data->flags, Chunk_Initialized) )
+  {
+    FreeWorldChunk(world, chunk);
+  }
+
+  world->ChunksToInit[world->nChunksToInit++] = chunk;
+
+  return;
+}
+
+void
 UpdateVisibleRegionPosition( World *world, voxel_position GrossUpdateVector )
 {
   world->VisibleRegionOrigin += GrossUpdateVector;
@@ -412,11 +422,6 @@ UpdateVisibleRegionPosition( World *world, voxel_position GrossUpdateVector )
   voxel_position UpdateMax = ClampMinus1toInfinity( IterVector * world->VisibleRegion );
   voxel_position UpdateMin = ClampPositive( -1 * IterVector * (world->VisibleRegion -1) );
 
-  Voxel *FreeVoxelPointers[256] = {};
-  Voxel *FreeBoundaryPointers[256] = {};
-  int FreeVoxels = 0;
-  int FreeBoundaries = 0;
-
   for ( int z = UpdateMin.z; z != UpdateMax.z; z += IterVector.z )
   {
     for ( int y = UpdateMin.y; y != UpdateMax.y; y += IterVector.y )
@@ -425,47 +430,18 @@ UpdateVisibleRegionPosition( World *world, voxel_position GrossUpdateVector )
       {
         world_position CurrentP = World_Position(x,y,z);
 
-        World_Chunk *chunk = GetWorldChunk(world, CurrentP);
-        World_Chunk *NextChunk = GetWorldChunk(world, CurrentP + GrossUpdateVector );
+        World_Chunk *chunk = GetWorldChunk(world, CurrentP  );
         World_Chunk *PrevChunk = GetWorldChunk(world, CurrentP - GrossUpdateVector );
 
-        if ( chunk && IsSet(chunk->Data.flags, Chunk_Uninitialized) )
-          continue;
-
-        if ( NextChunk && IsSet(NextChunk->Data.flags, Chunk_Uninitialized) )
-          continue;
-
-        if ( !PrevChunk ) // Add chunk pointers to free lists
+        if ( chunk && !PrevChunk ) // Add chunk pointers to free lists
         {
-          chunk->Data.flags = Chunk_Uninitialized;
-
-          FreeVoxelPointers[FreeVoxels++] = chunk->Data.Voxels;
-          FreeBoundaryPointers[FreeBoundaries++] = chunk->Data.BoundaryVoxels;
-        }
-
-        if ( NextChunk ) // Copy current chunk 'over' in the world
-        {
-          *chunk = *NextChunk;
-          chunk->WorldP = CurrentP;
-        }
-
-        else // Copy in voxel pointers from the freed chunks
-        {
-          Assert(FreeBoundaries > 0);
-
-          chunk->Data.Voxels = FreeVoxelPointers[--FreeVoxels];
-          chunk->Data.BoundaryVoxels = FreeBoundaryPointers[--FreeBoundaries];
-
-          chunk->WorldP = CurrentP;
-          ZeroWorldChunk(world, chunk);
+          QueueForInitialization(world, chunk);
         }
 
       }
     }
   }
 
-  Assert(FreeVoxels == 0);
-  Assert(FreeBoundaries == 0);
 }
 
 /* inline collision_event */
@@ -520,7 +496,7 @@ UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
       Player->P.WorldP.y = C.CP.WorldP.y;
 
       if (UpdateVector.y > 0)
-        Player->P.Offset.y -= (Player->Model.Dim.y-1);
+        Player->P.Offset.y -= (Player->Model->Dim.y-1);
 
       Player->P = Canonicalize(world, Player->P);
     }
@@ -541,7 +517,7 @@ UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
         Player->P.WorldP.x = C.CP.WorldP.x;
 
         if (UpdateVector.x > 0)
-          Player->P.Offset.x -= (Player->Model.Dim.x-1);
+          Player->P.Offset.x -= (Player->Model->Dim.x-1);
       }
       else
       {
@@ -565,7 +541,7 @@ UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
         Player->P.WorldP.z = C.CP.WorldP.z;
 
         if (UpdateVector.z > 0)
-          Player->P.Offset.z -= (Player->Model.Dim.z-1);
+          Player->P.Offset.z -= (Player->Model->Dim.z-1);
       }
       else
       {
@@ -602,7 +578,7 @@ UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera)
 #if DEBUG_CAMERA_FOCUS_ORIGIN
   canonical_position NewTarget = Canonical_Position( V3(0,0,0), World_Position(0,0,0) );
 #else
-  canonical_position NewTarget = Canonicalize(world, Player->P.Offset, Player->P.WorldP) + (Player->Model.Dim/2);
+  canonical_position NewTarget = Canonicalize(world, Player->P.Offset, Player->P.WorldP) + (Player->Model->Dim/2);
 #endif
 
   v3 TargetDelta = GetRenderP(world, NewTarget) - GetRenderP(world, Camera->Target);
@@ -646,10 +622,12 @@ AllocateWorld( World *world )
 
   world->Gravity = WORLD_GRAVITY;
 
-  world->Chunks = (World_Chunk*)calloc( Volume(world->VisibleRegion), sizeof(World_Chunk));
-  world->UninitChunks = (World_Chunk**)calloc( Volume(world->VisibleRegion), sizeof(World_Chunk*));
+  world->ChunkHash = (World_Chunk**)calloc( Volume(world->VisibleRegion), sizeof(World_Chunk*));
 
-  { // Allocate five chunks worth of vertices for the render buffer
+  world->ChunksToInit = (World_Chunk**)calloc( Volume(world->VisibleRegion), sizeof(World_Chunk*));
+  world->nChunksToInit = 0;
+
+  {
     int BufferVertices = 10*(world->ChunkDim.x*world->ChunkDim.y*world->ChunkDim.z * VERT_PER_VOXEL * 3);
 
     world->VertexData.Data = (GLfloat *)calloc(BufferVertices, sizeof(GLfloat) );
@@ -667,8 +645,8 @@ AllocateWorld( World *world )
     world->VertexCount = 0;
   }
 
-
   world->VisibleRegionOrigin = World_Position(0,0,0);
+
 
   for ( int z = 0; z < world->VisibleRegion.z; ++ z )
   {
@@ -676,12 +654,8 @@ AllocateWorld( World *world )
     {
       for ( int x = 0; x < world->VisibleRegion.x; ++ x )
       {
-        int ChunksAllocated = x +
-          (y*world->VisibleRegion.x) +
-          (z*world->VisibleRegion.x*world->VisibleRegion.y);
-
-        world->Chunks[ChunksAllocated] = AllocateWorldChunk( world->ChunkDim, World_Position(x,y,z) );
-        world->Chunks[ChunksAllocated].Data.flags = SetFlag( world->Chunks[ChunksAllocated].Data.flags, Chunk_World);
+        World_Chunk *chunk = AllocateWorldChunk(world, World_Position(x,y,z));
+        QueueForInitialization(world, chunk);
       }
     }
   }

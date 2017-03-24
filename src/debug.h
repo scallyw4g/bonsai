@@ -9,7 +9,7 @@ using namespace std;
 #if(MSVC)
 #define Assert(condition) if (!(condition)) __debugbreak();
 #else
-#define Assert(condition) assert(condition)
+#define Assert(condition) if (!(condition)) __builtin_trap();
 #endif
 
 void Log(const char* fmt...)
