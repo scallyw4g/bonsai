@@ -95,7 +95,7 @@ InitializeVoxels( World *world, World_Chunk *WorldChunk )
   Chunk *chunk = WorldChunk->Data;
   /* CALLGRIND_TOGGLE_COLLECT; */
 
-  chunk->flags = SetFlag(chunk->flags, Chunk_Initialized);
+  chunk->flags = SetFlag(chunk->flags, Chunk_Initialized | Chunk_Queued);
 
   for ( int z = 0; z < chunk->Dim.z; ++ z)
   {
@@ -396,12 +396,15 @@ ClampMinus1toInfinity( voxel_position V )
 void
 QueueForInitialization(World *world, World_Chunk *chunk)
 {
-  if ( IsSet(chunk->Data->flags, Chunk_Initialized) )
+  if ( NotSet(chunk->Data->flags, Chunk_Queued ) )
   {
-    FreeWorldChunk(world, chunk);
-  }
+    chunk->Data->flags = SetFlag(chunk->Data->flags, Chunk_Queued);
 
-  world->ChunksToInit[world->nChunksToInit++] = chunk;
+    if ( IsSet(chunk->Data->flags, Chunk_Initialized) )
+      FreeWorldChunk(world, chunk);
+
+    world->ChunksToInit[world->nChunksToInit++] = chunk;
+  }
 
   return;
 }

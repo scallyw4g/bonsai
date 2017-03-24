@@ -16,6 +16,7 @@
 #define InvalidDefaultCase default: {Assert(false);} break
 
 enum ChunkFlags {
+  Chunk_Uninitialized           = 1 << 0,
   Chunk_Initialized             = 1 << 1,
 
   Chunk_Entity                  = 1 << 2,
@@ -27,6 +28,7 @@ enum ChunkFlags {
   Chunk_RebuildExteriorRight    = 1 << 8,
   Chunk_RebuildExteriorFront    = 1 << 9,
   Chunk_RebuildExteriorBack     = 1 << 10,
+  Chunk_Queued                  = 1 << 11,
 };
 
 enum VoxelFlags {
@@ -294,6 +296,7 @@ FreeChunk( Chunk *chunk )
 void
 FreeWorldChunk(World *world, World_Chunk *chunk)
 {
+  Assert( NotSet(chunk->Data->flags, Chunk_Queued) );
   chunk->Data->flags = UnSetFlag(chunk->Data->flags, Chunk_Initialized);
   FreeChunk(chunk->Data);
   return;
