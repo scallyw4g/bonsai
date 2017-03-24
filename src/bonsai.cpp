@@ -116,7 +116,7 @@ InitializeVoxels( World *world, World_Chunk *WorldChunk )
         }
 #else
         v3 NoiseInputs =
-          ( ( V3(x,y,z) + (world->ChunkDim*(WorldChunk->WorldP+world->VisibleRegionOrigin))) % WORLD_SIZE )
+          ( ( V3(x,y,z) + (world->ChunkDim*(WorldChunk->WorldP))) % WORLD_SIZE )
           /
           WORLD_SIZE;
 
@@ -410,10 +410,8 @@ QueueForInitialization(World *world, World_Chunk *chunk)
 }
 
 void
-UpdateVisibleRegionPosition( World *world, voxel_position GrossUpdateVector )
+FreeAndQueueChunksForInit( World *world, voxel_position GrossUpdateVector )
 {
-  world->VisibleRegionOrigin += GrossUpdateVector;
-
   voxel_position IterVector = GrossUpdateVector + GrossUpdateVector + 1;
 
   // Clamp magnitude to 1
@@ -565,10 +563,7 @@ UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
   if ( OriginalPlayerP.WorldP != Player->P.WorldP && DEBUG_SCROLL_WORLD ) // We moved to the next chunk
   {
     voxel_position WorldDisp = (  Player->P.WorldP - OriginalPlayerP.WorldP );
-
-    UpdateVisibleRegionPosition(world, WorldDisp);
-
-    Player->P.WorldP = OriginalPlayerP.WorldP ;
+    FreeAndQueueChunksForInit(world, WorldDisp);
   }
 
   Player->P = Canonicalize(world, Player->P);
@@ -647,8 +642,6 @@ AllocateWorld( World *world )
 
     world->VertexCount = 0;
   }
-
-  world->VisibleRegionOrigin = World_Position(0,0,0);
 
 
   for ( int z = 0; z < world->VisibleRegion.z; ++ z )

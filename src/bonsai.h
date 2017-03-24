@@ -136,8 +136,6 @@ struct World
 
   chunk_dimension ChunkDim;
 
-  world_position VisibleRegionOrigin;
-
   PerlinNoise Noise;
 
   v3 Gravity;
@@ -347,7 +345,7 @@ unsigned int
 GetWorldChunkHash(world_position P)
 {
   // TODO(Jesse): Better hash function!
-  unsigned int HashIndex = ( ((unsigned)P.x + (unsigned)P.y + (unsigned)P.z) * 42 * 13 * 233) % WORLD_HASH_SIZE;
+  unsigned int HashIndex = ( ((unsigned)P.x & 31 + (unsigned)P.y & 42 + (unsigned)P.z & 88) * 42 * 13 * 233) % WORLD_HASH_SIZE;
   Assert(HashIndex < WORLD_HASH_SIZE);
 
   return HashIndex;
