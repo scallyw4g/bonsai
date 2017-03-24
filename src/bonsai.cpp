@@ -163,13 +163,16 @@ ZeroWorldChunks( World *world )
 void
 InitializeWorldChunks( World *world )
 {
+  int ChunksToInit = DEBUG_CHUNKS_TO_INIT_PER_FRAME;
   while ( world->ChunkToInitCount > 0 )
   {
     World_Chunk *chunk = world->ChunksToInit[--world->ChunkToInitCount];
 
     Assert( NotSet(chunk->Data->flags, Chunk_Initialized) );
     InitializeVoxels(world, chunk);
-    return;
+
+    if ( ChunksToInit-- == 0 )
+      return;
   }
 
   return;
@@ -497,10 +500,10 @@ FreeAndQueueChunksForInit( World *world, voxel_position GrossUpdateVector, Entit
 
 void FreeUnneedeWorldChunks(World* world, world_position WorldDisp, Entity *Player)
 {
-  world_position Iter = GetSign(WorldDisp);
+  /* world_position Iter = GetSign(WorldDisp); */
 
-  voxel_position UpdateMin = Player->P.WorldP - (world->VisibleRegion/2) * Iter;
-  voxel_position UpdateMax = Player->P.WorldP + (world->VisibleRegion/2) * Iter;
+  /* voxel_position UpdateMin = Player->P.WorldP - (world->VisibleRegion/2) * Iter; */
+  /* voxel_position UpdateMax = Player->P.WorldP + (world->VisibleRegion/2) * Iter; */
 }
 
 void GetAndQueueChunksForInit(World* world, world_position WorldDisp, Entity *Player)
