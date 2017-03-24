@@ -537,7 +537,7 @@ RotateAround( v3 Axis )
 }
 
 void
-DEBUG_DrawLine(World *world, v3 P1, v3 P2, float Thickness = 0.1f )
+DEBUG_DrawLine(World *world, v3 P1, v3 P2, int ColorIndex, float Thickness )
 {
   // 2 verts per line, 3 floats per vert
 
@@ -552,16 +552,8 @@ DEBUG_DrawLine(World *world, v3 P1, v3 P2, float Thickness = 0.1f )
      0, 0, 0
   };
 
-  float FaceColors[] =
-  {
-     0, 0, 0,
-     0, 0, 0,
-     0, 0, 0,
-
-     0, 0, 0,
-     0, 0, 0,
-     0, 0, 0
-  };
+  float FaceColors[32];
+  GetColorData( ColorIndex, FaceColors);
 
   {
     float localVertexData[] =
@@ -607,7 +599,7 @@ DEBUG_DrawLine(World *world, v3 P1, v3 P2, float Thickness = 0.1f )
 }
 
 void
-DEBUG_DrawAABB( World *world, v3 MinP, v3 MaxP, Quaternion Rotation = Quaternion(1,0,0,0) )
+DEBUG_DrawAABB( World *world, v3 MinP, v3 MaxP, Quaternion Rotation, int ColorIndex, float Thickness = 0.05f )
 {
   /* v3 HalfDim = (GetRenderP(world, MaxCP) - GetRenderP(world, MinCP)) / 2; */
 
@@ -658,24 +650,24 @@ DEBUG_DrawAABB( World *world, v3 MinP, v3 MaxP, Quaternion Rotation = Quaternion
   // Render
   //
   // Top
-  DEBUG_DrawLine(world, TopRL, TopRR);
-  DEBUG_DrawLine(world, TopFL, TopFR);
-  DEBUG_DrawLine(world, TopFL, TopRL);
-  DEBUG_DrawLine(world, TopFR, TopRR);
+  DEBUG_DrawLine(world, TopRL, TopRR, ColorIndex, Thickness);
+  DEBUG_DrawLine(world, TopFL, TopFR, ColorIndex, Thickness);
+  DEBUG_DrawLine(world, TopFL, TopRL, ColorIndex, Thickness);
+  DEBUG_DrawLine(world, TopFR, TopRR, ColorIndex, Thickness);
 
   // Right
-  DEBUG_DrawLine(world, TopFR, BotFR);
-  DEBUG_DrawLine(world, TopRR, BotRR);
+  DEBUG_DrawLine(world, TopFR, BotFR, ColorIndex, Thickness);
+  DEBUG_DrawLine(world, TopRR, BotRR, ColorIndex, Thickness);
 
   // Left
-  DEBUG_DrawLine(world, TopFL, BotFL);
-  DEBUG_DrawLine(world, TopRL, BotRL);
+  DEBUG_DrawLine(world, TopFL, BotFL, ColorIndex, Thickness);
+  DEBUG_DrawLine(world, TopRL, BotRL, ColorIndex, Thickness);
 
   // Bottom
-  DEBUG_DrawLine(world, BotRL, BotRR);
-  DEBUG_DrawLine(world, BotFL, BotFR);
-  DEBUG_DrawLine(world, BotFL, BotRL);
-  DEBUG_DrawLine(world, BotFR, BotRR);
+  DEBUG_DrawLine(world, BotRL, BotRR, ColorIndex, Thickness);
+  DEBUG_DrawLine(world, BotFL, BotFR, ColorIndex, Thickness);
+  DEBUG_DrawLine(world, BotFL, BotRL, ColorIndex, Thickness);
+  DEBUG_DrawLine(world, BotFR, BotRR, ColorIndex, Thickness);
 
   return;
 }
@@ -692,16 +684,16 @@ GetModelSpaceP(Chunk *chunk, v3 P)
 }
 
 void
-DEBUG_DrawChunkAABB( World *world, RenderGroup *RG, World_Chunk *chunk, Quaternion Rotation )
+DEBUG_DrawChunkAABB( World *world, RenderGroup *RG, World_Chunk *chunk, Quaternion Rotation, int ColorIndex )
 {
-  if ( chunk->Data->BoundaryVoxelCount == 0 ) return;
+ // if ( chunk->Data->BoundaryVoxelCount == 0 ) return;
 
   /* ComputeAndFlushMVP(world, RG, GetRenderP( world, Canonicalize(world, V3(0,0,0), chunk->WorldP)), Rotation); */
 
   v3 MinP = GetRenderP(world, Canonical_Position(world, V3(0,0,0), chunk->WorldP));
   v3 MaxP = GetRenderP(world, Canonical_Position(world, V3(chunk->Data->Dim), chunk->WorldP));
 
-  DEBUG_DrawAABB(world, MinP, MaxP , Rotation );
+  DEBUG_DrawAABB(world, MinP, MaxP , Rotation, ColorIndex );
 }
 
 #if 0
@@ -1036,7 +1028,7 @@ BuildBoundaryVoxels( World *world, World_Chunk *WorldChunk)
   if ( IsSet(chunk->flags, Chunk_RebuildExteriorTop   ) )
   {
     voxel_position  TopVector    = Voxel_Position(0,1,0);
-    World_Chunk *Top = GetWorldChunk( world, WorldChunk->WorldP + TopVector   );
+    World_Chunk *Top = *GetWorldChunk( world, WorldChunk->WorldP + TopVector   );
     if ( Top )
     {
       BuildExteriorBoundaryVoxels( world,  WorldChunk,  Top,    TopVector   );
@@ -1047,7 +1039,7 @@ BuildBoundaryVoxels( World *world, World_Chunk *WorldChunk)
   if ( IsSet(chunk->flags, Chunk_RebuildExteriorBot   ) )
   {
     voxel_position  BotVector    = Voxel_Position(0,-1,0);
-    World_Chunk *Bot = GetWorldChunk( world, WorldChunk->WorldP + BotVector   );
+    World_Chunk *Bot = *GetWorldChunk( world, WorldChunk->WorldP + BotVector   );
     if ( Bot )
     {
       BuildExteriorBoundaryVoxels( world,  WorldChunk,  Bot,    BotVector   );
@@ -1058,7 +1050,7 @@ BuildBoundaryVoxels( World *world, World_Chunk *WorldChunk)
   if ( IsSet(chunk->flags, Chunk_RebuildExteriorLeft  ) )
   {
     voxel_position  LeftVector   = Voxel_Position(-1,0,0);
-    World_Chunk *Left = GetWorldChunk( world, WorldChunk->WorldP + LeftVector  );
+    World_Chunk *Left = *GetWorldChunk( world, WorldChunk->WorldP + LeftVector  );
     if ( Left )
     {
       BuildExteriorBoundaryVoxels( world,  WorldChunk,  Left,   LeftVector  );
@@ -1069,7 +1061,7 @@ BuildBoundaryVoxels( World *world, World_Chunk *WorldChunk)
   if ( IsSet(chunk->flags, Chunk_RebuildExteriorRight ) )
   {
     voxel_position  RightVector  = Voxel_Position(1,0,0);
-    World_Chunk *Right = GetWorldChunk( world, WorldChunk->WorldP + RightVector );
+    World_Chunk *Right = *GetWorldChunk( world, WorldChunk->WorldP + RightVector );
     if ( Right )
     {
       BuildExteriorBoundaryVoxels( world,  WorldChunk,  Right,  RightVector );
@@ -1080,7 +1072,7 @@ BuildBoundaryVoxels( World *world, World_Chunk *WorldChunk)
   if ( IsSet(chunk->flags, Chunk_RebuildExteriorFront ) )
   {
     voxel_position  FrontVector  = Voxel_Position(0,0,1);
-    World_Chunk *Front = GetWorldChunk( world, WorldChunk->WorldP + FrontVector );
+    World_Chunk *Front = *GetWorldChunk( world, WorldChunk->WorldP + FrontVector );
     if ( Front )
     {
       BuildExteriorBoundaryVoxels( world,  WorldChunk,  Front,  FrontVector );
@@ -1091,7 +1083,7 @@ BuildBoundaryVoxels( World *world, World_Chunk *WorldChunk)
   if ( IsSet(chunk->flags, Chunk_RebuildExteriorBack  ) )
   {
     voxel_position  BackVector   = Voxel_Position(0,0,-1);
-    World_Chunk *Back = GetWorldChunk( world, WorldChunk->WorldP + BackVector  );
+    World_Chunk *Back = *GetWorldChunk( world, WorldChunk->WorldP + BackVector  );
     if ( Back )
     {
       BuildExteriorBoundaryVoxels( world,  WorldChunk,  Back,   BackVector  );
@@ -1111,11 +1103,16 @@ DrawWorldChunk(
     ShadowRenderGroup *SG
   )
 {
+  if (IsSet(WorldChunk->Data->flags, Chunk_Queued) )
+  {
+    DEBUG_DrawChunkAABB( world, RG, WorldChunk, Quaternion(1,0,0,0), 1 );
+  }
+
   if (IsSet(WorldChunk->Data->flags, Chunk_Initialized) )
   {
 
 #if DEBUG_CHUNK_AABB
-    DEBUG_DrawChunkAABB( world, RG, WorldChunk, Quaternion(1,0,0,0) );
+    /* DEBUG_DrawChunkAABB( world, RG, WorldChunk, Quaternion(1,0,0,0) ); */
 #endif
 
     BuildBoundaryVoxels(world, WorldChunk);

@@ -128,8 +128,10 @@ struct World
   World_Chunk **ChunkHash;
 
   World_Chunk **ChunksToInit;
-  int nChunksToInit;
+  int ChunkToInitCount;
 
+  World_Chunk **FreeChunks;
+  int FreeChunkCount;
 
   // This is the number of chunks in xyz we're going to update and render
   chunk_dimension VisibleRegion;
@@ -292,11 +294,22 @@ FreeChunk( Chunk *chunk )
 }
 
 void
-FreeWorldChunk(World *world, World_Chunk *chunk)
+FreeWorldChunk(World *world, World_Chunk **chunk)
 {
-  Assert( NotSet(chunk->Data->flags, Chunk_Queued) );
-  chunk->Data->flags = UnSetFlag(chunk->Data->flags, Chunk_Initialized);
-  FreeChunk(chunk->Data);
+  (*chunk)->Data->flags = UnSetFlag( (*chunk)->Data->flags, Chunk_Initialized | Chunk_Queued );
+
+  World_Chunk *Next = 0;
+	
+  if ((*chunk)->Next )
+  {
+	  Next = (*chunk)->Next->Next;
+  }
+
+  world->FreeChunks[world->FreeChunkCount++] = *chunk;
+
+  (*chunk)->Next = Next;
+
+  FreeChunk((*chunk)->Data);
   return;
 }
 
@@ -424,30 +437,25 @@ IsFilledInWorld( World_Chunk *chunk, voxel_position VoxelP )
   return isFilled;
 }
 
-World_Chunk*
+World_Chunk**
 GetWorldChunk( World *world, world_position P )
 {
   unsigned int HashIndex = GetWorldChunkHash(P);
-  World_Chunk *Result = world->ChunkHash[HashIndex];
+  World_Chunk **Result = &world->ChunkHash[HashIndex];
 
-  while (Result)
+  while (*Result)
   {
 
-    if ( Result->WorldP == P )
+    if ( (*Result)->WorldP == P )
     {
       break;
     }
     else
     {
-      Result = Result->Next;
+      Result = &(*Result)->Next;
     }
 
   }
-
-  /* if (!Result) */
-  /* { */
-  /*   Result = AllocateWorldChunk(world, P); */
-  /* } */
 
   return Result;
 }
@@ -465,7 +473,7 @@ IsFilledInWorld( World *world, World_Chunk *chunk, canonical_position VoxelP )
 
     if ( chunk->WorldP != VoxelP.WorldP )
     {
-      localChunk = GetWorldChunk(world, VoxelP.WorldP);
+      localChunk = *GetWorldChunk(world, VoxelP.WorldP);
     }
 
     isFilled = IsFilledInWorld( localChunk, Voxel_Position(VoxelP.Offset) );

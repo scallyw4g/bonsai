@@ -84,7 +84,7 @@ GAME_UPDATE_AND_RENDER
     {
       for ( int x = 0; x < world->VisibleRegion.x; ++ x )
       {
-        World_Chunk *chunk = GetWorldChunk(world, World_Position(x,y,z));
+        World_Chunk *chunk = *GetWorldChunk(world, World_Position(x,y,z));
         if (chunk)
           DrawWorldChunk( world, chunk, Camera, RG, SG);
       }
