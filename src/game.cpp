@@ -51,8 +51,6 @@ GAME_UPDATE_AND_RENDER
     ShadowRenderGroup *SG
   )
 {
-  InitializeWorldChunks( world );
-
   if ( glfwGetKey(window, GLFW_KEY_ENTER ) == GLFW_PRESS )
     SeedWorldAndUnspawnPlayer(world, Player);
 
@@ -100,8 +98,12 @@ GAME_UPDATE_AND_RENDER
   for ( int i = 0; i < world->ChunkToInitCount; ++ i)
   {
     World_Chunk *chunk = world->ChunksToInit[i];
-    Assert( IsSet(chunk->Data->flags, Chunk_Queued) );
-    Assert( NotSet(chunk->Data->flags, Chunk_Initialized) );
+
+	// Chunks can be freed before they are initialzied, and stay
+	// in the queue, so we actually have to check these when initializing
+    // Assert( IsSet(chunk->Data->flags, Chunk_Queued) );
+    // Assert( NotSet(chunk->Data->flags, Chunk_Initialized) );
+
     DEBUG_DrawChunkAABB( world, RG, chunk, Quaternion(1,0,0,0), 1 );
   }
 
@@ -165,7 +167,6 @@ main( void )
 
   AllocateWorld(&world);
   SeedWorldAndUnspawnPlayer(&world, &Player);
-  InitializeWorldChunks( &world );
 
 
   /* Player.Model = LoadVox("./chr_knight.vox"); */

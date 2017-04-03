@@ -186,15 +186,22 @@ void
 InitializeWorldChunks( World *world )
 {
   int ChunksToInit = DEBUG_CHUNKS_TO_INIT_PER_FRAME;
+
   while ( world->ChunkToInitCount > 0 )
   {
     World_Chunk *chunk = world->ChunksToInit[--world->ChunkToInitCount];
+    world->ChunksToInit[world->ChunkToInitCount] = 0;
 
-    Assert( NotSet(chunk->Data->flags, Chunk_Initialized) );
-    InitializeVoxels(world, chunk);
+    // When chunks are freed they stay in the initialization queue, so we've
+    // got to make sure the chunk we're on is still queued for init
+    if ( IsSet(chunk->Data->flags, Chunk_Queued) )
+    {
+      Assert( NotSet(chunk->Data->flags, Chunk_Initialized) );
+      InitializeVoxels(world, chunk);
+    }
 
-    /* if ( ChunksToInit-- == 0 ) */
-    /*   return; */
+    if ( ChunksToInit-- == 0 )
+      return;
   }
 
   return;
@@ -421,7 +428,7 @@ ClampMinus1toInfinity( voxel_position V )
 }
 
 void
-QueueForInitialization(World *world, World_Chunk *chunk)
+QueueChunkForInit(World *world, World_Chunk *chunk)
 {
   Assert( NotSet(chunk->Data->flags, Chunk_Queued ) );
   Assert( NotSet(chunk->Data->flags, Chunk_Initialized) );
@@ -454,50 +461,6 @@ GetFreeChunk(World *world, world_position P)
   return Result;
 }
 
-void
-FreeAndQueueChunksForInit( World *world, voxel_position GrossUpdateVector, Entity *Player)
-{
-  voxel_position IterVector = GrossUpdateVector + GrossUpdateVector + 1;
-
-  // Clamp magnitude to 1
-  IterVector.x = GetSign(IterVector.x);
-  IterVector.y = GetSign(IterVector.y);
-  IterVector.z = GetSign(IterVector.z);
-
-  // Max includes -1 so we can iterate all the way to 0 if we're going down
-  voxel_position UpdateMax = ClampMinus1toInfinity( (Player->P.WorldP - (world->VisibleRegion/2)) + (IterVector * world->VisibleRegion ));
-  voxel_position UpdateMin = ClampPositive( (Player->P.WorldP - (world->VisibleRegion/2)) + (-1 * IterVector * (world->VisibleRegion -1)) );
-
-  for ( int z = UpdateMin.z; z != UpdateMax.z; z += IterVector.z )
-  {
-    for ( int y = UpdateMin.y; y != UpdateMax.y; y += IterVector.y )
-    {
-      for ( int x = UpdateMin.x; x != UpdateMax.x; x += IterVector.x )
-      {
-        world_position CurrentP = World_Position(x,y,z);
-
-        World_Chunk *chunk = GetWorldChunk(world, CurrentP  );
-
-        World_Chunk *Prev = GetWorldChunk(world, CurrentP - GrossUpdateVector );
-        World_Chunk *Next = GetWorldChunk(world, CurrentP + GrossUpdateVector );
-
-        if ( !(chunk) )
-        {
-          World_Chunk *initChunk = GetFreeChunk(world, CurrentP);
-          QueueForInitialization(world, initChunk);
-        }
-
-        if ( chunk && !Prev ) // Add chunk pointers to free lists
-        {
-          FreeWorldChunk(world, chunk);
-        }
-
-      }
-    }
-  }
-
-}
-
 world_position
 GetSign(world_position P)
 {
@@ -508,7 +471,7 @@ GetSign(world_position P)
 }
 
 void
-GetAndQueueChunksForInit(World* world, world_position WorldDisp, Entity *Player)
+QueueChunksForInit(World* world, world_position WorldDisp, Entity *Player)
 {
   world_position PlayerP = Player->P.WorldP;
 
@@ -530,7 +493,7 @@ GetAndQueueChunksForInit(World* world, world_position WorldDisp, Entity *Player)
       {
         world_position P = World_Position(x,y,z);
         World_Chunk* chunk = GetFreeChunk(world, P );
-        QueueForInitialization(world, chunk);
+        QueueChunkForInit(world, chunk);
       }
     }
   }
@@ -660,7 +623,7 @@ UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
     world_position WorldDisp = ( Player->P.WorldP - OriginalPlayerP.WorldP );
 
     FreeUnneedeWorldChunks(world, WorldDisp, Player);
-    GetAndQueueChunksForInit(world, WorldDisp, Player);
+    QueueChunksForInit(world, WorldDisp, Player);
   }
 
   Player->P = Canonicalize(world, Player->P);
@@ -726,7 +689,7 @@ AllocateWorld( World *world )
   world->FreeChunkCount = 0;
 
   {
-    int BufferVertices = 10*(world->ChunkDim.x*world->ChunkDim.y*world->ChunkDim.z * VERT_PER_VOXEL * 3);
+    int BufferVertices = 100*(world->ChunkDim.x*world->ChunkDim.y*world->ChunkDim.z * VERT_PER_VOXEL * 3);
 
     world->VertexData.Data = (GLfloat *)calloc(BufferVertices, sizeof(GLfloat) );
     world->ColorData.Data  = (GLfloat *)calloc(BufferVertices, sizeof(GLfloat) );
@@ -751,7 +714,7 @@ AllocateWorld( World *world )
       for ( int x = 0; x < world->VisibleRegion.x; ++ x )
       {
         World_Chunk *chunk = AllocateWorldChunk(world, World_Position(x,y,z));
-        QueueForInitialization(world, chunk);
+        QueueChunkForInit(world, chunk);
       }
     }
   }
