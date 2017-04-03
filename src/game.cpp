@@ -11,12 +11,14 @@
 void
 SeedWorldAndUnspawnPlayer( World *world, Entity *Player )
 {
+
+  srand(DEBUG_NOISE_SEED);
   PerlinNoise Noise(rand());
   world->Noise = Noise;
 
   Player->Spawned = false;
 
-  /* ZeroWorldChunks(world); */
+  return;
 }
 
 v3
@@ -49,6 +51,7 @@ GAME_UPDATE_AND_RENDER
     ShadowRenderGroup *SG
   )
 {
+  InitializeWorldChunks( world );
 
   if ( glfwGetKey(window, GLFW_KEY_ENTER ) == GLFW_PRESS )
     SeedWorldAndUnspawnPlayer(world, Player);
@@ -78,17 +81,28 @@ GAME_UPDATE_AND_RENDER
 
   ClearFramebuffers(RG, SG);
 
-  for ( int z = 0; z < world->VisibleRegion.z; ++ z )
+  world_position Min = Player->P.WorldP - (world->VisibleRegion/2);
+  world_position Max = Player->P.WorldP + (world->VisibleRegion/2);
+
+  for ( int z = Min.z; z < Max.z; ++ z )
   {
-    for ( int y = 0; y < world->VisibleRegion.y; ++ y )
+    for ( int y = Min.y; y < Max.y; ++ y )
     {
-      for ( int x = 0; x < world->VisibleRegion.x; ++ x )
+      for ( int x = Min.x; x < Max.x; ++ x )
       {
-        World_Chunk *chunk = *GetWorldChunk(world, World_Position(x,y,z));
+        World_Chunk *chunk = GetWorldChunk(world, World_Position(x,y,z));
         if (chunk)
           DrawWorldChunk( world, chunk, Camera, RG, SG);
       }
     }
+  }
+
+  for ( int i = 0; i < world->ChunkToInitCount; ++ i)
+  {
+    World_Chunk *chunk = world->ChunksToInit[i];
+    Assert( IsSet(chunk->Data->flags, Chunk_Queued) );
+    Assert( NotSet(chunk->Data->flags, Chunk_Initialized) );
+    DEBUG_DrawChunkAABB( world, RG, chunk, Quaternion(1,0,0,0), 1 );
   }
 
   DrawEntity( world, Player, Camera, RG, SG);
@@ -179,13 +193,15 @@ main( void )
   Camera.Frust.FOV = 45.0f;
   Camera.P = CAMERA_INITIAL_P;
 
-  double lastTime = glfwGetTime();
 
 
   /*
    *  Main Render loop
    *
    */
+
+  double lastTime = glfwGetTime();
+
   do
   {
     double currentTime = glfwGetTime();
@@ -195,36 +211,10 @@ main( void )
     accumulatedTime += dt;
     numFrames ++;
 
-
-    /* timespec T1; */
-    /* clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &T1); */
-
-    /* CALLGRIND_START_INSTRUMENTATION; */
-    /* CALLGRIND_TOGGLE_COLLECT; */
-
     RG.Basis.ProjectionMatrix = GetProjectionMatrix(&Camera, WindowWidth, WindowHeight);
 
-    GAME_UPDATE_AND_RENDER(
-      &world,
-      &Player,
-      &Camera,
-      dt,
+    GAME_UPDATE_AND_RENDER( &world, &Player, &Camera, dt, &RG, &SG);
 
-      &RG,
-      &SG
-    );
-
-    /* CALLGRIND_TOGGLE_COLLECT; */
-
-    /* timespec T2; */
-    /* clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &T2); */
-
-    /* if ( T2.tv_sec - T1.tv_sec > 0 ) T1.tv_nsec -= 1000000000; */
-
-    /* Log(" %d ms this frame \n\n\n", */
-    /*     (int)(T2.tv_nsec -T1.tv_nsec)/1000000 ); */
-
-    /* Log(" %d triangles \n", tris); */
     tris=0;
 
   } // Check if the ESC key was pressed or the window was closed

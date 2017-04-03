@@ -277,6 +277,7 @@ operator+(voxel_position P1, int i)
 
   return Result;
 }
+
 inline voxel_position
 operator+(voxel_position P1, voxel_position const P2)
 {

@@ -15,23 +15,25 @@
 
 #define InvalidDefaultCase default: {Assert(false);} break
 
-enum ChunkFlags {
-  Chunk_Uninitialized           = 1 << 0,
-  Chunk_Initialized             = 1 << 1,
+enum ChunkFlags
+{
+  Chunk_Uninitialized           = 0 << 0,
+  Chunk_Initialized             = 1 << 0,
 
-  Chunk_Entity                  = 1 << 2,
-  Chunk_World                   = 1 << 3,
-  Chunk_RebuildInteriorBoundary = 1 << 4,
-  Chunk_RebuildExteriorTop      = 1 << 5,
-  Chunk_RebuildExteriorBot      = 1 << 6,
-  Chunk_RebuildExteriorLeft     = 1 << 7,
-  Chunk_RebuildExteriorRight    = 1 << 8,
-  Chunk_RebuildExteriorFront    = 1 << 9,
-  Chunk_RebuildExteriorBack     = 1 << 10,
-  Chunk_Queued                  = 1 << 11,
+  Chunk_Entity                  = 1 << 1,
+  Chunk_World                   = 1 << 2,
+  Chunk_RebuildInteriorBoundary = 1 << 3,
+  Chunk_RebuildExteriorTop      = 1 << 4,
+  Chunk_RebuildExteriorBot      = 1 << 5,
+  Chunk_RebuildExteriorLeft     = 1 << 6,
+  Chunk_RebuildExteriorRight    = 1 << 7,
+  Chunk_RebuildExteriorFront    = 1 << 8,
+  Chunk_RebuildExteriorBack     = 1 << 9,
+  Chunk_Queued                  = 1 << 10,
 };
 
-enum VoxelFlags {
+enum VoxelFlags
+{
   Voxel_Filled     = 1 << (FINAL_COLOR_BIT + 0),
 
   Voxel_LeftFace   = 1 << (FINAL_COLOR_BIT + 1),
@@ -41,7 +43,6 @@ enum VoxelFlags {
   Voxel_FrontFace  = 1 << (FINAL_COLOR_BIT + 5),
   Voxel_BackFace   = 1 << (FINAL_COLOR_BIT + 6)
 };
-
 
 struct Voxel
 {
@@ -66,9 +67,9 @@ struct World_Chunk
   world_position WorldP;
 
   // TODO(Jesse): This is only for looking up chunks in the hashtable and
-  // should be factored out of this struct somehow as it's 'cold' data
+  // should be factored out of this struct somehow as it's cold data
   World_Chunk *Next;
-  /* World_Chunk *Prev; */
+  World_Chunk *Prev;
 };
 
 struct free_world_chunk
@@ -204,7 +205,6 @@ SetVoxelColor(Voxel V, int w)
   return Result;
 }
 
-// TODO(Jesse): Is this buggy?
 inline voxel_position
 GetVoxelP(chunk_dimension Dim, int i)
 {
@@ -280,9 +280,9 @@ FreeChunk( Chunk *chunk )
   chunk->BoundaryVoxelCount = 0;
 
   chunk->flags = 0;
-  chunk->flags = UnSetFlag( chunk->flags, Chunk_Initialized );
 
   chunk->flags = SetFlag( chunk->flags, Chunk_RebuildInteriorBoundary );
+
   chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorTop   );
   chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorBot   );
   chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorLeft  );
@@ -293,23 +293,45 @@ FreeChunk( Chunk *chunk )
   return;
 }
 
-void
-FreeWorldChunk(World *world, World_Chunk **chunk)
+unsigned int
+GetWorldChunkHash(world_position P)
 {
-  (*chunk)->Data->flags = UnSetFlag( (*chunk)->Data->flags, Chunk_Initialized | Chunk_Queued );
+  // TODO(Jesse): Better hash function!
+  unsigned int HashIndex = (((unsigned)P.x + (unsigned)P.y + (unsigned)P.z) * 42 * 13 * 233) % WORLD_HASH_SIZE;
+  Assert(HashIndex < WORLD_HASH_SIZE);
 
-  World_Chunk *Next = 0;
-	
-  if ((*chunk)->Next )
+  return HashIndex;
+}
+
+void
+FreeWorldChunk(World *world, World_Chunk *chunk)
+{
+  // Unlink from middle of linked list
+  if (chunk->Prev)
   {
-	  Next = (*chunk)->Next->Next;
+    chunk->Prev->Next = chunk->Next;
   }
 
-  world->FreeChunks[world->FreeChunkCount++] = *chunk;
+  if (chunk->Next)
+  {
+    chunk->Next->Prev = chunk->Prev;
+  }
 
-  (*chunk)->Next = Next;
+  // Unlink from head end of linked list
+  if (!chunk->Prev && chunk->Next)
+  {
+    world->ChunkHash[GetWorldChunkHash(chunk->WorldP)] = chunk->Next;
+  }
 
-  FreeChunk((*chunk)->Data);
+  chunk->Prev = 0;
+  chunk->Next = 0;
+
+  world->FreeChunks[world->FreeChunkCount++] = chunk;
+
+  FreeChunk(chunk->Data);
+
+  Assert( NotSet(chunk->Data->flags, Chunk_Initialized) );
+
   return;
 }
 
@@ -354,16 +376,6 @@ AllocateChunk(chunk_dimension Dim)
   return Result;
 }
 
-unsigned int
-GetWorldChunkHash(world_position P)
-{
-  // TODO(Jesse): Better hash function!
-  unsigned int HashIndex = ( ((unsigned)P.x & 31 + (unsigned)P.y & 42 + (unsigned)P.z & 88) * 42 * 13 * 233) % WORLD_HASH_SIZE;
-  Assert(HashIndex < WORLD_HASH_SIZE);
-
-  return HashIndex;
-}
-
 void
 InsertChunkIntoWorld(World *world, World_Chunk *chunk)
 {
@@ -373,6 +385,7 @@ InsertChunkIntoWorld(World *world, World_Chunk *chunk)
   if (Last)
   {
     Assert(Last->WorldP != chunk->WorldP);
+
     while (Last->Next)
     {
       Assert(Last->WorldP != chunk->WorldP);
@@ -380,6 +393,7 @@ InsertChunkIntoWorld(World *world, World_Chunk *chunk)
     }
 
     Last->Next = chunk;
+    chunk->Prev = Last;
   }
   else
   {
@@ -420,7 +434,7 @@ IsFacingPoint( v3 FaceToPoint, v3 FaceNormal )
 }
 
 inline bool
-IsFilledInWorld( World_Chunk *chunk, voxel_position VoxelP )
+IsFilledInChunk( World_Chunk *chunk, voxel_position VoxelP )
 {
   bool isFilled = true;
 
@@ -437,30 +451,26 @@ IsFilledInWorld( World_Chunk *chunk, voxel_position VoxelP )
   return isFilled;
 }
 
-World_Chunk**
+World_Chunk*
 GetWorldChunk( World *world, world_position P )
 {
   unsigned int HashIndex = GetWorldChunkHash(P);
-  World_Chunk **Result = &world->ChunkHash[HashIndex];
+  World_Chunk *Result = world->ChunkHash[HashIndex];
 
-  while (*Result)
+  while (Result)
   {
-
-    if ( (*Result)->WorldP == P )
+    if ( Result->WorldP == P )
     {
       break;
     }
     else
     {
-      Result = &(*Result)->Next;
+      Result = Result->Next;
     }
-
   }
 
   return Result;
 }
-
-
 
 inline bool
 IsFilledInWorld( World *world, World_Chunk *chunk, canonical_position VoxelP )
@@ -473,10 +483,10 @@ IsFilledInWorld( World *world, World_Chunk *chunk, canonical_position VoxelP )
 
     if ( chunk->WorldP != VoxelP.WorldP )
     {
-      localChunk = *GetWorldChunk(world, VoxelP.WorldP);
+      localChunk = GetWorldChunk(world, VoxelP.WorldP);
     }
 
-    isFilled = IsFilledInWorld( localChunk, Voxel_Position(VoxelP.Offset) );
+    isFilled = IsFilledInChunk( localChunk, Voxel_Position(VoxelP.Offset) );
   }
 
   return isFilled;

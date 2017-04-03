@@ -785,7 +785,7 @@ BuildExteriorBoundaryVoxels( World *world, World_Chunk *chunk, World_Chunk *Neig
       {
         voxel_position LocalVoxelP = Voxel_Position(x+LocalOffset.x, y+LocalOffset.y, z+LocalOffset.z);
 
-        if ( !IsFilledInWorld( chunk, LocalVoxelP ) )
+        if ( !IsFilledInChunk( chunk, LocalVoxelP ) )
           continue;
 
         voxel_position NeighborP = ClampPositive(
@@ -793,7 +793,7 @@ BuildExteriorBoundaryVoxels( World *world, World_Chunk *chunk, World_Chunk *Neig
             (chunk->Data->Dim * NeighborVector) ) -
             (NeighborVector*NeighborVector));
 
-        if ( ! IsFilledInWorld( Neighbor, NeighborP) )
+        if ( ! IsFilledInChunk( Neighbor, NeighborP) )
         {
           Voxel voxel = chunk->Data->Voxels[GetIndex(LocalVoxelP, chunk->Data)];
 
@@ -1028,7 +1028,7 @@ BuildBoundaryVoxels( World *world, World_Chunk *WorldChunk)
   if ( IsSet(chunk->flags, Chunk_RebuildExteriorTop   ) )
   {
     voxel_position  TopVector    = Voxel_Position(0,1,0);
-    World_Chunk *Top = *GetWorldChunk( world, WorldChunk->WorldP + TopVector   );
+    World_Chunk *Top = GetWorldChunk( world, WorldChunk->WorldP + TopVector   );
     if ( Top )
     {
       BuildExteriorBoundaryVoxels( world,  WorldChunk,  Top,    TopVector   );
@@ -1039,7 +1039,7 @@ BuildBoundaryVoxels( World *world, World_Chunk *WorldChunk)
   if ( IsSet(chunk->flags, Chunk_RebuildExteriorBot   ) )
   {
     voxel_position  BotVector    = Voxel_Position(0,-1,0);
-    World_Chunk *Bot = *GetWorldChunk( world, WorldChunk->WorldP + BotVector   );
+    World_Chunk *Bot = GetWorldChunk( world, WorldChunk->WorldP + BotVector   );
     if ( Bot )
     {
       BuildExteriorBoundaryVoxels( world,  WorldChunk,  Bot,    BotVector   );
@@ -1050,7 +1050,7 @@ BuildBoundaryVoxels( World *world, World_Chunk *WorldChunk)
   if ( IsSet(chunk->flags, Chunk_RebuildExteriorLeft  ) )
   {
     voxel_position  LeftVector   = Voxel_Position(-1,0,0);
-    World_Chunk *Left = *GetWorldChunk( world, WorldChunk->WorldP + LeftVector  );
+    World_Chunk *Left = GetWorldChunk( world, WorldChunk->WorldP + LeftVector  );
     if ( Left )
     {
       BuildExteriorBoundaryVoxels( world,  WorldChunk,  Left,   LeftVector  );
@@ -1061,7 +1061,7 @@ BuildBoundaryVoxels( World *world, World_Chunk *WorldChunk)
   if ( IsSet(chunk->flags, Chunk_RebuildExteriorRight ) )
   {
     voxel_position  RightVector  = Voxel_Position(1,0,0);
-    World_Chunk *Right = *GetWorldChunk( world, WorldChunk->WorldP + RightVector );
+    World_Chunk *Right = GetWorldChunk( world, WorldChunk->WorldP + RightVector );
     if ( Right )
     {
       BuildExteriorBoundaryVoxels( world,  WorldChunk,  Right,  RightVector );
@@ -1072,7 +1072,7 @@ BuildBoundaryVoxels( World *world, World_Chunk *WorldChunk)
   if ( IsSet(chunk->flags, Chunk_RebuildExteriorFront ) )
   {
     voxel_position  FrontVector  = Voxel_Position(0,0,1);
-    World_Chunk *Front = *GetWorldChunk( world, WorldChunk->WorldP + FrontVector );
+    World_Chunk *Front = GetWorldChunk( world, WorldChunk->WorldP + FrontVector );
     if ( Front )
     {
       BuildExteriorBoundaryVoxels( world,  WorldChunk,  Front,  FrontVector );
@@ -1083,7 +1083,7 @@ BuildBoundaryVoxels( World *world, World_Chunk *WorldChunk)
   if ( IsSet(chunk->flags, Chunk_RebuildExteriorBack  ) )
   {
     voxel_position  BackVector   = Voxel_Position(0,0,-1);
-    World_Chunk *Back = *GetWorldChunk( world, WorldChunk->WorldP + BackVector  );
+    World_Chunk *Back = GetWorldChunk( world, WorldChunk->WorldP + BackVector  );
     if ( Back )
     {
       BuildExteriorBoundaryVoxels( world,  WorldChunk,  Back,   BackVector  );
@@ -1103,10 +1103,6 @@ DrawWorldChunk(
     ShadowRenderGroup *SG
   )
 {
-  if (IsSet(WorldChunk->Data->flags, Chunk_Queued) )
-  {
-    DEBUG_DrawChunkAABB( world, RG, WorldChunk, Quaternion(1,0,0,0), 1 );
-  }
 
   if (IsSet(WorldChunk->Data->flags, Chunk_Initialized) )
   {

@@ -55,8 +55,10 @@
 #define DEBUG_LOD_RENDER              0
 #define DEBUG_DRAW_SHADOW_MAP_TEXTURE 0
 
-#define DEBUG_FRAMES_TO_RUN          -1
-#define DEBUG_CHUNKS_TO_INIT_PER_FRAME 3
+#define DEBUG_NOISE_SEED 43259.43
+
+#define DEBUG_FRAMES_TO_RUN            -1
+#define DEBUG_CHUNKS_TO_INIT_PER_FRAME 5
 
 #define SCR_WIDTH 1920
 #define SCR_HEIGHT 1080
@@ -66,7 +68,7 @@
 #define SHADOW_MAP_RESOLUTION 2048
 #define DEBUG_TEXTURE_SIZE    512
 
-#define CAMERA_FOCAL_LENGTH (40.0f);
+#define CAMERA_FOCAL_LENGTH (80.0f);
 
 #define CAMERA_INITIAL_P Canonical_Position(&world, V3(1,1,1), World_Position(world.VisibleRegion/2))
 
