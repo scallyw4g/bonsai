@@ -58,7 +58,7 @@
 #define DEBUG_NOISE_SEED 43261.43
 
 #define DEBUG_FRAMES_TO_RUN            -1
-#define DEBUG_CHUNKS_TO_INIT_PER_FRAME 2
+#define DEBUG_CHUNKS_TO_INIT_PER_FRAME 1
 
 #define SCR_WIDTH 1920
 #define SCR_HEIGHT 1080
@@ -68,7 +68,7 @@
 #define SHADOW_MAP_RESOLUTION 2048
 #define DEBUG_TEXTURE_SIZE    512
 
-#define CAMERA_FOCAL_LENGTH (80.0f);
+#define CAMERA_FOCAL_LENGTH (100.0f);
 
 #define CAMERA_INITIAL_P Canonical_Position(&world, V3(1,1,1), World_Position(world.VisibleRegion/2))
 
@@ -88,6 +88,9 @@ DEBUG_GLOBAL int tris = 0;
 DEBUG_GLOBAL int VoxelsIndexed = 0;
 
 DEBUG_GLOBAL float GlobalLightTheta = 0;
+
+DEBUG_GLOBAL rectangle3 LastFreeSlice(V3(0,0,0), V3(0,0,0));
+DEBUG_GLOBAL rectangle3 LastQueuedSlice(V3(0,0,0), V3(0,0,0));
 
 #define FACE_COLOR_SIZE 32
 #define PALETTE_SIZE 256

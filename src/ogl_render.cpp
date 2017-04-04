@@ -171,9 +171,6 @@ RenderWorld(World *world, RenderGroup *RG)
   glUniformMatrix4fv(RG->MVPID,         1, GL_FALSE, &mvp[0][0]);
   glUniformMatrix4fv(RG->ModelMatrixID, 1, GL_FALSE, &RG->Basis.ModelMatrix[0][0]);
 
-  glClearColor(1.0f, 0.0f, 1.0f, 0.0f);
-
-
   // Vertices
   glEnableVertexAttribArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, RG->vertexbuffer);
@@ -266,6 +263,9 @@ BufferFace (
        world->ColorData.filled > world->ColorData.bytesAllocd ||
        world->NormalData.filled > world->NormalData.bytesAllocd )
   {
+    world->VertexData.filled -= sizeofVertPositions;
+    world->NormalData.filled -= sizeofNormals;
+    world->ColorData.filled  -= sizeofNormals;
     // Out of memory, panic!
     Assert(!"Out of memory");
     return;
@@ -560,11 +560,11 @@ DEBUG_DrawLine(World *world, v3 P1, v3 P2, int ColorIndex, float Thickness )
     {
       P1.x, P1.y, P1.z,
       P2.x, P2.y, P2.z,
-      P1.x + Thickness, P1.y + Thickness, P1.z + Thickness,
+      P1.x + Thickness, P1.y,  P1.z + Thickness,
 
       P2.x, P2.y, P2.z,
       P1.x, P1.y, P1.z,
-      P2.x + Thickness, P2.y + Thickness, P2.z + Thickness
+      P2.x + Thickness, P2.y, P2.z + Thickness
     };
 
 
@@ -576,6 +576,29 @@ DEBUG_DrawLine(World *world, v3 P1, v3 P2, int ColorIndex, float Thickness )
         FaceColors);
   }
 
+  {
+    float localVertexData[] =
+    {
+      P1.x, P1.y, P1.z,
+      P2.x, P2.y, P2.z,
+      P1.x, P1.y + Thickness,  P1.z,
+
+      P2.x, P2.y, P2.z,
+      P1.x, P1.y, P1.z,
+      P2.x, P2.y + Thickness, P2.z
+    };
+
+
+    BufferFace(world,
+        localVertexData,
+        sizeof(localVertexData),
+        localNormalData,
+        sizeof(localNormalData),
+        FaceColors);
+  }
+
+#if 0
+  // This is for anti-aliasing the lines; it draws extra triangles along the edges which can be set to alpha 0
   {
     float localVertexData[] =
     {
@@ -595,6 +618,7 @@ DEBUG_DrawLine(World *world, v3 P1, v3 P2, int ColorIndex, float Thickness )
         sizeof(localNormalData),
         FaceColors);
   }
+#endif
 
 }
 
@@ -672,6 +696,13 @@ DEBUG_DrawAABB( World *world, v3 MinP, v3 MaxP, Quaternion Rotation, int ColorIn
   return;
 }
 
+void
+DEBUG_DrawAABB( World *world, rectangle3 Rect, Quaternion Rotation, int ColorIndex, float Thickness = 0.05f )
+{
+	DEBUG_DrawAABB( world, Rect.MinCorner, Rect.MaxCorner, Rotation, ColorIndex, Thickness );
+	return;
+}
+
 v3
 GetModelSpaceP(Chunk *chunk, v3 P)
 {
@@ -686,10 +717,6 @@ GetModelSpaceP(Chunk *chunk, v3 P)
 void
 DEBUG_DrawChunkAABB( World *world, RenderGroup *RG, World_Chunk *chunk, Quaternion Rotation, int ColorIndex )
 {
- // if ( chunk->Data->BoundaryVoxelCount == 0 ) return;
-
-  /* ComputeAndFlushMVP(world, RG, GetRenderP( world, Canonicalize(world, V3(0,0,0), chunk->WorldP)), Rotation); */
-
   v3 MinP = GetRenderP(world, Canonical_Position(world, V3(0,0,0), chunk->WorldP));
   v3 MaxP = GetRenderP(world, Canonical_Position(world, V3(chunk->Data->Dim), chunk->WorldP));
 

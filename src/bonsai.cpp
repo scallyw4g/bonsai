@@ -76,7 +76,7 @@ initWindow( int WindowWidth, int WindowHeight )
   // Ensure we can capture the escape key being pressed below
   glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_FALSE);
 
-  glClearColor(0.35f, 0.0f, 0.5f, 0.0f);
+  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
   // Enable depth test
   glEnable(GL_DEPTH_TEST);
@@ -453,6 +453,11 @@ GetFreeChunk(World *world, world_position P)
   {
     Result = world->FreeChunks[--world->FreeChunkCount];
     Result->WorldP = P;
+
+	Assert(Result->Next == 0);
+	Assert(Result->Prev == 0);
+
+	InsertChunkIntoWorld(world, Result);
   }
 
   Assert( NotSet(Result->Data->flags, Chunk_Queued) );
@@ -482,8 +487,10 @@ QueueChunksForInit(World* world, world_position WorldDisp, Entity *Player)
   world_position VRHalfDim = World_Position(world->VisibleRegion/2);
   world_position VrDim = world->VisibleRegion;
 
-  world_position SliceMin = PlayerP + (VRHalfDim * Iter) - (VRHalfDim * InvAbsIter);
-  world_position SliceMax = PlayerP + (VRHalfDim * Iter) + (VRHalfDim * InvAbsIter) - InvAbsIter;
+  world_position SliceMin = PlayerP + (VRHalfDim * Iter) - (VRHalfDim * InvAbsIter) - ClampPositive(Iter);
+  world_position SliceMax = PlayerP + (VRHalfDim * Iter) + (VRHalfDim * InvAbsIter) - ClampPositive(Iter) - InvAbsIter;
+
+  LastQueuedSlice = rectangle3(SliceMin*CHUNK_DIMENSION - 1, (SliceMax*CHUNK_DIMENSION + CHUNK_DIMENSION + 1));
 
   for (int z = SliceMin.z; z <= SliceMax.z; ++ z)
   {
@@ -510,8 +517,10 @@ FreeUnneedeWorldChunks(World* world, world_position WorldDisp, Entity *Player)
 
   world_position VRHalfDim = World_Position(world->VisibleRegion/2);
 
-  world_position SliceMin = PlayerP - (VRHalfDim * Iter) - (VRHalfDim * InvAbsIter);
-  world_position SliceMax = PlayerP - (VRHalfDim * Iter) + (VRHalfDim * InvAbsIter) - InvAbsIter;
+  world_position SliceMin = PlayerP - (VRHalfDim * Iter) - (VRHalfDim * InvAbsIter) - ClampPositive(Iter);
+  world_position SliceMax = PlayerP - (VRHalfDim * Iter) + (VRHalfDim * InvAbsIter) - ClampPositive(Iter) - InvAbsIter;
+
+  LastFreeSlice = rectangle3(SliceMin*CHUNK_DIMENSION - 1, (SliceMax*CHUNK_DIMENSION + CHUNK_DIMENSION + 1));
 
   for (int z = SliceMin.z; z <= SliceMax.z; ++ z)
   {
@@ -706,6 +715,10 @@ AllocateWorld( World *world )
     world->VertexCount = 0;
   }
 
+
+  Assert(world->VertexData.Data);
+  Assert(world->ColorData.Data );
+  Assert(world->NormalData.Data);
 
   for ( int z = 0; z < world->VisibleRegion.z; ++ z )
   {

@@ -1,12 +1,12 @@
 
-
 #include <bonsai.h>
 #include <render.h>
 
-#include <bonsai.cpp>
 #include <constants.hpp>
+#include <bonsai.cpp>
 
 #include <time.h>
+
 
 void
 SeedWorldAndUnspawnPlayer( World *world, Entity *Player )
@@ -79,32 +79,43 @@ GAME_UPDATE_AND_RENDER
 
   ClearFramebuffers(RG, SG);
 
-  world_position Min = Player->P.WorldP - (world->VisibleRegion/2);
-  world_position Max = Player->P.WorldP + (world->VisibleRegion/2);
+  world_position Min = (Player->P.WorldP - (world->VisibleRegion/2)) * CHUNK_DIMENSION;
+  world_position Max = (Player->P.WorldP + (world->VisibleRegion/2)) * CHUNK_DIMENSION;
 
-  for ( int z = Min.z; z < Max.z; ++ z )
+  DEBUG_DrawAABB( world, V3(Min), V3(Max), Quaternion(0,0,0,1), GREEN, 0.25);
+
+  DEBUG_DrawAABB( world, LastFreeSlice,    Quaternion(0,0,0,1), RED,   0.1);
+  DEBUG_DrawAABB( world, LastQueuedSlice,  Quaternion(0,0,0,1), TEAL,  0.1);
+
+  for ( int i = 0; i < WORLD_HASH_SIZE; ++i)
   {
-    for ( int y = Min.y; y < Max.y; ++ y )
+    World_Chunk *chunk = world->ChunkHash[i];
+    while (chunk)
     {
-      for ( int x = Min.x; x < Max.x; ++ x )
-      {
-        World_Chunk *chunk = GetWorldChunk(world, World_Position(x,y,z));
-        if (chunk)
-          DrawWorldChunk( world, chunk, Camera, RG, SG);
-      }
+      DrawWorldChunk( world, chunk, Camera, RG, SG);
+
+      if (IsSet(chunk->Data->flags, Chunk_Initialized) )
+        DEBUG_DrawChunkAABB(world, RG, chunk, Quaternion(0,0,0,1), GREEN);
+
+      else if (IsSet(chunk->Data->flags, Chunk_Queued) )
+        DEBUG_DrawChunkAABB(world, RG, chunk, Quaternion(0,0,0,1), WHITE);
+
+      else
+          DEBUG_DrawChunkAABB(world, RG, chunk, Quaternion(0,0,0,1), RED);
+
+      chunk = chunk->Next;
     }
   }
 
   for ( int i = 0; i < world->ChunkToInitCount; ++ i)
   {
     World_Chunk *chunk = world->ChunksToInit[i];
-
-	// Chunks can be freed before they are initialzied, and stay
-	// in the queue, so we actually have to check these when initializing
+    // Chunks can be freed before they are initialzied, and stay
+    // in the queue, so we actually can't assert these
     // Assert( IsSet(chunk->Data->flags, Chunk_Queued) );
     // Assert( NotSet(chunk->Data->flags, Chunk_Initialized) );
 
-    DEBUG_DrawChunkAABB( world, RG, chunk, Quaternion(1,0,0,0), 1 );
+    DEBUG_DrawChunkAABB( world, RG, chunk, Quaternion(1,0,0,0), WHITE );
   }
 
   DrawEntity( world, Player, Camera, RG, SG);

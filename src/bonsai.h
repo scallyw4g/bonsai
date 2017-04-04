@@ -352,11 +352,14 @@ Chunk*
 AllocateChunk(chunk_dimension Dim)
 {
   Chunk *Result = (Chunk*)calloc(1, sizeof(Chunk));
+  Assert(Result);
 
   Result->Dim = Dim;
 
   Result->Voxels = (Voxel*)calloc(Volume(Dim), sizeof(Voxel));
   Result->BoundaryVoxels = (Voxel*)calloc(Volume(Dim), sizeof(Voxel));
+  Assert(Result->Voxels);
+  Assert(Result->BoundaryVoxels);
 
   FreeChunk(Result);
 
@@ -407,6 +410,8 @@ World_Chunk*
 AllocateWorldChunk(World *world, world_position WorldP)
 {
   World_Chunk *Result = (World_Chunk*)calloc(1, sizeof(World_Chunk));
+  Assert(Result);
+
   Result->Data = AllocateChunk(Chunk_Dimension(CD_X, CD_Y, CD_Z));
 
   Result->WorldP = WorldP;
