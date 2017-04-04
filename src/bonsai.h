@@ -318,7 +318,7 @@ FreeWorldChunk(World *world, World_Chunk *chunk)
   }
 
   // Unlink from head end of linked list
-  if (!chunk->Prev && chunk->Next)
+  if (!chunk->Prev)
   {
     world->ChunkHash[GetWorldChunkHash(chunk->WorldP)] = chunk->Next;
   }
@@ -465,13 +465,9 @@ GetWorldChunk( World *world, world_position P )
   while (Result)
   {
     if ( Result->WorldP == P )
-    {
       break;
-    }
-    else
-    {
-      Result = Result->Next;
-    }
+
+    Result = Result->Next;
   }
 
   return Result;

@@ -454,10 +454,10 @@ GetFreeChunk(World *world, world_position P)
     Result = world->FreeChunks[--world->FreeChunkCount];
     Result->WorldP = P;
 
-	Assert(Result->Next == 0);
-	Assert(Result->Prev == 0);
+    Assert(Result->Next == 0);
+    Assert(Result->Prev == 0);
 
-	InsertChunkIntoWorld(world, Result);
+    InsertChunkIntoWorld(world, Result);
   }
 
   Assert( NotSet(Result->Data->flags, Chunk_Queued) );
@@ -529,10 +529,8 @@ FreeUnneedeWorldChunks(World* world, world_position WorldDisp, Entity *Player)
       for (int x = SliceMin.x; x <= SliceMax.x; ++ x)
       {
         World_Chunk* chunk = GetWorldChunk(world, World_Position(x,y,z));
-
         if (chunk)
           FreeWorldChunk(world, chunk);
-
       }
     }
   }

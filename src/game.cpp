@@ -95,13 +95,17 @@ GAME_UPDATE_AND_RENDER
       DrawWorldChunk( world, chunk, Camera, RG, SG);
 
       if (IsSet(chunk->Data->flags, Chunk_Initialized) )
-        DEBUG_DrawChunkAABB(world, RG, chunk, Quaternion(0,0,0,1), GREEN);
-
+      {
+        // DEBUG_DrawChunkAABB(world, RG, chunk, Quaternion(0,0,0,1), GREEN);
+      }
       else if (IsSet(chunk->Data->flags, Chunk_Queued) )
+      {
         DEBUG_DrawChunkAABB(world, RG, chunk, Quaternion(0,0,0,1), WHITE);
-
+      }
       else
-          DEBUG_DrawChunkAABB(world, RG, chunk, Quaternion(0,0,0,1), RED);
+      {
+        DEBUG_DrawChunkAABB(world, RG, chunk, Quaternion(0,0,0,1), RED);
+      }
 
       chunk = chunk->Next;
     }

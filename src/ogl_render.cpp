@@ -699,8 +699,8 @@ DEBUG_DrawAABB( World *world, v3 MinP, v3 MaxP, Quaternion Rotation, int ColorIn
 void
 DEBUG_DrawAABB( World *world, rectangle3 Rect, Quaternion Rotation, int ColorIndex, float Thickness = 0.05f )
 {
-	DEBUG_DrawAABB( world, Rect.MinCorner, Rect.MaxCorner, Rotation, ColorIndex, Thickness );
-	return;
+  DEBUG_DrawAABB( world, Rect.MinCorner, Rect.MaxCorner, Rotation, ColorIndex, Thickness );
+  return;
 }
 
 v3
