@@ -306,6 +306,8 @@ GetWorldChunkHash(world_position P)
 void
 FreeWorldChunk(World *world, World_Chunk *chunk)
 {
+  Assert( IsSet(chunk->Data->flags, Chunk_Initialized) || IsSet(chunk->Data->flags, Chunk_Queued) );
+ 
   // Unlink from middle of linked list
   if (chunk->Prev)
   {
@@ -389,11 +391,11 @@ InsertChunkIntoWorld(World *world, World_Chunk *chunk)
 
   if (Last)
   {
-    Assert(Last->WorldP != chunk->WorldP);
+    // Assert(Last->WorldP != chunk->WorldP);
 
     while (Last->Next)
     {
-      Assert(Last->WorldP != chunk->WorldP);
+      // Assert(Last->WorldP != chunk->WorldP);
       Last = Last->Next;
     }
 

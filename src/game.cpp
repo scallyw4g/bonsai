@@ -79,10 +79,10 @@ GAME_UPDATE_AND_RENDER
 
   ClearFramebuffers(RG, SG);
 
-  world_position Min = (Player->P.WorldP - (world->VisibleRegion/2)) * CHUNK_DIMENSION;
-  world_position Max = (Player->P.WorldP + (world->VisibleRegion/2)) * CHUNK_DIMENSION;
+  world_position Min = (Player->P.WorldP - (world->VisibleRegion / 2));
+  world_position Max = (Player->P.WorldP + (world->VisibleRegion / 2));
 
-  DEBUG_DrawAABB( world, V3(Min), V3(Max), Quaternion(0,0,0,1), GREEN, 0.25);
+  DEBUG_DrawAABB( world, V3(Min*CHUNK_DIMENSION), V3(Max*CHUNK_DIMENSION), Quaternion(0,0,0,1), GREEN, 0.25);
 
   DEBUG_DrawAABB( world, LastFreeSlice,    Quaternion(0,0,0,1), RED,   0.1);
   DEBUG_DrawAABB( world, LastQueuedSlice,  Quaternion(0,0,0,1), TEAL,  0.1);
@@ -90,38 +90,35 @@ GAME_UPDATE_AND_RENDER
   for ( int i = 0; i < WORLD_HASH_SIZE; ++i)
   {
     World_Chunk *chunk = world->ChunkHash[i];
+
     while (chunk)
     {
-      Assert(chunk->WorldP > Min);
-      Assert(chunk->WorldP < Max);
-      DrawWorldChunk( world, chunk, Camera, RG, SG);
+	  if ( (chunk->WorldP >= Min && chunk->WorldP < Max) )
+	  {
+		  DrawWorldChunk( world, chunk, Camera, RG, SG);
 
-      if (IsSet(chunk->Data->flags, Chunk_Initialized) )
-      {
-        // DEBUG_DrawChunkAABB(world, RG, chunk, Quaternion(0,0,0,1), GREEN);
-      }
-      else if (IsSet(chunk->Data->flags, Chunk_Queued) )
-      {
-        DEBUG_DrawChunkAABB(world, RG, chunk, Quaternion(0,0,0,1), WHITE);
-      }
-      else
-      {
-        DEBUG_DrawChunkAABB(world, RG, chunk, Quaternion(0,0,0,1), RED);
-      }
+		  if (IsSet(chunk->Data->flags, Chunk_Initialized) )
+		  {
+			// DEBUG_DrawChunkAABB(world, RG, chunk, Quaternion(0,0,0,1), GREEN);
+		  }
+		  else if (IsSet(chunk->Data->flags, Chunk_Queued) )
+		  {
+			DEBUG_DrawChunkAABB(world, RG, chunk, Quaternion(0,0,0,1), WHITE);
+		  }
+		  else
+		  {
+			DEBUG_DrawChunkAABB(world, RG, chunk, Quaternion(0,0,0,1), RED);
+		  }
 
-      chunk = chunk->Next;
+		  chunk = chunk->Next;
+	  }
+	  else
+	  {
+		  World_Chunk *ChunkToFree = chunk;
+		  chunk = chunk->Next;
+		  FreeWorldChunk(world, ChunkToFree);
+	  }
     }
-  }
-
-  for ( int i = 0; i < world->ChunkToInitCount; ++ i)
-  {
-    World_Chunk *chunk = world->ChunksToInit[i];
-    // Chunks can be freed before they are initialzied, and stay
-    // in the queue, so we actually can't assert these
-    // Assert( IsSet(chunk->Data->flags, Chunk_Queued) );
-    // Assert( NotSet(chunk->Data->flags, Chunk_Initialized) );
-
-    // DEBUG_DrawChunkAABB( world, RG, chunk, Quaternion(1,0,0,0), WHITE );
   }
 
   DrawEntity( world, Player, Camera, RG, SG);

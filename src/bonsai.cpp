@@ -525,8 +525,8 @@ FreeUnneedeWorldChunks(World* world, world_position WorldDisp, Entity *Player)
 void
 UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
 {
-  // v3 Remaining = GrossUpdateVector;
-  v3 Remaining = V3(-1, 0, 1);
+  v3 Remaining = GrossUpdateVector;
+  //Remaining += V3(-1, 0, 1);
   canonical_position OriginalPlayerP = Player->P;
 
   collision_event C;
@@ -607,7 +607,7 @@ UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
 	{
 		world_position WorldDisp = ( Player->P.WorldP - OriginalPlayerP.WorldP );
 
-		FreeUnneedeWorldChunks(world, WorldDisp, Player);
+		// FreeUnneedeWorldChunks(world, WorldDisp, Player);
 		QueueChunksForInit(world, WorldDisp, Player);
 	}
   }
