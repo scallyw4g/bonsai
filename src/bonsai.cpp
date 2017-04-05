@@ -459,6 +459,8 @@ GetSign(world_position P)
 void
 QueueChunksForInit(World* world, world_position WorldDisp, Entity *Player)
 {
+	if (Length(V3(WorldDisp)) == 0) return;
+
   world_position PlayerP = Player->P.WorldP;
 
   world_position Iter = GetSign(WorldDisp);
@@ -523,11 +525,23 @@ FreeUnneedeWorldChunks(World* world, world_position WorldDisp, Entity *Player)
 }
 
 void
+UpdateVisibleRegion(World *world, world_position OriginalPlayerP, Entity *Player)
+{
+	if ( OriginalPlayerP != Player->P.WorldP && DEBUG_SCROLL_WORLD ) // We moved to the next chunk
+	{
+		world_position WorldDisp = ( Player->P.WorldP - OriginalPlayerP );
+		QueueChunksForInit(world, World_Position(WorldDisp.x, 0, 0), Player);
+		QueueChunksForInit(world, World_Position(0, WorldDisp.y, 0), Player);
+		QueueChunksForInit(world, World_Position(0, 0, WorldDisp.z), Player);
+	}
+}
+
+void
 UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
 {
   v3 Remaining = GrossUpdateVector;
-  //Remaining += V3(-1, 0, 1);
-  canonical_position OriginalPlayerP = Player->P;
+  //Remaining += V3(1, 1, 0);
+  world_position OriginalPlayerP = Player->P.WorldP;
 
   collision_event C;
   while ( Remaining != V3(0,0,0) )
@@ -603,17 +617,14 @@ UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
       Player->P = Canonicalize(world, Player->P);
     }
 
-	if ( OriginalPlayerP.WorldP != Player->P.WorldP && DEBUG_SCROLL_WORLD ) // We moved to the next chunk
-	{
-		world_position WorldDisp = ( Player->P.WorldP - OriginalPlayerP.WorldP );
-
-		// FreeUnneedeWorldChunks(world, WorldDisp, Player);
-		QueueChunksForInit(world, WorldDisp, Player);
-	}
   }
+
+  UpdateVisibleRegion(world, OriginalPlayerP, Player);
 
   Player->P = Canonicalize(world, Player->P);
   Assert ( GetCollision(world, Player ).didCollide == false );
+
+  return;
 }
 
 void
