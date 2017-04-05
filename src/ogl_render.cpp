@@ -171,9 +171,6 @@ RenderWorld(World *world, RenderGroup *RG)
   glUniformMatrix4fv(RG->MVPID,         1, GL_FALSE, &mvp[0][0]);
   glUniformMatrix4fv(RG->ModelMatrixID, 1, GL_FALSE, &RG->Basis.ModelMatrix[0][0]);
 
-  glClearColor(1.0f, 0.0f, 1.0f, 0.0f);
-
-
   // Vertices
   glEnableVertexAttribArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, RG->vertexbuffer);
@@ -266,8 +263,11 @@ BufferFace (
        world->ColorData.filled > world->ColorData.bytesAllocd ||
        world->NormalData.filled > world->NormalData.bytesAllocd )
   {
+    world->VertexData.filled -= sizeofVertPositions;
+    world->NormalData.filled -= sizeofNormals;
+    world->ColorData.filled  -= sizeofNormals;
     // Out of memory, panic!
-    assert(!"Out of memory");
+    Assert(!"Out of memory");
     return;
   }
 
@@ -537,7 +537,7 @@ RotateAround( v3 Axis )
 }
 
 void
-DEBUG_DrawLine(World *world, v3 P1, v3 P2, float Thickness = 0.1f )
+DEBUG_DrawLine(World *world, v3 P1, v3 P2, int ColorIndex, float Thickness )
 {
   // 2 verts per line, 3 floats per vert
 
@@ -552,27 +552,19 @@ DEBUG_DrawLine(World *world, v3 P1, v3 P2, float Thickness = 0.1f )
      0, 0, 0
   };
 
-  float FaceColors[] =
-  {
-     0, 0, 0,
-     0, 0, 0,
-     0, 0, 0,
-
-     0, 0, 0,
-     0, 0, 0,
-     0, 0, 0
-  };
+  float FaceColors[32];
+  GetColorData( ColorIndex, FaceColors);
 
   {
     float localVertexData[] =
     {
       P1.x, P1.y, P1.z,
       P2.x, P2.y, P2.z,
-      P1.x + Thickness, P1.y + Thickness, P1.z + Thickness,
+      P1.x + Thickness, P1.y,  P1.z + Thickness,
 
       P2.x, P2.y, P2.z,
       P1.x, P1.y, P1.z,
-      P2.x + Thickness, P2.y + Thickness, P2.z + Thickness
+      P2.x + Thickness, P2.y, P2.z + Thickness
     };
 
 
@@ -584,6 +576,29 @@ DEBUG_DrawLine(World *world, v3 P1, v3 P2, float Thickness = 0.1f )
         FaceColors);
   }
 
+  {
+    float localVertexData[] =
+    {
+      P1.x, P1.y, P1.z,
+      P2.x, P2.y, P2.z,
+      P1.x, P1.y + Thickness,  P1.z,
+
+      P2.x, P2.y, P2.z,
+      P1.x, P1.y, P1.z,
+      P2.x, P2.y + Thickness, P2.z
+    };
+
+
+    BufferFace(world,
+        localVertexData,
+        sizeof(localVertexData),
+        localNormalData,
+        sizeof(localNormalData),
+        FaceColors);
+  }
+
+#if 0
+  // This is for anti-aliasing the lines; it draws extra triangles along the edges which can be set to alpha 0
   {
     float localVertexData[] =
     {
@@ -603,11 +618,12 @@ DEBUG_DrawLine(World *world, v3 P1, v3 P2, float Thickness = 0.1f )
         sizeof(localNormalData),
         FaceColors);
   }
+#endif
 
 }
 
 void
-DEBUG_DrawAABB( World *world, v3 MinP, v3 MaxP, Quaternion Rotation = Quaternion(1,0,0,0) )
+DEBUG_DrawAABB( World *world, v3 MinP, v3 MaxP, Quaternion Rotation, int ColorIndex, float Thickness = 0.05f )
 {
   /* v3 HalfDim = (GetRenderP(world, MaxCP) - GetRenderP(world, MinCP)) / 2; */
 
@@ -658,25 +674,32 @@ DEBUG_DrawAABB( World *world, v3 MinP, v3 MaxP, Quaternion Rotation = Quaternion
   // Render
   //
   // Top
-  DEBUG_DrawLine(world, TopRL, TopRR);
-  DEBUG_DrawLine(world, TopFL, TopFR);
-  DEBUG_DrawLine(world, TopFL, TopRL);
-  DEBUG_DrawLine(world, TopFR, TopRR);
+  DEBUG_DrawLine(world, TopRL, TopRR, ColorIndex, Thickness);
+  DEBUG_DrawLine(world, TopFL, TopFR, ColorIndex, Thickness);
+  DEBUG_DrawLine(world, TopFL, TopRL, ColorIndex, Thickness);
+  DEBUG_DrawLine(world, TopFR, TopRR, ColorIndex, Thickness);
 
   // Right
-  DEBUG_DrawLine(world, TopFR, BotFR);
-  DEBUG_DrawLine(world, TopRR, BotRR);
+  DEBUG_DrawLine(world, TopFR, BotFR, ColorIndex, Thickness);
+  DEBUG_DrawLine(world, TopRR, BotRR, ColorIndex, Thickness);
 
   // Left
-  DEBUG_DrawLine(world, TopFL, BotFL);
-  DEBUG_DrawLine(world, TopRL, BotRL);
+  DEBUG_DrawLine(world, TopFL, BotFL, ColorIndex, Thickness);
+  DEBUG_DrawLine(world, TopRL, BotRL, ColorIndex, Thickness);
 
   // Bottom
-  DEBUG_DrawLine(world, BotRL, BotRR);
-  DEBUG_DrawLine(world, BotFL, BotFR);
-  DEBUG_DrawLine(world, BotFL, BotRL);
-  DEBUG_DrawLine(world, BotFR, BotRR);
+  DEBUG_DrawLine(world, BotRL, BotRR, ColorIndex, Thickness);
+  DEBUG_DrawLine(world, BotFL, BotFR, ColorIndex, Thickness);
+  DEBUG_DrawLine(world, BotFL, BotRL, ColorIndex, Thickness);
+  DEBUG_DrawLine(world, BotFR, BotRR, ColorIndex, Thickness);
 
+  return;
+}
+
+void
+DEBUG_DrawAABB( World *world, rectangle3 Rect, Quaternion Rotation, int ColorIndex, float Thickness = 0.05f )
+{
+  DEBUG_DrawAABB( world, Rect.MinCorner, Rect.MaxCorner, Rotation, ColorIndex, Thickness );
   return;
 }
 
@@ -692,16 +715,12 @@ GetModelSpaceP(Chunk *chunk, v3 P)
 }
 
 void
-DEBUG_DrawChunkAABB( World *world, RenderGroup *RG, World_Chunk *chunk, Quaternion Rotation )
+DEBUG_DrawChunkAABB( World *world, RenderGroup *RG, World_Chunk *chunk, Quaternion Rotation, int ColorIndex )
 {
-  if ( chunk->Data.BoundaryVoxelCount == 0 ) return;
-
-  /* ComputeAndFlushMVP(world, RG, GetRenderP( world, Canonicalize(world, V3(0,0,0), chunk->WorldP)), Rotation); */
-
   v3 MinP = GetRenderP(world, Canonical_Position(world, V3(0,0,0), chunk->WorldP));
-  v3 MaxP = GetRenderP(world, Canonical_Position(world, V3(chunk->Data.Dim), chunk->WorldP));
+  v3 MaxP = GetRenderP(world, Canonical_Position(world, V3(chunk->Data->Dim), chunk->WorldP));
 
-  DEBUG_DrawAABB(world, MinP, MaxP , Rotation );
+  DEBUG_DrawAABB(world, MinP, MaxP , Rotation, ColorIndex );
 }
 
 #if 0
@@ -766,7 +785,7 @@ Clamp01( voxel_position V )
 void
 PushBoundaryVoxel( Chunk *chunk, Voxel voxel )
 {
-  assert( chunk->BoundaryVoxelCount < Volume(chunk->Dim) );
+  Assert( chunk->BoundaryVoxelCount < Volume(chunk->Dim) );
 
   chunk->BoundaryVoxels[chunk->BoundaryVoxelCount] = voxel;
   chunk->BoundaryVoxelCount++;
@@ -779,9 +798,9 @@ BuildExteriorBoundaryVoxels( World *world, World_Chunk *chunk, World_Chunk *Neig
 
   voxel_position AbsInvNeighborVector = ((nvSq-1)*(nvSq-1));
 
-  voxel_position LocalPlane = ClampPositive(chunk->Data.Dim-1) * AbsInvNeighborVector + 1;
+  voxel_position LocalPlane = ClampPositive(chunk->Data->Dim-1) * AbsInvNeighborVector + 1;
 
-  voxel_position LocalOffset = ClampPositive(chunk->Data.Dim*NeighborVector - nvSq);
+  voxel_position LocalOffset = ClampPositive(chunk->Data->Dim*NeighborVector - nvSq);
 
   voxel_position Start = Voxel_Position(0,0,0);
 
@@ -793,17 +812,17 @@ BuildExteriorBoundaryVoxels( World *world, World_Chunk *chunk, World_Chunk *Neig
       {
         voxel_position LocalVoxelP = Voxel_Position(x+LocalOffset.x, y+LocalOffset.y, z+LocalOffset.z);
 
-        if ( !IsFilledInWorld( chunk, LocalVoxelP ) )
+        if ( !IsFilledInChunk( chunk, LocalVoxelP ) )
           continue;
 
         voxel_position NeighborP = ClampPositive(
             (LocalVoxelP -
-            (chunk->Data.Dim * NeighborVector) ) -
+            (chunk->Data->Dim * NeighborVector) ) -
             (NeighborVector*NeighborVector));
 
-        if ( ! IsFilledInWorld( Neighbor, NeighborP) )
+        if ( ! IsFilledInChunk( Neighbor, NeighborP) )
         {
-          Voxel voxel = chunk->Data.Voxels[GetIndex(LocalVoxelP, &chunk->Data)];
+          Voxel voxel = chunk->Data->Voxels[GetIndex(LocalVoxelP, chunk->Data)];
 
           if (NeighborVector.x > 0)
             voxel.flags = SetFlag(voxel.flags, Voxel_RightFace);
@@ -823,8 +842,9 @@ BuildExteriorBoundaryVoxels( World *world, World_Chunk *chunk, World_Chunk *Neig
           if (NeighborVector.z < 0)
             voxel.flags = SetFlag(voxel.flags, Voxel_BackFace);
 
-          assert(GetVoxelP(voxel) == LocalVoxelP);
-          PushBoundaryVoxel( &chunk->Data, voxel );
+      voxel_position P = GetVoxelP(voxel);
+          Assert( P == LocalVoxelP);
+          PushBoundaryVoxel( chunk->Data, voxel );
         }
       }
     }
@@ -914,7 +934,7 @@ BuildInteriorBoundaryVoxels(World *world, Chunk *chunk, world_position WorldP)
 
         if (DidPushVoxel)
         {
-          assert(GetVoxelP(voxel) == Voxel_Position(x,y,z));
+          Assert(GetVoxelP(voxel) == Voxel_Position(x,y,z));
           PushBoundaryVoxel(chunk, voxel);
         }
 
@@ -1025,7 +1045,7 @@ BufferChunkMesh(
 void
 BuildBoundaryVoxels( World *world, World_Chunk *WorldChunk)
 {
-  Chunk* chunk = &WorldChunk->Data;
+  Chunk* chunk = WorldChunk->Data;
   if ( IsSet(chunk->flags, Chunk_RebuildInteriorBoundary) )
   {
     chunk->BoundaryVoxelCount = 0;
@@ -1035,7 +1055,7 @@ BuildBoundaryVoxels( World *world, World_Chunk *WorldChunk)
   if ( IsSet(chunk->flags, Chunk_RebuildExteriorTop   ) )
   {
     voxel_position  TopVector    = Voxel_Position(0,1,0);
-    World_Chunk *Top   = GetWorldChunk( world, WorldChunk->WorldP + TopVector   );
+    World_Chunk *Top = GetWorldChunk( world, WorldChunk->WorldP + TopVector   );
     if ( Top )
     {
       BuildExteriorBoundaryVoxels( world,  WorldChunk,  Top,    TopVector   );
@@ -1046,7 +1066,7 @@ BuildBoundaryVoxels( World *world, World_Chunk *WorldChunk)
   if ( IsSet(chunk->flags, Chunk_RebuildExteriorBot   ) )
   {
     voxel_position  BotVector    = Voxel_Position(0,-1,0);
-    World_Chunk *Bot   = GetWorldChunk( world, WorldChunk->WorldP + BotVector   );
+    World_Chunk *Bot = GetWorldChunk( world, WorldChunk->WorldP + BotVector   );
     if ( Bot )
     {
       BuildExteriorBoundaryVoxels( world,  WorldChunk,  Bot,    BotVector   );
@@ -1057,7 +1077,7 @@ BuildBoundaryVoxels( World *world, World_Chunk *WorldChunk)
   if ( IsSet(chunk->flags, Chunk_RebuildExteriorLeft  ) )
   {
     voxel_position  LeftVector   = Voxel_Position(-1,0,0);
-    World_Chunk *Left  = GetWorldChunk( world, WorldChunk->WorldP + LeftVector  );
+    World_Chunk *Left = GetWorldChunk( world, WorldChunk->WorldP + LeftVector  );
     if ( Left )
     {
       BuildExteriorBoundaryVoxels( world,  WorldChunk,  Left,   LeftVector  );
@@ -1090,7 +1110,7 @@ BuildBoundaryVoxels( World *world, World_Chunk *WorldChunk)
   if ( IsSet(chunk->flags, Chunk_RebuildExteriorBack  ) )
   {
     voxel_position  BackVector   = Voxel_Position(0,0,-1);
-    World_Chunk *Back  = GetWorldChunk( world, WorldChunk->WorldP + BackVector  );
+    World_Chunk *Back = GetWorldChunk( world, WorldChunk->WorldP + BackVector  );
     if ( Back )
     {
       BuildExteriorBoundaryVoxels( world,  WorldChunk,  Back,   BackVector  );
@@ -1110,13 +1130,17 @@ DrawWorldChunk(
     ShadowRenderGroup *SG
   )
 {
+
+  if (IsSet(WorldChunk->Data->flags, Chunk_Initialized) )
+  {
+
 #if DEBUG_CHUNK_AABB
-  DEBUG_DrawChunkAABB( world, RG, WorldChunk, Quaternion(1,0,0,0) );
+    /* DEBUG_DrawChunkAABB( world, RG, WorldChunk, Quaternion(1,0,0,0) ); */
 #endif
 
-
-  BuildBoundaryVoxels(world, WorldChunk);
-  BufferChunkMesh(world, &WorldChunk->Data, WorldChunk->WorldP, RG, SG, Camera);
+    BuildBoundaryVoxels(world, WorldChunk);
+    BufferChunkMesh(world, WorldChunk->Data, WorldChunk->WorldP, RG, SG, Camera);
+  }
 }
 
 void
@@ -1133,12 +1157,19 @@ DrawEntity(
   /* glUniform3fv(RG->LightPID, 1, &LightP[0]); */
   //
 
-  if ( IsSet(entity->Model.flags, Chunk_RebuildInteriorBoundary) )
-  {
-    BuildInteriorBoundaryVoxels(world, &entity->Model, entity->P.WorldP);
-  }
+  if (!entity->Spawned)
+    return;
 
-  BufferChunkMesh(world, &entity->Model, entity->P.WorldP, RG, SG, Camera, entity->P.Offset);
+  if ( IsSet(entity->Model->flags, Chunk_Initialized) )
+  {
+
+    if ( IsSet(entity->Model->flags, Chunk_RebuildInteriorBoundary) )
+    {
+      BuildInteriorBoundaryVoxels(world, entity->Model, entity->P.WorldP);
+    }
+
+    BufferChunkMesh(world, entity->Model, entity->P.WorldP, RG, SG, Camera, entity->P.Offset);
+  }
 
   return;
 }

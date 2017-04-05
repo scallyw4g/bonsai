@@ -13,10 +13,12 @@
 
 #define ArrayCount(a) (sizeof(a)/sizeof(a[0]))
 
-#define InvalidDefaultCase default: {assert(false);} break
+#define InvalidDefaultCase default: {Assert(false);} break
 
-enum ChunkFlags {
-  Chunk_Uninitialized           = 1 << 0,
+enum ChunkFlags
+{
+  Chunk_Uninitialized           = 0 << 0,
+  Chunk_Initialized             = 1 << 0,
 
   Chunk_Entity                  = 1 << 1,
   Chunk_World                   = 1 << 2,
@@ -27,9 +29,11 @@ enum ChunkFlags {
   Chunk_RebuildExteriorRight    = 1 << 7,
   Chunk_RebuildExteriorFront    = 1 << 8,
   Chunk_RebuildExteriorBack     = 1 << 9,
+  Chunk_Queued                  = 1 << 10,
 };
 
-enum VoxelFlags {
+enum VoxelFlags
+{
   Voxel_Filled     = 1 << (FINAL_COLOR_BIT + 0),
 
   Voxel_LeftFace   = 1 << (FINAL_COLOR_BIT + 1),
@@ -40,130 +44,10 @@ enum VoxelFlags {
   Voxel_BackFace   = 1 << (FINAL_COLOR_BIT + 6)
 };
 
-inline int
-UnSetFlag( int Flags, int Flag )
-{
-  int Result = (Flags & ~Flag);
-  return Result;
-}
-
-inline int
-SetFlag( int Flags, int Flag )
-{
-  int Result = (Flags | Flag);
-  return Result;
-}
-
-inline bool
-IsSet( int Flags, int Flag )
-{
-  bool Result = ( (Flags & Flag) != 0 );
-  return Result;
-}
-
-inline bool
-NotSet( int Flags, int Flag )
-{
-  bool Result = !(IsSet(Flags, Flag));
-  return Result;
-}
-
 struct Voxel
 {
   int flags;
 };
-
-inline int
-GetVoxelColor(Voxel V)
-{
-  int Color = (V.flags >> (FINAL_POSITION_BIT) ) & ~( 0xFFFFFFFF << (COLOR_BIT_WIDTH));
-
-  assert(Color < PALETTE_SIZE);
-  return Color;
-}
-
-inline Voxel
-SetVoxelColor(Voxel V, int w)
-{
-  Voxel Result = V;
-
-  unsigned int flagMask = (0xFFFFFFFF << FINAL_COLOR_BIT);
-  unsigned int colorMask = ( flagMask | ~(0xFFFFFFFF << (FINAL_POSITION_BIT)) );
-
-  int currentFlags = Result.flags & colorMask;
-
-  Result.flags = currentFlags;
-  Result.flags |= (w << (FINAL_POSITION_BIT));
-
-  assert(GetVoxelColor(Result) == w);
-
-  return Result;
-}
-
-// TODO(Jesse): Is this buggy?
-inline voxel_position
-GetVoxelP(chunk_dimension Dim, int i)
-{
- int x = i % Dim.x;
- int y = (i/Dim.x) % Dim.y ;
- int z = i / (Dim.x*Dim.y);
-
- assert(x <= Dim.x);
- assert(y <= Dim.y);
- assert(z <= Dim.z);
-
- voxel_position Result = Voxel_Position(x,y,z);
- return Result;
-}
-
-inline voxel_position
-GetVoxelP(Voxel V)
-{
-  voxel_position P = Voxel_Position(
-    V.flags >> (POSITION_BIT_WIDTH * 0) & 0x000000FF >> (8 - POSITION_BIT_WIDTH),
-    V.flags >> (POSITION_BIT_WIDTH * 1) & 0x000000FF >> (8 - POSITION_BIT_WIDTH),
-    V.flags >> (POSITION_BIT_WIDTH * 2) & 0x000000FF >> (8 - POSITION_BIT_WIDTH)
-  );
-
-  return P;
-}
-
-inline Voxel
-SetVoxelP(Voxel V, voxel_position P)
-{
-  assert( P.x < Pow2(POSITION_BIT_WIDTH) );
-  assert( P.y < Pow2(POSITION_BIT_WIDTH) );
-  assert( P.z < Pow2(POSITION_BIT_WIDTH) );
-
-  Voxel Result = V;
-
-  int currentFlags = ( Result.flags & (0xFFFFFFFF << FINAL_POSITION_BIT));
-  Result.flags = currentFlags;
-
-  Result.flags |= P.x << (POSITION_BIT_WIDTH * 0);
-  Result.flags |= P.y << (POSITION_BIT_WIDTH * 1);
-  Result.flags |= P.z << (POSITION_BIT_WIDTH * 2);
-
-  assert(GetVoxelP(Result) == P);
-
-  return Result;
-
-}
-
-Voxel
-GetVoxel(int x, int y, int z, int w)
-{
-  Voxel Result = {};
-  voxel_position P = Voxel_Position(x,y,z);
-
-  Result = SetVoxelP(Result, P );
-  Result = SetVoxelColor(Result, w);
-
-  assert(GetVoxelP(Result) == P);
-  assert(GetVoxelColor(Result) == w);
-
-  return Result;
-}
 
 struct Chunk
 {
@@ -177,84 +61,28 @@ struct Chunk
   chunk_dimension Dim;
 };
 
-void
-ZeroChunk( Chunk * chunk )
-{
-  for ( int i = 0; i < Volume(chunk->Dim); ++ i)
-  {
-    chunk->Voxels[i].flags = 0;
-  }
-
-  chunk->BoundaryVoxelCount = 0;
-
-  chunk->flags = 0;
-  chunk->flags = SetFlag( chunk->flags, Chunk_Uninitialized );
-  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildInteriorBoundary );
-  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorTop   );
-  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorBot   );
-  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorLeft  );
-  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorRight );
-  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorFront );
-  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorBack  );
-}
-
-inline int
-GetIndex(voxel_position P, Chunk *chunk)
-{
-  int i =
-    (P.x) +
-    (P.y*chunk->Dim.x) +
-    (P.z*chunk->Dim.x*chunk->Dim.y);
-
-  assert(i < Volume(chunk->Dim));
-
-  return i;
-}
-
-Chunk
-AllocateChunk(chunk_dimension Dim)
-{
-  Chunk Result;
-
-  Result.Dim = Dim;
-
-  Result.Voxels = (Voxel*)calloc(Volume(Dim), sizeof(Voxel));
-  Result.BoundaryVoxels = (Voxel*)calloc(Volume(Dim), sizeof(Voxel));
-
-  ZeroChunk(&Result);
-
-  for (int z = 0; z < Result.Dim.z; ++z)
-  {
-    for (int y = 0; y < Result.Dim.y; ++y)
-    {
-      for (int x = 0; x < Result.Dim.x; ++x)
-      {
-        voxel_position P = Voxel_Position(x,y,z);
-        int i = GetIndex(P, &Result);
-        Result.Voxels[i] = SetVoxelP( Result.Voxels[i], P );
-      }
-    }
-  }
-
-  return Result;
-}
-
 struct World_Chunk
 {
-  Chunk Data;
+  Chunk *Data;
   world_position WorldP;
+
+  // TODO(Jesse): This is only for looking up chunks in the hashtable and
+  // should be factored out of this struct somehow as it's cold data
+  World_Chunk *Next;
+  World_Chunk *Prev;
 };
 
-World_Chunk
-AllocateWorldChunk(chunk_dimension Dim, voxel_position WorldP)
+struct free_world_chunk
 {
-  World_Chunk Result;
-  Result.Data = AllocateChunk(Dim);
+  World_Chunk *Chunk;
+  World_Chunk *Next;
+};
 
-  Result.WorldP = WorldP;
-
-  return Result;
-}
+struct collision_event
+{
+  canonical_position CP;
+  bool didCollide;
+};
 
 struct Frustum
 {
@@ -285,52 +113,31 @@ struct VertexBlock
 
 struct Entity
 {
-  Chunk Model;
+  Chunk *Model;
   v3 Velocity;
   v3 Acceleration;
 
   canonical_position P;
 
   Quaternion Rotation;
+
+  bool Spawned;
 };
-
-struct ChunkStack
-{
-  World_Chunk *chunks; // This should be Volume(VisibleRegion) chunks
-  int count;
-};
-
-World_Chunk
-PopChunkStack(ChunkStack *stack)
-{
-  World_Chunk Result = stack->chunks[--stack->count];
-
-  assert(stack->count >= 0);
-  return Result;
-};
-
-void
-PushChunkStack(ChunkStack *stack, World_Chunk chunk)
-{
-  assert(stack->count + 1 < CHUNK_STACK_SIZE);
-
-  stack->chunks[stack->count++] = chunk;
-  return;
-};
-
 
 struct World
 {
-  World_Chunk *Chunks;
+  World_Chunk **ChunkHash;
 
-  ChunkStack FreeChunks;
+  World_Chunk **ChunksToInit;
+  int ChunkToInitCount;
+
+  World_Chunk **FreeChunks;
+  int FreeChunkCount;
 
   // This is the number of chunks in xyz we're going to update and render
   chunk_dimension VisibleRegion;
 
   chunk_dimension ChunkDim;
-
-  world_position VisibleRegionOrigin;
 
   PerlinNoise Noise;
 
@@ -343,39 +150,275 @@ struct World
   int VertexCount; // How many verticies are we drawing
 };
 
-struct collision_event
+inline int
+UnSetFlag( int Flags, int Flag )
 {
-  canonical_position CP;
-  bool didCollide;
-};
+  int Result = (Flags & ~Flag);
+  return Result;
+}
 
-World_Chunk*
-GetWorldChunk( World *world, world_position WorldP )
+inline int
+SetFlag( int Flags, int Flag )
 {
-  World_Chunk *Result;
+  int Result = (Flags | Flag);
+  return Result;
+}
 
-  if (
-    WorldP.x < 0 ||
-    WorldP.x >= world->VisibleRegion.x ||
+inline bool
+IsSet( int Flags, int Flag )
+{
+  bool Result = ( (Flags & Flag) != 0 );
+  return Result;
+}
 
-    WorldP.y < 0 ||
-    WorldP.y >= world->VisibleRegion.y ||
+inline bool
+NotSet( int Flags, int Flag )
+{
+  bool Result = !(IsSet(Flags, Flag));
+  return Result;
+}
 
-    WorldP.z < 0 ||
-    WorldP.z >= world->VisibleRegion.z )
+inline int
+GetVoxelColor(Voxel V)
+{
+  int Color = (V.flags >> (FINAL_POSITION_BIT) ) & ~( 0xFFFFFFFF << (COLOR_BIT_WIDTH));
+
+  Assert(Color < PALETTE_SIZE);
+  return Color;
+}
+
+inline Voxel
+SetVoxelColor(Voxel V, int w)
+{
+  Voxel Result = V;
+
+  unsigned int flagMask = (0xFFFFFFFF << FINAL_COLOR_BIT);
+  unsigned int colorMask = ( flagMask | ~(0xFFFFFFFF << (FINAL_POSITION_BIT)) );
+
+  int currentFlags = Result.flags & colorMask;
+
+  Result.flags = currentFlags;
+  Result.flags |= (w << (FINAL_POSITION_BIT));
+
+  Assert(GetVoxelColor(Result) == w);
+
+  return Result;
+}
+
+inline voxel_position
+GetVoxelP(chunk_dimension Dim, int i)
+{
+ int x = i % Dim.x;
+ int y = (i/Dim.x) % Dim.y ;
+ int z = i / (Dim.x*Dim.y);
+
+ Assert(x <= Dim.x);
+ Assert(y <= Dim.y);
+ Assert(z <= Dim.z);
+
+ voxel_position Result = Voxel_Position(x,y,z);
+ return Result;
+}
+
+inline voxel_position
+GetVoxelP(Voxel V)
+{
+  voxel_position P = Voxel_Position(
+    V.flags >> (POSITION_BIT_WIDTH * 0) & 0x000000FF >> (8 - POSITION_BIT_WIDTH),
+    V.flags >> (POSITION_BIT_WIDTH * 1) & 0x000000FF >> (8 - POSITION_BIT_WIDTH),
+    V.flags >> (POSITION_BIT_WIDTH * 2) & 0x000000FF >> (8 - POSITION_BIT_WIDTH)
+  );
+
+  return P;
+}
+
+inline Voxel
+SetVoxelP(Voxel V, voxel_position P)
+{
+  Assert( P.x < Pow2(POSITION_BIT_WIDTH) );
+  Assert( P.y < Pow2(POSITION_BIT_WIDTH) );
+  Assert( P.z < Pow2(POSITION_BIT_WIDTH) );
+
+  Voxel Result = V;
+
+  int currentFlags = ( Result.flags & (0xFFFFFFFF << FINAL_POSITION_BIT));
+  Result.flags = currentFlags;
+
+  Result.flags |= P.x << (POSITION_BIT_WIDTH * 0);
+  Result.flags |= P.y << (POSITION_BIT_WIDTH * 1);
+  Result.flags |= P.z << (POSITION_BIT_WIDTH * 2);
+
+  Assert(GetVoxelP(Result) == P);
+
+  return Result;
+
+}
+
+Voxel
+GetVoxel(int x, int y, int z, int w)
+{
+  Voxel Result = {};
+  voxel_position P = Voxel_Position(x,y,z);
+
+  Result = SetVoxelP(Result, P );
+  Result = SetVoxelColor(Result, w);
+
+  Assert(GetVoxelP(Result) == P);
+  Assert(GetVoxelColor(Result) == w);
+
+  return Result;
+}
+
+void
+ZeroChunk( Chunk *chunk )
+{
+  for ( int i = 0; i < Volume(chunk->Dim); ++ i)
   {
-    /* assert(false); // Requesting outside the initialized world; no bueno? */
-    return 0;
+    chunk->Voxels[i].flags = 0;
   }
 
+  chunk->BoundaryVoxelCount = 0;
+
+  chunk->flags = 0;
+
+  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildInteriorBoundary );
+
+  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorTop   );
+  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorBot   );
+  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorLeft  );
+  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorRight );
+  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorFront );
+  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorBack  );
+
+  return;
+}
+
+unsigned int
+GetWorldChunkHash(world_position P)
+{
+  // TODO(Jesse): Better hash function!
+  unsigned int HashIndex = (((unsigned)P.x + (unsigned)P.y + (unsigned)P.z) * 42 * 13 * 233) % WORLD_HASH_SIZE;
+  Assert(HashIndex < WORLD_HASH_SIZE);
+
+  return HashIndex;
+}
+
+void
+FreeWorldChunk(World *world, World_Chunk *chunk)
+{
+  // Unlink from middle of linked list
+  if (chunk->Prev)
+  {
+    chunk->Prev->Next = chunk->Next;
+  }
+
+  if (chunk->Next)
+  {
+    chunk->Next->Prev = chunk->Prev;
+  }
+
+  // Unlink from head end of linked list
+  if (!chunk->Prev)
+  {
+    world->ChunkHash[GetWorldChunkHash(chunk->WorldP)] = chunk->Next;
+  }
+
+  chunk->Prev = 0;
+  chunk->Next = 0;
+
+  Assert(world->FreeChunkCount < FREELIST_SIZE);
+  world->FreeChunks[world->FreeChunkCount++] = chunk;
+
+  ZeroChunk(chunk->Data);
+
+  Assert( NotSet(chunk->Data->flags, Chunk_Initialized) );
+  Assert( NotSet(chunk->Data->flags, Chunk_Queued) );
+
+  return;
+}
+
+inline int
+GetIndex(voxel_position P, Chunk *chunk)
+{
   int i =
-    WorldP.x +
-    (WorldP.y * world->VisibleRegion.x) +
-    (WorldP.z * world->VisibleRegion.x * world->VisibleRegion.y);
+    (P.x) +
+    (P.y*chunk->Dim.x) +
+    (P.z*chunk->Dim.x*chunk->Dim.y);
 
-  Result = &world->Chunks[i];
+  Assert(i < Volume(chunk->Dim));
 
-  assert( Result->WorldP == WorldP );
+  return i;
+}
+
+Chunk*
+AllocateChunk(chunk_dimension Dim)
+{
+  Chunk *Result = (Chunk*)calloc(1, sizeof(Chunk));
+  Assert(Result);
+
+  Result->Dim = Dim;
+
+  Result->Voxels = (Voxel*)calloc(Volume(Dim), sizeof(Voxel));
+  Result->BoundaryVoxels = (Voxel*)calloc(Volume(Dim), sizeof(Voxel));
+  Assert(Result->Voxels);
+  Assert(Result->BoundaryVoxels);
+
+  ZeroChunk(Result);
+
+  for (int z = 0; z < Result->Dim.z; ++z)
+  {
+    for (int y = 0; y < Result->Dim.y; ++y)
+    {
+      for (int x = 0; x < Result->Dim.x; ++x)
+      {
+        voxel_position P = Voxel_Position(x,y,z);
+        int i = GetIndex(P, Result);
+        Result->Voxels[i] = SetVoxelP( Result->Voxels[i], P );
+      }
+    }
+  }
+
+  return Result;
+}
+
+void
+InsertChunkIntoWorld(World *world, World_Chunk *chunk)
+{
+  unsigned int HashIndex = GetWorldChunkHash(chunk->WorldP);
+  World_Chunk *Last = world->ChunkHash[HashIndex];;
+
+  if (Last)
+  {
+    Assert(Last->WorldP != chunk->WorldP);
+
+    while (Last->Next)
+    {
+      Assert(Last->WorldP != chunk->WorldP);
+      Last = Last->Next;
+    }
+
+    Last->Next = chunk;
+    chunk->Prev = Last;
+  }
+  else
+  {
+    world->ChunkHash[HashIndex] = chunk;
+  }
+
+  return;
+}
+
+World_Chunk*
+AllocateWorldChunk(World *world, world_position WorldP)
+{
+  World_Chunk *Result = (World_Chunk*)calloc(1, sizeof(World_Chunk));
+  Assert(Result);
+
+  Result->Data = AllocateChunk(Chunk_Dimension(CD_X, CD_Y, CD_Z));
+
+  Result->WorldP = WorldP;
+
+  InsertChunkIntoWorld(world, Result);
 
   return Result;
 }
@@ -398,22 +441,43 @@ IsFacingPoint( v3 FaceToPoint, v3 FaceNormal )
 }
 
 inline bool
-IsFilledInWorld( World_Chunk *chunk, voxel_position VoxelP )
+IsFilledInChunk( World_Chunk *chunk, voxel_position VoxelP )
 {
   bool isFilled = true;
 
-  if (chunk)
+  if (chunk && IsSet(chunk->Data->flags, Chunk_Initialized) )
   {
-    int i = GetIndex(VoxelP, &chunk->Data);
+    int i = GetIndex(VoxelP, chunk->Data);
+    Assert(i > -1);
+    Assert(i < Volume(chunk->Data->Dim));
+    Assert(VoxelP == GetVoxelP(chunk->Data->Voxels[i]));
 
-    assert(i > -1);
-    assert(i < Volume(chunk->Data.Dim));
-    assert(VoxelP == GetVoxelP(chunk->Data.Voxels[i]));
-
-    isFilled = IsSet(chunk->Data.Voxels[i].flags, Voxel_Filled);
+    isFilled = IsSet(chunk->Data->Voxels[i].flags, Voxel_Filled);
   }
 
   return isFilled;
+}
+
+World_Chunk*
+GetWorldChunk( World *world, world_position P )
+{
+  unsigned int HashIndex = GetWorldChunkHash(P);
+  World_Chunk *Result = world->ChunkHash[HashIndex];
+
+  while (Result)
+  {
+    if ( Result->WorldP == P )
+        break;
+
+    Result = Result->Next;
+  }
+
+  if (Result)
+  {
+    Assert(Result->WorldP == P) 
+  }
+
+  return Result;
 }
 
 inline bool
@@ -430,7 +494,7 @@ IsFilledInWorld( World *world, World_Chunk *chunk, canonical_position VoxelP )
       localChunk = GetWorldChunk(world, VoxelP.WorldP);
     }
 
-    isFilled = IsFilledInWorld( localChunk, Voxel_Position(VoxelP.Offset) );
+    isFilled = IsFilledInChunk( localChunk, Voxel_Position(VoxelP.Offset) );
   }
 
   return isFilled;
@@ -439,7 +503,7 @@ IsFilledInWorld( World *world, World_Chunk *chunk, canonical_position VoxelP )
 inline bool
 NotFilledInWorld( World *world, World_Chunk *chunk, canonical_position VoxelP )
 {
-  bool Result = !(IsFilledInWorld(world,chunk,VoxelP));
+  bool Result = !(IsFilledInWorld(world, chunk, VoxelP));
   return Result;
 }
 
@@ -448,8 +512,8 @@ IsFilled( Chunk *chunk, voxel_position VoxelP )
 {
   int i = GetIndex(VoxelP, chunk);
 
-  assert(i > -1);
-  assert(i < Volume(chunk->Dim));
+  Assert(i > -1);
+  Assert(i < Volume(chunk->Dim));
 
   bool isFilled = IsSet(chunk->Voxels[i].flags, Voxel_Filled);
   return isFilled;

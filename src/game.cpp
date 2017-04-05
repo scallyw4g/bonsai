@@ -1,26 +1,42 @@
 
-
 #include <bonsai.h>
 #include <render.h>
 
-#include <bonsai.cpp>
 #include <constants.hpp>
+#include <bonsai.cpp>
 
 #include <time.h>
 
+
 void
-RegenerateGameWorld( World *world, Entity *Player )
+SeedWorldAndUnspawnPlayer( World *world, Entity *Player )
 {
-  Log("\n\n\n\n\n");
-  srand(time(NULL));
-  world->VisibleRegionOrigin = World_Position(0,0,0);
-  do
-  {
-    PerlinNoise Noise(rand());
-    world->Noise = Noise;
-    ZeroWorldChunks(world);
-    GenerateVisibleRegion( world , Voxel_Position(0,0,0) );
-  } while (!SpawnPlayer( world, Player ) );
+
+  srand(DEBUG_NOISE_SEED);
+  PerlinNoise Noise(rand());
+  world->Noise = Noise;
+
+  Player->Spawned = false;
+
+  return;
+}
+
+v3
+GetEntityDelta(World *world, Entity *Player, v3 Input, float dt)
+{
+  // TODO : Bake these into the terrain/model ?
+  v3 drag = V3(0.6f, 1.0f, 0.6f);
+
+  Player->Acceleration = Input * PLAYER_ACCEL_MULTIPLIER; // m/s2
+
+  if (IsGrounded(world, Player) && (glfwGetKey( window, GLFW_KEY_SPACE ) == GLFW_PRESS))
+      Player->Velocity.y += PLAYER_JUMP_STRENGTH; // Jump
+
+  Player->Acceleration += world->Gravity * dt; // Apply Gravity
+  Player->Velocity = (Player->Velocity + (Player->Acceleration)) * drag; // m/s
+
+  v3 PlayerDelta = Player->Velocity * dt;
+  return PlayerDelta;
 }
 
 void
@@ -36,28 +52,25 @@ GAME_UPDATE_AND_RENDER
   )
 {
   if ( glfwGetKey(window, GLFW_KEY_ENTER ) == GLFW_PRESS )
-    RegenerateGameWorld(world, Player);
+    SeedWorldAndUnspawnPlayer(world, Player);
 
-  // TODO : Bake these into the terrain/model ?
-  v3 drag = V3(0.6f, 1.0f, 0.6f);
+  if (Player->Spawned)
+  {
+    v3 Input = GetInputsFromController(Camera);
+    v3 PlayerDelta = GetEntityDelta(world, Player, Input, dt);
+    UpdatePlayerP( world, Player, PlayerDelta );
+    if (Length(Input) > 0) Player->Rotation = LookAt(Input);
+  }
+  else // Try to respawn the player until enough of the world has been initialized to do so
+  {
+    SpawnPlayer( world, Player );
+  }
 
-  v3 Input = GetInputsFromController(Camera);
-  Player->Acceleration = Input * PLAYER_ACCEL_MULTIPLIER; // m/s2
+  InitializeWorldChunks( world );
 
-  if (IsGrounded(world, Player) && (glfwGetKey( window, GLFW_KEY_SPACE ) == GLFW_PRESS))
-      Player->Velocity.y += PLAYER_JUMP_STRENGTH; // Jump
-
-  Player->Acceleration += world->Gravity * dt; // Apply Gravity
-  Player->Velocity = (Player->Velocity + (Player->Acceleration)) * drag; // m/s
-
-  v3 PlayerDelta = Player->Velocity * dt;
-
-  UpdatePlayerP( world, Player, PlayerDelta );
   UpdateCameraP( world, Player, Camera );
-  RG->Basis.ViewMatrix = GetViewMatrix(world, Camera);
 
-  if (Length(Input) > 0)
-    Player->Rotation = LookAt(Input);
+  RG->Basis.ViewMatrix = GetViewMatrix(world, Camera);
 
   GlobalLightTheta += dt;
 
@@ -66,27 +79,52 @@ GAME_UPDATE_AND_RENDER
 
   ClearFramebuffers(RG, SG);
 
-  for ( int i = 0; i < Volume(world->VisibleRegion); ++ i )
+  world_position Min = (Player->P.WorldP - (world->VisibleRegion/2)) * CHUNK_DIMENSION;
+  world_position Max = (Player->P.WorldP + (world->VisibleRegion/2)) * CHUNK_DIMENSION;
+
+  DEBUG_DrawAABB( world, V3(Min), V3(Max), Quaternion(0,0,0,1), GREEN, 0.25);
+
+  DEBUG_DrawAABB( world, LastFreeSlice,    Quaternion(0,0,0,1), RED,   0.1);
+  DEBUG_DrawAABB( world, LastQueuedSlice,  Quaternion(0,0,0,1), TEAL,  0.1);
+
+  for ( int i = 0; i < WORLD_HASH_SIZE; ++i)
   {
-#if DEBUG_SUSPEND_DRAWING_WORLD
-    World_Chunk *chunk = &world->Chunks[i];
-    DrawWorldChunk(
-      world,
-      chunk,
-      Camera,
-      RG,
-      SG
-    );
-#endif
+    World_Chunk *chunk = world->ChunkHash[i];
+    while (chunk)
+    {
+      Assert(chunk->WorldP > Min);
+      Assert(chunk->WorldP < Max);
+      DrawWorldChunk( world, chunk, Camera, RG, SG);
+
+      if (IsSet(chunk->Data->flags, Chunk_Initialized) )
+      {
+        // DEBUG_DrawChunkAABB(world, RG, chunk, Quaternion(0,0,0,1), GREEN);
+      }
+      else if (IsSet(chunk->Data->flags, Chunk_Queued) )
+      {
+        DEBUG_DrawChunkAABB(world, RG, chunk, Quaternion(0,0,0,1), WHITE);
+      }
+      else
+      {
+        DEBUG_DrawChunkAABB(world, RG, chunk, Quaternion(0,0,0,1), RED);
+      }
+
+      chunk = chunk->Next;
+    }
   }
 
-  DrawEntity(
-    world,
-    Player,
-    Camera,
-    RG,
-    SG
-  );
+  for ( int i = 0; i < world->ChunkToInitCount; ++ i)
+  {
+    World_Chunk *chunk = world->ChunksToInit[i];
+    // Chunks can be freed before they are initialzied, and stay
+    // in the queue, so we actually can't assert these
+    // Assert( IsSet(chunk->Data->flags, Chunk_Queued) );
+    // Assert( NotSet(chunk->Data->flags, Chunk_Initialized) );
+
+    // DEBUG_DrawChunkAABB( world, RG, chunk, Quaternion(1,0,0,0), WHITE );
+  }
+
+  DrawEntity( world, Player, Camera, RG, SG);
 
   FlushRenderBuffers(world, RG, SG, Camera);
 
@@ -142,10 +180,11 @@ main( void )
   glBindVertexArray(VertexArrayID);
 
   World world;
-  AllocateWorld(&world);
-
-
   Entity Player;
+
+  AllocateWorld(&world);
+  SeedWorldAndUnspawnPlayer(&world, &Player);
+
 
   /* Player.Model = LoadVox("./chr_knight.vox"); */
   /* Player.Model = LoadVox("./ephtracy.vox"); */
@@ -159,8 +198,11 @@ main( void )
   /* Player.Model = AllocateChunk(Chunk_Dimension(13,7,7), World_Position(0,0,0)); */
   /* FillChunk(&Player.Model); */
 
-  Player.Model.flags = SetFlag( Player.Model.flags, Chunk_Entity);
+  Player.Model->flags = SetFlag( Player.Model->flags, Chunk_Entity);
   Player.Rotation = Quaternion(1,0,0,0);
+  Player.P.Offset = V3(0,0,0);
+  Player.P.WorldP = World_Position(world.VisibleRegion/2);
+  Player.Spawned = false;
 
   Camera_Object Camera = {};
   Camera.Frust.farClip = 500.0f;
@@ -169,24 +211,15 @@ main( void )
   Camera.Frust.FOV = 45.0f;
   Camera.P = CAMERA_INITIAL_P;
 
-  do
-  {
-    srand(time(NULL));
-    PerlinNoise Noise(rand());
-    world.Noise = Noise;
-
-    ZeroWorldChunks(&world);
-    GenerateVisibleRegion( &world , Voxel_Position(0,0,0) );
-    /* Log("spawning plyawer\n"); */
-  } while (!SpawnPlayer( &world, &Player ) );
-
-  double lastTime = glfwGetTime();
 
 
   /*
    *  Main Render loop
    *
    */
+
+  double lastTime = glfwGetTime();
+
   do
   {
     double currentTime = glfwGetTime();
@@ -196,36 +229,10 @@ main( void )
     accumulatedTime += dt;
     numFrames ++;
 
-
-    /* timespec T1; */
-    /* clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &T1); */
-
-    /* CALLGRIND_START_INSTRUMENTATION; */
-    /* CALLGRIND_TOGGLE_COLLECT; */
-
     RG.Basis.ProjectionMatrix = GetProjectionMatrix(&Camera, WindowWidth, WindowHeight);
 
-    GAME_UPDATE_AND_RENDER(
-      &world,
-      &Player,
-      &Camera,
-      dt,
+    GAME_UPDATE_AND_RENDER( &world, &Player, &Camera, dt, &RG, &SG);
 
-      &RG,
-      &SG
-    );
-
-    /* CALLGRIND_TOGGLE_COLLECT; */
-
-    /* timespec T2; */
-    /* clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &T2); */
-
-    /* if ( T2.tv_sec - T1.tv_sec > 0 ) T1.tv_nsec -= 1000000000; */
-
-    /* Log(" %d ms this frame \n\n\n", */
-    /*     (int)(T2.tv_nsec -T1.tv_nsec)/1000000 ); */
-
-    /* Log(" %d triangles \n", tris); */
     tris=0;
 
   } // Check if the ESC key was pressed or the window was closed
@@ -247,21 +254,7 @@ main( void )
   glfwTerminate();
   /* glfwDestroyWindow(window); */
 
-  for ( int i = 0; i < Volume(world.VisibleRegion) ; ++ i )
-  {
-    free( world.Chunks[i].Data.Voxels );
-    free( world.Chunks[i].Data.BoundaryVoxels );
-  }
-
-  free( world.VertexData.Data );
-  free( world.ColorData.Data );
-  free( world.NormalData.Data );
-
-  free( world.Chunks );
-  free( world.FreeChunks.chunks );
-
-  free(Player.Model.Voxels);
-  free(Player.Model.BoundaryVoxels);
+  // TODO(Jesse): Manual memory management instead of leaking everything !!!!
 
   return 0;
 }

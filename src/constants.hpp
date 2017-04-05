@@ -24,9 +24,11 @@
 #define CD_Z 8
 
 // Visible Region XYZ - Must be > (3,3,3)
-#define VR_X 8
-#define VR_Y 8
-#define VR_Z 8
+#define VR_X 16
+#define VR_Y 16
+#define VR_Z 16
+
+#define VOLUME_VISIBLE_REGION (VR_X*VR_X*VR_X)
 
 #define WORLD_X V3(1,0,0)
 #define WORLD_Y V3(0,1,0)
@@ -37,6 +39,10 @@
 #define VISIBLE_REGION Chunk_Dimension(VR_X,VR_Y,VR_Z)
 
 #define WORLD_SIZE 200
+
+#define WORLD_HASH_SIZE VOLUME_VISIBLE_REGION
+#define FREELIST_SIZE 10*VOLUME_VISIBLE_REGION
+
 #define WORLD_GRAVITY V3(0, -20.0f, 0)
 
 #define PLAYER_STEP_MAX          1
@@ -50,9 +56,11 @@
 #define DEBUG_WORLD_GENERATION        0
 #define DEBUG_LOD_RENDER              0
 #define DEBUG_DRAW_SHADOW_MAP_TEXTURE 0
-#define DEBUG_SUSPEND_DRAWING_WORLD   1
 
-#define DEBUG_FRAMES_TO_RUN          -1
+#define DEBUG_NOISE_SEED 43261.43
+
+#define DEBUG_FRAMES_TO_RUN            -1
+#define DEBUG_CHUNKS_TO_INIT_PER_FRAME 140
 
 #define SCR_WIDTH 1920
 #define SCR_HEIGHT 1080
@@ -62,9 +70,7 @@
 #define SHADOW_MAP_RESOLUTION 2048
 #define DEBUG_TEXTURE_SIZE    512
 
-#define CHUNK_STACK_SIZE (VR_X*VR_X*VR_X)
-
-#define CAMERA_FOCAL_LENGTH (40.0f);
+#define CAMERA_FOCAL_LENGTH (100.0f);
 
 #define CAMERA_INITIAL_P Canonical_Position(&world, V3(1,1,1), World_Position(world.VisibleRegion/2))
 
@@ -84,6 +90,9 @@ DEBUG_GLOBAL int tris = 0;
 DEBUG_GLOBAL int VoxelsIndexed = 0;
 
 DEBUG_GLOBAL float GlobalLightTheta = 0;
+
+DEBUG_GLOBAL rectangle3 LastFreeSlice(V3(0,0,0), V3(0,0,0));
+DEBUG_GLOBAL rectangle3 LastQueuedSlice(V3(0,0,0), V3(0,0,0));
 
 #define FACE_COLOR_SIZE 32
 #define PALETTE_SIZE 256

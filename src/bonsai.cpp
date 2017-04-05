@@ -70,13 +70,13 @@ initWindow( int WindowWidth, int WindowHeight )
   }
   else
   {
-    assert(false); // We hit a real error
+    Assert(false); // We hit a real error
   }
 
   // Ensure we can capture the escape key being pressed below
   glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_FALSE);
 
-  glClearColor(0.35f, 0.0f, 0.5f, 0.0f);
+  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
   // Enable depth test
   glEnable(GL_DEPTH_TEST);
@@ -90,12 +90,13 @@ initWindow( int WindowWidth, int WindowHeight )
 void
 InitializeVoxels( World *world, World_Chunk *WorldChunk )
 {
-  assert(WorldChunk);
+  Assert(WorldChunk);
 
-  Chunk *chunk = &WorldChunk->Data;
+  Chunk *chunk = WorldChunk->Data;
   /* CALLGRIND_TOGGLE_COLLECT; */
 
-  chunk->flags = UnSetFlag(chunk->flags, Chunk_Uninitialized);
+  chunk->flags = SetFlag(chunk->flags, Chunk_Initialized );
+  chunk->flags = UnSetFlag(chunk->flags, Chunk_Queued);
 
   for ( int z = 0; z < chunk->Dim.z; ++ z)
   {
@@ -104,8 +105,15 @@ InitializeVoxels( World *world, World_Chunk *WorldChunk )
       for ( int x = 0; x < chunk->Dim.x; ++ x)
       {
         int i = GetIndex(Voxel_Position(x,y,z), chunk);
-        chunk->Voxels[i] = SetVoxelP(chunk->Voxels[i], Voxel_Position(x,y,z));
+        chunk->Voxels[i].flags = 0;
+
+        voxel_position P = Voxel_Position(x,y,z);
+
+        chunk->Voxels[i] = SetVoxelP(chunk->Voxels[i], P);
         chunk->Voxels[i] = SetVoxelColor(chunk->Voxels[i], 42);
+
+        Assert( GetVoxelP(chunk->Voxels[i]) == P );
+        Assert( NotSet( chunk->Voxels[i].flags, Voxel_Filled) );
 
 
 
@@ -116,7 +124,7 @@ InitializeVoxels( World *world, World_Chunk *WorldChunk )
         }
 #else
         v3 NoiseInputs =
-          ( ( V3(x,y,z) + (world->ChunkDim*(WorldChunk->WorldP+world->VisibleRegionOrigin))) % WORLD_SIZE )
+          ( ( V3(x,y,z) + (world->ChunkDim*(WorldChunk->WorldP))) % WORLD_SIZE )
           /
           WORLD_SIZE;
 
@@ -126,7 +134,22 @@ InitializeVoxels( World *world, World_Chunk *WorldChunk )
 
         double noiseValue = world->Noise.noise(InX, InY, InZ);
 
-        chunk->Voxels[i].flags = SetFlag( chunk->Voxels[i].flags, Floori(noiseValue + 0.5) * Voxel_Filled );
+        int Noise01 = Floori(noiseValue + 0.5);
+
+        Assert(Noise01 == 0 || Noise01 == 1);
+
+        chunk->Voxels[i].flags = SetFlag( chunk->Voxels[i].flags, Noise01 * Voxel_Filled );
+
+        if (Noise01 == 0)
+        {
+          Assert( NotSet( chunk->Voxels[i].flags, Voxel_Filled) );
+        }
+        else
+        {
+          Assert( IsSet( chunk->Voxels[i].flags, Voxel_Filled) );
+        }
+
+        Assert( GetVoxelP(chunk->Voxels[i]) == P );
 #endif
       }
     }
@@ -138,19 +161,25 @@ InitializeVoxels( World *world, World_Chunk *WorldChunk )
 }
 
 void
-ZeroWorldChunks( World *world )
+InitializeWorldChunks( World *world )
 {
-  world->VertexCount = 0;
-  for ( int z = 0; z < world->VisibleRegion.z; ++z )
+  int ChunksToInit = DEBUG_CHUNKS_TO_INIT_PER_FRAME;
+
+  while ( world->ChunkToInitCount > 0 )
   {
-    for ( int y = 0; y < world->VisibleRegion.y; ++y )
+    World_Chunk *chunk = world->ChunksToInit[--world->ChunkToInitCount];
+    world->ChunksToInit[world->ChunkToInitCount] = 0;
+
+    // When chunks are freed they stay in the initialization queue, so we've
+    // got to make sure the chunk we're on is still queued for init
+    if ( IsSet(chunk->Data->flags, Chunk_Queued) )
     {
-      for ( int x = 0; x < world->VisibleRegion.x; ++x )
-      {
-        World_Chunk *chunk = GetWorldChunk(world, World_Position(x,y,z));
-        ZeroChunk(&chunk->Data);
-      }
+      Assert( NotSet(chunk->Data->flags, Chunk_Initialized) );
+      InitializeVoxels(world, chunk);
     }
+
+    if ( ChunksToInit-- == 0 )
+      return;
   }
 
   return;
@@ -229,7 +258,7 @@ GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
 
         World_Chunk *chunk = GetWorldChunk( world, LoopTestP.WorldP );
 
-        if ( IsFilledInWorld(chunk, Voxel_Position(LoopTestP.Offset)) )
+        if ( IsFilledInChunk(chunk, Voxel_Position(LoopTestP.Offset)) )
         {
           Collision.CP = LoopTestP;
           Collision.didCollide = true;
@@ -239,7 +268,7 @@ GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
       }
     }
   }
-end:
+  end:
 
   return Collision;
 }
@@ -247,13 +276,15 @@ end:
 collision_event
 GetCollision(World *world, Entity *entity, v3 Offset = V3(0,0,0) )
 {
+  Assert( entity->Spawned );
+
   collision_event C;
   C.didCollide = false;
 
-  for (int i = 0; i < entity->Model.BoundaryVoxelCount; ++i)
+  for (int i = 0; i < entity->Model->BoundaryVoxelCount; ++i)
   {
     canonical_position CP;
-    CP.Offset = V3(GetVoxelP(entity->Model.BoundaryVoxels[i])) + entity->P.Offset + Offset;
+    CP.Offset = V3(GetVoxelP(entity->Model->BoundaryVoxels[i])) + entity->P.Offset + Offset;
     CP.WorldP = entity->P.WorldP;
 
     C = GetCollision(world, CP, Chunk_Dimension(1,1,1) );
@@ -272,10 +303,10 @@ IsGrounded( World *world, Entity *entity)
   return c.didCollide;
 }
 
-bool
+void
 SpawnPlayer( World *world, Entity *Player )
 {
-  Chunk *Model = &Player->Model;
+  Chunk *Model = Player->Model;
 
   /* Model->Voxels[0].flags = 0; */
   /* Model->Voxels[0].flags = SetFlag( Model->Voxels[0].flags, Voxel_Filled); */
@@ -287,30 +318,24 @@ SpawnPlayer( World *world, Entity *Player )
   canonical_position TestP;
   collision_event Collision;
 
-  int count = 0;
+  int rX = rand() % (world->ChunkDim.x);
+  int rY = rand() % (world->ChunkDim.y);
+  int rZ = rand() % (world->ChunkDim.z);
 
-  do
+  v3 Offset = V3( rX, rY, rZ );
+  world_position WP = World_Position( world->VisibleRegion.x/2, world->VisibleRegion.y/2, world->VisibleRegion.z/2 );
+  /* world_position WP = World_Position( rX, rY, rZ ); */
+  TestP = Canonicalize(world, Offset, WP);
+
+  Collision = GetCollision( world, TestP, Player->Model->Dim);
+
+  if (!Collision.didCollide)
   {
-    if ( ++count > 5 )
-    {
-      return false;
-    }
+    Player->P = TestP;
+    Player->Spawned = true;
+  }
 
-    int rX = rand() % (world->ChunkDim.x);
-    int rY = rand() % (world->ChunkDim.y);
-    int rZ = rand() % (world->ChunkDim.z);
-
-    v3 Offset = V3( rX, rY, rZ );
-    world_position WP = World_Position(world->VisibleRegion.x/2, world->VisibleRegion.y/2, world->VisibleRegion.z/2);
-    TestP = Canonicalize(world, Offset, WP);
-
-    Collision = GetCollision( world, TestP, Model->Dim);
-
-  } while ( Collision.didCollide == true );
-
-  Player->P = TestP;
-
-  return true;
+  return;
 }
 
 v3
@@ -381,98 +406,133 @@ ClampMinus1toInfinity( voxel_position V )
 }
 
 void
-GenerateVisibleRegion( World *world, voxel_position GrossUpdateVector )
+QueueChunkForInit(World *world, World_Chunk *chunk)
 {
-  voxel_position IterVector = GrossUpdateVector + GrossUpdateVector + 1;
+  Assert( NotSet(chunk->Data->flags, Chunk_Queued ) );
+  Assert( NotSet(chunk->Data->flags, Chunk_Initialized) );
 
-  // Clamp magnitude to 1
-  IterVector.x = GetSign(IterVector.x);
-  IterVector.y = GetSign(IterVector.y);
-  IterVector.z = GetSign(IterVector.z);
+  chunk->Data->flags = SetFlag(chunk->Data->flags, Chunk_Queued);
 
-  // Max includes -1 so we can iterate all the way to 0 if we're going down
-  voxel_position UpdateMax = ClampMinus1toInfinity( IterVector * world->VisibleRegion );
-  voxel_position UpdateMin = ClampPositive( -1 * IterVector * (world->VisibleRegion -1) );
+  Assert(world->ChunkToInitCount < FREELIST_SIZE);
+  world->ChunksToInit[world->ChunkToInitCount++] = chunk;
 
-  for ( int z = UpdateMin.z; z != UpdateMax.z; z += IterVector.z )
+
+  return;
+}
+
+World_Chunk*
+GetFreeChunk(World *world, world_position P)
+{
+  World_Chunk *Result = 0;
+
+  if (world->FreeChunkCount == 0)
   {
-    for ( int y = UpdateMin.y; y != UpdateMax.y; y += IterVector.y )
+    Result = AllocateWorldChunk(world, P);
+  }
+  else
+  {
+    Assert(world->FreeChunkCount > 0);
+    Result = world->FreeChunks[--world->FreeChunkCount];
+    Result->WorldP = P;
+
+    Assert(Result->Next == 0);
+    Assert(Result->Prev == 0);
+
+    InsertChunkIntoWorld(world, Result);
+  }
+
+  Assert( NotSet(Result->Data->flags, Chunk_Queued) );
+  Assert( NotSet(Result->Data->flags, Chunk_Initialized) );
+
+  return Result;
+}
+
+world_position
+GetSign(world_position P)
+{
+  world_position Result =
+    World_Position( GetSign(P.x), GetSign(P.y), GetSign(P.z));
+
+  return Result;
+}
+
+void
+QueueChunksForInit(World* world, world_position WorldDisp, Entity *Player)
+{
+  world_position PlayerP = Player->P.WorldP;
+
+  world_position Iter = GetSign(WorldDisp);
+
+  world_position InvAbsIter = ((Iter * Iter)-1) * ((Iter * Iter)-1);
+
+  world_position VRHalfDim = World_Position(world->VisibleRegion/2);
+  world_position VrDim = world->VisibleRegion;
+
+  world_position SliceMin = PlayerP + (VRHalfDim * Iter) - (VRHalfDim * InvAbsIter) - ClampPositive(Iter);
+  world_position SliceMax = PlayerP + (VRHalfDim * Iter) + (VRHalfDim * InvAbsIter) - ClampPositive(Iter) - InvAbsIter;
+
+  LastQueuedSlice = rectangle3(SliceMin*CHUNK_DIMENSION - 1, (SliceMax*CHUNK_DIMENSION + CHUNK_DIMENSION + 1));
+
+  for (int z = SliceMin.z; z <= SliceMax.z; ++ z)
+  {
+    for (int y = SliceMin.y; y <= SliceMax.y; ++ y)
     {
-      for ( int x = UpdateMin.x; x != UpdateMax.x; x += IterVector.x )
+      for (int x = SliceMin.x; x <= SliceMax.x; ++ x)
       {
-        world_position CurrentP = World_Position(x,y,z);
-
-        World_Chunk *chunk = GetWorldChunk(world, CurrentP);
-        World_Chunk *NextChunk = GetWorldChunk(world, CurrentP + GrossUpdateVector );
-        World_Chunk *PrevChunk = GetWorldChunk(world, CurrentP - GrossUpdateVector );
-
-        // We're initializing the world
-        if ( IsSet(chunk->Data.flags, Chunk_Uninitialized) )
-        {
-          ZeroChunk(&chunk->Data);
-          InitializeVoxels( world, chunk );
-          continue;
-        }
-
-        if ( !PrevChunk ) PushChunkStack( &world->FreeChunks, *chunk);
-
-
-        if ( NextChunk ) // We're copying chunks
-        {
-          memcpy( chunk, NextChunk, sizeof(Chunk) );
-          chunk->WorldP = CurrentP;
-        }
-        else // We're inside the maximum boundary
-        {
-          *chunk = PopChunkStack(&world->FreeChunks);
-          chunk->WorldP = CurrentP;
-          ZeroChunk(&chunk->Data);
-          InitializeVoxels( world, chunk );
-        }
-
+        world_position P = World_Position(x,y,z);
+        World_Chunk* chunk = GetFreeChunk(world, P );
+        QueueChunkForInit(world, chunk);
       }
     }
   }
-
-  assert(world->FreeChunks.count == 0);
 }
 
-/* inline collision_event */
-/* GetCollisionForUpdate(World* world, canonical_position *LegalP, v3 UpdateVector, int Sign, Entity *entity) */
-/* { */
-/*   collision_event Result; */
+void
+FreeUnneedeWorldChunks(World* world, world_position WorldDisp, Entity *Player)
+{
+  world_position PlayerP = Player->P.WorldP;
 
-/*   v3 Offset = LegalP->Offset + UpdateVector; */
-/*   canonical_position TestP = Canonicalize( world, Offset, LegalP->WorldP ); */
-/*   collision_event Collision = GetCollision( world, entity ); */
-/*   if ( Collision.didCollide ) */
-/*   { */
-/*     assert( GetSign(Sign) != Zero ); */
-/*     Result.CP.Offset = Collision.CP.Offset - ClampMinus1toInfinity(entity->Model.Dim.x*Sign); */
-/*     Result.CP.WorldP = Collision.CP.WorldP; */
-/*     Result.didCollide = true; */
-/*   } */
-/*   else */
-/*   { */
-/*     Result.CP = TestP; */
-/*     Result.didCollide = false; */
-/*   } */
+  world_position Iter = GetSign(WorldDisp);
 
-/*   Result.CP = Canonicalize( world, Result.CP ); */
+  world_position InvAbsIter = ((Iter * Iter)-1) * ((Iter * Iter)-1);
 
-/*   return Result; */
-/* } */
+  world_position VRHalfDim = World_Position(world->VisibleRegion/2);
+
+  world_position SliceMin = PlayerP - (VRHalfDim * Iter) - (VRHalfDim * InvAbsIter) - ClampPositive(Iter);
+  world_position SliceMax = PlayerP - (VRHalfDim * Iter) + (VRHalfDim * InvAbsIter) - ClampPositive(Iter) - InvAbsIter;
+
+  LastFreeSlice = rectangle3(SliceMin*CHUNK_DIMENSION - 1, (SliceMax*CHUNK_DIMENSION + CHUNK_DIMENSION + 1));
+
+  for (int z = SliceMin.z; z <= SliceMax.z; ++ z)
+  {
+    for (int y = SliceMin.y; y <= SliceMax.y; ++ y)
+    {
+      for (int x = SliceMin.x; x <= SliceMax.x; ++ x)
+      {
+        if ( world->FreeChunkCount == 15 )
+        {
+          // DebugBreak();
+        }
+
+        World_Chunk* chunk = GetWorldChunk(world, World_Position(x,y,z));
+        if (chunk)
+          FreeWorldChunk(world, chunk);
+      }
+    }
+  }
+}
 
 void
 UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
 {
-  v3 Remaining = GrossUpdateVector;
+  // v3 Remaining = GrossUpdateVector;
+  v3 Remaining = V3(-1, 0, 1);
   canonical_position OriginalPlayerP = Player->P;
 
   collision_event C;
   while ( Remaining != V3(0,0,0) )
   {
-    assert(LengthSq(Remaining) >= 0);
+    Assert(LengthSq(Remaining) >= 0);
 
     v3 UpdateVector = GetAtomicUpdateVector(Remaining);
     Remaining -= UpdateVector;
@@ -489,7 +549,7 @@ UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
       Player->P.WorldP.y = C.CP.WorldP.y;
 
       if (UpdateVector.y > 0)
-        Player->P.Offset.y -= (Player->Model.Dim.y-1);
+        Player->P.Offset.y -= (Player->Model->Dim.y-1);
 
       Player->P = Canonicalize(world, Player->P);
     }
@@ -510,7 +570,7 @@ UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
         Player->P.WorldP.x = C.CP.WorldP.x;
 
         if (UpdateVector.x > 0)
-          Player->P.Offset.x -= (Player->Model.Dim.x-1);
+          Player->P.Offset.x -= (Player->Model->Dim.x-1);
       }
       else
       {
@@ -534,7 +594,7 @@ UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
         Player->P.WorldP.z = C.CP.WorldP.z;
 
         if (UpdateVector.z > 0)
-          Player->P.Offset.z -= (Player->Model.Dim.z-1);
+          Player->P.Offset.z -= (Player->Model->Dim.z-1);
       }
       else
       {
@@ -543,27 +603,17 @@ UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
       Player->P = Canonicalize(world, Player->P);
     }
 
-  }
+	if ( OriginalPlayerP.WorldP != Player->P.WorldP && DEBUG_SCROLL_WORLD ) // We moved to the next chunk
+	{
+		world_position WorldDisp = ( Player->P.WorldP - OriginalPlayerP.WorldP );
 
-  // TODO(Jesse) : Can we still do some sanity checking here ?
-  //
-  /* float DisplacementSq = LengthSq( GetRenderP(world, Player->P) - GetRenderP(world, Canonical_Position(model->Offset, model->WorldP)) ); */
-  /* float GrossUpdateLenghtSq = LengthSq(GrossUpdateVector); */
-  /* float tolerance = PLAYER_STEP_MAX*PLAYER_STEP_MAX + 0.1; */
-  /* assert(DisplacementSq - tolerance <= GrossUpdateLenghtSq); */
-
-  if ( OriginalPlayerP.WorldP != Player->P.WorldP && DEBUG_SCROLL_WORLD ) // We moved to the next chunk
-  {
-    voxel_position WorldDisp = (  Player->P.WorldP - OriginalPlayerP.WorldP );
-
-    world->VisibleRegionOrigin += WorldDisp;
-    GenerateVisibleRegion(world, WorldDisp);
-
-    Player->P.WorldP = OriginalPlayerP.WorldP ;
+		FreeUnneedeWorldChunks(world, WorldDisp, Player);
+		QueueChunksForInit(world, WorldDisp, Player);
+	}
   }
 
   Player->P = Canonicalize(world, Player->P);
-  assert ( GetCollision(world, Player ).didCollide == false );
+  Assert ( GetCollision(world, Player ).didCollide == false );
 }
 
 void
@@ -572,7 +622,7 @@ UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera)
 #if DEBUG_CAMERA_FOCUS_ORIGIN
   canonical_position NewTarget = Canonical_Position( V3(0,0,0), World_Position(0,0,0) );
 #else
-  canonical_position NewTarget = Canonicalize(world, Player->P.Offset, Player->P.WorldP) + (Player->Model.Dim/2);
+  canonical_position NewTarget = Canonicalize(world, Player->P.Offset, Player->P.WorldP) + (Player->Model->Dim/2);
 #endif
 
   v3 TargetDelta = GetRenderP(world, NewTarget) - GetRenderP(world, Camera->Target);
@@ -616,14 +666,16 @@ AllocateWorld( World *world )
 
   world->Gravity = WORLD_GRAVITY;
 
-  world->Chunks = (World_Chunk*)calloc( Volume(world->VisibleRegion), sizeof(World_Chunk));
+  world->ChunkHash = (World_Chunk**)calloc( WORLD_HASH_SIZE, sizeof(World_Chunk*));
 
-  // Allocate a second chunks buffer for when we're updating visible region
-  world->FreeChunks.chunks = (World_Chunk*)calloc( Volume(world->VisibleRegion), sizeof(World_Chunk) );
-  world->FreeChunks.count = 0;
+  world->ChunksToInit = (World_Chunk**)calloc( FREELIST_SIZE, sizeof(World_Chunk*));
+  world->ChunkToInitCount = 0;
 
-  { // Allocate five chunks worth of vertices for the render buffer
-    int BufferVertices = 10*(world->ChunkDim.x*world->ChunkDim.y*world->ChunkDim.z * VERT_PER_VOXEL * 3);
+  world->FreeChunks = (World_Chunk**)calloc( FREELIST_SIZE, sizeof(World_Chunk*));
+  world->FreeChunkCount = 0;
+
+  {
+    int BufferVertices = 100*(world->ChunkDim.x*world->ChunkDim.y*world->ChunkDim.z * VERT_PER_VOXEL * 3);
 
     world->VertexData.Data = (GLfloat *)calloc(BufferVertices, sizeof(GLfloat) );
     world->ColorData.Data  = (GLfloat *)calloc(BufferVertices, sizeof(GLfloat) );
@@ -641,7 +693,9 @@ AllocateWorld( World *world )
   }
 
 
-  world->VisibleRegionOrigin = World_Position(0,0,0);
+  Assert(world->VertexData.Data);
+  Assert(world->ColorData.Data );
+  Assert(world->NormalData.Data);
 
   for ( int z = 0; z < world->VisibleRegion.z; ++ z )
   {
@@ -649,12 +703,8 @@ AllocateWorld( World *world )
     {
       for ( int x = 0; x < world->VisibleRegion.x; ++ x )
       {
-        int ChunksAllocated = x +
-          (y*world->VisibleRegion.x) +
-          (z*world->VisibleRegion.x*world->VisibleRegion.y);
-
-        world->Chunks[ChunksAllocated] = AllocateWorldChunk( world->ChunkDim, World_Position(x,y,z) );
-        world->Chunks[ChunksAllocated].Data.flags = SetFlag( world->Chunks[ChunksAllocated].Data.flags, Chunk_World);
+        World_Chunk *chunk = AllocateWorldChunk(world, World_Position(x,y,z));
+        QueueChunkForInit(world, chunk);
       }
     }
   }

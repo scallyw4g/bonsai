@@ -10,12 +10,14 @@ struct canonical_position;
 inline canonical_position
 Canonicalize( World *world, canonical_position CP );
 
-struct v2 {
+struct v2
+{
    float x;
    float y;
 };
 
-union v3 {
+union v3
+{
   struct { float x, y, z; };
   struct { float r, g, b; };
 
@@ -33,7 +35,8 @@ union v3 {
 
 };
 
-union v4 {
+union v4
+{
   struct { float w, x, y, z; };
   struct { float r, g, b, a; };
 
@@ -79,6 +82,7 @@ union v4 {
 };
 
 typedef v4 Quaternion;
+
 
 Quaternion
 operator*(Quaternion A, Quaternion B)
@@ -277,6 +281,7 @@ operator+(voxel_position P1, int i)
 
   return Result;
 }
+
 inline voxel_position
 operator+(voxel_position P1, voxel_position const P2)
 {
@@ -297,6 +302,30 @@ operator-(voxel_position P1, voxel_position const P2)
   Result.x = P1.x - P2.x;
   Result.y = P1.y - P2.y;
   Result.z = P1.z - P2.z;
+
+  return Result;
+}
+
+inline bool
+operator<(voxel_position P1, voxel_position const P2)
+{
+  bool Result = true;
+
+  Result &= P1.x < P2.x;
+  Result &= P1.y < P2.y;
+  Result &= P1.z < P2.z;
+
+  return Result;
+}
+
+inline bool
+operator>(voxel_position P1, voxel_position const P2)
+{
+  bool Result = true;
+
+  Result &= P1.x > P2.x;
+  Result &= P1.y > P2.y;
+  Result &= P1.z > P2.z;
 
   return Result;
 }
@@ -333,6 +362,24 @@ V3(voxel_position wp)
 
   return Result;
 }
+
+struct rectangle3
+{
+  v3 MinCorner;
+  v3 MaxCorner;
+
+  rectangle3 (v3 Min, v3 Max)
+  {
+    MinCorner = Min;
+    MaxCorner = Max;
+  }
+
+  rectangle3 (world_position Min, world_position Max)
+  {
+    MinCorner = V3(Min);
+    MaxCorner = V3(Max);
+  }
+};
 
 inline v3
 GLV3(glm::vec3 vec)

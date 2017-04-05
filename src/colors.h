@@ -4,6 +4,14 @@
  * the columns in this lookup table to match what OpenGL expects: RR GG BB AA
  */
 
+#define BLACK    0
+#define WHITE    1
+#define RED     36
+#define GREEN  186
+#define BLUE   215
+#define TEAL   181
+#define YELLOW  11
+
 //  RR GG BB AA
 static v4 default_palette[PALETTE_SIZE] = {
   V4(0x00, 0x00, 0x00, 0x00),
@@ -267,7 +275,7 @@ static v4 default_palette[PALETTE_SIZE] = {
 void
 GetColorData( int colorIndex, float *Colors)
 {
-  assert(colorIndex < PALETTE_SIZE);
+  Assert(colorIndex < PALETTE_SIZE);
 
   v4 Color = default_palette[colorIndex];
 
