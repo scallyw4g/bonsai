@@ -160,28 +160,6 @@ InitializeVoxels( World *world, World_Chunk *WorldChunk )
   return;
 }
 
-// This is incompatible with hash-table method of looking up world chunks
-#if 0
-void
-ZeroWorldChunks( World *world )
-{
-  world->VertexCount = 0;
-  for ( int z = 0; z < world->VisibleRegion.z; ++z )
-  {
-    for ( int y = 0; y < world->VisibleRegion.y; ++y )
-    {
-      for ( int x = 0; x < world->VisibleRegion.x; ++x )
-      {
-        World_Chunk **chunk = GetWorldChunk(world, World_Position(x,y,z));
-        FreeWorldChunk(world, chunk);
-      }
-    }
-  }
-
-  return;
-}
-#endif
-
 void
 InitializeWorldChunks( World *world )
 {
@@ -435,7 +413,9 @@ QueueChunkForInit(World *world, World_Chunk *chunk)
 
   chunk->Data->flags = SetFlag(chunk->Data->flags, Chunk_Queued);
 
+  Assert(world->ChunkToInitCount < FREELIST_SIZE);
   world->ChunksToInit[world->ChunkToInitCount++] = chunk;
+
 
   return;
 }
@@ -451,6 +431,7 @@ GetFreeChunk(World *world, world_position P)
   }
   else
   {
+    Assert(world->FreeChunkCount > 0);
     Result = world->FreeChunks[--world->FreeChunkCount];
     Result->WorldP = P;
 
@@ -528,6 +509,11 @@ FreeUnneedeWorldChunks(World* world, world_position WorldDisp, Entity *Player)
     {
       for (int x = SliceMin.x; x <= SliceMax.x; ++ x)
       {
+        if ( world->FreeChunkCount == 15 )
+        {
+          // DebugBreak();
+        }
+
         World_Chunk* chunk = GetWorldChunk(world, World_Position(x,y,z));
         if (chunk)
           FreeWorldChunk(world, chunk);
@@ -539,7 +525,8 @@ FreeUnneedeWorldChunks(World* world, world_position WorldDisp, Entity *Player)
 void
 UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
 {
-  v3 Remaining = GrossUpdateVector;
+  // v3 Remaining = GrossUpdateVector;
+  v3 Remaining = V3(-1, 0, 1);
   canonical_position OriginalPlayerP = Player->P;
 
   collision_event C;
@@ -616,21 +603,13 @@ UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
       Player->P = Canonicalize(world, Player->P);
     }
 
-  }
+	if ( OriginalPlayerP.WorldP != Player->P.WorldP && DEBUG_SCROLL_WORLD ) // We moved to the next chunk
+	{
+		world_position WorldDisp = ( Player->P.WorldP - OriginalPlayerP.WorldP );
 
-  // TODO(Jesse) : Can we still do some sanity checking here ?
-  //
-  /* float DisplacementSq = LengthSq( GetRenderP(world, Player->P) - GetRenderP(world, Canonical_Position(model->Offset, model->WorldP)) ); */
-  /* float GrossUpdateLenghtSq = LengthSq(GrossUpdateVector); */
-  /* float tolerance = PLAYER_STEP_MAX*PLAYER_STEP_MAX + 0.1; */
-  /* Assert(DisplacementSq - tolerance <= GrossUpdateLenghtSq); */
-
-  if ( OriginalPlayerP.WorldP != Player->P.WorldP && DEBUG_SCROLL_WORLD ) // We moved to the next chunk
-  {
-    world_position WorldDisp = ( Player->P.WorldP - OriginalPlayerP.WorldP );
-
-    FreeUnneedeWorldChunks(world, WorldDisp, Player);
-    QueueChunksForInit(world, WorldDisp, Player);
+		FreeUnneedeWorldChunks(world, WorldDisp, Player);
+		QueueChunksForInit(world, WorldDisp, Player);
+	}
   }
 
   Player->P = Canonicalize(world, Player->P);
@@ -687,12 +666,12 @@ AllocateWorld( World *world )
 
   world->Gravity = WORLD_GRAVITY;
 
-  world->ChunkHash = (World_Chunk**)calloc( Volume(world->VisibleRegion), sizeof(World_Chunk*));
+  world->ChunkHash = (World_Chunk**)calloc( WORLD_HASH_SIZE, sizeof(World_Chunk*));
 
-  world->ChunksToInit = (World_Chunk**)calloc( Volume(world->VisibleRegion), sizeof(World_Chunk*));
+  world->ChunksToInit = (World_Chunk**)calloc( FREELIST_SIZE, sizeof(World_Chunk*));
   world->ChunkToInitCount = 0;
 
-  world->FreeChunks = (World_Chunk**)calloc( Volume(world->VisibleRegion), sizeof(World_Chunk*));
+  world->FreeChunks = (World_Chunk**)calloc( FREELIST_SIZE, sizeof(World_Chunk*));
   world->FreeChunkCount = 0;
 
   {

@@ -270,7 +270,7 @@ GetVoxel(int x, int y, int z, int w)
 }
 
 void
-FreeChunk( Chunk *chunk )
+ZeroChunk( Chunk *chunk )
 {
   for ( int i = 0; i < Volume(chunk->Dim); ++ i)
   {
@@ -326,11 +326,13 @@ FreeWorldChunk(World *world, World_Chunk *chunk)
   chunk->Prev = 0;
   chunk->Next = 0;
 
+  Assert(world->FreeChunkCount < FREELIST_SIZE);
   world->FreeChunks[world->FreeChunkCount++] = chunk;
 
-  FreeChunk(chunk->Data);
+  ZeroChunk(chunk->Data);
 
   Assert( NotSet(chunk->Data->flags, Chunk_Initialized) );
+  Assert( NotSet(chunk->Data->flags, Chunk_Queued) );
 
   return;
 }
@@ -361,7 +363,7 @@ AllocateChunk(chunk_dimension Dim)
   Assert(Result->Voxels);
   Assert(Result->BoundaryVoxels);
 
-  FreeChunk(Result);
+  ZeroChunk(Result);
 
   for (int z = 0; z < Result->Dim.z; ++z)
   {
@@ -465,9 +467,14 @@ GetWorldChunk( World *world, world_position P )
   while (Result)
   {
     if ( Result->WorldP == P )
-      break;
+        break;
 
     Result = Result->Next;
+  }
+
+  if (Result)
+  {
+    Assert(Result->WorldP == P) 
   }
 
   return Result;

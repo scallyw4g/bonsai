@@ -92,6 +92,8 @@ GAME_UPDATE_AND_RENDER
     World_Chunk *chunk = world->ChunkHash[i];
     while (chunk)
     {
+      Assert(chunk->WorldP > Min);
+      Assert(chunk->WorldP < Max);
       DrawWorldChunk( world, chunk, Camera, RG, SG);
 
       if (IsSet(chunk->Data->flags, Chunk_Initialized) )
@@ -119,7 +121,7 @@ GAME_UPDATE_AND_RENDER
     // Assert( IsSet(chunk->Data->flags, Chunk_Queued) );
     // Assert( NotSet(chunk->Data->flags, Chunk_Initialized) );
 
-    DEBUG_DrawChunkAABB( world, RG, chunk, Quaternion(1,0,0,0), WHITE );
+    // DEBUG_DrawChunkAABB( world, RG, chunk, Quaternion(1,0,0,0), WHITE );
   }
 
   DrawEntity( world, Player, Camera, RG, SG);
