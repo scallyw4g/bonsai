@@ -130,6 +130,7 @@ struct World
 
   World_Chunk **ChunksToInit;
   int ChunkToInitCount;
+  int ChunkToInitOffset; // Where to start the circular loop
 
   World_Chunk **FreeChunks;
   int FreeChunkCount;
@@ -149,6 +150,9 @@ struct World
 
   int VertexCount; // How many verticies are we drawing
 };
+
+inline bool
+IsFilledInChunk( World *world, World_Chunk *chunk, voxel_position VoxelP );
 
 inline int
 UnSetFlag( int Flags, int Flag )
@@ -442,24 +446,6 @@ IsFacingPoint( v3 FaceToPoint, v3 FaceNormal )
   return Result;
 }
 
-inline bool
-IsFilledInChunk( World_Chunk *chunk, voxel_position VoxelP )
-{
-  bool isFilled = true;
-
-  if (chunk && IsSet(chunk->Data->flags, Chunk_Initialized) )
-  {
-    int i = GetIndex(VoxelP, chunk->Data);
-    Assert(i > -1);
-    Assert(i < Volume(chunk->Data->Dim));
-    Assert(VoxelP == GetVoxelP(chunk->Data->Voxels[i]));
-
-    isFilled = IsSet(chunk->Data->Voxels[i].flags, Voxel_Filled);
-  }
-
-  return isFilled;
-}
-
 World_Chunk*
 GetWorldChunk( World *world, world_position P )
 {
@@ -479,33 +465,6 @@ GetWorldChunk( World *world, world_position P )
     Assert(Result->WorldP == P) 
   }
 
-  return Result;
-}
-
-inline bool
-IsFilledInWorld( World *world, World_Chunk *chunk, canonical_position VoxelP )
-{
-  bool isFilled = true;
-
-  if ( chunk )
-  {
-    World_Chunk *localChunk = chunk;
-
-    if ( chunk->WorldP != VoxelP.WorldP )
-    {
-      localChunk = GetWorldChunk(world, VoxelP.WorldP);
-    }
-
-    isFilled = IsFilledInChunk( localChunk, Voxel_Position(VoxelP.Offset) );
-  }
-
-  return isFilled;
-}
-
-inline bool
-NotFilledInWorld( World *world, World_Chunk *chunk, canonical_position VoxelP )
-{
-  bool Result = !(IsFilledInWorld(world, chunk, VoxelP));
   return Result;
 }
 

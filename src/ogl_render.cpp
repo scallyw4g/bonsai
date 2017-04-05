@@ -812,7 +812,7 @@ BuildExteriorBoundaryVoxels( World *world, World_Chunk *chunk, World_Chunk *Neig
       {
         voxel_position LocalVoxelP = Voxel_Position(x+LocalOffset.x, y+LocalOffset.y, z+LocalOffset.z);
 
-        if ( !IsFilledInChunk( chunk, LocalVoxelP ) )
+        if ( !IsFilledInChunk(world, chunk, LocalVoxelP ) )
           continue;
 
         voxel_position NeighborP = ClampPositive(
@@ -820,7 +820,7 @@ BuildExteriorBoundaryVoxels( World *world, World_Chunk *chunk, World_Chunk *Neig
             (chunk->Data->Dim * NeighborVector) ) -
             (NeighborVector*NeighborVector));
 
-        if ( ! IsFilledInChunk( Neighbor, NeighborP) )
+        if ( ! IsFilledInChunk( world, Neighbor, NeighborP) )
         {
           Voxel voxel = chunk->Data->Voxels[GetIndex(LocalVoxelP, chunk->Data)];
 

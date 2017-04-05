@@ -40,6 +40,19 @@ GetEntityDelta(World *world, Entity *Player, v3 Input, float dt)
 }
 
 void
+WaitForFrameTime(float frameStart, float FPS)
+{
+  float frameTime = glfwGetTime() - frameStart;
+
+  while (frameTime < (1.0f/FPS))
+  {
+    frameTime = glfwGetTime() - frameStart;
+  }
+
+  return;
+}
+
+void
 GAME_UPDATE_AND_RENDER
 (
     World *world,
@@ -66,7 +79,7 @@ GAME_UPDATE_AND_RENDER
     SpawnPlayer( world, Player );
   }
 
-  InitializeWorldChunks( world );
+  InitQueuedChunks( world );
 
   UpdateCameraP( world, Player, Camera );
 
@@ -93,31 +106,31 @@ GAME_UPDATE_AND_RENDER
 
     while (chunk)
     {
-	  if ( (chunk->WorldP >= Min && chunk->WorldP < Max) )
-	  {
-		  DrawWorldChunk( world, chunk, Camera, RG, SG);
+      if ( (chunk->WorldP >= Min && chunk->WorldP < Max) )
+      {
+        DrawWorldChunk( world, chunk, Camera, RG, SG);
 
-		  if (IsSet(chunk->Data->flags, Chunk_Initialized) )
-		  {
-			// DEBUG_DrawChunkAABB(world, RG, chunk, Quaternion(0,0,0,1), GREEN);
-		  }
-		  else if (IsSet(chunk->Data->flags, Chunk_Queued) )
-		  {
-			DEBUG_DrawChunkAABB(world, RG, chunk, Quaternion(0,0,0,1), WHITE);
-		  }
-		  else
-		  {
-			DEBUG_DrawChunkAABB(world, RG, chunk, Quaternion(0,0,0,1), RED);
-		  }
+        if (IsSet(chunk->Data->flags, Chunk_Initialized) )
+        {
+          // DEBUG_DrawChunkAABB(world, RG, chunk, Quaternion(0,0,0,1), GREEN);
+        }
+        else if (IsSet(chunk->Data->flags, Chunk_Queued) )
+        {
+          // DEBUG_DrawChunkAABB(world, RG, chunk, Quaternion(0,0,0,1), WHITE);
+        }
+        else
+        {
+          DEBUG_DrawChunkAABB(world, RG, chunk, Quaternion(0,0,0,1), RED);
+        }
 
-		  chunk = chunk->Next;
-	  }
-	  else
-	  {
-		  World_Chunk *ChunkToFree = chunk;
-		  chunk = chunk->Next;
-		  FreeWorldChunk(world, ChunkToFree);
-	  }
+        chunk = chunk->Next;
+      }
+      else
+      {
+        World_Chunk *ChunkToFree = chunk;
+        chunk = chunk->Next;
+        FreeWorldChunk(world, ChunkToFree);
+      }
     }
   }
 
@@ -141,6 +154,8 @@ GAME_UPDATE_AND_RENDER
 
   /* Log("%d Boundary Voxels Indexed\n", BoundaryVoxelsIndexed ); */
   /* BoundaryVoxelsIndexed=0; */
+
+  return;
 }
 
 void
@@ -223,12 +238,17 @@ main( void )
     float dt = (float)(currentTime - lastTime);
     lastTime = currentTime;
 
+    cout << dt << endl;
+
     accumulatedTime += dt;
     numFrames ++;
 
     RG.Basis.ProjectionMatrix = GetProjectionMatrix(&Camera, WindowWidth, WindowHeight);
 
     GAME_UPDATE_AND_RENDER( &world, &Player, &Camera, dt, &RG, &SG);
+
+    float FPS = 60.0f;
+    WaitForFrameTime(lastTime, FPS);
 
     tris=0;
 

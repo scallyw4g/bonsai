@@ -24,9 +24,9 @@
 #define CD_Z 8
 
 // Visible Region XYZ - Must be > (3,3,3)
-#define VR_X 8
-#define VR_Y 8
-#define VR_Z 8
+#define VR_X 16
+#define VR_Y 16
+#define VR_Z 16
 
 #define VOLUME_VISIBLE_REGION (VR_X*VR_X*VR_X)
 
@@ -41,7 +41,7 @@
 #define WORLD_SIZE 200
 
 #define WORLD_HASH_SIZE VOLUME_VISIBLE_REGION
-#define FREELIST_SIZE 100*VOLUME_VISIBLE_REGION
+#define FREELIST_SIZE (10*VOLUME_VISIBLE_REGION)
 
 #define WORLD_GRAVITY V3(0, -20.0f, 0)
 
@@ -60,7 +60,7 @@
 #define DEBUG_NOISE_SEED 43261.43
 
 #define DEBUG_FRAMES_TO_RUN            -1
-#define DEBUG_CHUNKS_TO_INIT_PER_FRAME 15
+#define DEBUG_CHUNKS_TO_INIT_PER_FRAME 50
 
 #define SCR_WIDTH 1920
 #define SCR_HEIGHT 1080
@@ -70,7 +70,7 @@
 #define SHADOW_MAP_RESOLUTION 2048
 #define DEBUG_TEXTURE_SIZE    512
 
-#define CAMERA_FOCAL_LENGTH (100.0f);
+#define CAMERA_FOCAL_LENGTH (160.0f);
 
 #define CAMERA_INITIAL_P Canonical_Position(&world, V3(1,1,1), World_Position(world.VisibleRegion/2))
 
