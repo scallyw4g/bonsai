@@ -299,6 +299,9 @@ GetProjectionMatrix(Camera_Object *Camera, int WindowWidth, int WindowHeight)
   return Projection;
 }
 
+// FIXME(Jesse): This returns world-space coordinates, where it should return a
+// position relative to the player so we don't encounter floating point
+// precision issues
 inline glm::vec3
 GetGLRenderP(World *world, canonical_position P)
 {

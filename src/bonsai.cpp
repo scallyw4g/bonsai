@@ -164,9 +164,8 @@ inline bool
 IsFilledInChunk( World *world, World_Chunk *chunk, voxel_position VoxelP )
 {
   bool isFilled = true;
-  Assert(chunk);
 
-  if (IsSet(chunk->Data->flags, Chunk_Initialized) )
+  if (chunk && IsSet(chunk->Data->flags, Chunk_Initialized) )
   {
     int i = GetIndex(VoxelP, chunk->Data);
     Assert(i > -1);
@@ -212,18 +211,21 @@ QueueChunkForInit(World *world, World_Chunk *chunk)
   Assert( NotSet(chunk->Data->flags, Chunk_Queued ) );
   Assert( NotSet(chunk->Data->flags, Chunk_Initialized) );
 
-  chunk->Data->flags = SetFlag(chunk->Data->flags, Chunk_Queued);
+  if (world->ChunkToInitCount == FREELIST_SIZE)
+  {
+    InitializeVoxels(world, chunk);
+  }
+  else
+  {
+    chunk->Data->flags = SetFlag(chunk->Data->flags, Chunk_Queued);
 
-  Assert(world->ChunkToInitCount < FREELIST_SIZE);
+    Assert(world->ChunkToInitCount < FREELIST_SIZE);
 
-  int ChunkIndex = (world->ChunkToInitOffset + world->ChunkToInitCount) % FREELIST_SIZE;
-  world->ChunkToInitCount++;
+    int ChunkIndex = (world->ChunkToInitOffset + world->ChunkToInitCount) % FREELIST_SIZE;
+    world->ChunkToInitCount++;
 
-  Assert(ChunkIndex < FREELIST_SIZE);
-  Assert(world->ChunkToInitCount < FREELIST_SIZE);
-
-  world->ChunksToInit[ChunkIndex] = chunk;
-
+    world->ChunksToInit[ChunkIndex] = chunk;
+  }
 
   return;
 }
@@ -329,13 +331,11 @@ GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
 
         World_Chunk *chunk = GetWorldChunk( world, LoopTestP.WorldP );
 
-#if 0
-        if (NotSet(chunk->Data->flags, Chunk_Initialized) )
+        if (chunk && NotSet(chunk->Data->flags, Chunk_Initialized) )
         {
           chunk->Data->flags = (chunk->Data->flags, Chunk_Queued);
           InitializeVoxels(world, chunk);
         }
-#endif
 
         if ( IsFilledInChunk(world, chunk, Voxel_Position(LoopTestP.Offset)) )
         {
