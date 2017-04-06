@@ -317,6 +317,13 @@ GetRenderP( World *world, canonical_position P)
 }
 
 inline v3
+GetRenderP( World *world, world_position WorldP)
+{
+  v3 Result = GetRenderP(world, Canonical_Position(world, V3(0,0,0), WorldP));
+  return Result;
+}
+
+inline v3
 GetRenderP( World *world, Entity *entity)
 {
   v3 Result = GetRenderP(world, entity->P);

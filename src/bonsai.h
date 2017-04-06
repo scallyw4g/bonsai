@@ -276,10 +276,12 @@ GetVoxel(int x, int y, int z, int w)
 void
 ZeroChunk( Chunk *chunk )
 {
-  for ( int i = 0; i < Volume(chunk->Dim); ++ i)
-  {
-    chunk->Voxels[i].flags = 0;
-  }
+
+  // Pretty sure this is redundant
+  /* for ( int i = 0; i < Volume(chunk->Dim); ++ i) */
+  /* { */
+  /*   chunk->Voxels[i].flags = 0; */
+  /* } */
 
   chunk->BoundaryVoxelCount = 0;
 
@@ -478,6 +480,23 @@ IsFilled( Chunk *chunk, voxel_position VoxelP )
 
   bool isFilled = IsSet(chunk->Voxels[i].flags, Voxel_Filled);
   return isFilled;
+}
+
+inline voxel_position
+ClampNegative( voxel_position V )
+{
+  voxel_position Result = V;
+
+  if ( V.x > 0 )
+    Result.x = 0;
+
+  if ( V.y > 0 )
+    Result.y = 0;
+
+  if ( V.z > 0 )
+    Result.z = 0;
+
+  return Result;
 }
 
 inline voxel_position

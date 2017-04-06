@@ -100,6 +100,26 @@ GAME_UPDATE_AND_RENDER
   DEBUG_DrawAABB( world, LastFreeSlice,    Quaternion(0,0,0,1), RED,   0.1);
   DEBUG_DrawAABB( world, LastQueuedSlice,  Quaternion(0,0,0,1), TEAL,  0.1);
 
+#if DEBUG_HIGHLIGHT_VOID_CHUNKS
+  for (int z = 0; z < world->VisibleRegion.z; ++z)
+  {
+    for (int y = 0; y < world->VisibleRegion.y; ++y)
+    {
+      for (int x = 0; x < world->VisibleRegion.x; ++x)
+      {
+        world_position ChunkP = World_Position(x,y,z) + Player->P.WorldP - (world->VisibleRegion/2);
+        World_Chunk *chunk = GetWorldChunk(world, ChunkP);
+
+        if (!chunk)
+        {
+          DEBUG_DrawAABB(world, GetRenderP(world, ChunkP), GetRenderP(world, ChunkP + 1), Quaternion(0,0,0,1), RED);
+        }
+
+      }
+    }
+  }
+#endif
+
   for ( int i = 0; i < WORLD_HASH_SIZE; ++i)
   {
     World_Chunk *chunk = world->ChunkHash[i];
@@ -109,20 +129,14 @@ GAME_UPDATE_AND_RENDER
       if ( (chunk->WorldP >= Min && chunk->WorldP < Max) )
       {
         DrawWorldChunk( world, chunk, Camera, RG, SG);
-
         if (IsSet(chunk->Data->flags, Chunk_Initialized) )
         {
           // DEBUG_DrawChunkAABB(world, RG, chunk, Quaternion(0,0,0,1), GREEN);
         }
         else if (IsSet(chunk->Data->flags, Chunk_Queued) )
         {
-          // DEBUG_DrawChunkAABB(world, RG, chunk, Quaternion(0,0,0,1), WHITE);
+          DEBUG_DrawChunkAABB(world, RG, chunk, Quaternion(0,0,0,1), WHITE);
         }
-        else
-        {
-          DEBUG_DrawChunkAABB(world, RG, chunk, Quaternion(0,0,0,1), RED);
-        }
-
         chunk = chunk->Next;
       }
       else
@@ -172,8 +186,8 @@ main( void )
 {
   int WindowWidth, WindowHeight;
 
-  WindowWidth = 1920;
-  WindowHeight = 1080;
+  WindowWidth = SCR_WIDTH;
+  WindowHeight = SCR_HEIGHT;
 
   initWindow(WindowWidth, WindowHeight);
 

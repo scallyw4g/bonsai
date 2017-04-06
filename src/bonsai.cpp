@@ -92,6 +92,8 @@ InitializeVoxels( World *world, World_Chunk *WorldChunk )
 {
   Assert(WorldChunk);
 
+  ZeroChunk(WorldChunk->Data);
+
   Chunk *chunk = WorldChunk->Data;
   /* CALLGRIND_TOGGLE_COLLECT; */
 
@@ -249,10 +251,11 @@ InitQueuedChunks( World *world )
     {
       Assert( NotSet(chunk->Data->flags, Chunk_Initialized) );
       InitializeVoxels(world, chunk);
+
+      if ( ChunksToInit-- == 0 )
+        return;
     }
 
-    if ( ChunksToInit-- == 0 )
-      return;
   }
 
   return;
@@ -534,8 +537,8 @@ QueueChunksForInit(World* world, world_position WorldDisp, Entity *Player)
   world_position VRHalfDim = World_Position(world->VisibleRegion/2);
   world_position VrDim = world->VisibleRegion;
 
-  world_position SliceMin = PlayerP + (VRHalfDim * Iter) - (VRHalfDim * InvAbsIter) - ClampPositive(Iter);
-  world_position SliceMax = PlayerP + (VRHalfDim * Iter) + (VRHalfDim * InvAbsIter) - ClampPositive(Iter) - InvAbsIter;
+  world_position SliceMin = PlayerP + (VRHalfDim * Iter) - (VRHalfDim * InvAbsIter) - ClampPositive(WorldDisp);
+  world_position SliceMax = PlayerP + (VRHalfDim * Iter) + (VRHalfDim * InvAbsIter) - ClampPositive(Iter) - InvAbsIter - ClampNegative(WorldDisp) + ClampNegative(Iter);
 
   LastQueuedSlice = rectangle3(SliceMin*CHUNK_DIMENSION - 1, (SliceMax*CHUNK_DIMENSION + CHUNK_DIMENSION + 1));
 
@@ -569,7 +572,7 @@ void
 UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
 {
   v3 Remaining = GrossUpdateVector;
-  Remaining += V3(2, 0, 0);
+  /* Remaining = V3(-16, 0, 0); */
   world_position OriginalPlayerP = Player->P.WorldP;
 
   collision_event C;

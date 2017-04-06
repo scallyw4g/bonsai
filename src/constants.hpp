@@ -56,14 +56,19 @@
 #define DEBUG_WORLD_GENERATION        0
 #define DEBUG_LOD_RENDER              0
 #define DEBUG_DRAW_SHADOW_MAP_TEXTURE 0
+#define DEBUG_HIGHLIGHT_VOID_CHUNKS   0
 
-#define DEBUG_NOISE_SEED 43262.43
+#define DEBUG_NOISE_SEED 43263.43
 
 #define DEBUG_FRAMES_TO_RUN            -1
 #define DEBUG_CHUNKS_TO_INIT_PER_FRAME 50
 
+
 #define SCR_WIDTH 1920
 #define SCR_HEIGHT 1080
+
+/* #define SCR_WIDTH 3840 */
+/* #define SCR_HEIGHT 2160 */
 
 #define Proj_XY 50
 #define Proj_Z  100
