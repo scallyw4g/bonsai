@@ -715,12 +715,25 @@ GetModelSpaceP(Chunk *chunk, v3 P)
 }
 
 void
-DEBUG_DrawChunkAABB( World *world, RenderGroup *RG, World_Chunk *chunk, Quaternion Rotation, int ColorIndex )
+DEBUG_DrawChunkAABB( World *world, world_position WorldP, Quaternion Rotation, int ColorIndex )
+{
+  v3 MinP = GetRenderP(world, Canonical_Position(world, V3(0,0,0), WorldP));
+  v3 MaxP = GetRenderP(world, Canonical_Position(world, CHUNK_DIMENSION, WorldP));
+
+  DEBUG_DrawAABB(world, MinP, MaxP , Rotation, ColorIndex );
+
+  return;
+}
+
+void
+DEBUG_DrawChunkAABB( World *world, World_Chunk *chunk, Quaternion Rotation, int ColorIndex )
 {
   v3 MinP = GetRenderP(world, Canonical_Position(world, V3(0,0,0), chunk->WorldP));
   v3 MaxP = GetRenderP(world, Canonical_Position(world, V3(chunk->Data->Dim), chunk->WorldP));
 
   DEBUG_DrawAABB(world, MinP, MaxP , Rotation, ColorIndex );
+
+  return;
 }
 
 #if 0
@@ -1135,7 +1148,7 @@ DrawWorldChunk(
   {
 
 #if DEBUG_CHUNK_AABB
-    /* DEBUG_DrawChunkAABB( world, RG, WorldChunk, Quaternion(1,0,0,0) ); */
+    /* DEBUG_DrawChunkAABB( world, WorldChunk, Quaternion(1,0,0,0) ); */
 #endif
 
     BuildBoundaryVoxels(world, WorldChunk);

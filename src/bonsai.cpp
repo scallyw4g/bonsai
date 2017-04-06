@@ -126,9 +126,7 @@ InitializeVoxels( World *world, World_Chunk *WorldChunk )
         }
 #else
         v3 NoiseInputs =
-          ( ( V3(x,y,z) + (world->ChunkDim*(WorldChunk->WorldP))) % WORLD_SIZE )
-          /
-          WORLD_SIZE;
+          ( ( V3(x,y,z) + (world->ChunkDim*(WorldChunk->WorldP))) ) / NOISE_FREQUENCY;
 
         double InX = (double)NoiseInputs.x;
         double InY = (double)NoiseInputs.y;
@@ -359,6 +357,7 @@ collision_event
 GetCollision(World *world, Entity *entity, v3 Offset = V3(0,0,0) )
 {
   Assert( entity->Spawned );
+  Assert( entity->Model->BoundaryVoxelCount > 0 );
 
   collision_event C;
   C.didCollide = false;
@@ -383,41 +382,6 @@ IsGrounded( World *world, Entity *entity)
 {
   collision_event c = GetCollision(world, entity, V3(0,-0.001, 0));
   return c.didCollide;
-}
-
-void
-SpawnPlayer( World *world, Entity *Player )
-{
-  Chunk *Model = Player->Model;
-
-  /* Model->Voxels[0].flags = 0; */
-  /* Model->Voxels[0].flags = SetFlag( Model->Voxels[0].flags, Voxel_Filled); */
-  /* Model->Voxels[0] = SetVoxelP( Model->Voxels[0], Voxel_Position(0,0,0) ); */
-
-  Player->Acceleration = V3(0,0,0);
-  Player->Velocity = V3(0,0,0);
-
-  canonical_position TestP;
-  collision_event Collision;
-
-  int rX = rand() % (world->ChunkDim.x);
-  int rY = rand() % (world->ChunkDim.y);
-  int rZ = rand() % (world->ChunkDim.z);
-
-  v3 Offset = V3( rX, rY, rZ );
-  world_position WP = World_Position( world->VisibleRegion.x/2, world->VisibleRegion.y/2, world->VisibleRegion.z/2 );
-  /* world_position WP = World_Position( rX, rY, rZ ); */
-  TestP = Canonicalize(world, Offset, WP);
-
-  Collision = GetCollision( world, TestP, Player->Model->Dim);
-
-  if (!Collision.didCollide)
-  {
-    Player->P = TestP;
-    Player->Spawned = true;
-  }
-
-  return;
 }
 
 v3
@@ -568,6 +532,41 @@ UpdateVisibleRegion(World *world, world_position OriginalPlayerP, Entity *Player
   }
 }
 
+
+void
+SpawnPlayer( World *world, Entity *Player )
+{
+  Chunk *Model = Player->Model;
+
+  Player->Acceleration = V3(0,0,0);
+  Player->Velocity = V3(0,0,0);
+
+  canonical_position TestP;
+  collision_event Collision;
+
+  int rX = rand() % (world->ChunkDim.x);
+  int rY = rand() % (world->ChunkDim.y);
+  int rZ = rand() % (world->ChunkDim.z);
+
+  v3 Offset = V3( rX, rY, rZ );
+  TestP = Canonicalize(world, Offset, Player->P.WorldP);
+
+  Collision = GetCollision( world, TestP, Player->Model->Dim);
+
+  if (!Collision.didCollide)
+  {
+    Player->P = TestP;
+    Player->Spawned = true;
+  }
+  else
+  {
+    world_position OriginalP = Player->P.WorldP;
+    Player->P.WorldP += World_Position(1,0,0);
+    UpdateVisibleRegion(world, OriginalP, Player);
+  }
+
+  return;
+}
 void
 UpdatePlayerP(World *world, Entity *Player, v3 GrossUpdateVector)
 {
@@ -702,7 +701,7 @@ UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera)
 }
 
 void
-AllocateWorld( World *world )
+AllocateWorld( World *world, world_position Midpoint)
 {
   world->ChunkDim = CHUNK_DIMENSION;
   world->VisibleRegion = VISIBLE_REGION;
@@ -741,11 +740,14 @@ AllocateWorld( World *world )
   Assert(world->ColorData.Data );
   Assert(world->NormalData.Data);
 
-  for ( int z = 0; z < world->VisibleRegion.z; ++ z )
+  world_position Min = Midpoint - (world->VisibleRegion/2);
+  world_position Max = Midpoint + (world->VisibleRegion/2);
+
+  for ( int z = Min.z; z < Max.z; ++ z )
   {
-    for ( int y = 0; y < world->VisibleRegion.y; ++ y )
+    for ( int y = Min.y; y < Max.y; ++ y )
     {
-      for ( int x = 0; x < world->VisibleRegion.x; ++ x )
+      for ( int x = Min.x; x < Max.x; ++ x )
       {
         World_Chunk *chunk = AllocateWorldChunk(world, World_Position(x,y,z));
         QueueChunkForInit(world, chunk);

@@ -12,7 +12,7 @@ void
 SeedWorldAndUnspawnPlayer( World *world, Entity *Player )
 {
 
-  srand(DEBUG_NOISE_SEED);
+  srand(DEBUG_NOISE_SEED++);
   PerlinNoise Noise(rand());
   world->Noise = Noise;
 
@@ -40,7 +40,7 @@ GetEntityDelta(World *world, Entity *Player, v3 Input, float dt)
 }
 
 void
-WaitForFrameTime(float frameStart, float FPS)
+WaitForFrameTime(float frameStart, float FPS) // Poor man vsync
 {
   float frameTime = glfwGetTime() - frameStart;
 
@@ -135,7 +135,7 @@ GAME_UPDATE_AND_RENDER
         }
         else if (IsSet(chunk->Data->flags, Chunk_Queued) )
         {
-          DEBUG_DrawChunkAABB(world, RG, chunk, Quaternion(0,0,0,1), WHITE);
+          // DEBUG_DrawChunkAABB(world, RG, chunk, Quaternion(0,0,0,1), WHITE);
         }
         chunk = chunk->Next;
       }
@@ -208,10 +208,6 @@ main( void )
   World world;
   Entity Player;
 
-  AllocateWorld(&world);
-  SeedWorldAndUnspawnPlayer(&world, &Player);
-
-
   /* Player.Model = LoadVox("./chr_knight.vox"); */
   /* Player.Model = LoadVox("./ephtracy.vox"); */
   /* Player.Model = LoadVox("./chr_sword.vox"); */
@@ -227,8 +223,11 @@ main( void )
   Player.Model->flags = SetFlag( Player.Model->flags, Chunk_Entity);
   Player.Rotation = Quaternion(1,0,0,0);
   Player.P.Offset = V3(0,0,0);
-  Player.P.WorldP = World_Position(world.VisibleRegion/2);
+  Player.P.WorldP = World_Position(0,0,0);
   Player.Spawned = false;
+
+  AllocateWorld(&world, Player.P.WorldP);
+  SeedWorldAndUnspawnPlayer(&world, &Player);
 
   Camera_Object Camera = {};
   Camera.Frust.farClip = 500.0f;

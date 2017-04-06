@@ -24,9 +24,9 @@
 #define CD_Z 8
 
 // Visible Region XYZ - Must be > (3,3,3)
-#define VR_X 16
-#define VR_Y 16
-#define VR_Z 16
+#define VR_X 32
+#define VR_Y 32
+#define VR_Z 32
 
 #define VOLUME_VISIBLE_REGION (VR_X*VR_X*VR_X)
 
@@ -38,7 +38,7 @@
 
 #define VISIBLE_REGION Chunk_Dimension(VR_X,VR_Y,VR_Z)
 
-#define WORLD_SIZE 200
+#define NOISE_FREQUENCY 100
 
 #define WORLD_HASH_SIZE VOLUME_VISIBLE_REGION
 #define FREELIST_SIZE (10*VOLUME_VISIBLE_REGION)
@@ -58,14 +58,14 @@
 #define DEBUG_DRAW_SHADOW_MAP_TEXTURE 0
 #define DEBUG_HIGHLIGHT_VOID_CHUNKS   0
 
-#define DEBUG_NOISE_SEED 43263.43
-
 #define DEBUG_FRAMES_TO_RUN            -1
-#define DEBUG_CHUNKS_TO_INIT_PER_FRAME 50
+#define DEBUG_CHUNKS_TO_INIT_PER_FRAME 150
 
+#define SCR_WIDTH 800
+#define SCR_HEIGHT 600
 
-#define SCR_WIDTH 1920
-#define SCR_HEIGHT 1080
+// #define SCR_WIDTH 1920
+// #define SCR_HEIGHT 1080
 
 /* #define SCR_WIDTH 3840 */
 /* #define SCR_HEIGHT 2160 */
@@ -75,7 +75,7 @@
 #define SHADOW_MAP_RESOLUTION 2048
 #define DEBUG_TEXTURE_SIZE    512
 
-#define CAMERA_FOCAL_LENGTH (160.0f);
+#define CAMERA_FOCAL_LENGTH (100.0f);
 
 #define CAMERA_INITIAL_P Canonical_Position(&world, V3(1,1,1), World_Position(world.VisibleRegion/2))
 
@@ -87,6 +87,8 @@
 #define FINAL_POSITION_BIT (POSITION_BIT_WIDTH*3)
 #define FINAL_COLOR_BIT ((FINAL_POSITION_BIT+COLOR_BIT_WIDTH))
 
+
+DEBUG_GLOBAL double DEBUG_NOISE_SEED = 43165.43543;
 
 DEBUG_GLOBAL int numFrames = 0;
 DEBUG_GLOBAL float accumulatedTime = 0;
