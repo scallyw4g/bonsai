@@ -704,7 +704,7 @@ DEBUG_DrawAABB( World *world, rectangle3 Rect, Quaternion Rotation, int ColorInd
 }
 
 v3
-GetModelSpaceP(Chunk *chunk, v3 P)
+GetModelSpaceP(chunk_data *chunk, v3 P)
 {
   /* v3 HalfDim = chunk->Dim/2; */
   /* v3 Result = P - HalfDim; */
@@ -796,7 +796,7 @@ Clamp01( voxel_position V )
 }
 
 void
-PushBoundaryVoxel( Chunk *chunk, Voxel voxel )
+PushBoundaryVoxel( chunk_data *chunk, Voxel voxel )
 {
   Assert( chunk->BoundaryVoxelCount < Volume(chunk->Dim) );
 
@@ -886,7 +886,7 @@ IsInsideChunk( voxel_position Dim, voxel_position P )
 }
 
 void
-BuildInteriorBoundaryVoxels(World *world, Chunk *chunk, world_position WorldP)
+BuildInteriorBoundaryVoxels(World *world, chunk_data *chunk, world_position WorldP)
 {
   chunk->flags = UnSetFlag( chunk->flags, Chunk_RebuildInteriorBoundary );
 
@@ -958,7 +958,7 @@ BuildInteriorBoundaryVoxels(World *world, Chunk *chunk, world_position WorldP)
 
 #if 0
 bool
-IsInFrustum( World *world, Camera_Object *Camera, Chunk *chunk )
+IsInFrustum( World *world, Camera_Object *Camera, chunk_data *chunk )
 {
   v3 ChunkMid = V3(chunk->Dim.x/2, chunk->Dim.y/2, chunk->Dim.z/2);
 
@@ -998,7 +998,7 @@ ClearFramebuffers(RenderGroup *RG, ShadowRenderGroup *SG)
 void
 BufferChunkMesh(
     World *world,
-    Chunk *chunk,
+    chunk_data *chunk,
     world_position WorldP,
     RenderGroup *RG,
     ShadowRenderGroup *SG,
@@ -1058,7 +1058,7 @@ BufferChunkMesh(
 void
 BuildBoundaryVoxels( World *world, world_chunk *WorldChunk)
 {
-  Chunk* chunk = WorldChunk->Data;
+  chunk_data* chunk = WorldChunk->Data;
   if ( IsSet(chunk->flags, Chunk_RebuildInteriorBoundary) )
   {
     chunk->BoundaryVoxelCount = 0;

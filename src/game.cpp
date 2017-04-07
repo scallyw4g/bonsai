@@ -179,7 +179,7 @@ GAME_UPDATE_AND_RENDER
 }
 
 void
-FillChunk(Chunk *chunk)
+FillChunk(chunk_data *chunk)
 {
   for (int i = 0; i < Volume(chunk->Dim); ++i)
   {

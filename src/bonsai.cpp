@@ -94,7 +94,7 @@ InitializeVoxels( World *world, world_chunk *WorldChunk )
 
   ZeroChunk(WorldChunk->Data);
 
-  Chunk *chunk = WorldChunk->Data;
+  chunk_data *chunk = WorldChunk->Data;
   /* CALLGRIND_TOGGLE_COLLECT; */
 
   chunk->flags = SetFlag(chunk->flags, Chunk_Initialized );
@@ -536,7 +536,7 @@ UpdateVisibleRegion(World *world, world_position OriginalPlayerP, Entity *Player
 void
 SpawnPlayer( World *world, Entity *Player )
 {
-  Chunk *Model = Player->Model;
+  chunk_data *Model = Player->Model;
 
   Player->Acceleration = V3(0,0,0);
   Player->Velocity = V3(0,0,0);

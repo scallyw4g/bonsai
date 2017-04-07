@@ -130,10 +130,10 @@ ReadXYZIChunk(FILE *File, int* byteCounter)
   return nVoxels;
 }
 
-Chunk*
+chunk_data*
 LoadVox(char const *filepath)
 {
-  Chunk *Result;
+  chunk_data *Result;
   int totalChunkBytes;
 
   FILE * ModelFile = fopen(filepath, "r");

@@ -49,7 +49,7 @@ struct Voxel
   int flags;
 };
 
-struct Chunk
+struct chunk_data
 {
   int flags;
   int BoundaryVoxelCount;
@@ -63,7 +63,7 @@ struct Chunk
 
 struct world_chunk
 {
-  Chunk *Data;
+  chunk_data *Data;
   world_position WorldP;
 
   // TODO(Jesse): This is only for looking up chunks in the hashtable and
@@ -74,7 +74,7 @@ struct world_chunk
 
 struct free_world_chunk
 {
-  world_chunk *Chunk;
+  world_chunk *chunk_data;
   world_chunk *Next;
 };
 
@@ -113,7 +113,7 @@ struct VertexBlock
 
 struct Entity
 {
-  Chunk *Model;
+  chunk_data *Model;
   v3 Velocity;
   v3 Acceleration;
 
@@ -274,7 +274,7 @@ GetVoxel(int x, int y, int z, int w)
 }
 
 void
-ZeroChunk( Chunk *chunk )
+ZeroChunk( chunk_data *chunk )
 {
 
   // Pretty sure this is redundant
@@ -346,7 +346,7 @@ FreeWorldChunk(World *world, world_chunk *chunk)
 }
 
 inline int
-GetIndex(voxel_position P, Chunk *chunk)
+GetIndex(voxel_position P, chunk_data *chunk)
 {
   int i =
     (P.x) +
@@ -358,10 +358,10 @@ GetIndex(voxel_position P, Chunk *chunk)
   return i;
 }
 
-Chunk*
+chunk_data*
 AllocateChunk(chunk_dimension Dim)
 {
-  Chunk *Result = (Chunk*)calloc(1, sizeof(Chunk));
+  chunk_data *Result = (chunk_data*)calloc(1, sizeof(chunk_data));
   Assert(Result);
 
   Result->Dim = Dim;
@@ -471,7 +471,7 @@ GetWorldChunk( World *world, world_position P )
 }
 
 bool
-IsFilled( Chunk *chunk, voxel_position VoxelP )
+IsFilled( chunk_data *chunk, voxel_position VoxelP )
 {
   int i = GetIndex(VoxelP, chunk);
 
