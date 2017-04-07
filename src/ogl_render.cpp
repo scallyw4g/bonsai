@@ -726,7 +726,7 @@ DEBUG_DrawChunkAABB( World *world, world_position WorldP, Quaternion Rotation, i
 }
 
 void
-DEBUG_DrawChunkAABB( World *world, World_Chunk *chunk, Quaternion Rotation, int ColorIndex )
+DEBUG_DrawChunkAABB( World *world, world_chunk *chunk, Quaternion Rotation, int ColorIndex )
 {
   v3 MinP = GetRenderP(world, Canonical_Position(world, V3(0,0,0), chunk->WorldP));
   v3 MaxP = GetRenderP(world, Canonical_Position(world, V3(chunk->Data->Dim), chunk->WorldP));
@@ -805,7 +805,7 @@ PushBoundaryVoxel( Chunk *chunk, Voxel voxel )
 }
 
 bool
-BuildExteriorBoundaryVoxels( World *world, World_Chunk *chunk, World_Chunk *Neighbor, voxel_position NeighborVector )
+BuildExteriorBoundaryVoxels( World *world, world_chunk *chunk, world_chunk *Neighbor, voxel_position NeighborVector )
 {
   voxel_position nvSq = (NeighborVector*NeighborVector);
 
@@ -1056,7 +1056,7 @@ BufferChunkMesh(
 }
 
 void
-BuildBoundaryVoxels( World *world, World_Chunk *WorldChunk)
+BuildBoundaryVoxels( World *world, world_chunk *WorldChunk)
 {
   Chunk* chunk = WorldChunk->Data;
   if ( IsSet(chunk->flags, Chunk_RebuildInteriorBoundary) )
@@ -1068,7 +1068,7 @@ BuildBoundaryVoxels( World *world, World_Chunk *WorldChunk)
   if ( IsSet(chunk->flags, Chunk_RebuildExteriorTop   ) )
   {
     voxel_position  TopVector    = Voxel_Position(0,1,0);
-    World_Chunk *Top = GetWorldChunk( world, WorldChunk->WorldP + TopVector   );
+    world_chunk *Top = GetWorldChunk( world, WorldChunk->WorldP + TopVector   );
     if ( Top )
     {
       BuildExteriorBoundaryVoxels( world,  WorldChunk,  Top,    TopVector   );
@@ -1079,7 +1079,7 @@ BuildBoundaryVoxels( World *world, World_Chunk *WorldChunk)
   if ( IsSet(chunk->flags, Chunk_RebuildExteriorBot   ) )
   {
     voxel_position  BotVector    = Voxel_Position(0,-1,0);
-    World_Chunk *Bot = GetWorldChunk( world, WorldChunk->WorldP + BotVector   );
+    world_chunk *Bot = GetWorldChunk( world, WorldChunk->WorldP + BotVector   );
     if ( Bot )
     {
       BuildExteriorBoundaryVoxels( world,  WorldChunk,  Bot,    BotVector   );
@@ -1090,7 +1090,7 @@ BuildBoundaryVoxels( World *world, World_Chunk *WorldChunk)
   if ( IsSet(chunk->flags, Chunk_RebuildExteriorLeft  ) )
   {
     voxel_position  LeftVector   = Voxel_Position(-1,0,0);
-    World_Chunk *Left = GetWorldChunk( world, WorldChunk->WorldP + LeftVector  );
+    world_chunk *Left = GetWorldChunk( world, WorldChunk->WorldP + LeftVector  );
     if ( Left )
     {
       BuildExteriorBoundaryVoxels( world,  WorldChunk,  Left,   LeftVector  );
@@ -1101,7 +1101,7 @@ BuildBoundaryVoxels( World *world, World_Chunk *WorldChunk)
   if ( IsSet(chunk->flags, Chunk_RebuildExteriorRight ) )
   {
     voxel_position  RightVector  = Voxel_Position(1,0,0);
-    World_Chunk *Right = GetWorldChunk( world, WorldChunk->WorldP + RightVector );
+    world_chunk *Right = GetWorldChunk( world, WorldChunk->WorldP + RightVector );
     if ( Right )
     {
       BuildExteriorBoundaryVoxels( world,  WorldChunk,  Right,  RightVector );
@@ -1112,7 +1112,7 @@ BuildBoundaryVoxels( World *world, World_Chunk *WorldChunk)
   if ( IsSet(chunk->flags, Chunk_RebuildExteriorFront ) )
   {
     voxel_position  FrontVector  = Voxel_Position(0,0,1);
-    World_Chunk *Front = GetWorldChunk( world, WorldChunk->WorldP + FrontVector );
+    world_chunk *Front = GetWorldChunk( world, WorldChunk->WorldP + FrontVector );
     if ( Front )
     {
       BuildExteriorBoundaryVoxels( world,  WorldChunk,  Front,  FrontVector );
@@ -1123,7 +1123,7 @@ BuildBoundaryVoxels( World *world, World_Chunk *WorldChunk)
   if ( IsSet(chunk->flags, Chunk_RebuildExteriorBack  ) )
   {
     voxel_position  BackVector   = Voxel_Position(0,0,-1);
-    World_Chunk *Back = GetWorldChunk( world, WorldChunk->WorldP + BackVector  );
+    world_chunk *Back = GetWorldChunk( world, WorldChunk->WorldP + BackVector  );
     if ( Back )
     {
       BuildExteriorBoundaryVoxels( world,  WorldChunk,  Back,   BackVector  );
@@ -1137,7 +1137,7 @@ BuildBoundaryVoxels( World *world, World_Chunk *WorldChunk)
 void
 DrawWorldChunk(
     World *world,
-    World_Chunk *WorldChunk,
+    world_chunk *WorldChunk,
     Camera_Object *Camera,
     RenderGroup *RG,
     ShadowRenderGroup *SG

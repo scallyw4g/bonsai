@@ -88,7 +88,7 @@ initWindow( int WindowWidth, int WindowHeight )
 }
 
 void
-InitializeVoxels( World *world, World_Chunk *WorldChunk )
+InitializeVoxels( World *world, world_chunk *WorldChunk )
 {
   Assert(WorldChunk);
 
@@ -126,7 +126,7 @@ InitializeVoxels( World *world, World_Chunk *WorldChunk )
         }
 #else
         v3 NoiseInputs =
-          ( ( V3(x,y,z) + (world->ChunkDim*(WorldChunk->WorldP))) ) / NOISE_FREQUENCY;
+          ( ( V3(x,y,z) + (CHUNK_DIMENSION*(WorldChunk->WorldP))) ) / NOISE_FREQUENCY;
 
         double InX = (double)NoiseInputs.x;
         double InY = (double)NoiseInputs.y;
@@ -161,7 +161,7 @@ InitializeVoxels( World *world, World_Chunk *WorldChunk )
 }
 
 inline bool
-IsFilledInChunk( World *world, World_Chunk *chunk, voxel_position VoxelP )
+IsFilledInChunk( World *world, world_chunk *chunk, voxel_position VoxelP )
 {
   bool isFilled = true;
 
@@ -179,13 +179,13 @@ IsFilledInChunk( World *world, World_Chunk *chunk, voxel_position VoxelP )
 }
 
 inline bool
-IsFilledInWorld( World *world, World_Chunk *chunk, canonical_position VoxelP )
+IsFilledInWorld( World *world, world_chunk *chunk, canonical_position VoxelP )
 {
   bool isFilled = true;
 
   if ( chunk )
   {
-    World_Chunk *localChunk = chunk;
+    world_chunk *localChunk = chunk;
 
     if ( chunk->WorldP != VoxelP.WorldP )
     {
@@ -199,14 +199,14 @@ IsFilledInWorld( World *world, World_Chunk *chunk, canonical_position VoxelP )
 }
 
 inline bool
-NotFilledInWorld( World *world, World_Chunk *chunk, canonical_position VoxelP )
+NotFilledInWorld( World *world, world_chunk *chunk, canonical_position VoxelP )
 {
   bool Result = !(IsFilledInWorld(world, chunk, VoxelP));
   return Result;
 }
 
 inline void
-QueueChunkForInit(World *world, World_Chunk *chunk)
+QueueChunkForInit(World *world, world_chunk *chunk)
 {
   Assert( NotSet(chunk->Data->flags, Chunk_Queued ) );
   Assert( NotSet(chunk->Data->flags, Chunk_Initialized) );
@@ -237,7 +237,7 @@ InitQueuedChunks( World *world )
 
   while ( world->ChunkToInitCount > 0 )
   {
-    World_Chunk *chunk = world->ChunksToInit[world->ChunkToInitOffset];
+    world_chunk *chunk = world->ChunksToInit[world->ChunkToInitOffset];
     world->ChunksToInit[world->ChunkToInitOffset] = 0;
 
     world->ChunkToInitOffset = (world->ChunkToInitOffset + 1) % FREELIST_SIZE;
@@ -330,7 +330,7 @@ GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
       {
         canonical_position LoopTestP = Canonicalize( world, V3(x,y,z), TestP.WorldP );
 
-        World_Chunk *chunk = GetWorldChunk( world, LoopTestP.WorldP );
+        world_chunk *chunk = GetWorldChunk( world, LoopTestP.WorldP );
 
         if (chunk && NotSet(chunk->Data->flags, Chunk_Initialized) )
         {
@@ -451,10 +451,10 @@ ClampMinus1toInfinity( voxel_position V )
   return Result;
 }
 
-World_Chunk*
+world_chunk*
 GetFreeChunk(World *world, world_position P)
 {
-  World_Chunk *Result = 0;
+  world_chunk *Result = 0;
 
   if (world->FreeChunkCount == 0)
   {
@@ -513,7 +513,7 @@ QueueChunksForInit(World* world, world_position WorldDisp, Entity *Player)
       for (int x = SliceMin.x; x <= SliceMax.x; ++ x)
       {
         world_position P = World_Position(x,y,z);
-        World_Chunk* chunk = GetFreeChunk(world, P );
+        world_chunk* chunk = GetFreeChunk(world, P );
         QueueChunkForInit(world, chunk);
       }
     }
@@ -708,13 +708,13 @@ AllocateWorld( World *world, world_position Midpoint)
 
   world->Gravity = WORLD_GRAVITY;
 
-  world->ChunkHash = (World_Chunk**)calloc( WORLD_HASH_SIZE, sizeof(World_Chunk*));
+  world->ChunkHash = (world_chunk**)calloc( WORLD_HASH_SIZE, sizeof(world_chunk*));
 
-  world->ChunksToInit = (World_Chunk**)calloc( FREELIST_SIZE, sizeof(World_Chunk*));
+  world->ChunksToInit = (world_chunk**)calloc( FREELIST_SIZE, sizeof(world_chunk*));
   world->ChunkToInitCount = 0;
   world->ChunkToInitOffset = 0;
 
-  world->FreeChunks = (World_Chunk**)calloc( FREELIST_SIZE, sizeof(World_Chunk*));
+  world->FreeChunks = (world_chunk**)calloc( FREELIST_SIZE, sizeof(world_chunk*));
   world->FreeChunkCount = 0;
 
   {
@@ -749,7 +749,7 @@ AllocateWorld( World *world, world_position Midpoint)
     {
       for ( int x = Min.x; x < Max.x; ++ x )
       {
-        World_Chunk *chunk = AllocateWorldChunk(world, World_Position(x,y,z));
+        world_chunk *chunk = AllocateWorldChunk(world, World_Position(x,y,z));
         QueueChunkForInit(world, chunk);
       }
     }

@@ -61,21 +61,21 @@ struct Chunk
   chunk_dimension Dim;
 };
 
-struct World_Chunk
+struct world_chunk
 {
   Chunk *Data;
   world_position WorldP;
 
   // TODO(Jesse): This is only for looking up chunks in the hashtable and
   // should be factored out of this struct somehow as it's cold data
-  World_Chunk *Next;
-  World_Chunk *Prev;
+  world_chunk *Next;
+  world_chunk *Prev;
 };
 
 struct free_world_chunk
 {
-  World_Chunk *Chunk;
-  World_Chunk *Next;
+  world_chunk *Chunk;
+  world_chunk *Next;
 };
 
 struct collision_event
@@ -126,13 +126,13 @@ struct Entity
 
 struct World
 {
-  World_Chunk **ChunkHash;
+  world_chunk **ChunkHash;
 
-  World_Chunk **ChunksToInit;
+  world_chunk **ChunksToInit;
   int ChunkToInitCount;
   int ChunkToInitOffset; // Where to start the circular loop
 
-  World_Chunk **FreeChunks;
+  world_chunk **FreeChunks;
   int FreeChunkCount;
 
   // This is the number of chunks in xyz we're going to update and render
@@ -152,7 +152,7 @@ struct World
 };
 
 inline bool
-IsFilledInChunk( World *world, World_Chunk *chunk, voxel_position VoxelP );
+IsFilledInChunk( World *world, world_chunk *chunk, voxel_position VoxelP );
 
 inline int
 UnSetFlag( int Flags, int Flag )
@@ -310,7 +310,7 @@ GetWorldChunkHash(world_position P)
 }
 
 void
-FreeWorldChunk(World *world, World_Chunk *chunk)
+FreeWorldChunk(World *world, world_chunk *chunk)
 {
   Assert( IsSet(chunk->Data->flags, Chunk_Initialized) || IsSet(chunk->Data->flags, Chunk_Queued) );
  
@@ -390,10 +390,10 @@ AllocateChunk(chunk_dimension Dim)
 }
 
 void
-InsertChunkIntoWorld(World *world, World_Chunk *chunk)
+InsertChunkIntoWorld(World *world, world_chunk *chunk)
 {
   unsigned int HashIndex = GetWorldChunkHash(chunk->WorldP);
-  World_Chunk *Last = world->ChunkHash[HashIndex];;
+  world_chunk *Last = world->ChunkHash[HashIndex];;
 
   if (Last)
   {
@@ -416,10 +416,10 @@ InsertChunkIntoWorld(World *world, World_Chunk *chunk)
   return;
 }
 
-World_Chunk*
+world_chunk*
 AllocateWorldChunk(World *world, world_position WorldP)
 {
-  World_Chunk *Result = (World_Chunk*)calloc(1, sizeof(World_Chunk));
+  world_chunk *Result = (world_chunk*)calloc(1, sizeof(world_chunk));
   Assert(Result);
 
   Result->Data = AllocateChunk(Chunk_Dimension(CD_X, CD_Y, CD_Z));
@@ -448,11 +448,11 @@ IsFacingPoint( v3 FaceToPoint, v3 FaceNormal )
   return Result;
 }
 
-World_Chunk*
+world_chunk*
 GetWorldChunk( World *world, world_position P )
 {
   unsigned int HashIndex = GetWorldChunkHash(P);
-  World_Chunk *Result = world->ChunkHash[HashIndex];
+  world_chunk *Result = world->ChunkHash[HashIndex];
 
   while (Result)
   {

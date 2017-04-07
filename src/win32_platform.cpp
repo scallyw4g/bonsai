@@ -7,6 +7,8 @@
 
 struct work_queue_entry
 {
+  World *world;
+  world_chunk *Chunk;
   const char *String;
 };
 
@@ -77,7 +79,6 @@ PushString(work_queue *Queue, const char *String)
 {
   work_queue_entry Entry = {};
   Entry.String = String;
-
 
   Queue->Entries[Queue->EntryCount] = Entry;
 

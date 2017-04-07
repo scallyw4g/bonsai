@@ -114,7 +114,7 @@ GAME_UPDATE_AND_RENDER
       for (int x = 0; x < world->VisibleRegion.x; ++x)
       {
         world_position ChunkP = World_Position(x,y,z) + Player->P.WorldP - (world->VisibleRegion/2);
-        World_Chunk *chunk = GetWorldChunk(world, ChunkP);
+        world_chunk *chunk = GetWorldChunk(world, ChunkP);
 
         if (!chunk)
         {
@@ -128,7 +128,7 @@ GAME_UPDATE_AND_RENDER
 
   for ( int i = 0; i < WORLD_HASH_SIZE; ++i)
   {
-    World_Chunk *chunk = world->ChunkHash[i];
+    world_chunk *chunk = world->ChunkHash[i];
 
     while (chunk)
     {
@@ -147,7 +147,7 @@ GAME_UPDATE_AND_RENDER
       }
       else
       {
-        World_Chunk *ChunkToFree = chunk;
+        world_chunk *ChunkToFree = chunk;
         chunk = chunk->Next;
         FreeWorldChunk(world, ChunkToFree);
       }
