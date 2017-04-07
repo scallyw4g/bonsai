@@ -21,7 +21,7 @@ struct work_queue
   HANDLE SemaphoreHandle;
   unsigned int EntryCount;
   unsigned int NextEntry;
-  work_queue_entry Entries[64];
+  work_queue_entry Entries[WORK_QUEUE_SIZE];
 };
 
 struct thread_startup_params
@@ -33,7 +33,7 @@ struct thread_startup_params
 struct platform
 {
   work_queue Queue;
-  thread_startup_params Threads[8];
+  thread_startup_params Threads[THREAD_COUNT];
 };
 
 DWORD WINAPI DoWorkerWork(void *Input)
@@ -45,11 +45,23 @@ DWORD WINAPI DoWorkerWork(void *Input)
 
   for (;;)
   {
-    if (Queue->NextEntry < Queue->EntryCount)
+    int OriginalNext = Queue->NextEntry;
+
+    if (OriginalNext < Queue->EntryCount)
     {
-      unsigned int EntryIndex = InterlockedIncrement((LONG volatile *)&Queue->NextEntry) - 1;
-      work_queue_entry Entry = Queue->Entries[EntryIndex];
-      printf("Thread %d, %s\n", Self->ThreadIndex, Entry.String);
+      unsigned int EntryIndex = InterlockedCompareExchange( (LONG volatile *)&Queue->NextEntry,
+                                                            (OriginalNext + 1) % WORK_QUEUE_SIZE,
+                                                            OriginalNext);
+      if ( EntryIndex == OriginalNext )
+      {
+        work_queue_entry Entry = Queue->Entries[EntryIndex];
+        printf("Thread %d, %s\n", Self->ThreadIndex, Entry.String);
+      }
+      else
+      {
+        Assert(False);
+      }
+
     }
     else
     {
@@ -66,13 +78,15 @@ PushString(work_queue *Queue, const char *String)
   work_queue_entry Entry = {};
   Entry.String = String;
 
+
   Queue->Entries[Queue->EntryCount] = Entry;
 
   _WriteBarrier();
   _mm_sfence();
 
-  ++Queue->EntryCount;
+  Queue->EntryCount = ++Queue->EntryCount % WORK_QUEUE_SIZE;
 
+  Assert(Queue->NextEntry != Queue->EntryCount);
 
   ReleaseSemaphore( Queue->SemaphoreHandle, 1, 0 );
 
@@ -86,22 +100,11 @@ PlatformInit(platform *Platform)
   DWORD flags = 0;
   DWORD ThreadID = 0;
 
-  int ThreadCount = ArrayCount(Platform->Threads);
+  int ThreadCount = THREAD_COUNT;
 
   work_queue *Queue = &Platform->Queue;
 
   Queue->SemaphoreHandle = CreateSemaphore( 0, 0, ThreadCount, 0);
-
-  PushString(&Platform->Queue, "0");
-  PushString(&Platform->Queue, "1");
-  PushString(&Platform->Queue, "2");
-  PushString(&Platform->Queue, "3");
-  PushString(&Platform->Queue, "4");
-  PushString(&Platform->Queue, "5");
-  PushString(&Platform->Queue, "6");
-  PushString(&Platform->Queue, "7");
-  PushString(&Platform->Queue, "8");
-  PushString(&Platform->Queue, "9");
 
   for (int ThreadIndex = 0;
       ThreadIndex < ThreadCount;
@@ -119,19 +122,16 @@ PlatformInit(platform *Platform)
     );
   }
 
-  Sleep(5000);
-
-  PushString(&Platform->Queue, "B0");
-  PushString(&Platform->Queue, "B1");
-  PushString(&Platform->Queue, "B2");
-  PushString(&Platform->Queue, "B3");
-  PushString(&Platform->Queue, "B4");
-  PushString(&Platform->Queue, "B5");
-  PushString(&Platform->Queue, "B6");
-  PushString(&Platform->Queue, "B7");
-  PushString(&Platform->Queue, "B8");
-  PushString(&Platform->Queue, "B9");
-
+  PushString(&Platform->Queue, "0");
+  PushString(&Platform->Queue, "1");
+  PushString(&Platform->Queue, "2");
+  PushString(&Platform->Queue, "3");
+  PushString(&Platform->Queue, "4");
+  PushString(&Platform->Queue, "5");
+  PushString(&Platform->Queue, "6");
+  PushString(&Platform->Queue, "7");
+  PushString(&Platform->Queue, "8");
+  PushString(&Platform->Queue, "9");
 
   return;
 }
