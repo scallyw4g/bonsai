@@ -1070,7 +1070,7 @@ BuildBoundaryVoxels( World *world, world_chunk *WorldChunk)
   {
     voxel_position  TopVector    = Voxel_Position(0,1,0);
     world_chunk *Top = GetWorldChunk( world, WorldChunk->WorldP + TopVector   );
-    if ( Top )
+    if ( Top && IsSet( Top->Data->flags, Chunk_Initialized) )
     {
       BuildExteriorBoundaryVoxels( world,  WorldChunk,  Top,    TopVector   );
       chunk->flags = UnSetFlag( chunk->flags, Chunk_RebuildExteriorTop );
@@ -1081,7 +1081,7 @@ BuildBoundaryVoxels( World *world, world_chunk *WorldChunk)
   {
     voxel_position  BotVector    = Voxel_Position(0,-1,0);
     world_chunk *Bot = GetWorldChunk( world, WorldChunk->WorldP + BotVector   );
-    if ( Bot )
+    if ( Bot && IsSet( Bot->Data->flags, Chunk_Initialized) )
     {
       BuildExteriorBoundaryVoxels( world,  WorldChunk,  Bot,    BotVector   );
       chunk->flags = UnSetFlag( chunk->flags, Chunk_RebuildExteriorBot );
@@ -1092,7 +1092,7 @@ BuildBoundaryVoxels( World *world, world_chunk *WorldChunk)
   {
     voxel_position  LeftVector   = Voxel_Position(-1,0,0);
     world_chunk *Left = GetWorldChunk( world, WorldChunk->WorldP + LeftVector  );
-    if ( Left )
+    if ( Left && IsSet( Left->Data->flags, Chunk_Initialized) )
     {
       BuildExteriorBoundaryVoxels( world,  WorldChunk,  Left,   LeftVector  );
       chunk->flags = UnSetFlag( chunk->flags, Chunk_RebuildExteriorLeft );
@@ -1103,7 +1103,7 @@ BuildBoundaryVoxels( World *world, world_chunk *WorldChunk)
   {
     voxel_position  RightVector  = Voxel_Position(1,0,0);
     world_chunk *Right = GetWorldChunk( world, WorldChunk->WorldP + RightVector );
-    if ( Right )
+    if ( Right && IsSet( Right->Data->flags, Chunk_Initialized) )
     {
       BuildExteriorBoundaryVoxels( world,  WorldChunk,  Right,  RightVector );
       chunk->flags = UnSetFlag( chunk->flags, Chunk_RebuildExteriorRight );
@@ -1114,7 +1114,7 @@ BuildBoundaryVoxels( World *world, world_chunk *WorldChunk)
   {
     voxel_position  FrontVector  = Voxel_Position(0,0,1);
     world_chunk *Front = GetWorldChunk( world, WorldChunk->WorldP + FrontVector );
-    if ( Front )
+    if ( Front && IsSet( Front->Data->flags, Chunk_Initialized) )
     {
       BuildExteriorBoundaryVoxels( world,  WorldChunk,  Front,  FrontVector );
       chunk->flags = UnSetFlag( chunk->flags, Chunk_RebuildExteriorFront );
@@ -1125,7 +1125,7 @@ BuildBoundaryVoxels( World *world, world_chunk *WorldChunk)
   {
     voxel_position  BackVector   = Voxel_Position(0,0,-1);
     world_chunk *Back = GetWorldChunk( world, WorldChunk->WorldP + BackVector  );
-    if ( Back )
+    if ( Back && IsSet( Back->Data->flags, Chunk_Initialized) )
     {
       BuildExteriorBoundaryVoxels( world,  WorldChunk,  Back,   BackVector  );
       chunk->flags = UnSetFlag( chunk->flags, Chunk_RebuildExteriorBack );
