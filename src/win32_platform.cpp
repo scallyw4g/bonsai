@@ -18,7 +18,8 @@ struct thread
 
 struct work_queue
 {
-  volatile unsigned int EntryCount;
+  unsigned int EntryCount;
+  unsigned int NextEntry;
   work_queue_entry Entries[64];
 };
 
@@ -41,21 +42,12 @@ DWORD WINAPI DoWorkerWork(void *Input)
   work_queue *Queue = ThreadParams->Queue;
   thread *Self = &ThreadParams->Self;
 
-  while (Queue->EntryCount > 0)
+  for (;;)
   {
-    unsigned int Count = Queue->EntryCount;
-    unsigned int EntryIndex = 0;
-
-    unsigned int ExchangedCount =
-      InterlockedCompareExchange(&Queue->EntryCount, Count - 1, Count);
-
-    if ( ExchangedCount == Count )
+    if (Queue->NextEntry < Queue->EntryCount)
     {
-      work_queue_entry Entry = Queue->Entries[ExchangedCount-1];
-
-      work_queue_entry NullEntry = {};
-      Queue->Entries[Queue->EntryCount] = NullEntry;
-
+      unsigned int EntryIndex = InterlockedIncrement((LONG volatile *)&Queue->NextEntry) - 1;
+      work_queue_entry Entry = Queue->Entries[EntryIndex];
       printf("Thread %d, %s\n", Self->ThreadIndex, Entry.String);
     }
   }
@@ -71,9 +63,10 @@ PushString(work_queue *Queue, const char *String)
 
   Queue->Entries[Queue->EntryCount] = Entry;
 
-  _ReadWriteBarrier();
+  _WriteBarrier();
+  _mm_sfence();
 
-  InterlockedIncrement(&Queue->EntryCount);
+  ++Queue->EntryCount;
 
   return;
 }
@@ -104,7 +97,7 @@ PlatformInit(platform *Platform)
   {
     thread_startup_params *Params = &Platform->Threads[ThreadIndex];
     Params->Self.ThreadIndex = ThreadIndex;
-	Params->Queue = Queue;
+    Params->Queue = Queue;
 
     HANDLE ThreadHandle = CreateThread( 0, StackSize,
       &DoWorkerWork,
