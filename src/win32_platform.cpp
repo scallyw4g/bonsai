@@ -18,6 +18,7 @@ struct thread
 
 struct work_queue
 {
+  HANDLE SemaphoreHandle;
   unsigned int EntryCount;
   unsigned int NextEntry;
   work_queue_entry Entries[64];
@@ -50,6 +51,10 @@ DWORD WINAPI DoWorkerWork(void *Input)
       work_queue_entry Entry = Queue->Entries[EntryIndex];
       printf("Thread %d, %s\n", Self->ThreadIndex, Entry.String);
     }
+    else
+    {
+      WaitForSingleObject( Queue->SemaphoreHandle, INFINITE );
+    }
   }
 
   return 0;
@@ -68,6 +73,9 @@ PushString(work_queue *Queue, const char *String)
 
   ++Queue->EntryCount;
 
+
+  ReleaseSemaphore( Queue->SemaphoreHandle, 1, 0 );
+
   return;
 }
 
@@ -78,7 +86,11 @@ PlatformInit(platform *Platform)
   DWORD flags = 0;
   DWORD ThreadID = 0;
 
+  int ThreadCount = ArrayCount(Platform->Threads);
+
   work_queue *Queue = &Platform->Queue;
+
+  Queue->SemaphoreHandle = CreateSemaphore( 0, 0, ThreadCount, 0);
 
   PushString(&Platform->Queue, "0");
   PushString(&Platform->Queue, "1");
@@ -92,7 +104,7 @@ PlatformInit(platform *Platform)
   PushString(&Platform->Queue, "9");
 
   for (int ThreadIndex = 0;
-      ThreadIndex < ArrayCount(Platform->Threads);
+      ThreadIndex < ThreadCount;
       ++ ThreadIndex )
   {
     thread_startup_params *Params = &Platform->Threads[ThreadIndex];
@@ -106,6 +118,8 @@ PlatformInit(platform *Platform)
       &Params->Self.ID
     );
   }
+
+  Sleep(5000);
 
   PushString(&Platform->Queue, "B0");
   PushString(&Platform->Queue, "B1");
