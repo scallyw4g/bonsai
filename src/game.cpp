@@ -1,3 +1,8 @@
+#ifdef _WIN32
+#include <win32_platform.cpp>
+#else
+#include <unix_platform.cpp>
+#endif
 
 #include <bonsai.h>
 #include <render.h>
@@ -185,6 +190,9 @@ int
 main( void )
 {
   int WindowWidth, WindowHeight;
+
+  platform Platform = {};
+  PlatformInit(&Platform);
 
   WindowWidth = SCR_WIDTH;
   WindowHeight = SCR_HEIGHT;
