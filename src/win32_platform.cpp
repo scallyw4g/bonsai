@@ -2,30 +2,80 @@
 #define WIN32_PLATFORM
 
 #include <Windows.h>
+#include <WinBase.h>
 #include <iostream>
-
-struct work_queue
-{
-};
 
 struct work_queue_entry
 {
+  const char *String;
+};
+
+struct thread
+{
+  int ThreadIndex;
+  DWORD ID;
+};
+
+struct work_queue
+{
+  volatile unsigned int EntryCount;
+  work_queue_entry Entries[64];
+};
+
+struct thread_startup_params
+{
+  work_queue *Queue;
+  thread Self;
 };
 
 struct platform
 {
+  work_queue Queue;
+  thread_startup_params Threads[8];
 };
 
-DWORD WINAPI DoWorkerWork(void *String)
+DWORD WINAPI DoWorkerWork(void *Input)
 {
-  String = (char *)String;
-  printf("%s\n", String);
+  thread_startup_params *ThreadParams = (thread_startup_params *)Input;
+
+  work_queue *Queue = ThreadParams->Queue;
+  thread *Self = &ThreadParams->Self;
+
+  while (Queue->EntryCount > 0)
+  {
+    unsigned int Count = Queue->EntryCount;
+    unsigned int EntryIndex = 0;
+
+    unsigned int ExchangedCount =
+      InterlockedCompareExchange(&Queue->EntryCount, Count - 1, Count);
+
+    if ( ExchangedCount == Count )
+    {
+      work_queue_entry Entry = Queue->Entries[ExchangedCount-1];
+
+      work_queue_entry NullEntry = {};
+      Queue->Entries[Queue->EntryCount] = NullEntry;
+
+      printf("Thread %d, %s\n", Self->ThreadIndex, Entry.String);
+    }
+  }
+
   return 0;
 }
 
 void
-PushString(char *String)
+PushString(work_queue *Queue, const char *String)
 {
+  work_queue_entry Entry = {};
+  Entry.String = String;
+
+  Queue->Entries[Queue->EntryCount] = Entry;
+
+  _ReadWriteBarrier();
+
+  InterlockedIncrement(&Queue->EntryCount);
+
+  return;
 }
 
 void
@@ -35,25 +85,45 @@ PlatformInit(platform *Platform)
   DWORD flags = 0;
   DWORD ThreadID = 0;
 
-  const char *Input = "Hi!";
+  work_queue *Queue = &Platform->Queue;
 
-  DWORD Threads[8];
+  PushString(&Platform->Queue, "0");
+  PushString(&Platform->Queue, "1");
+  PushString(&Platform->Queue, "2");
+  PushString(&Platform->Queue, "3");
+  PushString(&Platform->Queue, "4");
+  PushString(&Platform->Queue, "5");
+  PushString(&Platform->Queue, "6");
+  PushString(&Platform->Queue, "7");
+  PushString(&Platform->Queue, "8");
+  PushString(&Platform->Queue, "9");
 
   for (int ThreadIndex = 0;
-      ThreadIndex < ArrayCount(Threads);
-      ++ ThreadIndex; )
+      ThreadIndex < ArrayCount(Platform->Threads);
+      ++ ThreadIndex )
   {
+    thread_startup_params *Params = &Platform->Threads[ThreadIndex];
+    Params->Self.ThreadIndex = ThreadIndex;
+	Params->Queue = Queue;
+
     HANDLE ThreadHandle = CreateThread( 0, StackSize,
       &DoWorkerWork,
-      (void *)Input,
+      (void *)Params,
       flags,
-      &ThreadID
+      &Params->Self.ID
     );
-
-    Assert(ThreadID);
-
-    Threads[ThreadIndex] = ThreadID;
   }
+
+  PushString(&Platform->Queue, "B0");
+  PushString(&Platform->Queue, "B1");
+  PushString(&Platform->Queue, "B2");
+  PushString(&Platform->Queue, "B3");
+  PushString(&Platform->Queue, "B4");
+  PushString(&Platform->Queue, "B5");
+  PushString(&Platform->Queue, "B6");
+  PushString(&Platform->Queue, "B7");
+  PushString(&Platform->Queue, "B8");
+  PushString(&Platform->Queue, "B9");
 
 
   return;
