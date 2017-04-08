@@ -7,6 +7,7 @@
 
 struct work_queue_entry
 {
+  World *world;
   void (*Callback)(void*);
   void *Input;
 };
@@ -48,7 +49,7 @@ DWORD WINAPI ThreadMain(void *Input)
   {
     unsigned int OriginalNext = Queue->NextEntry;
 
-    if (OriginalNext < Queue->EntryCount)
+    if (OriginalNext != Queue->EntryCount)
     {
       unsigned int EntryIndex = InterlockedCompareExchange( (LONG volatile *)&Queue->NextEntry,
                                                             (OriginalNext + 1) % WORK_QUEUE_SIZE,
@@ -57,7 +58,7 @@ DWORD WINAPI ThreadMain(void *Input)
       {
         work_queue_entry Entry = Queue->Entries[EntryIndex];
 
-        Entry.Callback(Entry.Input);
+        Entry.Callback(&Entry);
 
         printf("Thread %d executed callback\n", Self->ThreadIndex);
       }

@@ -7,7 +7,7 @@
 #define DEBUG_GLOBAL static
 #define GLOBAL_VARIABLE static
 
-#define THREAD_COUNT 8
+#define THREAD_COUNT 4
 
 #define BONSAI_INTERNAL 1
 
@@ -28,7 +28,7 @@
 
 // Visible Region XYZ - Must be > (3,3,3)
 #define VR_X 16
-#define VR_Y 16
+#define VR_Y 32
 #define VR_Z 16
 
 #define VOLUME_VISIBLE_REGION (VR_X*VR_X*VR_X)
@@ -63,7 +63,6 @@
 #define DEBUG_HIGHLIGHT_VOID_CHUNKS   0
 
 #define DEBUG_FRAMES_TO_RUN            -1
-#define DEBUG_CHUNKS_TO_INIT_PER_FRAME 50
 
 /* #define SCR_WIDTH 800 */
 /* #define SCR_HEIGHT 600 */

@@ -20,8 +20,8 @@ enum ChunkFlags
   Chunk_Uninitialized           = 0 << 0,
   Chunk_Initialized             = 1 << 0,
 
-  Chunk_Entity                  = 1 << 1,
-  Chunk_World                   = 1 << 2,
+  // Chunk_Entity                  = 1 << 1,
+  // Chunk_World                   = 1 << 2,
   Chunk_RebuildInteriorBoundary = 1 << 3,
   Chunk_RebuildExteriorTop      = 1 << 4,
   Chunk_RebuildExteriorBot      = 1 << 5,
@@ -306,35 +306,38 @@ GetWorldChunkHash(world_position P)
 void
 FreeWorldChunk(World *world, world_chunk *chunk)
 {
-  Assert( IsSet(chunk->Data->flags, Chunk_Initialized) || IsSet(chunk->Data->flags, Chunk_Queued) );
- 
-  // Unlink from middle of linked list
-  if (chunk->Prev)
+  // Only free chunks that have been initialized because queued ones
+  // could be in-flight in another thread
+  if (IsSet(chunk->Data->flags, Chunk_Initialized))
   {
-    chunk->Prev->Next = chunk->Next;
+	  // Unlink from middle of linked list
+	  if (chunk->Prev)
+	  {
+		chunk->Prev->Next = chunk->Next;
+	  }
+
+	  if (chunk->Next)
+	  {
+		chunk->Next->Prev = chunk->Prev;
+	  }
+
+	  // Unlink from head end of linked list
+	  if (!chunk->Prev)
+	  {
+		world->ChunkHash[GetWorldChunkHash(chunk->WorldP)] = chunk->Next;
+	  }
+
+	  chunk->Prev = 0;
+	  chunk->Next = 0;
+
+	  Assert(world->FreeChunkCount < FREELIST_SIZE);
+	  world->FreeChunks[world->FreeChunkCount++] = chunk;
+
+	  ZeroChunk(chunk->Data);
+
+	  Assert( NotSet(chunk->Data->flags, Chunk_Initialized) );
+	  Assert( NotSet(chunk->Data->flags, Chunk_Queued) );
   }
-
-  if (chunk->Next)
-  {
-    chunk->Next->Prev = chunk->Prev;
-  }
-
-  // Unlink from head end of linked list
-  if (!chunk->Prev)
-  {
-    world->ChunkHash[GetWorldChunkHash(chunk->WorldP)] = chunk->Next;
-  }
-
-  chunk->Prev = 0;
-  chunk->Next = 0;
-
-  Assert(world->FreeChunkCount < FREELIST_SIZE);
-  world->FreeChunks[world->FreeChunkCount++] = chunk;
-
-  ZeroChunk(chunk->Data);
-
-  Assert( NotSet(chunk->Data->flags, Chunk_Initialized) );
-  Assert( NotSet(chunk->Data->flags, Chunk_Queued) );
 
   return;
 }
@@ -464,7 +467,7 @@ GetWorldChunk( World *world, world_position P )
   return Result;
 }
 
-bool
+inline bool
 IsFilled( chunk_data *chunk, voxel_position VoxelP )
 {
   int i = GetIndex(VoxelP, chunk);
@@ -474,6 +477,13 @@ IsFilled( chunk_data *chunk, voxel_position VoxelP )
 
   bool isFilled = IsSet(chunk->Voxels[i].flags, Voxel_Filled);
   return isFilled;
+}
+
+inline bool
+NotFilled(chunk_data *Chunk, voxel_position VoxelP)
+{
+	bool Result = !IsFilled(Chunk, VoxelP);
+	return Result;
 }
 
 inline voxel_position

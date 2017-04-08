@@ -896,50 +896,50 @@ BuildInteriorBoundaryVoxels(World *world, chunk_data *chunk, world_position Worl
     {
       for ( int x = 0; x < chunk->Dim.x ; ++x )
       {
-        v3 Offset = V3(x,y,z);
+        voxel_position VoxelP = Voxel_Position(x,y,z);
 
-        if ( !IsFilled( chunk, Voxel_Position(Offset) ) )
+        if ( NotFilled( chunk, VoxelP ) )
           continue;
 
-        voxel_position rightVoxel  = Voxel_Position( Offset + V3(1.0f,0,0) );
-        voxel_position leftVoxel  = Voxel_Position( Offset - V3(1.0f,0,0) );
+		voxel_position rightVoxel = VoxelP + Voxel_Position(1.0f, 0, 0);
+		voxel_position leftVoxel = VoxelP - Voxel_Position(1.0f, 0, 0);
 
-        voxel_position topVoxel   = Voxel_Position( Offset + V3(0,1.0f,0) );
-        voxel_position botVoxel   = Voxel_Position( Offset - V3(0,1.0f,0) );
+		voxel_position topVoxel = VoxelP + Voxel_Position(0, 1.0f, 0);
+		voxel_position botVoxel = VoxelP - Voxel_Position(0, 1.0f, 0);
 
-        voxel_position frontVoxel = Voxel_Position( Offset + V3(0,0,1.0f) );
-        voxel_position backVoxel  = Voxel_Position( Offset - V3(0,0,1.0f) );
+		voxel_position frontVoxel = VoxelP + Voxel_Position(0, 0, 1.0f);
+		voxel_position backVoxel = VoxelP - Voxel_Position(0, 0, 1.0f);
 
         Voxel voxel = chunk->Voxels[GetIndex(Voxel_Position(x,y,z), chunk)];
 
         bool DidPushVoxel = false;
 
-        if ( IsInsideChunk( chunk->Dim, rightVoxel  ) && !IsFilled( chunk, rightVoxel  ))
+        if ( IsInsideChunk( chunk->Dim, rightVoxel  ) && NotFilled( chunk, rightVoxel  ))
         {
           voxel.flags = SetFlag(voxel.flags, Voxel_RightFace);
           DidPushVoxel = true;
         }
-        if ( IsInsideChunk( chunk->Dim, leftVoxel  ) && !IsFilled( chunk, leftVoxel  ))
+        if ( IsInsideChunk( chunk->Dim, leftVoxel  ) && NotFilled( chunk, leftVoxel  ))
         {
           voxel.flags = SetFlag(voxel.flags, Voxel_LeftFace);
           DidPushVoxel = true;
         }
-        if ( IsInsideChunk( chunk->Dim, botVoxel   ) && !IsFilled( chunk, botVoxel   ))
+        if ( IsInsideChunk( chunk->Dim, botVoxel   ) && NotFilled( chunk, botVoxel   ))
         {
           voxel.flags = SetFlag(voxel.flags, Voxel_BottomFace);
           DidPushVoxel = true;
         }
-        if ( IsInsideChunk( chunk->Dim, topVoxel   ) && !IsFilled( chunk, topVoxel   ))
+        if ( IsInsideChunk( chunk->Dim, topVoxel   ) && NotFilled( chunk, topVoxel   ))
         {
           voxel.flags = SetFlag(voxel.flags, Voxel_TopFace);
           DidPushVoxel = true;
         }
-        if ( IsInsideChunk( chunk->Dim, frontVoxel ) && !IsFilled( chunk, frontVoxel ))
+        if ( IsInsideChunk( chunk->Dim, frontVoxel ) && NotFilled( chunk, frontVoxel ))
         {
           voxel.flags = SetFlag(voxel.flags, Voxel_FrontFace);
           DidPushVoxel = true;
         }
-        if ( IsInsideChunk( chunk->Dim, backVoxel  ) && !IsFilled( chunk, backVoxel  ))
+        if ( IsInsideChunk( chunk->Dim, backVoxel  ) && NotFilled( chunk, backVoxel  ))
         {
           voxel.flags = SetFlag(voxel.flags, Voxel_BackFace);
           DidPushVoxel = true;
@@ -1065,7 +1065,7 @@ BuildBoundaryVoxels( World *world, world_chunk *WorldChunk)
     chunk->BoundaryVoxelCount = 0;
     BuildInteriorBoundaryVoxels( world, chunk, WorldChunk->WorldP );
   }
-
+#if 0
   if ( IsSet(chunk->flags, Chunk_RebuildExteriorTop   ) )
   {
     voxel_position  TopVector    = Voxel_Position(0,1,0);
@@ -1131,6 +1131,7 @@ BuildBoundaryVoxels( World *world, world_chunk *WorldChunk)
       chunk->flags = UnSetFlag( chunk->flags, Chunk_RebuildExteriorBack );
     }
   }
+#endif
 
   return;
 }
@@ -1147,12 +1148,6 @@ DrawWorldChunk(
 
   if (IsSet(WorldChunk->Data->flags, Chunk_Initialized) )
   {
-
-#if DEBUG_CHUNK_AABB
-    /* DEBUG_DrawChunkAABB( world, WorldChunk, Quaternion(1,0,0,0) ); */
-#endif
-
-    BuildBoundaryVoxels(world, WorldChunk);
     BufferChunkMesh(world, WorldChunk->Data, WorldChunk->WorldP, RG, SG, Camera);
   }
 }

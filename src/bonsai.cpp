@@ -89,7 +89,7 @@ initWindow( int WindowWidth, int WindowHeight )
 
 
 void
-InitializeVoxels( world_chunk *WorldChunk )
+InitializeVoxels( World *world, world_chunk *WorldChunk )
 {
   Assert(WorldChunk);
 
@@ -155,8 +155,9 @@ InitializeVoxels( world_chunk *WorldChunk )
 
   /* CALLGRIND_TOGGLE_COLLECT; */
 
-  chunk->flags = UnSetFlag(chunk->flags, Chunk_Queued);
-  chunk->flags = SetFlag(chunk->flags, Chunk_Initialized );
+  BuildBoundaryVoxels(world, WorldChunk);
+
+  chunk->flags = Chunk_Initialized;
 
   return;
 }
@@ -164,8 +165,10 @@ InitializeVoxels( world_chunk *WorldChunk )
 void
 InitializeVoxels(void *Input)
 {
-	world_chunk *Chunk = (world_chunk *)Input;
-	return InitializeVoxels(Chunk);
+	work_queue_entry *Params = (work_queue_entry *)Input;
+	world_chunk *Chunk = (world_chunk *)Params->Input;
+
+	return InitializeVoxels(Params->world, Chunk);
 }
 
 inline bool
@@ -214,18 +217,19 @@ NotFilledInWorld( World *world, world_chunk *chunk, canonical_position VoxelP )
 }
 
 inline void
-QueueChunkForInit(World *world, platform *Plat, world_chunk *chunk)
+QueueChunkForInit(World *world, platform *Plat, world_chunk *Chunk)
 {
-  Assert( NotSet(chunk->Data->flags, Chunk_Queued ) );
-  Assert( NotSet(chunk->Data->flags, Chunk_Initialized) );
+  Assert( NotSet(Chunk->Data->flags, Chunk_Queued ) );
+  Assert( NotSet(Chunk->Data->flags, Chunk_Initialized) );
 
   work_queue_entry Entry;
   Entry.Callback = &InitializeVoxels;
-  Entry.Input = (void*)chunk;
+  Entry.Input = (void*)Chunk;
+  Entry.world = world;
+
+  Chunk->Data->flags = SetFlag(Chunk->Data->flags, Chunk_Queued);
 
   PushWorkQueueEntry(&Plat->Queue, &Entry);
-
-  chunk->Data->flags = SetFlag(chunk->Data->flags, Chunk_Queued);
 
   return;
 }
@@ -303,11 +307,13 @@ GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
 
         world_chunk *chunk = GetWorldChunk( world, LoopTestP.WorldP );
 
+#if 0
         if (chunk && NotSet(chunk->Data->flags, Chunk_Initialized) )
         {
           chunk->Data->flags = (chunk->Data->flags, Chunk_Queued);
           InitializeVoxels(chunk);
         }
+#endif
 
         if ( IsFilledInChunk(world, chunk, Voxel_Position(LoopTestP.Offset)) )
         {
@@ -501,6 +507,8 @@ UpdateVisibleRegion(World *world, platform *Plat, world_position OriginalPlayerP
     QueueChunksForInit(world, Plat, World_Position(0, WorldDisp.y, 0), Player);
     QueueChunksForInit(world, Plat, World_Position(0, 0, WorldDisp.z), Player);
   }
+
+  return;
 }
 
 
