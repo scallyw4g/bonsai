@@ -128,10 +128,6 @@ struct World
 {
   world_chunk **ChunkHash;
 
-  world_chunk **ChunksToInit;
-  int ChunkToInitCount;
-  int ChunkToInitOffset; // Where to start the circular loop
-
   world_chunk **FreeChunks;
   int FreeChunkCount;
 
@@ -139,8 +135,6 @@ struct World
   chunk_dimension VisibleRegion;
 
   chunk_dimension ChunkDim;
-
-  PerlinNoise Noise;
 
   v3 Gravity;
 

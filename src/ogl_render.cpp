@@ -947,7 +947,8 @@ BuildInteriorBoundaryVoxels(World *world, chunk_data *chunk, world_position Worl
 
         if (DidPushVoxel)
         {
-          Assert(GetVoxelP(voxel) == Voxel_Position(x,y,z));
+          voxel_position P = GetVoxelP(voxel);
+          Assert( P == Voxel_Position(x,y,z));
           PushBoundaryVoxel(chunk, voxel);
         }
 

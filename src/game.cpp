@@ -17,11 +17,6 @@
 void
 SeedWorldAndUnspawnPlayer( World *world, Entity *Player )
 {
-
-  srand(DEBUG_NOISE_SEED++);
-  PerlinNoise Noise(rand());
-  world->Noise = Noise;
-
   Player->Spawned = false;
 
   return;
@@ -62,6 +57,7 @@ void
 GAME_UPDATE_AND_RENDER
 (
     World *world,
+	platform *Plat,
     Entity *Player,
     Camera_Object *Camera,
     float dt,
@@ -77,15 +73,13 @@ GAME_UPDATE_AND_RENDER
   {
     v3 Input = GetInputsFromController(Camera);
     v3 PlayerDelta = GetEntityDelta(world, Player, Input, dt);
-    UpdatePlayerP( world, Player, PlayerDelta );
+    UpdatePlayerP( world, Plat, Player, PlayerDelta );
     if (Length(Input) > 0) Player->Rotation = LookAt(Input);
   }
   else // Try to respawn the player until enough of the world has been initialized to do so
   {
-    SpawnPlayer( world, Player );
+    SpawnPlayer( world, Plat, Player );
   }
-
-  InitQueuedChunks( world );
 
   UpdateCameraP( world, Player, Camera );
 
@@ -137,11 +131,11 @@ GAME_UPDATE_AND_RENDER
         DrawWorldChunk( world, chunk, Camera, RG, SG);
         if (IsSet(chunk->Data->flags, Chunk_Initialized) )
         {
-          // DEBUG_DrawChunkAABB(world, RG, chunk, Quaternion(0,0,0,1), GREEN);
+          // DEBUG_DrawChunkAABB(world, chunk, Quaternion(0,0,0,1), GREEN);
         }
         else if (IsSet(chunk->Data->flags, Chunk_Queued) )
         {
-          // DEBUG_DrawChunkAABB(world, RG, chunk, Quaternion(0,0,0,1), WHITE);
+          DEBUG_DrawChunkAABB(world, chunk, Quaternion(0,0,0,1), WHITE);
         }
         chunk = chunk->Next;
       }
@@ -192,8 +186,12 @@ main( void )
 {
   int WindowWidth, WindowHeight;
 
-  platform Platform = {};
-  PlatformInit(&Platform);
+  srand(DEBUG_NOISE_SEED);
+  PerlinNoise Noise(rand());
+  GlobalNoise = Noise;
+
+  platform Plat = {};
+  PlatformInit(&Plat);
 
   WindowWidth = SCR_WIDTH;
   WindowHeight = SCR_HEIGHT;
@@ -235,7 +233,7 @@ main( void )
   Player.P.WorldP = World_Position(0,0,0);
   Player.Spawned = false;
 
-  AllocateWorld(&world, Player.P.WorldP);
+  AllocateWorld(&world, &Plat, Player.P.WorldP);
   SeedWorldAndUnspawnPlayer(&world, &Player);
 
   Camera_Object Camera = {};
@@ -260,14 +258,12 @@ main( void )
     float dt = (float)(currentTime - lastTime);
     lastTime = currentTime;
 
-    cout << dt << endl;
-
     accumulatedTime += dt;
     numFrames ++;
 
     RG.Basis.ProjectionMatrix = GetProjectionMatrix(&Camera, WindowWidth, WindowHeight);
 
-    GAME_UPDATE_AND_RENDER( &world, &Player, &Camera, dt, &RG, &SG);
+    GAME_UPDATE_AND_RENDER( &world, &Plat, &Player, &Camera, dt, &RG, &SG);
 
     float FPS = 60.0f;
     WaitForFrameTime(lastTime, FPS);

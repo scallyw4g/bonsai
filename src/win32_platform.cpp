@@ -7,9 +7,8 @@
 
 struct work_queue_entry
 {
-  World *world;
-  world_chunk *Chunk;
-  const char *String;
+  void (*Callback)(void*);
+  void *Input;
 };
 
 struct thread
@@ -22,7 +21,7 @@ struct work_queue
 {
   HANDLE SemaphoreHandle;
   unsigned int EntryCount;
-  unsigned int NextEntry;
+  volatile unsigned int NextEntry;
   work_queue_entry Entries[WORK_QUEUE_SIZE];
 };
 
@@ -38,7 +37,7 @@ struct platform
   thread_startup_params Threads[THREAD_COUNT];
 };
 
-DWORD WINAPI DoWorkerWork(void *Input)
+DWORD WINAPI ThreadMain(void *Input)
 {
   thread_startup_params *ThreadParams = (thread_startup_params *)Input;
 
@@ -47,7 +46,7 @@ DWORD WINAPI DoWorkerWork(void *Input)
 
   for (;;)
   {
-    int OriginalNext = Queue->NextEntry;
+    unsigned int OriginalNext = Queue->NextEntry;
 
     if (OriginalNext < Queue->EntryCount)
     {
@@ -57,11 +56,10 @@ DWORD WINAPI DoWorkerWork(void *Input)
       if ( EntryIndex == OriginalNext )
       {
         work_queue_entry Entry = Queue->Entries[EntryIndex];
-        printf("Thread %d, %s\n", Self->ThreadIndex, Entry.String);
-      }
-      else
-      {
-        Assert(False);
+
+        Entry.Callback(Entry.Input);
+
+        printf("Thread %d executed callback\n", Self->ThreadIndex);
       }
 
     }
@@ -75,18 +73,15 @@ DWORD WINAPI DoWorkerWork(void *Input)
 }
 
 void
-PushString(work_queue *Queue, const char *String)
+PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
 {
-  work_queue_entry Entry = {};
-  Entry.String = String;
-
-  Queue->Entries[Queue->EntryCount] = Entry;
+  Queue->Entries[Queue->EntryCount] = *Entry;
 
   _WriteBarrier();
   _mm_sfence();
 
   Queue->EntryCount = ++Queue->EntryCount % WORK_QUEUE_SIZE;
-
+  // TODO(Jesse): Is this check correct?
   Assert(Queue->NextEntry != Queue->EntryCount);
 
   ReleaseSemaphore( Queue->SemaphoreHandle, 1, 0 );
@@ -116,23 +111,12 @@ PlatformInit(platform *Platform)
     Params->Queue = Queue;
 
     HANDLE ThreadHandle = CreateThread( 0, StackSize,
-      &DoWorkerWork,
+      &ThreadMain,
       (void *)Params,
       flags,
       &Params->Self.ID
     );
   }
-
-  PushString(&Platform->Queue, "0");
-  PushString(&Platform->Queue, "1");
-  PushString(&Platform->Queue, "2");
-  PushString(&Platform->Queue, "3");
-  PushString(&Platform->Queue, "4");
-  PushString(&Platform->Queue, "5");
-  PushString(&Platform->Queue, "6");
-  PushString(&Platform->Queue, "7");
-  PushString(&Platform->Queue, "8");
-  PushString(&Platform->Queue, "9");
 
   return;
 }

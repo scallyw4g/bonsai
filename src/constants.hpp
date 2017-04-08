@@ -5,9 +5,9 @@
 #define False 1
 
 #define DEBUG_GLOBAL static
+#define GLOBAL_VARIABLE static
 
 #define THREAD_COUNT 8
-#define WORK_QUEUE_SIZE 4096
 
 #define BONSAI_INTERNAL 1
 
@@ -45,6 +45,7 @@
 
 #define WORLD_HASH_SIZE VOLUME_VISIBLE_REGION
 #define FREELIST_SIZE (10*VOLUME_VISIBLE_REGION)
+#define WORK_QUEUE_SIZE FREELIST_SIZE
 
 #define WORLD_GRAVITY V3(0, -20.0f, 0)
 
@@ -103,6 +104,8 @@ DEBUG_GLOBAL float GlobalLightTheta = 0;
 
 DEBUG_GLOBAL rectangle3 LastFreeSlice(V3(0,0,0), V3(0,0,0));
 DEBUG_GLOBAL rectangle3 LastQueuedSlice(V3(0,0,0), V3(0,0,0));
+
+GLOBAL_VARIABLE PerlinNoise GlobalNoise;
 
 #define FACE_COLOR_SIZE 32
 #define PALETTE_SIZE 256
