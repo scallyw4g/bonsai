@@ -16,4 +16,3 @@ CMakeCache.txt
 build/Bonsai
 cmake_install.cmake
 src/BonsaiConfig.h
-src/vox_loader.cpp

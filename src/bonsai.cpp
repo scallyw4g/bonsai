@@ -15,7 +15,7 @@ GLFWwindow* window;
 
 #include <ogl_render.cpp>
 
-#include <platform.cpp>
+#include <vox_loader.cpp>
 #include <objloader.cpp>
 
 #include <perlin.cpp>
