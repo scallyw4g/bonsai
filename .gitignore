@@ -6,4 +6,14 @@ Session.vim
 .exrc
 tags
 
+
+# CMake files files
 external/CMakeFiles
+CMakeFiles/
+
+Makefile
+CMakeCache.txt
+build/Bonsai
+cmake_install.cmake
+src/BonsaiConfig.h
+src/vox_loader.cpp
