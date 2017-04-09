@@ -93,6 +93,12 @@ InitializeVoxels( World *world, world_chunk *WorldChunk )
 {
   Assert(WorldChunk);
 
+  if ( IsSet(WorldChunk->Data->flags, Chunk_Garbage) )
+  {
+    WorldChunk->Data->flags = Chunk_Initialized;
+    return;
+  }
+
   ZeroChunk(WorldChunk->Data);
 
   chunk_data *chunk = WorldChunk->Data;
@@ -147,7 +153,8 @@ InitializeVoxels( World *world, world_chunk *WorldChunk )
           Assert( IsSet( chunk->Voxels[i].flags, Voxel_Filled) );
         }
 
-        Assert( GetVoxelP(chunk->Voxels[i]) == P );
+        voxel_position AssignedP = GetVoxelP(chunk->Voxels[i]);
+        Assert( AssignedP == P );
 #endif
       }
     }

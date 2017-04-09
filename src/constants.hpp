@@ -7,7 +7,7 @@
 #define DEBUG_GLOBAL static
 #define GLOBAL_VARIABLE static
 
-#define THREAD_COUNT 4
+#define THREAD_COUNT 7
 
 #define BONSAI_INTERNAL 1
 
@@ -27,9 +27,9 @@
 #define CD_Z 8
 
 // Visible Region XYZ - Must be > (3,3,3)
-#define VR_X 16
+#define VR_X 32
 #define VR_Y 32
-#define VR_Z 16
+#define VR_Z 32
 
 #define VOLUME_VISIBLE_REGION (VR_X*VR_X*VR_X)
 
@@ -41,11 +41,10 @@
 
 #define VISIBLE_REGION Chunk_Dimension(VR_X,VR_Y,VR_Z)
 
-#define NOISE_FREQUENCY 100
+#define NOISE_FREQUENCY 200
 
 #define WORLD_HASH_SIZE VOLUME_VISIBLE_REGION
-#define FREELIST_SIZE (10*VOLUME_VISIBLE_REGION)
-#define WORK_QUEUE_SIZE FREELIST_SIZE
+#define FREELIST_SIZE (VOLUME_VISIBLE_REGION)
 
 #define WORLD_GRAVITY V3(0, -20.0f, 0)
 

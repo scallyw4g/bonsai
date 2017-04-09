@@ -267,7 +267,7 @@ BufferFace (
     world->NormalData.filled -= sizeofNormals;
     world->ColorData.filled  -= sizeofNormals;
     // Out of memory, panic!
-    Assert(!"Out of memory");
+    /* Assert(!"Out of memory"); */
     return;
   }
 

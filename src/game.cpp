@@ -1,13 +1,7 @@
 #include <bonsai.h>
-
-#ifdef _WIN32
-#include <win32_platform.cpp>
-#else
-#include <unix_platform.cpp>
-#endif
-
 #include <render.h>
 
+#include <platform.cpp>
 #include <constants.hpp>
 #include <bonsai.cpp>
 
@@ -189,10 +183,6 @@ main( void )
   srand(DEBUG_NOISE_SEED);
   PerlinNoise Noise(rand());
   GlobalNoise = Noise;
-
-  platform Plat = {};
-  PlatformInit(&Plat);
-
   WindowWidth = SCR_WIDTH;
   WindowHeight = SCR_HEIGHT;
 
@@ -232,6 +222,9 @@ main( void )
   Player.P.WorldP = World_Position(0,0,0);
   Player.Spawned = false;
 
+  platform Plat = {};
+  PlatformInit(&Plat);
+
   AllocateWorld(&world, &Plat, Player.P.WorldP);
   SeedWorldAndUnspawnPlayer(&world, &Player);
 
@@ -241,6 +234,7 @@ main( void )
   Camera.Frust.width = 30.0f;
   Camera.Frust.FOV = 45.0f;
   Camera.P = CAMERA_INITIAL_P;
+
 
 
 
