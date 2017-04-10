@@ -296,7 +296,13 @@ unsigned int
 GetWorldChunkHash(world_position P)
 {
   // TODO(Jesse): Better hash function!
-  unsigned int HashIndex = (((unsigned)P.x + (unsigned)P.y + (unsigned)P.z) * 42 * 13 * 233) % WORLD_HASH_SIZE;
+
+  unsigned int i =
+    (P.x) +
+    (P.y*CD_X) +
+    (P.z*CD_X*CD_Y);
+
+  unsigned int HashIndex = (i * 42 * 13 * 233) % WORLD_HASH_SIZE;
   Assert(HashIndex < WORLD_HASH_SIZE);
 
   return HashIndex;

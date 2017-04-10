@@ -22,13 +22,13 @@
 #define VOXEL_DIAMETER (1.0f)
 #define VOXEL_RADIUS (VOXEL_DIAMETER/2.0f)
 
-#define CD_X 8
+#define CD_X 16
 #define CD_Y 8
-#define CD_Z 8
+#define CD_Z 16
 
 // Visible Region XYZ - Must be > (3,3,3)
 #define VR_X 32
-#define VR_Y 32
+#define VR_Y 16
 #define VR_Z 32
 
 #define VOLUME_VISIBLE_REGION (VR_X*VR_X*VR_X)
@@ -41,7 +41,7 @@
 
 #define VISIBLE_REGION Chunk_Dimension(VR_X,VR_Y,VR_Z)
 
-#define NOISE_FREQUENCY 200
+#define NOISE_FREQUENCY 400
 
 #define WORLD_HASH_SIZE VOLUME_VISIBLE_REGION
 #define FREELIST_SIZE (VOLUME_VISIBLE_REGION)
@@ -50,11 +50,11 @@
 
 #define PLAYER_STEP_MAX          1
 #define PLAYER_JUMP_STRENGTH     20.0f
-#define PLAYER_ACCEL_MULTIPLIER  10.0f
+#define PLAYER_ACCEL_MULTIPLIER  50.0f
 
 
 #define DEBUG_SCROLL_WORLD            1
-#define DEBUG_CHUNK_AABB              0
+#define DEBUG_CHUNK_AABB              1
 #define DEBUG_CAMERA_FOCUS_ORIGIN     0
 #define DEBUG_WORLD_GENERATION        0
 #define DEBUG_LOD_RENDER              0

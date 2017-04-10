@@ -129,7 +129,7 @@ GAME_UPDATE_AND_RENDER
         }
         else if (IsSet(chunk->Data->flags, Chunk_Queued) )
         {
-          DEBUG_DrawChunkAABB(world, chunk, Quaternion(0,0,0,1), WHITE);
+          // DEBUG_DrawChunkAABB(world, chunk, Quaternion(0,0,0,1), WHITE);
         }
         chunk = chunk->Next;
       }
