@@ -79,7 +79,7 @@ PlatformInit(platform *Platform)
     Params->Self.ThreadIndex = ThreadIndex;
     Params->Queue = Queue;
 
-    thread_id ThreadID = CreateThread( &ThreadMain, Params );
+    thread_id ThreadID = CreateThread( ThreadMain, Params );
   }
 
   return;

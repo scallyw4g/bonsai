@@ -36,14 +36,14 @@ CreateSemaphore( int ThreadCount )
 }
 
 thread_id
-CreateThread( void* ThreadMain, thread_startup_params *Params)
+CreateThread( LPTHREAD_START_ROUTINE ThreadMain, thread_startup_params *Params)
 {
   DWORD flags = 0;
   int StackSize = 0;
 
   thread_id ThreadId = CreateThread(
-	  0,
-	  0,
+      0,
+      0,
       (LPTHREAD_START_ROUTINE)ThreadMain,
       (void *)Params,
       flags,
