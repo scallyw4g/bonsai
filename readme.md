@@ -11,6 +11,7 @@ Features:
 
 [ ] SSAO
 
+[X] Multi-threaded world generation
 
 # Todo and Known Bugs:
 
