@@ -99,10 +99,10 @@ GAME_UPDATE_AND_RENDER
   world_position Min = (Player->P.WorldP - (world->VisibleRegion / 2));
   world_position Max = (Player->P.WorldP + (world->VisibleRegion / 2));
 
-  DEBUG_DrawAABB( world, V3(Min*CHUNK_DIMENSION), V3(Max*CHUNK_DIMENSION), Quaternion(0,0,0,1), GREEN, 0.25);
+  DEBUG_DrawAABB( world, V3(Min*CHUNK_DIMENSION), V3(Max*CHUNK_DIMENSION), Quaternion(1,0,0,0), GREEN, 0.25);
 
-  DEBUG_DrawAABB( world, LastFreeSlice,    Quaternion(0,0,0,1), RED,   0.1);
-  DEBUG_DrawAABB( world, LastQueuedSlice,  Quaternion(0,0,0,1), TEAL,  0.1);
+  DEBUG_DrawAABB( world, LastFreeSlice,    Quaternion(1,0,0,0), RED,   0.1);
+  DEBUG_DrawAABB( world, LastQueuedSlice,  Quaternion(1,0,0,0), TEAL,  0.1);
 
 #if DEBUG_HIGHLIGHT_VOID_CHUNKS
   for (int z = 0; z < world->VisibleRegion.z; ++z)
@@ -116,7 +116,7 @@ GAME_UPDATE_AND_RENDER
 
         if (!chunk)
         {
-          DEBUG_DrawAABB(world, GetRenderP(world, ChunkP), GetRenderP(world, ChunkP + 1), Quaternion(0,0,0,1), RED);
+          DEBUG_DrawAABB(world, GetRenderP(world, ChunkP), GetRenderP(world, ChunkP + 1), Quaternion(1,0,0,0), RED);
         }
 
       }
@@ -135,11 +135,11 @@ GAME_UPDATE_AND_RENDER
         DrawWorldChunk( world, chunk, Camera, RG, SG);
         if (IsSet(chunk->Data->flags, Chunk_Initialized) )
         {
-          // DEBUG_DrawChunkAABB(world, chunk, Quaternion(0,0,0,1), GREEN);
+          // DEBUG_DrawChunkAABB(world, chunk, Quaternion(1,0,0,0), GREEN);
         }
         else if (IsSet(chunk->Data->flags, Chunk_Queued) )
         {
-          // DEBUG_DrawChunkAABB(world, chunk, Quaternion(0,0,0,1), WHITE);
+          // DEBUG_DrawChunkAABB(world, chunk, Quaternion(1,0,0,0), WHITE);
         }
         chunk = chunk->Next;
       }

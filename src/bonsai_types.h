@@ -41,14 +41,14 @@ union v4
   struct { float r, g, b, a; };
 
   struct {
-    v2 xy;
     float Ignored0_;
+    v2 xy;
     float Ignored01_;
   };
 
   struct {
-    v3 xyz;
     float Ignored02_;
+    v3 xyz;
   };
 
   float E[4];
