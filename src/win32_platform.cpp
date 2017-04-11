@@ -35,6 +35,15 @@ CreateSemaphore( int ThreadCount )
   return Result;
 }
 
+int
+GetLogicalCoreCount()
+{
+  SYSTEM_INFO sysinfo;
+  GetSystemInfo(&sysinfo);
+  int Result = sysinfo.dwNumberOfProcessors;
+  return Result;
+}
+
 thread_id
 CreateThread( LPTHREAD_START_ROUTINE ThreadMain, thread_startup_params *Params)
 {

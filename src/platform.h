@@ -33,9 +33,7 @@ struct thread_startup_params
 struct platform
 {
   work_queue Queue;
-  thread_startup_params Threads[THREAD_COUNT];
-
-
+  thread_startup_params *Threads;
 };
 
 #endif

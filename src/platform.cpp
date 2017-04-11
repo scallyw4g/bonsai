@@ -64,9 +64,11 @@ PlatformInit(platform *Platform)
 {
   int StackSize = 0;
 
-  int ThreadCount = THREAD_COUNT;
+  int LogicalCoreCount = GetLogicalCoreCount();
+  int ThreadCount = LogicalCoreCount -1; // -1 because we already have a main thread
 
   Platform->Queue.Entries = (work_queue_entry *)calloc(sizeof(work_queue_entry), WORK_QUEUE_SIZE);
+  Platform->Threads = (thread_startup_params *)calloc(sizeof(thread_startup_params), ThreadCount);
   work_queue *Queue = &Platform->Queue;
 
   Queue->Semaphore = CreateSemaphore(ThreadCount);

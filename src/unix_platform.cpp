@@ -32,6 +32,13 @@ CreateSemaphore( int ThreadCount )
   return 0;
 }
 
+int
+GetLogicalCoreCount()
+{
+  int Result = sysconf(_SC_NPROCESSORS_ONLN);
+  return Result;
+}
+
 thread_id
 CreateThread( void* (*ThreadMain)(void*), thread_startup_params *Params)
 {
