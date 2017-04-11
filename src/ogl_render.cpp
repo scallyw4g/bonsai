@@ -500,15 +500,14 @@ bool IsBottomChunkBoundary( chunk_dimension ChunkDim, int idx )
 }
 
 Quaternion
-LookAt( v3 P )
+LookAt( v3 P, v3 RotAxis )
 {
-  P.y = 0;
+  // P.y = 0;
   P = Normalize(P);
 
   v3 NegZ = WORLD_Z * -1.0f;
 
   v3 ObjectFront = NegZ;
-  v3 RotAxis = V3(0,1,0); // Normalize(Cross( NegZ, ObjectToP ));
 
   v3 ObjectToP = Normalize(P - ObjectFront);
 
@@ -520,7 +519,7 @@ LookAt( v3 P )
   // Apparently theta is supposed to be divided by 2 here (according to the
   // internet) but that seems to yield a half rotation, so I took it out..
   // Quaternion Result( cos(theta/2), (RotAxis*sin(theta/2)) );
-  Quaternion Result( cos(theta), (RotAxis*sin(theta)) );
+  Quaternion Result( cos(theta/2), (RotAxis*sin(theta/2)) );
   return Result;
 }
 
@@ -776,32 +775,43 @@ IsInFrustum(World *world, Camera_Object *Camera, canonical_position P)
   v3 FarHeight = V3( 0, ((Frust.farClip - Frust.nearClip)/cos(Frust.FOV/2)) * sin(Frust.FOV/2), 0);
   v3 FarWidth = V3( FarHeight.y, 0, 0);
 
-  line TopLeft( V3(0,0,0), FrustLength + FarHeight + FarWidth );
-  line TopRight( V3(0,0,0), FrustLength + FarHeight - FarWidth );
+  line TopLeft( V3(0,0,0), FrustLength + FarHeight - FarWidth );
+  line TopRight( V3(0,0,0), FrustLength + FarHeight + FarWidth );
 
-  line BotLeft( V3(0,0,0), FrustLength - FarHeight + FarWidth );
-  line BotRight( V3(0,0,0), FrustLength - FarHeight - FarWidth );
+  line BotLeft( V3(0,0,0), FrustLength - FarHeight - FarWidth );
+  line BotRight( V3(0,0,0), FrustLength - FarHeight + FarWidth );
 
-  TopLeft  = TopLeft - (FrustLength/2);
-  TopRight = TopRight - (FrustLength/2);
-  BotLeft  = BotLeft - (FrustLength/2);
-  BotRight = BotRight - (FrustLength/2);
+  TopLeft = TopLeft - (FrustLength / 2);
+  TopRight = TopRight - (FrustLength / 2);
+  BotLeft = BotLeft - (FrustLength / 2);
+  BotRight = BotRight - (FrustLength / 2);
 
-  Quaternion Rot = LookAt(Camera->Front);
+  DEBUG_DrawLine(world, TopLeft , WHITE, 1.0f);
+  DEBUG_DrawLine(world, TopRight, WHITE, 1.0f);
+  DEBUG_DrawLine(world, BotLeft , WHITE, 1.0f);
+  DEBUG_DrawLine(world, BotRight, WHITE, 1.0f);
+
+  Quaternion Rot = LookAt( GetRenderP(world, Camera->Target), Camera->Up);
+
   TopLeft  = Rotate(TopLeft, Rot);
   TopRight = Rotate(TopRight, Rot);
   BotLeft  = Rotate(BotLeft, Rot);
   BotRight = Rotate(BotRight, Rot);
 
-  TopLeft  = TopLeft + (FrustLength/2) + CameraRenderP;
-  TopRight = TopRight + (FrustLength/2) + CameraRenderP;
-  BotLeft  = BotLeft + (FrustLength/2) + CameraRenderP;
-  BotRight = BotRight + (FrustLength/2) + CameraRenderP;
+  DEBUG_DrawLine(world, TopLeft , RED, 1.0f);
+  DEBUG_DrawLine(world, TopRight, RED, 1.0f);
+  DEBUG_DrawLine(world, BotLeft , RED, 1.0f);
+  DEBUG_DrawLine(world, BotRight, RED, 1.0f);
 
-  DEBUG_DrawLine(world, TopLeft , WHITE, 0.3f);
-  DEBUG_DrawLine(world, TopRight, WHITE, 0.3f);
-  DEBUG_DrawLine(world, BotLeft , WHITE, 0.3f);
-  DEBUG_DrawLine(world, BotRight, WHITE, 0.3f);
+  TopLeft  = TopLeft  + GetRenderP(world, Camera->P);
+  TopRight = TopRight + GetRenderP(world, Camera->P);
+  BotLeft  = BotLeft  + GetRenderP(world, Camera->P);
+  BotRight = BotRight + GetRenderP(world, Camera->P);
+
+  DEBUG_DrawLine(world, TopLeft , GREEN, 1.0f);
+  DEBUG_DrawLine(world, TopRight, GREEN, 1.0f);
+  DEBUG_DrawLine(world, BotLeft , GREEN, 1.0f);
+  DEBUG_DrawLine(world, BotRight, GREEN, 1.0f);
 
   /* v3 TestRenderP = GetRenderP = v3 - (FrustLength/2); */
 
@@ -988,7 +998,7 @@ BuildInteriorBoundaryVoxels(World *world, chunk_data *chunk, world_position Worl
 bool
 IsInFrustum( World *world, Camera_Object *Camera, world_chunk *Chunk )
 {
-  v3 ChunkMid = V3(CD_X, CD_Y, CD_Z);
+  v3 ChunkMid = V3(CD_X, CD_Y, CD_Z)/2;
   canonical_position P1 = Canonical_Position( world, ChunkMid, Chunk->WorldP );
 
   if (IsInFrustum(world, Camera, P1 ))

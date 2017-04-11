@@ -11,6 +11,7 @@
 #define BLUE   215
 #define TEAL   181
 #define YELLOW  11
+#define PINK    31
 
 //  RR GG BB AA
 static v4 default_palette[PALETTE_SIZE] = {

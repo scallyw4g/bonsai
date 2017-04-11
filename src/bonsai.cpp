@@ -23,6 +23,21 @@ GLFWwindow* window;
 #include <math.h>
 
 void
+OnMouseScroll(GLFWwindow* window, double xoffset, double yoffset)
+{
+	if (UseDebugCamera)
+	{
+		DEBUG_CAMERA_FOCAL_LENGTH -= (yoffset * DEBUG_CAMERA_SCROLL_SPEED);
+	}
+	else
+	{
+		CAMERA_FOCAL_LENGTH -= (yoffset * PLAYER_ACCEL_MULTIPLIER);
+	}
+
+  return;
+}
+
+void
 initWindow( int WindowWidth, int WindowHeight )
 {
   // Initialise GLFW
@@ -42,6 +57,8 @@ initWindow( int WindowWidth, int WindowHeight )
 
   // Open a window and create its OpenGL context
   window = glfwCreateWindow( WindowWidth, WindowHeight, "Playground", NULL, NULL);
+
+  glfwSetScrollCallback(window, OnMouseScroll);
 
   if (window == NULL)
   {
@@ -86,7 +103,6 @@ initWindow( int WindowWidth, int WindowHeight )
 
   return;
 }
-
 
 void
 InitializeVoxels( World *world, world_chunk *WorldChunk )
@@ -245,8 +261,9 @@ QueueChunkForInit(World *world, platform *Plat, world_chunk *Chunk)
 inline v3
 GetInputsFromController(Camera_Object *Camera)
 {
-  v3 right = Cross(Camera->Front, WORLD_Y);
+  v3 right = Camera->Right;
   v3 forward = Camera->Front;
+  v3 up = Camera->Up;
 
   v3 UpdateDir = V3(0,0,0);
 
@@ -518,7 +535,6 @@ UpdateVisibleRegion(World *world, platform *Plat, world_position OriginalPlayerP
   return;
 }
 
-
 void
 SpawnPlayer( World *world, platform *Plat, Entity *Player )
 {
@@ -645,13 +661,16 @@ UpdatePlayerP(World *world, platform *Plat, Entity *Player, v3 GrossUpdateVector
 }
 
 void
-UpdateDebugCamera( World *world, Entity *Player, Camera_Object *Camera)
+UpdateDebugCamera( World *world, v3 TargetDelta, Camera_Object *Camera)
 {
-  canonical_position NewTarget = Canonicalize(world, Player->P.Offset, Player->P.WorldP) + (Player->Model->Dim/2);
-
-
   float FocalLength = DEBUG_CAMERA_FOCAL_LENGTH;
   float mouseSpeed = 0.20f;
+
+  if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+	  TargetDelta -= WORLD_Y;
+
+  if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+	  TargetDelta += WORLD_Y;
 
   double X, Y;
   glfwGetCursorPos(window, &X, &Y);
@@ -666,7 +685,7 @@ UpdateDebugCamera( World *world, Entity *Player, Camera_Object *Camera)
   v3 UpdateRight = Camera->Right * dX;
   v3 UpdateUp = Camera->Up * dY;
 
-  v3 TargetDelta = UpdateRight + UpdateUp;
+  TargetDelta = (TargetDelta * DEBUG_CAMERA_SCROLL_SPEED) + UpdateRight + UpdateUp;
 
   Camera->P.Offset += (TargetDelta + UpdateRight + (UpdateUp));
   Camera->Target.Offset += TargetDelta;

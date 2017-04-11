@@ -63,29 +63,32 @@ GAME_UPDATE_AND_RENDER
 {
   if ( glfwGetKey(window, GLFW_KEY_ENTER ) == GLFW_PRESS )
     SeedWorldAndUnspawnPlayer(world, Player);
-
-  if (Player->Spawned)
-  {
-    v3 Input = GetInputsFromController(Camera);
-    v3 PlayerDelta = GetEntityDelta(world, Player, Input, dt);
-    UpdatePlayerP( world, Plat, Player, PlayerDelta );
-    if (Length(Input) > 0) Player->Rotation = LookAt(Input);
-  }
-  else // Try to respawn the player until enough of the world has been initialized to do so
-  {
-    SpawnPlayer( world, Plat, Player );
-  }
-
-  UpdateCameraP( world, Player, Camera );
-
-  UpdateDebugCamera(world, Player, &DebugCamera);
+ 
+  if (glfwGetKey(window, GLFW_KEY_F11) == GLFW_PRESS)
+	  UseDebugCamera = !UseDebugCamera;
+  
 
   if (UseDebugCamera)
   {
+v3 Input = GetInputsFromController(&DebugCamera);
+    UpdateDebugCamera(world, Input, &DebugCamera);
     RG->Basis.ViewMatrix = GetViewMatrix(world, &DebugCamera);
   }
   else
   {
+    v3 Input = GetInputsFromController(Camera);
+    if (Player->Spawned)
+    {
+      v3 PlayerDelta = GetEntityDelta(world, Player, Input, dt);
+      UpdatePlayerP( world, Plat, Player, PlayerDelta );
+      // if (Length(Input) > 0) Player->Rotation = LookAt(Input);
+    }
+    else // Try to respawn the player until enough of the world has been initialized to do so
+    {
+      SpawnPlayer( world, Plat, Player );
+    }
+
+	UpdateCameraP(world, Player, Camera);
     RG->Basis.ViewMatrix = GetViewMatrix(world, Camera);
   }
 
@@ -245,7 +248,7 @@ main( void )
   Camera.Frust.FOV = 45.0f;
   Camera.P = CAMERA_INITIAL_P;
 
-  DebugCamera.Frust.farClip = 500.0f;
+  DebugCamera.Frust.farClip = 5000.0f;
   DebugCamera.Frust.nearClip = 0.1f;
   DebugCamera.Frust.width = 30.0f;
   DebugCamera.Frust.FOV = 45.0f;
@@ -262,6 +265,12 @@ main( void )
 
   do
   {
+#if DEBUG_DRAW_AXIES
+	  DEBUG_DrawLine(&world, V3(0,0,0), V3(10000, 0, 0), RED, 0.5f );
+	  DEBUG_DrawLine(&world, V3(0,0,0), V3(0, 10000, 0), GREEN, 0.5f );
+	  DEBUG_DrawLine(&world, V3(0,0,0), V3(0, 0, 10000), BLUE, 0.5f );
+#endif
+
     double currentTime = glfwGetTime();
     float dt = (float)(currentTime - lastTime);
     lastTime = currentTime;
@@ -269,7 +278,16 @@ main( void )
     accumulatedTime += dt;
     numFrames ++;
 
-    RG.Basis.ProjectionMatrix = GetProjectionMatrix(&Camera, WindowWidth, WindowHeight);
+	if (UseDebugCamera)
+		RG.Basis.ProjectionMatrix = GetProjectionMatrix(&DebugCamera, WindowWidth, WindowHeight);
+	else
+		RG.Basis.ProjectionMatrix = GetProjectionMatrix(&Camera, WindowWidth, WindowHeight);
+
+	if (UseDebugCamera)
+	{
+		AABB CameraLocation(GetRenderP(&world, Camera.P) - 2, GetRenderP(&world, Camera.P) + 2);
+		DEBUG_DrawAABB(&world, CameraLocation, Quaternion(1,0,0,0), PINK, 0.5f);
+	}
 
     GAME_UPDATE_AND_RENDER( &world, &Plat, &Player, &Camera, dt, &RG, &SG);
 
@@ -280,7 +298,6 @@ main( void )
 
   } // Check if the ESC key was pressed or the window was closed
   while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
-         glfwGetKey(window, GLFW_KEY_Q )      != GLFW_PRESS &&
          glfwWindowShouldClose(window) == 0                 &&
          DEBUG_FRAMES_TO_RUN != numFrames );
 
