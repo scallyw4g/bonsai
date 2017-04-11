@@ -620,6 +620,14 @@ DEBUG_DrawLine(World *world, v3 P1, v3 P2, int ColorIndex, float Thickness )
   }
 #endif
 
+  return;
+}
+
+void
+DEBUG_DrawLine(World *world, line Line, int ColorIndex, float Thickness )
+{
+  DEBUG_DrawLine(world, Line.MinP, Line.MaxP, ColorIndex, Thickness);
+  return;
 }
 
 void
@@ -697,7 +705,7 @@ DEBUG_DrawAABB( World *world, v3 MinP, v3 MaxP, Quaternion Rotation, int ColorIn
 }
 
 void
-DEBUG_DrawAABB( World *world, rectangle3 Rect, Quaternion Rotation, int ColorIndex, float Thickness = 0.05f )
+DEBUG_DrawAABB( World *world, AABB Rect, Quaternion Rotation, int ColorIndex, float Thickness = 0.05f )
 {
   DEBUG_DrawAABB( world, Rect.MinCorner, Rect.MaxCorner, Rotation, ColorIndex, Thickness );
   return;
@@ -736,49 +744,69 @@ DEBUG_DrawChunkAABB( World *world, world_chunk *chunk, Quaternion Rotation, int 
   return;
 }
 
-#if 0
+v3
+Rotate(v3 P, Quaternion Rotation)
+{
+  v3 Result = ((Rotation * Quaternion(1, P)) * Conjugate(Rotation)).xyz;
+  return Result;
+}
+
+line
+Rotate(line Line, Quaternion Rotation)
+{
+  line Result;
+
+  Result.MinP = Rotate(Line.MinP, Rotation);
+  Result.MaxP = Rotate(Line.MaxP, Rotation);
+
+  return Result;
+}
+
 inline bool
 IsInFrustum(World *world, Camera_Object *Camera, canonical_position P)
 {
+  Frustum Frust = Camera->Frust;
+
   v3 CameraRight = Cross( WORLD_Y, Camera->Front);
 
   v3 CameraRenderP = GetRenderP(world, Canonicalize(world, Camera->P));
 
-  v3 MinFrustP = CameraRenderP + (Camera->Front * Camera->Frust.farClip) - (CameraRight * (Camera->Frust.width/2));
-  v3 MaxFrustP = CameraRenderP + (CameraRight * (Camera->Frust.width/2));
+  v3 FrustLength = V3(0,0, Frust.farClip);
 
-  if ( MinFrustP.x > MaxFrustP.x )
-  {
-    int tmp = MinFrustP.x;
-    MinFrustP.x = MaxFrustP.x;
-    MaxFrustP.x = tmp;
-  }
-  if ( MinFrustP.y > MaxFrustP.y )
-  {
-    int tmp = MinFrustP.y;
-    MinFrustP.y = MaxFrustP.y;
-    MaxFrustP.y = tmp;
-  }
-  if ( MinFrustP.z > MaxFrustP.z )
-  {
-    int tmp = MinFrustP.z;
-    MinFrustP.z = MaxFrustP.z;
-    MaxFrustP.z = tmp;
-  }
+  v3 FarHeight = V3( 0, ((Frust.farClip - Frust.nearClip)/cos(Frust.FOV/2)) * sin(Frust.FOV/2), 0);
+  v3 FarWidth = V3( FarHeight.y, 0, 0);
 
-  v3 TestRenderP = GetRenderP(world, P);
+  line TopLeft( V3(0,0,0), FrustLength + FarHeight + FarWidth );
+  line TopRight( V3(0,0,0), FrustLength + FarHeight - FarWidth );
 
-  if (((TestRenderP.x > MinFrustP.x && TestRenderP.x < MaxFrustP.x) &&
-       (TestRenderP.y > MinFrustP.y && TestRenderP.y < MaxFrustP.y) &&
-       (TestRenderP.z > MinFrustP.z && TestRenderP.z < MaxFrustP.z))
-     )
-  {
-    return true;
-  }
+  line BotLeft( V3(0,0,0), FrustLength - FarHeight + FarWidth );
+  line BotRight( V3(0,0,0), FrustLength - FarHeight - FarWidth );
 
-  return false;
+  TopLeft  = TopLeft - (FrustLength/2);
+  TopRight = TopRight - (FrustLength/2);
+  BotLeft  = BotLeft - (FrustLength/2);
+  BotRight = BotRight - (FrustLength/2);
+
+  Quaternion Rot = LookAt(Camera->Front);
+  TopLeft  = Rotate(TopLeft, Rot);
+  TopRight = Rotate(TopRight, Rot);
+  BotLeft  = Rotate(BotLeft, Rot);
+  BotRight = Rotate(BotRight, Rot);
+
+  TopLeft  = TopLeft + (FrustLength/2) + CameraRenderP;
+  TopRight = TopRight + (FrustLength/2) + CameraRenderP;
+  BotLeft  = BotLeft + (FrustLength/2) + CameraRenderP;
+  BotRight = BotRight + (FrustLength/2) + CameraRenderP;
+
+  DEBUG_DrawLine(world, TopLeft , WHITE, 0.3f);
+  DEBUG_DrawLine(world, TopRight, WHITE, 0.3f);
+  DEBUG_DrawLine(world, BotLeft , WHITE, 0.3f);
+  DEBUG_DrawLine(world, BotRight, WHITE, 0.3f);
+
+  /* v3 TestRenderP = GetRenderP = v3 - (FrustLength/2); */
+
+  return true;
 }
-#endif
 
 voxel_position
 Clamp01( voxel_position V )
@@ -957,13 +985,11 @@ BuildInteriorBoundaryVoxels(World *world, chunk_data *chunk, world_position Worl
   }
 }
 
-#if 0
 bool
-IsInFrustum( World *world, Camera_Object *Camera, chunk_data *chunk )
+IsInFrustum( World *world, Camera_Object *Camera, world_chunk *Chunk )
 {
-  v3 ChunkMid = V3(chunk->Dim.x/2, chunk->Dim.y/2, chunk->Dim.z/2);
-
-  canonical_position P1 = Canonical_Position( ChunkMid, chunk->WorldP );
+  v3 ChunkMid = V3(CD_X, CD_Y, CD_Z);
+  canonical_position P1 = Canonical_Position( world, ChunkMid, Chunk->WorldP );
 
   if (IsInFrustum(world, Camera, P1 ))
   {
@@ -972,7 +998,6 @@ IsInFrustum( World *world, Camera_Object *Camera, chunk_data *chunk )
 
   return false;
 }
-#endif
 
 inline bool
 IsFacingPoint( glm::vec3 FaceToPoint, v3 FaceNormal )
@@ -1145,11 +1170,15 @@ DrawWorldChunk(
     ShadowRenderGroup *SG
   )
 {
-
-  if (IsSet(WorldChunk->Data->flags, Chunk_Initialized) )
+  if (IsInFrustum(world, Camera, WorldChunk) )
   {
-    BufferChunkMesh(world, WorldChunk->Data, WorldChunk->WorldP, RG, SG, Camera);
+    if (IsSet(WorldChunk->Data->flags, Chunk_Initialized) )
+    {
+      BufferChunkMesh(world, WorldChunk->Data, WorldChunk->WorldP, RG, SG, Camera);
+    }
   }
+
+  return;
 }
 
 void

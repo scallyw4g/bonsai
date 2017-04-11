@@ -488,7 +488,7 @@ QueueChunksForInit(World* world, platform *Plat, world_position WorldDisp, Entit
   world_position SliceMin = PlayerP + (VRHalfDim * Iter) - (VRHalfDim * InvAbsIter) - ClampPositive(WorldDisp);
   world_position SliceMax = PlayerP + (VRHalfDim * Iter) + (VRHalfDim * InvAbsIter) - ClampPositive(Iter) - InvAbsIter - ClampNegative(WorldDisp) + ClampNegative(Iter);
 
-  LastQueuedSlice = rectangle3(SliceMin*CHUNK_DIMENSION - 1, (SliceMax*CHUNK_DIMENSION + CHUNK_DIMENSION + 1));
+  LastQueuedSlice = AABB(SliceMin*CHUNK_DIMENSION - 1, (SliceMax*CHUNK_DIMENSION + CHUNK_DIMENSION + 1));
 
   for (int z = SliceMin.z; z <= SliceMax.z; ++ z)
   {
@@ -645,6 +645,45 @@ UpdatePlayerP(World *world, platform *Plat, Entity *Player, v3 GrossUpdateVector
 }
 
 void
+UpdateDebugCamera( World *world, Entity *Player, Camera_Object *Camera)
+{
+  canonical_position NewTarget = Canonicalize(world, Player->P.Offset, Player->P.WorldP) + (Player->Model->Dim/2);
+
+
+  float FocalLength = DEBUG_CAMERA_FOCAL_LENGTH;
+  float mouseSpeed = 0.20f;
+
+  double X, Y;
+  glfwGetCursorPos(window, &X, &Y);
+  glfwSetCursorPos(window, 1024/2, 768/2);
+
+  float dX = mouseSpeed * float(1024/2 - X );
+  float dY = mouseSpeed * float( 768/2 - Y );
+
+  Camera->Right = Normalize(Cross(Camera->Front, WORLD_Y));
+  Camera->Up = Normalize(Cross(Camera->Front, Camera->Right));
+
+  v3 UpdateRight = Camera->Right * dX;
+  v3 UpdateUp = Camera->Up * dY;
+
+  v3 TargetDelta = UpdateRight + UpdateUp;
+
+  Camera->P.Offset += (TargetDelta + UpdateRight + (UpdateUp));
+  Camera->Target.Offset += TargetDelta;
+
+  Camera->P = Canonicalize(world, Camera->P);
+  Camera->Target = Canonicalize(world, Camera->Target);
+
+  v3 TargetToCamera = Normalize(GetRenderP(world, Camera->P) - GetRenderP(world, Camera->Target));
+  Camera->P.Offset = Camera->Target.Offset + (TargetToCamera * FocalLength);
+  Camera->P.WorldP = Camera->Target.WorldP;
+
+  Camera->Front = Normalize( GetRenderP(world, Camera->Target) - GetRenderP(world, Camera->P) );
+
+  return;
+}
+
+void
 UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera)
 {
 #if DEBUG_CAMERA_FOCUS_ORIGIN
@@ -654,7 +693,7 @@ UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera)
 #endif
 
   v3 TargetDelta = GetRenderP(world, NewTarget) - GetRenderP(world, Camera->Target);
-
+  
   float FocalLength = CAMERA_FOCAL_LENGTH;
   float mouseSpeed = 0.20f;
 
@@ -700,7 +739,7 @@ AllocateWorld( World *world, platform *Plat, world_position Midpoint)
   world->FreeChunkCount = 0;
 
   {
-    int BufferVertices = 100*(world->ChunkDim.x*world->ChunkDim.y*world->ChunkDim.z * VERT_PER_VOXEL * 3);
+    int BufferVertices = (VOLUME_VISIBLE_REGION * VERT_PER_VOXEL);
 
     world->VertexData.Data = (GLfloat *)calloc(BufferVertices, sizeof(GLfloat) );
     world->ColorData.Data  = (GLfloat *)calloc(BufferVertices, sizeof(GLfloat) );

@@ -1,7 +1,7 @@
 #ifndef BONSAI_PLATFORM_H
 #define BONSAI_PLATFORM_H
 
-#define WORK_QUEUE_SIZE (10*VOLUME_VISIBLE_REGION)
+#define WORK_QUEUE_SIZE (2*VOLUME_VISIBLE_REGION)
 
 struct work_queue_entry
 {

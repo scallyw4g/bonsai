@@ -22,14 +22,14 @@
 #define VOXEL_DIAMETER (1.0f)
 #define VOXEL_RADIUS (VOXEL_DIAMETER/2.0f)
 
-#define CD_X 16
-#define CD_Y 16
-#define CD_Z 16
+#define CD_X 8
+#define CD_Y 8
+#define CD_Z 8
 
 // Visible Region XYZ - Must be > (3,3,3)
-#define VR_X 32
-#define VR_Y 32
-#define VR_Z 32
+#define VR_X 16
+#define VR_Y 16
+#define VR_Z 16
 
 #define VOLUME_VISIBLE_REGION (VR_X*VR_X*VR_X)
 
@@ -44,7 +44,7 @@
 #define NOISE_FREQUENCY 400
 
 #define WORLD_HASH_SIZE VOLUME_VISIBLE_REGION
-#define FREELIST_SIZE (VOLUME_VISIBLE_REGION)
+#define FREELIST_SIZE VOLUME_VISIBLE_REGION
 
 #define WORLD_GRAVITY V3(0, -20.0f, 0)
 
@@ -63,11 +63,14 @@
 
 #define DEBUG_FRAMES_TO_RUN            -1
 
-/* #define SCR_WIDTH 800 */
-/* #define SCR_HEIGHT 600 */
+//
+// Screen Resolution
 
-#define SCR_WIDTH 1920
-#define SCR_HEIGHT 1080
+#define SCR_WIDTH 800
+#define SCR_HEIGHT 600
+
+/* #define SCR_WIDTH 1920 */
+/* #define SCR_HEIGHT 1080 */
 
 /* #define SCR_WIDTH 3840 */
 /* #define SCR_HEIGHT 2160 */
@@ -78,6 +81,7 @@
 #define DEBUG_TEXTURE_SIZE    512
 
 #define CAMERA_FOCAL_LENGTH (150.0f);
+#define DEBUG_CAMERA_FOCAL_LENGTH (250.0f);
 
 #define CAMERA_INITIAL_P Canonical_Position(&world, V3(1,1,1), World_Position(world.VisibleRegion/2))
 
@@ -100,10 +104,12 @@ DEBUG_GLOBAL int VoxelsIndexed = 0;
 
 DEBUG_GLOBAL float GlobalLightTheta = 0;
 
-DEBUG_GLOBAL rectangle3 LastFreeSlice(V3(0,0,0), V3(0,0,0));
-DEBUG_GLOBAL rectangle3 LastQueuedSlice(V3(0,0,0), V3(0,0,0));
+DEBUG_GLOBAL AABB LastFreeSlice(V3(0,0,0), V3(0,0,0));
+DEBUG_GLOBAL AABB LastQueuedSlice(V3(0,0,0), V3(0,0,0));
 
 GLOBAL_VARIABLE PerlinNoise GlobalNoise;
+
+DEBUG_GLOBAL bool UseDebugCamera = true;
 
 #define FACE_COLOR_SIZE 32
 #define PALETTE_SIZE 256

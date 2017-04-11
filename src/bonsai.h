@@ -373,7 +373,7 @@ AllocateChunk(chunk_dimension Dim)
   Result->Dim = Dim;
 
   Result->Voxels = (Voxel*)calloc(Volume(Dim), sizeof(Voxel));
-  Result->BoundaryVoxels = (Voxel*)calloc(Volume(Dim), sizeof(Voxel));
+  Result->BoundaryVoxels = (Voxel*)calloc((Volume(Dim)/4), sizeof(Voxel));
   Assert(Result->Voxels);
   Assert(Result->BoundaryVoxels);
 

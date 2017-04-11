@@ -7,6 +7,7 @@
 
 #include <time.h>
 
+DEBUG_GLOBAL Camera_Object DebugCamera = {};
 
 void
 SeedWorldAndUnspawnPlayer( World *world, Entity *Player )
@@ -77,7 +78,16 @@ GAME_UPDATE_AND_RENDER
 
   UpdateCameraP( world, Player, Camera );
 
-  RG->Basis.ViewMatrix = GetViewMatrix(world, Camera);
+  UpdateDebugCamera(world, Player, &DebugCamera);
+
+  if (UseDebugCamera)
+  {
+    RG->Basis.ViewMatrix = GetViewMatrix(world, &DebugCamera);
+  }
+  else
+  {
+    RG->Basis.ViewMatrix = GetViewMatrix(world, Camera);
+  }
 
   GlobalLightTheta += dt;
 
@@ -235,6 +245,11 @@ main( void )
   Camera.Frust.FOV = 45.0f;
   Camera.P = CAMERA_INITIAL_P;
 
+  DebugCamera.Frust.farClip = 500.0f;
+  DebugCamera.Frust.nearClip = 0.1f;
+  DebugCamera.Frust.width = 30.0f;
+  DebugCamera.Frust.FOV = 45.0f;
+  DebugCamera.P = CAMERA_INITIAL_P;
 
 
 

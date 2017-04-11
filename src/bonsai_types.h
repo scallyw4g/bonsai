@@ -387,18 +387,32 @@ V3(voxel_position wp)
   return Result;
 }
 
-struct rectangle3
+struct line
+{
+  v3 MinP;
+  v3 MaxP;
+
+  line() {}
+
+  line(v3 MinP, v3 MaxP)
+  {
+    this->MinP = MinP;
+    this->MaxP = MaxP;
+  }
+};
+
+struct AABB
 {
   v3 MinCorner;
   v3 MaxCorner;
 
-  rectangle3 (v3 Min, v3 Max)
+  AABB(v3 Min, v3 Max)
   {
     MinCorner = Min;
     MaxCorner = Max;
   }
 
-  rectangle3 (world_position Min, world_position Max)
+  AABB(world_position Min, world_position Max)
   {
     MinCorner = V3(Min);
     MaxCorner = V3(Max);
@@ -756,6 +770,38 @@ operator-(v3 A, v3 B)
   Result.x = A.x - B.x;
   Result.y = A.y - B.y;
   Result.z = A.z - B.z;
+
+  return Result;
+}
+
+inline line
+operator+(line A, v3 B)
+{
+  line Result;
+
+  Result.MinP.x = A.MinP.x + B.x;
+  Result.MinP.y = A.MinP.y + B.y;
+  Result.MinP.z = A.MinP.z + B.z;
+
+  Result.MaxP.x = A.MaxP.x + B.x;
+  Result.MaxP.y = A.MaxP.y + B.y;
+  Result.MaxP.z = A.MaxP.z + B.z;
+
+  return Result;
+}
+
+inline line
+operator-(line A, v3 B)
+{
+  line Result;
+
+  Result.MinP.x = A.MinP.x - B.x;
+  Result.MinP.y = A.MinP.y - B.y;
+  Result.MinP.z = A.MinP.z - B.z;
+
+  Result.MaxP.x = A.MaxP.x - B.x;
+  Result.MaxP.y = A.MaxP.y - B.y;
+  Result.MaxP.z = A.MaxP.z - B.z;
 
   return Result;
 }
