@@ -87,4 +87,10 @@ PlatformInit(platform *Platform)
   return;
 }
 
+debug_state *
+GetDebugState(void)
+{
+  return &DebugState;
+}
+
 #endif

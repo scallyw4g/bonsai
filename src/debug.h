@@ -1,5 +1,5 @@
-#ifndef DEBUG_H
-#define DEBUG_H
+#ifndef BONSAI_DEBUG_H
+#define BONSAI_DEBUG_H
 
 #include <iostream>
 #include <cstdarg>

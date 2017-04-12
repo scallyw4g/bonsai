@@ -175,7 +175,7 @@ operator*(int i, voxel_position P1)
 }
 
 inline voxel_position
-operator*(voxel_position P1, voxel_position const P2)
+operator*(voxel_position P1, voxel_position P2)
 {
   voxel_position Result;
 
@@ -187,7 +187,7 @@ operator*(voxel_position P1, voxel_position const P2)
 }
 
 inline v3
-operator*(v3 P1, voxel_position const P2)
+operator*(v3 P1, voxel_position P2)
 {
   v3 Result;
 
@@ -283,7 +283,7 @@ operator+(voxel_position P1, int i)
 }
 
 inline voxel_position
-operator+(voxel_position P1, voxel_position const P2)
+operator+(voxel_position P1, voxel_position P2)
 {
   voxel_position Result;
 
@@ -295,7 +295,7 @@ operator+(voxel_position P1, voxel_position const P2)
 }
 
 inline voxel_position
-operator-(voxel_position P1, voxel_position const P2)
+operator-(voxel_position P1, voxel_position P2)
 {
   voxel_position Result;
 
@@ -307,7 +307,7 @@ operator-(voxel_position P1, voxel_position const P2)
 }
 
 inline bool
-operator<(voxel_position P1, voxel_position const P2)
+operator<(v3 P1, v3 P2)
 {
   bool Result = true;
 
@@ -319,7 +319,7 @@ operator<(voxel_position P1, voxel_position const P2)
 }
 
 inline bool
-operator>(voxel_position P1, voxel_position const P2)
+operator>(v3 P1, v3 P2)
 {
   bool Result = true;
 
@@ -331,7 +331,31 @@ operator>(voxel_position P1, voxel_position const P2)
 }
 
 inline bool
-operator<=(voxel_position P1, voxel_position const P2)
+operator<(voxel_position P1, voxel_position P2)
+{
+  bool Result = true;
+
+  Result &= P1.x < P2.x;
+  Result &= P1.y < P2.y;
+  Result &= P1.z < P2.z;
+
+  return Result;
+}
+
+inline bool
+operator>(voxel_position P1, voxel_position P2)
+{
+  bool Result = true;
+
+  Result &= P1.x > P2.x;
+  Result &= P1.y > P2.y;
+  Result &= P1.z > P2.z;
+
+  return Result;
+}
+
+inline bool
+operator<=(voxel_position P1, voxel_position P2)
 {
   bool Result = true;
 
@@ -343,7 +367,7 @@ operator<=(voxel_position P1, voxel_position const P2)
 }
 
 inline bool
-operator>=(voxel_position P1, voxel_position const P2)
+operator>=(voxel_position P1, voxel_position P2)
 {
   bool Result = true;
 

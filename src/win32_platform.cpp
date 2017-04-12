@@ -64,4 +64,11 @@ CreateThread( LPTHREAD_START_ROUTINE ThreadMain, thread_startup_params *Params)
 
 #define CompleteAllWrites _WriteBarrier(); _mm_sfence()
 
+unsigned long long
+GetCycleCount()
+{
+  unsigned long long Result = __rdtsc();
+  return Result;
+}
+
 #endif

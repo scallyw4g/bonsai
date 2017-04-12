@@ -711,6 +711,8 @@ UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera)
   canonical_position NewTarget = Canonicalize(world, Player->P.Offset, Player->P.WorldP) + (Player->Model->Dim/2);
 #endif
 
+
+
   v3 TargetDelta = GetRenderP(world, NewTarget) - GetRenderP(world, Camera->Target);
   
   float FocalLength = CAMERA_FOCAL_LENGTH;

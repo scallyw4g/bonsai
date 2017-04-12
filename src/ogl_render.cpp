@@ -500,26 +500,22 @@ bool IsBottomChunkBoundary( chunk_dimension ChunkDim, int idx )
 }
 
 Quaternion
-LookAt( v3 P, v3 RotAxis )
+LookAt( v3 LookAtP, v3 ObjectP, v3 RotAxis )
 {
-  // P.y = 0;
-  P = Normalize(P);
+  LookAtP = Normalize(LookAtP);
+  ObjectP = Normalize(ObjectP);
 
-  v3 NegZ = WORLD_Z * -1.0f;
-
-  v3 ObjectFront = NegZ;
-
-  v3 ObjectToP = Normalize(P - ObjectFront);
+  v3 ObjectToP = Normalize(LookAtP - ObjectP);
 
   // TODO(Jesse) : Is there a better way of computing theta?
-  float theta = acos( Dot(NegZ, ObjectToP) );
-  float signTheta = Dot( Cross(RotAxis, NegZ), ObjectToP);
+  float theta = acos( Dot(ObjectP, ObjectToP) );
+  float signTheta = Dot( Cross(RotAxis, ObjectP), ObjectToP);
   theta = signTheta > 0 ? theta : -theta;
 
   // Apparently theta is supposed to be divided by 2 here (according to the
   // internet) but that seems to yield a half rotation, so I took it out..
   // Quaternion Result( cos(theta/2), (RotAxis*sin(theta/2)) );
-  Quaternion Result( cos(theta/2), (RotAxis*sin(theta/2)) );
+  Quaternion Result( cos(theta), (RotAxis*sin(theta)) );
   return Result;
 }
 
@@ -766,42 +762,30 @@ IsInFrustum(World *world, Camera_Object *Camera, canonical_position P)
 {
   Frustum Frust = Camera->Frust;
 
-  v3 CameraRight = Cross( WORLD_Y, Camera->Front);
-
-  v3 CameraRenderP = GetRenderP(world, Canonicalize(world, Camera->P));
-
   v3 FrustLength = V3(0,0, Frust.farClip);
 
   v3 FarHeight = V3( 0, ((Frust.farClip - Frust.nearClip)/cos(Frust.FOV/2)) * sin(Frust.FOV/2), 0);
   v3 FarWidth = V3( FarHeight.y, 0, 0);
 
-  line TopLeft( V3(0,0,0), FrustLength + FarHeight - FarWidth );
+  line TopLeft ( V3(0,0,0), FrustLength + FarHeight - FarWidth );
   line TopRight( V3(0,0,0), FrustLength + FarHeight + FarWidth );
-
-  line BotLeft( V3(0,0,0), FrustLength - FarHeight - FarWidth );
+  line BotLeft ( V3(0,0,0), FrustLength - FarHeight - FarWidth );
   line BotRight( V3(0,0,0), FrustLength - FarHeight + FarWidth );
 
-  TopLeft = TopLeft - (FrustLength / 2);
-  TopRight = TopRight - (FrustLength / 2);
-  BotLeft = BotLeft - (FrustLength / 2);
-  BotRight = BotRight - (FrustLength / 2);
-
-  DEBUG_DrawLine(world, TopLeft , WHITE, 1.0f);
-  DEBUG_DrawLine(world, TopRight, WHITE, 1.0f);
-  DEBUG_DrawLine(world, BotLeft , WHITE, 1.0f);
-  DEBUG_DrawLine(world, BotRight, WHITE, 1.0f);
-
-  Quaternion Rot = LookAt( GetRenderP(world, Camera->Target), Camera->Up);
+  Quaternion Rot = LookAt( Camera->Front, V3(0,0,-1), Camera->Up);
 
   TopLeft  = Rotate(TopLeft, Rot);
   TopRight = Rotate(TopRight, Rot);
   BotLeft  = Rotate(BotLeft, Rot);
   BotRight = Rotate(BotRight, Rot);
 
-  DEBUG_DrawLine(world, TopLeft , RED, 1.0f);
-  DEBUG_DrawLine(world, TopRight, RED, 1.0f);
-  DEBUG_DrawLine(world, BotLeft , RED, 1.0f);
-  DEBUG_DrawLine(world, BotRight, RED, 1.0f);
+  DEBUG_DrawLine(world, GetRenderP(world, Camera->P), GetRenderP(world, Camera->P) + (Camera->Front*10) , PINK, 1.0f);
+  DEBUG_DrawLine(world, TopLeft.MinP, TopLeft.MinP + (Camera->Front*10) , PINK, 1.0f);
+
+  DEBUG_DrawLine(world, TopLeft , WHITE, 1.0f);
+  DEBUG_DrawLine(world, TopRight, WHITE, 1.0f);
+  DEBUG_DrawLine(world, BotLeft , WHITE, 1.0f);
+  DEBUG_DrawLine(world, BotRight, WHITE, 1.0f);
 
   TopLeft  = TopLeft  + GetRenderP(world, Camera->P);
   TopRight = TopRight + GetRenderP(world, Camera->P);
@@ -813,9 +797,16 @@ IsInFrustum(World *world, Camera_Object *Camera, canonical_position P)
   DEBUG_DrawLine(world, BotLeft , GREEN, 1.0f);
   DEBUG_DrawLine(world, BotRight, GREEN, 1.0f);
 
-  /* v3 TestRenderP = GetRenderP = v3 - (FrustLength/2); */
+  bool Result = true;
 
-  return true;
+  v3 TestRenderP = GetRenderP(world, P);
+
+  Result |= (TestRenderP > TopLeft.MinP && TestRenderP < TopLeft.MaxP);
+  Result |= (TestRenderP > TopRight.MinP && TestRenderP < TopRight.MaxP);
+  Result |= (TestRenderP > BotLeft.MinP && TestRenderP < BotLeft.MaxP);
+  Result |= (TestRenderP > BotRight.MinP && TestRenderP < BotRight.MaxP);
+
+  return Result;
 }
 
 voxel_position

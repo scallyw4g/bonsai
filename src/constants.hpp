@@ -7,8 +7,6 @@
 #define DEBUG_GLOBAL static
 #define GLOBAL_VARIABLE static
 
-#define THREAD_COUNT 3
-
 #define BONSAI_INTERNAL 1
 
 #define CHUNK_VOL (CHUNK_HEIGHT*CHUNK_WIDTH*CHUNK_DEPTH)
@@ -70,8 +68,8 @@
 #define SCR_WIDTH 800
 #define SCR_HEIGHT 600
 
-#define SCR_WIDTH 1920
-#define SCR_HEIGHT 1080
+// #define SCR_WIDTH 1920
+// #define SCR_HEIGHT 1080
 
 /* #define SCR_WIDTH 3840 */
 /* #define SCR_HEIGHT 2160 */
@@ -82,8 +80,8 @@
 #define DEBUG_TEXTURE_SIZE    512
 
 GLOBAL_VARIABLE float CAMERA_FOCAL_LENGTH = 150.0f;
-GLOBAL_VARIABLE float DEBUG_CAMERA_FOCAL_LENGTH = 150.0f;
-#define DEBUG_CAMERA_SCROLL_SPEED  30.0f
+GLOBAL_VARIABLE float DEBUG_CAMERA_FOCAL_LENGTH = 100.0f;
+#define DEBUG_CAMERA_SCROLL_SPEED  20.0f
 
 #define CAMERA_INITIAL_P Canonical_Position(&world, V3(1,1,1), World_Position(world.VisibleRegion/2))
 

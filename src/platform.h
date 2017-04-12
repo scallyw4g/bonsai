@@ -36,4 +36,11 @@ struct platform
   thread_startup_params *Threads;
 };
 
+struct debug_state
+{
+  unsigned long long (*GetCycleCount)(void);
+};
+
+static debug_state DebugState;
+
 #endif

@@ -4,6 +4,7 @@
 #include <platform.cpp>
 #include <constants.hpp>
 #include <bonsai.cpp>
+#include <debug.cpp>
 
 #include <time.h>
 
@@ -20,6 +21,7 @@ SeedWorldAndUnspawnPlayer( World *world, Entity *Player )
 v3
 GetEntityDelta(World *world, Entity *Player, v3 Input, float dt)
 {
+  // DebugCounter();
   // TODO : Bake these into the terrain/model ?
   v3 drag = V3(0.6f, 1.0f, 0.6f);
 
@@ -268,7 +270,7 @@ main( void )
 #if DEBUG_DRAW_AXIES
 	  DEBUG_DrawLine(&world, V3(0,0,0), V3(10000, 0, 0), RED, 0.5f );
 	  DEBUG_DrawLine(&world, V3(0,0,0), V3(0, 10000, 0), GREEN, 0.5f );
-	  DEBUG_DrawLine(&world, V3(0,0,0), V3(0, 0, 10000), BLUE, 0.5f );
+	  DEBUG_DrawLine(&world, V3(0,0,0), V3(0, 0, 10000), TEAL, 0.5f );
 #endif
 
     double currentTime = glfwGetTime();

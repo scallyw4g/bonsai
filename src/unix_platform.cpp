@@ -54,4 +54,15 @@ CreateThread( void* (*ThreadMain)(void*), thread_startup_params *Params)
 
 #define CompleteAllWrites  asm volatile("" ::: "memory"); _mm_sfence()
 
+__inline__ unsigned long long
+GetCycleCount()
+{
+  unsigned hi, lo;
+  __asm__ __volatile__ ("rdtsc" : "=a"(lo), "=d"(hi));
+
+  unsigned long long Result = ( (unsigned long long)lo)|( ((unsigned long long)hi)<<32 );
+
+  return Result;
+}
+
 #endif
