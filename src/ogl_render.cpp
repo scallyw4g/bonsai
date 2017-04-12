@@ -499,18 +499,31 @@ bool IsBottomChunkBoundary( chunk_dimension ChunkDim, int idx )
   return (idx/(int)ChunkDim.x) % (int)ChunkDim.y == 0;
 }
 
+float
+GetTheta(v3 P1, v3 P2, v3 Axis)
+{
+  v3 P1ToP2 = Normalize(P2 - P1);
+  
+  float theta = acos( Dot(P1,P2) / (Length(P1)*Length(P2)) );
+  // float signTheta = Dot( Cross(Axis, P1), P1ToP2);
+  // theta = signTheta > 0 ? theta : -theta;
+
+  return theta;
+}
+
 Quaternion
 LookAt( v3 LookAtP, v3 ObjectP, v3 RotAxis )
 {
   LookAtP = Normalize(LookAtP);
   ObjectP = Normalize(ObjectP);
 
-  v3 ObjectToP = Normalize(LookAtP - ObjectP);
+  float theta = 0; // GetTheta(ObjectP, LookAtP, RotAxis);
+
+  float ninety = GetTheta(V3(1, 0, 0), V3(0, 0, 1), V3(0, 1, 0));
+
+  Assert(ninety == 90.0f);
 
   // TODO(Jesse) : Is there a better way of computing theta?
-  float theta = acos( Dot(ObjectP, ObjectToP) );
-  float signTheta = Dot( Cross(RotAxis, ObjectP), ObjectToP);
-  theta = signTheta > 0 ? theta : -theta;
 
   // Apparently theta is supposed to be divided by 2 here (according to the
   // internet) but that seems to yield a half rotation, so I took it out..
@@ -782,10 +795,10 @@ IsInFrustum(World *world, Camera_Object *Camera, canonical_position P)
   DEBUG_DrawLine(world, GetRenderP(world, Camera->P), GetRenderP(world, Camera->P) + (Camera->Front*10) , PINK, 1.0f);
   DEBUG_DrawLine(world, TopLeft.MinP, TopLeft.MinP + (Camera->Front*10) , PINK, 1.0f);
 
-  DEBUG_DrawLine(world, TopLeft , WHITE, 1.0f);
-  DEBUG_DrawLine(world, TopRight, WHITE, 1.0f);
-  DEBUG_DrawLine(world, BotLeft , WHITE, 1.0f);
-  DEBUG_DrawLine(world, BotRight, WHITE, 1.0f);
+  DEBUG_DrawLine(world, TopLeft  + GetRenderP(world, Camera->P) + (Camera->Front*100), WHITE, 1.0f);
+  DEBUG_DrawLine(world, TopRight + GetRenderP(world, Camera->P) + (Camera->Front*100), WHITE, 1.0f);
+  DEBUG_DrawLine(world, BotLeft  + GetRenderP(world, Camera->P) + (Camera->Front*100), WHITE, 1.0f);
+  DEBUG_DrawLine(world, BotRight + GetRenderP(world, Camera->P) + (Camera->Front*100), WHITE, 1.0f);
 
   TopLeft  = TopLeft  + GetRenderP(world, Camera->P);
   TopRight = TopRight + GetRenderP(world, Camera->P);

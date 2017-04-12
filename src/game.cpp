@@ -4,7 +4,7 @@
 #include <platform.cpp>
 #include <constants.hpp>
 #include <bonsai.cpp>
-#include <debug.cpp>
+// #include <debug.cpp>
 
 #include <time.h>
 
@@ -69,6 +69,8 @@ GAME_UPDATE_AND_RENDER
   if (glfwGetKey(window, GLFW_KEY_F11) == GLFW_PRESS)
 	  UseDebugCamera = !UseDebugCamera;
   
+  
+  Print(Camera->Front);
 
   if (UseDebugCamera)
   {
