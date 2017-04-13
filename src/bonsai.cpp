@@ -90,8 +90,7 @@ initWindow( int WindowWidth, int WindowHeight )
     Assert(false); // We hit a real error
   }
 
-  // Ensure we can capture the escape key being pressed below
-  glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_FALSE);
+  glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 

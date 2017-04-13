@@ -66,10 +66,23 @@ GAME_UPDATE_AND_RENDER
   if ( glfwGetKey(window, GLFW_KEY_ENTER ) == GLFW_PRESS )
     SeedWorldAndUnspawnPlayer(world, Player);
  
-  if (glfwGetKey(window, GLFW_KEY_F11) == GLFW_PRESS)
-	  UseDebugCamera = !UseDebugCamera;
-  
-  
+  static bool Toggled = false;
+  static bool F11Depressed = false;
+
+  F11Depressed = glfwGetKey(window, GLFW_KEY_F11) == GLFW_PRESS ;
+
+  printf("%d %d\n", F11Depressed, Toggled);
+  if ( !Toggled && F11Depressed)
+  {
+    Toggled = true;
+    UseDebugCamera = !UseDebugCamera;
+  }
+  else if ( Toggled && !F11Depressed )
+  {
+    Toggled = false;
+  }
+
+
   Print(Camera->Front);
 
   if (UseDebugCamera)
@@ -251,12 +264,16 @@ main( void )
   Camera.Frust.width = 30.0f;
   Camera.Frust.FOV = 45.0f;
   Camera.P = CAMERA_INITIAL_P;
+  Camera.Up = WORLD_Y;
+  Camera.Front = WORLD_X;
 
   DebugCamera.Frust.farClip = 5000.0f;
   DebugCamera.Frust.nearClip = 0.1f;
   DebugCamera.Frust.width = 30.0f;
   DebugCamera.Frust.FOV = 45.0f;
   DebugCamera.P = CAMERA_INITIAL_P;
+  DebugCamera.Up = WORLD_Y;
+  DebugCamera.Front = WORLD_X;
 
 
 

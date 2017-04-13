@@ -31,6 +31,16 @@ myFmodf( float F, float mod )
 #endif
 
 float
+Abs(float F)
+{
+  float Result = F;
+
+  Result = Result < 0 ? -Result : Result;
+
+  return Result;
+}
+
+float
 RandomInRange(float Min, float Max)
 {
   float Range = Max - Min;

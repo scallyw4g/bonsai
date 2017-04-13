@@ -504,45 +504,53 @@ GetTheta(v3 P1, v3 P2, v3 Axis)
 {
   v3 P1ToP2 = Normalize(P2 - P1);
   
-  float theta = acos( Dot(P1,P2) / (Length(P1)*Length(P2)) );
-  // float signTheta = Dot( Cross(Axis, P1), P1ToP2);
-  // theta = signTheta > 0 ? theta : -theta;
+  float DotP1P2 = Dot(P1,P2);
+  float theta = acos( DotP1P2 / (Length(P1)*Length(P2)) );
+
+  // TODO(Jesse) : Is there a better way of computing theta?
+  float signTheta = Dot( Cross(Axis, P1), P1ToP2);
+  theta = signTheta > 0 ? theta : -theta;
+
+  static float lastTheta = theta;
+  // Assert( Abs(lastTheta - theta) < 0.1f );
+  lastTheta = theta;
 
   return theta;
 }
 
 Quaternion
-LookAt( v3 LookAtP, v3 ObjectP, v3 RotAxis )
+LookAt( v3 LookAtP, v3 Front, v3 Axis )
 {
   LookAtP = Normalize(LookAtP);
-  ObjectP = Normalize(ObjectP);
+  Front = Normalize(Front);
+  Axis = Normalize(Axis);
 
-  float theta = 0; // GetTheta(ObjectP, LookAtP, RotAxis);
 
-  float ninety = GetTheta(V3(1, 0, 0), V3(0, 0, 1), V3(0, 1, 0));
+  float theta = GetTheta(Front, LookAtP, Axis);
 
-  Assert(ninety == 90.0f);
-
-  // TODO(Jesse) : Is there a better way of computing theta?
+  // float onePontFiveSeven = GetTheta(V3(1, 0, 0), V3(0, 0, 1), V3(0, 1, 0));
+  // Assert(onePontFiveSeven == 90.0f);
 
   // Apparently theta is supposed to be divided by 2 here (according to the
   // internet) but that seems to yield a half rotation, so I took it out..
-  // Quaternion Result( cos(theta/2), (RotAxis*sin(theta/2)) );
-  Quaternion Result( cos(theta), (RotAxis*sin(theta)) );
+  // Quaternion Result( cos(theta/2), (Axis*sin(theta/2)) );
+  Quaternion Result( cos(theta/2), (Axis*sin(theta/2)) );
   return Result;
 }
 
+#if 0
 Quaternion
 RotateAround( v3 Axis )
 {
   static
     float theta = 0.01f;
 
-  theta+= 0.05f;
+  theta += 0.05f;
 
   Quaternion Result( cos(theta/2), Axis*sin(theta/2) );
   return Result;
 }
+#endif
 
 void
 DEBUG_DrawLine(World *world, v3 P1, v3 P2, int ColorIndex, float Thickness )
@@ -785,15 +793,34 @@ IsInFrustum(World *world, Camera_Object *Camera, canonical_position P)
   line BotLeft ( V3(0,0,0), FrustLength - FarHeight - FarWidth );
   line BotRight( V3(0,0,0), FrustLength - FarHeight + FarWidth );
 
-  Quaternion Rot = LookAt( Camera->Front, V3(0,0,-1), Camera->Up);
+  // Quaternion Rot = LookAt( Camera->Front, V3(0,0,1), V3(0,1,0));
 
-  TopLeft  = Rotate(TopLeft, Rot);
-  TopRight = Rotate(TopRight, Rot);
-  BotLeft  = Rotate(BotLeft, Rot);
-  BotRight = Rotate(BotRight, Rot);
+  v3 Front = V3(0,0,1);
+  // v3 Target = Camera->Front;
+  v3 Target = Normalize(V3(-1,-1, -0.01));
+  v3 Axis = Normalize(Cross(Target, Front));
 
-  DEBUG_DrawLine(world, GetRenderP(world, Camera->P), GetRenderP(world, Camera->P) + (Camera->Front*10) , PINK, 1.0f);
-  DEBUG_DrawLine(world, TopLeft.MinP, TopLeft.MinP + (Camera->Front*10) , PINK, 1.0f);
+  Quaternion Rot = LookAt(Target, Front, Axis);
+
+  v3 VectorToRotate = V3(0, 20, 0);
+  v3 Rotated = Rotate(VectorToRotate, Rot);
+  Rotated = V3(0,0,0);
+
+  line Up( V3(0,0,0), V3(0,20,0) );
+
+  TopLeft.MaxP  = Rotate(TopLeft.MaxP, Rot);
+  TopRight.MaxP = Rotate(TopRight.MaxP, Rot);
+  BotLeft.MaxP  = Rotate(BotLeft.MaxP, Rot);
+  BotRight.MaxP = Rotate(BotRight.MaxP, Rot);
+  Up.MaxP       = Rotate(Up.MaxP, Rot);
+
+  v3 CameraRenderP = GetRenderP(world, Camera->P);
+  v3 CameraFront10 = (Camera->Front*10);
+
+  DEBUG_DrawLine(world, CameraRenderP, CameraRenderP + CameraFront10 , PINK, 1.0f);
+  DEBUG_DrawLine(world, TopLeft.MinP, TopLeft.MinP + CameraFront10 , PINK, 1.0f);
+
+  DEBUG_DrawLine(world, Up.MinP, Up.MaxP + CameraRenderP + CameraFront10, PINK, 1.0f);
 
   DEBUG_DrawLine(world, TopLeft  + GetRenderP(world, Camera->P) + (Camera->Front*100), WHITE, 1.0f);
   DEBUG_DrawLine(world, TopRight + GetRenderP(world, Camera->P) + (Camera->Front*100), WHITE, 1.0f);

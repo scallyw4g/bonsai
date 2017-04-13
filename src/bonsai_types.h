@@ -10,6 +10,8 @@ struct canonical_position;
 inline canonical_position
 Canonicalize( World *world, canonical_position CP );
 
+typedef float radians;
+
 struct v2
 {
    float x;
