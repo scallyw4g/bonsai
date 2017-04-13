@@ -265,6 +265,7 @@ main( void )
   Camera.Frust.FOV = 45.0f;
   Camera.P = CAMERA_INITIAL_P;
   Camera.Up = WORLD_Y;
+  Camera.Right = WORLD_Z;
   Camera.Front = WORLD_X;
 
   DebugCamera.Frust.farClip = 5000.0f;
@@ -273,6 +274,7 @@ main( void )
   DebugCamera.Frust.FOV = 45.0f;
   DebugCamera.P = CAMERA_INITIAL_P;
   DebugCamera.Up = WORLD_Y;
+  DebugCamera.Right = WORLD_Z;
   DebugCamera.Front = WORLD_X;
 
 

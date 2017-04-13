@@ -507,26 +507,26 @@ GetTheta(v3 P1, v3 P2, v3 Axis)
   float DotP1P2 = Dot(P1,P2);
   float theta = acos( DotP1P2 / (Length(P1)*Length(P2)) );
 
-  // TODO(Jesse) : Is there a better way of computing theta?
-  float signTheta = Dot( Cross(Axis, P1), P1ToP2);
-  theta = signTheta > 0 ? theta : -theta;
+  // TODO(Jesse) : Is there a better way of computing sign theta?
+  // float signTheta = Dot( Cross(Axis, P1), P1ToP2);
+  // theta = signTheta > 0 ? theta : -theta;
 
-  static float lastTheta = theta;
+  // static float lastTheta = theta;
   // Assert( Abs(lastTheta - theta) < 0.1f );
-  lastTheta = theta;
+  // lastTheta = theta;
 
   return theta;
 }
 
 Quaternion
-LookAt( v3 LookAtP, v3 Front, v3 Axis )
+RotatePoint(v3 P1, v3 P2)
 {
-  LookAtP = Normalize(LookAtP);
-  Front = Normalize(Front);
-  Axis = Normalize(Axis);
+  P1 = Normalize(P1);
+  P2 = Normalize(P2);
+  v3 Axis = Normalize(Cross(P1, P2));
 
 
-  float theta = GetTheta(Front, LookAtP, Axis);
+  float theta = GetTheta(P1, P2, Axis);
 
   // float onePontFiveSeven = GetTheta(V3(1, 0, 0), V3(0, 0, 1), V3(0, 1, 0));
   // Assert(onePontFiveSeven == 90.0f);
@@ -763,7 +763,7 @@ DEBUG_DrawChunkAABB( World *world, world_chunk *chunk, Quaternion Rotation, int 
 v3
 Rotate(v3 P, Quaternion Rotation)
 {
-  v3 Result = ((Rotation * Quaternion(1, P)) * Conjugate(Rotation)).xyz;
+  v3 Result = ((Rotation * Quaternion(0, P)) * Conjugate(Rotation)).xyz;
   return Result;
 }
 
@@ -793,26 +793,26 @@ IsInFrustum(World *world, Camera_Object *Camera, canonical_position P)
   line BotLeft ( V3(0,0,0), FrustLength - FarHeight - FarWidth );
   line BotRight( V3(0,0,0), FrustLength - FarHeight + FarWidth );
 
-  // Quaternion Rot = LookAt( Camera->Front, V3(0,0,1), V3(0,1,0));
-
   v3 Front = V3(0,0,1);
-  // v3 Target = Camera->Front;
-  v3 Target = Normalize(V3(-1,-1, -0.01));
+  v3 Target = Camera->Front;
+  // v3 Target = Normalize( V3(1.0, -1.0, 1.0));
   v3 Axis = Normalize(Cross(Target, Front));
 
-  Quaternion Rot = LookAt(Target, Front, Axis);
+  Quaternion Rot = RotatePoint(Front, Target);
 
-  v3 VectorToRotate = V3(0, 20, 0);
-  v3 Rotated = Rotate(VectorToRotate, Rot);
-  Rotated = V3(0,0,0);
+  v3 UpVec = V3(0, 1, 0);
+  v3 RotatedUp = Rotate(UpVec, Rot);
+
+  Quaternion DesiredUp = RotatePoint(RotatedUp, Camera->Up);
+  Quaternion FinalRotation = DesiredUp * Rot;
 
   line Up( V3(0,0,0), V3(0,20,0) );
 
-  TopLeft.MaxP  = Rotate(TopLeft.MaxP, Rot);
-  TopRight.MaxP = Rotate(TopRight.MaxP, Rot);
-  BotLeft.MaxP  = Rotate(BotLeft.MaxP, Rot);
-  BotRight.MaxP = Rotate(BotRight.MaxP, Rot);
-  Up.MaxP       = Rotate(Up.MaxP, Rot);
+  TopLeft.MaxP  = Rotate(TopLeft.MaxP, FinalRotation);
+  TopRight.MaxP = Rotate(TopRight.MaxP, FinalRotation);
+  BotLeft.MaxP  = Rotate(BotLeft.MaxP, FinalRotation);
+  BotRight.MaxP = Rotate(BotRight.MaxP, FinalRotation);
+  Up.MaxP       = Rotate(Up.MaxP, FinalRotation);
 
   v3 CameraRenderP = GetRenderP(world, Camera->P);
   v3 CameraFront10 = (Camera->Front*10);
@@ -821,6 +821,9 @@ IsInFrustum(World *world, Camera_Object *Camera, canonical_position P)
   DEBUG_DrawLine(world, TopLeft.MinP, TopLeft.MinP + CameraFront10 , PINK, 1.0f);
 
   DEBUG_DrawLine(world, Up.MinP, Up.MaxP + CameraRenderP + CameraFront10, PINK, 1.0f);
+
+  // Draw Axis of Rotation
+  DEBUG_DrawLine(world, V3(0,0,0), Axis*10, TEAL, 1.0f);
 
   DEBUG_DrawLine(world, TopLeft  + GetRenderP(world, Camera->P) + (Camera->Front*100), WHITE, 1.0f);
   DEBUG_DrawLine(world, TopRight + GetRenderP(world, Camera->P) + (Camera->Front*100), WHITE, 1.0f);

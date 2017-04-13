@@ -741,6 +741,7 @@ UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera)
   Camera->P.WorldP = Camera->Target.WorldP;
 
   Camera->Front = Normalize( GetRenderP(world, Camera->Target) - GetRenderP(world, Camera->P) );
+  Camera->Up = Normalize(Cross(Camera->Front, Camera->Right));
 
   return;
 }
