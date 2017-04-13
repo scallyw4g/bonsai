@@ -285,18 +285,19 @@ inline void
 BufferRightFace(
     World *world,
     glm::vec3 worldP,
-    const float* FaceColor
+    const float* FaceColor,
+	float Diameter = VOXEL_DIAMETER
     )
 {
   float localVertexData[] =
   {
-    worldP.x + VOXEL_DIAMETER, worldP.y +  VOXEL_DIAMETER, worldP.z +  VOXEL_DIAMETER,
-    worldP.x + VOXEL_DIAMETER, worldP.y                  , worldP.z                  ,
-    worldP.x + VOXEL_DIAMETER, worldP.y +  VOXEL_DIAMETER, worldP.z                  ,
+    worldP.x + Diameter, worldP.y +  Diameter, worldP.z +  Diameter,
+    worldP.x + Diameter, worldP.y                  , worldP.z                  ,
+    worldP.x + Diameter, worldP.y +  Diameter, worldP.z                  ,
 
-    worldP.x + VOXEL_DIAMETER, worldP.y                  , worldP.z                  ,
-    worldP.x + VOXEL_DIAMETER, worldP.y +  VOXEL_DIAMETER, worldP.z +  VOXEL_DIAMETER,
-    worldP.x + VOXEL_DIAMETER, worldP.y                  , worldP.z +  VOXEL_DIAMETER
+    worldP.x + Diameter, worldP.y                  , worldP.z                  ,
+    worldP.x + Diameter, worldP.y +  Diameter, worldP.z +  Diameter,
+    worldP.x + Diameter, worldP.y                  , worldP.z +  Diameter
   };
 
   float localNormalData[] =
@@ -318,18 +319,19 @@ inline void
 BufferLeftFace(
     World *world,
     glm::vec3 worldP,
-    const float* FaceColor
+    const float* FaceColor,
+	float Diameter = VOXEL_DIAMETER
     )
 {
   float localVertexData[] =
   {
     worldP.x                  , worldP.y                  , worldP.z                  ,
-    worldP.x                  , worldP.y +  VOXEL_DIAMETER, worldP.z +  VOXEL_DIAMETER,
-    worldP.x                  , worldP.y +  VOXEL_DIAMETER, worldP.z                  ,
+    worldP.x                  , worldP.y +  Diameter, worldP.z +  Diameter,
+    worldP.x                  , worldP.y +  Diameter, worldP.z                  ,
 
     worldP.x                  , worldP.y                  , worldP.z                  ,
-    worldP.x                  , worldP.y                  , worldP.z +  VOXEL_DIAMETER,
-    worldP.x                  , worldP.y +  VOXEL_DIAMETER, worldP.z +  VOXEL_DIAMETER
+    worldP.x                  , worldP.y                  , worldP.z +  Diameter,
+    worldP.x                  , worldP.y +  Diameter, worldP.z +  Diameter
   };
 
   float localNormalData[] =
@@ -351,17 +353,18 @@ inline void
 BufferBottomFace(
     World *world,
     glm::vec3 worldP,
-    const float* FaceColor
+    const float* FaceColor,
+	float Diameter = VOXEL_DIAMETER
     )
 {
   float localVertexData[] =
   {
-    worldP.x +  VOXEL_DIAMETER, worldP.y                  , worldP.z +  VOXEL_DIAMETER,
+    worldP.x +  Diameter, worldP.y                  , worldP.z +  Diameter,
     worldP.x                  , worldP.y                  , worldP.z                  ,
-    worldP.x +  VOXEL_DIAMETER, worldP.y                  , worldP.z                  ,
+    worldP.x +  Diameter, worldP.y                  , worldP.z                  ,
 
-    worldP.x +  VOXEL_DIAMETER, worldP.y                  , worldP.z +  VOXEL_DIAMETER,
-    worldP.x                  , worldP.y                  , worldP.z +  VOXEL_DIAMETER,
+    worldP.x +  Diameter, worldP.y                  , worldP.z +  Diameter,
+    worldP.x                  , worldP.y                  , worldP.z +  Diameter,
     worldP.x                  , worldP.y                  , worldP.z
   };
 
@@ -384,18 +387,19 @@ inline void
 BufferTopFace(
     World *world,
     glm::vec3 worldP,
-    const float* FaceColor
+    const float* FaceColor,
+	float Diameter = VOXEL_DIAMETER
     )
 {
   float localVertexData[] =
   {
-    worldP.x +  VOXEL_DIAMETER, worldP.y +  VOXEL_DIAMETER, worldP.z +  VOXEL_DIAMETER,
-    worldP.x +  VOXEL_DIAMETER, worldP.y +  VOXEL_DIAMETER, worldP.z                  ,
-    worldP.x                  , worldP.y +  VOXEL_DIAMETER, worldP.z                  ,
+    worldP.x +  Diameter, worldP.y +  Diameter, worldP.z +  Diameter,
+    worldP.x +  Diameter, worldP.y +  Diameter, worldP.z                  ,
+    worldP.x                  , worldP.y +  Diameter, worldP.z                  ,
 
-    worldP.x +  VOXEL_DIAMETER, worldP.y +  VOXEL_DIAMETER, worldP.z +  VOXEL_DIAMETER,
-    worldP.x                  , worldP.y +  VOXEL_DIAMETER, worldP.z                  ,
-    worldP.x                  , worldP.y +  VOXEL_DIAMETER, worldP.z +  VOXEL_DIAMETER
+    worldP.x +  Diameter, worldP.y +  Diameter, worldP.z +  Diameter,
+    worldP.x                  , worldP.y +  Diameter, worldP.z                  ,
+    worldP.x                  , worldP.y +  Diameter, worldP.z +  Diameter
   };
 
   float localNormalData[] =
@@ -417,18 +421,19 @@ inline void
 BufferFrontFace(
     World *world,
     glm::vec3 worldP,
-    const float* FaceColor
+    const float* FaceColor,
+	float Diameter = VOXEL_DIAMETER
     )
 {
   float localVertexData[] =
   {
-    worldP.x                  , worldP.y +  VOXEL_DIAMETER, worldP.z +  VOXEL_DIAMETER,
-    worldP.x                  , worldP.y                  , worldP.z +  VOXEL_DIAMETER,
-    worldP.x +  VOXEL_DIAMETER, worldP.y                  , worldP.z +  VOXEL_DIAMETER,
+    worldP.x                  , worldP.y +  Diameter, worldP.z +  Diameter,
+    worldP.x                  , worldP.y                  , worldP.z +  Diameter,
+    worldP.x +  Diameter, worldP.y                  , worldP.z +  Diameter,
 
-    worldP.x +  VOXEL_DIAMETER, worldP.y +  VOXEL_DIAMETER, worldP.z +  VOXEL_DIAMETER,
-    worldP.x                  , worldP.y +  VOXEL_DIAMETER, worldP.z +  VOXEL_DIAMETER,
-    worldP.x +  VOXEL_DIAMETER, worldP.y                  , worldP.z +  VOXEL_DIAMETER
+    worldP.x +  Diameter, worldP.y +  Diameter, worldP.z +  Diameter,
+    worldP.x                  , worldP.y +  Diameter, worldP.z +  Diameter,
+    worldP.x +  Diameter, worldP.y                  , worldP.z +  Diameter
   };
 
   float localNormalData[] =
@@ -450,17 +455,18 @@ inline void
 BufferBackFace(
     World *world,
     glm::vec3 worldP,
-    const float* FaceColor
+    const float* FaceColor,
+	float Diameter = VOXEL_DIAMETER
     )
 {
   float localVertexData[] =
   {
-    worldP.x +  VOXEL_DIAMETER, worldP.y +  VOXEL_DIAMETER, worldP.z                  ,
+    worldP.x +  Diameter, worldP.y +  Diameter, worldP.z                  ,
     worldP.x                  , worldP.y                  , worldP.z                  ,
-    worldP.x                  , worldP.y +  VOXEL_DIAMETER, worldP.z                  ,
+    worldP.x                  , worldP.y +  Diameter, worldP.z                  ,
 
-    worldP.x +  VOXEL_DIAMETER, worldP.y +  VOXEL_DIAMETER, worldP.z                  ,
-    worldP.x +  VOXEL_DIAMETER, worldP.y                  , worldP.z                  ,
+    worldP.x +  Diameter, worldP.y +  Diameter, worldP.z                  ,
+    worldP.x +  Diameter, worldP.y                  , worldP.z                  ,
     worldP.x                  , worldP.y                  , worldP.z                  ,
   };
 
@@ -778,6 +784,24 @@ Rotate(line Line, Quaternion Rotation)
   return Result;
 }
 
+void
+DEBUG_DrawPointMarker( World *world, v3 RenderP, int ColorIndex, float Diameter)
+{
+  float FaceColors[FACE_COLOR_SIZE];
+  GetColorData(ColorIndex, &FaceColors[0]);;
+
+  RenderP = RenderP - (Diameter/2);
+
+  BufferRightFace(  world, GLV3(RenderP), FaceColors, Diameter);
+  BufferLeftFace(   world, GLV3(RenderP), FaceColors, Diameter);
+  BufferBottomFace( world, GLV3(RenderP), FaceColors, Diameter);
+  BufferTopFace(    world, GLV3(RenderP), FaceColors, Diameter);
+  BufferFrontFace(  world, GLV3(RenderP), FaceColors, Diameter);
+  BufferBackFace(   world, GLV3(RenderP), FaceColors, Diameter);
+
+  return;
+}
+
 inline bool
 IsInFrustum(World *world, Camera_Object *Camera, canonical_position P)
 {
@@ -785,69 +809,101 @@ IsInFrustum(World *world, Camera_Object *Camera, canonical_position P)
 
   v3 FrustLength = V3(0,0, Frust.farClip);
 
-  v3 FarHeight = V3( 0, ((Frust.farClip - Frust.nearClip)/cos(Frust.FOV/2)) * sin(Frust.FOV/2), 0);
+  v3 FarHeight = ( V3( 0, ((Frust.farClip - Frust.nearClip)/cos(Frust.FOV/2)) * sin(Frust.FOV/2), 0));
   v3 FarWidth = V3( FarHeight.y, 0, 0);
 
-  line TopLeft ( V3(0,0,0), FrustLength + FarHeight - FarWidth );
-  line TopRight( V3(0,0,0), FrustLength + FarHeight + FarWidth );
-  line BotLeft ( V3(0,0,0), FrustLength - FarHeight - FarWidth );
-  line BotRight( V3(0,0,0), FrustLength - FarHeight + FarWidth );
+  line MaxMax( V3(0,0,0), FrustLength + FarHeight + FarWidth );
+  line MaxMin ( V3(0,0,0), FrustLength + FarHeight - FarWidth );
+  line MinMax( V3(0,0,0), FrustLength - FarHeight + FarWidth );
+  line MinMin ( V3(0,0,0), FrustLength - FarHeight - FarWidth );
 
   v3 Front = V3(0,0,1);
   v3 Target = Camera->Front;
-  // v3 Target = Normalize( V3(1.0, -1.0, 1.0));
   v3 Axis = Normalize(Cross(Target, Front));
 
-  Quaternion Rot = RotatePoint(Front, Target);
+  Quaternion GrossRotation = RotatePoint(Front, Target);
 
+  // We've got to correct the rotation so it ends pointing the frustum in the cameras 'up' direction
   v3 UpVec = V3(0, 1, 0);
-  v3 RotatedUp = Rotate(UpVec, Rot);
-
+  v3 RotatedUp = Rotate(UpVec, GrossRotation);
   Quaternion DesiredUp = RotatePoint(RotatedUp, Camera->Up);
-  Quaternion FinalRotation = DesiredUp * Rot;
 
-  line Up( V3(0,0,0), V3(0,20,0) );
+  Quaternion FinalRotation = DesiredUp * GrossRotation;
 
-  TopLeft.MaxP  = Rotate(TopLeft.MaxP, FinalRotation);
-  TopRight.MaxP = Rotate(TopRight.MaxP, FinalRotation);
-  BotLeft.MaxP  = Rotate(BotLeft.MaxP, FinalRotation);
-  BotRight.MaxP = Rotate(BotRight.MaxP, FinalRotation);
-  Up.MaxP       = Rotate(Up.MaxP, FinalRotation);
+  MaxMin.MaxP  = Rotate(MaxMin.MaxP, FinalRotation);
+  MaxMax.MaxP = Rotate(MaxMax.MaxP, FinalRotation);
+  MinMin.MaxP  = Rotate(MinMin.MaxP, FinalRotation);
+  MinMax.MaxP = Rotate(MinMax.MaxP, FinalRotation);
 
-  v3 CameraRenderP = GetRenderP(world, Camera->P);
-  v3 CameraFront10 = (Camera->Front*10);
-
-  DEBUG_DrawLine(world, CameraRenderP, CameraRenderP + CameraFront10 , PINK, 1.0f);
-  DEBUG_DrawLine(world, TopLeft.MinP, TopLeft.MinP + CameraFront10 , PINK, 1.0f);
-
-  DEBUG_DrawLine(world, Up.MinP, Up.MaxP + CameraRenderP + CameraFront10, PINK, 1.0f);
-
-  // Draw Axis of Rotation
-  DEBUG_DrawLine(world, V3(0,0,0), Axis*10, TEAL, 1.0f);
-
-  DEBUG_DrawLine(world, TopLeft  + GetRenderP(world, Camera->P) + (Camera->Front*100), WHITE, 1.0f);
-  DEBUG_DrawLine(world, TopRight + GetRenderP(world, Camera->P) + (Camera->Front*100), WHITE, 1.0f);
-  DEBUG_DrawLine(world, BotLeft  + GetRenderP(world, Camera->P) + (Camera->Front*100), WHITE, 1.0f);
-  DEBUG_DrawLine(world, BotRight + GetRenderP(world, Camera->P) + (Camera->Front*100), WHITE, 1.0f);
-
-  TopLeft  = TopLeft  + GetRenderP(world, Camera->P);
-  TopRight = TopRight + GetRenderP(world, Camera->P);
-  BotLeft  = BotLeft  + GetRenderP(world, Camera->P);
-  BotRight = BotRight + GetRenderP(world, Camera->P);
-
-  DEBUG_DrawLine(world, TopLeft , GREEN, 1.0f);
-  DEBUG_DrawLine(world, TopRight, GREEN, 1.0f);
-  DEBUG_DrawLine(world, BotLeft , GREEN, 1.0f);
-  DEBUG_DrawLine(world, BotRight, GREEN, 1.0f);
-
-  bool Result = true;
+  MaxMin  = MaxMin  + GetRenderP(world, Camera->P);
+  MaxMax = MaxMax + GetRenderP(world, Camera->P);
+  MinMin  = MinMin  + GetRenderP(world, Camera->P);
+  MinMax = MinMax + GetRenderP(world, Camera->P);
 
   v3 TestRenderP = GetRenderP(world, P);
 
-  Result |= (TestRenderP > TopLeft.MinP && TestRenderP < TopLeft.MaxP);
-  Result |= (TestRenderP > TopRight.MinP && TestRenderP < TopRight.MaxP);
-  Result |= (TestRenderP > BotLeft.MinP && TestRenderP < BotLeft.MaxP);
-  Result |= (TestRenderP > BotRight.MinP && TestRenderP < BotRight.MaxP);
+#if 1
+  if (MaxMin.MinP > MaxMin.MaxP)
+  {
+	  v3 Temp = MaxMin.MinP;
+	  MaxMin.MinP = MaxMin.MaxP;
+	  MaxMin.MaxP = Temp;
+  }
+  if (MaxMax.MinP > MaxMax.MaxP)
+  {
+	  v3 Temp = MaxMax.MinP;
+	  MaxMax.MinP = MaxMax.MaxP;
+	  MaxMax.MaxP = Temp;
+  }
+  if (MinMin.MinP > MinMin.MaxP)
+  {
+	  v3 Temp = MinMin.MinP;
+	  MinMin.MinP = MinMin.MaxP;
+	  MinMin.MaxP = Temp;
+  }
+  if (MinMax.MinP > MinMax.MaxP)
+  {
+	  v3 Temp = MinMax.MinP;
+	  MinMax.MinP = MinMax.MaxP;
+	  MinMax.MaxP = Temp;
+  }
+#endif
+
+  float dot = Dot( V3(1,0,0), Normalize(V3(-1,1,1)) );
+  dot ++;
+
+#if 0
+  Assert(MaxMin.MinP.z == MaxMax.MinP.z);
+  Assert(MinMin.MinP.z == MinMax.MinP.z);
+  Assert(MaxMax.MinP.z == MaxMin.MinP.z);
+  Assert(MinMax.MinP.z == MinMin.MinP.z);
+  Assert(MaxMax.MinP.z == MinMin.MinP.z);
+  Assert(MinMax.MinP.z == MaxMin.MinP.z);
+#endif
+
+  bool Result = true;
+
+  DEBUG_DrawLine(world, MaxMax, TEAL, 1.0f);
+  DEBUG_DrawLine(world, MaxMin, TEAL, 1.0f);
+  DEBUG_DrawLine(world, MinMax, TEAL, 1.0f);
+  DEBUG_DrawLine(world, MinMin, TEAL, 1.0f);
+
+  DEBUG_DrawPointMarker(world, MaxMax.MaxP, GREEN, 5.0f);
+  DEBUG_DrawPointMarker(world, MaxMin.MaxP, GREEN, 5.0f);
+  DEBUG_DrawPointMarker(world, MinMax.MaxP, GREEN, 5.0f);
+  DEBUG_DrawPointMarker(world, MinMin.MaxP, GREEN, 5.0f);
+
+  Result &= (TestRenderP.x < MaxMax.MaxP.x);
+  Result &= (TestRenderP.x < MinMax.MaxP.x);
+
+  Result &= (TestRenderP.x < MaxMin.MaxP.x);
+  Result &= (TestRenderP.x < MinMin.MaxP.x);
+
+  Result &= (TestRenderP.y < MaxMax.MaxP.y);
+  Result &= (TestRenderP.y < MaxMin.MaxP.y);
+
+  Result &= (TestRenderP.y < MinMax.MaxP.y);
+  Result &= (TestRenderP.y < MinMin.MaxP.y);
 
   return Result;
 }
@@ -1034,13 +1090,8 @@ IsInFrustum( World *world, Camera_Object *Camera, world_chunk *Chunk )
 {
   v3 ChunkMid = V3(CD_X, CD_Y, CD_Z)/2;
   canonical_position P1 = Canonical_Position( world, ChunkMid, Chunk->WorldP );
-
-  if (IsInFrustum(world, Camera, P1 ))
-  {
-    return true;
-  }
-
-  return false;
+  bool Result = IsInFrustum(world, Camera, P1 );
+  return Result;
 }
 
 inline bool
