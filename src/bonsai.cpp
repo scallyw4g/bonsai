@@ -92,7 +92,7 @@ initWindow( int WindowWidth, int WindowHeight )
 
   glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
-  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+  glClearColor(0.25f, 0.25f, 0.25f, 0.25f);
 
   // Enable depth test
   glEnable(GL_DEPTH_TEST);
@@ -775,11 +775,6 @@ UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera)
 
   v3 CameraRenderP = GetRenderP(world, Camera->P);
 
-  MaxMin = MaxMin + CameraRenderP;
-  MaxMax = MaxMax + CameraRenderP;
-  MinMin = MinMin + CameraRenderP;
-  MinMax = MinMax + CameraRenderP;
-
   plane Top(CameraRenderP,   Normalize(Cross(MaxMax, MaxMin)));
   plane Bot(CameraRenderP,   Normalize(Cross(MinMin, MinMax)));
   plane Left(CameraRenderP,  Normalize(Cross(MinMax, MaxMax)));
@@ -790,18 +785,27 @@ UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera)
   Camera->Frust.Left = Left;
   Camera->Frust.Right = Right;
 
+  // TODO(Jesse): Cull these as well?
   /* plane Near; */
   /* plane Far; */
 
-  DEBUG_DrawLine(world, CameraRenderP, MaxMax, TEAL, 1.0f);
-  DEBUG_DrawLine(world, CameraRenderP, MaxMin, TEAL, 1.0f);
-  DEBUG_DrawLine(world, CameraRenderP, MinMax, TEAL, 1.0f);
-  DEBUG_DrawLine(world, CameraRenderP, MinMin, TEAL, 1.0f);
+  if (UseDebugCamera)
+  {
+    MaxMin = MaxMin + CameraRenderP;
+    MaxMax = MaxMax + CameraRenderP;
+    MinMin = MinMin + CameraRenderP;
+    MinMax = MinMax + CameraRenderP;
 
-  DEBUG_DrawPointMarker(world, MaxMax, GREEN, 5.0f);
-  DEBUG_DrawPointMarker(world, MaxMin, GREEN, 5.0f);
-  DEBUG_DrawPointMarker(world, MinMax, GREEN, 5.0f);
-  DEBUG_DrawPointMarker(world, MinMin, GREEN, 5.0f);
+    DEBUG_DrawLine(world, CameraRenderP, MaxMax, RED, 1.0f);
+    DEBUG_DrawLine(world, CameraRenderP, MaxMin, GREEN, 1.0f);
+    DEBUG_DrawLine(world, CameraRenderP, MinMax, BLUE, 1.0f);
+    DEBUG_DrawLine(world, CameraRenderP, MinMin, WHITE, 1.0f);
+
+    DEBUG_DrawPointMarker(world, MaxMax, GREEN, 5.0f);
+    DEBUG_DrawPointMarker(world, MaxMin, GREEN, 5.0f);
+    DEBUG_DrawPointMarker(world, MinMax, GREEN, 5.0f);
+    DEBUG_DrawPointMarker(world, MinMin, GREEN, 5.0f);
+  }
 
   return;
 }

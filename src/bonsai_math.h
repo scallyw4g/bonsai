@@ -56,6 +56,18 @@ Pow2(int p)
   return Result;
 }
 
+float
+ClampMinus1To1(float F)
+{
+  if (F > 1)
+	  F=1;
+
+  if (F < -1)
+	  F=-1;
+
+  return F;
+}
+
 int clamp0(int i)
 {
   if (i < 0)

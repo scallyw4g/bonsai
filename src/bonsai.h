@@ -87,11 +87,16 @@ struct plane
 {
   v3 P;
   v3 Normal;
+  float d;
 
   plane( v3 P, v3 Normal )
   {
     this->P = P;
     this->Normal = Normal;
+
+    this->d = -1.0f * (Normal.x*P.x + Normal.y*P.y + Normal.z*P.z);
+
+    Assert(Normal.x*P.x + Normal.y*P.y + Normal.z*P.z + this->d == 0);
   }
 
   plane() {} 

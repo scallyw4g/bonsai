@@ -286,7 +286,7 @@ BufferRightFace(
     World *world,
     glm::vec3 worldP,
     const float* FaceColor,
-	float Diameter = VOXEL_DIAMETER
+    float Diameter = VOXEL_DIAMETER
     )
 {
   float localVertexData[] =
@@ -320,7 +320,7 @@ BufferLeftFace(
     World *world,
     glm::vec3 worldP,
     const float* FaceColor,
-	float Diameter = VOXEL_DIAMETER
+    float Diameter = VOXEL_DIAMETER
     )
 {
   float localVertexData[] =
@@ -354,7 +354,7 @@ BufferBottomFace(
     World *world,
     glm::vec3 worldP,
     const float* FaceColor,
-	float Diameter = VOXEL_DIAMETER
+    float Diameter = VOXEL_DIAMETER
     )
 {
   float localVertexData[] =
@@ -388,7 +388,7 @@ BufferTopFace(
     World *world,
     glm::vec3 worldP,
     const float* FaceColor,
-	float Diameter = VOXEL_DIAMETER
+    float Diameter = VOXEL_DIAMETER
     )
 {
   float localVertexData[] =
@@ -422,7 +422,7 @@ BufferFrontFace(
     World *world,
     glm::vec3 worldP,
     const float* FaceColor,
-	float Diameter = VOXEL_DIAMETER
+    float Diameter = VOXEL_DIAMETER
     )
 {
   float localVertexData[] =
@@ -456,7 +456,7 @@ BufferBackFace(
     World *world,
     glm::vec3 worldP,
     const float* FaceColor,
-	float Diameter = VOXEL_DIAMETER
+    float Diameter = VOXEL_DIAMETER
     )
 {
   float localVertexData[] =
@@ -511,16 +511,20 @@ GetTheta(v3 P1, v3 P2, v3 Axis)
   v3 P1ToP2 = Normalize(P2 - P1);
   
   float DotP1P2 = Dot(P1,P2);
-  float theta = acos( DotP1P2 / (Length(P1)*Length(P2)) );
 
-  // TODO(Jesse) : Is there a better way of computing sign theta?
-  // float signTheta = Dot( Cross(Axis, P1), P1ToP2);
-  // theta = signTheta > 0 ? theta : -theta;
+  float LP1, LP2;
 
-  // static float lastTheta = theta;
-  // Assert( Abs(lastTheta - theta) < 0.1f );
-  // lastTheta = theta;
+  LP1 = Length(P1);
+  LP2 = Length(P2);
 
+  Assert(LP1 != 0);
+  Assert(LP2 != 0);
+
+  float cosTheta = DotP1P2 / (LP1*LP2);
+  cosTheta = ClampMinus1To1(cosTheta);
+  float theta = acos( cosTheta );
+
+  Assert(theta >= -1 || theta <= 1);
   return theta;
 }
 
@@ -531,32 +535,14 @@ RotatePoint(v3 P1, v3 P2)
   P2 = Normalize(P2);
   v3 Axis = Normalize(Cross(P1, P2));
 
-
   float theta = GetTheta(P1, P2, Axis);
 
-  // float onePontFiveSeven = GetTheta(V3(1, 0, 0), V3(0, 0, 1), V3(0, 1, 0));
-  // Assert(onePontFiveSeven == 90.0f);
-
-  // Apparently theta is supposed to be divided by 2 here (according to the
-  // internet) but that seems to yield a half rotation, so I took it out..
-  // Quaternion Result( cos(theta/2), (Axis*sin(theta/2)) );
   Quaternion Result( cos(theta/2), (Axis*sin(theta/2)) );
+
+  Assert(Length(Result.xyz) > 0);
+
   return Result;
 }
-
-#if 0
-Quaternion
-RotateAround( v3 Axis )
-{
-  static
-    float theta = 0.01f;
-
-  theta += 0.05f;
-
-  Quaternion Result( cos(theta/2), Axis*sin(theta/2) );
-  return Result;
-}
-#endif
 
 void
 DEBUG_DrawLine(World *world, v3 P1, v3 P2, int ColorIndex, float Thickness )
@@ -802,60 +788,35 @@ DEBUG_DrawPointMarker( World *world, v3 RenderP, int ColorIndex, float Diameter)
   return;
 }
 
+inline float
+DistanceToPlane(plane *Plane, v3 P)
+{
+  float x = Plane->P.x;
+  float y = Plane->P.y;
+  float z = Plane->P.z;
+
+  float a = Plane->Normal.x;
+  float b = Plane->Normal.y;
+  float c = Plane->Normal.z;
+
+  float d = Plane->d;
+  Assert(a*x + b*y + c*z + d == 0);
+
+  float Distance = a*P.x + b*P.y + c*P.z + d;
+  return Distance;
+}
+
 inline bool
 IsInFrustum(World *world, Camera_Object *Camera, canonical_position P)
 {
   bool Result = true;
 
-  v3 tp = GetRenderP(world, P);
+  v3 TestP = GetRenderP(world, P);
 
-  plane Plane = Camera->Frust.Top;
-  float x = Plane.P.x;
-  float y = Plane.P.y;
-  float z = Plane.P.z;
-  float a = Plane.Normal.x;
-  float b = Plane.Normal.y;
-  float c = Plane.Normal.z;
-  float d = -1.0f * (a*x + b*y + c*z);
-  Assert(a*x + b*y + c*z + d == 0);
-  float dist = a*tp.x + b*tp.y + c*tp.z + d;
-  Result &= dist > 0;
-
-  Plane = Camera->Frust.Bot;
-  x = Plane.P.x;
-  y = Plane.P.y;
-  z = Plane.P.z;
-  a = Plane.Normal.x;
-  b = Plane.Normal.y;
-  c = Plane.Normal.z;
-  d = -1.0f * (a*x + b*y + c*z);
-  Assert(a*x + b*y + c*z + d == 0);
-  dist = a*tp.x + b*tp.y + c*tp.z + d;
-  Result &= dist > 0;
-
-  Plane = Camera->Frust.Left;
-  x = Plane.P.x;
-  y = Plane.P.y;
-  z = Plane.P.z;
-  a = Plane.Normal.x;
-  b = Plane.Normal.y;
-  c = Plane.Normal.z;
-  d = -1.0f * (a*x + b*y + c*z);
-  Assert(a*x + b*y + c*z + d == 0);
-  dist = a*tp.x + b*tp.y + c*tp.z + d;
-  Result &= dist > 0;
-
-  Plane = Camera->Frust.Right;
-  x = Plane.P.x;
-  y = Plane.P.y;
-  z = Plane.P.z;
-  a = Plane.Normal.x;
-  b = Plane.Normal.y;
-  c = Plane.Normal.z;
-  d = -1.0f * (a*x + b*y + c*z);
-  Assert(a*x + b*y + c*z + d == 0);
-  dist = a*tp.x + b*tp.y + c*tp.z + d;
-  Result &= dist > 0;
+  Result &= (DistanceToPlane(&Camera->Frust.Top, TestP) > 0);
+  Result &= (DistanceToPlane(&Camera->Frust.Bot, TestP) > 0);
+  Result &= (DistanceToPlane(&Camera->Frust.Left, TestP) > 0);
+  Result &= (DistanceToPlane(&Camera->Frust.Right, TestP) > 0);
 
   return Result;
 }
@@ -981,14 +942,14 @@ BuildInteriorBoundaryVoxels(World *world, chunk_data *chunk, world_position Worl
         if ( NotFilled( chunk, VoxelP ) )
           continue;
 
-		voxel_position rightVoxel = VoxelP + Voxel_Position(1.0f, 0, 0);
-		voxel_position leftVoxel = VoxelP - Voxel_Position(1.0f, 0, 0);
+    voxel_position rightVoxel = VoxelP + Voxel_Position(1.0f, 0, 0);
+    voxel_position leftVoxel = VoxelP - Voxel_Position(1.0f, 0, 0);
 
-		voxel_position topVoxel = VoxelP + Voxel_Position(0, 1.0f, 0);
-		voxel_position botVoxel = VoxelP - Voxel_Position(0, 1.0f, 0);
+    voxel_position topVoxel = VoxelP + Voxel_Position(0, 1.0f, 0);
+    voxel_position botVoxel = VoxelP - Voxel_Position(0, 1.0f, 0);
 
-		voxel_position frontVoxel = VoxelP + Voxel_Position(0, 0, 1.0f);
-		voxel_position backVoxel = VoxelP - Voxel_Position(0, 0, 1.0f);
+    voxel_position frontVoxel = VoxelP + Voxel_Position(0, 0, 1.0f);
+    voxel_position backVoxel = VoxelP - Voxel_Position(0, 0, 1.0f);
 
         Voxel voxel = chunk->Voxels[GetIndex(Voxel_Position(x,y,z), chunk)];
 
