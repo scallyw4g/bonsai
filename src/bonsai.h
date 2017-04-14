@@ -83,12 +83,31 @@ struct collision_event
   bool didCollide;
 };
 
+struct plane
+{
+  v3 P;
+  v3 Normal;
+
+  plane( v3 P, v3 Normal )
+  {
+    this->P = P;
+    this->Normal = Normal;
+  }
+
+  plane() {} 
+};
+
 struct Frustum
 {
   float farClip;
   float nearClip;
   float width;
   float FOV;
+
+  plane Top;
+  plane Bot;
+  plane Left;
+  plane Right;
 };
 
 struct Camera_Object

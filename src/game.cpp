@@ -56,7 +56,7 @@ void
 GAME_UPDATE_AND_RENDER
 (
     World *world,
-	platform *Plat,
+    platform *Plat,
     Entity *Player,
     Camera_Object *Camera,
     float dt,
@@ -85,34 +85,37 @@ GAME_UPDATE_AND_RENDER
     Toggled = false;
   }
 
-
-  Print(Camera->Front);
+  Camera_Object *CurrentCamera;
 
   if (UseDebugCamera)
+    CurrentCamera = &DebugCamera;
+  else
+    CurrentCamera = Camera;
+
+  v3 Input = GetInputsFromController(CurrentCamera);
+  if (UseDebugCamera)
   {
-v3 Input = GetInputsFromController(&DebugCamera);
     UpdateDebugCamera(world, Input, &DebugCamera);
-    RG->Basis.ViewMatrix = GetViewMatrix(world, &DebugCamera);
   }
   else
   {
-    v3 Input = GetInputsFromController(Camera);
-    if (Player->Spawned)
-    {
-      v3 PlayerDelta = GetEntityDelta(world, Player, Input, dt);
-      UpdatePlayerP( world, Plat, Player, PlayerDelta );
-      // if (Length(Input) > 0) Player->Rotation = LookAt(Input);
-    }
-    else // Try to respawn the player until enough of the world has been initialized to do so
-    {
-      SpawnPlayer( world, Plat, Player );
-    }
-
-	UpdateCameraP(world, Player, Camera);
-    RG->Basis.ViewMatrix = GetViewMatrix(world, Camera);
+     if (Player->Spawned)
+     {
+       v3 PlayerDelta = GetEntityDelta(world, Player, Input, dt);
+       UpdatePlayerP( world, Plat, Player, PlayerDelta );
+       // if (Length(Input) > 0) Player->Rotation = LookAt(Input);
+     }
+     else // Try to respawn the player until enough of the world has been initialized to do so
+     {
+       SpawnPlayer( world, Plat, Player );
+     }
   }
 
+  UpdateCameraP(world, Player, Camera);
+  RG->Basis.ViewMatrix = GetViewMatrix(world, CurrentCamera);
+
   GlobalLightTheta += dt;
+
 
   //
   // Draw world

@@ -805,105 +805,27 @@ DEBUG_DrawPointMarker( World *world, v3 RenderP, int ColorIndex, float Diameter)
 inline bool
 IsInFrustum(World *world, Camera_Object *Camera, canonical_position P)
 {
-  Frustum Frust = Camera->Frust;
 
-  v3 FrustLength = V3(0,0, Frust.farClip);
-
-  v3 FarHeight = ( V3( 0, ((Frust.farClip - Frust.nearClip)/cos(Frust.FOV/2)) * sin(Frust.FOV/2), 0));
-  v3 FarWidth = V3( FarHeight.y, 0, 0);
-
-  line MaxMax( V3(0,0,0), FrustLength + FarHeight + FarWidth );
-  line MaxMin ( V3(0,0,0), FrustLength + FarHeight - FarWidth );
-  line MinMax( V3(0,0,0), FrustLength - FarHeight + FarWidth );
-  line MinMin ( V3(0,0,0), FrustLength - FarHeight - FarWidth );
-
-  v3 Front = V3(0,0,1);
-  v3 Target = Camera->Front;
-  v3 Axis = Normalize(Cross(Target, Front));
-
-  Quaternion GrossRotation = RotatePoint(Front, Target);
-
-  // We've got to correct the rotation so it ends pointing the frustum in the cameras 'up' direction
-  v3 UpVec = V3(0, 1, 0);
-  v3 RotatedUp = Rotate(UpVec, GrossRotation);
-  Quaternion DesiredUp = RotatePoint(RotatedUp, Camera->Up);
-
-  Quaternion FinalRotation = DesiredUp * GrossRotation;
-
-  MaxMin.MaxP  = Rotate(MaxMin.MaxP, FinalRotation);
-  MaxMax.MaxP = Rotate(MaxMax.MaxP, FinalRotation);
-  MinMin.MaxP  = Rotate(MinMin.MaxP, FinalRotation);
-  MinMax.MaxP = Rotate(MinMax.MaxP, FinalRotation);
-
-  MaxMin  = MaxMin  + GetRenderP(world, Camera->P);
-  MaxMax = MaxMax + GetRenderP(world, Camera->P);
-  MinMin  = MinMin  + GetRenderP(world, Camera->P);
-  MinMax = MinMax + GetRenderP(world, Camera->P);
+  /* v3 MaxMax = Camera->Frust.MaxMax; */
+  /* v3 MaxMin = Camera->Frust.MaxMin; */
+  /* v3 MinMax = Camera->Frust.MinMax; */
+  /* v3 MinMin = Camera->Frust.MinMin; */
 
   v3 TestRenderP = GetRenderP(world, P);
 
-#if 1
-  if (MaxMin.MinP > MaxMin.MaxP)
-  {
-	  v3 Temp = MaxMin.MinP;
-	  MaxMin.MinP = MaxMin.MaxP;
-	  MaxMin.MaxP = Temp;
-  }
-  if (MaxMax.MinP > MaxMax.MaxP)
-  {
-	  v3 Temp = MaxMax.MinP;
-	  MaxMax.MinP = MaxMax.MaxP;
-	  MaxMax.MaxP = Temp;
-  }
-  if (MinMin.MinP > MinMin.MaxP)
-  {
-	  v3 Temp = MinMin.MinP;
-	  MinMin.MinP = MinMin.MaxP;
-	  MinMin.MaxP = Temp;
-  }
-  if (MinMax.MinP > MinMax.MaxP)
-  {
-	  v3 Temp = MinMax.MinP;
-	  MinMax.MinP = MinMax.MaxP;
-	  MinMax.MaxP = Temp;
-  }
-#endif
-
-  float dot = Dot( V3(1,0,0), Normalize(V3(-1,1,1)) );
-  dot ++;
-
-#if 0
-  Assert(MaxMin.MinP.z == MaxMax.MinP.z);
-  Assert(MinMin.MinP.z == MinMax.MinP.z);
-  Assert(MaxMax.MinP.z == MaxMin.MinP.z);
-  Assert(MinMax.MinP.z == MinMin.MinP.z);
-  Assert(MaxMax.MinP.z == MinMin.MinP.z);
-  Assert(MinMax.MinP.z == MaxMin.MinP.z);
-#endif
-
   bool Result = true;
 
-  DEBUG_DrawLine(world, MaxMax, TEAL, 1.0f);
-  DEBUG_DrawLine(world, MaxMin, TEAL, 1.0f);
-  DEBUG_DrawLine(world, MinMax, TEAL, 1.0f);
-  DEBUG_DrawLine(world, MinMin, TEAL, 1.0f);
+  /* Result &= (TestRenderP.x < MaxMax.x); */
+  /* Result &= (TestRenderP.x < MinMax.x); */
 
-  DEBUG_DrawPointMarker(world, MaxMax.MaxP, GREEN, 5.0f);
-  DEBUG_DrawPointMarker(world, MaxMin.MaxP, GREEN, 5.0f);
-  DEBUG_DrawPointMarker(world, MinMax.MaxP, GREEN, 5.0f);
-  DEBUG_DrawPointMarker(world, MinMin.MaxP, GREEN, 5.0f);
+  /* Result &= (TestRenderP.x < MaxMin.x); */
+  /* Result &= (TestRenderP.x < MinMin.x); */
 
-  Result &= (TestRenderP.x < MaxMax.MaxP.x);
-  Result &= (TestRenderP.x < MinMax.MaxP.x);
+  /* Result &= (TestRenderP.y < MaxMax.y); */
+  /* Result &= (TestRenderP.y < MaxMin.y); */
 
-  Result &= (TestRenderP.x < MaxMin.MaxP.x);
-  Result &= (TestRenderP.x < MinMin.MaxP.x);
-
-  Result &= (TestRenderP.y < MaxMax.MaxP.y);
-  Result &= (TestRenderP.y < MaxMin.MaxP.y);
-
-  Result &= (TestRenderP.y < MinMax.MaxP.y);
-  Result &= (TestRenderP.y < MinMin.MaxP.y);
+  /* Result &= (TestRenderP.y < MinMax.y); */
+  /* Result &= (TestRenderP.y < MinMin.y); */
 
   return Result;
 }

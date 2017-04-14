@@ -704,6 +704,7 @@ UpdateDebugCamera( World *world, v3 TargetDelta, Camera_Object *Camera)
 void
 UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera)
 {
+
 #if DEBUG_CAMERA_FOCUS_ORIGIN
   canonical_position NewTarget = Canonical_Position( V3(0,0,0), World_Position(0,0,0) );
 #else
@@ -742,6 +743,60 @@ UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera)
 
   Camera->Front = Normalize( GetRenderP(world, Camera->Target) - GetRenderP(world, Camera->P) );
   Camera->Up = Normalize(Cross(Camera->Front, Camera->Right));
+
+  // Frustum computation
+  //
+  v3 FrustLength = V3(0,0, Camera->Frust.farClip);
+  v3 FarHeight = ( V3( 0, ((Camera->Frust.farClip - Camera->Frust.nearClip)/cos(Camera->Frust.FOV/2)) * sin(Camera->Frust.FOV/2), 0));
+  v3 FarWidth = V3( FarHeight.y, 0, 0);
+
+  v3 MaxMax = FrustLength + FarHeight + FarWidth;
+  v3 MaxMin = FrustLength + FarHeight - FarWidth;
+  v3 MinMax = FrustLength - FarHeight + FarWidth;
+  v3 MinMin = FrustLength - FarHeight - FarWidth;
+
+  v3 Front = V3(0,0,1);
+  v3 Target = Camera->Front;
+  v3 Axis = Normalize(Cross(Target, Front));
+
+  Quaternion GrossRotation = RotatePoint(Front, Target);
+
+  // We've got to correct the rotation so it ends pointing the frustum in the cameras 'up' direction
+  v3 UpVec = V3(0, 1, 0);
+  v3 RotatedUp = Rotate(UpVec, GrossRotation);
+  Quaternion DesiredUp = RotatePoint(RotatedUp, Camera->Up);
+
+  Quaternion FinalRotation = DesiredUp * GrossRotation;
+
+  MaxMin = Rotate(MaxMin, FinalRotation);
+  MaxMax = Rotate(MaxMax, FinalRotation);
+  MinMin = Rotate(MinMin, FinalRotation);
+  MinMax = Rotate(MinMax, FinalRotation);
+
+  v3 CameraRenderP = GetRenderP(world, Camera->P);
+
+  MaxMin = MaxMin + CameraRenderP;
+  MaxMax = MaxMax + CameraRenderP;
+  MinMin = MinMin + CameraRenderP;
+  MinMax = MinMax + CameraRenderP;
+
+  plane Top(CameraRenderP,   Cross(MaxMax, MaxMin));
+  plane Bot(CameraRenderP,   Cross(MinMin, MinMax));
+  plane Left(CameraRenderP,  Cross(MinMax, MaxMax));
+  plane Right(CameraRenderP, Cross(MaxMin, MinMin));
+
+  /* plane Near; */
+  /* plane Far; */
+
+  DEBUG_DrawLine(world, CameraRenderP, MaxMax, TEAL, 1.0f);
+  DEBUG_DrawLine(world, CameraRenderP, MaxMin, TEAL, 1.0f);
+  DEBUG_DrawLine(world, CameraRenderP, MinMax, TEAL, 1.0f);
+  DEBUG_DrawLine(world, CameraRenderP, MinMin, TEAL, 1.0f);
+
+  DEBUG_DrawPointMarker(world, MaxMax, GREEN, 5.0f);
+  DEBUG_DrawPointMarker(world, MaxMin, GREEN, 5.0f);
+  DEBUG_DrawPointMarker(world, MinMax, GREEN, 5.0f);
+  DEBUG_DrawPointMarker(world, MinMin, GREEN, 5.0f);
 
   return;
 }
