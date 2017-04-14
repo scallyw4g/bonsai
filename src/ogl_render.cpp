@@ -805,27 +805,57 @@ DEBUG_DrawPointMarker( World *world, v3 RenderP, int ColorIndex, float Diameter)
 inline bool
 IsInFrustum(World *world, Camera_Object *Camera, canonical_position P)
 {
-
-  /* v3 MaxMax = Camera->Frust.MaxMax; */
-  /* v3 MaxMin = Camera->Frust.MaxMin; */
-  /* v3 MinMax = Camera->Frust.MinMax; */
-  /* v3 MinMin = Camera->Frust.MinMin; */
-
-  v3 TestRenderP = GetRenderP(world, P);
-
   bool Result = true;
 
-  /* Result &= (TestRenderP.x < MaxMax.x); */
-  /* Result &= (TestRenderP.x < MinMax.x); */
+  v3 tp = GetRenderP(world, P);
 
-  /* Result &= (TestRenderP.x < MaxMin.x); */
-  /* Result &= (TestRenderP.x < MinMin.x); */
+  plane Plane = Camera->Frust.Top;
+  float x = Plane.P.x;
+  float y = Plane.P.y;
+  float z = Plane.P.z;
+  float a = Plane.Normal.x;
+  float b = Plane.Normal.y;
+  float c = Plane.Normal.z;
+  float d = -1.0f * (a*x + b*y + c*z);
+  Assert(a*x + b*y + c*z + d == 0);
+  float dist = a*tp.x + b*tp.y + c*tp.z + d;
+  Result &= dist > 0;
 
-  /* Result &= (TestRenderP.y < MaxMax.y); */
-  /* Result &= (TestRenderP.y < MaxMin.y); */
+  Plane = Camera->Frust.Bot;
+  x = Plane.P.x;
+  y = Plane.P.y;
+  z = Plane.P.z;
+  a = Plane.Normal.x;
+  b = Plane.Normal.y;
+  c = Plane.Normal.z;
+  d = -1.0f * (a*x + b*y + c*z);
+  Assert(a*x + b*y + c*z + d == 0);
+  dist = a*tp.x + b*tp.y + c*tp.z + d;
+  Result &= dist > 0;
 
-  /* Result &= (TestRenderP.y < MinMax.y); */
-  /* Result &= (TestRenderP.y < MinMin.y); */
+  Plane = Camera->Frust.Left;
+  x = Plane.P.x;
+  y = Plane.P.y;
+  z = Plane.P.z;
+  a = Plane.Normal.x;
+  b = Plane.Normal.y;
+  c = Plane.Normal.z;
+  d = -1.0f * (a*x + b*y + c*z);
+  Assert(a*x + b*y + c*z + d == 0);
+  dist = a*tp.x + b*tp.y + c*tp.z + d;
+  Result &= dist > 0;
+
+  Plane = Camera->Frust.Right;
+  x = Plane.P.x;
+  y = Plane.P.y;
+  z = Plane.P.z;
+  a = Plane.Normal.x;
+  b = Plane.Normal.y;
+  c = Plane.Normal.z;
+  d = -1.0f * (a*x + b*y + c*z);
+  Assert(a*x + b*y + c*z + d == 0);
+  dist = a*tp.x + b*tp.y + c*tp.z + d;
+  Result &= dist > 0;
 
   return Result;
 }

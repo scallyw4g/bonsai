@@ -780,10 +780,15 @@ UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera)
   MinMin = MinMin + CameraRenderP;
   MinMax = MinMax + CameraRenderP;
 
-  plane Top(CameraRenderP,   Cross(MaxMax, MaxMin));
-  plane Bot(CameraRenderP,   Cross(MinMin, MinMax));
-  plane Left(CameraRenderP,  Cross(MinMax, MaxMax));
-  plane Right(CameraRenderP, Cross(MaxMin, MinMin));
+  plane Top(CameraRenderP,   Normalize(Cross(MaxMax, MaxMin)));
+  plane Bot(CameraRenderP,   Normalize(Cross(MinMin, MinMax)));
+  plane Left(CameraRenderP,  Normalize(Cross(MinMax, MaxMax)));
+  plane Right(CameraRenderP, Normalize(Cross(MaxMin, MinMin)));
+
+  Camera->Frust.Top = Top;
+  Camera->Frust.Bot = Bot;
+  Camera->Frust.Left = Left;
+  Camera->Frust.Right = Right;
 
   /* plane Near; */
   /* plane Far; */
