@@ -4,9 +4,7 @@
 
 #include <GL/glew.h>
 
-#include <glfw3.h>
-
-
+#if 0
 GLuint loadBMP_custom(const char * imagepath){
 
 	Log("Reading image %s\n", imagepath);
@@ -85,6 +83,7 @@ GLuint loadBMP_custom(const char * imagepath){
 	// Return the ID of the texture we just created
 	return textureID;
 }
+#endif
 
 // Since GLFW 3, glfwLoadTexture2D() has been removed. You have to use another texture loading library, 
 // or do it yourself (just like loadBMP_custom and loadDDS)

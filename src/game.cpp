@@ -1,10 +1,12 @@
 #include <bonsai.h>
 #include <render.h>
+#include <debug.h>
 
 #include <platform.cpp>
 #include <constants.hpp>
 #include <bonsai.cpp>
-// #include <debug.cpp>
+#include <texture.cpp>
+#include <debug.cpp>
 
 #include <time.h>
 
@@ -63,6 +65,7 @@ GAME_UPDATE_AND_RENDER
     ShadowRenderGroup *SG
   )
 {
+
   if ( glfwGetKey(window, GLFW_KEY_ENTER ) == GLFW_PRESS )
     SeedWorldAndUnspawnPlayer(world, Player);
  
@@ -176,6 +179,8 @@ v3 Input = GetInputsFromController(&DebugCamera);
 
   FlushRenderBuffers(world, RG, SG, Camera);
 
+  PrintDebugText("Hiya!!!", 10, 10, 30);
+
   DrawWorldToFullscreenQuad(world, RG, SG, Camera);
 
   AssertNoGlErrors;
@@ -286,8 +291,13 @@ main( void )
 
   double lastTime = glfwGetTime();
 
+
+  initText2D("Holstein.DDS");
+
   do
   {
+	  AssertNoGlErrors;
+
 #if DEBUG_DRAW_AXIES
 	  DEBUG_DrawLine(&world, V3(0,0,0), V3(10000, 0, 0), RED, 0.5f );
 	  DEBUG_DrawLine(&world, V3(0,0,0), V3(0, 10000, 0), GREEN, 0.5f );

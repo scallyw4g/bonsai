@@ -4,13 +4,12 @@
 #include <iostream>
 #include <cstdarg>
 
-#include <signal.h>
-
 using namespace std;
 
 #if(MSVC)
 #define Assert(condition) if (!(condition)) __debugbreak();
 #else
+#include <signal.h>
 #define Assert(condition) if (!(condition)) raise(SIGTRAP);
 // #define Assert(condition) if (!(condition)) __builtin_trap();
 #endif
