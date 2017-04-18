@@ -19,7 +19,7 @@ Features:
 -------------------------------------------------------------------------------
 ## Renderer
 
-[ ] AO
+[ ] SSAO
 
 [ ] FIXME: BoundaryVoxel buffer can contain duplicates on the corners and edges
 

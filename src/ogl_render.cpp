@@ -16,8 +16,6 @@
 
 #include <colors.h>
 
-using namespace std;
-
 #define BufferLocalFace \
   BufferFace( \
       world, \
@@ -92,6 +90,10 @@ DrawWorldToFullscreenQuad(World *world, RenderGroup *RG, ShadowRenderGroup *SG, 
   glm::mat4 depthBiasMVP = biasMatrix * GetDepthMVP(world, Camera);
   glUniformMatrix4fv(RG->DepthBiasMVPID, 1, GL_FALSE, &depthBiasMVP[0][0]);
 
+  glm::mat4 VP =  RG->Basis.ViewMatrix;
+
+  glUniformMatrix4fv(RG->ViewMatrixUniform, 1, GL_FALSE, &VP[0][0]);
+
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, RG->ColorTexture);
   glUniform1i(RG->ColorTextureUniform, 0);
@@ -103,10 +105,6 @@ DrawWorldToFullscreenQuad(World *world, RenderGroup *RG, ShadowRenderGroup *SG, 
   glActiveTexture(GL_TEXTURE2);
   glBindTexture(GL_TEXTURE_2D, RG->PositionTexture);
   glUniform1i(RG->PositionTextureUniform, 2);
-
-  glActiveTexture(GL_TEXTURE3);
-  glBindTexture(GL_TEXTURE_2D, SG->DepthTexture);
-  glUniform1i(RG->ShadowMapTextureUniform, 3);
 
 #if DEBUG_DRAW_SHADOW_MAP_TEXTURE
   glUseProgram(RG->SimpleTextureShaderID);
@@ -266,8 +264,11 @@ BufferFace (
     world->VertexData.filled -= sizeofVertPositions;
     world->NormalData.filled -= sizeofNormals;
     world->ColorData.filled  -= sizeofNormals;
+
+    // TODO(Jesse): Instead of Asserting, do this
+    /* FlushRenderBuffers( world, RG, SG, Camera); */
     // Out of memory, panic!
-    /* Assert(!"Out of memory"); */
+    Assert(!"Out of memory");
     return;
   }
 

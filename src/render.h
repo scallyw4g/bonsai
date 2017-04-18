@@ -63,6 +63,7 @@ struct RenderGroup
 
   GLuint ShadowMapTextureUniform;
   GLuint DepthBiasMVPID;
+  GLuint ViewMatrixUniform;
   //
 
   GLuint SimpleTextureShaderID;
@@ -215,6 +216,7 @@ InitializeRenderGroup( RenderGroup *RG )
   RG->PositionTextureUniform  = glGetUniformLocation(RG->LightingShader, "gPosition");
   RG->DepthTextureUniform     = glGetUniformLocation(RG->LightingShader, "gDepth");
   RG->GlobalLightDirectionID  = glGetUniformLocation(RG->LightingShader, "GlobalLightDirection");
+  RG->ViewMatrixUniform       = glGetUniformLocation(RG->LightingShader, "ViewMatrix");
 
 
   RG->SimpleTextureShaderID = LoadShaders( "Passthrough.vertexshader",
