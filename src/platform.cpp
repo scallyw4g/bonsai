@@ -23,12 +23,11 @@ ThreadMain(void *Input)
 
     if (OriginalNext != Queue->EntryCount)
     {
-      unsigned int EntryIndex = AtomicCompareExchange( &Queue->NextEntry,
-                                                       (OriginalNext + 1) % WORK_QUEUE_SIZE,
-                                                       OriginalNext);
-      if ( EntryIndex == OriginalNext )
+      if ( AtomicCompareExchange(&Queue->NextEntry,
+                                 (OriginalNext + 1) % WORK_QUEUE_SIZE,
+                                 OriginalNext))
       {
-        work_queue_entry Entry = Queue->Entries[EntryIndex];
+        work_queue_entry Entry = Queue->Entries[OriginalNext];
         Entry.Callback(&Entry);
       }
 

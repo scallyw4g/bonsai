@@ -6,10 +6,10 @@
 #include <unix_platform.h>
 #include <platform.h>
 
-inline unsigned int
+inline bool
 AtomicCompareExchange( volatile unsigned int *Source, unsigned int Exchange, unsigned int Comparator )
 {
-  unsigned int Result = __sync_val_compare_and_swap ( Source, Comparator, Exchange);
+  bool Result = __sync_bool_compare_and_swap ( Source, Comparator, Exchange);
   return Result;
 }
 
