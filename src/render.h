@@ -299,18 +299,11 @@ GetProjectionMatrix(Camera_Object *Camera, int WindowWidth, int WindowHeight)
   return Projection;
 }
 
-inline glm::vec3
-GetGLRenderP(World *world, canonical_position P, Camera_Object *Camera)
-{
-  glm::vec3 CameraOffset = GLV3(Camera->Target.Offset + (Camera->Target.WorldP * world->ChunkDim));
-  glm::vec3 Result = GLV3(P.Offset + (P.WorldP * world->ChunkDim)) - CameraOffset;
-  return Result;
-}
-
 inline v3
 GetRenderP( World *world, canonical_position P, Camera_Object *Camera)
 {
-  v3 Result = GLV3(GetGLRenderP( world, P, Camera));
+  v3 CameraOffset = Camera->Target.Offset + (Camera->Target.WorldP * world->ChunkDim);
+  v3 Result = P.Offset + (P.WorldP * world->ChunkDim) - CameraOffset;
   return Result;
 }
 
@@ -338,8 +331,8 @@ GetViewMatrix(World *world, Camera_Object *Camera)
   glm::vec3 CameraUp = glm::normalize( glm::cross( GLV3(Camera->Front), CameraRight) );
 
   Result = glm::lookAt(
-    GetGLRenderP(world, Camera->P, Camera),
-    GetGLRenderP(world, Camera->Target, Camera ),
+    GLV3(GetRenderP(world, Camera->P, Camera)),
+    GLV3(GetRenderP(world, Camera->Target, Camera )),
     CameraUp
   );
 

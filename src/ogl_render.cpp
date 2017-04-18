@@ -58,8 +58,8 @@ GetDepthMVP(World *world, Camera_Object *Camera)
   // Compute the MVP matrix from the light's point of view
   glm::mat4 depthProjectionMatrix = glm::ortho<float>(-Proj_XY,Proj_XY, -Proj_XY,Proj_XY, -Proj_Z,Proj_Z);
 
-  glm::vec3 P = GetGLRenderP(world, Camera->Target+GLV3(GlobalLightDirection), Camera);
-  glm::vec3 Target = GetGLRenderP(world, Camera->Target, Camera);
+  glm::vec3 P = GLV3(GetRenderP(world, Camera->Target+GLV3(GlobalLightDirection), Camera));
+  glm::vec3 Target = GLV3(GetRenderP(world, Camera->Target, Camera));
 
   glm::vec3 Front = glm::normalize(Target-P);
   glm::vec3 Right = glm::cross( Front, glm::vec3(0,1,0) );
@@ -1057,7 +1057,7 @@ BufferChunkMesh(
     GetColorData(GetVoxelColor(V), &FaceColors[0]);;
 
     glm::vec3 RenderP =
-      GetGLRenderP(world, Canonical_Position(world, Offset+GetVoxelP(V), WorldP), Camera);
+      GLV3(GetRenderP(world, Canonical_Position(world, Offset+GetVoxelP(V), WorldP), Camera));
 
     if ( IsSet( V.flags, Voxel_RightFace ) )
     {
@@ -1199,7 +1199,7 @@ DrawEntity(
   )
 {
   // Debug light code
-  /* glm::vec3 LightP = GetGLRenderP(world, entity->P + entity->Model.Dim/2); */
+  /* glm::vec3 LightP = GLV3(GetRenderP(world, entity->P + entity->Model.Dim/2)); */
   /* glUniform3fv(RG->LightPID, 1, &LightP[0]); */
   //
 
