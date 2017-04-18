@@ -11,8 +11,25 @@ tags
 external/CMakeFiles
 CMakeFiles/
 
+
 Makefile
 CMakeCache.txt
 build/Bonsai
 cmake_install.cmake
 src/BonsaiConfig.h
+
+
+# Win32 build files
+build/ALL_BUILD.vcxproj
+build/ALL_BUILD.vcxproj.filters
+build/Debug/
+build/INSTALL.vcxproj
+build/INSTALL.vcxproj.filters
+build/Release/
+build/Win32/
+build/ZERO_CHECK.vcxproj
+build/ZERO_CHECK.vcxproj.filters
+build/external/
+
+# Cygwin build files
+libBonsai.dll.a
