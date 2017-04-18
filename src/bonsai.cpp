@@ -692,11 +692,11 @@ UpdateDebugCamera( World *world, v3 TargetDelta, Camera_Object *Camera)
   Camera->P = Canonicalize(world, Camera->P);
   Camera->Target = Canonicalize(world, Camera->Target);
 
-  v3 TargetToCamera = Normalize(GetRenderP(world, Camera->P) - GetRenderP(world, Camera->Target));
+  v3 TargetToCamera = Normalize(GetRenderP(world, Camera->P, Camera) - GetRenderP(world, Camera->Target, Camera));
   Camera->P.Offset = Camera->Target.Offset + (TargetToCamera * FocalLength);
   Camera->P.WorldP = Camera->Target.WorldP;
 
-  Camera->Front = Normalize( GetRenderP(world, Camera->Target) - GetRenderP(world, Camera->P) );
+  Camera->Front = Normalize( GetRenderP(world, Camera->Target, Camera) - GetRenderP(world, Camera->P, Camera) );
 
   return;
 }
@@ -713,7 +713,7 @@ UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera)
 
 
 
-  v3 TargetDelta = GetRenderP(world, NewTarget) - GetRenderP(world, Camera->Target);
+  v3 TargetDelta = GetRenderP(world, NewTarget, Camera) - GetRenderP(world, Camera->Target, Camera);
   
   float FocalLength = CAMERA_FOCAL_LENGTH;
   float mouseSpeed = 0.20f;
@@ -737,11 +737,11 @@ UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera)
   Camera->P = Canonicalize(world, Camera->P);
   Camera->Target = Canonicalize(world, Camera->Target);
 
-  v3 TargetToCamera = Normalize(GetRenderP(world, Camera->P) - GetRenderP(world, Camera->Target));
+  v3 TargetToCamera = Normalize(GetRenderP(world, Camera->P, Camera) - GetRenderP(world, Camera->Target, Camera));
   Camera->P.Offset = Camera->Target.Offset + (TargetToCamera * FocalLength);
   Camera->P.WorldP = Camera->Target.WorldP;
 
-  Camera->Front = Normalize( GetRenderP(world, Camera->Target) - GetRenderP(world, Camera->P) );
+  Camera->Front = Normalize( GetRenderP(world, Camera->Target, Camera) - GetRenderP(world, Camera->P, Camera) );
   Camera->Up = Normalize(Cross(Camera->Front, Camera->Right));
 
   // Frustum computation
@@ -773,7 +773,7 @@ UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera)
   MinMin = Rotate(MinMin, FinalRotation);
   MinMax = Rotate(MinMax, FinalRotation);
 
-  v3 CameraRenderP = GetRenderP(world, Camera->P);
+  v3 CameraRenderP = GetRenderP(world, Camera->P, Camera);
 
   plane Top(CameraRenderP,   Normalize(Cross(MaxMax, MaxMin)));
   plane Bot(CameraRenderP,   Normalize(Cross(MinMin, MinMax)));

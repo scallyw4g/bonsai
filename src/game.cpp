@@ -74,7 +74,6 @@ GAME_UPDATE_AND_RENDER
 
   F11Depressed = glfwGetKey(window, GLFW_KEY_F11) == GLFW_PRESS ;
 
-  printf("%d %d\n", F11Depressed, Toggled);
   if ( !Toggled && F11Depressed)
   {
     Toggled = true;
@@ -323,14 +322,14 @@ main( void )
 
 	if (UseDebugCamera)
 	{
-		AABB CameraLocation(GetRenderP(&world, Camera.P) - 2, GetRenderP(&world, Camera.P) + 2);
+		AABB CameraLocation(GetRenderP(&world, Camera.P, &Camera) - 2, GetRenderP(&world, Camera.P, &Camera) + 2);
 		DEBUG_DrawAABB(&world, CameraLocation, Quaternion(1,0,0,0), PINK, 0.5f);
 	}
 
     GAME_UPDATE_AND_RENDER( &world, &Plat, &Player, &Camera, dt, &RG, &SG);
 
-    float FPS = 60.0f;
-    WaitForFrameTime(lastTime, FPS);
+    /* float FPS = 60.0f; */
+    /* WaitForFrameTime(lastTime, FPS); */
 
     tris=0;
 

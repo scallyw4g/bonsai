@@ -58,8 +58,8 @@ GetDepthMVP(World *world, Camera_Object *Camera)
   // Compute the MVP matrix from the light's point of view
   glm::mat4 depthProjectionMatrix = glm::ortho<float>(-Proj_XY,Proj_XY, -Proj_XY,Proj_XY, -Proj_Z,Proj_Z);
 
-  glm::vec3 P = GetGLRenderP(world, Camera->Target+GLV3(GlobalLightDirection) );
-  glm::vec3 Target = GetGLRenderP(world, Camera->Target );
+  glm::vec3 P = GetGLRenderP(world, Camera->Target+GLV3(GlobalLightDirection), Camera);
+  glm::vec3 Target = GetGLRenderP(world, Camera->Target, Camera);
 
   glm::vec3 Front = glm::normalize(Target-P);
   glm::vec3 Right = glm::cross( Front, glm::vec3(0,1,0) );
@@ -731,10 +731,10 @@ GetModelSpaceP(chunk_data *chunk, v3 P)
 }
 
 void
-DEBUG_DrawChunkAABB( World *world, world_position WorldP, Quaternion Rotation, int ColorIndex )
+DEBUG_DrawChunkAABB( World *world, world_position WorldP, Camera_Object *Camera, Quaternion Rotation, int ColorIndex )
 {
-  v3 MinP = GetRenderP(world, Canonical_Position(world, V3(0,0,0), WorldP));
-  v3 MaxP = GetRenderP(world, Canonical_Position(world, CHUNK_DIMENSION, WorldP));
+  v3 MinP = GetRenderP(world, Canonical_Position(world, V3(0,0,0), WorldP), Camera);
+  v3 MaxP = GetRenderP(world, Canonical_Position(world, CHUNK_DIMENSION, WorldP), Camera);
 
   DEBUG_DrawAABB(world, MinP, MaxP , Rotation, ColorIndex );
 
@@ -742,10 +742,10 @@ DEBUG_DrawChunkAABB( World *world, world_position WorldP, Quaternion Rotation, i
 }
 
 void
-DEBUG_DrawChunkAABB( World *world, world_chunk *chunk, Quaternion Rotation, int ColorIndex )
+DEBUG_DrawChunkAABB( World *world, world_chunk *chunk, Camera_Object *Camera, Quaternion Rotation, int ColorIndex )
 {
-  v3 MinP = GetRenderP(world, Canonical_Position(world, V3(0,0,0), chunk->WorldP));
-  v3 MaxP = GetRenderP(world, Canonical_Position(world, V3(chunk->Data->Dim), chunk->WorldP));
+  v3 MinP = GetRenderP(world, Canonical_Position(world, V3(0,0,0), chunk->WorldP), Camera);
+  v3 MaxP = GetRenderP(world, Canonical_Position(world, V3(chunk->Data->Dim), chunk->WorldP), Camera);
 
   DEBUG_DrawAABB(world, MinP, MaxP , Rotation, ColorIndex );
 
@@ -811,7 +811,7 @@ IsInFrustum(World *world, Camera_Object *Camera, canonical_position P)
 {
   bool Result = true;
 
-  v3 TestP = GetRenderP(world, P);
+  v3 TestP = GetRenderP(world, P, Camera);
 
   Result &= (DistanceToPlane(&Camera->Frust.Top, TestP) > 0);
   Result &= (DistanceToPlane(&Camera->Frust.Bot, TestP) > 0);
@@ -1057,7 +1057,7 @@ BufferChunkMesh(
     GetColorData(GetVoxelColor(V), &FaceColors[0]);;
 
     glm::vec3 RenderP =
-      GetGLRenderP(world, Canonical_Position(world, Offset+GetVoxelP(V), WorldP));
+      GetGLRenderP(world, Canonical_Position(world, Offset+GetVoxelP(V), WorldP), Camera);
 
     if ( IsSet( V.flags, Voxel_RightFace ) )
     {

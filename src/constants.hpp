@@ -20,14 +20,14 @@
 #define VOXEL_DIAMETER (1.0f)
 #define VOXEL_RADIUS (VOXEL_DIAMETER/2.0f)
 
-#define CD_X 8
-#define CD_Y 8
-#define CD_Z 8
+#define CD_X 16
+#define CD_Y 16
+#define CD_Z 16
 
 // Visible Region XYZ - Must be > (3,3,3)
-#define VR_X 8
-#define VR_Y 8
-#define VR_Z 8
+#define VR_X 16
+#define VR_Y 16
+#define VR_Z 16
 
 #define VOLUME_VISIBLE_REGION (VR_X*VR_X*VR_X)
 
@@ -60,18 +60,18 @@
 #define DEBUG_HIGHLIGHT_VOID_CHUNKS   0
 #define DEBUG_DRAW_AXIES              1
 
-#define DEBUG_FONT_SIZE               8
+#define DEBUG_FONT_SIZE               16
 
 #define DEBUG_FRAMES_TO_RUN            -1
 
 //
 // Screen Resolution
 
-#define SCR_WIDTH 800
-#define SCR_HEIGHT 600
+/* #define SCR_WIDTH 800 */
+/* #define SCR_HEIGHT 600 */
 
-/* #define SCR_WIDTH 1920 */
-/* #define SCR_HEIGHT 1080 */
+#define SCR_WIDTH 1920
+#define SCR_HEIGHT 1080
 
 /* #define SCR_WIDTH 3840 */
 /* #define SCR_HEIGHT 2160 */
