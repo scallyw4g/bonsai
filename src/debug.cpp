@@ -27,49 +27,59 @@ initText2D(const char *TexturePath)
 }
 
 void
-PrintDebugText( char *Text, int x, int y, int size)
+PrintDebugText( const char *Text, int x, int y, int size)
 {
 	unsigned int length = strlen(Text);
+  unsigned int BufferIndex = 0;
 
 	// Fill buffers
-	std::vector<glm::vec2> vertices;
-	std::vector<glm::vec2> UVs;
-	for ( unsigned int i=0 ; i<length ; i++ ){
-		
-		glm::vec2 vertex_up_left    = glm::vec2( x+i*size     , y+size );
-		glm::vec2 vertex_up_right   = glm::vec2( x+i*size+size, y+size );
-		glm::vec2 vertex_down_right = glm::vec2( x+i*size+size, y      );
-		glm::vec2 vertex_down_left  = glm::vec2( x+i*size     , y      );
+	v2 vertices[1024];
+	v2 UVs[1024];
 
-		vertices.push_back(vertex_up_left   );
-		vertices.push_back(vertex_down_left );
-		vertices.push_back(vertex_up_right  );
-
-		vertices.push_back(vertex_down_right);
-		vertices.push_back(vertex_up_right);
-		vertices.push_back(vertex_down_left);
+	for ( unsigned int i=0 ; i<length ; i++ )
+  {
+		v2 vertex_up_left    = V2( x+i*size     , y+size );
+		v2 vertex_up_right   = V2( x+i*size+size, y+size );
+		v2 vertex_down_right = V2( x+i*size+size, y      );
+		v2 vertex_down_left  = V2( x+i*size     , y      );
 
 		char character = Text[i];
 		float uv_x = (character%16)/16.0f;
 		float uv_y = (character/16)/16.0f;
 
-		glm::vec2 uv_up_left    = glm::vec2( uv_x           , uv_y );
-		glm::vec2 uv_up_right   = glm::vec2( uv_x+1.0f/16.0f, uv_y );
-		glm::vec2 uv_down_right = glm::vec2( uv_x+1.0f/16.0f, (uv_y + 1.0f/16.0f) );
-		glm::vec2 uv_down_left  = glm::vec2( uv_x           , (uv_y + 1.0f/16.0f) );
-		UVs.push_back(uv_up_left   );
-		UVs.push_back(uv_down_left );
-		UVs.push_back(uv_up_right  );
+		v2 uv_up_left    = V2( uv_x           , uv_y );
+		v2 uv_up_right   = V2( uv_x+1.0f/16.0f, uv_y );
+		v2 uv_down_right = V2( uv_x+1.0f/16.0f, (uv_y + 1.0f/16.0f) );
+		v2 uv_down_left  = V2( uv_x           , (uv_y + 1.0f/16.0f) );
 
-		UVs.push_back(uv_down_right);
-		UVs.push_back(uv_up_right);
-		UVs.push_back(uv_down_left);
+
+		vertices[BufferIndex] = vertex_up_left;
+		UVs[BufferIndex++] = uv_up_left;
+
+		vertices[BufferIndex] = vertex_down_left;
+		UVs[BufferIndex++] = uv_down_left;
+
+		vertices[BufferIndex] = vertex_up_right;
+		UVs[BufferIndex++] = uv_up_right;
+
+
+		vertices[BufferIndex] = vertex_down_right;
+		UVs[BufferIndex++] = uv_down_right;
+
+		vertices[BufferIndex] = vertex_up_right;
+		UVs[BufferIndex++] = uv_up_right;
+
+		vertices[BufferIndex] = vertex_down_left;
+		UVs[BufferIndex++] = uv_down_left;
+
+    continue;
 	}
+
 	glBindBuffer(GL_ARRAY_BUFFER, Text2DVertexBufferID);
-	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec2), &vertices[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, (BufferIndex+1) * sizeof(v2), &vertices[0], GL_STATIC_DRAW);
 	
 	glBindBuffer(GL_ARRAY_BUFFER, Text2DUVBufferID);
-	glBufferData(GL_ARRAY_BUFFER, UVs.size() * sizeof(glm::vec2), &UVs[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, (BufferIndex+1) * sizeof(v2), &UVs[0], GL_STATIC_DRAW);
 
 	// Bind shader
 	glUseProgram(Text2DShaderID);
@@ -94,7 +104,7 @@ PrintDebugText( char *Text, int x, int y, int size)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// Draw call
-	glDrawArrays(GL_TRIANGLES, 0, vertices.size() );
+	glDrawArrays(GL_TRIANGLES, 0, BufferIndex );
 
 	glDisable(GL_BLEND);
 

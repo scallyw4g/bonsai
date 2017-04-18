@@ -182,7 +182,9 @@ GAME_UPDATE_AND_RENDER
 
   FlushRenderBuffers(world, RG, SG, Camera);
 
-  PrintDebugText("Hiya!!!", 10, 10, 30);
+  char buffer[256] = {};
+  sprintf(buffer, "%f ms last frame", dt);
+  PrintDebugText(buffer, 0, 0, DEBUG_FONT_SIZE);
 
   DrawWorldToFullscreenQuad(world, RG, SG, Camera);
 
