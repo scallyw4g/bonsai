@@ -64,6 +64,8 @@ struct RenderGroup
   GLuint ShadowMapTextureUniform;
   GLuint DepthBiasMVPID;
   GLuint ViewMatrixUniform;
+
+  GLuint CameraPosUniform;
   //
 
   GLuint SimpleTextureShaderID;
@@ -217,6 +219,7 @@ InitializeRenderGroup( RenderGroup *RG )
   RG->DepthTextureUniform     = glGetUniformLocation(RG->LightingShader, "gDepth");
   RG->GlobalLightDirectionID  = glGetUniformLocation(RG->LightingShader, "GlobalLightDirection");
   RG->ViewMatrixUniform       = glGetUniformLocation(RG->LightingShader, "ViewMatrix");
+  RG->CameraPosUniform        = glGetUniformLocation(RG->LightingShader, "CameraPosUniform");
 
 
   RG->SimpleTextureShaderID = LoadShaders( "Passthrough.vertexshader",
@@ -294,7 +297,7 @@ GetProjectionMatrix(Camera_Object *Camera, int WindowWidth, int WindowHeight)
 {
   glm::mat4 Projection = glm::perspective(
       glm::radians(Camera->Frust.FOV),
-      (float)WindowWidth/(float)WindowHeight, // display ratio
+      (float)WindowWidth/(float)WindowHeight,
       Camera->Frust.nearClip,
       Camera->Frust.farClip);
 

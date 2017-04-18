@@ -25,9 +25,9 @@
 #define CD_Z 16
 
 // Visible Region XYZ - Must be > (3,3,3)
-#define VR_X 16
-#define VR_Y 16
-#define VR_Z 16
+#define VR_X 8
+#define VR_Y 8
+#define VR_Z 8
 
 #define VOLUME_VISIBLE_REGION (VR_X*VR_X*VR_X)
 
@@ -39,7 +39,7 @@
 
 #define VISIBLE_REGION Chunk_Dimension(VR_X,VR_Y,VR_Z)
 
-#define NOISE_FREQUENCY 400
+#define NOISE_FREQUENCY 200
 
 #define WORLD_HASH_SIZE VOLUME_VISIBLE_REGION
 #define FREELIST_SIZE VOLUME_VISIBLE_REGION
@@ -58,7 +58,7 @@
 #define DEBUG_LOD_RENDER              0
 #define DEBUG_DRAW_SHADOW_MAP_TEXTURE 0
 #define DEBUG_HIGHLIGHT_VOID_CHUNKS   0
-#define DEBUG_DRAW_AXIES              1
+#define DEBUG_DRAW_AXIES              0
 
 #define DEBUG_FONT_SIZE               16
 
@@ -81,7 +81,7 @@
 #define SHADOW_MAP_RESOLUTION 2048
 #define DEBUG_TEXTURE_SIZE    512
 
-GLOBAL_VARIABLE float CAMERA_FOCAL_LENGTH = 150.0f;
+GLOBAL_VARIABLE float CAMERA_FOCAL_LENGTH = 15.0f;
 GLOBAL_VARIABLE float DEBUG_CAMERA_FOCAL_LENGTH = 10.0f;
 #define DEBUG_CAMERA_SCROLL_SPEED  20.0f
 

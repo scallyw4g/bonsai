@@ -90,9 +90,12 @@ DrawWorldToFullscreenQuad(World *world, RenderGroup *RG, ShadowRenderGroup *SG, 
   glm::mat4 depthBiasMVP = biasMatrix * GetDepthMVP(world, Camera);
   glUniformMatrix4fv(RG->DepthBiasMVPID, 1, GL_FALSE, &depthBiasMVP[0][0]);
 
-  glm::mat4 VP =  RG->Basis.ViewMatrix;
+  glm::mat4 VP = RG->Basis.ViewMatrix;
 
   glUniformMatrix4fv(RG->ViewMatrixUniform, 1, GL_FALSE, &VP[0][0]);
+
+  v3 CameraRenderP = GetRenderP(world, Camera->P, Camera);
+  glUniform3fv(RG->CameraPosUniform, 1, &CameraRenderP.E[0]);
 
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, RG->ColorTexture);
@@ -268,7 +271,7 @@ BufferFace (
     // TODO(Jesse): Instead of Asserting, do this
     /* FlushRenderBuffers( world, RG, SG, Camera); */
     // Out of memory, panic!
-    Assert(!"Out of memory");
+    /* Assert(!"Out of memory"); */
     return;
   }
 
