@@ -4,8 +4,6 @@
 #include <sstream>
 #include <string>
 
-#include <GL/glew.h>
-
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -167,7 +165,7 @@ RenderWorld(World *world, RenderGroup *RG)
   glUseProgram(RG->ShaderID);
   glViewport(0,0,SCR_WIDTH,SCR_HEIGHT);
 
-  glm::mat4 mvp = RG->Basis.ProjectionMatrix * RG->Basis.ViewMatrix * mat4(1);
+  glm::mat4 mvp = RG->Basis.ProjectionMatrix * RG->Basis.ViewMatrix * glm::mat4(1);
 
   glUniformMatrix4fv(RG->MVPID,         1, GL_FALSE, &mvp[0][0]);
   glUniformMatrix4fv(RG->ModelMatrixID, 1, GL_FALSE, &RG->Basis.ModelMatrix[0][0]);
@@ -946,14 +944,14 @@ BuildInteriorBoundaryVoxels(World *world, chunk_data *chunk, world_position Worl
         if ( NotFilled( chunk, VoxelP ) )
           continue;
 
-    voxel_position rightVoxel = VoxelP + Voxel_Position(1.0f, 0, 0);
-    voxel_position leftVoxel = VoxelP - Voxel_Position(1.0f, 0, 0);
+    voxel_position rightVoxel = VoxelP + Voxel_Position(1, 0, 0);
+    voxel_position leftVoxel = VoxelP - Voxel_Position(1, 0, 0);
 
-    voxel_position topVoxel = VoxelP + Voxel_Position(0, 1.0f, 0);
-    voxel_position botVoxel = VoxelP - Voxel_Position(0, 1.0f, 0);
+    voxel_position topVoxel = VoxelP + Voxel_Position(0, 1, 0);
+    voxel_position botVoxel = VoxelP - Voxel_Position(0, 1, 0);
 
-    voxel_position frontVoxel = VoxelP + Voxel_Position(0, 0, 1.0f);
-    voxel_position backVoxel = VoxelP - Voxel_Position(0, 0, 1.0f);
+    voxel_position frontVoxel = VoxelP + Voxel_Position(0, 0, 1);
+    voxel_position backVoxel = VoxelP - Voxel_Position(0, 0, 1);
 
         Voxel voxel = chunk->Voxels[GetIndex(Voxel_Position(x,y,z), chunk)];
 

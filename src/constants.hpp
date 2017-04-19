@@ -1,8 +1,8 @@
 #ifndef GAME_CONSTANTS
 #define GAME_CONSTANTS
 
-#define True 0
-#define False 1
+#define True 1
+#define False 0
 
 #define DEBUG_GLOBAL static
 #define GLOBAL_VARIABLE static
@@ -108,8 +108,6 @@ DEBUG_GLOBAL float GlobalLightTheta = 0;
 
 DEBUG_GLOBAL AABB LastFreeSlice(V3(0,0,0), V3(0,0,0));
 DEBUG_GLOBAL AABB LastQueuedSlice(V3(0,0,0), V3(0,0,0));
-
-GLOBAL_VARIABLE PerlinNoise GlobalNoise;
 
 DEBUG_GLOBAL bool UseDebugCamera = true;
 

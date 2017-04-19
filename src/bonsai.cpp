@@ -1,14 +1,8 @@
 #include <time.h>
 
-#include <GL/glew.h>
-#include <GL/glew.c>
-
 #if LINUX
 #include "/usr/include/valgrind/callgrind.h"
 #endif
-
-#include <GLFW/glfw3.h>
-GLFWwindow* window;
 
 #include <constants.hpp>
 
@@ -22,6 +16,12 @@ GLFWwindow* window;
 
 #include <math.h>
 
+// FIXME(Jesse): Global-variable this up so threads can cold-call for it
+static World world;
+
+GLOBAL_VARIABLE PerlinNoise GlobalNoise;
+
+#if 0
 void
 OnMouseScroll(GLFWwindow* window, double xoffset, double yoffset)
 {
@@ -36,72 +36,7 @@ OnMouseScroll(GLFWwindow* window, double xoffset, double yoffset)
 
   return;
 }
-
-void
-initWindow( int WindowWidth, int WindowHeight )
-{
-  // Initialise GLFW
-  if( !glfwInit() )
-  {
-    fprintf( stderr, "Failed to initialize GLFW\n" );
-    getchar();
-    return;
-  }
-
-  glfwWindowHint(GLFW_RESIZABLE,GL_FALSE);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-  glfwWindowHint(GLFW_SAMPLES, 4);
-
-  // Open a window and create its OpenGL context
-  window = glfwCreateWindow( WindowWidth, WindowHeight, "Playground", NULL, NULL);
-
-  glfwSetScrollCallback(window, OnMouseScroll);
-
-  if (window == NULL)
-  {
-    fprintf( stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n" );
-    getchar();
-    glfwTerminate();
-    return;
-  }
-
-  glfwMakeContextCurrent(window);
-
-  glewExperimental = true; // Needed for core profile
-  if ( glewInit() != GLEW_OK )
-  {
-    fprintf(stderr, "Failed to initialize GLEW\n");
-    getchar();
-    glfwTerminate();
-    return;
-  }
-
-  int error = glGetError();
-  if ( error == GL_INVALID_ENUM  || error == GL_NO_ERROR )
-  {
-    // Everythings fine, this is a design flaw:
-    // http://stackoverflow.com/questions/20034615/why-does-glewinit-result-in-gl-invalid-enum-after-making-some-calls-to-glfwwin
-  }
-  else
-  {
-    Assert(false); // We hit a real error
-  }
-
-  glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-
-  glClearColor(0.25f, 0.25f, 0.25f, 0.25f);
-
-  // Enable depth test
-  glEnable(GL_DEPTH_TEST);
-
-  // Accept fragment if it closer to the camera than the former one
-  glDepthFunc(GL_LESS);
-
-  return;
-}
+#endif
 
 void
 InitializeVoxels( World *world, world_chunk *WorldChunk )
@@ -151,7 +86,7 @@ InitializeVoxels( World *world, world_chunk *WorldChunk )
         double InY = (double)NoiseInputs.y;
         double InZ = (double)NoiseInputs.z;
 
-        double noiseValue = GlobalNoise.noise(InX, InY, InZ);
+        float noiseValue = (float)GlobalNoise.noise(InX, InY, InZ);
 
         int Noise01 = Floori(noiseValue + 0.5);
 
@@ -190,7 +125,10 @@ InitializeVoxels(void *Input)
 	work_queue_entry *Params = (work_queue_entry *)Input;
 	world_chunk *Chunk = (world_chunk *)Params->Input;
 
-	return InitializeVoxels(Params->world, Chunk);
+  // FIXME(Jesse): For the sake of all things good and green don't make the
+  // world a global variable!!!
+  InitializeVoxels(&world, Chunk);
+	return;
 }
 
 inline bool
@@ -247,11 +185,10 @@ QueueChunkForInit(World *world, platform *Plat, world_chunk *Chunk)
   work_queue_entry Entry;
   Entry.Callback = &InitializeVoxels;
   Entry.Input = (void*)Chunk;
-  Entry.world = world;
 
   Chunk->Data->flags = SetFlag(Chunk->Data->flags, Chunk_Queued);
 
-  PushWorkQueueEntry(&Plat->Queue, &Entry);
+  Plat->PushWorkQueueEntry(&Plat->Queue, &Entry);
 
   return;
 }
@@ -266,6 +203,7 @@ GetInputsFromController(Camera_Object *Camera)
 
   v3 UpdateDir = V3(0,0,0);
 
+#if 0
   // Move forward
   if (glfwGetKey( window, GLFW_KEY_KP_8 ) == GLFW_PRESS ||
       glfwGetKey( window, GLFW_KEY_W ) == GLFW_PRESS )
@@ -290,6 +228,8 @@ GetInputsFromController(Camera_Object *Camera)
   {
     UpdateDir -= right;
   }
+#endif
+  Assert(false);
 
   UpdateDir.y = 0;
 
@@ -664,16 +604,20 @@ UpdateDebugCamera( World *world, v3 TargetDelta, Camera_Object *Camera)
 {
   float FocalLength = DEBUG_CAMERA_FOCAL_LENGTH;
   float mouseSpeed = 0.20f;
+  double X, Y;
 
+#if 0
   if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
 	  TargetDelta -= WORLD_Y;
 
   if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
 	  TargetDelta += WORLD_Y;
 
-  double X, Y;
   glfwGetCursorPos(window, &X, &Y);
   glfwSetCursorPos(window, 1024/2, 768/2);
+#endif
+
+  Assert(false);
 
   float dX = mouseSpeed * float(1024/2 - X );
   float dY = mouseSpeed * float( 768/2 - Y );
@@ -719,8 +663,11 @@ UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera)
   float mouseSpeed = 0.20f;
 
   double X, Y;
+#if 0
   glfwGetCursorPos(window, &X, &Y);
   glfwSetCursorPos(window, 1024/2, 768/2);
+#endif
+  Assert(false);
 
   float dX = mouseSpeed * float(1024/2 - X );
   float dY = mouseSpeed * float( 768/2 - Y );

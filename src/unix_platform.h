@@ -2,6 +2,9 @@
 #define UNIX_PLATFORM_H
 
 #include <pthread.h>
+#include <signal.h>
+
+#define Assert(condition) if (!(condition)) raise(SIGTRAP);
 
 #define THREAD_MAIN_RETURN void*
 

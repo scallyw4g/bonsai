@@ -3,6 +3,101 @@
 
 #include <iostream>
 
+#include <bonsai_types.h>
+#include <constants.hpp>
+
+#if _WIN32
+#include <win32_platform.cpp>
+#else
+#include <unix_platform.cpp>
+#endif
+
+#include <platform.h>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+
+GLOBAL_VARIABLE u32 LastGameLibTime = 0;
+
+b32
+GameLibIsNew(const char *LibPath)
+{
+  b32 Result = False;
+  struct stat StatStruct;
+
+  if (stat(LibPath, &StatStruct) == 0)
+  {
+    if (StatStruct.st_mtime > LastGameLibTime)
+    {
+      Result = True;
+    }
+  }
+  else
+  {
+    printf("Error Stat-ing Game library :( \n");
+  }
+
+  return Result;
+}
+
+shared_lib
+CheckAndReloadGameLibrary()
+{
+  shared_lib BonsaiLib = 0;
+
+  if ( GameLibIsNew(GAME_LIB) )
+  {
+     BonsaiLib = LoadLibrary(GAME_LIB_PATH);
+  }
+
+  if (!BonsaiLib)
+  {
+    printf("Error Loading Game library :( \n");
+  }
+
+  return BonsaiLib;
+}
+
+int
+main(s32 NumArgs, char ** Args)
+{
+  printf("\n -- Initializing Bonsai \n");
+
+  char pwd[MAX_PATH];
+  GetCurrentDirectory(MAX_PATH, pwd);
+
+  HINSTANCE AppHandle = GetModuleHandle(0);
+
+  shared_lib GameLib = CheckAndReloadGameLibrary();
+
+  if (GameLib)
+  {
+    game_memory GameMemory = {};
+    FARPROC GameMain = 0;
+
+    u32 WindowHeight = 256;
+    u32 WindowWidth = 512;
+
+
+    GameMain = (FARPROC)GetProcAddress(GameLib, "GameMain");
+    if (!GameMain) { printf("Error retreiving GameMain from Game Lib :( \n"); return False; }
+
+    window Window = OpenAndInitializeWindow(WindowWidth, WindowHeight, AppHandle );
+    if (!Window) { printf("Error Initializing Window \n"); return False; }
+
+    ShowWindow(Window, SW_SHOW);
+    UpdateWindow(Window);
+
+
+    while ( GameMain() )
+    {
+      GameLib = CheckAndReloadGameLibrary();
+    }
+  }
+
+  return True;
+}
+
 THREAD_MAIN_RETURN
 ThreadMain(void *Input)
 {

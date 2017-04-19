@@ -7,10 +7,8 @@
 struct World;
 struct canonical_position;
 
-inline canonical_position
-Canonicalize( World *world, canonical_position CP );
-
-typedef float radians;
+/* inline canonical_position */
+/* Canonicalize( World *world, canonical_position CP ); */
 
 struct v2
 {
@@ -484,7 +482,7 @@ Canonical_Position(World *world, v3 Offset, world_position WorldP )
   Result.Offset = Offset;
   Result.WorldP = WorldP;
 
-  Result = Canonicalize(world, Result);
+  /* Result = Canonicalize(world, Result); */
 
   return Result;
 }
@@ -497,7 +495,7 @@ Canonical_Position(World *world, glm::vec3 Offset, world_position WorldP )
   Result.Offset = GLV3(Offset);
   Result.WorldP = WorldP;
 
-  Result = Canonicalize(world, Result);
+  /* Result = Canonicalize(world, Result); */
 
   return Result;
 }
@@ -509,7 +507,7 @@ Canonical_Position(World *world, voxel_position Offset, world_position WorldP )
   Result.Offset = V3(Offset);
   Result.WorldP = WorldP;
 
-  Result = Canonicalize(world, Result);
+  /* Result = Canonicalize(world, Result); */
 
   return Result;
 }
@@ -578,6 +576,12 @@ v2 V2(float x,float y)
   Result.y = y;
 
   return Result;
+}
+
+v2 V2(int x,int y)
+{
+	v2 Result = V2((float)x, (float)y);
+	return Result;
 }
 
 v4 V4(int w, int x, int y, int z)

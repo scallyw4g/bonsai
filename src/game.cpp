@@ -1,14 +1,14 @@
 #ifdef _WIN32
-#include <win32_platform.cpp>
+#include <win32_platform.h>
 #else
-#include <unix_platform.cpp>
+#include <unix_platform.h>
 #endif
 
+#include <platform.h>
 #include <bonsai.h>
 #include <render.h>
 #include <debug.h>
 
-#include <platform.cpp>
 #include <constants.hpp>
 #include <bonsai.cpp>
 #include <texture.cpp>
@@ -16,7 +16,7 @@
 
 #include <time.h>
 
-DEBUG_GLOBAL Camera_Object DebugCamera = {};
+DEBUG_GLOBAL    Camera_Object DebugCamera = {};
 
 void
 SeedWorldAndUnspawnPlayer( World *world, Entity *Player )
@@ -35,8 +35,10 @@ GetEntityDelta(World *world, Entity *Player, v3 Input, float dt)
 
   Player->Acceleration = Input * PLAYER_ACCEL_MULTIPLIER; // m/s2
 
+#if 0
   if (IsGrounded(world, Player) && (glfwGetKey( window, GLFW_KEY_SPACE ) == GLFW_PRESS))
       Player->Velocity.y += PLAYER_JUMP_STRENGTH; // Jump
+#endif
 
   Player->Acceleration += world->Gravity * dt; // Apply Gravity
   Player->Velocity = (Player->Velocity + (Player->Acceleration)) * drag; // m/s
@@ -46,13 +48,13 @@ GetEntityDelta(World *world, Entity *Player, v3 Input, float dt)
 }
 
 void
-WaitForFrameTime(float frameStart, float FPS) // Poor man vsync
+WaitForFrameTime(platform *Plat, real64 frameStart, float FPS) // Poor man vsync
 {
-  float frameTime = glfwGetTime() - frameStart;
+  real64 frameTime = Plat->GetHighPrecisionClock() - frameStart;
 
   while (frameTime < (1.0f/FPS))
   {
-    frameTime = glfwGetTime() - frameStart;
+    frameTime = Plat->GetHighPrecisionClock() - frameStart;
   }
 
   return;
@@ -71,7 +73,9 @@ GAME_UPDATE_AND_RENDER
     ShadowRenderGroup *SG
   )
 {
+  Camera_Object *CurrentCamera;
 
+#if 0
   if ( glfwGetKey(window, GLFW_KEY_ENTER ) == GLFW_PRESS )
     SeedWorldAndUnspawnPlayer(world, Player);
  
@@ -90,11 +94,10 @@ GAME_UPDATE_AND_RENDER
     Toggled = false;
   }
 
-  Camera_Object *CurrentCamera;
-
   if (UseDebugCamera)
     CurrentCamera = &DebugCamera;
   else
+#endif
     CurrentCamera = Camera;
 
   v3 Input = GetInputsFromController(CurrentCamera);
@@ -195,8 +198,7 @@ GAME_UPDATE_AND_RENDER
 
   AssertNoGlErrors;
 
-  glfwSwapBuffers(window);
-  glfwPollEvents();
+  /* SwapBuffers(); */
 
 
   /* Log("%d Triangles drawn\n", tris ); */
@@ -220,9 +222,13 @@ FillChunk(chunk_data *chunk)
   }
 }
 
-int
-main( void )
+extern "C" {
+
+EXPORT int
+GameMain( platform *Plat )
 {
+  printf("Starting Game \n");
+
   int WindowWidth, WindowHeight;
 
   srand(DEBUG_NOISE_SEED);
@@ -230,8 +236,6 @@ main( void )
   GlobalNoise = Noise;
   WindowWidth = SCR_WIDTH;
   WindowHeight = SCR_HEIGHT;
-
-  initWindow(WindowWidth, WindowHeight);
 
   ShadowRenderGroup SG = {};
   if (!InitializeShadowBuffer(&SG)) { Log("Error initializing Shadow Buffer\n"); return False; }
@@ -247,7 +251,6 @@ main( void )
   glGenVertexArrays(1, &VertexArrayID);
   glBindVertexArray(VertexArrayID);
 
-  World world;
   Entity Player;
 
   /* Player.Model = LoadVox("./chr_knight.vox"); */
@@ -267,10 +270,7 @@ main( void )
   Player.P.WorldP = World_Position(0,0,0);
   Player.Spawned = false;
 
-  platform Plat = {};
-  PlatformInit(&Plat);
-
-  AllocateWorld(&world, &Plat, Player.P.WorldP);
+  AllocateWorld(&world, Plat, Player.P.WorldP);
   SeedWorldAndUnspawnPlayer(&world, &Player);
 
   Camera_Object Camera = {};
@@ -299,7 +299,7 @@ main( void )
    *
    */
 
-  double lastTime = glfwGetTime();
+  double lastTime = Plat->GetHighPrecisionClock();
 
 
   initText2D("Holstein.DDS");
@@ -314,7 +314,7 @@ main( void )
 	  DEBUG_DrawLine(&world, V3(0,0,0), V3(0, 0, 10000), TEAL, 0.5f );
 #endif
 
-    double currentTime = glfwGetTime();
+    double currentTime = Plat->GetHighPrecisionClock();
     float dt = (float)(currentTime - lastTime);
     lastTime = currentTime;
 
@@ -332,33 +332,22 @@ main( void )
 		DEBUG_DrawAABB(&world, CameraLocation, Quaternion(1,0,0,0), PINK, 0.5f);
 	}
 
-    GAME_UPDATE_AND_RENDER( &world, &Plat, &Player, &Camera, dt, &RG, &SG);
+    GAME_UPDATE_AND_RENDER( &world, Plat, &Player, &Camera, dt, &RG, &SG);
 
     /* float FPS = 60.0f; */
     /* WaitForFrameTime(lastTime, FPS); */
 
     tris=0;
 
+    Assert(false);
   } // Check if the ESC key was pressed or the window was closed
-  while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
-         glfwWindowShouldClose(window) == 0                 &&
-         DEBUG_FRAMES_TO_RUN != numFrames );
+  while( DEBUG_FRAMES_TO_RUN != numFrames );
 
   /* CALLGRIND_DUMP_STATS; */
 
-  glDeleteBuffers(1, &RG.vertexbuffer);
-  glDeleteBuffers(1, &RG.colorbuffer);
-  glDeleteBuffers(1, &RG.normalbuffer);
-
-  glDeleteVertexArrays(1, &VertexArrayID);
-  glDeleteProgram(RG.ShaderID);
-
-  // Close OpenGL window and terminate GLFW
-  glfwTerminate();
-  /* glfwDestroyWindow(window); */
-
-  // TODO(Jesse): Manual memory management instead of leaking everything !!!!
+  Plat->Terminate();
 
   return 0;
+}
 }
 

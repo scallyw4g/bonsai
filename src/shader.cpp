@@ -6,23 +6,22 @@
 #include <algorithm>
 using namespace std;
 
-#include <GL/glew.h>
-
 #include <stdlib.h>
 #include <string.h>
 
 #include <shader.hpp>
 #include <debug.h>
 
-GLuint LoadShaders(const char * vertex_file_path,const char * fragment_file_path)
+u32
+LoadShaders(const char * VertShaderPath, const char * fragment_file_path)
 {
 	// Create the shaders
-	GLuint VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
-	GLuint FragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
+	u32 VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
+	u32 FragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
 
 	// Read the Vertex Shader code from the file
 	std::string VertexShaderCode;
-	std::ifstream VertexShaderStream(vertex_file_path, std::ios::in);
+	std::ifstream VertexShaderStream(VertShaderPath, std::ios::in);
 
 	if(VertexShaderStream.is_open()){
 		std::string Line = "";
@@ -30,7 +29,7 @@ GLuint LoadShaders(const char * vertex_file_path,const char * fragment_file_path
 			VertexShaderCode += "\n" + Line;
 		VertexShaderStream.close();
 	}else{
-		Log("Impossible to open ", vertex_file_path, " Are you in the right directory ? Don't forget to read the FAQ !");
+		Log("Impossible to open ", VertShaderPath, " Are you in the right directory ? Don't forget to read the FAQ !");
 		return 0;
 	}
 
@@ -44,12 +43,12 @@ GLuint LoadShaders(const char * vertex_file_path,const char * fragment_file_path
 		FragmentShaderStream.close();
 	}
 
-	GLint Result = GL_FALSE;
+	s32 Result = GL_FALSE;
 	int InfoLogLength;
 
 
 	// Compile Vertex Shader
-	Log("Compiling shader : %s", vertex_file_path);
+	Log("Compiling shader : %s", VertShaderPath);
 	char const * VertexSourcePointer = VertexShaderCode.c_str();
 	glShaderSource(VertexShaderID, 1, &VertexSourcePointer , NULL);
 	glCompileShader(VertexShaderID);
@@ -84,7 +83,7 @@ GLuint LoadShaders(const char * vertex_file_path,const char * fragment_file_path
 
 	// Link the program
 	Log("Linking program");
-	GLuint ProgramID = glCreateProgram();
+	u32 ProgramID = glCreateProgram();
 	glAttachShader(ProgramID, VertexShaderID);
 	glAttachShader(ProgramID, FragmentShaderID);
 	glLinkProgram(ProgramID);

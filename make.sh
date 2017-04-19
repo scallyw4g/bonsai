@@ -1,9 +1,8 @@
 #! /bin/bash
 
-make
+make 2>&1
 
 if [ $? -eq 0 ]; then
-  cd build/
-  gdb -ex run Bonsai >> /dev/tty
+  ./build/Bonsai.exe > /dev/tty
 fi
 

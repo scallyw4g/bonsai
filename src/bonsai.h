@@ -1,8 +1,6 @@
 #ifndef PLAYGROUNDH
 #define PLAYGROUNDH
 
-#include <GL/glew.h>
-
 #include <perlin.h>
 #include <stdio.h>
 #include <bonsai_types.h>
@@ -129,7 +127,7 @@ struct Camera_Object
 
 struct VertexBlock
 {
-  GLfloat *Data;
+  float *Data;
   int bytesAllocd;
   int filled;
 };

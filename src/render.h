@@ -12,9 +12,7 @@
   DumpGlErrorEnum(glErrorNo);         \
   Assert(glErrorNo == GL_NO_ERROR); }
 
-using namespace glm;
-
-DEBUG_GLOBAL GLfloat g_quad_vertex_buffer_data[] =
+DEBUG_GLOBAL float g_quad_vertex_buffer_data[] =
 {
   -1.0f, -1.0f, -1.0f,
    1.0f, -1.0f, -1.0f,
@@ -34,55 +32,54 @@ struct RenderBasis
 
 struct RenderGroup
 {
-  GLuint FBO;
-  GLuint ColorTexture;
-  GLuint DepthTexture;
-  GLuint NormalTexture;
-  GLuint PositionTexture;
+  u32 FBO;
+  u32 ColorTexture;
+  u32 DepthTexture;
+  u32 NormalTexture;
+  u32 PositionTexture;
 
-  GLuint colorbuffer;
-  GLuint vertexbuffer;
-  GLuint normalbuffer;
+  u32 colorbuffer;
+  u32 vertexbuffer;
+  u32 normalbuffer;
 
-  GLuint quad_vertexbuffer;
+  u32 quad_vertexbuffer;
 
-  GLuint ShaderID;
-  GLuint MVPID;
-  GLuint ModelMatrixID;
-  /* GLuint LightPID; */
+  u32 ShaderID;
+  u32 MVPID;
+  u32 ModelMatrixID;
+  /* u32 LightPID; */
 
 
-  GLuint GlobalLightDirectionID;
+  u32 GlobalLightDirectionID;
 
   // Lighting Shader
-  GLuint LightingShader;
-  GLuint ColorTextureUniform;
-  GLuint NormalTextureUniform;
-  GLuint PositionTextureUniform;
-  GLuint DepthTextureUniform;
+  u32 LightingShader;
+  u32 ColorTextureUniform;
+  u32 NormalTextureUniform;
+  u32 PositionTextureUniform;
+  u32 DepthTextureUniform;
 
-  GLuint ShadowMapTextureUniform;
-  GLuint DepthBiasMVPID;
-  GLuint ViewMatrixUniform;
-
-  GLuint CameraPosUniform;
+  u32 ShadowMapTextureUniform;
+  u32 DepthBiasMVPID;
+  u32 ViewMatrixUniform;
+  u32 CameraPosUniform;
   //
 
-  GLuint SimpleTextureShaderID;
-  GLuint SimpleTextureUniform;
+  u32 SimpleTextureShaderID;
+  u32 SimpleTextureUniform;
 
   RenderBasis Basis;
 };
 
 struct ShadowRenderGroup
 {
-  GLuint MVP_ID;
-  GLuint ShadowMapID;
+  u32 MVP_ID;
+  u32 ShadowMapID;
 
-  GLuint TextureID;
-  GLuint ShaderID;
-  GLuint FramebufferName;
-  GLuint DepthTexture;
+  u32 TextureID;
+  u32 ShaderID;
+  u32 FramebufferName;
+  u32 DepthTexture;
 };
 
 void
@@ -189,7 +186,7 @@ InitializeRenderGroup( RenderGroup *RG )
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, RG->NormalTexture,   0);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, RG->PositionTexture, 0);
 
-  GLuint attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+  u32 attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
   glDrawBuffers(3, attachments);
 
 
@@ -236,9 +233,9 @@ InitializeRenderGroup( RenderGroup *RG )
 
   //
   // World Data buffers
-  GLuint vertexbuffer;
-  GLuint colorbuffer;
-  GLuint normalbuffer;
+  u32 vertexbuffer;
+  u32 colorbuffer;
+  u32 normalbuffer;
 
   glGenBuffers(1, &vertexbuffer);
   glGenBuffers(1, &colorbuffer);
