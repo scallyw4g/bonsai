@@ -3,6 +3,8 @@
 
 #define WORK_QUEUE_SIZE (2*VOLUME_VISIBLE_REGION)
 
+// FIXME(Jesse): Surely there's a way to not have work_queue_entires contain the world
+struct World;
 struct work_queue_entry
 {
   World *world;

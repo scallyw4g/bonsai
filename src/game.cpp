@@ -1,3 +1,9 @@
+#ifdef _WIN32
+#include <win32_platform.cpp>
+#else
+#include <unix_platform.cpp>
+#endif
+
 #include <bonsai.h>
 #include <render.h>
 #include <debug.h>

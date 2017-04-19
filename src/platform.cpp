@@ -3,12 +3,6 @@
 
 #include <iostream>
 
-#ifdef _WIN32
-#include <win32_platform.cpp>
-#else
-#include <unix_platform.cpp>
-#endif
-
 THREAD_MAIN_RETURN
 ThreadMain(void *Input)
 {
@@ -19,13 +13,14 @@ ThreadMain(void *Input)
 
   for (;;)
   {
-    unsigned int OriginalNext = Queue->NextEntry;
+    u32 OriginalNext = Queue->NextEntry;
 
     if (OriginalNext != Queue->EntryCount)
     {
-      if ( AtomicCompareExchange(&Queue->NextEntry,
-                                 (OriginalNext + 1) % WORK_QUEUE_SIZE,
-                                 OriginalNext))
+      u32 EntryIndex = AtomicCompareExchange( &Queue->NextEntry,
+                                                       (OriginalNext + 1) % WORK_QUEUE_SIZE,
+                                                       OriginalNext);
+      if ( EntryIndex == OriginalNext )
       {
         work_queue_entry Entry = Queue->Entries[OriginalNext];
         Entry.Callback(&Entry);
@@ -61,10 +56,20 @@ PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
 void
 PlatformInit(platform *Platform)
 {
-  int StackSize = 0;
+  Assert(sizeof(u8)  == 1);
 
-  int LogicalCoreCount = GetLogicalCoreCount();
-  int ThreadCount = LogicalCoreCount -1; // -1 because we already have a main thread
+  Assert(sizeof(u32) == 4);
+  Assert(sizeof(s32) == 4);
+  Assert(sizeof(r32) == 4);
+
+  Assert(sizeof(umm) == 8);
+  Assert(sizeof(u64) == 8);
+  Assert(sizeof(s64) == 8);
+
+  u32 StackSize = 0;
+
+  u32 LogicalCoreCount = GetLogicalCoreCount();
+  u32 ThreadCount = LogicalCoreCount -1; // -1 because we already have a main thread
 
   Platform->Queue.Entries = (work_queue_entry *)calloc(sizeof(work_queue_entry), WORK_QUEUE_SIZE);
   Platform->Threads = (thread_startup_params *)calloc(sizeof(thread_startup_params), ThreadCount);
@@ -72,7 +77,7 @@ PlatformInit(platform *Platform)
 
   Queue->Semaphore = CreateSemaphore(ThreadCount);
 
-  for (int ThreadIndex = 0;
+  for (u32 ThreadIndex = 0;
       ThreadIndex < ThreadCount;
       ++ ThreadIndex )
   {
