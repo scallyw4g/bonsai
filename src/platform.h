@@ -25,53 +25,46 @@
 #define GL_COLOR_ATTACHMENT14 0x8CEE
 #define GL_COLOR_ATTACHMENT15 0x8CEF
 
-#define glCreateShader(...)             0
-#define glShaderSource(...)             0
-#define glCompileShader(...)            0
-#define glGetShaderiv(...)              0
-#define glGetShaderInfoLog(...)         0
-#define glAttachShader(...)             0
-#define glDetachShader(...)             0
-#define glDeleteShader(...)             0
-
-#define glCreateProgram(...)            0
-#define glLinkProgram(...)              0
-#define glGetProgramiv(...)             0
-#define glGetProgramInfo(...)           0
-#define glGetProgramInfoLog(...)        0
-#define glUseProgram(...)               0
-#define glDeleteProgram(...)            0
-
-#define glGetUniformLocation(...)       0
-
-#define glGenFramebuffers(...)          0
-#define glBindFramebuffer(...)          0
-#define glFramebufferTexture(...)       0
-#define glFramebufferTexture2D(...)     0
-#define glCheckFramebufferStatus(...)   0
-
-#define glGenTextures(...)              0
-#define glBindTexture(...)              0
-#define glActiveTexture(...)            0
-#define glTexImage2D(...)               0
-#define glTexParameteri(...)            0
-#define glCompressedTexImage2D(...)     0
-
-#define glGenBuffers(...)               0
-#define glBindBuffer(...)               0
-#define glBufferData(...)               0
-#define glDrawBuffers(...)              0
-#define glDeleteBuffers(...)            0
-
-#define glVertexAttribPointer(...)      0
-#define glEnableVertexAttribArray(...)  0
-#define glDisableVertexAttribArray(...) 0
-#define glGenVertexArrays(...)          0
-#define glBindVertexArray(...)          0
-
-#define glUniform3fv(...)               0
-#define glUniformMatrix4fv(...)         0
-#define glUniform1i(...)                0
+PROC WINAPI glCreateShader;
+PROC WINAPI glShaderSource;
+PROC WINAPI glCompileShader;
+PROC WINAPI glGetShaderiv;
+PROC WINAPI glGetShaderInfoLog;
+PROC WINAPI glAttachShader;
+PROC WINAPI glDetachShader;
+PROC WINAPI glDeleteShader;
+PROC WINAPI glCreateProgram;
+PROC WINAPI glLinkProgram;
+PROC WINAPI glGetProgramiv;
+PROC WINAPI glGetProgramInfo;
+PROC WINAPI glGetProgramInfoLog;
+PROC WINAPI glUseProgram;
+PROC WINAPI glDeleteProgram;
+PROC WINAPI glGetUniformLocation;
+PROC WINAPI glGenFramebuffers;
+PROC WINAPI glBindFramebuffer;
+PROC WINAPI glFramebufferTexture;
+PROC WINAPI glFramebufferTexture2D;
+PROC WINAPI glCheckFramebufferStatus;
+PROC WINAPI glGenTextures;
+PROC WINAPI glBindTexture;
+PROC WINAPI glActiveTexture;
+PROC WINAPI glTexImage2D;
+PROC WINAPI glTexParameteri;
+PROC WINAPI glCompressedTexImage2D;
+PROC WINAPI glGenBuffers;
+PROC WINAPI glBindBuffer;
+PROC WINAPI glBufferData;
+PROC WINAPI glDrawBuffers;
+PROC WINAPI glDeleteBuffers;
+PROC WINAPI glVertexAttribPointer;
+PROC WINAPI glEnableVertexAttribArray;
+PROC WINAPI glDisableVertexAttribArray;
+PROC WINAPI glGenVertexArrays;
+PROC WINAPI glBindVertexArray;
+PROC WINAPI glUniform3fv;
+PROC WINAPI glUniformMatrix4fv;
+PROC WINAPI glUniform1i;
 
 // FIXME(Jesse): Surely there's a way to not have work_queue_entires contain the world
 struct work_queue_entry

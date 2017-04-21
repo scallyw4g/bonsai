@@ -3,6 +3,7 @@
 
 #include <Windows.h>
 #include <WinBase.h>
+#include <Wingdi.h>
 
 #include <sys/stat.h>
 

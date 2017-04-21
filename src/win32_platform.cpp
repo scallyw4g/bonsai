@@ -92,6 +92,54 @@ Terminate()
 }
 
 void
+InitializeOpenGlExtensions()
+{
+#define BonsaiQueryGlExtension(name) name = wglGetProcAddress(#name);
+  BonsaiQueryGlExtension(glCreateShader);
+  BonsaiQueryGlExtension(glShaderSource);
+  BonsaiQueryGlExtension(glCompileShader);
+  BonsaiQueryGlExtension(glGetShaderiv);
+  BonsaiQueryGlExtension(glGetShaderInfoLog);
+  BonsaiQueryGlExtension(glAttachShader);
+  BonsaiQueryGlExtension(glDetachShader);
+  BonsaiQueryGlExtension(glDeleteShader);
+  BonsaiQueryGlExtension(glCreateProgram);
+  BonsaiQueryGlExtension(glLinkProgram);
+  BonsaiQueryGlExtension(glGetProgramiv);
+  BonsaiQueryGlExtension(glGetProgramInfo);
+  BonsaiQueryGlExtension(glGetProgramInfoLog);
+  BonsaiQueryGlExtension(glUseProgram);
+  BonsaiQueryGlExtension(glDeleteProgram);
+  BonsaiQueryGlExtension(glGetUniformLocation);
+  BonsaiQueryGlExtension(glGenFramebuffers);
+  BonsaiQueryGlExtension(glBindFramebuffer);
+  BonsaiQueryGlExtension(glFramebufferTexture);
+  BonsaiQueryGlExtension(glFramebufferTexture2D);
+  BonsaiQueryGlExtension(glCheckFramebufferStatus);
+  BonsaiQueryGlExtension(glGenTextures);
+  BonsaiQueryGlExtension(glBindTexture);
+  BonsaiQueryGlExtension(glActiveTexture);
+  BonsaiQueryGlExtension(glTexImage2D);
+  BonsaiQueryGlExtension(glTexParameteri);
+  BonsaiQueryGlExtension(glCompressedTexImage2D);
+  BonsaiQueryGlExtension(glGenBuffers);
+  BonsaiQueryGlExtension(glBindBuffer);
+  BonsaiQueryGlExtension(glBufferData);
+  BonsaiQueryGlExtension(glDrawBuffers);
+  BonsaiQueryGlExtension(glDeleteBuffers);
+  BonsaiQueryGlExtension(glVertexAttribPointer);
+  BonsaiQueryGlExtension(glEnableVertexAttribArray);
+  BonsaiQueryGlExtension(glDisableVertexAttribArray);
+  BonsaiQueryGlExtension(glGenVertexArrays);
+  BonsaiQueryGlExtension(glBindVertexArray);
+  BonsaiQueryGlExtension(glUniform3fv);
+  BonsaiQueryGlExtension(glUniformMatrix4fv);
+  BonsaiQueryGlExtension(glUniform1i);
+
+  return;
+}
+
+void
 setupPixelFormat(HDC hDC)
 {
     PIXELFORMATDESCRIPTOR pfd = {

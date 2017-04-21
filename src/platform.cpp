@@ -88,7 +88,6 @@ main(s32 NumArgs, char ** Args)
     ShowWindow(Window, SW_SHOW);
     UpdateWindow(Window);
 
-
     while ( GameMain() )
     {
       GameLib = CheckAndReloadGameLibrary();
