@@ -12,11 +12,12 @@ using namespace std;
 #include <shader.hpp>
 #include <debug.h>
 
+
 u32
 LoadShaders(const char * VertShaderPath, const char * fragment_file_path)
 {
 	// Create the shaders
-	u32 VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
+ 	u32 VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
 	u32 FragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
 
 	// Read the Vertex Shader code from the file

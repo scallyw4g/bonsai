@@ -131,8 +131,9 @@ GLuint loadDDS(const char * imagepath){
 
 	Assert(false);
 
-#if 0
 	unsigned int format;
+
+#if 0
 
 	switch(fourCC) 
 	{ 

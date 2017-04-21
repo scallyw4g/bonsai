@@ -2,6 +2,8 @@
 #define BONSAI_PLATFORM_H
 
 #include <GL/gl.h>
+#include <GL/glext.h>
+#include <GL/wglext.h>
 
 #define WORK_QUEUE_SIZE (2*VOLUME_VISIBLE_REGION)
 
@@ -24,47 +26,6 @@
 #define GL_COLOR_ATTACHMENT13 0x8CED
 #define GL_COLOR_ATTACHMENT14 0x8CEE
 #define GL_COLOR_ATTACHMENT15 0x8CEF
-
-PROC WINAPI glCreateShader;
-PROC WINAPI glShaderSource;
-PROC WINAPI glCompileShader;
-PROC WINAPI glGetShaderiv;
-PROC WINAPI glGetShaderInfoLog;
-PROC WINAPI glAttachShader;
-PROC WINAPI glDetachShader;
-PROC WINAPI glDeleteShader;
-PROC WINAPI glCreateProgram;
-PROC WINAPI glLinkProgram;
-PROC WINAPI glGetProgramiv;
-PROC WINAPI glGetProgramInfo;
-PROC WINAPI glGetProgramInfoLog;
-PROC WINAPI glUseProgram;
-PROC WINAPI glDeleteProgram;
-PROC WINAPI glGetUniformLocation;
-PROC WINAPI glGenFramebuffers;
-PROC WINAPI glBindFramebuffer;
-PROC WINAPI glFramebufferTexture;
-PROC WINAPI glFramebufferTexture2D;
-PROC WINAPI glCheckFramebufferStatus;
-PROC WINAPI glGenTextures;
-PROC WINAPI glBindTexture;
-PROC WINAPI glActiveTexture;
-PROC WINAPI glTexImage2D;
-PROC WINAPI glTexParameteri;
-PROC WINAPI glCompressedTexImage2D;
-PROC WINAPI glGenBuffers;
-PROC WINAPI glBindBuffer;
-PROC WINAPI glBufferData;
-PROC WINAPI glDrawBuffers;
-PROC WINAPI glDeleteBuffers;
-PROC WINAPI glVertexAttribPointer;
-PROC WINAPI glEnableVertexAttribArray;
-PROC WINAPI glDisableVertexAttribArray;
-PROC WINAPI glGenVertexArrays;
-PROC WINAPI glBindVertexArray;
-PROC WINAPI glUniform3fv;
-PROC WINAPI glUniformMatrix4fv;
-PROC WINAPI glUniform1i;
 
 // FIXME(Jesse): Surely there's a way to not have work_queue_entires contain the world
 struct work_queue_entry

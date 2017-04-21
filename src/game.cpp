@@ -16,7 +16,7 @@
 
 #include <time.h>
 
-DEBUG_GLOBAL    Camera_Object DebugCamera = {};
+DEBUG_GLOBAL Camera_Object DebugCamera = {};
 
 void
 SeedWorldAndUnspawnPlayer( World *world, Entity *Player )

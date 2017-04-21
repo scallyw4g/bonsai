@@ -23,6 +23,8 @@ target_link_libraries(Bonsai ${OPENGL_LIBRARIES})
 include_directories(${PROJECT_SOURCE_DIR}/src)
 include_directories(${PROJECT_SOURCE_DIR}/external/glm-0.9.7.1)
 
+add_definitions( -DGL_GLEXT_PROTOTYPES=1 )
+
 if (CYGWIN OR WIN32)
 
   set(WIN32 1)
