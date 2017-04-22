@@ -9,7 +9,7 @@
 // dlopen
 #include <dlfcn.h>
 
-// Windows
+// Xlib
 #include <X11/X.h>
 #include <X11/Xlib.h>
 

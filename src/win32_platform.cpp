@@ -347,6 +347,9 @@ OpenAndInitializeWindow( int WindowWidth, int WindowHeight, HINSTANCE hCurrentIn
 
   e = GetLastError();
 
+  ShowWindow(Window, SW_SHOW);
+  UpdateWindow(Window);
+
   return Window;
 
   /* int error = glGetError(); */

@@ -2,9 +2,13 @@
 #define UNIX_PLATFORM_CPP
 
 #include <unistd.h>
+#include <stdio.h>
 
 #include <unix_platform.h>
 #include <platform.h>
+
+static Display *dpy;
+static GLXContext glc;
 
 inline bool
 AtomicCompareExchange( volatile unsigned int *Source, unsigned int Exchange, unsigned int Comparator )
@@ -77,7 +81,35 @@ LoadLibrary(const char *filename)
 window
 OpenAndInitializeWindow( int WindowWidth, int WindowHeight )
 {
-  return 0;
+  GLint GlAttribs[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
+
+  dpy = XOpenDisplay(0);
+  if (!dpy) { printf(" Cannot connect to X Server \n"); return False; }
+
+  window RootWindow = DefaultRootWindow(dpy);
+  if (!RootWindow) { printf(" Unable to get RootWindow \n"); return False; }
+
+  XVisualInfo *VisualInfo = glXChooseVisual(dpy, 0, GlAttribs);
+  if (!VisualInfo) { printf(" Unable to get Visual Info \n"); return False; }
+
+  Colormap Colors = XCreateColormap(dpy, RootWindow, VisualInfo->visual, AllocNone);
+
+  XSetWindowAttributes WindowAttribs;
+  WindowAttribs.colormap = Colors;
+  WindowAttribs.event_mask = ExposureMask | KeyPressMask;
+
+  Window win = XCreateWindow(dpy, RootWindow, 0, 0, 600, 600, 0, VisualInfo->depth, InputOutput, VisualInfo->visual, CWColormap | CWEventMask, &WindowAttribs);
+  if (!win) { printf(" Unable to Create Window \n"); return False; }
+
+  XMapWindow(dpy, win);
+  XStoreName(dpy, win, "Bonsai");
+
+  glc = glXCreateContext(dpy, VisualInfo, NULL, GL_TRUE);
+  if (!glc) { printf(" Unable to Create GLXContext \n"); return False; }
+
+  glXMakeCurrent(dpy, win, glc);
+
+  return win;
 }
 
 inline GameCallback

@@ -36,7 +36,6 @@ if (CYGWIN OR WIN32)
 
 else()
   add_definitions( -DLINUX=1 -ggdb )
-  add_definitions( -lGL )
 endif()
 
 
@@ -48,22 +47,24 @@ endif()
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)  # g++
   message(STATUS "Compiling with g++")
 
-  find_package(Threads)
-  target_link_libraries(Bonsai ${CMAKE_THREAD_LIBS_INIT})
-  target_link_libraries(Bonsai ${CMAKE_DL_LIBS})
+  find_package(Threads REQUIRED)
+  find_package(X11 REQUIRED)
 
-  add_definitions( -std=c++11 -lpthread )
+  # Xlib
+  target_link_libraries(Bonsai X11)
+
+  # -lpthread
+  target_link_libraries(Bonsai ${CMAKE_THREAD_LIBS_INIT})
+
+  # SO loader
+  target_link_libraries(Bonsai ${CMAKE_DL_LIBS})
 
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
   message(STATUS "Compiling with MSVC")
-
-  add_definitions( /MDd /EHsc )
-  add_definitions( -DMSVC=1 )
+  add_definitions( /MDd /EHsc -DMSVC=1 )
 
 else()
-
   message(FATAL_ERROR "Unsupported Compiler")
-
 endif()
 
 

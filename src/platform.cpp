@@ -83,11 +83,27 @@ main(s32 NumArgs, char ** Args)
     window Window = OpenAndInitializeWindow(WindowWidth, WindowHeight ); // , AppHandle );
     if (!Window) { printf("Error Initializing Window :( \n"); return False; }
 
-    /* ShowWindow(Window, SW_SHOW); */
-    /* UpdateWindow(Window); */
-
-    while ( GameMain((void*)0) )
+    for (;;)
     {
+      XEvent xev;
+      XNextEvent(dpy, &xev);
+
+      if(xev.type == Expose) {
+        XWindowAttributes gwa;
+        XGetWindowAttributes(dpy, Window, &gwa);
+        glViewport(0, 0, gwa.width, gwa.height);
+        glXSwapBuffers(dpy, Window);
+      }
+
+      else if(xev.type == KeyPress) {
+        glXMakeCurrent(dpy, None, NULL);
+        /* glXDestroyContext(dpy, glc); */
+        /* XDestroyWindow(dpy, win); */
+        XCloseDisplay(dpy);
+        exit(0);
+      }
+
+      GameMain(&GameMemory);
       GameLib = CheckAndReloadGameLibrary();
     }
   }
