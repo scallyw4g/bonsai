@@ -92,10 +92,10 @@ OpenAndInitializeWindow( int WindowWidth, int WindowHeight )
   XVisualInfo *VisualInfo = glXChooseVisual(dpy, 0, GlAttribs);
   if (!VisualInfo) { printf(" Unable to get Visual Info \n"); return False; }
 
-  Colormap Colors = XCreateColormap(dpy, RootWindow, VisualInfo->visual, AllocNone);
+  Colormap ColorInfo = XCreateColormap(dpy, RootWindow, VisualInfo->visual, AllocNone);
 
   XSetWindowAttributes WindowAttribs;
-  WindowAttribs.colormap = Colors;
+  WindowAttribs.colormap = ColorInfo;
   WindowAttribs.event_mask = ExposureMask | KeyPressMask;
 
   Window win = XCreateWindow(dpy, RootWindow, 0, 0, 600, 600, 0, VisualInfo->depth, InputOutput, VisualInfo->visual, CWColormap | CWEventMask, &WindowAttribs);

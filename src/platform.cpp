@@ -63,11 +63,6 @@ main(s32 NumArgs, char ** Args)
 {
   printf("\n -- Initializing Bonsai \n");
 
-  /* char pwd[MAX_PATH]; */
-  /* GetCurrentDirectory(MAX_PATH, pwd); */
-
-  /* HINSTANCE AppHandle = GetModuleHandle(0); */
-
   shared_lib GameLib = CheckAndReloadGameLibrary();
 
   if (GameLib)
@@ -80,7 +75,7 @@ main(s32 NumArgs, char ** Args)
     GAME_MAIN_PROC = (game_main_proc)GetProcFromLib(GameLib, "GameMain");
     if (!GameMain) { printf("Error retreiving GameMain from Game Lib :( \n"); return False; }
 
-    window Window = OpenAndInitializeWindow(WindowWidth, WindowHeight ); // , AppHandle );
+    window Window = OpenAndInitializeWindow(WindowWidth, WindowHeight );
     if (!Window) { printf("Error Initializing Window :( \n"); return False; }
 
     for (;;)

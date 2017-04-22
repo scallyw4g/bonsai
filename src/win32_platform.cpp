@@ -317,10 +317,12 @@ WindowMessageCallback(
 }
 
 window
-OpenAndInitializeWindow( int WindowWidth, int WindowHeight, HINSTANCE hCurrentInstance )
+OpenAndInitializeWindow( int WindowWidth, int WindowHeight )
 {
   WNDCLASS wndClass;
   window Window;
+
+  HINSTANCE AppHandle = GetModuleHandle(0);
 
   LPCSTR className = "Bonsai";
 
@@ -329,7 +331,7 @@ OpenAndInitializeWindow( int WindowWidth, int WindowHeight, HINSTANCE hCurrentIn
   wndClass.lpfnWndProc = WindowMessageCallback;
   wndClass.cbClsExtra = 0;
   wndClass.cbWndExtra = 0;
-  wndClass.hInstance = hCurrentInstance;
+  wndClass.hInstance = AppHandle;
   wndClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
   wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
   wndClass.hbrBackground = CreateSolidBrush(COLOR_BACKGROUND);
@@ -343,7 +345,7 @@ OpenAndInitializeWindow( int WindowWidth, int WindowHeight, HINSTANCE hCurrentIn
       className, className,
       WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
       0, 0, WindowWidth, WindowHeight,
-      NULL, NULL, hCurrentInstance, NULL);
+      NULL, NULL, AppHandle, NULL);
 
   e = GetLastError();
 
