@@ -181,7 +181,7 @@ InitializeRenderGroup( RenderGroup *RG )
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
   //
 
-  glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, RG->DepthTexture, 0);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, RG->DepthTexture, 0);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, RG->ColorTexture,    0);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, RG->NormalTexture,   0);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, RG->PositionTexture, 0);
@@ -255,12 +255,16 @@ InitializeShadowBuffer(ShadowRenderGroup *ShadowGroup)
   glGenFramebuffers(1, &ShadowGroup->FramebufferName);
   glBindFramebuffer(GL_FRAMEBUFFER, ShadowGroup->FramebufferName);
 
+  AssertNoGlErrors;
+
   // Depth texture. Slower than a depth buffer, but you can sample it later in your shader
   glGenTextures(1, &ShadowGroup->DepthTexture);
   glBindTexture(GL_TEXTURE_2D, ShadowGroup->DepthTexture);
 
   glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16,
       SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+
+  AssertNoGlErrors;
 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -269,18 +273,26 @@ InitializeShadowBuffer(ShadowRenderGroup *ShadowGroup)
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
 
-  glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, ShadowGroup->DepthTexture, 0);
+  AssertNoGlErrors;
 
   // No color output in the bound framebuffer, only depth.
   glDrawBuffer(GL_NONE);
   glReadBuffer(GL_NONE);
 
+  AssertNoGlErrors;
+
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, ShadowGroup->DepthTexture, 0);
+  AssertNoGlErrors;
+
   ShadowGroup->ShaderID        = LoadShaders( "DepthRTT.vertexshader", "DepthRTT.fragmentshader");
   ShadowGroup->MVP_ID          = glGetUniformLocation(ShadowGroup->ShaderID, "depthMVP");
 
-  // Always check that our framebuffer is ok
+  AssertNoGlErrors;
+
   if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     return false;
+
+  AssertNoGlErrors;
 
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

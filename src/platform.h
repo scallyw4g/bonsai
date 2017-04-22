@@ -38,6 +38,44 @@ struct game_memory
   void* FirstFreeByte;
 };
 
+struct gl
+{
+  PFNGLCREATESHADERPROC glCreateShader;
+  PFNGLSHADERSOURCEPROC glShaderSource;
+  PFNGLCOMPILESHADERPROC glCompileShader;
+  PFNGLGETSHADERIVPROC glGetShaderiv;
+  PFNGLGETSHADERINFOLOGPROC glGetShaderInfoLog;
+  PFNGLATTACHSHADERPROC glAttachShader;
+  PFNGLDETACHSHADERPROC glDetachShader;
+  PFNGLDELETESHADERPROC glDeleteShader;
+  PFNGLCREATEPROGRAMPROC glCreateProgram;
+  PFNGLLINKPROGRAMPROC glLinkProgram;
+  PFNGLGETPROGRAMIVPROC glGetProgramiv;
+  PFNGLGETPROGRAMINFOLOGPROC glGetProgramInfoLog;
+  PFNGLUSEPROGRAMPROC glUseProgram;
+  PFNGLDELETEPROGRAMPROC glDeleteProgram;
+  PFNGLGETUNIFORMLOCATIONPROC glGetUniformLocation;
+  PFNGLGENFRAMEBUFFERSPROC glGenFramebuffers;
+  PFNGLBINDFRAMEBUFFERPROC glBindFramebuffer;
+  /* PFNGLFRAMEBUFFERTEXTUREPROC glFramebufferTexture; */
+  PFNGLFRAMEBUFFERTEXTURE2DPROC glFramebufferTexture2D;
+  PFNGLCHECKFRAMEBUFFERSTATUSPROC glCheckFramebufferStatus;
+  PFNGLCOMPRESSEDTEXIMAGE2DPROC glCompressedTexImage2D;
+  PFNGLGENBUFFERSPROC glGenBuffers;
+  PFNGLBINDBUFFERPROC glBindBuffer;
+  PFNGLBUFFERDATAPROC glBufferData;
+  PFNGLDRAWBUFFERSPROC glDrawBuffers;
+  PFNGLDELETEBUFFERSPROC glDeleteBuffers;
+  PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer;
+  PFNGLENABLEVERTEXATTRIBARRAYPROC glEnableVertexAttribArray;
+  PFNGLDISABLEVERTEXATTRIBARRAYPROC glDisableVertexAttribArray;
+  PFNGLGENVERTEXARRAYSPROC glGenVertexArrays;
+  PFNGLBINDVERTEXARRAYPROC glBindVertexArray;
+  PFNGLUNIFORM3FVPROC glUniform3fv;
+  PFNGLUNIFORMMATRIX4FVPROC glUniformMatrix4fv;
+  PFNGLUNIFORM1IPROC glUniform1i;
+};
+
 struct platform
 {
   work_queue Queue;
@@ -47,6 +85,7 @@ struct platform
   void (*Terminate)(void);
 
   game_memory GameMemory;
+  gl GL;
 
   real32 dt;
 };

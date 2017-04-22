@@ -115,7 +115,7 @@ InitializeOpenGlExtensions()
   BonsaiQueryGlExtension(glGetUniformLocation);
   BonsaiQueryGlExtension(glGenFramebuffers);
   BonsaiQueryGlExtension(glBindFramebuffer);
-  BonsaiQueryGlExtension(glFramebufferTexture);
+  /* BonsaiQueryGlExtension(glFramebufferTexture); */
   BonsaiQueryGlExtension(glFramebufferTexture2D);
   BonsaiQueryGlExtension(glCheckFramebufferStatus);
   BonsaiQueryGlExtension(glGenTextures);

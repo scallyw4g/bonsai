@@ -92,6 +92,23 @@ ThreadMain(void *Input)
 }
 
 void
+PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
+{
+  Queue->Entries[Queue->EntryCount] = *Entry;
+
+  CompleteAllWrites;
+
+  Queue->EntryCount = ++Queue->EntryCount % WORK_QUEUE_SIZE;
+
+  // TODO(Jesse): Is this check correct?
+  Assert(Queue->NextEntry != Queue->EntryCount);
+
+  WakeThread( Queue->Semaphore );
+
+  return;
+}
+
+void
 PlatformInit(platform *Plat)
 {
   Assert(sizeof(u8)  == 1);
@@ -105,6 +122,11 @@ PlatformInit(platform *Plat)
   Assert(sizeof(s64) == 8);
 
   u32 StackSize = 0;
+
+  glDepthFunc(GL_LEQUAL);
+  glEnable(GL_DEPTH_TEST);
+
+  InitializeOpenGlExtensions(&Plat->GL);
 
   u32 LogicalCoreCount = GetLogicalCoreCount();
   u32 ThreadCount = LogicalCoreCount -1; // -1 because we already have a main thread
@@ -127,6 +149,7 @@ PlatformInit(platform *Plat)
   }
 
   Plat->GetHighPrecisionClock = GetHighPrecisionClock;
+  Plat->PushWorkQueueEntry = PushWorkQueueEntry;
 
   return;
 }
@@ -179,29 +202,14 @@ main(s32 NumArgs, char ** Args)
       /*   exit(0); */
       /* } */
 
-      GameMain(&Plat);
+      if (!GameMain(&Plat))
+        break;
+
       GameLib = CheckAndReloadGameLibrary();
     }
   }
 
   return True;
-}
-
-void
-PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
-{
-  Queue->Entries[Queue->EntryCount] = *Entry;
-
-  CompleteAllWrites;
-
-  Queue->EntryCount = ++Queue->EntryCount % WORK_QUEUE_SIZE;
-
-  // TODO(Jesse): Is this check correct?
-  Assert(Queue->NextEntry != Queue->EntryCount);
-
-  WakeThread( Queue->Semaphore );
-
-  return;
 }
 
 debug_state *

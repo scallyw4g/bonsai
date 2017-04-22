@@ -130,4 +130,49 @@ GetHighPrecisionClock()
   return Time.tv_nsec;
 }
 
+void
+InitializeOpenGlExtensions(gl *GL)
+{
+  GL->glCreateShader = (PFNGLCREATESHADERPROC)glXGetProcAddress((GLubyte*)"glCreateShader");;
+  GL->glShaderSource = (PFNGLSHADERSOURCEPROC)glXGetProcAddress((GLubyte*)"glShaderSource");
+  GL->glCompileShader = (PFNGLCOMPILESHADERPROC)glXGetProcAddress((GLubyte*)"glCompileShader");
+  GL->glGetShaderiv = (PFNGLGETSHADERIVPROC)glXGetProcAddress((GLubyte*)"glGetShaderiv");
+  GL->glGetShaderInfoLog = (PFNGLGETSHADERINFOLOGPROC)glXGetProcAddress((GLubyte*)"glGetShaderInfoLog");
+  GL->glAttachShader = (PFNGLATTACHSHADERPROC)glXGetProcAddress((GLubyte*)"glAttachShader");
+  GL->glDetachShader = (PFNGLDETACHSHADERPROC)glXGetProcAddress((GLubyte*)"glDetachShader");
+  GL->glDeleteShader = (PFNGLDELETESHADERPROC)glXGetProcAddress((GLubyte*)"glDeleteShader");
+  GL->glCreateProgram = (PFNGLCREATEPROGRAMPROC)glXGetProcAddress((GLubyte*)"glCreateProgram");
+  GL->glLinkProgram = (PFNGLLINKPROGRAMPROC)glXGetProcAddress((GLubyte*)"glLinkProgram");
+  GL->glGetProgramiv = (PFNGLGETPROGRAMIVPROC)glXGetProcAddress((GLubyte*)"glGetProgramiv");
+  GL->glGetProgramInfoLog = (PFNGLGETPROGRAMINFOLOGPROC)glXGetProcAddress((GLubyte*)"glGetProgramInfoLog");
+  GL->glUseProgram = (PFNGLUSEPROGRAMPROC)glXGetProcAddress((GLubyte*)"glUseProgram");
+  GL->glDeleteProgram = (PFNGLDELETEPROGRAMPROC)glXGetProcAddress((GLubyte*)"glDeleteProgram");
+  GL->glGetUniformLocation = (PFNGLGETUNIFORMLOCATIONPROC)glXGetProcAddress((GLubyte*)"glGetUniformLocation");
+  GL->glGenFramebuffers = (PFNGLGENFRAMEBUFFERSPROC)glXGetProcAddress((GLubyte*)"glGenFramebuffers");
+  GL->glBindFramebuffer = (PFNGLBINDFRAMEBUFFERPROC)glXGetProcAddress((GLubyte*)"glBindFramebuffer");
+
+  // TODO(Jesse): This appears to not work on ES 3.1 ..?
+  // GL->glFramebufferTexture = (PFNGLFRAMEBUFFERTEXTUREPROC)glXGetProcAddress((GLubyte*)"glFramebufferTexture");
+
+  GL->glFramebufferTexture2D = (PFNGLFRAMEBUFFERTEXTURE2DPROC)glXGetProcAddress((GLubyte*)"glFramebufferTexture2D");
+  GL->glCheckFramebufferStatus = (PFNGLCHECKFRAMEBUFFERSTATUSPROC)glXGetProcAddress((GLubyte*)"glCheckFramebufferStatus");
+  GL->glCompressedTexImage2D = (PFNGLCOMPRESSEDTEXIMAGE2DPROC)glXGetProcAddress((GLubyte*)"glCompressedTexImage2D");
+  GL->glGenBuffers = (PFNGLGENBUFFERSPROC)glXGetProcAddress((GLubyte*)"glGenBuffers");
+  GL->glBindBuffer = (PFNGLBINDBUFFERPROC)glXGetProcAddress((GLubyte*)"glBindBuffer");
+  GL->glBufferData = (PFNGLBUFFERDATAPROC)glXGetProcAddress((GLubyte*)"glBufferData");
+  GL->glDrawBuffers = (PFNGLDRAWBUFFERSPROC)glXGetProcAddress((GLubyte*)"glDrawBuffers");
+  GL->glDeleteBuffers = (PFNGLDELETEBUFFERSPROC)glXGetProcAddress((GLubyte*)"glDeleteBuffers");
+  GL->glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC)glXGetProcAddress((GLubyte*)"glVertexAttribPointer");
+  GL->glEnableVertexAttribArray = (PFNGLENABLEVERTEXATTRIBARRAYPROC)glXGetProcAddress((GLubyte*)"glEnableVertexAttribArray");
+  GL->glDisableVertexAttribArray = (PFNGLDISABLEVERTEXATTRIBARRAYPROC)glXGetProcAddress((GLubyte*)"glDisableVertexAttribArray");
+  GL->glGenVertexArrays = (PFNGLGENVERTEXARRAYSPROC)glXGetProcAddress((GLubyte*)"glGenVertexArrays");
+  GL->glBindVertexArray = (PFNGLBINDVERTEXARRAYPROC)glXGetProcAddress((GLubyte*)"glBindVertexArray");
+  GL->glUniform3fv = (PFNGLUNIFORM3FVPROC)glXGetProcAddress((GLubyte*)"glUniform3fv");
+  GL->glUniformMatrix4fv = (PFNGLUNIFORMMATRIX4FVPROC)glXGetProcAddress((GLubyte*)"glUniformMatrix4fv");
+  GL->glUniform1i = (PFNGLUNIFORM1IPROC)glXGetProcAddress((GLubyte*)"glUniform1i");
+
+  return;
+}
+
+
 #endif

@@ -14,6 +14,7 @@
 #include <X11/Xlib.h>
 
 #include <GL/glx.h>
+#include <GL/glext.h>
 
 #define Assert(condition) if (!(condition)) raise(SIGTRAP);
 
