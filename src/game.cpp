@@ -67,7 +67,6 @@ GAME_UPDATE_AND_RENDER
     platform *Plat,
     Entity *Player,
     Camera_Object *Camera,
-    float dt,
 
     RenderGroup *RG,
     ShadowRenderGroup *SG
@@ -109,7 +108,7 @@ GAME_UPDATE_AND_RENDER
   {
      if (Player->Spawned)
      {
-       v3 PlayerDelta = GetEntityDelta(world, Player, Input, dt);
+       v3 PlayerDelta = GetEntityDelta(world, Player, Input, Plat->dt);
        UpdatePlayerP( world, Plat, Player, PlayerDelta );
        // if (Length(Input) > 0) Player->Rotation = LookAt(Input);
      }
@@ -122,7 +121,7 @@ GAME_UPDATE_AND_RENDER
   UpdateCameraP(world, Player, Camera);
   RG->Basis.ViewMatrix = GetViewMatrix(world, CurrentCamera);
 
-  GlobalLightTheta += dt;
+  GlobalLightTheta += Plat->dt;
 
 
   //
@@ -191,7 +190,7 @@ GAME_UPDATE_AND_RENDER
   FlushRenderBuffers(world, RG, SG, Camera);
 
   char buffer[256] = {};
-  sprintf(buffer, "%f ms last frame", dt);
+  sprintf(buffer, "%f ms last frame", Plat->dt);
   PrintDebugText(buffer, 0, 0, DEBUG_FONT_SIZE);
 
   DrawWorldToFullscreenQuad(world, RG, SG, Camera);
@@ -221,8 +220,6 @@ FillChunk(chunk_data *chunk)
     chunk->Voxels[i].flags = SetFlag(chunk->Voxels[i].flags , Voxel_Filled);
   }
 }
-
-extern "C" {
 
 EXPORT int
 GameMain( platform *Plat )
@@ -299,32 +296,24 @@ GameMain( platform *Plat )
    *
    */
 
-  double lastTime = Plat->GetHighPrecisionClock();
-
 
   initText2D("Holstein.DDS");
 
-  do
-  {
-    AssertNoGlErrors;
+  AssertNoGlErrors;
 
 #if DEBUG_DRAW_AXIES
-    DEBUG_DrawLine(&world, V3(0,0,0), V3(10000, 0, 0), RED, 0.5f );
-    DEBUG_DrawLine(&world, V3(0,0,0), V3(0, 10000, 0), GREEN, 0.5f );
-    DEBUG_DrawLine(&world, V3(0,0,0), V3(0, 0, 10000), TEAL, 0.5f );
+  DEBUG_DrawLine(&world, V3(0,0,0), V3(10000, 0, 0), RED, 0.5f );
+  DEBUG_DrawLine(&world, V3(0,0,0), V3(0, 10000, 0), GREEN, 0.5f );
+  DEBUG_DrawLine(&world, V3(0,0,0), V3(0, 0, 10000), TEAL, 0.5f );
 #endif
 
-    double currentTime = Plat->GetHighPrecisionClock();
-    float dt = (float)(currentTime - lastTime);
-    lastTime = currentTime;
+  accumulatedTime += Plat->dt;
+  numFrames ++;
 
-    accumulatedTime += dt;
-    numFrames ++;
-
-  if (UseDebugCamera)
-    RG.Basis.ProjectionMatrix = GetProjectionMatrix(&DebugCamera, WindowWidth, WindowHeight);
-  else
-    RG.Basis.ProjectionMatrix = GetProjectionMatrix(&Camera, WindowWidth, WindowHeight);
+if (UseDebugCamera)
+  RG.Basis.ProjectionMatrix = GetProjectionMatrix(&DebugCamera, WindowWidth, WindowHeight);
+else
+  RG.Basis.ProjectionMatrix = GetProjectionMatrix(&Camera, WindowWidth, WindowHeight);
 
   if (UseDebugCamera)
   {
@@ -332,22 +321,19 @@ GameMain( platform *Plat )
     DEBUG_DrawAABB(&world, CameraLocation, Quaternion(1,0,0,0), PINK, 0.5f);
   }
 
-    GAME_UPDATE_AND_RENDER( &world, Plat, &Player, &Camera, dt, &RG, &SG);
+  GAME_UPDATE_AND_RENDER( &world, Plat, &Player, &Camera, &RG, &SG);
 
-    /* float FPS = 60.0f; */
-    /* WaitForFrameTime(lastTime, FPS); */
+  /* float FPS = 60.0f; */
+  /* WaitForFrameTime(lastTime, FPS); */
 
-    tris=0;
+  tris=0;
 
-    Assert(false);
-  } // Check if the ESC key was pressed or the window was closed
-  while( DEBUG_FRAMES_TO_RUN != numFrames );
+  Assert(false);
 
   /* CALLGRIND_DUMP_STATS; */
 
   Plat->Terminate();
 
   return 0;
-}
 }
 

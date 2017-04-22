@@ -58,53 +58,6 @@ CheckAndReloadGameLibrary()
   return BonsaiLib;
 }
 
-int
-main(s32 NumArgs, char ** Args)
-{
-  printf("\n -- Initializing Bonsai \n");
-
-  shared_lib GameLib = CheckAndReloadGameLibrary();
-
-  if (GameLib)
-  {
-    game_memory GameMemory = {};
-
-    u32 WindowHeight = 256;
-    u32 WindowWidth = 512;
-
-    GAME_MAIN_PROC = (game_main_proc)GetProcFromLib(GameLib, "GameMain");
-    if (!GameMain) { printf("Error retreiving GameMain from Game Lib :( \n"); return False; }
-
-    window Window = OpenAndInitializeWindow(WindowWidth, WindowHeight );
-    if (!Window) { printf("Error Initializing Window :( \n"); return False; }
-
-    while ( true )
-    {
-
-      /* XEvent xev; */
-      /* XNextEvent(dpy, &xev); */
-      /* if(xev.type == Expose) { */
-      /*   XWindowAttributes gwa; */
-      /*   XGetWindowAttributes(dpy, Window, &gwa); */
-      /*   glViewport(0, 0, gwa.width, gwa.height); */
-      /*   glXSwapBuffers(dpy, Window); */
-      /* } */
-      /* else if(xev.type == KeyPress) { */
-      /*   glXMakeCurrent(dpy, None, NULL); */
-      /*   glXDestroyContext(dpy, glc); */
-      /*   XDestroyWindow(dpy, win); */
-      /*   XCloseDisplay(dpy); */
-      /*   exit(0); */
-      /* } */
-
-      GameMain(&GameMain);
-      GameLib = CheckAndReloadGameLibrary();
-    }
-  }
-
-  return True;
-}
-
 THREAD_MAIN_RETURN
 ThreadMain(void *Input)
 {
@@ -139,24 +92,7 @@ ThreadMain(void *Input)
 }
 
 void
-PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
-{
-  Queue->Entries[Queue->EntryCount] = *Entry;
-
-  CompleteAllWrites;
-
-  Queue->EntryCount = ++Queue->EntryCount % WORK_QUEUE_SIZE;
-
-  // TODO(Jesse): Is this check correct?
-  Assert(Queue->NextEntry != Queue->EntryCount);
-
-  WakeThread( Queue->Semaphore );
-
-  return;
-}
-
-void
-PlatformInit(platform *Platform)
+PlatformInit(platform *Plat)
 {
   Assert(sizeof(u8)  == 1);
 
@@ -173,9 +109,9 @@ PlatformInit(platform *Platform)
   u32 LogicalCoreCount = GetLogicalCoreCount();
   u32 ThreadCount = LogicalCoreCount -1; // -1 because we already have a main thread
 
-  Platform->Queue.Entries = (work_queue_entry *)calloc(sizeof(work_queue_entry), WORK_QUEUE_SIZE);
-  Platform->Threads = (thread_startup_params *)calloc(sizeof(thread_startup_params), ThreadCount);
-  work_queue *Queue = &Platform->Queue;
+  Plat->Queue.Entries = (work_queue_entry *)calloc(sizeof(work_queue_entry), WORK_QUEUE_SIZE);
+  Plat->Threads = (thread_startup_params *)calloc(sizeof(thread_startup_params), ThreadCount);
+  work_queue *Queue = &Plat->Queue;
 
   Queue->Semaphore = CreateSemaphore(ThreadCount);
 
@@ -183,12 +119,87 @@ PlatformInit(platform *Platform)
       ThreadIndex < ThreadCount;
       ++ ThreadIndex )
   {
-    thread_startup_params *Params = &Platform->Threads[ThreadIndex];
+    thread_startup_params *Params = &Plat->Threads[ThreadIndex];
     Params->Self.ThreadIndex = ThreadIndex;
     Params->Queue = Queue;
 
     thread_id ThreadID = CreateThread( ThreadMain, Params );
   }
+
+  Plat->GetHighPrecisionClock = GetHighPrecisionClock;
+
+  return;
+}
+
+int
+main(s32 NumArgs, char ** Args)
+{
+  printf("\n -- Initializing Bonsai \n");
+
+  shared_lib GameLib = CheckAndReloadGameLibrary();
+
+  if (GameLib)
+  {
+    platform Plat = {};
+    PlatformInit(&Plat);
+
+    u32 WindowHeight = 256;
+    u32 WindowWidth = 512;
+
+    GAME_MAIN_PROC = (game_main_proc)GetProcFromLib(GameLib, "GameMain");
+    if (!GameMain) { printf("Error retreiving GameMain from Game Lib :( \n"); return False; }
+
+    window Window = OpenAndInitializeWindow(WindowWidth, WindowHeight );
+    if (!Window) { printf("Error Initializing Window :( \n"); return False; }
+
+    double lastTime = Plat.GetHighPrecisionClock();
+
+    while ( true )
+    {
+
+      double currentTime = Plat.GetHighPrecisionClock();
+      Plat.dt = (real32)((currentTime - lastTime) / 1000000.0f);
+      lastTime = currentTime;
+
+      printf("%f\n", Plat.dt);
+
+      /* XEvent xev; */
+      /* XNextEvent(dpy, &xev); */
+      /* if(xev.type == Expose) { */
+      /*   XWindowAttributes gwa; */
+      /*   XGetWindowAttributes(dpy, Window, &gwa); */
+      /*   glViewport(0, 0, gwa.width, gwa.height); */
+      /*   glXSwapBuffers(dpy, Window); */
+      /* } */
+      /* else if(xev.type == KeyPress) { */
+      /*   glXMakeCurrent(dpy, None, NULL); */
+      /*   glXDestroyContext(dpy, glc); */
+      /*   XDestroyWindow(dpy, win); */
+      /*   XCloseDisplay(dpy); */
+      /*   exit(0); */
+      /* } */
+
+      GameMain(&Plat);
+      GameLib = CheckAndReloadGameLibrary();
+    }
+  }
+
+  return True;
+}
+
+void
+PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
+{
+  Queue->Entries[Queue->EntryCount] = *Entry;
+
+  CompleteAllWrites;
+
+  Queue->EntryCount = ++Queue->EntryCount % WORK_QUEUE_SIZE;
+
+  // TODO(Jesse): Is this check correct?
+  Assert(Queue->NextEntry != Queue->EntryCount);
+
+  WakeThread( Queue->Semaphore );
 
   return;
 }

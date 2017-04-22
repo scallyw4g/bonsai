@@ -118,4 +118,16 @@ GetProcFromLib(shared_lib Lib, const char *Name)
   GameCallback Result = (GameCallback)dlsym(Lib, Name);
   return Result;
 }
+
+/*
+ *  Returns nanoseconds
+ */
+inline real64
+GetHighPrecisionClock()
+{
+  struct timespec Time;
+  clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &Time);
+  return Time.tv_nsec;
+}
+
 #endif

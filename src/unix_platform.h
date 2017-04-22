@@ -27,7 +27,7 @@ typedef bool (*game_main_proc)(void*);
 
 #define GAME_MAIN_PROC game_main_proc GameMain
 
-#define EXPORT __attribute__((visibility("default")))
+#define EXPORT extern "C" __attribute__((visibility("default")))
 
 typedef int thread_id;
 typedef int semaphore;
