@@ -3,6 +3,6 @@
 make 2>&1
 
 if [ $? -eq 0 ]; then
-  ./build/Bonsai.exe > /dev/tty
+  ./build/Bonsai > /dev/tty
 fi
 

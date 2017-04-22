@@ -67,4 +67,23 @@ GetCycleCount()
   return Result;
 }
 
+void*
+LoadLibrary(const char *filename)
+{
+  void* Result = dlopen(filename, RTLD_LAZY);
+  return Result;
+}
+
+window
+OpenAndInitializeWindow( int WindowWidth, int WindowHeight )
+{
+  return 0;
+}
+
+inline GameCallback
+GetProcFromLib(shared_lib Lib, const char *Name)
+{
+  GameCallback Result = (GameCallback)dlsym(Lib, Name);
+  return Result;
+}
 #endif

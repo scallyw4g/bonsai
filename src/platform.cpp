@@ -47,7 +47,7 @@ CheckAndReloadGameLibrary()
 
   if ( GameLibIsNew(GAME_LIB) )
   {
-     BonsaiLib = LoadLibrary(GAME_LIB_PATH);
+     BonsaiLib = LoadLibrary(GAME_LIB);
   }
 
   if (!BonsaiLib)
@@ -63,32 +63,30 @@ main(s32 NumArgs, char ** Args)
 {
   printf("\n -- Initializing Bonsai \n");
 
-  char pwd[MAX_PATH];
-  GetCurrentDirectory(MAX_PATH, pwd);
+  /* char pwd[MAX_PATH]; */
+  /* GetCurrentDirectory(MAX_PATH, pwd); */
 
-  HINSTANCE AppHandle = GetModuleHandle(0);
+  /* HINSTANCE AppHandle = GetModuleHandle(0); */
 
   shared_lib GameLib = CheckAndReloadGameLibrary();
 
   if (GameLib)
   {
     game_memory GameMemory = {};
-    FARPROC GameMain = 0;
 
     u32 WindowHeight = 256;
     u32 WindowWidth = 512;
 
-
-    GameMain = (FARPROC)GetProcAddress(GameLib, "GameMain");
+    GAME_MAIN_PROC = (game_main_proc)GetProcFromLib(GameLib, "GameMain");
     if (!GameMain) { printf("Error retreiving GameMain from Game Lib :( \n"); return False; }
 
-    window Window = OpenAndInitializeWindow(WindowWidth, WindowHeight, AppHandle );
-    if (!Window) { printf("Error Initializing Window \n"); return False; }
+    window Window = OpenAndInitializeWindow(WindowWidth, WindowHeight ); // , AppHandle );
+    if (!Window) { printf("Error Initializing Window :( \n"); return False; }
 
-    ShowWindow(Window, SW_SHOW);
-    UpdateWindow(Window);
+    /* ShowWindow(Window, SW_SHOW); */
+    /* UpdateWindow(Window); */
 
-    while ( GameMain() )
+    while ( GameMain((void*)0) )
     {
       GameLib = CheckAndReloadGameLibrary();
     }

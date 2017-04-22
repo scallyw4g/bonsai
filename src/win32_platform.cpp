@@ -1,6 +1,8 @@
 #ifndef WIN32_PLATFORM
 #define WIN32_PLATFORM
 
+#include <GL/wglext.h>
+
 #include <win32_platform.h>
 #include <platform.h>
 
@@ -365,6 +367,14 @@ OpenAndInitializeWindow( int WindowWidth, int WindowHeight, HINSTANCE hCurrentIn
 
   // Accept fragment if it closer to the camera than the former one
   // glDepthFunc(GL_LESS);
+}
+
+
+inline FARPROC
+GetProcFromLib(shared_lib Lib, const char *Name)
+{
+  shared_lib Result = (FARPROC)GetProcAddress(Lib, Name);
+  return Result;
 }
 
 #endif

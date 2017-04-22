@@ -48,7 +48,11 @@ endif()
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)  # g++
   message(STATUS "Compiling with g++")
 
-  add_definitions( -std=c++11 )
+  find_package(Threads)
+  target_link_libraries(Bonsai ${CMAKE_THREAD_LIBS_INIT})
+  target_link_libraries(Bonsai ${CMAKE_DL_LIBS})
+
+  add_definitions( -std=c++11 -lpthread )
 
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
   message(STATUS "Compiling with MSVC")

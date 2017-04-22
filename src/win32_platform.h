@@ -7,6 +7,9 @@
 
 #include <sys/stat.h>
 
+
+
+
 #define Assert(condition) if (!(condition)) __debugbreak();
 
 #ifdef __CYGWIN__
@@ -20,6 +23,7 @@
 #define EXPORT __declspec( dllexport )
 
 #define THREAD_MAIN_RETURN DWORD WINAPI
+#define GAME_MAIN_PROC FARPROC GameMain
 
 typedef HANDLE thread_id;
 typedef HANDLE semaphore;
