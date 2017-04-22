@@ -306,12 +306,12 @@ GameMain( platform *Plat )
 
   do
   {
-	  AssertNoGlErrors;
+    AssertNoGlErrors;
 
 #if DEBUG_DRAW_AXIES
-	  DEBUG_DrawLine(&world, V3(0,0,0), V3(10000, 0, 0), RED, 0.5f );
-	  DEBUG_DrawLine(&world, V3(0,0,0), V3(0, 10000, 0), GREEN, 0.5f );
-	  DEBUG_DrawLine(&world, V3(0,0,0), V3(0, 0, 10000), TEAL, 0.5f );
+    DEBUG_DrawLine(&world, V3(0,0,0), V3(10000, 0, 0), RED, 0.5f );
+    DEBUG_DrawLine(&world, V3(0,0,0), V3(0, 10000, 0), GREEN, 0.5f );
+    DEBUG_DrawLine(&world, V3(0,0,0), V3(0, 0, 10000), TEAL, 0.5f );
 #endif
 
     double currentTime = Plat->GetHighPrecisionClock();
@@ -321,16 +321,16 @@ GameMain( platform *Plat )
     accumulatedTime += dt;
     numFrames ++;
 
-	if (UseDebugCamera)
-		RG.Basis.ProjectionMatrix = GetProjectionMatrix(&DebugCamera, WindowWidth, WindowHeight);
-	else
-		RG.Basis.ProjectionMatrix = GetProjectionMatrix(&Camera, WindowWidth, WindowHeight);
+  if (UseDebugCamera)
+    RG.Basis.ProjectionMatrix = GetProjectionMatrix(&DebugCamera, WindowWidth, WindowHeight);
+  else
+    RG.Basis.ProjectionMatrix = GetProjectionMatrix(&Camera, WindowWidth, WindowHeight);
 
-	if (UseDebugCamera)
-	{
-		AABB CameraLocation(GetRenderP(&world, Camera.P, &Camera) - 2, GetRenderP(&world, Camera.P, &Camera) + 2);
-		DEBUG_DrawAABB(&world, CameraLocation, Quaternion(1,0,0,0), PINK, 0.5f);
-	}
+  if (UseDebugCamera)
+  {
+    AABB CameraLocation(GetRenderP(&world, Camera.P, &Camera) - 2, GetRenderP(&world, Camera.P, &Camera) + 2);
+    DEBUG_DrawAABB(&world, CameraLocation, Quaternion(1,0,0,0), PINK, 0.5f);
+  }
 
     GAME_UPDATE_AND_RENDER( &world, Plat, &Player, &Camera, dt, &RG, &SG);
 
