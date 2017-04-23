@@ -17,7 +17,7 @@
 #include <math.h>
 
 // FIXME(Jesse): Global-variable this up so threads can cold-call for it
-static World world;
+static World *GlobalWorld = 0;
 
 GLOBAL_VARIABLE PerlinNoise GlobalNoise;
 
@@ -128,7 +128,8 @@ InitializeVoxels(void *Input)
 
   // FIXME(Jesse): For the sake of all things good and green don't make the
   // world a global variable!!!
-  InitializeVoxels(&world, Chunk);
+  Assert(GlobalWorld);
+  InitializeVoxels(GlobalWorld, Chunk);
 	return;
 }
 
@@ -761,7 +762,9 @@ UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera)
 World *
 AllocateWorld( platform *Plat, world_position Midpoint)
 {
-  World *world = (World*)calloc( sizeof(World), 1 );
+  GlobalWorld = (World*)calloc( sizeof(World), 1 );
+
+  World *world = GlobalWorld;
 
   world->ChunkDim = CHUNK_DIMENSION;
   world->VisibleRegion = VISIBLE_REGION;
