@@ -129,11 +129,7 @@ GLuint loadDDS(const char * imagepath){
 
 	unsigned int components  = (fourCC == FOURCC_DXT1) ? 3 : 4; 
 
-	Assert(false);
-
 	unsigned int format;
-
-#if 0
 
 	switch(fourCC) 
 	{ 
@@ -150,10 +146,8 @@ GLuint loadDDS(const char * imagepath){
 		free(buffer); 
 		return 0; 
 	}
+
 	unsigned int blockSize = (format == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT) ? 8 : 16; 
-#else
-	unsigned int blockSize = 8;
-#endif
 	unsigned int offset = 0;
 
 	// Create one OpenGL texture

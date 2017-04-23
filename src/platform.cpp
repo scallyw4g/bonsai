@@ -72,10 +72,7 @@ ThreadMain(void *Input)
 
     if (OriginalNext != Queue->EntryCount)
     {
-      u32 EntryIndex = AtomicCompareExchange( &Queue->NextEntry,
-                                                       (OriginalNext + 1) % WORK_QUEUE_SIZE,
-                                                       OriginalNext);
-      if ( EntryIndex == OriginalNext )
+      if ( AtomicCompareExchange(&Queue->NextEntry, (OriginalNext+1)%WORK_QUEUE_SIZE, OriginalNext) )
       {
         work_queue_entry Entry = Queue->Entries[OriginalNext];
         Entry.Callback(&Entry);
@@ -154,6 +151,22 @@ PlatformInit(platform *Plat)
   return;
 }
 
+/*
+ *  Poor mans vsync
+ */
+void
+WaitForFrameTime(real64 frameStart, float FPS)
+{
+  real64 frameTime = GetHighPrecisionClock() - frameStart;
+
+  while (frameTime < (1.0f/FPS))
+  {
+    frameTime = GetHighPrecisionClock() - frameStart;
+  }
+
+  return;
+}
+
 int
 main(s32 NumArgs, char ** Args)
 {
@@ -169,13 +182,18 @@ main(s32 NumArgs, char ** Args)
     u32 WindowHeight = 256;
     u32 WindowWidth = 512;
 
-    GAME_MAIN_PROC = (game_main_proc)GetProcFromLib(GameLib, "GameMain");
+    game_init_proc GameInit = (game_init_proc)GetProcFromLib(GameLib, "GameInit");
+    if (!GameInit) { printf("Error retreiving GameInit from Game Lib :( \n"); return False; }
+
+    game_main_proc GameMain = (game_main_proc)GetProcFromLib(GameLib, "GameMain");
     if (!GameMain) { printf("Error retreiving GameMain from Game Lib :( \n"); return False; }
 
     window Window = OpenAndInitializeWindow(WindowWidth, WindowHeight );
     if (!Window) { printf("Error Initializing Window :( \n"); return False; }
 
     double lastTime = Plat.GetHighPrecisionClock();
+
+    if (!GameInit(&Plat)) { printf("Error Initializing Game :( \n"); return False; }
 
     while ( true )
     {
@@ -202,10 +220,12 @@ main(s32 NumArgs, char ** Args)
       /*   exit(0); */
       /* } */
 
-      if (!GameMain(&Plat))
         break;
 
       GameLib = CheckAndReloadGameLibrary();
+
+      float FPS = 60.0f;
+      WaitForFrameTime(lastTime, FPS);
     }
   }
 

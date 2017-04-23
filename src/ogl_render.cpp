@@ -1100,6 +1100,7 @@ BuildBoundaryVoxels( World *world, world_chunk *WorldChunk)
     chunk->BoundaryVoxelCount = 0;
     BuildInteriorBoundaryVoxels( world, chunk, WorldChunk->WorldP );
   }
+
 #if 0
   if ( IsSet(chunk->flags, Chunk_RebuildExteriorTop   ) )
   {

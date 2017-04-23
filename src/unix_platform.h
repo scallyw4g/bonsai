@@ -14,7 +14,11 @@
 #include <X11/Xlib.h>
 
 #include <GL/glx.h>
-#include <GL/glext.h>
+
+
+
+struct platform;
+
 
 #define Assert(condition) if (!(condition)) raise(SIGTRAP);
 
@@ -24,9 +28,8 @@
 #define THREAD_MAIN_RETURN void*
 
 typedef void (*GameCallback)(void*);
+typedef bool (*game_init_proc)(platform*);
 typedef bool (*game_main_proc)(void*);
-
-#define GAME_MAIN_PROC game_main_proc GameMain
 
 #define EXPORT extern "C" __attribute__((visibility("default")))
 

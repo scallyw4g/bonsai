@@ -7,13 +7,15 @@
 #include <unix_platform.h>
 #include <platform.h>
 
+#include <GL/glext.h>
+
 static Display *dpy;
 static GLXContext glc;
 
 inline bool
 AtomicCompareExchange( volatile unsigned int *Source, unsigned int Exchange, unsigned int Comparator )
 {
-  bool Result = __sync_bool_compare_and_swap ( Source, Comparator, Exchange);
+  bool Result = __sync_bool_compare_and_swap ( Source, Comparator, Exchange );
   return Result;
 }
 
@@ -151,7 +153,7 @@ InitializeOpenGlExtensions(gl *GL)
   GL->glGenFramebuffers = (PFNGLGENFRAMEBUFFERSPROC)glXGetProcAddress((GLubyte*)"glGenFramebuffers");
   GL->glBindFramebuffer = (PFNGLBINDFRAMEBUFFERPROC)glXGetProcAddress((GLubyte*)"glBindFramebuffer");
 
-  // TODO(Jesse): This appears to not work on ES 3.1 ..?
+  // TODO(Jesse): This function appears to not work on ES 3.1 ..??
   // GL->glFramebufferTexture = (PFNGLFRAMEBUFFERTEXTUREPROC)glXGetProcAddress((GLubyte*)"glFramebufferTexture");
 
   GL->glFramebufferTexture2D = (PFNGLFRAMEBUFFERTEXTURE2DPROC)glXGetProcAddress((GLubyte*)"glFramebufferTexture2D");

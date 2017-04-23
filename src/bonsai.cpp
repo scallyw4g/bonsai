@@ -21,6 +21,7 @@ static World world;
 
 GLOBAL_VARIABLE PerlinNoise GlobalNoise;
 
+  // TODO(Jesse): Re-enable this!
 #if 0
 void
 OnMouseScroll(GLFWwindow* window, double xoffset, double yoffset)
@@ -203,6 +204,7 @@ GetInputsFromController(Camera_Object *Camera)
 
   v3 UpdateDir = V3(0,0,0);
 
+  // TODO(Jesse): Re-enable this!
 #if 0
   // Move forward
   if (glfwGetKey( window, GLFW_KEY_KP_8 ) == GLFW_PRESS ||
@@ -229,7 +231,6 @@ GetInputsFromController(Camera_Object *Camera)
     UpdateDir -= right;
   }
 #endif
-  Assert(false);
 
   UpdateDir.y = 0;
 
@@ -606,6 +607,7 @@ UpdateDebugCamera( World *world, v3 TargetDelta, Camera_Object *Camera)
   float mouseSpeed = 0.20f;
   double X, Y;
 
+  // TODO(Jesse): Re-enable this!
 #if 0
   if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
 	  TargetDelta -= WORLD_Y;
@@ -616,8 +618,6 @@ UpdateDebugCamera( World *world, v3 TargetDelta, Camera_Object *Camera)
   glfwGetCursorPos(window, &X, &Y);
   glfwSetCursorPos(window, 1024/2, 768/2);
 #endif
-
-  Assert(false);
 
   float dX = mouseSpeed * float(1024/2 - X );
   float dY = mouseSpeed * float( 768/2 - Y );
@@ -658,16 +658,17 @@ UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera)
 
 
   v3 TargetDelta = GetRenderP(world, NewTarget, Camera) - GetRenderP(world, Camera->Target, Camera);
-  
+
   float FocalLength = CAMERA_FOCAL_LENGTH;
   float mouseSpeed = 0.20f;
 
-  double X, Y;
+  double X = 0, Y = 0;
+
+  // TODO(Jesse): Re-enable this!
 #if 0
   glfwGetCursorPos(window, &X, &Y);
   glfwSetCursorPos(window, 1024/2, 768/2);
 #endif
-  Assert(false);
 
   float dX = mouseSpeed * float(1024/2 - X );
   float dY = mouseSpeed * float( 768/2 - Y );
@@ -757,9 +758,11 @@ UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera)
   return;
 }
 
-void
-AllocateWorld( World *world, platform *Plat, world_position Midpoint)
+World *
+AllocateWorld( platform *Plat, world_position Midpoint)
 {
+  World *world = (World*)calloc( sizeof(World), 1 );
+
   world->ChunkDim = CHUNK_DIMENSION;
   world->VisibleRegion = VISIBLE_REGION;
 
@@ -808,5 +811,5 @@ AllocateWorld( World *world, platform *Plat, world_position Midpoint)
     }
   }
 
-  return;
+  return world;
 }

@@ -85,7 +85,7 @@ GLOBAL_VARIABLE float CAMERA_FOCAL_LENGTH = 15.0f;
 GLOBAL_VARIABLE float DEBUG_CAMERA_FOCAL_LENGTH = 10.0f;
 #define DEBUG_CAMERA_SCROLL_SPEED  20.0f
 
-#define CAMERA_INITIAL_P Canonical_Position(&world, V3(1,1,1), World_Position(world.VisibleRegion/2))
+#define CAMERA_INITIAL_P Canonical_Position(world, V3(1,1,1), World_Position(world->VisibleRegion/2))
 
 // NOTE(Jesse): The position storage needs to be as large as the largest model
 // that will ever be loaded. Can we load models in chunks as well?

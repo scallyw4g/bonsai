@@ -16,6 +16,8 @@
 
 #include <time.h>
 
+#include <game.h>
+
 DEBUG_GLOBAL Camera_Object DebugCamera = {};
 
 void
@@ -47,33 +49,19 @@ GetEntityDelta(World *world, Entity *Player, v3 Input, float dt)
   return PlayerDelta;
 }
 
-void
-WaitForFrameTime(platform *Plat, real64 frameStart, float FPS) // Poor man vsync
+bool
+GameUpdateAndRender ( platform *Plat, game_main_args *Args )
 {
-  real64 frameTime = Plat->GetHighPrecisionClock() - frameStart;
+  World *world          = Args->world;
+  Entity *Player        = Args->Player;
+  Camera_Object *Camera = Args->Camera;
 
-  while (frameTime < (1.0f/FPS))
-  {
-    frameTime = Plat->GetHighPrecisionClock() - frameStart;
-  }
+  RenderGroup *RG       = Args->RG;
+  ShadowRenderGroup *SG = Args->SG;
 
-  return;
-}
-
-void
-GAME_UPDATE_AND_RENDER
-(
-    World *world,
-    platform *Plat,
-    Entity *Player,
-    Camera_Object *Camera,
-
-    RenderGroup *RG,
-    ShadowRenderGroup *SG
-  )
-{
   Camera_Object *CurrentCamera;
 
+  // TODO(Jesse): Re-enable this!
 #if 0
   if ( glfwGetKey(window, GLFW_KEY_ENTER ) == GLFW_PRESS )
     SeedWorldAndUnspawnPlayer(world, Player);
@@ -209,7 +197,7 @@ GAME_UPDATE_AND_RENDER
   /* Log("%d Boundary Voxels Indexed\n", BoundaryVoxelsIndexed ); */
   /* BoundaryVoxelsIndexed=0; */
 
-  return;
+  return True;
 }
 
 void
@@ -222,7 +210,7 @@ FillChunk(chunk_data *chunk)
 }
 
 EXPORT int
-GameMain( platform *Plat )
+GameInit( platform *Plat )
 {
   printf("Starting Game \n");
 
@@ -240,13 +228,14 @@ GameMain( platform *Plat )
   RenderGroup RG = {};
   if (!InitializeRenderGroup(&RG)) { Log("Error initializing RenderGroup\n"); return False; }
 
+  // This needs to be off for shadow maps to work correctly
   /* glEnable(GL_CULL_FACE); */
-  /* glCullFace(GL_BACK); // Cull back-facing triangles -> draw only front-facing triangles */
+  /* glCullFace(GL_BACK); */
 
   // This is necessary!
   GLuint VertexArrayID;
-  glGenVertexArrays(1, &VertexArrayID);
-  glBindVertexArray(VertexArrayID);
+  Plat->GL.glGenVertexArrays(1, &VertexArrayID);
+  Plat->GL.glBindVertexArray(VertexArrayID);
 
   Entity Player;
 
@@ -267,8 +256,8 @@ GameMain( platform *Plat )
   Player.P.WorldP = World_Position(0,0,0);
   Player.Spawned = false;
 
-  AllocateWorld(&world, Plat, Player.P.WorldP);
-  SeedWorldAndUnspawnPlayer(&world, &Player);
+  World *world = AllocateWorld( Plat, Player.P.WorldP);
+  SeedWorldAndUnspawnPlayer(world, &Player);
 
   Camera_Object Camera = {};
   Camera.Frust.farClip = 500.0f;
@@ -296,44 +285,45 @@ GameMain( platform *Plat )
    *
    */
 
+  initText2D("build/Holstein.DDS");
 
-  initText2D("Holstein.DDS");
+  for (;;)
+  {
 
-  AssertNoGlErrors;
+    AssertNoGlErrors;
 
 #if DEBUG_DRAW_AXIES
-  DEBUG_DrawLine(&world, V3(0,0,0), V3(10000, 0, 0), RED, 0.5f );
-  DEBUG_DrawLine(&world, V3(0,0,0), V3(0, 10000, 0), GREEN, 0.5f );
-  DEBUG_DrawLine(&world, V3(0,0,0), V3(0, 0, 10000), TEAL, 0.5f );
+    DEBUG_DrawLine(world, V3(0,0,0), V3(10000, 0, 0), RED, 0.5f );
+    DEBUG_DrawLine(world, V3(0,0,0), V3(0, 10000, 0), GREEN, 0.5f );
+    DEBUG_DrawLine(world, V3(0,0,0), V3(0, 0, 10000), TEAL, 0.5f );
 #endif
 
-  accumulatedTime += Plat->dt;
-  numFrames ++;
-
-if (UseDebugCamera)
-  RG.Basis.ProjectionMatrix = GetProjectionMatrix(&DebugCamera, WindowWidth, WindowHeight);
-else
-  RG.Basis.ProjectionMatrix = GetProjectionMatrix(&Camera, WindowWidth, WindowHeight);
+    accumulatedTime += Plat->dt;
+    numFrames ++;
 
   if (UseDebugCamera)
-  {
-    AABB CameraLocation(GetRenderP(&world, Camera.P, &Camera) - 2, GetRenderP(&world, Camera.P, &Camera) + 2);
-    DEBUG_DrawAABB(&world, CameraLocation, Quaternion(1,0,0,0), PINK, 0.5f);
+    RG.Basis.ProjectionMatrix = GetProjectionMatrix(&DebugCamera, WindowWidth, WindowHeight);
+  else
+    RG.Basis.ProjectionMatrix = GetProjectionMatrix(&Camera, WindowWidth, WindowHeight);
+
+    if (UseDebugCamera)
+    {
+      AABB CameraLocation(GetRenderP(world, Camera.P, &Camera) - 2, GetRenderP(world, Camera.P, &Camera) + 2);
+      DEBUG_DrawAABB(world, CameraLocation, Quaternion(1,0,0,0), PINK, 0.5f);
+    }
+
+    game_main_args Args = {};
+    Args.world = world;
+    Args.Player = &Player;
+    Args.Camera = &Camera;
+    Args.RG = &RG;
+    Args.SG = &SG;
+
+    GameUpdateAndRender( Plat, &Args );
+
+    tris=0;
   }
 
-  GAME_UPDATE_AND_RENDER( &world, Plat, &Player, &Camera, &RG, &SG);
-
-  /* float FPS = 60.0f; */
-  /* WaitForFrameTime(lastTime, FPS); */
-
-  tris=0;
-
-  Assert(false);
-
-  /* CALLGRIND_DUMP_STATS; */
-
-  Plat->Terminate();
-
-  return 0;
+  return True;
 }
 
