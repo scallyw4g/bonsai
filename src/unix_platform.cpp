@@ -73,10 +73,31 @@ GetCycleCount()
   return Result;
 }
 
-void*
+void
+CloseLibrary(shared_lib Lib)
+{
+  int e = dlclose(Lib);
+  Assert(!e);
+
+  return;
+}
+
+inline void*
 LoadLibrary(const char *filename)
 {
-  void* Result = dlopen(filename, RTLD_LAZY);
+  void* Result = dlopen(filename, RTLD_NOW);
+
+  if (!Result)
+  {
+    char *error = dlerror();
+    printf("Error loading library: %s \n", error);
+    Assert(False);
+  }
+  else
+  {
+    printf("Game Lib loaded! \n");
+  }
+
   return Result;
 }
 

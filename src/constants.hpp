@@ -20,9 +20,9 @@
 #define VOXEL_DIAMETER (1.0f)
 #define VOXEL_RADIUS (VOXEL_DIAMETER/2.0f)
 
-#define CD_X 16
-#define CD_Y 16
-#define CD_Z 16
+#define CD_X 8
+#define CD_Y 8
+#define CD_Z 8
 
 // Visible Region XYZ - Must be > (3,3,3)
 #define VR_X 8

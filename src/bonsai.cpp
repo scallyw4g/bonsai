@@ -663,7 +663,8 @@ UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera)
   float FocalLength = CAMERA_FOCAL_LENGTH;
   float mouseSpeed = 0.20f;
 
-  double X = 0, Y = 0;
+  double X = 1024/2;
+  double Y = 768/2;
 
   // TODO(Jesse): Re-enable this!
 #if 0

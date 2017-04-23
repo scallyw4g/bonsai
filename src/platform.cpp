@@ -29,6 +29,7 @@ GameLibIsNew(const char *LibPath)
   {
     if (StatStruct.st_mtime > LastGameLibTime)
     {
+      LastGameLibTime = StatStruct.st_mtime;
       Result = True;
     }
   }
@@ -38,24 +39,6 @@ GameLibIsNew(const char *LibPath)
   }
 
   return Result;
-}
-
-shared_lib
-CheckAndReloadGameLibrary()
-{
-  shared_lib BonsaiLib = 0;
-
-  if ( GameLibIsNew(GAME_LIB) )
-  {
-     BonsaiLib = LoadLibrary(GAME_LIB);
-  }
-
-  if (!BonsaiLib)
-  {
-    printf("Error Loading Game library :( \n");
-  }
-
-  return BonsaiLib;
 }
 
 THREAD_MAIN_RETURN
@@ -172,7 +155,9 @@ main(s32 NumArgs, char ** Args)
 {
   printf("\n -- Initializing Bonsai \n");
 
-  shared_lib GameLib = CheckAndReloadGameLibrary();
+  GameLibIsNew(GAME_LIB);  // Hack to initialize the LastGameLibTime static
+
+  shared_lib GameLib = LoadLibrary(GAME_LIB);
 
   if (GameLib)
   {
@@ -196,7 +181,7 @@ main(s32 NumArgs, char ** Args)
     game_state *GameState = GameInit(&Plat);
     if (!GameState) { printf("Error Initializing Game State :( \n"); return False; }
 
-    while ( true )
+    for (;;)
     {
 
       double currentTime = Plat.GetHighPrecisionClock();
@@ -204,6 +189,7 @@ main(s32 NumArgs, char ** Args)
       lastTime = currentTime;
 
       printf("%f\n", Plat.dt);
+
 
       /* XEvent xev; */
       /* XNextEvent(dpy, &xev); */
@@ -223,12 +209,22 @@ main(s32 NumArgs, char ** Args)
 
 
       GameUpdateAndRender(&Plat, GameState);
-      GameLib = CheckAndReloadGameLibrary();
+
+      if ( GameLibIsNew(GAME_LIB) )
+      {
+        CloseLibrary(GameLib);
+
+        sleep(1); // FIXME(Jesse): Do a copy on the library or something instead
+
+        GameLib = LoadLibrary(GAME_LIB);
+
+        GameUpdateAndRender = (game_main_proc)GetProcFromLib(GameLib, "GameUpdateAndRender");
+      }
 
       glXSwapBuffers(dpy, Window);
 
-      float FPS = 60.0f;
-      WaitForFrameTime(lastTime, FPS);
+      /* float FPS = 60.0f; */
+      /* WaitForFrameTime(lastTime, FPS); */
     }
   }
 
