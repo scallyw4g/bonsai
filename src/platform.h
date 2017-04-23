@@ -88,6 +88,8 @@ struct platform
   gl GL;
 
   real32 dt;
+  real32 WindowWidth;
+  real32 WindowHeight;
 };
 
 struct debug_state

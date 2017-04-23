@@ -179,21 +179,22 @@ main(s32 NumArgs, char ** Args)
     platform Plat = {};
     PlatformInit(&Plat);
 
-    u32 WindowHeight = 256;
-    u32 WindowWidth = 512;
+    Plat.WindowHeight = 256;
+    Plat.WindowWidth = 512;
 
     game_init_proc GameInit = (game_init_proc)GetProcFromLib(GameLib, "GameInit");
     if (!GameInit) { printf("Error retreiving GameInit from Game Lib :( \n"); return False; }
 
-    game_main_proc GameMain = (game_main_proc)GetProcFromLib(GameLib, "GameMain");
-    if (!GameMain) { printf("Error retreiving GameMain from Game Lib :( \n"); return False; }
+    game_main_proc GameUpdateAndRender = (game_main_proc)GetProcFromLib(GameLib, "GameUpdateAndRender");
+    if (!GameUpdateAndRender) { printf("Error retreiving GameUpdateAndRender from Game Lib :( \n"); return False; }
 
-    window Window = OpenAndInitializeWindow(WindowWidth, WindowHeight );
+    window Window = OpenAndInitializeWindow(Plat.WindowWidth, Plat.WindowHeight );
     if (!Window) { printf("Error Initializing Window :( \n"); return False; }
 
     double lastTime = Plat.GetHighPrecisionClock();
 
-    if (!GameInit(&Plat)) { printf("Error Initializing Game :( \n"); return False; }
+    game_state *GameState = GameInit(&Plat);
+    if (!GameState) { printf("Error Initializing Game State :( \n"); return False; }
 
     while ( true )
     {
@@ -220,9 +221,11 @@ main(s32 NumArgs, char ** Args)
       /*   exit(0); */
       /* } */
 
-        break;
 
+      GameUpdateAndRender(&Plat, GameState);
       GameLib = CheckAndReloadGameLibrary();
+
+      glXSwapBuffers(dpy, Window);
 
       float FPS = 60.0f;
       WaitForFrameTime(lastTime, FPS);

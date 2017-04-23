@@ -24,7 +24,6 @@ void
 SeedWorldAndUnspawnPlayer( World *world, Entity *Player )
 {
   Player->Spawned = false;
-
   return;
 }
 
@@ -49,17 +48,37 @@ GetEntityDelta(World *world, Entity *Player, v3 Input, float dt)
   return PlayerDelta;
 }
 
-bool
-GameUpdateAndRender ( platform *Plat, game_main_args *Args )
+EXPORT bool
+GameUpdateAndRender ( platform *Plat, game_state *GameState )
 {
-  World *world          = Args->world;
-  Entity *Player        = Args->Player;
-  Camera_Object *Camera = Args->Camera;
+  World *world          = GameState->world;
+  Entity *Player        = GameState->Player;
+  Camera_Object *Camera = GameState->Camera;
 
-  RenderGroup *RG       = Args->RG;
-  ShadowRenderGroup *SG = Args->SG;
+  RenderGroup *RG       = GameState->RG;
+  ShadowRenderGroup *SG = GameState->SG;
 
   Camera_Object *CurrentCamera;
+
+#if DEBUG_DRAW_AXIES
+  DEBUG_DrawLine(world, V3(0,0,0), V3(10000, 0, 0), RED, 0.5f );
+  DEBUG_DrawLine(world, V3(0,0,0), V3(0, 10000, 0), GREEN, 0.5f );
+  DEBUG_DrawLine(world, V3(0,0,0), V3(0, 0, 10000), TEAL, 0.5f );
+#endif
+
+  accumulatedTime += Plat->dt;
+  numFrames ++;
+
+if (UseDebugCamera)
+  RG->Basis.ProjectionMatrix = GetProjectionMatrix(&DebugCamera, Plat->WindowWidth, Plat->WindowHeight);
+else
+  RG->Basis.ProjectionMatrix = GetProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight);
+
+  if (UseDebugCamera)
+  {
+    AABB CameraLocation(GetRenderP(world, Camera->P, Camera) - 2, GetRenderP(world, Camera->P, Camera) + 2);
+    DEBUG_DrawAABB(world, CameraLocation, Quaternion(1,0,0,0), PINK, 0.5f);
+  }
 
   // TODO(Jesse): Re-enable this!
 #if 0
@@ -209,7 +228,7 @@ FillChunk(chunk_data *chunk)
   }
 }
 
-EXPORT int
+EXPORT void*
 GameInit( platform *Plat )
 {
   printf("Starting Game \n");
@@ -222,11 +241,11 @@ GameInit( platform *Plat )
   WindowWidth = SCR_WIDTH;
   WindowHeight = SCR_HEIGHT;
 
-  ShadowRenderGroup SG = {};
-  if (!InitializeShadowBuffer(&SG)) { Log("Error initializing Shadow Buffer\n"); return False; }
+  ShadowRenderGroup *SG = (ShadowRenderGroup*)calloc( sizeof(ShadowRenderGroup), 1);
+  if (!InitializeShadowBuffer(SG)) { Log("Error initializing Shadow Buffer\n"); return False; }
 
-  RenderGroup RG = {};
-  if (!InitializeRenderGroup(&RG)) { Log("Error initializing RenderGroup\n"); return False; }
+  RenderGroup *RG = (RenderGroup*)calloc( sizeof(RenderGroup), 1);
+  if (!InitializeRenderGroup(RG)) { Log("Error initializing RenderGroup\n"); return False; }
 
   // This needs to be off for shadow maps to work correctly
   /* glEnable(GL_CULL_FACE); */
@@ -237,37 +256,37 @@ GameInit( platform *Plat )
   Plat->GL.glGenVertexArrays(1, &VertexArrayID);
   Plat->GL.glBindVertexArray(VertexArrayID);
 
-  Entity Player;
+  Entity *Player = (Entity *)calloc( sizeof(Entity), 1);
 
-  /* Player.Model = LoadVox("./chr_knight.vox"); */
-  /* Player.Model = LoadVox("./ephtracy.vox"); */
-  /* Player.Model = LoadVox("./chr_sword.vox"); */
-  /* Player.Model = LoadVox("./shelf.vox"); */
-  Player.Model = LoadVox("./build/3x3x3.vox");
-  /* Player.Model = LoadVox("./8x8x8.vox"); */
-  /* Player.Model = LoadVox("./alien_bot2.vox"); */
-  /* Player.Model = LoadVox("./chr_rain.vox"); */
-  /* Player.Model = LoadVox("./chr_old.vox"); */
-  /* Player.Model = AllocateChunk(Chunk_Dimension(13,7,7), World_Position(0,0,0)); */
-  /* FillChunk(&Player.Model); */
+  /* Player->Model = LoadVox("./chr_knight.vox"); */
+  /* Player->Model = LoadVox("./ephtracy.vox"); */
+  /* Player->Model = LoadVox("./chr_sword.vox"); */
+  /* Player->Model = LoadVox("./shelf.vox"); */
+  Player->Model = LoadVox("./build/3x3x3.vox");
+  /* Player->Model = LoadVox("./8x8x8.vox"); */
+  /* Player->Model = LoadVox("./alien_bot2.vox"); */
+  /* Player->Model = LoadVox("./chr_rain.vox"); */
+  /* Player->Model = LoadVox("./chr_old.vox"); */
+  /* Player->Model = AllocateChunk(Chunk_Dimension(13,7,7), World_Position(0,0,0)); */
+  /* FillChunk(&Player->Model); */
 
-  Player.Rotation = Quaternion(1,0,0,0);
-  Player.P.Offset = V3(0,0,0);
-  Player.P.WorldP = World_Position(0,0,0);
-  Player.Spawned = false;
+  Player->Rotation = Quaternion(1,0,0,0);
+  Player->P.Offset = V3(0,0,0);
+  Player->P.WorldP = World_Position(0,0,0);
+  Player->Spawned = false;
 
-  World *world = AllocateWorld( Plat, Player.P.WorldP);
-  SeedWorldAndUnspawnPlayer(world, &Player);
+  World *world = AllocateWorld( Plat, Player->P.WorldP);
+  SeedWorldAndUnspawnPlayer(world, Player);
 
-  Camera_Object Camera = {};
-  Camera.Frust.farClip = 500.0f;
-  Camera.Frust.nearClip = 0.1f;
-  Camera.Frust.width = 30.0f;
-  Camera.Frust.FOV = 45.0f;
-  Camera.P = CAMERA_INITIAL_P;
-  Camera.Up = WORLD_Y;
-  Camera.Right = WORLD_Z;
-  Camera.Front = WORLD_X;
+  Camera_Object *Camera = (Camera_Object *)calloc( sizeof(Camera_Object), 1);
+  Camera->Frust.farClip = 500.0f;
+  Camera->Frust.nearClip = 0.1f;
+  Camera->Frust.width = 30.0f;
+  Camera->Frust.FOV = 45.0f;
+  Camera->P = CAMERA_INITIAL_P;
+  Camera->Up = WORLD_Y;
+  Camera->Right = WORLD_Z;
+  Camera->Front = WORLD_X;
 
   DebugCamera.Frust.farClip = 5000.0f;
   DebugCamera.Frust.nearClip = 0.1f;
@@ -278,52 +297,17 @@ GameInit( platform *Plat )
   DebugCamera.Right = WORLD_Z;
   DebugCamera.Front = WORLD_X;
 
-
-
-  /*
-   *  Main Render loop
-   *
-   */
-
   initText2D("build/Holstein.DDS");
 
-  for (;;)
-  {
+  AssertNoGlErrors;
 
-    AssertNoGlErrors;
+  game_state *GameState = (game_state*)calloc( sizeof(game_state), 1 );
+  GameState->world = world;
+  GameState->Player = Player;
+  GameState->Camera = Camera;
+  GameState->RG = RG;
+  GameState->SG = SG;
 
-#if DEBUG_DRAW_AXIES
-    DEBUG_DrawLine(world, V3(0,0,0), V3(10000, 0, 0), RED, 0.5f );
-    DEBUG_DrawLine(world, V3(0,0,0), V3(0, 10000, 0), GREEN, 0.5f );
-    DEBUG_DrawLine(world, V3(0,0,0), V3(0, 0, 10000), TEAL, 0.5f );
-#endif
-
-    accumulatedTime += Plat->dt;
-    numFrames ++;
-
-  if (UseDebugCamera)
-    RG.Basis.ProjectionMatrix = GetProjectionMatrix(&DebugCamera, WindowWidth, WindowHeight);
-  else
-    RG.Basis.ProjectionMatrix = GetProjectionMatrix(&Camera, WindowWidth, WindowHeight);
-
-    if (UseDebugCamera)
-    {
-      AABB CameraLocation(GetRenderP(world, Camera.P, &Camera) - 2, GetRenderP(world, Camera.P, &Camera) + 2);
-      DEBUG_DrawAABB(world, CameraLocation, Quaternion(1,0,0,0), PINK, 0.5f);
-    }
-
-    game_main_args Args = {};
-    Args.world = world;
-    Args.Player = &Player;
-    Args.Camera = &Camera;
-    Args.RG = &RG;
-    Args.SG = &SG;
-
-    GameUpdateAndRender( Plat, &Args );
-
-    tris=0;
-  }
-
-  return True;
+  return GameState;
 }
 

@@ -18,6 +18,8 @@
 
 
 struct platform;
+struct game_state;
+
 
 
 #define Assert(condition) if (!(condition)) raise(SIGTRAP);
@@ -28,8 +30,8 @@ struct platform;
 #define THREAD_MAIN_RETURN void*
 
 typedef void (*GameCallback)(void*);
-typedef bool (*game_init_proc)(platform*);
-typedef bool (*game_main_proc)(void*);
+typedef game_state* (*game_init_proc)(platform*);
+typedef bool (*game_main_proc)(platform*, game_state*);
 
 #define EXPORT extern "C" __attribute__((visibility("default")))
 
