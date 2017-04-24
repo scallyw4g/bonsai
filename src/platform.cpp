@@ -238,7 +238,7 @@ main(s32 NumArgs, char ** Args)
   {
 
     u64 currentTime = Plat.GetHighPrecisionClock();
-    Plat.dt = (real32)((currentTime - lastTime) / 1000000.0f);
+    Plat.dt = (real32)((currentTime - lastTime) / 1000000);
     lastTime = currentTime;
 
     printf("%f\n", Plat.dt);

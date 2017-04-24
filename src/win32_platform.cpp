@@ -4,9 +4,15 @@
 #include <win32_platform.h>
 #include <platform.h>
 
+#include <chrono>
+
 #include <GL/wglext.h>
 
 #define BONSAI_MAIN(void) int CALLBACK WinMain( HINSTANCE AppHandle, HINSTANCE Ignored, LPSTR CmdLine, int CmdShow )
+
+static HDC hDC;
+static HGLRC hGLRC;
+static HPALETTE hPalette;
 
 inline b32
 AtomicCompareExchange( volatile unsigned int *Source, unsigned int Exchange, unsigned int Comparator )
@@ -77,15 +83,8 @@ GetCycleCount()
 u64
 GetHighPrecisionClock()
 {
-  Assert(false);
-  return 0;
-}
-
-void
-SwapBuffers()
-{
-  Assert(false);
-  return;
+  u64 Result = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+  return Result;
 }
 
 void
@@ -192,10 +191,6 @@ WindowMessageCallback(
     WPARAM wParam,
     LPARAM lParam)
 {
-  static HDC hDC;
-  static HGLRC hGLRC;
-  static HPALETTE hPalette;
-
   switch (message) {
      case WM_CREATE:
          /* initialize OpenGL rendering */

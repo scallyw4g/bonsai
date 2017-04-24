@@ -33,7 +33,7 @@
 
 #define sleep(seconds) Sleep(seconds * 1000)
 
-#define SWAP_BUFFERS SwapBuffers()
+#define SWAP_BUFFERS SwapBuffers(hDC)
 
 #define bonsaiGlGetProcAddress(procName) wglGetProcAddress(procName)
 
