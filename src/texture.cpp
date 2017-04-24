@@ -91,11 +91,7 @@ GLuint loadDDS(const char * imagepath){
 
 	unsigned char header[124];
 
-	FILE *fp; 
- 
-	/* try to open the file */ 
-	s32 e = fopen_s(&fp, imagepath, "rb"); 
-	Assert(!e);
+	FILE *fp = fopen(imagepath, "rb"); 
 
 	if (fp == NULL){
 		Log("%s could not be opened. Are you in the right directory ? Don't forget to read the FAQ !\n", imagepath); getchar(); 

@@ -15,7 +15,6 @@
 
 #include <GL/glx.h>
 
-
 #define Assert(condition) if (!(condition)) raise(SIGTRAP);
 
 #define GAME_LIB_PATH "./libGame"
@@ -29,23 +28,6 @@
 
 typedef int thread_id;
 typedef int semaphore;
-
-// 1 Bit types
-typedef unsigned char u8;
-
-// 32 Bit types
-typedef int s32;
-typedef unsigned int u32;
-typedef float r32;
-typedef u32 b32;
-typedef float real32;
-
-// 64 Bit types
-typedef long int s64;
-typedef unsigned long int u64;
-typedef u64 umm;
-typedef double real64;
-
 
 typedef void* shared_lib;
 typedef Window window;

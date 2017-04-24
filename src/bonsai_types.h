@@ -7,8 +7,24 @@
 struct World;
 struct canonical_position;
 
-/* inline canonical_position */
-/* Canonicalize( World *world, canonical_position CP ); */
+
+// 8 Bit types
+typedef uint8_t u8;
+
+// 32 Bit types
+typedef int32_t s32;
+typedef uint32_t u32;
+typedef float r32;
+typedef u32 b32;
+typedef float real32;
+
+// 64 Bit types
+typedef int64_t s64;
+typedef uint64_t u64;
+typedef u64 umm;
+typedef double r64;
+
+
 
 struct v2
 {

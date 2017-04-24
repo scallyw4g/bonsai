@@ -9,10 +9,12 @@
 
 #define BONSAI_MAIN(void) int CALLBACK WinMain( HINSTANCE AppHandle, HINSTANCE Ignored, LPSTR CmdLine, int CmdShow )
 
-inline unsigned int
+inline b32
 AtomicCompareExchange( volatile unsigned int *Source, unsigned int Exchange, unsigned int Comparator )
 {
-  unsigned int Result = InterlockedCompareExchange( (LONG volatile *)Source, Exchange, Comparator);
+  u32 Val = InterlockedCompareExchange( (LONG volatile *)Source, Exchange, Comparator);
+
+  b32 Result = (Val == Comparator);
   return Result;
 }
 

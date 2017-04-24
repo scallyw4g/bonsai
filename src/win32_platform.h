@@ -7,6 +7,7 @@
 
 #include <sys/stat.h>
 
+#include <stdint.h>
 
 
 
@@ -32,21 +33,6 @@
 typedef HANDLE thread_id;
 typedef HANDLE semaphore;
 
-// 1 Bit types
-typedef unsigned char u8;
-
-// 32 Bit types
-typedef int s32;
-typedef unsigned int u32;
-typedef float r32;
-typedef u32 b32;
-typedef float real32;
-
-// 64 Bit types
-typedef long int s64;
-typedef unsigned long int u64;
-typedef u64 umm;
-typedef double real64;
 
 // ???
 typedef HMODULE shared_lib;

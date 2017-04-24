@@ -136,9 +136,7 @@ LoadVox(char const *filepath)
   chunk_data *Result;
   int totalChunkBytes;
 
-  FILE *ModelFile;
-  s32 e = fopen_s( &ModelFile, filepath, "r");
-  Assert(!e);
+  FILE *ModelFile = fopen(filepath, "r");
 
   if (ModelFile)
   {

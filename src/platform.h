@@ -4,6 +4,8 @@
 #include <GL/gl.h>
 #include <GL/glext.h>
 
+#include <bonsai_types.h>
+
 #define WORK_QUEUE_SIZE (2*VOLUME_VISIBLE_REGION)
 
 struct platform;

@@ -17,7 +17,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-GLOBAL_VARIABLE u64 LastGameLibTime = 0;
+GLOBAL_VARIABLE s64 LastGameLibTime = 0;
 
 b32
 GameLibIsNew(const char *LibPath)
@@ -111,6 +111,9 @@ PlatformInit(platform *Plat)
   u32 LogicalCoreCount = GetLogicalCoreCount();
   u32 ThreadCount = LogicalCoreCount -1; // -1 because we already have a main thread
 
+  Plat->Queue.EntryCount = 0;
+  Plat->Queue.NextEntry = 0;
+
   Plat->Queue.Entries = (work_queue_entry *)calloc(sizeof(work_queue_entry), WORK_QUEUE_SIZE);
   Plat->Threads = (thread_startup_params *)calloc(sizeof(thread_startup_params), ThreadCount);
   work_queue *Queue = &Plat->Queue;
@@ -138,9 +141,9 @@ PlatformInit(platform *Plat)
  *  Poor mans vsync
  */
 void
-WaitForFrameTime(real64 frameStart, float FPS)
+WaitForFrameTime(r64 frameStart, float FPS)
 {
-  real64 frameTime = GetHighPrecisionClock() - frameStart;
+  r64 frameTime = GetHighPrecisionClock() - frameStart;
 
   while (frameTime < (1.0f/FPS))
   {
@@ -155,79 +158,81 @@ main(s32 NumArgs, char ** Args)
 {
   printf("\n -- Initializing Bonsai \n");
 
+  platform Plat = {};
+  PlatformInit(&Plat);
+
+  Plat.WindowHeight = 256;
+  Plat.WindowWidth = 512;
+
   GameLibIsNew(GAME_LIB);  // Hack to initialize the LastGameLibTime static
 
   shared_lib GameLib = LoadLibrary(GAME_LIB);
+  if (!GameLib) { printf("Error Loading GameLib :( \n"); return False; }
 
-  if (GameLib)
+  game_init_proc GameInit = (game_init_proc)GetProcFromLib(GameLib, "GameInit");
+  if (!GameInit) { printf("Error retreiving GameInit from Game Lib :( \n"); return False; }
+
+  game_main_proc GameUpdateAndRender = (game_main_proc)GetProcFromLib(GameLib, "GameUpdateAndRender");
+  if (!GameUpdateAndRender) { printf("Error retreiving GameUpdateAndRender from Game Lib :( \n"); return False; }
+
+  game_state *GameState = GameInit(&Plat);
+  if (!GameState) { printf("Error Initializing Game State :( \n"); return False; }
+
+  window Window = OpenAndInitializeWindow(Plat.WindowWidth, Plat.WindowHeight );
+  if (!Window) { printf("Error Initializing Window :( \n"); return False; }
+
+  /*
+   *  Main Game loop
+   */
+
+  u64 lastTime = Plat.GetHighPrecisionClock();
+
+  for (;;)
   {
-    platform Plat = {};
-    PlatformInit(&Plat);
 
-    Plat.WindowHeight = 256;
-    Plat.WindowWidth = 512;
+    u64 currentTime = Plat.GetHighPrecisionClock();
+    Plat.dt = (real32)((currentTime - lastTime) / 1000000.0f);
+    lastTime = currentTime;
 
-    game_init_proc GameInit = (game_init_proc)GetProcFromLib(GameLib, "GameInit");
-    if (!GameInit) { printf("Error retreiving GameInit from Game Lib :( \n"); return False; }
+    printf("%f\n", Plat.dt);
 
-    game_main_proc GameUpdateAndRender = (game_main_proc)GetProcFromLib(GameLib, "GameUpdateAndRender");
-    if (!GameUpdateAndRender) { printf("Error retreiving GameUpdateAndRender from Game Lib :( \n"); return False; }
 
-    window Window = OpenAndInitializeWindow(Plat.WindowWidth, Plat.WindowHeight );
-    if (!Window) { printf("Error Initializing Window :( \n"); return False; }
+    /* XEvent xev; */
+    /* XNextEvent(dpy, &xev); */
+    /* if(xev.type == Expose) { */
+    /*   XWindowAttributes gwa; */
+    /*   XGetWindowAttributes(dpy, Window, &gwa); */
+    /*   glViewport(0, 0, gwa.width, gwa.height); */
+    /*   glXSwapBuffers(dpy, Window); */
+    /* } */
+    /* else if(xev.type == KeyPress) { */
+    /*   glXMakeCurrent(dpy, None, NULL); */
+    /*   glXDestroyContext(dpy, glc); */
+    /*   XDestroyWindow(dpy, win); */
+    /*   XCloseDisplay(dpy); */
+    /*   exit(0); */
+    /* } */
 
-    double lastTime = Plat.GetHighPrecisionClock();
 
-    game_state *GameState = GameInit(&Plat);
-    if (!GameState) { printf("Error Initializing Game State :( \n"); return False; }
+    GameUpdateAndRender(&Plat, GameState);
 
-    for (;;)
+    if ( GameLibIsNew(GAME_LIB) )
     {
+      CloseLibrary(GameLib);
 
-      double currentTime = Plat.GetHighPrecisionClock();
-      Plat.dt = (real32)((currentTime - lastTime) / 1000000.0f);
-      lastTime = currentTime;
+      // FIXME(Jesse): Do a copy on the library .. or something .. instead of
+      // blocking and hoping the compiler is finished
+      sleep(1);
 
-      printf("%f\n", Plat.dt);
+      GameLib = OpenLibrary(GAME_LIB);
 
-
-      /* XEvent xev; */
-      /* XNextEvent(dpy, &xev); */
-      /* if(xev.type == Expose) { */
-      /*   XWindowAttributes gwa; */
-      /*   XGetWindowAttributes(dpy, Window, &gwa); */
-      /*   glViewport(0, 0, gwa.width, gwa.height); */
-      /*   glXSwapBuffers(dpy, Window); */
-      /* } */
-      /* else if(xev.type == KeyPress) { */
-      /*   glXMakeCurrent(dpy, None, NULL); */
-      /*   glXDestroyContext(dpy, glc); */
-      /*   XDestroyWindow(dpy, win); */
-      /*   XCloseDisplay(dpy); */
-      /*   exit(0); */
-      /* } */
-
-
-      GameUpdateAndRender(&Plat, GameState);
-
-      if ( GameLibIsNew(GAME_LIB) )
-      {
-        CloseLibrary(GameLib);
-
-        // FIXME(Jesse): Do a copy on the library .. or something .. instead of
-        // blocking and hoping the compiler is finished
-        sleep(1);
-
-        GameLib = OpenLibrary(GAME_LIB);
-
-        GameUpdateAndRender = (game_main_proc)GetProcFromLib(GameLib, "GameUpdateAndRender");
-      }
-
-      SWAP_BUFFERS;
-
-      /* float FPS = 60.0f; */
-      /* WaitForFrameTime(lastTime, FPS); */
+      GameUpdateAndRender = (game_main_proc)GetProcFromLib(GameLib, "GameUpdateAndRender");
     }
+
+    SWAP_BUFFERS;
+
+    /* float FPS = 60.0f; */
+    /* WaitForFrameTime(lastTime, FPS); */
   }
 
   return True;
