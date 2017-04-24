@@ -87,7 +87,7 @@ GameInit( platform *Plat )
   /* Player->Model = LoadVox("./ephtracy.vox"); */
   /* Player->Model = LoadVox("./chr_sword.vox"); */
   /* Player->Model = LoadVox("./shelf.vox"); */
-  Player->Model = LoadVox("./build/3x3x3.vox");
+  Player->Model = LoadVox("3x3x3.vox");
   /* Player->Model = LoadVox("./8x8x8.vox"); */
   /* Player->Model = LoadVox("./alien_bot2.vox"); */
   /* Player->Model = LoadVox("./chr_rain.vox"); */
@@ -122,7 +122,7 @@ GameInit( platform *Plat )
   DebugCamera.Right = WORLD_Z;
   DebugCamera.Front = WORLD_X;
 
-  initText2D("build/Holstein.DDS");
+  initText2D("Holstein.DDS");
 
   AssertNoGlErrors;
 

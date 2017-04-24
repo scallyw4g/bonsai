@@ -6,7 +6,6 @@
 
 #include <GL/wglext.h>
 
-
 #define BONSAI_MAIN(void) int CALLBACK WinMain( HINSTANCE AppHandle, HINSTANCE Ignored, LPSTR CmdLine, int CmdShow )
 
 inline b32
@@ -94,12 +93,6 @@ Terminate()
 {
   Assert(false);
   return;
-}
-
-void
-InitializeOpenGlExtensions(gl_extensions *GL)
-{
-
 }
 
 void
@@ -368,5 +361,14 @@ CloseLibrary(shared_lib Lib)
   return Result;
 }
 
+#define CwdBufferLen 2048
+DEBUG_GLOBAL char CwdBuffer[CwdBufferLen];
+
+inline char*
+GetCwd()
+{
+  GetCurrentDirectory( CwdBufferLen, CwdBuffer );
+  return &CwdBuffer[0];
+}
 
 #endif

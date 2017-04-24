@@ -26,6 +26,8 @@
 
 #define SWAP_BUFFERS glXSwapBuffers(dpy, Window)
 
+#define bonsaiGlGetProcAddress(procName) glxGetProcAddress((GLubyte*)procName)
+
 typedef int thread_id;
 typedef int semaphore;
 

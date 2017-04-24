@@ -89,6 +89,51 @@ PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
 }
 
 void
+InitializeOpenGlExtensions(gl_extensions *GL)
+{
+  GL->glCreateShader = (PFNGLCREATESHADERPROC)bonsaiGlGetProcAddress("glCreateShader");;
+  GL->glShaderSource = (PFNGLSHADERSOURCEPROC)bonsaiGlGetProcAddress("glShaderSource");
+  GL->glCompileShader = (PFNGLCOMPILESHADERPROC)bonsaiGlGetProcAddress("glCompileShader");
+  GL->glGetShaderiv = (PFNGLGETSHADERIVPROC)bonsaiGlGetProcAddress("glGetShaderiv");
+  GL->glGetShaderInfoLog = (PFNGLGETSHADERINFOLOGPROC)bonsaiGlGetProcAddress("glGetShaderInfoLog");
+  GL->glAttachShader = (PFNGLATTACHSHADERPROC)bonsaiGlGetProcAddress("glAttachShader");
+  GL->glDetachShader = (PFNGLDETACHSHADERPROC)bonsaiGlGetProcAddress("glDetachShader");
+  GL->glDeleteShader = (PFNGLDELETESHADERPROC)bonsaiGlGetProcAddress("glDeleteShader");
+  GL->glCreateProgram = (PFNGLCREATEPROGRAMPROC)bonsaiGlGetProcAddress("glCreateProgram");
+  GL->glLinkProgram = (PFNGLLINKPROGRAMPROC)bonsaiGlGetProcAddress("glLinkProgram");
+  GL->glGetProgramiv = (PFNGLGETPROGRAMIVPROC)bonsaiGlGetProcAddress("glGetProgramiv");
+  GL->glGetProgramInfoLog = (PFNGLGETPROGRAMINFOLOGPROC)bonsaiGlGetProcAddress("glGetProgramInfoLog");
+  GL->glUseProgram = (PFNGLUSEPROGRAMPROC)bonsaiGlGetProcAddress("glUseProgram");
+  GL->glDeleteProgram = (PFNGLDELETEPROGRAMPROC)bonsaiGlGetProcAddress("glDeleteProgram");
+  GL->glGetUniformLocation = (PFNGLGETUNIFORMLOCATIONPROC)bonsaiGlGetProcAddress("glGetUniformLocation");
+  GL->glGenFramebuffers = (PFNGLGENFRAMEBUFFERSPROC)bonsaiGlGetProcAddress("glGenFramebuffers");
+  GL->glBindFramebuffer = (PFNGLBINDFRAMEBUFFERPROC)bonsaiGlGetProcAddress("glBindFramebuffer");
+
+  // TODO(Jesse): This function appears to not work on ES 3.1 ..??
+  // GL->glFramebufferTexture = (PFNGLFRAMEBUFFERTEXTUREPROC)bonsaiGlGetProcAddress("glFramebufferTexture");
+
+  GL->glFramebufferTexture2D = (PFNGLFRAMEBUFFERTEXTURE2DPROC)bonsaiGlGetProcAddress("glFramebufferTexture2D");
+  GL->glCheckFramebufferStatus = (PFNGLCHECKFRAMEBUFFERSTATUSPROC)bonsaiGlGetProcAddress("glCheckFramebufferStatus");
+  GL->glCompressedTexImage2D = (PFNGLCOMPRESSEDTEXIMAGE2DPROC)bonsaiGlGetProcAddress("glCompressedTexImage2D");
+  GL->glGenBuffers = (PFNGLGENBUFFERSPROC)bonsaiGlGetProcAddress("glGenBuffers");
+  GL->glBindBuffer = (PFNGLBINDBUFFERPROC)bonsaiGlGetProcAddress("glBindBuffer");
+  GL->glBufferData = (PFNGLBUFFERDATAPROC)bonsaiGlGetProcAddress("glBufferData");
+  GL->glDrawBuffers = (PFNGLDRAWBUFFERSPROC)bonsaiGlGetProcAddress("glDrawBuffers");
+  GL->glDeleteBuffers = (PFNGLDELETEBUFFERSPROC)bonsaiGlGetProcAddress("glDeleteBuffers");
+  GL->glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC)bonsaiGlGetProcAddress("glVertexAttribPointer");
+  GL->glEnableVertexAttribArray = (PFNGLENABLEVERTEXATTRIBARRAYPROC)bonsaiGlGetProcAddress("glEnableVertexAttribArray");
+  GL->glDisableVertexAttribArray = (PFNGLDISABLEVERTEXATTRIBARRAYPROC)bonsaiGlGetProcAddress("glDisableVertexAttribArray");
+  GL->glGenVertexArrays = (PFNGLGENVERTEXARRAYSPROC)bonsaiGlGetProcAddress("glGenVertexArrays");
+  GL->glBindVertexArray = (PFNGLBINDVERTEXARRAYPROC)bonsaiGlGetProcAddress("glBindVertexArray");
+  GL->glUniform3fv = (PFNGLUNIFORM3FVPROC)bonsaiGlGetProcAddress("glUniform3fv");
+  GL->glUniformMatrix4fv = (PFNGLUNIFORMMATRIX4FVPROC)bonsaiGlGetProcAddress("glUniformMatrix4fv");
+  GL->glUniform1i = (PFNGLUNIFORM1IPROC)bonsaiGlGetProcAddress("glUniform1i");
+  GL->glActiveTexture = (PFNGLACTIVETEXTUREPROC)bonsaiGlGetProcAddress("glActiveTexture");
+
+  return;
+}
+
+void
 PlatformInit(platform *Plat)
 {
   Assert(sizeof(u8)  == 1);
@@ -105,8 +150,6 @@ PlatformInit(platform *Plat)
 
   glDepthFunc(GL_LEQUAL);
   glEnable(GL_DEPTH_TEST);
-
-  InitializeOpenGlExtensions(&Plat->GL);
 
   u32 LogicalCoreCount = GetLogicalCoreCount();
   u32 ThreadCount = LogicalCoreCount -1; // -1 because we already have a main thread
@@ -158,6 +201,8 @@ main(s32 NumArgs, char ** Args)
 {
   printf("\n -- Initializing Bonsai \n");
 
+  printf(" -- Running out of : %s ", GetCwd() );
+
   platform Plat = {};
   PlatformInit(&Plat);
 
@@ -175,11 +220,13 @@ main(s32 NumArgs, char ** Args)
   game_main_proc GameUpdateAndRender = (game_main_proc)GetProcFromLib(GameLib, "GameUpdateAndRender");
   if (!GameUpdateAndRender) { printf("Error retreiving GameUpdateAndRender from Game Lib :( \n"); return False; }
 
-  game_state *GameState = GameInit(&Plat);
-  if (!GameState) { printf("Error Initializing Game State :( \n"); return False; }
-
   window Window = OpenAndInitializeWindow(Plat.WindowWidth, Plat.WindowHeight );
   if (!Window) { printf("Error Initializing Window :( \n"); return False; }
+
+  InitializeOpenGlExtensions(&Plat.GL);
+
+  game_state *GameState = GameInit(&Plat);
+  if (!GameState) { printf("Error Initializing Game State :( \n"); return False; }
 
   /*
    *  Main Game loop
@@ -203,11 +250,11 @@ main(s32 NumArgs, char ** Args)
     /*   XWindowAttributes gwa; */
     /*   XGetWindowAttributes(dpy, Window, &gwa); */
     /*   glViewport(0, 0, gwa.width, gwa.height); */
-    /*   glXSwapBuffers(dpy, Window); */
+    /*   bonsaiGlSwapBuffers(dpy, Window); */
     /* } */
     /* else if(xev.type == KeyPress) { */
-    /*   glXMakeCurrent(dpy, None, NULL); */
-    /*   glXDestroyContext(dpy, glc); */
+    /*   bonsaiGlMakeCurrent(dpy, None, NULL); */
+    /*   bonsaiGlDestroyContext(dpy, glc); */
     /*   XDestroyWindow(dpy, win); */
     /*   XCloseDisplay(dpy); */
     /*   exit(0); */
@@ -243,5 +290,6 @@ GetDebugState(void)
 {
   return &DebugState;
 }
+
 
 #endif

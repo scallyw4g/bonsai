@@ -35,6 +35,8 @@
 
 #define SWAP_BUFFERS SwapBuffers()
 
+#define bonsaiGlGetProcAddress(procName) wglGetProcAddress(procName)
+
 // #define Log(str) OutputDebugString(str)
 
 
