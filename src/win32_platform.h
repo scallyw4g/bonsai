@@ -14,14 +14,19 @@
 #define Assert(condition) if (!(condition)) __debugbreak();
 
 #ifdef __CYGWIN__
+
 #define GAME_LIB_PATH "build/cygGame"
-#else
+
+#else // MSVC
+
 #define GAME_LIB_PATH "Debug/Game"
-#endif
+#define snprintf(...) _snprintf(__VA_ARGS__)
+
+#endif // __CYGWIN__
 
 #define GAME_LIB (GAME_LIB_PATH".dll")
 
-#define EXPORT __declspec( dllexport )
+#define EXPORT extern "C" __declspec( dllexport )
 
 #define THREAD_MAIN_RETURN DWORD WINAPI
 #define GAME_MAIN_PROC FARPROC GameMain
@@ -29,6 +34,9 @@
 #define sleep(seconds) Sleep(seconds * 1000)
 
 #define SWAP_BUFFERS SwapBuffers()
+
+// #define Log(str) OutputDebugString(str)
+
 
 typedef HANDLE thread_id;
 typedef HANDLE semaphore;
