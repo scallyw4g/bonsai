@@ -89,7 +89,7 @@ InitializeVoxels( World *world, world_chunk *WorldChunk )
 
         float noiseValue = (float)GlobalNoise.noise(InX, InY, InZ);
 
-        int Noise01 = Floori(noiseValue + 0.5);
+        int Noise01 = Floori(noiseValue + 0.5f);
 
         Assert(Noise01 == 0 || Noise01 == 1);
 
@@ -248,19 +248,19 @@ GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
 
   TestP = Canonicalize(world, TestP);
 
-  v3 MinP = TestP.Offset;
-  v3 MaxP = (TestP.Offset + ModelDim);
+  voxel_position MinP = Voxel_Position(TestP.Offset);
+  voxel_position MaxP = Voxel_Position(TestP.Offset + ModelDim);
 
   // We need to check if the TestP is exactly on a voxel boundary.
   // if it is, don't include the next voxel in our detection.
   if ( TestP.Offset.x == Floorf(TestP.Offset.x) )
-    MaxP.x -= 1.0f;
+    MaxP.x -= 1;
 
   if ( TestP.Offset.y == Floorf(TestP.Offset.y) )
-    MaxP.y -= 1.0f;
+    MaxP.y -= 1;
 
   if ( TestP.Offset.z == Floorf(TestP.Offset.z) )
-    MaxP.z -= 1.0f;
+    MaxP.z -= 1;
 
   for ( int z = MinP.z; z <= MaxP.z; z++ )
   {
@@ -322,7 +322,7 @@ GetCollision(World *world, Entity *entity, v3 Offset = V3(0,0,0) )
 inline bool
 IsGrounded( World *world, Entity *entity)
 {
-  collision_event c = GetCollision(world, entity, V3(0,-0.001, 0));
+  collision_event c = GetCollision(world, entity, V3(0.0f,-0.001f, 0.0f));
   return c.didCollide;
 }
 
@@ -606,10 +606,12 @@ UpdateDebugCamera( World *world, v3 TargetDelta, Camera_Object *Camera)
 {
   float FocalLength = DEBUG_CAMERA_FOCAL_LENGTH;
   float mouseSpeed = 0.20f;
-  double X, Y;
+
 
   // TODO(Jesse): Re-enable this!
 #if 0
+  double X, Y;
+
   if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
 	  TargetDelta -= WORLD_Y;
 
@@ -618,7 +620,11 @@ UpdateDebugCamera( World *world, v3 TargetDelta, Camera_Object *Camera)
 
   glfwGetCursorPos(window, &X, &Y);
   glfwSetCursorPos(window, 1024/2, 768/2);
+#else
+  double X = 1024/2;
+  double Y = 768/2;
 #endif
+
 
   float dX = mouseSpeed * float(1024/2 - X );
   float dY = mouseSpeed * float( 768/2 - Y );
@@ -696,9 +702,9 @@ UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera)
 
   // Frustum computation
   //
-  v3 FrustLength = V3(0,0, Camera->Frust.farClip);
-  v3 FarHeight = ( V3( 0, ((Camera->Frust.farClip - Camera->Frust.nearClip)/cos(Camera->Frust.FOV/2)) * sin(Camera->Frust.FOV/2), 0));
-  v3 FarWidth = V3( FarHeight.y, 0, 0);
+  v3 FrustLength = V3(0.0f,0.0f, Camera->Frust.farClip);
+  v3 FarHeight = ( V3( 0.0f, ((Camera->Frust.farClip - Camera->Frust.nearClip)/cos(Camera->Frust.FOV/2)) * sin(Camera->Frust.FOV/2), 0.0f));
+  v3 FarWidth = V3( FarHeight.y, 0.0f, 0.0f);
 
   v3 MaxMax = FrustLength + FarHeight + FarWidth;
   v3 MaxMin = FrustLength + FarHeight - FarWidth;

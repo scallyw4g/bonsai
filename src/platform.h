@@ -6,6 +6,15 @@
 
 #define WORK_QUEUE_SIZE (2*VOLUME_VISIBLE_REGION)
 
+struct platform;
+struct game_state;
+
+typedef void (*GameCallback)(void*);
+typedef game_state* (*game_init_proc)(platform*);
+typedef bool (*game_main_proc)(platform*, game_state*);
+
+
+
 // FIXME(Jesse): Surely there's a way to not have work_queue_entires contain the world
 struct work_queue_entry
 {
@@ -38,7 +47,7 @@ struct game_memory
   void* FirstFreeByte;
 };
 
-struct gl
+struct gl_extensions
 {
   PFNGLCREATESHADERPROC glCreateShader;
   PFNGLSHADERSOURCEPROC glShaderSource;
@@ -74,6 +83,7 @@ struct gl
   PFNGLUNIFORM3FVPROC glUniform3fv;
   PFNGLUNIFORMMATRIX4FVPROC glUniformMatrix4fv;
   PFNGLUNIFORM1IPROC glUniform1i;
+  PFNGLACTIVETEXTUREPROC glActiveTexture;
 };
 
 struct platform
@@ -81,15 +91,15 @@ struct platform
   work_queue Queue;
   thread_startup_params *Threads;
   void (*PushWorkQueueEntry)(work_queue *Queue, work_queue_entry *Entry);
-  real64 (*GetHighPrecisionClock)(void);
+  u64 (*GetHighPrecisionClock)(void);
   void (*Terminate)(void);
 
   game_memory GameMemory;
-  gl GL;
+  gl_extensions GL;
 
   real32 dt;
-  real32 WindowWidth;
-  real32 WindowHeight;
+  s32 WindowWidth;
+  s32 WindowHeight;
 };
 
 struct debug_state

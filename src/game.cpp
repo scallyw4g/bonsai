@@ -5,9 +5,12 @@
 #endif
 
 #include <platform.h>
+static gl_extensions *GL_Global;
+
 #include <bonsai.h>
 #include <render.h>
 #include <debug.h>
+
 
 #include <constants.hpp>
 #include <bonsai.cpp>
@@ -52,6 +55,8 @@ EXPORT void*
 GameInit( platform *Plat )
 {
   printf("Starting Game \n");
+
+  GL_Global = &Plat->GL;
 
   int WindowWidth, WindowHeight;
 
@@ -134,6 +139,8 @@ GameInit( platform *Plat )
 EXPORT bool
 GameUpdateAndRender ( platform *Plat, game_state *GameState )
 {
+  GL_Global = &Plat->GL;
+
   World *world          = GameState->world;
   Entity *Player        = GameState->Player;
   Camera_Object *Camera = GameState->Camera;
@@ -224,8 +231,8 @@ else
 
   DEBUG_DrawAABB( world, V3(Min*CHUNK_DIMENSION), V3(Max*CHUNK_DIMENSION), Quaternion(1,0,0,0), GREEN, 0.25);
 
-  DEBUG_DrawAABB( world, LastFreeSlice,    Quaternion(1,0,0,0), RED,   0.1);
-  DEBUG_DrawAABB( world, LastQueuedSlice,  Quaternion(1,0,0,0), TEAL,  0.1);
+  DEBUG_DrawAABB( world, LastFreeSlice,    Quaternion(1,0,0,0), RED,   0.1f);
+  DEBUG_DrawAABB( world, LastQueuedSlice,  Quaternion(1,0,0,0), TEAL,  0.1f);
 
 #if DEBUG_HIGHLIGHT_VOID_CHUNKS
   for (int z = 0; z < world->VisibleRegion.z; ++z)

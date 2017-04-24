@@ -25,6 +25,10 @@
 #define THREAD_MAIN_RETURN DWORD WINAPI
 #define GAME_MAIN_PROC FARPROC GameMain
 
+#define sleep(seconds) Sleep(seconds * 1000)
+
+#define SWAP_BUFFERS SwapBuffers()
+
 typedef HANDLE thread_id;
 typedef HANDLE semaphore;
 

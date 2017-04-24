@@ -83,7 +83,7 @@ CloseLibrary(shared_lib Lib)
 }
 
 inline void*
-LoadLibrary(const char *filename)
+OpenLibrary(const char *filename)
 {
   void* Result = dlopen(filename, RTLD_NOW);
 
@@ -193,6 +193,7 @@ InitializeOpenGlExtensions(gl *GL)
   GL->glUniform3fv = (PFNGLUNIFORM3FVPROC)glXGetProcAddress((GLubyte*)"glUniform3fv");
   GL->glUniformMatrix4fv = (PFNGLUNIFORMMATRIX4FVPROC)glXGetProcAddress((GLubyte*)"glUniformMatrix4fv");
   GL->glUniform1i = (PFNGLUNIFORM1IPROC)glXGetProcAddress((GLubyte*)"glUniform1i");
+  GL->glActiveTexture = (PFNGLACTIVETEXTUREPROC)glXGetProcAddress((GLubyte*)"glActiveTexture");
 
   return;
 }

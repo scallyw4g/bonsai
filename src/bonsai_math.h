@@ -166,6 +166,23 @@ Cross( v3 A, v3 B )
 enum Sign { Negative = -1, Zero = 0, Positive = 1 };
 
 inline Sign
+GetSign( s32 f )
+{
+  Sign Result = Zero;
+
+  if ( f > 0 )
+  {
+    Result = Positive;
+  }
+  else if ( f < 0 )
+  {
+    Result = Negative;
+  }
+
+  return Result;
+}
+
+inline Sign
 GetSign( float f )
 {
   Sign Result = Zero;

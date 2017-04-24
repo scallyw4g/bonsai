@@ -17,11 +17,11 @@ initText2D(const char *TexturePath)
 	Text2DVertexBufferID;
 	Text2DUVBufferID;
 
-	glGenBuffers(1, &Text2DVertexBufferID);
-	glGenBuffers(1, &Text2DUVBufferID);
+	GL_Global->glGenBuffers(1, &Text2DVertexBufferID);
+	GL_Global->glGenBuffers(1, &Text2DUVBufferID);
 
 	Text2DShaderID = LoadShaders("TextVertexShader.vertexshader", "TextVertexShader.fragmentshader");
-	Text2DUniformID = glGetUniformLocation(Text2DShaderID, "myTextureSampler");
+	Text2DUniformID = GL_Global->glGetUniformLocation(Text2DShaderID, "myTextureSampler");
 
 	return;
 }
@@ -75,30 +75,30 @@ PrintDebugText( const char *Text, int x, int y, int size)
     continue;
 	}
 
-	glBindBuffer(GL_ARRAY_BUFFER, Text2DVertexBufferID);
-	glBufferData(GL_ARRAY_BUFFER, (BufferIndex+1) * sizeof(v2), &vertices[0], GL_STATIC_DRAW);
+	GL_Global->glBindBuffer(GL_ARRAY_BUFFER, Text2DVertexBufferID);
+	GL_Global->glBufferData(GL_ARRAY_BUFFER, (BufferIndex+1) * sizeof(v2), &vertices[0], GL_STATIC_DRAW);
 	
-	glBindBuffer(GL_ARRAY_BUFFER, Text2DUVBufferID);
-	glBufferData(GL_ARRAY_BUFFER, (BufferIndex+1) * sizeof(v2), &UVs[0], GL_STATIC_DRAW);
+	GL_Global->glBindBuffer(GL_ARRAY_BUFFER, Text2DUVBufferID);
+	GL_Global->glBufferData(GL_ARRAY_BUFFER, (BufferIndex+1) * sizeof(v2), &UVs[0], GL_STATIC_DRAW);
 
 	// Bind shader
-	glUseProgram(Text2DShaderID);
+	GL_Global->glUseProgram(Text2DShaderID);
 
 	// Bind texture
-	glActiveTexture(GL_TEXTURE0);
+	GL_Global->glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, Text2DTextureID);
 	// Set our "myTextureSampler" sampler to user Texture Unit 0
-	glUniform1i(Text2DUniformID, 0);
+	GL_Global->glUniform1i(Text2DUniformID, 0);
 
 	// 1rst attribute buffer : vertices
-	glEnableVertexAttribArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, Text2DVertexBufferID);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (void*)0 );
+	GL_Global->glEnableVertexAttribArray(0);
+	GL_Global->glBindBuffer(GL_ARRAY_BUFFER, Text2DVertexBufferID);
+	GL_Global->glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (void*)0 );
 
 	// 2nd attribute buffer : UVs
-	glEnableVertexAttribArray(1);
-	glBindBuffer(GL_ARRAY_BUFFER, Text2DUVBufferID);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0 );
+	GL_Global->glEnableVertexAttribArray(1);
+	GL_Global->glBindBuffer(GL_ARRAY_BUFFER, Text2DUVBufferID);
+	GL_Global->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0 );
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -108,8 +108,8 @@ PrintDebugText( const char *Text, int x, int y, int size)
 
 	glDisable(GL_BLEND);
 
-	glDisableVertexAttribArray(0);
-	glDisableVertexAttribArray(1);
+	GL_Global->glDisableVertexAttribArray(0);
+	GL_Global->glDisableVertexAttribArray(1);
 
 	return;
 }
@@ -118,14 +118,14 @@ void
 CleanupText2D()
 {
 	// Delete buffers
-	glDeleteBuffers(1, &Text2DVertexBufferID);
-	glDeleteBuffers(1, &Text2DUVBufferID);
+	GL_Global->glDeleteBuffers(1, &Text2DVertexBufferID);
+	GL_Global->glDeleteBuffers(1, &Text2DUVBufferID);
 
 	// Delete texture
 	glDeleteTextures(1, &Text2DTextureID);
 
 	// Delete shader
-	glDeleteProgram(Text2DShaderID);
+	GL_Global->glDeleteProgram(Text2DShaderID);
 
 	return;
 }

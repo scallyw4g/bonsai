@@ -29,9 +29,9 @@ RenderQuad(RenderGroup *RG)
   // TODO(Jesse): Please explain to me why I cannot draw two of these to the screen between clears
   /* glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); */
 
-  glEnableVertexAttribArray(0);
-  glBindBuffer(GL_ARRAY_BUFFER, RG->quad_vertexbuffer);
-  glVertexAttribPointer(
+  GL_Global->glEnableVertexAttribArray(0);
+  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->quad_vertexbuffer);
+  GL_Global->glVertexAttribPointer(
     0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
     3,                  // size
     GL_FLOAT,           // type
@@ -42,7 +42,7 @@ RenderQuad(RenderGroup *RG)
 
   glDrawArrays(GL_TRIANGLES, 0, 6); // 2*3 indices starting at 0 -> 2 triangles
 
-  glDisableVertexAttribArray(0);
+  GL_Global->glDisableVertexAttribArray(0);
 }
 
 glm::mat4
@@ -69,14 +69,14 @@ GetDepthMVP(World *world, Camera_Object *Camera)
 void
 DrawWorldToFullscreenQuad(World *world, RenderGroup *RG, ShadowRenderGroup *SG, Camera_Object *Camera)
 {
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  glUseProgram(RG->LightingShader);
+  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  GL_Global->glUseProgram(RG->LightingShader);
   glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 
   glm::vec3 GlobalLightDirection =  glm::vec3( sin(GlobalLightTheta), 1.0, -2.0);
   GlobalLightDirection = glm::normalize( GlobalLightDirection );
 
-  glUniform3fv(RG->GlobalLightDirectionID, 1, &GlobalLightDirection[0]);
+  GL_Global->glUniform3fv(RG->GlobalLightDirectionID, 1, &GlobalLightDirection[0]);
 
   glm::mat4 biasMatrix(
     0.5, 0.0, 0.0, 0.0,
@@ -86,26 +86,26 @@ DrawWorldToFullscreenQuad(World *world, RenderGroup *RG, ShadowRenderGroup *SG, 
   );
 
   glm::mat4 depthBiasMVP = biasMatrix * GetDepthMVP(world, Camera);
-  glUniformMatrix4fv(RG->DepthBiasMVPID, 1, GL_FALSE, &depthBiasMVP[0][0]);
+  GL_Global->glUniformMatrix4fv(RG->DepthBiasMVPID, 1, GL_FALSE, &depthBiasMVP[0][0]);
 
   glm::mat4 VP = RG->Basis.ViewMatrix;
 
-  glUniformMatrix4fv(RG->ViewMatrixUniform, 1, GL_FALSE, &VP[0][0]);
+  GL_Global->glUniformMatrix4fv(RG->ViewMatrixUniform, 1, GL_FALSE, &VP[0][0]);
 
   v3 CameraRenderP = GetRenderP(world, Camera->P, Camera);
-  glUniform3fv(RG->CameraPosUniform, 1, &CameraRenderP.E[0]);
+  GL_Global->glUniform3fv(RG->CameraPosUniform, 1, &CameraRenderP.E[0]);
 
-  glActiveTexture(GL_TEXTURE0);
+  GL_Global->glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, RG->ColorTexture);
-  glUniform1i(RG->ColorTextureUniform, 0);
+  GL_Global->glUniform1i(RG->ColorTextureUniform, 0);
 
-  glActiveTexture(GL_TEXTURE1);
+  GL_Global->glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_2D, RG->NormalTexture);
-  glUniform1i(RG->NormalTextureUniform, 1);
+  GL_Global->glUniform1i(RG->NormalTextureUniform, 1);
 
-  glActiveTexture(GL_TEXTURE2);
+  GL_Global->glActiveTexture(GL_TEXTURE2);
   glBindTexture(GL_TEXTURE_2D, RG->PositionTexture);
-  glUniform1i(RG->PositionTextureUniform, 2);
+  GL_Global->glUniform1i(RG->PositionTextureUniform, 2);
 
 #if DEBUG_DRAW_SHADOW_MAP_TEXTURE
   glUseProgram(RG->SimpleTextureShaderID);
@@ -127,19 +127,19 @@ RenderShadowMap(World *world, ShadowRenderGroup *SG, RenderGroup *RG, Camera_Obj
 
   glm::mat4 depthMVP = GetDepthMVP(world, Camera);
 
-  glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
+  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
-  glUseProgram(SG->ShaderID);
-  glUniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &depthMVP[0][0]);
+  GL_Global->glUseProgram(SG->ShaderID);
+  GL_Global->glUniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &depthMVP[0][0]);
 
   /* glBindTexture(GL_TEXTURE_2D, SG->Texture); */
 
   // 1rst attribute buffer : vertices
-  glEnableVertexAttribArray(0);
-  glBindBuffer(GL_ARRAY_BUFFER, RG->vertexbuffer);
-  glBufferData(GL_ARRAY_BUFFER, world->VertexData.filled, world->VertexData.Data, GL_STATIC_DRAW);
-  glVertexAttribPointer(
+  GL_Global->glEnableVertexAttribArray(0);
+  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->vertexbuffer);
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, world->VertexData.filled, world->VertexData.Data, GL_STATIC_DRAW);
+  GL_Global->glVertexAttribPointer(
     0,                  // The attribute we want to configure
     3,                  // size
     GL_FLOAT,           // type
@@ -150,9 +150,9 @@ RenderShadowMap(World *world, ShadowRenderGroup *SG, RenderGroup *RG, Camera_Obj
 
   glDrawArrays(GL_TRIANGLES, 0, world->VertexCount);
 
-  glDisableVertexAttribArray(0);
+  GL_Global->glDisableVertexAttribArray(0);
 
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
   return;
 }
@@ -160,21 +160,21 @@ RenderShadowMap(World *world, ShadowRenderGroup *SG, RenderGroup *RG, Camera_Obj
 void
 RenderWorld(World *world, RenderGroup *RG)
 {
-  glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO);
+  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO);
 
-  glUseProgram(RG->ShaderID);
+  GL_Global->glUseProgram(RG->ShaderID);
   glViewport(0,0,SCR_WIDTH,SCR_HEIGHT);
 
   glm::mat4 mvp = RG->Basis.ProjectionMatrix * RG->Basis.ViewMatrix * glm::mat4(1);
 
-  glUniformMatrix4fv(RG->MVPID,         1, GL_FALSE, &mvp[0][0]);
-  glUniformMatrix4fv(RG->ModelMatrixID, 1, GL_FALSE, &RG->Basis.ModelMatrix[0][0]);
+  GL_Global->glUniformMatrix4fv(RG->MVPID,         1, GL_FALSE, &mvp[0][0]);
+  GL_Global->glUniformMatrix4fv(RG->ModelMatrixID, 1, GL_FALSE, &RG->Basis.ModelMatrix[0][0]);
 
   // Vertices
-  glEnableVertexAttribArray(0);
-  glBindBuffer(GL_ARRAY_BUFFER, RG->vertexbuffer);
-  glBufferData(GL_ARRAY_BUFFER, world->VertexData.filled, world->VertexData.Data, GL_STATIC_DRAW);
-  glVertexAttribPointer(
+  GL_Global->glEnableVertexAttribArray(0);
+  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->vertexbuffer);
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, world->VertexData.filled, world->VertexData.Data, GL_STATIC_DRAW);
+  GL_Global->glVertexAttribPointer(
     0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
     3,                  // size
     GL_FLOAT,           // type
@@ -184,10 +184,10 @@ RenderWorld(World *world, RenderGroup *RG)
   );
 
   // Colors
-  glEnableVertexAttribArray(1);
-  glBindBuffer(GL_ARRAY_BUFFER, RG->colorbuffer);
-  glBufferData(GL_ARRAY_BUFFER, world->ColorData.filled, world->ColorData.Data, GL_STATIC_DRAW);
-  glVertexAttribPointer(
+  GL_Global->glEnableVertexAttribArray(1);
+  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->colorbuffer);
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, world->ColorData.filled, world->ColorData.Data, GL_STATIC_DRAW);
+  GL_Global->glVertexAttribPointer(
     1,                  // attribute 1. No particular reason for 1, but must match the layout in the shader.
     3,                  // size
     GL_FLOAT,           // type
@@ -197,10 +197,10 @@ RenderWorld(World *world, RenderGroup *RG)
   );
 
   // Normals
-  glEnableVertexAttribArray(2);
-  glBindBuffer(GL_ARRAY_BUFFER, RG->normalbuffer);
-  glBufferData(GL_ARRAY_BUFFER, world->NormalData.filled, world->NormalData.Data, GL_STATIC_DRAW);
-  glVertexAttribPointer(
+  GL_Global->glEnableVertexAttribArray(2);
+  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->normalbuffer);
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, world->NormalData.filled, world->NormalData.Data, GL_STATIC_DRAW);
+  GL_Global->glVertexAttribPointer(
     2,
     3,                  // size
     GL_FLOAT,           // type
@@ -211,9 +211,9 @@ RenderWorld(World *world, RenderGroup *RG)
 
   glDrawArrays(GL_TRIANGLES, 0, world->VertexCount);
 
-  glDisableVertexAttribArray(0);
-  glDisableVertexAttribArray(1);
-  glDisableVertexAttribArray(2);
+  GL_Global->glDisableVertexAttribArray(0);
+  GL_Global->glDisableVertexAttribArray(1);
+  GL_Global->glDisableVertexAttribArray(2);
 
 }
 
@@ -1019,13 +1019,13 @@ IsFacingPoint( glm::vec3 FaceToPoint, v3 FaceNormal )
 void
 ClearFramebuffers(RenderGroup *RG, ShadowRenderGroup *SG)
 {
-  glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO);
+  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
+  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
   glClear(GL_DEPTH_BUFFER_BIT);
 
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   return;

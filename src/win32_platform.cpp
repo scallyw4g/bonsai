@@ -1,10 +1,11 @@
 #ifndef WIN32_PLATFORM
 #define WIN32_PLATFORM
 
-#include <GL/wglext.h>
-
 #include <win32_platform.h>
 #include <platform.h>
+
+#include <GL/wglext.h>
+
 
 #define BONSAI_MAIN(void) int CALLBACK WinMain( HINSTANCE AppHandle, HINSTANCE Ignored, LPSTR CmdLine, int CmdShow )
 
@@ -94,51 +95,9 @@ Terminate()
 }
 
 void
-InitializeOpenGlExtensions()
+InitializeOpenGlExtensions(gl_extensions *GL)
 {
-#define BonsaiQueryGlExtension(name) name = wglGetProcAddress(#name);
-  BonsaiQueryGlExtension(glCreateShader);
-  BonsaiQueryGlExtension(glShaderSource);
-  BonsaiQueryGlExtension(glCompileShader);
-  BonsaiQueryGlExtension(glGetShaderiv);
-  BonsaiQueryGlExtension(glGetShaderInfoLog);
-  BonsaiQueryGlExtension(glAttachShader);
-  BonsaiQueryGlExtension(glDetachShader);
-  BonsaiQueryGlExtension(glDeleteShader);
-  BonsaiQueryGlExtension(glCreateProgram);
-  BonsaiQueryGlExtension(glLinkProgram);
-  BonsaiQueryGlExtension(glGetProgramiv);
-  BonsaiQueryGlExtension(glGetProgramInfo);
-  BonsaiQueryGlExtension(glGetProgramInfoLog);
-  BonsaiQueryGlExtension(glUseProgram);
-  BonsaiQueryGlExtension(glDeleteProgram);
-  BonsaiQueryGlExtension(glGetUniformLocation);
-  BonsaiQueryGlExtension(glGenFramebuffers);
-  BonsaiQueryGlExtension(glBindFramebuffer);
-  /* BonsaiQueryGlExtension(glFramebufferTexture); */
-  BonsaiQueryGlExtension(glFramebufferTexture2D);
-  BonsaiQueryGlExtension(glCheckFramebufferStatus);
-  BonsaiQueryGlExtension(glGenTextures);
-  BonsaiQueryGlExtension(glBindTexture);
-  BonsaiQueryGlExtension(glActiveTexture);
-  BonsaiQueryGlExtension(glTexImage2D);
-  BonsaiQueryGlExtension(glTexParameteri);
-  BonsaiQueryGlExtension(glCompressedTexImage2D);
-  BonsaiQueryGlExtension(glGenBuffers);
-  BonsaiQueryGlExtension(glBindBuffer);
-  BonsaiQueryGlExtension(glBufferData);
-  BonsaiQueryGlExtension(glDrawBuffers);
-  BonsaiQueryGlExtension(glDeleteBuffers);
-  BonsaiQueryGlExtension(glVertexAttribPointer);
-  BonsaiQueryGlExtension(glEnableVertexAttribArray);
-  BonsaiQueryGlExtension(glDisableVertexAttribArray);
-  BonsaiQueryGlExtension(glGenVertexArrays);
-  BonsaiQueryGlExtension(glBindVertexArray);
-  BonsaiQueryGlExtension(glUniform3fv);
-  BonsaiQueryGlExtension(glUniformMatrix4fv);
-  BonsaiQueryGlExtension(glUniform1i);
 
-  return;
 }
 
 void
@@ -378,8 +337,34 @@ OpenAndInitializeWindow( int WindowWidth, int WindowHeight )
 inline FARPROC
 GetProcFromLib(shared_lib Lib, const char *Name)
 {
-  shared_lib Result = (FARPROC)GetProcAddress(Lib, Name);
+  FARPROC Result = (FARPROC)GetProcAddress(Lib, Name);
   return Result;
 }
+
+inline shared_lib
+OpenLibrary(const char *LibPath)
+{
+  shared_lib Result = LoadLibrary(LibPath);
+
+  if (!Result)
+  {
+    printf("Error loading library: %s \n", LibPath);
+    Assert(False);
+  }
+  else
+  {
+    printf("Game Lib loaded! \n");
+  }
+
+  return Result;
+}
+
+inline b32
+CloseLibrary(shared_lib Lib)
+{
+  b32 Result = FreeLibrary(Lib);
+  return Result;
+}
+
 
 #endif

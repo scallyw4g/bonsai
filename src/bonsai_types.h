@@ -463,6 +463,18 @@ Translate( v3 v)
 }
 
 inline v3
+V3(int x, int y, int z)
+{
+  v3 Result = {};
+
+  Result.x = (float)x;
+  Result.y = (float)y;
+  Result.z = (float)z;
+
+  return Result;
+}
+
+inline v3
 V3(float x, float y, float z)
 {
   v3 Result = {};

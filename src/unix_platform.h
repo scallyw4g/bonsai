@@ -16,12 +16,6 @@
 #include <GL/glx.h>
 
 
-
-struct platform;
-struct game_state;
-
-
-
 #define Assert(condition) if (!(condition)) raise(SIGTRAP);
 
 #define GAME_LIB_PATH "./libGame"
@@ -29,11 +23,9 @@ struct game_state;
 
 #define THREAD_MAIN_RETURN void*
 
-typedef void (*GameCallback)(void*);
-typedef game_state* (*game_init_proc)(platform*);
-typedef bool (*game_main_proc)(platform*, game_state*);
-
 #define EXPORT extern "C" __attribute__((visibility("default")))
+
+#define SWAP_BUFFERS glXSwapBuffers(dpy, Window)
 
 typedef int thread_id;
 typedef int semaphore;

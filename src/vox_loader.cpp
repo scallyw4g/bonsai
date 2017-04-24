@@ -136,7 +136,10 @@ LoadVox(char const *filepath)
   chunk_data *Result;
   int totalChunkBytes;
 
-  FILE * ModelFile = fopen(filepath, "r");
+  FILE *ModelFile;
+  s32 e = fopen_s( &ModelFile, filepath, "r");
+  Assert(!e);
+
   if (ModelFile)
   {
     // Ensure we're dealing with a .vox file
@@ -199,7 +202,7 @@ LoadVox(char const *filepath)
             LocalVoxelCache[i] = GetVoxel(X+1,Y+1,Z+1,W);
           }
 
-          v3 Min = V3(minX, minY, minZ);
+          v3 Min = V3((r32)minX, (r32)minY, (r32)minZ);
 
           // Add 3 to the max dimension because the max values are indicies,
           // and we need a 1 voxel buffer around the model because

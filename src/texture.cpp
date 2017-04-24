@@ -94,7 +94,9 @@ GLuint loadDDS(const char * imagepath){
 	FILE *fp; 
  
 	/* try to open the file */ 
-	fp = fopen(imagepath, "rb"); 
+	s32 e = fopen_s(&fp, imagepath, "rb"); 
+	Assert(!e);
+
 	if (fp == NULL){
 		Log("%s could not be opened. Are you in the right directory ? Don't forget to read the FAQ !\n", imagepath); getchar(); 
 		return 0;
@@ -163,7 +165,7 @@ GLuint loadDDS(const char * imagepath){
 	for (unsigned int level = 0; level < mipMapCount && (width || height); ++level) 
 	{ 
 		unsigned int size = ((width+3)/4)*((height+3)/4)*blockSize; 
-		glCompressedTexImage2D(GL_TEXTURE_2D, level, format, width, height,  
+		GL_Global->glCompressedTexImage2D(GL_TEXTURE_2D, level, format, width, height,  
 			0, size, buffer + offset); 
 	 
 		offset += size; 

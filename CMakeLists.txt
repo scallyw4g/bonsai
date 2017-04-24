@@ -28,7 +28,7 @@ add_definitions( -DGL_GLEXT_PROTOTYPES=1 )
 if (CYGWIN OR WIN32)
 
   set(WIN32 1)
-  add_definitions(-D_WIN32=1 )
+  add_definitions(-D_WIN32=1 -D_CRT_SECURE_NO_WARNGINS=1)
 
   target_link_libraries(Bonsai Gdi32)
   target_link_libraries(Bonsai User32)
@@ -46,6 +46,8 @@ endif()
 
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)  # g++
   message(STATUS "Compiling with g++")
+
+  add_definitions( -std=c++11 )
 
   find_package(Threads REQUIRED)
   find_package(X11 REQUIRED)

@@ -17,7 +17,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-GLOBAL_VARIABLE u32 LastGameLibTime = 0;
+GLOBAL_VARIABLE u64 LastGameLibTime = 0;
 
 b32
 GameLibIsNew(const char *LibPath)
@@ -29,7 +29,7 @@ GameLibIsNew(const char *LibPath)
   {
     if (StatStruct.st_mtime > LastGameLibTime)
     {
-      LastGameLibTime = StatStruct.st_mtime;
+      LastGameLibTime = (u64)StatStruct.st_mtime;
       Result = True;
     }
   }
@@ -214,14 +214,16 @@ main(s32 NumArgs, char ** Args)
       {
         CloseLibrary(GameLib);
 
-        sleep(1); // FIXME(Jesse): Do a copy on the library or something instead
+        // FIXME(Jesse): Do a copy on the library .. or something .. instead of
+        // blocking and hoping the compiler is finished
+        sleep(1);
 
-        GameLib = LoadLibrary(GAME_LIB);
+        GameLib = OpenLibrary(GAME_LIB);
 
         GameUpdateAndRender = (game_main_proc)GetProcFromLib(GameLib, "GameUpdateAndRender");
       }
 
-      glXSwapBuffers(dpy, Window);
+      SWAP_BUFFERS;
 
       /* float FPS = 60.0f; */
       /* WaitForFrameTime(lastTime, FPS); */
