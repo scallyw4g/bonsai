@@ -206,6 +206,8 @@ main(s32 NumArgs, char ** Args)
   platform Plat = {};
   PlatformInit(&Plat);
 
+  os Os = {};
+
   Plat.WindowHeight = 256;
   Plat.WindowWidth = 512;
 
@@ -220,8 +222,8 @@ main(s32 NumArgs, char ** Args)
   game_main_proc GameUpdateAndRender = (game_main_proc)GetProcFromLib(GameLib, "GameUpdateAndRender");
   if (!GameUpdateAndRender) { printf("Error retreiving GameUpdateAndRender from Game Lib :( \n"); return False; }
 
-  window Window = OpenAndInitializeWindow(Plat.WindowWidth, Plat.WindowHeight );
-  if (!Window) { printf("Error Initializing Window :( \n"); return False; }
+  OpenAndInitializeWindow(&Os, Plat.WindowWidth, Plat.WindowHeight);
+  if (!Os.Window) { printf("Error Initializing Window :( \n"); return False; }
 
   InitializeOpenGlExtensions(&Plat.GL);
 
@@ -275,6 +277,8 @@ main(s32 NumArgs, char ** Args)
 
       GameUpdateAndRender = (game_main_proc)GetProcFromLib(GameLib, "GameUpdateAndRender");
     }
+
+    while ( ProcessOsMessages(&Os) );
 
     SWAP_BUFFERS;
 

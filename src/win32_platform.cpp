@@ -265,11 +265,10 @@ WindowMessageCallback(
    return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
-window
-OpenAndInitializeWindow( int WindowWidth, int WindowHeight )
+void
+OpenAndInitializeWindow( os *Os, int WindowWidth, int WindowHeight )
 {
   WNDCLASS wndClass;
-  window Window;
 
   HINSTANCE AppHandle = GetModuleHandle(0);
 
@@ -288,39 +287,22 @@ OpenAndInitializeWindow( int WindowWidth, int WindowHeight )
   wndClass.lpszClassName = className;
   RegisterClass(&wndClass);
 
-  int e = GetLastError();
-
-  Window = CreateWindow(
+  Os->Window = CreateWindow(
       className, className,
       WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
       0, 0, WindowWidth, WindowHeight,
       NULL, NULL, AppHandle, NULL);
 
-  e = GetLastError();
-
-  ShowWindow(Window, SW_SHOW);
-  UpdateWindow(Window);
-
-  return Window;
-
-  /* int error = glGetError(); */
-  /* if ( error == GL_INVALID_ENUM  || error == GL_NO_ERROR ) */
-  /* { */
-  /*   // Everythings fine, this is a design flaw: */
-  /*   // http://stackoverflow.com/questions/20034615/why-does-glewinit-result-in-gl-invalid-enum-after-making-some-calls-to-glfwwin */
-  /* } */
-  /* else */
-  /* { */
-  /*   Assert(false); // We hit a real error */
-  /* } */
-
-  // glClearColor(0.25f, 0.25f, 0.25f, 0.25f);
+  ShowWindow(Os->Window, SW_SHOW);
+  UpdateWindow(Os->Window);
 
   // Enable depth test
   // glEnable(GL_DEPTH_TEST);
 
   // Accept fragment if it closer to the camera than the former one
   // glDepthFunc(GL_LESS);
+
+  return;
 }
 
 
@@ -364,6 +346,32 @@ GetCwd()
 {
   GetCurrentDirectory( CwdBufferLen, CwdBuffer );
   return &CwdBuffer[0];
+}
+
+b32
+ProcessOsMessages(os *Os)
+{
+  b32 Result = False;
+
+  MSG Message;
+  if ( PeekMessage(&Message, Os->Window, 0, 0, 0) )
+  {
+    Result = true;
+    BOOL bRet = GetMessage( &Message, Os->Window, 0, 0 );
+
+    if (bRet == -1)
+    {
+      // Error retreiving message, panic ?
+      Assert(False);
+    }
+    else
+    {
+      TranslateMessage(&Message);
+      DispatchMessage(&Message);
+    }
+  }
+
+  return Result;
 }
 
 #endif

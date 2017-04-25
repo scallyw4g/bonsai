@@ -104,6 +104,11 @@ struct platform
   s32 WindowHeight;
 };
 
+struct os
+{
+  window Window;
+};
+
 struct debug_state
 {
   unsigned long long (*GetCycleCount)(void);
