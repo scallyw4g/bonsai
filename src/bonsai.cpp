@@ -200,7 +200,6 @@ GetInputsFromController(platform *Plat, Camera_Object *Camera)
 {
   v3 right = Camera->Right;
   v3 forward = Camera->Front;
-  v3 up = Camera->Up;
 
   v3 UpdateDir = V3(0,0,0);
 
@@ -428,7 +427,6 @@ QueueChunksForInit(World* world, platform *Plat, world_position WorldDisp, Entit
   world_position InvAbsIter = ((Iter * Iter)-1) * ((Iter * Iter)-1);
 
   world_position VRHalfDim = World_Position(world->VisibleRegion/2);
-  world_position VrDim = world->VisibleRegion;
 
   world_position SliceMin = PlayerP + (VRHalfDim * Iter) - (VRHalfDim * InvAbsIter) - ClampPositive(WorldDisp);
   world_position SliceMax = PlayerP + (VRHalfDim * Iter) + (VRHalfDim * InvAbsIter) - ClampPositive(Iter) - InvAbsIter - ClampNegative(WorldDisp) + ClampNegative(Iter);
@@ -466,8 +464,6 @@ UpdateVisibleRegion(World *world, platform *Plat, world_position OriginalPlayerP
 void
 SpawnPlayer( World *world, platform *Plat, Entity *Player )
 {
-  chunk_data *Model = Player->Model;
-
   Player->Acceleration = V3(0,0,0);
   Player->Velocity = V3(0,0,0);
 
@@ -600,6 +596,7 @@ UpdateDebugCamera(platform *Plat, World *world, v3 TargetDelta, Camera_Object *C
   if (Plat->Input.E)
     TargetDelta += WORLD_Y;
 
+  // TODO(Jesse): Re-enable me!
 #if 0
   double X, Y;
   glfwGetCursorPos(window, &X, &Y);
@@ -697,7 +694,6 @@ UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera)
 
   v3 Front = V3(0,0,1);
   v3 Target = Camera->Front;
-  v3 Axis = Normalize(Cross(Target, Front));
 
   Quaternion GrossRotation = RotatePoint(Front, Target);
 

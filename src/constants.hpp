@@ -1,6 +1,10 @@
 #ifndef GAME_CONSTANTS
 #define GAME_CONSTANTS
 
+// Shush GCC about unused globals in this file
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
+
 #define BONSAI_INTERNAL 1
 
 #define CHUNK_VOL (CHUNK_HEIGHT*CHUNK_WIDTH*CHUNK_DEPTH)
@@ -70,14 +74,15 @@
 
 #define DEBUG_FRAMES_TO_RUN            -1
 
+
 //
 // Screen Resolution
 
-/* #define SCR_WIDTH 800 */
-/* #define SCR_HEIGHT 600 */
+#define SCR_WIDTH 800
+#define SCR_HEIGHT 600
 
-#define SCR_WIDTH 1920
-#define SCR_HEIGHT 1080
+/* #define SCR_WIDTH 1920 */
+/* #define SCR_HEIGHT 1080 */
 
 /* #define SCR_WIDTH 3840 */
 /* #define SCR_HEIGHT 2160 */
@@ -115,9 +120,11 @@ DEBUG_GLOBAL float GlobalLightTheta = 0;
 DEBUG_GLOBAL AABB LastFreeSlice(V3(0,0,0), V3(0,0,0));
 DEBUG_GLOBAL AABB LastQueuedSlice(V3(0,0,0), V3(0,0,0));
 
-DEBUG_GLOBAL bool UseDebugCamera = true;
+DEBUG_GLOBAL bool UseDebugCamera = True;
 
 #define FACE_COLOR_SIZE 32
 #define PALETTE_SIZE 256
+
+#pragma GCC diagnostic pop // Unused wanrings
 
 #endif

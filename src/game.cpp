@@ -66,13 +66,9 @@ GameInit( platform *Plat )
   GL_Global = &Plat->GL;
   GlobalGlslVersion = Plat->GlslVersion;
 
-  int WindowWidth, WindowHeight;
-
   srand(DEBUG_NOISE_SEED);
   PerlinNoise Noise(rand());
   GlobalNoise = Noise;
-  WindowWidth = SCR_WIDTH;
-  WindowHeight = SCR_HEIGHT;
 
   ShadowRenderGroup *SG = (ShadowRenderGroup*)calloc( sizeof(ShadowRenderGroup), 1);
   if (!InitializeShadowBuffer(SG)) { Log("Error initializing Shadow Buffer\n"); return False; }
@@ -156,10 +152,10 @@ GameUpdateAndRender ( platform *Plat, game_state *GameState )
   accumulatedTime += Plat->dt;
   numFrames ++;
 
-if (UseDebugCamera)
-  RG->Basis.ProjectionMatrix = GetProjectionMatrix(&DebugCamera, Plat->WindowWidth, Plat->WindowHeight);
-else
-  RG->Basis.ProjectionMatrix = GetProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight);
+  if (UseDebugCamera)
+    RG->Basis.ProjectionMatrix = GetProjectionMatrix(&DebugCamera, Plat->WindowWidth, Plat->WindowHeight);
+  else
+    RG->Basis.ProjectionMatrix = GetProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight);
 
   if (UseDebugCamera)
   {

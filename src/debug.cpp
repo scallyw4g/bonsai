@@ -14,8 +14,6 @@ void
 initText2D(const char *TexturePath)
 {
 	Text2DTextureID = loadDDS(TexturePath);
-	Text2DVertexBufferID;
-	Text2DUVBufferID;
 
 	GL_Global->glGenBuffers(1, &Text2DVertexBufferID);
 	GL_Global->glGenBuffers(1, &Text2DUVBufferID);

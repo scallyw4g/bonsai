@@ -510,8 +510,6 @@ bool IsBottomChunkBoundary( chunk_dimension ChunkDim, int idx )
 float
 GetTheta(v3 P1, v3 P2, v3 Axis)
 {
-  v3 P1ToP2 = Normalize(P2 - P1);
-  
   float DotP1P2 = Dot(P1,P2);
 
   float LP1, LP2;

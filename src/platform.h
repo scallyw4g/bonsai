@@ -117,7 +117,7 @@ struct platform
   game_memory GameMemory;
   gl_extensions GL;
 
-  real32 dt;
+  r32 dt;
   s32 WindowWidth;
   s32 WindowHeight;
 
@@ -137,7 +137,5 @@ struct debug_state
 {
   unsigned long long (*GetCycleCount)(void);
 };
-
-static debug_state DebugState;
 
 #endif

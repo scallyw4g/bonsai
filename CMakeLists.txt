@@ -44,10 +44,10 @@ endif()
 
 # Platform specific
 
-if (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)  # g++
+if (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)  # gcc
   message(STATUS "Compiling with g++")
 
-  add_definitions( -std=c++11 )
+  add_definitions( -std=c++11 -Wall )
 
   find_package(Threads REQUIRED)
   find_package(X11 REQUIRED)

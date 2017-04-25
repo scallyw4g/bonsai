@@ -50,7 +50,6 @@ ThreadMain(void *Input)
   thread_startup_params *ThreadParams = (thread_startup_params *)Input;
 
   work_queue *Queue = ThreadParams->Queue;
-  thread *Self = &ThreadParams->Self;
 
   for (;;)
   {
@@ -149,8 +148,6 @@ PlatformInit(platform *Plat)
   Assert(sizeof(u64) == 8);
   Assert(sizeof(s64) == 8);
 
-  u32 StackSize = 0;
-
   glDepthFunc(GL_LEQUAL);
   glEnable(GL_DEPTH_TEST);
 
@@ -174,7 +171,7 @@ PlatformInit(platform *Plat)
     Params->Self.ThreadIndex = ThreadIndex;
     Params->Queue = Queue;
 
-    thread_id ThreadID = CreateThread( ThreadMain, Params );
+    CreateThread( ThreadMain, Params );
   }
 
   Plat->GetHighPrecisionClock = GetHighPrecisionClock;
@@ -306,47 +303,27 @@ main(s32 NumArgs, char ** Args)
     Plat.dt = (real32)((currentTime - lastTime) / 1000000);
     lastTime = currentTime;
 
+    printf("DT: %f \n", Plat.dt);
+
     // Zero out inputs from last frame
     memset(&Plat.Input, 0, sizeof(Plat.Input));
 
     // Flush Message Queue
-    // while ( ProcessOsMessages(&Os) );
-
-    // printf("%f\n", Plat.dt);
-
-
-    /* XEvent xev; */
-    /* XNextEvent(dpy, &xev); */
-    /* if(xev.type == Expose) { */
-    /*   XWindowAttributes gwa; */
-    /*   XGetWindowAttributes(dpy, Window, &gwa); */
-    /*   glViewport(0, 0, gwa.width, gwa.height); */
-    /*   bonsaiGlSwapBuffers(dpy, Window); */
-    /* } */
-    /* else if(xev.type == KeyPress) { */
-    /*   bonsaiGlMakeCurrent(dpy, None, NULL); */
-    /*   bonsaiGlDestroyContext(dpy, glc); */
-    /*   XDestroyWindow(dpy, win); */
-    /*   XCloseDisplay(dpy); */
-    /*   exit(0); */
-    /* } */
-
-
-    GameUpdateAndRender(&Plat, GameState);
+    while ( ProcessOsMessages(&Os, &Plat) );
 
     if ( GameLibIsNew(GAME_LIB) )
     {
       CloseLibrary(GameLib);
 
-      // FIXME(Jesse): Do a copy on the library .. or something .. instead of
-      // blocking and hoping the compiler is finished
+      // FIXME(Jesse): Do something smart instead of blocking and hoping the
+      // compiler is finished
       sleep(1);
 
       GameLib = OpenLibrary(GAME_LIB);
-
       GameUpdateAndRender = (game_main_proc)GetProcFromLib(GameLib, "GameUpdateAndRender");
     }
 
+    GameUpdateAndRender(&Plat, GameState);
     BonsaiSwapBuffers(&Os);
 
     /* float FPS = 60.0f; */
