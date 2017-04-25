@@ -36,5 +36,5 @@ build/ZERO_CHECK.vcxproj
 build/ZERO_CHECK.vcxproj.filters
 
 # Binaries
-libBonsai.dll.a
+libGame.dll.a
 build/cygGame.dll
