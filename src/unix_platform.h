@@ -29,7 +29,6 @@
 #define bonsaiGlGetProcAddress(procName) glXGetProcAddress((GLubyte*)procName)
 
 #define GlobalCwdBufferLength 2048
-GLOBAL_VARIABLE char GlobalCwdBuffer[GlobalCwdBufferLength];
 
 typedef int thread_id;
 typedef int semaphore;

@@ -6,6 +6,9 @@
 #include <unix_platform.h>
 #include <platform.h>
 
+#include <GL/glx.h>
+#include <X11/keysymdef.h>
+
 inline bool
 AtomicCompareExchange( volatile unsigned int *Source, unsigned int Exchange, unsigned int Comparator )
 {
@@ -84,12 +87,12 @@ OpenLibrary(const char *filename)
   if (!Result)
   {
     char *error = dlerror();
-    printf("Error loading library: %s \n", error);
+    printf(" !!! Error loading library: %s \n", error);
     Assert(False);
   }
   else
   {
-    printf("Game Lib loaded! \n");
+    printf(" --- Game Lib loaded! \n");
   }
 
   return Result;
@@ -141,6 +144,7 @@ GetProcFromLib(shared_lib Lib, const char *Name)
 char*
 GetCwd()
 {
+  GLOBAL_VARIABLE char GlobalCwdBuffer[GlobalCwdBufferLength];
   getcwd(GlobalCwdBuffer, GlobalCwdBufferLength);
   return (GlobalCwdBuffer);
 }
@@ -161,9 +165,77 @@ GetHighPrecisionClock()
 }
 
 b32
-ProcessOsMessages(os *Os)
+ProcessOsMessages(os *Os, platform *Plat)
 {
-  return False;
+
+  XEvent Event;
+  b32 EventFound = XCheckWindowEvent(Os->Display, Os->Window, ExposureMask|KeyPressMask, &Event);
+
+  if (EventFound)
+  {
+    if(Event.type == Expose)
+    {
+      XWindowAttributes WindowAttribs;
+      XGetWindowAttributes(Os->Display, Os->Window, &WindowAttribs);
+
+      /* s32 width = WindowAttribs.width; */
+      /* s32 height = WindowAttribs.height; */
+      s32 width = 300;
+      s32 height = 300;
+
+      glViewport(0, 0, width, height);
+
+      printf("Exposed %d %d\n", width, height);
+    }
+
+    else if(Event.type == KeyPress)
+    {
+      int KeySym = XLookupKeysym(&Event.xkey, 0);
+      switch (KeySym)
+      {
+        case XK_w:
+        {
+          Plat->Input.W = True;
+        } break;
+
+        case XK_s:
+        {
+          Plat->Input.S = True;
+        } break;
+
+        case XK_a:
+        {
+          Plat->Input.A = True;
+        } break;
+
+        case XK_d:
+        {
+          Plat->Input.D = True;
+        } break;
+
+        case XK_q:
+        {
+          Plat->Input.Q = True;
+        } break;
+
+        case XK_e:
+        {
+          Plat->Input.E = True;
+        } break;
+
+        case XK_F11:
+        {
+          Plat->Input.F11 = True;
+        } break;
+
+        default:
+        {
+        } break;
+      }
+    }
+  }
+
+  return EventFound;
 }
 
 inline void
