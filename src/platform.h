@@ -16,7 +16,6 @@ typedef game_state* (*game_init_proc)(platform*);
 typedef bool (*game_main_proc)(platform*, game_state*);
 
 
-
 // FIXME(Jesse): Surely there's a way to not have work_queue_entires contain the world
 struct work_queue_entry
 {
@@ -102,6 +101,8 @@ struct platform
   real32 dt;
   s32 WindowWidth;
   s32 WindowHeight;
+
+  const char *GlslVersion;
 };
 
 struct os

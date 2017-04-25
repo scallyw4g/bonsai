@@ -201,7 +201,7 @@ main(s32 NumArgs, char ** Args)
 {
   printf("\n -- Initializing Bonsai \n");
 
-  printf(" -- Running out of : %s ", GetCwd() );
+  printf(" -- Running out of : %s \n", GetCwd() );
 
   platform Plat = {};
   PlatformInit(&Plat);
@@ -226,6 +226,16 @@ main(s32 NumArgs, char ** Args)
   if (!Os.Window) { printf("Error Initializing Window :( \n"); return False; }
 
   InitializeOpenGlExtensions(&Plat.GL);
+
+  float GLSL_Version = atof((char*)glGetString ( GL_SHADING_LANGUAGE_VERSION ));
+  printf(" GLSL verison : %f \n", GLSL_Version );
+
+  if (GLSL_Version >= 3.3f)
+    Plat.GlslVersion = "330";
+
+  else
+    Plat.GlslVersion = "ES";
+
 
   game_state *GameState = GameInit(&Plat);
   if (!GameState) { printf("Error Initializing Game State :( \n"); return False; }

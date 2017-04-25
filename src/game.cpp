@@ -5,10 +5,16 @@
 #endif
 
 #include <platform.h>
+
+// TODO(Jesse): Axe these!
 static gl_extensions *GL_Global;
+static const char *GlobalGlslVersion;
 
 #include <bonsai.h>
+
+#include <shader.cpp>
 #include <render.h>
+
 #include <debug.h>
 
 
@@ -57,6 +63,7 @@ GameInit( platform *Plat )
   printf("Starting Game \n");
 
   GL_Global = &Plat->GL;
+  GlobalGlslVersion = Plat->GlslVersion;
 
   int WindowWidth, WindowHeight;
 

@@ -4,8 +4,6 @@
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include <shader.cpp>
-
 // Wrapper so assertions give us file/line numbers
 #define AssertNoGlErrors {            \
   int glErrorNo = glGetError();       \
