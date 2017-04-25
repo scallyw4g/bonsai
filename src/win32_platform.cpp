@@ -191,82 +191,180 @@ WindowMessageCallback(
     WPARAM wParam,
     LPARAM lParam)
 {
-  switch (message) {
-     case WM_CREATE:
-         /* initialize OpenGL rendering */
-         hDC = GetDC(hWnd);
-         setupPixelFormat(hDC);
-         hPalette = setupPalette(hDC);
-         hGLRC = wglCreateContext(hDC);
-         wglMakeCurrent(hDC, hGLRC);
-         return 0;
-     case WM_DESTROY:
-         /* finish OpenGL rendering */
-         if (hGLRC) {
-             wglMakeCurrent(NULL, NULL);
-             wglDeleteContext(hGLRC);
-         }
-         if (hPalette) {
-             DeleteObject(hPalette);
-         }
-         ReleaseDC(hWnd, hDC);
-         PostQuitMessage(0);
-         return 0;
-     case WM_SIZE:
-         /* track window size changes */
-         if (hGLRC) {
-             return 0;
-         }
-     case WM_PALETTECHANGED:
-         /* realize palette if this is *not* the current window */
-         if (hGLRC && hPalette && (HWND) wParam != hWnd) {
-             UnrealizeObject(hPalette);
-             SelectPalette(hDC, hPalette, FALSE);
-             RealizePalette(hDC);
-             SwapBuffers(hDC);
-             break;
-         }
-         break;
-     case WM_QUERYNEWPALETTE:
-         /* realize palette if this is the current window */
-         if (hGLRC && hPalette) {
-             UnrealizeObject(hPalette);
-             SelectPalette(hDC, hPalette, FALSE);
-             RealizePalette(hDC);
-             SwapBuffers(hDC);
-             return TRUE;
-         }
-         break;
-     case WM_PAINT:
-         {
-             PAINTSTRUCT ps;
-             BeginPaint(hWnd, &ps);
-             if (hGLRC) {
-                 SwapBuffers(hDC);
-             }
-             EndPaint(hWnd, &ps);
-             return 0;
-         }
-         break;
-     case WM_CHAR:
-         /* handle keyboard input */
-         switch ((int)wParam) {
-         case VK_ESCAPE:
-             DestroyWindow(hWnd);
-             return 0;
-         default:
-             break;
-         }
-         break;
-     default:
-         break;
-     }
+
+  switch (message)
+  {
+    case WM_CREATE:
+    {
+      hDC = GetDC(hWnd);
+      setupPixelFormat(hDC);
+      hPalette = setupPalette(hDC);
+      hGLRC = wglCreateContext(hDC);
+      wglMakeCurrent(hDC, hGLRC);
+      return 0;
+
+    } break;
+
+
+    case WM_DESTROY:
+    {
+      if (hGLRC) // Cleanup Opengl context
+      {
+        wglMakeCurrent(NULL, NULL);
+        wglDeleteContext(hGLRC);
+      }
+
+      if (hPalette)
+      {
+        DeleteObject(hPalette);
+      }
+
+      ReleaseDC(hWnd, hDC);
+      PostQuitMessage(0);
+
+      return 0;
+
+    } break;
+
+    case WM_SIZE:
+    {
+      // Handle resize ?
+      return 0;
+
+    } break;
+
+    case WM_PALETTECHANGED:
+    {
+      /* realize palette if this is *not* the current window */
+      if (hGLRC && hPalette && (HWND) wParam != hWnd)
+      {
+        UnrealizeObject(hPalette);
+        SelectPalette(hDC, hPalette, FALSE);
+        RealizePalette(hDC);
+        SwapBuffers(hDC);
+        break;
+      }
+
+    } break;
+
+    case WM_QUERYNEWPALETTE:
+    {
+      /* realize palette if this is the current window */
+      if (hGLRC && hPalette)
+      {
+        UnrealizeObject(hPalette);
+        SelectPalette(hDC, hPalette, FALSE);
+        RealizePalette(hDC);
+        SwapBuffers(hDC);
+        return TRUE;
+      }
+
+    } break;
+
+    case WM_PAINT:
+    {
+      PAINTSTRUCT ps;
+      BeginPaint(hWnd, &ps);
+      if (hGLRC)
+      {
+        SwapBuffers(hDC);
+      }
+      EndPaint(hWnd, &ps);
+      return 0;
+
+    } break;
+
+
+    /*
+     * User Input
+     */
+    case WM_LBUTTONDOWN:
+    {
+
+      platform *Plat = (platform*)GetWindowLongPtr(hWnd, 0);
+      Plat->Input.LMB = True;
+      break;
+    }
+
+    case WM_RBUTTONDOWN:
+    {
+      platform *Plat = (platform*)GetWindowLongPtr(hWnd, 0);
+      Plat->Input.RMB = True;
+      break;
+    }
+
+    case WM_KEYDOWN:
+    {
+      switch ((int)wParam)
+      {
+        case VK_ESCAPE:
+        {
+          DestroyWindow(hWnd);
+          return 0;
+        } break;
+
+        case 0x57:
+        {
+          platform *Plat = (platform*)GetWindowLongPtr(hWnd, 0);
+          Plat->Input.W = True;
+        } break;
+
+        case 0x44:
+        {
+          platform *Plat = (platform*)GetWindowLongPtr(hWnd, 0);
+          Plat->Input.D = True;
+        } break;
+
+        case 0x53:
+        {
+          platform *Plat = (platform*)GetWindowLongPtr(hWnd, 0);
+          Plat->Input.S = True;
+        } break;
+
+        case 0x41:
+        {
+          platform *Plat = (platform*)GetWindowLongPtr(hWnd, 0);
+          Plat->Input.A = True;
+        } break;
+
+        case 0x51:
+        {
+          platform *Plat = (platform*)GetWindowLongPtr(hWnd, 0);
+          Plat->Input.Q = True;
+        } break;
+
+        case 0x45:
+        {
+          platform *Plat = (platform*)GetWindowLongPtr(hWnd, 0);
+          Plat->Input.E = True;
+        } break;
+
+        case VK_F11:
+        {
+          platform *Plat = (platform*)GetWindowLongPtr(hWnd, 0);
+          Plat->Input.F11 = True;
+        } break;
+
+        default:
+        {
+          // Ignore all other keypresses
+        } break;
+      }
+
+    }
+
+    default:
+    {
+      // Ignore all other window messages
+    } break;
+
+  }
 
    return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
 void
-OpenAndInitializeWindow( os *Os, int WindowWidth, int WindowHeight )
+OpenAndInitializeWindow( os *Os, platform *Plat, int WindowWidth, int WindowHeight )
 {
   WNDCLASS wndClass;
 
@@ -278,7 +376,7 @@ OpenAndInitializeWindow( os *Os, int WindowWidth, int WindowHeight )
   wndClass.style = CS_OWNDC | CS_HREDRAW | CS_VREDRAW;
   wndClass.lpfnWndProc = WindowMessageCallback;
   wndClass.cbClsExtra = 0;
-  wndClass.cbWndExtra = 0;
+  wndClass.cbWndExtra = sizeof(Plat);
   wndClass.hInstance = AppHandle;
   wndClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
   wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
@@ -287,11 +385,14 @@ OpenAndInitializeWindow( os *Os, int WindowWidth, int WindowHeight )
   wndClass.lpszClassName = className;
   RegisterClass(&wndClass);
 
+
   Os->Window = CreateWindow(
       className, className,
       WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
-      0, 0, WindowWidth, WindowHeight,
+      100, 800, WindowWidth, WindowHeight,
       NULL, NULL, AppHandle, NULL);
+
+  SetWindowLongPtr(Os->Window, 0, (LONG_PTR)Plat);
 
   ShowWindow(Os->Window, SW_SHOW);
   UpdateWindow(Os->Window);

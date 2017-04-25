@@ -195,9 +195,8 @@ QueueChunkForInit(World *world, platform *Plat, world_chunk *Chunk)
   return;
 }
 
-// FIXME : Problem with multiple keypresses ( 8 then 7 then 4 won't move left )
 inline v3
-GetInputsFromController(Camera_Object *Camera)
+GetInputsFromController(platform *Plat, Camera_Object *Camera)
 {
   v3 right = Camera->Right;
   v3 forward = Camera->Front;
@@ -205,33 +204,21 @@ GetInputsFromController(Camera_Object *Camera)
 
   v3 UpdateDir = V3(0,0,0);
 
-  // TODO(Jesse): Re-enable this!
-#if 0
-  // Move forward
-  if (glfwGetKey( window, GLFW_KEY_KP_8 ) == GLFW_PRESS ||
-      glfwGetKey( window, GLFW_KEY_W ) == GLFW_PRESS )
-  {
+  // Forward
+  if ( Plat->Input.W )
     UpdateDir += forward;
-  }
-  // Move backward
-  if (glfwGetKey( window, GLFW_KEY_KP_5 ) == GLFW_PRESS ||
-      glfwGetKey( window, GLFW_KEY_S ) == GLFW_PRESS )
-  {
+
+  // Backward
+  if ( Plat->Input.S )
     UpdateDir -= forward;
-  }
-  // Strafe right
-  if (glfwGetKey( window, GLFW_KEY_KP_6 ) == GLFW_PRESS ||
-      glfwGetKey( window, GLFW_KEY_D ) == GLFW_PRESS )
-  {
+
+  // Right
+  if ( Plat->Input.D )
     UpdateDir += right;
-  }
-  // Strafe left
-  if (glfwGetKey( window, GLFW_KEY_KP_4 ) == GLFW_PRESS ||
-      glfwGetKey( window, GLFW_KEY_A ) == GLFW_PRESS )
-  {
+
+  // Left
+  if ( Plat->Input.A )
     UpdateDir -= right;
-  }
-#endif
 
   UpdateDir.y = 0;
 
@@ -602,22 +589,19 @@ UpdatePlayerP(World *world, platform *Plat, Entity *Player, v3 GrossUpdateVector
 }
 
 void
-UpdateDebugCamera( World *world, v3 TargetDelta, Camera_Object *Camera)
+UpdateDebugCamera(platform *Plat, World *world, v3 TargetDelta, Camera_Object *Camera)
 {
   float FocalLength = DEBUG_CAMERA_FOCAL_LENGTH;
   float mouseSpeed = 0.20f;
 
+  if (Plat->Input.Q)
+    TargetDelta -= WORLD_Y;
 
-  // TODO(Jesse): Re-enable this!
+  if (Plat->Input.E)
+    TargetDelta += WORLD_Y;
+
 #if 0
   double X, Y;
-
-  if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-	  TargetDelta -= WORLD_Y;
-
-  if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-	  TargetDelta += WORLD_Y;
-
   glfwGetCursorPos(window, &X, &Y);
   glfwSetCursorPos(window, 1024/2, 768/2);
 #else

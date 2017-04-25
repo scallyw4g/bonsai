@@ -271,7 +271,7 @@ main(s32 NumArgs, char ** Args)
   game_main_proc GameUpdateAndRender = (game_main_proc)GetProcFromLib(GameLib, "GameUpdateAndRender");
   if (!GameUpdateAndRender) { printf("Error retreiving GameUpdateAndRender from Game Lib :( \n"); return False; }
 
-  OpenAndInitializeWindow(&Os, Plat.WindowWidth, Plat.WindowHeight);
+  OpenAndInitializeWindow(&Os, &Plat, Plat.WindowWidth, Plat.WindowHeight);
   if (!Os.Window) { printf("Error Initializing Window :( \n"); return False; }
 
   InitializeOpenGlExtensions(&Plat.GL);
@@ -297,12 +297,18 @@ main(s32 NumArgs, char ** Args)
 
   for (;;)
   {
-
+    // Reset frame timer
     u64 currentTime = Plat.GetHighPrecisionClock();
     Plat.dt = (real32)((currentTime - lastTime) / 1000000);
     lastTime = currentTime;
 
-    printf("%f\n", Plat.dt);
+    // Zero out inputs from last frame
+    memset(&Plat.Input, 0, sizeof(Plat.Input));
+
+    // Flush Message Queue
+    while ( ProcessOsMessages(&Os) );
+
+    // printf("%f\n", Plat.dt);
 
 
     /* XEvent xev; */
@@ -336,8 +342,6 @@ main(s32 NumArgs, char ** Args)
 
       GameUpdateAndRender = (game_main_proc)GetProcFromLib(GameLib, "GameUpdateAndRender");
     }
-
-    while ( ProcessOsMessages(&Os) );
 
     SWAP_BUFFERS;
 

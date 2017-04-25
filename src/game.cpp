@@ -166,22 +166,19 @@ else
     DEBUG_DrawAABB(world, CameraLocation, Quaternion(1,0,0,0), PINK, 0.5f);
   }
 
-  // TODO(Jesse): Re-enable this!
 #if 0
   if ( glfwGetKey(window, GLFW_KEY_ENTER ) == GLFW_PRESS )
     SeedWorldAndUnspawnPlayer(world, Player);
+#endif
 
   static bool Toggled = false;
-  static bool F11Depressed = false;
 
-  F11Depressed = glfwGetKey(window, GLFW_KEY_F11) == GLFW_PRESS ;
-
-  if ( !Toggled && F11Depressed)
+  if ( !Toggled && Plat->Input.F11)
   {
     Toggled = true;
     UseDebugCamera = !UseDebugCamera;
   }
-  else if ( Toggled && !F11Depressed )
+  else if ( Toggled && !Plat->Input.F11 )
   {
     Toggled = false;
   }
@@ -189,13 +186,12 @@ else
   if (UseDebugCamera)
     CurrentCamera = &DebugCamera;
   else
-#endif
     CurrentCamera = Camera;
 
-  v3 Input = GetInputsFromController(CurrentCamera);
+  v3 Input = GetInputsFromController(Plat, CurrentCamera);
   if (UseDebugCamera)
   {
-    UpdateDebugCamera(world, Input, &DebugCamera);
+    UpdateDebugCamera(Plat, world, Input, &DebugCamera);
   }
   else
   {

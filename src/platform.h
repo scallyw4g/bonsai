@@ -87,6 +87,20 @@ struct gl_extensions
   PFNGLACTIVETEXTUREPROC glActiveTexture;
 };
 
+struct input
+{
+  b32 F11;
+  b32 RMB;
+  b32 LMB;
+  b32 W;
+  b32 A;
+  b32 S;
+  b32 D;
+
+  b32 Q;
+  b32 E;
+};
+
 struct platform
 {
   work_queue Queue;
@@ -103,6 +117,8 @@ struct platform
   s32 WindowHeight;
 
   const char *GlslVersion;
+
+  input Input;
 };
 
 struct os

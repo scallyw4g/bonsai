@@ -22,7 +22,7 @@
 
 #include <direct.h> // Chdir
 
-#define GAME_LIB_PATH "Debug/Game"
+#define GAME_LIB_PATH "build/Debug/Game"
 #define snprintf(...) _snprintf(__VA_ARGS__)
 
 #endif // __CYGWIN__
