@@ -156,12 +156,27 @@ IsFilesystemRoot(char *Filepath)
   return Result;
 }
 
-inline u64
+inline r64
 GetHighPrecisionClock()
 {
   struct timespec Time;
-  clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &Time);
+  clock_gettime(CLOCK_MONOTONIC, &Time);
   return(Time.tv_nsec);
+}
+
+r64
+ComputeDtForFrame(r64 *lastTime)
+{
+  r64 cachedLastTime = *lastTime;
+  r64 currentTime = GetHighPrecisionClock();
+
+  if (cachedLastTime > currentTime)
+    cachedLastTime -= 1000000000;
+
+  r64 Result = ((currentTime - cachedLastTime) / 1000000000);
+
+  *lastTime = currentTime;
+  return Result;
 }
 
 b32

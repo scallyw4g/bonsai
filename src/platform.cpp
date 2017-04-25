@@ -294,16 +294,11 @@ main(s32 NumArgs, char ** Args)
    *  Main Game loop
    */
 
-  u64 lastTime = Plat.GetHighPrecisionClock();
+  r64 lastTime = Plat.GetHighPrecisionClock();
 
   for (;;)
   {
-    // Reset frame timer
-    u64 currentTime = Plat.GetHighPrecisionClock();
-    Plat.dt = (real32)((currentTime - lastTime) / 1000000);
-    lastTime = currentTime;
-
-    printf("DT: %f \n", Plat.dt);
+    Plat.dt = ComputeDtForFrame(&lastTime);
 
     // Zero out inputs from last frame
     memset(&Plat.Input, 0, sizeof(Plat.Input));

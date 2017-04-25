@@ -120,7 +120,7 @@ DEBUG_GLOBAL float GlobalLightTheta = 0;
 DEBUG_GLOBAL AABB LastFreeSlice(V3(0,0,0), V3(0,0,0));
 DEBUG_GLOBAL AABB LastQueuedSlice(V3(0,0,0), V3(0,0,0));
 
-DEBUG_GLOBAL bool UseDebugCamera = True;
+DEBUG_GLOBAL bool UseDebugCamera = False;
 
 #define FACE_COLOR_SIZE 32
 #define PALETTE_SIZE 256

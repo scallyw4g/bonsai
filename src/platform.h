@@ -111,13 +111,13 @@ struct platform
   work_queue Queue;
   thread_startup_params *Threads;
   void (*PushWorkQueueEntry)(work_queue *Queue, work_queue_entry *Entry);
-  u64 (*GetHighPrecisionClock)(void);
+  r64 (*GetHighPrecisionClock)(void);
   void (*Terminate)(void);
 
   game_memory GameMemory;
   gl_extensions GL;
 
-  r32 dt;
+  r64 dt;
   s32 WindowWidth;
   s32 WindowHeight;
 
