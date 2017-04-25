@@ -6,8 +6,6 @@
 
 #include <chrono> // Timer
 
-#include <GL/wglext.h>
-
 #define BONSAI_MAIN(void) int CALLBACK WinMain( HINSTANCE AppHandle, HINSTANCE Ignored, LPSTR CmdLine, int CmdShow )
 
 static HDC hDC;
@@ -370,7 +368,7 @@ WindowMessageCallback(
    return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
-void
+b32
 OpenAndInitializeWindow( os *Os, platform *Plat, int WindowWidth, int WindowHeight )
 {
   WNDCLASS wndClass;
@@ -410,7 +408,7 @@ OpenAndInitializeWindow( os *Os, platform *Plat, int WindowWidth, int WindowHeig
   // Accept fragment if it closer to the camera than the former one
   // glDepthFunc(GL_LESS);
 
-  return;
+  return True;
 }
 
 

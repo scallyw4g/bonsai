@@ -15,7 +15,6 @@
 // Xlib
 #include <X11/X.h>
 #include <X11/Xlib.h>
-
 #include <GL/glx.h>
 
 #define Assert(condition) if (!(condition)) raise(SIGTRAP);
@@ -27,14 +26,18 @@
 
 #define EXPORT extern "C" __attribute__((visibility("default")))
 
-#define SWAP_BUFFERS glXSwapBuffers(dpy, Window)
+#define bonsaiGlGetProcAddress(procName) glXGetProcAddress((GLubyte*)procName)
 
-#define bonsaiGlGetProcAddress(procName) glxGetProcAddress((GLubyte*)procName)
+#define GlobalCwdBufferLength 2048
+GLOBAL_VARIABLE char GlobalCwdBuffer[GlobalCwdBufferLength];
 
 typedef int thread_id;
 typedef int semaphore;
 
 typedef void* shared_lib;
 typedef Window window;
+
+typedef Display display;
+typedef GLXContext gl_context;
 
 #endif

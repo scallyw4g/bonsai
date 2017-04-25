@@ -2,8 +2,10 @@
 #define BONSAI_PLATFORM_CPP
 
 #include <iostream>
+#include <string.h> // memset
 
 
+#include <platform_constants.h>
 #include <bonsai_types.h>
 #include <constants.hpp>
 
@@ -262,7 +264,7 @@ main(s32 NumArgs, char ** Args)
 
   GameLibIsNew(GAME_LIB);  // Hack to initialize the LastGameLibTime static
 
-  shared_lib GameLib = LoadLibrary(GAME_LIB);
+  shared_lib GameLib = OpenLibrary(GAME_LIB);
   if (!GameLib) { printf("Error Loading GameLib :( \n"); return False; }
 
   game_init_proc GameInit = (game_init_proc)GetProcFromLib(GameLib, "GameInit");
@@ -271,8 +273,10 @@ main(s32 NumArgs, char ** Args)
   game_main_proc GameUpdateAndRender = (game_main_proc)GetProcFromLib(GameLib, "GameUpdateAndRender");
   if (!GameUpdateAndRender) { printf("Error retreiving GameUpdateAndRender from Game Lib :( \n"); return False; }
 
-  OpenAndInitializeWindow(&Os, &Plat, Plat.WindowWidth, Plat.WindowHeight);
-  if (!Os.Window) { printf("Error Initializing Window :( \n"); return False; }
+  b32 WindowSuccess = OpenAndInitializeWindow(&Os, &Plat, Plat.WindowWidth, Plat.WindowHeight);
+  if (!WindowSuccess) { printf("Error Initializing Window :( \n"); return False; }
+
+  Assert(Os.Window);
 
   InitializeOpenGlExtensions(&Plat.GL);
 
@@ -283,7 +287,7 @@ main(s32 NumArgs, char ** Args)
     Plat.GlslVersion = "330";
 
   else
-    Plat.GlslVersion = "ES";
+    Plat.GlslVersion = "310ES";
 
 
   game_state *GameState = GameInit(&Plat);
@@ -306,7 +310,7 @@ main(s32 NumArgs, char ** Args)
     memset(&Plat.Input, 0, sizeof(Plat.Input));
 
     // Flush Message Queue
-    while ( ProcessOsMessages(&Os) );
+    // while ( ProcessOsMessages(&Os) );
 
     // printf("%f\n", Plat.dt);
 
@@ -343,7 +347,7 @@ main(s32 NumArgs, char ** Args)
       GameUpdateAndRender = (game_main_proc)GetProcFromLib(GameLib, "GameUpdateAndRender");
     }
 
-    SWAP_BUFFERS;
+    BonsaiSwapBuffers(&Os);
 
     /* float FPS = 60.0f; */
     /* WaitForFrameTime(lastTime, FPS); */

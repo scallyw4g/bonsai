@@ -1,12 +1,6 @@
 #ifndef GAME_CONSTANTS
 #define GAME_CONSTANTS
 
-#define True 1
-#define False 0
-
-#define DEBUG_GLOBAL static
-#define GLOBAL_VARIABLE static
-
 #define BONSAI_INTERNAL 1
 
 #define CHUNK_VOL (CHUNK_HEIGHT*CHUNK_WIDTH*CHUNK_DEPTH)

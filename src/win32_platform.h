@@ -10,6 +10,7 @@
 
 #include <stdint.h>
 
+#include <GL/wglext.h>
 
 
 #define Assert(condition) if (!(condition)) __debugbreak();

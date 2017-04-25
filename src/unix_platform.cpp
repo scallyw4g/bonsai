@@ -6,11 +6,6 @@
 #include <unix_platform.h>
 #include <platform.h>
 
-#include <GL/glext.h>
-
-static Display *dpy;
-static GLXContext glc;
-
 inline bool
 AtomicCompareExchange( volatile unsigned int *Source, unsigned int Exchange, unsigned int Comparator )
 {
@@ -100,38 +95,40 @@ OpenLibrary(const char *filename)
   return Result;
 }
 
-window
-OpenAndInitializeWindow( int WindowWidth, int WindowHeight )
+b32
+OpenAndInitializeWindow( os *Os, platform *Plat, int WindowWidth, int WindowHeight )
 {
   GLint GlAttribs[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
 
-  dpy = XOpenDisplay(0);
-  if (!dpy) { printf(" Cannot connect to X Server \n"); return False; }
+  Os->Display = XOpenDisplay(0);
+  if (!Os->Display) { printf(" Cannot connect to X Server \n"); return False; }
 
-  window RootWindow = DefaultRootWindow(dpy);
+  window RootWindow = DefaultRootWindow(Os->Display);
   if (!RootWindow) { printf(" Unable to get RootWindow \n"); return False; }
 
-  XVisualInfo *VisualInfo = glXChooseVisual(dpy, 0, GlAttribs);
+  XVisualInfo *VisualInfo = glXChooseVisual(Os->Display, 0, GlAttribs);
   if (!VisualInfo) { printf(" Unable to get Visual Info \n"); return False; }
 
-  Colormap ColorInfo = XCreateColormap(dpy, RootWindow, VisualInfo->visual, AllocNone);
+  Colormap ColorInfo = XCreateColormap(Os->Display, RootWindow, VisualInfo->visual, AllocNone);
 
   XSetWindowAttributes WindowAttribs;
   WindowAttribs.colormap = ColorInfo;
   WindowAttribs.event_mask = ExposureMask | KeyPressMask;
 
-  Window win = XCreateWindow(dpy, RootWindow, 0, 0, 600, 600, 0, VisualInfo->depth, InputOutput, VisualInfo->visual, CWColormap | CWEventMask, &WindowAttribs);
+  Window win = XCreateWindow(Os->Display, RootWindow, 0, 0, 600, 600, 0, VisualInfo->depth, InputOutput, VisualInfo->visual, CWColormap | CWEventMask, &WindowAttribs);
   if (!win) { printf(" Unable to Create Window \n"); return False; }
 
-  XMapWindow(dpy, win);
-  XStoreName(dpy, win, "Bonsai");
+  XMapWindow(Os->Display, win);
+  XStoreName(Os->Display, win, "Bonsai");
 
-  glc = glXCreateContext(dpy, VisualInfo, NULL, GL_TRUE);
-  if (!glc) { printf(" Unable to Create GLXContext \n"); return False; }
+  Os->GlContext = glXCreateContext(Os->Display, VisualInfo, NULL, GL_TRUE);
+  if (!Os->GlContext) { printf(" Unable to Create GLXContext \n"); return False; }
 
-  glXMakeCurrent(dpy, win, glc);
+  glXMakeCurrent(Os->Display, win, Os->GlContext);
 
-  return win;
+  Os->Window = win;
+
+  return True;
 }
 
 inline GameCallback
@@ -141,16 +138,38 @@ GetProcFromLib(shared_lib Lib, const char *Name)
   return Result;
 }
 
-/*
- *  Returns nanoseconds
- */
-inline real64
+char*
+GetCwd()
+{
+  getcwd(GlobalCwdBuffer, GlobalCwdBufferLength);
+  return (GlobalCwdBuffer);
+}
+
+b32
+IsFilesystemRoot(char *Filepath)
+{
+  b32 Result = ( Filepath[0] == '/' && Filepath[1] == 0 );
+  return Result;
+}
+
+inline u64
 GetHighPrecisionClock()
 {
   struct timespec Time;
   clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &Time);
-  return Time.tv_nsec;
+  return(Time.tv_nsec);
 }
 
+b32
+ProcessOsMessages(os *Os)
+{
+  return False;
+}
+
+inline void
+BonsaiSwapBuffers(os *Os)
+{
+  glXSwapBuffers(Os->Display, Os->Window);
+}
 
 #endif

@@ -1,3 +1,5 @@
+#include <platform_constants.h>
+
 #ifdef _WIN32
 #include <win32_platform.h>
 #else
@@ -18,7 +20,6 @@ static const char *GlobalGlslVersion;
 #include <debug.h>
 
 
-#include <constants.hpp>
 #include <bonsai.cpp>
 #include <texture.cpp>
 #include <debug.cpp>

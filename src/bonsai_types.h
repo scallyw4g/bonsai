@@ -7,7 +7,6 @@
 struct World;
 struct canonical_position;
 
-
 // 8 Bit types
 typedef uint8_t u8;
 
