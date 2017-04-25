@@ -2,6 +2,7 @@
 #define UNIX_PLATFORM_H
 
 #include <Windows.h>
+#include <Windowsx.h> // Macros to retrieve mouse coordinates
 #include <WinBase.h>
 #include <Wingdi.h>
 

@@ -283,15 +283,22 @@ WindowMessageCallback(
 
       platform *Plat = (platform*)GetWindowLongPtr(hWnd, 0);
       Plat->Input.LMB = True;
-      break;
-    }
+    } break;
 
     case WM_RBUTTONDOWN:
     {
       platform *Plat = (platform*)GetWindowLongPtr(hWnd, 0);
       Plat->Input.RMB = True;
-      break;
-    }
+    } break;
+
+    case WM_MOUSEMOVE:
+    {
+      s32 xPos = GET_X_LPARAM(lParam);
+      s32 yPos = GET_Y_LPARAM(lParam);
+
+      printf(" X: %d, Y: %d \n", xPos, yPos);
+
+    } break;
 
     case WM_KEYDOWN:
     {

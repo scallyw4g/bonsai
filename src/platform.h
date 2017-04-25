@@ -99,6 +99,9 @@ struct input
 
   b32 Q;
   b32 E;
+
+  s32 DeltaMouseX;
+  s32 DeltaMouseY;
 };
 
 struct platform
