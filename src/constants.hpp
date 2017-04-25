@@ -46,9 +46,21 @@
 
 #define WORLD_GRAVITY V3(0.0f, -20.0f, 0.0f)
 
+#define MODELS_PATH "models/"
+
 #define PLAYER_STEP_MAX          1
 #define PLAYER_JUMP_STRENGTH     20.0f
 #define PLAYER_ACCEL_MULTIPLIER  50.0f
+
+/* #define PLAYER_MODEL MODELS_PATH"chr_knight.vox" */
+/* #define PLAYER_MODEL MODELS_PATH"ephtracy.vox" */
+/* #define PLAYER_MODEL MODELS_PATH"chr_sword.vox" */
+/* #define PLAYER_MODEL MODELS_PATH"shelf.vox" */
+/* #define PLAYER_MODEL MODELS_PATH"8x8x8.vox" */
+/* #define PLAYER_MODEL MODELS_PATH"alien_bot2.vox" */
+/* #define PLAYER_MODEL MODELS_PATH"chr_rain.vox" */
+/* #define PLAYER_MODEL MODELS_PATH"chr_old.vox" */
+#define PLAYER_MODEL MODELS_PATH"3x3x3.vox"
 
 
 #define DEBUG_SCROLL_WORLD            1
