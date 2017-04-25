@@ -1,0 +1,106 @@
+#version 330
+
+out vec3 color;
+
+in vec2 UV;
+
+uniform sampler2D gColor;
+uniform sampler2D gNormal;
+uniform sampler2D gPosition;
+
+uniform sampler2DShadow shadowMap;
+
+uniform vec3 CameraPos;
+uniform vec3 GlobalLightDirection;
+uniform mat4 DepthBiasMVP;
+uniform mat4 ViewMatrix;
+
+float exposure = 1.0f;
+float gamma = 2.2f;
+
+float GlobalLightIntensity = 1.0f;
+
+//
+//
+//
+
+vec2 poissonDisk[16] = vec2[](
+   vec2( -0.94201624, -0.39906216 ),
+   vec2(  0.94558609, -0.76890725 ),
+   vec2( -0.09418410, -0.92938870 ),
+   vec2(  0.34495938,  0.29387760 ),
+   vec2( -0.91588581,  0.45771432 ),
+   vec2( -0.81544232, -0.87912464 ),
+   vec2( -0.38277543,  0.27676845 ),
+   vec2(  0.97484398,  0.75648379 ),
+
+   vec2(  0.44323325, -0.97511554 ),
+   vec2(  0.53742981, -0.47373420 ),
+   vec2( -0.26496911, -0.41893023 ),
+   vec2(  0.79197514,  0.19090188 ),
+   vec2( -0.24188840,  0.99706507 ),
+   vec2( -0.81409955,  0.91437590 ),
+   vec2(  0.19984126,  0.78641367 ),
+   vec2(  0.14383161, -0.14100790 )
+);
+
+//
+//
+void main()
+{
+  vec3 Diffuse      = texture(gColor, UV).rgb;
+  vec3 fragNormal   = texture(gNormal, UV).rgb; // modelspace
+  vec3 fragPosition = texture(gPosition, UV).rgb; // worldspace
+
+  vec3 Ambient = Diffuse * GlobalLightIntensity * 0.1f;
+
+  float GlobalLightCosTheta = clamp( dot( fragNormal, GlobalLightDirection), 0.0f, 1.0f);
+
+
+  float AO = 0.0f;
+
+  vec3 CameraViewSpace = (vec4(CameraPos, 1.0f) * ViewMatrix).xyz;
+
+  int AoSamples = 16;
+  for ( int PoissonIndex = 0; PoissonIndex < AoSamples; ++PoissonIndex )
+  {
+    vec3 SampleViewSpace = (texture(gPosition, UV + ( poissonDisk[PoissonIndex]/200.0f) ) * ViewMatrix).xyz;
+    vec3 FragViewSpace   = (texture(gPosition, UV) * ViewMatrix).xyz;
+
+    float DistanceToSample = length( CameraViewSpace - SampleViewSpace );
+    float DistanceToFrag = length( CameraViewSpace - FragViewSpace );
+
+    if (DistanceToSample < DistanceToFrag)
+      AO += 1.3f;
+  }
+
+  AO = 1.0f - (AO/float(AoSamples));
+
+  vec4 ShadowCoord = DepthBiasMVP * vec4(fragPosition, 1.0f);
+
+  vec3 N = normalize( fragNormal );
+  float cosGlobalTheta = clamp( dot( N, GlobalLightDirection), 0.0f, 1.0f);
+
+  // TODO(Jesse): This is an epsilon to fix shadow acne.. can we do this better?
+  // I notice a lot of peter-panning on corners using this technique
+  float bias = 0.01f;
+
+  float visibility = 1.0f;
+
+  /* for (int i=0;i < 8;i++){ */
+  /*   int index = int(16.0*random(floor(fragPosition*1000.0), i))%16; */
+  /*   visibility -= 0.1*( 1.0 - texture( shadowMap, vec3(ShadowCoord.xy + poissonDisk[index]/1000.0,  (ShadowCoord.z-bias)/ShadowCoord.w) )); */
+  /* } */
+
+
+  vec3 hdrColor =
+    Ambient
+    + Diffuse * GlobalLightCosTheta * GlobalLightIntensity * visibility * vec3(AO)
+  ;
+
+  // Reinhard tone mapping
+  vec3 mapped = hdrColor / (hdrColor + vec3(1.0f));
+
+  // Gamma correction
+  color = pow(mapped, vec3(1.0f / gamma));
+}
