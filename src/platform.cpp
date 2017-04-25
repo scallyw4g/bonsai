@@ -2,7 +2,6 @@
 #define BONSAI_PLATFORM_CPP
 
 #include <iostream>
-#include <string.h> // memset
 
 #include <platform_constants.h>
 #include <bonsai_types.h>
@@ -20,6 +19,7 @@
 #include <sys/stat.h>
 
 GLOBAL_VARIABLE s64 LastGameLibTime = 0;
+GLOBAL_VARIABLE input NullInput = {};
 
 b32
 GameLibIsNew(const char *LibPath)
@@ -301,6 +301,8 @@ main(s32 NumArgs, char ** Args)
 
     // printf("%f \n", Plat.dt);
 
+    // Zero out inputs from last frame
+    Plat.Input = NullInput;
 
     // Flush Message Queue
     while ( ProcessOsMessages(&Os, &Plat) );
