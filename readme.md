@@ -38,6 +38,8 @@ model is pretty big.  Think 3^3 8^3 chunks with a 16^3 model
 
 [ ] Write keypress callbacks instead of checking if (key == down) { do_thing }
 
+[ ] FIXME: Shaders need to be pre-processed for the available version of GLSL
+
 [ ] FIXME: If you're going really fast and try to update your position outside
 the VisibleRegion you collide with the edge of the world and stop moving
 
