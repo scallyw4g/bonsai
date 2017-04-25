@@ -1,7 +1,6 @@
 #ifndef UNIX_PLATFORM_CPP
 #define UNIX_PLATFORM_CPP
 
-#include <unistd.h>
 #include <stdio.h>
 
 #include <unix_platform.h>

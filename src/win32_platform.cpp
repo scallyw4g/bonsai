@@ -4,7 +4,7 @@
 #include <win32_platform.h>
 #include <platform.h>
 
-#include <chrono>
+#include <chrono> // Timer
 
 #include <GL/wglext.h>
 
@@ -374,4 +374,10 @@ ProcessOsMessages(os *Os)
   return Result;
 }
 
+inline b32
+IsFilesystemRoot(const char *Filepath)
+{
+  b32 Result = ( strlen(Filepath) == 3 && Filepath[1] == ':' && Filepath[2] == '\\');
+  return Result;
+}
 #endif

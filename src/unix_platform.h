@@ -6,6 +6,9 @@
 // Assert
 #include <signal.h>
 
+// chdir
+#include <unistd.h>
+
 // dlopen
 #include <dlfcn.h>
 

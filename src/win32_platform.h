@@ -15,9 +15,12 @@
 
 #ifdef __CYGWIN__
 
+#include <unistd.h> // Chdir
 #define GAME_LIB_PATH "build/cygGame"
 
 #else // MSVC
+
+#include <direct.h> // Chdir
 
 #define GAME_LIB_PATH "Debug/Game"
 #define snprintf(...) _snprintf(__VA_ARGS__)

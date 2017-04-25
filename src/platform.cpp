@@ -3,6 +3,7 @@
 
 #include <iostream>
 
+
 #include <bonsai_types.h>
 #include <constants.hpp>
 
@@ -196,10 +197,58 @@ WaitForFrameTime(r64 frameStart, float FPS)
   return;
 }
 
+
+inline b32
+FileExists(const char *Path)
+{
+  b32 Result = False;
+
+  if (FILE *file = fopen(Path, "r"))
+  {
+    fclose(file);
+    Result = True;
+  }
+
+  return Result;
+}
+
+
+b32
+SearchForProjectRoot(void)
+{
+  b32 Result = False;
+
+  if (FileExists("CMakeLists.txt"))
+  {
+    Result = True;
+  }
+  else
+  {
+    b32 ChdirSuceeded = (chdir("..") == 0);
+    b32 NotAtFilesystemRoot = (!IsFilesystemRoot(GetCwd()));
+
+    if (ChdirSuceeded && NotAtFilesystemRoot)
+      Result = SearchForProjectRoot();
+
+    else
+      Result = False;
+
+  }
+
+  return Result;
+}
+
+
 int
 main(s32 NumArgs, char ** Args)
 {
   printf("\n -- Initializing Bonsai \n");
+
+  if (!SearchForProjectRoot())
+  {
+    printf(" -- Error -- Couldn't find root dir, exiting. \n");
+    return False;
+  }
 
   printf(" -- Running out of : %s \n", GetCwd() );
 
@@ -298,12 +347,5 @@ main(s32 NumArgs, char ** Args)
 
   return True;
 }
-
-debug_state *
-GetDebugState(void)
-{
-  return &DebugState;
-}
-
 
 #endif
