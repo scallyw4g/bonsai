@@ -78,7 +78,12 @@ GetCycleCount()
 inline r64
 GetHighPrecisionClock()
 {
-  r64 Result = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+  GLOBAL_VARIABLE auto FirstTime = std::chrono::high_resolution_clock::now();
+  // cout << "FirstTime Time : " << chrono::time_point_cast<chrono::nanoseconds>(FirstTime).time_since_epoch().count() << " ns \n";
+
+  r64 Result = (std::chrono::high_resolution_clock::now() - FirstTime).count();
+  // cout << "Time/iter, clock: " << chrono::duration_cast<chrono::nanoseconds>(Result).count() << " ns \n";
+
   return Result;
 }
 
@@ -86,7 +91,7 @@ inline r64
 ComputeDtForFrame(r64 *LastTime)
 {
   r64 CurrentTime = GetHighPrecisionClock();
-  r64 Dt = CurrentTime - *LastTime;
+  r64 Dt = (CurrentTime - *LastTime) / 1000000000;
 
   *LastTime = CurrentTime;
   return Dt;
@@ -290,13 +295,13 @@ WindowMessageCallback(
     case WM_LBUTTONDOWN:
     {
 
-      platform *Plat = (platform*)GetWindowLongPtr(hWnd, 0);
+      platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
       Plat->Input.LMB = True;
     } break;
 
     case WM_RBUTTONDOWN:
     {
-      platform *Plat = (platform*)GetWindowLongPtr(hWnd, 0);
+      platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
       Plat->Input.RMB = True;
     } break;
 
@@ -321,43 +326,43 @@ WindowMessageCallback(
 
         case 0x57:
         {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, 0);
+          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
           Plat->Input.W = True;
         } break;
 
         case 0x44:
         {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, 0);
+          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
           Plat->Input.D = True;
         } break;
 
         case 0x53:
         {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, 0);
+          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
           Plat->Input.S = True;
         } break;
 
         case 0x41:
         {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, 0);
+          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
           Plat->Input.A = True;
         } break;
 
         case 0x51:
         {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, 0);
+          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
           Plat->Input.Q = True;
         } break;
 
         case 0x45:
         {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, 0);
+          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
           Plat->Input.E = True;
         } break;
 
         case VK_F11:
         {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, 0);
+          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
           Plat->Input.F11 = True;
         } break;
 

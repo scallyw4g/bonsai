@@ -111,7 +111,7 @@ struct platform
   game_memory GameMemory;
   gl_extensions GL;
 
-  r64 dt;
+  r32 dt;
   s32 WindowWidth;
   s32 WindowHeight;
 

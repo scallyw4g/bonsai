@@ -276,10 +276,10 @@ main(s32 NumArgs, char ** Args)
 
   InitializeOpenGlExtensions(&Plat.GL);
 
-  float GLSL_Version = atof((char*)glGetString ( GL_SHADING_LANGUAGE_VERSION ));
+  r64 GLSL_Version = atof((char*)glGetString ( GL_SHADING_LANGUAGE_VERSION ));
   printf(" GLSL verison : %f \n", GLSL_Version );
 
-  if (GLSL_Version >= 3.3f)
+  if (GLSL_Version >= 3.3)
     Plat.GlslVersion = "330";
 
   else
@@ -297,9 +297,10 @@ main(s32 NumArgs, char ** Args)
 
   for (;;)
   {
-    Plat.dt = ComputeDtForFrame(&lastTime);
+    Plat.dt = (r32)ComputeDtForFrame(&lastTime);
 
-    printf("%f \n", Plat.dt);
+    // printf("%f \n", Plat.dt);
+
     // Zero out inputs from last frame
     memset(&Plat.Input, 0, sizeof(Plat.Input));
 

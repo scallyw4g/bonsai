@@ -47,7 +47,7 @@
 
 
 
-
+#define PLATFORM_OFFSET (sizeof(void*))
 
 #define GAME_LIB (GAME_LIB_PATH".dll")
 
