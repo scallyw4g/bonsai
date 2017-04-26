@@ -1,12 +1,6 @@
 #ifndef BONSAI_PLATFORM_H
 #define BONSAI_PLATFORM_H
 
-#include <GL/gl.h>
-#include <GL/glext.h>
-
-#include <platform_constants.h>
-
-#include <bonsai_types.h>
 
 #define WORK_QUEUE_SIZE (2*VOLUME_VISIBLE_REGION)
 
@@ -129,7 +123,7 @@ struct platform
 struct os
 {
   window Window;
-  display *Display;
+  display Display;
   gl_context GlContext;
 };
 

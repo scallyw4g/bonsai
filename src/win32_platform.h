@@ -6,21 +6,32 @@
 #include <WinBase.h>
 #include <Wingdi.h>
 
+#include <GL/gl.h>
+#include <GL/glext.h>
+#include <GL/wglext.h>
+
 #include <sys/stat.h>
 
 #include <stdint.h>
 
-#include <GL/wglext.h>
 
 
 #define Assert(condition) if (!(condition)) __debugbreak();
 
+/*
+ *  Cygwin GCC specific stuff
+ */
 #ifdef __CYGWIN__
 
 #include <unistd.h> // Chdir
 #define GAME_LIB_PATH "build/cygGame"
 
-#else // MSVC
+ // Unfortunately older versions of GCC require this to ignore unused globals
+ // because the pragma ignore syntax doesn't appear to work
+/*
+ *  MSVC specific stuff
+ */
+#else
 
 #include <direct.h> // Chdir
 
@@ -28,6 +39,15 @@
 #define snprintf(...) _snprintf(__VA_ARGS__)
 
 #endif // __CYGWIN__
+
+
+
+
+
+
+
+
+
 
 #define GAME_LIB (GAME_LIB_PATH".dll")
 
@@ -52,5 +72,7 @@ typedef HANDLE semaphore;
 // ???
 typedef HMODULE shared_lib;
 typedef HWND window;
+typedef HGLRC gl_context;
+typedef HDC display;
 
 #endif

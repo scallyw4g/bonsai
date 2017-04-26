@@ -1,19 +1,13 @@
 #ifndef GAME_CONSTANTS
 #define GAME_CONSTANTS
 
-// Shush GCC about unused globals in this file
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-variable"
-
-#define BONSAI_INTERNAL 1
-
 #define CHUNK_VOL (CHUNK_HEIGHT*CHUNK_WIDTH*CHUNK_DEPTH)
 
 // 6 verticies per face, 6 faces per voxel
 #define VERT_PER_VOXEL (6*6)
 
 // 3 floats per vert
-#define BYTES_PER_VERT (sizeof(float)*3)
+#define BYTES_PER_VERT (sizeof(r32)*3)
 
 #define VOXEL_DIAMETER (1.0f)
 #define VOXEL_RADIUS (VOXEL_DIAMETER/2.0f)
@@ -44,8 +38,6 @@
 
 #define WORLD_GRAVITY V3(0.0f, -20.0f, 0.0f)
 
-#define MODELS_PATH "models/"
-
 #define PLAYER_STEP_MAX          1
 #define PLAYER_JUMP_STRENGTH     20.0f
 #define PLAYER_ACCEL_MULTIPLIER  50.0f
@@ -75,25 +67,13 @@
 #define DEBUG_FRAMES_TO_RUN            -1
 
 
-//
-// Screen Resolution
-
-#define SCR_WIDTH 800
-#define SCR_HEIGHT 600
-
-/* #define SCR_WIDTH 1920 */
-/* #define SCR_HEIGHT 1080 */
-
-/* #define SCR_WIDTH 3840 */
-/* #define SCR_HEIGHT 2160 */
-
 #define Proj_XY 50
 #define Proj_Z  100
 #define SHADOW_MAP_RESOLUTION 2048
 #define DEBUG_TEXTURE_SIZE    512
 
-GLOBAL_VARIABLE float CAMERA_FOCAL_LENGTH = 15.0f;
-GLOBAL_VARIABLE float DEBUG_CAMERA_FOCAL_LENGTH = 10.0f;
+GLOBAL_VARIABLE r32 CAMERA_FOCAL_LENGTH = 15.0f;
+GLOBAL_VARIABLE r32 DEBUG_CAMERA_FOCAL_LENGTH = 10.0f;
 #define DEBUG_CAMERA_SCROLL_SPEED  20.0f
 
 #define CAMERA_INITIAL_P Canonical_Position(world, V3(1,1,1), World_Position(world->VisibleRegion/2))
@@ -107,15 +87,15 @@ GLOBAL_VARIABLE float DEBUG_CAMERA_FOCAL_LENGTH = 10.0f;
 #define FINAL_COLOR_BIT ((FINAL_POSITION_BIT+COLOR_BIT_WIDTH))
 
 
-DEBUG_GLOBAL unsigned int DEBUG_NOISE_SEED = 43165433;
+DEBUG_GLOBAL u32 DEBUG_NOISE_SEED = 43165433;
 
-DEBUG_GLOBAL int numFrames = 0;
-DEBUG_GLOBAL float accumulatedTime = 0;
+DEBUG_GLOBAL s32 numFrames = 0;
+DEBUG_GLOBAL r64 accumulatedTime = 0;
 
-DEBUG_GLOBAL int tris = 0;
-DEBUG_GLOBAL int VoxelsIndexed = 0;
+DEBUG_GLOBAL s32 tris = 0;
+DEBUG_GLOBAL s32 VoxelsIndexed = 0;
 
-DEBUG_GLOBAL float GlobalLightTheta = 0;
+DEBUG_GLOBAL r32 GlobalLightTheta = 0;
 
 DEBUG_GLOBAL AABB LastFreeSlice(V3(0,0,0), V3(0,0,0));
 DEBUG_GLOBAL AABB LastQueuedSlice(V3(0,0,0), V3(0,0,0));
@@ -124,7 +104,5 @@ DEBUG_GLOBAL bool UseDebugCamera = False;
 
 #define FACE_COLOR_SIZE 32
 #define PALETTE_SIZE 256
-
-#pragma GCC diagnostic pop // Unused wanrings
 
 #endif

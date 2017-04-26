@@ -6,6 +6,7 @@
 #include <unix_platform.h>
 #endif
 
+#include <bonsai_types.h>
 #include <platform.h>
 
 // TODO(Jesse): Axe these!

@@ -8,8 +8,6 @@
 
 #define BONSAI_MAIN(void) int CALLBACK WinMain( HINSTANCE AppHandle, HINSTANCE Ignored, LPSTR CmdLine, int CmdShow )
 
-static HDC hDC;
-static HGLRC hGLRC;
 static HPALETTE hPalette;
 
 inline b32
@@ -55,7 +53,6 @@ thread_id
 CreateThread( LPTHREAD_START_ROUTINE ThreadMain, thread_startup_params *Params)
 {
   DWORD flags = 0;
-  int StackSize = 0;
 
   thread_id ThreadId = CreateThread(
       0,
@@ -78,11 +75,21 @@ GetCycleCount()
   return Result;
 }
 
-u64
+inline r64
 GetHighPrecisionClock()
 {
-  u64 Result = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+  r64 Result = std::chrono::high_resolution_clock::now().time_since_epoch().count();
   return Result;
+}
+
+inline r64
+ComputeDtForFrame(r64 *LastTime)
+{
+  r64 CurrentTime = GetHighPrecisionClock();
+  r64 Dt = CurrentTime - *LastTime;
+
+  *LastTime = CurrentTime;
+  return Dt;
 }
 
 void
@@ -194,11 +201,7 @@ WindowMessageCallback(
   {
     case WM_CREATE:
     {
-      hDC = GetDC(hWnd);
-      setupPixelFormat(hDC);
-      hPalette = setupPalette(hDC);
-      hGLRC = wglCreateContext(hDC);
-      wglMakeCurrent(hDC, hGLRC);
+
       return 0;
 
     } break;
@@ -206,10 +209,12 @@ WindowMessageCallback(
 
     case WM_DESTROY:
     {
-      if (hGLRC) // Cleanup Opengl context
+      os *Os = (os*)GetWindowLongPtr(hWnd, 0);
+
+      if (Os->GlContext) // Cleanup Opengl context
       {
         wglMakeCurrent(NULL, NULL);
-        wglDeleteContext(hGLRC);
+        wglDeleteContext(Os->GlContext);
       }
 
       if (hPalette)
@@ -217,7 +222,7 @@ WindowMessageCallback(
         DeleteObject(hPalette);
       }
 
-      ReleaseDC(hWnd, hDC);
+      ReleaseDC(hWnd, Os->Display);
       PostQuitMessage(0);
 
       return 0;
@@ -233,13 +238,15 @@ WindowMessageCallback(
 
     case WM_PALETTECHANGED:
     {
+      os *Os = (os*)GetWindowLongPtr(hWnd, 0);
+
       /* realize palette if this is *not* the current window */
-      if (hGLRC && hPalette && (HWND) wParam != hWnd)
+      if (Os->GlContext && hPalette && (HWND) wParam != hWnd)
       {
         UnrealizeObject(hPalette);
-        SelectPalette(hDC, hPalette, FALSE);
-        RealizePalette(hDC);
-        SwapBuffers(hDC);
+        SelectPalette(Os->Display, hPalette, FALSE);
+        RealizePalette(Os->Display);
+        SwapBuffers(Os->Display);
         break;
       }
 
@@ -247,13 +254,15 @@ WindowMessageCallback(
 
     case WM_QUERYNEWPALETTE:
     {
+      os *Os = (os*)GetWindowLongPtr(hWnd, 0);
+
       /* realize palette if this is the current window */
-      if (hGLRC && hPalette)
+      if (Os->GlContext && hPalette)
       {
         UnrealizeObject(hPalette);
-        SelectPalette(hDC, hPalette, FALSE);
-        RealizePalette(hDC);
-        SwapBuffers(hDC);
+        SelectPalette(Os->Display, hPalette, FALSE);
+        RealizePalette(Os->Display);
+        SwapBuffers(Os->Display);
         return TRUE;
       }
 
@@ -261,11 +270,13 @@ WindowMessageCallback(
 
     case WM_PAINT:
     {
+      os *Os = (os*)GetWindowLongPtr(hWnd, 0);
+
       PAINTSTRUCT ps;
       BeginPaint(hWnd, &ps);
-      if (hGLRC)
+      if (Os->GlContext)
       {
-        SwapBuffers(hDC);
+        SwapBuffers(Os->Display);
       }
       EndPaint(hWnd, &ps);
       return 0;
@@ -381,7 +392,7 @@ OpenAndInitializeWindow( os *Os, platform *Plat, int WindowWidth, int WindowHeig
   wndClass.style = CS_OWNDC | CS_HREDRAW | CS_VREDRAW;
   wndClass.lpfnWndProc = WindowMessageCallback;
   wndClass.cbClsExtra = 0;
-  wndClass.cbWndExtra = sizeof(Plat);
+  wndClass.cbWndExtra = sizeof(Plat) + sizeof(Os);
   wndClass.hInstance = AppHandle;
   wndClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
   wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
@@ -397,7 +408,24 @@ OpenAndInitializeWindow( os *Os, platform *Plat, int WindowWidth, int WindowHeig
       100, 800, WindowWidth, WindowHeight,
       NULL, NULL, AppHandle, NULL);
 
-  SetWindowLongPtr(Os->Window, 0, (LONG_PTR)Plat);
+  Os->Display = GetDC(Os->Window);
+  setupPixelFormat(Os->Display);
+  hPalette = setupPalette(Os->Display);
+  Os->GlContext = wglCreateContext(Os->Display);
+  wglMakeCurrent(Os->Display, Os->GlContext);
+
+  {
+    SetWindowLongPtr(Os->Window, 0, (LONG_PTR)Os);
+    int e = GetLastError();
+    Assert(!e);
+  }
+
+  {
+    SetWindowLongPtr(Os->Window, sizeof(Os), (LONG_PTR)Plat);
+    int e = GetLastError();
+    Assert(!e);
+  }
+
 
   ShowWindow(Os->Window, SW_SHOW);
   UpdateWindow(Os->Window);
@@ -455,7 +483,7 @@ GetCwd()
 }
 
 b32
-ProcessOsMessages(os *Os)
+ProcessOsMessages(os *Os, platform *Plat)
 {
   b32 Result = False;
 
@@ -486,4 +514,11 @@ IsFilesystemRoot(const char *Filepath)
   b32 Result = ( strlen(Filepath) == 3 && Filepath[1] == ':' && Filepath[2] == '\\');
   return Result;
 }
+
+inline void
+BonsaiSwapBuffers(os *Os)
+{
+  SwapBuffers(Os->Display);
+}
+
 #endif

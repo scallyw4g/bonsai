@@ -4,7 +4,6 @@
 #include <iostream>
 #include <string.h> // memset
 
-
 #include <platform_constants.h>
 #include <bonsai_types.h>
 #include <constants.hpp>
@@ -300,6 +299,7 @@ main(s32 NumArgs, char ** Args)
   {
     Plat.dt = ComputeDtForFrame(&lastTime);
 
+    printf("%f \n", Plat.dt);
     // Zero out inputs from last frame
     memset(&Plat.Input, 0, sizeof(Plat.Input));
 

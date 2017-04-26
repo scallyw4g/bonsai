@@ -15,7 +15,12 @@
 // Xlib
 #include <X11/X.h>
 #include <X11/Xlib.h>
+#include <GL/gl.h>
+#include <GL/glext.h>
 #include <GL/glx.h>
+
+
+
 
 #define Assert(condition) if (!(condition)) raise(SIGTRAP);
 
@@ -36,7 +41,7 @@ typedef int semaphore;
 typedef void* shared_lib;
 typedef Window window;
 
-typedef Display display;
+typedef Display* display;
 typedef GLXContext gl_context;
 
 #endif
