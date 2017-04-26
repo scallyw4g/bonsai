@@ -314,6 +314,60 @@ WindowMessageCallback(
 
     } break;
 
+    case WM_KEYUP:
+    {
+      switch ((int)wParam)
+      {
+
+        case 0x57:
+        {
+          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
+          Plat->Input.W = False;
+        } break;
+
+        case 0x44:
+        {
+          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
+          Plat->Input.D = False;
+        } break;
+
+        case 0x53:
+        {
+          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
+          Plat->Input.S = False;
+        } break;
+
+        case 0x41:
+        {
+          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
+          Plat->Input.A = False;
+        } break;
+
+        case 0x51:
+        {
+          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
+          Plat->Input.Q = False;
+        } break;
+
+        case 0x45:
+        {
+          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
+          Plat->Input.E = False;
+        } break;
+
+        case VK_F11:
+        {
+          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
+          Plat->Input.F11 = False;
+        } break;
+
+        default:
+        {
+          // Ignore all other keypresses
+        } break;
+      }
+
+    }
     case WM_KEYDOWN:
     {
       switch ((int)wParam)

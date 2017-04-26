@@ -1017,6 +1017,8 @@ IsFacingPoint( glm::vec3 FaceToPoint, v3 FaceNormal )
 void
 ClearFramebuffers(RenderGroup *RG, ShadowRenderGroup *SG)
 {
+  glClearColor(0.35f, 0.35f, 0.35f, 0.0f);
+
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

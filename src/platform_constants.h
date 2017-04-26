@@ -29,14 +29,10 @@
 
 // Screen Resolution
 
-#define SCR_WIDTH 800
-#define SCR_HEIGHT 600
+#define SCREEN_RATIO 8
 
-/* #define SCR_WIDTH 1920 */
-/* #define SCR_HEIGHT 1080 */
-
-/* #define SCR_WIDTH 3840 */
-/* #define SCR_HEIGHT 2160 */
+#define SCR_WIDTH (3840/SCREEN_RATIO)
+#define SCR_HEIGHT (2160/SCREEN_RATIO)
 
 
 /*
