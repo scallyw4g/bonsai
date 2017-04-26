@@ -14,6 +14,7 @@
  */
 #else
 
+// Hush up gcc about unreferenced globals
 #define GLOBAL_VARIABLE static __attribute__((unused))
 #define DEBUG_GLOBAL static __attribute__((unused))
 

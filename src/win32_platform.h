@@ -26,8 +26,6 @@
 #include <unistd.h> // Chdir
 #define GAME_LIB_PATH "build/cygGame"
 
- // Unfortunately older versions of GCC require this to ignore unused globals
- // because the pragma ignore syntax doesn't appear to work
 /*
  *  MSVC specific stuff
  */
