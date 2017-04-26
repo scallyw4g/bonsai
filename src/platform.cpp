@@ -255,8 +255,8 @@ main(s32 NumArgs, char ** Args)
 
   os Os = {};
 
-  Plat.WindowHeight = 256;
-  Plat.WindowWidth = 512;
+  Plat.WindowHeight = SCR_HEIGHT;
+  Plat.WindowWidth = SCR_WIDTH;
 
   GameLibIsNew(GAME_LIB);  // Hack to initialize the LastGameLibTime static
 

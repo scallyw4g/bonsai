@@ -1,13 +1,19 @@
 #ifndef PLAYGROUNDH
 #define PLAYGROUNDH
 
+
+#include <bonsai_types.h>
+#include <platform.h>
+
+#include <bonsai_math.h>
+
 #include <perlin.h>
 #include <stdio.h>
 #include <bonsai_types.h>
-#include <bonsai_math.h>
 #include <debug.h>
-
 #include <constants.hpp>
+
+#include <debug.h>
 
 #define ArrayCount(a) (sizeof(a)/sizeof(a[0]))
 
@@ -165,6 +171,12 @@ struct World
 
   int VertexCount; // How many verticies are we drawing
 };
+
+
+
+#include <render.h>
+
+
 
 inline bool
 IsFilledInChunk( World *world, world_chunk *chunk, voxel_position VoxelP );

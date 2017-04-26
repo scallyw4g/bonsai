@@ -1,6 +1,14 @@
 #ifndef BONSAI_PLATFORM_H
 #define BONSAI_PLATFORM_H
 
+#include <platform_constants.h>
+
+#ifdef _WIN32
+#include <win32_platform.h>
+#else
+#include <unix_platform.h>
+#endif
+
 
 #define WORK_QUEUE_SIZE (2*VOLUME_VISIBLE_REGION)
 

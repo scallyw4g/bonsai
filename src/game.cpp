@@ -1,33 +1,14 @@
-#include <platform_constants.h>
 
-#ifdef _WIN32
-#include <win32_platform.h>
-#else
-#include <unix_platform.h>
-#endif
+#include <bonsai.h>
 
-#include <bonsai_types.h>
-#include <platform.h>
-
+//
 // TODO(Jesse): Axe these!
 static gl_extensions *GL_Global;
 static const char *GlobalGlslVersion;
 
-#include <bonsai.h>
-
-#include <shader.cpp>
-#include <render.h>
-
-#include <debug.h>
-
+#include <game.h>
 
 #include <bonsai.cpp>
-#include <texture.cpp>
-#include <debug.cpp>
-
-#include <time.h>
-
-#include <game.h>
 
 DEBUG_GLOBAL Camera_Object DebugCamera = {};
 

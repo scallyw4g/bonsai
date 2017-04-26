@@ -1,20 +1,17 @@
-#include <time.h>
 
-#if LINUX
-#include "/usr/include/valgrind/callgrind.h"
-#endif
+#include <bonsai.h>
 
 #include <constants.hpp>
 
-
-#include <ogl_render.cpp>
-
 #include <vox_loader.cpp>
-#include <objloader.cpp>
-
 #include <perlin.cpp>
 
-#include <math.h>
+#include <shader.cpp>
+#include <render.cpp>
+#include <texture.cpp> // Only used for font .DDS atm
+#include <debug.cpp>
+
+
 
 // FIXME(Jesse): Global-variable this up so threads can cold-call for it
 static World *GlobalWorld = 0;

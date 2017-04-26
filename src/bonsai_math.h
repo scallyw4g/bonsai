@@ -60,10 +60,10 @@ float
 ClampMinus1To1(float F)
 {
   if (F > 1)
-	  F=1;
+    F=1;
 
   if (F < -1)
-	  F=-1;
+    F=-1;
 
   return F;
 }
