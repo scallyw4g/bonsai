@@ -116,7 +116,7 @@ OpenAndInitializeWindow( os *Os, platform *Plat, int WindowWidth, int WindowHeig
 
   XSetWindowAttributes WindowAttribs;
   WindowAttribs.colormap = ColorInfo;
-  WindowAttribs.event_mask = ExposureMask | KeyPressMask;
+  WindowAttribs.event_mask = ExposureMask | KeyPressMask | KeyReleaseMask;
 
   Window win = XCreateWindow(Os->Display, RootWindow, 0, 0, 600, 600, 0, VisualInfo->depth, InputOutput, VisualInfo->visual, CWColormap | CWEventMask, &WindowAttribs);
   if (!win) { printf(" Unable to Create Window \n"); return False; }
@@ -184,7 +184,7 @@ ProcessOsMessages(os *Os, platform *Plat)
 {
 
   XEvent Event;
-  b32 EventFound = XCheckWindowEvent(Os->Display, Os->Window, ExposureMask|KeyPressMask, &Event);
+  b32 EventFound = XCheckWindowEvent(Os->Display, Os->Window, ExposureMask | KeyPressMask | KeyReleaseMask, &Event);
 
   if (EventFound)
   {
@@ -193,16 +193,54 @@ ProcessOsMessages(os *Os, platform *Plat)
       XWindowAttributes WindowAttribs;
       XGetWindowAttributes(Os->Display, Os->Window, &WindowAttribs);
 
-      /* s32 width = WindowAttribs.width; */
-      /* s32 height = WindowAttribs.height; */
-      s32 width = 300;
-      s32 height = 300;
-
-      glViewport(0, 0, width, height);
-
-      printf("Exposed %d %d\n", width, height);
+      glViewport(0, 0, Plat->WindowWidth, Plat->WindowHeight);
     }
 
+    else if(Event.type == KeyRelease)
+    {
+      int KeySym = XLookupKeysym(&Event.xkey, 0);
+      switch (KeySym)
+      {
+        case XK_w:
+        {
+          Plat->Input.W = False;
+        } break;
+
+        case XK_s:
+        {
+          Plat->Input.S = False;
+        } break;
+
+        case XK_a:
+        {
+          Plat->Input.A = False;
+        } break;
+
+        case XK_d:
+        {
+          Plat->Input.D = False;
+        } break;
+
+        case XK_q:
+        {
+          Plat->Input.Q = False;
+        } break;
+
+        case XK_e:
+        {
+          Plat->Input.E = False;
+        } break;
+
+        case XK_F11:
+        {
+          Plat->Input.F11 = False;
+        } break;
+
+        default:
+        {
+        } break;
+      }
+    }
     else if(Event.type == KeyPress)
     {
       int KeySym = XLookupKeysym(&Event.xkey, 0);
