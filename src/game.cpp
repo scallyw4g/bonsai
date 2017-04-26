@@ -97,7 +97,9 @@ GameInit( platform *Plat )
   DebugCamera.Right = WORLD_Z;
   DebugCamera.Front = WORLD_X;
 
-  initText2D("Holstein.DDS");
+  debug_text_render_group *DebugRG = (debug_text_render_group*)calloc( sizeof(debug_text_render_group), 1);
+
+  initText2D("Holstein.DDS", DebugRG);
 
   AssertNoGlErrors;
 
@@ -107,6 +109,7 @@ GameInit( platform *Plat )
   GameState->Camera = Camera;
   GameState->RG = RG;
   GameState->SG = SG;
+  GameState->DebugRG = DebugRG;
 
   return GameState;
 }
@@ -120,8 +123,9 @@ GameUpdateAndRender ( platform *Plat, game_state *GameState )
   Entity *Player        = GameState->Player;
   Camera_Object *Camera = GameState->Camera;
 
-  RenderGroup *RG       = GameState->RG;
-  ShadowRenderGroup *SG = GameState->SG;
+  RenderGroup *RG                  = GameState->RG;
+  ShadowRenderGroup *SG            = GameState->SG;
+  debug_text_render_group *DebugRG = GameState->DebugRG;
 
   Camera_Object *CurrentCamera;
 
@@ -257,9 +261,9 @@ GameUpdateAndRender ( platform *Plat, game_state *GameState )
 
   FlushRenderBuffers(world, RG, SG, Camera);
 
-  /* char buffer[256] = {}; */
-  /* sprintf(buffer, "%f ms last frame", Plat->dt); */
-  /* PrintDebugText(buffer, 0, 0, DEBUG_FONT_SIZE); */
+  char buffer[256] = {};
+  sprintf(buffer, "%f ms last frame", Plat->dt);
+  PrintDebugText(DebugRG, buffer, 0, 0, DEBUG_FONT_SIZE);
 
   DrawWorldToFullscreenQuad(world, RG, SG, Camera);
 

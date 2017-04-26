@@ -8,6 +8,16 @@ using namespace std;
 
 // #define Assert(condition) if (!(condition)) __builtin_trap();
 
+struct debug_text_render_group
+{
+  u32 Text2DTextureID;
+  u32 Text2DVertexBufferID;
+  u32 Text2DUVBufferID;
+
+  u32 Text2DShaderID;
+  u32 Text2DUniformID;
+};
+
 void Log(const char* fmt...)
 {
   va_list args;

@@ -302,7 +302,7 @@ main(s32 NumArgs, char ** Args)
     // printf("%f \n", Plat.dt);
 
     // Zero out inputs from last frame
-    Plat.Input = NullInput;
+    /* Plat.Input = NullInput; */
 
     // Flush Message Queue
     while ( ProcessOsMessages(&Os, &Plat) );
