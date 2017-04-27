@@ -34,6 +34,7 @@ if (CYGWIN OR WIN32)
   target_link_libraries(Bonsai Gdi32)
   target_link_libraries(Bonsai User32)
   target_link_libraries(Bonsai Shell32)
+  target_link_libraries(Bonsai Opengl32)
 
 else()
   add_definitions( -DLINUX=1 -ggdb )
