@@ -70,4 +70,23 @@ else()
   message(FATAL_ERROR "Unsupported Compiler")
 endif()
 
+#
+# Platform Specific
+#
+
+if (UNIX)
+
+  add_custom_command(
+    TARGET Game POST_BUILD
+    COMMAND mv ${BIN}/libGame.so ${BIN}/libGameLoadable.so
+  )
+
+elseif (CYGWIN)
+  message(FATAL_ERROR "Implement this!")
+elseif (WIN32)
+  message(FATAL_ERROR "Implement this!")
+else()
+  message(FATAL_ERROR "Unsupported Platform")
+endif()
+
 

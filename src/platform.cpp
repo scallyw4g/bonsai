@@ -311,10 +311,6 @@ main(s32 NumArgs, char ** Args)
     {
       CloseLibrary(GameLib);
 
-      // FIXME(Jesse): Do something smart instead of blocking and hoping the
-      // compiler is finished
-      sleep(1);
-
       GameLib = OpenLibrary(GAME_LIB);
       GameUpdateAndRender = (game_main_proc)GetProcFromLib(GameLib, "GameUpdateAndRender");
     }
