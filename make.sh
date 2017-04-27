@@ -1,5 +1,6 @@
 #! /bin/bash
 
+cd build
 make "$@" 2>&1
 
 # if [ $? -eq 0 ]; then

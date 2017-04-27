@@ -133,7 +133,7 @@ ReadXYZIChunk(FILE *File, int* byteCounter)
 chunk_data*
 LoadVox(char const *filepath)
 {
-  chunk_data *Result;
+  chunk_data *Result = 0;
   int totalChunkBytes;
 
   FILE *ModelFile = fopen(filepath, "r");
