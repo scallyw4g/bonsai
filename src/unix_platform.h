@@ -26,7 +26,7 @@
 
 #define Assert(condition) if (!(condition)) raise(SIGTRAP);
 
-#define GAME_LIB_PATH "./libGame"
+#define GAME_LIB_PATH "./bin/libGame"
 #define GAME_LIB (GAME_LIB_PATH".so")
 
 #define THREAD_MAIN_RETURN void*

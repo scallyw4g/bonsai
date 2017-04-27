@@ -216,7 +216,7 @@ SearchForProjectRoot(void)
 {
   b32 Result = False;
 
-  if (FileExists("CMakeLists.txt"))
+  if (FileExists(".root_marker"))
   {
     Result = True;
   }

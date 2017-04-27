@@ -57,22 +57,19 @@ Ensure you have [CMake](https://cmake.org/download) and either g++ or MSVC
 
 ```
 git clone https://github.com/jjbandit/bonsai
-cd bonsai/
-git submodule init
-git submodule update
-mkdir build
+cd bonsai/build
 cmake .
 make
+../bin/Bonsai
 ```
 
 ## On Windows:
 Tested on VS2012 && VS2015
 
 - `git clone https://github.com/jjbandit/bonsai`
-- from `cmd`/`powershell`/`whatever` run `git submodule init` and `git submodule update`
 - Run CMake from the GUI
-- Set source code to $BONSAI_DIRECTORY 
-- Set "Where to build the binaries" to $BONSAI_DIRECTORY/build
+- Set source code to $BONSAI_DIRECTORY/build
+- Set "Where to build the binaries" to $BONSAI_DIRECTORY/bin
 - Click "Configure" followed by "Generate" and finally "Open Project"
 - Build with Visual Studio `F7` should do it
 

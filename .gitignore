@@ -1,41 +1,12 @@
-build/bonsai*
-build/*.vox
-build/callgrind*
 
 Session.vim
 .exrc
 tags
 
 
-# CMake files files
-external/CMakeFiles
-CMakeFiles/
+external
 
+build/*
+!build/CMakeLists.txt
 
-Makefile
-CMakeCache.txt
-build/Bonsai
-cmake_install.cmake
-src/BonsaiConfig.h
-
-
-# Win32 build files
-build/Game.vcxproj
-build/game.dir/
-build/game.vcxproj.filters
-build/game_lib.vcxproj
-build/game_lib.vcxproj.filters
-build/ALL_BUILD.vcxproj
-build/ALL_BUILD.vcxproj.filters
-build/Debug/
-build/INSTALL.vcxproj
-build/INSTALL.vcxproj.filters
-build/Release/
-build/Win32/
-build/ZERO_CHECK.vcxproj
-build/ZERO_CHECK.vcxproj.filters
-
-# Binaries
-libGame.dll.a
-build/cygGame.dll
-libGame.so
+bin/
