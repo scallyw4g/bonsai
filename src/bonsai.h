@@ -150,7 +150,6 @@ struct Entity
 
   bool Spawned;
 };
-
 struct World
 {
   world_chunk **ChunkHash;

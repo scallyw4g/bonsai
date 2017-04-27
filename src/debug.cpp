@@ -67,18 +67,13 @@ PrintDebugText( debug_text_render_group *RG, const char *Text, int x, int y, int
   }
 
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->Text2DVertexBufferID);
-  AssertNoGlErrors;
   GL_Global->glBufferData(GL_ARRAY_BUFFER, (BufferIndex+1) * sizeof(v2), &vertices[0], GL_STATIC_DRAW);
-  AssertNoGlErrors;
 
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->Text2DUVBufferID);
-  AssertNoGlErrors;
   GL_Global->glBufferData(GL_ARRAY_BUFFER, (BufferIndex+1) * sizeof(v2), &UVs[0], GL_STATIC_DRAW);
-  AssertNoGlErrors;
 
   // Bind shader
   GL_Global->glUseProgram(RG->Text2DShaderID);
-  AssertNoGlErrors;
 
   // Bind texture
   GL_Global->glActiveTexture(GL_TEXTURE0);
@@ -86,34 +81,29 @@ PrintDebugText( debug_text_render_group *RG, const char *Text, int x, int y, int
   // Set our "myTextureSampler" sampler to user Texture Unit 0
   GL_Global->glUniform1i(RG->Text2DUniformID, 0);
 
-  AssertNoGlErrors;
   // 1rst attribute buffer : vertices
   GL_Global->glEnableVertexAttribArray(0);
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->Text2DVertexBufferID);
   GL_Global->glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (void*)0 );
 
-  AssertNoGlErrors;
   // 2nd attribute buffer : UVs
   GL_Global->glEnableVertexAttribArray(1);
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->Text2DUVBufferID);
   GL_Global->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0 );
 
-  AssertNoGlErrors;
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  AssertNoGlErrors;
   // Draw call
   glDrawArrays(GL_TRIANGLES, 0, BufferIndex );
 
-  AssertNoGlErrors;
   glDisable(GL_BLEND);
 
-  AssertNoGlErrors;
   GL_Global->glDisableVertexAttribArray(0);
   GL_Global->glDisableVertexAttribArray(1);
 
   AssertNoGlErrors;
+
   return;
 }
 

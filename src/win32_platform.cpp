@@ -489,12 +489,6 @@ OpenAndInitializeWindow( os *Os, platform *Plat, int WindowWidth, int WindowHeig
   ShowWindow(Os->Window, SW_SHOW);
   UpdateWindow(Os->Window);
 
-  // Enable depth test
-  // glEnable(GL_DEPTH_TEST);
-
-  // Accept fragment if it closer to the camera than the former one
-  // glDepthFunc(GL_LESS);
-
   return True;
 }
 

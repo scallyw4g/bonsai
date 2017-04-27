@@ -131,6 +131,9 @@ InitializeOpenGlExtensions(gl_extensions *GL)
   GL->glUniform1i = (PFNGLUNIFORM1IPROC)bonsaiGlGetProcAddress("glUniform1i");
   GL->glActiveTexture = (PFNGLACTIVETEXTUREPROC)bonsaiGlGetProcAddress("glActiveTexture");
 
+  glDepthFunc(GL_LESS);
+  glEnable(GL_DEPTH_TEST);
+
   return;
 }
 
@@ -146,9 +149,6 @@ PlatformInit(platform *Plat)
   Assert(sizeof(umm) == 8);
   Assert(sizeof(u64) == 8);
   Assert(sizeof(s64) == 8);
-
-  glDepthFunc(GL_LEQUAL);
-  glEnable(GL_DEPTH_TEST);
 
   u32 LogicalCoreCount = GetLogicalCoreCount();
   u32 ThreadCount = LogicalCoreCount -1; // -1 because we already have a main thread
