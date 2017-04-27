@@ -972,10 +972,10 @@ IsInFrustum(World *world, Camera_Object *Camera, canonical_position P)
 
   v3 TestP = GetRenderP(world, P, Camera);
 
-  Result &= (DistanceToPlane(&Camera->Frust.Top, TestP) > 0);
-  Result &= (DistanceToPlane(&Camera->Frust.Bot, TestP) > 0);
-  Result &= (DistanceToPlane(&Camera->Frust.Left, TestP) > 0);
-  Result &= (DistanceToPlane(&Camera->Frust.Right, TestP) > 0);
+  Result &= (DistanceToPlane(&Camera->Frust.Top, TestP)   > -1*world->ChunkDim.y);
+  Result &= (DistanceToPlane(&Camera->Frust.Bot, TestP)   > -1*world->ChunkDim.y);
+  Result &= (DistanceToPlane(&Camera->Frust.Left, TestP)  > -1*world->ChunkDim.x);
+  Result &= (DistanceToPlane(&Camera->Frust.Right, TestP) > -1*world->ChunkDim.x);
 
   return Result;
 }
