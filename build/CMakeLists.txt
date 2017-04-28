@@ -31,12 +31,16 @@ add_definitions( -DGL_GLEXT_PROTOTYPES=1 )
 
 if (CYGWIN OR WIN32)
 
+  unset(UNIX)
+  add_definitions( -D_WIN32 )
+
   target_link_libraries(Bonsai Gdi32)
   target_link_libraries(Bonsai User32)
   target_link_libraries(Bonsai Shell32)
   target_link_libraries(Bonsai Opengl32)
 
 else()
+
   add_definitions( -DLINUX=1 -ggdb )
 endif()
 
@@ -77,17 +81,26 @@ endif()
 
 if (UNIX)
 
-  add_custom_command(
-    TARGET Game POST_BUILD
-    COMMAND mv ${BIN}/libGame.so ${BIN}/libGameLoadable.so
-  )
+  set(COMPILED_LIB ${BIN}/libGame.so)
+  set(LOADABLE_LIB ${BIN}/libGameLoadable.so)
 
 elseif (CYGWIN)
-  message(FATAL_ERROR "Implement this!")
+
+  set(COMPILED_LIB ${BIN}/cygGame.dll)
+  set(LOADABLE_LIB ${BIN}/cygGameLoadable.dll)
+
 elseif (WIN32)
-  message(FATAL_ERROR "Implement this!")
+
+  set(COMPILED_LIB ${BIN}/Debug/Game.dll)
+  set(LOADABLE_LIB ${BIN}/Debug/GameLoadable.dll)
+
 else()
   message(FATAL_ERROR "Unsupported Platform")
 endif()
+
+# Rename the game library on completion so the hot-loading code doesn't try to
+# load it before the compiler is finished
+add_custom_command( TARGET Game POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E rename ${COMPILED_LIB} ${LOADABLE_LIB} )
 
 
