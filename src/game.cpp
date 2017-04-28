@@ -43,7 +43,7 @@ GetEntityDelta(World *world, Entity *Player, v3 Input, float dt)
 EXPORT void*
 GameInit( platform *Plat )
 {
-  Info("Starting Game");
+  Info("Initializing Game");
 
   GL_Global = &Plat->GL;
   GlobalGlslVersion = Plat->GlslVersion;
@@ -53,10 +53,10 @@ GameInit( platform *Plat )
   GlobalNoise = Noise;
 
   ShadowRenderGroup *SG = (ShadowRenderGroup*)calloc( sizeof(ShadowRenderGroup), 1);
-  if (!InitializeShadowBuffer(SG)) { Log("Error initializing Shadow Buffer\n"); return False; }
+  if (!InitializeShadowBuffer(SG)) { Error("Initializing Shadow Buffer"); return False; }
 
   RenderGroup *RG = (RenderGroup*)calloc( sizeof(RenderGroup), 1);
-  if (!InitializeRenderGroup(RG)) { Log("Error initializing RenderGroup\n"); return False; }
+  if (!InitializeRenderGroup(RG)) { Error("Initializing RenderGroup"); return False; }
 
   // This needs to be off for shadow maps to work correctly
   /* glEnable(GL_CULL_FACE); */
@@ -117,6 +117,7 @@ GameInit( platform *Plat )
 EXPORT bool
 GameUpdateAndRender ( platform *Plat, game_state *GameState )
 {
+  Info("Frame start");
   GL_Global = &Plat->GL;
   GlobalWorld = GameState->world;
 
@@ -183,7 +184,6 @@ GameUpdateAndRender ( platform *Plat, game_state *GameState )
      {
        v3 PlayerDelta = GetEntityDelta(world, Player, Input, Plat->dt);
        UpdatePlayerP( world, Plat, Player, PlayerDelta );
-       // if (Length(Input) > 0) Player->Rotation = LookAt(Input);
      }
      else // Try to respawn the player until enough of the world has been initialized to do so
      {
@@ -273,15 +273,16 @@ GameUpdateAndRender ( platform *Plat, game_state *GameState )
   /* SwapBuffers(); */
 
 
-  /* Log("%d Triangles drawn\n", tris ); */
+  /* Info("%d Triangles drawn", tris ); */
   /* tris=0; */
 
-  /* Log("%d Voxels Indexed\n", VoxelsIndexed ); */
+  /* Info("%d Voxels Indexed", VoxelsIndexed ); */
   /* VoxelsIndexed=0; */
 
-  /* Log("%d Boundary Voxels Indexed\n", BoundaryVoxelsIndexed ); */
+  /* Info("%d Boundary Voxels Indexed", BoundaryVoxelsIndexed ); */
   /* BoundaryVoxelsIndexed=0; */
 
+  Info("Frame end");
   return True;
 }
 

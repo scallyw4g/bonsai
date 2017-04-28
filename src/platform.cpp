@@ -92,6 +92,8 @@ PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
 void
 InitializeOpenGlExtensions(gl_extensions *GL)
 {
+  Info("Initializing OpenGL Extensions");
+
   GL->glCreateShader = (PFNGLCREATESHADERPROC)bonsaiGlGetProcAddress("glCreateShader");;
   GL->glShaderSource = (PFNGLSHADERSOURCEPROC)bonsaiGlGetProcAddress("glShaderSource");
   GL->glCompileShader = (PFNGLCOMPILESHADERPROC)bonsaiGlGetProcAddress("glCompileShader");
@@ -131,8 +133,17 @@ InitializeOpenGlExtensions(gl_extensions *GL)
   GL->glUniform1i = (PFNGLUNIFORM1IPROC)bonsaiGlGetProcAddress("glUniform1i");
   GL->glActiveTexture = (PFNGLACTIVETEXTUREPROC)bonsaiGlGetProcAddress("glActiveTexture");
 
+
   glDepthFunc(GL_LESS);
   glEnable(GL_DEPTH_TEST);
+
+  AssertNoGlErrors;
+
+  // Platform specific (wgl / glX)
+  GL->glSwapInterval = (PFNSWAPINTERVALPROC)bonsaiGlGetProcAddress("wglSwapIntervalEXT");
+
+  if ( GL->glSwapInterval )
+    GL->glSwapInterval(1); // vsync
 
   return;
 }
@@ -276,7 +287,11 @@ main(s32 NumArgs, char ** Args)
 
   InitializeOpenGlExtensions(&Plat.GL);
 
-  r64 GLSL_Version = atof((char*)glGetString ( GL_SHADING_LANGUAGE_VERSION ));
+  char *glslVer = (char*)glGetString ( GL_SHADING_LANGUAGE_VERSION );
+  Info(glslVer);
+  Assert(glslVer);
+
+  r64 GLSL_Version = atof(glslVer);
   Info("GLSL verison : %f", GLSL_Version );
 
   if (GLSL_Version >= 3.3)

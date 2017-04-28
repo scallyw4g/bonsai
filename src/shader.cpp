@@ -37,7 +37,7 @@ LoadShaders(const char * VertShaderPath, const char * FragFilePath)
 			VertexShaderCode += "\n" + Line;
 		VertexShaderStream.close();
 	}else{
-		Log("Impossible to open %s !", ComputedVertPath );
+		Error("Impossible to open %s !", ComputedVertPath );
 		return 0;
 	}
 
@@ -56,7 +56,7 @@ LoadShaders(const char * VertShaderPath, const char * FragFilePath)
 
 
 	// Compile Vertex Shader
-	Log("Compiling shader : %s", ComputedVertPath);
+	Info("Compiling shader : %s", ComputedVertPath);
 	char const * VertexSourcePointer = VertexShaderCode.c_str();
 	GL_Global->glShaderSource(VertexShaderID, 1, &VertexSourcePointer , NULL);
 	GL_Global->glCompileShader(VertexShaderID);
@@ -67,13 +67,13 @@ LoadShaders(const char * VertShaderPath, const char * FragFilePath)
 	if ( InfoLogLength > 0 ){
 		std::vector<char> VertexShaderErrorMessage(InfoLogLength+1);
 		GL_Global->glGetShaderInfoLog(VertexShaderID, InfoLogLength, NULL, &VertexShaderErrorMessage[0]);
-		Log("%s", &VertexShaderErrorMessage[0]);
+		Error("%s", &VertexShaderErrorMessage[0]);
 	}
 
 
 
 	// Compile Fragment Shader
-	Log("Compiling shader : %s", ComputedFragPath);
+	Info("Compiling shader : %s", ComputedFragPath);
 	char const * FragmentSourcePointer = FragmentShaderCode.c_str();
 	GL_Global->glShaderSource(FragmentShaderID, 1, &FragmentSourcePointer , NULL);
 	GL_Global->glCompileShader(FragmentShaderID);
@@ -84,13 +84,13 @@ LoadShaders(const char * VertShaderPath, const char * FragFilePath)
 	if ( InfoLogLength > 0 ){
 		std::vector<char> FragmentShaderErrorMessage(InfoLogLength+1);
 		GL_Global->glGetShaderInfoLog(FragmentShaderID, InfoLogLength, NULL, &FragmentShaderErrorMessage[0]);
-		Log("%s", &FragmentShaderErrorMessage[0]);
+		Error("%s", &FragmentShaderErrorMessage[0]);
 	}
 
 
 
 	// Link the program
-	Log("Linking program");
+	Info("Linking Shader");
 	u32 ProgramID = GL_Global->glCreateProgram();
 	GL_Global->glAttachShader(ProgramID, VertexShaderID);
 	GL_Global->glAttachShader(ProgramID, FragmentShaderID);
@@ -102,7 +102,7 @@ LoadShaders(const char * VertShaderPath, const char * FragFilePath)
 	if ( InfoLogLength > 0 ){
 		std::vector<char> ProgramErrorMessage(InfoLogLength+1);
 		GL_Global->glGetProgramInfoLog(ProgramID, InfoLogLength, NULL, &ProgramErrorMessage[0]);
-		Log("%s", &ProgramErrorMessage[0]);
+		Error("%s", &ProgramErrorMessage[0]);
 	}
 
 	

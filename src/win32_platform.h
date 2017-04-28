@@ -16,7 +16,7 @@
 
 
 
-#define Assert(condition) if (!(condition)) __debugbreak();
+
 
 /*
  *  Cygwin GCC specific stuff
@@ -64,6 +64,7 @@
 #define SWAP_BUFFERS SwapBuffers(hDC)
 
 #define bonsaiGlGetProcAddress(procName) wglGetProcAddress(procName)
+typedef PFNWGLSWAPINTERVALEXTPROC PFNSWAPINTERVALPROC;
 
 // #define Log(str) OutputDebugString(str)
 

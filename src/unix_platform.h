@@ -24,15 +24,17 @@
 
 
 
-#define Assert(condition) if (!(condition)) raise(SIGTRAP);
-
 #define GAME_LIB "./bin/libGameLoadable.so"
 
 #define THREAD_MAIN_RETURN void*
 
 #define EXPORT extern "C" __attribute__((visibility("default")))
 
+/*
+ * glX Business
+ */
 #define bonsaiGlGetProcAddress(procName) glXGetProcAddress((GLubyte*)procName)
+typedef PFNGLXSWAPINTERVALEXTPROC PFNSWAPINTERVALPROC;
 
 #define GlobalCwdBufferLength 2048
 

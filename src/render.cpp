@@ -170,8 +170,8 @@ InitializeShadowBuffer(ShadowRenderGroup *ShadowGroup)
   GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, ShadowGroup->DepthTexture, 0);
   AssertNoGlErrors;
 
-  ShadowGroup->ShaderID        = LoadShaders( "DepthRTT.vertexshader", "DepthRTT.fragmentshader");
-  ShadowGroup->MVP_ID          = GL_Global->glGetUniformLocation(ShadowGroup->ShaderID, "depthMVP");
+  ShadowGroup->ShaderID = LoadShaders( "DepthRTT.vertexshader", "DepthRTT.fragmentshader");
+  ShadowGroup->MVP_ID   = GL_Global->glGetUniformLocation(ShadowGroup->ShaderID, "depthMVP");
 
   AssertNoGlErrors;
 
@@ -183,6 +183,7 @@ InitializeShadowBuffer(ShadowRenderGroup *ShadowGroup)
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  AssertNoGlErrors;
 
  return true;
 }

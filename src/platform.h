@@ -88,6 +88,9 @@ struct gl_extensions
   PFNGLUNIFORMMATRIX4FVPROC glUniformMatrix4fv;
   PFNGLUNIFORM1IPROC glUniform1i;
   PFNGLACTIVETEXTUREPROC glActiveTexture;
+
+  // Platform specific (wgl / glX)
+  PFNSWAPINTERVALPROC glSwapInterval;
 };
 
 struct input
@@ -138,5 +141,64 @@ struct debug_state
 {
   unsigned long long (*GetCycleCount)(void);
 };
+
+void
+DumpGlErrorEnum(int Error)
+{
+  if ( Error != 0 )
+  {
+    Error("%d", Error);
+  }
+
+  switch (Error)
+  {
+    case GL_INVALID_ENUM:
+    {
+      Error(" GL_INVALID_ENUM: An unacceptable value is specified for an enumerated argument. The offending command is ignored and has no other side effect than to set the error flag.\n");
+    } break;
+
+    case GL_INVALID_VALUE:
+    {
+      Error(" GL_INVALID_VALUE: A numeric argument is out of range. The offending command is ignored and has no other side effect than to set the error flag.\n");
+    } break;
+
+    case GL_INVALID_OPERATION:
+    {
+      Error(" GL_INVALID_OPERATION: The specified operation is not allowed in the current state. The offending command is ignored and has no other side effect than to set the error flag.\n");
+    } break;
+
+    case GL_INVALID_FRAMEBUFFER_OPERATION:
+    {
+      Error(" GL_INVALID_FRAMEBUFFER_OPERATION: The framebuffer object is not complete. The offending command is ignored and has no other side effect than to set the error flag.\n");
+    } break;
+
+    case GL_OUT_OF_MEMORY:
+    {
+      Error(" GL_OUT_OF_MEMORY: There is not enough memory left to execute the command. The state of the GL is undefined, except for the state of the error flags, after this error is recorded.\n");
+    } break;
+
+    case GL_STACK_UNDERFLOW:
+    {
+      Error(" GL_STACK_UNDERFLOW: An attempt has been made to perform an operation that would cause an internal stack to underflow.\n");
+    } break;
+
+    case GL_STACK_OVERFLOW:
+    {
+      Error(" GL_STACK_OVERFLOW: An attempt has been made to perform an operation that would cause an internal stack to overflow.\n");
+    } break;
+
+    case GL_NO_ERROR:
+    {
+      // Happy days :D
+    } break;
+
+    default :
+    {
+      Error("Some weird OpenGL shit happened\n");
+    } break;
+  }
+
+  return;
+}
 
 #endif

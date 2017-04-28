@@ -42,15 +42,15 @@
 #define PLAYER_JUMP_STRENGTH     20.0f
 #define PLAYER_ACCEL_MULTIPLIER  20.0f
 
-/* #define PLAYER_MODEL MODELS_PATH"chr_knight.vox" */
-/* #define PLAYER_MODEL MODELS_PATH"ephtracy.vox" */
-/* #define PLAYER_MODEL MODELS_PATH"chr_sword.vox" */
-/* #define PLAYER_MODEL MODELS_PATH"shelf.vox" */
-/* #define PLAYER_MODEL MODELS_PATH"8x8x8.vox" */
-/* #define PLAYER_MODEL MODELS_PATH"alien_bot2.vox" */
-/* #define PLAYER_MODEL MODELS_PATH"chr_rain.vox" */
-/* #define PLAYER_MODEL MODELS_PATH"chr_old.vox" */
-#define PLAYER_MODEL MODELS_PATH"3x3x3.vox"
+/* #define PLAYER_MODEL MODELS_PATH"/chr_knight.vox" */
+/* #define PLAYER_MODEL MODELS_PATH"/ephtracy.vox" */
+/* #define PLAYER_MODEL MODELS_PATH"/chr_sword.vox" */
+/* #define PLAYER_MODEL MODELS_PATH"/shelf.vox" */
+/* #define PLAYER_MODEL MODELS_PATH"/8x8x8.vox" */
+/* #define PLAYER_MODEL MODELS_PATH"/alien_bot2.vox" */
+/* #define PLAYER_MODEL MODELS_PATH"/chr_rain.vox" */
+/* #define PLAYER_MODEL MODELS_PATH"/chr_old.vox" */
+#define PLAYER_MODEL MODELS_PATH"/3x3x3.vox"
 
 
 #define DEBUG_SCROLL_WORLD            1

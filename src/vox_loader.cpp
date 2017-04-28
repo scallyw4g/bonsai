@@ -248,7 +248,7 @@ LoadVox(char const *filepath)
   }
   else
   {
-    Log("Couldn't read model file '%s' .", filepath);
+    Error("Couldn't read model file '%s' .", filepath);
   }
 
 loaded:

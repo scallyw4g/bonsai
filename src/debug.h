@@ -6,8 +6,6 @@
 
 using namespace std;
 
-// #define Assert(condition) if (!(condition)) __builtin_trap();
-
 struct debug_text_render_group
 {
   u32 Text2DTextureID;
