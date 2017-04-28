@@ -9,6 +9,18 @@
 #define GLOBAL_VARIABLE static
 #define DEBUG_GLOBAL static
 
+
+
+#define VariadicOutputDebugString(FormatString, ...) {   \
+    char Buffer[1024] = {};                              \
+    _snprintf(Buffer, 1023, FormatString, __VA_ARGS__);  \
+    OutputDebugString(Buffer); }
+
+
+#define Info(...)  OutputDebugString(" - Info - "); VariadicOutputDebugString(__VA_ARGS__); OutputDebugString("\n")
+#define Debug(...) OutputDebugString(__VA_ARGS__); VariadicOutputDebugString("\n")
+#define Error(...) OutputDebugString(" - Error - "); VariadicOutputDebugString(__VA_ARGS__); OutputDebugString("\n")
+
 /*
  *  GCC on Linux && Cygwin
  */
@@ -17,6 +29,10 @@
 // Hush up gcc about unreferenced globals
 #define GLOBAL_VARIABLE static __attribute__((unused))
 #define DEBUG_GLOBAL static __attribute__((unused))
+
+#define Info(...)  printf(" - Info - "); printf(__VA_ARGS__); printf("\n")
+#define Debug(...) printf(__VA_ARGS__); printf("\n")
+#define Error(...) printf(" - Error - "); printf(__VA_ARGS__); printf("\n")
 
 #endif // _MSC_VER
 

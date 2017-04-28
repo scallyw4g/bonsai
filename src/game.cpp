@@ -43,7 +43,7 @@ GetEntityDelta(World *world, Entity *Player, v3 Input, float dt)
 EXPORT void*
 GameInit( platform *Plat )
 {
-  printf("Starting Game \n");
+  Info("Starting Game");
 
   GL_Global = &Plat->GL;
   GlobalGlslVersion = Plat->GlslVersion;

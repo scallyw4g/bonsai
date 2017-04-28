@@ -37,7 +37,7 @@ GameLibIsNew(const char *LibPath)
   }
   else
   {
-    printf("Error Stat-ing Game library :( \n");
+    Error("Stat-ing Game library :( ");
   }
 
   return Result;
@@ -240,15 +240,15 @@ SearchForProjectRoot(void)
 int
 main(s32 NumArgs, char ** Args)
 {
-  printf("\n -- Initializing Bonsai \n");
+  Info("Initializing Bonsai");
 
   if (!SearchForProjectRoot())
   {
-    printf(" -- Error -- Couldn't find root dir, exiting. \n");
+    Error("Couldn't find root dir, exiting.");
     return False;
   }
 
-  printf(" -- Running out of : %s \n", GetCwd() );
+  Info("Running out of : %s", GetCwd() );
 
   platform Plat = {};
   PlatformInit(&Plat);
@@ -261,23 +261,23 @@ main(s32 NumArgs, char ** Args)
   GameLibIsNew(GAME_LIB);  // Hack to initialize the LastGameLibTime static
 
   shared_lib GameLib = OpenLibrary(GAME_LIB);
-  if (!GameLib) { printf("Error Loading GameLib :( \n"); return False; }
+  if (!GameLib) { Error("Loading GameLib :( "); return False; }
 
   game_init_proc GameInit = (game_init_proc)GetProcFromLib(GameLib, "GameInit");
-  if (!GameInit) { printf("Error retreiving GameInit from Game Lib :( \n"); return False; }
+  if (!GameInit) { Error("Retreiving GameInit from Game Lib :( "); return False; }
 
   game_main_proc GameUpdateAndRender = (game_main_proc)GetProcFromLib(GameLib, "GameUpdateAndRender");
-  if (!GameUpdateAndRender) { printf("Error retreiving GameUpdateAndRender from Game Lib :( \n"); return False; }
+  if (!GameUpdateAndRender) { Error("Retreiving GameUpdateAndRender from Game Lib :( "); return False; }
 
   b32 WindowSuccess = OpenAndInitializeWindow(&Os, &Plat, Plat.WindowWidth, Plat.WindowHeight);
-  if (!WindowSuccess) { printf("Error Initializing Window :( \n"); return False; }
+  if (!WindowSuccess) { Error("Initializing Window :( "); return False; }
 
   Assert(Os.Window);
 
   InitializeOpenGlExtensions(&Plat.GL);
 
   r64 GLSL_Version = atof((char*)glGetString ( GL_SHADING_LANGUAGE_VERSION ));
-  printf(" GLSL verison : %f \n", GLSL_Version );
+  Info("GLSL verison : %f", GLSL_Version );
 
   if (GLSL_Version >= 3.3)
     Plat.GlslVersion = "330";
@@ -287,7 +287,7 @@ main(s32 NumArgs, char ** Args)
 
 
   game_state *GameState = GameInit(&Plat);
-  if (!GameState) { printf("Error Initializing Game State :( \n"); return False; }
+  if (!GameState) { Error("Initializing Game State :( "); return False; }
 
   /*
    *  Main Game loop
@@ -299,10 +299,7 @@ main(s32 NumArgs, char ** Args)
   {
     Plat.dt = (r32)ComputeDtForFrame(&lastTime);
 
-    // printf("%f \n", Plat.dt);
-
-    // Zero out inputs from last frame
-    /* Plat.Input = NullInput; */
+    // Debug("%f ", Plat.dt);
 
     // Flush Message Queue
     while ( ProcessOsMessages(&Os, &Plat) );

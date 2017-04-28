@@ -310,7 +310,7 @@ WindowMessageCallback(
       s32 xPos = GET_X_LPARAM(lParam);
       s32 yPos = GET_Y_LPARAM(lParam);
 
-      printf(" X: %d, Y: %d \n", xPos, yPos);
+      Info(" X: %d, Y: %d", xPos, yPos);
 
     } break;
 
@@ -507,12 +507,11 @@ OpenLibrary(const char *LibPath)
 
   if (!Result)
   {
-    printf("Error loading library: %s \n", LibPath);
-    Assert(False);
+    Error("Error loading library: %s", LibPath);
   }
   else
   {
-    printf("Game Lib loaded! \n");
+    Info("Game Lib loaded!");
   }
 
   return Result;

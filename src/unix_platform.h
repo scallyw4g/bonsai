@@ -36,6 +36,9 @@
 
 #define GlobalCwdBufferLength 2048
 
+// FIXME(Jesse): Just write our own snprintf
+#define Snprintf(...) snprintf(__VA_ARGS__)
+
 typedef int thread_id;
 typedef int semaphore;
 

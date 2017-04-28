@@ -22,10 +22,10 @@ LoadShaders(const char * VertShaderPath, const char * FragFilePath)
 
   // FIXME(Jesse): For gods sake don't use sprintf
   char ComputedVertPath[2048] = {};
-  snprintf(ComputedVertPath, 2048, "%s/%s/%s", SHADER_PATH, GlobalGlslVersion, VertShaderPath);
+  Snprintf(ComputedVertPath, 2048, "%s/%s/%s", SHADER_PATH, GlobalGlslVersion, VertShaderPath);
 
   char ComputedFragPath[2048] = {};
-  snprintf(ComputedFragPath, 2048, "%s/%s/%s", SHADER_PATH, GlobalGlslVersion, FragFilePath);
+  Snprintf(ComputedFragPath, 2048, "%s/%s/%s", SHADER_PATH, GlobalGlslVersion, FragFilePath);
 
 	// Read the Vertex Shader code from the file
 	std::string VertexShaderCode;

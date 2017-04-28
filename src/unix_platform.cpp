@@ -87,12 +87,12 @@ OpenLibrary(const char *filename)
   if (!Result)
   {
     char *error = dlerror();
-    printf(" !!! Error loading library: %s \n", error);
+    Error("Loading library: %s", error);
     Assert(False);
   }
   else
   {
-    printf(" --- Game Lib loaded! \n");
+    Info("Game Lib loaded!");
   }
 
   return Result;
@@ -104,13 +104,13 @@ OpenAndInitializeWindow( os *Os, platform *Plat, int WindowWidth, int WindowHeig
   GLint GlAttribs[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
 
   Os->Display = XOpenDisplay(0);
-  if (!Os->Display) { printf(" Cannot connect to X Server \n"); return False; }
+  if (!Os->Display) { Error("Cannot connect to X Server"); return False; }
 
   window RootWindow = DefaultRootWindow(Os->Display);
-  if (!RootWindow) { printf(" Unable to get RootWindow \n"); return False; }
+  if (!RootWindow) { Error("Unable to get RootWindow"); return False; }
 
   XVisualInfo *VisualInfo = glXChooseVisual(Os->Display, 0, GlAttribs);
-  if (!VisualInfo) { printf(" Unable to get Visual Info \n"); return False; }
+  if (!VisualInfo) { Error("Unable to get Visual Info"); return False; }
 
   Colormap ColorInfo = XCreateColormap(Os->Display, RootWindow, VisualInfo->visual, AllocNone);
 
@@ -119,13 +119,13 @@ OpenAndInitializeWindow( os *Os, platform *Plat, int WindowWidth, int WindowHeig
   WindowAttribs.event_mask = ExposureMask | KeyPressMask | KeyReleaseMask;
 
   Window win = XCreateWindow(Os->Display, RootWindow, 0, 0, 600, 600, 0, VisualInfo->depth, InputOutput, VisualInfo->visual, CWColormap | CWEventMask, &WindowAttribs);
-  if (!win) { printf(" Unable to Create Window \n"); return False; }
+  if (!win) { Error("Unable to Create Window"); return False; }
 
   XMapWindow(Os->Display, win);
   XStoreName(Os->Display, win, "Bonsai");
 
   Os->GlContext = glXCreateContext(Os->Display, VisualInfo, NULL, GL_TRUE);
-  if (!Os->GlContext) { printf(" Unable to Create GLXContext \n"); return False; }
+  if (!Os->GlContext) { Error("Unable to Create GLXContext"); return False; }
 
   glXMakeCurrent(Os->Display, win, Os->GlContext);
 

@@ -24,7 +24,10 @@
 #ifdef __CYGWIN__
 
 #include <unistd.h> // Chdir
-#define GAME_LIB_PATH "bin/cygGame"
+#define GAME_LIB_PATH "bin/cygGameLoadable"
+
+// FIXME(Jesse): Just write our own snprintf
+#define Snprintf(...) snprintf(__VA_ARGS__)
 
 /*
  *  MSVC specific stuff
@@ -33,8 +36,10 @@
 
 #include <direct.h> // Chdir
 
-#define GAME_LIB_PATH "bin/Debug/Game"
-#define snprintf(...) _snprintf(__VA_ARGS__)
+#define GAME_LIB_PATH "bin/Debug/GameLoadable"
+
+// FIXME(Jesse): Just write our own snprintf
+#define Snprintf(...) _snprintf(__VA_ARGS__)
 
 #endif // __CYGWIN__
 
