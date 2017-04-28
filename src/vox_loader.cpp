@@ -134,7 +134,7 @@ chunk_data*
 LoadVox(char const *filepath)
 {
   chunk_data *Result = 0;
-  int totalChunkBytes;
+  s32 totalChunkBytes = 0;
 
   FILE *ModelFile = fopen(filepath, "r");
 

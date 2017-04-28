@@ -117,7 +117,6 @@ GameInit( platform *Plat )
 EXPORT bool
 GameUpdateAndRender ( platform *Plat, game_state *GameState )
 {
-  Info("Frame start");
   GL_Global = &Plat->GL;
   GlobalWorld = GameState->world;
 
@@ -282,7 +281,6 @@ GameUpdateAndRender ( platform *Plat, game_state *GameState )
   /* Info("%d Boundary Voxels Indexed", BoundaryVoxelsIndexed ); */
   /* BoundaryVoxelsIndexed=0; */
 
-  Info("Frame end");
   return True;
 }
 

@@ -206,10 +206,7 @@ WindowMessageCallback(
   {
     case WM_CREATE:
     {
-
-      return 0;
-
-    } break;
+    } return 0;
 
 
     case WM_DESTROY:
@@ -230,16 +227,11 @@ WindowMessageCallback(
       ReleaseDC(hWnd, Os->Display);
       PostQuitMessage(0);
 
-      return 0;
-
-    } break;
+    } return 0;
 
     case WM_SIZE:
     {
-      // Handle resize ?
-      return 0;
-
-    } break;
+    } return 0;
 
     case WM_PALETTECHANGED:
     {
@@ -252,10 +244,9 @@ WindowMessageCallback(
         SelectPalette(Os->Display, hPalette, FALSE);
         RealizePalette(Os->Display);
         SwapBuffers(Os->Display);
-        break;
       }
 
-    } break;
+    } return 0;
 
     case WM_QUERYNEWPALETTE:
     {
@@ -271,7 +262,7 @@ WindowMessageCallback(
         return TRUE;
       }
 
-    } break;
+    } return 0;
 
     case WM_PAINT:
     {
@@ -286,7 +277,7 @@ WindowMessageCallback(
       EndPaint(hWnd, &ps);
       return 0;
 
-    } break;
+    } return 0;
 
 
     /*
@@ -295,24 +286,23 @@ WindowMessageCallback(
     case WM_LBUTTONDOWN:
     {
 
-      platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-      Plat->Input.LMB = True;
-    } break;
+      input *Input = (input*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
+      Input->LMB = True;
+    } return 0;
 
     case WM_RBUTTONDOWN:
     {
-      platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-      Plat->Input.RMB = True;
-    } break;
+      input *Input = (input*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
+      Input->RMB = True;
+    } return 0;
 
     case WM_MOUSEMOVE:
     {
-      s32 xPos = GET_X_LPARAM(lParam);
-      s32 yPos = GET_Y_LPARAM(lParam);
+      /* s32 xPos = GET_X_LPARAM(lParam); */
+      /* s32 yPos = GET_Y_LPARAM(lParam); */
+      /* Info(" X: %d, Y: %d", xPos, yPos); */
 
-      Info(" X: %d, Y: %d", xPos, yPos);
-
-    } break;
+    } return 0;
 
     case WM_KEYUP:
     {
@@ -321,45 +311,45 @@ WindowMessageCallback(
 
         case 0x57:
         {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-          Plat->Input.W = False;
-        } break;
+          input *Input = (input*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
+          Input->W = False;
+        } return 0;
 
         case 0x44:
         {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-          Plat->Input.D = False;
-        } break;
+          input *Input = (input*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
+          Input->D = False;
+        } return 0;
 
         case 0x53:
         {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-          Plat->Input.S = False;
-        } break;
+          input *Input = (input*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
+          Input->S = False;
+        } return 0;
 
         case 0x41:
         {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-          Plat->Input.A = False;
-        } break;
+          input *Input = (input*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
+          Input->A = False;
+        } return 0;
 
         case 0x51:
         {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-          Plat->Input.Q = False;
-        } break;
+          input *Input = (input*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
+          Input->Q = False;
+        } return 0;
 
         case 0x45:
         {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-          Plat->Input.E = False;
-        } break;
+          input *Input = (input*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
+          Input->E = False;
+        } return 0;
 
         case VK_F11:
         {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-          Plat->Input.F11 = False;
-        } break;
+          input *Input = (input*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
+          Input->F11 = False;
+        } return 0;
 
         default:
         {
@@ -376,49 +366,49 @@ WindowMessageCallback(
         {
           DestroyWindow(hWnd);
           return 0;
-        } break;
+        } return 0;
 
         case 0x57:
         {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-          Plat->Input.W = True;
-        } break;
+          input *Input = (input*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
+          Input->W = True;
+        } return 0;
 
         case 0x44:
         {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-          Plat->Input.D = True;
-        } break;
+          input *Input = (input*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
+          Input->D = True;
+        } return 0;
 
         case 0x53:
         {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-          Plat->Input.S = True;
-        } break;
+          input *Input = (input*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
+          Input->S = True;
+        } return 0;
 
         case 0x41:
         {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-          Plat->Input.A = True;
-        } break;
+          input *Input = (input*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
+          Input->A = True;
+        } return 0;
 
         case 0x51:
         {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-          Plat->Input.Q = True;
-        } break;
+          input *Input = (input*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
+          Input->Q = True;
+        } return 0;
 
         case 0x45:
         {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-          Plat->Input.E = True;
-        } break;
+          input *Input = (input*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
+          Input->E = True;
+        } return 0;
 
         case VK_F11:
         {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-          Plat->Input.F11 = True;
-        } break;
+          input *Input = (input*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
+          Input->F11 = True;
+        } return 0;
 
         default:
         {
@@ -480,7 +470,7 @@ OpenAndInitializeWindow( os *Os, platform *Plat, int WindowWidth, int WindowHeig
   }
 
   {
-    SetWindowLongPtr(Os->Window, sizeof(Os), (LONG_PTR)Plat);
+    SetWindowLongPtr(Os->Window, sizeof(Os), (LONG_PTR)&Plat->Input);
     int e = GetLastError();
     Assert(!e);
   }
