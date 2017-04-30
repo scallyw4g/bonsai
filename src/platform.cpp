@@ -56,7 +56,9 @@ ThreadMain(void *Input)
 
     if (OriginalNext != Queue->EntryCount)
     {
-      if ( AtomicCompareExchange(&Queue->NextEntry, (OriginalNext+1)%WORK_QUEUE_SIZE, OriginalNext) )
+      if ( AtomicCompareExchange(&Queue->NextEntry,
+                                 (OriginalNext+1)%WORK_QUEUE_SIZE,
+                                 OriginalNext) )
       {
         work_queue_entry Entry = Queue->Entries[OriginalNext];
         Entry.Callback(&Entry);

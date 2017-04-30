@@ -238,14 +238,14 @@ GameUpdateAndRender ( platform *Plat, game_state *GameState )
       if ( (chunk->WorldP >= Min && chunk->WorldP < Max) )
       {
         DrawWorldChunk( world, chunk, Camera, RG, SG);
-        if (IsSet(chunk->Data->flags, Chunk_Initialized) )
-        {
-          // DEBUG_DrawChunkAABB(world, chunk, Quaternion(1,0,0,0), GREEN);
-        }
-        else if (IsSet(chunk->Data->flags, Chunk_Queued) )
-        {
-          // DEBUG_DrawChunkAABB(world, chunk, Quaternion(1,0,0,0), WHITE);
-        }
+        /* if (IsSet(chunk->Data->flags, Chunk_Initialized) ) */
+        /* { */
+        /*   // DEBUG_DrawChunkAABB(world, chunk, Quaternion(1,0,0,0), GREEN); */
+        /* } */
+        /* else if (IsSet(chunk->Data->flags, Chunk_Queued) ) */
+        /* { */
+        /*   // DEBUG_DrawChunkAABB(world, chunk, Quaternion(1,0,0,0), WHITE); */
+        /* } */
         chunk = chunk->Next;
       }
       else

@@ -42,10 +42,7 @@ InitializeVoxels( World *world, world_chunk *WorldChunk )
   Assert(WorldChunk);
 
   if ( IsSet(WorldChunk->Data->flags, Chunk_Garbage) )
-  {
-    WorldChunk->Data->flags = Chunk_Initialized;
     return;
-  }
 
   ZeroChunk(WorldChunk->Data);
 
@@ -110,9 +107,8 @@ InitializeVoxels( World *world, world_chunk *WorldChunk )
 
   /* CALLGRIND_TOGGLE_COLLECT; */
 
+  chunk->flags = SetFlag(chunk->flags, Chunk_Initialized);
   BuildBoundaryVoxels(world, WorldChunk);
-
-  chunk->flags = Chunk_Initialized;
 
   return;
 }
@@ -120,14 +116,14 @@ InitializeVoxels( World *world, world_chunk *WorldChunk )
 void
 InitializeVoxels(void *Input)
 {
-	work_queue_entry *Params = (work_queue_entry *)Input;
-	world_chunk *Chunk = (world_chunk *)Params->Input;
+  work_queue_entry *Params = (work_queue_entry *)Input;
+  world_chunk *Chunk = (world_chunk *)Params->Input;
 
   // FIXME(Jesse): For the sake of all things good and green don't make the
   // world a global variable!!!
   Assert(GlobalWorld);
   InitializeVoxels(GlobalWorld, Chunk);
-	return;
+  return;
 }
 
 inline bool

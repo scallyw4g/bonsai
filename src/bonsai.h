@@ -311,7 +311,7 @@ ZeroChunk( chunk_data *chunk )
 
   chunk->BoundaryVoxelCount = 0;
 
-  chunk->flags = 0;
+  chunk->flags = Chunk_Uninitialized;
 
   chunk->flags = SetFlag( chunk->flags, Chunk_RebuildInteriorBoundary );
 
@@ -346,7 +346,7 @@ FreeWorldChunk(World *world, world_chunk *chunk)
 {
   // Only free chunks that have been initialized because queued ones
   // could be in-flight in another thread
-  if (IsSet(chunk->Data->flags, Chunk_Initialized))
+  if ( IsSet(chunk->Data->flags, Chunk_Initialized) || IsSet(chunk->Data->flags, Chunk_Garbage) )
   {
     // Unlink from middle of linked list
     if (chunk->Prev)
@@ -406,7 +406,7 @@ AllocateChunk(chunk_dimension Dim)
   Result->Dim = Dim;
 
   Result->Voxels = (Voxel*)calloc(Volume(Dim), sizeof(Voxel));
-  Result->BoundaryVoxels = (Voxel*)calloc((Volume(Dim)/4), sizeof(Voxel));
+  Result->BoundaryVoxels = (Voxel*)calloc((Volume(Dim)), sizeof(Voxel));
   Assert(Result->Voxels);
   Assert(Result->BoundaryVoxels);
 

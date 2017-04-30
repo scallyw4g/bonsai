@@ -10,7 +10,7 @@
 #endif
 
 
-#define WORK_QUEUE_SIZE (2*VOLUME_VISIBLE_REGION)
+#define WORK_QUEUE_SIZE (5*VOLUME_VISIBLE_REGION)
 
 struct platform;
 struct game_state;

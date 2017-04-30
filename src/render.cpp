@@ -1035,9 +1035,8 @@ BuildExteriorBoundaryVoxels( World *world, world_chunk *chunk, world_chunk *Neig
           continue;
 
         voxel_position NeighborP = ClampPositive(
-            (LocalVoxelP -
-            (chunk->Data->Dim * NeighborVector) ) -
-            (NeighborVector*NeighborVector));
+            (LocalVoxelP - (chunk->Data->Dim * NeighborVector))
+            - nvSq);
 
         if ( ! IsFilledInChunk( world, Neighbor, NeighborP) )
         {
@@ -1061,7 +1060,7 @@ BuildExteriorBoundaryVoxels( World *world, world_chunk *chunk, world_chunk *Neig
           if (NeighborVector.z < 0)
             voxel.flags = SetFlag(voxel.flags, Voxel_BackFace);
 
-      voxel_position P = GetVoxelP(voxel);
+          voxel_position P = GetVoxelP(voxel);
           Assert( P == LocalVoxelP);
           PushBoundaryVoxel( chunk->Data, voxel );
         }
@@ -1259,6 +1258,7 @@ BufferChunkMesh(
 void
 BuildBoundaryVoxels( World *world, world_chunk *WorldChunk)
 {
+
   chunk_data* chunk = WorldChunk->Data;
   if ( IsSet(chunk->flags, Chunk_RebuildInteriorBoundary) )
   {
@@ -1266,7 +1266,6 @@ BuildBoundaryVoxels( World *world, world_chunk *WorldChunk)
     BuildInteriorBoundaryVoxels( world, chunk, WorldChunk->WorldP );
   }
 
-#if 0
   if ( IsSet(chunk->flags, Chunk_RebuildExteriorTop   ) )
   {
     voxel_position  TopVector    = Voxel_Position(0,1,0);
@@ -1278,6 +1277,7 @@ BuildBoundaryVoxels( World *world, world_chunk *WorldChunk)
     }
   }
 
+#if 1
   if ( IsSet(chunk->flags, Chunk_RebuildExteriorBot   ) )
   {
     voxel_position  BotVector    = Voxel_Position(0,-1,0);
@@ -1350,6 +1350,7 @@ DrawWorldChunk(
   {
     if (IsSet(WorldChunk->Data->flags, Chunk_Initialized) )
     {
+      BuildBoundaryVoxels( world, WorldChunk);
       BufferChunkMesh(world, WorldChunk->Data, WorldChunk->WorldP, RG, SG, Camera);
     }
   }
