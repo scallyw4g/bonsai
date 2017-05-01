@@ -41,8 +41,13 @@ InitializeVoxels( World *world, world_chunk *WorldChunk )
 {
   Assert(WorldChunk);
 
+  // If the chunk was marked as garbage before it had been initialized we can
+  // simply mark it as collected and skip it.
   if ( IsSet(WorldChunk->Data->flags, Chunk_Garbage) )
+  {
+    WorldChunk->Data->flags = SetFlag(WorldChunk->Data->flags, Chunk_Collected);
     return;
+  }
 
   ZeroChunk(WorldChunk->Data);
 

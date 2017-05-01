@@ -1106,14 +1106,14 @@ BuildInteriorBoundaryVoxels(World *world, chunk_data *chunk, world_position Worl
         if ( NotFilled( chunk, VoxelP ) )
           continue;
 
-    voxel_position rightVoxel = VoxelP + Voxel_Position(1, 0, 0);
-    voxel_position leftVoxel = VoxelP - Voxel_Position(1, 0, 0);
+        voxel_position rightVoxel = VoxelP + Voxel_Position(1, 0, 0);
+        voxel_position leftVoxel = VoxelP - Voxel_Position(1, 0, 0);
 
-    voxel_position topVoxel = VoxelP + Voxel_Position(0, 1, 0);
-    voxel_position botVoxel = VoxelP - Voxel_Position(0, 1, 0);
+        voxel_position topVoxel = VoxelP + Voxel_Position(0, 1, 0);
+        voxel_position botVoxel = VoxelP - Voxel_Position(0, 1, 0);
 
-    voxel_position frontVoxel = VoxelP + Voxel_Position(0, 0, 1);
-    voxel_position backVoxel = VoxelP - Voxel_Position(0, 0, 1);
+        voxel_position frontVoxel = VoxelP + Voxel_Position(0, 0, 1);
+        voxel_position backVoxel = VoxelP - Voxel_Position(0, 0, 1);
 
         Voxel voxel = chunk->Voxels[GetIndex(Voxel_Position(x,y,z), chunk)];
 

@@ -33,6 +33,7 @@ enum ChunkFlags
   Chunk_RebuildExteriorBack     = 1 << 8,
   Chunk_Queued                  = 1 << 9,
   Chunk_Garbage                 = 1 << 10,
+  Chunk_Collected               = 1 << 11,
 };
 
 enum VoxelFlags
@@ -344,25 +345,26 @@ GetWorldChunkHash(world_position P)
 void
 FreeWorldChunk(World *world, world_chunk *chunk)
 {
-  // Only free chunks that have been initialized because queued ones
-  // could be in-flight in another thread
-  if ( IsSet(chunk->Data->flags, Chunk_Initialized) || IsSet(chunk->Data->flags, Chunk_Garbage) )
+  // Only free chunks that have been initialized, or chunks that had previously
+  // been marked as garbage and have been flushed all the way through the world
+  // initialization queue.
+  if ( IsSet(chunk->Data->flags, Chunk_Initialized) || IsSet(chunk->Data->flags, Chunk_Collected) )
   {
     // Unlink from middle of linked list
     if (chunk->Prev)
     {
-    chunk->Prev->Next = chunk->Next;
+      chunk->Prev->Next = chunk->Next;
     }
 
     if (chunk->Next)
     {
-    chunk->Next->Prev = chunk->Prev;
+      chunk->Next->Prev = chunk->Prev;
     }
 
     // Unlink from head end of linked list
     if (!chunk->Prev)
     {
-    world->ChunkHash[GetWorldChunkHash(chunk->WorldP)] = chunk->Next;
+      world->ChunkHash[GetWorldChunkHash(chunk->WorldP)] = chunk->Next;
     }
 
     chunk->Prev = 0;
