@@ -91,49 +91,51 @@ PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
   return;
 }
 
+
+#define DefGlProc(ProcType, ProcName) Gl->ProcName = (ProcType)bonsaiGlGetProcAddress(#ProcName); Assert(Gl->ProcName)
 void
-InitializeOpenGlExtensions(gl_extensions *GL)
+InitializeOpenGlExtensions(gl_extensions *Gl)
 {
   Info("Initializing OpenGL Extensions");
 
-  GL->glCreateShader = (PFNGLCREATESHADERPROC)bonsaiGlGetProcAddress("glCreateShader");;
-  GL->glShaderSource = (PFNGLSHADERSOURCEPROC)bonsaiGlGetProcAddress("glShaderSource");
-  GL->glCompileShader = (PFNGLCOMPILESHADERPROC)bonsaiGlGetProcAddress("glCompileShader");
-  GL->glGetShaderiv = (PFNGLGETSHADERIVPROC)bonsaiGlGetProcAddress("glGetShaderiv");
-  GL->glGetShaderInfoLog = (PFNGLGETSHADERINFOLOGPROC)bonsaiGlGetProcAddress("glGetShaderInfoLog");
-  GL->glAttachShader = (PFNGLATTACHSHADERPROC)bonsaiGlGetProcAddress("glAttachShader");
-  GL->glDetachShader = (PFNGLDETACHSHADERPROC)bonsaiGlGetProcAddress("glDetachShader");
-  GL->glDeleteShader = (PFNGLDELETESHADERPROC)bonsaiGlGetProcAddress("glDeleteShader");
-  GL->glCreateProgram = (PFNGLCREATEPROGRAMPROC)bonsaiGlGetProcAddress("glCreateProgram");
-  GL->glLinkProgram = (PFNGLLINKPROGRAMPROC)bonsaiGlGetProcAddress("glLinkProgram");
-  GL->glGetProgramiv = (PFNGLGETPROGRAMIVPROC)bonsaiGlGetProcAddress("glGetProgramiv");
-  GL->glGetProgramInfoLog = (PFNGLGETPROGRAMINFOLOGPROC)bonsaiGlGetProcAddress("glGetProgramInfoLog");
-  GL->glUseProgram = (PFNGLUSEPROGRAMPROC)bonsaiGlGetProcAddress("glUseProgram");
-  GL->glDeleteProgram = (PFNGLDELETEPROGRAMPROC)bonsaiGlGetProcAddress("glDeleteProgram");
-  GL->glGetUniformLocation = (PFNGLGETUNIFORMLOCATIONPROC)bonsaiGlGetProcAddress("glGetUniformLocation");
-  GL->glGenFramebuffers = (PFNGLGENFRAMEBUFFERSPROC)bonsaiGlGetProcAddress("glGenFramebuffers");
-  GL->glBindFramebuffer = (PFNGLBINDFRAMEBUFFERPROC)bonsaiGlGetProcAddress("glBindFramebuffer");
+  DefGlProc(PFNGLCREATESHADERPROC, glCreateShader);
+  DefGlProc(PFNGLSHADERSOURCEPROC, glShaderSource);
+  DefGlProc(PFNGLCOMPILESHADERPROC, glCompileShader);
+  DefGlProc(PFNGLGETSHADERIVPROC, glGetShaderiv);
+  DefGlProc(PFNGLGETSHADERINFOLOGPROC, glGetShaderInfoLog);
+  DefGlProc(PFNGLATTACHSHADERPROC, glAttachShader);
+  DefGlProc(PFNGLDETACHSHADERPROC, glDetachShader);
+  DefGlProc(PFNGLDELETESHADERPROC, glDeleteShader);
+  DefGlProc(PFNGLCREATEPROGRAMPROC, glCreateProgram);
+  DefGlProc(PFNGLLINKPROGRAMPROC, glLinkProgram);
+  DefGlProc(PFNGLGETPROGRAMIVPROC, glGetProgramiv);
+  DefGlProc(PFNGLGETPROGRAMINFOLOGPROC, glGetProgramInfoLog);
+  DefGlProc(PFNGLUSEPROGRAMPROC, glUseProgram);
+  DefGlProc(PFNGLDELETEPROGRAMPROC, glDeleteProgram);
+  DefGlProc(PFNGLGETUNIFORMLOCATIONPROC, glGetUniformLocation);
+  DefGlProc(PFNGLGENFRAMEBUFFERSPROC, glGenFramebuffers);
+  DefGlProc(PFNGLBINDFRAMEBUFFERPROC, glBindFramebuffer);
 
   // TODO(Jesse): This function appears to not work on ES 3.1 ..??
-  // GL->glFramebufferTexture = (PFNGLFRAMEBUFFERTEXTUREPROC)bonsaiGlGetProcAddress("glFramebufferTexture");
+  // DefGlProc(PFNGLFRAMEBUFFERTEXTUREPROC, glFramebufferTexture);
 
-  GL->glFramebufferTexture2D = (PFNGLFRAMEBUFFERTEXTURE2DPROC)bonsaiGlGetProcAddress("glFramebufferTexture2D");
-  GL->glCheckFramebufferStatus = (PFNGLCHECKFRAMEBUFFERSTATUSPROC)bonsaiGlGetProcAddress("glCheckFramebufferStatus");
-  GL->glCompressedTexImage2D = (PFNGLCOMPRESSEDTEXIMAGE2DPROC)bonsaiGlGetProcAddress("glCompressedTexImage2D");
-  GL->glGenBuffers = (PFNGLGENBUFFERSPROC)bonsaiGlGetProcAddress("glGenBuffers");
-  GL->glBindBuffer = (PFNGLBINDBUFFERPROC)bonsaiGlGetProcAddress("glBindBuffer");
-  GL->glBufferData = (PFNGLBUFFERDATAPROC)bonsaiGlGetProcAddress("glBufferData");
-  GL->glDrawBuffers = (PFNGLDRAWBUFFERSPROC)bonsaiGlGetProcAddress("glDrawBuffers");
-  GL->glDeleteBuffers = (PFNGLDELETEBUFFERSPROC)bonsaiGlGetProcAddress("glDeleteBuffers");
-  GL->glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC)bonsaiGlGetProcAddress("glVertexAttribPointer");
-  GL->glEnableVertexAttribArray = (PFNGLENABLEVERTEXATTRIBARRAYPROC)bonsaiGlGetProcAddress("glEnableVertexAttribArray");
-  GL->glDisableVertexAttribArray = (PFNGLDISABLEVERTEXATTRIBARRAYPROC)bonsaiGlGetProcAddress("glDisableVertexAttribArray");
-  GL->glGenVertexArrays = (PFNGLGENVERTEXARRAYSPROC)bonsaiGlGetProcAddress("glGenVertexArrays");
-  GL->glBindVertexArray = (PFNGLBINDVERTEXARRAYPROC)bonsaiGlGetProcAddress("glBindVertexArray");
-  GL->glUniform3fv = (PFNGLUNIFORM3FVPROC)bonsaiGlGetProcAddress("glUniform3fv");
-  GL->glUniformMatrix4fv = (PFNGLUNIFORMMATRIX4FVPROC)bonsaiGlGetProcAddress("glUniformMatrix4fv");
-  GL->glUniform1i = (PFNGLUNIFORM1IPROC)bonsaiGlGetProcAddress("glUniform1i");
-  GL->glActiveTexture = (PFNGLACTIVETEXTUREPROC)bonsaiGlGetProcAddress("glActiveTexture");
+  DefGlProc(PFNGLFRAMEBUFFERTEXTURE2DPROC, glFramebufferTexture2D);
+  DefGlProc(PFNGLCHECKFRAMEBUFFERSTATUSPROC, glCheckFramebufferStatus);
+  DefGlProc(PFNGLCOMPRESSEDTEXIMAGE2DPROC, glCompressedTexImage2D);
+  DefGlProc(PFNGLGENBUFFERSPROC, glGenBuffers);
+  DefGlProc(PFNGLBINDBUFFERPROC, glBindBuffer);
+  DefGlProc(PFNGLBUFFERDATAPROC, glBufferData);
+  DefGlProc(PFNGLDRAWBUFFERSPROC, glDrawBuffers);
+  DefGlProc(PFNGLDELETEBUFFERSPROC, glDeleteBuffers);
+  DefGlProc(PFNGLVERTEXATTRIBPOINTERPROC, glVertexAttribPointer);
+  DefGlProc(PFNGLENABLEVERTEXATTRIBARRAYPROC, glEnableVertexAttribArray);
+  DefGlProc(PFNGLDISABLEVERTEXATTRIBARRAYPROC, glDisableVertexAttribArray);
+  DefGlProc(PFNGLGENVERTEXARRAYSPROC, glGenVertexArrays);
+  DefGlProc(PFNGLBINDVERTEXARRAYPROC, glBindVertexArray);
+  DefGlProc(PFNGLUNIFORM3FVPROC, glUniform3fv);
+  DefGlProc(PFNGLUNIFORMMATRIX4FVPROC, glUniformMatrix4fv);
+  DefGlProc(PFNGLUNIFORM1IPROC, glUniform1i);
+  DefGlProc(PFNGLACTIVETEXTUREPROC, glActiveTexture);
 
 
   glDepthFunc(GL_LESS);
@@ -142,10 +144,10 @@ InitializeOpenGlExtensions(gl_extensions *GL)
   AssertNoGlErrors;
 
   // Platform specific (wgl / glX)
-  GL->glSwapInterval = (PFNSWAPINTERVALPROC)bonsaiGlGetProcAddress("wglSwapIntervalEXT");
+  Gl->glSwapInterval = (PFNSWAPINTERVALPROC)bonsaiGlGetProcAddress("wglSwapIntervalEXT");
 
-  if ( GL->glSwapInterval )
-    GL->glSwapInterval(1); // vsync
+  if ( Gl->glSwapInterval )
+    Gl->glSwapInterval(1); // vsync
 
   return;
 }
