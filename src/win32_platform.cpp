@@ -98,9 +98,22 @@ ComputeDtForFrame(r64 *LastTime)
 }
 
 void
-Terminate()
+Terminate(os *Os)
 {
-  Assert(false);
+  if (Os->GlContext) // Cleanup Opengl context
+  {
+    wglMakeCurrent(NULL, NULL);
+    wglDeleteContext(Os->GlContext);
+  }
+
+  if (hPalette)
+  {
+    DeleteObject(hPalette);
+  }
+
+  ReleaseDC(Os->Window, Os->Display);
+  PostQuitMessage(0);
+
   return;
 }
 
@@ -212,20 +225,7 @@ WindowMessageCallback(
     case WM_DESTROY:
     {
       os *Os = (os*)GetWindowLongPtr(hWnd, 0);
-
-      if (Os->GlContext) // Cleanup Opengl context
-      {
-        wglMakeCurrent(NULL, NULL);
-        wglDeleteContext(Os->GlContext);
-      }
-
-      if (hPalette)
-      {
-        DeleteObject(hPalette);
-      }
-
-      ReleaseDC(hWnd, Os->Display);
-      PostQuitMessage(0);
+      Os->ContinueRunning = false;
 
     } return 0;
 

@@ -168,6 +168,8 @@ PlatformInit(platform *Plat)
   u32 LogicalCoreCount = GetLogicalCoreCount();
   u32 ThreadCount = LogicalCoreCount -1; // -1 because we already have a main thread
 
+  Info("Detected %d Logical cores, creating %d threads", LogicalCoreCount, ThreadCount);
+
   Plat->Queue.EntryCount = 0;
   Plat->Queue.NextEntry = 0;
 
@@ -269,6 +271,7 @@ main(s32 NumArgs, char ** Args)
   PlatformInit(&Plat);
 
   os Os = {};
+  Os.ContinueRunning = True;
 
   Plat.WindowHeight = SCR_HEIGHT;
   Plat.WindowWidth = SCR_WIDTH;
@@ -314,7 +317,7 @@ main(s32 NumArgs, char ** Args)
 
   r64 lastTime = Plat.GetHighPrecisionClock();
 
-  for (;;)
+  while ( Os.ContinueRunning )
   {
     Plat.dt = (r32)ComputeDtForFrame(&lastTime);
 
@@ -337,6 +340,8 @@ main(s32 NumArgs, char ** Args)
     /* float FPS = 60.0f; */
     /* WaitForFrameTime(lastTime, FPS); */
   }
+
+  Terminate(&Os);
 
   return True;
 }

@@ -135,6 +135,8 @@ struct os
   window Window;
   display Display;
   gl_context GlContext;
+
+  b32 ContinueRunning;
 };
 
 struct debug_state

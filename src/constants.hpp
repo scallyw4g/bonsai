@@ -61,6 +61,7 @@
 #define DEBUG_DRAW_SHADOW_MAP_TEXTURE 0
 #define DEBUG_HIGHLIGHT_VOID_CHUNKS   0
 #define DEBUG_DRAW_AXIES              0
+#define DEBUG_OPTIMIZE_WORLD_GC       1
 
 #define DEBUG_FONT_SIZE               16
 

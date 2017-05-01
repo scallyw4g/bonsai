@@ -94,6 +94,9 @@ elseif (WIN32)
   set(COMPILED_LIB ${BIN}/Debug/Game.dll)
   set(LOADABLE_LIB ${BIN}/Debug/GameLoadable.dll)
 
+  # set(COMPILED_LIB ${BIN}/Release/Game.dll)
+  # set(LOADABLE_LIB ${BIN}/Release/GameLoadable.dll)
+
 else()
   message(FATAL_ERROR "Unsupported Platform")
 endif()
