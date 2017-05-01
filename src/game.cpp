@@ -56,7 +56,7 @@ GameInit( platform *Plat )
   if (!InitializeShadowBuffer(SG)) { Error("Initializing Shadow Buffer"); return False; }
 
   RenderGroup *RG = (RenderGroup*)calloc( sizeof(RenderGroup), 1);
-  if (!InitializeRenderGroup(RG)) { Error("Initializing RenderGroup"); return False; }
+  if (!InitializeRenderGroup(Plat, RG)) { Error("Initializing RenderGroup"); return False; }
 
   // This needs to be off for shadow maps to work correctly
   /* glEnable(GL_CULL_FACE); */
@@ -237,7 +237,7 @@ GameUpdateAndRender ( platform *Plat, game_state *GameState )
     {
       if ( (chunk->WorldP >= Min && chunk->WorldP < Max) )
       {
-        DrawWorldChunk( world, chunk, Camera, RG, SG);
+        DrawWorldChunk( Plat, world, chunk, Camera, RG, SG);
         chunk = chunk->Next;
       }
       else
@@ -249,15 +249,15 @@ GameUpdateAndRender ( platform *Plat, game_state *GameState )
     }
   }
 
-  DrawEntity( world, Player, Camera, RG, SG);
+  DrawEntity(Plat, world, Player, Camera, RG, SG);
 
-  FlushRenderBuffers(world, RG, SG, Camera);
+  FlushRenderBuffers(Plat, world, RG, SG, Camera);
 
   char buffer[256] = {};
   sprintf(buffer, "%f ms last frame", Plat->dt);
   PrintDebugText(DebugRG, buffer, 0, 0, DEBUG_FONT_SIZE);
 
-  DrawWorldToFullscreenQuad(world, RG, SG, Camera);
+  DrawWorldToFullscreenQuad(Plat, world, RG, SG, Camera);
 
   AssertNoGlErrors;
 

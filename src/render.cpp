@@ -24,7 +24,7 @@
       FaceColor)
 
 bool
-InitializeRenderGroup( RenderGroup *RG )
+InitializeRenderGroup( platform *Plat, RenderGroup *RG )
 {
   RG->Basis.ModelMatrix = glm::mat4(1);
 
@@ -35,21 +35,21 @@ InitializeRenderGroup( RenderGroup *RG )
   glBindTexture(GL_TEXTURE_2D, RG->ColorTexture);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Plat->WindowWidth, Plat->WindowHeight, 0, GL_RGBA, GL_FLOAT, NULL);
   glBindTexture(GL_TEXTURE_2D, 0);
 
   glGenTextures(1, &RG->NormalTexture);
   glBindTexture(GL_TEXTURE_2D, RG->NormalTexture);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Plat->WindowWidth, Plat->WindowHeight, 0, GL_RGBA, GL_FLOAT, NULL);
   glBindTexture(GL_TEXTURE_2D, 0);
 
   glGenTextures(1, &RG->PositionTexture);
   glBindTexture(GL_TEXTURE_2D, RG->PositionTexture);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Plat->WindowWidth, Plat->WindowHeight, 0, GL_RGBA, GL_FLOAT, NULL);
   glBindTexture(GL_TEXTURE_2D, 0);
 
   // Depth texture
@@ -57,7 +57,7 @@ InitializeRenderGroup( RenderGroup *RG )
   glBindTexture(GL_TEXTURE_2D, RG->DepthTexture);
 
   glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32,
-      SCR_WIDTH, SCR_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+      Plat->WindowWidth, Plat->WindowHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -232,11 +232,11 @@ GetDepthMVP(World *world, Camera_Object *Camera)
 }
 
 void
-DrawWorldToFullscreenQuad(World *world, RenderGroup *RG, ShadowRenderGroup *SG, Camera_Object *Camera)
+DrawWorldToFullscreenQuad( platform *Plat, World *world, RenderGroup *RG, ShadowRenderGroup *SG, Camera_Object *Camera)
 {
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
   GL_Global->glUseProgram(RG->LightingShader);
-  glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+  glViewport(0, 0, Plat->WindowWidth, Plat->WindowHeight);
 
   glm::vec3 GlobalLightDirection =  glm::vec3( sin(GlobalLightTheta), 1.0, -2.0);
   GlobalLightDirection = glm::normalize( GlobalLightDirection );
@@ -323,12 +323,12 @@ RenderShadowMap(World *world, ShadowRenderGroup *SG, RenderGroup *RG, Camera_Obj
 }
 
 void
-RenderWorld(World *world, RenderGroup *RG)
+RenderWorld( platform *Plat, World *world, RenderGroup *RG)
 {
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO);
 
   GL_Global->glUseProgram(RG->ShaderID);
-  glViewport(0,0,SCR_WIDTH,SCR_HEIGHT);
+  glViewport(0,0,Plat->WindowWidth,Plat->WindowHeight);
 
   glm::mat4 mvp = RG->Basis.ProjectionMatrix * RG->Basis.ViewMatrix * glm::mat4(1);
 
@@ -385,6 +385,7 @@ RenderWorld(World *world, RenderGroup *RG)
 
 void
 FlushRenderBuffers(
+    platform *Plat,
     World *world,
     RenderGroup *RG,
     ShadowRenderGroup *SG,
@@ -394,7 +395,7 @@ FlushRenderBuffers(
 
   RenderShadowMap(world, SG, RG, Camera);
 
-  RenderWorld(world, RG);
+  RenderWorld(Plat, world, RG);
 
   AssertNoGlErrors;
 
@@ -1197,6 +1198,7 @@ ClearFramebuffers(RenderGroup *RG, ShadowRenderGroup *SG)
 
 void
 BufferChunkMesh(
+    platform *Plat,
     World *world,
     chunk_data *chunk,
     world_position WorldP,
@@ -1211,7 +1213,7 @@ BufferChunkMesh(
   int MaxChunkMeshBytes = chunk->BoundaryVoxelCount * VERT_PER_VOXEL * BYTES_PER_VERT;
   if (world->VertexData.filled + MaxChunkMeshBytes > world->VertexData.bytesAllocd )
   {
-    FlushRenderBuffers( world, RG, SG, Camera);
+    FlushRenderBuffers( Plat, world, RG, SG, Camera);
   }
 
   for ( int i = 0; i < chunk->BoundaryVoxelCount; ++i )
@@ -1339,6 +1341,7 @@ BuildBoundaryVoxels( World *world, world_chunk *WorldChunk)
 
 void
 DrawWorldChunk(
+    platform *Plat,
     World *world,
     world_chunk *WorldChunk,
     Camera_Object *Camera,
@@ -1351,7 +1354,7 @@ DrawWorldChunk(
     if (IsSet(WorldChunk->Data->flags, Chunk_Initialized) )
     {
       BuildBoundaryVoxels( world, WorldChunk);
-      BufferChunkMesh(world, WorldChunk->Data, WorldChunk->WorldP, RG, SG, Camera);
+      BufferChunkMesh(Plat, world, WorldChunk->Data, WorldChunk->WorldP, RG, SG, Camera);
     }
   }
 
@@ -1360,6 +1363,7 @@ DrawWorldChunk(
 
 void
 DrawEntity(
+    platform *Plat,
     World *world,
     Entity *entity,
     Camera_Object *Camera,
@@ -1383,7 +1387,7 @@ DrawEntity(
       BuildInteriorBoundaryVoxels(world, entity->Model, entity->P.WorldP);
     }
 
-    BufferChunkMesh(world, entity->Model, entity->P.WorldP, RG, SG, Camera, entity->P.Offset);
+    BufferChunkMesh(Plat, world, entity->Model, entity->P.WorldP, RG, SG, Camera, entity->P.Offset);
   }
 
   return;
