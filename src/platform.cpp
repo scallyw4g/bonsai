@@ -151,7 +151,7 @@ InitializeOpenGlExtensions(gl_extensions *Gl)
   return;
 }
 
-void
+b32
 PlatformInit(platform *Plat, memory_arena *GameMemory)
 {
   Plat->GetHighPrecisionClock = GetHighPrecisionClock;
@@ -172,8 +172,9 @@ PlatformInit(platform *Plat, memory_arena *GameMemory)
   Plat->Queue.EntryCount = 0;
   Plat->Queue.NextEntry = 0;
 
-  Plat->Queue.Entries = (work_queue_entry *)Plat->PushStruct(Plat->GameMemory, sizeof(work_queue_entry)*WORK_QUEUE_SIZE);
-  Plat->Threads = (thread_startup_params *)Plat->PushStruct(Plat->GameMemory, sizeof(thread_startup_params)*ThreadCount);
+  PUSH_STRUCT_CHECKED(work_queue_entry, Plat->Queue.Entries,  Plat->GameMemory, WORK_QUEUE_SIZE);
+  PUSH_STRUCT_CHECKED(thread_startup_params, Plat->Threads ,  Plat->GameMemory, WORK_QUEUE_SIZE);
+
   work_queue *Queue = &Plat->Queue;
 
   Queue->Semaphore = CreateSemaphore(ThreadCount);
@@ -190,7 +191,7 @@ PlatformInit(platform *Plat, memory_arena *GameMemory)
   }
 
 
-  return;
+  return True;
 }
 
 /*

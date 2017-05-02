@@ -411,9 +411,12 @@ GetIndex(voxel_position P, chunk_data *chunk)
 chunk_data*
 AllocateChunk(platform *Plat, memory_arena *WorldStorage, chunk_dimension Dim)
 {
-  chunk_data *Result     = (chunk_data*)Plat->PushStruct(WorldStorage, sizeof(chunk_data));
-  Result->Voxels         = (Voxel*)Plat->PushStruct(WorldStorage, Volume(Dim)*sizeof(Voxel));
-  Result->BoundaryVoxels = (Voxel*)Plat->PushStruct(WorldStorage, Volume(Dim)*sizeof(Voxel));
+  chunk_data *Result     = 0;
+
+  PUSH_STRUCT_CHECKED(chunk_data, Result, WorldStorage, 1);
+
+  PUSH_STRUCT_CHECKED(Voxel, Result->Voxels         , WorldStorage , Volume(Dim));
+  PUSH_STRUCT_CHECKED(Voxel, Result->BoundaryVoxels , WorldStorage , Volume(Dim));
 
   Result->Dim = Dim;
 
@@ -465,7 +468,8 @@ InsertChunkIntoWorld(World *world, world_chunk *chunk)
 world_chunk*
 AllocateWorldChunk(platform *Plat, World *world, world_position WorldP)
 {
-  world_chunk *Result = (world_chunk*)Plat->PushStruct(world->WorldStorage.Arena, sizeof(world_chunk));
+  world_chunk *Result = 0;
+  PUSH_STRUCT_CHECKED(world_chunk, Result, world->WorldStorage.Arena, 1);
 
   Result->Data = AllocateChunk(Plat, world->WorldStorage.Arena, Chunk_Dimension(CD_X, CD_Y, CD_Z));
 

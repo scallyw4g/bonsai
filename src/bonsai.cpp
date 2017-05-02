@@ -746,11 +746,6 @@ UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera)
   return;
 }
 
-#define PUSH_STRUCT_CHECKED(Type, Result, Arena, Number) \
-  Result = (Type*)Plat->PushStruct( Arena, sizeof(Type)*Number ); \
-  if (!(Result)) { Error("Error Pushing "#Result); return False; }
-
-
 World *
 AllocateWorld( platform *Plat, world_position Midpoint)
 {

@@ -210,8 +210,8 @@ u8*
 
 Allocate(umm Bytes)
 {
-  u8* Result = (u8*)malloc(Bytes);
-  memset(Result, 0, Bytes);
+  u8* Result = (u8*)malloc((size_t)Bytes);
+  memset(Result, 0, (size_t)Bytes);
 
   Assert(Result);
   return Result;
@@ -231,6 +231,11 @@ PushSize(memory_arena *Arena, umm Size)
 
   return Result;
 }
+
+
+#define PUSH_STRUCT_CHECKED(Type, Result, Arena, Number) \
+  Result = (Type*)Plat->PushStruct( Arena, sizeof(Type)*Number ); \
+  if (!(Result)) { Error("Error Pushing "#Result); return False; }
 
 void*
 PushStruct(memory_arena *Memory, umm sizeofStruct)
