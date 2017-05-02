@@ -380,13 +380,13 @@ ClampMinus1toInfinity( voxel_position V )
 }
 
 world_chunk*
-GetFreeChunk(World *world, world_position P)
+GetFreeChunk(platform *Plat, World *world, world_position P)
 {
   world_chunk *Result = 0;
 
   if (world->FreeChunkCount == 0)
   {
-    Result = AllocateWorldChunk(world, P);
+    Result = AllocateWorldChunk(Plat, world, P);
   }
   else
   {
@@ -416,7 +416,7 @@ GetSign(world_position P)
 }
 
 void
-QueueChunksForInit(World* world, platform *Plat, world_position WorldDisp, Entity *Player)
+QueueChunksForInit(platform *Plat, World* world, world_position WorldDisp, Entity *Player)
 {
   if (Length(V3(WorldDisp)) == 0) return;
 
@@ -440,7 +440,7 @@ QueueChunksForInit(World* world, platform *Plat, world_position WorldDisp, Entit
       for (int x = SliceMin.x; x <= SliceMax.x; ++ x)
       {
         world_position P = World_Position(x,y,z);
-        world_chunk* chunk = GetFreeChunk(world, P );
+        world_chunk* chunk = GetFreeChunk(Plat, world, P);
         QueueChunkForInit(world, Plat, chunk);
       }
     }
@@ -453,9 +453,9 @@ UpdateVisibleRegion(World *world, platform *Plat, world_position OriginalPlayerP
   if ( OriginalPlayerP != Player->P.WorldP && DEBUG_SCROLL_WORLD ) // We moved to the next chunk
   {
     world_position WorldDisp = ( Player->P.WorldP - OriginalPlayerP );
-    QueueChunksForInit(world, Plat, World_Position(WorldDisp.x, 0, 0), Player);
-    QueueChunksForInit(world, Plat, World_Position(0, WorldDisp.y, 0), Player);
-    QueueChunksForInit(world, Plat, World_Position(0, 0, WorldDisp.z), Player);
+    QueueChunksForInit(Plat, world, World_Position(WorldDisp.x, 0, 0), Player);
+    QueueChunksForInit(Plat, world, World_Position(0, WorldDisp.y, 0), Player);
+    QueueChunksForInit(Plat, world, World_Position(0, 0, WorldDisp.z), Player);
   }
 
   return;
@@ -795,7 +795,7 @@ AllocateWorld( platform *Plat, world_position Midpoint)
     {
       for ( int x = Min.x; x < Max.x; ++ x )
       {
-        world_chunk *chunk = AllocateWorldChunk(world, World_Position(x,y,z));
+        world_chunk *chunk = AllocateWorldChunk(Plat, world, World_Position(x,y,z));
         QueueChunkForInit(world, Plat, chunk);
       }
     }

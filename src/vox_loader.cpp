@@ -131,7 +131,7 @@ ReadXYZIChunk(FILE *File, int* byteCounter)
 }
 
 chunk_data*
-LoadVox(char const *filepath)
+LoadVox(platform *Plat, char const *filepath)
 {
   chunk_data *Result = 0;
   s32 totalChunkBytes = 0;
@@ -212,7 +212,7 @@ LoadVox(char const *filepath)
           // monolithic one. The storage for chunks must be as large as the
           // largest chunk we will EVER load, which should definately not be
           // decided at compile time.
-          Result = AllocateChunk(Dim);
+          Result = AllocateChunk(Plat, Dim);
 
           for( int i = 0; i < numVoxels; ++ i)
           {

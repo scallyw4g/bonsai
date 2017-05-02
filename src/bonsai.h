@@ -400,15 +400,15 @@ GetIndex(voxel_position P, chunk_data *chunk)
 }
 
 chunk_data*
-AllocateChunk(chunk_dimension Dim)
+AllocateChunk(platform *Plat, chunk_dimension Dim)
 {
-  chunk_data *Result = (chunk_data*)calloc(1, sizeof(chunk_data));
+  chunk_data *Result = (chunk_data*)Plat->PushStruct(Plat->GameMemory, sizeof(chunk_data));
   Assert(Result);
 
   Result->Dim = Dim;
 
-  Result->Voxels = (Voxel*)calloc(Volume(Dim), sizeof(Voxel));
-  Result->BoundaryVoxels = (Voxel*)calloc((Volume(Dim)), sizeof(Voxel));
+  Result->Voxels = (Voxel*)Plat->PushStruct(Plat->GameMemory, Volume(Dim)*sizeof(Voxel));
+  Result->BoundaryVoxels = (Voxel*)Plat->PushStruct(Plat->GameMemory, Volume(Dim)*sizeof(Voxel));
   Assert(Result->Voxels);
   Assert(Result->BoundaryVoxels);
 
@@ -458,12 +458,12 @@ InsertChunkIntoWorld(World *world, world_chunk *chunk)
 }
 
 world_chunk*
-AllocateWorldChunk(World *world, world_position WorldP)
+AllocateWorldChunk(platform *Plat, World *world, world_position WorldP)
 {
-  world_chunk *Result = (world_chunk*)calloc(1, sizeof(world_chunk));
+  world_chunk *Result = (world_chunk*)Plat->PushStruct(Plat->GameMemory, sizeof(world_chunk));
   Assert(Result);
 
-  Result->Data = AllocateChunk(Chunk_Dimension(CD_X, CD_Y, CD_Z));
+  Result->Data = AllocateChunk(Plat, Chunk_Dimension(CD_X, CD_Y, CD_Z));
 
   Result->WorldP = WorldP;
 

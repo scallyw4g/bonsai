@@ -166,6 +166,10 @@ PushStruct(game_memory *Memory, u32 sizeofStruct)
 void
 PlatformInit(platform *Plat, game_memory *GameMemory)
 {
+  Plat->GetHighPrecisionClock = GetHighPrecisionClock;
+  Plat->PushWorkQueueEntry = PushWorkQueueEntry;
+  Plat->PushStruct = PushStruct;
+
   // Initialized from globals
   Plat->WindowHeight = SCR_HEIGHT;
   Plat->WindowWidth = SCR_WIDTH;
@@ -180,8 +184,8 @@ PlatformInit(platform *Plat, game_memory *GameMemory)
   Plat->Queue.EntryCount = 0;
   Plat->Queue.NextEntry = 0;
 
-  Plat->Queue.Entries = (work_queue_entry *)calloc(sizeof(work_queue_entry), WORK_QUEUE_SIZE);
-  Plat->Threads = (thread_startup_params *)calloc(sizeof(thread_startup_params), ThreadCount);
+  Plat->Queue.Entries = (work_queue_entry *)Plat->PushStruct(Plat->GameMemory, sizeof(work_queue_entry)*WORK_QUEUE_SIZE);
+  Plat->Threads = (thread_startup_params *)Plat->PushStruct(Plat->GameMemory, sizeof(thread_startup_params)*ThreadCount);
   work_queue *Queue = &Plat->Queue;
 
   Queue->Semaphore = CreateSemaphore(ThreadCount);
@@ -196,10 +200,6 @@ PlatformInit(platform *Plat, game_memory *GameMemory)
 
     CreateThread( ThreadMain, Params );
   }
-
-  Plat->GetHighPrecisionClock = GetHighPrecisionClock;
-  Plat->PushWorkQueueEntry = PushWorkQueueEntry;
-  Plat->PushStruct = PushStruct;
 
 
   return;

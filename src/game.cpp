@@ -52,10 +52,10 @@ GameInit( platform *Plat )
   PerlinNoise Noise(rand());
   GlobalNoise = Noise;
 
-  ShadowRenderGroup *SG = (ShadowRenderGroup*)calloc( sizeof(ShadowRenderGroup), 1);
+  ShadowRenderGroup *SG = (ShadowRenderGroup*)Plat->PushStruct(Plat->GameMemory, sizeof(ShadowRenderGroup));
   if (!InitializeShadowBuffer(SG)) { Error("Initializing Shadow Buffer"); return False; }
 
-  RenderGroup *RG = (RenderGroup*)calloc( sizeof(RenderGroup), 1);
+  RenderGroup *RG = (RenderGroup*)Plat->PushStruct(Plat->GameMemory, sizeof(RenderGroup));
   if (!InitializeRenderGroup(Plat, RG)) { Error("Initializing RenderGroup"); return False; }
 
   // This needs to be off for shadow maps to work correctly
@@ -67,9 +67,9 @@ GameInit( platform *Plat )
   Plat->GL.glGenVertexArrays(1, &VertexArrayID);
   Plat->GL.glBindVertexArray(VertexArrayID);
 
-  Entity *Player = (Entity *)calloc( sizeof(Entity), 1);
+  Entity *Player = (Entity *)Plat->PushStruct( Plat->GameMemory, sizeof(Entity));
 
-  Player->Model = LoadVox(PLAYER_MODEL);
+  Player->Model = LoadVox(Plat, PLAYER_MODEL);
   Player->Rotation = Quaternion(1,0,0,0);
   Player->P.Offset = V3(0,0,0);
   Player->P.WorldP = World_Position(0,0,0);
@@ -78,7 +78,7 @@ GameInit( platform *Plat )
   World *world = AllocateWorld( Plat, Player->P.WorldP);
   SeedWorldAndUnspawnPlayer(world, Player);
 
-  Camera_Object *Camera = (Camera_Object *)calloc( sizeof(Camera_Object), 1);
+  Camera_Object *Camera = (Camera_Object *)Plat->PushStruct(Plat->GameMemory, sizeof(Camera_Object));
   Camera->Frust.farClip = 500.0f;
   Camera->Frust.nearClip = 0.1f;
   Camera->Frust.width = 30.0f;
@@ -97,13 +97,13 @@ GameInit( platform *Plat )
   DebugCamera.Right = WORLD_Z;
   DebugCamera.Front = WORLD_X;
 
-  debug_text_render_group *DebugRG = (debug_text_render_group*)calloc( sizeof(debug_text_render_group), 1);
+  debug_text_render_group *DebugRG = (debug_text_render_group*)Plat->PushStruct(Plat->GameMemory, sizeof(debug_text_render_group));
 
   initText2D("Holstein.DDS", DebugRG);
 
   AssertNoGlErrors;
 
-  game_state *GameState = (game_state*)calloc( sizeof(game_state), 1 );
+  game_state *GameState = (game_state*)Plat->PushStruct(Plat->GameMemory, sizeof(game_state));
   GameState->world = world;
   GameState->Player = Player;
   GameState->Camera = Camera;
