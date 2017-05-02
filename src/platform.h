@@ -220,15 +220,16 @@ Allocate(umm Bytes)
 void*
 PushSize(memory_arena *Arena, umm Size)
 {
-  void* Result = (void*)Arena->FirstFreeByte;
+  void* Result = 0;
 
-  Assert(Arena->Remaining >= Size);
-
-  Arena->FirstFreeByte += Size;
-  Arena->Remaining -= Size;
+  if (Size < Arena->Remaining)
+  {
+    Result = (void*)Arena->FirstFreeByte;
+    Arena->FirstFreeByte += Size;
+    Arena->Remaining -= Size;
+  }
 
   return Result;
-
 }
 
 void*
@@ -238,7 +239,8 @@ PushStruct(memory_arena *Memory, umm sizeofStruct)
   return Result;
 }
 
-
+#if 0
+// TODO(Jesse): Does this function correctly?
 inline void
 SubArena( memory_arena *Src, memory_arena *Dest, umm Size)
 {
@@ -246,16 +248,21 @@ SubArena( memory_arena *Src, memory_arena *Dest, umm Size)
   Dest->Remaining = Size;
   Dest->TotalSize = Size;
 
+  Assert(Dest->FirstFreeByte);
+
   return;
 }
+#endif
 
 inline void
-AllocateMemoryArena(memory_arena *Arena, umm Size)
+AllocateAndInitializeArena(memory_arena *Arena, umm Size)
 {
   Arena->Remaining = Size;
   Arena->TotalSize = Size;
 
   Arena->FirstFreeByte = Allocate(Arena->Remaining);
+
+  Assert(Arena->FirstFreeByte);
 
   return;
 }
