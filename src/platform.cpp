@@ -274,12 +274,7 @@ main(s32 NumArgs, char ** Args)
 {
   Info("Initializing Bonsai");
 
-  if (!SearchForProjectRoot())
-  {
-    Error("Couldn't find root dir, exiting.");
-    return False;
-  }
-
+  if (!SearchForProjectRoot()) { Error("Couldn't find root dir, exiting."); return False; }
   Info("Found Bonsai Root : %s", GetCwd() );
 
   memory_arena PlatMemory = {};
@@ -329,16 +324,12 @@ main(s32 NumArgs, char ** Args)
     if ( GameLibIsNew(GAME_LIB) )
     {
       CloseLibrary(GameLib);
-
       GameLib = OpenLibrary(GAME_LIB);
       GameUpdateAndRender = (game_main_proc)GetProcFromLib(GameLib, "GameUpdateAndRender");
     }
 
     GameUpdateAndRender(&Plat, GameState);
     BonsaiSwapBuffers(&Os);
-
-    /* float FPS = 60.0f; */
-    /* WaitForFrameTime(lastTime, FPS); */
   }
 
   Terminate(&Os);

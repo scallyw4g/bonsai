@@ -187,7 +187,7 @@ ProcessOsMessages(os *Os, platform *Plat)
   b32 EventFound =
     XCheckWindowEvent(Os->Display,
                       Os->Window,
-                      ExposureMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask,
+                      ExposureMask | KeyPressMask | KeyReleaseMask ,
                       &Event);
 
   if (EventFound)
@@ -198,21 +198,9 @@ ProcessOsMessages(os *Os, platform *Plat)
 
       case Expose:
       {
-        XWindowAttributes WindowAttribs;
-        XGetWindowAttributes(Os->Display, Os->Window, &WindowAttribs);
-
-        glViewport(0, 0, Plat->WindowWidth, Plat->WindowHeight);
-      }
-
-      case ConfigureNotify:
-      {
-        if (Event.xconfigure.width > 0)
-          Plat->WindowWidth = Event.xconfigure.width;
-
-        if (Event.xconfigure.height > 0)
-          Plat->WindowHeight = Event.xconfigure.height;
-
-      }  break;
+        Plat->WindowWidth = Event.xexpose.width;
+        Plat->WindowHeight = Event.xexpose.height;
+      } break;
 
       case KeyRelease:
       {

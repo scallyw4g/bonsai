@@ -328,7 +328,7 @@ RenderWorld( platform *Plat, World *world, RenderGroup *RG)
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO);
 
   GL_Global->glUseProgram(RG->ShaderID);
-  glViewport(0,0,Plat->WindowWidth,Plat->WindowHeight);
+  glViewport(0, 0, Plat->WindowWidth, Plat->WindowHeight);
 
   glm::mat4 mvp = RG->Basis.ProjectionMatrix * RG->Basis.ViewMatrix * glm::mat4(1);
 

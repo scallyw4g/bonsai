@@ -20,6 +20,10 @@ typedef game_state* (*game_init_proc)(platform*);
 typedef bool (*game_main_proc)(platform*, game_state*);
 
 
+#define PUSH_STRUCT_CHECKED(Type, Result, Arena, Number) \
+  Result = (Type*)Plat->PushStruct( Arena, sizeof(Type)*Number ); \
+  if (!(Result)) { Error("Pushing %s on Line: %d, in file %s", #Result, __LINE__, __FILE__); return False; }
+
 struct work_queue_entry
 {
   void (*Callback)(void*);
@@ -206,8 +210,8 @@ DumpGlErrorEnum(int Error)
 
   return;
 }
-u8*
 
+u8*
 Allocate(umm Bytes)
 {
   u8* Result = (u8*)calloc(1, Bytes);
@@ -230,11 +234,6 @@ PushSize(memory_arena *Arena, umm Size)
 
   return Result;
 }
-
-
-#define PUSH_STRUCT_CHECKED(Type, Result, Arena, Number) \
-  Result = (Type*)Plat->PushStruct( Arena, sizeof(Type)*Number ); \
-  if (!(Result)) { Error("Pushing %s on Line: %d, in file %s", #Result, __LINE__, __FILE__); return False; }
 
 void*
 PushStruct(memory_arena *Memory, umm sizeofStruct)
