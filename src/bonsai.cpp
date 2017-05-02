@@ -753,17 +753,17 @@ AllocateWorld( platform *Plat, world_position Midpoint)
   /*
    *  Allocate stuff
    */
-  PUSH_STRUCT_CHECKED(World, GlobalWorld, Plat->GameMemory, 1 );
+  PUSH_STRUCT_CHECKED(World, GlobalWorld, Plat->Memory, 1 );
 
   World *world = GlobalWorld;
 
   world->WorldStorage.Next = 0;
 
-  PUSH_STRUCT_CHECKED(memory_arena, world->WorldStorage.Arena, Plat->GameMemory, 1);
+  PUSH_STRUCT_CHECKED(memory_arena, world->WorldStorage.Arena, Plat->Memory, 1);
   AllocateAndInitializeArena(world->WorldStorage.Arena, Megabytes(512));
 
-  PUSH_STRUCT_CHECKED(world_chunk*, world->ChunkHash, Plat->GameMemory, WORLD_HASH_SIZE );
-  PUSH_STRUCT_CHECKED(world_chunk*, world->FreeChunks, Plat->GameMemory, FREELIST_SIZE );
+  PUSH_STRUCT_CHECKED(world_chunk*, world->ChunkHash, Plat->Memory, WORLD_HASH_SIZE );
+  PUSH_STRUCT_CHECKED(world_chunk*, world->FreeChunks, Plat->Memory, FREELIST_SIZE );
 
   world->FreeChunkCount = 0;
 
@@ -779,9 +779,9 @@ AllocateWorld( platform *Plat, world_position Midpoint)
   {
     int BufferVertices = (VOLUME_VISIBLE_REGION * VERT_PER_VOXEL);
 
-    PUSH_STRUCT_CHECKED(GLfloat, world->VertexData.Data, Plat->GameMemory, BufferVertices );
-    PUSH_STRUCT_CHECKED(GLfloat, world->ColorData.Data,  Plat->GameMemory, BufferVertices );
-    PUSH_STRUCT_CHECKED(GLfloat, world->NormalData.Data, Plat->GameMemory, BufferVertices );
+    PUSH_STRUCT_CHECKED(GLfloat, world->VertexData.Data, Plat->Memory, BufferVertices );
+    PUSH_STRUCT_CHECKED(GLfloat, world->ColorData.Data,  Plat->Memory, BufferVertices );
+    PUSH_STRUCT_CHECKED(GLfloat, world->NormalData.Data, Plat->Memory, BufferVertices );
 
     world->VertexData.bytesAllocd = BufferVertices*sizeof(r32);
     world->ColorData.bytesAllocd  = BufferVertices*sizeof(r32);

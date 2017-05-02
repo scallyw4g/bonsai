@@ -121,7 +121,7 @@ struct platform
   umm (*Allocate)(u8 Bytes);
   void* (*PushStruct)(memory_arena *Memory, umm sizeofStruct );
 
-  memory_arena *GameMemory;
+  memory_arena *Memory;
 
   gl_extensions GL;
 

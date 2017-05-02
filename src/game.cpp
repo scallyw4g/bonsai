@@ -44,9 +44,9 @@ Entity *
 AllocateEntity(platform *Plat, canonical_position InitialP, const char *ModelPath)
 {
   Entity *entity = 0;
-  PUSH_STRUCT_CHECKED(Entity, entity, Plat->GameMemory, 1);
+  PUSH_STRUCT_CHECKED(Entity, entity, Plat->Memory, 1);
 
-  entity->Model = LoadVox(Plat, Plat->GameMemory, ModelPath);
+  entity->Model = LoadVox(Plat, Plat->Memory, ModelPath);
   entity->Rotation = Quaternion(1,0,0,0);
   entity->P = InitialP;
   entity->Spawned = false;
@@ -67,11 +67,11 @@ GameInit( platform *Plat )
   GlobalNoise = Noise;
 
   ShadowRenderGroup *SG = 0;
-  PUSH_STRUCT_CHECKED(ShadowRenderGroup, SG, Plat->GameMemory, 1);
+  PUSH_STRUCT_CHECKED(ShadowRenderGroup, SG, Plat->Memory, 1);
   if (!InitializeShadowBuffer(SG)) { Error("Initializing Shadow Buffer"); return False; }
 
   RenderGroup *RG = 0;
-  PUSH_STRUCT_CHECKED(RenderGroup, RG, Plat->GameMemory, 1);
+  PUSH_STRUCT_CHECKED(RenderGroup, RG, Plat->Memory, 1);
   if (!InitializeRenderGroup(Plat, RG)) { Error("Initializing RenderGroup"); return False; }
 
   // This needs to be off for shadow maps to work correctly
@@ -94,7 +94,7 @@ GameInit( platform *Plat )
   SeedWorldAndUnspawnPlayer(world, Player);
 
   Camera_Object *Camera = 0;
-  PUSH_STRUCT_CHECKED(Camera_Object, Camera, Plat->GameMemory, 1);
+  PUSH_STRUCT_CHECKED(Camera_Object, Camera, Plat->Memory, 1);
 
   Camera->Frust.farClip = 500.0f;
   Camera->Frust.nearClip = 0.1f;
@@ -115,14 +115,14 @@ GameInit( platform *Plat )
   DebugCamera.Front = WORLD_X;
 
   debug_text_render_group *DebugRG = 0;
-  PUSH_STRUCT_CHECKED(debug_text_render_group, DebugRG, Plat->GameMemory, 1);
+  PUSH_STRUCT_CHECKED(debug_text_render_group, DebugRG, Plat->Memory, 1);
 
   initText2D("Holstein.DDS", DebugRG);
 
   AssertNoGlErrors;
 
   game_state *GameState = 0;
-  PUSH_STRUCT_CHECKED(game_state, GameState, Plat->GameMemory, 1);
+  PUSH_STRUCT_CHECKED(game_state, GameState, Plat->Memory, 1);
 
   GameState->world = world;
   GameState->Player = Player;

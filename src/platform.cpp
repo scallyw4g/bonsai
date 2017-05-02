@@ -155,7 +155,7 @@ InitializeOpenGlExtensions(gl_extensions *Gl)
 }
 
 b32
-PlatformInit(platform *Plat, memory_arena *GameMemory)
+PlatformInit(platform *Plat, memory_arena *Memory)
 {
   Plat->GetHighPrecisionClock = GetHighPrecisionClock;
   Plat->PushWorkQueueEntry = PushWorkQueueEntry;
@@ -165,7 +165,7 @@ PlatformInit(platform *Plat, memory_arena *GameMemory)
   Plat->WindowHeight = SCR_HEIGHT;
   Plat->WindowWidth = SCR_WIDTH;
 
-  Plat->GameMemory = GameMemory;
+  Plat->Memory = Memory;
 
   u32 LogicalCoreCount = GetLogicalCoreCount();
   u32 ThreadCount = LogicalCoreCount -1; // -1 because we already have a main thread
@@ -175,8 +175,8 @@ PlatformInit(platform *Plat, memory_arena *GameMemory)
   Plat->Queue.EntryCount = 0;
   Plat->Queue.NextEntry = 0;
 
-  PUSH_STRUCT_CHECKED(work_queue_entry, Plat->Queue.Entries,  Plat->GameMemory, WORK_QUEUE_SIZE);
-  PUSH_STRUCT_CHECKED(thread_startup_params, Plat->Threads ,  Plat->GameMemory, WORK_QUEUE_SIZE);
+  PUSH_STRUCT_CHECKED(work_queue_entry, Plat->Queue.Entries,  Plat->Memory, WORK_QUEUE_SIZE);
+  PUSH_STRUCT_CHECKED(thread_startup_params, Plat->Threads ,  Plat->Memory, WORK_QUEUE_SIZE);
 
   work_queue *Queue = &Plat->Queue;
 
@@ -254,6 +254,20 @@ SearchForProjectRoot(void)
   return Result;
 }
 
+void
+QueryAndSetGlslVersion(platform *Plat)
+{
+  r64 GLSL_Version = atof((char*)glGetString ( GL_SHADING_LANGUAGE_VERSION ));
+  Info("GLSL verison : %f", GLSL_Version );
+
+  if (GLSL_Version >= 3.3)
+    Plat->GlslVersion = "330";
+
+  else
+    Plat->GlslVersion = "310ES";
+
+  return;
+}
 
 int
 main(s32 NumArgs, char ** Args)
@@ -295,14 +309,7 @@ main(s32 NumArgs, char ** Args)
 
   InitializeOpenGlExtensions(&Plat.GL);
 
-  r64 GLSL_Version = atof((char*)glGetString ( GL_SHADING_LANGUAGE_VERSION ));
-  Info("GLSL verison : %f", GLSL_Version );
-
-  if (GLSL_Version >= 3.3)
-    Plat.GlslVersion = "330";
-
-  else
-    Plat.GlslVersion = "310ES";
+  QueryAndSetGlslVersion(&Plat);
 
   game_state *GameState = GameInit(&Plat);
   if (!GameState) { Error("Initializing Game State :( "); return False; }
