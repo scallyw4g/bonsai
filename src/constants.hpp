@@ -17,9 +17,9 @@
 #define CD_Z 8
 
 // Visible Region XYZ - Must be > (3,3,3)
-#define VR_X 24
-#define VR_Y 24
-#define VR_Z 24
+#define VR_X 16
+#define VR_Y 16
+#define VR_Z 16
 
 #define VOLUME_VISIBLE_REGION (VR_X*VR_X*VR_X)
 

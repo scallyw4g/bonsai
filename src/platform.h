@@ -46,10 +46,11 @@ struct thread_startup_params
   thread Self;
 };
 
-struct game_memory
+struct memory_arena
 {
   u8* FirstFreeByte;
   umm Remaining;
+  umm TotalSize;
 };
 
 struct gl_extensions
@@ -118,9 +119,10 @@ struct platform
   void (*PushWorkQueueEntry)(work_queue *Queue, work_queue_entry *Entry);
   r64 (*GetHighPrecisionClock)(void);
   umm (*Allocate)(u8 Bytes);
-  void* (*PushStruct)(game_memory *Memory, u32 sizeofStruct );
+  void* (*PushStruct)(memory_arena *Memory, u32 sizeofStruct );
 
-  game_memory *GameMemory;
+  memory_arena *GameMemory;
+
   gl_extensions GL;
 
   r32 dt;
@@ -204,5 +206,28 @@ DumpGlErrorEnum(int Error)
 
   return;
 }
+u8*
+
+Allocate(umm Bytes)
+{
+  u8* Result = (u8*)malloc(Bytes);
+  memset(Result, 0, Bytes);
+
+  Assert(Result);
+  return Result;
+}
+
+inline void
+AllocateMemoryArena(memory_arena *Arena, umm Size)
+{
+  Arena->Remaining = Size;
+  Arena->TotalSize = Size;
+
+  Arena->FirstFreeByte = Allocate(Arena->Remaining);
+
+  return;
+}
+
 
 #endif
+

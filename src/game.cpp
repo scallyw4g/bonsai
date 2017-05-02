@@ -40,6 +40,19 @@ GetEntityDelta(World *world, Entity *Player, v3 Input, float dt)
   return PlayerDelta;
 }
 
+Entity *
+AllocateEntity(platform *Plat, canonical_position InitialP, const char *ModelPath)
+{
+  Entity *entity = (Entity *)Plat->PushStruct( Plat->GameMemory, sizeof(Entity));
+
+  entity->Model = LoadVox(Plat, Plat->GameMemory, ModelPath);
+  entity->Rotation = Quaternion(1,0,0,0);
+  entity->P = InitialP;
+  entity->Spawned = false;
+
+  return entity;
+}
+
 EXPORT void*
 GameInit( platform *Plat )
 {
@@ -67,15 +80,11 @@ GameInit( platform *Plat )
   Plat->GL.glGenVertexArrays(1, &VertexArrayID);
   Plat->GL.glBindVertexArray(VertexArrayID);
 
-  Entity *Player = (Entity *)Plat->PushStruct( Plat->GameMemory, sizeof(Entity));
+  canonical_position PlayerInitialP = {};
 
-  Player->Model = LoadVox(Plat, PLAYER_MODEL);
-  Player->Rotation = Quaternion(1,0,0,0);
-  Player->P.Offset = V3(0,0,0);
-  Player->P.WorldP = World_Position(0,0,0);
-  Player->Spawned = false;
+  Entity *Player = AllocateEntity(Plat, PlayerInitialP, PLAYER_MODEL);
+  World *world = AllocateWorld(Plat, PlayerInitialP.WorldP);
 
-  World *world = AllocateWorld( Plat, Player->P.WorldP);
   SeedWorldAndUnspawnPlayer(world, Player);
 
   Camera_Object *Camera = (Camera_Object *)Plat->PushStruct(Plat->GameMemory, sizeof(Camera_Object));

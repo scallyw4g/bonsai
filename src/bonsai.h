@@ -151,6 +151,7 @@ struct Entity
 
   bool Spawned;
 };
+
 struct World
 {
   world_chunk **ChunkHash;
@@ -170,6 +171,8 @@ struct World
   VertexBlock NormalData;
 
   int VertexCount; // How many verticies are we drawing
+
+  memory_arena WorldStorage;
 };
 
 
@@ -400,17 +403,13 @@ GetIndex(voxel_position P, chunk_data *chunk)
 }
 
 chunk_data*
-AllocateChunk(platform *Plat, chunk_dimension Dim)
+AllocateChunk(platform *Plat, memory_arena *WorldStorage, chunk_dimension Dim)
 {
-  chunk_data *Result = (chunk_data*)Plat->PushStruct(Plat->GameMemory, sizeof(chunk_data));
-  Assert(Result);
+  chunk_data *Result     = (chunk_data*)Plat->PushStruct(WorldStorage, sizeof(chunk_data));
+  Result->Voxels         = (Voxel*)Plat->PushStruct(WorldStorage, Volume(Dim)*sizeof(Voxel));
+  Result->BoundaryVoxels = (Voxel*)Plat->PushStruct(WorldStorage, Volume(Dim)*sizeof(Voxel));
 
   Result->Dim = Dim;
-
-  Result->Voxels = (Voxel*)Plat->PushStruct(Plat->GameMemory, Volume(Dim)*sizeof(Voxel));
-  Result->BoundaryVoxels = (Voxel*)Plat->PushStruct(Plat->GameMemory, Volume(Dim)*sizeof(Voxel));
-  Assert(Result->Voxels);
-  Assert(Result->BoundaryVoxels);
 
   ZeroChunk(Result);
 
@@ -460,10 +459,9 @@ InsertChunkIntoWorld(World *world, world_chunk *chunk)
 world_chunk*
 AllocateWorldChunk(platform *Plat, World *world, world_position WorldP)
 {
-  world_chunk *Result = (world_chunk*)Plat->PushStruct(Plat->GameMemory, sizeof(world_chunk));
-  Assert(Result);
+  world_chunk *Result = (world_chunk*)Plat->PushStruct(&world->WorldStorage, sizeof(world_chunk));
 
-  Result->Data = AllocateChunk(Plat, Chunk_Dimension(CD_X, CD_Y, CD_Z));
+  Result->Data = AllocateChunk(Plat, &world->WorldStorage, Chunk_Dimension(CD_X, CD_Y, CD_Z));
 
   Result->WorldP = WorldP;
 

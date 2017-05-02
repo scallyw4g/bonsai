@@ -781,6 +781,7 @@ AllocateWorld( platform *Plat, world_position Midpoint)
     world->VertexCount = 0;
   }
 
+  AllocateMemoryArena(&world->WorldStorage , Megabytes(512) );
 
   Assert(world->VertexData.Data);
   Assert(world->ColorData.Data );

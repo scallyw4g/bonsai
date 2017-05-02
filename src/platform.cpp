@@ -19,7 +19,6 @@
 #include <sys/stat.h>
 
 GLOBAL_VARIABLE s64 LastGameLibTime = 0;
-GLOBAL_VARIABLE input NullInput = {};
 
 b32
 GameLibIsNew(const char *LibPath)
@@ -153,18 +152,21 @@ InitializeOpenGlExtensions(gl_extensions *Gl)
 }
 
 void*
-PushStruct(game_memory *Memory, u32 sizeofStruct)
+PushStruct(memory_arena *Memory, u32 sizeofStruct)
 {
   void* Result = (void*)Memory->FirstFreeByte;
 
+  Assert(Memory->Remaining >= (umm)sizeofStruct);
+
   Memory->FirstFreeByte += sizeofStruct;
   Memory->Remaining -= sizeofStruct;
+
 
   return Result;
 }
 
 void
-PlatformInit(platform *Plat, game_memory *GameMemory)
+PlatformInit(platform *Plat, memory_arena *GameMemory)
 {
   Plat->GetHighPrecisionClock = GetHighPrecisionClock;
   Plat->PushWorkQueueEntry = PushWorkQueueEntry;
@@ -263,13 +265,6 @@ SearchForProjectRoot(void)
 }
 
 
-u8*
-Allocate(s32 Bytes)
-{
-  u8* Result = (u8*)calloc(sizeof(u8), Bytes);
-  return Result;
-}
-
 int
 main(s32 NumArgs, char ** Args)
 {
@@ -281,14 +276,13 @@ main(s32 NumArgs, char ** Args)
     return False;
   }
 
-  Info("Running out of : %s", GetCwd() );
+  Info("Found Bonsai Root : %s", GetCwd() );
 
-  game_memory GameMemory = {};
-  GameMemory.Remaining = Megabytes(500);
-  GameMemory.FirstFreeByte = Allocate(GameMemory.Remaining);
+  memory_arena PlatMemory = {};
+  AllocateMemoryArena(&PlatMemory, Megabytes(64));
 
   platform Plat = {};
-  PlatformInit(&Plat, &GameMemory);
+  PlatformInit(&Plat, &PlatMemory);
 
   os Os = {};
   Os.ContinueRunning = True;
@@ -311,11 +305,7 @@ main(s32 NumArgs, char ** Args)
 
   InitializeOpenGlExtensions(&Plat.GL);
 
-  char *glslVer = (char*)glGetString ( GL_SHADING_LANGUAGE_VERSION );
-  Info(glslVer);
-  Assert(glslVer);
-
-  r64 GLSL_Version = atof(glslVer);
+  r64 GLSL_Version = atof((char*)glGetString ( GL_SHADING_LANGUAGE_VERSION ));
   Info("GLSL verison : %f", GLSL_Version );
 
   if (GLSL_Version >= 3.3)
@@ -323,7 +313,6 @@ main(s32 NumArgs, char ** Args)
 
   else
     Plat.GlslVersion = "310ES";
-
 
   game_state *GameState = GameInit(&Plat);
   if (!GameState) { Error("Initializing Game State :( "); return False; }
@@ -338,9 +327,6 @@ main(s32 NumArgs, char ** Args)
   {
     Plat.dt = (r32)ComputeDtForFrame(&lastTime);
 
-    // Debug("%f ", Plat.dt);
-
-    // Flush Message Queue
     while ( ProcessOsMessages(&Os, &Plat) );
 
     if ( GameLibIsNew(GAME_LIB) )

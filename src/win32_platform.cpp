@@ -81,7 +81,7 @@ GetHighPrecisionClock()
   GLOBAL_VARIABLE auto FirstTime = std::chrono::high_resolution_clock::now();
   // cout << "FirstTime Time : " << chrono::time_point_cast<chrono::nanoseconds>(FirstTime).time_since_epoch().count() << " ns \n";
 
-  r64 Result = (std::chrono::high_resolution_clock::now() - FirstTime).count();
+  r64 Result = (r64)(std::chrono::high_resolution_clock::now() - FirstTime).count();
   // cout << "Time/iter, clock: " << chrono::duration_cast<chrono::nanoseconds>(Result).count() << " ns \n";
 
   return Result;
