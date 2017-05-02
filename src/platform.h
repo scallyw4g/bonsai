@@ -119,7 +119,7 @@ struct platform
   void (*PushWorkQueueEntry)(work_queue *Queue, work_queue_entry *Entry);
   r64 (*GetHighPrecisionClock)(void);
   umm (*Allocate)(u8 Bytes);
-  void* (*PushStruct)(memory_arena *Memory, u32 sizeofStruct );
+  void* (*PushStruct)(memory_arena *Memory, umm sizeofStruct );
 
   memory_arena *GameMemory;
 
@@ -215,6 +215,38 @@ Allocate(umm Bytes)
 
   Assert(Result);
   return Result;
+}
+
+void*
+PushSize(memory_arena *Arena, umm Size)
+{
+  void* Result = (void*)Arena->FirstFreeByte;
+
+  Assert(Arena->Remaining >= Size);
+
+  Arena->FirstFreeByte += Size;
+  Arena->Remaining -= Size;
+
+  return Result;
+
+}
+
+void*
+PushStruct(memory_arena *Memory, umm sizeofStruct)
+{
+  void* Result = PushSize(Memory, sizeofStruct);
+  return Result;
+}
+
+
+inline void
+SubArena( memory_arena *Src, memory_arena *Dest, umm Size)
+{
+  Dest->FirstFreeByte = (u8*)PushSize(Src, Size);
+  Dest->Remaining = Size;
+  Dest->TotalSize = Size;
+
+  return;
 }
 
 inline void

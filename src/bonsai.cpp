@@ -753,6 +753,10 @@ AllocateWorld( platform *Plat, world_position Midpoint)
 
   World *world = GlobalWorld;
 
+  world->WorldStorage.Arena = (memory_arena*)Plat->PushStruct(Plat->GameMemory, sizeof(memory_arena));
+  AllocateMemoryArena(world->WorldStorage.Arena, Megabytes(512));
+  world->WorldStorage.Next = 0;
+
   world->ChunkDim = CHUNK_DIMENSION;
   world->VisibleRegion = VISIBLE_REGION;
 
@@ -780,8 +784,6 @@ AllocateWorld( platform *Plat, world_position Midpoint)
 
     world->VertexCount = 0;
   }
-
-  AllocateMemoryArena(&world->WorldStorage , Megabytes(512) );
 
   Assert(world->VertexData.Data);
   Assert(world->ColorData.Data );

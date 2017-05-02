@@ -152,6 +152,12 @@ struct Entity
   bool Spawned;
 };
 
+struct world_storage
+{
+  memory_arena *Arena;
+  world_storage *Next;
+};
+
 struct World
 {
   world_chunk **ChunkHash;
@@ -172,7 +178,7 @@ struct World
 
   int VertexCount; // How many verticies are we drawing
 
-  memory_arena WorldStorage;
+  world_storage WorldStorage;
 };
 
 
@@ -459,9 +465,9 @@ InsertChunkIntoWorld(World *world, world_chunk *chunk)
 world_chunk*
 AllocateWorldChunk(platform *Plat, World *world, world_position WorldP)
 {
-  world_chunk *Result = (world_chunk*)Plat->PushStruct(&world->WorldStorage, sizeof(world_chunk));
+  world_chunk *Result = (world_chunk*)Plat->PushStruct(world->WorldStorage.Arena, sizeof(world_chunk));
 
-  Result->Data = AllocateChunk(Plat, &world->WorldStorage, Chunk_Dimension(CD_X, CD_Y, CD_Z));
+  Result->Data = AllocateChunk(Plat, world->WorldStorage.Arena, Chunk_Dimension(CD_X, CD_Y, CD_Z));
 
   Result->WorldP = WorldP;
 

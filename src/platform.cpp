@@ -151,20 +151,6 @@ InitializeOpenGlExtensions(gl_extensions *Gl)
   return;
 }
 
-void*
-PushStruct(memory_arena *Memory, u32 sizeofStruct)
-{
-  void* Result = (void*)Memory->FirstFreeByte;
-
-  Assert(Memory->Remaining >= (umm)sizeofStruct);
-
-  Memory->FirstFreeByte += sizeofStruct;
-  Memory->Remaining -= sizeofStruct;
-
-
-  return Result;
-}
-
 void
 PlatformInit(platform *Plat, memory_arena *GameMemory)
 {
