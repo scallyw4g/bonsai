@@ -749,7 +749,7 @@ UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera)
 World *
 AllocateWorld( platform *Plat, world_position Midpoint)
 {
-  GlobalWorld = (World*)calloc( sizeof(World), 1 );
+  GlobalWorld = (World*)Plat->PushStruct( Plat->GameMemory, sizeof(World) );
 
   World *world = GlobalWorld;
 
@@ -758,21 +758,21 @@ AllocateWorld( platform *Plat, world_position Midpoint)
 
   world->Gravity = WORLD_GRAVITY;
 
-  world->ChunkHash = (world_chunk**)calloc( WORLD_HASH_SIZE, sizeof(world_chunk*));
+  world->ChunkHash = (world_chunk**)Plat->PushStruct( Plat->GameMemory, WORLD_HASH_SIZE*sizeof(world_chunk*) );
 
-  world->FreeChunks = (world_chunk**)calloc( FREELIST_SIZE, sizeof(world_chunk*));
+  world->FreeChunks = (world_chunk**)Plat->PushStruct( Plat->GameMemory, FREELIST_SIZE*sizeof(world_chunk*) );
   world->FreeChunkCount = 0;
 
   {
     int BufferVertices = (VOLUME_VISIBLE_REGION * VERT_PER_VOXEL);
 
-    world->VertexData.Data = (GLfloat *)calloc(BufferVertices, sizeof(GLfloat) );
-    world->ColorData.Data  = (GLfloat *)calloc(BufferVertices, sizeof(GLfloat) );
-    world->NormalData.Data = (GLfloat *)calloc(BufferVertices, sizeof(GLfloat) );
+    world->VertexData.Data = (GLfloat *)Plat->PushStruct( Plat->GameMemory, BufferVertices*sizeof(r32) );
+    world->ColorData.Data  = (GLfloat *)Plat->PushStruct( Plat->GameMemory, BufferVertices*sizeof(r32) );
+    world->NormalData.Data = (GLfloat *)Plat->PushStruct( Plat->GameMemory, BufferVertices*sizeof(r32) );
 
-    world->VertexData.bytesAllocd = BufferVertices*sizeof(GLfloat);
-    world->ColorData.bytesAllocd  = BufferVertices*sizeof(GLfloat);
-    world->NormalData.bytesAllocd = BufferVertices*sizeof(GLfloat);
+    world->VertexData.bytesAllocd = BufferVertices*sizeof(r32);
+    world->ColorData.bytesAllocd  = BufferVertices*sizeof(r32);
+    world->NormalData.bytesAllocd = BufferVertices*sizeof(r32);
 
     world->VertexData.filled = 0;
     world->ColorData.filled = 0;

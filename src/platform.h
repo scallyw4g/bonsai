@@ -48,7 +48,8 @@ struct thread_startup_params
 
 struct game_memory
 {
-  void* FirstFreeByte;
+  u8* FirstFreeByte;
+  umm Remaining;
 };
 
 struct gl_extensions
@@ -116,9 +117,10 @@ struct platform
   thread_startup_params *Threads;
   void (*PushWorkQueueEntry)(work_queue *Queue, work_queue_entry *Entry);
   r64 (*GetHighPrecisionClock)(void);
-  void (*Terminate)(void);
+  umm (*Allocate)(u8 Bytes);
+  void* (*PushStruct)(game_memory *Memory, u32 sizeofStruct );
 
-  game_memory GameMemory;
+  game_memory *GameMemory;
   gl_extensions GL;
 
   r32 dt;

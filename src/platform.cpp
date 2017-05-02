@@ -152,18 +152,25 @@ InitializeOpenGlExtensions(gl_extensions *Gl)
   return;
 }
 
-void
-PlatformInit(platform *Plat)
+void*
+PushStruct(game_memory *Memory, u32 sizeofStruct)
 {
-  Assert(sizeof(u8)  == 1);
+  void* Result = (void*)Memory->FirstFreeByte;
 
-  Assert(sizeof(u32) == 4);
-  Assert(sizeof(s32) == 4);
-  Assert(sizeof(r32) == 4);
+  Memory->FirstFreeByte += sizeofStruct;
+  Memory->Remaining -= sizeofStruct;
 
-  Assert(sizeof(umm) == 8);
-  Assert(sizeof(u64) == 8);
-  Assert(sizeof(s64) == 8);
+  return Result;
+}
+
+void
+PlatformInit(platform *Plat, game_memory *GameMemory)
+{
+  // Initialized from globals
+  Plat->WindowHeight = SCR_HEIGHT;
+  Plat->WindowWidth = SCR_WIDTH;
+
+  Plat->GameMemory = GameMemory;
 
   u32 LogicalCoreCount = GetLogicalCoreCount();
   u32 ThreadCount = LogicalCoreCount -1; // -1 because we already have a main thread
@@ -192,6 +199,8 @@ PlatformInit(platform *Plat)
 
   Plat->GetHighPrecisionClock = GetHighPrecisionClock;
   Plat->PushWorkQueueEntry = PushWorkQueueEntry;
+  Plat->PushStruct = PushStruct;
+
 
   return;
 }
@@ -254,6 +263,13 @@ SearchForProjectRoot(void)
 }
 
 
+u8*
+Allocate(s32 Bytes)
+{
+  u8* Result = (u8*)calloc(sizeof(u8), Bytes);
+  return Result;
+}
+
 int
 main(s32 NumArgs, char ** Args)
 {
@@ -267,14 +283,15 @@ main(s32 NumArgs, char ** Args)
 
   Info("Running out of : %s", GetCwd() );
 
+  game_memory GameMemory = {};
+  GameMemory.Remaining = Megabytes(500);
+  GameMemory.FirstFreeByte = Allocate(GameMemory.Remaining);
+
   platform Plat = {};
-  PlatformInit(&Plat);
+  PlatformInit(&Plat, &GameMemory);
 
   os Os = {};
   Os.ContinueRunning = True;
-
-  Plat.WindowHeight = SCR_HEIGHT;
-  Plat.WindowWidth = SCR_WIDTH;
 
   GameLibIsNew(GAME_LIB);  // Hack to initialize the LastGameLibTime static
 
