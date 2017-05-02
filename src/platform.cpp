@@ -142,11 +142,14 @@ InitializeOpenGlExtensions(gl_extensions *Gl)
 
   AssertNoGlErrors;
 
+  // TODO(Jesse): Turn me on!
+#if 0
   // Platform specific (wgl / glX)
   Gl->glSwapInterval = (PFNSWAPINTERVALPROC)bonsaiGlGetProcAddress("wglSwapIntervalEXT");
 
   if ( Gl->glSwapInterval )
     Gl->glSwapInterval(1); // vsync
+#endif
 
   return;
 }

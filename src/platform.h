@@ -210,8 +210,7 @@ u8*
 
 Allocate(umm Bytes)
 {
-  u8* Result = (u8*)malloc((size_t)Bytes);
-  memset(Result, 0, (size_t)Bytes);
+  u8* Result = (u8*)calloc(1, Bytes);
 
   Assert(Result);
   return Result;
