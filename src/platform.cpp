@@ -287,7 +287,7 @@ main(s32 NumArgs, char ** Args)
   game_main_proc GameUpdateAndRender = (game_main_proc)GetProcFromLib(GameLib, "GameUpdateAndRender");
   if (!GameUpdateAndRender) { Error("Retreiving GameUpdateAndRender from Game Lib :( "); return False; }
 
-  b32 WindowSuccess = OpenAndInitializeWindow(&Os, &Plat, Plat.WindowWidth, Plat.WindowHeight);
+  b32 WindowSuccess = OpenAndInitializeWindow(&Os, &Plat);
   if (!WindowSuccess) { Error("Initializing Window :( "); return False; }
 
   Assert(Os.Window);
