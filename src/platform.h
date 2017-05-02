@@ -235,7 +235,7 @@ PushSize(memory_arena *Arena, umm Size)
 
 #define PUSH_STRUCT_CHECKED(Type, Result, Arena, Number) \
   Result = (Type*)Plat->PushStruct( Arena, sizeof(Type)*Number ); \
-  if (!(Result)) { Error("Error Pushing "#Result); return False; }
+  if (!(Result)) { Error("Pushing %s on Line: %d, in file %s", #Result, __LINE__, __FILE__); return False; }
 
 void*
 PushStruct(memory_arena *Memory, umm sizeofStruct)

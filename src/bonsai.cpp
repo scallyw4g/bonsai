@@ -387,6 +387,7 @@ GetFreeChunk(platform *Plat, World *world, world_position P)
   if (world->FreeChunkCount == 0)
   {
     Result = AllocateWorldChunk(Plat, world, P);
+    Assert(Result);
   }
   else
   {
@@ -803,6 +804,7 @@ AllocateWorld( platform *Plat, world_position Midpoint)
       for ( int x = Min.x; x < Max.x; ++ x )
       {
         world_chunk *chunk = AllocateWorldChunk(Plat, world, World_Position(x,y,z));
+        Assert(chunk);
         QueueChunkForInit(world, Plat, chunk);
       }
     }

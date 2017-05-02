@@ -86,7 +86,10 @@ GameInit( platform *Plat )
   canonical_position PlayerInitialP = {};
 
   Entity *Player = AllocateEntity(Plat, PlayerInitialP, PLAYER_MODEL);
+  if (!Player) { Error("Error Allocating Player"); return False; }
+
   World *world = AllocateWorld(Plat, PlayerInitialP.WorldP);
+  if (!world) { Error("Error Allocating world"); return False; }
 
   SeedWorldAndUnspawnPlayer(world, Player);
 

@@ -472,6 +472,7 @@ AllocateWorldChunk(platform *Plat, World *world, world_position WorldP)
   PUSH_STRUCT_CHECKED(world_chunk, Result, world->WorldStorage.Arena, 1);
 
   Result->Data = AllocateChunk(Plat, world->WorldStorage.Arena, Chunk_Dimension(CD_X, CD_Y, CD_Z));
+  Assert(Result->Data);
 
   Result->WorldP = WorldP;
 

@@ -213,6 +213,7 @@ LoadVox(platform *Plat, memory_arena *WorldStorage, char const *filepath)
           // largest chunk we will EVER load, which should definately not be
           // decided at compile time.
           Result = AllocateChunk(Plat, WorldStorage, Dim);
+          if(!Result) { return False; }
 
           for( int i = 0; i < numVoxels; ++ i)
           {
