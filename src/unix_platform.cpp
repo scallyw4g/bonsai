@@ -184,10 +184,11 @@ ProcessOsMessages(os *Os, platform *Plat)
 {
 
   XEvent Event;
-  b32 EventFound = XCheckWindowEvent(Os->Display,
-                                     Os->Window,
-                                     ExposureMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask,
-                                     &Event);
+  b32 EventFound =
+    XCheckWindowEvent(Os->Display,
+                      Os->Window,
+                      ExposureMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask,
+                      &Event);
 
   if (EventFound)
   {
@@ -251,6 +252,11 @@ ProcessOsMessages(os *Os, platform *Plat)
           case XK_F11:
           {
             Plat->Input.F11 = False;
+          } break;
+
+          case XK_Escape:
+          {
+            Os->ContinueRunning = false;
           } break;
 
           default:
@@ -321,7 +327,8 @@ BonsaiSwapBuffers(os *Os)
 inline void
 Terminate(os *Os)
 {
-  Assert(false);
+  XDestroyWindow(Os->Display, Os->Window);
+  XCloseDisplay(Os->Display);
   return;
 }
 
