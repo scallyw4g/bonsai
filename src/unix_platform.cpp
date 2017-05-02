@@ -99,7 +99,7 @@ OpenLibrary(const char *filename)
 }
 
 b32
-OpenAndInitializeWindow( os *Os, platform *Plat, int WindowWidth, int WindowHeight )
+OpenAndInitializeWindow( os *Os, platform *Plat)
 {
   GLint GlAttribs[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
 
@@ -184,108 +184,129 @@ ProcessOsMessages(os *Os, platform *Plat)
 {
 
   XEvent Event;
-  b32 EventFound = XCheckWindowEvent(Os->Display, Os->Window, ExposureMask | KeyPressMask | KeyReleaseMask, &Event);
+  b32 EventFound = XCheckWindowEvent(Os->Display,
+                                     Os->Window,
+                                     ExposureMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask,
+                                     &Event);
 
   if (EventFound)
   {
-    if(Event.type == Expose)
-    {
-      XWindowAttributes WindowAttribs;
-      XGetWindowAttributes(Os->Display, Os->Window, &WindowAttribs);
 
-      glViewport(0, 0, Plat->WindowWidth, Plat->WindowHeight);
-    }
-
-    else if(Event.type == KeyRelease)
+    switch (Event.type)
     {
-      int KeySym = XLookupKeysym(&Event.xkey, 0);
-      switch (KeySym)
+
+      case Expose:
       {
-        case XK_w:
-        {
-          Plat->Input.W = False;
-        } break;
+        XWindowAttributes WindowAttribs;
+        XGetWindowAttributes(Os->Display, Os->Window, &WindowAttribs);
 
-        case XK_s:
-        {
-          Plat->Input.S = False;
-        } break;
-
-        case XK_a:
-        {
-          Plat->Input.A = False;
-        } break;
-
-        case XK_d:
-        {
-          Plat->Input.D = False;
-        } break;
-
-        case XK_q:
-        {
-          Plat->Input.Q = False;
-        } break;
-
-        case XK_e:
-        {
-          Plat->Input.E = False;
-        } break;
-
-        case XK_F11:
-        {
-          Plat->Input.F11 = False;
-        } break;
-
-        default:
-        {
-        } break;
+        glViewport(0, 0, Plat->WindowWidth, Plat->WindowHeight);
       }
-    }
-    else if(Event.type == KeyPress)
-    {
-      int KeySym = XLookupKeysym(&Event.xkey, 0);
-      switch (KeySym)
+
+      case ConfigureNotify:
       {
-        case XK_w:
-        {
-          Plat->Input.W = True;
-        } break;
+        if (Event.xconfigure.width > 0)
+          Plat->WindowWidth = Event.xconfigure.width;
 
-        case XK_s:
-        {
-          Plat->Input.S = True;
-        } break;
+        if (Event.xconfigure.height > 0)
+          Plat->WindowHeight = Event.xconfigure.height;
 
-        case XK_a:
-        {
-          Plat->Input.A = True;
-        } break;
+      }  break;
 
-        case XK_d:
+      case KeyRelease:
+      {
+        int KeySym = XLookupKeysym(&Event.xkey, 0);
+        switch (KeySym)
         {
-          Plat->Input.D = True;
-        } break;
+          case XK_w:
+          {
+            Plat->Input.W = False;
+          } break;
 
-        case XK_q:
-        {
-          Plat->Input.Q = True;
-        } break;
+          case XK_s:
+          {
+            Plat->Input.S = False;
+          } break;
 
-        case XK_e:
-        {
-          Plat->Input.E = True;
-        } break;
+          case XK_a:
+          {
+            Plat->Input.A = False;
+          } break;
 
-        case XK_F11:
-        {
-          Plat->Input.F11 = True;
-        } break;
+          case XK_d:
+          {
+            Plat->Input.D = False;
+          } break;
 
-        default:
+          case XK_q:
+          {
+            Plat->Input.Q = False;
+          } break;
+
+          case XK_e:
+          {
+            Plat->Input.E = False;
+          } break;
+
+          case XK_F11:
+          {
+            Plat->Input.F11 = False;
+          } break;
+
+          default:
+          {
+          } break;
+        }
+      } break;
+
+      case KeyPress:
+      {
+        int KeySym = XLookupKeysym(&Event.xkey, 0);
+        switch (KeySym)
         {
-        } break;
-      }
+          case XK_w:
+          {
+            Plat->Input.W = True;
+          } break;
+
+          case XK_s:
+          {
+            Plat->Input.S = True;
+          } break;
+
+          case XK_a:
+          {
+            Plat->Input.A = True;
+          } break;
+
+          case XK_d:
+          {
+            Plat->Input.D = True;
+          } break;
+
+          case XK_q:
+          {
+            Plat->Input.Q = True;
+          } break;
+
+          case XK_e:
+          {
+            Plat->Input.E = True;
+          } break;
+
+          case XK_F11:
+          {
+            Plat->Input.F11 = True;
+          } break;
+
+          default:
+          {
+          } break;
+        }
+
+      } break;
     }
+
   }
 
   return EventFound;
@@ -295,6 +316,13 @@ inline void
 BonsaiSwapBuffers(os *Os)
 {
   glXSwapBuffers(Os->Display, Os->Window);
+}
+
+inline void
+Terminate(os *Os)
+{
+  Assert(false);
+  return;
 }
 
 #endif
