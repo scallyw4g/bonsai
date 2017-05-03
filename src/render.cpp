@@ -220,9 +220,7 @@ GetDepthMVP(World *world, Camera_Object *Camera)
   GlobalLightDirection = Normalize( GlobalLightDirection );
 
   // Compute the MVP matrix from the light's point of view
-  // m4 depthProjectionMatrix = glm::ortho<float>(-Proj_XY,Proj_XY, -Proj_XY,Proj_XY, -Proj_Z,Proj_Z);
-  m4 depthProjectionMatrix = IdentityMatrix;
-  Assert(False);
+  m4 depthProjectionMatrix = Orthographic(SHADOW_MAP_XY, SHADOW_MAP_Z);
 
   v3 P = GetRenderP(world, Camera->Target+GlobalLightDirection, Camera);
   v3 Target = GetRenderP(world, Camera->Target, Camera);

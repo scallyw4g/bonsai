@@ -25,6 +25,7 @@ target_link_libraries(Game ${OPENGL_LIBRARIES})
 target_link_libraries(Bonsai ${OPENGL_LIBRARIES})
 
 include_directories(${SRC})
+include_directories(${ROOT}/external/glm-0.9.7.1)
 
 add_definitions( -DGL_GLEXT_PROTOTYPES=1 )
 

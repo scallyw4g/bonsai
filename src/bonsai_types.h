@@ -1,8 +1,14 @@
 #ifndef BONSAI_TYPES_H
 #define BONSAI_TYPES_H
 
+#include <glm/glm.hpp>
+#include <glm/gtx/transform.hpp>
+
 #include <stdint.h>
 #include <climits>
+
+#define PI 3.1415926535897932384626433832795028841971693993751058209749445923078164062
+#define PIf (float(PI))
 
 struct World;
 struct canonical_position;
@@ -17,6 +23,7 @@ typedef u32      b32;
 typedef float    real32;
 typedef real32   r32;
 typedef r32      radians;
+typedef r32      degrees;
 
 // 64 Bit types
 typedef int64_t  s64;
@@ -94,7 +101,27 @@ union v4
     this->z = z;
     this->w = w;
   }
+
+  r32
+  operator[](int index)
+  {
+    r32 Result = this->E[index];
+    return Result;
+  }
+
 };
+
+v4 V4(float w, float x, float y, float z)
+{
+  v4 Result;
+
+  Result.x = x;
+  Result.y = y;
+  Result.z = z;
+  Result.w = w;
+
+  return Result;
+}
 
 typedef v4 Quaternion;
 
@@ -102,24 +129,65 @@ typedef v4 Quaternion;
 struct m4
 {
   v4 E[4];
+
+  v4
+  operator[](int index)
+  {
+    v4 Result = this->E[index];
+    return Result;
+  }
 };
 
+inline glm::mat4
+GLM4(m4 M)
+{
+  glm::mat4 Result = {
+    glm::vec4(M[0][0], M[0][1], M[0][2], M[0][3]),
+    glm::vec4(M[1][0], M[1][1], M[1][2], M[1][3]),
+    glm::vec4(M[2][0], M[2][1], M[2][2], M[2][3]),
+    glm::vec4(M[2][0], M[2][1], M[3][2], M[3][3]),
+  };
 
-#include <iostream>
+  return Result;
+}
+
+inline m4
+GLM4(glm::mat4 M)
+{
+  m4 Result = {
+    V4(M[0][0], M[0][1], M[0][2], M[0][3]),
+    V4(M[1][0], M[1][1], M[1][2], M[1][3]),
+    V4(M[2][0], M[2][1], M[2][2], M[2][3]),
+    V4(M[2][0], M[2][1], M[3][2], M[3][3]),
+  };
+
+  return Result;
+}
+
+#define Mul( V, M ) V4( \
+  V[0]*B[0][0] + V[1]*B[1][0] + V[2]*B[2][0] + V[3]*B[3][0], \
+  V[0]*B[0][1] + V[1]*B[1][1] + V[2]*B[2][1] + V[3]*B[3][1], \
+  V[0]*B[0][2] + V[1]*B[1][2] + V[2]*B[2][2] + V[3]*B[3][2], \
+  V[0]*B[0][3] + V[1]*B[1][3] + V[2]*B[2][3] + V[3]*B[3][3] )
+
 m4
 operator*(m4 A, m4 B)
 {
-  m4 Result = {};
 
-  /* Result.w = A.w*B.w - A.x*B.x - A.y*B.y - A.z*B.z; */
-  /* Result.x = A.w*B.x + A.x*B.w + A.y*B.z - A.z*B.y; */
-  /* Result.y = A.w*B.y + A.y*B.w + A.z*B.x - A.x*B.z; */
-  /* Result.z = A.w*B.z + A.z*B.w + A.x*B.y - A.y*B.x; */
+#if USE_GLM
+  glm::mat4 MA = GLM4(A);
+  glm::mat4 MB = GLM4(B);
+  m4 Result = GLM4(MA * MB);
+#else
 
-  printf(" ------------------- m4 * Operator not implemented!!!!!! \n");
-  printf(" ------------------- m4 * Operator not implemented!!!!!! \n");
-  printf(" ------------------- m4 * Operator not implemented!!!!!! \n");
-  printf(" ------------------- m4 * Operator not implemented!!!!!! \n");
+  m4 Result = {
+    Mul(A[0], B),
+    Mul(A[1], B),
+    Mul(A[2], B),
+    Mul(A[3], B)
+  };
+
+#endif
 
   return Result;
 }
@@ -586,18 +654,6 @@ v2 V2(int x,int y)
 {
 	v2 Result = V2((float)x, (float)y);
 	return Result;
-}
-
-v4 V4(int w, int x, int y, int z)
-{
-  v4 Result;
-
-  Result.x = (float)x;
-  Result.y = (float)y;
-  Result.z = (float)z;
-  Result.w = (float)w;
-
-  return Result;
 }
 
 v2 operator+=(v2 P1, v2 P2)
