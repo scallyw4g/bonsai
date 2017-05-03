@@ -1,28 +1,29 @@
 #ifndef BONSAI_TYPES_H
 #define BONSAI_TYPES_H
 
-#include <glm/glm.hpp>
-#include <glm/gtx/transform.hpp>
+#include <stdint.h>
 
 struct World;
 struct canonical_position;
 
 // 8 Bit types
-typedef uint8_t u8;
+typedef uint8_t  u8;
 
 // 32 Bit types
-typedef int32_t s32;
+typedef int32_t  s32;
 typedef uint32_t u32;
-typedef float r32;
-typedef u32 b32;
-typedef float real32;
+typedef u32      b32;
+typedef float    real32;
+typedef real32   r32;
+typedef r32      radians;
 
 // 64 Bit types
-typedef int64_t s64;
+typedef int64_t  s64;
 typedef uint64_t u64;
-typedef u64 umm;
-typedef double r64;
+typedef u64      umm;
+typedef double   r64;
 
+#define INT_MAX (~0)
 
 
 struct v2
@@ -99,6 +100,31 @@ union v4
 typedef v4 Quaternion;
 
 
+struct m4
+{
+  v4 E[4];
+};
+
+
+#include <iostream>
+m4
+operator*(m4 A, m4 B)
+{
+  m4 Result = {};
+
+  /* Result.w = A.w*B.w - A.x*B.x - A.y*B.y - A.z*B.z; */
+  /* Result.x = A.w*B.x + A.x*B.w + A.y*B.z - A.z*B.y; */
+  /* Result.y = A.w*B.y + A.y*B.w + A.z*B.x - A.x*B.z; */
+  /* Result.z = A.w*B.z + A.z*B.w + A.x*B.y - A.y*B.x; */
+
+  printf(" ------------------- m4 * Operator not implemented!!!!!! \n");
+  printf(" ------------------- m4 * Operator not implemented!!!!!! \n");
+  printf(" ------------------- m4 * Operator not implemented!!!!!! \n");
+  printf(" ------------------- m4 * Operator not implemented!!!!!! \n");
+
+  return Result;
+}
+
 Quaternion
 operator*(Quaternion A, Quaternion B)
 {
@@ -118,6 +144,19 @@ struct voxel_position
   int y;
   int z;
 };
+
+inline voxel_position
+Voxel_Position(v3 Offset)
+{
+  voxel_position Result;
+
+  Result.x = (int)Offset.x;
+  Result.y = (int)Offset.y;
+  Result.z = (int)Offset.z;
+
+  return Result;
+}
+
 
 inline bool
 operator==(v3 P1, v3 P2)
@@ -214,33 +253,9 @@ operator*(v3 P1, voxel_position P2)
 }
 
 inline v3
-operator+(v3 P2, glm::vec3 P1)
+operator+(v3 Vec, voxel_position Pos)
 {
   v3 Result;
-
-  Result.x = P1.x + P2.x;
-  Result.y = P1.y + P2.y;
-  Result.z = P1.z + P2.z;
-
-  return Result;
-}
-
-inline v3
-operator+(glm::vec3 P1, v3 P2)
-{
-  v3 Result;
-
-  Result.x = P1.x + P2.x;
-  Result.y = P1.y + P2.y;
-  Result.z = P1.z + P2.z;
-
-  return Result;
-}
-
-inline glm::vec3
-operator+(glm::vec3 Vec, voxel_position Pos)
-{
-  glm::vec3 Result;
 
   Result.x = Vec.x + Pos.x;
   Result.y = Vec.y + Pos.y;
@@ -252,12 +267,7 @@ operator+(glm::vec3 Vec, voxel_position Pos)
 inline voxel_position
 operator+(voxel_position Pos, v3 Vec)
 {
-  voxel_position Result;
-
-  Result.x = Pos.x+ (int)Vec.x;
-  Result.y = Pos.y+ (int)Vec.y;
-  Result.z = Pos.z+ (int)Vec.z;
-
+  voxel_position Result = Voxel_Position(Vec + Pos);
   return Result;
 }
 
@@ -458,22 +468,15 @@ struct AABB
   }
 };
 
-inline v3
-GLV3(glm::vec3 vec)
+inline m4
+Translate( v3 v )
 {
-  v3 Result;
+  m4 Result;
+  Result.E[0] = v4(1,0,0,v.x);
+  Result.E[1] = v4(0,1,0,v.y);
+  Result.E[2] = v4(0,0,1,v.z);
+  Result.E[3] = v4(0,0,0,1);
 
-  Result.x = vec.x;
-  Result.y = vec.y;
-  Result.z = vec.z;
-
-  return Result;
-}
-
-inline glm::mat4
-Translate( v3 v)
-{
-  glm::mat4 Result = glm::translate( glm::vec3(v.x, v.y, v.z) );
   return Result;
 }
 
@@ -515,19 +518,6 @@ Canonical_Position(World *world, v3 Offset, world_position WorldP )
 }
 
 inline canonical_position
-Canonical_Position(World *world, glm::vec3 Offset, world_position WorldP )
-{
-  canonical_position Result;
-
-  Result.Offset = GLV3(Offset);
-  Result.WorldP = WorldP;
-
-  /* Result = Canonicalize(world, Result); */
-
-  return Result;
-}
-
-inline canonical_position
 Canonical_Position(World *world, voxel_position Offset, world_position WorldP )
 {
   canonical_position Result;
@@ -535,18 +525,6 @@ Canonical_Position(World *world, voxel_position Offset, world_position WorldP )
   Result.WorldP = WorldP;
 
   /* Result = Canonicalize(world, Result); */
-
-  return Result;
-}
-
-inline voxel_position
-Voxel_Position(v3 Offset)
-{
-  voxel_position Result;
-
-  Result.x = (int)Offset.x;
-  Result.y = (int)Offset.y;
-  Result.z = (int)Offset.z;
 
   return Result;
 }
@@ -686,18 +664,6 @@ operator%(v3 A, int i)
   Result.x = (float)((int)A.x % i);
   Result.y = (float)((int)A.y % i);
   Result.z = (float)((int)A.z % i);
-
-  return Result;
-}
-
-inline v3
-operator+(v3 A, voxel_position B)
-{
-  v3 Result;
-
-  Result.x = A.x + B.x;
-  Result.y = A.y + B.y;
-  Result.z = A.z + B.z;
 
   return Result;
 }
@@ -949,13 +915,6 @@ operator-(canonical_position P1, canonical_position P2)
   Result.Offset = P1.Offset - P2.Offset;
   Result.WorldP = P1.WorldP - P2.WorldP;
 
-  return Result;
-}
-
-inline glm::vec3
-GLV3( v3 Vec )
-{
-  glm::vec3 Result = glm::vec3( Vec.x, Vec.y, Vec.z);
   return Result;
 }
 

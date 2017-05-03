@@ -1,9 +1,6 @@
 #ifndef RENDER_H
 #define RENDER_H
 
-#include <glm/gtx/quaternion.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
 DEBUG_GLOBAL float g_quad_vertex_buffer_data[] =
 {
   -1.0f, -1.0f, -1.0f,
@@ -16,9 +13,9 @@ DEBUG_GLOBAL float g_quad_vertex_buffer_data[] =
 
 struct RenderBasis
 {
-  glm::mat4 ModelMatrix;
-  glm::mat4 ViewMatrix;
-  glm::mat4 ProjectionMatrix;
+  m4 ModelMatrix;
+  m4 ViewMatrix;
+  m4 ProjectionMatrix;
 };
 
 struct RenderGroup
@@ -73,11 +70,20 @@ struct ShadowRenderGroup
   u32 DepthTexture;
 };
 
-inline glm::mat4
+inline m4
+Perspective(radians FOV, r32 AspectRatio, r32 NearClip, r32 FarClip)
+{
+  m4 Result = {};
+
+  Assert(False);
+  return Result;
+}
+
+inline m4
 GetProjectionMatrix(Camera_Object *Camera, int WindowWidth, int WindowHeight)
 {
-  glm::mat4 Projection = glm::perspective(
-      glm::radians(Camera->Frust.FOV),
+  m4 Projection = Perspective(
+      radians(Camera->Frust.FOV),
       (float)WindowWidth/(float)WindowHeight,
       Camera->Frust.nearClip,
       Camera->Frust.farClip);
@@ -107,30 +113,29 @@ GetRenderP( World *world, Entity *entity, Camera_Object *Camera)
   return Result;
 }
 
-inline glm::mat4
+inline m4
+LookAt(v3 P, v3 Target, v3 Up)
+{
+  m4 Result = {};
+
+  Assert(False);
+  return Result;
+}
+
+inline m4
 GetViewMatrix(World *world, Camera_Object *Camera)
 {
-  glm::mat4 Result;
+  v3 up = V3(0, 1, 0);
+  v3 CameraRight = Normalize( Cross(up, Camera->Front) );
+  v3 CameraUp = Normalize( Cross( Camera->Front, CameraRight) );
 
-  glm::vec3 up = glm::vec3(0, 1, 0);
-  glm::vec3 CameraRight = glm::normalize( glm::cross(up, GLV3(Camera->Front)) );
-  glm::vec3 CameraUp = glm::normalize( glm::cross( GLV3(Camera->Front), CameraRight) );
-
-  Result = glm::lookAt(
-    GLV3(GetRenderP(world, Camera->P, Camera)),
-    GLV3(GetRenderP(world, Camera->Target, Camera )),
+  m4 Result = LookAt(
+    GetRenderP(world, Camera->P, Camera),
+    GetRenderP(world, Camera->Target, Camera),
     CameraUp
   );
 
   return Result;
 }
 
-inline glm::mat4
-ToGLMat4(Quaternion q)
-{
-  glm::quat glmQuat = glm::quat(q.w, q.x, q.y, q.z);
-  glm::mat4 RotationMatrix = glm::toMat4(glmQuat);
-
-  return RotationMatrix;
-}
 #endif

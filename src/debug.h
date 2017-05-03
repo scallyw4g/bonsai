@@ -98,19 +98,13 @@ Print_P( v3 P, const char* name)
 }
 
 inline void
-Print_P( glm::vec3 P, const char* name)
-{
-  Log(" %s %f %f %f \n", name, P.x, P.y, P.z );
-}
-
-inline void
-Print_P( glm::mat4 &Mat, const char* name)
+Print_P( m4 Mat, const char* name)
 {
   Log("\n %s ", name );
-  Log(" %f %f %f %f ", Mat[0][0], Mat[0][1], Mat[0][2], Mat[0][3] );
-  Log(" %f %f %f %f ", Mat[1][0], Mat[1][1], Mat[1][2], Mat[1][3] );
-  Log(" %f %f %f %f ", Mat[2][0], Mat[2][1], Mat[2][2], Mat[2][3] );
-  Log(" %f %f %f %f ", Mat[3][0], Mat[3][1], Mat[3][2], Mat[3][3] );
+  Log(" %f %f %f %f ", Mat.E[0].E[0], Mat.E[0].E[1], Mat.E[0].E[2], Mat.E[0].E[3] );
+  Log(" %f %f %f %f ", Mat.E[1].E[0], Mat.E[1].E[1], Mat.E[1].E[2], Mat.E[1].E[3] );
+  Log(" %f %f %f %f ", Mat.E[2].E[0], Mat.E[2].E[1], Mat.E[2].E[2], Mat.E[2].E[3] );
+  Log(" %f %f %f %f ", Mat.E[3].E[0], Mat.E[3].E[1], Mat.E[3].E[2], Mat.E[3].E[3] );
 }
 
 

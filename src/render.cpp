@@ -4,9 +4,6 @@
 #include <sstream>
 #include <string>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
 #include <bonsai.h>
 #include <render.h>
 
@@ -23,10 +20,16 @@
       sizeof(localNormalData), \
       FaceColor)
 
+
+GLOBAL_VARIABLE m4 IdentityMatrix = {V4(1, 0, 0 ,0),
+                                     V4(0, 1, 0 ,0),
+                                     V4(0, 0, 1 ,0),
+                                     V4(0, 0, 0 ,0)};
+
 bool
 InitializeRenderGroup( platform *Plat, RenderGroup *RG )
 {
-  RG->Basis.ModelMatrix = glm::mat4(1);
+  RG->Basis.ModelMatrix = IdentityMatrix;
 
   GL_Global->glGenFramebuffers(1, &RG->FBO);
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO);
@@ -210,23 +213,25 @@ RenderQuad(RenderGroup *RG)
   GL_Global->glDisableVertexAttribArray(0);
 }
 
-glm::mat4
+m4
 GetDepthMVP(World *world, Camera_Object *Camera)
 {
-  glm::vec3 GlobalLightDirection =  glm::vec3( sin(GlobalLightTheta), 1.0, -2.0);
-  GlobalLightDirection = glm::normalize( GlobalLightDirection );
+  v3 GlobalLightDirection =  V3( sin(GlobalLightTheta), 1.0, -2.0);
+  GlobalLightDirection = Normalize( GlobalLightDirection );
 
   // Compute the MVP matrix from the light's point of view
-  glm::mat4 depthProjectionMatrix = glm::ortho<float>(-Proj_XY,Proj_XY, -Proj_XY,Proj_XY, -Proj_Z,Proj_Z);
+  // m4 depthProjectionMatrix = glm::ortho<float>(-Proj_XY,Proj_XY, -Proj_XY,Proj_XY, -Proj_Z,Proj_Z);
+  m4 depthProjectionMatrix = IdentityMatrix;
+  Assert(False);
 
-  glm::vec3 P = GLV3(GetRenderP(world, Camera->Target+GLV3(GlobalLightDirection), Camera));
-  glm::vec3 Target = GLV3(GetRenderP(world, Camera->Target, Camera));
+  v3 P = GetRenderP(world, Camera->Target+GlobalLightDirection, Camera);
+  v3 Target = GetRenderP(world, Camera->Target, Camera);
 
-  glm::vec3 Front = glm::normalize(Target-P);
-  glm::vec3 Right = glm::cross( Front, glm::vec3(0,1,0) );
-  glm::vec3 Up = glm::cross(Right, Front);
+  v3 Front = Normalize(Target-P);
+  v3 Right = Cross( Front, V3(0,1,0) );
+  v3 Up = Cross(Right, Front);
 
-  glm::mat4 depthViewMatrix = glm::lookAt(P, Target, Up);
+  m4 depthViewMatrix = LookAt(P, Target, Up);
 
   return depthProjectionMatrix * depthViewMatrix;
 }
@@ -238,24 +243,24 @@ DrawWorldToFullscreenQuad( platform *Plat, World *world, RenderGroup *RG, Shadow
   GL_Global->glUseProgram(RG->LightingShader);
   glViewport(0, 0, Plat->WindowWidth, Plat->WindowHeight);
 
-  glm::vec3 GlobalLightDirection =  glm::vec3( sin(GlobalLightTheta), 1.0, -2.0);
-  GlobalLightDirection = glm::normalize( GlobalLightDirection );
+  v3 GlobalLightDirection =  V3( sin(GlobalLightTheta), 1.0, -2.0);
+  GlobalLightDirection = Normalize( GlobalLightDirection );
 
-  GL_Global->glUniform3fv(RG->GlobalLightDirectionID, 1, &GlobalLightDirection[0]);
+  GL_Global->glUniform3fv(RG->GlobalLightDirectionID, 1, &GlobalLightDirection.E[0]);
 
-  glm::mat4 biasMatrix(
-    0.5, 0.0, 0.0, 0.0,
-    0.0, 0.5, 0.0, 0.0,
-    0.0, 0.0, 0.5, 0.0,
-    0.5, 0.5, 0.5, 1.0
-  );
+  m4 biasMatrix = {
+    V4(0.5, 0.0, 0.0, 0.0),
+    V4(0.0, 0.5, 0.0, 0.0),
+    V4(0.0, 0.0, 0.5, 0.0),
+    V4(0.5, 0.5, 0.5, 1.0)
+  };
 
-  glm::mat4 depthBiasMVP = biasMatrix * GetDepthMVP(world, Camera);
-  GL_Global->glUniformMatrix4fv(RG->DepthBiasMVPID, 1, GL_FALSE, &depthBiasMVP[0][0]);
+  m4 depthBiasMVP = biasMatrix * GetDepthMVP(world, Camera);
+  GL_Global->glUniformMatrix4fv(RG->DepthBiasMVPID, 1, GL_FALSE, &depthBiasMVP.E[0].E[0]);
 
-  glm::mat4 VP = RG->Basis.ViewMatrix;
+  m4 VP = RG->Basis.ViewMatrix;
 
-  GL_Global->glUniformMatrix4fv(RG->ViewMatrixUniform, 1, GL_FALSE, &VP[0][0]);
+  GL_Global->glUniformMatrix4fv(RG->ViewMatrixUniform, 1, GL_FALSE, &VP.E[0].E[0]);
 
   v3 CameraRenderP = GetRenderP(world, Camera->P, Camera);
   GL_Global->glUniform3fv(RG->CameraPosUniform, 1, &CameraRenderP.E[0]);
@@ -290,13 +295,13 @@ RenderShadowMap(World *world, ShadowRenderGroup *SG, RenderGroup *RG, Camera_Obj
 {
   glViewport(0, 0, SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
 
-  glm::mat4 depthMVP = GetDepthMVP(world, Camera);
+  m4 depthMVP = GetDepthMVP(world, Camera);
 
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
   GL_Global->glUseProgram(SG->ShaderID);
-  GL_Global->glUniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &depthMVP[0][0]);
+  GL_Global->glUniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &depthMVP.E[0].E[0]);
 
   /* glBindTexture(GL_TEXTURE_2D, SG->Texture); */
 
@@ -330,10 +335,10 @@ RenderWorld( platform *Plat, World *world, RenderGroup *RG)
   GL_Global->glUseProgram(RG->ShaderID);
   glViewport(0, 0, Plat->WindowWidth, Plat->WindowHeight);
 
-  glm::mat4 mvp = RG->Basis.ProjectionMatrix * RG->Basis.ViewMatrix * glm::mat4(1);
+  m4 mvp = RG->Basis.ProjectionMatrix * RG->Basis.ViewMatrix;
 
-  GL_Global->glUniformMatrix4fv(RG->MVPID,         1, GL_FALSE, &mvp[0][0]);
-  GL_Global->glUniformMatrix4fv(RG->ModelMatrixID, 1, GL_FALSE, &RG->Basis.ModelMatrix[0][0]);
+  GL_Global->glUniformMatrix4fv(RG->MVPID,         1, GL_FALSE, &mvp.E[0].E[0]);
+  GL_Global->glUniformMatrix4fv(RG->ModelMatrixID, 1, GL_FALSE, &RG->Basis.ModelMatrix.E[0].E[0]);
 
   // Vertices
   GL_Global->glEnableVertexAttribArray(0);
@@ -452,7 +457,7 @@ BufferFace (
 inline void
 BufferRightFace(
     World *world,
-    glm::vec3 worldP,
+    v3 worldP,
     const float* FaceColor,
     float Diameter = VOXEL_DIAMETER
     )
@@ -486,7 +491,7 @@ BufferRightFace(
 inline void
 BufferLeftFace(
     World *world,
-    glm::vec3 worldP,
+    v3 worldP,
     const float* FaceColor,
     float Diameter = VOXEL_DIAMETER
     )
@@ -520,7 +525,7 @@ BufferLeftFace(
 inline void
 BufferBottomFace(
     World *world,
-    glm::vec3 worldP,
+    v3 worldP,
     const float* FaceColor,
     float Diameter = VOXEL_DIAMETER
     )
@@ -554,7 +559,7 @@ BufferBottomFace(
 inline void
 BufferTopFace(
     World *world,
-    glm::vec3 worldP,
+    v3 worldP,
     const float* FaceColor,
     float Diameter = VOXEL_DIAMETER
     )
@@ -588,7 +593,7 @@ BufferTopFace(
 inline void
 BufferFrontFace(
     World *world,
-    glm::vec3 worldP,
+    v3 worldP,
     const float* FaceColor,
     float Diameter = VOXEL_DIAMETER
     )
@@ -622,7 +627,7 @@ BufferFrontFace(
 inline void
 BufferBackFace(
     World *world,
-    glm::vec3 worldP,
+    v3 worldP,
     const float* FaceColor,
     float Diameter = VOXEL_DIAMETER
     )
@@ -944,12 +949,12 @@ DEBUG_DrawPointMarker( World *world, v3 RenderP, int ColorIndex, float Diameter)
 
   RenderP = RenderP - (Diameter/2);
 
-  BufferRightFace(  world, GLV3(RenderP), FaceColors, Diameter);
-  BufferLeftFace(   world, GLV3(RenderP), FaceColors, Diameter);
-  BufferBottomFace( world, GLV3(RenderP), FaceColors, Diameter);
-  BufferTopFace(    world, GLV3(RenderP), FaceColors, Diameter);
-  BufferFrontFace(  world, GLV3(RenderP), FaceColors, Diameter);
-  BufferBackFace(   world, GLV3(RenderP), FaceColors, Diameter);
+  BufferRightFace(  world, RenderP, FaceColors, Diameter);
+  BufferLeftFace(   world, RenderP, FaceColors, Diameter);
+  BufferBottomFace( world, RenderP, FaceColors, Diameter);
+  BufferTopFace(    world, RenderP, FaceColors, Diameter);
+  BufferFrontFace(  world, RenderP, FaceColors, Diameter);
+  BufferBackFace(   world, RenderP, FaceColors, Diameter);
 
   return;
 }
@@ -1172,13 +1177,6 @@ IsInFrustum( World *world, Camera_Object *Camera, world_chunk *Chunk )
   return Result;
 }
 
-inline bool
-IsFacingPoint( glm::vec3 FaceToPoint, v3 FaceNormal )
-{
-  bool Result = IsFacingPoint(GLV3(FaceToPoint), FaceNormal);
-  return Result;
-}
-
 void
 ClearFramebuffers(RenderGroup *RG, ShadowRenderGroup *SG)
 {
@@ -1224,8 +1222,8 @@ BufferChunkMesh(
 
     GetColorData(GetVoxelColor(V), &FaceColors[0]);;
 
-    glm::vec3 RenderP =
-      GLV3(GetRenderP(world, Canonical_Position(world, Offset+GetVoxelP(V), WorldP), Camera));
+    v3 RenderP =
+      GetRenderP(world, Canonical_Position(world, Offset+GetVoxelP(V), WorldP), Camera);
 
     if ( IsSet( V.flags, Voxel_RightFace ) )
     {
@@ -1372,7 +1370,7 @@ DrawEntity(
   )
 {
   // Debug light code
-  /* glm::vec3 LightP = GLV3(GetRenderP(world, entity->P + entity->Model.Dim/2)); */
+  /* v3 LightP = GetRenderP(world, entity->P + entity->Model.Dim/2); */
   /* glUniform3fv(RG->LightPID, 1, &LightP[0]); */
   //
 
