@@ -178,8 +178,8 @@ PlatformInit(platform *Plat, memory_arena *Memory)
   Plat->Queue.EntryCount = 0;
   Plat->Queue.NextEntry = 0;
 
-  PUSH_STRUCT_CHECKED(work_queue_entry, Plat->Queue.Entries,  Plat->Memory, WORK_QUEUE_SIZE);
-  PUSH_STRUCT_CHECKED(thread_startup_params, Plat->Threads ,  Plat->Memory, WORK_QUEUE_SIZE);
+  Plat->Queue.Entries = PUSH_STRUCT_CHECKED(work_queue_entry,  Plat->Memory, WORK_QUEUE_SIZE);
+  Plat->Threads = PUSH_STRUCT_CHECKED(thread_startup_params,  Plat->Memory, WORK_QUEUE_SIZE);
 
   work_queue *Queue = &Plat->Queue;
 

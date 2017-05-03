@@ -124,6 +124,7 @@ struct platform
   r64 (*GetHighPrecisionClock)(void);
   umm (*Allocate)(u8 Bytes);
   void* (*PushStruct)(memory_arena *Memory, umm sizeofStruct );
+  void* (*PushStructChecked_)(memory_arena *Memory, umm sizeofStruct, const char* StructName, s32 Line, const char* File);
 
   memory_arena *Memory;
 
@@ -235,10 +236,25 @@ PushSize(memory_arena *Arena, umm Size)
   return Result;
 }
 
+#define PUSH_STRUCT_CHECKED(Type, Arena, Number) \
+  (Type*)Plat->PushStructChecked_( Arena, sizeof(Type)*Number, #Type, __LINE__, __FILE__ ); \
+
 void*
 PushStruct(memory_arena *Memory, umm sizeofStruct)
 {
   void* Result = PushSize(Memory, sizeofStruct);
+  return Result;
+}
+
+inline void*
+PushStructChecked_(memory_arena *Arena, umm Size, const char* StructType, s32 Line, const char* File)
+{
+  void* Result = PushStruct( Arena, Size );
+
+  if (!(Result)) {
+    Error("Pushing %s on Line: %d, in file %s", StructType, Line, File); return False;
+  }
+
   return Result;
 }
 

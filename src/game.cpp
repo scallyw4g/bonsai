@@ -43,8 +43,7 @@ GetEntityDelta(World *world, Entity *Player, v3 Input, float dt)
 Entity *
 AllocateEntity(platform *Plat, canonical_position InitialP, const char *ModelPath)
 {
-  Entity *entity = 0;
-  PUSH_STRUCT_CHECKED(Entity, entity, Plat->Memory, 1);
+  Entity *entity = PUSH_STRUCT_CHECKED(Entity, Plat->Memory, 1);
 
   entity->Model = LoadVox(Plat, Plat->Memory, ModelPath);
   entity->Rotation = Quaternion(1,0,0,0);
@@ -66,12 +65,10 @@ GameInit( platform *Plat )
   PerlinNoise Noise(rand());
   GlobalNoise = Noise;
 
-  ShadowRenderGroup *SG = 0;
-  PUSH_STRUCT_CHECKED(ShadowRenderGroup, SG, Plat->Memory, 1);
+  ShadowRenderGroup *SG = PUSH_STRUCT_CHECKED(ShadowRenderGroup, Plat->Memory, 1);
   if (!InitializeShadowBuffer(SG)) { Error("Initializing Shadow Buffer"); return False; }
 
-  RenderGroup *RG = 0;
-  PUSH_STRUCT_CHECKED(RenderGroup, RG, Plat->Memory, 1);
+  RenderGroup *RG = PUSH_STRUCT_CHECKED(RenderGroup, Plat->Memory, 1);
   if (!InitializeRenderGroup(Plat, RG)) { Error("Initializing RenderGroup"); return False; }
 
   // This needs to be off for shadow maps to work correctly
@@ -93,8 +90,7 @@ GameInit( platform *Plat )
 
   SeedWorldAndUnspawnPlayer(world, Player);
 
-  Camera_Object *Camera = 0;
-  PUSH_STRUCT_CHECKED(Camera_Object, Camera, Plat->Memory, 1);
+  Camera_Object *Camera = PUSH_STRUCT_CHECKED(Camera_Object, Plat->Memory, 1);
 
   Camera->Frust.farClip = 500.0f;
   Camera->Frust.nearClip = 0.1f;
@@ -114,15 +110,13 @@ GameInit( platform *Plat )
   DebugCamera.Right = WORLD_Z;
   DebugCamera.Front = WORLD_X;
 
-  debug_text_render_group *DebugRG = 0;
-  PUSH_STRUCT_CHECKED(debug_text_render_group, DebugRG, Plat->Memory, 1);
+  debug_text_render_group *DebugRG = PUSH_STRUCT_CHECKED(debug_text_render_group, Plat->Memory, 1);
 
   initText2D("Holstein.DDS", DebugRG);
 
   AssertNoGlErrors;
 
-  game_state *GameState = 0;
-  PUSH_STRUCT_CHECKED(game_state, GameState, Plat->Memory, 1);
+  game_state *GameState = PUSH_STRUCT_CHECKED(game_state, Plat->Memory, 1);
 
   GameState->world = world;
   GameState->Player = Player;
