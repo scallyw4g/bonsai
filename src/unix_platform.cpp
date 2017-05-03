@@ -17,24 +17,25 @@ AtomicCompareExchange( volatile unsigned int *Source, unsigned int Exchange, uns
 }
 
 inline void
-ThreadSleep( semaphore Semaphore )
+ThreadSleep( semaphore *Semaphore )
 {
-  /* WaitForSingleObject( Semaphore, INFINITE ); */
+  sem_wait(Semaphore);
   return;
 }
 
 inline void
-WakeThread( semaphore Semaphore )
+WakeThread( semaphore *Semaphore )
 {
-  /* ReleaseSemaphore( Semaphore, 1, 0 ); */
+  sem_post(Semaphore);
   return;
 }
 
 semaphore
 CreateSemaphore( int ThreadCount )
 {
-  /* semaphore Result = CreateSemaphore( 0, 0, ThreadCount, 0); */
-  return 0;
+  semaphore Result;
+  sem_init(&Result, 0, 1);
+  return Result;
 }
 
 int
@@ -58,17 +59,6 @@ CreateThread( void* (*ThreadMain)(void*), thread_startup_params *Params)
 }
 
 #define CompleteAllWrites  asm volatile("" ::: "memory"); _mm_sfence()
-
-__inline__ unsigned long long
-GetCycleCount()
-{
-  unsigned hi, lo;
-  __asm__ __volatile__ ("rdtsc" : "=a"(lo), "=d"(hi));
-
-  unsigned long long Result = ( (unsigned long long)lo)|( ((unsigned long long)hi)<<32 );
-
-  return Result;
-}
 
 void
 CloseLibrary(shared_lib Lib)
@@ -118,7 +108,12 @@ OpenAndInitializeWindow( os *Os, platform *Plat)
   WindowAttribs.colormap = ColorInfo;
   WindowAttribs.event_mask = ExposureMask | KeyPressMask | KeyReleaseMask;
 
-  Window win = XCreateWindow(Os->Display, RootWindow, 0, 0, 600, 600, 0, VisualInfo->depth, InputOutput, VisualInfo->visual, CWColormap | CWEventMask, &WindowAttribs);
+  Window win = XCreateWindow(Os->Display, RootWindow,
+      0, 0,
+      Plat->WindowWidth, Plat->WindowHeight,
+      0, VisualInfo->depth, InputOutput, VisualInfo->visual,
+      CWColormap | CWEventMask, &WindowAttribs);
+
   if (!win) { Error("Unable to Create Window"); return False; }
 
   XMapWindow(Os->Display, win);

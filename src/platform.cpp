@@ -51,6 +51,8 @@ ThreadMain(void *Input)
 
   for (;;)
   {
+    ThreadSleep( &Queue->Semaphore );
+
     u32 OriginalNext = Queue->NextEntry;
 
     if (OriginalNext != Queue->EntryCount)
@@ -64,10 +66,11 @@ ThreadMain(void *Input)
       }
 
     }
-    else
-    {
-      ThreadSleep( Queue->Semaphore );
-    }
+
+    int count = 0;
+    sem_getvalue( &Queue->Semaphore, &count);
+    Info("Sem Count %d", count);
+
   }
 
   return 0;
@@ -85,7 +88,7 @@ PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
   // TODO(Jesse): Is this check correct?
   Assert(Queue->NextEntry != Queue->EntryCount);
 
-  WakeThread( Queue->Semaphore );
+  WakeThread( &Queue->Semaphore );
 
   return;
 }

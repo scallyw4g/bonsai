@@ -19,6 +19,8 @@
 #include <GL/glext.h>
 #include <GL/glx.h>
 
+#include <semaphore.h>
+
 // Valgrind
 #include "/usr/include/valgrind/callgrind.h"
 
@@ -42,7 +44,7 @@ typedef PFNGLXSWAPINTERVALEXTPROC PFNSWAPINTERVALPROC;
 #define Snprintf(...) snprintf(__VA_ARGS__)
 
 typedef int thread_id;
-typedef int semaphore;
+typedef sem_t semaphore;
 
 typedef void* shared_lib;
 typedef Window window;
