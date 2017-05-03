@@ -2,6 +2,7 @@
 #define BONSAI_TYPES_H
 
 #include <stdint.h>
+#include <climits>
 
 struct World;
 struct canonical_position;
@@ -22,8 +23,6 @@ typedef int64_t  s64;
 typedef uint64_t u64;
 typedef u64      umm;
 typedef double   r64;
-
-#define INT_MAX (~0)
 
 
 struct v2
