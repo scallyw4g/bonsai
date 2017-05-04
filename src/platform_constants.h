@@ -7,9 +7,6 @@
  *  Common
  */
 
-// TODO(Jesse): Finish Axing GLM!
-#define USE_GLM 1
-
 #define True  1
 #define False 0
 

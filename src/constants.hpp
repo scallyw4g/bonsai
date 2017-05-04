@@ -68,8 +68,8 @@
 #define DEBUG_FRAMES_TO_RUN            -1
 
 
-#define SHADOW_MAP_XY 50
-#define SHADOW_MAP_Z  100
+#define SHADOW_MAP_XY 50.0f
+#define SHADOW_MAP_Z  100.0f
 #define SHADOW_MAP_RESOLUTION 2048
 #define DEBUG_TEXTURE_SIZE    512
 

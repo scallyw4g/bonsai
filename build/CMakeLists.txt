@@ -7,7 +7,7 @@ set (Bonsai_VERSION_MINOR 1)
 
 set(CMAKE_BUILD_TYPE Debug)
 
-set( ROOT ${CMAKE_SOURCE_DIR}/../ )
+set( ROOT ${CMAKE_SOURCE_DIR}/.. )
 
 set( SRC ${ROOT}/src )
 set( BIN ${ROOT}/bin )
@@ -95,27 +95,27 @@ endif()
 # Platform Specific
 #
 
-if (UNIX)
-
-  set(COMPILED_LIB ${BIN}/libGame.so)
-  set(LOADABLE_LIB ${BIN}/libGameLoadable.so)
-
-elseif(WIN32)
-
-  set(COMPILED_LIB ${BIN}/Debug/Game.dll)
-  set(LOADABLE_LIB ${BIN}/Debug/GameLoadable.dll)
-
-  # set(COMPILED_LIB ${BIN}/Release/Game.dll)
-  # set(LOADABLE_LIB ${BIN}/Release/GameLoadable.dll)
-
-else()
-
-  message(FATAL_ERROR "Unsupported Platform")
-
-endif()
+# if (UNIX)
+#
+#   set(COMPILED_LIB ${BIN}/libGame.so)
+#   set(LOADABLE_LIB ${BIN}/libGameLoadable.so)
+#
+# elseif(WIN32)
+#
+#   set(COMPILED_LIB ${BIN}/Debug/Game.dll)
+#   set(LOADABLE_LIB ${BIN}/Debug/GameLoadable.dll)
+#
+#   # set(COMPILED_LIB ${BIN}/Release/Game.dll)
+#   # set(LOADABLE_LIB ${BIN}/Release/GameLoadable.dll)
+#
+# else()
+#
+#   message(FATAL_ERROR "Unsupported Platform")
+#
+# endif()
 
 # Rename the game library on completion so the hot-loading code doesn't try to
 # load it before the compiler is finished
-add_custom_command( TARGET Game POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E rename ${COMPILED_LIB} ${LOADABLE_LIB} )
+# add_custom_command( TARGET Game POST_BUILD
+#                     COMMAND ${CMAKE_COMMAND} -E rename ${COMPILED_LIB} ${LOADABLE_LIB} )
 

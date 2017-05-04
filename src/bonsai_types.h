@@ -102,10 +102,10 @@ union v4
     this->w = w;
   }
 
-  r32
+  r32&
   operator[](int index)
   {
-    r32 Result = this->E[index];
+    r32& Result = this->E[index];
     return Result;
   }
 
@@ -130,10 +130,10 @@ struct m4
 {
   v4 E[4];
 
-  v4
+  v4&
   operator[](int index)
   {
-    v4 Result = this->E[index];
+    v4& Result = this->E[index];
     return Result;
   }
 };
@@ -164,31 +164,48 @@ GLM4(glm::mat4 M)
   return Result;
 }
 
-#define Mul( V, M ) V4( \
-  V[0]*B[0][0] + V[1]*B[1][0] + V[2]*B[2][0] + V[3]*B[3][0], \
-  V[0]*B[0][1] + V[1]*B[1][1] + V[2]*B[2][1] + V[3]*B[3][1], \
-  V[0]*B[0][2] + V[1]*B[1][2] + V[2]*B[2][2] + V[3]*B[3][2], \
-  V[0]*B[0][3] + V[1]*B[1][3] + V[2]*B[2][3] + V[3]*B[3][3] )
+#define Col0(M, N) M[N][0]
+#define Col1(M, N) M[N][1]
+#define Col2(M, N) M[N][2]
+#define Col3(M, N) M[N][3]
+
+#define Mul( RowN, B ) V4( \
+  RowN[0]*Col0(B,0) + RowN[1]*Col0(B,1) + RowN[2]*Col0(B,2) + RowN[3]*Col0(B,3), \
+  RowN[0]*Col1(B,0) + RowN[1]*Col1(B,1) + RowN[2]*Col1(B,2) + RowN[3]*Col1(B,3), \
+  RowN[0]*Col2(B,0) + RowN[1]*Col2(B,1) + RowN[2]*Col2(B,2) + RowN[3]*Col2(B,3), \
+  RowN[0]*Col3(B,0) + RowN[1]*Col3(B,1) + RowN[2]*Col3(B,2) + RowN[3]*Col3(B,3) )
 
 m4
 operator*(m4 A, m4 B)
 {
 
-#if 1
   glm::mat4 MA = GLM4(A);
   glm::mat4 MB = GLM4(B);
-  m4 Result = GLM4(MA * MB);
-#else
+  m4 GlmResult = GLM4(MA * MB);
 
-  m4 Result = {
-    Mul(A[0], B),
-    Mul(A[1], B),
-    Mul(A[2], B),
-    Mul(A[3], B)
-  };
 
-#endif
+  v4 A0 = A[0];
+  v4 A1 = A[1];
+  v4 A2 = A[2];
+  v4 A3 = A[3];
 
+  v4 B0 = B[0];
+  v4 B1 = B[1];
+  v4 B2 = B[2];
+  v4 B3 = B[3];
+
+
+  m4 Result = {};
+
+
+  // OpenGL matrices 
+  Result[0].w = A[0][0]*B[0][0] + A[0][1]*B[1][0] + A[0][2]*B[2][0] + A[0][3]*B[3][0];
+  Result[1].w = A[0][0]*B[0][1] + A[0][1]*B[1][1] + A[0][2]*B[2][1] + A[0][3]*B[3][1];
+  Result[2].w = A[0][0]*B[0][2] + A[0][1]*B[1][2] + A[0][2]*B[2][2] + A[0][3]*B[3][2];
+  Result[3].w = A[0][0]*B[0][3] + A[0][1]*B[1][3] + A[0][2]*B[2][3] + A[0][3]*B[3][3];
+
+
+  GlmResult = GLM4(MA * MB);
   return Result;
 }
 

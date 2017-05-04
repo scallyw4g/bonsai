@@ -215,7 +215,7 @@ DumpGlErrorEnum(int Error)
 u8*
 Allocate(umm Bytes)
 {
-  u8* Result = (u8*)calloc(1, Bytes);
+  u8* Result = (u8*)calloc(1, (size_t)Bytes);
 
   Assert(Result);
   return Result;

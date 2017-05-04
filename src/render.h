@@ -72,11 +72,11 @@ struct ShadowRenderGroup
 
 
 inline m4
-Orthographic( int XY, int Z )
+Orthographic( r32 XY, r32 Z )
 {
 
-#if USE_GLM
-  m4 Result = GLM4(glm::ortho<float>(-XY,XY, -XY,XY, -Z,Z));
+#if 1
+  m4 Result = GLM4(glm::ortho<r32>(-XY,XY, -XY,XY, -Z,Z));
 #else
   m4 Result = IdentityMatrix;
   Assert(False);
@@ -89,7 +89,7 @@ inline m4
 Perspective(radians FOV, r32 AspectRatio, r32 NearClip, r32 FarClip)
 {
 
-#if USE_GLM
+#if 1
   glm::mat4 Projection = glm::perspective(FOV, AspectRatio, NearClip, FarClip);
   m4 Result = GLM4(Projection);
 #else
