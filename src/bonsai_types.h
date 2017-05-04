@@ -141,12 +141,12 @@ struct m4
 inline glm::mat4
 GLM4(m4 M)
 {
-  glm::mat4 Result = {
+  glm::mat4 Result(
     glm::vec4(M[0][0], M[0][1], M[0][2], M[0][3]),
     glm::vec4(M[1][0], M[1][1], M[1][2], M[1][3]),
     glm::vec4(M[2][0], M[2][1], M[2][2], M[2][3]),
-    glm::vec4(M[2][0], M[2][1], M[3][2], M[3][3]),
-  };
+    glm::vec4(M[2][0], M[2][1], M[3][2], M[3][3])
+  );
 
   return Result;
 }
@@ -174,7 +174,7 @@ m4
 operator*(m4 A, m4 B)
 {
 
-#if USE_GLM
+#if 1
   glm::mat4 MA = GLM4(A);
   glm::mat4 MB = GLM4(B);
   m4 Result = GLM4(MA * MB);

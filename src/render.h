@@ -95,9 +95,11 @@ Perspective(radians FOV, r32 AspectRatio, r32 NearClip, r32 FarClip)
 #else
   // Scale
   r32 S = (1/(tan((FOV/2) * (PIf/180))));
+
   // Remap z to 0-1
   r32 Z = (-FarClip)/(FarClip-NearClip);
   r32 ZZ = -FarClip * NearClip / (FarClip - NearClip);
+
   m4 Result = {
     V4(S, 0, 0, 0),
     V4(0, S, 0, 0),

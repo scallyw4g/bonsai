@@ -29,18 +29,30 @@ include_directories(${ROOT}/external/glm-0.9.7.1)
 
 add_definitions( -DGL_GLEXT_PROTOTYPES=1 )
 
-if (CYGWIN OR WIN32)
 
-  unset(UNIX)
-  add_definitions( -D_WIN32 )
+#
+# Platform specific
+#
+
+if (CYGWIN)
+  message(FATAL_ERROR "Refer to the README for instructions to run with Cygwin")
+endif()
+
+# Link against Win32 libs we need
+if (WIN32)
+
+  add_definitions( -DBONSAI_WIN32=1 )
 
   target_link_libraries(Bonsai Gdi32)
   target_link_libraries(Bonsai User32)
   target_link_libraries(Bonsai Shell32)
   target_link_libraries(Bonsai Opengl32)
 
-else()
+endif()
 
+
+# Generate GDB debug info
+if (UNIX)
   add_definitions( -DLINUX=1 -ggdb )
 endif()
 
@@ -48,9 +60,13 @@ endif()
 
 
 
-# Platform specific
+#
+# Compiler specific
+#
 
-if (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)  # gcc
+### GCC
+
+if (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
   message(STATUS "Compiling with g++")
 
   add_definitions( -std=c++11 -Wall )
@@ -69,7 +85,7 @@ if (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)  # gcc
 
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
   message(STATUS "Compiling with MSVC")
-  add_definitions( /MDd /EHsc -DMSVC=1 )
+  add_definitions( -MDd -EHsc -DMSVC=1 )
 
 else()
   message(FATAL_ERROR "Unsupported Compiler")
@@ -84,12 +100,7 @@ if (UNIX)
   set(COMPILED_LIB ${BIN}/libGame.so)
   set(LOADABLE_LIB ${BIN}/libGameLoadable.so)
 
-elseif (CYGWIN)
-
-  set(COMPILED_LIB ${BIN}/cygGame.dll)
-  set(LOADABLE_LIB ${BIN}/cygGameLoadable.dll)
-
-elseif (WIN32)
+elseif(WIN32)
 
   set(COMPILED_LIB ${BIN}/Debug/Game.dll)
   set(LOADABLE_LIB ${BIN}/Debug/GameLoadable.dll)
@@ -98,12 +109,13 @@ elseif (WIN32)
   # set(LOADABLE_LIB ${BIN}/Release/GameLoadable.dll)
 
 else()
+
   message(FATAL_ERROR "Unsupported Platform")
+
 endif()
 
 # Rename the game library on completion so the hot-loading code doesn't try to
 # load it before the compiler is finished
 add_custom_command( TARGET Game POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E rename ${COMPILED_LIB} ${LOADABLE_LIB} )
-
 

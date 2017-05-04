@@ -1,9 +1,20 @@
 #! /bin/bash
 
-cd build
-make "$@" 2>&1
+BINARY="build/Bonsai"
 
-# if [ $? -eq 0 ]; then
-#   ./build/Bonsai > /dev/tty
-# fi
+if [ $WIN32 -eq 1 ]; then
+
+  BINARY="$BINARY"".exe"
+  msbuild.exe ./bin/
+
+else # Unix
+
+  cd build
+  make "$@" 2>&1
+
+fi
+
+
+# Run it!
+[ $? -eq 0 ] && ./$BINARY > /dev/tty
 

@@ -7,7 +7,7 @@
 #include <bonsai_types.h>
 #include <constants.hpp>
 
-#if _WIN32
+#if BONSAI_WIN32
 #include <win32_platform.cpp>
 #else
 #include <unix_platform.cpp>
