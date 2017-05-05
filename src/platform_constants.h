@@ -53,6 +53,11 @@
 #define Debug(...) OutputDebugString(__VA_ARGS__); VariadicOutputDebugString("\n")
 #define Error(...) OutputDebugString(" ! Error - "); VariadicOutputDebugString(__VA_ARGS__); OutputDebugString("\n")
 
+
+// Disable warnings about insecure CRT functions
+#pragma warning(disable : 4996)
+
+
 /*
  *  GCC on Linux && Cygwin
  */
