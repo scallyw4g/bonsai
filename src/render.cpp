@@ -1014,9 +1014,11 @@ PushBoundaryVoxel( chunk_data *chunk, Voxel voxel )
   chunk->BoundaryVoxelCount++;
 }
 
-bool
+s32
 BuildExteriorBoundaryVoxels( World *world, world_chunk *chunk, world_chunk *Neighbor, voxel_position NeighborVector )
 {
+  s32 FirstFilledIndex = -1;
+
   voxel_position nvSq = (NeighborVector*NeighborVector);
 
   voxel_position AbsInvNeighborVector = ((nvSq-1)*(nvSq-1));
@@ -1067,13 +1069,15 @@ BuildExteriorBoundaryVoxels( World *world, world_chunk *chunk, world_chunk *Neig
           voxel_position P = GetVoxelP(voxel);
           Assert( P == LocalVoxelP);
           PushBoundaryVoxel( chunk->Data, voxel );
+
+          FirstFilledIndex = chunk->Data->BoundaryVoxelCount - 1;
         }
       }
     }
   }
 
 
-  return true;
+  return FirstFilledIndex;
 }
 
 bool
@@ -1253,6 +1257,51 @@ BufferChunkMesh(
   return;
 }
 
+line
+FindIntersectingLine(world_chunk *Chunk, voxel_position OffsetVector, int FirstFilledIndex)
+{
+  voxel_position MinP = Voxel_Position(INT_MAX, INT_MAX, INT_MAX);
+  voxel_position MinP = Voxel_Position(~INT_MAX, ~INT_MAX, ~INT_MAX);
+
+  for (int VoxelIndex = FirstFilledIndex;
+      VoxelIndex < Chunk->Data->BoundaryVoxelCount;
+      ++ VoxelIndex)
+  {
+    voxel V = Chunk->Data->BoundaryVoxels[VoxelIndex];
+    voxel_position P  = GetVoxelP(V);
+
+    if (P < MinP)
+      MinP = P;
+
+    if (P > MaxP)
+      MaxP = P;
+  }
+
+  line Result(MinP, MaxP);
+
+  return Result;
+}
+
+inline void
+SetupAndBuildExteriorBoundary(World *world, world_chunk *Chunk, voxel_position OffsetVector)
+{
+  if ( IsSet(Chunk->Data->flags, Chunk_RebuildExteriorTop ) )
+  {
+    world_chunk *Neighbot = GetWorldChunk( world, Chunk->WorldP + OffsetVector );
+    if ( Neighbot && IsSet( Neighbot->Data->flags, Chunk_Initialized) )
+    {
+      int FirstExteriorIndex = BuildExteriorBoundaryVoxels( world, Chunk, Neighbot, OffsetVector );
+      Chunk->Data->flags = UnSetFlag( Chunk->Data->flags, Chunk_RebuildExteriorTop );
+
+      if (FirstExteriorIndex != -1)
+      {
+        Assert(Chunk->EdgeCount > MAX_CHUNK_EDGES);
+        Chunk->Edges[Chunk->EdgeCount++] = FindIntersectingLine(Chunk, OffsetVector, FirstExteriorIndex);
+      }
+    }
+  }
+}
+
 void
 BuildBoundaryVoxels( World *world, world_chunk *WorldChunk)
 {
@@ -1264,73 +1313,14 @@ BuildBoundaryVoxels( World *world, world_chunk *WorldChunk)
     BuildInteriorBoundaryVoxels( world, chunk, WorldChunk->WorldP );
   }
 
-  if ( IsSet(chunk->flags, Chunk_RebuildExteriorTop   ) )
-  {
-    voxel_position  TopVector    = Voxel_Position(0,1,0);
-    world_chunk *Top = GetWorldChunk( world, WorldChunk->WorldP + TopVector   );
-    if ( Top && IsSet( Top->Data->flags, Chunk_Initialized) )
-    {
-      BuildExteriorBoundaryVoxels( world,  WorldChunk,  Top,    TopVector   );
-      chunk->flags = UnSetFlag( chunk->flags, Chunk_RebuildExteriorTop );
-    }
-  }
+  SetupAndBuildExteriorBoundary(world, WorldChunk, Voxel_Position( 0, 1, 0));
+  SetupAndBuildExteriorBoundary(world, WorldChunk, Voxel_Position( 0,-1, 0));
 
-#if 1
-  if ( IsSet(chunk->flags, Chunk_RebuildExteriorBot   ) )
-  {
-    voxel_position  BotVector    = Voxel_Position(0,-1,0);
-    world_chunk *Bot = GetWorldChunk( world, WorldChunk->WorldP + BotVector   );
-    if ( Bot && IsSet( Bot->Data->flags, Chunk_Initialized) )
-    {
-      BuildExteriorBoundaryVoxels( world,  WorldChunk,  Bot,    BotVector   );
-      chunk->flags = UnSetFlag( chunk->flags, Chunk_RebuildExteriorBot );
-    }
-  }
+  SetupAndBuildExteriorBoundary(world, WorldChunk, Voxel_Position( 1, 0, 0));
+  SetupAndBuildExteriorBoundary(world, WorldChunk, Voxel_Position(-1, 0, 0));
 
-  if ( IsSet(chunk->flags, Chunk_RebuildExteriorLeft  ) )
-  {
-    voxel_position  LeftVector   = Voxel_Position(-1,0,0);
-    world_chunk *Left = GetWorldChunk( world, WorldChunk->WorldP + LeftVector  );
-    if ( Left && IsSet( Left->Data->flags, Chunk_Initialized) )
-    {
-      BuildExteriorBoundaryVoxels( world,  WorldChunk,  Left,   LeftVector  );
-      chunk->flags = UnSetFlag( chunk->flags, Chunk_RebuildExteriorLeft );
-    }
-  }
-
-  if ( IsSet(chunk->flags, Chunk_RebuildExteriorRight ) )
-  {
-    voxel_position  RightVector  = Voxel_Position(1,0,0);
-    world_chunk *Right = GetWorldChunk( world, WorldChunk->WorldP + RightVector );
-    if ( Right && IsSet( Right->Data->flags, Chunk_Initialized) )
-    {
-      BuildExteriorBoundaryVoxels( world,  WorldChunk,  Right,  RightVector );
-      chunk->flags = UnSetFlag( chunk->flags, Chunk_RebuildExteriorRight );
-    }
-  }
-
-  if ( IsSet(chunk->flags, Chunk_RebuildExteriorFront ) )
-  {
-    voxel_position  FrontVector  = Voxel_Position(0,0,1);
-    world_chunk *Front = GetWorldChunk( world, WorldChunk->WorldP + FrontVector );
-    if ( Front && IsSet( Front->Data->flags, Chunk_Initialized) )
-    {
-      BuildExteriorBoundaryVoxels( world,  WorldChunk,  Front,  FrontVector );
-      chunk->flags = UnSetFlag( chunk->flags, Chunk_RebuildExteriorFront );
-    }
-  }
-
-  if ( IsSet(chunk->flags, Chunk_RebuildExteriorBack  ) )
-  {
-    voxel_position  BackVector   = Voxel_Position(0,0,-1);
-    world_chunk *Back = GetWorldChunk( world, WorldChunk->WorldP + BackVector  );
-    if ( Back && IsSet( Back->Data->flags, Chunk_Initialized) )
-    {
-      BuildExteriorBoundaryVoxels( world,  WorldChunk,  Back,   BackVector  );
-      chunk->flags = UnSetFlag( chunk->flags, Chunk_RebuildExteriorBack );
-    }
-  }
-#endif
+  SetupAndBuildExteriorBoundary(world, WorldChunk, Voxel_Position( 0, 0, 1));
+  SetupAndBuildExteriorBoundary(world, WorldChunk, Voxel_Position( 0, 0,-1));
 
   return;
 }

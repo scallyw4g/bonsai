@@ -106,4 +106,6 @@ DEBUG_GLOBAL bool UseDebugCamera = False;
 #define FACE_COLOR_SIZE 32
 #define PALETTE_SIZE 256
 
+#define MAX_CHUNK_EDGES 4
+
 #endif

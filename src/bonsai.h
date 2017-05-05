@@ -74,6 +74,9 @@ struct world_chunk
   // should be factored out of this struct somehow as it's cold data
   world_chunk *Next;
   world_chunk *Prev;
+
+  line Edges[MAX_CHUNK_EDGES];
+  int EdgeCount;
 };
 
 struct free_world_chunk
