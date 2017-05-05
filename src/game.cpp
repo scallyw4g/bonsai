@@ -46,7 +46,7 @@ AllocateEntity(platform *Plat, canonical_position InitialP, const char *ModelPat
   Entity *entity = PUSH_STRUCT_CHECKED(Entity, Plat->Memory, 1);
 
   entity->Model = LoadVox(Plat, Plat->Memory, ModelPath);
-  entity->Rotation = Quaternion(1,0,0,0);
+  entity->Rotation = Quaternion(0,0,0,1);
   entity->P = InitialP;
   entity->Spawned = false;
 
@@ -161,7 +161,7 @@ GameUpdateAndRender ( platform *Plat, game_state *GameState )
   if (UseDebugCamera)
   {
     AABB CameraLocation(GetRenderP(world, Camera->P, Camera) - 2, GetRenderP(world, Camera->P, Camera) + 2);
-    DEBUG_DrawAABB(world, CameraLocation, Quaternion(1,0,0,0), PINK, 0.5f);
+    DEBUG_DrawAABB(world, CameraLocation, Quaternion(0,0,0,1), PINK, 0.5f);
   }
 
 #if 0
@@ -218,10 +218,10 @@ GameUpdateAndRender ( platform *Plat, game_state *GameState )
   world_position Min = (Player->P.WorldP - (world->VisibleRegion / 2));
   world_position Max = (Player->P.WorldP + (world->VisibleRegion / 2));
 
-  DEBUG_DrawAABB( world, V3(Min*CHUNK_DIMENSION), V3(Max*CHUNK_DIMENSION), Quaternion(1,0,0,0), GREEN, 0.25);
+  DEBUG_DrawAABB( world, V3(Min*CHUNK_DIMENSION), V3(Max*CHUNK_DIMENSION), Quaternion(0,0,0,1), GREEN, 0.25);
 
-  DEBUG_DrawAABB( world, LastFreeSlice,    Quaternion(1,0,0,0), RED,   0.1f);
-  DEBUG_DrawAABB( world, LastQueuedSlice,  Quaternion(1,0,0,0), TEAL,  0.1f);
+  DEBUG_DrawAABB( world, LastFreeSlice,    Quaternion(0,0,0,1), RED,   0.1f);
+  DEBUG_DrawAABB( world, LastQueuedSlice,  Quaternion(0,0,0,1), TEAL,  0.1f);
 
 #if DEBUG_HIGHLIGHT_VOID_CHUNKS
   for (int z = 0; z < world->VisibleRegion.z; ++z)
@@ -235,7 +235,7 @@ GameUpdateAndRender ( platform *Plat, game_state *GameState )
 
         if (!chunk)
         {
-          DEBUG_DrawAABB(world, GetRenderP(world, ChunkP), GetRenderP(world, ChunkP + 1), Quaternion(1,0,0,0), RED);
+          DEBUG_DrawAABB(world, GetRenderP(world, ChunkP), GetRenderP(world, ChunkP + 1), Quaternion(0,0,0,1), RED);
         }
 
       }

@@ -706,7 +706,7 @@ RotatePoint(v3 P1, v3 P2)
 
   float theta = GetTheta(P1, P2, Axis);
 
-  Quaternion Result( cos(theta/2), (Axis*sin(theta/2)) );
+  Quaternion Result( (Axis*sin(theta/2)), cos(theta/2) );
 
   Assert(Length(Result.xyz) > 0);
 
@@ -827,14 +827,14 @@ DEBUG_DrawAABB( World *world, v3 MinP, v3 MaxP, Quaternion Rotation, int ColorIn
   v3 BotFR = V3(MaxP.x, MinP.y, MaxP.z);
 
   /* // Apply rotation to verts */
-  /* TopRL = ((Rotation * Quaternion(1, TopRL)) * Conjugate(Rotation)).xyz; */
-  /* TopRR = ((Rotation * Quaternion(1, TopRR)) * Conjugate(Rotation)).xyz; */
-  /* TopFL = ((Rotation * Quaternion(1, TopFL)) * Conjugate(Rotation)).xyz; */
-  /* TopFR = ((Rotation * Quaternion(1, TopFR)) * Conjugate(Rotation)).xyz; */
-  /* BotRL = ((Rotation * Quaternion(1, BotRL)) * Conjugate(Rotation)).xyz; */
-  /* BotRR = ((Rotation * Quaternion(1, BotRR)) * Conjugate(Rotation)).xyz; */
-  /* BotFL = ((Rotation * Quaternion(1, BotFL)) * Conjugate(Rotation)).xyz; */
-  /* BotFR = ((Rotation * Quaternion(1, BotFR)) * Conjugate(Rotation)).xyz; */
+  /* TopRL = ((Rotation * Quaternion(TopRL, 1)) * Conjugate(Rotation)).xyz; */
+  /* TopRR = ((Rotation * Quaternion(TopRR, 1)) * Conjugate(Rotation)).xyz; */
+  /* TopFL = ((Rotation * Quaternion(TopFL, 1)) * Conjugate(Rotation)).xyz; */
+  /* TopFR = ((Rotation * Quaternion(TopFR, 1)) * Conjugate(Rotation)).xyz; */
+  /* BotRL = ((Rotation * Quaternion(BotRL, 1)) * Conjugate(Rotation)).xyz; */
+  /* BotRR = ((Rotation * Quaternion(BotRR, 1)) * Conjugate(Rotation)).xyz; */
+  /* BotFL = ((Rotation * Quaternion(BotFL, 1)) * Conjugate(Rotation)).xyz; */
+  /* BotFR = ((Rotation * Quaternion(BotFR, 1)) * Conjugate(Rotation)).xyz; */
 
   /* // Translate into world space */
   /* TopRL += HalfDim + MinCP.Offset; */
@@ -924,7 +924,7 @@ DEBUG_DrawChunkAABB( World *world, world_chunk *chunk, Camera_Object *Camera, Qu
 v3
 Rotate(v3 P, Quaternion Rotation)
 {
-  v3 Result = ((Rotation * Quaternion(0, P)) * Conjugate(Rotation)).xyz;
+  v3 Result = ((Rotation * Quaternion(P,0)) * Conjugate(Rotation)).xyz;
   return Result;
 }
 
