@@ -184,15 +184,15 @@ operator*(m4 A, m4 B)
   m4 GlmResult = GLM4(MA * MB);
 
 
-  v4 A0 = A[0];
-  v4 A1 = A[1];
-  v4 A2 = A[2];
-  v4 A3 = A[3];
+  /* v4 A0 = A[0]; */
+  /* v4 A1 = A[1]; */
+  /* v4 A2 = A[2]; */
+  /* v4 A3 = A[3]; */
 
-  v4 B0 = B[0];
-  v4 B1 = B[1];
-  v4 B2 = B[2];
-  v4 B3 = B[3];
+  /* v4 B0 = B[0]; */
+  /* v4 B1 = B[1]; */
+  /* v4 B2 = B[2]; */
+  /* v4 B3 = B[3]; */
 
 
   m4 Result = {};
@@ -206,7 +206,7 @@ operator*(m4 A, m4 B)
 
 
   GlmResult = GLM4(MA * MB);
-  return Result;
+  return GlmResult;
 }
 
 Quaternion

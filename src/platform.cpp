@@ -66,11 +66,6 @@ ThreadMain(void *Input)
       }
 
     }
-
-    int count = 0;
-    sem_getvalue( &Queue->Semaphore, &count);
-    Info("Sem Count %d", count);
-
   }
 
   return 0;

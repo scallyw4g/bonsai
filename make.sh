@@ -12,9 +12,9 @@ else # Unix
   BINARY="bin/Bonsai"
 
   cd build
-  make "$@" 2>&1 && cp ./bin/Game.so ./bin/GameLoadable.so
+  make "$@" 2>&1 && cp ../bin/libGame.so ../bin/libGameLoadable.so
 
-  [ $? -eq 0 ] && ./$BINARY > /dev/tty
+  [ $? -eq 0 ] && ../$BINARY > /dev/tty
 
 fi
 
