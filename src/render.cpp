@@ -1259,7 +1259,7 @@ BufferChunkMesh(
 }
 
 line
-FindIntersectingLine(world *world, world_chunk *Chunk, voxel_position OffsetVector, int FirstFilledIndex)
+FindIntersectingLine(game_state *GameState, world_chunk *Chunk, voxel_position OffsetVector, int FirstFilledIndex)
 {
   voxel_position MinP = GetVoxelP(Chunk->Data->BoundaryVoxels[FirstFilledIndex]);
   voxel_position MaxP = GetVoxelP(Chunk->Data->BoundaryVoxels[FirstFilledIndex]);
@@ -1292,51 +1292,51 @@ FindIntersectingLine(world *world, world_chunk *Chunk, voxel_position OffsetVect
 
   }
 
-  voxel_position Offset = GetRenderP( world, chunk->P );
+  v3 Offset = GetRenderP( GameState->world, Chunk->WorldP, GameState->Camera);
   line Result(MinP, MaxP);
 
   return Result;
 }
 
 inline void
-SetupAndBuildExteriorBoundary(World *world, world_chunk *Chunk, voxel_position OffsetVector)
+SetupAndBuildExteriorBoundary(game_state *GameState, world_chunk *Chunk, voxel_position OffsetVector)
 {
   if ( IsSet(Chunk->Data->flags, Chunk_RebuildExteriorTop ) )
   {
-    world_chunk *Neighbot = GetWorldChunk( world, Chunk->WorldP + OffsetVector );
+    world_chunk *Neighbot = GetWorldChunk( GameState->world, Chunk->WorldP + OffsetVector );
     if ( Neighbot && IsSet( Neighbot->Data->flags, Chunk_Initialized) )
     {
-      int FirstExteriorIndex = BuildExteriorBoundaryVoxels( world, Chunk, Neighbot, OffsetVector );
+      int FirstExteriorIndex = BuildExteriorBoundaryVoxels( GameState->world, Chunk, Neighbot, OffsetVector );
       Chunk->Data->flags = UnSetFlag( Chunk->Data->flags, Chunk_RebuildExteriorTop );
 
       if (FirstExteriorIndex != -1)
       {
         Assert(Chunk->EdgeCount < MAX_CHUNK_EDGES);
-        Chunk->Edges[Chunk->EdgeCount++] = FindIntersectingLine(Chunk, OffsetVector, FirstExteriorIndex);
+        Chunk->Edges[Chunk->EdgeCount++] = FindIntersectingLine(GameState, Chunk, OffsetVector, FirstExteriorIndex);
       }
     }
   }
 }
 
 void
-BuildBoundaryVoxels( World *world, world_chunk *WorldChunk)
+BuildBoundaryVoxels( game_state *GameState, world_chunk *WorldChunk)
 {
 
   chunk_data* chunk = WorldChunk->Data;
   if ( IsSet(chunk->flags, Chunk_RebuildInteriorBoundary) )
   {
     chunk->BoundaryVoxelCount = 0;
-    BuildInteriorBoundaryVoxels( world, chunk, WorldChunk->WorldP );
+    BuildInteriorBoundaryVoxels( GameState->world, chunk, WorldChunk->WorldP );
   }
 
-  SetupAndBuildExteriorBoundary(world, WorldChunk, Voxel_Position( 0, 1, 0));
-  SetupAndBuildExteriorBoundary(world, WorldChunk, Voxel_Position( 0,-1, 0));
+  SetupAndBuildExteriorBoundary(GameState, WorldChunk, Voxel_Position( 0, 1, 0));
+  SetupAndBuildExteriorBoundary(GameState, WorldChunk, Voxel_Position( 0,-1, 0));
 
-  SetupAndBuildExteriorBoundary(world, WorldChunk, Voxel_Position( 1, 0, 0));
-  SetupAndBuildExteriorBoundary(world, WorldChunk, Voxel_Position(-1, 0, 0));
+  SetupAndBuildExteriorBoundary(GameState, WorldChunk, Voxel_Position( 1, 0, 0));
+  SetupAndBuildExteriorBoundary(GameState, WorldChunk, Voxel_Position(-1, 0, 0));
 
-  SetupAndBuildExteriorBoundary(world, WorldChunk, Voxel_Position( 0, 0, 1));
-  SetupAndBuildExteriorBoundary(world, WorldChunk, Voxel_Position( 0, 0,-1));
+  SetupAndBuildExteriorBoundary(GameState, WorldChunk, Voxel_Position( 0, 0, 1));
+  SetupAndBuildExteriorBoundary(GameState, WorldChunk, Voxel_Position( 0, 0,-1));
 
   return;
 }
@@ -1356,20 +1356,18 @@ DrawChunkEdges( World *world, world_chunk *Chunk )
 
 void
 DrawWorldChunk(
-    platform *Plat,
-    World *world,
+    game_state *GameState,
     world_chunk *WorldChunk,
-    Camera_Object *Camera,
     RenderGroup *RG,
     ShadowRenderGroup *SG
   )
 {
-  if (IsInFrustum(world, Camera, WorldChunk) )
+  if (IsInFrustum(GameState->world, GameState->Camera, WorldChunk) )
   {
     if (IsSet(WorldChunk->Data->flags, Chunk_Initialized) )
     {
-      BuildBoundaryVoxels( world, WorldChunk);
-      BufferChunkMesh(Plat, world, WorldChunk->Data, WorldChunk->WorldP, RG, SG, Camera);
+      BuildBoundaryVoxels( GameState, WorldChunk);
+      BufferChunkMesh( GameState->Plat, GameState->world, WorldChunk->Data, WorldChunk->WorldP, RG, SG, GameState->Camera);
     }
   }
 

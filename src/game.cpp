@@ -196,7 +196,7 @@ GameUpdateAndRender ( platform *Plat, game_state *GameState )
      if (Player->Spawned)
      {
        v3 PlayerDelta = GetEntityDelta(world, Player, Input, Plat->dt);
-       UpdatePlayerP( world, Plat, Player, PlayerDelta );
+       UpdatePlayerP( GameState, Player, PlayerDelta );
      }
      else // Try to respawn the player until enough of the world has been initialized to do so
      {

@@ -37,7 +37,7 @@ OnMouseScroll(GLFWwindow* window, double xoffset, double yoffset)
 #endif
 
 void
-InitializeVoxels( World *world, world_chunk *WorldChunk )
+InitializeVoxels( game_state *GameState, world_chunk *WorldChunk )
 {
   Assert(WorldChunk);
 
@@ -115,7 +115,7 @@ InitializeVoxels( World *world, world_chunk *WorldChunk )
   /* CALLGRIND_TOGGLE_COLLECT; */
 
   chunk->flags = SetFlag(chunk->flags, Chunk_Initialized);
-  BuildBoundaryVoxels(world, WorldChunk);
+  BuildBoundaryVoxels(GameState, WorldChunk);
 
   return;
 }
@@ -124,12 +124,11 @@ void
 InitializeVoxels(void *Input)
 {
   work_queue_entry *Params = (work_queue_entry *)Input;
+
+  game_state *GameState = Params->GameState;
   world_chunk *Chunk = (world_chunk *)Params->Input;
 
-  // FIXME(Jesse): For the sake of all things good and green don't make the
-  // world a global variable!!!
-  Assert(GlobalWorld);
-  InitializeVoxels(GlobalWorld, Chunk);
+  InitializeVoxels(GameState, Chunk);
   return;
 }
 
@@ -495,8 +494,11 @@ SpawnPlayer( World *world, platform *Plat, Entity *Player )
   return;
 }
 void
-UpdatePlayerP(World *world, platform *Plat, Entity *Player, v3 GrossUpdateVector)
+UpdatePlayerP(game_state *GameState, Entity *Player, v3 GrossUpdateVector)
 {
+  World *world = GameState->world;
+  platform *Plat = GameState->Plat;
+
   v3 Remaining = GrossUpdateVector;
   /* Remaining = V3(-16, 0, 0); */
   world_position OriginalPlayerP = Player->P.WorldP;
