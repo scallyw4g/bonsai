@@ -179,7 +179,7 @@ LoadVox(platform *Plat, memory_arena *WorldStorage, char const *filepath)
           int maxX = 0, maxY = 0, maxZ = 0;
           int minX = INT_MAX, minY = INT_MAX, minZ = INT_MAX;
 
-          Voxel *LocalVoxelCache = (Voxel *)calloc(numVoxels, sizeof(Voxel) );
+          voxel *LocalVoxelCache = (voxel *)calloc(numVoxels, sizeof(voxel) );
           for( int i = 0; i < numVoxels; ++ i)
           {
             int X = (int)ReadChar(ModelFile, &bytesRemaining);
@@ -217,7 +217,7 @@ LoadVox(platform *Plat, memory_arena *WorldStorage, char const *filepath)
 
           for( int i = 0; i < numVoxels; ++ i)
           {
-            Voxel V = {};
+            voxel V = {};
             V.flags = SetFlag(V.flags, Voxel_Filled);
 
             voxel_position RealP = GetVoxelP(LocalVoxelCache[i])-Min;

@@ -1006,11 +1006,11 @@ Clamp01( voxel_position V )
 }
 
 void
-PushBoundaryVoxel( chunk_data *chunk, Voxel voxel )
+PushBoundaryVoxel( chunk_data *chunk, voxel Voxel )
 {
   Assert( chunk->BoundaryVoxelCount < Volume(chunk->Dim) );
 
-  chunk->BoundaryVoxels[chunk->BoundaryVoxelCount] = voxel;
+  chunk->BoundaryVoxels[chunk->BoundaryVoxelCount] = Voxel;
   chunk->BoundaryVoxelCount++;
 }
 
@@ -1046,31 +1046,32 @@ BuildExteriorBoundaryVoxels( World *world, world_chunk *chunk, world_chunk *Neig
 
         if ( ! IsFilledInChunk( world, Neighbor, NeighborP) )
         {
-          Voxel voxel = chunk->Data->Voxels[GetIndex(LocalVoxelP, chunk->Data)];
+          voxel Voxel = chunk->Data->Voxels[GetIndex(LocalVoxelP, chunk->Data)];
 
           if (NeighborVector.x > 0)
-            voxel.flags = SetFlag(voxel.flags, Voxel_RightFace);
+            Voxel.flags = SetFlag(Voxel.flags, Voxel_RightFace);
 
           if (NeighborVector.x < 0)
-            voxel.flags = SetFlag(voxel.flags, Voxel_LeftFace);
+            Voxel.flags = SetFlag(Voxel.flags, Voxel_LeftFace);
 
           if (NeighborVector.y > 0)
-            voxel.flags = SetFlag(voxel.flags, Voxel_TopFace);
+            Voxel.flags = SetFlag(Voxel.flags, Voxel_TopFace);
 
           if (NeighborVector.y < 0)
-            voxel.flags = SetFlag(voxel.flags, Voxel_BottomFace);
+            Voxel.flags = SetFlag(Voxel.flags, Voxel_BottomFace);
 
           if (NeighborVector.z > 0)
-            voxel.flags = SetFlag(voxel.flags, Voxel_FrontFace);
+            Voxel.flags = SetFlag(Voxel.flags, Voxel_FrontFace);
 
           if (NeighborVector.z < 0)
-            voxel.flags = SetFlag(voxel.flags, Voxel_BackFace);
+            Voxel.flags = SetFlag(Voxel.flags, Voxel_BackFace);
 
-          voxel_position P = GetVoxelP(voxel);
+          voxel_position P = GetVoxelP(Voxel);
           Assert( P == LocalVoxelP);
-          PushBoundaryVoxel( chunk->Data, voxel );
+          PushBoundaryVoxel( chunk->Data, Voxel );
 
-          FirstFilledIndex = chunk->Data->BoundaryVoxelCount - 1;
+          if (FirstFilledIndex == -1)
+            FirstFilledIndex = chunk->Data->BoundaryVoxelCount - 1;
         }
       }
     }
@@ -1123,46 +1124,46 @@ BuildInteriorBoundaryVoxels(World *world, chunk_data *chunk, world_position Worl
         voxel_position frontVoxel = VoxelP + Voxel_Position(0, 0, 1);
         voxel_position backVoxel = VoxelP - Voxel_Position(0, 0, 1);
 
-        Voxel voxel = chunk->Voxels[GetIndex(Voxel_Position(x,y,z), chunk)];
+        voxel Voxel = chunk->Voxels[GetIndex(Voxel_Position(x,y,z), chunk)];
 
         bool DidPushVoxel = false;
 
         if ( IsInsideChunk( chunk->Dim, rightVoxel  ) && NotFilled( chunk, rightVoxel  ))
         {
-          voxel.flags = SetFlag(voxel.flags, Voxel_RightFace);
+          Voxel.flags = SetFlag(Voxel.flags, Voxel_RightFace);
           DidPushVoxel = true;
         }
         if ( IsInsideChunk( chunk->Dim, leftVoxel  ) && NotFilled( chunk, leftVoxel  ))
         {
-          voxel.flags = SetFlag(voxel.flags, Voxel_LeftFace);
+          Voxel.flags = SetFlag(Voxel.flags, Voxel_LeftFace);
           DidPushVoxel = true;
         }
         if ( IsInsideChunk( chunk->Dim, botVoxel   ) && NotFilled( chunk, botVoxel   ))
         {
-          voxel.flags = SetFlag(voxel.flags, Voxel_BottomFace);
+          Voxel.flags = SetFlag(Voxel.flags, Voxel_BottomFace);
           DidPushVoxel = true;
         }
         if ( IsInsideChunk( chunk->Dim, topVoxel   ) && NotFilled( chunk, topVoxel   ))
         {
-          voxel.flags = SetFlag(voxel.flags, Voxel_TopFace);
+          Voxel.flags = SetFlag(Voxel.flags, Voxel_TopFace);
           DidPushVoxel = true;
         }
         if ( IsInsideChunk( chunk->Dim, frontVoxel ) && NotFilled( chunk, frontVoxel ))
         {
-          voxel.flags = SetFlag(voxel.flags, Voxel_FrontFace);
+          Voxel.flags = SetFlag(Voxel.flags, Voxel_FrontFace);
           DidPushVoxel = true;
         }
         if ( IsInsideChunk( chunk->Dim, backVoxel  ) && NotFilled( chunk, backVoxel  ))
         {
-          voxel.flags = SetFlag(voxel.flags, Voxel_BackFace);
+          Voxel.flags = SetFlag(Voxel.flags, Voxel_BackFace);
           DidPushVoxel = true;
         }
 
         if (DidPushVoxel)
         {
-          voxel_position P = GetVoxelP(voxel);
+          voxel_position P = GetVoxelP(Voxel);
           Assert( P == Voxel_Position(x,y,z));
-          PushBoundaryVoxel(chunk, voxel);
+          PushBoundaryVoxel(chunk, Voxel);
         }
 
       }
@@ -1220,7 +1221,7 @@ BufferChunkMesh(
   {
     VoxelsIndexed ++;
 
-    Voxel V = chunk->BoundaryVoxels[i];
+    voxel V = chunk->BoundaryVoxels[i];
 
     GetColorData(GetVoxelColor(V), &FaceColors[0]);;
 
@@ -1260,8 +1261,11 @@ BufferChunkMesh(
 line
 FindIntersectingLine(world_chunk *Chunk, voxel_position OffsetVector, int FirstFilledIndex)
 {
-  voxel_position MinP = Voxel_Position(INT_MAX, INT_MAX, INT_MAX);
-  voxel_position MinP = Voxel_Position(~INT_MAX, ~INT_MAX, ~INT_MAX);
+  voxel_position MinP = GetVoxelP(Chunk->Data->BoundaryVoxels[FirstFilledIndex]);
+  voxel_position MaxP = GetVoxelP(Chunk->Data->BoundaryVoxels[FirstFilledIndex]);
+
+  int CurrentMaxLen = 0;
+  int CurrentMinLen = 0;
 
   for (int VoxelIndex = FirstFilledIndex;
       VoxelIndex < Chunk->Data->BoundaryVoxelCount;
@@ -1270,11 +1274,22 @@ FindIntersectingLine(world_chunk *Chunk, voxel_position OffsetVector, int FirstF
     voxel V = Chunk->Data->BoundaryVoxels[VoxelIndex];
     voxel_position P  = GetVoxelP(V);
 
-    if (P < MinP)
-      MinP = P;
+    int OriginToP = LengthSq(P);
 
-    if (P > MaxP)
+    // Max
+    if ( OriginToP > CurrentMaxLen )
+    {
       MaxP = P;
+      CurrentMaxLen = OriginToP;
+    }
+
+    // Min
+    if ( OriginToP < CurrentMinLen )
+    {
+      MinP = P;
+      CurrentMinLen = OriginToP;
+    }
+
   }
 
   line Result(MinP, MaxP);
@@ -1295,7 +1310,7 @@ SetupAndBuildExteriorBoundary(World *world, world_chunk *Chunk, voxel_position O
 
       if (FirstExteriorIndex != -1)
       {
-        Assert(Chunk->EdgeCount > MAX_CHUNK_EDGES);
+        Assert(Chunk->EdgeCount < MAX_CHUNK_EDGES);
         Chunk->Edges[Chunk->EdgeCount++] = FindIntersectingLine(Chunk, OffsetVector, FirstExteriorIndex);
       }
     }

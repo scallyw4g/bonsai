@@ -533,6 +533,12 @@ struct line
     this->MinP = MinP;
     this->MaxP = MaxP;
   }
+
+  line(voxel_position MinP, voxel_position MaxP)
+  {
+    this->MinP = V3(MinP);
+    this->MaxP = V3(MaxP);
+  }
 };
 
 struct AABB
@@ -987,6 +993,18 @@ operator-(canonical_position P1, canonical_position P2)
 
   Result.Offset = P1.Offset - P2.Offset;
   Result.WorldP = P1.WorldP - P2.WorldP;
+
+  return Result;
+}
+
+inline voxel_position
+operator^(voxel_position P1, voxel_position P2)
+{
+  voxel_position Result;
+
+  Result.x = P1.x ^ P2.x;
+  Result.y = P1.y ^ P2.y;
+  Result.z = P1.z ^ P2.z;
 
   return Result;
 }

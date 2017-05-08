@@ -48,7 +48,7 @@ enum VoxelFlags
   Voxel_BackFace   = 1 << (FINAL_COLOR_BIT + 6)
 };
 
-struct Voxel
+struct voxel
 {
   int flags;
 };
@@ -58,9 +58,9 @@ struct chunk_data
   int flags;
   int BoundaryVoxelCount;
 
-  Voxel *Voxels;
+  voxel *Voxels;
 
-  Voxel *BoundaryVoxels;
+  voxel *BoundaryVoxels;
 
   chunk_dimension Dim;
 };
@@ -222,7 +222,7 @@ NotSet( int Flags, int Flag )
 }
 
 inline int
-GetVoxelColor(Voxel V)
+GetVoxelColor(voxel V)
 {
   int Color = (V.flags >> (FINAL_POSITION_BIT) ) & ~( 0xFFFFFFFF << (COLOR_BIT_WIDTH));
 
@@ -230,10 +230,10 @@ GetVoxelColor(Voxel V)
   return Color;
 }
 
-inline Voxel
-SetVoxelColor(Voxel V, int w)
+inline voxel
+SetVoxelColor(voxel V, int w)
 {
-  Voxel Result = V;
+  voxel Result = V;
 
   unsigned int flagMask = (0xFFFFFFFF << FINAL_COLOR_BIT);
   unsigned int colorMask = ( flagMask | ~(0xFFFFFFFF << (FINAL_POSITION_BIT)) );
@@ -264,7 +264,7 @@ GetVoxelP(chunk_dimension Dim, int i)
 }
 
 inline voxel_position
-GetVoxelP(Voxel V)
+GetVoxelP(voxel V)
 {
   voxel_position P = Voxel_Position(
     V.flags >> (POSITION_BIT_WIDTH * 0) & 0x000000FF >> (8 - POSITION_BIT_WIDTH),
@@ -275,14 +275,14 @@ GetVoxelP(Voxel V)
   return P;
 }
 
-inline Voxel
-SetVoxelP(Voxel V, voxel_position P)
+inline voxel
+SetVoxelP(voxel V, voxel_position P)
 {
   Assert( P.x < Pow2(POSITION_BIT_WIDTH) );
   Assert( P.y < Pow2(POSITION_BIT_WIDTH) );
   Assert( P.z < Pow2(POSITION_BIT_WIDTH) );
 
-  Voxel Result = V;
+  voxel Result = V;
 
   int currentFlags = ( Result.flags & (0xFFFFFFFF << FINAL_POSITION_BIT));
   Result.flags = currentFlags;
@@ -297,10 +297,10 @@ SetVoxelP(Voxel V, voxel_position P)
 
 }
 
-Voxel
+voxel
 GetVoxel(int x, int y, int z, int w)
 {
-  Voxel Result = {};
+  voxel Result = {};
   voxel_position P = Voxel_Position(x,y,z);
 
   Result = SetVoxelP(Result, P );
@@ -416,8 +416,8 @@ AllocateChunk(platform *Plat, memory_arena *WorldStorage, chunk_dimension Dim)
 {
   chunk_data *Result = PUSH_STRUCT_CHECKED(chunk_data, WorldStorage, 1);;
 
-  Result->Voxels          = PUSH_STRUCT_CHECKED(Voxel, WorldStorage , Volume(Dim));
-  Result->BoundaryVoxels  = PUSH_STRUCT_CHECKED(Voxel, WorldStorage , Volume(Dim));
+  Result->Voxels          = PUSH_STRUCT_CHECKED(voxel, WorldStorage , Volume(Dim));
+  Result->BoundaryVoxels  = PUSH_STRUCT_CHECKED(voxel, WorldStorage , Volume(Dim));
 
   Result->Dim = Dim;
 

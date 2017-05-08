@@ -101,6 +101,13 @@ v2 Lerp(float t, v2 p1, v2 p2)
   return Result;
 }
 
+inline int
+LengthSq( voxel_position P )
+{
+  int Result = P.x*P.x + P.y*P.y + P.z*P.z;
+  return Result;
+}
+
 inline float
 LengthSq( v3 Vec )
 {
