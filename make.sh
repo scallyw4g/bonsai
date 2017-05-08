@@ -3,7 +3,6 @@
 if [ -z $WIN32 ]; then # Unix
 
   BINARY="bin/Bonsai"
-
   cd build
   make "$@" 2>&1 && mv ../bin/libGame.so ../bin/libGameLoadable.so
 

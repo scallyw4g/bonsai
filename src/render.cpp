@@ -708,7 +708,8 @@ RotatePoint(v3 P1, v3 P2)
 
   Quaternion Result( (Axis*sin(theta/2)), cos(theta/2) );
 
-  Assert(Length(Result.xyz) > 0);
+  if (Length(Result.xyz) == 0)  // The resulting rotation was inconsequential
+    Result = Quaternion();
 
   return Result;
 }

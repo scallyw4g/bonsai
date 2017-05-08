@@ -119,9 +119,13 @@ void
 InitializeVoxels(void *Input)
 {
   work_queue_entry *Params = (work_queue_entry *)Input;
+  Assert(Params);
 
   game_state *GameState = Params->GameState;
   world_chunk *Chunk = (world_chunk *)Params->Input;
+
+  Assert(GameState);
+  Assert(Chunk);
 
   InitializeVoxels(GameState, Chunk);
   return;
@@ -173,7 +177,7 @@ NotFilledInWorld( World *world, world_chunk *chunk, canonical_position VoxelP )
 }
 
 inline void
-QueueChunkForInit(World *world, platform *Plat, world_chunk *Chunk)
+QueueChunkForInit(game_state *GameState, world_chunk *Chunk)
 {
   Assert( NotSet(Chunk->Data->flags, Chunk_Queued ) );
   Assert( NotSet(Chunk->Data->flags, Chunk_Initialized) );
@@ -181,10 +185,11 @@ QueueChunkForInit(World *world, platform *Plat, world_chunk *Chunk)
   work_queue_entry Entry;
   Entry.Callback = &InitializeVoxels;
   Entry.Input = (void*)Chunk;
+  Entry.GameState = GameState;
 
   Chunk->Data->flags = SetFlag(Chunk->Data->flags, Chunk_Queued);
 
-  Plat->PushWorkQueueEntry(&Plat->Queue, &Entry);
+  GameState->Plat->PushWorkQueueEntry(&GameState->Plat->Queue, &Entry);
 
   return;
 }
@@ -411,7 +416,7 @@ GetSign(world_position P)
 }
 
 void
-QueueChunksForInit(platform *Plat, World* world, world_position WorldDisp, Entity *Player)
+QueueChunksForInit(game_state *GameState, world_position WorldDisp, Entity *Player)
 {
   if (Length(V3(WorldDisp)) == 0) return;
 
@@ -421,7 +426,7 @@ QueueChunksForInit(platform *Plat, World* world, world_position WorldDisp, Entit
 
   world_position InvAbsIter = ((Iter * Iter)-1) * ((Iter * Iter)-1);
 
-  world_position VRHalfDim = World_Position(world->VisibleRegion/2);
+  world_position VRHalfDim = World_Position(GameState->world->VisibleRegion/2);
 
   world_position SliceMin = PlayerP + (VRHalfDim * Iter) - (VRHalfDim * InvAbsIter) - ClampPositive(WorldDisp);
   world_position SliceMax = PlayerP + (VRHalfDim * Iter) + (VRHalfDim * InvAbsIter) - ClampPositive(Iter) - InvAbsIter - ClampNegative(WorldDisp) + ClampNegative(Iter);
@@ -435,22 +440,22 @@ QueueChunksForInit(platform *Plat, World* world, world_position WorldDisp, Entit
       for (int x = SliceMin.x; x <= SliceMax.x; ++ x)
       {
         world_position P = World_Position(x,y,z);
-        world_chunk* chunk = GetFreeChunk(Plat, world, P);
-        QueueChunkForInit(world, Plat, chunk);
+        world_chunk* chunk = GetFreeChunk(GameState->Plat, GameState->world, P);
+        QueueChunkForInit(GameState, chunk);
       }
     }
   }
 }
 
 void
-UpdateVisibleRegion(World *world, platform *Plat, world_position OriginalPlayerP, Entity *Player)
+UpdateVisibleRegion(game_state *GameState, world_position OriginalPlayerP, Entity *Player)
 {
   if ( OriginalPlayerP != Player->P.WorldP && DEBUG_SCROLL_WORLD ) // We moved to the next chunk
   {
     world_position WorldDisp = ( Player->P.WorldP - OriginalPlayerP );
-    QueueChunksForInit(Plat, world, World_Position(WorldDisp.x, 0, 0), Player);
-    QueueChunksForInit(Plat, world, World_Position(0, WorldDisp.y, 0), Player);
-    QueueChunksForInit(Plat, world, World_Position(0, 0, WorldDisp.z), Player);
+    QueueChunksForInit(GameState, World_Position(WorldDisp.x, 0, 0), Player);
+    QueueChunksForInit(GameState, World_Position(0, WorldDisp.y, 0), Player);
+    QueueChunksForInit(GameState, World_Position(0, 0, WorldDisp.z), Player);
   }
 
   return;
@@ -574,7 +579,7 @@ UpdatePlayerP(game_state *GameState, Entity *Player, v3 GrossUpdateVector)
 
   }
 
-  UpdateVisibleRegion(world, Plat, OriginalPlayerP, Player);
+  UpdateVisibleRegion(GameState, OriginalPlayerP, Player);
 
   Player->P = Canonicalize(world, Player->P);
   Assert ( GetCollision(world, Player ).didCollide == false );
@@ -745,12 +750,15 @@ UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera)
 }
 
 World *
-AllocateWorld( platform *Plat, world_position Midpoint)
+AllocateWorld( game_state *GameState, world_position Midpoint)
 {
+  platform *Plat = GameState->Plat;
+
   /*
    *  Allocate stuff
    */
   World *world = PUSH_STRUCT_CHECKED(World, Plat->Memory, 1 );
+  GameState->world = world;
 
   world->WorldStorage.Next = 0;
 
@@ -800,7 +808,7 @@ AllocateWorld( platform *Plat, world_position Midpoint)
       {
         world_chunk *chunk = AllocateWorldChunk(Plat, world, World_Position(x,y,z));
         Assert(chunk);
-        QueueChunkForInit(world, Plat, chunk);
+        QueueChunkForInit(GameState, chunk);
       }
     }
   }

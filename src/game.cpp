@@ -85,10 +85,6 @@ GameInit( platform *Plat )
   Entity *Player = AllocateEntity(Plat, PlayerInitialP, PLAYER_MODEL);
   if (!Player) { Error("Error Allocating Player"); return False; }
 
-  World *world = AllocateWorld(Plat, PlayerInitialP.WorldP);
-  if (!world) { Error("Error Allocating world"); return False; }
-
-  SeedWorldAndUnspawnPlayer(world, Player);
 
   Camera_Object *Camera = PUSH_STRUCT_CHECKED(Camera_Object, Plat->Memory, 1);
 
@@ -117,13 +113,17 @@ GameInit( platform *Plat )
   AssertNoGlErrors;
 
   game_state *GameState = PUSH_STRUCT_CHECKED(game_state, Plat->Memory, 1);
-
-  GameState->world = world;
+  GameState->Plat = Plat;
   GameState->Player = Player;
   GameState->Camera = Camera;
   GameState->RG = RG;
   GameState->SG = SG;
   GameState->DebugRG = DebugRG;
+
+  World *world = AllocateWorld(GameState, PlayerInitialP.WorldP);
+  if (!world) { Error("Error Allocating world"); return False; }
+
+  SeedWorldAndUnspawnPlayer(world, Player);
 
   return GameState;
 }
@@ -250,8 +250,7 @@ GameUpdateAndRender ( platform *Plat, game_state *GameState )
     {
       if ( (chunk->WorldP >= Min && chunk->WorldP < Max) )
       {
-        // DrawWorldChunk( Plat, world, chunk, Camera, RG, SG);
-        //
+        DrawWorldChunk( GameState, chunk, RG, SG);
         DrawChunkEdges( world, chunk );
 
         chunk = chunk->Next;
