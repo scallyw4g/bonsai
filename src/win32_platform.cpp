@@ -293,22 +293,12 @@ WindowMessageCallback(
     {
       platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
       Plat->Input.LMB = True;
-
-      if (Plat->MouseClickP == InvalidMouseP)
-      {
-        Plat->MouseClickP = Plat->GetMouseP();
-
-        // I'm not 100% sure -1,-1 is always invalid..
-        Assert(Plat->MouseClickP != InvalidMouseP);
-      }
-
     } return 0;
 
     case WM_LBUTTONUP:
     {
       platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-	  Plat->Input.LMB = FALSE;
-	  Plat->MouseClickP = InvalidMouseP;
+      Plat->Input.LMB = False;
     } return 0;
 
     case WM_RBUTTONDOWN:
@@ -582,23 +572,6 @@ inline void
 BonsaiSwapBuffers(os *Os)
 {
   SwapBuffers(Os->Display);
-}
-
-inline void
-SetMouseP(v2 P)
-{
-  s32 e = SetCursorPos(P.x, P.y);
-  Assert( e != 0 );
-  return;
-}
-
-inline v2
-GetMouseP()
-{
-  POINT P;
-  GetCursorPos(&P);
-  v2 Result { P.x, P.y };
-  return Result;
 }
 
 #endif

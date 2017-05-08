@@ -704,6 +704,28 @@ v2 operator+=(v2 P1, v2 P2)
   return Result;
 }
 
+v2
+operator*(v2 P1, r32 F)
+{
+  v2 Result;
+
+  Result.x = P1.x * F;
+  Result.y = P1.y * F;
+
+  return Result;
+}
+
+v2
+operator-(v2 P1, v2 P2)
+{
+  v2 Result;
+
+  Result.x = P1.x - P2.x;
+  Result.y = P1.y - P2.y;
+
+  return Result;
+}
+
 v2 operator+(v2 P1, v2 P2)
 {
   v2 Result;

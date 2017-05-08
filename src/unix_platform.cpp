@@ -106,7 +106,7 @@ OpenAndInitializeWindow( os *Os, platform *Plat)
 
   XSetWindowAttributes WindowAttribs;
   WindowAttribs.colormap = ColorInfo;
-  WindowAttribs.event_mask = ExposureMask | KeyPressMask | KeyReleaseMask;
+  WindowAttribs.event_mask = WindowEventMasks;
 
   Window win = XCreateWindow(Os->Display, RootWindow,
       0, 0,
@@ -182,7 +182,7 @@ ProcessOsMessages(os *Os, platform *Plat)
   b32 EventFound =
     XCheckWindowEvent(Os->Display,
                       Os->Window,
-                      ExposureMask | KeyPressMask | KeyReleaseMask ,
+                      WindowEventMasks,
                       &Event);
 
   if (EventFound)
@@ -195,6 +195,28 @@ ProcessOsMessages(os *Os, platform *Plat)
       {
         Plat->WindowWidth = Event.xexpose.width;
         Plat->WindowHeight = Event.xexpose.height;
+      } break;
+
+      case MotionNotify:
+      {
+        Plat->MouseP.x = Event.xmotion.x;
+        Plat->MouseP.y = Event.xmotion.y;
+      } break;
+
+      case ButtonPress:
+      {
+        if (Event.xbutton.button == Button1)
+        {
+          Plat->Input.LMB = True;
+        }
+      } break;
+
+      case ButtonRelease:
+      {
+        if (Event.xbutton.button == Button1)
+        {
+          Plat->Input.LMB = False;
+        }
       } break;
 
       case KeyRelease:
@@ -312,6 +334,12 @@ Terminate(os *Os)
 {
   XDestroyWindow(Os->Display, Os->Window);
   XCloseDisplay(Os->Display);
+  return;
+}
+
+inline void
+SetMouseP(v2 P)
+{
   return;
 }
 

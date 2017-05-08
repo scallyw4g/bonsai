@@ -128,9 +128,8 @@ struct platform
   void* (*PushStruct)(memory_arena *Memory, umm sizeofStruct );
   void* (*PushStructChecked_)(memory_arena *Memory, umm sizeofStruct, const char* StructName, s32 Line, const char* File);
 
-  v2 MouseClickP;
-  v2 (*GetMouseP)(void);
-  void (*SetMouseP)(v2);
+  v2 MouseP;
+  v2 MouseDP;
 
   memory_arena *Memory;
 
@@ -288,7 +287,6 @@ AllocateAndInitializeArena(memory_arena *Arena, umm Size)
 
   return;
 }
-
 
 #endif
 

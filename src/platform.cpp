@@ -159,10 +159,6 @@ PlatformInit(platform *Plat, memory_arena *Memory)
   Plat->PushWorkQueueEntry = PushWorkQueueEntry;
   Plat->PushStruct = PushStruct;
   Plat->PushStructChecked_ = PushStructChecked_;
-  Plat->GetMouseP = GetMouseP;
-  Plat->SetMouseP = SetMouseP;
-
-  Plat->MouseClickP = InvalidMouseP;
 
   // Initialized from globals
   Plat->WindowHeight = SCR_HEIGHT;
@@ -322,7 +318,9 @@ main(s32 NumArgs, char ** Args)
   {
     Plat.dt = (r32)ComputeDtForFrame(&lastTime);
 
+    v2 LastMouseP = Plat.MouseP;
     while ( ProcessOsMessages(&Os, &Plat) );
+    Plat.MouseDP = LastMouseP - Plat.MouseP;
 
     if ( GameLibIsNew(GAME_LIB) )
     {

@@ -497,7 +497,6 @@ void
 UpdatePlayerP(game_state *GameState, Entity *Player, v3 GrossUpdateVector)
 {
   World *world = GameState->world;
-  platform *Plat = GameState->Plat;
 
   v3 Remaining = GrossUpdateVector;
   /* Remaining = V3(-16, 0, 0); */
@@ -588,21 +587,14 @@ UpdatePlayerP(game_state *GameState, Entity *Player, v3 GrossUpdateVector)
 }
 
 inline v2
-GetdXY(platform *Plat)
+GetMouseDelta(platform *Plat)
 {
   float mouseSpeed = 1.00f;
 
   v2 Result = {};
 
   if (Plat->Input.LMB)
-  {
-    v2 MouseP = Plat->GetMouseP();
-
-    Plat->SetMouseP(Plat->MouseClickP);
-
-    Result.x = mouseSpeed * float(Plat->MouseClickP.x - MouseP.x );
-    Result.y = mouseSpeed * float(Plat->MouseClickP.y - MouseP.y );
-  }
+    Result = Plat->MouseDP * mouseSpeed;
 
   return Result;
 }
@@ -618,23 +610,10 @@ UpdateDebugCamera(platform *Plat, World *world, v3 TargetDelta, Camera_Object *C
   if (Plat->Input.E)
     TargetDelta += WORLD_Y;
 
-  // TODO(Jesse): Re-enable me!
-#if 0
-  double X, Y;
-  glfwGetCursorPos(window, &X, &Y);
-  glfwSetCursorPos(window, 1024/2, 768/2);
-#else
-  double X = 1024/2;
-  double Y = 768/2;
-#endif
-
-
-
-
   Camera->Right = Normalize(Cross(Camera->Front, WORLD_Y));
   Camera->Up = Normalize(Cross(Camera->Front, Camera->Right));
 
-  v2 MouseDelta = GetdXY(Plat);
+  v2 MouseDelta = GetMouseDelta(Plat);
   v3 UpdateRight = Camera->Right * MouseDelta.x;
   v3 UpdateUp = Camera->Up * MouseDelta.y;
 
@@ -673,7 +652,7 @@ UpdateCameraP(platform *Plat, World *world, Entity *Player, Camera_Object *Camer
   Camera->Right = Normalize(Cross(Camera->Front, WORLD_Y));
   Camera->Up = Normalize(Cross(Camera->Front, Camera->Right));
 
-  v2 MouseDelta = GetdXY(Plat);
+  v2 MouseDelta = GetMouseDelta(Plat);
   v3 UpdateRight = Camera->Right * MouseDelta.x;
   v3 UpdateUp = Camera->Up * MouseDelta.y;
 
