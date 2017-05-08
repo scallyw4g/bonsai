@@ -381,6 +381,7 @@ FreeWorldChunk(World *world, world_chunk *chunk)
 
     chunk->Prev = 0;
     chunk->Next = 0;
+    chunk->EdgeCount = 0;
 
     Assert(world->FreeChunkCount < FREELIST_SIZE);
     world->FreeChunks[world->FreeChunkCount++] = chunk;

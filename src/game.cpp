@@ -250,8 +250,8 @@ GameUpdateAndRender ( platform *Plat, game_state *GameState )
     {
       if ( (chunk->WorldP >= Min && chunk->WorldP < Max) )
       {
-        DrawWorldChunk( GameState, chunk, RG, SG);
-        DrawChunkEdges( world, chunk );
+        /* DrawWorldChunk( GameState, chunk, RG, SG); */
+        DrawChunkEdges( GameState, chunk );
 
         chunk = chunk->Next;
 

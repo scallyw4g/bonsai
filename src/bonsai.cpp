@@ -587,11 +587,30 @@ UpdatePlayerP(game_state *GameState, Entity *Player, v3 GrossUpdateVector)
   return;
 }
 
+inline v2
+GetdXY(platform *Plat)
+{
+  float mouseSpeed = 1.00f;
+
+  v2 Result = {};
+
+  if (Plat->Input.LMB)
+  {
+    v2 MouseP = Plat->GetMouseP();
+
+    Plat->SetMouseP(Plat->MouseClickP);
+
+    Result.x = mouseSpeed * float(Plat->MouseClickP.x - MouseP.x );
+    Result.y = mouseSpeed * float(Plat->MouseClickP.y - MouseP.y );
+  }
+
+  return Result;
+}
+
 void
 UpdateDebugCamera(platform *Plat, World *world, v3 TargetDelta, Camera_Object *Camera)
 {
   float FocalLength = DEBUG_CAMERA_FOCAL_LENGTH;
-  float mouseSpeed = 0.20f;
 
   if (Plat->Input.Q)
     TargetDelta -= WORLD_Y;
@@ -610,14 +629,14 @@ UpdateDebugCamera(platform *Plat, World *world, v3 TargetDelta, Camera_Object *C
 #endif
 
 
-  float dX = mouseSpeed * float(1024/2 - X );
-  float dY = mouseSpeed * float( 768/2 - Y );
+
 
   Camera->Right = Normalize(Cross(Camera->Front, WORLD_Y));
   Camera->Up = Normalize(Cross(Camera->Front, Camera->Right));
 
-  v3 UpdateRight = Camera->Right * dX;
-  v3 UpdateUp = Camera->Up * dY;
+  v2 MouseDelta = GetdXY(Plat);
+  v3 UpdateRight = Camera->Right * MouseDelta.x;
+  v3 UpdateUp = Camera->Up * MouseDelta.y;
 
   TargetDelta = (TargetDelta * DEBUG_CAMERA_SCROLL_SPEED) + UpdateRight + UpdateUp;
 
@@ -650,26 +669,13 @@ UpdateCameraP(platform *Plat, World *world, Entity *Player, Camera_Object *Camer
   v3 TargetDelta = GetRenderP(world, NewTarget, Camera) - GetRenderP(world, Camera->Target, Camera);
 
   float FocalLength = CAMERA_FOCAL_LENGTH;
-  float mouseSpeed = 1.00f;
-
-  float dX = 0;
-  float dY = 0;
-
-  if (Plat->Input.LMB)
-  {
-    v2 MouseP = Plat->GetMouseP();
-
-    Plat->SetMouseP(Plat->MouseClickP);
-
-    dX = mouseSpeed * float(Plat->MouseClickP.x - MouseP.x );
-    dY = mouseSpeed * float(Plat->MouseClickP.y - MouseP.y );
-  }
 
   Camera->Right = Normalize(Cross(Camera->Front, WORLD_Y));
   Camera->Up = Normalize(Cross(Camera->Front, Camera->Right));
 
-  v3 UpdateRight = Camera->Right * dX;
-  v3 UpdateUp = Camera->Up * dY;
+  v2 MouseDelta = GetdXY(Plat);
+  v3 UpdateRight = Camera->Right * MouseDelta.x;
+  v3 UpdateUp = Camera->Up * MouseDelta.y;
 
   Camera->P.Offset += (TargetDelta + UpdateRight + (UpdateUp));
   Camera->Target.Offset += TargetDelta;
