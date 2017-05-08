@@ -730,6 +730,9 @@ DEBUG_DrawLine(World *world, v3 P1, v3 P2, int ColorIndex, float Thickness )
      0, 0, 0
   };
 
+  P1.x = P1.x - (Thickness/2.0f);
+  P2.x = P2.x - (Thickness/2.0f);
+
   float FaceColors[32];
   GetColorData( ColorIndex, FaceColors);
 
@@ -738,11 +741,11 @@ DEBUG_DrawLine(World *world, v3 P1, v3 P2, int ColorIndex, float Thickness )
     {
       P1.x, P1.y, P1.z,
       P2.x, P2.y, P2.z,
-      P1.x + Thickness, P1.y,  P1.z + Thickness,
+      P1.x + Thickness, P1.y,  P1.z,
 
       P2.x, P2.y, P2.z,
-      P1.x, P1.y, P1.z,
-      P2.x + Thickness, P2.y, P2.z + Thickness
+      P1.x + Thickness, P1.y, P1.z,
+      P2.x + Thickness, P2.y, P2.z
     };
 
 
@@ -754,6 +757,12 @@ DEBUG_DrawLine(World *world, v3 P1, v3 P2, int ColorIndex, float Thickness )
         FaceColors);
   }
 
+  P1.x = P1.x + (Thickness/2.0f);
+  P2.x = P2.x + (Thickness/2.0f);
+
+  P1.y = P1.y - (Thickness/2.0f);
+  P2.y = P2.y - (Thickness/2.0f);
+
   {
     float localVertexData[] =
     {
@@ -762,7 +771,7 @@ DEBUG_DrawLine(World *world, v3 P1, v3 P2, int ColorIndex, float Thickness )
       P1.x, P1.y + Thickness,  P1.z,
 
       P2.x, P2.y, P2.z,
-      P1.x, P1.y, P1.z,
+      P1.x, P1.y + Thickness, P1.z,
       P2.x, P2.y + Thickness, P2.z
     };
 
@@ -1354,7 +1363,7 @@ DrawChunkEdges( game_state *GameState, world_chunk *Chunk )
       EdgeIndex < Chunk->EdgeCount;
       ++EdgeIndex )
   {
-    DEBUG_DrawLine(GameState->world, Chunk->Edges[EdgeIndex] + Offset, 0, 1.0f );
+    DEBUG_DrawLine(GameState->world, Chunk->Edges[EdgeIndex] + Offset, 0, 0.5f );
   }
 
   return;
