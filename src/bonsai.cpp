@@ -11,11 +11,6 @@
 #include <texture.cpp> // Only used for font .DDS atm
 #include <debug.cpp>
 
-
-
-// FIXME(Jesse): Global-variable this up so threads can cold-call for it
-static World *GlobalWorld = 0;
-
 GLOBAL_VARIABLE PerlinNoise GlobalNoise;
 
   // TODO(Jesse): Re-enable this!
@@ -755,9 +750,7 @@ AllocateWorld( platform *Plat, world_position Midpoint)
   /*
    *  Allocate stuff
    */
-  GlobalWorld = PUSH_STRUCT_CHECKED(World, Plat->Memory, 1 );
-
-  World *world = GlobalWorld;
+  World *world = PUSH_STRUCT_CHECKED(World, Plat->Memory, 1 );
 
   world->WorldStorage.Next = 0;
 

@@ -132,7 +132,6 @@ EXPORT bool
 GameUpdateAndRender ( platform *Plat, game_state *GameState )
 {
   GL_Global = &Plat->GL;
-  GlobalWorld = GameState->world;
 
   World *world          = GameState->world;
   Entity *Player        = GameState->Player;
