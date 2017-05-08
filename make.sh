@@ -1,6 +1,6 @@
 #! /bin/bash
 
-if [ -z $WIN32 ]; then # Unix
+if [ "$WIN32" == "1" ]; then
 
   BINARY="bin/Bonsai"
   cd build
@@ -13,8 +13,10 @@ else # Win32
   BINARY="bin/Debug/Bonsai.exe"
   msbuild.exe ./bin/Game.vcxproj
 
-  cp ./bin/Debug/Game.dll ./bin/Debug/GameLoadable.dll
+  cd build
+  make "$@" 2>&1 && mv ../bin/libGame.so ../bin/libGameLoadable.so
 
+  [ $? -eq 0 ] && ../$BINARY > /dev/tty
 
 fi
 
