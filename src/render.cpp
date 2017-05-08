@@ -1293,20 +1293,21 @@ FindIntersectingLine(game_state *GameState, world_chunk *Chunk, voxel_position O
 
   }
 
-  v3 Offset = GetRenderP( GameState->world, Chunk->WorldP, GameState->Camera);
-  line Result(MinP+Offset, MaxP+Offset);
+  line Result(MinP, MaxP);
 
   return Result;
 }
 
 inline void
-SetupAndBuildExteriorBoundary(game_state *GameState, world_chunk *Chunk, voxel_position OffsetVector)
+SetupAndBuildExteriorBoundary(game_state *GameState, world_chunk *Chunk, voxel_position OffsetVector, ChunkFlags Flag)
 {
-  if ( IsSet(Chunk->Data->flags, Chunk_RebuildExteriorTop ) )
+  if ( IsSet(Chunk->Data->flags, Flag ) )
   {
+
     world_chunk *Neighbot = GetWorldChunk( GameState->world, Chunk->WorldP + OffsetVector );
     if ( Neighbot && IsSet( Neighbot->Data->flags, Chunk_Initialized) )
     {
+
       int FirstExteriorIndex = BuildExteriorBoundaryVoxels( GameState->world, Chunk, Neighbot, OffsetVector );
       Chunk->Data->flags = UnSetFlag( Chunk->Data->flags, Chunk_RebuildExteriorTop );
 
@@ -1316,7 +1317,9 @@ SetupAndBuildExteriorBoundary(game_state *GameState, world_chunk *Chunk, voxel_p
         Chunk->Edges[Chunk->EdgeCount++] = FindIntersectingLine(GameState, Chunk, OffsetVector, FirstExteriorIndex);
       }
     }
+
   }
+
 }
 
 void
@@ -1330,26 +1333,28 @@ BuildBoundaryVoxels( game_state *GameState, world_chunk *WorldChunk)
     BuildInteriorBoundaryVoxels( GameState->world, chunk, WorldChunk->WorldP );
   }
 
-  SetupAndBuildExteriorBoundary(GameState, WorldChunk, Voxel_Position( 0, 1, 0));
-  SetupAndBuildExteriorBoundary(GameState, WorldChunk, Voxel_Position( 0,-1, 0));
+  SetupAndBuildExteriorBoundary(GameState, WorldChunk, Voxel_Position( 0, 1, 0), Chunk_RebuildExteriorTop);
+  SetupAndBuildExteriorBoundary(GameState, WorldChunk, Voxel_Position( 0,-1, 0), Chunk_RebuildExteriorBot);
 
-  SetupAndBuildExteriorBoundary(GameState, WorldChunk, Voxel_Position( 1, 0, 0));
-  SetupAndBuildExteriorBoundary(GameState, WorldChunk, Voxel_Position(-1, 0, 0));
+  SetupAndBuildExteriorBoundary(GameState, WorldChunk, Voxel_Position( 1, 0, 0), Chunk_RebuildExteriorLeft);
+  SetupAndBuildExteriorBoundary(GameState, WorldChunk, Voxel_Position(-1, 0, 0), Chunk_RebuildExteriorRight);
 
-  SetupAndBuildExteriorBoundary(GameState, WorldChunk, Voxel_Position( 0, 0, 1));
-  SetupAndBuildExteriorBoundary(GameState, WorldChunk, Voxel_Position( 0, 0,-1));
+  SetupAndBuildExteriorBoundary(GameState, WorldChunk, Voxel_Position( 0, 0, 1), Chunk_RebuildExteriorBack);
+  SetupAndBuildExteriorBoundary(GameState, WorldChunk, Voxel_Position( 0, 0,-1), Chunk_RebuildExteriorFront);
 
   return;
 }
 
 void
-DrawChunkEdges( World *world, world_chunk *Chunk )
+DrawChunkEdges( game_state *GameState, world_chunk *Chunk )
 {
+  v3 Offset = GetRenderP( GameState->world, Chunk->WorldP, GameState->Camera);
+
   for (int EdgeIndex = 0;
       EdgeIndex < Chunk->EdgeCount;
       ++EdgeIndex )
   {
-    DEBUG_DrawLine(world, Chunk->Edges[EdgeIndex], 0, 1.0f );
+    DEBUG_DrawLine(GameState->world, Chunk->Edges[EdgeIndex] + Offset, 0, 1.0f );
   }
 
   return;
