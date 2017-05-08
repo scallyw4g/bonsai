@@ -2,6 +2,7 @@
 #define BONSAI_PLATFORM_H
 
 #include <platform_constants.h>
+#include <bonsai_types.h>
 
 #ifdef _WIN32
 #include <win32_platform.h>
@@ -19,6 +20,7 @@ typedef void (*GameCallback)(void*);
 typedef game_state* (*game_init_proc)(platform*);
 typedef bool (*game_main_proc)(platform*, game_state*);
 
+GLOBAL_VARIABLE v2 InvalidMouseP = {-1, -1};
 
 #define PUSH_STRUCT_CHECKED(Type, Arena, Number) \
   (Type*)Plat->PushStructChecked_( Arena, sizeof(Type)*Number, #Type, __LINE__, __FILE__ );
@@ -125,6 +127,10 @@ struct platform
   umm (*Allocate)(u8 Bytes);
   void* (*PushStruct)(memory_arena *Memory, umm sizeofStruct );
   void* (*PushStructChecked_)(memory_arena *Memory, umm sizeofStruct, const char* StructName, s32 Line, const char* File);
+
+  v2 MouseClickP;
+  v2 (*GetMouseP)(void);
+  void (*SetMouseP)(v2);
 
   memory_arena *Memory;
 

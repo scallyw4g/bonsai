@@ -1294,7 +1294,7 @@ FindIntersectingLine(game_state *GameState, world_chunk *Chunk, voxel_position O
   }
 
   v3 Offset = GetRenderP( GameState->world, Chunk->WorldP, GameState->Camera);
-  line Result(MinP, MaxP);
+  line Result(MinP+Offset, MaxP+Offset);
 
   return Result;
 }

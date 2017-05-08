@@ -203,7 +203,7 @@ GameUpdateAndRender ( platform *Plat, game_state *GameState )
      }
   }
 
-  UpdateCameraP(world, Player, Camera);
+  UpdateCameraP(Plat, world, Player, Camera);
   RG->Basis.ViewMatrix = GetViewMatrix(world, CurrentCamera);
 
   GlobalLightTheta += Plat->dt;

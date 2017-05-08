@@ -78,7 +78,7 @@ GLOBAL_VARIABLE r32 DEBUG_CAMERA_FOCAL_LENGTH = 50.0f;
 #define DEBUG_CAMERA_SCROLL_SPEED  20.0f
 
 // TODO(Jesse): How should we initialize this for realz?
-static canonical_position CameraInitialP = {4};
+static canonical_position CameraInitialP = {7};
 #define CAMERA_INITIAL_P CameraInitialP
 
 // NOTE(Jesse): The position storage needs to be as large as the largest model

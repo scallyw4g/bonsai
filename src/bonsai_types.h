@@ -244,6 +244,19 @@ Voxel_Position(v3 Offset)
 
 
 inline bool
+operator==(v2 P1, v2 P2)
+{
+  bool Result = ( P1.x == P2.x && P1.y == P2.y);
+  return Result;
+}
+
+inline bool
+operator!=(v2 P1, v2 P2)
+{
+  bool Result = !(P1 == P2);
+  return Result;
+}
+inline bool
 operator==(v3 P1, v3 P2)
 {
   bool Result;
@@ -255,6 +268,7 @@ operator==(v3 P1, v3 P2)
 
   return Result;
 }
+
 inline bool
 operator!=(v3 P1, v3 P2)
 {

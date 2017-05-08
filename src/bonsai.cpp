@@ -637,9 +637,8 @@ UpdateDebugCamera(platform *Plat, World *world, v3 TargetDelta, Camera_Object *C
 }
 
 void
-UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera)
+UpdateCameraP(platform *Plat, World *world, Entity *Player, Camera_Object *Camera)
 {
-
 #if DEBUG_CAMERA_FOCUS_ORIGIN
   canonical_position NewTarget = Canonical_Position( V3(0,0,0), World_Position(0,0,0) );
 #else
@@ -651,19 +650,20 @@ UpdateCameraP( World *world, Entity *Player, Camera_Object *Camera)
   v3 TargetDelta = GetRenderP(world, NewTarget, Camera) - GetRenderP(world, Camera->Target, Camera);
 
   float FocalLength = CAMERA_FOCAL_LENGTH;
-  float mouseSpeed = 0.20f;
+  float mouseSpeed = 1.00f;
 
-  double X = 1024/2;
-  double Y = 768/2;
+  float dX = 0;
+  float dY = 0;
 
-  // TODO(Jesse): Re-enable this!
-#if 0
-  glfwGetCursorPos(window, &X, &Y);
-  glfwSetCursorPos(window, 1024/2, 768/2);
-#endif
+  if (Plat->Input.LMB)
+  {
+    v2 MouseP = Plat->GetMouseP();
 
-  float dX = mouseSpeed * float(1024/2 - X );
-  float dY = mouseSpeed * float( 768/2 - Y );
+    Plat->SetMouseP(Plat->MouseClickP);
+
+    dX = mouseSpeed * float(Plat->MouseClickP.x - MouseP.x );
+    dY = mouseSpeed * float(Plat->MouseClickP.y - MouseP.y );
+  }
 
   Camera->Right = Normalize(Cross(Camera->Front, WORLD_Y));
   Camera->Up = Normalize(Cross(Camera->Front, Camera->Right));

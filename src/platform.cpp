@@ -159,6 +159,10 @@ PlatformInit(platform *Plat, memory_arena *Memory)
   Plat->PushWorkQueueEntry = PushWorkQueueEntry;
   Plat->PushStruct = PushStruct;
   Plat->PushStructChecked_ = PushStructChecked_;
+  Plat->GetMouseP = GetMouseP;
+  Plat->SetMouseP = SetMouseP;
+
+  Plat->MouseClickP = InvalidMouseP;
 
   // Initialized from globals
   Plat->WindowHeight = SCR_HEIGHT;
