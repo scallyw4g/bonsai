@@ -251,8 +251,12 @@ GameUpdateAndRender ( platform *Plat, game_state *GameState )
     {
       if ( (chunk->WorldP >= Min && chunk->WorldP < Max) )
       {
-        DrawWorldChunk( Plat, world, chunk, Camera, RG, SG);
+        // DrawWorldChunk( Plat, world, chunk, Camera, RG, SG);
+        //
+        DrawChunkEdges( world, chunk );
+
         chunk = chunk->Next;
+
       }
       else
       {

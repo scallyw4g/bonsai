@@ -1259,7 +1259,7 @@ BufferChunkMesh(
 }
 
 line
-FindIntersectingLine(world_chunk *Chunk, voxel_position OffsetVector, int FirstFilledIndex)
+FindIntersectingLine(world *world, world_chunk *Chunk, voxel_position OffsetVector, int FirstFilledIndex)
 {
   voxel_position MinP = GetVoxelP(Chunk->Data->BoundaryVoxels[FirstFilledIndex]);
   voxel_position MaxP = GetVoxelP(Chunk->Data->BoundaryVoxels[FirstFilledIndex]);
@@ -1292,6 +1292,7 @@ FindIntersectingLine(world_chunk *Chunk, voxel_position OffsetVector, int FirstF
 
   }
 
+  voxel_position Offset = GetRenderP( world, chunk->P );
   line Result(MinP, MaxP);
 
   return Result;
@@ -1336,6 +1337,19 @@ BuildBoundaryVoxels( World *world, world_chunk *WorldChunk)
 
   SetupAndBuildExteriorBoundary(world, WorldChunk, Voxel_Position( 0, 0, 1));
   SetupAndBuildExteriorBoundary(world, WorldChunk, Voxel_Position( 0, 0,-1));
+
+  return;
+}
+
+void
+DrawChunkEdges( World *world, world_chunk *Chunk )
+{
+  for (int EdgeIndex = 0;
+      EdgeIndex < Chunk->EdgeCount;
+      ++EdgeIndex )
+  {
+    DEBUG_DrawLine(world, Chunk->Edges[EdgeIndex], 0, 1.0f );
+  }
 
   return;
 }
