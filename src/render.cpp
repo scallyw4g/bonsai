@@ -1312,13 +1312,13 @@ SetupAndBuildExteriorBoundary(game_state *GameState, world_chunk *Chunk, voxel_p
 {
   if ( IsSet(Chunk->Data->flags, Flag ) )
   {
-
     world_chunk *Neighbot = GetWorldChunk( GameState->world, Chunk->WorldP + OffsetVector );
+
     if ( Neighbot && IsSet( Neighbot->Data->flags, Chunk_Initialized) )
     {
 
       int FirstExteriorIndex = BuildExteriorBoundaryVoxels( GameState->world, Chunk, Neighbot, OffsetVector );
-      Chunk->Data->flags = UnSetFlag( Chunk->Data->flags, Chunk_RebuildExteriorTop );
+      Chunk->Data->flags = UnSetFlag( Chunk->Data->flags, Flag );
 
       if (FirstExteriorIndex != -1)
       {
@@ -1382,7 +1382,7 @@ DrawWorldChunk(
     if (IsSet(WorldChunk->Data->flags, Chunk_Initialized) )
     {
       BuildBoundaryVoxels( GameState, WorldChunk);
-      BufferChunkMesh( GameState->Plat, GameState->world, WorldChunk->Data, WorldChunk->WorldP, RG, SG, GameState->Camera);
+      /* BufferChunkMesh( GameState->Plat, GameState->world, WorldChunk->Data, WorldChunk->WorldP, RG, SG, GameState->Camera); */
     }
   }
 
