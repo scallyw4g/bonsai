@@ -748,7 +748,7 @@ AllocateWorld( game_state *GameState, world_position Midpoint)
   world->WorldStorage.Next = 0;
 
   world->WorldStorage.Arena = PUSH_STRUCT_CHECKED(memory_arena, Plat->Memory, 1);
-  AllocateAndInitializeArena(world->WorldStorage.Arena, Gigabytes(12));
+  AllocateAndInitializeArena(world->WorldStorage.Arena, WORLD_STORAGE_SIZE);
 
   world->ChunkHash = PUSH_STRUCT_CHECKED(world_chunk*, Plat->Memory, WORLD_HASH_SIZE );
   world->FreeChunks = PUSH_STRUCT_CHECKED(world_chunk*, Plat->Memory, FREELIST_SIZE );

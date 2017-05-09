@@ -309,9 +309,9 @@ WindowMessageCallback(
 
     case WM_MOUSEMOVE:
     {
-      /* s32 xPos = GET_X_LPARAM(lParam); */
-      /* s32 yPos = GET_Y_LPARAM(lParam); */
-      /* Info(" X: %d, Y: %d", xPos, yPos); */
+      platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
+      Plat->MouseP.x = GET_X_LPARAM(lParam);
+      Plat->MouseP.y = GET_Y_LPARAM(lParam);
 
     } return 0;
 
