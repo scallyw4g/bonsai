@@ -1308,7 +1308,7 @@ FindIntersectingLine(game_state *GameState, world_chunk *Chunk, voxel_position O
 }
 
 inline void
-SetupAndBuildExteriorBoundary(game_state *GameState, world_chunk *Chunk, voxel_position OffsetVector, ChunkFlags Flag)
+SetupAndBuildExteriorBoundary(game_state *GameState, world_chunk *Chunk, voxel_position OffsetVector, chunk_flag Flag)
 {
   if ( IsSet(Chunk->Data->flags, Flag ) )
   {

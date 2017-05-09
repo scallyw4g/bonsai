@@ -19,7 +19,7 @@
 
 #define InvalidDefaultCase default: {Assert(false);} break
 
-enum ChunkFlags
+enum chunk_flag
 {
   Chunk_Uninitialized           = 0 << 0,
   Chunk_Initialized             = 1 << 1,
@@ -36,7 +36,7 @@ enum ChunkFlags
   Chunk_Collected               = 1 << 11,
 };
 
-enum VoxelFlags
+enum voxel_flag
 {
   Voxel_Filled     = 1 << (FINAL_COLOR_BIT + 0),
 
