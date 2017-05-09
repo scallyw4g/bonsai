@@ -12,8 +12,9 @@
 #include <colors.h>
 
 #define BufferLocalFace \
-  BufferFace( \
+  BufferVerts( \
       world, \
+      6, \
       localVertexData, \
       sizeof(localVertexData), \
       localNormalData, \
@@ -412,8 +413,10 @@ FlushRenderBuffers(
 }
 
 inline void
-BufferFace (
+BufferVerts(
     World *world,
+
+    int NumVerts,
 
     float* VertsPositions,
     int sizeofVertPositions,
@@ -447,8 +450,7 @@ BufferFace (
   memcpy( &world->NormalData.Data[world->VertexCount*3], Normals, sizeofNormals );
   memcpy( &world->ColorData.Data[world->VertexCount*3],  VertColors, sizeofNormals );
 
-  tris += 2;
-  world->VertexCount += 6;
+  world->VertexCount += NumVerts;
 
   return;
 }
@@ -750,7 +752,8 @@ DEBUG_DrawLine(World *world, v3 P1, v3 P2, int ColorIndex, float Thickness )
     };
 
 
-    BufferFace(world,
+    BufferVerts(world,
+        6,
         localVertexData,
         sizeof(localVertexData),
         localNormalData,
@@ -777,7 +780,8 @@ DEBUG_DrawLine(World *world, v3 P1, v3 P2, int ColorIndex, float Thickness )
     };
 
 
-    BufferFace(world,
+    BufferVerts(world,
+        6,
         localVertexData,
         sizeof(localVertexData),
         localNormalData,
@@ -799,7 +803,8 @@ DEBUG_DrawLine(World *world, v3 P1, v3 P2, int ColorIndex, float Thickness )
       P1.x, P1.y, P1.z,
     };
 
-    BufferFace(world,
+    BufferVerts(world,
+        6
         localVertexData,
         sizeof(localVertexData),
         localNormalData,
@@ -1386,7 +1391,7 @@ BufferTriangle(World *world, v3 *Verts)
   float FaceColors[32];
   GetColorData( 42, FaceColors);
 
-  BufferFace ( world,
+  BufferVerts ( world, 3,
 
     VertBuffer,
     sizeof(VertBuffer),
@@ -1406,23 +1411,19 @@ Draw0thLOD(game_state *GameState, world_chunk *Chunk)
 
   int NumPolys = Chunk->EdgeCount / 2;
 
-  if (NumPolys == 1)
+  // if (Chunk->EdgeCount == 3)
   {
-    v3 Verticies[3];
+    v3 Verticies[3] = {};
 
     v3 Offset = GetRenderP(GameState->world, Chunk->WorldP, GameState->Camera);
 
-    for ( int PolyIndex = 0;
-        PolyIndex < NumPolys;
-        ++PolyIndex)
-    {
-      Verticies[0] = Chunk->Edges[PolyIndex*2].MinP + Offset;
-      Verticies[1] = Chunk->Edges[PolyIndex*2].MaxP + Offset;
+    Verticies[0] = Chunk->Edges[0].MinP + Offset;
+    Verticies[1] = Chunk->Edges[1].MinP + Offset;
 
-      Verticies[2] = Chunk->Edges[PolyIndex*2 + 1].MaxP + Offset;
+    Verticies[2] = Chunk->Edges[2].MinP + Offset;
 
-      BufferTriangle(GameState->world, &Verticies[0]);
-    }
+    BufferTriangle(GameState->world, &Verticies[0]);
+    memset(&Verticies[0], 0, ArrayCount(Verticies)*sizeof(v3));
   }
 
   return;
