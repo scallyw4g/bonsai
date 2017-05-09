@@ -765,7 +765,7 @@ AllocateWorld( game_state *GameState, world_position Midpoint)
   world->Gravity = WORLD_GRAVITY;
 
   {
-    int BufferVertices = (VOLUME_VISIBLE_REGION * VERT_PER_VOXEL);
+    int BufferVertices = 10*(VOLUME_VISIBLE_REGION * VERT_PER_VOXEL);
 
     world->VertexData.Data = PUSH_STRUCT_CHECKED(GLfloat, Plat->Memory, BufferVertices );
     world->ColorData.Data = PUSH_STRUCT_CHECKED(GLfloat,  Plat->Memory, BufferVertices );

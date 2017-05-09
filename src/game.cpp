@@ -217,10 +217,9 @@ GameUpdateAndRender ( platform *Plat, game_state *GameState )
   world_position Min = (Player->P.WorldP - (world->VisibleRegion / 2));
   world_position Max = (Player->P.WorldP + (world->VisibleRegion / 2));
 
-  DEBUG_DrawAABB( world, V3(Min*CHUNK_DIMENSION), V3(Max*CHUNK_DIMENSION), Quaternion(0,0,0,1), GREEN, 0.25);
-
-  DEBUG_DrawAABB( world, LastFreeSlice,    Quaternion(0,0,0,1), RED,   0.1f);
-  DEBUG_DrawAABB( world, LastQueuedSlice,  Quaternion(0,0,0,1), TEAL,  0.1f);
+  /* DEBUG_DrawAABB( world, V3(Min*CHUNK_DIMENSION), V3(Max*CHUNK_DIMENSION), Quaternion(0,0,0,1), GREEN, 0.25); */
+  /* DEBUG_DrawAABB( world, LastFreeSlice,    Quaternion(0,0,0,1), RED,   0.1f); */
+  /* DEBUG_DrawAABB( world, LastQueuedSlice,  Quaternion(0,0,0,1), TEAL,  0.1f); */
 
 #if DEBUG_HIGHLIGHT_VOID_CHUNKS
   for (int z = 0; z < world->VisibleRegion.z; ++z)
@@ -250,10 +249,13 @@ GameUpdateAndRender ( platform *Plat, game_state *GameState )
     {
       if ( (chunk->WorldP >= Min && chunk->WorldP < Max) )
       {
-        DrawWorldChunk( GameState, chunk, RG, SG);
+
+        if (chunk->WorldP == World_Position(0,-1,0))
+        {
+          DrawWorldChunk( GameState, chunk, RG, SG);
+        }
 
         chunk = chunk->Next;
-
       }
       else
       {

@@ -1082,12 +1082,13 @@ BuildExteriorBoundaryVoxels( World *world, world_chunk *chunk, world_chunk *Neig
           if (NeighborVector.z < 0)
             Voxel.flags = SetFlag(Voxel.flags, Voxel_BackFace);
 
-          voxel_position P = GetVoxelP(Voxel);
+		  if (FirstFilledIndex == -1)
+			  FirstFilledIndex = chunk->Data->BoundaryVoxelCount - 1;
+
+		  voxel_position P = GetVoxelP(Voxel);
           Assert( P == LocalVoxelP);
           PushBoundaryVoxel( chunk->Data, Voxel );
 
-          if (FirstFilledIndex == -1)
-            FirstFilledIndex = chunk->Data->BoundaryVoxelCount - 1;
         }
       }
     }
@@ -1275,7 +1276,11 @@ BufferChunkMesh(
 }
 
 line
-FindIntersectingLine(game_state *GameState, world_chunk *Chunk, voxel_position OffsetVector, int FirstFilledIndex)
+FindIntersectingLine(
+  game_state *GameState,
+  world_chunk *Chunk,
+  voxel_position OffsetVector,
+  int FirstFilledIndex)
 {
   voxel_position MinP = GetVoxelP(Chunk->Data->BoundaryVoxels[FirstFilledIndex]);
   voxel_position MaxP = GetVoxelP(Chunk->Data->BoundaryVoxels[FirstFilledIndex]);
@@ -1295,7 +1300,7 @@ FindIntersectingLine(game_state *GameState, world_chunk *Chunk, voxel_position O
     // Max
     if ( OriginToP > CurrentMaxLen )
     {
-      MaxP = P;
+      MaxP = P + 1;
       CurrentMaxLen = OriginToP;
     }
 
@@ -1314,7 +1319,11 @@ FindIntersectingLine(game_state *GameState, world_chunk *Chunk, voxel_position O
 }
 
 inline void
-SetupAndBuildExteriorBoundary(game_state *GameState, world_chunk *Chunk, voxel_position OffsetVector, chunk_flag Flag)
+SetupAndBuildExteriorBoundary(
+  game_state *GameState,
+  world_chunk *Chunk,
+  voxel_position OffsetVector,
+  chunk_flag Flag)
 {
   if ( IsSet(Chunk->Data->flags, Flag ) )
   {
@@ -1322,9 +1331,9 @@ SetupAndBuildExteriorBoundary(game_state *GameState, world_chunk *Chunk, voxel_p
 
     if ( Neighbor && IsSet( Neighbor->Data->flags, Chunk_Initialized) )
     {
+      Chunk->Data->flags = UnSetFlag( Chunk->Data->flags, Flag );
 
       int FirstExteriorIndex = BuildExteriorBoundaryVoxels( GameState->world, Chunk, Neighbor, OffsetVector );
-      Chunk->Data->flags = UnSetFlag( Chunk->Data->flags, Flag );
 
       if (FirstExteriorIndex != -1)
       {
@@ -1341,7 +1350,7 @@ void
 BuildBoundaryVoxels( game_state *GameState, world_chunk *WorldChunk)
 {
 
-  if (WorldChunk->WorldP == World_Position(-5, 6, -3))
+  if (WorldChunk->WorldP == World_Position(0, -1, 0))
   {
       int foo = 5;
       ++foo;
@@ -1376,7 +1385,7 @@ DrawChunkEdges( game_state *GameState, world_chunk *Chunk )
       EdgeIndex < Chunk->EdgeCount;
       ++EdgeIndex )
   {
-    DEBUG_DrawLine(GameState->world, Chunk->Edges[EdgeIndex] + Offset, 0, 0.5f );
+    DEBUG_DrawLine(GameState->world, Chunk->Edges[EdgeIndex] + Offset, 0, 0.3f );
   }
 
   return;
@@ -1407,52 +1416,61 @@ BufferTriangle(World *world, v3 *Verts)
 void
 Draw0thLOD(game_state *GameState, world_chunk *Chunk)
 {
-  if(Chunk->EdgeCount < 3) return; // We need at least 3 edges to make a triangle!
+  s32 EdgeMask = Chunk->EdgeCount % 3;
+  v3 Verticies[3] = {};
+  v3 Offset = GetRenderP(GameState->world, Chunk->WorldP, GameState->Camera);
 
-  int NumPolys = Chunk->EdgeCount / 2;
-
-  // if (Chunk->EdgeCount == 3)
+  // We have a quad
+  if (Chunk->EdgeCount == 4)
   {
-    v3 Verticies[3] = {};
-
-    v3 Offset = GetRenderP(GameState->world, Chunk->WorldP, GameState->Camera);
+    // Assert(Chunk->EdgeCount == 4);
 
     Verticies[0] = Chunk->Edges[0].MinP + Offset;
     Verticies[1] = Chunk->Edges[1].MinP + Offset;
+    Verticies[2] = Chunk->Edges[1].MaxP + Offset;
+    BufferTriangle(GameState->world, &Verticies[0]);
 
+    Verticies[0] = Chunk->Edges[2].MinP + Offset;
+    Verticies[1] = Chunk->Edges[3].MinP + Offset;
+    Verticies[2] = Chunk->Edges[3].MaxP + Offset;
+    BufferTriangle(GameState->world, &Verticies[0]);
+  }
+
+  // We've got a single triangle
+  if (Chunk->EdgeCount == 3)
+  {
+    // Assert(Chunk->EdgeCount == 3 || Chunk->EdgeCount == 0);
+
+    Verticies[0] = Chunk->Edges[0].MinP + Offset;
+    Verticies[1] = Chunk->Edges[1].MinP + Offset;
     Verticies[2] = Chunk->Edges[2].MinP + Offset;
 
     BufferTriangle(GameState->world, &Verticies[0]);
-    memset(&Verticies[0], 0, ArrayCount(Verticies)*sizeof(v3));
   }
 
   return;
 }
 
 void
-DrawWorldChunk(
-    game_state *GameState,
-    world_chunk *WorldChunk,
-    RenderGroup *RG,
-    ShadowRenderGroup *SG
-  )
+DrawWorldChunk( game_state *GameState,
+                world_chunk *WorldChunk,
+                RenderGroup *RG,
+                ShadowRenderGroup *SG)
 {
   if (IsInFrustum(GameState->world, GameState->Camera, WorldChunk) )
   {
     if (IsSet(WorldChunk->Data->flags, Chunk_Initialized) )
     {
-      if (WorldChunk->WorldP == World_Position(-4, 4, -2))
-      {
-        int foo = 5;
-        ++foo;
-      }
-
       BuildBoundaryVoxels( GameState, WorldChunk);
 
-      DrawChunkEdges( GameState, WorldChunk );
-      Draw0thLOD( GameState, WorldChunk );
+      if (WorldChunk->Data->BoundaryVoxelCount > 0)
+      {
+        DrawChunkEdges( GameState, WorldChunk );
+        Draw0thLOD( GameState, WorldChunk );
 
-      /* BufferChunkMesh( GameState->Plat, GameState->world, WorldChunk->Data, WorldChunk->WorldP, RG, SG, GameState->Camera); */
+        BufferChunkMesh( GameState->Plat, GameState->world, WorldChunk->Data, WorldChunk->WorldP, RG, SG, GameState->Camera);
+        DEBUG_DrawChunkAABB( GameState->world, WorldChunk, GameState->Camera, Quaternion(), 0);
+      }
     }
   }
 
