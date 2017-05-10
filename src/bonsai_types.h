@@ -555,18 +555,18 @@ struct line
   }
 };
 
-struct AABB
+struct aabb
 {
   v3 MinCorner;
   v3 MaxCorner;
 
-  AABB(v3 Min, v3 Max)
+  aabb(v3 Min, v3 Max)
   {
     MinCorner = Min;
     MaxCorner = Max;
   }
 
-  AABB(world_position Min, world_position Max)
+  aabb(world_position Min, world_position Max)
   {
     MinCorner = V3(Min);
     MaxCorner = V3(Max);

@@ -101,8 +101,8 @@ DEBUG_GLOBAL s32 VoxelsIndexed = 0;
 
 DEBUG_GLOBAL r32 GlobalLightTheta = 0;
 
-DEBUG_GLOBAL AABB LastFreeSlice(V3(0,0,0), V3(0,0,0));
-DEBUG_GLOBAL AABB LastQueuedSlice(V3(0,0,0), V3(0,0,0));
+DEBUG_GLOBAL aabb LastFreeSlice(V3(0,0,0), V3(0,0,0));
+DEBUG_GLOBAL aabb LastQueuedSlice(V3(0,0,0), V3(0,0,0));
 
 DEBUG_GLOBAL bool UseDebugCamera = False;
 

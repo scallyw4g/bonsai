@@ -431,7 +431,7 @@ QueueChunksForInit(game_state *GameState, world_position WorldDisp, Entity *Play
   world_position SliceMin = PlayerP + (VRHalfDim * Iter) - (VRHalfDim * InvAbsIter) - ClampPositive(WorldDisp);
   world_position SliceMax = PlayerP + (VRHalfDim * Iter) + (VRHalfDim * InvAbsIter) - ClampPositive(Iter) - InvAbsIter - ClampNegative(WorldDisp) + ClampNegative(Iter);
 
-  LastQueuedSlice = AABB(SliceMin*CHUNK_DIMENSION - 1, (SliceMax*CHUNK_DIMENSION + CHUNK_DIMENSION + 1));
+  LastQueuedSlice = aabb(SliceMin*CHUNK_DIMENSION - 1, (SliceMax*CHUNK_DIMENSION + CHUNK_DIMENSION + 1));
 
   for (int z = SliceMin.z; z <= SliceMax.z; ++ z)
   {

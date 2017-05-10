@@ -898,7 +898,7 @@ DEBUG_DrawAABB( World *world, v3 MinP, v3 MaxP, Quaternion Rotation, int ColorIn
 }
 
 void
-DEBUG_DrawAABB( World *world, AABB Rect, Quaternion Rotation, int ColorIndex, float Thickness = 0.05f )
+DEBUG_DrawAABB( World *world, aabb Rect, Quaternion Rotation, int ColorIndex, float Thickness = 0.05f )
 {
   DEBUG_DrawAABB( world, Rect.MinCorner, Rect.MaxCorner, Rotation, ColorIndex, Thickness );
   return;
@@ -1030,11 +1030,9 @@ PushBoundaryVoxel( chunk_data *chunk, voxel Voxel )
   chunk->BoundaryVoxelCount++;
 }
 
-s32
+void
 BuildExteriorBoundaryVoxels( World *world, world_chunk *chunk, world_chunk *Neighbor, voxel_position NeighborVector )
 {
-  s32 FirstFilledIndex = -1;
-
   voxel_position nvSq = (NeighborVector*NeighborVector);
 
   voxel_position AbsInvNeighborVector = ((nvSq-1)*(nvSq-1));
@@ -1082,10 +1080,7 @@ BuildExteriorBoundaryVoxels( World *world, world_chunk *chunk, world_chunk *Neig
           if (NeighborVector.z < 0)
             Voxel.flags = SetFlag(Voxel.flags, Voxel_BackFace);
 
-		  if (FirstFilledIndex == -1)
-			  FirstFilledIndex = chunk->Data->BoundaryVoxelCount - 1;
-
-		  voxel_position P = GetVoxelP(Voxel);
+          voxel_position P = GetVoxelP(Voxel);
           Assert( P == LocalVoxelP);
           PushBoundaryVoxel( chunk->Data, Voxel );
 
@@ -1095,7 +1090,7 @@ BuildExteriorBoundaryVoxels( World *world, world_chunk *chunk, world_chunk *Neig
   }
 
 
-  return FirstFilledIndex;
+  return;
 }
 
 bool
@@ -1332,18 +1327,16 @@ SetupAndBuildExteriorBoundary(
     if ( Neighbor && IsSet( Neighbor->Data->flags, Chunk_Initialized) )
     {
       Chunk->Data->flags = UnSetFlag( Chunk->Data->flags, Flag );
-
-      int FirstExteriorIndex = BuildExteriorBoundaryVoxels( GameState->world, Chunk, Neighbor, OffsetVector );
-
-      if (FirstExteriorIndex != -1)
-      {
-        Assert(Chunk->EdgeCount < MAX_CHUNK_EDGES);
-        Chunk->Edges[Chunk->EdgeCount++] = FindIntersectingLine(GameState, Chunk, OffsetVector, FirstExteriorIndex);
-      }
+      BuildExteriorBoundaryVoxels( GameState->world, Chunk, Neighbor, OffsetVector );
     }
-
   }
+}
 
+aabb
+FindBoundaryVoxelsAABB(chunk_data *Chunk)
+{
+
+  return aabb( V3(0,0,0), V3(0,0,0) );
 }
 
 void
@@ -1358,6 +1351,7 @@ BuildBoundaryVoxels( game_state *GameState, world_chunk *WorldChunk)
   }
 
   chunk_data* chunk = WorldChunk->Data;
+
   if ( IsSet(chunk->flags, Chunk_RebuildInteriorBoundary) )
   {
     chunk->BoundaryVoxelCount = 0;
@@ -1372,6 +1366,20 @@ BuildBoundaryVoxels( game_state *GameState, world_chunk *WorldChunk)
 
   SetupAndBuildExteriorBoundary(GameState, WorldChunk, Voxel_Position( 0, 0, 1), Chunk_RebuildExteriorFront);
   SetupAndBuildExteriorBoundary(GameState, WorldChunk, Voxel_Position( 0, 0,-1), Chunk_RebuildExteriorBack);
+
+  if ( NotSet(chunk->flags,
+        Chunk_RebuildInteriorBoundary |
+        Chunk_RebuildExteriorTop |
+        Chunk_RebuildExteriorBot |
+        Chunk_RebuildExteriorLeft |
+        Chunk_RebuildExteriorRight |
+        Chunk_RebuildExteriorFront |
+        Chunk_RebuildExteriorBack)
+     )
+  {
+    aabb BoundaryVoxelsAABB = FindBoundaryVoxelsAABB(WorldChunk->Data);
+  }
+
 
   return;
 }

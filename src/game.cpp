@@ -159,7 +159,7 @@ GameUpdateAndRender ( platform *Plat, game_state *GameState )
 
   if (UseDebugCamera)
   {
-    AABB CameraLocation(GetRenderP(world, Camera->P, Camera) - 2, GetRenderP(world, Camera->P, Camera) + 2);
+    aabb CameraLocation(GetRenderP(world, Camera->P, Camera) - 2, GetRenderP(world, Camera->P, Camera) + 2);
     DEBUG_DrawAABB(world, CameraLocation, Quaternion(0,0,0,1), PINK, 0.5f);
   }
 
