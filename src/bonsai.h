@@ -191,7 +191,7 @@ struct World
 
 
 inline bool
-IsFilledInChunk( World *world, world_chunk *chunk, voxel_position VoxelP );
+IsFilledInChunk( chunk_data *Chunk, voxel_position VoxelP );
 
 inline int
 UnSetFlag( int Flags, int Flag )

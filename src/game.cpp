@@ -250,7 +250,7 @@ GameUpdateAndRender ( platform *Plat, game_state *GameState )
       if ( (chunk->WorldP >= Min && chunk->WorldP < Max) )
       {
 
-        if (chunk->WorldP == World_Position(0,-1,0))
+        /* if (chunk->WorldP == World_Position(0,-1,0)) */
         {
           DrawWorldChunk( GameState, chunk, RG, SG);
         }

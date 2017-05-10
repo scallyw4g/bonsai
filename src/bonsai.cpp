@@ -132,18 +132,19 @@ InitializeVoxels(void *Input)
 }
 
 inline bool
-IsFilledInChunk( World *world, world_chunk *chunk, voxel_position VoxelP )
+IsFilledInChunk( chunk_data *Chunk, voxel_position VoxelP )
 {
   bool isFilled = true;
 
-  if (chunk && IsSet(chunk->Data->flags, Chunk_Initialized) )
+  if (Chunk && IsSet(Chunk->flags, Chunk_Initialized) )
   {
-    int i = GetIndex(VoxelP, chunk->Data);
-    Assert(i > -1);
-    Assert(i < Volume(chunk->Data->Dim));
-    Assert(VoxelP == GetVoxelP(chunk->Data->Voxels[i]));
+    int i = GetIndex(VoxelP, Chunk);
 
-    isFilled = IsSet(chunk->Data->Voxels[i].flags, Voxel_Filled);
+    Assert(i > -1);
+    Assert(i < Volume(Chunk->Dim));
+    Assert(VoxelP == GetVoxelP(Chunk->Voxels[i]));
+
+    isFilled = IsSet(Chunk->Voxels[i].flags, Voxel_Filled);
   }
 
   return isFilled;
@@ -163,7 +164,7 @@ IsFilledInWorld( World *world, world_chunk *chunk, canonical_position VoxelP )
       localChunk = GetWorldChunk(world, VoxelP.WorldP);
     }
 
-    isFilled = IsFilledInChunk( world, localChunk, Voxel_Position(VoxelP.Offset) );
+    isFilled = IsFilledInChunk(localChunk->Data, Voxel_Position(VoxelP.Offset) );
   }
 
   return isFilled;
@@ -265,7 +266,7 @@ GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
         }
 #endif
 
-        if ( IsFilledInChunk(world, chunk, Voxel_Position(LoopTestP.Offset)) )
+        if ( IsFilledInChunk(chunk->Data, Voxel_Position(LoopTestP.Offset)) )
         {
           Collision.CP = LoopTestP;
           Collision.didCollide = true;
