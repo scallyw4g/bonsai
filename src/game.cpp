@@ -129,7 +129,7 @@ GameInit( platform *Plat )
 }
 
 EXPORT bool
-GameUpdateAndRender ( platform *Plat, game_state *GameState )
+GameUpdateAndRender( platform *Plat, game_state *GameState )
 {
   GL_Global = &Plat->GL;
 
@@ -143,7 +143,7 @@ GameUpdateAndRender ( platform *Plat, game_state *GameState )
 
   Camera_Object *CurrentCamera;
 
-#if DEBUG_DRAW_AXIES
+#if DEBUG_DRAW_WORLD_AXIES
   DEBUG_DrawLine(world, V3(0,0,0), V3(10000, 0, 0), RED, 0.5f );
   DEBUG_DrawLine(world, V3(0,0,0), V3(0, 10000, 0), GREEN, 0.5f );
   DEBUG_DrawLine(world, V3(0,0,0), V3(0, 0, 10000), TEAL, 0.5f );
@@ -250,7 +250,7 @@ GameUpdateAndRender ( platform *Plat, game_state *GameState )
       if ( (chunk->WorldP >= Min && chunk->WorldP < Max) )
       {
 
-        /* if (chunk->WorldP == World_Position(0,-1,0)) */
+        /* if (chunk->WorldP == World_Position(-1,0,2)) */
         {
           DrawWorldChunk( GameState, chunk, RG, SG);
         }

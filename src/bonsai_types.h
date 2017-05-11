@@ -1052,6 +1052,18 @@ operator-(canonical_position P1, canonical_position P2)
   return Result;
 }
 
+inline v3
+operator^(v3 P1, v3 P2)
+{
+  v3 Result;
+
+  Result.x = (r32)((s32)P1.x ^ (s32)P2.x);
+  Result.y = (r32)((s32)P1.y ^ (s32)P2.y);
+  Result.z = (r32)((s32)P1.z ^ (s32)P2.z);
+
+  return Result;
+}
+
 inline voxel_position
 operator^(voxel_position P1, voxel_position P2)
 {

@@ -407,15 +407,6 @@ GetFreeChunk(platform *Plat, World *world, world_position P)
   return Result;
 }
 
-world_position
-GetSign(world_position P)
-{
-  world_position Result =
-    World_Position( GetSign(P.x), GetSign(P.y), GetSign(P.z));
-
-  return Result;
-}
-
 void
 QueueChunksForInit(game_state *GameState, world_position WorldDisp, Entity *Player)
 {

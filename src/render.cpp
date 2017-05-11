@@ -1370,32 +1370,63 @@ FindBoundaryVoxelsAABB(chunk_data *Chunk, chunk_dimension Dim)
   }
 
 
-  return aabb( MinP, MaxP + V3(1,1,1) );
+  return aabb( MinP, MaxP );
+}
+
+inline v3
+GetSign(v3 P)
+{
+  v3 Result =
+    V3( GetSign(P.x), GetSign(P.y), GetSign(P.z));
+
+  return Result;
+}
+
+inline voxel_position
+GetSign(voxel_position P)
+{
+  voxel_position Result =
+    Voxel_Position( GetSign(P.x), GetSign(P.y), GetSign(P.z));
+
+  return Result;
 }
 
 voxel_position
-RayTraceCollision(chunk_data *Chunk, chunk_dimension Dim, v3 StartingP, v3 Ray)
+RayTraceCollision(chunk_data *Chunk, chunk_dimension Dim, v3 StartingP, v3 Ray, v3 CenteringRay)
 {
   Assert(LengthSq(Ray) == 1);
   v3 Result = V3(-1,-1,-1);
 
-  v3 CurrentP = StartingP - 1;
+  // Clamp magnitude of this ray to 1 in each axis
+  CenteringRay = GetSign(CenteringRay);
+
+  v3 CurrentP = StartingP;
   while ( IsInsideChunk(Dim, CurrentP) )
   {
-    if ( IsFilledInChunk(Chunk, Voxel_Position(CurrentP)) )
+    v3 CachedP = CurrentP;
+
+    while ( IsInsideChunk(Dim, CurrentP) )
     {
-      Result = CurrentP;
-      break;
+      if ( IsFilledInChunk(Chunk, Voxel_Position(CurrentP)) )
+      {
+        Result = CurrentP;
+        goto finished;
+      }
+
+      CurrentP += Ray;
     }
 
-    CurrentP += Ray;
+    CurrentP = CachedP;
+    CurrentP += CenteringRay;
   }
+
+  finished:
 
   return Voxel_Position(Result);
 }
 
 void
-BufferTriangle(World *world, v3 *Verts)
+BufferTriangle(World *world, v3 *Verts, s32 ColorIndex)
 {
   r32 VertBuffer[9];
 
@@ -1403,7 +1434,7 @@ BufferTriangle(World *world, v3 *Verts)
   memcpy( VertBuffer, Verts, 9 * sizeof(r32) );
 
   float FaceColors[32];
-  GetColorData( RED, FaceColors);
+  GetColorData( ColorIndex, FaceColors);
 
   BufferVerts ( world, 3,
 
@@ -1461,45 +1492,73 @@ BuildBoundaryVoxels( game_state *GameState, world_chunk *WorldChunk)
       aabb BoundaryVoxelsAABB = FindBoundaryVoxelsAABB(WorldChunk->Data, world->ChunkDim);
 
       v3 RenderOffset = GetRenderP( GameState->world, WorldChunk->WorldP, GameState->Camera);
-      /* DEBUG_DrawAABB( world, BoundaryVoxelsAABB + RenderOffset, Quaternion(), RED, 0.10f ); */
 
-      voxel_position MaxMax = RayTraceCollision( WorldChunk->Data, world->ChunkDim, BoundaryVoxelsAABB.MaxCorner, V3(0,-1,0) );
+
+
+      v3 MaxMaxStart = BoundaryVoxelsAABB.MaxCorner;
 
       v3 MaxMinStart = BoundaryVoxelsAABB.MaxCorner;
       MaxMinStart.x = BoundaryVoxelsAABB.MinCorner.x;
-      voxel_position MaxMin = RayTraceCollision( WorldChunk->Data, world->ChunkDim, MaxMinStart, V3(0,-1,0) );
 
       v3 MinMaxStart = BoundaryVoxelsAABB.MaxCorner;
       MinMaxStart.z = BoundaryVoxelsAABB.MinCorner.z;
-      voxel_position MinMax = RayTraceCollision( WorldChunk->Data, world->ChunkDim, MinMaxStart, V3(0,-1,0) );
 
       v3 MinMinStart = BoundaryVoxelsAABB.MinCorner;
       MinMinStart.y = BoundaryVoxelsAABB.MaxCorner.y;
-      voxel_position MinMin = RayTraceCollision( WorldChunk->Data, world->ChunkDim, MinMinStart, V3(0,-1,0) );
 
 
-      v3 VertMaxMax = V3(MaxMax + RenderOffset);
-      v3 VertMaxMin = V3(MaxMin + RenderOffset);
-      v3 VertMinMin = V3(MinMin + RenderOffset);
-      v3 VertMinMax = V3(MinMax + RenderOffset);
+      voxel_position MaxMax = RayTraceCollision( WorldChunk->Data,
+                                                 world->ChunkDim,
+                                                 MaxMaxStart,
+                                                 V3(0,-1,0),
+                                                 MinMinStart - MaxMaxStart );
 
-      DEBUG_DrawLine(world, VertMaxMax, VertMaxMin, BLUE, 0.1f);
-      DEBUG_DrawLine(world, VertMinMin, VertMinMax, RED, 0.1f);
+      voxel_position MaxMin = RayTraceCollision( WorldChunk->Data,
+                                                 world->ChunkDim,
+                                                 MaxMinStart,
+                                                 V3(0,-1,0),
+                                                 MinMaxStart - MaxMinStart );
 
-      DEBUG_DrawLine(world, VertMaxMax, VertMinMax, BLUE, 0.1f);
-      DEBUG_DrawLine(world, VertMinMin, VertMaxMin, RED, 0.1f);
+      voxel_position MinMax = RayTraceCollision( WorldChunk->Data,
+                                                 world->ChunkDim,
+                                                 MinMaxStart,
+                                                 V3(0,-1,0),
+                                                 MaxMinStart - MinMaxStart );
+
+      voxel_position MinMin = RayTraceCollision( WorldChunk->Data,
+                                                 world->ChunkDim,
+                                                 MinMinStart,
+                                                 V3(0,-1,0),
+                                                 MaxMaxStart - MinMinStart );
+
+
+      v3 VertMaxMax = V3(MaxMax + RenderOffset + GetSign(MaxMax) );
+      v3 VertMaxMin = V3(MaxMin + RenderOffset + GetSign(MaxMin) );
+      v3 VertMinMin = V3(MinMin + RenderOffset + GetSign(MinMin) );
+      v3 VertMinMax = V3(MinMax + RenderOffset + GetSign(MinMax) );
+
+      /* DEBUG_DrawLine(world, VertMaxMax, VertMaxMin, BLUE, 0.1f); */
+      /* DEBUG_DrawLine(world, VertMinMin, VertMinMax, RED,  0.1f); */
+
+      /* DEBUG_DrawLine(world, VertMaxMax, VertMinMax, BLUE, 0.1f); */
+      /* DEBUG_DrawLine(world, VertMinMin, VertMaxMin, RED,  0.1f); */
 
       v3 Verts[3];
 
       Verts[0] = VertMaxMax;
       Verts[1] = VertMaxMin;
       Verts[2] = VertMinMin;
-      BufferTriangle(world, &Verts[0]);
+      BufferTriangle(world, &Verts[0], RED);
 
-      Verts[0] = VertMaxMax;
-      Verts[1] = VertMinMin;
-      Verts[2] = VertMinMax;
-      BufferTriangle(world, &Verts[0]);
+      Verts[0] = VertMinMin;
+      Verts[1] = VertMinMax;
+      Verts[2] = VertMaxMax;
+      BufferTriangle(world, &Verts[0], BLUE);
+
+      // Draw Boundary voxels aabb
+      aabb RenderCorrectedAABB = BoundaryVoxelsAABB + RenderOffset;
+      RenderCorrectedAABB.MaxCorner += V3(1,1,1);
+      DEBUG_DrawAABB( world, RenderCorrectedAABB, Quaternion(), TEAL, 0.10f );
     }
   }
 
@@ -1537,12 +1596,12 @@ Draw0thLOD(game_state *GameState, world_chunk *Chunk)
     Verticies[0] = Chunk->Edges[0].MinP + Offset;
     Verticies[1] = Chunk->Edges[1].MinP + Offset;
     Verticies[2] = Chunk->Edges[1].MaxP + Offset;
-    BufferTriangle(GameState->world, &Verticies[0]);
+    BufferTriangle(GameState->world, &Verticies[0], 0);
 
     Verticies[0] = Chunk->Edges[2].MinP + Offset;
     Verticies[1] = Chunk->Edges[3].MinP + Offset;
     Verticies[2] = Chunk->Edges[3].MaxP + Offset;
-    BufferTriangle(GameState->world, &Verticies[0]);
+    BufferTriangle(GameState->world, &Verticies[0], 0);
   }
 
   // We've got a single triangle
@@ -1554,7 +1613,7 @@ Draw0thLOD(game_state *GameState, world_chunk *Chunk)
     Verticies[1] = Chunk->Edges[1].MinP + Offset;
     Verticies[2] = Chunk->Edges[2].MinP + Offset;
 
-    BufferTriangle(GameState->world, &Verticies[0]);
+    BufferTriangle(GameState->world, &Verticies[0], 0);
   }
 
   return;
@@ -1577,7 +1636,7 @@ DrawWorldChunk( game_state *GameState,
         DrawChunkEdges( GameState, WorldChunk );
         Draw0thLOD( GameState, WorldChunk );
 
-        BufferChunkMesh( GameState->Plat, GameState->world, WorldChunk->Data, WorldChunk->WorldP, RG, SG, GameState->Camera);
+        /* BufferChunkMesh( GameState->Plat, GameState->world, WorldChunk->Data, WorldChunk->WorldP, RG, SG, GameState->Camera); */
         /* DEBUG_DrawChunkAABB( GameState->world, WorldChunk, GameState->Camera, Quaternion(), 0); */
       }
     }

@@ -141,7 +141,7 @@ InitializeOpenGlExtensions(gl_extensions *Gl)
   AssertNoGlErrors;
 
   // TODO(Jesse): Turn me on!
-#if 0
+#if 1
   // Platform specific (wgl / glX)
   Gl->glSwapInterval = (PFNSWAPINTERVALPROC)bonsaiGlGetProcAddress("wglSwapIntervalEXT");
 
@@ -167,7 +167,7 @@ PlatformInit(platform *Plat, memory_arena *Memory)
   Plat->Memory = Memory;
 
   u32 LogicalCoreCount = GetLogicalCoreCount();
-  u32 ThreadCount = LogicalCoreCount -1; // -1 because we already have a main thread
+  u32 ThreadCount = LogicalCoreCount -1 + DEBUG_THREAD_COUNT_BIAS; // -1 because we already have a main thread
 
   Info("Detected %d Logical cores, creating %d threads", LogicalCoreCount, ThreadCount);
 
