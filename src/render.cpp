@@ -1477,6 +1477,30 @@ BuildBoundaryVoxels( game_state *GameState, world_chunk *WorldChunk)
   SetupAndBuildExteriorBoundary(world, WorldChunk, Voxel_Position( 0, 0, 1), Chunk_RebuildExteriorFront);
   SetupAndBuildExteriorBoundary(world, WorldChunk, Voxel_Position( 0, 0,-1), Chunk_RebuildExteriorBack);
 
+
+  return;
+}
+
+void
+DrawChunkEdges( game_state *GameState, world_chunk *Chunk )
+{
+  v3 Offset = GetRenderP( GameState->world, Chunk->WorldP, GameState->Camera);
+
+  for (int EdgeIndex = 0;
+      EdgeIndex < Chunk->EdgeCount;
+      ++EdgeIndex )
+  {
+    DEBUG_DrawLine(GameState->world, Chunk->Edges[EdgeIndex] + Offset, 0, 0.3f );
+  }
+
+  return;
+}
+
+void
+Draw0thLOD(game_state *GameState, world_chunk *WorldChunk)
+{
+
+  chunk_data *chunk = WorldChunk->Data;
   if ( NotSet(chunk->flags,
         Chunk_RebuildInteriorBoundary |
         Chunk_RebuildExteriorTop |
@@ -1489,9 +1513,13 @@ BuildBoundaryVoxels( game_state *GameState, world_chunk *WorldChunk)
   {
     if (WorldChunk->Data->BoundaryVoxelCount > 0)
     {
-      aabb BoundaryVoxelsAABB = FindBoundaryVoxelsAABB(WorldChunk->Data, world->ChunkDim);
+      World *world = GameState->world;
+      chunk_dimension WorldChunkDim = world->ChunkDim;
 
-      v3 RenderOffset = GetRenderP( GameState->world, WorldChunk->WorldP, GameState->Camera);
+      aabb BoundaryVoxelsAABB = FindBoundaryVoxelsAABB(WorldChunk->Data, WorldChunkDim);
+
+      v3 RenderOffset = GetRenderP( world, WorldChunk->WorldP, GameState->Camera);
+
 
 
 
@@ -1507,26 +1535,26 @@ BuildBoundaryVoxels( game_state *GameState, world_chunk *WorldChunk)
       MinMinStart.y = BoundaryVoxelsAABB.MaxCorner.y;
 
 
-      voxel_position MaxMax = RayTraceCollision( WorldChunk->Data,
-                                                 world->ChunkDim,
+      voxel_position MaxMax = RayTraceCollision( chunk,
+                                                 WorldChunkDim,
                                                  MaxMaxStart,
                                                  V3(0,-1,0),
                                                  MinMinStart - MaxMaxStart );
 
-      voxel_position MaxMin = RayTraceCollision( WorldChunk->Data,
-                                                 world->ChunkDim,
+      voxel_position MaxMin = RayTraceCollision( chunk,
+                                                 WorldChunkDim,
                                                  MaxMinStart,
                                                  V3(0,-1,0),
                                                  MinMaxStart - MaxMinStart );
 
-      voxel_position MinMax = RayTraceCollision( WorldChunk->Data,
-                                                 world->ChunkDim,
+      voxel_position MinMax = RayTraceCollision( chunk,
+                                                 WorldChunkDim,
                                                  MinMaxStart,
                                                  V3(0,-1,0),
                                                  MaxMinStart - MinMaxStart );
 
-      voxel_position MinMin = RayTraceCollision( WorldChunk->Data,
-                                                 world->ChunkDim,
+      voxel_position MinMin = RayTraceCollision( chunk,
+                                                 WorldChunkDim,
                                                  MinMinStart,
                                                  V3(0,-1,0),
                                                  MaxMaxStart - MinMinStart );
@@ -1562,61 +1590,6 @@ BuildBoundaryVoxels( game_state *GameState, world_chunk *WorldChunk)
     }
   }
 
-
-  return;
-}
-
-void
-DrawChunkEdges( game_state *GameState, world_chunk *Chunk )
-{
-  v3 Offset = GetRenderP( GameState->world, Chunk->WorldP, GameState->Camera);
-
-  for (int EdgeIndex = 0;
-      EdgeIndex < Chunk->EdgeCount;
-      ++EdgeIndex )
-  {
-    DEBUG_DrawLine(GameState->world, Chunk->Edges[EdgeIndex] + Offset, 0, 0.3f );
-  }
-
-  return;
-}
-
-void
-Draw0thLOD(game_state *GameState, world_chunk *Chunk)
-{
-  s32 EdgeMask = Chunk->EdgeCount % 3;
-  v3 Verticies[3] = {};
-  v3 Offset = GetRenderP(GameState->world, Chunk->WorldP, GameState->Camera);
-
-  // We have a quad
-  if (Chunk->EdgeCount == 4)
-  {
-    // Assert(Chunk->EdgeCount == 4);
-
-    Verticies[0] = Chunk->Edges[0].MinP + Offset;
-    Verticies[1] = Chunk->Edges[1].MinP + Offset;
-    Verticies[2] = Chunk->Edges[1].MaxP + Offset;
-    BufferTriangle(GameState->world, &Verticies[0], 0);
-
-    Verticies[0] = Chunk->Edges[2].MinP + Offset;
-    Verticies[1] = Chunk->Edges[3].MinP + Offset;
-    Verticies[2] = Chunk->Edges[3].MaxP + Offset;
-    BufferTriangle(GameState->world, &Verticies[0], 0);
-  }
-
-  // We've got a single triangle
-  if (Chunk->EdgeCount == 3)
-  {
-    // Assert(Chunk->EdgeCount == 3 || Chunk->EdgeCount == 0);
-
-    Verticies[0] = Chunk->Edges[0].MinP + Offset;
-    Verticies[1] = Chunk->Edges[1].MinP + Offset;
-    Verticies[2] = Chunk->Edges[2].MinP + Offset;
-
-    BufferTriangle(GameState->world, &Verticies[0], 0);
-  }
-
-  return;
 }
 
 void
