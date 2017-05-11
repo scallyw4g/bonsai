@@ -277,7 +277,7 @@ main(s32 NumArgs, char ** Args)
   Info("Found Bonsai Root : %s", GetCwd() );
 
   memory_arena PlatMemory = {};
-  AllocateAndInitializeArena(&PlatMemory, Megabytes(32));
+  AllocateAndInitializeArena(&PlatMemory, Megabytes(128));
 
   platform Plat = {};
   PlatformInit(&Plat, &PlatMemory);

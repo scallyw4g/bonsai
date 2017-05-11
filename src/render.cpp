@@ -1576,17 +1576,17 @@ Draw0thLOD(game_state *GameState, world_chunk *WorldChunk)
       Verts[0] = VertMaxMax;
       Verts[1] = VertMaxMin;
       Verts[2] = VertMinMin;
-      BufferTriangle(world, &Verts[0], RED);
+      BufferTriangle(world, &Verts[0], 42);
 
       Verts[0] = VertMinMin;
       Verts[1] = VertMinMax;
       Verts[2] = VertMaxMax;
-      BufferTriangle(world, &Verts[0], BLUE);
+      BufferTriangle(world, &Verts[0], 42);
 
       // Draw Boundary voxels aabb
-      aabb RenderCorrectedAABB = BoundaryVoxelsAABB + RenderOffset;
-      RenderCorrectedAABB.MaxCorner += V3(1,1,1);
-      DEBUG_DrawAABB( world, RenderCorrectedAABB, Quaternion(), TEAL, 0.10f );
+      /* aabb RenderCorrectedAABB = BoundaryVoxelsAABB + RenderOffset; */
+      /* RenderCorrectedAABB.MaxCorner += V3(1,1,1); */
+      /* DEBUG_DrawAABB( world, RenderCorrectedAABB, Quaternion(), TEAL, 0.10f ); */
     }
   }
 
@@ -1606,10 +1606,16 @@ DrawWorldChunk( game_state *GameState,
 
       if (WorldChunk->Data->BoundaryVoxelCount > 0)
       {
-        DrawChunkEdges( GameState, WorldChunk );
-        Draw0thLOD( GameState, WorldChunk );
+        if ( LengthSq(GameState->Player->P.WorldP - WorldChunk->WorldP) > 10)
+        {
+          Draw0thLOD( GameState, WorldChunk );
+        }
+        else
+        {
+          BufferChunkMesh( GameState->Plat, GameState->world, WorldChunk->Data, WorldChunk->WorldP, RG, SG, GameState->Camera);
+        }
 
-        /* BufferChunkMesh( GameState->Plat, GameState->world, WorldChunk->Data, WorldChunk->WorldP, RG, SG, GameState->Camera); */
+        /* DrawChunkEdges( GameState, WorldChunk ); */
         /* DEBUG_DrawChunkAABB( GameState->world, WorldChunk, GameState->Camera, Quaternion(), 0); */
       }
     }

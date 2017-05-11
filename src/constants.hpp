@@ -12,14 +12,14 @@
 #define VOXEL_DIAMETER (1.0f)
 #define VOXEL_RADIUS (VOXEL_DIAMETER/2.0f)
 
-#define CD_X 8
-#define CD_Y 8
-#define CD_Z 8
+#define CD_X 16
+#define CD_Y 16
+#define CD_Z 16
 
 // Visible Region XYZ - Must be > (3,3,3)
-#define VR_X 8
-#define VR_Y 8
-#define VR_Z 8
+#define VR_X 24
+#define VR_Y 24
+#define VR_Z 24
 
 #define VOLUME_VISIBLE_REGION (VR_X*VR_X*VR_X)
 
@@ -35,7 +35,7 @@
 
 #define WORLD_HASH_SIZE VOLUME_VISIBLE_REGION
 #define FREELIST_SIZE VOLUME_VISIBLE_REGION
-#define WORLD_STORAGE_SIZE Megabytes(500)
+#define WORLD_STORAGE_SIZE Megabytes(1200)
 
 #define WORLD_GRAVITY V3(0.0f, -20.0f, 0.0f)
 
@@ -63,7 +63,7 @@
 #define DEBUG_HIGHLIGHT_VOID_CHUNKS   0
 #define DEBUG_DRAW_WORLD_AXIES        1
 #define DEBUG_OPTIMIZE_WORLD_GC       1
-#define DEBUG_THREAD_COUNT_BIAS       -4
+#define DEBUG_THREAD_COUNT_BIAS       0
 
 #define DEBUG_FONT_SIZE               16
 
@@ -75,7 +75,7 @@
 #define SHADOW_MAP_RESOLUTION 2048
 #define DEBUG_TEXTURE_SIZE    512
 
-GLOBAL_VARIABLE r32 CAMERA_FOCAL_LENGTH = 120.0f;
+GLOBAL_VARIABLE r32 CAMERA_FOCAL_LENGTH = 100.0f;
 GLOBAL_VARIABLE r32 DEBUG_CAMERA_FOCAL_LENGTH = 50.0f;
 #define DEBUG_CAMERA_SCROLL_SPEED  20.0f
 
