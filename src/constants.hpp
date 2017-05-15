@@ -17,9 +17,9 @@
 #define CD_Z 16
 
 // Visible Region XYZ - Must be > (3,3,3)
-#define VR_X 24
-#define VR_Y 24
-#define VR_Z 24
+#define VR_X 8
+#define VR_Y 8
+#define VR_Z 8
 
 #define VOLUME_VISIBLE_REGION (VR_X*VR_X*VR_X)
 
@@ -35,7 +35,7 @@
 
 #define WORLD_HASH_SIZE VOLUME_VISIBLE_REGION
 #define FREELIST_SIZE VOLUME_VISIBLE_REGION
-#define WORLD_STORAGE_SIZE Megabytes(1200)
+#define WORLD_STORAGE_SIZE Megabytes(800)
 
 #define WORLD_GRAVITY V3(0.0f, -20.0f, 0.0f)
 
@@ -58,7 +58,6 @@
 #define DEBUG_CHUNK_AABB              1
 #define DEBUG_CAMERA_FOCUS_ORIGIN     0
 #define DEBUG_WORLD_GENERATION        0
-#define DEBUG_LOD_RENDER              0
 #define DEBUG_DRAW_SHADOW_MAP_TEXTURE 0
 #define DEBUG_HIGHLIGHT_VOID_CHUNKS   0
 #define DEBUG_DRAW_WORLD_AXIES        1
@@ -111,5 +110,7 @@ DEBUG_GLOBAL bool UseDebugCamera = False;
 #define PALETTE_SIZE 256
 
 #define MAX_CHUNK_EDGES 8
+
+#define LOD_DISTANCE 3
 
 #endif

@@ -1516,10 +1516,109 @@ Draw0thLOD(game_state *GameState, world_chunk *WorldChunk)
       World *world = GameState->world;
       chunk_dimension WorldChunkDim = world->ChunkDim;
 
-      aabb BoundaryVoxelsAABB = FindBoundaryVoxelsAABB(WorldChunk->Data, WorldChunkDim);
-
       v3 RenderOffset = GetRenderP( world, WorldChunk->WorldP, GameState->Camera);
 
+      aabb BoundaryVoxelsAABB = FindBoundaryVoxelsAABB(WorldChunk->Data, WorldChunkDim);
+
+      float xLen = BoundaryVoxelsAABB.MaxCorner.x - BoundaryVoxelsAABB.MinCorner.x;
+      float yLen = BoundaryVoxelsAABB.MaxCorner.y - BoundaryVoxelsAABB.MinCorner.y;
+      float zLen = BoundaryVoxelsAABB.MaxCorner.z - BoundaryVoxelsAABB.MinCorner.z;
+
+      // Find the widest axies and iterate orthogonal to them
+
+      voxel_position IterAxis = {}; // Axis to iterate along
+
+      // X Axis is widest
+      if (xLen >= yLen && xLen >= zLen)
+      {
+        // Y is next widest
+        if (yLen > zLen)
+        {
+          IterAxis.z = 1;
+        }
+        else // Z is next widest
+        {
+          IterAxis.y = 1;
+        }
+      }
+
+      // Y axis is widest
+      else if (yLen >= xLen && yLen >= zLen)
+      {
+        // x is next widest
+        if (xLen > zLen)
+        {
+          IterAxis.z = 1;
+        }
+        else // z is next widest
+        {
+          IterAxis.x = 1;
+        }
+      }
+
+      // Z is widest
+      else if (zLen >= yLen && zLen >= xLen)
+      {
+        // X is next widest
+        if (xLen > yLen)
+        {
+          IterAxis.y = 1;
+        }
+        else // Y is next widest
+        {
+          IterAxis.x = 1;
+        }
+      }
+      else // Use an arbitrary axis
+      {
+        if (xLen > yLen)
+        {
+          IterAxis.y = 1;
+        }
+        else
+        {
+          IterAxis.x = 1;
+        }
+      }
+
+      /* Assert(Length(IterAxis) == 1); */
+
+      if ( GameState->Player->P.WorldP == WorldChunk->WorldP)
+        DEBUG_DrawAABB( world, BoundaryVoxelsAABB + RenderOffset, Quaternion(), RED, 0.25f );
+
+      //
+      // Start iterating along the axis orthogonal to the widest axies
+      voxel_position MaxP = IterAxis * world->ChunkDim;
+
+
+      s32 AxisMax = max(MaxP.x, MaxP.y);
+      AxisMax = max(AxisMax, MaxP.z);
+
+
+      // Vector pointing towards the position to iterate from
+      voxel_position MaxAxies = IterAxis ^ Voxel_Position(1,1,1);
+
+
+      voxel_position StartingP = Voxel_Position(BoundaryVoxelsAABB.MinCorner + (((BoundaryVoxelsAABB.MaxCorner-BoundaryVoxelsAABB.MinCorner)*MaxAxies)/2));
+
+      s32 MaxIterations = (s32)Length( (BoundaryVoxelsAABB.MaxCorner*IterAxis) - (BoundaryVoxelsAABB.MinCorner*IterAxis) );
+
+      voxel_position CurrentP = StartingP;
+
+      for (s32 Iterations = 0;
+          Iterations < MaxIterations;
+          ++Iterations)
+      {
+        s32 VoxelIndex = GetIndex(CurrentP, chunk);
+
+        voxel Voxel = chunk->Voxels[VoxelIndex];
+        voxel_position P = GetVoxelP(Voxel);
+
+        if ( GameState->Player->P.WorldP == WorldChunk->WorldP)
+          DEBUG_DrawPointMarker(world, V3(P + RenderOffset), GREEN, 1.2f);
+
+        CurrentP += IterAxis;
+      }
 
 
 
@@ -1606,11 +1705,11 @@ DrawWorldChunk( game_state *GameState,
 
       if (WorldChunk->Data->BoundaryVoxelCount > 0)
       {
-        if ( LengthSq(GameState->Player->P.WorldP - WorldChunk->WorldP) > 10)
+        /* if ( LengthSq(GameState->Player->P.WorldP - WorldChunk->WorldP) > LOD_DISTANCE) */
         {
           Draw0thLOD( GameState, WorldChunk );
         }
-        else
+        /* else */
         {
           BufferChunkMesh( GameState->Plat, GameState->world, WorldChunk->Data, WorldChunk->WorldP, RG, SG, GameState->Camera);
         }
