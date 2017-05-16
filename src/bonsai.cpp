@@ -131,10 +131,10 @@ InitializeVoxels(void *Input)
   return;
 }
 
-inline bool
+inline b32
 IsFilledInChunk( chunk_data *Chunk, voxel_position VoxelP )
 {
-  bool isFilled = true;
+  b32 isFilled = True;
 
   if (Chunk && IsSet(Chunk->flags, Chunk_Initialized) )
   {
@@ -150,10 +150,10 @@ IsFilledInChunk( chunk_data *Chunk, voxel_position VoxelP )
   return isFilled;
 }
 
-inline bool
+inline b32
 IsFilledInWorld( World *world, world_chunk *chunk, canonical_position VoxelP )
 {
-  bool isFilled = true;
+  b32 isFilled = true;
 
   if ( chunk )
   {
@@ -170,10 +170,10 @@ IsFilledInWorld( World *world, world_chunk *chunk, canonical_position VoxelP )
   return isFilled;
 }
 
-inline bool
+inline b32
 NotFilledInWorld( World *world, world_chunk *chunk, canonical_position VoxelP )
 {
-  bool Result = !(IsFilledInWorld(world, chunk, VoxelP));
+  b32 Result = !(IsFilledInWorld(world, chunk, VoxelP));
   return Result;
 }
 
@@ -305,7 +305,7 @@ GetCollision(World *world, Entity *entity, v3 Offset = V3(0,0,0) )
   return C;
 }
 
-inline bool
+inline b32
 IsGrounded( World *world, Entity *entity)
 {
   collision_event c = GetCollision(world, entity, V3(0.0f,-0.001f, 0.0f));

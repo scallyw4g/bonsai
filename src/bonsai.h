@@ -190,7 +190,7 @@ struct World
 
 
 
-inline bool
+inline b32
 IsFilledInChunk( chunk_data *Chunk, voxel_position VoxelP );
 
 inline int
@@ -207,17 +207,17 @@ SetFlag( int Flags, int Flag )
   return Result;
 }
 
-inline bool
+inline b32
 IsSet( int Flags, int Flag )
 {
-  bool Result = ( (Flags & Flag) != 0 );
+  b32 Result = ( (Flags & Flag) != 0 );
   return Result;
 }
 
-inline bool
+inline b32
 NotSet( int Flags, int Flag )
 {
-  bool Result = !(IsSet(Flags, Flag));
+  b32 Result = !(IsSet(Flags, Flag));
   return Result;
 }
 
@@ -521,7 +521,7 @@ GetWorldChunk( World *world, world_position P )
   return Result;
 }
 
-inline bool
+inline b32
 IsFilled( chunk_data *chunk, voxel_position VoxelP )
 {
   int i = GetIndex(VoxelP, chunk);
@@ -529,14 +529,14 @@ IsFilled( chunk_data *chunk, voxel_position VoxelP )
   Assert(i > -1);
   Assert(i < Volume(chunk->Dim));
 
-  bool isFilled = IsSet(chunk->Voxels[i].flags, Voxel_Filled);
+  b32 isFilled = IsSet(chunk->Voxels[i].flags, Voxel_Filled);
   return isFilled;
 }
 
-inline bool
+inline b32
 NotFilled(chunk_data *Chunk, voxel_position VoxelP)
 {
-  bool Result = !IsFilled(Chunk, VoxelP);
+  b32 Result = !IsFilled(Chunk, VoxelP);
   return Result;
 }
 
