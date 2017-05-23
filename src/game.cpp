@@ -45,7 +45,7 @@ AllocateEntity(platform *Plat, canonical_position InitialP, const char *ModelPat
 {
   Entity *entity = PUSH_STRUCT_CHECKED(Entity, Plat->Memory, 1);
 
-  entity->Model = LoadVox(Plat, Plat->Memory, ModelPath);
+  entity->Model = LoadVox(Plat, Plat->Memory, ModelPath, entity);
   entity->Rotation = Quaternion(0,0,0,1);
   entity->P = InitialP;
   entity->Spawned = false;
@@ -292,14 +292,4 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
 
   return True;
 }
-
-void
-FillChunk(chunk_data *chunk)
-{
-  for (int i = 0; i < Volume(chunk->Dim); ++i)
-  {
-    chunk->Voxels[i].flags = SetFlag(chunk->Voxels[i].flags , Voxel_Filled);
-  }
-}
-
 

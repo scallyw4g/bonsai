@@ -11,6 +11,9 @@
 
 #include <colors.h>
 
+
+DEBUG_GLOBAL v3 DEBUG_RenderOffset;
+
 #define BufferLocalFace \
   BufferVerts( \
       world, \
@@ -930,7 +933,7 @@ void
 DEBUG_DrawChunkAABB( World *world, world_chunk *chunk, Camera_Object *Camera, Quaternion Rotation, int ColorIndex )
 {
   v3 MinP = GetRenderP(world, Canonical_Position(world, V3(0,0,0), chunk->WorldP), Camera);
-  v3 MaxP = GetRenderP(world, Canonical_Position(world, V3(chunk->Data->Dim), chunk->WorldP), Camera);
+  v3 MaxP = GetRenderP(world, Canonical_Position(world, world->ChunkDim, chunk->WorldP), Camera);
 
   DEBUG_DrawAABB(world, MinP, MaxP , Rotation, ColorIndex );
 
@@ -1022,24 +1025,24 @@ Clamp01( voxel_position V )
 }
 
 void
-PushBoundaryVoxel( chunk_data *chunk, voxel Voxel )
+PushBoundaryVoxel( chunk_data *chunk, voxel Voxel, chunk_dimension Dim)
 {
-  Assert( chunk->BoundaryVoxelCount < Volume(chunk->Dim) );
+  Assert( chunk->BoundaryVoxelCount < Volume(Dim) );
 
   chunk->BoundaryVoxels[chunk->BoundaryVoxelCount] = Voxel;
   chunk->BoundaryVoxelCount++;
 }
 
 void
-BuildExteriorBoundaryVoxels( World *world, world_chunk *chunk, world_chunk *Neighbor, voxel_position NeighborVector )
+BuildExteriorBoundaryVoxels( World *world, world_chunk *chunk, chunk_dimension Dim, world_chunk *Neighbor, voxel_position NeighborVector )
 {
   voxel_position nvSq = (NeighborVector*NeighborVector);
 
   voxel_position AbsInvNeighborVector = ((nvSq-1)*(nvSq-1));
 
-  voxel_position LocalPlane = ClampPositive(chunk->Data->Dim-1) * AbsInvNeighborVector + 1;
+  voxel_position LocalPlane = ClampPositive(Dim-1) * AbsInvNeighborVector + 1;
 
-  voxel_position LocalOffset = ClampPositive(chunk->Data->Dim*NeighborVector - nvSq);
+  voxel_position LocalOffset = ClampPositive(Dim*NeighborVector - nvSq);
 
   voxel_position Start = Voxel_Position(0,0,0);
 
@@ -1051,16 +1054,16 @@ BuildExteriorBoundaryVoxels( World *world, world_chunk *chunk, world_chunk *Neig
       {
         voxel_position LocalVoxelP = Voxel_Position(x+LocalOffset.x, y+LocalOffset.y, z+LocalOffset.z);
 
-        if ( chunk && !IsFilledInChunk(chunk->Data, LocalVoxelP ) )
+        if ( chunk && !IsFilledInChunk(chunk->Data, LocalVoxelP, Dim) )
           continue;
 
         voxel_position NeighborP = ClampPositive(
-            (LocalVoxelP - (chunk->Data->Dim * NeighborVector))
+            (LocalVoxelP - (Dim * NeighborVector))
             - nvSq);
 
-        if ( Neighbor && !IsFilledInChunk(Neighbor->Data, NeighborP) )
+        if ( Neighbor && !IsFilledInChunk(Neighbor->Data, NeighborP, Dim) )
         {
-          voxel *Voxel = &chunk->Data->Voxels[GetIndex(LocalVoxelP, chunk->Data)];
+          voxel *Voxel = &chunk->Data->Voxels[GetIndex(LocalVoxelP, chunk->Data, Dim)];
 
           if (NeighborVector.x > 0)
             Voxel->flags = SetFlag(Voxel->flags, Voxel_RightFace);
@@ -1082,7 +1085,7 @@ BuildExteriorBoundaryVoxels( World *world, world_chunk *chunk, world_chunk *Neig
 
           voxel_position P = GetVoxelP(*Voxel);
           Assert( P == LocalVoxelP);
-          PushBoundaryVoxel( chunk->Data, *Voxel );
+          PushBoundaryVoxel( chunk->Data, *Voxel, Dim);
 
         }
       }
@@ -1094,8 +1097,7 @@ BuildExteriorBoundaryVoxels( World *world, world_chunk *chunk, world_chunk *Neig
 }
 
 b32
-IsInsideChunk( voxel_position Dim, voxel_position P )
-{
+IsInsideDim( voxel_position Dim, voxel_position P ) {
   b32 Result = False;
 
   Result = (
@@ -1112,26 +1114,26 @@ IsInsideChunk( voxel_position Dim, voxel_position P )
 }
 
 b32
-IsInsideChunk( voxel_position Dim, v3 P )
+IsInsideDim( voxel_position Dim, v3 P )
 {
-  b32 Result = IsInsideChunk(Dim, Voxel_Position(P) );
+  b32 Result = IsInsideDim(Dim, Voxel_Position(P) );
   return Result;
 }
 
 void
-BuildInteriorBoundaryVoxels(chunk_data *chunk, world_position WorldP)
+BuildInteriorBoundaryVoxels(chunk_data *chunk, world_position WorldP, chunk_dimension Dim)
 {
   chunk->flags = UnSetFlag( chunk->flags, Chunk_RebuildInteriorBoundary );
 
-  for ( int z = 0; z < chunk->Dim.z ; ++z )
+  for ( int z = 0; z < Dim.z ; ++z )
   {
-    for ( int y = 0; y < chunk->Dim.y ; ++y )
+    for ( int y = 0; y < Dim.y ; ++y )
     {
-      for ( int x = 0; x < chunk->Dim.x ; ++x )
+      for ( int x = 0; x < Dim.x ; ++x )
       {
         voxel_position VoxelP = Voxel_Position(x,y,z);
 
-        if ( NotFilled( chunk, VoxelP ) )
+        if ( NotFilled( chunk, VoxelP, Dim) )
           continue;
 
         voxel_position rightVoxel = VoxelP + Voxel_Position(1, 0, 0);
@@ -1143,36 +1145,36 @@ BuildInteriorBoundaryVoxels(chunk_data *chunk, world_position WorldP)
         voxel_position frontVoxel = VoxelP + Voxel_Position(0, 0, 1);
         voxel_position backVoxel = VoxelP - Voxel_Position(0, 0, 1);
 
-        voxel *Voxel = &chunk->Voxels[GetIndex(Voxel_Position(x,y,z), chunk)];
+        voxel *Voxel = &chunk->Voxels[GetIndex(Voxel_Position(x,y,z), chunk, Dim)];
 
         bool DidPushVoxel = false;
 
-        if ( IsInsideChunk( chunk->Dim, rightVoxel  ) && NotFilled( chunk, rightVoxel  ))
+        if ( IsInsideDim( Dim, rightVoxel  ) && NotFilled( chunk, rightVoxel, Dim))
         {
           Voxel->flags = SetFlag(Voxel->flags, Voxel_RightFace);
           DidPushVoxel = true;
         }
-        if ( IsInsideChunk( chunk->Dim, leftVoxel  ) && NotFilled( chunk, leftVoxel  ))
+        if ( IsInsideDim( Dim, leftVoxel  ) && NotFilled( chunk, leftVoxel, Dim))
         {
           Voxel->flags = SetFlag(Voxel->flags, Voxel_LeftFace);
           DidPushVoxel = true;
         }
-        if ( IsInsideChunk( chunk->Dim, botVoxel   ) && NotFilled( chunk, botVoxel   ))
+        if ( IsInsideDim( Dim, botVoxel   ) && NotFilled( chunk, botVoxel, Dim))
         {
           Voxel->flags = SetFlag(Voxel->flags, Voxel_BottomFace);
           DidPushVoxel = true;
         }
-        if ( IsInsideChunk( chunk->Dim, topVoxel   ) && NotFilled( chunk, topVoxel   ))
+        if ( IsInsideDim( Dim, topVoxel   ) && NotFilled( chunk, topVoxel, Dim))
         {
           Voxel->flags = SetFlag(Voxel->flags, Voxel_TopFace);
           DidPushVoxel = true;
         }
-        if ( IsInsideChunk( chunk->Dim, frontVoxel ) && NotFilled( chunk, frontVoxel ))
+        if ( IsInsideDim( Dim, frontVoxel ) && NotFilled( chunk, frontVoxel, Dim))
         {
           Voxel->flags = SetFlag(Voxel->flags, Voxel_FrontFace);
           DidPushVoxel = true;
         }
-        if ( IsInsideChunk( chunk->Dim, backVoxel  ) && NotFilled( chunk, backVoxel  ))
+        if ( IsInsideDim( Dim, backVoxel  ) && NotFilled( chunk, backVoxel, Dim))
         {
           Voxel->flags = SetFlag(Voxel->flags, Voxel_BackFace);
           DidPushVoxel = true;
@@ -1182,7 +1184,7 @@ BuildInteriorBoundaryVoxels(chunk_data *chunk, world_position WorldP)
         {
           voxel_position P = GetVoxelP(*Voxel);
           Assert( P == Voxel_Position(x,y,z));
-          PushBoundaryVoxel(chunk, *Voxel);
+          PushBoundaryVoxel(chunk, *Voxel, Dim);
         }
 
       }
@@ -1334,7 +1336,7 @@ SetupAndBuildExteriorBoundary(
     if ( Neighbor && IsSet( Neighbor->Data->flags, Chunk_Initialized) )
     {
       Chunk->Data->flags = UnSetFlag( Chunk->Data->flags, Flag );
-      BuildExteriorBoundaryVoxels( world, Chunk, Neighbor, OffsetVector );
+      BuildExteriorBoundaryVoxels( world, Chunk, world->ChunkDim, Neighbor, OffsetVector);
     }
   }
 }
@@ -1400,13 +1402,13 @@ RayTraceCollision(chunk_data *Chunk, chunk_dimension Dim, v3 StartingP, v3 Ray, 
   CenteringRay = GetSign(CenteringRay);
 
   v3 CurrentP = StartingP;
-  while ( IsInsideChunk(Dim, CurrentP) )
+  while ( IsInsideDim(Dim, CurrentP) )
   {
     v3 CachedP = CurrentP;
 
-    while ( IsInsideChunk(Dim, CurrentP) )
+    while ( IsInsideDim(Dim, CurrentP) )
     {
-      if ( IsFilledInChunk(Chunk, Voxel_Position(CurrentP)) )
+      if ( IsFilledInChunk(Chunk, Voxel_Position(CurrentP), Dim) )
       {
         Result = CurrentP;
         goto finished;
@@ -1449,7 +1451,7 @@ BufferTriangle(World *world, v3 *Verts, s32 ColorIndex)
 }
 
 void
-BuildBoundaryVoxels( game_state *GameState, world_chunk *WorldChunk)
+BuildWorldChunkBoundaryVoxels( game_state *GameState, world_chunk *WorldChunk)
 {
 
   /* if (WorldChunk->WorldP == World_Position(0, -1, 0)) */
@@ -1464,7 +1466,7 @@ BuildBoundaryVoxels( game_state *GameState, world_chunk *WorldChunk)
   if ( IsSet(chunk->flags, Chunk_RebuildInteriorBoundary) )
   {
     chunk->BoundaryVoxelCount = 0;
-    BuildInteriorBoundaryVoxels(chunk, WorldChunk->WorldP );
+    BuildInteriorBoundaryVoxels(chunk, WorldChunk->WorldP, world->ChunkDim);
   }
 
   SetupAndBuildExteriorBoundary(world, WorldChunk, Voxel_Position( 0, 1, 0), Chunk_RebuildExteriorTop);
@@ -1496,9 +1498,9 @@ DrawChunkEdges( game_state *GameState, world_chunk *Chunk )
 }
 
 inline b32
-IsBoundaryVoxel(chunk_data *Chunk, voxel_position Offset)
+IsBoundaryVoxel(chunk_data *Chunk, voxel_position Offset, chunk_dimension Dim)
 {
-  s32 VoxelIndex = GetIndex(Offset, Chunk);
+  s32 VoxelIndex = GetIndex(Offset, Chunk, Dim);
   voxel V = Chunk->Voxels[VoxelIndex];
 
   b32 Result = False;
@@ -1510,6 +1512,110 @@ IsBoundaryVoxel(chunk_data *Chunk, voxel_position Offset)
   Result |= IsSet( V.flags, Voxel_RightFace);
 
   return Result;
+}
+
+inline void
+CheckDistanceToTarget(chunk_data *Chunk,
+                      chunk_dimension Dim,
+                      voxel_position *CurrentP,
+                      s32 *CurrentClosestDistanceSq,
+                      voxel_position TargetP,
+                      voxel_position TestP)
+{
+  s32 DistSq = LengthSq(TargetP - TestP);
+
+  if ( (DistSq < *CurrentClosestDistanceSq) && IsBoundaryVoxel(Chunk, TestP, Dim) )
+  {
+    *CurrentP = TestP;
+    *CurrentClosestDistanceSq = DistSq;
+  }
+
+  return;
+}
+
+voxel_position
+TraverseSurfaceToBoundary(World *world,
+                          chunk_data *Chunk,
+                          voxel_position StartingP,
+                          voxel_position Front,
+                          voxel_position IterDir)
+{
+  s32 CurrentClosestDistanceSq = 0;
+  voxel_position TargetP = (IterDir * world->ChunkDim) - IterDir;
+
+  voxel_position CurrentP = StartingP;
+
+  voxel_position Up      = Voxel_Position(Cross(Front, IterDir));
+  voxel_position Left    = Voxel_Position(Cross(Front, Up));
+  voxel_position Forward = Front;
+
+
+
+  voxel_position LoopStartingP = {};
+  for (;;)
+  {
+    LoopStartingP = CurrentP;
+
+#if 1
+    DEBUG_DrawPointMarker(world, V3(CurrentP + DEBUG_RenderOffset), PINK, 0.25f);
+#endif
+
+    // Single axies
+    voxel_position PUp      = CurrentP + Up;
+    voxel_position PDown    = CurrentP - Up;
+
+    voxel_position PLeft    = CurrentP + Left;
+    voxel_position PRight   = CurrentP - Left;
+
+    voxel_position PForward = CurrentP + Forward;
+    voxel_position PBack    = CurrentP - Forward;
+
+    // Diagonal axies
+    voxel_position PUpRight   = PUp   - Left;
+    voxel_position PUpLeft    = PUp   + Left;
+    voxel_position PDownRight = PDown - Left;
+    voxel_position PDownLeft  = PDown + Left;
+
+    // Forward diagonals
+    voxel_position FwdUpRight   = PUpRight   + Forward;
+    voxel_position FwdUpLeft    = PUpLeft    + Forward;
+    voxel_position FwdDownRight = PDownRight + Forward;
+    voxel_position FwdDownLeft  = PDownLeft  + Forward;
+
+    // Backward diagonals
+    voxel_position BackUpRight   = PUpRight   - Forward;
+    voxel_position BackUpLeft    = PUpLeft    - Forward;
+    voxel_position BackDownRight = PDownRight - Forward;
+    voxel_position BackDownLeft  = PDownLeft  - Forward;
+
+    s32 DistSq = 0;
+    CheckDistanceToTarget(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PUp);
+    CheckDistanceToTarget(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PDown);
+    CheckDistanceToTarget(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PLeft);
+    CheckDistanceToTarget(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PRight);
+    CheckDistanceToTarget(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PForward);
+    CheckDistanceToTarget(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PBack);
+
+    CheckDistanceToTarget(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PUpRight);
+    CheckDistanceToTarget(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PUpLeft);
+    CheckDistanceToTarget(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PDownRight);
+    CheckDistanceToTarget(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PDownLeft);
+
+    CheckDistanceToTarget(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, FwdUpRight);
+    CheckDistanceToTarget(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, FwdUpLeft);
+    CheckDistanceToTarget(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, FwdDownRight);
+    CheckDistanceToTarget(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, FwdDownLeft);
+
+    CheckDistanceToTarget(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, BackUpRight);
+    CheckDistanceToTarget(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, BackUpLeft);
+    CheckDistanceToTarget(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, BackDownRight);
+    CheckDistanceToTarget(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, BackDownLeft);
+
+    if (LoopStartingP == CurrentP)
+      break;
+  }
+
+  return CurrentP;
 }
 
 void
@@ -1533,6 +1639,8 @@ Draw0thLOD(game_state *GameState, world_chunk *WorldChunk)
       chunk_dimension WorldChunkDim = world->ChunkDim;
 
       v3 RenderOffset = GetRenderP( world, WorldChunk->WorldP, GameState->Camera);
+
+      DEBUG_RenderOffset = RenderOffset;
 
       aabb BoundaryVoxelsAABB = FindBoundaryVoxelsAABB(WorldChunk->Data, WorldChunkDim);
 
@@ -1621,6 +1729,8 @@ Draw0thLOD(game_state *GameState, world_chunk *WorldChunk)
 
       voxel_position CurrentP = StartingP;
 
+      b32 FoundMidpoint = False;
+
       for (s32 Iterations = 0;
           Iterations < MaxIterations;
           ++Iterations)
@@ -1629,13 +1739,30 @@ Draw0thLOD(game_state *GameState, world_chunk *WorldChunk)
         if ( GameState->Player->P.WorldP == WorldChunk->WorldP)
           DEBUG_DrawPointMarker(world, V3(CurrentP + RenderOffset), BLUE, 0.25f);
 
-        if (IsBoundaryVoxel(chunk, CurrentP))
+        if (IsBoundaryVoxel(chunk, CurrentP, world->ChunkDim))
         {
           DEBUG_DrawPointMarker(world, V3(CurrentP + RenderOffset), GREEN, 1.2f);
+          FoundMidpoint = True;
           break;
         }
 
         CurrentP += IterAxis;
+      }
+
+      if (FoundMidpoint)
+      {
+        voxel_position BoundaryPosition =
+          TraverseSurfaceToBoundary(world, chunk, CurrentP, IterAxis, Voxel_Position(-1, 0, 0));
+
+        voxel_position BoundaryPosition2 =
+          TraverseSurfaceToBoundary(world, chunk, CurrentP, IterAxis, Voxel_Position(1, 0, 0));
+
+
+        /* if ( GameState->Player->P.WorldP == WorldChunk->WorldP) */
+        {
+          DEBUG_DrawPointMarker(world, V3(BoundaryPosition + RenderOffset)+0.1f, RED, 1.2f);
+          DEBUG_DrawPointMarker(world, V3(BoundaryPosition2 + RenderOffset)-0.1f, BLUE, 1.2f);
+        }
       }
 
 
@@ -1723,7 +1850,7 @@ DrawWorldChunk( game_state *GameState,
   {
     if (IsSet(WorldChunk->Data->flags, Chunk_Initialized) )
     {
-      BuildBoundaryVoxels( GameState, WorldChunk);
+      BuildWorldChunkBoundaryVoxels( GameState, WorldChunk);
 
       if (WorldChunk->Data->BoundaryVoxelCount > 0)
       {
@@ -1768,7 +1895,7 @@ DrawEntity(
 
     if ( IsSet(entity->Model->flags, Chunk_RebuildInteriorBoundary) )
     {
-      BuildInteriorBoundaryVoxels(entity->Model, entity->P.WorldP);
+      BuildInteriorBoundaryVoxels(entity->Model, entity->P.WorldP, entity->ModelDim );
     }
 
     BufferChunkMesh(Plat, world, entity->Model, entity->P.WorldP, RG, SG, Camera, entity->P.Offset);

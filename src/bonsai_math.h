@@ -159,6 +159,18 @@ Dot( v3 A, v3 B)
 }
 
 inline v3
+Cross( voxel_position A, voxel_position B )
+{
+  v3 Result = {
+    (r32)(A.y*B.z)-(r32)(A.z*B.y),
+    (r32)(A.z*B.x)-(r32)(A.x*B.z),
+    (r32)(A.x*B.y)-(r32)(A.y*B.x)
+  };
+
+  return Result;
+}
+
+inline v3
 Cross( v3 A, v3 B )
 {
   v3 Result = {

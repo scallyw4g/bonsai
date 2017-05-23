@@ -55,25 +55,24 @@ struct voxel
 
 struct chunk_data
 {
-  int flags;
-  int BoundaryVoxelCount;
+  u32 flags;
+
+  s32 BoundaryVoxelCount;
 
   voxel *Voxels;
-
   voxel *BoundaryVoxels;
-
-  chunk_dimension Dim;
 };
 
 struct world_chunk
 {
   chunk_data *Data;
-  world_position WorldP;
 
   // TODO(Jesse): This is only for looking up chunks in the hashtable and
   // should be factored out of this struct somehow as it's cold data
   world_chunk *Next;
   world_chunk *Prev;
+
+  world_position WorldP;
 
   line Edges[MAX_CHUNK_EDGES];
   int EdgeCount;
@@ -145,6 +144,8 @@ struct VertexBlock
 struct Entity
 {
   chunk_data *Model;
+  chunk_dimension ModelDim;
+
   v3 Velocity;
   v3 Acceleration;
 
@@ -191,7 +192,7 @@ struct World
 
 
 inline b32
-IsFilledInChunk( chunk_data *Chunk, voxel_position VoxelP );
+IsFilledInChunk( chunk_data *Chunk, voxel_position VoxelP, chunk_dimension Dim);
 
 inline int
 UnSetFlag( int Flags, int Flag )
@@ -400,14 +401,14 @@ FreeWorldChunk(World *world, world_chunk *chunk)
 }
 
 inline int
-GetIndex(voxel_position P, chunk_data *chunk)
+GetIndex(voxel_position P, chunk_data *chunk, chunk_dimension Dim)
 {
   int i =
     (P.x) +
-    (P.y*chunk->Dim.x) +
-    (P.z*chunk->Dim.x*chunk->Dim.y);
+    (P.y*Dim.x) +
+    (P.z*Dim.x*Dim.y);
 
-  Assert(i < Volume(chunk->Dim));
+  Assert(i < Volume(Dim));
 
   return i;
 }
@@ -420,18 +421,16 @@ AllocateChunk(platform *Plat, memory_arena *WorldStorage, chunk_dimension Dim)
   Result->Voxels          = PUSH_STRUCT_CHECKED(voxel, WorldStorage , Volume(Dim));
   Result->BoundaryVoxels  = PUSH_STRUCT_CHECKED(voxel, WorldStorage , Volume(Dim));
 
-  Result->Dim = Dim;
-
   ZeroChunk(Result);
 
-  for (int z = 0; z < Result->Dim.z; ++z)
+  for (int z = 0; z < Dim.z; ++z)
   {
-    for (int y = 0; y < Result->Dim.y; ++y)
+    for (int y = 0; y < Dim.y; ++y)
     {
-      for (int x = 0; x < Result->Dim.x; ++x)
+      for (int x = 0; x < Dim.x; ++x)
       {
         voxel_position P = Voxel_Position(x,y,z);
-        int i = GetIndex(P, Result);
+        u32 i = GetIndex(P, Result, Dim);
         Result->Voxels[i] = SetVoxelP( Result->Voxels[i], P );
       }
     }
@@ -522,21 +521,21 @@ GetWorldChunk( World *world, world_position P )
 }
 
 inline b32
-IsFilled( chunk_data *chunk, voxel_position VoxelP )
+IsFilled( chunk_data *chunk, voxel_position VoxelP, chunk_dimension Dim)
 {
-  int i = GetIndex(VoxelP, chunk);
+  int i = GetIndex(VoxelP, chunk, Dim);
 
   Assert(i > -1);
-  Assert(i < Volume(chunk->Dim));
+  Assert(i < Volume(Dim));
 
   b32 isFilled = IsSet(chunk->Voxels[i].flags, Voxel_Filled);
   return isFilled;
 }
 
 inline b32
-NotFilled(chunk_data *Chunk, voxel_position VoxelP)
+NotFilled(chunk_data *Chunk, voxel_position VoxelP, chunk_dimension Dim)
 {
-  b32 Result = !IsFilled(Chunk, VoxelP);
+  b32 Result = !IsFilled(Chunk, VoxelP, Dim);
   return Result;
 }
 

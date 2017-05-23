@@ -51,13 +51,15 @@ InitializeVoxels( game_state *GameState, world_chunk *WorldChunk )
   chunk_data *chunk = WorldChunk->Data;
   /* CALLGRIND_TOGGLE_COLLECT; */
 
-  for ( int z = 0; z < chunk->Dim.z; ++ z)
+  chunk_dimension Dim = GameState->world->ChunkDim;
+
+  for ( int z = 0; z < Dim.z; ++ z)
   {
-    for ( int y = 0; y < chunk->Dim.y; ++ y)
+    for ( int y = 0; y < Dim.y; ++ y)
     {
-      for ( int x = 0; x < chunk->Dim.x; ++ x)
+      for ( int x = 0; x < Dim.x; ++ x)
       {
-        int i = GetIndex(Voxel_Position(x,y,z), chunk);
+        int i = GetIndex(Voxel_Position(x,y,z), chunk, Dim);
         chunk->Voxels[i].flags = 0;
 
         voxel_position P = Voxel_Position(x,y,z);
@@ -110,7 +112,7 @@ InitializeVoxels( game_state *GameState, world_chunk *WorldChunk )
   /* CALLGRIND_TOGGLE_COLLECT; */
 
   chunk->flags = SetFlag(chunk->flags, Chunk_Initialized);
-  BuildBoundaryVoxels(GameState, WorldChunk);
+  BuildWorldChunkBoundaryVoxels(GameState, WorldChunk);
 
   return;
 }
@@ -132,16 +134,16 @@ InitializeVoxels(void *Input)
 }
 
 inline b32
-IsFilledInChunk( chunk_data *Chunk, voxel_position VoxelP )
+IsFilledInChunk( chunk_data *Chunk, voxel_position VoxelP, chunk_dimension Dim)
 {
   b32 isFilled = True;
 
   if (Chunk && IsSet(Chunk->flags, Chunk_Initialized) )
   {
-    int i = GetIndex(VoxelP, Chunk);
+    int i = GetIndex(VoxelP, Chunk, Dim);
 
     Assert(i > -1);
-    Assert(i < Volume(Chunk->Dim));
+    Assert(i < Volume(Dim));
     Assert(VoxelP == GetVoxelP(Chunk->Voxels[i]));
 
     isFilled = IsSet(Chunk->Voxels[i].flags, Voxel_Filled);
@@ -164,7 +166,7 @@ IsFilledInWorld( World *world, world_chunk *chunk, canonical_position VoxelP )
       localChunk = GetWorldChunk(world, VoxelP.WorldP);
     }
 
-    isFilled = IsFilledInChunk(localChunk->Data, Voxel_Position(VoxelP.Offset) );
+    isFilled = IsFilledInChunk(localChunk->Data, Voxel_Position(VoxelP.Offset), world->ChunkDim );
   }
 
   return isFilled;
@@ -258,6 +260,9 @@ GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
 
         world_chunk *chunk = GetWorldChunk( world, LoopTestP.WorldP );
 
+
+        // TODO(Jesse): Can we somehow atomically pull this one off the queue
+        // and initialize it on demand?
 #if 0
         if (chunk && NotSet(chunk->Data->flags, Chunk_Initialized) )
         {
@@ -266,7 +271,7 @@ GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
         }
 #endif
 
-        if ( IsFilledInChunk(chunk->Data, Voxel_Position(LoopTestP.Offset)) )
+        if ( IsFilledInChunk(chunk->Data, Voxel_Position(LoopTestP.Offset), world->ChunkDim) )
         {
           Collision.CP = LoopTestP;
           Collision.didCollide = true;
@@ -469,7 +474,7 @@ SpawnPlayer( World *world, platform *Plat, Entity *Player )
   v3 Offset = V3( rX, rY, rZ );
   TestP = Canonicalize(world, Offset, Player->P.WorldP);
 
-  Collision = GetCollision( world, TestP, Player->Model->Dim);
+  Collision = GetCollision( world, TestP, Player->ModelDim);
 
   if (!Collision.didCollide)
   {
@@ -514,7 +519,7 @@ UpdatePlayerP(game_state *GameState, Entity *Player, v3 GrossUpdateVector)
       Player->P.WorldP.y = C.CP.WorldP.y;
 
       if (UpdateVector.y > 0)
-        Player->P.Offset.y -= (Player->Model->Dim.y-1);
+        Player->P.Offset.y -= (Player->ModelDim.y-1);
 
       Player->P = Canonicalize(world, Player->P);
     }
@@ -535,7 +540,7 @@ UpdatePlayerP(game_state *GameState, Entity *Player, v3 GrossUpdateVector)
         Player->P.WorldP.x = C.CP.WorldP.x;
 
         if (UpdateVector.x > 0)
-          Player->P.Offset.x -= (Player->Model->Dim.x-1);
+          Player->P.Offset.x -= (Player->ModelDim.x-1);
       }
       else
       {
@@ -559,7 +564,7 @@ UpdatePlayerP(game_state *GameState, Entity *Player, v3 GrossUpdateVector)
         Player->P.WorldP.z = C.CP.WorldP.z;
 
         if (UpdateVector.z > 0)
-          Player->P.Offset.z -= (Player->Model->Dim.z-1);
+          Player->P.Offset.z -= (Player->ModelDim.z-1);
       }
       else
       {
@@ -632,7 +637,7 @@ UpdateCameraP(platform *Plat, World *world, Entity *Player, Camera_Object *Camer
 #if DEBUG_CAMERA_FOCUS_ORIGIN
   canonical_position NewTarget = Canonical_Position( V3(0,0,0), World_Position(0,0,0) );
 #else
-  canonical_position NewTarget = Canonicalize(world, Player->P.Offset, Player->P.WorldP) + (Player->Model->Dim/2);
+  canonical_position NewTarget = Canonicalize(world, Player->P.Offset, Player->P.WorldP) + (Player->ModelDim/2);
 #endif
 
 

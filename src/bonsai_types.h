@@ -16,6 +16,10 @@ struct canonical_position;
 // 8 Bit types
 typedef uint8_t  u8;
 
+// 16 Bit types
+typedef uint16_t u16;
+typedef int16_t  s16;
+
 // 32 Bit types
 typedef int32_t  s32;
 typedef uint32_t u32;
@@ -225,9 +229,9 @@ operator*(Quaternion A, Quaternion B)
 
 struct voxel_position
 {
-  int x;
-  int y;
-  int z;
+  s32 x;
+  s32 y;
+  s32 z;
 };
 
 inline voxel_position
@@ -1048,6 +1052,18 @@ operator-(canonical_position P1, canonical_position P2)
 
   Result.Offset = P1.Offset - P2.Offset;
   Result.WorldP = P1.WorldP - P2.WorldP;
+
+  return Result;
+}
+
+inline voxel_position
+operator&(voxel_position P1, voxel_position P2)
+{
+  voxel_position Result;
+
+  Result.x = P1.x & (s32)P2.x;
+  Result.y = P1.y & (s32)P2.y;
+  Result.z = P1.z & (s32)P2.z;
 
   return Result;
 }

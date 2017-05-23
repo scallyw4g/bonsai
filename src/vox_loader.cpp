@@ -131,7 +131,7 @@ ReadXYZIChunk(FILE *File, int* byteCounter)
 }
 
 chunk_data*
-LoadVox(platform *Plat, memory_arena *WorldStorage, char const *filepath)
+LoadVox(platform *Plat, memory_arena *WorldStorage, char const *filepath, Entity *entity )
 {
   chunk_data *Result = 0;
   s32 totalChunkBytes = 0;
@@ -207,6 +207,7 @@ LoadVox(platform *Plat, memory_arena *WorldStorage, char const *filepath)
           // BuildExteriorBoundaryVoxels doesn't handle models correctly.
           // +1 to convert from index, +2 for a 1vox buffer on each side.
           chunk_dimension Dim = Chunk_Dimension(maxX+3, maxY+3, maxZ+3) - Min;
+          entity->ModelDim = Dim;
 
           // TODO(Jesse): Load models in multiple chunks instead of one
           // monolithic one. The storage for chunks must be as large as the
@@ -225,7 +226,7 @@ LoadVox(platform *Plat, memory_arena *WorldStorage, char const *filepath)
 
             V = SetVoxelColor(V, GetVoxelColor(LocalVoxelCache[i]));
 
-            Result->Voxels[GetIndex(RealP, Result)] = V;
+            Result->Voxels[GetIndex(RealP, Result, Dim)] = V;
 
             Assert(GetVoxelColor(V) < PALETTE_SIZE);
 
