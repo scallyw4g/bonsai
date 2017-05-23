@@ -6,6 +6,44 @@
 
 using namespace std;
 
+struct debug_profile_entry
+{
+  u64 CycleCount;
+  u32 HitCount;
+};
+
+struct debug_profile_table
+{
+  debug_profile_entry Table[1024];
+};
+
+struct debug_timed_function
+{
+  u32 FunctionIndex = 0;
+
+  debug_timed_function(u32 FunctionIndexIn)
+  {
+    FunctionIndex = FunctionIndexIn;
+  }
+
+  ~debug_timed_function()
+  {
+    debug_state *DebugState = GetDebugState();
+
+    debug_profile_entry *Entry = DebugState[FunctionIndex];
+
+    Entry->HitCount++;
+    Entry->CycleCount += DebugState->GetCycleCount();
+  }
+};
+
+#define TIMED_FUNCTION() debug_timed_function(__COUNTER__)
+
+struct debug_state
+{
+  u64 (*GetCycleCount)(void);
+};
+
 struct debug_text_render_group
 {
   u32 Text2DTextureID;

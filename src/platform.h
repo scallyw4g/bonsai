@@ -154,11 +154,6 @@ struct os
   b32 ContinueRunning;
 };
 
-struct debug_state
-{
-  unsigned long long (*GetCycleCount)(void);
-};
-
 void
 DumpGlErrorEnum(int Error)
 {
