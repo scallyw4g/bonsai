@@ -820,6 +820,12 @@ DEBUG_DrawLine(World *world, v3 P1, v3 P2, int ColorIndex, float Thickness )
 }
 
 void
+DEBUG_DrawVectorAt(World *world, v3 Offset, v3 Vector, int ColorIndex, float Thickness )
+{
+  DEBUG_DrawLine(world, Offset, Vector + Offset, ColorIndex, Thickness );
+}
+
+void
 DEBUG_DrawLine(World *world, line Line, int ColorIndex, float Thickness )
 {
   DEBUG_DrawLine(world, Line.MinP, Line.MaxP, ColorIndex, Thickness);
@@ -827,7 +833,7 @@ DEBUG_DrawLine(World *world, line Line, int ColorIndex, float Thickness )
 }
 
 void
-DEBUG_DrawAABB( World *world, v3 MinP, v3 MaxP, Quaternion Rotation, int ColorIndex, float Thickness = 0.05f )
+DEBUG_DrawAABB( World *world, v3 MinP, v3 MaxP, Quaternion Rotation, int ColorIndex, float Thickness = 0.25f )
 {
   /* v3 HalfDim = (GetRenderP(world, MaxCP) - GetRenderP(world, MinCP)) / 2; */
 
@@ -1427,12 +1433,14 @@ RayTraceCollision(chunk_data *Chunk, chunk_dimension Dim, v3 StartingP, v3 Ray, 
 }
 
 void
-BufferTriangle(World *world, v3 *Verts, s32 ColorIndex)
+BufferTriangle(World *world, v3 *Verts, v3 Normal, s32 ColorIndex)
 {
   r32 VertBuffer[9];
+  v3 NormalBuffer[3] = {Normal};
 
   // TODO(Jesse): Is this necessary to avoid some pointer aliasing bug?
   memcpy( VertBuffer, Verts, 9 * sizeof(r32) );
+
 
   float FaceColors[32];
   GetColorData( ColorIndex, FaceColors);
@@ -1442,8 +1450,8 @@ BufferTriangle(World *world, v3 *Verts, s32 ColorIndex)
     VertBuffer,
     sizeof(VertBuffer),
 
-    VertBuffer,
-    sizeof(VertBuffer),
+    (float*)&NormalBuffer[0],
+    sizeof(NormalBuffer),
 
     FaceColors
   );
@@ -1619,6 +1627,16 @@ TraverseSurfaceToBoundary(World *world,
   return CurrentP;
 }
 
+inline v3
+Midpoint(aabb AABB)
+{
+  v3 MaxP = AABB.MaxCorner - AABB.MinCorner;
+  v3 Mid = MaxP/2;
+
+  v3 Result = AABB.MinCorner + Mid;
+  return Result;
+}
+
 void
 Draw0thLOD(game_state *GameState, world_chunk *WorldChunk)
 {
@@ -1634,7 +1652,10 @@ Draw0thLOD(game_state *GameState, world_chunk *WorldChunk)
         Chunk_RebuildExteriorBack)
      )
   {
-    if (WorldChunk->Data->BoundaryVoxelCount > 0)
+
+    s32 BoundaryVoxelCount = WorldChunk->Data->BoundaryVoxelCount;
+
+    if ( BoundaryVoxelCount > 0)
     {
       World *world = GameState->world;
       chunk_dimension WorldChunkDim = world->ChunkDim;
@@ -1643,6 +1664,169 @@ Draw0thLOD(game_state *GameState, world_chunk *WorldChunk)
 
       DEBUG_RenderOffset = RenderOffset;
 
+
+      v3 SurfaceNormal = {};
+      v3 ChunkMidpoint = WorldChunkDim /2;
+      DEBUG_DrawPointMarker(world, ChunkMidpoint + RenderOffset, GREEN, 0.5f);
+
+      s32 WorldChunkVolume = Volume(WorldChunkDim);
+
+      // First compute how much of the chunk is actually full.  This is done
+      // because the surface normal computation works better if the check is
+      // done against the minority of filled or empty voxels.  For example, if
+      // a chunk is mostly full, we want to check against the empty voxels for
+      // the normal computation
+      s32 FilledVolume = 0;
+      for ( s32 VoxelIndex = 0;
+          VoxelIndex < WorldChunkVolume;
+          ++VoxelIndex)
+      {
+        voxel_position VoxelP = GetVoxelP(WorldChunkDim, VoxelIndex);
+        if ( IsFilledInChunk( WorldChunk->Data, VoxelP, WorldChunkDim ) )
+          FilledVolume ++ ;
+      }
+
+      b32 HalfFilled = FilledVolume >= WorldChunkVolume/2 ? True : False ;
+      b32 HalfEmpty = !HalfFilled;
+
+
+      // Loop through the chunk and find the surface normal
+      for ( s32 VoxelIndex = 0;
+          VoxelIndex < WorldChunkVolume;
+          ++VoxelIndex)
+      {
+        voxel_position VoxelP = GetVoxelP(WorldChunkDim, VoxelIndex);
+
+        /* if (IsBoundaryVoxel(chunk, VoxelP, WorldChunkDim)) */
+        /*   DEBUG_DrawPointMarker(world, V3(VoxelP) + RenderOffset, PINK, 0.25f); */
+
+        // TODO(Jesse): Pretty sure we can do some XOR trickery or something
+        // here to avoid this branch, which could be a large perf win
+        if ( HalfFilled && NotFilledInChunk( WorldChunk->Data, VoxelP, WorldChunkDim ) )
+        {
+          SurfaceNormal += Normalize( VoxelP - ChunkMidpoint );
+        }
+        else if ( HalfEmpty && IsFilledInChunk( WorldChunk->Data, VoxelP, WorldChunkDim ) )
+        {
+          SurfaceNormal += Normalize( VoxelP - ChunkMidpoint );
+        }
+
+      }
+
+      // FIXME(Jesse): Sometimes the surface is perfectly balanced within the chunk,
+      // in which case the normal turns out to be zero.
+      SurfaceNormal = Normalize(SurfaceNormal);
+      if ( Length(SurfaceNormal) == 0 )
+      {
+        DEBUG_DrawChunkAABB( world, WorldChunk, GameState->Camera, Quaternion() , RED );
+        return;
+      }
+
+      /* DEBUG_DrawVectorAt(world, RenderOffset + ChunkMidpoint - (SurfaceNormal*10), SurfaceNormal*20, RED, 0.5f ); */
+
+      b32 FoundMidpoint = false;
+      v3 Mid = {};
+
+      //
+      // Raytrace along the surface normal starting at the BoundaryVoxels AABB Midpoint
+      //
+      aabb BoundaryVoxelsAABB = FindBoundaryVoxelsAABB(WorldChunk->Data, WorldChunkDim);
+      v3 MidAABB = Midpoint(BoundaryVoxelsAABB);
+      b32 MidpointIsFilled = IsFilledInChunk(WorldChunk->Data, Voxel_Position(MidAABB), WorldChunkDim);
+
+      {
+        v3 CurrentP = MidAABB;
+        while( IsInsideDim(WorldChunkDim, CurrentP) )
+        {
+          DEBUG_DrawPointMarker(world, CurrentP + RenderOffset, PINK, 0.25f);
+
+          b32 CurrentPIsFilled = IsFilledInChunk(WorldChunk->Data, Voxel_Position(CurrentP), WorldChunkDim);
+          if (CurrentPIsFilled != MidpointIsFilled)
+          {
+            FoundMidpoint = true;
+            Mid = CurrentPIsFilled ? CurrentP : CurrentP - SurfaceNormal;
+            break;
+          }
+          CurrentP += SurfaceNormal;
+        }
+      }
+
+
+      {
+        if ( !FoundMidpoint )
+        {
+          v3 CurrentP = MidAABB;
+          while( IsInsideDim(WorldChunkDim, CurrentP) )
+          {
+            DEBUG_DrawPointMarker(world, CurrentP + RenderOffset, PINK, 0.25f);
+
+            b32 CurrentPIsFilled = IsFilledInChunk(WorldChunk->Data, Voxel_Position(CurrentP), WorldChunkDim);
+            if (CurrentPIsFilled != MidpointIsFilled)
+            {
+              FoundMidpoint = true;
+              Mid = CurrentPIsFilled ? CurrentP : CurrentP + SurfaceNormal;
+              break;
+            }
+            CurrentP -= SurfaceNormal;
+          }
+        }
+      }
+
+      // FIXME(Jesse): Why would we fail to find a midpoint pray tell??
+      if ( !FoundMidpoint )
+      {
+        DEBUG_DrawChunkAABB( world, WorldChunk, GameState->Camera, Quaternion() , RED );
+      }
+      else
+      {
+        v3 Front = SurfaceNormal;
+        v3 Right = Cross( WORLD_Y, Front );
+        v3 Up = Cross( Front, Right );
+
+        v3 MidpointRenderP = RenderOffset + Mid;
+
+        DEBUG_DrawPointMarker(world, MidpointRenderP, GREEN, 0.5f);
+
+        {
+
+          v3 UpRight = Normalize(Up + Right);
+          v3 UpLeft = Normalize(Up - Right);
+
+          v3 DownRight = Normalize(Right - Up);
+          v3 DownLeft = Normalize((Up + Right) * -1.0f);
+
+          v3 VertMaxMax = Mid;
+          while ( IsInsideDim(WorldChunkDim, VertMaxMax) ) VertMaxMax += UpRight;
+          VertMaxMax -= UpRight;
+
+          v3 VertMaxMin = Mid;
+          while ( IsInsideDim(WorldChunkDim, VertMaxMin) ) VertMaxMin += UpLeft;
+          VertMaxMin -= UpLeft;
+
+          v3 VertMinMax = Mid;
+          while ( IsInsideDim(WorldChunkDim, VertMinMax) ) VertMinMax += DownRight;
+          VertMinMax -= DownRight;
+
+          v3 VertMinMin = Mid;
+          while ( IsInsideDim(WorldChunkDim, VertMinMin) ) VertMinMin += DownLeft;
+          VertMinMin -= DownLeft;
+
+          v3 Verts[3];
+
+          Verts[0] = VertMaxMax + RenderOffset;
+          Verts[1] = VertMaxMin + RenderOffset;
+          Verts[2] = VertMinMin + RenderOffset;
+          BufferTriangle(world, &Verts[0], SurfaceNormal, 42);
+
+          Verts[0] = VertMinMin + RenderOffset;
+          Verts[1] = VertMinMax + RenderOffset;
+          Verts[2] = VertMaxMax + RenderOffset;
+          BufferTriangle(world, &Verts[0], SurfaceNormal, 42);
+
+        }
+      }
+
+#if 0
       aabb BoundaryVoxelsAABB = FindBoundaryVoxelsAABB(WorldChunk->Data, WorldChunkDim);
 
       float xLen = BoundaryVoxelsAABB.MaxCorner.x - BoundaryVoxelsAABB.MinCorner.x;
@@ -1784,7 +1968,6 @@ Draw0thLOD(game_state *GameState, world_chunk *WorldChunk)
       }
 
 
-#if 0
       v3 MaxMaxStart = BoundaryVoxelsAABB.MaxCorner;
 
       v3 MaxMinStart = BoundaryVoxelsAABB.MaxCorner;
@@ -1872,19 +2055,21 @@ DrawWorldChunk( game_state *GameState,
 
       if (WorldChunk->Data->BoundaryVoxelCount > 0)
       {
+
 #if 1
+        Draw0thLOD( GameState, WorldChunk );
         if (GameState->Player->P.WorldP == WorldChunk->WorldP)
         {
-          Draw0thLOD( GameState, WorldChunk );
-          BufferChunkMesh( GameState->Plat, GameState->world, WorldChunk->Data, WorldChunk->WorldP, RG, SG, GameState->Camera);
+          /* Draw0thLOD( GameState, WorldChunk ); */
+          DEBUG_DrawChunkAABB( GameState->world, WorldChunk, GameState->Camera, Quaternion() , 0 );
+        }
+        else
+        {
+          /* BufferChunkMesh( GameState->Plat, GameState->world, WorldChunk->Data, WorldChunk->WorldP, RG, SG, GameState->Camera); */
         }
 #else
-
-        if ( LengthSq(GameState->Player->P.WorldP - WorldChunk->WorldP) > LOD_DISTANCE)
-        {
-          Draw0thLOD( GameState, WorldChunk );
-          BufferChunkMesh( GameState->Plat, GameState->world, WorldChunk->Data, WorldChunk->WorldP, RG, SG, GameState->Camera);
-        }
+        Draw0thLOD( GameState, WorldChunk );
+        /* BufferChunkMesh( GameState->Plat, GameState->world, WorldChunk->Data, WorldChunk->WorldP, RG, SG, GameState->Camera); */
 #endif
 
         /* DrawChunkEdges( GameState, WorldChunk ); */

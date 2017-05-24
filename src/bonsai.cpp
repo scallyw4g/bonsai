@@ -153,6 +153,14 @@ IsFilledInChunk( chunk_data *Chunk, voxel_position VoxelP, chunk_dimension Dim)
 }
 
 inline b32
+NotFilledInChunk( chunk_data *Chunk, voxel_position VoxelP, chunk_dimension Dim)
+{
+  b32 Result = !IsFilledInChunk(Chunk, VoxelP, Dim);
+  return Result;
+}
+
+
+inline b32
 IsFilledInWorld( World *world, world_chunk *chunk, canonical_position VoxelP )
 {
   b32 isFilled = true;

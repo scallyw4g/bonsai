@@ -150,6 +150,13 @@ Normalize(v3 A)
   return Result;
 }
 
+inline v3
+Normalize(voxel_position A)
+{
+  v3 Result = Normalize( V3(A), Length(V3(A)));
+  return Result;
+}
+
 inline float
 Dot( v3 A, v3 B)
 {

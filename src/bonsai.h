@@ -194,6 +194,9 @@ struct World
 inline b32
 IsFilledInChunk( chunk_data *Chunk, voxel_position VoxelP, chunk_dimension Dim);
 
+inline b32
+NotFilledInChunk( chunk_data *Chunk, voxel_position VoxelP, chunk_dimension Dim);
+
 inline int
 UnSetFlag( int Flags, int Flag )
 {
