@@ -1515,19 +1515,22 @@ IsBoundaryVoxel(chunk_data *Chunk, voxel_position Offset, chunk_dimension Dim)
 }
 
 inline void
-CheckDistanceToTarget(chunk_data *Chunk,
-                      chunk_dimension Dim,
-                      voxel_position *CurrentP,
-                      s32 *CurrentClosestDistanceSq,
-                      voxel_position TargetP,
-                      voxel_position TestP)
+CheckAndIncrementCurrentP(chunk_data *Chunk,
+                          chunk_dimension Dim,
+                          voxel_position *CurrentP,
+                          s32 *CurrentClosestDistanceSq,
+                          voxel_position TargetP,
+                          voxel_position TestP)
 {
-  s32 DistSq = LengthSq(TargetP - TestP);
-
-  if ( (DistSq < *CurrentClosestDistanceSq) && IsBoundaryVoxel(Chunk, TestP, Dim) )
+  if ( IsInsideDim(Dim, TestP) )
   {
-    *CurrentP = TestP;
-    *CurrentClosestDistanceSq = DistSq;
+    s32 DistSq = LengthSq(TargetP - TestP);
+
+    if ( (DistSq > *CurrentClosestDistanceSq) && IsBoundaryVoxel(Chunk, TestP, Dim) )
+    {
+      *CurrentP = TestP;
+      *CurrentClosestDistanceSq = DistSq;
+    }
   }
 
   return;
@@ -1537,7 +1540,6 @@ voxel_position
 TraverseSurfaceToBoundary(World *world,
                           chunk_data *Chunk,
                           voxel_position StartingP,
-                          voxel_position Front,
                           voxel_position IterDir)
 {
   s32 CurrentClosestDistanceSq = 0;
@@ -1545,14 +1547,13 @@ TraverseSurfaceToBoundary(World *world,
 
   voxel_position CurrentP = StartingP;
 
-  voxel_position Up      = Voxel_Position(Cross(Front, IterDir));
-  voxel_position Left    = Voxel_Position(Cross(Front, Up));
-  voxel_position Forward = Front;
-
+  voxel_position Up      = Voxel_Position(WORLD_Y);
+  voxel_position Right   = Voxel_Position(WORLD_X);
+  voxel_position Forward = Voxel_Position(WORLD_Z);
 
 
   voxel_position LoopStartingP = {};
-  for (;;)
+  while (IsInsideDim(world->ChunkDim, CurrentP) )
   {
     LoopStartingP = CurrentP;
 
@@ -1564,17 +1565,17 @@ TraverseSurfaceToBoundary(World *world,
     voxel_position PUp      = CurrentP + Up;
     voxel_position PDown    = CurrentP - Up;
 
-    voxel_position PLeft    = CurrentP + Left;
-    voxel_position PRight   = CurrentP - Left;
+    voxel_position PRight    = CurrentP + Right;
+    voxel_position PLeft     = CurrentP - Right;
 
     voxel_position PForward = CurrentP + Forward;
     voxel_position PBack    = CurrentP - Forward;
 
     // Diagonal axies
-    voxel_position PUpRight   = PUp   - Left;
-    voxel_position PUpLeft    = PUp   + Left;
-    voxel_position PDownRight = PDown - Left;
-    voxel_position PDownLeft  = PDown + Left;
+    voxel_position PUpRight   = PUp   + Right;
+    voxel_position PUpLeft    = PUp   - Right;
+    voxel_position PDownRight = PDown + Right;
+    voxel_position PDownLeft  = PDown - Right;
 
     // Forward diagonals
     voxel_position FwdUpRight   = PUpRight   + Forward;
@@ -1589,27 +1590,27 @@ TraverseSurfaceToBoundary(World *world,
     voxel_position BackDownLeft  = PDownLeft  - Forward;
 
     s32 DistSq = 0;
-    CheckDistanceToTarget(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PUp);
-    CheckDistanceToTarget(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PDown);
-    CheckDistanceToTarget(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PLeft);
-    CheckDistanceToTarget(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PRight);
-    CheckDistanceToTarget(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PForward);
-    CheckDistanceToTarget(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PBack);
+    CheckAndIncrementCurrentP(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PUp);
+    CheckAndIncrementCurrentP(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PDown);
+    CheckAndIncrementCurrentP(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PLeft);
+    CheckAndIncrementCurrentP(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PRight);
+    CheckAndIncrementCurrentP(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PForward);
+    CheckAndIncrementCurrentP(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PBack);
 
-    CheckDistanceToTarget(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PUpRight);
-    CheckDistanceToTarget(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PUpLeft);
-    CheckDistanceToTarget(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PDownRight);
-    CheckDistanceToTarget(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PDownLeft);
+    CheckAndIncrementCurrentP(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PUpRight);
+    CheckAndIncrementCurrentP(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PUpLeft);
+    CheckAndIncrementCurrentP(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PDownRight);
+    CheckAndIncrementCurrentP(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PDownLeft);
 
-    CheckDistanceToTarget(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, FwdUpRight);
-    CheckDistanceToTarget(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, FwdUpLeft);
-    CheckDistanceToTarget(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, FwdDownRight);
-    CheckDistanceToTarget(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, FwdDownLeft);
+    CheckAndIncrementCurrentP(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, FwdUpRight);
+    CheckAndIncrementCurrentP(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, FwdUpLeft);
+    CheckAndIncrementCurrentP(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, FwdDownRight);
+    CheckAndIncrementCurrentP(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, FwdDownLeft);
 
-    CheckDistanceToTarget(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, BackUpRight);
-    CheckDistanceToTarget(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, BackUpLeft);
-    CheckDistanceToTarget(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, BackDownRight);
-    CheckDistanceToTarget(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, BackDownLeft);
+    CheckAndIncrementCurrentP(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, BackUpRight);
+    CheckAndIncrementCurrentP(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, BackUpLeft);
+    CheckAndIncrementCurrentP(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, BackDownRight);
+    CheckAndIncrementCurrentP(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, BackDownLeft);
 
     if (LoopStartingP == CurrentP)
       break;
@@ -1752,17 +1753,34 @@ Draw0thLOD(game_state *GameState, world_chunk *WorldChunk)
       if (FoundMidpoint)
       {
         voxel_position BoundaryPosition =
-          TraverseSurfaceToBoundary(world, chunk, CurrentP, IterAxis, Voxel_Position(-1, 0, 0));
-
+          TraverseSurfaceToBoundary(world, chunk, CurrentP, Voxel_Position(-1, 0, 0));
         voxel_position BoundaryPosition2 =
-          TraverseSurfaceToBoundary(world, chunk, CurrentP, IterAxis, Voxel_Position(1, 0, 0));
+          TraverseSurfaceToBoundary(world, chunk, CurrentP, Voxel_Position(1, 0, 0));
+
+        DEBUG_DrawPointMarker(world, V3(BoundaryPosition + RenderOffset)+0.1f, RED, 1.2f);
+        DEBUG_DrawPointMarker(world, V3(BoundaryPosition2 + RenderOffset)-0.1f, RED, 1.2f);
 
 
-        /* if ( GameState->Player->P.WorldP == WorldChunk->WorldP) */
-        {
-          DEBUG_DrawPointMarker(world, V3(BoundaryPosition + RenderOffset)+0.1f, RED, 1.2f);
-          DEBUG_DrawPointMarker(world, V3(BoundaryPosition2 + RenderOffset)-0.1f, BLUE, 1.2f);
-        }
+
+        BoundaryPosition =
+          TraverseSurfaceToBoundary(world, chunk, CurrentP, Voxel_Position(0, 0, -1));
+        BoundaryPosition2 =
+          TraverseSurfaceToBoundary(world, chunk, CurrentP, Voxel_Position(0, 0, 1));
+
+        DEBUG_DrawPointMarker(world, V3(BoundaryPosition + RenderOffset)+0.1f, TEAL, 1.2f);
+        DEBUG_DrawPointMarker(world, V3(BoundaryPosition2 + RenderOffset)-0.1f, TEAL, 1.2f);
+
+
+
+        BoundaryPosition =
+          TraverseSurfaceToBoundary(world, chunk, CurrentP, Voxel_Position(0, -1, 0));
+        BoundaryPosition2 =
+          TraverseSurfaceToBoundary(world, chunk, CurrentP, Voxel_Position(0, 1, 0));
+
+        DEBUG_DrawPointMarker(world, V3(BoundaryPosition + RenderOffset), GREEN, 1.2f);
+        DEBUG_DrawPointMarker(world, V3(BoundaryPosition2 + RenderOffset), GREEN, 1.2f);
+
+
       }
 
 
@@ -1854,14 +1872,20 @@ DrawWorldChunk( game_state *GameState,
 
       if (WorldChunk->Data->BoundaryVoxelCount > 0)
       {
-        /* if ( LengthSq(GameState->Player->P.WorldP - WorldChunk->WorldP) > LOD_DISTANCE) */
+#if 1
+        if (GameState->Player->P.WorldP == WorldChunk->WorldP)
         {
           Draw0thLOD( GameState, WorldChunk );
-        }
-        /* else */
-        {
           BufferChunkMesh( GameState->Plat, GameState->world, WorldChunk->Data, WorldChunk->WorldP, RG, SG, GameState->Camera);
         }
+#else
+
+        if ( LengthSq(GameState->Player->P.WorldP - WorldChunk->WorldP) > LOD_DISTANCE)
+        {
+          Draw0thLOD( GameState, WorldChunk );
+          BufferChunkMesh( GameState->Plat, GameState->world, WorldChunk->Data, WorldChunk->WorldP, RG, SG, GameState->Camera);
+        }
+#endif
 
         /* DrawChunkEdges( GameState, WorldChunk ); */
         /* DEBUG_DrawChunkAABB( GameState->world, WorldChunk, GameState->Camera, Quaternion(), 0); */
