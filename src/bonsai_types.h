@@ -576,6 +576,27 @@ operator+(v3 A, v3 B)
 }
 
 
+struct linei
+{
+  voxel_position MinP;
+  voxel_position MaxP;
+
+  linei() {}
+
+  linei(voxel_position MinP, voxel_position MaxP)
+  {
+    this->MinP = MinP;
+    this->MaxP = MaxP;
+  }
+
+  linei(v3 MinP, v3 MaxP)
+  {
+    this->MinP = Voxel_Position(MinP);
+    this->MaxP = Voxel_Position(MaxP);
+  }
+
+};
+
 struct line
 {
   v3 MinP;
@@ -619,6 +640,13 @@ struct aabb
     MaxCorner = V3(0,0,0);
   }
 
+};
+
+#define POINT_BUFFER_SIZE 8
+struct point_buffer
+{
+  s32 Count;
+  voxel_position Points[POINT_BUFFER_SIZE];
 };
 
 inline aabb

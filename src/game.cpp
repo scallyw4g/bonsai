@@ -6,11 +6,11 @@
 static gl_extensions *GL_Global;
 static const char *GlobalGlslVersion;
 
+DEBUG_GLOBAL Camera_Object DebugCamera = {};
+
 #include <game.h>
 
 #include <bonsai.cpp>
-
-DEBUG_GLOBAL Camera_Object DebugCamera = {};
 
 void
 SeedWorldAndUnspawnPlayer( World *world, Entity *Player )
@@ -53,6 +53,27 @@ AllocateEntity(platform *Plat, canonical_position InitialP, const char *ModelPat
   return entity;
 }
 
+void
+InitCamera(Camera_Object* Camera, canonical_position P, float FocalLength)
+{
+  Camera->Frust.farClip = FocalLength;
+  Camera->Frust.nearClip = 0.1f;
+  Camera->Frust.width = 30.0f;
+  Camera->Frust.FOV = 45.0f;
+  Camera->P = P;
+  Camera->Up = WORLD_Y;
+  Camera->Right = WORLD_Z;
+  Camera->Front = WORLD_X;
+
+  return;
+}
+
+EXPORT void
+InitGlobals()
+{
+  InitCamera(&DebugCamera, CAMERA_INITIAL_P, 5000.0f);
+}
+
 EXPORT void*
 GameInit( platform *Plat )
 {
@@ -85,26 +106,9 @@ GameInit( platform *Plat )
   Entity *Player = AllocateEntity(Plat, PlayerInitialP, PLAYER_MODEL);
   if (!Player) { Error("Error Allocating Player"); return False; }
 
-
   Camera_Object *Camera = PUSH_STRUCT_CHECKED(Camera_Object, Plat->Memory, 1);
 
-  Camera->Frust.farClip = 500.0f;
-  Camera->Frust.nearClip = 0.1f;
-  Camera->Frust.width = 30.0f;
-  Camera->Frust.FOV = 45.0f;
-  Camera->P = CAMERA_INITIAL_P;
-  Camera->Up = WORLD_Y;
-  Camera->Right = WORLD_Z;
-  Camera->Front = WORLD_X;
-
-  DebugCamera.Frust.farClip = 5000.0f;
-  DebugCamera.Frust.nearClip = 0.1f;
-  DebugCamera.Frust.width = 30.0f;
-  DebugCamera.Frust.FOV = 45.0f;
-  DebugCamera.P = CAMERA_INITIAL_P;
-  DebugCamera.Up = WORLD_Y;
-  DebugCamera.Right = WORLD_Z;
-  DebugCamera.Front = WORLD_X;
+  InitCamera(Camera, CAMERA_INITIAL_P, 5000.0f);
 
   debug_text_render_group *DebugRG = PUSH_STRUCT_CHECKED(debug_text_render_group, Plat->Memory, 1);
 
@@ -124,6 +128,8 @@ GameInit( platform *Plat )
   if (!world) { Error("Error Allocating world"); return False; }
 
   SeedWorldAndUnspawnPlayer(world, Player);
+
+  InitGlobals();
 
   return GameState;
 }

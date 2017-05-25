@@ -145,8 +145,8 @@ InitializeOpenGlExtensions(gl_extensions *Gl)
   // Platform specific (wgl / glX)
   Gl->glSwapInterval = (PFNSWAPINTERVALPROC)bonsaiGlGetProcAddress("wglSwapIntervalEXT");
 
-  if ( Gl->glSwapInterval )
-    Gl->glSwapInterval(1); // vsync
+  /* if ( Gl->glSwapInterval ) */
+  /*   Gl->glSwapInterval(1); // vsync */
 #endif
 
   return;
@@ -277,7 +277,7 @@ main(s32 NumArgs, char ** Args)
   Info("Found Bonsai Root : %s", GetCwd() );
 
   memory_arena PlatMemory = {};
-  AllocateAndInitializeArena(&PlatMemory, Megabytes(128));
+  AllocateAndInitializeArena(&PlatMemory, PLATFORM_STORAGE_SIZE);
 
   platform Plat = {};
   PlatformInit(&Plat, &PlatMemory);
@@ -296,6 +296,9 @@ main(s32 NumArgs, char ** Args)
   game_main_proc GameUpdateAndRender = (game_main_proc)GetProcFromLib(GameLib, "GameUpdateAndRender");
   if (!GameUpdateAndRender) { Error("Retreiving GameUpdateAndRender from Game Lib :( "); return False; }
 
+  game_init_globals_proc InitGlobals = (game_init_globals_proc)GetProcFromLib(GameLib, "InitGlobals");
+  if (!InitGlobals) { Error("Retreiving InitGlobals from Game Lib :( "); return False; }
+
   b32 WindowSuccess = OpenAndInitializeWindow(&Os, &Plat);
   if (!WindowSuccess) { Error("Initializing Window :( "); return False; }
 
@@ -307,6 +310,8 @@ main(s32 NumArgs, char ** Args)
 
   game_state *GameState = GameInit(&Plat);
   if (!GameState) { Error("Initializing Game State :( "); return False; }
+
+  InitGlobals();
 
   /*
    *  Main Game loop
@@ -327,6 +332,9 @@ main(s32 NumArgs, char ** Args)
       CloseLibrary(GameLib);
       GameLib = OpenLibrary(GAME_LIB);
       GameUpdateAndRender = (game_main_proc)GetProcFromLib(GameLib, "GameUpdateAndRender");
+      InitGlobals = (game_init_globals_proc)GetProcFromLib(GameLib, "InitGlobals");
+
+      InitGlobals();
     }
 
     GameUpdateAndRender(&Plat, GameState);

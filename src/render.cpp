@@ -1597,7 +1597,6 @@ TraverseSurfaceToBoundary(World *world,
     voxel_position BackDownRight = PDownRight - Forward;
     voxel_position BackDownLeft  = PDownLeft  - Forward;
 
-    s32 DistSq = 0;
     CheckAndIncrementCurrentP(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PUp);
     CheckAndIncrementCurrentP(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PDown);
     CheckAndIncrementCurrentP(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PLeft);
@@ -1635,6 +1634,38 @@ Midpoint(aabb AABB)
 
   v3 Result = AABB.MinCorner + Mid;
   return Result;
+}
+
+void
+FindBoundaryVoxelsAlongEdge(chunk_data *Data, chunk_dimension Dim, voxel_position Start, voxel_position Iter, point_buffer *PB)
+{
+  voxel_position CurrentP = Start;
+  b32 StartIsFilled = IsFilledInChunk(Data, CurrentP, Dim);
+
+  Assert(Length(V3(Iter)) == 1.0f);
+
+  while ( IsInsideDim(Dim, CurrentP) )
+  {
+
+    b32 CurrentPIsFilled = IsFilledInChunk(Data, CurrentP, Dim);
+    if (CurrentPIsFilled != StartIsFilled)
+    {
+      Assert(PB->Count < POINT_BUFFER_SIZE);
+      PB->Points[PB->Count++] = CurrentP;
+      StartIsFilled = CurrentPIsFilled;
+    }
+
+    CurrentP += Iter;
+  }
+
+  /* for ( s32 PointIndex = 0; */
+  /*       PointIndex < PointCount; */
+  /*       ++PointIndex ) */
+  /* { */
+  /*   DEBUG_DrawPointMarker(world, V3(Points[PointIndex]) + DEBUG_RenderOffset, PINK, 1.0f); */
+  /* } */
+
+  return;
 }
 
 void
@@ -1713,8 +1744,8 @@ Draw0thLOD(game_state *GameState, world_chunk *WorldChunk)
 
       }
 
-      // FIXME(Jesse): Sometimes the surface is perfectly balanced within the chunk,
-      // in which case the normal turns out to be zero.
+      // FIXME(Jesse): Sometimes the surface is perfectly balanced within the
+      // chunk, in which case the normal turns out to be zero.
       SurfaceNormal = Normalize(SurfaceNormal);
       if ( Length(SurfaceNormal) == 0 )
       {
@@ -1722,13 +1753,112 @@ Draw0thLOD(game_state *GameState, world_chunk *WorldChunk)
         return;
       }
 
-      /* DEBUG_DrawVectorAt(world, RenderOffset + ChunkMidpoint - (SurfaceNormal*10), SurfaceNormal*20, RED, 0.5f ); */
+      DEBUG_DrawVectorAt(world, RenderOffset + ChunkMidpoint - (SurfaceNormal*10), SurfaceNormal*20, BLACK, 0.5f );
 
+      point_buffer PB = {};
+
+      {
+        voxel_position Start = Voxel_Position(0, 0, 0);
+
+        {
+          voxel_position Iter  = Voxel_Position(1, 0, 0);
+          FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, &PB);
+        }
+        {
+          voxel_position Iter  = Voxel_Position(0, 1, 0);
+          FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, &PB);
+        }
+        {
+          voxel_position Iter  = Voxel_Position(0, 0, 1);
+          FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, &PB);
+        }
+      }
+
+      {
+        voxel_position Start = Voxel_Position(0, WorldChunkDim.y-1, WorldChunkDim.z-1);
+
+        {
+          voxel_position Iter  = Voxel_Position(1, 0, 0);
+          FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, &PB);
+        }
+        {
+          voxel_position Iter  = Voxel_Position(0,-1, 0);
+          FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, &PB);
+        }
+        {
+          voxel_position Iter  = Voxel_Position(0, 0,-1);
+          FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, &PB);
+        }
+      }
+
+      {
+        voxel_position Start = Voxel_Position(WorldChunkDim.x-1, WorldChunkDim.y-1, 0);
+
+        {
+          voxel_position Iter  = Voxel_Position(-1, 0, 0);
+          FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, &PB);
+        }
+        {
+          voxel_position Iter  = Voxel_Position(0,-1, 0);
+          FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, &PB);
+        }
+        {
+          voxel_position Iter  = Voxel_Position(0, 0, 1);
+          FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, &PB);
+        }
+      }
+
+      {
+        voxel_position Start = Voxel_Position(WorldChunkDim.x-1, 0, WorldChunkDim.z-1);
+
+        {
+          voxel_position Iter  = Voxel_Position(-1, 0, 0);
+          FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, &PB);
+        }
+        {
+          voxel_position Iter  = Voxel_Position(0, 1, 0);
+          FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, &PB);
+        }
+        {
+          voxel_position Iter  = Voxel_Position(0, 0,-1);
+          FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, &PB);
+        }
+      }
+
+      for ( s32 PointIndex = 0; PointIndex < PB.Count; ++PointIndex )
+        DEBUG_DrawPointMarker(world, V3(PB.Points[PointIndex]) + RenderOffset, PINK, 1.0f);
+
+
+      s32 VertIndex = 0;
+      v3 Verts[3] = {};
+
+      Verts[0] = V3(PB.Points[0]) + RenderOffset;
+
+      if (PB.Count == 4)
+      {
+
+        while ( VertIndex < PB.Count )
+        {
+          for ( s32 VertInnerIndex = 0;
+              VertInnerIndex < 2;
+              ++VertInnerIndex)
+          {
+            Verts[1] = V3(PB.Points[VertIndex] + RenderOffset);
+            Verts[2] = V3(PB.Points[++VertIndex] + RenderOffset);
+            BufferTriangle(world, &Verts[0], SurfaceNormal, 42);
+          }
+
+        }
+    }
+
+
+#if 0
       b32 FoundMidpoint = false;
-      v3 Mid = {};
+      v3 SurfaceMid = {};
 
       //
       // Raytrace along the surface normal starting at the BoundaryVoxels AABB Midpoint
+      // to find the surfaces mid point
       //
       aabb BoundaryVoxelsAABB = FindBoundaryVoxelsAABB(WorldChunk->Data, WorldChunkDim);
       v3 MidAABB = Midpoint(BoundaryVoxelsAABB);
@@ -1744,7 +1874,7 @@ Draw0thLOD(game_state *GameState, world_chunk *WorldChunk)
           if (CurrentPIsFilled != MidpointIsFilled)
           {
             FoundMidpoint = true;
-            Mid = CurrentPIsFilled ? CurrentP : CurrentP - SurfaceNormal;
+            SurfaceMid = CurrentPIsFilled ? CurrentP : CurrentP - SurfaceNormal;
             break;
           }
           CurrentP += SurfaceNormal;
@@ -1764,7 +1894,7 @@ Draw0thLOD(game_state *GameState, world_chunk *WorldChunk)
             if (CurrentPIsFilled != MidpointIsFilled)
             {
               FoundMidpoint = true;
-              Mid = CurrentPIsFilled ? CurrentP : CurrentP + SurfaceNormal;
+              SurfaceMid = CurrentPIsFilled ? CurrentP : CurrentP + SurfaceNormal;
               break;
             }
             CurrentP -= SurfaceNormal;
@@ -1772,7 +1902,7 @@ Draw0thLOD(game_state *GameState, world_chunk *WorldChunk)
         }
       }
 
-      // FIXME(Jesse): Why would we fail to find a midpoint pray tell??
+      // FIXME(Jesse): Why would we fail to find a surface midpoint pray tell?
       if ( !FoundMidpoint )
       {
         DEBUG_DrawChunkAABB( world, WorldChunk, GameState->Camera, Quaternion() , RED );
@@ -1783,7 +1913,11 @@ Draw0thLOD(game_state *GameState, world_chunk *WorldChunk)
         v3 Right = Cross( WORLD_Y, Front );
         v3 Up = Cross( Front, Right );
 
-        v3 MidpointRenderP = RenderOffset + Mid;
+        DEBUG_DrawVectorAt(world, RenderOffset + SurfaceMid, Front*10, RED, 0.5f );
+        DEBUG_DrawVectorAt(world, RenderOffset + SurfaceMid, Right*10, TEAL, 0.5f );
+        DEBUG_DrawVectorAt(world, RenderOffset + SurfaceMid, Up*10, GREEN, 0.5f );
+
+        v3 MidpointRenderP = RenderOffset + SurfaceMid;
 
         DEBUG_DrawPointMarker(world, MidpointRenderP, GREEN, 0.5f);
 
@@ -1795,19 +1929,19 @@ Draw0thLOD(game_state *GameState, world_chunk *WorldChunk)
           v3 DownRight = Normalize(Right - Up);
           v3 DownLeft = Normalize((Up + Right) * -1.0f);
 
-          v3 VertMaxMax = Mid;
+          v3 VertMaxMax = SurfaceMid;
           while ( IsInsideDim(WorldChunkDim, VertMaxMax) ) VertMaxMax += UpRight;
           VertMaxMax -= UpRight;
 
-          v3 VertMaxMin = Mid;
+          v3 VertMaxMin = SurfaceMid;
           while ( IsInsideDim(WorldChunkDim, VertMaxMin) ) VertMaxMin += UpLeft;
           VertMaxMin -= UpLeft;
 
-          v3 VertMinMax = Mid;
+          v3 VertMinMax = SurfaceMid;
           while ( IsInsideDim(WorldChunkDim, VertMinMax) ) VertMinMax += DownRight;
           VertMinMax -= DownRight;
 
-          v3 VertMinMin = Mid;
+          v3 VertMinMin = SurfaceMid;
           while ( IsInsideDim(WorldChunkDim, VertMinMin) ) VertMinMin += DownLeft;
           VertMinMin -= DownLeft;
 
@@ -1825,6 +1959,8 @@ Draw0thLOD(game_state *GameState, world_chunk *WorldChunk)
 
         }
       }
+
+#endif
 
 #if 0
       aabb BoundaryVoxelsAABB = FindBoundaryVoxelsAABB(WorldChunk->Data, WorldChunkDim);
@@ -2058,9 +2194,12 @@ DrawWorldChunk( game_state *GameState,
 
 #if 1
         Draw0thLOD( GameState, WorldChunk );
+        /* BufferChunkMesh( GameState->Plat, GameState->world, WorldChunk->Data, WorldChunk->WorldP, RG, SG, GameState->Camera); */
+
         if (GameState->Player->P.WorldP == WorldChunk->WorldP)
         {
           /* Draw0thLOD( GameState, WorldChunk ); */
+          /* BufferChunkMesh( GameState->Plat, GameState->world, WorldChunk->Data, WorldChunk->WorldP, RG, SG, GameState->Camera); */
           DEBUG_DrawChunkAABB( GameState->world, WorldChunk, GameState->Camera, Quaternion() , 0 );
         }
         else

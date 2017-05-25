@@ -57,24 +57,25 @@ void main()
   float GlobalLightCosTheta = clamp( dot( fragNormal, GlobalLightDirection), 0.0f, 1.0f);
 
 
-  float AO = 0.0f;
+  float AO = 1.0f;
 
   vec3 CameraViewSpace = (vec4(CameraPos, 1.0f) * ViewMatrix).xyz;
 
-  int AoSamples = 16;
-  for ( int PoissonIndex = 0; PoissonIndex < AoSamples; ++PoissonIndex )
-  {
-    vec3 SampleViewSpace = (texture(gPosition, UV + ( poissonDisk[PoissonIndex]/200.0f) ) * ViewMatrix).xyz;
-    vec3 FragViewSpace   = (texture(gPosition, UV) * ViewMatrix).xyz;
+  /* float AO = 0.0f; */
+  /* int AoSamples = 16; */
+  /* for ( int PoissonIndex = 0; PoissonIndex < AoSamples; ++PoissonIndex ) */
+  /* { */
+  /*   vec3 SampleViewSpace = (texture(gPosition, UV + ( poissonDisk[PoissonIndex]/200.0f) ) * ViewMatrix).xyz; */
+  /*   vec3 FragViewSpace   = (texture(gPosition, UV) * ViewMatrix).xyz; */
 
-    float DistanceToSample = length( CameraViewSpace - SampleViewSpace );
-    float DistanceToFrag = length( CameraViewSpace - FragViewSpace );
+  /*   float DistanceToSample = length( CameraViewSpace - SampleViewSpace ); */
+  /*   float DistanceToFrag = length( CameraViewSpace - FragViewSpace ); */
 
-    if (DistanceToSample < DistanceToFrag)
-      AO += 1.3f;
-  }
+  /*   if (DistanceToSample < DistanceToFrag) */
+  /*     AO += 1.3f; */
+  /* } */
 
-  AO = 1.0f - (AO/float(AoSamples));
+  /* AO = 1.0f - (AO/float(AoSamples)); */
 
   vec4 ShadowCoord = DepthBiasMVP * vec4(fragPosition, 1.0f);
 

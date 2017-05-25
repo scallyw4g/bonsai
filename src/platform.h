@@ -19,6 +19,7 @@ struct game_state;
 typedef void (*GameCallback)(void*);
 typedef game_state* (*game_init_proc)(platform*);
 typedef bool (*game_main_proc)(platform*, game_state*);
+typedef void (*game_init_globals_proc)(void);
 
 GLOBAL_VARIABLE v2 InvalidMouseP = {-1, -1};
 
