@@ -500,9 +500,12 @@ SpawnPlayer( World *world, platform *Plat, Entity *Player )
 
   return;
 }
+
 void
 UpdatePlayerP(game_state *GameState, Entity *Player, v3 GrossUpdateVector)
 {
+  TIMED_FUNCTION();
+
   World *world = GameState->world;
 
   v3 Remaining = GrossUpdateVector;

@@ -6,7 +6,7 @@
 static gl_extensions *GL_Global;
 static const char *GlobalGlslVersion;
 
-DEBUG_GLOBAL Camera_Object DebugCamera = {};
+DEBUG_GLOBAL Camera_Object GlobalDebugCamera = {};
 
 #include <game.h>
 
@@ -69,9 +69,10 @@ InitCamera(Camera_Object* Camera, canonical_position P, float FocalLength)
 }
 
 EXPORT void
-InitGlobals()
+InitGlobals(platform *Plat)
 {
-  InitCamera(&DebugCamera, CAMERA_INITIAL_P, 5000.0f);
+  InitCamera(&GlobalDebugCamera, CAMERA_INITIAL_P, 5000.0f);
+  InitDebugState(GetDebugState(), Plat);
 }
 
 EXPORT void*
@@ -129,7 +130,7 @@ GameInit( platform *Plat )
 
   SeedWorldAndUnspawnPlayer(world, Player);
 
-  InitGlobals();
+  InitGlobals(Plat);
 
   return GameState;
 }
@@ -137,6 +138,8 @@ GameInit( platform *Plat )
 EXPORT bool
 GameUpdateAndRender( platform *Plat, game_state *GameState )
 {
+  TIMED_FUNCTION();
+
   GL_Global = &Plat->GL;
 
   World *world          = GameState->world;
@@ -159,7 +162,7 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
   numFrames ++;
 
   if (UseDebugCamera)
-    RG->Basis.ProjectionMatrix = GetProjectionMatrix(&DebugCamera, Plat->WindowWidth, Plat->WindowHeight);
+    RG->Basis.ProjectionMatrix = GetProjectionMatrix(&GlobalDebugCamera, Plat->WindowWidth, Plat->WindowHeight);
   else
     RG->Basis.ProjectionMatrix = GetProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight);
 
@@ -187,14 +190,14 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
   }
 
   if (UseDebugCamera)
-    CurrentCamera = &DebugCamera;
+    CurrentCamera = &GlobalDebugCamera;
   else
     CurrentCamera = Camera;
 
   v3 Input = GetInputsFromController(Plat, CurrentCamera);
   if (UseDebugCamera)
   {
-    UpdateDebugCamera(Plat, world, Input, &DebugCamera);
+    UpdateDebugCamera(Plat, world, Input, &GlobalDebugCamera);
   }
   else
   {
@@ -278,7 +281,9 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
 
   char buffer[256] = {};
   sprintf(buffer, "%f ms last frame", Plat->dt);
-  PrintDebugText(DebugRG, buffer, 0, 0, DEBUG_FONT_SIZE);
+  /* PrintDebugText(DebugRG, buffer, 0, 0, DEBUG_FONT_SIZE); */
+
+  DEBUG_FRAME_END(DebugRG);
 
   DrawWorldToFullscreenQuad(Plat, world, RG, SG, Camera);
 

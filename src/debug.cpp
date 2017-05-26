@@ -78,7 +78,7 @@ PrintDebugText( debug_text_render_group *RG, const char *Text, int x, int y, int
   // Bind texture
   GL_Global->glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, RG->Text2DTextureID);
-  // Set our "myTextureSampler" sampler to user Texture Unit 0
+
   GL_Global->glUniform1i(RG->Text2DUniformID, 0);
 
   // 1rst attribute buffer : vertices
@@ -105,6 +105,35 @@ PrintDebugText( debug_text_render_group *RG, const char *Text, int x, int y, int
   AssertNoGlErrors;
 
   return;
+}
+
+void
+DebugFrameEnd(debug_text_render_group *RG)
+{
+  debug_state *DebugState = GetDebugState();
+
+  debug_profile_entry NullEntry = {};
+
+  s32 FontSize = 22;
+  s32 LinePadding = 3;
+
+  s32 AtY = 0;
+
+  for (s32 EntryIndex = 0;
+      EntryIndex < DEBUG_STATE_ENTRY_COUNT;
+      ++EntryIndex)
+  {
+    debug_profile_entry *Entry = &DebugState->Entries[EntryIndex];
+
+    if (Entry->HitCount > 0)
+    {
+      PrintDebugText( RG, "Timed a function!", 0, AtY, FontSize);
+      AtY += (FontSize + LinePadding);
+    }
+
+    *Entry = NullEntry;
+  }
+
 }
 
 void

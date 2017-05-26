@@ -159,6 +159,8 @@ PlatformInit(platform *Plat, memory_arena *Memory)
   Plat->PushWorkQueueEntry = PushWorkQueueEntry;
   Plat->PushStruct = PushStruct;
   Plat->PushStructChecked_ = PushStructChecked_;
+  Plat->GetHighPrecisionClock = GetHighPrecisionClock;
+  Plat->GetCycleCount = GetCycleCount;
 
   // Initialized from globals
   Plat->WindowHeight = SCR_HEIGHT;
@@ -311,7 +313,7 @@ main(s32 NumArgs, char ** Args)
   game_state *GameState = GameInit(&Plat);
   if (!GameState) { Error("Initializing Game State :( "); return False; }
 
-  InitGlobals();
+  InitGlobals(&Plat);
 
   /*
    *  Main Game loop
@@ -334,7 +336,7 @@ main(s32 NumArgs, char ** Args)
       GameUpdateAndRender = (game_main_proc)GetProcFromLib(GameLib, "GameUpdateAndRender");
       InitGlobals = (game_init_globals_proc)GetProcFromLib(GameLib, "InitGlobals");
 
-      InitGlobals();
+      InitGlobals(&Plat);
     }
 
     GameUpdateAndRender(&Plat, GameState);

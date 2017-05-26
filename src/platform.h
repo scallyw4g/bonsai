@@ -19,7 +19,7 @@ struct game_state;
 typedef void (*GameCallback)(void*);
 typedef game_state* (*game_init_proc)(platform*);
 typedef bool (*game_main_proc)(platform*, game_state*);
-typedef void (*game_init_globals_proc)(void);
+typedef void (*game_init_globals_proc)(platform*);
 
 GLOBAL_VARIABLE v2 InvalidMouseP = {-1, -1};
 
@@ -125,6 +125,7 @@ struct platform
   thread_startup_params *Threads;
   void (*PushWorkQueueEntry)(work_queue *Queue, work_queue_entry *Entry);
   r64 (*GetHighPrecisionClock)(void);
+  u64 (*GetCycleCount)(void);
   umm (*Allocate)(u8 Bytes);
   void* (*PushStruct)(memory_arena *Memory, umm sizeofStruct );
   void* (*PushStructChecked_)(memory_arena *Memory, umm sizeofStruct, const char* StructName, s32 Line, const char* File);
@@ -217,8 +218,11 @@ u8*
 Allocate(umm Bytes)
 {
   u8* Result = (u8*)calloc(1, (size_t)Bytes);
-
-  Assert(Result);
+  if (!Result)
+  {
+    Assert(False);
+    Error("Unable to allocate memory!");
+  }
   return Result;
 }
 

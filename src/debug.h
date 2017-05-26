@@ -6,42 +6,66 @@
 
 using namespace std;
 
+
+#define DEBUG_STATE_ENTRY_COUNT 2048
+
+
 struct debug_profile_entry
 {
   u64 CycleCount;
   u32 HitCount;
 };
 
-struct debug_profile_table
+struct debug_state
 {
-  debug_profile_entry Table[1024];
+  u64 (*GetCycleCount)(void);
+  debug_profile_entry Entries[DEBUG_STATE_ENTRY_COUNT];
 };
+
+DEBUG_GLOBAL debug_state GlobalDebugState;
+
+#define TIMED_FUNCTION() debug_timed_function(__COUNTER__)
+#define DEBUG_FRAME_END(DebugRG) DebugFrameEnd(DebugRG)
+
+
+void
+InitDebugState( debug_state *DebugState, platform *Plat)
+{
+  DebugState->GetCycleCount = Plat->GetCycleCount;
+
+  return;
+}
+
+inline debug_state*
+GetDebugState() { return &GlobalDebugState; }
 
 struct debug_timed_function
 {
   u32 FunctionIndex = 0;
 
+  u64 StartingCycleCount;
+  u64 EndingCycleCount;
+
   debug_timed_function(u32 FunctionIndexIn)
   {
+    Assert(FunctionIndexIn < DEBUG_STATE_ENTRY_COUNT);
     FunctionIndex = FunctionIndexIn;
+
+    // Record cycle count at last moment before returning
+    StartingCycleCount = GetDebugState()->GetCycleCount();
   }
 
   ~debug_timed_function()
   {
+    // Record cycle count ASAP when object is cleaned up
     debug_state *DebugState = GetDebugState();
+    EndingCycleCount = DebugState->GetCycleCount();
 
-    debug_profile_entry *Entry = DebugState[FunctionIndex];
+    debug_profile_entry *Entry = &DebugState->Entries[FunctionIndex];
 
+    Entry->CycleCount += (EndingCycleCount - StartingCycleCount);
     Entry->HitCount++;
-    Entry->CycleCount += DebugState->GetCycleCount();
   }
-};
-
-#define TIMED_FUNCTION() debug_timed_function(__COUNTER__)
-
-struct debug_state
-{
-  u64 (*GetCycleCount)(void);
 };
 
 struct debug_text_render_group
