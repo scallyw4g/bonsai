@@ -2183,7 +2183,6 @@ TraverseSurfaceToBoundary(World *world,
 void
 Draw0thLod(game_state *GameState, world_chunk *Chunk, v3 RenderOffset)
 {
-  s32 Color = YELLOW;
   /* for ( s32 PointIndex = 0; PointIndex < Chunk->PB.Count; ++PointIndex ) */
   /*   DEBUG_DrawPointMarker(world, V3(Chunk->PB.Points[PointIndex]) + RenderOffset, Color--, 1.0f); */
 
@@ -2192,13 +2191,13 @@ Draw0thLod(game_state *GameState, world_chunk *Chunk, v3 RenderOffset)
   Verts[0] = V3(Chunk->PB.Points[0]) + RenderOffset;
 
 
-  Color = 0;
+  s32 Color = 42;
   s32 VertIndex = 1;
   while ( (VertIndex + 1) < Chunk->PB.Count )
   {
     Verts[1] = V3(Chunk->PB.Points[VertIndex]) + RenderOffset;
     Verts[2] = V3(Chunk->PB.Points[++VertIndex]) + RenderOffset;
-    BufferTriangle(GameState->world, &Verts[0], Chunk->Normal, Color+= 10);
+    BufferTriangle(GameState->world, &Verts[0], Chunk->Normal, Color);
   }
 
   return;
