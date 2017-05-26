@@ -17,7 +17,7 @@ initText2D(const char *TexturePath, debug_text_render_group *RG)
   return;
 }
 
-void
+rect2
 PrintDebugText( debug_text_render_group *RG, const char *Text, int x, int y, int size)
 {
   unsigned int length = strlen(Text);
@@ -27,12 +27,16 @@ PrintDebugText( debug_text_render_group *RG, const char *Text, int x, int y, int
   v2 vertices[1024];
   v2 UVs[1024];
 
+  rect2 Result = { V2(x, y), V2(x,y) };
+
   for ( unsigned int i=0 ; i<length ; i++ )
   {
     v2 vertex_up_left    = V2( x+i*size     , y+size );
     v2 vertex_up_right   = V2( x+i*size+size, y+size );
     v2 vertex_down_right = V2( x+i*size+size, y      );
     v2 vertex_down_left  = V2( x+i*size     , y      );
+
+    Result.Max = vertex_up_right;
 
     char character = Text[i];
     float uv_x = (character%16)/16.0f;
@@ -104,7 +108,7 @@ PrintDebugText( debug_text_render_group *RG, const char *Text, int x, int y, int
 
   AssertNoGlErrors;
 
-  return;
+  return Result;
 }
 
 void
@@ -114,7 +118,7 @@ DebugFrameEnd(debug_text_render_group *RG)
 
   debug_profile_entry NullEntry = {};
 
-  s32 FontSize = 22;
+  s32 FontSize = 42;
   s32 LinePadding = 3;
 
   s32 AtY = 0;
@@ -127,7 +131,13 @@ DebugFrameEnd(debug_text_render_group *RG)
 
     if (Entry->HitCount > 0)
     {
-      PrintDebugText( RG, "Timed a function!", 0, AtY, FontSize);
+      char CycleCountBuffer[32];
+      sprintf(CycleCountBuffer, "%llu", Entry->CycleCount);
+
+      rect2 CCTextRect = PrintDebugText( RG, CycleCountBuffer, 0, AtY, FontSize);
+      rect2 FNTextRect = PrintDebugText( RG, Entry->FuncName, (int)CCTextRect.Max.x, AtY, FontSize);
+
+
       AtY += (FontSize + LinePadding);
     }
 

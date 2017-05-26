@@ -14,6 +14,7 @@ struct debug_profile_entry
 {
   u64 CycleCount;
   u32 HitCount;
+  const char* FuncName;
 };
 
 struct debug_state
@@ -24,7 +25,7 @@ struct debug_state
 
 DEBUG_GLOBAL debug_state GlobalDebugState;
 
-#define TIMED_FUNCTION() debug_timed_function(__COUNTER__)
+#define TIMED_FUNCTION() debug_timed_function FN(__COUNTER__, __FUNCTION_NAME__)
 #define DEBUG_FRAME_END(DebugRG) DebugFrameEnd(DebugRG)
 
 
@@ -46,10 +47,13 @@ struct debug_timed_function
   u64 StartingCycleCount;
   u64 EndingCycleCount;
 
-  debug_timed_function(u32 FunctionIndexIn)
+  const char* FuncName;
+
+  debug_timed_function(u32 FunctionIndexIn, const char* FuncNameIn)
   {
     Assert(FunctionIndexIn < DEBUG_STATE_ENTRY_COUNT);
     FunctionIndex = FunctionIndexIn;
+    FuncName = FuncNameIn;
 
     // Record cycle count at last moment before returning
     StartingCycleCount = GetDebugState()->GetCycleCount();
@@ -65,6 +69,7 @@ struct debug_timed_function
 
     Entry->CycleCount += (EndingCycleCount - StartingCycleCount);
     Entry->HitCount++;
+    Entry->FuncName = FuncName;
   }
 };
 

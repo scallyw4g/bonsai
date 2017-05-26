@@ -617,6 +617,12 @@ struct line
   }
 };
 
+struct rect2
+{
+  v2 Min;
+  v2 Max;
+};
+
 struct aabb
 {
   v3 MinCorner;

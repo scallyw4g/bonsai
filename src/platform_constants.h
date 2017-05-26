@@ -40,6 +40,8 @@
  */
 #ifdef _MSC_VER
 
+#define __FUNCTION_NAME__ __FUNCTION__
+
 #define GLOBAL_VARIABLE static
 #define DEBUG_GLOBAL static
 
@@ -64,6 +66,8 @@
  *  GCC on Linux && Cygwin
  */
 #else
+
+#define __FUNCTION_NAME__ __func__
 
 #define Assert(condition) if (!(condition)) raise(SIGTRAP);
 
