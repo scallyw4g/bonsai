@@ -1698,7 +1698,7 @@ Draw0thLOD(game_state *GameState, world_chunk *WorldChunk)
 
       v3 SurfaceNormal = {};
       v3 ChunkMidpoint = WorldChunkDim /2;
-      DEBUG_DrawPointMarker(world, ChunkMidpoint + RenderOffset, GREEN, 0.5f);
+      /* DEBUG_DrawPointMarker(world, ChunkMidpoint + RenderOffset, GREEN, 0.5f); */
 
       s32 WorldChunkVolume = Volume(WorldChunkDim);
 
@@ -1753,7 +1753,7 @@ Draw0thLOD(game_state *GameState, world_chunk *WorldChunk)
         return;
       }
 
-      DEBUG_DrawVectorAt(world, RenderOffset + ChunkMidpoint - (SurfaceNormal*10), SurfaceNormal*20, BLACK, 0.5f );
+      /* DEBUG_DrawVectorAt(world, RenderOffset + ChunkMidpoint - (SurfaceNormal*10), SurfaceNormal*20, BLACK, 0.5f ); */
 
       point_buffer PB = {};
 
@@ -1825,31 +1825,65 @@ Draw0thLOD(game_state *GameState, world_chunk *WorldChunk)
         }
       }
 
-      for ( s32 PointIndex = 0; PointIndex < PB.Count; ++PointIndex )
-        DEBUG_DrawPointMarker(world, V3(PB.Points[PointIndex]) + RenderOffset, PINK, 1.0f);
 
 
-      s32 VertIndex = 0;
-      v3 Verts[3] = {};
+      // Sort the vertices based on distance to closest points
+      for (s32 PBIndexOuter = 0;
+          PBIndexOuter < PB.Count;
+          ++PBIndexOuter)
+      {
+        voxel_position CurrentVert = PB.Points[PBIndexOuter];
+        s32 ShortestLength = INT_MAX;
 
-      Verts[0] = V3(PB.Points[0]) + RenderOffset;
+        // Loop through remaining points and find next closest point, collapsing
+        // points that are very close to each other
+        for (s32 PBIndexInner = PBIndexOuter + 1;
+            PBIndexInner < PB.Count;
+            ++PBIndexInner)
+        {
+          s32 TestLength = LengthSq(CurrentVert - PB.Points[PBIndexInner]);
 
-      if (PB.Count == 4)
+          /* if ( TestLength < 11 ) */
+          /* { */
+          /*   PB.Points[PBIndexOuter] = PB.Points[PB.Count-1]; */
+          /*   PBIndexInner--; */
+          /*   PB.Count--; */
+          /*   continue; */
+          /* } */
+
+          if ( TestLength < ShortestLength )
+          {
+            ShortestLength = TestLength;
+
+            voxel_position Temp = PB.Points[PBIndexOuter + 1];
+            PB.Points[PBIndexOuter + 1] = PB.Points[PBIndexInner];
+            PB.Points[PBIndexInner] = Temp;
+          }
+        }
+
+      }
+
+      /* if (PB.Count == 5) */
       {
 
-        while ( VertIndex < PB.Count )
-        {
-          for ( s32 VertInnerIndex = 0;
-              VertInnerIndex < 2;
-              ++VertInnerIndex)
-          {
-            Verts[1] = V3(PB.Points[VertIndex] + RenderOffset);
-            Verts[2] = V3(PB.Points[++VertIndex] + RenderOffset);
-            BufferTriangle(world, &Verts[0], SurfaceNormal, 42);
-          }
+        s32 Color = YELLOW;
+        for ( s32 PointIndex = 0; PointIndex < PB.Count; ++PointIndex )
+          DEBUG_DrawPointMarker(world, V3(PB.Points[PointIndex]) + RenderOffset, Color--, 1.0f);
 
+
+        v3 Verts[3] = {};
+        Verts[0] = V3(PB.Points[0]) + RenderOffset;
+
+
+        Color = 0;
+        s32 VertIndex = 1;
+        while ( (VertIndex + 1) < PB.Count )
+        {
+          Verts[1] = V3(PB.Points[VertIndex]) + RenderOffset;
+          Verts[2] = V3(PB.Points[++VertIndex]) + RenderOffset;
+          BufferTriangle(world, &Verts[0], SurfaceNormal, Color+= 10);
         }
-    }
+      }
 
 
 #if 0
@@ -2200,7 +2234,7 @@ DrawWorldChunk( game_state *GameState,
         {
           /* Draw0thLOD( GameState, WorldChunk ); */
           /* BufferChunkMesh( GameState->Plat, GameState->world, WorldChunk->Data, WorldChunk->WorldP, RG, SG, GameState->Camera); */
-          DEBUG_DrawChunkAABB( GameState->world, WorldChunk, GameState->Camera, Quaternion() , 0 );
+          /* DEBUG_DrawChunkAABB( GameState->world, WorldChunk, GameState->Camera, Quaternion() , 0 ); */
         }
         else
         {
