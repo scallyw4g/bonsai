@@ -112,6 +112,7 @@ InitializeVoxels( game_state *GameState, world_chunk *WorldChunk )
   /* CALLGRIND_TOGGLE_COLLECT; */
 
   chunk->flags = SetFlag(chunk->flags, Chunk_Initialized);
+
   BuildWorldChunkBoundaryVoxels(GameState, WorldChunk);
 
   return;
@@ -130,6 +131,7 @@ InitializeVoxels(void *Input)
   Assert(Chunk);
 
   InitializeVoxels(GameState, Chunk);
+
   return;
 }
 

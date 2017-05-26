@@ -34,6 +34,7 @@ enum chunk_flag
   Chunk_Queued                  = 1 << 9,
   Chunk_Garbage                 = 1 << 10,
   Chunk_Collected               = 1 << 11,
+  Chunk_LodGenerated            = 1 << 12,
 };
 
 enum voxel_flag
@@ -74,8 +75,8 @@ struct world_chunk
 
   world_position WorldP;
 
-  line Edges[MAX_CHUNK_EDGES];
-  int EdgeCount;
+  point_buffer PB;
+  v3 Normal;
 };
 
 struct free_world_chunk
@@ -385,7 +386,7 @@ FreeWorldChunk(World *world, world_chunk *chunk)
 
     chunk->Prev = 0;
     chunk->Next = 0;
-    chunk->EdgeCount = 0;
+    chunk->PB.Count = 0;
 
     Assert(world->FreeChunkCount < FREELIST_SIZE);
     world->FreeChunks[world->FreeChunkCount++] = chunk;

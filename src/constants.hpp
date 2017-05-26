@@ -17,9 +17,9 @@
 #define CD_Z 16
 
 // Visible Region XYZ - Must be > (3,3,3)
-#define VR_X 8
-#define VR_Y 8
-#define VR_Z 8
+#define VR_X 16
+#define VR_Y 16
+#define VR_Z 16
 
 #define VOLUME_VISIBLE_REGION (VR_X*VR_X*VR_X)
 
@@ -35,7 +35,7 @@
 
 #define WORLD_HASH_SIZE VOLUME_VISIBLE_REGION
 #define FREELIST_SIZE VOLUME_VISIBLE_REGION
-#define WORLD_STORAGE_SIZE Megabytes(800)
+#define WORLD_STORAGE_SIZE Megabytes(900)
 
 #define WORLD_GRAVITY V3(0.0f, -20.0f, 0.0f)
 
@@ -62,7 +62,7 @@
 #define DEBUG_HIGHLIGHT_VOID_CHUNKS   0
 #define DEBUG_DRAW_WORLD_AXIES        1
 #define DEBUG_OPTIMIZE_WORLD_GC       1
-#define DEBUG_THREAD_COUNT_BIAS       -3
+#define DEBUG_THREAD_COUNT_BIAS       -2
 
 #define DEBUG_FONT_SIZE               16
 
