@@ -16,6 +16,7 @@ void
 SeedWorldAndUnspawnPlayer( World *world, Entity *Player )
 {
   Player->Spawned = false;
+
   return;
 }
 
@@ -261,7 +262,9 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
 
         /* if (chunk->WorldP == World_Position(-1,0,2)) */
         {
-          DrawWorldChunk( GameState, chunk, RG, SG);
+          DrawWorldChunk(GameState, chunk, RG, SG);
+
+          //BufferWorldChunk(GameState, chunk, RG, SG);
         }
 
         chunk = chunk->Next;

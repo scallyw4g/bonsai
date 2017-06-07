@@ -14,13 +14,13 @@
 
 DEBUG_GLOBAL v3 DEBUG_RenderOffset;
 
-#define BufferLocalFace \
-  BufferVerts( \
-      world, \
-      6, \
-      localVertexData, \
+#define BufferLocalFace        \
+  BufferVerts(                 \
+      &world->Mesh,            \
+      6,                       \
+      localVertexData,         \
       sizeof(localVertexData), \
-      localNormalData, \
+      localNormalData,         \
       sizeof(localNormalData), \
       FaceColor)
 
@@ -310,7 +310,7 @@ RenderShadowMap(World *world, ShadowRenderGroup *SG, RenderGroup *RG, Camera_Obj
   // 1rst attribute buffer : vertices
   GL_Global->glEnableVertexAttribArray(0);
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->vertexbuffer);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, world->VertexData.filled, world->VertexData.Data, GL_STATIC_DRAW);
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, world->Mesh.VertexData.filled, world->Mesh.VertexData.Data, GL_STATIC_DRAW);
   GL_Global->glVertexAttribPointer(
     0,                  // The attribute we want to configure
     3,                  // size
@@ -320,7 +320,7 @@ RenderShadowMap(World *world, ShadowRenderGroup *SG, RenderGroup *RG, Camera_Obj
     (void*)0            // array buffer offset
   );
 
-  glDrawArrays(GL_TRIANGLES, 0, world->VertexCount);
+  glDrawArrays(GL_TRIANGLES, 0, world->Mesh.VertexCount);
 
   GL_Global->glDisableVertexAttribArray(0);
 
@@ -345,7 +345,7 @@ RenderWorld( platform *Plat, World *world, RenderGroup *RG)
   // Vertices
   GL_Global->glEnableVertexAttribArray(0);
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->vertexbuffer);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, world->VertexData.filled, world->VertexData.Data, GL_STATIC_DRAW);
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, world->Mesh.VertexData.filled, world->Mesh.VertexData.Data, GL_STATIC_DRAW);
   GL_Global->glVertexAttribPointer(
     0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
     3,                  // size
@@ -358,7 +358,7 @@ RenderWorld( platform *Plat, World *world, RenderGroup *RG)
   // Colors
   GL_Global->glEnableVertexAttribArray(1);
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->colorbuffer);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, world->ColorData.filled, world->ColorData.Data, GL_STATIC_DRAW);
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, world->Mesh.ColorData.filled, world->Mesh.ColorData.Data, GL_STATIC_DRAW);
   GL_Global->glVertexAttribPointer(
     1,                  // attribute 1. No particular reason for 1, but must match the layout in the shader.
     3,                  // size
@@ -371,7 +371,7 @@ RenderWorld( platform *Plat, World *world, RenderGroup *RG)
   // Normals
   GL_Global->glEnableVertexAttribArray(2);
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->normalbuffer);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, world->NormalData.filled, world->NormalData.Data, GL_STATIC_DRAW);
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, world->Mesh.NormalData.filled, world->Mesh.NormalData.Data, GL_STATIC_DRAW);
   GL_Global->glVertexAttribPointer(
     2,
     3,                  // size
@@ -381,7 +381,7 @@ RenderWorld( platform *Plat, World *world, RenderGroup *RG)
     (void*)0            // array buffer offset
   );
 
-  glDrawArrays(GL_TRIANGLES, 0, world->VertexCount);
+  glDrawArrays(GL_TRIANGLES, 0, world->Mesh.VertexCount);
 
   GL_Global->glDisableVertexAttribArray(0);
   GL_Global->glDisableVertexAttribArray(1);
@@ -406,18 +406,18 @@ FlushRenderBuffers(
 
   AssertNoGlErrors;
 
-  world->VertexCount = 0;
+  world->Mesh.VertexCount = 0;
 
-  world->VertexData.filled = 0;
-  world->NormalData.filled = 0;
-  world->ColorData.filled = 0;
+  world->Mesh.VertexData.filled = 0;
+  world->Mesh.NormalData.filled = 0;
+  world->Mesh.ColorData.filled = 0;
 
   return;
 }
 
 inline void
 BufferVerts(
-    World *world,
+    mesh_buffer_target *target,
 
     int NumVerts,
 
@@ -430,30 +430,30 @@ BufferVerts(
     const float* VertColors
   )
 {
-  world->VertexData.filled += sizeofVertPositions;
-  world->NormalData.filled += sizeofNormals;
-  world->ColorData.filled += sizeofNormals;
+  target->VertexData.filled += sizeofVertPositions;
+  target->NormalData.filled += sizeofNormals;
+  target->ColorData.filled += sizeofNormals;
 
-  if ( world->VertexData.filled > world->VertexData.bytesAllocd ||
-       world->ColorData.filled > world->ColorData.bytesAllocd ||
-       world->NormalData.filled > world->NormalData.bytesAllocd )
+  if ( target->VertexData.filled > target->VertexData.bytesAllocd ||
+       target->ColorData.filled > target->ColorData.bytesAllocd ||
+       target->NormalData.filled > target->NormalData.bytesAllocd )
   {
-    world->VertexData.filled -= sizeofVertPositions;
-    world->NormalData.filled -= sizeofNormals;
-    world->ColorData.filled  -= sizeofNormals;
+    target->VertexData.filled -= sizeofVertPositions;
+    target->NormalData.filled -= sizeofNormals;
+    target->ColorData.filled  -= sizeofNormals;
 
     // TODO(Jesse): Instead of Asserting, do this
-    /* FlushRenderBuffers( world, RG, SG, Camera); */
+    /* FlushRenderBuffers( target, RG, SG, Camera); */
     // Out of memory, panic!
     /* Assert(!"Out of memory"); */
     return;
   }
 
-  memcpy( &world->VertexData.Data[world->VertexCount*3], VertsPositions, sizeofVertPositions );
-  memcpy( &world->NormalData.Data[world->VertexCount*3], Normals, sizeofNormals );
-  memcpy( &world->ColorData.Data[world->VertexCount*3],  VertColors, sizeofNormals );
+  memcpy( &target->VertexData.Data[target->VertexCount*3], VertsPositions, sizeofVertPositions );
+  memcpy( &target->NormalData.Data[target->VertexCount*3], Normals, sizeofNormals );
+  memcpy( &target->ColorData.Data[target->VertexCount*3],  VertColors, sizeofNormals );
 
-  world->VertexCount += NumVerts;
+  target->VertexCount += NumVerts;
 
   return;
 }
@@ -755,7 +755,7 @@ DEBUG_DrawLine(World *world, v3 P1, v3 P2, int ColorIndex, float Thickness )
     };
 
 
-    BufferVerts(world,
+    BufferVerts(&world->Mesh,
         6,
         localVertexData,
         sizeof(localVertexData),
@@ -783,7 +783,7 @@ DEBUG_DrawLine(World *world, v3 P1, v3 P2, int ColorIndex, float Thickness )
     };
 
 
-    BufferVerts(world,
+    BufferVerts(&world->Mesh,
         6,
         localVertexData,
         sizeof(localVertexData),
@@ -1238,17 +1238,13 @@ BufferChunkMesh(
 {
   float FaceColors[FACE_COLOR_SIZE];
 
-  int MaxChunkMeshBytes = chunk->BoundaryVoxelCount * VERT_PER_VOXEL * BYTES_PER_VERT;
-  if (world->VertexData.filled + MaxChunkMeshBytes > world->VertexData.bytesAllocd )
-  {
-    FlushRenderBuffers( Plat, world, RG, SG, Camera);
-  }
-
-  for ( int i = 0; i < chunk->BoundaryVoxelCount; ++i )
+  for (int VoxIndex = 0;
+       VoxIndex < chunk->BoundaryVoxelCount;
+       ++VoxIndex )
   {
     VoxelsIndexed ++;
 
-    voxel V = chunk->BoundaryVoxels[i];
+    voxel V = chunk->BoundaryVoxels[VoxIndex];
 
     GetColorData(GetVoxelColor(V), &FaceColors[0]);;
 
@@ -1256,29 +1252,23 @@ BufferChunkMesh(
       GetRenderP(world, Canonical_Position(world, Offset+GetVoxelP(V), WorldP), Camera);
 
     if ( IsSet( V.flags, Voxel_RightFace ) )
-    {
-      BufferRightFace(  world, RenderP, FaceColors);
-    }
+      BufferRightFace( world, RenderP, FaceColors);
+
     if ( IsSet( V.flags, Voxel_LeftFace ) )
-    {
-      BufferLeftFace(   world, RenderP, FaceColors);
-    }
+      BufferLeftFace( world, RenderP, FaceColors);
+
     if ( IsSet( V.flags, Voxel_BottomFace ) )
-    {
       BufferBottomFace( world, RenderP, FaceColors);
-    }
+
     if ( IsSet( V.flags, Voxel_TopFace ) )
-    {
-      BufferTopFace(    world, RenderP, FaceColors);
-    }
+      BufferTopFace( world, RenderP, FaceColors);
+
     if ( IsSet( V.flags, Voxel_FrontFace ) )
-    {
-      BufferFrontFace(  world, RenderP, FaceColors);
-    }
+      BufferFrontFace( world, RenderP, FaceColors);
+
     if ( IsSet( V.flags, Voxel_BackFace ) )
-    {
-      BufferBackFace(   world, RenderP, FaceColors);
-    }
+      BufferBackFace( world, RenderP, FaceColors);
+
   }
 
 
@@ -1442,11 +1432,12 @@ BufferTriangle(World *world, v3 *Verts, v3 Normal, s32 ColorIndex)
   // TODO(Jesse): Is this necessary to avoid some pointer aliasing bug?
   memcpy( VertBuffer, Verts, 9 * sizeof(r32) );
 
-
   float FaceColors[32];
   GetColorData( ColorIndex, FaceColors);
 
-  BufferVerts ( world, 3,
+  BufferVerts(
+    &world->Mesh,
+    3,
 
     VertBuffer,
     sizeof(VertBuffer),
@@ -1507,186 +1498,186 @@ Compute0thLod(game_state *GameState, world_chunk *WorldChunk)
   chunk_data *chunk = WorldChunk->Data;
 
 
-    s32 BoundaryVoxelCount = WorldChunk->Data->BoundaryVoxelCount;
+  s32 BoundaryVoxelCount = WorldChunk->Data->BoundaryVoxelCount;
 
-    if ( BoundaryVoxelCount > 0)
+  if ( BoundaryVoxelCount > 0)
+  {
+    World *world = GameState->world;
+    chunk_dimension WorldChunkDim = world->ChunkDim;
+
+    v3 RenderOffset = GetRenderP( world, WorldChunk->WorldP, GameState->Camera);
+
+    DEBUG_RenderOffset = RenderOffset;
+
+
+    v3 SurfaceNormal = {};
+    v3 ChunkMidpoint = WorldChunkDim /2;
+    /* DEBUG_DrawPointMarker(world, ChunkMidpoint + RenderOffset, GREEN, 0.5f); */
+
+    s32 WorldChunkVolume = Volume(WorldChunkDim);
+
+    // First compute how much of the chunk is actually full.  This is done
+    // because the surface normal computation works better if the check is
+    // done against the minority of filled or empty voxels.  For example, if
+    // a chunk is mostly full, we want to check against the empty voxels for
+    // the normal computation
+    s32 FilledVolume = 0;
+    for ( s32 VoxelIndex = 0;
+        VoxelIndex < WorldChunkVolume;
+        ++VoxelIndex)
     {
-      World *world = GameState->world;
-      chunk_dimension WorldChunkDim = world->ChunkDim;
+      voxel_position VoxelP = GetVoxelP(WorldChunkDim, VoxelIndex);
+      if ( IsFilledInChunk( WorldChunk->Data, VoxelP, WorldChunkDim ) )
+        FilledVolume ++ ;
+    }
 
-      v3 RenderOffset = GetRenderP( world, WorldChunk->WorldP, GameState->Camera);
+    b32 HalfFilled = FilledVolume >= WorldChunkVolume/2 ? True : False ;
+    b32 HalfEmpty = !HalfFilled;
 
-      DEBUG_RenderOffset = RenderOffset;
 
+    // Loop through the chunk and find the surface normal
+    for ( s32 VoxelIndex = 0;
+        VoxelIndex < WorldChunkVolume;
+        ++VoxelIndex)
+    {
+      voxel_position VoxelP = GetVoxelP(WorldChunkDim, VoxelIndex);
 
-      v3 SurfaceNormal = {};
-      v3 ChunkMidpoint = WorldChunkDim /2;
-      /* DEBUG_DrawPointMarker(world, ChunkMidpoint + RenderOffset, GREEN, 0.5f); */
+      /* if (IsBoundaryVoxel(chunk, VoxelP, WorldChunkDim)) */
+      /*   DEBUG_DrawPointMarker(world, V3(VoxelP) + RenderOffset, PINK, 0.25f); */
 
-      s32 WorldChunkVolume = Volume(WorldChunkDim);
-
-      // First compute how much of the chunk is actually full.  This is done
-      // because the surface normal computation works better if the check is
-      // done against the minority of filled or empty voxels.  For example, if
-      // a chunk is mostly full, we want to check against the empty voxels for
-      // the normal computation
-      s32 FilledVolume = 0;
-      for ( s32 VoxelIndex = 0;
-          VoxelIndex < WorldChunkVolume;
-          ++VoxelIndex)
+      // TODO(Jesse): Pretty sure we can do some XOR trickery or something
+      // here to avoid this branch, which could be a large perf win
+      if ( HalfFilled && NotFilledInChunk( WorldChunk->Data, VoxelP, WorldChunkDim ) )
       {
-        voxel_position VoxelP = GetVoxelP(WorldChunkDim, VoxelIndex);
-        if ( IsFilledInChunk( WorldChunk->Data, VoxelP, WorldChunkDim ) )
-          FilledVolume ++ ;
+        SurfaceNormal += Normalize( VoxelP - ChunkMidpoint );
+      }
+      else if ( HalfEmpty && IsFilledInChunk( WorldChunk->Data, VoxelP, WorldChunkDim ) )
+      {
+        SurfaceNormal += Normalize( VoxelP - ChunkMidpoint );
       }
 
-      b32 HalfFilled = FilledVolume >= WorldChunkVolume/2 ? True : False ;
-      b32 HalfEmpty = !HalfFilled;
+    }
 
+    // FIXME(Jesse): Sometimes the surface is perfectly balanced within the
+    // chunk, in which case the normal turns out to be zero.
+    SurfaceNormal = Normalize(SurfaceNormal);
+    if ( Length(SurfaceNormal) == 0 )
+    {
+      DEBUG_DrawChunkAABB( world, WorldChunk, GameState->Camera, Quaternion() , RED );
+      return;
+    }
 
-      // Loop through the chunk and find the surface normal
-      for ( s32 VoxelIndex = 0;
-          VoxelIndex < WorldChunkVolume;
-          ++VoxelIndex)
-      {
-        voxel_position VoxelP = GetVoxelP(WorldChunkDim, VoxelIndex);
+    WorldChunk->Normal = SurfaceNormal;
 
-        /* if (IsBoundaryVoxel(chunk, VoxelP, WorldChunkDim)) */
-        /*   DEBUG_DrawPointMarker(world, V3(VoxelP) + RenderOffset, PINK, 0.25f); */
+    /* DEBUG_DrawVectorAt(world, RenderOffset + ChunkMidpoint - (SurfaceNormal*10), SurfaceNormal*20, BLACK, 0.5f ); */
 
-        // TODO(Jesse): Pretty sure we can do some XOR trickery or something
-        // here to avoid this branch, which could be a large perf win
-        if ( HalfFilled && NotFilledInChunk( WorldChunk->Data, VoxelP, WorldChunkDim ) )
-        {
-          SurfaceNormal += Normalize( VoxelP - ChunkMidpoint );
-        }
-        else if ( HalfEmpty && IsFilledInChunk( WorldChunk->Data, VoxelP, WorldChunkDim ) )
-        {
-          SurfaceNormal += Normalize( VoxelP - ChunkMidpoint );
-        }
+    point_buffer *PB = &WorldChunk->PB;
 
-      }
-
-      // FIXME(Jesse): Sometimes the surface is perfectly balanced within the
-      // chunk, in which case the normal turns out to be zero.
-      SurfaceNormal = Normalize(SurfaceNormal);
-      if ( Length(SurfaceNormal) == 0 )
-      {
-        DEBUG_DrawChunkAABB( world, WorldChunk, GameState->Camera, Quaternion() , RED );
-        return;
-      }
-
-      WorldChunk->Normal = SurfaceNormal;
-
-      /* DEBUG_DrawVectorAt(world, RenderOffset + ChunkMidpoint - (SurfaceNormal*10), SurfaceNormal*20, BLACK, 0.5f ); */
-
-      point_buffer *PB = &WorldChunk->PB;
+    {
+      voxel_position Start = Voxel_Position(0, 0, 0);
 
       {
-        voxel_position Start = Voxel_Position(0, 0, 0);
-
-        {
-          voxel_position Iter  = Voxel_Position(1, 0, 0);
-          FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
-        }
-        {
-          voxel_position Iter  = Voxel_Position(0, 1, 0);
-          FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
-        }
-        {
-          voxel_position Iter  = Voxel_Position(0, 0, 1);
-          FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
-        }
+        voxel_position Iter  = Voxel_Position(1, 0, 0);
+        FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
       }
+      {
+        voxel_position Iter  = Voxel_Position(0, 1, 0);
+        FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
+      }
+      {
+        voxel_position Iter  = Voxel_Position(0, 0, 1);
+        FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
+      }
+    }
+
+    {
+      voxel_position Start = Voxel_Position(0, WorldChunkDim.y-1, WorldChunkDim.z-1);
 
       {
-        voxel_position Start = Voxel_Position(0, WorldChunkDim.y-1, WorldChunkDim.z-1);
-
-        {
-          voxel_position Iter  = Voxel_Position(1, 0, 0);
-          FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
-        }
-        {
-          voxel_position Iter  = Voxel_Position(0,-1, 0);
-          FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
-        }
-        {
-          voxel_position Iter  = Voxel_Position(0, 0,-1);
-          FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
-        }
+        voxel_position Iter  = Voxel_Position(1, 0, 0);
+        FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
       }
+      {
+        voxel_position Iter  = Voxel_Position(0,-1, 0);
+        FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
+      }
+      {
+        voxel_position Iter  = Voxel_Position(0, 0,-1);
+        FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
+      }
+    }
+
+    {
+      voxel_position Start = Voxel_Position(WorldChunkDim.x-1, WorldChunkDim.y-1, 0);
 
       {
-        voxel_position Start = Voxel_Position(WorldChunkDim.x-1, WorldChunkDim.y-1, 0);
-
-        {
-          voxel_position Iter  = Voxel_Position(-1, 0, 0);
-          FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
-        }
-        {
-          voxel_position Iter  = Voxel_Position(0,-1, 0);
-          FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
-        }
-        {
-          voxel_position Iter  = Voxel_Position(0, 0, 1);
-          FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
-        }
+        voxel_position Iter  = Voxel_Position(-1, 0, 0);
+        FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
       }
+      {
+        voxel_position Iter  = Voxel_Position(0,-1, 0);
+        FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
+      }
+      {
+        voxel_position Iter  = Voxel_Position(0, 0, 1);
+        FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
+      }
+    }
+
+    {
+      voxel_position Start = Voxel_Position(WorldChunkDim.x-1, 0, WorldChunkDim.z-1);
 
       {
-        voxel_position Start = Voxel_Position(WorldChunkDim.x-1, 0, WorldChunkDim.z-1);
-
-        {
-          voxel_position Iter  = Voxel_Position(-1, 0, 0);
-          FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
-        }
-        {
-          voxel_position Iter  = Voxel_Position(0, 1, 0);
-          FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
-        }
-        {
-          voxel_position Iter  = Voxel_Position(0, 0,-1);
-          FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
-        }
+        voxel_position Iter  = Voxel_Position(-1, 0, 0);
+        FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
       }
-
-
-
-      // Sort the vertices based on distance to closest points
-      for (s32 PBIndexOuter = 0;
-          PBIndexOuter < PB->Count;
-          ++PBIndexOuter)
       {
-        voxel_position CurrentVert = PB->Points[PBIndexOuter];
-        s32 ShortestLength = INT_MAX;
-
-        // Loop through remaining points and find next closest point, collapsing
-        // points that are very close to each other
-        for (s32 PBIndexInner = PBIndexOuter + 1;
-            PBIndexInner < PB->Count;
-            ++PBIndexInner)
-        {
-          s32 TestLength = LengthSq(CurrentVert - PB->Points[PBIndexInner]);
-
-          /* if ( TestLength < 11 ) */
-          /* { */
-          /*   PB->Points[PBIndexOuter] = PB->Points[PB->Count-1]; */
-          /*   PBIndexInner--; */
-          /*   PB->Count--; */
-          /*   continue; */
-          /* } */
-
-          if ( TestLength < ShortestLength )
-          {
-            ShortestLength = TestLength;
-
-            voxel_position Temp = PB->Points[PBIndexOuter + 1];
-            PB->Points[PBIndexOuter + 1] = PB->Points[PBIndexInner];
-            PB->Points[PBIndexInner] = Temp;
-          }
-        }
-
+        voxel_position Iter  = Voxel_Position(0, 1, 0);
+        FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
       }
+      {
+        voxel_position Iter  = Voxel_Position(0, 0,-1);
+        FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
+      }
+    }
+
+
+
+    // Sort the vertices based on distance to closest points
+    for (s32 PBIndexOuter = 0;
+        PBIndexOuter < PB->Count;
+        ++PBIndexOuter)
+    {
+      voxel_position CurrentVert = PB->Points[PBIndexOuter];
+      s32 ShortestLength = INT_MAX;
+
+      // Loop through remaining points and find next closest point, collapsing
+      // points that are very close to each other
+      for (s32 PBIndexInner = PBIndexOuter + 1;
+          PBIndexInner < PB->Count;
+          ++PBIndexInner)
+      {
+        s32 TestLength = LengthSq(CurrentVert - PB->Points[PBIndexInner]);
+
+        /* if ( TestLength < 11 ) */
+        /* { */
+        /*   PB->Points[PBIndexOuter] = PB->Points[PB->Count-1]; */
+        /*   PBIndexInner--; */
+        /*   PB->Count--; */
+        /*   continue; */
+        /* } */
+
+        if ( TestLength < ShortestLength )
+        {
+          ShortestLength = TestLength;
+
+          voxel_position Temp = PB->Points[PBIndexOuter + 1];
+          PB->Points[PBIndexOuter + 1] = PB->Points[PBIndexInner];
+          PB->Points[PBIndexInner] = Temp;
+        }
+      }
+
+    }
 
       /* if (PB->Count == 5) */
 #if 0
@@ -2008,7 +1999,7 @@ Compute0thLod(game_state *GameState, world_chunk *WorldChunk)
 
 #endif
 
-    }
+  }
 
   chunk->flags = SetFlag(chunk->flags, Chunk_LodGenerated);
 
@@ -2180,6 +2171,7 @@ TraverseSurfaceToBoundary(World *world,
 
   return CurrentP;
 }
+
 void
 Draw0thLod(game_state *GameState, world_chunk *Chunk, v3 RenderOffset)
 {
@@ -2210,48 +2202,30 @@ DrawWorldChunk( game_state *GameState,
                 RenderGroup *RG,
                 ShadowRenderGroup *SG)
 {
-  if (IsInFrustum(GameState->world, GameState->Camera, WorldChunk) )
+  if (IsInFrustum(GameState->world, GameState->Camera, WorldChunk) && 
+      IsSet(WorldChunk->Data->flags, Chunk_Initialized))
   {
-    if (IsSet(WorldChunk->Data->flags, Chunk_Initialized) )
+    BuildWorldChunkBoundaryVoxels( GameState, WorldChunk);
+
+    if (WorldChunk->Data->BoundaryVoxelCount == 0)
+      return;
+
+    World *world = GameState->world;
+    Camera_Object *Camera = GameState->Camera;
+
+    v3 ChunkRenderOffset = GetRenderP( world, WorldChunk->WorldP, Camera);
+    v3 CameraRenderOffset = GetRenderP( world, Camera->P, Camera);
+
+    if ( Length(ChunkRenderOffset - CameraRenderOffset ) < 250 )
     {
-      BuildWorldChunkBoundaryVoxels( GameState, WorldChunk);
-
-      if (WorldChunk->Data->BoundaryVoxelCount > 0)
-      {
-
-        World *world = GameState->world;
-        Camera_Object *Camera = GameState->Camera;
-
-        v3 ChunkRenderOffset = GetRenderP( world, WorldChunk->WorldP, Camera);
-        v3 CameraRenderOffset = GetRenderP( world, Camera->P, Camera);
-
-        if ( Length(ChunkRenderOffset - CameraRenderOffset ) < 250 )
-        {
-          BufferChunkMesh( GameState->Plat, world, WorldChunk->Data, WorldChunk->WorldP, RG, SG, GameState->Camera);
-        }
-        else
-        {
-          Draw0thLod( GameState, WorldChunk, ChunkRenderOffset);
-        }
-
-        /* DEBUG_DrawChunkAABB( GameState->world, WorldChunk, GameState->Camera, Quaternion(), 0); */
-
-#if 0
-        if (GameState->Player->P.WorldP == WorldChunk->WorldP)
-        {
-          /* Draw0thLod( GameState, WorldChunk ); */
-          /* BufferChunkMesh( GameState->Plat, GameState->world, WorldChunk->Data, WorldChunk->WorldP, RG, SG, GameState->Camera); */
-          /* DEBUG_DrawChunkAABB( GameState->world, WorldChunk, GameState->Camera, Quaternion() , 0 ); */
-        }
-
-        /* else */
-        /* { */
-        /*   BufferChunkMesh( GameState->Plat, GameState->world, WorldChunk->Data, WorldChunk->WorldP, RG, SG, GameState->Camera); */
-        /* } */
-
-#endif
-      }
+      BufferChunkMesh( GameState->Plat, world, WorldChunk->Data, WorldChunk->WorldP, RG, SG, GameState->Camera);
     }
+    else
+    {
+      Draw0thLod( GameState, WorldChunk, ChunkRenderOffset);
+    }
+
+    /* DEBUG_DrawChunkAABB( GameState->world, WorldChunk, GameState->Camera, Quaternion(), 0); */
   }
 
   return;

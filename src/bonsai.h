@@ -64,9 +64,17 @@ struct chunk_data
   voxel *BoundaryVoxels;
 };
 
+struct mesh_block
+{
+  v3 Meshes[64];
+  mesh_block *Next;
+};
+
+
 struct world_chunk
 {
   chunk_data *Data;
+  v3 *Mesh;
 
   // TODO(Jesse): This is only for looking up chunks in the hashtable and
   // should be factored out of this struct somehow as it's cold data
@@ -142,6 +150,15 @@ struct VertexBlock
   int filled;
 };
 
+struct mesh_buffer_target
+{
+  VertexBlock VertexData;
+  VertexBlock ColorData;
+  VertexBlock NormalData;
+
+  int VertexCount; // How many verticies are we drawing
+};
+
 struct Entity
 {
   chunk_data *Model;
@@ -177,12 +194,7 @@ struct World
 
   v3 Gravity;
 
-  VertexBlock VertexData;
-  VertexBlock ColorData;
-  VertexBlock NormalData;
-
-  int VertexCount; // How many verticies are we drawing
-
+  mesh_buffer_target Mesh;
   world_storage WorldStorage;
 };
 

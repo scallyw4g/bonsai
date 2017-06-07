@@ -775,21 +775,21 @@ AllocateWorld( game_state *GameState, world_position Midpoint)
   world->Gravity = WORLD_GRAVITY;
 
   {
-    int BufferVertices = 10*(VOLUME_VISIBLE_REGION * VERT_PER_VOXEL);
+    int BufferVertices = 100*(VOLUME_VISIBLE_REGION * VERT_PER_VOXEL);
 
-    world->VertexData.Data = PUSH_STRUCT_CHECKED(GLfloat, Plat->Memory, BufferVertices );
-    world->ColorData.Data = PUSH_STRUCT_CHECKED(GLfloat,  Plat->Memory, BufferVertices );
-    world->NormalData.Data = PUSH_STRUCT_CHECKED(GLfloat, Plat->Memory, BufferVertices );
+    world->Mesh.VertexData.Data = PUSH_STRUCT_CHECKED(GLfloat, Plat->Memory, BufferVertices );
+    world->Mesh.ColorData.Data = PUSH_STRUCT_CHECKED(GLfloat,  Plat->Memory, BufferVertices );
+    world->Mesh.NormalData.Data = PUSH_STRUCT_CHECKED(GLfloat, Plat->Memory, BufferVertices );
 
-    world->VertexData.bytesAllocd = BufferVertices*sizeof(r32);
-    world->ColorData.bytesAllocd  = BufferVertices*sizeof(r32);
-    world->NormalData.bytesAllocd = BufferVertices*sizeof(r32);
+    world->Mesh.VertexData.bytesAllocd = BufferVertices*sizeof(r32);
+    world->Mesh.ColorData.bytesAllocd  = BufferVertices*sizeof(r32);
+    world->Mesh.NormalData.bytesAllocd = BufferVertices*sizeof(r32);
 
-    world->VertexData.filled = 0;
-    world->ColorData.filled = 0;
-    world->NormalData.filled = 0;
+    world->Mesh.VertexData.filled = 0;
+    world->Mesh.ColorData.filled = 0;
+    world->Mesh.NormalData.filled = 0;
 
-    world->VertexCount = 0;
+    world->Mesh.VertexCount = 0;
   }
 
   world_position Min = Midpoint - (world->VisibleRegion/2);
