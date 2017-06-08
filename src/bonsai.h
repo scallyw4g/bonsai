@@ -54,11 +54,25 @@ struct voxel
   int flags;
 };
 
+struct mesh_buffer_target
+{
+  s32 bytesAllocd;
+  s32 filled;
+
+  s32 VertexCount;
+
+  r32* VertexData;
+  r32* ColorData;
+  r32* NormalData;
+};
+
 struct chunk_data
 {
   u32 flags;
 
   s32 BoundaryVoxelCount;
+
+  mesh_buffer_target Mesh;
 
   voxel *Voxels;
   voxel *BoundaryVoxels;
@@ -141,22 +155,6 @@ struct Camera_Object
   v3 Front;
   v3 Right;
   v3 Up;
-};
-
-struct VertexBlock
-{
-  float *Data;
-  int bytesAllocd;
-  int filled;
-};
-
-struct mesh_buffer_target
-{
-  VertexBlock VertexData;
-  VertexBlock ColorData;
-  VertexBlock NormalData;
-
-  int VertexCount; // How many verticies are we drawing
 };
 
 struct Entity

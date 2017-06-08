@@ -19,10 +19,9 @@ DEBUG_GLOBAL v3 DEBUG_RenderOffset;
       &world->Mesh,            \
       6,                       \
       localVertexData,         \
-      sizeof(localVertexData), \
       localNormalData,         \
-      sizeof(localNormalData), \
-      FaceColor)
+      FaceColor,               \
+      sizeof(localVertexData)) \
 
 
 GLOBAL_VARIABLE m4 IdentityMatrix = {V4(1, 0, 0 ,0),
@@ -310,7 +309,7 @@ RenderShadowMap(World *world, ShadowRenderGroup *SG, RenderGroup *RG, Camera_Obj
   // 1rst attribute buffer : vertices
   GL_Global->glEnableVertexAttribArray(0);
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->vertexbuffer);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, world->Mesh.VertexData.filled, world->Mesh.VertexData.Data, GL_STATIC_DRAW);
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, world->Mesh.filled, world->Mesh.VertexData, GL_STATIC_DRAW);
   GL_Global->glVertexAttribPointer(
     0,                  // The attribute we want to configure
     3,                  // size
@@ -345,7 +344,7 @@ RenderWorld( platform *Plat, World *world, RenderGroup *RG)
   // Vertices
   GL_Global->glEnableVertexAttribArray(0);
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->vertexbuffer);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, world->Mesh.VertexData.filled, world->Mesh.VertexData.Data, GL_STATIC_DRAW);
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, world->Mesh.filled, world->Mesh.VertexData, GL_STATIC_DRAW);
   GL_Global->glVertexAttribPointer(
     0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
     3,                  // size
@@ -358,7 +357,7 @@ RenderWorld( platform *Plat, World *world, RenderGroup *RG)
   // Colors
   GL_Global->glEnableVertexAttribArray(1);
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->colorbuffer);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, world->Mesh.ColorData.filled, world->Mesh.ColorData.Data, GL_STATIC_DRAW);
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, world->Mesh.filled, world->Mesh.ColorData, GL_STATIC_DRAW);
   GL_Global->glVertexAttribPointer(
     1,                  // attribute 1. No particular reason for 1, but must match the layout in the shader.
     3,                  // size
@@ -371,7 +370,7 @@ RenderWorld( platform *Plat, World *world, RenderGroup *RG)
   // Normals
   GL_Global->glEnableVertexAttribArray(2);
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->normalbuffer);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, world->Mesh.NormalData.filled, world->Mesh.NormalData.Data, GL_STATIC_DRAW);
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, world->Mesh.filled, world->Mesh.NormalData, GL_STATIC_DRAW);
   GL_Global->glVertexAttribPointer(
     2,
     3,                  // size
@@ -408,9 +407,7 @@ FlushRenderBuffers(
 
   world->Mesh.VertexCount = 0;
 
-  world->Mesh.VertexData.filled = 0;
-  world->Mesh.NormalData.filled = 0;
-  world->Mesh.ColorData.filled = 0;
+  world->Mesh.filled = 0;
 
   return;
 }
@@ -419,29 +416,18 @@ inline void
 BufferVerts(
     mesh_buffer_target *target,
 
-    int NumVerts,
+    s32 NumVerts,
 
     float* VertsPositions,
-    int sizeofVertPositions,
-
     float* Normals,
-    int sizeofNormals,
+    const float* VertColors,
 
-    const float* VertColors
+    s32 sizeofData
   )
 {
-  target->VertexData.filled += sizeofVertPositions;
-  target->NormalData.filled += sizeofNormals;
-  target->ColorData.filled += sizeofNormals;
 
-  if ( target->VertexData.filled > target->VertexData.bytesAllocd ||
-       target->ColorData.filled > target->ColorData.bytesAllocd ||
-       target->NormalData.filled > target->NormalData.bytesAllocd )
+  if ( target->filled + sizeofData > target->bytesAllocd )
   {
-    target->VertexData.filled -= sizeofVertPositions;
-    target->NormalData.filled -= sizeofNormals;
-    target->ColorData.filled  -= sizeofNormals;
-
     // TODO(Jesse): Instead of Asserting, do this
     /* FlushRenderBuffers( target, RG, SG, Camera); */
     // Out of memory, panic!
@@ -449,9 +435,11 @@ BufferVerts(
     return;
   }
 
-  memcpy( &target->VertexData.Data[target->VertexCount*3], VertsPositions, sizeofVertPositions );
-  memcpy( &target->NormalData.Data[target->VertexCount*3], Normals, sizeofNormals );
-  memcpy( &target->ColorData.Data[target->VertexCount*3],  VertColors, sizeofNormals );
+  target->filled += sizeofData;
+
+  memcpy( &target->VertexData[target->VertexCount*3],  VertsPositions,  sizeofData );
+  memcpy( &target->NormalData[target->VertexCount*3],  Normals,         sizeofData );
+  memcpy( &target->ColorData[target->VertexCount*3],   VertColors,      sizeofData );
 
   target->VertexCount += NumVerts;
 
@@ -758,10 +746,9 @@ DEBUG_DrawLine(World *world, v3 P1, v3 P2, int ColorIndex, float Thickness )
     BufferVerts(&world->Mesh,
         6,
         localVertexData,
-        sizeof(localVertexData),
         localNormalData,
-        sizeof(localNormalData),
-        FaceColors);
+        FaceColors,
+        sizeof(localVertexData));
   }
 
   P1.x = P1.x + (Thickness/2.0f);
@@ -786,10 +773,9 @@ DEBUG_DrawLine(World *world, v3 P1, v3 P2, int ColorIndex, float Thickness )
     BufferVerts(&world->Mesh,
         6,
         localVertexData,
-        sizeof(localVertexData),
         localNormalData,
-        sizeof(localNormalData),
-        FaceColors);
+        FaceColors,
+        sizeof(localVertexData));
   }
 
 #if 0
@@ -811,7 +797,7 @@ DEBUG_DrawLine(World *world, v3 P1, v3 P2, int ColorIndex, float Thickness )
         localVertexData,
         sizeof(localVertexData),
         localNormalData,
-        sizeof(localNormalData),
+        sizeof(localVertexData),
         FaceColors);
   }
 #endif
@@ -1438,15 +1424,10 @@ BufferTriangle(World *world, v3 *Verts, v3 Normal, s32 ColorIndex)
   BufferVerts(
     &world->Mesh,
     3,
-
     VertBuffer,
-    sizeof(VertBuffer),
-
     (float*)&NormalBuffer[0],
-    sizeof(NormalBuffer),
-
-    FaceColors
-  );
+    FaceColors,
+    sizeof(VertBuffer));
 
 }
 

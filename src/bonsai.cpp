@@ -161,7 +161,6 @@ NotFilledInChunk( chunk_data *Chunk, voxel_position VoxelP, chunk_dimension Dim)
   return Result;
 }
 
-
 inline b32
 IsFilledInWorld( World *world, world_chunk *chunk, canonical_position VoxelP )
 {
@@ -755,7 +754,7 @@ AllocateWorld( game_state *GameState, world_position Midpoint)
   World *world = PUSH_STRUCT_CHECKED(World, Plat->Memory, 1 );
   GameState->world = world;
 
-  world->WorldStorage.Next = 0;
+  Assert(world->WorldStorage.Next == 0);
 
   world->WorldStorage.Arena = PUSH_STRUCT_CHECKED(memory_arena, Plat->Memory, 1);
   AllocateAndInitializeArena(world->WorldStorage.Arena, WORLD_STORAGE_SIZE);
@@ -763,7 +762,7 @@ AllocateWorld( game_state *GameState, world_position Midpoint)
   world->ChunkHash = PUSH_STRUCT_CHECKED(world_chunk*, Plat->Memory, WORLD_HASH_SIZE );
   world->FreeChunks = PUSH_STRUCT_CHECKED(world_chunk*, Plat->Memory, FREELIST_SIZE );
 
-  world->FreeChunkCount = 0;
+  Assert(world->FreeChunkCount == 0);
 
   /*
    *  Initialize stuff
@@ -777,19 +776,13 @@ AllocateWorld( game_state *GameState, world_position Midpoint)
   {
     int BufferVertices = 100*(VOLUME_VISIBLE_REGION * VERT_PER_VOXEL);
 
-    world->Mesh.VertexData.Data = PUSH_STRUCT_CHECKED(GLfloat, Plat->Memory, BufferVertices );
-    world->Mesh.ColorData.Data = PUSH_STRUCT_CHECKED(GLfloat,  Plat->Memory, BufferVertices );
-    world->Mesh.NormalData.Data = PUSH_STRUCT_CHECKED(GLfloat, Plat->Memory, BufferVertices );
+    world->Mesh.VertexData = PUSH_STRUCT_CHECKED(GLfloat, Plat->Memory, BufferVertices );
+    world->Mesh.ColorData = PUSH_STRUCT_CHECKED(GLfloat,  Plat->Memory, BufferVertices );
+    world->Mesh.NormalData = PUSH_STRUCT_CHECKED(GLfloat, Plat->Memory, BufferVertices );
 
-    world->Mesh.VertexData.bytesAllocd = BufferVertices*sizeof(r32);
-    world->Mesh.ColorData.bytesAllocd  = BufferVertices*sizeof(r32);
-    world->Mesh.NormalData.bytesAllocd = BufferVertices*sizeof(r32);
-
-    world->Mesh.VertexData.filled = 0;
-    world->Mesh.ColorData.filled = 0;
-    world->Mesh.NormalData.filled = 0;
-
-    world->Mesh.VertexCount = 0;
+    world->Mesh.bytesAllocd = BufferVertices*sizeof(r32);
+    Assert(world->Mesh.filled == 0);
+    Assert(world->Mesh.VertexCount == 0);
   }
 
   world_position Min = Midpoint - (world->VisibleRegion/2);
@@ -810,3 +803,4 @@ AllocateWorld( game_state *GameState, world_position Midpoint)
 
   return world;
 }
+
