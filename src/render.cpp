@@ -1190,7 +1190,6 @@ void
 BuildWorldChunkBoundaryVoxels(World *world, world_chunk *WorldChunk)
 {
   chunk_data *chunk = WorldChunk->Data;
-  world_position WorldP = WorldChunk->WorldP;
   chunk_dimension Dim = world->ChunkDim;
 
   chunk->BoundaryVoxelCount = 0;
@@ -1493,7 +1492,7 @@ inline void
 BufferTriangle(World *world, v3 *Verts, v3 Normal, s32 ColorIndex)
 {
   r32 VertBuffer[9];
-  v3 NormalBuffer[3] = {Normal};
+  v3 NormalBuffer[3] = {Normal, Normal, Normal};
 
   // TODO(Jesse): Is this necessary to avoid some pointer aliasing bug?
   memcpy( VertBuffer, Verts, 9 * sizeof(r32) );
@@ -1556,12 +1555,6 @@ FindBoundaryVoxelsAlongEdge(chunk_data *Data, chunk_dimension Dim, voxel_positio
 void
 Compute0thLod(game_state *GameState, world_chunk *WorldChunk)
 {
-  chunk_data *chunk = WorldChunk->Data;
-  s32 BoundaryVoxelCount = chunk->BoundaryVoxelCount;
-
-  if ( BoundaryVoxelCount == 0)
-    return;
-
   World *world = GameState->world;
   chunk_dimension WorldChunkDim = world->ChunkDim;
 
@@ -1575,22 +1568,8 @@ Compute0thLod(game_state *GameState, world_chunk *WorldChunk)
 
   s32 WorldChunkVolume = Volume(WorldChunkDim);
 
-  // First compute how much of the chunk is actually full.  This is done
-  // because the surface normal computation works better if the check is
-  // done against the minority of filled or empty voxels.  For example, if
-  // a chunk is mostly full, we want to check against the empty voxels for
-  // the normal computation
-  s32 FilledVolume = 0;
-  for ( s32 VoxelIndex = 0;
-      VoxelIndex < WorldChunkVolume;
-      ++VoxelIndex)
-  {
-    voxel_position VoxelP = GetVoxelP(WorldChunkDim, VoxelIndex);
-    if ( IsFilledInChunk( WorldChunk->Data, VoxelP, WorldChunkDim ) )
-      FilledVolume ++ ;
-  }
 
-  b32 HalfFull = FilledVolume >= WorldChunkVolume/2 ? True : False ;
+  b32 HalfFull = WorldChunk->Filled >= WorldChunkVolume/2 ? True : False ;
   b32 HalfEmpty = !HalfFull;
 
 
@@ -1616,7 +1595,7 @@ Compute0thLod(game_state *GameState, world_chunk *WorldChunk)
     }
   }
 
-  if (HalfFull)
+  if (HalfEmpty)
     SurfaceNormal *= -1.0f;
 
   // FIXME(Jesse): Sometimes the surface is perfectly balanced within the
@@ -2258,19 +2237,19 @@ DrawWorldChunk( game_state *GameState,
                 RenderGroup *RG,
                 ShadowRenderGroup *SG)
 {
+  if (Chunk->Filled == Volume(GameState->world->ChunkDim) || Chunk->Filled == 0)
+    return;
+
   chunk_data *ChunkData = Chunk->Data;
+
+  if (NotSet(ChunkData->flags, Chunk_Initialized))
+    return;
+
   World *world = GameState->world;
   chunk_dimension Dim = world->ChunkDim;
 
   if (!IsInFrustum(Dim, GameState->Camera, Chunk))
-  {
     return;
-  }
-
-  if (NotSet(ChunkData->flags, Chunk_Initialized))
-  {
-    return;
-  }
 
   Camera_Object *Camera = GameState->Camera;
   v3 ChunkRenderOffset = GetRenderP( Dim, Chunk->WorldP, Camera);
@@ -2282,10 +2261,7 @@ DrawWorldChunk( game_state *GameState,
     Compute0thLod(GameState, Chunk);
   }
 
-  if (ChunkData->BoundaryVoxelCount == 0)
-    return;
-
-  if ( Length(ChunkRenderOffset - CameraRenderOffset ) < 250 )
+  if ( Length(ChunkRenderOffset - CameraRenderOffset ) < MIN_LOD_DISTANCE )
   {
     BufferChunkMesh( GameState->Plat, world, ChunkData, Chunk->WorldP, RG, SG, GameState->Camera);
   }

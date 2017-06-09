@@ -93,6 +93,8 @@ struct world_chunk
 
   point_buffer PB;
   v3 Normal;
+
+  s32 Filled;
 };
 
 struct free_world_chunk

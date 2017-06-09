@@ -100,6 +100,7 @@ InitializeVoxels( game_state *GameState, world_chunk *WorldChunk )
         else
         {
           Assert( IsSet( chunk->Voxels[i].flags, Voxel_Filled) );
+          WorldChunk->Filled ++;
         }
 
         voxel_position AssignedP = GetVoxelP(chunk->Voxels[i]);

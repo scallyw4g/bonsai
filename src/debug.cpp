@@ -132,10 +132,10 @@ DebugFrameEnd(debug_text_render_group *RG)
     if (Entry->HitCount > 0)
     {
       char CycleCountBuffer[32];
-      sprintf(CycleCountBuffer, "%llu", Entry->CycleCount);
+      sprintf(CycleCountBuffer, "%lu", Entry->CycleCount);
 
       rect2 CCTextRect = PrintDebugText( RG, CycleCountBuffer, 0, AtY, FontSize);
-      rect2 FNTextRect = PrintDebugText( RG, Entry->FuncName, (int)CCTextRect.Max.x, AtY, FontSize);
+      PrintDebugText( RG, Entry->FuncName, (int)CCTextRect.Max.x, AtY, FontSize);
 
 
       AtY += (FontSize + LinePadding);
