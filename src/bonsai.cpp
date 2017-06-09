@@ -113,8 +113,6 @@ InitializeVoxels( game_state *GameState, world_chunk *WorldChunk )
 
   chunk->flags = SetFlag(chunk->flags, Chunk_Initialized);
 
-  BuildWorldChunkBoundaryVoxels(GameState, WorldChunk);
-
   return;
 }
 
@@ -133,59 +131,6 @@ InitializeVoxels(void *Input)
   InitializeVoxels(GameState, Chunk);
 
   return;
-}
-
-inline b32
-IsFilledInChunk( chunk_data *Chunk, voxel_position VoxelP, chunk_dimension Dim)
-{
-  b32 isFilled = True;
-
-  if (Chunk && IsSet(Chunk->flags, Chunk_Initialized) )
-  {
-    int i = GetIndex(VoxelP, Chunk, Dim);
-
-    Assert(i > -1);
-    Assert(i < Volume(Dim));
-    Assert(VoxelP == GetVoxelP(Chunk->Voxels[i]));
-
-    isFilled = IsSet(Chunk->Voxels[i].flags, Voxel_Filled);
-  }
-
-  return isFilled;
-}
-
-inline b32
-NotFilledInChunk( chunk_data *Chunk, voxel_position VoxelP, chunk_dimension Dim)
-{
-  b32 Result = !IsFilledInChunk(Chunk, VoxelP, Dim);
-  return Result;
-}
-
-inline b32
-IsFilledInWorld( World *world, world_chunk *chunk, canonical_position VoxelP )
-{
-  b32 isFilled = true;
-
-  if ( chunk )
-  {
-    world_chunk *localChunk = chunk;
-
-    if ( chunk->WorldP != VoxelP.WorldP )
-    {
-      localChunk = GetWorldChunk(world, VoxelP.WorldP);
-    }
-
-    isFilled = IsFilledInChunk(localChunk->Data, Voxel_Position(VoxelP.Offset), world->ChunkDim );
-  }
-
-  return isFilled;
-}
-
-inline b32
-NotFilledInWorld( World *world, world_chunk *chunk, canonical_position VoxelP )
-{
-  b32 Result = !(IsFilledInWorld(world, chunk, VoxelP));
-  return Result;
 }
 
 inline void
@@ -243,7 +188,9 @@ GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
   collision_event Collision;
   Collision.didCollide = false;
 
-  TestP = Canonicalize(world, TestP);
+  chunk_dimension WorldChunkDim = world->ChunkDim;
+
+  TestP = Canonicalize(WorldChunkDim, TestP);
 
   voxel_position MinP = Voxel_Position(TestP.Offset);
   voxel_position MaxP = Voxel_Position(TestP.Offset + ModelDim);
@@ -265,7 +212,7 @@ GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
     {
       for ( int x = MinP.x; x <= MaxP.x; x++ )
       {
-        canonical_position LoopTestP = Canonicalize( world, V3(x,y,z), TestP.WorldP );
+        canonical_position LoopTestP = Canonicalize( WorldChunkDim, V3(x,y,z), TestP.WorldP );
 
         world_chunk *chunk = GetWorldChunk( world, LoopTestP.WorldP );
 
@@ -476,12 +423,14 @@ SpawnPlayer( World *world, platform *Plat, Entity *Player )
   canonical_position TestP;
   collision_event Collision;
 
-  int rX = rand() % (world->ChunkDim.x);
-  int rY = rand() % (world->ChunkDim.y);
-  int rZ = rand() % (world->ChunkDim.z);
+  chunk_dimension WorldChunkDim = world->ChunkDim;
+
+  int rX = rand() % (WorldChunkDim.x);
+  int rY = rand() % (WorldChunkDim.y);
+  int rZ = rand() % (WorldChunkDim.z);
 
   v3 Offset = V3( rX, rY, rZ );
-  TestP = Canonicalize(world, Offset, Player->P.WorldP);
+  TestP = Canonicalize(WorldChunkDim, Offset, Player->P.WorldP);
 
   Collision = GetCollision( world, TestP, Player->ModelDim);
 
@@ -510,6 +459,7 @@ UpdatePlayerP(game_state *GameState, Entity *Player, v3 GrossUpdateVector)
   v3 Remaining = GrossUpdateVector;
   /* Remaining = V3(-16, 0, 0); */
   world_position OriginalPlayerP = Player->P.WorldP;
+  chunk_dimension WorldChunkDim = world->ChunkDim;
 
   collision_event C;
   while ( Remaining != V3(0,0,0) )
@@ -521,7 +471,7 @@ UpdatePlayerP(game_state *GameState, Entity *Player, v3 GrossUpdateVector)
 
 
     Player->P.Offset.y += UpdateVector.y;
-    Player->P = Canonicalize(world, Player->P);
+    Player->P = Canonicalize(WorldChunkDim, Player->P);
     C = GetCollision(world, Player);
     if (C.didCollide)
     {
@@ -533,12 +483,12 @@ UpdatePlayerP(game_state *GameState, Entity *Player, v3 GrossUpdateVector)
       if (UpdateVector.y > 0)
         Player->P.Offset.y -= (Player->ModelDim.y-1);
 
-      Player->P = Canonicalize(world, Player->P);
+      Player->P = Canonicalize(WorldChunkDim, Player->P);
     }
 
 
     Player->P.Offset.x += UpdateVector.x;
-    Player->P = Canonicalize(world, Player->P);
+    Player->P = Canonicalize(WorldChunkDim, Player->P);
     C = GetCollision(world, Player);
     if (C.didCollide)
     {
@@ -558,12 +508,12 @@ UpdatePlayerP(game_state *GameState, Entity *Player, v3 GrossUpdateVector)
       {
         Player->P.Offset += V3(0,1,0);
       }
-      Player->P = Canonicalize(world, Player->P);
+      Player->P = Canonicalize(WorldChunkDim, Player->P);
     }
 
 
     Player->P.Offset.z += UpdateVector.z;
-    Player->P = Canonicalize(world, Player->P);
+    Player->P = Canonicalize(WorldChunkDim, Player->P);
     C = GetCollision(world, Player);
     if (C.didCollide)
     {
@@ -582,14 +532,14 @@ UpdatePlayerP(game_state *GameState, Entity *Player, v3 GrossUpdateVector)
       {
         Player->P.Offset += V3(0,1,0);
       }
-      Player->P = Canonicalize(world, Player->P);
+      Player->P = Canonicalize(WorldChunkDim, Player->P);
     }
 
   }
 
   UpdateVisibleRegion(GameState, OriginalPlayerP, Player);
 
-  Player->P = Canonicalize(world, Player->P);
+  Player->P = Canonicalize(WorldChunkDim, Player->P);
   Assert ( GetCollision(world, Player ).didCollide == false );
 
   return;
@@ -613,6 +563,8 @@ UpdateDebugCamera(platform *Plat, World *world, v3 TargetDelta, Camera_Object *C
 {
   float FocalLength = DEBUG_CAMERA_FOCAL_LENGTH;
 
+  chunk_dimension WorldChunkDim = world->ChunkDim;
+
   if (Plat->Input.Q)
     TargetDelta -= WORLD_Y;
 
@@ -631,14 +583,14 @@ UpdateDebugCamera(platform *Plat, World *world, v3 TargetDelta, Camera_Object *C
   Camera->P.Offset += (TargetDelta + UpdateRight + (UpdateUp));
   Camera->Target.Offset += TargetDelta;
 
-  Camera->P = Canonicalize(world, Camera->P);
-  Camera->Target = Canonicalize(world, Camera->Target);
+  Camera->P = Canonicalize(WorldChunkDim, Camera->P);
+  Camera->Target = Canonicalize(WorldChunkDim, Camera->Target);
 
-  v3 TargetToCamera = Normalize(GetRenderP(world, Camera->P, Camera) - GetRenderP(world, Camera->Target, Camera));
+  v3 TargetToCamera = Normalize(GetRenderP(WorldChunkDim, Camera->P, Camera) - GetRenderP(WorldChunkDim, Camera->Target, Camera));
   Camera->P.Offset = Camera->Target.Offset + (TargetToCamera * FocalLength);
   Camera->P.WorldP = Camera->Target.WorldP;
 
-  Camera->Front = Normalize( GetRenderP(world, Camera->Target, Camera) - GetRenderP(world, Camera->P, Camera) );
+  Camera->Front = Normalize( GetRenderP(WorldChunkDim, Camera->Target, Camera) - GetRenderP(WorldChunkDim, Camera->P, Camera) );
 
   return;
 }
@@ -646,15 +598,16 @@ UpdateDebugCamera(platform *Plat, World *world, v3 TargetDelta, Camera_Object *C
 void
 UpdateCameraP(platform *Plat, World *world, Entity *Player, Camera_Object *Camera)
 {
+  chunk_dimension WorldChunkDim = world->ChunkDim;
 #if DEBUG_CAMERA_FOCUS_ORIGIN
   canonical_position NewTarget = Canonical_Position( V3(0,0,0), World_Position(0,0,0) );
 #else
-  canonical_position NewTarget = Canonicalize(world, Player->P.Offset, Player->P.WorldP) + (Player->ModelDim/2);
+  canonical_position NewTarget = Canonicalize(WorldChunkDim, Player->P.Offset, Player->P.WorldP) + (Player->ModelDim/2);
 #endif
 
 
 
-  v3 TargetDelta = GetRenderP(world, NewTarget, Camera) - GetRenderP(world, Camera->Target, Camera);
+  v3 TargetDelta = GetRenderP(WorldChunkDim, NewTarget, Camera) - GetRenderP(WorldChunkDim, Camera->Target, Camera);
 
   float FocalLength = CAMERA_FOCAL_LENGTH;
 
@@ -668,14 +621,14 @@ UpdateCameraP(platform *Plat, World *world, Entity *Player, Camera_Object *Camer
   Camera->P.Offset += (TargetDelta + UpdateRight + (UpdateUp));
   Camera->Target.Offset += TargetDelta;
 
-  Camera->P = Canonicalize(world, Camera->P);
-  Camera->Target = Canonicalize(world, Camera->Target);
+  Camera->P = Canonicalize(WorldChunkDim, Camera->P);
+  Camera->Target = Canonicalize(WorldChunkDim, Camera->Target);
 
-  v3 TargetToCamera = Normalize(GetRenderP(world, Camera->P, Camera) - GetRenderP(world, Camera->Target, Camera));
+  v3 TargetToCamera = Normalize(GetRenderP(WorldChunkDim, Camera->P, Camera) - GetRenderP(WorldChunkDim, Camera->Target, Camera));
   Camera->P.Offset = Camera->Target.Offset + (TargetToCamera * FocalLength);
   Camera->P.WorldP = Camera->Target.WorldP;
 
-  Camera->Front = Normalize( GetRenderP(world, Camera->Target, Camera) - GetRenderP(world, Camera->P, Camera) );
+  Camera->Front = Normalize( GetRenderP(WorldChunkDim, Camera->Target, Camera) - GetRenderP(WorldChunkDim, Camera->P, Camera) );
   Camera->Up = Normalize(Cross(Camera->Front, Camera->Right));
 
   // Frustum computation
@@ -706,7 +659,7 @@ UpdateCameraP(platform *Plat, World *world, Entity *Player, Camera_Object *Camer
   MinMin = Rotate(MinMin, FinalRotation);
   MinMax = Rotate(MinMax, FinalRotation);
 
-  v3 CameraRenderP = GetRenderP(world, Camera->P, Camera);
+  v3 CameraRenderP = GetRenderP(WorldChunkDim, Camera->P, Camera);
 
   plane Top(CameraRenderP,   Normalize(Cross(MaxMax, MaxMin)));
   plane Bot(CameraRenderP,   Normalize(Cross(MinMin, MinMax)));

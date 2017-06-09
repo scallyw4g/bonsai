@@ -133,24 +133,24 @@ GetProjectionMatrix(Camera_Object *Camera, int WindowWidth, int WindowHeight)
 }
 
 inline v3
-GetRenderP( World *world, canonical_position P, Camera_Object *Camera)
+GetRenderP( chunk_dimension WorldChunkDim, canonical_position P, Camera_Object *Camera)
 {
-  v3 CameraOffset = Camera->Target.Offset + (Camera->Target.WorldP * world->ChunkDim);
-  v3 Result = P.Offset + (P.WorldP * world->ChunkDim) - CameraOffset;
+  v3 CameraOffset = Camera->Target.Offset + (Camera->Target.WorldP * WorldChunkDim);
+  v3 Result = P.Offset + (P.WorldP * WorldChunkDim) - CameraOffset;
   return Result;
 }
 
 inline v3
-GetRenderP( World *world, world_position WorldP, Camera_Object *Camera)
+GetRenderP( chunk_dimension WorldChunkDim, world_position WorldP, Camera_Object *Camera)
 {
-  v3 Result = GetRenderP(world, Canonical_Position(world, V3(0,0,0), WorldP), Camera);
+  v3 Result = GetRenderP(WorldChunkDim, Canonical_Position(V3(0,0,0), WorldP), Camera);
   return Result;
 }
 
 inline v3
-GetRenderP( World *world, Entity *entity, Camera_Object *Camera)
+GetRenderP( chunk_dimension WorldChunkDim, Entity *entity, Camera_Object *Camera)
 {
-  v3 Result = GetRenderP(world, entity->P, Camera);
+  v3 Result = GetRenderP(WorldChunkDim, entity->P, Camera);
   return Result;
 }
 
@@ -167,15 +167,15 @@ LookAt(v3 P, v3 Target, v3 Up)
 }
 
 inline m4
-GetViewMatrix(World *world, Camera_Object *Camera)
+GetViewMatrix(chunk_dimension WorldChunkDim, Camera_Object *Camera)
 {
   v3 up = V3(0, 1, 0);
   v3 CameraRight = Normalize( Cross(up, Camera->Front) );
   v3 CameraUp = Normalize( Cross( Camera->Front, CameraRight) );
 
   m4 Result = LookAt(
-    GetRenderP(world, Camera->P, Camera),
-    GetRenderP(world, Camera->Target, Camera),
+    GetRenderP(WorldChunkDim, Camera->P, Camera),
+    GetRenderP(WorldChunkDim, Camera->Target, Camera),
     CameraUp
   );
 

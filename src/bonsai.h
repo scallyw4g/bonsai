@@ -24,17 +24,11 @@ enum chunk_flag
   Chunk_Uninitialized           = 0 << 0,
   Chunk_Initialized             = 1 << 1,
 
-  Chunk_RebuildInteriorBoundary = 1 << 2,
-  Chunk_RebuildExteriorTop      = 1 << 3,
-  Chunk_RebuildExteriorBot      = 1 << 4,
-  Chunk_RebuildExteriorLeft     = 1 << 5,
-  Chunk_RebuildExteriorRight    = 1 << 6,
-  Chunk_RebuildExteriorFront    = 1 << 7,
-  Chunk_RebuildExteriorBack     = 1 << 8,
-  Chunk_Queued                  = 1 << 9,
-  Chunk_Garbage                 = 1 << 10,
-  Chunk_Collected               = 1 << 11,
-  Chunk_LodGenerated            = 1 << 12,
+  Chunk_RebuildBoundary         = 1 << 2,
+  Chunk_Queued                  = 1 << 3,
+  Chunk_Garbage                 = 1 << 4,
+  Chunk_Collected               = 1 << 5,
+  /* Chunk_LodGenerated            = 1 << 6, */
 };
 
 enum voxel_flag
@@ -202,12 +196,6 @@ struct World
 
 
 
-inline b32
-IsFilledInChunk( chunk_data *Chunk, voxel_position VoxelP, chunk_dimension Dim);
-
-inline b32
-NotFilledInChunk( chunk_data *Chunk, voxel_position VoxelP, chunk_dimension Dim);
-
 inline int
 UnSetFlag( int Flags, int Flag )
 {
@@ -341,14 +329,7 @@ ZeroChunk( chunk_data *chunk )
 
   chunk->flags = Chunk_Uninitialized;
 
-  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildInteriorBoundary );
-
-  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorTop   );
-  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorBot   );
-  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorLeft  );
-  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorRight );
-  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorFront );
-  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildExteriorBack  );
+  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildBoundary );
 
   return;
 }
@@ -414,10 +395,10 @@ FreeWorldChunk(World *world, world_chunk *chunk)
   return;
 }
 
-inline int
+inline s32
 GetIndex(voxel_position P, chunk_data *chunk, chunk_dimension Dim)
 {
-  int i =
+  s32 i =
     (P.x) +
     (P.y*Dim.x) +
     (P.z*Dim.x*Dim.y);
@@ -425,6 +406,13 @@ GetIndex(voxel_position P, chunk_data *chunk, chunk_dimension Dim)
   Assert(i < Volume(Dim));
 
   return i;
+}
+
+inline s32
+GetIndex(v3 Offset, chunk_data *Chunk, chunk_dimension Dim)
+{
+  s32 Index = GetIndex( Voxel_Position(Offset), Chunk, Dim);
+  return Index;
 }
 
 chunk_data*
@@ -587,62 +575,56 @@ ClampPositive( voxel_position V )
   return Result;
 }
 
-// NOTE : The maximum bound is non-inclusive; 0 is part of the chunk
-// while the furthest point in x,y or z is the next chunk
-inline canonical_position
-Canonicalize( World *world, v3 Offset, world_position WorldP )
+inline b32
+IsFilledInChunk( chunk_data *Chunk, voxel_position VoxelP, chunk_dimension Dim)
 {
-  canonical_position Result;
+  b32 isFilled = True;
 
-  Result.Offset = Offset;
-  Result.WorldP = WorldP;
+  if (Chunk && IsSet(Chunk->flags, Chunk_Initialized) )
+  {
+    int i = GetIndex(VoxelP, Chunk, Dim);
 
-  if ( Result.Offset.x >= world->ChunkDim.x )
-  {
-    int ChunkWidths = (int)(Result.Offset.x / world->ChunkDim.x);
-    Result.Offset.x -= world->ChunkDim.x*ChunkWidths;
-    Result.WorldP.x += ChunkWidths;
-  }
-  if ( Result.Offset.y >= world->ChunkDim.y )
-  {
-    int ChunkWidths = (int)(Result.Offset.y / world->ChunkDim.y);
-    Result.Offset.y -= world->ChunkDim.y*ChunkWidths;
-    Result.WorldP.y += ChunkWidths;
-  }
-  if ( Result.Offset.z >= world->ChunkDim.z )
-  {
-    int ChunkWidths = (int)(Result.Offset.z / world->ChunkDim.z);
-    Result.Offset.z -= world->ChunkDim.z*ChunkWidths;
-    Result.WorldP.z += ChunkWidths;
+    Assert(i > -1);
+    Assert(i < Volume(Dim));
+    Assert(VoxelP == GetVoxelP(Chunk->Voxels[i]));
+
+    isFilled = IsSet(Chunk->Voxels[i].flags, Voxel_Filled);
   }
 
-  if ( Result.Offset.x < 0 )
-  {
-    int ChunkWidths = (int)((Result.Offset.x-world->ChunkDim.x) / -world->ChunkDim.x);
-    Result.Offset.x += world->ChunkDim.x*ChunkWidths;
-    Result.WorldP.x -= ChunkWidths;
-  }
-  if ( Result.Offset.y < 0 )
-  {
-    int ChunkWidths = (int)((Result.Offset.y-world->ChunkDim.y) / -world->ChunkDim.y);
-    Result.Offset.y += world->ChunkDim.y*ChunkWidths;
-    Result.WorldP.y -= ChunkWidths;
-  }
-  if ( Result.Offset.z < 0 )
-  {
-    int ChunkWidths = (int)((Result.Offset.z-world->ChunkDim.z) / -world->ChunkDim.z);
-    Result.Offset.z += world->ChunkDim.z*ChunkWidths;
-    Result.WorldP.z -= ChunkWidths;
-  }
+  return isFilled;
+}
 
+inline b32
+NotFilledInChunk( chunk_data *Chunk, voxel_position VoxelP, chunk_dimension Dim)
+{
+  b32 Result = !IsFilledInChunk(Chunk, VoxelP, Dim);
   return Result;
 }
 
-inline canonical_position
-Canonicalize( World *world, canonical_position CP )
+inline b32
+IsFilledInWorld( World *world, world_chunk *chunk, canonical_position VoxelP )
 {
-  canonical_position Result = Canonicalize( world, CP.Offset, CP.WorldP );
-  return Result;
+  b32 isFilled = true;
+
+  if ( chunk )
+  {
+    world_chunk *localChunk = chunk;
+
+    if ( chunk->WorldP != VoxelP.WorldP )
+    {
+      localChunk = GetWorldChunk(world, VoxelP.WorldP);
+    }
+
+    isFilled = localChunk && IsFilledInChunk(localChunk->Data, Voxel_Position(VoxelP.Offset), world->ChunkDim );
+  }
+
+  return isFilled;
 }
 
+inline b32
+NotFilledInWorld( World *world, world_chunk *chunk, canonical_position VoxelP )
+{
+  b32 Result = !(IsFilledInWorld(world, chunk, VoxelP));
+  return Result;
+}
 #endif

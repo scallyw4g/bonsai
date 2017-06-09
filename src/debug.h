@@ -144,6 +144,14 @@ Print_Binary( unsigned int input )
   Log("<-- Low bit \n");
 }
 
+
+inline void
+Print_P( s32 N, const char* name)
+{
+  Log(" -- %s\n", name);
+  Log(" N: %d \n", N);
+}
+
 inline void
 Print_P( canonical_position P, const char* name)
 {

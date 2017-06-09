@@ -216,8 +216,8 @@ RenderQuad(RenderGroup *RG)
   GL_Global->glDisableVertexAttribArray(0);
 }
 
-m4
-GetDepthMVP(World *world, Camera_Object *Camera)
+inline m4
+GetDepthMVP(chunk_dimension WorldChunkDim, Camera_Object *Camera)
 {
   v3 GlobalLightDirection =  V3( sin(GlobalLightTheta), 1.0, -2.0);
   GlobalLightDirection = Normalize( GlobalLightDirection );
@@ -225,8 +225,8 @@ GetDepthMVP(World *world, Camera_Object *Camera)
   // Compute the MVP matrix from the light's point of view
   m4 depthProjectionMatrix = Orthographic(SHADOW_MAP_XY, SHADOW_MAP_Z);
 
-  v3 P = GetRenderP(world, Camera->Target+GlobalLightDirection, Camera);
-  v3 Target = GetRenderP(world, Camera->Target, Camera);
+  v3 P = GetRenderP(WorldChunkDim, Camera->Target+GlobalLightDirection, Camera);
+  v3 Target = GetRenderP(WorldChunkDim, Camera->Target, Camera);
 
   v3 Front = Normalize(Target-P);
   v3 Right = Cross( Front, V3(0,1,0) );
@@ -238,7 +238,7 @@ GetDepthMVP(World *world, Camera_Object *Camera)
 }
 
 void
-DrawWorldToFullscreenQuad( platform *Plat, World *world, RenderGroup *RG, ShadowRenderGroup *SG, Camera_Object *Camera)
+DrawWorldToFullscreenQuad( platform *Plat, chunk_dimension WorldChunkDim, RenderGroup *RG, ShadowRenderGroup *SG, Camera_Object *Camera)
 {
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
   GL_Global->glUseProgram(RG->LightingShader);
@@ -256,14 +256,14 @@ DrawWorldToFullscreenQuad( platform *Plat, World *world, RenderGroup *RG, Shadow
     V4(0.5, 0.5, 0.5, 1.0)
   };
 
-  m4 depthBiasMVP = biasMatrix * GetDepthMVP(world, Camera);
+  m4 depthBiasMVP = biasMatrix * GetDepthMVP(WorldChunkDim, Camera);
   GL_Global->glUniformMatrix4fv(RG->DepthBiasMVPID, 1, GL_FALSE, &depthBiasMVP.E[0].E[0]);
 
   m4 VP = RG->Basis.ViewMatrix;
 
   GL_Global->glUniformMatrix4fv(RG->ViewMatrixUniform, 1, GL_FALSE, &VP.E[0].E[0]);
 
-  v3 CameraRenderP = GetRenderP(world, Camera->P, Camera);
+  v3 CameraRenderP = GetRenderP(WorldChunkDim, Camera->P, Camera);
   GL_Global->glUniform3fv(RG->CameraPosUniform, 1, &CameraRenderP.E[0]);
 
   GL_Global->glActiveTexture(GL_TEXTURE0);
@@ -296,7 +296,7 @@ RenderShadowMap(World *world, ShadowRenderGroup *SG, RenderGroup *RG, Camera_Obj
 {
   glViewport(0, 0, SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
 
-  m4 depthMVP = GetDepthMVP(world, Camera);
+  m4 depthMVP = GetDepthMVP(world->ChunkDim, Camera);
 
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -389,7 +389,7 @@ RenderWorld( platform *Plat, World *world, RenderGroup *RG)
 }
 
 
-void
+inline void
 FlushRenderBuffers(
     platform *Plat,
     World *world,
@@ -428,10 +428,11 @@ BufferVerts(
 
   if ( target->filled + sizeofData > target->bytesAllocd )
   {
-    // TODO(Jesse): Instead of Asserting, do this
-    /* FlushRenderBuffers( target, RG, SG, Camera); */
+    // TODO(Jesse): Instead of Asserting, do this ?
+    /* FlushRenderBuffers( Plat, world, RG, SG, Camera); */
+
     // Out of memory, panic!
-    /* Assert(!"Out of memory"); */
+    Assert(!"Out of memory");
     return;
   }
 
@@ -650,27 +651,27 @@ BufferBackFace(
   return;
 }
 
-bool IsRightChunkBoundary( chunk_dimension ChunkDim, int idx )
+inline bool IsRightChunkBoundary( chunk_dimension ChunkDim, int idx )
 {
   return (idx+1) % (int)ChunkDim.x == 0;
 }
 
-bool IsLeftChunkBoundary( chunk_dimension ChunkDim, int idx )
+inline bool IsLeftChunkBoundary( chunk_dimension ChunkDim, int idx )
 {
   return (idx) % (int)ChunkDim.x == 0;
 }
 
-bool IsTopChunkBoundary( chunk_dimension ChunkDim, int idx )
+inline bool IsTopChunkBoundary( chunk_dimension ChunkDim, int idx )
 {
   return ((idx/(int)ChunkDim.x)+1) % (int)ChunkDim.y == 0;
 }
 
-bool IsBottomChunkBoundary( chunk_dimension ChunkDim, int idx )
+inline bool IsBottomChunkBoundary( chunk_dimension ChunkDim, int idx )
 {
   return (idx/(int)ChunkDim.x) % (int)ChunkDim.y == 0;
 }
 
-float
+inline float
 GetTheta(v3 P1, v3 P2, v3 Axis)
 {
   float DotP1P2 = Dot(P1,P2);
@@ -691,7 +692,7 @@ GetTheta(v3 P1, v3 P2, v3 Axis)
   return theta;
 }
 
-Quaternion
+inline Quaternion
 RotatePoint(v3 P1, v3 P2)
 {
   P1 = Normalize(P1);
@@ -708,7 +709,7 @@ RotatePoint(v3 P1, v3 P2)
   return Result;
 }
 
-void
+inline void
 DEBUG_DrawLine(World *world, v3 P1, v3 P2, int ColorIndex, float Thickness )
 {
   // 2 verts per line, 3 floats per vert
@@ -805,13 +806,13 @@ DEBUG_DrawLine(World *world, v3 P1, v3 P2, int ColorIndex, float Thickness )
   return;
 }
 
-void
+inline void
 DEBUG_DrawVectorAt(World *world, v3 Offset, v3 Vector, int ColorIndex, float Thickness )
 {
   DEBUG_DrawLine(world, Offset, Vector + Offset, ColorIndex, Thickness );
 }
 
-void
+inline void
 DEBUG_DrawLine(World *world, line Line, int ColorIndex, float Thickness )
 {
   DEBUG_DrawLine(world, Line.MinP, Line.MaxP, ColorIndex, Thickness);
@@ -819,7 +820,7 @@ DEBUG_DrawLine(World *world, line Line, int ColorIndex, float Thickness )
 }
 
 void
-DEBUG_DrawAABB( World *world, v3 MinP, v3 MaxP, Quaternion Rotation, int ColorIndex, float Thickness = 0.25f )
+DEBUG_DrawAABB( World *world, v3 MinP, v3 MaxP, Quaternion Rotation, int ColorIndex, float Thickness = DEFAULT_LINE_THICKNESS )
 {
   /* v3 HalfDim = (GetRenderP(world, MaxCP) - GetRenderP(world, MinCP)) / 2; */
 
@@ -892,14 +893,14 @@ DEBUG_DrawAABB( World *world, v3 MinP, v3 MaxP, Quaternion Rotation, int ColorIn
   return;
 }
 
-void
-DEBUG_DrawAABB( World *world, aabb Rect, Quaternion Rotation, int ColorIndex, float Thickness = 0.05f )
+inline void
+DEBUG_DrawAABB( World *world, aabb Rect, Quaternion Rotation, int ColorIndex, float Thickness = DEFAULT_LINE_THICKNESS )
 {
   DEBUG_DrawAABB( world, Rect.MinCorner, Rect.MaxCorner, Rotation, ColorIndex, Thickness );
   return;
 }
 
-v3
+inline v3
 GetModelSpaceP(chunk_data *chunk, v3 P)
 {
   /* v3 HalfDim = chunk->Dim/2; */
@@ -910,36 +911,36 @@ GetModelSpaceP(chunk_data *chunk, v3 P)
   return Result;
 }
 
-void
-DEBUG_DrawChunkAABB( World *world, world_position WorldP, Camera_Object *Camera, Quaternion Rotation, int ColorIndex )
+inline void
+DEBUG_DrawChunkAABB( World *world, world_position WorldP, Camera_Object *Camera,
+                     Quaternion Rotation, s32 ColorIndex , r32 Thickness = DEFAULT_LINE_THICKNESS)
 {
-  v3 MinP = GetRenderP(world, Canonical_Position(world, V3(0,0,0), WorldP), Camera);
-  v3 MaxP = GetRenderP(world, Canonical_Position(world, CHUNK_DIMENSION, WorldP), Camera);
+  v3 MinP = GetRenderP(world->ChunkDim, Canonical_Position(V3(0,0,0), WorldP), Camera);
+  v3 MaxP = GetRenderP(world->ChunkDim, Canonical_Position(CHUNK_DIMENSION, WorldP), Camera);
 
-  DEBUG_DrawAABB(world, MinP, MaxP , Rotation, ColorIndex );
-
+  DEBUG_DrawAABB(world, MinP, MaxP , Rotation, ColorIndex, Thickness);
   return;
 }
 
-void
-DEBUG_DrawChunkAABB( World *world, world_chunk *chunk, Camera_Object *Camera, Quaternion Rotation, int ColorIndex )
+inline void
+DEBUG_DrawChunkAABB( World *world, world_chunk *chunk, Camera_Object *Camera,
+                     Quaternion Rotation, s32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS)
 {
-  v3 MinP = GetRenderP(world, Canonical_Position(world, V3(0,0,0), chunk->WorldP), Camera);
-  v3 MaxP = GetRenderP(world, Canonical_Position(world, world->ChunkDim, chunk->WorldP), Camera);
+  v3 MinP = GetRenderP(world->ChunkDim, Canonical_Position(V3(0,0,0), chunk->WorldP), Camera);
+  v3 MaxP = GetRenderP(world->ChunkDim, Canonical_Position(world->ChunkDim, chunk->WorldP), Camera);
 
-  DEBUG_DrawAABB(world, MinP, MaxP , Rotation, ColorIndex );
-
+  DEBUG_DrawAABB(world, MinP, MaxP , Rotation, ColorIndex, Thickness);
   return;
 }
 
-v3
+inline v3
 Rotate(v3 P, Quaternion Rotation)
 {
   v3 Result = ((Rotation * Quaternion(P,0)) * Conjugate(Rotation)).xyz;
   return Result;
 }
 
-line
+inline line
 Rotate(line Line, Quaternion Rotation)
 {
   line Result;
@@ -950,7 +951,7 @@ Rotate(line Line, Quaternion Rotation)
   return Result;
 }
 
-void
+inline void
 DEBUG_DrawPointMarker( World *world, v3 RenderP, int ColorIndex, float Diameter)
 {
   float FaceColors[FACE_COLOR_SIZE];
@@ -987,21 +988,21 @@ DistanceToPlane(plane *Plane, v3 P)
 }
 
 inline bool
-IsInFrustum(World *world, Camera_Object *Camera, canonical_position P)
+IsInFrustum(chunk_dimension WorldChunkDim, Camera_Object *Camera, canonical_position P)
 {
   bool Result = true;
 
-  v3 TestP = GetRenderP(world, P, Camera);
+  v3 TestP = GetRenderP(WorldChunkDim, P, Camera);
 
-  Result &= (DistanceToPlane(&Camera->Frust.Top, TestP)   > -1*world->ChunkDim.y);
-  Result &= (DistanceToPlane(&Camera->Frust.Bot, TestP)   > -1*world->ChunkDim.y);
-  Result &= (DistanceToPlane(&Camera->Frust.Left, TestP)  > -1*world->ChunkDim.x);
-  Result &= (DistanceToPlane(&Camera->Frust.Right, TestP) > -1*world->ChunkDim.x);
+  Result &= (DistanceToPlane(&Camera->Frust.Top, TestP)   > -1*WorldChunkDim.y);
+  Result &= (DistanceToPlane(&Camera->Frust.Bot, TestP)   > -1*WorldChunkDim.y);
+  Result &= (DistanceToPlane(&Camera->Frust.Left, TestP)  > -1*WorldChunkDim.x);
+  Result &= (DistanceToPlane(&Camera->Frust.Right, TestP) > -1*WorldChunkDim.x);
 
   return Result;
 }
 
-voxel_position
+inline voxel_position
 Clamp01( voxel_position V )
 {
   voxel_position Result = V;
@@ -1016,7 +1017,7 @@ Clamp01( voxel_position V )
   return Result;
 }
 
-void
+inline void
 PushBoundaryVoxel( chunk_data *chunk, voxel Voxel, chunk_dimension Dim)
 {
   Assert( chunk->BoundaryVoxelCount < Volume(Dim) );
@@ -1088,8 +1089,9 @@ BuildExteriorBoundaryVoxels( World *world, world_chunk *chunk, chunk_dimension D
   return;
 }
 
-b32
-IsInsideDim( voxel_position Dim, voxel_position P ) {
+inline b32
+IsInsideDim( voxel_position Dim, voxel_position P )
+{
   b32 Result = False;
 
   Result = (
@@ -1105,7 +1107,7 @@ IsInsideDim( voxel_position Dim, voxel_position P ) {
   return Result;
 }
 
-b32
+inline b32
 IsInsideDim( voxel_position Dim, v3 P )
 {
   b32 Result = IsInsideDim(Dim, Voxel_Position(P) );
@@ -1113,9 +1115,9 @@ IsInsideDim( voxel_position Dim, v3 P )
 }
 
 void
-BuildInteriorBoundaryVoxels(chunk_data *chunk, world_position WorldP, chunk_dimension Dim)
+BuildEntityBoundaryVoxels(chunk_data *chunk, world_position WorldP, chunk_dimension Dim)
 {
-  chunk->flags = UnSetFlag( chunk->flags, Chunk_RebuildInteriorBoundary );
+  chunk->flags = UnSetFlag( chunk->flags, Chunk_RebuildBoundary );
 
   for ( int z = 0; z < Dim.z ; ++z )
   {
@@ -1184,16 +1186,94 @@ BuildInteriorBoundaryVoxels(chunk_data *chunk, world_position WorldP, chunk_dime
   }
 }
 
-bool
-IsInFrustum( World *world, Camera_Object *Camera, world_chunk *Chunk )
+void
+BuildWorldChunkBoundaryVoxels(World *world, world_chunk *WorldChunk)
+{
+  chunk_data *chunk = WorldChunk->Data;
+  world_position WorldP = WorldChunk->WorldP;
+  chunk_dimension Dim = world->ChunkDim;
+
+  chunk->BoundaryVoxelCount = 0;
+
+  chunk->flags = UnSetFlag( chunk->flags, Chunk_RebuildBoundary );
+
+  for ( int z = 0; z < Dim.z ; ++z )
+  {
+    for ( int y = 0; y < Dim.y ; ++y )
+    {
+      for ( int x = 0; x < Dim.x ; ++x )
+      {
+        canonical_position CurrentP  = Canonical_Position(world->ChunkDim, V3(x,y,z), WorldChunk->WorldP);
+
+        if ( NotFilledInWorld( world, WorldChunk, CurrentP ) )
+          continue;
+
+        canonical_position rightVoxel = Canonicalize(Dim, CurrentP + V3(1, 0, 0));
+        canonical_position leftVoxel  = Canonicalize(Dim, CurrentP - V3(1, 0, 0));
+
+        canonical_position topVoxel   = Canonicalize(Dim, CurrentP + V3(0, 1, 0));
+        canonical_position botVoxel   = Canonicalize(Dim, CurrentP - V3(0, 1, 0));
+
+        canonical_position frontVoxel = Canonicalize(Dim, CurrentP + V3(0, 0, 1));
+        canonical_position backVoxel  = Canonicalize(Dim, CurrentP - V3(0, 0, 1));
+
+        voxel *Voxel = &chunk->Voxels[GetIndex(CurrentP.Offset, chunk, Dim)];
+
+        bool DidPushVoxel = false;
+
+        if ( NotFilledInWorld( world, WorldChunk, rightVoxel ) )
+        {
+          Voxel->flags = SetFlag(Voxel->flags, Voxel_RightFace);
+          DidPushVoxel = true;
+        }
+        if ( NotFilledInWorld( world, WorldChunk, leftVoxel ) )
+        {
+          Voxel->flags = SetFlag(Voxel->flags, Voxel_LeftFace);
+          DidPushVoxel = true;
+        }
+        if ( NotFilledInWorld( world, WorldChunk, botVoxel   ) )
+        {
+          Voxel->flags = SetFlag(Voxel->flags, Voxel_BottomFace);
+          DidPushVoxel = true;
+        }
+        if ( NotFilledInWorld( world, WorldChunk, topVoxel   ) )
+        {
+          Voxel->flags = SetFlag(Voxel->flags, Voxel_TopFace);
+          DidPushVoxel = true;
+        }
+        if ( NotFilledInWorld( world, WorldChunk, frontVoxel ) )
+        {
+          Voxel->flags = SetFlag(Voxel->flags, Voxel_FrontFace);
+          DidPushVoxel = true;
+        }
+        if ( NotFilledInWorld( world, WorldChunk, backVoxel  ) )
+        {
+          Voxel->flags = SetFlag(Voxel->flags, Voxel_BackFace);
+          DidPushVoxel = true;
+        }
+
+        if (DidPushVoxel)
+        {
+          voxel_position P = GetVoxelP(*Voxel);
+          Assert( P == Voxel_Position(CurrentP.Offset));
+          PushBoundaryVoxel(chunk, *Voxel, Dim);
+        }
+
+      }
+    }
+  }
+}
+
+inline bool
+IsInFrustum( chunk_dimension WorldChunkDim, Camera_Object *Camera, world_chunk *Chunk )
 {
   v3 ChunkMid = V3(CD_X, CD_Y, CD_Z)/2;
-  canonical_position P1 = Canonical_Position( world, ChunkMid, Chunk->WorldP );
-  bool Result = IsInFrustum(world, Camera, P1 );
+  canonical_position P1 = Canonical_Position(  ChunkMid, Chunk->WorldP );
+  bool Result = IsInFrustum(WorldChunkDim, Camera, P1 );
   return Result;
 }
 
-void
+inline void
 ClearFramebuffers(RenderGroup *RG, ShadowRenderGroup *SG)
 {
   glClearColor(0.35f, 0.35f, 0.35f, 0.0f);
@@ -1235,7 +1315,7 @@ BufferChunkMesh(
     GetColorData(GetVoxelColor(V), &FaceColors[0]);;
 
     v3 RenderP =
-      GetRenderP(world, Canonical_Position(world, Offset+GetVoxelP(V), WorldP), Camera);
+      GetRenderP(world->ChunkDim, Canonical_Position( Offset+GetVoxelP(V), WorldP), Camera);
 
     if ( IsSet( V.flags, Voxel_RightFace ) )
       BufferRightFace( world, RenderP, FaceColors);
@@ -1409,7 +1489,7 @@ RayTraceCollision(chunk_data *Chunk, chunk_dimension Dim, v3 StartingP, v3 Ray, 
   return Voxel_Position(Result);
 }
 
-void
+inline void
 BufferTriangle(World *world, v3 *Verts, v3 Normal, s32 ColorIndex)
 {
   r32 VertBuffer[9];
@@ -1441,7 +1521,7 @@ Midpoint(aabb AABB)
   return Result;
 }
 
-void
+inline void
 FindBoundaryVoxelsAlongEdge(chunk_data *Data, chunk_dimension Dim, voxel_position Start, voxel_position Iter, point_buffer *PB)
 {
   voxel_position CurrentP = Start;
@@ -1477,202 +1557,222 @@ void
 Compute0thLod(game_state *GameState, world_chunk *WorldChunk)
 {
   chunk_data *chunk = WorldChunk->Data;
+  s32 BoundaryVoxelCount = chunk->BoundaryVoxelCount;
 
+  if ( BoundaryVoxelCount == 0)
+    return;
 
-  s32 BoundaryVoxelCount = WorldChunk->Data->BoundaryVoxelCount;
+  World *world = GameState->world;
+  chunk_dimension WorldChunkDim = world->ChunkDim;
 
-  if ( BoundaryVoxelCount > 0)
+  v3 RenderOffset = GetRenderP( WorldChunkDim, WorldChunk->WorldP, GameState->Camera);
+
+  DEBUG_RenderOffset = RenderOffset;
+
+  v3 SurfaceNormal = {};
+  v3 ChunkMidpoint = WorldChunkDim /2;
+  /* DEBUG_DrawPointMarker(world, ChunkMidpoint + RenderOffset, GREEN, 0.5f); */
+
+  s32 WorldChunkVolume = Volume(WorldChunkDim);
+
+  // First compute how much of the chunk is actually full.  This is done
+  // because the surface normal computation works better if the check is
+  // done against the minority of filled or empty voxels.  For example, if
+  // a chunk is mostly full, we want to check against the empty voxels for
+  // the normal computation
+  s32 FilledVolume = 0;
+  for ( s32 VoxelIndex = 0;
+      VoxelIndex < WorldChunkVolume;
+      ++VoxelIndex)
   {
-    World *world = GameState->world;
-    chunk_dimension WorldChunkDim = world->ChunkDim;
+    voxel_position VoxelP = GetVoxelP(WorldChunkDim, VoxelIndex);
+    if ( IsFilledInChunk( WorldChunk->Data, VoxelP, WorldChunkDim ) )
+      FilledVolume ++ ;
+  }
 
-    v3 RenderOffset = GetRenderP( world, WorldChunk->WorldP, GameState->Camera);
+  b32 HalfFull = FilledVolume >= WorldChunkVolume/2 ? True : False ;
+  b32 HalfEmpty = !HalfFull;
 
-    DEBUG_RenderOffset = RenderOffset;
 
+  // Loop through the chunk and find the surface normal
+  for ( s32 VoxelIndex = 0;
+      VoxelIndex < WorldChunkVolume;
+      ++VoxelIndex)
+  {
+    voxel_position VoxelP = GetVoxelP(WorldChunkDim, VoxelIndex);
 
-    v3 SurfaceNormal = {};
-    v3 ChunkMidpoint = WorldChunkDim /2;
-    /* DEBUG_DrawPointMarker(world, ChunkMidpoint + RenderOffset, GREEN, 0.5f); */
+    /* if (IsBoundaryVoxel(chunk, VoxelP, WorldChunkDim)) */
+    /*   DEBUG_DrawPointMarker(world, V3(VoxelP) + RenderOffset, PINK, 0.25f); */
 
-    s32 WorldChunkVolume = Volume(WorldChunkDim);
-
-    // First compute how much of the chunk is actually full.  This is done
-    // because the surface normal computation works better if the check is
-    // done against the minority of filled or empty voxels.  For example, if
-    // a chunk is mostly full, we want to check against the empty voxels for
-    // the normal computation
-    s32 FilledVolume = 0;
-    for ( s32 VoxelIndex = 0;
-        VoxelIndex < WorldChunkVolume;
-        ++VoxelIndex)
+    // TODO(Jesse): Pretty sure we can do some XOR trickery or something
+    // here to avoid this branch, which could be a large perf win
+    if ( HalfFull && NotFilledInChunk( WorldChunk->Data, VoxelP, WorldChunkDim ) )
     {
-      voxel_position VoxelP = GetVoxelP(WorldChunkDim, VoxelIndex);
-      if ( IsFilledInChunk( WorldChunk->Data, VoxelP, WorldChunkDim ) )
-        FilledVolume ++ ;
+      SurfaceNormal += Normalize( VoxelP - ChunkMidpoint );
     }
-
-    b32 HalfFilled = FilledVolume >= WorldChunkVolume/2 ? True : False ;
-    b32 HalfEmpty = !HalfFilled;
-
-
-    // Loop through the chunk and find the surface normal
-    for ( s32 VoxelIndex = 0;
-        VoxelIndex < WorldChunkVolume;
-        ++VoxelIndex)
+    else if ( HalfEmpty && IsFilledInChunk( WorldChunk->Data, VoxelP, WorldChunkDim ) )
     {
-      voxel_position VoxelP = GetVoxelP(WorldChunkDim, VoxelIndex);
-
-      /* if (IsBoundaryVoxel(chunk, VoxelP, WorldChunkDim)) */
-      /*   DEBUG_DrawPointMarker(world, V3(VoxelP) + RenderOffset, PINK, 0.25f); */
-
-      // TODO(Jesse): Pretty sure we can do some XOR trickery or something
-      // here to avoid this branch, which could be a large perf win
-      if ( HalfFilled && NotFilledInChunk( WorldChunk->Data, VoxelP, WorldChunkDim ) )
-      {
-        SurfaceNormal += Normalize( VoxelP - ChunkMidpoint );
-      }
-      else if ( HalfEmpty && IsFilledInChunk( WorldChunk->Data, VoxelP, WorldChunkDim ) )
-      {
-        SurfaceNormal += Normalize( VoxelP - ChunkMidpoint );
-      }
-
+      SurfaceNormal += Normalize( VoxelP - ChunkMidpoint );
     }
+  }
 
-    // FIXME(Jesse): Sometimes the surface is perfectly balanced within the
-    // chunk, in which case the normal turns out to be zero.
-    SurfaceNormal = Normalize(SurfaceNormal);
-    if ( Length(SurfaceNormal) == 0 )
-    {
-      DEBUG_DrawChunkAABB( world, WorldChunk, GameState->Camera, Quaternion() , RED );
-      return;
-    }
+  if (HalfFull)
+    SurfaceNormal *= -1.0f;
 
-    WorldChunk->Normal = SurfaceNormal;
+  // FIXME(Jesse): Sometimes the surface is perfectly balanced within the
+  // chunk, in which case the normal turns out to be zero.
+  SurfaceNormal = Normalize(SurfaceNormal);
+  if ( Length(SurfaceNormal) == 0 )
+  {
+    DEBUG_DrawChunkAABB( world, WorldChunk, GameState->Camera, Quaternion() , RED );
+    return;
+  }
 
-    /* DEBUG_DrawVectorAt(world, RenderOffset + ChunkMidpoint - (SurfaceNormal*10), SurfaceNormal*20, BLACK, 0.5f ); */
+  WorldChunk->Normal = SurfaceNormal;
 
-    point_buffer *PB = &WorldChunk->PB;
+  /* DEBUG_DrawVectorAt(world, RenderOffset + ChunkMidpoint - (SurfaceNormal*10), SurfaceNormal*20, BLACK, 0.5f ); */
+
+  point_buffer *PB = &WorldChunk->PB;
+
+  {
+    voxel_position Start = Voxel_Position(0, 0, 0);
 
     {
-      voxel_position Start = Voxel_Position(0, 0, 0);
-
-      {
-        voxel_position Iter  = Voxel_Position(1, 0, 0);
-        FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
-      }
-      {
-        voxel_position Iter  = Voxel_Position(0, 1, 0);
-        FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
-      }
-      {
-        voxel_position Iter  = Voxel_Position(0, 0, 1);
-        FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
-      }
+      voxel_position Iter  = Voxel_Position(1, 0, 0);
+      FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
     }
+    {
+      voxel_position Iter  = Voxel_Position(0, 1, 0);
+      FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
+    }
+    {
+      voxel_position Iter  = Voxel_Position(0, 0, 1);
+      FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
+    }
+  }
+
+  {
+    voxel_position Start = Voxel_Position(0, WorldChunkDim.y-1, WorldChunkDim.z-1);
 
     {
-      voxel_position Start = Voxel_Position(0, WorldChunkDim.y-1, WorldChunkDim.z-1);
-
-      {
-        voxel_position Iter  = Voxel_Position(1, 0, 0);
-        FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
-      }
-      {
-        voxel_position Iter  = Voxel_Position(0,-1, 0);
-        FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
-      }
-      {
-        voxel_position Iter  = Voxel_Position(0, 0,-1);
-        FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
-      }
+      voxel_position Iter  = Voxel_Position(1, 0, 0);
+      FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
     }
+    {
+      voxel_position Iter  = Voxel_Position(0,-1, 0);
+      FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
+    }
+    {
+      voxel_position Iter  = Voxel_Position(0, 0,-1);
+      FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
+    }
+  }
+
+  {
+    voxel_position Start = Voxel_Position(WorldChunkDim.x-1, WorldChunkDim.y-1, 0);
 
     {
-      voxel_position Start = Voxel_Position(WorldChunkDim.x-1, WorldChunkDim.y-1, 0);
-
-      {
-        voxel_position Iter  = Voxel_Position(-1, 0, 0);
-        FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
-      }
-      {
-        voxel_position Iter  = Voxel_Position(0,-1, 0);
-        FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
-      }
-      {
-        voxel_position Iter  = Voxel_Position(0, 0, 1);
-        FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
-      }
+      voxel_position Iter  = Voxel_Position(-1, 0, 0);
+      FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
     }
+    {
+      voxel_position Iter  = Voxel_Position(0,-1, 0);
+      FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
+    }
+    {
+      voxel_position Iter  = Voxel_Position(0, 0, 1);
+      FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
+    }
+  }
+
+  {
+    voxel_position Start = Voxel_Position(WorldChunkDim.x-1, 0, WorldChunkDim.z-1);
 
     {
-      voxel_position Start = Voxel_Position(WorldChunkDim.x-1, 0, WorldChunkDim.z-1);
-
-      {
-        voxel_position Iter  = Voxel_Position(-1, 0, 0);
-        FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
-      }
-      {
-        voxel_position Iter  = Voxel_Position(0, 1, 0);
-        FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
-      }
-      {
-        voxel_position Iter  = Voxel_Position(0, 0,-1);
-        FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
-      }
+      voxel_position Iter  = Voxel_Position(-1, 0, 0);
+      FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
     }
-
-
-
-    // Sort the vertices based on distance to closest points
-    for (s32 PBIndexOuter = 0;
-        PBIndexOuter < PB->Count;
-        ++PBIndexOuter)
     {
-      voxel_position CurrentVert = PB->Points[PBIndexOuter];
-      s32 ShortestLength = INT_MAX;
+      voxel_position Iter  = Voxel_Position(0, 1, 0);
+      FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
+    }
+    {
+      voxel_position Iter  = Voxel_Position(0, 0,-1);
+      FindBoundaryVoxelsAlongEdge(WorldChunk->Data, WorldChunkDim, Start, Iter, PB);
+    }
+  }
 
-      // Loop through remaining points and find next closest point, collapsing
-      // points that are very close to each other
-      for (s32 PBIndexInner = PBIndexOuter + 1;
-          PBIndexInner < PB->Count;
-          ++PBIndexInner)
+
+
+  // Sort the vertices based on distance to closest points
+  for (s32 PBIndexOuter = 0;
+      PBIndexOuter < PB->Count;
+      ++PBIndexOuter)
+  {
+    voxel_position CurrentVert = PB->Points[PBIndexOuter];
+    s32 ShortestLength = INT_MAX;
+
+    // Loop through remaining points and find next closest point, collapsing
+    // points that are very close to each other
+    for (s32 PBIndexInner = PBIndexOuter + 1;
+        PBIndexInner < PB->Count;
+        ++PBIndexInner)
+    {
+      s32 TestLength = LengthSq(CurrentVert - PB->Points[PBIndexInner]);
+
+      /* if ( TestLength < 11 ) */
+      /* { */
+      /*   PB->Points[PBIndexOuter] = PB->Points[PB->Count-1]; */
+      /*   PBIndexInner--; */
+      /*   PB->Count--; */
+      /*   continue; */
+      /* } */
+
+      if ( TestLength < ShortestLength )
       {
-        s32 TestLength = LengthSq(CurrentVert - PB->Points[PBIndexInner]);
+        ShortestLength = TestLength;
 
-        /* if ( TestLength < 11 ) */
-        /* { */
-        /*   PB->Points[PBIndexOuter] = PB->Points[PB->Count-1]; */
-        /*   PBIndexInner--; */
-        /*   PB->Count--; */
-        /*   continue; */
-        /* } */
-
-        if ( TestLength < ShortestLength )
-        {
-          ShortestLength = TestLength;
-
-          voxel_position Temp = PB->Points[PBIndexOuter + 1];
-          PB->Points[PBIndexOuter + 1] = PB->Points[PBIndexInner];
-          PB->Points[PBIndexInner] = Temp;
-        }
+        voxel_position Temp = PB->Points[PBIndexOuter + 1];
+        PB->Points[PBIndexOuter + 1] = PB->Points[PBIndexInner];
+        PB->Points[PBIndexInner] = Temp;
       }
-
     }
 
-      /* if (PB->Count == 5) */
+  }
+
+    /* if (PB->Count == 5) */
 #if 0
-      b32 FoundMidpoint = false;
-      v3 SurfaceMid = {};
+    b32 FoundMidpoint = false;
+    v3 SurfaceMid = {};
 
-      //
-      // Raytrace along the surface normal starting at the BoundaryVoxels AABB Midpoint
-      // to find the surfaces mid point
-      //
-      aabb BoundaryVoxelsAABB = FindBoundaryVoxelsAABB(WorldChunk->Data, WorldChunkDim);
-      v3 MidAABB = Midpoint(BoundaryVoxelsAABB);
-      b32 MidpointIsFilled = IsFilledInChunk(WorldChunk->Data, Voxel_Position(MidAABB), WorldChunkDim);
+    //
+    // Raytrace along the surface normal starting at the BoundaryVoxels AABB Midpoint
+    // to find the surfaces mid point
+    //
+    aabb BoundaryVoxelsAABB = FindBoundaryVoxelsAABB(WorldChunk->Data, WorldChunkDim);
+    v3 MidAABB = Midpoint(BoundaryVoxelsAABB);
+    b32 MidpointIsFilled = IsFilledInChunk(WorldChunk->Data, Voxel_Position(MidAABB), WorldChunkDim);
 
+    {
+      v3 CurrentP = MidAABB;
+      while( IsInsideDim(WorldChunkDim, CurrentP) )
+      {
+        DEBUG_DrawPointMarker(world, CurrentP + RenderOffset, PINK, 0.25f);
+
+        b32 CurrentPIsFilled = IsFilledInChunk(WorldChunk->Data, Voxel_Position(CurrentP), WorldChunkDim);
+        if (CurrentPIsFilled != MidpointIsFilled)
+        {
+          FoundMidpoint = true;
+          SurfaceMid = CurrentPIsFilled ? CurrentP : CurrentP - SurfaceNormal;
+          break;
+        }
+        CurrentP += SurfaceNormal;
+      }
+    }
+
+
+    {
+      if ( !FoundMidpoint )
       {
         v3 CurrentP = MidAABB;
         while( IsInsideDim(WorldChunkDim, CurrentP) )
@@ -1683,351 +1783,285 @@ Compute0thLod(game_state *GameState, world_chunk *WorldChunk)
           if (CurrentPIsFilled != MidpointIsFilled)
           {
             FoundMidpoint = true;
-            SurfaceMid = CurrentPIsFilled ? CurrentP : CurrentP - SurfaceNormal;
+            SurfaceMid = CurrentPIsFilled ? CurrentP : CurrentP + SurfaceNormal;
             break;
           }
-          CurrentP += SurfaceNormal;
+          CurrentP -= SurfaceNormal;
         }
       }
+    }
 
+    // FIXME(Jesse): Why would we fail to find a surface midpoint pray tell?
+    if ( !FoundMidpoint )
+    {
+      DEBUG_DrawChunkAABB( world, WorldChunk, GameState->Camera, Quaternion() , RED );
+    }
+    else
+    {
+      v3 Front = SurfaceNormal;
+      v3 Right = Cross( WORLD_Y, Front );
+      v3 Up = Cross( Front, Right );
+
+      DEBUG_DrawVectorAt(world, RenderOffset + SurfaceMid, Front*10, RED, 0.5f );
+      DEBUG_DrawVectorAt(world, RenderOffset + SurfaceMid, Right*10, TEAL, 0.5f );
+      DEBUG_DrawVectorAt(world, RenderOffset + SurfaceMid, Up*10, GREEN, 0.5f );
+
+      v3 MidpointRenderP = RenderOffset + SurfaceMid;
+
+      DEBUG_DrawPointMarker(world, MidpointRenderP, GREEN, 0.5f);
 
       {
-        if ( !FoundMidpoint )
-        {
-          v3 CurrentP = MidAABB;
-          while( IsInsideDim(WorldChunkDim, CurrentP) )
-          {
-            DEBUG_DrawPointMarker(world, CurrentP + RenderOffset, PINK, 0.25f);
 
-            b32 CurrentPIsFilled = IsFilledInChunk(WorldChunk->Data, Voxel_Position(CurrentP), WorldChunkDim);
-            if (CurrentPIsFilled != MidpointIsFilled)
-            {
-              FoundMidpoint = true;
-              SurfaceMid = CurrentPIsFilled ? CurrentP : CurrentP + SurfaceNormal;
-              break;
-            }
-            CurrentP -= SurfaceNormal;
-          }
-        }
+        v3 UpRight = Normalize(Up + Right);
+        v3 UpLeft = Normalize(Up - Right);
+
+        v3 DownRight = Normalize(Right - Up);
+        v3 DownLeft = Normalize((Up + Right) * -1.0f);
+
+        v3 VertMaxMax = SurfaceMid;
+        while ( IsInsideDim(WorldChunkDim, VertMaxMax) ) VertMaxMax += UpRight;
+        VertMaxMax -= UpRight;
+
+        v3 VertMaxMin = SurfaceMid;
+        while ( IsInsideDim(WorldChunkDim, VertMaxMin) ) VertMaxMin += UpLeft;
+        VertMaxMin -= UpLeft;
+
+        v3 VertMinMax = SurfaceMid;
+        while ( IsInsideDim(WorldChunkDim, VertMinMax) ) VertMinMax += DownRight;
+        VertMinMax -= DownRight;
+
+        v3 VertMinMin = SurfaceMid;
+        while ( IsInsideDim(WorldChunkDim, VertMinMin) ) VertMinMin += DownLeft;
+        VertMinMin -= DownLeft;
+
+        v3 Verts[3];
+
+        Verts[0] = VertMaxMax + RenderOffset;
+        Verts[1] = VertMaxMin + RenderOffset;
+        Verts[2] = VertMinMin + RenderOffset;
+        BufferTriangle(world, &Verts[0], SurfaceNormal, 42);
+
+        Verts[0] = VertMinMin + RenderOffset;
+        Verts[1] = VertMinMax + RenderOffset;
+        Verts[2] = VertMaxMax + RenderOffset;
+        BufferTriangle(world, &Verts[0], SurfaceNormal, 42);
+
       }
-
-      // FIXME(Jesse): Why would we fail to find a surface midpoint pray tell?
-      if ( !FoundMidpoint )
-      {
-        DEBUG_DrawChunkAABB( world, WorldChunk, GameState->Camera, Quaternion() , RED );
-      }
-      else
-      {
-        v3 Front = SurfaceNormal;
-        v3 Right = Cross( WORLD_Y, Front );
-        v3 Up = Cross( Front, Right );
-
-        DEBUG_DrawVectorAt(world, RenderOffset + SurfaceMid, Front*10, RED, 0.5f );
-        DEBUG_DrawVectorAt(world, RenderOffset + SurfaceMid, Right*10, TEAL, 0.5f );
-        DEBUG_DrawVectorAt(world, RenderOffset + SurfaceMid, Up*10, GREEN, 0.5f );
-
-        v3 MidpointRenderP = RenderOffset + SurfaceMid;
-
-        DEBUG_DrawPointMarker(world, MidpointRenderP, GREEN, 0.5f);
-
-        {
-
-          v3 UpRight = Normalize(Up + Right);
-          v3 UpLeft = Normalize(Up - Right);
-
-          v3 DownRight = Normalize(Right - Up);
-          v3 DownLeft = Normalize((Up + Right) * -1.0f);
-
-          v3 VertMaxMax = SurfaceMid;
-          while ( IsInsideDim(WorldChunkDim, VertMaxMax) ) VertMaxMax += UpRight;
-          VertMaxMax -= UpRight;
-
-          v3 VertMaxMin = SurfaceMid;
-          while ( IsInsideDim(WorldChunkDim, VertMaxMin) ) VertMaxMin += UpLeft;
-          VertMaxMin -= UpLeft;
-
-          v3 VertMinMax = SurfaceMid;
-          while ( IsInsideDim(WorldChunkDim, VertMinMax) ) VertMinMax += DownRight;
-          VertMinMax -= DownRight;
-
-          v3 VertMinMin = SurfaceMid;
-          while ( IsInsideDim(WorldChunkDim, VertMinMin) ) VertMinMin += DownLeft;
-          VertMinMin -= DownLeft;
-
-          v3 Verts[3];
-
-          Verts[0] = VertMaxMax + RenderOffset;
-          Verts[1] = VertMaxMin + RenderOffset;
-          Verts[2] = VertMinMin + RenderOffset;
-          BufferTriangle(world, &Verts[0], SurfaceNormal, 42);
-
-          Verts[0] = VertMinMin + RenderOffset;
-          Verts[1] = VertMinMax + RenderOffset;
-          Verts[2] = VertMaxMax + RenderOffset;
-          BufferTriangle(world, &Verts[0], SurfaceNormal, 42);
-
-        }
-      }
+    }
 
 #endif
 
 #if 0
-      aabb BoundaryVoxelsAABB = FindBoundaryVoxelsAABB(WorldChunk->Data, WorldChunkDim);
+    aabb BoundaryVoxelsAABB = FindBoundaryVoxelsAABB(WorldChunk->Data, WorldChunkDim);
 
-      float xLen = BoundaryVoxelsAABB.MaxCorner.x - BoundaryVoxelsAABB.MinCorner.x;
-      float yLen = BoundaryVoxelsAABB.MaxCorner.y - BoundaryVoxelsAABB.MinCorner.y;
-      float zLen = BoundaryVoxelsAABB.MaxCorner.z - BoundaryVoxelsAABB.MinCorner.z;
+    float xLen = BoundaryVoxelsAABB.MaxCorner.x - BoundaryVoxelsAABB.MinCorner.x;
+    float yLen = BoundaryVoxelsAABB.MaxCorner.y - BoundaryVoxelsAABB.MinCorner.y;
+    float zLen = BoundaryVoxelsAABB.MaxCorner.z - BoundaryVoxelsAABB.MinCorner.z;
 
-      // Find the widest axies and iterate orthogonal to them
+    // Find the widest axies and iterate orthogonal to them
 
-      voxel_position IterAxis = {}; // Axis to iterate along
+    voxel_position IterAxis = {}; // Axis to iterate along
 
-      // X Axis is widest
-      if (xLen >= yLen && xLen >= zLen)
+    // X Axis is widest
+    if (xLen >= yLen && xLen >= zLen)
+    {
+      // Y is next widest
+      if (yLen > zLen)
       {
-        // Y is next widest
-        if (yLen > zLen)
-        {
-          IterAxis.z = 1;
-        }
-        else // Z is next widest
-        {
-          IterAxis.y = 1;
-        }
+        IterAxis.z = 1;
       }
-
-      // Y axis is widest
-      else if (yLen >= xLen && yLen >= zLen)
+      else // Z is next widest
       {
-        // x is next widest
-        if (xLen > zLen)
-        {
-          IterAxis.z = 1;
-        }
-        else // z is next widest
-        {
-          IterAxis.x = 1;
-        }
+        IterAxis.y = 1;
       }
+    }
 
-      // Z is widest
-      else if (zLen >= yLen && zLen >= xLen)
+    // Y axis is widest
+    else if (yLen >= xLen && yLen >= zLen)
+    {
+      // x is next widest
+      if (xLen > zLen)
       {
-        // X is next widest
-        if (xLen > yLen)
-        {
-          IterAxis.y = 1;
-        }
-        else // Y is next widest
-        {
-          IterAxis.x = 1;
-        }
+        IterAxis.z = 1;
       }
-      else // Use an arbitrary axis
+      else // z is next widest
       {
-        if (xLen > yLen)
-        {
-          IterAxis.y = 1;
-        }
-        else
-        {
-          IterAxis.x = 1;
-        }
+        IterAxis.x = 1;
       }
+    }
 
-      /* Assert(Length(IterAxis) == 1); */
+    // Z is widest
+    else if (zLen >= yLen && zLen >= xLen)
+    {
+      // X is next widest
+      if (xLen > yLen)
+      {
+        IterAxis.y = 1;
+      }
+      else // Y is next widest
+      {
+        IterAxis.x = 1;
+      }
+    }
+    else // Use an arbitrary axis
+    {
+      if (xLen > yLen)
+      {
+        IterAxis.y = 1;
+      }
+      else
+      {
+        IterAxis.x = 1;
+      }
+    }
+
+    /* Assert(Length(IterAxis) == 1); */
+
+    if ( GameState->Player->P.WorldP == WorldChunk->WorldP)
+      DEBUG_DrawAABB( world, BoundaryVoxelsAABB + RenderOffset, Quaternion(), RED, 0.25f );
+
+    //
+    // Start iterating along the axis orthogonal to the widest axies
+    voxel_position MaxP = IterAxis * world->ChunkDim;
+
+
+    s32 AxisMax = max(MaxP.x, MaxP.y);
+    AxisMax = max(AxisMax, MaxP.z);
+
+
+    // Vector pointing towards the position to iterate from
+    voxel_position MaxAxies = IterAxis ^ Voxel_Position(1,1,1);
+
+
+    voxel_position StartingP = Voxel_Position(BoundaryVoxelsAABB.MinCorner + (((BoundaryVoxelsAABB.MaxCorner-BoundaryVoxelsAABB.MinCorner)*MaxAxies)/2));
+
+    s32 MaxIterations = (s32)Length( (BoundaryVoxelsAABB.MaxCorner*IterAxis) - (BoundaryVoxelsAABB.MinCorner*IterAxis) );
+
+    voxel_position CurrentP = StartingP;
+
+    b32 FoundMidpoint = False;
+
+    for (s32 Iterations = 0;
+        Iterations < MaxIterations;
+        ++Iterations)
+    {
 
       if ( GameState->Player->P.WorldP == WorldChunk->WorldP)
-        DEBUG_DrawAABB( world, BoundaryVoxelsAABB + RenderOffset, Quaternion(), RED, 0.25f );
+        DEBUG_DrawPointMarker(world, V3(CurrentP + RenderOffset), BLUE, 0.25f);
 
-      //
-      // Start iterating along the axis orthogonal to the widest axies
-      voxel_position MaxP = IterAxis * world->ChunkDim;
-
-
-      s32 AxisMax = max(MaxP.x, MaxP.y);
-      AxisMax = max(AxisMax, MaxP.z);
-
-
-      // Vector pointing towards the position to iterate from
-      voxel_position MaxAxies = IterAxis ^ Voxel_Position(1,1,1);
-
-
-      voxel_position StartingP = Voxel_Position(BoundaryVoxelsAABB.MinCorner + (((BoundaryVoxelsAABB.MaxCorner-BoundaryVoxelsAABB.MinCorner)*MaxAxies)/2));
-
-      s32 MaxIterations = (s32)Length( (BoundaryVoxelsAABB.MaxCorner*IterAxis) - (BoundaryVoxelsAABB.MinCorner*IterAxis) );
-
-      voxel_position CurrentP = StartingP;
-
-      b32 FoundMidpoint = False;
-
-      for (s32 Iterations = 0;
-          Iterations < MaxIterations;
-          ++Iterations)
+      if (IsBoundaryVoxel(chunk, CurrentP, world->ChunkDim))
       {
-
-        if ( GameState->Player->P.WorldP == WorldChunk->WorldP)
-          DEBUG_DrawPointMarker(world, V3(CurrentP + RenderOffset), BLUE, 0.25f);
-
-        if (IsBoundaryVoxel(chunk, CurrentP, world->ChunkDim))
-        {
-          DEBUG_DrawPointMarker(world, V3(CurrentP + RenderOffset), GREEN, 1.2f);
-          FoundMidpoint = True;
-          break;
-        }
-
-        CurrentP += IterAxis;
+        DEBUG_DrawPointMarker(world, V3(CurrentP + RenderOffset), GREEN, 1.2f);
+        FoundMidpoint = True;
+        break;
       }
 
-      if (FoundMidpoint)
-      {
-        voxel_position BoundaryPosition =
-          TraverseSurfaceToBoundary(world, chunk, CurrentP, Voxel_Position(-1, 0, 0));
-        voxel_position BoundaryPosition2 =
-          TraverseSurfaceToBoundary(world, chunk, CurrentP, Voxel_Position(1, 0, 0));
+      CurrentP += IterAxis;
+    }
 
-        DEBUG_DrawPointMarker(world, V3(BoundaryPosition + RenderOffset)+0.1f, RED, 1.2f);
-        DEBUG_DrawPointMarker(world, V3(BoundaryPosition2 + RenderOffset)-0.1f, RED, 1.2f);
+    if (FoundMidpoint)
+    {
+      voxel_position BoundaryPosition =
+        TraverseSurfaceToBoundary(world, chunk, CurrentP, Voxel_Position(-1, 0, 0));
+      voxel_position BoundaryPosition2 =
+        TraverseSurfaceToBoundary(world, chunk, CurrentP, Voxel_Position(1, 0, 0));
 
-
-
-        BoundaryPosition =
-          TraverseSurfaceToBoundary(world, chunk, CurrentP, Voxel_Position(0, 0, -1));
-        BoundaryPosition2 =
-          TraverseSurfaceToBoundary(world, chunk, CurrentP, Voxel_Position(0, 0, 1));
-
-        DEBUG_DrawPointMarker(world, V3(BoundaryPosition + RenderOffset)+0.1f, TEAL, 1.2f);
-        DEBUG_DrawPointMarker(world, V3(BoundaryPosition2 + RenderOffset)-0.1f, TEAL, 1.2f);
+      DEBUG_DrawPointMarker(world, V3(BoundaryPosition + RenderOffset)+0.1f, RED, 1.2f);
+      DEBUG_DrawPointMarker(world, V3(BoundaryPosition2 + RenderOffset)-0.1f, RED, 1.2f);
 
 
 
-        BoundaryPosition =
-          TraverseSurfaceToBoundary(world, chunk, CurrentP, Voxel_Position(0, -1, 0));
-        BoundaryPosition2 =
-          TraverseSurfaceToBoundary(world, chunk, CurrentP, Voxel_Position(0, 1, 0));
+      BoundaryPosition =
+        TraverseSurfaceToBoundary(world, chunk, CurrentP, Voxel_Position(0, 0, -1));
+      BoundaryPosition2 =
+        TraverseSurfaceToBoundary(world, chunk, CurrentP, Voxel_Position(0, 0, 1));
 
-        DEBUG_DrawPointMarker(world, V3(BoundaryPosition + RenderOffset), GREEN, 1.2f);
-        DEBUG_DrawPointMarker(world, V3(BoundaryPosition2 + RenderOffset), GREEN, 1.2f);
-
-
-      }
+      DEBUG_DrawPointMarker(world, V3(BoundaryPosition + RenderOffset)+0.1f, TEAL, 1.2f);
+      DEBUG_DrawPointMarker(world, V3(BoundaryPosition2 + RenderOffset)-0.1f, TEAL, 1.2f);
 
 
-      v3 MaxMaxStart = BoundaryVoxelsAABB.MaxCorner;
 
-      v3 MaxMinStart = BoundaryVoxelsAABB.MaxCorner;
-      MaxMinStart.x = BoundaryVoxelsAABB.MinCorner.x;
+      BoundaryPosition =
+        TraverseSurfaceToBoundary(world, chunk, CurrentP, Voxel_Position(0, -1, 0));
+      BoundaryPosition2 =
+        TraverseSurfaceToBoundary(world, chunk, CurrentP, Voxel_Position(0, 1, 0));
 
-      v3 MinMaxStart = BoundaryVoxelsAABB.MaxCorner;
-      MinMaxStart.z = BoundaryVoxelsAABB.MinCorner.z;
-
-      v3 MinMinStart = BoundaryVoxelsAABB.MinCorner;
-      MinMinStart.y = BoundaryVoxelsAABB.MaxCorner.y;
+      DEBUG_DrawPointMarker(world, V3(BoundaryPosition + RenderOffset), GREEN, 1.2f);
+      DEBUG_DrawPointMarker(world, V3(BoundaryPosition2 + RenderOffset), GREEN, 1.2f);
 
 
-      voxel_position MaxMax = RayTraceCollision( chunk,
-                                                 WorldChunkDim,
-                                                 MaxMaxStart,
-                                                 V3(0,-1,0),
-                                                 MinMinStart - MaxMaxStart );
-
-      voxel_position MaxMin = RayTraceCollision( chunk,
-                                                 WorldChunkDim,
-                                                 MaxMinStart,
-                                                 V3(0,-1,0),
-                                                 MinMaxStart - MaxMinStart );
-
-      voxel_position MinMax = RayTraceCollision( chunk,
-                                                 WorldChunkDim,
-                                                 MinMaxStart,
-                                                 V3(0,-1,0),
-                                                 MaxMinStart - MinMaxStart );
-
-      voxel_position MinMin = RayTraceCollision( chunk,
-                                                 WorldChunkDim,
-                                                 MinMinStart,
-                                                 V3(0,-1,0),
-                                                 MaxMaxStart - MinMinStart );
+    }
 
 
-      v3 VertMaxMax = V3(MaxMax + RenderOffset + GetSign(MaxMax) );
-      v3 VertMaxMin = V3(MaxMin + RenderOffset + GetSign(MaxMin) );
-      v3 VertMinMin = V3(MinMin + RenderOffset + GetSign(MinMin) );
-      v3 VertMinMax = V3(MinMax + RenderOffset + GetSign(MinMax) );
+    v3 MaxMaxStart = BoundaryVoxelsAABB.MaxCorner;
 
-      /* DEBUG_DrawLine(world, VertMaxMax, VertMaxMin, BLUE, 0.1f); */
-      /* DEBUG_DrawLine(world, VertMinMin, VertMinMax, RED,  0.1f); */
+    v3 MaxMinStart = BoundaryVoxelsAABB.MaxCorner;
+    MaxMinStart.x = BoundaryVoxelsAABB.MinCorner.x;
 
-      /* DEBUG_DrawLine(world, VertMaxMax, VertMinMax, BLUE, 0.1f); */
-      /* DEBUG_DrawLine(world, VertMinMin, VertMaxMin, RED,  0.1f); */
+    v3 MinMaxStart = BoundaryVoxelsAABB.MaxCorner;
+    MinMaxStart.z = BoundaryVoxelsAABB.MinCorner.z;
 
-      v3 Verts[3];
+    v3 MinMinStart = BoundaryVoxelsAABB.MinCorner;
+    MinMinStart.y = BoundaryVoxelsAABB.MaxCorner.y;
 
-      Verts[0] = VertMaxMax;
-      Verts[1] = VertMaxMin;
-      Verts[2] = VertMinMin;
-      BufferTriangle(world, &Verts[0], 42);
 
-      Verts[0] = VertMinMin;
-      Verts[1] = VertMinMax;
-      Verts[2] = VertMaxMax;
-      BufferTriangle(world, &Verts[0], 42);
+    voxel_position MaxMax = RayTraceCollision( chunk,
+                                               WorldChunkDim,
+                                               MaxMaxStart,
+                                               V3(0,-1,0),
+                                               MinMinStart - MaxMaxStart );
 
-      // Draw Boundary voxels aabb
-      /* aabb RenderCorrectedAABB = BoundaryVoxelsAABB + RenderOffset; */
-      /* RenderCorrectedAABB.MaxCorner += V3(1,1,1); */
-      /* DEBUG_DrawAABB( world, RenderCorrectedAABB, Quaternion(), TEAL, 0.10f ); */
+    voxel_position MaxMin = RayTraceCollision( chunk,
+                                               WorldChunkDim,
+                                               MaxMinStart,
+                                               V3(0,-1,0),
+                                               MinMaxStart - MaxMinStart );
+
+    voxel_position MinMax = RayTraceCollision( chunk,
+                                               WorldChunkDim,
+                                               MinMaxStart,
+                                               V3(0,-1,0),
+                                               MaxMinStart - MinMaxStart );
+
+    voxel_position MinMin = RayTraceCollision( chunk,
+                                               WorldChunkDim,
+                                               MinMinStart,
+                                               V3(0,-1,0),
+                                               MaxMaxStart - MinMinStart );
+
+
+    v3 VertMaxMax = V3(MaxMax + RenderOffset + GetSign(MaxMax) );
+    v3 VertMaxMin = V3(MaxMin + RenderOffset + GetSign(MaxMin) );
+    v3 VertMinMin = V3(MinMin + RenderOffset + GetSign(MinMin) );
+    v3 VertMinMax = V3(MinMax + RenderOffset + GetSign(MinMax) );
+
+    /* DEBUG_DrawLine(world, VertMaxMax, VertMaxMin, BLUE, 0.1f); */
+    /* DEBUG_DrawLine(world, VertMinMin, VertMinMax, RED,  0.1f); */
+
+    /* DEBUG_DrawLine(world, VertMaxMax, VertMinMax, BLUE, 0.1f); */
+    /* DEBUG_DrawLine(world, VertMinMin, VertMaxMin, RED,  0.1f); */
+
+    v3 Verts[3];
+
+    Verts[0] = VertMaxMax;
+    Verts[1] = VertMaxMin;
+    Verts[2] = VertMinMin;
+    BufferTriangle(world, &Verts[0], 42);
+
+    Verts[0] = VertMinMin;
+    Verts[1] = VertMinMax;
+    Verts[2] = VertMaxMax;
+    BufferTriangle(world, &Verts[0], 42);
+
+    // Draw Boundary voxels aabb
+    /* aabb RenderCorrectedAABB = BoundaryVoxelsAABB + RenderOffset; */
+    /* RenderCorrectedAABB.MaxCorner += V3(1,1,1); */
+    /* DEBUG_DrawAABB( world, RenderCorrectedAABB, Quaternion(), TEAL, 0.10f ); */
 
 #endif
 
-  }
 
-  chunk->flags = SetFlag(chunk->flags, Chunk_LodGenerated);
-
-  return;
-}
-
-void
-BuildWorldChunkBoundaryVoxels( game_state *GameState, world_chunk *WorldChunk)
-{
-
-  /* if (WorldChunk->WorldP == World_Position(0, -1, 0)) */
-  /* { */
-  /*     int foo = 5; */
-  /*     ++foo; */
-  /* } */
-
-  chunk_data* chunk = WorldChunk->Data;
-  World *world = GameState->world;
-
-  if ( IsSet(chunk->flags, Chunk_RebuildInteriorBoundary) )
-  {
-    chunk->BoundaryVoxelCount = 0;
-    BuildInteriorBoundaryVoxels(chunk, WorldChunk->WorldP, world->ChunkDim);
-  }
-
-  SetupAndBuildExteriorBoundary(world, WorldChunk, Voxel_Position( 0, 1, 0), Chunk_RebuildExteriorTop);
-  SetupAndBuildExteriorBoundary(world, WorldChunk, Voxel_Position( 0,-1, 0), Chunk_RebuildExteriorBot);
-
-  SetupAndBuildExteriorBoundary(world, WorldChunk, Voxel_Position( 1, 0, 0), Chunk_RebuildExteriorLeft);
-  SetupAndBuildExteriorBoundary(world, WorldChunk, Voxel_Position(-1, 0, 0), Chunk_RebuildExteriorRight);
-
-  SetupAndBuildExteriorBoundary(world, WorldChunk, Voxel_Position( 0, 0, 1), Chunk_RebuildExteriorFront);
-  SetupAndBuildExteriorBoundary(world, WorldChunk, Voxel_Position( 0, 0,-1), Chunk_RebuildExteriorBack);
-
-
-  if ( NotSet(chunk->flags, Chunk_LodGenerated            |
-                            Chunk_RebuildInteriorBoundary |
-                            Chunk_RebuildExteriorTop      |
-                            Chunk_RebuildExteriorBot      |
-                            Chunk_RebuildExteriorLeft     |
-                            Chunk_RebuildExteriorRight    |
-                            Chunk_RebuildExteriorFront    |
-                            Chunk_RebuildExteriorBack)
-     )
-  {
-    Compute0thLod(GameState, WorldChunk);
-  }
+/* chunk->flags = SetFlag(chunk->flags, Chunk_LodGenerated); */
 
   return;
 }
@@ -2153,7 +2187,7 @@ TraverseSurfaceToBoundary(World *world,
   return CurrentP;
 }
 
-void
+inline void
 Draw0thLod(game_state *GameState, world_chunk *Chunk, v3 RenderOffset)
 {
   /* for ( s32 PointIndex = 0; PointIndex < Chunk->PB.Count; ++PointIndex ) */
@@ -2176,38 +2210,91 @@ Draw0thLod(game_state *GameState, world_chunk *Chunk, v3 RenderOffset)
   return;
 }
 
+b32
+CanBuildWorldChunkBoundary(World *world, world_chunk *Chunk)
+{
+  // FIXME(Jesse): This is _real_ bad for the cache!
+  b32 Result = True;
+
+  world_position ChunkP = Chunk->WorldP;
+
+  Result &= IsSet(Chunk->Data->flags, Chunk_RebuildBoundary);
+
+  // Bail early to save the cache most of the time.. does this even help?
+  if (!Result) return Result;
+
+  world_position Left  = ChunkP - Voxel_Position(1, 0, 0);
+  world_position Right = ChunkP + Voxel_Position(1, 0, 0);
+  world_position Top   = ChunkP + Voxel_Position(0, 1, 0);
+  world_position Bot   = ChunkP - Voxel_Position(0, 1, 0);
+  world_position Front = ChunkP + Voxel_Position(0, 0, 1);
+  world_position Back  = ChunkP - Voxel_Position(0, 0, 1);
+
+  world_chunk *TestChunk = GetWorldChunk( world, Left );
+  Result &= TestChunk && IsSet(TestChunk->Data->flags, Chunk_Initialized);
+
+  TestChunk = GetWorldChunk( world, Right );
+  Result &= TestChunk && IsSet(TestChunk->Data->flags, Chunk_Initialized);
+
+  TestChunk = GetWorldChunk( world, Top );
+  Result &= TestChunk && IsSet(TestChunk->Data->flags, Chunk_Initialized);
+
+  TestChunk = GetWorldChunk( world, Bot );
+  Result &= TestChunk && IsSet(TestChunk->Data->flags, Chunk_Initialized);
+
+  TestChunk = GetWorldChunk( world, Front );
+  Result &= TestChunk && IsSet(TestChunk->Data->flags, Chunk_Initialized);
+
+  TestChunk = GetWorldChunk( world, Back );
+  Result &= TestChunk && IsSet(TestChunk->Data->flags, Chunk_Initialized);
+
+
+  return Result;
+}
 
 void
 DrawWorldChunk( game_state *GameState,
-                world_chunk *WorldChunk,
+                world_chunk *Chunk,
                 RenderGroup *RG,
                 ShadowRenderGroup *SG)
 {
-  if (IsInFrustum(GameState->world, GameState->Camera, WorldChunk) && 
-      IsSet(WorldChunk->Data->flags, Chunk_Initialized))
+  chunk_data *ChunkData = Chunk->Data;
+  World *world = GameState->world;
+  chunk_dimension Dim = world->ChunkDim;
+
+  if (!IsInFrustum(Dim, GameState->Camera, Chunk))
   {
-    BuildWorldChunkBoundaryVoxels( GameState, WorldChunk);
-
-    if (WorldChunk->Data->BoundaryVoxelCount == 0)
-      return;
-
-    World *world = GameState->world;
-    Camera_Object *Camera = GameState->Camera;
-
-    v3 ChunkRenderOffset = GetRenderP( world, WorldChunk->WorldP, Camera);
-    v3 CameraRenderOffset = GetRenderP( world, Camera->P, Camera);
-
-    if ( Length(ChunkRenderOffset - CameraRenderOffset ) < 250 )
-    {
-      BufferChunkMesh( GameState->Plat, world, WorldChunk->Data, WorldChunk->WorldP, RG, SG, GameState->Camera);
-    }
-    else
-    {
-      Draw0thLod( GameState, WorldChunk, ChunkRenderOffset);
-    }
-
-    /* DEBUG_DrawChunkAABB( GameState->world, WorldChunk, GameState->Camera, Quaternion(), 0); */
+    return;
   }
+
+  if (NotSet(ChunkData->flags, Chunk_Initialized))
+  {
+    return;
+  }
+
+  Camera_Object *Camera = GameState->Camera;
+  v3 ChunkRenderOffset = GetRenderP( Dim, Chunk->WorldP, Camera);
+  v3 CameraRenderOffset = GetRenderP( Dim, Camera->P, Camera);
+
+  if (CanBuildWorldChunkBoundary(world, Chunk))
+  {
+    BuildWorldChunkBoundaryVoxels(world, Chunk);
+    Compute0thLod(GameState, Chunk);
+  }
+
+  if (ChunkData->BoundaryVoxelCount == 0)
+    return;
+
+  if ( Length(ChunkRenderOffset - CameraRenderOffset ) < 250 )
+  {
+    BufferChunkMesh( GameState->Plat, world, ChunkData, Chunk->WorldP, RG, SG, GameState->Camera);
+  }
+  else
+  {
+    Draw0thLod( GameState, Chunk, ChunkRenderOffset);
+  }
+
+  /* DEBUG_DrawChunkAABB( GameState->world, Chunk, GameState->Camera, Quaternion(), 0); */
 
   return;
 }
@@ -2230,15 +2317,17 @@ DrawEntity(
   if (!entity->Spawned)
     return;
 
-  if ( IsSet(entity->Model->flags, Chunk_Initialized) )
+  chunk_data *Model = entity->Model;
+
+  if ( IsSet(Model->flags, Chunk_Initialized) )
   {
 
-    if ( IsSet(entity->Model->flags, Chunk_RebuildInteriorBoundary) )
+    if ( IsSet(Model->flags, Chunk_RebuildBoundary) )
     {
-      BuildInteriorBoundaryVoxels(entity->Model, entity->P.WorldP, entity->ModelDim );
+      BuildEntityBoundaryVoxels(Model, entity->P.WorldP, entity->ModelDim);
     }
 
-    BufferChunkMesh(Plat, world, entity->Model, entity->P.WorldP, RG, SG, Camera, entity->P.Offset);
+    BufferChunkMesh(Plat, world, Model, entity->P.WorldP, RG, SG, Camera, entity->P.Offset);
   }
 
   return;

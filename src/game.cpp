@@ -147,6 +147,8 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
   Entity *Player        = GameState->Player;
   Camera_Object *Camera = GameState->Camera;
 
+  chunk_dimension WorldChunkDim = world->ChunkDim;
+
   RenderGroup *RG                  = GameState->RG;
   ShadowRenderGroup *SG            = GameState->SG;
   debug_text_render_group *DebugRG = GameState->DebugRG;
@@ -169,7 +171,7 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
 
   if (UseDebugCamera)
   {
-    aabb CameraLocation(GetRenderP(world, Camera->P, Camera) - 2, GetRenderP(world, Camera->P, Camera) + 2);
+    aabb CameraLocation(GetRenderP(WorldChunkDim, Camera->P, Camera) - 2, GetRenderP(WorldChunkDim, Camera->P, Camera) + 2);
     DEBUG_DrawAABB(world, CameraLocation, Quaternion(0,0,0,1), PINK, 0.5f);
   }
 
@@ -214,7 +216,7 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
   }
 
   UpdateCameraP(Plat, world, Player, Camera);
-  RG->Basis.ViewMatrix = GetViewMatrix(world, CurrentCamera);
+  RG->Basis.ViewMatrix = GetViewMatrix(WorldChunkDim, CurrentCamera);
 
   GlobalLightTheta += Plat->dt;
 
@@ -243,7 +245,7 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
 
         if (!chunk)
         {
-          DEBUG_DrawAABB(world, GetRenderP(world, ChunkP), GetRenderP(world, ChunkP + 1), Quaternion(0,0,0,1), RED);
+          DEBUG_DrawAABB(world, GetRenderP(WorldChunkDim, ChunkP), GetRenderP(WorldChunkDim, ChunkP + 1), Quaternion(0,0,0,1), RED);
         }
 
       }
@@ -259,12 +261,10 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
     {
       if ( (chunk->WorldP >= Min && chunk->WorldP < Max) )
       {
-
-        /* if (chunk->WorldP == World_Position(-1,0,2)) */
+        /* if (chunk->WorldP == World_Position(-3,-1,-4) ) */
         {
           DrawWorldChunk(GameState, chunk, RG, SG);
-
-          //BufferWorldChunk(GameState, chunk, RG, SG);
+          /* DEBUG_DrawChunkAABB( GameState->world, chunk, GameState->Camera, Quaternion(), 0); */
         }
 
         chunk = chunk->Next;
@@ -288,12 +288,11 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
 
   DEBUG_FRAME_END(DebugRG);
 
-  DrawWorldToFullscreenQuad(Plat, world, RG, SG, Camera);
+  DrawWorldToFullscreenQuad(Plat, WorldChunkDim, RG, SG, Camera);
 
   AssertNoGlErrors;
 
   /* SwapBuffers(); */
-
 
   /* Info("%d Triangles drawn", tris ); */
   /* tris=0; */
