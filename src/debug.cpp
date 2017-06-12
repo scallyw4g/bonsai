@@ -123,25 +123,25 @@ DebugFrameEnd(debug_text_render_group *RG)
 
   DEBUG_GLOBAL r32 MaxX;
 
+  u64 MaxCycles = 0;
+
+  for (s32 EntryIndex = 0;
+      EntryIndex < DEBUG_STATE_ENTRY_COUNT;
+      ++EntryIndex)
   {
-    s32 AtY = 0;
-    // Print the cycle counts and record the max X
-    for (s32 EntryIndex = 0;
-        EntryIndex < DEBUG_STATE_ENTRY_COUNT;
-        ++EntryIndex)
+    debug_profile_entry *Entry = &DebugState->Entries[EntryIndex];
+
+    for (s32 InnerEntryIndex = 0;
+        InnerEntryIndex < DEBUG_STATE_ENTRY_COUNT;
+        ++InnerEntryIndex)
     {
+      debug_profile_entry *EntryInner = &DebugState->Entries[InnerEntryIndex];
 
-      debug_profile_entry *Entry = &DebugState->Entries[EntryIndex];
-
-      if (Entry->HitCount > 0)
+      if (EntryInner->CycleCount > Entry->CycleCount)
       {
-        char CycleCountBuffer[128];
-        sprintf(CycleCountBuffer, "%" PRIu64, Entry->CycleCount);
-
-        rect2 CCRect = PrintDebugText( RG, CycleCountBuffer, 0, AtY, FontSize);
-        MaxX = max(MaxX, CCRect.Max.x);
-
-        AtY += (FontSize + LinePadding);
+        debug_profile_entry Temp = *EntryInner;
+        *EntryInner = *Entry;
+        *Entry = Temp;
       }
     }
   }
@@ -152,12 +152,43 @@ DebugFrameEnd(debug_text_render_group *RG)
         EntryIndex < DEBUG_STATE_ENTRY_COUNT;
         ++EntryIndex)
     {
+
+      debug_profile_entry *Entry = &DebugState->Entries[EntryIndex];
+
+      if (Entry->HitCount > 0)
+      {
+        char CycleCountBuffer[32];
+        sprintf(CycleCountBuffer, "%" PRIu64, Entry->CycleCount);
+
+        rect2 CCRect = PrintDebugText( RG, CycleCountBuffer, 0, AtY, FontSize);
+
+        MaxX = max(MaxX, CCRect.Max.x);
+        MaxCycles = max(MaxCycles, Entry->CycleCount);
+
+        AtY += (FontSize + LinePadding);
+      }
+    }
+  }
+
+  {
+    s32 AtY = 0;
+    DEBUG_GLOBAL s32 PercX = 0;
+    for (s32 EntryIndex = 0;
+        EntryIndex < DEBUG_STATE_ENTRY_COUNT;
+        ++EntryIndex)
+    {
       debug_profile_entry *Entry = &DebugState->Entries[EntryIndex];
       if (Entry->HitCount > 0)
       {
-        PrintDebugText( RG, Entry->FuncName, (int)MaxX, AtY, FontSize);
-        AtY += (FontSize + LinePadding);
+        char PercentageBuffer[32];
+        sprintf(PercentageBuffer, "%.0f", (r32)((r64)Entry->CycleCount/(r64)MaxCycles)*100);
 
+        rect2 PercRect = PrintDebugText( RG, PercentageBuffer, (s32)MaxX, AtY, FontSize);
+        PercX = max((s32)PercRect.Max.x, PercX);
+
+        PrintDebugText( RG, Entry->FuncName, PercX, AtY, FontSize);
+
+        AtY += (FontSize + LinePadding);
       }
 
       *Entry = NullEntry;

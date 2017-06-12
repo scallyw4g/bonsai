@@ -1275,7 +1275,7 @@ IsInFrustum( chunk_dimension WorldChunkDim, Camera_Object *Camera, world_chunk *
 inline void
 ClearFramebuffers(RenderGroup *RG, ShadowRenderGroup *SG)
 {
-  glClearColor(0.35f, 0.35f, 0.35f, 0.0f);
+  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

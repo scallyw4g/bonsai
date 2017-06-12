@@ -7,7 +7,7 @@
 using namespace std;
 
 
-#define DEBUG_STATE_ENTRY_COUNT 2048
+#define DEBUG_STATE_ENTRY_COUNT 32
 
 
 struct debug_profile_entry
@@ -56,7 +56,7 @@ struct debug_timed_function
     FunctionIndex = FunctionIndexIn;
     FuncName = FuncNameIn;
 
-    // Record cycle count at last moment before returning
+    // Record cycle count at last moment
     StartingCycleCount = GetDebugState()->GetCycleCount();
   }
 

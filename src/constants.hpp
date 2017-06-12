@@ -65,7 +65,7 @@
 #define DEBUG_OPTIMIZE_WORLD_GC       1
 #define DEBUG_THREAD_COUNT_BIAS       -4
 
-#define DEBUG_FONT_SIZE               32
+#define DEBUG_FONT_SIZE               24
 #define DEFAULT_LINE_THICKNESS       0.5f
 
 #define DEBUG_FRAMES_TO_RUN           -1
