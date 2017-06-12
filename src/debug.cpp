@@ -136,7 +136,7 @@ DebugFrameEnd(debug_text_render_group *RG)
       if (Entry->HitCount > 0)
       {
         char CycleCountBuffer[128];
-        sprintf(CycleCountBuffer, "%llu", Entry->CycleCount);
+        sprintf(CycleCountBuffer, "%" PRIu64, Entry->CycleCount);
 
         rect2 CCRect = PrintDebugText( RG, CycleCountBuffer, 0, AtY, FontSize);
         MaxX = max(MaxX, CCRect.Max.x);

@@ -27,7 +27,7 @@ DEBUG_GLOBAL debug_state GlobalDebugState;
 
 #define TIMED_FUNCTION() debug_timed_function FunctionTimer(__COUNTER__, __FUNCTION_NAME__)
 #define TIMED_BLOCK(BlockName) { debug_timed_function BlockTimer(__COUNTER__, BlockName)
-#define END_BLOCK }
+#define END_BLOCK(BlockName) }
 #define DEBUG_FRAME_END(DebugRG) DebugFrameEnd(DebugRG)
 
 
