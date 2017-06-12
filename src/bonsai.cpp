@@ -32,7 +32,7 @@ OnMouseScroll(GLFWwindow* window, double xoffset, double yoffset)
 #endif
 
 void
-InitializeVoxels( game_state *GameState, world_chunk *WorldChunk )
+InitChunkPerlin( game_state *GameState, world_chunk *WorldChunk )
 {
   Assert(WorldChunk);
 
@@ -79,7 +79,7 @@ InitializeVoxels( game_state *GameState, world_chunk *WorldChunk )
         }
 #else
         v3 NoiseInputs =
-          ( ( V3(x,y,z) + (CHUNK_DIMENSION*(WorldChunk->WorldP))) ) / NOISE_FREQUENCY;
+          ( ( V3(x,y,z) + (WORLD_CHUNK_DIM*(WorldChunk->WorldP))) ) / NOISE_FREQUENCY;
 
         double InX = (double)NoiseInputs.x;
         double InY = (double)NoiseInputs.y;
@@ -110,10 +110,26 @@ InitializeVoxels( game_state *GameState, world_chunk *WorldChunk )
     }
   }
 
-  /* CALLGRIND_TOGGLE_COLLECT; */
+  return;
+}
 
-  chunk->flags = SetFlag(chunk->flags, Chunk_Initialized);
+void
+FillChunk(chunk_data *chunk, chunk_dimension Dim)
+{
+  for (int i = 0; i < Volume(Dim); ++i)
+  {
+    chunk->Voxels[i].flags = SetFlag(chunk->Voxels[i].flags , Voxel_Filled);
+    /* Print(GetVoxelP(chunk->Voxels[i])); */
+  }
+}
 
+void
+InitializeVoxels( game_state *GameState, world_chunk *Chunk )
+{
+  if (Chunk->WorldP == World_Position(0,0,0) )
+    FillChunk(Chunk->Data, WORLD_CHUNK_DIM);
+
+  Chunk->Data->flags = SetFlag(Chunk->Data->flags, Chunk_Initialized);
   return;
 }
 
@@ -131,6 +147,7 @@ InitializeVoxels(void *Input)
 
   InitializeVoxels(GameState, Chunk);
 
+  Chunk->Data->flags = SetFlag(Chunk->Data->flags, Chunk_Initialized);
   return;
 }
 
@@ -247,7 +264,7 @@ collision_event
 GetCollision(World *world, Entity *entity, v3 Offset = V3(0,0,0) )
 {
   Assert( entity->Spawned );
-  Assert( entity->Model->BoundaryVoxelCount > 0 );
+  /* Assert( entity->Model->BoundaryVoxelCount > 0 ); */
 
   collision_event C;
   C.didCollide = false;
@@ -385,7 +402,7 @@ QueueChunksForInit(game_state *GameState, world_position WorldDisp, Entity *Play
   world_position SliceMin = PlayerP + (VRHalfDim * Iter) - (VRHalfDim * InvAbsIter) - ClampPositive(WorldDisp);
   world_position SliceMax = PlayerP + (VRHalfDim * Iter) + (VRHalfDim * InvAbsIter) - ClampPositive(Iter) - InvAbsIter - ClampNegative(WorldDisp) + ClampNegative(Iter);
 
-  LastQueuedSlice = aabb(SliceMin*CHUNK_DIMENSION - 1, (SliceMax*CHUNK_DIMENSION + CHUNK_DIMENSION + 1));
+  LastQueuedSlice = aabb(SliceMin*WORLD_CHUNK_DIM - 1, (SliceMax*WORLD_CHUNK_DIM + WORLD_CHUNK_DIM + 1));
 
   for (int z = SliceMin.z; z <= SliceMax.z; ++ z)
   {
@@ -722,7 +739,7 @@ AllocateWorld( game_state *GameState, world_position Midpoint)
    *  Initialize stuff
    */
 
-  world->ChunkDim = CHUNK_DIMENSION;
+  world->ChunkDim = WORLD_CHUNK_DIM;
   world->VisibleRegion = VISIBLE_REGION;
 
   world->Gravity = WORLD_GRAVITY;

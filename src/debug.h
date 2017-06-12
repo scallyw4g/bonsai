@@ -25,7 +25,9 @@ struct debug_state
 
 DEBUG_GLOBAL debug_state GlobalDebugState;
 
-#define TIMED_FUNCTION() debug_timed_function FN(__COUNTER__, __FUNCTION_NAME__)
+#define TIMED_FUNCTION() debug_timed_function FunctionTimer(__COUNTER__, __FUNCTION_NAME__)
+#define TIMED_BLOCK(BlockName) { debug_timed_function BlockTimer(__COUNTER__, BlockName)
+#define END_BLOCK }
 #define DEBUG_FRAME_END(DebugRG) DebugFrameEnd(DebugRG)
 
 
@@ -33,7 +35,6 @@ void
 InitDebugState( debug_state *DebugState, platform *Plat)
 {
   DebugState->GetCycleCount = Plat->GetCycleCount;
-
   return;
 }
 

@@ -916,7 +916,7 @@ DEBUG_DrawChunkAABB( World *world, world_position WorldP, Camera_Object *Camera,
                      Quaternion Rotation, s32 ColorIndex , r32 Thickness = DEFAULT_LINE_THICKNESS)
 {
   v3 MinP = GetRenderP(world->ChunkDim, Canonical_Position(V3(0,0,0), WorldP), Camera);
-  v3 MaxP = GetRenderP(world->ChunkDim, Canonical_Position(CHUNK_DIMENSION, WorldP), Camera);
+  v3 MaxP = GetRenderP(world->ChunkDim, Canonical_Position(WORLD_CHUNK_DIM, WorldP), Camera);
 
   DEBUG_DrawAABB(world, MinP, MaxP , Rotation, ColorIndex, Thickness);
   return;
@@ -2255,11 +2255,14 @@ DrawWorldChunk( game_state *GameState,
   v3 ChunkRenderOffset = GetRenderP( Dim, Chunk->WorldP, Camera);
   v3 CameraRenderOffset = GetRenderP( Dim, Camera->P, Camera);
 
-  if (CanBuildWorldChunkBoundary(world, Chunk))
-  {
+  if ( IsSet( Chunk->Data->flags, Chunk_RebuildBoundary ) )
     BuildWorldChunkBoundaryVoxels(world, Chunk);
-    Compute0thLod(GameState, Chunk);
-  }
+
+  /* if (CanBuildWorldChunkBoundary(world, Chunk)) */
+  /* { */
+  /*   BuildWorldChunkBoundaryVoxels(world, Chunk); */
+  /*   Compute0thLod(GameState, Chunk); */
+  /* } */
 
   if ( Length(ChunkRenderOffset - CameraRenderOffset ) < MIN_LOD_DISTANCE )
   {

@@ -6,7 +6,7 @@ if [ "$WIN32" == "1" ]; then
   rm bin/Debug/*.pdb
 
   BINARY="bin/Debug/Bonsai.exe"
-  msbuild.exe /nologo /v:m ./bin/Game.vcxproj
+  msbuild.exe /nologo /v:m ./bin/Bonsai.sln
 
   mv bin/Debug/Game.dll bin/Debug/GameLoadable.dll
 

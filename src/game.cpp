@@ -42,11 +42,16 @@ GetEntityDelta(World *world, Entity *Player, v3 Input, float dt)
 }
 
 Entity *
-AllocateEntity(platform *Plat, canonical_position InitialP, const char *ModelPath)
+AllocateEntity(platform *Plat, memory_arena *Storage, canonical_position InitialP, const char *ModelPath)
 {
   Entity *entity = PUSH_STRUCT_CHECKED(Entity, Plat->Memory, 1);
 
-  entity->Model = LoadVox(Plat, Plat->Memory, ModelPath, entity);
+  /* entity->Model = LoadVox(Plat, Plat->Memory, ModelPath, entity); */
+
+  chunk_dimension Dim = Chunk_Dimension(3,3,1);
+  entity->Model = AllocateChunk(Plat, Storage, Dim);
+  FillChunk(entity->Model, Dim);
+
   entity->Rotation = Quaternion(0,0,0,1);
   entity->P = InitialP;
   entity->Spawned = false;
@@ -105,7 +110,7 @@ GameInit( platform *Plat )
 
   canonical_position PlayerInitialP = {};
 
-  Entity *Player = AllocateEntity(Plat, PlayerInitialP, PLAYER_MODEL);
+  Entity *Player = AllocateEntity(Plat, Plat->Memory, PlayerInitialP, PLAYER_MODEL);
   if (!Player) { Error("Error Allocating Player"); return False; }
 
   Camera_Object *Camera = PUSH_STRUCT_CHECKED(Camera_Object, Plat->Memory, 1);
@@ -224,6 +229,8 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
   //
   // Draw world
 
+  TIMED_BLOCK("Render");
+
   ClearFramebuffers(RG, SG);
 
   world_position Min = (Player->P.WorldP - (world->VisibleRegion / 2));
@@ -253,6 +260,7 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
   }
 #endif
 
+  TIMED_BLOCK("Render - World");
   for ( int i = 0; i < WORLD_HASH_SIZE; ++i)
   {
     world_chunk *chunk = world->ChunkHash[i];
@@ -277,20 +285,23 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
       }
     }
   }
+  END_BLOCK("Render - World");
 
   DrawEntity(Plat, world, Player, Camera, RG, SG);
 
+  TIMED_BLOCK("Render - Flush");
   FlushRenderBuffers(Plat, world, RG, SG, Camera);
-
-  char buffer[256] = {};
-  sprintf(buffer, "%f ms last frame", Plat->dt);
-  /* PrintDebugText(DebugRG, buffer, 0, 0, DEBUG_FONT_SIZE); */
+  END_BLOCK("Render - Flush");
 
   DEBUG_FRAME_END(DebugRG);
 
+  TIMED_BLOCK("Render - Draw");
   DrawWorldToFullscreenQuad(Plat, WorldChunkDim, RG, SG, Camera);
+  END_BLOCK("Draw");
 
   AssertNoGlErrors;
+
+  END_BLOCK("Render");
 
   /* SwapBuffers(); */
 

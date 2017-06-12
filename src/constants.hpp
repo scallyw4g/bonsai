@@ -12,14 +12,14 @@
 #define VOXEL_DIAMETER (1.0f)
 #define VOXEL_RADIUS (VOXEL_DIAMETER/2.0f)
 
-#define CD_X 16
-#define CD_Y 16
-#define CD_Z 16
+#define CD_X 8
+#define CD_Y 8
+#define CD_Z 1
 
 // Visible Region XYZ - Must be > (3,3,3)
 #define VR_X 8
 #define VR_Y 8
-#define VR_Z 8
+#define VR_Z 1
 
 #define VOLUME_VISIBLE_REGION (VR_X*VR_X*VR_X)
 
@@ -27,7 +27,7 @@
 #define WORLD_Y V3(0,1,0)
 #define WORLD_Z V3(0,0,1)
 
-#define CHUNK_DIMENSION Chunk_Dimension(CD_X,CD_Y,CD_Z)
+#define WORLD_CHUNK_DIM Chunk_Dimension(CD_X,CD_Y,CD_Z)
 
 #define VISIBLE_REGION Chunk_Dimension(VR_X,VR_Y,VR_Z)
 
@@ -37,7 +37,7 @@
 #define FREELIST_SIZE VOLUME_VISIBLE_REGION
 #define WORLD_STORAGE_SIZE Megabytes(500)
 
-#define WORLD_GRAVITY V3(0.0f, -20.0f, 0.0f)
+#define WORLD_GRAVITY V3(0.0f, 0.0f, 0.0f)
 
 #define PLAYER_STEP_MAX          1
 #define PLAYER_JUMP_STRENGTH     20.0f
@@ -51,6 +51,7 @@
 /* #define PLAYER_MODEL MODELS_PATH"/alien_bot2.vox" */
 /* #define PLAYER_MODEL MODELS_PATH"/chr_rain.vox" */
 /* #define PLAYER_MODEL MODELS_PATH"/chr_old.vox" */
+/* #define PLAYER_MODEL MODELS_PATH"/3x3x3.vox" */
 #define PLAYER_MODEL MODELS_PATH"/3x3x3.vox"
 
 
@@ -64,7 +65,7 @@
 #define DEBUG_OPTIMIZE_WORLD_GC       1
 #define DEBUG_THREAD_COUNT_BIAS       -2
 
-#define DEBUG_FONT_SIZE               16
+#define DEBUG_FONT_SIZE               32
 #define DEFAULT_LINE_THICKNESS       0.5f
 
 #define DEBUG_FRAMES_TO_RUN           -1

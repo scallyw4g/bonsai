@@ -118,30 +118,50 @@ DebugFrameEnd(debug_text_render_group *RG)
 
   debug_profile_entry NullEntry = {};
 
-  s32 FontSize = 42;
+  s32 FontSize = DEBUG_FONT_SIZE;
   s32 LinePadding = 3;
 
-  s32 AtY = 0;
+  DEBUG_GLOBAL r32 MaxX;
 
-  for (s32 EntryIndex = 0;
-      EntryIndex < DEBUG_STATE_ENTRY_COUNT;
-      ++EntryIndex)
   {
-    debug_profile_entry *Entry = &DebugState->Entries[EntryIndex];
-
-    if (Entry->HitCount > 0)
+    s32 AtY = 0;
+    // Print the cycle counts and record the max X
+    for (s32 EntryIndex = 0;
+        EntryIndex < DEBUG_STATE_ENTRY_COUNT;
+        ++EntryIndex)
     {
-      char CycleCountBuffer[32];
-      sprintf(CycleCountBuffer, "%lu", Entry->CycleCount);
 
-      rect2 CCTextRect = PrintDebugText( RG, CycleCountBuffer, 0, AtY, FontSize);
-      PrintDebugText( RG, Entry->FuncName, (int)CCTextRect.Max.x, AtY, FontSize);
+      debug_profile_entry *Entry = &DebugState->Entries[EntryIndex];
 
+      if (Entry->HitCount > 0)
+      {
+        char CycleCountBuffer[128];
+        sprintf(CycleCountBuffer, "%llu", Entry->CycleCount);
 
-      AtY += (FontSize + LinePadding);
+        rect2 CCRect = PrintDebugText( RG, CycleCountBuffer, 0, AtY, FontSize);
+        MaxX = max(MaxX, CCRect.Max.x);
+
+        AtY += (FontSize + LinePadding);
+      }
     }
+  }
 
-    *Entry = NullEntry;
+  {
+    s32 AtY = 0;
+    for (s32 EntryIndex = 0;
+        EntryIndex < DEBUG_STATE_ENTRY_COUNT;
+        ++EntryIndex)
+    {
+      debug_profile_entry *Entry = &DebugState->Entries[EntryIndex];
+      if (Entry->HitCount > 0)
+      {
+        PrintDebugText( RG, Entry->FuncName, (int)MaxX, AtY, FontSize);
+        AtY += (FontSize + LinePadding);
+
+      }
+
+      *Entry = NullEntry;
+    }
   }
 
 }

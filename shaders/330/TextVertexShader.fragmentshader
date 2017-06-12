@@ -12,4 +12,5 @@ uniform sampler2D myTextureSampler;
 void main()
 {
   color = texture( myTextureSampler, UV );
+  color.a = color.a > 0.3f ? 1.0f : 0.0f;
 }
