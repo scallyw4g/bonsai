@@ -73,7 +73,7 @@ InitializeRenderGroup( platform *Plat, RenderGroup *RG )
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
   //
 
-  GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, RG->DepthTexture, 0);
+  GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,  GL_TEXTURE_2D, RG->DepthTexture,    0);
   GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, RG->ColorTexture,    0);
   GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, RG->NormalTexture,   0);
   GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, RG->PositionTexture, 0);
@@ -1277,14 +1277,22 @@ ClearFramebuffers(RenderGroup *RG, ShadowRenderGroup *SG)
 {
   glClearColor(0.25f, 0.25f, 0.25f, 0.0f);
 
+  // FIXME(Jesse): This is taking _forever_ on Linux (GLES) .. does it take
+  // forever on other Linux systems?
+  TIMED_BLOCK("Clear 1");
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  END_BLOCK();
 
+  TIMED_BLOCK("Clear 2");
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
   glClear(GL_DEPTH_BUFFER_BIT);
+  END_BLOCK();
 
+  TIMED_BLOCK("Clear 3");
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  END_BLOCK();
 
   return;
 }

@@ -12,7 +12,7 @@
 
 // Screen Resolution
 
-#define SCREEN_RATIO 2
+#define SCREEN_RATIO 4
 
 #define SCR_WIDTH (3840/SCREEN_RATIO)
 #define SCR_HEIGHT (2160/SCREEN_RATIO)
