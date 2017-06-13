@@ -932,13 +932,26 @@ operator/(v3 A, int B)
 }
 
 inline v3
-operator/(voxel_position A, int i)
+operator/(voxel_position A, r32 f)
 {
   v3 Result;
 
-  Result.x = A.x / (float)i;
-  Result.y = A.y / (float)i;
-  Result.z = A.z / (float)i;
+  Result.x = A.x / f;
+  Result.y = A.y / f;
+  Result.z = A.z / f;
+
+  return Result;
+}
+
+
+inline voxel_position
+operator/(voxel_position A, s32 i)
+{
+  voxel_position Result;
+
+  Result.x = A.x / i;
+  Result.y = A.y / i;
+  Result.z = A.z / i;
 
   return Result;
 }

@@ -441,7 +441,7 @@ QueueChunksForInit(game_state *GameState, world_position WorldDisp, Entity *Play
 
   world_position InvAbsIter = ((Iter * Iter)-1) * ((Iter * Iter)-1);
 
-  world_position VRHalfDim = World_Position(GameState->world->VisibleRegion/2);
+  world_position VRHalfDim = GameState->world->VisibleRegion/2;
 
   world_position SliceMin = PlayerP + (VRHalfDim * Iter) - (VRHalfDim * InvAbsIter) - ClampPositive(WorldDisp);
   world_position SliceMax = PlayerP + (VRHalfDim * Iter) + (VRHalfDim * InvAbsIter) - ClampPositive(Iter) - InvAbsIter - ClampNegative(WorldDisp) + ClampNegative(Iter);
@@ -625,7 +625,7 @@ GetMouseDelta(platform *Plat)
 void
 UpdateDebugCamera(platform *Plat, World *world, v3 TargetDelta, Camera_Object *Camera)
 {
-  float FocalLength = DEBUG_CAMERA_FOCAL_LENGTH;
+  r32 FocalLength = DEBUG_CAMERA_FOCAL_LENGTH;
 
   chunk_dimension WorldChunkDim = world->ChunkDim;
 
@@ -666,7 +666,7 @@ UpdateCameraP(platform *Plat, World *world, Entity *Player, Camera_Object *Camer
 #if DEBUG_CAMERA_FOCUS_ORIGIN
   canonical_position NewTarget = Canonical_Position( V3(0,0,0), World_Position(0,0,0) );
 #else
-  canonical_position NewTarget = Canonicalize(WorldChunkDim, Player->P.Offset, Player->P.WorldP) + (Player->ModelDim/2);
+  canonical_position NewTarget = Canonicalize(WorldChunkDim, Player->P.Offset, Player->P.WorldP) + (Player->ModelDim/2.0f);
 #endif
 
 

@@ -1563,7 +1563,7 @@ Compute0thLod(game_state *GameState, world_chunk *WorldChunk)
   DEBUG_RenderOffset = RenderOffset;
 
   v3 SurfaceNormal = {};
-  v3 ChunkMidpoint = WorldChunkDim /2;
+  v3 ChunkMidpoint = WorldChunkDim/2.0f;
   /* DEBUG_DrawPointMarker(world, ChunkMidpoint + RenderOffset, GREEN, 0.5f); */
 
   s32 WorldChunkVolume = Volume(WorldChunkDim);
@@ -2264,14 +2264,15 @@ DrawWorldChunk( game_state *GameState,
   /*   Compute0thLod(GameState, Chunk); */
   /* } */
 
-  if ( Length(ChunkRenderOffset - CameraRenderOffset ) < MIN_LOD_DISTANCE )
+  /* if ( Length(ChunkRenderOffset - CameraRenderOffset ) < MIN_LOD_DISTANCE ) */
   {
     BufferChunkMesh( GameState->Plat, world, ChunkData, Chunk->WorldP, RG, SG, GameState->Camera);
   }
-  else
-  {
-    Draw0thLod( GameState, Chunk, ChunkRenderOffset);
-  }
+
+  /* else */
+  /* { */
+  /*   Draw0thLod( GameState, Chunk, ChunkRenderOffset); */
+  /* } */
 
   /* DEBUG_DrawChunkAABB( GameState->world, Chunk, GameState->Camera, Quaternion(), 0); */
 

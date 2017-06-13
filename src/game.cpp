@@ -61,8 +61,8 @@ InitCamera(Camera_Object* Camera, canonical_position P, float FocalLength)
   Camera->Frust.FOV = 45.0f;
   Camera->P = P;
   Camera->Up = WORLD_Y;
-  Camera->Right = WORLD_Z;
-  Camera->Front = WORLD_X;
+  Camera->Right = WORLD_X;
+  Camera->Front = WORLD_Z;
 
   return;
 }
@@ -223,32 +223,14 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
 
   ClearFramebuffers(RG, SG);
 
-  world_position Min = (Player->P.WorldP - (world->VisibleRegion / 2));
-  world_position Max = (Player->P.WorldP + (world->VisibleRegion / 2)) + 1;
+  world_position Min = -1 * (world->VisibleRegion/2);
+  world_position Max = (world->VisibleRegion/2) + 1;
 
-  /* DEBUG_DrawAABB( world, V3(Min*CHUNK_DIMENSION), V3(Max*CHUNK_DIMENSION), Quaternion(0,0,0,1), GREEN, 0.25); */
-  /* DEBUG_DrawAABB( world, LastFreeSlice,    Quaternion(0,0,0,1), RED,   0.1f); */
-  /* DEBUG_DrawAABB( world, LastQueuedSlice,  Quaternion(0,0,0,1), TEAL,  0.1f); */
-
-#if DEBUG_HIGHLIGHT_VOID_CHUNKS
-  for (int z = 0; z < world->VisibleRegion.z; ++z)
-  {
-    for (int y = 0; y < world->VisibleRegion.y; ++y)
-    {
-      for (int x = 0; x < world->VisibleRegion.x; ++x)
-      {
-        world_position ChunkP = World_Position(x,y,z) + Player->P.WorldP - (world->VisibleRegion/2);
-        world_chunk *chunk = GetWorldChunk(world, ChunkP);
-
-        if (!chunk)
-        {
-          DEBUG_DrawAABB(world, GetRenderP(WorldChunkDim, ChunkP), GetRenderP(WorldChunkDim, ChunkP + 1), Quaternion(0,0,0,1), RED);
-        }
-
-      }
-    }
-  }
-#endif
+  DEBUG_DrawAABB( world,
+                  GetRenderP(WORLD_CHUNK_DIM, Min, Camera),
+                  GetRenderP(WORLD_CHUNK_DIM, Max, Camera),
+                  Quaternion(),
+                  RED );
 
   TIMED_BLOCK("Render - World");
   for ( int i = 0; i < WORLD_HASH_SIZE; ++i)
