@@ -43,6 +43,8 @@ AllocateEntity(platform *Plat, memory_arena *Storage, canonical_position Initial
 
   chunk_dimension Dim = Chunk_Dimension(3,3,1);
   entity->Model = AllocateChunk(Plat, Storage, Dim);
+  entity->ModelDim = Dim;
+
   FillChunk(entity->Model, Dim);
 
   entity->Rotation = Quaternion(0,0,0,1);

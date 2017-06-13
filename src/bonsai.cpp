@@ -532,6 +532,27 @@ UpdatePlayerP(game_state *GameState, Entity *Player, v3 GrossDelta)
     v3 StepDelta = GetAtomicUpdateVector(Remaining);
     Remaining -= StepDelta;
 
+    Player->P.Offset.x += StepDelta.x;
+    Player->P = Canonicalize(WorldChunkDim, Player->P);
+    C = GetCollision(world, Player);
+    if (C.didCollide)
+    {
+      Player->Velocity.x = 0;
+      Player->P.Offset.x = C.CP.Offset.x;
+      Player->P.WorldP.x = C.CP.WorldP.x;
+
+      if (StepDelta.x > 0)
+	  {
+        Player->P.Offset.x -= (Player->ModelDim.x);
+	  }
+	  else
+	  {
+         Player->P.Offset.x++;
+	  }
+
+      Player->P = Canonicalize(WorldChunkDim, Player->P);
+    }
+
 
     Player->P.Offset.y += StepDelta.y;
     Player->P = Canonicalize(WorldChunkDim, Player->P);
@@ -539,65 +560,20 @@ UpdatePlayerP(game_state *GameState, Entity *Player, v3 GrossDelta)
     if (C.didCollide)
     {
       Player->Velocity.y = 0;
-
       Player->P.Offset.y = C.CP.Offset.y;
       Player->P.WorldP.y = C.CP.WorldP.y;
 
       if (StepDelta.y > 0)
-        Player->P.Offset.y -= (Player->ModelDim.y-1);
+	  {
+        Player->P.Offset.y -= (Player->ModelDim.y);
+	  }
+	  else
+	  {
+         Player->P.Offset.y++;
+	  }
 
       Player->P = Canonicalize(WorldChunkDim, Player->P);
     }
-
-
-    Player->P.Offset.x += StepDelta.x;
-    Player->P = Canonicalize(WorldChunkDim, Player->P);
-    C = GetCollision(world, Player);
-    if (C.didCollide)
-    {
-      C = GetCollision(world, Player, V3(0,1,0));
-
-      if (C.didCollide)
-      {
-        Player->Velocity.x = 0;
-
-        Player->P.Offset.x = C.CP.Offset.x;
-        Player->P.WorldP.x = C.CP.WorldP.x;
-
-        if (StepDelta.x > 0)
-          Player->P.Offset.x -= (Player->ModelDim.x-1);
-      }
-      else
-      {
-        Player->P.Offset += V3(0,1,0);
-      }
-      Player->P = Canonicalize(WorldChunkDim, Player->P);
-    }
-
-
-    Player->P.Offset.z += StepDelta.z;
-    Player->P = Canonicalize(WorldChunkDim, Player->P);
-    C = GetCollision(world, Player);
-    if (C.didCollide)
-    {
-      C = GetCollision(world, Player, V3(0,1,0));
-      if (C.didCollide)
-      {
-        Player->Velocity.z = 0;
-
-        Player->P.Offset.z = C.CP.Offset.z;
-        Player->P.WorldP.z = C.CP.WorldP.z;
-
-        if (StepDelta.z > 0)
-          Player->P.Offset.z -= (Player->ModelDim.z-1);
-      }
-      else
-      {
-        Player->P.Offset += V3(0,1,0);
-      }
-      Player->P = Canonicalize(WorldChunkDim, Player->P);
-    }
-
   }
 
   // UpdateVisibleRegion(GameState, OriginalPlayerP, Player);
