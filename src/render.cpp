@@ -1275,7 +1275,7 @@ IsInFrustum( chunk_dimension WorldChunkDim, Camera_Object *Camera, world_chunk *
 inline void
 ClearFramebuffers(RenderGroup *RG, ShadowRenderGroup *SG)
 {
-  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+  glClearColor(0.25f, 0.25f, 0.25f, 0.0f);
 
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -2246,14 +2246,14 @@ DrawWorldChunk( game_state *GameState,
     return;
 
   World *world = GameState->world;
-  chunk_dimension Dim = world->ChunkDim;
+  /* chunk_dimension Dim = world->ChunkDim; */
 
   // if (!IsInFrustum(Dim, GameState->Camera, Chunk))
     // return;
 
   Camera_Object *Camera = GameState->Camera;
-  v3 ChunkRenderOffset = GetRenderP( Dim, Chunk->WorldP, Camera);
-  v3 CameraRenderOffset = GetRenderP( Dim, Camera->P, Camera);
+  /* v3 ChunkRenderOffset = GetRenderP( Dim, Chunk->WorldP, Camera); */
+  /* v3 CameraRenderOffset = GetRenderP( Dim, Camera->P, Camera); */
 
   if ( IsSet( Chunk->Data->flags, Chunk_RebuildBoundary ) )
     BuildWorldChunkBoundaryVoxels(world, Chunk);
@@ -2266,7 +2266,7 @@ DrawWorldChunk( game_state *GameState,
 
   /* if ( Length(ChunkRenderOffset - CameraRenderOffset ) < MIN_LOD_DISTANCE ) */
   {
-    BufferChunkMesh( GameState->Plat, world, ChunkData, Chunk->WorldP, RG, SG, GameState->Camera);
+    BufferChunkMesh( GameState->Plat, world, ChunkData, Chunk->WorldP, RG, SG, Camera);
   }
 
   /* else */

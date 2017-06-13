@@ -520,7 +520,7 @@ UpdatePlayerP(game_state *GameState, Entity *Player, v3 GrossDelta)
 
   v3 Remaining = GrossDelta;
 
-  world_position OriginalPlayerP = Player->P.WorldP;
+  /* world_position OriginalPlayerP = Player->P.WorldP; */
   chunk_dimension WorldChunkDim = world->ChunkDim;
 
   collision_event C;
