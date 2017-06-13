@@ -116,18 +116,34 @@ InitChunkPerlin( game_state *GameState, world_chunk *WorldChunk )
 void
 FillChunk(chunk_data *chunk, chunk_dimension Dim)
 {
-  for (int i = 0; i < Volume(Dim); ++i)
+  s32 Vol = Volume(Dim);
+
+  for (int i = 0; i < Vol; ++i)
   {
-    chunk->Voxels[i].flags = SetFlag(chunk->Voxels[i].flags , Voxel_Filled);
-    /* Print(GetVoxelP(chunk->Voxels[i])); */
+    chunk->Voxels[i].flags = SetFlag(chunk->Voxels[i].flags, Voxel_Filled     |
+                                                             Voxel_TopFace    |
+                                                             Voxel_BottomFace |
+                                                             Voxel_FrontFace  |
+                                                             Voxel_BackFace   |
+                                                             Voxel_LeftFace   |
+                                                             Voxel_RightFace);
+
+    chunk->BoundaryVoxels[i] = chunk->Voxels[i];
+
+    ++chunk->BoundaryVoxelCount;
   }
+
+  chunk->flags = SetFlag(chunk->flags, Chunk_Initialized);
 }
 
 void
 InitializeVoxels( game_state *GameState, world_chunk *Chunk )
 {
-  if (Chunk->WorldP == World_Position(0,0,0) )
+  if (Chunk->WorldP == World_Position(2,2,0) )
+  {
     FillChunk(Chunk->Data, WORLD_CHUNK_DIM);
+    Chunk->Filled = Volume(WORLD_CHUNK_DIM);
+  }
 
   Chunk->Data->flags = SetFlag(Chunk->Data->flags, Chunk_Initialized);
   return;
@@ -170,7 +186,36 @@ QueueChunkForInit(game_state *GameState, world_chunk *Chunk)
 }
 
 inline v3
-GetInputsFromController(platform *Plat, Camera_Object *Camera)
+GetOrthographicInputs(platform *Plat)
+{
+  v3 right = V3(1,0,0);
+  v3 forward = V3(0,1,0);
+
+  v3 UpdateDir = V3(0,0,0);
+
+  // Forward
+  if ( Plat->Input.W )
+    UpdateDir += forward;
+
+  // Backward
+  if ( Plat->Input.S )
+    UpdateDir -= forward;
+
+  // Right
+  if ( Plat->Input.D )
+    UpdateDir += right;
+
+  // Left
+  if ( Plat->Input.A )
+    UpdateDir -= right;
+
+  UpdateDir = Normalize(UpdateDir);
+
+  return UpdateDir;
+}
+
+inline v3
+GetCameraRelativeInput(platform *Plat, Camera_Object *Camera)
 {
   v3 right = Camera->Right;
   v3 forward = Camera->Front;
@@ -234,10 +279,9 @@ GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
 
         world_chunk *chunk = GetWorldChunk( world, LoopTestP.WorldP );
 
-
+#if 0
         // TODO(Jesse): Can we somehow atomically pull this one off the queue
         // and initialize it on demand?
-#if 0
         if (chunk && NotSet(chunk->Data->flags, Chunk_Initialized) )
         {
           chunk->Data->flags = (chunk->Data->flags, Chunk_Queued);
@@ -245,7 +289,7 @@ GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
         }
 #endif
 
-        if ( IsFilledInChunk(chunk->Data, Voxel_Position(LoopTestP.Offset), world->ChunkDim) )
+        if ( chunk && IsFilledInChunk(chunk->Data, Voxel_Position(LoopTestP.Offset), world->ChunkDim) )
         {
           Collision.CP = LoopTestP;
           Collision.didCollide = true;
@@ -468,27 +512,28 @@ SpawnPlayer( World *world, platform *Plat, Entity *Player )
 }
 
 void
-UpdatePlayerP(game_state *GameState, Entity *Player, v3 GrossUpdateVector)
+UpdatePlayerP(game_state *GameState, Entity *Player, v3 GrossDelta)
 {
   TIMED_FUNCTION();
 
   World *world = GameState->world;
 
-  v3 Remaining = GrossUpdateVector;
-  /* Remaining = V3(-16, 0, 0); */
+  v3 Remaining = GrossDelta;
+
   world_position OriginalPlayerP = Player->P.WorldP;
   chunk_dimension WorldChunkDim = world->ChunkDim;
 
   collision_event C;
+
   while ( Remaining != V3(0,0,0) )
   {
     Assert(LengthSq(Remaining) >= 0);
 
-    v3 UpdateVector = GetAtomicUpdateVector(Remaining);
-    Remaining -= UpdateVector;
+    v3 StepDelta = GetAtomicUpdateVector(Remaining);
+    Remaining -= StepDelta;
 
 
-    Player->P.Offset.y += UpdateVector.y;
+    Player->P.Offset.y += StepDelta.y;
     Player->P = Canonicalize(WorldChunkDim, Player->P);
     C = GetCollision(world, Player);
     if (C.didCollide)
@@ -498,14 +543,14 @@ UpdatePlayerP(game_state *GameState, Entity *Player, v3 GrossUpdateVector)
       Player->P.Offset.y = C.CP.Offset.y;
       Player->P.WorldP.y = C.CP.WorldP.y;
 
-      if (UpdateVector.y > 0)
+      if (StepDelta.y > 0)
         Player->P.Offset.y -= (Player->ModelDim.y-1);
 
       Player->P = Canonicalize(WorldChunkDim, Player->P);
     }
 
 
-    Player->P.Offset.x += UpdateVector.x;
+    Player->P.Offset.x += StepDelta.x;
     Player->P = Canonicalize(WorldChunkDim, Player->P);
     C = GetCollision(world, Player);
     if (C.didCollide)
@@ -519,7 +564,7 @@ UpdatePlayerP(game_state *GameState, Entity *Player, v3 GrossUpdateVector)
         Player->P.Offset.x = C.CP.Offset.x;
         Player->P.WorldP.x = C.CP.WorldP.x;
 
-        if (UpdateVector.x > 0)
+        if (StepDelta.x > 0)
           Player->P.Offset.x -= (Player->ModelDim.x-1);
       }
       else
@@ -530,7 +575,7 @@ UpdatePlayerP(game_state *GameState, Entity *Player, v3 GrossUpdateVector)
     }
 
 
-    Player->P.Offset.z += UpdateVector.z;
+    Player->P.Offset.z += StepDelta.z;
     Player->P = Canonicalize(WorldChunkDim, Player->P);
     C = GetCollision(world, Player);
     if (C.didCollide)
@@ -543,7 +588,7 @@ UpdatePlayerP(game_state *GameState, Entity *Player, v3 GrossUpdateVector)
         Player->P.Offset.z = C.CP.Offset.z;
         Player->P.WorldP.z = C.CP.WorldP.z;
 
-        if (UpdateVector.z > 0)
+        if (StepDelta.z > 0)
           Player->P.Offset.z -= (Player->ModelDim.z-1);
       }
       else
@@ -555,10 +600,11 @@ UpdatePlayerP(game_state *GameState, Entity *Player, v3 GrossUpdateVector)
 
   }
 
-  UpdateVisibleRegion(GameState, OriginalPlayerP, Player);
+  // UpdateVisibleRegion(GameState, OriginalPlayerP, Player);
 
   Player->P = Canonicalize(WorldChunkDim, Player->P);
-  Assert ( GetCollision(world, Player ).didCollide == false );
+  collision_event AssertCollision = GetCollision(world, Player );
+  Assert ( AssertCollision.didCollide == false );
 
   return;
 }
@@ -757,7 +803,7 @@ AllocateWorld( game_state *GameState, world_position Midpoint)
   }
 
   world_position Min = Midpoint - (world->VisibleRegion/2);
-  world_position Max = Midpoint + (world->VisibleRegion/2);
+  world_position Max = Midpoint + (world->VisibleRegion/2) + 1;
 
   for ( int z = Min.z; z < Max.z; ++ z )
   {

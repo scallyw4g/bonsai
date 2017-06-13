@@ -2237,7 +2237,7 @@ DrawWorldChunk( game_state *GameState,
                 RenderGroup *RG,
                 ShadowRenderGroup *SG)
 {
-  if (Chunk->Filled == Volume(GameState->world->ChunkDim) || Chunk->Filled == 0)
+  if (Chunk->Data->BoundaryVoxelCount == 0)
     return;
 
   chunk_data *ChunkData = Chunk->Data;
@@ -2248,8 +2248,8 @@ DrawWorldChunk( game_state *GameState,
   World *world = GameState->world;
   chunk_dimension Dim = world->ChunkDim;
 
-  if (!IsInFrustum(Dim, GameState->Camera, Chunk))
-    return;
+  // if (!IsInFrustum(Dim, GameState->Camera, Chunk))
+    // return;
 
   Camera_Object *Camera = GameState->Camera;
   v3 ChunkRenderOffset = GetRenderP( Dim, Chunk->WorldP, Camera);

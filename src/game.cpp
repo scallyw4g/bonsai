@@ -23,16 +23,9 @@ SeedWorldAndUnspawnPlayer( World *world, Entity *Player )
 v3
 GetEntityDelta(World *world, Entity *Player, v3 Input, float dt)
 {
-  // DebugCounter();
-  // TODO : Bake these into the terrain/model ?
-  v3 drag = V3(0.6f, 1.0f, 0.6f);
+  v3 drag = V3(0.6f, 0.6f, 0.0f);
 
-  Player->Acceleration = Input * PLAYER_ACCEL_MULTIPLIER; // m/s2
-
-#if 0
-  if (IsGrounded(world, Player) && (glfwGetKey( window, GLFW_KEY_SPACE ) == GLFW_PRESS))
-      Player->Velocity.y += PLAYER_JUMP_STRENGTH; // Jump
-#endif
+  Player->Acceleration = Input * PLAYER_ACCEL_MULTIPLIER;
 
   Player->Acceleration += world->Gravity * dt; // Apply Gravity
   Player->Velocity = (Player->Velocity + (Player->Acceleration)) * drag; // m/s
@@ -180,11 +173,6 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
     DEBUG_DrawAABB(world, CameraLocation, Quaternion(0,0,0,1), PINK, 0.5f);
   }
 
-#if 0
-  if ( glfwGetKey(window, GLFW_KEY_ENTER ) == GLFW_PRESS )
-    SeedWorldAndUnspawnPlayer(world, Player);
-#endif
-
   static bool Toggled = false;
 
   if ( !Toggled && Plat->Input.F11)
@@ -202,7 +190,9 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
   else
     CurrentCamera = Camera;
 
-  v3 Input = GetInputsFromController(Plat, CurrentCamera);
+  v3 Input = GetOrthographicInputs(Plat);
+  /* v3 Input = V3(1, 0, 0); */
+
   if (UseDebugCamera)
   {
     UpdateDebugCamera(Plat, world, Input, &GlobalDebugCamera);
@@ -234,7 +224,7 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
   ClearFramebuffers(RG, SG);
 
   world_position Min = (Player->P.WorldP - (world->VisibleRegion / 2));
-  world_position Max = (Player->P.WorldP + (world->VisibleRegion / 2));
+  world_position Max = (Player->P.WorldP + (world->VisibleRegion / 2)) + 1;
 
   /* DEBUG_DrawAABB( world, V3(Min*CHUNK_DIMENSION), V3(Max*CHUNK_DIMENSION), Quaternion(0,0,0,1), GREEN, 0.25); */
   /* DEBUG_DrawAABB( world, LastFreeSlice,    Quaternion(0,0,0,1), RED,   0.1f); */
@@ -269,12 +259,7 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
     {
       if ( (chunk->WorldP >= Min && chunk->WorldP < Max) )
       {
-        /* if (chunk->WorldP == World_Position(-3,-1,-4) ) */
-        {
-          DrawWorldChunk(GameState, chunk, RG, SG);
-          /* DEBUG_DrawChunkAABB( GameState->world, chunk, GameState->Camera, Quaternion(), 0); */
-        }
-
+        DrawWorldChunk(GameState, chunk, RG, SG);
         chunk = chunk->Next;
       }
       else
