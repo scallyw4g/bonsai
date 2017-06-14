@@ -625,25 +625,25 @@ struct rect2
 
 struct aabb
 {
-  v3 MinCorner;
-  v3 MaxCorner;
+  v3 Min;
+  v3 Max;
 
   aabb(v3 Min, v3 Max)
   {
-    MinCorner = Min;
-    MaxCorner = Max;
+    this->Min = Min;
+    this->Max = Max;
   }
 
   aabb(world_position Min, world_position Max)
   {
-    MinCorner = V3(Min);
-    MaxCorner = V3(Max);
+    this->Min = V3(Min);
+    this->Max = V3(Max);
   }
 
   aabb()
   {
-    MinCorner = V3(0,0,0);
-    MaxCorner = V3(0,0,0);
+    this->Min = V3(0,0,0);
+    this->Max = V3(0,0,0);
   }
 
 };
@@ -660,8 +660,8 @@ operator+(aabb AABB, v3 V)
 {
   aabb Result;
 
-  Result.MinCorner = AABB.MinCorner + V;
-  Result.MaxCorner = AABB.MaxCorner + V;
+  Result.Min = AABB.Min + V;
+  Result.Max = AABB.Max + V;
 
   return Result;
 }

@@ -519,6 +519,45 @@ SpawnPlayer( World *world, platform *Plat, entity *Player )
   return;
 }
 
+inline v3
+GetAbsoluteP( canonical_position CP )
+{
+  v3 Result = V3(CP.Offset.x*CD_X*CP.WorldP.x,
+                 CP.Offset.y*CD_Y*CP.WorldP.y,
+                 CP.Offset.z*CD_Z*CP.WorldP.z);
+  return Result;
+}
+
+inline b32
+Intersect(aabb *First, aabb *Second)
+{
+  b32 Result = False;
+
+  Result |= (First->Min.x > Second->Min.x && First->Min.x < Second->Max.x);
+  Result |= (First->Min.y > Second->Min.y && First->Min.y < Second->Max.y);
+  Result |= (First->Min.z > Second->Min.z && First->Min.z < Second->Max.z);
+
+  Result |= (First->Max.x < Second->Max.x && First->Max.x > Second->Min.x);
+  Result |= (First->Max.y < Second->Max.y && First->Max.y > Second->Min.y);
+  Result |= (First->Max.z < Second->Max.z && First->Max.z > Second->Min.z);
+
+  return Result;
+}
+
+inline b32
+GetCollision( entity *First, entity *Second)
+{
+  v3 FirstMin = GetAbsoluteP(First->P);
+  aabb FirstAABB( FirstMin, FirstMin + First->ModelDim );
+
+  v3 SecondMin = GetAbsoluteP(Second->P);
+  aabb SecondAABB( SecondMin, SecondMin + Second->ModelDim );
+
+  b32 Result = Intersect(&FirstAABB, &SecondAABB);
+
+  return Result;
+}
+
 void
 UpdatePlayerP(game_state *GameState, entity *Player, v3 GrossDelta)
 {
@@ -535,6 +574,17 @@ UpdatePlayerP(game_state *GameState, entity *Player, v3 GrossDelta)
 
   while ( Remaining != V3(0,0,0) )
   {
+
+    for ( s32 EnemyIndex = 0;
+        EnemyIndex < TOTAL_ENEMY_COUNT;
+        ++EnemyIndex )
+    {
+      entity *Enemy = GameState->Enemies[EnemyIndex];
+
+      if ( GetCollision( Player, Enemy) )
+        return;
+    }
+
     Assert(LengthSq(Remaining) >= 0);
 
     v3 StepDelta = GetAtomicUpdateVector(Remaining);
@@ -550,16 +600,15 @@ UpdatePlayerP(game_state *GameState, entity *Player, v3 GrossDelta)
       Player->P.WorldP.x = C.CP.WorldP.x;
 
       if (StepDelta.x > 0)
-    {
-        Player->P.Offset.x -= (Player->ModelDim.x);
-    }
-    else
-    {
-         Player->P.Offset.x++;
-    }
-
-      Player->P = Canonicalize(WorldChunkDim, Player->P);
-    }
+      {
+          Player->P.Offset.x -= (Player->ModelDim.x);
+      }
+      else
+      {
+        Player->P.Offset.x++;
+      }
+        Player->P = Canonicalize(WorldChunkDim, Player->P);
+      }
 
 
     Player->P.Offset.y += StepDelta.y;
@@ -572,13 +621,13 @@ UpdatePlayerP(game_state *GameState, entity *Player, v3 GrossDelta)
       Player->P.WorldP.y = C.CP.WorldP.y;
 
       if (StepDelta.y > 0)
-    {
+      {
         Player->P.Offset.y -= (Player->ModelDim.y);
-    }
-    else
-    {
-         Player->P.Offset.y++;
-    }
+      }
+      else
+      {
+        Player->P.Offset.y++;
+      }
 
       Player->P = Canonicalize(WorldChunkDim, Player->P);
     }

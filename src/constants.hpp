@@ -55,7 +55,7 @@
 #define PLAYER_MODEL MODELS_PATH"/3x3x3.vox"
 
 
-#define TOTAL_ENEMY_COUNT 32
+#define TOTAL_ENEMY_COUNT 2
 #define DEBUG_ENTITY_DIM Chunk_Dimension(3,3,1)
 
 
@@ -95,7 +95,6 @@ DEBUG_GLOBAL canonical_position CameraInitialP = { {0,0,10}, {0,-3,10} };
 
 #define FINAL_POSITION_BIT (POSITION_BIT_WIDTH*3)
 #define FINAL_COLOR_BIT ((FINAL_POSITION_BIT+COLOR_BIT_WIDTH))
-
 
 DEBUG_GLOBAL u32 DEBUG_NOISE_SEED = 65435;
 

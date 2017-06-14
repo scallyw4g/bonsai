@@ -896,7 +896,7 @@ DEBUG_DrawAABB( World *world, v3 MinP, v3 MaxP, Quaternion Rotation, int ColorIn
 inline void
 DEBUG_DrawAABB( World *world, aabb Rect, Quaternion Rotation, int ColorIndex, float Thickness = DEFAULT_LINE_THICKNESS )
 {
-  DEBUG_DrawAABB( world, Rect.MinCorner, Rect.MaxCorner, Rotation, ColorIndex, Thickness );
+  DEBUG_DrawAABB( world, Rect.Min, Rect.Max, Rotation, ColorIndex, Thickness );
   return;
 }
 
@@ -1521,10 +1521,10 @@ BufferTriangle(World *world, v3 *Verts, v3 Normal, s32 ColorIndex)
 inline v3
 Midpoint(aabb AABB)
 {
-  v3 MaxP = AABB.MaxCorner - AABB.MinCorner;
+  v3 MaxP = AABB.Max - AABB.Min;
   v3 Mid = MaxP/2;
 
-  v3 Result = AABB.MinCorner + Mid;
+  v3 Result = AABB.Min + Mid;
   return Result;
 }
 
@@ -1841,9 +1841,9 @@ Compute0thLod(game_state *GameState, world_chunk *WorldChunk)
 #if 0
     aabb BoundaryVoxelsAABB = FindBoundaryVoxelsAABB(WorldChunk->Data, WorldChunkDim);
 
-    float xLen = BoundaryVoxelsAABB.MaxCorner.x - BoundaryVoxelsAABB.MinCorner.x;
-    float yLen = BoundaryVoxelsAABB.MaxCorner.y - BoundaryVoxelsAABB.MinCorner.y;
-    float zLen = BoundaryVoxelsAABB.MaxCorner.z - BoundaryVoxelsAABB.MinCorner.z;
+    float xLen = BoundaryVoxelsAABB.Max.x - BoundaryVoxelsAABB.Min.x;
+    float yLen = BoundaryVoxelsAABB.Max.y - BoundaryVoxelsAABB.Min.y;
+    float zLen = BoundaryVoxelsAABB.Max.z - BoundaryVoxelsAABB.Min.z;
 
     // Find the widest axies and iterate orthogonal to them
 

@@ -173,6 +173,7 @@ DebugFrameEnd(debug_text_render_group *RG)
   {
     s32 AtY = 0;
     DEBUG_GLOBAL s32 PercX = 0;
+    DEBUG_GLOBAL s32 HitCountX = 0;
     for (s32 EntryIndex = 0;
         EntryIndex < DEBUG_STATE_ENTRY_COUNT;
         ++EntryIndex)
@@ -186,7 +187,13 @@ DebugFrameEnd(debug_text_render_group *RG)
         rect2 PercRect = PrintDebugText( RG, PercentageBuffer, (s32)MaxX, AtY, FontSize);
         PercX = max((s32)PercRect.Max.x, PercX);
 
-        PrintDebugText( RG, Entry->FuncName, PercX, AtY, FontSize);
+        // Print Hit Count
+        char CountBuffer[32];
+        sprintf(CountBuffer, "%" PRIu32, Entry->HitCount);
+        rect2 HitCountRect = PrintDebugText( RG, CountBuffer, PercX, AtY, FontSize);
+        HitCountX = max((s32)HitCountRect.Max.x, HitCountX);
+
+        PrintDebugText( RG, Entry->FuncName, HitCountX, AtY, FontSize);
 
         AtY += (FontSize + LinePadding);
       }

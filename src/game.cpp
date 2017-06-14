@@ -36,6 +36,7 @@ GetEntityDelta(World *world, entity *Player, v3 Input, float dt)
 void
 InitEntity(entity *Entity, chunk_dimension Dim, canonical_position InitialP,  const char *ModelPath)
 {
+  TIMED_FUNCTION();
 #if 0
   entity->Model = LoadVox(Plat, Plat->Memory, ModelPath, entity);
 #else
@@ -114,6 +115,8 @@ SpawnEnemy(entity **Enemies, s32 EnemyIndex)
   s32 Y = rand() % Max.y;
   s32 Z = rand() % Max.z;
 
+  Y += 24;
+
   entity *Enemy = Enemies[EnemyIndex];
 
   canonical_position InitialP = Canonical_Position(V3(X,Y,Z), World_Position(0,0,0));
@@ -129,6 +132,7 @@ SpawnEnemy(entity **Enemies, s32 EnemyIndex)
 void
 SpawnEnemies(game_state *GameState)
 {
+  TIMED_FUNCTION();
   entity **Enemies = GameState->Enemies;
 
   for (s32 EnemyIndex = 0;
@@ -154,6 +158,8 @@ EXPORT void*
 GameInit( platform *Plat )
 {
   Info("Initializing Game");
+
+  InitGlobals(Plat);
 
   GL_Global = &Plat->GL;
   GlobalGlslVersion = Plat->GlslVersion;
@@ -212,8 +218,6 @@ GameInit( platform *Plat )
   if (!world) { Error("Error Allocating world"); return False; }
 
   SeedWorldAndUnspawnPlayer(world, Player);
-
-  InitGlobals(Plat);
 
   return GameState;
 }
