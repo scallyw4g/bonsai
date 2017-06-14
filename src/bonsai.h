@@ -132,7 +132,7 @@ struct plane
     Assert(Normal.x*P.x + Normal.y*P.y + Normal.z*P.z + this->d == 0);
   }
 
-  plane() {} 
+  plane() {}
 };
 
 struct Frustum

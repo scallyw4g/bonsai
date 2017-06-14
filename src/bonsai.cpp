@@ -18,14 +18,14 @@ GLOBAL_VARIABLE PerlinNoise GlobalNoise;
 void
 OnMouseScroll(GLFWwindow* window, double xoffset, double yoffset)
 {
-	if (UseDebugCamera)
-	{
-		DEBUG_CAMERA_FOCAL_LENGTH -= (yoffset * DEBUG_CAMERA_SCROLL_SPEED);
-	}
-	else
-	{
-		CAMERA_FOCAL_LENGTH -= (yoffset * PLAYER_ACCEL_MULTIPLIER);
-	}
+  if (UseDebugCamera)
+  {
+    DEBUG_CAMERA_FOCAL_LENGTH -= (yoffset * DEBUG_CAMERA_SCROLL_SPEED);
+  }
+  else
+  {
+    CAMERA_FOCAL_LENGTH -= (yoffset * PLAYER_ACCEL_MULTIPLIER);
+  }
 
   return;
 }
@@ -550,13 +550,13 @@ UpdatePlayerP(game_state *GameState, entity *Player, v3 GrossDelta)
       Player->P.WorldP.x = C.CP.WorldP.x;
 
       if (StepDelta.x > 0)
-	  {
+    {
         Player->P.Offset.x -= (Player->ModelDim.x);
-	  }
-	  else
-	  {
+    }
+    else
+    {
          Player->P.Offset.x++;
-	  }
+    }
 
       Player->P = Canonicalize(WorldChunkDim, Player->P);
     }
@@ -572,13 +572,13 @@ UpdatePlayerP(game_state *GameState, entity *Player, v3 GrossDelta)
       Player->P.WorldP.y = C.CP.WorldP.y;
 
       if (StepDelta.y > 0)
-	  {
+    {
         Player->P.Offset.y -= (Player->ModelDim.y);
-	  }
-	  else
-	  {
+    }
+    else
+    {
          Player->P.Offset.y++;
-	  }
+    }
 
       Player->P = Canonicalize(WorldChunkDim, Player->P);
     }
