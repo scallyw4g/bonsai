@@ -313,9 +313,9 @@ GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
 }
 
 collision_event
-GetCollision(World *world, Entity *entity, v3 Offset = V3(0,0,0) )
+GetCollision(World *world, entity *entity, v3 Offset = V3(0,0,0) )
 {
-  Assert( entity->Spawned );
+  Assert( Spawned(entity) );
   /* Assert( entity->Model->BoundaryVoxelCount > 0 ); */
 
   collision_event C;
@@ -337,7 +337,7 @@ GetCollision(World *world, Entity *entity, v3 Offset = V3(0,0,0) )
 }
 
 inline b32
-IsGrounded( World *world, Entity *entity)
+IsGrounded( World *world, entity *entity)
 {
   collision_event c = GetCollision(world, entity, V3(0.0f,-0.001f, 0.0f));
   return c.didCollide;
@@ -439,7 +439,7 @@ GetFreeChunk(platform *Plat, World *world, world_position P)
 }
 
 void
-QueueChunksForInit(game_state *GameState, world_position WorldDisp, Entity *Player)
+QueueChunksForInit(game_state *GameState, world_position WorldDisp, entity *Player)
 {
   if (Length(V3(WorldDisp)) == 0) return;
 
@@ -471,7 +471,7 @@ QueueChunksForInit(game_state *GameState, world_position WorldDisp, Entity *Play
 }
 
 void
-UpdateVisibleRegion(game_state *GameState, world_position OriginalPlayerP, Entity *Player)
+UpdateVisibleRegion(game_state *GameState, world_position OriginalPlayerP, entity *Player)
 {
   if ( OriginalPlayerP != Player->P.WorldP && DEBUG_SCROLL_WORLD ) // We moved to the next chunk
   {
@@ -485,7 +485,7 @@ UpdateVisibleRegion(game_state *GameState, world_position OriginalPlayerP, Entit
 }
 
 void
-SpawnPlayer( World *world, platform *Plat, Entity *Player )
+SpawnPlayer( World *world, platform *Plat, entity *Player )
 {
   Player->Acceleration = V3(0,0,0);
   Player->Velocity = V3(0,0,0);
@@ -507,7 +507,7 @@ SpawnPlayer( World *world, platform *Plat, Entity *Player )
   if (!Collision.didCollide)
   {
     Player->P = TestP;
-    Player->Spawned = true;
+    Player->Flags = (entity_flags)SetFlag(Player->Flags, Entity_Spawned);
   }
   else
   {
@@ -520,7 +520,7 @@ SpawnPlayer( World *world, platform *Plat, Entity *Player )
 }
 
 void
-UpdatePlayerP(game_state *GameState, Entity *Player, v3 GrossDelta)
+UpdatePlayerP(game_state *GameState, entity *Player, v3 GrossDelta)
 {
   TIMED_FUNCTION();
 
@@ -644,7 +644,7 @@ UpdateDebugCamera(platform *Plat, World *world, v3 TargetDelta, Camera_Object *C
 }
 
 void
-UpdateCameraP(platform *Plat, World *world, Entity *Player, Camera_Object *Camera)
+UpdateCameraP(platform *Plat, World *world, entity *Player, Camera_Object *Camera)
 {
   chunk_dimension WorldChunkDim = world->ChunkDim;
 #if DEBUG_CAMERA_FOCUS_ORIGIN

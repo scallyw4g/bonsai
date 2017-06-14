@@ -13,15 +13,14 @@ DEBUG_GLOBAL Camera_Object GlobalDebugCamera = {};
 #include <bonsai.cpp>
 
 void
-SeedWorldAndUnspawnPlayer( World *world, Entity *Player )
+SeedWorldAndUnspawnPlayer( World *world, entity *Player )
 {
-  Player->Spawned = false;
-
+  Player->Flags = (entity_flags)UnSetFlag(Player->Flags, Entity_Spawned);
   return;
 }
 
 v3
-GetEntityDelta(World *world, Entity *Player, v3 Input, float dt)
+GetEntityDelta(World *world, entity *Player, v3 Input, float dt)
 {
   v3 drag = V3(0.6f, 0.6f, 0.0f);
 
@@ -34,24 +33,32 @@ GetEntityDelta(World *world, Entity *Player, v3 Input, float dt)
   return PlayerDelta;
 }
 
-Entity *
+void
+InitEntity(platform *Plat, entity *Entity, memory_arena *Storage, canonical_position InitialP, const char *ModelPath)
+{
+#if 0
+  entity->Model = LoadVox(Plat, Plat->Memory, ModelPath, entity);
+#else
+  chunk_dimension Dim = Chunk_Dimension(3,3,1);
+  Entity->Model = AllocateChunk(Plat, Storage, Dim);
+  Entity->ModelDim = Dim;
+  FillChunk(Entity->Model, Dim);
+#endif
+
+  Entity->Rotation = Quaternion(0,0,0,1);
+  Entity->P = InitialP;
+  Entity->Flags = Entity_Uninitialized;
+
+  return;
+}
+
+entity *
 AllocateEntity(platform *Plat, memory_arena *Storage, canonical_position InitialP, const char *ModelPath)
 {
-  Entity *entity = PUSH_STRUCT_CHECKED(Entity, Plat->Memory, 1);
+  entity *Entity = PUSH_STRUCT_CHECKED(entity, Storage, 1);
+  InitEntity(Plat, Entity, Storage, InitialP, ModelPath);
 
-  /* entity->Model = LoadVox(Plat, Plat->Memory, ModelPath, entity); */
-
-  chunk_dimension Dim = Chunk_Dimension(3,3,1);
-  entity->Model = AllocateChunk(Plat, Storage, Dim);
-  entity->ModelDim = Dim;
-
-  FillChunk(entity->Model, Dim);
-
-  entity->Rotation = Quaternion(0,0,0,1);
-  entity->P = InitialP;
-  entity->Spawned = false;
-
-  return entity;
+  return Entity;
 }
 
 void
@@ -65,6 +72,43 @@ InitCamera(Camera_Object* Camera, canonical_position P, float FocalLength)
   Camera->Up = WORLD_Y;
   Camera->Right = WORLD_X;
   Camera->Front = WORLD_Z;
+
+  return;
+}
+
+inline b32
+Destroyed(entity_flags Flags)
+{
+  b32 Result =  IsSet(Flags, Entity_Destoryed);
+  return Result;
+}
+
+inline b32
+Destroyed(entity *Entity)
+{
+  b32 Result = Destroyed(Entity->Flags);
+  return Result;
+}
+
+void
+SpawnEnemy(entity *Enemies, s32 EnemyIndex)
+{
+  entity *Enemy = &Enemies[EnemyIndex];
+  return;
+}
+
+void
+SpawnEnemies(game_state *GameState)
+{
+  entity *Enemies = GameState->Enemies;
+
+  for (s32 EnemyIndex = 0;
+      EnemyIndex < TOTAL_ENEMY_COUNT;
+      ++EnemyIndex)
+  {
+    if ( Destroyed(&Enemies[EnemyIndex]) )
+      SpawnEnemy(Enemies, EnemyIndex);
+  }
 
   return;
 }
@@ -105,7 +149,7 @@ GameInit( platform *Plat )
 
   canonical_position PlayerInitialP = {};
 
-  Entity *Player = AllocateEntity(Plat, Plat->Memory, PlayerInitialP, PLAYER_MODEL);
+  entity *Player = AllocateEntity(Plat, Plat->Memory, PlayerInitialP, PLAYER_MODEL);
   if (!Player) { Error("Error Allocating Player"); return False; }
 
   Camera_Object *Camera = PUSH_STRUCT_CHECKED(Camera_Object, Plat->Memory, 1);
@@ -144,7 +188,7 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
   GL_Global = &Plat->GL;
 
   World *world          = GameState->world;
-  Entity *Player        = GameState->Player;
+  entity *Player        = GameState->Player;
   Camera_Object *Camera = GameState->Camera;
 
   chunk_dimension WorldChunkDim = world->ChunkDim;
@@ -201,7 +245,7 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
   }
   else
   {
-     if (Player->Spawned)
+     if (Spawned(Player->Flags))
      {
        v3 PlayerDelta = GetEntityDelta(world, Player, Input, Plat->dt);
        UpdatePlayerP( GameState, Player, PlayerDelta );

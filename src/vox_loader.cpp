@@ -131,7 +131,7 @@ ReadXYZIChunk(FILE *File, int* byteCounter)
 }
 
 chunk_data*
-LoadVox(platform *Plat, memory_arena *WorldStorage, char const *filepath, Entity *entity )
+LoadVox(platform *Plat, memory_arena *WorldStorage, char const *filepath, entity *Entity )
 {
   chunk_data *Result = 0;
   s32 totalChunkBytes = 0;
@@ -207,7 +207,7 @@ LoadVox(platform *Plat, memory_arena *WorldStorage, char const *filepath, Entity
           // BuildExteriorBoundaryVoxels doesn't handle models correctly.
           // +1 to convert from index, +2 for a 1vox buffer on each side.
           chunk_dimension Dim = Chunk_Dimension(maxX+3, maxY+3, maxZ+3) - Min;
-          entity->ModelDim = Dim;
+          Entity->ModelDim = Dim;
 
           // TODO(Jesse): Load models in multiple chunks instead of one
           // monolithic one. The storage for chunks must be as large as the

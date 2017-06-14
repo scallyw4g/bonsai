@@ -43,6 +43,13 @@ enum voxel_flag
   Voxel_BackFace   = 1 << (FINAL_COLOR_BIT + 6)
 };
 
+enum entity_flags
+{
+  Entity_Uninitialized = 0 << 0,
+  Entity_Spawned       = 1 << 0,
+  Entity_Destoryed     = 1 << 1,
+};
+
 struct voxel
 {
   int flags;
@@ -153,7 +160,7 @@ struct Camera_Object
   v3 Up;
 };
 
-struct Entity
+struct entity
 {
   chunk_data *Model;
   chunk_dimension ModelDim;
@@ -165,7 +172,7 @@ struct Entity
 
   Quaternion Rotation;
 
-  bool Spawned;
+  entity_flags Flags;
 };
 
 struct world_storage
@@ -225,6 +232,21 @@ NotSet( int Flags, int Flag )
   b32 Result = !(IsSet(Flags, Flag));
   return Result;
 }
+
+inline b32
+Spawned(entity_flags Flags)
+{
+  b32 Result = IsSet(Flags, Entity_Spawned);
+  return Result;
+}
+
+inline b32
+Spawned(entity *Entity)
+{
+  b32 Result = Spawned(Entity->Flags);
+  return Result;
+}
+
 
 inline int
 GetVoxelColor(voxel V)

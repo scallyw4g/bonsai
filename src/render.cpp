@@ -2291,7 +2291,7 @@ void
 DrawEntity(
     platform *Plat,
     World *world,
-    Entity *entity,
+    entity *entity,
     Camera_Object *Camera,
     RenderGroup *RG,
     ShadowRenderGroup *SG
@@ -2302,7 +2302,7 @@ DrawEntity(
   /* glUniform3fv(RG->LightPID, 1, &LightP[0]); */
   //
 
-  if (!entity->Spawned)
+  if (!Spawned(entity))
     return;
 
   chunk_data *Model = entity->Model;

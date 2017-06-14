@@ -148,7 +148,7 @@ GetRenderP( chunk_dimension WorldChunkDim, world_position WorldP, Camera_Object 
 }
 
 inline v3
-GetRenderP( chunk_dimension WorldChunkDim, Entity *entity, Camera_Object *Camera)
+GetRenderP( chunk_dimension WorldChunkDim, entity *entity, Camera_Object *Camera)
 {
   v3 Result = GetRenderP(WorldChunkDim, entity->P, Camera);
   return Result;

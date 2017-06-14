@@ -55,6 +55,9 @@
 #define PLAYER_MODEL MODELS_PATH"/3x3x3.vox"
 
 
+#define TOTAL_ENEMY_COUNT 32
+
+
 #define DEBUG_SCROLL_WORLD            1
 #define DEBUG_CHUNK_AABB              1
 #define DEBUG_CAMERA_FOCUS_ORIGIN     0
