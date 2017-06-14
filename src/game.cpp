@@ -45,7 +45,7 @@ InitEntity(entity *Entity, chunk_dimension Dim, canonical_position InitialP,  co
 
   Entity->Rotation = Quaternion(0,0,0,1);
   Entity->P = InitialP;
-  Entity->Flags = Entity_Uninitialized;
+  Entity->Flags = Entity_Initialized;
 
   return;
 }
@@ -108,10 +108,17 @@ Unspawned(entity *Entity)
 void
 SpawnEnemy(entity **Enemies, s32 EnemyIndex)
 {
-  s32 N = rand() % VR_X;
+  world_position Max = World_Position(CD_X*VR_X, CD_Y*VR_Y, CD_Z*VR_Z);
+
+  s32 X = rand() % Max.x;
+  s32 Y = rand() % Max.y;
+  s32 Z = rand() % Max.z;
+
   entity *Enemy = Enemies[EnemyIndex];
 
-  canonical_position InitialP = Canonical_Position(V3(N,N,N), World_Position(1,1,1));
+  canonical_position InitialP = Canonical_Position(V3(X,Y,Z), World_Position(0,0,0));
+  InitialP = Canonicalize(WORLD_CHUNK_DIM, InitialP);
+
   InitEntity(Enemy, DEBUG_ENTITY_DIM, InitialP, 0);
 
   Enemy->Flags = (entity_flags)SetFlag(Enemy->Flags, Entity_Spawned);

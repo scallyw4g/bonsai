@@ -46,8 +46,9 @@ enum voxel_flag
 enum entity_flags
 {
   Entity_Uninitialized = 0 << 0,
-  Entity_Spawned       = 1 << 0,
-  Entity_Destoryed     = 1 << 1,
+  Entity_Initialized   = 1 << 0,
+  Entity_Spawned       = 1 << 1,
+  Entity_Destoryed     = 1 << 2,
 };
 
 struct voxel
@@ -84,7 +85,6 @@ struct mesh_block
   v3 Meshes[64];
   mesh_block *Next;
 };
-
 
 struct world_chunk
 {
@@ -246,7 +246,6 @@ Spawned(entity *Entity)
   b32 Result = Spawned(Entity->Flags);
   return Result;
 }
-
 
 inline int
 GetVoxelColor(voxel V)

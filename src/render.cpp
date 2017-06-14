@@ -2113,7 +2113,7 @@ TraverseSurfaceToBoundary(World *world,
   {
     LoopStartingP = CurrentP;
 
-#if 1
+#if 0
     DEBUG_DrawPointMarker(world, V3(CurrentP + DEBUG_RenderOffset), PINK, 0.25f);
 #endif
 

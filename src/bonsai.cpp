@@ -130,7 +130,7 @@ FillChunk(chunk_data *chunk, chunk_dimension Dim)
 
     chunk->BoundaryVoxels[i] = chunk->Voxels[i];
 
-    ++chunk->BoundaryVoxelCount;
+    chunk->BoundaryVoxelCount = i;
   }
 
   chunk->flags = SetFlag(chunk->flags, Chunk_Initialized);
