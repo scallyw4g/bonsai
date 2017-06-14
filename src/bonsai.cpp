@@ -139,7 +139,9 @@ FillChunk(chunk_data *chunk, chunk_dimension Dim)
 void
 InitializeVoxels( game_state *GameState, world_chunk *Chunk )
 {
-  if (Chunk->WorldP == World_Position(2,2,0) )
+  if ( Chunk->WorldP == World_Position(3,2,0) ||
+       Chunk->WorldP == World_Position(6,2,0) ||
+       Chunk->WorldP == World_Position(9,2,0) )
   {
     FillChunk(Chunk->Data, WORLD_CHUNK_DIM);
     Chunk->Filled = Volume(WORLD_CHUNK_DIM);
@@ -784,8 +786,8 @@ AllocateWorld( game_state *GameState, world_position Midpoint)
     Assert(world->Mesh.VertexCount == 0);
   }
 
-  world_position Min = Midpoint - (world->VisibleRegion/2);
-  world_position Max = Midpoint + (world->VisibleRegion/2) + 1;
+  world_position Min = World_Position(0,0,0);
+  world_position Max = world->VisibleRegion;
 
   for ( int z = Min.z; z < Max.z; ++ z )
   {

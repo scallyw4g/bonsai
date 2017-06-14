@@ -226,10 +226,10 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
   // FIXME(Jesse): This is extremely slow on my laptop ..?!
   TIMED_BLOCK("Render - Clear");
   ClearFramebuffers(RG, SG);
-  END_BLOCK();
+  END_BLOCK("");
 
-  world_position Min = -1 * (world->VisibleRegion/2);
-  world_position Max = (world->VisibleRegion/2) + 1;
+  world_position Min = World_Position(0,0,0);;
+  world_position Max = world->VisibleRegion;
 
   DEBUG_DrawAABB( world,
                   GetRenderP(WORLD_CHUNK_DIM, Min, Camera),
@@ -263,15 +263,15 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
 
   TIMED_BLOCK("Render - Flush");
   FlushRenderBuffers(Plat, world, RG, SG, Camera);
-  END_BLOCK();
+  END_BLOCK("");
 
   TIMED_BLOCK("Render - Debug End");
   DEBUG_FRAME_END(DebugRG);
-  END_BLOCK();
+  END_BLOCK("");
 
   TIMED_BLOCK("Render - Draw");
   DrawWorldToFullscreenQuad(Plat, WorldChunkDim, RG, SG, Camera);
-  END_BLOCK();
+  END_BLOCK("");
 
   AssertNoGlErrors;
 

@@ -1282,17 +1282,17 @@ ClearFramebuffers(RenderGroup *RG, ShadowRenderGroup *SG)
   TIMED_BLOCK("Clear 1");
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  END_BLOCK();
+  END_BLOCK("");
 
   TIMED_BLOCK("Clear 2");
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
   glClear(GL_DEPTH_BUFFER_BIT);
-  END_BLOCK();
+  END_BLOCK("");
 
   TIMED_BLOCK("Clear 3");
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  END_BLOCK();
+  END_BLOCK("");
 
   return;
 }
