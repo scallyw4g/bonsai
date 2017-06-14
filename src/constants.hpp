@@ -56,6 +56,7 @@
 
 
 #define TOTAL_ENEMY_COUNT 32
+#define DEBUG_ENTITY_DIM Chunk_Dimension(3,3,1)
 
 
 #define DEBUG_SCROLL_WORLD            1

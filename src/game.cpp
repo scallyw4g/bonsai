@@ -34,13 +34,11 @@ GetEntityDelta(World *world, entity *Player, v3 Input, float dt)
 }
 
 void
-InitEntity(platform *Plat, entity *Entity, memory_arena *Storage, canonical_position InitialP, const char *ModelPath)
+InitEntity(entity *Entity, chunk_dimension Dim, canonical_position InitialP,  const char *ModelPath)
 {
 #if 0
   entity->Model = LoadVox(Plat, Plat->Memory, ModelPath, entity);
 #else
-  chunk_dimension Dim = Chunk_Dimension(3,3,1);
-  Entity->Model = AllocateChunk(Plat, Storage, Dim);
   Entity->ModelDim = Dim;
   FillChunk(Entity->Model, Dim);
 #endif
@@ -55,8 +53,11 @@ InitEntity(platform *Plat, entity *Entity, memory_arena *Storage, canonical_posi
 entity *
 AllocateEntity(platform *Plat, memory_arena *Storage, canonical_position InitialP, const char *ModelPath)
 {
+  chunk_dimension Dim = DEBUG_ENTITY_DIM;
   entity *Entity = PUSH_STRUCT_CHECKED(entity, Storage, 1);
-  InitEntity(Plat, Entity, Storage, InitialP, ModelPath);
+  Entity->Model = AllocateChunk(Plat, Storage, Dim);
+
+  InitEntity(Entity, Dim, InitialP, ModelPath);
 
   return Entity;
 }
@@ -90,23 +91,45 @@ Destroyed(entity *Entity)
   return Result;
 }
 
-void
-SpawnEnemy(entity *Enemies, s32 EnemyIndex)
+inline b32
+Unspawned(entity_flags Flags)
 {
-  entity *Enemy = &Enemies[EnemyIndex];
+  b32 Result =  NotSet(Flags, Entity_Spawned);
+  return Result;
+}
+
+inline b32
+Unspawned(entity *Entity)
+{
+  b32 Result = Unspawned(Entity->Flags);
+  return Result;
+}
+
+void
+SpawnEnemy(entity **Enemies, s32 EnemyIndex)
+{
+  s32 N = rand() % VR_X;
+  entity *Enemy = Enemies[EnemyIndex];
+
+  canonical_position InitialP = Canonical_Position(V3(N,N,N), World_Position(1,1,1));
+  InitEntity(Enemy, DEBUG_ENTITY_DIM, InitialP, 0);
+
+  Enemy->Flags = (entity_flags)SetFlag(Enemy->Flags, Entity_Spawned);
+
   return;
 }
 
 void
 SpawnEnemies(game_state *GameState)
 {
-  entity *Enemies = GameState->Enemies;
+  entity **Enemies = GameState->Enemies;
 
   for (s32 EnemyIndex = 0;
       EnemyIndex < TOTAL_ENEMY_COUNT;
       ++EnemyIndex)
   {
-    if ( Destroyed(&Enemies[EnemyIndex]) )
+    entity *Enemy = Enemies[EnemyIndex];
+    if ( Destroyed(Enemy) || Unspawned(Enemy) )
       SpawnEnemy(Enemies, EnemyIndex);
   }
 
@@ -169,6 +192,14 @@ GameInit( platform *Plat )
   GameState->RG = RG;
   GameState->SG = SG;
   GameState->DebugRG = DebugRG;
+
+  for (s32 EnemyIndex = 0;
+      EnemyIndex < TOTAL_ENEMY_COUNT;
+      ++ EnemyIndex)
+  {
+    canonical_position InitP = Canonical_Position(V3(0,0,0), World_Position(0,0,0));
+    GameState->Enemies[EnemyIndex] = AllocateEntity(Plat, Plat->Memory, InitP, 0);
+  }
 
   World *world = AllocateWorld(GameState, PlayerInitialP.WorldP);
   if (!world) { Error("Error Allocating world"); return False; }
@@ -256,6 +287,8 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
      }
   }
 
+  SpawnEnemies(GameState);
+
   UpdateCameraP(Plat, world, Player, Camera);
   RG->Basis.ViewMatrix = GetViewMatrix(WorldChunkDim, CurrentCamera);
 
@@ -302,6 +335,14 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
     }
   }
   END_BLOCK("Render - World");
+
+  for (s32 EnemyIndex = 0;
+      EnemyIndex < TOTAL_ENEMY_COUNT;
+      ++ EnemyIndex)
+  {
+    entity *Enemy = GameState->Enemies[EnemyIndex];
+    DrawEntity(Plat, world, Enemy, Camera, RG, SG);
+  }
 
   DrawEntity(Plat, world, Player, Camera, RG, SG);
 
