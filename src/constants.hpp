@@ -12,13 +12,13 @@
 #define VOXEL_DIAMETER (1.0f)
 #define VOXEL_RADIUS (VOXEL_DIAMETER/2.0f)
 
-#define CD_X 16
+#define CD_X 8
 #define CD_Y 8
 #define CD_Z 1
 
 // Visible Region XYZ - Must be > (3,3,3)
 #define VR_X 8
-#define VR_Y 8
+#define VR_Y 16
 #define VR_Z 1
 
 #define VOLUME_VISIBLE_REGION (VR_X*VR_X*VR_X)
@@ -76,12 +76,12 @@
 #define SHADOW_MAP_RESOLUTION 2048
 #define DEBUG_TEXTURE_SIZE    512
 
-GLOBAL_VARIABLE r32 CAMERA_FOCAL_LENGTH = 300.0f;
+GLOBAL_VARIABLE r32 CAMERA_FOCAL_LENGTH = 600.0f;
 GLOBAL_VARIABLE r32 DEBUG_CAMERA_FOCAL_LENGTH = 50.0f;
 #define DEBUG_CAMERA_SCROLL_SPEED  20.0f
 
 // TODO(Jesse): How should we initialize this for realz?
-DEBUG_GLOBAL canonical_position CameraInitialP = { {0,0,10}, {0,0,10} };
+DEBUG_GLOBAL canonical_position CameraInitialP = { {0,0,10}, {0,-3,10} };
 #define CAMERA_INITIAL_P CameraInitialP
 
 // NOTE(Jesse): The position storage needs to be as large as the largest model

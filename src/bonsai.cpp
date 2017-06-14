@@ -276,7 +276,6 @@ GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
       for ( int x = MinP.x; x <= MaxP.x; x++ )
       {
         canonical_position LoopTestP = Canonicalize( WorldChunkDim, V3(x,y,z), TestP.WorldP );
-
         world_chunk *chunk = GetWorldChunk( world, LoopTestP.WorldP );
 
 #if 0
@@ -289,7 +288,14 @@ GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
         }
 #endif
 
-        if ( chunk && IsFilledInChunk(chunk->Data, Voxel_Position(LoopTestP.Offset), world->ChunkDim) )
+        if (!chunk)
+        {
+          Collision.CP = LoopTestP;
+          Collision.didCollide = true;
+          goto end;
+        }
+
+        if ( IsFilledInChunk(chunk->Data, Voxel_Position(LoopTestP.Offset), world->ChunkDim) )
         {
           Collision.CP = LoopTestP;
           Collision.didCollide = true;
