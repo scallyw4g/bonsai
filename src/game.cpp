@@ -109,6 +109,7 @@ Unspawned(entity *Entity)
 void
 SpawnEnemy(entity **Enemies, s32 EnemyIndex)
 {
+  TIMED_FUNCTION();
   world_position Max = World_Position(CD_X*VR_X, CD_Y*VR_Y, CD_Z*VR_Z);
 
   s32 X = rand() % Max.x;
@@ -150,6 +151,9 @@ SpawnEnemies(game_state *GameState)
 EXPORT void
 InitGlobals(platform *Plat)
 {
+  GL_Global = &Plat->GL;
+  GlobalGlslVersion = Plat->GlslVersion;
+
   InitCamera(&GlobalDebugCamera, CAMERA_INITIAL_P, 5000.0f);
   InitDebugState(GetDebugState(), Plat);
 }
@@ -160,9 +164,6 @@ GameInit( platform *Plat )
   Info("Initializing Game");
 
   InitGlobals(Plat);
-
-  GL_Global = &Plat->GL;
-  GlobalGlslVersion = Plat->GlslVersion;
 
   srand(DEBUG_NOISE_SEED);
   PerlinNoise Noise(rand());
@@ -312,9 +313,7 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
   TIMED_BLOCK("Render");
 
   // FIXME(Jesse): This is extremely slow on my laptop ..?!
-  TIMED_BLOCK("Render - Clear");
   ClearFramebuffers(RG, SG);
-  END_BLOCK("");
 
   world_position Min = World_Position(0,0,0);;
   world_position Max = world->VisibleRegion;
@@ -357,17 +356,11 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
 
   DrawEntity(Plat, world, Player, Camera, RG, SG);
 
-  TIMED_BLOCK("Render - Flush");
   FlushRenderBuffers(Plat, world, RG, SG, Camera);
-  END_BLOCK("");
 
-  TIMED_BLOCK("Render - Debug End");
   DEBUG_FRAME_END(DebugRG);
-  END_BLOCK("");
 
-  TIMED_BLOCK("Render - Draw");
   DrawWorldToFullscreenQuad(Plat, WorldChunkDim, RG, SG, Camera);
-  END_BLOCK("");
 
   AssertNoGlErrors;
 

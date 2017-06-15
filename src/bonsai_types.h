@@ -1119,6 +1119,13 @@ operator*(v3 A, float f)
   return Result;
 }
 
+inline v3
+operator*(float f, v3 A)
+{
+  v3 Result = A * f;
+  return Result;
+}
+
 inline v3&
 operator*=(v3& A, float f)
 {

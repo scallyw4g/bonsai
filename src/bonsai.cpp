@@ -522,31 +522,40 @@ SpawnPlayer( World *world, platform *Plat, entity *Player )
 inline v3
 GetAbsoluteP( canonical_position CP )
 {
-  v3 Result = V3(CP.Offset.x*CD_X*CP.WorldP.x,
-                 CP.Offset.y*CD_Y*CP.WorldP.y,
-                 CP.Offset.z*CD_Z*CP.WorldP.z);
+  v3 Result = V3(CP.Offset.x+(CD_X*CP.WorldP.x),
+                 CP.Offset.y+(CD_Y*CP.WorldP.y),
+                 CP.Offset.z+(CD_Z*CP.WorldP.z));
   return Result;
 }
 
 inline b32
 Intersect(aabb *First, aabb *Second)
 {
-  b32 Result = False;
+  b32 Result = True;
 
-  Result |= (First->Min.x > Second->Min.x && First->Min.x < Second->Max.x);
-  Result |= (First->Min.y > Second->Min.y && First->Min.y < Second->Max.y);
-  Result |= (First->Min.z > Second->Min.z && First->Min.z < Second->Max.z);
+  v3 FirstRadius = 0.5f * V3(First->Max.x - First->Min.x,
+                             First->Max.y - First->Min.y,
+                             First->Max.z - First->Min.z);
 
-  Result |= (First->Max.x < Second->Max.x && First->Max.x > Second->Min.x);
-  Result |= (First->Max.y < Second->Max.y && First->Max.y > Second->Min.y);
-  Result |= (First->Max.z < Second->Max.z && First->Max.z > Second->Min.z);
+  v3 SecondRadius = 0.5f * V3(Second->Max.x - Second->Min.x,
+                              Second->Max.y - Second->Min.y,
+                              Second->Max.z - Second->Min.z);
+
+
+  v3 FirstCenter = First->Min + FirstRadius;
+  v3 SecondCenter = Second->Min + SecondRadius;
+
+  Result &= (Abs(FirstCenter.x - SecondCenter.x) < (FirstRadius.x + SecondRadius.x));
+  Result &= (Abs(FirstCenter.y - SecondCenter.y) < (FirstRadius.y + SecondRadius.y));
+  Result &= (Abs(FirstCenter.z - SecondCenter.z) < (FirstRadius.z + SecondRadius.z));
 
   return Result;
 }
 
 inline b32
-GetCollision( entity *First, entity *Second)
+GetCollision(entity *First, entity *Second)
 {
+  TIMED_FUNCTION();
   v3 FirstMin = GetAbsoluteP(First->P);
   aabb FirstAABB( FirstMin, FirstMin + First->ModelDim );
 
@@ -574,16 +583,6 @@ UpdatePlayerP(game_state *GameState, entity *Player, v3 GrossDelta)
 
   while ( Remaining != V3(0,0,0) )
   {
-
-    for ( s32 EnemyIndex = 0;
-        EnemyIndex < TOTAL_ENEMY_COUNT;
-        ++EnemyIndex )
-    {
-      entity *Enemy = GameState->Enemies[EnemyIndex];
-
-      if ( GetCollision( Player, Enemy) )
-        return;
-    }
 
     Assert(LengthSq(Remaining) >= 0);
 
@@ -630,6 +629,20 @@ UpdatePlayerP(game_state *GameState, entity *Player, v3 GrossDelta)
       }
 
       Player->P = Canonicalize(WorldChunkDim, Player->P);
+    }
+
+    for ( s32 EnemyIndex = 0;
+        EnemyIndex < TOTAL_ENEMY_COUNT;
+        ++EnemyIndex )
+    {
+      entity *Enemy = GameState->Enemies[EnemyIndex];
+
+      if ( GetCollision(Player, Enemy) )
+      {
+        Player->P.Offset -= StepDelta;
+        Player->P = Canonicalize(WorldChunkDim, Player->P);
+        return;
+      }
     }
   }
 
