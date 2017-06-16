@@ -13,24 +13,6 @@
 
 GLOBAL_VARIABLE PerlinNoise GlobalNoise;
 
-  // TODO(Jesse): Re-enable this!
-#if 0
-void
-OnMouseScroll(GLFWwindow* window, double xoffset, double yoffset)
-{
-  if (UseDebugCamera)
-  {
-    DEBUG_CAMERA_FOCAL_LENGTH -= (yoffset * DEBUG_CAMERA_SCROLL_SPEED);
-  }
-  else
-  {
-    CAMERA_FOCAL_LENGTH -= (yoffset * PLAYER_ACCEL_MULTIPLIER);
-  }
-
-  return;
-}
-#endif
-
 void
 InitChunkPerlin( game_state *GameState, world_chunk *WorldChunk )
 {
@@ -669,43 +651,6 @@ GetMouseDelta(platform *Plat)
 }
 
 void
-UpdateDebugCamera(platform *Plat, World *world, v3 TargetDelta, Camera_Object *Camera)
-{
-  r32 FocalLength = DEBUG_CAMERA_FOCAL_LENGTH;
-
-  chunk_dimension WorldChunkDim = world->ChunkDim;
-
-  if (Plat->Input.Q)
-    TargetDelta -= WORLD_Y;
-
-  if (Plat->Input.E)
-    TargetDelta += WORLD_Y;
-
-  Camera->Right = Normalize(Cross(Camera->Front, WORLD_Y));
-  Camera->Up = Normalize(Cross(Camera->Front, Camera->Right));
-
-  v2 MouseDelta = GetMouseDelta(Plat);
-  v3 UpdateRight = Camera->Right * MouseDelta.x;
-  v3 UpdateUp = Camera->Up * MouseDelta.y;
-
-  TargetDelta = (TargetDelta * DEBUG_CAMERA_SCROLL_SPEED) + UpdateRight + UpdateUp;
-
-  Camera->P.Offset += (TargetDelta + UpdateRight + (UpdateUp));
-  Camera->Target.Offset += TargetDelta;
-
-  Camera->P = Canonicalize(WorldChunkDim, Camera->P);
-  Camera->Target = Canonicalize(WorldChunkDim, Camera->Target);
-
-  v3 TargetToCamera = Normalize(GetRenderP(WorldChunkDim, Camera->P, Camera) - GetRenderP(WorldChunkDim, Camera->Target, Camera));
-  Camera->P.Offset = Camera->Target.Offset + (TargetToCamera * FocalLength);
-  Camera->P.WorldP = Camera->Target.WorldP;
-
-  Camera->Front = Normalize( GetRenderP(WorldChunkDim, Camera->Target, Camera) - GetRenderP(WorldChunkDim, Camera->P, Camera) );
-
-  return;
-}
-
-void
 UpdateCameraP(platform *Plat, World *world, entity *Player, Camera_Object *Camera)
 {
   chunk_dimension WorldChunkDim = world->ChunkDim;
@@ -784,24 +729,6 @@ UpdateCameraP(platform *Plat, World *world, entity *Player, Camera_Object *Camer
   // TODO(Jesse): Cull these as well?
   /* plane Near; */
   /* plane Far; */
-
-  if (UseDebugCamera)
-  {
-    MaxMin = MaxMin + CameraRenderP;
-    MaxMax = MaxMax + CameraRenderP;
-    MinMin = MinMin + CameraRenderP;
-    MinMax = MinMax + CameraRenderP;
-
-    DEBUG_DrawLine(world, CameraRenderP, MaxMax, RED, 1.0f);
-    DEBUG_DrawLine(world, CameraRenderP, MaxMin, GREEN, 1.0f);
-    DEBUG_DrawLine(world, CameraRenderP, MinMax, BLUE, 1.0f);
-    DEBUG_DrawLine(world, CameraRenderP, MinMin, WHITE, 1.0f);
-
-    DEBUG_DrawPointMarker(world, MaxMax, GREEN, 5.0f);
-    DEBUG_DrawPointMarker(world, MaxMin, GREEN, 5.0f);
-    DEBUG_DrawPointMarker(world, MinMax, GREEN, 5.0f);
-    DEBUG_DrawPointMarker(world, MinMin, GREEN, 5.0f);
-  }
 
   return;
 }

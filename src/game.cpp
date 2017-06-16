@@ -6,8 +6,6 @@
 static gl_extensions *GL_Global;
 static const char *GlobalGlslVersion;
 
-DEBUG_GLOBAL Camera_Object GlobalDebugCamera = {};
-
 #include <game.h>
 
 #include <bonsai.cpp>
@@ -154,7 +152,6 @@ InitGlobals(platform *Plat)
   GL_Global = &Plat->GL;
   GlobalGlslVersion = Plat->GlslVersion;
 
-  InitCamera(&GlobalDebugCamera, CAMERA_INITIAL_P, 5000.0f);
   InitDebugState(GetDebugState(), Plat);
 }
 
@@ -240,8 +237,6 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
   ShadowRenderGroup *SG            = GameState->SG;
   debug_text_render_group *DebugRG = GameState->DebugRG;
 
-  Camera_Object *CurrentCamera;
-
 #if DEBUG_DRAW_WORLD_AXIES
   DEBUG_DrawLine(world, V3(0,0,0), V3(10000, 0, 0), RED, 0.5f );
   DEBUG_DrawLine(world, V3(0,0,0), V3(0, 10000, 0), GREEN, 0.5f );
@@ -251,58 +246,28 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
   accumulatedTime += Plat->dt;
   numFrames ++;
 
-  if (UseDebugCamera)
-    RG->Basis.ProjectionMatrix = GetProjectionMatrix(&GlobalDebugCamera, Plat->WindowWidth, Plat->WindowHeight);
-  else
-    RG->Basis.ProjectionMatrix = GetProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight);
-
-  if (UseDebugCamera)
-  {
-    aabb CameraLocation(GetRenderP(WorldChunkDim, Camera->P, Camera) - 2, GetRenderP(WorldChunkDim, Camera->P, Camera) + 2);
-    DEBUG_DrawAABB(world, CameraLocation, Quaternion(0,0,0,1), PINK, 0.5f);
-  }
+  RG->Basis.ProjectionMatrix = GetProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight);
 
   static bool Toggled = false;
+  SpawnEnemies(GameState);
+  /* SimulateEnemies(GameState); */
 
-  if ( !Toggled && Plat->Input.F11)
-  {
-    Toggled = true;
-    UseDebugCamera = !UseDebugCamera;
-  }
-  else if ( Toggled && !Plat->Input.F11 )
-  {
-    Toggled = false;
-  }
-
-  if (UseDebugCamera)
-    CurrentCamera = &GlobalDebugCamera;
-  else
-    CurrentCamera = Camera;
 
   v3 Input = GetOrthographicInputs(Plat);
   /* v3 Input = V3(1, 0, 0); */
 
-  if (UseDebugCamera)
+  if (Spawned(Player->Flags))
   {
-    UpdateDebugCamera(Plat, world, Input, &GlobalDebugCamera);
+    v3 PlayerDelta = GetEntityDelta(world, Player, Input, Plat->dt);
+    UpdatePlayerP( GameState, Player, PlayerDelta );
   }
-  else
+  else // Try to respawn the player until enough of the world has been initialized to do so
   {
-     if (Spawned(Player->Flags))
-     {
-       v3 PlayerDelta = GetEntityDelta(world, Player, Input, Plat->dt);
-       UpdatePlayerP( GameState, Player, PlayerDelta );
-     }
-     else // Try to respawn the player until enough of the world has been initialized to do so
-     {
-       SpawnPlayer( world, Plat, Player );
-     }
+    SpawnPlayer( world, Plat, Player );
   }
-
-  SpawnEnemies(GameState);
 
   UpdateCameraP(Plat, world, Player, Camera);
-  RG->Basis.ViewMatrix = GetViewMatrix(WorldChunkDim, CurrentCamera);
+  RG->Basis.ViewMatrix = GetViewMatrix(WorldChunkDim, Camera);
 
   GlobalLightTheta += Plat->dt;
 

@@ -109,8 +109,6 @@ DEBUG_GLOBAL r32 GlobalLightTheta = 0;
 DEBUG_GLOBAL aabb LastFreeSlice(V3(0,0,0), V3(0,0,0));
 DEBUG_GLOBAL aabb LastQueuedSlice(V3(0,0,0), V3(0,0,0));
 
-DEBUG_GLOBAL bool UseDebugCamera = False;
-
 #define FACE_COLOR_SIZE 32
 #define PALETTE_SIZE 256
 
