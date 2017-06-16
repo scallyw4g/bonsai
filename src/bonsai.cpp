@@ -621,7 +621,7 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
 
       if ( GetCollision(Entity, Enemy) )
       {
-        Entity->P.Offset -= StepDelta;
+        /* Entity->P.Offset -= StepDelta; */
         Entity->P = Canonicalize(WorldChunkDim, Entity->P);
         return;
       }

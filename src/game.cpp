@@ -20,13 +20,14 @@ SeedWorldAndUnspawnPlayer( World *world, entity *Player )
 v3
 GetEntityDelta(entity *Player, v3 Acceleration, float dt)
 {
-  v3 drag = V3(0.6f, 0.6f, 0.0f);
+  v3 drag = V3(1.0f, 1.0f, 0.0f);
 
   Player->Acceleration = Acceleration * PLAYER_ACCEL_MULTIPLIER;
 
-  Player->Velocity = (Player->Velocity + (Player->Acceleration)) * drag; // m/s
+  Player->Velocity = (Player->Velocity + (Player->Acceleration*dt)) * drag; // m/s
 
   v3 PlayerDelta = Player->Velocity * dt;
+
   return PlayerDelta;
 }
 
@@ -190,15 +191,20 @@ SpawnEnemies(game_state *GameState)
 }
 
 v3
-RandomlyMutateAcceleration(entity *Entity)
+CorrectTowardsCenter(entity *Entity)
 {
-  v3 Result = Normalize(Entity->Acceleration * (r32)(rand()/RAND_MAX));
+  v3 Target = V3(VR_X*CD_X, VR_Y*CD_Y, VR_Z*CD_Z) / 2;
+
+  v3 P = GetAbsoluteP(Entity->P);
+  v3 Result = Normalize( Target - P );
+
   return Result;
 }
 
 void
 SimulateEnemies(game_state *GameState, r32 dt)
 {
+  TIMED_FUNCTION();
   for ( s32 EnemyIndex = 0;
         EnemyIndex < TOTAL_ENEMY_COUNT;
         ++EnemyIndex )
@@ -208,7 +214,7 @@ SimulateEnemies(game_state *GameState, r32 dt)
     if (IsPlayer(Enemy))
         continue;
 
-    v3 Acceleration = RandomlyMutateAcceleration(Enemy);
+    v3 Acceleration = CorrectTowardsCenter(Enemy);
     v3 Delta = GetEntityDelta(Enemy, Acceleration, dt);
 
     UpdateEntityP(GameState, Enemy, Delta);
