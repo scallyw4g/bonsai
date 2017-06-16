@@ -18,13 +18,12 @@ SeedWorldAndUnspawnPlayer( World *world, entity *Player )
 }
 
 v3
-GetEntityDelta(World *world, entity *Player, v3 Input, float dt)
+GetEntityDelta(entity *Player, v3 Acceleration, float dt)
 {
   v3 drag = V3(0.6f, 0.6f, 0.0f);
 
-  Player->Acceleration = Input * PLAYER_ACCEL_MULTIPLIER;
+  Player->Acceleration = Acceleration * PLAYER_ACCEL_MULTIPLIER;
 
-  Player->Acceleration += world->Gravity * dt; // Apply Gravity
   Player->Velocity = (Player->Velocity + (Player->Acceleration)) * drag; // m/s
 
   v3 PlayerDelta = Player->Velocity * dt;
@@ -146,6 +145,31 @@ SpawnEnemies(game_state *GameState)
   return;
 }
 
+v3
+RandomlyMutateAcceleration(entity *Entity)
+{
+  v3 Result = Normalize(Entity->Acceleration * (r32)(rand()/RAND_MAX));
+  return Result;
+}
+
+void
+SimulateEnemies(game_state *GameState, r32 dt)
+{
+  for ( s32 EnemyIndex = 0;
+        EnemyIndex < TOTAL_ENEMY_COUNT;
+        ++EnemyIndex )
+  {
+    entity *Enemy = GameState->Enemies[EnemyIndex];
+
+    v3 Acceleration = RandomlyMutateAcceleration(Enemy);
+    v3 Delta = GetEntityDelta(Enemy, Acceleration, dt);
+
+    UpdatePlayerP(GameState, Enemy, Delta);
+  }
+
+  return;
+}
+
 EXPORT void
 InitGlobals(platform *Plat)
 {
@@ -250,7 +274,7 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
 
   static bool Toggled = false;
   SpawnEnemies(GameState);
-  /* SimulateEnemies(GameState); */
+  SimulateEnemies(GameState, Plat->dt);
 
 
   v3 Input = GetOrthographicInputs(Plat);
@@ -258,7 +282,7 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
 
   if (Spawned(Player->Flags))
   {
-    v3 PlayerDelta = GetEntityDelta(world, Player, Input, Plat->dt);
+    v3 PlayerDelta = GetEntityDelta(Player, Input, Plat->dt);
     UpdatePlayerP( GameState, Player, PlayerDelta );
   }
   else // Try to respawn the player until enough of the world has been initialized to do so

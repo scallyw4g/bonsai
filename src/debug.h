@@ -1,13 +1,14 @@
 #ifndef BONSAI_DEBUG_H
 #define BONSAI_DEBUG_H
 
+
 #include <iostream>
 #include <cstdarg>
 
 using namespace std;
 
-
 #define DEBUG_STATE_ENTRY_COUNT 32
+
 
 
 struct debug_profile_entry

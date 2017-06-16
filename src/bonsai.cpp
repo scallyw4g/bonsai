@@ -579,7 +579,6 @@ UpdatePlayerP(game_state *GameState, entity *Player, v3 GrossDelta)
       Player->Velocity.x = 0;
       Player->P.Offset.x = C.CP.Offset.x;
       Player->P.WorldP.x = C.CP.WorldP.x;
-
       if (StepDelta.x > 0)
       {
           Player->P.Offset.x -= (Player->ModelDim.x);
@@ -588,8 +587,8 @@ UpdatePlayerP(game_state *GameState, entity *Player, v3 GrossDelta)
       {
         Player->P.Offset.x++;
       }
-        Player->P = Canonicalize(WorldChunkDim, Player->P);
-      }
+      Player->P = Canonicalize(WorldChunkDim, Player->P);
+    }
 
 
     Player->P.Offset.y += StepDelta.y;
@@ -600,7 +599,6 @@ UpdatePlayerP(game_state *GameState, entity *Player, v3 GrossDelta)
       Player->Velocity.y = 0;
       Player->P.Offset.y = C.CP.Offset.y;
       Player->P.WorldP.y = C.CP.WorldP.y;
-
       if (StepDelta.y > 0)
       {
         Player->P.Offset.y -= (Player->ModelDim.y);
@@ -609,16 +607,14 @@ UpdatePlayerP(game_state *GameState, entity *Player, v3 GrossDelta)
       {
         Player->P.Offset.y++;
       }
-
       Player->P = Canonicalize(WorldChunkDim, Player->P);
     }
 
     for ( s32 EnemyIndex = 0;
-        EnemyIndex < TOTAL_ENEMY_COUNT;
-        ++EnemyIndex )
+          EnemyIndex < TOTAL_ENEMY_COUNT;
+          ++EnemyIndex )
     {
       entity *Enemy = GameState->Enemies[EnemyIndex];
-
       if ( GetCollision(Player, Enemy) )
       {
         Player->P.Offset -= StepDelta;
@@ -626,6 +622,7 @@ UpdatePlayerP(game_state *GameState, entity *Player, v3 GrossDelta)
         return;
       }
     }
+
   }
 
   // UpdateVisibleRegion(GameState, OriginalPlayerP, Player);

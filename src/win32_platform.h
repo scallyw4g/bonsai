@@ -17,23 +17,6 @@
 
 
 
-
-/*
- *  Cygwin GCC specific stuff
- */
-#ifdef __CYGWIN__
-
-#include <unistd.h> // Chdir
-#define GAME_LIB_PATH "bin/cygGameLoadable"
-
-// FIXME(Jesse): Just write our own snprintf
-#define Snprintf(...) snprintf(__VA_ARGS__)
-
-/*
- *  MSVC specific stuff
- */
-#else
-
 #include <direct.h> // Chdir
 
 #define GAME_LIB_PATH "bin/Debug/GameLoadable"
@@ -41,10 +24,15 @@
 // FIXME(Jesse): Just write our own snprintf
 #define Snprintf(...) _snprintf(__VA_ARGS__)
 
-#endif // __CYGWIN__
 
 
 
+// In Cygwin printing to the console with printf doesn't work, so we wrap some
+// Win32 crazyness that works
+GLOBAL_VARIABLE HANDLE Stdout = GetStdHandle(STD_OUTPUT_HANDLE);
+#define PrintConsole(Message)                        \
+  OutputDebugString(Message);                        \
+  WriteFile(Stdout, Message, strlen(Message), 0, 0);
 
 
 
