@@ -12,7 +12,7 @@ struct game_state
   ShadowRenderGroup       *SG;
   debug_text_render_group *DebugRG;
 
-  entity *Enemies[TOTAL_ENEMY_COUNT];
+  entity *Entities[TOTAL_ENEMY_COUNT];
 };
 
 

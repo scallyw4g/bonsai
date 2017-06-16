@@ -550,7 +550,7 @@ GetCollision(entity *First, entity *Second)
 }
 
 void
-UpdatePlayerP(game_state *GameState, entity *Player, v3 GrossDelta)
+UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
 {
   TIMED_FUNCTION();
 
@@ -558,7 +558,7 @@ UpdatePlayerP(game_state *GameState, entity *Player, v3 GrossDelta)
 
   v3 Remaining = GrossDelta;
 
-  /* world_position OriginalPlayerP = Player->P.WorldP; */
+  /* world_position OriginalPlayerP = Entity->P.WorldP; */
   chunk_dimension WorldChunkDim = world->ChunkDim;
 
   collision_event C;
@@ -571,64 +571,68 @@ UpdatePlayerP(game_state *GameState, entity *Player, v3 GrossDelta)
     v3 StepDelta = GetAtomicUpdateVector(Remaining);
     Remaining -= StepDelta;
 
-    Player->P.Offset.x += StepDelta.x;
-    Player->P = Canonicalize(WorldChunkDim, Player->P);
-    C = GetCollision(world, Player);
+    Entity->P.Offset.x += StepDelta.x;
+    Entity->P = Canonicalize(WorldChunkDim, Entity->P);
+    C = GetCollision(world, Entity);
     if (C.didCollide)
     {
-      Player->Velocity.x = 0;
-      Player->P.Offset.x = C.CP.Offset.x;
-      Player->P.WorldP.x = C.CP.WorldP.x;
+      Entity->Velocity.x = 0;
+      Entity->P.Offset.x = C.CP.Offset.x;
+      Entity->P.WorldP.x = C.CP.WorldP.x;
       if (StepDelta.x > 0)
       {
-          Player->P.Offset.x -= (Player->ModelDim.x);
+          Entity->P.Offset.x -= (Entity->ModelDim.x);
       }
       else
       {
-        Player->P.Offset.x++;
+        Entity->P.Offset.x++;
       }
-      Player->P = Canonicalize(WorldChunkDim, Player->P);
+      Entity->P = Canonicalize(WorldChunkDim, Entity->P);
     }
 
 
-    Player->P.Offset.y += StepDelta.y;
-    Player->P = Canonicalize(WorldChunkDim, Player->P);
-    C = GetCollision(world, Player);
+    Entity->P.Offset.y += StepDelta.y;
+    Entity->P = Canonicalize(WorldChunkDim, Entity->P);
+    C = GetCollision(world, Entity);
     if (C.didCollide)
     {
-      Player->Velocity.y = 0;
-      Player->P.Offset.y = C.CP.Offset.y;
-      Player->P.WorldP.y = C.CP.WorldP.y;
+      Entity->Velocity.y = 0;
+      Entity->P.Offset.y = C.CP.Offset.y;
+      Entity->P.WorldP.y = C.CP.WorldP.y;
       if (StepDelta.y > 0)
       {
-        Player->P.Offset.y -= (Player->ModelDim.y);
+        Entity->P.Offset.y -= (Entity->ModelDim.y);
       }
       else
       {
-        Player->P.Offset.y++;
+        Entity->P.Offset.y++;
       }
-      Player->P = Canonicalize(WorldChunkDim, Player->P);
+      Entity->P = Canonicalize(WorldChunkDim, Entity->P);
     }
 
     for ( s32 EnemyIndex = 0;
           EnemyIndex < TOTAL_ENEMY_COUNT;
           ++EnemyIndex )
     {
-      entity *Enemy = GameState->Enemies[EnemyIndex];
-      if ( GetCollision(Player, Enemy) )
+      entity *Enemy = GameState->Entities[EnemyIndex];
+
+      if (Enemy == Entity)
+        continue;
+
+      if ( GetCollision(Entity, Enemy) )
       {
-        Player->P.Offset -= StepDelta;
-        Player->P = Canonicalize(WorldChunkDim, Player->P);
+        Entity->P.Offset -= StepDelta;
+        Entity->P = Canonicalize(WorldChunkDim, Entity->P);
         return;
       }
     }
 
   }
 
-  // UpdateVisibleRegion(GameState, OriginalPlayerP, Player);
+  // UpdateVisibleRegion(GameState, OriginalPlayerP, Entity);
 
-  Player->P = Canonicalize(WorldChunkDim, Player->P);
-  collision_event AssertCollision = GetCollision(world, Player );
+  Entity->P = Canonicalize(WorldChunkDim, Entity->P);
+  collision_event AssertCollision = GetCollision(world, Entity );
   Assert ( AssertCollision.didCollide == false );
 
   return;

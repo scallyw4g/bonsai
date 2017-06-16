@@ -60,6 +60,15 @@ AllocateEntity(platform *Plat, memory_arena *Storage, canonical_position Initial
   return Entity;
 }
 
+entity *
+AllocatePlayer(platform *Plat, memory_arena *Storage, canonical_position InitialP, const char *ModelPath)
+{
+  entity *Player = AllocateEntity(Plat, Storage, InitialP, ModelPath);
+  Player->Flags = (entity_flags)SetFlag(Player->Flags, Entity_Player);
+
+  return Player;
+}
+
 void
 InitCamera(Camera_Object* Camera, canonical_position P, float FocalLength)
 {
@@ -103,8 +112,28 @@ Unspawned(entity *Entity)
   return Result;
 }
 
+inline b32
+CollideAgainstEntities(entity **Entities, entity *Entity)
+{
+  b32 Result = False;
+
+  for (s32 EntityIndex = 0;
+      EntityIndex < TOTAL_ENEMY_COUNT;
+      ++EntityIndex)
+  {
+    entity *TestEntity = Entities[EntityIndex];
+
+    if (TestEntity == Entity)
+      continue;
+
+    Result |= GetCollision(Entity, TestEntity);
+  }
+
+  return Result;
+}
+
 void
-SpawnEnemy(entity **Enemies, s32 EnemyIndex)
+SpawnEnemy(World *world, entity **WorldEntities, entity *Enemy)
 {
   TIMED_FUNCTION();
   world_position Max = World_Position(CD_X*VR_X, CD_Y*VR_Y, CD_Z*VR_Z);
@@ -115,8 +144,6 @@ SpawnEnemy(entity **Enemies, s32 EnemyIndex)
 
   Y += 24;
 
-  entity *Enemy = Enemies[EnemyIndex];
-
   canonical_position InitialP = Canonical_Position(V3(X,Y,Z), World_Position(0,0,0));
   InitialP = Canonicalize(WORLD_CHUNK_DIM, InitialP);
 
@@ -124,22 +151,39 @@ SpawnEnemy(entity **Enemies, s32 EnemyIndex)
 
   Enemy->Flags = (entity_flags)SetFlag(Enemy->Flags, Entity_Spawned);
 
+  if (GetCollision(world, Enemy).didCollide)
+    SpawnEnemy(world, WorldEntities, Enemy);
+
+  if (CollideAgainstEntities(WorldEntities, Enemy))
+    SpawnEnemy(world, WorldEntities, Enemy);
+
   return;
+}
+
+inline b32
+IsPlayer(entity *Entity)
+{
+  b32 Result = IsSet(Entity->Flags, Entity_Player);
+  return Result;
 }
 
 void
 SpawnEnemies(game_state *GameState)
 {
   TIMED_FUNCTION();
-  entity **Enemies = GameState->Enemies;
+  entity **Entities = GameState->Entities;
 
-  for (s32 EnemyIndex = 0;
-      EnemyIndex < TOTAL_ENEMY_COUNT;
-      ++EnemyIndex)
+  for (s32 EntityIndex = 0;
+      EntityIndex < TOTAL_ENEMY_COUNT;
+      ++EntityIndex)
   {
-    entity *Enemy = Enemies[EnemyIndex];
+    entity *Enemy = Entities[EntityIndex];
+
+    if (IsPlayer(Enemy))
+        continue;
+
     if ( Destroyed(Enemy) || Unspawned(Enemy) )
-      SpawnEnemy(Enemies, EnemyIndex);
+      SpawnEnemy(GameState->world, Entities, Enemy);
   }
 
   return;
@@ -159,12 +203,15 @@ SimulateEnemies(game_state *GameState, r32 dt)
         EnemyIndex < TOTAL_ENEMY_COUNT;
         ++EnemyIndex )
   {
-    entity *Enemy = GameState->Enemies[EnemyIndex];
+    entity *Enemy = GameState->Entities[EnemyIndex];
+
+    if (IsPlayer(Enemy))
+        continue;
 
     v3 Acceleration = RandomlyMutateAcceleration(Enemy);
     v3 Delta = GetEntityDelta(Enemy, Acceleration, dt);
 
-    UpdatePlayerP(GameState, Enemy, Delta);
+    UpdateEntityP(GameState, Enemy, Delta);
   }
 
   return;
@@ -207,15 +254,13 @@ GameInit( platform *Plat )
 
   canonical_position PlayerInitialP = {};
 
-  entity *Player = AllocateEntity(Plat, Plat->Memory, PlayerInitialP, PLAYER_MODEL);
+  entity *Player = AllocatePlayer(Plat, Plat->Memory, PlayerInitialP, PLAYER_MODEL);
   if (!Player) { Error("Error Allocating Player"); return False; }
 
   Camera_Object *Camera = PUSH_STRUCT_CHECKED(Camera_Object, Plat->Memory, 1);
-
   InitCamera(Camera, CAMERA_INITIAL_P, 5000.0f);
 
   debug_text_render_group *DebugRG = PUSH_STRUCT_CHECKED(debug_text_render_group, Plat->Memory, 1);
-
   initText2D("Holstein.DDS", DebugRG);
 
   AssertNoGlErrors;
@@ -228,12 +273,14 @@ GameInit( platform *Plat )
   GameState->SG = SG;
   GameState->DebugRG = DebugRG;
 
-  for (s32 EnemyIndex = 0;
+  GameState->Entities[0] = Player;
+
+  for (s32 EnemyIndex = PLAYER_COUNT;
       EnemyIndex < TOTAL_ENEMY_COUNT;
       ++ EnemyIndex)
   {
     canonical_position InitP = Canonical_Position(V3(0,0,0), World_Position(0,0,0));
-    GameState->Enemies[EnemyIndex] = AllocateEntity(Plat, Plat->Memory, InitP, 0);
+    GameState->Entities[EnemyIndex] = AllocateEntity(Plat, Plat->Memory, InitP, 0);
   }
 
   World *world = AllocateWorld(GameState, PlayerInitialP.WorldP);
@@ -272,7 +319,6 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
 
   RG->Basis.ProjectionMatrix = GetProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight);
 
-  static bool Toggled = false;
   SpawnEnemies(GameState);
   SimulateEnemies(GameState, Plat->dt);
 
@@ -283,7 +329,7 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
   if (Spawned(Player->Flags))
   {
     v3 PlayerDelta = GetEntityDelta(Player, Input, Plat->dt);
-    UpdatePlayerP( GameState, Player, PlayerDelta );
+    UpdateEntityP( GameState, Player, PlayerDelta );
   }
   else // Try to respawn the player until enough of the world has been initialized to do so
   {
@@ -339,7 +385,7 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
       EnemyIndex < TOTAL_ENEMY_COUNT;
       ++ EnemyIndex)
   {
-    entity *Enemy = GameState->Enemies[EnemyIndex];
+    entity *Enemy = GameState->Entities[EnemyIndex];
     DrawEntity(Plat, world, Enemy, Camera, RG, SG);
   }
 

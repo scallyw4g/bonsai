@@ -49,6 +49,7 @@ enum entity_flags
   Entity_Initialized   = 1 << 0,
   Entity_Spawned       = 1 << 1,
   Entity_Destoryed     = 1 << 2,
+  Entity_Player        = 1 << 3,
 };
 
 struct voxel

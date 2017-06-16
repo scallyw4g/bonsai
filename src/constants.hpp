@@ -55,7 +55,8 @@
 #define PLAYER_MODEL MODELS_PATH"/3x3x3.vox"
 
 
-#define TOTAL_ENEMY_COUNT 20
+#define PLAYER_COUNT 1
+#define TOTAL_ENEMY_COUNT 32
 #define DEBUG_ENTITY_DIM Chunk_Dimension(3,3,1)
 
 
