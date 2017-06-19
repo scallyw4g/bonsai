@@ -111,10 +111,17 @@ PrintDebugText( debug_text_render_group *RG, const char *Text, int x, int y, int
   return Result;
 }
 
+DEBUG_GLOBAL u64 LastFrameCycleCount = 0;
+
 void
 DebugFrameEnd(debug_text_render_group *RG)
 {
   debug_state *DebugState = GetDebugState();
+
+  u64 CurrentFrameCycleCount = DebugState->GetCycleCount();
+  u64 CycleDelta = CurrentFrameCycleCount - LastFrameCycleCount;
+
+  LastFrameCycleCount = CurrentFrameCycleCount;
 
   debug_profile_entry NullEntry = {};
 
@@ -122,8 +129,6 @@ DebugFrameEnd(debug_text_render_group *RG)
   s32 LinePadding = 3;
 
   DEBUG_GLOBAL r32 MaxX;
-
-  u64 MaxCycles = 0;
 
   for (s32 EntryIndex = 0;
       EntryIndex < DEBUG_STATE_ENTRY_COUNT;
@@ -163,11 +168,16 @@ DebugFrameEnd(debug_text_render_group *RG)
         rect2 CCRect = PrintDebugText( RG, CycleCountBuffer, 0, AtY, FontSize);
 
         MaxX = max(MaxX, CCRect.Max.x);
-        MaxCycles = max(MaxCycles, Entry->CycleCount);
 
         AtY += (FontSize + LinePadding);
       }
     }
+
+    char CycleCountBuffer[32];
+    sprintf(CycleCountBuffer, "%" PRIu64, CycleDelta);
+    rect2 CCRect = PrintDebugText( RG, CycleCountBuffer, 0, AtY, FontSize);
+    AtY += (FontSize + LinePadding);
+
   }
 
   {
@@ -182,7 +192,7 @@ DebugFrameEnd(debug_text_render_group *RG)
       if (Entry->HitCount > 0)
       {
         char PercentageBuffer[32];
-        sprintf(PercentageBuffer, "%.0f", (r32)((r64)Entry->CycleCount/(r64)MaxCycles)*100);
+        sprintf(PercentageBuffer, "%.0f", (r32)((r64)Entry->CycleCount/(r64)CycleDelta)*100);
 
         rect2 PercRect = PrintDebugText( RG, PercentageBuffer, (s32)MaxX, AtY, FontSize);
         PercX = max((s32)PercRect.Max.x, PercX);

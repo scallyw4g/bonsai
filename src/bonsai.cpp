@@ -544,8 +544,7 @@ GetCollision(entity *First, entity *Second)
 void
 ProcessCollisionRule(entity *First, entity *Second)
 {
-  if (First==Second)
-    return;
+  Assert(First!=Second);
 
   u32 JointFlags = First->Flags | Second->Flags;
 
