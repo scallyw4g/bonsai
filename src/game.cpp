@@ -20,7 +20,8 @@ SeedWorldAndUnspawnPlayer( World *world, entity *Player )
 v3
 GetEntityDelta(entity *Player, float dt)
 {
-  v3 drag = V3(1.0f, 1.0f, 0.0f);
+  v3 drag = V3(0.9f, 0.9f, 0.0f);
+  /* v3 drag = V3(1.0f, 1.0f, 0.0f); */
 
   v3 Acceleration = Player->Acceleration * PLAYER_ACCEL_MULTIPLIER;
 
@@ -113,26 +114,6 @@ Unspawned(entity *Entity)
   return Result;
 }
 
-inline b32
-CollideAgainstEntities(entity **Entities, entity *Entity)
-{
-  b32 Result = False;
-
-  for (s32 EntityIndex = 0;
-      EntityIndex < TOTAL_ENEMY_COUNT;
-      ++EntityIndex)
-  {
-    entity *TestEntity = Entities[EntityIndex];
-
-    if (TestEntity == Entity)
-      continue;
-
-    Result |= GetCollision(Entity, TestEntity);
-  }
-
-  return Result;
-}
-
 void
 SpawnEnemy(World *world, entity **WorldEntities, entity *Enemy)
 {
@@ -140,29 +121,23 @@ SpawnEnemy(World *world, entity **WorldEntities, entity *Enemy)
   world_position Max = World_Position(CD_X*VR_X, CD_Y*VR_Y, CD_Z*VR_Z);
 
   s32 X = rand() % Max.x;
-  s32 Y = rand() % Max.y;
+  s32 Y = (rand() % Max.y) + 32; // Offset away from the player
   s32 Z = rand() % Max.z;
 
-  Y += 24; // Offset away from the player
-
   v3 SeedVec = V3(X,Y,Z);
-
-
 
   canonical_position InitialP = Canonical_Position(SeedVec, World_Position(0,0,0));
   InitialP = Canonicalize(WORLD_CHUNK_DIM, InitialP);
 
   InitEntity(Enemy, DEBUG_ENTITY_DIM, InitialP, 0);
 
-  Enemy->Flags = (entity_flags)SetFlag(Enemy->Flags, Entity_Spawned);
+  Enemy->Flags = (entity_flags)SetFlag(Enemy->Flags, Entity_Spawned|Entity_Enemy);
 
-  v3 Accel = GetAbsoluteP(InitialP) - (Max/2);
-  Enemy->Acceleration = Accel;
+  Enemy->Acceleration = V3(0, -1, 0);
 
-  if (GetCollision(world, Enemy).didCollide)
-    SpawnEnemy(world, WorldEntities, Enemy);
-
-  if (CollideAgainstEntities(WorldEntities, Enemy))
+  // Respawn entity if it collides against the world or current entities
+  if ( GetCollision(world, Enemy).didCollide ||
+       GetCollision(WorldEntities, Enemy)    )
     SpawnEnemy(world, WorldEntities, Enemy);
 
   return;
@@ -198,20 +173,6 @@ SpawnEnemies(game_state *GameState)
 }
 
 void
-CorrectTowardsCenter(entity *Entity)
-{
-  v3 Target = V3(VR_X*CD_X, VR_Y*CD_Y, VR_Z*CD_Z) / 2;
-
-  v3 P = GetAbsoluteP(Entity->P);
-  v3 TargetToP = Normalize( Target - P );
-
-  /* Entity->Acceleration = Lerp(1.0f, Entity->Acceleration, TargetToP); */
-  Entity->Acceleration = Lerp(0.4f, Entity->Acceleration, TargetToP);
-
-  return;
-}
-
-void
 SimulateEnemies(game_state *GameState, r32 dt)
 {
   TIMED_FUNCTION();
@@ -224,9 +185,7 @@ SimulateEnemies(game_state *GameState, r32 dt)
     if (IsPlayer(Enemy))
         continue;
 
-    CorrectTowardsCenter(Enemy);
     v3 Delta = GetEntityDelta(Enemy, dt);
-
     UpdateEntityP(GameState, Enemy, Delta);
   }
 

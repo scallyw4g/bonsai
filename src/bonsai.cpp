@@ -550,6 +550,64 @@ GetCollision(entity *First, entity *Second)
 }
 
 void
+ProcessCollisionRule(entity *First, entity *Second)
+{
+  if (First==Second)
+    return;
+
+  u32 JointFlags = First->Flags | Second->Flags;
+
+  u32 Collision_EnemyPlayer = Entity_Player|Entity_Enemy ;
+
+  if ( (Collision_EnemyPlayer & JointFlags) == Collision_EnemyPlayer)
+  {
+    printf("Entity-Player Collision \n");
+  }
+
+}
+
+inline b32
+GetCollision(entity **Entities, entity *Entity)
+{
+  b32 Result = False;
+
+  for (s32 EntityIndex = 0;
+      EntityIndex < TOTAL_ENEMY_COUNT;
+      ++EntityIndex)
+  {
+    entity *TestEntity = Entities[EntityIndex];
+
+    if (TestEntity == Entity)
+      continue;
+
+    Result = GetCollision(Entity, TestEntity);
+  }
+
+  return Result;
+}
+
+void
+ProcessCollisionRules(entity **Entities, entity *Entity)
+{
+  for (s32 EntityIndex = 0;
+      EntityIndex < TOTAL_ENEMY_COUNT;
+      ++EntityIndex)
+  {
+    entity *TestEntity = Entities[EntityIndex];
+
+    if (TestEntity == Entity)
+      continue;
+
+    b32 Collision = GetCollision(Entity, TestEntity);
+
+    if (Collision)
+    {
+      ProcessCollisionRule(Entity, TestEntity);
+    }
+  }
+}
+
+void
 UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
 {
   TIMED_FUNCTION();
@@ -610,23 +668,7 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
       Entity->P = Canonicalize(WorldChunkDim, Entity->P);
     }
 
-    for ( s32 EnemyIndex = 0;
-          EnemyIndex < TOTAL_ENEMY_COUNT;
-          ++EnemyIndex )
-    {
-      entity *Enemy = GameState->Entities[EnemyIndex];
-
-      if (Enemy == Entity)
-        continue;
-
-      if ( GetCollision(Entity, Enemy) )
-      {
-        /* Entity->P.Offset -= StepDelta; */
-        Entity->P = Canonicalize(WorldChunkDim, Entity->P);
-        return;
-      }
-    }
-
+    ProcessCollisionRules(GameState->Entities, Entity);
   }
 
   // UpdateVisibleRegion(GameState, OriginalPlayerP, Entity);
