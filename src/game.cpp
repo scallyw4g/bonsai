@@ -18,13 +18,13 @@ SeedWorldAndUnspawnPlayer( World *world, entity *Player )
 }
 
 v3
-GetEntityDelta(entity *Player, v3 Acceleration, float dt)
+GetEntityDelta(entity *Player, float dt)
 {
   v3 drag = V3(1.0f, 1.0f, 0.0f);
 
-  Player->Acceleration = Acceleration * PLAYER_ACCEL_MULTIPLIER;
+  v3 Acceleration = Player->Acceleration * PLAYER_ACCEL_MULTIPLIER;
 
-  Player->Velocity = (Player->Velocity + (Player->Acceleration*dt)) * drag; // m/s
+  Player->Velocity = (Player->Velocity + (Acceleration*dt)) * drag; // m/s
 
   v3 PlayerDelta = Player->Velocity * dt;
 
@@ -143,14 +143,21 @@ SpawnEnemy(World *world, entity **WorldEntities, entity *Enemy)
   s32 Y = rand() % Max.y;
   s32 Z = rand() % Max.z;
 
-  Y += 24;
+  Y += 24; // Offset away from the player
 
-  canonical_position InitialP = Canonical_Position(V3(X,Y,Z), World_Position(0,0,0));
+  v3 SeedVec = V3(X,Y,Z);
+
+
+
+  canonical_position InitialP = Canonical_Position(SeedVec, World_Position(0,0,0));
   InitialP = Canonicalize(WORLD_CHUNK_DIM, InitialP);
 
   InitEntity(Enemy, DEBUG_ENTITY_DIM, InitialP, 0);
 
   Enemy->Flags = (entity_flags)SetFlag(Enemy->Flags, Entity_Spawned);
+
+  v3 Accel = GetAbsoluteP(InitialP) - (Max/2);
+  Enemy->Acceleration = Accel;
 
   if (GetCollision(world, Enemy).didCollide)
     SpawnEnemy(world, WorldEntities, Enemy);
@@ -190,15 +197,18 @@ SpawnEnemies(game_state *GameState)
   return;
 }
 
-v3
+void
 CorrectTowardsCenter(entity *Entity)
 {
   v3 Target = V3(VR_X*CD_X, VR_Y*CD_Y, VR_Z*CD_Z) / 2;
 
   v3 P = GetAbsoluteP(Entity->P);
-  v3 Result = Normalize( Target - P );
+  v3 TargetToP = Normalize( Target - P );
 
-  return Result;
+  /* Entity->Acceleration = Lerp(1.0f, Entity->Acceleration, TargetToP); */
+  Entity->Acceleration = Lerp(0.4f, Entity->Acceleration, TargetToP);
+
+  return;
 }
 
 void
@@ -214,8 +224,8 @@ SimulateEnemies(game_state *GameState, r32 dt)
     if (IsPlayer(Enemy))
         continue;
 
-    v3 Acceleration = CorrectTowardsCenter(Enemy);
-    v3 Delta = GetEntityDelta(Enemy, Acceleration, dt);
+    CorrectTowardsCenter(Enemy);
+    v3 Delta = GetEntityDelta(Enemy, dt);
 
     UpdateEntityP(GameState, Enemy, Delta);
   }
@@ -334,7 +344,8 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
 
   if (Spawned(Player->Flags))
   {
-    v3 PlayerDelta = GetEntityDelta(Player, Input, Plat->dt);
+    Player->Acceleration = Input;
+    v3 PlayerDelta = GetEntityDelta(Player, Plat->dt);
     UpdateEntityP( GameState, Player, PlayerDelta );
   }
   else // Try to respawn the player until enough of the world has been initialized to do so

@@ -91,13 +91,23 @@ float Floorf(float f)
   return Result;
 }
 
-v2 Lerp(float t, v2 p1, v2 p2)
+v3
+Lerp(r32 t, v3 p1, v3 p2)
 {
-  Assert(t<1);
-  Assert(t>0);
+  Assert(t<=1);
+  Assert(t>=0);
+
+  v3 Result = (1-t)*p1 + t*p2;
+  return Result;
+}
+
+v2
+Lerp(r32 t, v2 p1, v2 p2)
+{
+  Assert(t<=1);
+  Assert(t>=0);
 
   v2 Result = (1-t)*p1 + t*p2;
-
   return Result;
 }
 
