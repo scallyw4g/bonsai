@@ -678,6 +678,25 @@ ProcessCollisionRules(game_state *GameState, entity *Entity)
 }
 
 void
+EntityWorldCollision(entity *Entity)
+{
+  const entity_flags EnemyPlayerProjectile =
+    (entity_flags)(Entity_Player|Entity_Enemy|Entity_Projectile);
+
+  entity_flags EntityType = (entity_flags)(Entity->Flags & EnemyPlayerProjectile);
+
+  switch (EntityType)
+  {
+    case Entity_Enemy:
+    case Entity_Projectile:
+    {
+      Entity->Flags = (entity_flags)UnSetFlag(Entity->Flags, Entity_Spawned);
+    } break;
+  }
+}
+
+
+void
 UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
 {
   TIMED_FUNCTION();
@@ -707,15 +726,14 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
       Entity->Velocity.x = 0;
       Entity->P.Offset.x = C.CP.Offset.x;
       Entity->P.WorldP.x = C.CP.WorldP.x;
+
       if (StepDelta.x > 0)
-      {
-          Entity->P.Offset.x -= (Entity->ModelDim.x);
-      }
+        Entity->P.Offset.x -= (Entity->ModelDim.x);
       else
-      {
         Entity->P.Offset.x++;
-      }
+
       Entity->P = Canonicalize(WorldChunkDim, Entity->P);
+      EntityWorldCollision(Entity);
     }
 
 
@@ -727,15 +745,14 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
       Entity->Velocity.y = 0;
       Entity->P.Offset.y = C.CP.Offset.y;
       Entity->P.WorldP.y = C.CP.WorldP.y;
+
       if (StepDelta.y > 0)
-      {
         Entity->P.Offset.y -= (Entity->ModelDim.y);
-      }
       else
-      {
         Entity->P.Offset.y++;
-      }
+
       Entity->P = Canonicalize(WorldChunkDim, Entity->P);
+      EntityWorldCollision(Entity);
     }
 
     ProcessCollisionRules(GameState, Entity);
