@@ -325,9 +325,6 @@ main(s32 NumArgs, char ** Args)
   {
     Plat.dt = (r32)ComputeDtForFrame(&lastTime);
 
-    if (Plat.dt > 1.0f)
-      Plat.dt = 1.0f;
-
     v2 LastMouseP = Plat.MouseP;
     while ( ProcessOsMessages(&Os, &Plat) );
     Plat.MouseDP = LastMouseP - Plat.MouseP;

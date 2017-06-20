@@ -176,6 +176,7 @@ void
 SimulateEnemies(game_state *GameState, r32 dt)
 {
   TIMED_FUNCTION();
+
   for ( s32 EnemyIndex = 0;
         EnemyIndex < TOTAL_ENEMY_COUNT;
         ++EnemyIndex )

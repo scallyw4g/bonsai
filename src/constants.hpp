@@ -57,6 +57,7 @@
 
 #define PLAYER_COUNT 1
 #define TOTAL_ENEMY_COUNT 32
+#define TOTAL_TRIGGER_COUNT 8
 #define DEBUG_ENTITY_DIM Chunk_Dimension(3,3,1)
 
 
@@ -106,9 +107,6 @@ DEBUG_GLOBAL s32 tris = 0;
 DEBUG_GLOBAL s32 VoxelsIndexed = 0;
 
 DEBUG_GLOBAL r32 GlobalLightTheta = 0;
-
-DEBUG_GLOBAL aabb LastFreeSlice(V3(0,0,0), V3(0,0,0));
-DEBUG_GLOBAL aabb LastQueuedSlice(V3(0,0,0), V3(0,0,0));
 
 #define FACE_COLOR_SIZE 32
 #define PALETTE_SIZE 256

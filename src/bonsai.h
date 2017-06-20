@@ -163,6 +163,12 @@ struct Camera_Object
   v3 Up;
 };
 
+struct trigger
+{
+  aabb AABB;
+  GameCallback Callback;
+};
+
 struct entity
 {
   chunk_data *Model;

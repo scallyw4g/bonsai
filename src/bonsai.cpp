@@ -436,8 +436,6 @@ QueueChunksForInit(game_state *GameState, world_position WorldDisp, entity *Play
   world_position SliceMin = PlayerP + (VRHalfDim * Iter) - (VRHalfDim * InvAbsIter) - ClampPositive(WorldDisp);
   world_position SliceMax = PlayerP + (VRHalfDim * Iter) + (VRHalfDim * InvAbsIter) - ClampPositive(Iter) - InvAbsIter - ClampNegative(WorldDisp) + ClampNegative(Iter);
 
-  LastQueuedSlice = aabb(SliceMin*WORLD_CHUNK_DIM - 1, (SliceMax*WORLD_CHUNK_DIM + WORLD_CHUNK_DIM + 1));
-
   for (int z = SliceMin.z; z <= SliceMax.z; ++ z)
   {
     for (int y = SliceMin.y; y <= SliceMax.y; ++ y)
@@ -515,22 +513,19 @@ Intersect(aabb *First, aabb *Second)
 {
   b32 Result = True;
 
-  v3 FirstRadius = 0.5f * V3(First->Max.x - First->Min.x,
-                             First->Max.y - First->Min.y,
-                             First->Max.z - First->Min.z);
+  Result &= (Abs(First->Center.x - Second->Center.x) < (First->Radius.x + Second->Radius.x));
+  Result &= (Abs(First->Center.y - Second->Center.y) < (First->Radius.y + Second->Radius.y));
+  Result &= (Abs(First->Center.z - Second->Center.z) < (First->Radius.z + Second->Radius.z));
 
-  v3 SecondRadius = 0.5f * V3(Second->Max.x - Second->Min.x,
-                              Second->Max.y - Second->Min.y,
-                              Second->Max.z - Second->Min.z);
+  return Result;
+}
 
-
-  v3 FirstCenter = First->Min + FirstRadius;
-  v3 SecondCenter = Second->Min + SecondRadius;
-
-  Result &= (Abs(FirstCenter.x - SecondCenter.x) < (FirstRadius.x + SecondRadius.x));
-  Result &= (Abs(FirstCenter.y - SecondCenter.y) < (FirstRadius.y + SecondRadius.y));
-  Result &= (Abs(FirstCenter.z - SecondCenter.z) < (FirstRadius.z + SecondRadius.z));
-
+inline aabb
+GetAABB(entity *Entity)
+{
+  v3 Radius = Entity->ModelDim / 2.0f;
+  v3 Center = GetAbsoluteP(Entity->P) + Radius;
+  aabb Result(Center, Radius);
   return Result;
 }
 
@@ -538,11 +533,8 @@ inline b32
 GetCollision(entity *First, entity *Second)
 {
   TIMED_FUNCTION();
-  v3 FirstMin = GetAbsoluteP(First->P);
-  aabb FirstAABB( FirstMin, FirstMin + First->ModelDim );
-
-  v3 SecondMin = GetAbsoluteP(Second->P);
-  aabb SecondAABB( SecondMin, SecondMin + Second->ModelDim );
+  aabb FirstAABB = GetAABB(First);
+  aabb SecondAABB = GetAABB(Second);
 
   b32 Result = Intersect(&FirstAABB, &SecondAABB);
 
@@ -586,8 +578,23 @@ GetCollision(entity **Entities, entity *Entity)
   return Result;
 }
 
+b32
+GetCollision(entity *Entity, trigger *Trigger)
+{
+  aabb EntityAABB = GetAABB(Entity);
+
+  b32 Result = Intersect(&EntityAABB, &Trigger->AABB);
+  return Result;
+}
+
 void
-ProcessCollisionRules(entity **Entities, entity *Entity)
+Trigger(entity *Entity, trigger *Trigger)
+{
+  Trigger->Callback(Entity);
+}
+
+void
+ProcessCollisionRules(entity **Entities, trigger **Triggers, entity *Entity)
 {
   for (s32 EntityIndex = 0;
       EntityIndex < TOTAL_ENEMY_COUNT;
@@ -598,13 +605,22 @@ ProcessCollisionRules(entity **Entities, entity *Entity)
     if (TestEntity == Entity)
       continue;
 
-    b32 Collision = GetCollision(Entity, TestEntity);
-
-    if (Collision)
-    {
+    if (GetCollision(Entity, TestEntity))
       ProcessCollisionRule(Entity, TestEntity);
+  }
+
+  for (s32 TriggerIndex = 0;
+      TriggerIndex < TOTAL_TRIGGER_COUNT;
+      ++TriggerIndex)
+  {
+    trigger *TestTrigger = Triggers[TriggerIndex];
+    if (TestTrigger)
+    {
+      if (GetCollision(Entity, TestTrigger))
+        Trigger(Entity, TestTrigger);
     }
   }
+
 }
 
 void
@@ -668,7 +684,7 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
       Entity->P = Canonicalize(WorldChunkDim, Entity->P);
     }
 
-    ProcessCollisionRules(GameState->Entities, Entity);
+    ProcessCollisionRules(GameState->Entities, GameState->Triggers, Entity);
   }
 
   // UpdateVisibleRegion(GameState, OriginalPlayerP, Entity);

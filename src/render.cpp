@@ -896,7 +896,9 @@ DEBUG_DrawAABB( World *world, v3 MinP, v3 MaxP, Quaternion Rotation, int ColorIn
 inline void
 DEBUG_DrawAABB( World *world, aabb Rect, Quaternion Rotation, int ColorIndex, float Thickness = DEFAULT_LINE_THICKNESS )
 {
-  DEBUG_DrawAABB( world, Rect.Min, Rect.Max, Rotation, ColorIndex, Thickness );
+  v3 MinP = Rect.Center - Rect.Radius;
+  v3 MaxP = Rect.Center + Rect.Radius;
+  DEBUG_DrawAABB( world, MinP, MaxP, Rotation, ColorIndex, Thickness );
   return;
 }
 
@@ -1435,8 +1437,10 @@ FindBoundaryVoxelsAABB(chunk_data *Chunk, chunk_dimension Dim)
       MaxP.z = P.z;
   }
 
+  v3 Center = V3(MaxP - MinP);
+  v3 Radius = Center/2;
 
-  return aabb( MinP, MaxP );
+  return aabb( Center, Radius );
 }
 
 inline v3
@@ -1511,16 +1515,6 @@ BufferTriangle(World *world, v3 *Verts, v3 Normal, s32 ColorIndex)
     FaceColors,
     sizeof(VertBuffer));
 
-}
-
-inline v3
-Midpoint(aabb AABB)
-{
-  v3 MaxP = AABB.Max - AABB.Min;
-  v3 Mid = MaxP/2;
-
-  v3 Result = AABB.Min + Mid;
-  return Result;
 }
 
 inline void

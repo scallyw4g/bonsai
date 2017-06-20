@@ -575,7 +575,6 @@ operator+(v3 A, v3 B)
   return Result;
 }
 
-
 struct linei
 {
   voxel_position MinP;
@@ -625,25 +624,25 @@ struct rect2
 
 struct aabb
 {
-  v3 Min;
-  v3 Max;
+  v3 Center;
+  v3 Radius;
 
-  aabb(v3 Min, v3 Max)
+  aabb(v3 Center, v3 Radius)
   {
-    this->Min = Min;
-    this->Max = Max;
+    this->Center = Center;
+    this->Radius = Radius;
   }
 
-  aabb(world_position Min, world_position Max)
+  aabb(world_position Center, world_position Radius)
   {
-    this->Min = V3(Min);
-    this->Max = V3(Max);
+    this->Center = V3(Center);
+    this->Radius = V3(Radius);
   }
 
   aabb()
   {
-    this->Min = V3(0,0,0);
-    this->Max = V3(0,0,0);
+    this->Center = V3(0,0,0);
+    this->Radius = V3(0,0,0);
   }
 
 };
@@ -658,11 +657,8 @@ struct point_buffer
 inline aabb
 operator+(aabb AABB, v3 V)
 {
-  aabb Result;
-
-  Result.Min = AABB.Min + V;
-  Result.Max = AABB.Max + V;
-
+  aabb Result = AABB;
+  Result.Radius = AABB.Radius + V;
   return Result;
 }
 
