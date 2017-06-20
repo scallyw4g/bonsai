@@ -184,6 +184,8 @@ struct entity
   entity_flags Flags;
 };
 
+typedef entity projectile;
+
 struct world_storage
 {
   memory_arena *Arena;

@@ -63,6 +63,8 @@
 #define ENEMIES_PER_FRAME 2
 #define TOTAL_TRIGGER_COUNT 8
 #define DEBUG_ENTITY_DIM Chunk_Dimension(3,3,1)
+#define TOTAL_PROJECTILE_COUNT 128
+#define DEBUG_PROJECTILE_DIM Chunk_Dimension(1,2,1)
 
 
 #define DEBUG_SCROLL_WORLD            1

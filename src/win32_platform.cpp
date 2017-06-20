@@ -362,6 +362,12 @@ WindowMessageCallback(
           Plat->Input.F11 = False;
         } return 0;
 
+        case VK_SPACE:
+        {
+          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
+          Plat->Input.Space = False;
+        } return 0;
+
         default:
         {
           // Ignore all other keypresses
@@ -419,6 +425,12 @@ WindowMessageCallback(
         {
           platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
           Plat->Input.F11 = True;
+        } return 0;
+
+        case VK_SPACE:
+        {
+          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
+          Plat->Input.Space = True;
         } return 0;
 
         default:

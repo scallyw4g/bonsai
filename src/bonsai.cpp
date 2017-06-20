@@ -170,7 +170,7 @@ QueueChunkForInit(game_state *GameState, world_chunk *Chunk)
 }
 
 inline v3
-GetOrthographicInputs(platform *Plat)
+GetOrthographicInputs(input *Input)
 {
   v3 right = V3(1,0,0);
   v3 forward = V3(0,1,0);
@@ -178,19 +178,19 @@ GetOrthographicInputs(platform *Plat)
   v3 UpdateDir = V3(0,0,0);
 
   // Forward
-  if ( Plat->Input.W )
+  if ( Input->W )
     UpdateDir += forward;
 
   // Backward
-  if ( Plat->Input.S )
+  if ( Input->S )
     UpdateDir -= forward;
 
   // Right
-  if ( Plat->Input.D )
+  if ( Input->D )
     UpdateDir += right;
 
   // Left
-  if ( Plat->Input.A )
+  if ( Input->A )
     UpdateDir -= right;
 
   UpdateDir = Normalize(UpdateDir);
@@ -465,7 +465,7 @@ UpdateVisibleRegion(game_state *GameState, world_position OriginalPlayerP, entit
 }
 
 void
-SpawnPlayer( World *world, platform *Plat, entity *Player )
+SpawnPlayer( World *world, entity *Player )
 {
   Player->Acceleration = V3(0,0,0);
   Player->Velocity = V3(0,0,0);
@@ -488,12 +488,6 @@ SpawnPlayer( World *world, platform *Plat, entity *Player )
   {
     Player->P = TestP;
     Player->Flags = (entity_flags)SetFlag(Player->Flags, Entity_Spawned);
-  }
-  else
-  {
-    // world_position OriginalP = Player->P.WorldP;
-    // Player->P.WorldP += World_Position(1,0,0);
-    // UpdateVisibleRegion(world, Plat, OriginalP, Player);
   }
 
   return;

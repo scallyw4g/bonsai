@@ -51,21 +51,29 @@ InitEntity(entity *Entity, chunk_dimension Dim, canonical_position InitialP,  co
 }
 
 entity *
-AllocateEntity(platform *Plat, memory_arena *Storage, canonical_position InitialP, const char *ModelPath)
+AllocateEntity(platform *Plat, memory_arena *Storage, chunk_dimension Dim)
 {
-  chunk_dimension Dim = DEBUG_ENTITY_DIM;
   entity *Entity = PUSH_STRUCT_CHECKED(entity, Storage, 1);
   Entity->Model = AllocateChunk(Plat, Storage, Dim);
-
-  InitEntity(Entity, Dim, InitialP, ModelPath);
 
   return Entity;
 }
 
 entity *
+AllocateAndInitEntity(platform *Plat, memory_arena *Storage, canonical_position InitialP, const char *ModelPath)
+{
+  chunk_dimension Dim = DEBUG_ENTITY_DIM;
+
+  entity *Result = AllocateEntity(Plat, Storage, Dim);
+  InitEntity(Result, Dim, InitialP, ModelPath);
+
+  return Result;
+}
+
+entity *
 AllocatePlayer(platform *Plat, memory_arena *Storage, canonical_position InitialP, const char *ModelPath)
 {
-  entity *Player = AllocateEntity(Plat, Storage, InitialP, ModelPath);
+  entity *Player = AllocateAndInitEntity(Plat, Storage, InitialP, ModelPath);
   Player->Flags = (entity_flags)SetFlag(Player->Flags, Entity_Player);
 
   return Player;
@@ -210,6 +218,42 @@ SimulateEnemies(game_state *GameState, r32 dt)
 }
 
 void
+SpawnProjectile(game_state *GameState, canonical_position *P, v3 Velocity)
+{
+  Assert(GameState->ProjectileCount < TOTAL_PROJECTILE_COUNT);
+
+  entity *Projectile = GameState->Projectiles[GameState->ProjectileCount];
+  chunk_dimension Dim = Chunk_Dimension(1,5,1);
+
+  InitEntity(Projectile, Dim, *P, 0);
+
+  return;
+}
+
+void
+SimulatePlayer( game_state *GameState, entity *Player, input *Input, r32 dt )
+{
+  v3 InputAccel = GetOrthographicInputs(Input);
+  /* v3 Input = V3(1, 0, 0); */
+
+  if (Spawned(Player->Flags))
+  {
+    Player->Acceleration = InputAccel;
+    v3 PlayerDelta = GetEntityDelta(Player, dt);
+    UpdateEntityP( GameState, Player, PlayerDelta );
+  }
+  else // Try to respawn the player until enough of the world has been initialized to do so
+  {
+    SpawnPlayer( GameState->world, Player );
+  }
+
+  if (Input->Space)
+  {
+    SpawnProjectile(GameState, &Player->P, V3(0,-1,0));
+  }
+}
+
+void
 UnspawnEnemy(void *Input)
 {
   entity *Enemy = (entity*)Input;
@@ -227,7 +271,8 @@ AllocateAndInitTriggers(platform *Plat, game_state *GameState)
       TriggerIndex < TOTAL_TRIGGER_COUNT;
       ++TriggerIndex)
   {
-    GameState->Triggers[TriggerIndex] = PUSH_STRUCT_CHECKED(trigger, Plat->Memory, 1);
+    GameState->Triggers[TriggerIndex] =
+      PUSH_STRUCT_CHECKED(trigger, Plat->Memory, 1);
   }
 
   trigger *Trigger = GameState->Triggers[0];
@@ -238,6 +283,20 @@ AllocateAndInitTriggers(platform *Plat, game_state *GameState)
 
   Trigger->AABB = {Midpoint, Radius};
   Trigger->Callback = UnspawnEnemy;
+
+  return;
+}
+
+void
+AllocateProjectiles(platform *Plat, game_state *GameState)
+{
+  for (s32 ProjectileIndex = 0;
+      ProjectileIndex < TOTAL_PROJECTILE_COUNT;
+      ++ProjectileIndex)
+  {
+    GameState->Projectiles[ProjectileIndex] =
+      AllocateEntity(Plat, GameState->world->WorldStorage.Arena, DEBUG_PROJECTILE_DIM);
+  }
 
   return;
 }
@@ -300,18 +359,20 @@ GameInit( platform *Plat )
 
   GameState->Entities[0] = Player;
 
+  World *world = AllocateAndInitWorld(GameState, PlayerInitialP.WorldP);
+  if (!world) { Error("Error Allocating world"); return False; }
+
   for (s32 EnemyIndex = PLAYER_COUNT;
       EnemyIndex < TOTAL_ENEMY_COUNT;
       ++ EnemyIndex)
   {
-    canonical_position InitP = Canonical_Position(V3(0,0,0), World_Position(0,0,0));
-    GameState->Entities[EnemyIndex] = AllocateEntity(Plat, Plat->Memory, InitP, 0);
+    GameState->Entities[EnemyIndex] =
+      AllocateEntity(Plat, GameState->world->WorldStorage.Arena, DEBUG_ENTITY_DIM);
   }
 
-  World *world = AllocateAndInitWorld(GameState, PlayerInitialP.WorldP);
-  if (!world) { Error("Error Allocating world"); return False; }
-
   AllocateAndInitTriggers(Plat, GameState);
+
+  AllocateProjectiles(Plat, GameState);
 
   SeedWorldAndUnspawnPlayer(world, Player);
 
@@ -349,19 +410,7 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
   SpawnEnemies(GameState);
   SimulateEnemies(GameState, Plat->dt);
 
-  v3 Input = GetOrthographicInputs(Plat);
-  /* v3 Input = V3(1, 0, 0); */
-
-  if (Spawned(Player->Flags))
-  {
-    Player->Acceleration = Input;
-    v3 PlayerDelta = GetEntityDelta(Player, Plat->dt);
-    UpdateEntityP( GameState, Player, PlayerDelta );
-  }
-  else // Try to respawn the player until enough of the world has been initialized to do so
-  {
-    SpawnPlayer( world, Plat, Player );
-  }
+  SimulatePlayer(GameState, Player, &Plat->Input, Plat->dt);
 
   UpdateCameraP(Plat, world, Player, Camera);
   RG->Basis.ViewMatrix = GetViewMatrix(WorldChunkDim, Camera);

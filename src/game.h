@@ -14,6 +14,9 @@ struct game_state
 
   entity *Entities[TOTAL_ENEMY_COUNT];
   trigger *Triggers[TOTAL_TRIGGER_COUNT];
+
+  projectile *Projectiles[TOTAL_PROJECTILE_COUNT];
+  s32 ProjectileCount;
 };
 
 
