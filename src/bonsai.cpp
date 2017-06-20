@@ -470,6 +470,8 @@ SpawnPlayer( World *world, entity *Player )
   Player->Acceleration = V3(0,0,0);
   Player->Velocity = V3(0,0,0);
 
+  Player->Health = 3;
+
   canonical_position TestP;
   collision_event Collision;
 
@@ -480,7 +482,7 @@ SpawnPlayer( World *world, entity *Player )
   int rZ = rand() % (WorldChunkDim.z);
 
   v3 Offset = V3( rX, rY, rZ );
-  TestP = Canonicalize(WorldChunkDim, Offset, Player->P.WorldP);
+  TestP = Canonicalize(WorldChunkDim, Offset, World_Position(VR_X/2, 0, 0));
 
   Collision = GetCollision( world, TestP, Player->ModelDim);
 
@@ -535,7 +537,7 @@ GetCollision(entity *First, entity *Second)
   return Result;
 }
 
-void
+inline void
 Unspawn(entity *Entity)
 {
   if (NotSet(Entity->Flags, Entity_Player))
@@ -544,11 +546,18 @@ Unspawn(entity *Entity)
   return;
 }
 
-void
+inline void
 Unspawn(void *Input)
 {
   entity *Entity = (entity*)Input;
   Unspawn(Entity);
+}
+
+inline b32
+IsPlayer(entity *Entity)
+{
+  b32 Result = IsSet(Entity->Flags, Entity_Player);
+  return Result;
 }
 
 void
@@ -570,7 +579,8 @@ ProcessCollisionRule(entity *First, entity *Second)
   {
     case Collision_EnemyPlayer:
     {
-      printf("Enemy-Player Collision \n");
+      entity *Player = IsPlayer(First) ? First : Second ;
+      Player->Health --;
     } break;
 
     case Collision_PlayerProjectile:

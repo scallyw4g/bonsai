@@ -185,7 +185,8 @@ struct entity
 
   entity_flags Flags;
 
-  r32 RateOfFire; // TODO(Jesse): Unneeded for projectiles. factor out of here?
+  r32 FireCooldown; // TODO(Jesse): Unneeded for projectiles. factor out of here?
+  u32 Health; // Only needed for Player
 };
 
 typedef entity projectile;

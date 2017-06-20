@@ -150,13 +150,6 @@ SpawnEnemy(World *world, entity **WorldEntities, entity *Enemy)
   return;
 }
 
-inline b32
-IsPlayer(entity *Entity)
-{
-  b32 Result = IsSet(Entity->Flags, Entity_Player);
-  return Result;
-}
-
 void
 SpawnEnemies(game_state *GameState)
 {
@@ -244,14 +237,14 @@ SpawnProjectile(game_state *GameState, canonical_position *P, v3 Velocity)
   return;
 }
 
-b32
+inline b32
 CanFire(entity *Player, r32 dt)
 {
   b32 Result = False;
 
-  if ((Player->RateOfFire -= dt) < 0)
+  if ((Player->FireCooldown -= dt) < 0)
   {
-    Player->RateOfFire = PLAYER_RATE_OF_FIRE;
+    Player->FireCooldown = PLAYER_RATE_OF_FIRE;
     Result = True;
   }
 
@@ -261,8 +254,12 @@ CanFire(entity *Player, r32 dt)
 void
 SimulatePlayer( game_state *GameState, entity *Player, input *Input, r32 dt )
 {
+  if (Player->Health <= 0)
+  {
+    Player->Flags = (entity_flags)UnSetFlag(Player->Flags, Entity_Spawned);
+  }
+
   v3 InputAccel = GetOrthographicInputs(Input);
-  /* v3 Input = V3(1, 0, 0); */
 
   if (Spawned(Player->Flags))
   {
@@ -275,10 +272,14 @@ SimulatePlayer( game_state *GameState, entity *Player, input *Input, r32 dt )
     SpawnPlayer( GameState->world, Player );
   }
 
-  if ( Input->Space && CanFire(Player, dt) )
+  Player->FireCooldown -= dt;
+  if ( Input->Space && (Player->FireCooldown < 0) )
   {
     SpawnProjectile(GameState, &Player->P, V3(0,50,0));
+    Player->FireCooldown = PLAYER_RATE_OF_FIRE;
   }
+
+  return;
 }
 
 void
