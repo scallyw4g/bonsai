@@ -193,6 +193,39 @@ SimulateEnemies(game_state *GameState, r32 dt)
   return;
 }
 
+void
+UnspawnEnemy(void *Input)
+{
+  entity *Enemy = (entity*)Input;
+
+  if (NotSet(Enemy->Flags, Entity_Player))
+    Enemy->Flags = Entity_Uninitialized;
+
+  return;
+}
+
+void
+AllocateAndInitTriggers(platform *Plat, game_state *GameState)
+{
+  for (s32 TriggerIndex = 0;
+      TriggerIndex < TOTAL_TRIGGER_COUNT;
+      ++TriggerIndex)
+  {
+    GameState->Triggers[TriggerIndex] = PUSH_STRUCT_CHECKED(trigger, Plat->Memory, 1);
+  }
+
+  trigger *Trigger = GameState->Triggers[0];
+
+  // 0th Trigger is an unspawn point for enemies
+  v3 Midpoint = V3(VR_X*CD_X, 0, 0)/2;
+  v3 Radius = V3(VR_X*CD_X, 1, 1)/2;
+
+  Trigger->AABB = {Midpoint, Radius};
+  Trigger->Callback = UnspawnEnemy;
+
+  return;
+}
+
 EXPORT void
 InitGlobals(platform *Plat)
 {
@@ -259,8 +292,10 @@ GameInit( platform *Plat )
     GameState->Entities[EnemyIndex] = AllocateEntity(Plat, Plat->Memory, InitP, 0);
   }
 
-  World *world = AllocateWorld(GameState, PlayerInitialP.WorldP);
+  World *world = AllocateAndInitWorld(GameState, PlayerInitialP.WorldP);
   if (!world) { Error("Error Allocating world"); return False; }
+
+  AllocateAndInitTriggers(Plat, GameState);
 
   SeedWorldAndUnspawnPlayer(world, Player);
 
@@ -297,7 +332,6 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
 
   SpawnEnemies(GameState);
   SimulateEnemies(GameState, Plat->dt);
-
 
   v3 Input = GetOrthographicInputs(Plat);
   /* v3 Input = V3(1, 0, 0); */

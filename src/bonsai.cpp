@@ -297,11 +297,11 @@ GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
 collision_event
 GetCollision(World *world, entity *entity, v3 Offset = V3(0,0,0) )
 {
-  Assert( Spawned(entity) );
-  /* Assert( entity->Model->BoundaryVoxelCount > 0 ); */
-
   collision_event C;
   C.didCollide = false;
+
+  if ( !Spawned(entity) )
+    return C;
 
   for (int i = 0; i < entity->Model->BoundaryVoxelCount; ++i)
   {
@@ -587,7 +587,7 @@ GetCollision(entity *Entity, trigger *Trigger)
   return Result;
 }
 
-void
+inline void
 Trigger(entity *Entity, trigger *Trigger)
 {
   Trigger->Callback(Entity);
@@ -793,7 +793,7 @@ UpdateCameraP(platform *Plat, World *world, entity *Player, Camera_Object *Camer
 }
 
 World *
-AllocateWorld( game_state *GameState, world_position Midpoint)
+AllocateAndInitWorld( game_state *GameState, world_position Midpoint)
 {
   platform *Plat = GameState->Plat;
 
@@ -823,7 +823,7 @@ AllocateWorld( game_state *GameState, world_position Midpoint)
   world->Gravity = WORLD_GRAVITY;
 
   {
-    int BufferVertices = 100*(VOLUME_VISIBLE_REGION * VERT_PER_VOXEL);
+    s32 BufferVertices = 100*(VOLUME_VISIBLE_REGION * VERT_PER_VOXEL);
 
     world->Mesh.VertexData = PUSH_STRUCT_CHECKED(GLfloat, Plat->Memory, BufferVertices );
     world->Mesh.ColorData = PUSH_STRUCT_CHECKED(GLfloat,  Plat->Memory, BufferVertices );
@@ -837,11 +837,11 @@ AllocateWorld( game_state *GameState, world_position Midpoint)
   world_position Min = World_Position(0,0,0);
   world_position Max = world->VisibleRegion;
 
-  for ( int z = Min.z; z < Max.z; ++ z )
+  for ( s32 z = Min.z; z < Max.z; ++ z )
   {
-    for ( int y = Min.y; y < Max.y; ++ y )
+    for ( s32 y = Min.y; y < Max.y; ++ y )
     {
-      for ( int x = Min.x; x < Max.x; ++ x )
+      for ( s32 x = Min.x; x < Max.x; ++ x )
       {
         world_chunk *chunk = AllocateWorldChunk(Plat, world, World_Position(x,y,z));
         Assert(chunk);
