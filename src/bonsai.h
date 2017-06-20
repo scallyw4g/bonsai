@@ -52,6 +52,7 @@ enum entity_flags
   Entity_Player        = 1 << 3,
   Entity_Enemy         = 1 << 4,
   Entity_Trigger       = 1 << 5,
+  Entity_Projectile    = 1 << 6,
 };
 
 struct voxel
@@ -176,6 +177,7 @@ struct entity
 
   v3 Velocity;
   v3 Acceleration;
+  v3 Drag;
 
   canonical_position P;
 

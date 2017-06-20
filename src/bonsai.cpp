@@ -542,13 +542,31 @@ ProcessCollisionRule(entity *First, entity *Second)
 
   u32 JointFlags = First->Flags | Second->Flags;
 
-  u32 Collision_EnemyPlayer = Entity_Player|Entity_Enemy ;
+  const u32 Collision_EnemyPlayer      = Entity_Player|Entity_Enemy ;
+  const u32 Collision_PlayerProjectile = Entity_Player|Entity_Projectile ;
+  const u32 Collision_EnemyProjectile  = Entity_Enemy|Entity_Projectile ;
 
-  if ( (Collision_EnemyPlayer & JointFlags) == Collision_EnemyPlayer)
+  u32 Rule = (Collision_EnemyPlayer & JointFlags);
+
+  switch (Rule)
   {
-    printf("Entity-Player Collision \n");
+    case Collision_EnemyPlayer:
+    {
+      printf("Enemy-Player Collision \n");
+    } break;
+
+    case Collision_PlayerProjectile:
+    {
+      printf("Player-Projectile Collision \n");
+    } break;
+
+    case Collision_EnemyProjectile:
+    {
+      printf("Enemy-Projectile Collision \n");
+    } break;
   }
 
+  return;
 }
 
 inline b32
@@ -557,7 +575,7 @@ GetCollision(entity **Entities, entity *Entity)
   b32 Result = False;
 
   for (s32 EntityIndex = 0;
-      EntityIndex < TOTAL_ENEMY_COUNT;
+      EntityIndex < TOTAL_ENTITY_COUNT;
       ++EntityIndex)
   {
     entity *TestEntity = Entities[EntityIndex];
@@ -587,14 +605,14 @@ Trigger(entity *Entity, trigger *Trigger)
 }
 
 void
-ProcessCollisionRules(entity **Entities, trigger **Triggers, entity *Entity)
+ProcessCollisionRules(game_state *GameState, entity *Entity)
 {
+  // Collide against Entities
   for (s32 EntityIndex = 0;
-      EntityIndex < TOTAL_ENEMY_COUNT;
+      EntityIndex < TOTAL_ENTITY_COUNT;
       ++EntityIndex)
   {
-    entity *TestEntity = Entities[EntityIndex];
-
+    entity *TestEntity = GameState->Entities[EntityIndex];
     if (TestEntity == Entity)
       continue;
 
@@ -602,16 +620,30 @@ ProcessCollisionRules(entity **Entities, trigger **Triggers, entity *Entity)
       ProcessCollisionRule(Entity, TestEntity);
   }
 
+  // Collide against Triggers
   for (s32 TriggerIndex = 0;
       TriggerIndex < TOTAL_TRIGGER_COUNT;
       ++TriggerIndex)
   {
-    trigger *TestTrigger = Triggers[TriggerIndex];
+    trigger *TestTrigger = GameState->Triggers[TriggerIndex];
     if (TestTrigger)
     {
       if (GetCollision(Entity, TestTrigger))
         Trigger(Entity, TestTrigger);
     }
+  }
+
+  // Collide against Projectiles
+  for (s32 ProjectileIndex = 0;
+      ProjectileIndex < GameState->ProjectileCount;
+      ++ ProjectileIndex)
+  {
+    projectile *Projectile = GameState->Projectiles[ProjectileIndex];
+    if (Entity == Projectile)
+      continue;
+
+    if (GetCollision(Entity, Projectile))
+      ProcessCollisionRule(Entity, Projectile);
   }
 
 }
@@ -677,7 +709,7 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
       Entity->P = Canonicalize(WorldChunkDim, Entity->P);
     }
 
-    ProcessCollisionRules(GameState->Entities, GameState->Triggers, Entity);
+    ProcessCollisionRules(GameState, Entity);
   }
 
   // UpdateVisibleRegion(GameState, OriginalPlayerP, Entity);

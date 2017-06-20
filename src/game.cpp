@@ -18,24 +18,22 @@ SeedWorldAndUnspawnPlayer( World *world, entity *Player )
 }
 
 v3
-GetEntityDelta(entity *Player, float dt)
+GetEntityDelta(entity *Entity, float dt)
 {
-  v3 drag = V3(0.9f, 0.9f, 0.0f);
-  /* v3 drag = V3(1.0f, 1.0f, 0.0f); */
+  v3 Acceleration = Entity->Acceleration * PLAYER_ACCEL_MULTIPLIER;
 
-  v3 Acceleration = Player->Acceleration * PLAYER_ACCEL_MULTIPLIER;
+  Entity->Velocity = (Entity->Velocity + (Acceleration*dt)) * Entity->Drag; // m/s
 
-  Player->Velocity = (Player->Velocity + (Acceleration*dt)) * drag; // m/s
-
-  v3 PlayerDelta = Player->Velocity * dt;
+  v3 PlayerDelta = Entity->Velocity * dt;
 
   return PlayerDelta;
 }
 
 void
-InitEntity(entity *Entity, chunk_dimension Dim, canonical_position InitialP,  const char *ModelPath)
+InitEntity(entity *Entity, chunk_dimension Dim, canonical_position InitialP, v3 Drag, const char *ModelPath)
 {
   TIMED_FUNCTION();
+
 #if 0
   entity->Model = LoadVox(Plat, Plat->Memory, ModelPath, entity);
 #else
@@ -46,6 +44,7 @@ InitEntity(entity *Entity, chunk_dimension Dim, canonical_position InitialP,  co
   Entity->Rotation = Quaternion(0,0,0,1);
   Entity->P = InitialP;
   Entity->Flags = Entity_Initialized;
+  Entity->Drag = Drag;
 
   return;
 }
@@ -60,20 +59,20 @@ AllocateEntity(platform *Plat, memory_arena *Storage, chunk_dimension Dim)
 }
 
 entity *
-AllocateAndInitEntity(platform *Plat, memory_arena *Storage, canonical_position InitialP, const char *ModelPath)
+AllocateAndInitEntity(platform *Plat, memory_arena *Storage, canonical_position InitialP, v3 Drag, const char *ModelPath)
 {
   chunk_dimension Dim = DEBUG_ENTITY_DIM;
 
   entity *Result = AllocateEntity(Plat, Storage, Dim);
-  InitEntity(Result, Dim, InitialP, ModelPath);
+  InitEntity(Result, Dim, InitialP, Drag, ModelPath);
 
   return Result;
 }
 
 entity *
-AllocatePlayer(platform *Plat, memory_arena *Storage, canonical_position InitialP, const char *ModelPath)
+AllocatePlayer(platform *Plat, memory_arena *Storage, canonical_position InitialP, v3 Drag, const char *ModelPath)
 {
-  entity *Player = AllocateAndInitEntity(Plat, Storage, InitialP, ModelPath);
+  entity *Player = AllocateAndInitEntity(Plat, Storage, InitialP, Drag, ModelPath);
   Player->Flags = (entity_flags)SetFlag(Player->Flags, Entity_Player);
 
   return Player;
@@ -137,7 +136,7 @@ SpawnEnemy(World *world, entity **WorldEntities, entity *Enemy)
   canonical_position InitialP = Canonical_Position(SeedVec, World_Position(0,0,0));
   InitialP = Canonicalize(WORLD_CHUNK_DIM, InitialP);
 
-  InitEntity(Enemy, DEBUG_ENTITY_DIM, InitialP, 0);
+  InitEntity(Enemy, DEBUG_ENTITY_DIM, InitialP, ENEMY_DRAG, 0);
 
   Enemy->Flags = (entity_flags)SetFlag(Enemy->Flags, Entity_Spawned|Entity_Enemy);
 
@@ -172,7 +171,7 @@ SpawnEnemies(game_state *GameState)
   s32 EnemiesToSpawn = ENEMIES_PER_FRAME;
 
   for (s32 EntityIndex = 0;
-      EntityIndex < TOTAL_ENEMY_COUNT;
+      EntityIndex < TOTAL_ENTITY_COUNT;
       ++EntityIndex)
   {
     entity *Enemy = Entities[EntityIndex];
@@ -197,12 +196,26 @@ SpawnEnemies(game_state *GameState)
 }
 
 void
+SimulateProjectiles(game_state *GameState, r32 dt)
+{
+  for (s32 ProjectileIndex = 0;
+      ProjectileIndex < GameState->ProjectileCount;
+      ++ ProjectileIndex)
+  {
+    projectile *Projectile = GameState->Projectiles[ProjectileIndex];
+
+    v3 Delta = GetEntityDelta(Projectile, dt);
+    UpdateEntityP(GameState, Projectile, Delta);
+  }
+}
+
+void
 SimulateEnemies(game_state *GameState, r32 dt)
 {
   TIMED_FUNCTION();
 
   for ( s32 EnemyIndex = 0;
-        EnemyIndex < TOTAL_ENEMY_COUNT;
+        EnemyIndex < TOTAL_ENTITY_COUNT;
         ++EnemyIndex )
   {
     entity *Enemy = GameState->Entities[EnemyIndex];
@@ -221,11 +234,12 @@ void
 SpawnProjectile(game_state *GameState, canonical_position *P, v3 Velocity)
 {
   Assert(GameState->ProjectileCount < TOTAL_PROJECTILE_COUNT);
+  entity *Projectile = GameState->Projectiles[GameState->ProjectileCount++];
 
-  entity *Projectile = GameState->Projectiles[GameState->ProjectileCount];
-  chunk_dimension Dim = Chunk_Dimension(1,5,1);
+  InitEntity(Projectile, DEBUG_PROJECTILE_DIM, *P, PROJECTILE_DRAG, 0);
+  Projectile->Flags = (entity_flags)SetFlag(Projectile->Flags, Entity_Spawned|Entity_Projectile);
 
-  InitEntity(Projectile, Dim, *P, 0);
+  Projectile->Velocity = Velocity;
 
   return;
 }
@@ -249,7 +263,7 @@ SimulatePlayer( game_state *GameState, entity *Player, input *Input, r32 dt )
 
   if (Input->Space)
   {
-    SpawnProjectile(GameState, &Player->P, V3(0,-1,0));
+    SpawnProjectile(GameState, &Player->P, V3(0,75,0));
   }
 }
 
@@ -338,7 +352,7 @@ GameInit( platform *Plat )
 
   canonical_position PlayerInitialP = {};
 
-  entity *Player = AllocatePlayer(Plat, Plat->Memory, PlayerInitialP, PLAYER_MODEL);
+  entity *Player = AllocatePlayer(Plat, Plat->Memory, PlayerInitialP, PLAYER_DRAG, PLAYER_MODEL);
   if (!Player) { Error("Error Allocating Player"); return False; }
 
   Camera_Object *Camera = PUSH_STRUCT_CHECKED(Camera_Object, Plat->Memory, 1);
@@ -362,11 +376,11 @@ GameInit( platform *Plat )
   World *world = AllocateAndInitWorld(GameState, PlayerInitialP.WorldP);
   if (!world) { Error("Error Allocating world"); return False; }
 
-  for (s32 EnemyIndex = PLAYER_COUNT;
-      EnemyIndex < TOTAL_ENEMY_COUNT;
-      ++ EnemyIndex)
+  for (s32 EntityIndex = PLAYER_COUNT;
+      EntityIndex < TOTAL_ENTITY_COUNT;
+      ++ EntityIndex)
   {
-    GameState->Entities[EnemyIndex] =
+    GameState->Entities[EntityIndex] =
       AllocateEntity(Plat, GameState->world->WorldStorage.Arena, DEBUG_ENTITY_DIM);
   }
 
@@ -409,6 +423,8 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
 
   SpawnEnemies(GameState);
   SimulateEnemies(GameState, Plat->dt);
+
+  SimulateProjectiles(GameState, Plat->dt);
 
   SimulatePlayer(GameState, Player, &Plat->Input, Plat->dt);
 
@@ -457,13 +473,25 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
   }
   END_BLOCK("Render - World");
 
-  for (s32 EnemyIndex = 0;
-      EnemyIndex < TOTAL_ENEMY_COUNT;
-      ++ EnemyIndex)
+  TIMED_BLOCK("Render - Projectiles");
+  for (s32 ProjectileIndex = 0;
+      ProjectileIndex < GameState->ProjectileCount;
+      ++ ProjectileIndex)
   {
-    entity *Enemy = GameState->Entities[EnemyIndex];
+    entity *Projectile = GameState->Projectiles[ProjectileIndex];
+    DrawEntity(Plat, world, Projectile, Camera, RG, SG);
+  }
+  END_BLOCK("Entities");
+
+  TIMED_BLOCK("Render - Entities");
+  for (s32 EntityIndex = 0;
+      EntityIndex < TOTAL_ENTITY_COUNT;
+      ++ EntityIndex)
+  {
+    entity *Enemy = GameState->Entities[EntityIndex];
     DrawEntity(Plat, world, Enemy, Camera, RG, SG);
   }
+  END_BLOCK("Entities");
 
   DrawEntity(Plat, world, Player, Camera, RG, SG);
 
