@@ -540,13 +540,15 @@ ProcessCollisionRule(entity *First, entity *Second)
 {
   Assert(First!=Second);
 
-  u32 JointFlags = First->Flags | Second->Flags;
+  entity_flags JointFlags = (entity_flags)(First->Flags | Second->Flags);
 
-  const u32 Collision_EnemyPlayer      = Entity_Player|Entity_Enemy ;
-  const u32 Collision_PlayerProjectile = Entity_Player|Entity_Projectile ;
-  const u32 Collision_EnemyProjectile  = Entity_Enemy|Entity_Projectile ;
+  const entity_flags EnemyPlayerProjectile      = (entity_flags)(Entity_Player|Entity_Enemy|Entity_Projectile);
 
-  u32 Rule = (Collision_EnemyPlayer & JointFlags);
+  const entity_flags Collision_EnemyPlayer      = (entity_flags)(Entity_Player|Entity_Enemy);
+  const entity_flags Collision_PlayerProjectile = (entity_flags)(Entity_Player|Entity_Projectile);
+  const entity_flags Collision_EnemyProjectile  = (entity_flags)(Entity_Enemy|Entity_Projectile);
+
+  entity_flags Rule = (entity_flags)(EnemyPlayerProjectile & JointFlags);
 
   switch (Rule)
   {

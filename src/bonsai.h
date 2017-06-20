@@ -184,7 +184,8 @@ struct entity
   Quaternion Rotation;
 
   entity_flags Flags;
-  r32 RateOfFire;
+
+  r32 RateOfFire; // TODO(Jesse): Unneeded for projectiles. factor out of here?
 };
 
 typedef entity projectile;
