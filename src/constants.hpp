@@ -59,16 +59,18 @@
 /* #define PLAYER_MODEL MODELS_PATH"/3x3x3.vox" */
 #define PLAYER_MODEL MODELS_PATH"/3x3x3.vox"
 
-#define TOTAL_ENTITY_COUNT 12
+#define TOTAL_TRIGGER_COUNT    8
+#define TOTAL_ENTITY_COUNT     12
+#define TOTAL_PROJECTILE_COUNT 128
+
 #define ENEMY_DISTRIBUTION_SPREAD 4
 #define ENEMY_DRAG V3(0.9f, 0.9f, 0.0f)
 #define ENEMIES_PER_FRAME 2
-#define TOTAL_TRIGGER_COUNT 8
-#define DEBUG_ENTITY_DIM Chunk_Dimension(3,3,1)
-#define TOTAL_PROJECTILE_COUNT 128
-#define DEBUG_PROJECTILE_DIM Chunk_Dimension(1,2,1)
+
 #define PROJECTILE_DRAG V3(1,1,1)
 
+#define DEBUG_ENTITY_DIM     Chunk_Dimension(3,3,1)
+#define DEBUG_PROJECTILE_DIM Chunk_Dimension(1,2,1)
 
 #define DEBUG_SCROLL_WORLD            1
 #define DEBUG_CHUNK_AABB              1
