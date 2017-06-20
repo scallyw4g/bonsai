@@ -47,6 +47,7 @@
 #define PLAYER_JUMP_STRENGTH     20.0f
 #define PLAYER_ACCEL_MULTIPLIER  150.0f
 #define PLAYER_DRAG V3(0.9f, 0.9f, 0.0f)
+#define PLAYER_RATE_OF_FIRE      0.5f
 
 /* #define PLAYER_MODEL MODELS_PATH"/chr_knight.vox" */
 /* #define PLAYER_MODEL MODELS_PATH"/ephtracy.vox" */

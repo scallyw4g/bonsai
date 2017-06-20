@@ -184,6 +184,7 @@ struct entity
   Quaternion Rotation;
 
   entity_flags Flags;
+  r32 RateOfFire;
 };
 
 typedef entity projectile;

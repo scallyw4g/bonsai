@@ -244,6 +244,20 @@ SpawnProjectile(game_state *GameState, canonical_position *P, v3 Velocity)
   return;
 }
 
+b32
+CanFire(entity *Player, r32 dt)
+{
+  b32 Result = False;
+
+  if ((Player->RateOfFire -= dt) < 0)
+  {
+    Player->RateOfFire = PLAYER_RATE_OF_FIRE;
+    Result = True;
+  }
+
+  return Result;
+}
+
 void
 SimulatePlayer( game_state *GameState, entity *Player, input *Input, r32 dt )
 {
@@ -261,9 +275,9 @@ SimulatePlayer( game_state *GameState, entity *Player, input *Input, r32 dt )
     SpawnPlayer( GameState->world, Player );
   }
 
-  if (Input->Space)
+  if ( Input->Space && CanFire(Player, dt) )
   {
-    SpawnProjectile(GameState, &Player->P, V3(0,75,0));
+    SpawnProjectile(GameState, &Player->P, V3(0,50,0));
   }
 }
 
