@@ -206,8 +206,9 @@ struct World
 
   // This is the number of chunks in xyz we're going to update and render
   chunk_dimension VisibleRegion;
-
   chunk_dimension ChunkDim;
+
+  world_position Center;
 
   v3 Gravity;
 

@@ -125,11 +125,11 @@ void
 SpawnEnemy(World *world, entity **WorldEntities, entity *Enemy)
 {
   TIMED_FUNCTION();
-  world_position Max = World_Position(CD_X*VR_X, CD_Y*VR_Y, CD_Z*VR_Z);
+  world_position Max = World_Position(CD_X*VR_X, CD_Y*VR_Y, CD_Z*VR_Z)/2;
 
-  s32 X = rand() % Max.x;
-  s32 Y =  Max.y - (rand() % ENEMY_DISTRIBUTION_SPREAD);
-  s32 Z = rand() % Max.z;
+  s32 X = GetAbsoluteP(world->Center).x; // + (rand() % Max.x);
+  s32 Y = GetAbsoluteP(world->Center).y + 8; // + (Max.y - (rand() % ENEMY_DISTRIBUTION_SPREAD));
+  s32 Z = GetAbsoluteP(world->Center).z; // + (rand() % Max.z);
 
   v3 SeedVec = V3(X,Y,Z);
 
@@ -207,6 +207,20 @@ EntityWorldCollision(entity *Entity)
 }
 
 void
+UpdateVisibleRegion(game_state *GameState, world_position OriginalPlayerP, entity *Player)
+{
+
+  if ( OriginalPlayerP != Player->P.WorldP ) // We moved to the next chunk
+  {
+    world_position WorldDisp = ( Player->P.WorldP - OriginalPlayerP );
+    GameState->world->Center += WorldDisp;
+    QueueChunksForInit(GameState, World_Position(0, WorldDisp.y, 0), Player);
+  }
+
+  return;
+}
+
+void
 UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
 {
   TIMED_FUNCTION();
@@ -215,7 +229,6 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
 
   v3 Remaining = GrossDelta;
 
-  /* world_position OriginalPlayerP = Entity->P.WorldP; */
   chunk_dimension WorldChunkDim = world->ChunkDim;
 
   collision_event C;
@@ -268,7 +281,6 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
     ProcessCollisionRules(GameState, Entity);
   }
 
-  /* UpdateVisibleRegion(GameState, OriginalPlayerP, Entity); */
 
   Entity->P = Canonicalize(WorldChunkDim, Entity->P);
   collision_event AssertCollision = GetCollision(world, Entity );
@@ -354,7 +366,11 @@ SimulatePlayer( game_state *GameState, entity *Player, input *Input, r32 dt )
   {
     Player->Acceleration = InputAccel;
     v3 PlayerDelta = GetEntityDelta(Player, dt) + (PLAYER_IMPULSE*dt);
+
+    world_position OriginalPlayerP = Player->P.WorldP;
     UpdateEntityP( GameState, Player, PlayerDelta );
+    UpdateVisibleRegion(GameState, OriginalPlayerP, Player);
+
   }
   else // Try to respawn the player until enough of the world has been initialized to do so
   {
@@ -466,7 +482,7 @@ GameInit( platform *Plat )
 
   GameState->Entities[0] = Player;
 
-  World *world = AllocateAndInitWorld(GameState, PlayerInitialP.WorldP);
+  World *world = AllocateAndInitWorld(GameState, PlayerInitialP.WorldP, VISIBLE_REGION_RADIUS);
   if (!world) { Error("Error Allocating world"); return False; }
 
   for (s32 EntityIndex = PLAYER_COUNT;
@@ -535,8 +551,15 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
   // FIXME(Jesse): This is extremely slow on my laptop ..?!
   ClearFramebuffers(RG, SG);
 
+  world_position VisibleRadius = World_Position(VR_X, VR_Y, VR_Z)/2;
+
+#if 1
+  world_position Min = world->Center - VisibleRadius;
+  world_position Max = world->Center + VisibleRadius + 1;
+#else
   world_position Min = World_Position(0,0,0);;
   world_position Max = world->VisibleRegion;
+#endif
 
   DEBUG_DrawAABB( world,
                   GetRenderP(WORLD_CHUNK_DIM, Min, Camera),
@@ -545,14 +568,17 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
                   RED );
 
   TIMED_BLOCK("Render - World");
-  for ( int i = 0; i < WORLD_HASH_SIZE; ++i)
+  for ( s32 ChunkIndex = 0;
+        ChunkIndex < WORLD_HASH_SIZE;
+        ++ChunkIndex)
   {
-    world_chunk *chunk = world->ChunkHash[i];
+    world_chunk *chunk = world->ChunkHash[ChunkIndex];
 
     while (chunk)
     {
       if ( (chunk->WorldP >= Min && chunk->WorldP < Max) )
       {
+        DEBUG_DrawChunkAABB( world, chunk, Camera, Quaternion(), BLUE );
         DrawWorldChunk(GameState, chunk, RG, SG);
         chunk = chunk->Next;
       }

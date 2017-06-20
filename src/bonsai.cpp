@@ -443,25 +443,11 @@ QueueChunksForInit(game_state *GameState, world_position WorldDisp, entity *Play
       for (int x = SliceMin.x; x <= SliceMax.x; ++ x)
       {
         world_position P = World_Position(x,y,z);
-        world_chunk* chunk = GetFreeChunk(GameState->Plat, GameState->world, P);
+        world_chunk *chunk = GetFreeChunk(GameState->Plat, GameState->world, P);
         QueueChunkForInit(GameState, chunk);
       }
     }
   }
-}
-
-void
-UpdateVisibleRegion(game_state *GameState, world_position OriginalPlayerP, entity *Player)
-{
-  if ( OriginalPlayerP != Player->P.WorldP ) // We moved to the next chunk
-  {
-    world_position WorldDisp = ( Player->P.WorldP - OriginalPlayerP );
-    QueueChunksForInit(GameState, World_Position(WorldDisp.x, 0, 0), Player);
-    QueueChunksForInit(GameState, World_Position(0, WorldDisp.y, 0), Player);
-    QueueChunksForInit(GameState, World_Position(0, 0, WorldDisp.z), Player);
-  }
-
-  return;
 }
 
 void
@@ -493,6 +479,13 @@ SpawnPlayer( World *world, entity *Player )
   }
 
   return;
+}
+
+inline world_position
+GetAbsoluteP( world_position P )
+{
+  world_position Result = World_Position((CD_X*P.x), (CD_Y*P.y), (CD_Z*P.z));
+  return Result;
 }
 
 inline v3
@@ -774,7 +767,7 @@ UpdateCameraP(platform *Plat, World *world, entity *Player, Camera_Object *Camer
 }
 
 World *
-AllocateAndInitWorld( game_state *GameState, world_position Midpoint)
+AllocateAndInitWorld( game_state *GameState, world_position Center, world_position Radius)
 {
   platform *Plat = GameState->Plat;
 
@@ -797,11 +790,11 @@ AllocateAndInitWorld( game_state *GameState, world_position Midpoint)
   /*
    *  Initialize stuff
    */
-
   world->ChunkDim = WORLD_CHUNK_DIM;
   world->VisibleRegion = VISIBLE_REGION;
 
   world->Gravity = WORLD_GRAVITY;
+  world->Center = Center;
 
   {
     s32 BufferVertices = 100*(VOLUME_VISIBLE_REGION * VERT_PER_VOXEL);
@@ -815,14 +808,14 @@ AllocateAndInitWorld( game_state *GameState, world_position Midpoint)
     Assert(world->Mesh.VertexCount == 0);
   }
 
-  world_position Min = World_Position(0,0,0);
-  world_position Max = world->VisibleRegion;
+  world_position Min = Center - Radius;
+  world_position Max = Center + Radius + 1;
 
-  for ( s32 z = Min.z; z < Max.z; ++ z )
+  for ( s32 z = Min.z; z <= Max.z; ++ z )
   {
-    for ( s32 y = Min.y; y < Max.y; ++ y )
+    for ( s32 y = Min.y; y <= Max.y; ++ y )
     {
-      for ( s32 x = Min.x; x < Max.x; ++ x )
+      for ( s32 x = Min.x; x <= Max.x; ++ x )
       {
         world_chunk *chunk = AllocateWorldChunk(Plat, world, World_Position(x,y,z));
         Assert(chunk);

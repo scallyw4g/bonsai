@@ -28,8 +28,8 @@
 #define WORLD_Z V3(0,0,1)
 
 #define WORLD_CHUNK_DIM Chunk_Dimension(CD_X,CD_Y,CD_Z)
-
 #define VISIBLE_REGION Chunk_Dimension(VR_X,VR_Y,VR_Z)
+#define VISIBLE_REGION_RADIUS (Chunk_Dimension(VR_X,VR_Y,VR_Z)/2)
 
 #define MAX_VISIBLE_POINT V3(VR_X*CD_X, VR_Y*CD_Y, VR_Z*CD_Z)
 
@@ -48,7 +48,7 @@
 #define PLAYER_ACCEL_MULTIPLIER  150.0f
 #define PLAYER_DRAG              V3(0.9f, 0.9f, 0.0f)
 #define PLAYER_RATE_OF_FIRE      0.5f
-#define PLAYER_IMPULSE           V3(0,13,0)
+#define PLAYER_IMPULSE           V3(0,0,0)
 
 /* #define PLAYER_MODEL MODELS_PATH"/chr_knight.vox" */
 /* #define PLAYER_MODEL MODELS_PATH"/ephtracy.vox" */
@@ -79,7 +79,7 @@
 #define DEBUG_WORLD_GENERATION        0
 #define DEBUG_DRAW_SHADOW_MAP_TEXTURE 0
 #define DEBUG_HIGHLIGHT_VOID_CHUNKS   0
-#define DEBUG_DRAW_WORLD_AXIES        0
+#define DEBUG_DRAW_WORLD_AXIES        1
 #define DEBUG_OPTIMIZE_WORLD_GC       1
 #define DEBUG_THREAD_COUNT_BIAS       -4
 
