@@ -121,7 +121,7 @@ SpawnEnemy(World *world, entity **WorldEntities, entity *Enemy)
   world_position Max = World_Position(CD_X*VR_X, CD_Y*VR_Y, CD_Z*VR_Z);
 
   s32 X = rand() % Max.x;
-  s32 Y = (rand() % Max.y) + 32; // Offset away from the player
+  s32 Y =  Max.y - (rand() % ENEMY_DISTRIBUTION_SPREAD);
   s32 Z = rand() % Max.z;
 
   v3 SeedVec = V3(X,Y,Z);
@@ -156,6 +156,13 @@ SpawnEnemies(game_state *GameState)
   TIMED_FUNCTION();
   entity **Entities = GameState->Entities;
 
+  // Fire roughly every 32 frames
+  s32 SpawnEnemies = (rand() % 32) == 0;
+  if (!SpawnEnemies)
+    return;
+
+  s32 EnemiesToSpawn = ENEMIES_PER_FRAME;
+
   for (s32 EntityIndex = 0;
       EntityIndex < TOTAL_ENEMY_COUNT;
       ++EntityIndex)
@@ -166,7 +173,16 @@ SpawnEnemies(game_state *GameState)
         continue;
 
     if ( Destroyed(Enemy) || Unspawned(Enemy) )
-      SpawnEnemy(GameState->world, Entities, Enemy);
+    {
+      if (EnemiesToSpawn--)
+      {
+        SpawnEnemy(GameState->world, Entities, Enemy);
+      }
+      else
+      {
+        return;
+      }
+    }
   }
 
   return;
