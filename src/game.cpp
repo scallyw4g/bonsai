@@ -189,6 +189,95 @@ SpawnEnemies(game_state *GameState)
 }
 
 void
+EntityWorldCollision(entity *Entity)
+{
+  const entity_flags EnemyPlayerProjectile =
+    (entity_flags)(Entity_Player|Entity_Enemy|Entity_Projectile);
+
+  entity_flags EntityType = (entity_flags)(Entity->Flags & EnemyPlayerProjectile);
+
+  switch (EntityType)
+  {
+    case Entity_Enemy:
+    case Entity_Projectile:
+    {
+      Entity->Flags = (entity_flags)UnSetFlag(Entity->Flags, Entity_Spawned);
+    } break;
+  }
+}
+
+void
+UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
+{
+  TIMED_FUNCTION();
+
+  World *world = GameState->world;
+
+  v3 Remaining = GrossDelta;
+
+  /* world_position OriginalPlayerP = Entity->P.WorldP; */
+  chunk_dimension WorldChunkDim = world->ChunkDim;
+
+  collision_event C;
+
+  while ( Remaining != V3(0,0,0) )
+  {
+
+    Assert(LengthSq(Remaining) >= 0);
+
+    v3 StepDelta = GetAtomicUpdateVector(Remaining);
+    Remaining -= StepDelta;
+
+    Entity->P.Offset.x += StepDelta.x;
+    Entity->P = Canonicalize(WorldChunkDim, Entity->P);
+    C = GetCollision(world, Entity);
+    if (C.didCollide)
+    {
+      Entity->Velocity.x = 0;
+      Entity->P.Offset.x = C.CP.Offset.x;
+      Entity->P.WorldP.x = C.CP.WorldP.x;
+
+      if (StepDelta.x > 0)
+        Entity->P.Offset.x -= (Entity->ModelDim.x);
+      else
+        Entity->P.Offset.x++;
+
+      Entity->P = Canonicalize(WorldChunkDim, Entity->P);
+      EntityWorldCollision(Entity);
+    }
+
+
+    Entity->P.Offset.y += StepDelta.y;
+    Entity->P = Canonicalize(WorldChunkDim, Entity->P);
+    C = GetCollision(world, Entity);
+    if (C.didCollide)
+    {
+      Entity->Velocity.y = 0;
+      Entity->P.Offset.y = C.CP.Offset.y;
+      Entity->P.WorldP.y = C.CP.WorldP.y;
+
+      if (StepDelta.y > 0)
+        Entity->P.Offset.y -= (Entity->ModelDim.y);
+      else
+        Entity->P.Offset.y++;
+
+      Entity->P = Canonicalize(WorldChunkDim, Entity->P);
+      EntityWorldCollision(Entity);
+    }
+
+    ProcessCollisionRules(GameState, Entity);
+  }
+
+  /* UpdateVisibleRegion(GameState, OriginalPlayerP, Entity); */
+
+  Entity->P = Canonicalize(WorldChunkDim, Entity->P);
+  collision_event AssertCollision = GetCollision(world, Entity );
+  Assert ( AssertCollision.didCollide == false );
+
+  return;
+}
+
+void
 SimulateProjectiles(game_state *GameState, r32 dt)
 {
   for (s32 ProjectileIndex = 0;
@@ -264,7 +353,7 @@ SimulatePlayer( game_state *GameState, entity *Player, input *Input, r32 dt )
   if (Spawned(Player->Flags))
   {
     Player->Acceleration = InputAccel;
-    v3 PlayerDelta = GetEntityDelta(Player, dt);
+    v3 PlayerDelta = GetEntityDelta(Player, dt) + (PLAYER_IMPULSE*dt);
     UpdateEntityP( GameState, Player, PlayerDelta );
   }
   else // Try to respawn the player until enough of the world has been initialized to do so
