@@ -536,6 +536,22 @@ GetCollision(entity *First, entity *Second)
 }
 
 void
+Unspawn(entity *Entity)
+{
+  if (NotSet(Entity->Flags, Entity_Player))
+    Entity->Flags = Entity_Uninitialized;
+
+  return;
+}
+
+void
+Unspawn(void *Input)
+{
+  entity *Entity = (entity*)Input;
+  Unspawn(Entity);
+}
+
+void
 ProcessCollisionRule(entity *First, entity *Second)
 {
   Assert(First!=Second);
@@ -564,7 +580,8 @@ ProcessCollisionRule(entity *First, entity *Second)
 
     case Collision_EnemyProjectile:
     {
-      printf("Enemy-Projectile Collision \n");
+      Unspawn(First);
+      Unspawn(Second);
     } break;
   }
 

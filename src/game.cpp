@@ -282,17 +282,6 @@ SimulatePlayer( game_state *GameState, entity *Player, input *Input, r32 dt )
 }
 
 void
-UnspawnEnemy(void *Input)
-{
-  entity *Enemy = (entity*)Input;
-
-  if (NotSet(Enemy->Flags, Entity_Player))
-    Enemy->Flags = Entity_Uninitialized;
-
-  return;
-}
-
-void
 AllocateAndInitTriggers(platform *Plat, game_state *GameState)
 {
   for (s32 TriggerIndex = 0;
@@ -310,7 +299,7 @@ AllocateAndInitTriggers(platform *Plat, game_state *GameState)
   v3 Radius = V3(VR_X*CD_X, 1, 1)/2;
 
   Trigger->AABB = {Midpoint, Radius};
-  Trigger->Callback = UnspawnEnemy;
+  Trigger->Callback = Unspawn;
 
   return;
 }
