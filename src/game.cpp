@@ -211,10 +211,8 @@ EntityWorldCollision(entity *Entity)
 }
 
 void
-UpdateVisibleRegion(game_state *GameState, world_position OriginalPlayerP, entity *Player)
+UpdateVisibleRegion(game_state *GameState, world_position WorldDisp)
 {
-  world_position WorldDisp = ( Player->P.WorldP - OriginalPlayerP );
-
   if (WorldDisp.y != 0) // We moved to the next chunk
   {
     GameState->world->Center.y += WorldDisp.y;
@@ -361,7 +359,8 @@ SimulatePlayer( game_state *GameState, entity *Player, input *Input, r32 dt )
 {
   if (Player->Health <= 0)
   {
-    Player->Flags = (entity_flags)UnSetFlag(Player->Flags, Entity_Spawned);
+    Info("Player Destroyed!");
+    Player->Flags = Entity_Uninitialized;
   }
 
   v3 InputAccel = GetOrthographicInputs(Input);
@@ -373,10 +372,11 @@ SimulatePlayer( game_state *GameState, entity *Player, input *Input, r32 dt )
 
     world_position OriginalPlayerP = Player->P.WorldP;
     UpdateEntityP( GameState, Player, PlayerDelta );
-    UpdateVisibleRegion(GameState, OriginalPlayerP, Player);
 
+    world_position WorldDisp = ( Player->P.WorldP - OriginalPlayerP );
+    UpdateVisibleRegion(GameState, WorldDisp);
   }
-  else // Try to respawn the player until enough of the world has been initialized to do so
+  else
   {
     SpawnPlayer( GameState->world, Player );
   }

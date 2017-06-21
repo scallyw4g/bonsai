@@ -475,7 +475,7 @@ SpawnPlayer( World *world, entity *Player )
   if (!Collision.didCollide)
   {
     Player->P = TestP;
-    Player->Flags = (entity_flags)SetFlag(Player->Flags, Entity_Spawned);
+    Player->Flags = (entity_flags)SetFlag(Player->Flags, Entity_Spawned|Entity_Player);
   }
 
   return;
@@ -514,6 +514,7 @@ GetAABB(entity *Entity)
 {
   v3 Radius = Entity->ModelDim / 2.0f;
   v3 Center = GetAbsoluteP(Entity->P) + Radius;
+
   aabb Result(Center, Radius);
   return Result;
 }
@@ -533,7 +534,7 @@ GetCollision(entity *First, entity *Second)
 inline void
 Unspawn(entity *Entity)
 {
-  Entity->Flags = UnSetFlag(Entity->Flags, Entity_Spawned);
+  Entity->Flags = (entity_flags)UnSetFlag(Entity->Flags, Entity_Spawned);
   return;
 }
 
@@ -576,7 +577,6 @@ ProcessCollisionRule(entity *First, entity *Second)
 
     case Collision_PlayerProjectile:
     {
-      printf("Player-Projectile Collision \n");
     } break;
 
     case Collision_EnemyProjectile:
