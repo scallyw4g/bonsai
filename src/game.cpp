@@ -125,15 +125,19 @@ void
 SpawnEnemy(World *world, entity **WorldEntities, entity *Enemy)
 {
   TIMED_FUNCTION();
-  world_position Max = World_Position(CD_X*VR_X, CD_Y*VR_Y, CD_Z*VR_Z)/2;
+  s32 X = (rand() % VR_X) - (rand() % VR_X);
+  s32 Z = world->Center.z;
 
-  s32 X = GetAbsoluteP(world->Center).x; // + (rand() % Max.x);
-  s32 Y = GetAbsoluteP(world->Center).y + 8; // + (Max.y - (rand() % ENEMY_DISTRIBUTION_SPREAD));
-  s32 Z = GetAbsoluteP(world->Center).z; // + (rand() % Max.z);
+  /* s32 Y = AbsWorldCenter.y; */
+  /* s32 Z = AbsWorldCenter.z/2; // + (rand() % Max.z); */
 
-  v3 SeedVec = V3(X,Y,Z);
+  /* v3 SeedVec = V3(X,Y,Z); */
+  v3 SeedVec = V3(0,0,0);
 
-  canonical_position InitialP = Canonical_Position(SeedVec, World_Position(0,0,0));
+  world_position InitialCenter =
+    World_Position(X, world->Center.y + (VR_Y/2) -1, Z);
+
+  canonical_position InitialP = Canonical_Position( V3(0,0,0), InitialCenter);
   InitialP = Canonicalize(WORLD_CHUNK_DIM, InitialP);
 
   InitEntity(Enemy, DEBUG_ENTITY_DIM, InitialP, ENEMY_DRAG, 0);
@@ -578,7 +582,7 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
     {
       if ( (chunk->WorldP >= Min && chunk->WorldP < Max) )
       {
-        DEBUG_DrawChunkAABB( world, chunk, Camera, Quaternion(), BLUE );
+        /* DEBUG_DrawChunkAABB( world, chunk, Camera, Quaternion(), BLUE ); */
         DrawWorldChunk(GameState, chunk, RG, SG);
         chunk = chunk->Next;
       }

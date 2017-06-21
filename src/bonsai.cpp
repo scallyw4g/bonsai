@@ -461,9 +461,6 @@ SpawnPlayer( World *world, entity *Player )
 
   Player->Health = 3;
 
-  canonical_position TestP;
-  collision_event Collision;
-
   chunk_dimension WorldChunkDim = world->ChunkDim;
 
   /* int rX = rand() % (WorldChunkDim.x); */
@@ -471,9 +468,10 @@ SpawnPlayer( World *world, entity *Player )
   /* int rZ = rand() % (WorldChunkDim.z); */
   /* v3 Offset = V3( rX, rY, rZ ); */
 
-  TestP = Canonicalize(WorldChunkDim, V3(0,0,0), World_Position(0,0,0));
+  Print(world->Center);
+  canonical_position TestP = Canonicalize(WorldChunkDim, V3(0,0,0), World_Position(0,0,0));
 
-  Collision = GetCollision( world, TestP, Player->ModelDim);
+  collision_event Collision = GetCollision( world, TestP, Player->ModelDim);
 
   if (!Collision.didCollide)
   {

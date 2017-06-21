@@ -18,7 +18,7 @@
 
 // Visible Region XYZ - Must be > (3,3,3)
 #define VR_X 12
-#define VR_Y 16
+#define VR_Y 32
 #define VR_Z 1
 
 #define VOLUME_VISIBLE_REGION (VR_X*VR_X*VR_X)
@@ -48,7 +48,7 @@
 #define PLAYER_ACCEL_MULTIPLIER  150.0f
 #define PLAYER_DRAG              V3(0.9f, 0.9f, 0.0f)
 #define PLAYER_RATE_OF_FIRE      0.5f
-#define PLAYER_IMPULSE           V3(0,0,0)
+#define PLAYER_IMPULSE           V3(0,20,0)
 
 /* #define PLAYER_MODEL MODELS_PATH"/chr_knight.vox" */
 /* #define PLAYER_MODEL MODELS_PATH"/ephtracy.vox" */
@@ -65,9 +65,8 @@
 #define TOTAL_ENTITY_COUNT     12
 #define TOTAL_PROJECTILE_COUNT 128
 
-#define ENEMY_DISTRIBUTION_SPREAD 4
 #define ENEMY_DRAG V3(0.9f, 0.9f, 0.0f)
-#define ENEMIES_PER_FRAME 2
+#define ENEMIES_PER_FRAME 1
 
 #define PROJECTILE_DRAG V3(1,1,1)
 
@@ -79,7 +78,7 @@
 #define DEBUG_WORLD_GENERATION        0
 #define DEBUG_DRAW_SHADOW_MAP_TEXTURE 0
 #define DEBUG_HIGHLIGHT_VOID_CHUNKS   0
-#define DEBUG_DRAW_WORLD_AXIES        1
+#define DEBUG_DRAW_WORLD_AXIES        0
 #define DEBUG_OPTIMIZE_WORLD_GC       1
 #define DEBUG_THREAD_COUNT_BIAS       -4
 
