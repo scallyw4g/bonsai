@@ -463,12 +463,12 @@ SpawnPlayer( World *world, entity *Player )
 
   chunk_dimension WorldChunkDim = world->ChunkDim;
 
-  int rX = rand() % (WorldChunkDim.x);
-  int rY = rand() % (WorldChunkDim.y);
-  int rZ = rand() % (WorldChunkDim.z);
+  /* int rX = rand() % (WorldChunkDim.x); */
+  /* int rY = rand() % (WorldChunkDim.y); */
+  /* int rZ = rand() % (WorldChunkDim.z); */
+  /* v3 Offset = V3( rX, rY, rZ ); */
 
-  v3 Offset = V3( rX, rY, rZ );
-  TestP = Canonicalize(WorldChunkDim, Offset, World_Position(VR_X/2, 0, 0));
+  TestP = Canonicalize(WorldChunkDim, V3(0,0,0), World_Position(0,0,0));
 
   Collision = GetCollision( world, TestP, Player->ModelDim);
 
