@@ -468,7 +468,6 @@ SpawnPlayer( World *world, entity *Player )
   /* int rZ = rand() % (WorldChunkDim.z); */
   /* v3 Offset = V3( rX, rY, rZ ); */
 
-  Print(world->Center);
   canonical_position TestP = Canonicalize(WorldChunkDim, V3(0,0,0), World_Position(0,0,0));
 
   collision_event Collision = GetCollision( world, TestP, Player->ModelDim);
@@ -534,9 +533,7 @@ GetCollision(entity *First, entity *Second)
 inline void
 Unspawn(entity *Entity)
 {
-  if (NotSet(Entity->Flags, Entity_Player))
-    Entity->Flags = Entity_Uninitialized;
-
+  Entity->Flags = UnSetFlag(Entity->Flags, Entity_Spawned);
   return;
 }
 

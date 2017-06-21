@@ -110,7 +110,7 @@ Destroyed(entity *Entity)
 inline b32
 Unspawned(entity_flags Flags)
 {
-  b32 Result =  NotSet(Flags, Entity_Spawned);
+  b32 Result = NotSet(Flags, Entity_Spawned);
   return Result;
 }
 
@@ -402,14 +402,12 @@ AllocateAndInitTriggers(platform *Plat, game_state *GameState)
       PUSH_STRUCT_CHECKED(trigger, Plat->Memory, 1);
   }
 
-  trigger *Trigger = GameState->Triggers[0];
-
-  // 0th Trigger is an unspawn point for enemies
-  v3 Midpoint = V3(VR_X*CD_X, 0, 0)/2;
-  v3 Radius = V3(VR_X*CD_X, 1, 1)/2;
-
-  Trigger->AABB = {Midpoint, Radius};
-  Trigger->Callback = Unspawn;
+  /* trigger *Trigger = GameState->Triggers[0]; */
+  /* // 0th Trigger is an unspawn point for enemies */
+  /* v3 Midpoint = V3(VR_X*CD_X, 0, 0)/2; */
+  /* v3 Radius = V3(VR_X*CD_X, 1, 1)/2; */
+  /* Trigger->AABB = {Midpoint, Radius}; */
+  /* Trigger->Callback = Unspawn; */
 
   return;
 }
