@@ -188,7 +188,7 @@ void
 EntityWorldCollision(entity *Entity)
 {
   const entity_flags EnemyPlayerProjectile =
-    (entity_flags)(Entity_Player|Entity_Enemy|Entity_Projectile);
+    (entity_flags)(Entity_Player|Entity_Enemy|Entity_Projectile|Entity_Loot);
 
   entity_flags EntityType = (entity_flags)(Entity->Flags & EnemyPlayerProjectile);
 
@@ -196,6 +196,7 @@ EntityWorldCollision(entity *Entity)
   {
     case Entity_Enemy:
     case Entity_Projectile:
+    case Entity_Loot:
     {
       Entity->Flags = (entity_flags)UnSetFlag(Entity->Flags, Entity_Spawned);
     } break;
@@ -308,7 +309,7 @@ SimulateEnemies(game_state *GameState, r32 dt)
   {
     entity *Enemy = GameState->Entities[EnemyIndex];
 
-    if (IsPlayer(Enemy) || IsLoot(Enemy))
+    if (IsPlayer(Enemy))
         continue;
 
     v3 Delta = GetEntityDelta(Enemy, dt);

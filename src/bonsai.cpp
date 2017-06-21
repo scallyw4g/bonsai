@@ -546,6 +546,7 @@ SpawnLoot(entity *Entity)
   {
     Entity->Flags = Entity_Uninitialized;
     Entity->Flags = (entity_flags)SetFlag(Entity->Flags, Entity_Loot|Entity_Spawned);
+    Entity->Velocity = V3(0,0,0);
     FillChunk(Entity->Model, Entity->ModelDim, 42);
   }
 }
@@ -589,6 +590,7 @@ ProcessCollisionRule(entity *First, entity *Second)
 
   entity_flags JointFlags = (entity_flags)(First->Flags | Second->Flags);
 
+  // TODO(Jesse): Add Player pickups for loot!
   const entity_flags EnemyPlayerProjectile      = (entity_flags)(Entity_Player|Entity_Enemy|Entity_Projectile);
 
   const entity_flags Collision_EnemyPlayer      = (entity_flags)(Entity_Player|Entity_Enemy);
