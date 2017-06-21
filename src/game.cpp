@@ -287,7 +287,7 @@ void
 SimulateProjectiles(game_state *GameState, r32 dt)
 {
   for (s32 ProjectileIndex = 0;
-      ProjectileIndex < GameState->ProjectileCount;
+      ProjectileIndex < TOTAL_PROJECTILE_COUNT;
       ++ ProjectileIndex)
   {
     projectile *Projectile = GameState->Projectiles[ProjectileIndex];
@@ -321,13 +321,20 @@ SimulateEnemies(game_state *GameState, r32 dt)
 void
 SpawnProjectile(game_state *GameState, canonical_position *P, v3 Velocity)
 {
-  Assert(GameState->ProjectileCount < TOTAL_PROJECTILE_COUNT);
-  entity *Projectile = GameState->Projectiles[GameState->ProjectileCount++];
+  for (s32 ProjectileIndex = 0;
+      ProjectileIndex < TOTAL_PROJECTILE_COUNT;
+      ++ ProjectileIndex)
+  {
+    projectile *Projectile = GameState->Projectiles[ProjectileIndex];
 
-  InitEntity(Projectile, DEBUG_PROJECTILE_DIM, *P, PROJECTILE_DRAG, 0);
-  Projectile->Flags = (entity_flags)SetFlag(Projectile->Flags, Entity_Spawned|Entity_Projectile);
-
-  Projectile->Velocity = Velocity;
+    if ( Unspawned(Projectile) )
+    {
+      InitEntity(Projectile, DEBUG_PROJECTILE_DIM, *P, PROJECTILE_DRAG, 0);
+      Projectile->Flags = (entity_flags)SetFlag(Projectile->Flags, Entity_Spawned|Entity_Projectile);
+      Projectile->Velocity = Velocity;
+      return;
+    }
+  }
 
   return;
 }
@@ -572,7 +579,7 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
     {
       if ( (chunk->WorldP >= Min && chunk->WorldP < Max) )
       {
-        /* DEBUG_DrawChunkAABB( world, chunk, Camera, Quaternion(), BLUE ); */
+        DEBUG_DrawChunkAABB( world, chunk, Camera, Quaternion(), BLUE );
         DrawWorldChunk(GameState, chunk, RG, SG);
         chunk = chunk->Next;
       }
@@ -588,7 +595,7 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
 
   TIMED_BLOCK("Render - Projectiles");
   for (s32 ProjectileIndex = 0;
-      ProjectileIndex < GameState->ProjectileCount;
+      ProjectileIndex < TOTAL_PROJECTILE_COUNT;
       ++ ProjectileIndex)
   {
     entity *Projectile = GameState->Projectiles[ProjectileIndex];
@@ -605,8 +612,6 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
     DrawEntity(Plat, world, Enemy, Camera, RG, SG);
   }
   END_BLOCK("Entities");
-
-  DrawEntity(Plat, world, Player, Camera, RG, SG);
 
   FlushRenderBuffers(Plat, world, RG, SG, Camera);
 

@@ -525,6 +525,10 @@ inline b32
 GetCollision(entity *First, entity *Second)
 {
   TIMED_FUNCTION();
+
+  if (NotSet(First->Flags, Entity_Spawned) || NotSet(Second->Flags, Entity_Spawned))
+    return False;
+
   aabb FirstAABB = GetAABB(First);
   aabb SecondAABB = GetAABB(Second);
 
@@ -681,7 +685,7 @@ ProcessCollisionRules(game_state *GameState, entity *Entity)
 
   // Collide against Projectiles
   for (s32 ProjectileIndex = 0;
-      ProjectileIndex < GameState->ProjectileCount;
+      ProjectileIndex < TOTAL_PROJECTILE_COUNT;
       ++ ProjectileIndex)
   {
     projectile *Projectile = GameState->Projectiles[ProjectileIndex];
