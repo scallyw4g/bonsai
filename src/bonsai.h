@@ -53,6 +53,7 @@ enum entity_flags
   Entity_Enemy         = 1 << 4,
   Entity_Trigger       = 1 << 5,
   Entity_Projectile    = 1 << 6,
+  Entity_Loot          = 1 << 7,
 };
 
 struct voxel

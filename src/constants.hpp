@@ -66,7 +66,9 @@
 #define TOTAL_PROJECTILE_COUNT 128
 
 #define ENEMY_DRAG V3(0.9f, 0.9f, 0.0f)
-#define ENEMIES_PER_FRAME 1
+#define ENEMY_SPAWN_RATE 32
+
+#define LOOT_CHANCE 1
 
 #define PROJECTILE_DRAG V3(1,1,1)
 

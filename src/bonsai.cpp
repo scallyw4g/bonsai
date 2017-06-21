@@ -96,7 +96,7 @@ InitChunkPerlin( game_state *GameState, world_chunk *WorldChunk )
 }
 
 void
-FillChunk(chunk_data *chunk, chunk_dimension Dim)
+FillChunk(chunk_data *chunk, chunk_dimension Dim, u32 ColorIndex = 0)
 {
   s32 Vol = Volume(Dim);
 
@@ -110,8 +110,10 @@ FillChunk(chunk_data *chunk, chunk_dimension Dim)
                                                              Voxel_LeftFace   |
                                                              Voxel_RightFace);
 
-    chunk->BoundaryVoxels[i] = chunk->Voxels[i];
 
+    chunk->Voxels[i] = SetVoxelColor(chunk->Voxels[i], ColorIndex);
+
+    chunk->BoundaryVoxels[i] = chunk->Voxels[i];
     chunk->BoundaryVoxelCount = i;
   }
 
@@ -532,9 +534,26 @@ GetCollision(entity *First, entity *Second)
 }
 
 inline void
+SpawnLoot(entity *Entity)
+{
+  b32 SpawnLoot = (rand() % LOOT_CHANCE) == 0;
+
+  if (SpawnLoot)
+  {
+    Entity->Flags = Entity_Uninitialized;
+    Entity->Flags = (entity_flags)SetFlag(Entity->Flags, Entity_Loot|Entity_Spawned);
+    FillChunk(Entity->Model, Entity->ModelDim, 42);
+  }
+}
+
+inline void
 Unspawn(entity *Entity)
 {
   Entity->Flags = (entity_flags)UnSetFlag(Entity->Flags, Entity_Spawned);
+
+  if ( IsSet(Entity->Flags, Entity_Enemy) )
+    SpawnLoot(Entity);
+
   return;
 }
 
@@ -543,6 +562,13 @@ Unspawn(void *Input)
 {
   entity *Entity = (entity*)Input;
   Unspawn(Entity);
+}
+
+inline b32
+IsLoot(entity *Entity)
+{
+  b32 Result = IsSet(Entity->Flags, Entity_Loot);
+  return Result;
 }
 
 inline b32

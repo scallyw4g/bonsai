@@ -161,11 +161,9 @@ SpawnEnemies(game_state *GameState)
   entity **Entities = GameState->Entities;
 
   // Fire roughly every 32 frames
-  s32 SpawnEnemies = (rand() % 32) == 0;
+  s32 SpawnEnemies = (rand() % ENEMY_SPAWN_RATE) == 0;
   if (!SpawnEnemies)
     return;
-
-  s32 EnemiesToSpawn = ENEMIES_PER_FRAME;
 
   for (s32 EntityIndex = 0;
       EntityIndex < TOTAL_ENTITY_COUNT;
@@ -173,19 +171,13 @@ SpawnEnemies(game_state *GameState)
   {
     entity *Enemy = Entities[EntityIndex];
 
-    if (IsPlayer(Enemy))
+    if (IsPlayer(Enemy) || IsLoot(Enemy))
         continue;
 
     if ( Destroyed(Enemy) || Unspawned(Enemy) )
     {
-      if (EnemiesToSpawn--)
-      {
-        SpawnEnemy(GameState->world, Entities, Enemy);
-      }
-      else
-      {
-        return;
-      }
+      SpawnEnemy(GameState->world, Entities, Enemy);
+      return;
     }
   }
 
@@ -316,7 +308,7 @@ SimulateEnemies(game_state *GameState, r32 dt)
   {
     entity *Enemy = GameState->Entities[EnemyIndex];
 
-    if (IsPlayer(Enemy))
+    if (IsPlayer(Enemy) || IsLoot(Enemy))
         continue;
 
     v3 Delta = GetEntityDelta(Enemy, dt);
