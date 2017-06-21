@@ -421,11 +421,11 @@ GetFreeChunk(platform *Plat, World *world, world_position P)
 }
 
 void
-QueueChunksForInit(game_state *GameState, world_position WorldDisp, entity *Player)
+QueueChunksForInit(game_state *GameState, world_position WorldDisp)
 {
   if (Length(V3(WorldDisp)) == 0) return;
 
-  world_position PlayerP = Player->P.WorldP;
+  world_position WorldCenter = GameState->world->Center;
 
   world_position Iter = GetSign(WorldDisp);
 
@@ -433,11 +433,11 @@ QueueChunksForInit(game_state *GameState, world_position WorldDisp, entity *Play
 
   world_position VRHalfDim = GameState->world->VisibleRegion/2;
 
-  world_position SliceMin = PlayerP + (VRHalfDim * Iter) - (VRHalfDim * InvAbsIter) - ClampPositive(WorldDisp);
+  world_position SliceMin = WorldCenter + (VRHalfDim * Iter) - (VRHalfDim * InvAbsIter) - ClampPositive(WorldDisp);
 
   // NOTE(Jesse): Changed this from the following to behave properly on a 2d plane
-  // world_position SliceMax = PlayerP + (VRHalfDim * Iter) + (VRHalfDim * InvAbsIter) - ClampPositive(Iter) - InvAbsIter - ClampNegative(WorldDisp) + ClampNegative(Iter);
-  world_position SliceMax = PlayerP + (VRHalfDim * Iter) + (VRHalfDim * InvAbsIter) - ClampPositive(Iter) - ClampNegative(WorldDisp) + ClampNegative(Iter);
+  // world_position SliceMax = WorldCenter + (VRHalfDim * Iter) + (VRHalfDim * InvAbsIter) - ClampPositive(Iter) - InvAbsIter - ClampNegative(WorldDisp) + ClampNegative(Iter);
+  world_position SliceMax = WorldCenter + (VRHalfDim * Iter) + (VRHalfDim * InvAbsIter) - ClampPositive(Iter) - ClampNegative(WorldDisp) + ClampNegative(Iter);
 
   for (int z = SliceMin.z; z <= SliceMax.z; ++ z)
   {

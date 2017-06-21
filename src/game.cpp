@@ -209,12 +209,12 @@ EntityWorldCollision(entity *Entity)
 void
 UpdateVisibleRegion(game_state *GameState, world_position OriginalPlayerP, entity *Player)
 {
+  world_position WorldDisp = ( Player->P.WorldP - OriginalPlayerP );
 
-  if ( OriginalPlayerP != Player->P.WorldP ) // We moved to the next chunk
+  if (WorldDisp.y != 0) // We moved to the next chunk
   {
-    world_position WorldDisp = ( Player->P.WorldP - OriginalPlayerP );
-    GameState->world->Center += WorldDisp;
-    QueueChunksForInit(GameState, World_Position(0, WorldDisp.y, 0), Player);
+    GameState->world->Center.y += WorldDisp.y;
+    QueueChunksForInit(GameState, World_Position(0, WorldDisp.y, 0));
   }
 
   return;
