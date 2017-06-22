@@ -349,7 +349,7 @@ CanFire(entity *Player, r32 dt)
 
   if ((Player->FireCooldown -= dt) < 0)
   {
-    Player->FireCooldown = PLAYER_RATE_OF_FIRE;
+    Player->FireCooldown = Player->RateOfFire;
     Result = True;
   }
 
@@ -387,7 +387,7 @@ SimulatePlayer( game_state *GameState, entity *Player, input *Input, r32 dt )
   if ( Input->Space && (Player->FireCooldown < 0) )
   {
     SpawnProjectile(GameState, &Player->P, V3(0,50,0));
-    Player->FireCooldown = PLAYER_RATE_OF_FIRE;
+    Player->FireCooldown = Player->RateOfFire;
   }
 
   return;

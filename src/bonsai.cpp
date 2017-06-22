@@ -461,6 +461,7 @@ SpawnPlayer( World *world, entity *Player )
   Player->Acceleration = V3(0,0,0);
   Player->Velocity = V3(0,0,0);
   Player->Health = 3;
+  Player->RateOfFire = 1.0f;
 
   Player->Flags = (entity_flags)SetFlag(Player->Flags, Entity_Spawned|Entity_Player);
 
@@ -575,20 +576,47 @@ ProcessCollisionRule(entity *First, entity *Second)
   entity_flags JointFlags = (entity_flags)(First->Flags | Second->Flags);
 
   // TODO(Jesse): Add Player pickups for loot!
-  const entity_flags EnemyPlayerProjectile      = (entity_flags)(Entity_Player|Entity_Enemy|Entity_Projectile);
+  const entity_flags EnemyPlayerProjectile      = (entity_flags)(Entity_Player|Entity_Enemy|Entity_Projectile|Entity_Loot);
 
   const entity_flags Collision_EnemyPlayer      = (entity_flags)(Entity_Player|Entity_Enemy);
   const entity_flags Collision_PlayerProjectile = (entity_flags)(Entity_Player|Entity_Projectile);
   const entity_flags Collision_EnemyProjectile  = (entity_flags)(Entity_Enemy|Entity_Projectile);
+  const entity_flags Collision_PlayerLoot       = (entity_flags)(Entity_Player|Entity_Loot);
 
   entity_flags Rule = (entity_flags)(EnemyPlayerProjectile & JointFlags);
 
   switch (Rule)
   {
+    case Collision_PlayerLoot:
+    {
+      entity *Player = First;
+      entity *Loot = Second;
+
+      if (IsPlayer(Second))
+      {
+        Player=Second;
+        Loot=First;
+      }
+
+      Player->RateOfFire /= 2;
+      Unspawn(Loot);
+
+    } break;
+
     case Collision_EnemyPlayer:
     {
-      entity *Player = IsPlayer(First) ? First : Second ;
+      entity *Player = First;
+      entity *Enemy = Second;
+
+      if (IsPlayer(Second))
+      {
+        Player=Second;
+        Enemy=First;
+      }
+
       Player->Health --;
+      Unspawn(Enemy);
+
     } break;
 
     case Collision_PlayerProjectile:
