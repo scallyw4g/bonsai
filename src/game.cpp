@@ -46,6 +46,7 @@ AllocateEntity(platform *Plat, memory_arena *Storage, chunk_dimension ModelDim)
   Entity->Model = AllocateChunk(Storage, ModelDim);
 
   FillChunk(Entity->Model, ModelDim, BLACK);
+  Entity->ModelDim = ModelDim;
 
   return Entity;
 }
@@ -290,6 +291,9 @@ SimulateProjectiles(game_state *GameState, r32 dt)
   {
     projectile *Projectile = GameState->Projectiles[ProjectileIndex];
 
+    if (!Spawned(Projectile))
+      continue;
+
     v3 Delta = GetEntityDelta(Projectile, dt);
     UpdateEntityP(GameState, Projectile, Delta);
   }
@@ -418,7 +422,7 @@ AllocateProjectiles(platform *Plat, game_state *GameState)
       ++ProjectileIndex)
   {
     GameState->Projectiles[ProjectileIndex] =
-      AllocateEntity(Plat, GameState->world->WorldStorage.Arena, Chunk_Dimension(1,3,0));
+      AllocateEntity(Plat, GameState->world->WorldStorage.Arena, Chunk_Dimension(1,3,1));
   }
 
   return;
