@@ -175,6 +175,7 @@ struct entity
 {
   chunk_data *Model;
   chunk_dimension ModelDim;
+  v3 CollisionVolumeRadius;
 
   v3 Velocity;
   v3 Acceleration;
@@ -362,17 +363,8 @@ GetVoxel(int x, int y, int z, int w)
 void
 ZeroChunk( chunk_data *chunk )
 {
-
-  // Pretty sure this is redundant
-  /* for ( int i = 0; i < Volume(chunk->Dim); ++ i) */
-  /* { */
-  /*   chunk->Voxels[i].flags = 0; */
-  /* } */
-
   chunk->BoundaryVoxelCount = 0;
-
   chunk->flags = Chunk_Uninitialized;
-
   chunk->flags = SetFlag( chunk->flags, Chunk_RebuildBoundary );
 
   return;
@@ -460,7 +452,7 @@ GetIndex(v3 Offset, chunk_data *Chunk, chunk_dimension Dim)
 }
 
 chunk_data*
-AllocateChunk(platform *Plat, memory_arena *WorldStorage, chunk_dimension Dim)
+AllocateChunk(memory_arena *WorldStorage, chunk_dimension Dim)
 {
   chunk_data *Result = PUSH_STRUCT_CHECKED(chunk_data, WorldStorage, 1);;
 
@@ -517,7 +509,7 @@ AllocateWorldChunk(platform *Plat, World *world, world_position WorldP)
 {
   world_chunk *Result = PUSH_STRUCT_CHECKED(world_chunk, world->WorldStorage.Arena, 1);
 
-  Result->Data = AllocateChunk(Plat, world->WorldStorage.Arena, Chunk_Dimension(CD_X, CD_Y, CD_Z));
+  Result->Data = AllocateChunk(world->WorldStorage.Arena, Chunk_Dimension(CD_X, CD_Y, CD_Z));
   Assert(Result->Data);
 
   Result->WorldP = WorldP;

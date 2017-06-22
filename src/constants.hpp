@@ -61,6 +61,8 @@
 /* #define PLAYER_MODEL MODELS_PATH"/3x3x3.vox" */
 #define PLAYER_MODEL MODELS_PATH"/3x3x3.vox"
 
+#define ENEMY_MODEL MODELS_PATH"/tie-fighter.vox"
+
 #define TOTAL_TRIGGER_COUNT    8
 #define TOTAL_ENTITY_COUNT     12
 #define TOTAL_PROJECTILE_COUNT 128
@@ -73,10 +75,10 @@
 #define PROJECTILE_DRAG V3(1,1,1)
 
 #define DEBUG_ENTITY_DIM     Chunk_Dimension(3,3,1)
+#define DEBUG_ENTITY_COLLISION_VOL_RADIUS (V3(3,3,1)/2)
 #define DEBUG_PROJECTILE_DIM Chunk_Dimension(1,2,1)
 
 #define DEBUG_CHUNK_AABB              1
-#define DEBUG_CAMERA_FOCUS_ORIGIN     0
 #define DEBUG_WORLD_GENERATION        0
 #define DEBUG_DRAW_SHADOW_MAP_TEXTURE 0
 #define DEBUG_HIGHLIGHT_VOID_CHUNKS   0
@@ -95,12 +97,12 @@
 #define SHADOW_MAP_RESOLUTION 2048
 #define DEBUG_TEXTURE_SIZE    512
 
-GLOBAL_VARIABLE r32 CAMERA_FOCAL_LENGTH = 400.0f;
+GLOBAL_VARIABLE r32 CAMERA_FOCAL_LENGTH = 200.0f;
 GLOBAL_VARIABLE r32 DEBUG_CAMERA_FOCAL_LENGTH = 50.0f;
 #define DEBUG_CAMERA_SCROLL_SPEED  20.0f
 
 // TODO(Jesse): How should we initialize this for realz?
-DEBUG_GLOBAL canonical_position CameraInitialP = { {0,0,10}, {0,-3,10} };
+DEBUG_GLOBAL canonical_position CameraInitialP = { {0,0,10}, {0,-6,10} };
 #define CAMERA_INITIAL_P CameraInitialP
 
 // NOTE(Jesse): The position storage needs to be as large as the largest model

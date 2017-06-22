@@ -131,7 +131,7 @@ ReadXYZIChunk(FILE *File, int* byteCounter)
 }
 
 chunk_data*
-LoadVox(platform *Plat, memory_arena *WorldStorage, char const *filepath, entity *Entity )
+LoadVox(memory_arena *WorldStorage, char const *filepath, entity *Entity )
 {
   chunk_data *Result = 0;
   s32 totalChunkBytes = 0;
@@ -213,7 +213,7 @@ LoadVox(platform *Plat, memory_arena *WorldStorage, char const *filepath, entity
           // monolithic one. The storage for chunks must be as large as the
           // largest chunk we will EVER load, which should definately not be
           // decided at compile time.
-          Result = AllocateChunk(Plat, WorldStorage, Dim);
+          Result = AllocateChunk(WorldStorage, Dim);
           if(!Result) { return False; }
 
           for( int i = 0; i < numVoxels; ++ i)

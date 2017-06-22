@@ -96,7 +96,7 @@ InitChunkPerlin( game_state *GameState, world_chunk *WorldChunk )
 }
 
 void
-FillChunk(chunk_data *chunk, chunk_dimension Dim, u32 ColorIndex = 0)
+FillChunk(chunk_data *chunk, chunk_dimension Dim, u32 ColorIndex = BLACK)
 {
   s32 Vol = Volume(Dim);
 
@@ -232,7 +232,7 @@ GetCameraRelativeInput(platform *Plat, Camera_Object *Camera)
 }
 
 collision_event
-GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
+GetCollision( World *world, canonical_position TestP, v3 CollisionDim)
 {
   collision_event Collision;
   Collision.didCollide = false;
@@ -242,7 +242,7 @@ GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
   TestP = Canonicalize(WorldChunkDim, TestP);
 
   voxel_position MinP = Voxel_Position(TestP.Offset);
-  voxel_position MaxP = Voxel_Position(TestP.Offset + ModelDim);
+  voxel_position MaxP = Voxel_Position(TestP.Offset + CollisionDim);
 
   // We need to check if the TestP is exactly on a voxel boundary.
   // if it is, don't include the next voxel in our detection.
@@ -297,25 +297,15 @@ GetCollision( World *world, canonical_position TestP, chunk_dimension ModelDim)
 }
 
 collision_event
-GetCollision(World *world, entity *entity, v3 Offset = V3(0,0,0) )
+GetCollision(World *world, entity *Entity, v3 Offset = V3(0,0,0) )
 {
   collision_event C;
   C.didCollide = false;
 
-  if ( !Spawned(entity) )
+  if ( !Spawned(Entity) )
     return C;
 
-  for (int i = 0; i < entity->Model->BoundaryVoxelCount; ++i)
-  {
-    canonical_position CP;
-    CP.Offset = V3(GetVoxelP(entity->Model->BoundaryVoxels[i])) + entity->P.Offset + Offset;
-    CP.WorldP = entity->P.WorldP;
-
-    C = GetCollision(world, CP, Chunk_Dimension(1,1,1) );
-
-    if (C.didCollide)
-      return C;
-  }
+  C = GetCollision( world, Canonicalize(world->ChunkDim, Entity->P + Offset), Entity->CollisionVolumeRadius*2);
 
   return C;
 }
@@ -499,7 +489,7 @@ Intersect(aabb *First, aabb *Second)
 inline aabb
 GetAABB(entity *Entity)
 {
-  v3 Radius = Entity->ModelDim / 2.0f;
+  v3 Radius = Entity->CollisionVolumeRadius;
   v3 Center = GetAbsoluteP(Entity->P) + Radius;
 
   aabb Result(Center, Radius);
@@ -729,13 +719,7 @@ void
 UpdateCameraP(platform *Plat, World *world, entity *Player, Camera_Object *Camera)
 {
   chunk_dimension WorldChunkDim = world->ChunkDim;
-#if DEBUG_CAMERA_FOCUS_ORIGIN
-  canonical_position NewTarget = Canonical_Position( V3(0,0,0), World_Position(0,0,0) );
-#else
   canonical_position NewTarget = Canonicalize(WorldChunkDim, Player->P.Offset, Player->P.WorldP) + (Player->ModelDim/2.0f);
-#endif
-
-
 
   v3 TargetDelta = GetRenderP(WorldChunkDim, NewTarget, Camera) - GetRenderP(WorldChunkDim, Camera->Target, Camera);
 

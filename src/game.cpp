@@ -12,13 +12,6 @@ GLOBAL_VARIABLE s32 FramesToWaitBeforeSpawningPlayer = FRAMES_TO_WAIT_BEFORE_SPA
 
 #include <bonsai.cpp>
 
-void
-SeedWorldAndUnspawnPlayer( World *world, entity *Player )
-{
-  Player->Flags = (entity_flags)UnSetFlag(Player->Flags, Entity_Spawned);
-  return;
-}
-
 v3
 GetEntityDelta(entity *Entity, float dt)
 {
@@ -32,16 +25,11 @@ GetEntityDelta(entity *Entity, float dt)
 }
 
 void
-InitEntity(entity *Entity, chunk_dimension Dim, canonical_position InitialP, v3 Drag, const char *ModelPath)
+InitEntity(entity *Entity, v3 CollisionVolumeRadius, canonical_position InitialP, v3 Drag)
 {
   TIMED_FUNCTION();
 
-#if 0
-  entity->Model = LoadVox(Plat, Plat->Memory, ModelPath, entity);
-#else
-  Entity->ModelDim = Dim;
-  FillChunk(Entity->Model, Dim);
-#endif
+  Entity->CollisionVolumeRadius = CollisionVolumeRadius;
 
   Entity->Rotation = Quaternion(0,0,0,1);
   Entity->P = InitialP;
@@ -52,29 +40,35 @@ InitEntity(entity *Entity, chunk_dimension Dim, canonical_position InitialP, v3 
 }
 
 entity *
-AllocateEntity(platform *Plat, memory_arena *Storage, chunk_dimension Dim)
+AllocateEntity(platform *Plat, memory_arena *Storage, chunk_dimension ModelDim)
 {
   entity *Entity = PUSH_STRUCT_CHECKED(entity, Storage, 1);
-  Entity->Model = AllocateChunk(Plat, Storage, Dim);
+  Entity->Model = AllocateChunk(Storage, ModelDim);
+
+  FillChunk(Entity->Model, ModelDim, BLACK);
 
   return Entity;
 }
 
 entity *
-AllocateAndInitEntity(platform *Plat, memory_arena *Storage, canonical_position InitialP, v3 Drag, const char *ModelPath)
+AllocateEntity(platform *Plat, memory_arena *Storage, const char *ModelPath)
 {
-  chunk_dimension Dim = DEBUG_ENTITY_DIM;
+  entity *Entity = PUSH_STRUCT_CHECKED(entity, Storage, 1);
+  Entity->Model = LoadVox(Plat->Memory, ModelPath, Entity);
 
-  entity *Result = AllocateEntity(Plat, Storage, Dim);
-  InitEntity(Result, Dim, InitialP, Drag, ModelPath);
-
-  return Result;
+  return Entity;
 }
 
 entity *
 AllocatePlayer(platform *Plat, memory_arena *Storage, canonical_position InitialP, v3 Drag, const char *ModelPath)
 {
-  entity *Player = AllocateAndInitEntity(Plat, Storage, InitialP, Drag, ModelPath);
+  v3 CollisionVolumeRadius = DEBUG_ENTITY_COLLISION_VOL_RADIUS;
+
+  entity *Player = AllocateEntity(Plat, Storage, ModelPath);
+  /* entity *Player = AllocateEntity(Plat, Storage, DEBUG_ENTITY_DIM); */
+
+  InitEntity(Player, CollisionVolumeRadius, InitialP, Drag);
+
   Player->Flags = (entity_flags)SetFlag(Player->Flags, Entity_Player);
 
   return Player;
@@ -127,7 +121,7 @@ void
 SpawnEnemy(World *world, entity **WorldEntities, entity *Enemy)
 {
   TIMED_FUNCTION();
-  s32 X = (rand() % VR_X) - (rand() % VR_X);
+  s32 X = max(0, (rand() % VR_X) - (rand() % VR_X));
   s32 Z = world->Center.z;
 
   /* s32 Y = AbsWorldCenter.y; */
@@ -137,12 +131,13 @@ SpawnEnemy(World *world, entity **WorldEntities, entity *Enemy)
   v3 SeedVec = V3(0,0,0);
 
   world_position InitialCenter =
-    World_Position(X, world->Center.y + (VR_Y/2) -1, Z);
+    World_Position(X, world->Center.y + (VR_Y/2) -4, Z);
 
   canonical_position InitialP = Canonical_Position( V3(0,0,0), InitialCenter);
   InitialP = Canonicalize(WORLD_CHUNK_DIM, InitialP);
 
-  InitEntity(Enemy, DEBUG_ENTITY_DIM, InitialP, ENEMY_DRAG, 0);
+  v3 CollisionVolumeRadius = DEBUG_ENTITY_COLLISION_VOL_RADIUS;
+  InitEntity(Enemy, CollisionVolumeRadius, InitialP, ENEMY_DRAG);
 
   Enemy->Flags = (entity_flags)SetFlag(Enemy->Flags, Entity_Spawned|Entity_Enemy);
 
@@ -248,7 +243,7 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
       Entity->P.WorldP.x = C.CP.WorldP.x;
 
       if (StepDelta.x > 0)
-        Entity->P.Offset.x -= (Entity->ModelDim.x);
+        Entity->P.Offset.x -= (Entity->CollisionVolumeRadius.x);
       else
         Entity->P.Offset.x++;
 
@@ -267,7 +262,7 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
       Entity->P.WorldP.y = C.CP.WorldP.y;
 
       if (StepDelta.y > 0)
-        Entity->P.Offset.y -= (Entity->ModelDim.y);
+        Entity->P.Offset.y -= (Entity->CollisionVolumeRadius.y);
       else
         Entity->P.Offset.y++;
 
@@ -311,7 +306,7 @@ SimulateEnemies(game_state *GameState, r32 dt)
   {
     entity *Enemy = GameState->Entities[EnemyIndex];
 
-    if (IsPlayer(Enemy))
+    if (IsPlayer(Enemy) || !Spawned(Enemy))
         continue;
 
     v3 Delta = GetEntityDelta(Enemy, dt);
@@ -332,7 +327,8 @@ SpawnProjectile(game_state *GameState, canonical_position *P, v3 Velocity)
 
     if ( Unspawned(Projectile) )
     {
-      InitEntity(Projectile, DEBUG_PROJECTILE_DIM, *P, PROJECTILE_DRAG, 0);
+      v3 CollisionVolumeRadius = DEBUG_ENTITY_COLLISION_VOL_RADIUS;
+      InitEntity(Projectile, CollisionVolumeRadius, *P, PROJECTILE_DRAG);
       Projectile->Flags = (entity_flags)SetFlag(Projectile->Flags, Entity_Spawned|Entity_Projectile);
       Projectile->Velocity = Velocity;
       return;
@@ -422,7 +418,7 @@ AllocateProjectiles(platform *Plat, game_state *GameState)
       ++ProjectileIndex)
   {
     GameState->Projectiles[ProjectileIndex] =
-      AllocateEntity(Plat, GameState->world->WorldStorage.Arena, DEBUG_PROJECTILE_DIM);
+      AllocateEntity(Plat, GameState->world->WorldStorage.Arena, Chunk_Dimension(1,3,0));
   }
 
   return;
@@ -494,14 +490,13 @@ GameInit( platform *Plat )
       ++ EntityIndex)
   {
     GameState->Entities[EntityIndex] =
-      AllocateEntity(Plat, GameState->world->WorldStorage.Arena, DEBUG_ENTITY_DIM);
+      AllocateEntity(Plat, GameState->world->WorldStorage.Arena, ENEMY_MODEL);
+      /* AllocateEntity(Plat, GameState->world->WorldStorage.Arena, DEBUG_ENTITY_DIM); */
   }
 
   AllocateAndInitTriggers(Plat, GameState);
 
   AllocateProjectiles(Plat, GameState);
-
-  SeedWorldAndUnspawnPlayer(world, Player);
 
   return GameState;
 }
@@ -582,7 +577,7 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
     {
       if ( (chunk->WorldP >= Min && chunk->WorldP < Max) )
       {
-        DEBUG_DrawChunkAABB( world, chunk, Camera, Quaternion(), BLUE );
+        /* DEBUG_DrawChunkAABB( world, chunk, Camera, Quaternion(), BLUE ); */
         DrawWorldChunk(GameState, chunk, RG, SG);
         chunk = chunk->Next;
       }

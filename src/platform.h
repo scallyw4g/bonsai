@@ -26,7 +26,7 @@ typedef void (*game_init_globals_proc)(platform*);
 GLOBAL_VARIABLE v2 InvalidMouseP = {-1, -1};
 
 #define PUSH_STRUCT_CHECKED(Type, Arena, Number) \
-  (Type*)Plat->PushStructChecked_( Arena, sizeof(Type)*Number, #Type, __LINE__, __FILE__ );
+  (Type*)PushStructChecked_( Arena, sizeof(Type)*Number, #Type, __LINE__, __FILE__ );
 
 struct work_queue_entry
 {
