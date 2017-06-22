@@ -42,6 +42,7 @@
 #define WORLD_GRAVITY V3(0.0f, 0.0f, 0.0f)
 
 
+#define FRAMES_TO_WAIT_BEFORE_SPAWNING_PLAYER 60
 #define PLAYER_COUNT             1
 #define PLAYER_STEP_MAX          1
 #define PLAYER_JUMP_STRENGTH     20.0f
@@ -68,7 +69,7 @@
 #define ENEMY_DRAG V3(0.9f, 0.9f, 0.0f)
 #define ENEMY_SPAWN_RATE 32
 
-#define LOOT_CHANCE 1
+#define LOOT_CHANCE 32
 
 #define PROJECTILE_DRAG V3(1,1,1)
 

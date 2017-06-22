@@ -460,25 +460,9 @@ SpawnPlayer( World *world, entity *Player )
 {
   Player->Acceleration = V3(0,0,0);
   Player->Velocity = V3(0,0,0);
-
   Player->Health = 3;
 
-  chunk_dimension WorldChunkDim = world->ChunkDim;
-
-  /* int rX = rand() % (WorldChunkDim.x); */
-  /* int rY = rand() % (WorldChunkDim.y); */
-  /* int rZ = rand() % (WorldChunkDim.z); */
-  /* v3 Offset = V3( rX, rY, rZ ); */
-
-  canonical_position TestP = Canonicalize(WorldChunkDim, V3(0,0,0), World_Position(0,0,0));
-
-  collision_event Collision = GetCollision( world, TestP, Player->ModelDim);
-
-  if (!Collision.didCollide)
-  {
-    Player->P = TestP;
-    Player->Flags = (entity_flags)SetFlag(Player->Flags, Entity_Spawned|Entity_Player);
-  }
+  Player->Flags = (entity_flags)SetFlag(Player->Flags, Entity_Spawned|Entity_Player);
 
   return;
 }

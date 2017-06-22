@@ -6,6 +6,8 @@
 static gl_extensions *GL_Global;
 static const char *GlobalGlslVersion;
 
+GLOBAL_VARIABLE s32 FramesToWaitBeforeSpawningPlayer = FRAMES_TO_WAIT_BEFORE_SPAWNING_PLAYER;
+
 #include <game.h>
 
 #include <bonsai.cpp>
@@ -357,17 +359,16 @@ CanFire(entity *Player, r32 dt)
 void
 SimulatePlayer( game_state *GameState, entity *Player, input *Input, r32 dt )
 {
-  if (Player->Health <= 0)
+  if (Player->Health <= 0 && FramesToWaitBeforeSpawningPlayer == 0)
   {
     Info("Player Destroyed!");
-    Player->Flags = Entity_Uninitialized;
+    FramesToWaitBeforeSpawningPlayer = FRAMES_TO_WAIT_BEFORE_SPAWNING_PLAYER;
+    Player->Flags = (entity_flags)UnSetFlag(Player->Flags, Entity_Spawned);
   }
-
-  v3 InputAccel = GetOrthographicInputs(Input);
 
   if (Spawned(Player->Flags))
   {
-    Player->Acceleration = InputAccel;
+    Player->Acceleration = GetOrthographicInputs(Input);
     v3 PlayerDelta = GetEntityDelta(Player, dt) + (PLAYER_IMPULSE*dt);
 
     world_position OriginalPlayerP = Player->P.WorldP;
@@ -378,7 +379,8 @@ SimulatePlayer( game_state *GameState, entity *Player, input *Input, r32 dt )
   }
   else
   {
-    SpawnPlayer( GameState->world, Player );
+    if (--FramesToWaitBeforeSpawningPlayer <= 0)
+      SpawnPlayer( GameState->world, Player );
   }
 
   Player->FireCooldown -= dt;
@@ -461,10 +463,6 @@ GameInit( platform *Plat )
   Plat->GL.glGenVertexArrays(1, &VertexArrayID);
   Plat->GL.glBindVertexArray(VertexArrayID);
 
-  canonical_position PlayerInitialP = {};
-
-  entity *Player = AllocatePlayer(Plat, Plat->Memory, PlayerInitialP, PLAYER_DRAG, PLAYER_MODEL);
-  if (!Player) { Error("Error Allocating Player"); return False; }
 
   Camera_Object *Camera = PUSH_STRUCT_CHECKED(Camera_Object, Plat->Memory, 1);
   InitCamera(Camera, CAMERA_INITIAL_P, 5000.0f);
@@ -473,6 +471,10 @@ GameInit( platform *Plat )
   initText2D("Holstein.DDS", DebugRG);
 
   AssertNoGlErrors;
+
+  canonical_position PlayerInitialP = {};
+  entity *Player = AllocatePlayer(Plat, Plat->Memory, PlayerInitialP, PLAYER_DRAG, PLAYER_MODEL);
+  if (!Player) { Error("Error Allocating Player"); return False; }
 
   game_state *GameState = PUSH_STRUCT_CHECKED(game_state, Plat->Memory, 1);
   GameState->Plat = Plat;
