@@ -8,6 +8,7 @@
 
 // 3 floats per vert
 #define BYTES_PER_VERT (sizeof(r32)*3)
+#define BYTES_PER_FACE (BYTES_PER_VERT*6)
 
 #define VOXEL_DIAMETER (1.0f)
 #define VOXEL_RADIUS (VOXEL_DIAMETER/2.0f)

@@ -916,6 +916,18 @@ operator%(v3 A, int i)
 }
 
 inline v3
+operator/(v3 A, r32 B)
+{
+  v3 Result;
+
+  Result.x = A.x / B;
+  Result.y = A.y / B;
+  Result.z = A.z / B;
+
+  return Result;
+}
+
+inline v3
 operator/(v3 A, int B)
 {
   v3 Result;
@@ -1041,6 +1053,13 @@ operator+(v3 A, float f)
 }
 
 inline v3
+operator+(float f, v3 A)
+{
+  v3 Result = A+f;
+  return Result;
+}
+
+inline v3
 operator-(v3 A, v3 B)
 {
   v3 Result;
@@ -1128,6 +1147,16 @@ operator*=(v3& A, float f)
   A.x = A.x * f;
   A.y = A.y * f;
   A.z = A.z * f;
+
+  return A;
+}
+
+inline v3&
+operator/=(v3& A, float f)
+{
+  A.x = A.x / f;
+  A.y = A.y / f;
+  A.z = A.z / f;
 
   return A;
 }

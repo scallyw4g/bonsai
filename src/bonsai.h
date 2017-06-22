@@ -187,6 +187,8 @@ struct entity
 
   entity_flags Flags;
 
+  r32 Scale = 1.0f;
+
    // TODO(Jesse): Unneeded for projectiles. factor out of here?
   r32 RateOfFire;
   r32 FireCooldown;

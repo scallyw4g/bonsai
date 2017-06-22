@@ -48,6 +48,8 @@ AllocateEntity(platform *Plat, memory_arena *Storage, chunk_dimension ModelDim)
   FillChunk(Entity->Model, ModelDim, BLACK);
   Entity->ModelDim = ModelDim;
 
+  Entity->Scale = 1.0f;
+
   return Entity;
 }
 
@@ -56,6 +58,8 @@ AllocateEntity(platform *Plat, memory_arena *Storage, const char *ModelPath)
 {
   entity *Entity = PUSH_STRUCT_CHECKED(entity, Storage, 1);
   Entity->Model = LoadVox(Plat->Memory, ModelPath, Entity);
+
+  Entity->Scale = 1.0f;
 
   return Entity;
 }
@@ -495,6 +499,8 @@ GameInit( platform *Plat )
   {
     GameState->Entities[EntityIndex] =
       AllocateEntity(Plat, GameState->world->WorldStorage.Arena, ENEMY_MODEL);
+
+    GameState->Entities[EntityIndex]->Scale = 0.5f;
       /* AllocateEntity(Plat, GameState->world->WorldStorage.Arena, DEBUG_ENTITY_DIM); */
   }
 

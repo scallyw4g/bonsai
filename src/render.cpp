@@ -11,6 +11,183 @@
 
 #include <colors.h>
 
+inline void
+RightFaceVertexData( v3 MinP, r32 Diameter, r32* Result)
+{
+  r32 Temp[] = {
+    MinP.x + Diameter , MinP.y +  Diameter , MinP.z +  Diameter ,
+    MinP.x + Diameter , MinP.y             , MinP.z             ,
+    MinP.x + Diameter , MinP.y +  Diameter , MinP.z             ,
+    MinP.x + Diameter , MinP.y             , MinP.z             ,
+    MinP.x + Diameter , MinP.y +  Diameter , MinP.z +  Diameter ,
+    MinP.x + Diameter , MinP.y             , MinP.z +  Diameter ,
+  };
+
+  memcpy(Result, Temp, sizeof(Temp));
+
+  return;
+}
+
+r32 RightFaceNormalData[] =
+{
+   1, 0, 0,
+   1, 0, 0,
+   1, 0, 0,
+   1, 0, 0,
+   1, 0, 0,
+   1, 0, 0
+};
+
+inline void
+LeftFaceVertexData( v3 MinP, r32 Diameter, r32 *Result)
+{
+  r32 Temp[] = {
+    MinP.x , MinP.y +  Diameter , MinP.z +  Diameter ,
+    MinP.x , MinP.y             , MinP.z             ,
+    MinP.x , MinP.y +  Diameter , MinP.z             ,
+    MinP.x , MinP.y             , MinP.z             ,
+    MinP.x , MinP.y +  Diameter , MinP.z +  Diameter ,
+    MinP.x , MinP.y             , MinP.z +  Diameter ,
+  };
+
+  memcpy(Result, Temp, sizeof(Temp));
+
+  return;
+}
+
+r32 LeftFaceNormalData[] =
+{
+   -1, 0, 0,
+   -1, 0, 0,
+   -1, 0, 0,
+   -1, 0, 0,
+   -1, 0, 0,
+   -1, 0, 0
+};
+
+inline void
+BottomFaceVertexData( v3 MinP, r32 Diameter, r32 *Result)
+{
+  r32 Temp[] = {
+    MinP.x + Diameter , MinP.y , MinP.z +  Diameter ,
+    MinP.x            , MinP.y , MinP.z             ,
+    MinP.x + Diameter , MinP.y , MinP.z             ,
+    MinP.x            , MinP.y , MinP.z             ,
+    MinP.x + Diameter , MinP.y , MinP.z +  Diameter ,
+    MinP.x            , MinP.y , MinP.z +  Diameter ,
+  };
+
+  memcpy(Result, Temp, sizeof(Temp));
+
+  return;
+}
+
+r32 BottomFaceNormalData[] =
+{
+   0,-1, 0,
+   0,-1, 0,
+   0,-1, 0,
+   0,-1, 0,
+   0,-1, 0,
+   0,-1, 0
+};
+
+inline void
+TopFaceVertexData( v3 MinP, r32 Diameter, r32 *Result)
+{
+  r32 Temp[] = {
+    MinP.x + Diameter , MinP.y + Diameter , MinP.z + Diameter ,
+    MinP.x            , MinP.y + Diameter , MinP.z            ,
+    MinP.x + Diameter , MinP.y + Diameter , MinP.z            ,
+    MinP.x            , MinP.y + Diameter , MinP.z            ,
+    MinP.x + Diameter , MinP.y + Diameter , MinP.z + Diameter ,
+    MinP.x            , MinP.y + Diameter , MinP.z + Diameter ,
+  };
+
+  memcpy(Result, Temp, sizeof(Temp));
+
+  return;
+}
+
+r32 TopFaceNormalData[] =
+{
+  0, 1, 0,
+  0, 1, 0,
+  0, 1, 0,
+  0, 1, 0,
+  0, 1, 0,
+  0, 1, 0
+};
+
+inline void
+FrontFaceVertexData( v3 MinP, r32 Diameter, r32 *Result)
+{
+  r32 Temp[] = {
+    MinP.x +  Diameter , MinP.y +  Diameter , MinP.z + Diameter ,
+    MinP.x             , MinP.y             , MinP.z + Diameter ,
+    MinP.x +  Diameter , MinP.y             , MinP.z + Diameter ,
+    MinP.x             , MinP.y             , MinP.z + Diameter ,
+    MinP.x +  Diameter , MinP.y +  Diameter , MinP.z + Diameter ,
+    MinP.x             , MinP.y +  Diameter , MinP.z + Diameter ,
+  };
+
+  memcpy(Result, Temp, sizeof(Temp));
+
+  return;
+}
+
+r32 FrontFaceNormalData[] =
+{
+  0, 0, 1,
+  0, 0, 1,
+  0, 0, 1,
+
+  0, 0, 1,
+  0, 0, 1,
+  0, 0, 1
+};
+
+inline void
+BackFaceVertexData( v3 MinP, r32 Diameter, r32 *Result)
+{
+  r32 Temp[] = {
+    MinP.x + Diameter , MinP.y + Diameter , MinP.z ,
+    MinP.x            , MinP.y            , MinP.z ,
+    MinP.x + Diameter , MinP.y            , MinP.z ,
+    MinP.x            , MinP.y            , MinP.z ,
+    MinP.x + Diameter , MinP.y + Diameter , MinP.z ,
+    MinP.x            , MinP.y + Diameter , MinP.z ,
+  };
+
+  memcpy(Result, Temp, sizeof(Temp));
+
+  return;
+}
+
+r32 BackFaceNormalData[] =
+{
+  0, 0, -1,
+  0, 0, -1,
+  0, 0, -1,
+
+  0, 0, -1,
+  0, 0, -1,
+  0, 0, -1,
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 DEBUG_GLOBAL v3 DEBUG_RenderOffset;
 
@@ -447,210 +624,6 @@ BufferVerts(
   return;
 }
 
-inline void
-BufferRightFace(
-    World *world,
-    v3 worldP,
-    const float* FaceColor,
-    float Diameter = VOXEL_DIAMETER
-    )
-{
-  float localVertexData[] =
-  {
-    worldP.x + Diameter, worldP.y +  Diameter, worldP.z +  Diameter,
-    worldP.x + Diameter, worldP.y                  , worldP.z                  ,
-    worldP.x + Diameter, worldP.y +  Diameter, worldP.z                  ,
-
-    worldP.x + Diameter, worldP.y                  , worldP.z                  ,
-    worldP.x + Diameter, worldP.y +  Diameter, worldP.z +  Diameter,
-    worldP.x + Diameter, worldP.y                  , worldP.z +  Diameter
-  };
-
-  float localNormalData[] =
-  {
-     1, 0, 0,
-     1, 0, 0,
-     1, 0, 0,
-
-     1, 0, 0,
-     1, 0, 0,
-     1, 0, 0
-  };
-
-  BufferLocalFace;
-  return;
-}
-
-inline void
-BufferLeftFace(
-    World *world,
-    v3 worldP,
-    const float* FaceColor,
-    float Diameter = VOXEL_DIAMETER
-    )
-{
-  float localVertexData[] =
-  {
-    worldP.x                  , worldP.y                  , worldP.z                  ,
-    worldP.x                  , worldP.y +  Diameter, worldP.z +  Diameter,
-    worldP.x                  , worldP.y +  Diameter, worldP.z                  ,
-
-    worldP.x                  , worldP.y                  , worldP.z                  ,
-    worldP.x                  , worldP.y                  , worldP.z +  Diameter,
-    worldP.x                  , worldP.y +  Diameter, worldP.z +  Diameter
-  };
-
-  float localNormalData[] =
-  {
-     -1, 0, 0,
-     -1, 0, 0,
-     -1, 0, 0,
-
-     -1, 0, 0,
-     -1, 0, 0,
-     -1, 0, 0
-  };
-
-  BufferLocalFace;
-  return;
-}
-
-inline void
-BufferBottomFace(
-    World *world,
-    v3 worldP,
-    const float* FaceColor,
-    float Diameter = VOXEL_DIAMETER
-    )
-{
-  float localVertexData[] =
-  {
-    worldP.x +  Diameter, worldP.y                  , worldP.z +  Diameter,
-    worldP.x                  , worldP.y                  , worldP.z                  ,
-    worldP.x +  Diameter, worldP.y                  , worldP.z                  ,
-
-    worldP.x +  Diameter, worldP.y                  , worldP.z +  Diameter,
-    worldP.x                  , worldP.y                  , worldP.z +  Diameter,
-    worldP.x                  , worldP.y                  , worldP.z
-  };
-
-  float localNormalData[] =
-  {
-     0,-1, 0,
-     0,-1, 0,
-     0,-1, 0,
-
-     0,-1, 0,
-     0,-1, 0,
-     0,-1, 0
-  };
-
-  BufferLocalFace;
-  return;
-}
-
-inline void
-BufferTopFace(
-    World *world,
-    v3 worldP,
-    const float* FaceColor,
-    float Diameter = VOXEL_DIAMETER
-    )
-{
-  float localVertexData[] =
-  {
-    worldP.x +  Diameter, worldP.y +  Diameter, worldP.z +  Diameter,
-    worldP.x +  Diameter, worldP.y +  Diameter, worldP.z                  ,
-    worldP.x                  , worldP.y +  Diameter, worldP.z                  ,
-
-    worldP.x +  Diameter, worldP.y +  Diameter, worldP.z +  Diameter,
-    worldP.x                  , worldP.y +  Diameter, worldP.z                  ,
-    worldP.x                  , worldP.y +  Diameter, worldP.z +  Diameter
-  };
-
-  float localNormalData[] =
-  {
-    0, 1, 0,
-    0, 1, 0,
-    0, 1, 0,
-
-    0, 1, 0,
-    0, 1, 0,
-    0, 1, 0
-  };
-
-  BufferLocalFace;
-  return;
-}
-
-inline void
-BufferFrontFace(
-    World *world,
-    v3 worldP,
-    const float* FaceColor,
-    float Diameter = VOXEL_DIAMETER
-    )
-{
-  float localVertexData[] =
-  {
-    worldP.x                  , worldP.y +  Diameter, worldP.z +  Diameter,
-    worldP.x                  , worldP.y                  , worldP.z +  Diameter,
-    worldP.x +  Diameter, worldP.y                  , worldP.z +  Diameter,
-
-    worldP.x +  Diameter, worldP.y +  Diameter, worldP.z +  Diameter,
-    worldP.x                  , worldP.y +  Diameter, worldP.z +  Diameter,
-    worldP.x +  Diameter, worldP.y                  , worldP.z +  Diameter
-  };
-
-  float localNormalData[] =
-  {
-    0, 0, 1,
-    0, 0, 1,
-    0, 0, 1,
-
-    0, 0, 1,
-    0, 0, 1,
-    0, 0, 1
-  };
-
-  BufferLocalFace;
-  return;
-}
-
-inline void
-BufferBackFace(
-    World *world,
-    v3 worldP,
-    const float* FaceColor,
-    float Diameter = VOXEL_DIAMETER
-    )
-{
-  float localVertexData[] =
-  {
-    worldP.x +  Diameter, worldP.y +  Diameter, worldP.z                  ,
-    worldP.x                  , worldP.y                  , worldP.z                  ,
-    worldP.x                  , worldP.y +  Diameter, worldP.z                  ,
-
-    worldP.x +  Diameter, worldP.y +  Diameter, worldP.z                  ,
-    worldP.x +  Diameter, worldP.y                  , worldP.z                  ,
-    worldP.x                  , worldP.y                  , worldP.z                  ,
-  };
-
-  float localNormalData[] =
-  {
-    0, 0, -1,
-    0, 0, -1,
-    0, 0, -1,
-
-    0, 0, -1,
-    0, 0, -1,
-    0, 0, -1,
-  };
-
-  BufferLocalFace;
-  return;
-}
-
 inline bool IsRightChunkBoundary( chunk_dimension ChunkDim, int idx )
 {
   return (idx+1) % (int)ChunkDim.x == 0;
@@ -959,14 +932,19 @@ DEBUG_DrawPointMarker( World *world, v3 RenderP, int ColorIndex, float Diameter)
   float FaceColors[FACE_COLOR_SIZE];
   GetColorData(ColorIndex, &FaceColors[0]);;
 
-  RenderP = RenderP - (Diameter/2);
+  v3 BasisP = RenderP - (Diameter/2);
+  v3 Offset = V3(0,0,0);
 
-  BufferRightFace(  world, RenderP, FaceColors, Diameter);
-  BufferLeftFace(   world, RenderP, FaceColors, Diameter);
-  BufferBottomFace( world, RenderP, FaceColors, Diameter);
-  BufferTopFace(    world, RenderP, FaceColors, Diameter);
-  BufferFrontFace(  world, RenderP, FaceColors, Diameter);
-  BufferBackFace(   world, RenderP, FaceColors, Diameter);
+  r32 Scale = 1.0f;
+
+  /* r32 VertexData[BYTES_PER_FACE]; */
+
+  /* BufferRightFace(  world, RenderP, FaceColors, Diameter, Scale); */
+  /* BufferLeftFace(   world, RenderP, FaceColors, Diameter, Scale); */
+  /* BufferBottomFace( world, RenderP, FaceColors, Diameter, Scale); */
+  /* BufferTopFace(    world, RenderP, FaceColors, Diameter, Scale); */
+  /* BufferFrontFace(  world, RenderP, FaceColors, Diameter, Scale); */
+  /* BufferBackFace(   world, RenderP, FaceColors, Diameter, Scale); */
 
   return;
 }
@@ -1303,41 +1281,66 @@ BufferChunkMesh(
     RenderGroup *RG,
     ShadowRenderGroup *SG,
     Camera_Object *Camera,
+    r32 Scale,
     v3 Offset = V3(0,0,0)
   )
 {
-  float FaceColors[FACE_COLOR_SIZE];
+  r32 FaceColors[FACE_COLOR_SIZE];
+
+  v3 ModelBasisP =
+    GetRenderP( world->ChunkDim, Canonical_Position(Offset, WorldP), Camera);
 
   for (int VoxIndex = 0;
        VoxIndex < chunk->BoundaryVoxelCount;
        ++VoxIndex )
   {
+    r32 VertexData[BYTES_PER_FACE];
     VoxelsIndexed ++;
 
     voxel V = chunk->BoundaryVoxels[VoxIndex];
 
     GetColorData(GetVoxelColor(V), &FaceColors[0]);;
 
-    v3 RenderP =
-      GetRenderP(world->ChunkDim, Canonical_Position( Offset+GetVoxelP(V), WorldP), Camera);
+    r32 Diameter = 1.0f*Scale;
+
+    v3 VoxelOffset = V3(GetVoxelP(V)) * Scale;
+    v3 MinP = ModelBasisP + VoxelOffset ;
 
     if ( IsSet( V.flags, Voxel_RightFace ) )
-      BufferRightFace( world, RenderP, FaceColors);
+    {
+      RightFaceVertexData( MinP, Diameter, VertexData);
+      BufferVerts(&world->Mesh, 6, VertexData, RightFaceNormalData, FaceColors, sizeof(VertexData));
+    }
 
     if ( IsSet( V.flags, Voxel_LeftFace ) )
-      BufferLeftFace( world, RenderP, FaceColors);
+    {
+      LeftFaceVertexData( MinP, Diameter, VertexData);
+      BufferVerts(&world->Mesh, 6, VertexData, LeftFaceNormalData, FaceColors, sizeof(VertexData));
+    }
 
     if ( IsSet( V.flags, Voxel_BottomFace ) )
-      BufferBottomFace( world, RenderP, FaceColors);
+    {
+      BottomFaceVertexData( MinP, Diameter, VertexData);
+      BufferVerts(&world->Mesh, 6, VertexData, BottomFaceNormalData, FaceColors, sizeof(VertexData));
+    }
 
     if ( IsSet( V.flags, Voxel_TopFace ) )
-      BufferTopFace( world, RenderP, FaceColors);
+    {
+      TopFaceVertexData( MinP, Diameter, VertexData);
+      BufferVerts(&world->Mesh, 6, VertexData, TopFaceNormalData, FaceColors, sizeof(VertexData));
+    }
 
     if ( IsSet( V.flags, Voxel_FrontFace ) )
-      BufferFrontFace( world, RenderP, FaceColors);
+    {
+      FrontFaceVertexData( MinP, Diameter, VertexData);
+      BufferVerts(&world->Mesh, 6, VertexData, FrontFaceNormalData, FaceColors, sizeof(VertexData));
+    }
 
     if ( IsSet( V.flags, Voxel_BackFace ) )
-      BufferBackFace( world, RenderP, FaceColors);
+    {
+      BackFaceVertexData( MinP, Diameter, VertexData);
+      BufferVerts(&world->Mesh, 6, VertexData, BackFaceNormalData, FaceColors, sizeof(VertexData));
+    }
 
   }
 
@@ -2263,7 +2266,8 @@ DrawWorldChunk( game_state *GameState,
 
   /* if ( Length(ChunkRenderOffset - CameraRenderOffset ) < MIN_LOD_DISTANCE ) */
   {
-    BufferChunkMesh( GameState->Plat, world, ChunkData, Chunk->WorldP, RG, SG, Camera);
+    r32 Scale = 1.0f;
+    BufferChunkMesh( GameState->Plat, world, ChunkData, Chunk->WorldP, RG, SG, Camera, Scale);
   }
 
   /* else */
@@ -2280,31 +2284,31 @@ void
 DrawEntity(
     platform *Plat,
     World *world,
-    entity *entity,
+    entity *Entity,
     Camera_Object *Camera,
     RenderGroup *RG,
     ShadowRenderGroup *SG
   )
 {
   // Debug light code
-  /* v3 LightP = GetRenderP(world, entity->P + entity->Model.Dim/2); */
+  /* v3 LightP = GetRenderP(world, Entity->P + Entity->Model.Dim/2); */
   /* glUniform3fv(RG->LightPID, 1, &LightP[0]); */
   //
 
-  if (!Spawned(entity))
+  if (!Spawned(Entity))
     return;
 
-  chunk_data *Model = entity->Model;
+  chunk_data *Model = Entity->Model;
 
   if ( IsSet(Model->flags, Chunk_Initialized) )
   {
 
     if ( IsSet(Model->flags, Chunk_RebuildBoundary) )
     {
-      BuildEntityBoundaryVoxels(Model, entity->P.WorldP, entity->ModelDim);
+      BuildEntityBoundaryVoxels(Model, Entity->P.WorldP, Entity->ModelDim);
     }
 
-    BufferChunkMesh(Plat, world, Model, entity->P.WorldP, RG, SG, Camera, entity->P.Offset);
+    BufferChunkMesh(Plat, world, Model, Entity->P.WorldP, RG, SG, Camera, Entity->Scale, Entity->P.Offset);
   }
 
   return;
