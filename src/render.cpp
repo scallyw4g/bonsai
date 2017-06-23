@@ -189,18 +189,6 @@ r32 BackFaceNormalData[] =
 
 
 
-DEBUG_GLOBAL v3 DEBUG_RenderOffset;
-
-#define BufferLocalFace        \
-  BufferVerts(                 \
-      &world->Mesh,            \
-      6,                       \
-      localVertexData,         \
-      localNormalData,         \
-      FaceColor,               \
-      sizeof(localVertexData)) \
-
-
 GLOBAL_VARIABLE m4 IdentityMatrix = {V4(1, 0, 0 ,0),
                                      V4(0, 1, 0 ,0),
                                      V4(0, 0, 1 ,0),
@@ -1542,13 +1530,6 @@ FindBoundaryVoxelsAlongEdge(chunk_data *Data, chunk_dimension Dim, voxel_positio
     CurrentP += Iter;
   }
 
-  /* for ( s32 PointIndex = 0; */
-  /*       PointIndex < PointCount; */
-  /*       ++PointIndex ) */
-  /* { */
-  /*   DEBUG_DrawPointMarker(world, V3(Points[PointIndex]) + DEBUG_RenderOffset, PINK, 1.0f); */
-  /* } */
-
   return;
 }
 
@@ -1559,8 +1540,6 @@ Compute0thLod(game_state *GameState, world_chunk *WorldChunk)
   chunk_dimension WorldChunkDim = world->ChunkDim;
 
   v3 RenderOffset = GetRenderP( WorldChunkDim, WorldChunk->WorldP, GameState->Camera);
-
-  DEBUG_RenderOffset = RenderOffset;
 
   v3 SurfaceNormal = {};
   v3 ChunkMidpoint = WorldChunkDim/2.0f;
@@ -2104,10 +2083,6 @@ TraverseSurfaceToBoundary(World *world,
   while (IsInsideDim(world->ChunkDim, CurrentP) )
   {
     LoopStartingP = CurrentP;
-
-#if 0
-    DEBUG_DrawPointMarker(world, V3(CurrentP + DEBUG_RenderOffset), PINK, 0.25f);
-#endif
 
     // Single axies
     voxel_position PUp      = CurrentP + Up;
