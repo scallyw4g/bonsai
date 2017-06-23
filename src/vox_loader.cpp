@@ -179,7 +179,7 @@ LoadVox(memory_arena *WorldStorage, char const *filepath, entity *Entity )
           int maxX = 0, maxY = 0, maxZ = 0;
           int minX = INT_MAX, minY = INT_MAX, minZ = INT_MAX;
 
-          voxel *LocalVoxelCache = (voxel *)calloc(numVoxels, sizeof(voxel) );
+          unpacked_voxel *LocalVoxelCache = (unpacked_voxel *)calloc(numVoxels, sizeof(unpacked_voxel) );
           for( int i = 0; i < numVoxels; ++ i)
           {
             int X = (int)ReadChar(ModelFile, &bytesRemaining);
@@ -197,7 +197,7 @@ LoadVox(memory_arena *WorldStorage, char const *filepath, entity *Entity )
             minZ = Z < minZ ? Z : minZ;
 
             // Offset info the chunk by 1 to avoid having to call BuildExteriorBoundaryVoxels
-            LocalVoxelCache[i] = GetVoxel(X+1,Y+1,Z+1,W);
+            LocalVoxelCache[i] = GetUnpackedVoxel(X+1,Y+1,Z+1,W);
           }
 
           v3 Min = V3((r32)minX, (r32)minY, (r32)minZ);
@@ -218,17 +218,21 @@ LoadVox(memory_arena *WorldStorage, char const *filepath, entity *Entity )
 
           for( int i = 0; i < numVoxels; ++ i)
           {
-            voxel V = {};
-            V.flags = SetFlag(V.flags, Voxel_Filled);
+            unpacked_voxel V = LocalVoxelCache[i];
 
-            voxel_position RealP = GetVoxelP(LocalVoxelCache[i])-Min;
-            V = SetVoxelP(V, RealP);
+            voxel_position RealP = V.Offset - Min;
+            Result->Voxels[ GetIndex(RealP, Result, Dim) ] = PackVoxel(&V);;
 
-            V = SetVoxelColor(V, GetVoxelColor(LocalVoxelCache[i]));
+            /* V.flags = SetFlag(V.flags, Voxel_Filled); */
 
-            Result->Voxels[GetIndex(RealP, Result, Dim)] = V;
+            /* voxel_position RealP = GetVoxelP(LocalVoxelCache[i])-Min; */
+            /* V = SetVoxelP(V, RealP); */
 
-            Assert(GetVoxelColor(V) < PALETTE_SIZE);
+            /* V = SetVoxelColor(V, GetVoxelColor(LocalVoxelCache[i])); */
+
+            /* Result->Voxels[GetIndex(RealP, Result, Dim)] = V; */
+
+            /* Assert(GetVoxelColor(V) < PALETTE_SIZE); */
 
             /* Log("%d\n", GetVoxelColor(V)); */
             /* Assert(GetVoxelColor(*V) == 121); */

@@ -71,7 +71,7 @@
 #define ENEMY_DRAG V3(0.9f, 0.9f, 0.0f)
 #define ENEMY_SPAWN_RATE 32
 
-#define LOOT_CHANCE 2
+#define LOOT_CHANCE 6
 
 #define PROJECTILE_DRAG V3(1,1,1)
 

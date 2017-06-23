@@ -42,22 +42,22 @@ InitChunkPerlin( game_state *GameState, world_chunk *WorldChunk )
       for ( int x = 0; x < Dim.x; ++ x)
       {
         int i = GetIndex(Voxel_Position(x,y,z), chunk, Dim);
-        chunk->Voxels[i].flags = 0;
+        chunk->Voxels[i].Data = 0;
 
         voxel_position P = Voxel_Position(x,y,z);
 
-        chunk->Voxels[i] = SetVoxelP(chunk->Voxels[i], P);
-        chunk->Voxels[i] = SetVoxelColor(chunk->Voxels[i], 42);
+        SetVoxelP(&chunk->Voxels[i], P);
+        SetVoxelColor(&chunk->Voxels[i], 42);
 
-        Assert( GetVoxelP(chunk->Voxels[i]) == P );
-        Assert( NotSet( chunk->Voxels[i].flags, Voxel_Filled) );
+        Assert( GetVoxelP(&chunk->Voxels[i]) == P );
+        Assert( NotSet( chunk->Voxels[i].Data, Voxel_Filled) );
 
 
 
 #if DEBUG_WORLD_GENERATION
         if ( (y == 0 && WorldChunk->WorldP.y == 3) )
         {
-          chunk->Voxels[i].flags = SetFlag(chunk->Voxels[i].flags, Voxel_Filled);
+          chunk->Voxels[i].Data = SetFlag(chunk->Voxels[i].Data, Voxel_Filled);
         }
 #else
         v3 NoiseInputs =
@@ -73,19 +73,19 @@ InitChunkPerlin( game_state *GameState, world_chunk *WorldChunk )
 
         Assert(Noise01 == 0 || Noise01 == 1);
 
-        chunk->Voxels[i].flags = SetFlag( chunk->Voxels[i].flags, Noise01 * Voxel_Filled );
+        chunk->Voxels[i].Data = SetFlag( chunk->Voxels[i].Data, Noise01 * Voxel_Filled );
 
         if (Noise01 == 0)
         {
-          Assert( NotSet( chunk->Voxels[i].flags, Voxel_Filled) );
+          Assert( NotSet( chunk->Voxels[i].Data, Voxel_Filled) );
         }
         else
         {
-          Assert( IsSet( chunk->Voxels[i].flags, Voxel_Filled) );
+          Assert( IsSet( chunk->Voxels[i].Data, Voxel_Filled) );
           WorldChunk->Filled ++;
         }
 
-        voxel_position AssignedP = GetVoxelP(chunk->Voxels[i]);
+        voxel_position AssignedP = GetVoxelP(&chunk->Voxels[i]);
         Assert( AssignedP == P );
 #endif
       }
@@ -102,7 +102,7 @@ FillChunk(chunk_data *chunk, chunk_dimension Dim, u32 ColorIndex = BLACK)
 
   for (int i = 0; i < Vol; ++i)
   {
-    chunk->Voxels[i].flags = SetFlag(chunk->Voxels[i].flags, Voxel_Filled     |
+    chunk->Voxels[i].Data = SetFlag(chunk->Voxels[i].Data, Voxel_Filled     |
                                                              Voxel_TopFace    |
                                                              Voxel_BottomFace |
                                                              Voxel_FrontFace  |
@@ -111,7 +111,7 @@ FillChunk(chunk_data *chunk, chunk_dimension Dim, u32 ColorIndex = BLACK)
                                                              Voxel_RightFace);
 
 
-    chunk->Voxels[i] = SetVoxelColor(chunk->Voxels[i], ColorIndex);
+    SetVoxelColor(&chunk->Voxels[i], ColorIndex);
 
     chunk->BoundaryVoxels[i] = chunk->Voxels[i];
     chunk->BoundaryVoxelCount = i;
@@ -123,13 +123,13 @@ FillChunk(chunk_data *chunk, chunk_dimension Dim, u32 ColorIndex = BLACK)
 void
 InitializeVoxels( game_state *GameState, world_chunk *Chunk )
 {
-  if ( Chunk->WorldP == World_Position(3,2,0) ||
-       Chunk->WorldP == World_Position(6,2,0) ||
-       Chunk->WorldP == World_Position(9,2,0) )
-  {
-    FillChunk(Chunk->Data, WORLD_CHUNK_DIM);
-    Chunk->Filled = Volume(WORLD_CHUNK_DIM);
-  }
+  /* if ( Chunk->WorldP == World_Position(3,2,0) || */
+  /*      Chunk->WorldP == World_Position(6,2,0) || */
+  /*      Chunk->WorldP == World_Position(9,2,0) ) */
+  /* { */
+  /*   FillChunk(Chunk->Data, WORLD_CHUNK_DIM); */
+  /*   Chunk->Filled = Volume(WORLD_CHUNK_DIM); */
+  /* } */
 
   Chunk->Data->flags = SetFlag(Chunk->Data->flags, Chunk_Initialized);
   return;

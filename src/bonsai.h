@@ -56,9 +56,16 @@ enum entity_flags
   Entity_Loot          = 1 << 7,
 };
 
-struct voxel
+struct unpacked_voxel
 {
-  int flags;
+  voxel_position Offset;
+  u8 ColorIndex;
+  voxel_flag Flags;
+};
+
+struct packed_voxel
+{
+  u32 Data;
 };
 
 struct mesh_buffer_target
@@ -81,8 +88,8 @@ struct chunk_data
 
   mesh_buffer_target Mesh;
 
-  voxel *Voxels;
-  voxel *BoundaryVoxels;
+  packed_voxel *Voxels;
+  packed_voxel *BoundaryVoxels;
 };
 
 struct mesh_block
@@ -271,31 +278,28 @@ Spawned(entity *Entity)
   return Result;
 }
 
-inline int
-GetVoxelColor(voxel V)
+inline u8
+GetVoxelColor(packed_voxel *V)
 {
-  int Color = (V.flags >> (FINAL_POSITION_BIT) ) & ~( 0xFFFFFFFF << (COLOR_BIT_WIDTH));
+  u8 Color = (V->Data >> (FINAL_POSITION_BIT) ) & ~( 0xFFFFFFFF << (COLOR_BIT_WIDTH));
 
   Assert(Color < PALETTE_SIZE);
   return Color;
 }
 
-inline voxel
-SetVoxelColor(voxel V, int w)
+inline void
+SetVoxelColor(packed_voxel *Voxel, int w)
 {
-  voxel Result = V;
+  u32 flagMask = (0xFFFFFFFF << FINAL_COLOR_BIT);
+  u32 colorMask = ( flagMask | ~(0xFFFFFFFF << (FINAL_POSITION_BIT)) );
 
-  unsigned int flagMask = (0xFFFFFFFF << FINAL_COLOR_BIT);
-  unsigned int colorMask = ( flagMask | ~(0xFFFFFFFF << (FINAL_POSITION_BIT)) );
+  u32 currentFlags = Voxel->Data & colorMask;
 
-  int currentFlags = Result.flags & colorMask;
+  Voxel->Data = currentFlags;
+  Voxel->Data |= (w << (FINAL_POSITION_BIT));
 
-  Result.flags = currentFlags;
-  Result.flags |= (w << (FINAL_POSITION_BIT));
-
-  Assert(GetVoxelColor(Result) == w);
-
-  return Result;
+  u8 color = GetVoxelColor(Voxel);
+  Assert(color == w);
 }
 
 inline voxel_position
@@ -314,50 +318,64 @@ GetVoxelP(chunk_dimension Dim, int i)
 }
 
 inline voxel_position
-GetVoxelP(voxel V)
+GetVoxelP(packed_voxel *V)
 {
   voxel_position P = Voxel_Position(
-    V.flags >> (POSITION_BIT_WIDTH * 0) & 0x000000FF >> (8 - POSITION_BIT_WIDTH),
-    V.flags >> (POSITION_BIT_WIDTH * 1) & 0x000000FF >> (8 - POSITION_BIT_WIDTH),
-    V.flags >> (POSITION_BIT_WIDTH * 2) & 0x000000FF >> (8 - POSITION_BIT_WIDTH)
+    V->Data >> (POSITION_BIT_WIDTH * 0) & 0x000000FF >> (8 - POSITION_BIT_WIDTH),
+    V->Data >> (POSITION_BIT_WIDTH * 1) & 0x000000FF >> (8 - POSITION_BIT_WIDTH),
+    V->Data >> (POSITION_BIT_WIDTH * 2) & 0x000000FF >> (8 - POSITION_BIT_WIDTH)
   );
 
   return P;
 }
 
-inline voxel
-SetVoxelP(voxel V, voxel_position P)
+inline void
+SetVoxelP(packed_voxel *Voxel, voxel_position P)
 {
   Assert( P.x < Pow2(POSITION_BIT_WIDTH) );
   Assert( P.y < Pow2(POSITION_BIT_WIDTH) );
   Assert( P.z < Pow2(POSITION_BIT_WIDTH) );
 
-  voxel Result = V;
+  int currentFlags = ( Voxel->Data & (0xFFFFFFFF << FINAL_POSITION_BIT));
+  Voxel->Data = currentFlags;
 
-  int currentFlags = ( Result.flags & (0xFFFFFFFF << FINAL_POSITION_BIT));
-  Result.flags = currentFlags;
+  Voxel->Data |= P.x << (POSITION_BIT_WIDTH * 0);
+  Voxel->Data |= P.y << (POSITION_BIT_WIDTH * 1);
+  Voxel->Data |= P.z << (POSITION_BIT_WIDTH * 2);
 
-  Result.flags |= P.x << (POSITION_BIT_WIDTH * 0);
-  Result.flags |= P.y << (POSITION_BIT_WIDTH * 1);
-  Result.flags |= P.z << (POSITION_BIT_WIDTH * 2);
+  voxel_position SetP = GetVoxelP(Voxel);
+  Assert(SetP == P);
 
-  Assert(GetVoxelP(Result) == P);
-
-  return Result;
-
+  return;
 }
 
-voxel
-GetVoxel(int x, int y, int z, int w)
+inline packed_voxel
+PackVoxel(unpacked_voxel *V)
 {
-  voxel Result = {};
+  Assert(!"Implement Me!");
+  packed_voxel Result;
+  return Result;
+}
+
+inline unpacked_voxel
+GetUnpackedVoxel(int x, int y, int z, int w)
+{
+  Assert(!"Implement Me!");
+  unpacked_voxel V;
+  return V;
+}
+
+inline packed_voxel
+GetPackedVoxel(int x, int y, int z, int w)
+{
+  packed_voxel Result = {};
   voxel_position P = Voxel_Position(x,y,z);
 
-  Result = SetVoxelP(Result, P );
-  Result = SetVoxelColor(Result, w);
+  SetVoxelP(&Result, P );
+  SetVoxelColor(&Result, w);
 
-  Assert(GetVoxelP(Result) == P);
-  Assert(GetVoxelColor(Result) == w);
+  Assert(GetVoxelP(&Result) == P);
+  Assert(GetVoxelColor(&Result) == w);
 
   return Result;
 }
@@ -458,8 +476,8 @@ AllocateChunk(memory_arena *WorldStorage, chunk_dimension Dim)
 {
   chunk_data *Result = PUSH_STRUCT_CHECKED(chunk_data, WorldStorage, 1);;
 
-  Result->Voxels          = PUSH_STRUCT_CHECKED(voxel, WorldStorage , Volume(Dim));
-  Result->BoundaryVoxels  = PUSH_STRUCT_CHECKED(voxel, WorldStorage , Volume(Dim));
+  Result->Voxels          = PUSH_STRUCT_CHECKED(packed_voxel, WorldStorage , Volume(Dim));
+  Result->BoundaryVoxels  = PUSH_STRUCT_CHECKED(packed_voxel, WorldStorage , Volume(Dim));
 
   ZeroChunk(Result);
 
@@ -471,7 +489,7 @@ AllocateChunk(memory_arena *WorldStorage, chunk_dimension Dim)
       {
         voxel_position P = Voxel_Position(x,y,z);
         u32 i = GetIndex(P, Result, Dim);
-        Result->Voxels[i] = SetVoxelP( Result->Voxels[i], P );
+        SetVoxelP(&Result->Voxels[i], P );
       }
     }
   }
@@ -568,7 +586,7 @@ IsFilled( chunk_data *chunk, voxel_position VoxelP, chunk_dimension Dim)
   Assert(i > -1);
   Assert(i < Volume(Dim));
 
-  b32 isFilled = IsSet(chunk->Voxels[i].flags, Voxel_Filled);
+  b32 isFilled = IsSet(chunk->Voxels[i].Data, Voxel_Filled);
   return isFilled;
 }
 
@@ -624,9 +642,9 @@ IsFilledInChunk( chunk_data *Chunk, voxel_position VoxelP, chunk_dimension Dim)
 
     Assert(i > -1);
     Assert(i < Volume(Dim));
-    Assert(VoxelP == GetVoxelP(Chunk->Voxels[i]));
+    Assert(VoxelP == GetVoxelP(&Chunk->Voxels[i]));
 
-    isFilled = IsSet(Chunk->Voxels[i].flags, Voxel_Filled);
+    isFilled = IsSet(Chunk->Voxels[i].Data, Voxel_Filled);
   }
 
   return isFilled;

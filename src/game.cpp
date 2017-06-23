@@ -304,7 +304,7 @@ SimulateProjectiles(game_state *GameState, r32 dt)
 }
 
 void
-SimulateEnemies(game_state *GameState, r32 dt)
+SimulateEnemies(game_state *GameState, entity *Player, r32 dt)
 {
   TIMED_FUNCTION();
 
@@ -314,8 +314,20 @@ SimulateEnemies(game_state *GameState, r32 dt)
   {
     entity *Enemy = GameState->Entities[EnemyIndex];
 
-    if (IsPlayer(Enemy) || !Spawned(Enemy))
+    if (IsPlayer(Enemy) || !Spawned(Enemy) || IsLoot(Enemy))
         continue;
+
+    v3 PlayerP = GetAbsoluteP(Player->P);
+    v3 EnemyP = GetAbsoluteP(Enemy->P);
+
+    v3 EnemyToPlayer = Normalize( PlayerP - EnemyP);
+
+    if ( EnemyP.y > PlayerP.y )
+    {
+      r32 PrevY = Enemy->Acceleration.y;
+      Enemy->Acceleration = Lerp(0.15f, Enemy->Acceleration, EnemyToPlayer);
+      Enemy->Acceleration.y = PrevY;
+    }
 
     v3 Delta = GetEntityDelta(Enemy, dt);
     UpdateEntityP(GameState, Enemy, Delta);
@@ -540,7 +552,7 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
   RG->Basis.ProjectionMatrix = GetProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight);
 
   SpawnEnemies(GameState);
-  SimulateEnemies(GameState, Plat->dt);
+  SimulateEnemies(GameState, Player, Plat->dt);
 
   SimulateProjectiles(GameState, Plat->dt);
 
@@ -575,6 +587,27 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
                   GetRenderP(WORLD_CHUNK_DIM, Max, Camera),
                   Quaternion(),
                   RED );
+
+
+  {
+    world_position MinRad = VisibleRadius;
+    world_position MaxRad = VisibleRadius + 1;
+    for ( s32 z = MinRad.z; z < MaxRad.z; ++ z )
+    {
+      for ( s32 y = MinRad.y; y < MaxRad.y; ++ y )
+      {
+        for ( s32 x = MinRad.x; x < MaxRad.x; ++ x )
+        {
+          world_position TestP = World_Position(x,y,z);
+          world_chunk *chunk = GetWorldChunk(world, TestP);
+          if ( !chunk || NotSet(chunk->Data->flags, Chunk_Initialized) )
+          {
+            DEBUG_DrawChunkAABB( world, TestP, Camera, Quaternion(), RED);
+          }
+        }
+      }
+    }
+  }
 
   TIMED_BLOCK("Render - World");
   for ( s32 ChunkIndex = 0;
