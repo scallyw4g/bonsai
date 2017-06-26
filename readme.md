@@ -9,6 +9,8 @@ Features:
 
 [X] HDR Lighting
 
+[X] Deferred Shading
+
 [ ] SSAO
 
 [X] Multi-threaded world generation
@@ -21,28 +23,27 @@ Features:
 
 [ ] SSAO
 
-[ ] FIXME: BoundaryVoxel buffer can contain duplicates on the corners and edges
+[ ] Shaders need to be pre-processed for the available version of GLSL
 
 
 -------------------------------------------------------------------------------
 ## World
 
-[ ] Better world!
-
-[ ] FIXME: There's a collision detection bug when the world is small and a
+[ ] There's a collision detection bug when the world is small and a
 model is pretty big.  Think 3^3 8^3 chunks with a 16^3 model
 
 
 -------------------------------------------------------------------------------
 ## Misc
 
-[ ] Write keypress callbacks instead of checking if (key == down) { do_thing }
-
-[ ] FIXME: Shaders need to be pre-processed for the available version of GLSL
-
-[ ] FIXME: If you're going really fast and try to update your position outside
+[ ] If you're going really fast and try to update your position outside
 the VisibleRegion you collide with the edge of the world and stop moving
 
+-------------------------------------------------------------------------------
+## Voxel Loader
+
+[ ] MagicaVoxel is pretty crappy at following its own file format, and I don't
+trust it anymore.  Make an editor mode!
 
 
 

@@ -30,6 +30,20 @@ myFmodf( float F, float mod )
 }
 #endif
 
+inline s32
+Min(s32 A, s32 B)
+{
+  s32 Result = min(A, B);
+  return Result;
+}
+
+inline s32
+Max(s32 A, s32 B)
+{
+  s32 Result = max(A, B);
+  return Result;
+}
+
 float
 Abs(float F)
 {

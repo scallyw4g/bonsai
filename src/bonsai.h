@@ -352,16 +352,25 @@ SetVoxelP(packed_voxel *Voxel, voxel_position P)
 inline packed_voxel
 PackVoxel(unpacked_voxel *V)
 {
-  Assert(!"Implement Me!");
-  packed_voxel Result;
+  packed_voxel Result = {};
+
+  Result.Data = V->Flags; // Must come first
+
+  SetVoxelP(&Result, V->Offset);
+  SetVoxelColor(&Result, V->ColorIndex);
+
   return Result;
 }
 
 inline unpacked_voxel
 GetUnpackedVoxel(int x, int y, int z, int w)
 {
-  Assert(!"Implement Me!");
   unpacked_voxel V;
+
+  V.Offset = Voxel_Position(x,y,z);
+  V.ColorIndex = w;
+  V.Flags = (voxel_flag)0;
+
   return V;
 }
 

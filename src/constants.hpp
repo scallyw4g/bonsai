@@ -62,7 +62,7 @@
 /* #define PLAYER_MODEL MODELS_PATH"/3x3x3.vox" */
 #define PLAYER_MODEL MODELS_PATH"/3x3x3.vox"
 
-#define ENEMY_MODEL MODELS_PATH"/tie-fighter.vox"
+#define ENEMY_MODEL MODELS_PATH"/busted.vox"
 
 #define TOTAL_TRIGGER_COUNT    8
 #define TOTAL_ENTITY_COUNT     12

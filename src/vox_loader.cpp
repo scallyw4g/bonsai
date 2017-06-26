@@ -103,7 +103,7 @@ ReadSizeChunk(FILE *File, int* byteCounter)
   int chunkY = ReadInt(File, byteCounter);
   int chunkZ = ReadInt(File, byteCounter);
 
-  chunk_dimension Result = Chunk_Dimension(chunkX+1, chunkY+1, chunkZ+1);
+  chunk_dimension Result = Chunk_Dimension(chunkX, chunkY, chunkZ);
   return Result;
 }
 
@@ -144,7 +144,6 @@ LoadVox(memory_arena *WorldStorage, char const *filepath, entity *Entity )
     ReadVoxChunk(ModelFile);
 
     totalChunkBytes = ReadMainChunk(ModelFile);
-
     int bytesRemaining = totalChunkBytes;
 
     // TODO(Jesse) : Actually read all the data!
@@ -152,7 +151,9 @@ LoadVox(memory_arena *WorldStorage, char const *filepath, entity *Entity )
     {
       /* Log("%d\n", bytesRemaining); */
 
-      switch ( GetHeaderType(ModelFile, &bytesRemaining) )
+
+      Chunk_ID CurrentId = GetHeaderType(ModelFile, &bytesRemaining);
+      switch ( CurrentId )
       {
         case ID_RGBA:
         {
@@ -160,8 +161,8 @@ LoadVox(memory_arena *WorldStorage, char const *filepath, entity *Entity )
 
         case ID_PACK:
         {
-          /* int nChunks = */ ReadPackChunk(ModelFile, &bytesRemaining);
-          /* Log("nChunks %d\n", nChunks); */
+          int nChunks = ReadPackChunk(ModelFile, &bytesRemaining);
+          Log("nChunks %d\n", nChunks);
         } break;
 
         case ID_SIZE:
@@ -169,51 +170,52 @@ LoadVox(memory_arena *WorldStorage, char const *filepath, entity *Entity )
           // Instead of trusting the model (they're always wrong), we'll loop
           // through the data and figure it out ourselves.
 
-          /* chunk_dimension Dim = */ ReadSizeChunk(ModelFile, &bytesRemaining);
+          chunk_dimension Dim = ReadSizeChunk(ModelFile, &bytesRemaining);
+          Print(Dim);
         } break;
 
         case ID_XYZI:
         {
-          int numVoxels = ReadXYZIChunk(ModelFile, &bytesRemaining);
+          s32 numVoxels = ReadXYZIChunk(ModelFile, &bytesRemaining);
 
-          int maxX = 0, maxY = 0, maxZ = 0;
-          int minX = INT_MAX, minY = INT_MAX, minZ = INT_MAX;
+          s32 maxX = 0, maxY = 0, maxZ = 0;
+          s32 minX = INT_MAX, minY = INT_MAX, minZ = INT_MAX;
 
           unpacked_voxel *LocalVoxelCache = (unpacked_voxel *)calloc(numVoxels, sizeof(unpacked_voxel) );
-          for( int i = 0; i < numVoxels; ++ i)
+          for( s32 VoxelCacheIndex = 0;
+               VoxelCacheIndex < numVoxels;
+               ++VoxelCacheIndex)
           {
-            int X = (int)ReadChar(ModelFile, &bytesRemaining);
-            int Z = (int)ReadChar(ModelFile, &bytesRemaining);
-            int Y = (int)ReadChar(ModelFile, &bytesRemaining);
-            int W = (int)ReadChar(ModelFile, &bytesRemaining); // Color
+            s32 X = (s32)ReadChar(ModelFile, &bytesRemaining);
+            s32 Z = (s32)ReadChar(ModelFile, &bytesRemaining);
+            s32 Y = (s32)ReadChar(ModelFile, &bytesRemaining);
+            s32 W = (s32)ReadChar(ModelFile, &bytesRemaining); // Color
 
+            maxX = Max(X, maxX);
+            maxY = Max(Y, maxY);
+            maxZ = Max(Z, maxZ);
 
-            maxX = X > maxX ? X : maxX;
-            maxY = Y > maxY ? Y : maxY;
-            maxZ = Z > maxZ ? Z : maxZ;
+            minX = Min(X, minX);
+            minY = Min(Y, minY);
+            minZ = Min(Z, minZ);
 
-            minX = X < minX ? X : minX;
-            minY = Y < minY ? Y : minY;
-            minZ = Z < minZ ? Z : minZ;
-
-            // Offset info the chunk by 1 to avoid having to call BuildExteriorBoundaryVoxels
-            LocalVoxelCache[i] = GetUnpackedVoxel(X+1,Y+1,Z+1,W);
+            LocalVoxelCache[VoxelCacheIndex] = GetUnpackedVoxel(X,Y,Z,W);
           }
 
-          v3 Min = V3((r32)minX, (r32)minY, (r32)minZ);
+          chunk_dimension Min = Chunk_Dimension(minX, minY, minZ);
 
-          // Add 3 to the max dimension because the max values are indicies,
-          // and we need a 1 voxel buffer around the model because
-          // BuildExteriorBoundaryVoxels doesn't handle models correctly.
-          // +1 to convert from index, +2 for a 1vox buffer on each side.
-          chunk_dimension Dim = Chunk_Dimension(maxX+3, maxY+3, maxZ+3) - Min;
-          Entity->ModelDim = Dim;
+          // Add 1 to the max dimension to convert from indicies to positions
+          chunk_dimension Max = Chunk_Dimension(maxX+1, maxY+1, maxZ+1);
+
+          Entity->ModelDim = Max - Min;;
+
+          Print(Entity->ModelDim);
 
           // TODO(Jesse): Load models in multiple chunks instead of one
           // monolithic one. The storage for chunks must be as large as the
           // largest chunk we will EVER load, which should definately not be
           // decided at compile time.
-          Result = AllocateChunk(WorldStorage, Dim);
+          Result = AllocateChunk(WorldStorage, Entity->ModelDim);
           if(!Result) { return False; }
 
           for( int i = 0; i < numVoxels; ++ i)
@@ -221,21 +223,7 @@ LoadVox(memory_arena *WorldStorage, char const *filepath, entity *Entity )
             unpacked_voxel V = LocalVoxelCache[i];
 
             voxel_position RealP = V.Offset - Min;
-            Result->Voxels[ GetIndex(RealP, Result, Dim) ] = PackVoxel(&V);;
-
-            /* V.flags = SetFlag(V.flags, Voxel_Filled); */
-
-            /* voxel_position RealP = GetVoxelP(LocalVoxelCache[i])-Min; */
-            /* V = SetVoxelP(V, RealP); */
-
-            /* V = SetVoxelColor(V, GetVoxelColor(LocalVoxelCache[i])); */
-
-            /* Result->Voxels[GetIndex(RealP, Result, Dim)] = V; */
-
-            /* Assert(GetVoxelColor(V) < PALETTE_SIZE); */
-
-            /* Log("%d\n", GetVoxelColor(V)); */
-            /* Assert(GetVoxelColor(*V) == 121); */
+            Result->Voxels[ GetIndex(RealP, Result, Entity->ModelDim) ] = PackVoxel(&V);;
           }
 
           free(LocalVoxelCache);
