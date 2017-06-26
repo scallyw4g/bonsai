@@ -335,6 +335,9 @@ main(s32 NumArgs, char ** Args)
       InitGlobals(&Plat);
     }
 
+    if (Plat.Input.F11)
+      Plat.dt = 0;
+
     GameUpdateAndRender(&Plat, GameState);
     BonsaiSwapBuffers(&Os);
   }

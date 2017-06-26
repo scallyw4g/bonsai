@@ -551,12 +551,14 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
 
   RG->Basis.ProjectionMatrix = GetProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight);
 
+  TIMED_BLOCK("Sim");
   SpawnEnemies(GameState);
   SimulateEnemies(GameState, Player, Plat->dt);
 
   SimulateProjectiles(GameState, Plat->dt);
 
   SimulatePlayer(GameState, Player, &Plat->Input, Plat->dt);
+  END_BLOCK("Sim");
 
   UpdateCameraP(Plat, world, Player, Camera);
   RG->Basis.ViewMatrix = GetViewMatrix(WorldChunkDim, Camera);
@@ -642,7 +644,7 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
     entity *Projectile = GameState->Projectiles[ProjectileIndex];
     DrawEntity(Plat, world, Projectile, Camera, RG, SG);
   }
-  END_BLOCK("Entities");
+  END_BLOCK("Projectiles");
 
   TIMED_BLOCK("Render - Entities");
   for (s32 EntityIndex = 0;

@@ -187,8 +187,8 @@ LoadVox(memory_arena *WorldStorage, char const *filepath, entity *Entity )
                ++VoxelCacheIndex)
           {
             s32 X = (s32)ReadChar(ModelFile, &bytesRemaining);
-            s32 Z = (s32)ReadChar(ModelFile, &bytesRemaining);
             s32 Y = (s32)ReadChar(ModelFile, &bytesRemaining);
+            s32 Z = (s32)ReadChar(ModelFile, &bytesRemaining);
             s32 W = (s32)ReadChar(ModelFile, &bytesRemaining); // Color
 
             maxX = Max(X, maxX);

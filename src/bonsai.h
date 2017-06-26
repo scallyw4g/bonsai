@@ -359,6 +359,8 @@ PackVoxel(unpacked_voxel *V)
   SetVoxelP(&Result, V->Offset);
   SetVoxelColor(&Result, V->ColorIndex);
 
+  Result.Data = SetFlag(Result.Data, Voxel_Filled);
+
   return Result;
 }
 

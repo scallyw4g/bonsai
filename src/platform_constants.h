@@ -1,5 +1,5 @@
-#ifndef BONSAI_PLAT_CONTANTS_H
-#define BONSAI_PLAT_CONTANTS_H
+#ifndef BONSAI_PLAT_CONSTANTS_H
+#define BONSAI_PLAT_CONSTANTS_H
 
 #include <stdio.h>
 
@@ -12,7 +12,7 @@
 
 // Screen Resolution
 
-#define SCREEN_RATIO 8
+#define SCREEN_RATIO 4
 
 #define SCR_WIDTH (3840/SCREEN_RATIO)
 #define SCR_HEIGHT (2160/SCREEN_RATIO)
