@@ -408,27 +408,6 @@ SimulatePlayer( game_state *GameState, entity *Player, input *Input, r32 dt )
 }
 
 void
-AllocateAndInitTriggers(platform *Plat, game_state *GameState)
-{
-  for (s32 TriggerIndex = 0;
-      TriggerIndex < TOTAL_TRIGGER_COUNT;
-      ++TriggerIndex)
-  {
-    GameState->Triggers[TriggerIndex] =
-      PUSH_STRUCT_CHECKED(trigger, Plat->Memory, 1);
-  }
-
-  /* trigger *Trigger = GameState->Triggers[0]; */
-  /* // 0th Trigger is an unspawn point for enemies */
-  /* v3 Midpoint = V3(VR_X*CD_X, 0, 0)/2; */
-  /* v3 Radius = V3(VR_X*CD_X, 1, 1)/2; */
-  /* Trigger->AABB = {Midpoint, Radius}; */
-  /* Trigger->Callback = Unspawn; */
-
-  return;
-}
-
-void
 AllocateProjectiles(platform *Plat, game_state *GameState)
 {
   for (s32 ProjectileIndex = 0;
@@ -510,11 +489,9 @@ GameInit( platform *Plat )
     GameState->Entities[EntityIndex] =
       AllocateEntity(Plat, GameState->world->WorldStorage.Arena, ENEMY_MODEL);
 
-    GameState->Entities[EntityIndex]->Scale = 0.5f;
+    GameState->Entities[EntityIndex]->Scale = 0.25f;
       /* AllocateEntity(Plat, GameState->world->WorldStorage.Arena, DEBUG_ENTITY_DIM); */
   }
-
-  AllocateAndInitTriggers(Plat, GameState);
 
   AllocateProjectiles(Plat, GameState);
 

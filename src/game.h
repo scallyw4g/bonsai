@@ -13,7 +13,6 @@ struct game_state
   debug_text_render_group *DebugRG;
 
   entity *Entities[TOTAL_ENTITY_COUNT];
-  trigger *Triggers[TOTAL_TRIGGER_COUNT];
   projectile *Projectiles[TOTAL_PROJECTILE_COUNT];
 };
 

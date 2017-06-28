@@ -643,21 +643,6 @@ GetCollision(entity **Entities, entity *Entity)
   return Result;
 }
 
-b32
-GetCollision(entity *Entity, trigger *Trigger)
-{
-  aabb EntityAABB = GetAABB(Entity);
-
-  b32 Result = Intersect(&EntityAABB, &Trigger->AABB);
-  return Result;
-}
-
-inline void
-Trigger(entity *Entity, trigger *Trigger)
-{
-  Trigger->Callback(Entity);
-}
-
 void
 ProcessCollisionRules(game_state *GameState, entity *Entity)
 {
@@ -672,19 +657,6 @@ ProcessCollisionRules(game_state *GameState, entity *Entity)
 
     if (GetCollision(Entity, TestEntity))
       ProcessCollisionRule(Entity, TestEntity);
-  }
-
-  // Collide against Triggers
-  for (s32 TriggerIndex = 0;
-      TriggerIndex < TOTAL_TRIGGER_COUNT;
-      ++TriggerIndex)
-  {
-    trigger *TestTrigger = GameState->Triggers[TriggerIndex];
-    if (TestTrigger)
-    {
-      if (GetCollision(Entity, TestTrigger))
-        Trigger(Entity, TestTrigger);
-    }
   }
 
   // Collide against Projectiles
