@@ -358,19 +358,17 @@ SpawnProjectile(game_state *GameState, canonical_position *P, v3 Velocity)
   return;
 }
 
-inline b32
-CanFire(entity *Player, r32 dt)
-{
-  b32 Result = False;
-
-  if ((Player->FireCooldown -= dt) < 0)
-  {
-    Player->FireCooldown = Player->RateOfFire;
-    Result = True;
-  }
-
-  return Result;
-}
+/* inline b32 */
+/* CanFire(entity *Player) */
+/* { */
+/*   b32 Result = False; */
+/*   if ((Player->FireCooldown -= dt) < 0) */
+/*   { */
+/*     Player->FireCooldown = Player->RateOfFire; */
+/*     Result = True; */
+/*   } */
+/*   return Result; */
+/* } */
 
 void
 SimulatePlayer( game_state *GameState, entity *Player, input *Input, r32 dt )
@@ -392,18 +390,18 @@ SimulatePlayer( game_state *GameState, entity *Player, input *Input, r32 dt )
 
     world_position WorldDisp = ( Player->P.WorldP - OriginalPlayerP );
     UpdateVisibleRegion(GameState, WorldDisp);
+
+    Player->FireCooldown -= dt;
+    if ( Input->Space && (Player->FireCooldown < 0) )
+    {
+      SpawnProjectile(GameState, &Player->P, V3(0,50,0));
+      Player->FireCooldown = Player->RateOfFire;
+    }
   }
   else
   {
     if (--FramesToWaitBeforeSpawningPlayer <= 0)
       SpawnPlayer( GameState->world, Player );
-  }
-
-  Player->FireCooldown -= dt;
-  if ( Input->Space && (Player->FireCooldown < 0) )
-  {
-    SpawnProjectile(GameState, &Player->P, V3(0,50,0));
-    Player->FireCooldown = Player->RateOfFire;
   }
 
   return;
