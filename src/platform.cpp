@@ -338,6 +338,9 @@ main(s32 NumArgs, char ** Args)
     if (Plat.Input.F11)
       Plat.dt = 0;
 
+    if (Plat.dt > 1.0f)
+      Plat.dt = 1.0f;
+
     GameUpdateAndRender(&Plat, GameState);
     BonsaiSwapBuffers(&Os);
   }

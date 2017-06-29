@@ -13,15 +13,11 @@ GLOBAL_VARIABLE s32 FramesToWaitBeforeSpawningPlayer = FRAMES_TO_WAIT_BEFORE_SPA
 #include <bonsai.cpp>
 
 v3
-GetEntityDelta(entity *Entity, float dt)
+GetEntityDelta(entity *Entity, r32 Speed, r32 dt)
 {
-  v3 Acceleration = Entity->Acceleration * PLAYER_ACCEL_MULTIPLIER;
-
-  Entity->Velocity = (Entity->Velocity + (Acceleration*dt)) * Entity->Drag; // m/s
-
-  v3 PlayerDelta = Entity->Velocity * dt;
-
-  return PlayerDelta;
+  Entity->Velocity = (Entity->Velocity + (Entity->Acceleration*Speed*dt)) * Entity->Drag; // m/s
+  v3 Delta = Entity->Velocity * dt;
+  return Delta;
 }
 
 void
@@ -189,15 +185,13 @@ SpawnEnemies(game_state *GameState)
 void
 EntityWorldCollision(entity *Entity)
 {
-  const entity_flags EnemyPlayerProjectile =
-    (entity_flags)(Entity_Player|Entity_Enemy|Entity_Projectile|Entity_Loot);
-
-  entity_flags EntityType = (entity_flags)(Entity->Flags & EnemyPlayerProjectile);
+  entity_flags EntityType = (entity_flags)(ENTITY_TYPES & Entity->Flags);
 
   switch (EntityType)
   {
     case Entity_Enemy:
-    case Entity_Projectile:
+    case Entity_PlayerProjectile:
+    case Entity_EnemyProjectile:
     case Entity_Loot:
     {
       Entity->Flags = (entity_flags)UnSetFlag(Entity->Flags, Entity_Spawned);
@@ -298,7 +292,8 @@ SimulateProjectiles(game_state *GameState, r32 dt)
     if (!Spawned(Projectile))
       continue;
 
-    v3 Delta = GetEntityDelta(Projectile, dt);
+    Projectile->Acceleration = Normalize(Projectile->Acceleration) * PROJECTILE_SPEED;
+    v3 Delta = GetEntityDelta(Projectile, PROJECTILE_SPEED, dt);
     UpdateEntityP(GameState, Projectile, Delta);
   }
 }
@@ -320,16 +315,16 @@ SimulateEnemies(game_state *GameState, entity *Player, r32 dt)
     v3 PlayerP = GetAbsoluteP(Player->P);
     v3 EnemyP = GetAbsoluteP(Enemy->P);
 
-    v3 EnemyToPlayer = Normalize( PlayerP - EnemyP);
-
-    if ( EnemyP.y > PlayerP.y )
+    if ( EnemyP.y > PlayerP.y ) // Enemy is in front of Player
     {
+      v3 EnemyToPlayer = Normalize( PlayerP - EnemyP);
+
       r32 PrevY = Enemy->Acceleration.y;
-      Enemy->Acceleration = Lerp(0.15f, Enemy->Acceleration, EnemyToPlayer);
+      Enemy->Acceleration = Lerp(0.25f, Enemy->Acceleration, EnemyToPlayer);
       Enemy->Acceleration.y = PrevY;
     }
 
-    v3 Delta = GetEntityDelta(Enemy, dt);
+    v3 Delta = GetEntityDelta(Enemy, ENEMY_SPEED, dt);
     UpdateEntityP(GameState, Enemy, Delta);
   }
 
@@ -337,7 +332,7 @@ SimulateEnemies(game_state *GameState, entity *Player, r32 dt)
 }
 
 void
-SpawnProjectile(game_state *GameState, canonical_position *P, v3 Velocity)
+SpawnProjectile(game_state *GameState, canonical_position *P, v3 Velocity, entity_flags ProjectileType)
 {
   for (s32 ProjectileIndex = 0;
       ProjectileIndex < TOTAL_PROJECTILE_COUNT;
@@ -347,9 +342,9 @@ SpawnProjectile(game_state *GameState, canonical_position *P, v3 Velocity)
 
     if ( Unspawned(Projectile) )
     {
-      v3 CollisionVolumeRadius = DEBUG_ENTITY_COLLISION_VOL_RADIUS;
+      v3 CollisionVolumeRadius = V3(PROJECTILE_AABB);
       InitEntity(Projectile, CollisionVolumeRadius, *P, PROJECTILE_DRAG);
-      Projectile->Flags = (entity_flags)SetFlag(Projectile->Flags, Entity_Spawned|Entity_Projectile);
+      Projectile->Flags = (entity_flags)SetFlag(Projectile->Flags, Entity_Spawned|ProjectileType);
       Projectile->Velocity = Velocity;
       return;
     }
@@ -383,7 +378,7 @@ SimulatePlayer( game_state *GameState, entity *Player, input *Input, r32 dt )
   if (Spawned(Player->Flags))
   {
     Player->Acceleration = GetOrthographicInputs(Input);
-    v3 PlayerDelta = GetEntityDelta(Player, dt) + (PLAYER_IMPULSE*dt);
+    v3 PlayerDelta = GetEntityDelta(Player, PLAYER_SPEED, dt) + (PLAYER_IMPULSE*dt);
 
     world_position OriginalPlayerP = Player->P.WorldP;
     UpdateEntityP( GameState, Player, PlayerDelta );
@@ -394,7 +389,7 @@ SimulatePlayer( game_state *GameState, entity *Player, input *Input, r32 dt )
     Player->FireCooldown -= dt;
     if ( Input->Space && (Player->FireCooldown < 0) )
     {
-      SpawnProjectile(GameState, &Player->P, V3(0,50,0));
+      SpawnProjectile(GameState, &Player->P, V3(0,50,0), Entity_PlayerProjectile);
       Player->FireCooldown = Player->RateOfFire;
     }
   }
@@ -415,7 +410,7 @@ AllocateProjectiles(platform *Plat, game_state *GameState)
       ++ProjectileIndex)
   {
     GameState->Projectiles[ProjectileIndex] =
-      AllocateEntity(Plat, GameState->world->WorldStorage.Arena, Chunk_Dimension(1,3,1));
+      AllocateEntity(Plat, GameState->world->WorldStorage.Arena, PROJECTILE_AABB);
   }
 
   return;

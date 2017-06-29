@@ -154,6 +154,16 @@ GetRenderP( chunk_dimension WorldChunkDim, entity *entity, Camera_Object *Camera
   return Result;
 }
 
+inline aabb
+GetRenderSpaceAABB(chunk_dimension WorldChunkDim, entity *Entity, Camera_Object *Camera)
+{
+  v3 Radius = Entity->CollisionVolumeRadius;
+  v3 Center = GetRenderP(WorldChunkDim, Entity->P, Camera) + Radius;
+
+  aabb Result(Center, Radius);
+  return Result;
+}
+
 inline m4
 LookAt(v3 P, v3 Target, v3 Up)
 {

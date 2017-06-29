@@ -45,15 +45,25 @@ enum voxel_flag
 
 enum entity_flags
 {
-  Entity_Uninitialized = 0 << 0,
-  Entity_Initialized   = 1 << 0,
-  Entity_Spawned       = 1 << 1,
-  Entity_Destoryed     = 1 << 2,
-  Entity_Player        = 1 << 3,
-  Entity_Enemy         = 1 << 4,
-  Entity_Trigger       = 1 << 5,
-  Entity_Projectile    = 1 << 6,
-  Entity_Loot          = 1 << 7,
+  Entity_Uninitialized    = 0 << 0,
+  Entity_Initialized      = 1 << 0,
+  Entity_Spawned          = 1 << 1,
+  Entity_Destoryed        = 1 << 2,
+  Entity_Player           = 1 << 3,
+  Entity_Enemy            = 1 << 4,
+  Entity_EnemyProjectile  = 1 << 5,
+  Entity_PlayerProjectile = 1 << 6,
+  Entity_Loot             = 1 << 7,
+};
+
+GLOBAL_VARIABLE const entity_flags ENTITY_TYPES = (entity_flags)(Entity_Player|Entity_Enemy|Entity_EnemyProjectile|Entity_PlayerProjectile);
+
+enum collision_type
+{
+  Collision_Player_Enemy           = Entity_Player|Entity_Enemy,
+  Collision_Player_EnemyProjectile = Entity_Player|Entity_EnemyProjectile,
+  Collision_Enemy_PlayerProjectile = Entity_Enemy|Entity_PlayerProjectile,
+  Collision_Player_Loot            = Entity_Player|Entity_Loot,
 };
 
 struct unpacked_voxel
@@ -181,6 +191,7 @@ struct entity
   v3 Velocity;
   v3 Acceleration;
   v3 Drag;
+  r32 AccelMultiplier;
 
   canonical_position P;
 
@@ -688,4 +699,31 @@ NotFilledInWorld( World *world, world_chunk *chunk, canonical_position VoxelP )
   b32 Result = !(IsFilledInWorld(world, chunk, VoxelP));
   return Result;
 }
+
+inline world_position
+GetAbsoluteP( world_position P )
+{
+  world_position Result = World_Position((CD_X*P.x), (CD_Y*P.y), (CD_Z*P.z));
+  return Result;
+}
+
+inline v3
+GetAbsoluteP( canonical_position CP )
+{
+  v3 Result = V3(CP.Offset.x+(CD_X*CP.WorldP.x),
+                 CP.Offset.y+(CD_Y*CP.WorldP.y),
+                 CP.Offset.z+(CD_Z*CP.WorldP.z));
+  return Result;
+}
+
+inline aabb
+GetAABB(entity *Entity)
+{
+  v3 Radius = Entity->CollisionVolumeRadius;
+  v3 Center = GetAbsoluteP(Entity->P) + Radius;
+
+  aabb Result(Center, Radius);
+  return Result;
+}
+
 #endif

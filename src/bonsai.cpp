@@ -458,22 +458,6 @@ SpawnPlayer( World *world, entity *Player )
   return;
 }
 
-inline world_position
-GetAbsoluteP( world_position P )
-{
-  world_position Result = World_Position((CD_X*P.x), (CD_Y*P.y), (CD_Z*P.z));
-  return Result;
-}
-
-inline v3
-GetAbsoluteP( canonical_position CP )
-{
-  v3 Result = V3(CP.Offset.x+(CD_X*CP.WorldP.x),
-                 CP.Offset.y+(CD_Y*CP.WorldP.y),
-                 CP.Offset.z+(CD_Z*CP.WorldP.z));
-  return Result;
-}
-
 inline b32
 Intersect(aabb *First, aabb *Second)
 {
@@ -483,16 +467,6 @@ Intersect(aabb *First, aabb *Second)
   Result &= (Abs(First->Center.y - Second->Center.y) < (First->Radius.y + Second->Radius.y));
   Result &= (Abs(First->Center.z - Second->Center.z) < (First->Radius.z + Second->Radius.z));
 
-  return Result;
-}
-
-inline aabb
-GetAABB(entity *Entity)
-{
-  v3 Radius = Entity->CollisionVolumeRadius;
-  v3 Center = GetAbsoluteP(Entity->P) + Radius;
-
-  aabb Result(Center, Radius);
   return Result;
 }
 
@@ -565,19 +539,11 @@ ProcessCollisionRule(entity *First, entity *Second)
 
   entity_flags JointFlags = (entity_flags)(First->Flags | Second->Flags);
 
-  // TODO(Jesse): Add Player pickups for loot!
-  const entity_flags EnemyPlayerProjectile      = (entity_flags)(Entity_Player|Entity_Enemy|Entity_Projectile|Entity_Loot);
-
-  const entity_flags Collision_EnemyPlayer      = (entity_flags)(Entity_Player|Entity_Enemy);
-  const entity_flags Collision_PlayerProjectile = (entity_flags)(Entity_Player|Entity_Projectile);
-  const entity_flags Collision_EnemyProjectile  = (entity_flags)(Entity_Enemy|Entity_Projectile);
-  const entity_flags Collision_PlayerLoot       = (entity_flags)(Entity_Player|Entity_Loot);
-
-  entity_flags Rule = (entity_flags)(EnemyPlayerProjectile & JointFlags);
+  entity_flags Rule = (entity_flags)(ENTITY_TYPES & JointFlags);
 
   switch (Rule)
   {
-    case Collision_PlayerLoot:
+    case Collision_Player_Loot:
     {
       entity *Player = First;
       entity *Loot = Second;
@@ -593,7 +559,7 @@ ProcessCollisionRule(entity *First, entity *Second)
 
     } break;
 
-    case Collision_EnemyPlayer:
+    case Collision_Player_Enemy:
     {
       entity *Player = First;
       entity *Enemy = Second;
@@ -609,11 +575,11 @@ ProcessCollisionRule(entity *First, entity *Second)
 
     } break;
 
-    case Collision_PlayerProjectile:
+    case Collision_Player_EnemyProjectile:
     {
     } break;
 
-    case Collision_EnemyProjectile:
+    case Collision_Enemy_PlayerProjectile:
     {
       Unspawn(First);
       Unspawn(Second);

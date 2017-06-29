@@ -2275,16 +2275,19 @@ DrawEntity(
 
   chunk_data *Model = Entity->Model;
 
-  if ( IsSet(Model->flags, Chunk_Initialized) )
-  {
+#if DEBUG_DRAW_COLLISION_VOLUMES
+  aabb AABB = GetRenderSpaceAABB(world->ChunkDim, Entity, Camera);
+  DEBUG_DrawAABB( world, AABB, Quaternion(), PINK);
+#endif
 
-    if ( IsSet(Model->flags, Chunk_RebuildBoundary) )
-    {
-      BuildEntityBoundaryVoxels(Model, Entity->P.WorldP, Entity->ModelDim);
-    }
+  if ( NotSet(Model->flags, Chunk_Initialized) )
+    return;
 
-    BufferChunkMesh(Plat, world, Model, Entity->P.WorldP, RG, SG, Camera, Entity->Scale, Entity->P.Offset);
-  }
+  if ( IsSet(Model->flags, Chunk_RebuildBoundary) )
+    BuildEntityBoundaryVoxels(Model, Entity->P.WorldP, Entity->ModelDim);
+
+
+  BufferChunkMesh(Plat, world, Model, Entity->P.WorldP, RG, SG, Camera, Entity->Scale, Entity->P.Offset);
 
   return;
 }
