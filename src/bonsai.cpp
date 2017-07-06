@@ -505,9 +505,6 @@ Unspawn(entity *Entity)
 {
   Entity->Flags = (entity_flags)UnSetFlag(Entity->Flags, Entity_Spawned);
 
-  if ( IsSet(Entity->Flags, Entity_Enemy) )
-    SpawnLoot(Entity);
-
   return;
 }
 
@@ -554,7 +551,7 @@ ProcessCollisionRule(entity *First, entity *Second)
         Loot=First;
       }
 
-      Player->RateOfFire /= 2;
+      Player->RateOfFire /= 1.7f;
       Unspawn(Loot);
 
     } break;
@@ -583,6 +580,13 @@ ProcessCollisionRule(entity *First, entity *Second)
     {
       Unspawn(First);
       Unspawn(Second);
+
+      if ( IsSet(First->Flags, Entity_Enemy) )
+        SpawnLoot(First);
+
+      if ( IsSet(Second->Flags, Entity_Enemy) )
+        SpawnLoot(Second);
+
     } break;
   }
 

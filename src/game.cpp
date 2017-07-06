@@ -342,10 +342,10 @@ SpawnProjectile(game_state *GameState, canonical_position *P, v3 Velocity, entit
 
     if ( Unspawned(Projectile) )
     {
-      v3 CollisionVolumeRadius = V3(PROJECTILE_AABB);
+      v3 CollisionVolumeRadius = V3(PROJECTILE_AABB)/2;
       InitEntity(Projectile, CollisionVolumeRadius, *P, PROJECTILE_DRAG);
       Projectile->Flags = (entity_flags)SetFlag(Projectile->Flags, Entity_Spawned|ProjectileType);
-      Projectile->Velocity = Velocity;
+      Projectile->Velocity = Velocity * PROJECTILE_SPEED;
       return;
     }
   }
@@ -389,7 +389,7 @@ SimulatePlayer( game_state *GameState, entity *Player, input *Input, r32 dt )
     Player->FireCooldown -= dt;
     if ( Input->Space && (Player->FireCooldown < 0) )
     {
-      SpawnProjectile(GameState, &Player->P, V3(0,50,0), Entity_PlayerProjectile);
+      SpawnProjectile(GameState, &Player->P, V3(0,1,0), Entity_PlayerProjectile);
       Player->FireCooldown = Player->RateOfFire;
     }
   }

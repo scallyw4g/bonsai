@@ -12,7 +12,7 @@
 
 // Screen Resolution
 
-#define SCREEN_RATIO 4
+#define SCREEN_RATIO 8
 
 #define SCR_WIDTH (3840/SCREEN_RATIO)
 #define SCR_HEIGHT (2160/SCREEN_RATIO)
@@ -36,7 +36,7 @@
 
 
 /*
- *  MSVC specific
+ *  MSVC
  */
 #ifdef _MSC_VER
 
@@ -51,15 +51,15 @@
     PrintConsole(Buffer); }
 
 
-#define Info(...)  PrintConsole(" - Info - ");         \
-                   VariadicOutputDebugString(__VA_ARGS__);  \
+#define Info(...)  PrintConsole(" - Info - ");             \
+                   VariadicOutputDebugString(__VA_ARGS__); \
                    PrintConsole("\n")
 
-#define Debug(...) VariadicOutputDebugString(__VA_ARGS__);          \
+#define Debug(...) VariadicOutputDebugString(__VA_ARGS__); \
                    PrintConsole("\n")
 
-#define Error(...) PrintConsole(" ! Error - ");        \
-                   VariadicOutputDebugString(__VA_ARGS__);  \
+#define Error(...) PrintConsole(" ! Error - ");            \
+                   VariadicOutputDebugString(__VA_ARGS__); \
                    PrintConsole("\n")
 
 #define RuntimeBreak() __debugbreak()
@@ -69,7 +69,7 @@
 
 
 /*
- *  GCC on Linux && Cygwin
+ *  GCC
  */
 #else
 
@@ -79,8 +79,8 @@
 #define GLOBAL_VARIABLE static __attribute__((unused))
 #define DEBUG_GLOBAL static __attribute__((unused))
 
-#define Info(...)  printf(" - Info - "); printf(__VA_ARGS__); printf("\n")
-#define Debug(...) printf(__VA_ARGS__); printf("\n")
+#define Info(...)  printf(" - Info - ");  printf(__VA_ARGS__); printf("\n")
+#define Debug(...) printf(__VA_ARGS__);   printf("\n")
 #define Error(...) printf(" ! Error - "); printf(__VA_ARGS__); printf("\n")
 
 
