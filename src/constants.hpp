@@ -60,9 +60,9 @@
 /* #define PLAYER_MODEL MODELS_PATH"/chr_rain.vox" */
 /* #define PLAYER_MODEL MODELS_PATH"/chr_old.vox" */
 /* #define PLAYER_MODEL MODELS_PATH"/3x3x3.vox" */
-#define PLAYER_MODEL MODELS_PATH"/3x3x3.vox"
+#define PLAYER_MODEL MODELS_PATH"/x-wing.vox"
 
-#define ENEMY_MODEL MODELS_PATH"/busted.vox"
+#define ENEMY_MODEL MODELS_PATH"/tie-fighter.vox"
 
 #define TOTAL_TRIGGER_COUNT    8
 #define TOTAL_ENTITY_COUNT     12
@@ -83,7 +83,7 @@
 #define DEBUG_ENTITY_DIM     Chunk_Dimension(3,3,1)
 #define DEBUG_ENTITY_COLLISION_VOL_RADIUS (V3(3,3,1)/2)
 
-#define DEBUG_CHUNK_AABB              1
+#define DEBUG_CHUNK_AABB              0
 #define DEBUG_DRAW_COLLISION_VOLUMES  1
 #define DEBUG_WORLD_GENERATION        0
 #define DEBUG_DRAW_SHADOW_MAP_TEXTURE 0

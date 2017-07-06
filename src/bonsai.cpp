@@ -551,7 +551,7 @@ ProcessCollisionRule(entity *First, entity *Second)
         Loot=First;
       }
 
-      Player->RateOfFire /= 1.7f;
+      Player->RateOfFire = 0.25f + (Player->RateOfFire/1.7f);
       Unspawn(Loot);
 
     } break;

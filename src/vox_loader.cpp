@@ -162,7 +162,6 @@ LoadVox(memory_arena *WorldStorage, char const *filepath, entity *Entity )
         case ID_PACK:
         {
           int nChunks = ReadPackChunk(ModelFile, &bytesRemaining);
-          Log("nChunks %d\n", nChunks);
         } break;
 
         case ID_SIZE:
@@ -171,7 +170,6 @@ LoadVox(memory_arena *WorldStorage, char const *filepath, entity *Entity )
           // through the data and figure it out ourselves.
 
           chunk_dimension Dim = ReadSizeChunk(ModelFile, &bytesRemaining);
-          Print(Dim);
         } break;
 
         case ID_XYZI:
@@ -208,8 +206,6 @@ LoadVox(memory_arena *WorldStorage, char const *filepath, entity *Entity )
           chunk_dimension Max = Chunk_Dimension(maxX+1, maxY+1, maxZ+1);
 
           Entity->ModelDim = Max - Min;;
-
-          Print(Entity->ModelDim);
 
           // TODO(Jesse): Load models in multiple chunks instead of one
           // monolithic one. The storage for chunks must be as large as the

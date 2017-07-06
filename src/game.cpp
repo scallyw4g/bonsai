@@ -71,6 +71,7 @@ AllocatePlayer(platform *Plat, memory_arena *Storage, canonical_position Initial
   InitEntity(Player, CollisionVolumeRadius, InitialP, Drag);
 
   Player->Flags = (entity_flags)SetFlag(Player->Flags, Entity_Player);
+  Player->Scale = 0.25f;
 
   return Player;
 }
@@ -132,7 +133,7 @@ SpawnEnemy(World *world, entity **WorldEntities, entity *Enemy)
   v3 SeedVec = V3(0,0,0);
 
   world_position InitialCenter =
-    World_Position(X, world->Center.y + (VR_Y/2) -4, Z);
+    World_Position(X, world->Center.y + (VR_Y/2)-1, Z);
 
   canonical_position InitialP = Canonical_Position( V3(0,0,0), InitialCenter);
   InitialP = Canonicalize(WORLD_CHUNK_DIM, InitialP);
@@ -242,7 +243,7 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
       Entity->P.WorldP.x = C.CP.WorldP.x;
 
       if (StepDelta.x > 0)
-        Entity->P.Offset.x -= (Entity->CollisionVolumeRadius.x);
+        Entity->P.Offset.x -= (Entity->CollisionVolumeRadius.x*2);
       else
         Entity->P.Offset.x++;
 
@@ -261,7 +262,7 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
       Entity->P.WorldP.y = C.CP.WorldP.y;
 
       if (StepDelta.y > 0)
-        Entity->P.Offset.y -= (Entity->CollisionVolumeRadius.y);
+        Entity->P.Offset.y -= (Entity->CollisionVolumeRadius.y*2);
       else
         Entity->P.Offset.y++;
 

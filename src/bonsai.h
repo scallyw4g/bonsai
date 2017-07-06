@@ -49,6 +49,7 @@ enum entity_flags
   Entity_Initialized      = 1 << 0,
   Entity_Spawned          = 1 << 1,
   Entity_Destoryed        = 1 << 2,
+
   Entity_Player           = 1 << 3,
   Entity_Enemy            = 1 << 4,
   Entity_EnemyProjectile  = 1 << 5,
@@ -56,7 +57,8 @@ enum entity_flags
   Entity_Loot             = 1 << 7,
 };
 
-GLOBAL_VARIABLE const entity_flags ENTITY_TYPES = (entity_flags)(Entity_Player|Entity_Enemy|Entity_EnemyProjectile|Entity_PlayerProjectile|Entity_Loot);
+GLOBAL_VARIABLE const entity_flags ENTITY_TYPES = (entity_flags)
+  (Entity_Player|Entity_Enemy|Entity_EnemyProjectile|Entity_PlayerProjectile|Entity_Loot);
 
 enum collision_type
 {
