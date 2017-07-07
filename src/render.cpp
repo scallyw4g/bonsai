@@ -1274,7 +1274,6 @@ BufferChunkMesh(
     v3 Offset = V3(0,0,0)
   )
 {
-  TIMED_FUNCTION();
   r32 FaceColors[FACE_COLOR_SIZE];
 
   v3 ModelBasisP =

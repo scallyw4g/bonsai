@@ -6,6 +6,8 @@
 static gl_extensions *GL_Global;
 static const char *GlobalGlslVersion;
 
+GLOBAL_VARIABLE model PlayerModelGlobal = {};
+GLOBAL_VARIABLE model EnemyModelGlobal = {};
 GLOBAL_VARIABLE s32 FramesToWaitBeforeSpawningPlayer = FRAMES_TO_WAIT_BEFORE_SPAWNING_PLAYER;
 
 #include <game.h>
@@ -52,21 +54,17 @@ AllocateEntity(platform *Plat, memory_arena *Storage, chunk_dimension ModelDim)
 void
 AllocateGameModels(platform *Plat, game_state *GameState)
 {
-  for (s32 ModelIndex = 0;
-      ModelIndex < TOTAL_PROJECTILE_COUNT;
-      ++ModelIndex)
-  {
-    GameState->Projectiles[ModelIndex] =
-      AllocateEntity(Plat, GameState->world->WorldStorage.Arena, PROJECTILE_AABB);
-  }
-
+  PlayerModelGlobal = LoadModel(GameState->world->WorldStorage.Arena, PLAYER_MODEL);
+  EnemyModelGlobal = LoadModel(GameState->world->WorldStorage.Arena, ENEMY_MODEL);
 }
 
 entity *
-AllocateEntity(platform *Plat, memory_arena *Storage, const char *ModelPath)
+AllocateEntity(platform *Plat, memory_arena *Storage, model Model)
 {
+  Assert(Model.Chunk);
+
   entity *Entity = PUSH_STRUCT_CHECKED(entity, Storage, 1);
-  Entity->Model = LoadModel(Plat->Memory, ModelPath);
+  Entity->Model = Model;
 
   Entity->Scale = 1.0f;
 
@@ -78,7 +76,7 @@ AllocatePlayer(platform *Plat, memory_arena *Storage, canonical_position Initial
 {
   v3 CollisionVolumeRadius = DEBUG_ENTITY_COLLISION_VOL_RADIUS;
 
-  entity *Player = AllocateEntity(Plat, Storage, ModelPath);
+  entity *Player = AllocateEntity(Plat, Storage, PlayerModelGlobal);
   /* entity *Player = AllocateEntity(Plat, Storage, DEBUG_ENTITY_DIM); */
 
   InitEntity(Player, CollisionVolumeRadius, InitialP, Drag);
@@ -462,37 +460,39 @@ GameInit( platform *Plat )
 
   AssertNoGlErrors;
 
-  canonical_position PlayerInitialP = {};
-  entity *Player = AllocatePlayer(Plat, Plat->Memory, PlayerInitialP, PLAYER_DRAG, PLAYER_MODEL);
-  if (!Player) { Error("Error Allocating Player"); return False; }
-
   game_state *GameState = PUSH_STRUCT_CHECKED(game_state, Plat->Memory, 1);
   GameState->Plat = Plat;
-  GameState->Player = Player;
   GameState->Camera = Camera;
   GameState->RG = RG;
   GameState->SG = SG;
   GameState->DebugRG = DebugRG;
 
-  GameState->Entities[0] = Player;
+
+  canonical_position PlayerInitialP = {};
 
   World *world = AllocateAndInitWorld(GameState, PlayerInitialP.WorldP, VISIBLE_REGION_RADIUS);
   if (!world) { Error("Error Allocating world"); return False; }
+
+  AllocateGameModels(Plat, GameState);
+
+  entity *Player = AllocatePlayer(Plat, Plat->Memory, PlayerInitialP, PLAYER_DRAG, PLAYER_MODEL);
+  if (!Player) { Error("Error Allocating Player"); return False; }
+  GameState->Player = Player;
+
+  GameState->Entities[0] = Player;
 
   for (s32 EntityIndex = PLAYER_COUNT;
       EntityIndex < TOTAL_ENTITY_COUNT;
       ++ EntityIndex)
   {
     GameState->Entities[EntityIndex] =
-      AllocateEntity(Plat, GameState->world->WorldStorage.Arena, ENEMY_MODEL);
+      AllocateEntity(Plat, GameState->world->WorldStorage.Arena, EnemyModelGlobal);
 
     GameState->Entities[EntityIndex]->Scale = 0.25f;
       /* AllocateEntity(Plat, GameState->world->WorldStorage.Arena, DEBUG_ENTITY_DIM); */
   }
 
   AllocateProjectiles(Plat, GameState);
-
-  AllocateGameModels(Plat, GameState);
 
   return GameState;
 }
