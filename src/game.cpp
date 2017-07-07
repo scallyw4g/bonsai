@@ -168,7 +168,7 @@ void
 SpawnEnemies(game_state *GameState)
 {
   TIMED_FUNCTION();
-  entity **Entities = GameState->Entities;
+  entity **Enemies = GameState->Enemies;
 
   // Fire roughly every 32 frames
   s32 SpawnEnemies = (rand() % ENEMY_SPAWN_RATE) == 0;
@@ -179,14 +179,14 @@ SpawnEnemies(game_state *GameState)
       EntityIndex < TOTAL_ENTITY_COUNT;
       ++EntityIndex)
   {
-    entity *Enemy = Entities[EntityIndex];
+    entity *Enemy = Enemies[EntityIndex];
 
-    if (IsPlayer(Enemy) || IsLoot(Enemy))
+    if (IsLoot(Enemy))
         continue;
 
     if ( Destroyed(Enemy) || Unspawned(Enemy) )
     {
-      SpawnEnemy(GameState->world, Entities, Enemy);
+      SpawnEnemy(GameState->world, Enemies, Enemy);
       return;
     }
   }
@@ -319,9 +319,9 @@ SimulateEnemies(game_state *GameState, entity *Player, r32 dt)
         EnemyIndex < TOTAL_ENTITY_COUNT;
         ++EnemyIndex )
   {
-    entity *Enemy = GameState->Entities[EnemyIndex];
+    entity *Enemy = GameState->Enemies[EnemyIndex];
 
-    if (IsPlayer(Enemy) || !Spawned(Enemy) || IsLoot(Enemy))
+    if (!Spawned(Enemy) || IsLoot(Enemy))
         continue;
 
     v3 PlayerP = GetAbsoluteP(Player->P);
@@ -479,16 +479,14 @@ GameInit( platform *Plat )
   if (!Player) { Error("Error Allocating Player"); return False; }
   GameState->Player = Player;
 
-  GameState->Entities[0] = Player;
-
-  for (s32 EntityIndex = PLAYER_COUNT;
+  for (s32 EntityIndex = 0;
       EntityIndex < TOTAL_ENTITY_COUNT;
       ++ EntityIndex)
   {
-    GameState->Entities[EntityIndex] =
+    GameState->Enemies[EntityIndex] =
       AllocateEntity(Plat, GameState->world->WorldStorage.Arena, EnemyModelGlobal);
 
-    GameState->Entities[EntityIndex]->Scale = 0.25f;
+    GameState->Enemies[EntityIndex]->Scale = 0.25f;
       /* AllocateEntity(Plat, GameState->world->WorldStorage.Arena, DEBUG_ENTITY_DIM); */
   }
 
@@ -625,10 +623,12 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
       EntityIndex < TOTAL_ENTITY_COUNT;
       ++ EntityIndex)
   {
-    entity *Enemy = GameState->Entities[EntityIndex];
+    entity *Enemy = GameState->Enemies[EntityIndex];
     DrawEntity(Plat, world, Enemy, Camera, RG, SG);
   }
   END_BLOCK("Entities");
+
+  DrawEntity(Plat, world, GameState->Player, Camera, RG, SG);
 
   FlushRenderBuffers(Plat, world, RG, SG, Camera);
 

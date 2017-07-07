@@ -616,17 +616,17 @@ GetCollision(entity **Entities, entity *Entity)
 void
 ProcessCollisionRules(game_state *GameState, entity *Entity)
 {
-  // Collide against Entities
+  // Collide against Enemies
   for (s32 EntityIndex = 0;
       EntityIndex < TOTAL_ENTITY_COUNT;
       ++EntityIndex)
   {
-    entity *TestEntity = GameState->Entities[EntityIndex];
-    if (TestEntity == Entity)
+    entity *TestEnemy = GameState->Enemies[EntityIndex];
+    if (TestEnemy == Entity)
       continue;
 
-    if (GetCollision(Entity, TestEntity))
-      ProcessCollisionRule(Entity, TestEntity);
+    if (GetCollision(Entity, TestEnemy))
+      ProcessCollisionRule(Entity, TestEnemy);
   }
 
   // Collide against Projectiles
