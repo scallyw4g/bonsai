@@ -116,6 +116,7 @@ DEBUG_GLOBAL u64 LastFrameCycleCount = 0;
 void
 DebugFrameEnd(debug_text_render_group *RG)
 {
+  TIMED_FUNCTION();
   debug_state *DebugState = GetDebugState();
 
   u64 CurrentFrameCycleCount = DebugState->GetCycleCount();

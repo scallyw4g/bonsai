@@ -64,9 +64,9 @@
 
 #define ENEMY_MODEL MODELS_PATH"/tie-fighter.vox"
 
-#define TOTAL_TRIGGER_COUNT    8
-#define TOTAL_ENTITY_COUNT     12
+#define TOTAL_ENTITY_COUNT     24
 #define TOTAL_PROJECTILE_COUNT 128
+#define TOTAL_MODEL_COUNT      8
 
 #define ENEMY_SPEED 220
 #define PLAYER_SPEED 150
@@ -75,7 +75,7 @@
 #define ENEMY_DRAG V3(0.9f, 0.9f, 0.0f)
 #define ENEMY_SPAWN_RATE 32
 
-#define LOOT_CHANCE 6
+#define LOOT_CHANCE 1
 
 #define PROJECTILE_DRAG V3(1,1,1)
 #define PROJECTILE_AABB Chunk_Dimension(1,3,1)
@@ -90,7 +90,7 @@
 #define DEBUG_HIGHLIGHT_VOID_CHUNKS   0
 #define DEBUG_DRAW_WORLD_AXIES        0
 #define DEBUG_OPTIMIZE_WORLD_GC       1
-#define DEBUG_THREAD_COUNT_BIAS       -4
+#define DEBUG_THREAD_COUNT_BIAS       0
 
 #define DEBUG_FONT_SIZE               24
 #define DEFAULT_LINE_THICKNESS       0.5f

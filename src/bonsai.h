@@ -184,10 +184,15 @@ struct Camera_Object
   v3 Up;
 };
 
+struct model
+{
+  chunk_data *Chunk;
+  chunk_dimension Dim;
+};
+
 struct entity
 {
-  chunk_data *Model;
-  chunk_dimension ModelDim;
+  model Model;
   v3 CollisionVolumeRadius;
 
   v3 Velocity;

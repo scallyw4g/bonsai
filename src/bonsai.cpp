@@ -103,12 +103,12 @@ FillChunk(chunk_data *chunk, chunk_dimension Dim, u32 ColorIndex = BLACK)
   for (int i = 0; i < Vol; ++i)
   {
     chunk->Voxels[i].Data = SetFlag(chunk->Voxels[i].Data, Voxel_Filled     |
-                                                             Voxel_TopFace    |
-                                                             Voxel_BottomFace |
-                                                             Voxel_FrontFace  |
-                                                             Voxel_BackFace   |
-                                                             Voxel_LeftFace   |
-                                                             Voxel_RightFace);
+                                                           Voxel_TopFace    |
+                                                           Voxel_BottomFace |
+                                                           Voxel_FrontFace  |
+                                                           Voxel_BackFace   |
+                                                           Voxel_LeftFace   |
+                                                           Voxel_RightFace);
 
 
     SetVoxelColor(&chunk->Voxels[i], ColorIndex);
@@ -496,7 +496,7 @@ SpawnLoot(entity *Entity)
     Entity->Flags = Entity_Uninitialized;
     Entity->Flags = (entity_flags)SetFlag(Entity->Flags, Entity_Loot|Entity_Spawned);
     Entity->Velocity = V3(0,0,0);
-    FillChunk(Entity->Model, Entity->ModelDim, 42);
+    FillChunk(Entity->Model.Chunk, Entity->Model.Dim, 42);
   }
 }
 
@@ -551,7 +551,7 @@ ProcessCollisionRule(entity *First, entity *Second)
         Loot=First;
       }
 
-      Player->RateOfFire = 0.25f + (Player->RateOfFire/1.7f);
+      Player->RateOfFire = 0.10f + (Player->RateOfFire/1.7f);
       Unspawn(Loot);
 
     } break;
@@ -661,7 +661,7 @@ void
 UpdateCameraP(platform *Plat, World *world, entity *Player, Camera_Object *Camera)
 {
   chunk_dimension WorldChunkDim = world->ChunkDim;
-  canonical_position NewTarget = Canonicalize(WorldChunkDim, Player->P.Offset, Player->P.WorldP) + (Player->ModelDim/2.0f);
+  canonical_position NewTarget = Canonicalize(WorldChunkDim, Player->P.Offset, Player->P.WorldP) + (Player->Model.Dim/2.0f);
 
   v3 TargetDelta = GetRenderP(WorldChunkDim, NewTarget, Camera) - GetRenderP(WorldChunkDim, Camera->Target, Camera);
 

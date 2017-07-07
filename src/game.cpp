@@ -39,21 +39,34 @@ entity *
 AllocateEntity(platform *Plat, memory_arena *Storage, chunk_dimension ModelDim)
 {
   entity *Entity = PUSH_STRUCT_CHECKED(entity, Storage, 1);
-  Entity->Model = AllocateChunk(Storage, ModelDim);
+  Entity->Model.Chunk = AllocateChunk(Storage, ModelDim);
 
-  FillChunk(Entity->Model, ModelDim, BLACK);
-  Entity->ModelDim = ModelDim;
+  FillChunk(Entity->Model.Chunk, ModelDim, BLACK);
+  Entity->Model.Dim = ModelDim;
 
   Entity->Scale = 1.0f;
 
   return Entity;
 }
 
+void
+AllocateGameModels(platform *Plat, game_state *GameState)
+{
+  for (s32 ModelIndex = 0;
+      ModelIndex < TOTAL_PROJECTILE_COUNT;
+      ++ModelIndex)
+  {
+    GameState->Projectiles[ModelIndex] =
+      AllocateEntity(Plat, GameState->world->WorldStorage.Arena, PROJECTILE_AABB);
+  }
+
+}
+
 entity *
 AllocateEntity(platform *Plat, memory_arena *Storage, const char *ModelPath)
 {
   entity *Entity = PUSH_STRUCT_CHECKED(entity, Storage, 1);
-  Entity->Model = LoadVox(Plat->Memory, ModelPath, Entity);
+  Entity->Model = LoadModel(Plat->Memory, ModelPath);
 
   Entity->Scale = 1.0f;
 
@@ -354,18 +367,6 @@ SpawnProjectile(game_state *GameState, canonical_position *P, v3 Velocity, entit
   return;
 }
 
-/* inline b32 */
-/* CanFire(entity *Player) */
-/* { */
-/*   b32 Result = False; */
-/*   if ((Player->FireCooldown -= dt) < 0) */
-/*   { */
-/*     Player->FireCooldown = Player->RateOfFire; */
-/*     Result = True; */
-/*   } */
-/*   return Result; */
-/* } */
-
 void
 SimulatePlayer( game_state *GameState, entity *Player, input *Input, r32 dt )
 {
@@ -490,6 +491,8 @@ GameInit( platform *Plat )
   }
 
   AllocateProjectiles(Plat, GameState);
+
+  AllocateGameModels(Plat, GameState);
 
   return GameState;
 }
@@ -630,6 +633,10 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
   FlushRenderBuffers(Plat, world, RG, SG, Camera);
 
   DEBUG_FRAME_END(DebugRG);
+
+  char dtBuffer[32];
+  sprintf(dtBuffer, "%f", Plat->dt);
+  PrintDebugText( DebugRG, dtBuffer, 10, 500, 15);
 
   DrawWorldToFullscreenQuad(Plat, WorldChunkDim, RG, SG, Camera);
 

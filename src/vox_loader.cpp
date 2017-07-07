@@ -130,10 +130,10 @@ ReadXYZIChunk(FILE *File, int* byteCounter)
   return nVoxels;
 }
 
-chunk_data*
-LoadVox(memory_arena *WorldStorage, char const *filepath, entity *Entity )
+model
+LoadModel(memory_arena *WorldStorage, char const *filepath)
 {
-  chunk_data *Result = 0;
+  model Result;
   s32 totalChunkBytes = 0;
 
   FILE *ModelFile = fopen(filepath, "r");
@@ -205,26 +205,28 @@ LoadVox(memory_arena *WorldStorage, char const *filepath, entity *Entity )
           // Add 1 to the max dimension to convert from indicies to positions
           chunk_dimension Max = Chunk_Dimension(maxX+1, maxY+1, maxZ+1);
 
-          Entity->ModelDim = Max - Min;;
+          chunk_dimension ModelDim = Max - Min;
 
           // TODO(Jesse): Load models in multiple chunks instead of one
           // monolithic one. The storage for chunks must be as large as the
           // largest chunk we will EVER load, which should definately not be
           // decided at compile time.
-          Result = AllocateChunk(WorldStorage, Entity->ModelDim);
-          if(!Result) { return False; }
+          Result.Chunk = AllocateChunk(WorldStorage, ModelDim);
+          Assert(Result.Chunk);
+
+          Result.Dim = ModelDim;
 
           for( int i = 0; i < numVoxels; ++ i)
           {
             unpacked_voxel V = LocalVoxelCache[i];
 
             voxel_position RealP = V.Offset - Min;
-            Result->Voxels[ GetIndex(RealP, Result, Entity->ModelDim) ] = PackVoxel(&V);;
+            Result.Chunk->Voxels[ GetIndex(RealP, Result.Chunk, ModelDim) ] = PackVoxel(&V);;
           }
 
           free(LocalVoxelCache);
 
-          Result->flags = SetFlag(Result->flags, Chunk_Initialized);
+          Result.Chunk->flags = SetFlag(Result.Chunk->flags, Chunk_Initialized);
 
           // TODO(Jesse): Are we really done?
           goto loaded;

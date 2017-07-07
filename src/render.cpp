@@ -563,6 +563,7 @@ FlushRenderBuffers(
     Camera_Object *Camera
   )
 {
+  TIMED_FUNCTION();
 
   RenderShadowMap(world, SG, RG, Camera);
 
@@ -1273,6 +1274,7 @@ BufferChunkMesh(
     v3 Offset = V3(0,0,0)
   )
 {
+  TIMED_FUNCTION();
   r32 FaceColors[FACE_COLOR_SIZE];
 
   v3 ModelBasisP =
@@ -2273,7 +2275,7 @@ DrawEntity(
   if (!Spawned(Entity))
     return;
 
-  chunk_data *Model = Entity->Model;
+  chunk_data *Model = Entity->Model.Chunk;
 
 #if DEBUG_DRAW_COLLISION_VOLUMES
   aabb AABB = GetRenderSpaceAABB(world->ChunkDim, Entity, Camera);
@@ -2284,7 +2286,7 @@ DrawEntity(
     return;
 
   if ( IsSet(Model->flags, Chunk_RebuildBoundary) )
-    BuildEntityBoundaryVoxels(Model, Entity->P.WorldP, Entity->ModelDim);
+    BuildEntityBoundaryVoxels(Model, Entity->P.WorldP, Entity->Model.Dim);
 
 
   BufferChunkMesh(Plat, world, Model, Entity->P.WorldP, RG, SG, Camera, Entity->Scale, Entity->P.Offset);
