@@ -556,22 +556,19 @@ Spawned(entity *Entity)
 }
 
 inline r32
-RandomBilateral(random_series *Entropy)
-{
-  // TODO(Jesse): Real RNG!
-  Entropy->Seed = (Entropy->Seed * 494437) ^ (Entropy->Seed * 95073);
-
-  r32 Result = ((r32)(Entropy->Seed/UINT_MAX) * 2.0f) - 1.0f;
-  return Result;
-}
-
-inline r32
 RandomUnilateral(random_series *Entropy)
 {
   // TODO(Jesse): Real RNG!
   Entropy->Seed = (Entropy->Seed * 494437) ^ (Entropy->Seed * 95073);
 
-  r32 Result = (r32)(Entropy->Seed/UINT_MAX);
+  r32 Result = (r32)Entropy->Seed/(r32)UINT_MAX;
+  return Result;
+}
+
+inline r32
+RandomBilateral(random_series *Entropy)
+{
+  r32 Result = (RandomUnilateral(Entropy) * 2.0f) - 1.0f;
   return Result;
 }
 

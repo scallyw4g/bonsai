@@ -287,9 +287,29 @@ SpawnParticleSystem(game_state *GameState, canonical_position P)
     {
       System->P = P;
       SetFlag(System, ParticleSystem_Spawned);
+      System->Entropy.Seed = 54325;
       break;
     }
   }
+
+  return;
+}
+
+void
+SpawnPlayer(game_state *GameState, entity *Player )
+{
+  World *world = GameState->world;
+  Player->Acceleration = V3(0,0,0);
+  Player->Velocity = V3(0,0,0);
+  Player->Health = 3;
+  Player->RateOfFire = 1.0f;
+
+  Player->Model = PlayerModelGlobal;
+  Player->Scale = 0.25f;
+
+  SetFlag(Player, (entity_flag)(Entity_Spawned|Entity_Player));
+
+  SpawnParticleSystem(GameState, Player->P);
 
   return;
 }
@@ -483,7 +503,7 @@ SimulatePlayer( game_state *GameState, entity *Player, input *Input, r32 dt )
   else
   {
     if (--FramesToWaitBeforeSpawningPlayer <= 0)
-      SpawnPlayer( GameState->world, Player );
+      SpawnPlayer( GameState, Player );
   }
 
   return;
@@ -511,9 +531,11 @@ SimulateParticleSystems(game_state *GameState, r32 dt)
       particle *Particle = &System->Particles[ParticleIndex];
       Particle->Offset += Normalize(Particle->Offset) * dt;
 
+      // Swap out last partcile for the current partcile and decrement
       if ( (Particle->RemainingLifespan -= dt) < 0)
       {
-        Assert(!"Decrement Active Particles and swap last one out");
+        particle *SwapParticle = &System->Particles[System->ActiveParticles--];
+        *Particle = *SwapParticle;
       }
     }
 
@@ -540,7 +562,7 @@ void
 AllocateParticleSystems(platform *Plat, game_state *GameState)
 {
   for (s32 SystemIndex = 0;
-      SystemIndex < TOTAL_ENTITY_COUNT;
+      SystemIndex < TOTAL_PARTICLE_SYSTEMS;
       ++ SystemIndex)
   {
     GameState->ParticleSystems[SystemIndex] =
@@ -669,6 +691,8 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
   SimulateProjectiles(GameState, Plat->dt);
 
   SimulatePlayer(GameState, Player, &Plat->Input, Plat->dt);
+
+  SimulateParticleSystems(GameState, Plat->dt);
   END_BLOCK("Sim");
 
   UpdateCameraP(Plat, world, Player, Camera);

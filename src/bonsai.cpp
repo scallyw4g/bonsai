@@ -435,22 +435,6 @@ QueueChunksForInit(game_state *GameState, world_position WorldDisp)
   }
 }
 
-void
-SpawnPlayer( World *world, entity *Player )
-{
-  Player->Acceleration = V3(0,0,0);
-  Player->Velocity = V3(0,0,0);
-  Player->Health = 3;
-  Player->RateOfFire = 1.0f;
-
-  Player->Model = PlayerModelGlobal;
-  Player->Scale = 0.25f;
-
-  SetFlag(Player, (entity_flag)(Entity_Spawned|Entity_Player));
-
-  return;
-}
-
 inline b32
 Intersect(aabb *First, aabb *Second)
 {
