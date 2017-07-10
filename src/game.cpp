@@ -8,6 +8,7 @@ static const char *GlobalGlslVersion;
 
 GLOBAL_VARIABLE model PlayerModelGlobal = {};
 GLOBAL_VARIABLE model EnemyModelGlobal = {};
+GLOBAL_VARIABLE model LootModelGlobal = {};
 GLOBAL_VARIABLE s32 FramesToWaitBeforeSpawningPlayer = FRAMES_TO_WAIT_BEFORE_SPAWNING_PLAYER;
 
 #include <game.h>
@@ -56,16 +57,15 @@ AllocateGameModels(platform *Plat, game_state *GameState)
 {
   PlayerModelGlobal = LoadModel(GameState->world->WorldStorage.Arena, PLAYER_MODEL);
   EnemyModelGlobal = LoadModel(GameState->world->WorldStorage.Arena, ENEMY_MODEL);
+  LootModelGlobal = LoadModel(GameState->world->WorldStorage.Arena, LOOT_MODEL);
+
+  return;
 }
 
 entity *
-AllocateEntity(platform *Plat, memory_arena *Storage, model Model)
+AllocateEntity(platform *Plat, memory_arena *Storage)
 {
-  Assert(Model.Chunk);
-
   entity *Entity = PUSH_STRUCT_CHECKED(entity, Storage, 1);
-  Entity->Model = Model;
-
   Entity->Scale = 1.0f;
 
   return Entity;
@@ -76,7 +76,7 @@ AllocatePlayer(platform *Plat, memory_arena *Storage, canonical_position Initial
 {
   v3 CollisionVolumeRadius = DEBUG_ENTITY_COLLISION_VOL_RADIUS;
 
-  entity *Player = AllocateEntity(Plat, Storage, PlayerModelGlobal);
+  entity *Player = AllocateEntity(Plat, Storage);
   /* entity *Player = AllocateEntity(Plat, Storage, DEBUG_ENTITY_DIM); */
 
   InitEntity(Player, CollisionVolumeRadius, InitialP, Drag);
@@ -155,6 +155,9 @@ SpawnEnemy(World *world, entity **WorldEntities, entity *Enemy)
   SetFlag(Enemy, (entity_flag)(Entity_Spawned|Entity_Enemy));
 
   Enemy->Acceleration = V3(0, -1, 0);
+
+  Enemy->Model = EnemyModelGlobal;
+  Enemy->Scale = 0.25f;
 
   // Respawn entity if it collides against the world or current entities
   if ( GetCollision(world, Enemy).didCollide ||
@@ -484,7 +487,7 @@ GameInit( platform *Plat )
       ++ EntityIndex)
   {
     GameState->Enemies[EntityIndex] =
-      AllocateEntity(Plat, GameState->world->WorldStorage.Arena, EnemyModelGlobal);
+      AllocateEntity(Plat, GameState->world->WorldStorage.Arena);
 
     GameState->Enemies[EntityIndex]->Scale = 0.25f;
       /* AllocateEntity(Plat, GameState->world->WorldStorage.Arena, DEBUG_ENTITY_DIM); */

@@ -63,6 +63,7 @@
 #define PLAYER_MODEL MODELS_PATH"/tie-fighter.vox"
 
 #define ENEMY_MODEL MODELS_PATH"/tie-fighter.vox"
+#define LOOT_MODEL MODELS_PATH"/3x3x3.vox"
 
 #define TOTAL_ENTITY_COUNT     24
 #define TOTAL_PROJECTILE_COUNT 128

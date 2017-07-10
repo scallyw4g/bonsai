@@ -443,6 +443,9 @@ SpawnPlayer( World *world, entity *Player )
   Player->Health = 3;
   Player->RateOfFire = 1.0f;
 
+  Player->Model = PlayerModelGlobal;
+  Player->Scale = 0.25f;
+
   SetFlag(Player, (entity_flag)(Entity_Spawned|Entity_Player));
 
   return;
@@ -479,14 +482,14 @@ GetCollision(entity *First, entity *Second)
 inline void
 SpawnLoot(entity *Entity)
 {
-  b32 SpawnLoot = (rand() % LOOT_CHANCE) == 0;
+  b32 ShouldSpawnLoot = (rand() % LOOT_CHANCE) == 0;
 
-  if (SpawnLoot)
+  if (ShouldSpawnLoot)
   {
     Entity->Flags = Entity_Uninitialized;
     SetFlag(Entity, (entity_flag)(Entity_Loot|Entity_Spawned));
     Entity->Velocity = V3(0,0,0);
-    FillChunk(Entity->Model.Chunk, Entity->Model.Dim, 42);
+    Entity->Model = LootModelGlobal;
   }
 }
 
