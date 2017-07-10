@@ -21,14 +21,14 @@ InitChunkPerlin( game_state *GameState, world_chunk *WorldChunk )
 #if DEBUG_OPTIMIZE_WORLD_GC
   // If the chunk was marked as garbage before it had been initialized we can
   // simply mark it as collected and skip it.
-  if ( IsSet(WorldChunk->Data->flags, Chunk_Garbage) )
+  if ( IsSet(WorldChunk, Chunk_Garbage) )
   {
-    WorldChunk->Data->flags = SetFlag(WorldChunk->Data->flags, Chunk_Collected);
+    SetFlag(WorldChunk, Chunk_Collected);
     return;
   }
 #endif
 
-  ZeroChunk(WorldChunk->Data);
+  ZeroChunk(WorldChunk->Data, Volume(WORLD_CHUNK_DIM));
 
   chunk_data *chunk = WorldChunk->Data;
   /* CALLGRIND_TOGGLE_COLLECT; */
@@ -41,18 +41,11 @@ InitChunkPerlin( game_state *GameState, world_chunk *WorldChunk )
     {
       for ( int x = 0; x < Dim.x; ++ x)
       {
-        int i = GetIndex(Voxel_Position(x,y,z), chunk, Dim);
-        chunk->Voxels[i].Data = 0;
+        s32 i = GetIndex(Voxel_Position(x,y,z), chunk, Dim);
+        chunk->Voxels[i].Flags = Voxel_Uninitialzied;
+        chunk->Voxels[i].Color = 0;
 
-        voxel_position P = Voxel_Position(x,y,z);
-
-        SetVoxelP(&chunk->Voxels[i], P);
-        SetVoxelColor(&chunk->Voxels[i], 42);
-
-        Assert( GetVoxelP(&chunk->Voxels[i]) == P );
-        Assert( NotSet( chunk->Voxels[i].Data, Voxel_Filled) );
-
-
+        Assert( NotSet(&chunk->Voxels[i], Voxel_Filled) );
 
 #if DEBUG_WORLD_GENERATION
         if ( (y == 0 && WorldChunk->WorldP.y == 3) )
@@ -73,20 +66,17 @@ InitChunkPerlin( game_state *GameState, world_chunk *WorldChunk )
 
         Assert(Noise01 == 0 || Noise01 == 1);
 
-        chunk->Voxels[i].Data = SetFlag( chunk->Voxels[i].Data, Noise01 * Voxel_Filled );
+        SetFlag(&chunk->Voxels[i], (voxel_flag)(Noise01 * Voxel_Filled));
 
         if (Noise01 == 0)
         {
-          Assert( NotSet( chunk->Voxels[i].Data, Voxel_Filled) );
+          Assert( NotSet(&chunk->Voxels[i], Voxel_Filled) );
         }
         else
         {
-          Assert( IsSet( chunk->Voxels[i].Data, Voxel_Filled) );
+          Assert( IsSet(&chunk->Voxels[i], Voxel_Filled) );
           WorldChunk->Filled ++;
         }
-
-        voxel_position AssignedP = GetVoxelP(&chunk->Voxels[i]);
-        Assert( AssignedP == P );
 #endif
       }
     }
@@ -102,22 +92,22 @@ FillChunk(chunk_data *chunk, chunk_dimension Dim, u32 ColorIndex = BLACK)
 
   for (int i = 0; i < Vol; ++i)
   {
-    chunk->Voxels[i].Data = SetFlag(chunk->Voxels[i].Data, Voxel_Filled     |
-                                                           Voxel_TopFace    |
-                                                           Voxel_BottomFace |
-                                                           Voxel_FrontFace  |
-                                                           Voxel_BackFace   |
-                                                           Voxel_LeftFace   |
-                                                           Voxel_RightFace);
+    SetFlag(&chunk->Voxels[i], (voxel_flag)(Voxel_Filled     |
+                                            Voxel_TopFace    |
+                                            Voxel_BottomFace |
+                                            Voxel_FrontFace  |
+                                            Voxel_BackFace   |
+                                            Voxel_LeftFace   |
+                                            Voxel_RightFace));
 
 
-    SetVoxelColor(&chunk->Voxels[i], ColorIndex);
+    chunk->Voxels[i].Color = ColorIndex;
 
-    chunk->BoundaryVoxels[i] = chunk->Voxels[i];
+    chunk->BoundaryVoxels[i] = boundary_voxel(&chunk->Voxels[i], GetPosition(i, Dim));
     chunk->BoundaryVoxelCount = i;
   }
 
-  chunk->flags = SetFlag(chunk->flags, Chunk_Initialized);
+  SetFlag(chunk, Chunk_Initialized);
 }
 
 void
@@ -131,7 +121,7 @@ InitializeVoxels( game_state *GameState, world_chunk *Chunk )
   /*   Chunk->Filled = Volume(WORLD_CHUNK_DIM); */
   /* } */
 
-  Chunk->Data->flags = SetFlag(Chunk->Data->flags, Chunk_Initialized);
+  SetFlag(Chunk, Chunk_Initialized);
   return;
 }
 
@@ -149,22 +139,22 @@ InitializeVoxels(void *Input)
 
   InitializeVoxels(GameState, Chunk);
 
-  Chunk->Data->flags = SetFlag(Chunk->Data->flags, Chunk_Initialized);
+  SetFlag(Chunk, Chunk_Initialized);
   return;
 }
 
 inline void
 QueueChunkForInit(game_state *GameState, world_chunk *Chunk)
 {
-  Assert( NotSet(Chunk->Data->flags, Chunk_Queued ) );
-  Assert( NotSet(Chunk->Data->flags, Chunk_Initialized) );
+  Assert( NotSet(Chunk, Chunk_Queued ) );
+  Assert( NotSet(Chunk, Chunk_Initialized) );
 
   work_queue_entry Entry;
   Entry.Callback = &InitializeVoxels;
   Entry.Input = (void*)Chunk;
   Entry.GameState = GameState;
 
-  Chunk->Data->flags = SetFlag(Chunk->Data->flags, Chunk_Queued);
+  SetFlag(Chunk, Chunk_Queued);
 
   GameState->Plat->PushWorkQueueEntry(&GameState->Plat->Queue, &Entry);
 
@@ -406,8 +396,8 @@ GetFreeChunk(platform *Plat, World *world, world_position P)
     InsertChunkIntoWorld(world, Result);
   }
 
-  Assert( NotSet(Result->Data->flags, Chunk_Queued) );
-  Assert( NotSet(Result->Data->flags, Chunk_Initialized) );
+  Assert( NotSet(Result, Chunk_Queued) );
+  Assert( NotSet(Result, Chunk_Initialized) );
 
   return Result;
 }
@@ -453,7 +443,7 @@ SpawnPlayer( World *world, entity *Player )
   Player->Health = 3;
   Player->RateOfFire = 1.0f;
 
-  Player->Flags = (entity_flags)SetFlag(Player->Flags, Entity_Spawned|Entity_Player);
+  SetFlag(Player, (entity_flag)(Entity_Spawned|Entity_Player));
 
   return;
 }
@@ -494,7 +484,7 @@ SpawnLoot(entity *Entity)
   if (SpawnLoot)
   {
     Entity->Flags = Entity_Uninitialized;
-    Entity->Flags = (entity_flags)SetFlag(Entity->Flags, Entity_Loot|Entity_Spawned);
+    SetFlag(Entity, (entity_flag)(Entity_Loot|Entity_Spawned));
     Entity->Velocity = V3(0,0,0);
     FillChunk(Entity->Model.Chunk, Entity->Model.Dim, 42);
   }
@@ -503,8 +493,7 @@ SpawnLoot(entity *Entity)
 inline void
 Unspawn(entity *Entity)
 {
-  Entity->Flags = (entity_flags)UnSetFlag(Entity->Flags, Entity_Spawned);
-
+  UnSetFlag(Entity, Entity_Spawned);
   return;
 }
 
@@ -534,9 +523,9 @@ ProcessCollisionRule(entity *First, entity *Second)
 {
   Assert(First!=Second);
 
-  entity_flags JointFlags = (entity_flags)(First->Flags | Second->Flags);
+  entity_flag JointFlags = (entity_flag)(First->Flags | Second->Flags);
 
-  entity_flags Rule = (entity_flags)(ENTITY_TYPES & JointFlags);
+  entity_flag Rule = (entity_flag)(ENTITY_TYPES & JointFlags);
 
   switch (Rule)
   {

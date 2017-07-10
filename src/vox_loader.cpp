@@ -174,14 +174,14 @@ LoadModel(memory_arena *WorldStorage, char const *filepath)
 
         case ID_XYZI:
         {
-          s32 numVoxels = ReadXYZIChunk(ModelFile, &bytesRemaining);
+          s32 ModelVoxelCount = ReadXYZIChunk(ModelFile, &bytesRemaining);
 
           s32 maxX = 0, maxY = 0, maxZ = 0;
           s32 minX = INT_MAX, minY = INT_MAX, minZ = INT_MAX;
 
-          unpacked_voxel *LocalVoxelCache = (unpacked_voxel *)calloc(numVoxels, sizeof(unpacked_voxel) );
+          boundary_voxel *LocalVoxelCache = (boundary_voxel *)calloc(ModelVoxelCount, sizeof(boundary_voxel) );
           for( s32 VoxelCacheIndex = 0;
-               VoxelCacheIndex < numVoxels;
+               VoxelCacheIndex < ModelVoxelCount;
                ++VoxelCacheIndex)
           {
             s32 X = (s32)ReadChar(ModelFile, &bytesRemaining);
@@ -197,7 +197,8 @@ LoadModel(memory_arena *WorldStorage, char const *filepath)
             minY = Min(Y, minY);
             minZ = Min(Z, minZ);
 
-            LocalVoxelCache[VoxelCacheIndex] = GetUnpackedVoxel(X,Y,Z,W);
+            LocalVoxelCache[VoxelCacheIndex] = boundary_voxel(X,Y,Z,W);
+            SetFlag(&LocalVoxelCache[VoxelCacheIndex], Voxel_Filled);
           }
 
           chunk_dimension Min = Chunk_Dimension(minX, minY, minZ);
@@ -216,17 +217,18 @@ LoadModel(memory_arena *WorldStorage, char const *filepath)
 
           Result.Dim = ModelDim;
 
-          for( int i = 0; i < numVoxels; ++ i)
+          for( int VoxelCacheIndex = 0;
+               VoxelCacheIndex < ModelVoxelCount;
+               ++VoxelCacheIndex)
           {
-            unpacked_voxel V = LocalVoxelCache[i];
-
-            voxel_position RealP = V.Offset - Min;
-            Result.Chunk->Voxels[ GetIndex(RealP, Result.Chunk, ModelDim) ] = PackVoxel(&V);;
+            boundary_voxel *Voxel = &LocalVoxelCache[VoxelCacheIndex];
+            s32 Index = GetIndex(Voxel->Offset, Result.Chunk, Result.Dim);
+            Result.Chunk->Voxels[Index] = Voxel->V;
           }
 
           free(LocalVoxelCache);
 
-          Result.Chunk->flags = SetFlag(Result.Chunk->flags, Chunk_Initialized);
+          SetFlag(&Result, Chunk_Initialized);
 
           // TODO(Jesse): Are we really done?
           goto loaded;

@@ -33,17 +33,18 @@ enum chunk_flag
 
 enum voxel_flag
 {
-  Voxel_Filled     = 1 << (FINAL_COLOR_BIT + 0),
+  Voxel_Uninitialzied =   0,
+  Voxel_Filled     = 1 << 0,
 
-  Voxel_LeftFace   = 1 << (FINAL_COLOR_BIT + 1),
-  Voxel_RightFace  = 1 << (FINAL_COLOR_BIT + 2),
-  Voxel_TopFace    = 1 << (FINAL_COLOR_BIT + 3),
-  Voxel_BottomFace = 1 << (FINAL_COLOR_BIT + 4),
-  Voxel_FrontFace  = 1 << (FINAL_COLOR_BIT + 5),
-  Voxel_BackFace   = 1 << (FINAL_COLOR_BIT + 6)
+  Voxel_LeftFace   = 1 << 1,
+  Voxel_RightFace  = 1 << 2,
+  Voxel_TopFace    = 1 << 3,
+  Voxel_BottomFace = 1 << 4,
+  Voxel_FrontFace  = 1 << 5,
+  Voxel_BackFace   = 1 << 6,
 };
 
-enum entity_flags
+enum entity_flag
 {
   Entity_Uninitialized    = 0 << 0,
   Entity_Initialized      = 1 << 0,
@@ -57,7 +58,7 @@ enum entity_flags
   Entity_Loot             = 1 << 7,
 };
 
-GLOBAL_VARIABLE const entity_flags ENTITY_TYPES = (entity_flags)
+GLOBAL_VARIABLE const entity_flag ENTITY_TYPES = (entity_flag)
   (Entity_Player|Entity_Enemy|Entity_EnemyProjectile|Entity_PlayerProjectile|Entity_Loot);
 
 enum collision_type
@@ -68,16 +69,33 @@ enum collision_type
   Collision_Enemy_PlayerProjectile = Entity_Enemy |Entity_PlayerProjectile,
 };
 
-struct unpacked_voxel
+struct voxel
 {
-  voxel_position Offset;
-  u8 ColorIndex;
   voxel_flag Flags;
+  u8 Color;
 };
 
-struct packed_voxel
+struct boundary_voxel
 {
-  u32 Data;
+  voxel V;
+  voxel_position Offset;
+
+  boundary_voxel(s32 x, s32 y, s32 z, s32 w)
+  {
+    this->Offset.x = x;
+    this->Offset.y = y;
+    this->Offset.z = z;
+
+    this->V.Color = w;
+
+    this->V.Flags = Voxel_Uninitialzied;
+  }
+
+  boundary_voxel(voxel *V, voxel_position Offset)
+  {
+    this->V = *V;
+    this->Offset = Offset;
+  }
 };
 
 struct mesh_buffer_target
@@ -94,21 +112,23 @@ struct mesh_buffer_target
 
 struct chunk_data
 {
-  u32 flags;
+  chunk_flag Flags;
 
   s32 BoundaryVoxelCount;
 
   mesh_buffer_target Mesh;
 
-  packed_voxel *Voxels;
-  packed_voxel *BoundaryVoxels;
+  voxel *Voxels;
+  boundary_voxel *BoundaryVoxels;
 };
 
+#if 0
 struct mesh_block
 {
   v3 Meshes[64];
   mesh_block *Next;
 };
+#endif
 
 struct world_chunk
 {
@@ -204,7 +224,7 @@ struct entity
 
   Quaternion Rotation;
 
-  entity_flags Flags;
+  entity_flag Flags;
 
   r32 Scale = 1.0f;
 
@@ -248,36 +268,218 @@ struct World
 
 
 
-inline int
-UnSetFlag( int Flags, int Flag )
+inline void
+UnSetFlag( entity_flag *Flags, entity_flag Flag )
 {
-  int Result = (Flags & ~Flag);
-  return Result;
+  *Flags = (entity_flag)(*Flags & ~Flag);
+  return;
 }
 
-inline int
-SetFlag( int Flags, int Flag )
+inline void
+UnSetFlag( voxel_flag *Flags, voxel_flag Flag )
 {
-  int Result = (Flags | Flag);
-  return Result;
+  *Flags = (voxel_flag)(*Flags & ~Flag);
+  return;
+}
+
+inline void
+UnSetFlag( chunk_flag *Flags, chunk_flag Flag )
+{
+  *Flags = (chunk_flag)(*Flags & ~Flag);
+  return;
+}
+
+inline void
+UnSetFlag( chunk_data *Chunk, chunk_flag Flag )
+{
+  UnSetFlag(&Chunk->Flags, Flag);
+  return;
+}
+
+inline void
+UnSetFlag( world_chunk *Chunk, chunk_flag Flag )
+{
+  UnSetFlag(Chunk->Data, Flag);
+  return;
+}
+
+inline void
+UnSetFlag( entity *Entity, entity_flag Flag )
+{
+  UnSetFlag(&Entity->Flags, Flag);
+  return;
+}
+
+inline void
+SetFlag( voxel_flag *Flags, voxel_flag Flag )
+{
+  *Flags = (voxel_flag)(*Flags | Flag);
+  return;
+}
+
+inline void
+SetFlag( chunk_flag *Flags, chunk_flag Flag )
+{
+  *Flags = (chunk_flag)(*Flags | Flag);
+  return;
+}
+
+inline void
+SetFlag( entity_flag *Flags, entity_flag Flag )
+{
+  *Flags = (entity_flag)(*Flags | Flag);
+  return;
+}
+
+inline void
+SetFlag( entity *Entity, entity_flag Flag )
+{
+  SetFlag(&Entity->Flags, Flag);
+  return;
+}
+
+inline void
+SetFlag( chunk_data *Chunk, chunk_flag Flag )
+{
+  SetFlag(&Chunk->Flags, Flag);
+  return;
+}
+
+inline void
+SetFlag( world_chunk *Chunk, chunk_flag Flag )
+{
+  SetFlag(Chunk->Data, Flag);
+  return;
+}
+
+inline void
+SetFlag( model *Model, chunk_flag Flag )
+{
+  SetFlag(Model->Chunk, Flag);
+  return;
+}
+
+inline void
+SetFlag(voxel *Voxel, voxel_flag Flag )
+{
+  SetFlag(&Voxel->Flags, Flag);
+  return;
+}
+
+inline void
+SetFlag(boundary_voxel *Voxel, voxel_flag Flag )
+{
+  SetFlag(&Voxel->V.Flags, Flag);
+  return;
 }
 
 inline b32
-IsSet( int Flags, int Flag )
+IsSet( voxel_flag Flags, voxel_flag Flag )
 {
   b32 Result = ( (Flags & Flag) != 0 );
   return Result;
 }
 
 inline b32
-NotSet( int Flags, int Flag )
+IsSet( entity_flag Flags, entity_flag Flag )
+{
+  b32 Result = ( (Flags & Flag) != 0 );
+  return Result;
+}
+
+inline b32
+IsSet( chunk_flag Flags, chunk_flag Flag )
+{
+  b32 Result = ( (Flags & Flag) != 0 );
+  return Result;
+}
+
+inline b32
+IsSet( chunk_data *C, chunk_flag Flag )
+{
+  b32 Result = IsSet(C->Flags, Flag);
+  return Result;
+}
+
+inline b32
+IsSet( world_chunk *Chunk, chunk_flag Flag )
+{
+  b32 Result = IsSet(Chunk->Data, Flag);
+  return Result;
+}
+
+inline b32
+IsSet( voxel *V, voxel_flag Flag )
+{
+  b32 Result = IsSet(V->Flags, Flag);
+  return Result;
+}
+
+inline b32
+IsSet( boundary_voxel *V, voxel_flag Flag )
+{
+  b32 Result = IsSet(&V->V, Flag);
+  return Result;
+}
+
+inline b32
+IsSet( entity *Entity, entity_flag Flag )
+{
+  b32 Result = IsSet(Entity->Flags, Flag);
+  return Result;
+}
+
+inline b32
+NotSet( entity_flag Flags, entity_flag Flag )
 {
   b32 Result = !(IsSet(Flags, Flag));
   return Result;
 }
 
 inline b32
-Spawned(entity_flags Flags)
+NotSet( voxel_flag Flags, voxel_flag Flag )
+{
+  b32 Result = !(IsSet(Flags, Flag));
+  return Result;
+}
+
+inline b32
+NotSet( chunk_flag Flags, chunk_flag Flag )
+{
+  b32 Result = !(IsSet(Flags, Flag));
+  return Result;
+}
+
+inline b32
+NotSet( chunk_data *Chunk, chunk_flag Flag )
+{
+  b32 Result = !(IsSet(Chunk, Flag));
+  return Result;
+}
+
+inline b32
+NotSet( world_chunk *Chunk, chunk_flag Flag )
+{
+  b32 Result = !(IsSet(Chunk->Data, Flag));
+  return Result;
+}
+
+inline b32
+NotSet( voxel *Voxel, voxel_flag Flag )
+{
+  b32 Result = !(IsSet(Voxel, Flag));
+  return Result;
+}
+
+inline b32
+NotSet( entity *Entity, entity_flag Flag )
+{
+  b32 Result = !(IsSet(Entity, Flag));
+  return Result;
+}
+
+inline b32
+Spawned(entity_flag Flags)
 {
   b32 Result = IsSet(Flags, Entity_Spawned);
   return Result;
@@ -290,6 +492,7 @@ Spawned(entity *Entity)
   return Result;
 }
 
+#if 0
 inline u8
 GetVoxelColor(packed_voxel *V)
 {
@@ -312,21 +515,6 @@ SetVoxelColor(packed_voxel *Voxel, int w)
 
   u8 color = GetVoxelColor(Voxel);
   Assert(color == w);
-}
-
-inline voxel_position
-GetVoxelP(chunk_dimension Dim, int i)
-{
- int x = i % Dim.x;
- int y = (i/Dim.x) % Dim.y ;
- int z = i / (Dim.x*Dim.y);
-
- Assert(x <= Dim.x);
- Assert(y <= Dim.y);
- Assert(z <= Dim.z);
-
- voxel_position Result = Voxel_Position(x,y,z);
- return Result;
 }
 
 inline voxel_position
@@ -403,12 +591,42 @@ GetPackedVoxel(int x, int y, int z, int w)
   return Result;
 }
 
+#endif
+
+inline voxel_position
+GetPosition(s32 Index, chunk_dimension Dim)
+{
+ int x = Index % Dim.x;
+ int y = (Index/Dim.x) % Dim.y ;
+ int z = Index / (Dim.x*Dim.y);
+
+ Assert(x <= Dim.x);
+ Assert(y <= Dim.y);
+ Assert(z <= Dim.z);
+
+ voxel_position Result = Voxel_Position(x,y,z);
+ return Result;
+}
+
 void
-ZeroChunk( chunk_data *chunk )
+ZeroChunk( chunk_data *chunk, s32 Volume )
 {
   chunk->BoundaryVoxelCount = 0;
-  chunk->flags = Chunk_Uninitialized;
-  chunk->flags = SetFlag( chunk->flags, Chunk_RebuildBoundary );
+  chunk->Flags = Chunk_Uninitialized;
+  SetFlag( chunk, Chunk_RebuildBoundary );
+
+  for ( s32 VoxelIndex = 0;
+        VoxelIndex < Volume;
+        ++VoxelIndex)
+  {
+    voxel *Voxel = &chunk->Voxels[VoxelIndex];
+    Voxel->Flags = Voxel_Uninitialzied;
+    Voxel->Color = 0;
+
+    boundary_voxel *BoundaryVoxel = &chunk->BoundaryVoxels[VoxelIndex];
+    BoundaryVoxel->V = *Voxel;
+    BoundaryVoxel->Offset = Voxel_Position(0,0,0);
+  }
 
   return;
 }
@@ -435,7 +653,7 @@ FreeWorldChunk(World *world, world_chunk *chunk)
   // Only free chunks that have been initialized, or chunks that had previously
   // been marked as garbage and have been flushed all the way through the world
   // initialization queue.
-  if ( IsSet(chunk->Data->flags, Chunk_Initialized) || IsSet(chunk->Data->flags, Chunk_Collected) )
+  if ( IsSet(chunk->Data->Flags, Chunk_Initialized) || IsSet(chunk->Data->Flags, Chunk_Collected) )
   {
     // Unlink from middle of linked list
     if (chunk->Prev)
@@ -461,14 +679,14 @@ FreeWorldChunk(World *world, world_chunk *chunk)
     Assert(world->FreeChunkCount < FREELIST_SIZE);
     world->FreeChunks[world->FreeChunkCount++] = chunk;
 
-    ZeroChunk(chunk->Data);
+    ZeroChunk(chunk->Data, Volume(WORLD_CHUNK_DIM));
 
-    Assert( NotSet(chunk->Data->flags, Chunk_Initialized) );
-    Assert( NotSet(chunk->Data->flags, Chunk_Queued) );
+    Assert( NotSet(chunk->Data->Flags, Chunk_Initialized) );
+    Assert( NotSet(chunk->Data->Flags, Chunk_Queued) );
   }
   else
   {
-    chunk->Data->flags = SetFlag(chunk->Data->flags, Chunk_Garbage);
+    SetFlag(chunk, Chunk_Garbage);
   }
 
   return;
@@ -499,23 +717,10 @@ AllocateChunk(memory_arena *WorldStorage, chunk_dimension Dim)
 {
   chunk_data *Result = PUSH_STRUCT_CHECKED(chunk_data, WorldStorage, 1);;
 
-  Result->Voxels          = PUSH_STRUCT_CHECKED(packed_voxel, WorldStorage , Volume(Dim));
-  Result->BoundaryVoxels  = PUSH_STRUCT_CHECKED(packed_voxel, WorldStorage , Volume(Dim));
+  Result->Voxels          = PUSH_STRUCT_CHECKED(voxel, WorldStorage , Volume(Dim));
+  Result->BoundaryVoxels  = PUSH_STRUCT_CHECKED(boundary_voxel, WorldStorage , Volume(Dim));
 
-  ZeroChunk(Result);
-
-  for (int z = 0; z < Dim.z; ++z)
-  {
-    for (int y = 0; y < Dim.y; ++y)
-    {
-      for (int x = 0; x < Dim.x; ++x)
-      {
-        voxel_position P = Voxel_Position(x,y,z);
-        u32 i = GetIndex(P, Result, Dim);
-        SetVoxelP(&Result->Voxels[i], P );
-      }
-    }
-  }
+  ZeroChunk(Result, Volume(Dim));
 
   return Result;
 }
@@ -609,7 +814,7 @@ IsFilled( chunk_data *chunk, voxel_position VoxelP, chunk_dimension Dim)
   Assert(i > -1);
   Assert(i < Volume(Dim));
 
-  b32 isFilled = IsSet(chunk->Voxels[i].Data, Voxel_Filled);
+  b32 isFilled = IsSet(&chunk->Voxels[i], Voxel_Filled);
   return isFilled;
 }
 
@@ -659,15 +864,14 @@ IsFilledInChunk( chunk_data *Chunk, voxel_position VoxelP, chunk_dimension Dim)
 {
   b32 isFilled = True;
 
-  if (Chunk && IsSet(Chunk->flags, Chunk_Initialized) )
+  if (Chunk && IsSet(Chunk, Chunk_Initialized) )
   {
-    int i = GetIndex(VoxelP, Chunk, Dim);
+    s32 i = GetIndex(VoxelP, Chunk, Dim);
 
     Assert(i > -1);
     Assert(i < Volume(Dim));
-    Assert(VoxelP == GetVoxelP(&Chunk->Voxels[i]));
 
-    isFilled = IsSet(Chunk->Voxels[i].Data, Voxel_Filled);
+    isFilled = IsSet(&Chunk->Voxels[i], Voxel_Filled);
   }
 
   return isFilled;

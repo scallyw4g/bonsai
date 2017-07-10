@@ -81,7 +81,7 @@ AllocatePlayer(platform *Plat, memory_arena *Storage, canonical_position Initial
 
   InitEntity(Player, CollisionVolumeRadius, InitialP, Drag);
 
-  Player->Flags = (entity_flags)SetFlag(Player->Flags, Entity_Player);
+  SetFlag(Player, Entity_Player);
   Player->Scale = 0.25f;
 
   return Player;
@@ -103,7 +103,7 @@ InitCamera(Camera_Object* Camera, canonical_position P, float FocalLength)
 }
 
 inline b32
-Destroyed(entity_flags Flags)
+Destroyed(entity_flag Flags)
 {
   b32 Result =  IsSet(Flags, Entity_Destoryed);
   return Result;
@@ -117,7 +117,7 @@ Destroyed(entity *Entity)
 }
 
 inline b32
-Unspawned(entity_flags Flags)
+Unspawned(entity_flag Flags)
 {
   b32 Result = NotSet(Flags, Entity_Spawned);
   return Result;
@@ -152,7 +152,7 @@ SpawnEnemy(World *world, entity **WorldEntities, entity *Enemy)
   v3 CollisionVolumeRadius = DEBUG_ENTITY_COLLISION_VOL_RADIUS;
   InitEntity(Enemy, CollisionVolumeRadius, InitialP, ENEMY_DRAG);
 
-  Enemy->Flags = (entity_flags)SetFlag(Enemy->Flags, Entity_Spawned|Entity_Enemy);
+  SetFlag(Enemy, (entity_flag)(Entity_Spawned|Entity_Enemy));
 
   Enemy->Acceleration = V3(0, -1, 0);
 
@@ -197,7 +197,7 @@ SpawnEnemies(game_state *GameState)
 void
 EntityWorldCollision(entity *Entity)
 {
-  entity_flags EntityType = (entity_flags)(ENTITY_TYPES & Entity->Flags);
+  entity_flag EntityType = (entity_flag)(ENTITY_TYPES & Entity->Flags);
 
   switch (EntityType)
   {
@@ -206,7 +206,7 @@ EntityWorldCollision(entity *Entity)
     case Entity_EnemyProjectile:
     case Entity_Loot:
     {
-      Entity->Flags = (entity_flags)UnSetFlag(Entity->Flags, Entity_Spawned);
+      UnSetFlag(Entity, Entity_Spawned);
     } break;
   }
 }
@@ -344,7 +344,7 @@ SimulateEnemies(game_state *GameState, entity *Player, r32 dt)
 }
 
 void
-SpawnProjectile(game_state *GameState, canonical_position *P, v3 Velocity, entity_flags ProjectileType)
+SpawnProjectile(game_state *GameState, canonical_position *P, v3 Velocity, entity_flag ProjectileType)
 {
   for (s32 ProjectileIndex = 0;
       ProjectileIndex < TOTAL_PROJECTILE_COUNT;
@@ -356,7 +356,7 @@ SpawnProjectile(game_state *GameState, canonical_position *P, v3 Velocity, entit
     {
       v3 CollisionVolumeRadius = V3(PROJECTILE_AABB)/2;
       InitEntity(Projectile, CollisionVolumeRadius, *P, PROJECTILE_DRAG);
-      Projectile->Flags = (entity_flags)SetFlag(Projectile->Flags, Entity_Spawned|ProjectileType);
+      SetFlag(Projectile, (entity_flag)(Entity_Spawned|ProjectileType));
       Projectile->Velocity = Velocity * PROJECTILE_SPEED;
       return;
     }
@@ -372,7 +372,7 @@ SimulatePlayer( game_state *GameState, entity *Player, input *Input, r32 dt )
   {
     Info("Player Destroyed!");
     FramesToWaitBeforeSpawningPlayer = FRAMES_TO_WAIT_BEFORE_SPAWNING_PLAYER;
-    Player->Flags = (entity_flags)UnSetFlag(Player->Flags, Entity_Spawned);
+    UnSetFlag(Player, Entity_Spawned);
   }
 
   if (Spawned(Player->Flags))
@@ -574,7 +574,7 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
         {
           world_position TestP = World_Position(x,y,z);
           world_chunk *chunk = GetWorldChunk(world, TestP);
-          if ( !chunk || NotSet(chunk->Data->flags, Chunk_Initialized) )
+          if ( !chunk || NotSet(chunk, Chunk_Initialized) )
           {
             DEBUG_DrawChunkAABB( world, TestP, Camera, Quaternion(), RED);
           }

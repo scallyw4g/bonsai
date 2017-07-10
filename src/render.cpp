@@ -987,7 +987,7 @@ Clamp01( voxel_position V )
 }
 
 inline void
-PushBoundaryVoxel( chunk_data *chunk, packed_voxel *Voxel, chunk_dimension Dim)
+PushBoundaryVoxel( chunk_data *chunk, boundary_voxel *Voxel, chunk_dimension Dim)
 {
   Assert( chunk->BoundaryVoxelCount < Volume(Dim) );
 
@@ -1025,30 +1025,28 @@ BuildExteriorBoundaryVoxels( World *world, world_chunk *chunk, chunk_dimension D
 
         if ( Neighbor && !IsFilledInChunk(Neighbor->Data, NeighborP, Dim) )
         {
-          packed_voxel *Voxel = &chunk->Data->Voxels[GetIndex(LocalVoxelP, chunk->Data, Dim)];
+          voxel *Voxel = &chunk->Data->Voxels[GetIndex(LocalVoxelP, chunk->Data, Dim)];
 
           if (NeighborVector.x > 0)
-            Voxel->Data = SetFlag(Voxel->Data, Voxel_RightFace);
+            SetFlag(Voxel, Voxel_RightFace);
 
           if (NeighborVector.x < 0)
-            Voxel->Data = SetFlag(Voxel->Data, Voxel_LeftFace);
+            SetFlag(Voxel, Voxel_LeftFace);
 
           if (NeighborVector.y > 0)
-            Voxel->Data = SetFlag(Voxel->Data, Voxel_TopFace);
+            SetFlag(Voxel, Voxel_TopFace);
 
           if (NeighborVector.y < 0)
-            Voxel->Data = SetFlag(Voxel->Data, Voxel_BottomFace);
+            SetFlag(Voxel, Voxel_BottomFace);
 
           if (NeighborVector.z > 0)
-            Voxel->Data = SetFlag(Voxel->Data, Voxel_FrontFace);
+            SetFlag(Voxel, Voxel_FrontFace);
 
           if (NeighborVector.z < 0)
-            Voxel->Data = SetFlag(Voxel->Data, Voxel_BackFace);
+            SetFlag(Voxel, Voxel_BackFace);
 
-          voxel_position P = GetVoxelP(Voxel);
-          Assert( P == LocalVoxelP);
-          PushBoundaryVoxel( chunk->Data, Voxel, Dim);
-
+          boundary_voxel BoundaryVoxel(Voxel, LocalVoxelP);
+          PushBoundaryVoxel( chunk->Data, &BoundaryVoxel, Dim);
         }
       }
     }
@@ -1086,7 +1084,7 @@ IsInsideDim( voxel_position Dim, v3 P )
 void
 BuildEntityBoundaryVoxels(chunk_data *chunk, world_position WorldP, chunk_dimension Dim)
 {
-  chunk->flags = UnSetFlag( chunk->flags, Chunk_RebuildBoundary );
+  UnSetFlag(chunk, Chunk_RebuildBoundary);
 
   for ( int z = 0; z < Dim.z ; ++z )
   {
@@ -1094,60 +1092,59 @@ BuildEntityBoundaryVoxels(chunk_data *chunk, world_position WorldP, chunk_dimens
     {
       for ( int x = 0; x < Dim.x ; ++x )
       {
-        voxel_position VoxelP = Voxel_Position(x,y,z);
+        voxel_position LocalVoxelP = Voxel_Position(x,y,z);
 
-        if ( NotFilled( chunk, VoxelP, Dim) )
+        if ( NotFilled( chunk, LocalVoxelP, Dim) )
           continue;
 
-        voxel_position rightVoxel = VoxelP + Voxel_Position(1, 0, 0);
-        voxel_position leftVoxel = VoxelP - Voxel_Position(1, 0, 0);
+        voxel_position rightVoxel = LocalVoxelP + Voxel_Position(1, 0, 0);
+        voxel_position leftVoxel = LocalVoxelP - Voxel_Position(1, 0, 0);
 
-        voxel_position topVoxel = VoxelP + Voxel_Position(0, 1, 0);
-        voxel_position botVoxel = VoxelP - Voxel_Position(0, 1, 0);
+        voxel_position topVoxel = LocalVoxelP + Voxel_Position(0, 1, 0);
+        voxel_position botVoxel = LocalVoxelP - Voxel_Position(0, 1, 0);
 
-        voxel_position frontVoxel = VoxelP + Voxel_Position(0, 0, 1);
-        voxel_position backVoxel = VoxelP - Voxel_Position(0, 0, 1);
+        voxel_position frontVoxel = LocalVoxelP + Voxel_Position(0, 0, 1);
+        voxel_position backVoxel = LocalVoxelP - Voxel_Position(0, 0, 1);
 
-        packed_voxel *Voxel = &chunk->Voxels[GetIndex(Voxel_Position(x,y,z), chunk, Dim)];
+        voxel *Voxel = &chunk->Voxels[GetIndex(Voxel_Position(x,y,z), chunk, Dim)];
 
         bool DidPushVoxel = false;
 
         if ( IsInsideDim( Dim, rightVoxel  ) && NotFilled( chunk, rightVoxel, Dim))
         {
-          Voxel->Data = SetFlag(Voxel->Data, Voxel_RightFace);
+          SetFlag(Voxel, Voxel_RightFace);
           DidPushVoxel = true;
         }
         if ( IsInsideDim( Dim, leftVoxel  ) && NotFilled( chunk, leftVoxel, Dim))
         {
-          Voxel->Data = SetFlag(Voxel->Data, Voxel_LeftFace);
+          SetFlag(Voxel, Voxel_LeftFace);
           DidPushVoxel = true;
         }
         if ( IsInsideDim( Dim, botVoxel   ) && NotFilled( chunk, botVoxel, Dim))
         {
-          Voxel->Data = SetFlag(Voxel->Data, Voxel_BottomFace);
+          SetFlag(Voxel, Voxel_BottomFace);
           DidPushVoxel = true;
         }
         if ( IsInsideDim( Dim, topVoxel   ) && NotFilled( chunk, topVoxel, Dim))
         {
-          Voxel->Data = SetFlag(Voxel->Data, Voxel_TopFace);
+          SetFlag(Voxel, Voxel_TopFace);
           DidPushVoxel = true;
         }
         if ( IsInsideDim( Dim, frontVoxel ) && NotFilled( chunk, frontVoxel, Dim))
         {
-          Voxel->Data = SetFlag(Voxel->Data, Voxel_FrontFace);
+          SetFlag(Voxel, Voxel_FrontFace);
           DidPushVoxel = true;
         }
         if ( IsInsideDim( Dim, backVoxel  ) && NotFilled( chunk, backVoxel, Dim))
         {
-          Voxel->Data = SetFlag(Voxel->Data, Voxel_BackFace);
+          SetFlag(Voxel, Voxel_BackFace);
           DidPushVoxel = true;
         }
 
         if (DidPushVoxel)
         {
-          voxel_position P = GetVoxelP(Voxel);
-          Assert( P == Voxel_Position(x,y,z));
-          PushBoundaryVoxel(chunk, Voxel, Dim);
+          boundary_voxel BoundaryVoxel(Voxel, LocalVoxelP);
+          PushBoundaryVoxel(chunk, &BoundaryVoxel, Dim);
         }
 
       }
@@ -1163,7 +1160,7 @@ BuildWorldChunkBoundaryVoxels(World *world, world_chunk *WorldChunk)
 
   chunk->BoundaryVoxelCount = 0;
 
-  chunk->flags = UnSetFlag( chunk->flags, Chunk_RebuildBoundary );
+  UnSetFlag( chunk, Chunk_RebuildBoundary );
 
   for ( int z = 0; z < Dim.z ; ++z )
   {
@@ -1185,46 +1182,45 @@ BuildWorldChunkBoundaryVoxels(World *world, world_chunk *WorldChunk)
         canonical_position frontVoxel = Canonicalize(Dim, CurrentP + V3(0, 0, 1));
         canonical_position backVoxel  = Canonicalize(Dim, CurrentP - V3(0, 0, 1));
 
-        packed_voxel *Voxel = &chunk->Voxels[GetIndex(CurrentP.Offset, chunk, Dim)];
+        voxel *Voxel = &chunk->Voxels[GetIndex(CurrentP.Offset, chunk, Dim)];
 
         bool DidPushVoxel = false;
 
         if ( NotFilledInWorld( world, WorldChunk, rightVoxel ) )
         {
-          Voxel->Data = SetFlag(Voxel->Data, Voxel_RightFace);
+          SetFlag(Voxel, Voxel_RightFace);
           DidPushVoxel = true;
         }
         if ( NotFilledInWorld( world, WorldChunk, leftVoxel ) )
         {
-          Voxel->Data = SetFlag(Voxel->Data, Voxel_LeftFace);
+          SetFlag(Voxel, Voxel_LeftFace);
           DidPushVoxel = true;
         }
         if ( NotFilledInWorld( world, WorldChunk, botVoxel   ) )
         {
-          Voxel->Data = SetFlag(Voxel->Data, Voxel_BottomFace);
+          SetFlag(Voxel, Voxel_BottomFace);
           DidPushVoxel = true;
         }
         if ( NotFilledInWorld( world, WorldChunk, topVoxel   ) )
         {
-          Voxel->Data = SetFlag(Voxel->Data, Voxel_TopFace);
+          SetFlag(Voxel, Voxel_TopFace);
           DidPushVoxel = true;
         }
         if ( NotFilledInWorld( world, WorldChunk, frontVoxel ) )
         {
-          Voxel->Data = SetFlag(Voxel->Data, Voxel_FrontFace);
+          SetFlag(Voxel, Voxel_FrontFace);
           DidPushVoxel = true;
         }
         if ( NotFilledInWorld( world, WorldChunk, backVoxel  ) )
         {
-          Voxel->Data = SetFlag(Voxel->Data, Voxel_BackFace);
+          SetFlag(Voxel, Voxel_BackFace);
           DidPushVoxel = true;
         }
 
         if (DidPushVoxel)
         {
-          voxel_position P = GetVoxelP(Voxel);
-          Assert( P == Voxel_Position(CurrentP.Offset));
-          PushBoundaryVoxel(chunk, Voxel, Dim);
+          boundary_voxel BoundaryVoxel(Voxel, Voxel_Position(x,y,z));
+          PushBoundaryVoxel(chunk, &BoundaryVoxel, Dim);
         }
 
       }
@@ -1286,46 +1282,45 @@ BufferChunkMesh(
     r32 VertexData[BYTES_PER_FACE];
     VoxelsIndexed ++;
 
-    packed_voxel V = chunk->BoundaryVoxels[VoxIndex];
+    boundary_voxel *V = &chunk->BoundaryVoxels[VoxIndex];
 
-    GetColorData(GetVoxelColor(&V), &FaceColors[0]);;
+    GetColorData(V->V.Color, &FaceColors[0]);;
 
     r32 Diameter = 1.0f*Scale;
 
-    v3 VoxelOffset = V3(GetVoxelP(&V)) * Scale;
-    v3 MinP = ModelBasisP + VoxelOffset ;
+    v3 MinP = ModelBasisP + (V->Offset * Scale);
 
-    if ( IsSet( V.Data, Voxel_RightFace ) )
+    if ( IsSet( V, Voxel_RightFace ) )
     {
       RightFaceVertexData( MinP, Diameter, VertexData);
       BufferVerts(&world->Mesh, 6, VertexData, RightFaceNormalData, FaceColors, sizeof(VertexData));
     }
 
-    if ( IsSet( V.Data, Voxel_LeftFace ) )
+    if ( IsSet( V, Voxel_LeftFace ) )
     {
       LeftFaceVertexData( MinP, Diameter, VertexData);
       BufferVerts(&world->Mesh, 6, VertexData, LeftFaceNormalData, FaceColors, sizeof(VertexData));
     }
 
-    if ( IsSet( V.Data, Voxel_BottomFace ) )
+    if ( IsSet( V, Voxel_BottomFace ) )
     {
       BottomFaceVertexData( MinP, Diameter, VertexData);
       BufferVerts(&world->Mesh, 6, VertexData, BottomFaceNormalData, FaceColors, sizeof(VertexData));
     }
 
-    if ( IsSet( V.Data, Voxel_TopFace ) )
+    if ( IsSet( V, Voxel_TopFace ) )
     {
       TopFaceVertexData( MinP, Diameter, VertexData);
       BufferVerts(&world->Mesh, 6, VertexData, TopFaceNormalData, FaceColors, sizeof(VertexData));
     }
 
-    if ( IsSet( V.Data, Voxel_FrontFace ) )
+    if ( IsSet( V, Voxel_FrontFace ) )
     {
       FrontFaceVertexData( MinP, Diameter, VertexData);
       BufferVerts(&world->Mesh, 6, VertexData, FrontFaceNormalData, FaceColors, sizeof(VertexData));
     }
 
-    if ( IsSet( V.Data, Voxel_BackFace ) )
+    if ( IsSet( V, Voxel_BackFace ) )
     {
       BackFaceVertexData( MinP, Diameter, VertexData);
       BufferVerts(&world->Mesh, 6, VertexData, BackFaceNormalData, FaceColors, sizeof(VertexData));
@@ -1344,8 +1339,8 @@ FindIntersectingLine(
   voxel_position OffsetVector,
   int FirstFilledIndex)
 {
-  voxel_position MinP = GetVoxelP(&Chunk->Data->BoundaryVoxels[FirstFilledIndex]);
-  voxel_position MaxP = GetVoxelP(&Chunk->Data->BoundaryVoxels[FirstFilledIndex]);
+  voxel_position MinP = Chunk->Data->BoundaryVoxels[FirstFilledIndex].Offset;
+  voxel_position MaxP = MinP;
 
   int CurrentMaxLen = 0;
   int CurrentMinLen = 0;
@@ -1354,10 +1349,9 @@ FindIntersectingLine(
       VoxelIndex < Chunk->Data->BoundaryVoxelCount;
       ++ VoxelIndex)
   {
-    packed_voxel V = Chunk->Data->BoundaryVoxels[VoxelIndex];
-    voxel_position P  = GetVoxelP(&V);
+    voxel_position P  = Chunk->Data->BoundaryVoxels[VoxelIndex].Offset;
 
-    int OriginToP = LengthSq(P);
+    s32 OriginToP = LengthSq(P);
 
     // Max
     if ( OriginToP > CurrentMaxLen )
@@ -1387,13 +1381,13 @@ SetupAndBuildExteriorBoundary(
   voxel_position OffsetVector,
   chunk_flag Flag)
 {
-  if ( IsSet(Chunk->Data->flags, Flag ) )
+  if ( IsSet(Chunk, Flag ) )
   {
     world_chunk *Neighbor = GetWorldChunk( world, Chunk->WorldP + OffsetVector );
 
-    if ( Neighbor && IsSet( Neighbor->Data->flags, Chunk_Initialized) )
+    if ( Neighbor && IsSet( Neighbor, Chunk_Initialized) )
     {
-      Chunk->Data->flags = UnSetFlag( Chunk->Data->flags, Flag );
+      UnSetFlag( Chunk, Flag );
       BuildExteriorBoundaryVoxels( world, Chunk, world->ChunkDim, Neighbor, OffsetVector);
     }
   }
@@ -1411,7 +1405,7 @@ FindBoundaryVoxelsAABB(chunk_data *Chunk, chunk_dimension Dim)
         VoxelIndex < Chunk->BoundaryVoxelCount;
         ++VoxelIndex)
   {
-    voxel_position P = GetVoxelP(&Chunk->BoundaryVoxels[VoxelIndex]);
+    voxel_position P = Chunk->BoundaryVoxels[VoxelIndex].Offset;
 
     if (P.x < MinP.x)
       MinP.x = P.x;
@@ -1558,7 +1552,7 @@ Compute0thLod(game_state *GameState, world_chunk *WorldChunk)
       VoxelIndex < WorldChunkVolume;
       ++VoxelIndex)
   {
-    voxel_position VoxelP = GetVoxelP(WorldChunkDim, VoxelIndex);
+    voxel_position VoxelP = GetPosition(VoxelIndex, WorldChunkDim);
 
     /* if (IsBoundaryVoxel(chunk, VoxelP, WorldChunkDim)) */
     /*   DEBUG_DrawPointMarker(world, V3(VoxelP) + RenderOffset, PINK, 0.25f); */
@@ -2029,15 +2023,15 @@ inline b32
 IsBoundaryVoxel(chunk_data *Chunk, voxel_position Offset, chunk_dimension Dim)
 {
   s32 VoxelIndex = GetIndex(Offset, Chunk, Dim);
-  packed_voxel V = Chunk->Voxels[VoxelIndex];
+  voxel *V = &Chunk->Voxels[VoxelIndex];
 
   b32 Result = False;
-  Result |= IsSet( V.Data, Voxel_BackFace);
-  Result |= IsSet( V.Data, Voxel_FrontFace);
-  Result |= IsSet( V.Data, Voxel_TopFace);
-  Result |= IsSet( V.Data, Voxel_BottomFace);
-  Result |= IsSet( V.Data, Voxel_LeftFace);
-  Result |= IsSet( V.Data, Voxel_RightFace);
+  Result |= IsSet( V, Voxel_BackFace);
+  Result |= IsSet( V, Voxel_FrontFace);
+  Result |= IsSet( V, Voxel_TopFace);
+  Result |= IsSet( V, Voxel_BottomFace);
+  Result |= IsSet( V, Voxel_LeftFace);
+  Result |= IsSet( V, Voxel_RightFace);
 
   return Result;
 }
@@ -2173,7 +2167,7 @@ CanBuildWorldChunkBoundary(World *world, world_chunk *Chunk)
 
   world_position ChunkP = Chunk->WorldP;
 
-  Result &= IsSet(Chunk->Data->flags, Chunk_RebuildBoundary);
+  Result &= IsSet(Chunk, Chunk_RebuildBoundary);
 
   // Bail early to save the cache most of the time.. does this even help?
   if (!Result) return Result;
@@ -2186,22 +2180,22 @@ CanBuildWorldChunkBoundary(World *world, world_chunk *Chunk)
   world_position Back  = ChunkP - Voxel_Position(0, 0, 1);
 
   world_chunk *TestChunk = GetWorldChunk( world, Left );
-  Result &= TestChunk && IsSet(TestChunk->Data->flags, Chunk_Initialized);
+  Result &= TestChunk && IsSet(TestChunk, Chunk_Initialized);
 
   TestChunk = GetWorldChunk( world, Right );
-  Result &= TestChunk && IsSet(TestChunk->Data->flags, Chunk_Initialized);
+  Result &= TestChunk && IsSet(TestChunk, Chunk_Initialized);
 
   TestChunk = GetWorldChunk( world, Top );
-  Result &= TestChunk && IsSet(TestChunk->Data->flags, Chunk_Initialized);
+  Result &= TestChunk && IsSet(TestChunk, Chunk_Initialized);
 
   TestChunk = GetWorldChunk( world, Bot );
-  Result &= TestChunk && IsSet(TestChunk->Data->flags, Chunk_Initialized);
+  Result &= TestChunk && IsSet(TestChunk, Chunk_Initialized);
 
   TestChunk = GetWorldChunk( world, Front );
-  Result &= TestChunk && IsSet(TestChunk->Data->flags, Chunk_Initialized);
+  Result &= TestChunk && IsSet(TestChunk, Chunk_Initialized);
 
   TestChunk = GetWorldChunk( world, Back );
-  Result &= TestChunk && IsSet(TestChunk->Data->flags, Chunk_Initialized);
+  Result &= TestChunk && IsSet(TestChunk, Chunk_Initialized);
 
 
   return Result;
@@ -2218,7 +2212,7 @@ DrawWorldChunk( game_state *GameState,
 
   chunk_data *ChunkData = Chunk->Data;
 
-  if (NotSet(ChunkData->flags, Chunk_Initialized))
+  if (NotSet(ChunkData, Chunk_Initialized))
     return;
 
   World *world = GameState->world;
@@ -2231,7 +2225,7 @@ DrawWorldChunk( game_state *GameState,
   /* v3 ChunkRenderOffset = GetRenderP( Dim, Chunk->WorldP, Camera); */
   /* v3 CameraRenderOffset = GetRenderP( Dim, Camera->P, Camera); */
 
-  if ( IsSet( Chunk->Data->flags, Chunk_RebuildBoundary ) )
+  if ( IsSet( Chunk, Chunk_RebuildBoundary ) )
     BuildWorldChunkBoundaryVoxels(world, Chunk);
 
   /* if (CanBuildWorldChunkBoundary(world, Chunk)) */
@@ -2281,10 +2275,10 @@ DrawEntity(
   DEBUG_DrawAABB( world, AABB, Quaternion(), PINK);
 #endif
 
-  if ( NotSet(Model->flags, Chunk_Initialized) )
+  if ( NotSet(Model, Chunk_Initialized) )
     return;
 
-  if ( IsSet(Model->flags, Chunk_RebuildBoundary) )
+  if ( IsSet(Model, Chunk_RebuildBoundary) )
     BuildEntityBoundaryVoxels(Model, Entity->P.WorldP, Entity->Model.Dim);
 
 
