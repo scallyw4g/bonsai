@@ -2,6 +2,7 @@
 Session.vim
 .exrc
 tags
+cscope.out
 
 
 external
