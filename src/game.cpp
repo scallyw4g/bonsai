@@ -9,6 +9,9 @@ static const char *GlobalGlslVersion;
 GLOBAL_VARIABLE model PlayerModelGlobal = {};
 GLOBAL_VARIABLE model EnemyModelGlobal = {};
 GLOBAL_VARIABLE model LootModelGlobal = {};
+GLOBAL_VARIABLE model ProjectileModelGlobal = {};
+GLOBAL_VARIABLE model ProtonModelGlobal = {};
+
 GLOBAL_VARIABLE s32 FramesToWaitBeforeSpawningPlayer = FRAMES_TO_WAIT_BEFORE_SPAWNING_PLAYER;
 
 #include <game.h>
@@ -58,6 +61,9 @@ AllocateGameModels(platform *Plat, game_state *GameState)
   PlayerModelGlobal = LoadModel(GameState->world->WorldStorage.Arena, PLAYER_MODEL);
   EnemyModelGlobal = LoadModel(GameState->world->WorldStorage.Arena, ENEMY_MODEL);
   LootModelGlobal = LoadModel(GameState->world->WorldStorage.Arena, LOOT_MODEL);
+
+  ProjectileModelGlobal = LoadModel(GameState->world->WorldStorage.Arena, PROJECTILE_MODEL);
+  ProtonModelGlobal = LoadModel(GameState->world->WorldStorage.Arena, PROJECTILE_MODEL);
 
   return;
 }
@@ -356,10 +362,29 @@ SpawnProjectile(game_state *GameState, canonical_position *P, v3 Velocity, entit
     {
       v3 CollisionVolumeRadius = V3(PROJECTILE_AABB)/2;
       InitEntity(Projectile, CollisionVolumeRadius, *P, PROJECTILE_DRAG);
+
       SetFlag(Projectile, (entity_flag)(Entity_Spawned|ProjectileType));
       Projectile->Velocity = Velocity * PROJECTILE_SPEED;
-      return;
+
+      switch (ProjectileType)
+      {
+        case Entity_PlayerProton:
+        {
+          Projectile->Model = ProtonModelGlobal;
+        } break;
+
+        case Entity_PlayerProjectile:
+        case Entity_EnemyProjectile:
+        {
+          Projectile->Model = ProjectileModelGlobal;
+        } break;
+
+        InvalidDefaultCase;
+      }
+
+      break;
     }
+
   }
 
   return;
@@ -398,7 +423,7 @@ SimulatePlayer( game_state *GameState, entity *Player, input *Input, r32 dt )
     // Proton Torpedo!!
     if ( Input->Shift && (Player->FireCooldown < 0) )
     {
-      SpawnProjectile(GameState, &Player->P, V3(0,1,0), Entity_PlayerProjectile);
+      SpawnProjectile(GameState, &Player->P, V3(0,1,0), Entity_PlayerProton);
       Player->FireCooldown = Player->RateOfFire;
     }
   }

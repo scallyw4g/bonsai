@@ -569,6 +569,7 @@ ProcessCollisionRule(entity *First, entity *Second)
     } break;
 
     case Collision_Enemy_PlayerProjectile:
+    case Collision_Enemy_PlayerProton:
     {
       Unspawn(First);
       Unspawn(Second);

@@ -56,10 +56,11 @@ enum entity_flag
   Entity_EnemyProjectile  = 1 << 5,
   Entity_PlayerProjectile = 1 << 6,
   Entity_Loot             = 1 << 7,
+  Entity_PlayerProton     = 1 << 8,
 };
 
 GLOBAL_VARIABLE const entity_flag ENTITY_TYPES = (entity_flag)
-  (Entity_Player|Entity_Enemy|Entity_EnemyProjectile|Entity_PlayerProjectile|Entity_Loot);
+  (Entity_Player|Entity_Enemy|Entity_EnemyProjectile|Entity_PlayerProjectile|Entity_Loot|Entity_PlayerProton);
 
 enum collision_type
 {
@@ -67,6 +68,7 @@ enum collision_type
   Collision_Player_EnemyProjectile = Entity_Player|Entity_EnemyProjectile,
   Collision_Player_Loot            = Entity_Player|Entity_Loot,
   Collision_Enemy_PlayerProjectile = Entity_Enemy |Entity_PlayerProjectile,
+  Collision_Enemy_PlayerProton     = Entity_Enemy |Entity_PlayerProton,
 };
 
 struct voxel
