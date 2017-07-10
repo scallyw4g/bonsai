@@ -362,6 +362,24 @@ WindowMessageCallback(
           Plat->Input.F11 = False;
         } return 0;
 
+        case VK_SHIFT:
+        {
+          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
+          Plat->Input.Shift = False;
+        } return 0;
+
+        case VK_MENU:
+        {
+          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
+          Plat->Input.Alt = False;
+        } return 0;
+
+        case VK_CONTROL:
+        {
+          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
+          Plat->Input.Ctrl = False;
+        } return 0;
+
         case VK_SPACE:
         {
           platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
@@ -425,6 +443,24 @@ WindowMessageCallback(
         {
           platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
           Plat->Input.F11 = True;
+        } return 0;
+
+        case VK_SHIFT:
+        {
+          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
+          Plat->Input.Shift = True;
+        } return 0;
+
+        case VK_MENU:
+        {
+          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
+          Plat->Input.Alt = True;
+        } return 0;
+
+        case VK_CONTROL:
+        {
+          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
+          Plat->Input.Ctrl = True;
         } return 0;
 
         case VK_SPACE:

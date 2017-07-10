@@ -184,9 +184,6 @@ SpawnEnemies(game_state *GameState)
   {
     entity *Enemy = Enemies[EntityIndex];
 
-    if (IsLoot(Enemy))
-        continue;
-
     if ( Destroyed(Enemy) || Unspawned(Enemy) )
     {
       SpawnEnemy(GameState->world, Enemies, Enemy);
@@ -390,7 +387,16 @@ SimulatePlayer( game_state *GameState, entity *Player, input *Input, r32 dt )
     UpdateVisibleRegion(GameState, WorldDisp);
 
     Player->FireCooldown -= dt;
+
+    // Regular Fire
     if ( Input->Space && (Player->FireCooldown < 0) )
+    {
+      SpawnProjectile(GameState, &Player->P, V3(0,1,0), Entity_PlayerProjectile);
+      Player->FireCooldown = Player->RateOfFire;
+    }
+
+    // Proton Torpedo!!
+    if ( Input->Shift && (Player->FireCooldown < 0) )
     {
       SpawnProjectile(GameState, &Player->P, V3(0,1,0), Entity_PlayerProjectile);
       Player->FireCooldown = Player->RateOfFire;

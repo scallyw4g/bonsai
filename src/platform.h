@@ -107,6 +107,9 @@ struct gl_extensions
 struct input
 {
   b32 Space;
+  b32 Shift;
+  b32 Ctrl;
+  b32 Alt;
   b32 F11;
   b32 RMB;
   b32 LMB;
