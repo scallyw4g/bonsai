@@ -44,6 +44,12 @@ enum voxel_flag
   Voxel_BackFace   = 1 << 6,
 };
 
+enum particle_system_flag
+{
+  ParticleSystem_Uninitialized = 0 << 0,
+  ParticleSystem_Spawned       = 1 << 0,
+};
+
 enum entity_flag
 {
   Entity_Uninitialized    = 0 << 0,
@@ -276,13 +282,16 @@ struct particle
   r32 RemainingLifespan;
 };
 
-struct particle_system // ~16k per particle system
+struct particle_system
 {
   canonical_position P;
   random_series Entropy;
 
   s32 ActiveParticles;
   r32 ParticleDuration;
+
+  particle_system_flag Flags;
+
 
   particle Particles[PARTICLES_PER_SYSTEM];
 };
@@ -350,6 +359,13 @@ SetFlag( chunk_flag *Flags, chunk_flag Flag )
 }
 
 inline void
+SetFlag( particle_system_flag *Flags, particle_system_flag Flag )
+{
+  *Flags = (particle_system_flag)(*Flags | Flag);
+  return;
+}
+
+inline void
 SetFlag( entity_flag *Flags, entity_flag Flag )
 {
   *Flags = (entity_flag)(*Flags | Flag);
@@ -398,6 +414,14 @@ SetFlag(boundary_voxel *Voxel, voxel_flag Flag )
   return;
 }
 
+inline void
+SetFlag(particle_system *System, particle_system_flag Flag )
+{
+  SetFlag(&System->Flags, Flag);
+  return;
+}
+
+
 inline b32
 IsSet( voxel_flag Flags, voxel_flag Flag )
 {
@@ -414,6 +438,13 @@ IsSet( entity_flag Flags, entity_flag Flag )
 
 inline b32
 IsSet( chunk_flag Flags, chunk_flag Flag )
+{
+  b32 Result = ( (Flags & Flag) != 0 );
+  return Result;
+}
+
+inline b32
+IsSet( particle_system_flag Flags, particle_system_flag Flag )
 {
   b32 Result = ( (Flags & Flag) != 0 );
   return Result;
@@ -451,6 +482,13 @@ inline b32
 IsSet( entity *Entity, entity_flag Flag )
 {
   b32 Result = IsSet(Entity->Flags, Flag);
+  return Result;
+}
+
+inline b32
+NotSet( particle_system_flag Flags, particle_system_flag Flag )
+{
+  b32 Result = !(IsSet(Flags, Flag));
   return Result;
 }
 

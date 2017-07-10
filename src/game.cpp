@@ -125,9 +125,23 @@ Destroyed(entity *Entity)
 }
 
 inline b32
+Unspawned(particle_system_flag Flags)
+{
+  b32 Result = NotSet(Flags, ParticleSystem_Spawned);
+  return Result;
+}
+
+inline b32
 Unspawned(entity_flag Flags)
 {
   b32 Result = NotSet(Flags, Entity_Spawned);
+  return Result;
+}
+
+inline b32
+Unspawned(particle_system *System)
+{
+  b32 Result = Unspawned(System->Flags);
   return Result;
 }
 
@@ -253,9 +267,29 @@ SpawnParticle(particle_system *System)
   r32 Y = RandomBilateral(&System->Entropy);
   r32 Z = RandomBilateral(&System->Entropy);
 
-  Particle->Offset = V3(X,Y,Z);
+  Particle->Offset = Normalize(V3(X,Y,Z));
   Particle->Color = RED;
   Particle->RemainingLifespan = 3.0f;
+
+  return;
+}
+
+void
+SpawnParticleSystem(game_state *GameState, canonical_position P)
+{
+  for ( s32 SystemIndex = 0;
+        SystemIndex < TOTAL_PARTICLE_SYSTEMS;
+        ++ SystemIndex)
+  {
+    particle_system *System = GameState->ParticleSystems[SystemIndex];
+
+    if ( Unspawned(System) )
+    {
+      System->P = P;
+      SetFlag(System, ParticleSystem_Spawned);
+      break;
+    }
+  }
 
   return;
 }
@@ -463,6 +497,9 @@ SimulateParticleSystems(game_state *GameState, r32 dt)
         ++ SystemIndex)
   {
     particle_system *System = GameState->ParticleSystems[SystemIndex];
+
+    if ( Unspawned(System) )
+      continue;
 
     if ( (RandomUnilateral(&System->Entropy) > 0.8f) )
       SpawnParticle(System);
