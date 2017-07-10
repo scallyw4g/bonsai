@@ -14,6 +14,8 @@ struct game_state
 
   entity *Enemies[TOTAL_ENTITY_COUNT];
   projectile *Projectiles[TOTAL_PROJECTILE_COUNT];
+
+  particle_system *ParticleSystems[TOTAL_PARTICLE_SYSTEMS];
 };
 
 

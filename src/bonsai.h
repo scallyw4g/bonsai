@@ -264,6 +264,29 @@ struct World
   world_storage WorldStorage;
 };
 
+struct random_series
+{
+  u32 Seed;
+};
+
+struct particle
+{
+  v3 Offset; // TODO(Jesse): Compress to 16 bit float?
+  u8 Color;
+  r32 RemainingLifespan;
+};
+
+struct particle_system // ~16k per particle system
+{
+  canonical_position P;
+  random_series Entropy;
+
+  s32 ActiveParticles;
+  r32 ParticleDuration;
+
+  particle Particles[PARTICLES_PER_SYSTEM];
+};
+
 
 
 #include <render.h>
@@ -491,6 +514,26 @@ inline b32
 Spawned(entity *Entity)
 {
   b32 Result = Spawned(Entity->Flags);
+  return Result;
+}
+
+inline r32
+RandomBilateral(random_series *Entropy)
+{
+  // TODO(Jesse): Real RNG!
+  Entropy->Seed = (Entropy->Seed * 494437) ^ (Entropy->Seed * 95073);
+
+  r32 Result = ((r32)(Entropy->Seed/UINT_MAX) * 2.0f) - 1.0f;
+  return Result;
+}
+
+inline r32
+RandomUnilateral(random_series *Entropy)
+{
+  // TODO(Jesse): Real RNG!
+  Entropy->Seed = (Entropy->Seed * 494437) ^ (Entropy->Seed * 95073);
+
+  r32 Result = (r32)(Entropy->Seed/UINT_MAX);
   return Result;
 }
 
