@@ -478,17 +478,21 @@ SpawnLoot(entity *Entity)
 }
 
 inline void
-Unspawn(entity *Entity)
+Unspawn(particle_system *System)
 {
-  UnSetFlag(Entity, Entity_Spawned);
-  return;
+  UnSetFlag(System, ParticleSystem_Spawned);
+  System->Entropy.Seed = 0;
 }
 
 inline void
-Unspawn(void *Input)
+Unspawn(entity *Entity)
 {
-  entity *Entity = (entity*)Input;
-  Unspawn(Entity);
+  UnSetFlag(Entity, Entity_Spawned);
+
+  if (Entity->Emitter)
+    Unspawn(Entity->Emitter);
+
+  return;
 }
 
 inline b32

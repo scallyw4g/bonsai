@@ -1490,7 +1490,7 @@ BufferTriangle(World *world, v3 *Verts, v3 Normal, s32 ColorIndex)
   // TODO(Jesse): Is this necessary to avoid some pointer aliasing bug?
   memcpy( VertBuffer, Verts, 9 * sizeof(r32) );
 
-  float FaceColors[32];
+  r32 FaceColors[FACE_COLOR_SIZE];
   GetColorData( ColorIndex, FaceColors);
 
   BufferVerts(
@@ -1504,7 +1504,13 @@ BufferTriangle(World *world, v3 *Verts, v3 Normal, s32 ColorIndex)
 }
 
 inline void
-FindBoundaryVoxelsAlongEdge(chunk_data *Data, chunk_dimension Dim, voxel_position Start, voxel_position Iter, point_buffer *PB)
+FindBoundaryVoxelsAlongEdge(
+    chunk_data *Data,
+    chunk_dimension Dim,
+    voxel_position Start,
+    voxel_position Iter,
+    point_buffer *PB
+  )
 {
   voxel_position CurrentP = Start;
   b32 StartIsFilled = IsFilledInChunk(Data, CurrentP, Dim);
@@ -2037,12 +2043,14 @@ IsBoundaryVoxel(chunk_data *Chunk, voxel_position Offset, chunk_dimension Dim)
 }
 
 inline void
-CheckAndIncrementCurrentP(chunk_data *Chunk,
-                          chunk_dimension Dim,
-                          voxel_position *CurrentP,
-                          s32 *CurrentClosestDistanceSq,
-                          voxel_position TargetP,
-                          voxel_position TestP)
+CheckAndIncrementCurrentP(
+    chunk_data *Chunk,
+    chunk_dimension Dim,
+    voxel_position *CurrentP,
+    s32 *CurrentClosestDistanceSq,
+    voxel_position TargetP,
+    voxel_position TestP
+  )
 {
   if ( IsInsideDim(Dim, TestP) )
   {
@@ -2059,10 +2067,12 @@ CheckAndIncrementCurrentP(chunk_data *Chunk,
 }
 
 voxel_position
-TraverseSurfaceToBoundary(World *world,
-                          chunk_data *Chunk,
-                          voxel_position StartingP,
-                          voxel_position IterDir)
+TraverseSurfaceToBoundary(
+    World *world,
+    chunk_data *Chunk,
+    voxel_position StartingP,
+    voxel_position IterDir
+  )
 {
   s32 CurrentClosestDistanceSq = 0;
   voxel_position TargetP = (IterDir * world->ChunkDim) - IterDir;
@@ -2202,10 +2212,12 @@ CanBuildWorldChunkBoundary(World *world, world_chunk *Chunk)
 }
 
 void
-DrawWorldChunk( game_state *GameState,
-                world_chunk *Chunk,
-                RenderGroup *RG,
-                ShadowRenderGroup *SG)
+DrawWorldChunk(
+    game_state *GameState,
+    world_chunk *Chunk,
+    RenderGroup *RG,
+    ShadowRenderGroup *SG
+  )
 {
   if (Chunk->Data->BoundaryVoxelCount == 0)
     return;
@@ -2251,6 +2263,52 @@ DrawWorldChunk( game_state *GameState,
 }
 
 void
+DrawParticleSystem(
+    platform *Plat,
+    World *world,
+    particle_system *System,
+    canonical_position *P,
+    Camera_Object *Camera
+  )
+{
+  for ( s32 ParticleIndex = 0;
+        ParticleIndex < System->ActiveParticles;
+        ++ParticleIndex)
+  {
+    particle *Particle = &System->Particles[ParticleIndex];
+
+    r32 VertexData[BYTES_PER_FACE];
+    r32 FaceColors[32];
+
+    GetColorData(Particle->Color, &FaceColors[0]);;
+
+    r32 Diameter = 0.5f;
+
+    v3 MinP = GetRenderP(world->ChunkDim, (*P)+Particle->Offset, Camera);
+
+    RightFaceVertexData( MinP, Diameter, VertexData);
+    BufferVerts(&world->Mesh, 6, VertexData, RightFaceNormalData, FaceColors, sizeof(VertexData));
+
+    LeftFaceVertexData( MinP, Diameter, VertexData);
+    BufferVerts(&world->Mesh, 6, VertexData, LeftFaceNormalData, FaceColors, sizeof(VertexData));
+
+    BottomFaceVertexData( MinP, Diameter, VertexData);
+    BufferVerts(&world->Mesh, 6, VertexData, BottomFaceNormalData, FaceColors, sizeof(VertexData));
+
+    TopFaceVertexData( MinP, Diameter, VertexData);
+    BufferVerts(&world->Mesh, 6, VertexData, TopFaceNormalData, FaceColors, sizeof(VertexData));
+
+    FrontFaceVertexData( MinP, Diameter, VertexData);
+    BufferVerts(&world->Mesh, 6, VertexData, FrontFaceNormalData, FaceColors, sizeof(VertexData));
+
+    BackFaceVertexData( MinP, Diameter, VertexData);
+    BufferVerts(&world->Mesh, 6, VertexData, BackFaceNormalData, FaceColors, sizeof(VertexData));
+  }
+
+  return;
+}
+
+void
 DrawEntity(
     platform *Plat,
     World *world,
@@ -2283,6 +2341,9 @@ DrawEntity(
 
 
   BufferChunkMesh(Plat, world, Model, Entity->P.WorldP, RG, SG, Camera, Entity->Scale, Entity->P.Offset);
+
+  if (Entity->Emitter)
+    DrawParticleSystem( Plat, world, Entity->Emitter, &Entity->P, Camera );
 
   return;
 }

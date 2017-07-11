@@ -218,10 +218,40 @@ struct model
   chunk_dimension Dim;
 };
 
+struct random_series
+{
+  u32 Seed;
+};
+
+struct particle
+{
+  // TODO(Jesse): Compress to 16 bit float?
+  v3 Offset;
+  v3 Velocity;
+
+  u8 Color;
+  r32 RemainingLifespan;
+};
+
+struct particle_system
+{
+  random_series Entropy;
+
+  s32 ActiveParticles;
+  r32 ParticleDuration;
+  r32 ParticleSpeed;
+
+  particle_system_flag Flags;
+
+  particle Particles[PARTICLES_PER_SYSTEM];
+};
+
 struct entity
 {
   model Model;
   v3 CollisionVolumeRadius;
+
+  particle_system *Emitter;
 
   v3 Velocity;
   v3 Acceleration;
@@ -270,37 +300,18 @@ struct World
   world_storage WorldStorage;
 };
 
-struct random_series
-{
-  u32 Seed;
-};
-
-struct particle
-{
-  v3 Offset; // TODO(Jesse): Compress to 16 bit float?
-  u8 Color;
-  r32 RemainingLifespan;
-};
-
-struct particle_system
-{
-  canonical_position P;
-  random_series Entropy;
-
-  s32 ActiveParticles;
-  r32 ParticleDuration;
-
-  particle_system_flag Flags;
-
-
-  particle Particles[PARTICLES_PER_SYSTEM];
-};
-
 
 
 #include <render.h>
 
 
+
+inline void
+UnSetFlag( particle_system_flag *Flags, particle_system_flag Flag )
+{
+  *Flags = (particle_system_flag)(*Flags & ~Flag);
+  return;
+}
 
 inline void
 UnSetFlag( entity_flag *Flags, entity_flag Flag )
@@ -334,6 +345,13 @@ inline void
 UnSetFlag( world_chunk *Chunk, chunk_flag Flag )
 {
   UnSetFlag(Chunk->Data, Flag);
+  return;
+}
+
+inline void
+UnSetFlag( particle_system *System, particle_system_flag Flag )
+{
+  UnSetFlag(&System->Flags, Flag);
   return;
 }
 
@@ -559,7 +577,7 @@ inline r32
 RandomUnilateral(random_series *Entropy)
 {
   // TODO(Jesse): Real RNG!
-  Entropy->Seed = (Entropy->Seed * 494437) ^ (Entropy->Seed * 95073);
+  Entropy->Seed = ((Entropy->Seed * 4437) ^ (Entropy->Seed * 95073)) + (Entropy->Seed * 32155) | 256543762;
 
   r32 Result = (r32)Entropy->Seed/(r32)UINT_MAX;
   return Result;

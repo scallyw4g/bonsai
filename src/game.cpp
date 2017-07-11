@@ -82,8 +82,10 @@ AllocatePlayer(platform *Plat, memory_arena *Storage, canonical_position Initial
 {
   v3 CollisionVolumeRadius = DEBUG_ENTITY_COLLISION_VOL_RADIUS;
 
-  entity *Player = AllocateEntity(Plat, Storage);
   /* entity *Player = AllocateEntity(Plat, Storage, DEBUG_ENTITY_DIM); */
+
+  entity *Player = AllocateEntity(Plat, Storage);
+  Player->Emitter = PUSH_STRUCT_CHECKED(particle_system, Storage, 1);
 
   InitEntity(Player, CollisionVolumeRadius, InitialP, Drag);
 
@@ -268,29 +270,22 @@ SpawnParticle(particle_system *System)
   r32 Z = RandomBilateral(&System->Entropy);
 
   Particle->Offset = Normalize(V3(X,Y,Z));
+  Particle->Velocity = Normalize(V3(X,Y,Z));
   Particle->Color = RED;
-  Particle->RemainingLifespan = 3.0f;
+  Particle->RemainingLifespan = 0.5f;
 
   return;
 }
 
 void
-SpawnParticleSystem(game_state *GameState, canonical_position P)
+SpawnParticleSystem(particle_system *System, r32 ParticleSpeed)
 {
-  for ( s32 SystemIndex = 0;
-        SystemIndex < TOTAL_PARTICLE_SYSTEMS;
-        ++ SystemIndex)
-  {
-    particle_system *System = GameState->ParticleSystems[SystemIndex];
+  Assert(Unspawned(System));
 
-    if ( Unspawned(System) )
-    {
-      System->P = P;
-      SetFlag(System, ParticleSystem_Spawned);
-      System->Entropy.Seed = 54325;
-      break;
-    }
-  }
+  SetFlag(System, ParticleSystem_Spawned);
+  System->Entropy.Seed = 547325;
+
+  System->ParticleSpeed = ParticleSpeed;
 
   return;
 }
@@ -307,9 +302,9 @@ SpawnPlayer(game_state *GameState, entity *Player )
   Player->Model = PlayerModelGlobal;
   Player->Scale = 0.25f;
 
-  SetFlag(Player, (entity_flag)(Entity_Spawned|Entity_Player));
+  SpawnParticleSystem(Player->Emitter, 5.0f);
 
-  SpawnParticleSystem(GameState, Player->P);
+  SetFlag(Player, (entity_flag)(Entity_Spawned|Entity_Player));
 
   return;
 }
@@ -464,6 +459,33 @@ SimulateEnemies(game_state *GameState, entity *Player, r32 dt)
 }
 
 void
+SimulateParticleSystem(particle_system *System, r32 dt, v3 EntityDelta)
+{
+  if ( Unspawned(System) )
+    return;
+
+  if ( (RandomUnilateral(&System->Entropy) > 0.5f) )
+    SpawnParticle(System);
+
+  for ( s32 ParticleIndex = 0;
+        ParticleIndex < System->ActiveParticles;
+        ++ParticleIndex)
+  {
+    particle *Particle = &System->Particles[ParticleIndex];
+    Particle->Offset += (Particle->Velocity*dt*System->ParticleSpeed) - EntityDelta;
+
+    // Swap out last partcile for the current partcile and decrement
+    if ( (Particle->RemainingLifespan -= dt) < 0)
+    {
+      particle *SwapParticle = &System->Particles[System->ActiveParticles--];
+      *Particle = *SwapParticle;
+    }
+  }
+
+  return;
+}
+
+void
 SimulatePlayer( game_state *GameState, entity *Player, input *Input, r32 dt )
 {
   if (Player->Health <= 0 && FramesToWaitBeforeSpawningPlayer == 0)
@@ -499,46 +521,14 @@ SimulatePlayer( game_state *GameState, entity *Player, input *Input, r32 dt )
       SpawnProjectile(GameState, &Player->P, V3(0,1,0), Entity_PlayerProton);
       Player->FireCooldown = Player->RateOfFire;
     }
+
+    SimulateParticleSystem(Player->Emitter, dt, PlayerDelta);
+
   }
   else
   {
     if (--FramesToWaitBeforeSpawningPlayer <= 0)
       SpawnPlayer( GameState, Player );
-  }
-
-  return;
-}
-
-void
-SimulateParticleSystems(game_state *GameState, r32 dt)
-{
-  for ( s32 SystemIndex = 0;
-        SystemIndex < TOTAL_PARTICLE_SYSTEMS;
-        ++ SystemIndex)
-  {
-    particle_system *System = GameState->ParticleSystems[SystemIndex];
-
-    if ( Unspawned(System) )
-      continue;
-
-    if ( (RandomUnilateral(&System->Entropy) > 0.8f) )
-      SpawnParticle(System);
-
-    for ( s32 ParticleIndex = 0;
-          ParticleIndex < System->ActiveParticles;
-          ++ParticleIndex)
-    {
-      particle *Particle = &System->Particles[ParticleIndex];
-      Particle->Offset += Normalize(Particle->Offset) * dt;
-
-      // Swap out last partcile for the current partcile and decrement
-      if ( (Particle->RemainingLifespan -= dt) < 0)
-      {
-        particle *SwapParticle = &System->Particles[System->ActiveParticles--];
-        *Particle = *SwapParticle;
-      }
-    }
-
   }
 
   return;
@@ -558,12 +548,13 @@ AllocateProjectiles(platform *Plat, game_state *GameState)
   return;
 }
 
+#if 0
 void
 AllocateParticleSystems(platform *Plat, game_state *GameState)
 {
   for (s32 SystemIndex = 0;
       SystemIndex < TOTAL_PARTICLE_SYSTEMS;
-      ++ SystemIndex)
+      ++SystemIndex)
   {
     GameState->ParticleSystems[SystemIndex] =
       PUSH_STRUCT_CHECKED(particle_system, GameState->world->WorldStorage.Arena, 1);
@@ -571,6 +562,7 @@ AllocateParticleSystems(platform *Plat, game_state *GameState)
 
   return;
 }
+#endif
 
 void
 AllocateEnemies(platform *Plat, game_state *GameState)
@@ -651,7 +643,7 @@ GameInit( platform *Plat )
 
   AllocateProjectiles(Plat, GameState);
 
-  AllocateParticleSystems(Plat, GameState);
+  /* AllocateParticleSystems(Plat, GameState); */
 
   return GameState;
 }
@@ -691,8 +683,6 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
   SimulateProjectiles(GameState, Plat->dt);
 
   SimulatePlayer(GameState, Player, &Plat->Input, Plat->dt);
-
-  SimulateParticleSystems(GameState, Plat->dt);
   END_BLOCK("Sim");
 
   UpdateCameraP(Plat, world, Player, Camera);
@@ -820,4 +810,3 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
 
   return True;
 }
-
