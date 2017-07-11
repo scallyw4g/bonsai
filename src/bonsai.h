@@ -241,6 +241,10 @@ struct particle_system
   r32 ParticleDuration;
   r32 ParticleSpeed;
 
+  v3 InitialVelocity;
+
+  v3 SpawnDiameter;
+
   particle_system_flag Flags;
 
   particle Particles[PARTICLES_PER_SYSTEM];

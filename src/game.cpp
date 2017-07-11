@@ -269,16 +269,18 @@ SpawnParticle(particle_system *System)
   r32 Y = RandomBilateral(&System->Entropy);
   r32 Z = RandomBilateral(&System->Entropy);
 
-  Particle->Offset = Normalize(V3(X,Y,Z));
-  Particle->Velocity = Normalize(V3(X,Y,Z));
+  v3 Random = Normalize(V3(X,Y,Z));
+
+  Particle->Offset = Random * System->SpawnDiameter;
+  Particle->Velocity = Normalize(Random + System->InitialVelocity);
   Particle->Color = RED;
-  Particle->RemainingLifespan = 0.5f;
+  Particle->RemainingLifespan = 0.25f;
 
   return;
 }
 
 void
-SpawnParticleSystem(particle_system *System, r32 ParticleSpeed)
+SpawnParticleSystem(particle_system *System, v3 InitialVelocity, r32 ParticleSpeed, v3 SpawnDiameter)
 {
   Assert(Unspawned(System));
 
@@ -286,6 +288,8 @@ SpawnParticleSystem(particle_system *System, r32 ParticleSpeed)
   System->Entropy.Seed = 547325;
 
   System->ParticleSpeed = ParticleSpeed;
+  System->InitialVelocity = InitialVelocity;
+  System->SpawnDiameter = SpawnDiameter;
 
   return;
 }
@@ -302,7 +306,7 @@ SpawnPlayer(game_state *GameState, entity *Player )
   Player->Model = PlayerModelGlobal;
   Player->Scale = 0.25f;
 
-  SpawnParticleSystem(Player->Emitter, 5.0f);
+  SpawnParticleSystem(Player->Emitter, V3(0,-4,0), 5.0f, Player->CollisionVolumeRadius*2);
 
   SetFlag(Player, (entity_flag)(Entity_Spawned|Entity_Player));
 
@@ -459,7 +463,7 @@ SimulateEnemies(game_state *GameState, entity *Player, r32 dt)
 }
 
 void
-SimulateParticleSystem(particle_system *System, r32 dt, v3 EntityDelta)
+SimulateParticleSystem(particle_system *System, r32 dt, v3 SystemDelta)
 {
   if ( Unspawned(System) )
     return;
@@ -472,7 +476,7 @@ SimulateParticleSystem(particle_system *System, r32 dt, v3 EntityDelta)
         ++ParticleIndex)
   {
     particle *Particle = &System->Particles[ParticleIndex];
-    Particle->Offset += (Particle->Velocity*dt*System->ParticleSpeed) - EntityDelta;
+    Particle->Offset += (Particle->Velocity*dt*System->ParticleSpeed) + SystemDelta;
 
     // Swap out last partcile for the current partcile and decrement
     if ( (Particle->RemainingLifespan -= dt) < 0)
@@ -492,7 +496,7 @@ SimulatePlayer( game_state *GameState, entity *Player, input *Input, r32 dt )
   {
     Info("Player Destroyed!");
     FramesToWaitBeforeSpawningPlayer = FRAMES_TO_WAIT_BEFORE_SPAWNING_PLAYER;
-    UnSetFlag(Player, Entity_Spawned);
+    Unspawn(Player);
   }
 
   if (Spawned(Player->Flags))
@@ -522,7 +526,7 @@ SimulatePlayer( game_state *GameState, entity *Player, input *Input, r32 dt )
       Player->FireCooldown = Player->RateOfFire;
     }
 
-    SimulateParticleSystem(Player->Emitter, dt, PlayerDelta);
+    SimulateParticleSystem(Player->Emitter, dt, -1.0f*PlayerDelta);
 
   }
   else
