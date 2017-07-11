@@ -243,7 +243,7 @@ struct particle_system
 
   v3 InitialVelocity;
 
-  v3 SpawnDiameter;
+  aabb SpawnRegion;
 
   particle_system_flag Flags;
 
@@ -442,7 +442,6 @@ SetFlag(particle_system *System, particle_system_flag Flag )
   SetFlag(&System->Flags, Flag);
   return;
 }
-
 
 inline b32
 IsSet( voxel_flag Flags, voxel_flag Flag )

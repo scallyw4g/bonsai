@@ -80,13 +80,12 @@ AllocateEntity(platform *Plat, memory_arena *Storage)
 entity *
 AllocatePlayer(platform *Plat, memory_arena *Storage, canonical_position InitialP, v3 Drag, const char *ModelPath)
 {
-  v3 CollisionVolumeRadius = DEBUG_ENTITY_COLLISION_VOL_RADIUS;
-
   /* entity *Player = AllocateEntity(Plat, Storage, DEBUG_ENTITY_DIM); */
 
   entity *Player = AllocateEntity(Plat, Storage);
   Player->Emitter = PUSH_STRUCT_CHECKED(particle_system, Storage, 1);
 
+  v3 CollisionVolumeRadius = DEBUG_ENTITY_COLLISION_VOL_RADIUS;
   InitEntity(Player, CollisionVolumeRadius, InitialP, Drag);
 
   SetFlag(Player, Entity_Player);
@@ -271,7 +270,7 @@ SpawnParticle(particle_system *System)
 
   v3 Random = Normalize(V3(X,Y,Z));
 
-  Particle->Offset = Random * System->SpawnDiameter;
+  Particle->Offset = (Random*System->SpawnRegion.Radius) + System->SpawnRegion.Center;
   Particle->Velocity = Normalize(Random + System->InitialVelocity);
   Particle->Color = RED;
   Particle->RemainingLifespan = 0.25f;
@@ -280,7 +279,7 @@ SpawnParticle(particle_system *System)
 }
 
 void
-SpawnParticleSystem(particle_system *System, v3 InitialVelocity, r32 ParticleSpeed, v3 SpawnDiameter)
+SpawnParticleSystem(particle_system *System, v3 InitialVelocity, r32 ParticleSpeed, aabb SpawnRegion)
 {
   Assert(Unspawned(System));
 
@@ -289,7 +288,7 @@ SpawnParticleSystem(particle_system *System, v3 InitialVelocity, r32 ParticleSpe
 
   System->ParticleSpeed = ParticleSpeed;
   System->InitialVelocity = InitialVelocity;
-  System->SpawnDiameter = SpawnDiameter;
+  System->SpawnRegion = SpawnRegion;
 
   return;
 }
@@ -306,7 +305,7 @@ SpawnPlayer(game_state *GameState, entity *Player )
   Player->Model = PlayerModelGlobal;
   Player->Scale = 0.25f;
 
-  SpawnParticleSystem(Player->Emitter, V3(0,-4,0), 5.0f, Player->CollisionVolumeRadius*2);
+  SpawnParticleSystem(Player->Emitter, V3(0,-1,0), 10.0f, aabb(Player->CollisionVolumeRadius/2, Player->CollisionVolumeRadius/2) );
 
   SetFlag(Player, (entity_flag)(Entity_Spawned|Entity_Player));
 
@@ -527,7 +526,6 @@ SimulatePlayer( game_state *GameState, entity *Player, input *Input, r32 dt )
     }
 
     SimulateParticleSystem(Player->Emitter, dt, -1.0f*PlayerDelta);
-
   }
   else
   {
@@ -789,7 +787,7 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
 
   FlushRenderBuffers(Plat, world, RG, SG, Camera);
 
-  DEBUG_FRAME_END(DebugRG);
+  /* DEBUG_FRAME_END(DebugRG); */
 
   char dtBuffer[32];
   sprintf(dtBuffer, "%f", Plat->dt);
