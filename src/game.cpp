@@ -154,14 +154,14 @@ Unspawned(entity *Entity)
 }
 
 void
-SpawnEnemy(World *world, entity **WorldEntities, entity *Enemy)
+SpawnEnemy(World *world, entity **WorldEntities, entity *Enemy, random_series *EnemyEntropy)
 {
   TIMED_FUNCTION();
-  s32 X = max(0, (rand() % VR_X) - (rand() % VR_X));
+  s32 X = max(0, (RandomPositiveS32(EnemyEntropy) % VR_X) - (RandomPositiveS32(EnemyEntropy) % VR_X));
   s32 Z = world->Center.z;
 
   /* s32 Y = AbsWorldCenter.y; */
-  /* s32 Z = AbsWorldCenter.z/2; // + (rand() % Max.z); */
+  /* s32 Z = AbsWorldCenter.z/2; // + (RandomS32(EnemyEntropy) % Max.z); */
 
   /* v3 SeedVec = V3(X,Y,Z); */
   v3 SeedVec = V3(0,0,0);
@@ -185,7 +185,7 @@ SpawnEnemy(World *world, entity **WorldEntities, entity *Enemy)
   // Respawn entity if it collides against the world or current entities
   if ( GetCollision(world, Enemy).didCollide ||
        GetCollision(WorldEntities, Enemy)    )
-    SpawnEnemy(world, WorldEntities, Enemy);
+    SpawnEnemy(world, WorldEntities, Enemy, EnemyEntropy);
 
   return;
 }
@@ -197,7 +197,9 @@ SpawnEnemies(game_state *GameState)
   entity **Enemies = GameState->Enemies;
 
   // Fire roughly every 32 frames
-  s32 SpawnEnemies = (rand() % ENEMY_SPAWN_RATE) == 0;
+  s32 EnemySpawnEnrtopy = (RandomU32(&GameState->Entropy) % ENEMY_SPAWN_RATE);
+  s32 SpawnEnemies =  EnemySpawnEnrtopy == 0;
+
   if (!SpawnEnemies)
     return;
 
@@ -209,7 +211,7 @@ SpawnEnemies(game_state *GameState)
 
     if ( Destroyed(Enemy) || Unspawned(Enemy) )
     {
-      SpawnEnemy(GameState->world, Enemies, Enemy);
+      SpawnEnemy(GameState->world, Enemies, Enemy, &GameState->Entropy);
       return;
     }
   }
@@ -399,7 +401,7 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
       EntityWorldCollision(Entity);
     }
 
-    ProcessCollisionRules(GameState, Entity);
+    ProcessCollisionRules(GameState, Entity, &GameState->Entropy);
   }
 
 
@@ -634,6 +636,7 @@ GameInit( platform *Plat, memory_arena *GameMemory )
   GameState->RG = RG;
   GameState->SG = SG;
   GameState->DebugRG = DebugRG;
+  GameState->Entropy.Seed = DEBUG_NOISE_SEED;
 
 
   canonical_position PlayerInitialP = {};

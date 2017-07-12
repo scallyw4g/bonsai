@@ -1,8 +1,6 @@
 #include <vector>
 #include <map>
 
-#include <glm/glm.hpp>
-
 #include "vboindexer.hpp"
 
 #include <string.h> // for memcmp

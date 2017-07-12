@@ -3,8 +3,6 @@
 #include <string>
 #include <cstring>
 
-#include <glm/glm.hpp>
-
 #include "objloader.hpp"
 
 // Very, VERY simple OBJ loader.

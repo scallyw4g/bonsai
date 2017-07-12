@@ -14,6 +14,8 @@ struct game_state
 
   memory_arena *Memory;
 
+  random_series Entropy;
+
   entity *Enemies[TOTAL_ENTITY_COUNT];
   projectile *Projectiles[TOTAL_PROJECTILE_COUNT];
 };

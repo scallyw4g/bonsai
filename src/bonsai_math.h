@@ -4,9 +4,12 @@
 #include <bonsai.h>
 #include <debug.h>
 
+#if 0
+// Apparently we don't need these?
 #include <cmath>
 #include <math.h>
 #include <time.h>
+#endif
 
 #if 0
 // TODO(Jesse): Write actual/working fModf!
@@ -44,22 +47,19 @@ Max(s32 A, s32 B)
   return Result;
 }
 
-float
-Abs(float F)
+s32
+Abs(s32 Int)
 {
-  float Result = F;
-
+  s32 Result = Int;
   Result = Result < 0 ? -Result : Result;
-
   return Result;
 }
 
-float
-RandomInRange(float Min, float Max)
+r32
+Abs(r32 F)
 {
-  float Range = Max - Min;
-  float Rand = (float)rand() * 0.00001f;
-  float Result = fmodf(Rand, Range);
+  r32 Result = F;
+  Result = Result < 0 ? -Result : Result;
   return Result;
 }
 

@@ -309,19 +309,16 @@ DoDebugFrameRecord(debug_recording_state *State, input *Input, memory_arena *Mai
   {
     case RecordingMode_Clear:
     {
-      Debug("Clear");
     } break;
 
     case RecordingMode_Record:
     {
-      Debug("Record");
       Input->F1 = False;
       State->Inputs[State->FramesRecorded++] = *Input;
     } break;
 
     case RecordingMode_Playback:
     {
-      Debug("Playback");
       *Input = State->Inputs[State->FramesPlayedBack++];
 
       if (State->FramesPlayedBack == State->FramesRecorded)

@@ -563,13 +563,44 @@ Spawned(entity *Entity)
   return Result;
 }
 
+inline u32
+RandomU32(random_series *Entropy)
+{
+  u32 Seed = Entropy->Seed;
+
+  u32 A = 1664525;
+  u32 B = 1013904223;
+
+  // TODO(Jesse): This is LCG RNG - do we want a better one?
+  //
+  // Found the A and B values at:
+  // http://www.lomont.org/Math/Papers/2008/Lomont_PRNG_2008.pdf
+  //
+  Entropy->Seed = ((A * Entropy->Seed) + B) % UINT_MAX;
+
+  return Entropy->Seed;
+}
+
+inline s32
+RandomPositiveS32(random_series *Entropy)
+{
+  s32 Result = Abs((s32)RandomU32(Entropy));
+  Assert(Result >= 0);
+  return Result;
+}
+
+inline s32
+RandomS32(random_series *Entropy)
+{
+  s32 Result = (s32)RandomU32(Entropy);
+  return Result;
+}
+
 inline r32
 RandomUnilateral(random_series *Entropy)
 {
-  // TODO(Jesse): Real RNG!
-  Entropy->Seed = ((Entropy->Seed * 4437) ^ (Entropy->Seed * 95073)) + (Entropy->Seed * 32155) | 256543762;
-
-  r32 Result = (r32)Entropy->Seed/(r32)UINT_MAX;
+  u32 Random = RandomU32(Entropy);
+  r32 Result = (r32)Random/(r32)UINT_MAX;
   return Result;
 }
 

@@ -464,9 +464,9 @@ GetCollision(entity *First, entity *Second)
 }
 
 inline void
-SpawnLoot(entity *Entity)
+SpawnLoot(entity *Entity, random_series *Entropy)
 {
-  b32 ShouldSpawnLoot = (rand() % LOOT_CHANCE) == 0;
+  b32 ShouldSpawnLoot = (RandomU32(Entropy) % LOOT_CHANCE) == 0;
 
   if (ShouldSpawnLoot)
   {
@@ -510,7 +510,7 @@ IsPlayer(entity *Entity)
 }
 
 void
-ProcessCollisionRule(entity *First, entity *Second)
+ProcessCollisionRule(entity *First, entity *Second, random_series *Entropy )
 {
   Assert(First!=Second);
 
@@ -563,10 +563,10 @@ ProcessCollisionRule(entity *First, entity *Second)
       Unspawn(Second);
 
       if ( IsSet(First->Flags, Entity_Enemy) )
-        SpawnLoot(First);
+        SpawnLoot(First, Entropy);
 
       if ( IsSet(Second->Flags, Entity_Enemy) )
-        SpawnLoot(Second);
+        SpawnLoot(Second, Entropy);
 
     } break;
   }
@@ -595,7 +595,7 @@ GetCollision(entity **Entities, entity *Entity)
 }
 
 void
-ProcessCollisionRules(game_state *GameState, entity *Entity)
+ProcessCollisionRules(game_state *GameState, entity *Entity, random_series *Entropy)
 {
   // Collide against Enemies
   for (s32 EntityIndex = 0;
@@ -607,7 +607,7 @@ ProcessCollisionRules(game_state *GameState, entity *Entity)
       continue;
 
     if (GetCollision(Entity, TestEnemy))
-      ProcessCollisionRule(Entity, TestEnemy);
+      ProcessCollisionRule(Entity, TestEnemy, Entropy);
   }
 
   // Collide against Projectiles
@@ -620,7 +620,7 @@ ProcessCollisionRules(game_state *GameState, entity *Entity)
       continue;
 
     if (GetCollision(Entity, Projectile))
-      ProcessCollisionRule(Entity, Projectile);
+      ProcessCollisionRule(Entity, Projectile, Entropy);
   }
 
 }
