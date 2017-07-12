@@ -38,6 +38,9 @@ struct debug_recording_state
   s32 FramesRecorded;
   s32 FramesPlayedBack;
   debug_recording_mode Mode;
+
+  memory_arena RecordedMainMemory;
+
   input Inputs[3600];
 };
 

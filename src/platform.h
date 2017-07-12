@@ -306,5 +306,29 @@ AllocateAndInitializeArena(memory_arena *Arena, umm Size)
   return;
 }
 
+inline void
+Rewind(memory_arena *Memory)
+{
+  Memory->FirstFreeByte = Memory->FirstFreeByte - (Memory->TotalSize - Memory->Remaining);
+  Memory->Remaining = Memory->TotalSize;
+
+  return;
+}
+
+inline void
+CopyArena(memory_arena *Src, memory_arena *Dest)
+{
+  Rewind(Dest);
+  Assert(Dest->Remaining >= Src->TotalSize);
+
+  u8 *FirstSrcByte = Src->FirstFreeByte - (Src->TotalSize - Src->Remaining);
+
+  u8 *FirstDestByte = (u8*)PushSize(Dest, Src->TotalSize);
+
+  memcpy(FirstDestByte, FirstSrcByte, (size_t)Src->TotalSize);
+
+  return;
+}
+
 #endif
 

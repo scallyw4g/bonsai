@@ -268,42 +268,74 @@ QueryAndSetGlslVersion(platform *Plat)
 }
 
 inline void
-Debug_RecordingModeToggle(debug_recording_state *State)
+DoDebugFrameRecord(debug_recording_state *State, input *Input, memory_arena *MainMemory)
 {
-  State->Mode = (debug_recording_mode)((State->Mode + 1) % RecordingMode_Count);
+  {
+    GLOBAL_VARIABLE b32 Toggled = False;
+    if (Input->F1 && !Toggled)
+    {
+      Toggled = True;
+      State->Mode = (debug_recording_mode)((State->Mode + 1) % RecordingMode_Count);
 
-}
+      switch (State->Mode)
+      {
+        case RecordingMode_Clear:
+        {
+          State->FramesRecorded = 0;
+          State->FramesPlayedBack = 0;
+        } break;
 
-inline void
-DoDebugFrameRecord(debug_recording_state *State, input *Input)
-{
+        case RecordingMode_Record:
+        {
+          CopyArena(MainMemory, &State->RecordedMainMemory);
+        } break;
+
+        case RecordingMode_Playback:
+        {
+          CopyArena(&State->RecordedMainMemory, MainMemory);
+        } break;
+
+        InvalidDefaultCase;
+      }
+
+    }
+    else if (!Input->F1)
+    {
+      Toggled = False;
+    }
+  }
+
   switch (State->Mode)
   {
     case RecordingMode_Clear:
     {
-      State->FramesRecorded = 0;
-      State->FramesPlayedBack = 0;
+      Debug("Clear");
     } break;
 
     case RecordingMode_Record:
     {
+      Debug("Record");
+      Input->F1 = False;
       State->Inputs[State->FramesRecorded++] = *Input;
     } break;
 
     case RecordingMode_Playback:
     {
+      Debug("Playback");
       *Input = State->Inputs[State->FramesPlayedBack++];
+
+      if (State->FramesPlayedBack == State->FramesRecorded)
+      {
+        State->FramesPlayedBack = 0;
+        CopyArena(&State->RecordedMainMemory, MainMemory);
+      }
+
     } break;
 
     InvalidDefaultCase;
   }
 
-  if (State->FramesPlayedBack == State->FramesRecorded)
-  {
-    State->FramesPlayedBack = 0;
-    /* ResetMemoryArenas(); */
-  }
-
+  return;
 }
 
 int
@@ -315,13 +347,25 @@ main(s32 NumArgs, char ** Args)
   Info("Found Bonsai Root : %s", GetCwd() );
 
   memory_arena MainMemory = {};
+  memory_arena DebugMemory = {};
+
   AllocateAndInitializeArena(&MainMemory, MAIN_STORAGE_SIZE);
+  AllocateAndInitializeArena(&DebugMemory, Megabytes(8) );
+
 
   memory_arena PlatMemory = {};
-  SubArena(&MainMemory, &PlatMemory, PLATFORM_STORAGE_SIZE);
-
   memory_arena GameMemory = {};
+
+  SubArena(&MainMemory, &PlatMemory, PLATFORM_STORAGE_SIZE);
   SubArena(&MainMemory, &GameMemory, GAME_STORAGE_SIZE);
+
+
+  debug_recording_state *Debug_RecordingState =
+    PUSH_STRUCT_CHECKED(debug_recording_state, &DebugMemory, 1);
+
+
+  AllocateAndInitializeArena(&Debug_RecordingState->RecordedMainMemory, MAIN_STORAGE_SIZE);
+
 
   platform Plat = {};
   PlatformInit(&Plat, &PlatMemory);
@@ -361,28 +405,11 @@ main(s32 NumArgs, char ** Args)
    *  Main Game loop
    */
 
-
-  debug_recording_state *Debug_RecordingState =
-    PUSH_STRUCT_CHECKED(debug_recording_state, &PlatMemory, 1);
-
   r64 lastTime = Plat.GetHighPrecisionClock();
 
   while ( Os.ContinueRunning )
   {
     Plat.dt = (r32)ComputeDtForFrame(&lastTime);
-
-    {
-      GLOBAL_VARIABLE b32 Toggled = False;
-      if (Plat.Input.F1 && !Toggled)
-      {
-        Toggled = True;
-        Debug_RecordingModeToggle(Debug_RecordingState);
-      }
-      else if (!Plat.Input.F1)
-      {
-        Toggled = False;
-      }
-    }
 
     v2 LastMouseP = Plat.MouseP;
     while ( ProcessOsMessages(&Os, &Plat) );
@@ -404,7 +431,7 @@ main(s32 NumArgs, char ** Args)
     if (Plat.dt > 1.0f)
       Plat.dt = 1.0f;
 
-    DoDebugFrameRecord(Debug_RecordingState, &Plat.Input);
+    DoDebugFrameRecord(Debug_RecordingState, &Plat.Input, &MainMemory);
 
     GameUpdateAndRender(&Plat, GameState);
     BonsaiSwapBuffers(&Os);
