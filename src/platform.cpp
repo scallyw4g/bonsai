@@ -292,7 +292,7 @@ DoDebugFrameRecord(debug_recording_state *State, input *Input)
 
     case RecordingMode_Playback:
     {
-      *Input = *State->Inputs[State->FramesPlayedBack++];
+      *Input = State->Inputs[State->FramesPlayedBack++];
     } break;
 
     InvalidDefaultCase;
@@ -314,8 +314,14 @@ main(s32 NumArgs, char ** Args)
   if (!SearchForProjectRoot()) { Error("Couldn't find root dir, exiting."); return False; }
   Info("Found Bonsai Root : %s", GetCwd() );
 
+  memory_arena MainMemory = {};
+  AllocateAndInitializeArena(&MainMemory, MAIN_STORAGE_SIZE);
+
   memory_arena PlatMemory = {};
-  AllocateAndInitializeArena(&PlatMemory, PLATFORM_STORAGE_SIZE);
+  SubArena(&MainMemory, &PlatMemory, PLATFORM_STORAGE_SIZE);
+
+  memory_arena GameMemory = {};
+  SubArena(&MainMemory, &GameMemory, GAME_STORAGE_SIZE);
 
   platform Plat = {};
   PlatformInit(&Plat, &PlatMemory);
@@ -346,7 +352,7 @@ main(s32 NumArgs, char ** Args)
 
   QueryAndSetGlslVersion(&Plat);
 
-  game_state *GameState = GameInit(&Plat);
+  game_state *GameState = GameInit(&Plat, &GameMemory);
   if (!GameState) { Error("Initializing Game State :( "); return False; }
 
   InitGlobals(&Plat);
@@ -398,7 +404,7 @@ main(s32 NumArgs, char ** Args)
     if (Plat.dt > 1.0f)
       Plat.dt = 1.0f;
 
-    DoDebugFrameRecord(Debug_RecordingState);
+    DoDebugFrameRecord(Debug_RecordingState, &Plat.Input);
 
     GameUpdateAndRender(&Plat, GameState);
     BonsaiSwapBuffers(&Os);

@@ -12,7 +12,7 @@ struct game_state
   ShadowRenderGroup       *SG;
   debug_text_render_group *DebugRG;
 
-  memory_arena Storage;
+  memory_arena *Memory;
 
   entity *Enemies[TOTAL_ENTITY_COUNT];
   projectile *Projectiles[TOTAL_PROJECTILE_COUNT];

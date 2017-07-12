@@ -428,7 +428,7 @@ QueueChunksForInit(game_state *GameState, world_position WorldDisp)
       for (int x = SliceMin.x; x <= SliceMax.x; ++ x)
       {
         world_position P = World_Position(x,y,z);
-        world_chunk *chunk = GetFreeChunk(&GameState->Storage, GameState->world, P);
+        world_chunk *chunk = GetFreeChunk(GameState->Memory, GameState->world, P);
         QueueChunkForInit(GameState, chunk);
       }
     }
@@ -761,7 +761,7 @@ AllocateAndInitWorld( game_state *GameState, world_position Center, world_positi
     {
       for ( s32 x = Min.x; x <= Max.x; ++ x )
       {
-        world_chunk *chunk = AllocateWorldChunk(&GameState->Storage, world, World_Position(x,y,z));
+        world_chunk *chunk = AllocateWorldChunk(GameState->Memory, world, World_Position(x,y,z));
         Assert(chunk);
         QueueChunkForInit(GameState, chunk);
       }

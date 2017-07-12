@@ -56,34 +56,34 @@ AllocateEntity(platform *Plat, memory_arena *Storage, chunk_dimension ModelDim)
 }
 
 void
-AllocateGameModels(platform *Plat, game_state *GameState)
+AllocateGameModels(platform *Plat, memory_arena *Memory)
 {
-  PlayerModelGlobal = LoadModel(&GameState->Storage, PLAYER_MODEL);
-  EnemyModelGlobal = LoadModel(&GameState->Storage, ENEMY_MODEL);
-  LootModelGlobal = LoadModel(&GameState->Storage, LOOT_MODEL);
+  PlayerModelGlobal = LoadModel(Memory, PLAYER_MODEL);
+  EnemyModelGlobal = LoadModel(Memory, ENEMY_MODEL);
+  LootModelGlobal = LoadModel(Memory, LOOT_MODEL);
 
-  ProjectileModelGlobal = LoadModel(&GameState->Storage, PROJECTILE_MODEL);
-  ProtonModelGlobal = LoadModel(&GameState->Storage, PROJECTILE_MODEL);
+  ProjectileModelGlobal = LoadModel(Memory, PROJECTILE_MODEL);
+  ProtonModelGlobal = LoadModel(Memory, PROJECTILE_MODEL);
 
   return;
 }
 
 entity *
-AllocateEntity(platform *Plat, memory_arena *Storage)
+AllocateEntity(platform *Plat, memory_arena *Memory)
 {
-  entity *Entity = PUSH_STRUCT_CHECKED(entity, Storage, 1);
+  entity *Entity = PUSH_STRUCT_CHECKED(entity, Memory, 1);
   Entity->Scale = 1.0f;
 
   return Entity;
 }
 
 entity *
-AllocatePlayer(platform *Plat, memory_arena *Storage, canonical_position InitialP, v3 Drag, const char *ModelPath)
+AllocatePlayer(platform *Plat, memory_arena *Memory, canonical_position InitialP, v3 Drag, const char *ModelPath)
 {
-  /* entity *Player = AllocateEntity(Plat, Storage, DEBUG_ENTITY_DIM); */
+  /* entity *Player = AllocateEntity(Plat, Memory, DEBUG_ENTITY_DIM); */
 
-  entity *Player = AllocateEntity(Plat, Storage);
-  Player->Emitter = PUSH_STRUCT_CHECKED(particle_system, Storage, 1);
+  entity *Player = AllocateEntity(Plat, Memory);
+  Player->Emitter = PUSH_STRUCT_CHECKED(particle_system, Memory, 1);
 
   v3 CollisionVolumeRadius = DEBUG_ENTITY_COLLISION_VOL_RADIUS;
   InitEntity(Player, CollisionVolumeRadius, InitialP, Drag);
@@ -544,7 +544,7 @@ AllocateProjectiles(platform *Plat, game_state *GameState)
       ++ProjectileIndex)
   {
     GameState->Projectiles[ProjectileIndex] =
-      AllocateEntity(Plat, &GameState->Storage, PROJECTILE_AABB);
+      AllocateEntity(Plat, GameState->Memory, PROJECTILE_AABB);
   }
 
   return;
@@ -574,7 +574,7 @@ AllocateEnemies(platform *Plat, game_state *GameState)
       ++ EntityIndex)
   {
     GameState->Enemies[EntityIndex] =
-      AllocateEntity(Plat, &GameState->Storage);
+      AllocateEntity(Plat, GameState->Memory);
 
     GameState->Enemies[EntityIndex]->Scale = 0.25f;
   }
@@ -592,7 +592,7 @@ InitGlobals(platform *Plat)
 }
 
 EXPORT void*
-GameInit( platform *Plat )
+GameInit( platform *Plat, memory_arena *GameMemory )
 {
   Info("Initializing Game");
 
@@ -602,10 +602,13 @@ GameInit( platform *Plat )
   PerlinNoise Noise(rand());
   GlobalNoise = Noise;
 
-  ShadowRenderGroup *SG = PUSH_STRUCT_CHECKED(ShadowRenderGroup, Plat->Memory, 1);
+  game_state *GameState = PUSH_STRUCT_CHECKED(game_state, GameMemory, 1);
+  GameState->Memory = GameMemory;
+
+  ShadowRenderGroup *SG = PUSH_STRUCT_CHECKED(ShadowRenderGroup, GameState->Memory, 1);
   if (!InitializeShadowBuffer(SG)) { Error("Initializing Shadow Buffer"); return False; }
 
-  RenderGroup *RG = PUSH_STRUCT_CHECKED(RenderGroup, Plat->Memory, 1);
+  RenderGroup *RG = PUSH_STRUCT_CHECKED(RenderGroup, GameState->Memory, 1);
   if (!InitializeRenderGroup(Plat, RG)) { Error("Initializing RenderGroup"); return False; }
 
   // This needs to be off for shadow maps to work correctly
@@ -618,16 +621,13 @@ GameInit( platform *Plat )
   Plat->GL.glBindVertexArray(VertexArrayID);
 
 
-  Camera_Object *Camera = PUSH_STRUCT_CHECKED(Camera_Object, Plat->Memory, 1);
+  Camera_Object *Camera = PUSH_STRUCT_CHECKED(Camera_Object, GameState->Memory, 1);
   InitCamera(Camera, CAMERA_INITIAL_P, 5000.0f);
 
-  debug_text_render_group *DebugRG = PUSH_STRUCT_CHECKED(debug_text_render_group, Plat->Memory, 1);
+  debug_text_render_group *DebugRG = PUSH_STRUCT_CHECKED(debug_text_render_group, GameState->Memory, 1);
   initText2D("Holstein.DDS", DebugRG);
 
   AssertNoGlErrors;
-
-  game_state *GameState = PUSH_STRUCT_CHECKED(game_state, Plat->Memory, 1);
-  AllocateAndInitializeArena(&GameState->Storage, GAME_STORAGE_SIZE);
 
   GameState->Plat = Plat;
   GameState->Camera = Camera;
@@ -639,9 +639,9 @@ GameInit( platform *Plat )
   canonical_position PlayerInitialP = {};
 
   World *world = AllocateAndInitWorld(GameState, PlayerInitialP.WorldP, VISIBLE_REGION_RADIUS);
-  GameState->Player = AllocatePlayer(Plat, Plat->Memory, PlayerInitialP, PLAYER_DRAG, PLAYER_MODEL);
+  GameState->Player = AllocatePlayer(Plat, GameState->Memory, PlayerInitialP, PLAYER_DRAG, PLAYER_MODEL);
 
-  AllocateGameModels(Plat, GameState);
+  AllocateGameModels(Plat, GameState->Memory);
 
   AllocateEnemies(Plat, GameState);
 

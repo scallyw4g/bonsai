@@ -17,9 +17,10 @@
 
 struct platform;
 struct game_state;
+struct memory_arena;
 
 typedef void (*GameCallback)(void*);
-typedef game_state* (*game_init_proc)(platform*);
+typedef game_state* (*game_init_proc)(platform*, memory_arena*);
 typedef bool (*game_main_proc)(platform*, game_state*);
 typedef void (*game_init_globals_proc)(platform*);
 
@@ -250,7 +251,7 @@ PushSize(memory_arena *Arena, umm Size)
 {
   void* Result = 0;
 
-  if (Size < Arena->Remaining)
+  if (Size <= Arena->Remaining)
   {
     Result = (void*)Arena->FirstFreeByte;
     Arena->FirstFreeByte += Size;
@@ -279,7 +280,6 @@ PushStructChecked_(memory_arena *Arena, umm Size, const char* StructType, s32 Li
   return Result;
 }
 
-#if 0
 // TODO(Jesse): Does this function correctly?
 inline void
 SubArena( memory_arena *Src, memory_arena *Dest, umm Size)
@@ -292,7 +292,6 @@ SubArena( memory_arena *Src, memory_arena *Dest, umm Size)
 
   return;
 }
-#endif
 
 inline void
 AllocateAndInitializeArena(memory_arena *Arena, umm Size)
