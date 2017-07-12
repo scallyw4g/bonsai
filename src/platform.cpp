@@ -266,6 +266,12 @@ QueryAndSetGlslVersion(platform *Plat)
   return;
 }
 
+void
+Debug_RecordingModeToggle()
+{
+  Debug("TOGGLED!");
+}
+
 int
 main(s32 NumArgs, char ** Args)
 {
@@ -315,11 +321,25 @@ main(s32 NumArgs, char ** Args)
    *  Main Game loop
    */
 
+
   r64 lastTime = Plat.GetHighPrecisionClock();
 
   while ( Os.ContinueRunning )
   {
     Plat.dt = (r32)ComputeDtForFrame(&lastTime);
+
+    {
+      GLOBAL_VARIABLE b32 Toggled = False;
+      if (Plat.Input.F1 && !Toggled)
+      {
+        Toggled = True;
+        Debug_RecordingModeToggle();
+      }
+      else if (!Plat.Input.F1)
+      {
+        Toggled = False;
+      }
+    }
 
     v2 LastMouseP = Plat.MouseP;
     while ( ProcessOsMessages(&Os, &Plat) );
@@ -340,6 +360,7 @@ main(s32 NumArgs, char ** Args)
 
     if (Plat.dt > 1.0f)
       Plat.dt = 1.0f;
+
 
     GameUpdateAndRender(&Plat, GameState);
     BonsaiSwapBuffers(&Os);

@@ -110,7 +110,20 @@ struct input
   b32 Shift;
   b32 Ctrl;
   b32 Alt;
+
+  b32 F12;
   b32 F11;
+  b32 F10;
+  b32 F9;
+  b32 F8;
+  b32 F7;
+  b32 F6;
+  b32 F5;
+  b32 F4;
+  b32 F3;
+  b32 F2;
+  b32 F1;
+
   b32 RMB;
   b32 LMB;
   b32 W;

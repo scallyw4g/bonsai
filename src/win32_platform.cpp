@@ -315,84 +315,56 @@ WindowMessageCallback(
 
     } return 0;
 
+
+
+
+#define BindToInput(Keysym, InputField, Boolean) \
+  case Keysym: { \
+    platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET); \
+    Plat->Input.##InputField = Boolean; } return 0;
+
+#define BindKeyupToInput(Keysym, InputField) \
+    BindToInput(Keysym, InputField, False)
+
+#define BindKeydownToInput(Keysym, InputField) \
+    BindToInput(Keysym, InputField, True)
+
+
+
     case WM_KEYUP:
     {
       switch ((int)wParam)
       {
+        BindKeyupToInput(0x57, W);
+        BindKeyupToInput(0x44, D);
+        BindKeyupToInput(0x53, S);
+        BindKeyupToInput(0x41, A);
+        BindKeyupToInput(0x51, Q);
+        BindKeyupToInput(0x45, E);
 
-        case 0x57:
-        {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-          Plat->Input.W = False;
-        } return 0;
+        BindKeyupToInput(VK_F12, F12);
+        BindKeyupToInput(VK_F11, F11);
+        BindKeyupToInput(VK_F10, F10);
+        BindKeyupToInput(VK_F9, F9);
+        BindKeyupToInput(VK_F8, F8);
+        BindKeyupToInput(VK_F7, F7);
+        BindKeyupToInput(VK_F6, F6);
+        BindKeyupToInput(VK_F5, F5);
+        BindKeyupToInput(VK_F4, F4);
+        BindKeyupToInput(VK_F3, F3);
+        BindKeyupToInput(VK_F2, F2);
+        BindKeyupToInput(VK_F1, F1);
 
-        case 0x44:
-        {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-          Plat->Input.D = False;
-        } return 0;
-
-        case 0x53:
-        {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-          Plat->Input.S = False;
-        } return 0;
-
-        case 0x41:
-        {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-          Plat->Input.A = False;
-        } return 0;
-
-        case 0x51:
-        {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-          Plat->Input.Q = False;
-        } return 0;
-
-        case 0x45:
-        {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-          Plat->Input.E = False;
-        } return 0;
-
-        case VK_F11:
-        {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-          Plat->Input.F11 = False;
-        } return 0;
-
-        case VK_SHIFT:
-        {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-          Plat->Input.Shift = False;
-        } return 0;
-
-        case VK_MENU:
-        {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-          Plat->Input.Alt = False;
-        } return 0;
-
-        case VK_CONTROL:
-        {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-          Plat->Input.Ctrl = False;
-        } return 0;
-
-        case VK_SPACE:
-        {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-          Plat->Input.Space = False;
-        } return 0;
-
-        default:
-        {
-          // Ignore all other keypresses
-        } break;
+        BindKeyupToInput(VK_SHIFT, Shift);
+        BindKeyupToInput(VK_MENU, Alt);
+        BindKeyupToInput(VK_CONTROL, Ctrl);
+        BindKeyupToInput(VK_SPACE, Space);
+        default: { /* Ignore all other keypresses */ } break;
       }
-
     }
+
+
+
     case WM_KEYDOWN:
     {
       switch ((int)wParam)
@@ -403,85 +375,35 @@ WindowMessageCallback(
           return 0;
         } return 0;
 
-        case 0x57:
-        {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-          Plat->Input.W = True;
-        } return 0;
+        BindKeydownToInput(0x57, W);
+        BindKeydownToInput(0x44, D);
+        BindKeydownToInput(0x53, S);
+        BindKeydownToInput(0x41, A);
+        BindKeydownToInput(0x51, Q);
+        BindKeydownToInput(0x45, E);
 
-        case 0x44:
-        {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-          Plat->Input.D = True;
-        } return 0;
+        BindKeydownToInput(VK_F12, F12);
+        BindKeydownToInput(VK_F11, F11);
+        BindKeydownToInput(VK_F10, F10);
+        BindKeydownToInput(VK_F9, F9);
+        BindKeydownToInput(VK_F8, F8);
+        BindKeydownToInput(VK_F7, F7);
+        BindKeydownToInput(VK_F6, F6);
+        BindKeydownToInput(VK_F5, F5);
+        BindKeydownToInput(VK_F4, F4);
+        BindKeydownToInput(VK_F3, F3);
+        BindKeydownToInput(VK_F2, F2);
+        BindKeydownToInput(VK_F1, F1);
 
-        case 0x53:
-        {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-          Plat->Input.S = True;
-        } return 0;
-
-        case 0x41:
-        {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-          Plat->Input.A = True;
-        } return 0;
-
-        case 0x51:
-        {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-          Plat->Input.Q = True;
-        } return 0;
-
-        case 0x45:
-        {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-          Plat->Input.E = True;
-        } return 0;
-
-        case VK_F11:
-        {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-          Plat->Input.F11 = True;
-        } return 0;
-
-        case VK_SHIFT:
-        {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-          Plat->Input.Shift = True;
-        } return 0;
-
-        case VK_MENU:
-        {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-          Plat->Input.Alt = True;
-        } return 0;
-
-        case VK_CONTROL:
-        {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-          Plat->Input.Ctrl = True;
-        } return 0;
-
-        case VK_SPACE:
-        {
-          platform *Plat = (platform*)GetWindowLongPtr(hWnd, PLATFORM_OFFSET);
-          Plat->Input.Space = True;
-        } return 0;
-
-        default:
-        {
-          // Ignore all other keypresses
-        } break;
+        BindKeydownToInput(VK_SHIFT, Shift);
+        BindKeydownToInput(VK_MENU, Alt);
+        BindKeydownToInput(VK_CONTROL, Ctrl);
+        BindKeydownToInput(VK_SPACE, Space);
+        default: { /* Ignore all other keypresses */ } break;
       }
 
+      default: { /* Ignore all other window messages */ } break;
     }
-
-    default:
-    {
-      // Ignore all other window messages
-    } break;
-
   }
 
    return DefWindowProc(hWnd, message, wParam, lParam);
