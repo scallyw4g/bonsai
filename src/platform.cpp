@@ -270,6 +270,8 @@ void
 Debug_RecordingModeToggle()
 {
   Debug("TOGGLED!");
+
+
 }
 
 int
@@ -323,6 +325,8 @@ main(s32 NumArgs, char ** Args)
 
 
   r64 lastTime = Plat.GetHighPrecisionClock();
+
+  input FrameInputs[3600] = {};
 
   while ( Os.ContinueRunning )
   {

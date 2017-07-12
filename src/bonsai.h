@@ -279,12 +279,6 @@ struct entity
 
 typedef entity projectile;
 
-struct world_storage
-{
-  memory_arena *Arena;
-  world_storage *Next;
-};
-
 struct World
 {
   world_chunk **ChunkHash;
@@ -301,7 +295,6 @@ struct World
   v3 Gravity;
 
   mesh_buffer_target Mesh;
-  world_storage WorldStorage;
 };
 
 
@@ -854,11 +847,11 @@ InsertChunkIntoWorld(World *world, world_chunk *chunk)
 }
 
 world_chunk*
-AllocateWorldChunk(platform *Plat, World *world, world_position WorldP)
+AllocateWorldChunk(memory_arena *Storage, World *world, world_position WorldP)
 {
-  world_chunk *Result = PUSH_STRUCT_CHECKED(world_chunk, world->WorldStorage.Arena, 1);
+  world_chunk *Result = PUSH_STRUCT_CHECKED(world_chunk, Storage, 1);
 
-  Result->Data = AllocateChunk(world->WorldStorage.Arena, Chunk_Dimension(CD_X, CD_Y, CD_Z));
+  Result->Data = AllocateChunk(Storage, Chunk_Dimension(CD_X, CD_Y, CD_Z));
   Assert(Result->Data);
 
   Result->WorldP = WorldP;

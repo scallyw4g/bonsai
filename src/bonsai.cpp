@@ -375,13 +375,13 @@ ClampMinus1toInfinity( voxel_position V )
 }
 
 world_chunk*
-GetFreeChunk(platform *Plat, World *world, world_position P)
+GetFreeChunk(memory_arena *Storage, World *world, world_position P)
 {
   world_chunk *Result = 0;
 
   if (world->FreeChunkCount == 0)
   {
-    Result = AllocateWorldChunk(Plat, world, P);
+    Result = AllocateWorldChunk(Storage, world, P);
     Assert(Result);
   }
   else
@@ -428,7 +428,7 @@ QueueChunksForInit(game_state *GameState, world_position WorldDisp)
       for (int x = SliceMin.x; x <= SliceMax.x; ++ x)
       {
         world_position P = World_Position(x,y,z);
-        world_chunk *chunk = GetFreeChunk(GameState->Plat, GameState->world, P);
+        world_chunk *chunk = GetFreeChunk(&GameState->Storage, GameState->world, P);
         QueueChunkForInit(GameState, chunk);
       }
     }
@@ -726,11 +726,6 @@ AllocateAndInitWorld( game_state *GameState, world_position Center, world_positi
   World *world = PUSH_STRUCT_CHECKED(World, Plat->Memory, 1 );
   GameState->world = world;
 
-  Assert(world->WorldStorage.Next == 0);
-
-  world->WorldStorage.Arena = PUSH_STRUCT_CHECKED(memory_arena, Plat->Memory, 1);
-  AllocateAndInitializeArena(world->WorldStorage.Arena, WORLD_STORAGE_SIZE);
-
   world->ChunkHash = PUSH_STRUCT_CHECKED(world_chunk*, Plat->Memory, WORLD_HASH_SIZE );
   world->FreeChunks = PUSH_STRUCT_CHECKED(world_chunk*, Plat->Memory, FREELIST_SIZE );
 
@@ -766,7 +761,7 @@ AllocateAndInitWorld( game_state *GameState, world_position Center, world_positi
     {
       for ( s32 x = Min.x; x <= Max.x; ++ x )
       {
-        world_chunk *chunk = AllocateWorldChunk(Plat, world, World_Position(x,y,z));
+        world_chunk *chunk = AllocateWorldChunk(&GameState->Storage, world, World_Position(x,y,z));
         Assert(chunk);
         QueueChunkForInit(GameState, chunk);
       }

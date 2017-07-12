@@ -58,12 +58,12 @@ AllocateEntity(platform *Plat, memory_arena *Storage, chunk_dimension ModelDim)
 void
 AllocateGameModels(platform *Plat, game_state *GameState)
 {
-  PlayerModelGlobal = LoadModel(GameState->world->WorldStorage.Arena, PLAYER_MODEL);
-  EnemyModelGlobal = LoadModel(GameState->world->WorldStorage.Arena, ENEMY_MODEL);
-  LootModelGlobal = LoadModel(GameState->world->WorldStorage.Arena, LOOT_MODEL);
+  PlayerModelGlobal = LoadModel(&GameState->Storage, PLAYER_MODEL);
+  EnemyModelGlobal = LoadModel(&GameState->Storage, ENEMY_MODEL);
+  LootModelGlobal = LoadModel(&GameState->Storage, LOOT_MODEL);
 
-  ProjectileModelGlobal = LoadModel(GameState->world->WorldStorage.Arena, PROJECTILE_MODEL);
-  ProtonModelGlobal = LoadModel(GameState->world->WorldStorage.Arena, PROJECTILE_MODEL);
+  ProjectileModelGlobal = LoadModel(&GameState->Storage, PROJECTILE_MODEL);
+  ProtonModelGlobal = LoadModel(&GameState->Storage, PROJECTILE_MODEL);
 
   return;
 }
@@ -544,7 +544,7 @@ AllocateProjectiles(platform *Plat, game_state *GameState)
       ++ProjectileIndex)
   {
     GameState->Projectiles[ProjectileIndex] =
-      AllocateEntity(Plat, GameState->world->WorldStorage.Arena, PROJECTILE_AABB);
+      AllocateEntity(Plat, &GameState->Storage, PROJECTILE_AABB);
   }
 
   return;
@@ -574,7 +574,7 @@ AllocateEnemies(platform *Plat, game_state *GameState)
       ++ EntityIndex)
   {
     GameState->Enemies[EntityIndex] =
-      AllocateEntity(Plat, GameState->world->WorldStorage.Arena);
+      AllocateEntity(Plat, &GameState->Storage);
 
     GameState->Enemies[EntityIndex]->Scale = 0.25f;
   }
@@ -627,6 +627,8 @@ GameInit( platform *Plat )
   AssertNoGlErrors;
 
   game_state *GameState = PUSH_STRUCT_CHECKED(game_state, Plat->Memory, 1);
+  AllocateAndInitializeArena(&GameState->Storage, GAME_STORAGE_SIZE);
+
   GameState->Plat = Plat;
   GameState->Camera = Camera;
   GameState->RG = RG;
