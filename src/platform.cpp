@@ -14,6 +14,7 @@
 #endif
 
 #include <platform.h>
+#include <debug.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -266,11 +267,42 @@ QueryAndSetGlslVersion(platform *Plat)
   return;
 }
 
-void
-Debug_RecordingModeToggle()
+inline void
+Debug_RecordingModeToggle(debug_recording_state *State)
 {
-  Debug("TOGGLED!");
+  State->Mode = (debug_recording_mode)((State->Mode + 1) % RecordingMode_Count);
 
+}
+
+inline void
+DoDebugFrameRecord(debug_recording_state *State, input *Input)
+{
+  switch (State->Mode)
+  {
+    case RecordingMode_Clear:
+    {
+      State->FramesRecorded = 0;
+      State->FramesPlayedBack = 0;
+    } break;
+
+    case RecordingMode_Record:
+    {
+      State->Inputs[State->FramesRecorded++] = *Input;
+    } break;
+
+    case RecordingMode_Playback:
+    {
+      *Input = *State->Inputs[State->FramesPlayedBack++];
+    } break;
+
+    InvalidDefaultCase;
+  }
+
+  if (State->FramesPlayedBack == State->FramesRecorded)
+  {
+    State->FramesPlayedBack = 0;
+    /* ResetMemoryArenas(); */
+  }
 
 }
 
@@ -324,9 +356,10 @@ main(s32 NumArgs, char ** Args)
    */
 
 
-  r64 lastTime = Plat.GetHighPrecisionClock();
+  debug_recording_state *Debug_RecordingState =
+    PUSH_STRUCT_CHECKED(debug_recording_state, &PlatMemory, 1);
 
-  input FrameInputs[3600] = {};
+  r64 lastTime = Plat.GetHighPrecisionClock();
 
   while ( Os.ContinueRunning )
   {
@@ -337,7 +370,7 @@ main(s32 NumArgs, char ** Args)
       if (Plat.Input.F1 && !Toggled)
       {
         Toggled = True;
-        Debug_RecordingModeToggle();
+        Debug_RecordingModeToggle(Debug_RecordingState);
       }
       else if (!Plat.Input.F1)
       {
@@ -365,6 +398,7 @@ main(s32 NumArgs, char ** Args)
     if (Plat.dt > 1.0f)
       Plat.dt = 1.0f;
 
+    DoDebugFrameRecord(Debug_RecordingState);
 
     GameUpdateAndRender(&Plat, GameState);
     BonsaiSwapBuffers(&Os);

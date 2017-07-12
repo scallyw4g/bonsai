@@ -33,6 +33,8 @@
   DumpGlErrorEnum(glErrorNo);         \
   Assert(glErrorNo == GL_NO_ERROR); }
 
+#define ArrayCount(a) (sizeof(a)/sizeof(a[0]))
+#define InvalidDefaultCase default: {Assert(false);} break
 
 
 /*

@@ -13,12 +13,6 @@
 #include <debug.h>
 #include <constants.hpp>
 
-#include <debug.h>
-
-#define ArrayCount(a) (sizeof(a)/sizeof(a[0]))
-
-#define InvalidDefaultCase default: {Assert(false);} break
-
 enum chunk_flag
 {
   Chunk_Uninitialized           = 0 << 0,

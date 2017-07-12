@@ -24,6 +24,23 @@ struct debug_state
   debug_profile_entry Entries[DEBUG_STATE_ENTRY_COUNT];
 };
 
+enum debug_recording_mode
+{
+  RecordingMode_Clear,
+  RecordingMode_Record,
+  RecordingMode_Playback,
+
+  RecordingMode_Count,
+};
+
+struct debug_recording_state
+{
+  s32 FramesRecorded;
+  s32 FramesPlayedBack;
+  debug_recording_mode Mode;
+  input Inputs[3600];
+};
+
 DEBUG_GLOBAL debug_state GlobalDebugState;
 
 #define TIMED_FUNCTION() debug_timed_function FunctionTimer(__COUNTER__, __FUNCTION_NAME__)
