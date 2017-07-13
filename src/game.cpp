@@ -595,6 +595,11 @@ ProcessFrameEvent(frame_event *Event)
     {
     } break;
 
+    case FrameEvent_Explosion:
+    {
+      Debug("Explosions!!!");
+    } break;
+
     InvalidDefaultCase;
   }
 
@@ -741,8 +746,18 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
   while (Event)
   {
     ProcessFrameEvent(Event);
-    Event = Event->Next;
+    frame_event *NextEvent = Event->Next;
+
+    frame_event *TempEvent = GameState->EventQueue.FirstFreeEvent;
+
+    GameState->EventQueue.FirstFreeEvent = Event;
+    GameState->EventQueue.FirstFreeEvent->Type = FrameEvent_Undefined;
+    GameState->EventQueue.FirstFreeEvent->Next = TempEvent;
+
+    Event = NextEvent;
   }
+
+  GameState->EventQueue.Queue[GameState->EventQueue.CurrentFrameIndex] = 0;
 
   END_BLOCK("Sim");
 

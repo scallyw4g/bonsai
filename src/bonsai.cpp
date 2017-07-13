@@ -513,6 +513,41 @@ IsPlayer(entity *Entity)
   return Result;
 }
 
+inline frame_event*
+GetFreeFrameEvent(event_queue *Queue)
+{
+  frame_event *FreeEvent = Queue->FirstFreeEvent;
+
+  if (FreeEvent)
+  {
+    Queue->FirstFreeEvent = FreeEvent->Next;
+    FreeEvent->Next = 0;
+  }
+
+  return FreeEvent;
+}
+
+inline void
+PushFrameEvent(event_queue *EventQueue, frame_event *Event, s32 FramesToForward)
+{
+  frame_event **NextFrame = &EventQueue->Queue[EventQueue->CurrentFrameIndex + FramesToForward];
+  while (*NextFrame && (*NextFrame)->Next) *NextFrame = (*NextFrame)->Next;
+
+  *NextFrame = Event;
+
+  return;
+}
+
+void
+PushFrameEvent(event_queue *EventQueue, frame_event_type Type, s32 FramesToForward)
+{
+  frame_event *FreeEvent = GetFreeFrameEvent(EventQueue);
+  FreeEvent->Type = Type;
+  PushFrameEvent(EventQueue,  FreeEvent, FramesToForward);
+
+  return;
+}
+
 void
 ProcessCollisionRule(
     entity        *First,
@@ -560,6 +595,7 @@ ProcessCollisionRule(
       Player->Health --;
       Unspawn(Enemy);
 
+      PushFrameEvent(EventQueue, FrameEvent_Explosion, 1);
     } break;
 
     case Collision_Player_EnemyProjectile:
@@ -578,25 +614,8 @@ ProcessCollisionRule(
       if ( IsSet(Second->Flags, Entity_Enemy) )
         SpawnLoot(Second, Entropy, GameModels);
 
+      PushFrameEvent(EventQueue, FrameEvent_Explosion, 1);
     } break;
-  }
-
-  return;
-}
-
-inline void
-PushFrameEvent(game_state *GameState, frame_event *Event)
-{
-  event_queue *EventQueue = &GameState->EventQueue;
-  frame_event *NextFrame = EventQueue->Queue[EventQueue->CurrentFrameIndex + 1];
-  while (NextFrame->Next) NextFrame = NextFrame->Next;
-
-  frame_event *FreeEvent = GameState->EventQueue.FirstFreeEvent;
-
-  if (FreeEvent)
-  {
-    EventQueue->FirstFreeEvent = FreeEvent->Next;
-    NextFrame->Type = FrameEvent_Spawn;
   }
 
   return;

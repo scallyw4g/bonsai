@@ -14,16 +14,17 @@ enum model_index
 
 enum frame_event_type
 {
+  FrameEvent_Undefined,
+
   FrameEvent_Spawn,
   FrameEvent_Unspawn,
+  FrameEvent_Explosion,
 };
 
 struct frame_event
 {
   frame_event_type Type;
   canonical_position P;
-
-  void *Input;
 
   frame_event *Next;
 };
