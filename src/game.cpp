@@ -658,23 +658,27 @@ GameInit( platform *Plat, memory_arena *GameMemory )
 
   canonical_position PlayerInitialP = {};
 
-  World *world = AllocateAndInitWorld(GameState, PlayerInitialP.WorldP, VISIBLE_REGION_RADIUS);
-  GameState->Player = AllocatePlayer(Plat, GameState->Memory, PlayerInitialP, PLAYER_DRAG, PLAYER_MODEL);
+  World *world =
+    AllocateAndInitWorld(GameState, PlayerInitialP.WorldP, VISIBLE_REGION_RADIUS);
 
-  GameState->Models = PUSH_STRUCT_CHECKED(model, GameState->Memory, ModelIndex_Count-1);
+  GameState->Player =
+    AllocatePlayer(Plat, GameState->Memory, PlayerInitialP, PLAYER_DRAG, PLAYER_MODEL);
+
+  GameState->Models =
+    PUSH_STRUCT_CHECKED(model, GameState->Memory, ModelIndex_Count-1);
   AllocateGameModels(GameState, GameState->Memory);
 
   AllocateEnemies(Plat, GameState);
 
   AllocateProjectiles(Plat, GameState);
 
-  GameState->EventQueue =
+  GameState->EventQueue.Queue =
     PUSH_STRUCT_CHECKED(frame_event*, GameState->Memory, TOTAL_FRAME_EVENT_COUNT);
 
   frame_event *TempFrameEvents =
     PUSH_STRUCT_CHECKED(frame_event, GameState->Memory, TOTAL_FRAME_EVENT_COUNT);
 
-  frame_event **Next = &GameState->FirstFreeEvent;
+  frame_event **Next = &GameState->EventQueue.FirstFreeEvent;
 
   for ( s32 FrameEventIndex = 0;
         FrameEventIndex < TOTAL_FRAME_EVENT_COUNT;
@@ -716,7 +720,8 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
   accumulatedTime += Plat->dt;
   numFrames ++;
 
-  RG->Basis.ProjectionMatrix = GetProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight);
+  RG->Basis.ProjectionMatrix =
+    GetProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight);
 
   TIMED_BLOCK("Sim");
 
@@ -727,8 +732,12 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
 
   SimulatePlayer(GameState, Player, &Plat->Input, Plat->dt);
 
-  GameState->CurrentFrame = (GameState->CurrentFrame++) % TOTAL_FRAME_EVENT_COUNT;
-  frame_event *Event = GameState->EventQueue[GameState->CurrentFrame];
+  GameState->EventQueue.CurrentFrameIndex =
+    (GameState->EventQueue.CurrentFrameIndex++) % TOTAL_FRAME_EVENT_COUNT;
+
+  frame_event *Event =
+    GameState->EventQueue.Queue[GameState->EventQueue.CurrentFrameIndex];
+
   while (Event)
   {
     ProcessFrameEvent(Event);

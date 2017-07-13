@@ -475,6 +475,8 @@ SpawnLoot(entity *Entity, random_series *Entropy, model *GameModels)
     Entity->Velocity = V3(0,0,0);
     Entity->Model = GameModels[ModelIndex_Loot];
   }
+
+  return;
 }
 
 inline void
@@ -482,6 +484,8 @@ Unspawn(particle_system *System)
 {
   UnSetFlag(System, ParticleSystem_Spawned);
   System->Entropy.Seed = 0;
+
+  return;
 }
 
 inline void
@@ -510,7 +514,13 @@ IsPlayer(entity *Entity)
 }
 
 void
-ProcessCollisionRule(entity *First, entity *Second, random_series *Entropy, model *GameModels)
+ProcessCollisionRule(
+    entity        *First,
+    entity        *Second,
+    random_series *Entropy,
+    model         *GameModels,
+    event_queue   *EventQueue
+  )
 {
   Assert(First!=Second);
 
@@ -574,6 +584,24 @@ ProcessCollisionRule(entity *First, entity *Second, random_series *Entropy, mode
   return;
 }
 
+inline void
+PushFrameEvent(game_state *GameState, frame_event *Event)
+{
+  event_queue *EventQueue = &GameState->EventQueue;
+  frame_event *NextFrame = EventQueue->Queue[EventQueue->CurrentFrameIndex + 1];
+  while (NextFrame->Next) NextFrame = NextFrame->Next;
+
+  frame_event *FreeEvent = GameState->EventQueue.FirstFreeEvent;
+
+  if (FreeEvent)
+  {
+    EventQueue->FirstFreeEvent = FreeEvent->Next;
+    NextFrame->Type = FrameEvent_Spawn;
+  }
+
+  return;
+}
+
 inline b32
 GetCollision(entity **Entities, entity *Entity)
 {
@@ -607,7 +635,7 @@ ProcessCollisionRules(game_state *GameState, entity *Entity, random_series *Entr
       continue;
 
     if (GetCollision(Entity, TestEnemy))
-      ProcessCollisionRule(Entity, TestEnemy, Entropy, GameState->Models);
+      ProcessCollisionRule(Entity, TestEnemy, Entropy, GameState->Models, &GameState->EventQueue);
   }
 
   // Collide against Projectiles
@@ -620,7 +648,7 @@ ProcessCollisionRules(game_state *GameState, entity *Entity, random_series *Entr
       continue;
 
     if (GetCollision(Entity, Projectile))
-      ProcessCollisionRule(Entity, Projectile, Entropy, GameState->Models);
+      ProcessCollisionRule(Entity, Projectile, Entropy, GameState->Models, &GameState->EventQueue);
   }
 
 }

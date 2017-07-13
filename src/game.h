@@ -21,9 +21,19 @@ enum frame_event_type
 struct frame_event
 {
   frame_event_type Type;
+  canonical_position P;
+
   void *Input;
 
   frame_event *Next;
+};
+
+struct event_queue
+{
+  s32 CurrentFrameIndex;
+  frame_event **Queue;
+
+  frame_event *FirstFreeEvent;
 };
 
 struct game_state
@@ -41,12 +51,7 @@ struct game_state
 
   model                   *Models;
 
-
-  s32 CurrentFrame;
-  frame_event **EventQueue;
-
-  frame_event *FirstFreeEvent;
-
+  event_queue EventQueue;
 
   random_series Entropy;
 
