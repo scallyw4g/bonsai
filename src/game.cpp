@@ -768,9 +768,9 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
   END_BLOCK("Render - World");
 
   TIMED_BLOCK("Render - Projectiles");
-  for (s32 ProjectileIndex = 0;
-      ProjectileIndex < TOTAL_PROJECTILE_COUNT;
-      ++ ProjectileIndex)
+  for ( s32 ProjectileIndex = 0;
+        ProjectileIndex < TOTAL_PROJECTILE_COUNT;
+        ++ProjectileIndex)
   {
     entity *Projectile = GameState->Projectiles[ProjectileIndex];
     DrawEntity(Plat, world, Projectile, Camera, RG, SG);
@@ -778,9 +778,9 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
   END_BLOCK("Projectiles");
 
   TIMED_BLOCK("Render - Entities");
-  for (s32 EntityIndex = 0;
-      EntityIndex < TOTAL_ENTITY_COUNT;
-      ++ EntityIndex)
+  for ( s32 EntityIndex = 0;
+        EntityIndex < TOTAL_ENTITY_COUNT;
+        ++EntityIndex)
   {
     entity *Enemy = GameState->Enemies[EntityIndex];
     DrawEntity(Plat, world, Enemy, Camera, RG, SG);

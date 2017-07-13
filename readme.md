@@ -15,6 +15,10 @@ Features:
 
 [X] Multi-threaded world generation
 
+[X] Looped Game Recording/Playback
+
+[X] Hot Reload
+
 # Todo and Known Bugs:
 
 
