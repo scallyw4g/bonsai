@@ -1,6 +1,17 @@
 #ifndef GAME_H
 #define GAME_H
 
+enum model_index
+{
+  ModelIndex_Enemy,
+  ModelIndex_Player,
+  ModelIndex_Loot,
+  ModelIndex_Projectile,
+  ModelIndex_Proton,
+
+  ModelIndex_Count,
+};
+
 struct game_state
 {
   World                   *world;
@@ -18,6 +29,8 @@ struct game_state
 
   entity *Enemies[TOTAL_ENTITY_COUNT];
   projectile *Projectiles[TOTAL_PROJECTILE_COUNT];
+
+  model *Models;
 };
 
 

@@ -6,12 +6,6 @@
 static gl_extensions *GL_Global;
 static const char *GlobalGlslVersion;
 
-GLOBAL_VARIABLE model PlayerModelGlobal = {};
-GLOBAL_VARIABLE model EnemyModelGlobal = {};
-GLOBAL_VARIABLE model LootModelGlobal = {};
-GLOBAL_VARIABLE model ProjectileModelGlobal = {};
-GLOBAL_VARIABLE model ProtonModelGlobal = {};
-
 GLOBAL_VARIABLE s32 FramesToWaitBeforeSpawningPlayer = FRAMES_TO_WAIT_BEFORE_SPAWNING_PLAYER;
 
 #include <game.h>
@@ -56,14 +50,16 @@ AllocateEntity(platform *Plat, memory_arena *Storage, chunk_dimension ModelDim)
 }
 
 void
-AllocateGameModels(platform *Plat, memory_arena *Memory)
+AllocateGameModels(game_state *GameState, memory_arena *Memory)
 {
-  PlayerModelGlobal = LoadModel(Memory, PLAYER_MODEL);
-  EnemyModelGlobal = LoadModel(Memory, ENEMY_MODEL);
-  LootModelGlobal = LoadModel(Memory, LOOT_MODEL);
+  model *Models = GameState->Models;
 
-  ProjectileModelGlobal = LoadModel(Memory, PROJECTILE_MODEL);
-  ProtonModelGlobal = LoadModel(Memory, PROJECTILE_MODEL);
+  Models[ModelIndex_Player] = LoadModel(Memory, PLAYER_MODEL);
+  Models[ModelIndex_Enemy] = LoadModel(Memory, ENEMY_MODEL);
+  Models[ModelIndex_Loot] = LoadModel(Memory, LOOT_MODEL);
+
+  Models[ModelIndex_Projectile] = LoadModel(Memory, PROJECTILE_MODEL);
+  Models[ModelIndex_Proton] = LoadModel(Memory, PROJECTILE_MODEL);
 
   return;
 }
@@ -154,7 +150,7 @@ Unspawned(entity *Entity)
 }
 
 void
-SpawnEnemy(World *world, entity **WorldEntities, entity *Enemy, random_series *EnemyEntropy)
+SpawnEnemy(World *world, entity **WorldEntities, entity *Enemy, random_series *EnemyEntropy, model *GameModels)
 {
   TIMED_FUNCTION();
   s32 X = max(0, (RandomPositiveS32(EnemyEntropy) % VR_X) - (RandomPositiveS32(EnemyEntropy) % VR_X));
@@ -179,13 +175,13 @@ SpawnEnemy(World *world, entity **WorldEntities, entity *Enemy, random_series *E
 
   Enemy->Acceleration = V3(0, -1, 0);
 
-  Enemy->Model = EnemyModelGlobal;
+  Enemy->Model = GameModels[ModelIndex_Enemy];
   Enemy->Scale = 0.25f;
 
   // Respawn entity if it collides against the world or current entities
   if ( GetCollision(world, Enemy).didCollide ||
        GetCollision(WorldEntities, Enemy)    )
-    SpawnEnemy(world, WorldEntities, Enemy, EnemyEntropy);
+    SpawnEnemy(world, WorldEntities, Enemy, EnemyEntropy, GameModels);
 
   return;
 }
@@ -211,7 +207,7 @@ SpawnEnemies(game_state *GameState)
 
     if ( Destroyed(Enemy) || Unspawned(Enemy) )
     {
-      SpawnEnemy(GameState->world, Enemies, Enemy, &GameState->Entropy);
+      SpawnEnemy(GameState->world, Enemies, Enemy, &GameState->Entropy, GameState->Models);
       return;
     }
   }
@@ -222,6 +218,8 @@ SpawnEnemies(game_state *GameState)
 void
 SpawnProjectile(game_state *GameState, canonical_position *P, v3 Velocity, entity_flag ProjectileType)
 {
+  model *GameModels = GameState->Models;
+
   for (s32 ProjectileIndex = 0;
       ProjectileIndex < TOTAL_PROJECTILE_COUNT;
       ++ ProjectileIndex)
@@ -240,13 +238,13 @@ SpawnProjectile(game_state *GameState, canonical_position *P, v3 Velocity, entit
       {
         case Entity_PlayerProton:
         {
-          Projectile->Model = ProtonModelGlobal;
+          Projectile->Model = GameModels[ModelIndex_Proton];
         } break;
 
         case Entity_PlayerProjectile:
         case Entity_EnemyProjectile:
         {
-          Projectile->Model = ProjectileModelGlobal;
+          Projectile->Model = GameModels[ModelIndex_Projectile];
         } break;
 
         InvalidDefaultCase;
@@ -304,7 +302,7 @@ SpawnPlayer(game_state *GameState, entity *Player )
   Player->Health = 3;
   Player->RateOfFire = 1.0f;
 
-  Player->Model = PlayerModelGlobal;
+  Player->Model = GameState->Models[ModelIndex_Player];
   Player->Scale = 0.25f;
 
   SpawnParticleSystem(Player->Emitter, V3(0,-1,0), 10.0f, aabb(Player->CollisionVolumeRadius/2, Player->CollisionVolumeRadius/2) );
@@ -644,7 +642,8 @@ GameInit( platform *Plat, memory_arena *GameMemory )
   World *world = AllocateAndInitWorld(GameState, PlayerInitialP.WorldP, VISIBLE_REGION_RADIUS);
   GameState->Player = AllocatePlayer(Plat, GameState->Memory, PlayerInitialP, PLAYER_DRAG, PLAYER_MODEL);
 
-  AllocateGameModels(Plat, GameState->Memory);
+  GameState->Models = PUSH_STRUCT_CHECKED(model, GameState->Memory, ModelIndex_Count-1);
+  AllocateGameModels(GameState, GameState->Memory);
 
   AllocateEnemies(Plat, GameState);
 
