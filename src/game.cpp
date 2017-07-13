@@ -582,6 +582,25 @@ AllocateEnemies(platform *Plat, game_state *GameState)
   return;
 }
 
+void
+ProcessFrameEvent(frame_event *Event)
+{
+  switch(Event->Type)
+  {
+    case FrameEvent_Spawn:
+    {
+    } break;
+
+    case FrameEvent_Unspawn:
+    {
+    } break;
+
+    InvalidDefaultCase;
+  }
+
+  return;
+}
+
 EXPORT void
 InitGlobals(platform *Plat)
 {
@@ -649,6 +668,23 @@ GameInit( platform *Plat, memory_arena *GameMemory )
 
   AllocateProjectiles(Plat, GameState);
 
+  GameState->EventQueue =
+    PUSH_STRUCT_CHECKED(frame_event*, GameState->Memory, TOTAL_FRAME_EVENT_COUNT);
+
+  frame_event *TempFrameEvents =
+    PUSH_STRUCT_CHECKED(frame_event, GameState->Memory, TOTAL_FRAME_EVENT_COUNT);
+
+  frame_event **Next = &GameState->FirstFreeEvent;
+
+  for ( s32 FrameEventIndex = 0;
+        FrameEventIndex < TOTAL_FRAME_EVENT_COUNT;
+        ++FrameEventIndex)
+  {
+    frame_event *FreeEvent = &TempFrameEvents[FrameEventIndex];
+    *Next = FreeEvent;
+    Next = &FreeEvent->Next;
+  }
+
   /* AllocateParticleSystems(Plat, GameState); */
 
   return GameState;
@@ -683,19 +719,28 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
   RG->Basis.ProjectionMatrix = GetProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight);
 
   TIMED_BLOCK("Sim");
+
   SpawnEnemies(GameState);
   SimulateEnemies(GameState, Player, Plat->dt);
 
   SimulateProjectiles(GameState, Plat->dt);
 
   SimulatePlayer(GameState, Player, &Plat->Input, Plat->dt);
+
+  GameState->CurrentFrame = (GameState->CurrentFrame++) % TOTAL_FRAME_EVENT_COUNT;
+  frame_event *Event = GameState->EventQueue[GameState->CurrentFrame];
+  while (Event)
+  {
+    ProcessFrameEvent(Event);
+    Event = Event->Next;
+  }
+
   END_BLOCK("Sim");
 
   UpdateCameraP(Plat, world, Player, Camera);
   RG->Basis.ViewMatrix = GetViewMatrix(WorldChunkDim, Camera);
 
   GlobalLightTheta += Plat->dt;
-
 
   //
   // Draw world

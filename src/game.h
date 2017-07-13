@@ -12,6 +12,20 @@ enum model_index
   ModelIndex_Count,
 };
 
+enum frame_event_type
+{
+  FrameEvent_Spawn,
+  FrameEvent_Unspawn,
+};
+
+struct frame_event
+{
+  frame_event_type Type;
+  void *Input;
+
+  frame_event *Next;
+};
+
 struct game_state
 {
   World                   *world;
@@ -23,14 +37,21 @@ struct game_state
   ShadowRenderGroup       *SG;
   debug_text_render_group *DebugRG;
 
-  memory_arena *Memory;
+  memory_arena            *Memory;
+
+  model                   *Models;
+
+
+  s32 CurrentFrame;
+  frame_event **EventQueue;
+
+  frame_event *FirstFreeEvent;
+
 
   random_series Entropy;
 
   entity *Enemies[TOTAL_ENTITY_COUNT];
   projectile *Projectiles[TOTAL_PROJECTILE_COUNT];
-
-  model *Models;
 };
 
 
