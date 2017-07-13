@@ -452,7 +452,7 @@ GetCollision(entity *First, entity *Second)
 {
   TIMED_FUNCTION();
 
-  if (NotSet(First->Flags, Entity_Spawned) || NotSet(Second->Flags, Entity_Spawned))
+  if (Unspawned(First) || Unspawned(Second))
     return False;
 
   aabb FirstAABB = GetAABB(First);
@@ -470,8 +470,9 @@ SpawnLoot(entity *Entity, random_series *Entropy, model *GameModels)
 
   if (ShouldSpawnLoot)
   {
-    Entity->Flags = Entity_Uninitialized;
-    SetFlag(Entity, (entity_flag)(Entity_Loot|Entity_Spawned));
+    Entity->State = EntityState_Uninitialized;
+    Entity->Type = EntityType_Loot;
+    Entity->State = EntityState_Spawned;
     Entity->Velocity = V3(0,0,0);
     Entity->Model = GameModels[ModelIndex_Loot];
   }
@@ -491,7 +492,7 @@ Unspawn(particle_system *System)
 inline void
 Unspawn(entity *Entity)
 {
-  UnSetFlag(Entity, Entity_Spawned);
+  Entity->State = EntityState_Initialized;
 
   if (Entity->Emitter)
     Unspawn(Entity->Emitter);
@@ -502,14 +503,14 @@ Unspawn(entity *Entity)
 inline b32
 IsLoot(entity *Entity)
 {
-  b32 Result = IsSet(Entity->Flags, Entity_Loot);
+  b32 Result = Entity->Type == EntityType_Loot;
   return Result;
 }
 
 inline b32
 IsPlayer(entity *Entity)
 {
-  b32 Result = IsSet(Entity->Flags, Entity_Player);
+  b32 Result = Entity->Type == EntityType_Player;
   return Result;
 }
 
@@ -559,9 +560,9 @@ ProcessCollisionRule(
 {
   Assert(First!=Second);
 
-  entity_flag JointFlags = (entity_flag)(First->Flags | Second->Flags);
+  entity_type JointType = (entity_type)(First->Type | Second->Type);
 
-  entity_flag Rule = (entity_flag)(ENTITY_TYPES & JointFlags);
+  entity_type Rule = (entity_type)(ENTITY_TYPES & JointType);
 
   switch (Rule)
   {
@@ -608,10 +609,10 @@ ProcessCollisionRule(
       Unspawn(First);
       Unspawn(Second);
 
-      if ( IsSet(First->Flags, Entity_Enemy) )
+      if ( First->Type == EntityType_Enemy )
         SpawnLoot(First, Entropy, GameModels);
 
-      if ( IsSet(Second->Flags, Entity_Enemy) )
+      if ( Second->Type == EntityType_Enemy )
         SpawnLoot(Second, Entropy, GameModels);
 
       PushFrameEvent(EventQueue, FrameEvent_Explosion, 1);
@@ -644,30 +645,16 @@ GetCollision(entity **Entities, entity *Entity)
 void
 ProcessCollisionRules(game_state *GameState, entity *Entity, random_series *Entropy)
 {
-  // Collide against Enemies
   for (s32 EntityIndex = 0;
       EntityIndex < TOTAL_ENTITY_COUNT;
       ++EntityIndex)
   {
-    entity *TestEnemy = GameState->Enemies[EntityIndex];
+    entity *TestEnemy = GameState->EntityTable[EntityIndex];
     if (TestEnemy == Entity)
       continue;
 
     if (GetCollision(Entity, TestEnemy))
       ProcessCollisionRule(Entity, TestEnemy, Entropy, GameState->Models, &GameState->EventQueue);
-  }
-
-  // Collide against Projectiles
-  for (s32 ProjectileIndex = 0;
-      ProjectileIndex < TOTAL_PROJECTILE_COUNT;
-      ++ ProjectileIndex)
-  {
-    projectile *Projectile = GameState->Projectiles[ProjectileIndex];
-    if (Entity == Projectile)
-      continue;
-
-    if (GetCollision(Entity, Projectile))
-      ProcessCollisionRule(Entity, Projectile, Entropy, GameState->Models, &GameState->EventQueue);
   }
 
 }

@@ -56,8 +56,7 @@ struct game_state
 
   random_series Entropy;
 
-  entity *Enemies[TOTAL_ENTITY_COUNT];
-  projectile *Projectiles[TOTAL_PROJECTILE_COUNT];
+  entity *EntityTable[TOTAL_ENTITY_COUNT];
 };
 
 

@@ -44,31 +44,42 @@ enum particle_system_flag
   ParticleSystem_Spawned       = 1 << 0,
 };
 
-enum entity_flag
+enum entity_state
 {
-  Entity_Uninitialized    = 0 << 0,
-  Entity_Initialized      = 1 << 0,
-  Entity_Spawned          = 1 << 1,
-  Entity_Destoryed        = 1 << 2,
-
-  Entity_Player           = 1 << 3,
-  Entity_Enemy            = 1 << 4,
-  Entity_EnemyProjectile  = 1 << 5,
-  Entity_PlayerProjectile = 1 << 6,
-  Entity_Loot             = 1 << 7,
-  Entity_PlayerProton     = 1 << 8,
+  EntityState_Uninitialized    = 0,
+  EntityState_Initialized      = 1 << 0,
+  EntityState_Spawned          = 1 << 1,
+  EntityState_Destoryed        = 1 << 2,
 };
 
-GLOBAL_VARIABLE const entity_flag ENTITY_TYPES = (entity_flag)
-  (Entity_Player|Entity_Enemy|Entity_EnemyProjectile|Entity_PlayerProjectile|Entity_Loot|Entity_PlayerProton);
+enum entity_type
+{
+  EntityType_None             = 0,
+
+  EntityType_Player           = 1 << 0,
+  EntityType_Enemy            = 1 << 1,
+  EntityType_EnemyProjectile  = 1 << 2,
+  EntityType_PlayerProjectile = 1 << 3,
+  EntityType_Loot             = 1 << 4,
+  EntityType_PlayerProton     = 1 << 5,
+};
+
+GLOBAL_VARIABLE const entity_type ENTITY_TYPES = (entity_type)
+  ( EntityType_Player           |
+    EntityType_Enemy            |
+    EntityType_EnemyProjectile  |
+    EntityType_PlayerProjectile |
+    EntityType_Loot             |
+    EntityType_PlayerProton
+   );
 
 enum collision_type
 {
-  Collision_Player_Enemy           = Entity_Player|Entity_Enemy,
-  Collision_Player_EnemyProjectile = Entity_Player|Entity_EnemyProjectile,
-  Collision_Player_Loot            = Entity_Player|Entity_Loot,
-  Collision_Enemy_PlayerProjectile = Entity_Enemy |Entity_PlayerProjectile,
-  Collision_Enemy_PlayerProton     = Entity_Enemy |Entity_PlayerProton,
+  Collision_Player_Enemy           = EntityType_Player|EntityType_Enemy,
+  Collision_Player_EnemyProjectile = EntityType_Player|EntityType_EnemyProjectile,
+  Collision_Player_Loot            = EntityType_Player|EntityType_Loot,
+  Collision_Enemy_PlayerProjectile = EntityType_Enemy |EntityType_PlayerProjectile,
+  Collision_Enemy_PlayerProton     = EntityType_Enemy |EntityType_PlayerProton,
 };
 
 struct voxel
@@ -260,7 +271,8 @@ struct entity
 
   Quaternion Rotation;
 
-  entity_flag Flags;
+  entity_state State;
+  entity_type Type;
 
   r32 Scale;
 
@@ -270,8 +282,6 @@ struct entity
 
   u32 Health; // Only needed for Player
 };
-
-typedef entity projectile;
 
 struct World
 {
@@ -301,13 +311,6 @@ inline void
 UnSetFlag( particle_system_flag *Flags, particle_system_flag Flag )
 {
   *Flags = (particle_system_flag)(*Flags & ~Flag);
-  return;
-}
-
-inline void
-UnSetFlag( entity_flag *Flags, entity_flag Flag )
-{
-  *Flags = (entity_flag)(*Flags & ~Flag);
   return;
 }
 
@@ -347,13 +350,6 @@ UnSetFlag( particle_system *System, particle_system_flag Flag )
 }
 
 inline void
-UnSetFlag( entity *Entity, entity_flag Flag )
-{
-  UnSetFlag(&Entity->Flags, Flag);
-  return;
-}
-
-inline void
 SetFlag( voxel_flag *Flags, voxel_flag Flag )
 {
   *Flags = (voxel_flag)(*Flags | Flag);
@@ -371,20 +367,6 @@ inline void
 SetFlag( particle_system_flag *Flags, particle_system_flag Flag )
 {
   *Flags = (particle_system_flag)(*Flags | Flag);
-  return;
-}
-
-inline void
-SetFlag( entity_flag *Flags, entity_flag Flag )
-{
-  *Flags = (entity_flag)(*Flags | Flag);
-  return;
-}
-
-inline void
-SetFlag( entity *Entity, entity_flag Flag )
-{
-  SetFlag(&Entity->Flags, Flag);
   return;
 }
 
@@ -438,13 +420,6 @@ IsSet( voxel_flag Flags, voxel_flag Flag )
 }
 
 inline b32
-IsSet( entity_flag Flags, entity_flag Flag )
-{
-  b32 Result = ( (Flags & Flag) != 0 );
-  return Result;
-}
-
-inline b32
 IsSet( chunk_flag Flags, chunk_flag Flag )
 {
   b32 Result = ( (Flags & Flag) != 0 );
@@ -487,21 +462,7 @@ IsSet( boundary_voxel *V, voxel_flag Flag )
 }
 
 inline b32
-IsSet( entity *Entity, entity_flag Flag )
-{
-  b32 Result = IsSet(Entity->Flags, Flag);
-  return Result;
-}
-
-inline b32
 NotSet( particle_system_flag Flags, particle_system_flag Flag )
-{
-  b32 Result = !(IsSet(Flags, Flag));
-  return Result;
-}
-
-inline b32
-NotSet( entity_flag Flags, entity_flag Flag )
 {
   b32 Result = !(IsSet(Flags, Flag));
   return Result;
@@ -543,23 +504,37 @@ NotSet( voxel *Voxel, voxel_flag Flag )
 }
 
 inline b32
-NotSet( entity *Entity, entity_flag Flag )
-{
-  b32 Result = !(IsSet(Entity, Flag));
-  return Result;
-}
-
-inline b32
-Spawned(entity_flag Flags)
-{
-  b32 Result = IsSet(Flags, Entity_Spawned);
-  return Result;
-}
-
-inline b32
 Spawned(entity *Entity)
 {
-  b32 Result = Spawned(Entity->Flags);
+  b32 Result = Entity->State == EntityState_Spawned;
+  return Result;
+}
+
+inline b32
+Destroyed(entity *Entity)
+{
+  b32 Result = Entity->State == EntityState_Destoryed;
+  return Result;
+}
+
+inline b32
+Unspawned(particle_system_flag Flags)
+{
+  b32 Result = NotSet(Flags, ParticleSystem_Spawned);
+  return Result;
+}
+
+inline b32
+Unspawned(particle_system *System)
+{
+  b32 Result = Unspawned(System->Flags);
+  return Result;
+}
+
+inline b32
+Unspawned(entity *Entity)
+{
+  b32 Result = !Spawned(Entity);
   return Result;
 }
 

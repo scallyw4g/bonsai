@@ -29,7 +29,7 @@ InitEntity(entity *Entity, v3 CollisionVolumeRadius, canonical_position InitialP
 
   Entity->Rotation = Quaternion(0,0,0,1);
   Entity->P = InitialP;
-  Entity->Flags = Entity_Initialized;
+  Entity->State = EntityState_Initialized;
   Entity->Drag = Drag;
 
   return;
@@ -84,7 +84,7 @@ AllocatePlayer(platform *Plat, memory_arena *Memory, canonical_position InitialP
   v3 CollisionVolumeRadius = DEBUG_ENTITY_COLLISION_VOL_RADIUS;
   InitEntity(Player, CollisionVolumeRadius, InitialP, Drag);
 
-  SetFlag(Player, Entity_Player);
+  Player->Type = EntityType_Player;
   Player->Scale = 0.25f;
 
   if (!Player) { Error("Error Allocating Player"); return False; }
@@ -105,48 +105,6 @@ InitCamera(Camera_Object* Camera, canonical_position P, float FocalLength)
   Camera->Front = WORLD_Z;
 
   return;
-}
-
-inline b32
-Destroyed(entity_flag Flags)
-{
-  b32 Result =  IsSet(Flags, Entity_Destoryed);
-  return Result;
-}
-
-inline b32
-Destroyed(entity *Entity)
-{
-  b32 Result = Destroyed(Entity->Flags);
-  return Result;
-}
-
-inline b32
-Unspawned(particle_system_flag Flags)
-{
-  b32 Result = NotSet(Flags, ParticleSystem_Spawned);
-  return Result;
-}
-
-inline b32
-Unspawned(entity_flag Flags)
-{
-  b32 Result = NotSet(Flags, Entity_Spawned);
-  return Result;
-}
-
-inline b32
-Unspawned(particle_system *System)
-{
-  b32 Result = Unspawned(System->Flags);
-  return Result;
-}
-
-inline b32
-Unspawned(entity *Entity)
-{
-  b32 Result = Unspawned(Entity->Flags);
-  return Result;
 }
 
 void
@@ -171,7 +129,8 @@ SpawnEnemy(World *world, entity **WorldEntities, entity *Enemy, random_series *E
   v3 CollisionVolumeRadius = DEBUG_ENTITY_COLLISION_VOL_RADIUS;
   InitEntity(Enemy, CollisionVolumeRadius, InitialP, ENEMY_DRAG);
 
-  SetFlag(Enemy, (entity_flag)(Entity_Spawned|Entity_Enemy));
+  Enemy->State = EntityState_Spawned;
+  Enemy->Type = EntityType_Enemy;
 
   Enemy->Acceleration = V3(0, -1, 0);
 
@@ -190,7 +149,7 @@ void
 SpawnEnemies(game_state *GameState)
 {
   TIMED_FUNCTION();
-  entity **Enemies = GameState->Enemies;
+  entity **Entities = GameState->EntityTable;
 
   // Fire roughly every 32 frames
   s32 EnemySpawnEnrtopy = (RandomU32(&GameState->Entropy) % ENEMY_SPAWN_RATE);
@@ -199,15 +158,15 @@ SpawnEnemies(game_state *GameState)
   if (!SpawnEnemies)
     return;
 
-  for (s32 EntityIndex = 0;
-      EntityIndex < TOTAL_ENTITY_COUNT;
-      ++EntityIndex)
+  for ( s32 EntityIndex = 0;
+        EntityIndex < TOTAL_ENTITY_COUNT;
+        ++EntityIndex )
   {
-    entity *Enemy = Enemies[EntityIndex];
+    entity *Enemy = Entities[EntityIndex];
 
     if ( Destroyed(Enemy) || Unspawned(Enemy) )
     {
-      SpawnEnemy(GameState->world, Enemies, Enemy, &GameState->Entropy, GameState->Models);
+      SpawnEnemy(GameState->world, Entities, Enemy, &GameState->Entropy, GameState->Models);
       return;
     }
   }
@@ -216,33 +175,36 @@ SpawnEnemies(game_state *GameState)
 }
 
 void
-SpawnProjectile(game_state *GameState, canonical_position *P, v3 Velocity, entity_flag ProjectileType)
+SpawnProjectile(game_state *GameState, canonical_position *P, v3 Velocity, entity_type ProjectileType)
 {
   model *GameModels = GameState->Models;
 
   for (s32 ProjectileIndex = 0;
-      ProjectileIndex < TOTAL_PROJECTILE_COUNT;
+      ProjectileIndex < TOTAL_ENTITY_COUNT;
       ++ ProjectileIndex)
   {
-    projectile *Projectile = GameState->Projectiles[ProjectileIndex];
+    entity *Projectile = GameState->EntityTable[ProjectileIndex];
 
-    if ( Unspawned(Projectile) )
+    if ( Destroyed(Projectile) || Unspawned(Projectile) )
     {
       v3 CollisionVolumeRadius = V3(PROJECTILE_AABB)/2;
       InitEntity(Projectile, CollisionVolumeRadius, *P, PROJECTILE_DRAG);
 
-      SetFlag(Projectile, (entity_flag)(Entity_Spawned|ProjectileType));
+      Projectile->State = EntityState_Spawned;
+      Projectile->Type = ProjectileType;
+
       Projectile->Velocity = Velocity * PROJECTILE_SPEED;
+      Projectile->Acceleration = V3(0,0,0);
 
       switch (ProjectileType)
       {
-        case Entity_PlayerProton:
+        case EntityType_PlayerProton:
         {
           Projectile->Model = GameModels[ModelIndex_Proton];
         } break;
 
-        case Entity_PlayerProjectile:
-        case Entity_EnemyProjectile:
+        case EntityType_PlayerProjectile:
+        case EntityType_EnemyProjectile:
         {
           Projectile->Model = GameModels[ModelIndex_Projectile];
         } break;
@@ -307,7 +269,8 @@ SpawnPlayer(game_state *GameState, entity *Player )
 
   SpawnParticleSystem(Player->Emitter, V3(0,-1,0), 10.0f, aabb(Player->CollisionVolumeRadius/2, Player->CollisionVolumeRadius/2) );
 
-  SetFlag(Player, (entity_flag)(Entity_Spawned|Entity_Player));
+  Player->Type = EntityType_Player;
+  Player->State = EntityState_Spawned;
 
   return;
 }
@@ -315,16 +278,14 @@ SpawnPlayer(game_state *GameState, entity *Player )
 void
 EntityWorldCollision(entity *Entity)
 {
-  entity_flag EntityType = (entity_flag)(ENTITY_TYPES & Entity->Flags);
-
-  switch (EntityType)
+  switch (Entity->Type)
   {
-    case Entity_Enemy:
-    case Entity_PlayerProjectile:
-    case Entity_EnemyProjectile:
-    case Entity_Loot:
+    case EntityType_Enemy:
+    case EntityType_PlayerProjectile:
+    case EntityType_EnemyProjectile:
+    case EntityType_Loot:
     {
-      UnSetFlag(Entity, Entity_Spawned);
+      Unspawn(Entity);
     } break;
   }
 }
@@ -411,25 +372,35 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
 }
 
 void
-SimulateProjectiles(game_state *GameState, r32 dt)
+SimulateEnemy(game_state *GameState, entity *Enemy, entity *Player, r32 dt)
 {
-  for (s32 ProjectileIndex = 0;
-      ProjectileIndex < TOTAL_PROJECTILE_COUNT;
-      ++ ProjectileIndex)
+  v3 PlayerP = GetAbsoluteP(Player->P);
+  v3 EnemyP = GetAbsoluteP(Enemy->P);
+
+  if ( EnemyP.y > PlayerP.y ) // Enemy is in front of Player
   {
-    projectile *Projectile = GameState->Projectiles[ProjectileIndex];
+    v3 EnemyToPlayer = Normalize( PlayerP - EnemyP);
 
-    if (!Spawned(Projectile))
-      continue;
-
-    Projectile->Acceleration = Normalize(Projectile->Acceleration) * PROJECTILE_SPEED;
-    v3 Delta = GetEntityDelta(Projectile, PROJECTILE_SPEED, dt);
-    UpdateEntityP(GameState, Projectile, Delta);
+    r32 PrevY = Enemy->Acceleration.y;
+    Enemy->Acceleration = Lerp(0.25f, Enemy->Acceleration, EnemyToPlayer);
+    Enemy->Acceleration.y = PrevY;
   }
+
+  v3 Delta = GetEntityDelta(Enemy, ENEMY_SPEED, dt);
+  UpdateEntityP(GameState, Enemy, Delta);
 }
 
 void
-SimulateEnemies(game_state *GameState, entity *Player, r32 dt)
+SimulateProjectile(game_state *GameState, entity *Projectile, r32 dt)
+{
+  v3 Delta = GetEntityDelta(Projectile, PROJECTILE_SPEED, dt);
+  UpdateEntityP(GameState, Projectile, Delta);
+
+  return;
+}
+
+void
+SimulateEntities(game_state *GameState, entity *Player, r32 dt)
 {
   TIMED_FUNCTION();
 
@@ -437,29 +408,30 @@ SimulateEnemies(game_state *GameState, entity *Player, r32 dt)
         EnemyIndex < TOTAL_ENTITY_COUNT;
         ++EnemyIndex )
   {
-    entity *Enemy = GameState->Enemies[EnemyIndex];
+    entity *Entity = GameState->EntityTable[EnemyIndex];
 
-    if (!Spawned(Enemy) || IsLoot(Enemy))
+    if (!Spawned(Entity))
         continue;
 
-    v3 PlayerP = GetAbsoluteP(Player->P);
-    v3 EnemyP = GetAbsoluteP(Enemy->P);
-
-    if ( EnemyP.y > PlayerP.y ) // Enemy is in front of Player
+    switch (Entity->Type)
     {
-      v3 EnemyToPlayer = Normalize( PlayerP - EnemyP);
+      case EntityType_Enemy:
+      {
+        SimulateEnemy(GameState, Entity, Player, dt);
+      } break;
 
-      r32 PrevY = Enemy->Acceleration.y;
-      Enemy->Acceleration = Lerp(0.25f, Enemy->Acceleration, EnemyToPlayer);
-      Enemy->Acceleration.y = PrevY;
+      case EntityType_PlayerProjectile:
+      case EntityType_EnemyProjectile:
+      {
+        SimulateProjectile(GameState, Entity, dt);
+      } break;
     }
-
-    v3 Delta = GetEntityDelta(Enemy, ENEMY_SPEED, dt);
-    UpdateEntityP(GameState, Enemy, Delta);
   }
 
   return;
 }
+
+
 
 void
 SimulateParticleSystem(particle_system *System, r32 dt, v3 SystemDelta)
@@ -498,7 +470,7 @@ SimulatePlayer( game_state *GameState, entity *Player, input *Input, r32 dt )
     Unspawn(Player);
   }
 
-  if (Spawned(Player->Flags))
+  if (Spawned(Player))
   {
     Player->Acceleration = GetOrthographicInputs(Input);
     v3 PlayerDelta = GetEntityDelta(Player, PLAYER_SPEED, dt) + (PLAYER_IMPULSE*dt);
@@ -514,14 +486,14 @@ SimulatePlayer( game_state *GameState, entity *Player, input *Input, r32 dt )
     // Regular Fire
     if ( Input->Space && (Player->FireCooldown < 0) )
     {
-      SpawnProjectile(GameState, &Player->P, V3(0,1,0), Entity_PlayerProjectile);
+      SpawnProjectile(GameState, &Player->P, V3(0,1,0), EntityType_PlayerProjectile);
       Player->FireCooldown = Player->RateOfFire;
     }
 
     // Proton Torpedo!!
     if ( Input->Shift && (Player->FireCooldown < 0) )
     {
-      SpawnProjectile(GameState, &Player->P, V3(0,1,0), Entity_PlayerProton);
+      SpawnProjectile(GameState, &Player->P, V3(0,1,0), EntityType_PlayerProton);
       Player->FireCooldown = Player->RateOfFire;
     }
 
@@ -531,20 +503,6 @@ SimulatePlayer( game_state *GameState, entity *Player, input *Input, r32 dt )
   {
     if (--FramesToWaitBeforeSpawningPlayer <= 0)
       SpawnPlayer( GameState, Player );
-  }
-
-  return;
-}
-
-void
-AllocateProjectiles(platform *Plat, game_state *GameState)
-{
-  for (s32 ProjectileIndex = 0;
-      ProjectileIndex < TOTAL_PROJECTILE_COUNT;
-      ++ProjectileIndex)
-  {
-    GameState->Projectiles[ProjectileIndex] =
-      AllocateEntity(Plat, GameState->Memory, PROJECTILE_AABB);
   }
 
   return;
@@ -567,16 +525,16 @@ AllocateParticleSystems(platform *Plat, game_state *GameState)
 #endif
 
 void
-AllocateEnemies(platform *Plat, game_state *GameState)
+AllocateEntityTable(platform *Plat, game_state *GameState)
 {
   for (s32 EntityIndex = 0;
       EntityIndex < TOTAL_ENTITY_COUNT;
       ++ EntityIndex)
   {
-    GameState->Enemies[EntityIndex] =
+    GameState->EntityTable[EntityIndex] =
       AllocateEntity(Plat, GameState->Memory);
 
-    GameState->Enemies[EntityIndex]->Scale = 0.25f;
+    GameState->EntityTable[EntityIndex]->Scale = 1.0f;
   }
 
   return;
@@ -673,9 +631,7 @@ GameInit( platform *Plat, memory_arena *GameMemory )
     PUSH_STRUCT_CHECKED(model, GameState->Memory, ModelIndex_Count-1);
   AllocateGameModels(GameState, GameState->Memory);
 
-  AllocateEnemies(Plat, GameState);
-
-  AllocateProjectiles(Plat, GameState);
+  AllocateEntityTable(Plat, GameState);
 
   GameState->EventQueue.Queue =
     PUSH_STRUCT_CHECKED(frame_event*, GameState->Memory, TOTAL_FRAME_EVENT_COUNT);
@@ -731,9 +687,7 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
   TIMED_BLOCK("Sim");
 
   SpawnEnemies(GameState);
-  SimulateEnemies(GameState, Player, Plat->dt);
-
-  SimulateProjectiles(GameState, Plat->dt);
+  SimulateEntities(GameState, Player, Plat->dt);
 
   SimulatePlayer(GameState, Player, &Plat->Input, Plat->dt);
 
@@ -836,22 +790,12 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
   }
   END_BLOCK("Render - World");
 
-  TIMED_BLOCK("Render - Projectiles");
-  for ( s32 ProjectileIndex = 0;
-        ProjectileIndex < TOTAL_PROJECTILE_COUNT;
-        ++ProjectileIndex)
-  {
-    entity *Projectile = GameState->Projectiles[ProjectileIndex];
-    DrawEntity(Plat, world, Projectile, Camera, RG, SG);
-  }
-  END_BLOCK("Projectiles");
-
   TIMED_BLOCK("Render - Entities");
   for ( s32 EntityIndex = 0;
         EntityIndex < TOTAL_ENTITY_COUNT;
         ++EntityIndex)
   {
-    entity *Enemy = GameState->Enemies[EntityIndex];
+    entity *Enemy = GameState->EntityTable[EntityIndex];
     DrawEntity(Plat, world, Enemy, Camera, RG, SG);
   }
   END_BLOCK("Entities");
