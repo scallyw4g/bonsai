@@ -511,6 +511,13 @@ Spawned(entity *Entity)
 }
 
 inline b32
+Spawned(particle_system *System)
+{
+  b32 Result = IsSet(System->Flags, ParticleSystem_Spawned);
+  return Result;
+}
+
+inline b32
 Destroyed(entity *Entity)
 {
   b32 Result = Entity->State == EntityState_Destoryed;

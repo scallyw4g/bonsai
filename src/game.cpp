@@ -52,14 +52,12 @@ AllocateEntity(platform *Plat, memory_arena *Storage, chunk_dimension ModelDim)
 void
 AllocateGameModels(game_state *GameState, memory_arena *Memory)
 {
-  model *Models = GameState->Models;
+  GameState->Models[ModelIndex_Enemy] = LoadModel(Memory, ENEMY_MODEL);
+  GameState->Models[ModelIndex_Player] = LoadModel(Memory, PLAYER_MODEL);
+  GameState->Models[ModelIndex_Loot] = LoadModel(Memory, LOOT_MODEL);
 
-  Models[ModelIndex_Player] = LoadModel(Memory, PLAYER_MODEL);
-  Models[ModelIndex_Enemy] = LoadModel(Memory, ENEMY_MODEL);
-  Models[ModelIndex_Loot] = LoadModel(Memory, LOOT_MODEL);
-
-  Models[ModelIndex_Projectile] = LoadModel(Memory, PROJECTILE_MODEL);
-  Models[ModelIndex_Proton] = LoadModel(Memory, PROJECTILE_MODEL);
+  GameState->Models[ModelIndex_Projectile] = LoadModel(Memory, PROJECTILE_MODEL);
+  GameState->Models[ModelIndex_Proton] = LoadModel(Memory, PROJECTILE_MODEL);
 
   return;
 }
@@ -431,13 +429,10 @@ SimulateEntities(game_state *GameState, entity *Player, r32 dt)
   return;
 }
 
-
-
 void
 SimulateParticleSystem(particle_system *System, r32 dt, v3 SystemDelta)
 {
-  if ( Unspawned(System) )
-    return;
+  Assert(Spawned(System));
 
   if ( (RandomUnilateral(&System->Entropy) > 0.5f) )
     SpawnParticle(System);
@@ -628,7 +623,7 @@ GameInit( platform *Plat, memory_arena *GameMemory )
     AllocatePlayer(Plat, GameState->Memory, PlayerInitialP, PLAYER_DRAG, PLAYER_MODEL);
 
   GameState->Models =
-    PUSH_STRUCT_CHECKED(model, GameState->Memory, ModelIndex_Count-1);
+    PUSH_STRUCT_CHECKED(model, GameState->Memory, ModelIndex_Count);
   AllocateGameModels(GameState, GameState->Memory);
 
   AllocateEntityTable(Plat, GameState);
