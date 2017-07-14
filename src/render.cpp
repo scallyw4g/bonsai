@@ -2323,10 +2323,10 @@ DrawEntity(
   /* glUniform3fv(RG->LightPID, 1, &LightP[0]); */
   //
 
-  if (!Spawned(Entity))
-    return;
-
   chunk_data *Model = Entity->Model.Chunk;
+
+  if (!Model || !Spawned(Entity))
+    return;
 
 #if DEBUG_DRAW_COLLISION_VOLUMES
   aabb AABB = GetRenderSpaceAABB(world->ChunkDim, Entity, Camera);

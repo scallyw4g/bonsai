@@ -21,16 +21,49 @@ GetEntityDelta(entity *Entity, r32 Speed, r32 dt)
 }
 
 void
-InitEntity(entity *Entity, v3 CollisionVolumeRadius, canonical_position InitialP, v3 Drag)
+SpawnEntity(
+    entity *Entity,
+    particle_system *Emitter,
+    model *Model,
+    entity_type Type,
+
+    v3 Velocity,
+    v3 Acceleration,
+    v3 Drag,
+
+    canonical_position *InitialP,
+    v3 CollisionVolumeRadius,
+
+    r32 Scale = 1.0f,
+    r32 RateOfFire = 1.0f,
+    u32 Health = 1
+  )
 {
   TIMED_FUNCTION();
+
+  Entity->Emitter = Emitter;
+
+  if (Model)
+    Entity->Model = *Model;
+
+  Entity->Type = Type;
+
+  Entity->Velocity = Velocity;
+  Entity->Acceleration = Acceleration;
+  Entity->Drag = Drag;
+
+  if (InitialP)
+    Entity->P = *InitialP;
 
   Entity->CollisionVolumeRadius = CollisionVolumeRadius;
 
   Entity->Rotation = Quaternion(0,0,0,1);
-  Entity->P = InitialP;
-  Entity->State = EntityState_Initialized;
-  Entity->Drag = Drag;
+
+  Entity->Scale = Scale;
+  Entity->RateOfFire = RateOfFire;
+  Entity->Health = Health;
+
+  Entity->State = EntityState_Spawned;
 
   return;
 }
@@ -77,13 +110,9 @@ AllocatePlayer(platform *Plat, memory_arena *Memory, canonical_position InitialP
   /* entity *Player = AllocateEntity(Plat, Memory, DEBUG_ENTITY_DIM); */
 
   entity *Player = AllocateEntity(Plat, Memory);
-  Player->Emitter = PUSH_STRUCT_CHECKED(particle_system, Memory, 1);
+  particle_system *Emitter = PUSH_STRUCT_CHECKED(particle_system, Memory, 1);
 
-  v3 CollisionVolumeRadius = DEBUG_ENTITY_COLLISION_VOL_RADIUS;
-  InitEntity(Player, CollisionVolumeRadius, InitialP, Drag);
-
-  Player->Type = EntityType_Player;
-  Player->Scale = 0.25f;
+  Player->Emitter = Emitter;
 
   if (!Player) { Error("Error Allocating Player"); return False; }
 
@@ -112,28 +141,38 @@ SpawnEnemy(World *world, entity **WorldEntities, entity *Enemy, random_series *E
   s32 X = max(0, (RandomPositiveS32(EnemyEntropy) % VR_X) - (RandomPositiveS32(EnemyEntropy) % VR_X));
   s32 Z = world->Center.z;
 
-  /* s32 Y = AbsWorldCenter.y; */
-  /* s32 Z = AbsWorldCenter.z/2; // + (RandomS32(EnemyEntropy) % Max.z); */
-
-  /* v3 SeedVec = V3(X,Y,Z); */
   v3 SeedVec = V3(0,0,0);
 
   world_position InitialCenter =
     World_Position(X, world->Center.y + (VR_Y/2)-1, Z);
 
-  canonical_position InitialP = Canonical_Position( V3(0,0,0), InitialCenter);
-  InitialP = Canonicalize(WORLD_CHUNK_DIM, InitialP);
+  canonical_position InitialP =
+    Canonicalize(WORLD_CHUNK_DIM, Canonical_Position( V3(0,0,0), InitialCenter));
 
-  v3 CollisionVolumeRadius = DEBUG_ENTITY_COLLISION_VOL_RADIUS;
-  InitEntity(Enemy, CollisionVolumeRadius, InitialP, ENEMY_DRAG);
+  v3 Acceleration = V3(0, -1, 0);
 
-  Enemy->State = EntityState_Spawned;
-  Enemy->Type = EntityType_Enemy;
+  r32 Scale = 0.25f;
+  r32 RateOfFire = 1.0f;
+  u32 Health = 1;
 
-  Enemy->Acceleration = V3(0, -1, 0);
+  SpawnEntity(
+    Enemy,
+    0,
+    &GameModels[ModelIndex_Enemy],
+    EntityType_Enemy,
+
+    V3(0,0,0),
+    Acceleration,
+    ENEMY_DRAG,
+
+    &InitialP,
+    DEBUG_ENTITY_COLLISION_VOL_RADIUS,
+
+    Scale,
+    RateOfFire,
+    Health);
 
   Enemy->Model = GameModels[ModelIndex_Enemy];
-  Enemy->Scale = 0.25f;
 
   // Respawn entity if it collides against the world or current entities
   if ( GetCollision(world, Enemy).didCollide ||
@@ -186,13 +225,31 @@ SpawnProjectile(game_state *GameState, canonical_position *P, v3 Velocity, entit
     if ( Destroyed(Projectile) || Unspawned(Projectile) )
     {
       v3 CollisionVolumeRadius = V3(PROJECTILE_AABB)/2;
-      InitEntity(Projectile, CollisionVolumeRadius, *P, PROJECTILE_DRAG);
 
-      Projectile->State = EntityState_Spawned;
-      Projectile->Type = ProjectileType;
+      v3 Acceleration = V3(0,0,0);
+      v3 Drag = V3(1,1,1);
 
-      Projectile->Velocity = Velocity * PROJECTILE_SPEED;
-      Projectile->Acceleration = V3(0,0,0);
+      r32 Scale = 0.25f;
+      r32 RateOfFire = 1.0f;
+      u32 Health = 1;
+
+      SpawnEntity(
+        Projectile,
+        0,
+        &GameModels[ModelIndex_Projectile],
+        ProjectileType,
+
+        Velocity*PROJECTILE_SPEED,
+        Acceleration,
+        Drag,
+
+        P,
+        CollisionVolumeRadius,
+
+        Scale,
+        RateOfFire,
+        Health);
+
 
       switch (ProjectileType)
       {
@@ -243,7 +300,7 @@ SpawnParticleSystem(particle_system *System, v3 InitialVelocity, r32 ParticleSpe
 {
   Assert(Unspawned(System));
 
-  SetFlag(System, ParticleSystem_Spawned);
+  System->Spawned = True;
   System->Entropy.Seed = 547325;
 
   System->ParticleSpeed = ParticleSpeed;
@@ -256,19 +313,33 @@ SpawnParticleSystem(particle_system *System, v3 InitialVelocity, r32 ParticleSpe
 void
 SpawnPlayer(game_state *GameState, entity *Player )
 {
-  World *world = GameState->world;
-  Player->Acceleration = V3(0,0,0);
-  Player->Velocity = V3(0,0,0);
-  Player->Health = 3;
-  Player->RateOfFire = 1.0f;
+  v3 Acceleration = V3(0,0,0);
+  v3 Velocity = V3(0,0,0);
+  v3 Drag = V3(0.9f,0.9f,0.9f);
 
-  Player->Model = GameState->Models[ModelIndex_Player];
-  Player->Scale = 0.25f;
+  r32 Scale = 0.25f;
+  r32 RateOfFire = 1.0f;
+  u32 Health = 3;
+
+  SpawnEntity(
+      Player,
+      Player->Emitter,
+      &GameState->Models[ModelIndex_Player],
+      EntityType_Player,
+
+      Velocity,
+      Acceleration,
+      Drag,
+
+      0,
+      DEBUG_ENTITY_COLLISION_VOL_RADIUS,
+
+      Scale,
+      RateOfFire,
+      Health
+    );
 
   SpawnParticleSystem(Player->Emitter, V3(0,-1,0), 10.0f, aabb(Player->CollisionVolumeRadius/2, Player->CollisionVolumeRadius/2) );
-
-  Player->Type = EntityType_Player;
-  Player->State = EntityState_Spawned;
 
   return;
 }
@@ -432,7 +503,7 @@ SimulateEntities(game_state *GameState, entity *Player, r32 dt)
 void
 SimulateParticleSystem(particle_system *System, r32 dt, v3 SystemDelta)
 {
-  Assert(Spawned(System));
+  if (Unspawned(System)) return;
 
   if ( (RandomUnilateral(&System->Entropy) > 0.5f) )
     SpawnParticle(System);
@@ -536,7 +607,7 @@ AllocateEntityTable(platform *Plat, game_state *GameState)
 }
 
 void
-ProcessFrameEvent(frame_event *Event)
+ProcessFrameEvent(game_state *GameState, frame_event *Event)
 {
   switch(Event->Type)
   {
@@ -550,7 +621,38 @@ ProcessFrameEvent(frame_event *Event)
 
     case FrameEvent_Explosion:
     {
-      Debug("Explosions!!!");
+      for ( s32 EntityIndex = 0;
+            EntityIndex < TOTAL_ENTITY_COUNT;
+            ++EntityIndex )
+      {
+        entity *SystemEntity = GameState->EntityTable[EntityIndex];
+
+        if ( Destroyed(SystemEntity) || Unspawned(SystemEntity) )
+        {
+          canonical_position P = Canonical_Position();
+
+          SpawnEntity(
+            SystemEntity,
+            0,
+            &GameState->Models[ModelIndex_None],
+            EntityType_None,
+
+            V3(0,0,0),
+            V3(0,0,0),
+            V3(0,0,0),
+
+            &P,
+            V3(0,0,0)
+          );
+
+          SystemEntity->P = Event->P;
+
+          // FIXME(Jesse): We're leaking every explosion ever..
+          SystemEntity->Emitter = PUSH_STRUCT_CHECKED(particle_system, GameState->Memory, 1);
+          SpawnParticleSystem(SystemEntity->Emitter, V3(1,1,1), 1.0f, aabb(V3(0,0,0), V3(1,1,1)));
+        }
+      }
+
     } break;
 
     InvalidDefaultCase;
@@ -694,7 +796,7 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
 
   while (Event)
   {
-    ProcessFrameEvent(Event);
+    ProcessFrameEvent(GameState, Event);
     frame_event *NextEvent = Event->Next;
 
     frame_event *TempEvent = GameState->EventQueue.FirstFreeEvent;

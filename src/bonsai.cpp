@@ -483,7 +483,7 @@ SpawnLoot(entity *Entity, random_series *Entropy, model *GameModels)
 inline void
 Unspawn(particle_system *System)
 {
-  UnSetFlag(System, ParticleSystem_Spawned);
+  System->Spawned = False;
   System->Entropy.Seed = 0;
 
   return;
@@ -531,20 +531,13 @@ GetFreeFrameEvent(event_queue *Queue)
 inline void
 PushFrameEvent(event_queue *EventQueue, frame_event *Event, s32 FramesToForward)
 {
-  frame_event **NextFrame = &EventQueue->Queue[EventQueue->CurrentFrameIndex + FramesToForward];
-  while (*NextFrame && (*NextFrame)->Next) *NextFrame = (*NextFrame)->Next;
-
-  *NextFrame = Event;
-
-  return;
-}
-
-void
-PushFrameEvent(event_queue *EventQueue, frame_event_type Type, s32 FramesToForward)
-{
   frame_event *FreeEvent = GetFreeFrameEvent(EventQueue);
-  FreeEvent->Type = Type;
-  PushFrameEvent(EventQueue,  FreeEvent, FramesToForward);
+  *FreeEvent = *Event;
+
+  frame_event **NextFrameEvent = &EventQueue->Queue[EventQueue->CurrentFrameIndex + FramesToForward];
+  while (*NextFrameEvent && (*NextFrameEvent)->Next) *NextFrameEvent = (*NextFrameEvent)->Next;
+
+  *NextFrameEvent = FreeEvent;
 
   return;
 }
@@ -596,7 +589,8 @@ ProcessCollisionRule(
       Player->Health --;
       Unspawn(Enemy);
 
-      PushFrameEvent(EventQueue, FrameEvent_Explosion, 1);
+      frame_event Event(Enemy->P, FrameEvent_Explosion);
+      PushFrameEvent(EventQueue, &Event, 1);
     } break;
 
     case Collision_Player_EnemyProjectile:
@@ -609,13 +603,17 @@ ProcessCollisionRule(
       Unspawn(First);
       Unspawn(Second);
 
-      if ( First->Type == EntityType_Enemy )
-        SpawnLoot(First, Entropy, GameModels);
+      entity *Enemy = First;
+      entity *Projectile = Second;
 
       if ( Second->Type == EntityType_Enemy )
-        SpawnLoot(Second, Entropy, GameModels);
+      {
+        Enemy = Second;
+        Projectile = First;
+      }
 
-      PushFrameEvent(EventQueue, FrameEvent_Explosion, 1);
+      frame_event Event(Enemy->P, FrameEvent_Explosion);
+      PushFrameEvent(EventQueue, &Event, 1);
     } break;
   }
 

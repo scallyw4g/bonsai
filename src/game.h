@@ -3,6 +3,8 @@
 
 enum model_index
 {
+  ModelIndex_None,
+
   ModelIndex_Enemy,
   ModelIndex_Player,
   ModelIndex_Loot,
@@ -27,6 +29,13 @@ struct frame_event
   canonical_position P;
 
   frame_event *Next;
+
+  frame_event(canonical_position P, frame_event_type Type)
+  {
+    this->P = P;
+    this->Type = Type;
+    this->Next = 0;
+  }
 };
 
 struct event_queue

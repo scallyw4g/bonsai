@@ -674,6 +674,47 @@ Translate( v3 v )
   return Result;
 }
 
+inline world_position
+World_Position(v3 V)
+{
+  voxel_position Result;
+
+  Result.x = (int)V.x;
+  Result.y = (int)V.y;
+  Result.z = (int)V.z;
+
+  return Result;
+};
+
+inline voxel_position
+Voxel_Position(int x, int y, int z)
+{
+  voxel_position Result;
+
+  Result.x = x;
+  Result.y = y;
+  Result.z = z;
+
+  return Result;
+};
+
+inline world_position
+World_Position(int x, int y, int z)
+{
+  chunk_dimension Result = Voxel_Position(x,y,z);
+  return Result;
+}
+
+
+inline canonical_position
+Canonical_Position()
+{
+  canonical_position Result;
+  Result.Offset = V3(0,0,0);
+  Result.WorldP = World_Position(0,0,0);
+  return Result;
+}
+
 inline canonical_position
 Canonical_Position(v3 Offset, world_position WorldP )
 {
@@ -763,37 +804,6 @@ Canonical_Position(chunk_dimension WorldChunkDim, voxel_position Offset, world_p
 {
   canonical_position Result = Canonical_Position(Offset, WorldP);
   Result = Canonicalize(WorldChunkDim, Result);
-  return Result;
-}
-
-inline world_position
-World_Position(v3 V)
-{
-  voxel_position Result;
-
-  Result.x = (int)V.x;
-  Result.y = (int)V.y;
-  Result.z = (int)V.z;
-
-  return Result;
-};
-
-inline voxel_position
-Voxel_Position(int x, int y, int z)
-{
-  voxel_position Result;
-
-  Result.x = x;
-  Result.y = y;
-  Result.z = z;
-
-  return Result;
-};
-
-inline world_position
-World_Position(int x, int y, int z)
-{
-  chunk_dimension Result = Voxel_Position(x,y,z);
   return Result;
 }
 

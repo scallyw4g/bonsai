@@ -38,12 +38,6 @@ enum voxel_flag
   Voxel_BackFace   = 1 << 6,
 };
 
-enum particle_system_flag
-{
-  ParticleSystem_Uninitialized = 0 << 0,
-  ParticleSystem_Spawned       = 1 << 0,
-};
-
 enum entity_state
 {
   EntityState_Uninitialized    = 0,
@@ -250,7 +244,7 @@ struct particle_system
 
   aabb SpawnRegion;
 
-  particle_system_flag Flags;
+  b32 Spawned;
 
   particle Particles[PARTICLES_PER_SYSTEM];
 };
@@ -265,7 +259,6 @@ struct entity
   v3 Velocity;
   v3 Acceleration;
   v3 Drag;
-  r32 AccelMultiplier;
 
   canonical_position P;
 
@@ -308,13 +301,6 @@ struct World
 
 
 inline void
-UnSetFlag( particle_system_flag *Flags, particle_system_flag Flag )
-{
-  *Flags = (particle_system_flag)(*Flags & ~Flag);
-  return;
-}
-
-inline void
 UnSetFlag( voxel_flag *Flags, voxel_flag Flag )
 {
   *Flags = (voxel_flag)(*Flags & ~Flag);
@@ -343,13 +329,6 @@ UnSetFlag( world_chunk *Chunk, chunk_flag Flag )
 }
 
 inline void
-UnSetFlag( particle_system *System, particle_system_flag Flag )
-{
-  UnSetFlag(&System->Flags, Flag);
-  return;
-}
-
-inline void
 SetFlag( voxel_flag *Flags, voxel_flag Flag )
 {
   *Flags = (voxel_flag)(*Flags | Flag);
@@ -360,13 +339,6 @@ inline void
 SetFlag( chunk_flag *Flags, chunk_flag Flag )
 {
   *Flags = (chunk_flag)(*Flags | Flag);
-  return;
-}
-
-inline void
-SetFlag( particle_system_flag *Flags, particle_system_flag Flag )
-{
-  *Flags = (particle_system_flag)(*Flags | Flag);
   return;
 }
 
@@ -405,13 +377,6 @@ SetFlag(boundary_voxel *Voxel, voxel_flag Flag )
   return;
 }
 
-inline void
-SetFlag(particle_system *System, particle_system_flag Flag )
-{
-  SetFlag(&System->Flags, Flag);
-  return;
-}
-
 inline b32
 IsSet( voxel_flag Flags, voxel_flag Flag )
 {
@@ -421,13 +386,6 @@ IsSet( voxel_flag Flags, voxel_flag Flag )
 
 inline b32
 IsSet( chunk_flag Flags, chunk_flag Flag )
-{
-  b32 Result = ( (Flags & Flag) != 0 );
-  return Result;
-}
-
-inline b32
-IsSet( particle_system_flag Flags, particle_system_flag Flag )
 {
   b32 Result = ( (Flags & Flag) != 0 );
   return Result;
@@ -458,13 +416,6 @@ inline b32
 IsSet( boundary_voxel *V, voxel_flag Flag )
 {
   b32 Result = IsSet(&V->V, Flag);
-  return Result;
-}
-
-inline b32
-NotSet( particle_system_flag Flags, particle_system_flag Flag )
-{
-  b32 Result = !(IsSet(Flags, Flag));
   return Result;
 }
 
@@ -513,7 +464,7 @@ Spawned(entity *Entity)
 inline b32
 Spawned(particle_system *System)
 {
-  b32 Result = IsSet(System->Flags, ParticleSystem_Spawned);
+  b32 Result = System->Spawned;
   return Result;
 }
 
@@ -525,16 +476,9 @@ Destroyed(entity *Entity)
 }
 
 inline b32
-Unspawned(particle_system_flag Flags)
-{
-  b32 Result = NotSet(Flags, ParticleSystem_Spawned);
-  return Result;
-}
-
-inline b32
 Unspawned(particle_system *System)
 {
-  b32 Result = Unspawned(System->Flags);
+  b32 Result = !Spawned(System);
   return Result;
 }
 
