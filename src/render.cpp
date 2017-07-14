@@ -2325,25 +2325,24 @@ DrawEntity(
 
   chunk_data *Model = Entity->Model.Chunk;
 
-  if (!Model || !Spawned(Entity))
-    return;
-
-#if DEBUG_DRAW_COLLISION_VOLUMES
-  aabb AABB = GetRenderSpaceAABB(world->ChunkDim, Entity, Camera);
-  DEBUG_DrawAABB( world, AABB, Quaternion(), PINK);
-#endif
-
-  if ( NotSet(Model, Chunk_Initialized) )
-    return;
-
-  if ( IsSet(Model, Chunk_RebuildBoundary) )
-    BuildEntityBoundaryVoxels(Model, Entity->P.WorldP, Entity->Model.Dim);
-
-
-  BufferChunkMesh(Plat, world, Model, Entity->P.WorldP, RG, SG, Camera, Entity->Scale, Entity->P.Offset);
-
   if (Entity->Emitter)
     DrawParticleSystem( Plat, world, Entity->Emitter, &Entity->P, Camera );
+
+  if (Model && Spawned(Entity))
+  {
+#if DEBUG_DRAW_COLLISION_VOLUMES
+    aabb AABB = GetRenderSpaceAABB(world->ChunkDim, Entity, Camera);
+    DEBUG_DrawAABB(world, AABB, Quaternion(), PINK);
+#endif
+
+    if (IsSet(Model, Chunk_Initialized))
+    {
+      if (IsSet(Model, Chunk_RebuildBoundary))
+        BuildEntityBoundaryVoxels(Model, Entity->P.WorldP, Entity->Model.Dim);
+
+      BufferChunkMesh(Plat, world, Model, Entity->P.WorldP, RG, SG, Camera, Entity->Scale, Entity->P.Offset);
+    }
+  }
 
   return;
 }

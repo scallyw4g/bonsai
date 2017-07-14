@@ -56,6 +56,7 @@ enum entity_type
   EntityType_PlayerProjectile = 1 << 3,
   EntityType_Loot             = 1 << 4,
   EntityType_PlayerProton     = 1 << 5,
+  EntityType_ParticleSystem   = 1 << 6,
 };
 
 GLOBAL_VARIABLE const entity_type ENTITY_TYPES = (entity_type)
@@ -64,7 +65,8 @@ GLOBAL_VARIABLE const entity_type ENTITY_TYPES = (entity_type)
     EntityType_EnemyProjectile  |
     EntityType_PlayerProjectile |
     EntityType_Loot             |
-    EntityType_PlayerProton
+    EntityType_PlayerProton     |
+    EntityType_ParticleSystem
    );
 
 enum collision_type
@@ -244,7 +246,7 @@ struct particle_system
 
   aabb SpawnRegion;
 
-  b32 Spawned;
+  b32 Active;
 
   particle Particles[PARTICLES_PER_SYSTEM];
 };
@@ -462,9 +464,9 @@ Spawned(entity *Entity)
 }
 
 inline b32
-Spawned(particle_system *System)
+Active(particle_system *System)
 {
-  b32 Result = System->Spawned;
+  b32 Result = System->Active;
   return Result;
 }
 
@@ -476,9 +478,9 @@ Destroyed(entity *Entity)
 }
 
 inline b32
-Unspawned(particle_system *System)
+Inactive(particle_system *System)
 {
-  b32 Result = !Spawned(System);
+  b32 Result = !Active(System);
   return Result;
 }
 

@@ -23,7 +23,6 @@ GetEntityDelta(entity *Entity, r32 Speed, r32 dt)
 void
 SpawnEntity(
     entity *Entity,
-    particle_system *Emitter,
     model *Model,
     entity_type Type,
 
@@ -40,8 +39,6 @@ SpawnEntity(
   )
 {
   TIMED_FUNCTION();
-
-  Entity->Emitter = Emitter;
 
   if (Model)
     Entity->Model = *Model;
@@ -69,10 +66,11 @@ SpawnEntity(
 }
 
 entity *
-AllocateEntity(platform *Plat, memory_arena *Storage, chunk_dimension ModelDim)
+AllocateEntity(platform *Plat, memory_arena *Memory, chunk_dimension ModelDim)
 {
-  entity *Entity = PUSH_STRUCT_CHECKED(entity, Storage, 1);
-  Entity->Model.Chunk = AllocateChunk(Storage, ModelDim);
+  entity *Entity = PUSH_STRUCT_CHECKED(entity, Memory, 1);
+  Entity->Model.Chunk = AllocateChunk(Memory, ModelDim);
+  Entity->Emitter = PUSH_STRUCT_CHECKED(particle_system, Memory, 1);
 
   FillChunk(Entity->Model.Chunk, ModelDim, BLACK);
   Entity->Model.Dim = ModelDim;
@@ -99,7 +97,7 @@ entity *
 AllocateEntity(platform *Plat, memory_arena *Memory)
 {
   entity *Entity = PUSH_STRUCT_CHECKED(entity, Memory, 1);
-  Entity->Scale = 1.0f;
+  Entity->Emitter = PUSH_STRUCT_CHECKED(particle_system, Memory, 1);
 
   return Entity;
 }
@@ -108,12 +106,7 @@ entity *
 AllocatePlayer(platform *Plat, memory_arena *Memory, canonical_position InitialP, v3 Drag, const char *ModelPath)
 {
   /* entity *Player = AllocateEntity(Plat, Memory, DEBUG_ENTITY_DIM); */
-
   entity *Player = AllocateEntity(Plat, Memory);
-  particle_system *Emitter = PUSH_STRUCT_CHECKED(particle_system, Memory, 1);
-
-  Player->Emitter = Emitter;
-
   if (!Player) { Error("Error Allocating Player"); return False; }
 
   return Player;
@@ -157,7 +150,6 @@ SpawnEnemy(World *world, entity **WorldEntities, entity *Enemy, random_series *E
 
   SpawnEntity(
     Enemy,
-    0,
     &GameModels[ModelIndex_Enemy],
     EntityType_Enemy,
 
@@ -235,7 +227,6 @@ SpawnProjectile(game_state *GameState, canonical_position *P, v3 Velocity, entit
 
       SpawnEntity(
         Projectile,
-        0,
         &GameModels[ModelIndex_Projectile],
         ProjectileType,
 
@@ -298,9 +289,9 @@ SpawnParticle(particle_system *System)
 void
 SpawnParticleSystem(particle_system *System, v3 InitialVelocity, r32 ParticleSpeed, aabb SpawnRegion)
 {
-  Assert(Unspawned(System));
+  Assert(Inactive(System));
 
-  System->Spawned = True;
+  System->Active = True;
   System->Entropy.Seed = 547325;
 
   System->ParticleSpeed = ParticleSpeed;
@@ -323,7 +314,6 @@ SpawnPlayer(game_state *GameState, entity *Player )
 
   SpawnEntity(
       Player,
-      Player->Emitter,
       &GameState->Models[ModelIndex_Player],
       EntityType_Player,
 
@@ -347,6 +337,8 @@ SpawnPlayer(game_state *GameState, entity *Player )
 void
 EntityWorldCollision(entity *Entity)
 {
+  Assert(Entity->Type != EntityType_None);
+
   switch (Entity->Type)
   {
     case EntityType_Enemy:
@@ -469,6 +461,32 @@ SimulateProjectile(game_state *GameState, entity *Projectile, r32 dt)
 }
 
 void
+SimulateParticleSystem(particle_system *System, r32 dt, v3 SystemDelta)
+{
+  if (Inactive(System)) return;
+
+  if ( (RandomUnilateral(&System->Entropy) > 0.5f) )
+    SpawnParticle(System);
+
+  for ( s32 ParticleIndex = 0;
+        ParticleIndex < System->ActiveParticles;
+        ++ParticleIndex)
+  {
+    particle *Particle = &System->Particles[ParticleIndex];
+    Particle->Offset += (Particle->Velocity*dt*System->ParticleSpeed) + SystemDelta;
+
+    // Swap out last partcile for the current partcile and decrement
+    if ( (Particle->RemainingLifespan -= dt) < 0)
+    {
+      particle *SwapParticle = &System->Particles[System->ActiveParticles--];
+      *Particle = *SwapParticle;
+    }
+  }
+
+  return;
+}
+
+void
 SimulateEntities(game_state *GameState, entity *Player, r32 dt)
 {
   TIMED_FUNCTION();
@@ -494,32 +512,11 @@ SimulateEntities(game_state *GameState, entity *Player, r32 dt)
       {
         SimulateProjectile(GameState, Entity, dt);
       } break;
-    }
-  }
 
-  return;
-}
-
-void
-SimulateParticleSystem(particle_system *System, r32 dt, v3 SystemDelta)
-{
-  if (Unspawned(System)) return;
-
-  if ( (RandomUnilateral(&System->Entropy) > 0.5f) )
-    SpawnParticle(System);
-
-  for ( s32 ParticleIndex = 0;
-        ParticleIndex < System->ActiveParticles;
-        ++ParticleIndex)
-  {
-    particle *Particle = &System->Particles[ParticleIndex];
-    Particle->Offset += (Particle->Velocity*dt*System->ParticleSpeed) + SystemDelta;
-
-    // Swap out last partcile for the current partcile and decrement
-    if ( (Particle->RemainingLifespan -= dt) < 0)
-    {
-      particle *SwapParticle = &System->Particles[System->ActiveParticles--];
-      *Particle = *SwapParticle;
+      case EntityType_ParticleSystem:
+      {
+        SimulateParticleSystem(Entity->Emitter, dt, V3(0,0,0) );
+      } break;
     }
   }
 
@@ -607,6 +604,17 @@ AllocateEntityTable(platform *Plat, game_state *GameState)
 }
 
 void
+ReleaseFrameEvent(event_queue *Queue, frame_event *Event)
+{
+  frame_event *First = Queue->FirstFreeEvent;
+
+  Queue->FirstFreeEvent = Event;
+  Queue->FirstFreeEvent->Next = First;
+
+  return;
+}
+
+void
 ProcessFrameEvent(game_state *GameState, frame_event *Event)
 {
   switch(Event->Type)
@@ -617,6 +625,7 @@ ProcessFrameEvent(game_state *GameState, frame_event *Event)
 
     case FrameEvent_Unspawn:
     {
+      Unspawn(Event->Entity);
     } break;
 
     case FrameEvent_Explosion:
@@ -633,9 +642,8 @@ ProcessFrameEvent(game_state *GameState, frame_event *Event)
 
           SpawnEntity(
             SystemEntity,
-            0,
             &GameState->Models[ModelIndex_None],
-            EntityType_None,
+            EntityType_ParticleSystem,
 
             V3(0,0,0),
             V3(0,0,0),
@@ -647,9 +655,12 @@ ProcessFrameEvent(game_state *GameState, frame_event *Event)
 
           SystemEntity->P = Event->P;
 
-          // FIXME(Jesse): We're leaking every explosion ever..
-          SystemEntity->Emitter = PUSH_STRUCT_CHECKED(particle_system, GameState->Memory, 1);
           SpawnParticleSystem(SystemEntity->Emitter, V3(1,1,1), 1.0f, aabb(V3(0,0,0), V3(1,1,1)));
+
+          frame_event Event(SystemEntity, FrameEvent_Unspawn);
+          PushFrameEvent(&GameState->EventQueue, &Event, 10);
+
+          break;
         }
       }
 
@@ -658,6 +669,7 @@ ProcessFrameEvent(game_state *GameState, frame_event *Event)
     InvalidDefaultCase;
   }
 
+  ReleaseFrameEvent(&GameState->EventQueue, Event);
   return;
 }
 
@@ -789,23 +801,16 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
   SimulatePlayer(GameState, Player, &Plat->Input, Plat->dt);
 
   GameState->EventQueue.CurrentFrameIndex =
-    (GameState->EventQueue.CurrentFrameIndex++) % TOTAL_FRAME_EVENT_COUNT;
+    (GameState->EventQueue.CurrentFrameIndex++) % (TOTAL_FRAME_EVENT_COUNT-1);
 
   frame_event *Event =
     GameState->EventQueue.Queue[GameState->EventQueue.CurrentFrameIndex];
 
   while (Event)
   {
-    ProcessFrameEvent(GameState, Event);
     frame_event *NextEvent = Event->Next;
-
-    frame_event *TempEvent = GameState->EventQueue.FirstFreeEvent;
-
-    GameState->EventQueue.FirstFreeEvent = Event;
-    GameState->EventQueue.FirstFreeEvent->Type = FrameEvent_Undefined;
-    GameState->EventQueue.FirstFreeEvent->Next = TempEvent;
-
-    Event = NextEvent;
+    ProcessFrameEvent(GameState, Event);
+	Event = NextEvent;
   }
 
   GameState->EventQueue.Queue[GameState->EventQueue.CurrentFrameIndex] = 0;

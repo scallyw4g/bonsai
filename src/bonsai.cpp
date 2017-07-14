@@ -481,9 +481,9 @@ SpawnLoot(entity *Entity, random_series *Entropy, model *GameModels)
 }
 
 inline void
-Unspawn(particle_system *System)
+Deactivate(particle_system *System)
 {
-  System->Spawned = False;
+  System->Active = False;
   System->Entropy.Seed = 0;
 
   return;
@@ -495,7 +495,7 @@ Unspawn(entity *Entity)
   Entity->State = EntityState_Initialized;
 
   if (Entity->Emitter)
-    Unspawn(Entity->Emitter);
+    Deactivate(Entity->Emitter);
 
   return;
 }
