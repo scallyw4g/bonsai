@@ -200,10 +200,10 @@ ProcessOsMessages(os *Os, platform *Plat)
     switch (Event.type)
     {
 
-      case Expose:
+      case ConfigureNotify:
       {
-        Plat->WindowWidth = Event.xexpose.width;
-        Plat->WindowHeight = Event.xexpose.height;
+        Plat->WindowWidth = Event.xconfigure.width;
+        Plat->WindowHeight = Event.xconfigure.height;
       } break;
 
       case MotionNotify:

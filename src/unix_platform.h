@@ -40,7 +40,7 @@ typedef PFNGLXSWAPINTERVALEXTPROC PFNSWAPINTERVALPROC;
 
 #define GlobalCwdBufferLength 2048
 
-#define WindowEventMasks ExposureMask | PointerMotionMask | KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask
+#define WindowEventMasks StructureNotifyMask | PointerMotionMask | KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask
 
 // FIXME(Jesse): Write own snprintf
 #define Snprintf(...) snprintf(__VA_ARGS__)
