@@ -89,13 +89,78 @@ PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
   return;
 }
 
+b32
+StrMatch(char *Str1, char *Str2)
+{
+  char *Haystack = Str1;
+  char *Needle = Str2;
+
+  b32 Matched = True;
+  while( Matched && *Haystack && *Needle )
+  {
+    Matched = *(Haystack++) == *(Needle++);
+  }
+
+  b32 Result = (*Needle == 0 && Matched);
+  return Result;
+}
+
+b32
+StrStr(char *Str1, char *Str2)
+{
+  b32 Result = StrMatch(Str1, Str2);
+
+  while(*Str1++)
+  {
+    Result |= StrMatch(Str1, Str2);
+  }
+
+  return Result;
+}
+
+s32
+Length(char *Str)
+{
+  s32 Result = 0;
+  while (Str)
+  {
+    Result ++;
+    Str++;
+  }
+
+  return Result;
+}
 
 #define DefGlProc(ProcType, ProcName) Gl->ProcName = (ProcType)bonsaiGlGetProcAddress(#ProcName); Assert(Gl->ProcName)
 void
-InitializeOpenGlExtensions(gl_extensions *Gl)
+InitializeOpenGlExtensions(gl_extensions *Gl, os *Os)
 {
   Info("Initializing OpenGL Extensions");
 
+#if 0
+  const char* glxExtensionString = glXQueryExtensionsString(Os->Display, DefaultScreen(Os->Display));
+  const char* glExtensionString = (const char*)glGetString(GL_EXTENSIONS);
+  Debug(glExtensionString);
+  Debug(glxExtensionString);
+#endif
+
+  /*
+   * 1.3
+   */
+  DefGlProc(PFNGLCOMPRESSEDTEXIMAGE2DPROC, glCompressedTexImage2D);
+  DefGlProc(PFNGLACTIVETEXTUREPROC, glActiveTexture);
+
+  /*
+   * 1.5
+   */
+  DefGlProc(PFNGLGENBUFFERSPROC, glGenBuffers);
+  DefGlProc(PFNGLBINDBUFFERPROC, glBindBuffer);
+  DefGlProc(PFNGLBUFFERDATAPROC, glBufferData);
+  DefGlProc(PFNGLDELETEBUFFERSPROC, glDeleteBuffers);
+
+  /*
+   * 2.0
+   */
   DefGlProc(PFNGLCREATESHADERPROC, glCreateShader);
   DefGlProc(PFNGLSHADERSOURCEPROC, glShaderSource);
   DefGlProc(PFNGLCOMPILESHADERPROC, glCompileShader);
@@ -111,29 +176,31 @@ InitializeOpenGlExtensions(gl_extensions *Gl)
   DefGlProc(PFNGLUSEPROGRAMPROC, glUseProgram);
   DefGlProc(PFNGLDELETEPROGRAMPROC, glDeleteProgram);
   DefGlProc(PFNGLGETUNIFORMLOCATIONPROC, glGetUniformLocation);
-  DefGlProc(PFNGLGENFRAMEBUFFERSPROC, glGenFramebuffers);
-  DefGlProc(PFNGLBINDFRAMEBUFFERPROC, glBindFramebuffer);
-
-  // TODO(Jesse): This function appears to not work on ES 3.1 ..??
-  // DefGlProc(PFNGLFRAMEBUFFERTEXTUREPROC, glFramebufferTexture);
-
-  DefGlProc(PFNGLFRAMEBUFFERTEXTURE2DPROC, glFramebufferTexture2D);
-  DefGlProc(PFNGLCHECKFRAMEBUFFERSTATUSPROC, glCheckFramebufferStatus);
-  DefGlProc(PFNGLCOMPRESSEDTEXIMAGE2DPROC, glCompressedTexImage2D);
-  DefGlProc(PFNGLGENBUFFERSPROC, glGenBuffers);
-  DefGlProc(PFNGLBINDBUFFERPROC, glBindBuffer);
-  DefGlProc(PFNGLBUFFERDATAPROC, glBufferData);
   DefGlProc(PFNGLDRAWBUFFERSPROC, glDrawBuffers);
-  DefGlProc(PFNGLDELETEBUFFERSPROC, glDeleteBuffers);
   DefGlProc(PFNGLVERTEXATTRIBPOINTERPROC, glVertexAttribPointer);
   DefGlProc(PFNGLENABLEVERTEXATTRIBARRAYPROC, glEnableVertexAttribArray);
   DefGlProc(PFNGLDISABLEVERTEXATTRIBARRAYPROC, glDisableVertexAttribArray);
-  DefGlProc(PFNGLGENVERTEXARRAYSPROC, glGenVertexArrays);
-  DefGlProc(PFNGLBINDVERTEXARRAYPROC, glBindVertexArray);
   DefGlProc(PFNGLUNIFORM3FVPROC, glUniform3fv);
   DefGlProc(PFNGLUNIFORMMATRIX4FVPROC, glUniformMatrix4fv);
   DefGlProc(PFNGLUNIFORM1IPROC, glUniform1i);
-  DefGlProc(PFNGLACTIVETEXTUREPROC, glActiveTexture);
+
+  /*
+   * 3.0
+   */
+  DefGlProc(PFNGLGENFRAMEBUFFERSPROC, glGenFramebuffers);
+  DefGlProc(PFNGLBINDFRAMEBUFFERPROC, glBindFramebuffer);
+  DefGlProc(PFNGLFRAMEBUFFERTEXTURE2DPROC, glFramebufferTexture2D);
+  DefGlProc(PFNGLCHECKFRAMEBUFFERSTATUSPROC, glCheckFramebufferStatus);
+  DefGlProc(PFNGLGENVERTEXARRAYSPROC, glGenVertexArrays);
+  DefGlProc(PFNGLBINDVERTEXARRAYPROC, glBindVertexArray);
+
+  /*
+   * 3.2
+   */
+  // My laptop is running 3.1ES, but this worked with GLEW, so presumably
+  // it can be loaded somehow..  Maybe the _EXT or _ARB one?
+  // DefGlProc(PFNGLFRAMEBUFFERTEXTUREPROC, glFramebufferTexture);
+
 
 
   glDepthFunc(GL_LESS);
@@ -141,10 +208,12 @@ InitializeOpenGlExtensions(gl_extensions *Gl)
 
   AssertNoGlErrors;
 
+#if 0
   // Platform specific (wgl / glX)
   Gl->glSwapInterval = (PFNSWAPINTERVALPROC)bonsaiGlGetProcAddress("wglSwapIntervalEXT");
   Assert( Gl->glSwapInterval );
   Gl->glSwapInterval(1); // vsync
+ #endif
 
   return;
 }
@@ -389,7 +458,7 @@ main(s32 NumArgs, char ** Args)
 
   Assert(Os.Window);
 
-  InitializeOpenGlExtensions(&Plat.GL);
+  InitializeOpenGlExtensions(&Plat.GL, &Os);
 
   QueryAndSetGlslVersion(&Plat);
 

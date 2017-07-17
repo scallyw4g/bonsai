@@ -22,7 +22,7 @@
 #include <semaphore.h>
 
 // Valgrind
-#include "/usr/include/valgrind/callgrind.h"
+// #include "/usr/include/valgrind/callgrind.h"
 
 
 
@@ -42,7 +42,7 @@ typedef PFNGLXSWAPINTERVALEXTPROC PFNSWAPINTERVALPROC;
 
 #define WindowEventMasks ExposureMask | PointerMotionMask | KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask
 
-// FIXME(Jesse): Just write our own snprintf
+// FIXME(Jesse): Write own snprintf
 #define Snprintf(...) snprintf(__VA_ARGS__)
 
 // In Cygwin printing to the console with printf doesn't work, so we have a

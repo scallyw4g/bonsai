@@ -325,7 +325,13 @@ CopyArena(memory_arena *Src, memory_arena *Dest)
 
   u8 *FirstDestByte = (u8*)PushSize(Dest, Src->TotalSize);
 
-  memcpy(FirstDestByte, FirstSrcByte, (size_t)Src->TotalSize);
+  // TODO(Jesse): Vectorize for speed boost!
+  for( s32 BytesCopied = 0;
+       BytesCopied < Src->TotalSize;
+       ++BytesCopied )
+  {
+     FirstDestByte[BytesCopied] = FirstSrcByte[BytesCopied];
+  }
 
   return;
 }
