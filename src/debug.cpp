@@ -176,7 +176,7 @@ DebugFrameEnd(debug_text_render_group *RG)
 
     char CycleCountBuffer[32];
     sprintf(CycleCountBuffer, "%" PRIu64, CycleDelta);
-    rect2 CCRect = PrintDebugText( RG, CycleCountBuffer, 0, AtY, FontSize);
+    PrintDebugText( RG, CycleCountBuffer, 0, AtY, FontSize);
     AtY += (FontSize + LinePadding);
 
   }

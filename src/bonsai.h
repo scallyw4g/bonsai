@@ -494,8 +494,6 @@ Unspawned(entity *Entity)
 inline u32
 RandomU32(random_series *Entropy)
 {
-  u32 Seed = Entropy->Seed;
-
   u32 A = 1664525;
   u32 B = 1013904223;
 

@@ -161,7 +161,7 @@ LoadModel(memory_arena *WorldStorage, char const *filepath)
 
         case ID_PACK:
         {
-          int nChunks = ReadPackChunk(ModelFile, &bytesRemaining);
+          /* int nChunks = */ ReadPackChunk(ModelFile, &bytesRemaining);
         } break;
 
         case ID_SIZE:
@@ -169,7 +169,7 @@ LoadModel(memory_arena *WorldStorage, char const *filepath)
           // Instead of trusting the model (they're always wrong), we'll loop
           // through the data and figure it out ourselves.
 
-          chunk_dimension Dim = ReadSizeChunk(ModelFile, &bytesRemaining);
+          /* chunk_dimension Dim = */ ReadSizeChunk(ModelFile, &bytesRemaining);
         } break;
 
         case ID_XYZI:

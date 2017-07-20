@@ -32,6 +32,8 @@
 
 #define EXPORT extern "C" __attribute__((visibility("default")))
 
+#define CompleteAllWrites  asm volatile("" ::: "memory"); _mm_sfence()
+
 /*
  * glX Business
  */
@@ -57,5 +59,12 @@ typedef Window window;
 
 typedef Display* display;
 typedef GLXContext gl_context;
+
+inline void
+WakeThread( semaphore *Semaphore )
+{
+  sem_post(Semaphore);
+  return;
+}
 
 #endif

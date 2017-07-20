@@ -143,6 +143,23 @@ InitializeVoxels(void *Input)
   return;
 }
 
+void
+PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
+{
+  Queue->Entries[Queue->EntryCount] = *Entry;
+
+  CompleteAllWrites;
+
+  Queue->EntryCount = ++Queue->EntryCount % WORK_QUEUE_SIZE;
+
+  // TODO(Jesse): Is this check correct?
+  Assert(Queue->NextEntry != Queue->EntryCount);
+
+  WakeThread( &Queue->Semaphore );
+
+  return;
+}
+
 inline void
 QueueChunkForInit(game_state *GameState, world_chunk *Chunk)
 {
@@ -156,7 +173,7 @@ QueueChunkForInit(game_state *GameState, world_chunk *Chunk)
 
   SetFlag(Chunk, Chunk_Queued);
 
-  GameState->Plat->PushWorkQueueEntry(&GameState->Plat->Queue, &Entry);
+  PushWorkQueueEntry(&GameState->Plat->Queue, &Entry);
 
   return;
 }
@@ -553,11 +570,9 @@ ProcessCollisionRule(
 {
   Assert(First!=Second);
 
-  entity_type JointType = (entity_type)(First->Type | Second->Type);
+  collision_type CollisionType = (collision_type)(First->Type | Second->Type);
 
-  entity_type Rule = (entity_type)(ENTITY_TYPES & JointType);
-
-  switch (Rule)
+  switch (CollisionType)
   {
     case Collision_Player_Loot:
     {
@@ -604,17 +619,15 @@ ProcessCollisionRule(
       Unspawn(Second);
 
       entity *Enemy = First;
-      entity *Projectile = Second;
 
       if ( Second->Type == EntityType_Enemy )
-      {
         Enemy = Second;
-        Projectile = First;
-      }
 
       frame_event Event(Enemy->P, FrameEvent_Explosion);
       PushFrameEvent(EventQueue, &Event, 1);
     } break;
+
+    default: {} break;
   }
 
   return;

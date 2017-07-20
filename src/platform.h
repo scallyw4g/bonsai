@@ -143,7 +143,6 @@ struct platform
 {
   work_queue Queue;
   thread_startup_params *Threads;
-  void (*PushWorkQueueEntry)(work_queue *Queue, work_queue_entry *Entry);
   r64 (*GetHighPrecisionClock)(void);
   u64 (*GetCycleCount)(void);
   umm (*Allocate)(u8 Bytes);
@@ -326,7 +325,7 @@ CopyArena(memory_arena *Src, memory_arena *Dest)
   u8 *FirstDestByte = (u8*)PushSize(Dest, Src->TotalSize);
 
   // TODO(Jesse): Vectorize for speed boost!
-  for( s32 BytesCopied = 0;
+  for( u32 BytesCopied = 0;
        BytesCopied < Src->TotalSize;
        ++BytesCopied )
   {

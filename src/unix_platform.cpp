@@ -23,13 +23,6 @@ ThreadSleep( semaphore *Semaphore )
   return;
 }
 
-inline void
-WakeThread( semaphore *Semaphore )
-{
-  sem_post(Semaphore);
-  return;
-}
-
 semaphore
 CreateSemaphore( int ThreadCount )
 {
@@ -57,8 +50,6 @@ CreateThread( void* (*ThreadMain)(void*), thread_startup_params *Params)
 
   return Params->Self.ID;
 }
-
-#define CompleteAllWrites  asm volatile("" ::: "memory"); _mm_sfence()
 
 __inline__ u64
 GetCycleCount()

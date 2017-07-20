@@ -131,13 +131,11 @@ void
 SpawnEnemy(World *world, entity **WorldEntities, entity *Enemy, random_series *EnemyEntropy, model *GameModels)
 {
   TIMED_FUNCTION();
-  s32 X = max(0, (RandomPositiveS32(EnemyEntropy) % VR_X) - (RandomPositiveS32(EnemyEntropy) % VR_X));
+  s32 X = (RandomPositiveS32(EnemyEntropy) % VR_X) - (RandomPositiveS32(EnemyEntropy) % VR_X);
+  s32 Y = world->Center.y + ((RandomPositiveS32(EnemyEntropy) % VR_Y) / 2);
   s32 Z = world->Center.z;
 
-  v3 SeedVec = V3(0,0,0);
-
-  world_position InitialCenter =
-    World_Position(X, world->Center.y + (VR_Y/2)-1, Z);
+  world_position InitialCenter = World_Position(X, Y, Z);
 
   canonical_position InitialP =
     Canonicalize(WORLD_CHUNK_DIM, Canonical_Position( V3(0,0,0), InitialCenter));
@@ -348,6 +346,8 @@ EntityWorldCollision(entity *Entity)
     {
       Unspawn(Entity);
     } break;
+
+    default: {} break;
   }
 }
 
@@ -517,6 +517,8 @@ SimulateEntities(game_state *GameState, entity *Player, r32 dt)
       {
         SimulateParticleSystem(Entity->Emitter, dt, V3(0,0,0) );
       } break;
+
+      InvalidDefaultCase;
     }
   }
 
@@ -730,8 +732,7 @@ GameInit( platform *Plat, memory_arena *GameMemory )
 
   canonical_position PlayerInitialP = {};
 
-  World *world =
-    AllocateAndInitWorld(GameState, PlayerInitialP.WorldP, VISIBLE_REGION_RADIUS);
+  AllocateAndInitWorld(GameState, PlayerInitialP.WorldP, VISIBLE_REGION_RADIUS);
 
   GameState->Player =
     AllocatePlayer(Plat, GameState->Memory, PlayerInitialP, PLAYER_DRAG, PLAYER_MODEL);
@@ -775,6 +776,8 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
   entity *Player        = GameState->Player;
   Camera_Object *Camera = GameState->Camera;
 
+  Print(Player->P);
+
   chunk_dimension WorldChunkDim = world->ChunkDim;
 
   RenderGroup *RG                  = GameState->RG;
@@ -801,7 +804,9 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
   SimulatePlayer(GameState, Player, &Plat->Input, Plat->dt);
 
   GameState->EventQueue.CurrentFrameIndex =
-    (GameState->EventQueue.CurrentFrameIndex++) % (TOTAL_FRAME_EVENT_COUNT-1);
+    (GameState->EventQueue.CurrentFrameIndex) % (TOTAL_FRAME_EVENT_COUNT-1);
+
+  GameState->EventQueue.CurrentFrameIndex++;
 
   frame_event *Event =
     GameState->EventQueue.Queue[GameState->EventQueue.CurrentFrameIndex];
@@ -810,7 +815,7 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
   {
     frame_event *NextEvent = Event->Next;
     ProcessFrameEvent(GameState, Event);
-	Event = NextEvent;
+    Event = NextEvent;
   }
 
   GameState->EventQueue.Queue[GameState->EventQueue.CurrentFrameIndex] = 0;
@@ -906,7 +911,7 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
 
   FlushRenderBuffers(Plat, world, RG, SG, Camera);
 
-  /* DEBUG_FRAME_END(DebugRG); */
+  // DEBUG_FRAME_END(DebugRG);
 
   char dtBuffer[32];
   sprintf(dtBuffer, "%f", Plat->dt);

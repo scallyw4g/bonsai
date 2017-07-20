@@ -921,11 +921,6 @@ DEBUG_DrawPointMarker( World *world, v3 RenderP, int ColorIndex, float Diameter)
   float FaceColors[FACE_COLOR_SIZE];
   GetColorData(ColorIndex, &FaceColors[0]);;
 
-  v3 BasisP = RenderP - (Diameter/2);
-  v3 Offset = V3(0,0,0);
-
-  r32 Scale = 1.0f;
-
   /* r32 VertexData[BYTES_PER_FACE]; */
 
   /* BufferRightFace(  world, RenderP, FaceColors, Diameter, Scale); */
@@ -1540,7 +1535,7 @@ Compute0thLod(game_state *GameState, world_chunk *WorldChunk)
   World *world = GameState->world;
   chunk_dimension WorldChunkDim = world->ChunkDim;
 
-  v3 RenderOffset = GetRenderP( WorldChunkDim, WorldChunk->WorldP, GameState->Camera);
+  /* v3 RenderOffset = GetRenderP( WorldChunkDim, WorldChunk->WorldP, GameState->Camera); */
 
   v3 SurfaceNormal = {};
   v3 ChunkMidpoint = WorldChunkDim/2.0f;

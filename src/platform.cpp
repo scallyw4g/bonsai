@@ -222,7 +222,6 @@ b32
 PlatformInit(platform *Plat, memory_arena *Memory)
 {
   Plat->GetHighPrecisionClock = GetHighPrecisionClock;
-  Plat->PushWorkQueueEntry = PushWorkQueueEntry;
   Plat->PushStruct = PushStruct;
   Plat->PushStructChecked_ = PushStructChecked_;
   Plat->GetHighPrecisionClock = GetHighPrecisionClock;
