@@ -59,25 +59,24 @@ struct event_queue
 
 struct game_state
 {
-  World                   *world;
-  platform                *Plat;
-  entity                  *Player;
-  Camera_Object           *Camera;
+  World         *world;
+  platform      *Plat;
+  entity        *Player;
+  Camera_Object *Camera;
 
   RenderGroup             *RG;
   ShadowRenderGroup       *SG;
   debug_text_render_group *DebugRG;
 
-  memory_arena            *Memory;
+  memory_arena *Memory;
 
-  model                   *Models;
-
-  event_queue EventQueue;
+  model   *Models;
 
   random_series Entropy;
 
+  event_queue EventQueue;
+
   entity *EntityTable[TOTAL_ENTITY_COUNT];
 };
-
 
 #endif

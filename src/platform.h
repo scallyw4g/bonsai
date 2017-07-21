@@ -18,10 +18,11 @@
 struct platform;
 struct game_state;
 struct memory_arena;
+struct hotkeys;
 
 typedef void (*GameCallback)(void*);
 typedef game_state* (*game_init_proc)(platform*, memory_arena*);
-typedef bool (*game_main_proc)(platform*, game_state*);
+typedef bool (*game_main_proc)(platform*, game_state*, hotkeys*);
 typedef void (*game_init_globals_proc)(platform*);
 
 GLOBAL_VARIABLE v2 InvalidMouseP = {-1, -1};
@@ -137,6 +138,20 @@ struct input
 
   s32 DeltaMouseX;
   s32 DeltaMouseY;
+};
+
+struct hotkeys
+{
+  b32 Debug_ToggleLoopedGamePlayback;
+  b32 Debug_Pause;
+
+  b32 Left;
+  b32 Right;
+  b32 Forward;
+  b32 Backward;
+
+  b32 Player_Fire;
+  b32 Player_Proton;
 };
 
 struct platform
@@ -315,6 +330,19 @@ Rewind(memory_arena *Memory)
 }
 
 inline void
+MemCopy(u8 *Src, u8 *Dest, umm Size)
+{
+  // TODO(Jesse): Vectorize for speed boost!
+  for( umm BytesCopied = 0;
+       BytesCopied < Size;
+       ++BytesCopied )
+  {
+     Dest[BytesCopied] = Src[BytesCopied];
+  }
+
+}
+
+inline void
 CopyArena(memory_arena *Src, memory_arena *Dest)
 {
   Rewind(Dest);
@@ -324,13 +352,7 @@ CopyArena(memory_arena *Src, memory_arena *Dest)
 
   u8 *FirstDestByte = (u8*)PushSize(Dest, Src->TotalSize);
 
-  // TODO(Jesse): Vectorize for speed boost!
-  for( u32 BytesCopied = 0;
-       BytesCopied < Src->TotalSize;
-       ++BytesCopied )
-  {
-     FirstDestByte[BytesCopied] = FirstSrcByte[BytesCopied];
-  }
+  MemCopy( FirstSrcByte, FirstDestByte, Src->TotalSize);
 
   return;
 }

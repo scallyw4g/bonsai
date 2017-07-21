@@ -41,7 +41,7 @@ struct debug_recording_state
 
   memory_arena RecordedMainMemory;
 
-  input Inputs[3600];
+  hotkeys Inputs[DEBUG_RECORD_INPUT_SIZE];
 };
 
 DEBUG_GLOBAL debug_state GlobalDebugState;

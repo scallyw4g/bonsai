@@ -264,6 +264,11 @@ ProcessOsMessages(os *Os, platform *Plat)
             Os->ContinueRunning = false;
           } break;
 
+          case XK_space:
+          {
+            Plat->Input.Space = False;
+          } break;
+
           default:
           {
           } break;
@@ -308,6 +313,11 @@ ProcessOsMessages(os *Os, platform *Plat)
           case XK_F11:
           {
             Plat->Input.F11 = True;
+          } break;
+
+          case XK_space:
+          {
+            Plat->Input.Space = True;
           } break;
 
           default:

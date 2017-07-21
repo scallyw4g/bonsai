@@ -336,11 +336,14 @@ QueryAndSetGlslVersion(platform *Plat)
 }
 
 inline void
-DoDebugFrameRecord(debug_recording_state *State, input *Input, memory_arena *MainMemory)
+DoDebugFrameRecord(
+    debug_recording_state *State,
+    hotkeys *Hotkeys,
+    memory_arena *MainMemory)
 {
   {
     GLOBAL_VARIABLE b32 Toggled = False;
-    if (Input->F1 && !Toggled)
+    if (Hotkeys->Debug_ToggleLoopedGamePlayback  && !Toggled)
     {
       Toggled = True;
       State->Mode = (debug_recording_mode)((State->Mode + 1) % RecordingMode_Count);
@@ -349,17 +352,20 @@ DoDebugFrameRecord(debug_recording_state *State, input *Input, memory_arena *Mai
       {
         case RecordingMode_Clear:
         {
+          Log("Clear");
           State->FramesRecorded = 0;
           State->FramesPlayedBack = 0;
         } break;
 
         case RecordingMode_Record:
         {
+          Log("Recording");
           CopyArena(MainMemory, &State->RecordedMainMemory);
         } break;
 
         case RecordingMode_Playback:
         {
+          Log("Playback");
           CopyArena(&State->RecordedMainMemory, MainMemory);
         } break;
 
@@ -367,7 +373,7 @@ DoDebugFrameRecord(debug_recording_state *State, input *Input, memory_arena *Mai
       }
 
     }
-    else if (!Input->F1)
+    else if (!Hotkeys->Debug_ToggleLoopedGamePlayback)
     {
       Toggled = False;
     }
@@ -381,13 +387,14 @@ DoDebugFrameRecord(debug_recording_state *State, input *Input, memory_arena *Mai
 
     case RecordingMode_Record:
     {
-      Input->F1 = False;
-      State->Inputs[State->FramesRecorded++] = *Input;
+      Assert(State->FramesRecorded < DEBUG_RECORD_INPUT_SIZE);
+      Hotkeys->Debug_ToggleLoopedGamePlayback = False;
+      State->Inputs[State->FramesRecorded++] = *Hotkeys;
     } break;
 
     case RecordingMode_Playback:
     {
-      *Input = State->Inputs[State->FramesPlayedBack++];
+      *Hotkeys = State->Inputs[State->FramesPlayedBack++];
 
       if (State->FramesPlayedBack == State->FramesRecorded)
       {
@@ -403,7 +410,24 @@ DoDebugFrameRecord(debug_recording_state *State, input *Input, memory_arena *Mai
   return;
 }
 
-int
+void
+BindHotkeysToInput(hotkeys *Hotkeys, input *Input)
+{
+  Hotkeys->Debug_ToggleLoopedGamePlayback = Input->F11;
+  Hotkeys->Debug_Pause = Input->F12;
+
+  Hotkeys->Left = Input->A;
+  Hotkeys->Right = Input->D;
+  Hotkeys->Forward = Input->W;
+  Hotkeys->Backward = Input->S;
+
+  Hotkeys->Player_Fire = Input->Space;
+  Hotkeys->Player_Proton = Input->Shift;
+
+  return;
+}
+
+s32
 main(s32 NumArgs, char ** Args)
 {
   Info("Initializing Bonsai");
@@ -461,6 +485,8 @@ main(s32 NumArgs, char ** Args)
 
   QueryAndSetGlslVersion(&Plat);
 
+  hotkeys Hotkeys;
+
   game_state *GameState = GameInit(&Plat, &GameMemory);
   if (!GameState) { Error("Initializing Game State :( "); return False; }
 
@@ -490,15 +516,14 @@ main(s32 NumArgs, char ** Args)
       InitGlobals(&Plat);
     }
 
-    if (Plat.Input.F11)
-      Plat.dt = 0;
-
     if (Plat.dt > 1.0f)
       Plat.dt = 1.0f;
 
-    DoDebugFrameRecord(Debug_RecordingState, &Plat.Input, &MainMemory);
+    BindHotkeysToInput(&Hotkeys, &Plat.Input);
 
-    GameUpdateAndRender(&Plat, GameState);
+    DoDebugFrameRecord(Debug_RecordingState, &Hotkeys, &MainMemory);
+
+    GameUpdateAndRender(&Plat, GameState, &Hotkeys);
     BonsaiSwapBuffers(&Os);
   }
 

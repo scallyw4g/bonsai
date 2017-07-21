@@ -526,7 +526,7 @@ SimulateEntities(game_state *GameState, entity *Player, r32 dt)
 }
 
 void
-SimulatePlayer( game_state *GameState, entity *Player, input *Input, r32 dt )
+SimulatePlayer( game_state *GameState, entity *Player, hotkeys *Hotkeys, r32 dt )
 {
   if (Player->Health <= 0 && FramesToWaitBeforeSpawningPlayer == 0)
   {
@@ -537,7 +537,7 @@ SimulatePlayer( game_state *GameState, entity *Player, input *Input, r32 dt )
 
   if (Spawned(Player))
   {
-    Player->Acceleration = GetOrthographicInputs(Input);
+    Player->Acceleration = GetOrthographicInputs(Hotkeys);
     v3 PlayerDelta = GetEntityDelta(Player, PLAYER_SPEED, dt) + (PLAYER_IMPULSE*dt);
 
     world_position OriginalPlayerP = Player->P.WorldP;
@@ -549,14 +549,14 @@ SimulatePlayer( game_state *GameState, entity *Player, input *Input, r32 dt )
     Player->FireCooldown -= dt;
 
     // Regular Fire
-    if ( Input->Space && (Player->FireCooldown < 0) )
+    if ( Hotkeys->Player_Fire && (Player->FireCooldown < 0) )
     {
       SpawnProjectile(GameState, &Player->P, V3(0,1,0), EntityType_PlayerProjectile);
       Player->FireCooldown = Player->RateOfFire;
     }
 
     // Proton Torpedo!!
-    if ( Input->Shift && (Player->FireCooldown < 0) )
+    if ( Hotkeys->Player_Proton && (Player->FireCooldown < 0) )
     {
       SpawnProjectile(GameState, &Player->P, V3(0,1,0), EntityType_PlayerProton);
       Player->FireCooldown = Player->RateOfFire;
@@ -685,7 +685,7 @@ InitGlobals(platform *Plat)
 }
 
 EXPORT void*
-GameInit( platform *Plat, memory_arena *GameMemory )
+GameInit( platform *Plat, memory_arena *GameMemory)
 {
   Info("Initializing Game");
 
@@ -712,7 +712,6 @@ GameInit( platform *Plat, memory_arena *GameMemory )
   GLuint VertexArrayID;
   Plat->GL.glGenVertexArrays(1, &VertexArrayID);
   Plat->GL.glBindVertexArray(VertexArrayID);
-
 
   Camera_Object *Camera = PUSH_STRUCT_CHECKED(Camera_Object, GameState->Memory, 1);
   InitCamera(Camera, CAMERA_INITIAL_P, 5000.0f);
@@ -766,7 +765,7 @@ GameInit( platform *Plat, memory_arena *GameMemory )
 }
 
 EXPORT bool
-GameUpdateAndRender( platform *Plat, game_state *GameState )
+GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 {
   TIMED_FUNCTION();
 
@@ -775,8 +774,6 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
   World *world          = GameState->world;
   entity *Player        = GameState->Player;
   Camera_Object *Camera = GameState->Camera;
-
-  Print(Player->P);
 
   chunk_dimension WorldChunkDim = world->ChunkDim;
 
@@ -801,7 +798,7 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
   SpawnEnemies(GameState);
   SimulateEntities(GameState, Player, Plat->dt);
 
-  SimulatePlayer(GameState, Player, &Plat->Input, Plat->dt);
+  SimulatePlayer(GameState, Player, Hotkeys, Plat->dt);
 
   GameState->EventQueue.CurrentFrameIndex =
     (GameState->EventQueue.CurrentFrameIndex) % (TOTAL_FRAME_EVENT_COUNT-1);
@@ -850,7 +847,6 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
                   GetRenderP(WORLD_CHUNK_DIM, Max, Camera),
                   Quaternion(),
                   RED );
-
 
   {
     world_position MinRad = VisibleRadius;
@@ -911,7 +907,7 @@ GameUpdateAndRender( platform *Plat, game_state *GameState )
 
   FlushRenderBuffers(Plat, world, RG, SG, Camera);
 
-  // DEBUG_FRAME_END(DebugRG);
+   DEBUG_FRAME_END(DebugRG);
 
   char dtBuffer[32];
   sprintf(dtBuffer, "%f", Plat->dt);
