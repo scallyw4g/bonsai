@@ -37,6 +37,9 @@
 #define InvalidDefaultCase default: {Assert(false);} break
 
 
+#define DEBUG_RECORD_INPUT_SIZE       3600
+
+
 /*
  *  MSVC
  */

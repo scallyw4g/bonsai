@@ -11,16 +11,22 @@ using namespace std;
 
 
 
+#define DEBUG_FRAMES_TO_AVERAGE 32
 struct debug_profile_entry
 {
-  u64 CycleCount;
+  u64 CycleCount[DEBUG_FRAMES_TO_AVERAGE];
   u32 HitCount;
+
+  r32 MaxPerc;
+  r32 MinPerc = 100.0f;
+
   const char* FuncName;
 };
 
 struct debug_state
 {
   u64 (*GetCycleCount)(void);
+  u32 FrameIndex;
   debug_profile_entry Entries[DEBUG_STATE_ENTRY_COUNT];
 };
 
@@ -86,10 +92,10 @@ struct debug_timed_function
     // Record cycle count ASAP when object is cleaned up
     debug_state *DebugState = GetDebugState();
     EndingCycleCount = DebugState->GetCycleCount();
-
     debug_profile_entry *Entry = &DebugState->Entries[FunctionIndex];
 
-    Entry->CycleCount += (EndingCycleCount - StartingCycleCount);
+    Entry->CycleCount[DebugState->FrameIndex] += (EndingCycleCount - StartingCycleCount);
+
     Entry->HitCount++;
     Entry->FuncName = FuncName;
   }
@@ -121,6 +127,10 @@ void Log(const char* fmt...)
       {
         cout << va_arg(args, int);
       }
+      else if (*fmt == 'u')
+      {
+        cout << va_arg(args, unsigned int);
+      }
       else if (*fmt == 's')
       {
         cout << va_arg(args, char*);
@@ -129,6 +139,24 @@ void Log(const char* fmt...)
       {
         cout << va_arg(args, double);
       }
+      else if (*fmt == 'b')
+      {
+        b32 BoolVal = va_arg(args, int);
+        const char *Output = 0;
+
+        if (BoolVal)
+          Output = "True";
+        else
+          Output = "False";
+
+        cout << Output;
+      }
+      else
+      {
+        va_arg(args, void*);
+        cout << '?';
+      }
+
     }
     else
     {
@@ -153,13 +181,10 @@ Print_Binary( unsigned int input )
   for (int i = (sizeof(int)*8)-1; i >= 0; --i)
   {
     if ( ((input >> i) & 1) == 1 )
-    {
       Log("1");
-    }
     else
-    {
       Log("0");
-    }
+
     if ( (i % 8) == 0 ) { Log(" "); }
   }
 
@@ -182,8 +207,8 @@ Print_P( r32 N, const char* name)
 inline void
 Print_P( canonical_position P, const char* name)
 {
-  Log(" -- %s\n", name);
-  Log(" Offset: %f %f %f \n", P.Offset.x, P.Offset.y, P.Offset.z );
+  Log(" -- %s", name);
+  Log(" Offset: %f %f %f ", P.Offset.x, P.Offset.y, P.Offset.z );
   Log(" WorldP: %d %d %d \n", P.WorldP.x, P.WorldP.y, P.WorldP.z );
 }
 

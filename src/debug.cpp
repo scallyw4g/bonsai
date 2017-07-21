@@ -113,6 +113,23 @@ PrintDebugText( debug_text_render_group *RG, const char *Text, int x, int y, int
 
 DEBUG_GLOBAL u64 LastFrameCycleCount = 0;
 
+inline r32
+CalculateFramePercentage(debug_profile_entry *Entry, u64 CycleDelta)
+{
+  u64 TotalCycles = 0;
+  for (u32 EntryCycleIndex = 0;
+      EntryCycleIndex < DEBUG_FRAMES_TO_AVERAGE;
+      ++EntryCycleIndex)
+  {
+    TotalCycles += Entry->CycleCount[EntryCycleIndex];
+  }
+  u64 AvgCycles = TotalCycles/DEBUG_FRAMES_TO_AVERAGE;
+  r32 FramePerc = ((r32)AvgCycles/(r32)CycleDelta)*100;
+
+  return FramePerc;
+}
+
+
 void
 DebugFrameEnd(debug_text_render_group *RG)
 {
@@ -124,26 +141,30 @@ DebugFrameEnd(debug_text_render_group *RG)
 
   LastFrameCycleCount = CurrentFrameCycleCount;
 
-  debug_profile_entry NullEntry = {};
-
   s32 FontSize = DEBUG_FONT_SIZE;
   s32 LinePadding = 3;
 
-  DEBUG_GLOBAL r32 MaxX;
+  DEBUG_GLOBAL r32 MaxX = 0;
+
+  debug_profile_entry SortedEntries[DEBUG_STATE_ENTRY_COUNT];
+
+  MemCopy((u8*)DebugState->Entries,
+          (u8*)&SortedEntries,
+          sizeof(debug_profile_entry)*DEBUG_STATE_ENTRY_COUNT);
 
   for (s32 EntryIndex = 0;
       EntryIndex < DEBUG_STATE_ENTRY_COUNT;
       ++EntryIndex)
   {
-    debug_profile_entry *Entry = &DebugState->Entries[EntryIndex];
+    debug_profile_entry *Entry = &SortedEntries[EntryIndex];
 
     for (s32 InnerEntryIndex = 0;
         InnerEntryIndex < DEBUG_STATE_ENTRY_COUNT;
         ++InnerEntryIndex)
     {
-      debug_profile_entry *EntryInner = &DebugState->Entries[InnerEntryIndex];
+      debug_profile_entry *EntryInner = &SortedEntries[InnerEntryIndex];
 
-      if (EntryInner->CycleCount > Entry->CycleCount)
+      if (EntryInner->MaxPerc > Entry->MaxPerc)
       {
         debug_profile_entry Temp = *EntryInner;
         *EntryInner = *Entry;
@@ -152,67 +173,90 @@ DebugFrameEnd(debug_text_render_group *RG)
     }
   }
 
+  s32 AtY = 0;
+
   {
-    s32 AtY = 0;
     for (s32 EntryIndex = 0;
         EntryIndex < DEBUG_STATE_ENTRY_COUNT;
         ++EntryIndex)
     {
-
-      debug_profile_entry *Entry = &DebugState->Entries[EntryIndex];
+      debug_profile_entry *Entry = &SortedEntries[EntryIndex];
 
       if (Entry->HitCount > 0)
       {
-        char CycleCountBuffer[32];
-        sprintf(CycleCountBuffer, "%" PRIu64, Entry->CycleCount);
+        /* char CycleCountBuffer[32]; */
+        /* sprintf(CycleCountBuffer, "%" PRIu64, Entry->CycleCount); */
 
-        rect2 CCRect = PrintDebugText( RG, CycleCountBuffer, 0, AtY, FontSize);
-
-        MaxX = max(MaxX, CCRect.Max.x);
-
-        AtY += (FontSize + LinePadding);
+        /* rect2 CCRect = PrintDebugText( RG, CycleCountBuffer, 0, AtY, FontSize); */
+        /* MaxX = max(MaxX, CCRect.Max.x); */
+        /* AtY += (FontSize + LinePadding); */
       }
     }
 
     char CycleCountBuffer[32];
     sprintf(CycleCountBuffer, "%" PRIu64, CycleDelta);
-    PrintDebugText( RG, CycleCountBuffer, 0, AtY, FontSize);
+    PrintDebugText( RG, CycleCountBuffer, 0, AtY, FontSize).Max.x;
     AtY += (FontSize + LinePadding);
-
+    AtY += (FontSize + LinePadding);
   }
 
   {
-    s32 AtY = 0;
-    DEBUG_GLOBAL s32 PercX = 0;
     DEBUG_GLOBAL s32 HitCountX = 0;
+
     for (s32 EntryIndex = 0;
         EntryIndex < DEBUG_STATE_ENTRY_COUNT;
         ++EntryIndex)
     {
-      debug_profile_entry *Entry = &DebugState->Entries[EntryIndex];
-      if (Entry->HitCount > 0)
+      debug_profile_entry *Entry = &SortedEntries[EntryIndex];
+      if (Entry->FuncName)
       {
-        char PercentageBuffer[32];
-        sprintf(PercentageBuffer, "%.0f", (r32)((r64)Entry->CycleCount/(r64)CycleDelta)*100);
+        s32 AtX = 0;
 
-        rect2 PercRect = PrintDebugText( RG, PercentageBuffer, (s32)MaxX, AtY, FontSize);
-        PercX = max((s32)PercRect.Max.x, PercX);
+        char PercentageBuffer[32] = {};
 
-        // Print Hit Count
-        char CountBuffer[32];
-        sprintf(CountBuffer, "%" PRIu32, Entry->HitCount);
-        rect2 HitCountRect = PrintDebugText( RG, CountBuffer, PercX, AtY, FontSize);
-        HitCountX = max((s32)HitCountRect.Max.x, HitCountX);
+        r32 FramePerc = CalculateFramePercentage(Entry, CycleDelta);
+        sprintf(PercentageBuffer, "%.0f", FramePerc);
+        PrintDebugText( RG, PercentageBuffer, AtX, AtY, FontSize);
+        AtX += (FontSize*4);
 
-        PrintDebugText( RG, Entry->FuncName, HitCountX, AtY, FontSize);
+        sprintf(PercentageBuffer, "%.0f", Entry->MaxPerc);
+        PrintDebugText( RG, PercentageBuffer, AtX, AtY, FontSize);
+        AtX += (FontSize*4);
+
+        sprintf(PercentageBuffer, "%.0f", Entry->MinPerc);
+        PrintDebugText( RG, PercentageBuffer, AtX, AtY, FontSize);
+        AtX += (FontSize*4);
+
+        /* // Print Hit Count */
+        /* char CountBuffer[32]; */
+        /* sprintf(CountBuffer, "%" PRIu32, Entry->HitCount); */
+        /* rect2 HitCountRect = PrintDebugText( RG, CountBuffer, AtX, AtY, FontSize); */
+        /* HitCountX = max((s32)HitCountRect.Max.x, HitCountX); */
+
+        PrintDebugText( RG, Entry->FuncName, AtX, AtY, FontSize);
 
         AtY += (FontSize + LinePadding);
       }
-
-      *Entry = NullEntry;
     }
   }
 
+
+  DebugState->FrameIndex = (DebugState->FrameIndex+1) % DEBUG_FRAMES_TO_AVERAGE;
+
+  // Reset for next frame
+  for (s32 EntryIndex = 0;
+      EntryIndex < DEBUG_STATE_ENTRY_COUNT;
+      ++EntryIndex)
+  {
+    debug_profile_entry *Entry = &DebugState->Entries[EntryIndex];
+
+    r32 FramePerc = CalculateFramePercentage(Entry, CycleDelta);
+    Entry->MaxPerc = Max(Entry->MaxPerc, FramePerc);
+    Entry->MinPerc = Min(Entry->MinPerc, FramePerc);
+
+    Entry->HitCount = 0;
+    Entry->CycleCount[DebugState->FrameIndex] = 0;
+  }
 }
 
 void
