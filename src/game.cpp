@@ -463,7 +463,7 @@ SimulateProjectile(game_state *GameState, entity *Projectile, r32 dt)
 void
 SimulateParticleSystem(particle_system *System, r32 dt, v3 SystemDelta)
 {
-  if (Inactive(System)) return;
+  Assert(Active(System));
 
   if ( (RandomUnilateral(&System->Entropy) > 0.5f) )
     SpawnParticle(System);
@@ -491,11 +491,11 @@ SimulateEntities(game_state *GameState, entity *Player, r32 dt)
 {
   TIMED_FUNCTION();
 
-  for ( s32 EnemyIndex = 0;
-        EnemyIndex < TOTAL_ENTITY_COUNT;
-        ++EnemyIndex )
+  for ( s32 EntityIndex = 0;
+        EntityIndex < TOTAL_ENTITY_COUNT;
+        ++EntityIndex )
   {
-    entity *Entity = GameState->EntityTable[EnemyIndex];
+    entity *Entity = GameState->EntityTable[EntityIndex];
 
     if (!Spawned(Entity))
         continue;
@@ -515,11 +515,13 @@ SimulateEntities(game_state *GameState, entity *Player, r32 dt)
 
       case EntityType_ParticleSystem:
       {
-        SimulateParticleSystem(Entity->Emitter, dt, V3(0,0,0) );
       } break;
 
       InvalidDefaultCase;
     }
+
+    if (Active(Entity->Emitter))
+      SimulateParticleSystem(Entity->Emitter, dt, V3(0,0,0) );
   }
 
   return;
@@ -562,7 +564,8 @@ SimulatePlayer( game_state *GameState, entity *Player, hotkeys *Hotkeys, r32 dt 
       Player->FireCooldown = Player->RateOfFire;
     }
 
-    SimulateParticleSystem(Player->Emitter, dt, -1.0f*PlayerDelta);
+    if (Active(Player->Emitter))
+      SimulateParticleSystem(Player->Emitter, dt, -1.0f*PlayerDelta);
   }
   else
   {
@@ -660,7 +663,7 @@ ProcessFrameEvent(game_state *GameState, frame_event *Event)
           SpawnParticleSystem(SystemEntity->Emitter, V3(1,1,1), 1.0f, aabb(V3(0,0,0), V3(1,1,1)));
 
           frame_event Event(SystemEntity, FrameEvent_Unspawn);
-          PushFrameEvent(&GameState->EventQueue, &Event, 10);
+          PushFrameEvent(&GameState->EventQueue, &Event, 100);
 
           break;
         }
@@ -923,7 +926,7 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
   FlushRenderBuffers(Plat, world, RG, SG, Camera);
 
-   DEBUG_FRAME_END(DebugRG);
+  // DEBUG_FRAME_END(DebugRG);
 
   char dtBuffer[32];
   sprintf(dtBuffer, "%f", Plat->dt);

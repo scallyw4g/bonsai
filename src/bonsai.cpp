@@ -126,24 +126,6 @@ InitializeVoxels( game_state *GameState, world_chunk *Chunk )
 }
 
 void
-InitializeVoxels(void *Input)
-{
-  work_queue_entry *Params = (work_queue_entry *)Input;
-  Assert(Params);
-
-  game_state *GameState = Params->GameState;
-  world_chunk *Chunk = (world_chunk *)Params->Input;
-
-  Assert(GameState);
-  Assert(Chunk);
-
-  InitializeVoxels(GameState, Chunk);
-
-  SetFlag(Chunk, Chunk_Initialized);
-  return;
-}
-
-void
 PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
 {
   Queue->Entries[Queue->EntryCount] = *Entry;
@@ -499,6 +481,7 @@ Deactivate(particle_system *System)
 {
   System->Active = False;
   System->Entropy.Seed = 0;
+  System->ActiveParticles = 0;
 
   return;
 }
@@ -508,8 +491,8 @@ Unspawn(entity *Entity)
 {
   Entity->State = EntityState_Initialized;
 
-  if (Entity->Emitter)
-    Deactivate(Entity->Emitter);
+  Assert(Entity->Emitter);
+  Deactivate(Entity->Emitter);
 
   return;
 }
@@ -545,10 +528,14 @@ GetFreeFrameEvent(event_queue *Queue)
 inline void
 PushFrameEvent(event_queue *EventQueue, frame_event *Event, s32 FramesToForward)
 {
+  Assert(FramesToForward < TOTAL_FRAME_EVENT_COUNT);
+
   frame_event *FreeEvent = GetFreeFrameEvent(EventQueue);
   *FreeEvent = *Event;
 
-  frame_event **NextFrameEvent = &EventQueue->Queue[EventQueue->CurrentFrameIndex + FramesToForward];
+  s32 NextEventIndex = (EventQueue->CurrentFrameIndex+FramesToForward) % TOTAL_FRAME_EVENT_COUNT;
+  frame_event **NextFrameEvent = &EventQueue->Queue[NextEventIndex];
+
   while (*NextFrameEvent && (*NextFrameEvent)->Next) *NextFrameEvent = (*NextFrameEvent)->Next;
 
   *NextFrameEvent = FreeEvent;
