@@ -136,6 +136,8 @@ DEBUG_GLOBAL s32 VoxelsIndexed = 0;
 
 DEBUG_GLOBAL r32 GlobalLightTheta = 0;
 
+GLOBAL_VARIABLE r32 TargetFrameTime = 0.0166666666f;
+
 #define FACE_COLOR_SIZE 32
 #define PALETTE_SIZE 256
 

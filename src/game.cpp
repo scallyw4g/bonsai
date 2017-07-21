@@ -327,7 +327,7 @@ SpawnPlayer(game_state *GameState, entity *Player )
       Health
     );
 
-  SpawnParticleSystem(Player->Emitter, V3(0,-1,0), 10.0f, aabb(Player->CollisionVolumeRadius/2, Player->CollisionVolumeRadius/2) );
+  /* SpawnParticleSystem(Player->Emitter, V3(0,-1,0), 10.0f, aabb(Player->CollisionVolumeRadius/2, Player->CollisionVolumeRadius/2) ); */
 
   return;
 }
@@ -465,7 +465,7 @@ SimulateParticleSystem(particle_system *System, r32 dt, v3 SystemDelta)
 {
   Assert(Active(System));
 
-  if ( (RandomUnilateral(&System->Entropy) > 0.5f) )
+  if ( (RandomUnilateral(&System->Entropy) > 0.0f) )
     SpawnParticle(System);
 
   for ( s32 ParticleIndex = 0;
@@ -660,10 +660,10 @@ ProcessFrameEvent(game_state *GameState, frame_event *Event)
 
           SystemEntity->P = Event->P;
 
-          SpawnParticleSystem(SystemEntity->Emitter, V3(1,1,1), 1.0f, aabb(V3(0,0,0), V3(1,1,1)));
+          SpawnParticleSystem(SystemEntity->Emitter, V3(0,0,0), 30.0f, aabb(V3(0,0,0), V3(1,1,1)));
 
           frame_event Event(SystemEntity, FrameEvent_Unspawn);
-          PushFrameEvent(&GameState->EventQueue, &Event, 100);
+          PushFrameEvent(&GameState->EventQueue, &Event, 5);
 
           break;
         }
@@ -676,6 +676,29 @@ ProcessFrameEvent(game_state *GameState, frame_event *Event)
 
   ReleaseFrameEvent(&GameState->EventQueue, Event);
   return;
+}
+
+GLOBAL_VARIABLE s32 LogicalFrame = 0;
+GLOBAL_VARIABLE r32 LogicalFrameTime = 0;
+
+inline void
+UpdateLogicalFrameCount(r32 dt)
+{
+  LogicalFrameTime += dt;
+
+  if (LogicalFrameTime >= TargetFrameTime)
+  {
+    ++LogicalFrame;
+    LogicalFrameTime -= TargetFrameTime;
+  }
+
+  return;
+}
+
+inline s32
+GetLogicalFrameCount()
+{
+  return LogicalFrame;
 }
 
 EXPORT void
@@ -788,6 +811,8 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 {
   TIMED_FUNCTION();
 
+  UpdateLogicalFrameCount(Plat->dt);
+
   GL_Global = &Plat->GL;
 
   World *world          = GameState->world;
@@ -819,10 +844,7 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
   SimulatePlayer(GameState, Player, Hotkeys, Plat->dt);
 
-  GameState->EventQueue.CurrentFrameIndex =
-    (GameState->EventQueue.CurrentFrameIndex) % (TOTAL_FRAME_EVENT_COUNT-1);
-
-  GameState->EventQueue.CurrentFrameIndex++;
+  GameState->EventQueue.CurrentFrameIndex = GetLogicalFrameCount() % (TOTAL_FRAME_EVENT_COUNT);
 
   frame_event *Event =
     GameState->EventQueue.Queue[GameState->EventQueue.CurrentFrameIndex];
@@ -877,11 +899,7 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
         for ( s32 x = MinRad.x; x < MaxRad.x; ++ x )
         {
           world_position TestP = World_Position(x,y,z);
-          world_chunk *chunk = GetWorldChunk(world, TestP);
-          if ( !chunk || NotSet(chunk, Chunk_Initialized) )
-          {
-            DEBUG_DrawChunkAABB( world, TestP, Camera, Quaternion(), RED);
-          }
+          DEBUG_DrawChunkAABB( world, TestP, Camera, Quaternion(), RED);
         }
       }
     }
