@@ -20,6 +20,8 @@
 #include <sys/stat.h>
 
 GLOBAL_VARIABLE s64 LastGameLibTime = 0;
+GLOBAL_VARIABLE game_thread_callback_proc GameThreadCallback;
+
 
 b32
 GameLibIsNew(const char *LibPath)
@@ -63,7 +65,7 @@ ThreadMain(void *Input)
                                  OriginalNext) )
       {
         work_queue_entry Entry = Queue->Entries[OriginalNext];
-        Entry.Callback(&Entry);
+        GameThreadCallback(&Entry);
       }
 
     }
@@ -455,7 +457,6 @@ main(s32 NumArgs, char ** Args)
 
   AllocateAndInitializeArena(&Debug_RecordingState->RecordedMainMemory, MAIN_STORAGE_SIZE);
 
-
   platform Plat = {};
   PlatformInit(&Plat, &PlatMemory);
 
@@ -475,6 +476,9 @@ main(s32 NumArgs, char ** Args)
 
   game_init_globals_proc InitGlobals = (game_init_globals_proc)GetProcFromLib(GameLib, "InitGlobals");
   if (!InitGlobals) { Error("Retreiving InitGlobals from Game Lib :( "); return False; }
+
+  GameThreadCallback = (game_thread_callback_proc)GetProcFromLib(GameLib, "GameThreadCallback");
+  if (!GameThreadCallback) { Error("Retreiving GameThreadCallback from Game Lib :( "); return False; }
 
   b32 WindowSuccess = OpenAndInitializeWindow(&Os, &Plat);
   if (!WindowSuccess) { Error("Initializing Window :( "); return False; }

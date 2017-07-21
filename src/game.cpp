@@ -676,6 +676,22 @@ ProcessFrameEvent(game_state *GameState, frame_event *Event)
 }
 
 EXPORT void
+GameThreadCallback(work_queue_entry *Entry)
+{
+  switch (Entry->Flags)
+  {
+    case WorkEntry_InitWorldChunk:
+    {
+      InitializeVoxels(Entry->GameState, (world_chunk*)Entry->Input);
+    } break;
+
+    InvalidDefaultCase;
+  }
+
+  return;
+}
+
+EXPORT void
 InitGlobals(platform *Plat)
 {
   GL_Global = &Plat->GL;

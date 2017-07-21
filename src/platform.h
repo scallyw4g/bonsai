@@ -19,22 +19,28 @@ struct platform;
 struct game_state;
 struct memory_arena;
 struct hotkeys;
+struct work_queue_entry;
 
 typedef void (*GameCallback)(void*);
 typedef game_state* (*game_init_proc)(platform*, memory_arena*);
 typedef bool (*game_main_proc)(platform*, game_state*, hotkeys*);
 typedef void (*game_init_globals_proc)(platform*);
+typedef void (*game_thread_callback_proc)(work_queue_entry*);
 
 GLOBAL_VARIABLE v2 InvalidMouseP = {-1, -1};
 
 #define PUSH_STRUCT_CHECKED(Type, Arena, Number) \
   (Type*)PushStructChecked_( Arena, sizeof(Type)*Number, #Type, __LINE__, __FILE__ );
 
+enum work_queue_entry_flags
+{
+  WorkEntry_InitWorldChunk = 1 << 0,
+};
 struct work_queue_entry
 {
-  void (*Callback)(void*);
-  void *Input;
   game_state *GameState;
+  void *Input;
+  work_queue_entry_flags Flags;
 };
 
 struct thread

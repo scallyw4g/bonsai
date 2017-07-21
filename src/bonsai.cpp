@@ -167,9 +167,10 @@ QueueChunkForInit(game_state *GameState, world_chunk *Chunk)
   Assert( NotSet(Chunk, Chunk_Initialized) );
 
   work_queue_entry Entry;
-  Entry.Callback = &InitializeVoxels;
   Entry.Input = (void*)Chunk;
   Entry.GameState = GameState;
+  Entry.Flags = WorkEntry_InitWorldChunk;
+
 
   SetFlag(Chunk, Chunk_Queued);
 
