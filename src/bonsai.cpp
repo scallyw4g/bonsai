@@ -121,6 +121,7 @@ InitializeVoxels( game_state *GameState, world_chunk *Chunk )
   /*   Chunk->Filled = Volume(WORLD_CHUNK_DIM); */
   /* } */
 
+  UnSetFlag(Chunk, Chunk_Queued);
   SetFlag(Chunk, Chunk_Initialized);
   return;
 }
@@ -128,14 +129,11 @@ InitializeVoxels( game_state *GameState, world_chunk *Chunk )
 void
 PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
 {
-  Queue->Entries[Queue->EntryCount] = *Entry;
+  Queue->Entries[Queue->EnqueueIndex] = *Entry;
 
   CompleteAllWrites;
 
-  Queue->EntryCount = ++Queue->EntryCount % WORK_QUEUE_SIZE;
-
-  // TODO(Jesse): Is this check correct?
-  Assert(Queue->NextEntry != Queue->EntryCount);
+  Queue->EnqueueIndex = (Queue->EnqueueIndex+1) % WORK_QUEUE_SIZE;
 
   WakeThread( &Queue->Semaphore );
 
@@ -414,8 +412,8 @@ QueueChunksForInit(game_state *GameState, world_position WorldDisp)
   world_position SliceMin = WorldCenter + (VRHalfDim * Iter) - (VRHalfDim * InvAbsIter) - ClampPositive(WorldDisp);
 
   // NOTE(Jesse): Changed this from the following to behave properly on a 2d plane
-  // world_position SliceMax = WorldCenter + (VRHalfDim * Iter) + (VRHalfDim * InvAbsIter) - ClampPositive(Iter) - InvAbsIter - ClampNegative(WorldDisp) + ClampNegative(Iter);
-  world_position SliceMax = WorldCenter + (VRHalfDim * Iter) + (VRHalfDim * InvAbsIter) - ClampPositive(Iter) - ClampNegative(WorldDisp) + ClampNegative(Iter);
+  /* world_position SliceMax = WorldCenter + (VRHalfDim * Iter) + (VRHalfDim * InvAbsIter) - ClampPositive(Iter) - InvAbsIter - ClampNegative(WorldDisp) + ClampNegative(Iter); */
+  world_position SliceMax = WorldCenter + (VRHalfDim * Iter) + (VRHalfDim * InvAbsIter) - ClampPositive(Iter)              - ClampNegative(WorldDisp) + ClampNegative(Iter);
 
   for (int z = SliceMin.z; z <= SliceMax.z; ++ z)
   {

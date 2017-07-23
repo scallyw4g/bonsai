@@ -17,6 +17,19 @@ AtomicCompareExchange( volatile unsigned int *Source, unsigned int Exchange, uns
 }
 
 inline void
+PrintSemValue( semaphore *Semaphore )
+{
+  s32 Value;
+
+  s32 E = sem_getvalue(Semaphore, &Value);
+  Assert(E==0);
+
+  printf("Value: %d \n", Value);
+
+  return;
+}
+
+inline void
 ThreadSleep( semaphore *Semaphore )
 {
   sem_wait(Semaphore);
@@ -24,10 +37,11 @@ ThreadSleep( semaphore *Semaphore )
 }
 
 semaphore
-CreateSemaphore( int ThreadCount )
+CreateSemaphore(void)
 {
   semaphore Result;
-  sem_init(&Result, 0, 1);
+  sem_init(&Result, 0, 0);
+
   return Result;
 }
 

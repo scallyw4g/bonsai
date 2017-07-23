@@ -34,9 +34,9 @@ WakeThread( semaphore Semaphore )
 }
 
 semaphore
-CreateSemaphore( int ThreadCount )
+CreateSemaphore(void)
 {
-  semaphore Result = CreateSemaphore( 0, 0, ThreadCount, 0);
+  semaphore Result = CreateSemaphore( 0, 0, LONG_MAX, 0);
   return Result;
 }
 

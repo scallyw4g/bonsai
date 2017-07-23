@@ -844,7 +844,7 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
   SimulatePlayer(GameState, Player, Hotkeys, Plat->dt);
 
-  GameState->EventQueue.CurrentFrameIndex = GetLogicalFrameCount() % (TOTAL_FRAME_EVENT_COUNT);
+  GameState->EventQueue.CurrentFrameIndex = GetLogicalFrameCount() % TOTAL_FRAME_EVENT_COUNT;
 
   frame_event *Event =
     GameState->EventQueue.Queue[GameState->EventQueue.CurrentFrameIndex];
@@ -889,6 +889,27 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
                   Quaternion(),
                   RED );
 
+#if 1
+  {
+    for ( s32 z = Min.z; z < Max.z; ++ z )
+    {
+      for ( s32 y = Min.y; y < Max.y; ++ y )
+      {
+        for ( s32 x = Min.x; x < Max.x; ++ x )
+        {
+          world_position TestP = World_Position(x,y,z);
+          world_chunk *Chunk = GetWorldChunk(world, TestP);
+
+          if (!Chunk || NotSet(Chunk, Chunk_Initialized))
+            DEBUG_DrawChunkAABB( world, TestP, Camera, Quaternion(), RED);
+
+          if (Chunk && IsSet(Chunk, Chunk_Queued))
+            DEBUG_DrawChunkAABB( world, TestP, Camera, Quaternion(), BLUE);
+        }
+      }
+    }
+  }
+#else
   {
     world_position MinRad = VisibleRadius;
     world_position MaxRad = VisibleRadius + 1;
@@ -904,6 +925,7 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
       }
     }
   }
+#endif
 
   TIMED_BLOCK("Render - World");
   for ( s32 ChunkIndex = 0;

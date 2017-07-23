@@ -15,7 +15,6 @@ if [ "$WIN32" == "1" ]; then
 else # Win32
 
   BINARY="bin/Debug/Bonsai.exe"
-  msbuild.exe ./bin/Game.vcxproj
 
   cd build
   make "$@" 2>&1 && mv ../bin/libGame.so ../bin/libGameLoadable.so

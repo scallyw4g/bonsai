@@ -52,8 +52,8 @@ struct thread
 struct work_queue
 {
   semaphore Semaphore;
-  volatile unsigned int EntryCount;
-  volatile unsigned int NextEntry;
+  volatile unsigned int EnqueueIndex;
+  volatile unsigned int DequeueIndex;
   work_queue_entry *Entries;
 };
 

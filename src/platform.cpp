@@ -56,19 +56,20 @@ ThreadMain(void *Input)
   {
     ThreadSleep( &Queue->Semaphore );
 
-    u32 OriginalNext = Queue->NextEntry;
-
-    if (OriginalNext != Queue->EntryCount)
+    b32 Exchanged = False;
+    while (!Exchanged)
     {
-      if ( AtomicCompareExchange(&Queue->NextEntry,
-                                 (OriginalNext+1)%WORK_QUEUE_SIZE,
-                                 OriginalNext) )
+      u32 DequeueIndex = Queue->DequeueIndex;
+      Exchanged = AtomicCompareExchange(&Queue->DequeueIndex,
+                                        (DequeueIndex+1)%WORK_QUEUE_SIZE,
+                                        DequeueIndex);
+      if ( Exchanged )
       {
-        work_queue_entry Entry = Queue->Entries[OriginalNext];
+        work_queue_entry Entry = Queue->Entries[DequeueIndex];
         GameThreadCallback(&Entry);
       }
-
     }
+
   }
 
   return 0;
@@ -77,14 +78,11 @@ ThreadMain(void *Input)
 void
 PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
 {
-  Queue->Entries[Queue->EntryCount] = *Entry;
+  Queue->Entries[Queue->EnqueueIndex] = *Entry;
 
   CompleteAllWrites;
 
-  Queue->EntryCount = ++Queue->EntryCount % WORK_QUEUE_SIZE;
-
-  // TODO(Jesse): Is this check correct?
-  Assert(Queue->NextEntry != Queue->EntryCount);
+  Queue->EnqueueIndex = (Queue->EnqueueIndex+1) % WORK_QUEUE_SIZE;
 
   WakeThread( &Queue->Semaphore );
 
@@ -240,15 +238,15 @@ PlatformInit(platform *Plat, memory_arena *Memory)
 
   Info("Detected %d Logical cores, creating %d threads", LogicalCoreCount, ThreadCount);
 
-  Plat->Queue.EntryCount = 0;
-  Plat->Queue.NextEntry = 0;
+  Plat->Queue.EnqueueIndex = 0;
+  Plat->Queue.DequeueIndex = 0;
 
   Plat->Queue.Entries = PUSH_STRUCT_CHECKED(work_queue_entry,  Plat->Memory, WORK_QUEUE_SIZE);
   Plat->Threads = PUSH_STRUCT_CHECKED(thread_startup_params,  Plat->Memory, ThreadCount);
 
   work_queue *Queue = &Plat->Queue;
 
-  Queue->Semaphore = CreateSemaphore(ThreadCount);
+  Queue->Semaphore = CreateSemaphore();
 
   for (u32 ThreadIndex = 0;
       ThreadIndex < ThreadCount;
