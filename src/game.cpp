@@ -87,7 +87,11 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory)
   GameState->Models[ModelIndex_Player] = LoadModel(Memory, PLAYER_MODEL);
   GameState->Models[ModelIndex_Loot] = LoadModel(Memory, LOOT_MODEL);
 
-  GameState->Models[ModelIndex_Projectile] = LoadModel(Memory, PROJECTILE_MODEL);
+  chunk_dimension ProjectileDim = Chunk_Dimension(1,10,1);
+  GameState->Models[ModelIndex_Projectile].Chunk = AllocateChunk(Memory, ProjectileDim);
+  GameState->Models[ModelIndex_Projectile].Dim = ProjectileDim;
+  FillChunk(GameState->Models[ModelIndex_Projectile].Chunk, ProjectileDim, GREEN);
+
   GameState->Models[ModelIndex_Proton] = LoadModel(Memory, PROJECTILE_MODEL);
 
   return;
@@ -132,17 +136,19 @@ SpawnEnemy(World *world, entity **WorldEntities, entity *Enemy, random_series *E
 {
   TIMED_FUNCTION();
   s32 X = (RandomPositiveS32(EnemyEntropy) % VR_X) - (RandomPositiveS32(EnemyEntropy) % VR_X);
-  s32 Y = world->Center.y + ((RandomPositiveS32(EnemyEntropy) % VR_Y) / 2);
+  s32 Y = world->Center.y + (VR_Y / 2) - DEBUG_ENTITY_COLLISION_VOL_RADIUS.y;
   s32 Z = world->Center.z;
 
   world_position InitialCenter = World_Position(X, Y, Z);
 
+  s32 OffsetX = (RandomPositiveS32(EnemyEntropy) % CD_X);
+
   canonical_position InitialP =
-    Canonicalize(WORLD_CHUNK_DIM, Canonical_Position( V3(0,0,0), InitialCenter));
+    Canonicalize(WORLD_CHUNK_DIM, Canonical_Position( V3(OffsetX,0,0), InitialCenter));
 
   v3 Acceleration = V3(0, -1, 0);
 
-  r32 Scale = 0.25f;
+  r32 Scale = 0.5f;
   r32 RateOfFire = 1.0f;
   u32 Health = 1;
 
@@ -172,11 +178,49 @@ SpawnEnemy(World *world, entity **WorldEntities, entity *Enemy, random_series *E
   return;
 }
 
+GLOBAL_VARIABLE u64 LogicalFrame = 0;
+GLOBAL_VARIABLE r32 LogicalFrameTime = 0;
+
+inline void
+UpdateLogicalFrameCount(r32 dt)
+{
+  LogicalFrameTime += dt;
+
+  if (LogicalFrameTime >= TargetFrameTime)
+  {
+    s32 FramesElapsed = LogicalFrameTime / TargetFrameTime;
+    LogicalFrame += FramesElapsed;
+    LogicalFrameTime -= (TargetFrameTime*FramesElapsed);
+  }
+
+  return;
+}
+
+inline u64
+GetLogicalFrameCount()
+{
+  return LogicalFrame;
+}
+
+inline u64
+GetLogicalFrameDiff()
+{
+  LOCAL_PERSIST u64 LastLogicalFrame;
+  u64 FrameDiff = LastLogicalFrame - GetLogicalFrameCount();
+  LastLogicalFrame = GetLogicalFrameCount();
+
+  return FrameDiff;
+}
+
 void
 SpawnEnemies(game_state *GameState)
 {
   TIMED_FUNCTION();
   entity **Entities = GameState->EntityTable;
+
+  // Only fire on logical frames
+  if (GetLogicalFrameDiff() == 0)
+    return;
 
   // Fire roughly every 32 frames
   s32 EnemySpawnEnrtopy = (RandomU32(&GameState->Entropy) % ENEMY_SPAWN_RATE);
@@ -219,7 +263,7 @@ SpawnProjectile(game_state *GameState, canonical_position *P, v3 Velocity, entit
       v3 Acceleration = V3(0,0,0);
       v3 Drag = V3(1,1,1);
 
-      r32 Scale = 0.25f;
+      r32 Scale = 1.0f;
       r32 RateOfFire = 1.0f;
       u32 Health = 1;
 
@@ -304,11 +348,13 @@ SpawnPlayer(game_state *GameState, entity *Player )
 {
   v3 Acceleration = V3(0,0,0);
   v3 Velocity = V3(0,0,0);
-  v3 Drag = V3(0.9f,0.9f,0.9f);
+  v3 Drag = V3(0.95f,0.95f,0.95f);
 
-  r32 Scale = 0.25f;
+  r32 Scale = 0.5f;
   r32 RateOfFire = 1.0f;
   u32 Health = 3;
+
+  canonical_position InitialP = { V3(0,0,0), GameState->world->Center - World_Position(0, (VR_Y/2)-14 , 0) };
 
   SpawnEntity(
       Player,
@@ -319,7 +365,7 @@ SpawnPlayer(game_state *GameState, entity *Player )
       Acceleration,
       Drag,
 
-      0,
+      &InitialP,
       DEBUG_ENTITY_COLLISION_VOL_RADIUS,
 
       Scale,
@@ -442,9 +488,9 @@ SimulateEnemy(game_state *GameState, entity *Enemy, entity *Player, r32 dt)
   {
     v3 EnemyToPlayer = Normalize( PlayerP - EnemyP);
 
-    r32 PrevY = Enemy->Acceleration.y;
-    Enemy->Acceleration = Lerp(0.25f, Enemy->Acceleration, EnemyToPlayer);
-    Enemy->Acceleration.y = PrevY;
+    /* r32 PrevY = Enemy->Acceleration.y; */
+    Enemy->Acceleration = EnemyToPlayer; //Lerp(1.0f, Enemy->Acceleration, EnemyToPlayer);
+    /* Enemy->Acceleration.y = PrevY; */
   }
 
   v3 Delta = GetEntityDelta(Enemy, ENEMY_SPEED, dt);
@@ -465,7 +511,7 @@ SimulateParticleSystem(particle_system *System, r32 dt, v3 SystemDelta)
 {
   Assert(Active(System));
 
-  if ( (RandomUnilateral(&System->Entropy) > 0.0f) )
+  if ( (RandomUnilateral(&System->Entropy) > 0.5f) )
     SpawnParticle(System);
 
   for ( s32 ParticleIndex = 0;
@@ -663,7 +709,7 @@ ProcessFrameEvent(game_state *GameState, frame_event *Event)
           SpawnParticleSystem(SystemEntity->Emitter, V3(0,0,0), 30.0f, aabb(V3(0,0,0), V3(1,1,1)));
 
           frame_event Event(SystemEntity, FrameEvent_Unspawn);
-          PushFrameEvent(&GameState->EventQueue, &Event, 5);
+          PushFrameEvent(&GameState->EventQueue, &Event, 15);
 
           break;
         }
@@ -676,29 +722,6 @@ ProcessFrameEvent(game_state *GameState, frame_event *Event)
 
   ReleaseFrameEvent(&GameState->EventQueue, Event);
   return;
-}
-
-GLOBAL_VARIABLE s32 LogicalFrame = 0;
-GLOBAL_VARIABLE r32 LogicalFrameTime = 0;
-
-inline void
-UpdateLogicalFrameCount(r32 dt)
-{
-  LogicalFrameTime += dt;
-
-  if (LogicalFrameTime >= TargetFrameTime)
-  {
-    ++LogicalFrame;
-    LogicalFrameTime -= TargetFrameTime;
-  }
-
-  return;
-}
-
-inline s32
-GetLogicalFrameCount()
-{
-  return LogicalFrame;
 }
 
 EXPORT void
@@ -889,7 +912,8 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
                   Quaternion(),
                   RED );
 
-#if 1
+#if 0
+  // Draw chunks that aren't initialzied
   {
     for ( s32 z = Min.z; z < Max.z; ++ z )
     {
@@ -905,22 +929,6 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
           if (Chunk && IsSet(Chunk, Chunk_Queued))
             DEBUG_DrawChunkAABB( world, TestP, Camera, Quaternion(), BLUE);
-        }
-      }
-    }
-  }
-#else
-  {
-    world_position MinRad = VisibleRadius;
-    world_position MaxRad = VisibleRadius + 1;
-    for ( s32 z = MinRad.z; z < MaxRad.z; ++ z )
-    {
-      for ( s32 y = MinRad.y; y < MaxRad.y; ++ y )
-      {
-        for ( s32 x = MinRad.x; x < MaxRad.x; ++ x )
-        {
-          world_position TestP = World_Position(x,y,z);
-          DEBUG_DrawChunkAABB( world, TestP, Camera, Quaternion(), RED);
         }
       }
     }

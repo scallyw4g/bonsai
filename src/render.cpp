@@ -921,14 +921,25 @@ DEBUG_DrawPointMarker( World *world, v3 RenderP, int ColorIndex, float Diameter)
   float FaceColors[FACE_COLOR_SIZE];
   GetColorData(ColorIndex, &FaceColors[0]);;
 
-  /* r32 VertexData[BYTES_PER_FACE]; */
+  r32 VertexData[BYTES_PER_FACE];
 
-  /* BufferRightFace(  world, RenderP, FaceColors, Diameter, Scale); */
-  /* BufferLeftFace(   world, RenderP, FaceColors, Diameter, Scale); */
-  /* BufferBottomFace( world, RenderP, FaceColors, Diameter, Scale); */
-  /* BufferTopFace(    world, RenderP, FaceColors, Diameter, Scale); */
-  /* BufferFrontFace(  world, RenderP, FaceColors, Diameter, Scale); */
-  /* BufferBackFace(   world, RenderP, FaceColors, Diameter, Scale); */
+  RightFaceVertexData( RenderP, Diameter, VertexData);
+  BufferVerts(&world->Mesh, 6, VertexData, RightFaceNormalData, FaceColors, sizeof(VertexData));
+
+  LeftFaceVertexData( RenderP, Diameter, VertexData);
+  BufferVerts(&world->Mesh, 6, VertexData, LeftFaceNormalData, FaceColors, sizeof(VertexData));
+
+  BottomFaceVertexData( RenderP, Diameter, VertexData);
+  BufferVerts(&world->Mesh, 6, VertexData, BottomFaceNormalData, FaceColors, sizeof(VertexData));
+
+  TopFaceVertexData( RenderP, Diameter, VertexData);
+  BufferVerts(&world->Mesh, 6, VertexData, TopFaceNormalData, FaceColors, sizeof(VertexData));
+
+  FrontFaceVertexData( RenderP, Diameter, VertexData);
+  BufferVerts(&world->Mesh, 6, VertexData, FrontFaceNormalData, FaceColors, sizeof(VertexData));
+
+  BackFaceVertexData( RenderP, Diameter, VertexData);
+  BufferVerts(&world->Mesh, 6, VertexData, BackFaceNormalData, FaceColors, sizeof(VertexData));
 
   return;
 }

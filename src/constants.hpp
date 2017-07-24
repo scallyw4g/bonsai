@@ -19,7 +19,7 @@
 
 // Visible Region XYZ - Must be > (3,3,3)
 #define VR_X 12
-#define VR_Y 32
+#define VR_Y 64
 #define VR_Z 1
 
 #define VOLUME_VISIBLE_REGION (VR_X*VR_X*VR_X)
@@ -75,9 +75,9 @@
 
 #define PARTICLES_PER_SYSTEM   1024
 
-#define ENEMY_SPEED 220
-#define PLAYER_SPEED 150
-#define PROJECTILE_SPEED 150
+#define ENEMY_SPEED 620
+#define PLAYER_SPEED 300
+#define PROJECTILE_SPEED 250
 
 #define ENEMY_DRAG V3(0.9f, 0.9f, 0.0f)
 #define ENEMY_SPAWN_RATE 32
@@ -88,10 +88,10 @@
 #define PROJECTILE_AABB Chunk_Dimension(1,3,1)
 
 #define DEBUG_ENTITY_DIM     Chunk_Dimension(3,3,1)
-#define DEBUG_ENTITY_COLLISION_VOL_RADIUS (V3(3,3,1)/2)
+#define DEBUG_ENTITY_COLLISION_VOL_RADIUS V3(3.0f, 3.0f, 0.5f)
 
 #define DEBUG_CHUNK_AABB              0
-#define DEBUG_DRAW_COLLISION_VOLUMES  1
+#define DEBUG_DRAW_COLLISION_VOLUMES  0
 #define DEBUG_WORLD_GENERATION        0
 #define DEBUG_DRAW_SHADOW_MAP_TEXTURE 0
 #define DEBUG_HIGHLIGHT_VOID_CHUNKS   0
@@ -110,12 +110,12 @@
 #define SHADOW_MAP_RESOLUTION 2048
 #define DEBUG_TEXTURE_SIZE    512
 
-GLOBAL_VARIABLE r32 CAMERA_FOCAL_LENGTH = 200.0f;
+GLOBAL_VARIABLE r32 CAMERA_FOCAL_LENGTH = 400.0f;
 GLOBAL_VARIABLE r32 DEBUG_CAMERA_FOCAL_LENGTH = 50.0f;
 #define DEBUG_CAMERA_SCROLL_SPEED  20.0f
 
 // TODO(Jesse): How should we initialize this for realz?
-DEBUG_GLOBAL canonical_position CameraInitialP = { {0,0,10}, {0,-6,10} };
+DEBUG_GLOBAL canonical_position CameraInitialP = { {0,0,10}, {0,-9,10} };
 #define CAMERA_INITIAL_P CameraInitialP
 
 // NOTE(Jesse): The position storage needs to be as large as the largest model

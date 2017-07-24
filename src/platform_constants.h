@@ -36,6 +36,7 @@
 #define ArrayCount(a) (sizeof(a)/sizeof(a[0]))
 #define InvalidDefaultCase default: {Assert(false);} break
 
+#define LOCAL_PERSIST static
 
 #define DEBUG_RECORD_INPUT_SIZE       3600
 
