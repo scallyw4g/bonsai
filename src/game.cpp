@@ -6,8 +6,6 @@
 static gl_extensions *GL_Global;
 static const char *GlobalGlslVersion;
 
-GLOBAL_VARIABLE s32 FramesToWaitBeforeSpawningPlayer = FRAMES_TO_WAIT_BEFORE_SPAWNING_PLAYER;
-
 #include <game.h>
 
 #include <bonsai.cpp>
@@ -18,6 +16,14 @@ GetEntityDelta(entity *Entity, r32 Speed, r32 dt)
   Entity->Velocity = (Entity->Velocity + (Entity->Acceleration*Speed*dt)) * Entity->Drag; // m/s
   v3 Delta = Entity->Velocity * dt;
   return Delta;
+}
+
+void
+SpawnEntity( entity *Entity )
+{
+  Entity->State = EntityState_Spawned;
+
+  return;
 }
 
 void
@@ -576,13 +582,6 @@ SimulateEntities(game_state *GameState, entity *Player, r32 dt)
 void
 SimulatePlayer( game_state *GameState, entity *Player, hotkeys *Hotkeys, r32 dt )
 {
-  if (Player->Health <= 0 && FramesToWaitBeforeSpawningPlayer == 0)
-  {
-    Info("Player Destroyed!");
-    FramesToWaitBeforeSpawningPlayer = FRAMES_TO_WAIT_BEFORE_SPAWNING_PLAYER;
-    Unspawn(Player);
-  }
-
   if (Spawned(Player))
   {
     Player->Acceleration = GetOrthographicInputs(Hotkeys);
@@ -612,11 +611,6 @@ SimulatePlayer( game_state *GameState, entity *Player, hotkeys *Hotkeys, r32 dt 
 
     if (Active(Player->Emitter))
       SimulateParticleSystem(Player->Emitter, dt, -1.0f*PlayerDelta);
-  }
-  else
-  {
-    if (--FramesToWaitBeforeSpawningPlayer <= 0)
-      SpawnPlayer( GameState, Player );
   }
 
   return;
@@ -672,6 +666,7 @@ ProcessFrameEvent(game_state *GameState, frame_event *Event)
   {
     case FrameEvent_Spawn:
     {
+      SpawnEntity( Event->Entity );
     } break;
 
     case FrameEvent_Unspawn:
@@ -825,6 +820,8 @@ GameInit( platform *Plat, memory_arena *GameMemory)
   }
 
   /* AllocateParticleSystems(Plat, GameState); */
+
+  SpawnPlayer(GameState, GameState->Player );
 
   return GameState;
 }

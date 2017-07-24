@@ -275,7 +275,7 @@ struct entity
   r32 RateOfFire;
   r32 FireCooldown;
 
-  u32 Health; // Only needed for Player
+  s32 Health; // Only needed for Player
 };
 
 struct World

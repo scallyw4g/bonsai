@@ -5,9 +5,9 @@ enum model_index
 {
   ModelIndex_None,
 
-  ModelIndex_Enemy,
-  ModelIndex_Player,
-  ModelIndex_Loot,
+  ModelIndex_Enemy      = EntityType_Enemy,
+  ModelIndex_Player     = EntityType_Player,
+  ModelIndex_Loot       = EntityType_Loot,
   ModelIndex_Projectile,
   ModelIndex_Proton,
 

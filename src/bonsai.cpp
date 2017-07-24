@@ -468,7 +468,7 @@ SpawnLoot(entity *Entity, random_series *Entropy, model *GameModels)
     Entity->Type = EntityType_Loot;
     Entity->State = EntityState_Spawned;
     Entity->Velocity = V3(0,0,0);
-    Entity->Model = GameModels[ModelIndex_Loot];
+    Entity->Model = GameModels[EntityType_Loot];
   }
 
   return;
@@ -585,6 +585,15 @@ ProcessCollisionRule(
 
       Player->Health --;
       Unspawn(Enemy);
+
+      if (Player->Health <= 0)
+      {
+        Unspawn(Player);
+        Player->Health = PLAYER_MAX_HP;
+
+        frame_event Event(Player, FrameEvent_Spawn);
+        PushFrameEvent(EventQueue, &Event, 60);
+      }
 
       frame_event Event(Enemy->P, FrameEvent_Explosion);
       PushFrameEvent(EventQueue, &Event, 1);

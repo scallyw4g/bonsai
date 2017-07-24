@@ -193,6 +193,12 @@ Print_Binary( unsigned int input )
 
 
 inline void
+Print_P( u32 N, const char* name)
+{
+  Log(" -- %s == %d \n", name, N);
+}
+
+inline void
 Print_P( s32 N, const char* name)
 {
   Log(" -- %s == %d \n", name, N);
