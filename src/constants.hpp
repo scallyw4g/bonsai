@@ -44,7 +44,6 @@
 #define WORLD_GRAVITY V3(0.0f, 0.0f, 0.0f)
 
 
-#define FRAMES_TO_WAIT_BEFORE_SPAWNING_PLAYER 60
 #define PLAYER_COUNT             1
 #define PLAYER_MAX_HP            3
 #define PLAYER_STEP_MAX          1
@@ -76,16 +75,16 @@
 
 #define PARTICLES_PER_SYSTEM   1024
 
-#define ENEMY_SPEED 620
-#define PLAYER_SPEED 300
+#define ENEMY_SPEED 300
+#define PLAYER_SPEED 330
 #define PROJECTILE_SPEED 250
 
-#define ENEMY_DRAG V3(0.9f, 0.9f, 0.0f)
-#define ENEMY_SPAWN_RATE 32
+#define ENEMY_DRAG V3(0)
+#define ENEMY_SPAWN_RATE 60
 
 #define LOOT_CHANCE 1
 
-#define PROJECTILE_DRAG V3(1,1,1)
+#define PROJECTILE_DRAG V3(0)
 #define PROJECTILE_AABB Chunk_Dimension(1,3,1)
 
 #define DEBUG_ENTITY_DIM     Chunk_Dimension(3,3,1)
@@ -96,7 +95,7 @@
 #define DEBUG_WORLD_GENERATION        0
 #define DEBUG_DRAW_SHADOW_MAP_TEXTURE 0
 #define DEBUG_HIGHLIGHT_VOID_CHUNKS   0
-#define DEBUG_DRAW_WORLD_AXIES        0
+#define DEBUG_DRAW_WORLD_AXIES        1
 #define DEBUG_OPTIMIZE_WORLD_GC       1
 #define DEBUG_THREAD_COUNT_BIAS       0
 
@@ -116,7 +115,7 @@ GLOBAL_VARIABLE r32 DEBUG_CAMERA_FOCAL_LENGTH = 50.0f;
 #define DEBUG_CAMERA_SCROLL_SPEED  20.0f
 
 // TODO(Jesse): How should we initialize this for realz?
-DEBUG_GLOBAL canonical_position CameraInitialP = { {0,0,10}, {0,-9,10} };
+DEBUG_GLOBAL canonical_position CameraInitialP = { {0,0,0}, {0,-9,15} };
 #define CAMERA_INITIAL_P CameraInitialP
 
 // NOTE(Jesse): The position storage needs to be as large as the largest model

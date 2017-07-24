@@ -381,7 +381,7 @@ RenderQuad(RenderGroup *RG)
   GL_Global->glDisableVertexAttribArray(0);
 }
 
-v3 GlobalLightDirection = V3( -1.0f, -1.0f, 6.0f);
+v3 GlobalLightDirection = V3( 3.0f, -1.0f, -6.0f);
 
 inline m4
 GetDepthMVP(chunk_dimension WorldChunkDim, Camera_Object *Camera)

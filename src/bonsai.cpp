@@ -162,22 +162,22 @@ QueueChunkForInit(game_state *GameState, world_chunk *Chunk)
 inline v3
 GetOrthographicInputs(hotkeys *Hotkeys)
 {
-  v3 right = V3(1,0,0);
-  v3 forward = V3(0,1,0);
+  v3 Right = V3(1,0,0);
+  v3 Forward = V3(0,1,0);
 
   v3 UpdateDir = V3(0,0,0);
 
   if ( Hotkeys->Forward )
-    UpdateDir += forward;
+    UpdateDir += Forward;
 
   if ( Hotkeys->Backward )
-    UpdateDir -= forward;
+    UpdateDir -= Forward;
 
   if ( Hotkeys->Right )
-    UpdateDir += right;
+    UpdateDir += Right;
 
   if ( Hotkeys->Left )
-    UpdateDir -= right;
+    UpdateDir -= Right;
 
   UpdateDir = Normalize(UpdateDir);
 

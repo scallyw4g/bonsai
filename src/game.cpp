@@ -13,8 +13,12 @@ static const char *GlobalGlslVersion;
 v3
 GetEntityDelta(entity *Entity, r32 Speed, r32 dt)
 {
-  Entity->Velocity = (Entity->Velocity + (Entity->Acceleration*Speed*dt)) * Entity->Drag; // m/s
-  v3 Delta = Entity->Velocity * dt;
+  Entity->Acceleration -= Entity->Drag;
+
+  v3 Delta = ((Entity->Velocity*dt) + (Speed*0.5f*Entity->Acceleration*Square(dt)));
+
+  Entity->Velocity = (Delta/dt);
+
   return Delta;
 }
 
@@ -218,35 +222,43 @@ GetLogicalFrameDiff()
   return FrameDiff;
 }
 
+entity *
+GetUnusedEntity(game_state *GameState)
+{
+  entity *Result = 0;
+
+  for ( s32 EntityIndex = 0;
+        EntityIndex < TOTAL_ENTITY_COUNT;
+        ++EntityIndex )
+  {
+    entity *TestEntity = GameState->EntityTable[EntityIndex];
+    if ( Destroyed(TestEntity) || Unspawned(TestEntity) )
+    {
+      Result = TestEntity;
+      break;
+    }
+  }
+
+  return Result;
+}
+
 void
 SpawnEnemies(game_state *GameState)
 {
   TIMED_FUNCTION();
   entity **Entities = GameState->EntityTable;
 
-  // Only fire on logical frames
   if (GetLogicalFrameDiff() == 0)
     return;
 
-  // Fire roughly every 32 frames
   s32 EnemySpawnEnrtopy = (RandomU32(&GameState->Entropy) % ENEMY_SPAWN_RATE);
-  s32 SpawnEnemies =  EnemySpawnEnrtopy == 0;
-
-  if (!SpawnEnemies)
+  if (EnemySpawnEnrtopy != 0)
     return;
 
-  for ( s32 EntityIndex = 0;
-        EntityIndex < TOTAL_ENTITY_COUNT;
-        ++EntityIndex )
-  {
-    entity *Enemy = Entities[EntityIndex];
+  entity *Enemy = GetUnusedEntity(GameState);
 
-    if ( Destroyed(Enemy) || Unspawned(Enemy) )
-    {
-      SpawnEnemy(GameState->world, Entities, Enemy, &GameState->Entropy, GameState->Models);
-      return;
-    }
-  }
+  if (Enemy)
+    SpawnEnemy(GameState->world, Entities, Enemy, &GameState->Entropy, GameState->Models);
 
   return;
 }
@@ -266,8 +278,7 @@ SpawnProjectile(game_state *GameState, canonical_position *P, v3 Velocity, entit
     {
       v3 CollisionVolumeRadius = V3(PROJECTILE_AABB)/2;
 
-      v3 Acceleration = V3(0,0,0);
-      v3 Drag = V3(1,1,1);
+      v3 Acceleration = V3(0);
 
       r32 Scale = 1.0f;
       r32 RateOfFire = 1.0f;
@@ -280,7 +291,7 @@ SpawnProjectile(game_state *GameState, canonical_position *P, v3 Velocity, entit
 
         Velocity*PROJECTILE_SPEED,
         Acceleration,
-        Drag,
+        PROJECTILE_DRAG,
 
         P,
         CollisionVolumeRadius,
@@ -354,7 +365,7 @@ SpawnPlayer(game_state *GameState, entity *Player )
 {
   v3 Acceleration = V3(0,0,0);
   v3 Velocity = V3(0,0,0);
-  v3 Drag = V3(0.95f,0.95f,0.95f);
+  v3 Drag = V3(0);
 
   r32 Scale = 0.5f;
   r32 RateOfFire = 1.0f;
@@ -430,8 +441,7 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
 
   while ( Remaining != V3(0,0,0) )
   {
-
-    Assert(LengthSq(Remaining) >= 0);
+    Assert(Length(Remaining) >= 0);
 
     v3 StepDelta = GetAtomicUpdateVector(Remaining);
     Remaining -= StepDelta;
@@ -492,11 +502,8 @@ SimulateEnemy(game_state *GameState, entity *Enemy, entity *Player, r32 dt)
 
   if ( EnemyP.y > PlayerP.y ) // Enemy is in front of Player
   {
-    v3 EnemyToPlayer = Normalize( PlayerP - EnemyP);
-
-    /* r32 PrevY = Enemy->Acceleration.y; */
+    v3 EnemyToPlayer = Normalize(PlayerP - EnemyP);
     Enemy->Acceleration = EnemyToPlayer; //Lerp(1.0f, Enemy->Acceleration, EnemyToPlayer);
-    /* Enemy->Acceleration.y = PrevY; */
   }
 
   v3 Delta = GetEntityDelta(Enemy, ENEMY_SPEED, dt);
@@ -587,6 +594,8 @@ SimulatePlayer( game_state *GameState, entity *Player, hotkeys *Hotkeys, r32 dt 
     Player->Acceleration = GetOrthographicInputs(Hotkeys);
     v3 PlayerDelta = GetEntityDelta(Player, PLAYER_SPEED, dt) + (PLAYER_IMPULSE*dt);
 
+    Player->Drag = 0.005f*Player->Velocity;
+
     world_position OriginalPlayerP = Player->P.WorldP;
     UpdateEntityP( GameState, Player, PlayerDelta );
 
@@ -598,7 +607,7 @@ SimulatePlayer( game_state *GameState, entity *Player, hotkeys *Hotkeys, r32 dt 
     // Regular Fire
     if ( Hotkeys->Player_Fire && (Player->FireCooldown < 0) )
     {
-      SpawnProjectile(GameState, &Player->P, V3(0,1,0), EntityType_PlayerProjectile);
+      SpawnProjectile(GameState, &Player->P, V3(0,2,0), EntityType_PlayerProjectile);
       Player->FireCooldown = Player->RateOfFire;
     }
 
@@ -666,7 +675,7 @@ ProcessFrameEvent(game_state *GameState, frame_event *Event)
   {
     case FrameEvent_Spawn:
     {
-      SpawnEntity( Event->Entity );
+      SpawnEntity(Event->Entity);
     } break;
 
     case FrameEvent_Unspawn:

@@ -528,6 +528,30 @@ struct canonical_position
 };
 
 inline v3
+V3(r32 I)
+{
+  v3 Result;
+
+  Result.x = I;
+  Result.y = I;
+  Result.z = I;
+
+  return Result;
+}
+
+inline v3
+V3(s32 I)
+{
+  v3 Result;
+
+  Result.x = (r32)I;
+  Result.y = (r32)I;
+  Result.z = (r32)I;
+
+  return Result;
+}
+
+inline v3
 V3(voxel_position wp)
 {
   v3 Result;
