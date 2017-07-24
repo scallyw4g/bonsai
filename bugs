@@ -1,0 +1,11 @@
+
+3h # closed - thread queue - some entries getting skipped
+
+Problem introduced going from checking the thread queue for work -> semaphore
+only for flow control.  Whenever AtomicCompareExchange failed, ThreadSleep
+would be called again before ACE was retried, thus leaving the Semaphore out of
+sync with the number of entries on the queue.
+
+25 min # closed - frame_event queue - buffer overrun
+5 min # closed - particle_system - reinitialization
+5 min # closed - particle_system - frame rate higher than normal; no vsync
