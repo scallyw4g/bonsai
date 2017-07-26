@@ -224,11 +224,23 @@ struct random_series
   u64 Seed;
 };
 
+struct physics
+{
+  v3 Velocity;
+  v3 Acceleration;
+
+  r32 Drag;
+  r32 Mass;
+
+  r32 Speed;
+};
+
 struct particle
 {
   // TODO(Jesse): Compress to 16 bit float?
   v3 Offset;
-  v3 Velocity;
+
+  physics Physics;
 
   u8 Color;
   r32 RemainingLifespan;
@@ -267,9 +279,7 @@ struct entity
 
   particle_system *Emitter;
 
-  v3 Velocity;
-  v3 Acceleration;
-  r32 Drag;
+  physics Physics;
 
   canonical_position P;
 

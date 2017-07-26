@@ -467,7 +467,7 @@ SpawnLoot(entity *Entity, random_series *Entropy, model *GameModels)
     Entity->State = EntityState_Uninitialized;
     Entity->Type = EntityType_Loot;
     Entity->State = EntityState_Spawned;
-    Entity->Velocity = V3(0,0,0);
+    Entity->Physics.Velocity = V3(0,0,0);
     Entity->Model = GameModels[EntityType_Loot];
   }
 
@@ -589,8 +589,8 @@ ProcessCollisionRule(
       {
         Unspawn(Player);
         Player->Health = PLAYER_MAX_HP;
-        Player->Velocity = V3(0);
-        Player->Acceleration = V3(0);
+        Player->Physics.Velocity = V3(0);
+        Player->Physics.Acceleration = V3(0);
 
         frame_event Event(Player, FrameEvent_Spawn);
         PushFrameEvent(EventQueue, &Event, 60);
