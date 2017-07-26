@@ -7,6 +7,8 @@
 #define BLACK    0
 #define WHITE    1
 #define RED     36
+#define DARK_RED 144
+#define DARK_DARK_RED 180
 #define GREEN  186
 #define BLUE   215
 #define TEAL   181

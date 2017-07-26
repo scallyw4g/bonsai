@@ -7,19 +7,46 @@ static gl_extensions *GL_Global;
 static const char *GlobalGlslVersion;
 
 GLOBAL_VARIABLE physics NullPhysics = {};
+DEBUG_GLOBAL World *GLOBAL_world = 0;
 
 #include <game.h>
 
 #include <bonsai.cpp>
 
+inline r32
+SafeDivide0(r32 Dividend, r32 Divisor)
+{
+  r32 Result = 0.0f;
+
+  if (Divisor != 0.0f)
+    Result = Dividend/Divisor;
+
+  return Result;
+}
+
+inline v3
+SafeDivide0(v3 Dividend, r32 Divisor)
+{
+  v3 Result = V3(0);
+
+  if (Divisor != 0.0f)
+    Result = Dividend/Divisor;
+
+  return Result;
+}
+
 inline v3
 PhysicsUpdate(physics *Physics, r32 dt)
 {
-  Physics->Acceleration -= Physics->Mass*Physics->Drag*Physics->Velocity;
+  v3 Acceleration = SafeDivide0(Physics->Force, Physics->Mass);
 
-  v3 Delta = (Physics->Velocity*dt) + (0.5f*Physics->Acceleration*Square(dt));
+  v3 Delta = (Physics->Velocity*dt) + (0.5f*Acceleration*Square(dt));
 
   Physics->Velocity = (Delta/dt) ;
+
+  r32 Momentum = Physics->Mass * Length(Physics->Velocity);
+
+  Physics->Velocity -= (Physics->Drag*Physics->Velocity * SafeDivide0(1, Momentum));
 
   return Delta*Physics->Speed;
 }
@@ -176,7 +203,7 @@ SpawnEnemy(World *world, entity **WorldEntities, entity *Enemy, random_series *E
     Canonicalize(WORLD_CHUNK_DIM, Canonical_Position( V3(OffsetX,0,0), InitialCenter));
 
   physics Physics = {};
-  Physics.Acceleration = V3(0, -1, 0);
+  Physics.Force = V3(0, -1, 0);
   Physics.Speed = ENEMY_SPEED;
 
   r32 Scale = 0.5f;
@@ -350,34 +377,35 @@ SpawnProjectile(game_state *GameState, canonical_position *P, v3 Velocity, entit
   return;
 }
 
-void
+b32
 SpawnParticle(particle_system *System)
 {
-  particle *Particle = &System->Particles[System->ActiveParticles++];
-  Assert(System->ActiveParticles < PARTICLES_PER_SYSTEM);
+  b32 Spawn = ((RandomUnilateral(&System->Entropy)) * System->EmissionChance) >= 0.5f;
 
-  r32 X = RandomBilateral(&System->Entropy);
-  r32 Y = RandomBilateral(&System->Entropy);
-  r32 Z = RandomBilateral(&System->Entropy);
+  if (Spawn)
+  {
+    particle *Particle = &System->Particles[System->ActiveParticles++];
+    Assert(System->ActiveParticles < PARTICLES_PER_SYSTEM);
 
-  v3 Random = V3(X,Y,Z);
+    r32 X = RandomBilateral(&System->Entropy);
+    r32 Y = RandomBilateral(&System->Entropy);
+    r32 Z = RandomBilateral(&System->Entropy);
 
-  Particle->Offset = (Random*System->SpawnRegion.Radius) + System->SpawnRegion.Center;
-  Particle->Physics.Velocity = Random;
-  Particle->Physics.Speed = 60;
+    v3 Random = V3(X,Y,Z);
 
-  Particle->Physics.Drag = 16.0f;
-  Particle->Physics.Mass = 0.25f;
+    Particle->Offset = (Random*System->SpawnRegion.Radius) + System->SpawnRegion.Center;
 
+    Particle->Physics = System->ParticlePhysics;
+    Particle->Physics.Velocity = Random;
 
+    u32 Rand = RandomU32(&System->Entropy) ;
+    u32 ColorIndex = Rand % PARTICLE_SYSTEM_COLOR_COUNT;
 
-  u32 Rand = RandomU32(&System->Entropy) ;
-  u32 ColorIndex = Rand % PARTICLE_SYSTEM_COLOR_COUNT;
+    Particle->Color = System->Colors[ColorIndex];
+    Particle->RemainingLifespan = System->ParticleLifespan;
+  }
 
-  Particle->Color = System->Colors[ColorIndex];
-  Particle->RemainingLifespan = System->ParticleLifespan;
-
-  return;
+  return Spawn;
 }
 
 void
@@ -385,13 +413,15 @@ SpawnParticleSystem(particle_system *System, particle_system_init_params *Params
 {
   Assert(Inactive(System));
 
-  System->EmissionLifespan = 0.12f;
-  System->ParticleLifespan = 0.20f;
-  System->EmissionChance = 5.0f;
-
-  System->Entropy.Seed = 547325;
-
   System->SpawnRegion = Params->SpawnRegion;
+  System->ParticlePhysics = Params->Physics;
+
+  System->EmissionLifespan = Params->EmissionLifespan;
+  System->EmissionChance = Params->EmissionChance;
+
+  System->ParticleLifespan = Params->ParticleLifespan;
+
+  System->Entropy = Params->Entropy;
 
   MemCopy( (u8*)&Params->Colors, (u8*)&System->Colors, sizeof(System->Colors) );
 
@@ -399,11 +429,39 @@ SpawnParticleSystem(particle_system *System, particle_system_init_params *Params
 }
 
 void
+SpawnExplosion(entity *Entity, random_series *Entropy)
+{
+  particle_system_init_params Params = {};
+
+  Params.Entropy.Seed = RandomU32(Entropy);
+
+  Params.Colors[0] = BLACK;
+  Params.Colors[1] = BLACK;
+  Params.Colors[2] = DARK_DARK_RED;
+  Params.Colors[3] = ORANGE;
+  Params.Colors[4] = YELLOW;
+  Params.Colors[5] = WHITE;
+
+  Params.SpawnRegion = aabb(V3(0), V3(0.5f));
+
+  Params.EmissionLifespan = 0.15f;
+  Params.ParticleLifespan = 0.45f;
+  Params.EmissionChance = 5.5f;
+
+
+  Params.Physics.Speed = 20;
+  Params.Physics.Drag = 0.04f;
+  Params.Physics.Mass = 3.50f;
+
+  SpawnParticleSystem(Entity->Emitter, &Params );
+}
+
+void
 SpawnPlayer(game_state *GameState, entity *Player )
 {
   physics Physics = {};
-  Physics.Drag = 1.5f;
-  Physics.Mass = 5.0f;
+  Physics.Drag = 0.1f;
+  Physics.Mass = 1.0f;
   Physics.Speed = 650;
 
   r32 Scale = 0.5f;
@@ -426,8 +484,6 @@ SpawnPlayer(game_state *GameState, entity *Player )
       RateOfFire,
       Health
     );
-
-  // SpawnParticleSystem(Player->Emitter, V3(0,-1,0), 10.0f, aabb(Player->CollisionVolumeRadius/2, Player->CollisionVolumeRadius/2) );
 
   return;
 }
@@ -537,7 +593,7 @@ SimulateEnemy(game_state *GameState, entity *Enemy, entity *Player, r32 dt)
   if ( EnemyP.y > PlayerP.y ) // Enemy is in front of Player
   {
     v3 EnemyToPlayer = Normalize(PlayerP - EnemyP);
-    Enemy->Physics.Acceleration = EnemyToPlayer; //Lerp(1.0f, Enemy->Acceleration, EnemyToPlayer);
+    Enemy->Physics.Force = EnemyToPlayer;
   }
 
 }
@@ -550,7 +606,7 @@ ShouldEmit(particle_system *System)
 }
 
 void
-UpdateAndRenderParticleSystem(
+SimulateAndRenderParticleSystems(
     World *world,
     Camera_Object *Camera,
     entity *SystemEntity,
@@ -567,10 +623,7 @@ UpdateAndRenderParticleSystem(
 
   if ( CurrentFrameIsLogicalFrame() && ShouldEmit(System) )
   {
-    u32 ParticlesToSpawn = (u32)( (RandomUnilateral(&System->Entropy)+1) * System->EmissionChance);
-
-    while ( (ParticlesToSpawn--) > 0 )
-      SpawnParticle(System);
+    while (SpawnParticle(System));
   }
 
   for ( s32 ParticleIndex = 0;
@@ -583,9 +636,9 @@ UpdateAndRenderParticleSystem(
 
     Particle->Offset += Delta;
 
-    r32 Diameter = (Particle->RemainingLifespan / System->ParticleLifespan) + 0.7;
-    u8 ColorIndex = (u8)((Particle->RemainingLifespan / System->ParticleLifespan) * 3.999f);
-    Assert(ColorIndex >= 0 && ColorIndex <= 3);
+    r32 Diameter = (Particle->RemainingLifespan / System->ParticleLifespan) + 0.5f;
+    u8 ColorIndex = (u8)((Particle->RemainingLifespan / System->ParticleLifespan) * (PARTICLE_SYSTEM_COLOR_COUNT-0.0001f));
+    Assert(ColorIndex >= 0 && ColorIndex <= PARTICLE_SYSTEM_COLOR_COUNT);
 
     DrawParticle(world, &SystemEntity->P, Camera, Particle, Diameter, System->Colors[ColorIndex]);
 
@@ -642,7 +695,7 @@ SimulateEntities(game_state *GameState, entity *Player, r32 dt)
 
     UpdateEntityP(GameState, Entity, Delta);
 
-    UpdateAndRenderParticleSystem(GameState->world, GameState->Camera, Entity, dt, Delta );
+    SimulateAndRenderParticleSystems(GameState->world, GameState->Camera, Entity, dt, Delta );
   }
 
   return;
@@ -653,7 +706,8 @@ SimulatePlayer( game_state *GameState, entity *Player, hotkeys *Hotkeys, r32 dt 
 {
   if (Spawned(Player))
   {
-    Player->Physics.Acceleration = GetOrthographicInputs(Hotkeys);
+    Player->Physics.Force = GetOrthographicInputs(Hotkeys);
+
     v3 PlayerDelta = PhysicsUpdate(&Player->Physics, dt) + (PLAYER_IMPULSE*dt);
 
     world_position OriginalPlayerP = Player->P.WorldP;
@@ -678,7 +732,7 @@ SimulatePlayer( game_state *GameState, entity *Player, hotkeys *Hotkeys, r32 dt 
       Player->FireCooldown = Player->RateOfFire;
     }
 
-    UpdateAndRenderParticleSystem(GameState->world, GameState->Camera, Player, dt, -1.0f*PlayerDelta);
+    SimulateAndRenderParticleSystems(GameState->world, GameState->Camera, Player, dt, -1.0f*PlayerDelta);
   }
 
   return;
@@ -752,16 +806,7 @@ ProcessFrameEvent(game_state *GameState, frame_event *Event)
       entity *Entity = Event->Entity;
 
       SpawnEntity( GameState->Models, Entity, EntityType_ParticleSystem );
-
-      particle_system_init_params Params = {};
-      Params.SpawnRegion = aabb(V3(0), V3(Entity->Model.Dim/2));
-      Params.Colors[0] = BLACK;
-      Params.Colors[1] = ORANGE;
-      Params.Colors[2] = YELLOW;
-      Params.Colors[3] = WHITE;
-
-      SpawnParticleSystem(Entity->Emitter, &Params );
-
+      SpawnExplosion(Entity, &GameState->Entropy);
     } break;
 
     InvalidDefaultCase;
@@ -888,6 +933,9 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   GL_Global = &Plat->GL;
 
   World *world          = GameState->world;
+
+  GLOBAL_world = world;
+
   entity *Player        = GameState->Player;
   Camera_Object *Camera = GameState->Camera;
 

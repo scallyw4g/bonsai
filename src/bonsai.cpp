@@ -590,7 +590,7 @@ ProcessCollisionRule(
         Unspawn(Player);
         Player->Health = PLAYER_MAX_HP;
         Player->Physics.Velocity = V3(0);
-        Player->Physics.Acceleration = V3(0);
+        Player->Physics.Force = V3(0);
 
         frame_event Event(Player, FrameEvent_Spawn);
         PushFrameEvent(EventQueue, &Event, 60);
@@ -598,6 +598,7 @@ ProcessCollisionRule(
 
       frame_event Event(Enemy, FrameEvent_Explosion);
       PushFrameEvent(EventQueue, &Event, 1);
+
     } break;
 
     case Collision_Player_EnemyProjectile:

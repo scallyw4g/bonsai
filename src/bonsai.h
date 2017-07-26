@@ -227,7 +227,7 @@ struct random_series
 struct physics
 {
   v3 Velocity;
-  v3 Acceleration;
+  v3 Force;
 
   r32 Drag;
   r32 Mass;
@@ -246,10 +246,18 @@ struct particle
   r32 RemainingLifespan;
 };
 
-#define PARTICLE_SYSTEM_COLOR_COUNT 4
+#define PARTICLE_SYSTEM_COLOR_COUNT 6
 struct particle_system_init_params
 {
   aabb SpawnRegion;
+  physics Physics;
+
+  r32 EmissionLifespan;
+  r32 EmissionChance;
+
+  r32 ParticleLifespan;
+
+  random_series Entropy;
 
   u8 Colors[PARTICLE_SYSTEM_COLOR_COUNT];
 };
@@ -264,8 +272,10 @@ struct particle_system
   aabb SpawnRegion;
 
   r32 EmissionLifespan;
+
   r32 ParticleLifespan;
   r32 EmissionChance;
+  physics ParticlePhysics;
 
   u8 Colors[PARTICLE_SYSTEM_COLOR_COUNT];
 
@@ -485,7 +495,7 @@ Spawned(entity *Entity)
 inline b32
 Active(particle_system *System)
 {
-  b32 Result = (System->ParticleLifespan > 0) || (System->ActiveParticles > 0);
+  b32 Result = (System->EmissionLifespan > 0) || (System->ActiveParticles > 0);
   return Result;
 }
 
