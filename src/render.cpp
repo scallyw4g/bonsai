@@ -2269,47 +2269,39 @@ DrawWorldChunk(
 }
 
 void
-DrawParticleSystem(
-    platform *Plat,
+DrawParticle(
     World *world,
-    particle_system *System,
     canonical_position *P,
-    Camera_Object *Camera
+    Camera_Object *Camera,
+    particle *Particle,
+    r32 Diameter,
+    u8 ColorIndex
   )
 {
-  for ( s32 ParticleIndex = 0;
-        ParticleIndex < System->ActiveParticles;
-        ++ParticleIndex)
-  {
-    particle *Particle = &System->Particles[ParticleIndex];
+  r32 VertexData[BYTES_PER_FACE];
+  r32 FaceColors[32];
 
-    r32 VertexData[BYTES_PER_FACE];
-    r32 FaceColors[32];
+  GetColorData(ColorIndex, &FaceColors[0]);;
 
-    GetColorData(Particle->Color, &FaceColors[0]);;
+  v3 MinP = GetRenderP(world->ChunkDim, (*P)+Particle->Offset, Camera);
 
-    r32 Diameter = 0.5f;
+  RightFaceVertexData( MinP, Diameter, VertexData);
+  BufferVerts(&world->Mesh, 6, VertexData, RightFaceNormalData, FaceColors, sizeof(VertexData));
 
-    v3 MinP = GetRenderP(world->ChunkDim, (*P)+Particle->Offset, Camera);
+  LeftFaceVertexData( MinP, Diameter, VertexData);
+  BufferVerts(&world->Mesh, 6, VertexData, LeftFaceNormalData, FaceColors, sizeof(VertexData));
 
-    RightFaceVertexData( MinP, Diameter, VertexData);
-    BufferVerts(&world->Mesh, 6, VertexData, RightFaceNormalData, FaceColors, sizeof(VertexData));
+  BottomFaceVertexData( MinP, Diameter, VertexData);
+  BufferVerts(&world->Mesh, 6, VertexData, BottomFaceNormalData, FaceColors, sizeof(VertexData));
 
-    LeftFaceVertexData( MinP, Diameter, VertexData);
-    BufferVerts(&world->Mesh, 6, VertexData, LeftFaceNormalData, FaceColors, sizeof(VertexData));
+  TopFaceVertexData( MinP, Diameter, VertexData);
+  BufferVerts(&world->Mesh, 6, VertexData, TopFaceNormalData, FaceColors, sizeof(VertexData));
 
-    BottomFaceVertexData( MinP, Diameter, VertexData);
-    BufferVerts(&world->Mesh, 6, VertexData, BottomFaceNormalData, FaceColors, sizeof(VertexData));
+  FrontFaceVertexData( MinP, Diameter, VertexData);
+  BufferVerts(&world->Mesh, 6, VertexData, FrontFaceNormalData, FaceColors, sizeof(VertexData));
 
-    TopFaceVertexData( MinP, Diameter, VertexData);
-    BufferVerts(&world->Mesh, 6, VertexData, TopFaceNormalData, FaceColors, sizeof(VertexData));
-
-    FrontFaceVertexData( MinP, Diameter, VertexData);
-    BufferVerts(&world->Mesh, 6, VertexData, FrontFaceNormalData, FaceColors, sizeof(VertexData));
-
-    BackFaceVertexData( MinP, Diameter, VertexData);
-    BufferVerts(&world->Mesh, 6, VertexData, BackFaceNormalData, FaceColors, sizeof(VertexData));
-  }
+  BackFaceVertexData( MinP, Diameter, VertexData);
+  BufferVerts(&world->Mesh, 6, VertexData, BackFaceNormalData, FaceColors, sizeof(VertexData));
 
   return;
 }
@@ -2331,8 +2323,7 @@ DrawEntity(
 
   chunk_data *Model = Entity->Model.Chunk;
 
-  if (Entity->Emitter)
-    DrawParticleSystem( Plat, world, Entity->Emitter, &Entity->P, Camera );
+  // DrawParticleSystem( Plat, world, Entity->Emitter, &Entity->P, Camera );
 
   if (Model && Spawned(Entity))
   {

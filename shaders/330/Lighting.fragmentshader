@@ -18,7 +18,7 @@ uniform mat4 ViewMatrix;
 float exposure = 1.0f;
 float gamma = 2.2f;
 
-float GlobalLightIntensity = 1.0f;
+float GlobalLightIntensity = 5.0f;
 
 //
 //
@@ -101,7 +101,17 @@ void main()
 
   // Reinhard tone mapping
   vec3 mapped = hdrColor / (hdrColor + vec3(1.0f));
+  color = mapped;
 
+  /*
   // Gamma correction
   color = pow(mapped, vec3(1.0f / gamma));
+  */
+
+  /*
+  color =
+    Ambient
+    + Diffuse * GlobalLightCosTheta * GlobalLightIntensity * visibility * vec3(AO)
+  ;
+  */
 }

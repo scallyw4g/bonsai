@@ -237,7 +237,6 @@ struct particle
 #define PARTICLE_SYSTEM_COLOR_COUNT 4
 struct particle_system_init_params
 {
-  v3 InitialVelocity;
   aabb SpawnRegion;
 
   u8 Colors[PARTICLE_SYSTEM_COLOR_COUNT];
@@ -250,11 +249,11 @@ struct particle_system
   s32 ActiveParticles;
   r32 ParticleDuration;
 
-  v3 InitialVelocity;
-
   aabb SpawnRegion;
 
-  b32 Active;
+  r32 EmissionLifespan;
+  r32 ParticleLifespan;
+  r32 EmissionChance;
 
   u8 Colors[PARTICLE_SYSTEM_COLOR_COUNT];
 
@@ -270,7 +269,7 @@ struct entity
 
   v3 Velocity;
   v3 Acceleration;
-  v3 Drag;
+  r32 Drag;
 
   canonical_position P;
 
@@ -476,7 +475,7 @@ Spawned(entity *Entity)
 inline b32
 Active(particle_system *System)
 {
-  b32 Result = System->Active;
+  b32 Result = (System->ParticleLifespan > 0) || (System->ActiveParticles > 0);
   return Result;
 }
 

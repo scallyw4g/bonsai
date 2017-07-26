@@ -477,9 +477,8 @@ SpawnLoot(entity *Entity, random_series *Entropy, model *GameModels)
 inline void
 Deactivate(particle_system *System)
 {
-  System->Active = False;
-  System->Entropy.Seed = 0;
-  System->ActiveParticles = 0;
+  particle_system NullSystem = {};
+  *System = NullSystem;
 
   return;
 }
@@ -590,6 +589,8 @@ ProcessCollisionRule(
       {
         Unspawn(Player);
         Player->Health = PLAYER_MAX_HP;
+        Player->Velocity = V3(0);
+        Player->Acceleration = V3(0);
 
         frame_event Event(Player, FrameEvent_Spawn);
         PushFrameEvent(EventQueue, &Event, 60);
