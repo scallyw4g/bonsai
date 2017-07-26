@@ -595,7 +595,7 @@ ProcessCollisionRule(
         PushFrameEvent(EventQueue, &Event, 60);
       }
 
-      frame_event Event(Enemy->P, FrameEvent_Explosion);
+      frame_event Event(Enemy, FrameEvent_Explosion);
       PushFrameEvent(EventQueue, &Event, 1);
     } break;
 
@@ -606,15 +606,18 @@ ProcessCollisionRule(
     case Collision_Enemy_PlayerProjectile:
     case Collision_Enemy_PlayerProton:
     {
-      Unspawn(First);
-      Unspawn(Second);
-
       entity *Enemy = First;
+      entity *Projectile = Second;
 
       if ( Second->Type == EntityType_Enemy )
+      {
         Enemy = Second;
+        Projectile = First;
+      }
 
-      frame_event Event(Enemy->P, FrameEvent_Explosion);
+      Unspawn(Projectile);
+
+      frame_event Event(Enemy, FrameEvent_Explosion);
       PushFrameEvent(EventQueue, &Event, 1);
     } break;
 

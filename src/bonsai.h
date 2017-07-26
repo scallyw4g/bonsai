@@ -221,7 +221,7 @@ struct model
 
 struct random_series
 {
-  u32 Seed;
+  u64 Seed;
 };
 
 struct particle
@@ -234,19 +234,29 @@ struct particle
   r32 RemainingLifespan;
 };
 
+#define PARTICLE_SYSTEM_COLOR_COUNT 4
+struct particle_system_init_params
+{
+  v3 InitialVelocity;
+  aabb SpawnRegion;
+
+  u8 Colors[PARTICLE_SYSTEM_COLOR_COUNT];
+};
+
 struct particle_system
 {
   random_series Entropy;
 
   s32 ActiveParticles;
   r32 ParticleDuration;
-  r32 ParticleSpeed;
 
   v3 InitialVelocity;
 
   aabb SpawnRegion;
 
   b32 Active;
+
+  u8 Colors[PARTICLE_SYSTEM_COLOR_COUNT];
 
   particle Particles[PARTICLES_PER_SYSTEM];
 };
@@ -494,17 +504,19 @@ Unspawned(entity *Entity)
 inline u32
 RandomU32(random_series *Entropy)
 {
-  u32 A = 1664525;
-  u32 B = 1013904223;
-
   // TODO(Jesse): This is LCG RNG - do we want a better one?
-  //
-  // Found the A and B values at:
-  // http://www.lomont.org/Math/Papers/2008/Lomont_PRNG_2008.pdf
-  //
-  Entropy->Seed = ((A * Entropy->Seed) + B) % UINT_MAX;
 
-  return Entropy->Seed;
+  // Values from Knuth
+  u64 A = 6364136223846793005;
+  u64 B = 1442695040888963407;
+  u64 Mod = (1L << 63);
+
+  Entropy->Seed = ((A * Entropy->Seed) + B) % Mod;
+
+  // The bottom-most bits do not contain a high amount of entropy, so shift the
+  // most significant bits down and return them
+  u32 Result = (u32)(Entropy->Seed >> 31);
+  return Result;
 }
 
 inline s32

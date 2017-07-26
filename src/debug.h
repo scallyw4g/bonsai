@@ -125,11 +125,23 @@ void Log(const char* fmt...)
 
       if (*fmt == 'd')
       {
-        cout << va_arg(args, int);
+        cout << va_arg(args, s32);
+      }
+      else if (*fmt == 'l')
+      {
+        ++fmt;
+        if (*fmt == 'u')
+        {
+          cout << va_arg(args, u64);
+        }
+        else if (*fmt == 'd')
+        {
+          cout << va_arg(args, s64);
+        }
       }
       else if (*fmt == 'u')
       {
-        cout << va_arg(args, unsigned int);
+        cout << va_arg(args, u32);
       }
       else if (*fmt == 's')
       {
@@ -137,7 +149,7 @@ void Log(const char* fmt...)
       }
       else if (*fmt == 'f')
       {
-        cout << va_arg(args, double);
+        cout << va_arg(args, r64);
       }
       else if (*fmt == 'b')
       {
@@ -193,9 +205,15 @@ Print_Binary( unsigned int input )
 
 
 inline void
+Print_P( u64 N, const char* name)
+{
+  Log(" -- %s == %lu \n", name, N);
+}
+
+inline void
 Print_P( u32 N, const char* name)
 {
-  Log(" -- %s == %d \n", name, N);
+  Log(" -- %s == %u \n", name, N);
 }
 
 inline void

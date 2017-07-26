@@ -21,29 +21,19 @@ enum frame_event_type
   FrameEvent_Spawn,
   FrameEvent_Unspawn,
   FrameEvent_Explosion,
+  FrameEvent_Deactivate,
 };
 
 struct frame_event
 {
   frame_event_type Type;
-
-  union
-  {
-    canonical_position P;
-    entity *Entity;
-  };
+  entity *Entity;
 
   frame_event *Next;
 
   frame_event(entity *Entity, frame_event_type Type)
   {
     this->Entity = Entity;
-    this->Type = Type;
-    this->Next = 0;
-  }
-  frame_event(canonical_position P, frame_event_type Type)
-  {
-    this->P = P;
     this->Type = Type;
     this->Next = 0;
   }

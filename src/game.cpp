@@ -10,22 +10,51 @@ static const char *GlobalGlslVersion;
 
 #include <bonsai.cpp>
 
-v3
-GetEntityDelta(entity *Entity, r32 Speed, r32 dt)
+inline v3
+GetDelta(v3 Velocity, v3 Acceleration, v3 Drag, r32 Speed, r32 dt)
 {
-  Entity->Acceleration -= Entity->Drag;
+  Acceleration -= Drag;
 
-  v3 Delta = ((Entity->Velocity*dt) + (Speed*0.5f*Entity->Acceleration*Square(dt)));
+  v3 Delta = ((Velocity*dt) + (Speed*0.5f*Acceleration*Square(dt)));
 
+  return Delta;
+}
+
+inline v3
+DoEntityPhysics(entity *Entity, r32 Speed, r32 dt)
+{
+
+  v3 Delta = GetDelta(Entity->Velocity, Entity->Acceleration, Entity->Drag, Speed, dt);
   Entity->Velocity = (Delta/dt);
 
   return Delta;
 }
 
 void
-SpawnEntity( entity *Entity )
+SpawnEntity( model *GameModels, entity *Entity, entity_type Type)
 {
   Entity->State = EntityState_Spawned;
+  Entity->Type = Type;
+
+  switch (Type)
+  {
+    case EntityType_Player:
+    {
+      Entity->Model = GameModels[EntityType_Player];
+    } break;
+
+    case EntityType_Enemy:
+    {
+      Entity->Model = GameModels[EntityType_Enemy];
+    } break;
+
+    case EntityType_ParticleSystem:
+    {
+      Entity->Model = GameModels[EntityType_None];
+    } break;
+
+    InvalidDefaultCase;
+  }
 
   return;
 }
@@ -189,18 +218,21 @@ SpawnEnemy(World *world, entity **WorldEntities, entity *Enemy, random_series *E
 }
 
 GLOBAL_VARIABLE u64 LogicalFrame = 0;
+GLOBAL_VARIABLE u64 FrameDiff = 0;
 GLOBAL_VARIABLE r32 LogicalFrameTime = 0;
 
 inline void
 UpdateLogicalFrameCount(r32 dt)
 {
   LogicalFrameTime += dt;
+  FrameDiff = 0;
 
   if (LogicalFrameTime >= TargetFrameTime)
   {
     s32 FramesElapsed = LogicalFrameTime / TargetFrameTime;
     LogicalFrame += FramesElapsed;
     LogicalFrameTime -= (TargetFrameTime*FramesElapsed);
+    FrameDiff = FramesElapsed;
   }
 
   return;
@@ -215,10 +247,6 @@ GetLogicalFrameCount()
 inline u64
 GetLogicalFrameDiff()
 {
-  LOCAL_PERSIST u64 LastLogicalFrame;
-  u64 FrameDiff = LastLogicalFrame - GetLogicalFrameCount();
-  LastLogicalFrame = GetLogicalFrameCount();
-
   return FrameDiff;
 }
 
@@ -335,27 +363,32 @@ SpawnParticle(particle_system *System)
   r32 Y = RandomBilateral(&System->Entropy);
   r32 Z = RandomBilateral(&System->Entropy);
 
-  v3 Random = Normalize(V3(X,Y,Z));
+  v3 Random = V3(X,Y,Z);
 
   Particle->Offset = (Random*System->SpawnRegion.Radius) + System->SpawnRegion.Center;
-  Particle->Velocity = Normalize(Random + System->InitialVelocity);
-  Particle->Color = RED;
-  Particle->RemainingLifespan = 0.25f;
+  Particle->Velocity = Random*200;
+
+  u32 Rand = RandomU32(&System->Entropy) ;
+  u32 ColorIndex = Rand % PARTICLE_SYSTEM_COLOR_COUNT;
+
+  Particle->Color = System->Colors[ColorIndex];
+  Particle->RemainingLifespan = 0.35f;
 
   return;
 }
 
 void
-SpawnParticleSystem(particle_system *System, v3 InitialVelocity, r32 ParticleSpeed, aabb SpawnRegion)
+SpawnParticleSystem(particle_system *System, particle_system_init_params *Params)
 {
   Assert(Inactive(System));
 
   System->Active = True;
   System->Entropy.Seed = 547325;
 
-  System->ParticleSpeed = ParticleSpeed;
-  System->InitialVelocity = InitialVelocity;
-  System->SpawnRegion = SpawnRegion;
+  System->InitialVelocity = Params->InitialVelocity;
+  System->SpawnRegion = Params->SpawnRegion;
+
+  MemCopy( (u8*)&Params->Colors, (u8*)&System->Colors, sizeof(System->Colors) );
 
   return;
 }
@@ -390,7 +423,7 @@ SpawnPlayer(game_state *GameState, entity *Player )
       Health
     );
 
-  /* SpawnParticleSystem(Player->Emitter, V3(0,-1,0), 10.0f, aabb(Player->CollisionVolumeRadius/2, Player->CollisionVolumeRadius/2) ); */
+  // SpawnParticleSystem(Player->Emitter, V3(0,-1,0), 10.0f, aabb(Player->CollisionVolumeRadius/2, Player->CollisionVolumeRadius/2) );
 
   return;
 }
@@ -402,15 +435,12 @@ EntityWorldCollision(entity *Entity)
 
   switch (Entity->Type)
   {
-    case EntityType_Enemy:
-    case EntityType_PlayerProjectile:
-    case EntityType_EnemyProjectile:
-    case EntityType_Loot:
+    case EntityType_Player: {} break;
+
+    default:
     {
       Unspawn(Entity);
     } break;
-
-    default: {} break;
   }
 }
 
@@ -506,33 +536,29 @@ SimulateEnemy(game_state *GameState, entity *Enemy, entity *Player, r32 dt)
     Enemy->Acceleration = EnemyToPlayer; //Lerp(1.0f, Enemy->Acceleration, EnemyToPlayer);
   }
 
-  v3 Delta = GetEntityDelta(Enemy, ENEMY_SPEED, dt);
-  UpdateEntityP(GameState, Enemy, Delta);
 }
 
 void
-SimulateProjectile(game_state *GameState, entity *Projectile, r32 dt)
+SimulateParticleSystem(entity *SystemEntity, r32 dt, v3 EntityDelta)
 {
-  v3 Delta = GetEntityDelta(Projectile, PROJECTILE_SPEED, dt);
-  UpdateEntityP(GameState, Projectile, Delta);
-
-  return;
-}
-
-void
-SimulateParticleSystem(particle_system *System, r32 dt, v3 SystemDelta)
-{
+  particle_system *System = SystemEntity->Emitter;
   Assert(Active(System));
 
-  if ( (RandomUnilateral(&System->Entropy) > 0.5f) )
-    SpawnParticle(System);
+  if (GetLogicalFrameDiff() == 0)
+    return;
+
+  SpawnParticle(System);
 
   for ( s32 ParticleIndex = 0;
         ParticleIndex < System->ActiveParticles;
         ++ParticleIndex)
   {
     particle *Particle = &System->Particles[ParticleIndex];
-    Particle->Offset += (Particle->Velocity*dt*System->ParticleSpeed) + SystemDelta;
+
+    v3 Delta = GetDelta(Particle->Velocity, V3(0), V3(0), 1000, dt);
+    Particle->Velocity = (Delta/dt);
+
+    Particle->Offset += Delta;
 
     // Swap out last partcile for the current partcile and decrement
     if ( (Particle->RemainingLifespan -= dt) < 0)
@@ -559,28 +585,34 @@ SimulateEntities(game_state *GameState, entity *Player, r32 dt)
     if (!Spawned(Entity))
         continue;
 
+    v3 Delta = {};
+
     switch (Entity->Type)
     {
       case EntityType_Enemy:
       {
         SimulateEnemy(GameState, Entity, Player, dt);
+        Delta = DoEntityPhysics(Entity, ENEMY_SPEED, dt);
       } break;
 
       case EntityType_PlayerProjectile:
       case EntityType_EnemyProjectile:
       {
-        SimulateProjectile(GameState, Entity, dt);
+        Delta = DoEntityPhysics(Entity, PROJECTILE_SPEED, dt);
       } break;
 
       case EntityType_ParticleSystem:
       {
+        Delta = DoEntityPhysics(Entity, ENEMY_SPEED, dt);
       } break;
 
       InvalidDefaultCase;
     }
 
+    UpdateEntityP(GameState, Entity, Delta);
+
     if (Active(Entity->Emitter))
-      SimulateParticleSystem(Entity->Emitter, dt, V3(0,0,0) );
+      SimulateParticleSystem(Entity, dt, Delta );
   }
 
   return;
@@ -592,7 +624,7 @@ SimulatePlayer( game_state *GameState, entity *Player, hotkeys *Hotkeys, r32 dt 
   if (Spawned(Player))
   {
     Player->Acceleration = GetOrthographicInputs(Hotkeys);
-    v3 PlayerDelta = GetEntityDelta(Player, PLAYER_SPEED, dt) + (PLAYER_IMPULSE*dt);
+    v3 PlayerDelta = DoEntityPhysics(Player, PLAYER_SPEED, dt) + (PLAYER_IMPULSE*dt);
 
     Player->Drag = 0.005f*Player->Velocity;
 
@@ -619,7 +651,7 @@ SimulatePlayer( game_state *GameState, entity *Player, hotkeys *Hotkeys, r32 dt 
     }
 
     if (Active(Player->Emitter))
-      SimulateParticleSystem(Player->Emitter, dt, -1.0f*PlayerDelta);
+      SimulateParticleSystem(Player, dt, -1.0f*PlayerDelta);
   }
 
   return;
@@ -675,7 +707,12 @@ ProcessFrameEvent(game_state *GameState, frame_event *Event)
   {
     case FrameEvent_Spawn:
     {
-      SpawnEntity(Event->Entity);
+      SpawnEntity(GameState->Models, Event->Entity, Event->Entity->Type);
+    } break;
+
+    case FrameEvent_Deactivate:
+    {
+      Unspawn(Event->Entity);
     } break;
 
     case FrameEvent_Unspawn:
@@ -685,39 +722,22 @@ ProcessFrameEvent(game_state *GameState, frame_event *Event)
 
     case FrameEvent_Explosion:
     {
-      for ( s32 EntityIndex = 0;
-            EntityIndex < TOTAL_ENTITY_COUNT;
-            ++EntityIndex )
-      {
-        entity *SystemEntity = GameState->EntityTable[EntityIndex];
+      entity *Entity = Event->Entity;
 
-        if ( Destroyed(SystemEntity) || Unspawned(SystemEntity) )
-        {
-          canonical_position P = Canonical_Position();
+      SpawnEntity( GameState->Models, Entity, EntityType_ParticleSystem );
 
-          SpawnEntity(
-            SystemEntity,
-            &GameState->Models[ModelIndex_None],
-            EntityType_ParticleSystem,
+      particle_system_init_params Params = {};
+      Params.InitialVelocity = V3(0);
+      Params.SpawnRegion = aabb(V3(0), Entity->CollisionVolumeRadius);
+      Params.Colors[0] = ORANGE;
+      Params.Colors[1] = RED;
+      Params.Colors[2] = YELLOW;
+      Params.Colors[3] = ORANGE;
 
-            V3(0,0,0),
-            V3(0,0,0),
-            V3(0,0,0),
+      SpawnParticleSystem(Entity->Emitter, &Params );
 
-            &P,
-            V3(0,0,0)
-          );
-
-          SystemEntity->P = Event->P;
-
-          SpawnParticleSystem(SystemEntity->Emitter, V3(0,0,0), 30.0f, aabb(V3(0,0,0), V3(1,1,1)));
-
-          frame_event Event(SystemEntity, FrameEvent_Unspawn);
-          PushFrameEvent(&GameState->EventQueue, &Event, 15);
-
-          break;
-        }
-      }
+      frame_event Event(Entity, FrameEvent_Deactivate);
+      PushFrameEvent(&GameState->EventQueue, &Event, 15);
 
     } break;
 
