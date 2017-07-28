@@ -647,7 +647,7 @@ GetTheta(v3 P1, v3 P2, v3 Axis)
   Assert(LP2 != 0);
 
   float cosTheta = DotP1P2 / (LP1*LP2);
-  cosTheta = ClampMinus1To1(cosTheta);
+  cosTheta = ClampBilateral(cosTheta);
   float theta = acos( cosTheta );
 
   Assert(theta >= -1 || theta <= 1);

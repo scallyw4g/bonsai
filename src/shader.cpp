@@ -9,7 +9,6 @@ using namespace std;
 #include <string.h>
 
 #include <shader.hpp>
-#include <debug.h>
 
 
 u32

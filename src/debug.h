@@ -1,7 +1,6 @@
 #ifndef BONSAI_DEBUG_H
 #define BONSAI_DEBUG_H
 
-
 #include <iostream>
 #include <cstdarg>
 
@@ -245,6 +244,15 @@ Print_P( voxel_position P, const char* name)
 inline void
 Print_P( v3 P, const char* name)
 {
+  if ( Abs(P.x) < 0.000001f )
+    P.x = 0;
+
+  if ( Abs(P.y) < 0.000001f )
+    P.y = 0;
+
+  if ( Abs(P.z) < 0.000001f )
+    P.z = 0;
+
   Log(" %s %f %f %f \n", name, P.x, P.y, P.z );
 }
 

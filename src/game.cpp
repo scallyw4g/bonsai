@@ -13,42 +13,38 @@ DEBUG_GLOBAL World *GLOBAL_world = 0;
 
 #include <bonsai.cpp>
 
-inline r32
-SafeDivide0(r32 Dividend, r32 Divisor)
-{
-  r32 Result = 0.0f;
-
-  if (Divisor != 0.0f)
-    Result = Dividend/Divisor;
-
-  return Result;
-}
-
 inline v3
-SafeDivide0(v3 Dividend, r32 Divisor)
+PhysicsUpdate(physics *Physics, r32 dt, b32 Print = False)
 {
-  v3 Result = V3(0);
+  v3 Acceleration = SafeDivide0(Physics->Force, Physics->Mass); // (kg*m/s^2)/kg
 
-  if (Divisor != 0.0f)
-    Result = Dividend/Divisor;
+  // v3 Inerta = Physics->Mass*Acceleration; // kg*M/s^2
 
-  return Result;
-}
+  v3 DragForce = // kg*m/s^2
+    Physics->Force*Physics->Drag;
 
-inline v3
-PhysicsUpdate(physics *Physics, r32 dt)
-{
-  v3 Acceleration = SafeDivide0(Physics->Force, Physics->Mass);
+  Physics->Force -= DragForce;
 
-  v3 Delta = (Physics->Velocity*dt) + (0.5f*Acceleration*Square(dt));
+  Physics->Velocity -=                // M/s
+    Physics->Drag*Physics->Velocity;  // ??*M/s
 
-  Physics->Velocity = (Delta/dt) ;
+  v3 Delta = // M
+    (Physics->Velocity*dt) + (0.5f*Acceleration*Square(dt)); // (M/s * s) + (M/s^2) * (s^2)
 
-  r32 Momentum = Physics->Mass * Length(Physics->Velocity);
+  Physics->Velocity // M/s
+    = (Delta/dt) ;  // M/s
 
-  Physics->Velocity -= (Physics->Drag*Physics->Velocity * SafeDivide0(1, Momentum));
+  if (Print && (Length(Delta) > 0) )
+  {
+    Log("--");
+    Print(Delta);
+    Print(Physics->Velocity);
+    /* Print(DragForce); */
+    Print(Physics->Force);
+  }
 
-  return Delta*Physics->Speed;
+
+  return Delta*Physics->Speed; // M
 }
 
 void
@@ -190,6 +186,10 @@ InitCamera(Camera_Object* Camera, canonical_position P, float FocalLength)
 void
 SpawnEnemy(World *world, entity **WorldEntities, entity *Enemy, random_series *EnemyEntropy, model *GameModels)
 {
+#if DEBUG_PARTICLE_EFFECTS
+  return;
+#endif
+
   TIMED_FUNCTION();
   s32 X = (RandomPositiveS32(EnemyEntropy) % VR_X) - (RandomPositiveS32(EnemyEntropy) % VR_X);
   s32 Y = world->Center.y + (VR_Y / 2) - DEBUG_ENTITY_COLLISION_VOL_RADIUS.y;
@@ -203,8 +203,10 @@ SpawnEnemy(World *world, entity **WorldEntities, entity *Enemy, random_series *E
     Canonicalize(WORLD_CHUNK_DIM, Canonical_Position( V3(OffsetX,0,0), InitialCenter));
 
   physics Physics = {};
-  Physics.Force = V3(0, -1, 0);
+  Physics.Force = V3(0, 0, 0);
+  Physics.Mass = 1.0f;
   Physics.Speed = ENEMY_SPEED;
+  Physics.Drag = 0.01f;
 
   r32 Scale = 0.5f;
   r32 RateOfFire = 1.0f;
@@ -397,11 +399,8 @@ SpawnParticle(particle_system *System)
 
     Particle->Physics = System->ParticlePhysics;
     Particle->Physics.Velocity = Random;
+    // Particle->Physics.Force = Random*0.001f;
 
-    u32 Rand = RandomU32(&System->Entropy) ;
-    u32 ColorIndex = Rand % PARTICLE_SYSTEM_COLOR_COUNT;
-
-    Particle->Color = System->Colors[ColorIndex];
     Particle->RemainingLifespan = System->ParticleLifespan;
   }
 
@@ -442,16 +441,15 @@ SpawnExplosion(entity *Entity, random_series *Entropy)
   Params.Colors[4] = YELLOW;
   Params.Colors[5] = WHITE;
 
-  Params.SpawnRegion = aabb(V3(0), V3(0.5f));
+  Params.SpawnRegion = aabb(V3(0), V3(0.2f));
 
-  Params.EmissionLifespan = 0.15f;
-  Params.ParticleLifespan = 0.45f;
-  Params.EmissionChance = 5.5f;
+  Params.EmissionLifespan = 0.20f;
+  Params.ParticleLifespan = 0.55f;
+  Params.EmissionChance = 8.0f;
 
-
-  Params.Physics.Speed = 20;
-  Params.Physics.Drag = 0.04f;
-  Params.Physics.Mass = 3.50f;
+  Params.Physics.Speed = 55;
+  Params.Physics.Drag = 0.0f;
+  Params.Physics.Mass = 200.50f;
 
   SpawnParticleSystem(Entity->Emitter, &Params );
 }
@@ -460,13 +458,13 @@ void
 SpawnPlayer(game_state *GameState, entity *Player )
 {
   physics Physics = {};
-  Physics.Drag = 0.1f;
-  Physics.Mass = 1.0f;
-  Physics.Speed = 650;
+  Physics.Drag = 0.01f;
+  Physics.Mass = 0.5f;
+  Physics.Speed = 850;
 
   r32 Scale = 0.5f;
   r32 RateOfFire = 1.0f;
-  u32 Health = 3;
+  u32 Health = 300;
 
   canonical_position InitialP = { V3(0,0,0), GameState->world->Center - World_Position(0, (VR_Y/2)-14 , 0) };
 
@@ -576,10 +574,14 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
     ProcessCollisionRules(GameState, Entity, &GameState->Entropy);
   }
 
-
   Entity->P = Canonicalize(WorldChunkDim, Entity->P);
+
   collision_event AssertCollision = GetCollision(world, Entity );
-  Assert ( AssertCollision.didCollide == false );
+
+  // Entites that aren't moving can still be positioned outside the world if
+  // the player moves the world to do so
+  if (AssertCollision.didCollide )
+    EntityWorldCollision(Entity);
 
   return;
 }
@@ -593,7 +595,7 @@ SimulateEnemy(game_state *GameState, entity *Enemy, entity *Player, r32 dt)
   if ( EnemyP.y > PlayerP.y ) // Enemy is in front of Player
   {
     v3 EnemyToPlayer = Normalize(PlayerP - EnemyP);
-    Enemy->Physics.Force = EnemyToPlayer;
+    Enemy->Physics.Force += EnemyToPlayer*dt;
   }
 
 }
@@ -636,14 +638,21 @@ SimulateAndRenderParticleSystems(
 
     Particle->Offset += Delta;
 
+    r32 LastDiameter = (Particle->RemainingLifespan / System->ParticleLifespan) + 0.5f;
+
+    Particle->RemainingLifespan -= dt;
+
     r32 Diameter = (Particle->RemainingLifespan / System->ParticleLifespan) + 0.5f;
+    r32 DiameterDiff = LastDiameter-Diameter;
+
+    Particle->Offset += DiameterDiff;
+
     u8 ColorIndex = (u8)((Particle->RemainingLifespan / System->ParticleLifespan) * (PARTICLE_SYSTEM_COLOR_COUNT-0.0001f));
     Assert(ColorIndex >= 0 && ColorIndex <= PARTICLE_SYSTEM_COLOR_COUNT);
 
     DrawParticle(world, &SystemEntity->P, Camera, Particle, Diameter, System->Colors[ColorIndex]);
 
     // Swap out last partcile for the current partcile and decrement
-    Particle->RemainingLifespan -= dt;
 
     if ( Particle->RemainingLifespan < 0)
     {
@@ -706,9 +715,9 @@ SimulatePlayer( game_state *GameState, entity *Player, hotkeys *Hotkeys, r32 dt 
 {
   if (Spawned(Player))
   {
-    Player->Physics.Force = GetOrthographicInputs(Hotkeys);
+    Player->Physics.Force += GetOrthographicInputs(Hotkeys)*dt;
 
-    v3 PlayerDelta = PhysicsUpdate(&Player->Physics, dt) + (PLAYER_IMPULSE*dt);
+    v3 PlayerDelta = PhysicsUpdate(&Player->Physics, dt, True) + (PLAYER_IMPULSE*dt);
 
     world_position OriginalPlayerP = Player->P.WorldP;
     UpdateEntityP( GameState, Player, PlayerDelta );
@@ -731,6 +740,11 @@ SimulatePlayer( game_state *GameState, entity *Player, hotkeys *Hotkeys, r32 dt 
       SpawnProjectile(GameState, &Player->P, V3(0,1,0), EntityType_PlayerProton);
       Player->FireCooldown = Player->RateOfFire;
     }
+
+#if DEBUG_PARTICLE_EFFECTS
+    if (Inactive(Player->Emitter))
+      SpawnExplosion(Player, &GameState->Entropy);
+#endif
 
     SimulateAndRenderParticleSystems(GameState->world, GameState->Camera, Player, dt, -1.0f*PlayerDelta);
   }

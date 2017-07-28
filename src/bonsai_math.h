@@ -1,8 +1,8 @@
 #ifndef BONSAI_MATH_H
 #define BONSAI_MATH_H
 
-#include <bonsai.h>
-#include <debug.h>
+#include <bonsai_types.h>
+#include <platform.h>
 
 #if 0
 // Apparently we don't need these?
@@ -33,21 +33,44 @@ myFmodf( float F, float mod )
 }
 #endif
 
+
+inline r32
+SafeDivide0(r32 Dividend, r32 Divisor)
+{
+  r32 Result = 0.0f;
+
+  if (Divisor != 0.0f)
+    Result = Dividend/Divisor;
+
+  return Result;
+}
+
+inline v3
+SafeDivide0(v3 Dividend, r32 Divisor)
+{
+  v3 Result = V3(0);
+
+  if (Divisor != 0.0f)
+    Result = Dividend/Divisor;
+
+  return Result;
+}
+
 inline s32
 Min(s32 A, s32 B)
 {
-  s32 Result = min(A, B);
+  s32 Result = A < B ? A : B;
   return Result;
 }
 
 inline s32
 Max(s32 A, s32 B)
 {
-  s32 Result = max(A, B);
+  s32 Result = A > B ? A : B;
   return Result;
 }
 
-s32
+inline s32
 Abs(s32 Int)
 {
   s32 Result = Int;
@@ -55,7 +78,7 @@ Abs(s32 Int)
   return Result;
 }
 
-r32
+inline r32
 Abs(r32 F)
 {
   r32 Result = F;
@@ -71,7 +94,7 @@ Pow2(int p)
 }
 
 float
-ClampMinus1To1(float F)
+ClampBilateral(float F)
 {
   if (F > 1)
     F=1;

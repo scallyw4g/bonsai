@@ -14,6 +14,7 @@
 #endif
 
 #include <platform.h>
+#include <bonsai_math.h>
 #include <debug.h>
 
 #include <sys/types.h>

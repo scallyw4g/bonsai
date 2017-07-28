@@ -9,7 +9,6 @@
 
 #include <perlin.h>
 #include <stdio.h>
-#include <bonsai_types.h>
 #include <debug.h>
 #include <constants.hpp>
 
