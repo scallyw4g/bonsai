@@ -573,6 +573,7 @@ ProcessCollisionRule(
 
     case Collision_Player_Enemy:
     {
+      Log("Collision");
       entity *Player = First;
       entity *Enemy = Second;
 
@@ -650,7 +651,7 @@ GetCollision(entity **Entities, entity *Entity)
 }
 
 void
-ProcessCollisionRules(game_state *GameState, entity *Entity, random_series *Entropy)
+DoEntityCollisions(game_state *GameState, entity *Entity, random_series *Entropy)
 {
   for (s32 EntityIndex = 0;
       EntityIndex < TOTAL_ENTITY_COUNT;

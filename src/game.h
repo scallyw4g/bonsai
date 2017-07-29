@@ -41,7 +41,7 @@ struct frame_event
 
 struct event_queue
 {
-  s32 CurrentFrameIndex;
+  u64 CurrentFrameIndex;
   frame_event **Queue;
 
   frame_event *FirstFreeEvent;

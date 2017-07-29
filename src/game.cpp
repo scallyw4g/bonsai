@@ -571,7 +571,7 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
       EntityWorldCollision(Entity);
     }
 
-    ProcessCollisionRules(GameState, Entity, &GameState->Entropy);
+    DoEntityCollisions(GameState, Entity, &GameState->Entropy);
   }
 
   Entity->P = Canonicalize(WorldChunkDim, Entity->P);
@@ -978,19 +978,26 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
   SimulatePlayer(GameState, Player, Hotkeys, Plat->dt);
 
-  GameState->EventQueue.CurrentFrameIndex = GetLogicalFrameCount() % TOTAL_FRAME_EVENT_COUNT;
 
-  frame_event *Event =
-    GameState->EventQueue.Queue[GameState->EventQueue.CurrentFrameIndex];
-
-  while (Event)
+  event_queue *Queue = &GameState->EventQueue;
+  u32 LocalFrameDiff = FrameDiff;
+  while (LocalFrameDiff-- > 0)
   {
-    frame_event *NextEvent = Event->Next;
-    ProcessFrameEvent(GameState, Event);
-    Event = NextEvent;
+    Queue->CurrentFrameIndex = (Queue->CurrentFrameIndex+1) % TOTAL_FRAME_EVENT_COUNT;
+    frame_event *Event =
+      Queue->Queue[Queue->CurrentFrameIndex];
+
+    while (Event)
+    {
+      frame_event *NextEvent = Event->Next;
+      ProcessFrameEvent(GameState, Event);
+      Event = NextEvent;
+    }
+
+    GameState->EventQueue.Queue[GameState->EventQueue.CurrentFrameIndex] = 0;
   }
 
-  GameState->EventQueue.Queue[GameState->EventQueue.CurrentFrameIndex] = 0;
+  Assert(Queue->CurrentFrameIndex == (GetLogicalFrameCount() % TOTAL_FRAME_EVENT_COUNT));
 
   END_BLOCK("Sim");
 
