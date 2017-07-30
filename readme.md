@@ -17,7 +17,9 @@ Features:
 
 [X] Looped Game Recording/Playback
 
-[X] Hot Reload
+[X] Hot Reload Game Code
+
+[X] Particle Effects
 
 # Todo and Known Bugs:
 
@@ -29,6 +31,11 @@ Features:
 
 [ ] Shaders need to be pre-processed for the available version of GLSL
 
+
+-------------------------------------------------------------------------------
+## Particle System
+
+[ ] Turbulance
 
 -------------------------------------------------------------------------------
 ## World
