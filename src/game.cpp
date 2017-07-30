@@ -7,7 +7,6 @@ static gl_extensions *GL_Global;
 static const char *GlobalGlslVersion;
 
 GLOBAL_VARIABLE physics NullPhysics = {};
-DEBUG_GLOBAL World *GLOBAL_world = 0;
 
 #include <game.h>
 
@@ -34,6 +33,7 @@ PhysicsUpdate(physics *Physics, r32 dt, b32 Print = False)
   Physics->Velocity // M/s
     = (Delta/dt) ;  // M/s
 
+#if 0
   if (Print && (Length(Delta) > 0) )
   {
     Log("--");
@@ -42,6 +42,7 @@ PhysicsUpdate(physics *Physics, r32 dt, b32 Print = False)
     /* Print(DragForce); */
     Print(Physics->Force);
   }
+#endif
 
 
   return Delta*Physics->Speed; // M
@@ -236,46 +237,6 @@ SpawnEnemy(World *world, entity **WorldEntities, entity *Enemy, random_series *E
   return;
 }
 
-GLOBAL_VARIABLE u64 LogicalFrame = 0;
-GLOBAL_VARIABLE u64 FrameDiff = 0;
-GLOBAL_VARIABLE r32 LogicalFrameTime = 0;
-
-inline void
-UpdateLogicalFrameCount(r32 dt)
-{
-  LogicalFrameTime += dt;
-  FrameDiff = 0;
-
-  if (LogicalFrameTime >= TargetFrameTime)
-  {
-    s32 FramesElapsed = LogicalFrameTime / TargetFrameTime;
-    LogicalFrame += FramesElapsed;
-    LogicalFrameTime -= (TargetFrameTime*FramesElapsed);
-    FrameDiff = FramesElapsed;
-  }
-
-  return;
-}
-
-inline u64
-GetLogicalFrameCount()
-{
-  return LogicalFrame;
-}
-
-inline u64
-GetLogicalFrameDiff()
-{
-  return FrameDiff;
-}
-
-inline b32
-CurrentFrameIsLogicalFrame()
-{
-  b32 Result = (GetLogicalFrameDiff() > 0);
-  return Result;
-}
-
 entity *
 GetUnusedEntity(game_state *GameState)
 {
@@ -398,8 +359,7 @@ SpawnParticle(particle_system *System)
     Particle->Offset = (Random*System->SpawnRegion.Radius) + System->SpawnRegion.Center;
 
     Particle->Physics = System->ParticlePhysics;
-    Particle->Physics.Velocity = Random;
-    // Particle->Physics.Force = Random*0.001f;
+    Particle->Physics.Force = Normalize(Random);
 
     Particle->RemainingLifespan = System->ParticleLifespan;
   }
@@ -428,37 +388,39 @@ SpawnParticleSystem(particle_system *System, particle_system_init_params *Params
 }
 
 void
-SpawnExplosion(entity *Entity, random_series *Entropy)
+SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset)
 {
   particle_system_init_params Params = {};
 
   Params.Entropy.Seed = RandomU32(Entropy);
 
   Params.Colors[0] = BLACK;
-  Params.Colors[1] = BLACK;
-  Params.Colors[2] = DARK_DARK_RED;
+  Params.Colors[1] = DARK_DARK_RED;
+  Params.Colors[2] = DARK_RED;
   Params.Colors[3] = ORANGE;
   Params.Colors[4] = YELLOW;
   Params.Colors[5] = WHITE;
 
-  Params.SpawnRegion = aabb(V3(0), V3(0.2f));
+  Params.SpawnRegion = aabb(Offset, V3(0.2f));
 
   Params.EmissionLifespan = 0.20f;
   Params.ParticleLifespan = 0.55f;
   Params.EmissionChance = 8.0f;
 
   Params.Physics.Speed = 55;
-  Params.Physics.Drag = 0.0f;
-  Params.Physics.Mass = 200.50f;
+  Params.Physics.Drag = 0.2f;
+  Params.Physics.Mass = 0.1f;
 
   SpawnParticleSystem(Entity->Emitter, &Params );
+
+  return;
 }
 
 void
 SpawnPlayer(game_state *GameState, entity *Player )
 {
   physics Physics = {};
-  Physics.Drag = 0.01f;
+  Physics.Drag = 0.1f;
   Physics.Mass = 0.5f;
   Physics.Speed = 850;
 
@@ -637,12 +599,14 @@ SimulateAndRenderParticleSystems(
     v3 Delta = PhysicsUpdate(&Particle->Physics, dt);
 
     Particle->Offset += Delta;
+    Particle->Offset -= EntityDelta;
 
-    r32 LastDiameter = (Particle->RemainingLifespan / System->ParticleLifespan) + 0.5f;
+    r32 MinDiameter = 0.2f;
+    r32 LastDiameter = (Particle->RemainingLifespan / System->ParticleLifespan) + MinDiameter;
 
     Particle->RemainingLifespan -= dt;
 
-    r32 Diameter = (Particle->RemainingLifespan / System->ParticleLifespan) + 0.5f;
+    r32 Diameter = (Particle->RemainingLifespan / System->ParticleLifespan) + MinDiameter;
     r32 DiameterDiff = LastDiameter-Diameter;
 
     Particle->Offset += DiameterDiff;
@@ -819,8 +783,11 @@ ProcessFrameEvent(game_state *GameState, frame_event *Event)
     {
       entity *Entity = Event->Entity;
 
+      Entity->Physics.Velocity = Entity->Physics.Velocity * 0.25f;
+      v3 Offset = (Entity->Model.Dim/2.0f)*Entity->Scale;
+
       SpawnEntity( GameState->Models, Entity, EntityType_ParticleSystem );
-      SpawnExplosion(Entity, &GameState->Entropy);
+      SpawnExplosion(Entity, &GameState->Entropy, Offset);
     } break;
 
     InvalidDefaultCase;
@@ -887,16 +854,12 @@ GameInit( platform *Plat, memory_arena *GameMemory)
   Camera_Object *Camera = PUSH_STRUCT_CHECKED(Camera_Object, GameState->Memory, 1);
   InitCamera(Camera, CAMERA_INITIAL_P, 5000.0f);
 
-  debug_text_render_group *DebugRG = PUSH_STRUCT_CHECKED(debug_text_render_group, GameState->Memory, 1);
-  initText2D("Holstein.DDS", DebugRG);
-
   AssertNoGlErrors;
 
   GameState->Plat = Plat;
   GameState->Camera = Camera;
   GameState->RG = RG;
   GameState->SG = SG;
-  GameState->DebugRG = DebugRG;
   GameState->Entropy.Seed = DEBUG_NOISE_SEED;
 
 
@@ -948,8 +911,6 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
   World *world          = GameState->world;
 
-  GLOBAL_world = world;
-
   entity *Player        = GameState->Player;
   Camera_Object *Camera = GameState->Camera;
 
@@ -957,7 +918,6 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
   RenderGroup *RG                  = GameState->RG;
   ShadowRenderGroup *SG            = GameState->SG;
-  debug_text_render_group *DebugRG = GameState->DebugRG;
 
 #if DEBUG_DRAW_WORLD_AXIES
   DEBUG_DrawLine(world, V3(0,0,0), V3(10000, 0, 0), RED, 0.5f );
@@ -997,7 +957,8 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
     GameState->EventQueue.Queue[GameState->EventQueue.CurrentFrameIndex] = 0;
   }
 
-  Assert(Queue->CurrentFrameIndex == (GetLogicalFrameCount() % TOTAL_FRAME_EVENT_COUNT));
+  // FIXME(Jesse): This breaks hot code reloading
+  // Assert(Queue->CurrentFrameIndex == (GetLogicalFrameCount() % TOTAL_FRAME_EVENT_COUNT));
 
   END_BLOCK("Sim");
 
@@ -1092,11 +1053,7 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
   FlushRenderBuffers(Plat, world, RG, SG, Camera);
 
-  // DEBUG_FRAME_END(DebugRG);
-
-  char dtBuffer[32];
-  sprintf(dtBuffer, "%f", Plat->dt);
-  PrintDebugText( DebugRG, dtBuffer, 10, 500, 15);
+  // DEBUG_FRAME_END(Plat->dt);
 
   DrawWorldToFullscreenQuad(Plat, WorldChunkDim, RG, SG, Camera);
 

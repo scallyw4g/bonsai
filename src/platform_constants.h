@@ -19,6 +19,7 @@
 
 
 #define PLATFORM_STORAGE_SIZE Megabytes(256)
+#define TargetFrameTime 0.0166666666f
 
 /*
  *  Paths

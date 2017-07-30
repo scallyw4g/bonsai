@@ -1,6 +1,8 @@
 #ifndef BONSAI_DEBUG_CPP
 #define BONSAI_DEBUG_CPP
 
+#include <debug.h>
+
 GLuint LoadShaders(const char * vertex_file_path, const char * fragment_file_path);
 
 void
@@ -13,6 +15,17 @@ initText2D(const char *TexturePath, debug_text_render_group *RG)
 
   RG->Text2DShaderID = LoadShaders("TextVertexShader.vertexshader", "TextVertexShader.fragmentshader");
   RG->Text2DUniformID = GL_Global->glGetUniformLocation(RG->Text2DShaderID, "myTextureSampler");
+
+  return;
+}
+
+void
+InitDebugState( debug_state *DebugState, platform *Plat)
+{
+  DebugState->GetCycleCount = Plat->GetCycleCount;
+
+  DebugState->DebugRG = PUSH_STRUCT_CHECKED(debug_text_render_group, Plat->Memory, 1);
+  initText2D("Holstein.DDS", DebugState->DebugRG);
 
   return;
 }
@@ -116,30 +129,32 @@ DEBUG_GLOBAL u64 LastFrameCycleCount = 0;
 inline r32
 CalculateFramePercentage(debug_profile_entry *Entry, u64 CycleDelta)
 {
-  u64 TotalCycles = 0;
-  for (u32 EntryCycleIndex = 0;
-      EntryCycleIndex < DEBUG_FRAMES_TO_AVERAGE;
-      ++EntryCycleIndex)
-  {
-    TotalCycles += Entry->CycleCount[EntryCycleIndex];
-  }
-  u64 AvgCycles = TotalCycles/DEBUG_FRAMES_TO_AVERAGE;
-  r32 FramePerc = ((r32)AvgCycles/(r32)CycleDelta)*100;
+  u64 TotalCycles = Entry->CycleCount;
+  r32 FramePerc = (r32)((r64)TotalCycles/(r64)CycleDelta)*100;
 
   return FramePerc;
 }
 
 
+// FIXME(Jesse): The collation must happen before rendering, which must happen
+// outside any timed_function(), such as GameUpdateAndRender..
 void
-DebugFrameEnd(debug_text_render_group *RG)
+DebugFrameEnd(r32 dt)
 {
   TIMED_FUNCTION();
+
   debug_state *DebugState = GetDebugState();
+  debug_text_render_group *RG = DebugState->DebugRG;
 
   u64 CurrentFrameCycleCount = DebugState->GetCycleCount();
   u64 CycleDelta = CurrentFrameCycleCount - LastFrameCycleCount;
-
   LastFrameCycleCount = CurrentFrameCycleCount;
+
+  DEBUG_GLOBAL u64 MaxCycleCount = CycleDelta;
+  DEBUG_GLOBAL u64 MinCycleCount = CycleDelta;
+
+  MaxCycleCount = Max(CycleDelta, MaxCycleCount);
+  MinCycleCount = Min(CycleDelta, MinCycleCount);
 
   s32 FontSize = DEBUG_FONT_SIZE;
   s32 LinePadding = 3;
@@ -193,11 +208,31 @@ DebugFrameEnd(debug_text_render_group *RG)
       }
     }
 
-    char CycleCountBuffer[32];
-    sprintf(CycleCountBuffer, "%" PRIu64, CycleDelta);
-    PrintDebugText( RG, CycleCountBuffer, 0, AtY, FontSize).Max.x;
-    AtY += (FontSize + LinePadding);
-    AtY += (FontSize + LinePadding);
+
+    {
+      char CycleCountBuffer[32] = {};
+      sprintf(CycleCountBuffer, "%" PRIu64, MinCycleCount);
+      PrintDebugText( RG, CycleCountBuffer, 0, AtY, FontSize).Max.x;
+      AtY += (FontSize + LinePadding);
+      AtY += (FontSize + LinePadding);
+    }
+
+    {
+      char CycleCountBuffer[32] = {};
+      sprintf(CycleCountBuffer, "%" PRIu64, CycleDelta);
+      PrintDebugText( RG, CycleCountBuffer, 0, AtY, FontSize).Max.x;
+      AtY += (FontSize + LinePadding);
+      AtY += (FontSize + LinePadding);
+    }
+
+    {
+      char CycleCountBuffer[32] = {};
+      sprintf(CycleCountBuffer, "%" PRIu64, MaxCycleCount);
+      PrintDebugText( RG, CycleCountBuffer, 0, AtY, FontSize).Max.x;
+      AtY += (FontSize + LinePadding);
+      AtY += (FontSize + LinePadding);
+    }
+
   }
 
   {
@@ -241,8 +276,6 @@ DebugFrameEnd(debug_text_render_group *RG)
   }
 
 
-  DebugState->FrameIndex = (DebugState->FrameIndex+1) % DEBUG_FRAMES_TO_AVERAGE;
-
   // Reset for next frame
   for (s32 EntryIndex = 0;
       EntryIndex < DEBUG_STATE_ENTRY_COUNT;
@@ -255,8 +288,13 @@ DebugFrameEnd(debug_text_render_group *RG)
     Entry->MinPerc = Min(Entry->MinPerc, FramePerc);
 
     Entry->HitCount = 0;
-    Entry->CycleCount[DebugState->FrameIndex] = 0;
+    Entry->CycleCount = 0;
   }
+
+  char dtBuffer[32] = {};
+  sprintf(dtBuffer, "%f", dt);
+  PrintDebugText( RG, dtBuffer, 10, AtY, 15);
+
 }
 
 void

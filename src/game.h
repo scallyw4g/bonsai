@@ -56,7 +56,6 @@ struct game_state
 
   RenderGroup             *RG;
   ShadowRenderGroup       *SG;
-  debug_text_render_group *DebugRG;
 
   memory_arena *Memory;
 

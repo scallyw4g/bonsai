@@ -56,10 +56,38 @@ SafeDivide0(v3 Dividend, r32 Divisor)
   return Result;
 }
 
+inline r32
+Min(r32 A, r32 B)
+{
+  r32 Result = A < B ? A : B;
+  return Result;
+}
+
+inline u64
+Min(u64 A, u64 B)
+{
+  u64 Result = A < B ? A : B;
+  return Result;
+}
+
 inline s32
 Min(s32 A, s32 B)
 {
   s32 Result = A < B ? A : B;
+  return Result;
+}
+
+inline r32
+Max(r32 A, r32 B)
+{
+  r32 Result = A > B ? A : B;
+  return Result;
+}
+
+inline u64
+Max(u64 A, u64 B)
+{
+  u64 Result = A > B ? A : B;
   return Result;
 }
 

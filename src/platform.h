@@ -363,5 +363,48 @@ CopyArena(memory_arena *Src, memory_arena *Dest)
   return;
 }
 
+
+
+GLOBAL_VARIABLE u64 LogicalFrame = 0;
+GLOBAL_VARIABLE u64 FrameDiff = 0;
+GLOBAL_VARIABLE r32 LogicalFrameTime = 0;
+
+
+inline void
+UpdateLogicalFrameCount(r32 dt)
+{
+  LogicalFrameTime += dt;
+  FrameDiff = 0;
+
+  if (LogicalFrameTime >= TargetFrameTime)
+  {
+    s32 FramesElapsed = LogicalFrameTime / TargetFrameTime;
+    LogicalFrame += FramesElapsed;
+    LogicalFrameTime -= (TargetFrameTime*FramesElapsed);
+    FrameDiff = FramesElapsed;
+  }
+
+  return;
+}
+
+inline u64
+GetLogicalFrameCount()
+{
+  return LogicalFrame;
+}
+
+inline u64
+GetLogicalFrameDiff()
+{
+  return FrameDiff;
+}
+
+inline b32
+CurrentFrameIsLogicalFrame()
+{
+  b32 Result = (GetLogicalFrameDiff() > 0);
+  return Result;
+}
+
 #endif
 

@@ -1055,6 +1055,13 @@ operator+=(canonical_position& A, float B)
 }
 
 inline canonical_position&
+operator+=(canonical_position& A, v3 B)
+{
+	A.Offset += B;
+  return(A);
+}
+
+inline canonical_position&
 operator+=(canonical_position& A, canonical_position B)
 {
   A.Offset += B.Offset;

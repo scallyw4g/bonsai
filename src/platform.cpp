@@ -22,8 +22,6 @@
 
 GLOBAL_VARIABLE s64 LastGameLibTime = 0;
 GLOBAL_VARIABLE game_thread_callback_proc GameThreadCallback;
-
-
 b32
 GameLibIsNew(const char *LibPath)
 {
@@ -513,8 +511,10 @@ main(s32 NumArgs, char ** Args)
     {
       CloseLibrary(GameLib);
       GameLib = OpenLibrary(GAME_LIB);
+
       GameUpdateAndRender = (game_main_proc)GetProcFromLib(GameLib, "GameUpdateAndRender");
       InitGlobals = (game_init_globals_proc)GetProcFromLib(GameLib, "InitGlobals");
+      GameThreadCallback = (game_thread_callback_proc)GetProcFromLib(GameLib, "GameThreadCallback");
 
       InitGlobals(&Plat);
     }
@@ -527,6 +527,7 @@ main(s32 NumArgs, char ** Args)
     DoDebugFrameRecord(Debug_RecordingState, &Hotkeys, &MainMemory);
 
     GameUpdateAndRender(&Plat, GameState, &Hotkeys);
+
     BonsaiSwapBuffers(&Os);
   }
 

@@ -8,12 +8,11 @@ using namespace std;
 
 #define DEBUG_STATE_ENTRY_COUNT 32
 
+void DebugFrameEnd(r32 dt);
 
-
-#define DEBUG_FRAMES_TO_AVERAGE 32
 struct debug_profile_entry
 {
-  u64 CycleCount[DEBUG_FRAMES_TO_AVERAGE];
+  u64 CycleCount;
   u32 HitCount;
 
   r32 MaxPerc;
@@ -22,11 +21,23 @@ struct debug_profile_entry
   const char* FuncName;
 };
 
+struct debug_text_render_group
+{
+  u32 Text2DTextureID;
+  u32 Text2DVertexBufferID;
+  u32 Text2DUVBufferID;
+
+  u32 Text2DShaderID;
+  u32 Text2DUniformID;
+};
+
 struct debug_state
 {
   u64 (*GetCycleCount)(void);
-  u32 FrameIndex;
+  u64 FrameCount;
   debug_profile_entry Entries[DEBUG_STATE_ENTRY_COUNT];
+
+  debug_text_render_group *DebugRG;
 };
 
 enum debug_recording_mode
@@ -54,15 +65,8 @@ DEBUG_GLOBAL debug_state GlobalDebugState;
 #define TIMED_FUNCTION() debug_timed_function FunctionTimer(__COUNTER__, __FUNCTION_NAME__)
 #define TIMED_BLOCK(BlockName) { debug_timed_function BlockTimer(__COUNTER__, BlockName)
 #define END_BLOCK(BlockName) }
-#define DEBUG_FRAME_END(DebugRG) DebugFrameEnd(DebugRG)
+#define DEBUG_FRAME_END(...) DebugFrameEnd(__VA_ARGS__)
 
-
-void
-InitDebugState( debug_state *DebugState, platform *Plat)
-{
-  DebugState->GetCycleCount = Plat->GetCycleCount;
-  return;
-}
 
 inline debug_state*
 GetDebugState() { return &GlobalDebugState; }
@@ -93,21 +97,11 @@ struct debug_timed_function
     EndingCycleCount = DebugState->GetCycleCount();
     debug_profile_entry *Entry = &DebugState->Entries[FunctionIndex];
 
-    Entry->CycleCount[DebugState->FrameIndex] += (EndingCycleCount - StartingCycleCount);
+    Entry->CycleCount += (EndingCycleCount - StartingCycleCount);
 
     Entry->HitCount++;
     Entry->FuncName = FuncName;
   }
-};
-
-struct debug_text_render_group
-{
-  u32 Text2DTextureID;
-  u32 Text2DVertexBufferID;
-  u32 Text2DUVBufferID;
-
-  u32 Text2DShaderID;
-  u32 Text2DUniformID;
 };
 
 void Log(const char* fmt...)

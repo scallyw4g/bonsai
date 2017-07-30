@@ -2327,6 +2327,9 @@ DrawEntity(
 
   if (Model && Spawned(Entity))
   {
+    /* v3 RenderP = GetRenderP(world->ChunkDim, Entity->P, Camera) + ((Entity->Model.Dim/2.0f) * Entity->Scale); */
+    /* DEBUG_DrawPointMarker( world, RenderP , RED, 2.0f ) ; */
+
 #if DEBUG_DRAW_COLLISION_VOLUMES
     aabb AABB = GetRenderSpaceAABB(world->ChunkDim, Entity, Camera);
     DEBUG_DrawAABB(world, AABB, Quaternion(), PINK);

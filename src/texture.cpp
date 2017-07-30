@@ -1,3 +1,6 @@
+#ifndef BONSAI_TEXTURE_H
+#define BONSAI_TEXTURE_H
+
 #include <stdio.h>
 #include <string.h>
 
@@ -86,7 +89,9 @@ GLuint loadBMP_custom(const char * imagepath){
 #define FOURCC_DXT3 0x33545844 // Equivalent to "DXT3" in ASCII
 #define FOURCC_DXT5 0x35545844 // Equivalent to "DXT5" in ASCII
 
-GLuint loadDDS(const char * imagepath){
+u32
+loadDDS(const char * imagepath)
+{
 
   u32 header[124];
 
@@ -146,7 +151,7 @@ GLuint loadDDS(const char * imagepath){
   unsigned int offset = 0;
 
   // Create one OpenGL texture
-  GLuint textureID;
+  u32 textureID;
   glGenTextures(1, &textureID);
 
   // "Bind" the newly created texture : all future texture functions will modify this texture
@@ -158,7 +163,7 @@ GLuint loadDDS(const char * imagepath){
   for (unsigned int level = 0; level < mipMapCount && (width || height); ++level)
   {
     unsigned int size = ((width+3)/4)*((height+3)/4)*blockSize;
-    GL_Global->glCompressedTexImage2D(GL_TEXTURE_2D, level, format, width, height,
+    glCompressedTexImage2D(GL_TEXTURE_2D, level, format, width, height,
       0, size, buffer + offset);
 
     offset += size;
@@ -174,6 +179,6 @@ GLuint loadDDS(const char * imagepath){
   free(buffer);
 
   return textureID;
-
-
 }
+
+#endif
