@@ -195,6 +195,13 @@ struct os
   b32 ContinueRunning;
 };
 
+struct logical_frame_state
+{
+  u64 LogicalFrame;
+  u64 FrameDiff;
+  r32 LogicalFrameTime;
+};
+
 void
 DumpGlErrorEnum(int Error)
 {
@@ -365,44 +372,27 @@ CopyArena(memory_arena *Src, memory_arena *Dest)
 
 
 
-GLOBAL_VARIABLE u64 LogicalFrame = 0;
-GLOBAL_VARIABLE u64 FrameDiff = 0;
-GLOBAL_VARIABLE r32 LogicalFrameTime = 0;
-
-
 inline void
-UpdateLogicalFrameCount(r32 dt)
+UpdateLogicalFrameCount(logical_frame_state *State, r32 dt)
 {
-  LogicalFrameTime += dt;
-  FrameDiff = 0;
+  State->LogicalFrameTime += dt;
+  State->FrameDiff = 0;
 
-  if (LogicalFrameTime >= TargetFrameTime)
+  if (State->LogicalFrameTime >= TargetFrameTime)
   {
-    s32 FramesElapsed = LogicalFrameTime / TargetFrameTime;
-    LogicalFrame += FramesElapsed;
-    LogicalFrameTime -= (TargetFrameTime*FramesElapsed);
-    FrameDiff = FramesElapsed;
+    s32 FramesElapsed = State->LogicalFrameTime / TargetFrameTime;
+    State->LogicalFrame += FramesElapsed;
+    State->LogicalFrameTime -= (TargetFrameTime*FramesElapsed);
+    State->FrameDiff = FramesElapsed;
   }
 
   return;
 }
 
-inline u64
-GetLogicalFrameCount()
-{
-  return LogicalFrame;
-}
-
-inline u64
-GetLogicalFrameDiff()
-{
-  return FrameDiff;
-}
-
 inline b32
-CurrentFrameIsLogicalFrame()
+CurrentFrameIsLogicalFrame(logical_frame_state *State)
 {
-  b32 Result = (GetLogicalFrameDiff() > 0);
+  b32 Result = (State->FrameDiff > 0);
   return Result;
 }
 

@@ -263,7 +263,7 @@ SpawnEnemies(game_state *GameState)
   TIMED_FUNCTION();
   entity **Entities = GameState->EntityTable;
 
-  if (!CurrentFrameIsLogicalFrame())
+  if (!CurrentFrameIsLogicalFrame(&GameState->Frame))
     return;
 
   s32 EnemySpawnEnrtopy = (RandomU32(&GameState->Entropy) % ENEMY_SPAWN_RATE);
@@ -571,13 +571,14 @@ ShouldEmit(particle_system *System)
 
 void
 SimulateAndRenderParticleSystems(
-    World *world,
-    Camera_Object *Camera,
+    game_state *GameState,
     entity *SystemEntity,
     r32 dt,
     v3 EntityDelta
   )
 {
+  World *world = GameState->world;
+  Camera_Object *Camera = GameState->Camera;
   particle_system *System = SystemEntity->Emitter;
 
   if (Inactive(System))
@@ -585,7 +586,7 @@ SimulateAndRenderParticleSystems(
 
   System->EmissionLifespan -= dt;
 
-  if ( CurrentFrameIsLogicalFrame() && ShouldEmit(System) )
+  if ( CurrentFrameIsLogicalFrame(&GameState->Frame) && ShouldEmit(System) )
   {
     while (SpawnParticle(System));
   }
@@ -668,7 +669,7 @@ SimulateEntities(game_state *GameState, entity *Player, r32 dt)
 
     UpdateEntityP(GameState, Entity, Delta);
 
-    SimulateAndRenderParticleSystems(GameState->world, GameState->Camera, Entity, dt, Delta );
+    SimulateAndRenderParticleSystems(GameState, Entity, dt, Delta );
   }
 
   return;
@@ -710,7 +711,7 @@ SimulatePlayer( game_state *GameState, entity *Player, hotkeys *Hotkeys, r32 dt 
       SpawnExplosion(Player, &GameState->Entropy);
 #endif
 
-    SimulateAndRenderParticleSystems(GameState->world, GameState->Camera, Player, dt, -1.0f*PlayerDelta);
+    SimulateAndRenderParticleSystems(GameState, Player, dt, -1.0f*PlayerDelta);
   }
 
   return;
@@ -905,7 +906,7 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 {
   TIMED_FUNCTION();
 
-  UpdateLogicalFrameCount(Plat->dt);
+  UpdateLogicalFrameCount(&GameState->Frame, Plat->dt);
 
   GL_Global = &Plat->GL;
 
@@ -940,8 +941,9 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
 
   event_queue *Queue = &GameState->EventQueue;
-  u32 LocalFrameDiff = FrameDiff;
+  u32 LocalFrameDiff = GameState->Frame.FrameDiff;
   while (LocalFrameDiff-- > 0)
+
   {
     Queue->CurrentFrameIndex = (Queue->CurrentFrameIndex+1) % TOTAL_FRAME_EVENT_COUNT;
     frame_event *Event =
@@ -957,8 +959,7 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
     GameState->EventQueue.Queue[GameState->EventQueue.CurrentFrameIndex] = 0;
   }
 
-  // FIXME(Jesse): This breaks hot code reloading
-  // Assert(Queue->CurrentFrameIndex == (GetLogicalFrameCount() % TOTAL_FRAME_EVENT_COUNT));
+  Assert(Queue->CurrentFrameIndex == (GameState->Frame.LogicalFrame % TOTAL_FRAME_EVENT_COUNT));
 
   END_BLOCK("Sim");
 

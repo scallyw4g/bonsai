@@ -65,6 +65,8 @@ struct game_state
 
   event_queue EventQueue;
 
+  logical_frame_state Frame;
+
   entity *EntityTable[TOTAL_ENTITY_COUNT];
 };
 
