@@ -782,7 +782,11 @@ ProcessFrameEvent(game_state *GameState, frame_event *Event)
     {
       entity *Entity = Event->Entity;
 
-      Entity->Physics.Velocity = Entity->Physics.Velocity * 0.25f;
+      r32 PhysicsMultiple = 0.2f;
+      Entity->Physics.Velocity = Entity->Physics.Velocity * PhysicsMultiple;
+      Entity->Physics.Speed = 0;
+      Entity->Physics.Force = V3(0);
+
       v3 Offset = (Entity->Model.Dim/2.0f)*Entity->Scale;
 
       SpawnEntity( GameState->Models, Entity, EntityType_ParticleSystem );

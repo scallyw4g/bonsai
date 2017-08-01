@@ -481,7 +481,6 @@ Deactivate(particle_system *System)
   Assert(System->EmissionLifespan <= 0);
   Assert(System->ActiveParticles <= 0);
 
-
   *System = NullSystem;
 
   return;

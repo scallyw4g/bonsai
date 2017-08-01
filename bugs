@@ -1,3 +1,11 @@
+# Aug 1 2017
+
+15m - closed - particle system - Systems sometimes unspawning early
+Parent entities sometimes got to the end of the world before the whole effect
+had time to complete, causing it to disappear in a jarring fashon.
+
+1h - closed - physics - Had inconsistent physics update after refactor with variable frame rate
+
 # Jul 30 2017
 
 1h - closed - hot reload - some globals in game code causing problems. Moved into game_state.
