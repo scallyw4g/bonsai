@@ -396,14 +396,14 @@ SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset)
   Params.Colors[4] = YELLOW;
   Params.Colors[5] = WHITE;
 
-  Params.SpawnRegion = aabb(Offset, V3(0.2f));
+  Params.SpawnRegion = aabb(Offset, V3(1.2f));
 
   Params.EmissionLifespan = 0.10f;
   Params.ParticleLifespan = 0.55f;
   Params.EmissionChance = 8.0f;
 
   Params.Physics.Speed = 18;
-  Params.Physics.Drag = 1.2f;
+  Params.Physics.Drag = 2.0f;
   Params.Physics.Mass = 0.3f;
 
   SpawnParticleSystem(Entity->Emitter, &Params );
@@ -782,7 +782,7 @@ ProcessFrameEvent(game_state *GameState, frame_event *Event)
     {
       entity *Entity = Event->Entity;
 
-      r32 PhysicsMultiple = 0.2f;
+      r32 PhysicsMultiple = 0.15f;
       Entity->Physics.Velocity = Entity->Physics.Velocity * PhysicsMultiple;
       Entity->Physics.Speed = 0;
       Entity->Physics.Force = V3(0);
