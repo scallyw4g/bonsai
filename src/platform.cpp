@@ -519,9 +519,6 @@ main(s32 NumArgs, char ** Args)
       InitGlobals(&Plat);
     }
 
-    if (Plat.dt > 0.016666f)
-      Plat.dt = 0.01666666f;
-
     BindHotkeysToInput(&Hotkeys, &Plat.Input);
 
     DoDebugFrameRecord(Debug_RecordingState, &Hotkeys, &MainMemory);

@@ -46,6 +46,18 @@ SafeDivide0(r32 Dividend, r32 Divisor)
 }
 
 inline v3
+SafeDivide(v3 Dividend, r32 Divisor)
+{
+  v3 Result = Dividend;
+
+  if (Divisor != 0.0f)
+    Result = Dividend/Divisor;
+
+  return Result;
+}
+
+#if 0
+inline v3
 SafeDivide0(v3 Dividend, r32 Divisor)
 {
   v3 Result = V3(0);
@@ -55,6 +67,7 @@ SafeDivide0(v3 Dividend, r32 Divisor)
 
   return Result;
 }
+#endif
 
 inline r32
 Min(r32 A, r32 B)

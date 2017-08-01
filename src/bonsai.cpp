@@ -478,6 +478,10 @@ inline void
 Deactivate(particle_system *System)
 {
   particle_system NullSystem = {};
+  Assert(System->EmissionLifespan <= 0);
+  Assert(System->ActiveParticles <= 0);
+
+
   *System = NullSystem;
 
   return;

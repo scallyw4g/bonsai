@@ -80,7 +80,7 @@
 #define PROJECTILE_SPEED 400
 
 #define ENEMY_DRAG 0
-#define ENEMY_SPAWN_RATE 60
+#define ENEMY_SPAWN_RATE 30
 
 #define LOOT_CHANCE 1
 

@@ -15,23 +15,18 @@ GLOBAL_VARIABLE physics NullPhysics = {};
 inline v3
 PhysicsUpdate(physics *Physics, r32 dt, b32 Print = False)
 {
-  v3 Acceleration = SafeDivide0(Physics->Force, Physics->Mass); // (kg*m/s^2)/kg
+  v3 Acceleration = SafeDivide(Physics->Force*Physics->Speed, Physics->Mass);
 
-  // v3 Inerta = Physics->Mass*Acceleration; // kg*M/s^2
+  Physics->Force -=
+    Physics->Force*Physics->Drag*dt;
 
-  v3 DragForce = // kg*m/s^2
-    Physics->Force*Physics->Drag;
+  Physics->Velocity -=
+    Physics->Velocity*Physics->Drag*dt;
 
-  Physics->Force -= DragForce;
+  v3 Delta =
+    (Physics->Velocity*dt) + (0.5f*Acceleration*Square(dt));
 
-  Physics->Velocity -=                // M/s
-    Physics->Drag*Physics->Velocity;  // ??*M/s
-
-  v3 Delta = // M
-    (Physics->Velocity*dt) + (0.5f*Acceleration*Square(dt)); // (M/s * s) + (M/s^2) * (s^2)
-
-  Physics->Velocity // M/s
-    = (Delta/dt) ;  // M/s
+  Physics->Velocity = (Delta/dt);
 
 #if 0
   if (Print && (Length(Delta) > 0) )
@@ -45,7 +40,7 @@ PhysicsUpdate(physics *Physics, r32 dt, b32 Print = False)
 #endif
 
 
-  return Delta*Physics->Speed; // M
+  return Delta;
 }
 
 void
@@ -294,8 +289,8 @@ SpawnProjectile(game_state *GameState, canonical_position *P, v3 Velocity, entit
       v3 CollisionVolumeRadius = V3(PROJECTILE_AABB)/2;
 
       physics Physics = {};
-      Physics.Velocity = V3(0,1,0);
-      Physics.Speed = PROJECTILE_SPEED;
+      Physics.Velocity = V3(0,1000,0);
+      Physics.Speed = 1000;
 
       r32 Scale = 1.0f;
       r32 RateOfFire = 1.0f;
@@ -403,13 +398,13 @@ SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset)
 
   Params.SpawnRegion = aabb(Offset, V3(0.2f));
 
-  Params.EmissionLifespan = 0.20f;
+  Params.EmissionLifespan = 0.10f;
   Params.ParticleLifespan = 0.55f;
   Params.EmissionChance = 8.0f;
 
-  Params.Physics.Speed = 55;
-  Params.Physics.Drag = 0.2f;
-  Params.Physics.Mass = 0.1f;
+  Params.Physics.Speed = 18;
+  Params.Physics.Drag = 1.2f;
+  Params.Physics.Mass = 0.3f;
 
   SpawnParticleSystem(Entity->Emitter, &Params );
 
@@ -420,9 +415,9 @@ void
 SpawnPlayer(game_state *GameState, entity *Player )
 {
   physics Physics = {};
-  Physics.Drag = 0.1f;
-  Physics.Mass = 0.5f;
-  Physics.Speed = 850;
+  Physics.Drag = 5.0f;
+  Physics.Mass = 5.0f;
+  Physics.Speed = 10000;
 
   r32 Scale = 0.5f;
   r32 RateOfFire = 1.0f;
@@ -602,7 +597,7 @@ SimulateAndRenderParticleSystems(
     Particle->Offset += Delta;
     Particle->Offset -= EntityDelta;
 
-    r32 MinDiameter = 0.2f;
+    r32 MinDiameter = 0.3f;
     r32 LastDiameter = (Particle->RemainingLifespan / System->ParticleLifespan) + MinDiameter;
 
     Particle->RemainingLifespan -= dt;
@@ -708,10 +703,13 @@ SimulatePlayer( game_state *GameState, entity *Player, hotkeys *Hotkeys, r32 dt 
 
 #if DEBUG_PARTICLE_EFFECTS
     if (Inactive(Player->Emitter))
-      SpawnExplosion(Player, &GameState->Entropy);
+    {
+      v3 Offset = (Player->Model.Dim/2.0f)*Player->Scale;
+      SpawnExplosion(Player, &GameState->Entropy, Offset);
+    }
 #endif
 
-    SimulateAndRenderParticleSystems(GameState, Player, dt, -1.0f*PlayerDelta);
+    SimulateAndRenderParticleSystems(GameState, Player, dt, PlayerDelta);
   }
 
   return;
@@ -1054,7 +1052,7 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
   FlushRenderBuffers(Plat, world, RG, SG, Camera);
 
-  // DEBUG_FRAME_END(Plat->dt);
+  /* DEBUG_FRAME_END(Plat->dt); */
 
   DrawWorldToFullscreenQuad(Plat, WorldChunkDim, RG, SG, Camera);
 
