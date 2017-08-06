@@ -47,15 +47,6 @@ InitChunkPerlin( game_state *GameState, world_chunk *WorldChunk )
 
         Assert( NotSet(&chunk->Voxels[i], Voxel_Filled) );
 
-#if DEBUG_WORLD_GENERATION
-        if ( (y == 0 && WorldChunk->WorldP.y == 3) )
-        {
-          chunk->Voxels[i].Data = SetFlag(chunk->Voxels[i].Data, Voxel_Filled);
-        }
-#else
-        v3 NoiseInputs =
-          ( ( V3(x,y,z) + (WORLD_CHUNK_DIM*(WorldChunk->WorldP))) ) / NOISE_FREQUENCY;
-
         double InX = (double)NoiseInputs.x;
         double InY = (double)NoiseInputs.y;
         double InZ = (double)NoiseInputs.z;

@@ -575,6 +575,7 @@ SimulateAndRenderParticleSystems(
   World *world = GameState->world;
   Camera_Object *Camera = GameState->Camera;
   particle_system *System = SystemEntity->Emitter;
+  noise_3d *Turb = GameState->Turb;
 
   if (Inactive(System))
     return;
@@ -664,7 +665,7 @@ SimulateEntities(game_state *GameState, entity *Player, r32 dt)
 
     UpdateEntityP(GameState, Entity, Delta);
 
-    SimulateAndRenderParticleSystems(GameState, Entity, dt, Delta );
+    SimulateAndRenderParticleSystems(GameState, Entity, dt, Delta);
   }
 
   return;
@@ -800,6 +801,13 @@ ProcessFrameEvent(game_state *GameState, frame_event *Event)
   return;
 }
 
+void
+AllocateAndInitNoise3d(game_state *GameState, noise_3d *Noise, chunk_dimension Dim)
+{
+  Noise->Dim = Dim;
+  Noise->Voxels = PUSH_STRUCT_CHECKED(voxel, GameState->Memory, Volume(Dim));
+}
+
 EXPORT void
 GameThreadCallback(work_queue_entry *Entry)
 {
@@ -832,6 +840,7 @@ GameInit( platform *Plat, memory_arena *GameMemory)
 
   InitGlobals(Plat);
 
+
   srand(DEBUG_NOISE_SEED);
   PerlinNoise Noise(rand());
   GlobalNoise = Noise;
@@ -844,6 +853,9 @@ GameInit( platform *Plat, memory_arena *GameMemory)
 
   RenderGroup *RG = PUSH_STRUCT_CHECKED(RenderGroup, GameState->Memory, 1);
   if (!InitializeRenderGroup(Plat, RG)) { Error("Initializing RenderGroup"); return False; }
+
+  GameState->Turb = PUSH_STRUCT_CHECKED(noise_3d, GameState->Memory, 1);
+  AllocateAndInitNoise3d(&GameState->Turb, Chunk_Dimension(8,8,8) );
 
   // This needs to be off for shadow maps to work correctly
   /* glEnable(GL_CULL_FACE); */

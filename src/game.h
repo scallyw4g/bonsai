@@ -61,6 +61,8 @@ struct game_state
 
   model   *Models;
 
+  noise_3d *Turb;
+
   random_series Entropy;
 
   event_queue EventQueue;

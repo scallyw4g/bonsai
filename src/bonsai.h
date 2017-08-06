@@ -118,6 +118,12 @@ struct mesh_buffer_target
   r32* NormalData;
 };
 
+struct noise_3d
+{
+  voxel *Voxels;
+  chunk_dimension Dim;
+};
+
 struct chunk_data
 {
   chunk_flag Flags;
