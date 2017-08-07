@@ -908,6 +908,9 @@ GameInit( platform *Plat, memory_arena *GameMemory)
     Next = &FreeEvent->Next;
   }
 
+  GameState->FolieTable =
+    PUSH_STRUCT_CHECKED(aabb, GameState->Memory, TOTAL_FOLIE_COUNT);
+
   /* AllocateParticleSystems(Plat, GameState); */
 
   SpawnPlayer(GameState, GameState->Player );
@@ -933,6 +936,39 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
   RenderGroup *RG                  = GameState->RG;
   ShadowRenderGroup *SG            = GameState->SG;
+
+
+  r32 VrHalfDim = (VR_X*CD_X/2.0f);
+
+  v3 WorldCenterRenderP = GetRenderP(world->ChunkDim, world->Center, Camera);
+
+  aabb *Floor = GameState->FolieTable + 0;
+  aabb *LeftWall = GameState->FolieTable + 1;
+  aabb *RightWall = GameState->FolieTable + 2;
+
+  r32 YOffset = 300.0f;
+  r32 ZOffset = 25.0f;
+  r32 WallThickness = 0.5f;
+  {
+    v3 Center = WorldCenterRenderP -
+                  V3(VrHalfDim, YOffset, ZOffset);
+
+    *Floor = aabb(Center, V3(world->ChunkDim.x+VrHalfDim, 1000.0f, WallThickness));
+  }
+
+  {
+    v3 Center = WorldCenterRenderP -
+                  V3(VrHalfDim+(2.0f*WallThickness), YOffset, ZOffset);
+
+    *LeftWall = aabb(Center, V3(WallThickness, 1000.0f, ZOffset));
+  }
+  {
+    v3 Center = WorldCenterRenderP -
+                  V3(-VrHalfDim, YOffset, 25.0f) + world->ChunkDim;
+
+    *RightWall = aabb(Center, V3(WallThickness, 1000.0f, ZOffset));
+  }
+
 
 #if DEBUG_DRAW_WORLD_AXIES
   DEBUG_DrawLine(world, V3(0,0,0), V3(10000, 0, 0), RED, 0.5f );
@@ -1063,6 +1099,14 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
     DrawEntity(Plat, world, Enemy, Camera, RG, SG);
   }
   END_BLOCK("Entities");
+
+  for ( s32 FolieIndex = 0;
+      FolieIndex < TOTAL_FOLIE_COUNT;
+      ++FolieIndex)
+  {
+    aabb *AABB = GameState->FolieTable + FolieIndex;
+    DrawFolie(world, Camera, AABB);
+  }
 
   DrawEntity(Plat, world, GameState->Player, Camera, RG, SG);
 

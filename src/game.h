@@ -69,6 +69,8 @@ struct game_state
 
   logical_frame_state Frame;
 
+  aabb *FolieTable;
+
   entity *EntityTable[TOTAL_ENTITY_COUNT];
 };
 

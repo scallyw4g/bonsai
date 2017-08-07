@@ -222,6 +222,14 @@ Print_P( r32 N, const char* name)
 }
 
 inline void
+Print_P( aabb P, const char* name)
+{
+  Log(" -- %s", name);
+  Log(" Center: %f %f %f ", P.Center.x, P.Center.y, P.Center.z );
+  Log(" Radius: %f %f %f \n", P.Radius.x, P.Radius.y, P.Radius.z );
+}
+
+inline void
 Print_P( canonical_position P, const char* name)
 {
   Log(" -- %s", name);

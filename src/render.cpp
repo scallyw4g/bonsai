@@ -12,15 +12,15 @@
 #include <colors.h>
 
 inline void
-RightFaceVertexData( v3 MinP, r32 Diameter, r32* Result)
+RightFaceVertexData( v3 MinP, v3 Diameter, r32* Result)
 {
   r32 Temp[] = {
-    MinP.x + Diameter , MinP.y +  Diameter , MinP.z +  Diameter ,
-    MinP.x + Diameter , MinP.y             , MinP.z             ,
-    MinP.x + Diameter , MinP.y +  Diameter , MinP.z             ,
-    MinP.x + Diameter , MinP.y             , MinP.z             ,
-    MinP.x + Diameter , MinP.y +  Diameter , MinP.z +  Diameter ,
-    MinP.x + Diameter , MinP.y             , MinP.z +  Diameter ,
+    MinP.x + Diameter.x , MinP.y +  Diameter.y , MinP.z +  Diameter.z ,
+    MinP.x + Diameter.x , MinP.y               , MinP.z               ,
+    MinP.x + Diameter.x , MinP.y +  Diameter.y , MinP.z               ,
+    MinP.x + Diameter.x , MinP.y               , MinP.z               ,
+    MinP.x + Diameter.x , MinP.y +  Diameter.y , MinP.z +  Diameter.z ,
+    MinP.x + Diameter.x , MinP.y               , MinP.z +  Diameter.z ,
   };
 
   memcpy(Result, Temp, sizeof(Temp));
@@ -39,15 +39,15 @@ r32 RightFaceNormalData[] =
 };
 
 inline void
-LeftFaceVertexData( v3 MinP, r32 Diameter, r32 *Result)
+LeftFaceVertexData( v3 MinP, v3 Diameter, r32 *Result)
 {
   r32 Temp[] = {
-    MinP.x , MinP.y +  Diameter , MinP.z +  Diameter ,
-    MinP.x , MinP.y             , MinP.z             ,
-    MinP.x , MinP.y +  Diameter , MinP.z             ,
-    MinP.x , MinP.y             , MinP.z             ,
-    MinP.x , MinP.y +  Diameter , MinP.z +  Diameter ,
-    MinP.x , MinP.y             , MinP.z +  Diameter ,
+    MinP.x , MinP.y +  Diameter.y , MinP.z +  Diameter.z ,
+    MinP.x , MinP.y               , MinP.z               ,
+    MinP.x , MinP.y +  Diameter.y , MinP.z               ,
+    MinP.x , MinP.y               , MinP.z               ,
+    MinP.x , MinP.y +  Diameter.y , MinP.z +  Diameter.z ,
+    MinP.x , MinP.y               , MinP.z +  Diameter.z ,
   };
 
   memcpy(Result, Temp, sizeof(Temp));
@@ -66,15 +66,15 @@ r32 LeftFaceNormalData[] =
 };
 
 inline void
-BottomFaceVertexData( v3 MinP, r32 Diameter, r32 *Result)
+BottomFaceVertexData( v3 MinP, v3 Diameter, r32 *Result)
 {
   r32 Temp[] = {
-    MinP.x + Diameter , MinP.y , MinP.z +  Diameter ,
-    MinP.x            , MinP.y , MinP.z             ,
-    MinP.x + Diameter , MinP.y , MinP.z             ,
-    MinP.x            , MinP.y , MinP.z             ,
-    MinP.x + Diameter , MinP.y , MinP.z +  Diameter ,
-    MinP.x            , MinP.y , MinP.z +  Diameter ,
+    MinP.x + Diameter.x , MinP.y , MinP.z +  Diameter.z ,
+    MinP.x              , MinP.y , MinP.z               ,
+    MinP.x + Diameter.x , MinP.y , MinP.z               ,
+    MinP.x              , MinP.y , MinP.z               ,
+    MinP.x + Diameter .x, MinP.y , MinP.z +  Diameter.z ,
+    MinP.x              , MinP.y , MinP.z +  Diameter.z ,
   };
 
   memcpy(Result, Temp, sizeof(Temp));
@@ -93,15 +93,15 @@ r32 BottomFaceNormalData[] =
 };
 
 inline void
-TopFaceVertexData( v3 MinP, r32 Diameter, r32 *Result)
+TopFaceVertexData( v3 MinP, v3 Diameter, r32 *Result)
 {
   r32 Temp[] = {
-    MinP.x + Diameter , MinP.y + Diameter , MinP.z + Diameter ,
-    MinP.x            , MinP.y + Diameter , MinP.z            ,
-    MinP.x + Diameter , MinP.y + Diameter , MinP.z            ,
-    MinP.x            , MinP.y + Diameter , MinP.z            ,
-    MinP.x + Diameter , MinP.y + Diameter , MinP.z + Diameter ,
-    MinP.x            , MinP.y + Diameter , MinP.z + Diameter ,
+    MinP.x + Diameter.x , MinP.y + Diameter.y , MinP.z + Diameter.z ,
+    MinP.x              , MinP.y + Diameter.y , MinP.z              ,
+    MinP.x + Diameter.x , MinP.y + Diameter.y , MinP.z              ,
+    MinP.x              , MinP.y + Diameter.y , MinP.z              ,
+    MinP.x + Diameter.x , MinP.y + Diameter.y , MinP.z + Diameter.z ,
+    MinP.x              , MinP.y + Diameter.y , MinP.z + Diameter.z ,
   };
 
   memcpy(Result, Temp, sizeof(Temp));
@@ -120,15 +120,15 @@ r32 TopFaceNormalData[] =
 };
 
 inline void
-FrontFaceVertexData( v3 MinP, r32 Diameter, r32 *Result)
+FrontFaceVertexData( v3 MinP, v3 Diameter, r32 *Result)
 {
   r32 Temp[] = {
-    MinP.x +  Diameter , MinP.y +  Diameter , MinP.z + Diameter ,
-    MinP.x             , MinP.y             , MinP.z + Diameter ,
-    MinP.x +  Diameter , MinP.y             , MinP.z + Diameter ,
-    MinP.x             , MinP.y             , MinP.z + Diameter ,
-    MinP.x +  Diameter , MinP.y +  Diameter , MinP.z + Diameter ,
-    MinP.x             , MinP.y +  Diameter , MinP.z + Diameter ,
+    MinP.x +  Diameter.x , MinP.y +  Diameter.y , MinP.z + Diameter.z ,
+    MinP.x               , MinP.y               , MinP.z + Diameter.z ,
+    MinP.x +  Diameter.x , MinP.y               , MinP.z + Diameter.z ,
+    MinP.x               , MinP.y               , MinP.z + Diameter.z ,
+    MinP.x +  Diameter.x , MinP.y +  Diameter.y , MinP.z + Diameter.z ,
+    MinP.x               , MinP.y +  Diameter.y , MinP.z + Diameter.z ,
   };
 
   memcpy(Result, Temp, sizeof(Temp));
@@ -148,15 +148,15 @@ r32 FrontFaceNormalData[] =
 };
 
 inline void
-BackFaceVertexData( v3 MinP, r32 Diameter, r32 *Result)
+BackFaceVertexData( v3 MinP, v3 Diameter, r32 *Result)
 {
   r32 Temp[] = {
-    MinP.x + Diameter , MinP.y + Diameter , MinP.z ,
-    MinP.x            , MinP.y            , MinP.z ,
-    MinP.x + Diameter , MinP.y            , MinP.z ,
-    MinP.x            , MinP.y            , MinP.z ,
-    MinP.x + Diameter , MinP.y + Diameter , MinP.z ,
-    MinP.x            , MinP.y + Diameter , MinP.z ,
+    MinP.x + Diameter.x , MinP.y + Diameter.y , MinP.z ,
+    MinP.x              , MinP.y              , MinP.z ,
+    MinP.x + Diameter.x , MinP.y              , MinP.z ,
+    MinP.x              , MinP.y              , MinP.z ,
+    MinP.x + Diameter.x , MinP.y + Diameter.y , MinP.z ,
+    MinP.x              , MinP.y + Diameter.y , MinP.z ,
   };
 
   memcpy(Result, Temp, sizeof(Temp));
@@ -916,7 +916,7 @@ Rotate(line Line, Quaternion Rotation)
 }
 
 inline void
-DEBUG_DrawPointMarker( World *world, v3 RenderP, int ColorIndex, float Diameter)
+DEBUG_DrawPointMarker( World *world, v3 RenderP, int ColorIndex, v3 Diameter)
 {
   float FaceColors[FACE_COLOR_SIZE];
   GetColorData(ColorIndex, &FaceColors[0]);;
@@ -1298,37 +1298,37 @@ BufferChunkMesh(
 
     if ( IsSet( V, Voxel_RightFace ) )
     {
-      RightFaceVertexData( MinP, Diameter, VertexData);
+      RightFaceVertexData( MinP, V3(Diameter), VertexData);
       BufferVerts(&world->Mesh, 6, VertexData, RightFaceNormalData, FaceColors, sizeof(VertexData));
     }
 
     if ( IsSet( V, Voxel_LeftFace ) )
     {
-      LeftFaceVertexData( MinP, Diameter, VertexData);
+      LeftFaceVertexData( MinP, V3(Diameter), VertexData);
       BufferVerts(&world->Mesh, 6, VertexData, LeftFaceNormalData, FaceColors, sizeof(VertexData));
     }
 
     if ( IsSet( V, Voxel_BottomFace ) )
     {
-      BottomFaceVertexData( MinP, Diameter, VertexData);
+      BottomFaceVertexData( MinP, V3(Diameter), VertexData);
       BufferVerts(&world->Mesh, 6, VertexData, BottomFaceNormalData, FaceColors, sizeof(VertexData));
     }
 
     if ( IsSet( V, Voxel_TopFace ) )
     {
-      TopFaceVertexData( MinP, Diameter, VertexData);
+      TopFaceVertexData( MinP, V3(Diameter), VertexData);
       BufferVerts(&world->Mesh, 6, VertexData, TopFaceNormalData, FaceColors, sizeof(VertexData));
     }
 
     if ( IsSet( V, Voxel_FrontFace ) )
     {
-      FrontFaceVertexData( MinP, Diameter, VertexData);
+      FrontFaceVertexData( MinP, V3(Diameter), VertexData);
       BufferVerts(&world->Mesh, 6, VertexData, FrontFaceNormalData, FaceColors, sizeof(VertexData));
     }
 
     if ( IsSet( V, Voxel_BackFace ) )
     {
-      BackFaceVertexData( MinP, Diameter, VertexData);
+      BackFaceVertexData( MinP, V3(Diameter), VertexData);
       BufferVerts(&world->Mesh, 6, VertexData, BackFaceNormalData, FaceColors, sizeof(VertexData));
     }
 
@@ -2269,6 +2269,15 @@ DrawWorldChunk(
 }
 
 void
+DrawFolie(World *world, Camera_Object *Camera, aabb *AABB)
+{
+  v3 RenderP = AABB->Center;
+  DEBUG_DrawPointMarker( world, RenderP, RED, AABB->Radius*2);
+
+  return;
+}
+
+void
 DrawParticle(
     World *world,
     canonical_position *P,
@@ -2285,22 +2294,22 @@ DrawParticle(
 
   v3 MinP = GetRenderP(world->ChunkDim, (*P)+Particle->Offset, Camera);
 
-  RightFaceVertexData( MinP, Diameter, VertexData);
+  RightFaceVertexData( MinP, V3(Diameter), VertexData);
   BufferVerts(&world->Mesh, 6, VertexData, RightFaceNormalData, FaceColors, sizeof(VertexData));
 
-  LeftFaceVertexData( MinP, Diameter, VertexData);
+  LeftFaceVertexData( MinP, V3(Diameter), VertexData);
   BufferVerts(&world->Mesh, 6, VertexData, LeftFaceNormalData, FaceColors, sizeof(VertexData));
 
-  BottomFaceVertexData( MinP, Diameter, VertexData);
+  BottomFaceVertexData( MinP, V3(Diameter), VertexData);
   BufferVerts(&world->Mesh, 6, VertexData, BottomFaceNormalData, FaceColors, sizeof(VertexData));
 
-  TopFaceVertexData( MinP, Diameter, VertexData);
+  TopFaceVertexData( MinP, V3(Diameter), VertexData);
   BufferVerts(&world->Mesh, 6, VertexData, TopFaceNormalData, FaceColors, sizeof(VertexData));
 
-  FrontFaceVertexData( MinP, Diameter, VertexData);
+  FrontFaceVertexData( MinP, V3(Diameter), VertexData);
   BufferVerts(&world->Mesh, 6, VertexData, FrontFaceNormalData, FaceColors, sizeof(VertexData));
 
-  BackFaceVertexData( MinP, Diameter, VertexData);
+  BackFaceVertexData( MinP, V3(Diameter), VertexData);
   BufferVerts(&world->Mesh, 6, VertexData, BackFaceNormalData, FaceColors, sizeof(VertexData));
 
   return;

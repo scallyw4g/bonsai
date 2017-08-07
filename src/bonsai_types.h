@@ -35,12 +35,11 @@ typedef uint64_t u64;
 typedef u64      umm;
 typedef double   r64;
 
-
 struct v2
 {
-   float x;
-   float y;
+  r32 x, y;
 };
+
 
 union v3
 {
@@ -58,7 +57,6 @@ union v3
   };
 
   float E[3];
-
 };
 
 
@@ -711,6 +709,18 @@ World_Position(v3 V)
 };
 
 inline voxel_position
+Voxel_Position(int P)
+{
+  voxel_position Result;
+
+  Result.x = P;
+  Result.y = P;
+  Result.z = P;
+
+  return Result;
+};
+
+inline voxel_position
 Voxel_Position(int x, int y, int z)
 {
   voxel_position Result;
@@ -721,6 +731,13 @@ Voxel_Position(int x, int y, int z)
 
   return Result;
 };
+
+inline world_position
+World_Position(s32 P)
+{
+  chunk_dimension Result = Voxel_Position(P);
+  return Result;
+}
 
 inline world_position
 World_Position(int x, int y, int z)
