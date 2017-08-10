@@ -47,6 +47,9 @@ InitChunkPerlin( game_state *GameState, world_chunk *WorldChunk )
 
         Assert( NotSet(&chunk->Voxels[i], Voxel_Filled) );
 
+        v3 NoiseInputs =
+          ( ( V3(x,y,z) + (WORLD_CHUNK_DIM*(WorldChunk->WorldP))) ) / NOISE_FREQUENCY;
+
         double InX = (double)NoiseInputs.x;
         double InY = (double)NoiseInputs.y;
         double InZ = (double)NoiseInputs.z;
@@ -68,7 +71,6 @@ InitChunkPerlin( game_state *GameState, world_chunk *WorldChunk )
           Assert( IsSet(&chunk->Voxels[i], Voxel_Filled) );
           WorldChunk->Filled ++;
         }
-#endif
       }
     }
   }
@@ -567,7 +569,6 @@ ProcessCollisionRule(
 
     case Collision_Player_Enemy:
     {
-      Log("Collision");
       entity *Player = First;
       entity *Enemy = Second;
 

@@ -575,7 +575,7 @@ SimulateAndRenderParticleSystems(
   World *world = GameState->world;
   Camera_Object *Camera = GameState->Camera;
   particle_system *System = SystemEntity->Emitter;
-  noise_3d *Turb = GameState->Turb;
+  // noise_3d *Turb = GameState->Turb;
 
   if (Inactive(System))
     return;
@@ -857,7 +857,7 @@ GameInit( platform *Plat, memory_arena *GameMemory)
   if (!InitializeRenderGroup(Plat, RG)) { Error("Initializing RenderGroup"); return False; }
 
   GameState->Turb = PUSH_STRUCT_CHECKED(noise_3d, GameState->Memory, 1);
-  AllocateAndInitNoise3d(&GameState->Turb, Chunk_Dimension(8,8,8) );
+  AllocateAndInitNoise3d(GameState, GameState->Turb, Chunk_Dimension(8,8,8) );
 
   // This needs to be off for shadow maps to work correctly
   /* glEnable(GL_CULL_FACE); */
