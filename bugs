@@ -1,3 +1,12 @@
+# Aug 10 2017
+10h - closed - Fix shadow mapping
+Epic quest to fix the shadow mapping turned out to be mostly a wild goose chase
+and a couple hours tuning it at the end.  The wild goose chase part was trying
+to translate the world geometry using a transform matrix - which I still think
+should have worked - instead of repositioning the projection matrix with an
+offset.  The other part was changing the shader to use sampler2d instead of
+sampler2dShadow, which I'm not sure was a good idea, but I felt like doing it.
+
 # Aug 1 2017
 
 15m - closed - particle system - Systems sometimes unspawning early
