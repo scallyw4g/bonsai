@@ -603,6 +603,14 @@ SimulateAndRenderParticleSystems(
 
     Particle->RemainingLifespan -= dt;
 
+    if ( Particle->RemainingLifespan < 0)
+    {
+      // Swap out last partcile for the current partcile and decrement
+      particle *SwapParticle = &System->Particles[System->ActiveParticles--];
+      *Particle = *SwapParticle;
+      continue;
+    }
+
     r32 Diameter = (Particle->RemainingLifespan / System->ParticleLifespan) + MinDiameter;
     r32 DiameterDiff = LastDiameter-Diameter;
 
@@ -613,13 +621,7 @@ SimulateAndRenderParticleSystems(
 
     DrawParticle(world, &SystemEntity->P, Camera, Particle, Diameter, System->Colors[ColorIndex]);
 
-    // Swap out last partcile for the current partcile and decrement
 
-    if ( Particle->RemainingLifespan < 0)
-    {
-      particle *SwapParticle = &System->Particles[System->ActiveParticles--];
-      *Particle = *SwapParticle;
-    }
   }
 
   return;
