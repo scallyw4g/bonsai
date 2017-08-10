@@ -202,8 +202,8 @@ InitializeOpenGlExtensions(gl_extensions *Gl, os *Os)
 
 
 
-  glDepthFunc(GL_LESS);
   glEnable(GL_DEPTH_TEST);
+  glDepthFunc(GL_LEQUAL);
 
   AssertNoGlErrors;
 
