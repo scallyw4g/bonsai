@@ -38,7 +38,7 @@ struct RenderGroup
   /* u32 LightPID; */
 
 
-  u32 GlobalLightDirectionID;
+  u32 GlobalLightPositionID;;
 
   // Lighting Shader
   u32 LightingShader;
@@ -62,7 +62,6 @@ struct RenderGroup
 struct ShadowRenderGroup
 {
   u32 MVP_ID;
-  u32 ShadowMapID;
 
   u32 TextureID;
   u32 ShaderID;
@@ -72,11 +71,13 @@ struct ShadowRenderGroup
 
 
 inline m4
-Orthographic( r32 XY, r32 Z )
+Orthographic( r32 X, r32 Y, r32 Zmin, r32 Zmax, v3 Translate )
 {
 
 #if 1
-  m4 Result = GLM4(glm::ortho<r32>(-XY,XY, -XY,XY, -Z,Z));
+  m4 Result = GLM4(glm::ortho<r32>(-X+Translate.x, X+Translate.x,
+                                   -Y+Translate.y, Y+Translate.y,
+                                   Zmin +Translate.z, Zmax +Translate.z));
 #else
   m4 Result = IdentityMatrix;
   Assert(False);
@@ -175,8 +176,8 @@ inline m4
 LookAt(v3 P, v3 Target, v3 Up)
 {
   glm::mat4 M = glm::lookAt( glm::vec3(P.x, P.y, P.z),
-                                  glm::vec3(Target.x, Target.y, Target.z),
-                                  glm::vec3(Up.x, Up.y, Up.z) );
+                             glm::vec3(Target.x, Target.y, Target.z),
+                             glm::vec3(Up.x, Up.y, Up.z) );
 
   m4 Result = GLM4(M);
 

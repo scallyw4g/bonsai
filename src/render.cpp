@@ -271,7 +271,7 @@ InitializeRenderGroup( platform *Plat, RenderGroup *RG )
   RG->NormalTextureUniform    = GL_Global->glGetUniformLocation(RG->LightingShader, "gNormal");
   RG->PositionTextureUniform  = GL_Global->glGetUniformLocation(RG->LightingShader, "gPosition");
   RG->DepthTextureUniform     = GL_Global->glGetUniformLocation(RG->LightingShader, "gDepth");
-  RG->GlobalLightDirectionID  = GL_Global->glGetUniformLocation(RG->LightingShader, "GlobalLightDirection");
+  RG->GlobalLightPositionID   = GL_Global->glGetUniformLocation(RG->LightingShader, "GlobalLightPosition");
   RG->ViewMatrixUniform       = GL_Global->glGetUniformLocation(RG->LightingShader, "ViewMatrix");
   RG->CameraPosUniform        = GL_Global->glGetUniformLocation(RG->LightingShader, "CameraPosUniform");
 
@@ -319,7 +319,7 @@ InitializeShadowBuffer(ShadowRenderGroup *ShadowGroup)
   glBindTexture(GL_TEXTURE_2D, ShadowGroup->DepthTexture);
 
   glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16,
-      SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+      SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 
   AssertNoGlErrors;
 
@@ -362,9 +362,6 @@ InitializeShadowBuffer(ShadowRenderGroup *ShadowGroup)
 void
 RenderQuad(RenderGroup *RG)
 {
-  // TODO(Jesse): Please explain to me why I cannot draw two of these to the screen between clears
-  /* glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); */
-
   GL_Global->glEnableVertexAttribArray(0);
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->quad_vertexbuffer);
   GL_Global->glVertexAttribPointer(
@@ -381,38 +378,106 @@ RenderQuad(RenderGroup *RG)
   GL_Global->glDisableVertexAttribArray(0);
 }
 
-v3 GlobalLightDirection = V3( 3.0f, -1.0f, -6.0f);
+inline void
+BufferVerts(
+    mesh_buffer_target *target,
+
+    s32 NumVerts,
+
+    float* VertsPositions,
+    float* Normals,
+    const float* VertColors,
+
+    s32 sizeofData
+  )
+{
+
+  if ( target->filled + sizeofData > target->bytesAllocd )
+  {
+    // TODO(Jesse): Instead of Asserting, do this ?
+    /* FlushRenderBuffers( Plat, world, RG, SG, Camera); */
+
+    // Out of memory, panic!
+    Assert(!"Out of memory");
+    return;
+  }
+
+  target->filled += sizeofData;
+
+  memcpy( &target->VertexData[target->VertexCount*3],  VertsPositions,  sizeofData );
+  memcpy( &target->NormalData[target->VertexCount*3],  Normals,         sizeofData );
+  memcpy( &target->ColorData[target->VertexCount*3],   VertColors,      sizeofData );
+
+  target->VertexCount += NumVerts;
+
+  return;
+}
+
+inline void
+DEBUG_DrawPointMarker( World *world, v3 RenderP, int ColorIndex, v3 Diameter)
+{
+  float FaceColors[FACE_COLOR_SIZE];
+  GetColorData(ColorIndex, &FaceColors[0]);;
+
+  r32 VertexData[BYTES_PER_FACE];
+
+  RightFaceVertexData( RenderP, Diameter, VertexData);
+  BufferVerts(&world->Mesh, 6, VertexData, RightFaceNormalData, FaceColors, sizeof(VertexData));
+
+  LeftFaceVertexData( RenderP, Diameter, VertexData);
+  BufferVerts(&world->Mesh, 6, VertexData, LeftFaceNormalData, FaceColors, sizeof(VertexData));
+
+  BottomFaceVertexData( RenderP, Diameter, VertexData);
+  BufferVerts(&world->Mesh, 6, VertexData, BottomFaceNormalData, FaceColors, sizeof(VertexData));
+
+  TopFaceVertexData( RenderP, Diameter, VertexData);
+  BufferVerts(&world->Mesh, 6, VertexData, TopFaceNormalData, FaceColors, sizeof(VertexData));
+
+  FrontFaceVertexData( RenderP, Diameter, VertexData);
+  BufferVerts(&world->Mesh, 6, VertexData, FrontFaceNormalData, FaceColors, sizeof(VertexData));
+
+  BackFaceVertexData( RenderP, Diameter, VertexData);
+  BufferVerts(&world->Mesh, 6, VertexData, BackFaceNormalData, FaceColors, sizeof(VertexData));
+
+  return;
+}
+
+#define GLOBAL_LIGHT_OFFSET Normalize(V3( 0.1f, 0.0f, 1.0f))
+GLOBAL_VARIABLE v3 GlobalLightPosition = {};
 
 inline m4
-GetDepthMVP(chunk_dimension WorldChunkDim, Camera_Object *Camera)
+GetDepthMVP(World *world, Camera_Object *Camera)
 {
-  GlobalLightDirection = Normalize( GlobalLightDirection );
-
   // Compute the MVP matrix from the light's point of view
-  m4 depthProjectionMatrix = Orthographic(SHADOW_MAP_XY, SHADOW_MAP_Z);
+  v3 Translate = V3(0,300,0);
+  m4 depthProjectionMatrix = Orthographic(SHADOW_MAP_X,
+                                          SHADOW_MAP_Y,
+                                          SHADOW_MAP_Z_MIN,
+                                          SHADOW_MAP_Z_MAX,
+                                          Translate);
 
-  v3 P = GetRenderP(WorldChunkDim, Camera->Target+GlobalLightDirection, Camera);
-  v3 Target = GetRenderP(WorldChunkDim, Camera->Target, Camera);
+  v3 Target = V3(0,0,0);
+  GlobalLightPosition = Target + GLOBAL_LIGHT_OFFSET;
 
-  v3 Front = Normalize(Target-P);
+  v3 Front = Normalize(Target - GlobalLightPosition);
   v3 Right = Cross( Front, V3(0,1,0) );
   v3 Up = Cross(Right, Front);
 
-  m4 depthViewMatrix = LookAt(P, Target, Up);
+  m4 depthViewMatrix =  LookAt(GlobalLightPosition, Target, Up);
 
   return depthProjectionMatrix * depthViewMatrix;
 }
 
 void
-DrawWorldToFullscreenQuad( platform *Plat, chunk_dimension WorldChunkDim, RenderGroup *RG, ShadowRenderGroup *SG, Camera_Object *Camera)
+DrawWorldToFullscreenQuad( platform *Plat, World *world, RenderGroup *RG, ShadowRenderGroup *SG, Camera_Object *Camera)
 {
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+#if 1
   GL_Global->glUseProgram(RG->LightingShader);
   glViewport(0, 0, Plat->WindowWidth, Plat->WindowHeight);
 
-  GlobalLightDirection = Normalize( GlobalLightDirection );
-
-  GL_Global->glUniform3fv(RG->GlobalLightDirectionID, 1, &GlobalLightDirection.E[0]);
+  GL_Global->glUniform3fv(RG->GlobalLightPositionID, 1, &GlobalLightPosition.E[0]);
 
   m4 biasMatrix = {
     V4(0.5, 0.0, 0.0, 0.0),
@@ -421,14 +486,14 @@ DrawWorldToFullscreenQuad( platform *Plat, chunk_dimension WorldChunkDim, Render
     V4(0.5, 0.5, 0.5, 1.0)
   };
 
-  m4 depthBiasMVP = biasMatrix * GetDepthMVP(WorldChunkDim, Camera);
+  m4 depthBiasMVP = biasMatrix * GetDepthMVP(world, Camera);
   GL_Global->glUniformMatrix4fv(RG->DepthBiasMVPID, 1, GL_FALSE, &depthBiasMVP.E[0].E[0]);
 
   m4 VP = RG->Basis.ViewMatrix;
 
   GL_Global->glUniformMatrix4fv(RG->ViewMatrixUniform, 1, GL_FALSE, &VP.E[0].E[0]);
 
-  v3 CameraRenderP = GetRenderP(WorldChunkDim, Camera->P, Camera);
+  v3 CameraRenderP = GetRenderP(world->ChunkDim, Camera->P, Camera);
   GL_Global->glUniform3fv(RG->CameraPosUniform, 1, &CameraRenderP.E[0]);
 
   GL_Global->glActiveTexture(GL_TEXTURE0);
@@ -443,15 +508,29 @@ DrawWorldToFullscreenQuad( platform *Plat, chunk_dimension WorldChunkDim, Render
   glBindTexture(GL_TEXTURE_2D, RG->PositionTexture);
   GL_Global->glUniform1i(RG->PositionTextureUniform, 2);
 
+  GL_Global->glActiveTexture(GL_TEXTURE3);
+  glBindTexture(GL_TEXTURE_2D, SG->DepthTexture);
+  GL_Global->glUniform1i(RG->ShadowMapTextureUniform, 3);
+
+  RenderQuad(RG);
+#endif
+
 #if DEBUG_DRAW_SHADOW_MAP_TEXTURE
+  glDepthFunc(GL_ALWAYS);
+
+  r32 Scale = 0.2f;
+  glViewport(0, 0, SHADOW_MAP_RESOLUTION_X*Scale, SHADOW_MAP_RESOLUTION_Y*Scale);
+
   glUseProgram(RG->SimpleTextureShaderID);
 
   glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, RG->DepthTexture);
+  glBindTexture(GL_TEXTURE_2D, SG->DepthTexture);
   glUniform1i(RG->SimpleTextureUniform, 0);
-#endif
 
   RenderQuad(RG);
+  glDepthFunc(GL_LEQUAL);
+#endif
+
 
   return;
 }
@@ -459,9 +538,9 @@ DrawWorldToFullscreenQuad( platform *Plat, chunk_dimension WorldChunkDim, Render
 void
 RenderShadowMap(World *world, ShadowRenderGroup *SG, RenderGroup *RG, Camera_Object *Camera)
 {
-  glViewport(0, 0, SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
+  glViewport(0, 0, SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y);
 
-  m4 depthMVP = GetDepthMVP(world->ChunkDim, Camera);
+  m4 depthMVP = GetDepthMVP(world, Camera);
 
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -574,41 +653,6 @@ FlushRenderBuffers(
   world->Mesh.VertexCount = 0;
 
   world->Mesh.filled = 0;
-
-  return;
-}
-
-inline void
-BufferVerts(
-    mesh_buffer_target *target,
-
-    s32 NumVerts,
-
-    float* VertsPositions,
-    float* Normals,
-    const float* VertColors,
-
-    s32 sizeofData
-  )
-{
-
-  if ( target->filled + sizeofData > target->bytesAllocd )
-  {
-    // TODO(Jesse): Instead of Asserting, do this ?
-    /* FlushRenderBuffers( Plat, world, RG, SG, Camera); */
-
-    // Out of memory, panic!
-    Assert(!"Out of memory");
-    return;
-  }
-
-  target->filled += sizeofData;
-
-  memcpy( &target->VertexData[target->VertexCount*3],  VertsPositions,  sizeofData );
-  memcpy( &target->NormalData[target->VertexCount*3],  Normals,         sizeofData );
-  memcpy( &target->ColorData[target->VertexCount*3],   VertColors,      sizeofData );
-
-  target->VertexCount += NumVerts;
 
   return;
 }
@@ -913,35 +957,6 @@ Rotate(line Line, Quaternion Rotation)
   Result.MaxP = Rotate(Line.MaxP, Rotation);
 
   return Result;
-}
-
-inline void
-DEBUG_DrawPointMarker( World *world, v3 RenderP, int ColorIndex, v3 Diameter)
-{
-  float FaceColors[FACE_COLOR_SIZE];
-  GetColorData(ColorIndex, &FaceColors[0]);;
-
-  r32 VertexData[BYTES_PER_FACE];
-
-  RightFaceVertexData( RenderP, Diameter, VertexData);
-  BufferVerts(&world->Mesh, 6, VertexData, RightFaceNormalData, FaceColors, sizeof(VertexData));
-
-  LeftFaceVertexData( RenderP, Diameter, VertexData);
-  BufferVerts(&world->Mesh, 6, VertexData, LeftFaceNormalData, FaceColors, sizeof(VertexData));
-
-  BottomFaceVertexData( RenderP, Diameter, VertexData);
-  BufferVerts(&world->Mesh, 6, VertexData, BottomFaceNormalData, FaceColors, sizeof(VertexData));
-
-  TopFaceVertexData( RenderP, Diameter, VertexData);
-  BufferVerts(&world->Mesh, 6, VertexData, TopFaceNormalData, FaceColors, sizeof(VertexData));
-
-  FrontFaceVertexData( RenderP, Diameter, VertexData);
-  BufferVerts(&world->Mesh, 6, VertexData, FrontFaceNormalData, FaceColors, sizeof(VertexData));
-
-  BackFaceVertexData( RenderP, Diameter, VertexData);
-  BufferVerts(&world->Mesh, 6, VertexData, BackFaceNormalData, FaceColors, sizeof(VertexData));
-
-  return;
 }
 
 inline float
@@ -1270,7 +1285,6 @@ BufferChunkMesh(
     chunk_data *chunk,
     world_position WorldP,
     RenderGroup *RG,
-    ShadowRenderGroup *SG,
     Camera_Object *Camera,
     r32 Scale,
     v3 Offset = V3(0,0,0)
@@ -2221,8 +2235,7 @@ void
 DrawWorldChunk(
     game_state *GameState,
     world_chunk *Chunk,
-    RenderGroup *RG,
-    ShadowRenderGroup *SG
+    RenderGroup *RG
   )
 {
   if (Chunk->Data->BoundaryVoxelCount == 0)
@@ -2255,7 +2268,7 @@ DrawWorldChunk(
   /* if ( Length(ChunkRenderOffset - CameraRenderOffset ) < MIN_LOD_DISTANCE ) */
   {
     r32 Scale = 1.0f;
-    BufferChunkMesh( GameState->Plat, world, ChunkData, Chunk->WorldP, RG, SG, Camera, Scale);
+    BufferChunkMesh( GameState->Plat, world, ChunkData, Chunk->WorldP, RG, Camera, Scale);
   }
 
   /* else */
@@ -2272,7 +2285,7 @@ void
 DrawFolie(World *world, Camera_Object *Camera, aabb *AABB)
 {
   v3 RenderP = AABB->Center;
-  DEBUG_DrawPointMarker( world, RenderP, RED, AABB->Radius*2);
+  DEBUG_DrawPointMarker( world, RenderP, GREY, AABB->Radius*2);
 
   return;
 }
@@ -2321,8 +2334,7 @@ DrawEntity(
     World *world,
     entity *Entity,
     Camera_Object *Camera,
-    RenderGroup *RG,
-    ShadowRenderGroup *SG
+    RenderGroup *RG
   )
 {
   // Debug light code
@@ -2349,7 +2361,7 @@ DrawEntity(
       if (IsSet(Model, Chunk_RebuildBoundary))
         BuildEntityBoundaryVoxels(Model, Entity->P.WorldP, Entity->Model.Dim);
 
-      BufferChunkMesh(Plat, world, Model, Entity->P.WorldP, RG, SG, Camera, Entity->Scale, Entity->P.Offset);
+      BufferChunkMesh(Plat, world, Model, Entity->P.WorldP, RG, Camera, Entity->Scale, Entity->P.Offset);
     }
   }
 

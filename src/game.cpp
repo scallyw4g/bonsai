@@ -937,7 +937,6 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   RenderGroup *RG                  = GameState->RG;
   ShadowRenderGroup *SG            = GameState->SG;
 
-
   r32 VrHalfDim = (VR_X*CD_X/2.0f);
 
   v3 WorldCenterRenderP = GetRenderP(world->ChunkDim, world->Center, Camera);
@@ -946,27 +945,28 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   aabb *LeftWall = GameState->FolieTable + 1;
   aabb *RightWall = GameState->FolieTable + 2;
 
-  r32 YOffset = 300.0f;
   r32 ZOffset = 25.0f;
-  r32 WallThickness = 0.5f;
+  r32 WallThickness = 50.0f;
+  r32 WallLength = VR_Y*CD_Y;
+  r32 YOffset = WallLength/2.0f;
   {
     v3 Center = WorldCenterRenderP -
                   V3(VrHalfDim, YOffset, ZOffset);
 
-    *Floor = aabb(Center, V3(world->ChunkDim.x+VrHalfDim, 1000.0f, WallThickness));
+    *Floor = aabb(Center, V3(world->ChunkDim.x+VrHalfDim, WallLength, 0.5f));
   }
 
   {
     v3 Center = WorldCenterRenderP -
                   V3(VrHalfDim+(2.0f*WallThickness), YOffset, ZOffset);
 
-    *LeftWall = aabb(Center, V3(WallThickness, 1000.0f, ZOffset));
+    *LeftWall = aabb(Center, V3(WallThickness, WallLength, ZOffset));
   }
   {
     v3 Center = WorldCenterRenderP -
                   V3(-VrHalfDim, YOffset, 25.0f) + world->ChunkDim;
 
-    *RightWall = aabb(Center, V3(WallThickness, 1000.0f, ZOffset));
+    *RightWall = aabb(Center, V3(WallThickness, WallLength, ZOffset));
   }
 
 
@@ -1077,7 +1077,7 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
       if ( (chunk->WorldP >= Min && chunk->WorldP < Max) )
       {
         /* DEBUG_DrawChunkAABB( world, chunk, Camera, Quaternion(), BLUE ); */
-        DrawWorldChunk(GameState, chunk, RG, SG);
+        DrawWorldChunk(GameState, chunk, RG);
         chunk = chunk->Next;
       }
       else
@@ -1096,7 +1096,7 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
         ++EntityIndex)
   {
     entity *Enemy = GameState->EntityTable[EntityIndex];
-    DrawEntity(Plat, world, Enemy, Camera, RG, SG);
+    DrawEntity(Plat, world, Enemy, Camera, RG);
   }
   END_BLOCK("Entities");
 
@@ -1108,13 +1108,13 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
     DrawFolie(world, Camera, AABB);
   }
 
-  DrawEntity(Plat, world, GameState->Player, Camera, RG, SG);
+  DrawEntity(Plat, world, GameState->Player, Camera, RG);
 
   FlushRenderBuffers(Plat, world, RG, SG, Camera);
 
   /* DEBUG_FRAME_END(Plat->dt); */
 
-  DrawWorldToFullscreenQuad(Plat, WorldChunkDim, RG, SG, Camera);
+  DrawWorldToFullscreenQuad(Plat, world, RG, SG, Camera);
 
   AssertNoGlErrors;
 

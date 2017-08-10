@@ -14,7 +14,7 @@
 #define VOXEL_RADIUS (VOXEL_DIAMETER/2.0f)
 
 #define CD_X 8
-#define CD_Y 8
+#define CD_Y 16
 #define CD_Z 1
 
 // Visible Region XYZ - Must be > (3,3,3)
@@ -94,7 +94,7 @@
 #define DEBUG_CHUNK_AABB              0
 #define DEBUG_DRAW_COLLISION_VOLUMES  0
 #define DEBUG_WORLD_GENERATION        0
-#define DEBUG_DRAW_SHADOW_MAP_TEXTURE 0
+#define DEBUG_DRAW_SHADOW_MAP_TEXTURE 1
 #define DEBUG_HIGHLIGHT_VOID_CHUNKS   0
 #define DEBUG_DRAW_WORLD_AXIES        0
 #define DEBUG_OPTIMIZE_WORLD_GC       1
@@ -107,17 +107,25 @@
 #define DEBUG_FRAMES_TO_RUN           -1
 
 
-#define SHADOW_MAP_XY 50.0f
-#define SHADOW_MAP_Z  100.0f
-#define SHADOW_MAP_RESOLUTION 2048
-#define DEBUG_TEXTURE_SIZE    512
+#define SHADOW_MAP_X (VR_X*CD_X)
+#define SHADOW_MAP_Y (VR_Y*CD_Y/2)
 
-GLOBAL_VARIABLE r32 CAMERA_FOCAL_LENGTH = 200.0f;
+#define SHADOW_MAP_Z_MIN  -100.0f
+#define SHADOW_MAP_Z_MAX  200.0f
+
+#define DEBUG_TEXTURE_SIZE 500
+
+#define SHADOW_MAP_RESOLUTION_X 512
+#define SHADOW_MAP_RESOLUTION_Y 2048
+
+// GLOBAL_VARIABLE r32 CAMERA_FOCAL_LENGTH = 1000.0f;
+GLOBAL_VARIABLE r32 CAMERA_FOCAL_LENGTH = 440.0f;
+
 GLOBAL_VARIABLE r32 DEBUG_CAMERA_FOCAL_LENGTH = 50.0f;
 #define DEBUG_CAMERA_SCROLL_SPEED  20.0f
 
 // TODO(Jesse): How should we initialize this for realz?
-DEBUG_GLOBAL canonical_position CameraInitialP = { {0,0,0}, {0,-9,15} };
+DEBUG_GLOBAL canonical_position CameraInitialP = { {0,0,0}, {0,-4,15} };
 #define CAMERA_INITIAL_P CameraInitialP
 
 // NOTE(Jesse): The position storage needs to be as large as the largest model
