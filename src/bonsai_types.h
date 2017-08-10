@@ -149,7 +149,7 @@ GLM4(m4 M)
     glm::vec4(M[0][0], M[0][1], M[0][2], M[0][3]),
     glm::vec4(M[1][0], M[1][1], M[1][2], M[1][3]),
     glm::vec4(M[2][0], M[2][1], M[2][2], M[2][3]),
-    glm::vec4(M[2][0], M[2][1], M[3][2], M[3][3])
+    glm::vec4(M[3][0], M[3][1], M[3][2], M[3][3])
   );
 
   return Result;
@@ -162,7 +162,7 @@ GLM4(glm::mat4 M)
     V4(M[0][0], M[0][1], M[0][2], M[0][3]),
     V4(M[1][0], M[1][1], M[1][2], M[1][3]),
     V4(M[2][0], M[2][1], M[2][2], M[2][3]),
-    V4(M[2][0], M[2][1], M[3][2], M[3][3]),
+    V4(M[3][0], M[3][1], M[3][2], M[3][3]),
   };
 
   return Result;
@@ -687,11 +687,19 @@ operator+(aabb AABB, v3 V)
 inline m4
 Translate( v3 v )
 {
+#if 1
   m4 Result;
+
   Result.E[0] = v4(1,0,0,v.x);
   Result.E[1] = v4(0,1,0,v.y);
   Result.E[2] = v4(0,0,1,v.z);
   Result.E[3] = v4(0,0,0,1);
+#else
+  glm::mat4 TransMatrix = glm::translate(glm::mat4(), glm::vec3(v.x, v.y, v.z));
+  m4 Result = GLM4(TransMatrix);
+
+
+#endif
 
   return Result;
 }
