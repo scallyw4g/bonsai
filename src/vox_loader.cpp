@@ -130,6 +130,77 @@ ReadXYZIChunk(FILE *File, int* byteCounter)
   return nVoxels;
 }
 
+void
+BuildEntityBoundaryVoxels(chunk_data *chunk, chunk_dimension Dim)
+{
+  UnSetFlag(chunk, Chunk_RebuildBoundary);
+
+  for ( int z = 0; z < Dim.z ; ++z )
+  {
+    for ( int y = 0; y < Dim.y ; ++y )
+    {
+      for ( int x = 0; x < Dim.x ; ++x )
+      {
+        voxel_position LocalVoxelP = Voxel_Position(x,y,z);
+
+        if ( NotFilled( chunk, LocalVoxelP, Dim) )
+          continue;
+
+        voxel *Voxel = &chunk->Voxels[GetIndex(Voxel_Position(x,y,z), chunk, Dim)];
+
+        voxel_position rightVoxel = LocalVoxelP + Voxel_Position(1, 0, 0);
+        voxel_position leftVoxel = LocalVoxelP - Voxel_Position(1, 0, 0);
+
+        voxel_position topVoxel = LocalVoxelP + Voxel_Position(0, 1, 0);
+        voxel_position botVoxel = LocalVoxelP - Voxel_Position(0, 1, 0);
+
+        voxel_position frontVoxel = LocalVoxelP + Voxel_Position(0, 0, 1);
+        voxel_position backVoxel = LocalVoxelP - Voxel_Position(0, 0, 1);
+
+        bool DidPushVoxel = false;
+
+        if ( (!IsInsideDim(Dim, rightVoxel)) || NotFilled( chunk, rightVoxel, Dim))
+        {
+          SetFlag(Voxel, Voxel_RightFace);
+          DidPushVoxel = true;
+        }
+        if ( (!IsInsideDim( Dim, leftVoxel  )) || NotFilled( chunk, leftVoxel, Dim))
+        {
+          SetFlag(Voxel, Voxel_LeftFace);
+          DidPushVoxel = true;
+        }
+        if ( (!IsInsideDim( Dim, botVoxel   )) || NotFilled( chunk, botVoxel, Dim))
+        {
+          SetFlag(Voxel, Voxel_BottomFace);
+          DidPushVoxel = true;
+        }
+        if ( (!IsInsideDim( Dim, topVoxel   )) || NotFilled( chunk, topVoxel, Dim))
+        {
+          SetFlag(Voxel, Voxel_TopFace);
+          DidPushVoxel = true;
+        }
+        if ( (!IsInsideDim( Dim, frontVoxel )) || NotFilled( chunk, frontVoxel, Dim))
+        {
+          SetFlag(Voxel, Voxel_FrontFace);
+          DidPushVoxel = true;
+        }
+        if ( (!IsInsideDim( Dim, backVoxel  )) || NotFilled( chunk, backVoxel, Dim))
+        {
+          SetFlag(Voxel, Voxel_BackFace);
+          DidPushVoxel = true;
+        }
+
+        if (DidPushVoxel)
+        {
+          boundary_voxel BoundaryVoxel(Voxel, LocalVoxelP);
+          PushBoundaryVoxel(chunk, &BoundaryVoxel, Dim);
+        }
+
+      }
+    }
+  }
+}
+
 model
 LoadModel(memory_arena *WorldStorage, char const *filepath)
 {
@@ -246,5 +317,8 @@ LoadModel(memory_arena *WorldStorage, char const *filepath)
   }
 
 loaded:
+
+  BuildEntityBoundaryVoxels(Result.Chunk, Result.Dim);
+
   return Result;
 }

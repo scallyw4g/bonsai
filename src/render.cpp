@@ -1007,15 +1007,6 @@ Clamp01( voxel_position V )
   return Result;
 }
 
-inline void
-PushBoundaryVoxel( chunk_data *chunk, boundary_voxel *Voxel, chunk_dimension Dim)
-{
-  Assert( chunk->BoundaryVoxelCount < Volume(Dim) );
-
-  chunk->BoundaryVoxels[chunk->BoundaryVoxelCount] = *Voxel;
-  chunk->BoundaryVoxelCount++;
-}
-
 void
 BuildExteriorBoundaryVoxels( World *world, world_chunk *chunk, chunk_dimension Dim, world_chunk *Neighbor, voxel_position NeighborVector )
 {
@@ -1075,102 +1066,6 @@ BuildExteriorBoundaryVoxels( World *world, world_chunk *chunk, chunk_dimension D
 
 
   return;
-}
-
-inline b32
-IsInsideDim( voxel_position Dim, voxel_position P )
-{
-  b32 Result = False;
-
-  Result = (
-              P.x >= 0 &&
-              P.y >= 0 &&
-              P.z >= 0 &&
-
-              P.x < Dim.x &&
-              P.y < Dim.y &&
-              P.z < Dim.z
-           );
-
-  return Result;
-}
-
-inline b32
-IsInsideDim( voxel_position Dim, v3 P )
-{
-  b32 Result = IsInsideDim(Dim, Voxel_Position(P) );
-  return Result;
-}
-
-void
-BuildEntityBoundaryVoxels(chunk_data *chunk, world_position WorldP, chunk_dimension Dim)
-{
-  UnSetFlag(chunk, Chunk_RebuildBoundary);
-
-  for ( int z = 0; z < Dim.z ; ++z )
-  {
-    for ( int y = 0; y < Dim.y ; ++y )
-    {
-      for ( int x = 0; x < Dim.x ; ++x )
-      {
-        voxel_position LocalVoxelP = Voxel_Position(x,y,z);
-
-        if ( NotFilled( chunk, LocalVoxelP, Dim) )
-          continue;
-
-        voxel *Voxel = &chunk->Voxels[GetIndex(Voxel_Position(x,y,z), chunk, Dim)];
-
-        voxel_position rightVoxel = LocalVoxelP + Voxel_Position(1, 0, 0);
-        voxel_position leftVoxel = LocalVoxelP - Voxel_Position(1, 0, 0);
-
-        voxel_position topVoxel = LocalVoxelP + Voxel_Position(0, 1, 0);
-        voxel_position botVoxel = LocalVoxelP - Voxel_Position(0, 1, 0);
-
-        voxel_position frontVoxel = LocalVoxelP + Voxel_Position(0, 0, 1);
-        voxel_position backVoxel = LocalVoxelP - Voxel_Position(0, 0, 1);
-
-        bool DidPushVoxel = false;
-
-        if ( (!IsInsideDim(Dim, rightVoxel)) || NotFilled( chunk, rightVoxel, Dim))
-        {
-          SetFlag(Voxel, Voxel_RightFace);
-          DidPushVoxel = true;
-        }
-        if ( (!IsInsideDim( Dim, leftVoxel  )) || NotFilled( chunk, leftVoxel, Dim))
-        {
-          SetFlag(Voxel, Voxel_LeftFace);
-          DidPushVoxel = true;
-        }
-        if ( (!IsInsideDim( Dim, botVoxel   )) || NotFilled( chunk, botVoxel, Dim))
-        {
-          SetFlag(Voxel, Voxel_BottomFace);
-          DidPushVoxel = true;
-        }
-        if ( (!IsInsideDim( Dim, topVoxel   )) || NotFilled( chunk, topVoxel, Dim))
-        {
-          SetFlag(Voxel, Voxel_TopFace);
-          DidPushVoxel = true;
-        }
-        if ( (!IsInsideDim( Dim, frontVoxel )) || NotFilled( chunk, frontVoxel, Dim))
-        {
-          SetFlag(Voxel, Voxel_FrontFace);
-          DidPushVoxel = true;
-        }
-        if ( (!IsInsideDim( Dim, backVoxel  )) || NotFilled( chunk, backVoxel, Dim))
-        {
-          SetFlag(Voxel, Voxel_BackFace);
-          DidPushVoxel = true;
-        }
-
-        if (DidPushVoxel)
-        {
-          boundary_voxel BoundaryVoxel(Voxel, LocalVoxelP);
-          PushBoundaryVoxel(chunk, &BoundaryVoxel, Dim);
-        }
-
-      }
-    }
-  }
 }
 
 void
@@ -2358,8 +2253,6 @@ DrawEntity(
 
     if (IsSet(Model, Chunk_Initialized))
     {
-      if (IsSet(Model, Chunk_RebuildBoundary))
-        BuildEntityBoundaryVoxels(Model, Entity->P.WorldP, Entity->Model.Dim);
 
       BufferChunkMesh(Plat, world, Model, Entity->P.WorldP, RG, Camera, Entity->Scale, Entity->P.Offset);
     }

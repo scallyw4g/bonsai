@@ -1018,4 +1018,38 @@ GetAABB(entity *Entity)
   return Result;
 }
 
+inline void
+PushBoundaryVoxel( chunk_data *chunk, boundary_voxel *Voxel, chunk_dimension Dim)
+{
+  Assert( chunk->BoundaryVoxelCount < Volume(Dim) );
+
+  chunk->BoundaryVoxels[chunk->BoundaryVoxelCount] = *Voxel;
+  chunk->BoundaryVoxelCount++;
+}
+
+inline b32
+IsInsideDim( voxel_position Dim, voxel_position P )
+{
+  b32 Result = False;
+
+  Result = (
+              P.x >= 0 &&
+              P.y >= 0 &&
+              P.z >= 0 &&
+
+              P.x < Dim.x &&
+              P.y < Dim.y &&
+              P.z < Dim.z
+           );
+
+  return Result;
+}
+
+inline b32
+IsInsideDim( voxel_position Dim, v3 P )
+{
+  b32 Result = IsInsideDim(Dim, Voxel_Position(P) );
+  return Result;
+}
+
 #endif
