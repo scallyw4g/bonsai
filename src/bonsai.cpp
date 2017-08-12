@@ -567,6 +567,7 @@ ProcessCollisionRule(
 
     } break;
 
+    case Collision_Player_EnemyProjectile:
     case Collision_Player_Enemy:
     {
       entity *Player = First;
@@ -595,10 +596,6 @@ ProcessCollisionRule(
       frame_event Event(Enemy, FrameEvent_Explosion);
       PushFrameEvent(EventQueue, &Event, 1);
 
-    } break;
-
-    case Collision_Player_EnemyProjectile:
-    {
     } break;
 
     case Collision_Enemy_PlayerProjectile:

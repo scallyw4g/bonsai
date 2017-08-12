@@ -289,7 +289,7 @@ SpawnProjectile(game_state *GameState, canonical_position *P, v3 Velocity, entit
       v3 CollisionVolumeRadius = V3(PROJECTILE_AABB)/2;
 
       physics Physics = {};
-      Physics.Velocity = V3(0,1000,0);
+      Physics.Velocity = Velocity;
       Physics.Speed = 1000;
 
       r32 Scale = 1.0f;
@@ -421,7 +421,7 @@ SpawnPlayer(game_state *GameState, entity *Player )
 
   r32 Scale = 0.5f;
   r32 RateOfFire = 1.0f;
-  u32 Health = 300;
+  u32 Health = PLAYER_MAX_HP;
 
   canonical_position InitialP = { V3(0,0,0), GameState->world->Center - World_Position(0, (VR_Y/2)-14 , 0) };
 
@@ -553,6 +553,19 @@ SimulateEnemy(game_state *GameState, entity *Enemy, entity *Player, r32 dt)
   {
     v3 EnemyToPlayer = Normalize(PlayerP - EnemyP);
     Enemy->Physics.Force += EnemyToPlayer*dt;
+
+    Enemy->FireCooldown -= dt;
+    if ( Enemy->FireCooldown < 0 )
+    {
+      v3 ProjectileDirection = Normalize(Enemy->Physics.Velocity);
+      if ( LengthSq(ProjectileDirection) == 0)
+      {
+        ProjectileDirection = EnemyToPlayer;
+      }
+
+      SpawnProjectile(GameState, &Enemy->P, ProjectileDirection*500 , EntityType_EnemyProjectile);
+      Enemy->FireCooldown = Enemy->RateOfFire;
+    }
   }
 
   return;
@@ -694,7 +707,7 @@ SimulatePlayer( game_state *GameState, entity *Player, hotkeys *Hotkeys, r32 dt 
     // Regular Fire
     if ( Hotkeys->Player_Fire && (Player->FireCooldown < 0) )
     {
-      SpawnProjectile(GameState, &Player->P, V3(0,2,0), EntityType_PlayerProjectile);
+      SpawnProjectile(GameState, &Player->P, V3(0,1000,0), EntityType_PlayerProjectile);
       Player->FireCooldown = Player->RateOfFire;
     }
 

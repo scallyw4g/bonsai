@@ -45,12 +45,12 @@
 
 
 #define PLAYER_COUNT             1
-#define PLAYER_MAX_HP            3
+#define PLAYER_MAX_HP            10
 #define PLAYER_STEP_MAX          1
 #define PLAYER_JUMP_STRENGTH     20.0f
 #define PLAYER_ACCEL_MULTIPLIER  150.0f
 #define PLAYER_DRAG              V3(0.9f, 0.9f, 0.0f)
-#define PLAYER_IMPULSE           V3(0,60,0)
+#define PLAYER_IMPULSE           V3(0,200,0)
 
 /* #define PLAYER_MODEL MODELS_PATH"/chr_knight.vox" */
 /* #define PLAYER_MODEL MODELS_PATH"/ephtracy.vox" */
@@ -97,7 +97,6 @@
 #define DEBUG_DRAW_SHADOW_MAP_TEXTURE 0
 #define DEBUG_HIGHLIGHT_VOID_CHUNKS   0
 #define DEBUG_DRAW_WORLD_AXIES        0
-#define DEBUG_OPTIMIZE_WORLD_GC       1
 #define DEBUG_THREAD_COUNT_BIAS       0
 #define DEBUG_PARTICLE_EFFECTS        0
 
