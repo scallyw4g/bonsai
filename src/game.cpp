@@ -200,9 +200,9 @@ SpawnEnemy(World *world, entity **WorldEntities, entity *Enemy, random_series *E
 
   physics Physics = {};
   Physics.Force = V3(0, 0, 0);
-  Physics.Mass = 1.0f;
-  Physics.Speed = ENEMY_SPEED;
-  Physics.Drag = 0.01f;
+  Physics.Mass = 0.6f;
+  Physics.Speed = 1200;
+  Physics.Drag = 1.2f;
 
   r32 Scale = 0.5f;
   r32 RateOfFire = 1.0f;
@@ -555,6 +555,7 @@ SimulateEnemy(game_state *GameState, entity *Enemy, entity *Player, r32 dt)
     Enemy->Physics.Force += EnemyToPlayer*dt;
   }
 
+  return;
 }
 
 inline b32
@@ -1038,11 +1039,13 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   world_position Max = world->VisibleRegion;
 #endif
 
+#if 0
   DEBUG_DrawAABB( world,
                   GetRenderP(WORLD_CHUNK_DIM, Min, Camera),
                   GetRenderP(WORLD_CHUNK_DIM, Max, Camera),
                   Quaternion(),
                   RED );
+#endif
 
 #if 0
   // Draw chunks that aren't initialzied

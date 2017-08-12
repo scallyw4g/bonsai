@@ -96,7 +96,7 @@ void main()
   // TODO(Jesse): Divide by some w here?
   float FragDepthShadowSpace = FragPositionShadowSpace.z;
 
-  float ShadowMapDepth = texture(shadowMap, FragPositionShadowSpace.xy).x + 0.01f;
+  float ShadowMapDepth = texture(shadowMap, FragPositionShadowSpace.xy).x + 0.001f;
 
   vec3 visibility = vec3(1.0f);
   if ( ShadowMapDepth < FragDepthShadowSpace )
