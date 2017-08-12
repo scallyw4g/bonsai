@@ -1118,6 +1118,8 @@ BuildEntityBoundaryVoxels(chunk_data *chunk, world_position WorldP, chunk_dimens
         if ( NotFilled( chunk, LocalVoxelP, Dim) )
           continue;
 
+        voxel *Voxel = &chunk->Voxels[GetIndex(Voxel_Position(x,y,z), chunk, Dim)];
+
         voxel_position rightVoxel = LocalVoxelP + Voxel_Position(1, 0, 0);
         voxel_position leftVoxel = LocalVoxelP - Voxel_Position(1, 0, 0);
 
@@ -1127,36 +1129,34 @@ BuildEntityBoundaryVoxels(chunk_data *chunk, world_position WorldP, chunk_dimens
         voxel_position frontVoxel = LocalVoxelP + Voxel_Position(0, 0, 1);
         voxel_position backVoxel = LocalVoxelP - Voxel_Position(0, 0, 1);
 
-        voxel *Voxel = &chunk->Voxels[GetIndex(Voxel_Position(x,y,z), chunk, Dim)];
-
         bool DidPushVoxel = false;
 
-        if ( IsInsideDim( Dim, rightVoxel  ) && NotFilled( chunk, rightVoxel, Dim))
+        if ( (!IsInsideDim(Dim, rightVoxel)) || NotFilled( chunk, rightVoxel, Dim))
         {
           SetFlag(Voxel, Voxel_RightFace);
           DidPushVoxel = true;
         }
-        if ( IsInsideDim( Dim, leftVoxel  ) && NotFilled( chunk, leftVoxel, Dim))
+        if ( (!IsInsideDim( Dim, leftVoxel  )) || NotFilled( chunk, leftVoxel, Dim))
         {
           SetFlag(Voxel, Voxel_LeftFace);
           DidPushVoxel = true;
         }
-        if ( IsInsideDim( Dim, botVoxel   ) && NotFilled( chunk, botVoxel, Dim))
+        if ( (!IsInsideDim( Dim, botVoxel   )) || NotFilled( chunk, botVoxel, Dim))
         {
           SetFlag(Voxel, Voxel_BottomFace);
           DidPushVoxel = true;
         }
-        if ( IsInsideDim( Dim, topVoxel   ) && NotFilled( chunk, topVoxel, Dim))
+        if ( (!IsInsideDim( Dim, topVoxel   )) || NotFilled( chunk, topVoxel, Dim))
         {
           SetFlag(Voxel, Voxel_TopFace);
           DidPushVoxel = true;
         }
-        if ( IsInsideDim( Dim, frontVoxel ) && NotFilled( chunk, frontVoxel, Dim))
+        if ( (!IsInsideDim( Dim, frontVoxel )) || NotFilled( chunk, frontVoxel, Dim))
         {
           SetFlag(Voxel, Voxel_FrontFace);
           DidPushVoxel = true;
         }
-        if ( IsInsideDim( Dim, backVoxel  ) && NotFilled( chunk, backVoxel, Dim))
+        if ( (!IsInsideDim( Dim, backVoxel  )) || NotFilled( chunk, backVoxel, Dim))
         {
           SetFlag(Voxel, Voxel_BackFace);
           DidPushVoxel = true;
