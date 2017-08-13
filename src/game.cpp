@@ -181,7 +181,7 @@ InitCamera(Camera_Object* Camera, canonical_position P, float FocalLength)
 }
 
 void
-SpawnEnemy(World *world, entity **WorldEntities, entity *Enemy, random_series *EnemyEntropy, model *GameModels)
+SpawnEnemy(world *World, entity **WorldEntities, entity *Enemy, random_series *EnemyEntropy, model *GameModels)
 {
 #if DEBUG_PARTICLE_EFFECTS
   return;
@@ -189,8 +189,8 @@ SpawnEnemy(World *world, entity **WorldEntities, entity *Enemy, random_series *E
 
   TIMED_FUNCTION();
   s32 X = (RandomPositiveS32(EnemyEntropy) % VR_X) - (RandomPositiveS32(EnemyEntropy) % VR_X);
-  s32 Y = world->Center.y + (VR_Y / 2) - DEBUG_ENTITY_COLLISION_VOL_RADIUS.y;
-  s32 Z = world->Center.z;
+  s32 Y = World->Center.y + (VR_Y / 2) - DEBUG_ENTITY_COLLISION_VOL_RADIUS.y;
+  s32 Z = World->Center.z;
 
   world_position InitialCenter = World_Position(X, Y, Z);
 
@@ -226,9 +226,9 @@ SpawnEnemy(World *world, entity **WorldEntities, entity *Enemy, random_series *E
   Enemy->Model = GameModels[ModelIndex_Enemy];
 
   // Respawn entity if it collides against the world or current entities
-  if ( GetCollision(world, Enemy).didCollide ||
+  if ( GetCollision(World, Enemy).didCollide ||
        GetCollision(WorldEntities, Enemy)    )
-    SpawnEnemy(world, WorldEntities, Enemy, EnemyEntropy, GameModels);
+    SpawnEnemy(World, WorldEntities, Enemy, EnemyEntropy, GameModels);
 
   return;
 }
@@ -281,7 +281,7 @@ SpawnEnemies(game_state *GameState)
   entity *Enemy = GetUnusedEntity(GameState);
 
   if (Enemy)
-    SpawnEnemy(GameState->world, Entities, Enemy, &GameState->Entropy, GameState->Models);
+    SpawnEnemy(GameState->World, Entities, Enemy, &GameState->Entropy, GameState->Models);
 
   return;
 }
@@ -436,7 +436,7 @@ SpawnPlayer(game_state *GameState, entity *Player )
   r32 RateOfFire = 0.8f;
   u32 Health = PLAYER_MAX_HP;
 
-  canonical_position InitialP = { V3(0,0,0), GameState->world->Center - World_Position(0, (VR_Y/2)-14 , 0) };
+  canonical_position InitialP = { V3(0,0,0), GameState->World->Center - World_Position(0, (VR_Y/2)-14 , 0) };
 
   SpawnEntity(
       Player,
@@ -477,7 +477,7 @@ UpdateVisibleRegion(game_state *GameState, world_position WorldDisp)
 {
   if (WorldDisp.y != 0) // We moved to the next chunk
   {
-    GameState->world->Center.y += WorldDisp.y;
+    GameState->World->Center.y += WorldDisp.y;
     QueueChunksForInit(GameState, World_Position(0, WorldDisp.y, 0));
   }
 
@@ -489,11 +489,11 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
 {
   TIMED_FUNCTION();
 
-  World *world = GameState->world;
+  world *World = GameState->World;
 
   v3 Remaining = GrossDelta;
 
-  chunk_dimension WorldChunkDim = world->ChunkDim;
+  chunk_dimension WorldChunkDim = World->ChunkDim;
 
   collision_event C;
 
@@ -506,7 +506,7 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
 
     Entity->P.Offset.x += StepDelta.x;
     Entity->P = Canonicalize(WorldChunkDim, Entity->P);
-    C = GetCollision(world, Entity);
+    C = GetCollision(World, Entity);
     if (C.didCollide)
     {
       Entity->Physics.Velocity.x = 0;
@@ -525,7 +525,7 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
 
     Entity->P.Offset.y += StepDelta.y;
     Entity->P = Canonicalize(WorldChunkDim, Entity->P);
-    C = GetCollision(world, Entity);
+    C = GetCollision(World, Entity);
     if (C.didCollide)
     {
       Entity->Physics.Velocity.y = 0;
@@ -546,7 +546,7 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
 
   Entity->P = Canonicalize(WorldChunkDim, Entity->P);
 
-  collision_event AssertCollision = GetCollision(world, Entity );
+  collision_event AssertCollision = GetCollision(World, Entity );
 
   // Entites that aren't moving can still be positioned outside the world if
   // the player moves the world to do so
@@ -599,7 +599,7 @@ SimulateAndRenderParticleSystems(
     v3 EntityDelta
   )
 {
-  World *world = GameState->world;
+  world *World = GameState->World;
   Camera_Object *Camera = GameState->Camera;
   particle_system *System = SystemEntity->Emitter;
   // noise_3d *Turb = GameState->Turb;
@@ -646,7 +646,7 @@ SimulateAndRenderParticleSystems(
     u8 ColorIndex = (u8)((Particle->RemainingLifespan / System->ParticleLifespan) * (PARTICLE_SYSTEM_COLOR_COUNT-0.0001f));
     Assert(ColorIndex >= 0 && ColorIndex <= PARTICLE_SYSTEM_COLOR_COUNT);
 
-    DrawParticle(world, &SystemEntity->P, Camera, Particle, Diameter, System->Colors[ColorIndex]);
+    DrawParticle(World, &SystemEntity->P, Camera, Particle, Diameter, System->Colors[ColorIndex]);
 
 
   }
@@ -754,7 +754,7 @@ AllocateParticleSystems(platform *Plat, game_state *GameState)
       ++SystemIndex)
   {
     GameState->ParticleSystems[SystemIndex] =
-      PUSH_STRUCT_CHECKED(particle_system, GameState->world->WorldStorage.Arena, 1);
+      PUSH_STRUCT_CHECKED(particle_system, GameState->World->WorldStorage.Arena, 1);
   }
 
   return;
@@ -897,19 +897,19 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
   GL_Global = &Plat->GL;
 
-  World *world          = GameState->world;
+  world *World          = GameState->World;
 
   entity *Player        = GameState->Player;
   Camera_Object *Camera = GameState->Camera;
 
-  chunk_dimension WorldChunkDim = world->ChunkDim;
+  chunk_dimension WorldChunkDim = World->ChunkDim;
 
   RenderGroup *RG                  = GameState->RG;
   ShadowRenderGroup *SG            = GameState->SG;
 
   r32 VrHalfDim = (VR_X*CD_X/2.0f);
 
-  v3 WorldCenterRenderP = GetRenderP(world->ChunkDim, world->Center, Camera);
+  v3 WorldCenterRenderP = GetRenderP(World->ChunkDim, World->Center, Camera);
 
   aabb *Floor = GameState->FolieTable + 0;
   aabb *LeftWall = GameState->FolieTable + 1;
@@ -923,7 +923,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
     v3 Center = WorldCenterRenderP -
                   V3(VrHalfDim, YOffset, ZOffset);
 
-    *Floor = aabb(Center, V3(world->ChunkDim.x+VrHalfDim, WallLength, 0.5f));
+    *Floor = aabb(Center, V3(World->ChunkDim.x+VrHalfDim, WallLength, 0.5f));
   }
 
   {
@@ -934,16 +934,16 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   }
   {
     v3 Center = WorldCenterRenderP -
-                  V3(-VrHalfDim-world->ChunkDim.x, YOffset, 25.0f);
+                  V3(-VrHalfDim-World->ChunkDim.x, YOffset, 25.0f);
 
     *RightWall = aabb(Center, V3(WallThickness, WallLength, ZOffset));
   }
 
 
 #if DEBUG_DRAW_WORLD_AXIES
-  DEBUG_DrawLine(world, V3(0,0,0), V3(10000, 0, 0), RED, 0.5f );
-  DEBUG_DrawLine(world, V3(0,0,0), V3(0, 10000, 0), GREEN, 0.5f );
-  DEBUG_DrawLine(world, V3(0,0,0), V3(0, 0, 10000), TEAL, 0.5f );
+  DEBUG_DrawLine(World, V3(0,0,0), V3(10000, 0, 0), RED, 0.5f );
+  DEBUG_DrawLine(World, V3(0,0,0), V3(0, 10000, 0), GREEN, 0.5f );
+  DEBUG_DrawLine(World, V3(0,0,0), V3(0, 0, 10000), TEAL, 0.5f );
 #endif
 
   accumulatedTime += Plat->dt;
@@ -983,13 +983,13 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
   END_BLOCK("Sim");
 
-  UpdateCameraP(Plat, world, Player, Camera);
+  UpdateCameraP(Plat, World, Player, Camera);
   RG->Basis.ViewMatrix = GetViewMatrix(WorldChunkDim, Camera);
 
   GlobalLightTheta += Plat->dt;
 
   //
-  // Draw world
+  // Draw World
 
   TIMED_BLOCK("Render");
 
@@ -999,15 +999,15 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   world_position VisibleRadius = World_Position(VR_X, VR_Y, VR_Z)/2;
 
 #if 1
-  world_position Min = world->Center - VisibleRadius;
-  world_position Max = world->Center + VisibleRadius + 1;
+  world_position Min = World->Center - VisibleRadius;
+  world_position Max = World->Center + VisibleRadius + 1;
 #else
   world_position Min = World_Position(0,0,0);;
-  world_position Max = world->VisibleRegion;
+  world_position Max = World->VisibleRegion;
 #endif
 
 #if 0
-  DEBUG_DrawAABB( world,
+  DEBUG_DrawAABB( World,
                   GetRenderP(WORLD_CHUNK_DIM, Min, Camera),
                   GetRenderP(WORLD_CHUNK_DIM, Max, Camera),
                   Quaternion(),
@@ -1024,13 +1024,13 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
         for ( s32 x = Min.x; x < Max.x; ++ x )
         {
           world_position TestP = World_Position(x,y,z);
-          world_chunk *Chunk = GetWorldChunk(world, TestP);
+          world_chunk *Chunk = GetWorldChunk(World, TestP);
 
           if (!Chunk || NotSet(Chunk, Chunk_Initialized))
-            DEBUG_DrawChunkAABB( world, TestP, Camera, Quaternion(), RED);
+            DEBUG_DrawChunkAABB( World, TestP, Camera, Quaternion(), RED);
 
           if (Chunk && IsSet(Chunk, Chunk_Queued))
-            DEBUG_DrawChunkAABB( world, TestP, Camera, Quaternion(), BLUE);
+            DEBUG_DrawChunkAABB( World, TestP, Camera, Quaternion(), BLUE);
         }
       }
     }
@@ -1042,13 +1042,13 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
         ChunkIndex < WORLD_HASH_SIZE;
         ++ChunkIndex)
   {
-    world_chunk *chunk = world->ChunkHash[ChunkIndex];
+    world_chunk *chunk = World->ChunkHash[ChunkIndex];
 
     while (chunk)
     {
       if ( (chunk->WorldP >= Min && chunk->WorldP < Max) )
       {
-        /* DEBUG_DrawChunkAABB( world, chunk, Camera, Quaternion(), BLUE ); */
+        /* DEBUG_DrawChunkAABB( World, chunk, Camera, Quaternion(), BLUE ); */
         DrawWorldChunk(GameState, chunk, RG);
         chunk = chunk->Next;
       }
@@ -1056,7 +1056,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
       {
         world_chunk *ChunkToFree = chunk;
         chunk = chunk->Next;
-        FreeWorldChunk(world, ChunkToFree);
+        FreeWorldChunk(World, ChunkToFree);
       }
     }
   }
@@ -1068,7 +1068,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
         ++EntityIndex)
   {
     entity *Enemy = GameState->EntityTable[EntityIndex];
-    DrawEntity(Plat, world, Enemy, Camera, RG);
+    DrawEntity(Plat, World, Enemy, Camera, RG);
   }
   END_BLOCK("Entities");
 
@@ -1077,16 +1077,16 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
       ++FolieIndex)
   {
     aabb *AABB = GameState->FolieTable + FolieIndex;
-    DrawFolie(world, Camera, AABB);
+    DrawFolie(World, Camera, AABB);
   }
 
-  DrawEntity(Plat, world, GameState->Player, Camera, RG);
+  DrawEntity(Plat, World, GameState->Player, Camera, RG);
 
-  FlushRenderBuffers(Plat, world, RG, SG, Camera);
+  FlushRenderBuffers(Plat, World, RG, SG, Camera);
 
   /* DEBUG_FRAME_END(Plat->dt); */
 
-  DrawWorldToFullscreenQuad(Plat, world, RG, SG, Camera);
+  DrawWorldToFullscreenQuad(Plat, World, RG, SG, Camera);
 
   AssertNoGlErrors;
 

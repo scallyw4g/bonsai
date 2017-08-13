@@ -65,7 +65,7 @@ struct game_mode
 
 struct game_state
 {
-  World         *world;
+  world         *World;
   platform      *Plat;
   entity        *Player;
   Camera_Object *Camera;

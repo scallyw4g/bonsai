@@ -312,7 +312,7 @@ struct entity
   s32 Health; // Only needed for Player
 };
 
-struct World
+struct world
 {
   world_chunk **ChunkHash;
 
@@ -729,7 +729,7 @@ GetWorldChunkHash(world_position P)
 }
 
 void
-FreeWorldChunk(World *world, world_chunk *chunk)
+FreeWorldChunk(world *World, world_chunk *chunk)
 {
   // Only free chunks that have been initialized, or chunks that had previously
   // been marked as garbage and have been flushed all the way through the world
@@ -750,15 +750,15 @@ FreeWorldChunk(World *world, world_chunk *chunk)
     // Unlink from head end of linked list
     if (!chunk->Prev)
     {
-      world->ChunkHash[GetWorldChunkHash(chunk->WorldP)] = chunk->Next;
+      World->ChunkHash[GetWorldChunkHash(chunk->WorldP)] = chunk->Next;
     }
 
     chunk->Prev = 0;
     chunk->Next = 0;
     chunk->PB.Count = 0;
 
-    Assert(world->FreeChunkCount < FREELIST_SIZE);
-    world->FreeChunks[world->FreeChunkCount++] = chunk;
+    Assert(World->FreeChunkCount < FREELIST_SIZE);
+    World->FreeChunks[World->FreeChunkCount++] = chunk;
 
     ZeroChunk(chunk->Data, Volume(WORLD_CHUNK_DIM));
 
@@ -807,10 +807,10 @@ AllocateChunk(memory_arena *WorldStorage, chunk_dimension Dim)
 }
 
 void
-InsertChunkIntoWorld(World *world, world_chunk *chunk)
+InsertChunkIntoWorld(world *World, world_chunk *chunk)
 {
   unsigned int HashIndex = GetWorldChunkHash(chunk->WorldP);
-  world_chunk *Last = world->ChunkHash[HashIndex];;
+  world_chunk *Last = World->ChunkHash[HashIndex];;
 
   if (Last)
   {
@@ -827,14 +827,14 @@ InsertChunkIntoWorld(World *world, world_chunk *chunk)
   }
   else
   {
-    world->ChunkHash[HashIndex] = chunk;
+    World->ChunkHash[HashIndex] = chunk;
   }
 
   return;
 }
 
 world_chunk*
-AllocateWorldChunk(memory_arena *Storage, World *world, world_position WorldP)
+AllocateWorldChunk(memory_arena *Storage, world *World, world_position WorldP)
 {
   world_chunk *Result = PUSH_STRUCT_CHECKED(world_chunk, Storage, 1);
 
@@ -843,7 +843,7 @@ AllocateWorldChunk(memory_arena *Storage, World *world, world_position WorldP)
 
   Result->WorldP = WorldP;
 
-  InsertChunkIntoWorld(world, Result);
+  InsertChunkIntoWorld(World, Result);
 
   return Result;
 }
@@ -866,10 +866,10 @@ IsFacingPoint( v3 FaceToPoint, v3 FaceNormal )
 }
 
 world_chunk*
-GetWorldChunk( World *world, world_position P )
+GetWorldChunk( world *World, world_position P )
 {
   unsigned int HashIndex = GetWorldChunkHash(P);
-  world_chunk *Result = world->ChunkHash[HashIndex];
+  world_chunk *Result = World->ChunkHash[HashIndex];
 
   while (Result)
   {
@@ -966,7 +966,7 @@ NotFilledInChunk( chunk_data *Chunk, voxel_position VoxelP, chunk_dimension Dim)
 }
 
 inline b32
-IsFilledInWorld( World *world, world_chunk *chunk, canonical_position VoxelP )
+IsFilledInWorld( world *World, world_chunk *chunk, canonical_position VoxelP )
 {
   b32 isFilled = true;
 
@@ -976,19 +976,19 @@ IsFilledInWorld( World *world, world_chunk *chunk, canonical_position VoxelP )
 
     if ( chunk->WorldP != VoxelP.WorldP )
     {
-      localChunk = GetWorldChunk(world, VoxelP.WorldP);
+      localChunk = GetWorldChunk(World, VoxelP.WorldP);
     }
 
-    isFilled = localChunk && IsFilledInChunk(localChunk->Data, Voxel_Position(VoxelP.Offset), world->ChunkDim );
+    isFilled = localChunk && IsFilledInChunk(localChunk->Data, Voxel_Position(VoxelP.Offset), World->ChunkDim );
   }
 
   return isFilled;
 }
 
 inline b32
-NotFilledInWorld( World *world, world_chunk *chunk, canonical_position VoxelP )
+NotFilledInWorld( world *World, world_chunk *chunk, canonical_position VoxelP )
 {
-  b32 Result = !(IsFilledInWorld(world, chunk, VoxelP));
+  b32 Result = !(IsFilledInWorld(World, chunk, VoxelP));
   return Result;
 }
 

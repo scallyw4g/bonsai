@@ -10,7 +10,7 @@
 #define PI 3.1415926535897932384626433832795028841971693993751058209749445923078164062
 #define PIf (float(PI))
 
-struct World;
+struct world;
 struct canonical_position;
 
 // 8 Bit types

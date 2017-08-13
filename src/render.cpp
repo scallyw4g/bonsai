@@ -414,7 +414,7 @@ BufferVerts(
 }
 
 inline void
-DEBUG_DrawPointMarker( World *world, v3 RenderP, int ColorIndex, v3 Diameter)
+DEBUG_DrawPointMarker( world *World, v3 RenderP, int ColorIndex, v3 Diameter)
 {
   float FaceColors[FACE_COLOR_SIZE];
   GetColorData(ColorIndex, &FaceColors[0]);;
@@ -422,22 +422,22 @@ DEBUG_DrawPointMarker( World *world, v3 RenderP, int ColorIndex, v3 Diameter)
   r32 VertexData[BYTES_PER_FACE];
 
   RightFaceVertexData( RenderP, Diameter, VertexData);
-  BufferVerts(&world->Mesh, 6, VertexData, RightFaceNormalData, FaceColors, sizeof(VertexData));
+  BufferVerts(&World->Mesh, 6, VertexData, RightFaceNormalData, FaceColors, sizeof(VertexData));
 
   LeftFaceVertexData( RenderP, Diameter, VertexData);
-  BufferVerts(&world->Mesh, 6, VertexData, LeftFaceNormalData, FaceColors, sizeof(VertexData));
+  BufferVerts(&World->Mesh, 6, VertexData, LeftFaceNormalData, FaceColors, sizeof(VertexData));
 
   BottomFaceVertexData( RenderP, Diameter, VertexData);
-  BufferVerts(&world->Mesh, 6, VertexData, BottomFaceNormalData, FaceColors, sizeof(VertexData));
+  BufferVerts(&World->Mesh, 6, VertexData, BottomFaceNormalData, FaceColors, sizeof(VertexData));
 
   TopFaceVertexData( RenderP, Diameter, VertexData);
-  BufferVerts(&world->Mesh, 6, VertexData, TopFaceNormalData, FaceColors, sizeof(VertexData));
+  BufferVerts(&World->Mesh, 6, VertexData, TopFaceNormalData, FaceColors, sizeof(VertexData));
 
   FrontFaceVertexData( RenderP, Diameter, VertexData);
-  BufferVerts(&world->Mesh, 6, VertexData, FrontFaceNormalData, FaceColors, sizeof(VertexData));
+  BufferVerts(&World->Mesh, 6, VertexData, FrontFaceNormalData, FaceColors, sizeof(VertexData));
 
   BackFaceVertexData( RenderP, Diameter, VertexData);
-  BufferVerts(&world->Mesh, 6, VertexData, BackFaceNormalData, FaceColors, sizeof(VertexData));
+  BufferVerts(&World->Mesh, 6, VertexData, BackFaceNormalData, FaceColors, sizeof(VertexData));
 
   return;
 }
@@ -446,7 +446,7 @@ DEBUG_DrawPointMarker( World *world, v3 RenderP, int ColorIndex, v3 Diameter)
 GLOBAL_VARIABLE v3 GlobalLightPosition = {};
 
 inline m4
-GetDepthMVP(World *world, Camera_Object *Camera)
+GetDepthMVP(world *World, Camera_Object *Camera)
 {
   // Compute the MVP matrix from the light's point of view
   v3 Translate = V3(0,300,0);
@@ -469,7 +469,7 @@ GetDepthMVP(World *world, Camera_Object *Camera)
 }
 
 void
-DrawWorldToFullscreenQuad( platform *Plat, World *world, RenderGroup *RG, ShadowRenderGroup *SG, Camera_Object *Camera)
+DrawWorldToFullscreenQuad( platform *Plat, world *World, RenderGroup *RG, ShadowRenderGroup *SG, Camera_Object *Camera)
 {
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -486,14 +486,14 @@ DrawWorldToFullscreenQuad( platform *Plat, World *world, RenderGroup *RG, Shadow
     V4(0.5, 0.5, 0.5, 1.0)
   };
 
-  m4 depthBiasMVP = biasMatrix * GetDepthMVP(world, Camera);
+  m4 depthBiasMVP = biasMatrix * GetDepthMVP(World, Camera);
   GL_Global->glUniformMatrix4fv(RG->DepthBiasMVPID, 1, GL_FALSE, &depthBiasMVP.E[0].E[0]);
 
   m4 VP = RG->Basis.ViewMatrix;
 
   GL_Global->glUniformMatrix4fv(RG->ViewMatrixUniform, 1, GL_FALSE, &VP.E[0].E[0]);
 
-  v3 CameraRenderP = GetRenderP(world->ChunkDim, Camera->P, Camera);
+  v3 CameraRenderP = GetRenderP(World->ChunkDim, Camera->P, Camera);
   GL_Global->glUniform3fv(RG->CameraPosUniform, 1, &CameraRenderP.E[0]);
 
   GL_Global->glActiveTexture(GL_TEXTURE0);
@@ -536,11 +536,11 @@ DrawWorldToFullscreenQuad( platform *Plat, World *world, RenderGroup *RG, Shadow
 }
 
 void
-RenderShadowMap(World *world, ShadowRenderGroup *SG, RenderGroup *RG, Camera_Object *Camera)
+RenderShadowMap(world *World, ShadowRenderGroup *SG, RenderGroup *RG, Camera_Object *Camera)
 {
   glViewport(0, 0, SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y);
 
-  m4 depthMVP = GetDepthMVP(world, Camera);
+  m4 depthMVP = GetDepthMVP(World, Camera);
 
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -553,7 +553,7 @@ RenderShadowMap(World *world, ShadowRenderGroup *SG, RenderGroup *RG, Camera_Obj
   // 1rst attribute buffer : vertices
   GL_Global->glEnableVertexAttribArray(0);
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->vertexbuffer);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, world->Mesh.filled, world->Mesh.VertexData, GL_STATIC_DRAW);
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, World->Mesh.filled, World->Mesh.VertexData, GL_STATIC_DRAW);
   GL_Global->glVertexAttribPointer(
     0,                  // The attribute we want to configure
     3,                  // size
@@ -563,7 +563,7 @@ RenderShadowMap(World *world, ShadowRenderGroup *SG, RenderGroup *RG, Camera_Obj
     (void*)0            // array buffer offset
   );
 
-  glDrawArrays(GL_TRIANGLES, 0, world->Mesh.VertexCount);
+  glDrawArrays(GL_TRIANGLES, 0, World->Mesh.VertexCount);
 
   GL_Global->glDisableVertexAttribArray(0);
 
@@ -573,7 +573,7 @@ RenderShadowMap(World *world, ShadowRenderGroup *SG, RenderGroup *RG, Camera_Obj
 }
 
 void
-RenderWorld( platform *Plat, World *world, RenderGroup *RG)
+RenderWorld( platform *Plat, world *World, RenderGroup *RG)
 {
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO);
 
@@ -588,7 +588,7 @@ RenderWorld( platform *Plat, World *world, RenderGroup *RG)
   // Vertices
   GL_Global->glEnableVertexAttribArray(0);
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->vertexbuffer);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, world->Mesh.filled, world->Mesh.VertexData, GL_STATIC_DRAW);
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, World->Mesh.filled, World->Mesh.VertexData, GL_STATIC_DRAW);
   GL_Global->glVertexAttribPointer(
     0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
     3,                  // size
@@ -601,7 +601,7 @@ RenderWorld( platform *Plat, World *world, RenderGroup *RG)
   // Colors
   GL_Global->glEnableVertexAttribArray(1);
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->colorbuffer);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, world->Mesh.filled, world->Mesh.ColorData, GL_STATIC_DRAW);
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, World->Mesh.filled, World->Mesh.ColorData, GL_STATIC_DRAW);
   GL_Global->glVertexAttribPointer(
     1,                  // attribute 1. No particular reason for 1, but must match the layout in the shader.
     3,                  // size
@@ -614,7 +614,7 @@ RenderWorld( platform *Plat, World *world, RenderGroup *RG)
   // Normals
   GL_Global->glEnableVertexAttribArray(2);
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->normalbuffer);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, world->Mesh.filled, world->Mesh.NormalData, GL_STATIC_DRAW);
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, World->Mesh.filled, World->Mesh.NormalData, GL_STATIC_DRAW);
   GL_Global->glVertexAttribPointer(
     2,
     3,                  // size
@@ -624,7 +624,7 @@ RenderWorld( platform *Plat, World *world, RenderGroup *RG)
     (void*)0            // array buffer offset
   );
 
-  glDrawArrays(GL_TRIANGLES, 0, world->Mesh.VertexCount);
+  glDrawArrays(GL_TRIANGLES, 0, World->Mesh.VertexCount);
 
   GL_Global->glDisableVertexAttribArray(0);
   GL_Global->glDisableVertexAttribArray(1);
@@ -636,7 +636,7 @@ RenderWorld( platform *Plat, World *world, RenderGroup *RG)
 inline void
 FlushRenderBuffers(
     platform *Plat,
-    World *world,
+    world *World,
     RenderGroup *RG,
     ShadowRenderGroup *SG,
     Camera_Object *Camera
@@ -644,15 +644,15 @@ FlushRenderBuffers(
 {
   TIMED_FUNCTION();
 
-  RenderShadowMap(world, SG, RG, Camera);
+  RenderShadowMap(World, SG, RG, Camera);
 
-  RenderWorld(Plat, world, RG);
+  RenderWorld(Plat, World, RG);
 
   AssertNoGlErrors;
 
-  world->Mesh.VertexCount = 0;
+  World->Mesh.VertexCount = 0;
 
-  world->Mesh.filled = 0;
+  World->Mesh.filled = 0;
 
   return;
 }
@@ -716,7 +716,7 @@ RotatePoint(v3 P1, v3 P2)
 }
 
 inline void
-DEBUG_DrawLine(World *world, v3 P1, v3 P2, int ColorIndex, float Thickness )
+DEBUG_DrawLine(world *World, v3 P1, v3 P2, int ColorIndex, float Thickness )
 {
   // 2 verts per line, 3 floats per vert
 
@@ -750,7 +750,7 @@ DEBUG_DrawLine(World *world, v3 P1, v3 P2, int ColorIndex, float Thickness )
     };
 
 
-    BufferVerts(&world->Mesh,
+    BufferVerts(&World->Mesh,
         6,
         localVertexData,
         localNormalData,
@@ -777,7 +777,7 @@ DEBUG_DrawLine(World *world, v3 P1, v3 P2, int ColorIndex, float Thickness )
     };
 
 
-    BufferVerts(&world->Mesh,
+    BufferVerts(&World->Mesh,
         6,
         localVertexData,
         localNormalData,
@@ -813,20 +813,20 @@ DEBUG_DrawLine(World *world, v3 P1, v3 P2, int ColorIndex, float Thickness )
 }
 
 inline void
-DEBUG_DrawVectorAt(World *world, v3 Offset, v3 Vector, int ColorIndex, float Thickness )
+DEBUG_DrawVectorAt(world *World, v3 Offset, v3 Vector, int ColorIndex, float Thickness )
 {
-  DEBUG_DrawLine(world, Offset, Vector + Offset, ColorIndex, Thickness );
+  DEBUG_DrawLine(World, Offset, Vector + Offset, ColorIndex, Thickness );
 }
 
 inline void
-DEBUG_DrawLine(World *world, line Line, int ColorIndex, float Thickness )
+DEBUG_DrawLine(world *World, line Line, int ColorIndex, float Thickness )
 {
-  DEBUG_DrawLine(world, Line.MinP, Line.MaxP, ColorIndex, Thickness);
+  DEBUG_DrawLine(World, Line.MinP, Line.MaxP, ColorIndex, Thickness);
   return;
 }
 
 void
-DEBUG_DrawAABB( World *world, v3 MinP, v3 MaxP, Quaternion Rotation, int ColorIndex, float Thickness = DEFAULT_LINE_THICKNESS )
+DEBUG_DrawAABB( world *World, v3 MinP, v3 MaxP, Quaternion Rotation, int ColorIndex, float Thickness = DEFAULT_LINE_THICKNESS )
 {
   /* v3 HalfDim = (GetRenderP(world, MaxCP) - GetRenderP(world, MinCP)) / 2; */
 
@@ -877,34 +877,34 @@ DEBUG_DrawAABB( World *world, v3 MinP, v3 MaxP, Quaternion Rotation, int ColorIn
   // Render
   //
   // Top
-  DEBUG_DrawLine(world, TopRL, TopRR, ColorIndex, Thickness);
-  DEBUG_DrawLine(world, TopFL, TopFR, ColorIndex, Thickness);
-  DEBUG_DrawLine(world, TopFL, TopRL, ColorIndex, Thickness);
-  DEBUG_DrawLine(world, TopFR, TopRR, ColorIndex, Thickness);
+  DEBUG_DrawLine(World, TopRL, TopRR, ColorIndex, Thickness);
+  DEBUG_DrawLine(World, TopFL, TopFR, ColorIndex, Thickness);
+  DEBUG_DrawLine(World, TopFL, TopRL, ColorIndex, Thickness);
+  DEBUG_DrawLine(World, TopFR, TopRR, ColorIndex, Thickness);
 
   // Right
-  DEBUG_DrawLine(world, TopFR, BotFR, ColorIndex, Thickness);
-  DEBUG_DrawLine(world, TopRR, BotRR, ColorIndex, Thickness);
+  DEBUG_DrawLine(World, TopFR, BotFR, ColorIndex, Thickness);
+  DEBUG_DrawLine(World, TopRR, BotRR, ColorIndex, Thickness);
 
   // Left
-  DEBUG_DrawLine(world, TopFL, BotFL, ColorIndex, Thickness);
-  DEBUG_DrawLine(world, TopRL, BotRL, ColorIndex, Thickness);
+  DEBUG_DrawLine(World, TopFL, BotFL, ColorIndex, Thickness);
+  DEBUG_DrawLine(World, TopRL, BotRL, ColorIndex, Thickness);
 
   // Bottom
-  DEBUG_DrawLine(world, BotRL, BotRR, ColorIndex, Thickness);
-  DEBUG_DrawLine(world, BotFL, BotFR, ColorIndex, Thickness);
-  DEBUG_DrawLine(world, BotFL, BotRL, ColorIndex, Thickness);
-  DEBUG_DrawLine(world, BotFR, BotRR, ColorIndex, Thickness);
+  DEBUG_DrawLine(World, BotRL, BotRR, ColorIndex, Thickness);
+  DEBUG_DrawLine(World, BotFL, BotFR, ColorIndex, Thickness);
+  DEBUG_DrawLine(World, BotFL, BotRL, ColorIndex, Thickness);
+  DEBUG_DrawLine(World, BotFR, BotRR, ColorIndex, Thickness);
 
   return;
 }
 
 inline void
-DEBUG_DrawAABB( World *world, aabb Rect, Quaternion Rotation, int ColorIndex, float Thickness = DEFAULT_LINE_THICKNESS )
+DEBUG_DrawAABB( world *World, aabb Rect, Quaternion Rotation, int ColorIndex, float Thickness = DEFAULT_LINE_THICKNESS )
 {
   v3 MinP = Rect.Center - Rect.Radius;
   v3 MaxP = Rect.Center + Rect.Radius;
-  DEBUG_DrawAABB( world, MinP, MaxP, Rotation, ColorIndex, Thickness );
+  DEBUG_DrawAABB( World, MinP, MaxP, Rotation, ColorIndex, Thickness );
   return;
 }
 
@@ -920,24 +920,24 @@ GetModelSpaceP(chunk_data *chunk, v3 P)
 }
 
 inline void
-DEBUG_DrawChunkAABB( World *world, world_position WorldP, Camera_Object *Camera,
+DEBUG_DrawChunkAABB( world *World, world_position WorldP, Camera_Object *Camera,
                      Quaternion Rotation, s32 ColorIndex , r32 Thickness = DEFAULT_LINE_THICKNESS)
 {
-  v3 MinP = GetRenderP(world->ChunkDim, Canonical_Position(V3(0,0,0), WorldP), Camera);
-  v3 MaxP = GetRenderP(world->ChunkDim, Canonical_Position(WORLD_CHUNK_DIM, WorldP), Camera);
+  v3 MinP = GetRenderP(World->ChunkDim, Canonical_Position(V3(0,0,0), WorldP), Camera);
+  v3 MaxP = GetRenderP(World->ChunkDim, Canonical_Position(WORLD_CHUNK_DIM, WorldP), Camera);
 
-  DEBUG_DrawAABB(world, MinP, MaxP , Rotation, ColorIndex, Thickness);
+  DEBUG_DrawAABB(World, MinP, MaxP , Rotation, ColorIndex, Thickness);
   return;
 }
 
 inline void
-DEBUG_DrawChunkAABB( World *world, world_chunk *chunk, Camera_Object *Camera,
+DEBUG_DrawChunkAABB( world *World, world_chunk *chunk, Camera_Object *Camera,
                      Quaternion Rotation, s32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS)
 {
-  v3 MinP = GetRenderP(world->ChunkDim, Canonical_Position(V3(0,0,0), chunk->WorldP), Camera);
-  v3 MaxP = GetRenderP(world->ChunkDim, Canonical_Position(world->ChunkDim, chunk->WorldP), Camera);
+  v3 MinP = GetRenderP(World->ChunkDim, Canonical_Position(V3(0,0,0), chunk->WorldP), Camera);
+  v3 MaxP = GetRenderP(World->ChunkDim, Canonical_Position(World->ChunkDim, chunk->WorldP), Camera);
 
-  DEBUG_DrawAABB(world, MinP, MaxP , Rotation, ColorIndex, Thickness);
+  DEBUG_DrawAABB(World, MinP, MaxP , Rotation, ColorIndex, Thickness);
   return;
 }
 
@@ -1008,7 +1008,7 @@ Clamp01( voxel_position V )
 }
 
 void
-BuildExteriorBoundaryVoxels( World *world, world_chunk *chunk, chunk_dimension Dim, world_chunk *Neighbor, voxel_position NeighborVector )
+BuildExteriorBoundaryVoxels( world *World, world_chunk *chunk, chunk_dimension Dim, world_chunk *Neighbor, voxel_position NeighborVector )
 {
   voxel_position nvSq = (NeighborVector*NeighborVector);
 
@@ -1069,10 +1069,10 @@ BuildExteriorBoundaryVoxels( World *world, world_chunk *chunk, chunk_dimension D
 }
 
 void
-BuildWorldChunkBoundaryVoxels(World *world, world_chunk *WorldChunk)
+BuildWorldChunkBoundaryVoxels(world *World, world_chunk *WorldChunk)
 {
   chunk_data *chunk = WorldChunk->Data;
-  chunk_dimension Dim = world->ChunkDim;
+  chunk_dimension Dim = World->ChunkDim;
 
   chunk->BoundaryVoxelCount = 0;
 
@@ -1084,9 +1084,9 @@ BuildWorldChunkBoundaryVoxels(World *world, world_chunk *WorldChunk)
     {
       for ( int x = 0; x < Dim.x ; ++x )
       {
-        canonical_position CurrentP  = Canonical_Position(world->ChunkDim, V3(x,y,z), WorldChunk->WorldP);
+        canonical_position CurrentP  = Canonical_Position(World->ChunkDim, V3(x,y,z), WorldChunk->WorldP);
 
-        if ( NotFilledInWorld( world, WorldChunk, CurrentP ) )
+        if ( NotFilledInWorld( World, WorldChunk, CurrentP ) )
           continue;
 
         canonical_position rightVoxel = Canonicalize(Dim, CurrentP + V3(1, 0, 0));
@@ -1102,32 +1102,32 @@ BuildWorldChunkBoundaryVoxels(World *world, world_chunk *WorldChunk)
 
         bool DidPushVoxel = false;
 
-        if ( NotFilledInWorld( world, WorldChunk, rightVoxel ) )
+        if ( NotFilledInWorld( World, WorldChunk, rightVoxel ) )
         {
           SetFlag(Voxel, Voxel_RightFace);
           DidPushVoxel = true;
         }
-        if ( NotFilledInWorld( world, WorldChunk, leftVoxel ) )
+        if ( NotFilledInWorld( World, WorldChunk, leftVoxel ) )
         {
           SetFlag(Voxel, Voxel_LeftFace);
           DidPushVoxel = true;
         }
-        if ( NotFilledInWorld( world, WorldChunk, botVoxel   ) )
+        if ( NotFilledInWorld( World, WorldChunk, botVoxel   ) )
         {
           SetFlag(Voxel, Voxel_BottomFace);
           DidPushVoxel = true;
         }
-        if ( NotFilledInWorld( world, WorldChunk, topVoxel   ) )
+        if ( NotFilledInWorld( World, WorldChunk, topVoxel   ) )
         {
           SetFlag(Voxel, Voxel_TopFace);
           DidPushVoxel = true;
         }
-        if ( NotFilledInWorld( world, WorldChunk, frontVoxel ) )
+        if ( NotFilledInWorld( World, WorldChunk, frontVoxel ) )
         {
           SetFlag(Voxel, Voxel_FrontFace);
           DidPushVoxel = true;
         }
-        if ( NotFilledInWorld( world, WorldChunk, backVoxel  ) )
+        if ( NotFilledInWorld( World, WorldChunk, backVoxel  ) )
         {
           SetFlag(Voxel, Voxel_BackFace);
           DidPushVoxel = true;
@@ -1176,7 +1176,7 @@ ClearFramebuffers(RenderGroup *RG, ShadowRenderGroup *SG)
 void
 BufferChunkMesh(
     platform *Plat,
-    World *world,
+    world *World,
     chunk_data *chunk,
     world_position WorldP,
     RenderGroup *RG,
@@ -1188,7 +1188,7 @@ BufferChunkMesh(
   r32 FaceColors[FACE_COLOR_SIZE];
 
   v3 ModelBasisP =
-    GetRenderP( world->ChunkDim, Canonical_Position(Offset, WorldP), Camera);
+    GetRenderP( World->ChunkDim, Canonical_Position(Offset, WorldP), Camera);
 
   for (int VoxIndex = 0;
        VoxIndex < chunk->BoundaryVoxelCount;
@@ -1208,37 +1208,37 @@ BufferChunkMesh(
     if ( IsSet( V, Voxel_RightFace ) )
     {
       RightFaceVertexData( MinP, V3(Diameter), VertexData);
-      BufferVerts(&world->Mesh, 6, VertexData, RightFaceNormalData, FaceColors, sizeof(VertexData));
+      BufferVerts(&World->Mesh, 6, VertexData, RightFaceNormalData, FaceColors, sizeof(VertexData));
     }
 
     if ( IsSet( V, Voxel_LeftFace ) )
     {
       LeftFaceVertexData( MinP, V3(Diameter), VertexData);
-      BufferVerts(&world->Mesh, 6, VertexData, LeftFaceNormalData, FaceColors, sizeof(VertexData));
+      BufferVerts(&World->Mesh, 6, VertexData, LeftFaceNormalData, FaceColors, sizeof(VertexData));
     }
 
     if ( IsSet( V, Voxel_BottomFace ) )
     {
       BottomFaceVertexData( MinP, V3(Diameter), VertexData);
-      BufferVerts(&world->Mesh, 6, VertexData, BottomFaceNormalData, FaceColors, sizeof(VertexData));
+      BufferVerts(&World->Mesh, 6, VertexData, BottomFaceNormalData, FaceColors, sizeof(VertexData));
     }
 
     if ( IsSet( V, Voxel_TopFace ) )
     {
       TopFaceVertexData( MinP, V3(Diameter), VertexData);
-      BufferVerts(&world->Mesh, 6, VertexData, TopFaceNormalData, FaceColors, sizeof(VertexData));
+      BufferVerts(&World->Mesh, 6, VertexData, TopFaceNormalData, FaceColors, sizeof(VertexData));
     }
 
     if ( IsSet( V, Voxel_FrontFace ) )
     {
       FrontFaceVertexData( MinP, V3(Diameter), VertexData);
-      BufferVerts(&world->Mesh, 6, VertexData, FrontFaceNormalData, FaceColors, sizeof(VertexData));
+      BufferVerts(&World->Mesh, 6, VertexData, FrontFaceNormalData, FaceColors, sizeof(VertexData));
     }
 
     if ( IsSet( V, Voxel_BackFace ) )
     {
       BackFaceVertexData( MinP, V3(Diameter), VertexData);
-      BufferVerts(&world->Mesh, 6, VertexData, BackFaceNormalData, FaceColors, sizeof(VertexData));
+      BufferVerts(&World->Mesh, 6, VertexData, BackFaceNormalData, FaceColors, sizeof(VertexData));
     }
 
   }
@@ -1291,19 +1291,19 @@ FindIntersectingLine(
 
 inline void
 SetupAndBuildExteriorBoundary(
-  World *world,
+  world *World,
   world_chunk *Chunk,
   voxel_position OffsetVector,
   chunk_flag Flag)
 {
   if ( IsSet(Chunk, Flag ) )
   {
-    world_chunk *Neighbor = GetWorldChunk( world, Chunk->WorldP + OffsetVector );
+    world_chunk *Neighbor = GetWorldChunk( World, Chunk->WorldP + OffsetVector );
 
     if ( Neighbor && IsSet( Neighbor, Chunk_Initialized) )
     {
       UnSetFlag( Chunk, Flag );
-      BuildExteriorBoundaryVoxels( world, Chunk, world->ChunkDim, Neighbor, OffsetVector);
+      BuildExteriorBoundaryVoxels( World, Chunk, World->ChunkDim, Neighbor, OffsetVector);
     }
   }
 
@@ -1397,7 +1397,7 @@ RayTraceCollision(chunk_data *Chunk, chunk_dimension Dim, v3 StartingP, v3 Ray, 
 }
 
 inline void
-BufferTriangle(World *world, v3 *Verts, v3 Normal, s32 ColorIndex)
+BufferTriangle(world *World, v3 *Verts, v3 Normal, s32 ColorIndex)
 {
   r32 VertBuffer[9];
   v3 NormalBuffer[3] = {Normal, Normal, Normal};
@@ -1409,7 +1409,7 @@ BufferTriangle(World *world, v3 *Verts, v3 Normal, s32 ColorIndex)
   GetColorData( ColorIndex, FaceColors);
 
   BufferVerts(
-    &world->Mesh,
+    &World->Mesh,
     3,
     VertBuffer,
     (float*)&NormalBuffer[0],
@@ -1452,8 +1452,8 @@ FindBoundaryVoxelsAlongEdge(
 void
 Compute0thLod(game_state *GameState, world_chunk *WorldChunk)
 {
-  World *world = GameState->world;
-  chunk_dimension WorldChunkDim = world->ChunkDim;
+  world *World = GameState->World;
+  chunk_dimension WorldChunkDim = World->ChunkDim;
 
   /* v3 RenderOffset = GetRenderP( WorldChunkDim, WorldChunk->WorldP, GameState->Camera); */
 
@@ -1498,7 +1498,7 @@ Compute0thLod(game_state *GameState, world_chunk *WorldChunk)
   SurfaceNormal = Normalize(SurfaceNormal);
   if ( Length(SurfaceNormal) == 0 )
   {
-    DEBUG_DrawChunkAABB( world, WorldChunk, GameState->Camera, Quaternion() , RED );
+    DEBUG_DrawChunkAABB( World, WorldChunk, GameState->Camera, Quaternion() , RED );
     return;
   }
 
@@ -1796,7 +1796,7 @@ Compute0thLod(game_state *GameState, world_chunk *WorldChunk)
 
     //
     // Start iterating along the axis orthogonal to the widest axies
-    voxel_position MaxP = IterAxis * world->ChunkDim;
+    voxel_position MaxP = IterAxis * World->ChunkDim;
 
 
     s32 AxisMax = max(MaxP.x, MaxP.y);
@@ -1823,7 +1823,7 @@ Compute0thLod(game_state *GameState, world_chunk *WorldChunk)
       if ( GameState->Player->P.WorldP == WorldChunk->WorldP)
         DEBUG_DrawPointMarker(world, V3(CurrentP + RenderOffset), BLUE, 0.25f);
 
-      if (IsBoundaryVoxel(chunk, CurrentP, world->ChunkDim))
+      if (IsBoundaryVoxel(chunk, CurrentP, World->ChunkDim))
       {
         DEBUG_DrawPointMarker(world, V3(CurrentP + RenderOffset), GREEN, 1.2f);
         FoundMidpoint = True;
@@ -1983,14 +1983,14 @@ CheckAndIncrementCurrentP(
 
 voxel_position
 TraverseSurfaceToBoundary(
-    World *world,
+    world *World,
     chunk_data *Chunk,
     voxel_position StartingP,
     voxel_position IterDir
   )
 {
   s32 CurrentClosestDistanceSq = 0;
-  voxel_position TargetP = (IterDir * world->ChunkDim) - IterDir;
+  voxel_position TargetP = (IterDir * World->ChunkDim) - IterDir;
 
   voxel_position CurrentP = StartingP;
 
@@ -2000,7 +2000,7 @@ TraverseSurfaceToBoundary(
 
 
   voxel_position LoopStartingP = {};
-  while (IsInsideDim(world->ChunkDim, CurrentP) )
+  while (IsInsideDim(World->ChunkDim, CurrentP) )
   {
     LoopStartingP = CurrentP;
 
@@ -2032,27 +2032,27 @@ TraverseSurfaceToBoundary(
     voxel_position BackDownRight = PDownRight - Forward;
     voxel_position BackDownLeft  = PDownLeft  - Forward;
 
-    CheckAndIncrementCurrentP(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PUp);
-    CheckAndIncrementCurrentP(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PDown);
-    CheckAndIncrementCurrentP(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PLeft);
-    CheckAndIncrementCurrentP(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PRight);
-    CheckAndIncrementCurrentP(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PForward);
-    CheckAndIncrementCurrentP(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PBack);
+    CheckAndIncrementCurrentP(Chunk, World->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PUp);
+    CheckAndIncrementCurrentP(Chunk, World->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PDown);
+    CheckAndIncrementCurrentP(Chunk, World->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PLeft);
+    CheckAndIncrementCurrentP(Chunk, World->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PRight);
+    CheckAndIncrementCurrentP(Chunk, World->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PForward);
+    CheckAndIncrementCurrentP(Chunk, World->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PBack);
 
-    CheckAndIncrementCurrentP(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PUpRight);
-    CheckAndIncrementCurrentP(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PUpLeft);
-    CheckAndIncrementCurrentP(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PDownRight);
-    CheckAndIncrementCurrentP(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PDownLeft);
+    CheckAndIncrementCurrentP(Chunk, World->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PUpRight);
+    CheckAndIncrementCurrentP(Chunk, World->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PUpLeft);
+    CheckAndIncrementCurrentP(Chunk, World->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PDownRight);
+    CheckAndIncrementCurrentP(Chunk, World->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, PDownLeft);
 
-    CheckAndIncrementCurrentP(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, FwdUpRight);
-    CheckAndIncrementCurrentP(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, FwdUpLeft);
-    CheckAndIncrementCurrentP(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, FwdDownRight);
-    CheckAndIncrementCurrentP(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, FwdDownLeft);
+    CheckAndIncrementCurrentP(Chunk, World->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, FwdUpRight);
+    CheckAndIncrementCurrentP(Chunk, World->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, FwdUpLeft);
+    CheckAndIncrementCurrentP(Chunk, World->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, FwdDownRight);
+    CheckAndIncrementCurrentP(Chunk, World->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, FwdDownLeft);
 
-    CheckAndIncrementCurrentP(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, BackUpRight);
-    CheckAndIncrementCurrentP(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, BackUpLeft);
-    CheckAndIncrementCurrentP(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, BackDownRight);
-    CheckAndIncrementCurrentP(Chunk, world->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, BackDownLeft);
+    CheckAndIncrementCurrentP(Chunk, World->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, BackUpRight);
+    CheckAndIncrementCurrentP(Chunk, World->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, BackUpLeft);
+    CheckAndIncrementCurrentP(Chunk, World->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, BackDownRight);
+    CheckAndIncrementCurrentP(Chunk, World->ChunkDim, &CurrentP, &CurrentClosestDistanceSq, TargetP, BackDownLeft);
 
     if (LoopStartingP == CurrentP)
       break;
@@ -2078,14 +2078,14 @@ Draw0thLod(game_state *GameState, world_chunk *Chunk, v3 RenderOffset)
   {
     Verts[1] = V3(Chunk->PB.Points[VertIndex]) + RenderOffset;
     Verts[2] = V3(Chunk->PB.Points[++VertIndex]) + RenderOffset;
-    BufferTriangle(GameState->world, &Verts[0], Chunk->Normal, Color);
+    BufferTriangle(GameState->World, &Verts[0], Chunk->Normal, Color);
   }
 
   return;
 }
 
 b32
-CanBuildWorldChunkBoundary(World *world, world_chunk *Chunk)
+CanBuildWorldChunkBoundary(world *World, world_chunk *Chunk)
 {
   // FIXME(Jesse): This is _real_ bad for the cache!
   b32 Result = True;
@@ -2104,22 +2104,22 @@ CanBuildWorldChunkBoundary(World *world, world_chunk *Chunk)
   world_position Front = ChunkP + Voxel_Position(0, 0, 1);
   world_position Back  = ChunkP - Voxel_Position(0, 0, 1);
 
-  world_chunk *TestChunk = GetWorldChunk( world, Left );
+  world_chunk *TestChunk = GetWorldChunk( World, Left );
   Result &= TestChunk && IsSet(TestChunk, Chunk_Initialized);
 
-  TestChunk = GetWorldChunk( world, Right );
+  TestChunk = GetWorldChunk( World, Right );
   Result &= TestChunk && IsSet(TestChunk, Chunk_Initialized);
 
-  TestChunk = GetWorldChunk( world, Top );
+  TestChunk = GetWorldChunk( World, Top );
   Result &= TestChunk && IsSet(TestChunk, Chunk_Initialized);
 
-  TestChunk = GetWorldChunk( world, Bot );
+  TestChunk = GetWorldChunk( World, Bot );
   Result &= TestChunk && IsSet(TestChunk, Chunk_Initialized);
 
-  TestChunk = GetWorldChunk( world, Front );
+  TestChunk = GetWorldChunk( World, Front );
   Result &= TestChunk && IsSet(TestChunk, Chunk_Initialized);
 
-  TestChunk = GetWorldChunk( world, Back );
+  TestChunk = GetWorldChunk( World, Back );
   Result &= TestChunk && IsSet(TestChunk, Chunk_Initialized);
 
 
@@ -2141,8 +2141,8 @@ DrawWorldChunk(
   if (NotSet(ChunkData, Chunk_Initialized))
     return;
 
-  World *world = GameState->world;
-  /* chunk_dimension Dim = world->ChunkDim; */
+  world *World = GameState->World;
+  /* chunk_dimension Dim = World->ChunkDim; */
 
   // if (!IsInFrustum(Dim, GameState->Camera, Chunk))
     // return;
@@ -2152,7 +2152,7 @@ DrawWorldChunk(
   /* v3 CameraRenderOffset = GetRenderP( Dim, Camera->P, Camera); */
 
   if ( IsSet( Chunk, Chunk_RebuildBoundary ) )
-    BuildWorldChunkBoundaryVoxels(world, Chunk);
+    BuildWorldChunkBoundaryVoxels(World, Chunk);
 
   /* if (CanBuildWorldChunkBoundary(world, Chunk)) */
   /* { */
@@ -2163,7 +2163,7 @@ DrawWorldChunk(
   /* if ( Length(ChunkRenderOffset - CameraRenderOffset ) < MIN_LOD_DISTANCE ) */
   {
     r32 Scale = 1.0f;
-    BufferChunkMesh( GameState->Plat, world, ChunkData, Chunk->WorldP, RG, Camera, Scale);
+    BufferChunkMesh( GameState->Plat, World, ChunkData, Chunk->WorldP, RG, Camera, Scale);
   }
 
   /* else */
@@ -2177,17 +2177,17 @@ DrawWorldChunk(
 }
 
 void
-DrawFolie(World *world, Camera_Object *Camera, aabb *AABB)
+DrawFolie(world *World, Camera_Object *Camera, aabb *AABB)
 {
   v3 RenderP = AABB->Center;
-  DEBUG_DrawPointMarker( world, RenderP, GREY, AABB->Radius*2);
+  DEBUG_DrawPointMarker( World, RenderP, GREY, AABB->Radius*2);
 
   return;
 }
 
 void
 DrawParticle(
-    World *world,
+    world *World,
     canonical_position *P,
     Camera_Object *Camera,
     particle *Particle,
@@ -2200,25 +2200,25 @@ DrawParticle(
 
   GetColorData(ColorIndex, &FaceColors[0]);;
 
-  v3 MinP = GetRenderP(world->ChunkDim, (*P)+Particle->Offset, Camera);
+  v3 MinP = GetRenderP(World->ChunkDim, (*P)+Particle->Offset, Camera);
 
   RightFaceVertexData( MinP, V3(Diameter), VertexData);
-  BufferVerts(&world->Mesh, 6, VertexData, RightFaceNormalData, FaceColors, sizeof(VertexData));
+  BufferVerts(&World->Mesh, 6, VertexData, RightFaceNormalData, FaceColors, sizeof(VertexData));
 
   LeftFaceVertexData( MinP, V3(Diameter), VertexData);
-  BufferVerts(&world->Mesh, 6, VertexData, LeftFaceNormalData, FaceColors, sizeof(VertexData));
+  BufferVerts(&World->Mesh, 6, VertexData, LeftFaceNormalData, FaceColors, sizeof(VertexData));
 
   BottomFaceVertexData( MinP, V3(Diameter), VertexData);
-  BufferVerts(&world->Mesh, 6, VertexData, BottomFaceNormalData, FaceColors, sizeof(VertexData));
+  BufferVerts(&World->Mesh, 6, VertexData, BottomFaceNormalData, FaceColors, sizeof(VertexData));
 
   TopFaceVertexData( MinP, V3(Diameter), VertexData);
-  BufferVerts(&world->Mesh, 6, VertexData, TopFaceNormalData, FaceColors, sizeof(VertexData));
+  BufferVerts(&World->Mesh, 6, VertexData, TopFaceNormalData, FaceColors, sizeof(VertexData));
 
   FrontFaceVertexData( MinP, V3(Diameter), VertexData);
-  BufferVerts(&world->Mesh, 6, VertexData, FrontFaceNormalData, FaceColors, sizeof(VertexData));
+  BufferVerts(&World->Mesh, 6, VertexData, FrontFaceNormalData, FaceColors, sizeof(VertexData));
 
   BackFaceVertexData( MinP, V3(Diameter), VertexData);
-  BufferVerts(&world->Mesh, 6, VertexData, BackFaceNormalData, FaceColors, sizeof(VertexData));
+  BufferVerts(&World->Mesh, 6, VertexData, BackFaceNormalData, FaceColors, sizeof(VertexData));
 
   return;
 }
@@ -2226,7 +2226,7 @@ DrawParticle(
 void
 DrawEntity(
     platform *Plat,
-    World *world,
+    world *World,
     entity *Entity,
     Camera_Object *Camera,
     RenderGroup *RG
@@ -2243,18 +2243,18 @@ DrawEntity(
 
   if (Model && Spawned(Entity))
   {
-    /* v3 RenderP = GetRenderP(world->ChunkDim, Entity->P, Camera) + ((Entity->Model.Dim/2.0f) * Entity->Scale); */
+    /* v3 RenderP = GetRenderP(World->ChunkDim, Entity->P, Camera) + ((Entity->Model.Dim/2.0f) * Entity->Scale); */
     /* DEBUG_DrawPointMarker( world, RenderP , RED, 2.0f ) ; */
 
 #if DEBUG_DRAW_COLLISION_VOLUMES
-    aabb AABB = GetRenderSpaceAABB(world->ChunkDim, Entity, Camera);
+    aabb AABB = GetRenderSpaceAABB(World->ChunkDim, Entity, Camera);
     DEBUG_DrawAABB(world, AABB, Quaternion(), PINK);
 #endif
 
     if (IsSet(Model, Chunk_Initialized))
     {
 
-      BufferChunkMesh(Plat, world, Model, Entity->P.WorldP, RG, Camera, Entity->Scale, Entity->P.Offset);
+      BufferChunkMesh(Plat, World, Model, Entity->P.WorldP, RG, Camera, Entity->Scale, Entity->P.Offset);
     }
   }
 

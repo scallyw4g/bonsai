@@ -33,7 +33,7 @@ InitChunkPerlin( game_state *GameState, world_chunk *WorldChunk )
   chunk_data *chunk = WorldChunk->Data;
   /* CALLGRIND_TOGGLE_COLLECT; */
 
-  chunk_dimension Dim = GameState->world->ChunkDim;
+  chunk_dimension Dim = GameState->World->ChunkDim;
 
   for ( int z = 0; z < Dim.z; ++ z)
   {
@@ -209,12 +209,12 @@ GetCameraRelativeInput(platform *Plat, Camera_Object *Camera)
 }
 
 collision_event
-GetCollision( World *world, canonical_position TestP, v3 CollisionDim)
+GetCollision( world *World, canonical_position TestP, v3 CollisionDim)
 {
   collision_event Collision;
   Collision.didCollide = false;
 
-  chunk_dimension WorldChunkDim = world->ChunkDim;
+  chunk_dimension WorldChunkDim = World->ChunkDim;
 
   TestP = Canonicalize(WorldChunkDim, TestP);
 
@@ -239,7 +239,7 @@ GetCollision( World *world, canonical_position TestP, v3 CollisionDim)
       for ( int x = MinP.x; x <= MaxP.x; x++ )
       {
         canonical_position LoopTestP = Canonicalize( WorldChunkDim, V3(x,y,z), TestP.WorldP );
-        world_chunk *chunk = GetWorldChunk( world, LoopTestP.WorldP );
+        world_chunk *chunk = GetWorldChunk( World, LoopTestP.WorldP );
 
 #if 0
         // TODO(Jesse): Can we somehow atomically pull this one off the queue
@@ -258,7 +258,7 @@ GetCollision( World *world, canonical_position TestP, v3 CollisionDim)
           goto end;
         }
 
-        if ( IsFilledInChunk(chunk->Data, Voxel_Position(LoopTestP.Offset), world->ChunkDim) )
+        if ( IsFilledInChunk(chunk->Data, Voxel_Position(LoopTestP.Offset), World->ChunkDim) )
         {
           Collision.CP = LoopTestP;
           Collision.didCollide = true;
@@ -274,7 +274,7 @@ GetCollision( World *world, canonical_position TestP, v3 CollisionDim)
 }
 
 collision_event
-GetCollision(World *world, entity *Entity, v3 Offset = V3(0,0,0) )
+GetCollision(world *World, entity *Entity, v3 Offset = V3(0,0,0) )
 {
   collision_event C;
   C.didCollide = false;
@@ -282,15 +282,15 @@ GetCollision(World *world, entity *Entity, v3 Offset = V3(0,0,0) )
   if ( !Spawned(Entity) )
     return C;
 
-  C = GetCollision( world, Canonicalize(world->ChunkDim, Entity->P + Offset), Entity->CollisionVolumeRadius*2);
+  C = GetCollision( World, Canonicalize(World->ChunkDim, Entity->P + Offset), Entity->CollisionVolumeRadius*2);
 
   return C;
 }
 
 inline b32
-IsGrounded( World *world, entity *entity)
+IsGrounded( world *World, entity *entity)
 {
-  collision_event c = GetCollision(world, entity, V3(0.0f,-0.001f, 0.0f));
+  collision_event c = GetCollision(World, entity, V3(0.0f,-0.001f, 0.0f));
   return c.didCollide;
 }
 
@@ -362,25 +362,25 @@ ClampMinus1toInfinity( voxel_position V )
 }
 
 world_chunk*
-GetFreeChunk(memory_arena *Storage, World *world, world_position P)
+GetFreeChunk(memory_arena *Storage, world *World, world_position P)
 {
   world_chunk *Result = 0;
 
-  if (world->FreeChunkCount == 0)
+  if (World->FreeChunkCount == 0)
   {
-    Result = AllocateWorldChunk(Storage, world, P);
+    Result = AllocateWorldChunk(Storage, World, P);
     Assert(Result);
   }
   else
   {
-    Assert(world->FreeChunkCount > 0);
-    Result = world->FreeChunks[--world->FreeChunkCount];
+    Assert(World->FreeChunkCount > 0);
+    Result = World->FreeChunks[--World->FreeChunkCount];
     Result->WorldP = P;
 
     Assert(Result->Next == 0);
     Assert(Result->Prev == 0);
 
-    InsertChunkIntoWorld(world, Result);
+    InsertChunkIntoWorld(World, Result);
   }
 
   Assert( NotSet(Result, Chunk_Queued) );
@@ -394,13 +394,13 @@ QueueChunksForInit(game_state *GameState, world_position WorldDisp)
 {
   if (Length(V3(WorldDisp)) == 0) return;
 
-  world_position WorldCenter = GameState->world->Center;
+  world_position WorldCenter = GameState->World->Center;
 
   world_position Iter = GetSign(WorldDisp);
 
   world_position InvAbsIter = ((Iter * Iter)-1) * ((Iter * Iter)-1);
 
-  world_position VRHalfDim = GameState->world->VisibleRegion/2;
+  world_position VRHalfDim = GameState->World->VisibleRegion/2;
 
   world_position SliceMin = WorldCenter + (VRHalfDim * Iter) - (VRHalfDim * InvAbsIter) - ClampPositive(WorldDisp);
 
@@ -415,7 +415,7 @@ QueueChunksForInit(game_state *GameState, world_position WorldDisp)
       for (int x = SliceMin.x; x <= SliceMax.x; ++ x)
       {
         world_position P = World_Position(x,y,z);
-        world_chunk *chunk = GetFreeChunk(GameState->Memory, GameState->world, P);
+        world_chunk *chunk = GetFreeChunk(GameState->Memory, GameState->World, P);
         QueueChunkForInit(GameState, chunk);
       }
     }
@@ -672,9 +672,9 @@ GetMouseDelta(platform *Plat)
 }
 
 void
-UpdateCameraP(platform *Plat, World *world, entity *Player, Camera_Object *Camera)
+UpdateCameraP(platform *Plat, world *World, entity *Player, Camera_Object *Camera)
 {
-  chunk_dimension WorldChunkDim = world->ChunkDim;
+  chunk_dimension WorldChunkDim = World->ChunkDim;
   canonical_position NewTarget = Canonicalize(WorldChunkDim, Player->P.Offset, Player->P.WorldP) + (Player->Model.Dim/2.0f);
 
   v3 TargetDelta = GetRenderP(WorldChunkDim, NewTarget, Camera) - GetRenderP(WorldChunkDim, Camera->Target, Camera);
@@ -748,7 +748,7 @@ UpdateCameraP(platform *Plat, World *world, entity *Player, Camera_Object *Camer
   return;
 }
 
-World *
+world *
 AllocateAndInitWorld( game_state *GameState, world_position Center, world_position Radius)
 {
   platform *Plat = GameState->Plat;
@@ -756,33 +756,33 @@ AllocateAndInitWorld( game_state *GameState, world_position Center, world_positi
   /*
    *  Allocate stuff
    */
-  World *world = PUSH_STRUCT_CHECKED(World, Plat->Memory, 1 );
-  GameState->world = world;
+  world *World = PUSH_STRUCT_CHECKED(world, Plat->Memory, 1 );
+  GameState->World = World;
 
-  world->ChunkHash = PUSH_STRUCT_CHECKED(world_chunk*, Plat->Memory, WORLD_HASH_SIZE );
-  world->FreeChunks = PUSH_STRUCT_CHECKED(world_chunk*, Plat->Memory, FREELIST_SIZE );
+  World->ChunkHash = PUSH_STRUCT_CHECKED(world_chunk*, Plat->Memory, WORLD_HASH_SIZE );
+  World->FreeChunks = PUSH_STRUCT_CHECKED(world_chunk*, Plat->Memory, FREELIST_SIZE );
 
-  Assert(world->FreeChunkCount == 0);
+  Assert(World->FreeChunkCount == 0);
 
   /*
    *  Initialize stuff
    */
-  world->ChunkDim = WORLD_CHUNK_DIM;
-  world->VisibleRegion = VISIBLE_REGION;
+  World->ChunkDim = WORLD_CHUNK_DIM;
+  World->VisibleRegion = VISIBLE_REGION;
 
-  world->Gravity = WORLD_GRAVITY;
-  world->Center = Center;
+  World->Gravity = WORLD_GRAVITY;
+  World->Center = Center;
 
   {
     s32 BufferVertices = 100*(VOLUME_VISIBLE_REGION * VERT_PER_VOXEL);
 
-    world->Mesh.VertexData = PUSH_STRUCT_CHECKED(GLfloat, Plat->Memory, BufferVertices );
-    world->Mesh.ColorData = PUSH_STRUCT_CHECKED(GLfloat,  Plat->Memory, BufferVertices );
-    world->Mesh.NormalData = PUSH_STRUCT_CHECKED(GLfloat, Plat->Memory, BufferVertices );
+    World->Mesh.VertexData = PUSH_STRUCT_CHECKED(GLfloat, Plat->Memory, BufferVertices );
+    World->Mesh.ColorData = PUSH_STRUCT_CHECKED(GLfloat,  Plat->Memory, BufferVertices );
+    World->Mesh.NormalData = PUSH_STRUCT_CHECKED(GLfloat, Plat->Memory, BufferVertices );
 
-    world->Mesh.bytesAllocd = BufferVertices*sizeof(r32);
-    Assert(world->Mesh.filled == 0);
-    Assert(world->Mesh.VertexCount == 0);
+    World->Mesh.bytesAllocd = BufferVertices*sizeof(r32);
+    Assert(World->Mesh.filled == 0);
+    Assert(World->Mesh.VertexCount == 0);
   }
 
   world_position Min = Center - Radius;
@@ -794,13 +794,13 @@ AllocateAndInitWorld( game_state *GameState, world_position Center, world_positi
     {
       for ( s32 x = Min.x; x <= Max.x; ++ x )
       {
-        world_chunk *chunk = AllocateWorldChunk(GameState->Memory, world, World_Position(x,y,z));
+        world_chunk *chunk = AllocateWorldChunk(GameState->Memory, World, World_Position(x,y,z));
         Assert(chunk);
         QueueChunkForInit(GameState, chunk);
       }
     }
   }
 
-  return world;
+  return World;
 }
 
