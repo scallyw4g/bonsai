@@ -1,5 +1,9 @@
+# Aug 13 2017
+45m - closed - frame queue - Fix PushFrameEvent
+Had some bad logic to step through a linked list I clearly didn't test
+
 # Aug 10 2017
-10h - closed - Fix shadow mapping
+10h - closed - OpenGL - Fix shadow mapping
 Epic quest to fix the shadow mapping turned out to be mostly a wild goose chase
 and a couple hours tuning it at the end.  The wild goose chase part was trying
 to translate the world geometry using a transform matrix - which I still think

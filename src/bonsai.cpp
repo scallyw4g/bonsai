@@ -519,19 +519,22 @@ GetFreeFrameEvent(event_queue *Queue)
 }
 
 inline void
-PushFrameEvent(event_queue *EventQueue, frame_event *Event, s32 FramesToForward)
+PushFrameEvent(event_queue *EventQueue, frame_event *EventInit, s32 FramesToForward=1)
 {
   Assert(FramesToForward < TOTAL_FRAME_EVENT_COUNT);
 
   frame_event *FreeEvent = GetFreeFrameEvent(EventQueue);
-  *FreeEvent = *Event;
+  *FreeEvent = *EventInit;
 
-  s32 NextEventIndex = (EventQueue->CurrentFrameIndex+FramesToForward) % TOTAL_FRAME_EVENT_COUNT;
-  frame_event **NextFrameEvent = &EventQueue->Queue[NextEventIndex];
+  s32 EventIndex = (EventQueue->CurrentFrameIndex+FramesToForward) % TOTAL_FRAME_EVENT_COUNT;
+  frame_event **Event = &EventQueue->Queue[EventIndex];
 
-  while (*NextFrameEvent && (*NextFrameEvent)->Next) *NextFrameEvent = (*NextFrameEvent)->Next;
+  while (*Event)
+    Event = &(*Event)->Next;
 
-  *NextFrameEvent = FreeEvent;
+  Assert(*Event == 0);
+
+  *Event = FreeEvent;
 
   return;
 }
