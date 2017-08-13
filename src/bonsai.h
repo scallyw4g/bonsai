@@ -42,7 +42,6 @@ enum entity_state
   EntityState_Uninitialized    = 0,
   EntityState_Initialized      = 1 << 0,
   EntityState_Spawned          = 1 << 1,
-  EntityState_Destoryed        = 1 << 2,
 };
 
 enum entity_type
@@ -75,6 +74,8 @@ enum collision_type
   Collision_Player_Loot            = EntityType_Player|EntityType_Loot,
   Collision_Enemy_PlayerProjectile = EntityType_Enemy |EntityType_PlayerProjectile,
   Collision_Enemy_PlayerProton     = EntityType_Enemy |EntityType_PlayerProton,
+  Collision_Enemy_EnemyProjectile  = EntityType_Enemy |EntityType_EnemyProjectile,
+  Collision_Enemy_Enemy            = EntityType_Enemy,
 };
 
 struct voxel
@@ -509,13 +510,6 @@ inline b32
 Active(particle_system *System)
 {
   b32 Result = (System->EmissionLifespan > 0) || (System->ActiveParticles > 0);
-  return Result;
-}
-
-inline b32
-Destroyed(entity *Entity)
-{
-  b32 Result = Entity->State == EntityState_Destoryed;
   return Result;
 }
 

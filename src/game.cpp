@@ -46,6 +46,8 @@ PhysicsUpdate(physics *Physics, r32 dt, b32 Print = False)
 void
 SpawnEntity( model *GameModels, entity *Entity, entity_type Type)
 {
+  Assert(Unspawned(Entity));
+
   Entity->State = EntityState_Spawned;
   Entity->Type = Type;
   Entity->FireCooldown = Entity->RateOfFire;
@@ -235,7 +237,7 @@ SpawnEnemy(world *World, entity **WorldEntities, entity *Enemy, random_series *E
 }
 
 entity *
-GetUnusedEntity(game_state *GameState)
+GetFreeEntity(game_state *GameState)
 {
   entity *Result = 0;
 
@@ -244,7 +246,7 @@ GetUnusedEntity(game_state *GameState)
         ++EntityIndex )
   {
     entity *TestEntity = GameState->EntityTable[EntityIndex];
-    if ( Destroyed(TestEntity) || Unspawned(TestEntity) )
+    if (Unspawned(TestEntity))
     {
       Result = TestEntity;
       break;
@@ -279,7 +281,7 @@ SpawnEnemies(game_state *GameState)
   if (!Spawn)
     return;
 
-  entity *Enemy = GetUnusedEntity(GameState);
+  entity *Enemy = GetFreeEntity(GameState);
 
   if (Enemy)
     SpawnEnemy(GameState->World, Entities, Enemy, &GameState->Entropy, GameState->Models);
@@ -298,7 +300,7 @@ SpawnProjectile(game_state *GameState, canonical_position *P, v3 Velocity, entit
   {
     entity *Projectile = GameState->EntityTable[ProjectileIndex];
 
-    if ( Destroyed(Projectile) || Unspawned(Projectile) )
+    if (Unspawned(Projectile))
     {
       v3 CollisionVolumeRadius = V3(PROJECTILE_AABB)/2;
 
@@ -541,6 +543,9 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
       Entity->P = Canonicalize(WorldChunkDim, Entity->P);
       EntityWorldCollision(Entity);
     }
+
+    if (Unspawned(Entity))
+      break;
 
     DoEntityCollisions(GameState, Entity, &GameState->Entropy);
   }
@@ -799,8 +804,6 @@ StartGame(game_state *GameState)
   Mode->ActiveMode= GameMode_Playing;
   Mode->TimeRunning = 0;
 
-  SpawnPlayer(GameState, GameState->Player );
-
   for (s32 EntityIndex = 0;
        EntityIndex < TOTAL_ENTITY_COUNT;
        ++EntityIndex)
@@ -814,7 +817,7 @@ StartGame(game_state *GameState)
     Deactivate(Entity->Emitter);
   }
 
-
+  SpawnPlayer(GameState, GameState->Player );
 
   return;
 }
@@ -1211,7 +1214,7 @@ GameInit( platform *Plat, memory_arena *GameMemory)
   /* AllocateParticleSystems(Plat, GameState); */
 
   GameState->Player =
-    GetUnusedEntity(GameState);
+    GetFreeEntity(GameState);
 
   SpawnPlayer(GameState, GameState->Player );
 

@@ -446,7 +446,6 @@ GetCollision(entity *First, entity *Second)
   aabb SecondAABB = GetAABB(Second);
 
   b32 Result = Intersect(&FirstAABB, &SecondAABB);
-
   return Result;
 }
 
@@ -610,6 +609,7 @@ ProcessCollisionRule(
       }
 
       Unspawn(Projectile);
+      Unspawn(Enemy);
 
       frame_event Event(Enemy, FrameEvent_Explosion);
       PushFrameEvent(EventQueue, &Event);
@@ -641,19 +641,45 @@ GetCollision(entity **Entities, entity *Entity)
   return Result;
 }
 
+b32
+EntitiesCanCollide(entity *First, entity *Second)
+{
+  b32 Result = True;
+
+  collision_type CollisionType = (collision_type)(First->Type | Second->Type);
+
+  switch (CollisionType)
+  {
+    case Collision_Enemy_EnemyProjectile:
+    case Collision_Enemy_Enemy:
+    {
+      Result = False;
+    } break;
+
+    default: {} break;
+  }
+
+  return Result;
+}
+
 void
 DoEntityCollisions(game_state *GameState, entity *Entity, random_series *Entropy)
 {
+  Assert(Spawned(Entity));
+
   for (s32 EntityIndex = 0;
       EntityIndex < TOTAL_ENTITY_COUNT;
       ++EntityIndex)
   {
-    entity *TestEnemy = GameState->EntityTable[EntityIndex];
-    if (TestEnemy == Entity)
+    entity *TestEntity = GameState->EntityTable[EntityIndex];
+    if (TestEntity == Entity)
       continue;
 
-    if (GetCollision(Entity, TestEnemy))
-      ProcessCollisionRule(Entity, TestEnemy, Entropy, GameState->Models, &GameState->EventQueue);
+    if (!EntitiesCanCollide(Entity, TestEntity))
+      continue;
+
+    if (GetCollision(Entity, TestEntity))
+      ProcessCollisionRule(Entity, TestEntity, Entropy, GameState->Models, &GameState->EventQueue);
   }
 
   return;
