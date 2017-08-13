@@ -587,7 +587,7 @@ ProcessCollisionRule(
 
       if (Player->Health <= 0)
       {
-        Print(Player->Health);
+        Unspawn(Player);
         frame_event Event(0, FrameEvent_GameModeLoss);
         PushFrameEvent(EventQueue, &Event);
       }

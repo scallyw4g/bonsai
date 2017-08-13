@@ -788,6 +788,33 @@ ReleaseFrameEvent(event_queue *Queue, frame_event *Event)
 }
 
 void
+StartGame(game_state *GameState)
+{
+  game_mode *Mode = &GameState->Mode;
+  Mode->ActiveMode= GameMode_Playing;
+  Mode->TimeRunning = 0;
+
+  SpawnPlayer(GameState, GameState->Player );
+
+  for (s32 EntityIndex = 0;
+       EntityIndex < TOTAL_ENTITY_COUNT;
+       ++EntityIndex)
+  {
+    entity *Entity = GameState->EntityTable[EntityIndex];
+
+    Entity->Emitter->ActiveParticles = 0;
+    Entity->Emitter->EmissionLifespan = 0;
+
+    Unspawn(Entity);
+    Deactivate(Entity->Emitter);
+  }
+
+
+
+  return;
+}
+
+void
 LoseGame()
 {}
 
@@ -802,8 +829,6 @@ ProcessFrameEvent(game_state *GameState, frame_event *Event)
   {
     case FrameEvent_GameModeLoss:
     {
-      Log("Game Lost");
-      LoseGame();
       GameState->Mode.ActiveMode = GameMode_Loss;
     } break;
 
@@ -1080,14 +1105,6 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   return;
 }
 
-void
-DoLosing()
-{}
-
-void
-DoWinning()
-{}
-
 EXPORT void
 GameThreadCallback(work_queue_entry *Entry)
 {
@@ -1210,13 +1227,17 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
     case GameMode_Won:
     {
-      DoWinning();
+      /* DoWinning(); */
     } break;
 
     case GameMode_Loss:
     {
-      Plat->dt *= 0.01f;
+      Plat->dt *= 0.05f;
       DoGameplay(Plat, GameState, Hotkeys);
+
+      if (Hotkeys->Player_Spawn)
+        StartGame(GameState);
+
     } break;
 
     InvalidDefaultCase;

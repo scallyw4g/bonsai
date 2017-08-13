@@ -423,6 +423,8 @@ BindHotkeysToInput(hotkeys *Hotkeys, input *Input)
   Hotkeys->Player_Fire = Input->Space;
   Hotkeys->Player_Proton = Input->Shift;
 
+  Hotkeys->Player_Spawn = Input->Space;
+
   return;
 }
 
