@@ -48,6 +48,7 @@ SpawnEntity( model *GameModels, entity *Entity, entity_type Type)
 {
   Entity->State = EntityState_Spawned;
   Entity->Type = Type;
+  Entity->FireCooldown = Entity->RateOfFire;
 
   switch (Type)
   {
@@ -135,7 +136,7 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory)
   GameState->Models[ModelIndex_Player] = LoadModel(Memory, PLAYER_MODEL);
   GameState->Models[ModelIndex_Loot] = LoadModel(Memory, LOOT_MODEL);
 
-  chunk_dimension ProjectileDim = Chunk_Dimension(1,10,1);
+  chunk_dimension ProjectileDim = Chunk_Dimension(1,30,1);
   GameState->Models[ModelIndex_Projectile].Chunk = AllocateChunk(Memory, ProjectileDim);
   GameState->Models[ModelIndex_Projectile].Dim = ProjectileDim;
   FillChunk(GameState->Models[ModelIndex_Projectile].Chunk, ProjectileDim, GREEN);
@@ -205,7 +206,7 @@ SpawnEnemy(World *world, entity **WorldEntities, entity *Enemy, random_series *E
   Physics.Drag = 1.2f;
 
   r32 Scale = 0.5f;
-  r32 RateOfFire = 1.0f;
+  r32 RateOfFire = 2.0f;
   u32 Health = 1;
 
   SpawnEntity(
@@ -271,7 +272,7 @@ SpawnEnemies(game_state *GameState)
   s32 Level = GetLevel(GameState->Mode.TimeRunning);
 
   // One enemy per Level per second
-  r32 EnemySpawnRate = Level/60.0f;
+  r32 EnemySpawnRate = Level/120.0f;
 
   b32 Spawn = (RandomUnilateral(&GameState->Entropy) <= EnemySpawnRate);
   if (!Spawn)
@@ -302,7 +303,7 @@ SpawnProjectile(game_state *GameState, canonical_position *P, v3 Velocity, entit
 
       physics Physics = {};
       Physics.Velocity = Velocity;
-      Physics.Speed = 1000;
+      Physics.Speed = PROJECTILE_SPEED;
 
       r32 Scale = 1.0f;
       r32 RateOfFire = 1.0f;
@@ -429,10 +430,10 @@ SpawnPlayer(game_state *GameState, entity *Player )
   physics Physics = {};
   Physics.Drag = 5.0f;
   Physics.Mass = 5.0f;
-  Physics.Speed = 10000;
+  Physics.Speed = PLAYER_SPEED;
 
   r32 Scale = 0.5f;
-  r32 RateOfFire = 1.0f;
+  r32 RateOfFire = 0.8f;
   u32 Health = PLAYER_MAX_HP;
 
   canonical_position InitialP = { V3(0,0,0), GameState->world->Center - World_Position(0, (VR_Y/2)-14 , 0) };
@@ -575,7 +576,7 @@ SimulateEnemy(game_state *GameState, entity *Enemy, entity *Player, r32 dt)
         ProjectileDirection = EnemyToPlayer;
       }
 
-      SpawnProjectile(GameState, &Enemy->P, ProjectileDirection*500 , EntityType_EnemyProjectile);
+      SpawnProjectile(GameState, &Enemy->P, ProjectileDirection*PROJECTILE_SPEED , EntityType_EnemyProjectile);
       Enemy->FireCooldown = Enemy->RateOfFire;
     }
   }
@@ -719,7 +720,7 @@ SimulatePlayer( game_state *GameState, entity *Player, hotkeys *Hotkeys, r32 dt 
     // Regular Fire
     if ( Hotkeys->Player_Fire && (Player->FireCooldown < 0) )
     {
-      SpawnProjectile(GameState, &Player->P, V3(0,1000,0), EntityType_PlayerProjectile);
+      SpawnProjectile(GameState, &Player->P, V3(0,PROJECTILE_SPEED,0), EntityType_PlayerProjectile);
       Player->FireCooldown = Player->RateOfFire;
     }
 
@@ -915,7 +916,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   aabb *RightWall = GameState->FolieTable + 2;
 
   r32 ZOffset = 25.0f;
-  r32 WallThickness = 50.0f;
+  r32 WallThickness = 200.0f;
   r32 WallLength = VR_Y*CD_Y;
   r32 YOffset = WallLength/2.0f;
   {
@@ -933,7 +934,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   }
   {
     v3 Center = WorldCenterRenderP -
-                  V3(-VrHalfDim, YOffset, 25.0f) + world->ChunkDim;
+                  V3(-VrHalfDim-world->ChunkDim.x, YOffset, 25.0f);
 
     *RightWall = aabb(Center, V3(WallThickness, WallLength, ZOffset));
   }

@@ -14,7 +14,7 @@
 #define VOXEL_RADIUS (VOXEL_DIAMETER/2.0f)
 
 #define CD_X 8
-#define CD_Y 16
+#define CD_Y 32
 #define CD_Z 1
 
 // Visible Region XYZ - Must be > (3,3,3)
@@ -46,10 +46,7 @@
 #define SECONDS_PER_LEVEL 10.0
 
 #define PLAYER_COUNT             1
-#define PLAYER_MAX_HP            2
-#define PLAYER_STEP_MAX          1
-#define PLAYER_JUMP_STRENGTH     20.0f
-#define PLAYER_ACCEL_MULTIPLIER  150.0f
+#define PLAYER_MAX_HP            20
 #define PLAYER_DRAG              V3(0.9f, 0.9f, 0.0f)
 #define PLAYER_IMPULSE           V3(0,200,0)
 
@@ -78,8 +75,8 @@
 #define PARTICLES_PER_SYSTEM   1024
 
 #define ENEMY_SPEED 800
-#define PLAYER_SPEED 300
-#define PROJECTILE_SPEED 400
+#define PLAYER_SPEED 13000
+#define PROJECTILE_SPEED 1500
 
 #define ENEMY_DRAG 0
 
@@ -117,14 +114,14 @@
 #define SHADOW_MAP_RESOLUTION_X 512
 #define SHADOW_MAP_RESOLUTION_Y 2048
 
-// GLOBAL_VARIABLE r32 CAMERA_FOCAL_LENGTH = 1000.0f;
+/* GLOBAL_VARIABLE r32 CAMERA_FOCAL_LENGTH = 1000.0f; */
 GLOBAL_VARIABLE r32 CAMERA_FOCAL_LENGTH = 440.0f;
 
 GLOBAL_VARIABLE r32 DEBUG_CAMERA_FOCAL_LENGTH = 50.0f;
 #define DEBUG_CAMERA_SCROLL_SPEED  20.0f
 
 // TODO(Jesse): How should we initialize this for realz?
-DEBUG_GLOBAL canonical_position CameraInitialP = { {0,0,0}, {0,-4,15} };
+DEBUG_GLOBAL canonical_position CameraInitialP = { {0,-90,15}, {0,0,0} };
 #define CAMERA_INITIAL_P CameraInitialP
 
 // NOTE(Jesse): The position storage needs to be as large as the largest model
