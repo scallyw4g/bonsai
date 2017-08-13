@@ -152,15 +152,16 @@ AllocateEntity(platform *Plat, memory_arena *Memory)
   entity *Entity = PUSH_STRUCT_CHECKED(entity, Memory, 1);
   Entity->Emitter = PUSH_STRUCT_CHECKED(particle_system, Memory, 1);
 
+  Entity->Scale = 1.0f;
+
   return Entity;
 }
 
 entity *
-AllocatePlayer(platform *Plat, memory_arena *Memory, canonical_position InitialP, v3 Drag, const char *ModelPath)
+AllocatePlayer(platform *Plat, memory_arena *Memory)
 {
   /* entity *Player = AllocateEntity(Plat, Memory, DEBUG_ENTITY_DIM); */
   entity *Player = AllocateEntity(Plat, Memory);
-  if (!Player) { Error("Error Allocating Player"); return False; }
 
   return Player;
 }
@@ -655,52 +656,6 @@ SimulateAndRenderParticleSystems(
 }
 
 void
-SimulateEntities(game_state *GameState, entity *Player, r32 dt)
-{
-  TIMED_FUNCTION();
-
-  for ( s32 EntityIndex = 0;
-        EntityIndex < TOTAL_ENTITY_COUNT;
-        ++EntityIndex )
-  {
-    entity *Entity = GameState->EntityTable[EntityIndex];
-
-    if (!Spawned(Entity))
-        continue;
-
-    v3 Delta = {};
-
-    switch (Entity->Type)
-    {
-      case EntityType_Enemy:
-      {
-        SimulateEnemy(GameState, Entity, Player, dt);
-        Delta = PhysicsUpdate(&Entity->Physics, dt);
-      } break;
-
-      case EntityType_PlayerProjectile:
-      case EntityType_EnemyProjectile:
-      {
-        Delta = PhysicsUpdate(&Entity->Physics, dt);
-      } break;
-
-      case EntityType_ParticleSystem:
-      {
-        Delta = PhysicsUpdate(&Entity->Physics, dt);
-      } break;
-
-      InvalidDefaultCase;
-    }
-
-    UpdateEntityP(GameState, Entity, Delta);
-
-    SimulateAndRenderParticleSystems(GameState, Entity, dt, Delta);
-  }
-
-  return;
-}
-
-void
 SimulatePlayer( game_state *GameState, entity *Player, hotkeys *Hotkeys, r32 dt )
 {
   if (Spawned(Player))
@@ -745,6 +700,57 @@ SimulatePlayer( game_state *GameState, entity *Player, hotkeys *Hotkeys, r32 dt 
   return;
 }
 
+void
+SimulateEntities(game_state *GameState, entity *Player, hotkeys *Hotkeys, r32 dt)
+{
+  TIMED_FUNCTION();
+
+  for ( s32 EntityIndex = 0;
+        EntityIndex < TOTAL_ENTITY_COUNT;
+        ++EntityIndex )
+  {
+    entity *Entity = GameState->EntityTable[EntityIndex];
+
+    if (!Spawned(Entity))
+        continue;
+
+    v3 Delta = {};
+
+    switch (Entity->Type)
+    {
+      case EntityType_Enemy:
+      {
+        SimulateEnemy(GameState, Entity, Player, dt);
+        Delta = PhysicsUpdate(&Entity->Physics, dt);
+      } break;
+
+      case EntityType_PlayerProjectile:
+      case EntityType_EnemyProjectile:
+      {
+        Delta = PhysicsUpdate(&Entity->Physics, dt);
+      } break;
+
+      case EntityType_ParticleSystem:
+      {
+        Delta = PhysicsUpdate(&Entity->Physics, dt);
+      } break;
+
+      case EntityType_Player:
+      {
+        SimulatePlayer(GameState, Entity, Hotkeys, dt);
+      } break;
+
+      InvalidDefaultCase;
+    }
+
+    UpdateEntityP(GameState, Entity, Delta);
+
+    SimulateAndRenderParticleSystems(GameState, Entity, dt, Delta);
+  }
+
+  return;
+}
+
 #if 0
 void
 AllocateParticleSystems(platform *Plat, game_state *GameState)
@@ -770,8 +776,6 @@ AllocateEntityTable(platform *Plat, game_state *GameState)
   {
     GameState->EntityTable[EntityIndex] =
       AllocateEntity(Plat, GameState->Memory);
-
-    GameState->EntityTable[EntityIndex]->Scale = 1.0f;
   }
 
   return;
@@ -955,9 +959,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   TIMED_BLOCK("Sim");
 
   SpawnEnemies(GameState);
-  SimulateEntities(GameState, Player, Plat->dt);
-
-  SimulatePlayer(GameState, Player, Hotkeys, Plat->dt);
+  SimulateEntities(GameState, Player, Hotkeys, Plat->dt);
 
 
   event_queue *Queue = &GameState->EventQueue;
@@ -1180,9 +1182,6 @@ GameInit( platform *Plat, memory_arena *GameMemory)
 
   AllocateAndInitWorld(GameState, PlayerInitialP.WorldP, VISIBLE_REGION_RADIUS);
 
-  GameState->Player =
-    AllocatePlayer(Plat, GameState->Memory, PlayerInitialP, PLAYER_DRAG, PLAYER_MODEL);
-
   GameState->Models =
     PUSH_STRUCT_CHECKED(model, GameState->Memory, ModelIndex_Count);
   AllocateGameModels(GameState, GameState->Memory);
@@ -1210,6 +1209,9 @@ GameInit( platform *Plat, memory_arena *GameMemory)
     PUSH_STRUCT_CHECKED(aabb, GameState->Memory, TOTAL_FOLIE_COUNT);
 
   /* AllocateParticleSystems(Plat, GameState); */
+
+  GameState->Player =
+    GetUnusedEntity(GameState);
 
   SpawnPlayer(GameState, GameState->Player );
 

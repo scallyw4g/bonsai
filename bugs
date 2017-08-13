@@ -1,4 +1,8 @@
 # Aug 13 2017
+30m - closed - player - Put player into entity table
+Player update and the rest of entity update code was not exactly the same, thus
+there was a chance for entities to tunnel through the Player
+
 45m - closed - frame queue - Fix PushFrameEvent
 Had some bad logic to step through a linked list I clearly didn't test
 

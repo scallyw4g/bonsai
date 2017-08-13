@@ -27,6 +27,13 @@ enum frame_event_type
   FrameEvent_GameModeWon,
 };
 
+enum game_mode_type
+{
+  GameMode_Playing,
+  GameMode_Won,
+  GameMode_Loss
+};
+
 struct frame_event
 {
   frame_event_type Type;
@@ -48,13 +55,6 @@ struct event_queue
   frame_event **Queue;
 
   frame_event *FirstFreeEvent;
-};
-
-enum game_mode_type
-{
-  GameMode_Playing,
-  GameMode_Won,
-  GameMode_Loss
 };
 
 struct game_mode

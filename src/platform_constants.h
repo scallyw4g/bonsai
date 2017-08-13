@@ -35,7 +35,7 @@
   Assert(glErrorNo == GL_NO_ERROR); }
 
 #define ArrayCount(a) (sizeof(a)/sizeof(a[0]))
-#define InvalidDefaultCase default: {Assert(false);} break
+#define InvalidDefaultCase default: {Assert(!"Invalid Default Case");} break
 
 #define LOCAL_PERSIST static
 

@@ -656,6 +656,7 @@ DoEntityCollisions(game_state *GameState, entity *Entity, random_series *Entropy
       ProcessCollisionRule(Entity, TestEnemy, Entropy, GameState->Models, &GameState->EventQueue);
   }
 
+  return;
 }
 
 inline v2

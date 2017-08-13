@@ -144,30 +144,6 @@ struct mesh_block
 };
 #endif
 
-struct world_chunk
-{
-  chunk_data *Data;
-  v3 *Mesh;
-
-  // TODO(Jesse): This is only for looking up chunks in the hashtable and
-  // should be factored out of this struct somehow as it's cold data
-  world_chunk *Next;
-  world_chunk *Prev;
-
-  world_position WorldP;
-
-  point_buffer PB;
-  v3 Normal;
-
-  s32 Filled;
-};
-
-struct free_world_chunk
-{
-  world_chunk *chunk_data;
-  world_chunk *Next;
-};
-
 struct collision_event
 {
   canonical_position CP;
@@ -310,6 +286,38 @@ struct entity
   r32 FireCooldown;
 
   s32 Health; // Only needed for Player
+};
+
+struct entity_list
+{
+  entity *This;
+  entity *Next;
+};
+
+struct world_chunk
+{
+  chunk_data *Data;
+  v3 *Mesh;
+
+  // TODO(Jesse): This is only for looking up chunks in the hashtable and
+  // should be factored out of this struct somehow as it's cold data
+  world_chunk *Next;
+  world_chunk *Prev;
+
+  world_position WorldP;
+
+  point_buffer PB;
+  v3 Normal;
+
+  s32 Filled;
+
+  entity_list *Occupiers;
+};
+
+struct free_world_chunk
+{
+  world_chunk *chunk_data;
+  world_chunk *Next;
 };
 
 struct world
