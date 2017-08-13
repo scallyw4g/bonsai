@@ -836,118 +836,8 @@ AllocateAndInitNoise3d(game_state *GameState, noise_3d *Noise, chunk_dimension D
   Noise->Voxels = PUSH_STRUCT_CHECKED(voxel, GameState->Memory, Volume(Dim));
 }
 
-EXPORT void
-GameThreadCallback(work_queue_entry *Entry)
-{
-  switch (Entry->Flags)
-  {
-    case WorkEntry_InitWorldChunk:
-    {
-      InitializeVoxels(Entry->GameState, (world_chunk*)Entry->Input);
-    } break;
-
-    InvalidDefaultCase;
-  }
-
-  return;
-}
-
-EXPORT void
-InitGlobals(platform *Plat)
-{
-  GL_Global = &Plat->GL;
-  GlobalGlslVersion = Plat->GlslVersion;
-
-  InitDebugState(GetDebugState(), Plat);
-}
-
-EXPORT void*
-GameInit( platform *Plat, memory_arena *GameMemory)
-{
-  Info("Initializing Game");
-
-  InitGlobals(Plat);
-
-
-  srand(DEBUG_NOISE_SEED);
-  PerlinNoise Noise(rand());
-  GlobalNoise = Noise;
-
-  game_state *GameState = PUSH_STRUCT_CHECKED(game_state, GameMemory, 1);
-  GameState->Memory = GameMemory;
-
-  ShadowRenderGroup *SG = PUSH_STRUCT_CHECKED(ShadowRenderGroup, GameState->Memory, 1);
-  if (!InitializeShadowBuffer(SG)) { Error("Initializing Shadow Buffer"); return False; }
-
-  RenderGroup *RG = PUSH_STRUCT_CHECKED(RenderGroup, GameState->Memory, 1);
-  if (!InitializeRenderGroup(Plat, RG)) { Error("Initializing RenderGroup"); return False; }
-
-  GameState->Turb = PUSH_STRUCT_CHECKED(noise_3d, GameState->Memory, 1);
-  AllocateAndInitNoise3d(GameState, GameState->Turb, Chunk_Dimension(8,8,8) );
-
-  // This needs to be off for shadow maps to work correctly
-  /* glEnable(GL_CULL_FACE); */
-  /* glCullFace(GL_BACK); */
-
-  // This is necessary!
-  GLuint VertexArrayID;
-  Plat->GL.glGenVertexArrays(1, &VertexArrayID);
-  Plat->GL.glBindVertexArray(VertexArrayID);
-
-  Camera_Object *Camera = PUSH_STRUCT_CHECKED(Camera_Object, GameState->Memory, 1);
-  InitCamera(Camera, CAMERA_INITIAL_P, 5000.0f);
-
-  AssertNoGlErrors;
-
-  GameState->Plat = Plat;
-  GameState->Camera = Camera;
-  GameState->RG = RG;
-  GameState->SG = SG;
-  GameState->Entropy.Seed = DEBUG_NOISE_SEED;
-
-
-  canonical_position PlayerInitialP = {};
-
-  AllocateAndInitWorld(GameState, PlayerInitialP.WorldP, VISIBLE_REGION_RADIUS);
-
-  GameState->Player =
-    AllocatePlayer(Plat, GameState->Memory, PlayerInitialP, PLAYER_DRAG, PLAYER_MODEL);
-
-  GameState->Models =
-    PUSH_STRUCT_CHECKED(model, GameState->Memory, ModelIndex_Count);
-  AllocateGameModels(GameState, GameState->Memory);
-
-  AllocateEntityTable(Plat, GameState);
-
-  GameState->EventQueue.Queue =
-    PUSH_STRUCT_CHECKED(frame_event*, GameState->Memory, TOTAL_FRAME_EVENT_COUNT);
-
-  frame_event *TempFrameEvents =
-    PUSH_STRUCT_CHECKED(frame_event, GameState->Memory, TOTAL_FRAME_EVENT_COUNT);
-
-  frame_event **Next = &GameState->EventQueue.FirstFreeEvent;
-
-  for ( s32 FrameEventIndex = 0;
-        FrameEventIndex < TOTAL_FRAME_EVENT_COUNT;
-        ++FrameEventIndex)
-  {
-    frame_event *FreeEvent = &TempFrameEvents[FrameEventIndex];
-    *Next = FreeEvent;
-    Next = &FreeEvent->Next;
-  }
-
-  GameState->FolieTable =
-    PUSH_STRUCT_CHECKED(aabb, GameState->Memory, TOTAL_FOLIE_COUNT);
-
-  /* AllocateParticleSystems(Plat, GameState); */
-
-  SpawnPlayer(GameState, GameState->Player );
-
-  return GameState;
-}
-
-EXPORT bool
-GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
+b32
+DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 {
   TIMED_FUNCTION();
 
@@ -1163,4 +1053,134 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   /* BoundaryVoxelsIndexed=0; */
 
   return True;
+}
+
+EXPORT void
+GameThreadCallback(work_queue_entry *Entry)
+{
+  switch (Entry->Flags)
+  {
+    case WorkEntry_InitWorldChunk:
+    {
+      InitializeVoxels(Entry->GameState, (world_chunk*)Entry->Input);
+    } break;
+
+    InvalidDefaultCase;
+  }
+
+  return;
+}
+
+EXPORT void
+InitGlobals(platform *Plat)
+{
+  GL_Global = &Plat->GL;
+  GlobalGlslVersion = Plat->GlslVersion;
+
+  InitDebugState(GetDebugState(), Plat);
+}
+
+EXPORT void*
+GameInit( platform *Plat, memory_arena *GameMemory)
+{
+  Info("Initializing Game");
+
+  InitGlobals(Plat);
+
+
+  srand(DEBUG_NOISE_SEED);
+  PerlinNoise Noise(rand());
+  GlobalNoise = Noise;
+
+  game_state *GameState = PUSH_STRUCT_CHECKED(game_state, GameMemory, 1);
+  GameState->Memory = GameMemory;
+
+  ShadowRenderGroup *SG = PUSH_STRUCT_CHECKED(ShadowRenderGroup, GameState->Memory, 1);
+  if (!InitializeShadowBuffer(SG)) { Error("Initializing Shadow Buffer"); return False; }
+
+  RenderGroup *RG = PUSH_STRUCT_CHECKED(RenderGroup, GameState->Memory, 1);
+  if (!InitializeRenderGroup(Plat, RG)) { Error("Initializing RenderGroup"); return False; }
+
+  GameState->Turb = PUSH_STRUCT_CHECKED(noise_3d, GameState->Memory, 1);
+  AllocateAndInitNoise3d(GameState, GameState->Turb, Chunk_Dimension(8,8,8) );
+
+  // This needs to be off for shadow maps to work correctly
+  /* glEnable(GL_CULL_FACE); */
+  /* glCullFace(GL_BACK); */
+
+  // This is necessary!
+  GLuint VertexArrayID;
+  Plat->GL.glGenVertexArrays(1, &VertexArrayID);
+  Plat->GL.glBindVertexArray(VertexArrayID);
+
+  Camera_Object *Camera = PUSH_STRUCT_CHECKED(Camera_Object, GameState->Memory, 1);
+  InitCamera(Camera, CAMERA_INITIAL_P, 5000.0f);
+
+  AssertNoGlErrors;
+
+  GameState->Plat = Plat;
+  GameState->Camera = Camera;
+  GameState->RG = RG;
+  GameState->SG = SG;
+  GameState->Entropy.Seed = DEBUG_NOISE_SEED;
+
+
+  canonical_position PlayerInitialP = {};
+
+  AllocateAndInitWorld(GameState, PlayerInitialP.WorldP, VISIBLE_REGION_RADIUS);
+
+  GameState->Player =
+    AllocatePlayer(Plat, GameState->Memory, PlayerInitialP, PLAYER_DRAG, PLAYER_MODEL);
+
+  GameState->Models =
+    PUSH_STRUCT_CHECKED(model, GameState->Memory, ModelIndex_Count);
+  AllocateGameModels(GameState, GameState->Memory);
+
+  AllocateEntityTable(Plat, GameState);
+
+  GameState->EventQueue.Queue =
+    PUSH_STRUCT_CHECKED(frame_event*, GameState->Memory, TOTAL_FRAME_EVENT_COUNT);
+
+  frame_event *TempFrameEvents =
+    PUSH_STRUCT_CHECKED(frame_event, GameState->Memory, TOTAL_FRAME_EVENT_COUNT);
+
+  frame_event **Next = &GameState->EventQueue.FirstFreeEvent;
+
+  for ( s32 FrameEventIndex = 0;
+        FrameEventIndex < TOTAL_FRAME_EVENT_COUNT;
+        ++FrameEventIndex)
+  {
+    frame_event *FreeEvent = &TempFrameEvents[FrameEventIndex];
+    *Next = FreeEvent;
+    Next = &FreeEvent->Next;
+  }
+
+  GameState->FolieTable =
+    PUSH_STRUCT_CHECKED(aabb, GameState->Memory, TOTAL_FOLIE_COUNT);
+
+  /* AllocateParticleSystems(Plat, GameState); */
+
+  SpawnPlayer(GameState, GameState->Player );
+
+  return GameState;
+}
+
+EXPORT bool
+GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
+{
+  switch (GameState->Mode.ActiveMode)
+  {
+    case GameMode_Playing:
+    {
+      return DoGameplay(Plat, GameState, Hotkeys);
+    } break;
+
+    case GameMode_Won:
+    {
+    } break;
+
+    case GameMode_Loss:
+    {
+    } break;
+  }
 }
