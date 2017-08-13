@@ -587,17 +587,13 @@ ProcessCollisionRule(
 
       if (Player->Health <= 0)
       {
-        Unspawn(Player);
-        Player->Health = PLAYER_MAX_HP;
-        Player->Physics.Velocity = V3(0);
-        Player->Physics.Force = V3(0);
-
-        frame_event Event(Player, FrameEvent_Spawn);
-        PushFrameEvent(EventQueue, &Event, 60);
+        Print(Player->Health);
+        frame_event Event(0, FrameEvent_GameModeLoss);
+        PushFrameEvent(EventQueue, &Event);
       }
 
       frame_event Event(Enemy, FrameEvent_Explosion);
-      PushFrameEvent(EventQueue, &Event, 1);
+      PushFrameEvent(EventQueue, &Event);
 
     } break;
 
@@ -616,7 +612,7 @@ ProcessCollisionRule(
       Unspawn(Projectile);
 
       frame_event Event(Enemy, FrameEvent_Explosion);
-      PushFrameEvent(EventQueue, &Event, 1);
+      PushFrameEvent(EventQueue, &Event);
     } break;
 
     default: {} break;

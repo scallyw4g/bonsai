@@ -788,10 +788,35 @@ ReleaseFrameEvent(event_queue *Queue, frame_event *Event)
 }
 
 void
+LoseGame()
+{}
+
+void
+WinGame()
+{}
+
+void
 ProcessFrameEvent(game_state *GameState, frame_event *Event)
 {
   switch(Event->Type)
   {
+    case FrameEvent_GameModeLoss:
+    {
+      Log("Game Lost");
+      LoseGame();
+      GameState->Mode.ActiveMode = GameMode_Loss;
+    } break;
+
+    case FrameEvent_GameModePlaying:
+    {
+      GameState->Mode.ActiveMode = GameMode_Playing;
+    } break;
+
+    case FrameEvent_GameModeWon:
+    {
+      GameState->Mode.ActiveMode = GameMode_Won;
+    } break;
+
     case FrameEvent_Spawn:
     {
       SpawnEntity(GameState->Models, Event->Entity, Event->Entity->Type);
@@ -836,7 +861,7 @@ AllocateAndInitNoise3d(game_state *GameState, noise_3d *Noise, chunk_dimension D
   Noise->Voxels = PUSH_STRUCT_CHECKED(voxel, GameState->Memory, Volume(Dim));
 }
 
-b32
+void
 DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 {
   TIMED_FUNCTION();
@@ -1052,8 +1077,16 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   /* Info("%d Boundary Voxels Indexed", BoundaryVoxelsIndexed ); */
   /* BoundaryVoxelsIndexed=0; */
 
-  return True;
+  return;
 }
+
+void
+DoLosing()
+{}
+
+void
+DoWinning()
+{}
 
 EXPORT void
 GameThreadCallback(work_queue_entry *Entry)
@@ -1165,22 +1198,29 @@ GameInit( platform *Plat, memory_arena *GameMemory)
   return GameState;
 }
 
-EXPORT bool
+EXPORT void
 GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 {
   switch (GameState->Mode.ActiveMode)
   {
     case GameMode_Playing:
     {
-      return DoGameplay(Plat, GameState, Hotkeys);
+      DoGameplay(Plat, GameState, Hotkeys);
     } break;
 
     case GameMode_Won:
     {
+      DoWinning();
     } break;
 
     case GameMode_Loss:
     {
+      Plat->dt *= 0.01f;
+      DoGameplay(Plat, GameState, Hotkeys);
     } break;
+
+    InvalidDefaultCase;
   }
+
+  return;
 }

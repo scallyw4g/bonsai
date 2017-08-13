@@ -46,7 +46,7 @@
 #define SECONDS_PER_LEVEL 10.0
 
 #define PLAYER_COUNT             1
-#define PLAYER_MAX_HP            10
+#define PLAYER_MAX_HP            2
 #define PLAYER_STEP_MAX          1
 #define PLAYER_JUMP_STRENGTH     20.0f
 #define PLAYER_ACCEL_MULTIPLIER  150.0f
