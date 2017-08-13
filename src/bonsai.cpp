@@ -582,7 +582,6 @@ ProcessCollisionRule(
       }
 
       Player->Health --;
-      Unspawn(Enemy);
 
       if (Player->Health <= 0)
       {
@@ -609,7 +608,6 @@ ProcessCollisionRule(
       }
 
       Unspawn(Projectile);
-      Unspawn(Enemy);
 
       frame_event Event(Enemy, FrameEvent_Explosion);
       PushFrameEvent(EventQueue, &Event);

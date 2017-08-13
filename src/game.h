@@ -21,7 +21,6 @@ enum frame_event_type
   FrameEvent_Spawn,
   FrameEvent_Unspawn,
   FrameEvent_Explosion,
-  FrameEvent_Deactivate,
   FrameEvent_GameModeLoss,
   FrameEvent_GameModePlaying,
   FrameEvent_GameModeWon,
@@ -29,9 +28,10 @@ enum frame_event_type
 
 enum game_mode_type
 {
+  GameMode_Title,
   GameMode_Playing,
   GameMode_Won,
-  GameMode_Loss
+  GameMode_Loss,
 };
 
 struct frame_event

@@ -7,6 +7,7 @@ static gl_extensions *GL_Global;
 static const char *GlobalGlslVersion;
 
 GLOBAL_VARIABLE physics NullPhysics = {};
+GLOBAL_VARIABLE hotkeys NullHotkeys = {};
 
 #include <game.h>
 
@@ -798,11 +799,19 @@ ReleaseFrameEvent(event_queue *Queue, frame_event *Event)
 }
 
 void
+SetMode(game_mode *Mode, game_mode_type Active)
+{
+  Mode->ActiveMode = Active;
+  Mode->TimeRunning = 0;
+
+  return;
+}
+
+void
 StartGame(game_state *GameState)
 {
   game_mode *Mode = &GameState->Mode;
-  Mode->ActiveMode= GameMode_Playing;
-  Mode->TimeRunning = 0;
+  SetMode(Mode, GameMode_Playing);
 
   for (s32 EntityIndex = 0;
        EntityIndex < TOTAL_ENTITY_COUNT;
@@ -817,6 +826,7 @@ StartGame(game_state *GameState)
     Deactivate(Entity->Emitter);
   }
 
+  GameState->Player = GetFreeEntity(GameState);
   SpawnPlayer(GameState, GameState->Player );
 
   return;
@@ -837,7 +847,7 @@ ProcessFrameEvent(game_state *GameState, frame_event *Event)
   {
     case FrameEvent_GameModeLoss:
     {
-      GameState->Mode.ActiveMode = GameMode_Loss;
+      SetMode(&GameState->Mode, GameMode_Loss);
     } break;
 
     case FrameEvent_GameModePlaying:
@@ -855,11 +865,6 @@ ProcessFrameEvent(game_state *GameState, frame_event *Event)
       SpawnEntity(GameState->Models, Event->Entity, Event->Entity->Type);
     } break;
 
-    case FrameEvent_Deactivate:
-    {
-      Unspawn(Event->Entity);
-    } break;
-
     case FrameEvent_Unspawn:
     {
       Unspawn(Event->Entity);
@@ -868,6 +873,7 @@ ProcessFrameEvent(game_state *GameState, frame_event *Event)
     case FrameEvent_Explosion:
     {
       entity *Entity = Event->Entity;
+      Unspawn(Entity);
 
       r32 PhysicsMultiple = 0.15f;
       Entity->Physics.Velocity = Entity->Physics.Velocity * PhysicsMultiple;
@@ -900,7 +906,6 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   TIMED_FUNCTION();
 
   UpdateLogicalFrameCount(&GameState->Frame, Plat->dt);
-  GameState->Mode.TimeRunning += Plat->dt;
 
   GL_Global = &Plat->GL;
 
@@ -999,7 +1004,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   TIMED_BLOCK("Render");
 
   // FIXME(Jesse): This is extremely slow on my laptop ..?!
-  ClearFramebuffers(RG, SG);
+  /* ClearFramebuffers(RG, SG); */
 
   world_position VisibleRadius = World_Position(VR_X, VR_Y, VR_Z)/2;
 
@@ -1224,7 +1229,12 @@ GameInit( platform *Plat, memory_arena *GameMemory)
 EXPORT void
 GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 {
-  switch (GameState->Mode.ActiveMode)
+  game_mode *Mode = &GameState->Mode;
+  Mode->TimeRunning += Plat->dt;
+
+  ClearFramebuffers(GameState->RG, GameState->SG);
+
+  switch (Mode->ActiveMode)
   {
     case GameMode_Playing:
     {
@@ -1236,13 +1246,23 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
       /* DoWinning(); */
     } break;
 
+    case GameMode_Title:
+    {
+      if (Hotkeys->Player_Spawn)
+        StartGame(GameState);
+    } break;
+
     case GameMode_Loss:
     {
       Plat->dt *= 0.05f;
+      *Hotkeys = NullHotkeys;
       DoGameplay(Plat, GameState, Hotkeys);
 
-      if (Hotkeys->Player_Spawn)
-        StartGame(GameState);
+      Print(Mode->TimeRunning);
+      if (Mode->TimeRunning >= 5.0f)
+      {
+        SetMode(Mode, GameMode_Title);
+      }
 
     } break;
 
