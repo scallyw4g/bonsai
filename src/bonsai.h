@@ -193,7 +193,7 @@ struct plane
   plane() {}
 };
 
-struct Frustum
+struct frustum
 {
   float farClip;
   float nearClip;
@@ -206,9 +206,9 @@ struct Frustum
   plane Right;
 };
 
-struct Camera_Object
+struct camera
 {
-  Frustum Frust;
+  frustum Frust;
 
   canonical_position P;
   canonical_position Target; // TODO : Can this just be a v3?

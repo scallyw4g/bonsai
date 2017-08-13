@@ -122,7 +122,7 @@ Rads(degrees Degrees)
 }
 
 inline m4
-GetProjectionMatrix(Camera_Object *Camera, int WindowWidth, int WindowHeight)
+GetProjectionMatrix(camera *Camera, int WindowWidth, int WindowHeight)
 {
   m4 Projection = Perspective(
       Rads(Camera->Frust.FOV),
@@ -134,7 +134,7 @@ GetProjectionMatrix(Camera_Object *Camera, int WindowWidth, int WindowHeight)
 }
 
 inline v3
-GetRenderP( chunk_dimension WorldChunkDim, canonical_position P, Camera_Object *Camera)
+GetRenderP( chunk_dimension WorldChunkDim, canonical_position P, camera *Camera)
 {
   v3 CameraOffset = Camera->Target.Offset + (Camera->Target.WorldP * WorldChunkDim);
   v3 Result = P.Offset + (P.WorldP * WorldChunkDim) - CameraOffset;
@@ -142,28 +142,28 @@ GetRenderP( chunk_dimension WorldChunkDim, canonical_position P, Camera_Object *
 }
 
 inline v3
-GetRenderP( chunk_dimension WorldChunkDim, v3 Offset, Camera_Object *Camera)
+GetRenderP( chunk_dimension WorldChunkDim, v3 Offset, camera *Camera)
 {
   v3 Result = GetRenderP(WorldChunkDim, Canonical_Position(Offset, World_Position(0)), Camera);
   return Result;
 }
 
 inline v3
-GetRenderP( chunk_dimension WorldChunkDim, world_position WorldP, Camera_Object *Camera)
+GetRenderP( chunk_dimension WorldChunkDim, world_position WorldP, camera *Camera)
 {
   v3 Result = GetRenderP(WorldChunkDim, Canonical_Position(V3(0,0,0), WorldP), Camera);
   return Result;
 }
 
 inline v3
-GetRenderP( chunk_dimension WorldChunkDim, entity *entity, Camera_Object *Camera)
+GetRenderP( chunk_dimension WorldChunkDim, entity *entity, camera *Camera)
 {
   v3 Result = GetRenderP(WorldChunkDim, entity->P, Camera);
   return Result;
 }
 
 inline aabb
-GetRenderSpaceAABB(chunk_dimension WorldChunkDim, entity *Entity, Camera_Object *Camera)
+GetRenderSpaceAABB(chunk_dimension WorldChunkDim, entity *Entity, camera *Camera)
 {
   v3 Radius = Entity->CollisionVolumeRadius;
   v3 Center = GetRenderP(WorldChunkDim, Entity->P, Camera) + Radius;
@@ -185,7 +185,7 @@ LookAt(v3 P, v3 Target, v3 Up)
 }
 
 inline m4
-GetViewMatrix(chunk_dimension WorldChunkDim, Camera_Object *Camera)
+GetViewMatrix(chunk_dimension WorldChunkDim, camera *Camera)
 {
   v3 up = V3(0, 1, 0);
   v3 CameraRight = Normalize( Cross(up, Camera->Front) );

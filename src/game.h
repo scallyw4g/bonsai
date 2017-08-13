@@ -68,7 +68,7 @@ struct game_state
   world         *World;
   platform      *Plat;
   entity        *Player;
-  Camera_Object *Camera;
+  camera        *Camera;
 
   RenderGroup             *RG;
   ShadowRenderGroup       *SG;

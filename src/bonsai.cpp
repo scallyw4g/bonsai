@@ -178,7 +178,7 @@ GetOrthographicInputs(hotkeys *Hotkeys)
 }
 
 inline v3
-GetCameraRelativeInput(platform *Plat, Camera_Object *Camera)
+GetCameraRelativeInput(platform *Plat, camera *Camera)
 {
   v3 right = Camera->Right;
   v3 forward = Camera->Front;
@@ -672,7 +672,7 @@ GetMouseDelta(platform *Plat)
 }
 
 void
-UpdateCameraP(platform *Plat, world *World, entity *Player, Camera_Object *Camera)
+UpdateCameraP(platform *Plat, world *World, entity *Player, camera *Camera)
 {
   chunk_dimension WorldChunkDim = World->ChunkDim;
   canonical_position NewTarget = Canonicalize(WorldChunkDim, Player->P.Offset, Player->P.WorldP) + (Player->Model.Dim/2.0f);
@@ -701,7 +701,7 @@ UpdateCameraP(platform *Plat, world *World, entity *Player, Camera_Object *Camer
   Camera->Front = Normalize( GetRenderP(WorldChunkDim, Camera->Target, Camera) - GetRenderP(WorldChunkDim, Camera->P, Camera) );
   Camera->Up = Normalize(Cross(Camera->Front, Camera->Right));
 
-  // Frustum computation
+  // frustum computation
   //
   v3 FrustLength = V3(0.0f,0.0f, Camera->Frust.farClip);
   v3 FarHeight = ( V3( 0.0f, ((Camera->Frust.farClip - Camera->Frust.nearClip)/cos(Camera->Frust.FOV/2)) * sin(Camera->Frust.FOV/2), 0.0f));

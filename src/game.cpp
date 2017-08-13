@@ -166,7 +166,7 @@ AllocatePlayer(platform *Plat, memory_arena *Memory, canonical_position InitialP
 }
 
 void
-InitCamera(Camera_Object* Camera, canonical_position P, float FocalLength)
+InitCamera(camera* Camera, canonical_position P, float FocalLength)
 {
   Camera->Frust.farClip = FocalLength;
   Camera->Frust.nearClip = 0.1f;
@@ -600,7 +600,7 @@ SimulateAndRenderParticleSystems(
   )
 {
   world *World = GameState->World;
-  Camera_Object *Camera = GameState->Camera;
+  camera *Camera = GameState->Camera;
   particle_system *System = SystemEntity->Emitter;
   // noise_3d *Turb = GameState->Turb;
 
@@ -900,7 +900,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   world *World          = GameState->World;
 
   entity *Player        = GameState->Player;
-  Camera_Object *Camera = GameState->Camera;
+  camera *Camera = GameState->Camera;
 
   chunk_dimension WorldChunkDim = World->ChunkDim;
 
@@ -1164,7 +1164,7 @@ GameInit( platform *Plat, memory_arena *GameMemory)
   Plat->GL.glGenVertexArrays(1, &VertexArrayID);
   Plat->GL.glBindVertexArray(VertexArrayID);
 
-  Camera_Object *Camera = PUSH_STRUCT_CHECKED(Camera_Object, GameState->Memory, 1);
+  camera *Camera = PUSH_STRUCT_CHECKED(camera, GameState->Memory, 1);
   InitCamera(Camera, CAMERA_INITIAL_P, 5000.0f);
 
   AssertNoGlErrors;

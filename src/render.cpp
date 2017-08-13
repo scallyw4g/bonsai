@@ -446,7 +446,7 @@ DEBUG_DrawPointMarker( world *World, v3 RenderP, int ColorIndex, v3 Diameter)
 GLOBAL_VARIABLE v3 GlobalLightPosition = {};
 
 inline m4
-GetDepthMVP(world *World, Camera_Object *Camera)
+GetDepthMVP(world *World, camera *Camera)
 {
   // Compute the MVP matrix from the light's point of view
   v3 Translate = V3(0,300,0);
@@ -469,7 +469,7 @@ GetDepthMVP(world *World, Camera_Object *Camera)
 }
 
 void
-DrawWorldToFullscreenQuad( platform *Plat, world *World, RenderGroup *RG, ShadowRenderGroup *SG, Camera_Object *Camera)
+DrawWorldToFullscreenQuad( platform *Plat, world *World, RenderGroup *RG, ShadowRenderGroup *SG, camera *Camera)
 {
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -536,7 +536,7 @@ DrawWorldToFullscreenQuad( platform *Plat, world *World, RenderGroup *RG, Shadow
 }
 
 void
-RenderShadowMap(world *World, ShadowRenderGroup *SG, RenderGroup *RG, Camera_Object *Camera)
+RenderShadowMap(world *World, ShadowRenderGroup *SG, RenderGroup *RG, camera *Camera)
 {
   glViewport(0, 0, SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y);
 
@@ -639,7 +639,7 @@ FlushRenderBuffers(
     world *World,
     RenderGroup *RG,
     ShadowRenderGroup *SG,
-    Camera_Object *Camera
+    camera *Camera
   )
 {
   TIMED_FUNCTION();
@@ -920,7 +920,7 @@ GetModelSpaceP(chunk_data *chunk, v3 P)
 }
 
 inline void
-DEBUG_DrawChunkAABB( world *World, world_position WorldP, Camera_Object *Camera,
+DEBUG_DrawChunkAABB( world *World, world_position WorldP, camera *Camera,
                      Quaternion Rotation, s32 ColorIndex , r32 Thickness = DEFAULT_LINE_THICKNESS)
 {
   v3 MinP = GetRenderP(World->ChunkDim, Canonical_Position(V3(0,0,0), WorldP), Camera);
@@ -931,7 +931,7 @@ DEBUG_DrawChunkAABB( world *World, world_position WorldP, Camera_Object *Camera,
 }
 
 inline void
-DEBUG_DrawChunkAABB( world *World, world_chunk *chunk, Camera_Object *Camera,
+DEBUG_DrawChunkAABB( world *World, world_chunk *chunk, camera *Camera,
                      Quaternion Rotation, s32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS)
 {
   v3 MinP = GetRenderP(World->ChunkDim, Canonical_Position(V3(0,0,0), chunk->WorldP), Camera);
@@ -978,7 +978,7 @@ DistanceToPlane(plane *Plane, v3 P)
 }
 
 inline bool
-IsInFrustum(chunk_dimension WorldChunkDim, Camera_Object *Camera, canonical_position P)
+IsInfrustum(chunk_dimension WorldChunkDim, camera *Camera, canonical_position P)
 {
   bool Result = true;
 
@@ -1145,11 +1145,11 @@ BuildWorldChunkBoundaryVoxels(world *World, world_chunk *WorldChunk)
 }
 
 inline bool
-IsInFrustum( chunk_dimension WorldChunkDim, Camera_Object *Camera, world_chunk *Chunk )
+IsInfrustum( chunk_dimension WorldChunkDim, camera *Camera, world_chunk *Chunk )
 {
   v3 ChunkMid = V3(CD_X, CD_Y, CD_Z)/2;
   canonical_position P1 = Canonical_Position(  ChunkMid, Chunk->WorldP );
-  bool Result = IsInFrustum(WorldChunkDim, Camera, P1 );
+  bool Result = IsInfrustum(WorldChunkDim, Camera, P1 );
   return Result;
 }
 
@@ -1180,7 +1180,7 @@ BufferChunkMesh(
     chunk_data *chunk,
     world_position WorldP,
     RenderGroup *RG,
-    Camera_Object *Camera,
+    camera *Camera,
     r32 Scale,
     v3 Offset = V3(0,0,0)
   )
@@ -2144,10 +2144,10 @@ DrawWorldChunk(
   world *World = GameState->World;
   /* chunk_dimension Dim = World->ChunkDim; */
 
-  // if (!IsInFrustum(Dim, GameState->Camera, Chunk))
+  // if (!IsInfrustum(Dim, GameState->Camera, Chunk))
     // return;
 
-  Camera_Object *Camera = GameState->Camera;
+  camera *Camera = GameState->Camera;
   /* v3 ChunkRenderOffset = GetRenderP( Dim, Chunk->WorldP, Camera); */
   /* v3 CameraRenderOffset = GetRenderP( Dim, Camera->P, Camera); */
 
@@ -2177,7 +2177,7 @@ DrawWorldChunk(
 }
 
 void
-DrawFolie(world *World, Camera_Object *Camera, aabb *AABB)
+DrawFolie(world *World, camera *Camera, aabb *AABB)
 {
   v3 RenderP = AABB->Center;
   DEBUG_DrawPointMarker( World, RenderP, GREY, AABB->Radius*2);
@@ -2189,7 +2189,7 @@ void
 DrawParticle(
     world *World,
     canonical_position *P,
-    Camera_Object *Camera,
+    camera *Camera,
     particle *Particle,
     r32 Diameter,
     u8 ColorIndex
@@ -2228,7 +2228,7 @@ DrawEntity(
     platform *Plat,
     world *World,
     entity *Entity,
-    Camera_Object *Camera,
+    camera *Camera,
     RenderGroup *RG
   )
 {
