@@ -47,6 +47,19 @@ struct event_queue
   frame_event *FirstFreeEvent;
 };
 
+enum game_mode_type
+{
+  GameMode_Playing,
+  GameMode_Won,
+  GameMode_Loss
+};
+
+struct game_mode
+{
+  game_mode_type ActiveMode;
+  r64 TimeRunning;
+};
+
 struct game_state
 {
   World         *world;
@@ -64,6 +77,7 @@ struct game_state
   noise_3d *Turb;
 
   random_series Entropy;
+  game_mode Mode;
 
   event_queue EventQueue;
 

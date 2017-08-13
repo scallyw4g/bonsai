@@ -43,6 +43,7 @@
 
 #define WORLD_GRAVITY V3(0.0f, 0.0f, 0.0f)
 
+#define SECONDS_PER_LEVEL 10.0
 
 #define PLAYER_COUNT             1
 #define PLAYER_MAX_HP            10
@@ -81,7 +82,6 @@
 #define PROJECTILE_SPEED 400
 
 #define ENEMY_DRAG 0
-#define ENEMY_SPAWN_RATE 30
 
 #define LOOT_CHANCE 1
 

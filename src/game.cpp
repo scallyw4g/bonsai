@@ -252,6 +252,13 @@ GetUnusedEntity(game_state *GameState)
   return Result;
 }
 
+s32
+GetLevel(r64 Time)
+{
+  s32 Level = 1 + ((s32)(Time/SECONDS_PER_LEVEL));
+  return Level;
+}
+
 void
 SpawnEnemies(game_state *GameState)
 {
@@ -261,8 +268,13 @@ SpawnEnemies(game_state *GameState)
   if (!CurrentFrameIsLogicalFrame(&GameState->Frame))
     return;
 
-  s32 EnemySpawnEnrtopy = (RandomU32(&GameState->Entropy) % ENEMY_SPAWN_RATE);
-  if (EnemySpawnEnrtopy != 0)
+  s32 Level = GetLevel(GameState->Mode.TimeRunning);
+
+  // One enemy per Level per second
+  r32 EnemySpawnRate = Level/60.0f;
+
+  b32 Spawn = (RandomUnilateral(&GameState->Entropy) <= EnemySpawnRate);
+  if (!Spawn)
     return;
 
   entity *Enemy = GetUnusedEntity(GameState);
@@ -940,6 +952,7 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   TIMED_FUNCTION();
 
   UpdateLogicalFrameCount(&GameState->Frame, Plat->dt);
+  GameState->Mode.TimeRunning += Plat->dt;
 
   GL_Global = &Plat->GL;
 
