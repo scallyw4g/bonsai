@@ -756,6 +756,15 @@ World_Position(int x, int y, int z)
 
 
 inline canonical_position
+Canonical_Position(s32 I)
+{
+  canonical_position Result;
+  Result.Offset = V3(I);
+  Result.WorldP = World_Position(I);
+  return Result;
+}
+
+inline canonical_position
 Canonical_Position()
 {
   canonical_position Result;

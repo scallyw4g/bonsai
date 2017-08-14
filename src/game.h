@@ -18,8 +18,6 @@ enum frame_event_type
 {
   FrameEvent_Undefined,
 
-  FrameEvent_Spawn,
-  FrameEvent_Unspawn,
   FrameEvent_Explosion,
   FrameEvent_GameModeLoss,
   FrameEvent_GameModePlaying,
@@ -41,10 +39,17 @@ struct frame_event
 
   frame_event *Next;
 
+  frame_event(frame_event_type Type)
+  {
+    this->Type = Type;
+    this->Entity = 0;
+    this->Next = 0;
+  }
+
   frame_event(entity *Entity, frame_event_type Type)
   {
-    this->Entity = Entity;
     this->Type = Type;
+    this->Entity = Entity;
     this->Next = 0;
   }
 };

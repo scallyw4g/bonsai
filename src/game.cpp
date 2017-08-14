@@ -860,19 +860,11 @@ ProcessFrameEvent(game_state *GameState, frame_event *Event)
       GameState->Mode.ActiveMode = GameMode_Won;
     } break;
 
-    case FrameEvent_Spawn:
-    {
-      SpawnEntity(GameState->Models, Event->Entity, Event->Entity->Type);
-    } break;
-
-    case FrameEvent_Unspawn:
-    {
-      Unspawn(Event->Entity);
-    } break;
-
     case FrameEvent_Explosion:
     {
       entity *Entity = Event->Entity;
+      Assert( Destroyed(Entity) );
+
       Unspawn(Entity);
 
       r32 PhysicsMultiple = 0.15f;
@@ -971,14 +963,12 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
 
   event_queue *Queue = &GameState->EventQueue;
-  u32 LocalFrameDiff = GameState->Frame.FrameDiff;
-  while (LocalFrameDiff-- > 0)
-
+  u32 LogicalFrameDiff = GameState->Frame.FrameDiff;
+  while (LogicalFrameDiff-- > 0)
   {
     Queue->CurrentFrameIndex = (Queue->CurrentFrameIndex+1) % TOTAL_FRAME_EVENT_COUNT;
-    frame_event *Event =
-      Queue->Queue[Queue->CurrentFrameIndex];
 
+    frame_event *Event = Queue->Queue[Queue->CurrentFrameIndex];
     while (Event)
     {
       frame_event *NextEvent = Event->Next;

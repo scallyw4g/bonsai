@@ -479,6 +479,18 @@ Deactivate(particle_system *System)
 }
 
 inline void
+Destroy(entity *Entity)
+{
+  Assert( Spawned(Entity) );
+  Entity->State = EntityState_Destroyed;
+
+  Assert(Entity->Emitter);
+  Deactivate(Entity->Emitter);
+
+  return;
+}
+
+inline void
 Unspawn(entity *Entity)
 {
   Entity->State = EntityState_Initialized;
@@ -553,6 +565,7 @@ ProcessCollisionRule(
 
   switch (CollisionType)
   {
+#if 0
     case Collision_Player_Loot:
     {
       entity *Player = First;
@@ -568,6 +581,7 @@ ProcessCollisionRule(
       Unspawn(Loot);
 
     } break;
+#endif
 
     case Collision_Player_EnemyProjectile:
     case Collision_Player_Enemy:
@@ -586,10 +600,11 @@ ProcessCollisionRule(
       if (Player->Health <= 0)
       {
         Unspawn(Player);
-        frame_event Event(0, FrameEvent_GameModeLoss);
+        frame_event Event(FrameEvent_GameModeLoss);
         PushFrameEvent(EventQueue, &Event);
       }
 
+      Destroy(Enemy);
       frame_event Event(Enemy, FrameEvent_Explosion);
       PushFrameEvent(EventQueue, &Event);
 
@@ -608,6 +623,7 @@ ProcessCollisionRule(
       }
 
       Unspawn(Projectile);
+      Destroy(Enemy);
 
       frame_event Event(Enemy, FrameEvent_Explosion);
       PushFrameEvent(EventQueue, &Event);
@@ -648,6 +664,7 @@ EntitiesCanCollide(entity *First, entity *Second)
 
   switch (CollisionType)
   {
+    case Collision_Player_PlayerProjectile:
     case Collision_Enemy_EnemyProjectile:
     case Collision_Enemy_Enemy:
     {
