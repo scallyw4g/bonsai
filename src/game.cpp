@@ -47,7 +47,10 @@ PhysicsUpdate(physics *Physics, r32 dt, b32 Print = False)
 void
 SpawnEntity( model *GameModels, entity *Entity, entity_type Type)
 {
+  // These are mutually exclusive, so checking both is redundant, but that
+  // could change in the future
   Assert(Unspawned(Entity));
+  Assert(!Destroyed(Entity));
 
   Entity->State = EntityState_Spawned;
   Entity->Type = Type;
@@ -247,12 +250,15 @@ GetFreeEntity(game_state *GameState)
         ++EntityIndex )
   {
     entity *TestEntity = GameState->EntityTable[EntityIndex];
-    if (Unspawned(TestEntity))
+    if (Unspawned(TestEntity) && !Destroyed(TestEntity))
     {
       Result = TestEntity;
       break;
     }
   }
+
+  Assert(Unspawned(Result));
+  Assert(!Destroyed(Result));
 
   return Result;
 }
@@ -260,7 +266,7 @@ GetFreeEntity(game_state *GameState)
 s32
 GetLevel(r64 Time)
 {
-  s32 Level = 1 + ((s32)(Time/SECONDS_PER_LEVEL));
+  s32 Level = 10 + ((s32)(Time/SECONDS_PER_LEVEL));
   return Level;
 }
 
@@ -291,62 +297,55 @@ SpawnEnemies(game_state *GameState)
 }
 
 void
-SpawnProjectile(game_state *GameState, canonical_position *P, v3 Velocity, entity_type ProjectileType)
+SpawnProjectile(game_state *GameState,
+                canonical_position *P,
+                v3 Velocity,
+                entity_type ProjectileType
+  )
 {
   model *GameModels = GameState->Models;
 
-  for (s32 ProjectileIndex = 0;
-      ProjectileIndex < TOTAL_ENTITY_COUNT;
-      ++ ProjectileIndex)
+  entity *Projectile = GetFreeEntity(GameState);
+
+  v3 CollisionVolumeRadius = V3(PROJECTILE_AABB)/2;
+
+  physics Physics = {};
+  Physics.Velocity = Velocity;
+  Physics.Speed = PROJECTILE_SPEED;
+
+  r32 Scale = 1.0f;
+  r32 RateOfFire = 1.0f;
+  u32 Health = 1;
+
+  SpawnEntity(
+    Projectile,
+    &GameModels[ModelIndex_Projectile],
+    ProjectileType,
+
+    &Physics,
+
+    P,
+    CollisionVolumeRadius,
+
+    Scale,
+    RateOfFire,
+    Health);
+
+
+  switch (ProjectileType)
   {
-    entity *Projectile = GameState->EntityTable[ProjectileIndex];
-
-    if (Unspawned(Projectile))
+    case EntityType_PlayerProton:
     {
-      v3 CollisionVolumeRadius = V3(PROJECTILE_AABB)/2;
+      Projectile->Model = GameModels[ModelIndex_Proton];
+    } break;
 
-      physics Physics = {};
-      Physics.Velocity = Velocity;
-      Physics.Speed = PROJECTILE_SPEED;
+    case EntityType_PlayerProjectile:
+    case EntityType_EnemyProjectile:
+    {
+      Projectile->Model = GameModels[ModelIndex_Projectile];
+    } break;
 
-      r32 Scale = 1.0f;
-      r32 RateOfFire = 1.0f;
-      u32 Health = 1;
-
-      SpawnEntity(
-        Projectile,
-        &GameModels[ModelIndex_Projectile],
-        ProjectileType,
-
-        &Physics,
-
-        P,
-        CollisionVolumeRadius,
-
-        Scale,
-        RateOfFire,
-        Health);
-
-
-      switch (ProjectileType)
-      {
-        case EntityType_PlayerProton:
-        {
-          Projectile->Model = GameModels[ModelIndex_Proton];
-        } break;
-
-        case EntityType_PlayerProjectile:
-        case EntityType_EnemyProjectile:
-        {
-          Projectile->Model = GameModels[ModelIndex_Projectile];
-        } break;
-
-        InvalidDefaultCase;
-      }
-
-      break;
-    }
-
+    InvalidDefaultCase;
   }
 
   return;
@@ -545,7 +544,7 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
       EntityWorldCollision(Entity);
     }
 
-    if (Unspawned(Entity))
+    if (Unspawned(Entity) || Destroyed(Entity))
       break;
 
     DoEntityCollisions(GameState, Entity, &GameState->Entropy);
@@ -1049,7 +1048,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
       if ( (chunk->WorldP >= Min && chunk->WorldP < Max) )
       {
         /* DEBUG_DrawChunkAABB( World, chunk, Camera, Quaternion(), BLUE ); */
-        DrawWorldChunk(GameState, chunk, RG);
+        BufferWorldChunk(GameState, chunk, RG);
         chunk = chunk->Next;
       }
       else

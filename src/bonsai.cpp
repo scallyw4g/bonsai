@@ -439,6 +439,9 @@ GetCollision(entity *First, entity *Second)
 {
   TIMED_FUNCTION();
 
+  if (Destroyed(First) || Destroyed(Second))
+    return False;
+
   if (Unspawned(First) || Unspawned(Second))
     return False;
 
@@ -623,8 +626,8 @@ ProcessCollisionRule(
       }
 
       Unspawn(Projectile);
-      Destroy(Enemy);
 
+      Destroy(Enemy);
       frame_event Event(Enemy, FrameEvent_Explosion);
       PushFrameEvent(EventQueue, &Event);
     } break;

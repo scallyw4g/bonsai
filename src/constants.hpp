@@ -47,7 +47,7 @@
 #define TITLE_FONT_SIZE  32
 
 #define PLAYER_COUNT             1
-#define PLAYER_MAX_HP            10
+#define PLAYER_MAX_HP            1000
 #define PLAYER_DRAG              V3(0.9f, 0.9f, 0.0f)
 #define PLAYER_IMPULSE           V3(0,200,0)
 
