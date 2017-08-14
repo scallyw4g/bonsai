@@ -446,7 +446,7 @@ DEBUG_DrawPointMarker( world *World, v3 RenderP, int ColorIndex, v3 Diameter)
 GLOBAL_VARIABLE v3 GlobalLightPosition = {};
 
 inline m4
-GetDepthMVP(world *World, camera *Camera)
+GetDepthMVP(camera *Camera)
 {
   // Compute the MVP matrix from the light's point of view
   v3 Translate = V3(0,300,0);
@@ -469,9 +469,12 @@ GetDepthMVP(world *World, camera *Camera)
 }
 
 void
-DrawWorldToFullscreenQuad( platform *Plat, world *World, RenderGroup *RG, ShadowRenderGroup *SG, camera *Camera)
+DrawGBufferToFullscreenQuad( platform *Plat, RenderGroup *RG, ShadowRenderGroup *SG, camera *Camera, world_position WorldChunkDim)
 {
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 #if 1
   GL_Global->glUseProgram(RG->LightingShader);
@@ -486,14 +489,14 @@ DrawWorldToFullscreenQuad( platform *Plat, world *World, RenderGroup *RG, Shadow
     V4(0.5, 0.5, 0.5, 1.0)
   };
 
-  m4 depthBiasMVP = biasMatrix * GetDepthMVP(World, Camera);
+  m4 depthBiasMVP = biasMatrix * GetDepthMVP(Camera);
   GL_Global->glUniformMatrix4fv(RG->DepthBiasMVPID, 1, GL_FALSE, &depthBiasMVP.E[0].E[0]);
 
   m4 VP = RG->Basis.ViewMatrix;
 
   GL_Global->glUniformMatrix4fv(RG->ViewMatrixUniform, 1, GL_FALSE, &VP.E[0].E[0]);
 
-  v3 CameraRenderP = GetRenderP(World->ChunkDim, Camera->P, Camera);
+  v3 CameraRenderP = GetRenderP(WorldChunkDim, Camera->P, Camera);
   GL_Global->glUniform3fv(RG->CameraPosUniform, 1, &CameraRenderP.E[0]);
 
   GL_Global->glActiveTexture(GL_TEXTURE0);
@@ -532,6 +535,8 @@ DrawWorldToFullscreenQuad( platform *Plat, world *World, RenderGroup *RG, Shadow
 #endif
 
 
+  glDisable(GL_BLEND);
+
   return;
 }
 
@@ -540,10 +545,9 @@ RenderShadowMap(world *World, ShadowRenderGroup *SG, RenderGroup *RG, camera *Ca
 {
   glViewport(0, 0, SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y);
 
-  m4 depthMVP = GetDepthMVP(World, Camera);
+  m4 depthMVP = GetDepthMVP(Camera);
 
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
-  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
   GL_Global->glUseProgram(SG->ShaderID);
   GL_Global->glUniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &depthMVP.E[0].E[0]);
@@ -573,7 +577,7 @@ RenderShadowMap(world *World, ShadowRenderGroup *SG, RenderGroup *RG, camera *Ca
 }
 
 void
-RenderWorld( platform *Plat, world *World, RenderGroup *RG)
+RenderWorldToGBuffer( platform *Plat, world *World, RenderGroup *RG)
 {
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO);
 
@@ -634,7 +638,7 @@ RenderWorld( platform *Plat, world *World, RenderGroup *RG)
 
 
 inline void
-FlushRenderBuffers(
+RenderToGBuffer(
     platform *Plat,
     world *World,
     RenderGroup *RG,
@@ -646,7 +650,7 @@ FlushRenderBuffers(
 
   RenderShadowMap(World, SG, RG, Camera);
 
-  RenderWorld(Plat, World, RG);
+  RenderWorldToGBuffer(Plat, World, RG);
 
   AssertNoGlErrors;
 
@@ -1157,7 +1161,7 @@ inline void
 ClearFramebuffers(RenderGroup *RG, ShadowRenderGroup *SG)
 {
   /* TIMED_FUNCTION(); */
-  glClearColor(0.25f, 0.25f, 0.25f, 0.0f);
+  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
   // FIXME(Jesse): This is taking _forever_ on Linux (GLES) .. does it take
   // forever on other Linux systems?
@@ -2127,7 +2131,7 @@ CanBuildWorldChunkBoundary(world *World, world_chunk *Chunk)
 }
 
 void
-DrawWorldChunk(
+BufferWorldChunk(
     game_state *GameState,
     world_chunk *Chunk,
     RenderGroup *RG
@@ -2224,7 +2228,7 @@ DrawParticle(
 }
 
 void
-DrawEntity(
+BufferEntity(
     platform *Plat,
     world *World,
     entity *Entity,

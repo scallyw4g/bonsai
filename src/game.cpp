@@ -1067,7 +1067,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
         ++EntityIndex)
   {
     entity *Enemy = GameState->EntityTable[EntityIndex];
-    DrawEntity(Plat, World, Enemy, Camera, RG);
+    BufferEntity(Plat, World, Enemy, Camera, RG);
   }
   END_BLOCK("Entities");
 
@@ -1079,14 +1079,14 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
     DrawFolie(World, Camera, AABB);
   }
 
-  DrawEntity(Plat, World, GameState->Player, Camera, RG);
+  RenderToGBuffer(Plat, World, RG, SG, Camera);
+  DrawGBufferToFullscreenQuad(Plat, RG, SG, Camera, World->ChunkDim);
 
-  FlushRenderBuffers(Plat, World, RG, SG, Camera);
+
+  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  PrintDebugText( GetDebugState()->DebugRG, "HIHIHIHIHIHIHIHII", 100, 100, 32);
 
   /* DEBUG_FRAME_END(Plat->dt); */
-
-  DrawWorldToFullscreenQuad(Plat, World, RG, SG, Camera);
-
   AssertNoGlErrors;
 
   END_BLOCK("Render");
@@ -1103,6 +1103,18 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   /* BoundaryVoxelsIndexed=0; */
 
   return;
+}
+
+void
+DrawTitleScreen(game_state *GameState)
+{
+  debug_state *DebugState = GetDebugState();
+  debug_text_render_group *RG = DebugState->DebugRG;
+
+  s32 FontSize = TITLE_FONT_SIZE;
+
+  r32 AtY = 0;
+  PrintDebugText( RG, "Press `Space` to Start", 0, AtY, FontSize);
 }
 
 EXPORT void
@@ -1239,6 +1251,12 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
     {
       if (Hotkeys->Player_Spawn)
         StartGame(GameState);
+
+      Plat->dt *= 0.05f;
+      *Hotkeys = NullHotkeys;
+      DoGameplay(Plat, GameState, Hotkeys);
+
+      DrawTitleScreen(GameState);
     } break;
 
     case GameMode_Loss:
@@ -1247,11 +1265,8 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
       *Hotkeys = NullHotkeys;
       DoGameplay(Plat, GameState, Hotkeys);
 
-      Print(Mode->TimeRunning);
-      if (Mode->TimeRunning >= 5.0f)
-      {
+      if (Mode->TimeRunning >= 2.0f)
         SetMode(Mode, GameMode_Title);
-      }
 
     } break;
 

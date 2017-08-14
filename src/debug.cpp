@@ -31,27 +31,32 @@ InitDebugState( debug_state *DebugState, platform *Plat)
 }
 
 rect2
-PrintDebugText( debug_text_render_group *RG, const char *Text, int x, int y, int size)
+PrintDebugText( debug_text_render_group *RG, const char *Text, s32 x, s32 y, s32 FontSize)
 {
-  unsigned int length = strlen(Text);
-  unsigned int BufferIndex = 0;
+  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glDepthFunc(GL_ALWAYS);
+
+  s32 TextLength = strlen(Text);
+  s32 BufferIndex = 0;
 
   // Fill buffers
-  v2 vertices[1024];
+  v3 vertices[1024];
   v2 UVs[1024];
 
   rect2 Result = { V2(x, y), V2(x,y) };
 
-  for ( unsigned int i=0 ; i<length ; i++ )
+  for ( s32 CharIndex = 0;
+      CharIndex < TextLength;
+      CharIndex++ )
   {
-    v2 vertex_up_left    = V2( x+i*size     , y+size );
-    v2 vertex_up_right   = V2( x+i*size+size, y+size );
-    v2 vertex_down_right = V2( x+i*size+size, y      );
-    v2 vertex_down_left  = V2( x+i*size     , y      );
+    v3 vertex_up_left    = V3( (r32)(x+CharIndex*FontSize)         , (r32)(y+FontSize), 0.5f);
+    v3 vertex_up_right   = V3( (r32)(x+CharIndex*FontSize+FontSize), (r32)(y+FontSize), 0.5f);
+    v3 vertex_down_right = V3( (r32)(x+CharIndex*FontSize+FontSize), (r32)y           , 0.5f);
+    v3 vertex_down_left  = V3( (r32)(x+CharIndex*FontSize)         , (r32)y           , 0.5f);
 
-    Result.Max = vertex_up_right;
+    Result.Max = vertex_up_right.xy;
 
-    char character = Text[i];
+    char character = Text[CharIndex];
     float uv_x = (character%16)/16.0f;
     float uv_y = (character/16)/16.0f;
 
@@ -84,7 +89,7 @@ PrintDebugText( debug_text_render_group *RG, const char *Text, int x, int y, int
   }
 
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->Text2DVertexBufferID);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, (BufferIndex+1) * sizeof(v2), &vertices[0], GL_STATIC_DRAW);
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, (BufferIndex+1) * sizeof(v3), &vertices[0], GL_STATIC_DRAW);
 
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->Text2DUVBufferID);
   GL_Global->glBufferData(GL_ARRAY_BUFFER, (BufferIndex+1) * sizeof(v2), &UVs[0], GL_STATIC_DRAW);
@@ -101,7 +106,7 @@ PrintDebugText( debug_text_render_group *RG, const char *Text, int x, int y, int
   // 1rst attribute buffer : vertices
   GL_Global->glEnableVertexAttribArray(0);
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->Text2DVertexBufferID);
-  GL_Global->glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (void*)0 );
+  GL_Global->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0 );
 
   // 2nd attribute buffer : UVs
   GL_Global->glEnableVertexAttribArray(1);
@@ -121,6 +126,7 @@ PrintDebugText( debug_text_render_group *RG, const char *Text, int x, int y, int
 
   AssertNoGlErrors;
 
+  glDepthFunc(GL_LEQUAL);
   return Result;
 }
 

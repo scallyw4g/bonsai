@@ -3,7 +3,7 @@
 precision highp float;
 precision highp sampler2DShadow;
 
-out vec3 color;
+out vec4 color;
 
 in vec2 UV;
 
@@ -96,7 +96,7 @@ void main()
   // TODO(Jesse): Divide by some w here?
   float FragDepthShadowSpace = FragPositionShadowSpace.z;
 
-  float ShadowMapDepth = texture(shadowMap, FragPositionShadowSpace.xy).x + 0.001f;
+  float ShadowMapDepth = texture(shadowMap, FragPositionShadowSpace.xy).x + 0.07f;
 
   vec3 visibility = vec3(1.0f);
   if ( ShadowMapDepth < FragDepthShadowSpace )
@@ -130,9 +130,9 @@ void main()
   vec3 mapped = hdrColor / (hdrColor + vec3(1.0f));
 
   // Gamma correction
-  color = pow(mapped, vec3(1.0f / gamma));
+  color = vec4(pow(mapped, vec3(1.0f / gamma)), 1.0f);
 
-  /* color = vec3(0); */
+  /* color = vec4(0); */
 
   /* color.r = ShadowMapDepth; */
   /* color.r = FragDepthShadowSpace; */
