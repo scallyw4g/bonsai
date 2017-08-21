@@ -9,6 +9,7 @@ using namespace std;
 #define DEBUG_STATE_ENTRY_COUNT 32
 
 void DebugFrameEnd(r32 dt);
+struct debug_text_render_group;
 
 struct debug_profile_entry
 {
@@ -19,16 +20,6 @@ struct debug_profile_entry
   r32 MinPerc = 100.0f;
 
   const char* FuncName;
-};
-
-struct debug_text_render_group
-{
-  u32 Text2DTextureID;
-  u32 Text2DVertexBufferID;
-  u32 Text2DUVBufferID;
-
-  u32 Text2DShaderID;
-  u32 Text2DUniformID;
 };
 
 struct debug_state

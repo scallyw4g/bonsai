@@ -1,6 +1,7 @@
 #ifndef BONSAI_PLATFORM_CPP
 #define BONSAI_PLATFORM_CPP
 
+
 #include <iostream>
 
 #include <platform_constants.h>
@@ -15,10 +16,21 @@
 
 #include <platform.h>
 #include <bonsai_math.h>
-#include <debug.h>
+
+// TODO(Jesse): Axe this!!
+static gl_extensions *GL_Global = 0;
+static const char *GlobalGlslVersion;
+
+
+
+#include <texture.cpp>
+#include <shader.cpp>
+#include <render.cpp>
+#include <debug.cpp>
 
 #include <sys/types.h>
 #include <sys/stat.h>
+
 
 GLOBAL_VARIABLE s64 LastGameLibTime = 0;
 GLOBAL_VARIABLE game_thread_callback_proc GameThreadCallback;
@@ -335,6 +347,7 @@ QueryAndSetGlslVersion(platform *Plat)
   Plat->GlslVersion = "310ES";
 #endif
 
+  GlobalGlslVersion = Plat->GlslVersion;
   return;
 }
 
@@ -489,6 +502,7 @@ main(s32 NumArgs, char ** Args)
   Assert(Os.Window);
 
   InitializeOpenGlExtensions(&Plat.GL, &Os);
+  GL_Global = &Plat.GL;
 
   QueryAndSetGlslVersion(&Plat);
 
@@ -530,6 +544,8 @@ main(s32 NumArgs, char ** Args)
     DoDebugFrameRecord(Debug_RecordingState, &Hotkeys, &MainMemory);
 
     GameUpdateAndRender(&Plat, GameState, &Hotkeys);
+
+    DEBUG_FRAME_END(Plat.dt);
 
     BonsaiSwapBuffers(&Os);
   }

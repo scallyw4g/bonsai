@@ -1,6 +1,8 @@
 #ifndef RENDER_H
 #define RENDER_H
 
+#include <shader.hpp>
+
 DEBUG_GLOBAL float g_quad_vertex_buffer_data[] =
 {
   -1.0f, -1.0f, 1.0f,
@@ -18,19 +20,10 @@ struct RenderBasis
   m4 ProjectionMatrix;
 };
 
-typedef u32 shader;
-typedef u32 glsl_uniform;
-
 struct texture
 {
   u32 ID;
   v2 Dim;
-};
-
-struct simple_texture_shader
-{
-  shader ID;
-  glsl_uniform TextureUniform;
 };
 
 struct RenderGroup
@@ -47,7 +40,7 @@ struct RenderGroup
 
   u32 quad_vertexbuffer;
 
-  u32 ShaderID;
+  shader Shader;
   u32 MVPID;
   u32 ModelMatrixID;
   /* u32 LightPID; */
@@ -56,7 +49,7 @@ struct RenderGroup
   u32 GlobalLightPositionID;;
 
   // Lighting Shader
-  u32 LightingShader;
+  shader LightingShader;
   u32 ColorTextureUniform;
   u32 NormalTextureUniform;
   u32 PositionTextureUniform;
@@ -80,8 +73,18 @@ struct ShadowRenderGroup
 
   texture Texture;
 
-  u32 ShaderID;
+  shader Shader;
   u32 FramebufferName;
+};
+
+struct debug_text_render_group
+{
+  u32 Text2DTextureID;
+  u32 Text2DVertexBufferID;
+  u32 Text2DUVBufferID;
+
+  shader Text2DShader;
+  u32 Text2DUniformID;
 };
 
 

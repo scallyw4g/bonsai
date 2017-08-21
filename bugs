@@ -1,3 +1,8 @@
+# Aug 21 2017
+3h - closed - debug system - Needed to have renderin capabilities in the platform
+layer in order to properly time functions. 3h of refactoring, however actually
+firguring out the problem took some time as well.
+
 # Aug 13 2017
 30m - closed - entity state - Actually use the new Destroyed state
 

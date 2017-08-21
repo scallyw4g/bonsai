@@ -3,7 +3,8 @@
 
 #include <debug.h>
 
-GLuint LoadShaders(const char * vertex_file_path, const char * fragment_file_path);
+struct shader;
+shader LoadShaders(const char * vertex_file_path, const char * fragment_file_path);
 
 void
 initText2D(const char *TexturePath, debug_text_render_group *RG)
@@ -13,8 +14,8 @@ initText2D(const char *TexturePath, debug_text_render_group *RG)
   GL_Global->glGenBuffers(1, &RG->Text2DVertexBufferID);
   GL_Global->glGenBuffers(1, &RG->Text2DUVBufferID);
 
-  RG->Text2DShaderID = LoadShaders("TextVertexShader.vertexshader", "TextVertexShader.fragmentshader");
-  RG->Text2DUniformID = GL_Global->glGetUniformLocation(RG->Text2DShaderID, "myTextureSampler");
+  RG->Text2DShader = LoadShaders("TextVertexShader.vertexshader", "TextVertexShader.fragmentshader");
+  RG->Text2DUniformID = GL_Global->glGetUniformLocation(RG->Text2DShader.ID, "myTextureSampler");
 
   return;
 }
@@ -95,7 +96,7 @@ PrintDebugText( debug_text_render_group *RG, const char *Text, s32 x, s32 y, s32
   GL_Global->glBufferData(GL_ARRAY_BUFFER, (BufferIndex+1) * sizeof(v2), &UVs[0], GL_STATIC_DRAW);
 
   // Bind shader
-  GL_Global->glUseProgram(RG->Text2DShaderID);
+  GL_Global->glUseProgram(RG->Text2DShader.ID);
 
   // Bind texture
   GL_Global->glActiveTexture(GL_TEXTURE0);
@@ -314,7 +315,7 @@ CleanupText2D(debug_text_render_group *RG)
   glDeleteTextures(1, &RG->Text2DTextureID);
 
   // Delete shader
-  GL_Global->glDeleteProgram(RG->Text2DShaderID);
+  GL_Global->glDeleteProgram(RG->Text2DShader.ID);
 
   return;
 }

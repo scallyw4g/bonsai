@@ -98,7 +98,8 @@ loadDDS(const char * imagepath)
   FILE *fp = fopen(imagepath, "rb");
 
   if (fp == NULL){
-    Log("%s could not be opened. Are you in the right directory ? Don't forget to read the FAQ !\n", imagepath); getchar();
+    Assert(!"Couldn't open shader - Shit!");
+    //Log("%s could not be opened. Are you in the right directory ? Don't forget to read the FAQ !\n", imagepath); getchar();
     return 0;
   }
 

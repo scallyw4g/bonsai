@@ -683,6 +683,8 @@ EntitiesCanCollide(entity *First, entity *Second)
 void
 DoEntityCollisions(game_state *GameState, entity *Entity, random_series *Entropy)
 {
+  TIMED_FUNCTION();
+
   Assert(Spawned(Entity));
 
   for (s32 EntityIndex = 0;
@@ -847,5 +849,130 @@ AllocateAndInitWorld( game_state *GameState, world_position Center, world_positi
   }
 
   return World;
+}
+
+// FIXME(Jesse): This should probably be relocated to a mesh.cpp that contains stuff
+// which requires the world
+void
+BuildWorldChunkBoundaryVoxels(world *World, world_chunk *WorldChunk, chunk_dimension WorldChunkDim)
+{
+  chunk_data *chunk = WorldChunk->Data;
+  chunk->BoundaryVoxelCount = 0;
+
+  UnSetFlag( chunk, Chunk_RebuildBoundary );
+
+  for ( int z = 0; z < WorldChunkDim.z ; ++z )
+  {
+    for ( int y = 0; y < WorldChunkDim.y ; ++y )
+    {
+      for ( int x = 0; x < WorldChunkDim.x ; ++x )
+      {
+        canonical_position CurrentP  = Canonical_Position(WorldChunkDim, V3(x,y,z), WorldChunk->WorldP);
+
+        if ( NotFilledInWorld( World, WorldChunk, CurrentP ) )
+          continue;
+
+        canonical_position rightVoxel = Canonicalize(WorldChunkDim, CurrentP + V3(1, 0, 0));
+        canonical_position leftVoxel  = Canonicalize(WorldChunkDim, CurrentP - V3(1, 0, 0));
+
+        canonical_position topVoxel   = Canonicalize(WorldChunkDim, CurrentP + V3(0, 1, 0));
+        canonical_position botVoxel   = Canonicalize(WorldChunkDim, CurrentP - V3(0, 1, 0));
+
+        canonical_position frontVoxel = Canonicalize(WorldChunkDim, CurrentP + V3(0, 0, 1));
+        canonical_position backVoxel  = Canonicalize(WorldChunkDim, CurrentP - V3(0, 0, 1));
+
+        voxel *Voxel = &chunk->Voxels[GetIndex(CurrentP.Offset, chunk, WorldChunkDim)];
+
+        bool DidPushVoxel = false;
+
+        if ( NotFilledInWorld( World, WorldChunk, rightVoxel ) )
+        {
+          SetFlag(Voxel, Voxel_RightFace);
+          DidPushVoxel = true;
+        }
+        if ( NotFilledInWorld( World, WorldChunk, leftVoxel ) )
+        {
+          SetFlag(Voxel, Voxel_LeftFace);
+          DidPushVoxel = true;
+        }
+        if ( NotFilledInWorld( World, WorldChunk, botVoxel   ) )
+        {
+          SetFlag(Voxel, Voxel_BottomFace);
+          DidPushVoxel = true;
+        }
+        if ( NotFilledInWorld( World, WorldChunk, topVoxel   ) )
+        {
+          SetFlag(Voxel, Voxel_TopFace);
+          DidPushVoxel = true;
+        }
+        if ( NotFilledInWorld( World, WorldChunk, frontVoxel ) )
+        {
+          SetFlag(Voxel, Voxel_FrontFace);
+          DidPushVoxel = true;
+        }
+        if ( NotFilledInWorld( World, WorldChunk, backVoxel  ) )
+        {
+          SetFlag(Voxel, Voxel_BackFace);
+          DidPushVoxel = true;
+        }
+
+        if (DidPushVoxel)
+        {
+          boundary_voxel BoundaryVoxel(Voxel, Voxel_Position(x,y,z));
+          PushBoundaryVoxel(chunk, &BoundaryVoxel, WorldChunkDim);
+        }
+
+      }
+    }
+  }
+}
+
+void
+BufferWorldChunk(
+    world *World,
+    world_chunk *Chunk,
+    camera *Camera,
+    RenderGroup *RG
+  )
+{
+  if (Chunk->Data->BoundaryVoxelCount == 0)
+    return;
+
+  chunk_data *ChunkData = Chunk->Data;
+
+  if (NotSet(ChunkData, Chunk_Initialized))
+    return;
+
+
+  if ( IsSet( Chunk, Chunk_RebuildBoundary ) )
+    BuildWorldChunkBoundaryVoxels(World, Chunk, World->ChunkDim);
+
+#if 1
+    r32 Scale = 1.0f;
+    BufferChunkMesh( &World->Mesh, World->ChunkDim, ChunkData, Chunk->WorldP, RG, Camera, Scale);
+
+#else
+  if (CanBuildWorldChunkBoundary(world, Chunk))
+  {
+    BuildWorldChunkBoundaryVoxels(world, Chunk);
+    Compute0thLod(GameState, Chunk);
+  }
+
+  if ( Length(ChunkRenderOffset - CameraRenderOffset ) < MIN_LOD_DISTANCE )
+  {
+    r32 Scale = 1.0f;
+    BufferChunkMesh( GameState->Plat, World, ChunkData, Chunk->WorldP, RG, Camera, Scale);
+  }
+
+  else
+  {
+    Draw0thLod( GameState, Chunk, ChunkRenderOffset);
+  }
+
+  DEBUG_DrawChunkAABB( GameState->world, Chunk, GameState->Camera, Quaternion(), 0);
+
+#endif
+
+  return;
 }
 

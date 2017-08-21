@@ -600,12 +600,14 @@ ShouldEmit(particle_system *System)
 void
 SimulateAndRenderParticleSystems(
     game_state *GameState,
+    mesh_buffer_target *Mesh,
     entity *SystemEntity,
     r32 dt,
     v3 EntityDelta
   )
 {
   world *World = GameState->World;
+  chunk_dimension WorldChunkDim = World->ChunkDim;
   camera *Camera = GameState->Camera;
   particle_system *System = SystemEntity->Emitter;
   // noise_3d *Turb = GameState->Turb;
@@ -652,7 +654,7 @@ SimulateAndRenderParticleSystems(
     u8 ColorIndex = (u8)((Particle->RemainingLifespan / System->ParticleLifespan) * (PARTICLE_SYSTEM_COLOR_COUNT-0.0001f));
     Assert(ColorIndex >= 0 && ColorIndex <= PARTICLE_SYSTEM_COLOR_COUNT);
 
-    DrawParticle(World, &SystemEntity->P, Camera, Particle, Diameter, System->Colors[ColorIndex]);
+    DrawParticle(&SystemEntity->P, Mesh, WorldChunkDim, Camera, Particle, Diameter, System->Colors[ColorIndex]);
 
 
   }
@@ -699,7 +701,7 @@ SimulatePlayer( game_state *GameState, entity *Player, hotkeys *Hotkeys, r32 dt 
     }
 #endif
 
-    SimulateAndRenderParticleSystems(GameState, Player, dt, PlayerDelta);
+    SimulateAndRenderParticleSystems(GameState, &GameState->World->Mesh, Player, dt, PlayerDelta);
   }
 
   return;
@@ -750,7 +752,7 @@ SimulateEntities(game_state *GameState, entity *Player, hotkeys *Hotkeys, r32 dt
 
     UpdateEntityP(GameState, Entity, Delta);
 
-    SimulateAndRenderParticleSystems(GameState, Entity, dt, Delta);
+    SimulateAndRenderParticleSystems(GameState, &GameState->World->Mesh, Entity, dt, Delta);
   }
 
   return;
@@ -1048,7 +1050,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
       if ( (chunk->WorldP >= Min && chunk->WorldP < Max) )
       {
         /* DEBUG_DrawChunkAABB( World, chunk, Camera, Quaternion(), BLUE ); */
-        BufferWorldChunk(GameState, chunk, RG);
+        BufferWorldChunk(World, chunk, Camera, RG);
         chunk = chunk->Next;
       }
       else
@@ -1067,7 +1069,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
         ++EntityIndex)
   {
     entity *Enemy = GameState->EntityTable[EntityIndex];
-    BufferEntity(Plat, World, Enemy, Camera, RG);
+    BufferEntity( &World->Mesh, Enemy, Camera, RG, World->ChunkDim);
   }
   END_BLOCK("Entities");
 
@@ -1076,20 +1078,18 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
       ++FolieIndex)
   {
     aabb *AABB = GameState->FolieTable + FolieIndex;
-    DrawFolie(World, Camera, AABB);
+    DrawFolie(&World->Mesh, Camera, AABB);
   }
 
-  RenderToGBuffer(Plat, World, RG, SG, Camera);
-  DrawGBufferToFullscreenQuad(Plat, RG, SG, Camera, World->ChunkDim);
+  RenderToGBuffer(Plat, &World->Mesh, RG, SG, Camera);
+  DrawGBufferToFullscreenQuad( RG, SG, Camera, World->ChunkDim);
+
+  World->Mesh.VertexCount = 0;
+  World->Mesh.filled = 0;
 
   DrawTexturedQuad(&SG->Texture, &RG->SimpleTextureShader, RG);
   glViewport(0, 0, Plat->WindowWidth, Plat->WindowHeight);
 
-
-  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  PrintDebugText( GetDebugState()->DebugRG, "HIHIHIHIHIHIHIHII", 100, 100, 32);
-
-  /* DEBUG_FRAME_END(Plat->dt); */
   AssertNoGlErrors;
 
   END_BLOCK("Render");
