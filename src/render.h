@@ -18,6 +18,21 @@ struct RenderBasis
   m4 ProjectionMatrix;
 };
 
+typedef u32 shader;
+typedef u32 glsl_uniform;
+
+struct texture
+{
+  u32 ID;
+  v2 Dim;
+};
+
+struct simple_texture_shader
+{
+  shader ID;
+  glsl_uniform TextureUniform;
+};
+
 struct RenderGroup
 {
   u32 FBO;
@@ -53,8 +68,8 @@ struct RenderGroup
   u32 CameraPosUniform;
   //
 
-  u32 SimpleTextureShaderID;
-  u32 SimpleTextureUniform;
+
+  simple_texture_shader SimpleTextureShader;
 
   RenderBasis Basis;
 };
@@ -63,10 +78,10 @@ struct ShadowRenderGroup
 {
   u32 MVP_ID;
 
-  u32 TextureID;
+  texture Texture;
+
   u32 ShaderID;
   u32 FramebufferName;
-  u32 DepthTexture;
 };
 
 

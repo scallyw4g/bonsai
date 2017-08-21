@@ -1082,6 +1082,9 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   RenderToGBuffer(Plat, World, RG, SG, Camera);
   DrawGBufferToFullscreenQuad(Plat, RG, SG, Camera, World->ChunkDim);
 
+  DrawTexturedQuad(&SG->Texture, &RG->SimpleTextureShader, RG);
+  glViewport(0, 0, Plat->WindowWidth, Plat->WindowHeight);
+
 
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
   PrintDebugText( GetDebugState()->DebugRG, "HIHIHIHIHIHIHIHII", 100, 100, 32);

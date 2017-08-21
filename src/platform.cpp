@@ -322,6 +322,7 @@ SearchForProjectRoot(void)
 void
 QueryAndSetGlslVersion(platform *Plat)
 {
+#if 0
   r64 GLSL_Version = atof((char*)glGetString ( GL_SHADING_LANGUAGE_VERSION ));
   Info("GLSL verison : %f", GLSL_Version );
 
@@ -330,6 +331,9 @@ QueryAndSetGlslVersion(platform *Plat)
 
   else
     Plat->GlslVersion = "310ES";
+#else
+  Plat->GlslVersion = "310ES";
+#endif
 
   return;
 }

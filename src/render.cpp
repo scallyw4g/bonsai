@@ -194,6 +194,20 @@ GLOBAL_VARIABLE m4 IdentityMatrix = {V4(1, 0, 0 ,0),
                                      V4(0, 0, 1 ,0),
                                      V4(0, 0, 0 ,0)};
 
+simple_texture_shader
+MakeSimpleTextureShader()
+{
+  simple_texture_shader SimpleTextureShader = {};
+
+  SimpleTextureShader.ID = LoadShaders( "Passthrough.vertexshader",
+                                        "SimpleTexture.fragmentshader" );
+
+  SimpleTextureShader.TextureUniform =
+    GL_Global->glGetUniformLocation(SimpleTextureShader.ID, "Texture");
+
+  return SimpleTextureShader;
+}
+
 bool
 InitializeRenderGroup( platform *Plat, RenderGroup *RG )
 {
@@ -276,10 +290,7 @@ InitializeRenderGroup( platform *Plat, RenderGroup *RG )
   RG->CameraPosUniform        = GL_Global->glGetUniformLocation(RG->LightingShader, "CameraPosUniform");
 
 
-  RG->SimpleTextureShaderID = LoadShaders( "Passthrough.vertexshader",
-                                           "SimpleTexture.fragmentshader" );
-
-  RG->SimpleTextureUniform = GL_Global->glGetUniformLocation(RG->SimpleTextureShaderID, "Texture");
+  RG->SimpleTextureShader = MakeSimpleTextureShader();
   //
   // Quad vertex buffer
   GL_Global->glGenBuffers(1, &RG->quad_vertexbuffer);
@@ -305,6 +316,22 @@ InitializeRenderGroup( platform *Plat, RenderGroup *RG )
   return true;
 }
 
+texture
+MakeDepthTexture(v2 Dim)
+{
+  texture Texture = {};
+  Texture.Dim = Dim;
+
+  // Depth texture. Slower than a depth buffer, but you can sample it later in your shader
+  glGenTextures(1, &Texture.ID);
+  glBindTexture(GL_TEXTURE_2D, Texture.ID);
+
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32,
+    Texture.Dim.x, Texture.Dim.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+
+  return Texture;
+}
+
 bool
 InitializeShadowBuffer(ShadowRenderGroup *ShadowGroup)
 {
@@ -314,12 +341,7 @@ InitializeShadowBuffer(ShadowRenderGroup *ShadowGroup)
 
   AssertNoGlErrors;
 
-  // Depth texture. Slower than a depth buffer, but you can sample it later in your shader
-  glGenTextures(1, &ShadowGroup->DepthTexture);
-  glBindTexture(GL_TEXTURE_2D, ShadowGroup->DepthTexture);
-
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16,
-      SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+  ShadowGroup->Texture = MakeDepthTexture(V2(SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y));
 
   AssertNoGlErrors;
 
@@ -338,7 +360,7 @@ InitializeShadowBuffer(ShadowRenderGroup *ShadowGroup)
 
   AssertNoGlErrors;
 
-  GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, ShadowGroup->DepthTexture, 0);
+  GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, ShadowGroup->Texture.ID, 0);
   AssertNoGlErrors;
 
   ShadowGroup->ShaderID = LoadShaders( "DepthRTT.vertexshader", "DepthRTT.fragmentshader");
@@ -469,6 +491,29 @@ GetDepthMVP(camera *Camera)
 }
 
 void
+DrawTexturedQuad(texture *Texture, simple_texture_shader *Shader, RenderGroup *RG)
+{
+#if DEBUG_DRAW_SHADOW_MAP_TEXTURE
+  glDepthFunc(GL_ALWAYS);
+
+  r32 Scale = 0.2f;
+  glViewport(0, 0, Texture->Dim.x*Scale, Texture->Dim.y*Scale);
+
+  glUseProgram(Shader->ID);
+
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, Texture->ID);
+  glUniform1i(Shader->TextureUniform, 0);
+
+  RenderQuad(RG);
+
+  glDepthFunc(GL_LEQUAL);
+#endif
+
+  return;
+}
+
+void
 DrawGBufferToFullscreenQuad( platform *Plat, RenderGroup *RG, ShadowRenderGroup *SG, camera *Camera, world_position WorldChunkDim)
 {
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -478,7 +523,6 @@ DrawGBufferToFullscreenQuad( platform *Plat, RenderGroup *RG, ShadowRenderGroup 
 
 #if 1
   GL_Global->glUseProgram(RG->LightingShader);
-  glViewport(0, 0, Plat->WindowWidth, Plat->WindowHeight);
 
   GL_Global->glUniform3fv(RG->GlobalLightPositionID, 1, &GlobalLightPosition.E[0]);
 
@@ -512,26 +556,10 @@ DrawGBufferToFullscreenQuad( platform *Plat, RenderGroup *RG, ShadowRenderGroup 
   GL_Global->glUniform1i(RG->PositionTextureUniform, 2);
 
   GL_Global->glActiveTexture(GL_TEXTURE3);
-  glBindTexture(GL_TEXTURE_2D, SG->DepthTexture);
+  glBindTexture(GL_TEXTURE_2D, SG->Texture.ID);
   GL_Global->glUniform1i(RG->ShadowMapTextureUniform, 3);
 
   RenderQuad(RG);
-#endif
-
-#if DEBUG_DRAW_SHADOW_MAP_TEXTURE
-  glDepthFunc(GL_ALWAYS);
-
-  r32 Scale = 0.2f;
-  glViewport(0, 0, SHADOW_MAP_RESOLUTION_X*Scale, SHADOW_MAP_RESOLUTION_Y*Scale);
-
-  glUseProgram(RG->SimpleTextureShaderID);
-
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, SG->DepthTexture);
-  glUniform1i(RG->SimpleTextureUniform, 0);
-
-  RenderQuad(RG);
-  glDepthFunc(GL_LEQUAL);
 #endif
 
 
