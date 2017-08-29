@@ -35,7 +35,7 @@ rect2
 PrintDebugText( debug_text_render_group *RG, const char *Text, s32 x, s32 y, s32 FontSize)
 {
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  glDepthFunc(GL_ALWAYS);
+  /* glDepthFunc(GL_ALWAYS); */
 
   s32 TextLength = strlen(Text);
   s32 BufferIndex = 0;

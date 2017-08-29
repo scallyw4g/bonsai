@@ -200,12 +200,39 @@ MakeSimpleTextureShader()
   simple_texture_shader SimpleTextureShader = {};
 
   SimpleTextureShader.Shader = LoadShaders( "Passthrough.vertexshader",
-                                               "SimpleTexture.fragmentshader" );
+                                            "SimpleTexture.fragmentshader" );
 
   SimpleTextureShader.TextureUniform =
     GL_Global->glGetUniformLocation(SimpleTextureShader.Shader.ID, "Texture");
 
   return SimpleTextureShader;
+}
+
+texture
+MakeDepthTexture(v2 Dim)
+{
+  texture Texture = {};
+  Texture.Dim = Dim;
+
+  glGenTextures(1, &Texture.ID);
+  Assert(Texture.ID);
+
+  glBindTexture(GL_TEXTURE_2D, Texture.ID);
+
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32,
+    Texture.Dim.x, Texture.Dim.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+  /* glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE); */
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+
+  glBindTexture(GL_TEXTURE_2D, 0);
+
+  return Texture;
 }
 
 bool
@@ -237,29 +264,17 @@ InitializeRenderGroup( platform *Plat, RenderGroup *RG )
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Plat->WindowWidth, Plat->WindowHeight, 0, GL_RGBA, GL_FLOAT, NULL);
   glBindTexture(GL_TEXTURE_2D, 0);
 
-  // Depth texture
-  glGenTextures(1, &RG->DepthTexture);
-  glBindTexture(GL_TEXTURE_2D, RG->DepthTexture);
+  RG->DepthTexture = MakeDepthTexture( V2(Plat->WindowWidth, Plat->WindowHeight) );
 
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32,
-      Plat->WindowWidth, Plat->WindowHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
-
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
-  //
-
-  GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,  GL_TEXTURE_2D, RG->DepthTexture,    0);
   GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, RG->ColorTexture,    0);
   GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, RG->NormalTexture,   0);
   GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, RG->PositionTexture, 0);
+  GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT , GL_TEXTURE_2D, RG->DepthTexture.ID, 0);
+
+  AssertNoGlErrors;
 
   u32 attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
   GL_Global->glDrawBuffers(3, attachments);
-
 
   if (GL_Global->glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     return false;
@@ -267,11 +282,11 @@ InitializeRenderGroup( platform *Plat, RenderGroup *RG )
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-  RG->Shader = LoadShaders( "SimpleVertexShader.vertexshader",
-                            "SimpleFragmentShader.fragmentshader" );
+  RG->GBufferShader = LoadShaders( "SimpleVertexShader.vertexshader",
+                                   "SimpleFragmentShader.fragmentshader" );
 
-  RG->MVPID                = GL_Global->glGetUniformLocation(RG->Shader.ID, "MVP");
-  RG->ModelMatrixID        = GL_Global->glGetUniformLocation(RG->Shader.ID, "M");
+  RG->MVPID                = GL_Global->glGetUniformLocation(RG->GBufferShader.ID, "MVP");
+  RG->ModelMatrixID        = GL_Global->glGetUniformLocation(RG->GBufferShader.ID, "M");
   /* RG->LightPID             = glGetUniformLocation(RG->ShaderID, "LightP_worldspace"); */
 
 
@@ -316,22 +331,6 @@ InitializeRenderGroup( platform *Plat, RenderGroup *RG )
   return true;
 }
 
-texture
-MakeDepthTexture(v2 Dim)
-{
-  texture Texture = {};
-  Texture.Dim = Dim;
-
-  // Depth texture. Slower than a depth buffer, but you can sample it later in your shader
-  glGenTextures(1, &Texture.ID);
-  glBindTexture(GL_TEXTURE_2D, Texture.ID);
-
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32,
-    Texture.Dim.x, Texture.Dim.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
-
-  return Texture;
-}
-
 bool
 InitializeShadowBuffer(ShadowRenderGroup *ShadowGroup)
 {
@@ -339,44 +338,22 @@ InitializeShadowBuffer(ShadowRenderGroup *ShadowGroup)
   GL_Global->glGenFramebuffers(1, &ShadowGroup->FramebufferName);
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, ShadowGroup->FramebufferName);
 
-  AssertNoGlErrors;
-
-  ShadowGroup->Texture = MakeDepthTexture(V2(SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y));
-
-  AssertNoGlErrors;
-
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
-
-  AssertNoGlErrors;
-
-  // No color output in the bound framebuffer, only depth.
-  glDrawBuffer(GL_NONE);
-  glReadBuffer(GL_NONE);
-
-  AssertNoGlErrors;
-
+  ShadowGroup->Texture = MakeDepthTexture( V2(SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y) );
   GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, ShadowGroup->Texture.ID, 0);
-  AssertNoGlErrors;
 
-  ShadowGroup->Shader = LoadShaders( "DepthRTT.vertexshader", "DepthRTT.fragmentshader");
-  ShadowGroup->MVP_ID = GL_Global->glGetUniformLocation(ShadowGroup->Shader.ID, "depthMVP");
+  // TODO(Jesse): Not present on ES2 .. should we use them?
+  // No color output in the bound framebuffer, only depth.
+  /* glDrawBuffer(GL_NONE); */
+  /* glReadBuffer(GL_NONE); */
 
-  AssertNoGlErrors;
+  ShadowGroup->DepthShader = LoadShaders( "DepthRTT.vertexshader", "DepthRTT.fragmentshader");
+  ShadowGroup->MVP_ID = GL_Global->glGetUniformLocation(ShadowGroup->DepthShader.ID, "depthMVP");
 
   if(GL_Global->glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     return false;
 
-  AssertNoGlErrors;
-
-
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  AssertNoGlErrors;
 
  return true;
 }
@@ -468,10 +445,10 @@ DEBUG_DrawPointMarker( mesh_buffer_target *Mesh, v3 RenderP, int ColorIndex, v3 
 GLOBAL_VARIABLE v3 GlobalLightPosition = {};
 
 inline m4
-GetDepthMVP(camera *Camera)
+GetShadowMapMVP(camera *Camera)
 {
   // Compute the MVP matrix from the light's point of view
-  v3 Translate = V3(0,-1200,0);
+  v3 Translate = V3(0,300,0);
   m4 depthProjectionMatrix = Orthographic(SHADOW_MAP_X,
                                           SHADOW_MAP_Y,
                                           SHADOW_MAP_Z_MIN,
@@ -493,11 +470,11 @@ GetDepthMVP(camera *Camera)
 void
 DrawTexturedQuad(texture *Texture, simple_texture_shader *Shader, RenderGroup *RG)
 {
-#if DEBUG_DRAW_SHADOW_MAP_TEXTURE
-  glDepthFunc(GL_ALWAYS);
+  /* glDepthFunc(GL_ALWAYS); */
+  glDepthFunc(GL_LEQUAL);
 
   r32 Scale = 0.2f;
-  glViewport(0, 0, Texture->Dim.x*Scale, Texture->Dim.y*Scale);
+  glViewport(10, 10, Texture->Dim.x*Scale, Texture->Dim.y*Scale);
 
   glUseProgram(Shader->Shader.ID);
 
@@ -507,8 +484,6 @@ DrawTexturedQuad(texture *Texture, simple_texture_shader *Shader, RenderGroup *R
 
   RenderQuad(RG);
 
-  glDepthFunc(GL_LEQUAL);
-#endif
 
   return;
 }
@@ -533,7 +508,7 @@ DrawGBufferToFullscreenQuad( RenderGroup *RG, ShadowRenderGroup *SG, camera *Cam
     V4(0.5, 0.5, 0.5, 1.0)
   };
 
-  m4 depthBiasMVP = biasMatrix * GetDepthMVP(Camera);
+  m4 depthBiasMVP = biasMatrix * GetShadowMapMVP(Camera);
   GL_Global->glUniformMatrix4fv(RG->DepthBiasMVPID, 1, GL_FALSE, &depthBiasMVP.E[0].E[0]);
 
   m4 VP = RG->Basis.ViewMatrix;
@@ -556,8 +531,8 @@ DrawGBufferToFullscreenQuad( RenderGroup *RG, ShadowRenderGroup *SG, camera *Cam
   GL_Global->glUniform1i(RG->PositionTextureUniform, 2);
 
   GL_Global->glActiveTexture(GL_TEXTURE3);
-  glBindTexture(GL_TEXTURE_2D, SG->Texture.ID);
-  GL_Global->glUniform1i(RG->ShadowMapTextureUniform, 3);
+  glBindTexture(GL_TEXTURE_2D, RG->DepthTexture.ID);
+  GL_Global->glUniform1i(RG->DepthTextureUniform, 3);
 
   RenderQuad(RG);
 #endif
@@ -568,18 +543,35 @@ DrawGBufferToFullscreenQuad( RenderGroup *RG, ShadowRenderGroup *SG, camera *Cam
 }
 
 void
+DEBUG_CopyTextureToMemory(texture *Texture)
+{
+  glBindTexture(GL_TEXTURE_2D, Texture->ID);
+  glPixelStorei(GL_PACK_ALIGNMENT, 1);
+
+  u8 *raw_img = (u8*)calloc(sizeof(u8), Texture->Dim.x * Texture->Dim.y * 4);
+
+  glGetTexImage(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, raw_img);
+  //glGetTexImage(GL_TEXTURE_2D, 0, GL_BGRA, GL_UNSIGNED_BYTE, raw_img);
+
+  AssertNoGlErrors;
+
+  free(raw_img);
+  return;
+}
+
+void
 RenderShadowMap(mesh_buffer_target *Mesh, ShadowRenderGroup *SG, RenderGroup *RG, camera *Camera)
 {
   glViewport(0, 0, SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y);
 
-  m4 depthMVP = GetDepthMVP(Camera);
+  m4 MVP = GetShadowMapMVP(Camera);
 
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
 
-  GL_Global->glUseProgram(SG->Shader.ID);
-  GL_Global->glUniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &depthMVP.E[0].E[0]);
+  GL_Global->glUseProgram(SG->DepthShader.ID);
+  GL_Global->glUniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &MVP.E[0].E[0]);
 
-  /* glBindTexture(GL_TEXTURE_2D, SG->Texture); */
+  // glBindTexture(GL_TEXTURE_2D, SG->Texture.ID);
 
   // 1rst attribute buffer : vertices
   GL_Global->glEnableVertexAttribArray(0);
@@ -597,7 +589,6 @@ RenderShadowMap(mesh_buffer_target *Mesh, ShadowRenderGroup *SG, RenderGroup *RG
   glDrawArrays(GL_TRIANGLES, 0, Mesh->VertexCount);
 
   GL_Global->glDisableVertexAttribArray(0);
-
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
   return;
@@ -607,8 +598,8 @@ void
 RenderWorldToGBuffer( platform *Plat, mesh_buffer_target *Mesh, RenderGroup *RG)
 {
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO);
+  GL_Global->glUseProgram(RG->GBufferShader.ID);
 
-  GL_Global->glUseProgram(RG->Shader.ID);
   glViewport(0, 0, Plat->WindowWidth, Plat->WindowHeight);
 
   m4 mvp = RG->Basis.ProjectionMatrix * RG->Basis.ViewMatrix;
@@ -661,6 +652,7 @@ RenderWorldToGBuffer( platform *Plat, mesh_buffer_target *Mesh, RenderGroup *RG)
   GL_Global->glDisableVertexAttribArray(1);
   GL_Global->glDisableVertexAttribArray(2);
 
+  return;
 }
 
 

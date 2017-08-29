@@ -30,9 +30,10 @@ struct RenderGroup
 {
   u32 FBO;
   u32 ColorTexture;
-  u32 DepthTexture;
   u32 NormalTexture;
   u32 PositionTexture;
+
+  texture DepthTexture;
 
   u32 colorbuffer;
   u32 vertexbuffer;
@@ -40,7 +41,7 @@ struct RenderGroup
 
   u32 quad_vertexbuffer;
 
-  shader Shader;
+  shader GBufferShader;
   u32 MVPID;
   u32 ModelMatrixID;
   /* u32 LightPID; */
@@ -73,7 +74,7 @@ struct ShadowRenderGroup
 
   texture Texture;
 
-  shader Shader;
+  shader DepthShader;
   u32 FramebufferName;
 };
 
