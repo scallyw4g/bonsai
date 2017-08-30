@@ -1,10 +1,14 @@
 #version 310 es
 
-precision mediump float;
-layout(location = 0) out float fragmentdepth;
+precision highp float;
 
 void main()
 {
-  fragmentdepth = gl_FragCoord.z;
+  float Far = 500.0f;
+  float Near = 0.1f;
+  float ZDepth = gl_FragCoord.z;
+
+  float Depth = (2.0 * Near) / (Far + Near - ZDepth * (Far - Near));
+  gl_FragDepth = Depth;
 }
 
