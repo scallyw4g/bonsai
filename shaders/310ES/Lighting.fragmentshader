@@ -10,6 +10,7 @@ in vec2 UV;
 uniform sampler2D gColor;
 uniform sampler2D gNormal;
 uniform sampler2D gPosition;
+uniform sampler2D gDepth;
 
 uniform sampler2D shadowMap;
 // uniform sampler2DShadow shadowMap;
@@ -55,6 +56,8 @@ void main()
   vec3 Diffuse      = texture(gColor, UV).rgb;
   vec3 fragNormal   = texture(gNormal, UV).rgb; // modelspace
   vec3 fragPosition = texture(gPosition, UV).rgb; // worldspace
+  vec3 fragDepth    = texture(gDepth, UV).rgb;
+
 
   vec3 Ambient = Diffuse * GlobalLightIntensity * 0.1f;
 
@@ -137,4 +140,5 @@ void main()
   /* color.r = ShadowMapDepth; */
   /* color.r = FragDepthShadowSpace; */
 
+  /* color = vec4(fragDepth, 1); */
 }
