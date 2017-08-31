@@ -1082,14 +1082,14 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   }
 
   RenderToGBuffer(Plat, &World->Mesh, RG, SG, Camera);
-  DrawGBufferToFullscreenQuad( RG, SG, Camera, World->ChunkDim);
+  DrawGBufferToFullscreenQuad( Plat, RG, SG, Camera, World->ChunkDim);
 
   World->Mesh.VertexCount = 0;
   World->Mesh.filled = 0;
 
 #if DEBUG_DRAW_SHADOW_MAP_TEXTURE
   DrawTexturedQuad(&SG->Texture, &RG->SimpleTextureShader, RG);
-  glViewport(0, 0, Plat->WindowWidth, Plat->WindowHeight);
+  SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight));
 #endif
 
   AssertNoGlErrors;

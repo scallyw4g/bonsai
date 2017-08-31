@@ -88,6 +88,12 @@ struct debug_text_render_group
   u32 Text2DUniformID;
 };
 
+inline void
+SetViewport(v2 Dim)
+{
+  glViewport(0, 0, Dim.x, Dim.y);
+  return;
+}
 
 inline m4
 Orthographic( r32 X, r32 Y, r32 Zmin, r32 Zmax, v3 Translate )

@@ -187,7 +187,6 @@ Print_Binary( unsigned int input )
   Log("<-- Low bit \n");
 }
 
-
 inline void
 Print_P( u64 N, const char* name)
 {
@@ -253,6 +252,18 @@ Print_P( v3 P, const char* name)
     P.z = 0;
 
   Log(" %s %f %f %f \n", name, P.x, P.y, P.z );
+}
+
+inline void
+Print_P( v2 P, const char* name)
+{
+  if ( Abs(P.x) < 0.000001f )
+    P.x = 0;
+
+  if ( Abs(P.y) < 0.000001f )
+    P.y = 0;
+
+  Log(" %s %f %f \n", name, P.x, P.y );
 }
 
 inline void

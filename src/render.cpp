@@ -247,24 +247,24 @@ InitializeRenderGroup( platform *Plat, RenderGroup *RG )
   glBindTexture(GL_TEXTURE_2D, RG->ColorTexture);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Plat->WindowWidth, Plat->WindowHeight, 0, GL_RGBA, GL_FLOAT, NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
   glBindTexture(GL_TEXTURE_2D, 0);
 
   glGenTextures(1, &RG->NormalTexture);
   glBindTexture(GL_TEXTURE_2D, RG->NormalTexture);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Plat->WindowWidth, Plat->WindowHeight, 0, GL_RGBA, GL_FLOAT, NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
   glBindTexture(GL_TEXTURE_2D, 0);
 
   glGenTextures(1, &RG->PositionTexture);
   glBindTexture(GL_TEXTURE_2D, RG->PositionTexture);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Plat->WindowWidth, Plat->WindowHeight, 0, GL_RGBA, GL_FLOAT, NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
   glBindTexture(GL_TEXTURE_2D, 0);
 
-  RG->DepthTexture = MakeDepthTexture( V2(Plat->WindowWidth, Plat->WindowHeight) );
+  RG->DepthTexture = MakeDepthTexture( V2(SCR_WIDTH, SCR_HEIGHT) );
 
   GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, RG->ColorTexture,    0);
   GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, RG->NormalTexture,   0);
@@ -474,7 +474,7 @@ DrawTexturedQuad(texture *Texture, simple_texture_shader *Shader, RenderGroup *R
   glDepthFunc(GL_LEQUAL);
 
   r32 Scale = 0.2f;
-  glViewport(10, 10, Texture->Dim.x*Scale, Texture->Dim.y*Scale);
+  SetViewport(V2(Texture->Dim.x*Scale, Texture->Dim.y*Scale));
 
   glUseProgram(Shader->Shader.ID);
 
@@ -489,9 +489,10 @@ DrawTexturedQuad(texture *Texture, simple_texture_shader *Shader, RenderGroup *R
 }
 
 void
-DrawGBufferToFullscreenQuad( RenderGroup *RG, ShadowRenderGroup *SG, camera *Camera, world_position WorldChunkDim)
+DrawGBufferToFullscreenQuad( platform *Plat, RenderGroup *RG, ShadowRenderGroup *SG, camera *Camera, world_position WorldChunkDim)
 {
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight));
 
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -562,7 +563,7 @@ DEBUG_CopyTextureToMemory(texture *Texture)
 void
 RenderShadowMap(mesh_buffer_target *Mesh, ShadowRenderGroup *SG, RenderGroup *RG, camera *Camera)
 {
-  glViewport(0, 0, SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y);
+  SetViewport(V2(SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y));
 
   m4 MVP = GetShadowMapMVP(Camera);
 
@@ -600,7 +601,7 @@ RenderWorldToGBuffer( platform *Plat, mesh_buffer_target *Mesh, RenderGroup *RG)
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO);
   GL_Global->glUseProgram(RG->GBufferShader.ID);
 
-  glViewport(0, 0, Plat->WindowWidth, Plat->WindowHeight);
+  SetViewport( V2(SCR_WIDTH, SCR_HEIGHT) );
 
   m4 mvp = RG->Basis.ProjectionMatrix * RG->Basis.ViewMatrix;
 
