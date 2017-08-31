@@ -4,11 +4,6 @@ precision highp float;
 
 void main()
 {
-  float Far = 500.0f;
-  float Near = 0.1f;
-  float ZDepth = gl_FragCoord.z;
-
-  float Depth = (2.0 * Near) / (Far + Near - ZDepth * (Far - Near));
-  gl_FragDepth = Depth;
+  /* Depth is written linearized to the texture */
 }
 

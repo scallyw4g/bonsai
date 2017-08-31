@@ -294,7 +294,7 @@ InitializeRenderGroup( platform *Plat, RenderGroup *RG )
                                     "Lighting.fragmentshader" );
 
 
-  RG->DepthBiasMVPID          = GL_Global->glGetUniformLocation(RG->LightingShader.ID, "DepthBiasMVP");
+  RG->DepthBiasMVPID          = GL_Global->glGetUniformLocation(RG->LightingShader.ID, "shadowMVP");
   RG->ShadowMapTextureUniform = GL_Global->glGetUniformLocation(RG->LightingShader.ID, "shadowMap");
   RG->ColorTextureUniform     = GL_Global->glGetUniformLocation(RG->LightingShader.ID, "gColor");
   RG->NormalTextureUniform    = GL_Global->glGetUniformLocation(RG->LightingShader.ID, "gNormal");
@@ -448,7 +448,7 @@ inline m4
 GetShadowMapMVP(camera *Camera)
 {
   // Compute the MVP matrix from the light's point of view
-  v3 Translate = V3(0,300,0);
+  v3 Translate = V3(0,0,0);
   m4 depthProjectionMatrix = Orthographic(SHADOW_MAP_X,
                                           SHADOW_MAP_Y,
                                           SHADOW_MAP_Z_MIN,
@@ -509,8 +509,8 @@ DrawGBufferToFullscreenQuad( platform *Plat, RenderGroup *RG, ShadowRenderGroup 
     V4(0.5, 0.5, 0.5, 1.0)
   };
 
-  m4 depthBiasMVP = biasMatrix * GetShadowMapMVP(Camera);
-  GL_Global->glUniformMatrix4fv(RG->DepthBiasMVPID, 1, GL_FALSE, &depthBiasMVP.E[0].E[0]);
+  m4 shadowMVP = biasMatrix * GetShadowMapMVP(Camera);
+  GL_Global->glUniformMatrix4fv(RG->DepthBiasMVPID, 1, GL_FALSE, &shadowMVP.E[0].E[0]);
 
   m4 VP = RG->Basis.ViewMatrix;
 

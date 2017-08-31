@@ -17,7 +17,7 @@ uniform sampler2D shadowMap;
 
 uniform vec3 CameraPos;
 uniform vec3 GlobalLightPosition;
-uniform mat4 DepthBiasMVP;
+uniform mat4 shadowMVP;
 uniform mat4 ViewMatrix;
 
 float exposure = 1.0f;
@@ -94,12 +94,11 @@ void main()
   /*
    *  Shadow Mapping
    */
-  vec4 FragPositionShadowSpace = DepthBiasMVP * vec4(fragPosition, 1.0f);
+  vec4 FragPositionShadowSpace = shadowMVP * vec4(fragPosition, 1.0f);
 
-  // TODO(Jesse): Divide by some w here?
   float FragDepthShadowSpace = FragPositionShadowSpace.z;
 
-  float ShadowMapDepth = texture(shadowMap, FragPositionShadowSpace.xy).x + 0.07f;
+  float ShadowMapDepth = texture(shadowMap, FragPositionShadowSpace.xy).x;
 
   vec3 visibility = vec3(1.0f);
   if ( ShadowMapDepth < FragDepthShadowSpace )

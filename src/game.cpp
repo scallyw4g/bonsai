@@ -266,7 +266,7 @@ GetFreeEntity(game_state *GameState)
 s32
 GetLevel(r64 Time)
 {
-  s32 Level = 10 + ((s32)(Time/SECONDS_PER_LEVEL));
+  s32 Level = 1 + ((s32)(Time/SECONDS_PER_LEVEL));
   return Level;
 }
 
