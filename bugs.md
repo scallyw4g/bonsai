@@ -5,6 +5,13 @@ I was setting the gbuffer texture size at startup to the width/height of the
 screen, but then when drawing into it, reset the viewport size to the current
 size of the screen, which could have changed if the user resized it. No bueno.
 
+# Aug 28 2017 - 11:00 - closed - Fix shadow mapping on other hardware
+* opengl
+* shadow mapping
+Somehow on my Lenovo laptop the scene depth texture was linear, however on
+other hardware it was not.  This is a complete mystery and somewhat alarming.
+I still have yet to investigate the root cause.
+
 # Aug 21 2017 - 4:00 - closed - Rendering capabilities in the platform layer
 * debug system
 In order to properly time functions, the entire debug system needed to exist
