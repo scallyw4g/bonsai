@@ -98,7 +98,8 @@ void main()
 
   float FragDepthShadowSpace = FragPositionShadowSpace.z;
 
-  float ShadowMapDepth = texture(shadowMap, FragPositionShadowSpace.xy).x;
+  float acneBias = 0.01f; // Fix acne
+  float ShadowMapDepth = texture(shadowMap, FragPositionShadowSpace.xy).x + acneBias;
 
   vec3 visibility = vec3(1.0f);
   if ( ShadowMapDepth < FragDepthShadowSpace )
@@ -106,9 +107,6 @@ void main()
     visibility = vec3(0.1f);
   }
 
-  // TODO(Jesse): This is an epsilon to fix shadow acne.. can we do this better?
-  // I notice a lot of peter-panning on corners using this technique
-  /* float bias = 0.01f; */
   /* float visibility = 1.0f; */
   /* for (int i=0;i < 8;i++){ */
   /*   int index = i * 2; */
@@ -135,9 +133,11 @@ void main()
   color = vec4(pow(mapped, vec3(1.0f / gamma)), 1.0f);
 
   /* color = vec4(0); */
+  /* color.a = 1.0f; */
 
   /* color.r = ShadowMapDepth; */
   /* color.r = FragDepthShadowSpace; */
+  /* color.r = FragPositionShadowSpace.w; */
 
   /* color = vec4(fragDepth, 1); */
 }

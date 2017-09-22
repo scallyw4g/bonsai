@@ -441,7 +441,7 @@ DEBUG_DrawPointMarker( mesh_buffer_target *Mesh, v3 RenderP, int ColorIndex, v3 
   return;
 }
 
-#define GLOBAL_LIGHT_OFFSET Normalize(V3( 0.1f, 0.0f, 1.0f))
+#define GLOBAL_LIGHT_OFFSET Normalize(V3( 0.20f, 0.0f, 1.0f))
 GLOBAL_VARIABLE v3 GlobalLightPosition = {};
 
 inline m4
@@ -534,6 +534,10 @@ DrawGBufferToFullscreenQuad( platform *Plat, RenderGroup *RG, ShadowRenderGroup 
   GL_Global->glActiveTexture(GL_TEXTURE3);
   glBindTexture(GL_TEXTURE_2D, RG->DepthTexture.ID);
   GL_Global->glUniform1i(RG->DepthTextureUniform, 3);
+
+  GL_Global->glActiveTexture(GL_TEXTURE4);
+  glBindTexture(GL_TEXTURE_2D, SG->Texture.ID);
+  GL_Global->glUniform1i(RG->ShadowMapTextureUniform, 4);
 
   RenderQuad(RG);
 #endif

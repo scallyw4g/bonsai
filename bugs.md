@@ -1,3 +1,11 @@
+# Sept 22 2017 - 2:00 - closed - Shadow Mapping
+* opengl
+* texture
+* shadow mapping
+I was not setting the shadowMap uniform in the lighting shader and it was
+sampling the wrong texture.  FML.  I should probably make more type-safe
+wrapped opengl calls
+
 # Aug 31 2017 - 1:00 - closed - Screen resize bug
 * opengl
 * texture
