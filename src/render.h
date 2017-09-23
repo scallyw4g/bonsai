@@ -60,8 +60,10 @@ struct RenderGroup
   u32 DepthBiasMVPID;
   u32 ViewMatrixUniform;
   u32 CameraPosUniform;
+  u32 SsaoKernelUniform;
   //
 
+  random_series SsaoEntropy;
 
   simple_texture_shader SimpleTextureShader;
 

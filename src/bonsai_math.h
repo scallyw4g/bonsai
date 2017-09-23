@@ -189,6 +189,16 @@ Lerp(r32 t, v2 p1, v2 p2)
   return Result;
 }
 
+float
+Lerp(r32 t, r32 p1, r32 p2)
+{
+  Assert(t<=1);
+  Assert(t>=0);
+
+  r32 Result = (1-t)*p1 + t*p2;
+  return Result;
+}
+
 inline int
 LengthSq( voxel_position P )
 {

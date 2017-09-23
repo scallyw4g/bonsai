@@ -36,6 +36,10 @@
 
 #define NOISE_FREQUENCY 400
 
+// This must match the corresponding define in the SSAO shader
+#define SSAO_KERNEL_SIZE 16
+#define SSAO_ENTROPY_SEED 3426543
+
 #define WORLD_HASH_SIZE VOLUME_VISIBLE_REGION
 #define FREELIST_SIZE VOLUME_VISIBLE_REGION
 #define GAME_STORAGE_SIZE Megabytes(500)

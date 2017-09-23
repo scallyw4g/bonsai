@@ -303,6 +303,7 @@ InitializeRenderGroup( platform *Plat, RenderGroup *RG )
   RG->GlobalLightPositionID   = GL_Global->glGetUniformLocation(RG->LightingShader.ID, "GlobalLightPosition");
   RG->ViewMatrixUniform       = GL_Global->glGetUniformLocation(RG->LightingShader.ID, "ViewMatrix");
   RG->CameraPosUniform        = GL_Global->glGetUniformLocation(RG->LightingShader.ID, "CameraPosUniform");
+  RG->SsaoKernelUniform       = GL_Global->glGetUniformLocation(RG->LightingShader.ID, "SsaoKernel");
 
 
   RG->SimpleTextureShader = MakeSimpleTextureShader();
@@ -327,6 +328,8 @@ InitializeRenderGroup( platform *Plat, RenderGroup *RG )
   RG->vertexbuffer = vertexbuffer;
   RG->colorbuffer  = colorbuffer;
   RG->normalbuffer = normalbuffer;
+
+  RG->SsaoEntropy.Seed = SSAO_ENTROPY_SEED;
 
   return true;
 }
@@ -489,6 +492,20 @@ DrawTexturedQuad(texture *Texture, simple_texture_shader *Shader, RenderGroup *R
 }
 
 void
+InitSsaoKernel(v3 *Kernel, s32 Count, random_series *Entropy)
+{
+  for (int KernelIndex = 0;
+       KernelIndex < Count;
+       ++KernelIndex)
+  {
+    r32 Scale = (r32)KernelIndex/Count;
+    Scale = Lerp(Scale * Scale, 0.1f, 1.0f);
+
+    Kernel[KernelIndex] = Normalize( V3(RandomBilateral(Entropy), RandomBilateral(Entropy), RandomUnilateral(Entropy) )) * Scale;
+  }
+}
+
+void
 DrawGBufferToFullscreenQuad( platform *Plat, RenderGroup *RG, ShadowRenderGroup *SG, camera *Camera, world_position WorldChunkDim)
 {
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -518,6 +535,10 @@ DrawGBufferToFullscreenQuad( platform *Plat, RenderGroup *RG, ShadowRenderGroup 
 
   v3 CameraRenderP = GetRenderP(WorldChunkDim, Camera->P, Camera);
   GL_Global->glUniform3fv(RG->CameraPosUniform, 1, &CameraRenderP.E[0]);
+
+  v3 SsaoKernel[SSAO_KERNEL_SIZE] = {};
+  InitSsaoKernel(&SsaoKernel[0], ArrayCount(SsaoKernel), &RG->SsaoEntropy);
+  GL_Global->glUniform3fv(RG->SsaoKernelUniform, SSAO_KERNEL_SIZE, &SsaoKernel[0].E[0]);
 
   GL_Global->glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, RG->ColorTexture);
