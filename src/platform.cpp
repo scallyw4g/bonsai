@@ -192,6 +192,7 @@ InitializeOpenGlExtensions(gl_extensions *Gl, os *Os)
   DefGlProc(PFNGLENABLEVERTEXATTRIBARRAYPROC, glEnableVertexAttribArray);
   DefGlProc(PFNGLDISABLEVERTEXATTRIBARRAYPROC, glDisableVertexAttribArray);
   DefGlProc(PFNGLUNIFORM3FVPROC, glUniform3fv);
+  DefGlProc(PFNGLUNIFORM2FVPROC, glUniform2fv);
   DefGlProc(PFNGLUNIFORMMATRIX4FVPROC, glUniformMatrix4fv);
   DefGlProc(PFNGLUNIFORM1IPROC, glUniform1i);
 

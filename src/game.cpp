@@ -1165,8 +1165,12 @@ GameInit( platform *Plat, memory_arena *GameMemory)
   ShadowRenderGroup *SG = PUSH_STRUCT_CHECKED(ShadowRenderGroup, GameState->Memory, 1);
   if (!InitializeShadowBuffer(SG)) { Error("Initializing Shadow Buffer"); return False; }
 
+  AssertNoGlErrors;
+
   RenderGroup *RG = PUSH_STRUCT_CHECKED(RenderGroup, GameState->Memory, 1);
   if (!InitializeRenderGroup(Plat, RG)) { Error("Initializing RenderGroup"); return False; }
+
+  AssertNoGlErrors;
 
   GameState->Turb = PUSH_STRUCT_CHECKED(noise_3d, GameState->Memory, 1);
   AllocateAndInitNoise3d(GameState, GameState->Turb, Chunk_Dimension(8,8,8) );
@@ -1179,6 +1183,8 @@ GameInit( platform *Plat, memory_arena *GameMemory)
   GLuint VertexArrayID;
   Plat->GL.glGenVertexArrays(1, &VertexArrayID);
   Plat->GL.glBindVertexArray(VertexArrayID);
+
+  AssertNoGlErrors;
 
   camera *Camera = PUSH_STRUCT_CHECKED(camera, GameState->Memory, 1);
   InitCamera(Camera, CAMERA_INITIAL_P, 5000.0f);

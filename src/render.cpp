@@ -208,6 +208,41 @@ MakeSimpleTextureShader()
   return SimpleTextureShader;
 }
 
+void
+DefaultTexParams()
+{
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+  /* glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE); */
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+}
+
+texture
+MakeTexture_RGB(v2 Dim, const void* Data)
+{
+  texture Texture = {};
+  Texture.Dim = Dim;
+
+  glGenTextures(1, &Texture.ID);
+  Assert(Texture.ID);
+
+  glBindTexture(GL_TEXTURE_2D, Texture.ID);
+
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB,
+      Texture.Dim.x, Texture.Dim.y, 0,  GL_RGB, GL_FLOAT, Data);
+
+  DefaultTexParams();
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+  glBindTexture(GL_TEXTURE_2D, 0);
+
+  return Texture;
+}
+
 texture
 MakeDepthTexture(v2 Dim)
 {
@@ -222,17 +257,35 @@ MakeDepthTexture(v2 Dim)
   glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32,
     Texture.Dim.x, Texture.Dim.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-  /* glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE); */
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
-
+  DefaultTexParams();
   glBindTexture(GL_TEXTURE_2D, 0);
 
   return Texture;
+}
+
+void
+InitSsaoKernel(v3 *Kernel, s32 Count, random_series *Entropy)
+{
+  for (int KernelIndex = 0;
+       KernelIndex < Count;
+       ++KernelIndex)
+  {
+    r32 Scale = (r32)KernelIndex/Count;
+    Scale = Lerp(Scale * Scale, 0.1f, 1.0f);
+
+    Kernel[KernelIndex] = Normalize( V3(RandomBilateral(Entropy), RandomBilateral(Entropy), RandomUnilateral(Entropy) )) * Scale;
+  }
+}
+
+void
+InitSsaoNoise(v3 *Noise, s32 Count, random_series *Entropy)
+{
+  for (s32 NoiseIndex = 0;
+       NoiseIndex < Count;
+       ++NoiseIndex)
+  {
+    Noise[NoiseIndex] = Normalize( V3(RandomBilateral(Entropy), RandomBilateral(Entropy), 0.0f) );
+  }
 }
 
 bool
@@ -304,8 +357,6 @@ InitializeRenderGroup( platform *Plat, RenderGroup *RG )
   RG->ViewMatrixUniform       = GL_Global->glGetUniformLocation(RG->LightingShader.ID, "ViewMatrix");
   RG->ProjectionMatrixUniform = GL_Global->glGetUniformLocation(RG->LightingShader.ID, "ProjectionMatrix");
   RG->CameraPosUniform        = GL_Global->glGetUniformLocation(RG->LightingShader.ID, "CameraPosUniform");
-  RG->SsaoKernelUniform       = GL_Global->glGetUniformLocation(RG->LightingShader.ID, "SsaoKernel");
-
 
   RG->SimpleTextureShader = MakeSimpleTextureShader();
   //
@@ -314,7 +365,29 @@ InitializeRenderGroup( platform *Plat, RenderGroup *RG )
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->quad_vertexbuffer);
   GL_Global->glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
 
+  random_series SsaoEntropy = {};
+  SsaoEntropy.Seed = SSAO_ENTROPY_SEED;
 
+  AssertNoGlErrors;
+
+  { // SsaoNoiseTexture
+    v2 SsaoNoiseDim = V2(4,4);
+
+    v3 SsaoNoise[Area(SsaoNoiseDim)] = {};
+    InitSsaoNoise(&SsaoNoise[0], ArrayCount(SsaoNoise), &SsaoEntropy);
+
+    RG->SsaoNoiseTexture = MakeTexture_RGB( SsaoNoiseDim, &SsaoNoise);
+    AssertNoGlErrors;
+
+    RG->SsaoNoiseTexture.Uniform = GL_Global->glGetUniformLocation(RG->LightingShader.ID, "SsaoNoiseTexture");
+
+  }
+
+
+  InitSsaoKernel(&RG->SsaoKernel[0], ArrayCount(RG->SsaoKernel), &SsaoEntropy);
+  RG->SsaoKernelUniform = GL_Global->glGetUniformLocation(RG->LightingShader.ID, "SsaoKernel");
+
+  AssertNoGlErrors;
 
   //
   // World Data buffers
@@ -329,8 +402,6 @@ InitializeRenderGroup( platform *Plat, RenderGroup *RG )
   RG->vertexbuffer = vertexbuffer;
   RG->colorbuffer  = colorbuffer;
   RG->normalbuffer = normalbuffer;
-
-  RG->SsaoEntropy.Seed = SSAO_ENTROPY_SEED;
 
   return true;
 }
@@ -493,20 +564,6 @@ DrawTexturedQuad(texture *Texture, simple_texture_shader *Shader, RenderGroup *R
 }
 
 void
-InitSsaoKernel(v3 *Kernel, s32 Count, random_series *Entropy)
-{
-  for (int KernelIndex = 0;
-       KernelIndex < Count;
-       ++KernelIndex)
-  {
-    r32 Scale = (r32)KernelIndex/Count;
-    Scale = Lerp(Scale * Scale, 0.1f, 1.0f);
-
-    Kernel[KernelIndex] = Normalize( V3(RandomBilateral(Entropy), RandomBilateral(Entropy), RandomUnilateral(Entropy) )) * Scale;
-  }
-}
-
-void
 DrawGBufferToFullscreenQuad( platform *Plat, RenderGroup *RG, ShadowRenderGroup *SG, camera *Camera, world_position WorldChunkDim)
 {
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -515,7 +572,6 @@ DrawGBufferToFullscreenQuad( platform *Plat, RenderGroup *RG, ShadowRenderGroup 
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-#if 1
   GL_Global->glUseProgram(RG->LightingShader.ID);
 
   GL_Global->glUniform3fv(RG->GlobalLightPositionID, 1, &GlobalLightPosition.E[0]);
@@ -539,17 +595,6 @@ DrawGBufferToFullscreenQuad( platform *Plat, RenderGroup *RG, ShadowRenderGroup 
   v3 CameraRenderP = GetRenderP(WorldChunkDim, Camera->P, Camera);
   GL_Global->glUniform3fv(RG->CameraPosUniform, 1, &CameraRenderP.E[0]);
 
-  static v3 SsaoKernel[SSAO_KERNEL_SIZE] = {};
-  static b32 KernelInitialized = false;
-  if (!KernelInitialized)
-  {
-    KernelInitialized = true;
-    Debug("Initializing SSAO Kernel");
-    InitSsaoKernel(&SsaoKernel[0], ArrayCount(SsaoKernel), &RG->SsaoEntropy);
-  }
-
-  GL_Global->glUniform3fv(RG->SsaoKernelUniform, SSAO_KERNEL_SIZE, &SsaoKernel[0].E[0]);
-
   GL_Global->glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, RG->ColorTexture);
   GL_Global->glUniform1i(RG->ColorTextureUniform, 0);
@@ -570,8 +615,21 @@ DrawGBufferToFullscreenQuad( platform *Plat, RenderGroup *RG, ShadowRenderGroup 
   glBindTexture(GL_TEXTURE_2D, SG->Texture.ID);
   GL_Global->glUniform1i(RG->ShadowMapTextureUniform, 4);
 
+  GL_Global->glActiveTexture(GL_TEXTURE5);
+  AssertNoGlErrors;
+  glBindTexture(GL_TEXTURE_2D, RG->SsaoNoiseTexture.ID);
+  AssertNoGlErrors;
+  GL_Global->glUniform1i(RG->SsaoNoiseTexture.Uniform, 5);
+  AssertNoGlErrors;
+
+  v2 NoiseTile = V2(SCR_WIDTH/RG->SsaoNoiseTexture.Dim.x, SCR_HEIGHT/RG->SsaoNoiseTexture.Dim.y);
+  u32 SsaoNoiseTileUniform = GL_Global->glGetUniformLocation(RG->LightingShader.ID, "SsaoNoiseTile");
+  GL_Global->glUniform2fv(SsaoNoiseTileUniform, 1, &NoiseTile.x);
+  AssertNoGlErrors;
+
+  GL_Global->glUniform3fv(RG->SsaoKernelUniform, SSAO_KERNEL_SIZE, &RG->SsaoKernel[0].E[0]);
+
   RenderQuad(RG);
-#endif
 
   glDisable(GL_BLEND);
 

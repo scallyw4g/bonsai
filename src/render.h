@@ -23,6 +23,7 @@ struct RenderBasis
 struct texture
 {
   u32 ID;
+  u32 Uniform;
   v2 Dim;
 };
 
@@ -34,6 +35,9 @@ struct RenderGroup
   u32 PositionTexture;
 
   texture DepthTexture;
+  texture SsaoNoiseTexture;
+
+  v3 SsaoKernel[SSAO_KERNEL_SIZE];
 
   u32 colorbuffer;
   u32 vertexbuffer;
@@ -63,8 +67,6 @@ struct RenderGroup
   u32 CameraPosUniform;
   u32 SsaoKernelUniform;
   //
-
-  random_series SsaoEntropy;
 
   simple_texture_shader SimpleTextureShader;
 

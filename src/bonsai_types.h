@@ -115,6 +115,13 @@ union v4
 
 };
 
+v4
+V4(v3 V, r32 w)
+{
+  v4 Result(V, w);
+  return Result;
+}
+
 v4 V4(float x, float y, float z, float w)
 {
   v4 Result;

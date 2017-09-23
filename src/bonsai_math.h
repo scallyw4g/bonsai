@@ -199,6 +199,16 @@ Lerp(r32 t, r32 p1, r32 p2)
   return Result;
 }
 
+inline s32
+Area(v2 A)
+{
+  Assert(A.x > 0);
+  Assert(A.y > 0);
+
+  s32 Result = A.x * A.y;
+  return Result;
+}
+
 inline int
 LengthSq( voxel_position P )
 {
