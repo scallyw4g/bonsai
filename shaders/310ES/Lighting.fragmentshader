@@ -61,7 +61,7 @@ vec2 poissonDisk[16] = vec2[](
 void main()
 {
   vec3 Diffuse      = texture(gColor, UV).rgb;
-  vec3 fragNormal   = texture(gNormal, UV).rgb; // modelspace
+  vec3 FragNormal   = texture(gNormal, UV).rgb; // modelspace
   vec3 fragPosition = texture(gPosition, UV).rgb; // worldspace
   vec3 fragDepth    = texture(gDepth, UV).rgb;
 
@@ -69,18 +69,20 @@ void main()
   vec3 Ambient = Diffuse * GlobalLightIntensity * 0.1f;
 
   vec3 GlobalLightDirection = GlobalLightPosition;
-  float GlobalLightCosTheta = clamp( dot( fragNormal, GlobalLightDirection), 0.0f, 1.0f);
+  float GlobalLightCosTheta = clamp( dot( FragNormal, GlobalLightDirection), 0.0f, 1.0f);
+
+
+
 
   /*
    *  AO
    */
   vec3 FragPositionViewSpace = (ViewMatrix * texture(gPosition, UV)).xyz;
-  vec3 FragNormal_NDC = normalize(fragNormal * 2.0f - 1.0f); // Not sure this is correct in my case..
 
-  vec3 tangent = cross(FragNormal_NDC, UP);
-  vec3 bitangent = cross(FragNormal_NDC, tangent);
+  vec3 tangent = cross(FragNormal, UP);
+  vec3 bitangent = cross(FragNormal, tangent);
 
-  mat3 tbn = mat3(tangent, bitangent, FragNormal_NDC);
+  mat3 tbn = mat3(tangent, bitangent, FragNormal);
 
   float AO = 0.0;
   for ( int KernelIndex = 0;
@@ -89,8 +91,8 @@ void main()
   {
     const float Radius = 1.0f; // For tuning
 
-    vec3 SampleP = tbn * SsaoKernel[KernelIndex];
-    SampleP = SampleP * Radius + FragPositionViewSpace;
+    vec3 Kernel = /* tbn */ SsaoKernel[KernelIndex] * Radius;
+    vec3 SampleP = Kernel + FragPositionViewSpace;
 
     // project SampleP
     vec4 SampleUV = ProjectionMatrix * vec4(SampleP, 1);
@@ -101,26 +103,11 @@ void main()
     float sampleDepth = texture(gDepth, SampleUV.xy).r;
 
     // range check & accumulate:
-    float rangeCheck = abs(FragPositionViewSpace.z - sampleDepth) < Radius ? 1.0 : 0.0;
+    float rangeCheck = 1.0f; // abs(FragPositionViewSpace.z - sampleDepth) < Radius ? 1.0 : 0.0;
     AO += (sampleDepth <= SampleP.z ? 1.0 : 0.0) * rangeCheck;
   }
 
   AO = 1.0f - (AO / float(SSAO_KERNEL_SIZE));
-
-/*   for ( int PoissonIndex = 0; */
-/*         PoissonIndex < AoSamples; */
-/*         ++PoissonIndex ) */
-/*   { */
-/*     vec3 SampleViewSpace = (ViewMatrix * texture(gPosition, UV + ( poissonDisk[PoissonIndex]/200.0f) )).xyz; */
-
-/*     float DistanceToSample = length( CameraViewSpace - SampleViewSpace ); */
-/*     float DistanceToFrag = length( CameraViewSpace - FragViewSpace ); */
-
-/*     if (DistanceToSample < DistanceToFrag) */
-/*       AO += 1.0f; */
-/*   } */
-
-  /* AO = 1.0f - (AO/float(AoSamples)); */
 
 
 
@@ -166,13 +153,6 @@ void main()
   // Gamma correction
   color = vec4(pow(mapped, vec3(1.0f / gamma)), 1.0f);
 
-  /* color = vec4(0); */
-  /* color.a = 1.0f; */
-
-  /* color.r = ShadowMapDepth; */
-  /* color.r = FragDepthShadowSpace; */
-  /* color.r = FragPositionShadowSpace.w; */
-
   /* color = vec4(fragDepth, 1); */
-  /* color.xyz = vec3(AO); */
+  color.rgb = vec3(AO);
 }

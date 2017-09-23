@@ -539,8 +539,15 @@ DrawGBufferToFullscreenQuad( platform *Plat, RenderGroup *RG, ShadowRenderGroup 
   v3 CameraRenderP = GetRenderP(WorldChunkDim, Camera->P, Camera);
   GL_Global->glUniform3fv(RG->CameraPosUniform, 1, &CameraRenderP.E[0]);
 
-  v3 SsaoKernel[SSAO_KERNEL_SIZE] = {};
-  InitSsaoKernel(&SsaoKernel[0], ArrayCount(SsaoKernel), &RG->SsaoEntropy);
+  static v3 SsaoKernel[SSAO_KERNEL_SIZE] = {};
+  static b32 KernelInitialized = false;
+  if (!KernelInitialized)
+  {
+    KernelInitialized = true;
+    Debug("Initializing SSAO Kernel");
+    InitSsaoKernel(&SsaoKernel[0], ArrayCount(SsaoKernel), &RG->SsaoEntropy);
+  }
+
   GL_Global->glUniform3fv(RG->SsaoKernelUniform, SSAO_KERNEL_SIZE, &SsaoKernel[0].E[0]);
 
   GL_Global->glActiveTexture(GL_TEXTURE0);
