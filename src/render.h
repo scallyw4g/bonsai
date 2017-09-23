@@ -59,6 +59,7 @@ struct RenderGroup
   u32 ShadowMapTextureUniform;
   u32 DepthBiasMVPID;
   u32 ViewMatrixUniform;
+  u32 ProjectionMatrixUniform;
   u32 CameraPosUniform;
   u32 SsaoKernelUniform;
   //

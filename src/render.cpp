@@ -302,6 +302,7 @@ InitializeRenderGroup( platform *Plat, RenderGroup *RG )
   RG->DepthTextureUniform     = GL_Global->glGetUniformLocation(RG->LightingShader.ID, "gDepth");
   RG->GlobalLightPositionID   = GL_Global->glGetUniformLocation(RG->LightingShader.ID, "GlobalLightPosition");
   RG->ViewMatrixUniform       = GL_Global->glGetUniformLocation(RG->LightingShader.ID, "ViewMatrix");
+  RG->ProjectionMatrixUniform = GL_Global->glGetUniformLocation(RG->LightingShader.ID, "ProjectionMatrix");
   RG->CameraPosUniform        = GL_Global->glGetUniformLocation(RG->LightingShader.ID, "CameraPosUniform");
   RG->SsaoKernelUniform       = GL_Global->glGetUniformLocation(RG->LightingShader.ID, "SsaoKernel");
 
@@ -529,9 +530,11 @@ DrawGBufferToFullscreenQuad( platform *Plat, RenderGroup *RG, ShadowRenderGroup 
   m4 shadowMVP = biasMatrix * GetShadowMapMVP(Camera);
   GL_Global->glUniformMatrix4fv(RG->DepthBiasMVPID, 1, GL_FALSE, &shadowMVP.E[0].E[0]);
 
-  m4 VP = RG->Basis.ViewMatrix;
+  m4 ViewMat = RG->Basis.ViewMatrix;
+  GL_Global->glUniformMatrix4fv(RG->ViewMatrixUniform, 1, GL_FALSE, &ViewMat.E[0].E[0]);
 
-  GL_Global->glUniformMatrix4fv(RG->ViewMatrixUniform, 1, GL_FALSE, &VP.E[0].E[0]);
+  m4 ProjMat = RG->Basis.ProjectionMatrix;
+  GL_Global->glUniformMatrix4fv(RG->ProjectionMatrixUniform, 1, GL_FALSE, &ProjMat.E[0].E[0]);
 
   v3 CameraRenderP = GetRenderP(WorldChunkDim, Camera->P, Camera);
   GL_Global->glUniform3fv(RG->CameraPosUniform, 1, &CameraRenderP.E[0]);

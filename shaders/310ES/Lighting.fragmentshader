@@ -18,10 +18,13 @@ uniform sampler2D shadowMap;
 // This must match the corresponding define in constants.h
 const int SSAO_KERNEL_SIZE = 16;
 
+const vec3 UP = vec3(0,0,1);
+
 uniform vec3 CameraPos;
 uniform vec3 GlobalLightPosition;
 uniform mat4 shadowMVP;
 uniform mat4 ViewMatrix;
+uniform mat4 ProjectionMatrix;
 uniform vec3 SsaoKernel[SSAO_KERNEL_SIZE];
 
 float exposure = 1.0f;
@@ -71,17 +74,44 @@ void main()
   /*
    *  AO
    */
-  float AO = 0.0f;
-  int AoSamples = 16;
+  vec3 FragPositionViewSpace = (ViewMatrix * texture(gPosition, UV)).xyz;
+  vec3 FragNormal_NDC = normalize(fragNormal * 2.0f - 1.0f); // Not sure this is correct in my case..
 
-  vec3 CameraViewSpace = (ViewMatrix * vec4(CameraPos, 1.0f)).xyz;
+  vec3 tangent = cross(FragNormal_NDC, UP);
+  vec3 bitangent = cross(FragNormal_NDC, tangent);
+
+  mat3 tbn = mat3(tangent, bitangent, FragNormal_NDC);
+
+  float AO = 0.0;
+  for ( int KernelIndex = 0;
+        KernelIndex < SSAO_KERNEL_SIZE;
+        ++KernelIndex)
+  {
+    const float Radius = 1.0f; // For tuning
+
+    vec3 SampleP = tbn * SsaoKernel[KernelIndex];
+    SampleP = SampleP * Radius + FragPositionViewSpace;
+
+    // project SampleP
+    vec4 SampleUV = ProjectionMatrix * vec4(SampleP, 1);
+    SampleUV.xy /= SampleUV.w;             // Perspective divide
+    SampleUV.xy = SampleUV.xy * 0.5 + 0.5; // NDC to screen space [-1, 1] -> [0, 1]
+
+    // get Sample depth:
+    float sampleDepth = texture(gDepth, SampleUV.xy).r;
+
+    // range check & accumulate:
+    float rangeCheck = abs(FragPositionViewSpace.z - sampleDepth) < Radius ? 1.0 : 0.0;
+    AO += (sampleDepth <= SampleP.z ? 1.0 : 0.0) * rangeCheck;
+  }
+
+  AO = 1.0f - (AO / float(SSAO_KERNEL_SIZE));
 
 /*   for ( int PoissonIndex = 0; */
 /*         PoissonIndex < AoSamples; */
 /*         ++PoissonIndex ) */
 /*   { */
 /*     vec3 SampleViewSpace = (ViewMatrix * texture(gPosition, UV + ( poissonDisk[PoissonIndex]/200.0f) )).xyz; */
-/*     vec3 FragViewSpace   = (ViewMatrix * texture(gPosition, UV)).xyz; */
 
 /*     float DistanceToSample = length( CameraViewSpace - SampleViewSpace ); */
 /*     float DistanceToFrag = length( CameraViewSpace - FragViewSpace ); */
@@ -90,7 +120,7 @@ void main()
 /*       AO += 1.0f; */
 /*   } */
 
-  AO = 1.0f - (AO/float(AoSamples));
+  /* AO = 1.0f - (AO/float(AoSamples)); */
 
 
 
