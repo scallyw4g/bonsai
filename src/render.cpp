@@ -314,7 +314,7 @@ InitializeRenderGroup( platform *Plat, RenderGroup *RG )
   glBindTexture(GL_TEXTURE_2D, RG->PositionTexture);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
   glBindTexture(GL_TEXTURE_2D, 0);
 
   RG->DepthTexture = MakeDepthTexture( V2(SCR_WIDTH, SCR_HEIGHT) );
@@ -414,7 +414,8 @@ InitializeShadowBuffer(ShadowRenderGroup *ShadowGroup)
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, ShadowGroup->FramebufferName);
 
   ShadowGroup->Texture = MakeDepthTexture( V2(SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y) );
-  GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, ShadowGroup->Texture.ID, 0);
+  GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+      GL_TEXTURE_2D, ShadowGroup->Texture.ID, 0);
 
   // TODO(Jesse): Not present on ES2 .. should we use them?
   // No color output in the bound framebuffer, only depth.
@@ -616,16 +617,12 @@ DrawGBufferToFullscreenQuad( platform *Plat, RenderGroup *RG, ShadowRenderGroup 
   GL_Global->glUniform1i(RG->ShadowMapTextureUniform, 4);
 
   GL_Global->glActiveTexture(GL_TEXTURE5);
-  AssertNoGlErrors;
   glBindTexture(GL_TEXTURE_2D, RG->SsaoNoiseTexture.ID);
-  AssertNoGlErrors;
   GL_Global->glUniform1i(RG->SsaoNoiseTexture.Uniform, 5);
-  AssertNoGlErrors;
 
   v2 NoiseTile = V2(SCR_WIDTH/RG->SsaoNoiseTexture.Dim.x, SCR_HEIGHT/RG->SsaoNoiseTexture.Dim.y);
   u32 SsaoNoiseTileUniform = GL_Global->glGetUniformLocation(RG->LightingShader.ID, "SsaoNoiseTile");
   GL_Global->glUniform2fv(SsaoNoiseTileUniform, 1, &NoiseTile.x);
-  AssertNoGlErrors;
 
   GL_Global->glUniform3fv(RG->SsaoKernelUniform, SSAO_KERNEL_SIZE, &RG->SsaoKernel[0].E[0]);
 
@@ -1195,6 +1192,7 @@ ClearFramebuffers(RenderGroup *RG, ShadowRenderGroup *SG)
 {
   /* TIMED_FUNCTION(); */
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+  glClearDepth(1.0f);
 
   // FIXME(Jesse): This is taking _forever_ on Linux (GLES) .. does it take
   // forever on other Linux systems?
