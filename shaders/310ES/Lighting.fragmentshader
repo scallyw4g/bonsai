@@ -35,10 +35,6 @@ float gamma = 2.2f;
 
 float GlobalLightIntensity = 1.0f;
 
-// FIXME(Jesse): Put these in uniforms
-const float Far = 5000.0f;
-const float Near = 0.1f;
-
 //
 //
 //
@@ -63,28 +59,20 @@ vec2 poissonDisk[16] = vec2[](
    vec2(  0.14383161, -0.14100790 )
 );
 
-float
-Linearize(float Depth)
-{
-  float Result = (2.0 * Near) / (Far + Near - Depth * (Far - Near));
-  return Result;
-}
-
 //
 //
 void main()
 {
   vec3 Diffuse      = texture(gColor, UV).rgb;
-  vec3 FragNormal   = texture(gNormal, UV).rgb; // modelspace
+  vec3 FragNormal   = texture(gNormal, UV).rgb;   // modelspace
   vec3 FragPosition = texture(gPosition, UV).rgb; // worldspace
-  float fragDepth = Linearize(texture(gPosition, UV).w); // Linear
+  float fragDepth   = texture(gPosition, UV).w;   // Linear
 
 
   vec3 Ambient = Diffuse * GlobalLightIntensity * 0.1f;
 
   vec3 GlobalLightDirection = GlobalLightPosition;
   float GlobalLightCosTheta = clamp( dot( FragNormal, GlobalLightDirection), 0.0f, 1.0f);
-
 
 
 
@@ -102,7 +90,7 @@ void main()
         KernelIndex < SSAO_KERNEL_SIZE;
         ++KernelIndex)
   {
-    const float Radius = 6.0f; // For tuning
+    const float Radius = 0.8f; // For tuning
 
     vec3 KernelP = Reorientation * SsaoKernel[KernelIndex] * Radius;
     vec3 SampleP = KernelP + FragPosition;
@@ -117,10 +105,12 @@ void main()
     SampleUV = SampleUV.xy * 0.5 + 0.5;
 
     // get Sample depth:
-    float sampleDepth = Linearize(texture(gPosition, SampleUV.xy).w);
+    float sampleDepth = texture(gPosition, SampleUV.xy).w;
 
     bool Occluded = sampleDepth <= fragDepth;
-    bool InsideRadius = (fragDepth - sampleDepth) < Radius;
+
+    float Diff = abs(fragDepth - sampleDepth);
+    bool InsideRadius = Diff < 0.001f; // TODO(Jesse): In the john-chapman article this was the radius value - how?
 
     if (Occluded && InsideRadius)
     {
@@ -173,11 +163,12 @@ void main()
   vec3 mapped = hdrColor / (hdrColor + vec3(1.0f));
 
   // Gamma correction
+  mapped.rgb = vec3(AO);
   color = vec4(pow(mapped, vec3(1.0f / gamma)), 1.0f);
 
   /* color = vec4(0,0,0,1); */
 
   /* color.rgb = Diffuse; */
-  color.rgb = vec3(AO);
+  /* color.rgb = Noise; */
 
 }

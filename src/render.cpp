@@ -273,7 +273,8 @@ InitSsaoKernel(v3 *Kernel, s32 Count, random_series *Entropy)
     r32 Scale = (r32)KernelIndex/Count;
     Scale = Lerp(Scale * Scale, 0.1f, 1.0f);
 
-    Kernel[KernelIndex] = Normalize( V3(RandomBilateral(Entropy), RandomBilateral(Entropy), RandomUnilateral(Entropy) )) * Scale;
+    Kernel[KernelIndex] = V3(RandomBilateral(Entropy), RandomBilateral(Entropy), RandomBilateral(Entropy));
+    Kernel[KernelIndex] = Normalize( Kernel[KernelIndex]*Scale );
   }
 }
 
