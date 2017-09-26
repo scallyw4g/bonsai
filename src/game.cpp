@@ -909,8 +909,8 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
   chunk_dimension WorldChunkDim = World->ChunkDim;
 
-  RenderGroup *RG                  = GameState->RG;
-  ShadowRenderGroup *SG            = GameState->SG;
+  g_buffer_render_group *RG = GameState->RG;
+  ShadowRenderGroup *SG     = GameState->SG;
 
   r32 VrHalfDim = (VR_X*CD_X/2.0f);
 
@@ -1081,15 +1081,23 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
     DrawFolie(&World->Mesh, Camera, AABB);
   }
 
+  ao_render_group AoGroup = {};
+
   RenderToGBuffer(Plat, &World->Mesh, RG, SG, Camera);
+  /* AssertNoGlErrors; */
+  /* RenderAoTexture( Plat, RG, &AoGroup, Camera, World->ChunkDim); */
+  AssertNoGlErrors;
   DrawGBufferToFullscreenQuad( Plat, RG, SG, Camera, World->ChunkDim);
+  AssertNoGlErrors;
 
   World->Mesh.VertexCount = 0;
   World->Mesh.filled = 0;
 
+
 #if DEBUG_DRAW_SHADOW_MAP_TEXTURE
-  DrawTexturedQuad(&SG->Texture, &RG->SimpleTextureShader, RG);
-  SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight));
+  /* DrawTexturedQuad(&SG->DebugTextureShader); */
+  // DrawTexturedQuad(&RG->DebugColorTextureShader);
+  /* SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight)); */
 #endif
 
   AssertNoGlErrors;
@@ -1167,8 +1175,8 @@ GameInit( platform *Plat, memory_arena *GameMemory)
 
   AssertNoGlErrors;
 
-  RenderGroup *RG = PUSH_STRUCT_CHECKED(RenderGroup, GameState->Memory, 1);
-  if (!InitializeRenderGroup(Plat, RG)) { Error("Initializing RenderGroup"); return False; }
+  g_buffer_render_group *RG = PUSH_STRUCT_CHECKED(g_buffer_render_group, GameState->Memory, 1);
+  if (!InitializeRenderGroup(Plat, RG)) { Error("Initializing g_buffer_render_group"); return False; }
 
   AssertNoGlErrors;
 

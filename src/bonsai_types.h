@@ -35,6 +35,11 @@ typedef uint64_t u64;
 typedef u64      umm;
 typedef double   r64;
 
+struct v2i
+{
+  s32 x, y;
+};
+
 struct v2
 {
   r32 x, y;
@@ -887,18 +892,15 @@ Volume(chunk_dimension Dim)
 
 v2 V2(float x,float y)
 {
-  v2 Result = {};
-
-  Result.x = x;
-  Result.y = y;
-
+  v2 Result = {x,y};
   return Result;
 }
 
-v2 V2(int x,int y)
+v2i
+V2i(s32 x, s32 y)
 {
-	v2 Result = V2((float)x, (float)y);
-	return Result;
+  v2i Result = {x,y};
+  return Result;
 }
 
 v2 operator+=(v2 P1, v2 P2)

@@ -75,8 +75,8 @@ struct game_state
   entity        *Player;
   camera        *Camera;
 
-  RenderGroup             *RG;
-  ShadowRenderGroup       *SG;
+  g_buffer_render_group *RG;
+  ShadowRenderGroup     *SG;
 
   memory_arena *Memory;
 

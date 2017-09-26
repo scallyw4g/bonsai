@@ -13,6 +13,8 @@ DEBUG_GLOBAL float g_quad_vertex_buffer_data[] =
    1.0f,  1.0f, 1.0f,
 };
 
+typedef u32 framebuffer;
+
 struct RenderBasis
 {
   m4 ModelMatrix;
@@ -24,16 +26,23 @@ struct texture
 {
   u32 ID;
   u32 Uniform;
-  v2 Dim;
+  v2i Dim;
 };
 
-struct RenderGroup
+struct ao_render_group
+{
+  framebuffer Framebuffer;
+  texture AoTexture;
+  shader AoShader;
+};
+
+struct g_buffer_render_group
 {
   u32 FBO;
-  u32 ColorTexture;
   u32 NormalTexture;
   u32 PositionTexture;
 
+  texture ColorTexture;
   texture DepthTexture;
   texture SsaoNoiseTexture;
 
@@ -68,7 +77,7 @@ struct RenderGroup
   u32 SsaoKernelUniform;
   //
 
-  simple_texture_shader SimpleTextureShader;
+  shader DebugColorTextureShader;
 
   RenderBasis Basis;
 };
@@ -78,6 +87,8 @@ struct ShadowRenderGroup
   u32 MVP_ID;
 
   texture Texture;
+
+  shader DebugTextureShader;
 
   shader DepthShader;
   u32 FramebufferName;

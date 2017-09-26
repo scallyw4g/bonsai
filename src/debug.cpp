@@ -142,9 +142,6 @@ CalculateFramePercentage(debug_profile_entry *Entry, u64 CycleDelta)
   return FramePerc;
 }
 
-
-// FIXME(Jesse): The collation must happen before rendering, which must happen
-// outside any timed_function(), such as GameUpdateAndRender..
 void
 DebugFrameEnd(r32 dt)
 {

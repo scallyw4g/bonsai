@@ -932,7 +932,7 @@ BufferWorldChunk(
     world *World,
     world_chunk *Chunk,
     camera *Camera,
-    RenderGroup *RG
+    g_buffer_render_group *RG
   )
 {
   if (Chunk->Data->BoundaryVoxelCount == 0)

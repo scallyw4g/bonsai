@@ -7,28 +7,24 @@ out vec4 color;
 
 in vec2 UV;
 
+// This must match the corresponding define in constants.h
+const int SSAO_KERNEL_SIZE = 16;
+const vec3 UP = vec3(0,0,1);
+
+
 uniform sampler2D gColor;
-uniform sampler2D gNormal;
 uniform sampler2D gPosition;
+uniform sampler2D gNormal;
+uniform sampler2D shadowMap;
 
 uniform sampler2D SsaoNoiseTexture;
 uniform vec2 SsaoNoiseTile;
 
-uniform sampler2D shadowMap;
-// uniform sampler2DShadow shadowMap;
-
-// This must match the corresponding define in constants.h
-const int SSAO_KERNEL_SIZE = 8;
-
-const vec3 UP = vec3(0,0,1);
-
-uniform vec3 CameraPos;
 uniform vec3 GlobalLightPosition;
 uniform mat4 shadowMVP;
 uniform mat4 ViewMatrix;
 uniform mat4 ProjectionMatrix;
 uniform vec3 SsaoKernel[SSAO_KERNEL_SIZE];
-
 
 float exposure = 1.0f;
 float gamma = 2.2f;
@@ -85,7 +81,13 @@ void main()
   vec3 Front = cross(FragNormal, Right);
   mat3 Reorientation = mat3(Right, Front, FragNormal);
 
-  float AO = 0.0;
+  // NOTE(Jesse): I was getting some artifacts when at 90deg to a surface so I
+  // added a bias to the sample.
+  float AoSampleBias = 0.00005f;
+
+  float AO = 1.0f;
+  float OccluderContribution = 1.0f/float(SSAO_KERNEL_SIZE);
+
   for ( int KernelIndex = 0;
         KernelIndex < SSAO_KERNEL_SIZE;
         ++KernelIndex)
@@ -105,22 +107,19 @@ void main()
     SampleUV = SampleUV.xy * 0.5 + 0.5;
 
     // get Sample depth:
-    float sampleDepth = texture(gPosition, SampleUV.xy).w;
+    float sampleDepth = texture(gPosition, SampleUV.xy).w + AoSampleBias;;
 
     bool Occluded = sampleDepth <= fragDepth;
 
     float Diff = abs(fragDepth - sampleDepth);
-    bool InsideRadius = Diff < 0.001f; // TODO(Jesse): In the john-chapman article this was the radius value - how?
+    bool InsideRadius = Diff < 0.0016f; // TODO(Jesse): In the john-chapman article this was the radius value - how?
 
     if (Occluded && InsideRadius)
     {
-      AO += 1.0f;
+      AO -= OccluderContribution;
     }
 
   }
-
-  AO = 1.0f - (AO / float(SSAO_KERNEL_SIZE));
-
 
 
 
@@ -163,12 +162,13 @@ void main()
   vec3 mapped = hdrColor / (hdrColor + vec3(1.0f));
 
   // Gamma correction
-  mapped.rgb = vec3(AO);
+  /* mapped.rgb = vec3(AO); */
   color = vec4(pow(mapped, vec3(1.0f / gamma)), 1.0f);
 
   /* color = vec4(0,0,0,1); */
 
-  /* color.rgb = Diffuse; */
+  //color.rgb = Diffuse;
   /* color.rgb = Noise; */
+  color.rgb = vec3(AO);
 
 }

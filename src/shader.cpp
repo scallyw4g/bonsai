@@ -104,10 +104,10 @@ LoadShaders(const char * VertShaderPath, const char * FragFilePath)
     Error("%s", &ProgramErrorMessage[0]);
   }
 
-  
+
   GL_Global->glDetachShader(ProgramID, VertexShaderID);
   GL_Global->glDetachShader(ProgramID, FragmentShaderID);
-  
+
   GL_Global->glDeleteShader(VertexShaderID);
   GL_Global->glDeleteShader(FragmentShaderID);
 
