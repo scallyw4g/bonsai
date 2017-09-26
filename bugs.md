@@ -1,3 +1,11 @@
+# Sept 26 2017 - 4:00 - closed - Extra texture being bound
+* opengl
+* init
+* lifecycle
+* texture
+I had an old depth texture which was not needed in the shader but was being
+bound to its default uniform value of 0.  Very bad
+
 # Sept 22 2017 - 2:00 - closed - Shadow Mapping
 * opengl
 * texture

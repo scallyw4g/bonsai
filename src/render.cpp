@@ -218,8 +218,7 @@ GLOBAL_VARIABLE m4 IdentityMatrix = {V4(1, 0, 0 ,0),
 texture
 GenTexture(v2i Dim)
 {
-  texture Texture = {};
-  Texture.Dim = Dim;
+  texture Texture(Dim);
 
   glGenTextures(1, &Texture.ID);
   Assert(Texture.ID);
@@ -570,14 +569,11 @@ GetShadowMapMVP(camera *Camera)
 void
 ActivateAndBindTexture(u32 *TextureUnit, texture *Texture)
 {
-  Info("Binding Texture ID: %u to texture Uniform %u", Texture->ID, Texture->Uniform);
-
   GL_Global->glActiveTexture(GL_TEXTURE0 + *TextureUnit);
-  AssertNoGlErrors;
-  glBindTexture(GL_TEXTURE_2D, Texture->ID);
-  AssertNoGlErrors;
   GL_Global->glUniform1i(Texture->Uniform, *TextureUnit);
-  AssertNoGlErrors;
+  Assert(Texture->Uniform != -1);
+
+  glBindTexture(GL_TEXTURE_2D, Texture->ID);
 
   (*TextureUnit)++;
   return;
@@ -619,17 +615,13 @@ DrawTexturedQuad(shader *SimpleTextureShader)
   r32 Scale = 0.4f;
 
   glDepthFunc(GL_LEQUAL);
-  AssertNoGlErrors;
 
   texture *Texture = SimpleTextureShader->FirstUniform.Texture;
   SetViewport( V2(Texture->Dim.x, Texture->Dim.y)*Scale );
-  AssertNoGlErrors;
 
   glUseProgram(SimpleTextureShader->ID);
-  AssertNoGlErrors;
 
   BindShaderUniforms(SimpleTextureShader);
-  AssertNoGlErrors;
 
   RenderQuad();
   AssertNoGlErrors;
@@ -676,15 +668,12 @@ DrawGBufferToFullscreenQuad( platform *Plat, g_buffer_render_group *RG, ShadowRe
 
   m4 shadowMVP = biasMatrix * GetShadowMapMVP(Camera);
   GL_Global->glUniformMatrix4fv(RG->DepthBiasMVPID, 1, GL_FALSE, &shadowMVP.E[0].E[0]);
-  AssertNoGlErrors;
 
   m4 ViewMat = RG->Basis.ViewMatrix;
   GL_Global->glUniformMatrix4fv(RG->ViewMatrixUniform, 1, GL_FALSE, &ViewMat.E[0].E[0]);
-  AssertNoGlErrors;
 
   m4 ProjMat = RG->Basis.ProjectionMatrix;
   GL_Global->glUniformMatrix4fv(RG->ProjectionMatrixUniform, 1, GL_FALSE, &ProjMat.E[0].E[0]);
-  AssertNoGlErrors;
 
   u32 TexUnit = 0;
   ActivateAndBindTexture(&TexUnit, &RG->ColorTexture);
@@ -692,34 +681,28 @@ DrawGBufferToFullscreenQuad( platform *Plat, g_buffer_render_group *RG, ShadowRe
   GL_Global->glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_2D, RG->NormalTexture);
   GL_Global->glUniform1i(RG->NormalTextureUniform, 1);
-  AssertNoGlErrors;
 
   GL_Global->glActiveTexture(GL_TEXTURE2);
   glBindTexture(GL_TEXTURE_2D, RG->PositionTexture);
   GL_Global->glUniform1i(RG->PositionTextureUniform, 2);
-  AssertNoGlErrors;
 
   GL_Global->glActiveTexture(GL_TEXTURE3);
   glBindTexture(GL_TEXTURE_2D, SG->Texture.ID);
   GL_Global->glUniform1i(RG->ShadowMapTextureUniform, 3);
-  AssertNoGlErrors;
 
   GL_Global->glActiveTexture(GL_TEXTURE4);
   glBindTexture(GL_TEXTURE_2D, RG->SsaoNoiseTexture.ID);
   GL_Global->glUniform1i(RG->SsaoNoiseTexture.Uniform, 4);
-  AssertNoGlErrors;
 
   v2 NoiseTile = V2(SCR_WIDTH/RG->SsaoNoiseTexture.Dim.x, SCR_HEIGHT/RG->SsaoNoiseTexture.Dim.y);
   static u32 SsaoNoiseTileUniform = GetShaderUniform(&RG->LightingShader, "SsaoNoiseTile"); // FIXME(Jesse): Store this
   GL_Global->glUniform2fv(SsaoNoiseTileUniform, 1, &NoiseTile.x);
-  AssertNoGlErrors;
 
   GL_Global->glUniform3fv(RG->SsaoKernelUniform, SSAO_KERNEL_SIZE, &RG->SsaoKernel[0].E[0]);
 
-  AssertNoGlErrors;
   RenderQuad();
-
   AssertNoGlErrors;
+
   return;
 }
 

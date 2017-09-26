@@ -25,8 +25,16 @@ struct RenderBasis
 struct texture
 {
   u32 ID;
-  u32 Uniform;
+  s32 Uniform;
   v2i Dim;
+
+  // Restrict default constructor because setting the Uniform property to 0 is
+  // dangerous..  0 is a valid uniform!
+  texture(v2i Dim) {
+    this->Dim = Dim;
+    this->Uniform = -1;
+  }
+
 };
 
 struct ao_render_group

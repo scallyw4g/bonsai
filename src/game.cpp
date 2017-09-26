@@ -1097,8 +1097,8 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
 
 #if DEBUG_DRAW_SHADOW_MAP_TEXTURE
-  /* DrawTexturedQuad(&SG->DebugTextureShader); */
-  // DrawTexturedQuad(&RG->DebugColorTextureShader);
+  DrawTexturedQuad(&SG->DebugTextureShader);
+  /* DrawTexturedQuad(&RG->DebugColorTextureShader); */
   /* SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight)); */
 #endif
 
