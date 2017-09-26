@@ -278,13 +278,16 @@ MakeDepthTexture(v2i Dim)
   return Texture;
 }
 
+#define GetShaderUniform(Shader, UniformName) \
+  GetShaderUniform_(Shader, UniformName, #Shader)
+
 s32
-GetShaderUniform(shader *Shader, const char *Name)
+GetShaderUniform_(shader *Shader, const char *UniformName, const char *ShaderName)
 {
-  s32 Result = GL_Global->glGetUniformLocation(Shader->ID, Name);
+  s32 Result = GL_Global->glGetUniformLocation(Shader->ID, UniformName);
   Assert(Result != -1);
 
-  Info(" Shader Uniform %s == %d" , Name, Result);
+  Info(" %s Uniform %s == %d" , ShaderName, UniformName, Result);
   return Result;
 }
 
@@ -354,12 +357,12 @@ InitializeRenderGroup( platform *Plat, g_buffer_render_group *RG )
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
   glBindTexture(GL_TEXTURE_2D, 0);
 
-  RG->DepthTexture = MakeDepthTexture( V2i(SCR_WIDTH, SCR_HEIGHT) );
+  texture DepthTexture = MakeDepthTexture( V2i(SCR_WIDTH, SCR_HEIGHT) );
 
   GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, RG->ColorTexture.ID, 0);
   GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, RG->NormalTexture,   0);
   GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, RG->PositionTexture, 0);
-  GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT , GL_TEXTURE_2D, RG->DepthTexture.ID, 0);
+  GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,  GL_TEXTURE_2D, DepthTexture.ID, 0);
 
   AssertNoGlErrors;
 
@@ -369,7 +372,7 @@ InitializeRenderGroup( platform *Plat, g_buffer_render_group *RG )
   if (GL_Global->glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     return false;
 
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glClear(GL_COLOR_BUFFER_BIT);
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
   RG->GBufferShader = LoadShaders( "SimpleVertexShader.vertexshader",
@@ -660,9 +663,6 @@ DrawGBufferToFullscreenQuad( platform *Plat, g_buffer_render_group *RG, ShadowRe
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
   SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight));
 
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
   GL_Global->glUseProgram(RG->LightingShader.ID);
 
   GL_Global->glUniform3fv(RG->GlobalLightPositionID, 1, &GlobalLightPosition.E[0]);
@@ -700,18 +700,13 @@ DrawGBufferToFullscreenQuad( platform *Plat, g_buffer_render_group *RG, ShadowRe
   AssertNoGlErrors;
 
   GL_Global->glActiveTexture(GL_TEXTURE3);
-  glBindTexture(GL_TEXTURE_2D, RG->DepthTexture.ID);
-  GL_Global->glUniform1i(RG->DepthTextureUniform, 3);
+  glBindTexture(GL_TEXTURE_2D, SG->Texture.ID);
+  GL_Global->glUniform1i(RG->ShadowMapTextureUniform, 3);
   AssertNoGlErrors;
 
   GL_Global->glActiveTexture(GL_TEXTURE4);
-  glBindTexture(GL_TEXTURE_2D, SG->Texture.ID);
-  GL_Global->glUniform1i(RG->ShadowMapTextureUniform, 4);
-  AssertNoGlErrors;
-
-  GL_Global->glActiveTexture(GL_TEXTURE5);
   glBindTexture(GL_TEXTURE_2D, RG->SsaoNoiseTexture.ID);
-  GL_Global->glUniform1i(RG->SsaoNoiseTexture.Uniform, 5);
+  GL_Global->glUniform1i(RG->SsaoNoiseTexture.Uniform, 4);
   AssertNoGlErrors;
 
   v2 NoiseTile = V2(SCR_WIDTH/RG->SsaoNoiseTexture.Dim.x, SCR_HEIGHT/RG->SsaoNoiseTexture.Dim.y);
@@ -723,9 +718,6 @@ DrawGBufferToFullscreenQuad( platform *Plat, g_buffer_render_group *RG, ShadowRe
 
   AssertNoGlErrors;
   RenderQuad();
-
-  AssertNoGlErrors;
-  glDisable(GL_BLEND);
 
   AssertNoGlErrors;
   return;

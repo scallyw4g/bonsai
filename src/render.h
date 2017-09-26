@@ -43,7 +43,6 @@ struct g_buffer_render_group
   u32 PositionTexture;
 
   texture ColorTexture;
-  texture DepthTexture;
   texture SsaoNoiseTexture;
 
   v3 SsaoKernel[SSAO_KERNEL_SIZE];

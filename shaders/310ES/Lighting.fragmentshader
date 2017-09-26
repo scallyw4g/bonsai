@@ -155,7 +155,7 @@ void main()
    */
   vec3 hdrColor =
     Ambient
-    + Diffuse * GlobalLightCosTheta * GlobalLightIntensity * vec3(visibility) * vec3(AO)
+    + Diffuse * GlobalLightCosTheta * GlobalLightIntensity * vec3(visibility) //  * vec3(AO)
   ;
 
   // Reinhard tone mapping
@@ -165,10 +165,6 @@ void main()
   /* mapped.rgb = vec3(AO); */
   color = vec4(pow(mapped, vec3(1.0f / gamma)), 1.0f);
 
-  /* color = vec4(0,0,0,1); */
-
-  //color.rgb = Diffuse;
   /* color.rgb = Noise; */
-  color.rgb = vec3(AO);
 
 }

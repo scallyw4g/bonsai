@@ -1081,12 +1081,14 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
     DrawFolie(&World->Mesh, Camera, AABB);
   }
 
-  ao_render_group AoGroup = {};
+  /* ao_render_group AoGroup = {}; */
 
   RenderToGBuffer(Plat, &World->Mesh, RG, SG, Camera);
-  /* AssertNoGlErrors; */
-  /* RenderAoTexture( Plat, RG, &AoGroup, Camera, World->ChunkDim); */
   AssertNoGlErrors;
+
+  /* RenderAoTexture( Plat, RG, &AoGroup, Camera, World->ChunkDim); */
+  /* AssertNoGlErrors; */
+
   DrawGBufferToFullscreenQuad( Plat, RG, SG, Camera, World->ChunkDim);
   AssertNoGlErrors;
 
