@@ -25,16 +25,7 @@ struct RenderBasis
 struct texture
 {
   u32 ID;
-  s32 Uniform;
   v2i Dim;
-
-  // Restrict default constructor because setting the Uniform property to 0 is
-  // dangerous..  0 is a valid uniform!
-  texture(v2i Dim) {
-    this->Dim = Dim;
-    this->Uniform = -1;
-  }
-
 };
 
 struct ao_render_group
@@ -50,8 +41,7 @@ struct g_buffer_render_group
   u32 NormalTexture;
   u32 PositionTexture;
 
-  texture ColorTexture;
-  texture SsaoNoiseTexture;
+  texture *SsaoNoiseTexture;
 
   v3 SsaoKernel[SSAO_KERNEL_SIZE];
 
@@ -92,8 +82,6 @@ struct g_buffer_render_group
 struct ShadowRenderGroup
 {
   u32 MVP_ID;
-
-  texture Texture;
 
   shader DebugTextureShader;
 

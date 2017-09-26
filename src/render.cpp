@@ -215,15 +215,16 @@ GLOBAL_VARIABLE m4 IdentityMatrix = {V4(1, 0, 0 ,0),
                                      V4(0, 0, 1 ,0),
                                      V4(0, 0, 0 ,0)};
 
-texture
-GenTexture(v2i Dim)
+texture *
+GenTexture(v2i Dim, memory_arena *Mem)
 {
-  texture Texture(Dim);
+  texture *Texture = PUSH_STRUCT_CHECKED(texture, Mem, 1);
+  Texture->Dim = Dim;
 
-  glGenTextures(1, &Texture.ID);
-  Assert(Texture.ID);
+  glGenTextures(1, &Texture->ID);
+  Assert(Texture->ID);
 
-  glBindTexture(GL_TEXTURE_2D, Texture.ID);
+  glBindTexture(GL_TEXTURE_2D, Texture->ID);
 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -236,26 +237,26 @@ GenTexture(v2i Dim)
   return Texture;
 }
 
-texture
-MakeTexture_RGBA(v2i Dim, const void* Data)
+texture *
+MakeTexture_RGBA(v2i Dim, const void* Data, memory_arena *Mem)
 {
-  texture Texture = GenTexture(Dim);
+  texture *Texture = GenTexture(Dim, Mem);
 
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
-      Texture.Dim.x, Texture.Dim.y, 0,  GL_RGBA, GL_FLOAT, Data);
+      Texture->Dim.x, Texture->Dim.y, 0,  GL_RGBA, GL_FLOAT, Data);
 
   glBindTexture(GL_TEXTURE_2D, 0);
 
   return Texture;
 }
 
-texture
-MakeTexture_RGB(v2i Dim, const void* Data)
+texture *
+MakeTexture_RGB(v2i Dim, const void* Data, memory_arena *Mem)
 {
-  texture Texture = GenTexture(Dim);
+  texture *Texture = GenTexture(Dim, Mem);
 
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB,
-      Texture.Dim.x, Texture.Dim.y, 0,  GL_RGB, GL_FLOAT, Data);
+      Texture->Dim.x, Texture->Dim.y, 0,  GL_RGB, GL_FLOAT, Data);
 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -265,12 +266,12 @@ MakeTexture_RGB(v2i Dim, const void* Data)
   return Texture;
 }
 
-texture
-MakeDepthTexture(v2i Dim)
+texture *
+MakeDepthTexture(v2i Dim, memory_arena *Mem)
 {
-  texture Texture = GenTexture(Dim);
+  texture *Texture = GenTexture(Dim, Mem);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32,
-    Texture.Dim.x, Texture.Dim.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+    Texture->Dim.x, Texture->Dim.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 
   glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -331,16 +332,20 @@ MakeSimpleTextureShader(texture *Texture)
   return SimpleTextureShader;
 }
 
+static s32 Global_SsaoNoiseTextureUniform;
+static s32 Global_ColorTextureUniform;
+static texture *Global_ColorTexture;
+
 bool
-InitializeRenderGroup( platform *Plat, g_buffer_render_group *RG )
+InitializeRenderGroup( platform *Plat, g_buffer_render_group *RG, memory_arena *GraphicsMemory )
 {
   RG->Basis.ModelMatrix = IdentityMatrix;
 
   GL_Global->glGenFramebuffers(1, &RG->FBO);
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO);
 
-  RG->ColorTexture = MakeTexture_RGBA( V2i(SCR_WIDTH, SCR_HEIGHT), 0);
-  RG->DebugColorTextureShader = MakeSimpleTextureShader(&RG->ColorTexture);
+  Global_ColorTexture = MakeTexture_RGBA( V2i(SCR_WIDTH, SCR_HEIGHT), 0, GraphicsMemory);
+  RG->DebugColorTextureShader = MakeSimpleTextureShader(Global_ColorTexture);
 
   glGenTextures(1, &RG->NormalTexture);
   glBindTexture(GL_TEXTURE_2D, RG->NormalTexture);
@@ -356,12 +361,12 @@ InitializeRenderGroup( platform *Plat, g_buffer_render_group *RG )
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
   glBindTexture(GL_TEXTURE_2D, 0);
 
-  texture DepthTexture = MakeDepthTexture( V2i(SCR_WIDTH, SCR_HEIGHT) );
+  texture *DepthTexture = MakeDepthTexture( V2i(SCR_WIDTH, SCR_HEIGHT), GraphicsMemory );
 
-  GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, RG->ColorTexture.ID, 0);
+  GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, Global_ColorTexture->ID, 0);
   GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, RG->NormalTexture,   0);
   GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, RG->PositionTexture, 0);
-  GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,  GL_TEXTURE_2D, DepthTexture.ID, 0);
+  GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,  GL_TEXTURE_2D, DepthTexture->ID, 0);
 
   AssertNoGlErrors;
 
@@ -393,7 +398,7 @@ InitializeRenderGroup( platform *Plat, g_buffer_render_group *RG )
   RG->ViewMatrixUniform       = GetShaderUniform(&RG->LightingShader, "ViewMatrix");
   RG->ProjectionMatrixUniform = GetShaderUniform(&RG->LightingShader, "ProjectionMatrix");
 
-  RG->ColorTexture.Uniform     = GetShaderUniform(&RG->LightingShader, "gColor");
+  Global_ColorTextureUniform = GetShaderUniform(&RG->LightingShader, "gColor");
 
   //
   // Quad vertex buffer
@@ -415,10 +420,10 @@ InitializeRenderGroup( platform *Plat, g_buffer_render_group *RG )
     v3 SsaoNoise[Area(SsaoNoiseDim)] = {};
     InitSsaoNoise(&SsaoNoise[0], ArrayCount(SsaoNoise), &SsaoEntropy);
 
-    RG->SsaoNoiseTexture = MakeTexture_RGB( SsaoNoiseDim, &SsaoNoise);
+    RG->SsaoNoiseTexture = MakeTexture_RGB(SsaoNoiseDim, &SsaoNoise, GraphicsMemory);
     AssertNoGlErrors;
 
-    RG->SsaoNoiseTexture.Uniform = GetShaderUniform(&RG->LightingShader, "SsaoNoiseTexture");
+    Global_SsaoNoiseTextureUniform = GetShaderUniform(&RG->LightingShader, "SsaoNoiseTexture");
 
   }
 
@@ -446,15 +451,15 @@ InitializeRenderGroup( platform *Plat, g_buffer_render_group *RG )
 }
 
 bool
-InitializeShadowBuffer(ShadowRenderGroup *SG)
+InitializeShadowBuffer(ShadowRenderGroup *SG, memory_arena *GraphicsMemory)
 {
   // The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
   GL_Global->glGenFramebuffers(1, &SG->FramebufferName);
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
 
-  SG->Texture = MakeDepthTexture( V2i(SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y) );
+  texture *Texture = MakeDepthTexture( V2i(SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y), GraphicsMemory);
   GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-      GL_TEXTURE_2D, SG->Texture.ID, 0);
+      GL_TEXTURE_2D, Texture->ID, 0);
 
   // TODO(Jesse): Not present on ES2 .. should we use them?
   // No color output in the bound framebuffer, only depth.
@@ -462,7 +467,7 @@ InitializeShadowBuffer(ShadowRenderGroup *SG)
   /* glReadBuffer(GL_NONE); */
 
   // For debug-only visualization of this texture
-  SG->DebugTextureShader = MakeSimpleTextureShader(&SG->Texture);
+  SG->DebugTextureShader = MakeSimpleTextureShader(Texture);
 
   SG->DepthShader = LoadShaders( "DepthRTT.vertexshader", "DepthRTT.fragmentshader");
   SG->MVP_ID = GetShaderUniform(&SG->DepthShader, "depthMVP");
@@ -567,11 +572,12 @@ GetShadowMapMVP(camera *Camera)
 }
 
 void
-ActivateAndBindTexture(u32 *TextureUnit, texture *Texture)
+ActivateAndBindTexture(u32 *TextureUnit, texture *Texture, s32 ShaderUniformID)
 {
+  Assert(ShaderUniformID != -1);
+
   GL_Global->glActiveTexture(GL_TEXTURE0 + *TextureUnit);
-  GL_Global->glUniform1i(Texture->Uniform, *TextureUnit);
-  Assert(Texture->Uniform != -1);
+  GL_Global->glUniform1i(ShaderUniformID, *TextureUnit);
 
   glBindTexture(GL_TEXTURE_2D, Texture->ID);
 
@@ -595,7 +601,7 @@ BindShaderUniforms(shader *Shader)
         Assert(TextureOffset < 8); // TODO(Jesse): Query max gpu textures?
 
         texture *Texture = Uniform->Texture;
-        ActivateAndBindTexture(&TextureOffset, Texture);
+        ActivateAndBindTexture(&TextureOffset, Texture, Uniform->ID);
       } break;
 
       case ShaderUniform_M4:
@@ -676,7 +682,7 @@ DrawGBufferToFullscreenQuad( platform *Plat, g_buffer_render_group *RG, ShadowRe
   GL_Global->glUniformMatrix4fv(RG->ProjectionMatrixUniform, 1, GL_FALSE, &ProjMat.E[0].E[0]);
 
   u32 TexUnit = 0;
-  ActivateAndBindTexture(&TexUnit, &RG->ColorTexture);
+  ActivateAndBindTexture(&TexUnit, Global_ColorTexture, Global_ColorTextureUniform);
 
   GL_Global->glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_2D, RG->NormalTexture);
@@ -687,14 +693,10 @@ DrawGBufferToFullscreenQuad( platform *Plat, g_buffer_render_group *RG, ShadowRe
   GL_Global->glUniform1i(RG->PositionTextureUniform, 2);
 
   GL_Global->glActiveTexture(GL_TEXTURE3);
-  glBindTexture(GL_TEXTURE_2D, SG->Texture.ID);
-  GL_Global->glUniform1i(RG->ShadowMapTextureUniform, 3);
+  glBindTexture(GL_TEXTURE_2D, RG->SsaoNoiseTexture->ID);
+  GL_Global->glUniform1i(Global_SsaoNoiseTextureUniform, 3);
 
-  GL_Global->glActiveTexture(GL_TEXTURE4);
-  glBindTexture(GL_TEXTURE_2D, RG->SsaoNoiseTexture.ID);
-  GL_Global->glUniform1i(RG->SsaoNoiseTexture.Uniform, 4);
-
-  v2 NoiseTile = V2(SCR_WIDTH/RG->SsaoNoiseTexture.Dim.x, SCR_HEIGHT/RG->SsaoNoiseTexture.Dim.y);
+  v2 NoiseTile = V2(SCR_WIDTH/RG->SsaoNoiseTexture->Dim.x, SCR_HEIGHT/RG->SsaoNoiseTexture->Dim.y);
   static u32 SsaoNoiseTileUniform = GetShaderUniform(&RG->LightingShader, "SsaoNoiseTile"); // FIXME(Jesse): Store this
   GL_Global->glUniform2fv(SsaoNoiseTileUniform, 1, &NoiseTile.x);
 

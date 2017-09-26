@@ -1172,13 +1172,15 @@ GameInit( platform *Plat, memory_arena *GameMemory)
   game_state *GameState = PUSH_STRUCT_CHECKED(game_state, GameMemory, 1);
   GameState->Memory = GameMemory;
 
+  //FIXME(Jesse): Sub-arena for GraphicsMemory
   ShadowRenderGroup *SG = PUSH_STRUCT_CHECKED(ShadowRenderGroup, GameState->Memory, 1);
-  if (!InitializeShadowBuffer(SG)) { Error("Initializing Shadow Buffer"); return False; }
+  if (!InitializeShadowBuffer(SG, GameState->Memory)) { Error("Initializing Shadow Buffer"); return False; }
 
   AssertNoGlErrors;
 
+  //FIXME(Jesse): Sub-arena for GraphicsMemory
   g_buffer_render_group *RG = PUSH_STRUCT_CHECKED(g_buffer_render_group, GameState->Memory, 1);
-  if (!InitializeRenderGroup(Plat, RG)) { Error("Initializing g_buffer_render_group"); return False; }
+  if (!InitializeRenderGroup(Plat, RG, GameState->Memory)) { Error("Initializing g_buffer_render_group"); return False; }
 
   AssertNoGlErrors;
 

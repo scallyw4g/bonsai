@@ -17,7 +17,6 @@ struct shader_uniform
   b32 Initialized;
 
   union {
-    u64 Data;
     texture *Texture;
   };
 
