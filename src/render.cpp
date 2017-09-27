@@ -687,25 +687,11 @@ GetShadowMapMVP(camera *Camera)
 }
 
 void
-ActivateAndBindTexture(u32 *TextureUnit, texture *Texture, s32 ShaderUniformID)
-{
-  Assert(ShaderUniformID != -1);
-
-  GL_Global->glActiveTexture(GL_TEXTURE0 + *TextureUnit);
-  GL_Global->glUniform1i(ShaderUniformID, *TextureUnit);
-
-  glBindTexture(GL_TEXTURE_2D, Texture->ID);
-
-  (*TextureUnit)++;
-  return;
-}
-
-void
 BindShaderUniforms(shader *Shader)
 {
   shader_uniform *Uniform = Shader->FirstUniform;
 
-  u32 TextureOffset = 0;
+  u32 TextureUnit = 0;
 
   while (Uniform)
   {
@@ -713,10 +699,13 @@ BindShaderUniforms(shader *Shader)
     {
       case ShaderUniform_Texture:
       {
-        Assert(TextureOffset < 8); // TODO(Jesse): Query max gpu textures?
+        Assert(TextureUnit < 8); // TODO(Jesse): Query max gpu textures?
 
-        texture *Texture = Uniform->Texture;
-        ActivateAndBindTexture(&TextureOffset, Texture, Uniform->ID);
+        GL_Global->glActiveTexture(GL_TEXTURE0 + TextureUnit);
+        GL_Global->glUniform1i(Uniform->ID, TextureUnit);
+        glBindTexture(GL_TEXTURE_2D, Uniform->Texture->ID);
+
+        TextureUnit++;
       } break;
 
       case ShaderUniform_M4:
