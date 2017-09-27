@@ -13,6 +13,8 @@
 
 GLOBAL_VARIABLE u32 Global_QuadVertexBuffer = 0;
 
+GLOBAL_VARIABLE v3 GlobalLightPosition = {0.20f, 0.0f, 1.0f};
+
 GLOBAL_VARIABLE m4 NdcToScreenSpace = {
   V4(0.5, 0.0, 0.0, 0.0),
   V4(0.0, 0.5, 0.0, 0.0),
@@ -340,11 +342,19 @@ PushShaderUniform( memory_arena *Mem, const char *Name, m4 *Matrix)
 }
 
 shader_uniform *
+PushShaderUniform( memory_arena *Mem, const char *Name, v3 *Vector3)
+{
+  shader_uniform *Uniform = PushShaderUniform(Mem, Name);
+  Uniform->Vector3 = Vector3;
+  Uniform->Type = ShaderUniform_Vector3;
+  return Uniform;
+}
+
+shader_uniform *
 GetTextureUniform(memory_arena *Mem, shader *Shader, texture *Tex, const char *Name)
 {
   shader_uniform *Uniform = PushShaderUniform(Mem, Name, Tex);
   Uniform->ID = GetShaderUniform(Shader, Name);
-
   return Uniform;
 }
 
@@ -353,7 +363,14 @@ GetM4Uniform(memory_arena *Mem, shader *Shader, m4 *Matrix, const char *Name)
 {
   shader_uniform *Uniform = PushShaderUniform(Mem, Name, Matrix);
   Uniform->ID = GetShaderUniform(Shader, Name);
+  return Uniform;
+}
 
+shader_uniform *
+GetV3Uniform(memory_arena *Mem, shader *Shader, v3 *Vector3, const char *Name)
+{
+  shader_uniform *Uniform = PushShaderUniform(Mem, Name, Vector3);
+  Uniform->ID = GetShaderUniform(Shader, Name);
   return Uniform;
 }
 
@@ -425,6 +442,9 @@ MakeLightingShader(memory_arena *GraphicsMemory,
   Current = &(*Current)->Next;
 
   *Current = GetM4Uniform(GraphicsMemory, &Shader, ShadowMVP, "ShadowMVP");
+  Current = &(*Current)->Next;
+
+  *Current = GetV3Uniform(GraphicsMemory, &Shader, &GlobalLightPosition, "GlobalLightPosition");
   Current = &(*Current)->Next;
 
   return Shader;
@@ -539,8 +559,6 @@ InitGbufferRenderGroup( platform *Plat, g_buffer_render_group *gBuffer, memory_a
     return false;
 
 
-  gBuffer->gBufferShader = CreateGbufferShader(GraphicsMemory, &gBuffer->ViewProjection);
-
 
   texture *SsaoNoiseTexture = 0;
   { // TODO(Jesse): Pull this into a Ssao shader
@@ -564,10 +582,10 @@ InitGbufferRenderGroup( platform *Plat, g_buffer_render_group *gBuffer, memory_a
       ColorTexture, NormalTexture, PositionTexture, ShadowMap, SsaoNoiseTexture,
       &gBuffer->ViewProjection, &gBuffer->ShadowMVP);
 
+  gBuffer->gBufferShader = CreateGbufferShader(GraphicsMemory, &gBuffer->ViewProjection);
+
   gBuffer->SsaoKernelUniform = GetShaderUniform(&gBuffer->LightingShader, "SsaoKernel");
   gBuffer->SsaoNoiseTileUniform = GetShaderUniform(&gBuffer->LightingShader, "SsaoNoiseTile");
-
-  gBuffer->GlobalLightPositionID   = GetShaderUniform(&gBuffer->LightingShader, "GlobalLightPosition");
 
   { // To keep these here or not to keep these here..
     gBuffer->DebugColorTextureShader = MakeSimpleTextureShader(ColorTexture, GraphicsMemory);
@@ -674,9 +692,6 @@ DEBUG_DrawPointMarker( mesh_buffer_target *Mesh, v3 RenderP, int ColorIndex, v3 
   return;
 }
 
-#define GLOBAL_LIGHT_OFFSET Normalize(V3( 0.20f, 0.0f, 1.0f))
-GLOBAL_VARIABLE v3 GlobalLightPosition = {};
-
 inline m4
 GetShadowMapMVP(camera *Camera)
 {
@@ -688,13 +703,11 @@ GetShadowMapMVP(camera *Camera)
                                           SHADOW_MAP_Z_MAX,
                                           Translate);
 
-  v3 Target = V3(0,0,0);
-  GlobalLightPosition = Target + GLOBAL_LIGHT_OFFSET;
-
-  v3 Front = Normalize(Target - GlobalLightPosition);
+  v3 Front = GlobalLightPosition;
   v3 Right = Cross( Front, V3(0,1,0) );
   v3 Up = Cross(Right, Front);
 
+  v3 Target = V3(0);
   m4 depthViewMatrix =  LookAt(GlobalLightPosition, Target, Up);
 
   return depthProjectionMatrix * depthViewMatrix;
@@ -725,6 +738,11 @@ BindShaderUniforms(shader *Shader)
       case ShaderUniform_M4:
       {
         GL_Global->glUniformMatrix4fv(Uniform->ID, 1, GL_FALSE, (r32*)Uniform->M4);
+      } break;
+
+      case ShaderUniform_Vector3:
+      {
+        GL_Global->glUniform3fv(Uniform->ID, 1, (r32*)Uniform->Vector3);
       } break;
 
       InvalidDefaultCase;
@@ -777,8 +795,6 @@ DrawGBufferToFullscreenQuad( platform *Plat, g_buffer_render_group *RG, ShadowRe
   SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight));
 
   GL_Global->glUseProgram(RG->LightingShader.ID);
-
-  GL_Global->glUniform3fv(RG->GlobalLightPositionID, 1, &GlobalLightPosition.E[0]);
 
   RG->ShadowMVP = NdcToScreenSpace * GetShadowMapMVP(Camera);
 

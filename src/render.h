@@ -47,8 +47,6 @@ struct g_buffer_render_group
 
   shader gBufferShader;
 
-  u32 GlobalLightPositionID;;
-
   // Lighting Shader
   m4 ViewProjection;
   m4 ShadowMVP;
