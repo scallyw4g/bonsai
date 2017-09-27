@@ -497,6 +497,9 @@ CreateGbufferShader(memory_arena *GraphicsMemory, m4 *ViewProjection)
   *Current = GetM4Uniform(GraphicsMemory, &Shader, ViewProjection, "ViewProjection");
   Current = &(*Current)->Next;
 
+  *Current = GetM4Uniform(GraphicsMemory, &Shader, &IdentityMatrix, "Model");
+  Current = &(*Current)->Next;
+
   return Shader;
 }
 
@@ -520,11 +523,8 @@ InitGbufferRenderGroup( platform *Plat, g_buffer_render_group *gBuffer, memory_a
   if (!CheckAndClearFramebuffer())
     return false;
 
+
   gBuffer->gBufferShader = CreateGbufferShader(GraphicsMemory, &gBuffer->ViewProjection);
-
-  gBuffer->gBuffer_ModelUniform  = GetShaderUniform(&gBuffer->gBufferShader, "Model");
-  /* gBuffer->LightPID             GetShaderUniform(&gBuffer->ShaderID, "LightP_worldspace"); */
-
 
 
   texture *SsaoNoiseTexture = 0;
@@ -852,7 +852,6 @@ RenderWorldToGBuffer( platform *Plat, mesh_buffer_target *Mesh, g_buffer_render_
   SetViewport( V2(SCR_WIDTH, SCR_HEIGHT) );
 
   BindShaderUniforms(&RG->gBufferShader);
-  GL_Global->glUniformMatrix4fv(RG->gBuffer_ModelUniform,   1, GL_FALSE, (r32*)&IdentityMatrix);
 
   // Vertices
   GL_Global->glEnableVertexAttribArray(0);

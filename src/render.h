@@ -45,10 +45,7 @@ struct g_buffer_render_group
   u32 vertexbuffer;
   u32 normalbuffer;
 
-  // GBuffer
   shader gBufferShader;
-  u32 gBuffer_ModelUniform;
-  //
 
   u32 GlobalLightPositionID;;
 
