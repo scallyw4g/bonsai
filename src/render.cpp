@@ -12,10 +12,27 @@
 #include <colors.h>
 
 GLOBAL_VARIABLE u32 Global_QuadVertexBuffer = 0;
+GLOBAL_VARIABLE b32 Global_QuadVertexBuffer_Initialized = False;
+
+void
+Init_Global_QuadVertexBuffer() {
+  Global_QuadVertexBuffer_Initialized = True;
+
+  GL_Global->glGenBuffers(1, &Global_QuadVertexBuffer);
+  Assert(Global_QuadVertexBuffer);
+  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, Global_QuadVertexBuffer);
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
+  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+  return;
+}
 
 void
 RenderQuad()
 {
+  if (!Global_QuadVertexBuffer_Initialized)
+    Init_Global_QuadVertexBuffer();
+
   GL_Global->glEnableVertexAttribArray(0);
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, Global_QuadVertexBuffer);
   GL_Global->glVertexAttribPointer(
@@ -29,6 +46,7 @@ RenderQuad()
 
   glDrawArrays(GL_TRIANGLES, 0, 6); // 2*3 indices starting at 0 -> 2 triangles
 
+  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, 0);
   GL_Global->glDisableVertexAttribArray(0);
 }
 
@@ -387,13 +405,6 @@ CreateGbuffer(memory_arena *Memory)
   g_buffer_render_group *gBuffer = PUSH_STRUCT_CHECKED(g_buffer_render_group, Memory, 1);
   gBuffer->FBO = GenFramebuffer();
   gBuffer->ViewProjection = IdentityMatrix;
-
-  { // TODO(Jesse): Pull this out of here
-    GL_Global->glGenBuffers(1, &Global_QuadVertexBuffer);
-    Assert(Global_QuadVertexBuffer);
-    GL_Global->glBindBuffer(GL_ARRAY_BUFFER, Global_QuadVertexBuffer);
-    GL_Global->glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
-  }
 
   GL_Global->glGenBuffers(1, &gBuffer->vertexbuffer);
   GL_Global->glGenBuffers(1, &gBuffer->colorbuffer);
