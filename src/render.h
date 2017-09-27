@@ -38,8 +38,6 @@ struct ao_render_group
 struct g_buffer_render_group
 {
   u32 FBO;
-  u32 NormalTexture;
-  u32 PositionTexture;
 
   texture *SsaoNoiseTexture;
 
@@ -75,6 +73,8 @@ struct g_buffer_render_group
   //
 
   shader DebugColorTextureShader;
+  shader DebugNormalTextureShader;
+  shader DebugPositionTextureShader;
 
   RenderBasis Basis;
 };

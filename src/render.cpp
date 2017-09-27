@@ -344,11 +344,20 @@ MakeSimpleTextureShader(texture *Texture, memory_arena *GraphicsMemory)
 }
 
 shader
-MakeLightingShader(memory_arena *GraphicsMemory, texture *ColorTexture)
+MakeLightingShader(memory_arena *GraphicsMemory, texture *ColorTexture, texture *NormalTexture)
 {
   shader Shader = LoadShaders( "Lighting.vertexshader", "Lighting.fragmentshader" );
 
-  Shader.FirstUniform = GetTextureUniform(&Shader, ColorTexture, "gColor", GraphicsMemory);
+  shader_uniform **Current = &Shader.FirstUniform;
+
+  *Current = GetTextureUniform(&Shader, ColorTexture, "gColor", GraphicsMemory);
+  Current = &(*Current)->Next;
+
+  *Current = GetTextureUniform(&Shader, NormalTexture, "gNormal", GraphicsMemory);
+  Current = &(*Current)->Next;
+
+  *Current = GetTextureUniform(&Shader, NormalTexture, "gNormal", GraphicsMemory);
+  Current = &(*Current)->Next;
 
   return Shader;
 }
@@ -363,29 +372,16 @@ InitializeRenderGroup( platform *Plat, g_buffer_render_group *RG, memory_arena *
   GL_Global->glGenFramebuffers(1, &RG->FBO);
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO);
 
-  texture *ColorTexture = MakeTexture_RGBA( V2i(SCR_WIDTH, SCR_HEIGHT), 0, GraphicsMemory);
-  RG->DebugColorTextureShader = MakeSimpleTextureShader(ColorTexture, GraphicsMemory);
+  v2i ScreenDim = V2i(SCR_WIDTH, SCR_HEIGHT);
+  texture *ColorTexture    = MakeTexture_RGBA( ScreenDim, 0, GraphicsMemory);
+  texture *NormalTexture   = MakeTexture_RGBA( ScreenDim, 0, GraphicsMemory);
+  texture *PositionTexture = MakeTexture_RGBA( ScreenDim, 0, GraphicsMemory);
+  texture *DepthTexture    = MakeDepthTexture( ScreenDim, GraphicsMemory );
 
-  glGenTextures(1, &RG->NormalTexture);
-  glBindTexture(GL_TEXTURE_2D, RG->NormalTexture);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
-  glBindTexture(GL_TEXTURE_2D, 0);
-
-  glGenTextures(1, &RG->PositionTexture);
-  glBindTexture(GL_TEXTURE_2D, RG->PositionTexture);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
-  glBindTexture(GL_TEXTURE_2D, 0);
-
-  texture *DepthTexture = MakeDepthTexture( V2i(SCR_WIDTH, SCR_HEIGHT), GraphicsMemory );
-
-  GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ColorTexture->ID, 0);
-  GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, RG->NormalTexture,   0);
-  GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, RG->PositionTexture, 0);
-  GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,  GL_TEXTURE_2D, DepthTexture->ID, 0);
+  GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ColorTexture->ID,    0);
+  GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, NormalTexture->ID,   0);
+  GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, PositionTexture->ID, 0);
+  GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,  GL_TEXTURE_2D, DepthTexture->ID,    0);
 
   AssertNoGlErrors;
 
@@ -406,7 +402,12 @@ InitializeRenderGroup( platform *Plat, g_buffer_render_group *RG, memory_arena *
   /* RG->LightPID             GetShaderUniform(&RG->ShaderID, "LightP_worldspace"); */
 
 
-  RG->LightingShader = MakeLightingShader(GraphicsMemory, ColorTexture);
+  RG->LightingShader = MakeLightingShader(GraphicsMemory, ColorTexture, NormalTexture);
+
+  RG->DebugColorTextureShader = MakeSimpleTextureShader(ColorTexture, GraphicsMemory);
+  RG->DebugNormalTextureShader = MakeSimpleTextureShader(NormalTexture, GraphicsMemory);
+  RG->DebugPositionTextureShader = MakeSimpleTextureShader(PositionTexture, GraphicsMemory);
+
 
   RG->DepthBiasMVPID          = GetShaderUniform(&RG->LightingShader, "shadowMVP");
   RG->ShadowMapTextureUniform = GetShaderUniform(&RG->LightingShader, "shadowMap");
@@ -698,14 +699,6 @@ DrawGBufferToFullscreenQuad( platform *Plat, g_buffer_render_group *RG, ShadowRe
   GL_Global->glUniformMatrix4fv(RG->ProjectionMatrixUniform, 1, GL_FALSE, &ProjMat.E[0].E[0]);
 
   BindShaderUniforms(&RG->LightingShader);
-
-  GL_Global->glActiveTexture(GL_TEXTURE1);
-  glBindTexture(GL_TEXTURE_2D, RG->NormalTexture);
-  GL_Global->glUniform1i(RG->NormalTextureUniform, 1);
-
-  GL_Global->glActiveTexture(GL_TEXTURE2);
-  glBindTexture(GL_TEXTURE_2D, RG->PositionTexture);
-  GL_Global->glUniform1i(RG->PositionTextureUniform, 2);
 
   GL_Global->glActiveTexture(GL_TEXTURE3);
   glBindTexture(GL_TEXTURE_2D, RG->SsaoNoiseTexture->ID);
