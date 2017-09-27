@@ -45,18 +45,12 @@ struct g_buffer_render_group
   u32 vertexbuffer;
   u32 normalbuffer;
 
+  shader LightingShader;
   shader gBufferShader;
 
-  // Lighting Shader
-  m4 ViewProjection;
+  // Cached here because this one gets pre-multiplied by the NdcToScreenSpace bias matrix
   m4 ShadowMVP;
-  u32 ViewProjectionUniform;
-
-  shader LightingShader;
-
-  u32 DepthBiasMVPID;
-  u32 CameraPosUniform;
-  //
+  m4 ViewProjection;
 
   // SSAO TODO(Jesse): Move to it's own shader!
   v3 SsaoKernel[SSAO_KERNEL_SIZE];
