@@ -28,8 +28,6 @@ struct texture
   v2i Dim;
 };
 
-typedef texture depth_texture;
-
 struct ao_render_group
 {
   framebuffer Framebuffer;

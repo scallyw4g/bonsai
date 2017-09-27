@@ -388,12 +388,23 @@ CreateGbuffer(memory_arena *Memory)
   gBuffer->FBO = GenFramebuffer();
   gBuffer->ViewProjection = IdentityMatrix;
 
+  { // TODO(Jesse): Pull this out of here
+    GL_Global->glGenBuffers(1, &Global_QuadVertexBuffer);
+    Assert(Global_QuadVertexBuffer);
+    GL_Global->glBindBuffer(GL_ARRAY_BUFFER, Global_QuadVertexBuffer);
+    GL_Global->glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
+  }
+
+  GL_Global->glGenBuffers(1, &gBuffer->vertexbuffer);
+  GL_Global->glGenBuffers(1, &gBuffer->colorbuffer);
+  GL_Global->glGenBuffers(1, &gBuffer->normalbuffer);
+
   return gBuffer;
 }
 
 
 void
-FramebufferDepthTexture(g_buffer_render_group *Group, depth_texture *Tex)
+FramebufferDepthTexture(g_buffer_render_group *Group, texture *Tex)
 {
   GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
       GL_TEXTURE_2D, Tex->ID, 0);
@@ -460,7 +471,7 @@ InitGbufferRenderGroup( platform *Plat, g_buffer_render_group *gBuffer, memory_a
 
 
   gBuffer->GBufferShader = LoadShaders( "SimpleVertexShader.vertexshader",
-                                   "SimpleFragmentShader.fragmentshader" );
+                                        "SimpleFragmentShader.fragmentshader" );
 
   gBuffer->gBuffer_ViewProjection = GetShaderUniform(&gBuffer->GBufferShader, "ViewProjection");
   gBuffer->gBuffer_ModelUniform  = GetShaderUniform(&gBuffer->GBufferShader, "Model");
@@ -497,17 +508,6 @@ InitGbufferRenderGroup( platform *Plat, g_buffer_render_group *gBuffer, memory_a
   gBuffer->PositionTextureUniform  = GetShaderUniform(&gBuffer->LightingShader, "gPosition");
   gBuffer->GlobalLightPositionID   = GetShaderUniform(&gBuffer->LightingShader, "GlobalLightPosition");
   gBuffer->ViewProjectionUniform   = GetShaderUniform(&gBuffer->LightingShader, "ViewProjection");
-
-  { // TODO(Jesse): Pull this out of here
-    GL_Global->glGenBuffers(1, &Global_QuadVertexBuffer);
-    Assert(Global_QuadVertexBuffer);
-    GL_Global->glBindBuffer(GL_ARRAY_BUFFER, Global_QuadVertexBuffer);
-    GL_Global->glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
-  }
-
-  GL_Global->glGenBuffers(1, &gBuffer->vertexbuffer);
-  GL_Global->glGenBuffers(1, &gBuffer->colorbuffer);
-  GL_Global->glGenBuffers(1, &gBuffer->normalbuffer);
 
   gBuffer->DebugColorTextureShader = MakeSimpleTextureShader(ColorTexture, GraphicsMemory);
   gBuffer->DebugNormalTextureShader = MakeSimpleTextureShader(NormalTexture, GraphicsMemory);
