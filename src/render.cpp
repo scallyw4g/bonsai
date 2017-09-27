@@ -278,17 +278,30 @@ MakeDepthTexture(v2i Dim, memory_arena *Mem)
   return Texture;
 }
 
-#define GetShaderUniform(Shader, UniformName) \
-  GetShaderUniform_(Shader, UniformName, #Shader)
-
+#define INVALID_SHADER_UNIFORM (-1)
 s32
-GetShaderUniform_(shader *Shader, const char *UniformName, const char *ShaderName)
+GetShaderUniform(shader *Shader, const char *UniformName)
 {
   s32 Result = GL_Global->glGetUniformLocation(Shader->ID, UniformName);
-  Assert(Result != -1);
+  if (Result == INVALID_SHADER_UNIFORM)
+  {
+    Error("Couldn't retreive %s shader uniform", UniformName);
+  }
 
-  Info(" %s Uniform %s == %d" , ShaderName, UniformName, Result);
   return Result;
+}
+
+shader_uniform *
+GetTextureUniform(shader *Shader, texture *Tex, const char *UniformName, memory_arena *Mem)
+{
+  shader_uniform *Uniform = PUSH_STRUCT_CHECKED(shader_uniform, Mem, 1);
+  Uniform->Type = ShaderUniform_Texture;
+  Uniform->Texture = Tex;
+
+  Uniform->ID = GetShaderUniform(Shader, UniformName);
+  Uniform->Name = UniformName;
+
+  return Uniform;
 }
 
 void
@@ -318,23 +331,29 @@ InitSsaoNoise(v3 *Noise, s32 Count, random_series *Entropy)
 }
 
 shader
-MakeSimpleTextureShader(texture *Texture)
+MakeSimpleTextureShader(texture *Texture, memory_arena *GraphicsMemory)
 {
   shader SimpleTextureShader = LoadShaders( "Passthrough.vertexshader",
                                             "SimpleTexture.fragmentshader" );
 
-  SimpleTextureShader.FirstUniform.Type = ShaderUniform_Texture;
-  SimpleTextureShader.FirstUniform.ID = GetShaderUniform(&SimpleTextureShader, "Texture");
-  SimpleTextureShader.FirstUniform.Texture = Texture;
+  SimpleTextureShader.FirstUniform = GetTextureUniform(&SimpleTextureShader, Texture, "Texture", GraphicsMemory);
 
   AssertNoGlErrors;
 
   return SimpleTextureShader;
 }
 
+shader
+MakeLightingShader(memory_arena *GraphicsMemory, texture *ColorTexture)
+{
+  shader Shader = LoadShaders( "Lighting.vertexshader", "Lighting.fragmentshader" );
+
+  Shader.FirstUniform = GetTextureUniform(&Shader, ColorTexture, "gColor", GraphicsMemory);
+
+  return Shader;
+}
+
 static s32 Global_SsaoNoiseTextureUniform;
-static s32 Global_ColorTextureUniform;
-static texture *Global_ColorTexture;
 
 bool
 InitializeRenderGroup( platform *Plat, g_buffer_render_group *RG, memory_arena *GraphicsMemory )
@@ -344,8 +363,8 @@ InitializeRenderGroup( platform *Plat, g_buffer_render_group *RG, memory_arena *
   GL_Global->glGenFramebuffers(1, &RG->FBO);
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO);
 
-  Global_ColorTexture = MakeTexture_RGBA( V2i(SCR_WIDTH, SCR_HEIGHT), 0, GraphicsMemory);
-  RG->DebugColorTextureShader = MakeSimpleTextureShader(Global_ColorTexture);
+  texture *ColorTexture = MakeTexture_RGBA( V2i(SCR_WIDTH, SCR_HEIGHT), 0, GraphicsMemory);
+  RG->DebugColorTextureShader = MakeSimpleTextureShader(ColorTexture, GraphicsMemory);
 
   glGenTextures(1, &RG->NormalTexture);
   glBindTexture(GL_TEXTURE_2D, RG->NormalTexture);
@@ -363,7 +382,7 @@ InitializeRenderGroup( platform *Plat, g_buffer_render_group *RG, memory_arena *
 
   texture *DepthTexture = MakeDepthTexture( V2i(SCR_WIDTH, SCR_HEIGHT), GraphicsMemory );
 
-  GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, Global_ColorTexture->ID, 0);
+  GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ColorTexture->ID, 0);
   GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, RG->NormalTexture,   0);
   GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, RG->PositionTexture, 0);
   GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,  GL_TEXTURE_2D, DepthTexture->ID, 0);
@@ -387,8 +406,7 @@ InitializeRenderGroup( platform *Plat, g_buffer_render_group *RG, memory_arena *
   /* RG->LightPID             GetShaderUniform(&RG->ShaderID, "LightP_worldspace"); */
 
 
-  RG->LightingShader = LoadShaders( "Lighting.vertexshader",
-                                    "Lighting.fragmentshader" );
+  RG->LightingShader = MakeLightingShader(GraphicsMemory, ColorTexture);
 
   RG->DepthBiasMVPID          = GetShaderUniform(&RG->LightingShader, "shadowMVP");
   RG->ShadowMapTextureUniform = GetShaderUniform(&RG->LightingShader, "shadowMap");
@@ -397,8 +415,6 @@ InitializeRenderGroup( platform *Plat, g_buffer_render_group *RG, memory_arena *
   RG->GlobalLightPositionID   = GetShaderUniform(&RG->LightingShader, "GlobalLightPosition");
   RG->ViewMatrixUniform       = GetShaderUniform(&RG->LightingShader, "ViewMatrix");
   RG->ProjectionMatrixUniform = GetShaderUniform(&RG->LightingShader, "ProjectionMatrix");
-
-  Global_ColorTextureUniform = GetShaderUniform(&RG->LightingShader, "gColor");
 
   //
   // Quad vertex buffer
@@ -467,7 +483,7 @@ InitializeShadowBuffer(ShadowRenderGroup *SG, memory_arena *GraphicsMemory)
   /* glReadBuffer(GL_NONE); */
 
   // For debug-only visualization of this texture
-  SG->DebugTextureShader = MakeSimpleTextureShader(Texture);
+  SG->DebugTextureShader = MakeSimpleTextureShader(Texture, GraphicsMemory);
 
   SG->DepthShader = LoadShaders( "DepthRTT.vertexshader", "DepthRTT.fragmentshader");
   SG->MVP_ID = GetShaderUniform(&SG->DepthShader, "depthMVP");
@@ -588,7 +604,7 @@ ActivateAndBindTexture(u32 *TextureUnit, texture *Texture, s32 ShaderUniformID)
 void
 BindShaderUniforms(shader *Shader)
 {
-  shader_uniform *Uniform = &Shader->FirstUniform;
+  shader_uniform *Uniform = Shader->FirstUniform;
 
   u32 TextureOffset = 0;
 
@@ -622,7 +638,7 @@ DrawTexturedQuad(shader *SimpleTextureShader)
 
   glDepthFunc(GL_LEQUAL);
 
-  texture *Texture = SimpleTextureShader->FirstUniform.Texture;
+  texture *Texture = SimpleTextureShader->FirstUniform->Texture;
   SetViewport( V2(Texture->Dim.x, Texture->Dim.y)*Scale );
 
   glUseProgram(SimpleTextureShader->ID);
@@ -681,8 +697,7 @@ DrawGBufferToFullscreenQuad( platform *Plat, g_buffer_render_group *RG, ShadowRe
   m4 ProjMat = RG->Basis.ProjectionMatrix;
   GL_Global->glUniformMatrix4fv(RG->ProjectionMatrixUniform, 1, GL_FALSE, &ProjMat.E[0].E[0]);
 
-  u32 TexUnit = 0;
-  ActivateAndBindTexture(&TexUnit, Global_ColorTexture, Global_ColorTextureUniform);
+  BindShaderUniforms(&RG->LightingShader);
 
   GL_Global->glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_2D, RG->NormalTexture);

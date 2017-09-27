@@ -14,7 +14,6 @@ struct shader_uniform
   shader_uniform_type Type;
 
   s32 ID;
-  b32 Initialized;
 
   union {
     texture *Texture;
@@ -27,7 +26,7 @@ struct shader_uniform
 struct shader
 {
   u32 ID;
-  shader_uniform FirstUniform;
+  shader_uniform *FirstUniform;
 };
 
 shader LoadShaders(const char * vertex_file_path,const char * fragment_file_path);
