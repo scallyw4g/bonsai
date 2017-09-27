@@ -569,7 +569,7 @@ InitGbufferRenderGroup( platform *Plat, g_buffer_render_group *gBuffer, memory_a
 
   gBuffer->GlobalLightPositionID   = GetShaderUniform(&gBuffer->LightingShader, "GlobalLightPosition");
 
-  { // To keep these or not to keep these
+  { // To keep these here or not to keep these here..
     gBuffer->DebugColorTextureShader = MakeSimpleTextureShader(ColorTexture, GraphicsMemory);
     gBuffer->DebugNormalTextureShader = MakeSimpleTextureShader(NormalTexture, GraphicsMemory);
     gBuffer->DebugPositionTextureShader = MakeSimpleTextureShader(PositionTexture, GraphicsMemory);
