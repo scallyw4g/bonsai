@@ -1,0 +1,33 @@
+#version 310 es
+
+precision highp float;
+
+in vec2 UV;
+
+uniform sampler2D gColor;
+uniform sampler2D gPosition;
+uniform sampler2D gNormal;
+uniform sampler2D shadowMap;
+
+// This must match the corresponding define in constants.h
+const int SSAO_KERNEL_SIZE = 1;
+const vec3 UP = vec3(0,0,1);
+uniform vec3 SsaoKernel[SSAO_KERNEL_SIZE];
+
+uniform sampler2D SsaoNoiseTexture;
+uniform vec2 SsaoNoiseTile;
+
+out vec4 AoContrib;
+
+void main()
+{
+  AoContrib = ??? ;
+
+  // Linearize Depth texture
+
+  /* float Far = 500.0f; */
+  /* float Near = 0.1f; */
+  /* float ZDepth = texture(Texture, UV).x; */
+  /* color = vec4( vec3((2.0 * Near) / (Far + Near - ZDepth * (Far - Near))), 1 ); */
+
+}
