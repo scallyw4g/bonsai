@@ -1,7 +1,6 @@
 #version 310 es
 
 precision highp float;
-precision highp sampler2DShadow;
 
 out vec4 color;
 
@@ -22,14 +21,16 @@ uniform vec2 SsaoNoiseTile;
 
 uniform vec3 GlobalLightPosition;
 uniform mat4 shadowMVP;
-uniform mat4 ViewMatrix;
-uniform mat4 ProjectionMatrix;
+uniform mat4 ViewProjection;
 uniform vec3 SsaoKernel[SSAO_KERNEL_SIZE];
 
-float exposure = 1.0f;
-float gamma = 2.2f;
+// Tuning
+  float SsaoRadius = 1.0f;
+  float exposure = 1.0f;
+  float gamma = 2.2f;
+  float GlobalLightIntensity = 1.0f;
+//
 
-float GlobalLightIntensity = 1.0f;
 
 //
 //
@@ -64,7 +65,6 @@ void main()
   vec3 FragPosition = texture(gPosition, UV).rgb; // worldspace
   float FragDepth   = texture(gPosition, UV).w;   // Linear
 
-
   vec3 Ambient = Diffuse * GlobalLightIntensity * 0.1f;
 
   vec3 GlobalLightDirection = GlobalLightPosition;
@@ -83,31 +83,36 @@ void main()
 
   // NOTE(Jesse): I was getting some artifacts when at 90deg to a surface so I
   // added a bias to the sample.
-  float AoSampleBias = 0.00005f;
+  float AoSampleBias = 0.0f; // 0.00005f;
 
   float AO = 1.0f;
   float OccluderContribution = 1.0f/float(SSAO_KERNEL_SIZE);
+
+  // For Debugging UV Problem
+    vec4 ProjectedFragP = ViewProjection * vec4(FragPosition, 1);
+    vec2 FragUV = ProjectedFragP.xy / ProjectedFragP.w;
+    FragUV = (FragUV.xy * 0.5f) + 0.5f;
+    float ReprojectedFragDepth = texture(gPosition, FragUV).w;
+  //
 
   for ( int KernelIndex = 0;
         KernelIndex < SSAO_KERNEL_SIZE;
         ++KernelIndex)
   {
-    const float Radius = 0.8f; // For tuning
-
-    vec3 KernelP = Reorientation * SsaoKernel[KernelIndex] * Radius;
+    vec3 KernelP = Reorientation * SsaoKernel[KernelIndex] * SsaoRadius;
     vec3 SampleP = KernelP + FragPosition;
 
     // Project SampleP
-    vec4 Projected = ProjectionMatrix * ViewMatrix * vec4(SampleP, 1);
+    vec4 Projected = ViewProjection * vec4(SampleP, 1);
 
     // Prespective divide
     vec2 SampleUV = Projected.xy / Projected.w;
 
     // NDC to screen space [-1, 1] -> [0, 1]
-    SampleUV = SampleUV.xy * 0.5 + 0.5;
+    SampleUV = (SampleUV.xy * 0.5) + 0.5;
 
     // get Sample depth:
-    float sampleDepth = texture(gPosition, SampleUV.xy).w + AoSampleBias;;
+    float sampleDepth = texture(gPosition, SampleUV).w + AoSampleBias;
 
     bool Occluded = sampleDepth <= FragDepth;
 
@@ -165,17 +170,8 @@ void main()
   /* mapped.rgb = vec3(AO); */
   color = vec4(pow(mapped, vec3(1.0f / gamma)), 1.0f);
 
-  vec3 KernelAvg = vec3(0);
-  for ( int KernelIndex = 0;
-        KernelIndex < SSAO_KERNEL_SIZE;
-        ++KernelIndex)
-  {
-    KernelAvg += SsaoKernel[KernelIndex];
-  }
-  KernelAvg /= vec3(SSAO_KERNEL_SIZE);
-  color.rgb = KernelAvg;
-
-  /* color.rgb = vec3(AO); */
+  /* color.rgb = vec3(FragUV, 0); */
+  /* color.rgb = vec3(UV, 0); */
   /* color.rgb = vec3(FragDepth); */
   /* color.rgb = FragPosition; */
 }

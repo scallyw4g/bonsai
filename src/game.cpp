@@ -954,8 +954,9 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   accumulatedTime += Plat->dt;
   numFrames ++;
 
-  RG->Basis.ProjectionMatrix =
-    GetProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight);
+  RG->ViewProjection =
+    GetProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
+    GetViewMatrix(WorldChunkDim, Camera);
 
   TIMED_BLOCK("Sim");
 
@@ -985,7 +986,6 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   END_BLOCK("Sim");
 
   UpdateCameraP(Plat, World, Player, Camera);
-  RG->Basis.ViewMatrix = GetViewMatrix(WorldChunkDim, Camera);
 
   GlobalLightTheta += Plat->dt;
 
@@ -1100,7 +1100,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   DrawTexturedQuad(&SG->DebugTextureShader);
   /* DrawTexturedQuad(&RG->DebugPositionTextureShader); */
   /* DrawTexturedQuad(&RG->DebugNormalTextureShader); */
-  /* DrawTexturedQuad(&RG->DebugColorTextureShader); */
+  DrawTexturedQuad(&RG->DebugColorTextureShader);
   SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight));
 #endif
 

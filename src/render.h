@@ -37,11 +37,8 @@ struct ao_render_group
 
 struct g_buffer_render_group
 {
+
   u32 FBO;
-
-  texture *SsaoNoiseTexture;
-
-  v3 SsaoKernel[SSAO_KERNEL_SIZE];
 
   u32 colorbuffer;
   u32 vertexbuffer;
@@ -49,16 +46,20 @@ struct g_buffer_render_group
 
   u32 quad_vertexbuffer;
 
+  // GBuffer
   shader GBufferShader;
-  u32 MVPID;
-  u32 ModelMatrixID;
-  /* u32 LightPID; */
-
+  u32 gBuffer_ModelUniform;
+  u32 gBuffer_ViewProjection;
+  //
 
   u32 GlobalLightPositionID;;
 
   // Lighting Shader
+  m4 ViewProjection;
+  u32 ViewProjectionUniform;
+
   shader LightingShader;
+
   u32 ColorTextureUniform;
   u32 NormalTextureUniform;
   u32 PositionTextureUniform;
@@ -66,17 +67,24 @@ struct g_buffer_render_group
 
   u32 ShadowMapTextureUniform;
   u32 DepthBiasMVPID;
-  u32 ViewMatrixUniform;
-  u32 ProjectionMatrixUniform;
   u32 CameraPosUniform;
+  //
+
+  // SSAO TODO(Jesse): Move to it's own shader!
+  v3 SsaoKernel[SSAO_KERNEL_SIZE];
   u32 SsaoKernelUniform;
+
+  texture *SsaoNoiseTexture;
+  u32 SsaoNoiseTextureUniform;
+
+  v2 NoiseTile;
+  u32 SsaoNoiseTileUniform;
   //
 
   shader DebugColorTextureShader;
   shader DebugNormalTextureShader;
   shader DebugPositionTextureShader;
 
-  RenderBasis Basis;
 };
 
 struct ShadowRenderGroup

@@ -344,7 +344,8 @@ MakeSimpleTextureShader(texture *Texture, memory_arena *GraphicsMemory)
 }
 
 shader
-MakeLightingShader(memory_arena *GraphicsMemory, texture *ColorTexture, texture *NormalTexture, texture *PositionTexture)
+MakeLightingShader(memory_arena *GraphicsMemory,
+    texture *ColorTexture, texture *NormalTexture, texture *PositionTexture)
 {
   shader Shader = LoadShaders( "Lighting.vertexshader", "Lighting.fragmentshader" );
 
@@ -362,17 +363,15 @@ MakeLightingShader(memory_arena *GraphicsMemory, texture *ColorTexture, texture 
   return Shader;
 }
 
-static s32 Global_SsaoNoiseTextureUniform;
-
 bool
 InitializeRenderGroup( platform *Plat, g_buffer_render_group *RG, memory_arena *GraphicsMemory )
 {
-  RG->Basis.ModelMatrix = IdentityMatrix;
+  RG->ViewProjection = IdentityMatrix;
+  v2i ScreenDim = V2i(SCR_WIDTH, SCR_HEIGHT);
 
   GL_Global->glGenFramebuffers(1, &RG->FBO);
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO);
 
-  v2i ScreenDim = V2i(SCR_WIDTH, SCR_HEIGHT);
   texture *ColorTexture    = MakeTexture_RGBA( ScreenDim, 0, GraphicsMemory);
   texture *NormalTexture   = MakeTexture_RGBA( ScreenDim, 0, GraphicsMemory);
   texture *PositionTexture = MakeTexture_RGBA( ScreenDim, 0, GraphicsMemory);
@@ -382,8 +381,6 @@ InitializeRenderGroup( platform *Plat, g_buffer_render_group *RG, memory_arena *
   GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, NormalTexture->ID,   0);
   GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, PositionTexture->ID, 0);
   GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,  GL_TEXTURE_2D, DepthTexture->ID,    0);
-
-  AssertNoGlErrors;
 
   u32 attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
   GL_Global->glDrawBuffers(3, attachments);
@@ -397,8 +394,8 @@ InitializeRenderGroup( platform *Plat, g_buffer_render_group *RG, memory_arena *
   RG->GBufferShader = LoadShaders( "SimpleVertexShader.vertexshader",
                                    "SimpleFragmentShader.fragmentshader" );
 
-  RG->MVPID         = GetShaderUniform(&RG->GBufferShader, "MVP");
-  RG->ModelMatrixID = GetShaderUniform(&RG->GBufferShader, "M");
+  RG->gBuffer_ViewProjection = GetShaderUniform(&RG->GBufferShader, "ViewProjection");
+  RG->gBuffer_ModelUniform  = GetShaderUniform(&RG->GBufferShader, "Model");
   /* RG->LightPID             GetShaderUniform(&RG->ShaderID, "LightP_worldspace"); */
 
 
@@ -414,8 +411,7 @@ InitializeRenderGroup( platform *Plat, g_buffer_render_group *RG, memory_arena *
   RG->NormalTextureUniform    = GetShaderUniform(&RG->LightingShader, "gNormal");
   RG->PositionTextureUniform  = GetShaderUniform(&RG->LightingShader, "gPosition");
   RG->GlobalLightPositionID   = GetShaderUniform(&RG->LightingShader, "GlobalLightPosition");
-  RG->ViewMatrixUniform       = GetShaderUniform(&RG->LightingShader, "ViewMatrix");
-  RG->ProjectionMatrixUniform = GetShaderUniform(&RG->LightingShader, "ProjectionMatrix");
+  RG->ViewProjectionUniform   = GetShaderUniform(&RG->LightingShader, "ViewProjection");
 
   //
   // Quad vertex buffer
@@ -431,6 +427,11 @@ InitializeRenderGroup( platform *Plat, g_buffer_render_group *RG, memory_arena *
 
   AssertNoGlErrors;
 
+  { // SsaoKernel
+    InitSsaoKernel(RG->SsaoKernel, ArrayCount(RG->SsaoKernel), &SsaoEntropy);
+    RG->SsaoKernelUniform = GetShaderUniform(&RG->LightingShader, "SsaoKernel");
+  }
+
   { // SsaoNoiseTexture
     v2i SsaoNoiseDim = V2i(4,4);
 
@@ -438,15 +439,12 @@ InitializeRenderGroup( platform *Plat, g_buffer_render_group *RG, memory_arena *
     InitSsaoNoise(&SsaoNoise[0], ArrayCount(SsaoNoise), &SsaoEntropy);
 
     RG->SsaoNoiseTexture = MakeTexture_RGB(SsaoNoiseDim, &SsaoNoise, GraphicsMemory);
-    AssertNoGlErrors;
+    RG->SsaoNoiseTextureUniform = GetShaderUniform(&RG->LightingShader, "SsaoNoiseTexture");
 
-    Global_SsaoNoiseTextureUniform = GetShaderUniform(&RG->LightingShader, "SsaoNoiseTexture");
-
+    RG->NoiseTile = V2(SCR_WIDTH/RG->SsaoNoiseTexture->Dim.x, SCR_HEIGHT/RG->SsaoNoiseTexture->Dim.y);
+    RG->SsaoNoiseTileUniform = GetShaderUniform(&RG->LightingShader, "SsaoNoiseTile");
   }
 
-
-  InitSsaoKernel(&RG->SsaoKernel[0], ArrayCount(RG->SsaoKernel), &SsaoEntropy);
-  RG->SsaoKernelUniform = GetShaderUniform(&RG->LightingShader, "SsaoKernel");
 
   AssertNoGlErrors;
 
@@ -692,23 +690,16 @@ DrawGBufferToFullscreenQuad( platform *Plat, g_buffer_render_group *RG, ShadowRe
   m4 shadowMVP = biasMatrix * GetShadowMapMVP(Camera);
   GL_Global->glUniformMatrix4fv(RG->DepthBiasMVPID, 1, GL_FALSE, &shadowMVP.E[0].E[0]);
 
-  m4 ViewMat = RG->Basis.ViewMatrix;
-  GL_Global->glUniformMatrix4fv(RG->ViewMatrixUniform, 1, GL_FALSE, &ViewMat.E[0].E[0]);
-
-  m4 ProjMat = RG->Basis.ProjectionMatrix;
-  GL_Global->glUniformMatrix4fv(RG->ProjectionMatrixUniform, 1, GL_FALSE, &ProjMat.E[0].E[0]);
+  GL_Global->glUniformMatrix4fv(RG->ViewProjectionUniform, 1, GL_FALSE, (r32*)&RG->ViewProjection);
 
   BindShaderUniforms(&RG->LightingShader);
 
   GL_Global->glActiveTexture(GL_TEXTURE3);
   glBindTexture(GL_TEXTURE_2D, RG->SsaoNoiseTexture->ID);
-  GL_Global->glUniform1i(Global_SsaoNoiseTextureUniform, 3);
+  GL_Global->glUniform1i(RG->SsaoNoiseTextureUniform, 3);
 
-  v2 NoiseTile = V2(SCR_WIDTH/RG->SsaoNoiseTexture->Dim.x, SCR_HEIGHT/RG->SsaoNoiseTexture->Dim.y);
-  static u32 SsaoNoiseTileUniform = GetShaderUniform(&RG->LightingShader, "SsaoNoiseTile"); // FIXME(Jesse): Store this
-  GL_Global->glUniform2fv(SsaoNoiseTileUniform, 1, &NoiseTile.x);
-
-  GL_Global->glUniform3fv(RG->SsaoKernelUniform, SSAO_KERNEL_SIZE, &RG->SsaoKernel[0].E[0]);
+  GL_Global->glUniform2fv(RG->SsaoNoiseTileUniform, 1, &RG->NoiseTile.x);
+  GL_Global->glUniform3fv(RG->SsaoKernelUniform, SSAO_KERNEL_SIZE, (r32*)&RG->SsaoKernel);
 
   RenderQuad();
   AssertNoGlErrors;
@@ -774,10 +765,8 @@ RenderWorldToGBuffer( platform *Plat, mesh_buffer_target *Mesh, g_buffer_render_
 
   SetViewport( V2(SCR_WIDTH, SCR_HEIGHT) );
 
-  m4 mvp = RG->Basis.ProjectionMatrix * RG->Basis.ViewMatrix;
-
-  GL_Global->glUniformMatrix4fv(RG->MVPID,         1, GL_FALSE, &mvp.E[0].E[0]);
-  GL_Global->glUniformMatrix4fv(RG->ModelMatrixID, 1, GL_FALSE, &RG->Basis.ModelMatrix.E[0].E[0]);
+  GL_Global->glUniformMatrix4fv(RG->gBuffer_ViewProjection, 1, GL_FALSE, (r32*)&RG->ViewProjection);
+  GL_Global->glUniformMatrix4fv(RG->gBuffer_ModelUniform,   1, GL_FALSE, (r32*)&IdentityMatrix);
 
   // Vertices
   GL_Global->glEnableVertexAttribArray(0);
