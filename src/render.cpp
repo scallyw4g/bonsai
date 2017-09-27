@@ -798,8 +798,6 @@ DrawGBufferToFullscreenQuad( platform *Plat, g_buffer_render_group *RG, ShadowRe
 
   RG->ShadowMVP = NdcToScreenSpace * GetShadowMapMVP(Camera);
 
-  BindShaderUniforms(&RG->LightingShader);
-
   GL_Global->glUniform2fv(RG->SsaoNoiseTileUniform, 1, &RG->NoiseTile.x);
   GL_Global->glUniform3fv(RG->SsaoKernelUniform, SSAO_KERNEL_SIZE, (r32*)&RG->SsaoKernel);
 
