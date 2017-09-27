@@ -272,7 +272,7 @@ texture *
 MakeDepthTexture(v2i Dim, memory_arena *Mem)
 {
   texture *Texture = GenTexture(Dim, Mem);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32,
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F,
     Texture->Dim.x, Texture->Dim.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 
   glBindTexture(GL_TEXTURE_2D, 0);
@@ -347,7 +347,7 @@ MakeSimpleTextureShader(texture *Texture, memory_arena *GraphicsMemory)
 
 shader
 MakeLightingShader(memory_arena *GraphicsMemory,
-    texture *ColorTexture, texture *NormalTexture, texture *PositionTexture)
+    texture *ColorTexture, texture *NormalTexture, texture *PositionTexture, texture *ShadowMap, texture *SsaoNoiseTexture)
 {
   shader Shader = LoadShaders( "Lighting.vertexshader", "Lighting.fragmentshader" );
 
@@ -362,11 +362,17 @@ MakeLightingShader(memory_arena *GraphicsMemory,
   *Current = GetTextureUniform(&Shader, PositionTexture, "gPosition", GraphicsMemory);
   Current = &(*Current)->Next;
 
+  *Current = GetTextureUniform(&Shader, ShadowMap, "shadowMap", GraphicsMemory);
+  Current = &(*Current)->Next;
+
+  *Current = GetTextureUniform(&Shader, SsaoNoiseTexture, "SsaoNoiseTexture", GraphicsMemory);
+  Current = &(*Current)->Next;
+
   return Shader;
 }
 
 bool
-InitializeRenderGroup( platform *Plat, g_buffer_render_group *RG, memory_arena *GraphicsMemory )
+InitializeRenderGroup( platform *Plat, g_buffer_render_group *RG, memory_arena *GraphicsMemory, texture *ShadowMap)
 {
   RG->ViewProjection = IdentityMatrix;
   v2i ScreenDim = V2i(SCR_WIDTH, SCR_HEIGHT);
@@ -401,7 +407,27 @@ InitializeRenderGroup( platform *Plat, g_buffer_render_group *RG, memory_arena *
   /* RG->LightPID             GetShaderUniform(&RG->ShaderID, "LightP_worldspace"); */
 
 
-  RG->LightingShader = MakeLightingShader(GraphicsMemory, ColorTexture, NormalTexture, PositionTexture);
+  random_series SsaoEntropy = {};
+  SsaoEntropy.Seed = SSAO_ENTROPY_SEED;
+
+  v2i SsaoNoiseDim = V2i(4,4);
+
+  RG->NoiseTile = V2(SCR_WIDTH/SsaoNoiseDim.x, SCR_HEIGHT/SsaoNoiseDim.y);
+
+  // TODO(Jesse): Allocate SsaoNoise on a transient arena and jettison it after
+  // the first frame.
+  v3 SsaoNoise[Area(SsaoNoiseDim)] = {};
+  InitSsaoNoise(&SsaoNoise[0], ArrayCount(SsaoNoise), &SsaoEntropy);
+
+  texture *SsaoNoiseTexture = MakeTexture_RGB(SsaoNoiseDim, &SsaoNoise, GraphicsMemory);
+
+  RG->LightingShader = MakeLightingShader(GraphicsMemory,
+      ColorTexture, NormalTexture, PositionTexture, ShadowMap, SsaoNoiseTexture);
+
+  InitSsaoKernel(RG->SsaoKernel, ArrayCount(RG->SsaoKernel), &SsaoEntropy);
+  RG->SsaoKernelUniform = GetShaderUniform(&RG->LightingShader, "SsaoKernel");
+
+  RG->SsaoNoiseTileUniform = GetShaderUniform(&RG->LightingShader, "SsaoNoiseTile");
 
   RG->DebugColorTextureShader = MakeSimpleTextureShader(ColorTexture, GraphicsMemory);
   RG->DebugNormalTextureShader = MakeSimpleTextureShader(NormalTexture, GraphicsMemory);
@@ -409,7 +435,6 @@ InitializeRenderGroup( platform *Plat, g_buffer_render_group *RG, memory_arena *
 
 
   RG->DepthBiasMVPID          = GetShaderUniform(&RG->LightingShader, "shadowMVP");
-  RG->ShadowMapTextureUniform = GetShaderUniform(&RG->LightingShader, "shadowMap");
   RG->NormalTextureUniform    = GetShaderUniform(&RG->LightingShader, "gNormal");
   RG->PositionTextureUniform  = GetShaderUniform(&RG->LightingShader, "gPosition");
   RG->GlobalLightPositionID   = GetShaderUniform(&RG->LightingShader, "GlobalLightPosition");
@@ -424,29 +449,7 @@ InitializeRenderGroup( platform *Plat, g_buffer_render_group *RG, memory_arena *
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, Global_QuadVertexBuffer);
   GL_Global->glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
 
-  random_series SsaoEntropy = {};
-  SsaoEntropy.Seed = SSAO_ENTROPY_SEED;
-
   AssertNoGlErrors;
-
-  { // SsaoKernel
-    InitSsaoKernel(RG->SsaoKernel, ArrayCount(RG->SsaoKernel), &SsaoEntropy);
-    RG->SsaoKernelUniform = GetShaderUniform(&RG->LightingShader, "SsaoKernel");
-  }
-
-  { // SsaoNoiseTexture
-    v2i SsaoNoiseDim = V2i(4,4);
-
-    v3 SsaoNoise[Area(SsaoNoiseDim)] = {};
-    InitSsaoNoise(&SsaoNoise[0], ArrayCount(SsaoNoise), &SsaoEntropy);
-
-    RG->SsaoNoiseTexture = MakeTexture_RGB(SsaoNoiseDim, &SsaoNoise, GraphicsMemory);
-    RG->SsaoNoiseTextureUniform = GetShaderUniform(&RG->LightingShader, "SsaoNoiseTexture");
-
-    RG->NoiseTile = V2(SCR_WIDTH/RG->SsaoNoiseTexture->Dim.x, SCR_HEIGHT/RG->SsaoNoiseTexture->Dim.y);
-    RG->SsaoNoiseTileUniform = GetShaderUniform(&RG->LightingShader, "SsaoNoiseTile");
-  }
-
 
   AssertNoGlErrors;
 
@@ -474,9 +477,8 @@ InitializeShadowBuffer(ShadowRenderGroup *SG, memory_arena *GraphicsMemory)
   GL_Global->glGenFramebuffers(1, &SG->FramebufferName);
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
 
-  texture *Texture = MakeDepthTexture( V2i(SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y), GraphicsMemory);
-  GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-      GL_TEXTURE_2D, Texture->ID, 0);
+  SG->ShadowMap = MakeDepthTexture( V2i(SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y), GraphicsMemory);
+  GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, SG->ShadowMap->ID, 0);
 
   // TODO(Jesse): Not present on ES2 .. should we use them?
   // No color output in the bound framebuffer, only depth.
@@ -484,7 +486,7 @@ InitializeShadowBuffer(ShadowRenderGroup *SG, memory_arena *GraphicsMemory)
   /* glReadBuffer(GL_NONE); */
 
   // For debug-only visualization of this texture
-  SG->DebugTextureShader = MakeSimpleTextureShader(Texture, GraphicsMemory);
+  SG->DebugTextureShader = MakeSimpleTextureShader(SG->ShadowMap, GraphicsMemory);
 
   SG->DepthShader = LoadShaders( "DepthRTT.vertexshader", "DepthRTT.fragmentshader");
   SG->MVP_ID = GetShaderUniform(&SG->DepthShader, "depthMVP");
@@ -695,10 +697,6 @@ DrawGBufferToFullscreenQuad( platform *Plat, g_buffer_render_group *RG, ShadowRe
   GL_Global->glUniformMatrix4fv(RG->ViewProjectionUniform, 1, GL_FALSE, (r32*)&RG->ViewProjection);
 
   BindShaderUniforms(&RG->LightingShader);
-
-  GL_Global->glActiveTexture(GL_TEXTURE3);
-  glBindTexture(GL_TEXTURE_2D, RG->SsaoNoiseTexture->ID);
-  GL_Global->glUniform1i(RG->SsaoNoiseTextureUniform, 3);
 
   GL_Global->glUniform2fv(RG->SsaoNoiseTileUniform, 1, &RG->NoiseTile.x);
   GL_Global->glUniform3fv(RG->SsaoKernelUniform, SSAO_KERNEL_SIZE, (r32*)&RG->SsaoKernel);

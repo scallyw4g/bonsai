@@ -132,15 +132,15 @@ void main()
   /*
    *  Shadow Mapping
    */
-  vec4 FragPositionShadowSpace = shadowMVP * vec4(FragPosition, 1.0f);
+  vec4 FragPShadowScreenSpace = shadowMVP * vec4(FragPosition, 1.0f);
 
-  float FragDepthShadowSpace = FragPositionShadowSpace.z;
+  float FragPShadowDepth = FragPShadowScreenSpace.z;
 
   float acneBias = 0.01f; // Fix acne
-  float ShadowMapDepth = texture(shadowMap, FragPositionShadowSpace.xy).x + acneBias;
+  float ShadowDepth = texture(shadowMap, FragPShadowScreenSpace.xy).x + acneBias;
 
   vec3 visibility = vec3(1.0f);
-  if ( ShadowMapDepth < FragDepthShadowSpace )
+  if ( FragPShadowDepth > ShadowDepth )
   {
     visibility = vec3(0.1f);
   }
@@ -169,4 +169,5 @@ void main()
 
   // Gamma correction
   color = vec4(pow(mapped, vec3(1.0f / gamma)), 1.0f);
+  vec3 ShadowMap = texture(shadowMap, UV).xyz;
 }

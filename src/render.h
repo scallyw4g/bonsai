@@ -74,9 +74,6 @@ struct g_buffer_render_group
   v3 SsaoKernel[SSAO_KERNEL_SIZE];
   u32 SsaoKernelUniform;
 
-  texture *SsaoNoiseTexture;
-  u32 SsaoNoiseTextureUniform;
-
   v2 NoiseTile;
   u32 SsaoNoiseTileUniform;
   //
@@ -92,8 +89,10 @@ struct ShadowRenderGroup
   u32 MVP_ID;
 
   shader DebugTextureShader;
-
   shader DepthShader;
+
+  texture *ShadowMap;
+
   u32 FramebufferName;
 };
 
