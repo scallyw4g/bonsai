@@ -206,6 +206,11 @@ struct model
 struct random_series
 {
   u64 Seed;
+
+  random_series(u64 Seed = DEFAULT_ENTROPY_SEED)
+  {
+    this->Seed = Seed;
+  }
 };
 
 struct physics

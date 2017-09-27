@@ -372,7 +372,7 @@ MakeLightingShader(memory_arena *GraphicsMemory,
 }
 
 bool
-InitializeRenderGroup( platform *Plat, g_buffer_render_group *RG, memory_arena *GraphicsMemory, texture *ShadowMap)
+InitGbufferRenderGroup( platform *Plat, g_buffer_render_group *RG, memory_arena *GraphicsMemory, texture *ShadowMap)
 {
   RG->ViewProjection = IdentityMatrix;
   v2i ScreenDim = V2i(SCR_WIDTH, SCR_HEIGHT);
@@ -407,32 +407,30 @@ InitializeRenderGroup( platform *Plat, g_buffer_render_group *RG, memory_arena *
   /* RG->LightPID             GetShaderUniform(&RG->ShaderID, "LightP_worldspace"); */
 
 
-  random_series SsaoEntropy = {};
-  SsaoEntropy.Seed = SSAO_ENTROPY_SEED;
 
-  v2i SsaoNoiseDim = V2i(4,4);
+  texture *SsaoNoiseTexture = 0;
+  { // TODO(Jesse): Pull this into a Ssao shader
+    random_series SsaoEntropy;
+    v2i SsaoNoiseDim = V2i(4,4);
 
-  RG->NoiseTile = V2(SCR_WIDTH/SsaoNoiseDim.x, SCR_HEIGHT/SsaoNoiseDim.y);
+    RG->NoiseTile = V2(SCR_WIDTH/SsaoNoiseDim.x, SCR_HEIGHT/SsaoNoiseDim.y);
 
-  // TODO(Jesse): Allocate SsaoNoise on a transient arena and jettison it after
-  // the first frame.
-  v3 SsaoNoise[Area(SsaoNoiseDim)] = {};
-  InitSsaoNoise(&SsaoNoise[0], ArrayCount(SsaoNoise), &SsaoEntropy);
+    InitSsaoKernel(RG->SsaoKernel, ArrayCount(RG->SsaoKernel), &SsaoEntropy);
 
-  texture *SsaoNoiseTexture = MakeTexture_RGB(SsaoNoiseDim, &SsaoNoise, GraphicsMemory);
+    // TODO(Jesse): Allocate SsaoNoise on a transient arena and jettison it after
+    // the first frame.
+      v3 SsaoNoise[Area(SsaoNoiseDim)] = {};
+      InitSsaoNoise(&SsaoNoise[0], ArrayCount(SsaoNoise), &SsaoEntropy);
+      SsaoNoiseTexture = MakeTexture_RGB(SsaoNoiseDim, &SsaoNoise, GraphicsMemory);
+    //
+  }
+
 
   RG->LightingShader = MakeLightingShader(GraphicsMemory,
       ColorTexture, NormalTexture, PositionTexture, ShadowMap, SsaoNoiseTexture);
 
-  InitSsaoKernel(RG->SsaoKernel, ArrayCount(RG->SsaoKernel), &SsaoEntropy);
   RG->SsaoKernelUniform = GetShaderUniform(&RG->LightingShader, "SsaoKernel");
-
   RG->SsaoNoiseTileUniform = GetShaderUniform(&RG->LightingShader, "SsaoNoiseTile");
-
-  RG->DebugColorTextureShader = MakeSimpleTextureShader(ColorTexture, GraphicsMemory);
-  RG->DebugNormalTextureShader = MakeSimpleTextureShader(NormalTexture, GraphicsMemory);
-  RG->DebugPositionTextureShader = MakeSimpleTextureShader(PositionTexture, GraphicsMemory);
-
 
   RG->DepthBiasMVPID          = GetShaderUniform(&RG->LightingShader, "shadowMVP");
   RG->NormalTextureUniform    = GetShaderUniform(&RG->LightingShader, "gNormal");
@@ -440,32 +438,22 @@ InitializeRenderGroup( platform *Plat, g_buffer_render_group *RG, memory_arena *
   RG->GlobalLightPositionID   = GetShaderUniform(&RG->LightingShader, "GlobalLightPosition");
   RG->ViewProjectionUniform   = GetShaderUniform(&RG->LightingShader, "ViewProjection");
 
-  //
-  // Quad vertex buffer
+  { // TODO(Jesse): Pull this out of here
+    GL_Global->glGenBuffers(1, &Global_QuadVertexBuffer);
+    Assert(Global_QuadVertexBuffer);
+    GL_Global->glBindBuffer(GL_ARRAY_BUFFER, Global_QuadVertexBuffer);
+    GL_Global->glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
+  }
 
-  GL_Global->glGenBuffers(1, &Global_QuadVertexBuffer);
-  Assert(Global_QuadVertexBuffer);
+  GL_Global->glGenBuffers(1, &RG->vertexbuffer);
+  GL_Global->glGenBuffers(1, &RG->colorbuffer);
+  GL_Global->glGenBuffers(1, &RG->normalbuffer);
 
-  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, Global_QuadVertexBuffer);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
+  RG->DebugColorTextureShader = MakeSimpleTextureShader(ColorTexture, GraphicsMemory);
+  RG->DebugNormalTextureShader = MakeSimpleTextureShader(NormalTexture, GraphicsMemory);
+  RG->DebugPositionTextureShader = MakeSimpleTextureShader(PositionTexture, GraphicsMemory);
 
   AssertNoGlErrors;
-
-  AssertNoGlErrors;
-
-  //
-  // World Data buffers
-  u32 vertexbuffer;
-  u32 colorbuffer;
-  u32 normalbuffer;
-
-  GL_Global->glGenBuffers(1, &vertexbuffer);
-  GL_Global->glGenBuffers(1, &colorbuffer);
-  GL_Global->glGenBuffers(1, &normalbuffer);
-
-  RG->vertexbuffer = vertexbuffer;
-  RG->colorbuffer  = colorbuffer;
-  RG->normalbuffer = normalbuffer;
 
   return true;
 }

@@ -1182,7 +1182,7 @@ GameInit( platform *Plat, memory_arena *GameMemory)
 
   //FIXME(Jesse): Sub-arena for GraphicsMemory
   g_buffer_render_group *RG = PUSH_STRUCT_CHECKED(g_buffer_render_group, GameState->Memory, 1);
-  if (!InitializeRenderGroup(Plat, RG, GameState->Memory, SG->ShadowMap)) { Error("Initializing g_buffer_render_group"); return False; }
+  if (!InitGbufferRenderGroup(Plat, RG, GameState->Memory, SG->ShadowMap)) { Error("Initializing g_buffer_render_group"); return False; }
 
   AssertNoGlErrors;
 
