@@ -17,6 +17,8 @@ struct shader_uniform
 
   union {
     texture *Texture;
+    m4 *M4;
+    void *Data;
   };
 
   const char *Name;

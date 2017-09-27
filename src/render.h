@@ -39,16 +39,15 @@ typedef u32 framebuffer;
 struct g_buffer_render_group
 {
   framebuffer FBO;
-  u32 NextColorAttachment;
+  u32 Attachments;
 
   u32 colorbuffer;
   u32 vertexbuffer;
   u32 normalbuffer;
 
   // GBuffer
-  shader GBufferShader;
+  shader gBufferShader;
   u32 gBuffer_ModelUniform;
-  u32 gBuffer_ViewProjection;
   //
 
   u32 GlobalLightPositionID;;

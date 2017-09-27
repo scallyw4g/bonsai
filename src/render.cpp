@@ -28,7 +28,6 @@ Init_Global_QuadVertexBuffer() {
 void
 RenderQuad()
 {
-
   GL_Global->glEnableVertexAttribArray(0);
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, Global_QuadVertexBuffer);
   GL_Global->glVertexAttribPointer(
@@ -296,29 +295,61 @@ MakeDepthTexture(v2i Dim, memory_arena *Mem)
 
 #define INVALID_SHADER_UNIFORM (-1)
 s32
-GetShaderUniform(shader *Shader, const char *UniformName)
+GetShaderUniform(shader *Shader, const char *Name)
 {
-  s32 Result = GL_Global->glGetUniformLocation(Shader->ID, UniformName);
+  s32 Result = GL_Global->glGetUniformLocation(Shader->ID, Name);
   if (Result == INVALID_SHADER_UNIFORM)
   {
-    Error("Couldn't retreive %s shader uniform", UniformName);
+    Error("Couldn't retreive %s shader uniform", Name);
   }
 
   return Result;
 }
 
 shader_uniform *
-GetTextureUniform(shader *Shader, texture *Tex, const char *UniformName, memory_arena *Mem)
+PushShaderUniform( memory_arena *Mem, const char *Name)
 {
   shader_uniform *Uniform = PUSH_STRUCT_CHECKED(shader_uniform, Mem, 1);
-  Uniform->Type = ShaderUniform_Texture;
-  Uniform->Texture = Tex;
+  Uniform->Name = Name;
+  return Uniform;
+}
 
-  Uniform->ID = GetShaderUniform(Shader, UniformName);
-  Uniform->Name = UniformName;
+shader_uniform *
+PushShaderUniform( memory_arena *Mem, const char *Name, texture *Tex)
+{
+  shader_uniform *Uniform = PushShaderUniform(Mem, Name);
+  Uniform->Texture = Tex;
+  Uniform->Type = ShaderUniform_Texture;
+  return Uniform;
+}
+
+shader_uniform *
+PushShaderUniform( memory_arena *Mem, const char *Name, m4 *Matrix)
+{
+  shader_uniform *Uniform = PushShaderUniform(Mem, Name);
+  Uniform->M4 = Matrix;
+  Uniform->Type = ShaderUniform_M4;
+  return Uniform;
+}
+
+shader_uniform *
+GetTextureUniform(memory_arena *Mem, shader *Shader, texture *Tex, const char *Name)
+{
+  shader_uniform *Uniform = PushShaderUniform(Mem, Name, Tex);
+  Uniform->ID = GetShaderUniform(Shader, Name);
 
   return Uniform;
 }
+
+shader_uniform *
+GetM4Uniform(memory_arena *Mem, shader *Shader, m4 *Matrix, const char *Name)
+{
+  shader_uniform *Uniform = PushShaderUniform(Mem, Name, Matrix);
+  Uniform->ID = GetShaderUniform(Shader, Name);
+
+  return Uniform;
+}
+
 
 void
 InitSsaoKernel(v3 *Kernel, s32 Count, random_series *Entropy)
@@ -352,7 +383,7 @@ MakeSimpleTextureShader(texture *Texture, memory_arena *GraphicsMemory)
   shader SimpleTextureShader = LoadShaders( "Passthrough.vertexshader",
                                             "SimpleTexture.fragmentshader" );
 
-  SimpleTextureShader.FirstUniform = GetTextureUniform(&SimpleTextureShader, Texture, "Texture", GraphicsMemory);
+  SimpleTextureShader.FirstUniform = GetTextureUniform(GraphicsMemory, &SimpleTextureShader, Texture, "Texture");
 
   AssertNoGlErrors;
 
@@ -367,19 +398,19 @@ MakeLightingShader(memory_arena *GraphicsMemory,
 
   shader_uniform **Current = &Shader.FirstUniform;
 
-  *Current = GetTextureUniform(&Shader, ColorTexture, "gColor", GraphicsMemory);
+  *Current = GetTextureUniform(GraphicsMemory, &Shader, ColorTexture, "gColor");
   Current = &(*Current)->Next;
 
-  *Current = GetTextureUniform(&Shader, NormalTexture, "gNormal", GraphicsMemory);
+  *Current = GetTextureUniform(GraphicsMemory, &Shader, NormalTexture, "gNormal");
   Current = &(*Current)->Next;
 
-  *Current = GetTextureUniform(&Shader, PositionTexture, "gPosition", GraphicsMemory);
+  *Current = GetTextureUniform(GraphicsMemory, &Shader, PositionTexture, "gPosition");
   Current = &(*Current)->Next;
 
-  *Current = GetTextureUniform(&Shader, ShadowMap, "shadowMap", GraphicsMemory);
+  *Current = GetTextureUniform(GraphicsMemory, &Shader, ShadowMap, "shadowMap");
   Current = &(*Current)->Next;
 
-  *Current = GetTextureUniform(&Shader, SsaoNoiseTexture, "SsaoNoiseTexture", GraphicsMemory);
+  *Current = GetTextureUniform(GraphicsMemory, &Shader, SsaoNoiseTexture, "SsaoNoiseTexture");
   Current = &(*Current)->Next;
 
   return Shader;
@@ -409,7 +440,6 @@ CreateGbuffer(memory_arena *Memory)
   return gBuffer;
 }
 
-
 void
 FramebufferDepthTexture(g_buffer_render_group *Group, texture *Tex)
 {
@@ -421,7 +451,7 @@ FramebufferDepthTexture(g_buffer_render_group *Group, texture *Tex)
 void
 FramebufferTexture(g_buffer_render_group *Group, texture *Tex)
 {
-  u32 Attachment = Group->NextColorAttachment++;
+  u32 Attachment = Group->Attachments++;
   GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + Attachment,
       GL_TEXTURE_2D, Tex->ID, 0);
 
@@ -429,19 +459,19 @@ FramebufferTexture(g_buffer_render_group *Group, texture *Tex)
 }
 
 void
-SetDrawBuffers(g_buffer_render_group *gBuffer)
+SetDrawBuffers(u32 Count)
 {
   // TODO(Jesse): Transient storage?
   u32 Attachments[32] = {};
   for (u32 AttIndex = 0;
-      AttIndex < gBuffer->NextColorAttachment;
+      AttIndex < Count;
 
       ++AttIndex)
   {
     Attachments[AttIndex] =  GL_COLOR_ATTACHMENT0 + AttIndex;
   }
 
-  GL_Global->glDrawBuffers(gBuffer->NextColorAttachment, Attachments);
+  GL_Global->glDrawBuffers(Count, Attachments);
 
 }
 
@@ -456,6 +486,20 @@ CheckAndClearFramebuffer()
   return Result;
 }
 
+shader
+CreateGbufferShader(memory_arena *GraphicsMemory, m4 *ViewProjection)
+{
+  shader Shader = LoadShaders( "SimpleVertexShader.vertexshader",
+                               "SimpleFragmentShader.fragmentshader" );
+
+  shader_uniform **Current = &Shader.FirstUniform;
+
+  *Current = GetM4Uniform(GraphicsMemory, &Shader, ViewProjection, "ViewProjection");
+  Current = &(*Current)->Next;
+
+  return Shader;
+}
+
 bool
 InitGbufferRenderGroup( platform *Plat, g_buffer_render_group *gBuffer, memory_arena *GraphicsMemory, texture *ShadowMap)
 {
@@ -464,24 +508,21 @@ InitGbufferRenderGroup( platform *Plat, g_buffer_render_group *gBuffer, memory_a
   texture *ColorTexture    = MakeTexture_RGBA( ScreenDim, 0, GraphicsMemory);
   texture *NormalTexture   = MakeTexture_RGBA( ScreenDim, 0, GraphicsMemory);
   texture *PositionTexture = MakeTexture_RGBA( ScreenDim, 0, GraphicsMemory);
-  texture *DepthTexture    = MakeDepthTexture( ScreenDim, GraphicsMemory );
 
   FramebufferTexture(gBuffer, ColorTexture);
   FramebufferTexture(gBuffer, NormalTexture);
   FramebufferTexture(gBuffer, PositionTexture);
-  FramebufferDepthTexture(gBuffer, DepthTexture);
+  SetDrawBuffers(gBuffer->Attachments);
 
-  SetDrawBuffers(gBuffer);
+  texture *DepthTexture    = MakeDepthTexture( ScreenDim, GraphicsMemory );
+  FramebufferDepthTexture(gBuffer, DepthTexture);
 
   if (!CheckAndClearFramebuffer())
     return false;
 
+  gBuffer->gBufferShader = CreateGbufferShader(GraphicsMemory, &gBuffer->ViewProjection);
 
-  gBuffer->GBufferShader = LoadShaders( "SimpleVertexShader.vertexshader",
-                                        "SimpleFragmentShader.fragmentshader" );
-
-  gBuffer->gBuffer_ViewProjection = GetShaderUniform(&gBuffer->GBufferShader, "ViewProjection");
-  gBuffer->gBuffer_ModelUniform  = GetShaderUniform(&gBuffer->GBufferShader, "Model");
+  gBuffer->gBuffer_ModelUniform  = GetShaderUniform(&gBuffer->gBufferShader, "Model");
   /* gBuffer->LightPID             GetShaderUniform(&gBuffer->ShaderID, "LightP_worldspace"); */
 
 
@@ -680,6 +721,7 @@ BindShaderUniforms(shader *Shader)
 
       case ShaderUniform_M4:
       {
+        GL_Global->glUniformMatrix4fv(Uniform->ID, 1, GL_FALSE, (r32*)Uniform->M4);
       } break;
 
       InvalidDefaultCase;
@@ -816,11 +858,11 @@ void
 RenderWorldToGBuffer( platform *Plat, mesh_buffer_target *Mesh, g_buffer_render_group *RG)
 {
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO);
-  GL_Global->glUseProgram(RG->GBufferShader.ID);
+  GL_Global->glUseProgram(RG->gBufferShader.ID);
 
   SetViewport( V2(SCR_WIDTH, SCR_HEIGHT) );
 
-  GL_Global->glUniformMatrix4fv(RG->gBuffer_ViewProjection, 1, GL_FALSE, (r32*)&RG->ViewProjection);
+  BindShaderUniforms(&RG->gBufferShader);
   GL_Global->glUniformMatrix4fv(RG->gBuffer_ModelUniform,   1, GL_FALSE, (r32*)&IdentityMatrix);
 
   // Vertices
