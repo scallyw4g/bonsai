@@ -242,7 +242,7 @@ MakeTexture_RGBA(v2i Dim, const void* Data, memory_arena *Mem)
 {
   texture *Texture = GenTexture(Dim, Mem);
 
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F,
       Texture->Dim.x, Texture->Dim.y, 0,  GL_RGBA, GL_FLOAT, Data);
 
   glBindTexture(GL_TEXTURE_2D, 0);
@@ -255,7 +255,9 @@ MakeTexture_RGB(v2i Dim, const void* Data, memory_arena *Mem)
 {
   texture *Texture = GenTexture(Dim, Mem);
 
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB,
+  // TODO(Jesse): 32F is only necessary for reprojection of Position for
+  // calculating AO.  Consider passing this in when creating a Texture?
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F,
       Texture->Dim.x, Texture->Dim.y, 0,  GL_RGB, GL_FLOAT, Data);
 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
