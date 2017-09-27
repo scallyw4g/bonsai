@@ -62,7 +62,7 @@ void main()
   vec3 Diffuse      = texture(gColor, UV).rgb;
   vec3 FragNormal   = texture(gNormal, UV).rgb;   // modelspace
   vec3 FragPosition = texture(gPosition, UV).rgb; // worldspace
-  float fragDepth   = texture(gPosition, UV).w;   // Linear
+  float FragDepth   = texture(gPosition, UV).w;   // Linear
 
 
   vec3 Ambient = Diffuse * GlobalLightIntensity * 0.1f;
@@ -109,9 +109,9 @@ void main()
     // get Sample depth:
     float sampleDepth = texture(gPosition, SampleUV.xy).w + AoSampleBias;;
 
-    bool Occluded = sampleDepth <= fragDepth;
+    bool Occluded = sampleDepth <= FragDepth;
 
-    float Diff = abs(fragDepth - sampleDepth);
+    float Diff = abs(FragDepth - sampleDepth);
     bool InsideRadius = Diff < 0.0016f; // TODO(Jesse): In the john-chapman article this was the radius value - how?
 
     if (Occluded && InsideRadius)
@@ -165,6 +165,17 @@ void main()
   /* mapped.rgb = vec3(AO); */
   color = vec4(pow(mapped, vec3(1.0f / gamma)), 1.0f);
 
-  /* color.rgb = Noise; */
+  vec3 KernelAvg = vec3(0);
+  for ( int KernelIndex = 0;
+        KernelIndex < SSAO_KERNEL_SIZE;
+        ++KernelIndex)
+  {
+    KernelAvg += SsaoKernel[KernelIndex];
+  }
+  KernelAvg /= vec3(SSAO_KERNEL_SIZE);
+  color.rgb = KernelAvg;
 
+  /* color.rgb = vec3(AO); */
+  /* color.rgb = vec3(FragDepth); */
+  /* color.rgb = FragPosition; */
 }
