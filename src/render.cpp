@@ -13,6 +13,13 @@
 
 GLOBAL_VARIABLE u32 Global_QuadVertexBuffer = 0;
 
+GLOBAL_VARIABLE m4 NdcToScreenSpace = {
+  V4(0.5, 0.0, 0.0, 0.0),
+  V4(0.0, 0.5, 0.0, 0.0),
+  V4(0.0, 0.0, 0.5, 0.0),
+  V4(0.5, 0.5, 0.5, 1.0)
+};
+
 void
 Init_Global_QuadVertexBuffer() {
   GL_Global->glGenBuffers(1, &Global_QuadVertexBuffer);
@@ -775,14 +782,7 @@ DrawGBufferToFullscreenQuad( platform *Plat, g_buffer_render_group *RG, ShadowRe
 
   GL_Global->glUniform3fv(RG->GlobalLightPositionID, 1, &GlobalLightPosition.E[0]);
 
-  m4 biasMatrix = {
-    V4(0.5, 0.0, 0.0, 0.0),
-    V4(0.0, 0.5, 0.0, 0.0),
-    V4(0.0, 0.0, 0.5, 0.0),
-    V4(0.5, 0.5, 0.5, 1.0)
-  };
-
-  RG->ShadowMVP = biasMatrix * GetShadowMapMVP(Camera);
+  RG->ShadowMVP = NdcToScreenSpace * GetShadowMapMVP(Camera);
 
   GL_Global->glUniformMatrix4fv(RG->ViewProjectionUniform, 1, GL_FALSE, (r32*)&RG->ViewProjection);
 

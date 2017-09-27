@@ -21,8 +21,12 @@ uniform vec2 SsaoNoiseTile;
 
 uniform vec3 GlobalLightPosition;
 uniform mat4 ShadowMVP;
-uniform mat4 ViewProjection;
+
 uniform vec3 SsaoKernel[SSAO_KERNEL_SIZE];
+
+// TODO(Jesse): This could be pre-multiplied by an NdcToScreenSpace matrix so
+// each SSAO sample did not have to be re-biased in the hot loop.
+uniform mat4 ViewProjection;
 
 // Tuning
   float SsaoRadius = 1.0f;
@@ -83,13 +87,6 @@ void main()
 
   float AO = 1.0f;
   float OccluderContribution = 1.0f/float(SSAO_KERNEL_SIZE);
-
-  // For Debugging UV Problem
-    vec4 ProjectedFragP = ViewProjection * vec4(FragPosition, 1);
-    vec2 FragUV = ProjectedFragP.xy / ProjectedFragP.w;
-    FragUV = (FragUV.xy * 0.5f) + 0.5f;
-    float ReprojectedFragDepth = texture(gPosition, FragUV).w;
-  //
 
   // NOTE(Jesse): I was getting some artifacts when at 90deg to a surface so I
   // added a bias to the sample.
