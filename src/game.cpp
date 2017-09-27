@@ -4,7 +4,6 @@
 //
 // TODO(Jesse): Axe these!
 static gl_extensions *GL_Global;
-static const char *GlobalGlslVersion;
 
 GLOBAL_VARIABLE physics NullPhysics = {};
 GLOBAL_VARIABLE hotkeys NullHotkeys = {};
@@ -900,8 +899,6 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
   UpdateLogicalFrameCount(&GameState->Frame, Plat->dt);
 
-  GL_Global = &Plat->GL;
-
   world *World          = GameState->World;
 
   entity *Player        = GameState->Player;
@@ -1154,8 +1151,6 @@ EXPORT void
 InitGlobals(platform *Plat)
 {
   GL_Global = &Plat->GL;
-  GlobalGlslVersion = Plat->GlslVersion;
-
   InitDebugState(GetDebugState(), Plat);
 }
 
@@ -1166,6 +1161,7 @@ GameInit( platform *Plat, memory_arena *GameMemory)
 
   InitGlobals(Plat);
 
+  Init_Global_QuadVertexBuffer();
 
   srand(DEBUG_NOISE_SEED);
   PerlinNoise Noise(rand());

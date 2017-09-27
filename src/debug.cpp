@@ -3,9 +3,6 @@
 
 #include <debug.h>
 
-struct shader;
-shader LoadShaders(const char * vertex_file_path, const char * fragment_file_path);
-
 void
 initText2D(const char *TexturePath, debug_text_render_group *RG)
 {

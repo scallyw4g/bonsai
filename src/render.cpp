@@ -12,14 +12,12 @@
 #include <colors.h>
 
 GLOBAL_VARIABLE u32 Global_QuadVertexBuffer = 0;
-GLOBAL_VARIABLE b32 Global_QuadVertexBuffer_Initialized = False;
 
 void
 Init_Global_QuadVertexBuffer() {
-  Global_QuadVertexBuffer_Initialized = True;
-
   GL_Global->glGenBuffers(1, &Global_QuadVertexBuffer);
   Assert(Global_QuadVertexBuffer);
+
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, Global_QuadVertexBuffer);
   GL_Global->glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -30,8 +28,6 @@ Init_Global_QuadVertexBuffer() {
 void
 RenderQuad()
 {
-  if (!Global_QuadVertexBuffer_Initialized)
-    Init_Global_QuadVertexBuffer();
 
   GL_Global->glEnableVertexAttribArray(0);
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, Global_QuadVertexBuffer);
