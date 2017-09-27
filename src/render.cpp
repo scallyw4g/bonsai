@@ -392,7 +392,8 @@ MakeSimpleTextureShader(texture *Texture, memory_arena *GraphicsMemory)
 
 shader
 MakeLightingShader(memory_arena *GraphicsMemory,
-    texture *ColorTexture, texture *NormalTexture, texture *PositionTexture, texture *ShadowMap, texture *SsaoNoiseTexture)
+    texture *ColorTexture, texture *NormalTexture, texture *PositionTexture,
+    texture *ShadowMap, texture *SsaoNoiseTexture, m4 *ShadowMVP)
 {
   shader Shader = LoadShaders( "Lighting.vertexshader", "Lighting.fragmentshader" );
 
@@ -411,6 +412,9 @@ MakeLightingShader(memory_arena *GraphicsMemory,
   Current = &(*Current)->Next;
 
   *Current = GetTextureUniform(GraphicsMemory, &Shader, SsaoNoiseTexture, "SsaoNoiseTexture");
+  Current = &(*Current)->Next;
+
+  *Current = GetM4Uniform(GraphicsMemory, &Shader, ShadowMVP, "ShadowMVP");
   Current = &(*Current)->Next;
 
   return Shader;
@@ -432,6 +436,7 @@ CreateGbuffer(memory_arena *Memory)
   g_buffer_render_group *gBuffer = PUSH_STRUCT_CHECKED(g_buffer_render_group, Memory, 1);
   gBuffer->FBO = GenFramebuffer();
   gBuffer->ViewProjection = IdentityMatrix;
+  gBuffer->ShadowMVP = IdentityMatrix;
 
   GL_Global->glGenBuffers(1, &gBuffer->vertexbuffer);
   GL_Global->glGenBuffers(1, &gBuffer->colorbuffer);
@@ -546,12 +551,12 @@ InitGbufferRenderGroup( platform *Plat, g_buffer_render_group *gBuffer, memory_a
 
 
   gBuffer->LightingShader = MakeLightingShader(GraphicsMemory,
-      ColorTexture, NormalTexture, PositionTexture, ShadowMap, SsaoNoiseTexture);
+      ColorTexture, NormalTexture, PositionTexture, ShadowMap, SsaoNoiseTexture,
+      &gBuffer->ShadowMVP);
 
   gBuffer->SsaoKernelUniform = GetShaderUniform(&gBuffer->LightingShader, "SsaoKernel");
   gBuffer->SsaoNoiseTileUniform = GetShaderUniform(&gBuffer->LightingShader, "SsaoNoiseTile");
 
-  gBuffer->DepthBiasMVPID          = GetShaderUniform(&gBuffer->LightingShader, "shadowMVP");
   gBuffer->GlobalLightPositionID   = GetShaderUniform(&gBuffer->LightingShader, "GlobalLightPosition");
   gBuffer->ViewProjectionUniform   = GetShaderUniform(&gBuffer->LightingShader, "ViewProjection");
 
@@ -777,15 +782,14 @@ DrawGBufferToFullscreenQuad( platform *Plat, g_buffer_render_group *RG, ShadowRe
     V4(0.5, 0.5, 0.5, 1.0)
   };
 
-  m4 shadowMVP = biasMatrix * GetShadowMapMVP(Camera);
-  GL_Global->glUniformMatrix4fv(RG->DepthBiasMVPID, 1, GL_FALSE, &shadowMVP.E[0].E[0]);
+  RG->ShadowMVP = biasMatrix * GetShadowMapMVP(Camera);
 
   GL_Global->glUniformMatrix4fv(RG->ViewProjectionUniform, 1, GL_FALSE, (r32*)&RG->ViewProjection);
 
-  BindShaderUniforms(&RG->LightingShader);
-
   GL_Global->glUniform2fv(RG->SsaoNoiseTileUniform, 1, &RG->NoiseTile.x);
   GL_Global->glUniform3fv(RG->SsaoKernelUniform, SSAO_KERNEL_SIZE, (r32*)&RG->SsaoKernel);
+
+  BindShaderUniforms(&RG->LightingShader);
 
   RenderQuad();
   AssertNoGlErrors;

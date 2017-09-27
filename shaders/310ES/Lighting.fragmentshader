@@ -20,7 +20,7 @@ uniform sampler2D SsaoNoiseTexture;
 uniform vec2 SsaoNoiseTile;
 
 uniform vec3 GlobalLightPosition;
-uniform mat4 shadowMVP;
+uniform mat4 ShadowMVP;
 uniform mat4 ViewProjection;
 uniform vec3 SsaoKernel[SSAO_KERNEL_SIZE];
 
@@ -132,7 +132,7 @@ void main()
   /*
    *  Shadow Mapping
    */
-  vec4 FragPShadowScreenSpace = shadowMVP * vec4(FragPosition, 1.0f);
+  vec4 FragPShadowScreenSpace = ShadowMVP * vec4(FragPosition, 1.0f);
 
   float FragPShadowDepth = FragPShadowScreenSpace.z;
 

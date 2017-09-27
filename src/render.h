@@ -51,6 +51,7 @@ struct g_buffer_render_group
 
   // Lighting Shader
   m4 ViewProjection;
+  m4 ShadowMVP;
   u32 ViewProjectionUniform;
 
   shader LightingShader;
