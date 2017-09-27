@@ -504,14 +504,14 @@ InitGbufferRenderGroup( platform *Plat, g_buffer_render_group *gBuffer, memory_a
   gBuffer->SsaoNoiseTileUniform = GetShaderUniform(&gBuffer->LightingShader, "SsaoNoiseTile");
 
   gBuffer->DepthBiasMVPID          = GetShaderUniform(&gBuffer->LightingShader, "shadowMVP");
-  gBuffer->NormalTextureUniform    = GetShaderUniform(&gBuffer->LightingShader, "gNormal");
-  gBuffer->PositionTextureUniform  = GetShaderUniform(&gBuffer->LightingShader, "gPosition");
   gBuffer->GlobalLightPositionID   = GetShaderUniform(&gBuffer->LightingShader, "GlobalLightPosition");
   gBuffer->ViewProjectionUniform   = GetShaderUniform(&gBuffer->LightingShader, "ViewProjection");
 
-  gBuffer->DebugColorTextureShader = MakeSimpleTextureShader(ColorTexture, GraphicsMemory);
-  gBuffer->DebugNormalTextureShader = MakeSimpleTextureShader(NormalTexture, GraphicsMemory);
-  gBuffer->DebugPositionTextureShader = MakeSimpleTextureShader(PositionTexture, GraphicsMemory);
+  { // To keep these or not to keep these
+    gBuffer->DebugColorTextureShader = MakeSimpleTextureShader(ColorTexture, GraphicsMemory);
+    gBuffer->DebugNormalTextureShader = MakeSimpleTextureShader(NormalTexture, GraphicsMemory);
+    gBuffer->DebugPositionTextureShader = MakeSimpleTextureShader(PositionTexture, GraphicsMemory);
+  }
 
   AssertNoGlErrors;
 

@@ -45,8 +45,6 @@ struct g_buffer_render_group
   u32 vertexbuffer;
   u32 normalbuffer;
 
-  u32 quad_vertexbuffer;
-
   // GBuffer
   shader GBufferShader;
   u32 gBuffer_ModelUniform;
@@ -61,12 +59,6 @@ struct g_buffer_render_group
 
   shader LightingShader;
 
-  u32 ColorTextureUniform;
-  u32 NormalTextureUniform;
-  u32 PositionTextureUniform;
-  u32 DepthTextureUniform;
-
-  u32 ShadowMapTextureUniform;
   u32 DepthBiasMVPID;
   u32 CameraPosUniform;
   //
