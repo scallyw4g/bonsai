@@ -453,11 +453,20 @@ MakeLightingShader(memory_arena *GraphicsMemory,
 framebuffer
 GenFramebuffer()
 {
-  u32 Framebuffer = 0;
-  GL_Global->glGenFramebuffers(1, &Framebuffer);
-  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, Framebuffer);
+  framebuffer Framebuffer = {};
+  GL_Global->glGenFramebuffers(1, &Framebuffer.ID);
+  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, Framebuffer.ID);
 
   return Framebuffer;
+}
+
+ao_render_group *
+CreateAoFramebuffer(memory_arena *Mem)
+{
+  ao_render_group *Result = PUSH_STRUCT_CHECKED(ao_render_group, Mem, 1);
+  Result->FBO = GenFramebuffer();
+
+  return Result;
 }
 
 g_buffer_render_group *
@@ -484,9 +493,9 @@ FramebufferDepthTexture(g_buffer_render_group *Group, texture *Tex)
 }
 
 void
-FramebufferTexture(g_buffer_render_group *Group, texture *Tex)
+FramebufferTexture(framebuffer *FBO, texture *Tex)
 {
-  u32 Attachment = Group->Attachments++;
+  u32 Attachment = FBO->Attachments++;
   GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + Attachment,
       GL_TEXTURE_2D, Tex->ID, 0);
 
@@ -494,19 +503,19 @@ FramebufferTexture(g_buffer_render_group *Group, texture *Tex)
 }
 
 void
-SetDrawBuffers(u32 Count)
+SetDrawBuffers(framebuffer *FBO)
 {
   // TODO(Jesse): Transient storage?
   u32 Attachments[32] = {};
   for (u32 AttIndex = 0;
-      AttIndex < Count;
+      AttIndex < FBO->Attachments;
 
       ++AttIndex)
   {
     Attachments[AttIndex] =  GL_COLOR_ATTACHMENT0 + AttIndex;
   }
 
-  GL_Global->glDrawBuffers(Count, Attachments);
+  GL_Global->glDrawBuffers(FBO->Attachments, Attachments);
 
 }
 
@@ -538,8 +547,40 @@ CreateGbufferShader(memory_arena *GraphicsMemory, m4 *ViewProjection)
   return Shader;
 }
 
+shader
+MakeSsaoShader(memory_arena *GraphicsMemory)
+{
+  shader Shader = LoadShaders( "Passthrough.vertexshader",
+                               "Ao.fragmentshader" );
+
+  return Shader;
+}
+
 bool
-InitGbufferRenderGroup( platform *Plat, g_buffer_render_group *gBuffer, memory_arena *GraphicsMemory, texture *ShadowMap)
+InitAoRenderGroup(ao_render_group *AoGroup, memory_arena *GraphicsMemory)
+{
+  v2i ScreenDim = V2i(SCR_WIDTH, SCR_HEIGHT);
+  AssertNoGlErrors;
+
+  texture *SsaoTexture = MakeTexture_RGBA( ScreenDim, 0, GraphicsMemory);
+  AssertNoGlErrors;
+
+  FramebufferTexture(&AoGroup->FBO, SsaoTexture);
+  AssertNoGlErrors;
+  SetDrawBuffers(&AoGroup->FBO);
+  AssertNoGlErrors;
+
+  if (!CheckAndClearFramebuffer())
+    return false;
+
+  AssertNoGlErrors;
+
+  /* shader Shader = MakeSsaoShader(GraphicsMemory, SsaoTexture); */
+  return True;
+}
+
+bool
+InitGbufferRenderGroup(g_buffer_render_group *gBuffer, memory_arena *GraphicsMemory, texture *ShadowMap)
 {
   v2i ScreenDim = V2i(SCR_WIDTH, SCR_HEIGHT);
 
@@ -547,10 +588,10 @@ InitGbufferRenderGroup( platform *Plat, g_buffer_render_group *gBuffer, memory_a
   texture *NormalTexture   = MakeTexture_RGBA( ScreenDim, 0, GraphicsMemory);
   texture *PositionTexture = MakeTexture_RGBA( ScreenDim, 0, GraphicsMemory);
 
-  FramebufferTexture(gBuffer, ColorTexture);
-  FramebufferTexture(gBuffer, NormalTexture);
-  FramebufferTexture(gBuffer, PositionTexture);
-  SetDrawBuffers(gBuffer->Attachments);
+  FramebufferTexture(&gBuffer->FBO, ColorTexture);
+  FramebufferTexture(&gBuffer->FBO, NormalTexture);
+  FramebufferTexture(&gBuffer->FBO, PositionTexture);
+  SetDrawBuffers(&gBuffer->FBO);
 
   texture *DepthTexture    = MakeDepthTexture( ScreenDim, GraphicsMemory );
   FramebufferDepthTexture(gBuffer, DepthTexture);
@@ -581,8 +622,10 @@ InitGbufferRenderGroup( platform *Plat, g_buffer_render_group *gBuffer, memory_a
   gBuffer->LightingShader = MakeLightingShader(GraphicsMemory,
       ColorTexture, NormalTexture, PositionTexture, ShadowMap, SsaoNoiseTexture,
       &gBuffer->ViewProjection, &gBuffer->ShadowMVP);
+  AssertNoGlErrors;
 
   gBuffer->gBufferShader = CreateGbufferShader(GraphicsMemory, &gBuffer->ViewProjection);
+  AssertNoGlErrors;
 
   gBuffer->SsaoKernelUniform = GetShaderUniform(&gBuffer->LightingShader, "SsaoKernel");
   gBuffer->SsaoNoiseTileUniform = GetShaderUniform(&gBuffer->LightingShader, "SsaoNoiseTile");
@@ -773,12 +816,7 @@ DrawTexturedQuad(shader *SimpleTextureShader)
 }
 
 void
-RenderAoTexture( platform              * Plat,
-                 g_buffer_render_group * RG,
-                 ao_render_group       * Group,
-                 camera                * Camera,
-                 world_position WorldChunkDim
-  )
+RenderAoTexture()
 {
   /* GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, Group->Framebuffer); */
   /* SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight)); */
@@ -860,9 +898,9 @@ RenderShadowMap(mesh_buffer_target *Mesh, ShadowRenderGroup *SG, g_buffer_render
 }
 
 void
-RenderWorldToGBuffer( platform *Plat, mesh_buffer_target *Mesh, g_buffer_render_group *RG)
+RenderWorldToGBuffer(mesh_buffer_target *Mesh, g_buffer_render_group *RG)
 {
-  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO);
+  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO.ID);
   GL_Global->glUseProgram(RG->gBufferShader.ID);
 
   SetViewport( V2(SCR_WIDTH, SCR_HEIGHT) );
@@ -920,7 +958,6 @@ RenderWorldToGBuffer( platform *Plat, mesh_buffer_target *Mesh, g_buffer_render_
 
 inline void
 RenderToGBuffer(
-    platform *Plat,
     mesh_buffer_target *Mesh,
     g_buffer_render_group *RG,
     ShadowRenderGroup *SG,
@@ -931,7 +968,7 @@ RenderToGBuffer(
 
   RenderShadowMap(Mesh, SG, RG, Camera);
 
-  RenderWorldToGBuffer(Plat, Mesh, RG);
+  RenderWorldToGBuffer(Mesh, RG);
 
   AssertNoGlErrors;
 
@@ -1367,7 +1404,7 @@ ClearFramebuffers(g_buffer_render_group *RG, ShadowRenderGroup *SG)
 
   // FIXME(Jesse): This is taking _forever_ on Linux (GLES) .. does it take
   // forever on other Linux systems?
-  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO);
+  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO.ID);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);

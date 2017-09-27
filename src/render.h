@@ -13,8 +13,6 @@ DEBUG_GLOBAL float g_quad_vertex_buffer_data[] =
    1.0f,  1.0f, 1.0f,
 };
 
-typedef u32 framebuffer;
-
 struct RenderBasis
 {
   m4 ModelMatrix;
@@ -28,18 +26,21 @@ struct texture
   v2i Dim;
 };
 
+struct framebuffer
+{
+  u32 ID;
+  u32 Attachments;
+};
+
 struct ao_render_group
 {
-  framebuffer Framebuffer;
-  texture AoTexture;
+  framebuffer FBO;
   shader AoShader;
 };
 
-typedef u32 framebuffer;
 struct g_buffer_render_group
 {
   framebuffer FBO;
-  u32 Attachments;
 
   u32 colorbuffer;
   u32 vertexbuffer;

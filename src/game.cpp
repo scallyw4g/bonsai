@@ -1080,11 +1080,11 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
   /* ao_render_group AoGroup = {}; */
 
-  RenderToGBuffer(Plat, &World->Mesh, gBuffer, SG, Camera);
+  RenderToGBuffer(&World->Mesh, gBuffer, SG, Camera);
   AssertNoGlErrors;
 
-  /* RenderAoTexture( Plat, gBuffer, &AoGroup, Camera, World->ChunkDim); */
-  /* AssertNoGlErrors; */
+  RenderAoTexture();
+  AssertNoGlErrors;
 
   DrawGBufferToFullscreenQuad( Plat, gBuffer, SG, Camera, World->ChunkDim);
   AssertNoGlErrors;
@@ -1177,8 +1177,13 @@ GameInit( platform *Plat, memory_arena *GameMemory)
   AssertNoGlErrors;
 
   //FIXME(Jesse): Sub-arena for GraphicsMemory
+  ao_render_group *AoFramebuffer = CreateAoFramebuffer(GameState->Memory);
+  if (!InitAoRenderGroup(AoFramebuffer, GameState->Memory)) { Error("Initializing g_buffer_render_group"); return False; }
+
+  AssertNoGlErrors;
+
   g_buffer_render_group *gBuffer = CreateGbuffer(GameState->Memory);
-  if (!InitGbufferRenderGroup(Plat, gBuffer, GameState->Memory, SG->ShadowMap)) { Error("Initializing g_buffer_render_group"); return False; }
+  if (!InitGbufferRenderGroup(gBuffer, GameState->Memory, SG->ShadowMap)) { Error("Initializing g_buffer_render_group"); return False; }
 
   AssertNoGlErrors;
 
