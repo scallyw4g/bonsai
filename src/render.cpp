@@ -427,6 +427,17 @@ SetDrawBuffers(g_buffer_render_group *gBuffer)
 
 }
 
+b32
+CheckAndClearFramebuffer()
+{
+  b32 Result = (GL_Global->glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+
+  glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+  return Result;
+}
+
 bool
 InitGbufferRenderGroup( platform *Plat, g_buffer_render_group *gBuffer, memory_arena *GraphicsMemory, texture *ShadowMap)
 {
@@ -444,13 +455,9 @@ InitGbufferRenderGroup( platform *Plat, g_buffer_render_group *gBuffer, memory_a
 
   SetDrawBuffers(gBuffer);
 
-  if (GL_Global->glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+  if (!CheckAndClearFramebuffer())
     return false;
 
-  AssertNoGlErrors;
-
-  glClear(GL_COLOR_BUFFER_BIT);
-  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
   gBuffer->GBufferShader = LoadShaders( "SimpleVertexShader.vertexshader",
                                    "SimpleFragmentShader.fragmentshader" );
