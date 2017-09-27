@@ -344,7 +344,7 @@ MakeSimpleTextureShader(texture *Texture, memory_arena *GraphicsMemory)
 }
 
 shader
-MakeLightingShader(memory_arena *GraphicsMemory, texture *ColorTexture, texture *NormalTexture)
+MakeLightingShader(memory_arena *GraphicsMemory, texture *ColorTexture, texture *NormalTexture, texture *PositionTexture)
 {
   shader Shader = LoadShaders( "Lighting.vertexshader", "Lighting.fragmentshader" );
 
@@ -356,7 +356,7 @@ MakeLightingShader(memory_arena *GraphicsMemory, texture *ColorTexture, texture 
   *Current = GetTextureUniform(&Shader, NormalTexture, "gNormal", GraphicsMemory);
   Current = &(*Current)->Next;
 
-  *Current = GetTextureUniform(&Shader, NormalTexture, "gNormal", GraphicsMemory);
+  *Current = GetTextureUniform(&Shader, PositionTexture, "gPosition", GraphicsMemory);
   Current = &(*Current)->Next;
 
   return Shader;
@@ -402,7 +402,7 @@ InitializeRenderGroup( platform *Plat, g_buffer_render_group *RG, memory_arena *
   /* RG->LightPID             GetShaderUniform(&RG->ShaderID, "LightP_worldspace"); */
 
 
-  RG->LightingShader = MakeLightingShader(GraphicsMemory, ColorTexture, NormalTexture);
+  RG->LightingShader = MakeLightingShader(GraphicsMemory, ColorTexture, NormalTexture, PositionTexture);
 
   RG->DebugColorTextureShader = MakeSimpleTextureShader(ColorTexture, GraphicsMemory);
   RG->DebugNormalTextureShader = MakeSimpleTextureShader(NormalTexture, GraphicsMemory);
