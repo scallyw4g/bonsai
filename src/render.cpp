@@ -400,7 +400,7 @@ MakeSimpleTextureShader(texture *Texture, memory_arena *GraphicsMemory)
 shader
 MakeLightingShader(memory_arena *GraphicsMemory,
     texture *ColorTexture, texture *NormalTexture, texture *PositionTexture,
-    texture *ShadowMap, texture *SsaoNoiseTexture, m4 *ShadowMVP)
+    texture *ShadowMap, texture *SsaoNoiseTexture, m4 *ViewProjection, m4 *ShadowMVP)
 {
   shader Shader = LoadShaders( "Lighting.vertexshader", "Lighting.fragmentshader" );
 
@@ -419,6 +419,9 @@ MakeLightingShader(memory_arena *GraphicsMemory,
   Current = &(*Current)->Next;
 
   *Current = GetTextureUniform(GraphicsMemory, &Shader, SsaoNoiseTexture, "SsaoNoiseTexture");
+  Current = &(*Current)->Next;
+
+  *Current = GetM4Uniform(GraphicsMemory, &Shader, ViewProjection, "ViewProjection");
   Current = &(*Current)->Next;
 
   *Current = GetM4Uniform(GraphicsMemory, &Shader, ShadowMVP, "ShadowMVP");
@@ -559,13 +562,12 @@ InitGbufferRenderGroup( platform *Plat, g_buffer_render_group *gBuffer, memory_a
 
   gBuffer->LightingShader = MakeLightingShader(GraphicsMemory,
       ColorTexture, NormalTexture, PositionTexture, ShadowMap, SsaoNoiseTexture,
-      &gBuffer->ShadowMVP);
+      &gBuffer->ViewProjection, &gBuffer->ShadowMVP);
 
   gBuffer->SsaoKernelUniform = GetShaderUniform(&gBuffer->LightingShader, "SsaoKernel");
   gBuffer->SsaoNoiseTileUniform = GetShaderUniform(&gBuffer->LightingShader, "SsaoNoiseTile");
 
   gBuffer->GlobalLightPositionID   = GetShaderUniform(&gBuffer->LightingShader, "GlobalLightPosition");
-  gBuffer->ViewProjectionUniform   = GetShaderUniform(&gBuffer->LightingShader, "ViewProjection");
 
   { // To keep these or not to keep these
     gBuffer->DebugColorTextureShader = MakeSimpleTextureShader(ColorTexture, GraphicsMemory);
@@ -765,10 +767,6 @@ RenderAoTexture( platform              * Plat,
 
 /*   GL_Global->glUseProgram(Group->AoShader.ID); */
 
-  // m4 ViewProjection = RG->Basis.ProjectionMatrix * RG->Basis.ViewMatrix;
-  // SetMatrixUniform( Group->AoShader.ViewProjectionUniform, &ViewProjection );
-
-  /* GL_Global->glUniformMatrix4fv(Group->AoShader.ViewProjectionUniform, 1, GL_FALSE, &ViewProjection.E[0].E[0]); */
 
 }
 
@@ -784,7 +782,7 @@ DrawGBufferToFullscreenQuad( platform *Plat, g_buffer_render_group *RG, ShadowRe
 
   RG->ShadowMVP = NdcToScreenSpace * GetShadowMapMVP(Camera);
 
-  GL_Global->glUniformMatrix4fv(RG->ViewProjectionUniform, 1, GL_FALSE, (r32*)&RG->ViewProjection);
+  BindShaderUniforms(&RG->LightingShader);
 
   GL_Global->glUniform2fv(RG->SsaoNoiseTileUniform, 1, &RG->NoiseTile.x);
   GL_Global->glUniform3fv(RG->SsaoKernelUniform, SSAO_KERNEL_SIZE, (r32*)&RG->SsaoKernel);
