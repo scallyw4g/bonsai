@@ -371,40 +371,93 @@ MakeLightingShader(memory_arena *GraphicsMemory,
   return Shader;
 }
 
-bool
-InitGbufferRenderGroup( platform *Plat, g_buffer_render_group *RG, memory_arena *GraphicsMemory, texture *ShadowMap)
+framebuffer
+GenFramebuffer()
 {
-  RG->ViewProjection = IdentityMatrix;
-  v2i ScreenDim = V2i(SCR_WIDTH, SCR_HEIGHT);
+  u32 Framebuffer = 0;
+  GL_Global->glGenFramebuffers(1, &Framebuffer);
+  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, Framebuffer);
 
-  GL_Global->glGenFramebuffers(1, &RG->FBO);
-  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO);
+  return Framebuffer;
+}
+
+g_buffer_render_group *
+CreateGbuffer(memory_arena *Memory)
+{
+  g_buffer_render_group *gBuffer = PUSH_STRUCT_CHECKED(g_buffer_render_group, Memory, 1);
+  gBuffer->FBO = GenFramebuffer();
+  gBuffer->ViewProjection = IdentityMatrix;
+
+  return gBuffer;
+}
+
+
+void
+FramebufferDepthTexture(g_buffer_render_group *Group, depth_texture *Tex)
+{
+  GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+      GL_TEXTURE_2D, Tex->ID, 0);
+  return;
+}
+
+void
+FramebufferTexture(g_buffer_render_group *Group, texture *Tex)
+{
+  u32 Attachment = Group->NextColorAttachment++;
+  GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + Attachment,
+      GL_TEXTURE_2D, Tex->ID, 0);
+
+  return;
+}
+
+void
+SetDrawBuffers(g_buffer_render_group *gBuffer)
+{
+  // TODO(Jesse): Transient storage?
+  u32 Attachments[32] = {};
+  for (u32 AttIndex = 0;
+      AttIndex < gBuffer->NextColorAttachment;
+
+      ++AttIndex)
+  {
+    Attachments[AttIndex] =  GL_COLOR_ATTACHMENT0 + AttIndex;
+  }
+
+  GL_Global->glDrawBuffers(gBuffer->NextColorAttachment, Attachments);
+
+}
+
+bool
+InitGbufferRenderGroup( platform *Plat, g_buffer_render_group *gBuffer, memory_arena *GraphicsMemory, texture *ShadowMap)
+{
+  v2i ScreenDim = V2i(SCR_WIDTH, SCR_HEIGHT);
 
   texture *ColorTexture    = MakeTexture_RGBA( ScreenDim, 0, GraphicsMemory);
   texture *NormalTexture   = MakeTexture_RGBA( ScreenDim, 0, GraphicsMemory);
   texture *PositionTexture = MakeTexture_RGBA( ScreenDim, 0, GraphicsMemory);
   texture *DepthTexture    = MakeDepthTexture( ScreenDim, GraphicsMemory );
 
-  GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ColorTexture->ID,    0);
-  GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, NormalTexture->ID,   0);
-  GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, PositionTexture->ID, 0);
-  GL_Global->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,  GL_TEXTURE_2D, DepthTexture->ID,    0);
+  FramebufferTexture(gBuffer, ColorTexture);
+  FramebufferTexture(gBuffer, NormalTexture);
+  FramebufferTexture(gBuffer, PositionTexture);
+  FramebufferDepthTexture(gBuffer, DepthTexture);
 
-  u32 attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
-  GL_Global->glDrawBuffers(3, attachments);
+  SetDrawBuffers(gBuffer);
 
   if (GL_Global->glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     return false;
 
+  AssertNoGlErrors;
+
   glClear(GL_COLOR_BUFFER_BIT);
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-  RG->GBufferShader = LoadShaders( "SimpleVertexShader.vertexshader",
+  gBuffer->GBufferShader = LoadShaders( "SimpleVertexShader.vertexshader",
                                    "SimpleFragmentShader.fragmentshader" );
 
-  RG->gBuffer_ViewProjection = GetShaderUniform(&RG->GBufferShader, "ViewProjection");
-  RG->gBuffer_ModelUniform  = GetShaderUniform(&RG->GBufferShader, "Model");
-  /* RG->LightPID             GetShaderUniform(&RG->ShaderID, "LightP_worldspace"); */
+  gBuffer->gBuffer_ViewProjection = GetShaderUniform(&gBuffer->GBufferShader, "ViewProjection");
+  gBuffer->gBuffer_ModelUniform  = GetShaderUniform(&gBuffer->GBufferShader, "Model");
+  /* gBuffer->LightPID             GetShaderUniform(&gBuffer->ShaderID, "LightP_worldspace"); */
 
 
 
@@ -413,9 +466,9 @@ InitGbufferRenderGroup( platform *Plat, g_buffer_render_group *RG, memory_arena 
     random_series SsaoEntropy;
     v2i SsaoNoiseDim = V2i(4,4);
 
-    RG->NoiseTile = V2(SCR_WIDTH/SsaoNoiseDim.x, SCR_HEIGHT/SsaoNoiseDim.y);
+    gBuffer->NoiseTile = V2(SCR_WIDTH/SsaoNoiseDim.x, SCR_HEIGHT/SsaoNoiseDim.y);
 
-    InitSsaoKernel(RG->SsaoKernel, ArrayCount(RG->SsaoKernel), &SsaoEntropy);
+    InitSsaoKernel(gBuffer->SsaoKernel, ArrayCount(gBuffer->SsaoKernel), &SsaoEntropy);
 
     // TODO(Jesse): Allocate SsaoNoise on a transient arena and jettison it after
     // the first frame.
@@ -426,17 +479,17 @@ InitGbufferRenderGroup( platform *Plat, g_buffer_render_group *RG, memory_arena 
   }
 
 
-  RG->LightingShader = MakeLightingShader(GraphicsMemory,
+  gBuffer->LightingShader = MakeLightingShader(GraphicsMemory,
       ColorTexture, NormalTexture, PositionTexture, ShadowMap, SsaoNoiseTexture);
 
-  RG->SsaoKernelUniform = GetShaderUniform(&RG->LightingShader, "SsaoKernel");
-  RG->SsaoNoiseTileUniform = GetShaderUniform(&RG->LightingShader, "SsaoNoiseTile");
+  gBuffer->SsaoKernelUniform = GetShaderUniform(&gBuffer->LightingShader, "SsaoKernel");
+  gBuffer->SsaoNoiseTileUniform = GetShaderUniform(&gBuffer->LightingShader, "SsaoNoiseTile");
 
-  RG->DepthBiasMVPID          = GetShaderUniform(&RG->LightingShader, "shadowMVP");
-  RG->NormalTextureUniform    = GetShaderUniform(&RG->LightingShader, "gNormal");
-  RG->PositionTextureUniform  = GetShaderUniform(&RG->LightingShader, "gPosition");
-  RG->GlobalLightPositionID   = GetShaderUniform(&RG->LightingShader, "GlobalLightPosition");
-  RG->ViewProjectionUniform   = GetShaderUniform(&RG->LightingShader, "ViewProjection");
+  gBuffer->DepthBiasMVPID          = GetShaderUniform(&gBuffer->LightingShader, "shadowMVP");
+  gBuffer->NormalTextureUniform    = GetShaderUniform(&gBuffer->LightingShader, "gNormal");
+  gBuffer->PositionTextureUniform  = GetShaderUniform(&gBuffer->LightingShader, "gPosition");
+  gBuffer->GlobalLightPositionID   = GetShaderUniform(&gBuffer->LightingShader, "GlobalLightPosition");
+  gBuffer->ViewProjectionUniform   = GetShaderUniform(&gBuffer->LightingShader, "ViewProjection");
 
   { // TODO(Jesse): Pull this out of here
     GL_Global->glGenBuffers(1, &Global_QuadVertexBuffer);
@@ -445,13 +498,13 @@ InitGbufferRenderGroup( platform *Plat, g_buffer_render_group *RG, memory_arena 
     GL_Global->glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
   }
 
-  GL_Global->glGenBuffers(1, &RG->vertexbuffer);
-  GL_Global->glGenBuffers(1, &RG->colorbuffer);
-  GL_Global->glGenBuffers(1, &RG->normalbuffer);
+  GL_Global->glGenBuffers(1, &gBuffer->vertexbuffer);
+  GL_Global->glGenBuffers(1, &gBuffer->colorbuffer);
+  GL_Global->glGenBuffers(1, &gBuffer->normalbuffer);
 
-  RG->DebugColorTextureShader = MakeSimpleTextureShader(ColorTexture, GraphicsMemory);
-  RG->DebugNormalTextureShader = MakeSimpleTextureShader(NormalTexture, GraphicsMemory);
-  RG->DebugPositionTextureShader = MakeSimpleTextureShader(PositionTexture, GraphicsMemory);
+  gBuffer->DebugColorTextureShader = MakeSimpleTextureShader(ColorTexture, GraphicsMemory);
+  gBuffer->DebugNormalTextureShader = MakeSimpleTextureShader(NormalTexture, GraphicsMemory);
+  gBuffer->DebugPositionTextureShader = MakeSimpleTextureShader(PositionTexture, GraphicsMemory);
 
   AssertNoGlErrors;
 

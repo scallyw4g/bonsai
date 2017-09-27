@@ -28,6 +28,8 @@ struct texture
   v2i Dim;
 };
 
+typedef texture depth_texture;
+
 struct ao_render_group
 {
   framebuffer Framebuffer;
@@ -35,9 +37,11 @@ struct ao_render_group
   shader AoShader;
 };
 
+typedef u32 framebuffer;
 struct g_buffer_render_group
 {
-  u32 FBO;
+  framebuffer FBO;
+  u32 NextColorAttachment;
 
   u32 colorbuffer;
   u32 vertexbuffer;

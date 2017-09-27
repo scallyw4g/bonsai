@@ -909,7 +909,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
   chunk_dimension WorldChunkDim = World->ChunkDim;
 
-  g_buffer_render_group *RG = GameState->RG;
+  g_buffer_render_group *gBuffer = GameState->gBuffer;
   ShadowRenderGroup *SG     = GameState->SG;
 
   r32 VrHalfDim = (VR_X*CD_X/2.0f);
@@ -954,7 +954,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   accumulatedTime += Plat->dt;
   numFrames ++;
 
-  RG->ViewProjection =
+  gBuffer->ViewProjection =
     GetProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
     GetViewMatrix(WorldChunkDim, Camera);
 
@@ -995,7 +995,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   TIMED_BLOCK("Render");
 
   // FIXME(Jesse): This is extremely slow on my laptop ..?!
-  /* ClearFramebuffers(RG, SG); */
+  /* ClearFramebuffers(gBuffer, SG); */
 
   world_position VisibleRadius = World_Position(VR_X, VR_Y, VR_Z)/2;
 
@@ -1050,7 +1050,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
       if ( (chunk->WorldP >= Min && chunk->WorldP < Max) )
       {
         /* DEBUG_DrawChunkAABB( World, chunk, Camera, Quaternion(), BLUE ); */
-        BufferWorldChunk(World, chunk, Camera, RG);
+        BufferWorldChunk(World, chunk, Camera, gBuffer);
         chunk = chunk->Next;
       }
       else
@@ -1069,7 +1069,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
         ++EntityIndex)
   {
     entity *Enemy = GameState->EntityTable[EntityIndex];
-    BufferEntity( &World->Mesh, Enemy, Camera, RG, World->ChunkDim);
+    BufferEntity( &World->Mesh, Enemy, Camera, gBuffer, World->ChunkDim);
   }
   END_BLOCK("Entities");
 
@@ -1083,13 +1083,13 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
   /* ao_render_group AoGroup = {}; */
 
-  RenderToGBuffer(Plat, &World->Mesh, RG, SG, Camera);
+  RenderToGBuffer(Plat, &World->Mesh, gBuffer, SG, Camera);
   AssertNoGlErrors;
 
-  /* RenderAoTexture( Plat, RG, &AoGroup, Camera, World->ChunkDim); */
+  /* RenderAoTexture( Plat, gBuffer, &AoGroup, Camera, World->ChunkDim); */
   /* AssertNoGlErrors; */
 
-  DrawGBufferToFullscreenQuad( Plat, RG, SG, Camera, World->ChunkDim);
+  DrawGBufferToFullscreenQuad( Plat, gBuffer, SG, Camera, World->ChunkDim);
   AssertNoGlErrors;
 
   World->Mesh.VertexCount = 0;
@@ -1098,9 +1098,9 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
 #if DEBUG_DRAW_SHADOW_MAP_TEXTURE
   DrawTexturedQuad(&SG->DebugTextureShader);
-  /* DrawTexturedQuad(&RG->DebugPositionTextureShader); */
-  /* DrawTexturedQuad(&RG->DebugNormalTextureShader); */
-  DrawTexturedQuad(&RG->DebugColorTextureShader);
+  /* DrawTexturedQuad(&gBuffer->DebugPositionTextureShader); */
+  /* DrawTexturedQuad(&gBuffer->DebugNormalTextureShader); */
+  DrawTexturedQuad(&gBuffer->DebugColorTextureShader);
   SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight));
 #endif
 
@@ -1126,12 +1126,12 @@ void
 DrawTitleScreen(game_state *GameState)
 {
   debug_state *DebugState = GetDebugState();
-  debug_text_render_group *RG = DebugState->DebugRG;
+  debug_text_render_group *gBuffer = DebugState->DebugRG;
 
   s32 FontSize = TITLE_FONT_SIZE;
 
   r32 AtY = 0;
-  PrintDebugText( RG, "Press `Space` to Start", 0, AtY, FontSize);
+  PrintDebugText( gBuffer, "Press `Space` to Start", 0, AtY, FontSize);
 }
 
 EXPORT void
@@ -1181,8 +1181,8 @@ GameInit( platform *Plat, memory_arena *GameMemory)
   AssertNoGlErrors;
 
   //FIXME(Jesse): Sub-arena for GraphicsMemory
-  g_buffer_render_group *RG = PUSH_STRUCT_CHECKED(g_buffer_render_group, GameState->Memory, 1);
-  if (!InitGbufferRenderGroup(Plat, RG, GameState->Memory, SG->ShadowMap)) { Error("Initializing g_buffer_render_group"); return False; }
+  g_buffer_render_group *gBuffer = CreateGbuffer(GameState->Memory);
+  if (!InitGbufferRenderGroup(Plat, gBuffer, GameState->Memory, SG->ShadowMap)) { Error("Initializing g_buffer_render_group"); return False; }
 
   AssertNoGlErrors;
 
@@ -1207,7 +1207,7 @@ GameInit( platform *Plat, memory_arena *GameMemory)
 
   GameState->Plat = Plat;
   GameState->Camera = Camera;
-  GameState->RG = RG;
+  GameState->gBuffer = gBuffer;
   GameState->SG = SG;
   GameState->Entropy.Seed = DEBUG_NOISE_SEED;
 
@@ -1258,7 +1258,7 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   game_mode *Mode = &GameState->Mode;
   Mode->TimeRunning += Plat->dt;
 
-  ClearFramebuffers(GameState->RG, GameState->SG);
+  ClearFramebuffers(GameState->gBuffer, GameState->SG);
 
   switch (Mode->ActiveMode)
   {
