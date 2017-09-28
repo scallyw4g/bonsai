@@ -899,14 +899,14 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
   UpdateLogicalFrameCount(&GameState->Frame, Plat->dt);
 
-  world *World          = GameState->World;
-
-  entity *Player        = GameState->Player;
+  world *World = GameState->World;
+  entity *Player = GameState->Player;
   camera *Camera = GameState->Camera;
 
   chunk_dimension WorldChunkDim = World->ChunkDim;
 
   g_buffer_render_group *gBuffer = GameState->gBuffer;
+  ao_render_group *AoGroup = GameState->AoRenderGroup;
   ShadowRenderGroup *SG     = GameState->SG;
 
   r32 VrHalfDim = (VR_X*CD_X/2.0f);
@@ -1078,12 +1078,10 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
     DrawFolie(&World->Mesh, Camera, AABB);
   }
 
-  /* ao_render_group AoGroup = {}; */
-
   RenderToGBuffer(&World->Mesh, gBuffer, SG, Camera);
   AssertNoGlErrors;
 
-  RenderAoTexture();
+  RenderAoTexture(AoGroup);
   AssertNoGlErrors;
 
   DrawGBufferToFullscreenQuad( Plat, gBuffer, SG, Camera, World->ChunkDim);
@@ -1094,10 +1092,11 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
 
 #if DEBUG_DRAW_SHADOW_MAP_TEXTURE
-  DrawTexturedQuad(&SG->DebugTextureShader);
+  /* DrawTexturedQuad(&SG->DebugTextureShader); */
   /* DrawTexturedQuad(&gBuffer->DebugPositionTextureShader); */
   /* DrawTexturedQuad(&gBuffer->DebugNormalTextureShader); */
-  DrawTexturedQuad(&gBuffer->DebugColorTextureShader);
+  /* DrawTexturedQuad(&gBuffer->DebugColorTextureShader); */
+  DrawTexturedQuad(&AoGroup->DebugSsaoShader);
   SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight));
 #endif
 
@@ -1172,19 +1171,29 @@ GameInit( platform *Plat, memory_arena *GameMemory)
 
   //FIXME(Jesse): Sub-arena for GraphicsMemory
   ShadowRenderGroup *SG = PUSH_STRUCT_CHECKED(ShadowRenderGroup, GameState->Memory, 1);
-  if (!InitializeShadowBuffer(SG, GameState->Memory)) { Error("Initializing Shadow Buffer"); return False; }
+  if (!InitializeShadowBuffer(SG, GameState->Memory))
+  {
+    Error("Initializing Shadow Buffer"); return False;
+  }
 
   AssertNoGlErrors;
 
   //FIXME(Jesse): Sub-arena for GraphicsMemory
   g_buffer_render_group *gBuffer = CreateGbuffer(GameState->Memory);
-  if (!InitGbufferRenderGroup(gBuffer, GameState->Memory, SG->ShadowMap)) { Error("Initializing g_buffer_render_group"); return False; }
+  if (!InitGbufferRenderGroup(gBuffer, GameState->Memory, SG->ShadowMap))
+  {
+    Error("Initializing g_buffer_render_group"); return False;
+  }
 
   AssertNoGlErrors;
 
   //FIXME(Jesse): Sub-arena for GraphicsMemory
-  ao_render_group *AoFramebuffer = CreateAoFramebuffer(GameState->Memory);
-  if (!InitAoRenderGroup(AoFramebuffer, GameState->Memory, gBuffer->Textures)) { Error("Initializing g_buffer_render_group"); return False; }
+  ao_render_group *AoRenderGroup = CreateAoFramebuffer(GameState->Memory);
+  if (!InitAoRenderGroup(AoRenderGroup, GameState->Memory, gBuffer->Textures,
+        gBuffer->SsaoNoiseTexture, &gBuffer->NoiseTile, &gBuffer->ViewProjection, gBuffer->SsaoKernel, gBuffer->SsaoKernelUniform))
+  {
+    Error("Initializing g_buffer_render_group"); return False;
+  }
 
 
   AssertNoGlErrors;
@@ -1211,6 +1220,7 @@ GameInit( platform *Plat, memory_arena *GameMemory)
   GameState->Plat = Plat;
   GameState->Camera = Camera;
   GameState->gBuffer = gBuffer;
+  GameState->AoRenderGroup = AoRenderGroup;
   GameState->SG = SG;
   GameState->Entropy.Seed = DEBUG_NOISE_SEED;
 

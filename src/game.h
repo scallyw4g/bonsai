@@ -76,6 +76,7 @@ struct game_state
   camera        *Camera;
 
   g_buffer_render_group *gBuffer;
+  ao_render_group *AoRenderGroup;
   ShadowRenderGroup     *SG;
 
   memory_arena *Memory;

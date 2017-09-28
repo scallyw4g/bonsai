@@ -166,4 +166,5 @@ void main()
 
   // Gamma correction
   color = vec4(pow(mapped, vec3(1.0f / gamma)), 1.0f);
+  /* color.rgb = vec3(AO); */
 }

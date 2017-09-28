@@ -309,7 +309,7 @@ GetShaderUniform(shader *Shader, const char *Name)
   s32 Result = GL_Global->glGetUniformLocation(Shader->ID, Name);
   if (Result == INVALID_SHADER_UNIFORM)
   {
-    Error("Couldn't retreive %s shader uniform", Name);
+    Warn("Couldn't retreive %s shader uniform - was it optimized out?", Name);
   }
 
   return Result;
@@ -547,22 +547,54 @@ CreateGbufferShader(memory_arena *GraphicsMemory, m4 *ViewProjection)
 }
 
 shader
-MakeSsaoShader(memory_arena *GraphicsMemory, g_buffer_textures *gTextures)
+MakeSsaoShader(memory_arena *GraphicsMemory, g_buffer_textures *gTextures,
+    texture *SsaoNoiseTexture, v3 *SsaoNoiseTile, m4 *ViewProjection)
 {
   shader Shader = LoadShaders( "Passthrough.vertexshader",
                                "Ao.fragmentshader" );
 
+  shader_uniform **Current = &Shader.FirstUniform;
 
+  *Current = GetTextureUniform(GraphicsMemory, &Shader, gTextures->Color, "gColor");
+  Current = &(*Current)->Next;
+
+  *Current = GetTextureUniform(GraphicsMemory, &Shader, gTextures->Normal, "gNormal");
+  Current = &(*Current)->Next;
+
+  *Current = GetTextureUniform(GraphicsMemory, &Shader, gTextures->Position, "gPosition");
+  Current = &(*Current)->Next;
+
+  *Current = GetTextureUniform(GraphicsMemory, &Shader, SsaoNoiseTexture, "SsaoNoiseTexture");
+  Current = &(*Current)->Next;
+
+  *Current = GetV3Uniform(GraphicsMemory, &Shader, SsaoNoiseTile, "SsaoNoiseTile");
+  Current = &(*Current)->Next;
+
+  *Current = GetM4Uniform(GraphicsMemory, &Shader, ViewProjection, "ViewProjection");
+  Current = &(*Current)->Next;
+
+  AssertNoGlErrors;
 
 
   return Shader;
 }
 
 bool
-InitAoRenderGroup(ao_render_group *AoGroup, memory_arena *GraphicsMemory, g_buffer_textures *Textures)
+InitAoRenderGroup(ao_render_group   *AoGroup,
+                  memory_arena      *GraphicsMemory,
+                  g_buffer_textures *Textures,
+                  texture           *SsaoNoiseTexture,
+                  v3                *SsaoNoiseTile,
+                  m4                *ViewProjection,
+                  v3                *SsaoKernel,
+                  u32 SsaoKernelUniform
+    )
 {
   v2i ScreenDim = V2i(SCR_WIDTH, SCR_HEIGHT);
   AssertNoGlErrors;
+
+  AoGroup->SsaoKernelUniform = SsaoKernelUniform;
+  AoGroup->SsaoKernel = SsaoKernel;
 
   texture *SsaoTexture = MakeTexture_RGBA( ScreenDim, 0, GraphicsMemory);
 
@@ -574,18 +606,20 @@ InitAoRenderGroup(ao_render_group *AoGroup, memory_arena *GraphicsMemory, g_buff
   if (!CheckAndClearFramebuffer())
     return false;
 
+  AoGroup->DebugSsaoShader = MakeSimpleTextureShader(SsaoTexture, GraphicsMemory);
+
   AssertNoGlErrors;
 
-  //shader Shader = MakeSsaoShader(GraphicsMemory, Textures);
+  AoGroup->Shader = MakeSsaoShader(GraphicsMemory, Textures, SsaoNoiseTexture, SsaoNoiseTile, ViewProjection);
 
   return True;
 }
 
 bool
-InitGbufferRenderGroup(g_buffer_render_group *gBuffer, memory_arena *GraphicsMemory, texture *ShadowMap)
+InitGbufferRenderGroup( g_buffer_render_group *gBuffer,
+                        memory_arena *GraphicsMemory, texture *ShadowMap)
 {
   v2i ScreenDim = V2i(SCR_WIDTH, SCR_HEIGHT);
-
 
   gBuffer->Textures = PUSH_STRUCT_CHECKED(g_buffer_textures, GraphicsMemory, 1);
 
@@ -601,17 +635,17 @@ InitGbufferRenderGroup(g_buffer_render_group *gBuffer, memory_arena *GraphicsMem
   texture *DepthTexture    = MakeDepthTexture( ScreenDim, GraphicsMemory );
   FramebufferDepthTexture(gBuffer, DepthTexture);
 
+
   if (!CheckAndClearFramebuffer())
     return false;
 
 
-
-  texture *SsaoNoiseTexture = 0;
+  gBuffer->SsaoNoiseTexture = 0;
   { // TODO(Jesse): Pull this into a Ssao shader
     random_series SsaoEntropy;
     v2i SsaoNoiseDim = V2i(4,4);
 
-    gBuffer->NoiseTile = V2(SCR_WIDTH/SsaoNoiseDim.x, SCR_HEIGHT/SsaoNoiseDim.y);
+    gBuffer->NoiseTile = V3(SCR_WIDTH/SsaoNoiseDim.x, SCR_HEIGHT/SsaoNoiseDim.y, 1);
 
     InitSsaoKernel(gBuffer->SsaoKernel, ArrayCount(gBuffer->SsaoKernel), &SsaoEntropy);
 
@@ -619,13 +653,13 @@ InitGbufferRenderGroup(g_buffer_render_group *gBuffer, memory_arena *GraphicsMem
     // the first frame.
       v3 SsaoNoise[Area(SsaoNoiseDim)] = {};
       InitSsaoNoise(&SsaoNoise[0], ArrayCount(SsaoNoise), &SsaoEntropy);
-      SsaoNoiseTexture = MakeTexture_RGB(SsaoNoiseDim, &SsaoNoise, GraphicsMemory);
+      gBuffer->SsaoNoiseTexture = MakeTexture_RGB(SsaoNoiseDim, &SsaoNoise, GraphicsMemory);
     //
   }
 
 
   gBuffer->LightingShader = MakeLightingShader(GraphicsMemory,
-      gBuffer->Textures, ShadowMap, SsaoNoiseTexture,
+      gBuffer->Textures, ShadowMap, gBuffer->SsaoNoiseTexture,
       &gBuffer->ViewProjection, &gBuffer->ShadowMVP);
   AssertNoGlErrors;
 
@@ -744,7 +778,7 @@ inline m4
 GetShadowMapMVP(camera *Camera)
 {
   // Compute the MVP matrix from the light's point of view
-  v3 Translate = V3(0,0,0);
+  v3 Translate = V3(0,1200,0);
   m4 depthProjectionMatrix = Orthographic(SHADOW_MAP_X,
                                           SHADOW_MAP_Y,
                                           SHADOW_MAP_Z_MIN,
@@ -796,6 +830,7 @@ BindShaderUniforms(shader *Shader)
       InvalidDefaultCase;
     }
 
+    AssertNoGlErrors;
     Uniform = Uniform->Next;
   }
 }
@@ -803,7 +838,7 @@ BindShaderUniforms(shader *Shader)
 void
 DrawTexturedQuad(shader *SimpleTextureShader)
 {
-  r32 Scale = 0.4f;
+  r32 Scale = 0.5f;
 
   glDepthFunc(GL_LEQUAL);
 
@@ -821,14 +856,22 @@ DrawTexturedQuad(shader *SimpleTextureShader)
 }
 
 void
-RenderAoTexture()
+RenderAoTexture(ao_render_group *AoGroup)
 {
-  /* GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, Group->Framebuffer); */
-  /* SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight)); */
+  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, AoGroup->FBO.ID);
+  SetViewport( V2(SCR_WIDTH, SCR_HEIGHT) );
 
-/*   GL_Global->glUseProgram(Group->AoShader.ID); */
+  GL_Global->glUseProgram(AoGroup->Shader.ID);
 
+  GL_Global->glUniform3fv(AoGroup->SsaoKernelUniform, SSAO_KERNEL_SIZE, (r32*)AoGroup->SsaoKernel);
 
+  BindShaderUniforms(&AoGroup->Shader);
+
+  RenderQuad();
+
+  AssertNoGlErrors;
+
+  return;
 }
 
 void

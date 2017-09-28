@@ -35,7 +35,12 @@ struct framebuffer
 struct ao_render_group
 {
   framebuffer FBO;
-  shader AoShader;
+  shader Shader;
+  shader DebugSsaoShader;
+
+  // SSAO TODO(Jesse): Move to it's own shader!
+  v3 *SsaoKernel;
+  u32 SsaoKernelUniform;
 };
 
 struct g_buffer_textures
@@ -66,8 +71,10 @@ struct g_buffer_render_group
   v3 SsaoKernel[SSAO_KERNEL_SIZE];
   u32 SsaoKernelUniform;
 
-  v2 NoiseTile;
+  v3 NoiseTile;
   u32 SsaoNoiseTileUniform;
+
+  texture *SsaoNoiseTexture;
   //
 
   shader DebugColorTextureShader;

@@ -14,8 +14,6 @@ using namespace std;
 shader
 LoadShaders(const char * VertShaderPath, const char * FragFilePath, const char *GlslVersion = "310ES")
 {
-  shader Shader = {};
-
   // Create the shaders
   u32 VertexShaderID = GL_Global->glCreateShader(GL_VERTEX_SHADER);
   u32 FragmentShaderID = GL_Global->glCreateShader(GL_FRAGMENT_SHADER);
@@ -91,6 +89,7 @@ LoadShaders(const char * VertShaderPath, const char * FragFilePath, const char *
   // Link the program
   Info("Linking Shader");
   u32 ProgramID = GL_Global->glCreateProgram();
+  Assert(ProgramID);
   GL_Global->glAttachShader(ProgramID, VertexShaderID);
   GL_Global->glAttachShader(ProgramID, FragmentShaderID);
   GL_Global->glLinkProgram(ProgramID);
@@ -111,7 +110,9 @@ LoadShaders(const char * VertShaderPath, const char * FragFilePath, const char *
   GL_Global->glDeleteShader(VertexShaderID);
   GL_Global->glDeleteShader(FragmentShaderID);
 
+  shader Shader = {};
   Shader.ID = ProgramID;
+
   return Shader;
 }
 
