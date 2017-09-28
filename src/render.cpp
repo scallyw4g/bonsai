@@ -416,20 +416,19 @@ MakeSimpleTextureShader(texture *Texture, memory_arena *GraphicsMemory)
 
 shader
 MakeLightingShader(memory_arena *GraphicsMemory,
-    texture *ColorTexture, texture *NormalTexture, texture *PositionTexture,
-    texture *ShadowMap, texture *SsaoNoiseTexture, m4 *ViewProjection, m4 *ShadowMVP)
+    g_buffer_textures *gTextures, texture *ShadowMap, texture *SsaoNoiseTexture, m4 *ViewProjection, m4 *ShadowMVP)
 {
   shader Shader = LoadShaders( "Lighting.vertexshader", "Lighting.fragmentshader" );
 
   shader_uniform **Current = &Shader.FirstUniform;
 
-  *Current = GetTextureUniform(GraphicsMemory, &Shader, ColorTexture, "gColor");
+  *Current = GetTextureUniform(GraphicsMemory, &Shader, gTextures->Color, "gColor");
   Current = &(*Current)->Next;
 
-  *Current = GetTextureUniform(GraphicsMemory, &Shader, NormalTexture, "gNormal");
+  *Current = GetTextureUniform(GraphicsMemory, &Shader, gTextures->Normal, "gNormal");
   Current = &(*Current)->Next;
 
-  *Current = GetTextureUniform(GraphicsMemory, &Shader, PositionTexture, "gPosition");
+  *Current = GetTextureUniform(GraphicsMemory, &Shader, gTextures->Position, "gPosition");
   Current = &(*Current)->Next;
 
   *Current = GetTextureUniform(GraphicsMemory, &Shader, ShadowMap, "shadowMap");
@@ -548,26 +547,28 @@ CreateGbufferShader(memory_arena *GraphicsMemory, m4 *ViewProjection)
 }
 
 shader
-MakeSsaoShader(memory_arena *GraphicsMemory)
+MakeSsaoShader(memory_arena *GraphicsMemory, g_buffer_textures *gTextures)
 {
   shader Shader = LoadShaders( "Passthrough.vertexshader",
                                "Ao.fragmentshader" );
+
+
+
 
   return Shader;
 }
 
 bool
-InitAoRenderGroup(ao_render_group *AoGroup, memory_arena *GraphicsMemory)
+InitAoRenderGroup(ao_render_group *AoGroup, memory_arena *GraphicsMemory, g_buffer_textures *Textures)
 {
   v2i ScreenDim = V2i(SCR_WIDTH, SCR_HEIGHT);
   AssertNoGlErrors;
 
   texture *SsaoTexture = MakeTexture_RGBA( ScreenDim, 0, GraphicsMemory);
-  AssertNoGlErrors;
 
   FramebufferTexture(&AoGroup->FBO, SsaoTexture);
-  AssertNoGlErrors;
   SetDrawBuffers(&AoGroup->FBO);
+
   AssertNoGlErrors;
 
   if (!CheckAndClearFramebuffer())
@@ -575,7 +576,8 @@ InitAoRenderGroup(ao_render_group *AoGroup, memory_arena *GraphicsMemory)
 
   AssertNoGlErrors;
 
-  /* shader Shader = MakeSsaoShader(GraphicsMemory, SsaoTexture); */
+  //shader Shader = MakeSsaoShader(GraphicsMemory, Textures);
+
   return True;
 }
 
@@ -584,13 +586,16 @@ InitGbufferRenderGroup(g_buffer_render_group *gBuffer, memory_arena *GraphicsMem
 {
   v2i ScreenDim = V2i(SCR_WIDTH, SCR_HEIGHT);
 
-  texture *ColorTexture    = MakeTexture_RGBA( ScreenDim, 0, GraphicsMemory);
-  texture *NormalTexture   = MakeTexture_RGBA( ScreenDim, 0, GraphicsMemory);
-  texture *PositionTexture = MakeTexture_RGBA( ScreenDim, 0, GraphicsMemory);
 
-  FramebufferTexture(&gBuffer->FBO, ColorTexture);
-  FramebufferTexture(&gBuffer->FBO, NormalTexture);
-  FramebufferTexture(&gBuffer->FBO, PositionTexture);
+  gBuffer->Textures = PUSH_STRUCT_CHECKED(g_buffer_textures, GraphicsMemory, 1);
+
+  gBuffer->Textures->Color    = MakeTexture_RGBA( ScreenDim, 0, GraphicsMemory);
+  gBuffer->Textures->Normal   = MakeTexture_RGBA( ScreenDim, 0, GraphicsMemory);
+  gBuffer->Textures->Position = MakeTexture_RGBA( ScreenDim, 0, GraphicsMemory);
+
+  FramebufferTexture(&gBuffer->FBO, gBuffer->Textures->Color);
+  FramebufferTexture(&gBuffer->FBO, gBuffer->Textures->Normal);
+  FramebufferTexture(&gBuffer->FBO, gBuffer->Textures->Position);
   SetDrawBuffers(&gBuffer->FBO);
 
   texture *DepthTexture    = MakeDepthTexture( ScreenDim, GraphicsMemory );
@@ -620,7 +625,7 @@ InitGbufferRenderGroup(g_buffer_render_group *gBuffer, memory_arena *GraphicsMem
 
 
   gBuffer->LightingShader = MakeLightingShader(GraphicsMemory,
-      ColorTexture, NormalTexture, PositionTexture, ShadowMap, SsaoNoiseTexture,
+      gBuffer->Textures, ShadowMap, SsaoNoiseTexture,
       &gBuffer->ViewProjection, &gBuffer->ShadowMVP);
   AssertNoGlErrors;
 
@@ -631,9 +636,9 @@ InitGbufferRenderGroup(g_buffer_render_group *gBuffer, memory_arena *GraphicsMem
   gBuffer->SsaoNoiseTileUniform = GetShaderUniform(&gBuffer->LightingShader, "SsaoNoiseTile");
 
   { // To keep these here or not to keep these here..
-    gBuffer->DebugColorTextureShader = MakeSimpleTextureShader(ColorTexture, GraphicsMemory);
-    gBuffer->DebugNormalTextureShader = MakeSimpleTextureShader(NormalTexture, GraphicsMemory);
-    gBuffer->DebugPositionTextureShader = MakeSimpleTextureShader(PositionTexture, GraphicsMemory);
+    gBuffer->DebugColorTextureShader = MakeSimpleTextureShader(gBuffer->Textures->Color, GraphicsMemory);
+    gBuffer->DebugNormalTextureShader = MakeSimpleTextureShader(gBuffer->Textures->Normal, GraphicsMemory);
+    gBuffer->DebugPositionTextureShader = MakeSimpleTextureShader(gBuffer->Textures->Position, GraphicsMemory);
   }
 
   AssertNoGlErrors;

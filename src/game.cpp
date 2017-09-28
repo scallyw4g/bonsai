@@ -1177,13 +1177,15 @@ GameInit( platform *Plat, memory_arena *GameMemory)
   AssertNoGlErrors;
 
   //FIXME(Jesse): Sub-arena for GraphicsMemory
-  ao_render_group *AoFramebuffer = CreateAoFramebuffer(GameState->Memory);
-  if (!InitAoRenderGroup(AoFramebuffer, GameState->Memory)) { Error("Initializing g_buffer_render_group"); return False; }
+  g_buffer_render_group *gBuffer = CreateGbuffer(GameState->Memory);
+  if (!InitGbufferRenderGroup(gBuffer, GameState->Memory, SG->ShadowMap)) { Error("Initializing g_buffer_render_group"); return False; }
 
   AssertNoGlErrors;
 
-  g_buffer_render_group *gBuffer = CreateGbuffer(GameState->Memory);
-  if (!InitGbufferRenderGroup(gBuffer, GameState->Memory, SG->ShadowMap)) { Error("Initializing g_buffer_render_group"); return False; }
+  //FIXME(Jesse): Sub-arena for GraphicsMemory
+  ao_render_group *AoFramebuffer = CreateAoFramebuffer(GameState->Memory);
+  if (!InitAoRenderGroup(AoFramebuffer, GameState->Memory, gBuffer->Textures)) { Error("Initializing g_buffer_render_group"); return False; }
+
 
   AssertNoGlErrors;
 

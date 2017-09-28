@@ -38,9 +38,18 @@ struct ao_render_group
   shader AoShader;
 };
 
+struct g_buffer_textures
+{
+  texture *Color;
+  texture *Normal;
+  texture *Position;
+};
+
 struct g_buffer_render_group
 {
   framebuffer FBO;
+
+  g_buffer_textures *Textures;
 
   u32 colorbuffer;
   u32 vertexbuffer;
