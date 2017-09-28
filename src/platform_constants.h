@@ -58,7 +58,7 @@
     PrintConsole(Buffer); }
 
 
-#define Info(...)  PrintConsole(" - Info - ");             \
+#define Info(...)  PrintConsole("   Info - ");             \
                    VariadicOutputDebugString(__VA_ARGS__); \
                    PrintConsole("\n")
 
@@ -66,8 +66,12 @@
                    PrintConsole("\n")
 
 #define Error(...) PrintConsole(" ! Error - ");            \
-                   VariadicOutputDebugString(__VA_ARGS__); \
+                   VariadicOutputDebugString(__VA_ARGS__);   \
                    PrintConsole("\n")
+
+#define Warn(...) PrintConsole(" * Warn - ");            \
+                  VariadicOutputDebugString(__VA_ARGS__); \
+                  PrintConsole("\n")
 
 #define RuntimeBreak() __debugbreak()
 
@@ -86,9 +90,10 @@
 #define GLOBAL_VARIABLE static __attribute__((unused))
 #define DEBUG_GLOBAL static __attribute__((unused))
 
-#define Info(...)  printf(" - Info - ");  printf(__VA_ARGS__); printf("\n")
+#define Info(...)  printf("   Info - ");  printf(__VA_ARGS__); printf("\n")
 #define Debug(...) printf(__VA_ARGS__);   printf("\n")
 #define Error(...) printf(" ! Error - "); printf(__VA_ARGS__); printf("\n")
+#define Warn(...)  printf(" * Warn - "); printf(__VA_ARGS__); printf("\n")
 
 
 #define RuntimeBreak() raise(SIGTRAP)
