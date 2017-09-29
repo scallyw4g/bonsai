@@ -1188,10 +1188,8 @@ GameInit( platform *Plat, memory_arena *GameMemory)
   AssertNoGlErrors;
 
   //FIXME(Jesse): Sub-arena for GraphicsMemory
-  ao_render_group *AoRenderGroup = CreateAoFramebuffer(GameState->Memory);
-  if (!InitAoRenderGroup(AoRenderGroup, GameState->Memory, gBuffer->Textures,
-        gBuffer->SsaoNoiseTexture, &gBuffer->NoiseTile, &gBuffer->ViewProjection,
-        gBuffer->SsaoKernel))
+  ao_render_group *AoRenderGroup = CreateAoRenderGroup(GameState->Memory);
+  if (!InitAoRenderGroup(AoRenderGroup, GameState->Memory, gBuffer->Textures, &gBuffer->ViewProjection))
   {
     Error("Initializing g_buffer_render_group"); return False;
   }

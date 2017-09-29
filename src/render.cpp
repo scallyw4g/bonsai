@@ -416,7 +416,7 @@ MakeSimpleTextureShader(texture *Texture, memory_arena *GraphicsMemory)
 
 shader
 MakeLightingShader(memory_arena *GraphicsMemory,
-    g_buffer_textures *gTextures, texture *ShadowMap, texture *SsaoNoiseTexture, m4 *ViewProjection, m4 *ShadowMVP)
+    g_buffer_textures *gTextures, texture *ShadowMap, m4 *ViewProjection, m4 *ShadowMVP)
 {
   shader Shader = LoadShaders( "Lighting.vertexshader", "Lighting.fragmentshader" );
 
@@ -454,7 +454,7 @@ GenFramebuffer()
 }
 
 ao_render_group *
-CreateAoFramebuffer(memory_arena *Mem)
+CreateAoRenderGroup(memory_arena *Mem)
 {
   ao_render_group *Result = PUSH_STRUCT_CHECKED(ao_render_group, Mem, 1);
   Result->FBO = GenFramebuffer();
@@ -577,15 +577,10 @@ bool
 InitAoRenderGroup(ao_render_group   *AoGroup,
                   memory_arena      *GraphicsMemory,
                   g_buffer_textures *Textures,
-                  texture           *SsaoNoiseTexture,
-                  v3                *SsaoNoiseTile,
-                  m4                *ViewProjection,
-                  v3                *SsaoKernel)
+                  m4                *ViewProjection)
 {
   v2i ScreenDim = V2i(SCR_WIDTH, SCR_HEIGHT);
   AssertNoGlErrors;
-
-  AoGroup->SsaoKernel = SsaoKernel;
 
   texture *SsaoTexture = MakeTexture_RGBA( ScreenDim, 0, GraphicsMemory);
 
@@ -602,7 +597,23 @@ InitAoRenderGroup(ao_render_group   *AoGroup,
 
   AssertNoGlErrors;
 
-  AoGroup->Shader = MakeSsaoShader(GraphicsMemory, Textures, SsaoNoiseTexture, SsaoNoiseTile, ViewProjection);
+  random_series SsaoEntropy;
+  v2i SsaoNoiseDim = V2i(4,4);
+
+  AoGroup->NoiseTile = V3(SCR_WIDTH/SsaoNoiseDim.x, SCR_HEIGHT/SsaoNoiseDim.y, 1);
+
+  InitSsaoKernel(AoGroup->SsaoKernel, ArrayCount(AoGroup->SsaoKernel), &SsaoEntropy);
+
+  // TODO(Jesse): Transient arena for this instead of stack allocation ?
+  v3 SsaoNoise[Area(SsaoNoiseDim)] = {};
+  InitSsaoNoise(&SsaoNoise[0], ArrayCount(SsaoNoise), &SsaoEntropy);
+
+  texture *SsaoNoiseTexture =
+    MakeTexture_RGB(SsaoNoiseDim, &SsaoNoise, GraphicsMemory);
+
+  AoGroup->Shader = MakeSsaoShader(GraphicsMemory, Textures, SsaoNoiseTexture,
+      &AoGroup->NoiseTile, ViewProjection);
+
   AoGroup->SsaoKernelUniform = GetShaderUniform(&AoGroup->Shader, "SsaoKernel");
 
   return True;
@@ -633,40 +644,22 @@ InitGbufferRenderGroup( g_buffer_render_group *gBuffer,
     return false;
 
 
-  gBuffer->SsaoNoiseTexture = 0;
-  { // TODO(Jesse): Pull this into a Ssao shader
-    random_series SsaoEntropy;
-    v2i SsaoNoiseDim = V2i(4,4);
-
-    gBuffer->NoiseTile = V3(SCR_WIDTH/SsaoNoiseDim.x, SCR_HEIGHT/SsaoNoiseDim.y, 1);
-
-    InitSsaoKernel(gBuffer->SsaoKernel, ArrayCount(gBuffer->SsaoKernel), &SsaoEntropy);
-
-    // TODO(Jesse): Allocate SsaoNoise on a transient arena and jettison it after
-    // the first frame.
-      v3 SsaoNoise[Area(SsaoNoiseDim)] = {};
-      InitSsaoNoise(&SsaoNoise[0], ArrayCount(SsaoNoise), &SsaoEntropy);
-      gBuffer->SsaoNoiseTexture = MakeTexture_RGB(SsaoNoiseDim, &SsaoNoise, GraphicsMemory);
-    //
-  }
-
-
   gBuffer->LightingShader = MakeLightingShader(GraphicsMemory,
-      gBuffer->Textures, ShadowMap, gBuffer->SsaoNoiseTexture,
-      &gBuffer->ViewProjection, &gBuffer->ShadowMVP);
+      gBuffer->Textures, ShadowMap, &gBuffer->ViewProjection, &gBuffer->ShadowMVP);
+
   AssertNoGlErrors;
 
   gBuffer->gBufferShader = CreateGbufferShader(GraphicsMemory, &gBuffer->ViewProjection);
+
   AssertNoGlErrors;
 
-  gBuffer->SsaoKernelUniform = GetShaderUniform(&gBuffer->LightingShader, "SsaoKernel");
-  gBuffer->SsaoNoiseTileUniform = GetShaderUniform(&gBuffer->LightingShader, "SsaoNoiseTile");
 
   { // To keep these here or not to keep these here..
     gBuffer->DebugColorTextureShader = MakeSimpleTextureShader(gBuffer->Textures->Color, GraphicsMemory);
     gBuffer->DebugNormalTextureShader = MakeSimpleTextureShader(gBuffer->Textures->Normal, GraphicsMemory);
     gBuffer->DebugPositionTextureShader = MakeSimpleTextureShader(gBuffer->Textures->Position, GraphicsMemory);
   }
+
 
   AssertNoGlErrors;
 

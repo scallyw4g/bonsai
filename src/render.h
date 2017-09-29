@@ -38,9 +38,10 @@ struct ao_render_group
   shader Shader;
   shader DebugSsaoShader;
 
-  // SSAO TODO(Jesse): Move to it's own shader!
-  v3 *SsaoKernel;
-  u32 SsaoKernelUniform;
+  v3 SsaoKernel[SSAO_KERNEL_SIZE]; // Could just be pushed on the heap
+  u32 SsaoKernelUniform; // FIXME(Jesse): Automate me!
+
+  v3 NoiseTile;
 };
 
 struct g_buffer_textures
@@ -66,16 +67,6 @@ struct g_buffer_render_group
   // Cached here because this one gets pre-multiplied by the NdcToScreenSpace bias matrix
   m4 ShadowMVP;
   m4 ViewProjection;
-
-  // SSAO TODO(Jesse): Move to it's own shader!
-  v3 SsaoKernel[SSAO_KERNEL_SIZE];
-  u32 SsaoKernelUniform;
-
-  v3 NoiseTile;
-  u32 SsaoNoiseTileUniform;
-
-  texture *SsaoNoiseTexture;
-  //
 
   shader DebugColorTextureShader;
   shader DebugNormalTextureShader;
