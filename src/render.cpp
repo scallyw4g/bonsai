@@ -434,12 +434,6 @@ MakeLightingShader(memory_arena *GraphicsMemory,
   *Current = GetTextureUniform(GraphicsMemory, &Shader, ShadowMap, "shadowMap");
   Current = &(*Current)->Next;
 
-  *Current = GetTextureUniform(GraphicsMemory, &Shader, SsaoNoiseTexture, "SsaoNoiseTexture");
-  Current = &(*Current)->Next;
-
-  *Current = GetM4Uniform(GraphicsMemory, &Shader, ViewProjection, "ViewProjection");
-  Current = &(*Current)->Next;
-
   *Current = GetM4Uniform(GraphicsMemory, &Shader, ShadowMVP, "ShadowMVP");
   Current = &(*Current)->Next;
 
@@ -586,17 +580,15 @@ InitAoRenderGroup(ao_render_group   *AoGroup,
                   texture           *SsaoNoiseTexture,
                   v3                *SsaoNoiseTile,
                   m4                *ViewProjection,
-                  v3                *SsaoKernel,
-                  u32 SsaoKernelUniform
-    )
+                  v3                *SsaoKernel)
 {
   v2i ScreenDim = V2i(SCR_WIDTH, SCR_HEIGHT);
   AssertNoGlErrors;
 
-  AoGroup->SsaoKernelUniform = SsaoKernelUniform;
   AoGroup->SsaoKernel = SsaoKernel;
 
   texture *SsaoTexture = MakeTexture_RGBA( ScreenDim, 0, GraphicsMemory);
+
 
   FramebufferTexture(&AoGroup->FBO, SsaoTexture);
   SetDrawBuffers(&AoGroup->FBO);
@@ -611,6 +603,7 @@ InitAoRenderGroup(ao_render_group   *AoGroup,
   AssertNoGlErrors;
 
   AoGroup->Shader = MakeSsaoShader(GraphicsMemory, Textures, SsaoNoiseTexture, SsaoNoiseTile, ViewProjection);
+  AoGroup->SsaoKernelUniform = GetShaderUniform(&AoGroup->Shader, "SsaoKernel");
 
   return True;
 }
@@ -883,9 +876,6 @@ DrawGBufferToFullscreenQuad( platform *Plat, g_buffer_render_group *RG, ShadowRe
   GL_Global->glUseProgram(RG->LightingShader.ID);
 
   RG->ShadowMVP = NdcToScreenSpace * GetShadowMapMVP(Camera);
-
-  GL_Global->glUniform2fv(RG->SsaoNoiseTileUniform, 1, &RG->NoiseTile.x);
-  GL_Global->glUniform3fv(RG->SsaoKernelUniform, SSAO_KERNEL_SIZE, (r32*)&RG->SsaoKernel);
 
   BindShaderUniforms(&RG->LightingShader);
 

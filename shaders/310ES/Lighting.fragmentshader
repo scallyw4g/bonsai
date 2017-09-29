@@ -2,13 +2,8 @@
 
 precision highp float;
 
-out vec4 color;
-
 in vec2 UV;
-
-// This must match the corresponding define in constants.h
-const int SSAO_KERNEL_SIZE = 1;
-const vec3 UP = vec3(0,0,1);
+out vec4 color;
 
 
 uniform sampler2D gColor;
@@ -16,28 +11,13 @@ uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D shadowMap;
 
-uniform sampler2D SsaoNoiseTexture;
-uniform vec2 SsaoNoiseTile;
-
 uniform vec3 GlobalLightPosition;
 uniform mat4 ShadowMVP;
 
-uniform vec3 SsaoKernel[SSAO_KERNEL_SIZE];
-
-// TODO(Jesse): This could be pre-multiplied by an NdcToScreenSpace matrix so
-// each SSAO sample did not have to be re-biased in the hot loop.
-uniform mat4 ViewProjection;
-
 // Tuning
-  float SsaoRadius = 1.0f;
   float exposure = 1.0f;
   float gamma = 2.2f;
   float GlobalLightIntensity = 1.0f;
-//
-
-
-//
-//
 //
 
 vec2 poissonDisk[16] = vec2[](
@@ -60,69 +40,22 @@ vec2 poissonDisk[16] = vec2[](
    vec2(  0.14383161, -0.14100790 )
 );
 
-//
-//
+
+
+
+
+
+
 void main()
 {
   vec3 Diffuse      = texture(gColor, UV).rgb;
   vec3 FragNormal   = texture(gNormal, UV).rgb;   // modelspace
   vec3 FragPosition = texture(gPosition, UV).rgb; // worldspace
-  float FragDepth   = texture(gPosition, UV).w;   // Linear
 
   vec3 Ambient = Diffuse * GlobalLightIntensity * 0.1f;
 
   vec3 GlobalLightDirection = GlobalLightPosition;
   float GlobalLightCosTheta = clamp( dot( FragNormal, GlobalLightDirection), 0.0f, 1.0f);
-
-
-
-  /*
-   *  AO
-   */
-
-  vec3 Noise = texture(SsaoNoiseTexture, UV*SsaoNoiseTile).xyz;
-  vec3 Right = normalize(Noise - FragNormal);
-  vec3 Front = cross(FragNormal, Right);
-  mat3 Reorientation = mat3(Right, Front, FragNormal);
-
-  float AO = 1.0f;
-  float OccluderContribution = 1.0f/float(SSAO_KERNEL_SIZE);
-
-  // NOTE(Jesse): I was getting some artifacts when at 90deg to a surface so I
-  // added a bias to the sample.
-  float AoBias = 0.00005f;
-  float AoBiasFragDepth = FragDepth - AoBias;
-
-  for ( int KernelIndex = 0;
-        KernelIndex < SSAO_KERNEL_SIZE;
-        ++KernelIndex)
-  {
-    vec3 KernelP = Reorientation * SsaoKernel[KernelIndex] * SsaoRadius;
-    vec3 SampleP = KernelP + FragPosition;
-
-    // Project SampleP
-    vec4 Projected = ViewProjection * vec4(SampleP, 1);
-
-    // Prespective divide
-    vec2 SampleUV = Projected.xy / Projected.w;
-
-    // NDC to screen space [-1, 1] -> [0, 1]
-    SampleUV = (SampleUV.xy * 0.5) + 0.5;
-
-    // get Sample depth:
-    float sampleDepth = texture(gPosition, SampleUV).w;
-
-    bool Occluded = sampleDepth <= AoBiasFragDepth;
-
-    float Diff = abs(AoBiasFragDepth - sampleDepth);
-    bool InsideRadius = Diff < 0.0016f; // TODO(Jesse): In the john-chapman article this was the radius value - how?
-
-    if (Occluded && InsideRadius)
-    {
-      AO -= OccluderContribution;
-    }
-
-  }
 
 
 
@@ -158,7 +91,7 @@ void main()
    */
   vec3 hdrColor =
     Ambient
-    + Diffuse * GlobalLightCosTheta * GlobalLightIntensity * vec3(visibility)  * vec3(AO)
+    + Diffuse * GlobalLightCosTheta * GlobalLightIntensity * vec3(visibility)
   ;
 
   // Reinhard tone mapping
@@ -166,5 +99,4 @@ void main()
 
   // Gamma correction
   color = vec4(pow(mapped, vec3(1.0f / gamma)), 1.0f);
-  /* color.rgb = vec3(AO); */
 }

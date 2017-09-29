@@ -8,8 +8,8 @@ out vec4 Output;
 uniform sampler2D gColor;
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
-uniform sampler2D SsaoNoiseTexture;
 
+uniform sampler2D SsaoNoiseTexture;
 uniform vec3 SsaoNoiseTile;
 
 // This must match the corresponding define in constants.h
@@ -20,10 +20,6 @@ uniform mat4 ViewProjection;
 
 // Tuning
   float SsaoRadius = 1.0f;
-//
-
-// Debugging
-  float AvgSampleDepth = 0.0f;
 //
 
 void main()
@@ -77,11 +73,5 @@ void main()
 
   }
 
-  AvgSampleDepth /= float(SSAO_KERNEL_SIZE);
-
-  Output = vec4(AvgSampleDepth);
-  Output = vec4(FragNormal     , 1);
-  Output = vec4(FragPosition   , 1);
-  Output = vec4(vec3(FragDepth), 1);
-  Output = vec4(vec3(AO)       , 1);
+  Output = vec4(vec3(AO), 1);
 }
