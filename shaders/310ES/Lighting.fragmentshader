@@ -2,6 +2,8 @@
 
 precision highp float;
 
+#define USE_AO_SHADER 1
+
 in vec2 UV;
 out vec4 color;
 
@@ -63,6 +65,7 @@ void main()
   float GlobalLightCosTheta = clamp( dot( FragNormal, GlobalLightDirection), 0.0f, 1.0f);
 
 
+#if USE_AO_SHADER
   vec2 texelSize = 1.0 / vec2(textureSize(Ssao, 0));
   float AccumAO = 0.0;
 
@@ -76,6 +79,9 @@ void main()
   }
 
   BlurredAO = AccumAO / float(AoBlurSize * AoBlurSize);
+#else
+  BlurredAO = 1.0f;
+#endif
 
 
   /*

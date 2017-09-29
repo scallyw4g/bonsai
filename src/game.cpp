@@ -262,28 +262,29 @@ GetFreeEntity(game_state *GameState)
   return Result;
 }
 
-s32
+r32
 GetLevel(r64 Time)
 {
-  s32 Level = 1 + ((s32)(Time/SECONDS_PER_LEVEL));
+  r32 Level = 1 + ((r32)(Time/SECONDS_PER_LEVEL));
   return Level;
 }
 
 void
-SpawnEnemies(game_state *GameState)
+SpawnEnemies(game_state *GameState, r32 dt)
 {
   TIMED_FUNCTION();
   entity **Entities = GameState->EntityTable;
 
-  if (!CurrentFrameIsLogicalFrame(&GameState->Frame))
-    return;
+  r32 Level = GetLevel(GameState->Mode.TimeRunning);
 
-  s32 Level = GetLevel(GameState->Mode.TimeRunning);
+  r32 EnemySpawnRate = Level/30.0f;
 
-  // One enemy per Level per second
-  r32 EnemySpawnRate = Level/120.0f;
+  r32 SpawnRoll = RandomUnilateral(&GameState->Entropy);
 
-  b32 Spawn = (RandomUnilateral(&GameState->Entropy) <= EnemySpawnRate);
+  Print(EnemySpawnRate);
+  Print(SpawnRoll);
+
+  b32 Spawn = ( SpawnRoll <= EnemySpawnRate);
   if (!Spawn)
     return;
 
@@ -957,7 +958,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
   TIMED_BLOCK("Sim");
 
-  SpawnEnemies(GameState);
+  SpawnEnemies(GameState, Plat->dt);
   SimulateEntities(GameState, Player, Hotkeys, Plat->dt);
 
 
@@ -1096,8 +1097,8 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   /* DrawTexturedQuad(&gBuffer->DebugPositionTextureShader); */
   /* DrawTexturedQuad(&gBuffer->DebugNormalTextureShader); */
   /* DrawTexturedQuad(&gBuffer->DebugColorTextureShader); */
-  DrawTexturedQuad(&AoGroup->DebugSsaoShader);
-  SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight));
+  /* DrawTexturedQuad(&AoGroup->DebugSsaoShader); */
+  /* SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight)); */
 #endif
 
   AssertNoGlErrors;

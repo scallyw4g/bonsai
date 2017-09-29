@@ -2,6 +2,8 @@
 
 precision highp float;
 
+#define USE_AO_SHADER 1
+
 in vec2 UV;
 out vec4 Output;
 
@@ -24,6 +26,7 @@ uniform mat4 ViewProjection;
 
 void main()
 {
+#if USE_AO_SHADER
   vec3  FragNormal   = texture(gNormal,   UV).rgb; // modelspace
   vec3  FragPosition = texture(gPosition, UV).rgb; // worldspace
   float FragDepth    = texture(gPosition, UV).w;   // Linear
@@ -74,4 +77,8 @@ void main()
   }
 
   Output = vec4(vec3(AO), 1);
+#else
+  Output = vec4(1);
+#endif
+
 }

@@ -47,7 +47,7 @@
 
 #define WORLD_GRAVITY V3(0.0f, 0.0f, 0.0f)
 
-#define SECONDS_PER_LEVEL 10.0
+#define SECONDS_PER_LEVEL 10.0f
 #define TITLE_FONT_SIZE  32
 
 #define PLAYER_COUNT             1
@@ -120,13 +120,13 @@
 #define SHADOW_MAP_RESOLUTION_Y 4096
 
 /* GLOBAL_VARIABLE r32 CAMERA_FOCAL_LENGTH = 1000.0f; */
-GLOBAL_VARIABLE r32 CAMERA_FOCAL_LENGTH = 440.0f;
+GLOBAL_VARIABLE r32 CAMERA_FOCAL_LENGTH = 100.0f;
 
 GLOBAL_VARIABLE r32 DEBUG_CAMERA_FOCAL_LENGTH = 50.0f;
 #define DEBUG_CAMERA_SCROLL_SPEED  20.0f
 
 // TODO(Jesse): How should we initialize this for realz?
-DEBUG_GLOBAL canonical_position CameraInitialP = { {0,-90,15}, {0,0,0} };
+DEBUG_GLOBAL canonical_position CameraInitialP = { {0,-150,15}, {0,0,0} };
 #define CAMERA_INITIAL_P CameraInitialP
 
 // NOTE(Jesse): The position storage needs to be as large as the largest model
