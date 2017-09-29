@@ -39,7 +39,7 @@ void main()
 
   // NOTE(Jesse): I was getting some artifacts when at 90deg to a surface so I
   // added a bias to the sample.
-  float AoBias = 0.0001f;
+  float AoBias = 0.00015f;
   float AoBiasFragDepth = FragDepth - AoBias;
 
   for ( int KernelIndex = 0;

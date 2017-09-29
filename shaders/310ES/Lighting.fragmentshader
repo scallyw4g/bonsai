@@ -16,6 +16,9 @@ uniform sampler2D Ssao;
 uniform vec3 GlobalLightPosition;
 uniform mat4 ShadowMVP;
 
+int AoBlurSize = 4; // size of AO noise texture
+float BlurredAO = 0.0f;
+
 // Tuning
   float exposure = 1.0f;
   float gamma = 2.2f;
@@ -53,13 +56,26 @@ void main()
   vec3 Diffuse      = texture(gColor, UV).rgb;
   vec3 FragNormal   = texture(gNormal, UV).rgb;   // modelspace
   vec3 FragPosition = texture(gPosition, UV).rgb; // worldspace
-  vec3 Ssao         = texture(Ssao, UV).rgb;
 
   vec3 Ambient = Diffuse * GlobalLightIntensity * 0.1f;
 
   vec3 GlobalLightDirection = GlobalLightPosition;
   float GlobalLightCosTheta = clamp( dot( FragNormal, GlobalLightDirection), 0.0f, 1.0f);
 
+
+  vec2 texelSize = 1.0 / vec2(textureSize(Ssao, 0));
+  float AccumAO = 0.0;
+
+  vec2 hlim = vec2(float(-AoBlurSize) * 0.5 + 0.5);
+
+  for (int i = 0; i < AoBlurSize; ++i) {
+     for (int j = 0; j < AoBlurSize; ++j) {
+        vec2 TexOffset = (hlim + vec2(float(i), float(j))) * texelSize;
+        AccumAO += texture(Ssao, UV + TexOffset).r;
+     }
+  }
+
+  BlurredAO = AccumAO / float(AoBlurSize * AoBlurSize);
 
 
   /*
@@ -94,7 +110,7 @@ void main()
    */
   vec3 hdrColor =
     Ambient
-    + Diffuse * GlobalLightCosTheta * GlobalLightIntensity * vec3(visibility) * Ssao
+    + Diffuse * GlobalLightCosTheta * GlobalLightIntensity * vec3(visibility) * vec3(BlurredAO)
   ;
 
   // Reinhard tone mapping
