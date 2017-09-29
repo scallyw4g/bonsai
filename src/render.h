@@ -41,6 +41,8 @@ struct ao_render_group
   v3 SsaoKernel[SSAO_KERNEL_SIZE]; // Could just be pushed on the heap
   u32 SsaoKernelUniform; // FIXME(Jesse): Automate me!
 
+  texture *Texture;
+
   v3 NoiseTile;
 };
 

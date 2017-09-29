@@ -416,7 +416,7 @@ MakeSimpleTextureShader(texture *Texture, memory_arena *GraphicsMemory)
 
 shader
 MakeLightingShader(memory_arena *GraphicsMemory,
-    g_buffer_textures *gTextures, texture *ShadowMap, m4 *ViewProjection, m4 *ShadowMVP)
+    g_buffer_textures *gTextures, texture *ShadowMap, texture *Ssao, m4 *ViewProjection, m4 *ShadowMVP)
 {
   shader Shader = LoadShaders( "Lighting.vertexshader", "Lighting.fragmentshader" );
 
@@ -434,6 +434,9 @@ MakeLightingShader(memory_arena *GraphicsMemory,
   *Current = GetTextureUniform(GraphicsMemory, &Shader, ShadowMap, "shadowMap");
   Current = &(*Current)->Next;
 
+  *Current = GetTextureUniform(GraphicsMemory, &Shader, Ssao, "Ssao");
+  Current = &(*Current)->Next;
+
   *Current = GetM4Uniform(GraphicsMemory, &Shader, ShadowMVP, "ShadowMVP");
   Current = &(*Current)->Next;
 
@@ -448,7 +451,6 @@ GenFramebuffer()
 {
   framebuffer Framebuffer = {};
   GL_Global->glGenFramebuffers(1, &Framebuffer.ID);
-  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, Framebuffer.ID);
 
   return Framebuffer;
 }
@@ -574,18 +576,17 @@ MakeSsaoShader(memory_arena *GraphicsMemory, g_buffer_textures *gTextures,
 }
 
 bool
-InitAoRenderGroup(ao_render_group   *AoGroup,
-                  memory_arena      *GraphicsMemory,
-                  g_buffer_textures *Textures,
-                  m4                *ViewProjection)
+InitAoRenderGroup(ao_render_group *AoGroup, memory_arena *GraphicsMemory,
+                  g_buffer_textures *Textures, m4 *ViewProjection)
 {
+  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, AoGroup->FBO.ID);
+
   v2i ScreenDim = V2i(SCR_WIDTH, SCR_HEIGHT);
   AssertNoGlErrors;
 
-  texture *SsaoTexture = MakeTexture_RGBA( ScreenDim, 0, GraphicsMemory);
+  AoGroup->Texture = MakeTexture_RGBA( ScreenDim, 0, GraphicsMemory);
 
-
-  FramebufferTexture(&AoGroup->FBO, SsaoTexture);
+  FramebufferTexture(&AoGroup->FBO, AoGroup->Texture);
   SetDrawBuffers(&AoGroup->FBO);
 
   AssertNoGlErrors;
@@ -593,36 +594,13 @@ InitAoRenderGroup(ao_render_group   *AoGroup,
   if (!CheckAndClearFramebuffer())
     return false;
 
-  AoGroup->DebugSsaoShader = MakeSimpleTextureShader(SsaoTexture, GraphicsMemory);
-
-  AssertNoGlErrors;
-
-  random_series SsaoEntropy;
-  v2i SsaoNoiseDim = V2i(4,4);
-
-  AoGroup->NoiseTile = V3(SCR_WIDTH/SsaoNoiseDim.x, SCR_HEIGHT/SsaoNoiseDim.y, 1);
-
-  InitSsaoKernel(AoGroup->SsaoKernel, ArrayCount(AoGroup->SsaoKernel), &SsaoEntropy);
-
-  // TODO(Jesse): Transient arena for this instead of stack allocation ?
-  v3 SsaoNoise[Area(SsaoNoiseDim)] = {};
-  InitSsaoNoise(&SsaoNoise[0], ArrayCount(SsaoNoise), &SsaoEntropy);
-
-  texture *SsaoNoiseTexture =
-    MakeTexture_RGB(SsaoNoiseDim, &SsaoNoise, GraphicsMemory);
-
-  AoGroup->Shader = MakeSsaoShader(GraphicsMemory, Textures, SsaoNoiseTexture,
-      &AoGroup->NoiseTile, ViewProjection);
-
-  AoGroup->SsaoKernelUniform = GetShaderUniform(&AoGroup->Shader, "SsaoKernel");
-
   return True;
 }
 
 bool
-InitGbufferRenderGroup( g_buffer_render_group *gBuffer,
-                        memory_arena *GraphicsMemory, texture *ShadowMap)
+InitGbufferRenderGroup( g_buffer_render_group *gBuffer, memory_arena *GraphicsMemory)
 {
+  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, gBuffer->FBO.ID);
   v2i ScreenDim = V2i(SCR_WIDTH, SCR_HEIGHT);
 
   gBuffer->Textures = PUSH_STRUCT_CHECKED(g_buffer_textures, GraphicsMemory, 1);
@@ -639,31 +617,8 @@ InitGbufferRenderGroup( g_buffer_render_group *gBuffer,
   texture *DepthTexture    = MakeDepthTexture( ScreenDim, GraphicsMemory );
   FramebufferDepthTexture(gBuffer, DepthTexture);
 
-
-  if (!CheckAndClearFramebuffer())
-    return false;
-
-
-  gBuffer->LightingShader = MakeLightingShader(GraphicsMemory,
-      gBuffer->Textures, ShadowMap, &gBuffer->ViewProjection, &gBuffer->ShadowMVP);
-
-  AssertNoGlErrors;
-
-  gBuffer->gBufferShader = CreateGbufferShader(GraphicsMemory, &gBuffer->ViewProjection);
-
-  AssertNoGlErrors;
-
-
-  { // To keep these here or not to keep these here..
-    gBuffer->DebugColorTextureShader = MakeSimpleTextureShader(gBuffer->Textures->Color, GraphicsMemory);
-    gBuffer->DebugNormalTextureShader = MakeSimpleTextureShader(gBuffer->Textures->Normal, GraphicsMemory);
-    gBuffer->DebugPositionTextureShader = MakeSimpleTextureShader(gBuffer->Textures->Position, GraphicsMemory);
-  }
-
-
-  AssertNoGlErrors;
-
-  return true;
+  b32 Result = CheckAndClearFramebuffer();
+  return Result;
 }
 
 bool
@@ -988,12 +943,9 @@ RenderWorldToGBuffer(mesh_buffer_target *Mesh, g_buffer_render_group *RG)
 
 
 inline void
-RenderToGBuffer(
-    mesh_buffer_target *Mesh,
-    g_buffer_render_group *RG,
-    ShadowRenderGroup *SG,
-    camera *Camera
-  )
+RenderGBuffer(
+    mesh_buffer_target *Mesh, g_buffer_render_group *RG,
+    ShadowRenderGroup *SG, camera *Camera)
 {
   TIMED_FUNCTION();
 

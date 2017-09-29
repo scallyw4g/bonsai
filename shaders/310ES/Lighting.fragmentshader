@@ -10,6 +10,8 @@ uniform sampler2D gColor;
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D shadowMap;
+uniform sampler2D Ssao;
+
 
 uniform vec3 GlobalLightPosition;
 uniform mat4 ShadowMVP;
@@ -51,6 +53,7 @@ void main()
   vec3 Diffuse      = texture(gColor, UV).rgb;
   vec3 FragNormal   = texture(gNormal, UV).rgb;   // modelspace
   vec3 FragPosition = texture(gPosition, UV).rgb; // worldspace
+  vec3 Ssao         = texture(Ssao, UV).rgb;
 
   vec3 Ambient = Diffuse * GlobalLightIntensity * 0.1f;
 
@@ -91,7 +94,7 @@ void main()
    */
   vec3 hdrColor =
     Ambient
-    + Diffuse * GlobalLightCosTheta * GlobalLightIntensity * vec3(visibility)
+    + Diffuse * GlobalLightCosTheta * GlobalLightIntensity * vec3(visibility) * Ssao
   ;
 
   // Reinhard tone mapping

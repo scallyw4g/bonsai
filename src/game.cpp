@@ -906,7 +906,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   chunk_dimension WorldChunkDim = World->ChunkDim;
 
   g_buffer_render_group *gBuffer = GameState->gBuffer;
-  ao_render_group *AoGroup = GameState->AoRenderGroup;
+  ao_render_group *AoGroup = GameState->AoGroup;
   ShadowRenderGroup *SG     = GameState->SG;
 
   r32 VrHalfDim = (VR_X*CD_X/2.0f);
@@ -1078,7 +1078,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
     DrawFolie(&World->Mesh, Camera, AABB);
   }
 
-  RenderToGBuffer(&World->Mesh, gBuffer, SG, Camera);
+  RenderGBuffer(&World->Mesh, gBuffer, SG, Camera);
   AssertNoGlErrors;
 
   RenderAoTexture(AoGroup);
@@ -1096,8 +1096,8 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   /* DrawTexturedQuad(&gBuffer->DebugPositionTextureShader); */
   /* DrawTexturedQuad(&gBuffer->DebugNormalTextureShader); */
   /* DrawTexturedQuad(&gBuffer->DebugColorTextureShader); */
-  DrawTexturedQuad(&AoGroup->DebugSsaoShader);
-  SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight));
+  /* DrawTexturedQuad(&AoGroup->DebugSsaoShader); */
+  /* SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight)); */
 #endif
 
   AssertNoGlErrors;
@@ -1169,6 +1169,11 @@ GameInit( platform *Plat, memory_arena *GameMemory)
   game_state *GameState = PUSH_STRUCT_CHECKED(game_state, GameMemory, 1);
   GameState->Memory = GameMemory;
 
+
+  memory_arena *GraphicsMemory = PUSH_STRUCT_CHECKED(memory_arena, GameMemory, 1);
+  SubArena(GameMemory, GraphicsMemory, Megabytes(8));
+
+
   //FIXME(Jesse): Sub-arena for GraphicsMemory
   ShadowRenderGroup *SG = PUSH_STRUCT_CHECKED(ShadowRenderGroup, GameState->Memory, 1);
   if (!InitializeShadowBuffer(SG, GameState->Memory))
@@ -1180,22 +1185,72 @@ GameInit( platform *Plat, memory_arena *GameMemory)
 
   //FIXME(Jesse): Sub-arena for GraphicsMemory
   g_buffer_render_group *gBuffer = CreateGbuffer(GameState->Memory);
-  if (!InitGbufferRenderGroup(gBuffer, GameState->Memory, SG->ShadowMap))
+  if (!InitGbufferRenderGroup(gBuffer, GameState->Memory))
   {
     Error("Initializing g_buffer_render_group"); return False;
   }
 
   AssertNoGlErrors;
-
-  //FIXME(Jesse): Sub-arena for GraphicsMemory
-  ao_render_group *AoRenderGroup = CreateAoRenderGroup(GameState->Memory);
-  if (!InitAoRenderGroup(AoRenderGroup, GameState->Memory, gBuffer->Textures, &gBuffer->ViewProjection))
+  ao_render_group *AoGroup = CreateAoRenderGroup(GameState->Memory);
+  if (!InitAoRenderGroup(AoGroup, GameState->Memory, gBuffer->Textures, &gBuffer->ViewProjection))
   {
     Error("Initializing g_buffer_render_group"); return False;
   }
 
 
-  AssertNoGlErrors;
+
+
+  texture *SsaoNoiseTexture = 0;
+  {
+    v2i SsaoNoiseDim = V2i(4,4);
+    random_series SsaoEntropy;
+
+    AoGroup->NoiseTile = V3(SCR_WIDTH/SsaoNoiseDim.x, SCR_HEIGHT/SsaoNoiseDim.y, 1);
+
+    InitSsaoKernel(AoGroup->SsaoKernel, ArrayCount(AoGroup->SsaoKernel), &SsaoEntropy);
+
+    // TODO(Jesse): Transient arena for this instead of stack allocation ?
+    v3 SsaoNoise[Area(SsaoNoiseDim)] = {};
+    InitSsaoNoise(&SsaoNoise[0], ArrayCount(SsaoNoise), &SsaoEntropy);
+
+    SsaoNoiseTexture = MakeTexture_RGB(SsaoNoiseDim, &SsaoNoise, GraphicsMemory);
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  gBuffer->LightingShader =
+    MakeLightingShader(GraphicsMemory, gBuffer->Textures, SG->ShadowMap, AoGroup->Texture,
+        &gBuffer->ViewProjection, &gBuffer->ShadowMVP);
+
+  gBuffer->gBufferShader =
+    CreateGbufferShader(GraphicsMemory, &gBuffer->ViewProjection);
+
+  AoGroup->Shader = MakeSsaoShader(GraphicsMemory, gBuffer->Textures, SsaoNoiseTexture,
+      &AoGroup->NoiseTile, &gBuffer->ViewProjection);
+
+  AoGroup->SsaoKernelUniform = GetShaderUniform(&AoGroup->Shader, "SsaoKernel");
+
+  { // To keep these here or not to keep these here..
+    gBuffer->DebugColorTextureShader = MakeSimpleTextureShader(gBuffer->Textures->Color, GraphicsMemory);
+    gBuffer->DebugNormalTextureShader = MakeSimpleTextureShader(gBuffer->Textures->Normal, GraphicsMemory);
+    gBuffer->DebugPositionTextureShader = MakeSimpleTextureShader(gBuffer->Textures->Position, GraphicsMemory);
+    AoGroup->DebugSsaoShader = MakeSimpleTextureShader(AoGroup->Texture, GraphicsMemory);
+  }
+
+
 
   GameState->Turb = PUSH_STRUCT_CHECKED(noise_3d, GameState->Memory, 1);
   AllocateAndInitNoise3d(GameState, GameState->Turb, Chunk_Dimension(8,8,8) );
@@ -1219,7 +1274,7 @@ GameInit( platform *Plat, memory_arena *GameMemory)
   GameState->Plat = Plat;
   GameState->Camera = Camera;
   GameState->gBuffer = gBuffer;
-  GameState->AoRenderGroup = AoRenderGroup;
+  GameState->AoGroup = AoGroup;
   GameState->SG = SG;
   GameState->Entropy.Seed = DEBUG_NOISE_SEED;
 
