@@ -1096,8 +1096,8 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   /* DrawTexturedQuad(&gBuffer->DebugPositionTextureShader); */
   /* DrawTexturedQuad(&gBuffer->DebugNormalTextureShader); */
   /* DrawTexturedQuad(&gBuffer->DebugColorTextureShader); */
-  /* DrawTexturedQuad(&AoGroup->DebugSsaoShader); */
-  /* SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight)); */
+  DrawTexturedQuad(&AoGroup->DebugSsaoShader);
+  SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight));
 #endif
 
   AssertNoGlErrors;

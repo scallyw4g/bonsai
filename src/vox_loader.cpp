@@ -206,6 +206,7 @@ LoadModel(memory_arena *WorldStorage, char const *filepath)
 {
   model Result;
   s32 totalChunkBytes = 0;
+  chunk_dimension ReportedDim = {};
 
   FILE *ModelFile = fopen(filepath, "r");
 
@@ -237,22 +238,23 @@ LoadModel(memory_arena *WorldStorage, char const *filepath)
 
         case ID_SIZE:
         {
-          // Instead of trusting the model (they're always wrong), we'll loop
-          // through the data and figure it out ourselves.
-
-          /* chunk_dimension Dim = */ ReadSizeChunk(ModelFile, &bytesRemaining);
+          // MagicaVoxel doesn't follow its own file format very well, or the
+          // exporter is buggy.  Caching the reported dim lets us discard
+          // voxels that are outside the dimension that we think it should be.
+          ReportedDim = ReadSizeChunk(ModelFile, &bytesRemaining);
         } break;
 
         case ID_XYZI:
         {
-          s32 ModelVoxelCount = ReadXYZIChunk(ModelFile, &bytesRemaining);
+          s32 ReportedVoxelCount = ReadXYZIChunk(ModelFile, &bytesRemaining);
+          s32 ActualVoxelCount = 0;
 
           s32 maxX = 0, maxY = 0, maxZ = 0;
           s32 minX = INT_MAX, minY = INT_MAX, minZ = INT_MAX;
 
-          boundary_voxel *LocalVoxelCache = (boundary_voxel *)calloc(ModelVoxelCount, sizeof(boundary_voxel) );
+          boundary_voxel *LocalVoxelCache = (boundary_voxel *)calloc(ReportedVoxelCount, sizeof(boundary_voxel) );
           for( s32 VoxelCacheIndex = 0;
-               VoxelCacheIndex < ModelVoxelCount;
+               VoxelCacheIndex < ReportedVoxelCount;
                ++VoxelCacheIndex)
           {
             s32 X = (s32)ReadChar(ModelFile, &bytesRemaining);
@@ -260,24 +262,29 @@ LoadModel(memory_arena *WorldStorage, char const *filepath)
             s32 Z = (s32)ReadChar(ModelFile, &bytesRemaining);
             s32 W = (s32)ReadChar(ModelFile, &bytesRemaining); // Color
 
-            maxX = Max(X, maxX);
-            maxY = Max(Y, maxY);
-            maxZ = Max(Z, maxZ);
+            voxel_position TestP = Voxel_Position(X,Y,Z);
+            if (IsInsideDim(ReportedDim, TestP))
+            {
+              ++ActualVoxelCount;
+              maxX = Max(X, maxX);
+              maxY = Max(Y, maxY);
+              maxZ = Max(Z, maxZ);
 
-            minX = Min(X, minX);
-            minY = Min(Y, minY);
-            minZ = Min(Z, minZ);
+              minX = Min(X, minX);
+              minY = Min(Y, minY);
+              minZ = Min(Z, minZ);
 
-            LocalVoxelCache[VoxelCacheIndex] = boundary_voxel(X,Y,Z,W);
-            SetFlag(&LocalVoxelCache[VoxelCacheIndex], Voxel_Filled);
+              LocalVoxelCache[VoxelCacheIndex] = boundary_voxel(X,Y,Z,W);
+              SetFlag(&LocalVoxelCache[VoxelCacheIndex], Voxel_Filled);
+            }
           }
 
+          s32 IndexToPosition = 1;  // max(X,Y,Z) are indicies, convert to positions
+          chunk_dimension Max = Chunk_Dimension(maxX+IndexToPosition, maxY+IndexToPosition, maxZ+IndexToPosition);
           chunk_dimension Min = Chunk_Dimension(minX, minY, minZ);
 
-          // Add 1 to the max dimension to convert from indicies to positions
-          chunk_dimension Max = Chunk_Dimension(maxX+1, maxY+1, maxZ+1);
-
           chunk_dimension ModelDim = Max - Min;
+          Print(ModelDim);
 
           // TODO(Jesse): Load models in multiple chunks instead of one
           // monolithic one. The storage for chunks must be as large as the
@@ -289,10 +296,11 @@ LoadModel(memory_arena *WorldStorage, char const *filepath)
           Result.Dim = ModelDim;
 
           for( int VoxelCacheIndex = 0;
-               VoxelCacheIndex < ModelVoxelCount;
+               VoxelCacheIndex < ActualVoxelCount;
                ++VoxelCacheIndex)
           {
             boundary_voxel *Voxel = &LocalVoxelCache[VoxelCacheIndex];
+            Voxel->Offset -= Min;
             s32 Index = GetIndex(Voxel->Offset, Result.Chunk, Result.Dim);
             Result.Chunk->Voxels[Index] = Voxel->V;
           }
