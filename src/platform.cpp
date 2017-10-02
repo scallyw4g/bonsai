@@ -19,7 +19,6 @@
 
 // TODO(Jesse): Axe this!!
 static gl_extensions *GL_Global = 0;
-static const char *GlobalGlslVersion;
 
 
 
@@ -335,20 +334,14 @@ SearchForProjectRoot(void)
 void
 QueryAndSetGlslVersion(platform *Plat)
 {
-#if 0
   r64 GLSL_Version = atof((char*)glGetString ( GL_SHADING_LANGUAGE_VERSION ));
   Info("GLSL verison : %f", GLSL_Version );
 
   if (GLSL_Version >= 3.3)
     Plat->GlslVersion = "330";
-
   else
     Plat->GlslVersion = "310ES";
-#else
-  Plat->GlslVersion = "310ES";
-#endif
 
-  GlobalGlslVersion = Plat->GlslVersion;
   return;
 }
 

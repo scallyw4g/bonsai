@@ -1,9 +1,0 @@
-#version 310 es
-
-precision highp float;
-
-void main()
-{
-  /* Depth is written linearized to the texture; our projection is orthographic */
-}
-

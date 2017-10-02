@@ -30,7 +30,7 @@ ReadEntireFileIntoString(char *Filepath, memory_arena *Memory)
 }
 
 shader
-LoadShaders(const char * VertShaderPath, const char * FragFilePath, memory_arena *Memory, const char *GlslVersion = "310ES")
+LoadShaders(const char * VertShaderPath, const char * FragFilePath, memory_arena *Memory)
 {
   // Create the shaders
   u32 VertexShaderID = GL_Global->glCreateShader(GL_VERTEX_SHADER);
@@ -38,10 +38,10 @@ LoadShaders(const char * VertShaderPath, const char * FragFilePath, memory_arena
 
   // FIXME(Jesse): For gods sake don't use sprintf
   char ComputedVertPath[2048] = {};
-  Snprintf(ComputedVertPath, 2048, "%s/%s/%s", SHADER_PATH, GlslVersion, VertShaderPath);
+  Snprintf(ComputedVertPath, 2048, "%s/%s", SHADER_PATH, VertShaderPath);
 
   char ComputedFragPath[2048] = {};
-  Snprintf(ComputedFragPath, 2048, "%s/%s/%s", SHADER_PATH, GlslVersion, FragFilePath);
+  Snprintf(ComputedFragPath, 2048, "%s/%s", SHADER_PATH, FragFilePath);
 
   char *VertexShaderCode = ReadEntireFileIntoString(ComputedVertPath, Memory);
   char *FragShaderCode = ReadEntireFileIntoString(ComputedFragPath, Memory);
