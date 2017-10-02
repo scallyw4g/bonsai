@@ -4,14 +4,14 @@
 #include <debug.h>
 
 void
-initText2D(const char *TexturePath, debug_text_render_group *RG)
+initText2D(const char *TexturePath, debug_text_render_group *RG, memory_arena *Memory)
 {
   RG->Text2DTextureID = loadDDS(TexturePath);
 
   GL_Global->glGenBuffers(1, &RG->Text2DVertexBufferID);
   GL_Global->glGenBuffers(1, &RG->Text2DUVBufferID);
 
-  RG->Text2DShader = LoadShaders("TextVertexShader.vertexshader", "TextVertexShader.fragmentshader");
+  RG->Text2DShader = LoadShaders("TextVertexShader.vertexshader", "TextVertexShader.fragmentshader", Memory);
   RG->Text2DUniformID = GL_Global->glGetUniformLocation(RG->Text2DShader.ID, "myTextureSampler");
 
   return;
@@ -23,7 +23,7 @@ InitDebugState( debug_state *DebugState, platform *Plat)
   DebugState->GetCycleCount = Plat->GetCycleCount;
 
   DebugState->DebugRG = PUSH_STRUCT_CHECKED(debug_text_render_group, Plat->Memory, 1);
-  initText2D("Holstein.DDS", DebugState->DebugRG);
+  initText2D("Holstein.DDS", DebugState->DebugRG, Plat->Memory);
 
   return;
 }

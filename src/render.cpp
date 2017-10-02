@@ -411,7 +411,8 @@ shader
 MakeSimpleTextureShader(texture *Texture, memory_arena *GraphicsMemory)
 {
   shader SimpleTextureShader = LoadShaders( "Passthrough.vertexshader",
-                                            "SimpleTexture.fragmentshader" );
+                                            "SimpleTexture.fragmentshader",
+                                            GraphicsMemory );
 
   SimpleTextureShader.FirstUniform = GetTextureUniform(GraphicsMemory, &SimpleTextureShader, Texture, "Texture");
 
@@ -424,7 +425,7 @@ shader
 MakeLightingShader(memory_arena *GraphicsMemory,
     g_buffer_textures *gTextures, texture *ShadowMap, texture *Ssao, m4 *ViewProjection, m4 *ShadowMVP)
 {
-  shader Shader = LoadShaders( "Lighting.vertexshader", "Lighting.fragmentshader" );
+  shader Shader = LoadShaders( "Lighting.vertexshader", "Lighting.fragmentshader", GraphicsMemory);
 
   shader_uniform **Current = &Shader.FirstUniform;
 
@@ -535,7 +536,7 @@ shader
 CreateGbufferShader(memory_arena *GraphicsMemory, m4 *ViewProjection)
 {
   shader Shader = LoadShaders( "SimpleVertexShader.vertexshader",
-                               "SimpleFragmentShader.fragmentshader" );
+                               "SimpleFragmentShader.fragmentshader", GraphicsMemory);
 
   shader_uniform **Current = &Shader.FirstUniform;
 
@@ -553,7 +554,7 @@ MakeSsaoShader(memory_arena *GraphicsMemory, g_buffer_textures *gTextures,
     texture *SsaoNoiseTexture, v3 *SsaoNoiseTile, m4 *ViewProjection)
 {
   shader Shader = LoadShaders( "Passthrough.vertexshader",
-                               "Ao.fragmentshader" );
+                               "Ao.fragmentshader", GraphicsMemory);
 
   shader_uniform **Current = &Shader.FirstUniform;
 
@@ -645,7 +646,7 @@ InitializeShadowBuffer(ShadowRenderGroup *SG, memory_arena *GraphicsMemory)
   // For debug-only visualization of this texture
   SG->DebugTextureShader = MakeSimpleTextureShader(SG->ShadowMap, GraphicsMemory);
 
-  SG->DepthShader = LoadShaders( "DepthRTT.vertexshader", "DepthRTT.fragmentshader");
+  SG->DepthShader = LoadShaders( "DepthRTT.vertexshader", "DepthRTT.fragmentshader", GraphicsMemory);
   SG->MVP_ID = GetShaderUniform(&SG->DepthShader, "depthMVP");
 
   if(GL_Global->glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
