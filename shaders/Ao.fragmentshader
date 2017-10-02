@@ -1,0 +1,78 @@
+in vec2 UV;
+out vec4 Output;
+
+uniform sampler2D gColor;
+uniform sampler2D gPosition;
+uniform sampler2D gNormal;
+
+uniform sampler2D SsaoNoiseTexture;
+uniform vec3 SsaoNoiseTile;
+
+// This must match the corresponding define in constants.h
+const int SSAO_KERNEL_SIZE = 16;
+uniform vec3 SsaoKernel[SSAO_KERNEL_SIZE];
+
+uniform mat4 ViewProjection;
+
+// Tuning
+  float SsaoRadius = 1.0f;
+//
+
+void main()
+{
+#if USE_AO_SHADER
+  vec3  FragNormal   = texture(gNormal,   UV).rgb; // modelspace
+  vec3  FragPosition = texture(gPosition, UV).rgb; // worldspace
+  float FragDepth    = texture(gPosition, UV).w;   // Linear
+
+
+  vec3 Noise = texture(SsaoNoiseTexture, UV*SsaoNoiseTile.xy).xyz;
+  vec3 Right = normalize(Noise - FragNormal);
+  vec3 Front = cross(FragNormal, Right);
+  mat3 Reorientation = mat3(Right, Front, FragNormal);
+
+  float AO = 1.0f;
+  float OccluderContribution = 1.0f/float(SSAO_KERNEL_SIZE);
+
+  // NOTE(Jesse): I was getting some artifacts when at 90deg to a surface so I
+  // added a bias to the sample.
+  float AoBias = 0.00015f;
+  float AoBiasFragDepth = FragDepth - AoBias;
+
+  for ( int KernelIndex = 0;
+        KernelIndex < SSAO_KERNEL_SIZE;
+        ++KernelIndex)
+  {
+    vec3 KernelP = Reorientation * SsaoKernel[KernelIndex] * SsaoRadius;
+    vec3 SampleP = KernelP + FragPosition;
+
+    // Project SampleP
+    vec4 Projected = ViewProjection * vec4(SampleP, 1);
+
+    // Prespective divide
+    vec2 SampleUV = Projected.xy / Projected.w;
+
+    // NDC to screen space [-1, 1] -> [0, 1]
+    SampleUV = (SampleUV.xy * 0.5) + 0.5;
+
+    // get Sample depth:
+    float sampleDepth = texture(gPosition, SampleUV).w;
+
+    bool Occluded = sampleDepth <= AoBiasFragDepth;
+
+    float Diff = abs(AoBiasFragDepth - sampleDepth);
+    bool InsideRadius = Diff < 0.0016f; // TODO(Jesse): In the john-chapman article this was the radius value - how?
+
+    if (Occluded && InsideRadius)
+    {
+      AO -= OccluderContribution;
+    }
+
+  }
+
+  Output = vec4(vec3(AO), 1);
+#else
+  Output = vec4(1);
+#endif
+
+}

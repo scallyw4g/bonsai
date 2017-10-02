@@ -26,6 +26,7 @@
  */
 #define MODELS_PATH "models"
 #define SHADER_PATH "shaders"
+#define SHADER_HEADER "/header.glsl"
 
 
 // Wrapper so assertions give us file/line numbers

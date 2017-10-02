@@ -13,7 +13,7 @@ using namespace std;
 #define INVALID_SHADER_UNIFORM (-1)
 
 char *
-ReadEntireFileIntoString(char *Filepath, memory_arena *Memory)
+ReadEntireFileIntoString(const char *Filepath, memory_arena *Memory)
 {
   FILE *File = fopen(Filepath, "r");
   char *FileContents = 0;
@@ -27,19 +27,25 @@ ReadEntireFileIntoString(char *Filepath, memory_arena *Memory)
     FileContents = (char*)PushSize(Memory, FileSize + 1);
     fread(FileContents, 1, FileSize, File);
   }
+  else
+  {
+    Error("Opening %s", Filepath);
+  }
 
   return FileContents;
 }
 
 s32
-CompileShader(const char *Source, u32 Type)
+CompileShader(const char *Header, const char *Code, u32 Type)
 {
   int InfoLogLength = 0;
 
   u32 ShaderID = GL_Global->glCreateShader(Type);
 
+  const char *Sources[2] = {Header, Code};
+
   // Compile
-  GL_Global->glShaderSource(ShaderID, 1, &Source , NULL);
+  GL_Global->glShaderSource(ShaderID, 2, Sources, NULL);
   GL_Global->glCompileShader(ShaderID);
 
   // Check Status
@@ -50,7 +56,7 @@ CompileShader(const char *Source, u32 Type)
   {
     char VertexShaderErrorMessage[InfoLogLength+1] = {};
     GL_Global->glGetShaderInfoLog(ShaderID, InfoLogLength, NULL, VertexShaderErrorMessage);
-    Error("%s", VertexShaderErrorMessage);
+    Error("Shader : %s", VertexShaderErrorMessage);
     return INVALID_SHADER_UNIFORM;
   }
   else
@@ -62,7 +68,7 @@ CompileShader(const char *Source, u32 Type)
 shader
 LoadShaders(const char * VertShaderPath, const char * FragFilePath, memory_arena *Memory)
 {
-  Info("Creating shader : %s && %s", VertShaderPath, FragFilePath);
+  Info("Creating shader : %s | %s", VertShaderPath, FragFilePath);
 
   // FIXME(Jesse): For gods sake don't use sprintf
   char ComputedVertPath[2048] = {};
@@ -71,19 +77,19 @@ LoadShaders(const char * VertShaderPath, const char * FragFilePath, memory_arena
   char ComputedFragPath[2048] = {};
   Snprintf(ComputedFragPath, 2048, "%s/%s", SHADER_PATH, FragFilePath);
 
+  char *HeaderCode       = ReadEntireFileIntoString(SHADER_PATH SHADER_HEADER, Memory);
   char *VertexShaderCode = ReadEntireFileIntoString(ComputedVertPath, Memory);
-  char *FragShaderCode = ReadEntireFileIntoString(ComputedFragPath, Memory);
+  char *FragShaderCode   = ReadEntireFileIntoString(ComputedFragPath, Memory);
+
 
   s32 Result = GL_FALSE;
   int InfoLogLength;
 
 
-  u32 VertexShaderID = CompileShader(VertexShaderCode, GL_VERTEX_SHADER);
-  u32 FragmentShaderID = CompileShader(FragShaderCode, GL_FRAGMENT_SHADER);
-
+  s32 VertexShaderID = CompileShader(HeaderCode, VertexShaderCode, GL_VERTEX_SHADER);
+  s32 FragmentShaderID = CompileShader(HeaderCode, FragShaderCode, GL_FRAGMENT_SHADER);
 
   // Link the program
-  Info("Linking Shader");
   u32 ProgramID = GL_Global->glCreateProgram();
   Assert(ProgramID);
   GL_Global->glAttachShader(ProgramID, VertexShaderID);
@@ -93,10 +99,11 @@ LoadShaders(const char * VertShaderPath, const char * FragFilePath, memory_arena
   // Check the program
   GL_Global->glGetProgramiv(ProgramID, GL_LINK_STATUS, &Result);
   GL_Global->glGetProgramiv(ProgramID, GL_INFO_LOG_LENGTH, &InfoLogLength);
-  if ( InfoLogLength > 0 ){
-    std::vector<char> ProgramErrorMessage(InfoLogLength+1);
-    GL_Global->glGetProgramInfoLog(ProgramID, InfoLogLength, NULL, &ProgramErrorMessage[0]);
-    Error("%s", &ProgramErrorMessage[0]);
+  if ( InfoLogLength > 0 )
+  {
+    char ProgramErrorMessage[InfoLogLength+1];
+    GL_Global->glGetProgramInfoLog(ProgramID, InfoLogLength, NULL, ProgramErrorMessage);
+    Error("%s", ProgramErrorMessage);
   }
 
 
@@ -111,5 +118,3 @@ LoadShaders(const char * VertShaderPath, const char * FragFilePath, memory_arena
 
   return Shader;
 }
-
-

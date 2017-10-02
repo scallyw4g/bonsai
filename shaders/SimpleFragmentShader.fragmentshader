@@ -1,0 +1,26 @@
+in vec3 vertexP_worldspace;
+in vec3 vertexN_worldspace;
+in vec3 MaterialColor;
+
+layout (location = 0) out vec3 gColor;
+layout (location = 1) out vec3 gNormal;
+layout (location = 2) out vec4 gPosition;
+
+// FIXME(Jesse): Put these in uniforms
+const float Far = 5000.0f;
+const float Near = 0.1f;
+float
+Linearize(float Depth)
+{
+  float Result = (2.0 * Near) / (Far + Near - Depth * (Far - Near));
+  return Result;
+}
+
+void main()
+{
+  gPosition.xyz = vertexP_worldspace;
+  gPosition.w = Linearize(gl_FragCoord.z); // Depth
+
+  gNormal = vertexN_worldspace;
+  gColor = MaterialColor;
+}

@@ -1,0 +1,5 @@
+void main()
+{
+  /* Depth is written linearized to the texture; our projection is orthographic */
+}
+
