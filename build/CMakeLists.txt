@@ -9,22 +9,30 @@ set(CMAKE_BUILD_TYPE Debug)
 
 set( ROOT ${CMAKE_SOURCE_DIR}/.. )
 
+set( EXAMPLES ${ROOT}/examples )
 set( SRC ${ROOT}/src )
 set( BIN ${ROOT}/bin )
 
 set( LIBRARY_OUTPUT_PATH ${BIN} )
 set( EXECUTABLE_OUTPUT_PATH ${BIN} )
 
+set( SPACE_INVADERS_PATH ${EXAMPLES}/space_invaders )
+set( SSAO_TEST_PATH ${EXAMPLES}/ssao_test )
+
 add_executable(Bonsai ${SRC}/platform.cpp)
-add_library(Game SHARED ${SRC}/game.cpp)
+add_library(example_space_invaders SHARED ${SPACE_INVADERS_PATH}/game.cpp)
+add_library(example_ssao_test SHARED ${SSAO_TEST_PATH}/game.cpp)
 
 # Link with Opengl
 find_package(OpenGL REQUIRED)
 include_directories( ${OPENGL_INCLUDE_DIRS} )
-target_link_libraries(Game ${OPENGL_LIBRARIES})
+target_link_libraries(example_space_invaders ${OPENGL_LIBRARIES})
+target_link_libraries(example_ssao_test ${OPENGL_LIBRARIES})
 target_link_libraries(Bonsai ${OPENGL_LIBRARIES})
 
 include_directories(${SRC})
+include_directories(${SPACE_INVADERS_PATH})
+include_directories(${SSAO_TEST_PATH})
 include_directories(${ROOT}/external/glm-0.9.7.1)
 
 add_definitions( -DGL_GLEXT_PROTOTYPES=1 )
@@ -95,27 +103,30 @@ endif()
 # Platform Specific
 #
 
-# if (UNIX)
-#
-#   set(COMPILED_LIB ${BIN}/libGame.so)
-#   set(LOADABLE_LIB ${BIN}/libGameLoadable.so)
-#
-# elseif(WIN32)
-#
-#   set(COMPILED_LIB ${BIN}/Debug/Game.dll)
-#   set(LOADABLE_LIB ${BIN}/Debug/GameLoadable.dll)
-#
-#   # set(COMPILED_LIB ${BIN}/Release/Game.dll)
-#   # set(LOADABLE_LIB ${BIN}/Release/GameLoadable.dll)
-#
-# else()
-#
-#   message(FATAL_ERROR "Unsupported Platform")
-#
-# endif()
+if (UNIX)
+
+  set(SPACE_INVADERS_COMPILED_LIB ${BIN}/libexample_space_invaders.so)
+  set(SPACE_INVADERS_LOADABLE_LIB ${BIN}/libGameLoadable.so)
+
+  set(SSAO_COMPILED_LIB ${BIN}/libexample_ssao_test.so)
+  set(SSAO_LOADABLE_LIB ${BIN}/libGameLoadable.so)
+
+elseif(WIN32)
+
+  set(SPACE_INVADERS_COMPILED_LIB ${BIN}/Debug/Game.dll)
+  set(SPACE_INVADERS_LOADABLE_LIB ${BIN}/Debug/GameLoadable.dll)
+
+else()
+
+  message(FATAL_ERROR "Unsupported Platform")
+
+endif()
 
 # Rename the game library on completion so the hot-loading code doesn't try to
 # load it before the compiler is finished
-# add_custom_command( TARGET Game POST_BUILD
-#                     COMMAND ${CMAKE_COMMAND} -E rename ${COMPILED_LIB} ${LOADABLE_LIB} )
+# add_custom_command( TARGET example_space_invaders POST_BUILD
+#  COMMAND ${CMAKE_COMMAND} -E copy ${SPACE_INVADERS_COMPILED_LIB} ${SPACE_INVADERS_LOADABLE_LIB} )
+
+add_custom_command( TARGET example_ssao_test POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy ${SSAO_COMPILED_LIB} ${SSAO_LOADABLE_LIB} )
 
