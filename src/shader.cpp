@@ -10,6 +10,8 @@ using namespace std;
 
 #include <shader.hpp>
 
+#define INVALID_SHADER_UNIFORM (-1)
+
 char *
 ReadEntireFileIntoString(char *Filepath, memory_arena *Memory)
 {
@@ -29,12 +31,38 @@ ReadEntireFileIntoString(char *Filepath, memory_arena *Memory)
   return FileContents;
 }
 
+s32
+CompileShader(const char *Source, u32 Type)
+{
+  int InfoLogLength = 0;
+
+  u32 ShaderID = GL_Global->glCreateShader(Type);
+
+  // Compile
+  GL_Global->glShaderSource(ShaderID, 1, &Source , NULL);
+  GL_Global->glCompileShader(ShaderID);
+
+  // Check Status
+  s32 Result = GL_FALSE;
+  GL_Global->glGetShaderiv(ShaderID, GL_COMPILE_STATUS, &Result);
+  GL_Global->glGetShaderiv(ShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
+  if ( InfoLogLength > 0 )
+  {
+    char VertexShaderErrorMessage[InfoLogLength+1] = {};
+    GL_Global->glGetShaderInfoLog(ShaderID, InfoLogLength, NULL, VertexShaderErrorMessage);
+    Error("%s", VertexShaderErrorMessage);
+    return INVALID_SHADER_UNIFORM;
+  }
+  else
+  {
+    return ShaderID;
+  }
+}
+
 shader
 LoadShaders(const char * VertShaderPath, const char * FragFilePath, memory_arena *Memory)
 {
-  // Create the shaders
-  u32 VertexShaderID = GL_Global->glCreateShader(GL_VERTEX_SHADER);
-  u32 FragmentShaderID = GL_Global->glCreateShader(GL_FRAGMENT_SHADER);
+  Info("Creating shader : %s && %s", VertShaderPath, FragFilePath);
 
   // FIXME(Jesse): For gods sake don't use sprintf
   char ComputedVertPath[2048] = {};
@@ -49,37 +77,9 @@ LoadShaders(const char * VertShaderPath, const char * FragFilePath, memory_arena
   s32 Result = GL_FALSE;
   int InfoLogLength;
 
-  // Compile Vertex Shader
-  Info("Compiling shader : %s", ComputedVertPath);
-  char const * VertexSourcePointer = VertexShaderCode;
-  GL_Global->glShaderSource(VertexShaderID, 1, &VertexSourcePointer , NULL);
-  GL_Global->glCompileShader(VertexShaderID);
 
-  // Check Vertex Shader
-  GL_Global->glGetShaderiv(VertexShaderID, GL_COMPILE_STATUS, &Result);
-  GL_Global->glGetShaderiv(VertexShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
-  if ( InfoLogLength > 0 ){
-    std::vector<char> VertexShaderErrorMessage(InfoLogLength+1);
-    GL_Global->glGetShaderInfoLog(VertexShaderID, InfoLogLength, NULL, &VertexShaderErrorMessage[0]);
-    Error("%s", &VertexShaderErrorMessage[0]);
-  }
-
-
-
-  // Compile Fragment Shader
-  Info("Compiling shader : %s", ComputedFragPath);
-  GL_Global->glShaderSource(FragmentShaderID, 1, &FragShaderCode , NULL);
-  GL_Global->glCompileShader(FragmentShaderID);
-
-  // Check Fragment Shader
-  GL_Global->glGetShaderiv(FragmentShaderID, GL_COMPILE_STATUS, &Result);
-  GL_Global->glGetShaderiv(FragmentShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
-  if ( InfoLogLength > 0 ){
-    std::vector<char> FragmentShaderErrorMessage(InfoLogLength+1);
-    GL_Global->glGetShaderInfoLog(FragmentShaderID, InfoLogLength, NULL, &FragmentShaderErrorMessage[0]);
-    Error("%s", &FragmentShaderErrorMessage[0]);
-  }
-
+  u32 VertexShaderID = CompileShader(VertexShaderCode, GL_VERTEX_SHADER);
+  u32 FragmentShaderID = CompileShader(FragShaderCode, GL_FRAGMENT_SHADER);
 
 
   // Link the program

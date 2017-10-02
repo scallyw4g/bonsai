@@ -308,7 +308,6 @@ MakeDepthTexture(v2i Dim, memory_arena *Mem)
   return Texture;
 }
 
-#define INVALID_SHADER_UNIFORM (-1)
 s32
 GetShaderUniform(shader *Shader, const char *Name)
 {
