@@ -2336,7 +2336,7 @@ CanBuildWorldChunkBoundary(world *World, world_chunk *Chunk)
 
   world_position ChunkP = Chunk->WorldP;
 
-  Result &= IsSet(Chunk, Chunk_RebuildBoundary);
+  Result &= IsSet(Chunk, Chunk_BufferMesh);
 
   // Bail early to save the cache most of the time.. does this even help?
   if (!Result) return Result;

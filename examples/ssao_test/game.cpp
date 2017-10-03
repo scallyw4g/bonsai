@@ -114,14 +114,31 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 void
 InitializeVoxels( game_state *GameState, world_chunk *Chunk )
 {
+  ZeroChunk(Chunk->Data, Volume(GameState->World->ChunkDim));
+
   if ( Chunk->WorldP.z == 0 )
   {
-    FillChunk(Chunk->Data, WORLD_CHUNK_DIM, RED);
-    Chunk->Filled = Volume(WORLD_CHUNK_DIM);
+    chunk_dimension Dim = GameState->World->ChunkDim;
+
+    for ( int z = 0; z < Dim.z; ++ z)
+    {
+      for ( int y = 0; y < Dim.y; ++ y)
+      {
+        for ( int x = 0; x < Dim.x; ++ x)
+        {
+          if (z==0)
+          {
+            s32 i = GetIndex(Voxel_Position(x,y,z), Chunk->Data, Dim);
+            SetFlag(&Chunk->Data->Voxels[i], Voxel_Filled);
+          }
+        }
+      }
+    }
   }
 
   UnSetFlag(Chunk, Chunk_Queued);
   SetFlag(Chunk, Chunk_Initialized);
+
   return;
 }
 

@@ -39,14 +39,14 @@ struct game_mode
 
 enum chunk_flag
 {
-  Chunk_Uninitialized           = 0 << 0,
-  Chunk_Initialized             = 1 << 1,
+  Chunk_Uninitialized   = 0 << 0,
+  Chunk_Initialized     = 1 << 1,
 
-  Chunk_RebuildBoundary         = 1 << 2,
-  Chunk_Queued                  = 1 << 3,
-  Chunk_Garbage                 = 1 << 4,
-  Chunk_Collected               = 1 << 5,
-  /* Chunk_LodGenerated            = 1 << 6, */
+  Chunk_BufferMesh      = 1 << 2,
+  Chunk_Queued          = 1 << 3,
+  Chunk_Garbage         = 1 << 4,
+  Chunk_Collected       = 1 << 5,
+  /* Chunk_LodGenerated = 1 << 6, */
 };
 
 enum voxel_flag
@@ -768,7 +768,7 @@ ZeroChunk( chunk_data *chunk, s32 Volume )
 {
   chunk->BoundaryVoxelCount = 0;
   chunk->Flags = Chunk_Uninitialized;
-  SetFlag( chunk, Chunk_RebuildBoundary );
+  SetFlag( chunk, Chunk_BufferMesh );
 
   for ( s32 VoxelIndex = 0;
         VoxelIndex < Volume;

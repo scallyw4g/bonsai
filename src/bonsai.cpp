@@ -927,12 +927,12 @@ AllocateAndInitWorld( game_state *GameState, world_position Center,
 // FIXME(Jesse): This should probably be relocated to a mesh.cpp that contains stuff
 // which requires the world
 void
-BuildWorldChunkBoundaryVoxels(world *World, world_chunk *WorldChunk, chunk_dimension WorldChunkDim)
+BuildWorldChunkMesh(world *World, world_chunk *WorldChunk, chunk_dimension WorldChunkDim)
 {
   chunk_data *chunk = WorldChunk->Data;
   chunk->BoundaryVoxelCount = 0;
 
-  UnSetFlag( chunk, Chunk_RebuildBoundary );
+  UnSetFlag( chunk, Chunk_BufferMesh );
 
   for ( int z = 0; z < WorldChunkDim.z ; ++z )
   {
@@ -1009,6 +1009,9 @@ BufferWorldChunk(
     shadow_render_group *SG
   )
 {
+  if ( IsSet( Chunk, Chunk_BufferMesh ) )
+    BuildWorldChunkMesh(World, Chunk, World->ChunkDim);
+
   if (Chunk->Data->BoundaryVoxelCount == 0)
     return;
 
@@ -1018,9 +1021,6 @@ BufferWorldChunk(
     return;
 
 
-  if ( IsSet( Chunk, Chunk_RebuildBoundary ) )
-    BuildWorldChunkBoundaryVoxels(World, Chunk, World->ChunkDim);
-
 #if 1
     r32 Scale = 1.0f;
     BufferChunkMesh( &World->Mesh, World->ChunkDim, ChunkData, Chunk->WorldP, RG, SG, Camera, Scale);
@@ -1028,7 +1028,7 @@ BufferWorldChunk(
 #else
   if (CanBuildWorldChunkBoundary(world, Chunk))
   {
-    BuildWorldChunkBoundaryVoxels(world, Chunk);
+    BuildWorldChunkMesh(world, Chunk);
     Compute0thLod(GameState, Chunk);
   }
 

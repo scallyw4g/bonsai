@@ -131,9 +131,9 @@ ReadXYZIChunk(FILE *File, int* byteCounter)
 }
 
 void
-BuildEntityBoundaryVoxels(chunk_data *chunk, chunk_dimension Dim)
+BuildEntityMesh(chunk_data *chunk, chunk_dimension Dim)
 {
-  UnSetFlag(chunk, Chunk_RebuildBoundary);
+  UnSetFlag(chunk, Chunk_BufferMesh);
 
   for ( int z = 0; z < Dim.z ; ++z )
   {
@@ -326,7 +326,7 @@ LoadModel(memory_arena *WorldStorage, char const *filepath)
 
 loaded:
 
-  BuildEntityBoundaryVoxels(Result.Chunk, Result.Dim);
+  BuildEntityMesh(Result.Chunk, Result.Dim);
 
   return Result;
 }
