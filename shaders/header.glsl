@@ -2,5 +2,5 @@
 
 precision highp float;
 
-#define USE_AO_SHADER 1
+#define USE_AO_SHADER 0
 

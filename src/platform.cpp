@@ -515,6 +515,7 @@ main(s32 NumArgs, char ** Args)
 
   while ( Os.ContinueRunning )
   {
+    Info("Frame Start");
     Plat.dt = (r32)ComputeDtForFrame(&lastTime);
 
     v2 LastMouseP = Plat.MouseP;

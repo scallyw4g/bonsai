@@ -12,6 +12,31 @@
 #include <debug.h>
 #include <constants.hpp>
 
+enum frame_event_type
+{
+  FrameEvent_Undefined,
+
+  FrameEvent_Explosion,
+  FrameEvent_GameModeLoss,
+  FrameEvent_GameModePlaying,
+  FrameEvent_GameModeWon,
+};
+
+enum game_mode_type
+{
+  GameMode_Title,
+  GameMode_Playing,
+  GameMode_Won,
+  GameMode_Loss,
+};
+
+struct game_mode
+{
+  game_mode_type ActiveMode;
+  r64 TimeRunning;
+};
+
+
 enum chunk_flag
 {
   Chunk_Uninitialized           = 0 << 0,
@@ -80,6 +105,19 @@ enum collision_type
   Collision_Enemy_Enemy             = EntityType_Enemy,
 };
 
+enum model_index
+{
+  ModelIndex_None,
+
+  ModelIndex_Enemy      = EntityType_Enemy,
+  ModelIndex_Player     = EntityType_Player,
+  ModelIndex_Loot       = EntityType_Loot,
+  ModelIndex_Projectile,
+  ModelIndex_Proton,
+
+  ModelIndex_Count,
+};
+
 struct voxel
 {
   voxel_flag Flags;
@@ -138,14 +176,6 @@ struct chunk_data
   voxel *Voxels;
   boundary_voxel *BoundaryVoxels;
 };
-
-#if 0
-struct mesh_block
-{
-  v3 Meshes[64];
-  mesh_block *Next;
-};
-#endif
 
 struct collision_event
 {
@@ -296,6 +326,36 @@ struct entity
   s32 Health; // Only needed for Player
 };
 
+struct frame_event
+{
+  frame_event_type Type;
+  entity *Entity;
+
+  frame_event *Next;
+
+  frame_event(frame_event_type Type)
+  {
+    this->Type = Type;
+    this->Entity = 0;
+    this->Next = 0;
+  }
+
+  frame_event(entity *Entity, frame_event_type Type)
+  {
+    this->Type = Type;
+    this->Entity = Entity;
+    this->Next = 0;
+  }
+};
+
+struct event_queue
+{
+  u64 CurrentFrameIndex;
+  frame_event **Queue;
+
+  frame_event *FirstFreeEvent;
+};
+
 struct entity_list
 {
   entity *This;
@@ -305,7 +365,6 @@ struct entity_list
 struct world_chunk
 {
   chunk_data *Data;
-  v3 *Mesh;
 
   // TODO(Jesse): This is only for looking up chunks in the hashtable and
   // should be factored out of this struct somehow as it's cold data

@@ -76,7 +76,7 @@ struct g_buffer_render_group
 
 };
 
-struct ShadowRenderGroup
+struct shadow_render_group
 {
   u32 MVP_ID;
 

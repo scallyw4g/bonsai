@@ -20,20 +20,28 @@ set( SPACE_INVADERS_PATH ${EXAMPLES}/space_invaders )
 set( SSAO_TEST_PATH ${EXAMPLES}/ssao_test )
 
 add_executable(Bonsai ${SRC}/platform.cpp)
-add_library(example_space_invaders SHARED ${SPACE_INVADERS_PATH}/game.cpp)
-add_library(example_ssao_test SHARED ${SSAO_TEST_PATH}/game.cpp)
 
 # Link with Opengl
 find_package(OpenGL REQUIRED)
 include_directories( ${OPENGL_INCLUDE_DIRS} )
-target_link_libraries(example_space_invaders ${OPENGL_LIBRARIES})
-target_link_libraries(example_ssao_test ${OPENGL_LIBRARIES})
 target_link_libraries(Bonsai ${OPENGL_LIBRARIES})
 
+# Engine include dirs
 include_directories(${SRC})
-include_directories(${SPACE_INVADERS_PATH})
-include_directories(${SSAO_TEST_PATH})
 include_directories(${ROOT}/external/glm-0.9.7.1)
+
+
+
+# Example specific includes
+add_library(example_space_invaders SHARED ${SPACE_INVADERS_PATH}/game.cpp)
+target_link_libraries(example_space_invaders ${OPENGL_LIBRARIES})
+target_include_directories(example_space_invaders PRIVATE ${SPACE_INVADERS_PATH})
+
+add_library(example_ssao_test SHARED ${SSAO_TEST_PATH}/game.cpp)
+target_link_libraries(example_ssao_test ${OPENGL_LIBRARIES})
+target_include_directories(example_ssao_test PRIVATE ${SSAO_TEST_PATH})
+
+
 
 add_definitions( -DGL_GLEXT_PROTOTYPES=1 )
 

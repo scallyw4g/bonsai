@@ -628,7 +628,7 @@ InitGbufferRenderGroup( g_buffer_render_group *gBuffer, memory_arena *GraphicsMe
 }
 
 bool
-InitializeShadowBuffer(ShadowRenderGroup *SG, memory_arena *GraphicsMemory)
+InitializeShadowBuffer(shadow_render_group *SG, memory_arena *GraphicsMemory)
 {
   // The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
   GL_Global->glGenFramebuffers(1, &SG->FramebufferName);
@@ -655,70 +655,6 @@ InitializeShadowBuffer(ShadowRenderGroup *SG, memory_arena *GraphicsMemory)
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
  return true;
-}
-
-inline void
-BufferVerts(
-    mesh_buffer_target *target,
-
-    s32 NumVerts,
-
-    float* VertsPositions,
-    float* Normals,
-    const float* VertColors,
-
-    s32 sizeofData
-  )
-{
-
-  if ( target->filled + sizeofData > target->bytesAllocd )
-  {
-    // TODO(Jesse): Instead of Asserting, do this ?
-    /* FlushRenderBuffers( Plat, world, RG, SG, Camera); */
-
-    // Out of memory, panic!
-    Assert(!"Out of memory");
-    return;
-  }
-
-  target->filled += sizeofData;
-
-  memcpy( &target->VertexData[target->VertexCount*3],  VertsPositions,  sizeofData );
-  memcpy( &target->NormalData[target->VertexCount*3],  Normals,         sizeofData );
-  memcpy( &target->ColorData[target->VertexCount*3],   VertColors,      sizeofData );
-
-  target->VertexCount += NumVerts;
-
-  return;
-}
-
-inline void
-DEBUG_DrawPointMarker( mesh_buffer_target *Mesh, v3 RenderP, int ColorIndex, v3 Diameter)
-{
-  float FaceColors[FACE_COLOR_SIZE];
-  GetColorData(ColorIndex, &FaceColors[0]);;
-
-  r32 VertexData[BYTES_PER_FACE];
-
-  RightFaceVertexData( RenderP, Diameter, VertexData);
-  BufferVerts(Mesh, 6, VertexData, RightFaceNormalData, FaceColors, sizeof(VertexData));
-
-  LeftFaceVertexData( RenderP, Diameter, VertexData);
-  BufferVerts(Mesh, 6, VertexData, LeftFaceNormalData, FaceColors, sizeof(VertexData));
-
-  BottomFaceVertexData( RenderP, Diameter, VertexData);
-  BufferVerts(Mesh, 6, VertexData, BottomFaceNormalData, FaceColors, sizeof(VertexData));
-
-  TopFaceVertexData( RenderP, Diameter, VertexData);
-  BufferVerts(Mesh, 6, VertexData, TopFaceNormalData, FaceColors, sizeof(VertexData));
-
-  FrontFaceVertexData( RenderP, Diameter, VertexData);
-  BufferVerts(Mesh, 6, VertexData, FrontFaceNormalData, FaceColors, sizeof(VertexData));
-
-  BackFaceVertexData( RenderP, Diameter, VertexData);
-  BufferVerts(Mesh, 6, VertexData, BackFaceNormalData, FaceColors, sizeof(VertexData));
-
-  return;
 }
 
 inline m4
@@ -822,7 +758,7 @@ RenderAoTexture(ao_render_group *AoGroup)
 }
 
 void
-DrawGBufferToFullscreenQuad( platform *Plat, g_buffer_render_group *RG, ShadowRenderGroup *SG, camera *Camera, world_position WorldChunkDim)
+DrawGBufferToFullscreenQuad( platform *Plat, g_buffer_render_group *RG, shadow_render_group *SG, camera *Camera, world_position WorldChunkDim)
 {
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
   SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight));
@@ -857,7 +793,7 @@ DrawGBufferToFullscreenQuad( platform *Plat, g_buffer_render_group *RG, ShadowRe
 /* } */
 
 void
-RenderShadowMap(mesh_buffer_target *Mesh, ShadowRenderGroup *SG, g_buffer_render_group *RG, camera *Camera)
+RenderShadowMap(mesh_buffer_target *Mesh, shadow_render_group *SG, g_buffer_render_group *RG, camera *Camera)
 {
   SetViewport(V2(SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y));
 
@@ -951,7 +887,7 @@ RenderWorldToGBuffer(mesh_buffer_target *Mesh, g_buffer_render_group *RG)
 inline void
 RenderGBuffer(
     mesh_buffer_target *Mesh, g_buffer_render_group *RG,
-    ShadowRenderGroup *SG, camera *Camera)
+    shadow_render_group *SG, camera *Camera)
 {
   TIMED_FUNCTION();
 
@@ -959,7 +895,77 @@ RenderGBuffer(
 
   RenderWorldToGBuffer(Mesh, RG);
 
-  AssertNoGlErrors;
+  Mesh->VertexCount = 0;
+  Mesh->filled = 0;
+
+  return;
+}
+
+inline void
+BufferVerts(
+    mesh_buffer_target *target,
+    g_buffer_render_group *gBuffer,
+    shadow_render_group *SG,
+    camera *Camera,
+
+    s32 NumVerts,
+
+    float* VertsPositions,
+    float* Normals,
+    const float* VertColors,
+
+    s32 sizeofData
+  )
+{
+
+  if ( target->filled + sizeofData > target->bytesAllocd )
+  {
+    Warn("Out of memory, flushing to gBuffer");
+    RenderGBuffer(target, gBuffer, SG, Camera);
+
+    return;
+  }
+
+  target->filled += sizeofData;
+
+  memcpy( &target->VertexData[target->VertexCount*3],  VertsPositions,  sizeofData );
+  memcpy( &target->NormalData[target->VertexCount*3],  Normals,         sizeofData );
+  memcpy( &target->ColorData[target->VertexCount*3],   VertColors,      sizeofData );
+
+  target->VertexCount += NumVerts;
+
+  return;
+}
+
+inline void
+DEBUG_DrawPointMarker( mesh_buffer_target *Mesh,
+    g_buffer_render_group *gBuffer,
+    shadow_render_group *SG,
+    camera *Camera,
+    v3 RenderP, int ColorIndex, v3 Diameter)
+{
+  float FaceColors[FACE_COLOR_SIZE];
+  GetColorData(ColorIndex, &FaceColors[0]);;
+
+  r32 VertexData[BYTES_PER_FACE];
+
+  RightFaceVertexData( RenderP, Diameter, VertexData);
+  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, RightFaceNormalData, FaceColors, sizeof(VertexData));
+
+  LeftFaceVertexData( RenderP, Diameter, VertexData);
+  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, LeftFaceNormalData, FaceColors, sizeof(VertexData));
+
+  BottomFaceVertexData( RenderP, Diameter, VertexData);
+  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, BottomFaceNormalData, FaceColors, sizeof(VertexData));
+
+  TopFaceVertexData( RenderP, Diameter, VertexData);
+  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, TopFaceNormalData, FaceColors, sizeof(VertexData));
+
+  FrontFaceVertexData( RenderP, Diameter, VertexData);
+  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, FrontFaceNormalData, FaceColors, sizeof(VertexData));
+
+  BackFaceVertexData( RenderP, Diameter, VertexData);
+  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, BackFaceNormalData, FaceColors, sizeof(VertexData));
 
   return;
 }
@@ -1023,7 +1029,9 @@ RotatePoint(v3 P1, v3 P2)
 }
 
 inline void
-DEBUG_DrawLine(mesh_buffer_target *Mesh, v3 P1, v3 P2, int ColorIndex, float Thickness )
+DEBUG_DrawLine( mesh_buffer_target *Mesh,
+    g_buffer_render_group *gBuffer, shadow_render_group *SG, camera *Camera,
+                v3 P1, v3 P2, int ColorIndex, float Thickness )
 {
   // 2 verts per line, 3 floats per vert
 
@@ -1058,6 +1066,7 @@ DEBUG_DrawLine(mesh_buffer_target *Mesh, v3 P1, v3 P2, int ColorIndex, float Thi
 
 
     BufferVerts(Mesh,
+        gBuffer, SG, Camera,
         6,
         localVertexData,
         localNormalData,
@@ -1084,7 +1093,7 @@ DEBUG_DrawLine(mesh_buffer_target *Mesh, v3 P1, v3 P2, int ColorIndex, float Thi
     };
 
 
-    BufferVerts(Mesh,
+    BufferVerts(Mesh, gBuffer, SG, Camera,
         6,
         localVertexData,
         localNormalData,
@@ -1106,7 +1115,7 @@ DEBUG_DrawLine(mesh_buffer_target *Mesh, v3 P1, v3 P2, int ColorIndex, float Thi
       P1.x, P1.y, P1.z,
     };
 
-    BufferVerts(world,
+    BufferVerts(world, gBuffer, SG, Camera,
         6
         localVertexData,
         sizeof(localVertexData),
@@ -1120,20 +1129,20 @@ DEBUG_DrawLine(mesh_buffer_target *Mesh, v3 P1, v3 P2, int ColorIndex, float Thi
 }
 
 inline void
-DEBUG_DrawVectorAt(mesh_buffer_target *Mesh, v3 Offset, v3 Vector, int ColorIndex, float Thickness )
+DEBUG_DrawVectorAt(mesh_buffer_target *Mesh, g_buffer_render_group *gBuffer, shadow_render_group *SG, camera *Camera, v3 Offset, v3 Vector, int ColorIndex, float Thickness )
 {
-  DEBUG_DrawLine(Mesh, Offset, Vector + Offset, ColorIndex, Thickness );
+  DEBUG_DrawLine(Mesh, gBuffer, SG, Camera, Offset, Vector + Offset, ColorIndex, Thickness );
 }
 
 inline void
-DEBUG_DrawLine(mesh_buffer_target *Mesh, line Line, int ColorIndex, float Thickness )
+DEBUG_DrawLine(mesh_buffer_target *Mesh, g_buffer_render_group *gBuffer, shadow_render_group *SG, camera *Camera, line Line, int ColorIndex, float Thickness )
 {
-  DEBUG_DrawLine(Mesh, Line.MinP, Line.MaxP, ColorIndex, Thickness);
+  DEBUG_DrawLine(Mesh, gBuffer, SG, Camera, Line.MinP, Line.MaxP, ColorIndex, Thickness);
   return;
 }
 
 void
-DEBUG_DrawAABB(mesh_buffer_target *Mesh, v3 MinP, v3 MaxP, Quaternion Rotation, int ColorIndex, float Thickness = DEFAULT_LINE_THICKNESS )
+DEBUG_DrawAABB(mesh_buffer_target *Mesh, g_buffer_render_group *gBuffer, shadow_render_group *SG, camera *Camera, v3 MinP, v3 MaxP, Quaternion Rotation, int ColorIndex, float Thickness = DEFAULT_LINE_THICKNESS )
 {
   /* v3 HalfDim = (GetRenderP(world, MaxCP) - GetRenderP(world, MinCP)) / 2; */
 
@@ -1184,34 +1193,34 @@ DEBUG_DrawAABB(mesh_buffer_target *Mesh, v3 MinP, v3 MaxP, Quaternion Rotation, 
   // Render
   //
   // Top
-  DEBUG_DrawLine(Mesh, TopRL, TopRR, ColorIndex, Thickness);
-  DEBUG_DrawLine(Mesh, TopFL, TopFR, ColorIndex, Thickness);
-  DEBUG_DrawLine(Mesh, TopFL, TopRL, ColorIndex, Thickness);
-  DEBUG_DrawLine(Mesh, TopFR, TopRR, ColorIndex, Thickness);
+  DEBUG_DrawLine(Mesh, gBuffer, SG, Camera, TopRL, TopRR, ColorIndex, Thickness);
+  DEBUG_DrawLine(Mesh, gBuffer, SG, Camera, TopFL, TopFR, ColorIndex, Thickness);
+  DEBUG_DrawLine(Mesh, gBuffer, SG, Camera, TopFL, TopRL, ColorIndex, Thickness);
+  DEBUG_DrawLine(Mesh, gBuffer, SG, Camera, TopFR, TopRR, ColorIndex, Thickness);
 
   // Right
-  DEBUG_DrawLine(Mesh, TopFR, BotFR, ColorIndex, Thickness);
-  DEBUG_DrawLine(Mesh, TopRR, BotRR, ColorIndex, Thickness);
+  DEBUG_DrawLine(Mesh, gBuffer, SG, Camera, TopFR, BotFR, ColorIndex, Thickness);
+  DEBUG_DrawLine(Mesh, gBuffer, SG, Camera, TopRR, BotRR, ColorIndex, Thickness);
 
   // Left
-  DEBUG_DrawLine(Mesh, TopFL, BotFL, ColorIndex, Thickness);
-  DEBUG_DrawLine(Mesh, TopRL, BotRL, ColorIndex, Thickness);
+  DEBUG_DrawLine(Mesh, gBuffer, SG, Camera, TopFL, BotFL, ColorIndex, Thickness);
+  DEBUG_DrawLine(Mesh, gBuffer, SG, Camera, TopRL, BotRL, ColorIndex, Thickness);
 
   // Bottom
-  DEBUG_DrawLine(Mesh, BotRL, BotRR, ColorIndex, Thickness);
-  DEBUG_DrawLine(Mesh, BotFL, BotFR, ColorIndex, Thickness);
-  DEBUG_DrawLine(Mesh, BotFL, BotRL, ColorIndex, Thickness);
-  DEBUG_DrawLine(Mesh, BotFR, BotRR, ColorIndex, Thickness);
+  DEBUG_DrawLine(Mesh, gBuffer, SG, Camera, BotRL, BotRR, ColorIndex, Thickness);
+  DEBUG_DrawLine(Mesh, gBuffer, SG, Camera, BotFL, BotFR, ColorIndex, Thickness);
+  DEBUG_DrawLine(Mesh, gBuffer, SG, Camera, BotFL, BotRL, ColorIndex, Thickness);
+  DEBUG_DrawLine(Mesh, gBuffer, SG, Camera, BotFR, BotRR, ColorIndex, Thickness);
 
   return;
 }
 
 inline void
-DEBUG_DrawAABB(mesh_buffer_target *Mesh,  aabb Rect, Quaternion Rotation, int ColorIndex, float Thickness = DEFAULT_LINE_THICKNESS )
+DEBUG_DrawAABB(mesh_buffer_target *Mesh, g_buffer_render_group *gBuffer, shadow_render_group *SG, camera *Camera,  aabb Rect, Quaternion Rotation, int ColorIndex, float Thickness = DEFAULT_LINE_THICKNESS )
 {
   v3 MinP = Rect.Center - Rect.Radius;
   v3 MaxP = Rect.Center + Rect.Radius;
-  DEBUG_DrawAABB( Mesh, MinP, MaxP, Rotation, ColorIndex, Thickness );
+  DEBUG_DrawAABB( Mesh, gBuffer, SG, Camera, MinP, MaxP, Rotation, ColorIndex, Thickness );
   return;
 }
 
@@ -1227,24 +1236,25 @@ GetModelSpaceP(chunk_data *chunk, v3 P)
 }
 
 inline void
-DEBUG_DrawChunkAABB( mesh_buffer_target *Mesh, world_position WorldP, camera *Camera, chunk_dimension WorldChunkDim,
+DEBUG_DrawChunkAABB( mesh_buffer_target *Mesh, g_buffer_render_group *gBuffer,
+                     shadow_render_group *SG, world_position WorldP, camera *Camera, chunk_dimension WorldChunkDim,
                      Quaternion Rotation, s32 ColorIndex , r32 Thickness = DEFAULT_LINE_THICKNESS)
 {
   v3 MinP = GetRenderP(WorldChunkDim, Canonical_Position(V3(0,0,0), WorldP), Camera);
   v3 MaxP = GetRenderP(WorldChunkDim, Canonical_Position(WORLD_CHUNK_DIM, WorldP), Camera);
 
-  DEBUG_DrawAABB(Mesh, MinP, MaxP, Rotation, ColorIndex, Thickness);
+  DEBUG_DrawAABB(Mesh, gBuffer, SG, Camera, MinP, MaxP, Rotation, ColorIndex, Thickness);
   return;
 }
 
 inline void
-DEBUG_DrawChunkAABB(mesh_buffer_target *Mesh,  world_chunk *chunk, camera *Camera, chunk_dimension WorldChunkDim,
+DEBUG_DrawChunkAABB(mesh_buffer_target *Mesh, g_buffer_render_group *gBuffer, shadow_render_group *SG, world_chunk *chunk, camera *Camera, chunk_dimension WorldChunkDim,
                      Quaternion Rotation, s32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS)
 {
   v3 MinP = GetRenderP(WorldChunkDim, Canonical_Position(V3(0,0,0), chunk->WorldP), Camera);
   v3 MaxP = GetRenderP(WorldChunkDim, Canonical_Position(WorldChunkDim, chunk->WorldP), Camera);
 
-  DEBUG_DrawAABB(Mesh, MinP, MaxP , Rotation, ColorIndex, Thickness);
+  DEBUG_DrawAABB(Mesh, gBuffer, SG, Camera, MinP, MaxP , Rotation, ColorIndex, Thickness);
   return;
 }
 
@@ -1385,7 +1395,7 @@ IsInfrustum( chunk_dimension WorldChunkDim, camera *Camera, world_chunk *Chunk )
 }
 
 inline void
-ClearFramebuffers(g_buffer_render_group *RG, ShadowRenderGroup *SG)
+ClearFramebuffers(g_buffer_render_group *RG, shadow_render_group *SG)
 {
   /* TIMED_FUNCTION(); */
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -1412,6 +1422,7 @@ BufferChunkMesh(
     chunk_data *chunk,
     world_position WorldP,
     g_buffer_render_group *RG,
+    shadow_render_group *SG,
     camera *Camera,
     r32 Scale,
     v3 Offset = V3(0,0,0)
@@ -1440,37 +1451,37 @@ BufferChunkMesh(
     if ( IsSet( V, Voxel_RightFace ) )
     {
       RightFaceVertexData( MinP, V3(Diameter), VertexData);
-      BufferVerts(Mesh, 6, VertexData, RightFaceNormalData, FaceColors, sizeof(VertexData));
+      BufferVerts(Mesh, RG, SG, Camera, 6, VertexData, RightFaceNormalData, FaceColors, sizeof(VertexData));
     }
 
     if ( IsSet( V, Voxel_LeftFace ) )
     {
       LeftFaceVertexData( MinP, V3(Diameter), VertexData);
-      BufferVerts(Mesh, 6, VertexData, LeftFaceNormalData, FaceColors, sizeof(VertexData));
+      BufferVerts(Mesh, RG, SG, Camera, 6, VertexData, LeftFaceNormalData, FaceColors, sizeof(VertexData));
     }
 
     if ( IsSet( V, Voxel_BottomFace ) )
     {
       BottomFaceVertexData( MinP, V3(Diameter), VertexData);
-      BufferVerts(Mesh, 6, VertexData, BottomFaceNormalData, FaceColors, sizeof(VertexData));
+      BufferVerts(Mesh, RG, SG, Camera, 6, VertexData, BottomFaceNormalData, FaceColors, sizeof(VertexData));
     }
 
     if ( IsSet( V, Voxel_TopFace ) )
     {
       TopFaceVertexData( MinP, V3(Diameter), VertexData);
-      BufferVerts(Mesh, 6, VertexData, TopFaceNormalData, FaceColors, sizeof(VertexData));
+      BufferVerts(Mesh, RG, SG, Camera, 6, VertexData, TopFaceNormalData, FaceColors, sizeof(VertexData));
     }
 
     if ( IsSet( V, Voxel_FrontFace ) )
     {
       FrontFaceVertexData( MinP, V3(Diameter), VertexData);
-      BufferVerts(Mesh, 6, VertexData, FrontFaceNormalData, FaceColors, sizeof(VertexData));
+      BufferVerts(Mesh, RG, SG, Camera, 6, VertexData, FrontFaceNormalData, FaceColors, sizeof(VertexData));
     }
 
     if ( IsSet( V, Voxel_BackFace ) )
     {
       BackFaceVertexData( MinP, V3(Diameter), VertexData);
-      BufferVerts(Mesh, 6, VertexData, BackFaceNormalData, FaceColors, sizeof(VertexData));
+      BufferVerts(Mesh, RG, SG, Camera, 6, VertexData, BackFaceNormalData, FaceColors, sizeof(VertexData));
     }
 
   }
@@ -1628,7 +1639,7 @@ RayTraceCollision(chunk_data *Chunk, chunk_dimension Dim, v3 StartingP, v3 Ray, 
 }
 
 inline void
-BufferTriangle(mesh_buffer_target *Mesh, v3 *Verts, v3 Normal, s32 ColorIndex)
+BufferTriangle(mesh_buffer_target *Mesh, g_buffer_render_group *gBuffer, shadow_render_group *SG, camera *Camera, v3 *Verts, v3 Normal, s32 ColorIndex)
 {
   r32 VertBuffer[9];
   v3 NormalBuffer[3] = {Normal, Normal, Normal};
@@ -1641,6 +1652,7 @@ BufferTriangle(mesh_buffer_target *Mesh, v3 *Verts, v3 Normal, s32 ColorIndex)
 
   BufferVerts(
     Mesh,
+    gBuffer, SG, Camera,
     3,
     VertBuffer,
     (float*)&NormalBuffer[0],
@@ -2290,7 +2302,7 @@ TraverseSurfaceToBoundary(
 }
 
 inline void
-Draw0thLod(mesh_buffer_target *Mesh, world_chunk *Chunk, v3 RenderOffset)
+Draw0thLod(mesh_buffer_target *Mesh, g_buffer_render_group *gBuffer, shadow_render_group *SG, camera *Camera, world_chunk *Chunk, v3 RenderOffset)
 {
   /* for ( s32 PointIndex = 0; PointIndex < Chunk->PB.Count; ++PointIndex ) */
   /*   DEBUG_DrawPointMarker(world, V3(Chunk->PB.Points[PointIndex]) + RenderOffset, Color--, 1.0f); */
@@ -2306,7 +2318,7 @@ Draw0thLod(mesh_buffer_target *Mesh, world_chunk *Chunk, v3 RenderOffset)
   {
     Verts[1] = V3(Chunk->PB.Points[VertIndex]) + RenderOffset;
     Verts[2] = V3(Chunk->PB.Points[++VertIndex]) + RenderOffset;
-    BufferTriangle(Mesh, &Verts[0], Chunk->Normal, Color);
+    BufferTriangle(Mesh, gBuffer, SG, Camera, &Verts[0], Chunk->Normal, Color);
   }
 
   return;
@@ -2355,10 +2367,10 @@ CanBuildWorldChunkBoundary(world *World, world_chunk *Chunk)
 }
 
 void
-DrawFolie(mesh_buffer_target *Mesh, camera *Camera, aabb *AABB)
+DrawFolie(mesh_buffer_target *Mesh, g_buffer_render_group *gBuffer, shadow_render_group *SG, camera *Camera, aabb *AABB)
 {
   v3 RenderP = AABB->Center;
-  DEBUG_DrawPointMarker( Mesh, RenderP, GREY, AABB->Radius*2);
+  DEBUG_DrawPointMarker( Mesh, gBuffer, SG, Camera, RenderP, GREY, AABB->Radius*2);
 
   return;
 }
@@ -2367,6 +2379,8 @@ void
 DrawParticle(
     canonical_position *P,
     mesh_buffer_target *Mesh,
+    g_buffer_render_group *gBuffer,
+    shadow_render_group *SG,
     chunk_dimension WorldChunkDim,
     camera *Camera,
     particle *Particle,
@@ -2382,22 +2396,22 @@ DrawParticle(
   v3 MinP = GetRenderP(WorldChunkDim, (*P)+Particle->Offset, Camera);
 
   RightFaceVertexData( MinP, V3(Diameter), VertexData);
-  BufferVerts(Mesh, 6, VertexData, RightFaceNormalData, FaceColors, sizeof(VertexData));
+  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, RightFaceNormalData, FaceColors, sizeof(VertexData));
 
   LeftFaceVertexData( MinP, V3(Diameter), VertexData);
-  BufferVerts(Mesh, 6, VertexData, LeftFaceNormalData, FaceColors, sizeof(VertexData));
+  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, LeftFaceNormalData, FaceColors, sizeof(VertexData));
 
   BottomFaceVertexData( MinP, V3(Diameter), VertexData);
-  BufferVerts(Mesh, 6, VertexData, BottomFaceNormalData, FaceColors, sizeof(VertexData));
+  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, BottomFaceNormalData, FaceColors, sizeof(VertexData));
 
   TopFaceVertexData( MinP, V3(Diameter), VertexData);
-  BufferVerts(Mesh, 6, VertexData, TopFaceNormalData, FaceColors, sizeof(VertexData));
+  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, TopFaceNormalData, FaceColors, sizeof(VertexData));
 
   FrontFaceVertexData( MinP, V3(Diameter), VertexData);
-  BufferVerts(Mesh, 6, VertexData, FrontFaceNormalData, FaceColors, sizeof(VertexData));
+  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, FrontFaceNormalData, FaceColors, sizeof(VertexData));
 
   BackFaceVertexData( MinP, V3(Diameter), VertexData);
-  BufferVerts(Mesh, 6, VertexData, BackFaceNormalData, FaceColors, sizeof(VertexData));
+  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, BackFaceNormalData, FaceColors, sizeof(VertexData));
 
   return;
 }
@@ -2408,6 +2422,7 @@ BufferEntity(
     entity *Entity,
     camera *Camera,
     g_buffer_render_group *RG,
+    shadow_render_group *SG,
     chunk_dimension WorldChunkDim
   )
 {
@@ -2433,7 +2448,7 @@ BufferEntity(
     if (IsSet(Model, Chunk_Initialized))
     {
 
-      BufferChunkMesh(Mesh, WorldChunkDim, Model, Entity->P.WorldP, RG, Camera, Entity->Scale, Entity->P.Offset);
+      BufferChunkMesh(Mesh, WorldChunkDim, Model, Entity->P.WorldP, RG, SG, Camera, Entity->Scale, Entity->P.Offset);
     }
   }
 

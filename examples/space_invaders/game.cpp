@@ -9,6 +9,7 @@ GLOBAL_VARIABLE physics NullPhysics = {};
 GLOBAL_VARIABLE hotkeys NullHotkeys = {};
 
 #include <game.h>
+#include <game_constants.h>
 
 #include <bonsai.cpp>
 
@@ -27,18 +28,6 @@ PhysicsUpdate(physics *Physics, r32 dt, b32 Print = False)
     (Physics->Velocity*dt) + (0.5f*Acceleration*Square(dt));
 
   Physics->Velocity = (Delta/dt);
-
-#if 0
-  if (Print && (Length(Delta) > 0) )
-  {
-    Log("--");
-    Print(Delta);
-    Print(Physics->Velocity);
-    /* Print(DragForce); */
-    Print(Physics->Force);
-  }
-#endif
-
 
   return Delta;
 }
@@ -120,38 +109,6 @@ SpawnEntity(
 }
 
 entity *
-AllocateEntity(platform *Plat, memory_arena *Memory, chunk_dimension ModelDim)
-{
-  entity *Entity = PUSH_STRUCT_CHECKED(entity, Memory, 1);
-  Entity->Model.Chunk = AllocateChunk(Memory, ModelDim);
-  Entity->Emitter = PUSH_STRUCT_CHECKED(particle_system, Memory, 1);
-
-  FillChunk(Entity->Model.Chunk, ModelDim, BLACK);
-  Entity->Model.Dim = ModelDim;
-
-  Entity->Scale = 1.0f;
-
-  return Entity;
-}
-
-void
-AllocateGameModels(game_state *GameState, memory_arena *Memory)
-{
-  GameState->Models[ModelIndex_Enemy] = LoadModel(Memory, ENEMY_MODEL);
-  GameState->Models[ModelIndex_Player] = LoadModel(Memory, PLAYER_MODEL);
-  GameState->Models[ModelIndex_Loot] = LoadModel(Memory, LOOT_MODEL);
-
-  chunk_dimension ProjectileDim = Chunk_Dimension(1,30,1);
-  GameState->Models[ModelIndex_Projectile].Chunk = AllocateChunk(Memory, ProjectileDim);
-  GameState->Models[ModelIndex_Projectile].Dim = ProjectileDim;
-  FillChunk(GameState->Models[ModelIndex_Projectile].Chunk, ProjectileDim, GREEN);
-
-  GameState->Models[ModelIndex_Proton] = LoadModel(Memory, PROJECTILE_MODEL);
-
-  return;
-}
-
-entity *
 AllocateEntity(platform *Plat, memory_arena *Memory)
 {
   entity *Entity = PUSH_STRUCT_CHECKED(entity, Memory, 1);
@@ -169,21 +126,6 @@ AllocatePlayer(platform *Plat, memory_arena *Memory)
   entity *Player = AllocateEntity(Plat, Memory);
 
   return Player;
-}
-
-void
-InitCamera(camera* Camera, canonical_position P, float FocalLength)
-{
-  Camera->Frust.farClip = FocalLength;
-  Camera->Frust.nearClip = 0.1f;
-  Camera->Frust.width = 30.0f;
-  Camera->Frust.FOV = 45.0f;
-  Camera->P = P;
-  Camera->Up = WORLD_Y;
-  Camera->Right = WORLD_X;
-  Camera->Front = WORLD_Z;
-
-  return;
 }
 
 void
@@ -239,28 +181,6 @@ SpawnEnemy(world *World, entity **WorldEntities, entity *Enemy, random_series *E
   return;
 }
 
-entity *
-GetFreeEntity(game_state *GameState)
-{
-  entity *Result = 0;
-
-  for ( s32 EntityIndex = 0;
-        EntityIndex < TOTAL_ENTITY_COUNT;
-        ++EntityIndex )
-  {
-    entity *TestEntity = GameState->EntityTable[EntityIndex];
-    if (Unspawned(TestEntity) && !Destroyed(TestEntity))
-    {
-      Result = TestEntity;
-      break;
-    }
-  }
-
-  Assert(Unspawned(Result));
-  Assert(!Destroyed(Result));
-
-  return Result;
-}
 
 r32
 GetLevel(r64 Time)
@@ -610,6 +530,8 @@ SimulateAndRenderParticleSystems(
   chunk_dimension WorldChunkDim = World->ChunkDim;
   camera *Camera = GameState->Camera;
   particle_system *System = SystemEntity->Emitter;
+  g_buffer_render_group *gBuffer = GameState->gBuffer;
+  shadow_render_group *SG = GameState->SG;
   // noise_3d *Turb = GameState->Turb;
 
   if (Inactive(System))
@@ -654,7 +576,7 @@ SimulateAndRenderParticleSystems(
     u8 ColorIndex = (u8)((Particle->RemainingLifespan / System->ParticleLifespan) * (PARTICLE_SYSTEM_COLOR_COUNT-0.0001f));
     Assert(ColorIndex >= 0 && ColorIndex <= PARTICLE_SYSTEM_COLOR_COUNT);
 
-    DrawParticle(&SystemEntity->P, Mesh, WorldChunkDim, Camera, Particle, Diameter, System->Colors[ColorIndex]);
+    DrawParticle(&SystemEntity->P, Mesh, gBuffer, SG, WorldChunkDim, Camera, Particle, Diameter, System->Colors[ColorIndex]);
 
 
   }
@@ -775,20 +697,6 @@ AllocateParticleSystems(platform *Plat, game_state *GameState)
 #endif
 
 void
-AllocateEntityTable(platform *Plat, game_state *GameState)
-{
-  for (s32 EntityIndex = 0;
-      EntityIndex < TOTAL_ENTITY_COUNT;
-      ++ EntityIndex)
-  {
-    GameState->EntityTable[EntityIndex] =
-      AllocateEntity(Plat, GameState->Memory);
-  }
-
-  return;
-}
-
-void
 ReleaseFrameEvent(event_queue *Queue, frame_event *Event)
 {
   frame_event *First = Queue->FirstFreeEvent;
@@ -887,13 +795,6 @@ ProcessFrameEvent(game_state *GameState, frame_event *Event)
 }
 
 void
-AllocateAndInitNoise3d(game_state *GameState, noise_3d *Noise, chunk_dimension Dim)
-{
-  Noise->Dim = Dim;
-  Noise->Voxels = PUSH_STRUCT_CHECKED(voxel, GameState->Memory, Volume(Dim));
-}
-
-void
 DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 {
   TIMED_FUNCTION();
@@ -908,7 +809,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
   g_buffer_render_group *gBuffer = GameState->gBuffer;
   ao_render_group *AoGroup = GameState->AoGroup;
-  ShadowRenderGroup *SG     = GameState->SG;
+  shadow_render_group *SG     = GameState->SG;
 
   r32 VrHalfDim = (VR_X*CD_X/2.0f);
 
@@ -983,7 +884,8 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
   END_BLOCK("Sim");
 
-  UpdateCameraP(Plat, World, Player, Camera);
+  canonical_position NewTarget = Canonicalize(WorldChunkDim, Player->P.Offset, Player->P.WorldP) + (Player->Model.Dim/2.0f);
+  UpdateCameraP(Plat, World, NewTarget, Camera);
 
   GlobalLightTheta += Plat->dt;
 
@@ -1048,7 +950,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
       if ( (chunk->WorldP >= Min && chunk->WorldP < Max) )
       {
         /* DEBUG_DrawChunkAABB( World, chunk, Camera, Quaternion(), BLUE ); */
-        BufferWorldChunk(World, chunk, Camera, gBuffer);
+        BufferWorldChunk(World, chunk, Camera, gBuffer, SG);
         chunk = chunk->Next;
       }
       else
@@ -1067,7 +969,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
         ++EntityIndex)
   {
     entity *Enemy = GameState->EntityTable[EntityIndex];
-    BufferEntity( &World->Mesh, Enemy, Camera, gBuffer, World->ChunkDim);
+    BufferEntity( &World->Mesh, Enemy, Camera, gBuffer, SG, World->ChunkDim);
   }
   END_BLOCK("Entities");
 
@@ -1076,7 +978,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
       ++FolieIndex)
   {
     aabb *AABB = GameState->FolieTable + FolieIndex;
-    DrawFolie(&World->Mesh, Camera, AABB);
+    DrawFolie(&World->Mesh, gBuffer, SG, Camera, AABB);
   }
 
   RenderGBuffer(&World->Mesh, gBuffer, SG, Camera);
@@ -1087,9 +989,6 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
   DrawGBufferToFullscreenQuad( Plat, gBuffer, SG, Camera, World->ChunkDim);
   AssertNoGlErrors;
-
-  World->Mesh.VertexCount = 0;
-  World->Mesh.filled = 0;
 
 
 #if DEBUG_DRAW_SHADOW_MAP_TEXTURE
@@ -1129,6 +1028,14 @@ DrawTitleScreen(game_state *GameState)
 
   r32 AtY = 0;
   PrintDebugText( gBuffer, "Press `Space` to Start", 0, AtY, FontSize);
+}
+
+void
+InitializeVoxels( game_state *GameState, world_chunk *Chunk )
+{
+  UnSetFlag(Chunk, Chunk_Queued);
+  SetFlag(Chunk, Chunk_Initialized);
+  return;
 }
 
 EXPORT void
@@ -1176,7 +1083,7 @@ GameInit( platform *Plat, memory_arena *GameMemory)
 
 
   //FIXME(Jesse): Sub-arena for GraphicsMemory
-  ShadowRenderGroup *SG = PUSH_STRUCT_CHECKED(ShadowRenderGroup, GameState->Memory, 1);
+  shadow_render_group *SG = PUSH_STRUCT_CHECKED(shadow_render_group, GameState->Memory, 1);
   if (!InitializeShadowBuffer(SG, GameState->Memory))
   {
     Error("Initializing Shadow Buffer"); return False;

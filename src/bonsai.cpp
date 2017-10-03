@@ -14,6 +14,113 @@
 GLOBAL_VARIABLE PerlinNoise GlobalNoise;
 
 void
+FillChunk(chunk_data *chunk, chunk_dimension Dim, u32 ColorIndex = BLACK)
+{
+  s32 Vol = Volume(Dim);
+
+  for (int i = 0; i < Vol; ++i)
+  {
+    SetFlag(&chunk->Voxels[i], (voxel_flag)(Voxel_Filled     |
+                                            Voxel_TopFace    |
+                                            Voxel_BottomFace |
+                                            Voxel_FrontFace  |
+                                            Voxel_BackFace   |
+                                            Voxel_LeftFace   |
+                                            Voxel_RightFace));
+
+
+    chunk->Voxels[i].Color = ColorIndex;
+
+    chunk->BoundaryVoxels[i] = boundary_voxel(&chunk->Voxels[i], GetPosition(i, Dim));
+    chunk->BoundaryVoxelCount = i;
+  }
+
+  SetFlag(chunk, Chunk_Initialized);
+}
+
+entity *
+GetFreeEntity(game_state *GameState)
+{
+  entity *Result = 0;
+
+  for ( s32 EntityIndex = 0;
+        EntityIndex < TOTAL_ENTITY_COUNT;
+        ++EntityIndex )
+  {
+    entity *TestEntity = GameState->EntityTable[EntityIndex];
+    if (Unspawned(TestEntity) && !Destroyed(TestEntity))
+    {
+      Result = TestEntity;
+      break;
+    }
+  }
+
+  Assert(Unspawned(Result));
+  Assert(!Destroyed(Result));
+
+  return Result;
+}
+entity *
+AllocateEntity(platform *Plat, memory_arena *Memory, chunk_dimension ModelDim)
+{
+  entity *Entity = PUSH_STRUCT_CHECKED(entity, Memory, 1);
+  Entity->Model.Chunk = AllocateChunk(Memory, ModelDim);
+  Entity->Emitter = PUSH_STRUCT_CHECKED(particle_system, Memory, 1);
+
+  FillChunk(Entity->Model.Chunk, ModelDim, BLACK);
+  Entity->Model.Dim = ModelDim;
+
+  Entity->Scale = 1.0f;
+
+  return Entity;
+}
+
+void
+AllocateEntityTable(platform *Plat, game_state *GameState)
+{
+  for (s32 EntityIndex = 0;
+      EntityIndex < TOTAL_ENTITY_COUNT;
+      ++ EntityIndex)
+  {
+    GameState->EntityTable[EntityIndex] =
+      AllocateEntity(Plat, GameState->Memory, Chunk_Dimension(0,0,0));
+  }
+
+  return;
+}
+
+void
+InitCamera(camera* Camera, canonical_position P, float FocalLength)
+{
+  Camera->Frust.farClip = FocalLength;
+  Camera->Frust.nearClip = 0.1f;
+  Camera->Frust.width = 30.0f;
+  Camera->Frust.FOV = 45.0f;
+  Camera->P = P;
+  Camera->Up = WORLD_Y;
+  Camera->Right = WORLD_X;
+  Camera->Front = WORLD_Z;
+  return;
+}
+
+void
+AllocateGameModels(game_state *GameState, memory_arena *Memory)
+{
+  GameState->Models[ModelIndex_Enemy] = LoadModel(Memory, ENEMY_MODEL);
+  GameState->Models[ModelIndex_Player] = LoadModel(Memory, PLAYER_MODEL);
+  GameState->Models[ModelIndex_Loot] = LoadModel(Memory, LOOT_MODEL);
+
+  chunk_dimension ProjectileDim = Chunk_Dimension(1,30,1);
+  GameState->Models[ModelIndex_Projectile].Chunk = AllocateChunk(Memory, ProjectileDim);
+  GameState->Models[ModelIndex_Projectile].Dim = ProjectileDim;
+  FillChunk(GameState->Models[ModelIndex_Projectile].Chunk, ProjectileDim, GREEN);
+
+  GameState->Models[ModelIndex_Proton] = LoadModel(Memory, PROJECTILE_MODEL);
+
+  return;
+}
+
+void
 InitChunkPerlin( game_state *GameState, world_chunk *WorldChunk )
 {
   Assert(WorldChunk);
@@ -75,47 +182,6 @@ InitChunkPerlin( game_state *GameState, world_chunk *WorldChunk )
     }
   }
 
-  return;
-}
-
-void
-FillChunk(chunk_data *chunk, chunk_dimension Dim, u32 ColorIndex = BLACK)
-{
-  s32 Vol = Volume(Dim);
-
-  for (int i = 0; i < Vol; ++i)
-  {
-    SetFlag(&chunk->Voxels[i], (voxel_flag)(Voxel_Filled     |
-                                            Voxel_TopFace    |
-                                            Voxel_BottomFace |
-                                            Voxel_FrontFace  |
-                                            Voxel_BackFace   |
-                                            Voxel_LeftFace   |
-                                            Voxel_RightFace));
-
-
-    chunk->Voxels[i].Color = ColorIndex;
-
-    chunk->BoundaryVoxels[i] = boundary_voxel(&chunk->Voxels[i], GetPosition(i, Dim));
-    chunk->BoundaryVoxelCount = i;
-  }
-
-  SetFlag(chunk, Chunk_Initialized);
-}
-
-void
-InitializeVoxels( game_state *GameState, world_chunk *Chunk )
-{
-  /* if ( Chunk->WorldP == World_Position(3,2,0) || */
-  /*      Chunk->WorldP == World_Position(6,2,0) || */
-  /*      Chunk->WorldP == World_Position(9,2,0) ) */
-  /* { */
-  /*   FillChunk(Chunk->Data, WORLD_CHUNK_DIM); */
-  /*   Chunk->Filled = Volume(WORLD_CHUNK_DIM); */
-  /* } */
-
-  UnSetFlag(Chunk, Chunk_Queued);
-  SetFlag(Chunk, Chunk_Initialized);
   return;
 }
 
@@ -554,6 +620,13 @@ PushFrameEvent(event_queue *EventQueue, frame_event *EventInit, s32 FramesToForw
 }
 
 void
+AllocateAndInitNoise3d(game_state *GameState, noise_3d *Noise, chunk_dimension Dim)
+{
+  Noise->Dim = Dim;
+  Noise->Voxels = PUSH_STRUCT_CHECKED(voxel, GameState->Memory, Volume(Dim));
+}
+
+void
 ProcessCollisionRule(
     entity        *First,
     entity        *Second,
@@ -719,10 +792,9 @@ GetMouseDelta(platform *Plat)
 }
 
 void
-UpdateCameraP(platform *Plat, world *World, entity *Player, camera *Camera)
+UpdateCameraP(platform *Plat, world *World, canonical_position NewTarget, camera *Camera)
 {
   chunk_dimension WorldChunkDim = World->ChunkDim;
-  canonical_position NewTarget = Canonicalize(WorldChunkDim, Player->P.Offset, Player->P.WorldP) + (Player->Model.Dim/2.0f);
 
   v3 TargetDelta = GetRenderP(WorldChunkDim, NewTarget, Camera) - GetRenderP(WorldChunkDim, Camera->Target, Camera);
 
@@ -932,7 +1004,8 @@ BufferWorldChunk(
     world *World,
     world_chunk *Chunk,
     camera *Camera,
-    g_buffer_render_group *RG
+    g_buffer_render_group *RG,
+    shadow_render_group *SG
   )
 {
   if (Chunk->Data->BoundaryVoxelCount == 0)
@@ -949,7 +1022,7 @@ BufferWorldChunk(
 
 #if 1
     r32 Scale = 1.0f;
-    BufferChunkMesh( &World->Mesh, World->ChunkDim, ChunkData, Chunk->WorldP, RG, Camera, Scale);
+    BufferChunkMesh( &World->Mesh, World->ChunkDim, ChunkData, Chunk->WorldP, RG, SG, Camera, Scale);
 
 #else
   if (CanBuildWorldChunkBoundary(world, Chunk))
