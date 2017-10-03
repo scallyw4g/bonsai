@@ -1,5 +1,7 @@
-Welcome to the Bonsai engine Readme.
+# Welcome to Bonsai!
 
+Bonsai is a 3D voxel-based engine built with the intention of writing
+fast-paced arcade style games.
 
 
 
@@ -11,7 +13,7 @@ Features:
 
 [X] Deferred Shading
 
-[ ] SSAO
+[X] SSAO
 
 [X] Multi-threaded world generation
 
@@ -26,8 +28,6 @@ Features:
 
 -------------------------------------------------------------------------------
 ## Renderer
-
-[ ] SSAO
 
 [ ] Shaders need to be pre-processed for the available version of GLSL
 
