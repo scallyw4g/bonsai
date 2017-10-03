@@ -275,7 +275,7 @@ GameInit( platform *Plat, memory_arena *GameMemory)
 
 
   canonical_position PlayerInitialP = {};
-  AllocateAndInitWorld(GameState, PlayerInitialP.WorldP, VISIBLE_REGION_RADIUS);
+  AllocateAndInitWorld(GameState, PlayerInitialP.WorldP, VISIBLE_REGION_RADIUS, WORLD_CHUNK_DIM, VISIBLE_REGION);
 
   GameState->Models = 0;
   GameState->EventQueue.Queue = 0;

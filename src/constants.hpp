@@ -13,26 +13,14 @@
 #define VOXEL_DIAMETER (1.0f)
 #define VOXEL_RADIUS (VOXEL_DIAMETER/2.0f)
 
-#define CD_X 8
-#define CD_Y 32
-#define CD_Z 1
-
-// Visible Region XYZ - Must be > (3,3,3)
-#define VR_X 12
-#define VR_Y 64
-#define VR_Z 1
-
-#define VOLUME_VISIBLE_REGION (VR_X*VR_X*VR_X)
-
 #define WORLD_X V3(1,0,0)
 #define WORLD_Y V3(0,1,0)
 #define WORLD_Z V3(0,0,1)
 
-#define WORLD_CHUNK_DIM Chunk_Dimension(CD_X,CD_Y,CD_Z)
-#define VISIBLE_REGION Chunk_Dimension(VR_X,VR_Y,VR_Z)
-#define VISIBLE_REGION_RADIUS (Chunk_Dimension(VR_X,VR_Y,VR_Z)/2)
-
 #define MAX_VISIBLE_POINT V3(VR_X*CD_X, VR_Y*CD_Y, VR_Z*CD_Z)
+
+#define WORLD_HASH_SIZE 1024
+#define FREELIST_SIZE 1024
 
 #define NOISE_FREQUENCY 400
 
@@ -40,8 +28,6 @@
 #define SSAO_KERNEL_SIZE 16
 #define DEFAULT_ENTROPY_SEED 3426543
 
-#define WORLD_HASH_SIZE VOLUME_VISIBLE_REGION
-#define FREELIST_SIZE VOLUME_VISIBLE_REGION
 #define GAME_STORAGE_SIZE Megabytes(500)
 #define MAIN_STORAGE_SIZE (PLATFORM_STORAGE_SIZE+GAME_STORAGE_SIZE)
 
@@ -108,8 +94,9 @@
 #define DEBUG_FRAMES_TO_RUN           -1
 
 
-#define SHADOW_MAP_X (VR_X*CD_X)
-#define SHADOW_MAP_Y (VR_Y*CD_Y/1.5f)
+// TODO(Jesse): Define in game_constants.h
+#define SHADOW_MAP_X (100)
+#define SHADOW_MAP_Y (1400)
 
 #define SHADOW_MAP_Z_MIN  -100.0f
 #define SHADOW_MAP_Z_MAX  200.0f

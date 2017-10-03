@@ -175,7 +175,7 @@ SpawnEnemy(world *World, entity **WorldEntities, entity *Enemy, random_series *E
 
   // Respawn entity if it collides against the world or current entities
   if ( GetCollision(World, Enemy).didCollide ||
-       GetCollision(WorldEntities, Enemy)    )
+       GetCollision(WorldEntities, Enemy, World->ChunkDim)    )
     SpawnEnemy(World, WorldEntities, Enemy, EnemyEntropy, GameModels);
 
   return;
@@ -467,7 +467,7 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
     if (Unspawned(Entity) || Destroyed(Entity))
       break;
 
-    DoEntityCollisions(GameState, Entity, &GameState->Entropy);
+    DoEntityCollisions(GameState, Entity, &GameState->Entropy, GameState->World->ChunkDim);
   }
 
   Entity->P = Canonicalize(WorldChunkDim, Entity->P);
@@ -485,8 +485,8 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
 void
 SimulateEnemy(game_state *GameState, entity *Enemy, entity *Player, r32 dt)
 {
-  v3 PlayerP = GetAbsoluteP(Player->P);
-  v3 EnemyP = GetAbsoluteP(Enemy->P);
+  v3 PlayerP = GetAbsoluteP(Player->P, GameState->World->ChunkDim);
+  v3 EnemyP = GetAbsoluteP(Enemy->P, GameState->World->ChunkDim);
 
   if ( EnemyP.y > PlayerP.y ) // Enemy is in front of Player
   {
@@ -1189,7 +1189,7 @@ GameInit( platform *Plat, memory_arena *GameMemory)
 
   canonical_position PlayerInitialP = {};
 
-  AllocateAndInitWorld(GameState, PlayerInitialP.WorldP, VISIBLE_REGION_RADIUS);
+  AllocateAndInitWorld(GameState, PlayerInitialP.WorldP, VISIBLE_REGION_RADIUS, WORLD_CHUNK_DIM, VISIBLE_REGION);
 
   GameState->Models =
     PUSH_STRUCT_CHECKED(model, GameState->Memory, ModelIndex_Count);

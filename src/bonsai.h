@@ -373,7 +373,6 @@ struct world_chunk
 
   world_position WorldP;
 
-  point_buffer PB;
   v3 Normal;
 
   s32 Filled;
@@ -787,17 +786,16 @@ ZeroChunk( chunk_data *chunk, s32 Volume )
   return;
 }
 
-unsigned int
-GetWorldChunkHash(world_position P)
+u32
+GetWorldChunkHash(world_position P, chunk_dimension WorldChunkDim)
 {
   // TODO(Jesse): Better hash function!
-
-  unsigned int i =
+  u32 i =
     (P.x) +
-    (P.y*CD_X) +
-    (P.z*CD_X*CD_Y);
+    (P.y*WorldChunkDim.x) +
+    (P.z*WorldChunkDim.x*WorldChunkDim.y);
 
-  unsigned int HashIndex = (i * 42 * 13 * 233) % WORLD_HASH_SIZE;
+  u32 HashIndex = (i * 42 * 13 * 233) % WORLD_HASH_SIZE;
   Assert(HashIndex < WORLD_HASH_SIZE);
 
   return HashIndex;
@@ -825,17 +823,16 @@ FreeWorldChunk(world *World, world_chunk *chunk)
     // Unlink from head end of linked list
     if (!chunk->Prev)
     {
-      World->ChunkHash[GetWorldChunkHash(chunk->WorldP)] = chunk->Next;
+      World->ChunkHash[GetWorldChunkHash(chunk->WorldP, World->ChunkDim)] = chunk->Next;
     }
 
     chunk->Prev = 0;
     chunk->Next = 0;
-    chunk->PB.Count = 0;
 
     Assert(World->FreeChunkCount < FREELIST_SIZE);
     World->FreeChunks[World->FreeChunkCount++] = chunk;
 
-    ZeroChunk(chunk->Data, Volume(WORLD_CHUNK_DIM));
+    ZeroChunk(chunk->Data, Volume(World->ChunkDim));
 
     Assert( NotSet(chunk->Data->Flags, Chunk_Initialized) );
     Assert( NotSet(chunk->Data->Flags, Chunk_Queued) );
@@ -884,7 +881,7 @@ AllocateChunk(memory_arena *WorldStorage, chunk_dimension Dim)
 void
 InsertChunkIntoWorld(world *World, world_chunk *chunk)
 {
-  unsigned int HashIndex = GetWorldChunkHash(chunk->WorldP);
+  u32 HashIndex = GetWorldChunkHash(chunk->WorldP, World->ChunkDim);
   world_chunk *Last = World->ChunkHash[HashIndex];;
 
   if (Last)
@@ -913,7 +910,7 @@ AllocateWorldChunk(memory_arena *Storage, world *World, world_position WorldP)
 {
   world_chunk *Result = PUSH_STRUCT_CHECKED(world_chunk, Storage, 1);
 
-  Result->Data = AllocateChunk(Storage, Chunk_Dimension(CD_X, CD_Y, CD_Z));
+  Result->Data = AllocateChunk(Storage, World->ChunkDim);
   Assert(Result->Data);
 
   Result->WorldP = WorldP;
@@ -943,7 +940,7 @@ IsFacingPoint( v3 FaceToPoint, v3 FaceNormal )
 world_chunk*
 GetWorldChunk( world *World, world_position P )
 {
-  unsigned int HashIndex = GetWorldChunkHash(P);
+  u32 HashIndex = GetWorldChunkHash(P, World->ChunkDim);
   world_chunk *Result = World->ChunkHash[HashIndex];
 
   while (Result)
@@ -1068,26 +1065,26 @@ NotFilledInWorld( world *World, world_chunk *chunk, canonical_position VoxelP )
 }
 
 inline world_position
-GetAbsoluteP( world_position P )
+GetAbsoluteP( world_position P, chunk_dimension WorldChunkDim)
 {
-  world_position Result = World_Position((CD_X*P.x), (CD_Y*P.y), (CD_Z*P.z));
+  world_position Result = World_Position((WorldChunkDim.x*P.x), (WorldChunkDim.y*P.y), (WorldChunkDim.z*P.z));
   return Result;
 }
 
 inline v3
-GetAbsoluteP( canonical_position CP )
+GetAbsoluteP( canonical_position CP, chunk_dimension WorldChunkDim)
 {
-  v3 Result = V3(CP.Offset.x+(CD_X*CP.WorldP.x),
-                 CP.Offset.y+(CD_Y*CP.WorldP.y),
-                 CP.Offset.z+(CD_Z*CP.WorldP.z));
+  v3 Result = V3(CP.Offset.x+(WorldChunkDim.x*CP.WorldP.x),
+                 CP.Offset.y+(WorldChunkDim.y*CP.WorldP.y),
+                 CP.Offset.z+(WorldChunkDim.z*CP.WorldP.z));
   return Result;
 }
 
 inline aabb
-GetAABB(entity *Entity)
+GetAABB(entity *Entity, chunk_dimension WorldChunkDim)
 {
   v3 Radius = Entity->CollisionVolumeRadius;
-  v3 Center = GetAbsoluteP(Entity->P) + Radius;
+  v3 Center = GetAbsoluteP(Entity->P, WorldChunkDim) + Radius;
 
   aabb Result(Center, Radius);
   return Result;

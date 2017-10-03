@@ -1241,7 +1241,7 @@ DEBUG_DrawChunkAABB( mesh_buffer_target *Mesh, g_buffer_render_group *gBuffer,
                      Quaternion Rotation, s32 ColorIndex , r32 Thickness = DEFAULT_LINE_THICKNESS)
 {
   v3 MinP = GetRenderP(WorldChunkDim, Canonical_Position(V3(0,0,0), WorldP), Camera);
-  v3 MaxP = GetRenderP(WorldChunkDim, Canonical_Position(WORLD_CHUNK_DIM, WorldP), Camera);
+  v3 MaxP = GetRenderP(WorldChunkDim, Canonical_Position(WorldChunkDim, WorldP), Camera);
 
   DEBUG_DrawAABB(Mesh, gBuffer, SG, Camera, MinP, MaxP, Rotation, ColorIndex, Thickness);
   return;
@@ -1388,7 +1388,7 @@ BuildExteriorBoundaryVoxels( world_chunk *chunk, chunk_dimension Dim, world_chun
 inline bool
 IsInfrustum( chunk_dimension WorldChunkDim, camera *Camera, world_chunk *Chunk )
 {
-  v3 ChunkMid = V3(CD_X, CD_Y, CD_Z)/2;
+  v3 ChunkMid = WorldChunkDim/2.0f;
   canonical_position P1 = Canonical_Position(  ChunkMid, Chunk->WorldP );
   bool Result = IsInfrustum(WorldChunkDim, Camera, P1 );
   return Result;
@@ -1695,6 +1695,7 @@ FindBoundaryVoxelsAlongEdge(
 void
 Compute0thLod(world_chunk *WorldChunk, chunk_dimension WorldChunkDim)
 {
+#if 0
   /* v3 RenderOffset = GetRenderP( WorldChunkDim, WorldChunk->WorldP, GameState->Camera); */
 
   v3 SurfaceNormal = {};
@@ -2178,6 +2179,7 @@ Compute0thLod(world_chunk *WorldChunk, chunk_dimension WorldChunkDim)
 /* chunk->flags = SetFlag(chunk->flags, Chunk_LodGenerated); */
 
   return;
+#endif
 }
 
 inline b32
@@ -2307,6 +2309,7 @@ Draw0thLod(mesh_buffer_target *Mesh, g_buffer_render_group *gBuffer, shadow_rend
   /* for ( s32 PointIndex = 0; PointIndex < Chunk->PB.Count; ++PointIndex ) */
   /*   DEBUG_DrawPointMarker(world, V3(Chunk->PB.Points[PointIndex]) + RenderOffset, Color--, 1.0f); */
 
+#if 0
 
   v3 Verts[3] = {};
   Verts[0] = V3(Chunk->PB.Points[0]) + RenderOffset;
@@ -2321,6 +2324,7 @@ Draw0thLod(mesh_buffer_target *Mesh, g_buffer_render_group *gBuffer, shadow_rend
     BufferTriangle(Mesh, gBuffer, SG, Camera, &Verts[0], Chunk->Normal, Color);
   }
 
+#endif
   return;
 }
 

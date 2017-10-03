@@ -121,7 +121,7 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory)
 }
 
 void
-InitChunkPerlin( game_state *GameState, world_chunk *WorldChunk )
+InitChunkPerlin( game_state *GameState, world_chunk *WorldChunk, v3 WorldChunkDim)
 {
   Assert(WorldChunk);
 
@@ -135,7 +135,7 @@ InitChunkPerlin( game_state *GameState, world_chunk *WorldChunk )
   }
 #endif
 
-  ZeroChunk(WorldChunk->Data, Volume(WORLD_CHUNK_DIM));
+  ZeroChunk(WorldChunk->Data, Volume(WorldChunkDim));
 
   chunk_data *chunk = WorldChunk->Data;
   /* CALLGRIND_TOGGLE_COLLECT; */
@@ -155,7 +155,7 @@ InitChunkPerlin( game_state *GameState, world_chunk *WorldChunk )
         Assert( NotSet(&chunk->Voxels[i], Voxel_Filled) );
 
         v3 NoiseInputs =
-          ( ( V3(x,y,z) + (WORLD_CHUNK_DIM*(WorldChunk->WorldP))) ) / NOISE_FREQUENCY;
+          ( ( V3(x,y,z) + (WorldChunkDim*(WorldChunk->WorldP))) ) / NOISE_FREQUENCY;
 
         double InX = (double)NoiseInputs.x;
         double InY = (double)NoiseInputs.y;
@@ -501,7 +501,7 @@ Intersect(aabb *First, aabb *Second)
 }
 
 inline b32
-GetCollision(entity *First, entity *Second)
+GetCollision(entity *First, entity *Second, chunk_dimension WorldChunkDim)
 {
   TIMED_FUNCTION();
 
@@ -511,8 +511,8 @@ GetCollision(entity *First, entity *Second)
   if (Unspawned(First) || Unspawned(Second))
     return False;
 
-  aabb FirstAABB = GetAABB(First);
-  aabb SecondAABB = GetAABB(Second);
+  aabb FirstAABB = GetAABB(First, WorldChunkDim);
+  aabb SecondAABB = GetAABB(Second, WorldChunkDim);
 
   b32 Result = Intersect(&FirstAABB, &SecondAABB);
   return Result;
@@ -712,7 +712,7 @@ ProcessCollisionRule(
 }
 
 inline b32
-GetCollision(entity **Entities, entity *Entity)
+GetCollision(entity **Entities, entity *Entity, chunk_dimension WorldChunkDim)
 {
   b32 Result = False;
 
@@ -725,7 +725,7 @@ GetCollision(entity **Entities, entity *Entity)
     if (TestEntity == Entity)
       continue;
 
-    Result = GetCollision(Entity, TestEntity);
+    Result = GetCollision(Entity, TestEntity, WorldChunkDim);
   }
 
   return Result;
@@ -754,7 +754,7 @@ EntitiesCanCollide(entity *First, entity *Second)
 }
 
 void
-DoEntityCollisions(game_state *GameState, entity *Entity, random_series *Entropy)
+DoEntityCollisions(game_state *GameState, entity *Entity, random_series *Entropy, chunk_dimension WorldChunkDim)
 {
   TIMED_FUNCTION();
 
@@ -771,7 +771,7 @@ DoEntityCollisions(game_state *GameState, entity *Entity, random_series *Entropy
     if (!EntitiesCanCollide(Entity, TestEntity))
       continue;
 
-    if (GetCollision(Entity, TestEntity))
+    if (GetCollision(Entity, TestEntity, WorldChunkDim))
       ProcessCollisionRule(Entity, TestEntity, Entropy, GameState->Models, &GameState->EventQueue);
   }
 
@@ -868,7 +868,8 @@ UpdateCameraP(platform *Plat, world *World, canonical_position NewTarget, camera
 }
 
 world *
-AllocateAndInitWorld( game_state *GameState, world_position Center, world_position Radius)
+AllocateAndInitWorld( game_state *GameState, world_position Center,
+    world_position Radius, voxel_position WorldChunkDim, chunk_dimension VisibleRegion)
 {
   platform *Plat = GameState->Plat;
 
@@ -886,8 +887,8 @@ AllocateAndInitWorld( game_state *GameState, world_position Center, world_positi
   /*
    *  Initialize stuff
    */
-  World->ChunkDim = WORLD_CHUNK_DIM;
-  World->VisibleRegion = VISIBLE_REGION;
+  World->ChunkDim = WorldChunkDim;
+  World->VisibleRegion = VisibleRegion;
 
   World->Gravity = WORLD_GRAVITY;
   World->Center = Center;

@@ -13,7 +13,8 @@
 #define Assert(condition) \
   if (!(condition)) { Debug(" ! Failed - '%s' on Line: %d in File: %s", #condition, __LINE__, __FILE__); RuntimeBreak(); }
 
-#define WORK_QUEUE_SIZE (5*VOLUME_VISIBLE_REGION)
+// FIXME(Jesse): Define per application!
+#define WORK_QUEUE_SIZE (2048)
 
 struct platform;
 struct game_state;

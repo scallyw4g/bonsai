@@ -885,6 +885,12 @@ Chunk_Dimension(int x, int y, int z)
 }
 
 inline int
+Volume(v3 Dim)
+{
+  return (Dim.x*Dim.y*Dim.z);
+}
+
+inline int
 Volume(chunk_dimension Dim)
 {
   return (Dim.x*Dim.y*Dim.z);
