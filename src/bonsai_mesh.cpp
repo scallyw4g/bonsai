@@ -7,31 +7,47 @@ void
 RenderGBuffer(mesh_buffer_target *Target, g_buffer_render_group *gBuffer, shadow_render_group *SG, camera *Camera);
 
 inline void
+BufferSingleVert(
+    mesh_buffer_target *Target,
+    v3 *VertsPositions,
+    v3 *Normals,
+    const v3 VertColors
+  )
+{
+  memcpy( &Target->VertexData[Target->VertsFilled],  VertsPositions,  sizeof(v3) );
+  memcpy( &Target->NormalData[Target->VertsFilled],  Normals,         sizeof(v3) );
+  memcpy( &Target->ColorData[Target->VertsFilled],   &VertColors,     sizeof(v3) );
+
+  ++Target->VertsFilled;
+}
+
+inline void
 BufferVerts(
     mesh_buffer_target *Target,
 
     s32 NumVerts,
 
-    float* VertsPositions,
-    float* Normals,
-    const float* VertColors
+    v3 *VertsPositions,
+    v3 *Normals,
+    const v3 *VertColors
   )
 {
-  s32 sizeofData = NumVerts * sizeof(float) * 3;
-
   // This path assumes we've already checked there's enough memroy remaining
-  if ( Target->filled + sizeofData > Target->bytesAllocd )
+  if ( Target->VertsFilled + NumVerts > Target->VertsAllocated )
   {
-    Warn("Ran out of memory pushing %d bytes onto Mesh with %d/%d memory used", sizeofData, Target->filled, Target->bytesAllocd);
+    Warn("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Target->VertsFilled, Target->VertsAllocated);
     return;
   }
 
-  memcpy( &Target->VertexData[Target->VertexCount*3],  VertsPositions,  sizeofData );
-  memcpy( &Target->NormalData[Target->VertexCount*3],  Normals,         sizeofData );
-  memcpy( &Target->ColorData[Target->VertexCount*3],   VertColors,      sizeofData );
+  /* memcpy( &Target->VertexData[Target->VertexCount*3],  VertsPositions,  sizeofData ); */
+  /* memcpy( &Target->NormalData[Target->VertexCount*3],  Normals,         sizeofData ); */
+  /* memcpy( &Target->ColorData[Target->VertexCount*3],   VertColors,      sizeofData ); */
 
-  Target->filled += sizeofData;
-  Target->VertexCount += NumVerts;
+  while (NumVerts--)
+  {
+    BufferSingleVert(Target, &VertsPositions[NumVerts], &Normals[NumVerts], *VertColors);
+  }
+
 
   return;
 }
@@ -46,15 +62,14 @@ BufferVerts(
 
     s32 NumVerts,
 
-    float* VertsPositions,
-    float* Normals,
-    const float* VertColors
+    v3* VertsPositions,
+    v3* Normals,
+    const v3* VertColors
   )
 {
-  s32 sizeofData = NumVerts * sizeof(float) * 3;
-  if ( Target->filled + sizeofData > Target->bytesAllocd )
+  if ( Target->VertsFilled + NumVerts > Target->VertsAllocated )
   {
-    Warn("Out of memory, flushing to gBuffer");
+    Warn("Flushing %d/%d Verts to gBuffer", Target->VertsFilled, Target->VertsAllocated);
     RenderGBuffer(Target, gBuffer, SG, Camera);
     return;
   }
@@ -82,20 +97,14 @@ BufferVerts(
   BufferVerts(Dest, gBuffer, SG, Camera, Source->VertexCount, Source->VertexData,
       Source->NormalData, Source->ColorData);
 #else
-  s32 VertIndicies = Source->VertexCount*3;
   for ( s32 VertIndex = 0;
-        VertIndex < VertIndicies;
-        VertIndex += 3)
+        VertIndex < Source->VertsFilled;
+        ++VertIndex )
   {
-    r32 X = Source->VertexData[VertIndex+0]*Scale;
-    r32 Y = Source->VertexData[VertIndex+1]*Scale;
-    r32 Z = Source->VertexData[VertIndex+2]*Scale;
-
-    v3 XYZ = V3(X,Y,Z) + RenderOffset;
-
+    v3 XYZ = (Source->VertexData[VertIndex]*Scale) + RenderOffset;
     BufferVerts(Dest, gBuffer, SG, Camera,
         1,
-        &XYZ.E[0],
+        &XYZ,
         Source->NormalData + VertIndex,
         Source->ColorData + VertIndex);
   }
@@ -126,10 +135,10 @@ BuildEntityMesh(chunk_data *chunk, chunk_dimension Dim)
 
         v3 VP = V3(P);
         v3 Diameter = V3(1.0f);
-        r32 VertexData[BYTES_PER_FACE];
-        float FaceColors[FACE_COLOR_SIZE];
-        GetColorData(Voxel->Color, &FaceColors[0]);;
+        v3 VertexData[6];
 
+        v3 FaceColors[FACE_VERT_COUNT];
+        FillColorArray(Voxel->Color, FaceColors, FACE_VERT_COUNT);
 
         voxel_position rightVoxel = LocalVoxelP + Voxel_Position(1, 0, 0);
         voxel_position leftVoxel = LocalVoxelP - Voxel_Position(1, 0, 0);
@@ -141,47 +150,36 @@ BuildEntityMesh(chunk_data *chunk, chunk_dimension Dim)
         voxel_position backVoxel = LocalVoxelP - Voxel_Position(0, 0, 1);
 
 
-        b32 BufferedVert = False;
 
         if ( (!IsInsideDim(Dim, rightVoxel)) || NotFilled( chunk, rightVoxel, Dim))
         {
           RightFaceVertexData( VP, Diameter, VertexData);
           BufferVerts(&chunk->Mesh, 6, VertexData, RightFaceNormalData, FaceColors);
-          BufferedVert = True;
         }
         if ( (!IsInsideDim( Dim, leftVoxel  )) || NotFilled( chunk, leftVoxel, Dim))
         {
           LeftFaceVertexData( VP, Diameter, VertexData);
           BufferVerts(&chunk->Mesh, 6, VertexData, LeftFaceNormalData, FaceColors);
-          BufferedVert = True;
         }
         if ( (!IsInsideDim( Dim, botVoxel   )) || NotFilled( chunk, botVoxel, Dim))
         {
           BottomFaceVertexData( VP, Diameter, VertexData);
           BufferVerts(&chunk->Mesh, 6, VertexData, BottomFaceNormalData, FaceColors);
-          BufferedVert = True;
         }
         if ( (!IsInsideDim( Dim, topVoxel   )) || NotFilled( chunk, topVoxel, Dim))
         {
           TopFaceVertexData( VP, Diameter, VertexData);
           BufferVerts(&chunk->Mesh, 6, VertexData, TopFaceNormalData, FaceColors);
-          BufferedVert = True;
         }
         if ( (!IsInsideDim( Dim, frontVoxel )) || NotFilled( chunk, frontVoxel, Dim))
         {
           FrontFaceVertexData( VP, Diameter, VertexData);
           BufferVerts(&chunk->Mesh, 6, VertexData, FrontFaceNormalData, FaceColors);
-          BufferedVert = True;
         }
         if ( (!IsInsideDim( Dim, backVoxel  )) || NotFilled( chunk, backVoxel, Dim))
         {
           BackFaceVertexData( VP, Diameter, VertexData);
           BufferVerts(&chunk->Mesh, 6, VertexData, BackFaceNormalData, FaceColors);
-          BufferedVert = True;
-        }
-
-        if (BufferedVert)
-        {
         }
 
       }
@@ -210,9 +208,9 @@ BuildWorldChunkMesh(world *World, world_chunk *WorldChunk, chunk_dimension World
         voxel *Voxel = &chunk->Voxels[GetIndex(CurrentP.Offset, chunk, WorldChunkDim)];
 
         v3 Diameter = V3(1.0f);
-        r32 VertexData[BYTES_PER_FACE];
-        float FaceColors[FACE_COLOR_SIZE];
-        GetColorData(Voxel->Color, &FaceColors[0]);;
+        v3 VertexData[FACE_VERT_COUNT];
+        v3 FaceColors[FACE_VERT_COUNT];
+        FillColorArray(Voxel->Color, FaceColors, FACE_VERT_COUNT);;
 
         canonical_position rightVoxel = Canonicalize(WorldChunkDim, CurrentP + V3(1, 0, 0));
         canonical_position leftVoxel  = Canonicalize(WorldChunkDim, CurrentP - V3(1, 0, 0));

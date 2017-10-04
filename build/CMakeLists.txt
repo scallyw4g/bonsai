@@ -132,9 +132,9 @@ endif()
 
 # Rename the game library on completion so the hot-loading code doesn't try to
 # load it before the compiler is finished
-# add_custom_command( TARGET example_space_invaders POST_BUILD
-#  COMMAND ${CMAKE_COMMAND} -E copy ${SPACE_INVADERS_COMPILED_LIB} ${SPACE_INVADERS_LOADABLE_LIB} )
+ add_custom_command( TARGET example_space_invaders POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy ${SPACE_INVADERS_COMPILED_LIB} ${SPACE_INVADERS_LOADABLE_LIB} )
 
-add_custom_command( TARGET example_ssao_test POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy ${SSAO_COMPILED_LIB} ${SSAO_LOADABLE_LIB} )
+# add_custom_command( TARGET example_ssao_test POST_BUILD
+#   COMMAND ${CMAKE_COMMAND} -E copy ${SSAO_COMPILED_LIB} ${SSAO_LOADABLE_LIB} )
 

@@ -643,7 +643,7 @@ RenderShadowMap(mesh_buffer_target *Mesh, shadow_render_group *SG, g_buffer_rend
   // 1rst attribute buffer : vertices
   GL_Global->glEnableVertexAttribArray(0);
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->vertexbuffer);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, Mesh->filled, Mesh->VertexData, GL_STATIC_DRAW);
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, Mesh->VertsFilled*sizeof(v3), Mesh->VertexData, GL_STATIC_DRAW);
   GL_Global->glVertexAttribPointer(
     0,                  // The attribute we want to configure
     3,                  // size
@@ -653,7 +653,7 @@ RenderShadowMap(mesh_buffer_target *Mesh, shadow_render_group *SG, g_buffer_rend
     (void*)0            // array buffer offset
   );
 
-  glDrawArrays(GL_TRIANGLES, 0, Mesh->VertexCount);
+  glDrawArrays(GL_TRIANGLES, 0, Mesh->VertsFilled);
 
   GL_Global->glDisableVertexAttribArray(0);
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -674,7 +674,7 @@ RenderWorldToGBuffer(mesh_buffer_target *Mesh, g_buffer_render_group *RG)
   // Vertices
   GL_Global->glEnableVertexAttribArray(0);
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->vertexbuffer);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, Mesh->filled, Mesh->VertexData, GL_STATIC_DRAW);
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, Mesh->VertsFilled*sizeof(v3), Mesh->VertexData, GL_STATIC_DRAW);
   GL_Global->glVertexAttribPointer(
     0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
     3,                  // size
@@ -687,7 +687,7 @@ RenderWorldToGBuffer(mesh_buffer_target *Mesh, g_buffer_render_group *RG)
   // Colors
   GL_Global->glEnableVertexAttribArray(1);
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->colorbuffer);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, Mesh->filled, Mesh->ColorData, GL_STATIC_DRAW);
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, Mesh->VertsFilled*sizeof(v3), Mesh->ColorData, GL_STATIC_DRAW);
   GL_Global->glVertexAttribPointer(
     1,                  // attribute 1. No particular reason for 1, but must match the layout in the shader.
     3,                  // size
@@ -700,7 +700,7 @@ RenderWorldToGBuffer(mesh_buffer_target *Mesh, g_buffer_render_group *RG)
   // Normals
   GL_Global->glEnableVertexAttribArray(2);
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->normalbuffer);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, Mesh->filled, Mesh->NormalData, GL_STATIC_DRAW);
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, Mesh->VertsFilled*sizeof(v3), Mesh->NormalData, GL_STATIC_DRAW);
   GL_Global->glVertexAttribPointer(
     2,
     3,                  // size
@@ -710,7 +710,7 @@ RenderWorldToGBuffer(mesh_buffer_target *Mesh, g_buffer_render_group *RG)
     (void*)0            // array buffer offset
   );
 
-  glDrawArrays(GL_TRIANGLES, 0, Mesh->VertexCount);
+  glDrawArrays(GL_TRIANGLES, 0, Mesh->VertsFilled);
 
   GL_Global->glDisableVertexAttribArray(0);
   GL_Global->glDisableVertexAttribArray(1);
@@ -730,8 +730,7 @@ RenderGBuffer(
 
   RenderWorldToGBuffer(Mesh, RG);
 
-  Mesh->VertexCount = 0;
-  Mesh->filled = 0;
+  Mesh->VertsFilled = 0;
 
   return;
 }
@@ -743,10 +742,10 @@ DEBUG_DrawPointMarker( mesh_buffer_target *Mesh,
     camera *Camera,
     v3 RenderP, int ColorIndex, v3 Diameter)
 {
-  float FaceColors[FACE_COLOR_SIZE];
-  GetColorData(ColorIndex, &FaceColors[0]);;
+  v3 FaceColors[FACE_VERT_COUNT];
+  FillColorArray(ColorIndex, FaceColors, FACE_VERT_COUNT);;
 
-  r32 VertexData[BYTES_PER_FACE];
+  v3 VertexData[6];
 
   RightFaceVertexData( RenderP, Diameter, VertexData);
   BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, RightFaceNormalData, FaceColors);
@@ -838,33 +837,33 @@ DEBUG_DrawLine( mesh_buffer_target *Mesh,
 {
   // 2 verts per line, 3 floats per vert
 
-  float localNormalData[] =
+  v3 localNormalData[] =
   {
-     0, 0, 0,
-     0, 0, 0,
-     0, 0, 0,
+    {0, 0, 0},
+    {0, 0, 0},
+    {0, 0, 0},
 
-     0, 0, 0,
-     0, 0, 0,
-     0, 0, 0
+    {0, 0, 0},
+    {0, 0, 0},
+    {0, 0, 0},
   };
 
   P1.x = P1.x - (Thickness/2.0f);
   P2.x = P2.x - (Thickness/2.0f);
 
-  float FaceColors[32];
-  GetColorData( ColorIndex, FaceColors);
+  v3 FaceColors[FACE_VERT_COUNT];
+  FillColorArray(ColorIndex, FaceColors, FACE_VERT_COUNT);;
 
   {
-    float localVertexData[] =
+    v3 localVertexData[] =
     {
-      P1.x, P1.y, P1.z,
-      P2.x, P2.y, P2.z,
-      P1.x + Thickness, P1.y,  P1.z,
+      {P1.x, P1.y, P1.z},
+      {P2.x, P2.y, P2.z},
+      {P1.x + Thickness, P1.y,  P1.z},
 
-      P2.x, P2.y, P2.z,
-      P1.x + Thickness, P1.y, P1.z,
-      P2.x + Thickness, P2.y, P2.z
+      {P2.x, P2.y, P2.z},
+      {P1.x + Thickness, P1.y, P1.z},
+      {P2.x + Thickness, P2.y, P2.z},
     };
 
 
@@ -883,15 +882,15 @@ DEBUG_DrawLine( mesh_buffer_target *Mesh,
   P2.y = P2.y - (Thickness/2.0f);
 
   {
-    float localVertexData[] =
+    v3 localVertexData[] =
     {
-      P1.x, P1.y, P1.z,
-      P2.x, P2.y, P2.z,
-      P1.x, P1.y + Thickness,  P1.z,
+      {P1.x, P1.y, P1.z},
+      {P2.x, P2.y, P2.z},
+      {P1.x, P1.y + Thickness,  P1.z},
 
-      P2.x, P2.y, P2.z,
-      P1.x, P1.y + Thickness, P1.z,
-      P2.x, P2.y + Thickness, P2.z
+      {P2.x, P2.y, P2.z},
+      {P1.x, P1.y + Thickness, P1.z},
+      {P2.x, P2.y + Thickness, P2.z},
     };
 
 
@@ -1458,21 +1457,21 @@ RayTraceCollision(chunk_data *Chunk, chunk_dimension Dim, v3 StartingP, v3 Ray, 
 inline void
 BufferTriangle(mesh_buffer_target *Mesh, g_buffer_render_group *gBuffer, shadow_render_group *SG, camera *Camera, v3 *Verts, v3 Normal, s32 ColorIndex)
 {
-  r32 VertBuffer[9];
+  v3 VertBuffer[3];
   v3 NormalBuffer[3] = {Normal, Normal, Normal};
 
   // TODO(Jesse): Is this necessary to avoid some pointer aliasing bug?
   memcpy( VertBuffer, Verts, 9 * sizeof(r32) );
 
-  r32 FaceColors[FACE_COLOR_SIZE];
-  GetColorData( ColorIndex, FaceColors);
+  v3 FaceColors[FACE_VERT_COUNT];
+  FillColorArray(ColorIndex, FaceColors, FACE_VERT_COUNT);;
 
   BufferVerts(
     Mesh,
     gBuffer, SG, Camera,
     3,
     VertBuffer,
-    (float*)&NormalBuffer[0],
+    NormalBuffer,
     FaceColors);
 
 }
@@ -2208,10 +2207,10 @@ DrawParticle(
     u8 ColorIndex
   )
 {
-  r32 VertexData[BYTES_PER_FACE];
-  r32 FaceColors[32];
-
-  GetColorData(ColorIndex, &FaceColors[0]);;
+  v3 VertexData[6];
+ 
+  v3 FaceColors[FACE_VERT_COUNT];
+  FillColorArray(ColorIndex, FaceColors, FACE_VERT_COUNT);;
 
   v3 MinP = GetRenderP(WorldChunkDim, (*P)+Particle->Offset, Camera);
 

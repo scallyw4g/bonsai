@@ -2,7 +2,7 @@
 #define BONSAI_VERTEX_H
 
 inline void
-RightFaceVertexData( v3 MinP, v3 Diameter, r32* Result)
+RightFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
   r32 Temp[] = {
     MinP.x + Diameter.x , MinP.y +  Diameter.y , MinP.z +  Diameter.z ,
@@ -18,18 +18,18 @@ RightFaceVertexData( v3 MinP, v3 Diameter, r32* Result)
   return;
 }
 
-r32 RightFaceNormalData[] =
+v3 RightFaceNormalData[] =
 {
-   1, 0, 0,
-   1, 0, 0,
-   1, 0, 0,
-   1, 0, 0,
-   1, 0, 0,
-   1, 0, 0
+  {1, 0, 0},
+  {1, 0, 0},
+  {1, 0, 0},
+  {1, 0, 0},
+  {1, 0, 0},
+  {1, 0, 0}
 };
 
 inline void
-LeftFaceVertexData( v3 MinP, v3 Diameter, r32 *Result)
+LeftFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
   r32 Temp[] = {
     MinP.x , MinP.y +  Diameter.y , MinP.z +  Diameter.z ,
@@ -45,18 +45,18 @@ LeftFaceVertexData( v3 MinP, v3 Diameter, r32 *Result)
   return;
 }
 
-r32 LeftFaceNormalData[] =
+v3 LeftFaceNormalData[] =
 {
-   -1, 0, 0,
-   -1, 0, 0,
-   -1, 0, 0,
-   -1, 0, 0,
-   -1, 0, 0,
-   -1, 0, 0
+  {-1, 0, 0},
+  {-1, 0, 0},
+  {-1, 0, 0},
+  {-1, 0, 0},
+  {-1, 0, 0},
+  {-1, 0, 0},
 };
 
 inline void
-BottomFaceVertexData( v3 MinP, v3 Diameter, r32 *Result)
+BottomFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
   r32 Temp[] = {
     MinP.x + Diameter.x , MinP.y , MinP.z +  Diameter.z ,
@@ -72,18 +72,18 @@ BottomFaceVertexData( v3 MinP, v3 Diameter, r32 *Result)
   return;
 }
 
-r32 BottomFaceNormalData[] =
+v3 BottomFaceNormalData[] =
 {
-   0,-1, 0,
-   0,-1, 0,
-   0,-1, 0,
-   0,-1, 0,
-   0,-1, 0,
-   0,-1, 0
+  {0,-1, 0},
+  {0,-1, 0},
+  {0,-1, 0},
+  {0,-1, 0},
+  {0,-1, 0},
+  {0,-1, 0},
 };
 
 inline void
-TopFaceVertexData( v3 MinP, v3 Diameter, r32 *Result)
+TopFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
   r32 Temp[] = {
     MinP.x + Diameter.x , MinP.y + Diameter.y , MinP.z + Diameter.z ,
@@ -99,18 +99,18 @@ TopFaceVertexData( v3 MinP, v3 Diameter, r32 *Result)
   return;
 }
 
-r32 TopFaceNormalData[] =
+v3 TopFaceNormalData[] =
 {
-  0, 1, 0,
-  0, 1, 0,
-  0, 1, 0,
-  0, 1, 0,
-  0, 1, 0,
-  0, 1, 0
+  {0, 1, 0},
+  {0, 1, 0},
+  {0, 1, 0},
+  {0, 1, 0},
+  {0, 1, 0},
+  {0, 1, 0},
 };
 
 inline void
-FrontFaceVertexData( v3 MinP, v3 Diameter, r32 *Result)
+FrontFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
   r32 Temp[] = {
     MinP.x +  Diameter.x , MinP.y +  Diameter.y , MinP.z + Diameter.z ,
@@ -126,19 +126,19 @@ FrontFaceVertexData( v3 MinP, v3 Diameter, r32 *Result)
   return;
 }
 
-r32 FrontFaceNormalData[] =
+v3 FrontFaceNormalData[] =
 {
-  0, 0, 1,
-  0, 0, 1,
-  0, 0, 1,
+  {0, 0, 1},
+  {0, 0, 1},
+  {0, 0, 1},
 
-  0, 0, 1,
-  0, 0, 1,
-  0, 0, 1
+  {0, 0, 1},
+  {0, 0, 1},
+  {0, 0, 1},
 };
 
 inline void
-BackFaceVertexData( v3 MinP, v3 Diameter, r32 *Result)
+BackFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
   r32 Temp[] = {
     MinP.x + Diameter.x , MinP.y + Diameter.y , MinP.z ,
@@ -154,15 +154,15 @@ BackFaceVertexData( v3 MinP, v3 Diameter, r32 *Result)
   return;
 }
 
-r32 BackFaceNormalData[] =
+v3 BackFaceNormalData[] =
 {
-  0, 0, -1,
-  0, 0, -1,
-  0, 0, -1,
+  {0, 0, -1},
+  {0, 0, -1},
+  {0, 0, -1},
 
-  0, 0, -1,
-  0, 0, -1,
-  0, 0, -1,
+  {0, 0, -1},
+  {0, 0, -1},
+  {0, 0, -1},
 };
 
 

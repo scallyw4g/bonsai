@@ -82,6 +82,11 @@ union v4
     float Ignored02_;
   };
 
+  struct {
+    v3 rgb;
+    float Ignored03_;
+  };
+
   float E[4];
 
 

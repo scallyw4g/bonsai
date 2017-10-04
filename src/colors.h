@@ -279,22 +279,24 @@ static v4 default_palette[PALETTE_SIZE] = {
   V4(0x11, 0x11, 0x11, 0xff)
 };
 
-void
-GetColorData( int colorIndex, float *Colors)
+inline v3
+GetColorData(int ColorIndex)
 {
-  Assert(colorIndex < PALETTE_SIZE);
+  Assert(ColorIndex < PALETTE_SIZE);
+  v4 Color = default_palette[ColorIndex];
+  v3 Result = Color.rgb / 255.0f;
+  return Result;;
+}
 
-  v4 Color = default_palette[colorIndex];
-
-  for (int i = 0; i < FACE_COLOR_SIZE-2; i+=3)
+inline void
+FillColorArray(s32 ColorIndex, v3 *Array, s32 Count)
+{
+  while (Count--)
   {
-    *(Colors + i + 0) = (Color.r/256);
-    *(Colors + i + 1) = (Color.g/256);
-    *(Colors + i + 2) = (Color.b/256);
+    Array[Count] = GetColorData(ColorIndex);
   }
 
   return;
 }
-
 
 #endif

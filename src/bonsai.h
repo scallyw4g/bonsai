@@ -149,14 +149,12 @@ struct boundary_voxel
 
 struct mesh_buffer_target
 {
-  s32 bytesAllocd;
-  s32 filled;
+  s32 VertsAllocated;
+  s32 VertsFilled;
 
-  s32 VertexCount;
-
-  r32* VertexData;
-  r32* ColorData;
-  r32* NormalData;
+  v3* VertexData;
+  v3* ColorData;
+  v3* NormalData;
 };
 
 struct noise_3d
@@ -761,8 +759,7 @@ GetPosition(s32 Index, chunk_dimension Dim)
 void
 ZeroMesh( mesh_buffer_target *Mesh )
 {
-  Mesh->filled = 0;
-  Mesh->VertexCount = 0;
+  Mesh->VertsFilled = 0;
   return;
 }
 
@@ -868,14 +865,12 @@ GetIndex(v3 Offset, chunk_data *Chunk, chunk_dimension Dim)
 void
 AllocateMesh(mesh_buffer_target *Mesh, u32 NumVerts, memory_arena *Memory)
 {
-  Mesh->VertexData = PUSH_STRUCT_CHECKED(GLfloat, Memory, NumVerts );
-  Mesh->ColorData = PUSH_STRUCT_CHECKED(GLfloat,  Memory, NumVerts );
-  Mesh->NormalData = PUSH_STRUCT_CHECKED(GLfloat, Memory, NumVerts );
+  Mesh->VertexData = PUSH_STRUCT_CHECKED(v3, Memory, NumVerts );
+  Mesh->ColorData = PUSH_STRUCT_CHECKED(v3,  Memory, NumVerts );
+  Mesh->NormalData = PUSH_STRUCT_CHECKED(v3, Memory, NumVerts );
 
-  Mesh->bytesAllocd = NumVerts*sizeof(r32);
-
-  Mesh->filled = 0;
-  Mesh->VertexCount = 0;
+  Mesh->VertsAllocated = NumVerts;
+  Mesh->VertsFilled = 0;
 }
 
 chunk_data*
@@ -885,7 +880,7 @@ AllocateChunk(memory_arena *WorldStorage, chunk_dimension Dim)
   Result->Voxels = PUSH_STRUCT_CHECKED(voxel, WorldStorage , Volume(Dim));
 
   // TODO(Jesse): Allocate this based on actual need?
-  AllocateMesh(&Result->Mesh, 100000, WorldStorage);
+  AllocateMesh(&Result->Mesh, 4320, WorldStorage);
 
   ZeroChunk(Result, Volume(Dim));
 

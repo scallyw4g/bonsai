@@ -91,9 +91,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   DrawGBufferToFullscreenQuad( Plat, gBuffer, SG, Camera, World->ChunkDim);
   AssertNoGlErrors;
 
-  World->Mesh.VertexCount = 0;
-  World->Mesh.filled = 0;
-
+  World->Mesh.VertsFilled = 0;
 
 #if DEBUG_DRAW_SHADOW_MAP_TEXTURE
   /* DrawTexturedQuad(&SG->DebugTextureShader); */
