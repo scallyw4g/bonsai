@@ -18,7 +18,7 @@
 #define SCR_HEIGHT (2160/SCREEN_RATIO)
 
 
-#define PLATFORM_STORAGE_SIZE Megabytes(256)
+#define PLATFORM_STORAGE_SIZE Megabytes(512)
 #define TargetFrameTime 0.0166666666f
 
 /*

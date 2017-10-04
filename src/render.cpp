@@ -11,6 +11,9 @@
 
 #include <colors.h>
 
+#include <bonsai_vertex.h>
+#include <bonsai_mesh.cpp>
+
 GLOBAL_VARIABLE u32 Global_QuadVertexBuffer = 0;
 
 GLOBAL_VARIABLE v3 GlobalLightPosition = {0.20f, 0.0f, 1.0f};
@@ -53,170 +56,6 @@ RenderQuad()
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, 0);
   GL_Global->glDisableVertexAttribArray(0);
 }
-
-inline void
-RightFaceVertexData( v3 MinP, v3 Diameter, r32* Result)
-{
-  r32 Temp[] = {
-    MinP.x + Diameter.x , MinP.y +  Diameter.y , MinP.z +  Diameter.z ,
-    MinP.x + Diameter.x , MinP.y               , MinP.z               ,
-    MinP.x + Diameter.x , MinP.y +  Diameter.y , MinP.z               ,
-    MinP.x + Diameter.x , MinP.y               , MinP.z               ,
-    MinP.x + Diameter.x , MinP.y +  Diameter.y , MinP.z +  Diameter.z ,
-    MinP.x + Diameter.x , MinP.y               , MinP.z +  Diameter.z ,
-  };
-
-  memcpy(Result, Temp, sizeof(Temp));
-
-  return;
-}
-
-r32 RightFaceNormalData[] =
-{
-   1, 0, 0,
-   1, 0, 0,
-   1, 0, 0,
-   1, 0, 0,
-   1, 0, 0,
-   1, 0, 0
-};
-
-inline void
-LeftFaceVertexData( v3 MinP, v3 Diameter, r32 *Result)
-{
-  r32 Temp[] = {
-    MinP.x , MinP.y +  Diameter.y , MinP.z +  Diameter.z ,
-    MinP.x , MinP.y               , MinP.z               ,
-    MinP.x , MinP.y +  Diameter.y , MinP.z               ,
-    MinP.x , MinP.y               , MinP.z               ,
-    MinP.x , MinP.y +  Diameter.y , MinP.z +  Diameter.z ,
-    MinP.x , MinP.y               , MinP.z +  Diameter.z ,
-  };
-
-  memcpy(Result, Temp, sizeof(Temp));
-
-  return;
-}
-
-r32 LeftFaceNormalData[] =
-{
-   -1, 0, 0,
-   -1, 0, 0,
-   -1, 0, 0,
-   -1, 0, 0,
-   -1, 0, 0,
-   -1, 0, 0
-};
-
-inline void
-BottomFaceVertexData( v3 MinP, v3 Diameter, r32 *Result)
-{
-  r32 Temp[] = {
-    MinP.x + Diameter.x , MinP.y , MinP.z +  Diameter.z ,
-    MinP.x              , MinP.y , MinP.z               ,
-    MinP.x + Diameter.x , MinP.y , MinP.z               ,
-    MinP.x              , MinP.y , MinP.z               ,
-    MinP.x + Diameter .x, MinP.y , MinP.z +  Diameter.z ,
-    MinP.x              , MinP.y , MinP.z +  Diameter.z ,
-  };
-
-  memcpy(Result, Temp, sizeof(Temp));
-
-  return;
-}
-
-r32 BottomFaceNormalData[] =
-{
-   0,-1, 0,
-   0,-1, 0,
-   0,-1, 0,
-   0,-1, 0,
-   0,-1, 0,
-   0,-1, 0
-};
-
-inline void
-TopFaceVertexData( v3 MinP, v3 Diameter, r32 *Result)
-{
-  r32 Temp[] = {
-    MinP.x + Diameter.x , MinP.y + Diameter.y , MinP.z + Diameter.z ,
-    MinP.x              , MinP.y + Diameter.y , MinP.z              ,
-    MinP.x + Diameter.x , MinP.y + Diameter.y , MinP.z              ,
-    MinP.x              , MinP.y + Diameter.y , MinP.z              ,
-    MinP.x + Diameter.x , MinP.y + Diameter.y , MinP.z + Diameter.z ,
-    MinP.x              , MinP.y + Diameter.y , MinP.z + Diameter.z ,
-  };
-
-  memcpy(Result, Temp, sizeof(Temp));
-
-  return;
-}
-
-r32 TopFaceNormalData[] =
-{
-  0, 1, 0,
-  0, 1, 0,
-  0, 1, 0,
-  0, 1, 0,
-  0, 1, 0,
-  0, 1, 0
-};
-
-inline void
-FrontFaceVertexData( v3 MinP, v3 Diameter, r32 *Result)
-{
-  r32 Temp[] = {
-    MinP.x +  Diameter.x , MinP.y +  Diameter.y , MinP.z + Diameter.z ,
-    MinP.x               , MinP.y               , MinP.z + Diameter.z ,
-    MinP.x +  Diameter.x , MinP.y               , MinP.z + Diameter.z ,
-    MinP.x               , MinP.y               , MinP.z + Diameter.z ,
-    MinP.x +  Diameter.x , MinP.y +  Diameter.y , MinP.z + Diameter.z ,
-    MinP.x               , MinP.y +  Diameter.y , MinP.z + Diameter.z ,
-  };
-
-  memcpy(Result, Temp, sizeof(Temp));
-
-  return;
-}
-
-r32 FrontFaceNormalData[] =
-{
-  0, 0, 1,
-  0, 0, 1,
-  0, 0, 1,
-
-  0, 0, 1,
-  0, 0, 1,
-  0, 0, 1
-};
-
-inline void
-BackFaceVertexData( v3 MinP, v3 Diameter, r32 *Result)
-{
-  r32 Temp[] = {
-    MinP.x + Diameter.x , MinP.y + Diameter.y , MinP.z ,
-    MinP.x              , MinP.y              , MinP.z ,
-    MinP.x + Diameter.x , MinP.y              , MinP.z ,
-    MinP.x              , MinP.y              , MinP.z ,
-    MinP.x + Diameter.x , MinP.y + Diameter.y , MinP.z ,
-    MinP.x              , MinP.y + Diameter.y , MinP.z ,
-  };
-
-  memcpy(Result, Temp, sizeof(Temp));
-
-  return;
-}
-
-r32 BackFaceNormalData[] =
-{
-  0, 0, -1,
-  0, 0, -1,
-  0, 0, -1,
-
-  0, 0, -1,
-  0, 0, -1,
-  0, 0, -1,
-};
 
 
 
@@ -378,7 +217,6 @@ GetV3Uniform(memory_arena *Mem, shader *Shader, v3 *Vector3, const char *Name)
   Uniform->ID = GetShaderUniform(Shader, Name);
   return Uniform;
 }
-
 
 void
 InitSsaoKernel(v3 *Kernel, s32 Count, random_series *Entropy)
@@ -775,22 +613,20 @@ DrawGBufferToFullscreenQuad( platform *Plat, g_buffer_render_group *RG, shadow_r
   return;
 }
 
-/* void */
-/* DEBUG_CopyTextureToMemory(texture *Texture) */
-/* { */
-/*   glBindTexture(GL_TEXTURE_2D, Texture->ID); */
-/*   glPixelStorei(GL_PACK_ALIGNMENT, 1); */
-
-/*   u8 *raw_img = (u8*)calloc(sizeof(u8), Texture->Dim.x * Texture->Dim.y * 4); */
-
-/*   glGetTexImage(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, raw_img); */
-/*   //glGetTexImage(GL_TEXTURE_2D, 0, GL_BGRA, GL_UNSIGNED_BYTE, raw_img); */
-
-/*   AssertNoGlErrors; */
-
-/*   free(raw_img); */
-/*   return; */
-/* } */
+#if 0
+void
+DEBUG_CopyTextureToMemory(texture *Texture)
+{
+  glBindTexture(GL_TEXTURE_2D, Texture->ID);
+  glPixelStorei(GL_PACK_ALIGNMENT, 1);
+  u8 *raw_img = (u8*)calloc(sizeof(u8), Texture->Dim.x * Texture->Dim.y * 4);
+  glGetTexImage(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, raw_img);
+  //glGetTexImage(GL_TEXTURE_2D, 0, GL_BGRA, GL_UNSIGNED_BYTE, raw_img);
+  AssertNoGlErrors;
+  free(raw_img);
+  return;
+}
+#endif
 
 void
 RenderShadowMap(mesh_buffer_target *Mesh, shadow_render_group *SG, g_buffer_render_group *RG, camera *Camera)
@@ -883,7 +719,6 @@ RenderWorldToGBuffer(mesh_buffer_target *Mesh, g_buffer_render_group *RG)
   return;
 }
 
-
 inline void
 RenderGBuffer(
     mesh_buffer_target *Mesh, g_buffer_render_group *RG,
@@ -902,42 +737,6 @@ RenderGBuffer(
 }
 
 inline void
-BufferVerts(
-    mesh_buffer_target *target,
-    g_buffer_render_group *gBuffer,
-    shadow_render_group *SG,
-    camera *Camera,
-
-    s32 NumVerts,
-
-    float* VertsPositions,
-    float* Normals,
-    const float* VertColors,
-
-    s32 sizeofData
-  )
-{
-
-  if ( target->filled + sizeofData > target->bytesAllocd )
-  {
-    Warn("Out of memory, flushing to gBuffer");
-    RenderGBuffer(target, gBuffer, SG, Camera);
-
-    return;
-  }
-
-  target->filled += sizeofData;
-
-  memcpy( &target->VertexData[target->VertexCount*3],  VertsPositions,  sizeofData );
-  memcpy( &target->NormalData[target->VertexCount*3],  Normals,         sizeofData );
-  memcpy( &target->ColorData[target->VertexCount*3],   VertColors,      sizeofData );
-
-  target->VertexCount += NumVerts;
-
-  return;
-}
-
-inline void
 DEBUG_DrawPointMarker( mesh_buffer_target *Mesh,
     g_buffer_render_group *gBuffer,
     shadow_render_group *SG,
@@ -950,42 +749,46 @@ DEBUG_DrawPointMarker( mesh_buffer_target *Mesh,
   r32 VertexData[BYTES_PER_FACE];
 
   RightFaceVertexData( RenderP, Diameter, VertexData);
-  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, RightFaceNormalData, FaceColors, sizeof(VertexData));
+  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, RightFaceNormalData, FaceColors);
 
   LeftFaceVertexData( RenderP, Diameter, VertexData);
-  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, LeftFaceNormalData, FaceColors, sizeof(VertexData));
+  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, LeftFaceNormalData, FaceColors);
 
   BottomFaceVertexData( RenderP, Diameter, VertexData);
-  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, BottomFaceNormalData, FaceColors, sizeof(VertexData));
+  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, BottomFaceNormalData, FaceColors);
 
   TopFaceVertexData( RenderP, Diameter, VertexData);
-  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, TopFaceNormalData, FaceColors, sizeof(VertexData));
+  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, TopFaceNormalData, FaceColors);
 
   FrontFaceVertexData( RenderP, Diameter, VertexData);
-  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, FrontFaceNormalData, FaceColors, sizeof(VertexData));
+  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, FrontFaceNormalData, FaceColors);
 
   BackFaceVertexData( RenderP, Diameter, VertexData);
-  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, BackFaceNormalData, FaceColors, sizeof(VertexData));
+  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, BackFaceNormalData, FaceColors);
 
   return;
 }
 
-inline bool IsRightChunkBoundary( chunk_dimension ChunkDim, int idx )
+inline bool
+IsRightChunkBoundary( chunk_dimension ChunkDim, int idx )
 {
   return (idx+1) % (int)ChunkDim.x == 0;
 }
 
-inline bool IsLeftChunkBoundary( chunk_dimension ChunkDim, int idx )
+inline bool
+IsLeftChunkBoundary( chunk_dimension ChunkDim, int idx )
 {
   return (idx) % (int)ChunkDim.x == 0;
 }
 
-inline bool IsTopChunkBoundary( chunk_dimension ChunkDim, int idx )
+inline bool
+IsTopChunkBoundary( chunk_dimension ChunkDim, int idx )
 {
   return ((idx/(int)ChunkDim.x)+1) % (int)ChunkDim.y == 0;
 }
 
-inline bool IsBottomChunkBoundary( chunk_dimension ChunkDim, int idx )
+inline bool
+IsBottomChunkBoundary( chunk_dimension ChunkDim, int idx )
 {
   return (idx/(int)ChunkDim.x) % (int)ChunkDim.y == 0;
 }
@@ -1070,8 +873,7 @@ DEBUG_DrawLine( mesh_buffer_target *Mesh,
         6,
         localVertexData,
         localNormalData,
-        FaceColors,
-        sizeof(localVertexData));
+        FaceColors);
   }
 
   P1.x = P1.x + (Thickness/2.0f);
@@ -1097,8 +899,7 @@ DEBUG_DrawLine( mesh_buffer_target *Mesh,
         6,
         localVertexData,
         localNormalData,
-        FaceColors,
-        sizeof(localVertexData));
+        FaceColors);
   }
 
 #if 0
@@ -1324,6 +1125,7 @@ Clamp01( voxel_position V )
   return Result;
 }
 
+#if 0
 void
 BuildExteriorBoundaryVoxels( world_chunk *chunk, chunk_dimension Dim, world_chunk *Neighbor, voxel_position NeighborVector )
 {
@@ -1384,6 +1186,7 @@ BuildExteriorBoundaryVoxels( world_chunk *chunk, chunk_dimension Dim, world_chun
 
   return;
 }
+#endif
 
 inline bool
 IsInfrustum( chunk_dimension WorldChunkDim, camera *Camera, world_chunk *Chunk )
@@ -1417,22 +1220,29 @@ ClearFramebuffers(g_buffer_render_group *RG, shadow_render_group *SG)
 
 void
 BufferChunkMesh(
-    mesh_buffer_target *Mesh,
+    mesh_buffer_target *Dest,
     chunk_dimension WorldChunkDim,
-    chunk_data *chunk,
+    chunk_data *Chunk,
     world_position WorldP,
     g_buffer_render_group *RG,
     shadow_render_group *SG,
     camera *Camera,
     r32 Scale,
-    v3 Offset = V3(0,0,0)
+    v3 Offset
   )
 {
-  r32 FaceColors[FACE_COLOR_SIZE];
 
+
+#if 1
   v3 ModelBasisP =
     GetRenderP( WorldChunkDim, Canonical_Position(Offset, WorldP), Camera);
 
+  BufferVerts(&Chunk->Mesh, Dest, ModelBasisP, RG, SG, Camera, Scale);
+
+#else
+  r32 FaceColors[FACE_COLOR_SIZE];
+  v3 ModelBasisP =
+    GetRenderP( WorldChunkDim, Canonical_Position(Offset, WorldP), Camera);
   for (int VoxIndex = 0;
        VoxIndex < chunk->BoundaryVoxelCount;
        ++VoxIndex )
@@ -1485,11 +1295,13 @@ BufferChunkMesh(
     }
 
   }
+#endif
 
 
   return;
 }
 
+#if 0
 line
 FindIntersectingLine(
   world_chunk *Chunk,
@@ -1530,7 +1342,9 @@ FindIntersectingLine(
 
   return Result;
 }
+#endif
 
+#if 0
 inline void
 SetupAndBuildExteriorBoundary(
   world *World,
@@ -1550,7 +1364,9 @@ SetupAndBuildExteriorBoundary(
   }
 
 }
+#endif
 
+#if 0
 aabb
 FindBoundaryVoxelsAABB(chunk_data *Chunk, chunk_dimension Dim)
 {
@@ -1585,6 +1401,7 @@ FindBoundaryVoxelsAABB(chunk_data *Chunk, chunk_dimension Dim)
 
   return aabb( Center, Radius );
 }
+#endif
 
 inline v3
 GetSign(v3 P)
@@ -1656,8 +1473,7 @@ BufferTriangle(mesh_buffer_target *Mesh, g_buffer_render_group *gBuffer, shadow_
     3,
     VertBuffer,
     (float*)&NormalBuffer[0],
-    FaceColors,
-    sizeof(VertBuffer));
+    FaceColors);
 
 }
 
@@ -2400,22 +2216,22 @@ DrawParticle(
   v3 MinP = GetRenderP(WorldChunkDim, (*P)+Particle->Offset, Camera);
 
   RightFaceVertexData( MinP, V3(Diameter), VertexData);
-  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, RightFaceNormalData, FaceColors, sizeof(VertexData));
+  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, RightFaceNormalData, FaceColors);
 
   LeftFaceVertexData( MinP, V3(Diameter), VertexData);
-  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, LeftFaceNormalData, FaceColors, sizeof(VertexData));
+  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, LeftFaceNormalData, FaceColors);
 
   BottomFaceVertexData( MinP, V3(Diameter), VertexData);
-  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, BottomFaceNormalData, FaceColors, sizeof(VertexData));
+  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, BottomFaceNormalData, FaceColors);
 
   TopFaceVertexData( MinP, V3(Diameter), VertexData);
-  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, TopFaceNormalData, FaceColors, sizeof(VertexData));
+  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, TopFaceNormalData, FaceColors);
 
   FrontFaceVertexData( MinP, V3(Diameter), VertexData);
-  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, FrontFaceNormalData, FaceColors, sizeof(VertexData));
+  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, FrontFaceNormalData, FaceColors);
 
   BackFaceVertexData( MinP, V3(Diameter), VertexData);
-  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, BackFaceNormalData, FaceColors, sizeof(VertexData));
+  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, BackFaceNormalData, FaceColors);
 
   return;
 }
@@ -2451,7 +2267,6 @@ BufferEntity(
 
     if (IsSet(Model, Chunk_Initialized))
     {
-
       BufferChunkMesh(Mesh, WorldChunkDim, Model, Entity->P.WorldP, RG, SG, Camera, Entity->Scale, Entity->P.Offset);
     }
   }

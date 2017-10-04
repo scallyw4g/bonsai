@@ -20,6 +20,7 @@ FillChunk(chunk_data *chunk, chunk_dimension Dim, u32 ColorIndex = BLACK)
 
   for (int i = 0; i < Vol; ++i)
   {
+    // TODO(Jesse): Pretty sure we don't have to set the faces anymore??
     SetFlag(&chunk->Voxels[i], (voxel_flag)(Voxel_Filled     |
                                             Voxel_TopFace    |
                                             Voxel_BottomFace |
@@ -30,9 +31,6 @@ FillChunk(chunk_data *chunk, chunk_dimension Dim, u32 ColorIndex = BLACK)
 
 
     chunk->Voxels[i].Color = ColorIndex;
-
-    chunk->BoundaryVoxels[i] = boundary_voxel(&chunk->Voxels[i], GetPosition(i, Dim));
-    chunk->BoundaryVoxelCount = i;
   }
 
   SetFlag(chunk, Chunk_Initialized);
@@ -893,17 +891,8 @@ AllocateAndInitWorld( game_state *GameState, world_position Center,
   World->Gravity = WORLD_GRAVITY;
   World->Center = Center;
 
-  {
-    s32 BufferVertices = 100*(VOLUME_VISIBLE_REGION * VERT_PER_VOXEL);
-
-    World->Mesh.VertexData = PUSH_STRUCT_CHECKED(GLfloat, Plat->Memory, BufferVertices );
-    World->Mesh.ColorData = PUSH_STRUCT_CHECKED(GLfloat,  Plat->Memory, BufferVertices );
-    World->Mesh.NormalData = PUSH_STRUCT_CHECKED(GLfloat, Plat->Memory, BufferVertices );
-
-    World->Mesh.bytesAllocd = BufferVertices*sizeof(r32);
-    Assert(World->Mesh.filled == 0);
-    Assert(World->Mesh.VertexCount == 0);
-  }
+  s32 BufferVertices = 100*(VOLUME_VISIBLE_REGION * VERT_PER_VOXEL);
+  AllocateMesh(&World->Mesh, BufferVertices, Plat->Memory);
 
   world_position Min = Center - Radius;
   world_position Max = Center + Radius + 1;
@@ -924,82 +913,6 @@ AllocateAndInitWorld( game_state *GameState, world_position Center,
   return World;
 }
 
-// FIXME(Jesse): This should probably be relocated to a mesh.cpp that contains stuff
-// which requires the world
-void
-BuildWorldChunkMesh(world *World, world_chunk *WorldChunk, chunk_dimension WorldChunkDim)
-{
-  chunk_data *chunk = WorldChunk->Data;
-  chunk->BoundaryVoxelCount = 0;
-
-  UnSetFlag( chunk, Chunk_BufferMesh );
-
-  for ( int z = 0; z < WorldChunkDim.z ; ++z )
-  {
-    for ( int y = 0; y < WorldChunkDim.y ; ++y )
-    {
-      for ( int x = 0; x < WorldChunkDim.x ; ++x )
-      {
-        canonical_position CurrentP  = Canonical_Position(WorldChunkDim, V3(x,y,z), WorldChunk->WorldP);
-
-        if ( NotFilledInWorld( World, WorldChunk, CurrentP ) )
-          continue;
-
-        canonical_position rightVoxel = Canonicalize(WorldChunkDim, CurrentP + V3(1, 0, 0));
-        canonical_position leftVoxel  = Canonicalize(WorldChunkDim, CurrentP - V3(1, 0, 0));
-
-        canonical_position topVoxel   = Canonicalize(WorldChunkDim, CurrentP + V3(0, 1, 0));
-        canonical_position botVoxel   = Canonicalize(WorldChunkDim, CurrentP - V3(0, 1, 0));
-
-        canonical_position frontVoxel = Canonicalize(WorldChunkDim, CurrentP + V3(0, 0, 1));
-        canonical_position backVoxel  = Canonicalize(WorldChunkDim, CurrentP - V3(0, 0, 1));
-
-        voxel *Voxel = &chunk->Voxels[GetIndex(CurrentP.Offset, chunk, WorldChunkDim)];
-
-        bool DidPushVoxel = false;
-
-        if ( NotFilledInWorld( World, WorldChunk, rightVoxel ) )
-        {
-          SetFlag(Voxel, Voxel_RightFace);
-          DidPushVoxel = true;
-        }
-        if ( NotFilledInWorld( World, WorldChunk, leftVoxel ) )
-        {
-          SetFlag(Voxel, Voxel_LeftFace);
-          DidPushVoxel = true;
-        }
-        if ( NotFilledInWorld( World, WorldChunk, botVoxel   ) )
-        {
-          SetFlag(Voxel, Voxel_BottomFace);
-          DidPushVoxel = true;
-        }
-        if ( NotFilledInWorld( World, WorldChunk, topVoxel   ) )
-        {
-          SetFlag(Voxel, Voxel_TopFace);
-          DidPushVoxel = true;
-        }
-        if ( NotFilledInWorld( World, WorldChunk, frontVoxel ) )
-        {
-          SetFlag(Voxel, Voxel_FrontFace);
-          DidPushVoxel = true;
-        }
-        if ( NotFilledInWorld( World, WorldChunk, backVoxel  ) )
-        {
-          SetFlag(Voxel, Voxel_BackFace);
-          DidPushVoxel = true;
-        }
-
-        if (DidPushVoxel)
-        {
-          boundary_voxel BoundaryVoxel(Voxel, Voxel_Position(x,y,z));
-          PushBoundaryVoxel(chunk, &BoundaryVoxel, WorldChunkDim);
-        }
-
-      }
-    }
-  }
-}
-
 void
 BufferWorldChunk(
     world *World,
@@ -1012,9 +925,6 @@ BufferWorldChunk(
   if ( IsSet( Chunk, Chunk_BufferMesh ) )
     BuildWorldChunkMesh(World, Chunk, World->ChunkDim);
 
-  if (Chunk->Data->BoundaryVoxelCount == 0)
-    return;
-
   chunk_data *ChunkData = Chunk->Data;
 
   if (NotSet(ChunkData, Chunk_Initialized))
@@ -1023,7 +933,7 @@ BufferWorldChunk(
 
 #if 1
     r32 Scale = 1.0f;
-    BufferChunkMesh( &World->Mesh, World->ChunkDim, ChunkData, Chunk->WorldP, RG, SG, Camera, Scale);
+    BufferChunkMesh( &World->Mesh, World->ChunkDim, ChunkData, Chunk->WorldP, RG, SG, Camera, Scale, V3(0));
 
 #else
   if (CanBuildWorldChunkBoundary(world, Chunk))

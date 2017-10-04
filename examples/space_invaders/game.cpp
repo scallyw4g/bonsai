@@ -201,9 +201,6 @@ SpawnEnemies(game_state *GameState, r32 dt)
 
   r32 SpawnRoll = RandomUnilateral(&GameState->Entropy);
 
-  Print(EnemySpawnRate);
-  Print(SpawnRoll);
-
   b32 Spawn = ( SpawnRoll <= EnemySpawnRate);
   if (!Spawn)
     return;

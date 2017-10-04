@@ -1,3 +1,5 @@
+#ifndef BONSAI_COLORS_H
+#define BONSAI_COLORS_H
 
 /* Note that the default MagicaVoxel format is AA GG BB RR, so something will
  * have to be done if we continue to load this format.  I manually rearranged
@@ -294,3 +296,5 @@ GetColorData( int colorIndex, float *Colors)
   return;
 }
 
+
+#endif

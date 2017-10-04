@@ -168,13 +168,8 @@ struct noise_3d
 struct chunk_data
 {
   chunk_flag Flags;
-
-  s32 BoundaryVoxelCount;
-
   mesh_buffer_target Mesh;
-
   voxel *Voxels;
-  boundary_voxel *BoundaryVoxels;
 };
 
 struct collision_event
@@ -764,23 +759,28 @@ GetPosition(s32 Index, chunk_dimension Dim)
 }
 
 void
-ZeroChunk( chunk_data *chunk, s32 Volume )
+ZeroMesh( mesh_buffer_target *Mesh )
 {
-  chunk->BoundaryVoxelCount = 0;
-  chunk->Flags = Chunk_Uninitialized;
-  SetFlag( chunk, Chunk_BufferMesh );
+  Mesh->filled = 0;
+  Mesh->VertexCount = 0;
+  return;
+}
+
+void
+ZeroChunk( chunk_data *Chunk, s32 Volume )
+{
+  ZeroMesh(&Chunk->Mesh);
+
+  Chunk->Flags = Chunk_Uninitialized;
+  SetFlag( Chunk, Chunk_BufferMesh );
 
   for ( s32 VoxelIndex = 0;
         VoxelIndex < Volume;
         ++VoxelIndex)
   {
-    voxel *Voxel = &chunk->Voxels[VoxelIndex];
+    voxel *Voxel = &Chunk->Voxels[VoxelIndex];
     Voxel->Flags = Voxel_Uninitialzied;
     Voxel->Color = 0;
-
-    boundary_voxel *BoundaryVoxel = &chunk->BoundaryVoxels[VoxelIndex];
-    BoundaryVoxel->V = *Voxel;
-    BoundaryVoxel->Offset = Voxel_Position(0,0,0);
   }
 
   return;
@@ -865,13 +865,27 @@ GetIndex(v3 Offset, chunk_data *Chunk, chunk_dimension Dim)
   return Index;
 }
 
+void
+AllocateMesh(mesh_buffer_target *Mesh, u32 NumVerts, memory_arena *Memory)
+{
+  Mesh->VertexData = PUSH_STRUCT_CHECKED(GLfloat, Memory, NumVerts );
+  Mesh->ColorData = PUSH_STRUCT_CHECKED(GLfloat,  Memory, NumVerts );
+  Mesh->NormalData = PUSH_STRUCT_CHECKED(GLfloat, Memory, NumVerts );
+
+  Mesh->bytesAllocd = NumVerts*sizeof(r32);
+
+  Mesh->filled = 0;
+  Mesh->VertexCount = 0;
+}
+
 chunk_data*
 AllocateChunk(memory_arena *WorldStorage, chunk_dimension Dim)
 {
   chunk_data *Result = PUSH_STRUCT_CHECKED(chunk_data, WorldStorage, 1);;
+  Result->Voxels = PUSH_STRUCT_CHECKED(voxel, WorldStorage , Volume(Dim));
 
-  Result->Voxels          = PUSH_STRUCT_CHECKED(voxel, WorldStorage , Volume(Dim));
-  Result->BoundaryVoxels  = PUSH_STRUCT_CHECKED(boundary_voxel, WorldStorage , Volume(Dim));
+  // TODO(Jesse): Allocate this based on actual need?
+  AllocateMesh(&Result->Mesh, 100000, WorldStorage);
 
   ZeroChunk(Result, Volume(Dim));
 
@@ -1088,15 +1102,6 @@ GetAABB(entity *Entity, chunk_dimension WorldChunkDim)
 
   aabb Result(Center, Radius);
   return Result;
-}
-
-inline void
-PushBoundaryVoxel( chunk_data *chunk, boundary_voxel *Voxel, chunk_dimension Dim)
-{
-  Assert( chunk->BoundaryVoxelCount < Volume(Dim) );
-
-  chunk->BoundaryVoxels[chunk->BoundaryVoxelCount] = *Voxel;
-  chunk->BoundaryVoxelCount++;
 }
 
 inline b32
