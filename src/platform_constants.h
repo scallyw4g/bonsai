@@ -10,6 +10,8 @@
 #define True  1
 #define False 0
 
+#define _BONSAI_SLOW 1
+
 // Screen Resolution
 
 #define SCREEN_RATIO 2

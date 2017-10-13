@@ -1023,8 +1023,7 @@ DrawTitleScreen(game_state *GameState)
 
   s32 FontSize = TITLE_FONT_SIZE;
 
-  r32 AtY = 0;
-  PrintDebugText( gBuffer, "Press `Space` to Start", 0, AtY, FontSize);
+  PrintDebugText( gBuffer, "Press `Space` to Start", V2(0, 0), FontSize);
 }
 
 void

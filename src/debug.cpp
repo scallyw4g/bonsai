@@ -29,7 +29,7 @@ InitDebugState( debug_state *DebugState, platform *Plat)
 }
 
 rect2
-PrintDebugText( debug_text_render_group *RG, const char *Text, s32 x, s32 y, s32 FontSize)
+PrintDebugText( debug_text_render_group *RG, const char *Text, v2 XY, s32 FontSize)
 {
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
   /* glDepthFunc(GL_ALWAYS); */
@@ -41,16 +41,16 @@ PrintDebugText( debug_text_render_group *RG, const char *Text, s32 x, s32 y, s32
   v3 vertices[1024];
   v2 UVs[1024];
 
-  rect2 Result = { V2(x, y), V2(x,y) };
+  rect2 Result = { XY, XY };
 
   for ( s32 CharIndex = 0;
       CharIndex < TextLength;
       CharIndex++ )
   {
-    v3 vertex_up_left    = V3( (r32)(x+CharIndex*FontSize)         , (r32)(y+FontSize), 0.5f);
-    v3 vertex_up_right   = V3( (r32)(x+CharIndex*FontSize+FontSize), (r32)(y+FontSize), 0.5f);
-    v3 vertex_down_right = V3( (r32)(x+CharIndex*FontSize+FontSize), (r32)y           , 0.5f);
-    v3 vertex_down_left  = V3( (r32)(x+CharIndex*FontSize)         , (r32)y           , 0.5f);
+    v3 vertex_up_left    = V3( (r32)(XY.x+CharIndex*FontSize)         , (r32)(XY.y+FontSize), 0.5f);
+    v3 vertex_up_right   = V3( (r32)(XY.x+CharIndex*FontSize+FontSize), (r32)(XY.y+FontSize), 0.5f);
+    v3 vertex_down_right = V3( (r32)(XY.x+CharIndex*FontSize+FontSize), (r32)XY.y           , 0.5f);
+    v3 vertex_down_left  = V3( (r32)(XY.x+CharIndex*FontSize)         , (r32)XY.y           , 0.5f);
 
     Result.Max = vertex_up_right.xy;
 
@@ -115,6 +115,7 @@ PrintDebugText( debug_text_render_group *RG, const char *Text, s32 x, s32 y, s32
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   // Draw call
+  /* SetViewport( V2(SCR_HEIGHT, SCR_WIDTH) ); */
   glDrawArrays(GL_TRIANGLES, 0, BufferIndex );
 
   glDisable(GL_BLEND);
@@ -146,6 +147,13 @@ DebugFrameEnd(r32 dt)
 
   debug_state *DebugState = GetDebugState();
   debug_text_render_group *RG = DebugState->DebugRG;
+  s32 FontSize = DEBUG_FONT_SIZE;
+
+  char dtBuffer[32] = {};
+  sprintf(dtBuffer, "%f", dt);
+  PrintDebugText( RG, dtBuffer, V2(10, (SCR_HEIGHT-FontSize-10)/2), FontSize);
+
+#if _BONSAI_SLOW
 
   u64 CurrentFrameCycleCount = DebugState->GetCycleCount();
   u64 CycleDelta = CurrentFrameCycleCount - LastFrameCycleCount;
@@ -157,7 +165,6 @@ DebugFrameEnd(r32 dt)
   MaxCycleCount = Max(CycleDelta, MaxCycleCount);
   MinCycleCount = Min(CycleDelta, MinCycleCount);
 
-  s32 FontSize = DEBUG_FONT_SIZE;
   s32 LinePadding = 3;
 
   DEBUG_GLOBAL r32 MaxX = 0;
@@ -213,7 +220,7 @@ DebugFrameEnd(r32 dt)
     {
       char CycleCountBuffer[32] = {};
       sprintf(CycleCountBuffer, "%" PRIu64, MinCycleCount);
-      PrintDebugText( RG, CycleCountBuffer, 0, AtY, FontSize).Max.x;
+      PrintDebugText( RG, CycleCountBuffer, V2(0, AtY), FontSize).Max.x;
       AtY += (FontSize + LinePadding);
       AtY += (FontSize + LinePadding);
     }
@@ -221,7 +228,7 @@ DebugFrameEnd(r32 dt)
     {
       char CycleCountBuffer[32] = {};
       sprintf(CycleCountBuffer, "%" PRIu64, CycleDelta);
-      PrintDebugText( RG, CycleCountBuffer, 0, AtY, FontSize).Max.x;
+      PrintDebugText( RG, CycleCountBuffer, V2(0, AtY), FontSize).Max.x;
       AtY += (FontSize + LinePadding);
       AtY += (FontSize + LinePadding);
     }
@@ -229,7 +236,7 @@ DebugFrameEnd(r32 dt)
     {
       char CycleCountBuffer[32] = {};
       sprintf(CycleCountBuffer, "%" PRIu64, MaxCycleCount);
-      PrintDebugText( RG, CycleCountBuffer, 0, AtY, FontSize).Max.x;
+      PrintDebugText( RG, CycleCountBuffer, V2(0, AtY), FontSize).Max.x;
       AtY += (FontSize + LinePadding);
       AtY += (FontSize + LinePadding);
     }
@@ -252,15 +259,15 @@ DebugFrameEnd(r32 dt)
 
         r32 FramePerc = CalculateFramePercentage(Entry, CycleDelta);
         sprintf(PercentageBuffer, "%.0f", FramePerc);
-        PrintDebugText( RG, PercentageBuffer, AtX, AtY, FontSize);
+        PrintDebugText( RG, PercentageBuffer, V2(AtX, AtY), FontSize);
         AtX += (FontSize*4);
 
         sprintf(PercentageBuffer, "%.0f", Entry->MaxPerc);
-        PrintDebugText( RG, PercentageBuffer, AtX, AtY, FontSize);
+        PrintDebugText( RG, PercentageBuffer, V2(AtX, AtY), FontSize);
         AtX += (FontSize*4);
 
         sprintf(PercentageBuffer, "%.0f", Entry->MinPerc);
-        PrintDebugText( RG, PercentageBuffer, AtX, AtY, FontSize);
+        PrintDebugText( RG, PercentageBuffer, V2(AtX, AtY), FontSize);
         AtX += (FontSize*4);
 
         /* // Print Hit Count */
@@ -269,7 +276,7 @@ DebugFrameEnd(r32 dt)
         /* rect2 HitCountRect = PrintDebugText( RG, CountBuffer, AtX, AtY, FontSize); */
         /* HitCountX = max((s32)HitCountRect.Max.x, HitCountX); */
 
-        PrintDebugText( RG, Entry->FuncName, AtX, AtY, FontSize);
+        PrintDebugText( RG, Entry->FuncName, V2(AtX, AtY), FontSize);
 
         AtY += (FontSize + LinePadding);
       }
@@ -291,10 +298,9 @@ DebugFrameEnd(r32 dt)
     Entry->HitCount = 0;
     Entry->CycleCount = 0;
   }
+#endif
 
-  char dtBuffer[32] = {};
-  sprintf(dtBuffer, "%f", dt);
-  PrintDebugText( RG, dtBuffer, 10, AtY, 15);
+  return;
 
 }
 
