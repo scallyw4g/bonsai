@@ -5,7 +5,7 @@ project(Bonsai)
 set (Bonsai_VERSION_MAJOR 0)
 set (Bonsai_VERSION_MINOR 1)
 
-set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Release)
 
 set( ROOT ${CMAKE_SOURCE_DIR}/.. )
 
@@ -44,6 +44,17 @@ target_include_directories(example_ssao_test PRIVATE ${SSAO_TEST_PATH})
 
 
 add_definitions( -DGL_GLEXT_PROTOTYPES=1 )
+
+
+
+
+add_custom_target(run /usr/bin/optirun ${BIN}/Bonsai
+                  DEPENDS Bonsai
+                  COMMENT "Running Bonsai")
+
+
+
+
 
 
 #
