@@ -53,10 +53,21 @@ struct debug_recording_state
 
 DEBUG_GLOBAL debug_state GlobalDebugState;
 
+#if DEBUG
+
 #define TIMED_FUNCTION() debug_timed_function FunctionTimer(__COUNTER__, __FUNCTION_NAME__)
 #define TIMED_BLOCK(BlockName) { debug_timed_function BlockTimer(__COUNTER__, BlockName)
 #define END_BLOCK(BlockName) }
 #define DEBUG_FRAME_END(...) DebugFrameEnd(__VA_ARGS__)
+
+#else
+
+#define TIMED_FUNCTION(...)
+#define TIMED_BLOCK(...)
+#define END_BLOCK(...)
+#define DEBUG_FRAME_END(...)
+
+#endif
 
 
 inline debug_state*
