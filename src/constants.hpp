@@ -22,7 +22,7 @@
 #define WORLD_HASH_SIZE 1024
 #define FREELIST_SIZE 1024
 
-#define NOISE_FREQUENCY 400
+#define NOISE_FREQUENCY 25L
 
 // This must match the corresponding define in the SSAO shader
 #define SSAO_KERNEL_SIZE 16

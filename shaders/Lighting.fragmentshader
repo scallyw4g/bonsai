@@ -5,7 +5,7 @@ out vec4 color;
 uniform sampler2D gColor;
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
-uniform sampler2D shadowMap;
+uniform sampler2DShadow shadowMap;
 uniform sampler2D Ssao;
 
 
@@ -81,14 +81,20 @@ void main()
   /*
    *  Shadow Mapping
    */
+  vec3 visibility = vec3(1.0f);
+
   vec4 FragPShadowScreenSpace = ShadowMVP * vec4(FragPosition, 1.0f);
 
   float FragPShadowDepth = FragPShadowScreenSpace.z;
 
-  float acneBias = 0.01f; // Fix acne
-  float ShadowDepth = texture(shadowMap, FragPShadowScreenSpace.xy).x + acneBias;
+  float acneBias = 0.0001f; // Fix acne
+  float ShadowDepth = texture(shadowMap, vec3(FragPShadowScreenSpace.xy, FragPShadowScreenSpace.z/FragPShadowScreenSpace.w)) + acneBias;
+  color = vec4(FragPShadowScreenSpace.xyz, 1);
+  color.xyz = vec3(FragPShadowDepth);
 
-  vec3 visibility = vec3(1.0f);
+  return;
+
+
   if ( FragPShadowDepth > ShadowDepth )
   {
     visibility = vec3(0.1f);
@@ -110,7 +116,8 @@ void main()
    */
   vec3 hdrColor =
     Ambient
-    + Diffuse * GlobalLightCosTheta * GlobalLightIntensity * vec3(visibility) * vec3(BlurredAO)
+    + Diffuse * GlobalLightCosTheta * GlobalLightIntensity * visibility
+    * vec3(BlurredAO)
   ;
 
   // Reinhard tone mapping

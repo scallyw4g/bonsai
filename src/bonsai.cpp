@@ -140,28 +140,24 @@ InitChunkPerlin( game_state *GameState, world_chunk *WorldChunk, v3 WorldChunkDi
 
   chunk_dimension Dim = GameState->World->ChunkDim;
 
-  for ( int z = 0; z < Dim.z; ++ z)
+  for ( s32 z = 0; z < Dim.z; ++ z)
   {
-    for ( int y = 0; y < Dim.y; ++ y)
+    for ( s32 y = 0; y < Dim.y; ++ y)
     {
-      for ( int x = 0; x < Dim.x; ++ x)
+      for ( s32 x = 0; x < Dim.x; ++ x)
       {
         s32 i = GetIndex(Voxel_Position(x,y,z), chunk, Dim);
         chunk->Voxels[i].Flags = Voxel_Uninitialzied;
-        chunk->Voxels[i].Color = 0;
 
         Assert( NotSet(&chunk->Voxels[i], Voxel_Filled) );
 
-        v3 NoiseInputs =
-          ( ( V3(x,y,z) + (WorldChunkDim*(WorldChunk->WorldP))) ) / NOISE_FREQUENCY;
+        double InX = ((double)x + (double)WorldChunkDim.x * (double)WorldChunk->WorldP.x)/NOISE_FREQUENCY;
+        double InY = ((double)y + (double)WorldChunkDim.y * (double)WorldChunk->WorldP.y)/NOISE_FREQUENCY;
+        double InZ = ((double)z + (double)WorldChunkDim.z * (double)WorldChunk->WorldP.z)/NOISE_FREQUENCY;
 
-        double InX = (double)NoiseInputs.x;
-        double InY = (double)NoiseInputs.y;
-        double InZ = (double)NoiseInputs.z;
+        r32 noiseValue = (r32)GlobalNoise.noise(InX, InY, InZ);
 
-        float noiseValue = (float)GlobalNoise.noise(InX, InY, InZ);
-
-        int Noise01 = Floori(noiseValue + 0.5f);
+        s32 Noise01 = Floori(noiseValue + 0.5f);
 
         Assert(Noise01 == 0 || Noise01 == 1);
 
@@ -175,6 +171,7 @@ InitChunkPerlin( game_state *GameState, world_chunk *WorldChunk, v3 WorldChunkDi
         {
           Assert( IsSet(&chunk->Voxels[i], Voxel_Filled) );
           WorldChunk->Filled ++;
+          chunk->Voxels[i].Color = RED;
         }
       }
     }
@@ -792,11 +789,10 @@ GetMouseDelta(platform *Plat)
 void
 UpdateCameraP(platform *Plat, world *World, canonical_position NewTarget, camera *Camera)
 {
+  float FocalLength = CAMERA_FOCAL_LENGTH;
   chunk_dimension WorldChunkDim = World->ChunkDim;
 
   v3 TargetDelta = GetRenderP(WorldChunkDim, NewTarget, Camera) - GetRenderP(WorldChunkDim, Camera->Target, Camera);
-
-  float FocalLength = CAMERA_FOCAL_LENGTH;
 
   Camera->Right = Normalize(Cross(Camera->Front, WORLD_Y));
   Camera->Up = Normalize(Cross(Camera->Front, Camera->Right));

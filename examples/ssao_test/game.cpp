@@ -107,11 +107,11 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   /* DrawTexturedQuad(&gBuffer->DebugPositionTextureShader); */
   /* DrawTexturedQuad(&gBuffer->DebugNormalTextureShader); */
   /* DrawTexturedQuad(&gBuffer->DebugColorTextureShader); */
-  DrawTexturedQuad(&AoGroup->DebugSsaoShader);
-  SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight));
-#endif
+  /* DrawTexturedQuad(&AoGroup->DebugSsaoShader); */
+  /* SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight)); */
 
   AssertNoGlErrors;
+#endif
 
   END_BLOCK("Render");
 
@@ -126,6 +126,7 @@ InitializeVoxels( game_state *GameState, world_chunk *Chunk )
   if ( Chunk->WorldP.z == 0 )
   {
     chunk_dimension Dim = GameState->World->ChunkDim;
+    InitChunkPerlin(GameState, Chunk, V3(Dim));
 
     for ( int z = 0; z < Dim.z; ++ z)
     {
@@ -143,6 +144,7 @@ InitializeVoxels( game_state *GameState, world_chunk *Chunk )
         }
       }
     }
+
   }
 
   UnSetFlag(Chunk, Chunk_Queued);
@@ -265,13 +267,11 @@ GameInit( platform *Plat, memory_arena *GameMemory)
   AoGroup->SsaoKernelUniform = GetShaderUniform(&AoGroup->Shader, "SsaoKernel");
 
   { // To keep these here or not to keep these here..
-    gBuffer->DebugColorTextureShader = MakeSimpleTextureShader(gBuffer->Textures->Color, GraphicsMemory);
-    gBuffer->DebugNormalTextureShader = MakeSimpleTextureShader(gBuffer->Textures->Normal, GraphicsMemory);
-    gBuffer->DebugPositionTextureShader = MakeSimpleTextureShader(gBuffer->Textures->Position, GraphicsMemory);
-    AoGroup->DebugSsaoShader = MakeSimpleTextureShader(AoGroup->Texture, GraphicsMemory);
+    gBuffer->DebugColorTextureShader    = MakeSimpleTextureShader(gBuffer->Textures->Color    , GraphicsMemory);
+    gBuffer->DebugNormalTextureShader   = MakeSimpleTextureShader(gBuffer->Textures->Normal   , GraphicsMemory);
+    gBuffer->DebugPositionTextureShader = MakeSimpleTextureShader(gBuffer->Textures->Position , GraphicsMemory);
+    AoGroup->DebugSsaoShader            = MakeSimpleTextureShader(AoGroup->Texture            , GraphicsMemory);
   }
-
-
 
   GameState->Turb = PUSH_STRUCT_CHECKED(noise_3d, GameState->Memory, 1);
   AllocateAndInitNoise3d(GameState, GameState->Turb, Chunk_Dimension(8,8,8) );

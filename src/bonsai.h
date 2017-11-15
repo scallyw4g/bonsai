@@ -880,7 +880,7 @@ AllocateChunk(memory_arena *WorldStorage, chunk_dimension Dim)
   Result->Voxels = PUSH_STRUCT_CHECKED(voxel, WorldStorage , Volume(Dim));
 
   // TODO(Jesse): Allocate this based on actual need?
-  AllocateMesh(&Result->Mesh, 4320, WorldStorage);
+  AllocateMesh(&Result->Mesh, 15000, WorldStorage);
 
   ZeroChunk(Result, Volume(Dim));
 
