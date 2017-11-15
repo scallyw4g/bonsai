@@ -1200,7 +1200,7 @@ inline void
 ClearFramebuffers(g_buffer_render_group *RG, shadow_render_group *SG)
 {
   /* TIMED_FUNCTION(); */
-  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+  glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
   glClearDepth(1.0f);
 
   // FIXME(Jesse): This is taking _forever_ on Linux (GLES) .. does it take

@@ -14,6 +14,13 @@ GLOBAL_VARIABLE hotkeys NullHotkeys = {};
 
 #include <bonsai.cpp>
 
+void
+OrbitCameraAroundTarget(camera *Camera)
+{
+  Camera->P.Offset.x = 20*Sin(GlobalCameraTheta);
+  Camera->P.Offset.y = 20*Cos(GlobalCameraTheta);
+  return;
+}
 
 void
 DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
@@ -36,13 +43,15 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   DEBUG_DrawLine(World, V3(0,0,0), V3(0, 0, 10000), TEAL, 0.5f );
 #endif
 
+
+  OrbitCameraAroundTarget(Camera);
+  UpdateCameraP(Plat, World, Canonical_Position(0), Camera);
+  GlobalLightTheta += Plat->dt;
+  GlobalCameraTheta += Plat->dt*0.5;
+
   gBuffer->ViewProjection =
     GetProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
     GetViewMatrix(WorldChunkDim, Camera);
-
-  canonical_position NewTarget = Canonical_Position(0);
-  UpdateCameraP(Plat, World, NewTarget, Camera);
-  GlobalLightTheta += Plat->dt;
 
   //
   // Draw World
@@ -98,8 +107,8 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   /* DrawTexturedQuad(&gBuffer->DebugPositionTextureShader); */
   /* DrawTexturedQuad(&gBuffer->DebugNormalTextureShader); */
   /* DrawTexturedQuad(&gBuffer->DebugColorTextureShader); */
-  /* DrawTexturedQuad(&AoGroup->DebugSsaoShader); */
-  /* SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight)); */
+  DrawTexturedQuad(&AoGroup->DebugSsaoShader);
+  SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight));
 #endif
 
   AssertNoGlErrors;
@@ -124,10 +133,12 @@ InitializeVoxels( game_state *GameState, world_chunk *Chunk )
       {
         for ( int x = 0; x < Dim.x; ++ x)
         {
-          if (z==0)
+          if (z==0 || (x==0 && y==0))
           {
             s32 i = GetIndex(Voxel_Position(x,y,z), Chunk->Data, Dim);
-            SetFlag(&Chunk->Data->Voxels[i], Voxel_Filled);
+            voxel *Vox = &Chunk->Data->Voxels[i];
+            SetFlag(Vox, Voxel_Filled);
+            Vox->Color = GREY;
           }
         }
       }

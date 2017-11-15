@@ -33,6 +33,19 @@ myFmodf( float F, float mod )
 }
 #endif
 
+inline r32
+Sin(r32 Theta)
+{
+  r32 Result = sin(Theta);
+  return Result;
+}
+
+inline r32
+Cos(r32 Theta)
+{
+  r32 Result = cos(Theta);
+  return Result;
+}
 
 inline r32
 SafeDivide0(r32 Dividend, r32 Divisor)

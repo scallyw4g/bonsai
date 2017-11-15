@@ -1,6 +1,6 @@
-#define CD_X 8
-#define CD_Y 8
-#define CD_Z 8
+#define CD_X 16
+#define CD_Y 16
+#define CD_Z 16
 
 // Visible Region XYZ - Must be > (3,3,3)
 #define VR_X 8
@@ -13,4 +13,9 @@
 #define VISIBLE_REGION_RADIUS (VISIBLE_REGION/2)
 #define WORLD_CHUNK_DIM Chunk_Dimension(CD_X,CD_Y,CD_Z)
 
-GLOBAL_VARIABLE r32 CAMERA_FOCAL_LENGTH = 200.0f;
+GLOBAL_VARIABLE r32 CAMERA_FOCAL_LENGTH = 150.0f;
+
+DEBUG_GLOBAL canonical_position CameraInitialP = { {5,-5,15}, {0,0,0} };
+#define CAMERA_INITIAL_P CameraInitialP
+
+DEBUG_GLOBAL r32 GlobalCameraTheta = 0;

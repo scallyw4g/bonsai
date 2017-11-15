@@ -14,3 +14,6 @@
 #define WORLD_CHUNK_DIM Chunk_Dimension(CD_X,CD_Y,CD_Z)
 
 GLOBAL_VARIABLE r32 CAMERA_FOCAL_LENGTH = 500.0f;
+
+DEBUG_GLOBAL canonical_position CameraInitialP = { {0,-150,15}, {0,0,0} };
+#define CAMERA_INITIAL_P CameraInitialP
