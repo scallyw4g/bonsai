@@ -5,23 +5,21 @@ fast-paced arcade style games.
 
 
 
-Features:
+## Renderer Features
 
-[X] Shadow Mapping
+* Deferred Shading
+* HDR Lighting
+* Shadow Mapping
+* Screen Space Ambient Occlusion
 
-[X] HDR Lighting
+## Engine Features
 
-[X] Deferred Shading
-
-[X] SSAO
-
-[X] Multi-threaded world generation
-
-[X] Looped Game Recording/Playback
-
-[X] Hot Reload Game Code
-
-[X] Particle Effects
+* General Purpose Thread Queue
+* Gameplay Recording/Playback
+* Hot Code Reloading
+* Particle System
+* Entity System
+* Asset Loader
 
 # Todo and Known Bugs:
 
@@ -29,8 +27,7 @@ Features:
 -------------------------------------------------------------------------------
 ## Renderer
 
-[ ] Shaders need to be pre-processed for the available version of GLSL
-
+[ ] Some sort of Anti-Aliasing
 
 -------------------------------------------------------------------------------
 ## Particle System
@@ -43,10 +40,6 @@ Features:
 [ ] There's a collision detection bug when the world is small and a
 model is pretty big.  Think 3^3 8^3 chunks with a 16^3 model
 
-
--------------------------------------------------------------------------------
-## Misc
-
 [ ] If you're going really fast and try to update your position outside
 the VisibleRegion you collide with the edge of the world and stop moving
 
@@ -56,6 +49,10 @@ the VisibleRegion you collide with the edge of the world and stop moving
 [ ] MagicaVoxel is pretty crappy at following its own file format, and I don't
 trust it anymore.  Make an editor mode!
 
+-------------------------------------------------------------------------------
+## Sound
+
+[ ] Write an mp3,ogg,..? decompresser
 
 
 
