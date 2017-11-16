@@ -1,9 +1,10 @@
+
 cmake_minimum_required (VERSION 3.0)
 
 project(Bonsai)
 
-set (Bonsai_VERSION_MAJOR 0)
-set (Bonsai_VERSION_MINOR 1)
+set(Bonsai_VERSION_MAJOR 0)
+set(Bonsai_VERSION_MINOR 1)
 
 set(CMAKE_BUILD_TYPE Release)
 
@@ -16,9 +17,6 @@ set( BIN ${ROOT}/bin )
 set( LIBRARY_OUTPUT_PATH ${BIN} )
 set( EXECUTABLE_OUTPUT_PATH ${BIN} )
 
-set( SPACE_INVADERS_PATH ${EXAMPLES}/space_invaders )
-set( SSAO_TEST_PATH ${EXAMPLES}/ssao_test )
-
 add_executable(Bonsai ${SRC}/platform.cpp)
 
 # Link with Opengl
@@ -30,31 +28,25 @@ target_link_libraries(Bonsai ${OPENGL_LIBRARIES})
 include_directories(${SRC})
 include_directories(${ROOT}/external/glm-0.9.7.1)
 
-
-
-# Example specific includes
-add_library(example_space_invaders SHARED ${SPACE_INVADERS_PATH}/game.cpp)
-target_link_libraries(example_space_invaders ${OPENGL_LIBRARIES})
-target_include_directories(example_space_invaders PRIVATE ${SPACE_INVADERS_PATH})
-
-add_library(example_ssao_test SHARED ${SSAO_TEST_PATH}/game.cpp)
-target_link_libraries(example_ssao_test ${OPENGL_LIBRARIES})
-target_include_directories(example_ssao_test PRIVATE ${SSAO_TEST_PATH})
-
-
-
 add_definitions( -DGL_GLEXT_PROTOTYPES=1 )
 
 
+################################ USER INCLUDES ################################
 
+include( ${EXAMPLES}/space_invaders/vars.cmake )
+#include( ${EXAMPLES}/ssao_test/vars.cmake )
+
+###############################################################################
+
+include_directories(${GAME_SRC_DIR}/engine_constants)
+
+add_library(Game SHARED ${GAME_SRC_DIR}/game.cpp)
+target_link_libraries(Game ${OPENGL_LIBRARIES})
+target_include_directories(Game PRIVATE ${GAME_SRC_DIR})
 
 add_custom_target(run /usr/bin/optirun ${BIN}/Bonsai
                   DEPENDS Bonsai
                   COMMENT "Running Bonsai")
-
-
-
-
 
 
 #
@@ -62,10 +54,9 @@ add_custom_target(run /usr/bin/optirun ${BIN}/Bonsai
 #
 
 if (CYGWIN)
-  message(FATAL_ERROR "Refer to the README for instructions to run with Cygwin")
+  message(FATAL_ERROR "Cygwin Unsupported")
 endif()
 
-# Link against Win32 libs we need
 if (WIN32)
 
   add_definitions( -DBONSAI_WIN32=1 )
@@ -86,7 +77,25 @@ endif()
 
 
 
+if (UNIX)
 
+  set(GAME_COMPILED_LIB ${BIN}/libGame.so)
+  set(GAME_LOADABLE_LIB ${BIN}/libGameLoadable.so)
+
+elseif(WIN32)
+
+  set(GAME_COMPILED_LIB ${BIN}/Debug/Game.dll)
+  set(GAME_LOADABLE_LIB ${BIN}/Debug/GameLoadable.dll)
+
+else()
+
+  message(FATAL_ERROR "Unsupported Platform")
+
+endif()
+
+add_custom_command( TARGET Game POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy
+                    ${GAME_COMPILED_LIB} ${GAME_LOADABLE_LIB} )
 #
 # Compiler specific
 #
@@ -117,35 +126,3 @@ elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
 else()
   message(FATAL_ERROR "Unsupported Compiler")
 endif()
-
-#
-# Platform Specific
-#
-
-if (UNIX)
-
-  set(SPACE_INVADERS_COMPILED_LIB ${BIN}/libexample_space_invaders.so)
-  set(SPACE_INVADERS_LOADABLE_LIB ${BIN}/libGameLoadable.so)
-
-  set(SSAO_COMPILED_LIB ${BIN}/libexample_ssao_test.so)
-  set(SSAO_LOADABLE_LIB ${BIN}/libGameLoadable.so)
-
-elseif(WIN32)
-
-  set(SPACE_INVADERS_COMPILED_LIB ${BIN}/Debug/Game.dll)
-  set(SPACE_INVADERS_LOADABLE_LIB ${BIN}/Debug/GameLoadable.dll)
-
-else()
-
-  message(FATAL_ERROR "Unsupported Platform")
-
-endif()
-
-# Rename the game library on completion so the hot-loading code doesn't try to
-# load it before the compiler is finished
-# add_custom_command( TARGET example_space_invaders POST_BUILD
-#  COMMAND ${CMAKE_COMMAND} -E copy ${SPACE_INVADERS_COMPILED_LIB} ${SPACE_INVADERS_LOADABLE_LIB} )
-
- add_custom_command( TARGET example_ssao_test POST_BUILD
-   COMMAND ${CMAKE_COMMAND} -E copy ${SSAO_COMPILED_LIB} ${SSAO_LOADABLE_LIB} )
-

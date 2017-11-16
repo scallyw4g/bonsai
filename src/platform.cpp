@@ -7,6 +7,7 @@
 #include <platform_constants.h>
 #include <bonsai_types.h>
 #include <constants.hpp>
+#include <game_render_constants.h>
 
 #if BONSAI_WIN32
 #include <win32_platform.cpp>

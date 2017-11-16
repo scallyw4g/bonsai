@@ -1,6 +1,8 @@
 #ifndef GAME_CONSTANTS
 #define GAME_CONSTANTS
 
+#include <game_render_constants.h>
+
 #define CHUNK_VOL (CHUNK_HEIGHT*CHUNK_WIDTH*CHUNK_DEPTH)
 
 // 6 verticies per face, 6 faces per voxel
@@ -102,9 +104,6 @@
 #define SHADOW_MAP_Z_MAX  200.0f
 
 #define DEBUG_TEXTURE_SIZE 500
-
-#define SHADOW_MAP_RESOLUTION_X 512
-#define SHADOW_MAP_RESOLUTION_Y 4096
 
 GLOBAL_VARIABLE r32 DEBUG_CAMERA_FOCAL_LENGTH = 50.0f;
 #define DEBUG_CAMERA_SCROLL_SPEED  20.0f
