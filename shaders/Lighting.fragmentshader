@@ -5,7 +5,7 @@ out vec4 color;
 uniform sampler2D gColor;
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
-uniform sampler2DShadow shadowMap;
+uniform sampler2D shadowMap;
 uniform sampler2D Ssao;
 
 
@@ -87,12 +87,13 @@ void main()
 
   float FragPShadowDepth = FragPShadowScreenSpace.z;
 
-  float acneBias = 0.0001f; // Fix acne
-  float ShadowDepth = texture(shadowMap, vec3(FragPShadowScreenSpace.xy, FragPShadowScreenSpace.z/FragPShadowScreenSpace.w)) + acneBias;
-  color = vec4(FragPShadowScreenSpace.xyz, 1);
-  color.xyz = vec3(FragPShadowDepth);
+  float acneBias = 0.001f; // Fix acne
+  /* float ShadowDepth = texture(shadowMap, vec3(FragPShadowScreenSpace.xy, FragPShadowScreenSpace.z/FragPShadowScreenSpace.w)) + acneBias; */
+  float ShadowDepth = texture(shadowMap, FragPShadowScreenSpace.xy).x + acneBias;
 
-  return;
+  /* color = vec4(FragPShadowScreenSpace.xyz, 1); */
+  /* color.xyz = vec3(FragPShadowDepth); */
+  /* return; */
 
 
   if ( FragPShadowDepth > ShadowDepth )

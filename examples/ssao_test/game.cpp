@@ -17,8 +17,9 @@ GLOBAL_VARIABLE hotkeys NullHotkeys = {};
 void
 OrbitCameraAroundTarget(camera *Camera)
 {
-  Camera->P.Offset.x = 20*Sin(GlobalCameraTheta);
-  Camera->P.Offset.y = 20*Cos(GlobalCameraTheta);
+  Camera->P.Offset.x += Sin(GlobalCameraTheta);
+  Camera->P.Offset.y += Cos(GlobalCameraTheta);
+
   return;
 }
 
