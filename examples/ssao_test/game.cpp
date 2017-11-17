@@ -47,7 +47,6 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
   OrbitCameraAroundTarget(Camera);
   UpdateCameraP(Plat, World, Canonical_Position(0), Camera);
-  GlobalLightTheta += Plat->dt;
   GlobalCameraTheta += Plat->dt*0.5;
 
   gBuffer->ViewProjection =
@@ -104,12 +103,12 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   World->Mesh.VertsFilled = 0;
 
 #if DEBUG_DRAW_SHADOW_MAP_TEXTURE
-  DrawTexturedQuad(&SG->DebugTextureShader);
+  /* DrawTexturedQuad(&SG->DebugTextureShader); */
   /* DrawTexturedQuad(&gBuffer->DebugPositionTextureShader); */
   /* DrawTexturedQuad(&gBuffer->DebugNormalTextureShader); */
   /* DrawTexturedQuad(&gBuffer->DebugColorTextureShader); */
   /* DrawTexturedQuad(&AoGroup->DebugSsaoShader); */
-  SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight));
+  /* SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight)); */
 
   AssertNoGlErrors;
 #endif
@@ -140,7 +139,14 @@ InitializeVoxels( game_state *GameState, world_chunk *Chunk )
             s32 i = GetIndex(Voxel_Position(x,y,z), Chunk->Data, Dim);
             voxel *Vox = &Chunk->Data->Voxels[i];
             SetFlag(Vox, Voxel_Filled);
-            Vox->Color = GREY;
+            if (z==0)
+            {
+              Vox->Color = LIGHT_GREEN;
+            }
+            else
+            {
+              Vox->Color = GREY;
+            }
           }
         }
       }
@@ -175,6 +181,7 @@ InitGlobals(platform *Plat)
 {
   GL_Global = &Plat->GL;
   InitDebugState(GetDebugState(), Plat);
+  Global_WorldChunkDim = WORLD_CHUNK_DIM;
 }
 
 EXPORT void*

@@ -33,8 +33,8 @@ add_definitions( -DGL_GLEXT_PROTOTYPES=1 )
 
 ################################ USER INCLUDES ################################
 
-include( ${EXAMPLES}/space_invaders/vars.cmake )
-#include( ${EXAMPLES}/ssao_test/vars.cmake )
+#set( GAME_SRC_DIR ${EXAMPLES}/space_invaders )
+set( GAME_SRC_DIR ${EXAMPLES}/ssao_test )
 
 ###############################################################################
 

@@ -169,6 +169,14 @@ GetProjectionMatrix(camera *Camera, int WindowWidth, int WindowHeight)
 }
 
 inline v3
+GetRenderP(canonical_position P, camera *Camera)
+{
+  v3 CameraOffset = Camera->Target.Offset + (Camera->Target.WorldP * Global_WorldChunkDim);
+  v3 Result = P.Offset + (P.WorldP * Global_WorldChunkDim) - CameraOffset;
+  return Result;
+}
+
+inline v3
 GetRenderP( chunk_dimension WorldChunkDim, canonical_position P, camera *Camera)
 {
   v3 CameraOffset = Camera->Target.Offset + (Camera->Target.WorldP * WorldChunkDim);

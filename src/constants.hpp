@@ -95,14 +95,6 @@
 
 #define DEBUG_FRAMES_TO_RUN           -1
 
-
-// TODO(Jesse): Define in game_constants.h
-#define SHADOW_MAP_X (100)
-#define SHADOW_MAP_Y (1400)
-
-#define SHADOW_MAP_Z_MIN  -100.0f
-#define SHADOW_MAP_Z_MAX  200.0f
-
 #define DEBUG_TEXTURE_SIZE 500
 
 GLOBAL_VARIABLE r32 DEBUG_CAMERA_FOCAL_LENGTH = 50.0f;

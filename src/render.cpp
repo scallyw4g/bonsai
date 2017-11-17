@@ -16,7 +16,7 @@
 
 GLOBAL_VARIABLE u32 Global_QuadVertexBuffer = 0;
 
-GLOBAL_VARIABLE v3 GlobalLightPosition = {0.20f, 0.0f, 1.0f};
+GLOBAL_VARIABLE v3 GlobalLightPosition = {0.20f, 1.0f, 1.0f};
 
 GLOBAL_VARIABLE m4 NdcToScreenSpace = {
   V4(0.5, 0.0, 0.0, 0.0),
@@ -499,14 +499,15 @@ inline m4
 GetShadowMapMVP(camera *Camera)
 {
   // Compute the MVP matrix from the light's point of view
-  v3 Translate = V3(0,1200,0);
+  v3 Translate = GetRenderP(Camera->Target, Camera);
   m4 depthProjectionMatrix = Orthographic(SHADOW_MAP_X,
                                           SHADOW_MAP_Y,
                                           SHADOW_MAP_Z_MIN,
                                           SHADOW_MAP_Z_MAX,
                                           Translate);
 
-  v3 Front = GlobalLightPosition;
+  GlobalLightPosition = 0.1f*V3(Sin(GlobalLightTheta), Cos(GlobalLightTheta), 1.0f);
+  v3 Front = Normalize(GlobalLightPosition);
   v3 Right = Cross( Front, V3(0,1,0) );
   v3 Up = Cross(Right, Front);
 
@@ -559,7 +560,7 @@ BindShaderUniforms(shader *Shader)
 void
 DrawTexturedQuad(shader *SimpleTextureShader)
 {
-  r32 Scale = 0.5f;
+  r32 Scale = 0.25f;
 
   glDepthFunc(GL_LEQUAL);
 
@@ -604,6 +605,7 @@ DrawGBufferToFullscreenQuad( platform *Plat, g_buffer_render_group *RG, shadow_r
   GL_Global->glUseProgram(RG->LightingShader.ID);
 
   RG->ShadowMVP = NdcToScreenSpace * GetShadowMapMVP(Camera);
+  GlobalLightTheta += Plat->dt;
 
   BindShaderUniforms(&RG->LightingShader);
 
