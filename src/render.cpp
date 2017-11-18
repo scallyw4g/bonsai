@@ -260,7 +260,7 @@ MakeSimpleTextureShader(texture *Texture, memory_arena *GraphicsMemory)
 
 shader
 MakeLightingShader(memory_arena *GraphicsMemory,
-    g_buffer_textures *gTextures, texture *ShadowMap, texture *Ssao, m4 *ViewProjection, m4 *ShadowMVP)
+    g_buffer_textures *gTextures, texture *ShadowMap, texture *Ssao, m4 *ViewProjection, m4 *ShadowMVP, light *GlobalLight)
 {
   shader Shader = LoadShaders( "Lighting.vertexshader", "Lighting.fragmentshader", GraphicsMemory);
 
@@ -284,7 +284,7 @@ MakeLightingShader(memory_arena *GraphicsMemory,
   *Current = GetM4Uniform(GraphicsMemory, &Shader, ShadowMVP, "ShadowMVP");
   Current = &(*Current)->Next;
 
-  *Current = GetV3Uniform(GraphicsMemory, &Shader, &GlobalLightPosition, "GlobalLightPosition");
+  *Current = GetV3Uniform(GraphicsMemory, &Shader, &GlobalLight->Position, "GlobalLightPosition");
   Current = &(*Current)->Next;
 
   return Shader;
@@ -492,11 +492,14 @@ InitializeShadowBuffer(shadow_render_group *SG, memory_arena *GraphicsMemory)
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+  SG->Light.Position = V3(0.5f, 1.0f, 1.0f);
+  SG->Light.Type = LightType_Directional;
+
  return true;
 }
 
 inline m4
-GetShadowMapMVP(camera *Camera)
+GetShadowMapMVP(camera *Camera, light *GlobalLight)
 {
   // Compute the MVP matrix from the light's point of view
   v3 Translate = GetRenderP(Camera->Target, Camera);
@@ -506,13 +509,12 @@ GetShadowMapMVP(camera *Camera)
                                           SHADOW_MAP_Z_MAX,
                                           Translate);
 
-  GlobalLightPosition = 0.1f*V3(Sin(GlobalLightTheta), Cos(GlobalLightTheta), 1.0f);
-  v3 Front = Normalize(GlobalLightPosition);
+  v3 Front = Normalize(GlobalLight->Position);
   v3 Right = Cross( Front, V3(0,1,0) );
   v3 Up = Cross(Right, Front);
 
   v3 Target = V3(0);
-  m4 depthViewMatrix =  LookAt(GlobalLightPosition, Target, Up);
+  m4 depthViewMatrix =  LookAt(GlobalLight->Position, Target, Up);
 
   return depthProjectionMatrix * depthViewMatrix;
 }
@@ -604,8 +606,7 @@ DrawGBufferToFullscreenQuad( platform *Plat, g_buffer_render_group *RG, shadow_r
 
   GL_Global->glUseProgram(RG->LightingShader.ID);
 
-  RG->ShadowMVP = NdcToScreenSpace * GetShadowMapMVP(Camera);
-  GlobalLightTheta += Plat->dt;
+  RG->ShadowMVP = NdcToScreenSpace * GetShadowMapMVP(Camera, &SG->Light);
 
   BindShaderUniforms(&RG->LightingShader);
 
@@ -635,7 +636,7 @@ RenderShadowMap(mesh_buffer_target *Mesh, shadow_render_group *SG, g_buffer_rend
 {
   SetViewport(V2(SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y));
 
-  m4 MVP = GetShadowMapMVP(Camera);
+  m4 MVP = GetShadowMapMVP(Camera, &SG->Light);
 
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
 

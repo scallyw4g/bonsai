@@ -8,6 +8,7 @@
 #include <climits>
 
 #define PI 3.1415926535897932384626433832795028841971693993751058209749445923078164062
+#define 2PI (2.0*PI)
 #define PIf (float(PI))
 
 struct world;

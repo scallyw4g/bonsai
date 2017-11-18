@@ -1,5 +1,4 @@
 
-
 #include <bonsai.h>
 
 //
@@ -8,6 +7,8 @@ static gl_extensions *GL_Global;
 
 GLOBAL_VARIABLE physics NullPhysics = {};
 GLOBAL_VARIABLE hotkeys NullHotkeys = {};
+
+GLOBAL_VARIABLE r32 GlobalLightTheta = 0;
 
 #include <game.h>
 #include <game_constants.h>
@@ -90,6 +91,12 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
     }
   }
   END_BLOCK("Render - World");
+
+
+  GlobalLightTheta += (Plat->dt * 2PI)/ 60;
+  SG->Light.Position = 0.1f*V3(Sin(GlobalLightTheta), Cos(GlobalLightTheta), 1.0f);
+  Print(GlobalLightTheta);
+
 
   RenderGBuffer(&World->Mesh, gBuffer, SG, Camera);
   AssertNoGlErrors;
@@ -264,7 +271,7 @@ GameInit( platform *Plat, memory_arena *GameMemory)
 
   gBuffer->LightingShader =
     MakeLightingShader(GraphicsMemory, gBuffer->Textures, SG->ShadowMap, AoGroup->Texture,
-        &gBuffer->ViewProjection, &gBuffer->ShadowMVP);
+        &gBuffer->ViewProjection, &gBuffer->ShadowMVP, &SG->Light);
 
   gBuffer->gBufferShader =
     CreateGbufferShader(GraphicsMemory, &gBuffer->ViewProjection);

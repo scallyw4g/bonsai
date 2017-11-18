@@ -116,8 +116,6 @@ DEBUG_GLOBAL r64 accumulatedTime = 0;
 DEBUG_GLOBAL s32 tris = 0;
 DEBUG_GLOBAL s32 VoxelsIndexed = 0;
 
-DEBUG_GLOBAL r32 GlobalLightTheta = 0;
-
 
 #define FACE_VERT_COUNT 6
 #define PALETTE_SIZE 256

@@ -1,8 +1,6 @@
 
 #include <bonsai.h>
 
-#include <constants.hpp>
-
 #include <vox_loader.cpp>
 #include <perlin.cpp>
 

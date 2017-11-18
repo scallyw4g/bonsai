@@ -13,6 +13,21 @@ DEBUG_GLOBAL float g_quad_vertex_buffer_data[] =
    1.0f,  1.0f, 1.0f,
 };
 
+enum light_type
+{
+  LightType_Undefined,
+
+  LightType_Directional,
+  LightType_Spot,
+  LightType_Point,
+};
+
+struct light
+{
+  light_type Type;
+  v3 Position;
+};
+
 struct RenderBasis
 {
   m4 ModelMatrix;
@@ -78,6 +93,7 @@ struct g_buffer_render_group
 
 struct shadow_render_group
 {
+  u32 FramebufferName;
   u32 MVP_ID;
 
   shader DebugTextureShader;
@@ -85,7 +101,7 @@ struct shadow_render_group
 
   texture *ShadowMap;
 
-  u32 FramebufferName;
+  light Light;
 };
 
 struct debug_text_render_group
