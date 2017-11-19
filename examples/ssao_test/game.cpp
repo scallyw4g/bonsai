@@ -18,8 +18,8 @@ GLOBAL_VARIABLE r32 GlobalLightTheta = 0;
 void
 OrbitCameraAroundTarget(camera *Camera)
 {
-  Camera->P.Offset.x += Sin(GlobalCameraTheta);
-  Camera->P.Offset.y += Cos(GlobalCameraTheta);
+  Camera->P.Offset.x += 0.5f*Sin(GlobalCameraTheta);
+  Camera->P.Offset.y += 0.5f*Cos(GlobalCameraTheta);
 
   return;
 }
@@ -93,9 +93,8 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   END_BLOCK("Render - World");
 
 
-  GlobalLightTheta += (Plat->dt * 2PI)/ 60;
+  GlobalLightTheta += (Plat->dt * TWOPI)/ 60;
   SG->Light.Position = 0.1f*V3(Sin(GlobalLightTheta), Cos(GlobalLightTheta), 1.0f);
-  Print(GlobalLightTheta);
 
 
   RenderGBuffer(&World->Mesh, gBuffer, SG, Camera);
@@ -268,10 +267,9 @@ GameInit( platform *Plat, memory_arena *GameMemory)
 
 
 
-
   gBuffer->LightingShader =
     MakeLightingShader(GraphicsMemory, gBuffer->Textures, SG->ShadowMap, AoGroup->Texture,
-        &gBuffer->ViewProjection, &gBuffer->ShadowMVP, &SG->Light);
+        &gBuffer->ViewProjection, &gBuffer->ShadowMVP, &SG->Light, &SG->Lights);
 
   gBuffer->gBufferShader =
     CreateGbufferShader(GraphicsMemory, &gBuffer->ViewProjection);

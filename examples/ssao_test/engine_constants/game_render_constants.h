@@ -12,13 +12,14 @@
 GLOBAL_VARIABLE chunk_dimension Global_WorldChunkDim = WORLD_CHUNK_DIM;
 
 // Texture Resolution
-#define SHADOW_MAP_RESOLUTION_X 4096
-#define SHADOW_MAP_RESOLUTION_Y 4096
+#define SHADOW_MAP_RESOLUTION_X (4096)
+#define SHADOW_MAP_RESOLUTION_Y (4096)
 
 // World-Space draw resolution
 #define SHADOW_MAP_X (50)
 #define SHADOW_MAP_Y (50)
 
-#define SHADOW_MAP_Z_MIN -100.0f
-#define SHADOW_MAP_Z_MAX  100.0f
+#define SHADOW_MAP_Z_MIN (-100.0f)
+#define SHADOW_MAP_Z_MAX ( 100.0f)
 
+#define MAX_GAME_LIGHTS (32)

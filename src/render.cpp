@@ -195,6 +195,33 @@ PushShaderUniform( memory_arena *Mem, const char *Name, v3 *Vector3)
 }
 
 shader_uniform *
+PushShaderUniform( memory_arena *Mem, const char *Name, light *Light)
+{
+  shader_uniform *Uniform = PushShaderUniform(Mem, Name);
+  Uniform->Light = Light;
+  Uniform->Type = ShaderUniform_Light;
+  return Uniform;
+}
+
+shader_uniform *
+PushShaderUniform( memory_arena *Mem, const char *Name, s32 *S32)
+{
+  shader_uniform *Uniform = PushShaderUniform(Mem, Name);
+  Uniform->S32 = S32;
+  Uniform->Type = ShaderUniform_S32;
+  return Uniform;
+}
+
+shader_uniform *
+PushShaderUniform( memory_arena *Mem, const char *Name, u32 *U32)
+{
+  shader_uniform *Uniform = PushShaderUniform(Mem, Name);
+  Uniform->U32 = U32;
+  Uniform->Type = ShaderUniform_U32;
+  return Uniform;
+}
+
+shader_uniform *
 GetTextureUniform(memory_arena *Mem, shader *Shader, texture *Tex, const char *Name)
 {
   shader_uniform *Uniform = PushShaderUniform(Mem, Name, Tex);
@@ -214,6 +241,30 @@ shader_uniform *
 GetV3Uniform(memory_arena *Mem, shader *Shader, v3 *Vector3, const char *Name)
 {
   shader_uniform *Uniform = PushShaderUniform(Mem, Name, Vector3);
+  Uniform->ID = GetShaderUniform(Shader, Name);
+  return Uniform;
+}
+
+shader_uniform *
+GetLightUniform(memory_arena *Mem, shader *Shader, light *Light, const char *Name)
+{
+  shader_uniform *Uniform = PushShaderUniform(Mem, Name, Light);
+  Uniform->ID = GetShaderUniform(Shader, Name);
+  return Uniform;
+}
+
+shader_uniform *
+GetS32Uniform(memory_arena *Mem, shader *Shader, s32 *S32, const char *Name)
+{
+  shader_uniform *Uniform = PushShaderUniform(Mem, Name, S32);
+  Uniform->ID = GetShaderUniform(Shader, Name);
+  return Uniform;
+}
+
+shader_uniform *
+GetU32Uniform(memory_arena *Mem, shader *Shader, u32 *U32, const char *Name)
+{
+  shader_uniform *Uniform = PushShaderUniform(Mem, Name, U32);
   Uniform->ID = GetShaderUniform(Shader, Name);
   return Uniform;
 }
@@ -260,7 +311,8 @@ MakeSimpleTextureShader(texture *Texture, memory_arena *GraphicsMemory)
 
 shader
 MakeLightingShader(memory_arena *GraphicsMemory,
-    g_buffer_textures *gTextures, texture *ShadowMap, texture *Ssao, m4 *ViewProjection, m4 *ShadowMVP, light *GlobalLight)
+    g_buffer_textures *gTextures, texture *ShadowMap, texture *Ssao,
+    m4 *ViewProjection, m4 *ShadowMVP, light *GlobalLight, game_lights *Lights)
 {
   shader Shader = LoadShaders( "Lighting.vertexshader", "Lighting.fragmentshader", GraphicsMemory);
 
@@ -286,6 +338,17 @@ MakeLightingShader(memory_arena *GraphicsMemory,
 
   *Current = GetV3Uniform(GraphicsMemory, &Shader, &GlobalLight->Position, "GlobalLightPosition");
   Current = &(*Current)->Next;
+
+#if 0
+  if (Lights)
+  {
+    *Current = GetLightUniform(GraphicsMemory, &Shader, Lights->Lights, "Lights");
+    Current = &(*Current)->Next;
+
+    *Current = GetU32Uniform(GraphicsMemory, &Shader, &Lights->Count, "LightCount");
+    Current = &(*Current)->Next;
+  }
+#endif
 
   return Shader;
 }
@@ -494,6 +557,8 @@ InitializeShadowBuffer(shadow_render_group *SG, memory_arena *GraphicsMemory)
 
   SG->Light.Position = V3(0.5f, 1.0f, 1.0f);
   SG->Light.Type = LightType_Directional;
+
+  SG->Lights.Lights = PUSH_STRUCT_CHECKED(light, GraphicsMemory, MAX_GAME_LIGHTS);
 
  return true;
 }

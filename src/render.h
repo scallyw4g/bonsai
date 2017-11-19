@@ -28,6 +28,12 @@ struct light
   v3 Position;
 };
 
+struct game_lights
+{
+  u32 Count;
+  light *Lights;
+};
+
 struct RenderBasis
 {
   m4 ModelMatrix;
@@ -102,6 +108,7 @@ struct shadow_render_group
   texture *ShadowMap;
 
   light Light;
+  game_lights Lights;
 };
 
 struct debug_text_render_group

@@ -884,8 +884,6 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   canonical_position NewTarget = Canonicalize(WorldChunkDim, Player->P.Offset, Player->P.WorldP) + (Player->Model.Dim/2.0f);
   UpdateCameraP(Plat, World, NewTarget, Camera);
 
-  GlobalLightTheta += Plat->dt;
-
   //
   // Draw World
 
@@ -1137,7 +1135,7 @@ GameInit( platform *Plat, memory_arena *GameMemory)
 
   gBuffer->LightingShader =
     MakeLightingShader(GraphicsMemory, gBuffer->Textures, SG->ShadowMap, AoGroup->Texture,
-        &gBuffer->ViewProjection, &gBuffer->ShadowMVP);
+        &gBuffer->ViewProjection, &gBuffer->ShadowMVP, &SG->Light);
 
   gBuffer->gBufferShader =
     CreateGbufferShader(GraphicsMemory, &gBuffer->ViewProjection);
