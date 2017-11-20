@@ -107,7 +107,7 @@ struct shadow_render_group
 
   texture *ShadowMap;
 
-  light Light;
+  light TestLight;
   game_lights Lights;
 };
 

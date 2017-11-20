@@ -5,7 +5,7 @@ enum shader_uniform_type
 {
   ShaderUniform_Undefined,
   ShaderUniform_M4,
-  ShaderUniform_Vector3,
+  ShaderUniform_V3,
   ShaderUniform_S32,
   ShaderUniform_U32,
   ShaderUniform_Texture,
@@ -24,7 +24,7 @@ struct shader_uniform
     texture *Texture;
     light *Light;
     m4 *M4;
-    v3 *Vector3;
+    v3 *V3;
     s32 *S32;
     u32 *U32;
     void *Data;

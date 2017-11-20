@@ -94,7 +94,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
 
   GlobalLightTheta += (Plat->dt * TWOPI)/ 60;
-  SG->Light.Position = 0.1f*V3(Sin(GlobalLightTheta), Cos(GlobalLightTheta), 1.0f);
+  SG->TestLight.Position = 0.1f*V3(Sin(GlobalLightTheta), Cos(GlobalLightTheta), 1.0f);
 
 
   RenderGBuffer(&World->Mesh, gBuffer, SG, Camera);
@@ -269,7 +269,7 @@ GameInit( platform *Plat, memory_arena *GameMemory)
 
   gBuffer->LightingShader =
     MakeLightingShader(GraphicsMemory, gBuffer->Textures, SG->ShadowMap, AoGroup->Texture,
-        &gBuffer->ViewProjection, &gBuffer->ShadowMVP, &SG->Light, &SG->Lights);
+        &gBuffer->ViewProjection, &gBuffer->ShadowMVP, &SG->TestLight, &SG->Lights);
 
   gBuffer->gBufferShader =
     CreateGbufferShader(GraphicsMemory, &gBuffer->ViewProjection);

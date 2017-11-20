@@ -167,107 +167,29 @@ PushShaderUniform( memory_arena *Mem, const char *Name)
   return Uniform;
 }
 
-shader_uniform *
-PushShaderUniform( memory_arena *Mem, const char *Name, texture *Tex)
-{
-  shader_uniform *Uniform = PushShaderUniform(Mem, Name);
-  Uniform->Texture = Tex;
-  Uniform->Type = ShaderUniform_Texture;
-  return Uniform;
-}
+#define ShaderUniformAllocator(type, TypeName)                                 \
+  shader_uniform *                                                             \
+  PushShaderUniform( memory_arena *Mem, const char *Name, type *Value)         \
+  {                                                                            \
+    shader_uniform *Uniform = PushShaderUniform(Mem, Name);                    \
+    Uniform->TypeName = Value;                                                 \
+    Uniform->Type = ShaderUniform_##TypeName;                                  \
+    return Uniform;                                                            \
+  }                                                                            \
+  shader_uniform *                                                             \
+  GetUniform(memory_arena *Mem, shader *Shader, type *Value, const char *Name) \
+  {                                                                            \
+    shader_uniform *Uniform = PushShaderUniform(Mem, Name, Value);             \
+    Uniform->ID = GetShaderUniform(Shader, Name);                              \
+    return Uniform;                                                            \
+  }
 
-shader_uniform *
-PushShaderUniform( memory_arena *Mem, const char *Name, m4 *Matrix)
-{
-  shader_uniform *Uniform = PushShaderUniform(Mem, Name);
-  Uniform->M4 = Matrix;
-  Uniform->Type = ShaderUniform_M4;
-  return Uniform;
-}
-
-shader_uniform *
-PushShaderUniform( memory_arena *Mem, const char *Name, v3 *Vector3)
-{
-  shader_uniform *Uniform = PushShaderUniform(Mem, Name);
-  Uniform->Vector3 = Vector3;
-  Uniform->Type = ShaderUniform_Vector3;
-  return Uniform;
-}
-
-shader_uniform *
-PushShaderUniform( memory_arena *Mem, const char *Name, light *Light)
-{
-  shader_uniform *Uniform = PushShaderUniform(Mem, Name);
-  Uniform->Light = Light;
-  Uniform->Type = ShaderUniform_Light;
-  return Uniform;
-}
-
-shader_uniform *
-PushShaderUniform( memory_arena *Mem, const char *Name, s32 *S32)
-{
-  shader_uniform *Uniform = PushShaderUniform(Mem, Name);
-  Uniform->S32 = S32;
-  Uniform->Type = ShaderUniform_S32;
-  return Uniform;
-}
-
-shader_uniform *
-PushShaderUniform( memory_arena *Mem, const char *Name, u32 *U32)
-{
-  shader_uniform *Uniform = PushShaderUniform(Mem, Name);
-  Uniform->U32 = U32;
-  Uniform->Type = ShaderUniform_U32;
-  return Uniform;
-}
-
-shader_uniform *
-GetTextureUniform(memory_arena *Mem, shader *Shader, texture *Tex, const char *Name)
-{
-  shader_uniform *Uniform = PushShaderUniform(Mem, Name, Tex);
-  Uniform->ID = GetShaderUniform(Shader, Name);
-  return Uniform;
-}
-
-shader_uniform *
-GetM4Uniform(memory_arena *Mem, shader *Shader, m4 *Matrix, const char *Name)
-{
-  shader_uniform *Uniform = PushShaderUniform(Mem, Name, Matrix);
-  Uniform->ID = GetShaderUniform(Shader, Name);
-  return Uniform;
-}
-
-shader_uniform *
-GetV3Uniform(memory_arena *Mem, shader *Shader, v3 *Vector3, const char *Name)
-{
-  shader_uniform *Uniform = PushShaderUniform(Mem, Name, Vector3);
-  Uniform->ID = GetShaderUniform(Shader, Name);
-  return Uniform;
-}
-
-shader_uniform *
-GetLightUniform(memory_arena *Mem, shader *Shader, light *Light, const char *Name)
-{
-  shader_uniform *Uniform = PushShaderUniform(Mem, Name, Light);
-  Uniform->ID = GetShaderUniform(Shader, Name);
-  return Uniform;
-}
-
-shader_uniform *
-GetS32Uniform(memory_arena *Mem, shader *Shader, s32 *S32, const char *Name)
-{
-  shader_uniform *Uniform = PushShaderUniform(Mem, Name, S32);
-  Uniform->ID = GetShaderUniform(Shader, Name);
-  return Uniform;
-}
-
-shader_uniform *
-GetU32Uniform(memory_arena *Mem, shader *Shader, u32 *U32, const char *Name)
-{
-  shader_uniform *Uniform = PushShaderUniform(Mem, Name, U32);
-  Uniform->ID = GetShaderUniform(Shader, Name);
-  return Uniform;
-}
+ShaderUniformAllocator(light, Light)
+ShaderUniformAllocator(texture, Texture)
+ShaderUniformAllocator(m4, M4)
+ShaderUniformAllocator(v3, V3)
+ShaderUniformAllocator(u32, U32)
+ShaderUniformAllocator(s32, S32)
 
 void
 InitSsaoKernel(v3 *Kernel, s32 Count, random_series *Entropy)
@@ -302,7 +224,7 @@ MakeSimpleTextureShader(texture *Texture, memory_arena *GraphicsMemory)
                                             "SimpleTexture.fragmentshader",
                                             GraphicsMemory );
 
-  SimpleTextureShader.FirstUniform = GetTextureUniform(GraphicsMemory, &SimpleTextureShader, Texture, "Texture");
+  SimpleTextureShader.FirstUniform = GetUniform(GraphicsMemory, &SimpleTextureShader, Texture, "Texture");
 
   AssertNoGlErrors;
 
@@ -312,40 +234,40 @@ MakeSimpleTextureShader(texture *Texture, memory_arena *GraphicsMemory)
 shader
 MakeLightingShader(memory_arena *GraphicsMemory,
     g_buffer_textures *gTextures, texture *ShadowMap, texture *Ssao,
-    m4 *ViewProjection, m4 *ShadowMVP, light *GlobalLight, game_lights *Lights)
+    m4 *ViewProjection, m4 *ShadowMVP, light *Light, game_lights *Lights)
 {
   shader Shader = LoadShaders( "Lighting.vertexshader", "Lighting.fragmentshader", GraphicsMemory);
 
   shader_uniform **Current = &Shader.FirstUniform;
 
-  *Current = GetTextureUniform(GraphicsMemory, &Shader, gTextures->Color, "gColor");
+  *Current = GetUniform(GraphicsMemory, &Shader, gTextures->Color, "gColor");
   Current = &(*Current)->Next;
 
-  *Current = GetTextureUniform(GraphicsMemory, &Shader, gTextures->Normal, "gNormal");
+  *Current = GetUniform(GraphicsMemory, &Shader, gTextures->Normal, "gNormal");
   Current = &(*Current)->Next;
 
-  *Current = GetTextureUniform(GraphicsMemory, &Shader, gTextures->Position, "gPosition");
+  *Current = GetUniform(GraphicsMemory, &Shader, gTextures->Position, "gPosition");
   Current = &(*Current)->Next;
 
-  *Current = GetTextureUniform(GraphicsMemory, &Shader, ShadowMap, "shadowMap");
+  *Current = GetUniform(GraphicsMemory, &Shader, ShadowMap, "shadowMap");
   Current = &(*Current)->Next;
 
-  *Current = GetTextureUniform(GraphicsMemory, &Shader, Ssao, "Ssao");
+  *Current = GetUniform(GraphicsMemory, &Shader, Ssao, "Ssao");
   Current = &(*Current)->Next;
 
-  *Current = GetM4Uniform(GraphicsMemory, &Shader, ShadowMVP, "ShadowMVP");
+  *Current = GetUniform(GraphicsMemory, &Shader, ShadowMVP, "ShadowMVP");
   Current = &(*Current)->Next;
 
-  *Current = GetV3Uniform(GraphicsMemory, &Shader, &GlobalLight->Position, "GlobalLightPosition");
+  *Current = GetUniform(GraphicsMemory, &Shader, &Light->Position, "GlobalLightPosition");
   Current = &(*Current)->Next;
 
 #if 0
   if (Lights)
   {
-    *Current = GetLightUniform(GraphicsMemory, &Shader, Lights->Lights, "Lights");
+    *Current = GetUniform(GraphicsMemory, &Shader, Lights->Lights, "Lights");
     Current = &(*Current)->Next;
 
-    *Current = GetU32Uniform(GraphicsMemory, &Shader, &Lights->Count, "LightCount");
+    *Current = GetUniform(GraphicsMemory, &Shader, &Lights->Count, "LightCount");
     Current = &(*Current)->Next;
   }
 #endif
@@ -440,10 +362,10 @@ CreateGbufferShader(memory_arena *GraphicsMemory, m4 *ViewProjection)
 
   shader_uniform **Current = &Shader.FirstUniform;
 
-  *Current = GetM4Uniform(GraphicsMemory, &Shader, ViewProjection, "ViewProjection");
+  *Current = GetUniform(GraphicsMemory, &Shader, ViewProjection, "ViewProjection");
   Current = &(*Current)->Next;
 
-  *Current = GetM4Uniform(GraphicsMemory, &Shader, &IdentityMatrix, "Model");
+  *Current = GetUniform(GraphicsMemory, &Shader, &IdentityMatrix, "Model");
   Current = &(*Current)->Next;
 
   return Shader;
@@ -458,22 +380,22 @@ MakeSsaoShader(memory_arena *GraphicsMemory, g_buffer_textures *gTextures,
 
   shader_uniform **Current = &Shader.FirstUniform;
 
-  *Current = GetTextureUniform(GraphicsMemory, &Shader, gTextures->Color, "gColor");
+  *Current = GetUniform(GraphicsMemory, &Shader, gTextures->Color, "gColor");
   Current = &(*Current)->Next;
 
-  *Current = GetTextureUniform(GraphicsMemory, &Shader, gTextures->Normal, "gNormal");
+  *Current = GetUniform(GraphicsMemory, &Shader, gTextures->Normal, "gNormal");
   Current = &(*Current)->Next;
 
-  *Current = GetTextureUniform(GraphicsMemory, &Shader, gTextures->Position, "gPosition");
+  *Current = GetUniform(GraphicsMemory, &Shader, gTextures->Position, "gPosition");
   Current = &(*Current)->Next;
 
-  *Current = GetTextureUniform(GraphicsMemory, &Shader, SsaoNoiseTexture, "SsaoNoiseTexture");
+  *Current = GetUniform(GraphicsMemory, &Shader, SsaoNoiseTexture, "SsaoNoiseTexture");
   Current = &(*Current)->Next;
 
-  *Current = GetV3Uniform(GraphicsMemory, &Shader, SsaoNoiseTile, "SsaoNoiseTile");
+  *Current = GetUniform(GraphicsMemory, &Shader, SsaoNoiseTile, "SsaoNoiseTile");
   Current = &(*Current)->Next;
 
-  *Current = GetM4Uniform(GraphicsMemory, &Shader, ViewProjection, "ViewProjection");
+  *Current = GetUniform(GraphicsMemory, &Shader, ViewProjection, "ViewProjection");
   Current = &(*Current)->Next;
 
   AssertNoGlErrors;
@@ -555,8 +477,8 @@ InitializeShadowBuffer(shadow_render_group *SG, memory_arena *GraphicsMemory)
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-  SG->Light.Position = V3(0.5f, 1.0f, 1.0f);
-  SG->Light.Type = LightType_Directional;
+  SG->TestLight.Position = V3(0.5f, 1.0f, 1.0f);
+  SG->TestLight.Type = LightType_Directional;
 
   SG->Lights.Lights = PUSH_STRUCT_CHECKED(light, GraphicsMemory, MAX_GAME_LIGHTS);
 
@@ -611,9 +533,13 @@ BindShaderUniforms(shader *Shader)
         GL_Global->glUniformMatrix4fv(Uniform->ID, 1, GL_FALSE, (r32*)Uniform->M4);
       } break;
 
-      case ShaderUniform_Vector3:
+      case ShaderUniform_V3:
       {
-        GL_Global->glUniform3fv(Uniform->ID, 1, (r32*)Uniform->Vector3);
+        GL_Global->glUniform3fv(Uniform->ID, 1, (r32*)Uniform->V3);
+      } break;
+
+      case ShaderUniform_Light:
+      {
       } break;
 
       InvalidDefaultCase;
@@ -671,7 +597,7 @@ DrawGBufferToFullscreenQuad( platform *Plat, g_buffer_render_group *RG, shadow_r
 
   GL_Global->glUseProgram(RG->LightingShader.ID);
 
-  RG->ShadowMVP = NdcToScreenSpace * GetShadowMapMVP(Camera, &SG->Light);
+  RG->ShadowMVP = NdcToScreenSpace * GetShadowMapMVP(Camera, &SG->TestLight);
 
   BindShaderUniforms(&RG->LightingShader);
 
@@ -701,7 +627,7 @@ RenderShadowMap(mesh_buffer_target *Mesh, shadow_render_group *SG, g_buffer_rend
 {
   SetViewport(V2(SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y));
 
-  m4 MVP = GetShadowMapMVP(Camera, &SG->Light);
+  m4 MVP = GetShadowMapMVP(Camera, &SG->TestLight);
 
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
 
