@@ -21,5 +21,3 @@ GLOBAL_VARIABLE chunk_dimension Global_WorldChunkDim = WORLD_CHUNK_DIM;
 
 #define SHADOW_MAP_Z_MIN (-100.0f)
 #define SHADOW_MAP_Z_MAX ( 100.0f)
-
-#define MAX_GAME_LIGHTS (32)

@@ -263,8 +263,16 @@ MakeLightingShader(memory_arena *GraphicsMemory,
   *Current = GetUniform(GraphicsMemory, &Shader, ShadowMVP, "ShadowMVP");
   Current = &(*Current)->Next;
 
-  *Current = GetUniform(GraphicsMemory, &Shader, Light, "LightPositions[0]");
-  Current = &(*Current)->Next;
+  for ( u32 LightIndex = 0;
+        LightIndex < MAX_LIGHTS;
+        ++LightIndex)
+  {
+    char UniformName[64];
+    sprintf(UniformName, "LightPositions[%u]", LightIndex);
+
+    *Current = GetUniform(GraphicsMemory, &Shader, Light, UniformName);
+    Current = &(*Current)->Next;
+  }
 
   *Current = GetUniform(GraphicsMemory, &Shader, Camera, "CameraP");
   Current = &(*Current)->Next;
@@ -458,6 +466,16 @@ InitGbufferRenderGroup( g_buffer_render_group *gBuffer, memory_arena *GraphicsMe
   return Result;
 }
 
+void
+PushLight(game_lights *Lights, v3 Position, light_type Type)
+{
+  light *Light = &Lights->Lights[Lights->Count++];
+  Light->Position = Position;
+  Light->Type = Type;
+
+  return;
+}
+
 bool
 InitializeShadowBuffer(shadow_render_group *SG, memory_arena *GraphicsMemory)
 {
@@ -485,10 +503,8 @@ InitializeShadowBuffer(shadow_render_group *SG, memory_arena *GraphicsMemory)
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-  SG->TestLight.Position = V3(0.0f, 0.0f, 17.0f);
-  SG->TestLight.Type = LightType_Directional;
-
-  SG->Lights.Lights = PUSH_STRUCT_CHECKED(light, GraphicsMemory, MAX_GAME_LIGHTS);
+  SG->GameLights.Lights = PUSH_STRUCT_CHECKED(light, GraphicsMemory, MAX_LIGHTS);
+  PushLight(&SG->GameLights, V3(0.0f, 0.0f, 17.0f), LightType_Point);
 
  return true;
 }
@@ -612,7 +628,7 @@ DrawGBufferToFullscreenQuad( platform *Plat, g_buffer_render_group *RG, shadow_r
 
   GL_Global->glUseProgram(RG->LightingShader.ID);
 
-  RG->ShadowMVP = NdcToScreenSpace * GetShadowMapMVP(Camera, &SG->TestLight);
+  RG->ShadowMVP = NdcToScreenSpace * GetShadowMapMVP(Camera, &SG->GameLights.Lights[0]);
 
   BindShaderUniforms(&RG->LightingShader);
 
@@ -640,9 +656,10 @@ DEBUG_CopyTextureToMemory(texture *Texture)
 void
 RenderShadowMap(mesh_buffer_target *Mesh, shadow_render_group *SG, g_buffer_render_group *RG, camera *Camera)
 {
+#if 0
   SetViewport(V2(SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y));
 
-  m4 MVP = GetShadowMapMVP(Camera, &SG->TestLight);
+  m4 MVP = GetShadowMapMVP(Camera, &SG->GameLights[0]);
 
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
 
@@ -668,6 +685,7 @@ RenderShadowMap(mesh_buffer_target *Mesh, shadow_render_group *SG, g_buffer_rend
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
   return;
+#endif
 }
 
 void
