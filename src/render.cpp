@@ -167,7 +167,11 @@ PushShaderUniform( memory_arena *Mem, const char *Name)
   return Uniform;
 }
 
-#define ShaderUniformAllocator(type, TypeName)                                 \
+/*
+ * Unfortunately the c pre-processor makes us pass in the type and the name
+ * we're going to access it with.
+ */
+#define BasicTypeUniformAllocators(type, TypeName)                                 \
   shader_uniform *                                                             \
   PushShaderUniform( memory_arena *Mem, const char *Name, type *Value)         \
   {                                                                            \
@@ -184,12 +188,13 @@ PushShaderUniform( memory_arena *Mem, const char *Name)
     return Uniform;                                                            \
   }
 
-ShaderUniformAllocator(light, Light)
-ShaderUniformAllocator(texture, Texture)
-ShaderUniformAllocator(m4, M4)
-ShaderUniformAllocator(v3, V3)
-ShaderUniformAllocator(u32, U32)
-ShaderUniformAllocator(s32, S32)
+BasicTypeUniformAllocators(camera, Camera)
+BasicTypeUniformAllocators(texture, Texture)
+BasicTypeUniformAllocators(light, Light)
+BasicTypeUniformAllocators(m4, M4)
+BasicTypeUniformAllocators(v3, V3)
+BasicTypeUniformAllocators(u32, U32)
+BasicTypeUniformAllocators(s32, S32)
 
 void
 InitSsaoKernel(v3 *Kernel, s32 Count, random_series *Entropy)
@@ -234,7 +239,7 @@ MakeSimpleTextureShader(texture *Texture, memory_arena *GraphicsMemory)
 shader
 MakeLightingShader(memory_arena *GraphicsMemory,
     g_buffer_textures *gTextures, texture *ShadowMap, texture *Ssao,
-    m4 *ViewProjection, m4 *ShadowMVP, light *Light, game_lights *Lights)
+    m4 *ViewProjection, m4 *ShadowMVP, light *Light, game_lights *Lights, camera *Camera)
 {
   shader Shader = LoadShaders( "Lighting.vertexshader", "Lighting.fragmentshader", GraphicsMemory);
 
@@ -258,7 +263,10 @@ MakeLightingShader(memory_arena *GraphicsMemory,
   *Current = GetUniform(GraphicsMemory, &Shader, ShadowMVP, "ShadowMVP");
   Current = &(*Current)->Next;
 
-  *Current = GetUniform(GraphicsMemory, &Shader, &Light->Position, "GlobalLightPosition");
+  *Current = GetUniform(GraphicsMemory, &Shader, Light, "LightPositions[0]");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, Camera, "CameraP");
   Current = &(*Current)->Next;
 
 #if 0
@@ -477,7 +485,7 @@ InitializeShadowBuffer(shadow_render_group *SG, memory_arena *GraphicsMemory)
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-  SG->TestLight.Position = V3(0.5f, 1.0f, 1.0f);
+  SG->TestLight.Position = V3(0.0f, 0.0f, 17.0f);
   SG->TestLight.Type = LightType_Directional;
 
   SG->Lights.Lights = PUSH_STRUCT_CHECKED(light, GraphicsMemory, MAX_GAME_LIGHTS);
@@ -540,7 +548,14 @@ BindShaderUniforms(shader *Shader)
 
       case ShaderUniform_Light:
       {
+        GL_Global->glUniform3fv(Uniform->ID, 1, &Uniform->Light->Position.E[0]);
       } break;
+
+      case ShaderUniform_Camera:
+      {
+        v3 ViewPosition = GetRenderP(Uniform->Camera->P, Uniform->Camera);
+        GL_Global->glUniform3fv(Uniform->ID, 1, &ViewPosition.E[0]);
+      }break;;
 
       InvalidDefaultCase;
     }
@@ -2202,7 +2217,7 @@ DrawParticle(
   )
 {
   v3 VertexData[6];
- 
+
   v3 FaceColors[FACE_VERT_COUNT];
   FillColorArray(ColorIndex, FaceColors, FACE_VERT_COUNT);;
 

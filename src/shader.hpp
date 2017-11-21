@@ -10,10 +10,12 @@ enum shader_uniform_type
   ShaderUniform_U32,
   ShaderUniform_Texture,
   ShaderUniform_Light,
+  ShaderUniform_Camera,
 };
 
 struct texture;
 struct light;
+struct camera;
 struct shader_uniform
 {
   shader_uniform_type Type;
@@ -27,6 +29,7 @@ struct shader_uniform
     v3 *V3;
     s32 *S32;
     u32 *U32;
+    camera *Camera;
     void *Data;
   };
 

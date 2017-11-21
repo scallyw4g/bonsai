@@ -93,8 +93,10 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   END_BLOCK("Render - World");
 
 
-  GlobalLightTheta += (Plat->dt * TWOPI)/ 60;
-  SG->TestLight.Position = 0.1f*V3(Sin(GlobalLightTheta), Cos(GlobalLightTheta), 1.0f);
+  GlobalLightTheta += (Plat->dt * TWOPI) / 20;
+  SG->TestLight.Position += 0.1*V3( Sin(GlobalLightTheta), Cos(GlobalLightTheta), 0.0f);
+
+  DEBUG_DrawPointMarker( &World->Mesh, gBuffer, SG, Camera, SG->TestLight.Position, BLUE, V3(1.0f));
 
 
   RenderGBuffer(&World->Mesh, gBuffer, SG, Camera);
@@ -266,10 +268,12 @@ GameInit( platform *Plat, memory_arena *GameMemory)
 
 
 
+  camera *Camera = PUSH_STRUCT_CHECKED(camera, GameState->Memory, 1);
+  InitCamera(Camera, CAMERA_INITIAL_P, 5000.0f);
 
   gBuffer->LightingShader =
     MakeLightingShader(GraphicsMemory, gBuffer->Textures, SG->ShadowMap, AoGroup->Texture,
-        &gBuffer->ViewProjection, &gBuffer->ShadowMVP, &SG->TestLight, &SG->Lights);
+        &gBuffer->ViewProjection, &gBuffer->ShadowMVP, &SG->TestLight, &SG->Lights, Camera);
 
   gBuffer->gBufferShader =
     CreateGbufferShader(GraphicsMemory, &gBuffer->ViewProjection);
@@ -299,9 +303,6 @@ GameInit( platform *Plat, memory_arena *GameMemory)
   Plat->GL.glBindVertexArray(VertexArrayID);
 
   AssertNoGlErrors;
-
-  camera *Camera = PUSH_STRUCT_CHECKED(camera, GameState->Memory, 1);
-  InitCamera(Camera, CAMERA_INITIAL_P, 5000.0f);
 
   AssertNoGlErrors;
 

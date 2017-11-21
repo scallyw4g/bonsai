@@ -10,19 +10,14 @@ uniform sampler2D shadowMap;
 uniform sampler2D Ssao;
 
 
-uniform vec3 GlobalLightPosition;
+uniform vec3 LightPositions[MAX_LIGHTS];
+
 uniform mat4 ShadowMVP;
 
-uniform int LightCount;
+uniform vec3 CameraP;
 
 int AoBlurSize = 4; // size of AO noise texture
 float BlurredAO = 0.0f;
-
-// Tuning
-  float exposure = 1.0f;
-  float gamma = 2.2f;
-  float GlobalLightIntensity = 1.0f;
-//
 
 vec2 poissonDisk[16] = vec2[](
    vec2( -0.94201624, -0.39906216 ),
@@ -49,6 +44,14 @@ vec2 poissonDisk[16] = vec2[](
 
 
 
+// Tuning
+  float gamma = 2.2f;
+  float GlobalLightIntensity = 0.1f; // 1.0 represents full sun
+  vec3 LightColor = vec3(0,0,15);
+
+  float materialShininess = 15.0f;
+//
+
 
 void main()
 {
@@ -56,10 +59,32 @@ void main()
   vec3 FragNormal   = texture(gNormal, UV).rgb;   // modelspace
   vec3 FragPosition = texture(gPosition, UV).rgb; // worldspace
 
-  vec3 Ambient = Diffuse * GlobalLightIntensity * 0.1f;
 
-  vec3 GlobalLightDirection = GlobalLightPosition;
-  float GlobalLightCosTheta = clamp( dot( FragNormal, GlobalLightDirection), 0.0f, 1.0f);
+  vec3 LightPosition = LightPositions[0];
+  vec3 FragToLight = normalize(LightPosition - FragPosition);
+
+  float LightCosTheta = clamp( dot( FragNormal, FragToLight), 0.0f, 1.0f);
+
+  float Distance = distance(FragPosition, LightPosition);
+  float LightAtt = 1.0f/(Distance*Distance);
+
+
+
+
+  vec3 reflectionVector = reflect(FragToLight, FragNormal);
+  vec3 FragToCamera = normalize(FragPosition - CameraP);
+  float cosAngle = max(0.0, dot(FragToCamera, reflectionVector));
+  float SpecularPower = pow(cosAngle, materialShininess);
+
+
+
+
+  vec3 AmbientLight = Diffuse * GlobalLightIntensity;
+  vec3 DirectLight = (Diffuse + LightColor) * LightCosTheta * LightAtt;
+  vec3 SpecularLight = (Diffuse + LightColor) * SpecularPower * LightAtt;
+
+
+
 
 
 #if USE_AO_SHADER
@@ -81,6 +106,7 @@ void main()
 #endif
 
 
+#if USE_SHADOW_MAPPING
   /*
    *  Shadow Mapping
    */
@@ -94,15 +120,8 @@ void main()
   /* float ShadowDepth = texture(shadowMap, vec3(FragPShadowScreenSpace.xy, FragPShadowScreenSpace.z/FragPShadowScreenSpace.w)) + acneBias; */
   float ShadowDepth = texture(shadowMap, FragPShadowScreenSpace.xy).x + acneBias;
 
-  /* color = vec4(FragPShadowScreenSpace.xyz, 1); */
-  /* color.xyz = vec3(FragPShadowDepth); */
-  /* return; */
-
-
   if ( FragPShadowDepth > ShadowDepth )
-  {
     visibility = vec3(0.1f);
-  }
 
   /* float visibility = 1.0f; */
   /* for (int i=0;i < 8;i++){ */
@@ -110,19 +129,15 @@ void main()
   /*   visibility -= 0.1*( 1.0 - texture(shadowMap, vec3(ShadowCoord.xy + poissonDisk[index]/1000.0,  (ShadowCoord.z-bias)/ShadowCoord.w) )); */
   /* } */
 
-
-
-
-
+#else
+  vec3 visibility = vec3(1.0f);
+#endif
 
   /*
-   *  HDR tone-mapping && gamma correction
+   *  Tone-mapping && gamma correction
    */
   vec3 hdrColor =
-    Ambient
-    + Diffuse * GlobalLightCosTheta * GlobalLightIntensity * visibility
-    * vec3(BlurredAO)
-  ;
+    (AmbientLight * BlurredAO) + DirectLight + SpecularLight;
 
   // Reinhard tone mapping
   vec3 mapped = hdrColor / (hdrColor + vec3(1.0f));
