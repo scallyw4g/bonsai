@@ -5,6 +5,7 @@ precision highp float;
 precision highp sampler2DShadow;
 
 
+#define v4 vec4
 #define v3 vec3
 #define v2 vec2
 

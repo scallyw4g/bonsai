@@ -239,7 +239,7 @@ MakeSimpleTextureShader(texture *Texture, memory_arena *GraphicsMemory)
 shader
 MakeLightingShader(memory_arena *GraphicsMemory,
     g_buffer_textures *gTextures, texture *ShadowMap, texture *Ssao,
-    m4 *ViewProjection, m4 *ShadowMVP, light *Light, game_lights *Lights, camera *Camera)
+    m4 *ViewProjection, m4 *ShadowMVP, game_lights *Lights, camera *Camera)
 {
   shader Shader = LoadShaders( "Lighting.vertexshader", "Lighting.fragmentshader", GraphicsMemory);
 
@@ -270,9 +270,12 @@ MakeLightingShader(memory_arena *GraphicsMemory,
     char UniformName[64];
     sprintf(UniformName, "LightPositions[%u]", LightIndex);
 
-    *Current = GetUniform(GraphicsMemory, &Shader, Light, UniformName);
+    *Current = GetUniform(GraphicsMemory, &Shader, (*Lights)[LightIndex], UniformName);
     Current = &(*Current)->Next;
   }
+
+  *Current = GetUniform(GraphicsMemory, &Shader, &Lights->Count, "LightCount");
+  Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, Camera, "CameraP");
   Current = &(*Current)->Next;
@@ -469,7 +472,7 @@ InitGbufferRenderGroup( g_buffer_render_group *gBuffer, memory_arena *GraphicsMe
 void
 PushLight(game_lights *Lights, v3 Position, light_type Type)
 {
-  light *Light = &Lights->Lights[Lights->Count++];
+  light *Light = (*Lights)[Lights->Count++];
   Light->Position = Position;
   Light->Type = Type;
 
@@ -505,6 +508,7 @@ InitializeShadowBuffer(shadow_render_group *SG, memory_arena *GraphicsMemory)
 
   SG->GameLights.Lights = PUSH_STRUCT_CHECKED(light, GraphicsMemory, MAX_LIGHTS);
   PushLight(&SG->GameLights, V3(0.0f, 0.0f, 17.0f), LightType_Point);
+  PushLight(&SG->GameLights, V3(0.0f, 0.0f, 20.0f), LightType_Point);
 
  return true;
 }
@@ -550,6 +554,16 @@ BindShaderUniforms(shader *Shader)
         glBindTexture(GL_TEXTURE_2D, Uniform->Texture->ID);
 
         TextureUnit++;
+      } break;
+
+      case ShaderUniform_U32:
+      {
+        GL_Global->glUniform1i(Uniform->ID, *Uniform->U32);
+      } break;
+
+      case ShaderUniform_S32:
+      {
+        GL_Global->glUniform1i(Uniform->ID, *Uniform->S32);
       } break;
 
       case ShaderUniform_M4:

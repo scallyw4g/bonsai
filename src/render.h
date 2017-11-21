@@ -32,6 +32,13 @@ struct game_lights
 {
   u32 Count;
   light *Lights;
+
+  light *
+  operator[](s32 Index)
+  {
+    light *Result = &this->Lights[Index];
+    return Result;
+  }
 };
 
 struct RenderBasis

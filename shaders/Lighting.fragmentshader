@@ -1,6 +1,6 @@
 
 in vec2 UV;
-out vec4 color;
+out vec4 OutColor;
 
 
 uniform sampler2D gColor;
@@ -10,6 +10,7 @@ uniform sampler2D shadowMap;
 uniform sampler2D Ssao;
 
 
+uniform int LightCount;
 uniform vec3 LightPositions[MAX_LIGHTS];
 
 uniform mat4 ShadowMVP;
@@ -59,30 +60,44 @@ void main()
   vec3 FragNormal   = texture(gNormal, UV).rgb;   // modelspace
   vec3 FragPosition = texture(gPosition, UV).rgb; // worldspace
 
-
-  vec3 LightPosition = LightPositions[0];
-  vec3 FragToLight = normalize(LightPosition - FragPosition);
-
-  float LightCosTheta = clamp( dot( FragNormal, FragToLight), 0.0f, 1.0f);
-
-  float Distance = distance(FragPosition, LightPosition);
-  float LightAtt = 1.0f/(Distance*Distance);
-
-
-
-
-  vec3 reflectionVector = reflect(FragToLight, FragNormal);
-  vec3 FragToCamera = normalize(FragPosition - CameraP);
-  float cosAngle = max(0.0, dot(FragToCamera, reflectionVector));
-  float SpecularPower = pow(cosAngle, materialShininess);
-
-
-
-
   vec3 AmbientLight = Diffuse * GlobalLightIntensity;
-  vec3 DirectLight = (Diffuse + LightColor) * LightCosTheta * LightAtt;
-  vec3 SpecularLight = (Diffuse + LightColor) * SpecularPower * LightAtt;
+  vec3 AccumulatedLight = AmbientLight;
 
+  for ( int LightIndex = 0;
+      LightIndex < LightCount;
+      ++LightIndex)
+  {
+    if (LightIndex == 0)
+    {
+      LightColor = vec3(0,15,0);
+    }
+
+    if (LightIndex == 1)
+    {
+      LightColor = vec3(0,0,15);
+    }
+
+    vec3 LightPosition = LightPositions[LightIndex];
+    vec3 FragToLight = normalize(LightPosition - FragPosition);
+
+    float LightCosTheta = clamp( dot( FragNormal, FragToLight), 0.0f, 1.0f);
+
+    float Distance = distance(FragPosition, LightPosition);
+    float LightAtt = 1.0f/(Distance*Distance);
+
+
+    vec3 reflectionVector = reflect(FragToLight, FragNormal);
+    vec3 FragToCamera = normalize(FragPosition - CameraP);
+    float cosAngle = max(0.0, dot(FragToCamera, reflectionVector));
+    float SpecularPower = pow(cosAngle, materialShininess);
+
+
+    vec3 DirectLight = (Diffuse + LightColor) * LightCosTheta * LightAtt;
+    vec3 SpecularLight = (Diffuse + LightColor) * SpecularPower * LightAtt;
+
+
+    AccumulatedLight += DirectLight + SpecularLight;
+  }
 
 
 
@@ -106,12 +121,12 @@ void main()
 #endif
 
 
+  vec3 Visibility = vec3(1.0f);
+
 #if USE_SHADOW_MAPPING
   /*
    *  Shadow Mapping
    */
-  vec3 visibility = vec3(1.0f);
-
   vec4 FragPShadowScreenSpace = ShadowMVP * vec4(FragPosition, 1.0f);
 
   float FragPShadowDepth = FragPShadowScreenSpace.z;
@@ -121,27 +136,24 @@ void main()
   float ShadowDepth = texture(shadowMap, FragPShadowScreenSpace.xy).x + acneBias;
 
   if ( FragPShadowDepth > ShadowDepth )
-    visibility = vec3(0.1f);
+    Visibility = vec3(0.1f);
 
-  /* float visibility = 1.0f; */
+  /* float Visibility = 1.0f; */
   /* for (int i=0;i < 8;i++){ */
   /*   int index = i * 2; */
-  /*   visibility -= 0.1*( 1.0 - texture(shadowMap, vec3(ShadowCoord.xy + poissonDisk[index]/1000.0,  (ShadowCoord.z-bias)/ShadowCoord.w) )); */
+  /*   Visibility -= 0.1*( 1.0 - texture(shadowMap, vec3(ShadowCoord.xy + poissonDisk[index]/1000.0,  (ShadowCoord.z-bias)/ShadowCoord.w) )); */
   /* } */
-
-#else
-  vec3 visibility = vec3(1.0f);
 #endif
 
   /*
    *  Tone-mapping && gamma correction
    */
-  vec3 hdrColor =
-    (AmbientLight * BlurredAO) + DirectLight + SpecularLight;
+  vec3 TotalLight = BlurredAO * Visibility * AccumulatedLight;
+
 
   // Reinhard tone mapping
-  vec3 mapped = hdrColor / (hdrColor + vec3(1.0f));
+  vec3 ToneMapped = TotalLight / (TotalLight + vec3(1.0f));
 
   // Gamma correction
-  color = vec4(pow(mapped, vec3(1.0f / gamma)), 1.0f);
+  OutColor = vec4(pow(ToneMapped, vec3(1.0f / gamma)), 1.0f);
 }
