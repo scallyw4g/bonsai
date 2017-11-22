@@ -30,7 +30,7 @@ struct light
 
 struct game_lights
 {
-  u32 Count;
+  s32 Count;
   light *Lights;
 
   light *

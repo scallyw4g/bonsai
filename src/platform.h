@@ -109,6 +109,8 @@ struct gl_extensions
   PFNGLUNIFORMMATRIX4FVPROC glUniformMatrix4fv;
   PFNGLUNIFORM1IPROC glUniform1i;
   PFNGLACTIVETEXTUREPROC glActiveTexture;
+  PFNGLUNIFORM1FPROC glUniform1f;
+  PFNGLUNIFORM1UIPROC glUniform1ui;
 
   // Platform specific (wgl / glX)
   PFNSWAPINTERVALPROC glSwapInterval;

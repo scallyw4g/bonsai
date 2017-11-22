@@ -8,9 +8,6 @@ out vec3 MaterialColor;
 
 uniform mat4 ViewProjection;
 uniform mat4 Model;
-uniform vec3 LightP_worldspace;
-
-uniform mat4 DepthBiasMVP;
 
 void main()
 {

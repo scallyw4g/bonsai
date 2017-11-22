@@ -194,6 +194,8 @@ InitializeOpenGlExtensions(gl_extensions *Gl, os *Os)
   DefGlProc(PFNGLUNIFORM2FVPROC, glUniform2fv);
   DefGlProc(PFNGLUNIFORMMATRIX4FVPROC, glUniformMatrix4fv);
   DefGlProc(PFNGLUNIFORM1IPROC, glUniform1i);
+  DefGlProc(PFNGLUNIFORM1FPROC, glUniform1f);
+  DefGlProc(PFNGLUNIFORM1UIPROC, glUniform1ui);
 
   /*
    * 3.0

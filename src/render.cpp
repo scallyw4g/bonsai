@@ -193,8 +193,9 @@ BasicTypeUniformAllocators(texture, Texture)
 BasicTypeUniformAllocators(light, Light)
 BasicTypeUniformAllocators(m4, M4)
 BasicTypeUniformAllocators(v3, V3)
-BasicTypeUniformAllocators(u32, U32)
+/* BasicTypeUniformAllocators(u32, U32) */ // Not sure this is useful
 BasicTypeUniformAllocators(s32, S32)
+BasicTypeUniformAllocators(r32, R32)
 
 void
 InitSsaoKernel(v3 *Kernel, s32 Count, random_series *Entropy)
@@ -374,10 +375,10 @@ CheckAndClearFramebuffer()
 }
 
 shader
-CreateGbufferShader(memory_arena *GraphicsMemory, m4 *ViewProjection)
+CreateGbufferShader(memory_arena *GraphicsMemory, m4 *ViewProjection, camera *Camera)
 {
-  shader Shader = LoadShaders( "SimpleVertexShader.vertexshader",
-                               "SimpleFragmentShader.fragmentshader", GraphicsMemory);
+  shader Shader = LoadShaders( "gBuffer.vertexshader",
+                               "gBuffer.fragmentshader", GraphicsMemory);
 
   shader_uniform **Current = &Shader.FirstUniform;
 
@@ -385,6 +386,12 @@ CreateGbufferShader(memory_arena *GraphicsMemory, m4 *ViewProjection)
   Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, &IdentityMatrix, "Model");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, &Camera->Frust.farClip, "FarClip");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, &Camera->Frust.nearClip, "NearClip");
   Current = &(*Current)->Next;
 
   return Shader;
@@ -558,7 +565,12 @@ BindShaderUniforms(shader *Shader)
 
       case ShaderUniform_U32:
       {
-        GL_Global->glUniform1i(Uniform->ID, *Uniform->U32);
+        GL_Global->glUniform1ui(Uniform->ID, *Uniform->U32);
+      } break;
+
+      case ShaderUniform_R32:
+      {
+        GL_Global->glUniform1f(Uniform->ID, *Uniform->R32);
       } break;
 
       case ShaderUniform_S32:

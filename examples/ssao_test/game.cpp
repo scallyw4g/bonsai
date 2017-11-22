@@ -46,7 +46,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 #endif
 
 
-  OrbitCameraAroundTarget(Camera);
+  /* OrbitCameraAroundTarget(Camera); */
   UpdateCameraP(Plat, World, Canonical_Position(0), Camera);
   GlobalCameraTheta += Plat->dt*0.5;
 
@@ -95,6 +95,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
   GlobalLightTheta += (Plat->dt * TWOPI) / 20;
   SG->GameLights.Lights[0].Position += 0.1*V3( Sin(GlobalLightTheta), Cos(GlobalLightTheta), 0.0f);
+  SG->GameLights.Lights[1].Position += 0.2*V3( Sin(GlobalLightTheta), Cos(GlobalLightTheta), 0.0f);
   DEBUG_DrawPointMarker( &World->Mesh, gBuffer, SG, Camera, SG->GameLights.Lights[0].Position, BLUE, V3(1.0f));
   DEBUG_DrawPointMarker( &World->Mesh, gBuffer, SG, Camera, SG->GameLights.Lights[1].Position, RED, V3(1.0f));
 
@@ -134,7 +135,7 @@ InitializeVoxels( game_state *GameState, world_chunk *Chunk )
   if ( Chunk->WorldP.z == 0 )
   {
     chunk_dimension Dim = GameState->World->ChunkDim;
-    InitChunkPerlin(GameState, Chunk, V3(Dim));
+    InitChunkPerlin(GameState, Chunk, V3(Dim), GRASS_GREEN);
 
     for ( int z = 0; z < Dim.z; ++ z)
     {
@@ -149,11 +150,11 @@ InitializeVoxels( game_state *GameState, world_chunk *Chunk )
             SetFlag(Vox, Voxel_Filled);
             if (z==0)
             {
-              Vox->Color = LIGHT_GREEN;
+              Vox->Color = GRASS_GREEN;
             }
             else
             {
-              Vox->Color = GREY;
+              Vox->Color = WHITE;
             }
           }
         }
@@ -269,14 +270,14 @@ GameInit( platform *Plat, memory_arena *GameMemory)
 
 
   camera *Camera = PUSH_STRUCT_CHECKED(camera, GameState->Memory, 1);
-  InitCamera(Camera, CAMERA_INITIAL_P, 5000.0f);
+  InitCamera(Camera, CAMERA_INITIAL_P, 500.0f);
 
   gBuffer->LightingShader =
     MakeLightingShader(GraphicsMemory, gBuffer->Textures, SG->ShadowMap, AoGroup->Texture,
         &gBuffer->ViewProjection, &gBuffer->ShadowMVP, &SG->GameLights, Camera);
 
   gBuffer->gBufferShader =
-    CreateGbufferShader(GraphicsMemory, &gBuffer->ViewProjection);
+    CreateGbufferShader(GraphicsMemory, &gBuffer->ViewProjection, Camera);
 
   AoGroup->Shader = MakeSsaoShader(GraphicsMemory, gBuffer->Textures, SsaoNoiseTexture,
       &AoGroup->NoiseTile, &gBuffer->ViewProjection);

@@ -117,7 +117,7 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory)
 }
 
 void
-InitChunkPerlin( game_state *GameState, world_chunk *WorldChunk, v3 WorldChunkDim)
+InitChunkPerlin( game_state *GameState, world_chunk *WorldChunk, v3 WorldChunkDim, u32 ColorIndex)
 {
   Assert(WorldChunk);
 
@@ -169,7 +169,7 @@ InitChunkPerlin( game_state *GameState, world_chunk *WorldChunk, v3 WorldChunkDi
         {
           Assert( IsSet(&chunk->Voxels[i], Voxel_Filled) );
           WorldChunk->Filled ++;
-          chunk->Voxels[i].Color = RED;
+          chunk->Voxels[i].Color = ColorIndex;
         }
       }
     }

@@ -10,3 +10,5 @@ DEBUG_GLOBAL canonical_position CameraInitialP = { {5,-5,15}, {0,0,0} };
 #define CAMERA_INITIAL_P CameraInitialP
 
 DEBUG_GLOBAL r32 GlobalCameraTheta = 0;
+
+#define GROUND_COLOR GRASS_GREEN
