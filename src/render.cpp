@@ -788,22 +788,23 @@ DEBUG_DrawPointMarker( mesh_buffer_target *Mesh,
 
   v3 VertexData[6];
 
-  RightFaceVertexData( RenderP, Diameter, VertexData);
+  v3 Center = RenderP - (Diameter*0.5);
+  RightFaceVertexData( Center, Diameter, VertexData);
   BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, RightFaceNormalData, FaceColors);
 
-  LeftFaceVertexData( RenderP, Diameter, VertexData);
+  LeftFaceVertexData( Center, Diameter, VertexData);
   BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, LeftFaceNormalData, FaceColors);
 
-  BottomFaceVertexData( RenderP, Diameter, VertexData);
+  BottomFaceVertexData( Center, Diameter, VertexData);
   BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, BottomFaceNormalData, FaceColors);
 
-  TopFaceVertexData( RenderP, Diameter, VertexData);
+  TopFaceVertexData( Center, Diameter, VertexData);
   BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, TopFaceNormalData, FaceColors);
 
-  FrontFaceVertexData( RenderP, Diameter, VertexData);
+  FrontFaceVertexData( Center, Diameter, VertexData);
   BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, FrontFaceNormalData, FaceColors);
 
-  BackFaceVertexData( RenderP, Diameter, VertexData);
+  BackFaceVertexData( Center, Diameter, VertexData);
   BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, BackFaceNormalData, FaceColors);
 
   return;
