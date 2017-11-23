@@ -1,17 +1,7 @@
 #ifndef BONSAI_PLATFORM_H
 #define BONSAI_PLATFORM_H
 
-#include <platform_constants.h>
 #include <bonsai_types.h>
-
-#ifdef _WIN32
-#include <win32_platform.h>
-#else
-#include <unix_platform.h>
-#endif
-
-#define Assert(condition) \
-  if (!(condition)) { Debug(" ! Failed - '%s' on Line: %d in File: %s", #condition, __LINE__, __FILE__); RuntimeBreak(); }
 
 // FIXME(Jesse): Define per application!
 #define WORK_QUEUE_SIZE (2048)

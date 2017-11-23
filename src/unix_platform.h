@@ -1,6 +1,3 @@
-#ifndef UNIX_PLATFORM_H
-#define UNIX_PLATFORM_H
-
 #include <pthread.h>
 
 // Assert
@@ -66,5 +63,3 @@ WakeThread( semaphore *Semaphore )
   sem_post(Semaphore);
   return;
 }
-
-#endif

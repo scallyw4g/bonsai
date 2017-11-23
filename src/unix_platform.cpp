@@ -1,9 +1,5 @@
-#ifndef UNIX_PLATFORM_CPP
-#define UNIX_PLATFORM_CPP
-
 #include <stdio.h>
 
-#include <unix_platform.h>
 #include <platform.h>
 
 #include <GL/glx.h>
@@ -366,5 +362,3 @@ SetMouseP(v2 P)
 {
   return;
 }
-
-#endif
