@@ -153,7 +153,7 @@ GetProcFromLib(shared_lib Lib, const char *Name)
 char*
 GetCwd()
 {
-  GLOBAL_VARIABLE char GlobalCwdBuffer[GlobalCwdBufferLength];
+  global_variable char GlobalCwdBuffer[GlobalCwdBufferLength];
   getcwd(GlobalCwdBuffer, GlobalCwdBufferLength);
   return (GlobalCwdBuffer);
 }

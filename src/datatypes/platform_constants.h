@@ -50,8 +50,8 @@
 
 #define __FUNCTION_NAME__ __FUNCTION__
 
-#define GLOBAL_VARIABLE static
-#define DEBUG_GLOBAL static
+#define global_variable static
+#define debug_global static
 
 #define VariadicOutputDebugString(FormatString, ...) {    \
     char Buffer[1024] = {};                               \
@@ -88,8 +88,8 @@
 #define __FUNCTION_NAME__ __func__
 
 // Hush up gcc about unreferenced globals
-#define GLOBAL_VARIABLE static __attribute__((unused))
-#define DEBUG_GLOBAL static __attribute__((unused))
+#define global_variable static __attribute__((unused))
+#define debug_global static __attribute__((unused))
 
 #define Info(...)  printf("   Info - ");  printf(__VA_ARGS__); printf("\n")
 #define Debug(...) printf(__VA_ARGS__);   printf("\n")

@@ -14,11 +14,11 @@
 #include <bonsai_vertex.h>
 #include <bonsai_mesh.cpp>
 
-GLOBAL_VARIABLE u32 Global_QuadVertexBuffer = 0;
+global_variable u32 Global_QuadVertexBuffer = 0;
 
-GLOBAL_VARIABLE v3 GlobalLightPosition = {0.20f, 1.0f, 1.0f};
+global_variable v3 GlobalLightPosition = {0.20f, 1.0f, 1.0f};
 
-GLOBAL_VARIABLE m4 NdcToScreenSpace = {
+global_variable m4 NdcToScreenSpace = {
   V4(0.5, 0.0, 0.0, 0.0),
   V4(0.0, 0.5, 0.0, 0.0),
   V4(0.0, 0.0, 0.5, 0.0),
@@ -71,7 +71,7 @@ RenderQuad()
 
 
 
-GLOBAL_VARIABLE m4 IdentityMatrix = {V4(1, 0, 0 ,0),
+global_variable m4 IdentityMatrix = {V4(1, 0, 0 ,0),
                                      V4(0, 1, 0 ,0),
                                      V4(0, 0, 1 ,0),
                                      V4(0, 0, 0 ,0)};

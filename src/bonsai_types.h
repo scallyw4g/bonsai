@@ -4,6 +4,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 
+#include <platform_constants.h>
+
 #include <basic_types.h>
 #include <vector_types.h>
 #include <line_types.h>

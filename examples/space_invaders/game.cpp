@@ -5,8 +5,8 @@
 // TODO(Jesse): Axe these!
 static gl_extensions *GL_Global;
 
-GLOBAL_VARIABLE physics NullPhysics = {};
-GLOBAL_VARIABLE hotkeys NullHotkeys = {};
+global_variable physics NullPhysics = {};
+global_variable hotkeys NullHotkeys = {};
 
 #include <game.h>
 #include <game_constants.h>

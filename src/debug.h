@@ -4,14 +4,26 @@
 #include <iostream>
 #include <cstdarg>
 
-using namespace std;
-
 void DebugFrameEnd(r32 dt);
+
+debug_timed_function
+DebugTimedFunction(u32 FunctionIndexIn, const char* FuncNameIn)
+{
+  Assert(FunctionIndexIn < DEBUG_STATE_ENTRY_COUNT);
+
+  debug_timed_function Result = {};
+  Result.FunctionIndex = FunctionIndexIn;
+  Result.FuncName = FuncNameIn;
+
+  // Record cycle count at last moment
+  Result.StartingCycleCount = GetDebugState()->GetCycleCount();
+  return Result;
+}
 
 #if DEBUG
 
-#define TIMED_FUNCTION() debug_timed_function FunctionTimer(__COUNTER__, __FUNCTION_NAME__)
-#define TIMED_BLOCK(BlockName) { debug_timed_function BlockTimer(__COUNTER__, BlockName)
+#define TIMED_FUNCTION() debug_timed_function FunctionTimer = DebugTimedFunction(__COUNTER__, __FUNCTION_NAME__)
+#define TIMED_BLOCK(BlockName) { debug_timed_function BlockTimer = DebugTimedFunction(__COUNTER__, BlockName)
 #define END_BLOCK(BlockName) }
 #define DEBUG_FRAME_END(...) DebugFrameEnd(__VA_ARGS__)
 
@@ -25,7 +37,9 @@ void DebugFrameEnd(r32 dt);
 #endif
 
 
-void Log(const char* fmt...)
+
+void
+Log(const char* fmt...)
 {
   va_list args;
   va_start(args, fmt);
@@ -39,31 +53,31 @@ void Log(const char* fmt...)
 
       if (*fmt == 'd')
       {
-        cout << va_arg(args, s32);
+        std::cout << va_arg(args, s32);
       }
       else if (*fmt == 'l')
       {
         ++fmt;
         if (*fmt == 'u')
         {
-          cout << va_arg(args, u64);
+          std::cout << va_arg(args, u64);
         }
         else if (*fmt == 'd')
         {
-          cout << va_arg(args, s64);
+          std::cout << va_arg(args, s64);
         }
       }
       else if (*fmt == 'u')
       {
-        cout << va_arg(args, u32);
+        std::cout << va_arg(args, u32);
       }
       else if (*fmt == 's')
       {
-        cout << va_arg(args, char*);
+        std::cout << va_arg(args, char*);
       }
       else if (*fmt == 'f')
       {
-        cout << va_arg(args, r64);
+        std::cout << va_arg(args, r64);
       }
       else if (*fmt == 'b')
       {
@@ -75,24 +89,24 @@ void Log(const char* fmt...)
         else
           Output = "False";
 
-        cout << Output;
+        std::cout << Output;
       }
       else
       {
         va_arg(args, void*);
-        cout << '?';
+        std::cout << '?';
       }
 
     }
     else
     {
-      cout << (char)(*fmt);
+      std::cout << (char)(*fmt);
     }
 
     ++fmt;
   }
 
-  cout << endl;
+  std::cout << std::endl;
 
   va_end(args);
 }

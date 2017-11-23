@@ -22,8 +22,7 @@ struct debug_state
 };
 
 
-// FIXME(Jesse): Get debug_global in here instead of static
-static debug_state GlobalDebugState;
+debug_global debug_state GlobalDebugState;
 inline debug_state*
 GetDebugState() { return &GlobalDebugState; }
 
@@ -58,17 +57,6 @@ struct debug_timed_function
   u64 EndingCycleCount;
 
   const char* FuncName;
-
-  debug_timed_function(u32 FunctionIndexIn, const char* FuncNameIn)
-  {
-    // FIXME(Jesse): We need an Assert here!!
-    // Assert(FunctionIndexIn < DEBUG_STATE_ENTRY_COUNT);
-    FunctionIndex = FunctionIndexIn;
-    FuncName = FuncNameIn;
-
-    // Record cycle count at last moment
-    StartingCycleCount = GetDebugState()->GetCycleCount();
-  }
 
   ~debug_timed_function()
   {

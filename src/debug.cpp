@@ -134,7 +134,7 @@ PrintDebugText( debug_text_render_group *RG, const char *Text, v2 XY, s32 FontSi
   return Result;
 }
 
-DEBUG_GLOBAL u64 LastFrameCycleCount = 0;
+debug_global u64 LastFrameCycleCount = 0;
 
 inline r32
 CalculateFramePercentage(debug_profile_entry *Entry, u64 CycleDelta)
@@ -164,15 +164,15 @@ DebugFrameEnd(r32 dt)
   u64 CycleDelta = CurrentFrameCycleCount - LastFrameCycleCount;
   LastFrameCycleCount = CurrentFrameCycleCount;
 
-  DEBUG_GLOBAL u64 MaxCycleCount = CycleDelta;
-  DEBUG_GLOBAL u64 MinCycleCount = CycleDelta;
+  debug_global u64 MaxCycleCount = CycleDelta;
+  debug_global u64 MinCycleCount = CycleDelta;
 
   MaxCycleCount = Max(CycleDelta, MaxCycleCount);
   MinCycleCount = Min(CycleDelta, MinCycleCount);
 
   s32 LinePadding = 3;
 
-  DEBUG_GLOBAL r32 MaxX = 0;
+  debug_global r32 MaxX = 0;
 
   debug_profile_entry SortedEntries[DEBUG_STATE_ENTRY_COUNT];
 
@@ -249,7 +249,7 @@ DebugFrameEnd(r32 dt)
   }
 
   {
-    DEBUG_GLOBAL s32 HitCountX = 0;
+    debug_global s32 HitCountX = 0;
 
     for (s32 EntryIndex = 0;
         EntryIndex < DEBUG_STATE_ENTRY_COUNT;

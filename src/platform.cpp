@@ -4,7 +4,6 @@
 
 #include <iostream>
 
-#include <platform_constants.h>
 #include <bonsai_types.h>
 #include <constants.hpp>
 
@@ -31,8 +30,8 @@ static gl_extensions *GL_Global = 0;
 #include <sys/stat.h>
 
 
-GLOBAL_VARIABLE s64 LastGameLibTime = 0;
-GLOBAL_VARIABLE game_thread_callback_proc GameThreadCallback;
+global_variable s64 LastGameLibTime = 0;
+global_variable game_thread_callback_proc GameThreadCallback;
 b32
 GameLibIsNew(const char *LibPath)
 {
@@ -354,7 +353,7 @@ DoDebugFrameRecord(
     memory_arena *MainMemory)
 {
   {
-    GLOBAL_VARIABLE b32 Toggled = False;
+    global_variable b32 Toggled = False;
     if (Hotkeys->Debug_ToggleLoopedGamePlayback  && !Toggled)
     {
       Toggled = True;

@@ -4,11 +4,11 @@
 #define VISIBLE_REGION_RADIUS (VISIBLE_REGION/2)
 #define WORLD_CHUNK_DIM Chunk_Dimension(CD_X,CD_Y,CD_Z)
 
-GLOBAL_VARIABLE r32 CAMERA_FOCAL_LENGTH = 200.0f;
+global_variable r32 CAMERA_FOCAL_LENGTH = 200.0f;
 
-DEBUG_GLOBAL canonical_position CameraInitialP = { {0,-5,4}, {0,0,0} };
+debug_global canonical_position CameraInitialP = { {0,-5,4}, {0,0,0} };
 #define CAMERA_INITIAL_P CameraInitialP
 
-DEBUG_GLOBAL r32 GlobalCameraTheta = 0;
+debug_global r32 GlobalCameraTheta = 0;
 
 #define GROUND_COLOR GRASS_GREEN

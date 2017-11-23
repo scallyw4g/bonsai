@@ -4,7 +4,7 @@
 #define VISIBLE_REGION Chunk_Dimension(VR_X,VR_Y,VR_Z)
 #define VISIBLE_REGION_RADIUS (VISIBLE_REGION/2)
 
-GLOBAL_VARIABLE r32 CAMERA_FOCAL_LENGTH = 500.0f;
+global_variable r32 CAMERA_FOCAL_LENGTH = 500.0f;
 
-DEBUG_GLOBAL canonical_position CameraInitialP = { {0,-150,15}, {0,0,0} };
+debug_global canonical_position CameraInitialP = { {0,-150,15}, {0,0,0} };
 #define CAMERA_INITIAL_P CameraInitialP

@@ -29,7 +29,7 @@
 
 // In Cygwin printing to the console with printf doesn't work, so we wrap some
 // Win32 crazyness that works
-GLOBAL_VARIABLE HANDLE Stdout = GetStdHandle(STD_OUTPUT_HANDLE);
+global_variable HANDLE Stdout = GetStdHandle(STD_OUTPUT_HANDLE);
 #define PrintConsole(Message)                        \
   OutputDebugString(Message);                        \
   WriteFile(Stdout, Message, strlen(Message), 0, 0);

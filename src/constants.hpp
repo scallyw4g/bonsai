@@ -97,7 +97,7 @@
 
 #define DEBUG_TEXTURE_SIZE 500
 
-GLOBAL_VARIABLE r32 DEBUG_CAMERA_FOCAL_LENGTH = 50.0f;
+global_variable r32 DEBUG_CAMERA_FOCAL_LENGTH = 50.0f;
 #define DEBUG_CAMERA_SCROLL_SPEED  20.0f
 
 // NOTE(Jesse): The position storage needs to be as large as the largest model
@@ -108,13 +108,13 @@ GLOBAL_VARIABLE r32 DEBUG_CAMERA_FOCAL_LENGTH = 50.0f;
 #define FINAL_POSITION_BIT (POSITION_BIT_WIDTH*3)
 #define FINAL_COLOR_BIT ((FINAL_POSITION_BIT+COLOR_BIT_WIDTH))
 
-DEBUG_GLOBAL u32 DEBUG_NOISE_SEED = 65435;
+debug_global u32 DEBUG_NOISE_SEED = 65435;
 
-DEBUG_GLOBAL s32 numFrames = 0;
-DEBUG_GLOBAL r64 accumulatedTime = 0;
+debug_global s32 numFrames = 0;
+debug_global r64 accumulatedTime = 0;
 
-DEBUG_GLOBAL s32 tris = 0;
-DEBUG_GLOBAL s32 VoxelsIndexed = 0;
+debug_global s32 tris = 0;
+debug_global s32 VoxelsIndexed = 0;
 
 
 #define FACE_VERT_COUNT 6

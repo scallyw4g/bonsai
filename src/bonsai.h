@@ -83,7 +83,7 @@ enum entity_type
   EntityType_ParticleSystem   = 1 << 6,
 };
 
-GLOBAL_VARIABLE const entity_type ENTITY_TYPES = (entity_type)
+global_variable const entity_type ENTITY_TYPES = (entity_type)
   ( EntityType_Player           |
     EntityType_Enemy            |
     EntityType_EnemyProjectile  |

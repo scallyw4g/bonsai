@@ -78,7 +78,7 @@ GetCycleCount()
 inline r64
 GetHighPrecisionClock()
 {
-  GLOBAL_VARIABLE auto FirstTime = std::chrono::high_resolution_clock::now();
+  global_variable auto FirstTime = std::chrono::high_resolution_clock::now();
   // cout << "FirstTime Time : " << chrono::time_point_cast<chrono::nanoseconds>(FirstTime).time_since_epoch().count() << " ns \n";
 
   r64 Result = (r64)(std::chrono::high_resolution_clock::now() - FirstTime).count();
@@ -496,7 +496,7 @@ CloseLibrary(shared_lib Lib)
 }
 
 #define CwdBufferLen 2048
-DEBUG_GLOBAL char CwdBuffer[CwdBufferLen];
+debug_global char CwdBuffer[CwdBufferLen];
 
 inline char*
 GetCwd()

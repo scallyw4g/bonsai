@@ -9,7 +9,7 @@
 #include <render.cpp>
 #include <debug.cpp>
 
-GLOBAL_VARIABLE PerlinNoise GlobalNoise;
+global_variable PerlinNoise GlobalNoise;
 
 void
 FillChunk(chunk_data *chunk, chunk_dimension Dim, u32 ColorIndex = BLACK)
