@@ -26,6 +26,7 @@ target_link_libraries(Bonsai ${OPENGL_LIBRARIES})
 
 # Engine include dirs
 include_directories(${SRC})
+include_directories(${SRC}/datatypes)
 include_directories(${ROOT}/external/glm-0.9.7.1)
 
 add_definitions( -DGL_GLEXT_PROTOTYPES=1 )

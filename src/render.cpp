@@ -1531,6 +1531,14 @@ BufferTriangle(mesh_buffer_target *Mesh, g_buffer_render_group *gBuffer, shadow_
 
 }
 
+#if 0
+#define POINT_BUFFER_SIZE 8
+struct point_buffer
+{
+  s32 Count;
+  voxel_position Points[POINT_BUFFER_SIZE];
+};
+
 inline void
 FindBoundaryVoxelsAlongEdge(
     chunk_data *Data,
@@ -1561,6 +1569,7 @@ FindBoundaryVoxelsAlongEdge(
 
   return;
 }
+#endif
 
 void
 Compute0thLod(world_chunk *WorldChunk, chunk_dimension WorldChunkDim)
