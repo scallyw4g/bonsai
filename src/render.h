@@ -48,12 +48,6 @@ struct RenderBasis
   m4 ProjectionMatrix;
 };
 
-struct texture
-{
-  u32 ID;
-  v2i Dim;
-};
-
 struct framebuffer
 {
   u32 ID;
@@ -119,12 +113,16 @@ struct shadow_render_group
 
 struct debug_text_render_group
 {
-  u32 Text2DTextureID;
-  u32 Text2DVertexBufferID;
-  u32 Text2DUVBufferID;
+  framebuffer FBO;
+
+  texture FontTexture;
+  texture *CompositedTexture;
+
+  u32 VertexBuffer;
+  u32 UVBuffer;
 
   shader Text2DShader;
-  u32 Text2DUniformID;
+  u32 TextureUniformID;
 };
 
 inline void

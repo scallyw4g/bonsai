@@ -76,6 +76,7 @@ GLOBAL_VARIABLE m4 IdentityMatrix = {V4(1, 0, 0 ,0),
                                      V4(0, 0, 1 ,0),
                                      V4(0, 0, 0 ,0)};
 
+// TODO(Jesse): Why are these allocated on the heap?  Seems unnecessary..
 texture *
 GenTexture(v2i Dim, memory_arena *Mem)
 {
@@ -456,10 +457,10 @@ bool
 InitGbufferRenderGroup( g_buffer_render_group *gBuffer, memory_arena *GraphicsMemory)
 {
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, gBuffer->FBO.ID);
-  v2i ScreenDim = V2i(SCR_WIDTH, SCR_HEIGHT);
 
   gBuffer->Textures = PUSH_STRUCT_CHECKED(g_buffer_textures, GraphicsMemory, 1);
 
+  v2i ScreenDim = V2i(SCR_WIDTH, SCR_HEIGHT);
   gBuffer->Textures->Color    = MakeTexture_RGBA( ScreenDim, 0, GraphicsMemory);
   gBuffer->Textures->Normal   = MakeTexture_RGBA( ScreenDim, 0, GraphicsMemory);
   gBuffer->Textures->Position = MakeTexture_RGBA( ScreenDim, 0, GraphicsMemory);
@@ -486,7 +487,7 @@ PushLight(game_lights *Lights, v3 Position, light_type Type)
   return;
 }
 
-bool
+b32
 InitializeShadowBuffer(shadow_render_group *SG, memory_arena *GraphicsMemory)
 {
   // The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.

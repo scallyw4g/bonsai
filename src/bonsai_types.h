@@ -915,6 +915,13 @@ V2i(s32 x, s32 y)
   return Result;
 }
 
+v2i
+V2i(u32 x, u32 y)
+{
+  v2i Result = V2i((s32)x, (s32)y);
+  return Result;
+}
+
 v2 operator+=(v2 P1, v2 P2)
 {
   v2 Result;
@@ -1387,5 +1394,11 @@ Terabytes(u32 Number)
   u64 Result = Number*Gigabytes(1024);
   return Result;
 }
+
+struct texture
+{
+  u32 ID;
+  v2i Dim;
+};
 
 #endif

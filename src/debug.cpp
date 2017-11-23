@@ -1,20 +1,25 @@
-#ifndef BONSAI_DEBUG_CPP
-#define BONSAI_DEBUG_CPP
-
 #include <debug.h>
 
-void
-initText2D(const char *TexturePath, debug_text_render_group *RG, memory_arena *Memory)
+b32
+InitDebugOverlayFramebuffer(debug_text_render_group *RG, memory_arena *DebugArena, const char *DebugFont)
 {
-  RG->Text2DTextureID = loadDDS(TexturePath);
+  GL_Global->glGenFramebuffers(1, &RG->FBO.ID);
+  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO.ID);
 
-  GL_Global->glGenBuffers(1, &RG->Text2DVertexBufferID);
-  GL_Global->glGenBuffers(1, &RG->Text2DUVBufferID);
+  v2i ScreenDim = V2i(SCR_WIDTH, SCR_HEIGHT);
 
-  RG->Text2DShader = LoadShaders("TextVertexShader.vertexshader", "TextVertexShader.fragmentshader", Memory);
-  RG->Text2DUniformID = GL_Global->glGetUniformLocation(RG->Text2DShader.ID, "myTextureSampler");
+  RG->FontTexture = LoadDDS(DebugFont);
+  RG->CompositedTexture = MakeTexture_RGBA( ScreenDim, 0, DebugArena);
 
-  return;
+  GL_Global->glGenBuffers(1, &RG->VertexBuffer);
+  GL_Global->glGenBuffers(1, &RG->UVBuffer);
+
+  RG->Text2DShader = LoadShaders("TextVertexShader.vertexshader",
+                                 "TextVertexShader.fragmentshader", DebugArena);
+
+  RG->TextureUniformID = GL_Global->glGetUniformLocation(RG->Text2DShader.ID, "myTextureSampler");
+
+  return True;
 }
 
 void
@@ -22,8 +27,8 @@ InitDebugState( debug_state *DebugState, platform *Plat)
 {
   DebugState->GetCycleCount = Plat->GetCycleCount;
 
-  DebugState->DebugRG = PUSH_STRUCT_CHECKED(debug_text_render_group, Plat->Memory, 1);
-  initText2D("Holstein.DDS", DebugState->DebugRG, Plat->Memory);
+  DebugState->TextRenderGroup = PUSH_STRUCT_CHECKED(debug_text_render_group, Plat->Memory, 1);
+  InitDebugOverlayFramebuffer(DebugState->TextRenderGroup, Plat->Memory, "Holstein.DDS");
 
   return;
 }
@@ -86,10 +91,10 @@ PrintDebugText( debug_text_render_group *RG, const char *Text, v2 XY, s32 FontSi
     continue;
   }
 
-  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->Text2DVertexBufferID);
+  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->VertexBuffer);
   GL_Global->glBufferData(GL_ARRAY_BUFFER, (BufferIndex+1) * sizeof(v3), &vertices[0], GL_STATIC_DRAW);
 
-  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->Text2DUVBufferID);
+  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->UVBuffer);
   GL_Global->glBufferData(GL_ARRAY_BUFFER, (BufferIndex+1) * sizeof(v2), &UVs[0], GL_STATIC_DRAW);
 
   // Bind shader
@@ -97,18 +102,18 @@ PrintDebugText( debug_text_render_group *RG, const char *Text, v2 XY, s32 FontSi
 
   // Bind texture
   GL_Global->glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, RG->Text2DTextureID);
+  glBindTexture(GL_TEXTURE_2D, RG->FontTexture.ID);
 
-  GL_Global->glUniform1i(RG->Text2DUniformID, 0);
+  GL_Global->glUniform1i(RG->TextureUniformID, 0);
 
   // 1rst attribute buffer : vertices
   GL_Global->glEnableVertexAttribArray(0);
-  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->Text2DVertexBufferID);
+  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->VertexBuffer);
   GL_Global->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0 );
 
   // 2nd attribute buffer : UVs
   GL_Global->glEnableVertexAttribArray(1);
-  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->Text2DUVBufferID);
+  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->UVBuffer);
   GL_Global->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0 );
 
   glEnable(GL_BLEND);
@@ -116,7 +121,7 @@ PrintDebugText( debug_text_render_group *RG, const char *Text, v2 XY, s32 FontSi
 
   // Draw call
   /* SetViewport( V2(SCR_HEIGHT, SCR_WIDTH) ); */
-  glDrawArrays(GL_TRIANGLES, 0, BufferIndex );
+  glDrawArrays(GL_TRIANGLES, 0, BufferIndex);
 
   glDisable(GL_BLEND);
 
@@ -143,10 +148,10 @@ CalculateFramePercentage(debug_profile_entry *Entry, u64 CycleDelta)
 void
 DebugFrameEnd(r32 dt)
 {
-  TIMED_FUNCTION();
+  /* TIMED_FUNCTION(); */
 
   debug_state *DebugState = GetDebugState();
-  debug_text_render_group *RG = DebugState->DebugRG;
+  debug_text_render_group *RG = DebugState->TextRenderGroup;
   s32 FontSize = DEBUG_FONT_SIZE;
 
   char dtBuffer[32] = {};
@@ -308,16 +313,14 @@ void
 CleanupText2D(debug_text_render_group *RG)
 {
   // Delete buffers
-  GL_Global->glDeleteBuffers(1, &RG->Text2DVertexBufferID);
-  GL_Global->glDeleteBuffers(1, &RG->Text2DUVBufferID);
+  GL_Global->glDeleteBuffers(1, &RG->VertexBuffer);
+  GL_Global->glDeleteBuffers(1, &RG->UVBuffer);
 
   // Delete texture
-  glDeleteTextures(1, &RG->Text2DTextureID);
+  glDeleteTextures(1, &RG->FontTexture.ID);
 
   // Delete shader
   GL_Global->glDeleteProgram(RG->Text2DShader.ID);
 
   return;
 }
-
-#endif

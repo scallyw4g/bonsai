@@ -3,11 +3,12 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <texture.hpp>
 
 #if 0
-GLuint loadBMP_custom(const char * imagepath){
+GLuint loadBMP_custom(const char * FilePath){
 
-  Log("Reading image %s\n", imagepath);
+  Log("Reading image %s\n", FilePath);
 
   // Data read from the header of the BMP file
   unsigned char header[54];
@@ -18,8 +19,8 @@ GLuint loadBMP_custom(const char * imagepath){
   unsigned char * data;
 
   // Open the file
-  FILE * file = fopen(imagepath,"rb");
-  if (!file)							    {Log("%s could not be opened. Are you in the right directory ? Don't forget to read the FAQ !\n", imagepath); getchar(); return 0;}
+  FILE * file = fopen(FilePath,"rb");
+  if (!file)							    {Log("%s could not be opened. Are you in the right directory ? Don't forget to read the FAQ !\n", FilePath); getchar(); return 0;}
 
   // Read the header, i.e. the 54 first bytes
 
@@ -89,46 +90,45 @@ GLuint loadBMP_custom(const char * imagepath){
 #define FOURCC_DXT3 0x33545844 // Equivalent to "DXT3" in ASCII
 #define FOURCC_DXT5 0x35545844 // Equivalent to "DXT5" in ASCII
 
-u32
-loadDDS(const char * imagepath)
+texture
+LoadDDS(const char * FilePath)
 {
+  texture Result = {};
 
-  u32 header[124];
+  FILE *TextureFile = fopen(FilePath, "rb");
 
-  FILE *fp = fopen(imagepath, "rb");
-
-  if (fp == NULL){
+  if (!TextureFile){
     Assert(!"Couldn't open shader - Shit!");
-    //Log("%s could not be opened. Are you in the right directory ? Don't forget to read the FAQ !\n", imagepath); getchar();
-    return 0;
+    return Result;
   }
 
-  /* verify the type of file */
   char filecode[4];
-  fread(filecode, 1, 4, fp);
+  fread(filecode, 1, 4, TextureFile);
   if (strncmp(filecode, "DDS ", 4) != 0) {
-    fclose(fp);
-    return 0;
+    Assert(!"Invalid File format opening DDS file");
+    fclose(TextureFile);
+    return Result;
   }
 
-  /* get the surface desc */
-  fread(&header, 124, 1, fp);
+  u32 Header[124];
+  fread(&Header, 124, 1, TextureFile);
 
-  u32 height      = header[2 ];
-  u32 width       = header[3];
-  u32 linearSize  = header[4];
-  u32 mipMapCount = header[6];
-  u32 fourCC      = header[20];
+  u32 height      = Header[2];
+  u32 width       = Header[3];
+  u32 linearSize  = Header[4];
+  u32 mipMapCount = Header[6];
+  u32 fourCC      = Header[20];
 
+  Result.Dim.x = (s32)width;
+  Result.Dim.y = (s32)height;
 
-  unsigned char * buffer;
+  unsigned char *buffer;
   unsigned int bufsize;
-  /* how big is it going to be including all mipmaps? */
+
   bufsize = mipMapCount > 1 ? linearSize * 2 : linearSize;
   buffer = (unsigned char*)malloc(bufsize * sizeof(unsigned char));
-  fread(buffer, 1, bufsize, fp);
-  /* close the file pointer */
-  fclose(fp);
+  fread(buffer, 1, bufsize, TextureFile);
+  fclose(TextureFile);
 
   unsigned int format;
 
@@ -145,22 +145,18 @@ loadDDS(const char * imagepath)
     break;
   default:
     free(buffer);
-    return 0;
+    return Result;
   }
 
-  unsigned int blockSize = (format == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT) ? 8 : 16;
   unsigned int offset = 0;
 
-  // Create one OpenGL texture
-  u32 textureID;
-  glGenTextures(1, &textureID);
+  glGenTextures(1, &Result.ID);
 
-  // "Bind" the newly created texture : all future texture functions will modify this texture
-  glBindTexture(GL_TEXTURE_2D, textureID);
-  glPixelStorei(GL_UNPACK_ALIGNMENT,1);
+  glBindTexture(GL_TEXTURE_2D, Result.ID);
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 
-  /* load the mipmaps */
+  u32 blockSize = (format == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT) ? 8 : 16;
   for (unsigned int level = 0; level < mipMapCount && (width || height); ++level)
   {
     unsigned int size = ((width+3)/4)*((height+3)/4)*blockSize;
@@ -179,7 +175,7 @@ loadDDS(const char * imagepath)
 
   free(buffer);
 
-  return textureID;
+  return Result;
 }
 
 #endif

@@ -6,7 +6,7 @@ project(Bonsai)
 set(Bonsai_VERSION_MAJOR 0)
 set(Bonsai_VERSION_MINOR 1)
 
-set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE Debug)
 
 set( ROOT ${CMAKE_SOURCE_DIR}/.. )
 
@@ -48,6 +48,8 @@ add_custom_target(run /usr/bin/optirun ${BIN}/Bonsai
                   DEPENDS Bonsai
                   COMMENT "Running Bonsai")
 
+
+add_definitions( -DDEBUG=1 -DBONSAI_SLOW=1 )
 
 #
 # Platform specific
@@ -105,7 +107,7 @@ add_custom_command( TARGET Game POST_BUILD
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
   message(STATUS "Compiling with g++")
 
-  add_definitions( -std=c++11 -Wall )
+  add_definitions( -Wall )
 
   find_package(Threads REQUIRED)
   find_package(X11 REQUIRED)

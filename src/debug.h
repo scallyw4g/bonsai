@@ -28,7 +28,7 @@ struct debug_state
   u64 FrameCount;
   debug_profile_entry Entries[DEBUG_STATE_ENTRY_COUNT];
 
-  debug_text_render_group *DebugRG;
+  debug_text_render_group *TextRenderGroup;
 };
 
 enum debug_recording_mode
