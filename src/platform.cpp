@@ -23,8 +23,8 @@ static gl_extensions *GL_Global = 0;
 
 #include <texture.cpp>
 #include <shader.cpp>
-#include <render.cpp>
 #include <debug.cpp>
+#include <render.cpp>
 
 #include <sys/types.h>
 #include <sys/stat.h>

@@ -8,8 +8,6 @@ using namespace std;
 
 #include <string.h>
 
-#include <shader.hpp>
-
 #define INVALID_SHADER_UNIFORM (-1)
 
 char *

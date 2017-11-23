@@ -27,7 +27,6 @@ inline debug_state*
 GetDebugState() { return &GlobalDebugState; }
 
 
-
 enum debug_recording_mode
 {
   RecordingMode_Clear,

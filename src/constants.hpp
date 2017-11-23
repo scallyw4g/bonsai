@@ -27,7 +27,6 @@
 #define NOISE_FREQUENCY 25L
 
 // This must match the corresponding define in the SSAO shader
-#define SSAO_KERNEL_SIZE 16
 #define DEFAULT_ENTROPY_SEED 3426543
 
 #define GAME_STORAGE_SIZE Gigabytes(2)

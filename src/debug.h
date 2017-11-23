@@ -1,10 +1,5 @@
-#ifndef BONSAI_DEBUG_H
-#define BONSAI_DEBUG_H
-
 #include <iostream>
 #include <cstdarg>
-
-void DebugFrameEnd(r32 dt);
 
 debug_timed_function
 DebugTimedFunction(u32 FunctionIndexIn, const char* FuncNameIn)
@@ -220,6 +215,3 @@ Print_P( m4 *Mat, const char* name)
   Log(" %f %f %f %f ", Mat->E[3].E[0], Mat->E[3].E[1], Mat->E[3].E[2], Mat->E[3].E[3] );
   Log("");
 }
-
-
-#endif

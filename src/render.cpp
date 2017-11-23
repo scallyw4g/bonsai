@@ -778,7 +778,7 @@ RenderGBuffer(
     mesh_buffer_target *Mesh, g_buffer_render_group *RG,
     shadow_render_group *SG, camera *Camera)
 {
-  TIMED_FUNCTION();
+  // TIMED_FUNCTION();
 
   RenderShadowMap(Mesh, SG, RG, Camera);
 

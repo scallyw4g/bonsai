@@ -6,8 +6,8 @@
 
 #include <shader.cpp>
 #include <texture.cpp> // Only used for font .DDS atm
-#include <render.cpp>
 #include <debug.cpp>
+#include <render.cpp>
 
 global_variable PerlinNoise GlobalNoise;
 

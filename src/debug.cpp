@@ -1,5 +1,8 @@
 #include <debug.h>
 
+texture *
+MakeTexture_RGBA( v2i Dim, const void* Data, memory_arena *Memory);
+
 b32
 InitDebugOverlayFramebuffer(debug_text_render_group *RG, memory_arena *DebugArena, const char *DebugFont)
 {

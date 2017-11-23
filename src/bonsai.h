@@ -9,7 +9,6 @@
 
 #include <perlin.h>
 #include <stdio.h>
-#include <debug.h>
 #include <constants.hpp>
 
 enum frame_event_type
