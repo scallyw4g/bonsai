@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 
+
 #include <platform_constants.h>
 
 #include <basic_types.h>
@@ -16,6 +17,8 @@
 #include <render_types.h>
 #include <memory_types.h>
 #include <platform_types.h>
+
 #include <debug_types.h>
+#include <debug_print.h>
 
 #endif
