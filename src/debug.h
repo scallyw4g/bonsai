@@ -6,52 +6,7 @@
 
 using namespace std;
 
-#define DEBUG_STATE_ENTRY_COUNT 32
-
 void DebugFrameEnd(r32 dt);
-struct debug_text_render_group;
-
-struct debug_profile_entry
-{
-  u64 CycleCount;
-  u32 HitCount;
-
-  r32 MaxPerc;
-  r32 MinPerc = 100.0f;
-
-  const char* FuncName;
-};
-
-struct debug_state
-{
-  u64 (*GetCycleCount)(void);
-  u64 FrameCount;
-  debug_profile_entry Entries[DEBUG_STATE_ENTRY_COUNT];
-
-  debug_text_render_group *TextRenderGroup;
-};
-
-enum debug_recording_mode
-{
-  RecordingMode_Clear,
-  RecordingMode_Record,
-  RecordingMode_Playback,
-
-  RecordingMode_Count,
-};
-
-struct debug_recording_state
-{
-  s32 FramesRecorded;
-  s32 FramesPlayedBack;
-  debug_recording_mode Mode;
-
-  memory_arena RecordedMainMemory;
-
-  hotkeys Inputs[DEBUG_RECORD_INPUT_SIZE];
-};
-
-DEBUG_GLOBAL debug_state GlobalDebugState;
 
 #if DEBUG
 
@@ -69,42 +24,6 @@ DEBUG_GLOBAL debug_state GlobalDebugState;
 
 #endif
 
-
-inline debug_state*
-GetDebugState() { return &GlobalDebugState; }
-
-struct debug_timed_function
-{
-  u32 FunctionIndex = 0;
-
-  u64 StartingCycleCount;
-  u64 EndingCycleCount;
-
-  const char* FuncName;
-
-  debug_timed_function(u32 FunctionIndexIn, const char* FuncNameIn)
-  {
-    Assert(FunctionIndexIn < DEBUG_STATE_ENTRY_COUNT);
-    FunctionIndex = FunctionIndexIn;
-    FuncName = FuncNameIn;
-
-    // Record cycle count at last moment
-    StartingCycleCount = GetDebugState()->GetCycleCount();
-  }
-
-  ~debug_timed_function()
-  {
-    // Record cycle count ASAP when object is cleaned up
-    debug_state *DebugState = GetDebugState();
-    EndingCycleCount = DebugState->GetCycleCount();
-    debug_profile_entry *Entry = &DebugState->Entries[FunctionIndex];
-
-    Entry->CycleCount += (EndingCycleCount - StartingCycleCount);
-
-    Entry->HitCount++;
-    Entry->FuncName = FuncName;
-  }
-};
 
 void Log(const char* fmt...)
 {

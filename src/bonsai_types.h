@@ -13,5 +13,7 @@
 #include <rect_types.h>
 #include <render_types.h>
 #include <memory_types.h>
+#include <platform_types.h>
+#include <debug_types.h>
 
 #endif

@@ -42,8 +42,6 @@
 
 #define LOCAL_PERSIST static
 
-#define DEBUG_RECORD_INPUT_SIZE       3600
-
 
 /*
  *  MSVC

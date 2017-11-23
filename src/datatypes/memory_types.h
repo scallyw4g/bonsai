@@ -1,3 +1,10 @@
+struct memory_arena
+{
+  u8* FirstFreeByte;
+  umm Remaining;
+  umm TotalSize;
+};
+
 
 inline u64
 Kilobytes(u32 Bytes)
