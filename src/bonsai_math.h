@@ -1,7 +1,6 @@
 #ifndef BONSAI_MATH_H
 #define BONSAI_MATH_H
 
-#include <bonsai_types.h>
 #include <platform.h>
 
 #if 0

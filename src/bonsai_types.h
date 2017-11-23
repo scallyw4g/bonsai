@@ -1,6 +1,3 @@
-#ifndef BONSAI_TYPES_H
-#define BONSAI_TYPES_H
-
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 
@@ -27,5 +24,3 @@
 
 #include <debug_types.h>
 #include <debug_print.h>
-
-#endif

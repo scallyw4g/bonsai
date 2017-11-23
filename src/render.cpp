@@ -4,7 +4,6 @@
 #include <sstream>
 #include <string>
 
-#include <bonsai.h>
 #include <render.h>
 
 #include <stdio.h>

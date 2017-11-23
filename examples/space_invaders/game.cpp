@@ -1,4 +1,5 @@
 
+#include <bonsai_types.h>
 #include <bonsai.h>
 
 //

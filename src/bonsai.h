@@ -1,10 +1,3 @@
-#ifndef PLAYGROUNDH
-#define PLAYGROUNDH
-
-
-#include <bonsai_types.h>
-#include <platform.h>
-
 #include <bonsai_math.h>
 
 #include <perlin.h>
@@ -1122,5 +1115,3 @@ IsInsideDim( voxel_position Dim, v3 P )
   b32 Result = IsInsideDim(Dim, Voxel_Position(P) );
   return Result;
 }
-
-#endif

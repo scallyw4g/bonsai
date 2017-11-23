@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <string.h>
-#include <bonsai.h>
 #include <bonsai_math.h>
-#include <bonsai_types.h>
 #include <bonsai_vertex.h>
 #include <bonsai_mesh.cpp>
 
