@@ -6,5 +6,5 @@
 
 global_variable r32 CAMERA_FOCAL_LENGTH = 500.0f;
 
-debug_global canonical_position CameraInitialP = { {0,-150,15}, {0,0,0} };
+debug_global canonical_position CameraInitialP = { {{0,-150,15}}, {0,0,0} };
 #define CAMERA_INITIAL_P CameraInitialP

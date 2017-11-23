@@ -36,7 +36,7 @@ ReadEntireFileIntoString(const char *Filepath, memory_arena *Memory)
 s32
 CompileShader(const char *Header, const char *Code, u32 Type)
 {
-  int InfoLogLength = 0;
+  const int InfoLogLength = 0;
 
   u32 ShaderID = GL_Global->glCreateShader(Type);
 
@@ -49,7 +49,7 @@ CompileShader(const char *Header, const char *Code, u32 Type)
   // Check Status
   s32 Result = GL_FALSE;
   GL_Global->glGetShaderiv(ShaderID, GL_COMPILE_STATUS, &Result);
-  GL_Global->glGetShaderiv(ShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
+  GL_Global->glGetShaderiv(ShaderID, GL_INFO_LOG_LENGTH, (s32*)&InfoLogLength);
   if ( InfoLogLength > 0 )
   {
     char VertexShaderErrorMessage[InfoLogLength+1] = {};

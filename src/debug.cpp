@@ -228,7 +228,7 @@ DebugFrameEnd(r32 dt)
     {
       char CycleCountBuffer[32] = {};
       sprintf(CycleCountBuffer, "%" PRIu64, MinCycleCount);
-      PrintDebugText( RG, CycleCountBuffer, V2(0, AtY), FontSize).Max.x;
+      PrintDebugText( RG, CycleCountBuffer, V2(0, AtY), FontSize);
       AtY += (FontSize + LinePadding);
       AtY += (FontSize + LinePadding);
     }
@@ -236,7 +236,7 @@ DebugFrameEnd(r32 dt)
     {
       char CycleCountBuffer[32] = {};
       sprintf(CycleCountBuffer, "%" PRIu64, CycleDelta);
-      PrintDebugText( RG, CycleCountBuffer, V2(0, AtY), FontSize).Max.x;
+      PrintDebugText( RG, CycleCountBuffer, V2(0, AtY), FontSize);
       AtY += (FontSize + LinePadding);
       AtY += (FontSize + LinePadding);
     }
@@ -244,7 +244,7 @@ DebugFrameEnd(r32 dt)
     {
       char CycleCountBuffer[32] = {};
       sprintf(CycleCountBuffer, "%" PRIu64, MaxCycleCount);
-      PrintDebugText( RG, CycleCountBuffer, V2(0, AtY), FontSize).Max.x;
+      PrintDebugText( RG, CycleCountBuffer, V2(0, AtY), FontSize);
       AtY += (FontSize + LinePadding);
       AtY += (FontSize + LinePadding);
     }

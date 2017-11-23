@@ -298,11 +298,11 @@ Dot( v3 A, v3 B)
 inline v3
 Cross( voxel_position A, voxel_position B )
 {
-  v3 Result = {
+  v3 Result = {{
     (r32)(A.y*B.z)-(r32)(A.z*B.y),
     (r32)(A.z*B.x)-(r32)(A.x*B.z),
     (r32)(A.x*B.y)-(r32)(A.y*B.x)
-  };
+  }};
 
   return Result;
 }
@@ -310,11 +310,11 @@ Cross( voxel_position A, voxel_position B )
 inline v3
 Cross( v3 A, v3 B )
 {
-  v3 Result = {
+  v3 Result = {{
     (A.y*B.z)-(A.z*B.y),
     (A.z*B.x)-(A.x*B.z),
     (A.x*B.y)-(A.y*B.x)
-  };
+  }};
 
   return Result;
 }

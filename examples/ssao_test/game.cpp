@@ -238,37 +238,7 @@ GameInit( platform *Plat, memory_arena *GameMemory)
     Error("Initializing g_buffer_render_group"); return False;
   }
 
-
-
-
-  texture *SsaoNoiseTexture = 0;
-  {
-    v2i SsaoNoiseDim = V2i(4,4);
-    random_series SsaoEntropy;
-
-    AoGroup->NoiseTile = V3(SCR_WIDTH/SsaoNoiseDim.x, SCR_HEIGHT/SsaoNoiseDim.y, 1);
-
-    InitSsaoKernel(AoGroup->SsaoKernel, ArrayCount(AoGroup->SsaoKernel), &SsaoEntropy);
-
-    // TODO(Jesse): Transient arena for this instead of stack allocation ?
-    v3 SsaoNoise[Area(SsaoNoiseDim)] = {};
-    InitSsaoNoise(&SsaoNoise[0], ArrayCount(SsaoNoise), &SsaoEntropy);
-
-    SsaoNoiseTexture = MakeTexture_RGB(SsaoNoiseDim, &SsaoNoise, GraphicsMemory);
-  }
-
-
-
-
-
-
-
-
-
-
-
-
-
+  texture *SsaoNoiseTexture = AllocateAndInitSsaoNoise(AoGroup, GraphicsMemory);
 
   camera *Camera = PUSH_STRUCT_CHECKED(camera, GameState->Memory, 1);
   InitCamera(Camera, CAMERA_INITIAL_P, 500.0f);

@@ -15,14 +15,14 @@
 
 global_variable u32 Global_QuadVertexBuffer = 0;
 
-global_variable v3 GlobalLightPosition = {0.20f, 1.0f, 1.0f};
+global_variable v3 GlobalLightPosition = {{0.20f, 1.0f, 1.0f}};
 
-global_variable m4 NdcToScreenSpace = {
+global_variable m4 NdcToScreenSpace = {{
   V4(0.5, 0.0, 0.0, 0.0),
   V4(0.0, 0.5, 0.0, 0.0),
   V4(0.0, 0.0, 0.5, 0.0),
   V4(0.5, 0.5, 0.5, 1.0)
-};
+}};
 
 void
 Init_Global_QuadVertexBuffer() {
@@ -70,10 +70,10 @@ RenderQuad()
 
 
 
-global_variable m4 IdentityMatrix = {V4(1, 0, 0 ,0),
+global_variable m4 IdentityMatrix = {{V4(1, 0, 0 ,0),
                                      V4(0, 1, 0 ,0),
                                      V4(0, 0, 1 ,0),
-                                     V4(0, 0, 0 ,0)};
+                                     V4(0, 0, 0 ,0)}};
 
 // TODO(Jesse): Why are these allocated on the heap?  Seems unnecessary..
 texture *
@@ -147,6 +147,51 @@ MakeDepthTexture(v2i Dim, memory_arena *Mem)
   return Texture;
 }
 
+void
+InitSsaoKernel(v3 *Kernel, s32 Count, random_series *Entropy)
+{
+  for (int KernelIndex = 0;
+       KernelIndex < Count;
+       ++KernelIndex)
+  {
+    r32 Scale = (r32)KernelIndex/Count;
+    Scale = Lerp(Scale * Scale, 0.1f, 1.0f);
+
+    Kernel[KernelIndex] = V3(RandomBilateral(Entropy), RandomBilateral(Entropy), RandomUnilateral(Entropy));
+    Kernel[KernelIndex] = Normalize( Kernel[KernelIndex]*Scale );
+  }
+}
+
+void
+InitSsaoNoise(v3 *Noise, s32 Count, random_series *Entropy)
+{
+  for (s32 NoiseIndex = 0;
+       NoiseIndex < Count;
+       ++NoiseIndex)
+  {
+    Noise[NoiseIndex] = Normalize( V3(RandomBilateral(Entropy), RandomBilateral(Entropy), 0.0f) );
+  }
+}
+
+texture *
+AllocateAndInitSsaoNoise(ao_render_group *AoGroup, memory_arena *GraphicsMemory)
+{
+  v2i SsaoNoiseDim = V2i(4,4);
+  random_series SsaoEntropy;
+
+  AoGroup->NoiseTile = V3(SCR_WIDTH/SsaoNoiseDim.x, SCR_HEIGHT/SsaoNoiseDim.y, 1);
+
+  InitSsaoKernel(AoGroup->SsaoKernel, ArrayCount(AoGroup->SsaoKernel), &SsaoEntropy);
+
+  u32 NoiseElements = Area(SsaoNoiseDim);
+  v3 *SsaoNoise = PUSH_STRUCT_CHECKED(v3, GraphicsMemory, NoiseElements);
+  InitSsaoNoise(SsaoNoise, NoiseElements, &SsaoEntropy);
+
+  texture *Result = MakeTexture_RGB(SsaoNoiseDim, &SsaoNoise, GraphicsMemory);
+  return Result;
+}
+
+
 s32
 GetShaderUniform(shader *Shader, const char *Name)
 {
@@ -196,32 +241,6 @@ BasicTypeUniformAllocators(v3, V3)
 /* BasicTypeUniformAllocators(u32, U32) */ // Not sure this is useful
 BasicTypeUniformAllocators(s32, S32)
 BasicTypeUniformAllocators(r32, R32)
-
-void
-InitSsaoKernel(v3 *Kernel, s32 Count, random_series *Entropy)
-{
-  for (int KernelIndex = 0;
-       KernelIndex < Count;
-       ++KernelIndex)
-  {
-    r32 Scale = (r32)KernelIndex/Count;
-    Scale = Lerp(Scale * Scale, 0.1f, 1.0f);
-
-    Kernel[KernelIndex] = V3(RandomBilateral(Entropy), RandomBilateral(Entropy), RandomUnilateral(Entropy));
-    Kernel[KernelIndex] = Normalize( Kernel[KernelIndex]*Scale );
-  }
-}
-
-void
-InitSsaoNoise(v3 *Noise, s32 Count, random_series *Entropy)
-{
-  for (s32 NoiseIndex = 0;
-       NoiseIndex < Count;
-       ++NoiseIndex)
-  {
-    Noise[NoiseIndex] = Normalize( V3(RandomBilateral(Entropy), RandomBilateral(Entropy), 0.0f) );
-  }
-}
 
 shader
 MakeSimpleTextureShader(texture *Texture, memory_arena *GraphicsMemory)
@@ -893,13 +912,13 @@ DEBUG_DrawLine( mesh_buffer_target *Mesh,
 
   v3 localNormalData[] =
   {
-    {0, 0, 0},
-    {0, 0, 0},
-    {0, 0, 0},
+    {{0, 0, 0}},
+    {{0, 0, 0}},
+    {{0, 0, 0}},
 
-    {0, 0, 0},
-    {0, 0, 0},
-    {0, 0, 0},
+    {{0, 0, 0}},
+    {{0, 0, 0}},
+    {{0, 0, 0}},
   };
 
   P1.x = P1.x - (Thickness/2.0f);
@@ -911,13 +930,13 @@ DEBUG_DrawLine( mesh_buffer_target *Mesh,
   {
     v3 localVertexData[] =
     {
-      {P1.x, P1.y, P1.z},
-      {P2.x, P2.y, P2.z},
-      {P1.x + Thickness, P1.y,  P1.z},
+      {{P1.x, P1.y, P1.z}},
+      {{P2.x, P2.y, P2.z}},
+      {{P1.x + Thickness, P1.y,  P1.z}},
 
-      {P2.x, P2.y, P2.z},
-      {P1.x + Thickness, P1.y, P1.z},
-      {P2.x + Thickness, P2.y, P2.z},
+      {{P2.x, P2.y, P2.z}},
+      {{P1.x + Thickness, P1.y, P1.z}},
+      {{P2.x + Thickness, P2.y, P2.z}},
     };
 
 
@@ -938,13 +957,13 @@ DEBUG_DrawLine( mesh_buffer_target *Mesh,
   {
     v3 localVertexData[] =
     {
-      {P1.x, P1.y, P1.z},
-      {P2.x, P2.y, P2.z},
-      {P1.x, P1.y + Thickness,  P1.z},
+      {{P1.x, P1.y, P1.z}},
+      {{P2.x, P2.y, P2.z}},
+      {{P1.x, P1.y + Thickness,  P1.z}},
 
-      {P2.x, P2.y, P2.z},
-      {P1.x, P1.y + Thickness, P1.z},
-      {P2.x, P2.y + Thickness, P2.z},
+      {{P2.x, P2.y, P2.z}},
+      {{P1.x, P1.y + Thickness, P1.z}},
+      {{P2.x, P2.y + Thickness, P2.z}},
     };
 
 

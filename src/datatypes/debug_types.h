@@ -5,7 +5,7 @@ struct debug_profile_entry
   u32 HitCount;
 
   r32 MaxPerc;
-  r32 MinPerc = 100.0f;
+  r32 MinPerc;
 
   const char* FuncName;
 };
@@ -50,7 +50,7 @@ struct debug_recording_state
 
 struct debug_timed_function
 {
-  u32 FunctionIndex = 0;
+  u32 FunctionIndex;
 
   u64 StartingCycleCount;
   u64 EndingCycleCount;

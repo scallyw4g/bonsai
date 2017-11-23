@@ -1018,7 +1018,7 @@ void
 DrawTitleScreen(game_state *GameState)
 {
   debug_state *DebugState = GetDebugState();
-  debug_text_render_group *gBuffer = DebugState->DebugRG;
+  debug_text_render_group *gBuffer = DebugState->TextRenderGroup;
 
   s32 FontSize = TITLE_FONT_SIZE;
 
@@ -1100,46 +1100,17 @@ GameInit( platform *Plat, memory_arena *GameMemory)
     Error("Initializing g_buffer_render_group"); return False;
   }
 
+  texture *SsaoNoiseTexture = AllocateAndInitSsaoNoise();
 
-
-
-  texture *SsaoNoiseTexture = 0;
-  {
-    v2i SsaoNoiseDim = V2i(4,4);
-    random_series SsaoEntropy;
-
-    AoGroup->NoiseTile = V3(SCR_WIDTH/SsaoNoiseDim.x, SCR_HEIGHT/SsaoNoiseDim.y, 1);
-
-    InitSsaoKernel(AoGroup->SsaoKernel, ArrayCount(AoGroup->SsaoKernel), &SsaoEntropy);
-
-    // TODO(Jesse): Transient arena for this instead of stack allocation ?
-    v3 SsaoNoise[Area(SsaoNoiseDim)] = {};
-    InitSsaoNoise(&SsaoNoise[0], ArrayCount(SsaoNoise), &SsaoEntropy);
-
-    SsaoNoiseTexture = MakeTexture_RGB(SsaoNoiseDim, &SsaoNoise, GraphicsMemory);
-  }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  camera *Camera = PUSH_STRUCT_CHECKED(camera, GameState->Memory, 1);
+  InitCamera(Camera, CAMERA_INITIAL_P, 5000.0f);
 
   gBuffer->LightingShader =
     MakeLightingShader(GraphicsMemory, gBuffer->Textures, SG->ShadowMap, AoGroup->Texture,
-        &gBuffer->ViewProjection, &gBuffer->ShadowMVP, &SG->Light);
+        &gBuffer->ViewProjection, &gBuffer->ShadowMVP, &SG->GameLights, Camera);
 
   gBuffer->gBufferShader =
-    CreateGbufferShader(GraphicsMemory, &gBuffer->ViewProjection);
+    CreateGbufferShader(GraphicsMemory, &gBuffer->ViewProjection, Camera);
 
   AoGroup->Shader = MakeSsaoShader(GraphicsMemory, gBuffer->Textures, SsaoNoiseTexture,
       &AoGroup->NoiseTile, &gBuffer->ViewProjection);
@@ -1168,9 +1139,6 @@ GameInit( platform *Plat, memory_arena *GameMemory)
   Plat->GL.glBindVertexArray(VertexArrayID);
 
   AssertNoGlErrors;
-
-  camera *Camera = PUSH_STRUCT_CHECKED(camera, GameState->Memory, 1);
-  InitCamera(Camera, CAMERA_INITIAL_P, 5000.0f);
 
   AssertNoGlErrors;
 

@@ -79,11 +79,21 @@ endif()
 
 
 
+add_definitions( -std=c++11 )
 
 if (UNIX)
 
   set(GAME_COMPILED_LIB ${BIN}/libGame.so)
   set(GAME_LOADABLE_LIB ${BIN}/libGameLoadable.so)
+
+  add_definitions( -Wall )
+
+  find_package(Threads REQUIRED)
+  find_package(X11 REQUIRED)
+
+  target_link_libraries(Bonsai X11)                       # Xlib
+  target_link_libraries(Bonsai ${CMAKE_THREAD_LIBS_INIT}) # -lpthread
+  target_link_libraries(Bonsai ${CMAKE_DL_LIBS})          # .so loader
 
 elseif(WIN32)
 
@@ -96,9 +106,6 @@ else()
 
 endif()
 
-add_custom_command( TARGET Game POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E copy
-                    ${GAME_COMPILED_LIB} ${GAME_LOADABLE_LIB} )
 #
 # Compiler specific
 #
@@ -107,25 +114,16 @@ add_custom_command( TARGET Game POST_BUILD
 
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
   message(STATUS "Compiling with g++")
-
-  add_definitions( -Wall )
-
-  find_package(Threads REQUIRED)
-  find_package(X11 REQUIRED)
-
-  # Xlib
-  target_link_libraries(Bonsai X11)
-
-  # -lpthread
-  target_link_libraries(Bonsai ${CMAKE_THREAD_LIBS_INIT})
-
-  # SO loader
-  target_link_libraries(Bonsai ${CMAKE_DL_LIBS})
-
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
   message(STATUS "Compiling with MSVC")
   add_definitions( -MDd -EHsc -DMSVC=1 )
-
+elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL Clang)
+  message(STATUS "Compiling with Clang")
 else()
   message(FATAL_ERROR "Unsupported Compiler")
 endif()
+
+# Rename the Game lib once it's finished so the platform can re-load it
+add_custom_command( TARGET Game POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy
+                    ${GAME_COMPILED_LIB} ${GAME_LOADABLE_LIB} )
