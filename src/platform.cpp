@@ -219,12 +219,18 @@ InitializeOpenGlExtensions(gl_extensions *Gl, os *Os)
 
   AssertNoGlErrors;
 
-#if 0
   // Platform specific (wgl / glX)
+  u32 VsyncFrames = 1;
+#if LINUX
+  // TODO(Jesse): Not getting vsync on my arch laptop...
+  Gl->glSwapInterval = (PFNSWAPINTERVALPROC)bonsaiGlGetProcAddress("glXSwapIntervalEXT");
+  Assert( Gl->glSwapInterval );
+  Gl->glSwapInterval(Os->Display, Os->Window, VsyncFrames);
+#elif WIN32
   Gl->glSwapInterval = (PFNSWAPINTERVALPROC)bonsaiGlGetProcAddress("wglSwapIntervalEXT");
   Assert( Gl->glSwapInterval );
-  Gl->glSwapInterval(1); // vsync
- #endif
+  Gl->glSwapInterval(VsyncFrames);
+#endif
 
   return;
 }
