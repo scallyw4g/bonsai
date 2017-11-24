@@ -15,7 +15,7 @@ uniform vec3 SsaoKernel[SSAO_KERNEL_SIZE];
 uniform mat4 ViewProjection;
 
 // Tuning
-  float SsaoRadius = 0.75f;
+  float SsaoRadius = 0.85f;
   float DepthThreshold = 0.004f;
 //
 
@@ -28,6 +28,7 @@ void main()
 
 
   vec3 Noise = texture(SsaoNoiseTexture, UV*SsaoNoiseTile.xy).xyz;
+
   vec3 Right = normalize(Noise - FragNormal);
   vec3 Front = cross(FragNormal, Right);
   mat3 Reorientation = mat3(Right, Front, FragNormal) * SsaoRadius;
@@ -37,7 +38,7 @@ void main()
 
   // NOTE(Jesse): I was getting some artifacts when at 90deg to a surface so I
   // added a bias to the sample.
-  float AoBias = 0.00025f;
+  float AoBias = 0.0008f;
   float AoBiasFragDepth = FragDepth - AoBias;
 
   for ( int KernelIndex = 0;
