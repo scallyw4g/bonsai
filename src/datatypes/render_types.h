@@ -157,6 +157,15 @@ struct shadow_render_group
   game_lights GameLights;
 };
 
+struct text_geometry_buffer
+{
+  v3 *Verts;
+  v2 *UVs;
+
+  u32 Allocated;
+  u32 CurrentIndex;
+};
+
 struct debug_text_render_group
 {
   framebuffer FBO;
@@ -168,6 +177,9 @@ struct debug_text_render_group
   u32 UVBuffer;
 
   shader Text2DShader;
+
+  text_geometry_buffer GeoBuffer;
+
   shader DebugTextureShader;
 
   u32 TextureUniformID;

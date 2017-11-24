@@ -42,27 +42,40 @@ InitDebugOverlayFramebuffer(debug_text_render_group *RG, memory_arena *DebugAren
 }
 
 void
+AllocateAndInitGeoBuffer(text_geometry_buffer *Geo, u32 VertCount, memory_arena *DebugArena)
+{
+  Geo->Verts = PUSH_STRUCT_CHECKED(v3, DebugArena, VertCount);
+  Geo->UVs = PUSH_STRUCT_CHECKED(v2, DebugArena, VertCount);
+  Geo->Allocated = VertCount;
+}
+
+void
 InitDebugState( debug_state *DebugState, platform *Plat)
 {
   DebugState->GetCycleCount = Plat->GetCycleCount;
 
   DebugState->TextRenderGroup = PUSH_STRUCT_CHECKED(debug_text_render_group, Plat->Memory, 1);
   if (!InitDebugOverlayFramebuffer(DebugState->TextRenderGroup, Plat->Memory, "Holstein.DDS"))
-  {
     Error("Initializing Debug Overlay Framebuffer");
-  }
+
+  AllocateAndInitGeoBuffer(&DebugState->TextRenderGroup->GeoBuffer, 1024, Plat->Memory);
 
   return;
 }
 
 void
-DrawDebugText( debug_text_render_group *RG, u32 VertCount, v3 *Verteces, v2 *UVs)
+DrawDebugText( debug_text_render_group *RG, text_geometry_buffer *Geo)
 {
+  u32 VertCount = Geo->CurrentIndex +1;
+  Geo->CurrentIndex = 0;
+
+  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO.ID);
+
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->VertexBuffer);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, VertCount * sizeof(v3), Verteces, GL_STATIC_DRAW);
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, VertCount * sizeof(v3), Geo->Verts, GL_STATIC_DRAW);
 
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->UVBuffer);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, VertCount * sizeof(v2), UVs, GL_STATIC_DRAW);
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, VertCount * sizeof(v2), Geo->UVs, GL_STATIC_DRAW);
 
   // Bind Text shader
   GL_Global->glUseProgram(RG->Text2DShader.ID);
@@ -96,20 +109,21 @@ DrawDebugText( debug_text_render_group *RG, u32 VertCount, v3 *Verteces, v2 *UVs
   AssertNoGlErrors;
 
   glDepthFunc(GL_LEQUAL);
+
 }
 
 rect2
-PrintDebugText( debug_text_render_group *RG, const char *Text, v2 XY, s32 FontSize)
+PrintDebugText( text_geometry_buffer *Buffer, const char *Text, v2 XY, s32 FontSize)
 {
-  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO.ID);
   /* glDepthFunc(GL_ALWAYS); */
 
   s32 TextLength = strlen(Text);
-  u32 BufferIndex = 0;
-
-  // Fill buffers
-  v3 vertices[1024];
-  v2 UVs[1024];
+  if (Buffer->CurrentIndex + TextLength > Buffer->Allocated)
+  {
+    Assert(!"Out of Debug Text Memory!!");
+    rect2 Zero;
+    return Zero;
+  }
 
   rect2 Result = { XY, XY };
 
@@ -134,29 +148,27 @@ PrintDebugText( debug_text_render_group *RG, const char *Text, v2 XY, s32 FontSi
     v2 uv_down_left  = V2( uv_x           , (uv_y + 1.0f/16.0f) );
 
 
-    vertices[BufferIndex] = vertex_up_left;
-    UVs[BufferIndex++] = uv_up_left;
+    Buffer->Verts[Buffer->CurrentIndex] = vertex_up_left;
+    Buffer->UVs[Buffer->CurrentIndex++] = uv_up_left;
 
-    vertices[BufferIndex] = vertex_down_left;
-    UVs[BufferIndex++] = uv_down_left;
+    Buffer->Verts[Buffer->CurrentIndex] = vertex_down_left;
+    Buffer->UVs[Buffer->CurrentIndex++] = uv_down_left;
 
-    vertices[BufferIndex] = vertex_up_right;
-    UVs[BufferIndex++] = uv_up_right;
+    Buffer->Verts[Buffer->CurrentIndex] = vertex_up_right;
+    Buffer->UVs[Buffer->CurrentIndex++] = uv_up_right;
 
 
-    vertices[BufferIndex] = vertex_down_right;
-    UVs[BufferIndex++] = uv_down_right;
+    Buffer->Verts[Buffer->CurrentIndex] = vertex_down_right;
+    Buffer->UVs[Buffer->CurrentIndex++] = uv_down_right;
 
-    vertices[BufferIndex] = vertex_up_right;
-    UVs[BufferIndex++] = uv_up_right;
+    Buffer->Verts[Buffer->CurrentIndex] = vertex_up_right;
+    Buffer->UVs[Buffer->CurrentIndex++] = uv_up_right;
 
-    vertices[BufferIndex] = vertex_down_left;
-    UVs[BufferIndex++] = uv_down_left;
+    Buffer->Verts[Buffer->CurrentIndex] = vertex_down_left;
+    Buffer->UVs[Buffer->CurrentIndex++] = uv_down_left;
 
     continue;
   }
-
-  DrawDebugText(RG, BufferIndex+1, vertices, UVs);
 
   return Result;
 }
@@ -179,6 +191,7 @@ DebugFrameEnd(r32 dt)
 
   debug_state *DebugState = GetDebugState();
   debug_text_render_group *RG = DebugState->TextRenderGroup;
+  text_geometry_buffer *TextGeo = &RG->GeoBuffer;
   s32 FontSize = DEBUG_FONT_SIZE;
 
   // FIXME(Jesse): This should be called in ClearFramebuffers
@@ -191,7 +204,7 @@ DebugFrameEnd(r32 dt)
 
   char dtBuffer[32] = {};
   sprintf(dtBuffer, "%f", dt);
-  PrintDebugText( RG, dtBuffer, V2(10, (SCR_HEIGHT-FontSize-10)/2), FontSize);
+  PrintDebugText( TextGeo, dtBuffer, V2(10, (SCR_HEIGHT-FontSize-10)/2), FontSize);
 
 #if _BONSAI_SLOW
 
@@ -250,7 +263,7 @@ DebugFrameEnd(r32 dt)
         /* char CycleCountBuffer[32]; */
         /* sprintf(CycleCountBuffer, "%" PRIu64, Entry->CycleCount); */
 
-        /* rect2 CCRect = PrintDebugText( RG, CycleCountBuffer, 0, AtY, FontSize); */
+        /* rect2 CCRect = PrintDebugText( TextGeo, CycleCountBuffer, 0, AtY, FontSize); */
         /* MaxX = max(MaxX, CCRect.Max.x); */
         /* AtY += (FontSize + LinePadding); */
       }
@@ -260,7 +273,7 @@ DebugFrameEnd(r32 dt)
     {
       char CycleCountBuffer[32] = {};
       sprintf(CycleCountBuffer, "%" PRIu64, MinCycleCount);
-      PrintDebugText( RG, CycleCountBuffer, V2(0, AtY), FontSize);
+      PrintDebugText( TextGeo, CycleCountBuffer, V2(0, AtY), FontSize);
       AtY += (FontSize + LinePadding);
       AtY += (FontSize + LinePadding);
     }
@@ -268,7 +281,7 @@ DebugFrameEnd(r32 dt)
     {
       char CycleCountBuffer[32] = {};
       sprintf(CycleCountBuffer, "%" PRIu64, CycleDelta);
-      PrintDebugText( RG, CycleCountBuffer, V2(0, AtY), FontSize);
+      PrintDebugText( TextGeo, CycleCountBuffer, V2(0, AtY), FontSize);
       AtY += (FontSize + LinePadding);
       AtY += (FontSize + LinePadding);
     }
@@ -276,7 +289,7 @@ DebugFrameEnd(r32 dt)
     {
       char CycleCountBuffer[32] = {};
       sprintf(CycleCountBuffer, "%" PRIu64, MaxCycleCount);
-      PrintDebugText( RG, CycleCountBuffer, V2(0, AtY), FontSize);
+      PrintDebugText( TextGeo, CycleCountBuffer, V2(0, AtY), FontSize);
       AtY += (FontSize + LinePadding);
       AtY += (FontSize + LinePadding);
     }
@@ -299,15 +312,15 @@ DebugFrameEnd(r32 dt)
 
         r32 FramePerc = CalculateFramePercentage(Entry, CycleDelta);
         sprintf(PercentageBuffer, "%.0f", FramePerc);
-        PrintDebugText( RG, PercentageBuffer, V2(AtX, AtY), FontSize);
+        PrintDebugText( TextGeo, PercentageBuffer, V2(AtX, AtY), FontSize);
         AtX += (FontSize*4);
 
         sprintf(PercentageBuffer, "%.0f", Entry->MaxPerc);
-        PrintDebugText( RG, PercentageBuffer, V2(AtX, AtY), FontSize);
+        PrintDebugText( TextGeo, PercentageBuffer, V2(AtX, AtY), FontSize);
         AtX += (FontSize*4);
 
         sprintf(PercentageBuffer, "%.0f", Entry->MinPerc);
-        PrintDebugText( RG, PercentageBuffer, V2(AtX, AtY), FontSize);
+        PrintDebugText( TextGeo, PercentageBuffer, V2(AtX, AtY), FontSize);
         AtX += (FontSize*4);
 
         /* // Print Hit Count */
@@ -316,7 +329,7 @@ DebugFrameEnd(r32 dt)
         /* rect2 HitCountRect = PrintDebugText( RG, CountBuffer, AtX, AtY, FontSize); */
         /* HitCountX = max((s32)HitCountRect.Max.x, HitCountX); */
 
-        PrintDebugText( RG, Entry->FuncName, V2(AtX, AtY), FontSize);
+        PrintDebugText( TextGeo, Entry->FuncName, V2(AtX, AtY), FontSize);
 
         AtY += (FontSize + LinePadding);
       }
@@ -340,8 +353,9 @@ DebugFrameEnd(r32 dt)
   }
 #endif
 
-  return;
+  DrawDebugText(RG, TextGeo);
 
+  return;
 }
 
 void
