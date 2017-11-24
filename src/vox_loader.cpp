@@ -91,13 +91,26 @@ inline int
 ReadMainChunk(FILE *File)
 {
   int ID = ReadInt(File);
-  Assert( ID == ID_MAIN );
+
+  if ( ID != ID_MAIN )
+  {
+    Error("Invalid Main Chunk");
+    return 0;
+  }
 
   int selfSize = ReadInt(File);
-  Assert(selfSize == 0 );
+  if ( selfSize != 0 ) 
+  {
+    Error("Invalid Main Chunk");
+    return 0;
+  }
 
   int childSize = ReadInt(File);
-  Assert(childSize > 0 );
+  if (childSize == 0 )
+  {
+    Error("Invalid Main Chunk");
+    return 0;
+  }
 
   return childSize;
 }

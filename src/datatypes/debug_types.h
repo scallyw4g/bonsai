@@ -1,3 +1,10 @@
+#if NDEBUG // CMAKE defined
+#define RELEASE 1
+#else
+#define DEBUG 1
+#endif
+
+#if DEBUG
 
 struct debug_profile_entry
 {
@@ -85,20 +92,28 @@ DebugTimedFunction(u32 FunctionIndexIn, const char* FuncNameIn)
   return Result;
 }
 
-#if DEBUG
+#define INIT_DEUBG_STATE(Plat) InitDebugState(Plat)
 
 #define TIMED_FUNCTION() debug_timed_function FunctionTimer = DebugTimedFunction(__COUNTER__, __FUNCTION_NAME__)
 #define TIMED_BLOCK(BlockName) { debug_timed_function BlockTimer = DebugTimedFunction(__COUNTER__, BlockName)
 #define END_BLOCK(BlockName) }
-#define DEBUG_FRAME_END(...) DebugFrameEnd(__VA_ARGS__)
 
-#else
+#define DEBUG_FRAME_RECORD(...) DoDebugFrameRecord(__VA_ARGS__)
+#define DEBUG_FRAME_END(dt) DebugFrameEnd(dt)
+
+#elif RELEASE
+
+#define INIT_DEUBG_STATE(...)
 
 #define TIMED_FUNCTION(...)
 #define TIMED_BLOCK(...)
 #define END_BLOCK(...)
+
+#define DEBUG_FRAME_RECORD(...)
 #define DEBUG_FRAME_END(...)
 
+#else
+#error "Unknown Build State Encountered"
 #endif
 
 

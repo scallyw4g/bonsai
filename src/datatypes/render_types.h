@@ -178,7 +178,7 @@ struct debug_text_render_group
 
   shader Text2DShader;
 
-  text_geometry_buffer GeoBuffer;
+  text_geometry_buffer TextGeo;
 
   shader DebugTextureShader;
 

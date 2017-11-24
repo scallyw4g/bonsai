@@ -16,8 +16,6 @@ typedef void (*game_main_proc)(platform*, game_state*, hotkeys*);
 typedef void (*game_init_globals_proc)(platform*);
 typedef void (*game_thread_callback_proc)(work_queue_entry*);
 
-global_variable v2 InvalidMouseP = {-1, -1};
-
 #define PUSH_STRUCT_CHECKED(Type, Arena, Number) \
   (Type*)PushStructChecked_( Arena, sizeof(Type)*Number, #Type, __LINE__, __FILE__ );
 

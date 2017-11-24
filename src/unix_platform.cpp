@@ -12,6 +12,7 @@ AtomicCompareExchange( volatile unsigned int *Source, unsigned int Exchange, uns
   return Result;
 }
 
+#if 0
 inline void
 PrintSemValue( semaphore *Semaphore )
 {
@@ -24,6 +25,7 @@ PrintSemValue( semaphore *Semaphore )
 
   return;
 }
+#endif
 
 inline void
 ThreadSleep( semaphore *Semaphore )
@@ -73,8 +75,11 @@ GetCycleCount()
 void
 CloseLibrary(shared_lib Lib)
 {
-  int e = dlclose(Lib);
-  Assert(!e);
+  s32 Error = dlclose(Lib);
+  if (Error != 0)
+  {
+    Error("Closing Shared Library");
+  }
 
   return;
 }

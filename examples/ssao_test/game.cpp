@@ -2,12 +2,7 @@
 #include <bonsai_types.h>
 #include <bonsai.h>
 
-//
-// TODO(Jesse): Axe these!
-static gl_extensions *GL_Global;
-
-global_variable physics NullPhysics = {};
-global_variable hotkeys NullHotkeys = {};
+#include <globals.h>
 
 global_variable r32 GlobalLightTheta = 0;
 
@@ -54,6 +49,13 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   gBuffer->ViewProjection =
     GetProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
     GetViewMatrix(WorldChunkDim, Camera);
+
+
+#if DEBUG
+  debug_state *DebugState = GetDebugState();
+  debug_text_render_group *DebugRG = DebugState->TextRenderGroup;
+  PrintDebugText(DebugRG, &DebugRG->TextGeo, "HI", V2(100,100), 12);
+#endif
 
   //
   // Draw World
@@ -113,7 +115,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   World->Mesh.VertsFilled = 0;
 
 #if DEBUG_DRAW_SHADOW_MAP_TEXTURE
-  DrawTexturedQuad(&GetDebugState()->TextRenderGroup->DebugTextureShader);
+  // DrawTexturedQuad(&GetDebugState()->TextRenderGroup->DebugTextureShader);
   /* DrawTexturedQuad(&SG->DebugTextureShader); */
   /* DrawTexturedQuad(&gBuffer->DebugPositionTextureShader); */
   /* DrawTexturedQuad(&gBuffer->DebugNormalTextureShader); */
@@ -191,7 +193,7 @@ EXPORT void
 InitGlobals(platform *Plat)
 {
   GL_Global = &Plat->GL;
-  InitDebugState(GetDebugState(), Plat);
+  INIT_DEUBG_STATE(Plat);
   Global_WorldChunkDim = WORLD_CHUNK_DIM;
 }
 

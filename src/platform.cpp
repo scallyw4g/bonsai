@@ -20,8 +20,6 @@
 // TODO(Jesse): Axe this!!
 static gl_extensions *GL_Global = 0;
 
-
-
 #include <texture.cpp>
 #include <shader.cpp>
 #include <debug.cpp>
@@ -347,81 +345,6 @@ QueryAndSetGlslVersion(platform *Plat)
   return;
 }
 
-inline void
-DoDebugFrameRecord(
-    debug_recording_state *State,
-    hotkeys *Hotkeys,
-    memory_arena *MainMemory)
-{
-  {
-    global_variable b32 Toggled = False;
-    if (Hotkeys->Debug_ToggleLoopedGamePlayback  && !Toggled)
-    {
-      Toggled = True;
-      State->Mode = (debug_recording_mode)((State->Mode + 1) % RecordingMode_Count);
-
-      switch (State->Mode)
-      {
-        case RecordingMode_Clear:
-        {
-          Log("Clear");
-          State->FramesRecorded = 0;
-          State->FramesPlayedBack = 0;
-        } break;
-
-        case RecordingMode_Record:
-        {
-          Log("Recording");
-          CopyArena(MainMemory, &State->RecordedMainMemory);
-        } break;
-
-        case RecordingMode_Playback:
-        {
-          Log("Playback");
-          CopyArena(&State->RecordedMainMemory, MainMemory);
-        } break;
-
-        InvalidDefaultCase;
-      }
-
-    }
-    else if (!Hotkeys->Debug_ToggleLoopedGamePlayback)
-    {
-      Toggled = False;
-    }
-  }
-
-  switch (State->Mode)
-  {
-    case RecordingMode_Clear:
-    {
-    } break;
-
-    case RecordingMode_Record:
-    {
-      Assert(State->FramesRecorded < DEBUG_RECORD_INPUT_SIZE);
-      Hotkeys->Debug_ToggleLoopedGamePlayback = False;
-      State->Inputs[State->FramesRecorded++] = *Hotkeys;
-    } break;
-
-    case RecordingMode_Playback:
-    {
-      *Hotkeys = State->Inputs[State->FramesPlayedBack++];
-
-      if (State->FramesPlayedBack == State->FramesRecorded)
-      {
-        State->FramesPlayedBack = 0;
-        CopyArena(&State->RecordedMainMemory, MainMemory);
-      }
-
-    } break;
-
-    InvalidDefaultCase;
-  }
-
-  return;
-}
-
 void
 BindHotkeysToInput(hotkeys *Hotkeys, input *Input)
 {
@@ -463,11 +386,11 @@ main(s32 NumArgs, char ** Args)
   SubArena(&MainMemory, &GameMemory, GAME_STORAGE_SIZE);
 
 
+#if DEBUG
   debug_recording_state *Debug_RecordingState =
     PUSH_STRUCT_CHECKED(debug_recording_state, &DebugMemory, 1);
-
-
   AllocateAndInitializeArena(&Debug_RecordingState->RecordedMainMemory, MAIN_STORAGE_SIZE);
+#endif
 
   platform Plat = {};
   PlatformInit(&Plat, &PlatMemory);
@@ -537,7 +460,12 @@ main(s32 NumArgs, char ** Args)
 
     BindHotkeysToInput(&Hotkeys, &Plat.Input);
 
-    DoDebugFrameRecord(Debug_RecordingState, &Hotkeys, &MainMemory);
+#if RELEASE
+    // FIXME(Jesse): This is pretty obviously bad..
+    int Debug_RecordingState = 0;
+    ++Debug_RecordingState;
+#endif
+    DEBUG_FRAME_RECORD(Debug_RecordingState, &Hotkeys, &MainMemory);
 
     GameUpdateAndRender(&Plat, GameState, &Hotkeys);
 

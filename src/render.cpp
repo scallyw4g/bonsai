@@ -13,8 +13,7 @@
 #include <bonsai_vertex.h>
 #include <bonsai_mesh.cpp>
 
-global_variable u32 Global_QuadVertexBuffer = 0;
-
+global_variable u32 Global_QuadVertexBuffer;
 global_variable v3 GlobalLightPosition = {{0.20f, 1.0f, 1.0f}};
 
 global_variable m4 NdcToScreenSpace = {{
@@ -39,6 +38,11 @@ Init_Global_QuadVertexBuffer() {
 void
 RenderQuad()
 {
+  if (!Global_QuadVertexBuffer)
+  {
+    Init_Global_QuadVertexBuffer();
+  }
+
   GL_Global->glEnableVertexAttribArray(0);
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, Global_QuadVertexBuffer);
   GL_Global->glVertexAttribPointer(
@@ -1149,6 +1153,7 @@ Rotate(line Line, Quaternion Rotation)
   return Result;
 }
 
+#if 0
 inline float
 DistanceToPlane(plane *Plane, v3 P)
 {
@@ -1181,6 +1186,7 @@ IsInfrustum(chunk_dimension WorldChunkDim, camera *Camera, canonical_position P)
 
   return Result;
 }
+#endif
 
 inline voxel_position
 Clamp01( voxel_position V )
@@ -1258,7 +1264,6 @@ BuildExteriorBoundaryVoxels( world_chunk *chunk, chunk_dimension Dim, world_chun
 
   return;
 }
-#endif
 
 inline bool
 IsInfrustum( chunk_dimension WorldChunkDim, camera *Camera, world_chunk *Chunk )
@@ -1268,6 +1273,7 @@ IsInfrustum( chunk_dimension WorldChunkDim, camera *Camera, world_chunk *Chunk )
   bool Result = IsInfrustum(WorldChunkDim, Camera, P1 );
   return Result;
 }
+#endif
 
 inline void
 ClearFramebuffers(g_buffer_render_group *RG, shadow_render_group *SG)
@@ -1275,6 +1281,12 @@ ClearFramebuffers(g_buffer_render_group *RG, shadow_render_group *SG)
   /* TIMED_FUNCTION(); */
   glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
   glClearDepth(1.0f);
+
+#if DEBUG
+  debug_text_render_group *TextRG = GetDebugState()->TextRenderGroup;
+  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, TextRG->FBO.ID);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+#endif
 
   // FIXME(Jesse): This is taking _forever_ on Linux (GLES) .. does it take
   // forever on other Linux systems?

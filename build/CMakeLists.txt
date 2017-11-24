@@ -50,7 +50,7 @@ add_custom_target(run /usr/bin/optirun ${BIN}/Bonsai
                   COMMENT "Running Bonsai")
 
 
-add_definitions( -DDEBUG=1 -DBONSAI_SLOW=1 )
+add_definitions( -DBONSAI_SLOW=1 )
 
 #
 # Platform specific

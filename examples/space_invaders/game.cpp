@@ -2,12 +2,7 @@
 #include <bonsai_types.h>
 #include <bonsai.h>
 
-//
-// TODO(Jesse): Axe these!
-static gl_extensions *GL_Global;
-
-global_variable physics NullPhysics = {};
-global_variable hotkeys NullHotkeys = {};
+#include <globals.h>
 
 #include <game.h>
 #include <game_constants.h>
@@ -1053,7 +1048,7 @@ EXPORT void
 InitGlobals(platform *Plat)
 {
   GL_Global = &Plat->GL;
-  InitDebugState(GetDebugState(), Plat);
+  INIT_DEUBG_STATE(Plat);
 }
 
 EXPORT void*
@@ -1062,8 +1057,6 @@ GameInit( platform *Plat, memory_arena *GameMemory)
   Info("Initializing Game");
 
   InitGlobals(Plat);
-
-  Init_Global_QuadVertexBuffer();
 
   srand(DEBUG_NOISE_SEED);
   PerlinNoise Noise(rand());

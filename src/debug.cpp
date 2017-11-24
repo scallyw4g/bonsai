@@ -1,4 +1,4 @@
-#include <debug.h>
+#if DEBUG
 
 texture *
 MakeTexture_RGBA( v2i Dim, const void* Data, memory_arena *Memory);
@@ -50,26 +50,29 @@ AllocateAndInitGeoBuffer(text_geometry_buffer *Geo, u32 VertCount, memory_arena 
 }
 
 void
-InitDebugState( debug_state *DebugState, platform *Plat)
+InitDebugState(platform *Plat)
 {
+  debug_state *DebugState = GetDebugState();
   DebugState->GetCycleCount = Plat->GetCycleCount;
 
   DebugState->TextRenderGroup = PUSH_STRUCT_CHECKED(debug_text_render_group, Plat->Memory, 1);
   if (!InitDebugOverlayFramebuffer(DebugState->TextRenderGroup, Plat->Memory, "Holstein.DDS"))
     Error("Initializing Debug Overlay Framebuffer");
 
-  AllocateAndInitGeoBuffer(&DebugState->TextRenderGroup->GeoBuffer, 1024, Plat->Memory);
+  AllocateAndInitGeoBuffer(&DebugState->TextRenderGroup->TextGeo, 32, Plat->Memory);
 
   return;
 }
 
 void
-DrawDebugText( debug_text_render_group *RG, text_geometry_buffer *Geo)
+DrawDebugText(debug_text_render_group *RG, text_geometry_buffer *Geo)
 {
+  glDepthFunc(GL_ALWAYS);
+
   u32 VertCount = Geo->CurrentIndex +1;
   Geo->CurrentIndex = 0;
 
-  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO.ID);
+  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->VertexBuffer);
   GL_Global->glBufferData(GL_ARRAY_BUFFER, VertCount * sizeof(v3), Geo->Verts, GL_STATIC_DRAW);
@@ -113,24 +116,19 @@ DrawDebugText( debug_text_render_group *RG, text_geometry_buffer *Geo)
 }
 
 rect2
-PrintDebugText( text_geometry_buffer *Buffer, const char *Text, v2 XY, s32 FontSize)
+PrintDebugText(debug_text_render_group *RG, text_geometry_buffer *Geo, const char *Text, v2 XY, s32 FontSize)
 {
-  /* glDepthFunc(GL_ALWAYS); */
-
-  s32 TextLength = strlen(Text);
-  if (Buffer->CurrentIndex + TextLength > Buffer->Allocated)
-  {
-    Assert(!"Out of Debug Text Memory!!");
-    rect2 Zero;
-    return Zero;
-  }
+  s32 QuadCount = strlen(Text);
 
   rect2 Result = { XY, XY };
 
   for ( s32 CharIndex = 0;
-      CharIndex < TextLength;
+      CharIndex < QuadCount;
       CharIndex++ )
   {
+    if (Geo->CurrentIndex + 6 > Geo->Allocated)
+      DrawDebugText(RG, Geo);
+
     v3 vertex_up_left    = V3( (r32)(XY.x+CharIndex*FontSize)         , (r32)(XY.y+FontSize), 0.5f);
     v3 vertex_up_right   = V3( (r32)(XY.x+CharIndex*FontSize+FontSize), (r32)(XY.y+FontSize), 0.5f);
     v3 vertex_down_right = V3( (r32)(XY.x+CharIndex*FontSize+FontSize), (r32)XY.y           , 0.5f);
@@ -148,24 +146,24 @@ PrintDebugText( text_geometry_buffer *Buffer, const char *Text, v2 XY, s32 FontS
     v2 uv_down_left  = V2( uv_x           , (uv_y + 1.0f/16.0f) );
 
 
-    Buffer->Verts[Buffer->CurrentIndex] = vertex_up_left;
-    Buffer->UVs[Buffer->CurrentIndex++] = uv_up_left;
+    Geo->Verts[Geo->CurrentIndex] = vertex_up_left;
+    Geo->UVs[Geo->CurrentIndex++] = uv_up_left;
 
-    Buffer->Verts[Buffer->CurrentIndex] = vertex_down_left;
-    Buffer->UVs[Buffer->CurrentIndex++] = uv_down_left;
+    Geo->Verts[Geo->CurrentIndex] = vertex_down_left;
+    Geo->UVs[Geo->CurrentIndex++] = uv_down_left;
 
-    Buffer->Verts[Buffer->CurrentIndex] = vertex_up_right;
-    Buffer->UVs[Buffer->CurrentIndex++] = uv_up_right;
+    Geo->Verts[Geo->CurrentIndex] = vertex_up_right;
+    Geo->UVs[Geo->CurrentIndex++] = uv_up_right;
 
 
-    Buffer->Verts[Buffer->CurrentIndex] = vertex_down_right;
-    Buffer->UVs[Buffer->CurrentIndex++] = uv_down_right;
+    Geo->Verts[Geo->CurrentIndex] = vertex_down_right;
+    Geo->UVs[Geo->CurrentIndex++] = uv_down_right;
 
-    Buffer->Verts[Buffer->CurrentIndex] = vertex_up_right;
-    Buffer->UVs[Buffer->CurrentIndex++] = uv_up_right;
+    Geo->Verts[Geo->CurrentIndex] = vertex_up_right;
+    Geo->UVs[Geo->CurrentIndex++] = uv_up_right;
 
-    Buffer->Verts[Buffer->CurrentIndex] = vertex_down_left;
-    Buffer->UVs[Buffer->CurrentIndex++] = uv_down_left;
+    Geo->Verts[Geo->CurrentIndex] = vertex_down_left;
+    Geo->UVs[Geo->CurrentIndex++] = uv_down_left;
 
     continue;
   }
@@ -191,23 +189,14 @@ DebugFrameEnd(r32 dt)
 
   debug_state *DebugState = GetDebugState();
   debug_text_render_group *RG = DebugState->TextRenderGroup;
-  text_geometry_buffer *TextGeo = &RG->GeoBuffer;
+  text_geometry_buffer *TextGeo = &RG->TextGeo;
   s32 FontSize = DEBUG_FONT_SIZE;
-
-  // FIXME(Jesse): This should be called in ClearFramebuffers
-#if DEBUG
-  debug_text_render_group *TextRG = GetDebugState()->TextRenderGroup;
-  Assert(TextRG);
-  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, TextRG->FBO.ID);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-#endif
 
   char dtBuffer[32] = {};
   sprintf(dtBuffer, "%f", dt);
-  PrintDebugText( TextGeo, dtBuffer, V2(10, (SCR_HEIGHT-FontSize-10)/2), FontSize);
+  PrintDebugText(RG, TextGeo, dtBuffer, V2(10, (SCR_HEIGHT-FontSize-10)/2), FontSize);
 
 #if _BONSAI_SLOW
-
   u64 CurrentFrameCycleCount = DebugState->GetCycleCount();
   u64 CycleDelta = CurrentFrameCycleCount - LastFrameCycleCount;
   LastFrameCycleCount = CurrentFrameCycleCount;
@@ -263,7 +252,7 @@ DebugFrameEnd(r32 dt)
         /* char CycleCountBuffer[32]; */
         /* sprintf(CycleCountBuffer, "%" PRIu64, Entry->CycleCount); */
 
-        /* rect2 CCRect = PrintDebugText( TextGeo, CycleCountBuffer, 0, AtY, FontSize); */
+        /* rect2 CCRect = PrintDebugText(RG, TextGeo, CycleCountBuffer, 0, AtY, FontSize); */
         /* MaxX = max(MaxX, CCRect.Max.x); */
         /* AtY += (FontSize + LinePadding); */
       }
@@ -273,7 +262,7 @@ DebugFrameEnd(r32 dt)
     {
       char CycleCountBuffer[32] = {};
       sprintf(CycleCountBuffer, "%" PRIu64, MinCycleCount);
-      PrintDebugText( TextGeo, CycleCountBuffer, V2(0, AtY), FontSize);
+      PrintDebugText(RG, TextGeo, CycleCountBuffer, V2(0, AtY), FontSize);
       AtY += (FontSize + LinePadding);
       AtY += (FontSize + LinePadding);
     }
@@ -281,7 +270,7 @@ DebugFrameEnd(r32 dt)
     {
       char CycleCountBuffer[32] = {};
       sprintf(CycleCountBuffer, "%" PRIu64, CycleDelta);
-      PrintDebugText( TextGeo, CycleCountBuffer, V2(0, AtY), FontSize);
+      PrintDebugText(RG, TextGeo, CycleCountBuffer, V2(0, AtY), FontSize);
       AtY += (FontSize + LinePadding);
       AtY += (FontSize + LinePadding);
     }
@@ -289,7 +278,7 @@ DebugFrameEnd(r32 dt)
     {
       char CycleCountBuffer[32] = {};
       sprintf(CycleCountBuffer, "%" PRIu64, MaxCycleCount);
-      PrintDebugText( TextGeo, CycleCountBuffer, V2(0, AtY), FontSize);
+      PrintDebugText(RG, TextGeo, CycleCountBuffer, V2(0, AtY), FontSize);
       AtY += (FontSize + LinePadding);
       AtY += (FontSize + LinePadding);
     }
@@ -312,15 +301,15 @@ DebugFrameEnd(r32 dt)
 
         r32 FramePerc = CalculateFramePercentage(Entry, CycleDelta);
         sprintf(PercentageBuffer, "%.0f", FramePerc);
-        PrintDebugText( TextGeo, PercentageBuffer, V2(AtX, AtY), FontSize);
+        PrintDebugText(RG, TextGeo, PercentageBuffer, V2(AtX, AtY), FontSize);
         AtX += (FontSize*4);
 
         sprintf(PercentageBuffer, "%.0f", Entry->MaxPerc);
-        PrintDebugText( TextGeo, PercentageBuffer, V2(AtX, AtY), FontSize);
+        PrintDebugText(RG, TextGeo, PercentageBuffer, V2(AtX, AtY), FontSize);
         AtX += (FontSize*4);
 
         sprintf(PercentageBuffer, "%.0f", Entry->MinPerc);
-        PrintDebugText( TextGeo, PercentageBuffer, V2(AtX, AtY), FontSize);
+        PrintDebugText(RG, TextGeo, PercentageBuffer, V2(AtX, AtY), FontSize);
         AtX += (FontSize*4);
 
         /* // Print Hit Count */
@@ -329,7 +318,7 @@ DebugFrameEnd(r32 dt)
         /* rect2 HitCountRect = PrintDebugText( RG, CountBuffer, AtX, AtY, FontSize); */
         /* HitCountX = max((s32)HitCountRect.Max.x, HitCountX); */
 
-        PrintDebugText( TextGeo, Entry->FuncName, V2(AtX, AtY), FontSize);
+        PrintDebugText(RG, TextGeo, Entry->FuncName, V2(AtX, AtY), FontSize);
 
         AtY += (FontSize + LinePadding);
       }
@@ -373,3 +362,81 @@ CleanupText2D(debug_text_render_group *RG)
 
   return;
 }
+
+inline void
+DoDebugFrameRecord(
+    debug_recording_state *State,
+    hotkeys *Hotkeys,
+    memory_arena *MainMemory)
+{
+  {
+    global_variable b32 Toggled = False;
+    if (Hotkeys->Debug_ToggleLoopedGamePlayback  && !Toggled)
+    {
+      Toggled = True;
+      State->Mode = (debug_recording_mode)((State->Mode + 1) % RecordingMode_Count);
+
+      switch (State->Mode)
+      {
+        case RecordingMode_Clear:
+        {
+          Log("Clear");
+          State->FramesRecorded = 0;
+          State->FramesPlayedBack = 0;
+        } break;
+
+        case RecordingMode_Record:
+        {
+          Log("Recording");
+          CopyArena(MainMemory, &State->RecordedMainMemory);
+        } break;
+
+        case RecordingMode_Playback:
+        {
+          Log("Playback");
+          CopyArena(&State->RecordedMainMemory, MainMemory);
+        } break;
+
+        InvalidDefaultCase;
+      }
+
+    }
+    else if (!Hotkeys->Debug_ToggleLoopedGamePlayback)
+    {
+      Toggled = False;
+    }
+  }
+
+  switch (State->Mode)
+  {
+    case RecordingMode_Clear:
+    {
+    } break;
+
+    case RecordingMode_Record:
+    {
+      Assert(State->FramesRecorded < DEBUG_RECORD_INPUT_SIZE);
+      Hotkeys->Debug_ToggleLoopedGamePlayback = False;
+      State->Inputs[State->FramesRecorded++] = *Hotkeys;
+    } break;
+
+    case RecordingMode_Playback:
+    {
+      *Hotkeys = State->Inputs[State->FramesPlayedBack++];
+
+      if (State->FramesPlayedBack == State->FramesRecorded)
+      {
+        State->FramesPlayedBack = 0;
+        CopyArena(&State->RecordedMainMemory, MainMemory);
+      }
+
+    } break;
+
+    InvalidDefaultCase;
+  }
+
+  return;
+}
+
+
+#endif // DEBUG
