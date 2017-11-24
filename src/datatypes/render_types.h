@@ -168,5 +168,7 @@ struct debug_text_render_group
   u32 UVBuffer;
 
   shader Text2DShader;
+  shader DebugTextureShader;
+
   u32 TextureUniformID;
 };

@@ -3,6 +3,15 @@
 texture *
 MakeTexture_RGBA( v2i Dim, const void* Data, memory_arena *Memory);
 
+void
+FramebufferTexture(framebuffer *FBO, texture *Tex);
+
+shader
+MakeSimpleTextureShader(texture *Texture, memory_arena *GraphicsMemory);
+
+b32
+CheckAndClearFramebuffer();
+
 b32
 InitDebugOverlayFramebuffer(debug_text_render_group *RG, memory_arena *DebugArena, const char *DebugFont)
 {
@@ -14,6 +23,8 @@ InitDebugOverlayFramebuffer(debug_text_render_group *RG, memory_arena *DebugAren
   RG->FontTexture = LoadDDS(DebugFont);
   RG->CompositedTexture = MakeTexture_RGBA( ScreenDim, 0, DebugArena);
 
+  FramebufferTexture(&RG->FBO, RG->CompositedTexture);
+
   GL_Global->glGenBuffers(1, &RG->VertexBuffer);
   GL_Global->glGenBuffers(1, &RG->UVBuffer);
 
@@ -21,6 +32,11 @@ InitDebugOverlayFramebuffer(debug_text_render_group *RG, memory_arena *DebugAren
                                  "TextVertexShader.fragmentshader", DebugArena);
 
   RG->TextureUniformID = GL_Global->glGetUniformLocation(RG->Text2DShader.ID, "myTextureSampler");
+
+  RG->DebugTextureShader = MakeSimpleTextureShader(RG->CompositedTexture, DebugArena);
+
+  if (!CheckAndClearFramebuffer())
+    return False;
 
   return True;
 }
@@ -31,19 +47,65 @@ InitDebugState( debug_state *DebugState, platform *Plat)
   DebugState->GetCycleCount = Plat->GetCycleCount;
 
   DebugState->TextRenderGroup = PUSH_STRUCT_CHECKED(debug_text_render_group, Plat->Memory, 1);
-  InitDebugOverlayFramebuffer(DebugState->TextRenderGroup, Plat->Memory, "Holstein.DDS");
+  if (!InitDebugOverlayFramebuffer(DebugState->TextRenderGroup, Plat->Memory, "Holstein.DDS"))
+  {
+    Error("Initializing Debug Overlay Framebuffer");
+  }
 
   return;
+}
+
+void
+DrawDebugText( debug_text_render_group *RG, u32 VertCount, v3 *Verteces, v2 *UVs)
+{
+  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->VertexBuffer);
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, VertCount * sizeof(v3), Verteces, GL_STATIC_DRAW);
+
+  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->UVBuffer);
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, VertCount * sizeof(v2), UVs, GL_STATIC_DRAW);
+
+  // Bind Text shader
+  GL_Global->glUseProgram(RG->Text2DShader.ID);
+
+  // Bind Font texture
+  GL_Global->glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, RG->FontTexture.ID);
+  GL_Global->glUniform1i(RG->TextureUniformID, 0);
+
+  // 1rst attribute buffer : Verteces
+  GL_Global->glEnableVertexAttribArray(0);
+  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->VertexBuffer);
+  GL_Global->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0 );
+
+  // 2nd attribute buffer : UVs
+  GL_Global->glEnableVertexAttribArray(1);
+  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->UVBuffer);
+  GL_Global->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0 );
+
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+  // Draw
+  glDrawArrays(GL_TRIANGLES, 0, VertCount);
+
+  glDisable(GL_BLEND);
+
+  GL_Global->glDisableVertexAttribArray(0);
+  GL_Global->glDisableVertexAttribArray(1);
+
+  AssertNoGlErrors;
+
+  glDepthFunc(GL_LEQUAL);
 }
 
 rect2
 PrintDebugText( debug_text_render_group *RG, const char *Text, v2 XY, s32 FontSize)
 {
-  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO.ID);
   /* glDepthFunc(GL_ALWAYS); */
 
   s32 TextLength = strlen(Text);
-  s32 BufferIndex = 0;
+  u32 BufferIndex = 0;
 
   // Fill buffers
   v3 vertices[1024];
@@ -94,46 +156,8 @@ PrintDebugText( debug_text_render_group *RG, const char *Text, v2 XY, s32 FontSi
     continue;
   }
 
-  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->VertexBuffer);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, (BufferIndex+1) * sizeof(v3), &vertices[0], GL_STATIC_DRAW);
+  DrawDebugText(RG, BufferIndex+1, vertices, UVs);
 
-  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->UVBuffer);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, (BufferIndex+1) * sizeof(v2), &UVs[0], GL_STATIC_DRAW);
-
-  // Bind shader
-  GL_Global->glUseProgram(RG->Text2DShader.ID);
-
-  // Bind texture
-  GL_Global->glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, RG->FontTexture.ID);
-
-  GL_Global->glUniform1i(RG->TextureUniformID, 0);
-
-  // 1rst attribute buffer : vertices
-  GL_Global->glEnableVertexAttribArray(0);
-  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->VertexBuffer);
-  GL_Global->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0 );
-
-  // 2nd attribute buffer : UVs
-  GL_Global->glEnableVertexAttribArray(1);
-  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->UVBuffer);
-  GL_Global->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0 );
-
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-  // Draw call
-  /* SetViewport( V2(SCR_HEIGHT, SCR_WIDTH) ); */
-  glDrawArrays(GL_TRIANGLES, 0, BufferIndex);
-
-  glDisable(GL_BLEND);
-
-  GL_Global->glDisableVertexAttribArray(0);
-  GL_Global->glDisableVertexAttribArray(1);
-
-  AssertNoGlErrors;
-
-  glDepthFunc(GL_LEQUAL);
   return Result;
 }
 
@@ -156,6 +180,14 @@ DebugFrameEnd(r32 dt)
   debug_state *DebugState = GetDebugState();
   debug_text_render_group *RG = DebugState->TextRenderGroup;
   s32 FontSize = DEBUG_FONT_SIZE;
+
+  // FIXME(Jesse): This should be called in ClearFramebuffers
+#if DEBUG
+  debug_text_render_group *TextRG = GetDebugState()->TextRenderGroup;
+  Assert(TextRG);
+  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, TextRG->FBO.ID);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+#endif
 
   char dtBuffer[32] = {};
   sprintf(dtBuffer, "%f", dt);

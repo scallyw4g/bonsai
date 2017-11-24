@@ -113,12 +113,13 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   World->Mesh.VertsFilled = 0;
 
 #if DEBUG_DRAW_SHADOW_MAP_TEXTURE
+  DrawTexturedQuad(&GetDebugState()->TextRenderGroup->DebugTextureShader);
   /* DrawTexturedQuad(&SG->DebugTextureShader); */
   /* DrawTexturedQuad(&gBuffer->DebugPositionTextureShader); */
   /* DrawTexturedQuad(&gBuffer->DebugNormalTextureShader); */
   /* DrawTexturedQuad(&gBuffer->DebugColorTextureShader); */
   /* DrawTexturedQuad(&AoGroup->DebugSsaoShader); */
-  /* SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight)); */
+  SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight));
 
   AssertNoGlErrors;
 #endif
