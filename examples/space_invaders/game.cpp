@@ -1100,7 +1100,7 @@ GameInit( platform *Plat, memory_arena *GameMemory)
     Error("Initializing g_buffer_render_group"); return False;
   }
 
-  texture *SsaoNoiseTexture = AllocateAndInitSsaoNoise();
+  texture *SsaoNoiseTexture = AllocateAndInitSsaoNoise(AoGroup, GraphicsMemory);
 
   camera *Camera = PUSH_STRUCT_CHECKED(camera, GameState->Memory, 1);
   InitCamera(Camera, CAMERA_INITIAL_P, 5000.0f);

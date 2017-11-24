@@ -112,7 +112,7 @@ MakeTexture_RGBA(v2i Dim, const void* Data, memory_arena *Mem)
 }
 
 texture *
-MakeTexture_RGB(v2i Dim, const void* Data, memory_arena *Mem)
+MakeTexture_RGB(v2i Dim, const v3* Data, memory_arena *Mem)
 {
   texture *Texture = GenTexture(Dim, Mem);
 
@@ -183,12 +183,12 @@ AllocateAndInitSsaoNoise(ao_render_group *AoGroup, memory_arena *GraphicsMemory)
 
   InitSsaoKernel(AoGroup->SsaoKernel, ArrayCount(AoGroup->SsaoKernel), &SsaoEntropy);
 
-  u32 NoiseElements = Area(SsaoNoiseDim);
-  v3 *SsaoNoise = PUSH_STRUCT_CHECKED(v3, GraphicsMemory, NoiseElements);
-  InitSsaoNoise(SsaoNoise, NoiseElements, &SsaoEntropy);
+  // TODO(Jesse): Transient arena for this instead of stack allocation ?
+  v3 *SsaoNoise = PUSH_STRUCT_CHECKED(v3, GraphicsMemory, 16);
+  InitSsaoNoise(SsaoNoise, 16, &SsaoEntropy);
 
-  texture *Result = MakeTexture_RGB(SsaoNoiseDim, &SsaoNoise, GraphicsMemory);
-  return Result;
+  texture *SsaoNoiseTexture = MakeTexture_RGB(SsaoNoiseDim, SsaoNoise, GraphicsMemory);
+  return SsaoNoiseTexture;
 }
 
 

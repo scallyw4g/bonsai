@@ -1,3 +1,10 @@
+# Nov 23 2017 - 0:30 - closed - void ptr parameter
+* texture
+I was passing a void ptr to the MakeTexture_RGB to initialize the tex data,
+which bit me in the ass when I went from passing the address of a
+stack-allocated array to the address of a heap allocated array, which was v3**
+instead of a stack allocated array degrading to v3*
+
 # Sept 26 2017 - 4:00 - closed - Extra texture being bound
 * opengl
 * init
