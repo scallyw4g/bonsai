@@ -65,10 +65,8 @@ InitDebugState(platform *Plat)
 }
 
 void
-DrawDebugText(debug_text_render_group *RG, text_geometry_buffer *Geo)
+DrawDebugText(debug_text_render_group *RG, text_geometry_buffer *Geo, platform *Plat)
 {
-  glDepthFunc(GL_ALWAYS);
-
   u32 VertCount = Geo->CurrentIndex +1;
   Geo->CurrentIndex = 0;
 
@@ -101,22 +99,23 @@ DrawDebugText(debug_text_render_group *RG, text_geometry_buffer *Geo)
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+  glDisable(GL_DEPTH_TEST);
+
   // Draw
+  SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight));
   glDrawArrays(GL_TRIANGLES, 0, VertCount);
 
   glDisable(GL_BLEND);
+  glEnable(GL_DEPTH_TEST);
 
   GL_Global->glDisableVertexAttribArray(0);
   GL_Global->glDisableVertexAttribArray(1);
 
   AssertNoGlErrors;
-
-  glDepthFunc(GL_LEQUAL);
-
 }
 
 rect2
-PrintDebugText(debug_text_render_group *RG, text_geometry_buffer *Geo, const char *Text, v2 XY, s32 FontSize)
+TextOutAt(platform *Plat, debug_text_render_group *RG, text_geometry_buffer *Geo, const char *Text, v2 XY, s32 FontSize)
 {
   s32 QuadCount = strlen(Text);
 
@@ -127,7 +126,7 @@ PrintDebugText(debug_text_render_group *RG, text_geometry_buffer *Geo, const cha
       CharIndex++ )
   {
     if (Geo->CurrentIndex + 6 > Geo->Allocated)
-      DrawDebugText(RG, Geo);
+      DrawDebugText(RG, Geo, Plat);
 
     v3 vertex_up_left    = V3( (r32)(XY.x+CharIndex*FontSize)         , (r32)(XY.y+FontSize), 0.5f);
     v3 vertex_up_right   = V3( (r32)(XY.x+CharIndex*FontSize+FontSize), (r32)(XY.y+FontSize), 0.5f);
@@ -146,23 +145,25 @@ PrintDebugText(debug_text_render_group *RG, text_geometry_buffer *Geo, const cha
     v2 uv_down_left  = V2( uv_x           , (uv_y + 1.0f/16.0f) );
 
 
-    Geo->Verts[Geo->CurrentIndex] = vertex_up_left;
+    v3 XYClip = (1.0f / V3(SCR_WIDTH, SCR_HEIGHT, 1));
+
+    Geo->Verts[Geo->CurrentIndex] = (vertex_up_left * XYClip) * 2.0f - 1;
     Geo->UVs[Geo->CurrentIndex++] = uv_up_left;
 
-    Geo->Verts[Geo->CurrentIndex] = vertex_down_left;
+    Geo->Verts[Geo->CurrentIndex] = (vertex_down_left * XYClip) * 2.0f - 1;
     Geo->UVs[Geo->CurrentIndex++] = uv_down_left;
 
-    Geo->Verts[Geo->CurrentIndex] = vertex_up_right;
+    Geo->Verts[Geo->CurrentIndex] = (vertex_up_right * XYClip) * 2.0f - 1;
     Geo->UVs[Geo->CurrentIndex++] = uv_up_right;
 
 
-    Geo->Verts[Geo->CurrentIndex] = vertex_down_right;
+    Geo->Verts[Geo->CurrentIndex] = (vertex_down_right * XYClip) * 2.0f - 1;
     Geo->UVs[Geo->CurrentIndex++] = uv_down_right;
 
-    Geo->Verts[Geo->CurrentIndex] = vertex_up_right;
+    Geo->Verts[Geo->CurrentIndex] = (vertex_up_right * XYClip) * 2.0f - 1;
     Geo->UVs[Geo->CurrentIndex++] = uv_up_right;
 
-    Geo->Verts[Geo->CurrentIndex] = vertex_down_left;
+    Geo->Verts[Geo->CurrentIndex] = (vertex_down_left * XYClip) * 2.0f - 1;
     Geo->UVs[Geo->CurrentIndex++] = uv_down_left;
 
     continue;
@@ -183,18 +184,19 @@ CalculateFramePercentage(debug_profile_entry *Entry, u64 CycleDelta)
 }
 
 void
-DebugFrameEnd(r32 dt)
+DebugFrameEnd(platform *Plat)
 {
   /* TIMED_FUNCTION(); */
-
   debug_state *DebugState = GetDebugState();
   debug_text_render_group *RG = DebugState->TextRenderGroup;
   text_geometry_buffer *TextGeo = &RG->TextGeo;
   s32 FontSize = DEBUG_FONT_SIZE;
 
+  r32 dt = Plat->dt;
+
   char dtBuffer[32] = {};
   sprintf(dtBuffer, "%f", dt);
-  PrintDebugText(RG, TextGeo, dtBuffer, V2(10, (SCR_HEIGHT-FontSize-10)/2), FontSize);
+  TextOutAt(Plat, RG, TextGeo, dtBuffer, V2(10, 1080-FontSize), FontSize);
 
 #if _BONSAI_SLOW
   u64 CurrentFrameCycleCount = DebugState->GetCycleCount();
@@ -252,7 +254,7 @@ DebugFrameEnd(r32 dt)
         /* char CycleCountBuffer[32]; */
         /* sprintf(CycleCountBuffer, "%" PRIu64, Entry->CycleCount); */
 
-        /* rect2 CCRect = PrintDebugText(RG, TextGeo, CycleCountBuffer, 0, AtY, FontSize); */
+        /* rect2 CCRect = TextOutAt(Plat, RG, TextGeo, CycleCountBuffer, 0, AtY, FontSize); */
         /* MaxX = max(MaxX, CCRect.Max.x); */
         /* AtY += (FontSize + LinePadding); */
       }
@@ -262,7 +264,7 @@ DebugFrameEnd(r32 dt)
     {
       char CycleCountBuffer[32] = {};
       sprintf(CycleCountBuffer, "%" PRIu64, MinCycleCount);
-      PrintDebugText(RG, TextGeo, CycleCountBuffer, V2(0, AtY), FontSize);
+      TextOutAt(Plat, RG, TextGeo, CycleCountBuffer, V2(0, AtY), FontSize);
       AtY += (FontSize + LinePadding);
       AtY += (FontSize + LinePadding);
     }
@@ -270,7 +272,7 @@ DebugFrameEnd(r32 dt)
     {
       char CycleCountBuffer[32] = {};
       sprintf(CycleCountBuffer, "%" PRIu64, CycleDelta);
-      PrintDebugText(RG, TextGeo, CycleCountBuffer, V2(0, AtY), FontSize);
+      TextOutAt(Plat, RG, TextGeo, CycleCountBuffer, V2(0, AtY), FontSize);
       AtY += (FontSize + LinePadding);
       AtY += (FontSize + LinePadding);
     }
@@ -278,7 +280,7 @@ DebugFrameEnd(r32 dt)
     {
       char CycleCountBuffer[32] = {};
       sprintf(CycleCountBuffer, "%" PRIu64, MaxCycleCount);
-      PrintDebugText(RG, TextGeo, CycleCountBuffer, V2(0, AtY), FontSize);
+      TextOutAt(Plat, RG, TextGeo, CycleCountBuffer, V2(0, AtY), FontSize);
       AtY += (FontSize + LinePadding);
       AtY += (FontSize + LinePadding);
     }
@@ -301,24 +303,24 @@ DebugFrameEnd(r32 dt)
 
         r32 FramePerc = CalculateFramePercentage(Entry, CycleDelta);
         sprintf(PercentageBuffer, "%.0f", FramePerc);
-        PrintDebugText(RG, TextGeo, PercentageBuffer, V2(AtX, AtY), FontSize);
+        TextOutAt(Plat, RG, TextGeo, PercentageBuffer, V2(AtX, AtY), FontSize);
         AtX += (FontSize*4);
 
         sprintf(PercentageBuffer, "%.0f", Entry->MaxPerc);
-        PrintDebugText(RG, TextGeo, PercentageBuffer, V2(AtX, AtY), FontSize);
+        TextOutAt(Plat, RG, TextGeo, PercentageBuffer, V2(AtX, AtY), FontSize);
         AtX += (FontSize*4);
 
         sprintf(PercentageBuffer, "%.0f", Entry->MinPerc);
-        PrintDebugText(RG, TextGeo, PercentageBuffer, V2(AtX, AtY), FontSize);
+        TextOutAt(Plat, RG, TextGeo, PercentageBuffer, V2(AtX, AtY), FontSize);
         AtX += (FontSize*4);
 
         /* // Print Hit Count */
         /* char CountBuffer[32]; */
         /* sprintf(CountBuffer, "%" PRIu32, Entry->HitCount); */
-        /* rect2 HitCountRect = PrintDebugText( RG, CountBuffer, AtX, AtY, FontSize); */
+        /* rect2 HitCountRect = TextOutAt(Plat,  RG, CountBuffer, AtX, AtY, FontSize); */
         /* HitCountX = max((s32)HitCountRect.Max.x, HitCountX); */
 
-        PrintDebugText(RG, TextGeo, Entry->FuncName, V2(AtX, AtY), FontSize);
+        TextOutAt(Plat, RG, TextGeo, Entry->FuncName, V2(AtX, AtY), FontSize);
 
         AtY += (FontSize + LinePadding);
       }
@@ -342,7 +344,7 @@ DebugFrameEnd(r32 dt)
   }
 #endif
 
-  DrawDebugText(RG, TextGeo);
+  DrawDebugText(RG, TextGeo, Plat);
 
   return;
 }

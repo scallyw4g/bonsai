@@ -99,7 +99,7 @@ DebugTimedFunction(u32 FunctionIndexIn, const char* FuncNameIn)
 #define END_BLOCK(BlockName) }
 
 #define DEBUG_FRAME_RECORD(...) DoDebugFrameRecord(__VA_ARGS__)
-#define DEBUG_FRAME_END(dt) DebugFrameEnd(dt)
+#define DEBUG_FRAME_END(Plat) DebugFrameEnd(Plat)
 
 #elif RELEASE
 

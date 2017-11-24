@@ -450,6 +450,13 @@ V3(int x, int y, int z)
 }
 
 inline v3
+V3(v2 XY, float z)
+{
+  v3 Result = {{ XY.x, XY.y, z }};
+  return Result;
+}
+
+inline v3
 V3(float x, float y, float z)
 {
   v3 Result = {};
@@ -637,6 +644,27 @@ operator/(v3 A, r32 B)
   Result.y = A.y / B;
   Result.z = A.z / B;
 
+  return Result;
+}
+
+inline v3
+operator/(r32 B, v3 A)
+{
+  v3 Result = {};
+
+  Result.x = B/A.x;
+  Result.y = B/A.y;
+  Result.z = B/A.z;
+
+  return Result;
+}
+
+inline v2
+operator/(v2 A, v2 B)
+{
+  v2 Result;
+  Result.x = A.x / B.x;
+  Result.y = A.y / B.y;
   return Result;
 }
 

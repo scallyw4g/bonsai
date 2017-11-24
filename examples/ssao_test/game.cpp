@@ -54,7 +54,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 #if DEBUG
   debug_state *DebugState = GetDebugState();
   debug_text_render_group *DebugRG = DebugState->TextRenderGroup;
-  PrintDebugText(DebugRG, &DebugRG->TextGeo, "HI", V2(100,100), 12);
+  TextOutAt(Plat, DebugRG, &DebugRG->TextGeo, "HI", V2(100,100), 12);
 #endif
 
   //
