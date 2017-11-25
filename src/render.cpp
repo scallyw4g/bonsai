@@ -908,9 +908,9 @@ RotatePoint(v3 P1, v3 P2)
 }
 
 inline void
-DEBUG_DrawLine( mesh_buffer_target *Mesh,
-    g_buffer_render_group *gBuffer, shadow_render_group *SG, camera *Camera,
-                v3 P1, v3 P2, int ColorIndex, float Thickness )
+DEBUG_DrawLine( mesh_buffer_target *Mesh, g_buffer_render_group *gBuffer,
+                shadow_render_group *SG, camera *Camera, v3 P1, v3 P2,
+                int ColorIndex, float Thickness )
 {
   // 2 verts per line, 3 floats per vert
 

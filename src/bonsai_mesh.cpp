@@ -143,11 +143,11 @@ BuildEntityMesh(chunk_data *chunk, chunk_dimension Dim)
         voxel_position rightVoxel = LocalVoxelP + Voxel_Position(1, 0, 0);
         voxel_position leftVoxel = LocalVoxelP - Voxel_Position(1, 0, 0);
 
-        voxel_position topVoxel = LocalVoxelP + Voxel_Position(0, 1, 0);
-        voxel_position botVoxel = LocalVoxelP - Voxel_Position(0, 1, 0);
+        voxel_position topVoxel = LocalVoxelP + Voxel_Position(0, 0, 1);
+        voxel_position botVoxel = LocalVoxelP - Voxel_Position(0, 0, 1);
 
-        voxel_position frontVoxel = LocalVoxelP + Voxel_Position(0, 0, 1);
-        voxel_position backVoxel = LocalVoxelP - Voxel_Position(0, 0, 1);
+        voxel_position frontVoxel = LocalVoxelP + Voxel_Position(0, 1, 0);
+        voxel_position backVoxel = LocalVoxelP - Voxel_Position(0, 1, 0);
 
 
 
@@ -215,11 +215,11 @@ BuildWorldChunkMesh(world *World, world_chunk *WorldChunk, chunk_dimension World
         canonical_position rightVoxel = Canonicalize(WorldChunkDim, CurrentP + V3(1, 0, 0));
         canonical_position leftVoxel  = Canonicalize(WorldChunkDim, CurrentP - V3(1, 0, 0));
 
-        canonical_position topVoxel   = Canonicalize(WorldChunkDim, CurrentP + V3(0, 1, 0));
-        canonical_position botVoxel   = Canonicalize(WorldChunkDim, CurrentP - V3(0, 1, 0));
+        canonical_position topVoxel   = Canonicalize(WorldChunkDim, CurrentP + V3(0, 0, 1));
+        canonical_position botVoxel   = Canonicalize(WorldChunkDim, CurrentP - V3(0, 0, 1));
 
-        canonical_position frontVoxel = Canonicalize(WorldChunkDim, CurrentP + V3(0, 0, 1));
-        canonical_position backVoxel  = Canonicalize(WorldChunkDim, CurrentP - V3(0, 0, 1));
+        canonical_position frontVoxel = Canonicalize(WorldChunkDim, CurrentP + V3(0, 1, 0));
+        canonical_position backVoxel  = Canonicalize(WorldChunkDim, CurrentP - V3(0, 1, 0));
 
         if ( NotFilledInWorld( World, WorldChunk, rightVoxel ) )
         {

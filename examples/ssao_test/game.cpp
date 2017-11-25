@@ -36,9 +36,9 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
 
 #if DEBUG_DRAW_WORLD_AXIES
-  DEBUG_DrawLine(World, V3(0,0,0), V3(10000, 0, 0), RED, 0.5f );
-  DEBUG_DrawLine(World, V3(0,0,0), V3(0, 10000, 0), GREEN, 0.5f );
-  DEBUG_DrawLine(World, V3(0,0,0), V3(0, 0, 10000), TEAL, 0.5f );
+  DEBUG_DrawLine(&World->Mesh, gBuffer, SG, Camera, V3(0,0,0), V3(10000, 0, 0), RED, 0.5f );
+  DEBUG_DrawLine(&World->Mesh, gBuffer, SG, Camera, V3(0,0,0), V3(0, 10000, 0), GREEN, 0.5f );
+  DEBUG_DrawLine(&World->Mesh, gBuffer, SG, Camera, V3(0,0,0), V3(0, 0, 10000), TEAL, 0.5f );
 #endif
 
 
@@ -268,9 +268,8 @@ GameInit( platform *Plat, memory_arena *GameMemory)
   GameState->Turb = PUSH_STRUCT_CHECKED(noise_3d, GameState->Memory, 1);
   AllocateAndInitNoise3d(GameState, GameState->Turb, Chunk_Dimension(8,8,8) );
 
-  // This needs to be off for shadow maps to work correctly
-  /* glEnable(GL_CULL_FACE); */
-  /* glCullFace(GL_BACK); */
+  glEnable(GL_CULL_FACE);
+  glCullFace(GL_BACK);
 
   // This is necessary!
   GLuint VertexArrayID;
