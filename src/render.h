@@ -133,14 +133,10 @@ LookAt(v3 P, v3 Target, v3 Up)
 inline m4
 GetViewMatrix(chunk_dimension WorldChunkDim, camera *Camera)
 {
-  v3 up = V3(0, 1, 0);
-  v3 CameraRight = Normalize( Cross(up, Camera->Front) );
-  v3 CameraUp = Normalize( Cross( Camera->Front, CameraRight) );
-
   m4 Result = LookAt(
     GetRenderP(WorldChunkDim, Camera->P, Camera),
     GetRenderP(WorldChunkDim, Camera->Target, Camera),
-    CameraUp
+    Camera->Up
   );
 
   return Result;

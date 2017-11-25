@@ -244,7 +244,7 @@ GameInit( platform *Plat, memory_arena *GameMemory)
   texture *SsaoNoiseTexture = AllocateAndInitSsaoNoise(AoGroup, GraphicsMemory);
 
   camera *Camera = PUSH_STRUCT_CHECKED(camera, GameState->Memory, 1);
-  InitCamera(Camera, CAMERA_INITIAL_P, 500.0f);
+  InitCamera(Camera, CameraInitialFront, 500.0f);
 
   gBuffer->LightingShader =
     MakeLightingShader(GraphicsMemory, gBuffer->Textures, SG->ShadowMap, AoGroup->Texture,

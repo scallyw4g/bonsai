@@ -82,16 +82,15 @@ AllocateEntityTable(platform *Plat, game_state *GameState)
 }
 
 void
-InitCamera(camera* Camera, canonical_position P, float FocalLength)
+InitCamera(camera* Camera, v3 CameraFront, float FocalLength)
 {
   Camera->Frust.farClip = FocalLength;
   Camera->Frust.nearClip = 0.1f;
   Camera->Frust.width = 30.0f;
   Camera->Frust.FOV = 45.0f;
-  Camera->P = P;
-  Camera->Up = WORLD_Y;
+  Camera->Up = WORLD_Z;
   Camera->Right = WORLD_X;
-  Camera->Front = WORLD_Z;
+  Camera->Front = CameraFront;
   return;
 }
 
@@ -786,29 +785,21 @@ UpdateCameraP(platform *Plat, world *World, canonical_position NewTarget, camera
   float FocalLength = CAMERA_FOCAL_LENGTH;
   chunk_dimension WorldChunkDim = World->ChunkDim;
 
-  v3 TargetDelta = GetRenderP(WorldChunkDim, NewTarget, Camera) - GetRenderP(WorldChunkDim, Camera->Target, Camera);
-
-  Camera->Right = Normalize(Cross(Camera->Front, WORLD_Y));
-  Camera->Up = Normalize(Cross(Camera->Front, Camera->Right));
-
   v2 MouseDelta = GetMouseDelta(Plat);
-  v3 UpdateRight = Camera->Right * MouseDelta.x;
-  v3 UpdateUp = Camera->Up * MouseDelta.y;
 
-  Camera->P.Offset += (TargetDelta + UpdateRight + (UpdateUp));
-  Camera->Target.Offset += TargetDelta;
+  v3 FrontDelta = ((-1.0f*MouseDelta.x*Camera->Right) + (MouseDelta.y*Camera->Up)) * 0.001f;
+  Camera->Front = Normalize(Camera->Front + FrontDelta);
 
-  Camera->P = Canonicalize(WorldChunkDim, Camera->P);
-  Camera->Target = Canonicalize(WorldChunkDim, Camera->Target);
+  Camera->Right = Normalize(Cross(Camera->Front, Camera->Up));
+  Camera->Up = Normalize(-1.0f*Cross(Camera->Front, Camera->Right));
 
-  v3 TargetToCamera = Normalize(GetRenderP(WorldChunkDim, Camera->P, Camera) - GetRenderP(WorldChunkDim, Camera->Target, Camera));
-  Camera->P.Offset = Camera->Target.Offset + (TargetToCamera * FocalLength);
-  Camera->P.WorldP = Camera->Target.WorldP;
+  Camera->Target = NewTarget;
+  Camera->P = Canonicalize(WorldChunkDim, NewTarget - (Camera->Front*FocalLength));
 
-  Camera->Front = Normalize( GetRenderP(WorldChunkDim, Camera->Target, Camera) - GetRenderP(WorldChunkDim, Camera->P, Camera) );
-  Camera->Up = Normalize(Cross(Camera->Front, Camera->Right));
+#if 1
 
-  // frustum computation
+  //
+  // Frustum computation
   //
   v3 FrustLength = V3(0.0f,0.0f, Camera->Frust.farClip);
   v3 FarHeight = ( V3( 0.0f, ((Camera->Frust.farClip - Camera->Frust.nearClip)/cos(Camera->Frust.FOV/2)) * sin(Camera->Frust.FOV/2), 0.0f));
@@ -847,6 +838,7 @@ UpdateCameraP(platform *Plat, world *World, canonical_position NewTarget, camera
   Camera->Frust.Bot = Bot;
   Camera->Frust.Left = Left;
   Camera->Frust.Right = Right;
+#endif
 
   // TODO(Jesse): Cull these as well?
   /* plane Near; */
