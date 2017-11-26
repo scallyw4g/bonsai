@@ -1276,7 +1276,7 @@ IsInfrustum( chunk_dimension WorldChunkDim, camera *Camera, world_chunk *Chunk )
 #endif
 
 inline void
-ClearFramebuffers(g_buffer_render_group *RG, shadow_render_group *SG)
+ClearFramebuffers(graphics *Graphics)
 {
   /* TIMED_FUNCTION(); */
   glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
@@ -1290,10 +1290,10 @@ ClearFramebuffers(g_buffer_render_group *RG, shadow_render_group *SG)
 
   // FIXME(Jesse): This is taking _forever_ on Linux (GLES) .. does it take
   // forever on other Linux systems?
-  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO.ID);
+  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, Graphics->gBuffer->FBO.ID);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
+  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, Graphics->SG->FramebufferName);
   glClear(GL_DEPTH_BUFFER_BIT);
 
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);

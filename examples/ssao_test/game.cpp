@@ -33,9 +33,9 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
   chunk_dimension WorldChunkDim = World->ChunkDim;
 
-  g_buffer_render_group *gBuffer = GameState->gBuffer;
-  ao_render_group *AoGroup = GameState->AoGroup;
-  shadow_render_group *SG     = GameState->SG;
+  g_buffer_render_group *gBuffer = Plat->Graphics->gBuffer;
+  ao_render_group *AoGroup       = Plat->Graphics->AoGroup;
+  shadow_render_group *SG        = Plat->Graphics->SG;
 
 
 #if DEBUG_DRAW_WORLD_AXIES
@@ -200,8 +200,8 @@ InitGlobals(platform *Plat)
   Global_WorldChunkDim = WORLD_CHUNK_DIM;
 }
 
-b32
-GraphicsInit(game_state *State, camera* Camera, memory_arena *GraphicsMemory)
+graphics *
+GraphicsInit(camera* Camera, memory_arena *GraphicsMemory)
 {
   shadow_render_group *SG = PUSH_STRUCT_CHECKED(shadow_render_group, GraphicsMemory, 1);
   if (!InitializeShadowBuffer(SG, GraphicsMemory))
@@ -218,6 +218,7 @@ GraphicsInit(game_state *State, camera* Camera, memory_arena *GraphicsMemory)
   }
 
   AssertNoGlErrors;
+
   ao_render_group *AoGroup = CreateAoRenderGroup(GraphicsMemory);
   if (!InitAoRenderGroup(AoGroup, GraphicsMemory, gBuffer->Textures, &gBuffer->ViewProjection))
   {
@@ -227,14 +228,16 @@ GraphicsInit(game_state *State, camera* Camera, memory_arena *GraphicsMemory)
   texture *SsaoNoiseTexture = AllocateAndInitSsaoNoise(AoGroup, GraphicsMemory);
 
   gBuffer->LightingShader =
-    MakeLightingShader(GraphicsMemory, gBuffer->Textures, SG->ShadowMap, AoGroup->Texture,
-        &gBuffer->ViewProjection, &gBuffer->ShadowMVP, &SG->GameLights, Camera);
+    MakeLightingShader(GraphicsMemory, gBuffer->Textures, SG->ShadowMap,
+                       AoGroup->Texture, &gBuffer->ViewProjection,
+                       &gBuffer->ShadowMVP, &SG->GameLights, Camera);
 
   gBuffer->gBufferShader =
     CreateGbufferShader(GraphicsMemory, &gBuffer->ViewProjection, Camera);
 
-  AoGroup->Shader = MakeSsaoShader(GraphicsMemory, gBuffer->Textures, SsaoNoiseTexture,
-      &AoGroup->NoiseTile, &gBuffer->ViewProjection);
+  AoGroup->Shader =
+    MakeSsaoShader(GraphicsMemory, gBuffer->Textures, SsaoNoiseTexture,
+                   &AoGroup->NoiseTile, &gBuffer->ViewProjection);
 
   AoGroup->SsaoKernelUniform = GetShaderUniform(&AoGroup->Shader, "SsaoKernel");
 
@@ -245,16 +248,17 @@ GraphicsInit(game_state *State, camera* Camera, memory_arena *GraphicsMemory)
     AoGroup->DebugSsaoShader            = MakeSimpleTextureShader(AoGroup->Texture            , GraphicsMemory);
   }
 
-  State->SG = SG;
-  State->gBuffer = gBuffer;
-  State->AoGroup = AoGroup;
-
   glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
 
   AssertNoGlErrors;
 
-  return True;
+  graphics *Result = PUSH_STRUCT_CHECKED(graphics, GraphicsMemory, 1);
+  Result->AoGroup = AoGroup;
+  Result->gBuffer = gBuffer;
+  Result->SG = SG;
+
+  return Result;
 }
 
 EXPORT void*
@@ -273,16 +277,17 @@ GameInit( platform *Plat, memory_arena *GameMemory)
   game_state *GameState = PUSH_STRUCT_CHECKED(game_state, GameMemory, 1);
   GameState->Memory = GameMemory;
 
-
   memory_arena *GraphicsMemory = PUSH_STRUCT_CHECKED(memory_arena, GameMemory, 1);
   SubArena(GameMemory, GraphicsMemory, Megabytes(8));
 
   camera *Camera = PUSH_STRUCT_CHECKED(camera, GameState->Memory, 1);
   InitCamera(Camera, CameraInitialFront, 500.0f);
 
-  if (!GraphicsInit(GameState, Camera, GraphicsMemory))
+  Plat->Graphics = GraphicsInit(Camera, GraphicsMemory);
+  if (!Plat->Graphics)
   {
-    Error("Initializing Graphics"); return False;
+    Error("Initializing Graphics");
+    return False;
   }
 
   GameState->Turb = PUSH_STRUCT_CHECKED(noise_3d, GameState->Memory, 1);
@@ -309,7 +314,7 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   game_mode *Mode = &GameState->Mode;
   Mode->TimeRunning += Plat->dt;
 
-  ClearFramebuffers(GameState->gBuffer, GameState->SG);
+  ClearFramebuffers(Plat->Graphics);
   DoGameplay(Plat, GameState, Hotkeys);
 
   return;

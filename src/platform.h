@@ -139,6 +139,8 @@ struct platform
   void* (*PushStruct)(memory_arena *Memory, umm sizeofStruct );
   void* (*PushStructChecked_)(memory_arena *Memory, umm sizeofStruct, const char* StructName, s32 Line, const char* File);
 
+  graphics *Graphics;
+
   v2 MouseP;
   v2 MouseDP;
 
