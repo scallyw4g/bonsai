@@ -1,6 +1,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 
+#include <assert_types.h>
+
 
 #ifdef _WIN32
 #include <win32_platform.h>
@@ -8,7 +10,6 @@
 #include <unix_platform.h>
 #endif
 
-#include <assert_types.h>
 #include <platform_constants.h>
 
 #include <basic_types.h>

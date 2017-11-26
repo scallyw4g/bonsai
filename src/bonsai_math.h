@@ -246,6 +246,13 @@ LengthSq( v3 Vec )
 }
 
 inline float
+Length( voxel_position Vec )
+{
+  float Result = sqrt(LengthSq(Vec));
+  return Result;
+}
+
+inline float
 Length( v3 Vec )
 {
   float Result = sqrt(LengthSq(Vec));

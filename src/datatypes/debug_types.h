@@ -1,9 +1,3 @@
-#if NDEBUG // CMAKE defined
-#define RELEASE 1
-#else
-#define DEBUG 1
-#endif
-
 #if DEBUG
 
 struct debug_profile_entry

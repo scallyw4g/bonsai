@@ -11,6 +11,9 @@ global_variable r32 GlobalLightTheta = 0;
 
 #include <bonsai.cpp>
 
+#include <physics.cpp>
+#include <entity.cpp>
+
 void
 OrbitCameraAroundTarget(camera *Camera)
 {
@@ -197,54 +200,31 @@ InitGlobals(platform *Plat)
   Global_WorldChunkDim = WORLD_CHUNK_DIM;
 }
 
-EXPORT void*
-GameInit( platform *Plat, memory_arena *GameMemory)
+b32
+GraphicsInit(game_state *State, camera* Camera, memory_arena *GraphicsMemory)
 {
-  Info("Initializing Game");
-
-  InitGlobals(Plat);
-
-  Init_Global_QuadVertexBuffer();
-
-  srand(DEBUG_NOISE_SEED);
-  PerlinNoise Noise(rand());
-  GlobalNoise = Noise;
-
-  game_state *GameState = PUSH_STRUCT_CHECKED(game_state, GameMemory, 1);
-  GameState->Memory = GameMemory;
-
-
-  memory_arena *GraphicsMemory = PUSH_STRUCT_CHECKED(memory_arena, GameMemory, 1);
-  SubArena(GameMemory, GraphicsMemory, Megabytes(8));
-
-
-  //FIXME(Jesse): Sub-arena for GraphicsMemory
-  shadow_render_group *SG = PUSH_STRUCT_CHECKED(shadow_render_group, GameState->Memory, 1);
-  if (!InitializeShadowBuffer(SG, GameState->Memory))
+  shadow_render_group *SG = PUSH_STRUCT_CHECKED(shadow_render_group, GraphicsMemory, 1);
+  if (!InitializeShadowBuffer(SG, GraphicsMemory))
   {
     Error("Initializing Shadow Buffer"); return False;
   }
 
   AssertNoGlErrors;
 
-  //FIXME(Jesse): Sub-arena for GraphicsMemory
-  g_buffer_render_group *gBuffer = CreateGbuffer(GameState->Memory);
-  if (!InitGbufferRenderGroup(gBuffer, GameState->Memory))
+  g_buffer_render_group *gBuffer = CreateGbuffer(GraphicsMemory);
+  if (!InitGbufferRenderGroup(gBuffer, GraphicsMemory))
   {
     Error("Initializing g_buffer_render_group"); return False;
   }
 
   AssertNoGlErrors;
-  ao_render_group *AoGroup = CreateAoRenderGroup(GameState->Memory);
-  if (!InitAoRenderGroup(AoGroup, GameState->Memory, gBuffer->Textures, &gBuffer->ViewProjection))
+  ao_render_group *AoGroup = CreateAoRenderGroup(GraphicsMemory);
+  if (!InitAoRenderGroup(AoGroup, GraphicsMemory, gBuffer->Textures, &gBuffer->ViewProjection))
   {
-    Error("Initializing g_buffer_render_group"); return False;
+    Error("Initializing ao_render_group"); return False;
   }
 
   texture *SsaoNoiseTexture = AllocateAndInitSsaoNoise(AoGroup, GraphicsMemory);
-
-  camera *Camera = PUSH_STRUCT_CHECKED(camera, GameState->Memory, 1);
-  InitCamera(Camera, CameraInitialFront, 500.0f);
 
   gBuffer->LightingShader =
     MakeLightingShader(GraphicsMemory, gBuffer->Textures, SG->ShadowMap, AoGroup->Texture,
@@ -265,28 +245,52 @@ GameInit( platform *Plat, memory_arena *GameMemory)
     AoGroup->DebugSsaoShader            = MakeSimpleTextureShader(AoGroup->Texture            , GraphicsMemory);
   }
 
-  GameState->Turb = PUSH_STRUCT_CHECKED(noise_3d, GameState->Memory, 1);
-  AllocateAndInitNoise3d(GameState, GameState->Turb, Chunk_Dimension(8,8,8) );
+  State->SG = SG;
+  State->gBuffer = gBuffer;
+  State->AoGroup = AoGroup;
 
   glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
 
-  // This is necessary!
-  /* GLuint VertexArrayID; */
-  /* Plat->GL.glGenVertexArrays(1, &VertexArrayID); */
-  /* Plat->GL.glBindVertexArray(VertexArrayID); */
-
   AssertNoGlErrors;
 
-  AssertNoGlErrors;
+  return True;
+}
+
+EXPORT void*
+GameInit( platform *Plat, memory_arena *GameMemory)
+{
+  Info("Initializing Game");
+
+  InitGlobals(Plat);
+
+  Init_Global_QuadVertexBuffer();
+
+  srand(DEBUG_NOISE_SEED);
+  PerlinNoise Noise(rand());
+  GlobalNoise = Noise;
+
+  game_state *GameState = PUSH_STRUCT_CHECKED(game_state, GameMemory, 1);
+  GameState->Memory = GameMemory;
+
+
+  memory_arena *GraphicsMemory = PUSH_STRUCT_CHECKED(memory_arena, GameMemory, 1);
+  SubArena(GameMemory, GraphicsMemory, Megabytes(8));
+
+  camera *Camera = PUSH_STRUCT_CHECKED(camera, GameState->Memory, 1);
+  InitCamera(Camera, CameraInitialFront, 500.0f);
+
+  if (!GraphicsInit(GameState, Camera, GraphicsMemory))
+  {
+    Error("Initializing Graphics"); return False;
+  }
+
+  GameState->Turb = PUSH_STRUCT_CHECKED(noise_3d, GameState->Memory, 1);
+  AllocateAndInitNoise3d(GameState, GameState->Turb, Chunk_Dimension(8,8,8) );
 
   GameState->Plat = Plat;
   GameState->Camera = Camera;
-  GameState->gBuffer = gBuffer;
-  GameState->AoGroup = AoGroup;
-  GameState->SG = SG;
   GameState->Entropy.Seed = DEBUG_NOISE_SEED;
-
 
   canonical_position PlayerInitialP = {};
   AllocateAndInitWorld(GameState, PlayerInitialP.WorldP, VISIBLE_REGION_RADIUS, WORLD_CHUNK_DIM, VISIBLE_REGION);
