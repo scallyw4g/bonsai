@@ -21,3 +21,5 @@ global_variable chunk_dimension Global_WorldChunkDim = WORLD_CHUNK_DIM;
 
 #define SHADOW_MAP_Z_MIN (-100.0f)
 #define SHADOW_MAP_Z_MAX ( 100.0f)
+
+debug_global v3 CameraInitialFront = {{ 1, 1,-1 }};

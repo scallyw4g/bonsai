@@ -6,6 +6,4 @@
 
 global_variable r32 CAMERA_FOCAL_LENGTH = 300.0f;
 
-debug_global v3 CameraInitialFront = {{ 1, 1,-1 }};
-
 debug_global r32 GlobalCameraTheta = 0;

@@ -6,7 +6,6 @@ struct game_state
   world         *World;
   platform      *Plat;
   entity        *Player;
-  camera        *Camera;
 
   memory_arena *Memory;
 

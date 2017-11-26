@@ -29,13 +29,13 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   TIMED_FUNCTION();
 
   world *World = GameState->World;
-  camera *Camera = GameState->Camera;
 
   chunk_dimension WorldChunkDim = World->ChunkDim;
 
   g_buffer_render_group *gBuffer = Plat->Graphics->gBuffer;
   ao_render_group *AoGroup       = Plat->Graphics->AoGroup;
   shadow_render_group *SG        = Plat->Graphics->SG;
+  camera *Camera                 = Plat->Graphics->Camera;
 
 
 #if DEBUG_DRAW_WORLD_AXIES
@@ -65,59 +65,22 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
   TIMED_BLOCK("Render");
 
-  // FIXME(Jesse): This is extremely slow on my laptop ..?!
-  /* ClearFramebuffers(gBuffer, SG); */
+  RenderWorld(World, Plat->Graphics, Camera);
+  RenderEntities( GameState->EntityTable, &World->Mesh, Plat->Graphics, Camera, World);
 
-  world_position VisibleRadius = World_Position(VR_X, VR_Y, VR_Z)/2;
-
-  world_position Min = World->Center - VisibleRadius;
-  world_position Max = World->Center + VisibleRadius + 1;
-
-  TIMED_BLOCK("Render - World");
-  for ( s32 ChunkIndex = 0;
-        ChunkIndex < WORLD_HASH_SIZE;
-        ++ChunkIndex)
-  {
-    world_chunk *chunk = World->ChunkHash[ChunkIndex];
-
-    while (chunk)
-    {
-      if ( (chunk->WorldP >= Min && chunk->WorldP < Max) )
-      {
-        /* DEBUG_DrawChunkAABB( World, chunk, Camera, Quaternion(), BLUE ); */
-        BufferWorldChunk(World, chunk, Camera, gBuffer, SG);
-        chunk = chunk->Next;
-      }
-      else
-      {
-        world_chunk *ChunkToFree = chunk;
-        chunk = chunk->Next;
-        FreeWorldChunk(World, ChunkToFree);
-      }
-    }
+  { // Debug Lighting
+    GlobalLightTheta += (Plat->dt * TWOPI) / 20;
+    SG->GameLights.Lights[0].Position += 0.1*V3( Sin(GlobalLightTheta), Cos(GlobalLightTheta), 0.0f);
+    SG->GameLights.Lights[1].Position += 0.2*V3( Sin(GlobalLightTheta), Cos(GlobalLightTheta), 0.0f);
+    DEBUG_DrawPointMarker( &World->Mesh, gBuffer, SG, Camera, SG->GameLights.Lights[0].Position, BLUE, V3(1.0f));
+    DEBUG_DrawPointMarker( &World->Mesh, gBuffer, SG, Camera, SG->GameLights.Lights[1].Position, RED, V3(1.0f));
   }
-  END_BLOCK("Render - World");
-
-  RenderEntities( GameState->EntityTable, &World->Mesh,
-                  Plat->Graphics, Camera, World);
-
-  GlobalLightTheta += (Plat->dt * TWOPI) / 20;
-  SG->GameLights.Lights[0].Position += 0.1*V3( Sin(GlobalLightTheta), Cos(GlobalLightTheta), 0.0f);
-  SG->GameLights.Lights[1].Position += 0.2*V3( Sin(GlobalLightTheta), Cos(GlobalLightTheta), 0.0f);
-  DEBUG_DrawPointMarker( &World->Mesh, gBuffer, SG, Camera, SG->GameLights.Lights[0].Position, BLUE, V3(1.0f));
-  DEBUG_DrawPointMarker( &World->Mesh, gBuffer, SG, Camera, SG->GameLights.Lights[1].Position, RED, V3(1.0f));
-
 
   RenderGBuffer(&World->Mesh, gBuffer, SG, Camera);
-  AssertNoGlErrors;
 
   RenderAoTexture(AoGroup);
-  AssertNoGlErrors;
 
   DrawGBufferToFullscreenQuad( Plat, gBuffer, SG, Camera, World->ChunkDim);
-  AssertNoGlErrors;
-
-  World->Mesh.VertsFilled = 0;
 
 #if DEBUG_DRAW_SHADOW_MAP_TEXTURE
   // DrawTexturedQuad(&GetDebugState()->TextRenderGroup->DebugTextureShader);
@@ -127,8 +90,6 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   /* DrawTexturedQuad(&gBuffer->DebugColorTextureShader); */
   /* DrawTexturedQuad(&AoGroup->DebugSsaoShader); */
   SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight));
-
-  AssertNoGlErrors;
 #endif
 
   END_BLOCK("Render");
@@ -202,67 +163,6 @@ InitGlobals(platform *Plat)
   Global_WorldChunkDim = WORLD_CHUNK_DIM;
 }
 
-graphics *
-GraphicsInit(camera* Camera, memory_arena *GraphicsMemory)
-{
-  shadow_render_group *SG = PUSH_STRUCT_CHECKED(shadow_render_group, GraphicsMemory, 1);
-  if (!InitializeShadowBuffer(SG, GraphicsMemory))
-  {
-    Error("Initializing Shadow Buffer"); return False;
-  }
-
-  AssertNoGlErrors;
-
-  g_buffer_render_group *gBuffer = CreateGbuffer(GraphicsMemory);
-  if (!InitGbufferRenderGroup(gBuffer, GraphicsMemory))
-  {
-    Error("Initializing g_buffer_render_group"); return False;
-  }
-
-  AssertNoGlErrors;
-
-  ao_render_group *AoGroup = CreateAoRenderGroup(GraphicsMemory);
-  if (!InitAoRenderGroup(AoGroup, GraphicsMemory, gBuffer->Textures, &gBuffer->ViewProjection))
-  {
-    Error("Initializing ao_render_group"); return False;
-  }
-
-  texture *SsaoNoiseTexture = AllocateAndInitSsaoNoise(AoGroup, GraphicsMemory);
-
-  gBuffer->LightingShader =
-    MakeLightingShader(GraphicsMemory, gBuffer->Textures, SG->ShadowMap,
-                       AoGroup->Texture, &gBuffer->ViewProjection,
-                       &gBuffer->ShadowMVP, &SG->GameLights, Camera);
-
-  gBuffer->gBufferShader =
-    CreateGbufferShader(GraphicsMemory, &gBuffer->ViewProjection, Camera);
-
-  AoGroup->Shader =
-    MakeSsaoShader(GraphicsMemory, gBuffer->Textures, SsaoNoiseTexture,
-                   &AoGroup->NoiseTile, &gBuffer->ViewProjection);
-
-  AoGroup->SsaoKernelUniform = GetShaderUniform(&AoGroup->Shader, "SsaoKernel");
-
-  { // To keep these here or not to keep these here..
-    gBuffer->DebugColorTextureShader    = MakeSimpleTextureShader(gBuffer->Textures->Color    , GraphicsMemory);
-    gBuffer->DebugNormalTextureShader   = MakeSimpleTextureShader(gBuffer->Textures->Normal   , GraphicsMemory);
-    gBuffer->DebugPositionTextureShader = MakeSimpleTextureShader(gBuffer->Textures->Position , GraphicsMemory);
-    AoGroup->DebugSsaoShader            = MakeSimpleTextureShader(AoGroup->Texture            , GraphicsMemory);
-  }
-
-  glEnable(GL_CULL_FACE);
-  glCullFace(GL_BACK);
-
-  AssertNoGlErrors;
-
-  graphics *Result = PUSH_STRUCT_CHECKED(graphics, GraphicsMemory, 1);
-  Result->AoGroup = AoGroup;
-  Result->gBuffer = gBuffer;
-  Result->SG = SG;
-
-  return Result;
-}
-
 EXPORT void*
 GameInit( platform *Plat, memory_arena *GameMemory)
 {
@@ -279,24 +179,10 @@ GameInit( platform *Plat, memory_arena *GameMemory)
   game_state *GameState = PUSH_STRUCT_CHECKED(game_state, GameMemory, 1);
   GameState->Memory = GameMemory;
 
-  memory_arena *GraphicsMemory = PUSH_STRUCT_CHECKED(memory_arena, GameMemory, 1);
-  SubArena(GameMemory, GraphicsMemory, Megabytes(8));
-
-  camera *Camera = PUSH_STRUCT_CHECKED(camera, GameState->Memory, 1);
-  InitCamera(Camera, CameraInitialFront, 500.0f);
-
-  Plat->Graphics = GraphicsInit(Camera, GraphicsMemory);
-  if (!Plat->Graphics)
-  {
-    Error("Initializing Graphics");
-    return False;
-  }
-
   GameState->Turb = PUSH_STRUCT_CHECKED(noise_3d, GameState->Memory, 1);
   AllocateAndInitNoise3d(GameState, GameState->Turb, Chunk_Dimension(8,8,8) );
 
   GameState->Plat = Plat;
-  GameState->Camera = Camera;
   GameState->Entropy.Seed = DEBUG_NOISE_SEED;
 
   canonical_position PlayerInitialP = {};

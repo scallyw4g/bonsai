@@ -376,7 +376,26 @@ SpawnProjectile(game_state *GameState,
   return;
 }
 
-#if 0
+void
+SpawnParticleSystem(particle_system *System, particle_system_init_params *Params)
+{
+  Assert(Inactive(System));
+
+  System->SpawnRegion = Params->SpawnRegion;
+  System->ParticlePhysics = Params->Physics;
+
+  System->EmissionLifespan = Params->EmissionLifespan;
+  System->EmissionChance = Params->EmissionChance;
+
+  System->ParticleLifespan = Params->ParticleLifespan;
+
+  System->Entropy = Params->Entropy;
+
+  MemCopy( (u8*)&Params->Colors, (u8*)&System->Colors, sizeof(System->Colors) );
+
+  return;
+}
+
 void
 SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset)
 {
@@ -405,7 +424,6 @@ SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset)
 
   return;
 }
-#endif
 
 void
 SpawnPlayer(game_state *GameState, entity *Player )

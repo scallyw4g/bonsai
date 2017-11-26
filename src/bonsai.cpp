@@ -30,19 +30,6 @@ FillChunk(chunk_data *chunk, chunk_dimension Dim, u32 ColorIndex = BLACK)
   SetFlag(chunk, Chunk_Initialized);
 }
 
-void
-InitCamera(camera* Camera, v3 CameraFront, float FocalLength)
-{
-  Camera->Frust.farClip = FocalLength;
-  Camera->Frust.nearClip = 0.1f;
-  Camera->Frust.width = 30.0f;
-  Camera->Frust.FOV = 45.0f;
-  Camera->Up = WORLD_Z;
-  Camera->Right = WORLD_X;
-  Camera->Front = CameraFront;
-  return;
-}
-
 model *
 AllocateGameModels(game_state *GameState, memory_arena *Memory)
 {
@@ -587,52 +574,5 @@ AllocateAndInitWorld( game_state *GameState, world_position Center,
   }
 
   return World;
-}
-
-void
-BufferWorldChunk(
-    world *World,
-    world_chunk *Chunk,
-    camera *Camera,
-    g_buffer_render_group *RG,
-    shadow_render_group *SG
-  )
-{
-  if ( IsSet( Chunk, Chunk_BufferMesh ) )
-    BuildWorldChunkMesh(World, Chunk, World->ChunkDim);
-
-  chunk_data *ChunkData = Chunk->Data;
-
-  if (NotSet(ChunkData, Chunk_Initialized))
-    return;
-
-
-#if 1
-    r32 Scale = 1.0f;
-    BufferChunkMesh( &World->Mesh, World->ChunkDim, ChunkData, Chunk->WorldP, RG, SG, Camera, Scale, V3(0));
-
-#else
-  if (CanBuildWorldChunkBoundary(world, Chunk))
-  {
-    BuildWorldChunkMesh(world, Chunk);
-    Compute0thLod(GameState, Chunk);
-  }
-
-  if ( Length(ChunkRenderOffset - CameraRenderOffset ) < MIN_LOD_DISTANCE )
-  {
-    r32 Scale = 1.0f;
-    BufferChunkMesh( GameState->Plat, World, ChunkData, Chunk->WorldP, RG, Camera, Scale);
-  }
-
-  else
-  {
-    Draw0thLod( GameState, Chunk, ChunkRenderOffset);
-  }
-
-  DEBUG_DrawChunkAABB( GameState->world, Chunk, GameState->Camera, Quaternion(), 0);
-
-#endif
-
-  return;
 }
 

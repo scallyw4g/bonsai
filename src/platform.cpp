@@ -276,7 +276,6 @@ PlatformInit(platform *Plat, memory_arena *Memory)
     CreateThread( ThreadMain, Params );
   }
 
-
   return True;
 }
 
@@ -296,7 +295,6 @@ WaitForFrameTime(r64 frameStart, float FPS)
   return;
 }
 
-
 inline b32
 FileExists(const char *Path)
 {
@@ -310,7 +308,6 @@ FileExists(const char *Path)
 
   return Result;
 }
-
 
 b32
 SearchForProjectRoot(void)
@@ -386,10 +383,12 @@ main(s32 NumArgs, char ** Args)
 
 
   memory_arena PlatMemory = {};
+  memory_arena GraphicsMemory = {};
   memory_arena GameMemory = {};
 
   SubArena(&MainMemory, &PlatMemory, PLATFORM_STORAGE_SIZE);
   SubArena(&MainMemory, &GameMemory, GAME_STORAGE_SIZE);
+  SubArena(&MainMemory, &GraphicsMemory, GRAPHICS_STORAGE_SIZE);
 
 
 #if DEBUG
@@ -437,6 +436,10 @@ main(s32 NumArgs, char ** Args)
   if (!GameState) { Error("Initializing Game State :( "); return False; }
 
   InitGlobals(&Plat);
+
+  Plat.Graphics = GraphicsInit(&GraphicsMemory);
+  if (!Plat.Graphics) { Error("Initializing Graphics"); return False; }
+
 
   /*
    *  Main Game loop

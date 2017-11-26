@@ -35,6 +35,7 @@ Init_Global_QuadVertexBuffer() {
   return;
 }
 
+
 void
 RenderQuad()
 {
@@ -543,6 +544,84 @@ InitializeShadowBuffer(shadow_render_group *SG, memory_arena *GraphicsMemory)
  return true;
 }
 
+void
+InitCamera(camera* Camera, v3 CameraFront, float FocalLength)
+{
+  Camera->Frust.farClip = FocalLength;
+  Camera->Frust.nearClip = 0.1f;
+  Camera->Frust.width = 30.0f;
+  Camera->Frust.FOV = 45.0f;
+  Camera->Up = WORLD_Z;
+  Camera->Right = WORLD_X;
+  Camera->Front = CameraFront;
+  return;
+}
+
+graphics *
+GraphicsInit(memory_arena *GraphicsMemory)
+{
+  graphics *Result = PUSH_STRUCT_CHECKED(graphics, GraphicsMemory, 1);
+
+  Result->Camera = PUSH_STRUCT_CHECKED(camera, GraphicsMemory, 1);
+  InitCamera(Result->Camera, CameraInitialFront, 500.0f);
+
+  shadow_render_group *SG = PUSH_STRUCT_CHECKED(shadow_render_group, GraphicsMemory, 1);
+  if (!InitializeShadowBuffer(SG, GraphicsMemory))
+  {
+    Error("Initializing Shadow Buffer"); return False;
+  }
+
+  AssertNoGlErrors;
+
+  g_buffer_render_group *gBuffer = CreateGbuffer(GraphicsMemory);
+  if (!InitGbufferRenderGroup(gBuffer, GraphicsMemory))
+  {
+    Error("Initializing g_buffer_render_group"); return False;
+  }
+
+  AssertNoGlErrors;
+
+  ao_render_group *AoGroup = CreateAoRenderGroup(GraphicsMemory);
+  if (!InitAoRenderGroup(AoGroup, GraphicsMemory, gBuffer->Textures, &gBuffer->ViewProjection))
+  {
+    Error("Initializing ao_render_group"); return False;
+  }
+
+  texture *SsaoNoiseTexture = AllocateAndInitSsaoNoise(AoGroup, GraphicsMemory);
+
+  gBuffer->LightingShader =
+    MakeLightingShader(GraphicsMemory, gBuffer->Textures, SG->ShadowMap,
+                       AoGroup->Texture, &gBuffer->ViewProjection,
+                       &gBuffer->ShadowMVP, &SG->GameLights, Result->Camera);
+
+  gBuffer->gBufferShader =
+    CreateGbufferShader(GraphicsMemory, &gBuffer->ViewProjection, Result->Camera);
+
+  AoGroup->Shader =
+    MakeSsaoShader(GraphicsMemory, gBuffer->Textures, SsaoNoiseTexture,
+                   &AoGroup->NoiseTile, &gBuffer->ViewProjection);
+
+  AoGroup->SsaoKernelUniform = GetShaderUniform(&AoGroup->Shader, "SsaoKernel");
+
+  { // To keep these here or not to keep these here..
+    gBuffer->DebugColorTextureShader    = MakeSimpleTextureShader(gBuffer->Textures->Color    , GraphicsMemory);
+    gBuffer->DebugNormalTextureShader   = MakeSimpleTextureShader(gBuffer->Textures->Normal   , GraphicsMemory);
+    gBuffer->DebugPositionTextureShader = MakeSimpleTextureShader(gBuffer->Textures->Position , GraphicsMemory);
+    AoGroup->DebugSsaoShader            = MakeSimpleTextureShader(AoGroup->Texture            , GraphicsMemory);
+  }
+
+  glEnable(GL_CULL_FACE);
+  glCullFace(GL_BACK);
+
+  AssertNoGlErrors;
+
+  Result->AoGroup = AoGroup;
+  Result->gBuffer = gBuffer;
+  Result->SG = SG;
+
+  return Result;
+}
+
 inline m4
 GetShadowMapMVP(camera *Camera, light *GlobalLight)
 {
@@ -682,6 +761,7 @@ DrawGBufferToFullscreenQuad( platform *Plat, g_buffer_render_group *RG, shadow_r
   BindShaderUniforms(&RG->LightingShader);
 
   RenderQuad();
+
   AssertNoGlErrors;
 
   return;
@@ -807,6 +887,8 @@ RenderGBuffer(
   RenderWorldToGBuffer(Mesh, RG);
 
   Mesh->VertsFilled = 0;
+
+  AssertNoGlErrors;
 
   return;
 }
@@ -2365,6 +2447,87 @@ BufferEntity(
   }
 
   return;
+}
+
+void
+BufferWorldChunk(
+    world *World,
+    world_chunk *Chunk,
+    camera *Camera,
+    g_buffer_render_group *RG,
+    shadow_render_group *SG
+  )
+{
+  if ( IsSet( Chunk, Chunk_BufferMesh ) )
+    BuildWorldChunkMesh(World, Chunk, World->ChunkDim);
+
+  chunk_data *ChunkData = Chunk->Data;
+
+  if (NotSet(ChunkData, Chunk_Initialized))
+    return;
+
+
+#if 1
+    r32 Scale = 1.0f;
+    BufferChunkMesh( &World->Mesh, World->ChunkDim, ChunkData, Chunk->WorldP, RG, SG, Camera, Scale, V3(0));
+
+#else
+  if (CanBuildWorldChunkBoundary(world, Chunk))
+  {
+    BuildWorldChunkMesh(world, Chunk);
+    Compute0thLod(GameState, Chunk);
+  }
+
+  if ( Length(ChunkRenderOffset - CameraRenderOffset ) < MIN_LOD_DISTANCE )
+  {
+    r32 Scale = 1.0f;
+    BufferChunkMesh( GameState->Plat, World, ChunkData, Chunk->WorldP, RG, Camera, Scale);
+  }
+
+  else
+  {
+    Draw0thLod( GameState, Chunk, ChunkRenderOffset);
+  }
+
+  DEBUG_DrawChunkAABB( GameState->world, Chunk, GameState->Camera, Quaternion(), 0);
+
+#endif
+
+  return;
+}
+
+void
+RenderWorld(world *World, graphics *Graphics, camera *Camera)
+{
+  TIMED_FUNCTION();
+
+  world_position VisibleRadius = World_Position(VR_X, VR_Y, VR_Z)/2;
+
+  world_position Min = World->Center - VisibleRadius;
+  world_position Max = World->Center + VisibleRadius + 1;
+
+  for ( s32 ChunkIndex = 0;
+        ChunkIndex < WORLD_HASH_SIZE;
+        ++ChunkIndex)
+  {
+    world_chunk *chunk = World->ChunkHash[ChunkIndex];
+
+    while (chunk)
+    {
+      if ( (chunk->WorldP >= Min && chunk->WorldP < Max) )
+      {
+        /* DEBUG_DrawChunkAABB( World, chunk, Camera, Quaternion(), BLUE ); */
+        BufferWorldChunk(World, chunk, Camera, Graphics->gBuffer, Graphics->SG);
+        chunk = chunk->Next;
+      }
+      else
+      {
+        world_chunk *ChunkToFree = chunk;
+        chunk = chunk->Next;
+        FreeWorldChunk(World, ChunkToFree);
+      }
+    }
+  }
 }
 
 void
