@@ -62,11 +62,9 @@ Ensure you have [CMake](https://cmake.org/download) and g++, clang or MSVC
 ## On Linux:
 
 ```
-git clone https://github.com/jjbandit/bonsai
-cd bonsai/build
+git clone https://github.com/jjbandit/bonsai && cd bonsai/build
 cmake .
-make
-../bin/Bonsai
+make && make run
 ```
 
 ## On Windows:
