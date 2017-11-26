@@ -1,6 +1,26 @@
 #ifndef BONSAI_VERTEX_H
 #define BONSAI_VERTEX_H
 
+
+
+
+//    Not sure why I drew this, but it was kinda fun..
+//
+//     4              7
+//       +-----------+
+//      /|          /|      Z
+//     / |         / |      ^
+//  0 +-----------3  |      |
+//    |  |        |  |      |   Y
+//    |  +--------|--+      |  /
+//    | / 5       | /   6   | /
+//    |/          |/        |/
+//    +-----------+         +-----------> X
+//  1              2
+//
+
+
+
 inline void
 RightFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
