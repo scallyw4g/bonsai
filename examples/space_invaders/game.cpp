@@ -8,25 +8,8 @@
 #include <game_constants.h>
 
 #include <bonsai.cpp>
-
-inline v3
-PhysicsUpdate(physics *Physics, r32 dt, b32 Print = False)
-{
-  v3 Acceleration = SafeDivide(Physics->Force*Physics->Speed, Physics->Mass);
-
-  Physics->Force -=
-    Physics->Force*Physics->Drag*dt;
-
-  Physics->Velocity -=
-    Physics->Velocity*Physics->Drag*dt;
-
-  v3 Delta =
-    (Physics->Velocity*dt) + (0.5f*Acceleration*Square(dt));
-
-  Physics->Velocity = (Delta/dt);
-
-  return Delta;
-}
+#include <physics.cpp>
+#include <entity.cpp>
 
 r32
 GetLevel(r64 Time)
@@ -84,38 +67,6 @@ SpawnParticle(particle_system *System)
   }
 
   return Spawn;
-}
-
-void
-SpawnParticleSystem(particle_system *System, particle_system_init_params *Params)
-{
-  Assert(Inactive(System));
-
-  System->SpawnRegion = Params->SpawnRegion;
-  System->ParticlePhysics = Params->Physics;
-
-  System->EmissionLifespan = Params->EmissionLifespan;
-  System->EmissionChance = Params->EmissionChance;
-
-  System->ParticleLifespan = Params->ParticleLifespan;
-
-  System->Entropy = Params->Entropy;
-
-  MemCopy( (u8*)&Params->Colors, (u8*)&System->Colors, sizeof(System->Colors) );
-
-  return;
-}
-
-void
-UpdateVisibleRegion(game_state *GameState, world_position WorldDisp)
-{
-  if (WorldDisp.y != 0) // We moved to the next chunk
-  {
-    GameState->World->Center.y += WorldDisp.y;
-    QueueChunksForInit(GameState, World_Position(0, WorldDisp.y, 0));
-  }
-
-  return;
 }
 
 inline b32
@@ -532,11 +483,11 @@ void
 DrawTitleScreen(game_state *GameState)
 {
   debug_state *DebugState = GetDebugState();
-  debug_text_render_group *gBuffer = DebugState->TextRenderGroup;
+  debug_text_render_group *RG = DebugState->TextRenderGroup;
 
   s32 FontSize = TITLE_FONT_SIZE;
 
-  PrintDebugText( gBuffer, "Press `Space` to Start", V2(0, 0), FontSize);
+  TextOutAt( GameState->Plat, RG, &RG->TextGeo, "Press `Space` to Start", V2(0, 0), FontSize);
 }
 
 void
@@ -615,7 +566,7 @@ GameInit( platform *Plat, memory_arena *GameMemory)
   texture *SsaoNoiseTexture = AllocateAndInitSsaoNoise(AoGroup, GraphicsMemory);
 
   camera *Camera = PUSH_STRUCT_CHECKED(camera, GameState->Memory, 1);
-  InitCamera(Camera, CAMERA_INITIAL_P, 5000.0f);
+  InitCamera(Camera, V3(0,1,0), 5000.0f);
 
   gBuffer->LightingShader =
     MakeLightingShader(GraphicsMemory, gBuffer->Textures, SG->ShadowMap, AoGroup->Texture,
@@ -708,7 +659,7 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   game_mode *Mode = &GameState->Mode;
   Mode->TimeRunning += Plat->dt;
 
-  ClearFramebuffers(GameState->gBuffer, GameState->SG);
+  ClearFramebuffers(Plat->Graphics);
 
   switch (Mode->ActiveMode)
   {
