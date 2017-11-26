@@ -2366,3 +2366,17 @@ BufferEntity(
 
   return;
 }
+
+void
+RenderEntities( entity **EntityTable, mesh_buffer_target *Mesh,
+                graphics *Graphics, camera *Camera, world *World)
+{
+  for ( s32 EntityIndex = 0;
+        EntityIndex < TOTAL_ENTITY_COUNT;
+        ++EntityIndex)
+  {
+    entity *Entity = EntityTable[EntityIndex];
+    BufferEntity( Mesh, Entity, Camera, Graphics->gBuffer, Graphics->SG, World->ChunkDim);
+  }
+
+}

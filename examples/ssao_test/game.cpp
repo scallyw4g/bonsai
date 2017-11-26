@@ -98,6 +98,8 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   }
   END_BLOCK("Render - World");
 
+  RenderEntities( GameState->EntityTable, &World->Mesh,
+                  Plat->Graphics, Camera, World);
 
   GlobalLightTheta += (Plat->dt * TWOPI) / 20;
   SG->GameLights.Lights[0].Position += 0.1*V3( Sin(GlobalLightTheta), Cos(GlobalLightTheta), 0.0f);
@@ -303,7 +305,16 @@ GameInit( platform *Plat, memory_arena *GameMemory)
   GameState->Models = 0;
   GameState->EventQueue.Queue = 0;
   GameState->FolieTable = 0;
-  GameState->Player = 0;
+
+  AllocateEntityTable(Plat, GameState);
+
+  GameState->Models =
+  AllocateGameModels(GameState, GameState->Memory);
+
+  GameState->Player =
+    GetFreeEntity(GameState);
+
+  SpawnPlayer(GameState, GameState->Player );
 
   return GameState;
 }

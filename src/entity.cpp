@@ -419,7 +419,8 @@ SpawnPlayer(game_state *GameState, entity *Player )
   r32 RateOfFire = 0.8f;
   u32 Health = PLAYER_MAX_HP;
 
-  canonical_position InitialP = { V3(0,0,0), GameState->World->Center - World_Position(0, (VR_Y/2)-14 , 0) };
+  /* canonical_position InitialP = { V3(0,0,0), GameState->World->Center - World_Position(0, (VR_Y/2)-14 , 0) }; */
+  canonical_position InitialP = {};
 
   SpawnEntity(
       Player,
