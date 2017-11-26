@@ -272,9 +272,9 @@ GameInit( platform *Plat, memory_arena *GameMemory)
   glCullFace(GL_BACK);
 
   // This is necessary!
-  GLuint VertexArrayID;
-  Plat->GL.glGenVertexArrays(1, &VertexArrayID);
-  Plat->GL.glBindVertexArray(VertexArrayID);
+  /* GLuint VertexArrayID; */
+  /* Plat->GL.glGenVertexArrays(1, &VertexArrayID); */
+  /* Plat->GL.glBindVertexArray(VertexArrayID); */
 
   AssertNoGlErrors;
 

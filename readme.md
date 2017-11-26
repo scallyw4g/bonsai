@@ -46,8 +46,8 @@ the VisibleRegion you collide with the edge of the world and stop moving
 -------------------------------------------------------------------------------
 ## Voxel Loader
 
-[ ] MagicaVoxel is pretty crappy at following its own file format, and I don't
-trust it anymore.  Make an editor mode!
+[ ] MagicaVoxel has an exporter bug and I don't trust it anymore.  Make an
+editor mode!
 
 -------------------------------------------------------------------------------
 ## Sound
@@ -56,11 +56,8 @@ trust it anymore.  Make an editor mode!
 
 
 
-# Build tools
-
-Ensure you have [CMake](https://cmake.org/download) and either g++ or MSVC 
-
 # Building
+Ensure you have [CMake](https://cmake.org/download) and g++, clang or MSVC 
 
 ## On Linux:
 
