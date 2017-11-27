@@ -34,8 +34,8 @@ add_definitions( -DGL_GLEXT_PROTOTYPES=1 )
 
 ################################ USER INCLUDES ################################
 
-set( GAME_SRC_DIR ${EXAMPLES}/space_invaders )
-#set( GAME_SRC_DIR ${EXAMPLES}/ssao_test )
+#set( GAME_SRC_DIR ${EXAMPLES}/space_invaders )
+set( GAME_SRC_DIR ${EXAMPLES}/ssao_test )
 
 ###############################################################################
 

@@ -98,14 +98,14 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 }
 
 void
-InitializeVoxels( game_state *GameState, world_chunk *Chunk )
+InitializeVoxels(world_chunk *Chunk)
 {
-  ZeroChunk(Chunk->Data, Volume(GameState->World->ChunkDim));
+  chunk_dimension Dim = Global_WorldChunkDim;
+  ZeroChunk(Chunk->Data, Volume(Global_WorldChunkDim));
 
   if ( Chunk->WorldP.z == 0 )
   {
-    chunk_dimension Dim = GameState->World->ChunkDim;
-    InitChunkPerlin(GameState, Chunk, V3(Dim), GRASS_GREEN);
+    InitChunkPerlin(Chunk, V3(Dim), GRASS_GREEN);
 
     for ( int z = 0; z < Dim.z; ++ z)
     {
@@ -146,7 +146,7 @@ GameThreadCallback(work_queue_entry *Entry)
   {
     case WorkEntry_InitWorldChunk:
     {
-      InitializeVoxels(Entry->GameState, (world_chunk*)Entry->Input);
+      InitializeVoxels( (world_chunk*)Entry->Input);
     } break;
 
     InvalidDefaultCase;
@@ -185,20 +185,12 @@ GameInit( platform *Plat, memory_arena *GameMemory)
   GameState->Plat = Plat;
   GameState->Entropy.Seed = DEBUG_NOISE_SEED;
 
-  canonical_position PlayerInitialP = {};
-  AllocateAndInitWorld(GameState, PlayerInitialP.WorldP, VISIBLE_REGION_RADIUS, WORLD_CHUNK_DIM, VISIBLE_REGION);
-
-  GameState->Models = 0;
-  GameState->EventQueue.Queue = 0;
-  GameState->FolieTable = 0;
+  GameState->World = AllocateAndInitWorld(GameState, World_Position(0), VISIBLE_REGION_RADIUS, WORLD_CHUNK_DIM, VISIBLE_REGION);
 
   AllocateEntityTable(Plat, GameState);
 
-  GameState->Models =
-  AllocateGameModels(GameState, GameState->Memory);
-
-  GameState->Player =
-    GetFreeEntity(GameState);
+  GameState->Models = AllocateGameModels(GameState, GameState->Memory);
+  GameState->Player = GetFreeEntity(GameState);
 
   SpawnPlayer(GameState, GameState->Player );
 

@@ -50,7 +50,7 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory)
 }
 
 void
-InitChunkPerlin( game_state *GameState, world_chunk *WorldChunk, v3 WorldChunkDim, u32 ColorIndex)
+InitChunkPerlin(world_chunk *WorldChunk, v3 WorldChunkDim, u32 ColorIndex)
 {
   Assert(WorldChunk);
 
@@ -69,7 +69,7 @@ InitChunkPerlin( game_state *GameState, world_chunk *WorldChunk, v3 WorldChunkDi
   chunk_data *chunk = WorldChunk->Data;
   /* CALLGRIND_TOGGLE_COLLECT; */
 
-  chunk_dimension Dim = GameState->World->ChunkDim;
+  chunk_dimension Dim = Global_WorldChunkDim;
 
   for ( s32 z = 0; z < Dim.z; ++ z)
   {
@@ -126,20 +126,19 @@ PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
 }
 
 inline void
-QueueChunkForInit(game_state *GameState, world_chunk *Chunk)
+QueueChunkForInit(work_queue *Queue, world_chunk *Chunk)
 {
   Assert( NotSet(Chunk, Chunk_Queued ) );
   Assert( NotSet(Chunk, Chunk_Initialized) );
 
   work_queue_entry Entry;
   Entry.Input = (void*)Chunk;
-  Entry.GameState = GameState;
   Entry.Flags = WorkEntry_InitWorldChunk;
 
 
   SetFlag(Chunk, Chunk_Queued);
 
-  PushWorkQueueEntry(&GameState->Plat->Queue, &Entry);
+  PushWorkQueueEntry(Queue, &Entry);
 
   return;
 }
@@ -387,7 +386,7 @@ QueueChunksForInit(game_state *GameState, world_position WorldDisp)
       {
         world_position P = World_Position(x,y,z);
         world_chunk *chunk = GetFreeChunk(GameState->Memory, GameState->World, P);
-        QueueChunkForInit(GameState, chunk);
+        QueueChunkForInit(&GameState->Plat->Queue, chunk);
       }
     }
   }
@@ -568,7 +567,7 @@ AllocateAndInitWorld( game_state *GameState, world_position Center,
       {
         world_chunk *chunk = AllocateWorldChunk(GameState->Memory, World, World_Position(x,y,z));
         Assert(chunk);
-        QueueChunkForInit(GameState, chunk);
+        QueueChunkForInit(&GameState->Plat->Queue, chunk);
       }
     }
   }
