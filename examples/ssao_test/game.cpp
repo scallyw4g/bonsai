@@ -51,12 +51,6 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
     GetViewMatrix(WorldChunkDim, Camera);
 
 
-#if DEBUG
-  debug_state *DebugState = GetDebugState();
-  debug_text_render_group *DebugRG = DebugState->TextRenderGroup;
-  TextOutAt(Plat, DebugRG, &DebugRG->TextGeo, "HI", V2(100,100), 12);
-#endif
-
   SimulatePlayer(GameState, GameState->Player, Hotkeys, Plat->dt);
   //SimulateEntities(GameState, GameState->Player, Hotkeys, Plat->dt);
 

@@ -478,7 +478,7 @@ main(s32 NumArgs, char ** Args)
 
     GameUpdateAndRender(&Plat, GameState, &Hotkeys);
 
-    //DEBUG_FRAME_END(&Plat);
+    DEBUG_FRAME_END(&Plat);
 
     BonsaiSwapBuffers(&Os);
   }

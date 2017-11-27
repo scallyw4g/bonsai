@@ -187,6 +187,7 @@ CalculateFramePercentage(debug_profile_entry *Entry, u64 CycleDelta)
 
   return FramePerc;
 }
+#endif
 
 void
 DebugFrameEnd(platform *Plat)
@@ -196,14 +197,13 @@ DebugFrameEnd(platform *Plat)
   debug_text_render_group *RG = DebugState->TextRenderGroup;
   text_geometry_buffer *TextGeo = &RG->TextGeo;
   s32 FontSize = DEBUG_FONT_SIZE;
-
   r32 dt = Plat->dt;
 
   char dtBuffer[32] = {};
   sprintf(dtBuffer, "%f", dt);
   TextOutAt(Plat, RG, TextGeo, dtBuffer, V2(10, 1080-FontSize), FontSize);
 
-#if _BONSAI_SLOW
+#if 0
   u64 CurrentFrameCycleCount = DebugState->GetCycleCount();
   u64 CycleDelta = CurrentFrameCycleCount - LastFrameCycleCount;
   LastFrameCycleCount = CurrentFrameCycleCount;
@@ -353,7 +353,6 @@ DebugFrameEnd(platform *Plat)
 
   return;
 }
-#endif
 
 void
 CleanupText2D(debug_text_render_group *RG)
