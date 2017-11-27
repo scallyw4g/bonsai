@@ -1,7 +1,7 @@
 
 
 inline v3
-PhysicsUpdate(physics *Physics, r32 dt, b32 Print = False)
+PhysicsUpdate(physics *Physics, r32 dt)
 {
   v3 Acceleration = SafeDivide(Physics->Force*Physics->Speed, Physics->Mass);
 

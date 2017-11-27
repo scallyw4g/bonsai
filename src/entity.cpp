@@ -725,7 +725,7 @@ SimulatePlayer( game_state *GameState, entity *Player, hotkeys *Hotkeys, r32 dt 
   {
     Player->Physics.Force += GetOrthographicInputs(Hotkeys)*dt;
 
-    v3 PlayerDelta = PhysicsUpdate(&Player->Physics, dt, True);
+    v3 PlayerDelta = PhysicsUpdate(&Player->Physics, dt);
 
     world_position OriginalPlayerP = Player->P.WorldP;
     UpdateEntityP( GameState, Player, PlayerDelta );
