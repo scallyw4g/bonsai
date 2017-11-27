@@ -60,6 +60,9 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   TextOutAt(Plat, DebugRG, &DebugRG->TextGeo, "HI", V2(100,100), 12);
 #endif
 
+  SimulatePlayer(GameState, GameState->Player, Hotkeys, Plat->dt);
+  //SimulateEntities(GameState, GameState->Player, Hotkeys, Plat->dt);
+
   //
   // Draw World
 
@@ -192,7 +195,7 @@ GameInit( platform *Plat, memory_arena *GameMemory)
   GameState->Models = AllocateGameModels(GameState, GameState->Memory);
   GameState->Player = GetFreeEntity(GameState);
 
-  SpawnPlayer(GameState, GameState->Player );
+  SpawnPlayer(GameState, GameState->Player, Canonical_Position( V3(0,8,2), World_Position(0,0,0) ));
 
   return GameState;
 }

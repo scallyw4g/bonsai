@@ -426,7 +426,7 @@ SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset)
 }
 
 void
-SpawnPlayer(game_state *GameState, entity *Player )
+SpawnPlayer(game_state *GameState, entity *Player, canonical_position InitialP)
 {
   physics Physics = {};
   Physics.Drag = 5.0f;
@@ -436,9 +436,6 @@ SpawnPlayer(game_state *GameState, entity *Player )
   r32 Scale = 0.40f;
   r32 RateOfFire = 0.8f;
   u32 Health = PLAYER_MAX_HP;
-
-  canonical_position InitialP = { V3(0, 8, 2), World_Position(0, 0, 0) };
-  /* canonical_position InitialP = {}; */
 
   SpawnEntity(
       Player,
@@ -728,7 +725,7 @@ SimulatePlayer( game_state *GameState, entity *Player, hotkeys *Hotkeys, r32 dt 
   {
     Player->Physics.Force += GetOrthographicInputs(Hotkeys)*dt;
 
-    v3 PlayerDelta = PhysicsUpdate(&Player->Physics, dt, True) + (PLAYER_IMPULSE*dt);
+    v3 PlayerDelta = PhysicsUpdate(&Player->Physics, dt, True);
 
     world_position OriginalPlayerP = Player->P.WorldP;
     UpdateEntityP( GameState, Player, PlayerDelta );
