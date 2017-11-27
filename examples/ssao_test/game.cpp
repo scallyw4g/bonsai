@@ -45,9 +45,6 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 #endif
 
 
-  /* OrbitCameraAroundTarget(Camera); */
-  UpdateCameraP(Plat, World, Canonical_Position(0), Camera);
-  GlobalCameraTheta += Plat->dt*0.5;
 
   gBuffer->ViewProjection =
     GetProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
@@ -62,6 +59,9 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
   SimulatePlayer(GameState, GameState->Player, Hotkeys, Plat->dt);
   //SimulateEntities(GameState, GameState->Player, Hotkeys, Plat->dt);
+
+  UpdateCameraP(Plat, World, GameState->Player->P, Camera);
+  GlobalCameraTheta += Plat->dt*0.5;
 
   //
   // Draw World
@@ -116,19 +116,12 @@ InitializeVoxels(world_chunk *Chunk)
       {
         for ( int x = 0; x < Dim.x; ++ x)
         {
-          if (z==0 || (x==0 && y==0))
+          if (z==0)
           {
             s32 i = GetIndex(Voxel_Position(x,y,z), Chunk->Data, Dim);
             voxel *Vox = &Chunk->Data->Voxels[i];
             SetFlag(Vox, Voxel_Filled);
-            if (z==0)
-            {
-              Vox->Color = GRASS_GREEN;
-            }
-            else
-            {
-              Vox->Color = WHITE;
-            }
+            Vox->Color = GRASS_GREEN;
           }
         }
       }

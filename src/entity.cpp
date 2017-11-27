@@ -723,7 +723,8 @@ SimulatePlayer( game_state *GameState, entity *Player, hotkeys *Hotkeys, r32 dt 
 {
   if (Spawned(Player))
   {
-    Player->Physics.Force += GetOrthographicInputs(Hotkeys)*dt;
+    Player->Physics.Force += GetCameraRelativeInput(Hotkeys, GameState->Plat->Graphics->Camera)*dt;
+    /* Player->Physics.Force += GetOrthographicInputs(Hotkeys)*dt; */
 
     v3 PlayerDelta = PhysicsUpdate(&Player->Physics, dt);
 

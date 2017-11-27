@@ -169,30 +169,24 @@ GetOrthographicInputs(hotkeys *Hotkeys)
 }
 
 inline v3
-GetCameraRelativeInput(platform *Plat, camera *Camera)
+GetCameraRelativeInput(hotkeys *Hotkeys, camera *Camera)
 {
-  v3 right = Camera->Right;
-  v3 forward = Camera->Front;
+  v3 Right = Camera->Right;
+  v3 Forward = Camera->Front;
 
   v3 UpdateDir = V3(0,0,0);
 
-  // Forward
-  if ( Plat->Input.W )
-    UpdateDir += forward;
+  if ( Hotkeys->Forward )
+    UpdateDir += Forward;
 
-  // Backward
-  if ( Plat->Input.S )
-    UpdateDir -= forward;
+  if ( Hotkeys->Backward )
+    UpdateDir -= Forward;
 
-  // Right
-  if ( Plat->Input.D )
-    UpdateDir += right;
+  if ( Hotkeys->Right )
+    UpdateDir += Right;
 
-  // Left
-  if ( Plat->Input.A )
-    UpdateDir -= right;
-
-  UpdateDir.y = 0;
+  if ( Hotkeys->Left )
+    UpdateDir -= Right;
 
   UpdateDir = Normalize(UpdateDir, Length(UpdateDir));
 
