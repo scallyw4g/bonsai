@@ -433,12 +433,12 @@ SpawnPlayer(game_state *GameState, entity *Player )
   Physics.Mass = 5.0f;
   Physics.Speed = PLAYER_SPEED;
 
-  r32 Scale = 0.5f;
+  r32 Scale = 0.40f;
   r32 RateOfFire = 0.8f;
   u32 Health = PLAYER_MAX_HP;
 
-  /* canonical_position InitialP = { V3(0,0,0), GameState->World->Center - World_Position(0, (VR_Y/2)-14 , 0) }; */
-  canonical_position InitialP = {};
+  canonical_position InitialP = { V3(0, 8, 2), World_Position(0, 0, 0) };
+  /* canonical_position InitialP = {}; */
 
   SpawnEntity(
       Player,

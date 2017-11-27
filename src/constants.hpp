@@ -52,7 +52,7 @@
 /* #define PLAYER_MODEL MODELS_PATH"/chr_rain.vox" */
 /* #define PLAYER_MODEL MODELS_PATH"/chr_old.vox" */
 /* #define PLAYER_MODEL MODELS_PATH"/3x3x3.vox" */
-#define PLAYER_MODEL MODELS_PATH"/x-wing.vox"
+/* #define PLAYER_MODEL MODELS_PATH"/x-wing.vox" */
 
 #define ENEMY_MODEL MODELS_PATH"/tie-fighter.vox"
 #define LOOT_MODEL MODELS_PATH"/3x3x3.vox"
