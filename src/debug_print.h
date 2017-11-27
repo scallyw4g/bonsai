@@ -58,7 +58,7 @@ Log(const char* fmt...)
       else
       {
         va_arg(args, void*);
-        std::cout << '?';
+        std::cout << "Invalid Format String";
       }
 
     }

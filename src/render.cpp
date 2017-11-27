@@ -900,6 +900,8 @@ DEBUG_DrawPointMarker( mesh_buffer_target *Mesh,
     camera *Camera,
     v3 RenderP, int ColorIndex, v3 Diameter)
 {
+  TIMED_FUNCTION();
+
   v3 FaceColors[FACE_VERT_COUNT];
   FillColorArray(ColorIndex, FaceColors, FACE_VERT_COUNT);;
 

@@ -3,7 +3,7 @@
 struct debug_profile_scope
 {
   u64 CycleCount;
-  const char* FuncName;
+  const char* Name;
 
   debug_profile_scope *Parent;
   debug_profile_scope *Sibling;
@@ -22,6 +22,8 @@ struct debug_state
   debug_profile_scope **WriteScope;
   debug_profile_scope *CurrentScope;
   debug_profile_scope RootScope;
+
+  debug_profile_scope **NextFreeScope;
 
   u64 NumScopes;
 };
@@ -55,10 +57,9 @@ struct debug_recording_state
 
 struct debug_timed_function
 {
-  const char* FuncName;
   u64 StartingCycleCount;
 
-  debug_timed_function(const char *FuncName)
+  debug_timed_function(const char *Name)
   {
     debug_state *DebugState = GetDebugState();
     DebugState->NumScopes ++;
@@ -74,7 +75,7 @@ struct debug_timed_function
 
     DebugState->WriteScope = &NewScope->Child;
 
-    this->FuncName = FuncName;
+    NewScope->Name = Name;
     this->StartingCycleCount = DebugState->GetCycleCount(); // Intentionally last
   }
 
@@ -93,9 +94,15 @@ struct debug_timed_function
 
 #define INIT_DEUBG_STATE(Plat) InitDebugState(Plat)
 
+#if 1
 #define TIMED_FUNCTION() debug_timed_function FunctionTimer(__FUNCTION_NAME__)
 #define TIMED_BLOCK(BlockName) { debug_timed_function BlockTimer(BlockName)
 #define END_BLOCK(BlockName) }
+#else
+#define TIMED_FUNCTION(...)
+#define TIMED_BLOCK(...)
+#define END_BLOCK(...)
+#endif
 
 #define DEBUG_FRAME_RECORD(...) DoDebugFrameRecord(__VA_ARGS__)
 #define DEBUG_FRAME_END(Plat) DebugFrameEnd(Plat)

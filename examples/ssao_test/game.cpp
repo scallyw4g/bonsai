@@ -26,6 +26,7 @@ OrbitCameraAroundTarget(camera *Camera)
 void
 DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 {
+  /* debug_timed_function Timer(__FUNCTION__); */
   TIMED_FUNCTION();
 
   world *World = GameState->World;
@@ -51,43 +52,52 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
     GetViewMatrix(WorldChunkDim, Camera);
 
 
-  SimulatePlayer(GameState, GameState->Player, Hotkeys, Plat->dt);
-  //SimulateEntities(GameState, GameState->Player, Hotkeys, Plat->dt);
+  /* { */
+  /*   debug_timed_function Timer("SIMULATION"); */
 
-  UpdateCameraP(Plat, World, GameState->Player->P, Camera);
-  GlobalCameraTheta += Plat->dt*0.5;
+    SimulatePlayer(GameState, GameState->Player, Hotkeys, Plat->dt);
+    //SimulateEntities(GameState, GameState->Player, Hotkeys, Plat->dt);
+
+    UpdateCameraP(Plat, World, GameState->Player->P, Camera);
+    GlobalCameraTheta += Plat->dt*0.5;
+  /* } */
 
   //
   // Draw World
 
   TIMED_BLOCK("Render");
 
-  RenderWorld(World, Plat->Graphics, Camera);
-  RenderEntities( GameState->EntityTable, &World->Mesh, Plat->Graphics, Camera, World);
+  /* { */
+  /*   debug_timed_function Timer("RENDER"); */
 
-  { // Debug Lighting
-    GlobalLightTheta += (Plat->dt * TWOPI) / 20;
-    SG->GameLights.Lights[0].Position += 0.1*V3( Sin(GlobalLightTheta), Cos(GlobalLightTheta), 0.0f);
-    SG->GameLights.Lights[1].Position += 0.2*V3( Sin(GlobalLightTheta), Cos(GlobalLightTheta), 0.0f);
-    DEBUG_DrawPointMarker( &World->Mesh, gBuffer, SG, Camera, SG->GameLights.Lights[0].Position, BLUE, V3(1.0f));
-    DEBUG_DrawPointMarker( &World->Mesh, gBuffer, SG, Camera, SG->GameLights.Lights[1].Position, RED, V3(1.0f));
-  }
+    RenderWorld(World, Plat->Graphics, Camera);
+    RenderEntities( GameState->EntityTable, &World->Mesh, Plat->Graphics, Camera, World);
 
-  RenderGBuffer(&World->Mesh, gBuffer, SG, Camera);
+    { // Debug Lighting
+      GlobalLightTheta += (Plat->dt * TWOPI) / 20;
+      SG->GameLights.Lights[0].Position += 0.1*V3( Sin(GlobalLightTheta), Cos(GlobalLightTheta), 0.0f);
+      SG->GameLights.Lights[1].Position += 0.2*V3( Sin(GlobalLightTheta), Cos(GlobalLightTheta), 0.0f);
+      DEBUG_DrawPointMarker( &World->Mesh, gBuffer, SG, Camera, SG->GameLights.Lights[0].Position, BLUE, V3(1.0f));
+      DEBUG_DrawPointMarker( &World->Mesh, gBuffer, SG, Camera, SG->GameLights.Lights[1].Position, RED, V3(1.0f));
+    }
 
-  RenderAoTexture(AoGroup);
+    RenderGBuffer(&World->Mesh, gBuffer, SG, Camera);
 
-  DrawGBufferToFullscreenQuad( Plat, gBuffer, SG, Camera, World->ChunkDim);
+    RenderAoTexture(AoGroup);
 
-#if DEBUG_DRAW_SHADOW_MAP_TEXTURE
-  // DrawTexturedQuad(&GetDebugState()->TextRenderGroup->DebugTextureShader);
-  /* DrawTexturedQuad(&SG->DebugTextureShader); */
-  /* DrawTexturedQuad(&gBuffer->DebugPositionTextureShader); */
-  /* DrawTexturedQuad(&gBuffer->DebugNormalTextureShader); */
-  /* DrawTexturedQuad(&gBuffer->DebugColorTextureShader); */
-  /* DrawTexturedQuad(&AoGroup->DebugSsaoShader); */
-  SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight));
-#endif
+    DrawGBufferToFullscreenQuad( Plat, gBuffer, SG, Camera, World->ChunkDim);
+
+  #if DEBUG_DRAW_SHADOW_MAP_TEXTURE
+    // DrawTexturedQuad(&GetDebugState()->TextRenderGroup->DebugTextureShader);
+    /* DrawTexturedQuad(&SG->DebugTextureShader); */
+    /* DrawTexturedQuad(&gBuffer->DebugPositionTextureShader); */
+    /* DrawTexturedQuad(&gBuffer->DebugNormalTextureShader); */
+    /* DrawTexturedQuad(&gBuffer->DebugColorTextureShader); */
+    /* DrawTexturedQuad(&AoGroup->DebugSsaoShader); */
+    SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight));
+  #endif
+
+  /* } */
 
   END_BLOCK("Render");
 

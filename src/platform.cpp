@@ -483,7 +483,9 @@ main(s32 NumArgs, char ** Args)
     BonsaiSwapBuffers(&Os);
   }
 
+  Info("Shutting Down");
   Terminate(&Os);
+  Info("Exiting");
 
   return True;
 }

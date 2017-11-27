@@ -1,4 +1,5 @@
 #if DEBUG
+#include <stdio.h>
 
 texture *
 MakeTexture_RGBA( v2i Dim, const void* Data, memory_arena *Memory);
@@ -55,6 +56,7 @@ InitDebugState(platform *Plat)
   debug_state *DebugState = GetDebugState();
   DebugState->GetCycleCount = Plat->GetCycleCount;
 
+  DebugState->RootScope.Name = "RootScope";
   DebugState->WriteScope = &DebugState->RootScope.Child;
   DebugState->CurrentScope = &DebugState->RootScope;
 
@@ -190,6 +192,47 @@ CalculateFramePercentage(debug_profile_entry *Entry, u64 CycleDelta)
 #endif
 
 void
+FreeScope(debug_state *DebugState, debug_profile_scope *Scope)
+{
+  if (Scope->Child)
+    FreeScope(DebugState, Scope->Child);
+
+  if (Scope->Sibling)
+    FreeScope(DebugState, Scope->Sibling);
+
+  if (DebugState->NextFreeScope)
+    (*DebugState->NextFreeScope) = Scope;
+
+  DebugState->NextFreeScope = &Scope->Child;
+
+  return;
+}
+
+void
+PrintScopeTree(debug_profile_scope *Scope, s32 Depth = 0)
+{
+  s32 CurDepth = Depth;
+
+  while (CurDepth--)
+  {
+    printf("%s", "  ");
+  }
+
+  if (Depth > 0)
+    printf("%s", " `- ");
+
+  Debug("%d %s", Depth, Scope->Name);
+
+  if (Scope->Child)
+    PrintScopeTree(Scope->Child, ++Depth);
+
+  if (Scope->Sibling)
+    PrintScopeTree(Scope->Sibling, Depth);
+
+  return;
+}
+
+void
 DebugFrameEnd(platform *Plat)
 {
   /* TIMED_FUNCTION(); */
@@ -202,6 +245,11 @@ DebugFrameEnd(platform *Plat)
   char dtBuffer[32] = {};
   sprintf(dtBuffer, "%f", dt);
   TextOutAt(Plat, RG, TextGeo, dtBuffer, V2(10, 1080-FontSize), FontSize);
+
+  PrintScopeTree(&DebugState->RootScope);
+  Debug("-------------");
+
+  /* FreeScope(DebugState, &DebugState->RootScope); */
 
 #if 0
   u64 CurrentFrameCycleCount = DebugState->GetCycleCount();
