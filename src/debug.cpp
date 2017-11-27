@@ -55,9 +55,14 @@ InitDebugState(platform *Plat)
   debug_state *DebugState = GetDebugState();
   DebugState->GetCycleCount = Plat->GetCycleCount;
 
+  DebugState->WriteScope = &DebugState->RootScope.Child;
+  DebugState->CurrentScope = &DebugState->RootScope;
+
+  DebugState->Memory = SubArena(Plat->Memory, Megabytes(16));
+
   DebugState->TextRenderGroup = PUSH_STRUCT_CHECKED(debug_text_render_group, Plat->Memory, 1);
   if (!InitDebugOverlayFramebuffer(DebugState->TextRenderGroup, Plat->Memory, "Holstein.DDS"))
-    Error("Initializing Debug Overlay Framebuffer");
+  { Error("Initializing Debug Overlay Framebuffer"); }
 
   AllocateAndInitGeoBuffer(&DebugState->TextRenderGroup->TextGeo, 32, Plat->Memory);
 
@@ -173,7 +178,7 @@ TextOutAt(platform *Plat, debug_text_render_group *RG, text_geometry_buffer *Geo
 }
 
 debug_global u64 LastFrameCycleCount = 0;
-
+#if 0
 inline r32
 CalculateFramePercentage(debug_profile_entry *Entry, u64 CycleDelta)
 {
@@ -348,6 +353,7 @@ DebugFrameEnd(platform *Plat)
 
   return;
 }
+#endif
 
 void
 CleanupText2D(debug_text_render_group *RG)

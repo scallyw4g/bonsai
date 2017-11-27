@@ -1,25 +1,29 @@
 #if DEBUG
 
-struct debug_profile_entry
+struct debug_profile_scope
 {
   u64 CycleCount;
-  u32 HitCount;
-
-  r32 MaxPerc;
-  r32 MinPerc;
-
   const char* FuncName;
+
+  debug_profile_scope *Parent;
+  debug_profile_scope *Sibling;
+  debug_profile_scope *Child;
 };
 
-#define DEBUG_STATE_ENTRY_COUNT 32
 struct debug_text_render_group;
 struct debug_state
 {
   u64 (*GetCycleCount)(void);
   u64 FrameCount;
-  debug_profile_entry Entries[DEBUG_STATE_ENTRY_COUNT];
 
   debug_text_render_group *TextRenderGroup;
+  memory_arena *Memory;
+
+  debug_profile_scope **WriteScope;
+  debug_profile_scope *CurrentScope;
+  debug_profile_scope RootScope;
+
+  u64 NumScopes;
 };
 
 
@@ -51,45 +55,46 @@ struct debug_recording_state
 
 struct debug_timed_function
 {
-  u32 FunctionIndex;
-
-  u64 StartingCycleCount;
-  u64 EndingCycleCount;
-
   const char* FuncName;
+  u64 StartingCycleCount;
+
+  debug_timed_function(const char *FuncName)
+  {
+    debug_state *DebugState = GetDebugState();
+    DebugState->NumScopes ++;
+
+    // FIXME(Jesse): Recycle these
+    debug_profile_scope *NewScope =
+      PUSH_STRUCT_CHECKED(debug_profile_scope, DebugState->Memory, 1);
+
+    NewScope->Parent = DebugState->CurrentScope;
+
+    (*DebugState->WriteScope) = NewScope;
+    DebugState->CurrentScope = NewScope;
+
+    DebugState->WriteScope = &NewScope->Child;
+
+    this->FuncName = FuncName;
+    this->StartingCycleCount = DebugState->GetCycleCount(); // Intentionally last
+  }
 
   ~debug_timed_function()
   {
-    // Record cycle count ASAP when object is cleaned up
     debug_state *DebugState = GetDebugState();
-    EndingCycleCount = DebugState->GetCycleCount();
-    debug_profile_entry *Entry = &DebugState->Entries[FunctionIndex];
+    u64 EndingCycleCount = DebugState->GetCycleCount(); // Intentionally first
+    u64 CycleCount = (EndingCycleCount - StartingCycleCount);
+    DebugState->CurrentScope->CycleCount = CycleCount;
 
-    Entry->CycleCount += (EndingCycleCount - StartingCycleCount);
-
-    Entry->HitCount++;
-    Entry->FuncName = FuncName;
+    // 'Pop' the scope stack
+    DebugState->CurrentScope = DebugState->CurrentScope->Parent;
+    DebugState->WriteScope = &DebugState->CurrentScope->Sibling;
   }
 };
 
-debug_timed_function
-DebugTimedFunction(u32 FunctionIndexIn, const char* FuncNameIn)
-{
-  Assert(FunctionIndexIn < DEBUG_STATE_ENTRY_COUNT);
-
-  debug_timed_function Result = {};
-  Result.FunctionIndex = FunctionIndexIn;
-  Result.FuncName = FuncNameIn;
-
-  // Record cycle count at last moment
-  Result.StartingCycleCount = GetDebugState()->GetCycleCount();
-  return Result;
-}
-
 #define INIT_DEUBG_STATE(Plat) InitDebugState(Plat)
 
-#define TIMED_FUNCTION() debug_timed_function FunctionTimer = DebugTimedFunction(__COUNTER__, __FUNCTION_NAME__)
-#define TIMED_BLOCK(BlockName) { debug_timed_function BlockTimer = DebugTimedFunction(__COUNTER__, BlockName)
+#define TIMED_FUNCTION() debug_timed_function FunctionTimer(__FUNCTION_NAME__)
+#define TIMED_BLOCK(BlockName) { debug_timed_function BlockTimer(BlockName)
 #define END_BLOCK(BlockName) }
 
 #define DEBUG_FRAME_RECORD(...) DoDebugFrameRecord(__VA_ARGS__)
