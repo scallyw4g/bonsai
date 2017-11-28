@@ -23,7 +23,7 @@ struct debug_state
   debug_profile_scope *CurrentScope;
   debug_profile_scope RootScope;
 
-  debug_profile_scope **NextFreeScope;
+  debug_profile_scope FreeScopeSentinel;
 
   u64 NumScopes;
 };

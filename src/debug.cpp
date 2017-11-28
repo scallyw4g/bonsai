@@ -60,6 +60,9 @@ InitDebugState(platform *Plat)
   DebugState->WriteScope = &DebugState->RootScope.Child;
   DebugState->CurrentScope = &DebugState->RootScope;
 
+  DebugState->FreeScopeSentinel.Parent = &DebugState->FreeScopeSentinel;
+  DebugState->FreeScopeSentinel.Child = &DebugState->FreeScopeSentinel;
+
   DebugState->Memory = SubArena(Plat->Memory, Megabytes(6));
 
   DebugState->TextRenderGroup = PUSH_STRUCT_CHECKED(debug_text_render_group, Plat->Memory, 1);
@@ -192,18 +195,41 @@ CalculateFramePercentage(debug_profile_entry *Entry, u64 CycleDelta)
 #endif
 
 void
-FreeScope(debug_state *DebugState, debug_profile_scope *Scope)
+FreeScopes(debug_state *DebugState, debug_profile_scope *ScopeToFree)
 {
-  if (Scope->Child)
-    FreeScope(DebugState, Scope->Child);
+  if (ScopeToFree->Child)
+    FreeScopes(DebugState, ScopeToFree->Child);
 
-  if (Scope->Sibling)
-    FreeScope(DebugState, Scope->Sibling);
+  if (ScopeToFree->Sibling)
+    FreeScopes(DebugState, ScopeToFree->Sibling);
 
-  if (DebugState->NextFreeScope)
-    (*DebugState->NextFreeScope) = Scope;
+  ScopeToFree->Child = 0;
+  ScopeToFree->Sibling = 0;
+  ScopeToFree->Parent = 0;
 
-  DebugState->NextFreeScope = &Scope->Child;
+  debug_profile_scope *First = DebugState->FreeScopeSentinel.Child;
+  debug_profile_scope *Sentinel = &DebugState->FreeScopeSentinel;
+
+  Sentinel->Child = ScopeToFree;
+  First->Parent = ScopeToFree;
+
+  ScopeToFree->Parent = Sentinel;
+  ScopeToFree->Child = First;
+
+  return;
+}
+
+void
+PrintFreeScopes(debug_state *State)
+{
+  debug_profile_scope *Sentinel = &State->FreeScopeSentinel;
+  debug_profile_scope *Current = Sentinel->Child;
+
+  while(Current != Sentinel)
+  {
+    Log("%s", Current->Name);
+    Current = Current->Child;
+  }
 
   return;
 }
@@ -226,10 +252,32 @@ DebugFrameEnd(platform *Plat)
 
   Debug("Scopes Recorded: %lu", DebugState->NumScopes);
   PrintScopeTree(&DebugState->RootScope);
-  Debug("-------------");
+  Debug("------------------------------------------------------------------------------");
 
+  if (DebugState->RootScope.Child)
+    FreeScopes(DebugState, DebugState->RootScope.Child);
+
+  if (DebugState->RootScope.Sibling)
+    FreeScopes(DebugState, DebugState->RootScope.Sibling);
+
+  DebugState->RootScope.Parent = 0;
+  DebugState->RootScope.Sibling = 0;
+  DebugState->RootScope.Child = 0;
+  DebugState->WriteScope = 0;
+  DebugState->CurrentScope;
   DebugState->NumScopes = 0;
-  /* FreeScope(DebugState, &DebugState->RootScope); */
+
+  PrintFreeScopes(DebugState);
+  Debug("------------------------------------------------------------------------------");
+  PrintScopeTree(&DebugState->RootScope);
+
+  debug_profile_scope RootScope;
+
+  debug_profile_scope FreeScopeSentinel;
+
+  Debug("------------------------------------------------------------------------------");
+
+  exit(1);
 
 #if 0
   u64 CurrentFrameCycleCount = DebugState->GetCycleCount();

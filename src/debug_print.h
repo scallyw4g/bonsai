@@ -31,6 +31,10 @@ Log(const char* fmt...)
           std::cout << va_arg(args, s64);
         }
       }
+      else if (*fmt == 'x')
+      {
+        std::cout << va_arg(args, void*);
+      }
       else if (*fmt == 'u')
       {
         std::cout << va_arg(args, u32);
@@ -93,6 +97,15 @@ Print_Binary( unsigned int input )
   }
 
   Log("<-- Low bit \n");
+}
+
+inline void
+Print_P( debug_profile_scope *E, const char* name)
+{
+  Log(" -- %s -> %s \n", name, E->Name);
+  Log(" -- Parent %x \n", name, E->Parent);
+  Log(" -- Sibling %x \n", name, E->Sibling);
+  Log(" -- Child %x \n", name, E->Child);
 }
 
 inline void
