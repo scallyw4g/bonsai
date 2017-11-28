@@ -60,7 +60,7 @@ InitDebugState(platform *Plat)
   DebugState->WriteScope = &DebugState->RootScope.Child;
   DebugState->CurrentScope = &DebugState->RootScope;
 
-  DebugState->Memory = SubArena(Plat->Memory, Megabytes(16));
+  DebugState->Memory = SubArena(Plat->Memory, Megabytes(6));
 
   DebugState->TextRenderGroup = PUSH_STRUCT_CHECKED(debug_text_render_group, Plat->Memory, 1);
   if (!InitDebugOverlayFramebuffer(DebugState->TextRenderGroup, Plat->Memory, "Holstein.DDS"))
@@ -209,33 +209,10 @@ FreeScope(debug_state *DebugState, debug_profile_scope *Scope)
 }
 
 void
-PrintScopeTree(debug_profile_scope *Scope, s32 Depth = 0)
-{
-  s32 CurDepth = Depth;
-
-  while (CurDepth--)
-  {
-    printf("%s", "  ");
-  }
-
-  if (Depth > 0)
-    printf("%s", " `- ");
-
-  Debug("%d %s", Depth, Scope->Name);
-
-  if (Scope->Child)
-    PrintScopeTree(Scope->Child, ++Depth);
-
-  if (Scope->Sibling)
-    PrintScopeTree(Scope->Sibling, Depth);
-
-  return;
-}
-
-void
 DebugFrameEnd(platform *Plat)
 {
   /* TIMED_FUNCTION(); */
+
   debug_state *DebugState = GetDebugState();
   debug_text_render_group *RG = DebugState->TextRenderGroup;
   text_geometry_buffer *TextGeo = &RG->TextGeo;
@@ -246,9 +223,12 @@ DebugFrameEnd(platform *Plat)
   sprintf(dtBuffer, "%f", dt);
   TextOutAt(Plat, RG, TextGeo, dtBuffer, V2(10, 1080-FontSize), FontSize);
 
+
+  Debug("Scopes Recorded: %lu", DebugState->NumScopes);
   PrintScopeTree(&DebugState->RootScope);
   Debug("-------------");
 
+  DebugState->NumScopes = 0;
   /* FreeScope(DebugState, &DebugState->RootScope); */
 
 #if 0

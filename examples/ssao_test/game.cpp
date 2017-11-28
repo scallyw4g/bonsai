@@ -65,14 +65,12 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   //
   // Draw World
 
-  TIMED_BLOCK("Render");
+  TIMED_BLOCK("BufferMesh");
+    BufferWorld(World, Plat->Graphics, Camera);
+    BufferEntities( GameState->EntityTable, &World->Mesh, Plat->Graphics, Camera, World);
+  END_BLOCK("BufferMesh");
 
-  /* { */
-  /*   debug_timed_function Timer("RENDER"); */
-
-    RenderWorld(World, Plat->Graphics, Camera);
-    RenderEntities( GameState->EntityTable, &World->Mesh, Plat->Graphics, Camera, World);
-
+  TIMED_BLOCK("RenderToScreen");
     { // Debug Lighting
       GlobalLightTheta += (Plat->dt * TWOPI) / 20;
       SG->GameLights.Lights[0].Position += 0.1*V3( Sin(GlobalLightTheta), Cos(GlobalLightTheta), 0.0f);
@@ -97,9 +95,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
     SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight));
   #endif
 
-  /* } */
-
-  END_BLOCK("Render");
+  END_BLOCK("RenderToScreen");
 
   return;
 }

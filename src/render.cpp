@@ -646,6 +646,8 @@ GetShadowMapMVP(camera *Camera, light *GlobalLight)
 void
 BindShaderUniforms(shader *Shader)
 {
+  TIMED_FUNCTION();
+
   shader_uniform *Uniform = Shader->FirstUniform;
 
   u32 TextureUnit = 0;
@@ -2499,7 +2501,7 @@ BufferWorldChunk(
 }
 
 void
-RenderWorld(world *World, graphics *Graphics, camera *Camera)
+BufferWorld(world *World, graphics *Graphics, camera *Camera)
 {
   TIMED_FUNCTION();
 
@@ -2533,7 +2535,7 @@ RenderWorld(world *World, graphics *Graphics, camera *Camera)
 }
 
 void
-RenderEntities( entity **EntityTable, mesh_buffer_target *Mesh,
+BufferEntities( entity **EntityTable, mesh_buffer_target *Mesh,
                 graphics *Graphics, camera *Camera, world *World)
 {
   for ( s32 EntityIndex = 0;

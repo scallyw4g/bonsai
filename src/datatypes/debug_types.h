@@ -55,6 +55,41 @@ struct debug_recording_state
   hotkeys Inputs[DEBUG_RECORD_INPUT_SIZE];
 };
 
+void
+PrintScopeTree(debug_profile_scope *Scope, s32 Depth = 0)
+{
+  debug_state *DebugState = GetDebugState();
+
+  s32 CurDepth = Depth;
+
+  while (CurDepth--)
+  {
+    printf("%s", "  ");
+  }
+
+  if (Depth > 0)
+    printf("%s", " `- ");
+
+  printf("%d %s", Depth, Scope->Name);
+
+  if (DebugState->WriteScope == &Scope->Child)
+    printf(" %s", "<-- Child \n");
+  else if (DebugState->WriteScope == &Scope->Sibling)
+    printf(" %s", "<-- Sibling \n");
+  else
+    printf("%s", "\n");
+
+
+
+  if (Scope->Child)
+    PrintScopeTree(Scope->Child, Depth+1);
+
+  if (Scope->Sibling)
+    PrintScopeTree(Scope->Sibling, Depth);
+
+  return;
+}
+
 struct debug_timed_function
 {
   u64 StartingCycleCount;
@@ -63,6 +98,7 @@ struct debug_timed_function
   {
     debug_state *DebugState = GetDebugState();
     DebugState->NumScopes ++;
+
 
     // FIXME(Jesse): Recycle these
     debug_profile_scope *NewScope =
@@ -77,6 +113,10 @@ struct debug_timed_function
 
     NewScope->Name = Name;
     this->StartingCycleCount = DebugState->GetCycleCount(); // Intentionally last
+
+    /* Debug(" "); */
+    /* Debug("Pushing %s", Name); */
+    /* PrintScopeTree(&DebugState->RootScope); */
   }
 
   ~debug_timed_function()
@@ -86,9 +126,13 @@ struct debug_timed_function
     u64 CycleCount = (EndingCycleCount - StartingCycleCount);
     DebugState->CurrentScope->CycleCount = CycleCount;
 
+    /* Debug(" "); */
+    /* Debug("Popping %s", DebugState->CurrentScope->Name); */
+
     // 'Pop' the scope stack
-    DebugState->CurrentScope = DebugState->CurrentScope->Parent;
     DebugState->WriteScope = &DebugState->CurrentScope->Sibling;
+    DebugState->CurrentScope = DebugState->CurrentScope->Parent;
+    /* PrintScopeTree(&DebugState->RootScope); */
   }
 };
 
