@@ -235,20 +235,8 @@ PrintFreeScopes(debug_state *State)
 }
 
 void
-DebugFrameEnd(platform *Plat)
+CleanupScopeTree(debug_state *DebugState)
 {
-  /* TIMED_FUNCTION(); */
-
-  debug_state *DebugState = GetDebugState();
-  debug_text_render_group *RG = DebugState->TextRenderGroup;
-  text_geometry_buffer *TextGeo = &RG->TextGeo;
-  s32 FontSize = DEBUG_FONT_SIZE;
-  r32 dt = Plat->dt;
-
-  char dtBuffer[32] = {};
-  sprintf(dtBuffer, "%f", dt);
-  TextOutAt(Plat, RG, TextGeo, dtBuffer, V2(10, 1080-FontSize), FontSize);
-
 
   Debug("Scopes Recorded: %lu", DebugState->NumScopes);
   PrintScopeTree(&DebugState->RootScope);
@@ -276,6 +264,25 @@ DebugFrameEnd(platform *Plat)
 
   Debug("------------------------------------------------------------------------------");
 
+}
+
+void
+DebugFrameEnd(platform *Plat)
+{
+  /* TIMED_FUNCTION(); */
+
+  debug_state *DebugState = GetDebugState();
+  debug_text_render_group *RG = DebugState->TextRenderGroup;
+  text_geometry_buffer *TextGeo = &RG->TextGeo;
+  s32 FontSize = DEBUG_FONT_SIZE;
+  r32 dt = Plat->dt;
+
+  char dtBuffer[32] = {};
+  sprintf(dtBuffer, "%f", dt);
+  TextOutAt(Plat, RG, TextGeo, dtBuffer, V2(10, 1080-FontSize), FontSize);
+
+
+  CleanupScopeTree(DebugState);
 #if 0
   u64 CurrentFrameCycleCount = DebugState->GetCycleCount();
   u64 CycleDelta = CurrentFrameCycleCount - LastFrameCycleCount;
