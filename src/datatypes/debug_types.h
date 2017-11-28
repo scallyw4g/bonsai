@@ -90,6 +90,32 @@ PrintScopeTree(debug_profile_scope *Scope, s32 Depth = 0)
   return;
 }
 
+
+debug_profile_scope NullDebugProfileScope = {};
+
+debug_profile_scope *
+GetProfileScope(debug_state *State)
+{
+  debug_profile_scope *Result = 0;
+  debug_profile_scope *Sentinel = &State->FreeScopeSentinel;
+
+  if (Sentinel->Child != Sentinel)
+  {
+    Result = Sentinel->Child;
+
+    Sentinel->Child = Sentinel->Child->Child;
+    Sentinel->Child->Child->Parent = Sentinel;
+  }
+  else
+  {
+    Result = PUSH_STRUCT_CHECKED(debug_profile_scope, State->Memory, 1);
+  }
+
+  Assert(Result);
+  *Result = NullDebugProfileScope;
+  return Result;
+}
+
 struct debug_timed_function
 {
   u64 StartingCycleCount;
@@ -101,8 +127,7 @@ struct debug_timed_function
 
 
     // FIXME(Jesse): Recycle these
-    debug_profile_scope *NewScope =
-      PUSH_STRUCT_CHECKED(debug_profile_scope, DebugState->Memory, 1);
+    debug_profile_scope *NewScope = GetProfileScope(DebugState);
 
     NewScope->Parent = DebugState->CurrentScope;
 

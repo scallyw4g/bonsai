@@ -263,21 +263,18 @@ DebugFrameEnd(platform *Plat)
   DebugState->RootScope.Parent = 0;
   DebugState->RootScope.Sibling = 0;
   DebugState->RootScope.Child = 0;
-  DebugState->WriteScope = 0;
-  DebugState->CurrentScope;
+  DebugState->WriteScope = &DebugState->RootScope.Child;
+  DebugState->CurrentScope = 0;
   DebugState->NumScopes = 0;
 
   PrintFreeScopes(DebugState);
   Debug("------------------------------------------------------------------------------");
   PrintScopeTree(&DebugState->RootScope);
 
-  debug_profile_scope RootScope;
-
-  debug_profile_scope FreeScopeSentinel;
+  /* debug_profile_scope RootScope; */
+  /* debug_profile_scope FreeScopeSentinel; */
 
   Debug("------------------------------------------------------------------------------");
-
-  exit(1);
 
 #if 0
   u64 CurrentFrameCycleCount = DebugState->GetCycleCount();
