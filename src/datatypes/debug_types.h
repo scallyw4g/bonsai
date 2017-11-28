@@ -9,6 +9,8 @@ struct layout
   layout(u32 FontSize = 12)
   {
     this->FontSize = FontSize;
+    this->AtX = 0;
+    this->AtY = 0;
   }
 };
 

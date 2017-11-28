@@ -793,6 +793,8 @@ GetWorldChunkHash(world_position P, chunk_dimension WorldChunkDim)
 void
 FreeWorldChunk(world *World, world_chunk *chunk)
 {
+  TIMED_FUNCTION();
+
   // Only free chunks that have been initialized, or chunks that had previously
   // been marked as garbage and have been flushed all the way through the world
   // initialization queue.

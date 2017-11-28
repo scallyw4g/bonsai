@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include <bonsai_types.h>
+
 #include <bonsai.h>
 #include <constants.hpp>
 
@@ -449,6 +450,8 @@ main(s32 NumArgs, char ** Args)
 
   while ( Os.ContinueRunning )
   {
+    StartingCycleCount = GetDebugState()->GetCycleCount();
+
     Plat.dt = (r32)ComputeDtForFrame(&lastTime);
 
     v2 LastMouseP = Plat.MouseP;

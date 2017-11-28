@@ -1,6 +1,8 @@
 #if DEBUG
 #include <stdio.h>
 
+static u64 StartingCycleCount;
+
 texture *
 MakeTexture_RGBA( v2i Dim, const void* Data, memory_arena *Memory);
 
@@ -69,7 +71,7 @@ InitDebugState(platform *Plat)
   if (!InitDebugOverlayFramebuffer(DebugState->TextRenderGroup, Plat->Memory, "Holstein.DDS"))
   { Error("Initializing Debug Overlay Framebuffer"); }
 
-  AllocateAndInitGeoBuffer(&DebugState->TextRenderGroup->TextGeo, 32, Plat->Memory);
+  AllocateAndInitGeoBuffer(&DebugState->TextRenderGroup->TextGeo, 4096, Plat->Memory);
 
   return;
 }
@@ -125,7 +127,7 @@ DrawDebugText(debug_text_render_group *RG, text_geometry_buffer *Geo, v2 Viewpor
 }
 
 rect2
-TextOutAt(debug_text_render_group *RG, text_geometry_buffer *Geo,
+BufferTextAt(debug_text_render_group *RG, text_geometry_buffer *Geo,
     const char *Text, v2 XY, s32 FontSize, v2 ViewportDim)
 {
   s32 QuadCount = strlen(Text);
@@ -268,20 +270,37 @@ CleanupScopeTree(debug_state *DebugState)
 }
 
 inline void
-DrawText(const char *Text, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
+BufferText(const char *Text, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
 {
-  rect2 TextBox = TextOutAt(RG, &RG->TextGeo, Text, V2(Layout->AtX, Layout->AtY), Layout->FontSize, ViewportDim);
+  rect2 TextBox = BufferTextAt(RG, &RG->TextGeo, Text, V2(Layout->AtX, Layout->AtY), Layout->FontSize, ViewportDim);
   Layout->AtX = TextBox.Max.x;
 
   return;
 }
 
 inline void
-DrawText(u32 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
+BufferText(r32 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
+{
+  char Buffer[32] = {};
+  sprintf(Buffer, "%f", Number);
+  BufferText( Buffer, Layout, RG, ViewportDim);
+  return;
+}
+
+inline void
+BufferText(u64 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
+{
+  char Buffer[32] = {};
+  sprintf(Buffer, "%lu", Number);
+  BufferText( Buffer, Layout, RG, ViewportDim);
+  return;
+}
+inline void
+BufferText(u32 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
 {
   char Buffer[32] = {};
   sprintf(Buffer, "%u", Number);
-  DrawText( Buffer, Layout, RG, ViewportDim);
+  BufferText( Buffer, Layout, RG, ViewportDim);
   return;
 }
 
@@ -293,43 +312,78 @@ NewLine(layout *Layout)
   return;
 }
 
-void
-RenderScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout, v2 ViewportDim, u32 Depth = 0)
+inline void
+BufferNumberAsText(r32 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
+{
+  Layout->AtX += Layout->FontSize;
+  BufferText(Number, Layout, RG, ViewportDim);
+  Layout->AtX += Layout->FontSize;
+  return;
+}
+
+inline void
+BufferNumberAsText(r64 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
+{
+  Layout->AtX += Layout->FontSize;
+  BufferText((r32)Number, Layout, RG, ViewportDim);
+  Layout->AtX += Layout->FontSize;
+  return;
+}
+
+inline void
+BufferNumberAsText(u64 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
+{
+  Layout->AtX += Layout->FontSize;
+  BufferText(Number, Layout, RG, ViewportDim);
+  Layout->AtX += Layout->FontSize;
+  return;
+}
+
+inline void
+BufferNumberAsText(u32 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
+{
+  Layout->AtX += Layout->FontSize;
+  BufferText(Number, Layout, RG, ViewportDim);
+  Layout->AtX += Layout->FontSize;
+  return;
+}
+
+static u64 FrameCycles = 0;
+
+u64
+BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout, v2 ViewportDim, u32 Depth = 0)
 {
   if (!Scope)
-    return;
+    return 0;
 
-  RenderScopeTree(Scope->Child, State, Layout, ViewportDim, Depth+1);
+  u64 ChildCycles = BufferScopeTree(Scope->Child, State, Layout, ViewportDim, Depth+1);
+  u64 ScopeCycles = ChildCycles + Scope->CycleCount;
+  r64 FramePercentage = (r64)ScopeCycles / (r64)FrameCycles;
 
   u32 Duplicates = 0;
-  debug_profile_scope *Current = Scope->Sibling;
-  while (Current && strcmp(Current->Name, Scope->Name) == 0 )
+  debug_profile_scope *Sibling = Scope->Sibling;
+  while (Sibling && strcmp(Sibling->Name, Scope->Name) == 0 )
   {
     ++Duplicates;
-    Current = Current->Sibling;
+    Sibling = Sibling->Sibling;
   }
 
-  RenderScopeTree(Current, State, Layout, ViewportDim, Depth);
+  BufferScopeTree(Sibling, State, Layout, ViewportDim, Depth);
 
   Layout->AtX += (Depth*3.0f*Layout->FontSize);
 
-  // Adjust indentation
   if (Duplicates)
-  {
-    Layout->AtX += Layout->FontSize;
-    DrawText(Duplicates+1, Layout, State->TextRenderGroup, ViewportDim);
-    Layout->AtX += Layout->FontSize;
-  }
+    BufferNumberAsText(Duplicates+1, Layout, State->TextRenderGroup, ViewportDim);
   else
-  {
-    Layout->AtX += 3.0f*Layout->FontSize;
-  }
+    Layout->AtX += Layout->FontSize*3;
 
-  DrawText(Scope->Name, Layout, State->TextRenderGroup, ViewportDim);
+  BufferText(Scope->Name, Layout, State->TextRenderGroup, ViewportDim);
+  BufferNumberAsText((r32)FramePercentage, Layout, State->TextRenderGroup, ViewportDim);
+  BufferNumberAsText(ScopeCycles, Layout, State->TextRenderGroup, ViewportDim);
 
   NewLine(Layout);
 
-  return;
+  return ScopeCycles;
 }
 
 void
@@ -338,19 +392,25 @@ DebugFrameEnd(platform *Plat)
   debug_state *DebugState = GetDebugState();
   debug_text_render_group *RG = DebugState->TextRenderGroup;
   text_geometry_buffer *TextGeo = &RG->TextGeo;
-  s32 FontSize = DEBUG_FONT_SIZE;
   r32 dt = Plat->dt;
+
+  FrameCycles = DebugState->GetCycleCount() - StartingCycleCount;
 
   v2 ViewportDim = V2(Plat->WindowWidth, Plat->WindowHeight);
 
-  char dtBuffer[32] = {};
-  sprintf(dtBuffer, "%f", dt);
-  TextOutAt( RG, TextGeo, dtBuffer, V2(10, SCR_HEIGHT-FontSize), FontSize, ViewportDim);
+  {
+    layout Layout(DEBUG_FONT_SIZE);
+    Layout.AtY = (r32)SCR_HEIGHT - Layout.FontSize;
+    BufferNumberAsText(dt, &Layout, RG, ViewportDim);
+    BufferNumberAsText(FrameCycles, &Layout, RG, ViewportDim);
+  }
 
-  layout Layout(36);
-  RenderScopeTree(&DebugState->RootScope, DebugState, &Layout, ViewportDim);
+  {
+    layout Layout(36);
+    BufferScopeTree(&DebugState->RootScope, DebugState, &Layout, ViewportDim);
+    CleanupScopeTree(DebugState);
+  }
 
-  CleanupScopeTree(DebugState);
 #if 0
   u64 CurrentFrameCycleCount = DebugState->GetCycleCount();
   u64 CycleDelta = CurrentFrameCycleCount - LastFrameCycleCount;
@@ -407,7 +467,7 @@ DebugFrameEnd(platform *Plat)
         /* char CycleCountBuffer[32]; */
         /* sprintf(CycleCountBuffer, "%" PRIu64, Entry->CycleCount); */
 
-        /* rect2 CCRect = TextOutAt(Plat, RG, TextGeo, CycleCountBuffer, 0, AtY, FontSize); */
+        /* rect2 CCRect = BufferTextAt(Plat, RG, TextGeo, CycleCountBuffer, 0, AtY, FontSize); */
         /* MaxX = max(MaxX, CCRect.Max.x); */
         /* AtY += (FontSize + LinePadding); */
       }
@@ -417,7 +477,7 @@ DebugFrameEnd(platform *Plat)
     {
       char CycleCountBuffer[32] = {};
       sprintf(CycleCountBuffer, "%" PRIu64, MinCycleCount);
-      TextOutAt(Plat, RG, TextGeo, CycleCountBuffer, V2(0, AtY), FontSize);
+      BufferTextAt(Plat, RG, TextGeo, CycleCountBuffer, V2(0, AtY), FontSize);
       AtY += (FontSize + LinePadding);
       AtY += (FontSize + LinePadding);
     }
@@ -425,7 +485,7 @@ DebugFrameEnd(platform *Plat)
     {
       char CycleCountBuffer[32] = {};
       sprintf(CycleCountBuffer, "%" PRIu64, CycleDelta);
-      TextOutAt(Plat, RG, TextGeo, CycleCountBuffer, V2(0, AtY), FontSize);
+      BufferTextAt(Plat, RG, TextGeo, CycleCountBuffer, V2(0, AtY), FontSize);
       AtY += (FontSize + LinePadding);
       AtY += (FontSize + LinePadding);
     }
@@ -433,7 +493,7 @@ DebugFrameEnd(platform *Plat)
     {
       char CycleCountBuffer[32] = {};
       sprintf(CycleCountBuffer, "%" PRIu64, MaxCycleCount);
-      TextOutAt(Plat, RG, TextGeo, CycleCountBuffer, V2(0, AtY), FontSize);
+      BufferTextAt(Plat, RG, TextGeo, CycleCountBuffer, V2(0, AtY), FontSize);
       AtY += (FontSize + LinePadding);
       AtY += (FontSize + LinePadding);
     }
@@ -456,24 +516,24 @@ DebugFrameEnd(platform *Plat)
 
         r32 FramePerc = CalculateFramePercentage(Entry, CycleDelta);
         sprintf(PercentageBuffer, "%.0f", FramePerc);
-        TextOutAt(Plat, RG, TextGeo, PercentageBuffer, V2(AtX, AtY), FontSize);
+        BufferTextAt(Plat, RG, TextGeo, PercentageBuffer, V2(AtX, AtY), FontSize);
         AtX += (FontSize*4);
 
         sprintf(PercentageBuffer, "%.0f", Entry->MaxPerc);
-        TextOutAt(Plat, RG, TextGeo, PercentageBuffer, V2(AtX, AtY), FontSize);
+        BufferTextAt(Plat, RG, TextGeo, PercentageBuffer, V2(AtX, AtY), FontSize);
         AtX += (FontSize*4);
 
         sprintf(PercentageBuffer, "%.0f", Entry->MinPerc);
-        TextOutAt(Plat, RG, TextGeo, PercentageBuffer, V2(AtX, AtY), FontSize);
+        BufferTextAt(Plat, RG, TextGeo, PercentageBuffer, V2(AtX, AtY), FontSize);
         AtX += (FontSize*4);
 
         /* // Print Hit Count */
         /* char CountBuffer[32]; */
         /* sprintf(CountBuffer, "%" PRIu32, Entry->HitCount); */
-        /* rect2 HitCountRect = TextOutAt(Plat,  RG, CountBuffer, AtX, AtY, FontSize); */
+        /* rect2 HitCountRect = BufferTextAt(Plat,  RG, CountBuffer, AtX, AtY, FontSize); */
         /* HitCountX = max((s32)HitCountRect.Max.x, HitCountX); */
 
-        TextOutAt(Plat, RG, TextGeo, Entry->FuncName, V2(AtX, AtY), FontSize);
+        BufferTextAt(Plat, RG, TextGeo, Entry->FuncName, V2(AtX, AtY), FontSize);
 
         AtY += (FontSize + LinePadding);
       }

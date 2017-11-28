@@ -2462,6 +2462,7 @@ BufferWorldChunk(
     shadow_render_group *SG
   )
 {
+  TIMED_FUNCTION();
   if ( IsSet( Chunk, Chunk_BufferMesh ) )
     BuildWorldChunkMesh(World, Chunk, World->ChunkDim);
 
@@ -2526,9 +2527,11 @@ BufferWorld(world *World, graphics *Graphics, camera *Camera)
       }
       else
       {
+      /* TIMED_BLOCK("Free World Chunk"); */
         world_chunk *ChunkToFree = chunk;
         chunk = chunk->Next;
         FreeWorldChunk(World, ChunkToFree);
+      /* END_BLOCK("Free World Chunk"); */
       }
     }
   }
@@ -2538,6 +2541,7 @@ void
 BufferEntities( entity **EntityTable, mesh_buffer_target *Mesh,
                 graphics *Graphics, camera *Camera, world *World)
 {
+  TIMED_FUNCTION();
   for ( s32 EntityIndex = 0;
         EntityIndex < TOTAL_ENTITY_COUNT;
         ++EntityIndex)
