@@ -52,7 +52,6 @@ inline b32
 GetCollision(entity *First, entity *Second, chunk_dimension WorldChunkDim)
 {
   TIMED_FUNCTION();
-
   if (Destroyed(First) || Destroyed(Second))
     return False;
 
@@ -663,7 +662,7 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
     if (Unspawned(Entity) || Destroyed(Entity))
       break;
 
-    DoEntityCollisions(GameState, Entity, &GameState->Entropy, GameState->World->ChunkDim);
+    /* DoEntityCollisions(GameState, Entity, &GameState->Entropy, GameState->World->ChunkDim); */
   }
 
   Entity->P = Canonicalize(WorldChunkDim, Entity->P);

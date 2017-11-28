@@ -26,7 +26,6 @@ OrbitCameraAroundTarget(camera *Camera)
 void
 DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 {
-  /* debug_timed_function Timer(__FUNCTION__); */
   TIMED_FUNCTION();
 
   world *World = GameState->World;
@@ -52,15 +51,11 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
     GetViewMatrix(WorldChunkDim, Camera);
 
 
-  /* { */
-  /*   debug_timed_function Timer("SIMULATION"); */
+  SimulatePlayer(GameState, GameState->Player, Hotkeys, Plat->dt);
+  //SimulateEntities(GameState, GameState->Player, Hotkeys, Plat->dt);
 
-    SimulatePlayer(GameState, GameState->Player, Hotkeys, Plat->dt);
-    //SimulateEntities(GameState, GameState->Player, Hotkeys, Plat->dt);
-
-    UpdateCameraP(Plat, World, GameState->Player->P, Camera);
-    GlobalCameraTheta += Plat->dt*0.5;
-  /* } */
+  UpdateCameraP(Plat, World, GameState->Player->P, Camera);
+  GlobalCameraTheta += Plat->dt*0.5;
 
   //
   // Draw World

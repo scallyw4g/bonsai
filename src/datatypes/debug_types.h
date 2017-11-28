@@ -1,5 +1,17 @@
 #if DEBUG
 
+struct layout
+{
+  r32 AtX;
+  r32 AtY;
+  r32 FontSize;
+
+  layout(u32 FontSize = 12)
+  {
+    this->FontSize = FontSize;
+  }
+};
+
 struct debug_profile_scope
 {
   u64 CycleCount;
@@ -123,7 +135,7 @@ struct debug_timed_function
   debug_timed_function(const char *Name)
   {
     debug_state *DebugState = GetDebugState();
-    DebugState->NumScopes ++;
+    ++DebugState->NumScopes;
 
 
     // FIXME(Jesse): Recycle these
@@ -163,15 +175,9 @@ struct debug_timed_function
 
 #define INIT_DEUBG_STATE(Plat) InitDebugState(Plat)
 
-#if 1
 #define TIMED_FUNCTION() debug_timed_function FunctionTimer(__FUNCTION_NAME__)
 #define TIMED_BLOCK(BlockName) { debug_timed_function BlockTimer(BlockName)
 #define END_BLOCK(BlockName) }
-#else
-#define TIMED_FUNCTION(...)
-#define TIMED_BLOCK(...)
-#define END_BLOCK(...)
-#endif
 
 #define DEBUG_FRAME_RECORD(...) DoDebugFrameRecord(__VA_ARGS__)
 #define DEBUG_FRAME_END(Plat) DebugFrameEnd(Plat)

@@ -75,7 +75,7 @@ InitDebugState(platform *Plat)
 }
 
 void
-DrawDebugText(debug_text_render_group *RG, text_geometry_buffer *Geo, platform *Plat)
+DrawDebugText(debug_text_render_group *RG, text_geometry_buffer *Geo, v2 ViewportDim)
 {
   u32 VertCount = Geo->CurrentIndex +1;
   Geo->CurrentIndex = 0;
@@ -112,7 +112,7 @@ DrawDebugText(debug_text_render_group *RG, text_geometry_buffer *Geo, platform *
   glDisable(GL_DEPTH_TEST);
 
   // Draw
-  SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight));
+  SetViewport(ViewportDim);
   glDrawArrays(GL_TRIANGLES, 0, VertCount);
 
   glDisable(GL_BLEND);
@@ -125,7 +125,8 @@ DrawDebugText(debug_text_render_group *RG, text_geometry_buffer *Geo, platform *
 }
 
 rect2
-TextOutAt(platform *Plat, debug_text_render_group *RG, text_geometry_buffer *Geo, const char *Text, v2 XY, s32 FontSize)
+TextOutAt(debug_text_render_group *RG, text_geometry_buffer *Geo,
+    const char *Text, v2 XY, s32 FontSize, v2 ViewportDim)
 {
   s32 QuadCount = strlen(Text);
 
@@ -136,7 +137,7 @@ TextOutAt(platform *Plat, debug_text_render_group *RG, text_geometry_buffer *Geo
       CharIndex++ )
   {
     if (Geo->CurrentIndex + 6 > Geo->Allocated)
-      DrawDebugText(RG, Geo, Plat);
+      DrawDebugText(RG, Geo, ViewportDim);
 
     v3 vertex_up_left    = V3( (r32)(XY.x+CharIndex*FontSize)         , (r32)(XY.y+FontSize), 0.5f);
     v3 vertex_up_right   = V3( (r32)(XY.x+CharIndex*FontSize+FontSize), (r32)(XY.y+FontSize), 0.5f);
@@ -238,9 +239,9 @@ void
 CleanupScopeTree(debug_state *DebugState)
 {
 
-  Debug("Scopes Recorded: %lu", DebugState->NumScopes);
-  PrintScopeTree(&DebugState->RootScope);
-  Debug("------------------------------------------------------------------------------");
+  /* Debug("Scopes Recorded: %lu", DebugState->NumScopes); */
+  /* PrintScopeTree(&DebugState->RootScope); */
+  /* Debug("------------------------------------------------------------------------------"); */
 
   if (DebugState->RootScope.Child)
     FreeScopes(DebugState, DebugState->RootScope.Child);
@@ -255,32 +256,99 @@ CleanupScopeTree(debug_state *DebugState)
   DebugState->CurrentScope = 0;
   DebugState->NumScopes = 0;
 
-  PrintFreeScopes(DebugState);
-  Debug("------------------------------------------------------------------------------");
-  PrintScopeTree(&DebugState->RootScope);
+  /* PrintFreeScopes(DebugState); */
+  /* Debug("------------------------------------------------------------------------------"); */
+  /* PrintScopeTree(&DebugState->RootScope); */
 
   /* debug_profile_scope RootScope; */
   /* debug_profile_scope FreeScopeSentinel; */
 
-  Debug("------------------------------------------------------------------------------");
+  /* Debug("------------------------------------------------------------------------------"); */
 
+}
+
+inline void
+DrawText(const char *Text, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
+{
+  rect2 TextBox = TextOutAt(RG, &RG->TextGeo, Text, V2(Layout->AtX, Layout->AtY), Layout->FontSize, ViewportDim);
+  Layout->AtX = TextBox.Max.x;
+
+  return;
+}
+
+inline void
+DrawText(u32 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
+{
+  char Buffer[32] = {};
+  sprintf(Buffer, "%u", Number);
+  DrawText( Buffer, Layout, RG, ViewportDim);
+  return;
+}
+
+inline void
+NewLine(layout *Layout)
+{
+  Layout->AtY += (Layout->FontSize * 1.3f);
+  Layout->AtX = 0;
+  return;
+}
+
+void
+RenderScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout, v2 ViewportDim, u32 Depth = 0)
+{
+  if (!Scope)
+    return;
+
+  RenderScopeTree(Scope->Child, State, Layout, ViewportDim, Depth+1);
+
+  u32 Duplicates = 0;
+  debug_profile_scope *Current = Scope->Sibling;
+  while (Current && strcmp(Current->Name, Scope->Name) == 0 )
+  {
+    ++Duplicates;
+    Current = Current->Sibling;
+  }
+
+  RenderScopeTree(Current, State, Layout, ViewportDim, Depth);
+
+  Layout->AtX += (Depth*3.0f*Layout->FontSize);
+
+  // Adjust indentation
+  if (Duplicates)
+  {
+    Layout->AtX += Layout->FontSize;
+    DrawText(Duplicates+1, Layout, State->TextRenderGroup, ViewportDim);
+    Layout->AtX += Layout->FontSize;
+  }
+  else
+  {
+    Layout->AtX += 3.0f*Layout->FontSize;
+  }
+
+  DrawText(Scope->Name, Layout, State->TextRenderGroup, ViewportDim);
+
+  NewLine(Layout);
+
+  return;
 }
 
 void
 DebugFrameEnd(platform *Plat)
 {
-  /* TIMED_FUNCTION(); */
-
   debug_state *DebugState = GetDebugState();
   debug_text_render_group *RG = DebugState->TextRenderGroup;
   text_geometry_buffer *TextGeo = &RG->TextGeo;
   s32 FontSize = DEBUG_FONT_SIZE;
   r32 dt = Plat->dt;
 
+  v2 ViewportDim = V2(Plat->WindowWidth, Plat->WindowHeight);
+
   char dtBuffer[32] = {};
   sprintf(dtBuffer, "%f", dt);
-  TextOutAt(Plat, RG, TextGeo, dtBuffer, V2(10, 1080-FontSize), FontSize);
+  TextOutAt( RG, TextGeo, dtBuffer, V2(10, SCR_HEIGHT-FontSize), FontSize, ViewportDim);
 
+  layout Layout(36);
+  RenderScopeTree(&DebugState->RootScope, DebugState, &Layout, ViewportDim);
 
   CleanupScopeTree(DebugState);
 #if 0
@@ -429,7 +497,7 @@ DebugFrameEnd(platform *Plat)
   }
 #endif
 
-  DrawDebugText(RG, TextGeo, Plat);
+  DrawDebugText(RG, TextGeo, ViewportDim);
 
   return;
 }
