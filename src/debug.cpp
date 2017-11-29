@@ -379,20 +379,18 @@ AdvanceSpaces(u32 N, layout *Layout)
   return;
 }
 
-u64
+void
 BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout, v2 ViewportDim, u32 Depth = 0)
 {
   if (!Scope)
-    return 0;
+    return;
 
   b32 WeAreFirst = False;
-
-  // Cache and advance for the frame % which we'll write in later
-  layout InitialLayout = *Layout;
 
   if (Scope->Parent)
   {
     u32 CallCount = 0;
+    u64 TotalCycles = 0;
     debug_profile_scope *Next = Scope->Parent->Child;
     while (Next)
     {
@@ -411,6 +409,7 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout, 
       if (StringsMatch(Next->Name, Scope->Name))
       {
         ++CallCount;
+        TotalCycles += Next->CycleCount;
       }
 
       Next = Next->Sibling;
@@ -419,7 +418,8 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout, 
     Assert(CallCount);
     if (WeAreFirst)
     {
-      AdvanceSpaces(3, Layout); // For Percentage
+      r32 Percentage = (r32)TotalCycles/(r32)FrameElapsedCycles;
+      BufferPercentageAsText(Percentage, Layout, State->TextRenderGroup, ViewportDim);
       Layout->AtX += (Depth*2.0f*Layout->FontSize);
       BufferNumberAsText(CallCount, Layout, State->TextRenderGroup, ViewportDim);
       BufferText(Scope->Name, Layout, State->TextRenderGroup, ViewportDim);
@@ -427,20 +427,10 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout, 
     }
   }
 
-  u64 ChildCycles = BufferScopeTree(Scope->Child, State, Layout, ViewportDim, Depth+1);
+  BufferScopeTree(Scope->Child, State, Layout, ViewportDim, Depth+1);
   BufferScopeTree(Scope->Sibling, State, Layout, ViewportDim, Depth);
 
-
-  u64 TotalCycles = Scope->CycleCount;
-  if (WeAreFirst)
-  {
-    // Write frame %
-    TotalCycles += ChildCycles;
-    r32 Percentage = (r32)TotalCycles/(r32)FrameElapsedCycles;
-    BufferPercentageAsText(Percentage, &InitialLayout, State->TextRenderGroup, ViewportDim);
-  }
-
-  return TotalCycles;
+  return;
 }
 
 void
@@ -453,7 +443,8 @@ DebugFrameEnd(platform *Plat)
 
   v2 ViewportDim = V2(Plat->WindowWidth, Plat->WindowHeight);
 
-  PrintScopeTree(&DebugState->RootScope);
+  /* PrintScopeTree(&DebugState->RootScope); */
+  /* Log("-------------------------------------------------------------------------------"); */
 
   {
     layout Layout(DEBUG_FONT_SIZE);
@@ -469,7 +460,6 @@ DebugFrameEnd(platform *Plat)
     CleanupScopeTree(DebugState);
   }
 
-  Log("-------------------------------------------------------------------------------");
 
 #if 0
   u64 CurrentFrameCycleCount = DebugState->GetCycleCount();
