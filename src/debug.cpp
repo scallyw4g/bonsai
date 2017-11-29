@@ -63,7 +63,7 @@ InitDebugState(platform *Plat)
   State->FreeScopeSentinel.Parent = &State->FreeScopeSentinel;
   State->FreeScopeSentinel.Child = &State->FreeScopeSentinel;
 
-  State->Memory = SubArena(Plat->Memory, Megabytes(6));
+  State->Memory = SubArena(Plat->Memory, Megabytes(32));
 
   State->TextRenderGroup = PUSH_STRUCT_CHECKED(debug_text_render_group, Plat->Memory, 1);
   if (!InitDebugOverlayFramebuffer(State->TextRenderGroup, Plat->Memory, "Holstein.DDS"))
@@ -385,7 +385,7 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout, 
   if (!Scope)
     return;
 
-  b32 WeAreFirst = False;
+  b32 WeAreFirst = True;
 
   if (Scope->Parent)
   {
@@ -398,10 +398,11 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout, 
       {
         if (CallCount == 0) // We're first
         {
-          WeAreFirst = True; // Count duplicates
+          // Count duplicates
         }
         else
         {
+          WeAreFirst = False;
           break; // We're not first, descend to children/siblings
         }
       }
@@ -427,7 +428,10 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout, 
     }
   }
 
-  BufferScopeTree(Scope->Child, State, Layout, ViewportDim, Depth+1);
+
+  if (WeAreFirst)
+    BufferScopeTree(Scope->Child, State, Layout, ViewportDim, Depth+1);
+
   BufferScopeTree(Scope->Sibling, State, Layout, ViewportDim, Depth);
 
   return;
