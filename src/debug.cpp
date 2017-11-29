@@ -295,6 +295,7 @@ BufferText(u64 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportD
   BufferText( Buffer, Layout, RG, ViewportDim);
   return;
 }
+
 inline void
 BufferText(u32 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
 {
@@ -309,6 +310,24 @@ NewLine(layout *Layout)
 {
   Layout->AtY -= (Layout->FontSize * 1.3f);
   Layout->AtX = 0;
+  return;
+}
+
+inline void
+BufferPercentage(r32 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
+{
+  char Buffer[32] = {};
+  sprintf(Buffer, "%.2f", Number);
+  BufferText( Buffer, Layout, RG, ViewportDim);
+  return;
+}
+
+inline void
+BufferPercentageAsText(r32 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
+{
+  Layout->AtX += Layout->FontSize;
+  BufferPercentage(Number, Layout, RG, ViewportDim);
+  Layout->AtX += Layout->FontSize;
   return;
 }
 
@@ -357,23 +376,27 @@ b32 StringsMatch(const char *S1, const char *S2)
   return Result;
 }
 
+inline void
+AdvanceSpaces(u32 N, layout *Layout)
+{
+  Layout->AtX += (N*Layout->FontSize);
+  return;
+}
+
 u64
 BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout, v2 ViewportDim, u32 Depth = 0)
 {
   if (!Scope)
     return 0;
 
-  layout StartingLayout = *Layout;
-  /* u64 ChildCycles = BufferScopeTree(Scope->Child, State, Layout, ViewportDim, Depth+1); */
-  /* u64 ScopeCycles = ChildCycles + Scope->CycleCount; */
-  /* r64 FramePercentage = (r64)ScopeCycles / (r64)FrameCycles; */
-  /* BufferNumberAsText((r32)FramePercentage, Layout, State->TextRenderGroup, ViewportDim); */
-  /* BufferNumberAsText(ScopeCycles, Layout, State->TextRenderGroup, ViewportDim); */
+  b32 WeAreFirst = False;
+
+  // Cache and advance for the frame % which we'll write in later
+  layout InitialLayout = *Layout;
 
   if (Scope->Parent)
   {
     u32 CallCount = 0;
-    b32 WeAreFirst = False;
     debug_profile_scope *Next = Scope->Parent->Child;
     while (Next)
     {
@@ -381,12 +404,11 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout, 
       {
         if (CallCount == 0) // We're first
         {
-          WeAreFirst = True;
-          // Count duplicates
+          WeAreFirst = True; // Count duplicates
         }
-        else // We're not first
+        else
         {
-          break;
+          break; // We're not first, descend to children/siblings
         }
       }
 
@@ -401,17 +423,28 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout, 
     Assert(CallCount);
     if (WeAreFirst)
     {
-      BufferNumberAsText(CallCount, &StartingLayout, State->TextRenderGroup, ViewportDim);
+      AdvanceSpaces(3, Layout); // For Percentage
       Layout->AtX += (Depth*2.0f*Layout->FontSize);
+      BufferNumberAsText(CallCount, Layout, State->TextRenderGroup, ViewportDim);
       BufferText(Scope->Name, Layout, State->TextRenderGroup, ViewportDim);
       NewLine(Layout);
     }
   }
 
-  BufferScopeTree(Scope->Child, State, Layout, ViewportDim, Depth+1);
+  u64 ChildCycles = BufferScopeTree(Scope->Child, State, Layout, ViewportDim, Depth+1);
   BufferScopeTree(Scope->Sibling, State, Layout, ViewportDim, Depth);
 
-  return 0;
+
+  u64 TotalCycles = Scope->CycleCount;
+  if (WeAreFirst)
+  {
+    // Write frame %
+    TotalCycles += ChildCycles;
+    r32 Percentage = (r32)TotalCycles/(r32)FrameCycles;
+    BufferPercentageAsText(Percentage, &InitialLayout, State->TextRenderGroup, ViewportDim);
+  }
+
+  return TotalCycles;
 }
 
 void
@@ -436,8 +469,8 @@ DebugFrameEnd(platform *Plat)
   }
 
   {
-    layout Layout(36);
-    Layout.AtY = (r32)SCR_HEIGHT - (3.0f*Layout.FontSize);
+    layout Layout(18);
+    Layout.AtY = (r32)SCR_HEIGHT - (4.0f*Layout.FontSize);
     BufferScopeTree(&DebugState->RootScope, DebugState, &Layout, ViewportDim);
     CleanupScopeTree(DebugState);
   }
