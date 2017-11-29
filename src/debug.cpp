@@ -356,6 +356,8 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout, 
   if (!Scope)
     return 0;
 
+
+  layout StartingLayout = *Layout;
   Layout->AtX += (Depth*3.0f*Layout->FontSize);
   BufferText(Scope->Name, Layout, State->TextRenderGroup, ViewportDim);
 
@@ -370,10 +372,17 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout, 
   /* BufferNumberAsText(ScopeCycles, Layout, State->TextRenderGroup, ViewportDim); */
 
 #if 1
+  u32 DuplicateCount = 0;
   debug_profile_scope *NextUniqueSibling = Scope->Sibling;
   while (NextUniqueSibling && strcmp(NextUniqueSibling->Name, Scope->Name) == 0 )
   {
+    ++DuplicateCount;
     NextUniqueSibling = NextUniqueSibling->Sibling;
+  }
+
+  if (DuplicateCount)
+  {
+    BufferNumberAsText(DuplicateCount+1, &StartingLayout, State->TextRenderGroup, ViewportDim);
   }
 
   BufferScopeTree(NextUniqueSibling, State, Layout, ViewportDim, Depth);
