@@ -3,7 +3,6 @@
 
 #include <shader.cpp>
 #include <texture.cpp> // Only used for font .DDS atm
-#include <debug.cpp>
 #include <render.cpp>
 
 

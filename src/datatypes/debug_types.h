@@ -44,9 +44,7 @@ struct debug_state
 
 
 debug_global debug_state GlobalDebugState;
-inline debug_state*
-GetDebugState() { return &GlobalDebugState; }
-
+inline debug_state* GetDebugState() { return &GlobalDebugState; } 
 
 enum debug_recording_mode
 {
@@ -162,7 +160,7 @@ struct debug_timed_function
   {
     debug_state *DebugState = GetDebugState();
     u64 EndingCycleCount = DebugState->GetCycleCount(); // Intentionally first
-    u64 CycleCount = (EndingCycleCount - StartingCycleCount);
+    u64 CycleCount = (EndingCycleCount - this->StartingCycleCount);
     DebugState->CurrentScope->CycleCount = CycleCount;
 
     /* Debug(" "); */

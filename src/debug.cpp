@@ -1,8 +1,6 @@
 #if DEBUG
 #include <stdio.h>
 
-static u64 StartingCycleCount;
-
 texture *
 MakeTexture_RGBA( v2i Dim, const void* Data, memory_arena *Memory);
 
@@ -55,23 +53,23 @@ AllocateAndInitGeoBuffer(text_geometry_buffer *Geo, u32 VertCount, memory_arena 
 void
 InitDebugState(platform *Plat)
 {
-  debug_state *DebugState = GetDebugState();
-  DebugState->GetCycleCount = Plat->GetCycleCount;
+  debug_state *State = GetDebugState();
+  State->GetCycleCount = Plat->GetCycleCount;
 
-  DebugState->RootScope.Name = "RootScope";
-  DebugState->WriteScope = &DebugState->RootScope.Child;
-  DebugState->CurrentScope = &DebugState->RootScope;
+  State->RootScope.Name = "RootScope";
+  State->WriteScope = &State->RootScope.Child;
+  State->CurrentScope = &State->RootScope;
 
-  DebugState->FreeScopeSentinel.Parent = &DebugState->FreeScopeSentinel;
-  DebugState->FreeScopeSentinel.Child = &DebugState->FreeScopeSentinel;
+  State->FreeScopeSentinel.Parent = &State->FreeScopeSentinel;
+  State->FreeScopeSentinel.Child = &State->FreeScopeSentinel;
 
-  DebugState->Memory = SubArena(Plat->Memory, Megabytes(6));
+  State->Memory = SubArena(Plat->Memory, Megabytes(6));
 
-  DebugState->TextRenderGroup = PUSH_STRUCT_CHECKED(debug_text_render_group, Plat->Memory, 1);
-  if (!InitDebugOverlayFramebuffer(DebugState->TextRenderGroup, Plat->Memory, "Holstein.DDS"))
+  State->TextRenderGroup = PUSH_STRUCT_CHECKED(debug_text_render_group, Plat->Memory, 1);
+  if (!InitDebugOverlayFramebuffer(State->TextRenderGroup, Plat->Memory, "Holstein.DDS"))
   { Error("Initializing Debug Overlay Framebuffer"); }
 
-  AllocateAndInitGeoBuffer(&DebugState->TextRenderGroup->TextGeo, 4096, Plat->Memory);
+  AllocateAndInitGeoBuffer(&State->TextRenderGroup->TextGeo, 4096, Plat->Memory);
 
   return;
 }
@@ -367,8 +365,6 @@ BufferNumberAsText(u32 Number, layout *Layout, debug_text_render_group *RG, v2 V
   return;
 }
 
-static u64 FrameCycles = 0;
-
 
 b32 StringsMatch(const char *S1, const char *S2)
 {
@@ -440,7 +436,7 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout, 
   {
     // Write frame %
     TotalCycles += ChildCycles;
-    r32 Percentage = (r32)TotalCycles/(r32)FrameCycles;
+    r32 Percentage = (r32)TotalCycles/(r32)FrameElapsedCycles;
     BufferPercentageAsText(Percentage, &InitialLayout, State->TextRenderGroup, ViewportDim);
   }
 
@@ -455,8 +451,6 @@ DebugFrameEnd(platform *Plat)
   text_geometry_buffer *TextGeo = &RG->TextGeo;
   r32 dt = Plat->dt;
 
-  FrameCycles = DebugState->GetCycleCount() - StartingCycleCount;
-
   v2 ViewportDim = V2(Plat->WindowWidth, Plat->WindowHeight);
 
   PrintScopeTree(&DebugState->RootScope);
@@ -465,7 +459,7 @@ DebugFrameEnd(platform *Plat)
     layout Layout(DEBUG_FONT_SIZE);
     Layout.AtY = (r32)SCR_HEIGHT - Layout.FontSize;
     BufferNumberAsText(dt, &Layout, RG, ViewportDim);
-    BufferNumberAsText(FrameCycles, &Layout, RG, ViewportDim);
+    BufferNumberAsText(FrameElapsedCycles, &Layout, RG, ViewportDim);
   }
 
   {

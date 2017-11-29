@@ -21,6 +21,8 @@
 // TODO(Jesse): Axe this!!
 static gl_extensions *GL_Global = 0;
 
+static u64 FrameStartingCycles, FrameEndCycles, FrameElapsedCycles;
+
 #include <texture.cpp>
 #include <shader.cpp>
 #include <debug.cpp>
@@ -429,18 +431,21 @@ main(s32 NumArgs, char ** Args)
   InitializeOpenGlExtensions(&Plat.GL, &Os);
   GL_Global = &Plat.GL;
 
+#if DEBUG
+  InitDebugState(&Plat);
+#endif
+
   QueryAndSetGlslVersion(&Plat);
 
   hotkeys Hotkeys;
+
+  Plat.Graphics = GraphicsInit(&GraphicsMemory);
+  if (!Plat.Graphics) { Error("Initializing Graphics"); return False; }
 
   game_state *GameState = GameInit(&Plat, &GameMemory);
   if (!GameState) { Error("Initializing Game State :( "); return False; }
 
   InitGlobals(&Plat);
-
-  Plat.Graphics = GraphicsInit(&GraphicsMemory);
-  if (!Plat.Graphics) { Error("Initializing Graphics"); return False; }
-
 
   /*
    *  Main Game loop
@@ -450,7 +455,7 @@ main(s32 NumArgs, char ** Args)
 
   while ( Os.ContinueRunning )
   {
-    StartingCycleCount = GetDebugState()->GetCycleCount();
+    FrameStartingCycles = GetDebugState()->GetCycleCount();
 
     Plat.dt = (r32)ComputeDtForFrame(&lastTime);
 
@@ -480,6 +485,9 @@ main(s32 NumArgs, char ** Args)
     DEBUG_FRAME_RECORD(Debug_RecordingState, &Hotkeys, &MainMemory);
 
     GameUpdateAndRender(&Plat, GameState, &Hotkeys);
+
+    FrameEndCycles = GetDebugState()->GetCycleCount();
+    FrameElapsedCycles = FrameEndCycles - FrameStartingCycles;
 
     DEBUG_FRAME_END(&Plat);
 

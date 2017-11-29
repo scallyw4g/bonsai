@@ -150,7 +150,6 @@ EXPORT void
 InitGlobals(platform *Plat)
 {
   GL_Global = &Plat->GL;
-  INIT_DEUBG_STATE(Plat);
   Global_WorldChunkDim = WORLD_CHUNK_DIM;
 }
 
