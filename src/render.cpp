@@ -1401,8 +1401,6 @@ BufferChunkMesh(
     v3 Offset
   )
 {
-
-
 #if 1
   v3 ModelBasisP =
     GetRenderP( WorldChunkDim, Canonical_Position(Offset, WorldP), Camera);
@@ -2463,6 +2461,7 @@ BufferWorldChunk(
   )
 {
   TIMED_FUNCTION();
+
   if ( IsSet( Chunk, Chunk_BufferMesh ) )
     BuildWorldChunkMesh(World, Chunk, World->ChunkDim);
 

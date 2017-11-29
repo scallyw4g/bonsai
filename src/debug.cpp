@@ -307,7 +307,7 @@ BufferText(u32 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportD
 inline void
 NewLine(layout *Layout)
 {
-  Layout->AtY += (Layout->FontSize * 1.3f);
+  Layout->AtY -= (Layout->FontSize * 1.3f);
   Layout->AtX = 0;
   return;
 }
@@ -356,34 +356,34 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout, 
   if (!Scope)
     return 0;
 
-  u64 ChildCycles = BufferScopeTree(Scope->Child, State, Layout, ViewportDim, Depth+1);
-  u64 ScopeCycles = ChildCycles + Scope->CycleCount;
-  r64 FramePercentage = (r64)ScopeCycles / (r64)FrameCycles;
-
-  u32 Duplicates = 0;
-  debug_profile_scope *Sibling = Scope->Sibling;
-  while (Sibling && strcmp(Sibling->Name, Scope->Name) == 0 )
-  {
-    ++Duplicates;
-    Sibling = Sibling->Sibling;
-  }
-
-  BufferScopeTree(Sibling, State, Layout, ViewportDim, Depth);
-
   Layout->AtX += (Depth*3.0f*Layout->FontSize);
-
-  if (Duplicates)
-    BufferNumberAsText(Duplicates+1, Layout, State->TextRenderGroup, ViewportDim);
-  else
-    Layout->AtX += Layout->FontSize*3;
-
   BufferText(Scope->Name, Layout, State->TextRenderGroup, ViewportDim);
-  BufferNumberAsText((r32)FramePercentage, Layout, State->TextRenderGroup, ViewportDim);
-  BufferNumberAsText(ScopeCycles, Layout, State->TextRenderGroup, ViewportDim);
 
   NewLine(Layout);
 
-  return ScopeCycles;
+  BufferScopeTree(Scope->Child, State, Layout, ViewportDim, Depth+1);
+
+  /* u64 ChildCycles = BufferScopeTree(Scope->Child, State, Layout, ViewportDim, Depth+1); */
+  /* u64 ScopeCycles = ChildCycles + Scope->CycleCount; */
+  /* r64 FramePercentage = (r64)ScopeCycles / (r64)FrameCycles; */
+  /* BufferNumberAsText((r32)FramePercentage, Layout, State->TextRenderGroup, ViewportDim); */
+  /* BufferNumberAsText(ScopeCycles, Layout, State->TextRenderGroup, ViewportDim); */
+
+#if 1
+  debug_profile_scope *NextUniqueSibling = Scope->Sibling;
+  while (NextUniqueSibling && strcmp(NextUniqueSibling->Name, Scope->Name) == 0 )
+  {
+    NextUniqueSibling = NextUniqueSibling->Sibling;
+  }
+
+  BufferScopeTree(NextUniqueSibling, State, Layout, ViewportDim, Depth);
+
+#else
+  BufferScopeTree(Scope->Sibling, State, Layout, ViewportDim, Depth);
+#endif
+
+
+  return 0;
 }
 
 void
@@ -398,6 +398,8 @@ DebugFrameEnd(platform *Plat)
 
   v2 ViewportDim = V2(Plat->WindowWidth, Plat->WindowHeight);
 
+  PrintScopeTree(&DebugState->RootScope);
+
   {
     layout Layout(DEBUG_FONT_SIZE);
     Layout.AtY = (r32)SCR_HEIGHT - Layout.FontSize;
@@ -407,9 +409,12 @@ DebugFrameEnd(platform *Plat)
 
   {
     layout Layout(36);
+    Layout.AtY = (r32)SCR_HEIGHT - (3.0f*Layout.FontSize);
     BufferScopeTree(&DebugState->RootScope, DebugState, &Layout, ViewportDim);
     CleanupScopeTree(DebugState);
   }
+
+  Log("-------------------------------------------------------------------------------");
 
 #if 0
   u64 CurrentFrameCycleCount = DebugState->GetCycleCount();
