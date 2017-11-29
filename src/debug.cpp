@@ -350,47 +350,66 @@ BufferNumberAsText(u32 Number, layout *Layout, debug_text_render_group *RG, v2 V
 
 static u64 FrameCycles = 0;
 
+
+b32 StringsMatch(const char *S1, const char *S2)
+{
+  b32 Result = strcmp(S1, S2) == 0;
+  return Result;
+}
+
 u64
 BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout, v2 ViewportDim, u32 Depth = 0)
 {
   if (!Scope)
     return 0;
 
-
   layout StartingLayout = *Layout;
-  Layout->AtX += (Depth*3.0f*Layout->FontSize);
-  BufferText(Scope->Name, Layout, State->TextRenderGroup, ViewportDim);
-
-  NewLine(Layout);
-
-  BufferScopeTree(Scope->Child, State, Layout, ViewportDim, Depth+1);
-
   /* u64 ChildCycles = BufferScopeTree(Scope->Child, State, Layout, ViewportDim, Depth+1); */
   /* u64 ScopeCycles = ChildCycles + Scope->CycleCount; */
   /* r64 FramePercentage = (r64)ScopeCycles / (r64)FrameCycles; */
   /* BufferNumberAsText((r32)FramePercentage, Layout, State->TextRenderGroup, ViewportDim); */
   /* BufferNumberAsText(ScopeCycles, Layout, State->TextRenderGroup, ViewportDim); */
 
-#if 1
-  u32 DuplicateCount = 0;
-  debug_profile_scope *NextUniqueSibling = Scope->Sibling;
-  while (NextUniqueSibling && strcmp(NextUniqueSibling->Name, Scope->Name) == 0 )
+  if (Scope->Parent)
   {
-    ++DuplicateCount;
-    NextUniqueSibling = NextUniqueSibling->Sibling;
+    u32 CallCount = 0;
+    b32 WeAreFirst = False;
+    debug_profile_scope *Next = Scope->Parent->Child;
+    while (Next)
+    {
+      if (Next == Scope) // Find Ourselves
+      {
+        if (CallCount == 0) // We're first
+        {
+          WeAreFirst = True;
+          // Count duplicates
+        }
+        else // We're not first
+        {
+          break;
+        }
+      }
+
+      if (StringsMatch(Next->Name, Scope->Name))
+      {
+        ++CallCount;
+      }
+
+      Next = Next->Sibling;
+    }
+
+    Assert(CallCount);
+    if (WeAreFirst)
+    {
+      BufferNumberAsText(CallCount, &StartingLayout, State->TextRenderGroup, ViewportDim);
+      Layout->AtX += (Depth*2.0f*Layout->FontSize);
+      BufferText(Scope->Name, Layout, State->TextRenderGroup, ViewportDim);
+      NewLine(Layout);
+    }
   }
 
-  if (DuplicateCount)
-  {
-    BufferNumberAsText(DuplicateCount+1, &StartingLayout, State->TextRenderGroup, ViewportDim);
-  }
-
-  BufferScopeTree(NextUniqueSibling, State, Layout, ViewportDim, Depth);
-
-#else
+  BufferScopeTree(Scope->Child, State, Layout, ViewportDim, Depth+1);
   BufferScopeTree(Scope->Sibling, State, Layout, ViewportDim, Depth);
-#endif
-
 
   return 0;
 }
