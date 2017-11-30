@@ -455,6 +455,7 @@ GetMouseDelta(platform *Plat)
 void
 UpdateCameraP(platform *Plat, world *World, canonical_position NewTarget, camera *Camera)
 {
+  TIMED_FUNCTION();
   float FocalLength = CAMERA_FOCAL_LENGTH;
   chunk_dimension WorldChunkDim = World->ChunkDim;
 

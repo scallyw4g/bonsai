@@ -1,5 +1,7 @@
 #if DEBUG
 
+void BreakHere() { return; }
+
 struct layout
 {
   r32 AtX;
@@ -136,6 +138,7 @@ struct debug_timed_function
   {
     debug_state *DebugState = GetDebugState();
     ++DebugState->NumScopes;
+    BreakHere();
 
 
     // FIXME(Jesse): Recycle these
@@ -154,6 +157,7 @@ struct debug_timed_function
     /* Debug(" "); */
     /* Debug("Pushing %s", Name); */
     /* PrintScopeTree(&DebugState->RootScope); */
+
   }
 
   ~debug_timed_function()

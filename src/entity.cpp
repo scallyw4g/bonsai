@@ -720,6 +720,7 @@ UpdateVisibleRegion(game_state *GameState, world_position WorldDisp)
 void
 SimulatePlayer( game_state *GameState, entity *Player, hotkeys *Hotkeys, r32 dt )
 {
+  TIMED_FUNCTION();
   if (Spawned(Player))
   {
     Player->Physics.Force += GetCameraRelativeInput(Hotkeys, GameState->Plat->Graphics->Camera)*dt;

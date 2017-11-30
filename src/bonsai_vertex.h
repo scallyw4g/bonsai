@@ -20,6 +20,7 @@
 //
 
 
+#define WIND_CCW 0
 
 inline void
 RightFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
@@ -35,7 +36,11 @@ RightFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
   v3 P2 = {{ MaxP.x, MinP.y, MinP.z }};
   v3 P3 = {{ MaxP.x, MaxP.y, MinP.z }};
 
+#if WIND_CCW
+  v3 Temp[] = { P2, P1, P0, P2, P3, P1 };
+#else
   v3 Temp[] = { P0, P1, P2, P1, P3, P2 };
+#endif
 
   memcpy(Result, Temp, sizeof(Temp));
 

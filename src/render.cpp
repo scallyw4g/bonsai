@@ -610,8 +610,9 @@ GraphicsInit(memory_arena *GraphicsMemory)
     AoGroup->DebugSsaoShader            = MakeSimpleTextureShader(AoGroup->Texture            , GraphicsMemory);
   }
 
-  glEnable(GL_CULL_FACE);
-  glCullFace(GL_BACK);
+  // FIXME(Jesse): Our face widing is totally fucked
+  /* glEnable(GL_CULL_FACE); */
+  /* glCullFace(GL_BACK); */
 
   AssertNoGlErrors;
 
@@ -896,11 +897,11 @@ RenderGBuffer(
 }
 
 inline void
-DEBUG_DrawPointMarker( mesh_buffer_target *Mesh,
-    g_buffer_render_group *gBuffer,
-    shadow_render_group *SG,
-    camera *Camera,
-    v3 RenderP, int ColorIndex, v3 Diameter)
+DrawVoxel( mesh_buffer_target *Mesh,
+           g_buffer_render_group *gBuffer,
+           shadow_render_group *SG,
+           camera *Camera,
+           v3 RenderP, int ColorIndex, v3 Diameter)
 {
   TIMED_FUNCTION();
 
@@ -1364,7 +1365,7 @@ IsInfrustum( chunk_dimension WorldChunkDim, camera *Camera, world_chunk *Chunk )
 inline void
 ClearFramebuffers(graphics *Graphics)
 {
-  /* TIMED_FUNCTION(); */
+  TIMED_FUNCTION();
   glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
   glClearDepth(1.0f);
 
@@ -1401,6 +1402,7 @@ BufferChunkMesh(
     v3 Offset
   )
 {
+  TIMED_FUNCTION();
 #if 1
   v3 ModelBasisP =
     GetRenderP( WorldChunkDim, Canonical_Position(Offset, WorldP), Camera);
@@ -2367,11 +2369,12 @@ void
 DrawFolie(mesh_buffer_target *Mesh, g_buffer_render_group *gBuffer, shadow_render_group *SG, camera *Camera, aabb *AABB)
 {
   v3 RenderP = AABB->Center;
-  DEBUG_DrawPointMarker( Mesh, gBuffer, SG, Camera, RenderP, GREY, AABB->Radius*2);
+  DrawVoxel( Mesh, gBuffer, SG, Camera, RenderP, GREY, AABB->Radius*2);
 
   return;
 }
 
+#if 0
 void
 DrawParticle(
     canonical_position *P,
@@ -2412,6 +2415,7 @@ DrawParticle(
 
   return;
 }
+#endif
 
 void
 BufferEntity(
