@@ -91,7 +91,7 @@ inline r64
 ComputeDtForFrame(r64 *LastTime)
 {
   r64 CurrentTime = GetHighPrecisionClock();
-  r64 Dt = (CurrentTime - *LastTime) / 1000000000;
+  r64 Dt = (CurrentTime - *LastTime) / 1000000000.0;
 
   *LastTime = CurrentTime;
   return Dt;

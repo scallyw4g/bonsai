@@ -1,4 +1,9 @@
-# Nov 29 2017 - 0:30 - closed - Bad reinitialization of debug state
+# Nov 30 2017 - 2:00 - closed - Fix clock bugs
+* clock
+I was dividing by an integer instead of an r64, which caused the clock to get
+trucated on second boundaries. Whups
+
+# Nov 29 2017 - 1:00 - closed - Bad reinitialization of debug state
 * lifecycle
 CleanupScopeTree reinitialized the CurrentScope param to 0 when it should have
 been &DebugState->RootScope
