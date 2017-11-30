@@ -386,46 +386,44 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout, 
     return;
 
   b32 WeAreFirst = True;
+  u32 CallCount = 0;
+  u64 TotalCycles = 0;
 
-  if (Scope->Parent)
+  debug_profile_scope *Next = 0;
+  if (Scope->Parent) Next = Scope->Parent->Child;
+
+  while (Next)
   {
-    u32 CallCount = 0;
-    u64 TotalCycles = 0;
-    debug_profile_scope *Next = Scope->Parent->Child;
-    while (Next)
+    if (Next == Scope) // Find Ourselves
     {
-      if (Next == Scope) // Find Ourselves
+      if (CallCount == 0) // We're first
       {
-        if (CallCount == 0) // We're first
-        {
-          // Count duplicates
-        }
-        else
-        {
-          WeAreFirst = False;
-          break; // We're not first, descend to children/siblings
-        }
+        // Count duplicates
       }
-
-      if (StringsMatch(Next->Name, Scope->Name))
+      else
       {
-        ++CallCount;
-        TotalCycles += Next->CycleCount;
+        WeAreFirst = False;
+        break; // We're not first, descend to children/siblings
       }
-
-      Next = Next->Sibling;
     }
 
-    Assert(CallCount);
-    if (WeAreFirst)
+    if (StringsMatch(Next->Name, Scope->Name))
     {
-      r32 Percentage = (r32)TotalCycles/(r32)FrameElapsedCycles;
-      BufferPercentageAsText(Percentage, Layout, State->TextRenderGroup, ViewportDim);
-      Layout->AtX += (Depth*2.0f*Layout->FontSize);
-      BufferNumberAsText(CallCount, Layout, State->TextRenderGroup, ViewportDim);
-      BufferText(Scope->Name, Layout, State->TextRenderGroup, ViewportDim);
-      NewLine(Layout);
+      ++CallCount;
+      TotalCycles += Next->CycleCount;
     }
+
+    Next = Next->Sibling;
+  }
+
+  if (WeAreFirst)
+  {
+    r32 Percentage = (r32)TotalCycles/(r32)FrameElapsedCycles;
+    BufferPercentageAsText(Percentage, Layout, State->TextRenderGroup, ViewportDim);
+    Layout->AtX += (Depth*2.0f*Layout->FontSize);
+    BufferNumberAsText(CallCount, Layout, State->TextRenderGroup, ViewportDim);
+    BufferText(Scope->Name, Layout, State->TextRenderGroup, ViewportDim);
+    NewLine(Layout);
   }
 
 
