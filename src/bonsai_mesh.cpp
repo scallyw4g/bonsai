@@ -39,14 +39,18 @@ BufferVerts(
     return;
   }
 
-  /* memcpy( &Target->VertexData[Target->VertexCount*3],  VertsPositions,  sizeofData ); */
-  /* memcpy( &Target->NormalData[Target->VertexCount*3],  Normals,         sizeofData ); */
-  /* memcpy( &Target->ColorData[Target->VertexCount*3],   VertColors,      sizeofData ); */
+  s32 sizeofData = NumVerts * sizeof(v3);
 
-  while (NumVerts--)
-  {
-    BufferSingleVert(Target, &VertsPositions[NumVerts], &Normals[NumVerts], *VertColors);
-  }
+  memcpy( &Target->VertexData[Target->VertsFilled],  VertsPositions,  sizeofData );
+  memcpy( &Target->NormalData[Target->VertsFilled],  Normals,         sizeofData );
+  memcpy( &Target->ColorData[Target->VertsFilled],   VertColors,      sizeofData );
+
+  Target->VertsFilled += NumVerts;
+
+  /* while (NumVerts--) */
+  /* { */
+  /*   BufferSingleVert(Target, &VertsPositions[NumVerts], &Normals[NumVerts], *VertColors); */
+  /* } */
 
 
   return;
@@ -94,7 +98,7 @@ BufferVerts(
 {
 
 #if 0
-  BufferVerts(Dest, gBuffer, SG, Camera, Source->VertexCount, Source->VertexData,
+  BufferVerts(Dest, gBuffer, SG, Camera, Source->VertsFilled, Source->VertexData,
       Source->NormalData, Source->ColorData);
 #else
   for ( s32 VertIndex = 0;
