@@ -181,9 +181,9 @@ ComputeDtForFrame(r64 *lastTime)
   r64 currentTime = GetHighPrecisionClock();
 
   if (cachedLastTime > currentTime)
-    cachedLastTime -= 1000000000;
+    cachedLastTime -= 1000000000.0;
 
-  r64 Result = ((currentTime - cachedLastTime) / 1000000000);
+  r64 Result = ((currentTime - cachedLastTime) / 1000000000.0);
 
   *lastTime = currentTime;
   return Result;
