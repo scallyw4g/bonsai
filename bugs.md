@@ -1,3 +1,8 @@
+# Nov 29 2017 - 0:30 - closed - Bad reinitialization of debug state
+* lifecycle
+CleanupScopeTree reinitialized the CurrentScope param to 0 when it should have
+been &DebugState->RootScope
+
 # Nov 23 2017 - 0:30 - closed - void ptr parameter
 * texture
 I was passing a void ptr to the MakeTexture_RGB to initialize the tex data,

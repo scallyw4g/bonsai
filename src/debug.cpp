@@ -51,14 +51,30 @@ AllocateAndInitGeoBuffer(text_geometry_buffer *Geo, u32 VertCount, memory_arena 
 }
 
 void
+InitScopeTree(debug_state *State)
+{
+  State->RootScope.Name = "RootScope";
+  State->WriteScope = &State->RootScope.Child;
+  State->CurrentScope = &State->RootScope;
+
+  State->RootScope.Parent = 0;
+  State->RootScope.Sibling = 0;
+  State->RootScope.Child = 0;
+
+  State->WriteScope = &State->RootScope.Child;
+  State->CurrentScope = &State->RootScope;
+  State->NumScopes = 0;
+
+  return;
+}
+
+void
 InitDebugState(platform *Plat)
 {
   debug_state *State = GetDebugState();
   State->GetCycleCount = Plat->GetCycleCount;
 
-  State->RootScope.Name = "RootScope";
-  State->WriteScope = &State->RootScope.Child;
-  State->CurrentScope = &State->RootScope;
+  InitScopeTree(State);
 
   State->FreeScopeSentinel.Parent = &State->FreeScopeSentinel;
   State->FreeScopeSentinel.Child = &State->FreeScopeSentinel;
@@ -249,12 +265,7 @@ CleanupScopeTree(debug_state *DebugState)
   if (DebugState->RootScope.Sibling)
     FreeScopes(DebugState, DebugState->RootScope.Sibling);
 
-  DebugState->RootScope.Parent = 0;
-  DebugState->RootScope.Sibling = 0;
-  DebugState->RootScope.Child = 0;
-  DebugState->WriteScope = &DebugState->RootScope.Child;
-  DebugState->CurrentScope = 0;
-  DebugState->NumScopes = 0;
+  InitScopeTree(DebugState);
 
   /* PrintFreeScopes(DebugState); */
   /* Debug("------------------------------------------------------------------------------"); */
@@ -365,7 +376,6 @@ BufferNumberAsText(u32 Number, layout *Layout, debug_text_render_group *RG, v2 V
   return;
 }
 
-
 b32 StringsMatch(const char *S1, const char *S2)
 {
   b32 Result = strcmp(S1, S2) == 0;
@@ -425,7 +435,6 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout, 
     BufferText(Scope->Name, Layout, State->TextRenderGroup, ViewportDim);
     NewLine(Layout);
   }
-
 
   if (WeAreFirst)
     BufferScopeTree(Scope->Child, State, Layout, ViewportDim, Depth+1);
