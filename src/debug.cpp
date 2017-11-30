@@ -323,10 +323,38 @@ NewLine(layout *Layout)
 }
 
 inline void
+AdvanceSpaces(u32 N, layout *Layout)
+{
+  Layout->AtX += (N*Layout->FontSize);
+  return;
+}
+
+inline void
+BufferCycles(u64 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
+{
+  char Buffer[32] = {};
+  sprintf(Buffer, "%lu", Number);
+  {
+    s32 Max = 10;
+    s32 Len = strlen(Buffer);
+    s32 Pad = Max-Len;
+    AdvanceSpaces(Pad, Layout);
+  }
+  BufferText( Buffer, Layout, RG, ViewportDim);
+  return;
+}
+
+inline void
 BufferPercentage(r32 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
 {
   char Buffer[32] = {};
-  sprintf(Buffer, "%.2f", Number);
+  sprintf(Buffer, "%.1f", 100.0*Number);
+  {
+    s32 Max = 5;
+    s32 Len = strlen(Buffer);
+    s32 Pad = Max-Len;
+    AdvanceSpaces(Pad, Layout);
+  }
   BufferText( Buffer, Layout, RG, ViewportDim);
   return;
 }
@@ -334,9 +362,9 @@ BufferPercentage(r32 Number, layout *Layout, debug_text_render_group *RG, v2 Vie
 inline void
 BufferPercentageAsText(r32 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
 {
-  Layout->AtX += Layout->FontSize;
+  AdvanceSpaces(1, Layout);
   BufferPercentage(Number, Layout, RG, ViewportDim);
-  Layout->AtX += Layout->FontSize;
+  AdvanceSpaces(1, Layout);
   return;
 }
 
@@ -382,13 +410,6 @@ b32 StringsMatch(const char *S1, const char *S2)
   return Result;
 }
 
-inline void
-AdvanceSpaces(u32 N, layout *Layout)
-{
-  Layout->AtX += (N*Layout->FontSize);
-  return;
-}
-
 void
 BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout, v2 ViewportDim, u32 Depth = 0)
 {
@@ -396,7 +417,7 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout, 
     return;
 
   b32 WeAreFirst = True;
-  u32 CallCount = 0;
+  u64 CallCount = 0;
   u64 TotalCycles = 0;
 
   debug_profile_scope *Next = 0;
@@ -429,7 +450,9 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout, 
   if (WeAreFirst)
   {
     r32 Percentage = (r32)TotalCycles/(r32)FrameElapsedCycles;
+    u64 AvgCycles = SafeDivide0(TotalCycles, CallCount);
     BufferPercentageAsText(Percentage, Layout, State->TextRenderGroup, ViewportDim);
+    BufferCycles(AvgCycles, Layout, State->TextRenderGroup, ViewportDim);
     Layout->AtX += (Depth*2.0f*Layout->FontSize);
     BufferNumberAsText(CallCount, Layout, State->TextRenderGroup, ViewportDim);
     BufferText(Scope->Name, Layout, State->TextRenderGroup, ViewportDim);
