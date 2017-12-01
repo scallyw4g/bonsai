@@ -826,7 +826,7 @@ union f32_reg {
 };
 
 
-#define SIMD_OPERATORS 0
+#define SIMD_OPERATORS 1
 #define SANITY_CHECK_SIMD_OPERATORS 1
 inline v3
 operator*(v3 A, v3 B)

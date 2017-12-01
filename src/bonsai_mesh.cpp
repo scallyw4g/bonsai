@@ -104,25 +104,25 @@ BufferVertsDirect(
 
 #else
 
-#if 1
-  for ( s32 VertIndex = 0;
-        VertIndex < NumVerts;
-        ++VertIndex )
-  {
-    Dest->VertexData[Dest->VertsFilled] = VertsPositions[VertIndex]*Scale + Offset;
-    Dest->NormalData[Dest->VertsFilled] = Normals[VertIndex];
-    Dest->ColorData[Dest->VertsFilled] = VertColors[VertIndex];
-    ++Dest->VertsFilled;
-  }
+/* #if 1 */
+/*   for ( s32 VertIndex = 0; */
+/*         VertIndex < NumVerts; */
+/*         ++VertIndex ) */
+/*   { */
+/*     Dest->VertexData[Dest->VertsFilled] = VertsPositions[VertIndex]*Scale + Offset; */
+/*     Dest->NormalData[Dest->VertsFilled] = Normals[VertIndex]; */
+/*     Dest->ColorData[Dest->VertsFilled] = VertColors[VertIndex]; */
+/*     ++Dest->VertsFilled; */
+/*   } */
 
 
-#else
-  s32 sizeofData = NumVerts * sizeof(v3);
-  memcpy( &Dest->VertexData[Dest->VertsFilled],  VertsPositions,  sizeofData );
-  memcpy( &Dest->NormalData[Dest->VertsFilled],  Normals,         sizeofData );
-  memcpy( &Dest->ColorData[Dest->VertsFilled],   VertColors,      sizeofData );
-  Dest->VertsFilled += NumVerts;
-#endif
+/* #else */
+/*   s32 sizeofData = NumVerts * sizeof(v3); */
+/*   memcpy( &Dest->VertexData[Dest->VertsFilled],  VertsPositions,  sizeofData ); */
+/*   memcpy( &Dest->NormalData[Dest->VertsFilled],  Normals,         sizeofData ); */
+/*   memcpy( &Dest->ColorData[Dest->VertsFilled],   VertColors,      sizeofData ); */
+/*   Dest->VertsFilled += NumVerts; */
+/* #endif */
 
 
 #endif
