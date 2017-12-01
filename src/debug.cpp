@@ -334,15 +334,26 @@ AdvanceSpaces(u32 N, layout *Layout)
 inline void
 BufferCycles(u64 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
 {
-  char Buffer[32] = {};
-  sprintf(Buffer, "%lu", Number);
+  u64 OneThousand = 1000;
+  r32 Display = (r32)Number;
+  char Units = ' ';
+
+  if (Number >= OneThousand)
   {
-    s32 Max = 10;
+    Display = Number / (r32)OneThousand;
+    Units = 'K';
+  }
+
+  char Buffer[32];
+  sprintf(Buffer, "%.1f%c", Display, Units);
+  {
     s32 Len = strlen(Buffer);
-    s32 Pad = Max-Len;
+    s32 ColumnWidth = 10;
+    s32 Pad = Max(ColumnWidth-Len, 0);
     AdvanceSpaces(Pad, Layout);
   }
   BufferText( Buffer, Layout, RG, ViewportDim);
+
   return;
 }
 
@@ -508,7 +519,7 @@ DebugFrameEnd(platform *Plat)
     BufferSingleDecimal(1000.0*AverageFrameDt, &Layout, RG, ViewportDim);
     BufferText("ms", &Layout, RG, ViewportDim);
 
-    BufferNumberAsText(FrameElapsedCycles, &Layout, RG, ViewportDim);
+    BufferCycles(FrameElapsedCycles, &Layout, RG, ViewportDim);
     NewLine(&Layout);
 
     AdvanceSpaces(6, &Layout);
