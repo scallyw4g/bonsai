@@ -883,7 +883,7 @@ RenderGBuffer(
     mesh_buffer_target *Mesh, g_buffer_render_group *RG,
     shadow_render_group *SG, camera *Camera)
 {
-  // TIMED_FUNCTION();
+  TIMED_FUNCTION();
 
   RenderShadowMap(Mesh, SG, RG, Camera);
 
@@ -912,22 +912,22 @@ DrawVoxel( mesh_buffer_target *Mesh,
 
   v3 Center = RenderP - (Diameter*0.5);
   RightFaceVertexData( Center, Diameter, VertexData);
-  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, RightFaceNormalData, FaceColors);
+  BufferVertsChecked(Mesh, gBuffer, SG, Camera, 6, VertexData, RightFaceNormalData, FaceColors);
 
   LeftFaceVertexData( Center, Diameter, VertexData);
-  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, LeftFaceNormalData, FaceColors);
+  BufferVertsChecked(Mesh, gBuffer, SG, Camera, 6, VertexData, LeftFaceNormalData, FaceColors);
 
   BottomFaceVertexData( Center, Diameter, VertexData);
-  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, BottomFaceNormalData, FaceColors);
+  BufferVertsChecked(Mesh, gBuffer, SG, Camera, 6, VertexData, BottomFaceNormalData, FaceColors);
 
   TopFaceVertexData( Center, Diameter, VertexData);
-  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, TopFaceNormalData, FaceColors);
+  BufferVertsChecked(Mesh, gBuffer, SG, Camera, 6, VertexData, TopFaceNormalData, FaceColors);
 
   FrontFaceVertexData( Center, Diameter, VertexData);
-  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, FrontFaceNormalData, FaceColors);
+  BufferVertsChecked(Mesh, gBuffer, SG, Camera, 6, VertexData, FrontFaceNormalData, FaceColors);
 
   BackFaceVertexData( Center, Diameter, VertexData);
-  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, BackFaceNormalData, FaceColors);
+  BufferVertsChecked(Mesh, gBuffer, SG, Camera, 6, VertexData, BackFaceNormalData, FaceColors);
 
   return;
 }
@@ -1031,7 +1031,7 @@ DEBUG_DrawLine( mesh_buffer_target *Mesh, g_buffer_render_group *gBuffer,
     };
 
 
-    BufferVerts(Mesh,
+    BufferVertsChecked(Mesh,
         gBuffer, SG, Camera,
         6,
         localVertexData,
@@ -1058,7 +1058,7 @@ DEBUG_DrawLine( mesh_buffer_target *Mesh, g_buffer_render_group *gBuffer,
     };
 
 
-    BufferVerts(Mesh, gBuffer, SG, Camera,
+    BufferVertsChecked(Mesh, gBuffer, SG, Camera,
         6,
         localVertexData,
         localNormalData,
@@ -1369,7 +1369,7 @@ ClearFramebuffers(graphics *Graphics)
   glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
   glClearDepth(1.0f);
 
-#if DEBUG
+#if BONSAI_INTERNAL
   debug_text_render_group *TextRG = GetDebugState()->TextRenderGroup;
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, TextRG->FBO.ID);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1395,7 +1395,7 @@ BufferChunkMesh(
     chunk_dimension WorldChunkDim,
     chunk_data *Chunk,
     world_position WorldP,
-    g_buffer_render_group *RG,
+    g_buffer_render_group *gBuffer,
     shadow_render_group *SG,
     camera *Camera,
     r32 Scale,
@@ -1403,11 +1403,14 @@ BufferChunkMesh(
   )
 {
   TIMED_FUNCTION();
+
 #if 1
   v3 ModelBasisP =
     GetRenderP( WorldChunkDim, Canonical_Position(Offset, WorldP), Camera);
 
-  BufferVerts(&Chunk->Mesh, Dest, ModelBasisP, RG, SG, Camera, Scale);
+  BufferVertsChecked(Dest, gBuffer, SG, Camera, Chunk->Mesh.VertsFilled,
+      Chunk->Mesh.VertexData, Chunk->Mesh.NormalData, Chunk->Mesh.ColorData,
+      ModelBasisP, V3(Scale));
 
 #else
   r32 FaceColors[FACE_COLOR_SIZE];
@@ -1637,7 +1640,7 @@ BufferTriangle(mesh_buffer_target *Mesh, g_buffer_render_group *gBuffer, shadow_
   v3 FaceColors[FACE_VERT_COUNT];
   FillColorArray(ColorIndex, FaceColors, FACE_VERT_COUNT);;
 
-  BufferVerts(
+  BufferVertsChecked(
     Mesh,
     gBuffer, SG, Camera,
     3,
@@ -2427,6 +2430,7 @@ BufferEntity(
     chunk_dimension WorldChunkDim
   )
 {
+  TIMED_FUNCTION();
   // Debug light code
   /* v3 LightP = GetRenderP(world, Entity->P + Entity->Model.Dim/2); */
   /* glUniform3fv(RG->LightPID, 1, &LightP[0]); */
@@ -2464,16 +2468,13 @@ BufferWorldChunk(
     shadow_render_group *SG
   )
 {
-  TIMED_FUNCTION();
+  chunk_data *ChunkData = Chunk->Data;
 
   if ( IsSet( Chunk, Chunk_BufferMesh ) )
     BuildWorldChunkMesh(World, Chunk, World->ChunkDim);
 
-  chunk_data *ChunkData = Chunk->Data;
-
   if (NotSet(ChunkData, Chunk_Initialized))
     return;
-
 
 #if 1
     r32 Scale = 1.0f;
