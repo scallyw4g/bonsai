@@ -46,11 +46,6 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
 
 
-  gBuffer->ViewProjection =
-    GetProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
-    GetViewMatrix(WorldChunkDim, Camera);
-
-
   SimulatePlayer(GameState, GameState->Player, Hotkeys, Plat->dt);
   //SimulateEntities(GameState, GameState->Player, Hotkeys, Plat->dt);
 
@@ -59,11 +54,20 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
   //
   // Draw World
+  //
 
-  TIMED_BLOCK("BufferMesh");
+  //
+  // Update gBuffer camera transform
+  //
+
+  gBuffer->ViewProjection =
+    GetProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
+    GetViewMatrix(WorldChunkDim, Camera);
+
+  TIMED_BLOCK("BufferMeshes");
     BufferWorld(World, Plat->Graphics, Camera);
     BufferEntities( GameState->EntityTable, &World->Mesh, Plat->Graphics, Camera, World);
-  END_BLOCK("BufferMesh");
+  END_BLOCK("BufferMeshes");
 
   TIMED_BLOCK("RenderToScreen");
     { // Debug Lighting

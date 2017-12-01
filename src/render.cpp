@@ -1404,6 +1404,9 @@ BufferChunkMesh(
 {
   TIMED_FUNCTION();
 
+  if ( Chunk->Mesh.VertsFilled == 0)
+    return;
+
 #if 1
   v3 ModelBasisP =
     GetRenderP( WorldChunkDim, Canonical_Position(Offset, WorldP), Camera);

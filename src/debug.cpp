@@ -347,12 +347,12 @@ BufferCycles(u64 Number, layout *Layout, debug_text_render_group *RG, v2 Viewpor
 }
 
 inline void
-BufferPercentage(r32 Perc, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
+BufferSingleDecimal(r32 Perc, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
 {
   char Buffer[32] = {};
   sprintf(Buffer, "%.1f", Perc);
   {
-    s32 Max = 5;
+    s32 Max = 6;
     s32 Len = strlen(Buffer);
     s32 Pad = Max-Len;
     AdvanceSpaces(Pad, Layout);
@@ -444,7 +444,7 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout, 
   {
     r32 Percentage = 100.0*(r32)TotalCycles/(r32)FrameElapsedCycles;
     u64 AvgCycles = SafeDivide0(TotalCycles, CallCount);
-    BufferPercentage(Percentage, Layout, State->TextRenderGroup, ViewportDim);
+    BufferSingleDecimal(Percentage, Layout, State->TextRenderGroup, ViewportDim);
     BufferCycles(AvgCycles, Layout, State->TextRenderGroup, ViewportDim);
     Layout->AtX += (Depth*2.0f*Layout->FontSize);
     BufferNumberAsText(CallCount, Layout, State->TextRenderGroup, ViewportDim);
@@ -468,6 +468,29 @@ DebugFrameEnd(platform *Plat)
   text_geometry_buffer *TextGeo = &RG->TextGeo;
   r32 dt = Plat->dt;
 
+  static const u32 DtBufferSize = 60;
+  static r32 DtBuffer[DtBufferSize] = {};
+  static u32 DtBufferIndex = 0;
+
+  DtBuffer[DtBufferIndex] = dt;
+  DtBufferIndex = (++DtBufferIndex) % DtBufferSize;
+
+  r32 Accum = 0;
+  r32 MinDt = DtBuffer[0];
+  r32 MaxDt = DtBuffer[0];
+  for ( u32 Index = 0;
+        Index < DtBufferSize;
+        ++Index)
+  {
+    r32 Val = DtBuffer[Index];
+    Accum += Val;
+    MinDt = Min(MinDt, Val);
+    MaxDt = Max(MaxDt, Val);
+  }
+
+  r32 AverageFrameDt = Accum/(r32)DtBufferSize;
+
+
   v2 ViewportDim = V2(Plat->WindowWidth, Plat->WindowHeight);
 
   /* PrintScopeTree(&DebugState->RootScope); */
@@ -476,14 +499,25 @@ DebugFrameEnd(platform *Plat)
   {
     layout Layout(DEBUG_FONT_SIZE);
     Layout.AtY = (r32)SCR_HEIGHT - Layout.FontSize;
-    BufferPercentage(1000.0*dt, &Layout, RG, ViewportDim);
+
+    AdvanceSpaces(6, &Layout);
+    BufferSingleDecimal(1000.0*MaxDt, &Layout, RG, ViewportDim);
+    NewLine(&Layout);
+
+    BufferSingleDecimal(1000.0*dt, &Layout, RG, ViewportDim);
+    BufferSingleDecimal(1000.0*AverageFrameDt, &Layout, RG, ViewportDim);
     BufferText("ms", &Layout, RG, ViewportDim);
+
     BufferNumberAsText(FrameElapsedCycles, &Layout, RG, ViewportDim);
+    NewLine(&Layout);
+
+    AdvanceSpaces(6, &Layout);
+    BufferSingleDecimal(1000.0*MinDt, &Layout, RG, ViewportDim);
   }
 
   {
     layout Layout(22);
-    Layout.AtY = (r32)SCR_HEIGHT - (4.0f*Layout.FontSize);
+    Layout.AtY = (r32)SCR_HEIGHT - (5.0f*Layout.FontSize);
     BufferScopeTree(&DebugState->RootScope, DebugState, &Layout, ViewportDim);
     CleanupScopeTree(DebugState);
   }

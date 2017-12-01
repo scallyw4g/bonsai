@@ -1,8 +1,6 @@
 #if BONSAI_INTERNAL
 
 
-void BreakHere() { return; }
-
 struct layout
 {
   r32 AtX;
@@ -146,7 +144,6 @@ struct debug_timed_function
   {
     debug_state *DebugState = GetDebugState();
     ++DebugState->NumScopes;
-    BreakHere();
 
 
     // FIXME(Jesse): Recycle these

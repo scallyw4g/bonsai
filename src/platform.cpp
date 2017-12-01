@@ -291,9 +291,6 @@ WaitForFrameTime(r64 FrameStartMs, float FPS)
   r64 frameTarget = (1.0/(r64)FPS)*1000.0f;
   r64 FrameTime = GetHighPrecisionClock() - FrameStartMs;
 
-  Print(frameTarget);
-  Print(FrameTime);
-
   while (FrameTime < frameTarget)
   {
     FrameTime = GetHighPrecisionClock() - FrameStartMs;
@@ -463,7 +460,6 @@ main(s32 NumArgs, char ** Args)
     Plat.dt = (CurrentMS - LastMs)/1000.0f;
     LastMs = CurrentMS;
 
-    Print(Plat.dt);
     FrameStartingCycles = GetDebugState()->GetCycleCount();
 
     v2 LastMouseP = Plat.MouseP;

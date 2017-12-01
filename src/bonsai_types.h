@@ -1,8 +1,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 
-#include <assert_types.h>
+void BreakHere() { return; }
 
+#include <assert_types.h>
 
 #ifdef _WIN32
 #include <win32_platform.h>

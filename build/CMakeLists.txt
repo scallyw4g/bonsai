@@ -6,7 +6,7 @@ project(Bonsai)
 set(Bonsai_VERSION_MAJOR 0)
 set(Bonsai_VERSION_MINOR 1)
 
-set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE Debug)
 
 set( ROOT ${CMAKE_SOURCE_DIR}/.. )
 
