@@ -368,8 +368,8 @@ QueueChunksForInit(game_state *GameState, world_position WorldDisp)
   world_position SliceMin = WorldCenter + (VRHalfDim * Iter) - (VRHalfDim * InvAbsIter) - ClampPositive(WorldDisp);
 
   // NOTE(Jesse): Changed this from the following to behave properly on a 2d plane
-  /* world_position SliceMax = WorldCenter + (VRHalfDim * Iter) + (VRHalfDim * InvAbsIter) - ClampPositive(Iter) - InvAbsIter - ClampNegative(WorldDisp) + ClampNegative(Iter); */
-  world_position SliceMax = WorldCenter + (VRHalfDim * Iter) + (VRHalfDim * InvAbsIter) - ClampPositive(Iter)              - ClampNegative(WorldDisp) + ClampNegative(Iter);
+  world_position SliceMax = WorldCenter + (VRHalfDim * Iter) + (VRHalfDim * InvAbsIter) - ClampPositive(Iter) - InvAbsIter - ClampNegative(WorldDisp) + ClampNegative(Iter);
+  /* world_position SliceMax = WorldCenter + (VRHalfDim * Iter) + (VRHalfDim * InvAbsIter) - ClampPositive(Iter)              - ClampNegative(WorldDisp) + ClampNegative(Iter); */
 
   for (int z = SliceMin.z; z <= SliceMax.z; ++ z)
   {
