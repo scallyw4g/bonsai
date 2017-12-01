@@ -6,7 +6,7 @@ project(Bonsai)
 set(Bonsai_VERSION_MAJOR 0)
 set(Bonsai_VERSION_MINOR 1)
 
-set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Release)
 
 set( ROOT ${CMAKE_SOURCE_DIR}/.. )
 
@@ -50,7 +50,8 @@ add_custom_target(run /usr/bin/optirun ${BIN}/Bonsai
                   COMMENT "Running Bonsai")
 
 
-add_definitions( -DBONSAI_SLOW=1 )
+add_definitions( -DBONSAI_INTERNAL=1 )
+
 
 #
 # Platform specific

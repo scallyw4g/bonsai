@@ -152,6 +152,10 @@ struct platform
   const char *GlslVersion;
 
   input Input;
+
+#if BONSAI_INTERNAL
+  debug_state DebugState;
+#endif
 };
 
 struct os

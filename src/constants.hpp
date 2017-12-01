@@ -24,7 +24,7 @@
 #define WORLD_HASH_SIZE 1024
 #define FREELIST_SIZE 1024
 
-#define NOISE_FREQUENCY 25L
+#define NOISE_FREQUENCY 80L
 
 // This must match the corresponding define in the SSAO shader
 #define DEFAULT_ENTROPY_SEED 3426543

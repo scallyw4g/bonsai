@@ -9,7 +9,7 @@ uniform sampler2D SsaoNoiseTexture;
 uniform vec3 SsaoNoiseTile;
 
 // This must match the corresponding define in constants.h
-const int SSAO_KERNEL_SIZE = 16;
+const int SSAO_KERNEL_SIZE = 8;
 uniform vec3 SsaoKernel[SSAO_KERNEL_SIZE];
 
 uniform mat4 ViewProjection;

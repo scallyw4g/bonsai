@@ -1,4 +1,5 @@
-#if DEBUG
+#if BONSAI_INTERNAL
+
 
 void BreakHere() { return; }
 
@@ -42,11 +43,14 @@ struct debug_state
   debug_profile_scope FreeScopeSentinel;
 
   u64 NumScopes;
+  b32 Initialized;
 };
 
-
-debug_global debug_state GlobalDebugState;
-inline debug_state* GetDebugState() { return &GlobalDebugState; } 
+debug_global debug_state *GlobalDebugState;
+inline debug_state* GetDebugState() {
+  Assert(GlobalDebugState->Initialized);
+  return GlobalDebugState;
+}
 
 enum debug_recording_mode
 {
@@ -111,6 +115,7 @@ debug_profile_scope *
 GetProfileScope(debug_state *State)
 {
   debug_profile_scope *Result = 0;
+#if 1
   debug_profile_scope *Sentinel = &State->FreeScopeSentinel;
 
   if (Sentinel->Child != Sentinel)
@@ -124,6 +129,9 @@ GetProfileScope(debug_state *State)
   {
     Result = PUSH_STRUCT_CHECKED(debug_profile_scope, State->Memory, 1);
   }
+#else
+    Result = PUSH_STRUCT_CHECKED(debug_profile_scope, State->Memory, 1);
+#endif
 
   Assert(Result);
   *Result = NullDebugProfileScope;
@@ -186,7 +194,7 @@ struct debug_timed_function
 #define DEBUG_FRAME_RECORD(...) DoDebugFrameRecord(__VA_ARGS__)
 #define DEBUG_FRAME_END(Plat) DebugFrameEnd(Plat)
 
-#elif RELEASE
+#else
 
 #define INIT_DEUBG_STATE(...)
 
@@ -197,8 +205,6 @@ struct debug_timed_function
 #define DEBUG_FRAME_RECORD(...)
 #define DEBUG_FRAME_END(...)
 
-#else
-#error "Unknown Build State Encountered"
 #endif
 
 

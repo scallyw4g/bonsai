@@ -99,14 +99,14 @@ Print_Binary( unsigned int input )
   Log("<-- Low bit \n");
 }
 
-inline void
-Print_P( debug_profile_scope *E, const char* name)
-{
-  Log(" -- %s -> %s \n", name, E->Name);
-  Log(" -- Parent %x \n", name, E->Parent);
-  Log(" -- Sibling %x \n", name, E->Sibling);
-  Log(" -- Child %x \n", name, E->Child);
-}
+/* inline void */
+/* Print_P( debug_profile_scope *E, const char* name) */
+/* { */
+/*   Log(" -- %s -> %s \n", name, E->Name); */
+/*   Log(" -- Parent %x \n", name, E->Parent); */
+/*   Log(" -- Sibling %x \n", name, E->Sibling); */
+/*   Log(" -- Child %x \n", name, E->Child); */
+/* } */
 
 inline void
 Print_P( u64 N, const char* name)

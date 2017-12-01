@@ -14,7 +14,7 @@ PhysicsUpdate(physics *Physics, r32 dt)
   v3 Delta =
     (Physics->Velocity*dt) + (0.5f*Acceleration*Square(dt));
 
-  Physics->Velocity = (Delta/dt);
+  Physics->Velocity = SafeDivide(Delta, dt);
 
   return Delta;
 }

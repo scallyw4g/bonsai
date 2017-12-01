@@ -151,6 +151,7 @@ InitGlobals(platform *Plat)
 {
   GL_Global = &Plat->GL;
   Global_WorldChunkDim = WORLD_CHUNK_DIM;
+  GlobalDebugState = &Plat->DebugState;
 }
 
 EXPORT void*
@@ -190,6 +191,7 @@ GameInit( platform *Plat, memory_arena *GameMemory)
 EXPORT void
 GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 {
+  Assert(GlobalDebugState);
   game_mode *Mode = &GameState->Mode;
   Mode->TimeRunning += Plat->dt;
 

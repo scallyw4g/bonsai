@@ -82,6 +82,7 @@ GetRenderP(canonical_position P, camera *Camera)
 inline v3
 GetRenderP( chunk_dimension WorldChunkDim, canonical_position P, camera *Camera)
 {
+  TIMED_FUNCTION();
   v3 CameraOffset = Camera->Target.Offset + (Camera->Target.WorldP * WorldChunkDim);
   v3 Result = P.Offset + (P.WorldP * WorldChunkDim) - CameraOffset;
   return Result;

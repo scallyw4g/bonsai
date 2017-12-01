@@ -244,7 +244,6 @@ PlatformInit(platform *Plat, memory_arena *Memory)
   Plat->GetHighPrecisionClock = GetHighPrecisionClock;
   Plat->PushStruct = PushStruct;
   Plat->PushStructChecked_ = PushStructChecked_;
-  Plat->GetHighPrecisionClock = GetHighPrecisionClock;
   Plat->GetCycleCount = GetCycleCount;
 
   // Initialized from globals
@@ -286,13 +285,18 @@ PlatformInit(platform *Plat, memory_arena *Memory)
  *  Poor mans vsync
  */
 void
-WaitForFrameTime(r64 frameStart, float FPS)
+WaitForFrameTime(r64 FrameStartMs, float FPS)
 {
-  r64 frameTime = GetHighPrecisionClock() - frameStart;
+  TIMED_FUNCTION();
+  r64 frameTarget = (1.0/(r64)FPS)*1000.0f;
+  r64 FrameTime = GetHighPrecisionClock() - FrameStartMs;
 
-  while (frameTime < (1.0f/FPS))
+  Print(frameTarget);
+  Print(FrameTime);
+
+  while (FrameTime < frameTarget)
   {
-    frameTime = GetHighPrecisionClock() - frameStart;
+    FrameTime = GetHighPrecisionClock() - FrameStartMs;
   }
 
   return;
@@ -394,7 +398,7 @@ main(s32 NumArgs, char ** Args)
   SubArena(&MainMemory, &GraphicsMemory, GRAPHICS_STORAGE_SIZE);
 
 
-#if DEBUG
+#if BONSAI_INTERNAL
   debug_recording_state *Debug_RecordingState =
     PUSH_STRUCT_CHECKED(debug_recording_state, &DebugMemory, 1);
   AllocateAndInitializeArena(&Debug_RecordingState->RecordedMainMemory, MAIN_STORAGE_SIZE);
@@ -431,9 +435,11 @@ main(s32 NumArgs, char ** Args)
   InitializeOpenGlExtensions(&Plat.GL, &Os);
   GL_Global = &Plat.GL;
 
-#if DEBUG
+#if BONSAI_INTERNAL
   InitDebugState(&Plat);
 #endif
+
+  InitGlobals(&Plat);
 
   QueryAndSetGlslVersion(&Plat);
 
@@ -445,19 +451,20 @@ main(s32 NumArgs, char ** Args)
   game_state *GameState = GameInit(&Plat, &GameMemory);
   if (!GameState) { Error("Initializing Game State :( "); return False; }
 
-  InitGlobals(&Plat);
-
   /*
    *  Main Game loop
    */
 
-  r64 lastTime = Plat.GetHighPrecisionClock();
+  r64 LastMs = Plat.GetHighPrecisionClock();
 
   while ( Os.ContinueRunning )
   {
-    FrameStartingCycles = GetDebugState()->GetCycleCount();
+    r64 CurrentMS = GetHighPrecisionClock();
+    Plat.dt = (CurrentMS - LastMs)/1000.0f;
+    LastMs = CurrentMS;
 
-    Plat.dt = (r32)ComputeDtForFrame(&lastTime);
+    Print(Plat.dt);
+    FrameStartingCycles = GetDebugState()->GetCycleCount();
 
     v2 LastMouseP = Plat.MouseP;
     while ( ProcessOsMessages(&Os, &Plat) );
@@ -477,11 +484,6 @@ main(s32 NumArgs, char ** Args)
 
     BindHotkeysToInput(&Hotkeys, &Plat.Input);
 
-#if RELEASE
-    // FIXME(Jesse): This is pretty obviously bad..
-    int Debug_RecordingState = 0;
-    ++Debug_RecordingState;
-#endif
     DEBUG_FRAME_RECORD(Debug_RecordingState, &Hotkeys, &MainMemory);
 
     GameUpdateAndRender(&Plat, GameState, &Hotkeys);
@@ -492,6 +494,8 @@ main(s32 NumArgs, char ** Args)
     DEBUG_FRAME_END(&Plat);
 
     BonsaiSwapBuffers(&Os);
+
+    /* WaitForFrameTime(LastMs, 30.0f); */
   }
 
   Info("Shutting Down");

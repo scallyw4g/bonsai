@@ -1,4 +1,5 @@
-#if DEBUG
+#if BONSAI_INTERNAL
+
 #include <stdio.h>
 
 texture *
@@ -71,22 +72,23 @@ InitScopeTree(debug_state *State)
 void
 InitDebugState(platform *Plat)
 {
-  debug_state *State = GetDebugState();
-  State->GetCycleCount = Plat->GetCycleCount;
+  GlobalDebugState = &Plat->DebugState;
+  GlobalDebugState->GetCycleCount = Plat->GetCycleCount;
 
-  InitScopeTree(State);
+  InitScopeTree(GlobalDebugState);
 
-  State->FreeScopeSentinel.Parent = &State->FreeScopeSentinel;
-  State->FreeScopeSentinel.Child = &State->FreeScopeSentinel;
+  GlobalDebugState->FreeScopeSentinel.Parent = &GlobalDebugState->FreeScopeSentinel;
+  GlobalDebugState->FreeScopeSentinel.Child = &GlobalDebugState->FreeScopeSentinel;
 
-  State->Memory = SubArena(Plat->Memory, Megabytes(32));
+  GlobalDebugState->Memory = SubArena(Plat->Memory, Megabytes(32));
 
-  State->TextRenderGroup = PUSH_STRUCT_CHECKED(debug_text_render_group, Plat->Memory, 1);
-  if (!InitDebugOverlayFramebuffer(State->TextRenderGroup, Plat->Memory, "Holstein.DDS"))
+  GlobalDebugState->TextRenderGroup = PUSH_STRUCT_CHECKED(debug_text_render_group, Plat->Memory, 1);
+  if (!InitDebugOverlayFramebuffer(GlobalDebugState->TextRenderGroup, Plat->Memory, "Holstein.DDS"))
   { Error("Initializing Debug Overlay Framebuffer"); }
 
-  AllocateAndInitGeoBuffer(&State->TextRenderGroup->TextGeo, 4096, Plat->Memory);
+  AllocateAndInitGeoBuffer(&GlobalDebugState->TextRenderGroup->TextGeo, 4096, Plat->Memory);
 
+  GlobalDebugState->Initialized = True;
   return;
 }
 
@@ -345,10 +347,10 @@ BufferCycles(u64 Number, layout *Layout, debug_text_render_group *RG, v2 Viewpor
 }
 
 inline void
-BufferPercentage(r32 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
+BufferPercentage(r32 Perc, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
 {
   char Buffer[32] = {};
-  sprintf(Buffer, "%.1f", 100.0*Number);
+  sprintf(Buffer, "%.1f", Perc);
   {
     s32 Max = 5;
     s32 Len = strlen(Buffer);
@@ -356,15 +358,6 @@ BufferPercentage(r32 Number, layout *Layout, debug_text_render_group *RG, v2 Vie
     AdvanceSpaces(Pad, Layout);
   }
   BufferText( Buffer, Layout, RG, ViewportDim);
-  return;
-}
-
-inline void
-BufferPercentageAsText(r32 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
-{
-  AdvanceSpaces(1, Layout);
-  BufferPercentage(Number, Layout, RG, ViewportDim);
-  AdvanceSpaces(1, Layout);
   return;
 }
 
@@ -449,9 +442,9 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout, 
 
   if (WeAreFirst)
   {
-    r32 Percentage = (r32)TotalCycles/(r32)FrameElapsedCycles;
+    r32 Percentage = 100.0*(r32)TotalCycles/(r32)FrameElapsedCycles;
     u64 AvgCycles = SafeDivide0(TotalCycles, CallCount);
-    BufferPercentageAsText(Percentage, Layout, State->TextRenderGroup, ViewportDim);
+    BufferPercentage(Percentage, Layout, State->TextRenderGroup, ViewportDim);
     BufferCycles(AvgCycles, Layout, State->TextRenderGroup, ViewportDim);
     Layout->AtX += (Depth*2.0f*Layout->FontSize);
     BufferNumberAsText(CallCount, Layout, State->TextRenderGroup, ViewportDim);
@@ -483,12 +476,13 @@ DebugFrameEnd(platform *Plat)
   {
     layout Layout(DEBUG_FONT_SIZE);
     Layout.AtY = (r32)SCR_HEIGHT - Layout.FontSize;
-    BufferNumberAsText(dt, &Layout, RG, ViewportDim);
+    BufferPercentage(1000.0*dt, &Layout, RG, ViewportDim);
+    BufferText("ms", &Layout, RG, ViewportDim);
     BufferNumberAsText(FrameElapsedCycles, &Layout, RG, ViewportDim);
   }
 
   {
-    layout Layout(18);
+    layout Layout(22);
     Layout.AtY = (r32)SCR_HEIGHT - (4.0f*Layout.FontSize);
     BufferScopeTree(&DebugState->RootScope, DebugState, &Layout, ViewportDim);
     CleanupScopeTree(DebugState);

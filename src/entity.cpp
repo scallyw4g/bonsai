@@ -428,8 +428,8 @@ void
 SpawnPlayer(game_state *GameState, entity *Player, canonical_position InitialP)
 {
   physics Physics = {};
-  Physics.Drag = 5.0f;
-  Physics.Mass = 5.0f;
+  Physics.Drag = 6.0f;
+  Physics.Mass = 7.0f;
   Physics.Speed = PLAYER_SPEED;
 
   r32 Scale = 0.40f;

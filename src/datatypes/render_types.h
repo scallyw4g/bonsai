@@ -99,7 +99,7 @@ struct framebuffer
   u32 Attachments;
 };
 
-#define SSAO_KERNEL_SIZE 16
+#define SSAO_KERNEL_SIZE 8
 struct ao_render_group
 {
   framebuffer FBO;
