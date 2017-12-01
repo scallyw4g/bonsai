@@ -1,9 +1,6 @@
 #ifndef BONSAI_MESH_CPP
 #define BONSAI_MESH_CPP
 
-#include <immintrin.h>
-#include <xmmintrin.h>
-
 #include <colors.h>
 
 void
@@ -31,8 +28,7 @@ BufferVertsDirect(
     return;
   }
 
-#define SIMD_BUFFER_VERTS 1
-#if SIMD_BUFFER_VERTS
+#if 1
   __m128 mmScale = _mm_set_ps(0, Scale.z, Scale.y, Scale.x);
   __m128 mmOffset = _mm_set_ps(0, Offset.z, Offset.y, Offset.x);
 
@@ -104,25 +100,24 @@ BufferVertsDirect(
 
 #else
 
-/* #if 1 */
-/*   for ( s32 VertIndex = 0; */
-/*         VertIndex < NumVerts; */
-/*         ++VertIndex ) */
-/*   { */
-/*     Dest->VertexData[Dest->VertsFilled] = VertsPositions[VertIndex]*Scale + Offset; */
-/*     Dest->NormalData[Dest->VertsFilled] = Normals[VertIndex]; */
-/*     Dest->ColorData[Dest->VertsFilled] = VertColors[VertIndex]; */
-/*     ++Dest->VertsFilled; */
-/*   } */
-
-
-/* #else */
-/*   s32 sizeofData = NumVerts * sizeof(v3); */
-/*   memcpy( &Dest->VertexData[Dest->VertsFilled],  VertsPositions,  sizeofData ); */
-/*   memcpy( &Dest->NormalData[Dest->VertsFilled],  Normals,         sizeofData ); */
-/*   memcpy( &Dest->ColorData[Dest->VertsFilled],   VertColors,      sizeofData ); */
-/*   Dest->VertsFilled += NumVerts; */
-/* #endif */
+  // Left this here for futrue benchmarking.  The memcpy path is fastest by ~2x
+#if 1
+  for ( s32 VertIndex = 0;
+        VertIndex < NumVerts;
+        ++VertIndex )
+  {
+    Dest->VertexData[Dest->VertsFilled] = VertsPositions[VertIndex]*Scale + Offset;
+    Dest->NormalData[Dest->VertsFilled] = Normals[VertIndex];
+    Dest->ColorData[Dest->VertsFilled] = VertColors[VertIndex];
+    ++Dest->VertsFilled;
+  }
+#else
+  s32 sizeofData = NumVerts * sizeof(v3);
+  memcpy( &Dest->VertexData[Dest->VertsFilled],  VertsPositions,  sizeofData );
+  memcpy( &Dest->NormalData[Dest->VertsFilled],  Normals,         sizeofData );
+  memcpy( &Dest->ColorData[Dest->VertsFilled],   VertColors,      sizeofData );
+  Dest->VertsFilled += NumVerts;
+#endif
 
 
 #endif

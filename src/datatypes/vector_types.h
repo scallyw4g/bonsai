@@ -1,6 +1,5 @@
 #include <immintrin.h>
 #include <xmmintrin.h>
-#include <string.h>
 
 struct v2i
 {
