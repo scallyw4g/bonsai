@@ -1,3 +1,7 @@
+#include <immintrin.h>
+#include <xmmintrin.h>
+#include <string.h>
+
 struct v2i
 {
   s32 x, y;
@@ -816,9 +820,39 @@ operator-=(v3& A, v3 B)
   return(A);
 }
 
+union f32_reg {
+  r32 F[4];
+  __m128 Sse;
+};
+
+
+#define SIMD_OPERATORS 0
+#define SANITY_CHECK_SIMD_OPERATORS 1
 inline v3
 operator*(v3 A, v3 B)
 {
+#if SIMD_OPERATORS
+  __m128 Vec1 = _mm_set_ps(0, A.z, A.y, A.x);
+  __m128 Vec2 = _mm_set_ps(0, B.z, B.y, B.x);
+
+  f32_reg Res;
+  Res.Sse = _mm_mul_ps(Vec1, Vec2);
+
+  v3 Result = {{ Res.F[0], Res.F[1], Res.F[2] }};
+
+#if SANITY_CHECK_SIMD_OPERATORS
+  v3 Sanity;
+  Sanity.x = A.x * B.x;
+  Sanity.y = A.y * B.y;
+  Sanity.z = A.z * B.z;
+  Assert(Sanity.x == Result.x);
+  Assert(Sanity.y == Result.y);
+  Assert(Sanity.z == Result.z);
+#endif
+
+  return Result;
+
+#else
   v3 Result;
 
   Result.x = A.x * B.x;
@@ -826,6 +860,7 @@ operator*(v3 A, v3 B)
   Result.z = A.z * B.z;
 
   return Result;
+#endif 
 }
 
 inline v3
