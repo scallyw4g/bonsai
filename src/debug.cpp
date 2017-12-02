@@ -54,17 +54,10 @@ AllocateAndInitGeoBuffer(text_geometry_buffer *Geo, u32 VertCount, memory_arena 
 void
 InitScopeTree(debug_state *State)
 {
-  State->RootScope.Name = "RootScope";
-  State->WriteScope = &State->RootScope.Child;
-  State->CurrentScope = &State->RootScope;
-
-  State->RootScope.Parent = 0;
-  State->RootScope.Sibling = 0;
-  State->RootScope.Child = 0;
-
-  State->WriteScope = &State->RootScope.Child;
-  State->CurrentScope = &State->RootScope;
+  State->RootScope = 0;
   State->NumScopes = 0;
+  State->CurrentScope = 0;
+  State->WriteScope = &State->RootScope;
 
   return;
 }
@@ -261,17 +254,12 @@ CleanupScopeTree(debug_state *DebugState)
   /* PrintScopeTree(&DebugState->RootScope); */
   /* Debug("------------------------------------------------------------------------------"); */
 
-  if (DebugState->RootScope.Child)
-    FreeScopes(DebugState, DebugState->RootScope.Child);
-
-  if (DebugState->RootScope.Sibling)
-    FreeScopes(DebugState, DebugState->RootScope.Sibling);
-
+  FreeScopes(DebugState, DebugState->RootScope);
   InitScopeTree(DebugState);
 
   /* PrintFreeScopes(DebugState); */
   /* Debug("------------------------------------------------------------------------------"); */
-  /* PrintScopeTree(&DebugState->RootScope); */
+  /* PrintScopeTree(DebugState->RootScope); */
 
   /* debug_profile_scope RootScope; */
   /* debug_profile_scope FreeScopeSentinel; */
@@ -424,7 +412,7 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout, 
   u64 CallCount = 0;
   u64 TotalCycles = 0;
 
-  debug_profile_scope *Next = 0;
+  debug_profile_scope *Next = State->RootScope;
   if (Scope->Parent) Next = Scope->Parent->Child;
 
   while (Next)
@@ -504,7 +492,7 @@ DebugFrameEnd(platform *Plat)
 
   v2 ViewportDim = V2(Plat->WindowWidth, Plat->WindowHeight);
 
-  /* PrintScopeTree(&DebugState->RootScope); */
+  /* PrintScopeTree(DebugState->RootScope); */
   /* Log("-------------------------------------------------------------------------------"); */
 
   {
@@ -529,7 +517,7 @@ DebugFrameEnd(platform *Plat)
   {
     layout Layout(22);
     Layout.AtY = (r32)SCR_HEIGHT - (5.0f*Layout.FontSize);
-    BufferScopeTree(&DebugState->RootScope, DebugState, &Layout, ViewportDim);
+    BufferScopeTree(DebugState->RootScope, DebugState, &Layout, ViewportDim);
     CleanupScopeTree(DebugState);
   }
 

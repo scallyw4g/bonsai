@@ -36,7 +36,7 @@ struct debug_state
 
   debug_profile_scope **WriteScope;
   debug_profile_scope *CurrentScope;
-  debug_profile_scope RootScope;
+  debug_profile_scope *RootScope;
 
   debug_profile_scope FreeScopeSentinel;
 
@@ -74,7 +74,8 @@ struct debug_recording_state
 void
 PrintScopeTree(debug_profile_scope *Scope, s32 Depth = 0)
 {
-  debug_state *DebugState = GetDebugState();
+  if (!Scope)
+    return;
 
   s32 CurDepth = Depth;
 
@@ -88,6 +89,7 @@ PrintScopeTree(debug_profile_scope *Scope, s32 Depth = 0)
 
   printf("%d %s", Depth, Scope->Name);
 
+  debug_state *DebugState = GetDebugState();
   if (DebugState->WriteScope == &Scope->Child)
     printf(" %s", "<-- Child \n");
   else if (DebugState->WriteScope == &Scope->Sibling)
@@ -96,12 +98,8 @@ PrintScopeTree(debug_profile_scope *Scope, s32 Depth = 0)
     printf("%s", "\n");
 
 
-
-  if (Scope->Child)
-    PrintScopeTree(Scope->Child, Depth+1);
-
-  if (Scope->Sibling)
-    PrintScopeTree(Scope->Sibling, Depth);
+  PrintScopeTree(Scope->Child, Depth+1);
+  PrintScopeTree(Scope->Sibling, Depth);
 
   return;
 }
@@ -161,7 +159,7 @@ struct debug_timed_function
 
     /* Debug(" "); */
     /* Debug("Pushing %s", Name); */
-    /* PrintScopeTree(&DebugState->RootScope); */
+    /* PrintScopeTree(DebugState->RootScope); */
 
   }
 
@@ -178,7 +176,7 @@ struct debug_timed_function
     // 'Pop' the scope stack
     DebugState->WriteScope = &DebugState->CurrentScope->Sibling;
     DebugState->CurrentScope = DebugState->CurrentScope->Parent;
-    /* PrintScopeTree(&DebugState->RootScope); */
+    /* PrintScopeTree(DebugState->RootScope); */
   }
 };
 
