@@ -497,28 +497,46 @@ DebugFrameEnd(platform *Plat)
   /* PrintScopeTree(DebugState->RootScope); */
   /* Log("-------------------------------------------------------------------------------"); */
 
+  layout StatusBarLayout(DEBUG_FONT_SIZE);
+  StatusBarLayout.AtY = (r32)SCR_HEIGHT - StatusBarLayout.FontSize;
   {
-    layout Layout(DEBUG_FONT_SIZE);
-    Layout.AtY = (r32)SCR_HEIGHT - Layout.FontSize;
 
-    AdvanceSpaces(6, &Layout);
-    BufferSingleDecimal(1000.0*MaxDt, &Layout, RG, ViewportDim);
-    NewLine(&Layout);
+    AdvanceSpaces(6, &StatusBarLayout);
+    BufferSingleDecimal(1000.0*MaxDt, &StatusBarLayout, RG, ViewportDim);
+    NewLine(&StatusBarLayout);
 
-    BufferSingleDecimal(1000.0*dt, &Layout, RG, ViewportDim);
-    BufferSingleDecimal(1000.0*AverageFrameDt, &Layout, RG, ViewportDim);
-    BufferText("ms", &Layout, RG, ViewportDim);
+    BufferSingleDecimal(1000.0*dt, &StatusBarLayout, RG, ViewportDim);
+    BufferSingleDecimal(1000.0*AverageFrameDt, &StatusBarLayout, RG, ViewportDim);
+    BufferText("ms", &StatusBarLayout, RG, ViewportDim);
 
-    BufferCycles(FrameElapsedCycles, &Layout, RG, ViewportDim);
-    NewLine(&Layout);
+    BufferCycles(FrameElapsedCycles, &StatusBarLayout, RG, ViewportDim);
+    NewLine(&StatusBarLayout);
 
-    AdvanceSpaces(6, &Layout);
-    BufferSingleDecimal(1000.0*MinDt, &Layout, RG, ViewportDim);
+    AdvanceSpaces(6, &StatusBarLayout);
+    BufferSingleDecimal(1000.0*MinDt, &StatusBarLayout, RG, ViewportDim);
   }
 
   {
-    layout Layout(22);
-    Layout.AtY = (r32)SCR_HEIGHT - (5.0f*Layout.FontSize);
+    layout Layout = StatusBarLayout;
+    NewLine(&Layout);
+    NewLine(&Layout);
+    for (u32 ScopeIndex = 0;
+        ScopeIndex < ROOT_SCOPE_COUNT;
+        ++ScopeIndex )
+    {
+      if (ScopeIndex == DebugState->RootScopeIndex)
+      {
+        BufferSingleDecimal(1000.0*dt, &Layout, RG, ViewportDim);
+      }
+      else
+      {
+        BufferText("O", &Layout, RG, ViewportDim);
+      }
+    }
+
+    NewLine(&Layout);
+    NewLine(&Layout);
+    Layout.FontSize = 22;
     BufferScopeTree(DebugState->GetRootScope(), DebugState, &Layout, ViewportDim);
     FreeNextScopeTree();
   }
