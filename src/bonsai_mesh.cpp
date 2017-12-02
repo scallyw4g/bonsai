@@ -35,6 +35,11 @@ BufferVertsDirect(
   s32 FaceVerts = 6;
   Assert(NumVerts % FaceVerts == 0);
 
+  s32 sizeofData = NumVerts * sizeof(v3);
+  memcpy( &Dest->NormalData[Dest->VertsFilled],  Normals,         sizeofData );
+  memcpy( &Dest->ColorData[Dest->VertsFilled],   VertColors,      sizeofData );
+
+
   for ( s32 VertIndex = 0;
         VertIndex < NumVerts;
         VertIndex += FaceVerts )
@@ -80,20 +85,6 @@ BufferVertsDirect(
     Dest->VertexData[Dest->VertsFilled + 3] = Result3;
     Dest->VertexData[Dest->VertsFilled + 4] = Result4;
     Dest->VertexData[Dest->VertsFilled + 5] = Result5;
-
-    Dest->NormalData[Dest->VertsFilled + 0] = Normals[VertIndex + 0];
-    Dest->NormalData[Dest->VertsFilled + 1] = Normals[VertIndex + 1];
-    Dest->NormalData[Dest->VertsFilled + 2] = Normals[VertIndex + 2];
-    Dest->NormalData[Dest->VertsFilled + 3] = Normals[VertIndex + 3];
-    Dest->NormalData[Dest->VertsFilled + 4] = Normals[VertIndex + 4];
-    Dest->NormalData[Dest->VertsFilled + 5] = Normals[VertIndex + 5];
-
-    Dest->ColorData[Dest->VertsFilled + 0] = VertColors[VertIndex + 0];
-    Dest->ColorData[Dest->VertsFilled + 1] = VertColors[VertIndex + 1];
-    Dest->ColorData[Dest->VertsFilled + 2] = VertColors[VertIndex + 2];
-    Dest->ColorData[Dest->VertsFilled + 3] = VertColors[VertIndex + 3];
-    Dest->ColorData[Dest->VertsFilled + 4] = VertColors[VertIndex + 4];
-    Dest->ColorData[Dest->VertsFilled + 5] = VertColors[VertIndex + 5];
 
     Dest->VertsFilled += FaceVerts;
   }
