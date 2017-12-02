@@ -54,10 +54,9 @@ AllocateAndInitGeoBuffer(text_geometry_buffer *Geo, u32 VertCount, memory_arena 
 void
 InitScopeTree(debug_state *State)
 {
-  State->RootScope = 0;
   State->NumScopes = 0;
   State->CurrentScope = 0;
-  State->WriteScope = &State->RootScope;
+  State->WriteScope = &State->RootScopes[State->RootScopeIndex];
 
   return;
 }
@@ -209,11 +208,10 @@ CalculateFramePercentage(debug_profile_entry *Entry, u64 CycleDelta)
 void
 FreeScopes(debug_state *DebugState, debug_profile_scope *ScopeToFree)
 {
-  if (ScopeToFree->Child)
-    FreeScopes(DebugState, ScopeToFree->Child);
+  if (!ScopeToFree) return;
 
-  if (ScopeToFree->Sibling)
-    FreeScopes(DebugState, ScopeToFree->Sibling);
+  FreeScopes(DebugState, ScopeToFree->Child);
+  FreeScopes(DebugState, ScopeToFree->Sibling);
 
   ScopeToFree->Child = 0;
   ScopeToFree->Sibling = 0;
@@ -247,19 +245,23 @@ PrintFreeScopes(debug_state *State)
 }
 
 void
-CleanupScopeTree(debug_state *DebugState)
+FreeNextScopeTree(void)
 {
+  debug_state *State = GetDebugState();
 
-  /* Debug("Scopes Recorded: %lu", DebugState->NumScopes); */
-  /* PrintScopeTree(&DebugState->RootScope); */
+  /* Debug("Scopes Recorded: %lu", State->NumScopes); */
+  /* PrintScopeTree(&State->RootScope); */
   /* Debug("------------------------------------------------------------------------------"); */
 
-  FreeScopes(DebugState, DebugState->RootScope);
-  InitScopeTree(DebugState);
+  State->RootScopeIndex = (State->RootScopeIndex+1) % ROOT_SCOPE_COUNT;
+  debug_profile_scope *NextRootScope = State->GetRootScope();
+  FreeScopes(State, NextRootScope);
 
-  /* PrintFreeScopes(DebugState); */
+  InitScopeTree(State);
+
+  /* PrintFreeScopes(State); */
   /* Debug("------------------------------------------------------------------------------"); */
-  /* PrintScopeTree(DebugState->RootScope); */
+  /* PrintScopeTree(State->RootScope); */
 
   /* debug_profile_scope RootScope; */
   /* debug_profile_scope FreeScopeSentinel; */
@@ -412,7 +414,7 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout, 
   u64 CallCount = 0;
   u64 TotalCycles = 0;
 
-  debug_profile_scope *Next = State->RootScope;
+  debug_profile_scope *Next = State->GetRootScope();
   if (Scope->Parent) Next = Scope->Parent->Child;
 
   while (Next)
@@ -517,8 +519,8 @@ DebugFrameEnd(platform *Plat)
   {
     layout Layout(22);
     Layout.AtY = (r32)SCR_HEIGHT - (5.0f*Layout.FontSize);
-    BufferScopeTree(DebugState->RootScope, DebugState, &Layout, ViewportDim);
-    CleanupScopeTree(DebugState);
+    BufferScopeTree(DebugState->GetRootScope(), DebugState, &Layout, ViewportDim);
+    FreeNextScopeTree();
   }
 
 

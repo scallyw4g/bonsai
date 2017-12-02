@@ -25,6 +25,7 @@ struct debug_profile_scope
   debug_profile_scope *Child;
 };
 
+#define ROOT_SCOPE_COUNT 60
 struct debug_text_render_group;
 struct debug_state
 {
@@ -36,12 +37,19 @@ struct debug_state
 
   debug_profile_scope **WriteScope;
   debug_profile_scope *CurrentScope;
-  debug_profile_scope *RootScope;
+  debug_profile_scope *RootScopes[ROOT_SCOPE_COUNT];
+  u32 RootScopeIndex;
 
   debug_profile_scope FreeScopeSentinel;
 
   u64 NumScopes;
   b32 Initialized;
+
+  debug_profile_scope *GetRootScope()
+  {
+    debug_profile_scope *RootScope = this->RootScopes[this->RootScopeIndex];
+    return RootScope;
+  }
 };
 
 debug_global debug_state *GlobalDebugState;
