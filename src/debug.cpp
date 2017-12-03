@@ -52,11 +52,11 @@ AllocateAndInitGeoBuffer(text_geometry_buffer *Geo, u32 VertCount, memory_arena 
 }
 
 void
-InitScopeTree(debug_state *State)
+InitScopeTree(debug_state *State, debug_profile_scope **WriteScope)
 {
   State->NumScopes = 0;
   State->CurrentScope = 0;
-  State->WriteScope = &State->RootScopes[(State->RootScopeIndex + 1) % ROOT_SCOPE_COUNT];
+  State->WriteScope = WriteScope;
 
   return;
 }
@@ -67,7 +67,7 @@ InitDebugState(platform *Plat)
   GlobalDebugState = &Plat->DebugState;
   GlobalDebugState->GetCycleCount = Plat->GetCycleCount;
 
-  InitScopeTree(GlobalDebugState);
+  InitScopeTree(GlobalDebugState, GlobalDebugState->GetWriteScopeTree());
 
   GlobalDebugState->FreeScopeSentinel.Parent = &GlobalDebugState->FreeScopeSentinel;
   GlobalDebugState->FreeScopeSentinel.Child = &GlobalDebugState->FreeScopeSentinel;
@@ -442,10 +442,10 @@ DebugFrameBegin()
 
   State->RootScopeIndex = (State->RootScopeIndex+1) % ROOT_SCOPE_COUNT;
 
-  debug_profile_scope *RootToFree = State->GetWriteScopeTree();
-  FreeScopes(State, RootToFree);
+  debug_profile_scope **WriteScope = State->GetWriteScopeTree();
+  FreeScopes(State, *WriteScope);
 
-  InitScopeTree(State);
+  InitScopeTree(State, WriteScope);
 }
 
 void
