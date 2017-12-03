@@ -56,7 +56,7 @@ InitScopeTree(debug_state *State)
 {
   State->NumScopes = 0;
   State->CurrentScope = 0;
-  State->WriteScope = &State->RootScopes[State->RootScopeIndex];
+  State->WriteScope = &State->RootScopes[(State->RootScopeIndex + 1) % ROOT_SCOPE_COUNT];
 
   return;
 }
@@ -244,32 +244,6 @@ PrintFreeScopes(debug_state *State)
   return;
 }
 
-void
-FreeNextScopeTree(void)
-{
-  debug_state *State = GetDebugState();
-
-  /* Debug("Scopes Recorded: %lu", State->NumScopes); */
-  /* PrintScopeTree(&State->RootScope); */
-  /* Debug("------------------------------------------------------------------------------"); */
-
-  State->RootScopeIndex = (State->RootScopeIndex+1) % ROOT_SCOPE_COUNT;
-  debug_profile_scope *NextRootScope = State->GetRootScope();
-  FreeScopes(State, NextRootScope);
-
-  InitScopeTree(State);
-
-  /* PrintFreeScopes(State); */
-  /* Debug("------------------------------------------------------------------------------"); */
-  /* PrintScopeTree(State->RootScope); */
-
-  /* debug_profile_scope RootScope; */
-  /* debug_profile_scope FreeScopeSentinel; */
-
-  /* Debug("------------------------------------------------------------------------------"); */
-
-}
-
 inline void
 BufferText(const char *Text, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
 {
@@ -414,7 +388,7 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout, 
   u64 CallCount = 0;
   u64 TotalCycles = 0;
 
-  debug_profile_scope *Next = State->GetRootScope();
+  debug_profile_scope *Next = State->GetReadScopeTree();
   if (Scope->Parent) Next = Scope->Parent->Child;
 
   while (Next)
@@ -462,8 +436,22 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout, 
 }
 
 void
+DebugFrameBegin()
+{
+  debug_state *State = GetDebugState();
+
+  State->RootScopeIndex = (State->RootScopeIndex+1) % ROOT_SCOPE_COUNT;
+
+  debug_profile_scope *RootToFree = State->GetWriteScopeTree();
+  FreeScopes(State, RootToFree);
+
+  InitScopeTree(State);
+}
+
+void
 DebugFrameEnd(platform *Plat)
 {
+  TIMED_FUNCTION();
   debug_state *DebugState = GetDebugState();
   debug_text_render_group *RG = DebugState->TextRenderGroup;
   text_geometry_buffer *TextGeo = &RG->TextGeo;
@@ -490,7 +478,6 @@ DebugFrameEnd(platform *Plat)
   }
 
   r32 AverageFrameDt = Accum/(r32)DtBufferSize;
-
 
   v2 ViewportDim = V2(Plat->WindowWidth, Plat->WindowHeight);
 
@@ -537,8 +524,7 @@ DebugFrameEnd(platform *Plat)
     NewLine(&Layout);
     NewLine(&Layout);
     Layout.FontSize = 22;
-    BufferScopeTree(DebugState->GetRootScope(), DebugState, &Layout, ViewportDim);
-    FreeNextScopeTree();
+    BufferScopeTree(DebugState->GetReadScopeTree(), DebugState, &Layout, ViewportDim);
   }
 
 

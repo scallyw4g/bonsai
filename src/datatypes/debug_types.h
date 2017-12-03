@@ -45,9 +45,16 @@ struct debug_state
   u64 NumScopes;
   b32 Initialized;
 
-  debug_profile_scope *GetRootScope()
+  debug_profile_scope *GetReadScopeTree()
   {
     debug_profile_scope *RootScope = this->RootScopes[this->RootScopeIndex];
+    return RootScope;
+  }
+
+  debug_profile_scope *GetWriteScopeTree()
+  {
+    s32 Index = (this->RootScopeIndex + 1) % ROOT_SCOPE_COUNT;
+    debug_profile_scope *RootScope = this->RootScopes[Index];
     return RootScope;
   }
 };

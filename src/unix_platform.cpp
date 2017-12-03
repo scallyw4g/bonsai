@@ -343,6 +343,7 @@ ProcessOsMessages(os *Os, platform *Plat)
 inline void
 BonsaiSwapBuffers(os *Os)
 {
+  TIMED_FUNCTION();
   glXSwapBuffers(Os->Display, Os->Window);
 }
 

@@ -462,6 +462,8 @@ main(s32 NumArgs, char ** Args)
 
     FrameStartingCycles = GetDebugState()->GetCycleCount();
 
+    DebugFrameBegin();
+
     v2 LastMouseP = Plat.MouseP;
     while ( ProcessOsMessages(&Os, &Plat) );
     Plat.MouseDP = LastMouseP - Plat.MouseP;
@@ -484,14 +486,15 @@ main(s32 NumArgs, char ** Args)
 
     GameUpdateAndRender(&Plat, GameState, &Hotkeys);
 
-    FrameEndCycles = GetDebugState()->GetCycleCount();
-    FrameElapsedCycles = FrameEndCycles - FrameStartingCycles;
 
     DEBUG_FRAME_END(&Plat);
 
     BonsaiSwapBuffers(&Os);
 
     /* WaitForFrameTime(LastMs, 30.0f); */
+
+    FrameEndCycles = GetDebugState()->GetCycleCount();
+    FrameElapsedCycles = FrameEndCycles - FrameStartingCycles;
   }
 
   Info("Shutting Down");
