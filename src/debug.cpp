@@ -35,6 +35,7 @@ InitDebugOverlayFramebuffer(debug_text_render_group *RG, memory_arena *DebugAren
 
   RG->TextureUniformID = GL_Global->glGetUniformLocation(RG->Text2DShader.ID, "myTextureSampler");
 
+  RG->DebugFontTextureShader = MakeSimpleTextureShader(&RG->FontTexture, DebugArena);
   RG->DebugTextureShader = MakeSimpleTextureShader(RG->CompositedTexture, DebugArena);
 
   if (!CheckAndClearFramebuffer())
@@ -44,7 +45,7 @@ InitDebugOverlayFramebuffer(debug_text_render_group *RG, memory_arena *DebugAren
 }
 
 void
-AllocateAndInitGeoBuffer(text_geometry_buffer *Geo, u32 VertCount, memory_arena *DebugArena)
+AllocateAndInitGeoBuffer(textured_2d_geometry_buffer *Geo, u32 VertCount, memory_arena *DebugArena)
 {
   Geo->Verts = PUSH_STRUCT_CHECKED(v3, DebugArena, VertCount);
   Geo->UVs = PUSH_STRUCT_CHECKED(v2, DebugArena, VertCount);
@@ -85,7 +86,7 @@ InitDebugState(platform *Plat)
 }
 
 void
-DrawDebugText(debug_text_render_group *RG, text_geometry_buffer *Geo, v2 ViewportDim)
+DrawDebugText(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo, v2 ViewportDim)
 {
   u32 VertCount = Geo->CurrentIndex +1;
   Geo->CurrentIndex = 0;
@@ -135,7 +136,7 @@ DrawDebugText(debug_text_render_group *RG, text_geometry_buffer *Geo, v2 Viewpor
 }
 
 rect2
-BufferTextAt(debug_text_render_group *RG, text_geometry_buffer *Geo,
+BufferTextAt(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo,
     const char *Text, v2 XY, s32 FontSize, v2 ViewportDim)
 {
   s32 QuadCount = strlen(Text);
@@ -450,12 +451,25 @@ DebugFrameBegin()
 }
 
 void
+BufferQuad( v2 MinP, layout *Layout, untextured_2d_geometry_buffer *Mesh, v2 ViewportDim)
+{
+  /* v3 FaceColors[FACE_VERT_COUNT]; */
+  /* FillColorArray(ColorIndex, FaceColors, FACE_VERT_COUNT);; */
+  /* v3 VertexData[6]; */
+
+  /* FrontFaceVertexData( MinP, Diameter, VertexData); */
+  /* BufferVertsChecked(Mesh, gBuffer, SG, Camera, 6, VertexData, RightFaceNormalData, FaceColors); */
+
+  /* return; */
+}
+
+void
 DebugFrameEnd(platform *Plat)
 {
   TIMED_FUNCTION();
   debug_state *DebugState = GetDebugState();
   debug_text_render_group *RG = DebugState->TextRenderGroup;
-  text_geometry_buffer *TextGeo = &RG->TextGeo;
+  textured_2d_geometry_buffer *TextGeo = &RG->TextGeo;
   r32 dt = Plat->dt;
 
   static const u32 DtBufferSize = 60;
@@ -504,20 +518,23 @@ DebugFrameEnd(platform *Plat)
     BufferSingleDecimal(1000.0*MinDt, 6, &StatusBarLayout, RG, ViewportDim);
   }
 
+
   {
     layout Layout = StatusBarLayout;
     NewLine(&Layout);
     NewLine(&Layout);
+
     for (u32 TreeIndex = 0;
         TreeIndex < ROOT_SCOPE_COUNT;
         ++TreeIndex )
     {
-      if (TreeIndex == DebugState->RootScopeIndex)
-      {
-        DebugState->ScopeTrees[TreeIndex].FrameMs = dt*1000;
-      }
+      debug_scope_tree *Tree = &DebugState->ScopeTrees[TreeIndex];
 
-      BufferSingleDecimal(DebugState->ScopeTrees[TreeIndex].FrameMs, 0, &Layout, RG, ViewportDim);
+      if (TreeIndex == DebugState->RootScopeIndex)
+        Tree->FrameMs = dt*1000;
+
+      /* BufferQuad( V2(1.0/30.0, (0.0001*Tree.FrameMs)), &Layout, 0, ViewportDim); */
+      BufferSingleDecimal(Tree->FrameMs, 0, &Layout, RG, ViewportDim);
     }
 
     NewLine(&Layout);

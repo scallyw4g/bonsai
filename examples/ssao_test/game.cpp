@@ -86,6 +86,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
   #if DEBUG_DRAW_SHADOW_MAP_TEXTURE
     // DrawTexturedQuad(&GetDebugState()->TextRenderGroup->DebugTextureShader);
+    /* DrawTexturedQuad(&GetDebugState()->TextRenderGroup->DebugFontTextureShader); */
     /* DrawTexturedQuad(&SG->DebugTextureShader); */
     /* DrawTexturedQuad(&gBuffer->DebugPositionTextureShader); */
     /* DrawTexturedQuad(&gBuffer->DebugNormalTextureShader); */

@@ -4,11 +4,11 @@
 #include <colors.h>
 
 void
-RenderGBuffer(mesh_buffer_target *Target, g_buffer_render_group *gBuffer, shadow_render_group *SG, camera *Camera);
+RenderGBuffer(untextured_3d_geometry_buffer *Target, g_buffer_render_group *gBuffer, shadow_render_group *SG, camera *Camera);
 
 inline void
 BufferVertsDirect(
-    mesh_buffer_target *Dest,
+    untextured_3d_geometry_buffer *Dest,
 
     s32 NumVerts,
 
@@ -120,7 +120,7 @@ BufferVertsDirect(
 #if 1
 inline void
 BufferVertsChecked(
-    mesh_buffer_target *Target,
+    untextured_3d_geometry_buffer *Target,
 
     g_buffer_render_group *gBuffer,
     shadow_render_group *SG,
@@ -152,8 +152,8 @@ BufferVertsChecked(
 
 inline void
 BufferVerts(
-    mesh_buffer_target *Source,
-    mesh_buffer_target *Dest,
+    untextured_3d_geometry_buffer *Source,
+    untextured_3d_geometry_buffer *Dest,
 
     v3 RenderOffset,
 

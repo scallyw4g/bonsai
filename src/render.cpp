@@ -715,7 +715,7 @@ BindShaderUniforms(shader *Shader)
 void
 DrawTexturedQuad(shader *SimpleTextureShader)
 {
-  r32 Scale = 0.25f;
+  r32 Scale = 1.0f;
 
   glDepthFunc(GL_LEQUAL);
 
@@ -786,7 +786,7 @@ DEBUG_CopyTextureToMemory(texture *Texture)
 #endif
 
 void
-RenderShadowMap(mesh_buffer_target *Mesh, shadow_render_group *SG, g_buffer_render_group *RG, camera *Camera)
+RenderShadowMap(untextured_3d_geometry_buffer *Mesh, shadow_render_group *SG, g_buffer_render_group *RG, camera *Camera)
 {
 #if 0
   SetViewport(V2(SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y));
@@ -821,7 +821,7 @@ RenderShadowMap(mesh_buffer_target *Mesh, shadow_render_group *SG, g_buffer_rend
 }
 
 void
-RenderWorldToGBuffer(mesh_buffer_target *Mesh, g_buffer_render_group *RG)
+RenderWorldToGBuffer(untextured_3d_geometry_buffer *Mesh, g_buffer_render_group *RG)
 {
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO.ID);
   GL_Global->glUseProgram(RG->gBufferShader.ID);
@@ -880,7 +880,7 @@ RenderWorldToGBuffer(mesh_buffer_target *Mesh, g_buffer_render_group *RG)
 
 inline void
 RenderGBuffer(
-    mesh_buffer_target *Mesh, g_buffer_render_group *RG,
+    untextured_3d_geometry_buffer *Mesh, g_buffer_render_group *RG,
     shadow_render_group *SG, camera *Camera)
 {
   TIMED_FUNCTION();
@@ -897,7 +897,7 @@ RenderGBuffer(
 }
 
 inline void
-DrawVoxel( mesh_buffer_target *Mesh,
+DrawVoxel( untextured_3d_geometry_buffer *Mesh,
            g_buffer_render_group *gBuffer,
            shadow_render_group *SG,
            camera *Camera,
@@ -995,7 +995,7 @@ RotatePoint(v3 P1, v3 P2)
 }
 
 inline void
-DEBUG_DrawLine( mesh_buffer_target *Mesh, g_buffer_render_group *gBuffer,
+DEBUG_DrawLine( untextured_3d_geometry_buffer *Mesh, g_buffer_render_group *gBuffer,
                 shadow_render_group *SG, camera *Camera, v3 P1, v3 P2,
                 int ColorIndex, float Thickness )
 {
@@ -1093,20 +1093,20 @@ DEBUG_DrawLine( mesh_buffer_target *Mesh, g_buffer_render_group *gBuffer,
 }
 
 inline void
-DEBUG_DrawVectorAt(mesh_buffer_target *Mesh, g_buffer_render_group *gBuffer, shadow_render_group *SG, camera *Camera, v3 Offset, v3 Vector, int ColorIndex, float Thickness )
+DEBUG_DrawVectorAt(untextured_3d_geometry_buffer *Mesh, g_buffer_render_group *gBuffer, shadow_render_group *SG, camera *Camera, v3 Offset, v3 Vector, int ColorIndex, float Thickness )
 {
   DEBUG_DrawLine(Mesh, gBuffer, SG, Camera, Offset, Vector + Offset, ColorIndex, Thickness );
 }
 
 inline void
-DEBUG_DrawLine(mesh_buffer_target *Mesh, g_buffer_render_group *gBuffer, shadow_render_group *SG, camera *Camera, line Line, int ColorIndex, float Thickness )
+DEBUG_DrawLine(untextured_3d_geometry_buffer *Mesh, g_buffer_render_group *gBuffer, shadow_render_group *SG, camera *Camera, line Line, int ColorIndex, float Thickness )
 {
   DEBUG_DrawLine(Mesh, gBuffer, SG, Camera, Line.MinP, Line.MaxP, ColorIndex, Thickness);
   return;
 }
 
 void
-DEBUG_DrawAABB(mesh_buffer_target *Mesh, g_buffer_render_group *gBuffer, shadow_render_group *SG, camera *Camera, v3 MinP, v3 MaxP, Quaternion Rotation, int ColorIndex, float Thickness = DEFAULT_LINE_THICKNESS )
+DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, g_buffer_render_group *gBuffer, shadow_render_group *SG, camera *Camera, v3 MinP, v3 MaxP, Quaternion Rotation, int ColorIndex, float Thickness = DEFAULT_LINE_THICKNESS )
 {
   /* v3 HalfDim = (GetRenderP(world, MaxCP) - GetRenderP(world, MinCP)) / 2; */
 
@@ -1180,7 +1180,7 @@ DEBUG_DrawAABB(mesh_buffer_target *Mesh, g_buffer_render_group *gBuffer, shadow_
 }
 
 inline void
-DEBUG_DrawAABB(mesh_buffer_target *Mesh, g_buffer_render_group *gBuffer, shadow_render_group *SG, camera *Camera,  aabb Rect, Quaternion Rotation, int ColorIndex, float Thickness = DEFAULT_LINE_THICKNESS )
+DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, g_buffer_render_group *gBuffer, shadow_render_group *SG, camera *Camera,  aabb Rect, Quaternion Rotation, int ColorIndex, float Thickness = DEFAULT_LINE_THICKNESS )
 {
   v3 MinP = Rect.Center - Rect.Radius;
   v3 MaxP = Rect.Center + Rect.Radius;
@@ -1200,7 +1200,7 @@ GetModelSpaceP(chunk_data *chunk, v3 P)
 }
 
 inline void
-DEBUG_DrawChunkAABB( mesh_buffer_target *Mesh, g_buffer_render_group *gBuffer,
+DEBUG_DrawChunkAABB( untextured_3d_geometry_buffer *Mesh, g_buffer_render_group *gBuffer,
                      shadow_render_group *SG, world_position WorldP, camera *Camera, chunk_dimension WorldChunkDim,
                      Quaternion Rotation, s32 ColorIndex , r32 Thickness = DEFAULT_LINE_THICKNESS)
 {
@@ -1212,7 +1212,7 @@ DEBUG_DrawChunkAABB( mesh_buffer_target *Mesh, g_buffer_render_group *gBuffer,
 }
 
 inline void
-DEBUG_DrawChunkAABB(mesh_buffer_target *Mesh, g_buffer_render_group *gBuffer, shadow_render_group *SG, world_chunk *chunk, camera *Camera, chunk_dimension WorldChunkDim,
+DEBUG_DrawChunkAABB(untextured_3d_geometry_buffer *Mesh, g_buffer_render_group *gBuffer, shadow_render_group *SG, world_chunk *chunk, camera *Camera, chunk_dimension WorldChunkDim,
                      Quaternion Rotation, s32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS)
 {
   v3 MinP = GetRenderP(WorldChunkDim, Canonical_Position(V3(0,0,0), chunk->WorldP), Camera);
@@ -1391,7 +1391,7 @@ ClearFramebuffers(graphics *Graphics)
 
 void
 BufferChunkMesh(
-    mesh_buffer_target *Dest,
+    untextured_3d_geometry_buffer *Dest,
     chunk_dimension WorldChunkDim,
     chunk_data *Chunk,
     world_position WorldP,
@@ -1632,7 +1632,7 @@ RayTraceCollision(chunk_data *Chunk, chunk_dimension Dim, v3 StartingP, v3 Ray, 
 }
 
 inline void
-BufferTriangle(mesh_buffer_target *Mesh, g_buffer_render_group *gBuffer, shadow_render_group *SG, camera *Camera, v3 *Verts, v3 Normal, s32 ColorIndex)
+BufferTriangle(untextured_3d_geometry_buffer *Mesh, g_buffer_render_group *gBuffer, shadow_render_group *SG, camera *Camera, v3 *Verts, v3 Normal, s32 ColorIndex)
 {
   v3 VertBuffer[3];
   v3 NormalBuffer[3] = {Normal, Normal, Normal};
@@ -2305,7 +2305,7 @@ TraverseSurfaceToBoundary(
 }
 
 inline void
-Draw0thLod(mesh_buffer_target *Mesh, g_buffer_render_group *gBuffer, shadow_render_group *SG, camera *Camera, world_chunk *Chunk, v3 RenderOffset)
+Draw0thLod(untextured_3d_geometry_buffer *Mesh, g_buffer_render_group *gBuffer, shadow_render_group *SG, camera *Camera, world_chunk *Chunk, v3 RenderOffset)
 {
   /* for ( s32 PointIndex = 0; PointIndex < Chunk->PB.Count; ++PointIndex ) */
   /*   DEBUG_DrawPointMarker(world, V3(Chunk->PB.Points[PointIndex]) + RenderOffset, Color--, 1.0f); */
@@ -2372,7 +2372,7 @@ CanBuildWorldChunkBoundary(world *World, world_chunk *Chunk)
 }
 
 void
-DrawFolie(mesh_buffer_target *Mesh, g_buffer_render_group *gBuffer, shadow_render_group *SG, camera *Camera, aabb *AABB)
+DrawFolie(untextured_3d_geometry_buffer *Mesh, g_buffer_render_group *gBuffer, shadow_render_group *SG, camera *Camera, aabb *AABB)
 {
   v3 RenderP = AABB->Center;
   DrawVoxel( Mesh, gBuffer, SG, Camera, RenderP, GREY, AABB->Radius*2);
@@ -2384,7 +2384,7 @@ DrawFolie(mesh_buffer_target *Mesh, g_buffer_render_group *gBuffer, shadow_rende
 void
 DrawParticle(
     canonical_position *P,
-    mesh_buffer_target *Mesh,
+    untextured_3d_geometry_buffer *Mesh,
     g_buffer_render_group *gBuffer,
     shadow_render_group *SG,
     chunk_dimension WorldChunkDim,
@@ -2425,7 +2425,7 @@ DrawParticle(
 
 void
 BufferEntity(
-    mesh_buffer_target *Mesh,
+    untextured_3d_geometry_buffer *Mesh,
     entity *Entity,
     camera *Camera,
     g_buffer_render_group *RG,
@@ -2545,7 +2545,7 @@ BufferWorld(world *World, graphics *Graphics, camera *Camera)
 }
 
 void
-BufferEntities( entity **EntityTable, mesh_buffer_target *Mesh,
+BufferEntities( entity **EntityTable, untextured_3d_geometry_buffer *Mesh,
                 graphics *Graphics, camera *Camera, world *World)
 {
   TIMED_FUNCTION();

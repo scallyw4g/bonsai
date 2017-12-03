@@ -157,10 +157,28 @@ struct shadow_render_group
   game_lights GameLights;
 };
 
-struct text_geometry_buffer
+struct untextured_3d_geometry_buffer
+{
+  s32 VertsAllocated;
+  s32 VertsFilled;
+
+  v3* VertexData;
+  v3* ColorData;
+  v3* NormalData;
+};
+
+struct textured_2d_geometry_buffer
 {
   v3 *Verts;
   v2 *UVs;
+
+  u32 Allocated;
+  u32 CurrentIndex;
+};
+
+struct untextured_2d_geometry_buffer
+{
+  v3 *Verts;
 
   u32 Allocated;
   u32 CurrentIndex;
@@ -178,8 +196,9 @@ struct debug_text_render_group
 
   shader Text2DShader;
 
-  text_geometry_buffer TextGeo;
+  textured_2d_geometry_buffer TextGeo;
 
+  shader DebugFontTextureShader;
   shader DebugTextureShader;
 
   u32 TextureUniformID;

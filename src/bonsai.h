@@ -139,16 +139,6 @@ struct boundary_voxel
   }
 };
 
-struct mesh_buffer_target
-{
-  s32 VertsAllocated;
-  s32 VertsFilled;
-
-  v3* VertexData;
-  v3* ColorData;
-  v3* NormalData;
-};
-
 struct noise_3d
 {
   voxel *Voxels;
@@ -158,7 +148,7 @@ struct noise_3d
 struct chunk_data
 {
   chunk_flag Flags;
-  mesh_buffer_target Mesh;
+  untextured_3d_geometry_buffer Mesh;
   voxel *Voxels;
 };
 
@@ -386,7 +376,7 @@ struct world
 
   v3 Gravity;
 
-  mesh_buffer_target Mesh;
+  untextured_3d_geometry_buffer Mesh;
 };
 
 
@@ -749,7 +739,7 @@ GetPosition(s32 Index, chunk_dimension Dim)
 }
 
 void
-ZeroMesh( mesh_buffer_target *Mesh )
+ZeroMesh( untextured_3d_geometry_buffer *Mesh )
 {
   Mesh->VertsFilled = 0;
   return;
@@ -857,7 +847,7 @@ GetIndex(v3 Offset, chunk_data *Chunk, chunk_dimension Dim)
 }
 
 void
-AllocateMesh(mesh_buffer_target *Mesh, u32 NumVerts, memory_arena *Memory)
+AllocateMesh(untextured_3d_geometry_buffer *Mesh, u32 NumVerts, memory_arena *Memory)
 {
   Mesh->VertexData = PUSH_STRUCT_CHECKED(v3, Memory, NumVerts );
   Mesh->ColorData = PUSH_STRUCT_CHECKED(v3,  Memory, NumVerts );

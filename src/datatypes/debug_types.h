@@ -39,6 +39,7 @@ struct debug_state
   u64 FrameCount;
 
   debug_text_render_group *TextRenderGroup;
+
   memory_arena *Memory;
 
   debug_profile_scope **WriteScope;
