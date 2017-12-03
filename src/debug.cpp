@@ -322,14 +322,13 @@ BufferCycles(u64 Number, layout *Layout, debug_text_render_group *RG, v2 Viewpor
 }
 
 inline void
-BufferSingleDecimal(r32 Perc, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
+BufferSingleDecimal(r32 Perc, u32 ColumnWidth, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
 {
   char Buffer[32] = {};
   sprintf(Buffer, "%.1f", Perc);
   {
-    s32 Max = 6;
     s32 Len = strlen(Buffer);
-    s32 Pad = Max-Len;
+    s32 Pad = Max(ColumnWidth-Len, 0);
     AdvanceSpaces(Pad, Layout);
   }
   BufferText( Buffer, Layout, RG, ViewportDim);
@@ -372,7 +371,8 @@ BufferNumberAsText(u32 Number, layout *Layout, debug_text_render_group *RG, v2 V
   return;
 }
 
-b32 StringsMatch(const char *S1, const char *S2)
+b32
+StringsMatch(const char *S1, const char *S2)
 {
   b32 Result = strcmp(S1, S2) == 0;
   return Result;
@@ -419,7 +419,7 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout, 
   {
     r32 Percentage = 100.0*(r32)TotalCycles/(r32)FrameElapsedCycles;
     u64 AvgCycles = SafeDivide0(TotalCycles, CallCount);
-    BufferSingleDecimal(Percentage, Layout, State->TextRenderGroup, ViewportDim);
+    BufferSingleDecimal(Percentage, 6, Layout, State->TextRenderGroup, ViewportDim);
     BufferCycles(AvgCycles, Layout, State->TextRenderGroup, ViewportDim);
     Layout->AtX += (Depth*2.0f*Layout->FontSize);
     BufferNumberAsText(CallCount, Layout, State->TextRenderGroup, ViewportDim);
@@ -446,6 +446,7 @@ DebugFrameBegin()
   FreeScopes(State, *WriteScope);
 
   InitScopeTree(State, WriteScope);
+  return;
 }
 
 void
@@ -489,36 +490,34 @@ DebugFrameEnd(platform *Plat)
   {
 
     AdvanceSpaces(6, &StatusBarLayout);
-    BufferSingleDecimal(1000.0*MaxDt, &StatusBarLayout, RG, ViewportDim);
+    BufferSingleDecimal(1000.0*MaxDt, 6, &StatusBarLayout, RG, ViewportDim);
     NewLine(&StatusBarLayout);
 
-    BufferSingleDecimal(1000.0*dt, &StatusBarLayout, RG, ViewportDim);
-    BufferSingleDecimal(1000.0*AverageFrameDt, &StatusBarLayout, RG, ViewportDim);
+    BufferSingleDecimal(1000.0*dt, 6, &StatusBarLayout, RG, ViewportDim);
+    BufferSingleDecimal(1000.0*AverageFrameDt, 6, &StatusBarLayout, RG, ViewportDim);
     BufferText("ms", &StatusBarLayout, RG, ViewportDim);
 
     BufferCycles(FrameElapsedCycles, &StatusBarLayout, RG, ViewportDim);
     NewLine(&StatusBarLayout);
 
     AdvanceSpaces(6, &StatusBarLayout);
-    BufferSingleDecimal(1000.0*MinDt, &StatusBarLayout, RG, ViewportDim);
+    BufferSingleDecimal(1000.0*MinDt, 6, &StatusBarLayout, RG, ViewportDim);
   }
 
   {
     layout Layout = StatusBarLayout;
     NewLine(&Layout);
     NewLine(&Layout);
-    for (u32 ScopeIndex = 0;
-        ScopeIndex < ROOT_SCOPE_COUNT;
-        ++ScopeIndex )
+    for (u32 TreeIndex = 0;
+        TreeIndex < ROOT_SCOPE_COUNT;
+        ++TreeIndex )
     {
-      if (ScopeIndex == DebugState->RootScopeIndex)
+      if (TreeIndex == DebugState->RootScopeIndex)
       {
-        BufferSingleDecimal(1000.0*dt, &Layout, RG, ViewportDim);
+        DebugState->ScopeTrees[TreeIndex].FrameMs = dt*1000;
       }
-      else
-      {
-        BufferText("O", &Layout, RG, ViewportDim);
-      }
+
+      BufferSingleDecimal(DebugState->ScopeTrees[TreeIndex].FrameMs, 0, &Layout, RG, ViewportDim);
     }
 
     NewLine(&Layout);

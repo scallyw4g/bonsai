@@ -25,6 +25,12 @@ struct debug_profile_scope
   debug_profile_scope *Child;
 };
 
+struct debug_scope_tree
+{
+  r32 FrameMs;
+  debug_profile_scope *Root;
+};
+
 #define ROOT_SCOPE_COUNT 60
 struct debug_text_render_group;
 struct debug_state
@@ -37,7 +43,7 @@ struct debug_state
 
   debug_profile_scope **WriteScope;
   debug_profile_scope *CurrentScope;
-  debug_profile_scope *RootScopes[ROOT_SCOPE_COUNT];
+  debug_scope_tree ScopeTrees[ROOT_SCOPE_COUNT];
   u32 RootScopeIndex;
 
   debug_profile_scope FreeScopeSentinel;
@@ -47,14 +53,14 @@ struct debug_state
 
   debug_profile_scope *GetReadScopeTree()
   {
-    debug_profile_scope *RootScope = this->RootScopes[this->RootScopeIndex];
+    debug_profile_scope *RootScope = this->ScopeTrees[this->RootScopeIndex].Root;
     return RootScope;
   }
 
   debug_profile_scope **GetWriteScopeTree()
   {
     s32 Index = (this->RootScopeIndex + 1) % ROOT_SCOPE_COUNT;
-    debug_profile_scope **RootScope = &this->RootScopes[Index];
+    debug_profile_scope **RootScope = &this->ScopeTrees[Index].Root;
     return RootScope;
   }
 };
