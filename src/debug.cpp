@@ -598,48 +598,48 @@ DebugFrameEnd(platform *Plat)
   /* PrintScopeTree(DebugState->RootScope); */
   /* Log("-------------------------------------------------------------------------------"); */
 
-  layout StatusBarLayout(DEBUG_FONT_SIZE);
+  layout Layout(DEBUG_FONT_SIZE);
+  Layout.AtY = (r32)SCR_HEIGHT - Layout.FontSize;
+
   TIMED_BLOCK("Draw Status Bar");
-  StatusBarLayout.AtY = (r32)SCR_HEIGHT - StatusBarLayout.FontSize;
-  {
+    AdvanceSpaces(6, &Layout);
+    BufferSingleDecimal(1000.0*MaxDt, 6, &Layout, RG, ViewportDim);
+    NewLine(&Layout);
 
-    AdvanceSpaces(6, &StatusBarLayout);
-    BufferSingleDecimal(1000.0*MaxDt, 6, &StatusBarLayout, RG, ViewportDim);
-    NewLine(&StatusBarLayout);
+    BufferSingleDecimal(1000.0*dt, 6, &Layout, RG, ViewportDim);
+    BufferSingleDecimal(1000.0*AverageFrameDt, 6, &Layout, RG, ViewportDim);
+    BufferText("ms", &Layout, RG, ViewportDim);
 
-    BufferSingleDecimal(1000.0*dt, 6, &StatusBarLayout, RG, ViewportDim);
-    BufferSingleDecimal(1000.0*AverageFrameDt, 6, &StatusBarLayout, RG, ViewportDim);
-    BufferText("ms", &StatusBarLayout, RG, ViewportDim);
+    BufferCycles(FrameElapsedCycles, &Layout, RG, ViewportDim);
+    NewLine(&Layout);
 
-    BufferCycles(FrameElapsedCycles, &StatusBarLayout, RG, ViewportDim);
-    NewLine(&StatusBarLayout);
+    AdvanceSpaces(6, &Layout);
+    BufferSingleDecimal(1000.0*MinDt, 6, &Layout, RG, ViewportDim);
 
-    AdvanceSpaces(6, &StatusBarLayout);
-    BufferSingleDecimal(1000.0*MinDt, 6, &StatusBarLayout, RG, ViewportDim);
-  }
+    NewLine(&Layout);
   END_BLOCK("Status Bar");
 
-  TIMED_BLOCK("Call Graph");
-  {
-    layout Layout = StatusBarLayout;
-    NewLine(&Layout);
-    NewLine(&Layout);
-
+  TIMED_BLOCK("Frame Ticker");
     for (u32 TreeIndex = 0;
         TreeIndex < ROOT_SCOPE_COUNT;
         ++TreeIndex )
     {
       debug_scope_tree *Tree = &DebugState->ScopeTrees[TreeIndex];
 
-      v3 Color = V3(1,0,0);
-      if (TreeIndex == DebugState->RootScopeIndex)
+      v3 Color = V3(0.5f, 0.5f, 0.5f);
+      if ( Tree->Root == *DebugState->GetWriteScopeTree() )
       {
         Tree->FrameMs = dt*1000;
-        Color = V3(1,0,1);
+        Color = V3(0.0, 0.0, 0.5f);
       }
 
-      v2 MinP = V2(Layout.AtX, Layout.AtY);
-      v2 Dim = V2(Layout.FontSize, Layout.FontSize);
+      if ( Tree->Root == DebugState->GetReadScopeTree() )
+      {
+        Color = V3(0.5f, 0.5f, 0.0f);
+      }
+
+      v2 Dim = V2(Layout.FontSize, Layout.FontSize*3);
+      v2 MinP = V2(Layout.AtX, Layout.AtY-Dim.y);
 
       v2 DrawDim = BufferQuad(RG->UIGeo.Verts, RG->UIGeo.CurrentIndex, MinP, Dim);
       Layout.AtX = DrawDim.x + 5.0f;
@@ -648,12 +648,13 @@ DebugFrameEnd(platform *Plat)
 
       RG->UIGeo.CurrentIndex+=6;
     }
+  END_BLOCK("Frame Ticker");
 
+  TIMED_BLOCK("Call Graph");
     NewLine(&Layout);
     NewLine(&Layout);
     Layout.FontSize = 22;
     BufferScopeTree(DebugState->GetReadScopeTree(), DebugState, &Layout, ViewportDim);
-  }
   END_BLOCK("Call Graph");
 
   FlushSolidUIGeo(RG, ViewportDim);
