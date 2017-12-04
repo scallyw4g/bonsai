@@ -6,10 +6,12 @@ struct layout
   r32 AtX;
   r32 AtY;
   r32 FontSize;
+  r32 LineHeight;
 
   layout(u32 FontSize = 12)
   {
     this->FontSize = FontSize;
+    this->LineHeight = FontSize * 1.3f;
     this->AtX = 0;
     this->AtY = 0;
   }

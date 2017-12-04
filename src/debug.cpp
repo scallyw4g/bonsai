@@ -327,7 +327,7 @@ BufferText(u32 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportD
 inline void
 NewLine(layout *Layout)
 {
-  Layout->AtY -= (Layout->FontSize * 1.3f);
+  Layout->AtY -= (Layout->LineHeight);
   Layout->AtX = 0;
   return;
 }
@@ -562,6 +562,12 @@ FlushSolidUIGeo(debug_text_render_group *RG, v2 ViewportDim)
   return;
 }
 
+inline void
+PadBottom(layout *Layout, r32 Pad)
+{
+  Layout->AtY -= Pad;
+}
+
 void
 DebugFrameEnd(platform *Plat)
 {
@@ -615,11 +621,13 @@ DebugFrameEnd(platform *Plat)
 
     AdvanceSpaces(6, &Layout);
     BufferSingleDecimal(1000.0*MinDt, 6, &Layout, RG, ViewportDim);
-
-    NewLine(&Layout);
   END_BLOCK("Status Bar");
 
   TIMED_BLOCK("Frame Ticker");
+    r32 Pad = 15.0;
+    Layout.LineHeight = 50.0 + Pad;
+    NewLine(&Layout);
+
     for (u32 TreeIndex = 0;
         TreeIndex < ROOT_SCOPE_COUNT;
         ++TreeIndex )
@@ -638,22 +646,26 @@ DebugFrameEnd(platform *Plat)
         Color = V3(0.5f, 0.5f, 0.0f);
       }
 
-      v2 Dim = V2(Layout.FontSize, Layout.FontSize*3);
-      v2 MinP = V2(Layout.AtX, Layout.AtY-Dim.y);
+      r32 Perc = SafeDivide0(Tree->FrameMs, 1000.0f*MaxDt);
 
-      v2 DrawDim = BufferQuad(RG->UIGeo.Verts, RG->UIGeo.CurrentIndex, MinP, Dim);
+      v2 MinP = V2(Layout.AtX, Layout.AtY);
+      v2 QuadDim = V2(15.0, (Layout.LineHeight - Pad) * Perc);
+
+      v2 DrawDim = BufferQuad(RG->UIGeo.Verts, RG->UIGeo.CurrentIndex, MinP, QuadDim);
       Layout.AtX = DrawDim.x + 5.0f;
 
       BufferColors(RG->UIGeo.Colors, RG->UIGeo.CurrentIndex, Color);
 
       RG->UIGeo.CurrentIndex+=6;
     }
+
+    PadBottom(&Layout, Pad);
   END_BLOCK("Frame Ticker");
 
   TIMED_BLOCK("Call Graph");
-    NewLine(&Layout);
-    NewLine(&Layout);
     Layout.FontSize = 22;
+    Layout.LineHeight = Layout.FontSize*1.3f;
+    NewLine(&Layout);
     BufferScopeTree(DebugState->GetReadScopeTree(), DebugState, &Layout, ViewportDim);
   END_BLOCK("Call Graph");
 
