@@ -1,0 +1,9 @@
+layout(location = 0) in vec3 vertexPosition_modelspace;
+layout(location = 1) in vec3 VertexColor_In;
+
+out vec3 VertexColor;
+
+void main(){
+  gl_Position =  vec4(vertexPosition_modelspace,1);
+  VertexColor = VertexColor_In;
+}

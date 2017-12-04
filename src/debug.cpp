@@ -28,6 +28,7 @@ InitDebugOverlayFramebuffer(debug_text_render_group *RG, memory_arena *DebugAren
   FramebufferTexture(&RG->FBO, RG->CompositedTexture);
 
   GL_Global->glGenBuffers(1, &RG->SolidUIVertexBuffer);
+  GL_Global->glGenBuffers(1, &RG->SolidUIColorBuffer);
 
   GL_Global->glGenBuffers(1, &RG->VertexBuffer);
   GL_Global->glGenBuffers(1, &RG->UVBuffer);
@@ -58,6 +59,7 @@ void
 AllocateAndInitGeoBuffer(untextured_2d_geometry_buffer *Geo, u32 VertCount, memory_arena *DebugArena)
 {
   Geo->Verts = PUSH_STRUCT_CHECKED(v3, DebugArena, VertCount);
+  Geo->Colors = PUSH_STRUCT_CHECKED(v3, DebugArena, VertCount);
   Geo->Allocated = VertCount;
   return;
 }
@@ -74,7 +76,7 @@ InitScopeTree(debug_state *State, debug_profile_scope **WriteScope)
 shader
 MakeSolidUIShader(memory_arena *DebugMemory)
 {
-  shader SimpleTextureShader = LoadShaders( "Passthrough.vertexshader",
+  shader SimpleTextureShader = LoadShaders( "SimpleColor.vertexshader",
                                             "SimpleColor.fragmentshader",
                                             DebugMemory );
   return SimpleTextureShader;
@@ -172,8 +174,20 @@ BufferTextUVs(textured_2d_geometry_buffer *Geo, v2 UV)
   return;
 }
 
+void
+BufferColors(v3 *Colors, u32 StartingIndex, v3 Color)
+{
+  Colors[StartingIndex++] = Color;
+  Colors[StartingIndex++] = Color;
+  Colors[StartingIndex++] = Color;
+  Colors[StartingIndex++] = Color;
+  Colors[StartingIndex++] = Color;
+  Colors[StartingIndex++] = Color;
+  return;
+}
+
 v2
-BufferTexQuad(textured_2d_geometry_buffer *Geo, v2 MinP, v2 Dim)
+BufferQuad(v3 *Verts, u32 StartingIndex, v2 MinP, v2 Dim)
 {
   v3 vertex_up_left    = V3( MinP.x       , MinP.y+Dim.y , 0.5f);
   v3 vertex_up_right   = V3( MinP.x+Dim.x , MinP.y+Dim.y , 0.5f);
@@ -182,14 +196,12 @@ BufferTexQuad(textured_2d_geometry_buffer *Geo, v2 MinP, v2 Dim)
 
   v3 XYClip = (1.0f / V3(SCR_WIDTH, SCR_HEIGHT, 1));
 
-  u32 StartingIndex = Geo->CurrentIndex;
-
-  Geo->Verts[StartingIndex++] = (vertex_up_left * XYClip) * 2.0f - 1;
-  Geo->Verts[StartingIndex++] = (vertex_down_left * XYClip) * 2.0f - 1;
-  Geo->Verts[StartingIndex++] = (vertex_up_right * XYClip) * 2.0f - 1;
-  Geo->Verts[StartingIndex++] = (vertex_down_right * XYClip) * 2.0f - 1;
-  Geo->Verts[StartingIndex++] = (vertex_up_right * XYClip) * 2.0f - 1;
-  Geo->Verts[StartingIndex++] = (vertex_down_left * XYClip) * 2.0f - 1;
+  Verts[StartingIndex++] = (vertex_up_left * XYClip) * 2.0f - 1;
+  Verts[StartingIndex++] = (vertex_down_left * XYClip) * 2.0f - 1;
+  Verts[StartingIndex++] = (vertex_up_right * XYClip) * 2.0f - 1;
+  Verts[StartingIndex++] = (vertex_down_right * XYClip) * 2.0f - 1;
+  Verts[StartingIndex++] = (vertex_up_right * XYClip) * 2.0f - 1;
+  Verts[StartingIndex++] = (vertex_down_left * XYClip) * 2.0f - 1;
 
   v2 Max = vertex_up_right.xy;
   return Max;
@@ -214,9 +226,8 @@ BufferTextAt(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo,
     v2 UV = V2( (character%16)/16.0f, (character/16)/16.0f );
     BufferTextUVs(Geo, UV);
 
-    v2 MinP = V2(XY.x+ (FontSize*CharIndex), XY.y);
-
-    Result.Max = BufferTexQuad(Geo, MinP, V2(FontSize, FontSize));
+    v2 MinP = V2(XY.x + (FontSize*CharIndex), XY.y);
+    Result.Max = BufferQuad(Geo->Verts, Geo->CurrentIndex, MinP, V2(FontSize, FontSize));
 
     Geo->CurrentIndex += 6;
 
@@ -500,7 +511,7 @@ UseShader(shader *Shader)
 }
 
 void
-FlushSolidUIGeo(debug_text_render_group *RG)
+FlushSolidUIGeo(debug_text_render_group *RG, v2 ViewportDim)
 {
   TIMED_FUNCTION();
   untextured_2d_geometry_buffer *Buffer = &RG->UIGeo;
@@ -522,64 +533,34 @@ FlushSolidUIGeo(debug_text_render_group *RG)
     (void*)0            // array buffer offset
   );
 
+  // Colors
+  GL_Global->glEnableVertexAttribArray(1);
+  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->SolidUIColorBuffer);
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, Buffer->CurrentIndex*sizeof(v3), Buffer->Colors, GL_STATIC_DRAW);
+  GL_Global->glVertexAttribPointer(
+    1,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+    3,                  // size
+    GL_FLOAT,           // type
+    GL_FALSE,           // normalized?
+    0,                  // stride
+    (void*)0            // array buffer offset
+  );
+
   glDepthFunc(GL_ALWAYS);
 
-  SetViewport( V2(SCR_WIDTH, SCR_HEIGHT) );
+  SetViewport( ViewportDim );
   glDrawArrays(GL_TRIANGLES, 0, Buffer->CurrentIndex);
 
   glDepthFunc(GL_LEQUAL);
 
   Buffer->CurrentIndex = 0;
   GL_Global->glDisableVertexAttribArray(0);
+  GL_Global->glDisableVertexAttribArray(1);
+
+  AssertNoGlErrors;
 
   return;
 }
-
-void BufferVertsDirect( untextured_2d_geometry_buffer *Buffer, s32 NumVerts, v3 *VertData);
-
-#if 0
-void
-BufferQuad( v2 Dim, layout *Layout, debug_text_render_group *RG)
-{
-  TIMED_FUNCTION();
-  /* v3 FaceColors[FACE_VERT_COUNT] = {}; */
-  /* FillColorArray(0, FaceColors, FACE_VERT_COUNT);; */
-
-  /* v3 Diameter = V3(1, 1, 1); */
-  /* v3 VertexData[6] = {}; */
-  /* BackFaceVertexData( V3(0), Diameter, VertexData); */
-
-  v3 quad_vertex_buffer_data[] =
-  {
-    {{-1.0f, -1.0f, 1.0f}},
-    {{ 1.0f, -1.0f, 1.0f}},
-    {{-1.0f,  1.0f, 1.0f}},
-    {{-1.0f,  1.0f, 1.0f}},
-    {{ 1.0f, -1.0f, 1.0f}},
-    {{ 1.0f,  1.0f, 1.0f}},
-  };
-
-  v3 MinP = V3(Layout->AtX, Layout->AtY, 1.0f);
-  v3 MaxP = MinP + V3(Dim.x, Dim.y, 0.0f);
-
-  v3 ViewportDim = V3(SCR_WIDTH, SCR_HEIGHT, 1);
-
-  quad_vertex_buffer_data[0] = (quad_vertex_buffer_data[0] * MinP) / ViewportDim;
-  quad_vertex_buffer_data[1] = (quad_vertex_buffer_data[1] * MinP) / ViewportDim;
-  quad_vertex_buffer_data[2] = (quad_vertex_buffer_data[2] * MinP) / ViewportDim;
-
-  quad_vertex_buffer_data[3] = (quad_vertex_buffer_data[3] * MinP) / ViewportDim;
-  quad_vertex_buffer_data[4] = (quad_vertex_buffer_data[4] * MinP) / ViewportDim;
-  quad_vertex_buffer_data[5] = (quad_vertex_buffer_data[5] * MinP) / ViewportDim;
-
-  if (BufferIsFull( &RG->UIGeo, 6) )
-    FlushSolidUIGeo(RG);
-
-  BufferVertsDirect( &RG->UIGeo, 6, quad_vertex_buffer_data);
-
-  return;
-}
-#endif
 
 void
 DebugFrameEnd(platform *Plat)
@@ -650,11 +631,22 @@ DebugFrameEnd(platform *Plat)
     {
       debug_scope_tree *Tree = &DebugState->ScopeTrees[TreeIndex];
 
+      v3 Color = V3(1,0,0);
       if (TreeIndex == DebugState->RootScopeIndex)
+      {
         Tree->FrameMs = dt*1000;
+        Color = V3(1,0,1);
+      }
 
-      /* BufferQuad( V2(1.0/30.0, (0.0001*Tree->FrameMs)), &Layout, RG); */
-      /* BufferSingleDecimal(Tree->FrameMs, 0, &Layout, RG, ViewportDim); */
+      v2 MinP = V2(Layout.AtX, Layout.AtY);
+      v2 Dim = V2(Layout.FontSize, Layout.FontSize);
+
+      v2 DrawDim = BufferQuad(RG->UIGeo.Verts, RG->UIGeo.CurrentIndex, MinP, Dim);
+      Layout.AtX = DrawDim.x + 5.0f;
+
+      BufferColors(RG->UIGeo.Colors, RG->UIGeo.CurrentIndex, Color);
+
+      RG->UIGeo.CurrentIndex+=6;
     }
 
     NewLine(&Layout);
@@ -664,8 +656,7 @@ DebugFrameEnd(platform *Plat)
   }
   END_BLOCK("Call Graph");
 
-  FlushSolidUIGeo(RG);
-
+  FlushSolidUIGeo(RG, ViewportDim);
   DrawDebugText(RG, TextGeo, ViewportDim);
 
 #if 0

@@ -705,9 +705,11 @@ BindShaderUniforms(shader *Shader)
       InvalidDefaultCase;
     }
 
-    AssertNoGlErrors;
     Uniform = Uniform->Next;
+    AssertNoGlErrors;
   }
+
+  AssertNoGlErrors;
 }
 
 void

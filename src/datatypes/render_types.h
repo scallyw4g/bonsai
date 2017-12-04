@@ -179,6 +179,7 @@ struct textured_2d_geometry_buffer
 struct untextured_2d_geometry_buffer
 {
   v3 *Verts;
+  v3 *Colors;
 
   u32 Allocated;
   u32 CurrentIndex;
@@ -192,6 +193,7 @@ struct debug_text_render_group
   texture *CompositedTexture;
 
   u32 SolidUIVertexBuffer;
+  u32 SolidUIColorBuffer;
 
   u32 VertexBuffer;
   u32 UVBuffer;
