@@ -152,46 +152,47 @@ DrawDebugText(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo, v2 
   AssertNoGlErrors;
 }
 
-v2
-BufferTexQuad(textured_2d_geometry_buffer *Geo, v2 MinP, v2 Dim, s32 CharIndex, char character)
+void
+BufferTextUVs(textured_2d_geometry_buffer *Geo, v2 UV)
 {
-  v3 vertex_up_left    = V3( (r32)(MinP.x+CharIndex*Dim.x)       , (r32)(MinP.y+Dim.y) , 0.5f);
-  v3 vertex_up_right   = V3( (r32)(MinP.x+CharIndex*Dim.x+Dim.x) , (r32)(MinP.y+Dim.y) , 0.5f);
-  v3 vertex_down_right = V3( (r32)(MinP.x+CharIndex*Dim.x+Dim.x) , (r32)MinP.y         , 0.5f);
-  v3 vertex_down_left  = V3( (r32)(MinP.x+CharIndex*Dim.x)       , (r32)MinP.y         , 0.5f);
+  v2 uv_up_left    = V2( UV.x           , UV.y );
+  v2 uv_up_right   = V2( UV.x+1.0f/16.0f, UV.y );
+  v2 uv_down_right = V2( UV.x+1.0f/16.0f, (UV.y + 1.0f/16.0f) );
+  v2 uv_down_left  = V2( UV.x           , (UV.y + 1.0f/16.0f) );
 
-  float uv_x = (character%16)/16.0f;
-  float uv_y = (character/16)/16.0f;
+  u32 StartingIndex = Geo->CurrentIndex;
+  Geo->UVs[StartingIndex++] = uv_up_left;
+  Geo->UVs[StartingIndex++] = uv_down_left;
+  Geo->UVs[StartingIndex++] = uv_up_right;
 
-  v2 uv_up_left    = V2( uv_x           , uv_y );
-  v2 uv_up_right   = V2( uv_x+1.0f/16.0f, uv_y );
-  v2 uv_down_right = V2( uv_x+1.0f/16.0f, (uv_y + 1.0f/16.0f) );
-  v2 uv_down_left  = V2( uv_x           , (uv_y + 1.0f/16.0f) );
+  Geo->UVs[StartingIndex++] = uv_down_right;
+  Geo->UVs[StartingIndex++] = uv_up_right;
+  Geo->UVs[StartingIndex++] = uv_down_left;
 
+  return;
+}
+
+v2
+BufferTexQuad(textured_2d_geometry_buffer *Geo, v2 MinP, v2 Dim)
+{
+  v3 vertex_up_left    = V3( MinP.x       , MinP.y+Dim.y , 0.5f);
+  v3 vertex_up_right   = V3( MinP.x+Dim.x , MinP.y+Dim.y , 0.5f);
+  v3 vertex_down_right = V3( MinP.x+Dim.x , MinP.y       , 0.5f);
+  v3 vertex_down_left  = V3( MinP.x       , MinP.y       , 0.5f);
 
   v3 XYClip = (1.0f / V3(SCR_WIDTH, SCR_HEIGHT, 1));
 
-  Geo->Verts[Geo->CurrentIndex] = (vertex_up_left * XYClip) * 2.0f - 1;
-  Geo->UVs[Geo->CurrentIndex++] = uv_up_left;
+  u32 StartingIndex = Geo->CurrentIndex;
 
-  Geo->Verts[Geo->CurrentIndex] = (vertex_down_left * XYClip) * 2.0f - 1;
-  Geo->UVs[Geo->CurrentIndex++] = uv_down_left;
+  Geo->Verts[StartingIndex++] = (vertex_up_left * XYClip) * 2.0f - 1;
+  Geo->Verts[StartingIndex++] = (vertex_down_left * XYClip) * 2.0f - 1;
+  Geo->Verts[StartingIndex++] = (vertex_up_right * XYClip) * 2.0f - 1;
+  Geo->Verts[StartingIndex++] = (vertex_down_right * XYClip) * 2.0f - 1;
+  Geo->Verts[StartingIndex++] = (vertex_up_right * XYClip) * 2.0f - 1;
+  Geo->Verts[StartingIndex++] = (vertex_down_left * XYClip) * 2.0f - 1;
 
-  Geo->Verts[Geo->CurrentIndex] = (vertex_up_right * XYClip) * 2.0f - 1;
-  Geo->UVs[Geo->CurrentIndex++] = uv_up_right;
-
-
-  Geo->Verts[Geo->CurrentIndex] = (vertex_down_right * XYClip) * 2.0f - 1;
-  Geo->UVs[Geo->CurrentIndex++] = uv_down_right;
-
-  Geo->Verts[Geo->CurrentIndex] = (vertex_up_right * XYClip) * 2.0f - 1;
-  Geo->UVs[Geo->CurrentIndex++] = uv_up_right;
-
-  Geo->Verts[Geo->CurrentIndex] = (vertex_down_left * XYClip) * 2.0f - 1;
-  Geo->UVs[Geo->CurrentIndex++] = uv_down_left;
-
-  v2 Result = vertex_up_right.xy;
-  return Result;
+  v2 Max = vertex_up_right.xy;
+  return Max;
 }
 
 rect2
@@ -209,7 +210,15 @@ BufferTextAt(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo,
     if (Geo->CurrentIndex + 6 > Geo->Allocated)
       DrawDebugText(RG, Geo, ViewportDim);
 
-    Result.Max = BufferTexQuad(Geo, XY, V2(FontSize, FontSize), CharIndex, Text[CharIndex]);
+    char character = Text[CharIndex];
+    v2 UV = V2( (character%16)/16.0f, (character/16)/16.0f );
+    BufferTextUVs(Geo, UV);
+
+    v2 MinP = V2(XY.x+ (FontSize*CharIndex), XY.y);
+
+    Result.Max = BufferTexQuad(Geo, MinP, V2(FontSize, FontSize));
+
+    Geo->CurrentIndex += 6;
 
     continue;
   }
