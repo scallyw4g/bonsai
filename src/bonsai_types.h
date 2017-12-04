@@ -25,5 +25,8 @@ void BreakHere() { return; }
 #include <graphics_types.h>
 #include <platform_types.h>
 
+#include <string.h>
+#include <bonsai_vertex.h>
+
 #include <debug_types.h>
 #include <debug_print.h>

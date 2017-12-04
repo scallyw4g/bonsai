@@ -2,7 +2,6 @@
 #include <csignal>
 
 #include <sstream>
-#include <string>
 
 #include <render.h>
 
@@ -10,7 +9,6 @@
 
 #include <colors.h>
 
-#include <bonsai_vertex.h>
 #include <bonsai_mesh.cpp>
 
 global_variable u32 Global_QuadVertexBuffer;

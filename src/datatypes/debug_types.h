@@ -32,7 +32,6 @@ struct debug_scope_tree
 };
 
 #define ROOT_SCOPE_COUNT 60
-struct debug_text_render_group;
 struct debug_state
 {
   u64 (*GetCycleCount)(void);

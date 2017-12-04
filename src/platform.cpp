@@ -25,6 +25,7 @@ static u64 FrameStartingCycles, FrameEndCycles, FrameElapsedCycles;
 
 #include <texture.cpp>
 #include <shader.cpp>
+#include <bonsai_vertex.h>
 #include <debug.cpp>
 #include <render.cpp>
 

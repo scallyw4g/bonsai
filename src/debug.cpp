@@ -27,6 +27,8 @@ InitDebugOverlayFramebuffer(debug_text_render_group *RG, memory_arena *DebugAren
 
   FramebufferTexture(&RG->FBO, RG->CompositedTexture);
 
+  GL_Global->glGenBuffers(1, &RG->SolidUIVertexBuffer);
+
   GL_Global->glGenBuffers(1, &RG->VertexBuffer);
   GL_Global->glGenBuffers(1, &RG->UVBuffer);
 
@@ -53,13 +55,29 @@ AllocateAndInitGeoBuffer(textured_2d_geometry_buffer *Geo, u32 VertCount, memory
 }
 
 void
+AllocateAndInitGeoBuffer(untextured_2d_geometry_buffer *Geo, u32 VertCount, memory_arena *DebugArena)
+{
+  Geo->Verts = PUSH_STRUCT_CHECKED(v3, DebugArena, VertCount);
+  Geo->Allocated = VertCount;
+  return;
+}
+
+void
 InitScopeTree(debug_state *State, debug_profile_scope **WriteScope)
 {
   State->NumScopes = 0;
   State->CurrentScope = 0;
   State->WriteScope = WriteScope;
-
   return;
+}
+
+shader
+MakeSolidUIShader(memory_arena *DebugMemory)
+{
+  shader SimpleTextureShader = LoadShaders( "Passthrough.vertexshader",
+                                            "SimpleColor.fragmentshader",
+                                            DebugMemory );
+  return SimpleTextureShader;
 }
 
 void
@@ -80,6 +98,9 @@ InitDebugState(platform *Plat)
   { Error("Initializing Debug Overlay Framebuffer"); }
 
   AllocateAndInitGeoBuffer(&GlobalDebugState->TextRenderGroup->TextGeo, 4096, Plat->Memory);
+  AllocateAndInitGeoBuffer(&GlobalDebugState->TextRenderGroup->UIGeo, 8190, Plat->Memory);
+
+  GlobalDebugState->TextRenderGroup->SolidUIShader = MakeSolidUIShader(GlobalDebugState->Memory);
 
   GlobalDebugState->Initialized = True;
   return;
@@ -93,12 +114,6 @@ DrawDebugText(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo, v2 
 
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->VertexBuffer);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, VertCount * sizeof(v3), Geo->Verts, GL_STATIC_DRAW);
-
-  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->UVBuffer);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, VertCount * sizeof(v2), Geo->UVs, GL_STATIC_DRAW);
-
   // Bind Text shader
   GL_Global->glUseProgram(RG->Text2DShader.ID);
 
@@ -110,11 +125,13 @@ DrawDebugText(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo, v2 
   // 1rst attribute buffer : Verteces
   GL_Global->glEnableVertexAttribArray(0);
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->VertexBuffer);
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, VertCount * sizeof(v3), Geo->Verts, GL_STATIC_DRAW);
   GL_Global->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0 );
 
   // 2nd attribute buffer : UVs
   GL_Global->glEnableVertexAttribArray(1);
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->UVBuffer);
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, VertCount * sizeof(v2), Geo->UVs, GL_STATIC_DRAW);
   GL_Global->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0 );
 
   glEnable(GL_BLEND);
@@ -135,6 +152,48 @@ DrawDebugText(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo, v2 
   AssertNoGlErrors;
 }
 
+v2
+BufferTexQuad(textured_2d_geometry_buffer *Geo, v2 MinP, v2 Dim, s32 CharIndex, char character)
+{
+  v3 vertex_up_left    = V3( (r32)(MinP.x+CharIndex*Dim.x)       , (r32)(MinP.y+Dim.y) , 0.5f);
+  v3 vertex_up_right   = V3( (r32)(MinP.x+CharIndex*Dim.x+Dim.x) , (r32)(MinP.y+Dim.y) , 0.5f);
+  v3 vertex_down_right = V3( (r32)(MinP.x+CharIndex*Dim.x+Dim.x) , (r32)MinP.y         , 0.5f);
+  v3 vertex_down_left  = V3( (r32)(MinP.x+CharIndex*Dim.x)       , (r32)MinP.y         , 0.5f);
+
+  float uv_x = (character%16)/16.0f;
+  float uv_y = (character/16)/16.0f;
+
+  v2 uv_up_left    = V2( uv_x           , uv_y );
+  v2 uv_up_right   = V2( uv_x+1.0f/16.0f, uv_y );
+  v2 uv_down_right = V2( uv_x+1.0f/16.0f, (uv_y + 1.0f/16.0f) );
+  v2 uv_down_left  = V2( uv_x           , (uv_y + 1.0f/16.0f) );
+
+
+  v3 XYClip = (1.0f / V3(SCR_WIDTH, SCR_HEIGHT, 1));
+
+  Geo->Verts[Geo->CurrentIndex] = (vertex_up_left * XYClip) * 2.0f - 1;
+  Geo->UVs[Geo->CurrentIndex++] = uv_up_left;
+
+  Geo->Verts[Geo->CurrentIndex] = (vertex_down_left * XYClip) * 2.0f - 1;
+  Geo->UVs[Geo->CurrentIndex++] = uv_down_left;
+
+  Geo->Verts[Geo->CurrentIndex] = (vertex_up_right * XYClip) * 2.0f - 1;
+  Geo->UVs[Geo->CurrentIndex++] = uv_up_right;
+
+
+  Geo->Verts[Geo->CurrentIndex] = (vertex_down_right * XYClip) * 2.0f - 1;
+  Geo->UVs[Geo->CurrentIndex++] = uv_down_right;
+
+  Geo->Verts[Geo->CurrentIndex] = (vertex_up_right * XYClip) * 2.0f - 1;
+  Geo->UVs[Geo->CurrentIndex++] = uv_up_right;
+
+  Geo->Verts[Geo->CurrentIndex] = (vertex_down_left * XYClip) * 2.0f - 1;
+  Geo->UVs[Geo->CurrentIndex++] = uv_down_left;
+
+  v2 Result = vertex_up_right.xy;
+  return Result;
+}
+
 rect2
 BufferTextAt(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo,
     const char *Text, v2 XY, s32 FontSize, v2 ViewportDim)
@@ -150,43 +209,7 @@ BufferTextAt(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo,
     if (Geo->CurrentIndex + 6 > Geo->Allocated)
       DrawDebugText(RG, Geo, ViewportDim);
 
-    v3 vertex_up_left    = V3( (r32)(XY.x+CharIndex*FontSize)         , (r32)(XY.y+FontSize), 0.5f);
-    v3 vertex_up_right   = V3( (r32)(XY.x+CharIndex*FontSize+FontSize), (r32)(XY.y+FontSize), 0.5f);
-    v3 vertex_down_right = V3( (r32)(XY.x+CharIndex*FontSize+FontSize), (r32)XY.y           , 0.5f);
-    v3 vertex_down_left  = V3( (r32)(XY.x+CharIndex*FontSize)         , (r32)XY.y           , 0.5f);
-
-    Result.Max = vertex_up_right.xy;
-
-    char character = Text[CharIndex];
-    float uv_x = (character%16)/16.0f;
-    float uv_y = (character/16)/16.0f;
-
-    v2 uv_up_left    = V2( uv_x           , uv_y );
-    v2 uv_up_right   = V2( uv_x+1.0f/16.0f, uv_y );
-    v2 uv_down_right = V2( uv_x+1.0f/16.0f, (uv_y + 1.0f/16.0f) );
-    v2 uv_down_left  = V2( uv_x           , (uv_y + 1.0f/16.0f) );
-
-
-    v3 XYClip = (1.0f / V3(SCR_WIDTH, SCR_HEIGHT, 1));
-
-    Geo->Verts[Geo->CurrentIndex] = (vertex_up_left * XYClip) * 2.0f - 1;
-    Geo->UVs[Geo->CurrentIndex++] = uv_up_left;
-
-    Geo->Verts[Geo->CurrentIndex] = (vertex_down_left * XYClip) * 2.0f - 1;
-    Geo->UVs[Geo->CurrentIndex++] = uv_down_left;
-
-    Geo->Verts[Geo->CurrentIndex] = (vertex_up_right * XYClip) * 2.0f - 1;
-    Geo->UVs[Geo->CurrentIndex++] = uv_up_right;
-
-
-    Geo->Verts[Geo->CurrentIndex] = (vertex_down_right * XYClip) * 2.0f - 1;
-    Geo->UVs[Geo->CurrentIndex++] = uv_down_right;
-
-    Geo->Verts[Geo->CurrentIndex] = (vertex_up_right * XYClip) * 2.0f - 1;
-    Geo->UVs[Geo->CurrentIndex++] = uv_up_right;
-
-    Geo->Verts[Geo->CurrentIndex] = (vertex_down_left * XYClip) * 2.0f - 1;
-    Geo->UVs[Geo->CurrentIndex++] = uv_down_left;
+    Result.Max = BufferTexQuad(Geo, XY, V2(FontSize, FontSize), CharIndex, Text[CharIndex]);
 
     continue;
   }
@@ -450,18 +473,104 @@ DebugFrameBegin()
   return;
 }
 
-void
-BufferQuad( v2 MinP, layout *Layout, untextured_2d_geometry_buffer *Mesh, v2 ViewportDim)
+b32
+BufferIsFull(untextured_2d_geometry_buffer *Buffer, u32 VertsToPush)
 {
-  /* v3 FaceColors[FACE_VERT_COUNT]; */
-  /* FillColorArray(ColorIndex, FaceColors, FACE_VERT_COUNT);; */
-  /* v3 VertexData[6]; */
-
-  /* FrontFaceVertexData( MinP, Diameter, VertexData); */
-  /* BufferVertsChecked(Mesh, gBuffer, SG, Camera, 6, VertexData, RightFaceNormalData, FaceColors); */
-
-  /* return; */
+  b32 Result = (Buffer->CurrentIndex + VertsToPush) > Buffer->Allocated;
+  return Result;
 }
+
+void BindShaderUniforms(shader *Shader);
+
+void
+UseShader(shader *Shader)
+{
+  GL_Global->glUseProgram(Shader->ID);
+  BindShaderUniforms(Shader);
+  return;
+}
+
+void
+FlushSolidUIGeo(debug_text_render_group *RG)
+{
+  TIMED_FUNCTION();
+  untextured_2d_geometry_buffer *Buffer = &RG->UIGeo;
+
+  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+  UseShader(&RG->SolidUIShader);
+
+  // Vertices
+  GL_Global->glEnableVertexAttribArray(0);
+  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->SolidUIVertexBuffer);
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, Buffer->CurrentIndex*sizeof(v3), Buffer->Verts, GL_STATIC_DRAW);
+  GL_Global->glVertexAttribPointer(
+    0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+    3,                  // size
+    GL_FLOAT,           // type
+    GL_FALSE,           // normalized?
+    0,                  // stride
+    (void*)0            // array buffer offset
+  );
+
+  glDepthFunc(GL_ALWAYS);
+
+  SetViewport( V2(SCR_WIDTH, SCR_HEIGHT) );
+  glDrawArrays(GL_TRIANGLES, 0, Buffer->CurrentIndex);
+
+  glDepthFunc(GL_LEQUAL);
+
+  Buffer->CurrentIndex = 0;
+  GL_Global->glDisableVertexAttribArray(0);
+
+  return;
+}
+
+void BufferVertsDirect( untextured_2d_geometry_buffer *Buffer, s32 NumVerts, v3 *VertData);
+
+#if 0
+void
+BufferQuad( v2 Dim, layout *Layout, debug_text_render_group *RG)
+{
+  TIMED_FUNCTION();
+  /* v3 FaceColors[FACE_VERT_COUNT] = {}; */
+  /* FillColorArray(0, FaceColors, FACE_VERT_COUNT);; */
+
+  /* v3 Diameter = V3(1, 1, 1); */
+  /* v3 VertexData[6] = {}; */
+  /* BackFaceVertexData( V3(0), Diameter, VertexData); */
+
+  v3 quad_vertex_buffer_data[] =
+  {
+    {{-1.0f, -1.0f, 1.0f}},
+    {{ 1.0f, -1.0f, 1.0f}},
+    {{-1.0f,  1.0f, 1.0f}},
+    {{-1.0f,  1.0f, 1.0f}},
+    {{ 1.0f, -1.0f, 1.0f}},
+    {{ 1.0f,  1.0f, 1.0f}},
+  };
+
+  v3 MinP = V3(Layout->AtX, Layout->AtY, 1.0f);
+  v3 MaxP = MinP + V3(Dim.x, Dim.y, 0.0f);
+
+  v3 ViewportDim = V3(SCR_WIDTH, SCR_HEIGHT, 1);
+
+  quad_vertex_buffer_data[0] = (quad_vertex_buffer_data[0] * MinP) / ViewportDim;
+  quad_vertex_buffer_data[1] = (quad_vertex_buffer_data[1] * MinP) / ViewportDim;
+  quad_vertex_buffer_data[2] = (quad_vertex_buffer_data[2] * MinP) / ViewportDim;
+
+  quad_vertex_buffer_data[3] = (quad_vertex_buffer_data[3] * MinP) / ViewportDim;
+  quad_vertex_buffer_data[4] = (quad_vertex_buffer_data[4] * MinP) / ViewportDim;
+  quad_vertex_buffer_data[5] = (quad_vertex_buffer_data[5] * MinP) / ViewportDim;
+
+  if (BufferIsFull( &RG->UIGeo, 6) )
+    FlushSolidUIGeo(RG);
+
+  BufferVertsDirect( &RG->UIGeo, 6, quad_vertex_buffer_data);
+
+  return;
+}
+#endif
 
 void
 DebugFrameEnd(platform *Plat)
@@ -500,6 +609,7 @@ DebugFrameEnd(platform *Plat)
   /* Log("-------------------------------------------------------------------------------"); */
 
   layout StatusBarLayout(DEBUG_FONT_SIZE);
+  TIMED_BLOCK("Draw Status Bar");
   StatusBarLayout.AtY = (r32)SCR_HEIGHT - StatusBarLayout.FontSize;
   {
 
@@ -517,8 +627,9 @@ DebugFrameEnd(platform *Plat)
     AdvanceSpaces(6, &StatusBarLayout);
     BufferSingleDecimal(1000.0*MinDt, 6, &StatusBarLayout, RG, ViewportDim);
   }
+  END_BLOCK("Status Bar");
 
-
+  TIMED_BLOCK("Call Graph");
   {
     layout Layout = StatusBarLayout;
     NewLine(&Layout);
@@ -533,8 +644,8 @@ DebugFrameEnd(platform *Plat)
       if (TreeIndex == DebugState->RootScopeIndex)
         Tree->FrameMs = dt*1000;
 
-      /* BufferQuad( V2(1.0/30.0, (0.0001*Tree.FrameMs)), &Layout, 0, ViewportDim); */
-      BufferSingleDecimal(Tree->FrameMs, 0, &Layout, RG, ViewportDim);
+      /* BufferQuad( V2(1.0/30.0, (0.0001*Tree->FrameMs)), &Layout, RG); */
+      /* BufferSingleDecimal(Tree->FrameMs, 0, &Layout, RG, ViewportDim); */
     }
 
     NewLine(&Layout);
@@ -542,7 +653,11 @@ DebugFrameEnd(platform *Plat)
     Layout.FontSize = 22;
     BufferScopeTree(DebugState->GetReadScopeTree(), DebugState, &Layout, ViewportDim);
   }
+  END_BLOCK("Call Graph");
 
+  FlushSolidUIGeo(RG);
+
+  DrawDebugText(RG, TextGeo, ViewportDim);
 
 #if 0
   u64 CurrentFrameCycleCount = DebugState->GetCycleCount();
@@ -689,8 +804,6 @@ DebugFrameEnd(platform *Plat)
     Entry->CycleCount = 0;
   }
 #endif
-
-  DrawDebugText(RG, TextGeo, ViewportDim);
 
   return;
 }

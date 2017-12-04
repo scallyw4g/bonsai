@@ -8,6 +8,20 @@ RenderGBuffer(untextured_3d_geometry_buffer *Target, g_buffer_render_group *gBuf
 
 inline void
 BufferVertsDirect(
+    untextured_2d_geometry_buffer *Dest,
+    s32 NumVerts,
+    v3 *VertsPositions
+  )
+{
+  s32 sizeofData = NumVerts * sizeof(v3);
+  memcpy( &Dest->Verts[Dest->CurrentIndex],  VertsPositions,  sizeofData );
+  Dest->CurrentIndex += NumVerts;
+
+  return;
+}
+
+inline void
+BufferVertsDirect(
     untextured_3d_geometry_buffer *Dest,
 
     s32 NumVerts,

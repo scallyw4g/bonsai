@@ -191,12 +191,16 @@ struct debug_text_render_group
   texture FontTexture;
   texture *CompositedTexture;
 
+  u32 SolidUIVertexBuffer;
+
   u32 VertexBuffer;
   u32 UVBuffer;
 
   shader Text2DShader;
-
   textured_2d_geometry_buffer TextGeo;
+
+  shader SolidUIShader;
+  untextured_2d_geometry_buffer UIGeo;
 
   shader DebugFontTextureShader;
   shader DebugTextureShader;
