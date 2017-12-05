@@ -167,13 +167,11 @@ struct debug_timed_function
   debug_timed_function(const char *Name)
   {
     debug_state *DebugState = GetDebugState();
-
     if (!DebugState->DoScopeProfiling) return;
+
     ++DebugState->NumScopes;
 
-    // FIXME(Jesse): Recycle these
     debug_profile_scope *NewScope = GetProfileScope(DebugState);
-
     NewScope->Parent = DebugState->CurrentScope;
 
     (*DebugState->WriteScope) = NewScope;

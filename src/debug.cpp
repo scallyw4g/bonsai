@@ -585,7 +585,6 @@ DebugFrameEnd(platform *Plat)
   v2 MouseP = V2(Plat->MouseP.x, Plat->WindowHeight - Plat->MouseP.y);
 
   r32 FrameMs = 1000.0f*Plat->dt;
-  u32 ReadScopePick = DebugState->ReadScopeIndex;
 
   r32 Pad = 15.0;
   layout FrameTickerLayout(50 + Pad);
@@ -617,7 +616,7 @@ DebugFrameEnd(platform *Plat)
       debug_scope_tree *Tree = &DebugState->ScopeTrees[TreeIndex];
 
       v3 Color = V3(0.5f, 0.5f, 0.5f);
-      if ( Tree == DebugState->GetWriteScopeTree() )
+      if ( Tree == DebugState->GetWriteScopeTree() && DebugState->DoScopeProfiling )
       {
         Tree->FrameMs = FrameMs;
         Color = V3(0.0, 0.0, 0.5f);
@@ -635,7 +634,7 @@ DebugFrameEnd(platform *Plat)
 
       if (MouseP > MinP && MouseP < MinP + QuadDim)
       {
-        ReadScopePick = TreeIndex;
+        DebugState->ReadScopeIndex = TreeIndex;
         Color = V3(1.0f, 0.0f, 0.0f);
       }
 
@@ -675,7 +674,7 @@ DebugFrameEnd(platform *Plat)
     CallGraphLayout.FontSize = 22;
     CallGraphLayout.LineHeight = CallGraphLayout.FontSize*1.3f;
     NewLine(&CallGraphLayout);
-    debug_scope_tree *Tree = &DebugState->ScopeTrees[ReadScopePick];
+    debug_scope_tree *Tree = DebugState->GetReadScopeTree();
     BufferScopeTree(Tree->Root, DebugState, &CallGraphLayout, ViewportDim, Tree->TotalCycles, 0);
   END_BLOCK("Call Graph");
 
