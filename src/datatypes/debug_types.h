@@ -21,6 +21,7 @@ struct debug_profile_scope
 {
   u64 CycleCount;
   const char* Name;
+  b32 Expanded;
 
   debug_profile_scope *Parent;
   debug_profile_scope *Sibling;

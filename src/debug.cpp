@@ -470,7 +470,7 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout,
     NewLine(Layout);
   }
 
-  if (WeAreFirst)
+  if (WeAreFirst && Scope->Expanded)
     BufferScopeTree(Scope->Child, State, Layout, ViewportDim, TotalFrameCycles, Depth+1);
 
   BufferScopeTree(Scope->Sibling, State, Layout, ViewportDim, TotalFrameCycles, Depth);
