@@ -289,8 +289,8 @@ PrintFreeScopes(debug_state *State)
 inline void
 BufferText(const char *Text, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
 {
-  rect2 TextBox = BufferTextAt(RG, &RG->TextGeo, Text, V2(Layout->AtX, Layout->AtY), Layout->FontSize, ViewportDim);
-  Layout->AtX = TextBox.Max.x;
+  rect2 TextBox = BufferTextAt(RG, &RG->TextGeo, Text, V2(Layout->At.x, Layout->At.y), Layout->FontSize, ViewportDim);
+  Layout->At.x = TextBox.Max.x;
 
   return;
 }
@@ -325,15 +325,15 @@ BufferText(u32 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportD
 inline void
 NewLine(layout *Layout)
 {
-  Layout->AtY -= (Layout->LineHeight);
-  Layout->AtX = 0;
+  Layout->At.y -= (Layout->LineHeight);
+  Layout->At.x = 0;
   return;
 }
 
 inline void
 AdvanceSpaces(u32 N, layout *Layout)
 {
-  Layout->AtX += (N*Layout->FontSize);
+  Layout->At.x += (N*Layout->FontSize);
   return;
 }
 
@@ -380,36 +380,36 @@ BufferSingleDecimal(r32 Perc, u32 ColumnWidth, layout *Layout, debug_text_render
 inline void
 BufferNumberAsText(r32 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
 {
-  Layout->AtX += Layout->FontSize;
+  Layout->At.x += Layout->FontSize;
   BufferText(Number, Layout, RG, ViewportDim);
-  Layout->AtX += Layout->FontSize;
+  Layout->At.x += Layout->FontSize;
   return;
 }
 
 inline void
 BufferNumberAsText(r64 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
 {
-  Layout->AtX += Layout->FontSize;
+  Layout->At.x += Layout->FontSize;
   BufferText((r32)Number, Layout, RG, ViewportDim);
-  Layout->AtX += Layout->FontSize;
+  Layout->At.x += Layout->FontSize;
   return;
 }
 
 inline void
 BufferNumberAsText(u64 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
 {
-  Layout->AtX += Layout->FontSize;
+  Layout->At.x += Layout->FontSize;
   BufferText(Number, Layout, RG, ViewportDim);
-  Layout->AtX += Layout->FontSize;
+  Layout->At.x += Layout->FontSize;
   return;
 }
 
 inline void
 BufferNumberAsText(u32 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
 {
-  Layout->AtX += Layout->FontSize;
+  Layout->At.x += Layout->FontSize;
   BufferText(Number, Layout, RG, ViewportDim);
-  Layout->AtX += Layout->FontSize;
+  Layout->At.x += Layout->FontSize;
   return;
 }
 
@@ -464,7 +464,7 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout,
     u64 AvgCycles = SafeDivide0(TotalCycles, CallCount);
     BufferSingleDecimal(Percentage, 6, Layout, State->TextRenderGroup, ViewportDim);
     BufferCycles(AvgCycles, Layout, State->TextRenderGroup, ViewportDim);
-    Layout->AtX += (Depth*2.0f*Layout->FontSize);
+    Layout->At.x += (Depth*2.0f*Layout->FontSize);
     BufferNumberAsText(CallCount, Layout, State->TextRenderGroup, ViewportDim);
     BufferText(Scope->Name, Layout, State->TextRenderGroup, ViewportDim);
     NewLine(Layout);
@@ -582,7 +582,7 @@ FlushSolidUIGeo(debug_text_render_group *RG, v2 ViewportDim)
 inline void
 PadBottom(layout *Layout, r32 Pad)
 {
-  Layout->AtY -= Pad;
+  Layout->At.y -= Pad;
 }
 
 void
@@ -598,7 +598,7 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
 
   r32 Pad = 15.0;
   layout FrameTickerLayout(50 + Pad);
-  FrameTickerLayout.AtY = (r32)SCR_HEIGHT - FrameTickerLayout.FontSize;
+  FrameTickerLayout.At.y = (r32)SCR_HEIGHT - FrameTickerLayout.FontSize;
 
   r32 MinMs = DebugState->ScopeTrees[0].FrameMs;
   r32 MaxMs = DebugState->ScopeTrees[0].FrameMs;
@@ -634,7 +634,7 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
       if ( Tree == DebugState->GetReadScopeTree() )
         Color = V3(0.8f, 0.8f, 0.0f);
 
-      v2 MinP = V2(FrameTickerLayout.AtX, FrameTickerLayout.AtY);
+      v2 MinP = V2(FrameTickerLayout.At.x, FrameTickerLayout.At.y);
       v2 QuadDim = V2(15.0, (FrameTickerLayout.LineHeight - Pad) * Perc);
 
       if (MouseP > MinP && MouseP < MinP + QuadDim)
@@ -644,7 +644,7 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
       }
 
       v2 DrawDim = BufferQuad(RG->UIGeo.Verts, RG->UIGeo.CurrentIndex, MinP, QuadDim);
-      FrameTickerLayout.AtX = DrawDim.x + 5.0f;
+      FrameTickerLayout.At.x = DrawDim.x + 5.0f;
 
       BufferColors(RG->UIGeo.Colors, RG->UIGeo.CurrentIndex, Color);
 
@@ -678,7 +678,7 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
 
   TIMED_BLOCK("Draw Status Bar");
     layout StatusBarLayout(DEBUG_FONT_SIZE);
-    StatusBarLayout.AtY = (r32)SCR_HEIGHT - StatusBarLayout.FontSize;
+    StatusBarLayout.At.y = (r32)SCR_HEIGHT - StatusBarLayout.FontSize;
     BufferSingleDecimal(MaxMs, 6, &StatusBarLayout, RG, ViewportDim);
     NewLine(&StatusBarLayout);
 
@@ -689,153 +689,6 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
 
     BufferSingleDecimal(MinMs, 6, &StatusBarLayout, RG, ViewportDim);
   END_BLOCK("Status Bar");
-
-
-#if 0
-  u64 CurrentFrameCycleCount = DebugState->GetCycleCount();
-  u64 CycleDelta = CurrentFrameCycleCount - LastFrameCycleCount;
-  LastFrameCycleCount = CurrentFrameCycleCount;
-
-  debug_global u64 MaxCycleCount = CycleDelta;
-  debug_global u64 MinCycleCount = CycleDelta;
-
-  MaxCycleCount = Max(CycleDelta, MaxCycleCount);
-  MinCycleCount = Min(CycleDelta, MinCycleCount);
-
-  s32 LinePadding = 3;
-
-  debug_global r32 MaxX = 0;
-
-  debug_profile_entry SortedEntries[DEBUG_STATE_ENTRY_COUNT];
-
-  MemCopy((u8*)DebugState->Entries,
-          (u8*)&SortedEntries,
-          sizeof(debug_profile_entry)*DEBUG_STATE_ENTRY_COUNT);
-
-  for (s32 EntryIndex = 0;
-      EntryIndex < DEBUG_STATE_ENTRY_COUNT;
-      ++EntryIndex)
-  {
-    debug_profile_entry *Entry = &SortedEntries[EntryIndex];
-
-    for (s32 InnerEntryIndex = 0;
-        InnerEntryIndex < DEBUG_STATE_ENTRY_COUNT;
-        ++InnerEntryIndex)
-    {
-      debug_profile_entry *EntryInner = &SortedEntries[InnerEntryIndex];
-
-      if (EntryInner->MaxPerc > Entry->MaxPerc)
-      {
-        debug_profile_entry Temp = *EntryInner;
-        *EntryInner = *Entry;
-        *Entry = Temp;
-      }
-    }
-  }
-
-  s32 AtY = 0;
-
-  {
-    for (s32 EntryIndex = 0;
-        EntryIndex < DEBUG_STATE_ENTRY_COUNT;
-        ++EntryIndex)
-    {
-      debug_profile_entry *Entry = &SortedEntries[EntryIndex];
-
-      if (Entry->HitCount > 0)
-      {
-        /* char CycleCountBuffer[32]; */
-        /* sprintf(CycleCountBuffer, "%" PRIu64, Entry->CycleCount); */
-
-        /* rect2 CCRect = BufferTextAt(Plat, RG, TextGeo, CycleCountBuffer, 0, AtY, FontSize); */
-        /* MaxX = max(MaxX, CCRect.Max.x); */
-        /* AtY += (FontSize + LinePadding); */
-      }
-    }
-
-
-    {
-      char CycleCountBuffer[32] = {};
-      sprintf(CycleCountBuffer, "%" PRIu64, MinCycleCount);
-      BufferTextAt(Plat, RG, TextGeo, CycleCountBuffer, V2(0, AtY), FontSize);
-      AtY += (FontSize + LinePadding);
-      AtY += (FontSize + LinePadding);
-    }
-
-    {
-      char CycleCountBuffer[32] = {};
-      sprintf(CycleCountBuffer, "%" PRIu64, CycleDelta);
-      BufferTextAt(Plat, RG, TextGeo, CycleCountBuffer, V2(0, AtY), FontSize);
-      AtY += (FontSize + LinePadding);
-      AtY += (FontSize + LinePadding);
-    }
-
-    {
-      char CycleCountBuffer[32] = {};
-      sprintf(CycleCountBuffer, "%" PRIu64, MaxCycleCount);
-      BufferTextAt(Plat, RG, TextGeo, CycleCountBuffer, V2(0, AtY), FontSize);
-      AtY += (FontSize + LinePadding);
-      AtY += (FontSize + LinePadding);
-    }
-
-  }
-
-  {
-    debug_global s32 HitCountX = 0;
-
-    for (s32 EntryIndex = 0;
-        EntryIndex < DEBUG_STATE_ENTRY_COUNT;
-        ++EntryIndex)
-    {
-      debug_profile_entry *Entry = &SortedEntries[EntryIndex];
-      if (Entry->FuncName)
-      {
-        s32 AtX = 0;
-
-        char PercentageBuffer[32] = {};
-
-        r32 FramePerc = CalculateFramePercentage(Entry, CycleDelta);
-        sprintf(PercentageBuffer, "%.0f", FramePerc);
-        BufferTextAt(Plat, RG, TextGeo, PercentageBuffer, V2(AtX, AtY), FontSize);
-        AtX += (FontSize*4);
-
-        sprintf(PercentageBuffer, "%.0f", Entry->MaxPerc);
-        BufferTextAt(Plat, RG, TextGeo, PercentageBuffer, V2(AtX, AtY), FontSize);
-        AtX += (FontSize*4);
-
-        sprintf(PercentageBuffer, "%.0f", Entry->MinPerc);
-        BufferTextAt(Plat, RG, TextGeo, PercentageBuffer, V2(AtX, AtY), FontSize);
-        AtX += (FontSize*4);
-
-        /* // Print Hit Count */
-        /* char CountBuffer[32]; */
-        /* sprintf(CountBuffer, "%" PRIu32, Entry->HitCount); */
-        /* rect2 HitCountRect = BufferTextAt(Plat,  RG, CountBuffer, AtX, AtY, FontSize); */
-        /* HitCountX = max((s32)HitCountRect.Max.x, HitCountX); */
-
-        BufferTextAt(Plat, RG, TextGeo, Entry->FuncName, V2(AtX, AtY), FontSize);
-
-        AtY += (FontSize + LinePadding);
-      }
-    }
-  }
-
-
-  // Reset for next frame
-  for (s32 EntryIndex = 0;
-      EntryIndex < DEBUG_STATE_ENTRY_COUNT;
-      ++EntryIndex)
-  {
-    debug_profile_entry *Entry = &DebugState->Entries[EntryIndex];
-
-    r32 FramePerc = CalculateFramePercentage(Entry, CycleDelta);
-    Entry->MaxPerc = Max(Entry->MaxPerc, FramePerc);
-    Entry->MinPerc = Min(Entry->MinPerc, FramePerc);
-
-    Entry->HitCount = 0;
-    Entry->CycleCount = 0;
-  }
-#endif
 
   return;
 }

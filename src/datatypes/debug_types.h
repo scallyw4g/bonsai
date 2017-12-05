@@ -3,8 +3,7 @@
 
 struct layout
 {
-  r32 AtX;
-  r32 AtY;
+  v2 At;
   r32 FontSize;
   r32 LineHeight;
 
@@ -12,8 +11,7 @@ struct layout
   {
     this->FontSize = FontSize;
     this->LineHeight = FontSize * 1.3f;
-    this->AtX = 0;
-    this->AtY = 0;
+    this->At = {};
   }
 };
 
