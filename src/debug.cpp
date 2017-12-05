@@ -422,7 +422,7 @@ StringsMatch(const char *S1, const char *S2)
 
 void
 BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout,
-                v2 ViewportDim, u64 TotalFrameCycles, u32 Depth)
+                v2 ViewportDim, u64 TotalFrameCycles, u32 Depth, input *Input, v2 MouseP)
 {
   if (!Scope)
     return;
@@ -460,6 +460,8 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout,
 
   if (WeAreFirst)
   {
+    v2 StartingP = Layout->At;
+
     r32 Percentage = 100.0f*(r32)((r64)TotalCycles/(r64)TotalFrameCycles);
     u64 AvgCycles = SafeDivide0(TotalCycles, CallCount);
     BufferSingleDecimal(Percentage, 6, Layout, State->TextRenderGroup, ViewportDim);
@@ -467,13 +469,20 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout,
     Layout->At.x += (Depth*2.0f*Layout->FontSize);
     BufferNumberAsText(CallCount, Layout, State->TextRenderGroup, ViewportDim);
     BufferText(Scope->Name, Layout, State->TextRenderGroup, ViewportDim);
+
+    v2 EndingP = Layout->At;
+    EndingP.y += (Layout->LineHeight);
+
+    if (Input->LMB && MouseP > StartingP && MouseP < EndingP)
+      Scope->Expanded = !Scope->Expanded;
+
     NewLine(Layout);
   }
 
   if (WeAreFirst && Scope->Expanded)
-    BufferScopeTree(Scope->Child, State, Layout, ViewportDim, TotalFrameCycles, Depth+1);
+    BufferScopeTree(Scope->Child, State, Layout, ViewportDim, TotalFrameCycles, Depth+1, Input, MouseP);
 
-  BufferScopeTree(Scope->Sibling, State, Layout, ViewportDim, TotalFrameCycles, Depth);
+  BufferScopeTree(Scope->Sibling, State, Layout, ViewportDim, TotalFrameCycles, Depth, Input, MouseP);
 
   return;
 }
@@ -679,7 +688,7 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
       CallGraphLayout.FontSize = 22;
       CallGraphLayout.LineHeight = CallGraphLayout.FontSize*1.3f;
       NewLine(&CallGraphLayout);
-      BufferScopeTree(Tree->Root, DebugState, &CallGraphLayout, ViewportDim, Tree->TotalCycles, 0);
+      BufferScopeTree(Tree->Root, DebugState, &CallGraphLayout, ViewportDim, Tree->TotalCycles, 0, &Plat->Input, MouseP);
     }
   END_BLOCK("Call Graph");
 
