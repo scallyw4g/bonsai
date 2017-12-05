@@ -433,7 +433,7 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout,
   u64 CallCount = 0;
   u64 TotalCycles = 0;
 
-  debug_profile_scope *Next = State->GetReadScopeTree();
+  debug_profile_scope *Next = State->GetReadScopeTree()->Root;
   if (Scope->Parent) Next = Scope->Parent->Child;
 
   while (Next)
@@ -490,7 +490,7 @@ DebugFrameBegin(hotkeys *Hotkeys)
 
   if (!State->DoScopeProfiling) return;
 
-  State->RootScopeIndex = (State->RootScopeIndex+1) % ROOT_SCOPE_COUNT;
+  State->ReadScopeIndex = (State->ReadScopeIndex+1) % ROOT_SCOPE_COUNT;
   debug_scope_tree *WriteScope = State->GetWriteScopeTree();
   FreeScopes(State, WriteScope->Root);
   InitScopeTree(State, WriteScope);
@@ -631,7 +631,7 @@ DebugFrameEnd(platform *Plat)
 /*     BufferSingleDecimal(1000.0*MinDt, 6, &StatusBarLayout, RG, ViewportDim); */
 /*   END_BLOCK("Status Bar"); */
 
-  u32 ReadScopeIndex = DebugState->RootScopeIndex;
+  u32 ReadScopeIndex = DebugState->ReadScopeIndex;
 
   r32 Pad = 15.0;
   layout FrameTickerLayout(50 + Pad);
@@ -666,7 +666,7 @@ DebugFrameEnd(platform *Plat)
         Color = V3(0.0, 0.0, 0.5f);
       }
 
-      if ( Tree->Root == DebugState->GetReadScopeTree() )
+      if ( Tree == DebugState->GetReadScopeTree() )
       {
         Color = V3(0.5f, 0.5f, 0.0f);
       }

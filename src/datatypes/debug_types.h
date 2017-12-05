@@ -49,22 +49,22 @@ struct debug_state
   debug_profile_scope **WriteScope;
   debug_profile_scope *CurrentScope;
   debug_scope_tree ScopeTrees[ROOT_SCOPE_COUNT];
-  u32 RootScopeIndex;
+  u32 ReadScopeIndex;
 
   debug_profile_scope FreeScopeSentinel;
 
   u64 NumScopes;
   b32 Initialized;
 
-  debug_profile_scope *GetReadScopeTree()
+  debug_scope_tree *GetReadScopeTree()
   {
-    debug_profile_scope *RootScope = this->ScopeTrees[this->RootScopeIndex].Root;
+    debug_scope_tree *RootScope = &this->ScopeTrees[this->ReadScopeIndex];
     return RootScope;
   }
 
   debug_scope_tree *GetWriteScopeTree()
   {
-    s32 Index = (this->RootScopeIndex + 1) % ROOT_SCOPE_COUNT;
+    s32 Index = (this->ReadScopeIndex + 1) % ROOT_SCOPE_COUNT;
     debug_scope_tree *RootScope = &this->ScopeTrees[Index];
     return RootScope;
   }
