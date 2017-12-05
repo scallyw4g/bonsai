@@ -30,6 +30,7 @@ struct debug_profile_scope
 struct debug_scope_tree
 {
   r32 FrameMs;
+  u64 TotalCycles;
   debug_profile_scope *Root;
 };
 
@@ -61,10 +62,10 @@ struct debug_state
     return RootScope;
   }
 
-  debug_profile_scope **GetWriteScopeTree()
+  debug_scope_tree *GetWriteScopeTree()
   {
     s32 Index = (this->RootScopeIndex + 1) % ROOT_SCOPE_COUNT;
-    debug_profile_scope **RootScope = &this->ScopeTrees[Index].Root;
+    debug_scope_tree *RootScope = &this->ScopeTrees[Index];
     return RootScope;
   }
 };

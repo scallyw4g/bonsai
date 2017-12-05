@@ -65,11 +65,11 @@ AllocateAndInitGeoBuffer(untextured_2d_geometry_buffer *Geo, u32 VertCount, memo
 }
 
 void
-InitScopeTree(debug_state *State, debug_profile_scope **WriteScope)
+InitScopeTree(debug_state *State, debug_scope_tree *WriteScopeTree)
 {
   State->NumScopes = 0;
   State->CurrentScope = 0;
-  State->WriteScope = WriteScope;
+  State->WriteScope = &WriteScopeTree->Root;
   return;
 }
 
@@ -423,7 +423,8 @@ StringsMatch(const char *S1, const char *S2)
 }
 
 void
-BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout, v2 ViewportDim, u32 Depth = 0)
+BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout,
+                v2 ViewportDim, u64 TotalFrameCycles, u32 Depth)
 {
   if (!Scope)
     return;
@@ -461,7 +462,7 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout, 
 
   if (WeAreFirst)
   {
-    r32 Percentage = 100.0*(r32)TotalCycles/(r32)FrameElapsedCycles;
+    r32 Percentage = 100.0f*(r32)((r64)TotalCycles/(r64)TotalFrameCycles);
     u64 AvgCycles = SafeDivide0(TotalCycles, CallCount);
     BufferSingleDecimal(Percentage, 6, Layout, State->TextRenderGroup, ViewportDim);
     BufferCycles(AvgCycles, Layout, State->TextRenderGroup, ViewportDim);
@@ -472,9 +473,9 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout, 
   }
 
   if (WeAreFirst)
-    BufferScopeTree(Scope->Child, State, Layout, ViewportDim, Depth+1);
+    BufferScopeTree(Scope->Child, State, Layout, ViewportDim, TotalFrameCycles, Depth+1);
 
-  BufferScopeTree(Scope->Sibling, State, Layout, ViewportDim, Depth);
+  BufferScopeTree(Scope->Sibling, State, Layout, ViewportDim, TotalFrameCycles, Depth);
 
   return;
 }
@@ -490,8 +491,8 @@ DebugFrameBegin(hotkeys *Hotkeys)
   if (!State->DoScopeProfiling) return;
 
   State->RootScopeIndex = (State->RootScopeIndex+1) % ROOT_SCOPE_COUNT;
-  debug_profile_scope **WriteScope = State->GetWriteScopeTree();
-  FreeScopes(State, *WriteScope);
+  debug_scope_tree *WriteScope = State->GetWriteScopeTree();
+  FreeScopes(State, WriteScope->Root);
   InitScopeTree(State, WriteScope);
 
   return;
@@ -583,7 +584,7 @@ DebugFrameEnd(platform *Plat)
   v2 ViewportDim = V2(Plat->WindowWidth, Plat->WindowHeight);
   v2 MouseP = V2(Plat->MouseP.x, Plat->WindowHeight - Plat->MouseP.y);
 
-  r32 dt = Plat->dt;
+  r32 FrameMs = 1000.0f*Plat->dt;
 #if 0
   static const u32 DtBufferSize = 60;
   static r32 DtBuffer[DtBufferSize] = {};
@@ -591,7 +592,7 @@ DebugFrameEnd(platform *Plat)
 
   if (DebugState->DoScopeProfiling)
   {
-    DtBuffer[DtBufferIndex] = dt;
+    DtBuffer[DtBufferIndex] = FrameMs;
     DtBufferIndex = (++DtBufferIndex) % DtBufferSize;
   }
 
@@ -632,12 +633,25 @@ DebugFrameEnd(platform *Plat)
 
   u32 ReadScopeIndex = DebugState->RootScopeIndex;
 
-
   r32 Pad = 15.0;
   layout FrameTickerLayout(50 + Pad);
   FrameTickerLayout.AtY = (r32)SCR_HEIGHT - FrameTickerLayout.FontSize;
+
   TIMED_BLOCK("Frame Ticker");
     NewLine(&FrameTickerLayout);
+
+    r32 MinMs = DebugState->ScopeTrees[0].FrameMs;
+    r32 MaxMs = DebugState->ScopeTrees[0].FrameMs;
+    TIMED_BLOCK("Get Min/Max Dt");
+      for (u32 TreeIndex = 0;
+          TreeIndex < ROOT_SCOPE_COUNT;
+          ++TreeIndex )
+      {
+        debug_scope_tree *Tree = &DebugState->ScopeTrees[TreeIndex];
+        MinMs = Min(MinMs, Tree->FrameMs);
+        MaxMs = Max(MaxMs, Tree->FrameMs);
+      }
+    END_BLOCK("Min/Max Dt");
 
     for (u32 TreeIndex = 0;
         TreeIndex < ROOT_SCOPE_COUNT;
@@ -646,9 +660,9 @@ DebugFrameEnd(platform *Plat)
       debug_scope_tree *Tree = &DebugState->ScopeTrees[TreeIndex];
 
       v3 Color = V3(0.5f, 0.5f, 0.5f);
-      if ( Tree->Root == *DebugState->GetWriteScopeTree() )
+      if ( Tree == DebugState->GetWriteScopeTree() )
       {
-        Tree->FrameMs = dt*1000;
+        Tree->FrameMs = FrameMs;
         Color = V3(0.0, 0.0, 0.5f);
       }
 
@@ -657,7 +671,7 @@ DebugFrameEnd(platform *Plat)
         Color = V3(0.5f, 0.5f, 0.0f);
       }
 
-      r32 Perc = SafeDivide0(Tree->FrameMs, 1000.0f*dt);
+      r32 Perc = SafeDivide0(Tree->FrameMs, MaxMs);
 
       v2 MinP = V2(FrameTickerLayout.AtX, FrameTickerLayout.AtY);
       v2 QuadDim = V2(15.0, (FrameTickerLayout.LineHeight - Pad) * Perc);
@@ -685,7 +699,8 @@ DebugFrameEnd(platform *Plat)
     CallGraphLayout.FontSize = 22;
     CallGraphLayout.LineHeight = CallGraphLayout.FontSize*1.3f;
     NewLine(&CallGraphLayout);
-    BufferScopeTree(DebugState->ScopeTrees[ReadScopeIndex].Root, DebugState, &CallGraphLayout, ViewportDim);
+    debug_scope_tree *Tree = &DebugState->ScopeTrees[ReadScopeIndex];
+    BufferScopeTree(Tree->Root, DebugState, &CallGraphLayout, ViewportDim, Tree->TotalCycles, 0);
   END_BLOCK("Call Graph");
 
   FlushSolidUIGeo(RG, ViewportDim);

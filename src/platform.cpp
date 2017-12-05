@@ -21,8 +21,6 @@
 // TODO(Jesse): Axe this!!
 static gl_extensions *GL_Global = 0;
 
-static u64 FrameStartingCycles, FrameEndCycles, FrameElapsedCycles;
-
 #include <texture.cpp>
 #include <shader.cpp>
 #include <bonsai_vertex.h>
@@ -478,7 +476,7 @@ main(s32 NumArgs, char ** Args)
     Plat.dt = (CurrentMS - LastMs)/1000.0f;
     LastMs = CurrentMS;
 
-    FrameStartingCycles = GetDebugState()->GetCycleCount();
+    u64 FrameStartingCycles = GetDebugState()->GetCycleCount();
 
     BindHotkeysToInput(&Hotkeys, &Plat.Input);
     DebugFrameBegin(&Hotkeys);
@@ -510,8 +508,9 @@ main(s32 NumArgs, char ** Args)
 
     /* WaitForFrameTime(LastMs, 30.0f); */
 
-    FrameEndCycles = GetDebugState()->GetCycleCount();
-    FrameElapsedCycles = FrameEndCycles - FrameStartingCycles;
+    debug_scope_tree *WriteTree = GetDebugState()->GetWriteScopeTree();
+    u64 FrameEndCycles = GetDebugState()->GetCycleCount();
+    WriteTree->TotalCycles = FrameEndCycles - FrameStartingCycles;
   }
 
   Info("Shutting Down");
