@@ -574,7 +574,7 @@ PadBottom(layout *Layout, r32 Pad)
 }
 
 void
-DebugFrameEnd(platform *Plat)
+DebugFrameEnd(platform *Plat, u64 FrameCycles)
 {
   TIMED_FUNCTION();
   debug_state *DebugState = GetDebugState();
@@ -583,6 +583,12 @@ DebugFrameEnd(platform *Plat)
 
   v2 ViewportDim = V2(Plat->WindowWidth, Plat->WindowHeight);
   v2 MouseP = V2(Plat->MouseP.x, Plat->WindowHeight - Plat->MouseP.y);
+
+  if (DebugState->DoScopeProfiling)
+  {
+    debug_scope_tree *WriteTree = GetDebugState()->GetWriteScopeTree();
+    WriteTree->TotalCycles = FrameCycles;
+  }
 
   r32 FrameMs = 1000.0f*Plat->dt;
 

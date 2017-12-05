@@ -214,7 +214,7 @@ struct debug_timed_function
 #define END_BLOCK(BlockName) }
 
 #define DEBUG_FRAME_RECORD(...) DoDebugFrameRecord(__VA_ARGS__)
-#define DEBUG_FRAME_END(Plat) DebugFrameEnd(Plat)
+#define DEBUG_FRAME_END(Plat, Cycles) DebugFrameEnd(Plat, Cycles)
 
 #else
 

@@ -469,6 +469,7 @@ main(s32 NumArgs, char ** Args)
    */
 
   r64 LastMs = Plat.GetHighPrecisionClock();
+  r64 LastCycles = GetDebugState()->GetCycleCount();
 
   while ( Os.ContinueRunning )
   {
@@ -476,7 +477,14 @@ main(s32 NumArgs, char ** Args)
     Plat.dt = (CurrentMS - LastMs)/1000.0f;
     LastMs = CurrentMS;
 
-    u64 FrameStartingCycles = GetDebugState()->GetCycleCount();
+
+    r64 FrameCycles = 0;
+    if (GetDebugState()->DoScopeProfiling)
+    {
+      u64 CurrentCycles = GetDebugState()->GetCycleCount();
+      FrameCycles = CurrentCycles - LastCycles;
+      LastCycles = CurrentCycles;
+    }
 
     BindHotkeysToInput(&Hotkeys, &Plat.Input);
     DebugFrameBegin(&Hotkeys);
@@ -502,15 +510,12 @@ main(s32 NumArgs, char ** Args)
 
     GameUpdateAndRender(&Plat, GameState, &Hotkeys);
 
-    DEBUG_FRAME_END(&Plat);
+    DEBUG_FRAME_END(&Plat, FrameCycles);
 
     BonsaiSwapBuffers(&Os);
 
     /* WaitForFrameTime(LastMs, 30.0f); */
 
-    debug_scope_tree *WriteTree = GetDebugState()->GetWriteScopeTree();
-    u64 FrameEndCycles = GetDebugState()->GetCycleCount();
-    WriteTree->TotalCycles = FrameEndCycles - FrameStartingCycles;
   }
 
   Info("Shutting Down");
