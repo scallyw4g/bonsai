@@ -596,10 +596,6 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
   v2 ViewportDim = V2(Plat->WindowWidth, Plat->WindowHeight);
   v2 MouseP = V2(Plat->MouseP.x, Plat->WindowHeight - Plat->MouseP.y);
 
-  debug_scope_tree *WriteTree = GetDebugState()->GetWriteScopeTree();
-  if (WriteTree)
-    WriteTree->TotalCycles = FrameCycles;
-
   r32 Pad = 15.0;
   layout FrameTickerLayout(50 + Pad);
   FrameTickerLayout.AtY = (r32)SCR_HEIGHT - FrameTickerLayout.FontSize;
@@ -661,8 +657,8 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
 
     layout TreeInfoLayout = FrameTickerLayout;
     { // Current tree info
-      TreeInfoLayout.FontSize = 22;
-      TreeInfoLayout.LineHeight = 22 * 1.3f;
+      TreeInfoLayout.FontSize = 36;
+      TreeInfoLayout.LineHeight = 36 * 1.3f;
       BufferSingleDecimal(Tree->FrameMs, 4, &TreeInfoLayout, RG, ViewportDim);
       BufferCycles(Tree->TotalCycles, &TreeInfoLayout, RG, ViewportDim);
     }
@@ -683,18 +679,14 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
   TIMED_BLOCK("Draw Status Bar");
     layout StatusBarLayout(DEBUG_FONT_SIZE);
     StatusBarLayout.AtY = (r32)SCR_HEIGHT - StatusBarLayout.FontSize;
-    AdvanceSpaces(6, &StatusBarLayout);
     BufferSingleDecimal(MaxMs, 6, &StatusBarLayout, RG, ViewportDim);
     NewLine(&StatusBarLayout);
 
-    BufferSingleDecimal(Tree->FrameMs, 6, &StatusBarLayout, RG, ViewportDim);
     BufferSingleDecimal(AvgMs, 6, &StatusBarLayout, RG, ViewportDim);
+    BufferSingleDecimal(Tree->FrameMs, 6, &StatusBarLayout, RG, ViewportDim);
     BufferText("ms", &StatusBarLayout, RG, ViewportDim);
-
-    /* BufferCycles(FrameElapsedCycles, &StatusBarLayout, RG, ViewportDim); */
     NewLine(&StatusBarLayout);
 
-    AdvanceSpaces(6, &StatusBarLayout);
     BufferSingleDecimal(MinMs, 6, &StatusBarLayout, RG, ViewportDim);
   END_BLOCK("Status Bar");
 
