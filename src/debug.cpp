@@ -581,6 +581,9 @@ DebugFrameEnd(platform *Plat)
   textured_2d_geometry_buffer *TextGeo = &RG->TextGeo;
   r32 dt = Plat->dt;
 
+  v2 ViewportDim = V2(Plat->WindowWidth, Plat->WindowHeight);
+  v2 MouseP = V2(Plat->MouseP.x, Plat->WindowHeight - Plat->MouseP.y);
+
   static const u32 DtBufferSize = 60;
   static r32 DtBuffer[DtBufferSize] = {};
   static u32 DtBufferIndex = 0;
@@ -606,8 +609,6 @@ DebugFrameEnd(platform *Plat)
 
   r32 AverageFrameDt = Accum/(r32)DtBufferSize;
 
-  v2 ViewportDim = V2(Plat->WindowWidth, Plat->WindowHeight);
-
   /* PrintScopeTree(DebugState->RootScope); */
   /* Log("-------------------------------------------------------------------------------"); */
 
@@ -630,6 +631,7 @@ DebugFrameEnd(platform *Plat)
     BufferSingleDecimal(1000.0*MinDt, 6, &Layout, RG, ViewportDim);
   END_BLOCK("Status Bar");
 
+  u32 ReadScopeIndex = DebugState->RootScopeIndex;
   TIMED_BLOCK("Frame Ticker");
     r32 Pad = 15.0;
     Layout.LineHeight = 50.0 + Pad;
@@ -658,6 +660,12 @@ DebugFrameEnd(platform *Plat)
       v2 MinP = V2(Layout.AtX, Layout.AtY);
       v2 QuadDim = V2(15.0, (Layout.LineHeight - Pad) * Perc);
 
+      if (MouseP > MinP && MouseP < MinP + QuadDim)
+      {
+        ReadScopeIndex = TreeIndex;
+        Color = V3(0.5f, 0.5f, 0.0f);
+      }
+
       v2 DrawDim = BufferQuad(RG->UIGeo.Verts, RG->UIGeo.CurrentIndex, MinP, QuadDim);
       Layout.AtX = DrawDim.x + 5.0f;
 
@@ -673,7 +681,7 @@ DebugFrameEnd(platform *Plat)
     Layout.FontSize = 22;
     Layout.LineHeight = Layout.FontSize*1.3f;
     NewLine(&Layout);
-    BufferScopeTree(DebugState->GetReadScopeTree(), DebugState, &Layout, ViewportDim);
+    BufferScopeTree(DebugState->ScopeTrees[ReadScopeIndex].Root, DebugState, &Layout, ViewportDim);
   END_BLOCK("Call Graph");
 
   FlushSolidUIGeo(RG, ViewportDim);

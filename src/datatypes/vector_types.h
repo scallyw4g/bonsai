@@ -318,6 +318,26 @@ operator-(voxel_position P1, voxel_position P2)
 }
 
 inline bool
+operator>(v2 P1, v2 P2)
+{
+  bool Result = true;
+
+  Result &= P1.x > P2.x;
+  Result &= P1.y > P2.y;
+
+  return Result;
+}
+inline bool
+operator<(v2 P1, v2 P2)
+{
+  bool Result = true;
+
+  Result &= P1.x < P2.x;
+  Result &= P1.y < P2.y;
+
+  return Result;
+}
+inline bool
 operator<(v3 P1, v3 P2)
 {
   bool Result = true;
