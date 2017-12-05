@@ -64,6 +64,8 @@ struct debug_state
 
   debug_scope_tree *GetWriteScopeTree()
   {
+    if (!this->DoScopeProfiling) return 0;
+
     s32 Index = (this->ReadScopeIndex + 1) % ROOT_SCOPE_COUNT;
     debug_scope_tree *RootScope = &this->ScopeTrees[Index];
     return RootScope;

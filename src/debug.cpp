@@ -88,8 +88,6 @@ InitDebugState(platform *Plat)
   GlobalDebugState = &Plat->DebugState;
   GlobalDebugState->GetCycleCount = Plat->GetCycleCount;
 
-  InitScopeTree(GlobalDebugState, GlobalDebugState->GetWriteScopeTree());
-
   GlobalDebugState->FreeScopeSentinel.Parent = &GlobalDebugState->FreeScopeSentinel;
   GlobalDebugState->FreeScopeSentinel.Child = &GlobalDebugState->FreeScopeSentinel;
 
@@ -492,8 +490,11 @@ DebugFrameBegin(hotkeys *Hotkeys)
 
   State->ReadScopeIndex = (State->ReadScopeIndex+1) % ROOT_SCOPE_COUNT;
   debug_scope_tree *WriteScope = State->GetWriteScopeTree();
-  FreeScopes(State, WriteScope->Root);
-  InitScopeTree(State, WriteScope);
+  if (WriteScope)
+  {
+    FreeScopes(State, WriteScope->Root);
+    InitScopeTree(State, WriteScope);
+  }
 
   return;
 }
@@ -584,11 +585,10 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
   v2 ViewportDim = V2(Plat->WindowWidth, Plat->WindowHeight);
   v2 MouseP = V2(Plat->MouseP.x, Plat->WindowHeight - Plat->MouseP.y);
 
-  if (DebugState->DoScopeProfiling)
-  {
-    debug_scope_tree *WriteTree = GetDebugState()->GetWriteScopeTree();
+  debug_scope_tree *WriteTree = GetDebugState()->GetWriteScopeTree();
+
+  if (WriteTree)
     WriteTree->TotalCycles = FrameCycles;
-  }
 
   r32 FrameMs = 1000.0f*Plat->dt;
 
