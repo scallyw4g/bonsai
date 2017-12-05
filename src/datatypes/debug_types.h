@@ -43,6 +43,8 @@ struct debug_state
 
   memory_arena *Memory;
 
+  b32 DoScopeProfiling;
+
   debug_profile_scope **WriteScope;
   debug_profile_scope *CurrentScope;
   debug_scope_tree ScopeTrees[ROOT_SCOPE_COUNT];
@@ -164,8 +166,9 @@ struct debug_timed_function
   debug_timed_function(const char *Name)
   {
     debug_state *DebugState = GetDebugState();
-    ++DebugState->NumScopes;
 
+    if (!DebugState->DoScopeProfiling) return;
+    ++DebugState->NumScopes;
 
     // FIXME(Jesse): Recycle these
     debug_profile_scope *NewScope = GetProfileScope(DebugState);
@@ -189,6 +192,8 @@ struct debug_timed_function
   ~debug_timed_function()
   {
     debug_state *DebugState = GetDebugState();
+    if (!DebugState->DoScopeProfiling) return;
+
     u64 EndingCycleCount = DebugState->GetCycleCount(); // Intentionally first
     u64 CycleCount = (EndingCycleCount - this->StartingCycleCount);
     DebugState->CurrentScope->CycleCount = CycleCount;

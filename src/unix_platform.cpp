@@ -261,6 +261,11 @@ ProcessOsMessages(os *Os, platform *Plat)
             Plat->Input.E = False;
           } break;
 
+          case XK_F10:
+          {
+            Plat->Input.F10 = False;
+          } break;
+
           case XK_F11:
           {
             Plat->Input.F11 = False;
@@ -268,7 +273,7 @@ ProcessOsMessages(os *Os, platform *Plat)
 
           case XK_Escape:
           {
-            Os->ContinueRunning = false;
+            Os->ContinueRunning = False;
           } break;
 
           case XK_space:
@@ -315,6 +320,11 @@ ProcessOsMessages(os *Os, platform *Plat)
           case XK_e:
           {
             Plat->Input.E = True;
+          } break;
+
+          case XK_F10:
+          {
+            Plat->Input.F10 = True;
           } break;
 
           case XK_F11:

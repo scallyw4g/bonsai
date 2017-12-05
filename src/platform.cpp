@@ -356,8 +356,25 @@ QueryAndSetGlslVersion(platform *Plat)
 void
 BindHotkeysToInput(hotkeys *Hotkeys, input *Input)
 {
+  Hotkeys->Debug_Pause                    = Input->F12;
   Hotkeys->Debug_ToggleLoopedGamePlayback = Input->F11;
-  Hotkeys->Debug_Pause = Input->F12;
+
+  static b32 DidToggle = False;
+
+  if (Input->F10 && !DidToggle)
+  {
+    Hotkeys->Debug_ToggleProfile = True;
+    DidToggle = True;
+  }
+  else if (DidToggle)
+  {
+    Hotkeys->Debug_ToggleProfile = False;
+  }
+
+  if (!Input->F10)
+  {
+    DidToggle = False;
+  }
 
   Hotkeys->Left = Input->A;
   Hotkeys->Right = Input->D;
@@ -441,7 +458,7 @@ main(s32 NumArgs, char ** Args)
 
   QueryAndSetGlslVersion(&Plat);
 
-  hotkeys Hotkeys;
+  hotkeys Hotkeys = {};
 
   Plat.Graphics = GraphicsInit(&GraphicsMemory);
   if (!Plat.Graphics) { Error("Initializing Graphics"); return False; }
@@ -463,7 +480,8 @@ main(s32 NumArgs, char ** Args)
 
     FrameStartingCycles = GetDebugState()->GetCycleCount();
 
-    DebugFrameBegin();
+    BindHotkeysToInput(&Hotkeys, &Plat.Input);
+    DebugFrameBegin(&Hotkeys);
 
     v2 LastMouseP = Plat.MouseP;
     while ( ProcessOsMessages(&Os, &Plat) );
@@ -481,7 +499,6 @@ main(s32 NumArgs, char ** Args)
       InitGlobals(&Plat);
     }
 
-    BindHotkeysToInput(&Hotkeys, &Plat.Input);
 
     DEBUG_FRAME_RECORD(Debug_RecordingState, &Hotkeys, &MainMemory);
 

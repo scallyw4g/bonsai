@@ -480,16 +480,20 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout, 
 }
 
 void
-DebugFrameBegin()
+DebugFrameBegin(hotkeys *Hotkeys)
 {
   debug_state *State = GetDebugState();
 
-  State->RootScopeIndex = (State->RootScopeIndex+1) % ROOT_SCOPE_COUNT;
+  if ( Hotkeys->Debug_ToggleProfile )
+    State->DoScopeProfiling = !State->DoScopeProfiling;
 
+  if (!State->DoScopeProfiling) return;
+
+  State->RootScopeIndex = (State->RootScopeIndex+1) % ROOT_SCOPE_COUNT;
   debug_profile_scope **WriteScope = State->GetWriteScopeTree();
   FreeScopes(State, *WriteScope);
-
   InitScopeTree(State, WriteScope);
+
   return;
 }
 
@@ -581,8 +585,11 @@ DebugFrameEnd(platform *Plat)
   static r32 DtBuffer[DtBufferSize] = {};
   static u32 DtBufferIndex = 0;
 
-  DtBuffer[DtBufferIndex] = dt;
-  DtBufferIndex = (++DtBufferIndex) % DtBufferSize;
+  if (DebugState->DoScopeProfiling)
+  {
+    DtBuffer[DtBufferIndex] = dt;
+    DtBufferIndex = (++DtBufferIndex) % DtBufferSize;
+  }
 
   r32 Accum = 0;
   r32 MinDt = DtBuffer[0];
@@ -844,7 +851,7 @@ DoDebugFrameRecord(
     memory_arena *MainMemory)
 {
   {
-    global_variable b32 Toggled = False;
+    static b32 Toggled = False;
     if (Hotkeys->Debug_ToggleLoopedGamePlayback  && !Toggled)
     {
       Toggled = True;
