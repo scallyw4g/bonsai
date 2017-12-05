@@ -602,6 +602,10 @@ DebugFrameEnd(platform *Plat)
           ++TreeIndex )
       {
         debug_scope_tree *Tree = &DebugState->ScopeTrees[TreeIndex];
+
+        if ( Tree == DebugState->GetWriteScopeTree() && DebugState->DoScopeProfiling )
+          Tree->FrameMs = FrameMs;
+
         MinMs = Min(MinMs, Tree->FrameMs);
         MaxMs = Max(MaxMs, Tree->FrameMs);
         AvgMs += Tree->FrameMs;
@@ -614,20 +618,14 @@ DebugFrameEnd(platform *Plat)
         ++TreeIndex )
     {
       debug_scope_tree *Tree = &DebugState->ScopeTrees[TreeIndex];
+      r32 Perc = SafeDivide0(Tree->FrameMs, MaxMs);
 
       v3 Color = V3(0.5f, 0.5f, 0.5f);
       if ( Tree == DebugState->GetWriteScopeTree() && DebugState->DoScopeProfiling )
-      {
-        Tree->FrameMs = FrameMs;
-        Color = V3(0.0, 0.0, 0.5f);
-      }
+        Color = V3(0.8f, 0.0f, 0.0f);
 
       if ( Tree == DebugState->GetReadScopeTree() )
-      {
         Color = V3(0.8f, 0.8f, 0.0f);
-      }
-
-      r32 Perc = SafeDivide0(Tree->FrameMs, MaxMs);
 
       v2 MinP = V2(FrameTickerLayout.AtX, FrameTickerLayout.AtY);
       v2 QuadDim = V2(15.0, (FrameTickerLayout.LineHeight - Pad) * Perc);
@@ -635,7 +633,7 @@ DebugFrameEnd(platform *Plat)
       if (MouseP > MinP && MouseP < MinP + QuadDim)
       {
         DebugState->ReadScopeIndex = TreeIndex;
-        Color = V3(1.0f, 0.0f, 0.0f);
+        Color = V3(0.8f, 0.8f, 0.0f);
       }
 
       v2 DrawDim = BufferQuad(RG->UIGeo.Verts, RG->UIGeo.CurrentIndex, MinP, QuadDim);
@@ -645,9 +643,31 @@ DebugFrameEnd(platform *Plat)
 
       RG->UIGeo.CurrentIndex+=6;
     }
-
-    PadBottom(&FrameTickerLayout, Pad);
   END_BLOCK("Frame Ticker");
+
+  TIMED_BLOCK("Call Graph");
+    debug_scope_tree *Tree = DebugState->GetReadScopeTree();
+
+    layout TreeInfoLayout = FrameTickerLayout;
+    { // Current tree info
+      TreeInfoLayout.FontSize = 22;
+      TreeInfoLayout.LineHeight = 22 * 1.3f;
+      BufferSingleDecimal(Tree->FrameMs, 4, &TreeInfoLayout, RG, ViewportDim);
+      BufferCycles(Tree->TotalCycles, &TreeInfoLayout, RG, ViewportDim);
+    }
+
+    layout CallGraphLayout = TreeInfoLayout;
+    { // Call Graph
+      PadBottom(&CallGraphLayout, 15);
+      CallGraphLayout.FontSize = 22;
+      CallGraphLayout.LineHeight = CallGraphLayout.FontSize*1.3f;
+      NewLine(&CallGraphLayout);
+      BufferScopeTree(Tree->Root, DebugState, &CallGraphLayout, ViewportDim, Tree->TotalCycles, 0);
+    }
+  END_BLOCK("Call Graph");
+
+  FlushSolidUIGeo(RG, ViewportDim);
+  DrawDebugText(RG, TextGeo, ViewportDim);
 
   TIMED_BLOCK("Draw Status Bar");
     layout StatusBarLayout(DEBUG_FONT_SIZE);
@@ -667,19 +687,6 @@ DebugFrameEnd(platform *Plat)
     BufferSingleDecimal(MinMs, 6, &StatusBarLayout, RG, ViewportDim);
   END_BLOCK("Status Bar");
 
-
-  layout CallGraphLayout = FrameTickerLayout;
-
-  TIMED_BLOCK("Call Graph");
-    CallGraphLayout.FontSize = 22;
-    CallGraphLayout.LineHeight = CallGraphLayout.FontSize*1.3f;
-    NewLine(&CallGraphLayout);
-    debug_scope_tree *Tree = DebugState->GetReadScopeTree();
-    BufferScopeTree(Tree->Root, DebugState, &CallGraphLayout, ViewportDim, Tree->TotalCycles, 0);
-  END_BLOCK("Call Graph");
-
-  FlushSolidUIGeo(RG, ViewportDim);
-  DrawDebugText(RG, TextGeo, ViewportDim);
 
 #if 0
   u64 CurrentFrameCycleCount = DebugState->GetCycleCount();
