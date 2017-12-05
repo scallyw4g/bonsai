@@ -579,11 +579,12 @@ DebugFrameEnd(platform *Plat)
   debug_state *DebugState = GetDebugState();
   debug_text_render_group *RG = DebugState->TextRenderGroup;
   textured_2d_geometry_buffer *TextGeo = &RG->TextGeo;
-  r32 dt = Plat->dt;
 
   v2 ViewportDim = V2(Plat->WindowWidth, Plat->WindowHeight);
   v2 MouseP = V2(Plat->MouseP.x, Plat->WindowHeight - Plat->MouseP.y);
 
+  r32 dt = Plat->dt;
+#if 0
   static const u32 DtBufferSize = 60;
   static r32 DtBuffer[DtBufferSize] = {};
   static u32 DtBufferIndex = 0;
@@ -608,34 +609,35 @@ DebugFrameEnd(platform *Plat)
   }
 
   r32 AverageFrameDt = Accum/(r32)DtBufferSize;
+#endif
 
-  /* PrintScopeTree(DebugState->RootScope); */
-  /* Log("-------------------------------------------------------------------------------"); */
 
-  layout Layout(DEBUG_FONT_SIZE);
-  Layout.AtY = (r32)SCR_HEIGHT - Layout.FontSize;
+/*   TIMED_BLOCK("Draw Status Bar"); */
+  /*   layout StatusBarLayout(DEBUG_FONT_SIZE); */
+  /*   StatusBarLayout.AtY = (r32)SCR_HEIGHT - StatusBarLayout.FontSize; */
+/*     AdvanceSpaces(6, &StatusBarLayout); */
+/*     BufferSingleDecimal(1000.0*MaxDt, 6, &StatusBarLayout, RG, ViewportDim); */
+/*     NewLine(&StatusBarLayout); */
 
-  TIMED_BLOCK("Draw Status Bar");
-    AdvanceSpaces(6, &Layout);
-    BufferSingleDecimal(1000.0*MaxDt, 6, &Layout, RG, ViewportDim);
-    NewLine(&Layout);
+/*     BufferSingleDecimal(1000.0*DtBuffer[DtBufferIndex], 6, &StatusBarLayout, RG, ViewportDim); */
+/*     BufferSingleDecimal(1000.0*AverageFrameDt, 6, &StatusBarLayout, RG, ViewportDim); */
+/*     BufferText("ms", &StatusBarLayout, RG, ViewportDim); */
 
-    BufferSingleDecimal(1000.0*dt, 6, &Layout, RG, ViewportDim);
-    BufferSingleDecimal(1000.0*AverageFrameDt, 6, &Layout, RG, ViewportDim);
-    BufferText("ms", &Layout, RG, ViewportDim);
+/*     BufferCycles(FrameElapsedCycles, &StatusBarLayout, RG, ViewportDim); */
+/*     NewLine(&StatusBarLayout); */
 
-    BufferCycles(FrameElapsedCycles, &Layout, RG, ViewportDim);
-    NewLine(&Layout);
-
-    AdvanceSpaces(6, &Layout);
-    BufferSingleDecimal(1000.0*MinDt, 6, &Layout, RG, ViewportDim);
-  END_BLOCK("Status Bar");
+/*     AdvanceSpaces(6, &StatusBarLayout); */
+/*     BufferSingleDecimal(1000.0*MinDt, 6, &StatusBarLayout, RG, ViewportDim); */
+/*   END_BLOCK("Status Bar"); */
 
   u32 ReadScopeIndex = DebugState->RootScopeIndex;
+
+
+  r32 Pad = 15.0;
+  layout FrameTickerLayout(50 + Pad);
+  FrameTickerLayout.AtY = (r32)SCR_HEIGHT - FrameTickerLayout.FontSize;
   TIMED_BLOCK("Frame Ticker");
-    r32 Pad = 15.0;
-    Layout.LineHeight = 50.0 + Pad;
-    NewLine(&Layout);
+    NewLine(&FrameTickerLayout);
 
     for (u32 TreeIndex = 0;
         TreeIndex < ROOT_SCOPE_COUNT;
@@ -655,10 +657,10 @@ DebugFrameEnd(platform *Plat)
         Color = V3(0.5f, 0.5f, 0.0f);
       }
 
-      r32 Perc = SafeDivide0(Tree->FrameMs, 1000.0f*MaxDt);
+      r32 Perc = SafeDivide0(Tree->FrameMs, 1000.0f*dt);
 
-      v2 MinP = V2(Layout.AtX, Layout.AtY);
-      v2 QuadDim = V2(15.0, (Layout.LineHeight - Pad) * Perc);
+      v2 MinP = V2(FrameTickerLayout.AtX, FrameTickerLayout.AtY);
+      v2 QuadDim = V2(15.0, (FrameTickerLayout.LineHeight - Pad) * Perc);
 
       if (MouseP > MinP && MouseP < MinP + QuadDim)
       {
@@ -667,21 +669,23 @@ DebugFrameEnd(platform *Plat)
       }
 
       v2 DrawDim = BufferQuad(RG->UIGeo.Verts, RG->UIGeo.CurrentIndex, MinP, QuadDim);
-      Layout.AtX = DrawDim.x + 5.0f;
+      FrameTickerLayout.AtX = DrawDim.x + 5.0f;
 
       BufferColors(RG->UIGeo.Colors, RG->UIGeo.CurrentIndex, Color);
 
       RG->UIGeo.CurrentIndex+=6;
     }
 
-    PadBottom(&Layout, Pad);
+    PadBottom(&FrameTickerLayout, Pad);
   END_BLOCK("Frame Ticker");
 
+  layout CallGraphLayout = FrameTickerLayout;
+
   TIMED_BLOCK("Call Graph");
-    Layout.FontSize = 22;
-    Layout.LineHeight = Layout.FontSize*1.3f;
-    NewLine(&Layout);
-    BufferScopeTree(DebugState->ScopeTrees[ReadScopeIndex].Root, DebugState, &Layout, ViewportDim);
+    CallGraphLayout.FontSize = 22;
+    CallGraphLayout.LineHeight = CallGraphLayout.FontSize*1.3f;
+    NewLine(&CallGraphLayout);
+    BufferScopeTree(DebugState->ScopeTrees[ReadScopeIndex].Root, DebugState, &CallGraphLayout, ViewportDim);
   END_BLOCK("Call Graph");
 
   FlushSolidUIGeo(RG, ViewportDim);
