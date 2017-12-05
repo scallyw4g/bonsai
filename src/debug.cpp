@@ -585,63 +585,18 @@ DebugFrameEnd(platform *Plat)
   v2 MouseP = V2(Plat->MouseP.x, Plat->WindowHeight - Plat->MouseP.y);
 
   r32 FrameMs = 1000.0f*Plat->dt;
-#if 0
-  static const u32 DtBufferSize = 60;
-  static r32 DtBuffer[DtBufferSize] = {};
-  static u32 DtBufferIndex = 0;
-
-  if (DebugState->DoScopeProfiling)
-  {
-    DtBuffer[DtBufferIndex] = FrameMs;
-    DtBufferIndex = (++DtBufferIndex) % DtBufferSize;
-  }
-
-  r32 Accum = 0;
-  r32 MinDt = DtBuffer[0];
-  r32 MaxDt = DtBuffer[0];
-  for ( u32 Index = 0;
-        Index < DtBufferSize;
-        ++Index)
-  {
-    r32 Val = DtBuffer[Index];
-    Accum += Val;
-    MinDt = Min(MinDt, Val);
-    MaxDt = Max(MaxDt, Val);
-  }
-
-  r32 AverageFrameDt = Accum/(r32)DtBufferSize;
-#endif
-
-
-/*   TIMED_BLOCK("Draw Status Bar"); */
-  /*   layout StatusBarLayout(DEBUG_FONT_SIZE); */
-  /*   StatusBarLayout.AtY = (r32)SCR_HEIGHT - StatusBarLayout.FontSize; */
-/*     AdvanceSpaces(6, &StatusBarLayout); */
-/*     BufferSingleDecimal(1000.0*MaxDt, 6, &StatusBarLayout, RG, ViewportDim); */
-/*     NewLine(&StatusBarLayout); */
-
-/*     BufferSingleDecimal(1000.0*DtBuffer[DtBufferIndex], 6, &StatusBarLayout, RG, ViewportDim); */
-/*     BufferSingleDecimal(1000.0*AverageFrameDt, 6, &StatusBarLayout, RG, ViewportDim); */
-/*     BufferText("ms", &StatusBarLayout, RG, ViewportDim); */
-
-/*     BufferCycles(FrameElapsedCycles, &StatusBarLayout, RG, ViewportDim); */
-/*     NewLine(&StatusBarLayout); */
-
-/*     AdvanceSpaces(6, &StatusBarLayout); */
-/*     BufferSingleDecimal(1000.0*MinDt, 6, &StatusBarLayout, RG, ViewportDim); */
-/*   END_BLOCK("Status Bar"); */
-
-  u32 ReadScopeIndex = DebugState->ReadScopeIndex;
+  u32 ReadScopePick = DebugState->ReadScopeIndex;
 
   r32 Pad = 15.0;
   layout FrameTickerLayout(50 + Pad);
   FrameTickerLayout.AtY = (r32)SCR_HEIGHT - FrameTickerLayout.FontSize;
 
+  r32 MinMs = DebugState->ScopeTrees[0].FrameMs;
+  r32 MaxMs = DebugState->ScopeTrees[0].FrameMs;
+  r32 AvgMs = 0;
   TIMED_BLOCK("Frame Ticker");
     NewLine(&FrameTickerLayout);
 
-    r32 MinMs = DebugState->ScopeTrees[0].FrameMs;
-    r32 MaxMs = DebugState->ScopeTrees[0].FrameMs;
     TIMED_BLOCK("Get Min/Max Dt");
       for (u32 TreeIndex = 0;
           TreeIndex < ROOT_SCOPE_COUNT;
@@ -650,7 +605,9 @@ DebugFrameEnd(platform *Plat)
         debug_scope_tree *Tree = &DebugState->ScopeTrees[TreeIndex];
         MinMs = Min(MinMs, Tree->FrameMs);
         MaxMs = Max(MaxMs, Tree->FrameMs);
+        AvgMs += Tree->FrameMs;
       }
+      AvgMs /= (r32)ROOT_SCOPE_COUNT;
     END_BLOCK("Min/Max Dt");
 
     for (u32 TreeIndex = 0;
@@ -668,7 +625,7 @@ DebugFrameEnd(platform *Plat)
 
       if ( Tree == DebugState->GetReadScopeTree() )
       {
-        Color = V3(0.5f, 0.5f, 0.0f);
+        Color = V3(0.8f, 0.8f, 0.0f);
       }
 
       r32 Perc = SafeDivide0(Tree->FrameMs, MaxMs);
@@ -678,8 +635,8 @@ DebugFrameEnd(platform *Plat)
 
       if (MouseP > MinP && MouseP < MinP + QuadDim)
       {
-        ReadScopeIndex = TreeIndex;
-        Color = V3(0.5f, 0.5f, 0.0f);
+        ReadScopePick = TreeIndex;
+        Color = V3(1.0f, 0.0f, 0.0f);
       }
 
       v2 DrawDim = BufferQuad(RG->UIGeo.Verts, RG->UIGeo.CurrentIndex, MinP, QuadDim);
@@ -693,13 +650,32 @@ DebugFrameEnd(platform *Plat)
     PadBottom(&FrameTickerLayout, Pad);
   END_BLOCK("Frame Ticker");
 
+  TIMED_BLOCK("Draw Status Bar");
+    layout StatusBarLayout(DEBUG_FONT_SIZE);
+    StatusBarLayout.AtY = (r32)SCR_HEIGHT - StatusBarLayout.FontSize;
+    AdvanceSpaces(6, &StatusBarLayout);
+    BufferSingleDecimal(MaxMs, 6, &StatusBarLayout, RG, ViewportDim);
+    NewLine(&StatusBarLayout);
+
+    BufferSingleDecimal(FrameMs, 6, &StatusBarLayout, RG, ViewportDim);
+    BufferSingleDecimal(AvgMs, 6, &StatusBarLayout, RG, ViewportDim);
+    BufferText("ms", &StatusBarLayout, RG, ViewportDim);
+
+    /* BufferCycles(FrameElapsedCycles, &StatusBarLayout, RG, ViewportDim); */
+    NewLine(&StatusBarLayout);
+
+    AdvanceSpaces(6, &StatusBarLayout);
+    BufferSingleDecimal(MinMs, 6, &StatusBarLayout, RG, ViewportDim);
+  END_BLOCK("Status Bar");
+
+
   layout CallGraphLayout = FrameTickerLayout;
 
   TIMED_BLOCK("Call Graph");
     CallGraphLayout.FontSize = 22;
     CallGraphLayout.LineHeight = CallGraphLayout.FontSize*1.3f;
     NewLine(&CallGraphLayout);
-    debug_scope_tree *Tree = &DebugState->ScopeTrees[ReadScopeIndex];
+    debug_scope_tree *Tree = &DebugState->ScopeTrees[ReadScopePick];
     BufferScopeTree(Tree->Root, DebugState, &CallGraphLayout, ViewportDim, Tree->TotalCycles, 0);
   END_BLOCK("Call Graph");
 
