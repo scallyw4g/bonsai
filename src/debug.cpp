@@ -140,7 +140,7 @@ DrawDebugText(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo, v2 
   glDisable(GL_DEPTH_TEST);
 
   // Draw
-  SetViewport(ViewportDim);
+  SetViewport(V2(SCR_WIDTH, SCR_HEIGHT));
   glDrawArrays(GL_TRIANGLES, 0, VertCount);
 
   glDisable(GL_BLEND);
@@ -565,7 +565,7 @@ FlushSolidUIGeo(debug_text_render_group *RG, v2 ViewportDim)
 
   glDepthFunc(GL_ALWAYS);
 
-  SetViewport( ViewportDim );
+  SetViewport(V2(SCR_WIDTH, SCR_HEIGHT));
   glDrawArrays(GL_TRIANGLES, 0, Buffer->CurrentIndex);
 
   glDepthFunc(GL_LEQUAL);
@@ -625,7 +625,13 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
         ++TreeIndex )
     {
       debug_scope_tree *Tree = &DebugState->ScopeTrees[TreeIndex];
+
       r32 Perc = SafeDivide0(Tree->FrameMs, MaxMs);
+      v2 MinP = V2(FrameTickerLayout.At.x, FrameTickerLayout.At.y);
+      v2 QuadDim = V2(15.0, (FrameTickerLayout.LineHeight - Pad) * Perc);
+
+      v2 DrawDim = BufferQuad(RG->UIGeo.Verts, RG->UIGeo.CurrentIndex, MinP, QuadDim);
+      FrameTickerLayout.At.x = DrawDim.x + 5.0f;
 
       v3 Color = V3(0.5f, 0.5f, 0.5f);
       if ( Tree == DebugState->GetWriteScopeTree() )
@@ -634,17 +640,21 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
       if ( Tree == DebugState->GetReadScopeTree() )
         Color = V3(0.8f, 0.8f, 0.0f);
 
-      v2 MinP = V2(FrameTickerLayout.At.x, FrameTickerLayout.At.y);
-      v2 QuadDim = V2(15.0, (FrameTickerLayout.LineHeight - Pad) * Perc);
+      v2 AspectCorrectMinP = (MinP); // / ViewportDim ) * V2((r32)SCR_HEIGHT, (r32)SCR_WIDTH);
+      v2 AspectCorrectDrawDim = (DrawDim); // / ViewportDim ) * V2((r32)SCR_HEIGHT, (r32)SCR_WIDTH);
 
-      if (MouseP > MinP && MouseP < MinP + QuadDim)
+      /* Print(MouseP); */
+      /* Print(AspectCorrectMinP); */
+      /* Print(AspectCorrectDrawDim); */
+      /* Print(MinP); */
+      /* Print(DrawDim); */
+      /* Debug("------------------------------"); */
+
+      if (MouseP > AspectCorrectMinP && MouseP < AspectCorrectDrawDim)
       {
         DebugState->ReadScopeIndex = TreeIndex;
         Color = V3(0.8f, 0.8f, 0.0f);
       }
-
-      v2 DrawDim = BufferQuad(RG->UIGeo.Verts, RG->UIGeo.CurrentIndex, MinP, QuadDim);
-      FrameTickerLayout.At.x = DrawDim.x + 5.0f;
 
       BufferColors(RG->UIGeo.Colors, RG->UIGeo.CurrentIndex, Color);
 

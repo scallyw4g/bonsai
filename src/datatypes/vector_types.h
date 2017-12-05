@@ -604,6 +604,15 @@ v2 operator+=(v2 P1, v2 P2)
 }
 
 v2
+operator*(v2 A, v2 B)
+{
+  v2 Result;
+  Result.x = A.x * B.x;
+  Result.y = A.y * B.y;
+  return Result;
+}
+
+v2
 operator*(v2 P1, r32 F)
 {
   v2 Result;
