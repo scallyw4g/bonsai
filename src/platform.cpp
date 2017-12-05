@@ -487,7 +487,7 @@ main(s32 NumArgs, char ** Args)
     }
 
     BindHotkeysToInput(&Hotkeys, &Plat.Input);
-    DebugFrameBegin(&Hotkeys);
+    DebugFrameBegin(&Hotkeys, Plat.dt, FrameCycles);
 
     v2 LastMouseP = Plat.MouseP;
     while ( ProcessOsMessages(&Os, &Plat) );

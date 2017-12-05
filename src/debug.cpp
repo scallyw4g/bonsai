@@ -479,7 +479,7 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout,
 }
 
 void
-DebugFrameBegin(hotkeys *Hotkeys)
+DebugFrameBegin(hotkeys *Hotkeys, r32 Dt, u64 Cycles)
 {
   debug_state *State = GetDebugState();
 
@@ -488,12 +488,23 @@ DebugFrameBegin(hotkeys *Hotkeys)
 
   if (!State->DoScopeProfiling) return;
 
-  State->ReadScopeIndex = (State->ReadScopeIndex+1) % ROOT_SCOPE_COUNT;
-  debug_scope_tree *WriteScope = State->GetWriteScopeTree();
-  if (WriteScope)
-  {
-    FreeScopes(State, WriteScope->Root);
-    InitScopeTree(State, WriteScope);
+  { // Record dt/cycles for the frame we're finishing with
+    debug_scope_tree *WriteScope = State->GetWriteScopeTree();
+    if (WriteScope)
+    {
+      WriteScope->FrameMs = Dt*1000.0f;
+      WriteScope->TotalCycles = Cycles;
+    }
+  }
+
+  { // Advance to the next scope and reinitialize
+    State->ReadScopeIndex = (State->ReadScopeIndex+1) % ROOT_SCOPE_COUNT;
+    debug_scope_tree *WriteScope = State->GetWriteScopeTree();
+    if (WriteScope)
+    {
+      FreeScopes(State, WriteScope->Root);
+      InitScopeTree(State, WriteScope);
+    }
   }
 
   return;
@@ -586,11 +597,8 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
   v2 MouseP = V2(Plat->MouseP.x, Plat->WindowHeight - Plat->MouseP.y);
 
   debug_scope_tree *WriteTree = GetDebugState()->GetWriteScopeTree();
-
   if (WriteTree)
     WriteTree->TotalCycles = FrameCycles;
-
-  r32 FrameMs = 1000.0f*Plat->dt;
 
   r32 Pad = 15.0;
   layout FrameTickerLayout(50 + Pad);
@@ -609,9 +617,6 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
       {
         debug_scope_tree *Tree = &DebugState->ScopeTrees[TreeIndex];
 
-        if ( Tree == DebugState->GetWriteScopeTree() && DebugState->DoScopeProfiling )
-          Tree->FrameMs = FrameMs;
-
         MinMs = Min(MinMs, Tree->FrameMs);
         MaxMs = Max(MaxMs, Tree->FrameMs);
         AvgMs += Tree->FrameMs;
@@ -627,7 +632,7 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
       r32 Perc = SafeDivide0(Tree->FrameMs, MaxMs);
 
       v3 Color = V3(0.5f, 0.5f, 0.5f);
-      if ( Tree == DebugState->GetWriteScopeTree() && DebugState->DoScopeProfiling )
+      if ( Tree == DebugState->GetWriteScopeTree() )
         Color = V3(0.8f, 0.0f, 0.0f);
 
       if ( Tree == DebugState->GetReadScopeTree() )
@@ -651,8 +656,8 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
     }
   END_BLOCK("Frame Ticker");
 
+  debug_scope_tree *Tree = DebugState->GetReadScopeTree();
   TIMED_BLOCK("Call Graph");
-    debug_scope_tree *Tree = DebugState->GetReadScopeTree();
 
     layout TreeInfoLayout = FrameTickerLayout;
     { // Current tree info
@@ -682,7 +687,7 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
     BufferSingleDecimal(MaxMs, 6, &StatusBarLayout, RG, ViewportDim);
     NewLine(&StatusBarLayout);
 
-    BufferSingleDecimal(FrameMs, 6, &StatusBarLayout, RG, ViewportDim);
+    BufferSingleDecimal(Tree->FrameMs, 6, &StatusBarLayout, RG, ViewportDim);
     BufferSingleDecimal(AvgMs, 6, &StatusBarLayout, RG, ViewportDim);
     BufferText("ms", &StatusBarLayout, RG, ViewportDim);
 
