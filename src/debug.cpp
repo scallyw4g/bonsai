@@ -93,7 +93,7 @@ InitDebugState(platform *Plat)
   GlobalDebugState->FreeScopeSentinel.Parent = &GlobalDebugState->FreeScopeSentinel;
   GlobalDebugState->FreeScopeSentinel.Child = &GlobalDebugState->FreeScopeSentinel;
 
-  GlobalDebugState->Memory = SubArena(Plat->Memory, Megabytes(32));
+  GlobalDebugState->Memory = SubArena(Plat->Memory, Megabytes(128));
 
   GlobalDebugState->TextRenderGroup = PUSH_STRUCT_CHECKED(debug_text_render_group, Plat->Memory, 1);
   if (!InitDebugOverlayFramebuffer(GlobalDebugState->TextRenderGroup, Plat->Memory, "Holstein.DDS"))
@@ -438,11 +438,40 @@ BufferNumberAsText(u32 Number, layout *Layout, debug_text_render_group *RG, v2 V
   return;
 }
 
-b32
+inline b32
 StringsMatch(const char *S1, const char *S2)
 {
   b32 Result = strcmp(S1, S2) == 0;
   return Result;
+}
+
+inline void
+BufferScopeTreeEntry(debug_profile_scope *Scope, layout *Layout, u32 Color, u64 TotalCycles, u64 TotalFrameCycles, u64 CallCount, debug_text_render_group *RG, v2 ViewportDim, u32 Depth)
+{
+  r32 Percentage = 100.0f*(r32)((r64)TotalCycles/(r64)TotalFrameCycles);
+  u64 AvgCycles = SafeDivide0(TotalCycles, CallCount);
+  BufferColumn(Percentage, 6, Layout, RG, ViewportDim, Color);
+  BufferCycles(AvgCycles, Layout, RG, ViewportDim, Color);
+  BufferColumn(CallCount, 5, Layout, RG, ViewportDim, Color);
+
+  AdvanceSpaces(Depth*2.0f + 1, Layout);
+
+  if (Scope->Expanded && Scope->Child)
+  {
+    BufferText("-", Layout, RG, ViewportDim, Color);
+  }
+  else if (Scope->Child)
+  {
+    BufferText("+", Layout, RG, ViewportDim, Color);
+  }
+  else
+  {
+    AdvanceSpaces(1, Layout);
+  }
+
+  BufferText(Scope->Name, Layout, RG, ViewportDim, Color);
+
+  NewLine(Layout);
 }
 
 void
@@ -483,9 +512,9 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout,
     Next = Next->Sibling;
   }
 
-  u32 Color = WHITE;
   if (WeAreFirst)
   {
+    u32 Color = WHITE;
     {
       v2 StartingP = Layout->At;
       v2 EndingP = Layout->At + V2(SCR_WIDTH, Layout->LineHeight);
@@ -500,31 +529,8 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout,
       }
     }
 
-
-    r32 Percentage = 100.0f*(r32)((r64)TotalCycles/(r64)TotalFrameCycles);
-    u64 AvgCycles = SafeDivide0(TotalCycles, CallCount);
-    BufferColumn(Percentage, 6, Layout, State->TextRenderGroup, ViewportDim, Color);
-    BufferCycles(AvgCycles, Layout, State->TextRenderGroup, ViewportDim, Color);
-    BufferColumn(CallCount, 5, Layout, State->TextRenderGroup, ViewportDim, Color);
-
-    AdvanceSpaces(Depth*2.0f + 1, Layout);
-
-    if (Scope->Expanded && Scope->Child)
-    {
-      BufferText("-", Layout, State->TextRenderGroup, ViewportDim, Color);
-    }
-    else if (Scope->Child)
-    {
-      BufferText("+", Layout, State->TextRenderGroup, ViewportDim, Color);
-    }
-    else
-    {
-      AdvanceSpaces(1, Layout);
-    }
-
-    BufferText(Scope->Name, Layout, State->TextRenderGroup, ViewportDim, Color);
-
-    NewLine(Layout);
+    BufferScopeTreeEntry(Scope, Layout, Color, TotalCycles, TotalFrameCycles,
+                         CallCount, State->TextRenderGroup, ViewportDim, Depth);
   }
 
   if (WeAreFirst && Scope->Expanded)
