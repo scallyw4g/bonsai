@@ -1053,6 +1053,7 @@ IsFilledInWorld( world *World, world_chunk *chunk, canonical_position VoxelP )
 inline b32
 NotFilledInWorld( world *World, world_chunk *chunk, canonical_position VoxelP )
 {
+  TIMED_FUNCTION();
   b32 Result = !(IsFilledInWorld(World, chunk, VoxelP));
   return Result;
 }

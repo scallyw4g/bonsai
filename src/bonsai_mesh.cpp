@@ -30,9 +30,28 @@ BufferVertsDirect(
 
     v3 *VertsPositions,
     v3 *Normals,
+    const v3 *VertColors
+  )
+{
+  TIMED_FUNCTION();
+  s32 sizeofData = NumVerts * sizeof(v3);
+  memcpy( &Dest->VertexData[Dest->VertsFilled],  VertsPositions,  sizeofData );
+  memcpy( &Dest->NormalData[Dest->VertsFilled],  Normals,         sizeofData );
+  memcpy( &Dest->ColorData[Dest->VertsFilled],   VertColors,      sizeofData );
+  Dest->VertsFilled += NumVerts;
+}
+
+inline void
+BufferVertsDirect(
+    untextured_3d_geometry_buffer *Dest,
+
+    s32 NumVerts,
+
+    v3 *VertsPositions,
+    v3 *Normals,
     const v3 *VertColors,
-    v3 Offset = V3(0),
-    v3 Scale = V3(1)
+    v3 Offset,
+    v3 Scale
   )
 {
   TIMED_FUNCTION();
@@ -294,6 +313,13 @@ BuildWorldChunkMesh(world *World, world_chunk *WorldChunk, chunk_dimension World
 
   UnSetFlag( chunk, Chunk_BufferMesh );
 
+  canonical_position rightVoxel;
+  canonical_position leftVoxel;
+  canonical_position topVoxel;
+  canonical_position botVoxel;
+  canonical_position frontVoxel;
+  canonical_position backVoxel;
+
   for ( int z = 0; z < WorldChunkDim.z ; ++z )
   {
     for ( int y = 0; y < WorldChunkDim.y ; ++y )
@@ -312,14 +338,14 @@ BuildWorldChunkMesh(world *World, world_chunk *WorldChunk, chunk_dimension World
         v3 FaceColors[FACE_VERT_COUNT];
         FillColorArray(Voxel->Color, FaceColors, FACE_VERT_COUNT);;
 
-        canonical_position rightVoxel = Canonicalize(WorldChunkDim, CurrentP + V3(1, 0, 0));
-        canonical_position leftVoxel  = Canonicalize(WorldChunkDim, CurrentP - V3(1, 0, 0));
-
-        canonical_position topVoxel   = Canonicalize(WorldChunkDim, CurrentP + V3(0, 0, 1));
-        canonical_position botVoxel   = Canonicalize(WorldChunkDim, CurrentP - V3(0, 0, 1));
-
-        canonical_position frontVoxel = Canonicalize(WorldChunkDim, CurrentP + V3(0, 1, 0));
-        canonical_position backVoxel  = Canonicalize(WorldChunkDim, CurrentP - V3(0, 1, 0));
+        TIMED_BLOCK("Canonicalize");
+          rightVoxel = Canonicalize(WorldChunkDim, CurrentP + V3(1, 0, 0));
+          leftVoxel  = Canonicalize(WorldChunkDim, CurrentP - V3(1, 0, 0));
+          topVoxel   = Canonicalize(WorldChunkDim, CurrentP + V3(0, 0, 1));
+          botVoxel   = Canonicalize(WorldChunkDim, CurrentP - V3(0, 0, 1));
+          frontVoxel = Canonicalize(WorldChunkDim, CurrentP + V3(0, 1, 0));
+          backVoxel  = Canonicalize(WorldChunkDim, CurrentP - V3(0, 1, 0));
+        END_BLOCK("Canonicalize");
 
         if ( NotFilledInWorld( World, WorldChunk, rightVoxel ) )
         {
