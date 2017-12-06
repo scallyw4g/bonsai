@@ -375,7 +375,21 @@ BufferCycles(u64 Number, layout *Layout, debug_text_render_group *RG, v2 Viewpor
 }
 
 inline void
-BufferSingleDecimal(r32 Perc, u32 ColumnWidth, layout *Layout, debug_text_render_group *RG, v2 ViewportDim, u32 ColorIndex)
+BufferColumn( u64 Value, u32 ColumnWidth, layout *Layout, debug_text_render_group *RG, v2 ViewportDim, u32 ColorIndex)
+{
+  char Buffer[32] = {};
+  sprintf(Buffer, "%lu", Value);
+  {
+    s32 Len = strlen(Buffer);
+    s32 Pad = Max(ColumnWidth-Len, 0);
+    AdvanceSpaces(Pad, Layout);
+  }
+  BufferText( Buffer, Layout, RG, ViewportDim, ColorIndex);
+  return;
+}
+
+inline void
+BufferColumn( r32 Perc, u32 ColumnWidth, layout *Layout, debug_text_render_group *RG, v2 ViewportDim, u32 ColorIndex)
 {
   char Buffer[32] = {};
   sprintf(Buffer, "%.1f", Perc);
@@ -489,11 +503,25 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout,
 
     r32 Percentage = 100.0f*(r32)((r64)TotalCycles/(r64)TotalFrameCycles);
     u64 AvgCycles = SafeDivide0(TotalCycles, CallCount);
-    BufferSingleDecimal(Percentage, 6, Layout, State->TextRenderGroup, ViewportDim, Color);
+    BufferColumn(Percentage, 6, Layout, State->TextRenderGroup, ViewportDim, Color);
     BufferCycles(AvgCycles, Layout, State->TextRenderGroup, ViewportDim, Color);
-    BufferNumberAsText(CallCount, Layout, State->TextRenderGroup, ViewportDim, Color);
+    BufferColumn(CallCount, 5, Layout, State->TextRenderGroup, ViewportDim, Color);
 
-    Layout->At.x += (Depth*2.0f*Layout->FontSize);
+    AdvanceSpaces(Depth*2.0f + 1, Layout);
+
+    if (Scope->Expanded && Scope->Child)
+    {
+      BufferText("-", Layout, State->TextRenderGroup, ViewportDim, Color);
+    }
+    else if (Scope->Child)
+    {
+      BufferText("+", Layout, State->TextRenderGroup, ViewportDim, Color);
+    }
+    else
+    {
+      AdvanceSpaces(1, Layout);
+    }
+
     BufferText(Scope->Name, Layout, State->TextRenderGroup, ViewportDim, Color);
 
     NewLine(Layout);
@@ -696,7 +724,7 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
     { // Current tree info
       TreeInfoLayout.FontSize = 36;
       TreeInfoLayout.LineHeight = 36 * 1.3f;
-      BufferSingleDecimal(Tree->FrameMs, 4, &TreeInfoLayout, RG, ViewportDim, WHITE);
+      BufferColumn(Tree->FrameMs, 4, &TreeInfoLayout, RG, ViewportDim, WHITE);
       BufferCycles(Tree->TotalCycles, &TreeInfoLayout, RG, ViewportDim, WHITE);
     }
 
@@ -716,15 +744,15 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
   TIMED_BLOCK("Draw Status Bar");
     layout StatusBarLayout(DEBUG_FONT_SIZE);
     StatusBarLayout.At.y = (r32)SCR_HEIGHT - StatusBarLayout.FontSize;
-    BufferSingleDecimal(MaxMs, 6, &StatusBarLayout, RG, ViewportDim, WHITE);
+    BufferColumn(MaxMs, 6, &StatusBarLayout, RG, ViewportDim, WHITE);
     NewLine(&StatusBarLayout);
 
-    BufferSingleDecimal(AvgMs, 6, &StatusBarLayout, RG, ViewportDim, WHITE);
-    BufferSingleDecimal(Tree->FrameMs, 6, &StatusBarLayout, RG, ViewportDim, WHITE);
+    BufferColumn(AvgMs, 6, &StatusBarLayout, RG, ViewportDim, WHITE);
+    BufferColumn(Tree->FrameMs, 6, &StatusBarLayout, RG, ViewportDim, WHITE);
     BufferText("ms", &StatusBarLayout, RG, ViewportDim, WHITE);
     NewLine(&StatusBarLayout);
 
-    BufferSingleDecimal(MinMs, 6, &StatusBarLayout, RG, ViewportDim, WHITE);
+    BufferColumn(MinMs, 6, &StatusBarLayout, RG, ViewportDim, WHITE);
   END_BLOCK("Status Bar");
 
   return;
