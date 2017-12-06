@@ -214,7 +214,8 @@ ProcessOsMessages(os *Os, platform *Plat)
       {
         if (Event.xbutton.button == Button1)
         {
-          Plat->Input.LMB = True;
+          Plat->Input.LMB.WasPressed = True;
+          Plat->Input.LMB.IsDown = True;
         }
       } break;
 
@@ -222,64 +223,52 @@ ProcessOsMessages(os *Os, platform *Plat)
       {
         if (Event.xbutton.button == Button1)
         {
-          Plat->Input.LMB = False;
+          Plat->Input.LMB.WasPressed = False;
+          Plat->Input.LMB.IsDown = False;
         }
       } break;
+
+
+#define BindToInput(Keysym, InputField, Boolean) \
+  case Keysym: {                                 \
+    Plat->Input.InputField.WasPressed = Boolean; \
+    Plat->Input.InputField.IsDown = Boolean;     \
+  } break;
+
+#define BindKeydownToInput(Keysym, InputField) \
+    BindToInput(Keysym, InputField, True)
+
+#define BindKeyupToInput(Keysym, InputField) \
+    BindToInput(Keysym, InputField, False)
+
 
       case KeyRelease:
       {
         int KeySym = XLookupKeysym(&Event.xkey, 0);
         switch (KeySym)
         {
-          case XK_w:
-          {
-            Plat->Input.W = False;
-          } break;
 
-          case XK_s:
-          {
-            Plat->Input.S = False;
-          } break;
+          BindKeyupToInput(XK_w     , W)
+          BindKeyupToInput(XK_s     , S)
+          BindKeyupToInput(XK_a     , A);
+          BindKeyupToInput(XK_d     , D);
+          BindKeyupToInput(XK_q     , Q);
+          BindKeyupToInput(XK_e     , E);
 
-          case XK_a:
-          {
-            Plat->Input.A = False;
-          } break;
+          BindKeyupToInput(XK_F1    , F1);
+          BindKeyupToInput(XK_F2    , F2);
+          BindKeyupToInput(XK_F3    , F3);
+          BindKeyupToInput(XK_F4    , F4);
+          BindKeyupToInput(XK_F5    , F5);
+          BindKeyupToInput(XK_F6    , F6);
+          BindKeyupToInput(XK_F7    , F7);
+          BindKeyupToInput(XK_F8    , F8);
+          BindKeyupToInput(XK_F9    , F9);
+          BindKeyupToInput(XK_F10   , F10);
+          BindKeyupToInput(XK_F11   , F11);
+          BindKeyupToInput(XK_F12   , F12);
 
-          case XK_d:
-          {
-            Plat->Input.D = False;
-          } break;
-
-          case XK_q:
-          {
-            Plat->Input.Q = False;
-          } break;
-
-          case XK_e:
-          {
-            Plat->Input.E = False;
-          } break;
-
-          case XK_F10:
-          {
-            Plat->Input.F10 = False;
-          } break;
-
-          case XK_F11:
-          {
-            Plat->Input.F11 = False;
-          } break;
-
-          case XK_Escape:
-          {
-            Os->ContinueRunning = False;
-          } break;
-
-          case XK_space:
-          {
-            Plat->Input.Space = False;
-          } break;
+          BindKeyupToInput(XK_space , Space);
 
           default:
           {
@@ -292,49 +281,32 @@ ProcessOsMessages(os *Os, platform *Plat)
         int KeySym = XLookupKeysym(&Event.xkey, 0);
         switch (KeySym)
         {
-          case XK_w:
-          {
-            Plat->Input.W = True;
-          } break;
 
-          case XK_s:
-          {
-            Plat->Input.S = True;
-          } break;
+          BindKeydownToInput(XK_w     , W)
+          BindKeydownToInput(XK_s     , S)
+          BindKeydownToInput(XK_a     , A);
+          BindKeydownToInput(XK_d     , D);
+          BindKeydownToInput(XK_q     , Q);
+          BindKeydownToInput(XK_e     , E);
 
-          case XK_a:
-          {
-            Plat->Input.A = True;
-          } break;
+          BindKeydownToInput(XK_F1    , F1);
+          BindKeydownToInput(XK_F2    , F2);
+          BindKeydownToInput(XK_F3    , F3);
+          BindKeydownToInput(XK_F4    , F4);
+          BindKeydownToInput(XK_F5    , F5);
+          BindKeydownToInput(XK_F6    , F6);
+          BindKeydownToInput(XK_F7    , F7);
+          BindKeydownToInput(XK_F8    , F8);
+          BindKeydownToInput(XK_F9    , F9);
+          BindKeydownToInput(XK_F10   , F10);
+          BindKeydownToInput(XK_F11   , F11);
+          BindKeydownToInput(XK_F12   , F12);
 
-          case XK_d:
-          {
-            Plat->Input.D = True;
-          } break;
+          BindKeydownToInput(XK_space , Space);
 
-          case XK_q:
+          case XK_Escape:
           {
-            Plat->Input.Q = True;
-          } break;
-
-          case XK_e:
-          {
-            Plat->Input.E = True;
-          } break;
-
-          case XK_F10:
-          {
-            Plat->Input.F10 = True;
-          } break;
-
-          case XK_F11:
-          {
-            Plat->Input.F11 = True;
-          } break;
-
-          case XK_space:
-          {
-            Plat->Input.Space = True;
+            Os->ContinueRunning = False;
           } break;
 
           default:

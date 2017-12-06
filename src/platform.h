@@ -92,38 +92,37 @@ struct gl_extensions
   PFNSWAPINTERVALPROC glSwapInterval;
 };
 
+// XXX Make sure this ONLY contains input_event structs - they are cleared in a
+// loop and the struct size is used to determine the ending index
 struct input
 {
-  b32 Space;
-  b32 Shift;
-  b32 Ctrl;
-  b32 Alt;
+  input_event Space;
+  input_event Shift;
+  input_event Ctrl;
+  input_event Alt;
 
-  b32 F12;
-  b32 F11;
-  b32 F10;
-  b32 F9;
-  b32 F8;
-  b32 F7;
-  b32 F6;
-  b32 F5;
-  b32 F4;
-  b32 F3;
-  b32 F2;
-  b32 F1;
+  input_event F12;
+  input_event F11;
+  input_event F10;
+  input_event F9;
+  input_event F8;
+  input_event F7;
+  input_event F6;
+  input_event F5;
+  input_event F4;
+  input_event F3;
+  input_event F2;
+  input_event F1;
 
-  b32 RMB;
-  b32 LMB;
-  b32 W;
-  b32 A;
-  b32 S;
-  b32 D;
+  input_event RMB;
+  input_event LMB;
+  input_event W;
+  input_event A;
+  input_event S;
+  input_event D;
 
-  b32 Q;
-  b32 E;
-
-  s32 DeltaMouseX;
-  s32 DeltaMouseY;
+  input_event Q;
+  input_event E;
 };
 
 struct platform

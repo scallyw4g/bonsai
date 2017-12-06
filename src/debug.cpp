@@ -473,8 +473,13 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout,
     v2 EndingP = Layout->At;
     EndingP.y += (Layout->LineHeight);
 
-    if (Input->LMB && MouseP > StartingP && MouseP < EndingP)
-      Scope->Expanded = !Scope->Expanded;
+    if (MouseP > StartingP && MouseP < EndingP)
+    {
+      if ( Input->LMB.WasPressed )
+      {
+        Scope->Expanded = !Scope->Expanded;
+      }
+    }
 
     NewLine(Layout);
   }
@@ -493,7 +498,10 @@ DebugFrameBegin(hotkeys *Hotkeys, r32 Dt, u64 Cycles)
   debug_state *State = GetDebugState();
 
   if ( Hotkeys->Debug_ToggleProfile )
+  {
+    Hotkeys->Debug_ToggleProfile = False;
     State->DoScopeProfiling = !State->DoScopeProfiling;
+  }
 
   if (!State->DoScopeProfiling) return;
 

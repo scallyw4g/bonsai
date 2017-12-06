@@ -109,6 +109,12 @@ Print_Binary( unsigned int input )
 /* } */
 
 inline void
+Print_P( input_event E, const char* name)
+{
+  Log(" -- %s == IsDown %d WasPressed %d \n", name, E.IsDown, E.WasPressed );
+}
+
+inline void
 Print_P( u64 N, const char* name)
 {
   Log(" -- %s == %lu \n", name, N);

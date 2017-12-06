@@ -446,7 +446,7 @@ GetMouseDelta(platform *Plat)
 
   v2 Result = {};
 
-  if (Plat->Input.LMB)
+  if (Plat->Input.LMB.IsDown)
     Result = Plat->MouseDP * mouseSpeed;
 
   return Result;

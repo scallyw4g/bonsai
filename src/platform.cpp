@@ -352,37 +352,42 @@ QueryAndSetGlslVersion(platform *Plat)
 }
 
 void
+ClearWasPressedFlags(input_event *Input)
+{
+  u32 TotalEvents = sizeof(input)/sizeof(input_event);
+
+  for ( u32 EventIndex = 0;
+        EventIndex < TotalEvents;
+        ++EventIndex)
+  {
+    input_event *Event = Input + EventIndex;
+
+    // This is some super-janky insurance that we're overwriting boolean values
+    Assert(Event->IsDown == False || Event->IsDown == True);
+    Assert(Event->WasPressed == False || Event->WasPressed == True);
+
+    Event->WasPressed = False;
+  }
+}
+
+void
 BindHotkeysToInput(hotkeys *Hotkeys, input *Input)
 {
-  Hotkeys->Debug_Pause                    = Input->F12;
-  Hotkeys->Debug_ToggleLoopedGamePlayback = Input->F11;
+  Hotkeys->Debug_Pause                    = Input->F12.IsDown;
+  Hotkeys->Debug_ToggleLoopedGamePlayback = Input->F11.WasPressed;
 
-  static b32 DidToggle = False;
-
-  if (Input->F10 && !DidToggle)
-  {
+  if (Input->F10.WasPressed)
     Hotkeys->Debug_ToggleProfile = True;
-    DidToggle = True;
-  }
-  else if (DidToggle)
-  {
-    Hotkeys->Debug_ToggleProfile = False;
-  }
 
-  if (!Input->F10)
-  {
-    DidToggle = False;
-  }
+  Hotkeys->Left = Input->A.IsDown;
+  Hotkeys->Right = Input->D.IsDown;
+  Hotkeys->Forward = Input->W.IsDown;
+  Hotkeys->Backward = Input->S.IsDown;
 
-  Hotkeys->Left = Input->A;
-  Hotkeys->Right = Input->D;
-  Hotkeys->Forward = Input->W;
-  Hotkeys->Backward = Input->S;
+  Hotkeys->Player_Fire = Input->Space.WasPressed;
+  Hotkeys->Player_Proton = Input->Shift.WasPressed;
 
-  Hotkeys->Player_Fire = Input->Space;
-  Hotkeys->Player_Proton = Input->Shift;
-
-  Hotkeys->Player_Spawn = Input->Space;
+  Hotkeys->Player_Spawn = Input->Space.WasPressed;
 
   return;
 }
@@ -486,12 +491,14 @@ main(s32 NumArgs, char ** Args)
       LastCycles = CurrentCycles;
     }
 
-    BindHotkeysToInput(&Hotkeys, &Plat.Input);
+    ClearWasPressedFlags((input_event*)&Plat.Input);
     DebugFrameBegin(&Hotkeys, Plat.dt, FrameCycles);
 
     v2 LastMouseP = Plat.MouseP;
     while ( ProcessOsMessages(&Os, &Plat) );
     Plat.MouseDP = LastMouseP - Plat.MouseP;
+
+    BindHotkeysToInput(&Hotkeys, &Plat.Input);
 
     if ( GameLibIsNew(GAME_LIB) )
     {

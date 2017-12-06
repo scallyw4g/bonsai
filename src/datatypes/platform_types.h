@@ -1,4 +1,10 @@
 
+struct input_event
+{
+  b32 WasPressed;
+  b32 IsDown;
+};
+
 struct hotkeys
 {
   b32 Debug_ToggleLoopedGamePlayback;
