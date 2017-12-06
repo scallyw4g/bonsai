@@ -16,6 +16,7 @@ void BreakHere() { return; }
 #include <basic_types.h>
 #include <memory_types.h>
 #include <vector_types.h>
+#include <colors.h>
 #include <line_types.h>
 #include <matrix_types.h>
 #include <quaternion_types.h>

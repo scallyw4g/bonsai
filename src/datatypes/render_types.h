@@ -170,6 +170,7 @@ struct untextured_3d_geometry_buffer
 struct textured_2d_geometry_buffer
 {
   v3 *Verts;
+  v3 *Colors;
   v2 *UVs;
 
   u32 Allocated;
@@ -197,6 +198,7 @@ struct debug_text_render_group
 
   u32 VertexBuffer;
   u32 UVBuffer;
+  u32 ColorBuffer;
 
   shader Text2DShader;
   textured_2d_geometry_buffer TextGeo;

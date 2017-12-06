@@ -32,6 +32,7 @@ InitDebugOverlayFramebuffer(debug_text_render_group *RG, memory_arena *DebugAren
 
   GL_Global->glGenBuffers(1, &RG->VertexBuffer);
   GL_Global->glGenBuffers(1, &RG->UVBuffer);
+  GL_Global->glGenBuffers(1, &RG->ColorBuffer);
 
   RG->Text2DShader = LoadShaders("TextVertexShader.vertexshader",
                                  "TextVertexShader.fragmentshader", DebugArena);
@@ -51,6 +52,7 @@ void
 AllocateAndInitGeoBuffer(textured_2d_geometry_buffer *Geo, u32 VertCount, memory_arena *DebugArena)
 {
   Geo->Verts = PUSH_STRUCT_CHECKED(v3, DebugArena, VertCount);
+  Geo->Colors = PUSH_STRUCT_CHECKED(v3, DebugArena, VertCount);
   Geo->UVs = PUSH_STRUCT_CHECKED(v2, DebugArena, VertCount);
   Geo->Allocated = VertCount;
 }
@@ -97,8 +99,8 @@ InitDebugState(platform *Plat)
   if (!InitDebugOverlayFramebuffer(GlobalDebugState->TextRenderGroup, Plat->Memory, "Holstein.DDS"))
   { Error("Initializing Debug Overlay Framebuffer"); }
 
-  AllocateAndInitGeoBuffer(&GlobalDebugState->TextRenderGroup->TextGeo, 4096, Plat->Memory);
-  AllocateAndInitGeoBuffer(&GlobalDebugState->TextRenderGroup->UIGeo, 8190, Plat->Memory);
+  AllocateAndInitGeoBuffer(&GlobalDebugState->TextRenderGroup->TextGeo, 512, Plat->Memory);
+  AllocateAndInitGeoBuffer(&GlobalDebugState->TextRenderGroup->UIGeo, 512, Plat->Memory);
 
   GlobalDebugState->TextRenderGroup->SolidUIShader = MakeSolidUIShader(GlobalDebugState->Memory);
 
@@ -107,7 +109,7 @@ InitDebugState(platform *Plat)
 }
 
 void
-DrawDebugText(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo, v2 ViewportDim)
+FlushTextBuffer(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo, v2 ViewportDim)
 {
   u32 VertCount = Geo->CurrentIndex +1;
   Geo->CurrentIndex = 0;
@@ -122,17 +124,23 @@ DrawDebugText(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo, v2 
   glBindTexture(GL_TEXTURE_2D, RG->FontTexture.ID);
   GL_Global->glUniform1i(RG->TextureUniformID, 0);
 
-  // 1rst attribute buffer : Verteces
+  // Verteces
   GL_Global->glEnableVertexAttribArray(0);
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->VertexBuffer);
   GL_Global->glBufferData(GL_ARRAY_BUFFER, VertCount * sizeof(v3), Geo->Verts, GL_STATIC_DRAW);
   GL_Global->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0 );
 
-  // 2nd attribute buffer : UVs
+  // UVs
   GL_Global->glEnableVertexAttribArray(1);
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->UVBuffer);
   GL_Global->glBufferData(GL_ARRAY_BUFFER, VertCount * sizeof(v2), Geo->UVs, GL_STATIC_DRAW);
   GL_Global->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0 );
+
+  // Colors
+  GL_Global->glEnableVertexAttribArray(2);
+  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->ColorBuffer);
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, VertCount * sizeof(v3), Geo->Colors, GL_STATIC_DRAW);
+  GL_Global->glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)0 );
 
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -148,6 +156,7 @@ DrawDebugText(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo, v2 
 
   GL_Global->glDisableVertexAttribArray(0);
   GL_Global->glDisableVertexAttribArray(1);
+  GL_Global->glDisableVertexAttribArray(2);
 
   AssertNoGlErrors;
 }
@@ -207,7 +216,7 @@ BufferQuad(v3 *Verts, u32 StartingIndex, v2 MinP, v2 Dim)
 
 rect2
 BufferTextAt(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo,
-    const char *Text, v2 XY, s32 FontSize, v2 ViewportDim)
+    const char *Text, v2 XY, s32 FontSize, v2 ViewportDim, u32 ColorIndex)
 {
   s32 QuadCount = strlen(Text);
 
@@ -218,7 +227,7 @@ BufferTextAt(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo,
       CharIndex++ )
   {
     if (Geo->CurrentIndex + 6 > Geo->Allocated)
-      DrawDebugText(RG, Geo, ViewportDim);
+      FlushTextBuffer(RG, Geo, ViewportDim);
 
     char character = Text[CharIndex];
     v2 UV = V2( (character%16)/16.0f, (character/16)/16.0f );
@@ -226,6 +235,8 @@ BufferTextAt(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo,
 
     v2 MinP = V2(XY.x + (FontSize*CharIndex), XY.y);
     Result.Max = BufferQuad(Geo->Verts, Geo->CurrentIndex, MinP, V2(FontSize, FontSize));
+
+    BufferColors(Geo->Colors, Geo->CurrentIndex, default_palette[ColorIndex].xyz);
 
     Geo->CurrentIndex += 6;
 
@@ -287,38 +298,38 @@ PrintFreeScopes(debug_state *State)
 }
 
 inline void
-BufferText(const char *Text, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
+BufferText(const char *Text, layout *Layout, debug_text_render_group *RG, v2 ViewportDim, u32 ColorIndex)
 {
-  rect2 TextBox = BufferTextAt(RG, &RG->TextGeo, Text, V2(Layout->At.x, Layout->At.y), Layout->FontSize, ViewportDim);
+  rect2 TextBox = BufferTextAt(RG, &RG->TextGeo, Text, V2(Layout->At.x, Layout->At.y), Layout->FontSize, ViewportDim, ColorIndex );
   Layout->At.x = TextBox.Max.x;
 
   return;
 }
 
 inline void
-BufferText(r32 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
+BufferText(r32 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim, u32 ColorIndex)
 {
   char Buffer[32] = {};
   sprintf(Buffer, "%f", Number);
-  BufferText( Buffer, Layout, RG, ViewportDim);
+  BufferText( Buffer, Layout, RG, ViewportDim, ColorIndex);
   return;
 }
 
 inline void
-BufferText(u64 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
+BufferText(u64 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim, u32 ColorIndex)
 {
   char Buffer[32] = {};
   sprintf(Buffer, "%lu", Number);
-  BufferText( Buffer, Layout, RG, ViewportDim);
+  BufferText( Buffer, Layout, RG, ViewportDim, ColorIndex);
   return;
 }
 
 inline void
-BufferText(u32 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
+BufferText(u32 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim, u32 ColorIndex)
 {
   char Buffer[32] = {};
   sprintf(Buffer, "%u", Number);
-  BufferText( Buffer, Layout, RG, ViewportDim);
+  BufferText( Buffer, Layout, RG, ViewportDim, ColorIndex);
   return;
 }
 
@@ -338,7 +349,7 @@ AdvanceSpaces(u32 N, layout *Layout)
 }
 
 inline void
-BufferCycles(u64 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
+BufferCycles(u64 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim, u32 ColorIndex)
 {
   u64 OneThousand = 1000;
   r32 Display = (r32)Number;
@@ -358,13 +369,13 @@ BufferCycles(u64 Number, layout *Layout, debug_text_render_group *RG, v2 Viewpor
     s32 Pad = Max(ColumnWidth-Len, 0);
     AdvanceSpaces(Pad, Layout);
   }
-  BufferText( Buffer, Layout, RG, ViewportDim);
+  BufferText( Buffer, Layout, RG, ViewportDim, ColorIndex);
 
   return;
 }
 
 inline void
-BufferSingleDecimal(r32 Perc, u32 ColumnWidth, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
+BufferSingleDecimal(r32 Perc, u32 ColumnWidth, layout *Layout, debug_text_render_group *RG, v2 ViewportDim, u32 ColorIndex)
 {
   char Buffer[32] = {};
   sprintf(Buffer, "%.1f", Perc);
@@ -373,42 +384,42 @@ BufferSingleDecimal(r32 Perc, u32 ColumnWidth, layout *Layout, debug_text_render
     s32 Pad = Max(ColumnWidth-Len, 0);
     AdvanceSpaces(Pad, Layout);
   }
-  BufferText( Buffer, Layout, RG, ViewportDim);
+  BufferText( Buffer, Layout, RG, ViewportDim, ColorIndex);
   return;
 }
 
 inline void
-BufferNumberAsText(r32 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
+BufferNumberAsText(r32 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim, u32 ColorIndex)
 {
   Layout->At.x += Layout->FontSize;
-  BufferText(Number, Layout, RG, ViewportDim);
-  Layout->At.x += Layout->FontSize;
-  return;
-}
-
-inline void
-BufferNumberAsText(r64 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
-{
-  Layout->At.x += Layout->FontSize;
-  BufferText((r32)Number, Layout, RG, ViewportDim);
+  BufferText(Number, Layout, RG, ViewportDim, ColorIndex);
   Layout->At.x += Layout->FontSize;
   return;
 }
 
 inline void
-BufferNumberAsText(u64 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
+BufferNumberAsText(r64 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim, u32 ColorIndex)
 {
   Layout->At.x += Layout->FontSize;
-  BufferText(Number, Layout, RG, ViewportDim);
+  BufferText((r32)Number, Layout, RG, ViewportDim, ColorIndex);
   Layout->At.x += Layout->FontSize;
   return;
 }
 
 inline void
-BufferNumberAsText(u32 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim)
+BufferNumberAsText(u64 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim, u32 ColorIndex)
 {
   Layout->At.x += Layout->FontSize;
-  BufferText(Number, Layout, RG, ViewportDim);
+  BufferText(Number, Layout, RG, ViewportDim, ColorIndex);
+  Layout->At.x += Layout->FontSize;
+  return;
+}
+
+inline void
+BufferNumberAsText(u32 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim, u32 ColorIndex)
+{
+  Layout->At.x += Layout->FontSize;
+  BufferText(Number, Layout, RG, ViewportDim, ColorIndex);
   Layout->At.x += Layout->FontSize;
   return;
 }
@@ -458,28 +469,32 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout,
     Next = Next->Sibling;
   }
 
+  u32 Color = WHITE;
   if (WeAreFirst)
   {
-    v2 StartingP = Layout->At;
+    {
+      v2 StartingP = Layout->At;
+      v2 EndingP = Layout->At + V2(SCR_WIDTH, Layout->LineHeight);
+
+      if (MouseP > StartingP && MouseP < EndingP)
+      {
+        Color = TEAL;
+        if ( Input->LMB.WasPressed )
+        {
+          Scope->Expanded = !Scope->Expanded;
+        }
+      }
+    }
+
 
     r32 Percentage = 100.0f*(r32)((r64)TotalCycles/(r64)TotalFrameCycles);
     u64 AvgCycles = SafeDivide0(TotalCycles, CallCount);
-    BufferSingleDecimal(Percentage, 6, Layout, State->TextRenderGroup, ViewportDim);
-    BufferCycles(AvgCycles, Layout, State->TextRenderGroup, ViewportDim);
+    BufferSingleDecimal(Percentage, 6, Layout, State->TextRenderGroup, ViewportDim, Color);
+    BufferCycles(AvgCycles, Layout, State->TextRenderGroup, ViewportDim, Color);
+    BufferNumberAsText(CallCount, Layout, State->TextRenderGroup, ViewportDim, Color);
+
     Layout->At.x += (Depth*2.0f*Layout->FontSize);
-    BufferNumberAsText(CallCount, Layout, State->TextRenderGroup, ViewportDim);
-    BufferText(Scope->Name, Layout, State->TextRenderGroup, ViewportDim);
-
-    v2 EndingP = Layout->At;
-    EndingP.y += (Layout->LineHeight);
-
-    if (MouseP > StartingP && MouseP < EndingP)
-    {
-      if ( Input->LMB.WasPressed )
-      {
-        Scope->Expanded = !Scope->Expanded;
-      }
-    }
+    BufferText(Scope->Name, Layout, State->TextRenderGroup, ViewportDim, Color);
 
     NewLine(Layout);
   }
@@ -554,10 +569,13 @@ FlushSolidUIGeo(debug_text_render_group *RG, v2 ViewportDim)
 
   UseShader(&RG->SolidUIShader);
 
+  u32 VertCount = Buffer->CurrentIndex + 1;
+  Buffer->CurrentIndex = 0;
+
   // Vertices
   GL_Global->glEnableVertexAttribArray(0);
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->SolidUIVertexBuffer);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, Buffer->CurrentIndex*sizeof(v3), Buffer->Verts, GL_STATIC_DRAW);
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, VertCount * sizeof(v3), Buffer->Verts, GL_STATIC_DRAW);
   GL_Global->glVertexAttribPointer(
     0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
     3,                  // size
@@ -570,24 +588,16 @@ FlushSolidUIGeo(debug_text_render_group *RG, v2 ViewportDim)
   // Colors
   GL_Global->glEnableVertexAttribArray(1);
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->SolidUIColorBuffer);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, Buffer->CurrentIndex*sizeof(v3), Buffer->Colors, GL_STATIC_DRAW);
-  GL_Global->glVertexAttribPointer(
-    1,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-    3,                  // size
-    GL_FLOAT,           // type
-    GL_FALSE,           // normalized?
-    0,                  // stride
-    (void*)0            // array buffer offset
-  );
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, VertCount * sizeof(v3), Buffer->Colors, GL_STATIC_DRAW);
+  GL_Global->glVertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
   glDepthFunc(GL_ALWAYS);
 
   SetViewport(V2(SCR_WIDTH, SCR_HEIGHT));
-  glDrawArrays(GL_TRIANGLES, 0, Buffer->CurrentIndex);
+  glDrawArrays(GL_TRIANGLES, 0, VertCount);
 
   glDepthFunc(GL_LEQUAL);
 
-  Buffer->CurrentIndex = 0;
   GL_Global->glDisableVertexAttribArray(0);
   GL_Global->glDisableVertexAttribArray(1);
 
@@ -686,8 +696,8 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
     { // Current tree info
       TreeInfoLayout.FontSize = 36;
       TreeInfoLayout.LineHeight = 36 * 1.3f;
-      BufferSingleDecimal(Tree->FrameMs, 4, &TreeInfoLayout, RG, ViewportDim);
-      BufferCycles(Tree->TotalCycles, &TreeInfoLayout, RG, ViewportDim);
+      BufferSingleDecimal(Tree->FrameMs, 4, &TreeInfoLayout, RG, ViewportDim, WHITE);
+      BufferCycles(Tree->TotalCycles, &TreeInfoLayout, RG, ViewportDim, WHITE);
     }
 
     layout CallGraphLayout = TreeInfoLayout;
@@ -701,20 +711,20 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
   END_BLOCK("Call Graph");
 
   FlushSolidUIGeo(RG, ViewportDim);
-  DrawDebugText(RG, TextGeo, ViewportDim);
+  FlushTextBuffer(RG, TextGeo, ViewportDim);
 
   TIMED_BLOCK("Draw Status Bar");
     layout StatusBarLayout(DEBUG_FONT_SIZE);
     StatusBarLayout.At.y = (r32)SCR_HEIGHT - StatusBarLayout.FontSize;
-    BufferSingleDecimal(MaxMs, 6, &StatusBarLayout, RG, ViewportDim);
+    BufferSingleDecimal(MaxMs, 6, &StatusBarLayout, RG, ViewportDim, WHITE);
     NewLine(&StatusBarLayout);
 
-    BufferSingleDecimal(AvgMs, 6, &StatusBarLayout, RG, ViewportDim);
-    BufferSingleDecimal(Tree->FrameMs, 6, &StatusBarLayout, RG, ViewportDim);
-    BufferText("ms", &StatusBarLayout, RG, ViewportDim);
+    BufferSingleDecimal(AvgMs, 6, &StatusBarLayout, RG, ViewportDim, WHITE);
+    BufferSingleDecimal(Tree->FrameMs, 6, &StatusBarLayout, RG, ViewportDim, WHITE);
+    BufferText("ms", &StatusBarLayout, RG, ViewportDim, WHITE);
     NewLine(&StatusBarLayout);
 
-    BufferSingleDecimal(MinMs, 6, &StatusBarLayout, RG, ViewportDim);
+    BufferSingleDecimal(MinMs, 6, &StatusBarLayout, RG, ViewportDim, WHITE);
   END_BLOCK("Status Bar");
 
   return;

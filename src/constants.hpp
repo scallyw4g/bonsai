@@ -117,7 +117,6 @@ debug_global s32 VoxelsIndexed = 0;
 
 
 #define FACE_VERT_COUNT 6
-#define PALETTE_SIZE 256
 
 #define MAX_CHUNK_EDGES 8
 #define MAX_LIGHTS 32

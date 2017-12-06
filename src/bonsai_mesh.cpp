@@ -10,11 +10,13 @@ inline void
 BufferVertsDirect(
     untextured_2d_geometry_buffer *Dest,
     s32 NumVerts,
-    v3 *VertsPositions
+    v3 *Positions,
+    v3 *Colors
   )
 {
   s32 sizeofData = NumVerts * sizeof(v3);
-  memcpy( &Dest->Verts[Dest->CurrentIndex],  VertsPositions,  sizeofData );
+  memcpy( &Dest->Verts[Dest->CurrentIndex],  Positions,  sizeofData );
+  memcpy( &Dest->Colors[Dest->CurrentIndex],  Colors,  sizeofData );
   Dest->CurrentIndex += NumVerts;
 
   return;

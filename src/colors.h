@@ -1,6 +1,8 @@
 #ifndef BONSAI_COLORS_H
 #define BONSAI_COLORS_H
 
+#define PALETTE_SIZE 256
+
 /* Note that the default MagicaVoxel format is AA GG BB RR, so something will
  * have to be done if we continue to load this format.  I manually rearranged
  * the columns in this lookup table to match what OpenGL expects: RR GG BB AA
