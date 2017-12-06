@@ -474,6 +474,23 @@ BufferScopeTreeEntry(debug_profile_scope *Scope, layout *Layout, u32 Color, u64 
   NewLine(Layout);
 }
 
+inline rect2
+GetNextLineBounds(layout *Layout)
+{
+  v2 StartingP = Layout->At;
+  // FIXME(Jesse): Should line length be systemized somehow?
+  v2 EndingP = Layout->At + V2(100000.0f, Layout->LineHeight);
+  rect2 Result = { StartingP, EndingP };
+  return Result;
+}
+
+inline b32
+IsInsideRect(rect2 Rect, v2 P)
+{
+  b32 Result = (P > Rect.Min && P < Rect.Max);
+  return Result;
+}
+
 void
 BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout,
                 v2 ViewportDim, u64 TotalFrameCycles, u32 Depth, input *Input, v2 MouseP)
@@ -487,6 +504,9 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout,
 
   debug_profile_scope *Next = State->GetReadScopeTree()->Root;
   if (Scope->Parent) Next = Scope->Parent->Child;
+
+  debug_profile_scope *MinScope = 0;
+  debug_profile_scope *MaxScope = 0;
 
   while (Next)
   {
@@ -507,6 +527,12 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout,
     {
       ++CallCount;
       TotalCycles += Next->CycleCount;
+
+      if (!MinScope || Next->CycleCount < MinScope->CycleCount)
+        MinScope = Next;
+
+      if (!MaxScope || Next->CycleCount > MaxScope->CycleCount)
+        MaxScope = Next;
     }
 
     Next = Next->Sibling;
@@ -515,26 +541,32 @@ BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout,
   if (WeAreFirst)
   {
     u32 Color = WHITE;
-    {
-      v2 StartingP = Layout->At;
-      v2 EndingP = Layout->At + V2(SCR_WIDTH, Layout->LineHeight);
+    rect2 EntryBounds = GetNextLineBounds(Layout);
 
-      if (MouseP > StartingP && MouseP < EndingP)
-      {
-        Color = TEAL;
-        if ( Input->LMB.WasPressed )
-        {
-          Scope->Expanded = !Scope->Expanded;
-        }
-      }
+    if ( IsInsideRect(EntryBounds, MouseP) )
+    {
+      if (Input->LMB.WasPressed) Scope->Expanded = !Scope->Expanded;
+      Color = TEAL;
     }
 
-    BufferScopeTreeEntry(Scope, Layout, Color, TotalCycles, TotalFrameCycles,
-                         CallCount, State->TextRenderGroup, ViewportDim, Depth);
-  }
+    BufferScopeTreeEntry(Scope, Layout, Color, TotalCycles, TotalFrameCycles, CallCount, State->TextRenderGroup, ViewportDim, Depth);
 
-  if (WeAreFirst && Scope->Expanded)
-    BufferScopeTree(Scope->Child, State, Layout, ViewportDim, TotalFrameCycles, Depth+1, Input, MouseP);
+    if (CallCount > 3)
+    {
+      Assert(MinScope);
+      Assert(MaxScope);
+
+      BufferScopeTreeEntry(MinScope, Layout, GREEN, MinScope->CycleCount, TotalFrameCycles,
+                           1, State->TextRenderGroup, ViewportDim, Depth+1);
+
+      BufferScopeTreeEntry(MaxScope, Layout, RED, MaxScope->CycleCount, TotalFrameCycles,
+                           1, State->TextRenderGroup, ViewportDim, Depth+1);
+    }
+
+
+    if (Scope->Expanded)
+      BufferScopeTree(Scope->Child, State, Layout, ViewportDim, TotalFrameCycles, Depth+1, Input, MouseP);
+  }
 
   BufferScopeTree(Scope->Sibling, State, Layout, ViewportDim, TotalFrameCycles, Depth, Input, MouseP);
 
@@ -737,7 +769,7 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
     layout CallGraphLayout = TreeInfoLayout;
     { // Call Graph
       PadBottom(&CallGraphLayout, 15);
-      CallGraphLayout.FontSize = 22;
+      CallGraphLayout.FontSize = 30;
       CallGraphLayout.LineHeight = CallGraphLayout.FontSize*1.3f;
       NewLine(&CallGraphLayout);
       BufferScopeTree(Tree->Root, DebugState, &CallGraphLayout, ViewportDim, Tree->TotalCycles, 0, &Plat->Input, MouseP);
