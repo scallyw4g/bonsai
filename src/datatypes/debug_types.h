@@ -55,8 +55,16 @@ enum debug_ui_type
   DebugUIType_Count
 };
 
-#define ROOT_SCOPE_COUNT 60
+struct registered_memory_arena
+{
+  memory_arena *Arena;
+  const char* Name;
+};
+
 #define REGISTERED_MEMORY_ARENA_COUNT 32
+registered_memory_arena Global_RegisteredMemoryArenas[REGISTERED_MEMORY_ARENA_COUNT];
+
+#define ROOT_SCOPE_COUNT 60
 struct debug_state
 {
   u64 (*GetCycleCount)(void);
@@ -65,7 +73,6 @@ struct debug_state
   debug_text_render_group *TextRenderGroup;
 
   memory_arena *Memory;
-  memory_arena *RegisteredMemoryArenas[REGISTERED_MEMORY_ARENA_COUNT];
 
   b32 DoScopeProfiling;
 
@@ -182,14 +189,16 @@ GetProfileScope(debug_state *State)
     Result = PUSH_STRUCT_CHECKED(debug_profile_scope, State->Memory, 1);
 #endif
 
-  Assert(Result);
-  *Result = NullDebugProfileScope;
+  if (Result)
+    *Result = NullDebugProfileScope;
+
   return Result;
 }
 
 struct debug_timed_function
 {
   u64 StartingCycleCount;
+  debug_profile_scope *Scope;
 
   debug_timed_function(const char *Name)
   {
@@ -199,16 +208,20 @@ struct debug_timed_function
 
     ++DebugState->NumScopes;
 
-    debug_profile_scope *NewScope = GetProfileScope(DebugState);
-    NewScope->Parent = DebugState->CurrentScope;
+    this->Scope = GetProfileScope(DebugState);
 
-    (*DebugState->WriteScope) = NewScope;
-    DebugState->CurrentScope = NewScope;
+    if (this->Scope)
+    {
+      this->Scope->Parent = DebugState->CurrentScope;
 
-    DebugState->WriteScope = &NewScope->Child;
+      (*DebugState->WriteScope) = this->Scope;
+      DebugState->CurrentScope = this->Scope;
 
-    NewScope->Name = Name;
-    this->StartingCycleCount = DebugState->GetCycleCount(); // Intentionally last
+      DebugState->WriteScope = &this->Scope->Child;
+
+      this->Scope->Name = Name;
+      this->StartingCycleCount = DebugState->GetCycleCount(); // Intentionally last
+    }
 
     /* Debug(" "); */
     /* Debug("Pushing %s", Name); */
@@ -220,6 +233,8 @@ struct debug_timed_function
   {
     debug_state *DebugState = GetDebugState();
     if (!DebugState->DoScopeProfiling) return;
+    if (!this->Scope) return;
+
     Assert (DebugState->WriteScope);
 
     u64 EndingCycleCount = DebugState->GetCycleCount(); // Intentionally first

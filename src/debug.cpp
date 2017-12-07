@@ -5,8 +5,33 @@
 void
 DebugRegisterArena(const char *Name, memory_arena *Arena)
 {
+  /* debug_state *State = GetDebugState(); */
+  b32 Registered = False;
+  for ( u32 Index = 0;
+        Index < REGISTERED_MEMORY_ARENA_COUNT;
+        ++Index )
+  {
+    registered_memory_arena *Current = &Global_RegisteredMemoryArenas[Index];
 
-  Debug("Registered Arena %s", Name);
+    if (!Current->Name)
+    {
+      Current->Name = Name;
+      Current->Arena = Arena;
+      Registered = True;
+      break;
+    }
+  }
+
+  if (Registered)
+  {
+    Info("Registered Arena : %s", Name);
+  }
+  else
+  {
+    Error("Registering Arena : %s", Name);
+  }
+
+  return;
 }
 
 texture *
@@ -781,9 +806,37 @@ DebugDrawCallGraph(debug_state *DebugState, layout *Layout, debug_text_render_gr
 void
 DebugDrawMemoryHud(debug_state *DebugState, layout *Layout, debug_text_render_group *RG, textured_2d_geometry_buffer *TextGeo, v2 ViewportDim, v2 MouseP)
 {
-  SetFontSize(Layout, 40);
+  SetFontSize(Layout, 36);
   NewLine(Layout);
-  BufferText("Memory HUD", Layout, RG, ViewportDim, WHITE);
+
+  for ( u32 Index = 0;
+        Index < REGISTERED_MEMORY_ARENA_COUNT;
+        ++Index )
+  {
+    registered_memory_arena *Current = &Global_RegisteredMemoryArenas[Index];
+
+    if (Current->Name)
+    {
+
+      BufferColumn(Current->Arena->Allocations, 8, Layout, RG, ViewportDim, WHITE);
+      AdvanceSpaces(1, Layout);
+
+      BufferColumn(Current->Arena->Remaining, 10, Layout, RG, ViewportDim, WHITE);
+      AdvanceSpaces(1, Layout);
+
+      u64 Used = Current->Arena->TotalSize - Current->Arena->Remaining;
+      BufferColumn(Used, 10, Layout, RG, ViewportDim, WHITE);
+      AdvanceSpaces(1, Layout);
+
+      r32 Perc = 100.0f*(r32)((r64)Used/(r64)Current->Arena->TotalSize);
+      BufferColumn(Perc, 4, Layout, RG, ViewportDim, WHITE);
+      AdvanceSpaces(1, Layout);
+
+      BufferText(Current->Name, Layout, RG, ViewportDim, WHITE);
+      NewLine(Layout);
+    }
+  }
+
   return;
 }
 

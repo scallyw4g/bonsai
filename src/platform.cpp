@@ -407,7 +407,7 @@ main(s32 NumArgs, char ** Args)
   memory_arena DebugMemory = {};
 
   AllocateAndInitializeArena(&MainMemory, Gigabytes(3));
-  AllocateAndInitializeArena(&DebugMemory, Megabytes(8) );
+  AllocateAndInitializeArena(&DebugMemory, Megabytes(2) );
 
   memory_arena PlatMemory = {};
   memory_arena GraphicsMemory = {};
@@ -419,8 +419,7 @@ main(s32 NumArgs, char ** Args)
 
 
 #if BONSAI_INTERNAL
-  debug_recording_state *Debug_RecordingState =
-    PUSH_STRUCT_CHECKED(debug_recording_state, &DebugMemory, 1);
+  debug_recording_state *Debug_RecordingState = PUSH_STRUCT_CHECKED(debug_recording_state, &DebugMemory, 1);
   AllocateAndInitializeArena(&Debug_RecordingState->RecordedMainMemory, Gigabytes(3));
 #endif
 

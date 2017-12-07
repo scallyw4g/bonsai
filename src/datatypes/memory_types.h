@@ -3,6 +3,10 @@ struct memory_arena
   u8* FirstFreeByte;
   umm Remaining;
   umm TotalSize;
+
+#if BONSAI_INTERNAL
+  umm Allocations;
+#endif
 };
 
 #define PUSH_STRUCT_CHECKED(Type, Arena, Number) \
@@ -53,6 +57,10 @@ void*
 PushSize(memory_arena *Arena, umm Size)
 {
   void* Result = 0;
+
+#if BONSAI_INTERNAL
+  ++Arena->Allocations;
+#endif
 
   if (Size <= Arena->Remaining)
   {
