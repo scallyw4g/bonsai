@@ -406,23 +406,22 @@ main(s32 NumArgs, char ** Args)
   memory_arena MainMemory = {};
   memory_arena DebugMemory = {};
 
-  AllocateAndInitializeArena(&MainMemory, MAIN_STORAGE_SIZE);
+  AllocateAndInitializeArena(&MainMemory, Gigabytes(3));
   AllocateAndInitializeArena(&DebugMemory, Megabytes(8) );
-
 
   memory_arena PlatMemory = {};
   memory_arena GraphicsMemory = {};
   memory_arena GameMemory = {};
 
-  SubArena(&MainMemory, &PlatMemory, PLATFORM_STORAGE_SIZE);
-  SubArena(&MainMemory, &GameMemory, GAME_STORAGE_SIZE);
-  SubArena(&MainMemory, &GraphicsMemory, GRAPHICS_STORAGE_SIZE);
+  SubArena(&MainMemory, &PlatMemory, Megabytes(512) );
+  SubArena(&MainMemory, &GameMemory, Gigabytes(2) );
+  SubArena(&MainMemory, &GraphicsMemory, Megabytes(32) );
 
 
 #if BONSAI_INTERNAL
   debug_recording_state *Debug_RecordingState =
     PUSH_STRUCT_CHECKED(debug_recording_state, &DebugMemory, 1);
-  AllocateAndInitializeArena(&Debug_RecordingState->RecordedMainMemory, MAIN_STORAGE_SIZE);
+  AllocateAndInitializeArena(&Debug_RecordingState->RecordedMainMemory, Gigabytes(3));
 #endif
 
   platform Plat = {};
@@ -477,7 +476,10 @@ main(s32 NumArgs, char ** Args)
    */
 
   r64 LastMs = Plat.GetHighPrecisionClock();
+
+#if BONSAI_INTERNAL
   u64 LastCycles = GetDebugState()->GetCycleCount();
+#endif
 
   while ( Os.ContinueRunning )
   {
@@ -485,12 +487,14 @@ main(s32 NumArgs, char ** Args)
     Plat.dt = (CurrentMS - LastMs)/1000.0f;
     LastMs = CurrentMS;
 
+#if BONSAI_INTERNAL
     u64 CurrentCycles = GetDebugState()->GetCycleCount();
     u64 FrameCycles = CurrentCycles - LastCycles;
     LastCycles = CurrentCycles;
+#endif
 
     ClearWasPressedFlags((input_event*)&Plat.Input);
-    DebugFrameBegin(&Hotkeys, Plat.dt, FrameCycles);
+    DEBUG_FRAME_BEGIN(&Hotkeys, Plat.dt, FrameCycles);
 
     TIMED_BLOCK("Frame Preamble");
     v2 LastMouseP = Plat.MouseP;

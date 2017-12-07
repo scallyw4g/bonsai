@@ -83,8 +83,12 @@ PushStructChecked_(memory_arena *Arena, umm Size, const char* StructType, s32 Li
   return Result;
 }
 
+#if BONSAI_INTERNAL
 #define DEBUG_REGISTER_ARENA(Name, Arena) \
   DebugRegisterArena(Name, Arena)
+#else
+#define DEBUG_REGISTER_ARENA(...)
+#endif
 
 #define SubArena(Src, Dest, Size) \
   SubArena_(Src, Dest, Size); \

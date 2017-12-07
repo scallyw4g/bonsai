@@ -29,10 +29,6 @@
 // This must match the corresponding define in the SSAO shader
 #define DEFAULT_ENTROPY_SEED 3426543
 
-#define GAME_STORAGE_SIZE Gigabytes(2)
-#define GRAPHICS_STORAGE_SIZE Megabytes(32)
-#define MAIN_STORAGE_SIZE (GRAPHICS_STORAGE_SIZE+PLATFORM_STORAGE_SIZE+GAME_STORAGE_SIZE)
-
 #define WORLD_GRAVITY V3(0.0f, 0.0f, 0.0f)
 
 #define SECONDS_PER_LEVEL 10.0f

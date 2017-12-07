@@ -156,7 +156,9 @@ InitGlobals(platform *Plat)
 {
   GL_Global = &Plat->GL;
   Global_WorldChunkDim = WORLD_CHUNK_DIM;
+#if BONSAI_INTERNAL
   GlobalDebugState = &Plat->DebugState;
+#endif
 }
 
 EXPORT void*

@@ -56,6 +56,7 @@ enum debug_ui_type
 };
 
 #define ROOT_SCOPE_COUNT 60
+#define REGISTERED_MEMORY_ARENA_COUNT 32
 struct debug_state
 {
   u64 (*GetCycleCount)(void);
@@ -64,6 +65,7 @@ struct debug_state
   debug_text_render_group *TextRenderGroup;
 
   memory_arena *Memory;
+  memory_arena *RegisteredMemoryArenas[REGISTERED_MEMORY_ARENA_COUNT];
 
   b32 DoScopeProfiling;
 
@@ -242,6 +244,7 @@ struct debug_timed_function
 
 #define DEBUG_FRAME_RECORD(...) DoDebugFrameRecord(__VA_ARGS__)
 #define DEBUG_FRAME_END(Plat, Cycles) DebugFrameEnd(Plat, Cycles)
+#define DEBUG_FRAME_BEGIN(Hotkeys, dt, Cycles) DebugFrameBegin(Hotkeys, dt, Cycles)
 
 #else
 
@@ -253,6 +256,7 @@ struct debug_timed_function
 
 #define DEBUG_FRAME_RECORD(...)
 #define DEBUG_FRAME_END(...)
+#define DEBUG_FRAME_BEGIN(...)
 
 #endif
 

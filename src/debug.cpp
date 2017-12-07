@@ -5,6 +5,7 @@
 void
 DebugRegisterArena(const char *Name, memory_arena *Arena)
 {
+
   Debug("Registered Arena %s", Name);
 }
 
