@@ -465,6 +465,20 @@ BufferColumn( s32 Value, u32 ColumnWidth, layout *Layout, debug_text_render_grou
 }
 
 inline void
+BufferColumn( u32 Value, u32 ColumnWidth, layout *Layout, debug_text_render_group *RG, v2 ViewportDim, u32 ColorIndex)
+{
+  char Buffer[32] = {};
+  sprintf(Buffer, "%u", Value);
+  {
+    s32 Len = strlen(Buffer);
+    s32 Pad = Max(ColumnWidth-Len, 0);
+    AdvanceSpaces(Pad, Layout);
+  }
+  BufferText( Buffer, Layout, RG, ViewportDim, ColorIndex);
+  return;
+}
+
+inline void
 BufferColumn( u64 Value, u32 ColumnWidth, layout *Layout, debug_text_render_group *RG, v2 ViewportDim, u32 ColorIndex)
 {
   char Buffer[32] = {};
@@ -858,6 +872,22 @@ DebugDrawCallGraph(debug_state *DebugState, layout *Layout, debug_text_render_gr
   END_BLOCK("Call Graph");
 }
 
+u32
+GetTotalAllocations()
+{
+  u32 Result = 0;
+  for ( u32 Index = 0;
+        Index < REGISTERED_MEMORY_ARENA_COUNT;
+        ++Index )
+  {
+    registered_memory_arena *Current = &Global_RegisteredMemoryArenas[Index];
+    if (Current->Arena)
+      Result += Current->Arena->Allocations;
+  }
+
+  return Result;
+}
+
 void
 DebugDrawMemoryHud(debug_state *DebugState, layout *Layout, debug_text_render_group *RG, untextured_2d_geometry_buffer *Geo, v2 ViewportDim, v2 MouseP)
 {
@@ -967,6 +997,10 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
     BufferColumn(Dt.Avg, 6, &Layout, RG, ViewportDim, WHITE);
     BufferColumn(Plat->dt*1000.0f, 6, &Layout, RG, ViewportDim, WHITE);
     BufferText("ms", &Layout, RG, ViewportDim, WHITE);
+
+    BufferThousands(GetTotalAllocations(), &Layout, RG, ViewportDim, WHITE);
+    AdvanceSpaces(1, &Layout);
+    BufferText("Allocations", &Layout, RG, ViewportDim, WHITE);
     NewLine(&Layout);
 
     BufferColumn(Dt.Min, 6, &Layout, RG, ViewportDim, WHITE);
