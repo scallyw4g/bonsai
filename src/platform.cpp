@@ -407,7 +407,7 @@ main(s32 NumArgs, char ** Args)
   memory_arena DebugMemory = {};
 
   AllocateAndInitializeArena(&MainMemory, Gigabytes(3));
-  AllocateAndInitializeArena(&DebugMemory, Megabytes(2) );
+  AllocateAndInitializeArena(&DebugMemory, Gigabytes(1) );
 
   memory_arena PlatMemory = {};
   memory_arena GraphicsMemory = {};
@@ -455,7 +455,7 @@ main(s32 NumArgs, char ** Args)
   GL_Global = &Plat.GL;
 
 #if BONSAI_INTERNAL
-  InitDebugState(&Plat);
+  InitDebugState(&Plat, &DebugMemory);
 #endif
 
   InitGlobals(&Plat);

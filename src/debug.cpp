@@ -117,7 +117,7 @@ MakeSolidUIShader(memory_arena *DebugMemory)
 }
 
 void
-InitDebugState(platform *Plat)
+InitDebugState(platform *Plat, memory_arena *DebugMemory)
 {
   GlobalDebugState = &Plat->DebugState;
   GlobalDebugState->GetCycleCount = Plat->GetCycleCount;
@@ -125,15 +125,15 @@ InitDebugState(platform *Plat)
   GlobalDebugState->FreeScopeSentinel.Parent = &GlobalDebugState->FreeScopeSentinel;
   GlobalDebugState->FreeScopeSentinel.Child = &GlobalDebugState->FreeScopeSentinel;
 
-  GlobalDebugState->Memory = PUSH_STRUCT_CHECKED(memory_arena, Plat->Memory, 1);
-  SubArena(Plat->Memory, GlobalDebugState->Memory, Megabytes(128));
+  GlobalDebugState->Memory = PUSH_STRUCT_CHECKED(memory_arena, DebugMemory, 1);
+  SubArena(DebugMemory, GlobalDebugState->Memory, Megabytes(512));
 
-  GlobalDebugState->TextRenderGroup = PUSH_STRUCT_CHECKED(debug_text_render_group, Plat->Memory, 1);
-  if (!InitDebugOverlayFramebuffer(GlobalDebugState->TextRenderGroup, Plat->Memory, "Holstein.DDS"))
+  GlobalDebugState->TextRenderGroup = PUSH_STRUCT_CHECKED(debug_text_render_group, DebugMemory, 1);
+  if (!InitDebugOverlayFramebuffer(GlobalDebugState->TextRenderGroup, DebugMemory, "Holstein.DDS"))
   { Error("Initializing Debug Overlay Framebuffer"); }
 
-  AllocateAndInitGeoBuffer(&GlobalDebugState->TextRenderGroup->TextGeo, 512, Plat->Memory);
-  AllocateAndInitGeoBuffer(&GlobalDebugState->TextRenderGroup->UIGeo, 512, Plat->Memory);
+  AllocateAndInitGeoBuffer(&GlobalDebugState->TextRenderGroup->TextGeo, 512, DebugMemory);
+  AllocateAndInitGeoBuffer(&GlobalDebugState->TextRenderGroup->UIGeo, 512, DebugMemory);
 
   GlobalDebugState->TextRenderGroup->SolidUIShader = MakeSolidUIShader(GlobalDebugState->Memory);
 
@@ -298,6 +298,8 @@ FreeScopes(debug_state *DebugState, debug_profile_scope *ScopeToFree)
 {
   if (!ScopeToFree) return;
 
+  ++DebugState->FreeScopeCount;
+
   FreeScopes(DebugState, ScopeToFree->Child);
   FreeScopes(DebugState, ScopeToFree->Sibling);
 
@@ -384,7 +386,46 @@ AdvanceSpaces(u32 N, layout *Layout)
 }
 
 inline void
-BufferCycles(u64 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim, u32 ColorIndex)
+BufferMemorySize(u64 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim, u32 ColorIndex)
+{
+  r64 KB = (r64)Kilobytes(1);
+  r64 MB = (r64)Megabytes(1);
+  r64 GB = (r64)Gigabytes(1);
+
+  r64 Display = (r64)Number;
+  char Units = ' ';
+
+  if (Number >= KB && Number < MB)
+  {
+    Display = Number / KB;
+    Units = 'K';
+  }
+  else if (Number >= MB && Number < GB)
+  {
+    Display = Number / MB;
+    Units = 'M';
+  }
+  else if (Number >= GB)
+  {
+    Display = Number / GB;
+    Units = 'G';
+  }
+
+  char Buffer[32];
+  sprintf(Buffer, "%.0f%c", (r32)Display, Units);
+  {
+    s32 Len = strlen(Buffer);
+    s32 ColumnWidth = 5;
+    s32 Pad = Max(ColumnWidth-Len, 0);
+    AdvanceSpaces(Pad, Layout);
+  }
+  BufferText( Buffer, Layout, RG, ViewportDim, ColorIndex);
+
+  return;
+}
+
+inline void
+BufferThousands(u64 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim, u32 ColorIndex)
 {
   u64 OneThousand = 1000;
   r32 Display = (r32)Number;
@@ -406,6 +447,20 @@ BufferCycles(u64 Number, layout *Layout, debug_text_render_group *RG, v2 Viewpor
   }
   BufferText( Buffer, Layout, RG, ViewportDim, ColorIndex);
 
+  return;
+}
+
+inline void
+BufferColumn( s32 Value, u32 ColumnWidth, layout *Layout, debug_text_render_group *RG, v2 ViewportDim, u32 ColorIndex)
+{
+  char Buffer[32] = {};
+  sprintf(Buffer, "%d", Value);
+  {
+    s32 Len = strlen(Buffer);
+    s32 Pad = Max(ColumnWidth-Len, 0);
+    AdvanceSpaces(Pad, Layout);
+  }
+  BufferText( Buffer, Layout, RG, ViewportDim, ColorIndex);
   return;
 }
 
@@ -487,7 +542,7 @@ BufferScopeTreeEntry(debug_profile_scope *Scope, layout *Layout, u32 Color, u64 
   r32 Percentage = 100.0f*(r32)((r64)TotalCycles/(r64)TotalFrameCycles);
   u64 AvgCycles = SafeDivide0(TotalCycles, CallCount);
   BufferColumn(Percentage, 6, Layout, RG, ViewportDim, Color);
-  BufferCycles(AvgCycles, Layout, RG, ViewportDim, Color);
+  BufferThousands(AvgCycles, Layout, RG, ViewportDim, Color);
   BufferColumn(CallCount, 5, Layout, RG, ViewportDim, Color);
 
   AdvanceSpaces(Depth*2.0f + 1, Layout);
@@ -789,7 +844,7 @@ DebugDrawCallGraph(debug_state *DebugState, layout *Layout, debug_text_render_gr
       TreeInfoLayout.FontSize = 36;
       TreeInfoLayout.LineHeight = 36 * 1.3f;
       BufferColumn(ReadTree->FrameMs, 4, &TreeInfoLayout, RG, ViewportDim, WHITE);
-      BufferCycles(ReadTree->TotalCycles, &TreeInfoLayout, RG, ViewportDim, WHITE);
+      BufferThousands(ReadTree->TotalCycles, &TreeInfoLayout, RG, ViewportDim, WHITE);
     }
 
     layout CallGraphLayout = TreeInfoLayout;
@@ -809,6 +864,10 @@ DebugDrawMemoryHud(debug_state *DebugState, layout *Layout, debug_text_render_gr
   SetFontSize(Layout, 36);
   NewLine(Layout);
 
+  BufferText("Free Scopes : ", Layout, RG, ViewportDim, WHITE);
+  BufferColumn(DebugState->FreeScopeCount, 4, Layout, RG, ViewportDim, WHITE);
+  NewLine(Layout);
+
   for ( u32 Index = 0;
         Index < REGISTERED_MEMORY_ARENA_COUNT;
         ++Index )
@@ -817,15 +876,14 @@ DebugDrawMemoryHud(debug_state *DebugState, layout *Layout, debug_text_render_gr
 
     if (Current->Name)
     {
-
-      BufferColumn(Current->Arena->Allocations, 8, Layout, RG, ViewportDim, WHITE);
+      BufferThousands(Current->Arena->Allocations, Layout, RG, ViewportDim, WHITE);
       AdvanceSpaces(1, Layout);
 
-      BufferColumn(Current->Arena->Remaining, 10, Layout, RG, ViewportDim, WHITE);
+      BufferMemorySize(Current->Arena->Remaining, Layout, RG, ViewportDim, WHITE);
       AdvanceSpaces(1, Layout);
 
       u64 Used = Current->Arena->TotalSize - Current->Arena->Remaining;
-      BufferColumn(Used, 10, Layout, RG, ViewportDim, WHITE);
+      BufferMemorySize(Used, Layout, RG, ViewportDim, WHITE);
       AdvanceSpaces(1, Layout);
 
       r32 Perc = 100.0f*(r32)((r64)Used/(r64)Current->Arena->TotalSize);

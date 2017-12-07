@@ -34,6 +34,12 @@ Init_Global_QuadVertexBuffer() {
 }
 
 
+void Draw(u64 N)
+{
+  TIMED_FUNCTION();
+  glDrawArrays(GL_TRIANGLES, 0, N);
+}
+
 void
 RenderQuad()
 {
@@ -53,7 +59,7 @@ RenderQuad()
     (void*)0            // array buffer offset
   );
 
-  glDrawArrays(GL_TRIANGLES, 0, 6); // 2*3 indices starting at 0 -> 2 triangles
+  Draw(6); // 2*3 indices starting at 0 -> 2 triangles
 
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, 0);
   GL_Global->glDisableVertexAttribArray(0);
@@ -788,6 +794,7 @@ DEBUG_CopyTextureToMemory(texture *Texture)
 void
 RenderShadowMap(untextured_3d_geometry_buffer *Mesh, shadow_render_group *SG, g_buffer_render_group *RG, camera *Camera)
 {
+  TIMED_FUNCTION();
 #if 0
   SetViewport(V2(SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y));
 
@@ -823,6 +830,7 @@ RenderShadowMap(untextured_3d_geometry_buffer *Mesh, shadow_render_group *SG, g_
 void
 RenderWorldToGBuffer(untextured_3d_geometry_buffer *Mesh, g_buffer_render_group *RG)
 {
+  TIMED_FUNCTION();
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO.ID);
   GL_Global->glUseProgram(RG->gBufferShader.ID);
 
@@ -830,6 +838,7 @@ RenderWorldToGBuffer(untextured_3d_geometry_buffer *Mesh, g_buffer_render_group 
 
   BindShaderUniforms(&RG->gBufferShader);
 
+  TIMED_BLOCK("Bind and buffer data");
   // Vertices
   GL_Global->glEnableVertexAttribArray(0);
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->vertexbuffer);
@@ -868,8 +877,9 @@ RenderWorldToGBuffer(untextured_3d_geometry_buffer *Mesh, g_buffer_render_group 
     0,                  // stride
     (void*)0            // array buffer offset
   );
+  END_BLOCK("Bind and buffer data");
 
-  glDrawArrays(GL_TRIANGLES, 0, Mesh->VertsFilled);
+  Draw(Mesh->VertsFilled);
 
   GL_Global->glDisableVertexAttribArray(0);
   GL_Global->glDisableVertexAttribArray(1);

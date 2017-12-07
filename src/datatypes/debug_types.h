@@ -81,6 +81,8 @@ struct debug_state
   debug_scope_tree ScopeTrees[ROOT_SCOPE_COUNT];
   u32 ReadScopeIndex;
 
+  s32 FreeScopeCount;
+
   debug_ui_type UIType;
 
   debug_profile_scope FreeScopeSentinel;
@@ -180,6 +182,7 @@ GetProfileScope(debug_state *State)
 
     Sentinel->Child = Sentinel->Child->Child;
     Sentinel->Child->Child->Parent = Sentinel;
+    --State->FreeScopeCount;
   }
   else
   {
