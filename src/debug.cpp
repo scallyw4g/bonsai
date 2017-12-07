@@ -227,7 +227,7 @@ BufferColors(v3 *Colors, u32 StartingIndex, v3 Color)
 }
 
 v2
-BufferQuad(v3 *Verts, u32 StartingIndex, v2 MinP, v2 Dim)
+BufferQuad(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim)
 {
   v3 vertex_up_left    = V3( MinP.x       , MinP.y+Dim.y , 0.5f);
   v3 vertex_up_right   = V3( MinP.x+Dim.x , MinP.y+Dim.y , 0.5f);
@@ -236,12 +236,12 @@ BufferQuad(v3 *Verts, u32 StartingIndex, v2 MinP, v2 Dim)
 
   v3 XYClip = (1.0f / V3(SCR_WIDTH, SCR_HEIGHT, 1));
 
-  Verts[StartingIndex++] = (vertex_up_left * XYClip) * 2.0f - 1;
-  Verts[StartingIndex++] = (vertex_down_left * XYClip) * 2.0f - 1;
-  Verts[StartingIndex++] = (vertex_up_right * XYClip) * 2.0f - 1;
-  Verts[StartingIndex++] = (vertex_down_right * XYClip) * 2.0f - 1;
-  Verts[StartingIndex++] = (vertex_up_right * XYClip) * 2.0f - 1;
-  Verts[StartingIndex++] = (vertex_down_left * XYClip) * 2.0f - 1;
+  Dest[StartingIndex++] = (vertex_up_left * XYClip) * 2.0f - 1;
+  Dest[StartingIndex++] = (vertex_down_left * XYClip) * 2.0f - 1;
+  Dest[StartingIndex++] = (vertex_up_right * XYClip) * 2.0f - 1;
+  Dest[StartingIndex++] = (vertex_down_right * XYClip) * 2.0f - 1;
+  Dest[StartingIndex++] = (vertex_up_right * XYClip) * 2.0f - 1;
+  Dest[StartingIndex++] = (vertex_down_left * XYClip) * 2.0f - 1;
 
   v2 Max = vertex_up_right.xy;
   return Max;
@@ -859,7 +859,7 @@ DebugDrawCallGraph(debug_state *DebugState, layout *Layout, debug_text_render_gr
 }
 
 void
-DebugDrawMemoryHud(debug_state *DebugState, layout *Layout, debug_text_render_group *RG, textured_2d_geometry_buffer *TextGeo, v2 ViewportDim, v2 MouseP)
+DebugDrawMemoryHud(debug_state *DebugState, layout *Layout, debug_text_render_group *RG, untextured_2d_geometry_buffer *Geo, v2 ViewportDim, v2 MouseP)
 {
   SetFontSize(Layout, 36);
   NewLine(Layout);
@@ -876,21 +876,39 @@ DebugDrawMemoryHud(debug_state *DebugState, layout *Layout, debug_text_render_gr
 
     if (Current->Name)
     {
+      u64 Used = Current->Arena->TotalSize - Current->Arena->Remaining;
+      r32 Perc = (r32)((r64)Used/(r64)Current->Arena->TotalSize);
+
+      BufferText(Current->Name, Layout, RG, ViewportDim, WHITE);
+
+      v2 MinP = Layout->At;
+      v2 Dim = V2(SCR_WIDTH - Layout->At.x, Layout->FontSize);
+      Dim.x *= Perc;
+
+      v3 Green = {{ 0, 1, 0 }};
+      v3 Red = {{ 1, 0, 0 }};
+
+      v3 Color = (Green*(1.4f-Perc) + Red*Perc) / 2;
+
+      BufferQuad(Geo->Verts, Geo->CurrentIndex, MinP, Dim);
+      BufferColors(Geo->Colors, Geo->CurrentIndex, Color);
+      Geo->CurrentIndex+=6;
+
+      NewLine(Layout);
+
       BufferThousands(Current->Arena->Allocations, Layout, RG, ViewportDim, WHITE);
       AdvanceSpaces(1, Layout);
 
       BufferMemorySize(Current->Arena->Remaining, Layout, RG, ViewportDim, WHITE);
       AdvanceSpaces(1, Layout);
 
-      u64 Used = Current->Arena->TotalSize - Current->Arena->Remaining;
       BufferMemorySize(Used, Layout, RG, ViewportDim, WHITE);
       AdvanceSpaces(1, Layout);
 
-      r32 Perc = 100.0f*(r32)((r64)Used/(r64)Current->Arena->TotalSize);
-      BufferColumn(Perc, 4, Layout, RG, ViewportDim, WHITE);
+      BufferColumn(100.0f*Perc, 4, Layout, RG, ViewportDim, WHITE);
       AdvanceSpaces(1, Layout);
 
-      BufferText(Current->Name, Layout, RG, ViewportDim, WHITE);
+      NewLine(Layout);
       NewLine(Layout);
     }
   }
@@ -967,7 +985,7 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
 
     case DebugUIType_MemoryHud:
     {
-      DebugDrawMemoryHud(DebugState, &Layout, RG, TextGeo, ViewportDim, MouseP);
+      DebugDrawMemoryHud(DebugState, &Layout, RG, &RG->UIGeo, ViewportDim, MouseP);
     } break;
 
     InvalidDefaultCase;

@@ -415,7 +415,7 @@ main(s32 NumArgs, char ** Args)
 
   SubArena(&MainMemory, &PlatMemory, Megabytes(512) );
   SubArena(&MainMemory, &GameMemory, Gigabytes(2) );
-  SubArena(&MainMemory, &GraphicsMemory, Megabytes(32) );
+  SubArena(&MainMemory, &GraphicsMemory, Megabytes(1) );
 
 
 #if BONSAI_INTERNAL
