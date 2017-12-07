@@ -83,8 +83,19 @@ PushStructChecked_(memory_arena *Arena, umm Size, const char* StructType, s32 Li
   return Result;
 }
 
+#define DEBUG_REGISTER_ARENA(Name, Arena) \
+  DebugRegisterArena(Name, Arena)
+
+#define SubArena(Src, Dest, Size) \
+  SubArena_(Src, Dest, Size); \
+  DEBUG_REGISTER_ARENA(#Dest, Dest)
+
+#define AllocateAndInitializeArena(Arena, Size) \
+  AllocateAndInitializeArena_(Arena, Size); \
+  DEBUG_REGISTER_ARENA(#Arena, Arena)
+
 inline void
-SubArena( memory_arena *Src, memory_arena *Dest, umm Size)
+SubArena_( memory_arena *Src, memory_arena *Dest, umm Size)
 {
   Dest->FirstFreeByte = (u8*)PushSize(Src, Size);
   Dest->Remaining = Size;
@@ -95,24 +106,14 @@ SubArena( memory_arena *Src, memory_arena *Dest, umm Size)
   return;
 }
 
-memory_arena *
-SubArena( memory_arena *Src, umm Size)
-{
-  memory_arena *Result = PUSH_STRUCT_CHECKED(memory_arena, Src, 1);
-  SubArena(Src, Result, Size);
-  return Result;
-}
-
 inline void
-AllocateAndInitializeArena(memory_arena *Arena, umm Size)
+AllocateAndInitializeArena_(memory_arena *Arena, umm Size)
 {
   Arena->Remaining = Size;
   Arena->TotalSize = Size;
 
   Arena->FirstFreeByte = Allocate(Arena->Remaining);
-
   Assert(Arena->FirstFreeByte);
-
   return;
 }
 

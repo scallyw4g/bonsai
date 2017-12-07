@@ -2,6 +2,12 @@
 
 #include <stdio.h>
 
+void
+DebugRegisterArena(const char *Name, memory_arena *Arena)
+{
+  Debug("Registered Arena %s", Name);
+}
+
 texture *
 MakeTexture_RGBA( v2i Dim, const void* Data, memory_arena *Memory);
 
@@ -93,7 +99,8 @@ InitDebugState(platform *Plat)
   GlobalDebugState->FreeScopeSentinel.Parent = &GlobalDebugState->FreeScopeSentinel;
   GlobalDebugState->FreeScopeSentinel.Child = &GlobalDebugState->FreeScopeSentinel;
 
-  GlobalDebugState->Memory = SubArena(Plat->Memory, Megabytes(128));
+  GlobalDebugState->Memory = PUSH_STRUCT_CHECKED(memory_arena, Plat->Memory, 1);
+  SubArena(Plat->Memory, GlobalDebugState->Memory, Megabytes(128));
 
   GlobalDebugState->TextRenderGroup = PUSH_STRUCT_CHECKED(debug_text_render_group, Plat->Memory, 1);
   if (!InitDebugOverlayFramebuffer(GlobalDebugState->TextRenderGroup, Plat->Memory, "Holstein.DDS"))
@@ -950,6 +957,5 @@ DoDebugFrameRecord(
 
   return;
 }
-
 
 #endif // DEBUG
