@@ -196,6 +196,7 @@ GameInit( platform *Plat, memory_arena *GameMemory)
 EXPORT void
 GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 {
+  TIMED_FUNCTION();
   Assert(GlobalDebugState);
   game_mode *Mode = &GameState->Mode;
   Mode->TimeRunning += Plat->dt;

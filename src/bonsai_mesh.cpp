@@ -328,7 +328,7 @@ BuildWorldChunkMesh(world *World, world_chunk *WorldChunk, chunk_dimension World
       {
         canonical_position CurrentP  = Canonical_Position(WorldChunkDim, V3(x,y,z), WorldChunk->WorldP);
 
-        if ( NotFilledInWorld( World, WorldChunk, CurrentP ) )
+        if ( !IsFilledInWorld( World, WorldChunk, CurrentP ) )
           continue;
 
         voxel *Voxel = &chunk->Voxels[GetIndex(CurrentP.Offset, chunk, WorldChunkDim)];
@@ -347,37 +347,37 @@ BuildWorldChunkMesh(world *World, world_chunk *WorldChunk, chunk_dimension World
           backVoxel  = Canonicalize(WorldChunkDim, CurrentP - V3(0, 1, 0));
         END_BLOCK("Canonicalize");
 
-        if ( NotFilledInWorld( World, WorldChunk, rightVoxel ) )
+
+        if ( !IsFilledInWorld( World, WorldChunk, rightVoxel ) )
         {
           RightFaceVertexData( CurrentP.Offset, Diameter, VertexData);
           BufferVertsDirect(&chunk->Mesh, 6, VertexData, RightFaceNormalData, FaceColors);
         }
-        if ( NotFilledInWorld( World, WorldChunk, leftVoxel ) )
+        if ( !IsFilledInWorld( World, WorldChunk, leftVoxel ) )
         {
           LeftFaceVertexData( CurrentP.Offset, Diameter, VertexData);
           BufferVertsDirect(&chunk->Mesh, 6, VertexData, LeftFaceNormalData, FaceColors);
         }
-        if ( NotFilledInWorld( World, WorldChunk, botVoxel   ) )
+        if ( !IsFilledInWorld( World, WorldChunk, botVoxel   ) )
         {
           BottomFaceVertexData( CurrentP.Offset, Diameter, VertexData);
           BufferVertsDirect(&chunk->Mesh, 6, VertexData, BottomFaceNormalData, FaceColors);
         }
-        if ( NotFilledInWorld( World, WorldChunk, topVoxel   ) )
+        if ( !IsFilledInWorld( World, WorldChunk, topVoxel   ) )
         {
           TopFaceVertexData( CurrentP.Offset, Diameter, VertexData);
           BufferVertsDirect(&chunk->Mesh, 6, VertexData, TopFaceNormalData, FaceColors);
         }
-        if ( NotFilledInWorld( World, WorldChunk, frontVoxel ) )
+        if ( !IsFilledInWorld( World, WorldChunk, frontVoxel ) )
         {
           FrontFaceVertexData( CurrentP.Offset, Diameter, VertexData);
           BufferVertsDirect(&chunk->Mesh, 6, VertexData, FrontFaceNormalData, FaceColors);
         }
-        if ( NotFilledInWorld( World, WorldChunk, backVoxel  ) )
+        if ( !IsFilledInWorld( World, WorldChunk, backVoxel  ) )
         {
           BackFaceVertexData( CurrentP.Offset, Diameter, VertexData);
           BufferVertsDirect(&chunk->Mesh, 6, VertexData, BackFaceNormalData, FaceColors);
         }
-
       }
     }
   }

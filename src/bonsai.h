@@ -766,15 +766,16 @@ ZeroChunk( chunk_data *Chunk, s32 Volume )
 }
 
 u32
-GetWorldChunkHash(world_position P, chunk_dimension WorldChunkDim)
+GetWorldChunkHash(world_position P)
 {
+  TIMED_FUNCTION();
   // TODO(Jesse): Better hash function!
   u32 i =
     (P.x) +
-    (P.y*WorldChunkDim.x) +
-    (P.z*WorldChunkDim.x*WorldChunkDim.y);
+    (P.y*Global_WorldChunkDim.x) +
+    (P.z*Global_WorldChunkDim.x*Global_WorldChunkDim.y);
 
-  u32 HashIndex = (i * 42 * 13 * 233) % WORLD_HASH_SIZE;
+  u32 HashIndex = i % WORLD_HASH_SIZE;
   Assert(HashIndex < WORLD_HASH_SIZE);
 
   return HashIndex;
@@ -804,7 +805,7 @@ FreeWorldChunk(world *World, world_chunk *chunk)
     // Unlink from head end of linked list
     if (!chunk->Prev)
     {
-      World->ChunkHash[GetWorldChunkHash(chunk->WorldP, World->ChunkDim)] = chunk->Next;
+      World->ChunkHash[GetWorldChunkHash(chunk->WorldP)] = chunk->Next;
     }
 
     chunk->Prev = 0;
@@ -874,7 +875,7 @@ AllocateChunk(memory_arena *WorldStorage, chunk_dimension Dim)
 void
 InsertChunkIntoWorld(world *World, world_chunk *chunk)
 {
-  u32 HashIndex = GetWorldChunkHash(chunk->WorldP, World->ChunkDim);
+  u32 HashIndex = GetWorldChunkHash(chunk->WorldP);
   world_chunk *Last = World->ChunkHash[HashIndex];;
 
   if (Last)
@@ -933,7 +934,8 @@ IsFacingPoint( v3 FaceToPoint, v3 FaceNormal )
 world_chunk*
 GetWorldChunk( world *World, world_position P )
 {
-  u32 HashIndex = GetWorldChunkHash(P, World->ChunkDim);
+  TIMED_FUNCTION();
+  u32 HashIndex = GetWorldChunkHash(P);
   world_chunk *Result = World->ChunkHash[HashIndex];
 
   while (Result)
@@ -1033,6 +1035,7 @@ NotFilledInChunk( chunk_data *Chunk, voxel_position VoxelP, chunk_dimension Dim)
 inline b32
 IsFilledInWorld( world *World, world_chunk *chunk, canonical_position VoxelP )
 {
+  TIMED_FUNCTION();
   b32 isFilled = true;
 
   if ( chunk )

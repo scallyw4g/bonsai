@@ -258,6 +258,8 @@ CalculateFramePercentage(debug_profile_entry *Entry, u64 CycleDelta)
 }
 #endif
 
+debug_profile_scope NullScope = {};
+
 void
 FreeScopes(debug_state *DebugState, debug_profile_scope *ScopeToFree)
 {
@@ -266,18 +268,18 @@ FreeScopes(debug_state *DebugState, debug_profile_scope *ScopeToFree)
   FreeScopes(DebugState, ScopeToFree->Child);
   FreeScopes(DebugState, ScopeToFree->Sibling);
 
-  ScopeToFree->Child = 0;
-  ScopeToFree->Sibling = 0;
-  ScopeToFree->Parent = 0;
+  *ScopeToFree = NullScope;
 
-  debug_profile_scope *First = DebugState->FreeScopeSentinel.Child;
   debug_profile_scope *Sentinel = &DebugState->FreeScopeSentinel;
+  debug_profile_scope *First = Sentinel->Child;
 
   Sentinel->Child = ScopeToFree;
   First->Parent = ScopeToFree;
 
   ScopeToFree->Parent = Sentinel;
   ScopeToFree->Child = First;
+
+  Assert(Sentinel->Parent);
 
   return;
 }
@@ -448,6 +450,7 @@ StringsMatch(const char *S1, const char *S2)
 inline void
 BufferScopeTreeEntry(debug_profile_scope *Scope, layout *Layout, u32 Color, u64 TotalCycles, u64 TotalFrameCycles, u64 CallCount, debug_text_render_group *RG, v2 ViewportDim, u32 Depth)
 {
+  Assert(TotalFrameCycles);
   r32 Percentage = 100.0f*(r32)((r64)TotalCycles/(r64)TotalFrameCycles);
   u64 AvgCycles = SafeDivide0(TotalCycles, CallCount);
   BufferColumn(Percentage, 6, Layout, RG, ViewportDim, Color);
@@ -492,83 +495,92 @@ IsInsideRect(rect2 Rect, v2 P)
 }
 
 void
-BufferScopeTree(debug_profile_scope *Scope, debug_state *State, layout *Layout,
-                v2 ViewportDim, u64 TotalFrameCycles, u32 Depth, input *Input, v2 MouseP)
-{
-  if (!Scope)
-    return;
+BufferFirstCallToEach(debug_profile_scope *Scope, debug_state *State, layout *Layout,
+                v2 ViewportDim, u64 TotalFrameCycles, u32 Depth, input *Input, v2 MouseP);
 
-  b32 WeAreFirst = True;
-  u64 CallCount = 0;
-  u64 TotalCycles = 0;
+
+scope_stats
+GetStatsFor(debug_state *State, debug_profile_scope *Scope)
+{
+  scope_stats Result = {};
 
   debug_profile_scope *Next = State->GetReadScopeTree()->Root;
-  if (Scope->Parent) Next = Scope->Parent->Child;
-
-  debug_profile_scope *MinScope = 0;
-  debug_profile_scope *MaxScope = 0;
+  if (Scope->Parent) Next = Scope->Parent->Child; // Selects first sibling
 
   while (Next)
   {
     if (Next == Scope) // Find Ourselves
     {
-      if (CallCount == 0) // We're first
+      if (Result.Calls == 0) // We're first
       {
-        // Count duplicates
-      }
-      else
-      {
-        WeAreFirst = False;
-        break; // We're not first, descend to children/siblings
+        Result.IsFirst = True;
       }
     }
 
     if (StringsMatch(Next->Name, Scope->Name))
     {
-      ++CallCount;
-      TotalCycles += Next->CycleCount;
+      ++Result.Calls;
+      Result.CumulativeCycles += Next->CycleCount;
 
-      if (!MinScope || Next->CycleCount < MinScope->CycleCount)
-        MinScope = Next;
+      if (!Result.MinScope || Next->CycleCount < Result.MinScope->CycleCount)
+        Result.MinScope = Next;
 
-      if (!MaxScope || Next->CycleCount > MaxScope->CycleCount)
-        MaxScope = Next;
+      if (!Result.MaxScope || Next->CycleCount > Result.MaxScope->CycleCount)
+        Result.MaxScope = Next;
     }
 
     Next = Next->Sibling;
   }
 
-  if (WeAreFirst)
-  {
-    u32 Color = WHITE;
-    rect2 EntryBounds = GetNextLineBounds(Layout);
+  return Result;
+}
 
+u32
+HoverAndClickExpand(layout *Layout, debug_profile_scope *Scope, v2 MouseP, input *Input, u32 Color, u32 HoverColor)
+{
+  u32 DrawColor = Color;
+
+  {
+    rect2 EntryBounds = GetNextLineBounds(Layout);
     if ( IsInsideRect(EntryBounds, MouseP) )
     {
-      if (Input->LMB.WasPressed) Scope->Expanded = !Scope->Expanded;
-      Color = TEAL;
+      DrawColor = HoverColor;
+      if (Input->LMB.WasPressed)
+        Scope->Expanded = !Scope->Expanded;
     }
-
-    BufferScopeTreeEntry(Scope, Layout, Color, TotalCycles, TotalFrameCycles, CallCount, State->TextRenderGroup, ViewportDim, Depth);
-
-    if (CallCount > 3)
-    {
-      Assert(MinScope);
-      Assert(MaxScope);
-
-      BufferScopeTreeEntry(MinScope, Layout, GREEN, MinScope->CycleCount, TotalFrameCycles,
-                           1, State->TextRenderGroup, ViewportDim, Depth+1);
-
-      BufferScopeTreeEntry(MaxScope, Layout, RED, MaxScope->CycleCount, TotalFrameCycles,
-                           1, State->TextRenderGroup, ViewportDim, Depth+1);
-    }
-
-
-    if (Scope->Expanded)
-      BufferScopeTree(Scope->Child, State, Layout, ViewportDim, TotalFrameCycles, Depth+1, Input, MouseP);
   }
 
-  BufferScopeTree(Scope->Sibling, State, Layout, ViewportDim, TotalFrameCycles, Depth, Input, MouseP);
+  return DrawColor;
+}
+
+void
+BufferFirstCallToEach(debug_profile_scope *Scope, debug_state *State, layout *Layout,
+                      v2 ViewportDim, u64 TotalFrameCycles, u32 Depth, input *Input, v2 MouseP)
+{
+  if (!Scope) return;
+
+  if (!Scope->Stats)
+  {
+    Scope->Stats = PUSH_STRUCT_CHECKED(scope_stats, State->Memory, 1);
+    *Scope->Stats = GetStatsFor(State, Scope);
+  }
+
+  if (Scope->Stats->IsFirst)
+  {
+    u32 MainColor = HoverAndClickExpand(Layout, Scope, MouseP, Input, WHITE, TEAL);
+    BufferScopeTreeEntry(Scope, Layout, MainColor, Scope->Stats->CumulativeCycles, TotalFrameCycles, Scope->Stats->Calls, State->TextRenderGroup, ViewportDim, Depth);
+
+    if (Scope->Expanded)
+      BufferFirstCallToEach(Scope->Stats->MaxScope->Child, State, Layout, ViewportDim, TotalFrameCycles, Depth+1, Input, MouseP);
+
+  }
+  else
+  {
+    //Scope->Child = 0;
+    //FreeScopes(State, Scope->Child);
+  }
+
+  BufferFirstCallToEach(Scope->Sibling, State, Layout, ViewportDim, TotalFrameCycles, Depth, Input, MouseP);
 
   return;
 }
@@ -584,8 +596,6 @@ DebugFrameBegin(hotkeys *Hotkeys, r32 Dt, u64 Cycles)
     State->DoScopeProfiling = !State->DoScopeProfiling;
   }
 
-  if (!State->DoScopeProfiling) return;
-
   { // Record dt/cycles for the frame we're finishing with
     debug_scope_tree *WriteScope = State->GetWriteScopeTree();
     if (WriteScope)
@@ -594,6 +604,8 @@ DebugFrameBegin(hotkeys *Hotkeys, r32 Dt, u64 Cycles)
       WriteScope->TotalCycles = Cycles;
     }
   }
+
+  if (!State->DoScopeProfiling) return;
 
   { // Advance to the next scope and reinitialize
     State->ReadScopeIndex = (State->ReadScopeIndex+1) % ROOT_SCOPE_COUNT;
@@ -772,7 +784,7 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
       CallGraphLayout.FontSize = 30;
       CallGraphLayout.LineHeight = CallGraphLayout.FontSize*1.3f;
       NewLine(&CallGraphLayout);
-      BufferScopeTree(Tree->Root, DebugState, &CallGraphLayout, ViewportDim, Tree->TotalCycles, 0, &Plat->Input, MouseP);
+      BufferFirstCallToEach(Tree->Root, DebugState, &CallGraphLayout, ViewportDim, Tree->TotalCycles, 0, &Plat->Input, MouseP);
     }
   END_BLOCK("Call Graph");
 

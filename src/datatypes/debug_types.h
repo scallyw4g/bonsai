@@ -15,6 +15,16 @@ struct layout
   }
 };
 
+struct debug_profile_scope;
+struct scope_stats
+{
+  debug_profile_scope *MinScope;
+  debug_profile_scope *MaxScope;
+  b32 IsFirst;
+  u32 Calls;
+  u64 CumulativeCycles;
+};
+
 struct debug_profile_scope
 {
   u64 CycleCount;
@@ -24,6 +34,8 @@ struct debug_profile_scope
   debug_profile_scope *Parent;
   debug_profile_scope *Sibling;
   debug_profile_scope *Child;
+
+  scope_stats *Stats;
 };
 
 struct debug_scope_tree
@@ -169,6 +181,7 @@ struct debug_timed_function
   {
     debug_state *DebugState = GetDebugState();
     if (!DebugState->DoScopeProfiling) return;
+    Assert (DebugState->WriteScope);
 
     ++DebugState->NumScopes;
 
@@ -193,6 +206,7 @@ struct debug_timed_function
   {
     debug_state *DebugState = GetDebugState();
     if (!DebugState->DoScopeProfiling) return;
+    Assert (DebugState->WriteScope);
 
     u64 EndingCycleCount = DebugState->GetCycleCount(); // Intentionally first
     u64 CycleCount = (EndingCycleCount - this->StartingCycleCount);

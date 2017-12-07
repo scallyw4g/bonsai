@@ -474,7 +474,7 @@ main(s32 NumArgs, char ** Args)
    */
 
   r64 LastMs = Plat.GetHighPrecisionClock();
-  r64 LastCycles = GetDebugState()->GetCycleCount();
+  u64 LastCycles = GetDebugState()->GetCycleCount();
 
   while ( Os.ContinueRunning )
   {
@@ -482,18 +482,14 @@ main(s32 NumArgs, char ** Args)
     Plat.dt = (CurrentMS - LastMs)/1000.0f;
     LastMs = CurrentMS;
 
-
-    r64 FrameCycles = 0;
-    if (GetDebugState()->DoScopeProfiling)
-    {
-      u64 CurrentCycles = GetDebugState()->GetCycleCount();
-      FrameCycles = CurrentCycles - LastCycles;
-      LastCycles = CurrentCycles;
-    }
+    u64 CurrentCycles = GetDebugState()->GetCycleCount();
+    u64 FrameCycles = CurrentCycles - LastCycles;
+    LastCycles = CurrentCycles;
 
     ClearWasPressedFlags((input_event*)&Plat.Input);
     DebugFrameBegin(&Hotkeys, Plat.dt, FrameCycles);
 
+    TIMED_BLOCK("Frame Preamble");
     v2 LastMouseP = Plat.MouseP;
     while ( ProcessOsMessages(&Os, &Plat) );
     Plat.MouseDP = LastMouseP - Plat.MouseP;
@@ -515,14 +511,18 @@ main(s32 NumArgs, char ** Args)
 
     DEBUG_FRAME_RECORD(Debug_RecordingState, &Hotkeys, &MainMemory);
 
+    END_BLOCK("Frame Preamble");
+
     GameUpdateAndRender(&Plat, GameState, &Hotkeys);
 
+    TIMED_BLOCK("Frame End");
     DEBUG_FRAME_END(&Plat, FrameCycles);
 
     BonsaiSwapBuffers(&Os);
 
     /* WaitForFrameTime(LastMs, 30.0f); */
 
+    END_BLOCK("Frame End");
   }
 
   Info("Shutting Down");
