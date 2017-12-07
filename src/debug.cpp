@@ -574,11 +574,6 @@ BufferFirstCallToEach(debug_profile_scope *Scope, debug_state *State, layout *La
       BufferFirstCallToEach(Scope->Stats->MaxScope->Child, State, Layout, ViewportDim, TotalFrameCycles, Depth+1, Input, MouseP);
 
   }
-  else
-  {
-    //Scope->Child = 0;
-    //FreeScopes(State, Scope->Child);
-  }
 
   BufferFirstCallToEach(Scope->Sibling, State, Layout, ViewportDim, TotalFrameCycles, Depth, Input, MouseP);
 
@@ -594,6 +589,12 @@ DebugFrameBegin(hotkeys *Hotkeys, r32 Dt, u64 Cycles)
   {
     Hotkeys->Debug_ToggleProfile = False;
     State->DoScopeProfiling = !State->DoScopeProfiling;
+  }
+
+  if ( Hotkeys->Debug_NextUiState )
+  {
+    Hotkeys->Debug_NextUiState = False;
+    State->UIType = (debug_ui_type)(((s32)State->UIType + 1) % (s32)DebugUIType_Count);
   }
 
   { // Record dt/cycles for the frame we're finishing with
@@ -691,16 +692,8 @@ PadBottom(layout *Layout, r32 Pad)
 }
 
 void
-DebugFrameEnd(platform *Plat, u64 FrameCycles)
+DebugDrawCallGraph(debug_state *DebugState, input *Input, debug_text_render_group *RG, textured_2d_geometry_buffer *TextGeo, v2 ViewportDim, v2 MouseP)
 {
-  TIMED_FUNCTION();
-  debug_state *DebugState = GetDebugState();
-  debug_text_render_group *RG = DebugState->TextRenderGroup;
-  textured_2d_geometry_buffer *TextGeo = &RG->TextGeo;
-
-  v2 ViewportDim = V2(Plat->WindowWidth, Plat->WindowHeight);
-  v2 MouseP = V2(Plat->MouseP.x, Plat->WindowHeight - Plat->MouseP.y);
-
   r32 Pad = 15.0;
   layout FrameTickerLayout(50 + Pad);
   FrameTickerLayout.At.y = (r32)SCR_HEIGHT - FrameTickerLayout.FontSize;
@@ -767,15 +760,15 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
     }
   END_BLOCK("Frame Ticker");
 
-  debug_scope_tree *Tree = DebugState->GetReadScopeTree();
   TIMED_BLOCK("Call Graph");
 
+    debug_scope_tree *ReadTree = DebugState->GetReadScopeTree();
     layout TreeInfoLayout = FrameTickerLayout;
-    { // Current tree info
+    { // Current ReadTree info
       TreeInfoLayout.FontSize = 36;
       TreeInfoLayout.LineHeight = 36 * 1.3f;
-      BufferColumn(Tree->FrameMs, 4, &TreeInfoLayout, RG, ViewportDim, WHITE);
-      BufferCycles(Tree->TotalCycles, &TreeInfoLayout, RG, ViewportDim, WHITE);
+      BufferColumn(ReadTree->FrameMs, 4, &TreeInfoLayout, RG, ViewportDim, WHITE);
+      BufferCycles(ReadTree->TotalCycles, &TreeInfoLayout, RG, ViewportDim, WHITE);
     }
 
     layout CallGraphLayout = TreeInfoLayout;
@@ -784,26 +777,53 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
       CallGraphLayout.FontSize = 30;
       CallGraphLayout.LineHeight = CallGraphLayout.FontSize*1.3f;
       NewLine(&CallGraphLayout);
-      BufferFirstCallToEach(Tree->Root, DebugState, &CallGraphLayout, ViewportDim, Tree->TotalCycles, 0, &Plat->Input, MouseP);
+      BufferFirstCallToEach(ReadTree->Root, DebugState, &CallGraphLayout, ViewportDim, ReadTree->TotalCycles, 0, Input, MouseP);
     }
   END_BLOCK("Call Graph");
+}
 
-  FlushSolidUIGeo(RG, ViewportDim);
-  FlushTextBuffer(RG, TextGeo, ViewportDim);
+void
+DebugFrameEnd(platform *Plat, u64 FrameCycles)
+{
+  TIMED_FUNCTION();
+  debug_state *DebugState = GetDebugState();
+  debug_text_render_group *RG = DebugState->TextRenderGroup;
+  textured_2d_geometry_buffer *TextGeo = &RG->TextGeo;
+
+  v2 ViewportDim = V2(Plat->WindowWidth, Plat->WindowHeight);
+  v2 MouseP = V2(Plat->MouseP.x, Plat->WindowHeight - Plat->MouseP.y);
+
+  switch (DebugState->UIType)
+  {
+    case DebugUIType_None:
+    {
+    } break;
+
+    case DebugUIType_CallGraph:
+    {
+      DebugDrawCallGraph(DebugState, &Plat->Input, RG, TextGeo, ViewportDim, MouseP);
+    } break;
+
+    InvalidDefaultCase;
+  }
 
   TIMED_BLOCK("Draw Status Bar");
     layout StatusBarLayout(DEBUG_FONT_SIZE);
     StatusBarLayout.At.y = (r32)SCR_HEIGHT - StatusBarLayout.FontSize;
-    BufferColumn(MaxMs, 6, &StatusBarLayout, RG, ViewportDim, WHITE);
-    NewLine(&StatusBarLayout);
+    /* BufferColumn(MaxMs, 6, &StatusBarLayout, RG, ViewportDim, WHITE); */
+    /* NewLine(&StatusBarLayout); */
 
-    BufferColumn(AvgMs, 6, &StatusBarLayout, RG, ViewportDim, WHITE);
-    BufferColumn(Tree->FrameMs, 6, &StatusBarLayout, RG, ViewportDim, WHITE);
+    /* BufferColumn(AvgMs, 6, &StatusBarLayout, RG, ViewportDim, WHITE); */
+    debug_scope_tree *ReadTree = DebugState->GetReadScopeTree();
+    BufferColumn(ReadTree->FrameMs, 6, &StatusBarLayout, RG, ViewportDim, WHITE);
     BufferText("ms", &StatusBarLayout, RG, ViewportDim, WHITE);
     NewLine(&StatusBarLayout);
 
-    BufferColumn(MinMs, 6, &StatusBarLayout, RG, ViewportDim, WHITE);
+    /* BufferColumn(MinMs, 6, &StatusBarLayout, RG, ViewportDim, WHITE); */
   END_BLOCK("Status Bar");
+
+  FlushSolidUIGeo(RG, ViewportDim);
+  FlushTextBuffer(RG, TextGeo, ViewportDim);
 
   return;
 }

@@ -379,6 +379,9 @@ BindHotkeysToInput(hotkeys *Hotkeys, input *Input)
   if (Input->F10.WasPressed)
     Hotkeys->Debug_ToggleProfile = True;
 
+  if (Input->F1.WasPressed)
+    Hotkeys->Debug_NextUiState = True;
+
   Hotkeys->Left = Input->A.IsDown;
   Hotkeys->Right = Input->D.IsDown;
   Hotkeys->Forward = Input->W.IsDown;

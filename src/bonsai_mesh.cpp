@@ -347,7 +347,6 @@ BuildWorldChunkMesh(world *World, world_chunk *WorldChunk, chunk_dimension World
           backVoxel  = Canonicalize(WorldChunkDim, CurrentP - V3(0, 1, 0));
         END_BLOCK("Canonicalize");
 
-
         if ( !IsFilledInWorld( World, WorldChunk, rightVoxel ) )
         {
           RightFaceVertexData( CurrentP.Offset, Diameter, VertexData);

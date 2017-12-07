@@ -2367,7 +2367,6 @@ CanBuildWorldChunkBoundary(world *World, world_chunk *Chunk)
   TestChunk = GetWorldChunk( World, Back );
   Result &= TestChunk && IsSet(TestChunk, Chunk_Initialized);
 
-
   return Result;
 }
 

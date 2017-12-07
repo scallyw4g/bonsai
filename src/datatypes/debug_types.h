@@ -45,6 +45,15 @@ struct debug_scope_tree
   debug_profile_scope *Root;
 };
 
+enum debug_ui_type
+{
+  DebugUIType_None,
+
+  DebugUIType_CallGraph,
+
+  DebugUIType_Count
+};
+
 #define ROOT_SCOPE_COUNT 60
 struct debug_state
 {
@@ -61,6 +70,8 @@ struct debug_state
   debug_profile_scope *CurrentScope;
   debug_scope_tree ScopeTrees[ROOT_SCOPE_COUNT];
   u32 ReadScopeIndex;
+
+  debug_ui_type UIType;
 
   debug_profile_scope FreeScopeSentinel;
 
