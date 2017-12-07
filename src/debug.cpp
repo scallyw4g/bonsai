@@ -692,32 +692,14 @@ PadBottom(layout *Layout, r32 Pad)
 }
 
 void
-DebugDrawCallGraph(debug_state *DebugState, input *Input, debug_text_render_group *RG, textured_2d_geometry_buffer *TextGeo, v2 ViewportDim, v2 MouseP)
+DebugDrawCallGraph(u32 MaxMs, debug_state *DebugState, input *Input, debug_text_render_group *RG, textured_2d_geometry_buffer *TextGeo, v2 ViewportDim, v2 MouseP)
 {
   r32 Pad = 15.0;
   layout FrameTickerLayout(50 + Pad);
   FrameTickerLayout.At.y = (r32)SCR_HEIGHT - FrameTickerLayout.FontSize;
 
-  r32 MinMs = DebugState->ScopeTrees[0].FrameMs;
-  r32 MaxMs = DebugState->ScopeTrees[0].FrameMs;
-  r32 AvgMs = 0;
   TIMED_BLOCK("Frame Ticker");
     NewLine(&FrameTickerLayout);
-
-    TIMED_BLOCK("Get Min/Max Dt");
-      for (u32 TreeIndex = 0;
-          TreeIndex < ROOT_SCOPE_COUNT;
-          ++TreeIndex )
-      {
-        debug_scope_tree *Tree = &DebugState->ScopeTrees[TreeIndex];
-
-        MinMs = Min(MinMs, Tree->FrameMs);
-        MaxMs = Max(MaxMs, Tree->FrameMs);
-        AvgMs += Tree->FrameMs;
-      }
-      AvgMs /= (r32)ROOT_SCOPE_COUNT;
-    END_BLOCK("Min/Max Dt");
-
     for (u32 TreeIndex = 0;
         TreeIndex < ROOT_SCOPE_COUNT;
         ++TreeIndex )
@@ -783,6 +765,40 @@ DebugDrawCallGraph(debug_state *DebugState, input *Input, debug_text_render_grou
 }
 
 void
+DebugDrawMemoryHud(debug_state *DebugState, debug_text_render_group *RG, textured_2d_geometry_buffer *TextGeo, v2 ViewportDim, v2 MouseP)
+{
+}
+
+struct min_max_avg_dt
+{
+  r32 Min;
+  r32 Max;
+  r32 Avg;
+};
+
+min_max_avg_dt
+GetMinMaxAvgDt(debug_scope_tree *ScopeTrees)
+{
+  TIMED_FUNCTION();
+
+  min_max_avg_dt Dt = {};
+
+    for (u32 TreeIndex = 0;
+        TreeIndex < ROOT_SCOPE_COUNT;
+        ++TreeIndex )
+    {
+      debug_scope_tree *Tree = &ScopeTrees[TreeIndex];
+
+      Dt.Min = Min(Dt.Min, Tree->FrameMs);
+      Dt.Max = Max(Dt.Max, Tree->FrameMs);
+      Dt.Avg += Tree->FrameMs;
+    }
+    Dt.Avg /= (r32)ROOT_SCOPE_COUNT;
+
+  return Dt;
+}
+
+void
 DebugFrameEnd(platform *Plat, u64 FrameCycles)
 {
   TIMED_FUNCTION();
@@ -793,6 +809,8 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
   v2 ViewportDim = V2(Plat->WindowWidth, Plat->WindowHeight);
   v2 MouseP = V2(Plat->MouseP.x, Plat->WindowHeight - Plat->MouseP.y);
 
+  min_max_avg_dt Dt = GetMinMaxAvgDt(DebugState->ScopeTrees);
+
   switch (DebugState->UIType)
   {
     case DebugUIType_None:
@@ -801,7 +819,12 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
 
     case DebugUIType_CallGraph:
     {
-      DebugDrawCallGraph(DebugState, &Plat->Input, RG, TextGeo, ViewportDim, MouseP);
+      DebugDrawCallGraph(Dt.Max, DebugState, &Plat->Input, RG, TextGeo, ViewportDim, MouseP);
+    } break;
+
+    case DebugUIType_MemoryHud:
+    {
+      DebugDrawMemoryHud(DebugState, RG, TextGeo, ViewportDim, MouseP);
     } break;
 
     InvalidDefaultCase;
@@ -810,16 +833,15 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
   TIMED_BLOCK("Draw Status Bar");
     layout StatusBarLayout(DEBUG_FONT_SIZE);
     StatusBarLayout.At.y = (r32)SCR_HEIGHT - StatusBarLayout.FontSize;
-    /* BufferColumn(MaxMs, 6, &StatusBarLayout, RG, ViewportDim, WHITE); */
-    /* NewLine(&StatusBarLayout); */
+    BufferColumn(Dt.Max, 6, &StatusBarLayout, RG, ViewportDim, WHITE);
+    NewLine(&StatusBarLayout);
 
-    /* BufferColumn(AvgMs, 6, &StatusBarLayout, RG, ViewportDim, WHITE); */
-    debug_scope_tree *ReadTree = DebugState->GetReadScopeTree();
-    BufferColumn(ReadTree->FrameMs, 6, &StatusBarLayout, RG, ViewportDim, WHITE);
+    BufferColumn(Dt.Avg, 6, &StatusBarLayout, RG, ViewportDim, WHITE);
+    BufferColumn(Plat->dt*1000.0f, 6, &StatusBarLayout, RG, ViewportDim, WHITE);
     BufferText("ms", &StatusBarLayout, RG, ViewportDim, WHITE);
     NewLine(&StatusBarLayout);
 
-    /* BufferColumn(MinMs, 6, &StatusBarLayout, RG, ViewportDim, WHITE); */
+    BufferColumn(Dt.Min, 6, &StatusBarLayout, RG, ViewportDim, WHITE);
   END_BLOCK("Status Bar");
 
   FlushSolidUIGeo(RG, ViewportDim);

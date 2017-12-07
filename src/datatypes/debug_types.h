@@ -50,6 +50,7 @@ enum debug_ui_type
   DebugUIType_None,
 
   DebugUIType_CallGraph,
+  DebugUIType_MemoryHud,
 
   DebugUIType_Count
 };
