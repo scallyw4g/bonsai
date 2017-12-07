@@ -692,14 +692,20 @@ PadBottom(layout *Layout, r32 Pad)
 }
 
 void
-DebugDrawCallGraph(u32 MaxMs, debug_state *DebugState, input *Input, debug_text_render_group *RG, textured_2d_geometry_buffer *TextGeo, v2 ViewportDim, v2 MouseP)
+SetFontSize(layout *Layout, r32 FontSize)
 {
-  r32 Pad = 15.0;
-  layout FrameTickerLayout(50 + Pad);
-  FrameTickerLayout.At.y = (r32)SCR_HEIGHT - FrameTickerLayout.FontSize;
+  Layout->FontSize = FontSize;
+  Layout->LineHeight = FontSize * 1.3f;
+  return;
+}
+
+void
+DebugDrawCallGraph(debug_state *DebugState, layout *Layout, debug_text_render_group *RG, textured_2d_geometry_buffer *TextGeo, v2 ViewportDim, v2 MouseP, u32 MaxMs, input *Input)
+{
+  SetFontSize(Layout, 80);
+  NewLine(Layout);
 
   TIMED_BLOCK("Frame Ticker");
-    NewLine(&FrameTickerLayout);
     for (u32 TreeIndex = 0;
         TreeIndex < ROOT_SCOPE_COUNT;
         ++TreeIndex )
@@ -707,11 +713,11 @@ DebugDrawCallGraph(u32 MaxMs, debug_state *DebugState, input *Input, debug_text_
       debug_scope_tree *Tree = &DebugState->ScopeTrees[TreeIndex];
 
       r32 Perc = SafeDivide0(Tree->FrameMs, MaxMs);
-      v2 MinP = V2(FrameTickerLayout.At.x, FrameTickerLayout.At.y);
-      v2 QuadDim = V2(15.0, (FrameTickerLayout.LineHeight - Pad) * Perc);
+      v2 MinP = V2(Layout->At.x, Layout->At.y);
+      v2 QuadDim = V2(15.0, (Layout->FontSize) * Perc);
 
       v2 DrawDim = BufferQuad(RG->UIGeo.Verts, RG->UIGeo.CurrentIndex, MinP, QuadDim);
-      FrameTickerLayout.At.x = DrawDim.x + 5.0f;
+      Layout->At.x = DrawDim.x + 5.0f;
 
       v3 Color = V3(0.5f, 0.5f, 0.5f);
       if ( Tree == DebugState->GetWriteScopeTree() )
@@ -745,7 +751,7 @@ DebugDrawCallGraph(u32 MaxMs, debug_state *DebugState, input *Input, debug_text_
   TIMED_BLOCK("Call Graph");
 
     debug_scope_tree *ReadTree = DebugState->GetReadScopeTree();
-    layout TreeInfoLayout = FrameTickerLayout;
+    layout TreeInfoLayout = *Layout;
     { // Current ReadTree info
       TreeInfoLayout.FontSize = 36;
       TreeInfoLayout.LineHeight = 36 * 1.3f;
@@ -765,8 +771,12 @@ DebugDrawCallGraph(u32 MaxMs, debug_state *DebugState, input *Input, debug_text_
 }
 
 void
-DebugDrawMemoryHud(debug_state *DebugState, debug_text_render_group *RG, textured_2d_geometry_buffer *TextGeo, v2 ViewportDim, v2 MouseP)
+DebugDrawMemoryHud(debug_state *DebugState, layout *Layout, debug_text_render_group *RG, textured_2d_geometry_buffer *TextGeo, v2 ViewportDim, v2 MouseP)
 {
+  SetFontSize(Layout, 40);
+  NewLine(Layout);
+  BufferText("Memory HUD", Layout, RG, ViewportDim, WHITE);
+  return;
 }
 
 struct min_max_avg_dt
@@ -777,7 +787,7 @@ struct min_max_avg_dt
 };
 
 min_max_avg_dt
-GetMinMaxAvgDt(debug_scope_tree *ScopeTrees)
+ComputeMinMaxAvgDt(debug_scope_tree *ScopeTrees)
 {
   TIMED_FUNCTION();
 
@@ -809,7 +819,21 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
   v2 ViewportDim = V2(Plat->WindowWidth, Plat->WindowHeight);
   v2 MouseP = V2(Plat->MouseP.x, Plat->WindowHeight - Plat->MouseP.y);
 
-  min_max_avg_dt Dt = GetMinMaxAvgDt(DebugState->ScopeTrees);
+  min_max_avg_dt Dt = ComputeMinMaxAvgDt(DebugState->ScopeTrees);
+
+  layout Layout(DEBUG_FONT_SIZE);
+  TIMED_BLOCK("Draw Status Bar");
+    Layout.At.y = (r32)SCR_HEIGHT - Layout.FontSize;
+    BufferColumn(Dt.Max, 6, &Layout, RG, ViewportDim, WHITE);
+    NewLine(&Layout);
+
+    BufferColumn(Dt.Avg, 6, &Layout, RG, ViewportDim, WHITE);
+    BufferColumn(Plat->dt*1000.0f, 6, &Layout, RG, ViewportDim, WHITE);
+    BufferText("ms", &Layout, RG, ViewportDim, WHITE);
+    NewLine(&Layout);
+
+    BufferColumn(Dt.Min, 6, &Layout, RG, ViewportDim, WHITE);
+  END_BLOCK("Status Bar");
 
   switch (DebugState->UIType)
   {
@@ -819,30 +843,16 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
 
     case DebugUIType_CallGraph:
     {
-      DebugDrawCallGraph(Dt.Max, DebugState, &Plat->Input, RG, TextGeo, ViewportDim, MouseP);
+      DebugDrawCallGraph(DebugState, &Layout, RG, TextGeo, ViewportDim, MouseP, Dt.Max, &Plat->Input);
     } break;
 
     case DebugUIType_MemoryHud:
     {
-      DebugDrawMemoryHud(DebugState, RG, TextGeo, ViewportDim, MouseP);
+      DebugDrawMemoryHud(DebugState, &Layout, RG, TextGeo, ViewportDim, MouseP);
     } break;
 
     InvalidDefaultCase;
   }
-
-  TIMED_BLOCK("Draw Status Bar");
-    layout StatusBarLayout(DEBUG_FONT_SIZE);
-    StatusBarLayout.At.y = (r32)SCR_HEIGHT - StatusBarLayout.FontSize;
-    BufferColumn(Dt.Max, 6, &StatusBarLayout, RG, ViewportDim, WHITE);
-    NewLine(&StatusBarLayout);
-
-    BufferColumn(Dt.Avg, 6, &StatusBarLayout, RG, ViewportDim, WHITE);
-    BufferColumn(Plat->dt*1000.0f, 6, &StatusBarLayout, RG, ViewportDim, WHITE);
-    BufferText("ms", &StatusBarLayout, RG, ViewportDim, WHITE);
-    NewLine(&StatusBarLayout);
-
-    BufferColumn(Dt.Min, 6, &StatusBarLayout, RG, ViewportDim, WHITE);
-  END_BLOCK("Status Bar");
 
   FlushSolidUIGeo(RG, ViewportDim);
   FlushTextBuffer(RG, TextGeo, ViewportDim);
