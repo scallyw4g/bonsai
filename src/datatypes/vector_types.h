@@ -573,6 +573,13 @@ Volume(chunk_dimension Dim)
   return (Dim.x*Dim.y*Dim.z);
 }
 
+inline v2
+V2(r32 F)
+{
+  v2 Result = {F, F};
+  return Result;
+}
+
 v2 V2(float x,float y)
 {
   v2 Result = {x,y};

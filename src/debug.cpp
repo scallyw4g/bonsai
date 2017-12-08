@@ -247,6 +247,14 @@ BufferQuad(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim)
   return Max;
 }
 
+void
+BufferQuad(v3 *Dest, u32 StartingIndex, layout *Layout, v2 Dim)
+{
+  BufferQuad(Dest, StartingIndex, Layout->At, Dim);
+  Layout->At.x += Dim.x;
+  return;
+}
+
 rect2
 BufferTextAt(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo,
     const char *Text, v2 XY, s32 FontSize, v2 ViewportDim, u32 ColorIndex)
@@ -894,9 +902,9 @@ DebugDrawMemoryHud(debug_state *DebugState, layout *Layout, debug_text_render_gr
   SetFontSize(Layout, 36);
   NewLine(Layout);
 
-  BufferText("Free Scopes : ", Layout, RG, ViewportDim, WHITE);
-  BufferColumn(DebugState->FreeScopeCount, 4, Layout, RG, ViewportDim, WHITE);
-  NewLine(Layout);
+  /* BufferText("Free Scopes : ", Layout, RG, ViewportDim, WHITE); */
+  /* BufferColumn(DebugState->FreeScopeCount, 4, Layout, RG, ViewportDim, WHITE); */
+  /* NewLine(Layout); */
 
   for ( u32 Index = 0;
         Index < REGISTERED_MEMORY_ARENA_COUNT;
@@ -909,21 +917,28 @@ DebugDrawMemoryHud(debug_state *DebugState, layout *Layout, debug_text_render_gr
       u64 Used = Current->Arena->TotalSize - Current->Arena->Remaining;
       r32 Perc = (r32)((r64)Used/(r64)Current->Arena->TotalSize);
 
-      BufferText(Current->Name, Layout, RG, ViewportDim, WHITE);
+      r32 BarHeight = 0.25f*Layout->LineHeight;
+      r32 BarWidth = 200.0f;
 
-      v2 MinP = Layout->At;
-      v2 Dim = V2(SCR_WIDTH - Layout->At.x, Layout->FontSize);
-      Dim.x *= Perc;
+      v2 MinP = Layout->At + V2(0, BarHeight);
+      v2 BarDim = V2(BarWidth, BarHeight);
+      v2 PercBarDim = V2(BarWidth, BarHeight) * V2(Perc, 1);
 
       v3 Green = {{ 0, 1, 0 }};
       v3 Red = {{ 1, 0, 0 }};
+      v3 Color = (Green*(1.0f-Perc) + Red*Perc) / 2.0f;
 
-      v3 Color = (Green*(1.4f-Perc) + Red*Perc) / 2;
+      BufferQuad(Geo->Verts, Geo->CurrentIndex, MinP, BarDim);
+      BufferColors(Geo->Colors, Geo->CurrentIndex, V3(0.25f));
+      Geo->CurrentIndex+=6;
 
-      BufferQuad(Geo->Verts, Geo->CurrentIndex, MinP, Dim);
+      BufferQuad(Geo->Verts, Geo->CurrentIndex, MinP, PercBarDim);
       BufferColors(Geo->Colors, Geo->CurrentIndex, Color);
       Geo->CurrentIndex+=6;
 
+      Layout->At.x += BarDim.x;
+
+      BufferText(Current->Name, Layout, RG, ViewportDim, WHITE);
       NewLine(Layout);
 
       BufferThousands(Current->Arena->Allocations, Layout, RG, ViewportDim, WHITE);
