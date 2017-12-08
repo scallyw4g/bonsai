@@ -32,18 +32,20 @@ PrintSemValue( semaphore *Semaphore )
 #endif
 
 u8* InvalidMemoryPointer = ((u8*)-1);
+u64 InvalidSysconfReturn = ((u64)-1);
 
-s64
+u64
 PlatformGetPageSize()
 {
-  s64 PageSize = sysconf(_SC_PAGESIZE);
+  u64 PageSize = sysconf(_SC_PAGESIZE);
+  Assert(PageSize != InvalidSysconfReturn);
   return PageSize;
 }
 
 u8*
 PlatformProtectPage(u8* Mem)
 {
-  s64 PageSize = PlatformGetPageSize();
+  u64 PageSize = PlatformGetPageSize();
 
   Assert((s64)Mem % PageSize == 0);
 
@@ -52,18 +54,16 @@ PlatformProtectPage(u8* Mem)
   return Result;
 }
 
-inline u8*
-PlatformAllocateAligned(umm Bytes, u32 Alignment)
+u8*
+PlatformAllocatePagesFor(umm Bytes)
 {
-  umm AllocationSize = Bytes + Alignment;
+  u64 PageSize = PlatformGetPageSize();
+  u64 BytePagePad = Bytes % PageSize;
 
-#if BONSAI_ALLOCATOR_CALLOC
-  u8 *Result = (u8*)calloc(AllocationSize, 1);
-  u64 OffsetToAlignmentBoundary = (s64)Result % Alignment;
-  Result = Result + (Alignment - OffsetToAlignmentBoundary);
-#endif
+  umm AllocationSize = Bytes + BytePagePad;
 
-#if BONSAI_ALLOCATOR_VIRTUAL
+  Assert(AllocationSize % PageSize == 0);
+
   u8 *Result = (u8*)mmap(0, AllocationSize, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANONYMOUS, -1, 0);
   if (Result == InvalidMemoryPointer)
   {
@@ -78,8 +78,15 @@ PlatformAllocateAligned(umm Bytes, u32 Alignment)
       Assert(!"Unknown error allocating virtual memory!");
     }
   }
-#endif
 
+  return Result;
+}
+
+inline u8*
+PlatformAllocateAligned(umm Bytes, u32 Alignment)
+{
+  u8* Result = PlatformAllocatePagesFor(Bytes);
+  Assert( (u64)Result % (u64)Alignment == 0);
   return Result;
 }
 

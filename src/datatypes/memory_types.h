@@ -53,7 +53,7 @@ PlatformAllocateAligned(umm Bytes, u32 Alignment);
 u8*
 PlatformProtectPage(u8* Mem);
 
-s64
+u64
 PlatformGetPageSize();
 
 #define ARENA_BLOCK_SIZE (Megabytes(4))
@@ -61,7 +61,7 @@ PlatformGetPageSize();
 inline u8*
 AllocatePages(umm Bytes)
 {
-  s64 PageSize = PlatformGetPageSize();
+  u64 PageSize = PlatformGetPageSize();
   u8* Result = PlatformAllocateAligned(Bytes, PageSize);
 
   Assert(Result);
@@ -94,6 +94,8 @@ PushSize(memory_arena *Arena, umm Size)
     Arena->Remaining = SizeToAllocate;
     Arena->TotalSize = SizeToAllocate;
   }
+
+
 
   Result = Arena->FirstFreeByte;
   Arena->FirstFreeByte += Size;

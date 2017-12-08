@@ -52,14 +52,6 @@
 #error "Unfortunately, Underflow and Overflow protection at the same time is impossible"
 #endif
 
-#define BONSAI_ALLOCATOR_VIRTUAL 1
-#define BONSAI_ALLOCATOR_CALLOC 0
-
-#if BONSAI_ALLOCATOR_CALLOC && BONSAI_ALLOCATOR_VIRTUAL
-#error "Multiple Allocators Defined"
-#endif
-
-
 
 /*
  *  MSVC
