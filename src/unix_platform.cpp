@@ -1,5 +1,8 @@
 #include <stdio.h>
 
+// mmap
+#include <sys/mman.h>
+
 #include <platform.h>
 
 #include <GL/glx.h>
@@ -26,6 +29,27 @@ PrintSemValue( semaphore *Semaphore )
   return;
 }
 #endif
+
+u8* InvalidMemoryPointer = ((u8*)-1);
+
+inline u8*
+PlatformAllocateMemory(umm Bytes)
+{
+  s64 PageSize = sysconf(_SC_PAGESIZE);
+  u32 Pages = (Bytes / PageSize) + 1;
+  u8 *Result = (u8*)mmap(0, Pages*PageSize, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANONYMOUS, -1, 0);
+
+  if (Result == InvalidMemoryPointer)
+  {
+    Result = 0;
+  }
+  else
+  {
+    mprotect(Result, PageSize, PROT_NONE);
+  }
+
+  return Result + PageSize;
+}
 
 inline void
 ThreadSleep( semaphore *Semaphore )

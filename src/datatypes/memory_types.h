@@ -1,3 +1,4 @@
+
 struct memory_arena
 {
   u8* FirstFreeByte;
@@ -42,14 +43,18 @@ Terabytes(u32 Number)
 }
 
 u8*
+PlatformAllocateMemory(umm Size);
+
+u8*
 Allocate(umm Bytes)
 {
-  u8* Result = (u8*)calloc(1, (size_t)Bytes);
+  u8 *Result = PlatformAllocateMemory(Bytes);
   if (!Result)
   {
     Assert(False);
     Error("Unable to allocate memory!");
   }
+
   return Result;
 }
 
