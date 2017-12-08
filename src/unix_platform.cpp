@@ -40,7 +40,7 @@ PlatformAllocateMemory(umm Bytes)
 #endif
 
   s64 PageSize = sysconf(_SC_PAGESIZE);
-  u32 Pages = (Bytes / PageSize);
+  u32 Pages = (Bytes / PageSize) + 1;
 
 #if MEMPROTECT
   Pages++;
@@ -51,6 +51,15 @@ PlatformAllocateMemory(umm Bytes)
   if (Result == InvalidMemoryPointer)
   {
     Result = 0;
+    s32 Error = errno;
+    if (Error == ENOMEM)
+    {
+      Assert(!"Out of memory!");
+    }
+    else
+    {
+      Assert(!"Unknown error allocating memory!");
+    }
   }
   else
   {

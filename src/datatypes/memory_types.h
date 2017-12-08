@@ -49,11 +49,7 @@ u8*
 Allocate(umm Bytes)
 {
   u8 *Result = PlatformAllocateMemory(Bytes);
-  if (!Result)
-  {
-    Assert(False);
-    Error("Unable to allocate memory!");
-  }
+  Assert(Result);
 
   return Result;
 }
@@ -61,11 +57,17 @@ Allocate(umm Bytes)
 void*
 PushSize(memory_arena *Arena, umm Size)
 {
+#if MEMPROTECT
+
+  void *Result = Allocate(Size);
+
+#else // MEMPROTECT
   void* Result = 0;
+
 
 #if BONSAI_INTERNAL
   ++Arena->Allocations;
-#endif
+#endif // BONSAI_INTERNAL
 
   if (Size <= Arena->Remaining)
   {
@@ -73,6 +75,7 @@ PushSize(memory_arena *Arena, umm Size)
     Arena->FirstFreeByte += Size;
     Arena->Remaining -= Size;
   }
+#endif // MEMPROTECT
 
   return Result;
 }
