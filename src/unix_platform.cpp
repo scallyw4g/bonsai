@@ -35,8 +35,17 @@ u8* InvalidMemoryPointer = ((u8*)-1);
 inline u8*
 PlatformAllocateMemory(umm Bytes)
 {
+#if MEMPROTECT_UNDERFLOW && MEMPROTECT_OVERFLOW
+#error "Unfortunately, Underflow and Overflow protection at the same time is impossible"
+#endif
+
   s64 PageSize = sysconf(_SC_PAGESIZE);
-  u32 Pages = (Bytes / PageSize) + 1;
+  u32 Pages = (Bytes / PageSize);
+
+#if MEMPROTECT
+  Pages++;
+#endif
+
   u8 *Result = (u8*)mmap(0, Pages*PageSize, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANONYMOUS, -1, 0);
 
   if (Result == InvalidMemoryPointer)
@@ -45,10 +54,15 @@ PlatformAllocateMemory(umm Bytes)
   }
   else
   {
+#if MEMPROTECT_OVERFLOW
+#elif MEMPROTECT_UNDERFLOW
     mprotect(Result, PageSize, PROT_NONE);
+    Result = Result + PageSize;
+#else
+#endif
   }
 
-  return Result + PageSize;
+  return Result;
 }
 
 inline void

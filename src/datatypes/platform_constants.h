@@ -41,6 +41,16 @@
 
 
 /*
+ * Memory
+ */
+
+#define MEMPROTECT_UNDERFLOW 1
+#define MEMPROTECT_OVERFLOW 0
+
+#define MEMPROTECT (MEMPROTECT_OVERFLOW || MEMPROTECT_UNDERFLOW)
+
+
+/*
  *  MSVC
  */
 #ifdef _MSC_VER
