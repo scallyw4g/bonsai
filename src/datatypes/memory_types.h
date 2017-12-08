@@ -1,18 +1,23 @@
 
+#define registered_memory_arena(Arena) \
+  memory_arena Arena = {};             \
+  DEBUG_REGISTER_ARENA(Arena);
+
+
 struct memory_arena
 {
   u8* FirstFreeByte;
   umm Remaining;
   umm TotalSize;
+  umm Allocations;
 
 #if BONSAI_INTERNAL
-  umm Allocations;
+  umm Pushes;
 #endif
 };
 
 #define PUSH_STRUCT_CHECKED(Type, Arena, Number) \
   (Type*)PushStructChecked_( Arena, sizeof(Type)*Number, #Type, __LINE__, __FILE__ );
-
 
 inline u64
 Kilobytes(u32 Bytes)
@@ -43,39 +48,56 @@ Terabytes(u32 Number)
 }
 
 u8*
-PlatformAllocateMemory(umm Size);
+PlatformAllocateAligned(umm Bytes, u32 Alignment);
 
 u8*
-Allocate(umm Bytes)
+PlatformProtectPage(u8* Mem);
+
+s64
+PlatformGetPageSize();
+
+#define ARENA_BLOCK_SIZE (Megabytes(4))
+
+inline u8*
+AllocatePages(umm Bytes)
 {
-  u8 *Result = PlatformAllocateMemory(Bytes);
+  s64 PageSize = PlatformGetPageSize();
+  u8* Result = PlatformAllocateAligned(Bytes, PageSize);
+
   Assert(Result);
+  Assert((s64)Result % PageSize == 0);
 
   return Result;
 }
 
-void*
+u8*
 PushSize(memory_arena *Arena, umm Size)
 {
-#if MEMPROTECT
-
-  void *Result = Allocate(Size);
-
-#else // MEMPROTECT
-  void* Result = 0;
-
+  u8* Result = 0;
 
 #if BONSAI_INTERNAL
-  ++Arena->Allocations;
-#endif // BONSAI_INTERNAL
+  ++Arena->Pushes;
+#endif
 
-  if (Size <= Arena->Remaining)
+  b32 ArenaIsFull = Size > Arena->Remaining;
+  if (ArenaIsFull)
   {
-    Result = (void*)Arena->FirstFreeByte;
-    Arena->FirstFreeByte += Size;
-    Arena->Remaining -= Size;
+    ++Arena->Allocations;
+
+    u64 SizeToAllocate = ARENA_BLOCK_SIZE * Arena->Allocations * Arena->Allocations;
+    if (Size > SizeToAllocate)
+      SizeToAllocate = Size;
+
+    Arena->FirstFreeByte = AllocatePages(SizeToAllocate);
+    Assert(Arena->FirstFreeByte);
+
+    Arena->Remaining = SizeToAllocate;
+    Arena->TotalSize = SizeToAllocate;
   }
-#endif // MEMPROTECT
+
+  Result = Arena->FirstFreeByte;
+  Arena->FirstFreeByte += Size;
+  Arena->Remaining -= Size;
 
   return Result;
 }
@@ -100,12 +122,13 @@ PushStructChecked_(memory_arena *Arena, umm Size, const char* StructType, s32 Li
 }
 
 #if BONSAI_INTERNAL
-#define DEBUG_REGISTER_ARENA(Name, Arena) \
-  DebugRegisterArena(Name, Arena)
+#define DEBUG_REGISTER_ARENA(Arena) \
+  DebugRegisterArena(#Arena, &Arena)
 #else
 #define DEBUG_REGISTER_ARENA(...)
 #endif
 
+#if 0
 #define SubArena(Src, Dest, Size) \
   SubArena_(Src, Dest, Size); \
   DEBUG_REGISTER_ARENA(#Dest, Dest)
@@ -136,6 +159,7 @@ AllocateAndInitializeArena_(memory_arena *Arena, umm Size)
   Assert(Arena->FirstFreeByte);
   return;
 }
+#endif
 
 inline void
 Rewind(memory_arena *Memory)

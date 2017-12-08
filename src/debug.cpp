@@ -120,13 +120,12 @@ void
 InitDebugState(platform *Plat, memory_arena *DebugMemory)
 {
   GlobalDebugState = &Plat->DebugState;
+  GlobalDebugState->Memory = DebugMemory;
   GlobalDebugState->GetCycleCount = Plat->GetCycleCount;
+
 
   GlobalDebugState->FreeScopeSentinel.Parent = &GlobalDebugState->FreeScopeSentinel;
   GlobalDebugState->FreeScopeSentinel.Child = &GlobalDebugState->FreeScopeSentinel;
-
-  GlobalDebugState->Memory = PUSH_STRUCT_CHECKED(memory_arena, DebugMemory, 1);
-  SubArena(DebugMemory, GlobalDebugState->Memory, Megabytes(512));
 
   GlobalDebugState->TextRenderGroup = PUSH_STRUCT_CHECKED(debug_text_render_group, DebugMemory, 1);
   if (!InitDebugOverlayFramebuffer(GlobalDebugState->TextRenderGroup, DebugMemory, "Holstein.DDS"))
@@ -561,7 +560,7 @@ inline void
 BufferScopeTreeEntry(debug_profile_scope *Scope, layout *Layout, u32 Color, u64 TotalCycles, u64 TotalFrameCycles, u64 CallCount, debug_text_render_group *RG, v2 ViewportDim, u32 Depth)
 {
   Assert(TotalFrameCycles);
-  r32 Percentage = 100.0f*(r32)((r64)TotalCycles/(r64)TotalFrameCycles);
+  r32 Percentage = 100.0f* SafeDivide0((r64)TotalCycles, (r64)TotalFrameCycles);
   u64 AvgCycles = SafeDivide0(TotalCycles, CallCount);
   BufferColumn(Percentage, 6, Layout, RG, ViewportDim, Color);
   BufferThousands(AvgCycles, Layout, RG, ViewportDim, Color);
@@ -880,17 +879,28 @@ DebugDrawCallGraph(debug_state *DebugState, layout *Layout, debug_text_render_gr
   END_BLOCK("Call Graph");
 }
 
-u32
-GetTotalAllocations()
+struct memory_allocation_stats
 {
-  u32 Result = 0;
+  u64 Allocations;
+  u64 Pushes;
+};
+
+memory_allocation_stats
+GetAllocationStats()
+{
+  memory_allocation_stats Result = {};
+
   for ( u32 Index = 0;
         Index < REGISTERED_MEMORY_ARENA_COUNT;
         ++Index )
   {
     registered_memory_arena *Current = &Global_RegisteredMemoryArenas[Index];
+
     if (Current->Arena)
-      Result += Current->Arena->Allocations;
+    {
+      Result.Allocations += Current->Arena->Allocations;
+      Result.Pushes += Current->Arena->Pushes;
+    }
   }
 
   return Result;
@@ -915,7 +925,7 @@ DebugDrawMemoryHud(debug_state *DebugState, layout *Layout, debug_text_render_gr
     if (Current->Name)
     {
       u64 Used = Current->Arena->TotalSize - Current->Arena->Remaining;
-      r32 Perc = (r32)((r64)Used/(r64)Current->Arena->TotalSize);
+      r32 Perc = SafeDivide0(Used, Current->Arena->TotalSize);
 
       r32 BarHeight = 0.25f*Layout->LineHeight;
       r32 BarWidth = 200.0f;
@@ -942,6 +952,13 @@ DebugDrawMemoryHud(debug_state *DebugState, layout *Layout, debug_text_render_gr
       NewLine(Layout);
 
       BufferThousands(Current->Arena->Allocations, Layout, RG, ViewportDim, WHITE);
+      AdvanceSpaces(1, Layout);
+      BufferText("Allocs", Layout, RG, ViewportDim, WHITE);
+      AdvanceSpaces(1, Layout);
+
+      BufferThousands(Current->Arena->Pushes, Layout, RG, ViewportDim, WHITE);
+      AdvanceSpaces(1, Layout);
+      BufferText("Pushes", Layout, RG, ViewportDim, WHITE);
       AdvanceSpaces(1, Layout);
 
       BufferMemorySize(Current->Arena->Remaining, Layout, RG, ViewportDim, WHITE);
@@ -1013,10 +1030,19 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
     BufferColumn(Plat->dt*1000.0f, 6, &Layout, RG, ViewportDim, WHITE);
     BufferText("ms", &Layout, RG, ViewportDim, WHITE);
 
-    BufferThousands(GetTotalAllocations(), &Layout, RG, ViewportDim, WHITE);
-    AdvanceSpaces(1, &Layout);
-    BufferText("Allocations", &Layout, RG, ViewportDim, WHITE);
-    NewLine(&Layout);
+    {
+      memory_allocation_stats MemStats = GetAllocationStats();
+
+      BufferThousands(MemStats.Allocations, &Layout, RG, ViewportDim, WHITE);
+      AdvanceSpaces(1, &Layout);
+      BufferText("Allocations", &Layout, RG, ViewportDim, WHITE);
+
+      BufferThousands(MemStats.Pushes, &Layout, RG, ViewportDim, WHITE);
+      AdvanceSpaces(1, &Layout);
+      BufferText("Pushes", &Layout, RG, ViewportDim, WHITE);
+
+      NewLine(&Layout);
+    }
 
     BufferColumn(Dt.Min, 6, &Layout, RG, ViewportDim, WHITE);
   END_BLOCK("Status Bar");
@@ -1065,8 +1091,7 @@ CleanupText2D(debug_text_render_group *RG)
 inline void
 DoDebugFrameRecord(
     debug_recording_state *State,
-    hotkeys *Hotkeys,
-    memory_arena *MainMemory)
+    hotkeys *Hotkeys)
 {
   {
     static b32 Toggled = False;
@@ -1086,14 +1111,16 @@ DoDebugFrameRecord(
 
         case RecordingMode_Record:
         {
+          NotImplemented;
           Log("Recording");
-          CopyArena(MainMemory, &State->RecordedMainMemory);
+          //CopyArena(MainMemory, &State->RecordedMainMemory);
         } break;
 
         case RecordingMode_Playback:
         {
+          NotImplemented;
           Log("Playback");
-          CopyArena(&State->RecordedMainMemory, MainMemory);
+          //CopyArena(&State->RecordedMainMemory, MainMemory);
         } break;
 
         InvalidDefaultCase;
@@ -1114,6 +1141,7 @@ DoDebugFrameRecord(
 
     case RecordingMode_Record:
     {
+      NotImplemented;
       Assert(State->FramesRecorded < DEBUG_RECORD_INPUT_SIZE);
       Hotkeys->Debug_ToggleLoopedGamePlayback = False;
       State->Inputs[State->FramesRecorded++] = *Hotkeys;
@@ -1121,12 +1149,13 @@ DoDebugFrameRecord(
 
     case RecordingMode_Playback:
     {
+      NotImplemented;
       *Hotkeys = State->Inputs[State->FramesPlayedBack++];
 
       if (State->FramesPlayedBack == State->FramesRecorded)
       {
         State->FramesPlayedBack = 0;
-        CopyArena(&State->RecordedMainMemory, MainMemory);
+        //CopyArena(&State->RecordedMainMemory, MainMemory);
       }
 
     } break;

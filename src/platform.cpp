@@ -403,24 +403,14 @@ main(s32 NumArgs, char ** Args)
   if (!SearchForProjectRoot()) { Error("Couldn't find root dir, exiting."); return False; }
   Info("Found Bonsai Root : %s", GetCwd() );
 
-  memory_arena MainMemory = {};
-  memory_arena DebugMemory = {};
-
-  AllocateAndInitializeArena(&MainMemory, Gigabytes(3));
-  AllocateAndInitializeArena(&DebugMemory, Gigabytes(1) );
-
-  memory_arena PlatMemory = {};
-  memory_arena GraphicsMemory = {};
-  memory_arena GameMemory = {};
-
-  SubArena(&MainMemory, &PlatMemory, Megabytes(512) );
-  SubArena(&MainMemory, &GameMemory, Gigabytes(2) );
-  SubArena(&MainMemory, &GraphicsMemory, Megabytes(1) );
-
+  registered_memory_arena(DebugMemory);
+  registered_memory_arena(PlatMemory);
+  registered_memory_arena(GraphicsMemory);
+  registered_memory_arena(GameMemory);
 
 #if BONSAI_INTERNAL
-  debug_recording_state *Debug_RecordingState = PUSH_STRUCT_CHECKED(debug_recording_state, &DebugMemory, 1);
-  AllocateAndInitializeArena(&Debug_RecordingState->RecordedMainMemory, Gigabytes(3));
+  /* debug_recording_state *Debug_RecordingState = PUSH_STRUCT_CHECKED(debug_recording_state, &GameMemory, 1); */
+  /* AllocateAndInitializeArena(&Debug_RecordingState->RecordedMainMemory, Gigabytes(3)); */
 #endif
 
   platform Plat = {};
@@ -515,7 +505,7 @@ main(s32 NumArgs, char ** Args)
     }
 
 
-    DEBUG_FRAME_RECORD(Debug_RecordingState, &Hotkeys, &MainMemory);
+    /* DEBUG_FRAME_RECORD(Debug_RecordingState, &Hotkeys); */
 
     END_BLOCK("Frame Preamble");
 

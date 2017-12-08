@@ -2,6 +2,7 @@
 
 // mmap
 #include <sys/mman.h>
+#include <sys/time.h>
 
 #include <platform.h>
 
@@ -32,44 +33,52 @@ PrintSemValue( semaphore *Semaphore )
 
 u8* InvalidMemoryPointer = ((u8*)-1);
 
-inline u8*
-PlatformAllocateMemory(umm Bytes)
+s64
+PlatformGetPageSize()
 {
-#if MEMPROTECT_UNDERFLOW && MEMPROTECT_OVERFLOW
-#error "Unfortunately, Underflow and Overflow protection at the same time is impossible"
-#endif
-
   s64 PageSize = sysconf(_SC_PAGESIZE);
-  u32 Pages = (Bytes / PageSize) + 1;
+  return PageSize;
+}
 
-#if MEMPROTECT
-  Pages++;
+u8*
+PlatformProtectPage(u8* Mem)
+{
+  s64 PageSize = PlatformGetPageSize();
+
+  Assert((s64)Mem % PageSize == 0);
+
+  mprotect(Mem, PageSize, PROT_NONE);
+  u8* Result = Mem + PageSize;
+  return Result;
+}
+
+inline u8*
+PlatformAllocateAligned(umm Bytes, u32 Alignment)
+{
+  umm AllocationSize = Bytes + Alignment;
+
+#if BONSAI_ALLOCATOR_CALLOC
+  u8 *Result = (u8*)calloc(AllocationSize, 1);
+  u64 OffsetToAlignmentBoundary = (s64)Result % Alignment;
+  Result = Result + (Alignment - OffsetToAlignmentBoundary);
 #endif
 
-  u8 *Result = (u8*)mmap(0, Pages*PageSize, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANONYMOUS, -1, 0);
-
+#if BONSAI_ALLOCATOR_VIRTUAL
+  u8 *Result = (u8*)mmap(0, AllocationSize, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANONYMOUS, -1, 0);
   if (Result == InvalidMemoryPointer)
   {
     Result = 0;
     s32 Error = errno;
     if (Error == ENOMEM)
     {
-      Assert(!"Out of memory!");
+      Assert(!"Out of memory, or something..");
     }
     else
     {
-      Assert(!"Unknown error allocating memory!");
+      Assert(!"Unknown error allocating virtual memory!");
     }
   }
-  else
-  {
-#if MEMPROTECT_OVERFLOW
-#elif MEMPROTECT_UNDERFLOW
-    mprotect(Result, PageSize, PROT_NONE);
-    Result = Result + PageSize;
-#else
 #endif
-  }
 
   return Result;
 }

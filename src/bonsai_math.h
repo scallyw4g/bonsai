@@ -46,6 +46,24 @@ Cos(r32 Theta)
   return Result;
 }
 
+inline r64
+SafeDivide0(u64 Dividend, u64 Divisor)
+{
+  r64 Result = 0.0;
+  if (Divisor != 0.0)
+    Result = (r64)Dividend/(r64)Divisor;
+  return Result;
+}
+
+inline r64
+SafeDivide0(r64 Dividend, r64 Divisor)
+{
+  r64 Result = 0.0;
+  if (Divisor != 0.0)
+    Result = Dividend/Divisor;
+  return Result;
+}
+
 inline r32
 SafeDivide0(r32 Dividend, r32 Divisor)
 {
