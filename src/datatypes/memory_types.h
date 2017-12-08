@@ -48,7 +48,7 @@ Terabytes(u32 Number)
 }
 
 u8*
-PlatformAllocateAligned(umm Bytes, u32 Alignment);
+PlatformAllocatePages(umm Bytes);
 
 u8*
 PlatformProtectPage(u8* Mem);
@@ -56,19 +56,7 @@ PlatformProtectPage(u8* Mem);
 u64
 PlatformGetPageSize();
 
-#define ARENA_BLOCK_SIZE (Megabytes(4))
-
-inline u8*
-AllocatePages(umm Bytes)
-{
-  u64 PageSize = PlatformGetPageSize();
-  u8* Result = PlatformAllocateAligned(Bytes, PageSize);
-
-  Assert(Result);
-  Assert((s64)Result % PageSize == 0);
-
-  return Result;
-}
+#define ARENA_BLOCK_SIZE (Kilobytes(64))
 
 u8*
 PushSize(memory_arena *Arena, umm Size)
@@ -88,7 +76,7 @@ PushSize(memory_arena *Arena, umm Size)
     if (Size > SizeToAllocate)
       SizeToAllocate = Size;
 
-    Arena->FirstFreeByte = AllocatePages(SizeToAllocate);
+    Arena->FirstFreeByte = PlatformAllocatePages(SizeToAllocate);
     Assert(Arena->FirstFreeByte);
 
     Arena->Remaining = SizeToAllocate;

@@ -55,7 +55,7 @@ PlatformProtectPage(u8* Mem)
 }
 
 u8*
-PlatformAllocatePagesFor(umm Bytes)
+PlatformAllocatePages(umm Bytes)
 {
   u64 PageSize = PlatformGetPageSize();
   u64 BytePagePad = Bytes % PageSize;
@@ -79,14 +79,6 @@ PlatformAllocatePagesFor(umm Bytes)
     }
   }
 
-  return Result;
-}
-
-inline u8*
-PlatformAllocateAligned(umm Bytes, u32 Alignment)
-{
-  u8* Result = PlatformAllocatePagesFor(Bytes);
-  Assert( (u64)Result % (u64)Alignment == 0);
   return Result;
 }
 
