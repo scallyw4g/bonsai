@@ -14,7 +14,11 @@ struct memory_arena
 
 #if BONSAI_INTERNAL
   umm Pushes;
+
+#if MEMPROTECT
   b32 MemProtect = true;
+#endif
+
 #endif
 };
 
@@ -100,6 +104,21 @@ PushSize(memory_arena *Arena, umm SizeIn)
   }
 
   u8* Result = Arena->FirstFreeByte;
+
+#if MEMPROTECT_OVERFLOW
+  if (Arena->MemProtect)
+  {
+    umm End = (umm)Arena->FirstFreeByte + SizeIn;
+    umm EndToNextPage = PageSize - (End % PageSize);
+    Assert( (End+EndToNextPage) % PageSize == 0);
+
+    Result = Arena->FirstFreeByte + EndToNextPage;
+    u8* LastPage = Result + SizeIn;
+    Assert( (u64)LastPage % PageSize == 0)
+
+    mprotect(LastPage, PageSize, PROT_NONE);
+  }
+#endif
 
 #if MEMPROTECT_UNDERFLOW
   if (Arena->MemProtect)

@@ -404,7 +404,9 @@ main(s32 NumArgs, char ** Args)
   Info("Found Bonsai Root : %s", GetCwd() );
 
   registered_memory_arena(DebugMemory);
+#if MEMPROTECT
   DebugMemory.MemProtect = False; // This arena pushes a shit-ton of stuff and I run out of memory
+#endif
 
   registered_memory_arena(PlatMemory);
   registered_memory_arena(GraphicsMemory);

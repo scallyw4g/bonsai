@@ -45,8 +45,8 @@
  */
 
 #define MEMPROTECT (MEMPROTECT_OVERFLOW || MEMPROTECT_UNDERFLOW)
-#define MEMPROTECT_UNDERFLOW (1)
-#define MEMPROTECT_OVERFLOW (0)
+#define MEMPROTECT_UNDERFLOW (0)
+#define MEMPROTECT_OVERFLOW (1)
 
 #if MEMPROTECT_UNDERFLOW && MEMPROTECT_OVERFLOW
 #error "Unfortunately, Underflow and Overflow protection at the same time is impossible"
