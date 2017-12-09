@@ -1,3 +1,4 @@
+#include <sys/mman.h>
 
 #define registered_memory_arena(Arena) \
   memory_arena Arena = {};             \
@@ -13,6 +14,7 @@ struct memory_arena
 
 #if BONSAI_INTERNAL
   umm Pushes;
+  b32 MemProtect = true;
 #endif
 };
 
@@ -56,38 +58,65 @@ PlatformProtectPage(u8* Mem);
 u64
 PlatformGetPageSize();
 
-#define ARENA_BLOCK_SIZE (Kilobytes(64))
+#define ARENA_BLOCK_SIZE (Kilobytes(32))
+
 
 u8*
-PushSize(memory_arena *Arena, umm Size)
+PushSize(memory_arena *Arena, umm SizeIn)
 {
-  u8* Result = 0;
 
 #if BONSAI_INTERNAL
   ++Arena->Pushes;
 #endif
 
-  b32 ArenaIsFull = Size > Arena->Remaining;
+
+  umm RequestedSize = SizeIn;
+
+#if MEMPROTECT
+  u64 PageSize = PlatformGetPageSize();
+  if (Arena->MemProtect)
+  {
+    u32 Pages = (SizeIn/PageSize) + 1;
+    RequestedSize = (Pages*PageSize) + PageSize;
+    Assert( RequestedSize % PageSize == 0 );
+  }
+#endif
+
+  // Reallocate arena if there's not enough space left in it
+  b32 ArenaIsFull = RequestedSize > Arena->Remaining;
   if (ArenaIsFull)
   {
     ++Arena->Allocations;
 
-    u64 SizeToAllocate = ARENA_BLOCK_SIZE * Arena->Allocations * Arena->Allocations;
-    if (Size > SizeToAllocate)
-      SizeToAllocate = Size;
+    u64 AllocationSize = ARENA_BLOCK_SIZE * Arena->Allocations * Arena->Allocations;
+    if (RequestedSize > AllocationSize)
+      AllocationSize = RequestedSize;
 
-    Arena->FirstFreeByte = PlatformAllocatePages(SizeToAllocate);
+    Arena->FirstFreeByte = PlatformAllocatePages(AllocationSize);
     Assert(Arena->FirstFreeByte);
 
-    Arena->Remaining = SizeToAllocate;
-    Arena->TotalSize = SizeToAllocate;
+    Arena->Remaining = AllocationSize;
+    Arena->TotalSize = AllocationSize;
   }
 
+#if MEMPROTECT_UNDERFLOW
+  if (Arena->MemProtect)
+  {
+    umm At = (umm)Arena->FirstFreeByte;
+    umm NextPageOffset = PageSize - (At % PageSize);
+    Assert( (At+NextPageOffset) % PageSize == 0)
 
+    /* u8* NextPage = Arena->FirstFreeByte + NextPageOffset; */
+    /* mprotect(NextPage, PageSize, PROT_NONE); */
 
-  Result = Arena->FirstFreeByte;
-  Arena->FirstFreeByte += Size;
-  Arena->Remaining -= Size;
+    /* u8* Result = NextPage + PageSize; */
+  }
+#endif
+
+  u8* Result = Arena->FirstFreeByte;
+
+  Arena->FirstFreeByte += RequestedSize;
+  Arena->Remaining -= RequestedSize;
 
   return Result;
 }
