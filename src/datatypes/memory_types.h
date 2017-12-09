@@ -99,6 +99,8 @@ PushSize(memory_arena *Arena, umm SizeIn)
     Arena->TotalSize = AllocationSize;
   }
 
+  u8* Result = Arena->FirstFreeByte;
+
 #if MEMPROTECT_UNDERFLOW
   if (Arena->MemProtect)
   {
@@ -106,14 +108,12 @@ PushSize(memory_arena *Arena, umm SizeIn)
     umm NextPageOffset = PageSize - (At % PageSize);
     Assert( (At+NextPageOffset) % PageSize == 0)
 
-    /* u8* NextPage = Arena->FirstFreeByte + NextPageOffset; */
-    /* mprotect(NextPage, PageSize, PROT_NONE); */
+    u8* NextPage = Arena->FirstFreeByte + NextPageOffset;
+    mprotect(NextPage, PageSize, PROT_NONE);
 
-    /* u8* Result = NextPage + PageSize; */
+    Result = NextPage + PageSize;
   }
 #endif
-
-  u8* Result = Arena->FirstFreeByte;
 
   Arena->FirstFreeByte += RequestedSize;
   Arena->Remaining -= RequestedSize;
@@ -133,8 +133,11 @@ PushStructChecked_(memory_arena *Arena, umm Size, const char* StructType, s32 Li
 {
   void* Result = PushStruct( Arena, Size );
 
-  if (!(Result)) {
-    Error("Pushing %s on Line: %d, in file %s", StructType, Line, File); return False;
+  if (!Result)
+  {
+    Error("Pushing %s on Line: %d, in file %s", StructType, Line, File);
+    Assert(False);
+    return False;
   }
 
   return Result;
