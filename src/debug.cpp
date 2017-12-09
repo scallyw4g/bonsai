@@ -921,8 +921,9 @@ DebugDrawMemoryHud(debug_state *DebugState, layout *Layout, debug_text_render_gr
         ++Index )
   {
     registered_memory_arena *Current = &Global_RegisteredMemoryArenas[Index];
+    memory_arena *CurrentArena = Current->Arena;
 
-    if (Current->Name)
+    while (CurrentArena)
     {
       u64 Used = Current->Arena->TotalSize - Current->Arena->Remaining;
       r32 Perc = SafeDivide0(Used, Current->Arena->TotalSize);
@@ -972,6 +973,8 @@ DebugDrawMemoryHud(debug_state *DebugState, layout *Layout, debug_text_render_gr
 
       NewLine(Layout);
       NewLine(Layout);
+
+      CurrentArena = CurrentArena->Next;
     }
   }
 

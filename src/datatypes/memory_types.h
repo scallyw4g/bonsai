@@ -4,27 +4,6 @@
   memory_arena Arena = {};             \
   DEBUG_REGISTER_ARENA(Arena);
 
-
-struct memory_arena
-{
-  u8* FirstFreeByte;
-  umm Remaining;
-  umm TotalSize;
-  umm Allocations;
-
-#if BONSAI_INTERNAL
-  umm Pushes;
-
-#if MEMPROTECT
-  b32 MemProtect = true;
-#endif
-
-#endif
-};
-
-#define PUSH_STRUCT_CHECKED(Type, Arena, Number) \
-  (Type*)PushStructChecked_( Arena, sizeof(Type)*Number, #Type, __LINE__, __FILE__ );
-
 inline u64
 Kilobytes(u32 Bytes)
 {
@@ -53,6 +32,30 @@ Terabytes(u32 Number)
   return Result;
 }
 
+
+struct memory_arena
+{
+  u8* FirstFreeByte;
+  umm Remaining;
+  umm TotalSize;
+  umm Allocations;
+  umm BlockSize = Megabytes(1);
+
+  memory_arena *Next;
+
+#if BONSAI_INTERNAL
+  umm Pushes;
+
+#if MEMPROTECT
+  b32 MemProtect = true;
+#endif
+
+#endif
+};
+
+#define PUSH_STRUCT_CHECKED(Type, Arena, Number) \
+  (Type*)PushStructChecked_( Arena, sizeof(Type)*Number, #Type, __LINE__, __FILE__ );
+
 u8*
 PlatformAllocatePages(umm Bytes);
 
@@ -62,8 +65,6 @@ PlatformProtectPage(u8* Mem);
 u64
 PlatformGetPageSize();
 
-#define ARENA_BLOCK_SIZE (Kilobytes(32))
-
 
 u8*
 PushSize(memory_arena *Arena, umm SizeIn)
@@ -72,7 +73,6 @@ PushSize(memory_arena *Arena, umm SizeIn)
 #if BONSAI_INTERNAL
   ++Arena->Pushes;
 #endif
-
 
   umm RequestedSize = SizeIn;
 
@@ -92,7 +92,8 @@ PushSize(memory_arena *Arena, umm SizeIn)
   {
     ++Arena->Allocations;
 
-    u64 AllocationSize = ARENA_BLOCK_SIZE * Arena->Allocations * Arena->Allocations;
+    u64 AllocationSize = Arena->BlockSize * 2;
+    Arena->BlockSize = AllocationSize;
     if (RequestedSize > AllocationSize)
       AllocationSize = RequestedSize;
 
