@@ -929,6 +929,33 @@ GetTotalMemoryArenaStats()
 }
 
 void
+BufferBarGraph(untextured_2d_geometry_buffer *Geo, layout *Layout, r32 Width, r32 PercFilled)
+{
+
+  r32 BarHeight = 0.25f*Layout->LineHeight;
+  r32 BarWidth = 200.0f;
+
+  v2 MinP = Layout->At + V2(0, BarHeight);
+  v2 BarDim = V2(BarWidth, BarHeight);
+  v2 PercBarDim = V2(BarWidth, BarHeight) * V2(PercFilled, 1);
+
+  v3 Green = {{ 0, 1, 0 }};
+  v3 Red = {{ 1, 0, 0 }};
+  v3 Color = (Green*(1.0f-PercFilled) + Red*PercFilled) / 2.0f;
+
+  BufferQuad(Geo->Verts, Geo->CurrentIndex, MinP, BarDim);
+  BufferColors(Geo->Colors, Geo->CurrentIndex, V3(0.25f));
+  Geo->CurrentIndex+=6;
+
+  BufferQuad(Geo->Verts, Geo->CurrentIndex, MinP, PercBarDim);
+  BufferColors(Geo->Colors, Geo->CurrentIndex, Color);
+  Geo->CurrentIndex+=6;
+
+  Layout->At.x += BarDim.x;
+
+}
+
+void
 DebugDrawMemoryHud(debug_state *DebugState, layout *Layout, debug_text_render_group *RG, untextured_2d_geometry_buffer *Geo, v2 ViewportDim, v2 MouseP)
 {
   SetFontSize(Layout, 36);
@@ -948,6 +975,19 @@ DebugDrawMemoryHud(debug_state *DebugState, layout *Layout, debug_text_render_gr
     memory_arena_stats MemStats = GetMemoryArenaStats(Current->Arena);
 
     {
+      r32 GraphWidth = 350.0f;
+
+      u64 TotalUsed = MemStats.TotalAllocated - MemStats.Remaining;
+      r32 TotalPerc = SafeDivide0(TotalUsed, MemStats.TotalAllocated);
+      BufferBarGraph(&RG->UIGeo, Layout, GraphWidth, TotalPerc);
+      AdvanceSpaces(1, Layout);
+
+      u64 CurrentUsed = Current->Arena->TotalSize - Current->Arena->Remaining;
+      r32 CurrentPerc = SafeDivide0(CurrentUsed, Current->Arena->TotalSize);
+      BufferBarGraph(&RG->UIGeo, Layout, GraphWidth, CurrentPerc);
+
+      NewLine(Layout);
+
       BufferText(Current->Name, Layout, RG, ViewportDim, WHITE);
 
       AdvanceSpaces(1, Layout);
@@ -960,8 +1000,11 @@ DebugDrawMemoryHud(debug_state *DebugState, layout *Layout, debug_text_render_gr
       BufferText("P", Layout, RG, ViewportDim, WHITE);
       NewLine(Layout);
 
+      BufferText("Remaining:", Layout, RG, ViewportDim, WHITE);
       BufferMemorySize(MemStats.Remaining, Layout, RG, ViewportDim, WHITE);
-      BufferText("/", Layout, RG, ViewportDim, WHITE);
+      NewLine(Layout);
+
+      BufferText("Total:", Layout, RG, ViewportDim, WHITE);
       BufferMemorySize(MemStats.TotalAllocated, Layout, RG, ViewportDim, WHITE);
 
       NewLine(Layout);
