@@ -419,20 +419,14 @@ BufferMemorySize(u64 Number, layout *Layout, debug_text_render_group *RG, v2 Vie
   }
 
   char Buffer[32];
-  sprintf(Buffer, "%.0f%c", (r32)Display, Units);
-  {
-    s32 Len = strlen(Buffer);
-    s32 ColumnWidth = 5;
-    s32 Pad = Max(ColumnWidth-Len, 0);
-    AdvanceSpaces(Pad, Layout);
-  }
+  sprintf(Buffer, "%.1f%c", (r32)Display, Units);
   BufferText( Buffer, Layout, RG, ViewportDim, ColorIndex);
 
   return;
 }
 
 inline void
-BufferThousands(u64 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim, u32 ColorIndex)
+BufferThousands(u64 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim, u32 ColorIndex, u32 Columns)
 {
   u64 OneThousand = 1000;
   r32 Display = (r32)Number;
@@ -448,13 +442,18 @@ BufferThousands(u64 Number, layout *Layout, debug_text_render_group *RG, v2 View
   sprintf(Buffer, "%.1f%c", Display, Units);
   {
     s32 Len = strlen(Buffer);
-    s32 ColumnWidth = 10;
-    s32 Pad = Max(ColumnWidth-Len, 0);
+    s32 Pad = Max(Columns-Len, 0);
     AdvanceSpaces(Pad, Layout);
   }
   BufferText( Buffer, Layout, RG, ViewportDim, ColorIndex);
 
   return;
+}
+
+inline void
+BufferThousands(u64 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim, u32 ColorIndex)
+{
+  return BufferThousands(Number, Layout, RG, ViewportDim, ColorIndex, 10);
 }
 
 inline void
@@ -879,30 +878,54 @@ DebugDrawCallGraph(debug_state *DebugState, layout *Layout, debug_text_render_gr
   END_BLOCK("Call Graph");
 }
 
-struct memory_allocation_stats
+struct memory_arena_stats
 {
   u64 Allocations;
   u64 Pushes;
+
+  u64 TotalAllocated;
+  u64 Remaining;
 };
 
-memory_allocation_stats
-GetAllocationStats()
+memory_arena_stats
+GetMemoryArenaStats(memory_arena *Arena)
 {
-  memory_allocation_stats Result = {};
+  TIMED_FUNCTION();
+  memory_arena_stats Result = {};
 
+  while (Arena)
+  {
+    Result.Allocations++;
+    Result.Pushes += Arena->Pushes;
+    Result.TotalAllocated += Arena->TotalSize;
+    Result.Remaining += Arena->Remaining;
+
+    Arena = Arena->Prev;
+  }
+
+  return Result;
+}
+
+memory_arena_stats
+GetTotalMemoryArenaStats()
+{
+  TIMED_FUNCTION();
+  memory_arena_stats TotalStats = {};
   for ( u32 Index = 0;
         Index < REGISTERED_MEMORY_ARENA_COUNT;
         ++Index )
   {
     registered_memory_arena *Current = &Global_RegisteredMemoryArenas[Index];
+    if (!Current->Arena) continue;
 
-    if (Current->Arena)
-    {
-      Result.Pushes += Current->Arena->Pushes;
-    }
+    memory_arena_stats CurrentStats = GetMemoryArenaStats(Current->Arena);
+    TotalStats.Allocations          += CurrentStats.Allocations;
+    TotalStats.Pushes               += CurrentStats.Pushes;
+    TotalStats.TotalAllocated       += CurrentStats.TotalAllocated;
+    TotalStats.Remaining            += CurrentStats.Remaining;
   }
 
-  return Result;
+  return TotalStats;
 }
 
 void
@@ -920,18 +943,29 @@ DebugDrawMemoryHud(debug_state *DebugState, layout *Layout, debug_text_render_gr
         ++Index )
   {
     registered_memory_arena *Current = &Global_RegisteredMemoryArenas[Index];
+    if (!Current->Arena) continue;
 
-    if (!Current->Name) continue;
+    memory_arena_stats MemStats = GetMemoryArenaStats(Current->Arena);
 
-    memory_arena *CurrentArena = Current->Arena;
-
-    /* RuntimeBreak(); */
-    while (CurrentArena)
     {
       BufferText(Current->Name, Layout, RG, ViewportDim, WHITE);
+
+      AdvanceSpaces(1, Layout);
+      BufferThousands(MemStats.Allocations, Layout, RG, ViewportDim, WHITE, 0);
+      BufferText("A", Layout, RG, ViewportDim, WHITE);
+
+      AdvanceSpaces(1, Layout);
+      BufferThousands(MemStats.Pushes, Layout, RG, ViewportDim, WHITE, 0);
+      AdvanceSpaces(1, Layout);
+      BufferText("P", Layout, RG, ViewportDim, WHITE);
       NewLine(Layout);
 
-      CurrentArena = CurrentArena->Prev;
+      BufferMemorySize(MemStats.Remaining, Layout, RG, ViewportDim, WHITE);
+      BufferText("/", Layout, RG, ViewportDim, WHITE);
+      BufferMemorySize(MemStats.TotalAllocated, Layout, RG, ViewportDim, WHITE);
+
+      NewLine(Layout);
+      NewLine(Layout);
     }
 
 #if 0
@@ -1043,13 +1077,13 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
     BufferText("ms", &Layout, RG, ViewportDim, WHITE);
 
     {
-      memory_allocation_stats MemStats = GetAllocationStats();
+      memory_arena_stats TotalStats = GetTotalMemoryArenaStats();
 
-      BufferThousands(MemStats.Allocations, &Layout, RG, ViewportDim, WHITE);
+      BufferThousands(TotalStats.Allocations, &Layout, RG, ViewportDim, WHITE);
       AdvanceSpaces(1, &Layout);
       BufferText("Allocations", &Layout, RG, ViewportDim, WHITE);
 
-      BufferThousands(MemStats.Pushes, &Layout, RG, ViewportDim, WHITE);
+      BufferThousands(TotalStats.Pushes, &Layout, RG, ViewportDim, WHITE);
       AdvanceSpaces(1, &Layout);
       BufferText("Pushes", &Layout, RG, ViewportDim, WHITE);
 
