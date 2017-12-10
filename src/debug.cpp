@@ -898,7 +898,6 @@ GetAllocationStats()
 
     if (Current->Arena)
     {
-      Result.Allocations += Current->Arena->Allocations;
       Result.Pushes += Current->Arena->Pushes;
     }
   }
@@ -921,8 +920,21 @@ DebugDrawMemoryHud(debug_state *DebugState, layout *Layout, debug_text_render_gr
         ++Index )
   {
     registered_memory_arena *Current = &Global_RegisteredMemoryArenas[Index];
+
+    if (!Current->Name) continue;
+
     memory_arena *CurrentArena = Current->Arena;
 
+    /* RuntimeBreak(); */
+    while (CurrentArena)
+    {
+      BufferText(Current->Name, Layout, RG, ViewportDim, WHITE);
+      NewLine(Layout);
+
+      CurrentArena = CurrentArena->Prev;
+    }
+
+#if 0
     while (CurrentArena)
     {
       u64 Used = Current->Arena->TotalSize - Current->Arena->Remaining;
@@ -952,11 +964,6 @@ DebugDrawMemoryHud(debug_state *DebugState, layout *Layout, debug_text_render_gr
       BufferText(Current->Name, Layout, RG, ViewportDim, WHITE);
       NewLine(Layout);
 
-      BufferThousands(Current->Arena->Allocations, Layout, RG, ViewportDim, WHITE);
-      AdvanceSpaces(1, Layout);
-      BufferText("Allocs", Layout, RG, ViewportDim, WHITE);
-      AdvanceSpaces(1, Layout);
-
       BufferThousands(Current->Arena->Pushes, Layout, RG, ViewportDim, WHITE);
       AdvanceSpaces(1, Layout);
       BufferText("Pushes", Layout, RG, ViewportDim, WHITE);
@@ -974,8 +981,10 @@ DebugDrawMemoryHud(debug_state *DebugState, layout *Layout, debug_text_render_gr
       NewLine(Layout);
       NewLine(Layout);
 
-      CurrentArena = CurrentArena->Next;
+      CurrentArena = CurrentArena->Prev;
     }
+#endif
+
   }
 
   return;

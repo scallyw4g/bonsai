@@ -54,20 +54,18 @@ PlatformProtectPage(u8* Mem)
   return Result;
 }
 
-u8*
-PlatformAllocatePages(umm Bytes)
+memory_arena*
+PlatformAllocateArena(umm RequestedBytes = Megabytes(1))
 {
   u64 PageSize = PlatformGetPageSize();
-  u64 BytePagePad = Bytes % PageSize;
-
-  umm AllocationSize = Bytes + BytePagePad;
-
+  u64 BytePagePad = PageSize - (RequestedBytes % PageSize);
+  umm AllocationSize = RequestedBytes + BytePagePad;
   Assert(AllocationSize % PageSize == 0);
 
-  u8 *Result = (u8*)mmap(0, AllocationSize, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANONYMOUS, -1, 0);
-  if (Result == InvalidMemoryPointer)
+  u8 *Bytes = (u8*)mmap(0, AllocationSize, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANONYMOUS, -1, 0);
+  if (Bytes == InvalidMemoryPointer)
   {
-    Result = 0;
+    Bytes = 0;
     s32 Error = errno;
     if (Error == ENOMEM)
     {
@@ -79,7 +77,14 @@ PlatformAllocatePages(umm Bytes)
     }
   }
 
-  return Result;
+  memory_arena *NewArena = (memory_arena*)Bytes;
+
+  NewArena->FirstFreeByte = (u8*)((memory_arena*)Bytes + 1);
+  NewArena->Remaining = AllocationSize - sizeof(memory_arena);
+  NewArena->TotalSize = AllocationSize;
+  NewArena->BlockSize = Megabytes(32);
+
+  return NewArena;
 }
 
 inline void

@@ -1,7 +1,7 @@
 #include <sys/mman.h>
 
 #define registered_memory_arena(Arena) \
-  memory_arena Arena = {};             \
+  memory_arena *Arena = PlatformAllocateArena(); \
   DEBUG_REGISTER_ARENA(Arena);
 
 inline u64
@@ -38,10 +38,9 @@ struct memory_arena
   u8* FirstFreeByte;
   umm Remaining;
   umm TotalSize;
-  umm Allocations;
   umm BlockSize = Megabytes(1);
 
-  memory_arena *Next;
+  memory_arena *Prev;
 
 #if BONSAI_INTERNAL
   umm Pushes;
@@ -56,15 +55,14 @@ struct memory_arena
 #define PUSH_STRUCT_CHECKED(Type, Arena, Number) \
   (Type*)PushStructChecked_( Arena, sizeof(Type)*Number, #Type, __LINE__, __FILE__ );
 
-u8*
-PlatformAllocatePages(umm Bytes);
+memory_arena*
+PlatformAllocateArena(umm Bytes);
 
 u8*
 PlatformProtectPage(u8* Mem);
 
 u64
 PlatformGetPageSize();
-
 
 u8*
 PushSize(memory_arena *Arena, umm SizeIn)
@@ -90,18 +88,27 @@ PushSize(memory_arena *Arena, umm SizeIn)
   b32 ArenaIsFull = RequestedSize > Arena->Remaining;
   if (ArenaIsFull)
   {
-    ++Arena->Allocations;
-
-    u64 AllocationSize = Arena->BlockSize * 2;
-    Arena->BlockSize = AllocationSize;
+    Assert(Arena->BlockSize);
+    u64 AllocationSize = Arena->BlockSize;
     if (RequestedSize > AllocationSize)
       AllocationSize = RequestedSize;
 
-    Arena->FirstFreeByte = PlatformAllocatePages(AllocationSize);
-    Assert(Arena->FirstFreeByte);
+    memory_arena *Allocated = PlatformAllocateArena(AllocationSize);
 
-    Arena->Remaining = AllocationSize;
-    Arena->TotalSize = AllocationSize;
+#if MEMPROTECT
+    Allocated->MemProtect = Arena->MemProtect;
+#endif
+
+    memory_arena PrevArena = *Arena;
+    memory_arena NewArena = *Allocated;
+
+    // Swap
+    *Allocated = PrevArena;
+    *Arena = NewArena;
+
+    // And point back
+    Arena->Prev = Allocated;
+
   }
 
   u8* Result = Arena->FirstFreeByte;
@@ -165,7 +172,7 @@ PushStructChecked_(memory_arena *Arena, umm Size, const char* StructType, s32 Li
 
 #if BONSAI_INTERNAL
 #define DEBUG_REGISTER_ARENA(Arena) \
-  DebugRegisterArena(#Arena, &Arena)
+  DebugRegisterArena(#Arena, Arena)
 #else
 #define DEBUG_REGISTER_ARENA(...)
 #endif

@@ -405,7 +405,7 @@ main(s32 NumArgs, char ** Args)
 
   registered_memory_arena(DebugMemory);
 #if MEMPROTECT
-  DebugMemory.MemProtect = False; // This arena pushes a shit-ton of stuff and I run out of memory
+  DebugMemory->MemProtect = False; // This arena pushes a shit-ton of stuff and I run out of memory
 #endif
 
   registered_memory_arena(PlatMemory);
@@ -413,12 +413,12 @@ main(s32 NumArgs, char ** Args)
   registered_memory_arena(GameMemory);
 
 #if BONSAI_INTERNAL
-  /* debug_recording_state *Debug_RecordingState = PUSH_STRUCT_CHECKED(debug_recording_state, &GameMemory, 1); */
+  /* debug_recording_state *Debug_RecordingState = PUSH_STRUCT_CHECKED(debug_recording_state, GameMemory, 1); */
   /* AllocateAndInitializeArena(&Debug_RecordingState->RecordedMainMemory, Gigabytes(3)); */
 #endif
 
   platform Plat = {};
-  PlatformInit(&Plat, &PlatMemory);
+  PlatformInit(&Plat, PlatMemory);
 
   os Os = {};
   Os.ContinueRunning = True;
@@ -449,7 +449,7 @@ main(s32 NumArgs, char ** Args)
   GL_Global = &Plat.GL;
 
 #if BONSAI_INTERNAL
-  InitDebugState(&Plat, &DebugMemory);
+  InitDebugState(&Plat, DebugMemory);
 #endif
 
   InitGlobals(&Plat);
@@ -458,10 +458,10 @@ main(s32 NumArgs, char ** Args)
 
   hotkeys Hotkeys = {};
 
-  Plat.Graphics = GraphicsInit(&GraphicsMemory);
+  Plat.Graphics = GraphicsInit(GraphicsMemory);
   if (!Plat.Graphics) { Error("Initializing Graphics"); return False; }
 
-  game_state *GameState = GameInit(&Plat, &GameMemory);
+  game_state *GameState = GameInit(&Plat, GameMemory);
   if (!GameState) { Error("Initializing Game State :( "); return False; }
 
   /*
