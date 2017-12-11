@@ -82,7 +82,7 @@ PlatformAllocateArena(umm RequestedBytes = Megabytes(1))
   NewArena->FirstFreeByte = (u8*)((memory_arena*)Bytes + 1);
   NewArena->Remaining = AllocationSize - sizeof(memory_arena);
   NewArena->TotalSize = AllocationSize;
-  NewArena->BlockSize = Megabytes(32);
+  NewArena->NextBlockSize = AllocationSize * 2;
 
   return NewArena;
 }

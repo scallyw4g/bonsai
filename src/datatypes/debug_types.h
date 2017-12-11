@@ -6,9 +6,11 @@ struct layout
   v2 At;
   r32 FontSize;
   r32 LineHeight;
+  u32 Depth;
 
   layout(u32 FontSize = 12)
   {
+    this->Depth = 0;
     this->FontSize = FontSize;
     this->LineHeight = FontSize * 1.3f;
     this->At = {};
@@ -59,6 +61,7 @@ struct registered_memory_arena
 {
   memory_arena *Arena;
   const char* Name;
+  b32 Expanded;
 };
 
 #define REGISTERED_MEMORY_ARENA_COUNT 32

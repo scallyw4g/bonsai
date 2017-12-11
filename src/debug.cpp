@@ -378,17 +378,18 @@ BufferText(u32 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportD
 }
 
 inline void
-NewLine(layout *Layout)
+AdvanceSpaces(u32 N, layout *Layout)
 {
-  Layout->At.y -= (Layout->LineHeight);
-  Layout->At.x = 0;
+  Layout->At.x += (N*Layout->FontSize);
   return;
 }
 
 inline void
-AdvanceSpaces(u32 N, layout *Layout)
+NewLine(layout *Layout)
 {
-  Layout->At.x += (N*Layout->FontSize);
+  Layout->At.y -= (Layout->LineHeight);
+  Layout->At.x = 0;
+  AdvanceSpaces(Layout->Depth, Layout);
   return;
 }
 
@@ -641,6 +642,24 @@ GetStatsFor(debug_state *State, debug_profile_scope *Scope)
   }
 
   return Result;
+}
+
+u32
+HoverAndClickExpand(layout *Layout, registered_memory_arena *Arena, v2 MouseP, input *Input, u32 Color, u32 HoverColor)
+{
+  u32 DrawColor = Color;
+
+  {
+    rect2 EntryBounds = GetNextLineBounds(Layout);
+    if ( IsInsideRect(EntryBounds, MouseP) )
+    {
+      DrawColor = HoverColor;
+      if (Input->LMB.WasPressed)
+        Arena->Expanded = !Arena->Expanded;
+    }
+  }
+
+  return DrawColor;
 }
 
 u32
@@ -931,11 +950,10 @@ GetTotalMemoryArenaStats()
 void
 BufferBarGraph(untextured_2d_geometry_buffer *Geo, layout *Layout, r32 Width, r32 PercFilled)
 {
-
-  r32 BarHeight = 0.25f*Layout->LineHeight;
+  r32 BarHeight = Layout->FontSize;
   r32 BarWidth = 200.0f;
 
-  v2 MinP = Layout->At + V2(0, BarHeight);
+  v2 MinP = Layout->At; // + V2(0, BarHeight);
   v2 BarDim = V2(BarWidth, BarHeight);
   v2 PercBarDim = V2(BarWidth, BarHeight) * V2(PercFilled, 1);
 
@@ -956,9 +974,8 @@ BufferBarGraph(untextured_2d_geometry_buffer *Geo, layout *Layout, r32 Width, r3
 }
 
 void
-DebugDrawMemoryHud(debug_state *DebugState, layout *Layout, debug_text_render_group *RG, untextured_2d_geometry_buffer *Geo, v2 ViewportDim, v2 MouseP)
+DebugDrawMemoryHud(debug_state *DebugState, layout *Layout, debug_text_render_group *RG, untextured_2d_geometry_buffer *Geo, v2 ViewportDim, v2 MouseP, input *Input)
 {
-  SetFontSize(Layout, 36);
   NewLine(Layout);
 
   /* BufferText("Free Scopes : ", Layout, RG, ViewportDim, WHITE); */
@@ -972,44 +989,69 @@ DebugDrawMemoryHud(debug_state *DebugState, layout *Layout, debug_text_render_gr
     registered_memory_arena *Current = &Global_RegisteredMemoryArenas[Index];
     if (!Current->Arena) continue;
 
-    memory_arena_stats MemStats = GetMemoryArenaStats(Current->Arena);
-
     {
+      SetFontSize(Layout, 36);
+      NewLine(Layout);
+      u32 Color = HoverAndClickExpand(Layout, Current, MouseP, Input, WHITE, TEAL);
+      BufferText(Current->Name, Layout, RG, ViewportDim, Color);
+    }
+
+    SetFontSize(Layout, 28);
+    if (!Current->Expanded)
+    {
+      NewLine(Layout);
+      continue;
+    }
+
+    memory_arena_stats MemStats = GetMemoryArenaStats(Current->Arena);
+    ++Layout->Depth;
+    {
+      SetFontSize(Layout, 22);
+      NewLine(Layout);
       r32 GraphWidth = 350.0f;
 
       u64 TotalUsed = MemStats.TotalAllocated - MemStats.Remaining;
       r32 TotalPerc = SafeDivide0(TotalUsed, MemStats.TotalAllocated);
+
+      BufferMemorySize(TotalUsed, Layout, RG, ViewportDim, WHITE);
       BufferBarGraph(&RG->UIGeo, Layout, GraphWidth, TotalPerc);
-      AdvanceSpaces(1, Layout);
+      BufferMemorySize(MemStats.Remaining, Layout, RG, ViewportDim, WHITE);
+
+      /* AdvanceSpaces(1, Layout); */
+      NewLine(Layout);
 
       u64 CurrentUsed = Current->Arena->TotalSize - Current->Arena->Remaining;
       r32 CurrentPerc = SafeDivide0(CurrentUsed, Current->Arena->TotalSize);
+      BufferMemorySize(CurrentUsed, Layout, RG, ViewportDim, WHITE);
       BufferBarGraph(&RG->UIGeo, Layout, GraphWidth, CurrentPerc);
+      BufferMemorySize(Current->Arena->Remaining, Layout, RG, ViewportDim, WHITE);
+    }
 
+    {
       NewLine(Layout);
 
-      BufferText(Current->Name, Layout, RG, ViewportDim, WHITE);
-
-      AdvanceSpaces(1, Layout);
-      BufferThousands(MemStats.Allocations, Layout, RG, ViewportDim, WHITE, 0);
-      BufferText("A", Layout, RG, ViewportDim, WHITE);
-
-      AdvanceSpaces(1, Layout);
-      BufferThousands(MemStats.Pushes, Layout, RG, ViewportDim, WHITE, 0);
-      AdvanceSpaces(1, Layout);
-      BufferText("P", Layout, RG, ViewportDim, WHITE);
+      BufferText("Allocs", Layout, RG, ViewportDim, WHITE);
+      AdvanceSpaces(4, Layout);
+      BufferText(MemStats.Allocations, Layout, RG, ViewportDim, WHITE);
       NewLine(Layout);
 
-      BufferText("Remaining:", Layout, RG, ViewportDim, WHITE);
+      BufferText("Pushes", Layout, RG, ViewportDim, WHITE);
+      AdvanceSpaces(4, Layout);
+      BufferText(MemStats.Pushes, Layout, RG, ViewportDim, WHITE);
+      NewLine(Layout);
+
+      BufferText("Remaining", Layout, RG, ViewportDim, WHITE);
+      AdvanceSpaces(1, Layout);
       BufferMemorySize(MemStats.Remaining, Layout, RG, ViewportDim, WHITE);
       NewLine(Layout);
 
-      BufferText("Total:", Layout, RG, ViewportDim, WHITE);
+      BufferText("Total", Layout, RG, ViewportDim, WHITE);
+      AdvanceSpaces(5, Layout);
       BufferMemorySize(MemStats.TotalAllocated, Layout, RG, ViewportDim, WHITE);
-
-      NewLine(Layout);
-      NewLine(Layout);
     }
+
+    --Layout->Depth;
+    NewLine(Layout);
 
 #if 0
     while (CurrentArena)
@@ -1149,7 +1191,7 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
 
     case DebugUIType_MemoryHud:
     {
-      DebugDrawMemoryHud(DebugState, &Layout, RG, &RG->UIGeo, ViewportDim, MouseP);
+      DebugDrawMemoryHud(DebugState, &Layout, RG, &RG->UIGeo, ViewportDim, MouseP, &Plat->Input);
     } break;
 
     InvalidDefaultCase;

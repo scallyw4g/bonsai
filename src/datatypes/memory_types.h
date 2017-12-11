@@ -38,7 +38,7 @@ struct memory_arena
   u8* FirstFreeByte;
   umm Remaining;
   umm TotalSize;
-  umm BlockSize = Megabytes(1);
+  umm NextBlockSize;
 
   memory_arena *Prev;
 
@@ -88,8 +88,7 @@ PushSize(memory_arena *Arena, umm SizeIn)
   b32 ArenaIsFull = RequestedSize > Arena->Remaining;
   if (ArenaIsFull)
   {
-    Assert(Arena->BlockSize);
-    u64 AllocationSize = Arena->BlockSize;
+    u64 AllocationSize = Arena->NextBlockSize;
     if (RequestedSize > AllocationSize)
       AllocationSize = RequestedSize;
 
