@@ -396,6 +396,38 @@ NewLine(layout *Layout)
   return;
 }
 
+static char Global_CharBuffer[32];
+
+inline char*
+MemorySize(u64 Number)
+{
+  r64 KB = (r64)Kilobytes(1);
+  r64 MB = (r64)Megabytes(1);
+  r64 GB = (r64)Gigabytes(1);
+
+  r64 Display = (r64)Number;
+  char Units = ' ';
+
+  if (Number >= KB && Number < MB)
+  {
+    Display = Number / KB;
+    Units = 'K';
+  }
+  else if (Number >= MB && Number < GB)
+  {
+    Display = Number / MB;
+    Units = 'M';
+  }
+  else if (Number >= GB)
+  {
+    Display = Number / GB;
+    Units = 'G';
+  }
+
+  sprintf(Global_CharBuffer, "%.1f%c", (r32)Display, Units);
+  return Global_CharBuffer;
+}
+
 inline void
 BufferMemorySize(u64 Number, ui_render_group *Group, u32 ColorIndex)
 {
@@ -975,6 +1007,16 @@ BufferBarGraph(untextured_2d_geometry_buffer *Geo, layout *Layout, r32 Width, r3
 }
 
 void
+Column(u32 Width, char *Text, ui_render_group* Group, u32 ColorIndex )
+{
+  s32 Len = strlen(Text);
+  s32 Pad = Max(Width-Len, 0);
+  AdvanceSpaces(Pad, Group->Layout);
+
+  BufferText(Text, Group, ColorIndex);
+}
+
+void
 DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState)
 {
   layout *Layout = Group->Layout;
@@ -1018,11 +1060,10 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState)
       u64 TotalUsed = MemStats.TotalAllocated - MemStats.Remaining;
       r32 TotalPerc = SafeDivide0(TotalUsed, MemStats.TotalAllocated);
 
-      BufferMemorySize(TotalUsed, Group, WHITE);
+      Column(6, MemorySize(TotalUsed), Group, WHITE);
       BufferBarGraph(&Group->TextGroup->UIGeo, Layout, GraphWidth, TotalPerc);
-      BufferMemorySize(MemStats.Remaining, Group, WHITE);
+      Column(6, MemorySize(MemStats.Remaining), Group, WHITE);
 
-      /* AdvanceSpaces(1, Layout); */
       NewLine(Layout);
       NewLine(Layout);
 
@@ -1031,9 +1072,10 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState)
       {
         u64 CurrentUsed = CurrentArena->TotalSize - CurrentArena->Remaining;
         r32 CurrentPerc = SafeDivide0(CurrentUsed, CurrentArena->TotalSize);
-        BufferMemorySize(CurrentUsed, Group, WHITE);
+
+        Column(6, MemorySize(CurrentUsed), Group, WHITE);
         BufferBarGraph(&Group->TextGroup->UIGeo, Layout, GraphWidth, CurrentPerc);
-        BufferMemorySize(CurrentArena->Remaining, Group, WHITE);
+        Column(6, MemorySize(CurrentArena->Remaining), Group, WHITE);
         NewLine(Layout);
 
         CurrentArena = CurrentArena->Prev;
@@ -1066,58 +1108,6 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState)
 
     --Layout->Depth;
     NewLine(Layout);
-
-#if 0
-    while (CurrentArena)
-    {
-      u64 Used = Current->Arena->TotalSize - Current->Arena->Remaining;
-      r32 Perc = SafeDivide0(Used, Current->Arena->TotalSize);
-
-      r32 BarHeight = 0.25f*Layout->LineHeight;
-      r32 BarWidth = 200.0f;
-
-      v2 MinP = Layout->At + V2(0, BarHeight);
-      v2 BarDim = V2(BarWidth, BarHeight);
-      v2 PercBarDim = V2(BarWidth, BarHeight) * V2(Perc, 1);
-
-      v3 Green = {{ 0, 1, 0 }};
-      v3 Red = {{ 1, 0, 0 }};
-      v3 Color = (Green*(1.0f-Perc) + Red*Perc) / 2.0f;
-
-      BufferQuad(Geo->Verts, Geo->CurrentIndex, MinP, BarDim);
-      BufferColors(Geo->Colors, Geo->CurrentIndex, V3(0.25f));
-      Geo->CurrentIndex+=6;
-
-      BufferQuad(Geo->Verts, Geo->CurrentIndex, MinP, PercBarDim);
-      BufferColors(Geo->Colors, Geo->CurrentIndex, Color);
-      Geo->CurrentIndex+=6;
-
-      Layout->At.x += BarDim.x;
-
-      BufferText(Current->Name, Group, WHITE);
-      NewLine(Layout);
-
-      BufferThousands(Current->Arena->Pushes, Layout, RG, ViewportDim, WHITE);
-      AdvanceSpaces(1, Layout);
-      BufferText("Pushes", Group, WHITE);
-      AdvanceSpaces(1, Layout);
-
-      BufferMemorySize(Current->Arena->Remaining, Layout, RG, ViewportDim, WHITE);
-      AdvanceSpaces(1, Layout);
-
-      BufferMemorySize(Used, Layout, RG, ViewportDim, WHITE);
-      AdvanceSpaces(1, Layout);
-
-      BufferColumn(100.0f*Perc, 4, Layout, RG, ViewportDim, WHITE);
-      AdvanceSpaces(1, Layout);
-
-      NewLine(Layout);
-      NewLine(Layout);
-
-      CurrentArena = CurrentArena->Prev;
-    }
-#endif
-
   }
 
   return;
