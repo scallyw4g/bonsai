@@ -1,20 +1,20 @@
 #if BONSAI_INTERNAL
 
-
 struct layout
 {
   v2 At;
   r32 FontSize;
   r32 LineHeight;
   u32 Depth;
+};
 
-  layout(u32 FontSize = 12)
-  {
-    this->Depth = 0;
-    this->FontSize = FontSize;
-    this->LineHeight = FontSize * 1.3f;
-    this->At = {};
-  }
+struct ui_render_group
+{
+  layout *Layout;
+  debug_text_render_group *TextGroup;
+  v2 ViewportDim;
+  v2 MouseP;
+  struct input *Input;
 };
 
 struct debug_profile_scope;
