@@ -140,8 +140,59 @@ InitDebugState(platform *Plat, memory_arena *DebugMemory)
   return;
 }
 
+void BindShaderUniforms(shader *Shader);
 void
-FlushTextBuffer(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo, v2 ViewportDim)
+UseShader(shader *Shader)
+{
+  GL_Global->glUseProgram(Shader->ID);
+  BindShaderUniforms(Shader);
+  return;
+}
+
+void
+FlushBuffer(debug_text_render_group *RG, untextured_2d_geometry_buffer *Buffer, v2 ViewportDim)
+{
+  TIMED_FUNCTION();
+
+  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+  UseShader(&RG->SolidUIShader);
+
+  u32 VertCount = Buffer->CurrentIndex + 1;
+  Buffer->CurrentIndex = 0;
+
+  // Vertices
+  GL_Global->glEnableVertexAttribArray(0);
+  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->SolidUIVertexBuffer);
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, VertCount * sizeof(v3), Buffer->Verts, GL_STATIC_DRAW);
+  GL_Global->glVertexAttribPointer(
+    0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+    3,                  // size
+    GL_FLOAT,           // type
+    GL_FALSE,           // normalized?
+    0,                  // stride
+    (void*)0            // array buffer offset
+  );
+
+  // Colors
+  GL_Global->glEnableVertexAttribArray(1);
+  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->SolidUIColorBuffer);
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, VertCount * sizeof(v3), Buffer->Colors, GL_STATIC_DRAW);
+  GL_Global->glVertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+  SetViewport(V2(SCR_WIDTH, SCR_HEIGHT));
+  glDrawArrays(GL_TRIANGLES, 0, VertCount);
+
+  GL_Global->glDisableVertexAttribArray(0);
+  GL_Global->glDisableVertexAttribArray(1);
+
+  AssertNoGlErrors;
+
+  return;
+}
+
+void
+FlushBuffer(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo, v2 ViewportDim)
 {
   u32 VertCount = Geo->CurrentIndex +1;
   Geo->CurrentIndex = 0;
@@ -225,8 +276,27 @@ BufferColors(v3 *Colors, u32 StartingIndex, v3 Color)
   return;
 }
 
+void
+BufferColors(ui_render_group *Group, textured_2d_geometry_buffer *Geo, v3 Color)
+{
+  if (Geo->CurrentIndex + 6 > Geo->Allocated)
+    FlushBuffer(Group->TextGroup, Geo, Group->ViewportDim);
+
+  BufferColors(Geo->Colors, Geo->CurrentIndex, Color);
+}
+
+void
+BufferColors(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, v3 Color)
+{
+  if (Geo->CurrentIndex + 6 > Geo->Allocated)
+    FlushBuffer(Group->TextGroup, Geo, Group->ViewportDim);
+
+  BufferColors(Geo->Colors, Geo->CurrentIndex, Color);
+}
+
+
 v2
-BufferQuad(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z = 1.0f)
+BufferQuadDirect(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z)
 {
   v3 vertex_up_left    = V3( MinP.x       , MinP.y+Dim.y , Z);
   v3 vertex_up_right   = V3( MinP.x+Dim.x , MinP.y+Dim.y , Z);
@@ -246,10 +316,30 @@ BufferQuad(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z = 1.0f)
   return Max;
 }
 
+v2
+BufferQuad(ui_render_group *Group, textured_2d_geometry_buffer *Geo, v2 MinP, v2 Dim, r32 Z = 1.0f)
+{
+  if (Geo->CurrentIndex + 6 > Geo->Allocated)
+    FlushBuffer(Group->TextGroup, Geo, Group->ViewportDim);
+
+  v2 Result = BufferQuadDirect(Geo->Verts, Geo->CurrentIndex, MinP, Dim, Z);
+  return Result;
+}
+
+v2
+BufferQuad(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, v2 MinP, v2 Dim, r32 Z = 1.0f)
+{
+  if (Geo->CurrentIndex + 6 > Geo->Allocated)
+    FlushBuffer(Group->TextGroup, Geo, Group->ViewportDim);
+
+  v2 Result = BufferQuadDirect(Geo->Verts, Geo->CurrentIndex, MinP, Dim, Z);
+  return Result;
+}
+
 rect2
 BufferTextAt(ui_render_group *Group, const char *Text, u32 Color)
 {
-  textured_2d_geometry_buffer *Geo = &Group->TextGroup->TextGeo;
+  textured_2d_geometry_buffer *TextGeo = &Group->TextGroup->TextGeo;
   debug_text_render_group *RG = Group->TextGroup;
   layout *Layout = Group->Layout;
 
@@ -261,19 +351,16 @@ BufferTextAt(ui_render_group *Group, const char *Text, u32 Color)
       CharIndex < QuadCount;
       CharIndex++ )
   {
-    if (Geo->CurrentIndex + 6 > Geo->Allocated)
-      FlushTextBuffer(RG, Geo, Group->ViewportDim);
-
     char character = Text[CharIndex];
     v2 UV = V2( (character%16)/16.0f, (character/16)/16.0f );
-    BufferTextUVs(Geo, UV);
+    BufferTextUVs(TextGeo, UV);
 
     v2 MinP = Layout->At + V2(Layout->FontSize*CharIndex, 0);
-    Result.Max = BufferQuad(Geo->Verts, Geo->CurrentIndex, MinP, V2(Layout->FontSize), 1.0f);
+    Result.Max = BufferQuad(Group, TextGeo, MinP, V2(Layout->FontSize));
 
-    BufferColors(Geo->Colors, Geo->CurrentIndex, default_palette[Color].xyz);
+    BufferColors(Group, TextGeo, default_palette[Color].xyz);
 
-    Geo->CurrentIndex += 6;
+    TextGeo->CurrentIndex += 6;
 
     continue;
   }
@@ -790,59 +877,6 @@ BufferIsFull(untextured_2d_geometry_buffer *Buffer, u32 VertsToPush)
   return Result;
 }
 
-void BindShaderUniforms(shader *Shader);
-
-void
-UseShader(shader *Shader)
-{
-  GL_Global->glUseProgram(Shader->ID);
-  BindShaderUniforms(Shader);
-  return;
-}
-
-void
-FlushSolidUIGeo(debug_text_render_group *RG, v2 ViewportDim)
-{
-  TIMED_FUNCTION();
-  untextured_2d_geometry_buffer *Buffer = &RG->UIGeo;
-
-  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-  UseShader(&RG->SolidUIShader);
-
-  u32 VertCount = Buffer->CurrentIndex + 1;
-  Buffer->CurrentIndex = 0;
-
-  // Vertices
-  GL_Global->glEnableVertexAttribArray(0);
-  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->SolidUIVertexBuffer);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, VertCount * sizeof(v3), Buffer->Verts, GL_STATIC_DRAW);
-  GL_Global->glVertexAttribPointer(
-    0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-    3,                  // size
-    GL_FLOAT,           // type
-    GL_FALSE,           // normalized?
-    0,                  // stride
-    (void*)0            // array buffer offset
-  );
-
-  // Colors
-  GL_Global->glEnableVertexAttribArray(1);
-  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->SolidUIColorBuffer);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, VertCount * sizeof(v3), Buffer->Colors, GL_STATIC_DRAW);
-  GL_Global->glVertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-
-  SetViewport(V2(SCR_WIDTH, SCR_HEIGHT));
-  glDrawArrays(GL_TRIANGLES, 0, VertCount);
-
-  GL_Global->glDisableVertexAttribArray(0);
-  GL_Global->glDisableVertexAttribArray(1);
-
-  AssertNoGlErrors;
-
-  return;
-}
-
 inline void
 PadBottom(layout *Layout, r32 Pad)
 {
@@ -877,7 +911,7 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, u32 MaxMs)
       v2 MinP = V2(Layout->At.x, Layout->At.y);
       v2 QuadDim = V2(15.0, (Layout->FontSize) * Perc);
 
-      v2 DrawDim = BufferQuad(Group->TextGroup->UIGeo.Verts, Group->TextGroup->UIGeo.CurrentIndex, MinP, QuadDim, 1.0f);
+      v2 DrawDim = BufferQuad(Group, &Group->TextGroup->UIGeo, MinP, QuadDim);
       Layout->At.x = DrawDim.x + 5.0f;
 
       v3 Color = V3(0.5f, 0.5f, 0.5f);
@@ -977,7 +1011,7 @@ GetTotalMemoryArenaStats()
 }
 
 void
-BufferBarGraph(untextured_2d_geometry_buffer *Geo, layout *Layout, r32 Width, r32 PercFilled)
+BufferBarGraph(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, layout *Layout, r32 Width, r32 PercFilled)
 {
   r32 BarHeight = Layout->FontSize;
   r32 BarWidth = 200.0f;
@@ -988,12 +1022,12 @@ BufferBarGraph(untextured_2d_geometry_buffer *Geo, layout *Layout, r32 Width, r3
 
   v3 Color = {{ 1, 1, 0 }};
 
-  BufferQuad(Geo->Verts, Geo->CurrentIndex, MinP, BarDim);
-  BufferColors(Geo->Colors, Geo->CurrentIndex, V3(0.25f));
+  BufferQuad(Group, Geo, MinP, BarDim, 1.0f);
+  BufferColors(Group, Geo, V3(0.25f));
   Geo->CurrentIndex+=6;
 
-  BufferQuad(Geo->Verts, Geo->CurrentIndex, MinP, PercBarDim);
-  BufferColors(Geo->Colors, Geo->CurrentIndex, Color);
+  BufferQuad(Group, Geo, MinP, PercBarDim);
+  BufferColors(Group, Geo, Color);
   Geo->CurrentIndex+=6;
 
   Layout->At.x += BarDim.x;
@@ -1026,12 +1060,12 @@ BeginClipRect(layout *Layout)
 }
 
 void
-EndClipRect(layout *Layout, untextured_2d_geometry_buffer *Geo)
+EndClipRect(ui_render_group *Group, layout *Layout, untextured_2d_geometry_buffer *Geo)
 {
   v2 Dim = Layout->Clip.Max - Layout->Clip.Min;
 
-  BufferQuad(Geo->Verts, Geo->CurrentIndex, Layout->Clip.Min, Dim, 0.0f);
-  BufferColors(Geo->Colors, Geo->CurrentIndex, V3(0.2f));
+  BufferQuad(Group, Geo, Layout->Clip.Min, Dim, 0.0f);
+  BufferColors(Group, Geo, V3(0.2f));
   Geo->CurrentIndex+=6;
   return;
 }
@@ -1108,7 +1142,7 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState)
       NewLine(Layout);
 
       ColumnRight(6, MemorySize(TotalUsed), Group, WHITE);
-      BufferBarGraph(&Group->TextGroup->UIGeo, Layout, GraphWidth, TotalPerc);
+      BufferBarGraph(Group, &Group->TextGroup->UIGeo, Layout, GraphWidth, TotalPerc);
       ColumnRight(6, MemorySize(MemStats.Remaining), Group, WHITE);
 
       NewLine(Layout);
@@ -1121,7 +1155,7 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState)
         r32 CurrentPerc = SafeDivide0(CurrentUsed, CurrentArena->TotalSize);
 
         ColumnRight(6, MemorySize(CurrentUsed), Group, WHITE);
-        BufferBarGraph(&Group->TextGroup->UIGeo, Layout, GraphWidth, CurrentPerc);
+        BufferBarGraph(Group, &Group->TextGroup->UIGeo, Layout, GraphWidth, CurrentPerc);
         ColumnRight(6, MemorySize(CurrentArena->Remaining), Group, WHITE);
         NewLine(Layout);
 
@@ -1131,7 +1165,7 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState)
 
     --Layout->Depth;
     NewLine(Layout);
-    EndClipRect(Layout, &Group->TextGroup->UIGeo);
+    EndClipRect(Group, Layout, &Group->TextGroup->UIGeo);
 
     continue;
   }
@@ -1237,8 +1271,8 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
     InvalidDefaultCase;
   }
 
-  FlushSolidUIGeo(RG, ViewportDim);
-  FlushTextBuffer(RG, TextGeo, ViewportDim);
+  FlushBuffer(RG, &RG->UIGeo, ViewportDim);
+  FlushBuffer(RG, TextGeo, ViewportDim);
 
   return;
 }
