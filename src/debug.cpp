@@ -226,12 +226,12 @@ BufferColors(v3 *Colors, u32 StartingIndex, v3 Color)
 }
 
 v2
-BufferQuad(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim)
+BufferQuad(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z = 1.0f)
 {
-  v3 vertex_up_left    = V3( MinP.x       , MinP.y+Dim.y , 0.5f);
-  v3 vertex_up_right   = V3( MinP.x+Dim.x , MinP.y+Dim.y , 0.5f);
-  v3 vertex_down_right = V3( MinP.x+Dim.x , MinP.y       , 0.5f);
-  v3 vertex_down_left  = V3( MinP.x       , MinP.y       , 0.5f);
+  v3 vertex_up_left    = V3( MinP.x       , MinP.y+Dim.y , Z);
+  v3 vertex_up_right   = V3( MinP.x+Dim.x , MinP.y+Dim.y , Z);
+  v3 vertex_down_right = V3( MinP.x+Dim.x , MinP.y       , Z);
+  v3 vertex_down_left  = V3( MinP.x       , MinP.y       , Z);
 
   v3 XYClip = (1.0f / V3(SCR_WIDTH, SCR_HEIGHT, 1));
 
@@ -244,14 +244,6 @@ BufferQuad(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim)
 
   v2 Max = vertex_up_right.xy;
   return Max;
-}
-
-void
-BufferQuad(v3 *Dest, u32 StartingIndex, layout *Layout, v2 Dim)
-{
-  BufferQuad(Dest, StartingIndex, Layout->At, Dim);
-  Layout->At.x += Dim.x;
-  return;
 }
 
 rect2
@@ -277,7 +269,7 @@ BufferTextAt(ui_render_group *Group, const char *Text, u32 Color)
     BufferTextUVs(Geo, UV);
 
     v2 MinP = Layout->At + V2(Layout->FontSize*CharIndex, 0);
-    Result.Max = BufferQuad(Geo->Verts, Geo->CurrentIndex, MinP, V2(Layout->FontSize));
+    Result.Max = BufferQuad(Geo->Verts, Geo->CurrentIndex, MinP, V2(Layout->FontSize), 1.0f);
 
     BufferColors(Geo->Colors, Geo->CurrentIndex, default_palette[Color].xyz);
 
@@ -347,8 +339,16 @@ PrintFreeScopes(debug_state *State)
 inline void
 BufferText(const char *Text, ui_render_group *Group, u32 ColorIndex)
 {
+  layout *Layout = Group->Layout;
+
   rect2 TextBox = BufferTextAt(Group, Text, ColorIndex);
-  Group->Layout->At.x = TextBox.Max.x;
+  Layout->At.x = TextBox.Max.x;
+
+  Layout->Clip.Min.x = Min(Layout->At.x, Layout->Clip.Min.x);
+  Layout->Clip.Min.y = Min(Layout->At.y, Layout->Clip.Min.y);
+
+  Layout->Clip.Max.x = Max(Layout->At.x, Layout->Clip.Max.x);
+  Layout->Clip.Max.y = Max(Layout->At.y, Layout->Clip.Max.y);
 
   return;
 }
@@ -832,12 +832,8 @@ FlushSolidUIGeo(debug_text_render_group *RG, v2 ViewportDim)
   GL_Global->glBufferData(GL_ARRAY_BUFFER, VertCount * sizeof(v3), Buffer->Colors, GL_STATIC_DRAW);
   GL_Global->glVertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
-  glDepthFunc(GL_ALWAYS);
-
   SetViewport(V2(SCR_WIDTH, SCR_HEIGHT));
   glDrawArrays(GL_TRIANGLES, 0, VertCount);
-
-  glDepthFunc(GL_LEQUAL);
 
   GL_Global->glDisableVertexAttribArray(0);
   GL_Global->glDisableVertexAttribArray(1);
@@ -881,7 +877,7 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, u32 MaxMs)
       v2 MinP = V2(Layout->At.x, Layout->At.y);
       v2 QuadDim = V2(15.0, (Layout->FontSize) * Perc);
 
-      v2 DrawDim = BufferQuad(Group->TextGroup->UIGeo.Verts, Group->TextGroup->UIGeo.CurrentIndex, MinP, QuadDim);
+      v2 DrawDim = BufferQuad(Group->TextGroup->UIGeo.Verts, Group->TextGroup->UIGeo.CurrentIndex, MinP, QuadDim, 1.0f);
       Layout->At.x = DrawDim.x + 5.0f;
 
       v3 Color = V3(0.5f, 0.5f, 0.5f);
@@ -990,9 +986,7 @@ BufferBarGraph(untextured_2d_geometry_buffer *Geo, layout *Layout, r32 Width, r3
   v2 BarDim = V2(BarWidth, BarHeight);
   v2 PercBarDim = V2(BarWidth, BarHeight) * V2(PercFilled, 1);
 
-  v3 Green = {{ 0, 1, 0 }};
-  v3 Red = {{ 1, 0, 0 }};
-  v3 Color = (Green*(1.0f-PercFilled) + Red*PercFilled) / 2.0f;
+  v3 Color = {{ 1, 1, 0 }};
 
   BufferQuad(Geo->Verts, Geo->CurrentIndex, MinP, BarDim);
   BufferColors(Geo->Colors, Geo->CurrentIndex, V3(0.25f));
@@ -1007,13 +1001,39 @@ BufferBarGraph(untextured_2d_geometry_buffer *Geo, layout *Layout, r32 Width, r3
 }
 
 void
-Column(u32 Width, char *Text, ui_render_group* Group, u32 ColorIndex )
+ColumnLeft(u32 Width, const char *Text, ui_render_group* Group, u32 ColorIndex )
+{
+  s32 Len = strlen(Text);
+  s32 Pad = Max(Width-Len, 0);
+  BufferText(Text, Group, ColorIndex);
+  AdvanceSpaces(Pad, Group->Layout);
+}
+
+void
+ColumnRight(u32 Width, const char *Text, ui_render_group* Group, u32 ColorIndex )
 {
   s32 Len = strlen(Text);
   s32 Pad = Max(Width-Len, 0);
   AdvanceSpaces(Pad, Group->Layout);
-
   BufferText(Text, Group, ColorIndex);
+}
+
+inline void
+BeginClipRect(layout *Layout)
+{
+  Layout->Clip = { Layout->At, {0,0} };
+  return;
+}
+
+void
+EndClipRect(layout *Layout, untextured_2d_geometry_buffer *Geo)
+{
+  v2 Dim = Layout->Clip.Max - Layout->Clip.Min;
+
+  BufferQuad(Geo->Verts, Geo->CurrentIndex, Layout->Clip.Min, Dim, 0.0f);
+  BufferColors(Geo->Colors, Geo->CurrentIndex, V3(0.2f));
+  Geo->CurrentIndex+=6;
+  return;
 }
 
 void
@@ -1033,59 +1053,31 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState)
     registered_memory_arena *Current = &Global_RegisteredMemoryArenas[Index];
     if (!Current->Arena) continue;
 
+    memory_arena_stats MemStats = GetMemoryArenaStats(Current->Arena);
+    u64 TotalUsed = MemStats.TotalAllocated - MemStats.Remaining;
+
+    BeginClipRect(Layout);
+
     {
       SetFontSize(Layout, 36);
       NewLine(Layout);
       u32 Color = HoverAndClickExpand(Group, Current, WHITE, TEAL);
-      BufferText(Current->Name, Group, Color);
+      ColumnLeft(15, Current->Name, Group, Color);
+      BufferText(MemorySize(MemStats.TotalAllocated), Group, Color);
     }
 
+    ++Layout->Depth;
+    NewLine(Layout);
     SetFontSize(Layout, 28);
+
     if (!Current->Expanded)
     {
-      NewLine(Layout);
+      --Layout->Depth;
       continue;
     }
 
-    memory_arena_stats MemStats = GetMemoryArenaStats(Current->Arena);
-    ++Layout->Depth;
-
-
 
     {
-      SetFontSize(Layout, 22);
-      NewLine(Layout);
-      r32 GraphWidth = 350.0f;
-
-      u64 TotalUsed = MemStats.TotalAllocated - MemStats.Remaining;
-      r32 TotalPerc = SafeDivide0(TotalUsed, MemStats.TotalAllocated);
-
-      Column(6, MemorySize(TotalUsed), Group, WHITE);
-      BufferBarGraph(&Group->TextGroup->UIGeo, Layout, GraphWidth, TotalPerc);
-      Column(6, MemorySize(MemStats.Remaining), Group, WHITE);
-
-      NewLine(Layout);
-      NewLine(Layout);
-
-      memory_arena *CurrentArena = Current->Arena;
-      while (CurrentArena)
-      {
-        u64 CurrentUsed = CurrentArena->TotalSize - CurrentArena->Remaining;
-        r32 CurrentPerc = SafeDivide0(CurrentUsed, CurrentArena->TotalSize);
-
-        Column(6, MemorySize(CurrentUsed), Group, WHITE);
-        BufferBarGraph(&Group->TextGroup->UIGeo, Layout, GraphWidth, CurrentPerc);
-        Column(6, MemorySize(CurrentArena->Remaining), Group, WHITE);
-        NewLine(Layout);
-
-        CurrentArena = CurrentArena->Prev;
-      }
-
-    }
-
-    {
-      NewLine(Layout);
-
       BufferText("Allocs", Group, WHITE);
       AdvanceSpaces(4, Layout);
       BufferText(MemStats.Allocations, Group, WHITE);
@@ -1106,9 +1098,44 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState)
       BufferMemorySize(MemStats.TotalAllocated, Group, WHITE);
     }
 
+    {
+      SetFontSize(Layout, 22);
+      NewLine(Layout);
+      r32 GraphWidth = 350.0f;
+
+      r32 TotalPerc = SafeDivide0(TotalUsed, MemStats.TotalAllocated);
+
+      NewLine(Layout);
+
+      ColumnRight(6, MemorySize(TotalUsed), Group, WHITE);
+      BufferBarGraph(&Group->TextGroup->UIGeo, Layout, GraphWidth, TotalPerc);
+      ColumnRight(6, MemorySize(MemStats.Remaining), Group, WHITE);
+
+      NewLine(Layout);
+      NewLine(Layout);
+
+      memory_arena *CurrentArena = Current->Arena;
+      while (CurrentArena)
+      {
+        u64 CurrentUsed = CurrentArena->TotalSize - CurrentArena->Remaining;
+        r32 CurrentPerc = SafeDivide0(CurrentUsed, CurrentArena->TotalSize);
+
+        ColumnRight(6, MemorySize(CurrentUsed), Group, WHITE);
+        BufferBarGraph(&Group->TextGroup->UIGeo, Layout, GraphWidth, CurrentPerc);
+        ColumnRight(6, MemorySize(CurrentArena->Remaining), Group, WHITE);
+        NewLine(Layout);
+
+        CurrentArena = CurrentArena->Prev;
+      }
+    }
+
     --Layout->Depth;
     NewLine(Layout);
+    EndClipRect(Layout, &Group->TextGroup->UIGeo);
+
+    continue;
   }
+
 
   return;
 }

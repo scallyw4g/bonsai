@@ -1,11 +1,19 @@
 #if BONSAI_INTERNAL
 
+struct clip_rect
+{
+  v2 Min;
+  v2 Max;
+};
+
 struct layout
 {
   v2 At;
   r32 FontSize;
   r32 LineHeight;
   u32 Depth;
+
+  clip_rect Clip;
 };
 
 struct ui_render_group
