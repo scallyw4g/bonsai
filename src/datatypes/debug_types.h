@@ -197,7 +197,9 @@ GetProfileScope(debug_state *State)
   }
   else
   {
+    State->Memory->MemProtect = False;
     Result = PUSH_STRUCT_CHECKED(debug_profile_scope, State->Memory, 1);
+    State->Memory->MemProtect = True;
   }
 #else
     Result = PUSH_STRUCT_CHECKED(debug_profile_scope, State->Memory, 1);

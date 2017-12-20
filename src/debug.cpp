@@ -340,7 +340,6 @@ rect2
 BufferTextAt(ui_render_group *Group, const char *Text, u32 Color)
 {
   textured_2d_geometry_buffer *TextGeo = &Group->TextGroup->TextGeo;
-  debug_text_render_group *RG = Group->TextGroup;
   layout *Layout = Group->Layout;
 
   s32 QuadCount = strlen(Text);
@@ -351,12 +350,12 @@ BufferTextAt(ui_render_group *Group, const char *Text, u32 Color)
       CharIndex < QuadCount;
       CharIndex++ )
   {
+    v2 MinP = Layout->At + V2(Layout->FontSize*CharIndex, 0);
+    Result.Max = BufferQuad(Group, TextGeo, MinP, V2(Layout->FontSize));
+
     char character = Text[CharIndex];
     v2 UV = V2( (character%16)/16.0f, (character/16)/16.0f );
     BufferTextUVs(TextGeo, UV);
-
-    v2 MinP = Layout->At + V2(Layout->FontSize*CharIndex, 0);
-    Result.Max = BufferQuad(Group, TextGeo, MinP, V2(Layout->FontSize));
 
     BufferColors(Group, TextGeo, default_palette[Color].xyz);
 
@@ -809,7 +808,10 @@ BufferFirstCallToEach(ui_render_group *Group, debug_profile_scope *Scope, debug_
 
   if (!Scope->Stats)
   {
+    State->Memory->MemProtect = False;
     Scope->Stats = PUSH_STRUCT_CHECKED(scope_stats, State->Memory, 1);
+    State->Memory->MemProtect = True;
+
     *Scope->Stats = GetStatsFor(State, Scope);
   }
 
