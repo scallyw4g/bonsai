@@ -61,6 +61,14 @@ Ensure you have [CMake](https://cmake.org/download) and g++, clang or MSVC
 
 ## On Linux:
 
+### Ubuntu
+`sudo apt install freeglut3-dev libx11-dev cmake`
+
+### Archlinux
+`sudo pacman -S freeglut libx11 cmake`
+
+### Common
+
 ```
 git clone https://github.com/jjbandit/bonsai && cd bonsai/build
 cmake .
