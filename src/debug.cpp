@@ -228,14 +228,11 @@ FlushBuffer(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo, v2 Vi
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  glDisable(GL_DEPTH_TEST);
-
   // Draw
   SetViewport(V2(SCR_WIDTH, SCR_HEIGHT));
   glDrawArrays(GL_TRIANGLES, 0, VertCount);
 
   glDisable(GL_BLEND);
-  glEnable(GL_DEPTH_TEST);
 
   GL_Global->glDisableVertexAttribArray(0);
   GL_Global->glDisableVertexAttribArray(1);
@@ -317,7 +314,7 @@ BufferQuadDirect(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z)
 }
 
 v2
-BufferQuad(ui_render_group *Group, textured_2d_geometry_buffer *Geo, v2 MinP, v2 Dim, r32 Z = 1.0f)
+BufferQuad(ui_render_group *Group, textured_2d_geometry_buffer *Geo, v2 MinP, v2 Dim, r32 Z = 0.0f)
 {
   if (Geo->CurrentIndex + 6 > Geo->Allocated)
     FlushBuffer(Group->TextGroup, Geo, Group->ViewportDim);
@@ -327,7 +324,7 @@ BufferQuad(ui_render_group *Group, textured_2d_geometry_buffer *Geo, v2 MinP, v2
 }
 
 v2
-BufferQuad(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, v2 MinP, v2 Dim, r32 Z = 1.0f)
+BufferQuad(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, v2 MinP, v2 Dim, r32 Z = 0.0f)
 {
   if (Geo->CurrentIndex + 6 > Geo->Allocated)
     FlushBuffer(Group->TextGroup, Geo, Group->ViewportDim);
@@ -1024,7 +1021,7 @@ BufferBarGraph(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, layou
 
   v3 Color = {{ 1, 1, 0 }};
 
-  BufferQuad(Group, Geo, MinP, BarDim, 1.0f);
+  BufferQuad(Group, Geo, MinP, BarDim);
   BufferColors(Group, Geo, V3(0.25f));
   Geo->CurrentIndex+=6;
 
@@ -1065,8 +1062,7 @@ void
 EndClipRect(ui_render_group *Group, layout *Layout, untextured_2d_geometry_buffer *Geo)
 {
   v2 Dim = Layout->Clip.Max - Layout->Clip.Min;
-
-  BufferQuad(Group, Geo, Layout->Clip.Min, Dim, 0.0f);
+  BufferQuad(Group, Geo, Layout->Clip.Min, Dim, 1.0f);
   BufferColors(Group, Geo, V3(0.2f));
   Geo->CurrentIndex+=6;
   return;
