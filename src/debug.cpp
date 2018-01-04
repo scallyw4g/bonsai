@@ -2,6 +2,8 @@
 
 #include <stdio.h>
 
+debug_profile_scope NullScope = {};
+
 void
 DebugRegisterArena(const char *Name, memory_arena *Arena)
 {
@@ -45,6 +47,9 @@ MakeSimpleTextureShader(texture *Texture, memory_arena *GraphicsMemory);
 
 b32
 CheckAndClearFramebuffer();
+
+void
+BindShaderUniforms(shader *Shader);
 
 b32
 InitDebugOverlayFramebuffer(debug_text_render_group *RG, memory_arena *DebugArena, const char *DebugFont)
@@ -140,7 +145,6 @@ InitDebugState(platform *Plat, memory_arena *DebugMemory)
   return;
 }
 
-void BindShaderUniforms(shader *Shader);
 void
 UseShader(shader *Shader)
 {
@@ -291,7 +295,6 @@ BufferColors(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, v3 Colo
   BufferColors(Geo->Colors, Geo->CurrentIndex, Color);
 }
 
-
 v2
 BufferQuadDirect(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z)
 {
@@ -375,8 +378,6 @@ CalculateFramePercentage(debug_profile_entry *Entry, u64 CycleDelta)
   return FramePerc;
 }
 #endif
-
-debug_profile_scope NullScope = {};
 
 void
 FreeScopes(debug_state *DebugState, debug_profile_scope *ScopeToFree)
@@ -724,7 +725,6 @@ IsInsideRect(rect2 Rect, v2 P)
   b32 Result = (P > Rect.Min && P < Rect.Max);
   return Result;
 }
-
 
 scope_stats
 GetStatsFor(debug_state *State, debug_profile_scope *Scope)
@@ -1162,7 +1162,6 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState)
     }
 
     --Layout->Depth;
-    NewLine(Layout);
     EndClipRect(Group, Layout, &Group->TextGroup->UIGeo);
 
     continue;
