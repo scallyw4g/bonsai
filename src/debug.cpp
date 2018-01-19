@@ -131,8 +131,8 @@ InitDebugState(platform *Plat, memory_arena *DebugMemory)
   if (!InitDebugOverlayFramebuffer(GlobalDebugState->TextRenderGroup, DebugMemory, "Holstein.DDS"))
   { Error("Initializing Debug Overlay Framebuffer"); }
 
-  AllocateAndInitGeoBuffer(&GlobalDebugState->TextRenderGroup->TextGeo, 512, DebugMemory);
-  AllocateAndInitGeoBuffer(&GlobalDebugState->TextRenderGroup->UIGeo, 512, DebugMemory);
+  AllocateAndInitGeoBuffer(&GlobalDebugState->TextRenderGroup->TextGeo, 6, DebugMemory);
+  AllocateAndInitGeoBuffer(&GlobalDebugState->TextRenderGroup->UIGeo, 6, DebugMemory);
 
   GlobalDebugState->TextRenderGroup->SolidUIShader = MakeSolidUIShader(GlobalDebugState->Memory);
 
@@ -158,7 +158,7 @@ FlushBuffer(debug_text_render_group *RG, untextured_2d_geometry_buffer *Buffer, 
 
   UseShader(&RG->SolidUIShader);
 
-  u32 VertCount = Buffer->CurrentIndex + 1;
+  u32 VertCount = Buffer->CurrentIndex;
   Buffer->CurrentIndex = 0;
 
   // Vertices
@@ -194,7 +194,7 @@ FlushBuffer(debug_text_render_group *RG, untextured_2d_geometry_buffer *Buffer, 
 void
 FlushBuffer(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo, v2 ViewportDim)
 {
-  u32 VertCount = Geo->CurrentIndex +1;
+  u32 VertCount = Geo->CurrentIndex;
   Geo->CurrentIndex = 0;
 
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
