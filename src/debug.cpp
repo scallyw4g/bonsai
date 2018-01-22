@@ -185,7 +185,7 @@ FlushBuffer(debug_text_render_group *RG, untextured_2d_geometry_buffer *Buffer, 
   GL_Global->glVertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
   SetViewport(V2(SCR_WIDTH, SCR_HEIGHT));
-  glDrawArrays(GL_TRIANGLES, 0, VertCount);
+  Draw(VertCount);
 
   GL_Global->glDisableVertexAttribArray(0);
   GL_Global->glDisableVertexAttribArray(1);
@@ -234,7 +234,7 @@ FlushBuffer(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo, v2 Vi
 
   // Draw
   SetViewport(V2(SCR_WIDTH, SCR_HEIGHT));
-  glDrawArrays(GL_TRIANGLES, 0, VertCount);
+  Draw(VertCount);
 
   glDisable(GL_BLEND);
 

@@ -1,6 +1,19 @@
 #ifndef RENDER_H
 #define RENDER_H
 
+#ifdef BONSAI_INTERNAL
+global_variable u32 GlobalDrawCallCount;
+#endif
+
+void Draw(u64 N)
+{
+  TIMED_FUNCTION();
+#ifdef BONSAI_INTERNAL
+  ++GlobalDrawCallCount;
+#endif
+  glDrawArrays(GL_TRIANGLES, 0, N);
+}
+
 inline void
 SetViewport(v2 Dim)
 {

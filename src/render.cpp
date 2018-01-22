@@ -34,12 +34,6 @@ Init_Global_QuadVertexBuffer() {
 }
 
 
-void Draw(u64 N)
-{
-  TIMED_FUNCTION();
-  glDrawArrays(GL_TRIANGLES, 0, N);
-}
-
 void
 RenderQuad()
 {
@@ -818,7 +812,7 @@ RenderShadowMap(untextured_3d_geometry_buffer *Mesh, shadow_render_group *SG, g_
     (void*)0            // array buffer offset
   );
 
-  glDrawArrays(GL_TRIANGLES, 0, Mesh->CurrentIndex);
+  Draw(Mesh->CurrentIndex);
 
   GL_Global->glDisableVertexAttribArray(0);
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);

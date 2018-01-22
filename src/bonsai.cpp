@@ -5,6 +5,11 @@
 #include <texture.cpp> // Only used for font .DDS atm
 #include <render.cpp>
 
+void
+FrameEnd(void)
+{
+  GlobalDrawCallCount = 0;
+}
 
 void
 FillChunk(chunk_data *chunk, chunk_dimension Dim, u32 ColorIndex = BLACK)
@@ -547,7 +552,7 @@ AllocateAndInitWorld( game_state *GameState, world_position Center,
   World->Gravity = WORLD_GRAVITY;
   World->Center = Center;
 
-  s32 BufferVertices = 16000;
+  s32 BufferVertices = Kilobytes(32);
   AllocateMesh(&World->Mesh, BufferVertices, Plat->Memory);
 
   world_position Min = Center - Radius;
@@ -568,4 +573,3 @@ AllocateAndInitWorld( game_state *GameState, world_position Center,
 
   return World;
 }
-
