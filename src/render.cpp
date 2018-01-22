@@ -808,7 +808,7 @@ RenderShadowMap(untextured_3d_geometry_buffer *Mesh, shadow_render_group *SG, g_
   // 1rst attribute buffer : vertices
   GL_Global->glEnableVertexAttribArray(0);
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->vertexbuffer);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, Mesh->VertsFilled*sizeof(v3), Mesh->VertexData, GL_STATIC_DRAW);
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(v3), Mesh->VertexData, GL_STATIC_DRAW);
   GL_Global->glVertexAttribPointer(
     0,                  // The attribute we want to configure
     3,                  // size
@@ -818,7 +818,7 @@ RenderShadowMap(untextured_3d_geometry_buffer *Mesh, shadow_render_group *SG, g_
     (void*)0            // array buffer offset
   );
 
-  glDrawArrays(GL_TRIANGLES, 0, Mesh->VertsFilled);
+  glDrawArrays(GL_TRIANGLES, 0, Mesh->CurrentIndex);
 
   GL_Global->glDisableVertexAttribArray(0);
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -842,7 +842,7 @@ RenderWorldToGBuffer(untextured_3d_geometry_buffer *Mesh, g_buffer_render_group 
   // Vertices
   GL_Global->glEnableVertexAttribArray(0);
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->vertexbuffer);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, Mesh->VertsFilled*sizeof(v3), Mesh->VertexData, GL_STATIC_DRAW);
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(v3), Mesh->VertexData, GL_STATIC_DRAW);
   GL_Global->glVertexAttribPointer(
     0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
     3,                  // size
@@ -855,7 +855,7 @@ RenderWorldToGBuffer(untextured_3d_geometry_buffer *Mesh, g_buffer_render_group 
   // Colors
   GL_Global->glEnableVertexAttribArray(1);
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->colorbuffer);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, Mesh->VertsFilled*sizeof(v3), Mesh->ColorData, GL_STATIC_DRAW);
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(v3), Mesh->ColorData, GL_STATIC_DRAW);
   GL_Global->glVertexAttribPointer(
     1,                  // attribute 1. No particular reason for 1, but must match the layout in the shader.
     3,                  // size
@@ -868,7 +868,7 @@ RenderWorldToGBuffer(untextured_3d_geometry_buffer *Mesh, g_buffer_render_group 
   // Normals
   GL_Global->glEnableVertexAttribArray(2);
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->normalbuffer);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, Mesh->VertsFilled*sizeof(v3), Mesh->NormalData, GL_STATIC_DRAW);
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(v3), Mesh->NormalData, GL_STATIC_DRAW);
   GL_Global->glVertexAttribPointer(
     2,
     3,                  // size
@@ -879,7 +879,7 @@ RenderWorldToGBuffer(untextured_3d_geometry_buffer *Mesh, g_buffer_render_group 
   );
   END_BLOCK("Bind and buffer data");
 
-  Draw(Mesh->VertsFilled);
+  Draw(Mesh->CurrentIndex);
 
   GL_Global->glDisableVertexAttribArray(0);
   GL_Global->glDisableVertexAttribArray(1);
@@ -899,7 +899,7 @@ RenderGBuffer(
 
   RenderWorldToGBuffer(Mesh, RG);
 
-  Mesh->VertsFilled = 0;
+  Mesh->CurrentIndex = 0;
 
   AssertNoGlErrors;
 
@@ -1414,14 +1414,14 @@ BufferChunkMesh(
 {
   TIMED_FUNCTION();
 
-  if ( Chunk->Mesh.VertsFilled == 0)
+  if ( Chunk->Mesh.CurrentIndex == 0)
     return;
 
 #if 1
   v3 ModelBasisP =
     GetRenderP( WorldChunkDim, Canonical_Position(Offset, WorldP), Camera);
 
-  BufferVertsChecked(Dest, gBuffer, SG, Camera, Chunk->Mesh.VertsFilled,
+  BufferVertsChecked(Dest, gBuffer, SG, Camera, Chunk->Mesh.CurrentIndex,
       Chunk->Mesh.VertexData, Chunk->Mesh.NormalData, Chunk->Mesh.ColorData,
       ModelBasisP, V3(Scale));
 

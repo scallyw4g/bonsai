@@ -14,6 +14,8 @@ BufferVertsDirect(
     v3 *Colors
   )
 {
+  Assert(NumVerts + Dest->CurrentIndex <= Dest->Allocated);
+
   s32 sizeofData = NumVerts * sizeof(v3);
   memcpy( &Dest->Verts[Dest->CurrentIndex],  Positions,  sizeofData );
   memcpy( &Dest->Colors[Dest->CurrentIndex],  Colors,  sizeofData );
@@ -34,11 +36,13 @@ BufferVertsDirect(
   )
 {
   TIMED_FUNCTION();
+  Assert(NumVerts + Dest->CurrentIndex <= Dest->Allocated);
+
   s32 sizeofData = NumVerts * sizeof(v3);
-  memcpy( &Dest->VertexData[Dest->VertsFilled],  VertsPositions,  sizeofData );
-  memcpy( &Dest->NormalData[Dest->VertsFilled],  Normals,         sizeofData );
-  memcpy( &Dest->ColorData[Dest->VertsFilled],   VertColors,      sizeofData );
-  Dest->VertsFilled += NumVerts;
+  memcpy( &Dest->VertexData[Dest->CurrentIndex],  VertsPositions,  sizeofData );
+  memcpy( &Dest->NormalData[Dest->CurrentIndex],  Normals,         sizeofData );
+  memcpy( &Dest->ColorData[Dest->CurrentIndex],   VertColors,      sizeofData );
+  Dest->CurrentIndex += NumVerts;
 }
 
 inline void
@@ -55,11 +59,12 @@ BufferVertsDirect(
   )
 {
   TIMED_FUNCTION();
+  Assert(NumVerts + Dest->CurrentIndex <= Dest->Allocated);
 
   // This path assumes we've already checked there's enough memroy remaining
-  if ( Dest->VertsFilled + NumVerts > Dest->VertsAllocated )
+  if ( Dest->CurrentIndex + NumVerts > Dest->Allocated )
   {
-    Warn("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->VertsFilled, Dest->VertsAllocated);
+    Warn("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->CurrentIndex, Dest->Allocated);
     return;
   }
 
@@ -71,8 +76,8 @@ BufferVertsDirect(
   Assert(NumVerts % FaceVerts == 0);
 
   s32 sizeofData = NumVerts * sizeof(v3);
-  memcpy( &Dest->NormalData[Dest->VertsFilled],  Normals,         sizeofData );
-  memcpy( &Dest->ColorData[Dest->VertsFilled],   VertColors,      sizeofData );
+  memcpy( &Dest->NormalData[Dest->CurrentIndex],  Normals,         sizeofData );
+  memcpy( &Dest->ColorData[Dest->CurrentIndex],   VertColors,      sizeofData );
 
 
   for ( s32 VertIndex = 0;
@@ -114,14 +119,14 @@ BufferVertsDirect(
     v3 Result4 = {{ Vert4.F[0], Vert4.F[1], Vert4.F[2] }};
     v3 Result5 = {{ Vert5.F[0], Vert5.F[1], Vert5.F[2] }};
 
-    Dest->VertexData[Dest->VertsFilled + 0] = Result0;
-    Dest->VertexData[Dest->VertsFilled + 1] = Result1;
-    Dest->VertexData[Dest->VertsFilled + 2] = Result2;
-    Dest->VertexData[Dest->VertsFilled + 3] = Result3;
-    Dest->VertexData[Dest->VertsFilled + 4] = Result4;
-    Dest->VertexData[Dest->VertsFilled + 5] = Result5;
+    Dest->VertexData[Dest->CurrentIndex + 0] = Result0;
+    Dest->VertexData[Dest->CurrentIndex + 1] = Result1;
+    Dest->VertexData[Dest->CurrentIndex + 2] = Result2;
+    Dest->VertexData[Dest->CurrentIndex + 3] = Result3;
+    Dest->VertexData[Dest->CurrentIndex + 4] = Result4;
+    Dest->VertexData[Dest->CurrentIndex + 5] = Result5;
 
-    Dest->VertsFilled += FaceVerts;
+    Dest->CurrentIndex += FaceVerts;
   }
 
 #else
@@ -132,17 +137,17 @@ BufferVertsDirect(
         VertIndex < NumVerts;
         ++VertIndex )
   {
-    Dest->VertexData[Dest->VertsFilled] = VertsPositions[VertIndex]*Scale + Offset;
-    Dest->NormalData[Dest->VertsFilled] = Normals[VertIndex];
-    Dest->ColorData[Dest->VertsFilled] = VertColors[VertIndex];
-    ++Dest->VertsFilled;
+    Dest->VertexData[Dest->CurrentIndex] = VertsPositions[VertIndex]*Scale + Offset;
+    Dest->NormalData[Dest->CurrentIndex] = Normals[VertIndex];
+    Dest->ColorData[Dest->CurrentIndex] = VertColors[VertIndex];
+    ++Dest->CurrentIndex;
   }
 #else
   s32 sizeofData = NumVerts * sizeof(v3);
-  memcpy( &Dest->VertexData[Dest->VertsFilled],  VertsPositions,  sizeofData );
-  memcpy( &Dest->NormalData[Dest->VertsFilled],  Normals,         sizeofData );
-  memcpy( &Dest->ColorData[Dest->VertsFilled],   VertColors,      sizeofData );
-  Dest->VertsFilled += NumVerts;
+  memcpy( &Dest->VertexData[Dest->CurrentIndex],  VertsPositions,  sizeofData );
+  memcpy( &Dest->NormalData[Dest->CurrentIndex],  Normals,         sizeofData );
+  memcpy( &Dest->ColorData[Dest->CurrentIndex],   VertColors,      sizeofData );
+  Dest->CurrentIndex += NumVerts;
 #endif
 
 
@@ -172,9 +177,9 @@ BufferVertsChecked(
 {
   TIMED_FUNCTION();
 
-  if ( Target->VertsFilled + NumVerts > Target->VertsAllocated )
+  if ( Target->CurrentIndex + NumVerts > Target->Allocated )
   {
-    Warn("Flushing %d/%d Verts to gBuffer", Target->VertsFilled, Target->VertsAllocated);
+    Warn("Flushing %d/%d Verts to gBuffer", Target->CurrentIndex, Target->Allocated);
     RenderGBuffer(Target, gBuffer, SG, Camera);
     return;
   }
@@ -201,21 +206,21 @@ BufferVerts(
   TIMED_FUNCTION();
 
 #if 1
-  BufferVertsChecked(Dest, gBuffer, SG, Camera, Source->VertsFilled, Source->VertexData,
+  BufferVertsChecked(Dest, gBuffer, SG, Camera, Source->CurrentIndex, Source->VertexData,
       Source->NormalData, Source->ColorData);
   return;
 #else
   for ( s32 VertIndex = 0;
-        VertIndex < Source->VertsFilled;
+        VertIndex < Source->CurrentIndex;
         ++VertIndex )
   {
     v3 XYZ = (Source->VertexData[VertIndex]*Scale) + RenderOffset;
 
 #if 1
-    Dest->VertexData[Dest->VertsFilled] =  XYZ;
-    Dest->NormalData[Dest->VertsFilled] = Source->NormalData[VertIndex];
-    Dest->ColorData[Dest->VertsFilled]  = Source->ColorData[VertIndex];
-    ++Dest->VertsFilled;
+    Dest->VertexData[Dest->CurrentIndex] =  XYZ;
+    Dest->NormalData[Dest->CurrentIndex] = Source->NormalData[VertIndex];
+    Dest->ColorData[Dest->CurrentIndex]  = Source->ColorData[VertIndex];
+    ++Dest->CurrentIndex;
 #else
 
     BufferVerts(Dest, gBuffer, SG, Camera,

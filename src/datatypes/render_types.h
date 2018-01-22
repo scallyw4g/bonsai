@@ -159,12 +159,12 @@ struct shadow_render_group
 
 struct untextured_3d_geometry_buffer
 {
-  s32 VertsAllocated;
-  s32 VertsFilled;
-
   v3* VertexData;
   v3* ColorData;
   v3* NormalData;
+
+  s32 Allocated;
+  s32 CurrentIndex;
 };
 
 struct textured_2d_geometry_buffer

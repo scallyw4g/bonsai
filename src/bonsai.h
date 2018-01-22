@@ -741,7 +741,7 @@ GetPosition(s32 Index, chunk_dimension Dim)
 void
 ZeroMesh( untextured_3d_geometry_buffer *Mesh )
 {
-  Mesh->VertsFilled = 0;
+  Mesh->CurrentIndex = 0;
   return;
 }
 
@@ -854,8 +854,8 @@ AllocateMesh(untextured_3d_geometry_buffer *Mesh, u32 NumVerts, memory_arena *Me
   Mesh->ColorData = PUSH_STRUCT_CHECKED(v3,  Memory, NumVerts );
   Mesh->NormalData = PUSH_STRUCT_CHECKED(v3, Memory, NumVerts );
 
-  Mesh->VertsAllocated = NumVerts;
-  Mesh->VertsFilled = 0;
+  Mesh->Allocated = NumVerts;
+  Mesh->CurrentIndex = 0;
 }
 
 chunk_data*

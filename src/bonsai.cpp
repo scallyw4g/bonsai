@@ -547,7 +547,7 @@ AllocateAndInitWorld( game_state *GameState, world_position Center,
   World->Gravity = WORLD_GRAVITY;
   World->Center = Center;
 
-  s32 BufferVertices = 100*(VOLUME_VISIBLE_REGION * VERT_PER_VOXEL);
+  s32 BufferVertices = 16000;
   AllocateMesh(&World->Mesh, BufferVertices, Plat->Memory);
 
   world_position Min = Center - Radius;
