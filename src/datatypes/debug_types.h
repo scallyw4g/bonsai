@@ -61,6 +61,7 @@ enum debug_ui_type
 
   DebugUIType_CallGraph,
   DebugUIType_MemoryHud,
+  DebugUIType_DrawCalls,
 
   DebugUIType_Count
 };
@@ -117,8 +118,16 @@ struct debug_state
   }
 };
 
-#define GLOBAL_DRAW_CALL_LOCATION_COUNT 128
-debug_global u32 Global_DrawCallCounts[GLOBAL_DRAW_CALL_LOCATION_COUNT] = {};
+struct debug_draw_call
+{
+  const char * Caller;
+  u32 Count;
+};
+
+debug_global const u32 Global_DrawCallArrayLength = 128;
+debug_global debug_draw_call Global_DrawCalls[Global_DrawCallArrayLength] = {};
+debug_global debug_draw_call NullDrawCall = {};
+
 debug_global debug_state *GlobalDebugState;
 inline debug_state* GetDebugState() {
   Assert(GlobalDebugState && GlobalDebugState->Initialized);

@@ -7,8 +7,21 @@
 void Draw_(u64 N, const char * Caller)
 {
   TIMED_FUNCTION();
-  u64 Index = ((u64)Caller) % GLOBAL_DRAW_CALL_LOCATION_COUNT;
-  ++Global_DrawCallCounts[Index];
+  u64 Index = ((u64)Caller) % Global_DrawCallArrayLength;
+
+  debug_draw_call *DrawCall = &Global_DrawCalls[Index];
+
+  if ( DrawCall->Caller )
+  {
+    // If this assert fires, we need to implement hash collisions here
+    Assert(StringsMatch(DrawCall->Caller, Caller));
+  }
+  else
+  {
+    DrawCall->Caller = Caller;
+  }
+
+  DrawCall->Count++;
   glDrawArrays(GL_TRIANGLES, 0, N);
 }
 

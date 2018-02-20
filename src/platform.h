@@ -257,5 +257,12 @@ CurrentFrameIsLogicalFrame(logical_frame_state *State)
   return Result;
 }
 
+inline b32
+StringsMatch(const char *S1, const char *S2)
+{
+  b32 Result = strcmp(S1, S2) == 0;
+  return Result;
+}
+
 #endif
 

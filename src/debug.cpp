@@ -136,8 +136,8 @@ InitDebugState(platform *Plat, memory_arena *DebugMemory)
   if (!InitDebugOverlayFramebuffer(GlobalDebugState->TextRenderGroup, DebugMemory, "Holstein.DDS"))
   { Error("Initializing Debug Overlay Framebuffer"); }
 
-  AllocateAndInitGeoBuffer(&GlobalDebugState->TextRenderGroup->TextGeo, 6, DebugMemory);
-  AllocateAndInitGeoBuffer(&GlobalDebugState->TextRenderGroup->UIGeo, 6, DebugMemory);
+  AllocateAndInitGeoBuffer(&GlobalDebugState->TextRenderGroup->TextGeo, 1024, DebugMemory);
+  AllocateAndInitGeoBuffer(&GlobalDebugState->TextRenderGroup->UIGeo, 1024, DebugMemory);
 
   GlobalDebugState->TextRenderGroup->SolidUIShader = MakeSolidUIShader(GlobalDebugState->Memory);
 
@@ -671,13 +671,6 @@ BufferNumberAsText(u32 Number, layout *Layout, debug_text_render_group *RG, v2 V
 }
 #endif
 
-inline b32
-StringsMatch(const char *S1, const char *S2)
-{
-  b32 Result = strcmp(S1, S2) == 0;
-  return Result;
-}
-
 inline void
 BufferScopeTreeEntry(ui_render_group *Group, debug_profile_scope *Scope,
     u32 Color, u64 TotalCycles, u64 TotalFrameCycles, u64 CallCount, u32 Depth)
@@ -1069,6 +1062,30 @@ EndClipRect(ui_render_group *Group, layout *Layout, untextured_2d_geometry_buffe
 }
 
 void
+DebugDrawDrawCalls(ui_render_group *Group, debug_state *DebugState)
+{
+  layout *Layout = Group->Layout;
+  NewLine(Layout);
+  NewLine(Layout);
+
+  for( u32 DrawCountIndex = 0;
+       DrawCountIndex < Global_DrawCallArrayLength;
+       ++ DrawCountIndex)
+  {
+     debug_draw_call *DrawCall = &Global_DrawCalls[DrawCountIndex];
+     if (DrawCall->Caller)
+     {
+       BufferColumn(DrawCall->Count, 4, Group, WHITE);
+       AdvanceSpaces(2, Layout);
+       BufferText(DrawCall->Caller, Group, WHITE);
+       NewLine(Layout);
+     }
+  }
+
+
+}
+
+void
 DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState)
 {
   layout *Layout = Group->Layout;
@@ -1247,10 +1264,10 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
       u32 TotalDrawCalls = 0;
 
       for( u32 DrawCountIndex = 0;
-           DrawCountIndex < GLOBAL_DRAW_CALL_LOCATION_COUNT;
+           DrawCountIndex < Global_DrawCallArrayLength;
            ++ DrawCountIndex)
       {
-         TotalDrawCalls += Global_DrawCallCounts[DrawCountIndex];
+         TotalDrawCalls += Global_DrawCalls[DrawCountIndex].Count;
       }
 
       BufferColumn(TotalDrawCalls, 6, &Group, WHITE);
@@ -1264,6 +1281,10 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
 
   END_BLOCK("Status Bar");
 
+  SetFontSize(&Layout, 32);
+  NewLine(&Layout);
+  NewLine(&Layout);
+
   switch (DebugState->UIType)
   {
     case DebugUIType_None:
@@ -1272,12 +1293,20 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
 
     case DebugUIType_CallGraph:
     {
+      BufferText("Call Graphs", &Group, WHITE);
       DebugDrawCallGraph(&Group, DebugState, Dt.Max);
     } break;
 
     case DebugUIType_MemoryHud:
     {
+      BufferText("Memory Arenas", &Group, WHITE);
       DebugDrawMemoryHud(&Group, DebugState);
+    } break;
+
+    case DebugUIType_DrawCalls:
+    {
+      BufferText("Draw  Calls", &Group, WHITE);
+      DebugDrawDrawCalls(&Group, DebugState);
     } break;
 
     InvalidDefaultCase;
