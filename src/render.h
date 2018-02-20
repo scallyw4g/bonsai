@@ -1,16 +1,14 @@
 #ifndef RENDER_H
 #define RENDER_H
 
-#ifdef BONSAI_INTERNAL
-global_variable u32 GlobalDrawCallCount;
-#endif
+#define Draw(VertexCount) \
+  Draw_(VertexCount, __FUNCTION__);
 
-void Draw(u64 N)
+void Draw_(u64 N, const char * Caller)
 {
   TIMED_FUNCTION();
-#ifdef BONSAI_INTERNAL
-  ++GlobalDrawCallCount;
-#endif
+  u64 Index = ((u64)Caller) % GLOBAL_DRAW_CALL_LOCATION_COUNT;
+  ++Global_DrawCallCounts[Index];
   glDrawArrays(GL_TRIANGLES, 0, N);
 }
 

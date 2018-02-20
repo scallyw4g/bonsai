@@ -6,12 +6,6 @@
 #include <render.cpp>
 
 void
-FrameEnd(void)
-{
-  GlobalDrawCallCount = 0;
-}
-
-void
 FillChunk(chunk_data *chunk, chunk_dimension Dim, u32 ColorIndex = BLACK)
 {
   s32 Vol = Volume(Dim);
@@ -552,7 +546,7 @@ AllocateAndInitWorld( game_state *GameState, world_position Center,
   World->Gravity = WORLD_GRAVITY;
   World->Center = Center;
 
-  s32 BufferVertices = Kilobytes(32);
+  s32 BufferVertices = Kilobytes(64);
   AllocateMesh(&World->Mesh, BufferVertices, Plat->Memory);
 
   world_position Min = Center - Radius;

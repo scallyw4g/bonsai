@@ -396,6 +396,17 @@ BindHotkeysToInput(hotkeys *Hotkeys, input *Input)
   return;
 }
 
+void
+FrameEnd(void)
+{
+  for( u32 DrawCountIndex = 0;
+       DrawCountIndex < GLOBAL_DRAW_CALL_LOCATION_COUNT;
+       ++ DrawCountIndex)
+  {
+     Global_DrawCallCounts[DrawCountIndex] = 0;
+  }
+}
+
 s32
 main(s32 NumArgs, char ** Args)
 {

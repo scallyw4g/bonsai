@@ -117,9 +117,11 @@ struct debug_state
   }
 };
 
+#define GLOBAL_DRAW_CALL_LOCATION_COUNT 128
+debug_global u32 Global_DrawCallCounts[GLOBAL_DRAW_CALL_LOCATION_COUNT] = {};
 debug_global debug_state *GlobalDebugState;
 inline debug_state* GetDebugState() {
-  Assert(GlobalDebugState->Initialized);
+  Assert(GlobalDebugState && GlobalDebugState->Initialized);
   return GlobalDebugState;
 }
 

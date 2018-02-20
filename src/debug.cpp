@@ -1233,6 +1233,7 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
     BufferText("ms", &Group, WHITE);
 
     {
+      // Main line
       memory_arena_stats TotalStats = GetTotalMemoryArenaStats();
 
       BufferThousands(TotalStats.Allocations, &Group, WHITE);
@@ -1243,10 +1244,24 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
       AdvanceSpaces(1, &Layout);
       BufferText("Pushes", &Group, WHITE);
 
+      u32 TotalDrawCalls = 0;
+
+      for( u32 DrawCountIndex = 0;
+           DrawCountIndex < GLOBAL_DRAW_CALL_LOCATION_COUNT;
+           ++ DrawCountIndex)
+      {
+         TotalDrawCalls += Global_DrawCallCounts[DrawCountIndex];
+      }
+
+      BufferColumn(TotalDrawCalls, 6, &Group, WHITE);
+      AdvanceSpaces(1, &Layout);
+      BufferText("Draw Calls", &Group, WHITE);
+
       NewLine(&Layout);
     }
 
     BufferColumn(Dt.Min, 6, &Group, WHITE);
+
   END_BLOCK("Status Bar");
 
   switch (DebugState->UIType)
