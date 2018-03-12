@@ -851,9 +851,9 @@ GetIndex(v3 Offset, chunk_data *Chunk, chunk_dimension Dim)
 void
 AllocateMesh(untextured_3d_geometry_buffer *Mesh, u32 NumVerts, memory_arena *Memory)
 {
-  Mesh->VertexData = PUSH_STRUCT_CHECKED(v3, Memory, NumVerts );
-  Mesh->ColorData = PUSH_STRUCT_CHECKED(v3,  Memory, NumVerts );
-  Mesh->NormalData = PUSH_STRUCT_CHECKED(v3, Memory, NumVerts );
+  Mesh->Verts = PUSH_STRUCT_CHECKED(v3, Memory, NumVerts );
+  Mesh->Colors = PUSH_STRUCT_CHECKED(v3,  Memory, NumVerts );
+  Mesh->Normals = PUSH_STRUCT_CHECKED(v3, Memory, NumVerts );
 
   Mesh->Allocated = NumVerts;
   Mesh->CurrentIndex = 0;

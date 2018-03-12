@@ -4,8 +4,8 @@ struct post_processing_group
   framebuffer FBO;
   shader Shader;
 
-  u32 colorbuffer;
-  u32 vertexbuffer;
+  u32 VertexBuffer;
+  u32 ColorBuffer;
 };
 
 struct graphics

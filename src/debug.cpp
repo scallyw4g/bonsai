@@ -164,29 +164,16 @@ FlushBuffer(debug_text_render_group *RG, untextured_2d_geometry_buffer *Buffer, 
   UseShader(&RG->SolidUIShader);
 
   u32 VertCount = Buffer->CurrentIndex;
-  Buffer->CurrentIndex = 0;
 
-  // Vertices
-  GL_Global->glEnableVertexAttribArray(0);
-  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->SolidUIVertexBuffer);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, VertCount * sizeof(v3), Buffer->Verts, GL_STATIC_DRAW);
-  GL_Global->glVertexAttribPointer(
-    0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-    3,                  // size
-    GL_FLOAT,           // type
-    GL_FALSE,           // normalized?
-    0,                  // stride
-    (void*)0            // array buffer offset
-  );
-
-  // Colors
-  GL_Global->glEnableVertexAttribArray(1);
-  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->SolidUIColorBuffer);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, VertCount * sizeof(v3), Buffer->Colors, GL_STATIC_DRAW);
-  GL_Global->glVertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+  BEGIN_CARD_BUFFERING();
+    BUFFER_VERTS_TO_CARD(RG->SolidUIVertexBuffer, Buffer);
+    BUFFER_COLORS_TO_CARD(RG->SolidUIColorBuffer, Buffer);
+  END_CARD_BUFFERING();
 
   SetViewport(V2(SCR_WIDTH, SCR_HEIGHT));
   Draw(VertCount);
+
+  Buffer->CurrentIndex = 0;
 
   GL_Global->glDisableVertexAttribArray(0);
   GL_Global->glDisableVertexAttribArray(1);
@@ -200,7 +187,6 @@ void
 FlushBuffer(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo, v2 ViewportDim)
 {
   u32 VertCount = Geo->CurrentIndex;
-  Geo->CurrentIndex = 0;
 
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -212,23 +198,11 @@ FlushBuffer(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo, v2 Vi
   glBindTexture(GL_TEXTURE_2D, RG->FontTexture.ID);
   GL_Global->glUniform1i(RG->TextureUniformID, 0);
 
-  // Verteces
-  GL_Global->glEnableVertexAttribArray(0);
-  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->VertexBuffer);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, VertCount * sizeof(v3), Geo->Verts, GL_STATIC_DRAW);
-  GL_Global->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0 );
-
-  // UVs
-  GL_Global->glEnableVertexAttribArray(1);
-  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->UVBuffer);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, VertCount * sizeof(v2), Geo->UVs, GL_STATIC_DRAW);
-  GL_Global->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0 );
-
-  // Colors
-  GL_Global->glEnableVertexAttribArray(2);
-  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->ColorBuffer);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, VertCount * sizeof(v3), Geo->Colors, GL_STATIC_DRAW);
-  GL_Global->glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)0 );
+  BEGIN_CARD_BUFFERING();
+    BUFFER_VERTS_TO_CARD(RG->SolidUIVertexBuffer, Geo);
+    BUFFER_UVS_TO_CARD(RG->UVBuffer, Geo);
+    BUFFER_COLORS_TO_CARD(RG->SolidUIColorBuffer, Geo);
+  END_CARD_BUFFERING();
 
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -238,6 +212,8 @@ FlushBuffer(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo, v2 Vi
   Draw(VertCount);
 
   glDisable(GL_BLEND);
+
+  Geo->CurrentIndex = 0;
 
   GL_Global->glDisableVertexAttribArray(0);
   GL_Global->glDisableVertexAttribArray(1);

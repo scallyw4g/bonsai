@@ -834,9 +834,9 @@ RenderWorldToGBuffer(untextured_3d_geometry_buffer *Mesh, g_buffer_render_group 
 
   TIMED_BLOCK("gBuffer - Bind and buffer data");
     BEGIN_CARD_BUFFERING();
-      BUFFER_VERTS_TO_CARD(RG, Mesh);
-      BUFFER_COLORS_TO_CARD(RG, Mesh);
-      BUFFER_NORMALS_TO_CARD(RG, Mesh);
+      BUFFER_VERTS_TO_CARD(RG->vertexbuffer, Mesh);
+      BUFFER_COLORS_TO_CARD(RG->colorbuffer, Mesh);
+      BUFFER_NORMALS_TO_CARD(RG->normalbuffer, Mesh);
     END_CARD_BUFFERING();
   END_BLOCK("gBuffer - Bind and buffer data");
 
@@ -886,8 +886,8 @@ RenderPostBuffer(post_processing_group *PostGroup, untextured_3d_geometry_buffer
 
   TIMED_BLOCK("PostBuffer - Bind and buffer data");
     BEGIN_CARD_BUFFERING();
-      BUFFER_VERTS_TO_CARD(PostGroup, Mesh);
-      BUFFER_COLORS_TO_CARD(PostGroup, Mesh);
+      BUFFER_VERTS_TO_CARD(PostGroup->VertexBuffer, Mesh);
+      BUFFER_COLORS_TO_CARD(PostGroup->ColorBuffer, Mesh);
     END_CARD_BUFFERING();
   END_BLOCK("PostBuffer - Bind and buffer data");
 
@@ -1413,7 +1413,7 @@ BufferChunkMesh(
     GetRenderP( WorldChunkDim, Canonical_Position(Offset, WorldP), Camera);
 
   BufferVertsChecked(Dest, gBuffer, SG, Camera, Chunk->Mesh.CurrentIndex,
-      Chunk->Mesh.VertexData, Chunk->Mesh.NormalData, Chunk->Mesh.ColorData,
+      Chunk->Mesh.Verts, Chunk->Mesh.Normals, Chunk->Mesh.Colors,
       ModelBasisP, V3(Scale));
 
 #else

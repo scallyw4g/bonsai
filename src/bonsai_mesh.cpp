@@ -39,9 +39,9 @@ BufferVertsDirect(
   Assert(NumVerts + Dest->CurrentIndex <= Dest->Allocated);
 
   s32 sizeofData = NumVerts * sizeof(v3);
-  memcpy( &Dest->VertexData[Dest->CurrentIndex],  VertsPositions,  sizeofData );
-  memcpy( &Dest->NormalData[Dest->CurrentIndex],  Normals,         sizeofData );
-  memcpy( &Dest->ColorData[Dest->CurrentIndex],   VertColors,      sizeofData );
+  memcpy( &Dest->Verts[Dest->CurrentIndex],   VertsPositions,  sizeofData );
+  memcpy( &Dest->Normals[Dest->CurrentIndex], Normals,         sizeofData );
+  memcpy( &Dest->Colors[Dest->CurrentIndex],  VertColors,      sizeofData );
   Dest->CurrentIndex += NumVerts;
 }
 
@@ -76,8 +76,8 @@ BufferVertsDirect(
   Assert(NumVerts % FaceVerts == 0);
 
   s32 sizeofData = NumVerts * sizeof(v3);
-  memcpy( &Dest->NormalData[Dest->CurrentIndex],  Normals,         sizeofData );
-  memcpy( &Dest->ColorData[Dest->CurrentIndex],   VertColors,      sizeofData );
+  memcpy( &Dest->Normals[Dest->CurrentIndex],  Normals,         sizeofData );
+  memcpy( &Dest->Colors[Dest->CurrentIndex],   VertColors,      sizeofData );
 
 
   for ( s32 VertIndex = 0;
@@ -119,12 +119,12 @@ BufferVertsDirect(
     v3 Result4 = {{ Vert4.F[0], Vert4.F[1], Vert4.F[2] }};
     v3 Result5 = {{ Vert5.F[0], Vert5.F[1], Vert5.F[2] }};
 
-    Dest->VertexData[Dest->CurrentIndex + 0] = Result0;
-    Dest->VertexData[Dest->CurrentIndex + 1] = Result1;
-    Dest->VertexData[Dest->CurrentIndex + 2] = Result2;
-    Dest->VertexData[Dest->CurrentIndex + 3] = Result3;
-    Dest->VertexData[Dest->CurrentIndex + 4] = Result4;
-    Dest->VertexData[Dest->CurrentIndex + 5] = Result5;
+    Dest->Verts[Dest->CurrentIndex + 0] = Result0;
+    Dest->Verts[Dest->CurrentIndex + 1] = Result1;
+    Dest->Verts[Dest->CurrentIndex + 2] = Result2;
+    Dest->Verts[Dest->CurrentIndex + 3] = Result3;
+    Dest->Verts[Dest->CurrentIndex + 4] = Result4;
+    Dest->Verts[Dest->CurrentIndex + 5] = Result5;
 
     Dest->CurrentIndex += FaceVerts;
   }
@@ -206,8 +206,8 @@ BufferVerts(
   TIMED_FUNCTION();
 
 #if 1
-  BufferVertsChecked(Dest, gBuffer, SG, Camera, Source->CurrentIndex, Source->VertexData,
-      Source->NormalData, Source->ColorData);
+  BufferVertsChecked(Dest, gBuffer, SG, Camera, Source->CurrentIndex, Source->Verts,
+      Source->Normals, Source->Colors);
   return;
 #else
   for ( s32 VertIndex = 0;
