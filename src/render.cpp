@@ -907,6 +907,46 @@ RenderGBuffer(
   return;
 }
 
+#define BEGIN_CARD_BUFFERING() { u32 AttributeIndex = 0;
+#define END_CARD_BUFFERING()   }
+
+#define BUFFER_VERTS_TO_CARD(Group, Mesh)                                                                    \
+  GL_Global->glEnableVertexAttribArray(AttributeIndex);                                                      \
+  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, Group->vertexbuffer);                                             \
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(v3), Mesh->VertexData, GL_STATIC_DRAW); \
+  GL_Global->glVertexAttribPointer( AttributeIndex, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);                     \
+  ++AttributeIndex;
+
+#define BUFFER_COLORS_TO_CARD(Group, Mesh)                                                                  \
+  GL_Global->glEnableVertexAttribArray(AttributeIndex);                                                     \
+  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, Group->colorbuffer);                                             \
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(v3), Mesh->ColorData, GL_STATIC_DRAW); \
+  GL_Global->glVertexAttribPointer(AttributeIndex, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);                     \
+  ++AttributeIndex;
+
+inline void
+RenderPostBuffer(post_processing_group *PostGroup, untextured_3d_geometry_buffer *Mesh)
+{
+  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, PostGroup->FBO.ID);
+  GL_Global->glUseProgram(PostGroup->Shader.ID);
+
+  SetViewport( V2(SCR_WIDTH, SCR_HEIGHT) );
+
+  BindShaderUniforms(&PostGroup->Shader);
+
+  TIMED_BLOCK("PostBuffer - Bind and buffer data");
+    BEGIN_CARD_BUFFERING();
+      BUFFER_VERTS_TO_CARD(PostGroup, Mesh);
+      BUFFER_COLORS_TO_CARD(PostGroup, Mesh);
+    END_CARD_BUFFERING();
+  END_BLOCK("PostBuffer - Bind and buffer data");
+
+  Draw(Mesh->CurrentIndex);
+
+  GL_Global->glDisableVertexAttribArray(0);
+  GL_Global->glDisableVertexAttribArray(1);
+}
+
 inline void
 DrawVoxel( untextured_3d_geometry_buffer *Mesh,
            g_buffer_render_group *gBuffer,

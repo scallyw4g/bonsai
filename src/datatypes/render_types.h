@@ -138,10 +138,11 @@ struct g_buffer_render_group
   m4 ShadowMVP;
   m4 ViewProjection;
 
+#if BONSAI_INTERNAL
   shader DebugColorTextureShader;
   shader DebugNormalTextureShader;
   shader DebugPositionTextureShader;
-
+#endif
 };
 
 struct shadow_render_group
