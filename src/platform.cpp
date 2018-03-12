@@ -502,10 +502,10 @@ main(s32 NumArgs, char ** Args)
     LastCycles = CurrentCycles;
 #endif
 
-    if (Plat.dt > 1000.0f)
+    if (Plat.dt > 1.0f)
     {
       Warn("DT exceeded 1s, truncating.");
-      Plat.dt = 1000.0f;
+      Plat.dt = 1.0f;
     }
 
     ClearWasPressedFlags((input_event*)&Plat.Input);

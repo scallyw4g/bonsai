@@ -350,7 +350,7 @@ struct world_chunk
 
   v3 Normal;
 
-  s32 Filled;
+  /* s32 Filled; */
 
   entity_list *Occupiers;
 };
@@ -753,6 +753,7 @@ ZeroChunk( chunk_data *Chunk, s32 Volume )
   Chunk->Flags = Chunk_Uninitialized;
   SetFlag( Chunk, Chunk_BufferMesh );
 
+  // TODO(Jesse): Pretty sure this is not necessary
   for ( s32 VoxelIndex = 0;
         VoxelIndex < Volume;
         ++VoxelIndex)

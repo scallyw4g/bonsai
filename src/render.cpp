@@ -892,6 +892,7 @@ RenderGBuffer(
   RenderShadowMap(Mesh, SG, RG, Camera);
 
   RenderWorldToGBuffer(Mesh, RG);
+
   if (GetDebugState()->Debug_RedrawEveryPush)
   {
     DrawGBufferToFullscreenQuad( Global_Plat, RG, SG, Camera, WORLD_CHUNK_DIM);
@@ -1408,8 +1409,8 @@ BufferChunkMesh(
     g_buffer_render_group *gBuffer,
     shadow_render_group *SG,
     camera *Camera,
-    r32 Scale,
-    v3 Offset
+    r32 Scale = 1.0f,
+    v3 Offset = V3(0)
   )
 {
   TIMED_FUNCTION();
@@ -2482,15 +2483,11 @@ BufferWorldChunk(
 {
   chunk_data *ChunkData = Chunk->Data;
 
-  if ( IsSet( Chunk, Chunk_BufferMesh ) )
-    BuildWorldChunkMesh(World, Chunk, World->ChunkDim);
-
   if (NotSet(ChunkData, Chunk_Initialized))
     return;
 
 #if 1
-    r32 Scale = 1.0f;
-    BufferChunkMesh( &World->Mesh, World->ChunkDim, ChunkData, Chunk->WorldP, RG, SG, Camera, Scale, V3(0));
+    BufferChunkMesh( &World->Mesh, World->ChunkDim, ChunkData, Chunk->WorldP, RG, SG, Camera);
 
 #else
   if (CanBuildWorldChunkBoundary(world, Chunk))
@@ -2531,30 +2528,35 @@ BufferWorld(world *World, graphics *Graphics, camera *Camera)
         ChunkIndex < WORLD_HASH_SIZE;
         ++ChunkIndex)
   {
-    world_chunk *chunk = World->ChunkHash[ChunkIndex];
+    world_chunk *Chunk = World->ChunkHash[ChunkIndex];
 
-    while (chunk)
+    while (Chunk)
     {
-      if ( (chunk->WorldP >= Min && chunk->WorldP < Max) )
+      if ( (Chunk->WorldP >= Min && Chunk->WorldP < Max) )
       {
-        /* DEBUG_DrawChunkAABB( World, chunk, Camera, Quaternion(), BLUE ); */
-        BufferWorldChunk(World, chunk, Camera, Graphics->gBuffer, Graphics->SG);
+        /* DEBUG_DrawChunkAABB( World, Chunk, Camera, Quaternion(), BLUE ); */
 
-        if ( chunk->Data->Mesh.VertsFilled > 0 )
+        if ( IsSet( Chunk, Chunk_BufferMesh ) )
+          BuildWorldChunkMesh(World, Chunk, World->ChunkDim);
+
+        BufferWorldChunk(World, Chunk, Camera, Graphics->gBuffer, Graphics->SG);
+
+        if ( Chunk->Data->Mesh.CurrentIndex > 0 )
         {
+          debug_global u32 ColorIndex = 0;
           DEBUG_DrawChunkAABB( &World->Mesh, Graphics->gBuffer,
-                               Graphics->SG, chunk->WorldP, Camera, WORLD_CHUNK_DIM,
-                               Quaternion(), RED);
+                               Graphics->SG, Chunk->WorldP, Camera, WORLD_CHUNK_DIM,
+                               Quaternion(), (++ColorIndex) % PALETTE_SIZE);
           RenderGBuffer(&World->Mesh, Graphics->gBuffer, Graphics->SG, Camera);
         }
 
-        chunk = chunk->Next;
+        Chunk = Chunk->Next;
       }
       else
       {
       /* TIMED_BLOCK("Free World Chunk"); */
-        world_chunk *ChunkToFree = chunk;
-        chunk = chunk->Next;
+        world_chunk *ChunkToFree = Chunk;
+        Chunk = Chunk->Next;
         FreeWorldChunk(World, ChunkToFree);
       /* END_BLOCK("Free World Chunk"); */
       }

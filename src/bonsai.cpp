@@ -99,7 +99,7 @@ InitChunkPerlin(world_chunk *WorldChunk, v3 WorldChunkDim, u32 ColorIndex)
         else
         {
           Assert( IsSet(&chunk->Voxels[i], Voxel_Filled) );
-          WorldChunk->Filled ++;
+          /* WorldChunk->Filled ++; */
           chunk->Voxels[i].Color = ColorIndex;
         }
       }
