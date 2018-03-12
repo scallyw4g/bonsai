@@ -7,6 +7,7 @@ struct input_event
 
 struct hotkeys
 {
+  b32 Debug_RedrawEveryPush;
   b32 Debug_ToggleLoopedGamePlayback;
   b32 Debug_Pause;
   b32 Debug_ToggleProfile;

@@ -102,6 +102,8 @@ struct debug_state
   u64 NumScopes;
   b32 Initialized;
 
+  b32 Debug_RedrawEveryPush;
+
   debug_scope_tree *GetReadScopeTree()
   {
     debug_scope_tree *RootScope = &this->ScopeTrees[this->ReadScopeIndex];

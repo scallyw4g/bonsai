@@ -561,7 +561,7 @@ GraphicsInit(memory_arena *GraphicsMemory)
   graphics *Result = PUSH_STRUCT_CHECKED(graphics, GraphicsMemory, 1);
 
   Result->Camera = PUSH_STRUCT_CHECKED(camera, GraphicsMemory, 1);
-  InitCamera(Result->Camera, CameraInitialFront, 500.0f);
+  InitCamera(Result->Camera, CameraInitialFront, 1000.0f);
 
   shadow_render_group *SG = PUSH_STRUCT_CHECKED(shadow_render_group, GraphicsMemory, 1);
   if (!InitializeShadowBuffer(SG, GraphicsMemory))
@@ -885,13 +885,19 @@ RenderWorldToGBuffer(untextured_3d_geometry_buffer *Mesh, g_buffer_render_group 
 inline void
 RenderGBuffer(
     untextured_3d_geometry_buffer *Mesh, g_buffer_render_group *RG,
-    shadow_render_group *SG, camera *Camera)
+    shadow_render_group *SG, camera *Camera )
 {
   TIMED_FUNCTION();
 
   RenderShadowMap(Mesh, SG, RG, Camera);
 
   RenderWorldToGBuffer(Mesh, RG);
+  if (GetDebugState()->Debug_RedrawEveryPush)
+  {
+    DrawGBufferToFullscreenQuad( Global_Plat, RG, SG, Camera, WORLD_CHUNK_DIM);
+    glXSwapBuffers(Global_Os->Display, Global_Os->Window);
+    RuntimeBreak();
+  }
 
   Mesh->CurrentIndex = 0;
 
@@ -2533,6 +2539,15 @@ BufferWorld(world *World, graphics *Graphics, camera *Camera)
       {
         /* DEBUG_DrawChunkAABB( World, chunk, Camera, Quaternion(), BLUE ); */
         BufferWorldChunk(World, chunk, Camera, Graphics->gBuffer, Graphics->SG);
+
+        if ( chunk->Data->Mesh.VertsFilled > 0 )
+        {
+          DEBUG_DrawChunkAABB( &World->Mesh, Graphics->gBuffer,
+                               Graphics->SG, chunk->WorldP, Camera, WORLD_CHUNK_DIM,
+                               Quaternion(), RED);
+          RenderGBuffer(&World->Mesh, Graphics->gBuffer, Graphics->SG, Camera);
+        }
+
         chunk = chunk->Next;
       }
       else

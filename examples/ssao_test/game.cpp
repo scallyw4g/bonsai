@@ -2,6 +2,9 @@
 #include <bonsai_types.h>
 #include <bonsai.h>
 
+debug_global os *Global_Os = 0;
+debug_global platform *Global_Plat = 0;
+
 #include <globals.h>
 
 global_variable r32 GlobalLightTheta = 0;
@@ -152,21 +155,24 @@ GameThreadCallback(work_queue_entry *Entry)
 }
 
 EXPORT void
-InitGlobals(platform *Plat)
+InitGlobals(platform *Plat, os *Os)
 {
   GL_Global = &Plat->GL;
   Global_WorldChunkDim = WORLD_CHUNK_DIM;
 #if BONSAI_INTERNAL
   GlobalDebugState = &Plat->DebugState;
 #endif
+
+  Global_Os = Os;
+  Global_Plat = Plat;
 }
 
 EXPORT void*
-GameInit( platform *Plat, memory_arena *GameMemory)
+GameInit( platform *Plat, memory_arena *GameMemory, os *Os)
 {
   Info("Initializing Game");
 
-  InitGlobals(Plat);
+  InitGlobals(Plat, Os);
 
   Init_Global_QuadVertexBuffer();
 

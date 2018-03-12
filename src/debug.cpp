@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 debug_profile_scope NullScope = {};
+debug_global b32 DebugGlobal_RedrawEveryPush = 0;
 
 void
 DebugRegisterArena(const char *Name, memory_arena *Arena)
@@ -825,6 +826,11 @@ void
 DebugFrameBegin(hotkeys *Hotkeys, r32 Dt, u64 Cycles)
 {
   debug_state *State = GetDebugState();
+
+  if ( Hotkeys->Debug_RedrawEveryPush )
+  {
+    State->Debug_RedrawEveryPush = !State->Debug_RedrawEveryPush;
+  }
 
   if ( Hotkeys->Debug_ToggleProfile )
   {
