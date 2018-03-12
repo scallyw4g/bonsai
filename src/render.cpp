@@ -832,46 +832,13 @@ RenderWorldToGBuffer(untextured_3d_geometry_buffer *Mesh, g_buffer_render_group 
 
   BindShaderUniforms(&RG->gBufferShader);
 
-  TIMED_BLOCK("Bind and buffer data");
-  // Vertices
-  GL_Global->glEnableVertexAttribArray(0);
-  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->vertexbuffer);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(v3), Mesh->VertexData, GL_STATIC_DRAW);
-  GL_Global->glVertexAttribPointer(
-    0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-    3,                  // size
-    GL_FLOAT,           // type
-    GL_FALSE,           // normalized?
-    0,                  // stride
-    (void*)0            // array buffer offset
-  );
-
-  // Colors
-  GL_Global->glEnableVertexAttribArray(1);
-  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->colorbuffer);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(v3), Mesh->ColorData, GL_STATIC_DRAW);
-  GL_Global->glVertexAttribPointer(
-    1,                  // attribute 1. No particular reason for 1, but must match the layout in the shader.
-    3,                  // size
-    GL_FLOAT,           // type
-    GL_FALSE,           // normalized?
-    0,                  // stride
-    (void*)0            // array buffer offset
-  );
-
-  // Normals
-  GL_Global->glEnableVertexAttribArray(2);
-  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->normalbuffer);
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(v3), Mesh->NormalData, GL_STATIC_DRAW);
-  GL_Global->glVertexAttribPointer(
-    2,
-    3,                  // size
-    GL_FLOAT,           // type
-    GL_FALSE,           // normalized?
-    0,                  // stride
-    (void*)0            // array buffer offset
-  );
-  END_BLOCK("Bind and buffer data");
+  TIMED_BLOCK("gBuffer - Bind and buffer data");
+    BEGIN_CARD_BUFFERING();
+      BUFFER_VERTS_TO_CARD(RG, Mesh);
+      BUFFER_COLORS_TO_CARD(RG, Mesh);
+      BUFFER_NORMALS_TO_CARD(RG, Mesh);
+    END_CARD_BUFFERING();
+  END_BLOCK("gBuffer - Bind and buffer data");
 
   Draw(Mesh->CurrentIndex);
 
@@ -906,23 +873,6 @@ RenderGBuffer(
 
   return;
 }
-
-#define BEGIN_CARD_BUFFERING() { u32 AttributeIndex = 0;
-#define END_CARD_BUFFERING()   }
-
-#define BUFFER_VERTS_TO_CARD(Group, Mesh)                                                                    \
-  GL_Global->glEnableVertexAttribArray(AttributeIndex);                                                      \
-  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, Group->vertexbuffer);                                             \
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(v3), Mesh->VertexData, GL_STATIC_DRAW); \
-  GL_Global->glVertexAttribPointer( AttributeIndex, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);                     \
-  ++AttributeIndex;
-
-#define BUFFER_COLORS_TO_CARD(Group, Mesh)                                                                  \
-  GL_Global->glEnableVertexAttribArray(AttributeIndex);                                                     \
-  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, Group->colorbuffer);                                             \
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(v3), Mesh->ColorData, GL_STATIC_DRAW); \
-  GL_Global->glVertexAttribPointer(AttributeIndex, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);                     \
-  ++AttributeIndex;
 
 inline void
 RenderPostBuffer(post_processing_group *PostGroup, untextured_3d_geometry_buffer *Mesh)

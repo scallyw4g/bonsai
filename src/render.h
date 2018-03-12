@@ -1,6 +1,9 @@
 #ifndef RENDER_H
 #define RENDER_H
 
+// FIXME(Jesse): This should not do draw call tracking in release mode
+//
+
 #define Draw(VertexCount) \
   Draw_(VertexCount, __FUNCTION__);
 
@@ -166,5 +169,30 @@ GetViewMatrix(chunk_dimension WorldChunkDim, camera *Camera)
 
   return Result;
 }
+
+#define BEGIN_CARD_BUFFERING() { u32 AttributeIndex = 0;
+#define END_CARD_BUFFERING()   }
+
+#define BUFFER_VERTS_TO_CARD(Group, Mesh)                                                                    \
+  GL_Global->glEnableVertexAttribArray(AttributeIndex);                                                      \
+  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, Group->vertexbuffer);                                             \
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(v3), Mesh->VertexData, GL_STATIC_DRAW); \
+  GL_Global->glVertexAttribPointer( AttributeIndex, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);                     \
+  ++AttributeIndex;
+
+#define BUFFER_COLORS_TO_CARD(Group, Mesh)                                                                  \
+  GL_Global->glEnableVertexAttribArray(AttributeIndex);                                                     \
+  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, Group->colorbuffer);                                             \
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(v3), Mesh->ColorData, GL_STATIC_DRAW); \
+  GL_Global->glVertexAttribPointer(AttributeIndex, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);                     \
+  ++AttributeIndex;
+
+#define BUFFER_NORMALS_TO_CARD(Group, Mesh)                                                                  \
+  GL_Global->glEnableVertexAttribArray(AttributeIndex);                                                      \
+  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, Group->normalbuffer);                                             \
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(v3), Mesh->NormalData, GL_STATIC_DRAW); \
+  GL_Global->glVertexAttribPointer(AttributeIndex, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);                      \
+  ++AttributeIndex;
+
 
 #endif
