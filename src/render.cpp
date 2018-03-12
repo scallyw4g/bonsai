@@ -219,7 +219,7 @@ PushShaderUniform( memory_arena *Mem, const char *Name)
  * Unfortunately the c pre-processor makes us pass in the type and the name
  * we're going to access it with.
  */
-#define BasicTypeUniformAllocators(type, TypeName)                                 \
+#define BasicTypeUniformAllocators(type, TypeName)                             \
   shader_uniform *                                                             \
   PushShaderUniform( memory_arena *Mem, const char *Name, type *Value)         \
   {                                                                            \
@@ -859,13 +859,6 @@ RenderGBuffer(
   RenderShadowMap(Mesh, SG, RG, Camera);
 
   RenderWorldToGBuffer(Mesh, RG);
-
-  if (GetDebugState()->Debug_RedrawEveryPush)
-  {
-    DrawGBufferToFullscreenQuad( Global_Plat, RG, SG, Camera, WORLD_CHUNK_DIM);
-    glXSwapBuffers(Global_Os->Display, Global_Os->Window);
-    RuntimeBreak();
-  }
 
   Mesh->CurrentIndex = 0;
 
@@ -2338,7 +2331,7 @@ CanBuildWorldChunkBoundary(world *World, world_chunk *Chunk)
 
   world_position ChunkP = Chunk->WorldP;
 
-  Result &= IsSet(Chunk, Chunk_BufferMesh);
+  Result &= IsSet(Chunk, Chunk_BuildMesh );
 
   // Bail early to save the cache most of the time.. does this even help?
   if (!Result) return Result;
@@ -2526,7 +2519,7 @@ BufferWorld(world *World, graphics *Graphics, camera *Camera)
       {
         /* DEBUG_DrawChunkAABB( World, Chunk, Camera, Quaternion(), BLUE ); */
 
-        if ( IsSet( Chunk, Chunk_BufferMesh ) )
+        if ( IsSet( Chunk, Chunk_BuildMesh  ) )
           BuildWorldChunkMesh(World, Chunk, World->ChunkDim);
 
         BufferWorldChunk(World, Chunk, Camera, Graphics->gBuffer, Graphics->SG);
@@ -2534,22 +2527,33 @@ BufferWorld(world *World, graphics *Graphics, camera *Camera)
         if ( Chunk->Data->Mesh.CurrentIndex > 0 )
         {
           debug_global u32 ColorIndex = 0;
-          DEBUG_DrawChunkAABB( &World->Mesh, Graphics->gBuffer,
+
+
+          debug_state *DebugState = GetDebugState();
+          DEBUG_DrawChunkAABB( &DebugState->LineMesh, Graphics->gBuffer,
                                Graphics->SG, Chunk->WorldP, Camera, WORLD_CHUNK_DIM,
                                Quaternion(), (++ColorIndex) % PALETTE_SIZE);
+
           RenderGBuffer(&World->Mesh, Graphics->gBuffer, Graphics->SG, Camera);
+          RenderGBuffer(&DebugState->LineMesh, Graphics->gBuffer, Graphics->SG, Camera);
+
+          if (GetDebugState()->Debug_RedrawEveryPush)
+          {
+            DrawGBufferToFullscreenQuad( Global_Plat, Graphics->gBuffer, Graphics->SG, Camera, WORLD_CHUNK_DIM);
+            glXSwapBuffers(Global_Os->Display, Global_Os->Window);
+            RuntimeBreak();
+            ClearFramebuffers(Graphics);
+          }
         }
 
         Chunk = Chunk->Next;
       }
       else
-      {
-      /* TIMED_BLOCK("Free World Chunk"); */
+      TIMED_BLOCK("Free World Chunk");
         world_chunk *ChunkToFree = Chunk;
         Chunk = Chunk->Next;
         FreeWorldChunk(World, ChunkToFree);
-      /* END_BLOCK("Free World Chunk"); */
-      }
+      END_BLOCK("Free World Chunk");
     }
   }
 }

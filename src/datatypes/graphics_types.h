@@ -16,5 +16,4 @@ struct graphics
   ao_render_group       * AoGroup;
   shadow_render_group   * SG;
   post_processing_group * PostGroup;
-
 };

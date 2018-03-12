@@ -129,6 +129,8 @@ InitDebugState(platform *Plat, memory_arena *DebugMemory)
   GlobalDebugState->Memory = DebugMemory;
   GlobalDebugState->GetCycleCount = Plat->GetCycleCount;
 
+  s32 BufferVertices = Kilobytes(8);
+  AllocateMesh(&GlobalDebugState->LineMesh, BufferVertices, DebugMemory);
 
   GlobalDebugState->FreeScopeSentinel.Parent = &GlobalDebugState->FreeScopeSentinel;
   GlobalDebugState->FreeScopeSentinel.Child = &GlobalDebugState->FreeScopeSentinel;
@@ -811,7 +813,7 @@ DebugFrameBegin(hotkeys *Hotkeys, r32 Dt, u64 Cycles)
   if ( Hotkeys->Debug_ToggleProfile )
   {
     Hotkeys->Debug_ToggleProfile = False;
-    State->DoScopeProfiling = !State->DoScopeProfiling;
+    State->DebugDoScopeProfiling = !State->DebugDoScopeProfiling;
   }
 
   if ( Hotkeys->Debug_NextUiState )
@@ -829,7 +831,7 @@ DebugFrameBegin(hotkeys *Hotkeys, r32 Dt, u64 Cycles)
     }
   }
 
-  if (!State->DoScopeProfiling) return;
+  if (!State->DebugDoScopeProfiling) return;
 
   { // Advance to the next scope and reinitialize
     State->ReadScopeIndex = (State->ReadScopeIndex+1) % ROOT_SCOPE_COUNT;

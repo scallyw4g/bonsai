@@ -79,30 +79,27 @@ registered_memory_arena Global_RegisteredMemoryArenas[REGISTERED_MEMORY_ARENA_CO
 #define ROOT_SCOPE_COUNT 60
 struct debug_state
 {
-  u64 (*GetCycleCount)(void);
-  u64 FrameCount;
-
+  memory_arena            *Memory;
   debug_text_render_group *TextRenderGroup;
 
-  memory_arena *Memory;
+  untextured_3d_geometry_buffer LineMesh;
 
-  b32 DoScopeProfiling;
+  debug_ui_type UIType;
 
+  u64 FrameCount;
+  b32 Initialized;
+  b32 Debug_RedrawEveryPush;
+  b32 DebugDoScopeProfiling;
+
+  u64 (*GetCycleCount)(void);
+
+  debug_profile_scope FreeScopeSentinel;
   debug_profile_scope **WriteScope;
   debug_profile_scope *CurrentScope;
   debug_scope_tree ScopeTrees[ROOT_SCOPE_COUNT];
   u32 ReadScopeIndex;
-
   s32 FreeScopeCount;
-
-  debug_ui_type UIType;
-
-  debug_profile_scope FreeScopeSentinel;
-
   u64 NumScopes;
-  b32 Initialized;
-
-  b32 Debug_RedrawEveryPush;
 
   debug_scope_tree *GetReadScopeTree()
   {
@@ -112,7 +109,7 @@ struct debug_state
 
   debug_scope_tree *GetWriteScopeTree()
   {
-    if (!this->DoScopeProfiling) return 0;
+    if (!this->DebugDoScopeProfiling) return 0;
 
     s32 Index = (this->ReadScopeIndex + 1) % ROOT_SCOPE_COUNT;
     debug_scope_tree *RootScope = &this->ScopeTrees[Index];
@@ -232,7 +229,7 @@ struct debug_timed_function
   debug_timed_function(const char *Name)
   {
     debug_state *DebugState = GetDebugState();
-    if (!DebugState->DoScopeProfiling) return;
+    if (!DebugState->DebugDoScopeProfiling) return;
     Assert (DebugState->WriteScope);
 
     ++DebugState->NumScopes;
@@ -261,7 +258,7 @@ struct debug_timed_function
   ~debug_timed_function()
   {
     debug_state *DebugState = GetDebugState();
-    if (!DebugState->DoScopeProfiling) return;
+    if (!DebugState->DebugDoScopeProfiling) return;
     if (!this->Scope) return;
 
     Assert (DebugState->WriteScope);

@@ -238,7 +238,7 @@ BufferVerts(
 void
 BuildEntityMesh(chunk_data *chunk, chunk_dimension Dim)
 {
-  UnSetFlag(chunk, Chunk_BufferMesh);
+  UnSetFlag(chunk, Chunk_BuildMesh  );
 
   for ( int z = 0; z < Dim.z ; ++z )
   {
@@ -316,7 +316,7 @@ BuildWorldChunkMesh(world *World, world_chunk *WorldChunk, chunk_dimension World
 
   chunk_data *chunk = WorldChunk->Data;
 
-  UnSetFlag( chunk, Chunk_BufferMesh );
+  UnSetFlag( chunk, Chunk_BuildMesh  );
 
   canonical_position rightVoxel;
   canonical_position leftVoxel;

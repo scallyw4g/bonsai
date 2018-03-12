@@ -354,7 +354,7 @@ GetFreeChunk(memory_arena *Storage, world *World, world_position P)
 void
 QueueChunksForInit(game_state *GameState, world_position WorldDisp)
 {
-  if (Length(V3(WorldDisp)) == 0) return;
+  if (LengthSq(V3(WorldDisp)) == 0) return;
 
   world_position WorldCenter = GameState->World->Center;
 

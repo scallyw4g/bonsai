@@ -34,7 +34,7 @@ enum chunk_flag
   Chunk_Uninitialized   = 0 << 0,
   Chunk_Initialized     = 1 << 1,
 
-  Chunk_BufferMesh      = 1 << 2,
+  Chunk_BuildMesh       = 1 << 2,
   Chunk_Queued          = 1 << 3,
   Chunk_Garbage         = 1 << 4,
   Chunk_Collected       = 1 << 5,
@@ -751,7 +751,7 @@ ZeroChunk( chunk_data *Chunk, s32 Volume )
   ZeroMesh(&Chunk->Mesh);
 
   Chunk->Flags = Chunk_Uninitialized;
-  SetFlag( Chunk, Chunk_BufferMesh );
+  SetFlag( Chunk, Chunk_BuildMesh  );
 
   // TODO(Jesse): Pretty sure this is not necessary
   for ( s32 VoxelIndex = 0;
@@ -881,11 +881,11 @@ InsertChunkIntoWorld(world *World, world_chunk *chunk)
 
   if (Last)
   {
-    // Assert(Last->WorldP != chunk->WorldP);
+    Assert(Last->WorldP != chunk->WorldP);
 
     while (Last->Next)
     {
-      // Assert(Last->WorldP != chunk->WorldP);
+      Assert(Last->WorldP != chunk->WorldP);
       Last = Last->Next;
     }
 
