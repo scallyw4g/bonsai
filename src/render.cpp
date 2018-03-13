@@ -841,6 +841,7 @@ RenderWorldToGBuffer(untextured_3d_geometry_buffer *Mesh, g_buffer_render_group 
   END_BLOCK("gBuffer - Bind and buffer data");
 
   Draw(Mesh->CurrentIndex);
+  Mesh->CurrentIndex = 0;
 
   GL_Global->glDisableVertexAttribArray(0);
   GL_Global->glDisableVertexAttribArray(1);
@@ -859,8 +860,6 @@ RenderGBuffer(
   RenderShadowMap(Mesh, SG, RG, Camera);
 
   RenderWorldToGBuffer(Mesh, RG);
-
-  Mesh->CurrentIndex = 0;
 
   AssertNoGlErrors;
 
@@ -885,6 +884,7 @@ RenderPostBuffer(post_processing_group *PostGroup, untextured_3d_geometry_buffer
   END_BLOCK("PostBuffer - Bind and buffer data");
 
   Draw(Mesh->CurrentIndex);
+  Mesh->CurrentIndex = 0;
 
   GL_Global->glDisableVertexAttribArray(0);
   GL_Global->glDisableVertexAttribArray(1);

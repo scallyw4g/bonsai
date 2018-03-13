@@ -194,11 +194,11 @@ GetViewMatrix(chunk_dimension WorldChunkDim, camera *Camera)
   GL_Global->glVertexAttribPointer(AttributeIndex, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);                   \
   ++AttributeIndex;
 
-#define BUFFER_UVS_TO_CARD(BufferId, Mesh)                                                  \
-  GL_Global->glEnableVertexAttribArray(AttributeIndex);                                     \
-  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->UVBuffer);                                   \
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, VertCount*sizeof(v2), Geo->UVs, GL_STATIC_DRAW); \
-  GL_Global->glVertexAttribPointer(AttributeIndex, 2, GL_FLOAT, GL_FALSE, 0, (void*)0 );    \
+#define BUFFER_UVS_TO_CARD(BufferId, Mesh)                                                           \
+  GL_Global->glEnableVertexAttribArray(AttributeIndex);                                              \
+  GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->UVBuffer);                                            \
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(v2), Geo->UVs, GL_STATIC_DRAW); \
+  GL_Global->glVertexAttribPointer(AttributeIndex, 2, GL_FLOAT, GL_FALSE, 0, (void*)0 );             \
   ++AttributeIndex;
 
 
