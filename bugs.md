@@ -1,3 +1,10 @@
+# Mar 12 2018 - 18:00 - closed - Ghost geometry
+* lifecycle
+* concurrency
+I was setting the chunk flag to build a mesh when a chunk was actually
+un-initialized, and the thread queue was occationally getting to it before the
+voxels were initialized.  This caused a bogus mesh to be built.
+
 # Nov 30 2017 - 2:00 - closed - Fix clock bugs
 * clock
 I was dividing by an integer instead of an r64, which caused the clock to get
