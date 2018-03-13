@@ -377,6 +377,8 @@ ClearWasPressedFlags(input_event *Input)
 void
 BindHotkeysToInput(hotkeys *Hotkeys, input *Input)
 {
+
+#if BONSAI_INTERNAL
   Hotkeys->Debug_Pause                    = Input->F12.IsDown;
   Hotkeys->Debug_ToggleLoopedGamePlayback = Input->F11.WasPressed;
 
@@ -385,6 +387,9 @@ BindHotkeysToInput(hotkeys *Hotkeys, input *Input)
 
   if (Input->F1.WasPressed)
     Hotkeys->Debug_NextUiState = True;
+
+  Hotkeys->Debug_RedrawEveryPush = Input->F2.WasPressed;
+#endif
 
   Hotkeys->Left = Input->A.IsDown;
   Hotkeys->Right = Input->D.IsDown;
@@ -395,8 +400,6 @@ BindHotkeysToInput(hotkeys *Hotkeys, input *Input)
   Hotkeys->Player_Proton = Input->Shift.WasPressed;
 
   Hotkeys->Player_Spawn = Input->Space.WasPressed;
-
-  Hotkeys->Debug_RedrawEveryPush = Input->F2.WasPressed;
 
   return;
 }

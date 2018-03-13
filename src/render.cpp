@@ -2524,27 +2524,15 @@ BufferWorld(world *World, graphics *Graphics, camera *Camera)
 
         BufferWorldChunk(World, Chunk, Camera, Graphics->gBuffer, Graphics->SG);
 
-        if ( Chunk->Data->Mesh.CurrentIndex > 0 )
+#if BONSAI_INTERNAL
+        if (GetDebugState()->Debug_RedrawEveryPush)
         {
-          debug_global u32 ColorIndex = 0;
-
-
-          debug_state *DebugState = GetDebugState();
-          DEBUG_DrawChunkAABB( &DebugState->LineMesh, Graphics->gBuffer,
-                               Graphics->SG, Chunk->WorldP, Camera, WORLD_CHUNK_DIM,
-                               Quaternion(), (++ColorIndex) % PALETTE_SIZE);
-
-          RenderGBuffer(&World->Mesh, Graphics->gBuffer, Graphics->SG, Camera);
-          RenderGBuffer(&DebugState->LineMesh, Graphics->gBuffer, Graphics->SG, Camera);
-
-          if (GetDebugState()->Debug_RedrawEveryPush)
-          {
-            DrawGBufferToFullscreenQuad( Global_Plat, Graphics->gBuffer, Graphics->SG, Camera, WORLD_CHUNK_DIM);
-            glXSwapBuffers(Global_Os->Display, Global_Os->Window);
-            RuntimeBreak();
-            ClearFramebuffers(Graphics);
-          }
+          DrawGBufferToFullscreenQuad( Global_Plat, Graphics->gBuffer, Graphics->SG, Camera, WORLD_CHUNK_DIM);
+          glXSwapBuffers(Global_Os->Display, Global_Os->Window);
+          RuntimeBreak();
+          ClearFramebuffers(Graphics);
         }
+#endif
 
         Chunk = Chunk->Next;
       }

@@ -7,11 +7,13 @@ struct input_event
 
 struct hotkeys
 {
+#if BONSAI_INTERNAL
   b32 Debug_RedrawEveryPush;
   b32 Debug_ToggleLoopedGamePlayback;
   b32 Debug_Pause;
   b32 Debug_ToggleProfile;
   b32 Debug_NextUiState;
+#endif
 
   b32 Left;
   b32 Right;
