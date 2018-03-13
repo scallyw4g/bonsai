@@ -87,7 +87,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
     RenderAoTexture(AoGroup);
 
-    DrawGBufferToFullscreenQuad( Plat, gBuffer, SG, Camera, World->ChunkDim);
+    DrawGBufferToFullscreenQuad( Plat, Graphics, World->ChunkDim);
 
   #if DEBUG_DRAW_SHADOW_MAP_TEXTURE
     // DrawTexturedQuad(&GetDebugState()->TextRenderGroup->DebugTextureShader);

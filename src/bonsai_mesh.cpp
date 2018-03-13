@@ -187,7 +187,6 @@ BufferVertsChecked(
   {
     Warn("Flushing %d/%d Verts to gBuffer", Target->CurrentIndex, Target->Allocated);
     RenderGBuffer(Target, Graphics);
-    return;
   }
 
   BufferVertsDirect( Target, NumVerts, VertsPositions, Normals, VertColors, Offset, Scale);

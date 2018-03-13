@@ -752,16 +752,16 @@ RenderAoTexture(ao_render_group *AoGroup)
 }
 
 void
-DrawGBufferToFullscreenQuad( platform *Plat, g_buffer_render_group *RG, shadow_render_group *SG, camera *Camera, world_position WorldChunkDim)
+DrawGBufferToFullscreenQuad( platform *Plat, graphics *Graphics, world_position WorldChunkDim)
 {
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
   SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight));
 
-  GL_Global->glUseProgram(RG->LightingShader.ID);
+  GL_Global->glUseProgram(Graphics->gBuffer->LightingShader.ID);
 
-  RG->ShadowMVP = NdcToScreenSpace * GetShadowMapMVP(Camera, &SG->GameLights.Lights[0]);
+  Graphics->gBuffer->ShadowMVP = NdcToScreenSpace * GetShadowMapMVP(Graphics->Camera, &Graphics->SG->GameLights.Lights[0]);
 
-  BindShaderUniforms(&RG->LightingShader);
+  BindShaderUniforms(&Graphics->gBuffer->LightingShader);
 
   RenderQuad();
 
