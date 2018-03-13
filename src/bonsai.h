@@ -850,8 +850,14 @@ GetIndex(v3 Offset, chunk_data *Chunk, chunk_dimension Dim)
 void
 AllocateMesh(untextured_3d_geometry_buffer *Mesh, u32 NumVerts, memory_arena *Memory)
 {
-  Mesh->Verts = PUSH_STRUCT_CHECKED(v3, Memory, NumVerts );
-  Mesh->Colors = PUSH_STRUCT_CHECKED(v3,  Memory, NumVerts );
+  // The number of allocated verts must be a multiple of 6 for the renderer to
+  // flush them to the card in the most efficient way.
+  u32 Extras = NumVerts % 6;
+  NumVerts -= Extras;
+  Assert(NumVerts % 6 == 0);
+
+  Mesh->Verts   = PUSH_STRUCT_CHECKED(v3, Memory, NumVerts );
+  Mesh->Colors  = PUSH_STRUCT_CHECKED(v3, Memory, NumVerts );
   Mesh->Normals = PUSH_STRUCT_CHECKED(v3, Memory, NumVerts );
 
   Mesh->Allocated = NumVerts;

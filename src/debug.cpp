@@ -129,22 +129,22 @@ InitDebugState(platform *Plat, memory_arena *DebugMemory)
   GlobalDebugState->Memory = DebugMemory;
   GlobalDebugState->GetCycleCount = Plat->GetCycleCount;
 
-  s32 BufferVertices = Kilobytes(8);
-  AllocateMesh(&GlobalDebugState->LineMesh, BufferVertices, DebugMemory);
-
   GlobalDebugState->FreeScopeSentinel.Parent = &GlobalDebugState->FreeScopeSentinel;
   GlobalDebugState->FreeScopeSentinel.Child = &GlobalDebugState->FreeScopeSentinel;
 
-  GlobalDebugState->TextRenderGroup = PUSH_STRUCT_CHECKED(debug_text_render_group, DebugMemory, 1);
-  if (!InitDebugOverlayFramebuffer(GlobalDebugState->TextRenderGroup, DebugMemory, "Holstein.DDS"))
+  s32 BufferVertices = Kilobytes(1024);
+  AllocateMesh(&GlobalDebugState->LineMesh, BufferVertices, DebugMemory);
+
+  if (!InitDebugOverlayFramebuffer(&GlobalDebugState->TextRenderGroup, DebugMemory, "Holstein.DDS"))
   { Error("Initializing Debug Overlay Framebuffer"); }
 
-  AllocateAndInitGeoBuffer(&GlobalDebugState->TextRenderGroup->TextGeo, 1024, DebugMemory);
-  AllocateAndInitGeoBuffer(&GlobalDebugState->TextRenderGroup->UIGeo, 1024, DebugMemory);
+  AllocateAndInitGeoBuffer(&GlobalDebugState->TextRenderGroup.TextGeo, 1024, DebugMemory);
+  AllocateAndInitGeoBuffer(&GlobalDebugState->TextRenderGroup.UIGeo, 1024, DebugMemory);
 
-  GlobalDebugState->TextRenderGroup->SolidUIShader = MakeSolidUIShader(GlobalDebugState->Memory);
+  GlobalDebugState->TextRenderGroup.SolidUIShader = MakeSolidUIShader(GlobalDebugState->Memory);
 
   GlobalDebugState->Initialized = True;
+
   return;
 }
 
@@ -1196,7 +1196,7 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
 {
   TIMED_FUNCTION();
   debug_state *DebugState = GetDebugState();
-  debug_text_render_group *RG = DebugState->TextRenderGroup;
+  debug_text_render_group *RG = &DebugState->TextRenderGroup;
   textured_2d_geometry_buffer *TextGeo = &RG->TextGeo;
 
   v2 ViewportDim = V2(Plat->WindowWidth, Plat->WindowHeight);

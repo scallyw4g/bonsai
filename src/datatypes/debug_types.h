@@ -80,7 +80,7 @@ registered_memory_arena Global_RegisteredMemoryArenas[REGISTERED_MEMORY_ARENA_CO
 struct debug_state
 {
   memory_arena            *Memory;
-  debug_text_render_group *TextRenderGroup;
+  debug_text_render_group TextRenderGroup;
 
   untextured_3d_geometry_buffer LineMesh;
 
@@ -277,7 +277,7 @@ struct debug_timed_function
   }
 };
 
-#define INIT_DEUBG_STATE(Plat) InitDebugState(Plat)
+#define INIT_DEUBG_STATE(PlatPtr, MemArena) InitDebugState(PlatPtr, MemArena)
 
 #define TIMED_FUNCTION() debug_timed_function FunctionTimer(__FUNCTION_NAME__)
 #define TIMED_BLOCK(BlockName) { debug_timed_function BlockTimer(BlockName)

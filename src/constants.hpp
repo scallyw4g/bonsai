@@ -6,7 +6,8 @@
 #define CHUNK_VOL (CHUNK_HEIGHT*CHUNK_WIDTH*CHUNK_DEPTH)
 
 // 6 verticies per face, 6 faces per voxel
-#define VERT_PER_VOXEL (6*6)
+#define VERTS_PER_FACE 6
+#define VERT_PER_VOXEL (VERTS_PER_FACE*6)
 
 // 3 floats per vert
 #define BYTES_PER_VERT (sizeof(r32)*3)

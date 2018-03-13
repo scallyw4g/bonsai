@@ -31,7 +31,6 @@ PrintSemValue( semaphore *Semaphore )
 }
 #endif
 
-u8* InvalidMemoryPointer = ((u8*)-1);
 u64 InvalidSysconfReturn = ((u64)-1);
 
 u64
@@ -63,7 +62,7 @@ PlatformAllocateArena(umm RequestedBytes = Megabytes(1))
   Assert(AllocationSize % PageSize == 0);
 
   u8 *Bytes = (u8*)mmap(0, AllocationSize, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANONYMOUS, -1, 0);
-  if (Bytes == InvalidMemoryPointer)
+  if (Bytes == MAP_FAILED)
   {
     Bytes = 0;
     s32 Error = errno;
@@ -79,11 +78,13 @@ PlatformAllocateArena(umm RequestedBytes = Megabytes(1))
 
   memory_arena *NewArena = (memory_arena*)Bytes;
 
-  NewArena->FirstFreeByte = (u8*)((memory_arena*)Bytes + 1);
+  NewArena->FirstFreeByte = (u8*)(Bytes + PageSize);
   NewArena->Remaining = AllocationSize - sizeof(memory_arena);
   NewArena->TotalSize = AllocationSize;
   NewArena->NextBlockSize = AllocationSize * 2;
   NewArena->MemProtect = True;
+
+  Assert((umm)NewArena->FirstFreeByte % PageSize == 0);
 
   return NewArena;
 }

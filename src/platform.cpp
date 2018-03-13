@@ -467,9 +467,7 @@ main(s32 NumArgs, char ** Args)
   InitializeOpenGlExtensions(&Plat.GL, &Os);
   GL_Global = &Plat.GL;
 
-#if BONSAI_INTERNAL
-  InitDebugState(&Plat, DebugMemory);
-#endif
+  INIT_DEUBG_STATE(&Plat, DebugMemory);
 
   InitGlobals(&Plat);
 

@@ -81,12 +81,12 @@ PushSize(memory_arena *Arena, umm SizeIn)
     u32 Pages = (SizeIn/PageSize) + 1;
     RequestedSize = (Pages*PageSize) + PageSize;
     Assert( RequestedSize % PageSize == 0 );
+    Assert( (umm)Arena->FirstFreeByte % PageSize == 0);
   }
 #endif
 
-  // Reallocate arena if there's not enough space left in it
   b32 ArenaIsFull = RequestedSize > Arena->Remaining;
-  if (ArenaIsFull)
+  if (ArenaIsFull) // Reallocate the arena
   {
     u64 AllocationSize = Arena->NextBlockSize;
     if (RequestedSize > AllocationSize)
@@ -98,6 +98,7 @@ PushSize(memory_arena *Arena, umm SizeIn)
     Allocated->MemProtect = Arena->MemProtect;
 #endif
 
+    // TODO(Jesse): Can these copies be avoided with some more clever pointer-swapping?
     memory_arena PrevArena = *Arena;
     memory_arena NewArena = *Allocated;
 
@@ -115,9 +116,9 @@ PushSize(memory_arena *Arena, umm SizeIn)
 #if MEMPROTECT_OVERFLOW
   if (Arena->MemProtect)
   {
-    umm End = (umm)Arena->FirstFreeByte + SizeIn;
-    umm EndToNextPage = PageSize - (End % PageSize);
-    Assert( (End+EndToNextPage) % PageSize == 0);
+    umm EndOfStruct = (umm)Arena->FirstFreeByte + SizeIn;
+    umm EndToNextPage = PageSize - (EndOfStruct % PageSize);
+    Assert( (EndOfStruct+EndToNextPage) % PageSize == 0);
 
     Result = Arena->FirstFreeByte + EndToNextPage;
     u8* LastPage = Result + SizeIn;
@@ -143,6 +144,15 @@ PushSize(memory_arena *Arena, umm SizeIn)
 
   Arena->FirstFreeByte += RequestedSize;
   Arena->Remaining -= RequestedSize;
+  *Arena->FirstFreeByte = 0;
+
+#if MEMPROTECT
+  if (Arena->MemProtect)
+  {
+    Assert( ((umm)Result+SizeIn) % PageSize == 0);
+    Assert( (umm)Arena->FirstFreeByte % PageSize == 0);
+  }
+#endif
 
   return Result;
 }

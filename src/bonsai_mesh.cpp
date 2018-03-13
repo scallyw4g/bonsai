@@ -81,8 +81,7 @@ BufferVertsDirect(
   __m128 mmScale = _mm_set_ps(0, Scale.z, Scale.y, Scale.x);
   __m128 mmOffset = _mm_set_ps(0, Offset.z, Offset.y, Offset.x);
 
-  s32 FaceVerts = 6;
-  Assert(NumVerts % FaceVerts == 0);
+  Assert(NumVerts % VERTS_PER_FACE == 0);
 
   s32 sizeofData = NumVerts * sizeof(v3);
   memcpy( &Dest->Normals[Dest->CurrentIndex],  Normals,         sizeofData );
@@ -91,7 +90,7 @@ BufferVertsDirect(
 
   for ( s32 VertIndex = 0;
         VertIndex < NumVerts;
-        VertIndex += FaceVerts )
+        VertIndex += VERTS_PER_FACE )
   {
     v3 VertSrc0 = VertsPositions[VertIndex + 0];
     v3 VertSrc1 = VertsPositions[VertIndex + 1];
@@ -135,7 +134,7 @@ BufferVertsDirect(
     Dest->Verts[Dest->CurrentIndex + 4] = Result4;
     Dest->Verts[Dest->CurrentIndex + 5] = Result5;
 
-    Dest->CurrentIndex += FaceVerts;
+    Dest->CurrentIndex += VERTS_PER_FACE;
   }
 
 #else
