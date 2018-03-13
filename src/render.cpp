@@ -2516,7 +2516,7 @@ BufferWorld(world *World, graphics *Graphics, camera *Camera)
 #if BONSAI_INTERNAL
         if (GetDebugState()->Debug_RedrawEveryPush)
         {
-          DrawGBufferToFullscreenQuad( Global_Plat, Graphics->gBuffer, Graphics->SG, Camera, WORLD_CHUNK_DIM);
+          DrawGBufferToFullscreenQuad( Global_Plat, Graphics, WORLD_CHUNK_DIM);
           glXSwapBuffers(Global_Os->Display, Global_Os->Window);
           RuntimeBreak();
           ClearFramebuffers(Graphics);

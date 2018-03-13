@@ -174,9 +174,9 @@ BufferVertsChecked(
 
     s32 NumVerts,
 
-    v3* VertsPositions,
+    v3* Positions,
     v3* Normals,
-    const v3* VertColors,
+    const v3* Colors,
     v3 Offset = V3(0),
     v3 Scale = V3(1)
   )
@@ -185,11 +185,21 @@ BufferVertsChecked(
 
   if ( Target->CurrentIndex + NumVerts > Target->Allocated )
   {
-    Warn("Flushing %d/%d Verts to gBuffer", Target->CurrentIndex, Target->Allocated);
-    RenderGBuffer(Target, Graphics);
-  }
+    u32 VertsRemaining = Target->Allocated - Target->CurrentIndex;
+    BufferVertsDirect( Target, VertsRemaining, Positions, Normals, Colors, Offset, Scale);
 
-  BufferVertsDirect( Target, NumVerts, VertsPositions, Normals, VertColors, Offset, Scale);
+    Positions += VertsRemaining;
+    Normals += VertsRemaining;
+    Colors += VertsRemaining;
+
+    RenderGBuffer(Target, Graphics);
+
+    BufferVertsChecked(Target, Graphics, NumVerts-VertsRemaining, Positions, Normals, Colors, Offset, Scale);
+  }
+  else
+  {
+    BufferVertsDirect( Target, NumVerts, Positions, Normals, Colors, Offset, Scale);
+  }
 
   return;
 }
