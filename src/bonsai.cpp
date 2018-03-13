@@ -354,34 +354,41 @@ GetFreeChunk(memory_arena *Storage, world *World, world_position P)
 void
 QueueChunksForInit(game_state *GameState, world_position WorldDisp)
 {
+  TIMED_FUNCTION();
+
   if (LengthSq(V3(WorldDisp)) == 0) return;
 
-  world_position WorldCenter = GameState->World->Center;
+  world *World = GameState->World;
 
-  world_position Iter = GetSign(WorldDisp);
+  world_position WorldCenter = World->Center;
+  world_position VRHalfDim = World->VisibleRegion/2;
 
-  world_position InvAbsIter = ((Iter * Iter)-1) * ((Iter * Iter)-1);
+  world_position Min = WorldCenter - VRHalfDim + WorldDisp;
+  world_position Max = WorldCenter + VRHalfDim + WorldDisp;
 
-  world_position VRHalfDim = GameState->World->VisibleRegion/2;
+  // TODO(Jesse): This could be miles more efficient by only iterating over the
+  // chunks that need to be initialized instead of all chunks multiple times.
 
-  world_position SliceMin = WorldCenter + (VRHalfDim * Iter) - (VRHalfDim * InvAbsIter) - ClampPositive(WorldDisp);
-
-  // NOTE(Jesse): Changed this from the following to behave properly on a 2d plane
-  world_position SliceMax = WorldCenter + (VRHalfDim * Iter) + (VRHalfDim * InvAbsIter) - ClampPositive(Iter) - InvAbsIter - ClampNegative(WorldDisp) + ClampNegative(Iter);
-  /* world_position SliceMax = WorldCenter + (VRHalfDim * Iter) + (VRHalfDim * InvAbsIter) - ClampPositive(Iter)              - ClampNegative(WorldDisp) + ClampNegative(Iter); */
-
-  for (int z = SliceMin.z; z <= SliceMax.z; ++ z)
+  for (s32 z = Min.z; z <= Max.z; ++ z)
   {
-    for (int y = SliceMin.y; y <= SliceMax.y; ++ y)
+    for (s32 y = Min.y; y <= Max.y; ++ y)
     {
-      for (int x = SliceMin.x; x <= SliceMax.x; ++ x)
+      for (s32 x = Min.x; x <= Max.x; ++ x)
       {
         world_position P = World_Position(x,y,z);
-        world_chunk *chunk = GetFreeChunk(GameState->Memory, GameState->World, P);
-        QueueChunkForInit(&GameState->Plat->Queue, chunk);
+        world_chunk *Chunk = GetWorldChunk( World, P );
+
+        if (!Chunk)
+        {
+          Chunk = GetFreeChunk(GameState->Memory, GameState->World, P);
+          Assert(Chunk);
+          QueueChunkForInit(&GameState->Plat->Queue, Chunk);
+        }
       }
     }
   }
+
+  return;
 }
 
 inline b32
