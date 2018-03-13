@@ -751,7 +751,6 @@ ZeroChunk( chunk_data *Chunk, s32 Volume )
   ZeroMesh(&Chunk->Mesh);
 
   Chunk->Flags = Chunk_Uninitialized;
-  SetFlag( Chunk, Chunk_BuildMesh  );
 
   // TODO(Jesse): Pretty sure this is not necessary
   for ( s32 VoxelIndex = 0;

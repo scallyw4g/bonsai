@@ -318,6 +318,8 @@ BuildWorldChunkMesh(world *World, world_chunk *WorldChunk, chunk_dimension World
 
   UnSetFlag( chunk, Chunk_BuildMesh  );
 
+  Assert(NotSet(chunk, Chunk_Queued));
+
   canonical_position rightVoxel;
   canonical_position leftVoxel;
   canonical_position topVoxel;

@@ -106,6 +106,7 @@ InitChunkPerlin(world_chunk *WorldChunk, v3 WorldChunkDim, u32 ColorIndex)
     }
   }
 
+  SetFlag( WorldChunk, Chunk_BuildMesh  );
   return;
 }
 
