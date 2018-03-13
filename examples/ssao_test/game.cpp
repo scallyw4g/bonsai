@@ -35,10 +35,12 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
   chunk_dimension WorldChunkDim = World->ChunkDim;
 
-  g_buffer_render_group *gBuffer = Plat->Graphics->gBuffer;
-  ao_render_group *AoGroup       = Plat->Graphics->AoGroup;
-  shadow_render_group *SG        = Plat->Graphics->SG;
-  camera *Camera                 = Plat->Graphics->Camera;
+  graphics *Graphics = Plat->Graphics;
+
+  g_buffer_render_group *gBuffer = Graphics->gBuffer;
+  ao_render_group *AoGroup       = Graphics->AoGroup;
+  shadow_render_group *SG        = Graphics->SG;
+  camera *Camera                 = Graphics->Camera;
 
 
 #if DEBUG_DRAW_WORLD_AXIES
@@ -68,8 +70,8 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
     GetViewMatrix(WorldChunkDim, Camera);
 
   TIMED_BLOCK("BufferMeshes");
-    BufferWorld(World, Plat->Graphics, Camera);
-    BufferEntities( GameState->EntityTable, &World->Mesh, Plat->Graphics, Camera, World);
+    BufferWorld(World, Graphics, Camera);
+    BufferEntities( GameState->EntityTable, &World->Mesh, Graphics, Camera, World);
   END_BLOCK("BufferMeshes");
 
   TIMED_BLOCK("RenderToScreen");
@@ -77,11 +79,11 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
       GlobalLightTheta += (Plat->dt * TWOPI) / 20;
       SG->GameLights.Lights[0].Position += 0.1*V3( Sin(GlobalLightTheta), Cos(GlobalLightTheta), 0.0f);
       SG->GameLights.Lights[1].Position += 0.2*V3( Sin(GlobalLightTheta), Cos(GlobalLightTheta), 0.0f);
-      DrawVoxel( &World->Mesh, gBuffer, SG, Camera, SG->GameLights.Lights[0].Position, BLUE, V3(1.0f));
-      DrawVoxel( &World->Mesh, gBuffer, SG, Camera, SG->GameLights.Lights[1].Position, RED, V3(1.0f));
+      DrawVoxel( &World->Mesh, Graphics, SG->GameLights.Lights[0].Position, BLUE, V3(1.0f));
+      DrawVoxel( &World->Mesh, Graphics, SG->GameLights.Lights[1].Position, RED, V3(1.0f));
     }
 
-    RenderGBuffer(&World->Mesh, gBuffer, SG, Camera);
+    RenderGBuffer(&World->Mesh, Graphics);
 
     RenderAoTexture(AoGroup);
 

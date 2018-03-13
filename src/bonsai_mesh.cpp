@@ -4,7 +4,7 @@
 #include <colors.h>
 
 void
-RenderGBuffer(untextured_3d_geometry_buffer *Target, g_buffer_render_group *gBuffer, shadow_render_group *SG, camera *Camera);
+RenderGBuffer(untextured_3d_geometry_buffer *Target, graphics *Graphics);
 
 inline void
 BufferVertsDirect(
@@ -14,7 +14,13 @@ BufferVertsDirect(
     v3 *Colors
   )
 {
-  Assert(NumVerts + Dest->CurrentIndex <= Dest->Allocated);
+  TIMED_FUNCTION();
+  if ( Dest->CurrentIndex + NumVerts > Dest->Allocated )
+  {
+    Assert(false);
+    Error("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->CurrentIndex, Dest->Allocated);
+    return;
+  }
 
   s32 sizeofData = NumVerts * sizeof(v3);
   memcpy( &Dest->Verts[Dest->CurrentIndex],  Positions,  sizeofData );
@@ -36,7 +42,12 @@ BufferVertsDirect(
   )
 {
   TIMED_FUNCTION();
-  Assert(NumVerts + Dest->CurrentIndex <= Dest->Allocated);
+  if ( Dest->CurrentIndex + NumVerts > Dest->Allocated )
+  {
+    Assert(false);
+    Error("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->CurrentIndex, Dest->Allocated);
+    return;
+  }
 
   s32 sizeofData = NumVerts * sizeof(v3);
   memcpy( &Dest->Verts[Dest->CurrentIndex],   VertsPositions,  sizeofData );
@@ -59,12 +70,10 @@ BufferVertsDirect(
   )
 {
   TIMED_FUNCTION();
-  Assert(NumVerts + Dest->CurrentIndex <= Dest->Allocated);
-
-  // This path assumes we've already checked there's enough memroy remaining
   if ( Dest->CurrentIndex + NumVerts > Dest->Allocated )
   {
-    Warn("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->CurrentIndex, Dest->Allocated);
+    Assert(false);
+    Error("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->CurrentIndex, Dest->Allocated);
     return;
   }
 
@@ -161,10 +170,7 @@ BufferVertsDirect(
 inline void
 BufferVertsChecked(
     untextured_3d_geometry_buffer *Target,
-
-    g_buffer_render_group *gBuffer,
-    shadow_render_group *SG,
-    camera *Camera,
+    graphics *Graphics,
 
     s32 NumVerts,
 
@@ -180,7 +186,7 @@ BufferVertsChecked(
   if ( Target->CurrentIndex + NumVerts > Target->Allocated )
   {
     Warn("Flushing %d/%d Verts to gBuffer", Target->CurrentIndex, Target->Allocated);
-    RenderGBuffer(Target, gBuffer, SG, Camera);
+    RenderGBuffer(Target, Graphics);
     return;
   }
 
@@ -196,17 +202,15 @@ BufferVerts(
     untextured_3d_geometry_buffer *Dest,
 
     v3 RenderOffset,
+    r32 Scale,
 
-    g_buffer_render_group *gBuffer,
-    shadow_render_group *SG,
-    camera *Camera,
-    r32 Scale
+    graphics *Graphics
   )
 {
   TIMED_FUNCTION();
 
 #if 1
-  BufferVertsChecked(Dest, gBuffer, SG, Camera, Source->CurrentIndex, Source->Verts,
+  BufferVertsChecked(Dest, Graphics, Source->CurrentIndex, Source->Verts,
       Source->Normals, Source->Colors);
   return;
 #else
@@ -273,6 +277,7 @@ BuildEntityMesh(chunk_data *chunk, chunk_dimension Dim)
 
 
 
+        // FIXME(Jesse): This should use a BufferVertsChecked path
         if ( (!IsInsideDim(Dim, rightVoxel)) || NotFilled( chunk, rightVoxel, Dim))
         {
           RightFaceVertexData( VP, Diameter, VertexData);
@@ -354,6 +359,7 @@ BuildWorldChunkMesh(world *World, world_chunk *WorldChunk, chunk_dimension World
           backVoxel  = Canonicalize(WorldChunkDim, CurrentP - V3(0, 1, 0));
         END_BLOCK("Canonicalize");
 
+        // FIXME(Jesse): This should use a BufferVertsChecked path
         if ( !IsFilledInWorld( World, WorldChunk, rightVoxel ) )
         {
           RightFaceVertexData( CurrentP.Offset, Diameter, VertexData);
