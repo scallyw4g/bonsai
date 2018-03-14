@@ -11,6 +11,7 @@ set(CMAKE_BUILD_TYPE Debug)
 set( ROOT ${CMAKE_SOURCE_DIR}/.. )
 
 set( EXAMPLES ${ROOT}/examples )
+set( TESTS ${ROOT}/tests )
 set( SRC ${ROOT}/src )
 set( BIN ${ROOT}/bin )
 
@@ -18,11 +19,7 @@ set( LIBRARY_OUTPUT_PATH ${BIN} )
 set( EXECUTABLE_OUTPUT_PATH ${BIN} )
 
 add_executable(Bonsai ${SRC}/platform.cpp)
-
-# Link with Opengl
-find_package(OpenGL REQUIRED)
-include_directories( ${OPENGL_INCLUDE_DIRS} )
-target_link_libraries(Bonsai ${OPENGL_LIBRARIES})
+add_executable(test_m4 ${TESTS}/m4.cpp)
 
 # Engine include dirs
 include_directories(${SRC})
@@ -42,13 +39,22 @@ set( GAME_SRC_DIR ${EXAMPLES}/ssao_test )
 include_directories(${GAME_SRC_DIR}/engine_constants)
 
 add_library(Game SHARED ${GAME_SRC_DIR}/game.cpp)
-target_link_libraries(Game ${OPENGL_LIBRARIES})
 target_include_directories(Game PRIVATE ${GAME_SRC_DIR})
+
+# Link with Opengl
+find_package(OpenGL REQUIRED)
+include_directories(${OPENGL_INCLUDE_DIRS} )
+target_link_libraries(Bonsai ${OPENGL_LIBRARIES})
+target_link_libraries(Game ${OPENGL_LIBRARIES})
+target_link_libraries(test_m4 ${OPENGL_LIBRARIES})
+
 
 add_custom_target(run /usr/bin/optirun ${BIN}/Bonsai
                   DEPENDS Bonsai
                   COMMENT "Running Bonsai")
 
+add_custom_target(tests ${BIN}/test_m4
+                  COMMENT "Running M4 Tests")
 
 add_definitions( -DBONSAI_INTERNAL=1 )
 
@@ -95,6 +101,10 @@ if (UNIX)
   target_link_libraries(Bonsai X11)                       # Xlib
   target_link_libraries(Bonsai ${CMAKE_THREAD_LIBS_INIT}) # -lpthread
   target_link_libraries(Bonsai ${CMAKE_DL_LIBS})          # .so loader
+
+  target_link_libraries(test_m4 X11)                       # Xlib
+  target_link_libraries(test_m4 ${CMAKE_THREAD_LIBS_INIT}) # -lpthread
+  target_link_libraries(test_m4 ${CMAKE_DL_LIBS})          # .so loader
 
 elseif(WIN32)
 

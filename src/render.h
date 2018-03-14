@@ -1,13 +1,12 @@
 #ifndef RENDER_H
 #define RENDER_H
 
-// FIXME(Jesse): This should not do draw call tracking in release mode
-//
-
+#if BONSAI_INTERNAL
 #define Draw(VertexCount) \
   Draw_(VertexCount, __FUNCTION__);
 
-void Draw_(u64 N, const char * Caller)
+void
+Draw_(u64 N, const char * Caller)
 {
   TIMED_FUNCTION();
   u64 Index = ((u64)Caller) % Global_DrawCallArrayLength;
@@ -27,6 +26,13 @@ void Draw_(u64 N, const char * Caller)
   DrawCall->Count++;
   glDrawArrays(GL_TRIANGLES, 0, N);
 }
+#else
+void
+Draw(u64 N)
+{
+  glDrawArrays(GL_TRIANGLES, 0, N);
+}
+#endif
 
 inline void
 SetViewport(v2 Dim)

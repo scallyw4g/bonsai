@@ -767,9 +767,13 @@ BufferFirstCallToEach(ui_render_group *Group, debug_profile_scope *Scope, debug_
 
   if (!Scope->Stats)
   {
+#if MEMPROTECT
     State->Memory->MemProtect = False;
+#endif
     Scope->Stats = PUSH_STRUCT_CHECKED(scope_stats, State->Memory, 1);
+#if MEMPROTECT
     State->Memory->MemProtect = True;
+#endif
 
     *Scope->Stats = GetStatsFor(State, Scope);
   }
