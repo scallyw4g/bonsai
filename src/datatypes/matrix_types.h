@@ -10,6 +10,13 @@ struct m4
     return Result;
   }
 
+  bool
+  operator==(m4 &M2)
+  {
+    NotImplemented;
+    return true;
+  }
+
   m4(v4 Row0, v4 Row1, v4 Row2, v4 Row3)
   {
     this->E[0] = Row0;
@@ -26,32 +33,6 @@ struct m4
     this->E[3] = v4(0,0,0,0);
   }
 };
-
-inline glm::mat4
-GLM4(m4 M)
-{
-  glm::mat4 Result(
-    glm::vec4(M[0][0], M[0][1], M[0][2], M[0][3]),
-    glm::vec4(M[1][0], M[1][1], M[1][2], M[1][3]),
-    glm::vec4(M[2][0], M[2][1], M[2][2], M[2][3]),
-    glm::vec4(M[3][0], M[3][1], M[3][2], M[3][3])
-  );
-
-  return Result;
-}
-
-inline m4
-GLM4(glm::mat4 M)
-{
-  m4 Result;
-
-  Result[0] = V4(M[0][0], M[0][1], M[0][2], M[0][3]);
-  Result[1] = V4(M[1][0], M[1][1], M[1][2], M[1][3]);
-  Result[2] = V4(M[2][0], M[2][1], M[2][2], M[2][3]);
-  Result[3] = V4(M[3][0], M[3][1], M[3][2], M[3][3]);
-
-  return Result;
-}
 
 m4
 operator*(m4 A, m4 B)

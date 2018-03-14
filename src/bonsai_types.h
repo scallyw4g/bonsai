@@ -1,6 +1,3 @@
-#include <glm/glm.hpp>
-#include <glm/gtx/transform.hpp>
-
 void BreakHere() { return; }
 
 #include <assert_types.h>

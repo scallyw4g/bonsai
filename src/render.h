@@ -41,46 +41,45 @@ SetViewport(v2 Dim)
   return;
 }
 
+// TODO(Jesse): This only gets used when computing the shadow map, so I'm not
+// even sure if it works ATM
 inline m4
 Orthographic( r32 X, r32 Y, r32 Zmin, r32 Zmax, v3 Translate )
 {
+  r32 r = X;
+  r32 l = -X;
 
-#if 1
-  m4 Result = GLM4(glm::ortho<r32>(-X+Translate.x, X+Translate.x,
-                                   -Y+Translate.y, Y+Translate.y,
-                                   Zmin +Translate.z, Zmax +Translate.z));
-#else
-  m4 Result = IdentityMatrix;
-  Assert(False);
-#endif
+  r32 t = Y;
+  r32 b = -Y;
+
+  r32 f = Zmax;
+  r32 n = Zmin;
+
+  m4 Result = {
+    V4(2/(r-l) , 0       , 0        , -1*((r+l)/(r-l)) ) ,
+    V4(0       , 2/(t-b) , 0        , -1*((t+b)/(t-b)) ) ,
+    V4(0       , 0       , -2/(f-n) , -1*((f+n)/(f-n)) ) ,
+    V4(0       , 0       , 0        , 1)
+  };
 
   return Result;
 }
 
 inline m4
-Perspective(radians FOV, r32 AspectRatio, r32 NearClip, r32 FarClip)
+Perspective(radians FOV, v2 WindowDim, r32 NearClip, r32 FarClip)
 {
+  r32 TanHalfFOV = tan(FOV / 2.0f);
+  r32 Aspect = WindowDim.x/WindowDim.y;
 
-#if 1
-  glm::mat4 Projection = glm::perspective(FOV, AspectRatio, NearClip, FarClip);
-  m4 Result = GLM4(Projection);
-#else
-  // Scale
-  r32 S = (1/(tan((FOV/2) * (PIf/180))));
-
-  // Remap z to 0-1
-  r32 Z = (-FarClip)/(FarClip-NearClip);
-  r32 ZZ = -FarClip * NearClip / (FarClip - NearClip);
+  r32 Z = (-(FarClip+NearClip)) / (FarClip-NearClip);
+  r32 ZZ = (-(2.0f*FarClip*NearClip)) / (FarClip - NearClip);
 
   m4 Result = {
-    V4(S, 0, 0, 0),
-    V4(0, S, 0, 0),
-    V4(0, 0, Z, -1),
-    V4(0, 0, ZZ, 0),
+    V4(1.0f/(Aspect*TanHalfFOV) , 0               , 0  , 0)     ,
+    V4(0                        , 1.0f/TanHalfFOV , 0  , 0)     ,
+    V4(0                        , 0               , Z  , -1.0f) ,
+    V4(0                        , 0               , ZZ , 0)     ,
   };
-#endif
-
-
 
   return Result;
 }
@@ -97,7 +96,7 @@ GetProjectionMatrix(camera *Camera, int WindowWidth, int WindowHeight)
 {
   m4 Projection = Perspective(
       Rads(Camera->Frust.FOV),
-      (float)WindowWidth/(float)WindowHeight,
+      V2(WindowWidth, WindowHeight),
       Camera->Frust.nearClip,
       Camera->Frust.farClip);
 
@@ -155,11 +154,16 @@ GetRenderSpaceAABB(chunk_dimension WorldChunkDim, entity *Entity, camera *Camera
 inline m4
 LookAt(v3 P, v3 Target, v3 Up)
 {
-  glm::mat4 M = glm::lookAt( glm::vec3(P.x, P.y, P.z),
-                             glm::vec3(Target.x, Target.y, Target.z),
-                             glm::vec3(Up.x, Up.y, Up.z) );
+  v3 Front = Normalize(Target - P);
+  v3 Right = Normalize(Cross(Front, Up));
+  Up       = Normalize(Cross(Right, Front));
 
-  m4 Result = GLM4(M);
+  m4 Result = {
+    V4(Right.x       , Up.x       , -Front.x      , 0) ,
+    V4(Right.y       , Up.y       , -Front.y      , 0) ,
+    V4(Right.z       , Up.z       , -Front.z      , 0) ,
+    V4(-Dot(Right,P) , -Dot(Up,P) ,  Dot(Front,P) , 1)
+  };
 
   return Result;
 }

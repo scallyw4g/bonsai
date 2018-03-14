@@ -24,7 +24,6 @@ add_executable(test_m4 ${TESTS}/m4.cpp)
 # Engine include dirs
 include_directories(${SRC})
 include_directories(${SRC}/datatypes)
-include_directories(${ROOT}/external/glm-0.9.7.1)
 
 add_definitions( -DGL_GLEXT_PROTOTYPES=1 )
 
