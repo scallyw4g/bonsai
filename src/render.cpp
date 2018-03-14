@@ -14,12 +14,12 @@
 global_variable u32 Global_QuadVertexBuffer;
 global_variable v3 GlobalLightPosition = {{0.20f, 1.0f, 1.0f}};
 
-global_variable m4 NdcToScreenSpace = {{
+global_variable m4 NdcToScreenSpace = {
   V4(0.5, 0.0, 0.0, 0.0),
   V4(0.0, 0.5, 0.0, 0.0),
   V4(0.0, 0.0, 0.5, 0.0),
   V4(0.5, 0.5, 0.5, 1.0)
-}};
+};
 
 void
 Init_Global_QuadVertexBuffer() {
@@ -72,11 +72,6 @@ RenderQuad()
 
 
 
-
-global_variable m4 IdentityMatrix = {{V4(1, 0, 0 ,0),
-                                     V4(0, 1, 0 ,0),
-                                     V4(0, 0, 1 ,0),
-                                     V4(0, 0, 0 ,0)}};
 
 // TODO(Jesse): Why are these allocated on the heap?  Seems unnecessary..
 texture *

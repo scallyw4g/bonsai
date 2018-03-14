@@ -9,6 +9,22 @@ struct m4
     v4& Result = this->E[index];
     return Result;
   }
+
+  m4(v4 Row0, v4 Row1, v4 Row2, v4 Row3)
+  {
+    this->E[0] = Row0;
+    this->E[1] = Row1;
+    this->E[2] = Row2;
+    this->E[3] = Row3;
+  }
+
+  m4()
+  {
+    this->E[0] = v4(0,0,0,0);
+    this->E[1] = v4(0,0,0,0);
+    this->E[2] = v4(0,0,0,0);
+    this->E[3] = v4(0,0,0,0);
+  }
 };
 
 inline glm::mat4
@@ -40,7 +56,7 @@ GLM4(glm::mat4 M)
 m4
 operator*(m4 A, m4 B)
 {
-  m4 Result = {};
+  m4 Result;
 
   for(u32 Row = 0; Row < 4; ++Row)
   {
@@ -48,7 +64,7 @@ operator*(m4 A, m4 B)
     {
       for(u32 ResultIndex = 0; ResultIndex < 4; ++ResultIndex)
       {
-        Result.E[Row][Column] += A.E[ResultIndex][Column] * B.E[Row][ResultIndex];
+        Result[Row][Column] += A[ResultIndex][Column] * B[Row][ResultIndex];
       }
     }
   }
