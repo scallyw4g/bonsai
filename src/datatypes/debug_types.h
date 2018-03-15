@@ -154,76 +154,9 @@ struct debug_recording_state
   hotkeys Inputs[DEBUG_RECORD_INPUT_SIZE];
 };
 
-void
-PrintScopeTree(debug_profile_scope *Scope, s32 Depth = 0)
-{
-  if (!Scope)
-    return;
-
-  s32 CurDepth = Depth;
-
-  while (CurDepth--)
-  {
-    printf("%s", "  ");
-  }
-
-  if (Depth > 0)
-    printf("%s", " `- ");
-
-  printf("%d %s", Depth, Scope->Name);
-
-  debug_state *DebugState = GetDebugState();
-  if (DebugState->WriteScope == &Scope->Child)
-    printf(" %s", "<-- Child \n");
-  else if (DebugState->WriteScope == &Scope->Sibling)
-    printf(" %s", "<-- Sibling \n");
-  else
-    printf("%s", "\n");
-
-
-  PrintScopeTree(Scope->Child, Depth+1);
-  PrintScopeTree(Scope->Sibling, Depth);
-
-  return;
-}
-
-
 debug_profile_scope NullDebugProfileScope = {};
 
-debug_profile_scope *
-GetProfileScope(debug_state *State)
-{
-  debug_profile_scope *Result = 0;
-#if 1
-  debug_profile_scope *Sentinel = &State->FreeScopeSentinel;
-
-  if (Sentinel->Child != Sentinel)
-  {
-    Result = Sentinel->Child;
-
-    Sentinel->Child = Sentinel->Child->Child;
-    Sentinel->Child->Child->Parent = Sentinel;
-    --State->FreeScopeCount;
-  }
-  else
-  {
-#if MEMPROTECT
-    State->Memory->MemProtect = False;
-#endif
-    Result = PUSH_STRUCT_CHECKED(debug_profile_scope, State->Memory, 1);
-#if MEMPROTECT
-    State->Memory->MemProtect = True;
-#endif
-  }
-#else
-    Result = PUSH_STRUCT_CHECKED(debug_profile_scope, State->Memory, 1);
-#endif
-
-  if (Result)
-    *Result = NullDebugProfileScope;
-
-  return Result;
-}
+debug_profile_scope * GetProfileScope(debug_state *State);
 
 struct debug_timed_function
 {

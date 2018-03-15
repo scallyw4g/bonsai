@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <constants.hpp>
 
+#include <memory.cpp>
+
 enum frame_event_type
 {
   FrameEvent_Undefined,
