@@ -1,5 +1,9 @@
 #include <stdio.h>
 
+// network layer
+#include<sys/socket.h> //socket
+#include<arpa/inet.h>  //inet_addr
+
 // mmap
 #include <sys/mman.h>
 #include <sys/time.h>
@@ -404,5 +408,32 @@ Terminate(os *Os)
 inline void
 SetMouseP(v2 P)
 {
+  return;
+}
+
+#include <net/server.h>
+
+inline void
+ConnectToServer()
+{
+  int sock;
+  struct sockaddr_in server;
+  char message[SERVER_MESSAGE_LENGTH] , server_reply[SERVER_MESSAGE_LENGTH];
+
+  sock = socket(AF_INET , SOCK_STREAM , 0);
+  if (sock == -1) { printf("Could not create socket"); }
+
+  server.sin_addr.s_addr = inet_addr("127.0.0.1");
+  server.sin_family = AF_INET;
+  server.sin_port = htons( 1337 );
+
+  if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0) { perror("connect failed. Error"); return; }
+  if( send(sock , message , strlen(message) , 0) < 0) { puts("Send failed"); return; }
+
+  //Receive a reply from the server
+  if( recv(sock , server_reply , SERVER_MESSAGE_LENGTH , 0) < 0) { puts("recv failed"); return; }
+
+  Debug("Server reply : %s", server_reply);
+
   return;
 }

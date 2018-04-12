@@ -19,6 +19,7 @@ set( LIBRARY_OUTPUT_PATH ${BIN} )
 set( EXECUTABLE_OUTPUT_PATH ${BIN} )
 
 add_executable(Bonsai ${SRC}/platform.cpp)
+add_executable(Server ${SRC}/net/server.cpp)
 add_executable(test_m4 ${TESTS}/m4.cpp)
 
 # Engine include dirs
@@ -82,8 +83,6 @@ endif()
 if (UNIX)
   add_definitions( -DLINUX=1 -ggdb )
 endif()
-
-
 
 add_definitions( -std=c++11 )
 

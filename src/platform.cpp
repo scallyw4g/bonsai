@@ -487,6 +487,8 @@ main(s32 NumArgs, char ** Args)
 
   r64 LastMs = Plat.GetHighPrecisionClock();
 
+  ConnectToServer();
+
 #if BONSAI_INTERNAL
   u64 LastCycles = GetDebugState()->GetCycleCount();
 #endif
