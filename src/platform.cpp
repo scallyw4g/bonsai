@@ -487,7 +487,7 @@ main(s32 NumArgs, char ** Args)
 
   r64 LastMs = Plat.GetHighPrecisionClock();
 
-  ConnectToServer();
+  socket_t Socket = ConnectToServer();
 
 #if BONSAI_INTERNAL
   u64 LastCycles = GetDebugState()->GetCycleCount();
@@ -515,6 +515,9 @@ main(s32 NumArgs, char ** Args)
     DEBUG_FRAME_BEGIN(&Hotkeys, Plat.dt, FrameCycles);
 
     TIMED_BLOCK("Frame Preamble");
+
+    PingServer(Socket);
+
     v2 LastMouseP = Plat.MouseP;
     while ( ProcessOsMessages(&Os, &Plat) );
     Plat.MouseDP = LastMouseP - Plat.MouseP;
@@ -550,6 +553,7 @@ main(s32 NumArgs, char ** Args)
     FrameEnd();
 
     END_BLOCK("Frame End");
+
   }
 
   Info("Shutting Down");

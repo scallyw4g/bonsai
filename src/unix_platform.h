@@ -48,6 +48,8 @@ typedef PFNGLXSWAPINTERVALEXTPROC PFNSWAPINTERVALPROC;
 // wrapper that does some additional crazyness on Win32
 #define PrintConsole(Message) printf(Message)
 
+typedef int socket_t;
+
 typedef int thread_id;
 typedef sem_t semaphore;
 
@@ -63,3 +65,6 @@ WakeThread( semaphore *Semaphore )
   sem_post(Semaphore);
   return;
 }
+
+
+

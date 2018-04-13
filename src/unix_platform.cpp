@@ -413,27 +413,39 @@ SetMouseP(v2 P)
 
 #include <net/server.h>
 
-inline void
+inline socket_t
 ConnectToServer()
 {
-  int sock;
-  struct sockaddr_in server;
-  char message[SERVER_MESSAGE_LENGTH] , server_reply[SERVER_MESSAGE_LENGTH];
+  sockaddr_in RemoteServer;
+  socket_t Socket = socket(AF_INET , SOCK_STREAM , 0);
+  if (Socket == -1) { printf("Could not create socket"); }
 
-  sock = socket(AF_INET , SOCK_STREAM , 0);
-  if (sock == -1) { printf("Could not create socket"); }
+  RemoteServer.sin_addr.s_addr = inet_addr("127.0.0.1");
+  RemoteServer.sin_family = AF_INET;
+  RemoteServer.sin_port = htons( REMOTE_PORT );
 
-  server.sin_addr.s_addr = inet_addr("127.0.0.1");
-  server.sin_family = AF_INET;
-  server.sin_port = htons( 1337 );
+  if (connect(Socket , (sockaddr *)&RemoteServer , sizeof(RemoteServer)) < 0)
+    { Error("Connecting to server Failed"); }
+  else
+    { Debug("Connected"); }
 
-  if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0) { perror("connect failed. Error"); return; }
-  if( send(sock , message , strlen(message) , 0) < 0) { puts("Send failed"); return; }
+  return Socket;
+}
 
-  //Receive a reply from the server
-  if( recv(sock , server_reply , SERVER_MESSAGE_LENGTH , 0) < 0) { puts("recv failed"); return; }
+inline void
+PingServer(socket_t Socket)
+{
+  server_message Message = {};
+  server_message Response = {};
 
-  Debug("Server reply : %s", server_reply);
+  /* Debug("Pinging server"); */
 
-  return;
+  if (!Send(Socket, &Message))
+  {
+    ConnectToServer();
+  }
+
+  if( recv(Socket , (void*)&Response , sizeof(server_message) , 0) < 0) { puts("recv failed"); return; }
+
+  /* Debug("Hello, Client: %u", Response.ClientId); */
 }
