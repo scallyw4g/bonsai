@@ -7,12 +7,15 @@
 #include <net/server.h>
 
 network_connection
-WaitForClientConnection(socket_t ListeningSocket, sockaddr_in Client)
+WaitForClientConnection(socket_t ListeningSocket)
 {
   network_connection ClientConnection = {};
 
-  int c = sizeof(sockaddr_in);
-  socket_t Socket = accept(ListeningSocket, (sockaddr *)&Client, (socklen_t*)&c);
+  u32 AddressSize = sizeof(ClientConnection.Address);
+  socket_t Socket = accept(ListeningSocket, (sockaddr*)&ClientConnection.Address, &AddressSize);
+
+  // Accept overwrites this value to let us know how many bytes it wrote to ClientConnection.Address
+  Assert(AddressSize == sizeof(ClientConnection.Address));
 
   if (Socket < 0)
   {
@@ -31,8 +34,6 @@ WaitForClientConnection(socket_t ListeningSocket, sockaddr_in Client)
 int
 main(int ArgCount, char **Arguments)
 {
-  sockaddr_in client;
-
   server Server = CreateServer();
   Server.Address.sin_addr.s_addr = INADDR_ANY;
 
@@ -63,7 +64,7 @@ main(int ArgCount, char **Arguments)
     }
     else
     {
-      ClientConnection = WaitForClientConnection(IncomingConnections.Socket, client);
+      ClientConnection = WaitForClientConnection(IncomingConnections.Socket);
     }
   }
 

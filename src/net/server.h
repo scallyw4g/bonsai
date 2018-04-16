@@ -7,6 +7,7 @@ struct server_message
 
 struct network_connection
 {
+  sockaddr_in Address;
   socket_t Socket;
   b32 Connected;
 };
