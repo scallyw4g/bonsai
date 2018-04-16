@@ -159,5 +159,3 @@ CopyArena(memory_arena *Src, memory_arena *Dest)
   return;
 }
 
-
-

@@ -32,6 +32,16 @@ Terabytes(u32 Number)
   return Result;
 }
 
+template <typename T> inline void
+Clear(T *Struct)
+{
+  for ( u32 Byte = 0;
+      Byte < sizeof(T);
+      ++Byte)
+  {
+    *(((u8*)Struct) + Byte) = 0;
+  }
+}
 
 struct memory_arena
 {
@@ -94,3 +104,4 @@ AllocateAndInitializeArena_(memory_arena *Arena, umm Size)
   return;
 }
 #endif
+

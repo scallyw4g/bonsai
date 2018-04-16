@@ -34,13 +34,9 @@ WaitForClientConnection(socket_t ListeningSocket)
 int
 main(int ArgCount, char **Arguments)
 {
-  server Server = CreateServer();
-  Server.Address.sin_addr.s_addr = INADDR_ANY;
-
   network_connection IncomingConnections = {};
-  IncomingConnections.Socket = CreateSocket();
 
-  if( bind(IncomingConnections.Socket, (sockaddr *)&Server , sizeof(Server)) < 0)
+  if( bind(IncomingConnections.Socket, (sockaddr *)&IncomingConnections.Address , sizeof(IncomingConnections.Address)) < 0)
   {
     Error("Bind Failed");
     return 1;

@@ -414,7 +414,7 @@ SetMouseP(v2 P)
 }
 
 inline void
-ConnectToServer(network_connection *Connection, server *Server)
+ConnectToServer(network_connection *Connection)
 {
   if (!Connection->Socket) 
   {
@@ -422,7 +422,7 @@ ConnectToServer(network_connection *Connection, server *Server)
   }
 
   s32 ConnectStatus = connect(Connection->Socket,
-                              (sockaddr *)&Server->Address,
+                              (sockaddr *)&Connection->Address,
                               sizeof(sockaddr_in));
 
   if (ConnectStatus == 0)

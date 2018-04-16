@@ -5,26 +5,6 @@ struct server_message
   u32 ClientId;
 };
 
-struct network_connection
-{
-  sockaddr_in Address;
-  socket_t Socket;
-  b32 Connected;
-};
-
-struct server
-{
-  sockaddr_in Address;
-};
-
-enum socket_op
-{
-  SocketOp_Null,
-  SocketOp_Read,
-  SocketOp_Write,
-  SocketOp_Count
-};
-
 inline socket_t
 CreateSocket()
 {
@@ -37,14 +17,36 @@ CreateSocket()
   return Socket;
 }
 
-inline server
-CreateServer()
+inline sockaddr_in
+CreateAddress()
 {
-  server Server = {};
-  Server.Address.sin_family = AF_INET;
-  Server.Address.sin_port = htons( REMOTE_PORT );
-  return Server;
+  sockaddr_in Address = {};
+  Address.sin_family = AF_INET;
+  Address.sin_port = htons( REMOTE_PORT );
+  return Address;
 }
+
+struct network_connection
+{
+  sockaddr_in Address;
+  socket_t Socket;
+  b32 Connected;
+
+  network_connection()
+  {
+    Clear(this);
+    this->Socket = CreateSocket();
+    this->Address = CreateAddress();
+  }
+};
+
+enum socket_op
+{
+  SocketOp_Null,
+  SocketOp_Read,
+  SocketOp_Write,
+  SocketOp_Count
+};
 
 inline b32
 IsConnected(network_connection *Conn)
