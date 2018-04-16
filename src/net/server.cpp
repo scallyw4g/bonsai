@@ -31,16 +31,20 @@ WaitForClientConnection(socket_t ListeningSocket)
   return ClientConnection;
 }
 
+#define MAX_CLIENTS 2
+
 int
 main(int ArgCount, char **Arguments)
 {
   network_connection IncomingConnections = {};
 
-  if( bind(IncomingConnections.Socket, (sockaddr *)&IncomingConnections.Address , sizeof(IncomingConnections.Address)) < 0)
-  {
-    Error("Bind Failed");
-    return 1;
-  }
+  s32 BindResult =
+    bind(IncomingConnections.Socket,
+        (sockaddr *)&IncomingConnections.Address,
+        sizeof(IncomingConnections.Address));
+
+  if( BindResult < 0)
+    { Error("Bind Failed"); return 1; }
 
   Debug("Bind Successful");
 
@@ -48,19 +52,26 @@ main(int ArgCount, char **Arguments)
 
   Debug("Listening");
 
-  network_connection ClientConnection = {};
+  network_connection ClientList[2] = {};
   server_message Message = {};
+
+
+  for (u32 ClientIndex = 0;
+      ClientIndex < MAX_CLIENTS;
+      ++ClientIndex)
+  {
+    ClientList[ClientIndex] = WaitForClientConnection(IncomingConnections.Socket);
+  }
+
 
   for(;;)
   {
-    if (IsConnected(&ClientConnection))
+    for (u32 ClientIndex = 0;
+        ClientIndex < MAX_CLIENTS;
+        ++ClientIndex)
     {
-      Read(&ClientConnection, &Message);
-      Send(&ClientConnection, &Message);
-    }
-    else
-    {
-      ClientConnection = WaitForClientConnection(IncomingConnections.Socket);
+      Read(&ClientList[ClientIndex], &Message);
+      Send(&ClientList[ClientIndex], &Message);
     }
   }
 
