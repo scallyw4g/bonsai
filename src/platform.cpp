@@ -491,7 +491,7 @@ main(s32 NumArgs, char ** Args)
 #endif
 
 
-  network_connection RemoteConnection = {Socket_Blocking};
+  network_connection RemoteConnection = {Socket_NonBlocking};
   RemoteConnection.Address.sin_addr.s_addr = inet_addr("127.0.0.1");
 
   r64 LastMs = Plat.GetHighPrecisionClock();

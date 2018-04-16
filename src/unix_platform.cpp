@@ -416,24 +416,50 @@ SetMouseP(v2 P)
 inline void
 ConnectToServer(network_connection *Connection)
 {
-  if (!Connection->Socket)
+  if (!Connection->Socket.Id)
   {
     Connection->Socket = CreateSocket(Socket_NonBlocking);
   }
 
-  s32 ConnectStatus = connect(Connection->Socket,
+  s32 ConnectStatus = connect(Connection->Socket.Id,
                               (sockaddr *)&Connection->Address,
                               sizeof(sockaddr_in));
 
-  if (ConnectStatus == 0)
+  if (ConnectStatus)
   {
-    Debug("Connected");
-    Connection->Connected = True;
+      Debug("Connected");
+      Connection->Connected = True;
   }
   else
   {
-    Error("Connecting to remote host failed : %s", strerror(errno));
+    switch (errno)
+    {
+      case 0:
+      {
+      } break;
+
+      case EINPROGRESS:
+      case EALREADY:
+      {
+        // Connection in progress
+      } break;
+
+
+      case EISCONN:
+      {
+        // Not sure if we should ever call connect on an already-connected connection
+        Assert(False);
+      } break;
+
+      default :
+      {
+        Error("Connecting to remote host encountered an unexpected error : %s", strerror(errno));
+        Assert(False);
+      } break;
+
+    }
   }
+
 
   return;
 }

@@ -7,24 +7,28 @@
 #include <net/server.h>
 
 network_connection
-WaitForClientConnection(socket_t ListeningSocket)
+WaitForClientConnection(socket_t *ListeningSocket)
 {
   network_connection ClientConnection = { Socket_Blocking };
 
   u32 AddressSize = sizeof(ClientConnection.Address);
-  socket_t Socket = accept(ListeningSocket, (sockaddr*)&ClientConnection.Address, &AddressSize);
+  s32 SocketId =
+    accept(ListeningSocket->Id,
+        (sockaddr*)&ClientConnection.Address,
+        &AddressSize);
 
-  // Accept overwrites this value to let us know how many bytes it wrote to ClientConnection.Address
+  // The accept() call overwrites this value to let us know how many bytes it
+  // wrote to ClientConnection.Address
   Assert(AddressSize == sizeof(ClientConnection.Address));
 
-  if (Socket < 0)
+  if (SocketId < 0)
   {
     Error("Accept Failed");
   }
   else
   {
     Debug("Connection accepted");
-    ClientConnection.Socket = Socket;
+    ClientConnection.Socket.Id = SocketId;
     ClientConnection.Connected = True;
   }
 
@@ -39,7 +43,7 @@ main(int ArgCount, char **Arguments)
   network_connection IncomingConnections = { Socket_Blocking };
 
   s32 BindResult =
-    bind(IncomingConnections.Socket,
+    bind(IncomingConnections.Socket.Id,
         (sockaddr *)&IncomingConnections.Address,
         sizeof(IncomingConnections.Address));
 
@@ -48,7 +52,7 @@ main(int ArgCount, char **Arguments)
 
   Debug("Bind Successful");
 
-  listen(IncomingConnections.Socket , 3);
+  listen(IncomingConnections.Socket.Id, 3);
 
   Debug("Listening");
 
@@ -60,7 +64,7 @@ main(int ArgCount, char **Arguments)
       ClientIndex < MAX_CLIENTS;
       ++ClientIndex)
   {
-    ClientList[ClientIndex] = WaitForClientConnection(IncomingConnections.Socket);
+    ClientList[ClientIndex] = WaitForClientConnection(&IncomingConnections.Socket);
   }
 
 
