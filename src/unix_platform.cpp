@@ -416,9 +416,9 @@ SetMouseP(v2 P)
 inline void
 ConnectToServer(network_connection *Connection)
 {
-  if (!Connection->Socket) 
+  if (!Connection->Socket)
   {
-    Connection->Socket = CreateSocket();
+    Connection->Socket = CreateSocket(Socket_NonBlocking);
   }
 
   s32 ConnectStatus = connect(Connection->Socket,

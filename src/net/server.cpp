@@ -9,7 +9,7 @@
 network_connection
 WaitForClientConnection(socket_t ListeningSocket)
 {
-  network_connection ClientConnection = {};
+  network_connection ClientConnection = { Socket_Blocking };
 
   u32 AddressSize = sizeof(ClientConnection.Address);
   socket_t Socket = accept(ListeningSocket, (sockaddr*)&ClientConnection.Address, &AddressSize);
@@ -36,7 +36,7 @@ WaitForClientConnection(socket_t ListeningSocket)
 int
 main(int ArgCount, char **Arguments)
 {
-  network_connection IncomingConnections = {};
+  network_connection IncomingConnections = { Socket_Blocking };
 
   s32 BindResult =
     bind(IncomingConnections.Socket,
@@ -52,7 +52,7 @@ main(int ArgCount, char **Arguments)
 
   Debug("Listening");
 
-  network_connection ClientList[2] = {};
+  network_connection ClientList[2] = { Socket_Blocking, Socket_Blocking };
   server_message Message = {};
 
 

@@ -5,10 +5,17 @@ struct server_message
   u32 ClientId;
 };
 
-inline socket_t
-CreateSocket()
+enum socket_type
 {
-  socket_t Socket = socket(AF_INET , SOCK_STREAM , 0);
+  Socket_Blocking,
+  Socket_NonBlocking
+};
+
+inline socket_t
+CreateSocket(socket_type Type)
+{
+  u32 SocketType = SOCK_STREAM | (Type == Socket_Blocking ? 0:SOCK_NONBLOCK);
+  socket_t Socket = socket(AF_INET , SocketType, 0);
   if (Socket == -1)
   {
     Error("Could not create socket");
@@ -32,10 +39,10 @@ struct network_connection
   socket_t Socket;
   b32 Connected;
 
-  network_connection()
+  network_connection(socket_type Type)
   {
     Clear(this);
-    this->Socket = CreateSocket();
+    this->Socket = CreateSocket(Type);
     this->Address = CreateAddress();
   }
 };
