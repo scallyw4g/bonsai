@@ -6,74 +6,65 @@
 #include <bonsai_types.h>
 #include <net/server.h>
 
-socket_t
-WaitForClientConnection(int socket_desc, sockaddr_in Client)
+network_connection
+WaitForClientConnection(socket_t ListeningSocket, sockaddr_in Client)
 {
+  network_connection ClientConnection = {};
+
   int c = sizeof(sockaddr_in);
-  socket_t Socket = accept(socket_desc, (sockaddr *)&Client, (socklen_t*)&c);
+  socket_t Socket = accept(ListeningSocket, (sockaddr *)&Client, (socklen_t*)&c);
 
   if (Socket < 0)
-    { Error("Accept Failed"); return 1; }
+  {
+    Error("Accept Failed");
+  }
   else
-    { Debug("Connection accepted"); }
+  {
+    Debug("Connection accepted");
+    ClientConnection.Socket = Socket;
+    ClientConnection.Connected = True;
+  }
 
-  return Socket;
+  return ClientConnection;
 }
 
 int
 main(int ArgCount, char **Arguments)
 {
   sockaddr_in client;
-  sockaddr_in server;
 
-  int socket_desc = socket(AF_INET , SOCK_STREAM , 0);
-  if (socket_desc == -1) { Debug("Could not create socket"); return 1; }
+  server Server = CreateServer();
+  Server.Address.sin_addr.s_addr = INADDR_ANY;
 
-  server.sin_family = AF_INET;
-  server.sin_addr.s_addr = INADDR_ANY;
-  server.sin_port = htons( REMOTE_PORT );
+  network_connection IncomingConnections = {};
+  IncomingConnections.Socket = CreateSocket();
 
-  if( bind(socket_desc,(sockaddr *)&server , sizeof(server)) < 0)
-    { Error("Bind Failed"); return 1; }
-  else
-    { Debug("Bind Successful"); }
-
-  listen(socket_desc , 3);
-
-
-
+  if( bind(IncomingConnections.Socket, (sockaddr *)&Server , sizeof(Server)) < 0)
   {
-    server_message Message = {};
-    int BytesRead = 0;
+    Error("Bind Failed");
+    return 1;
+  }
 
-    b32 ConnectedToClient = False;
-    socket_t ClientSocket = {};
+  Debug("Bind Successful");
 
-    while(true)
+  listen(IncomingConnections.Socket , 3);
+
+  Debug("Listening");
+
+  network_connection ClientConnection = {};
+  server_message Message = {};
+
+  for(;;)
+  {
+    if (IsConnected(&ClientConnection))
     {
-      if (ConnectedToClient)
-      {
-        BytesRead = recv(ClientSocket , (void*)&Message , sizeof(server_message), 0);
-
-        if(BytesRead == -1)
-        { Error("Reading socket failed"); ConnectedToClient = False; }
-
-
-        if (!Send(ClientSocket, &Message))
-        {
-          ConnectedToClient = False;
-        }
-
-      }
-      else
-      {
-        ClientSocket = WaitForClientConnection(socket_desc, client);
-        ConnectedToClient = True;
-      }
-
+      Read(&ClientConnection, &Message);
+      Send(&ClientConnection, &Message);
     }
-
-
+    else
+    {
+      ClientConnection = WaitForClientConnection(IncomingConnections.Socket, client);
+    }
   }
 
   return 0;

@@ -485,14 +485,17 @@ main(s32 NumArgs, char ** Args)
    *  Main Game loop
    */
 
-  r64 LastMs = Plat.GetHighPrecisionClock();
-
-  socket_t Socket = ConnectToServer();
 
 #if BONSAI_INTERNAL
   u64 LastCycles = GetDebugState()->GetCycleCount();
 #endif
 
+  server Server = CreateServer();
+  Server.Address.sin_addr.s_addr = inet_addr("127.0.0.1");
+
+  network_connection RemoteConnection = {};
+
+  r64 LastMs = Plat.GetHighPrecisionClock();
   while ( Os.ContinueRunning )
   {
     r64 CurrentMS = GetHighPrecisionClock();
@@ -516,7 +519,14 @@ main(s32 NumArgs, char ** Args)
 
     TIMED_BLOCK("Frame Preamble");
 
-    PingServer(Socket);
+    if (IsConnected(&RemoteConnection))
+    {
+      PingServer(&RemoteConnection);
+    }
+    else
+    {
+      ConnectToServer(&RemoteConnection, &Server);
+    }
 
     v2 LastMouseP = Plat.MouseP;
     while ( ProcessOsMessages(&Os, &Plat) );

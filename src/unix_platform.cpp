@@ -13,6 +13,8 @@
 #include <GL/glx.h>
 #include <X11/keysymdef.h>
 
+#include <net/server.h>
+
 inline bool
 AtomicCompareExchange( volatile unsigned int *Source, unsigned int Exchange, unsigned int Comparator )
 {
@@ -411,41 +413,38 @@ SetMouseP(v2 P)
   return;
 }
 
-#include <net/server.h>
-
-inline socket_t
-ConnectToServer()
+inline void
+ConnectToServer(network_connection *Connection, server *Server)
 {
-  sockaddr_in RemoteServer;
-  socket_t Socket = socket(AF_INET , SOCK_STREAM , 0);
-  if (Socket == -1) { printf("Could not create socket"); }
+  if (!Connection->Socket) 
+  {
+    Connection->Socket = CreateSocket();
+  }
 
-  RemoteServer.sin_addr.s_addr = inet_addr("127.0.0.1");
-  RemoteServer.sin_family = AF_INET;
-  RemoteServer.sin_port = htons( REMOTE_PORT );
+  s32 ConnectStatus = connect(Connection->Socket,
+                              (sockaddr *)&Server->Address,
+                              sizeof(sockaddr_in));
 
-  if (connect(Socket , (sockaddr *)&RemoteServer , sizeof(RemoteServer)) < 0)
-    { Error("Connecting to server Failed"); }
+  if (ConnectStatus == 0)
+  {
+    Debug("Connected");
+    Connection->Connected = True;
+  }
   else
-    { Debug("Connected"); }
+  {
+    Error("Connecting to remote host failed : %s", strerror(errno));
+  }
 
-  return Socket;
+  return;
 }
 
 inline void
-PingServer(socket_t Socket)
+PingServer(network_connection *Connection)
 {
   server_message Message = {};
-  server_message Response = {};
 
-  /* Debug("Pinging server"); */
+  Send(Connection, &Message);
+  Read(Connection, &Message);
 
-  if (!Send(Socket, &Message))
-  {
-    ConnectToServer();
-  }
-
-  if( recv(Socket , (void*)&Response , sizeof(server_message) , 0) < 0) { puts("recv failed"); return; }
-
-  /* Debug("Hello, Client: %u", Response.ClientId); */
+  return;
 }
