@@ -13,8 +13,6 @@
 #include <GL/glx.h>
 #include <X11/keysymdef.h>
 
-#include <net/server.h>
-
 inline bool
 AtomicCompareExchange( volatile unsigned int *Source, unsigned int Exchange, unsigned int Comparator )
 {
@@ -464,17 +462,6 @@ ConnectToServer(network_connection *Connection)
     }
   }
 
-
   return;
 }
 
-inline void
-PingServer(network_connection *Connection)
-{
-  server_message Message = {};
-
-  Send(Connection, &Message);
-  Read(Connection, &Message);
-
-  return;
-}

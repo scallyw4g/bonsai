@@ -654,7 +654,7 @@ GameInit( platform *Plat, memory_arena *GameMemory)
 }
 
 EXPORT void
-GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
+GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys, network_connection *Network)
 {
   game_mode *Mode = &GameState->Mode;
   Mode->TimeRunning += Plat->dt;

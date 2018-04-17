@@ -203,8 +203,19 @@ GameInit( platform *Plat, memory_arena *GameMemory, os *Os)
   return GameState;
 }
 
+inline void
+PingServer(network_connection *Connection)
+{
+  server_message Message = {};
+
+  Send(Connection, &Message);
+  Read(Connection, &Message);
+
+  return;
+}
+
 EXPORT void
-GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
+GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys, network_connection *Network)
 {
   TIMED_FUNCTION();
   Assert(GlobalDebugState);
@@ -213,4 +224,11 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
   ClearFramebuffers(Plat->Graphics);
   DoGameplay(Plat, GameState, Hotkeys);
+
+
+  if (IsConnected(Network))
+  {
+    PingServer(Network);
+  }
+
 }

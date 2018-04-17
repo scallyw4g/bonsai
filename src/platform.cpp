@@ -490,8 +490,8 @@ main(s32 NumArgs, char ** Args)
   u64 LastCycles = GetDebugState()->GetCycleCount();
 #endif
 
-  network_connection RemoteConnection = {Socket_NonBlocking};
-  RemoteConnection.Address.sin_addr.s_addr = inet_addr("127.0.0.1");
+  network_connection Network = {Socket_NonBlocking};
+  Network.Address.sin_addr.s_addr = inet_addr("127.0.0.1");
 
   r64 LastMs = Plat.GetHighPrecisionClock();
   while ( Os.ContinueRunning )
@@ -517,15 +517,6 @@ main(s32 NumArgs, char ** Args)
 
     TIMED_BLOCK("Frame Preamble");
 
-    if (IsConnected(&RemoteConnection))
-    {
-      PingServer(&RemoteConnection);
-    }
-    else
-    {
-      ConnectToServer(&RemoteConnection);
-    }
-
     v2 LastMouseP = Plat.MouseP;
     while ( ProcessOsMessages(&Os, &Plat) );
     Plat.MouseDP = LastMouseP - Plat.MouseP;
@@ -548,8 +539,15 @@ main(s32 NumArgs, char ** Args)
     /* DEBUG_FRAME_RECORD(Debug_RecordingState, &Hotkeys); */
 
     END_BLOCK("Frame Preamble");
+    if (!IsConnected(&Network))
+    {
+      ConnectToServer(&Network);
+    }
 
-    GameUpdateAndRender(&Plat, GameState, &Hotkeys);
+    GameUpdateAndRender(&Plat,
+                        GameState,
+                        &Hotkeys,
+                        &Network);
 
     TIMED_BLOCK("Frame End");
     DEBUG_FRAME_END(&Plat, FrameCycles);

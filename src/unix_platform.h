@@ -18,6 +18,8 @@
 
 #include <semaphore.h>
 
+#include<arpa/inet.h> //inet_addr
+
 // Valgrind
 // #include "/usr/include/valgrind/callgrind.h"
 
@@ -63,6 +65,4 @@ WakeThread( semaphore *Semaphore )
   sem_post(Semaphore);
   return;
 }
-
-
 
