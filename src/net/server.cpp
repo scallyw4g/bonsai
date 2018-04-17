@@ -78,7 +78,7 @@ main(int ArgCount, char **Arguments)
       network_connection *ClientConn = &ClientList[ClientIndex];
       if (IsConnected(ClientConn))
       {
-        Read(&ClientList[ClientIndex], &Message);
+        while(Read(&ClientList[ClientIndex], &Message) == SocketOpResult_CompletedRW);
         Send(&ClientList[ClientIndex], &Message);
       }
       else

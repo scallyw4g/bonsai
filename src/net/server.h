@@ -100,14 +100,21 @@ Disconnect(network_connection *Connection)
   return;
 }
 
-void
+enum socket_op_result
+{
+  SocketOpResult_Noop,
+  SocketOpResult_CompletedRW,
+  SocketOpResult_Fail
+};
+
+socket_op_result
 NetworkOp(network_connection *Connection, server_message *Message, socket_op SocketOp)
 {
   Assert(Connection);
   Assert(Message);
 
-  b32 OpSuccessful = False;
-  s64 NumBytes = 0;
+  socket_op_result OpResult = SocketOpResult_Fail;
+  s64 SocketReturnValue = 0;
 
   // We may have disconnected on a previous attempt to read/write this frame
   if (IsConnected(Connection))
@@ -117,21 +124,23 @@ NetworkOp(network_connection *Connection, server_message *Message, socket_op Soc
       case SocketOp_Read:
       {
         u32 Flags = 0;
-        NumBytes = recv(Connection->Socket.Id, (void*)Message, sizeof(server_message), Flags);
+        SocketReturnValue = recv(Connection->Socket.Id, (void*)Message, sizeof(server_message), Flags);
       } break;
 
       case SocketOp_Write:
       {
         u32 Flags = MSG_NOSIGNAL;
-        NumBytes = send(Connection->Socket.Id, (void*)Message, sizeof(server_message) , Flags);
+        SocketReturnValue = send(Connection->Socket.Id, (void*)Message, sizeof(server_message) , Flags);
       } break;
 
       InvalidDefaultCase;
     }
 
-    switch(NumBytes)
+    const s32 SocketError = -1;
+    const s32 SocketClosed = 0;
+    switch(SocketReturnValue)
     {
-      case -1:
+      case SocketError:
       {
         switch (errno)
         {
@@ -139,7 +148,7 @@ NetworkOp(network_connection *Connection, server_message *Message, socket_op Soc
           {
             // Non-blocking socket would block
             Assert(Connection->Socket.Type == Socket_NonBlocking);
-            OpSuccessful = True;
+            OpResult = SocketOpResult_Noop;
           } break;
 
           default:
@@ -149,21 +158,22 @@ NetworkOp(network_connection *Connection, server_message *Message, socket_op Soc
         }
       } break;
 
-      case 0:
+      case SocketClosed:
       {
         Info("Network peer closed connection gracefully");
       } break;
 
       default:
       {
-        OpSuccessful = True;
+        // s64 BytesRead = SocketReturnValue;
+        OpResult = SocketOpResult_CompletedRW;
       } break;
     }
 
-    if (!OpSuccessful) { Disconnect(Connection); }
+    if (OpResult == SocketOpResult_Fail) { Disconnect(Connection); }
   }
 
-  return;
+  return OpResult;
 }
 
 void
@@ -173,9 +183,9 @@ Send(network_connection *Connection, server_message *Message)
   return;
 }
 
-void
+socket_op_result
 Read(network_connection *Connection, server_message *Message)
 {
-  NetworkOp(Connection, Message, SocketOp_Read);
-  return;
+  socket_op_result Result = NetworkOp(Connection, Message, SocketOp_Read);
+  return Result;
 }
