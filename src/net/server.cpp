@@ -67,12 +67,11 @@ main(int ArgCount, char **Arguments)
 
   Debug("Listening");
 
-  network_connection ClientList[2] = { Socket_Blocking, Socket_Blocking };
+  network_connection ClientList[2] = {};
   server_message Message = {};
 
   for(;;)
   {
-
     for (u32 ClientIndex = 0;
         ClientIndex < MAX_CLIENTS;
         ++ClientIndex)

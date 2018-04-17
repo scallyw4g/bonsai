@@ -490,7 +490,6 @@ main(s32 NumArgs, char ** Args)
   u64 LastCycles = GetDebugState()->GetCycleCount();
 #endif
 
-
   network_connection RemoteConnection = {Socket_NonBlocking};
   RemoteConnection.Address.sin_addr.s_addr = inet_addr("127.0.0.1");
 

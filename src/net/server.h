@@ -66,6 +66,8 @@ struct network_connection
     this->Socket = CreateSocket(Type);
     this->Address = CreateAddress();
   }
+
+  network_connection() = default;
 };
 
 enum socket_op
