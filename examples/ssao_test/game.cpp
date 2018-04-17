@@ -206,11 +206,12 @@ GameInit( platform *Plat, memory_arena *GameMemory, os *Os)
 inline void
 PingServer(network_connection *Connection, canonical_position *PlayerP)
 {
-  server_message Message = {};
+  client_to_server_message Message = {};
   Message.P = *PlayerP;
-
   Send(Connection, &Message);
-  while ( Read(Connection, &Message) == SocketOpResult_CompletedRW);
+
+  server_to_client_message Response = {};
+  while ( Read(Connection, &Response) == SocketOpResult_CompletedRW);
 
   return;
 }
@@ -230,5 +231,4 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys, net
   {
     PingServer(Network, &GameState->Player->P);
   }
-
 }

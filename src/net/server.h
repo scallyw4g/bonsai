@@ -1,35 +1,5 @@
 #define REMOTE_PORT 1337
 
-struct server_message
-{
-  u32 ClientId;
-  canonical_position P;
-};
-
-enum socket_type
-{
-  Socket_Blocking,
-  Socket_NonBlocking
-};
-
-struct socket_t
-{
-  s32 Id;
-  socket_type Type;
-
-  socket_t(socket_type Type)
-  {
-    Clear(this);
-    this->Type = Type;
-  }
-
-  socket_t() {
-    Clear(this);
-  }
-};
-
-global_variable socket_t NullSocket = {};
-
 inline socket_t
 CreateSocket(socket_type Type)
 {
@@ -109,7 +79,7 @@ enum socket_op_result
 };
 
 socket_op_result
-NetworkOp(network_connection *Connection, server_message *Message, socket_op SocketOp)
+NetworkOp(network_connection *Connection, void *Message, u32 MessageSize, socket_op SocketOp)
 {
   Assert(Connection);
   Assert(Message);
@@ -125,13 +95,13 @@ NetworkOp(network_connection *Connection, server_message *Message, socket_op Soc
       case SocketOp_Read:
       {
         u32 Flags = 0;
-        SocketReturnValue = recv(Connection->Socket.Id, (void*)Message, sizeof(server_message), Flags);
+        SocketReturnValue = recv(Connection->Socket.Id, (void*)Message, MessageSize, Flags);
       } break;
 
       case SocketOp_Write:
       {
         u32 Flags = MSG_NOSIGNAL;
-        SocketReturnValue = send(Connection->Socket.Id, (void*)Message, sizeof(server_message) , Flags);
+        SocketReturnValue = send(Connection->Socket.Id, (void*)Message, MessageSize , Flags);
       } break;
 
       InvalidDefaultCase;
@@ -177,16 +147,16 @@ NetworkOp(network_connection *Connection, server_message *Message, socket_op Soc
   return OpResult;
 }
 
-void
-Send(network_connection *Connection, server_message *Message)
+template <typename T> void
+Send(network_connection *Connection, T *Message)
 {
-  NetworkOp(Connection, Message, SocketOp_Write);
+  NetworkOp(Connection, Message, sizeof(T), SocketOp_Write);
   return;
 }
 
-socket_op_result
-Read(network_connection *Connection, server_message *Message)
+template <typename T> socket_op_result
+Read(network_connection *Connection, T *Message)
 {
-  socket_op_result Result = NetworkOp(Connection, Message, SocketOp_Read);
+  socket_op_result Result = NetworkOp(Connection, Message, sizeof(T), SocketOp_Read);
   return Result;
 }

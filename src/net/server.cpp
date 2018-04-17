@@ -67,7 +67,9 @@ main(int ArgCount, char **Arguments)
   Debug("Listening");
 
   network_connection ClientList[2] = {};
-  server_message Message = {};
+
+  client_to_server_message InputMessage = {};
+  server_to_client_message OutputMessage = {};
 
   for(;;)
   {
@@ -78,8 +80,8 @@ main(int ArgCount, char **Arguments)
       network_connection *ClientConn = &ClientList[ClientIndex];
       if (IsConnected(ClientConn))
       {
-        while(Read(&ClientList[ClientIndex], &Message) == SocketOpResult_CompletedRW);
-        Send(&ClientList[ClientIndex], &Message);
+        while(Read(&ClientList[ClientIndex], &InputMessage) == SocketOpResult_CompletedRW);
+        Send(&ClientList[ClientIndex], &OutputMessage);
       }
       else
       {
