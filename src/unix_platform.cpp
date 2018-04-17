@@ -425,7 +425,7 @@ ConnectToServer(network_connection *Connection)
                               (sockaddr *)&Connection->Address,
                               sizeof(sockaddr_in));
 
-  if (ConnectStatus)
+  if (ConnectStatus == 0)
   {
       Debug("Connected");
       Connection->Connected = True;
@@ -444,6 +444,10 @@ ConnectToServer(network_connection *Connection)
         // Connection in progress
       } break;
 
+      case ECONNREFUSED:
+      {
+        // Host is down
+      } break;
 
       case EISCONN:
       {
