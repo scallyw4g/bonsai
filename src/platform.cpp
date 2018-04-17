@@ -535,7 +535,6 @@ main(s32 NumArgs, char ** Args)
       InitGlobals(&Plat);
     }
 
-
     /* DEBUG_FRAME_RECORD(Debug_RecordingState, &Hotkeys); */
 
     END_BLOCK("Frame Preamble");

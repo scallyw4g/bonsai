@@ -204,12 +204,13 @@ GameInit( platform *Plat, memory_arena *GameMemory, os *Os)
 }
 
 inline void
-PingServer(network_connection *Connection)
+PingServer(network_connection *Connection, canonical_position *PlayerP)
 {
   server_message Message = {};
+  Message.P = *PlayerP;
 
   Send(Connection, &Message);
-  Read(Connection, &Message);
+  while ( Read(Connection, &Message) == SocketOpResult_CompletedRW);
 
   return;
 }
@@ -225,10 +226,9 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys, net
   ClearFramebuffers(Plat->Graphics);
   DoGameplay(Plat, GameState, Hotkeys);
 
-
   if (IsConnected(Network))
   {
-    PingServer(Network);
+    PingServer(Network, &GameState->Player->P);
   }
 
 }

@@ -3,6 +3,7 @@
 struct server_message
 {
   u32 ClientId;
+  canonical_position P;
 };
 
 enum socket_type
