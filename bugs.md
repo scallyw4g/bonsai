@@ -1,3 +1,10 @@
+# Apr 18 2018 - 2:00 - closed - Socket blocking instead of non-blocking
+* network
+* init
+Server and client sockets are created differently, which caused my assumption
+that they were non-blocking to be incorrect.  I thought the server was hanging
+on a infinite recv loop when in fact it was blocking on recv
+
 # Mar 12 2018 - 18:00 - closed - Ghost geometry
 * lifecycle
 * concurrency
@@ -12,6 +19,7 @@ trucated on second boundaries. Whups
 
 # Nov 29 2017 - 1:00 - closed - Bad reinitialization of debug state
 * lifecycle
+* init
 CleanupScopeTree reinitialized the CurrentScope param to 0 when it should have
 been &DebugState->RootScope
 
