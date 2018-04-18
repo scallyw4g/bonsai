@@ -175,6 +175,7 @@ NetworkOp(network_connection *Connection, void *Message, u32 MessageSize, socket
       {
         // s64 BytesRead = SocketReturnValue;
         OpResult = SocketOpResult_CompletedRW;
+        Assert(MessageSize == SocketReturnValue);
       } break;
     }
 

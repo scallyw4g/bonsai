@@ -5,23 +5,42 @@
 
 #include <bonsai_types.h>
 
+#define MAX_CLIENTS 2
+
+inline void
+RejectIncomingConnnections(socket_t *ListeningSocket)
+{
+  s32 SocketId = accept4(ListeningSocket->Id,
+                         0, 0, // Address write-back information
+                         SOCK_NONBLOCK);
+
+  while (SocketId > 0)
+  {
+    close(SocketId);
+    SocketId = accept4(ListeningSocket->Id,
+                       0, 0, // Address write-back information
+                       SOCK_NONBLOCK);
+  }
+
+  Assert(errno == EAGAIN || errno == EWOULDBLOCK);
+}
+
 inline void
 CheckForConnectingClient(socket_t *ListeningSocket, network_connection *ClientConnection)
 {
   Assert(ListeningSocket->Type == Socket_NonBlocking);
 
   u32 AddressSize = sizeof(ClientConnection->Address);
-  s32 SocketId =
-    accept4(ListeningSocket->Id,
-        (sockaddr*)&ClientConnection->Address,
-        &AddressSize,
-        SOCK_NONBLOCK);
+  s32 SocketId = accept4(ListeningSocket->Id,
+                        (sockaddr*)&ClientConnection->Address,
+                        &AddressSize,
+                        SOCK_NONBLOCK);
 
   // The accept() call overwrites this value to let us know how many bytes it
   // wrote to ClientConnection.Address
   Assert(AddressSize == sizeof(ClientConnection->Address));
 
-  if (SocketId < 0)
+  if (SocketId == -1)
   {
     switch(errno)
     {
@@ -36,12 +55,16 @@ CheckForConnectingClient(socket_t *ListeningSocket, network_connection *ClientCo
       } break;
     }
   }
-  else
+  else if (SocketId > 0)
   {
     Debug("Connection accepted");
     ClientConnection->Socket.Id = SocketId;
     ClientConnection->Socket.Type = Socket_NonBlocking;
     ClientConnection->Connected = True;
+  }
+  else
+  {
+    InvalidCodePath();
   }
 
   return;
@@ -75,7 +98,7 @@ main(int ArgCount, char **Arguments)
 
   Debug("Bind Successful");
 
-  listen(IncomingConnections.Socket.Id, 3);
+  listen(IncomingConnections.Socket.Id, 0);
 
   Debug("Listening");
 
@@ -96,8 +119,6 @@ main(int ArgCount, char **Arguments)
             == SocketOpResult_CompletedRW)
         {
           Send(Connection, &OutputMessage);
-          Print(OutputMessage.P);
-          Print(OutputMessage.Id);
         }
 
         BroadcastServerState(Clients, Connection);
@@ -108,6 +129,7 @@ main(int ArgCount, char **Arguments)
       }
     }
 
+    RejectIncomingConnnections(&IncomingConnections.Socket);
   }
 
   return 0;

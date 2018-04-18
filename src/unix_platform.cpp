@@ -428,7 +428,7 @@ ConnectToServer(network_connection *Connection)
       Debug("Connected");
       Connection->Connected = True;
   }
-  else
+  else if (ConnectStatus == -1)
   {
     switch (errno)
     {
@@ -460,6 +460,10 @@ ConnectToServer(network_connection *Connection)
       } break;
 
     }
+  }
+  else
+  {
+    InvalidCodePath();
   }
 
   return;

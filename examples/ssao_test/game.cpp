@@ -206,8 +206,6 @@ GameInit( platform *Plat, memory_arena *GameMemory, os *Os)
 static u64
 MessageId = 1;
 
-
-
 inline void
 PingServer(network_connection *Connection, canonical_position *PlayerP)
 {
