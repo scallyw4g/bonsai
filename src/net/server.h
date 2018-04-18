@@ -1,53 +1,3 @@
-#define REMOTE_PORT 1337
-
-inline socket_t
-CreateSocket(socket_type Type)
-{
-  u32 SocketType = SOCK_STREAM | (Type == Socket_Blocking ? 0:SOCK_NONBLOCK);
-
-  socket_t Socket = {Type};
-  Socket.Id = socket(AF_INET , SocketType, 0);
-
-  if (Socket.Id == -1)
-  {
-    Error("Could not create socket");
-    Socket.Id = 0;
-  }
-  return Socket;
-}
-
-inline sockaddr_in
-CreateAddress()
-{
-  sockaddr_in Address = {};
-  Address.sin_family = AF_INET;
-  Address.sin_port = htons( REMOTE_PORT );
-  return Address;
-}
-
-struct network_connection
-{
-  sockaddr_in Address;
-  socket_t Socket;
-  b32 Connected;
-
-  network_connection(socket_type Type)
-  {
-    Clear(this);
-    this->Socket = CreateSocket(Type);
-    this->Address = CreateAddress();
-  }
-
-  network_connection() = default;
-};
-
-enum socket_op
-{
-  SocketOp_Null,
-  SocketOp_Read,
-  SocketOp_Write,
-  SocketOp_Count
-};
 
 inline b32
 IsConnected(network_connection *Conn)
@@ -70,13 +20,6 @@ Disconnect(network_connection *Connection)
 
   return;
 }
-
-enum socket_op_result
-{
-  SocketOpResult_Noop,
-  SocketOpResult_CompletedRW,
-  SocketOpResult_Fail
-};
 
 socket_op_result
 NetworkOp(network_connection *Connection, void *Message, u32 MessageSize, socket_op SocketOp)

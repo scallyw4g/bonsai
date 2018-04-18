@@ -206,6 +206,8 @@ GameInit( platform *Plat, memory_arena *GameMemory, os *Os)
 static u64
 MessageId = 1;
 
+
+
 inline void
 PingServer(network_connection *Connection, canonical_position *PlayerP)
 {
@@ -219,17 +221,10 @@ PingServer(network_connection *Connection, canonical_position *PlayerP)
   server_to_client_message Response = {};
 
   socket_op_result ReadMessage = Read(Connection, &Response);
-
   while (ReadMessage == SocketOpResult_CompletedRW) {
     *PlayerP = Response.P;
     ReadMessage = Read(Connection, &Response);
   }
-
-  Print(Message.P);
-  Print(Message.Id);
-
-  Print(Response.Id);
-  Print(Response.P);
 
   if (Response.Id == Message.Id)
   {

@@ -45,7 +45,7 @@ CheckForConnectingClient(socket_t *ListeningSocket, network_connection *ClientCo
   return;
 }
 
-#define MAX_CLIENTS 1
+#define MAX_CLIENTS 2
 
 int
 main(int ArgCount, char **Arguments)
