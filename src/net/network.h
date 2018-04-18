@@ -197,3 +197,18 @@ Read(network_connection *Connection, T *Message)
   socket_op_result Result = NetworkOp(Connection, Message, sizeof(T), SocketOp_Read);
   return Result;
 }
+
+#include <sys/ioctl.h>
+
+template <typename T> socket_op_result
+FlushIncomingMessages(network_connection *Connection, T *Message)
+{
+  socket_op_result ReadMessage = Read(Connection, Message);
+  socket_op_result AnyMessagesRead = ReadMessage;
+
+  while (ReadMessage == SocketOpResult_CompletedRW) {
+    ReadMessage = Read(Connection, Message);
+  }
+
+  return AnyMessagesRead;
+}

@@ -12,9 +12,10 @@ CheckForConnectingClient(socket_t *ListeningSocket, network_connection *ClientCo
 
   u32 AddressSize = sizeof(ClientConnection->Address);
   s32 SocketId =
-    accept(ListeningSocket->Id,
+    accept4(ListeningSocket->Id,
         (sockaddr*)&ClientConnection->Address,
-        &AddressSize);
+        &AddressSize,
+        SOCK_NONBLOCK);
 
   // The accept() call overwrites this value to let us know how many bytes it
   // wrote to ClientConnection.Address
@@ -39,6 +40,7 @@ CheckForConnectingClient(socket_t *ListeningSocket, network_connection *ClientCo
   {
     Debug("Connection accepted");
     ClientConnection->Socket.Id = SocketId;
+    ClientConnection->Socket.Type = Socket_NonBlocking;
     ClientConnection->Connected = True;
   }
 
@@ -68,7 +70,6 @@ main(int ArgCount, char **Arguments)
 
   network_connection ClientList[MAX_CLIENTS] = {};
 
-  client_to_server_message InputMessage = {};
   server_to_client_message OutputMessage = {};
 
   for(;;)
@@ -77,23 +78,20 @@ main(int ArgCount, char **Arguments)
         ClientIndex < MAX_CLIENTS;
         ++ClientIndex)
     {
-      network_connection *ClientConn = &ClientList[ClientIndex];
-      if (IsConnected(ClientConn))
+      network_connection *Connection = &ClientList[ClientIndex];
+      if (IsConnected(Connection))
       {
-        /* while( Read(&ClientList[ClientIndex], &InputMessage) == SocketOpResult_CompletedRW ); */
-        Read(&ClientList[ClientIndex], &InputMessage);
-
-        Print(InputMessage.P);
-        Print(InputMessage.Id);
-
-        OutputMessage.P = InputMessage.P;
-        OutputMessage.Id = InputMessage.Id;
-
-        Send(&ClientList[ClientIndex], &OutputMessage);
+        if (FlushIncomingMessages(Connection, &OutputMessage)
+            == SocketOpResult_CompletedRW)
+        {
+          Send(Connection, &OutputMessage);
+          Print(OutputMessage.P);
+          Print(OutputMessage.Id);
+        }
       }
       else
       {
-        CheckForConnectingClient(&IncomingConnections.Socket, ClientConn);
+        CheckForConnectingClient(&IncomingConnections.Socket, Connection);
       }
     }
 

@@ -212,7 +212,6 @@ inline void
 PingServer(network_connection *Connection, canonical_position *PlayerP)
 {
   client_to_server_message Message = {};
-
   Message.Id = MessageId++;
   Message.P = *PlayerP;
 
@@ -220,10 +219,10 @@ PingServer(network_connection *Connection, canonical_position *PlayerP)
 
   server_to_client_message Response = {};
 
-  socket_op_result ReadMessage = Read(Connection, &Response);
-  while (ReadMessage == SocketOpResult_CompletedRW) {
+  if (FlushIncomingMessages(Connection, &Response)
+      == SocketOpResult_CompletedRW)
+  {
     *PlayerP = Response.P;
-    ReadMessage = Read(Connection, &Response);
   }
 
   if (Response.Id == Message.Id)
