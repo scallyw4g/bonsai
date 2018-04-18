@@ -45,7 +45,7 @@ CheckForConnectingClient(socket_t *ListeningSocket, network_connection *ClientCo
   return;
 }
 
-#define MAX_CLIENTS 2
+#define MAX_CLIENTS 1
 
 int
 main(int ArgCount, char **Arguments)
@@ -66,7 +66,7 @@ main(int ArgCount, char **Arguments)
 
   Debug("Listening");
 
-  network_connection ClientList[2] = {};
+  network_connection ClientList[MAX_CLIENTS] = {};
 
   client_to_server_message InputMessage = {};
   server_to_client_message OutputMessage = {};
@@ -80,7 +80,15 @@ main(int ArgCount, char **Arguments)
       network_connection *ClientConn = &ClientList[ClientIndex];
       if (IsConnected(ClientConn))
       {
-        while(Read(&ClientList[ClientIndex], &InputMessage) == SocketOpResult_CompletedRW);
+        /* while( Read(&ClientList[ClientIndex], &InputMessage) == SocketOpResult_CompletedRW ); */
+        Read(&ClientList[ClientIndex], &InputMessage);
+
+        Print(InputMessage.P);
+        Print(InputMessage.Id);
+
+        OutputMessage.P = InputMessage.P;
+        OutputMessage.Id = InputMessage.Id;
+
         Send(&ClientList[ClientIndex], &OutputMessage);
       }
       else

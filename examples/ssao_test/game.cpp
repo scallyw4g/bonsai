@@ -203,15 +203,39 @@ GameInit( platform *Plat, memory_arena *GameMemory, os *Os)
   return GameState;
 }
 
+static u64
+MessageId = 1;
+
 inline void
 PingServer(network_connection *Connection, canonical_position *PlayerP)
 {
   client_to_server_message Message = {};
+
+  Message.Id = MessageId++;
   Message.P = *PlayerP;
+
   Send(Connection, &Message);
 
   server_to_client_message Response = {};
-  while ( Read(Connection, &Response) == SocketOpResult_CompletedRW);
+
+  socket_op_result ReadMessage = Read(Connection, &Response);
+
+  while (ReadMessage == SocketOpResult_CompletedRW) {
+    *PlayerP = Response.P;
+    ReadMessage = Read(Connection, &Response);
+  }
+
+  Print(Message.P);
+  Print(Message.Id);
+
+  Print(Response.Id);
+  Print(Response.P);
+
+  if (Response.Id == Message.Id)
+  {
+    Assert(Response.P.Offset == Message.P.Offset);
+    Assert(Response.P.WorldP == Message.P.WorldP);
+  }
 
   return;
 }
