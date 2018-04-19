@@ -49,6 +49,17 @@ CheckForConnectingClient(socket_t *ListeningSocket, network_connection *ClientCo
 
 #define MAX_CLIENTS 2
 
+struct client_state
+{
+  u32 ClientId;
+  canonical_position P;
+};
+
+void
+BroadcastServerState(client_state *Clients, network_connection *Connected)
+{
+}
+
 int
 main(int ArgCount, char **Arguments)
 {
@@ -68,8 +79,8 @@ main(int ArgCount, char **Arguments)
 
   Debug("Listening");
 
-  network_connection ClientList[MAX_CLIENTS] = {};
-
+  client_state Clients[MAX_CLIENTS] = {};
+  network_connection ClientConnections[MAX_CLIENTS] = {};
   server_to_client_message OutputMessage = {};
 
   for(;;)
@@ -78,7 +89,7 @@ main(int ArgCount, char **Arguments)
         ClientIndex < MAX_CLIENTS;
         ++ClientIndex)
     {
-      network_connection *Connection = &ClientList[ClientIndex];
+      network_connection *Connection = &ClientConnections[ClientIndex];
       if (IsConnected(Connection))
       {
         if (FlushIncomingMessages(Connection, &OutputMessage)
@@ -88,6 +99,8 @@ main(int ArgCount, char **Arguments)
           Print(OutputMessage.P);
           Print(OutputMessage.Id);
         }
+
+        BroadcastServerState(Clients, Connection);
       }
       else
       {
