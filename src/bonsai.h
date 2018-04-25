@@ -1,8 +1,8 @@
-#include <bonsai_math.h>
-
 #include <perlin.h>
 #include <stdio.h>
 #include <constants.hpp>
+
+#include <bonsai_math.h>
 
 #include <memory.cpp>
 

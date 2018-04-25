@@ -16,7 +16,6 @@
 #endif
 
 #include <platform.h>
-#include <bonsai_math.h>
 
 // TODO(Jesse): Axe this!!
 static gl_extensions *GL_Global = 0;

@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <string.h>
-#include <bonsai_math.h>
 #include <bonsai_mesh.cpp>
 
 // Number of bytes per int according to .vox file format

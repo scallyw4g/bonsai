@@ -1,6 +1,3 @@
-#ifndef BONSAI_MATH_H
-#define BONSAI_MATH_H
-
 #include <platform.h>
 
 #if 1
@@ -199,13 +196,28 @@ float Floorf(float f)
   return Result;
 }
 
+canonical_position
+Lerp(r32 t, canonical_position p1, canonical_position p2)
+{
+  Assert(t<=1);
+  Assert(t>=0);
+
+  canonical_position Result;
+  Result.Offset = (1.0f-t)*p1.Offset + t*p2.Offset;
+  Result.WorldP = (1.0f-t)*p1.WorldP + t*p2.WorldP;
+
+  Canonicalize(Global_WorldChunkDim, Result);
+
+  return Result;
+}
+
 v3
 Lerp(r32 t, v3 p1, v3 p2)
 {
   Assert(t<=1);
   Assert(t>=0);
 
-  v3 Result = (1-t)*p1 + t*p2;
+  v3 Result = (1.0f-t)*p1 + t*p2;
   return Result;
 }
 
@@ -215,7 +227,7 @@ Lerp(r32 t, v2 p1, v2 p2)
   Assert(t<=1);
   Assert(t>=0);
 
-  v2 Result = (1-t)*p1 + t*p2;
+  v2 Result = (1.0f-t)*p1 + t*p2;
   return Result;
 }
 
@@ -225,7 +237,7 @@ Lerp(r32 t, r32 p1, r32 p2)
   Assert(t<=1);
   Assert(t>=0);
 
-  r32 Result = (1-t)*p1 + t*p2;
+  r32 Result = (1.0f-t)*p1 + t*p2;
   return Result;
 }
 
@@ -379,5 +391,3 @@ GetSign( float f )
 
   return Result;
 }
-
-#endif

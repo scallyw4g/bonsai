@@ -221,6 +221,7 @@ PingServer(network_connection *Connection, canonical_position *PlayerP)
       == SocketOpResult_CompletedRW)
   {
     *PlayerP = Response.P;
+
   }
 
   if (Response.Id == Message.Id)
