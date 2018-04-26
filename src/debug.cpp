@@ -1354,6 +1354,11 @@ GetProfileScope(debug_state *State)
 }
 
 void
+DebugDrawNetworkHud(ui_render_group *Group, debug_state *DebugState)
+{
+}
+
+void
 DebugFrameEnd(platform *Plat, u64 FrameCycles)
 {
   TIMED_FUNCTION();
@@ -1425,6 +1430,12 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
   {
     case DebugUIType_None:
     {
+    } break;
+
+    case DebugUIType_Network:
+    {
+      BufferText("Network", &Group, WHITE);
+      DebugDrawNetworkHud(&Group, DebugState);
     } break;
 
     case DebugUIType_CallGraph:
