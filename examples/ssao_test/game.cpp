@@ -31,16 +31,13 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 {
   TIMED_FUNCTION();
 
-  world *World = GameState->World;
-
-  chunk_dimension WorldChunkDim = World->ChunkDim;
-
-  graphics *Graphics = Plat->Graphics;
-
-  g_buffer_render_group *gBuffer = Graphics->gBuffer;
-  ao_render_group *AoGroup       = Graphics->AoGroup;
-  shadow_render_group *SG        = Graphics->SG;
-  camera *Camera                 = Graphics->Camera;
+  world                 *World    = GameState->World;
+  chunk_dimension WorldChunkDim   = World->ChunkDim;
+  graphics              *Graphics = Plat->Graphics;
+  g_buffer_render_group *gBuffer  = Graphics->gBuffer;
+  ao_render_group       *AoGroup  = Graphics->AoGroup;
+  shadow_render_group   *SG       = Graphics->SG;
+  camera                *Camera   = Graphics->Camera;
 
 
 #if DEBUG_DRAW_WORLD_AXIES

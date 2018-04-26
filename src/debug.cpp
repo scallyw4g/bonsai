@@ -1356,6 +1356,7 @@ GetProfileScope(debug_state *State)
 void
 DebugDrawNetworkHud(ui_render_group *Group, game_state *GameState, debug_state *DebugState)
 {
+  //Print(GameState->Player->P);
   return;
 }
 
