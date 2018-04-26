@@ -276,6 +276,14 @@ LengthSq( v3 Vec )
 }
 
 inline float
+Length( canonical_position P )
+{
+  v3 Offset = P.Offset + (P.WorldP * Global_WorldChunkDim);
+  float Result = sqrt(LengthSq(Offset));
+  return Result;
+}
+
+inline float
 Length( voxel_position Vec )
 {
   float Result = sqrt(LengthSq(Vec));

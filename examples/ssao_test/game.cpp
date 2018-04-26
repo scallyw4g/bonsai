@@ -212,22 +212,13 @@ PingServer(network_connection *Connection, canonical_position *PlayerP)
   client_to_server_message Message = {};
   Message.Id = MessageId++;
   Message.P = *PlayerP;
-
   Send(Connection, &Message);
 
   server_to_client_message Response = {};
-
   if (FlushIncomingMessages(Connection, &Response)
       == SocketOpResult_CompletedRW)
   {
-    *PlayerP = Response.P;
-
-  }
-
-  if (Response.Id == Message.Id)
-  {
-    Assert(Response.P.Offset == Message.P.Offset);
-    Assert(Response.P.WorldP == Message.P.WorldP);
+    // TODO(Jesse): Multiple clients - update remote ones!
   }
 
   return;
@@ -241,11 +232,12 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys, net
   game_mode *Mode = &GameState->Mode;
   Mode->TimeRunning += Plat->dt;
 
-  ClearFramebuffers(Plat->Graphics);
-  DoGameplay(Plat, GameState, Hotkeys);
-
   if (IsConnected(Network))
   {
     PingServer(Network, &GameState->Player->P);
   }
+
+  ClearFramebuffers(Plat->Graphics);
+  DoGameplay(Plat, GameState, Hotkeys);
+
 }
