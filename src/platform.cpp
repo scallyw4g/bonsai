@@ -548,7 +548,7 @@ main(s32 NumArgs, char ** Args)
                         &Network);
 
     TIMED_BLOCK("Frame End");
-    DEBUG_FRAME_END(&Plat, FrameCycles);
+    DEBUG_FRAME_END(&Plat, GameState, FrameCycles);
 
     BonsaiSwapBuffers(&Os);
 

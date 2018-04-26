@@ -222,7 +222,7 @@ struct debug_timed_function
 #define END_BLOCK(BlockName) }
 
 #define DEBUG_FRAME_RECORD(...) DoDebugFrameRecord(__VA_ARGS__)
-#define DEBUG_FRAME_END(Plat, Cycles) DebugFrameEnd(Plat, Cycles)
+#define DEBUG_FRAME_END(Plat, GameState, Cycles) DebugFrameEnd(Plat, GameState, Cycles)
 #define DEBUG_FRAME_BEGIN(Hotkeys, dt, Cycles) DebugFrameBegin(Hotkeys, dt, Cycles)
 
 #else

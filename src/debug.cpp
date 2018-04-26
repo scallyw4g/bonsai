@@ -1354,12 +1354,13 @@ GetProfileScope(debug_state *State)
 }
 
 void
-DebugDrawNetworkHud(ui_render_group *Group, debug_state *DebugState)
+DebugDrawNetworkHud(ui_render_group *Group, game_state *GameState, debug_state *DebugState)
 {
+  return;
 }
 
 void
-DebugFrameEnd(platform *Plat, u64 FrameCycles)
+DebugFrameEnd(platform *Plat, game_state *GameState, u64 FrameCycles)
 {
   TIMED_FUNCTION();
   debug_state *DebugState = GetDebugState();
@@ -1435,7 +1436,7 @@ DebugFrameEnd(platform *Plat, u64 FrameCycles)
     case DebugUIType_Network:
     {
       BufferText("Network", &Group, WHITE);
-      DebugDrawNetworkHud(&Group, DebugState);
+      DebugDrawNetworkHud(&Group, GameState, DebugState);
     } break;
 
     case DebugUIType_CallGraph:
