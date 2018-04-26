@@ -100,6 +100,13 @@ Canonicalize( chunk_dimension WorldChunkDim, canonical_position CP )
 }
 
 inline canonical_position
+Canonicalize(canonical_position P )
+{
+  canonical_position Result = Canonicalize(WORLD_CHUNK_DIM, P);
+  return Result;
+}
+
+inline canonical_position
 Canonical_Position( chunk_dimension WorldChunkDim, v3 Offset, world_position WorldP )
 {
   canonical_position Result = Canonical_Position(Offset, WorldP);

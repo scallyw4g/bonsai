@@ -67,7 +67,7 @@ InitChunkPerlin(world_chunk *WorldChunk, v3 WorldChunkDim, u32 ColorIndex)
   chunk_data *chunk = WorldChunk->Data;
   /* CALLGRIND_TOGGLE_COLLECT; */
 
-  chunk_dimension Dim = Global_WorldChunkDim;
+  chunk_dimension Dim = WORLD_CHUNK_DIM;
 
   for ( s32 z = 0; z < Dim.z; ++ z)
   {

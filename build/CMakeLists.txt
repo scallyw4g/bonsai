@@ -36,7 +36,7 @@ set( GAME_SRC_DIR ${EXAMPLES}/ssao_test )
 
 ###############################################################################
 
-include_directories(${GAME_SRC_DIR}/engine_constants)
+include_directories(${GAME_SRC_DIR})
 
 add_library(Game SHARED ${GAME_SRC_DIR}/game.cpp)
 target_include_directories(Game PRIVATE ${GAME_SRC_DIR})
@@ -46,6 +46,7 @@ find_package(OpenGL REQUIRED)
 include_directories(${OPENGL_INCLUDE_DIRS} )
 target_link_libraries(Bonsai ${OPENGL_LIBRARIES})
 target_link_libraries(Game ${OPENGL_LIBRARIES})
+target_link_libraries(Server ${OPENGL_LIBRARIES})
 target_link_libraries(test_m4 ${OPENGL_LIBRARIES})
 
 

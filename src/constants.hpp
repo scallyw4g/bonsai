@@ -1,9 +1,6 @@
 #ifndef GAME_CONSTANTS
 #define GAME_CONSTANTS
 
-#include <game_render_constants.h>
-
-global_variable chunk_dimension Global_WorldChunkDim = WORLD_CHUNK_DIM;
 #define CHUNK_VOL (CHUNK_HEIGHT*CHUNK_WIDTH*CHUNK_DEPTH)
 
 // 6 verticies per face, 6 faces per voxel

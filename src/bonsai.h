@@ -772,8 +772,8 @@ GetWorldChunkHash(world_position P)
   // TODO(Jesse): Better hash function!
   u32 i =
     (P.x) +
-    (P.y*Global_WorldChunkDim.x) +
-    (P.z*Global_WorldChunkDim.x*Global_WorldChunkDim.y);
+    (P.y*WORLD_CHUNK_DIM.x) +
+    (P.z*WORLD_CHUNK_DIM.x*WORLD_CHUNK_DIM.y);
 
   u32 HashIndex = i % WORLD_HASH_SIZE;
   Assert(HashIndex < WORLD_HASH_SIZE);

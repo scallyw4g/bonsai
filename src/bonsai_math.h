@@ -206,7 +206,7 @@ Lerp(r32 t, canonical_position p1, canonical_position p2)
   Result.Offset = (1.0f-t)*p1.Offset + t*p2.Offset;
   Result.WorldP = (1.0f-t)*p1.WorldP + t*p2.WorldP;
 
-  Canonicalize(Global_WorldChunkDim, Result);
+  Result = Canonicalize(Result);
 
   return Result;
 }
@@ -278,7 +278,7 @@ LengthSq( v3 Vec )
 inline float
 Length( canonical_position P )
 {
-  v3 Offset = P.Offset + (P.WorldP * Global_WorldChunkDim);
+  v3 Offset = P.Offset + (P.WorldP * WORLD_CHUNK_DIM);
   float Result = sqrt(LengthSq(Offset));
   return Result;
 }

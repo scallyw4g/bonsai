@@ -1,6 +1,5 @@
 
 #include <bonsai_types.h>
-#include <bonsai.h>
 
 #include <globals.h>
 

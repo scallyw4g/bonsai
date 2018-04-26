@@ -1,6 +1,5 @@
 
 #include <bonsai_types.h>
-#include <bonsai.h>
 
 debug_global os *Global_Os = 0;
 debug_global platform *Global_Plat = 0;
@@ -8,9 +7,6 @@ debug_global platform *Global_Plat = 0;
 #include <globals.h>
 
 global_variable r32 GlobalLightTheta = 0;
-
-#include <game.h>
-#include <game_constants.h>
 
 #include <bonsai.cpp>
 
@@ -105,8 +101,8 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 void
 InitializeVoxels(world_chunk *Chunk)
 {
-  chunk_dimension Dim = Global_WorldChunkDim;
-  ZeroChunk(Chunk->Data, Volume(Global_WorldChunkDim));
+  chunk_dimension Dim = WORLD_CHUNK_DIM;
+  ZeroChunk(Chunk->Data, Volume(WORLD_CHUNK_DIM));
 
   if ( Chunk->WorldP.z == 0 )
   {
@@ -157,7 +153,7 @@ EXPORT void
 InitGlobals(platform *Plat, os *Os)
 {
   GL_Global = &Plat->GL;
-  Global_WorldChunkDim = WORLD_CHUNK_DIM;
+
 #if BONSAI_INTERNAL
   GlobalDebugState = &Plat->DebugState;
 #endif

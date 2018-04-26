@@ -13,6 +13,9 @@ void BreakHere() { return; }
 #include <basic_types.h>
 #include <memory_types.h>
 #include <vector_types.h>
+
+#include <game_constants.h>
+
 #include <colors.h>
 #include <line_types.h>
 #include <matrix_types.h>
@@ -31,3 +34,5 @@ void BreakHere() { return; }
 #include <bonsai_vertex.h>
 #include <net/network.h>
 
+#include <bonsai.h>
+#include <game_types.h>

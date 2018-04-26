@@ -1322,41 +1322,10 @@ PrintScopeTree(debug_profile_scope *Scope, s32 Depth = 0)
   return;
 }
 
-debug_profile_scope *
-GetProfileScope(debug_state *State)
-{
-  debug_profile_scope *Result = 0;
-  debug_profile_scope *Sentinel = &State->FreeScopeSentinel;
-
-  if (Sentinel->Child != Sentinel)
-  {
-    Result = Sentinel->Child;
-
-    Sentinel->Child = Sentinel->Child->Child;
-    Sentinel->Child->Child->Parent = Sentinel;
-    --State->FreeScopeCount;
-  }
-  else
-  {
-#if MEMPROTECT
-    State->Memory->MemProtect = False;
-#endif
-    Result = PUSH_STRUCT_CHECKED(debug_profile_scope, State->Memory, 1);
-#if MEMPROTECT
-    State->Memory->MemProtect = True;
-#endif
-  }
-
-  if (Result)
-    *Result = NullDebugProfileScope;
-
-  return Result;
-}
-
 void
 DebugDrawNetworkHud(ui_render_group *Group, game_state *GameState, debug_state *DebugState)
 {
-  //Print(GameState->Player->P);
+  Print(GameState->Player->P);
   return;
 }
 
