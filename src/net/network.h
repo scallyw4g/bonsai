@@ -10,6 +10,7 @@ struct server_to_client_message
 {
   client_state Clients[MAX_CLIENTS];
 };
+typedef server_to_client_message server_state;
 
 struct client_to_server_message
 {

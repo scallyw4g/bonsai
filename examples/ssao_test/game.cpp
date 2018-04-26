@@ -206,7 +206,7 @@ GameInit( platform *Plat, memory_arena *GameMemory, os *Os)
 client_state Client = {};
 
 inline void
-PingServer(network_connection *Connection, canonical_position *PlayerP)
+PingServer(network_connection *Connection, server_state *ServerState)
 {
    ++Client.Counter;
 
@@ -214,8 +214,7 @@ PingServer(network_connection *Connection, canonical_position *PlayerP)
   Message.Client = Client;
   Send(Connection, &Message);
 
-  server_to_client_message Response = {};
-  if (FlushIncomingMessages(Connection, &Response)
+  if (FlushIncomingMessages(Connection, ServerState)
       == SocketOpResult_CompletedRW)
   {
     // TODO(Jesse): Multiple clients - update remote ones!
@@ -234,7 +233,7 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys, net
 
   if (IsConnected(Network))
   {
-    PingServer(Network, &GameState->Player->P);
+    PingServer(Network, &GameState->ServerState);
   }
 
   ClearFramebuffers(Plat->Graphics);

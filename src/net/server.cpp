@@ -8,7 +8,7 @@
 inline void
 RejectIncomingConnnections(socket_t *ListeningSocket)
 {
-  /* errno = 0; */
+  errno = 0;
 
   s32 SocketId = accept4(ListeningSocket->Id,
                          0, 0, // Address write-back information
@@ -57,7 +57,7 @@ CheckForConnectingClient(socket_t *ListeningSocket, network_connection *ClientCo
   }
   else if (SocketId > 0)
   {
-    Debug("Connection accepted");
+    Info("Connection Accepted");
     ClientConnection->Socket.Id = SocketId;
     ClientConnection->Socket.Type = Socket_NonBlocking;
     ClientConnection->Connected = True;
