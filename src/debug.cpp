@@ -1196,107 +1196,6 @@ ComputeMinMaxAvgDt(debug_scope_tree *ScopeTrees)
 }
 
 void
-DebugFrameEnd(platform *Plat, u64 FrameCycles)
-{
-  TIMED_FUNCTION();
-  debug_state *DebugState = GetDebugState();
-  debug_text_render_group *RG = &DebugState->TextRenderGroup;
-  textured_2d_geometry_buffer *TextGeo = &RG->TextGeo;
-
-  v2 ViewportDim = V2(Plat->WindowWidth, Plat->WindowHeight);
-  v2 MouseP = V2(Plat->MouseP.x, Plat->WindowHeight - Plat->MouseP.y);
-
-  min_max_avg_dt Dt = ComputeMinMaxAvgDt(DebugState->ScopeTrees);
-
-  layout Layout = {};
-  SetFontSize(&Layout, DEBUG_FONT_SIZE);
-
-  ui_render_group Group = {};
-  Group.Layout = &Layout;
-  Group.TextGroup = RG;
-  Group.ViewportDim = ViewportDim;
-  Group.MouseP = MouseP;
-  Group.Input = &Plat->Input;
-
-  TIMED_BLOCK("Draw Status Bar");
-    Layout.At.y = (r32)SCR_HEIGHT - Layout.FontSize;
-    BufferColumn(Dt.Max, 6, &Group, WHITE);
-    NewLine(&Layout);
-
-    BufferColumn(Dt.Avg, 6, &Group, WHITE);
-    BufferColumn(Plat->dt*1000.0f, 6, &Group, WHITE);
-    BufferText("ms", &Group, WHITE);
-
-    {
-      // Main line
-      memory_arena_stats TotalStats = GetTotalMemoryArenaStats();
-
-      BufferThousands(TotalStats.Allocations, &Group, WHITE);
-      AdvanceSpaces(1, &Layout);
-      BufferText("Allocations", &Group, WHITE);
-
-      BufferThousands(TotalStats.Pushes, &Group, WHITE);
-      AdvanceSpaces(1, &Layout);
-      BufferText("Pushes", &Group, WHITE);
-
-      u32 TotalDrawCalls = 0;
-
-      for( u32 DrawCountIndex = 0;
-           DrawCountIndex < Global_DrawCallArrayLength;
-           ++ DrawCountIndex)
-      {
-         TotalDrawCalls += Global_DrawCalls[DrawCountIndex].Count;
-      }
-
-      BufferColumn(TotalDrawCalls, 6, &Group, WHITE);
-      AdvanceSpaces(1, &Layout);
-      BufferText("Draw Calls", &Group, WHITE);
-
-      NewLine(&Layout);
-    }
-
-    BufferColumn(Dt.Min, 6, &Group, WHITE);
-
-  END_BLOCK("Status Bar");
-
-  SetFontSize(&Layout, 32);
-  NewLine(&Layout);
-  NewLine(&Layout);
-
-  switch (DebugState->UIType)
-  {
-    case DebugUIType_None:
-    {
-    } break;
-
-    case DebugUIType_CallGraph:
-    {
-      BufferText("Call Graphs", &Group, WHITE);
-      DebugDrawCallGraph(&Group, DebugState, Dt.Max);
-    } break;
-
-    case DebugUIType_MemoryHud:
-    {
-      BufferText("Memory Arenas", &Group, WHITE);
-      DebugDrawMemoryHud(&Group, DebugState);
-    } break;
-
-    case DebugUIType_DrawCalls:
-    {
-      BufferText("Draw  Calls", &Group, WHITE);
-      DebugDrawDrawCalls(&Group, DebugState);
-    } break;
-
-    InvalidDefaultCase;
-  }
-
-  FlushBuffer(RG, &RG->UIGeo, ViewportDim);
-  FlushBuffer(RG, TextGeo, ViewportDim);
-
-  return;
-}
-
-void
 CleanupText2D(debug_text_render_group *RG)
 {
   // Delete buffers
@@ -1452,6 +1351,107 @@ GetProfileScope(debug_state *State)
     *Result = NullDebugProfileScope;
 
   return Result;
+}
+
+void
+DebugFrameEnd(platform *Plat, u64 FrameCycles)
+{
+  TIMED_FUNCTION();
+  debug_state *DebugState = GetDebugState();
+  debug_text_render_group *RG = &DebugState->TextRenderGroup;
+  textured_2d_geometry_buffer *TextGeo = &RG->TextGeo;
+
+  v2 ViewportDim = V2(Plat->WindowWidth, Plat->WindowHeight);
+  v2 MouseP = V2(Plat->MouseP.x, Plat->WindowHeight - Plat->MouseP.y);
+
+  min_max_avg_dt Dt = ComputeMinMaxAvgDt(DebugState->ScopeTrees);
+
+  layout Layout = {};
+  SetFontSize(&Layout, DEBUG_FONT_SIZE);
+
+  ui_render_group Group = {};
+  Group.Layout = &Layout;
+  Group.TextGroup = RG;
+  Group.ViewportDim = ViewportDim;
+  Group.MouseP = MouseP;
+  Group.Input = &Plat->Input;
+
+  TIMED_BLOCK("Draw Status Bar");
+    Layout.At.y = (r32)SCR_HEIGHT - Layout.FontSize;
+    BufferColumn(Dt.Max, 6, &Group, WHITE);
+    NewLine(&Layout);
+
+    BufferColumn(Dt.Avg, 6, &Group, WHITE);
+    BufferColumn(Plat->dt*1000.0f, 6, &Group, WHITE);
+    BufferText("ms", &Group, WHITE);
+
+    {
+      // Main line
+      memory_arena_stats TotalStats = GetTotalMemoryArenaStats();
+
+      BufferThousands(TotalStats.Allocations, &Group, WHITE);
+      AdvanceSpaces(1, &Layout);
+      BufferText("Allocations", &Group, WHITE);
+
+      BufferThousands(TotalStats.Pushes, &Group, WHITE);
+      AdvanceSpaces(1, &Layout);
+      BufferText("Pushes", &Group, WHITE);
+
+      u32 TotalDrawCalls = 0;
+
+      for( u32 DrawCountIndex = 0;
+           DrawCountIndex < Global_DrawCallArrayLength;
+           ++ DrawCountIndex)
+      {
+         TotalDrawCalls += Global_DrawCalls[DrawCountIndex].Count;
+      }
+
+      BufferColumn(TotalDrawCalls, 6, &Group, WHITE);
+      AdvanceSpaces(1, &Layout);
+      BufferText("Draw Calls", &Group, WHITE);
+
+      NewLine(&Layout);
+    }
+
+    BufferColumn(Dt.Min, 6, &Group, WHITE);
+
+  END_BLOCK("Status Bar");
+
+  SetFontSize(&Layout, 32);
+  NewLine(&Layout);
+  NewLine(&Layout);
+
+  switch (DebugState->UIType)
+  {
+    case DebugUIType_None:
+    {
+    } break;
+
+    case DebugUIType_CallGraph:
+    {
+      BufferText("Call Graphs", &Group, WHITE);
+      DebugDrawCallGraph(&Group, DebugState, Dt.Max);
+    } break;
+
+    case DebugUIType_MemoryHud:
+    {
+      BufferText("Memory Arenas", &Group, WHITE);
+      DebugDrawMemoryHud(&Group, DebugState);
+    } break;
+
+    case DebugUIType_DrawCalls:
+    {
+      BufferText("Draw  Calls", &Group, WHITE);
+      DebugDrawDrawCalls(&Group, DebugState);
+    } break;
+
+    InvalidDefaultCase;
+  }
+
+  FlushBuffer(RG, &RG->UIGeo, ViewportDim);
+  FlushBuffer(RG, TextGeo, ViewportDim);
+
+  return;
 }
 
 #endif // DEBUG

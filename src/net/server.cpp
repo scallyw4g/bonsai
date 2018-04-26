@@ -5,8 +5,6 @@
 
 #include <bonsai_types.h>
 
-#define MAX_CLIENTS 2
-
 inline void
 RejectIncomingConnnections(socket_t *ListeningSocket)
 {
