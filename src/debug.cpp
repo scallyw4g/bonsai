@@ -1166,6 +1166,26 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState)
   return;
 }
 
+void
+DebugDrawNetworkHud(ui_render_group *Group, game_state *GameState, debug_state *DebugState)
+{
+  layout *Layout = Group->Layout;
+  NewLine(Layout);
+  NewLine(Layout);
+
+  server_state *ServerState = &GameState->ServerState;
+
+  for (u32 ClientIndex = 0;
+      ClientIndex < MAX_CLIENTS;
+      ++ClientIndex)
+  {
+    client_state *Client = &ServerState->Clients[ClientIndex];
+    BufferColumn(Client->Counter, 4, Group, WHITE);
+  }
+
+  return;
+}
+
 struct min_max_avg_dt
 {
   r32 Min;
@@ -1319,13 +1339,6 @@ PrintScopeTree(debug_profile_scope *Scope, s32 Depth = 0)
   PrintScopeTree(Scope->Child, Depth+1);
   PrintScopeTree(Scope->Sibling, Depth);
 
-  return;
-}
-
-void
-DebugDrawNetworkHud(ui_render_group *Group, game_state *GameState, debug_state *DebugState)
-{
-  Print(GameState->Player->P);
   return;
 }
 
