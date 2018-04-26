@@ -72,20 +72,21 @@ CheckForConnectingClient(socket_t *ListeningSocket, network_connection *ClientCo
   return;
 }
 
-#define MAX_CLIENTS 2
-
-struct client_state
-{
-  canonical_position P;
-};
-
-struct server_state
-{
-};
-
 void
-BroadcastServerState(client_state *Clients, network_connection *Connected)
+BroadcastServerState(client_state *Clients, network_connection *Connection)
 {
+  server_to_client_message OutputMessage = {};
+
+  for (u32 ClientIndex = 0;
+      ClientIndex < MAX_CLIENTS;
+      ++ClientIndex)
+  {
+    OutputMessage.Clients[ClientIndex] = Clients[ClientIndex];
+  }
+
+  Send(Connection, &OutputMessage);
+
+  return;
 }
 
 int
@@ -109,7 +110,7 @@ main(int ArgCount, char **Arguments)
 
   client_state Clients[MAX_CLIENTS] = {};
   network_connection ClientConnections[MAX_CLIENTS] = {};
-  server_to_client_message OutputMessage = {};
+  client_to_server_message InputMessage = {};
 
   for(;;)
   {
@@ -121,10 +122,10 @@ main(int ArgCount, char **Arguments)
       client_state *Client = &Clients[ClientIndex];
       if (IsConnected(Connection))
       {
-        if (FlushIncomingMessages(Connection, &OutputMessage)
+        if (FlushIncomingMessages(Connection, &InputMessage)
             == SocketOpResult_CompletedRW)
         {
-          Client->P = OutputMessage.P;
+          *Client = InputMessage.Client;
         }
         BroadcastServerState(Clients, Connection);
       }

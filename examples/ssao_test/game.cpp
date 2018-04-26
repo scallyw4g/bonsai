@@ -203,15 +203,15 @@ GameInit( platform *Plat, memory_arena *GameMemory, os *Os)
   return GameState;
 }
 
-static u64
-MessageId = 1;
+client_state Client = {};
 
 inline void
 PingServer(network_connection *Connection, canonical_position *PlayerP)
 {
+   ++Client.Counter;
+
   client_to_server_message Message = {};
-  Message.Id = MessageId++;
-  Message.P = *PlayerP;
+  Message.Client = Client;
   Send(Connection, &Message);
 
   server_to_client_message Response = {};

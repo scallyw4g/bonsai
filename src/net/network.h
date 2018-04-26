@@ -1,15 +1,19 @@
 #define REMOTE_PORT 1337
+#define MAX_CLIENTS 2
+
+struct client_state
+{
+  u32 Counter;
+};
 
 struct server_to_client_message
 {
-  u64 Id;
-  canonical_position P;
+  client_state Clients[MAX_CLIENTS];
 };
 
 struct client_to_server_message
 {
-  u64 Id;
-  canonical_position P;
+  client_state Client;
 };
 
 enum socket_type
