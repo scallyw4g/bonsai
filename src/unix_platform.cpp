@@ -35,6 +35,7 @@ PrintSemValue( semaphore *Semaphore )
 }
 #endif
 
+
 u64 InvalidSysconfReturn = ((u64)-1);
 
 u64
@@ -95,6 +96,8 @@ PlatformAllocateArena(umm RequestedBytes = Megabytes(1))
   return NewArena;
 }
 
+#if PLATFORM_THREADING_IMPLEMENTATIONS
+
 inline void
 ThreadSleep( semaphore *Semaphore )
 {
@@ -131,6 +134,8 @@ CreateThread( void* (*ThreadMain)(void*), thread_startup_params *Params)
   return Params->Self.ID;
 }
 
+#endif // PLATFORM_THREADING_IMPLEMENTATIONS
+
 __inline__ u64
 GetCycleCount()
 {
@@ -139,6 +144,8 @@ GetCycleCount()
   u64 Result = ( (u64)lo)|( ((u64)hi)<<32 );
   return Result;
 }
+
+#if PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS
 
 void
 CloseLibrary(shared_lib Lib)
@@ -219,34 +226,12 @@ GetProcFromLib(shared_lib Lib, const char *Name)
   return Result;
 }
 
-char*
-GetCwd()
+inline void
+Terminate(os *Os)
 {
-  global_variable char GlobalCwdBuffer[GlobalCwdBufferLength];
-  getcwd(GlobalCwdBuffer, GlobalCwdBufferLength);
-  return (GlobalCwdBuffer);
-}
-
-b32
-IsFilesystemRoot(char *Filepath)
-{
-  b32 Result = ( Filepath[0] == '/' && Filepath[1] == 0 );
-  return Result;
-}
-
-#include <time.h>
-
-inline r64
-GetHighPrecisionClock()
-{
-  timespec Time;
-  clock_gettime(CLOCK_MONOTONIC, &Time);
-
-  r64 SecondsAsMs = (r64)Time.tv_sec*1000.0;
-  r64 NsAsMs = Time.tv_nsec/1000000;
-
-  r64 Ms = SecondsAsMs + NsAsMs;
-  return Ms;
+  XDestroyWindow(Os->Display, Os->Window);
+  XCloseDisplay(Os->Display);
+  return;
 }
 
 b32
@@ -390,6 +375,40 @@ ProcessOsMessages(os *Os, platform *Plat)
   return EventFound;
 }
 
+#endif // PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS
+
+char*
+GetCwd()
+{
+  global_variable char GlobalCwdBuffer[GlobalCwdBufferLength];
+  getcwd(GlobalCwdBuffer, GlobalCwdBufferLength);
+  return (GlobalCwdBuffer);
+}
+
+b32
+IsFilesystemRoot(char *Filepath)
+{
+  b32 Result = ( Filepath[0] == '/' && Filepath[1] == 0 );
+  return Result;
+}
+
+#include <time.h>
+
+inline r64
+GetHighPrecisionClock()
+{
+  timespec Time;
+  clock_gettime(CLOCK_MONOTONIC, &Time);
+
+  r64 SecondsAsMs = (r64)Time.tv_sec*1000.0;
+  r64 NsAsMs = Time.tv_nsec/1000000;
+
+  r64 Ms = SecondsAsMs + NsAsMs;
+  return Ms;
+}
+
+#if PLATFORM_GL_IMPLEMENTATIONS
+
 inline void
 BonsaiSwapBuffers(os *Os)
 {
@@ -397,13 +416,7 @@ BonsaiSwapBuffers(os *Os)
   glXSwapBuffers(Os->Display, Os->Window);
 }
 
-inline void
-Terminate(os *Os)
-{
-  XDestroyWindow(Os->Display, Os->Window);
-  XCloseDisplay(Os->Display);
-  return;
-}
+#endif // PLATFORM_GL_IMPLEMENTATIONS
 
 inline void
 SetMouseP(v2 P)

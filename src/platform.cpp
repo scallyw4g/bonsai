@@ -12,6 +12,10 @@
 #if BONSAI_WIN32
 #include <win32_platform.cpp>
 #else
+
+#define PLATFORM_THREADING_IMPLEMENTATIONS 1
+#define PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS 1
+#define PLATFORM_GL_IMPLEMENTATIONS 1
 #include <unix_platform.cpp>
 #endif
 
