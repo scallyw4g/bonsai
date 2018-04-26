@@ -10,6 +10,8 @@
 inline void
 RejectIncomingConnnections(socket_t *ListeningSocket)
 {
+  /* errno = 0; */
+
   s32 SocketId = accept4(ListeningSocket->Id,
                          0, 0, // Address write-back information
                          SOCK_NONBLOCK);
@@ -74,8 +76,11 @@ CheckForConnectingClient(socket_t *ListeningSocket, network_connection *ClientCo
 
 struct client_state
 {
-  u32 ClientId;
   canonical_position P;
+};
+
+struct server_state
+{
 };
 
 void
@@ -113,14 +118,14 @@ main(int ArgCount, char **Arguments)
         ++ClientIndex)
     {
       network_connection *Connection = &ClientConnections[ClientIndex];
+      client_state *Client = &Clients[ClientIndex];
       if (IsConnected(Connection))
       {
         if (FlushIncomingMessages(Connection, &OutputMessage)
             == SocketOpResult_CompletedRW)
         {
-          Send(Connection, &OutputMessage);
+          Client->P = OutputMessage.P;
         }
-
         BroadcastServerState(Clients, Connection);
       }
       else
