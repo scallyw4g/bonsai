@@ -537,7 +537,7 @@ main(s32 NumArgs, char ** Args)
     /* DEBUG_FRAME_RECORD(Debug_RecordingState, &Hotkeys); */
 
     END_BLOCK("Frame Preamble");
-    if (!IsConnected(&GameState->Network))
+    if (IsDisconnected(&GameState->Network))
     {
       ConnectToServer(&GameState->Network);
     }

@@ -204,16 +204,34 @@ client_state Client = {};
 inline void
 PingServer(network_connection *Connection, server_state *ServerState)
 {
+  if (Connection->State == ConnectionState_AwaitingHandshake)
+  {
+    handshake_message Handshake = {};
+    socket_op_result ReadMessage = Read(Connection, &Handshake);
+
+    if (ReadMessage == SocketOpResult_CompletedRW)
+    {
+      Connection->State = ConnectionState_Connected;
+    }
+
+  }
+  else if(Connection->State == ConnectionState_Connected)
+  {
    ++Client.Counter;
 
-  client_to_server_message Message = {};
-  Message.Client = Client;
-  Send(Connection, &Message);
+    client_to_server_message Message = {};
+    Message.Client = Client;
+    Send(Connection, &Message);
 
-  if (FlushIncomingMessages(Connection, ServerState)
-      == SocketOpResult_CompletedRW)
+    if (FlushIncomingMessages(Connection, ServerState)
+        == SocketOpResult_CompletedRW)
+    {
+      // TODO(Jesse): Multiple clients - update remote ones!
+    }
+  }
+  else
   {
-    // TODO(Jesse): Multiple clients - update remote ones!
+    Assert(Connection->State == ConnectionState_Disconnected);
   }
 
   return;
@@ -228,10 +246,7 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   Mode->TimeRunning += Plat->dt;
 
   network_connection *Network = &GameState->Network;
-  if (IsConnected(Network))
-  {
-    PingServer(Network, &GameState->ServerState);
-  }
+  PingServer(Network, &GameState->ServerState);
 
   ClearFramebuffers(Plat->Graphics);
   DoGameplay(Plat, GameState, Hotkeys);

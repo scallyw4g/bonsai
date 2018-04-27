@@ -110,6 +110,12 @@ enum socket_op
   SocketOp_Count
 };
 
+inline b32
+IsDisconnected(network_connection *Conn)
+{
+  b32 Result = (Conn->State == ConnectionState_Disconnected);
+  return Result;
+}
 
 inline b32
 IsConnected(network_connection *Conn)
@@ -144,7 +150,8 @@ NetworkOp(network_connection *Connection, void *Message, u32 MessageSize, socket
   s32 BytesAvailable = 0;
 
   // We may have disconnected on a previous attempt to read/write this frame
-  if (IsConnected(Connection))
+  // therefore this check must be here
+  if (!IsDisconnected(Connection))
   {
     switch(SocketOp)
     {
