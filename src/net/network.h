@@ -4,6 +4,7 @@
 struct client_state
 {
   u32 Counter;
+  canonical_position P;
 };
 
 struct server_to_client_message
@@ -128,6 +129,7 @@ NetworkOp(network_connection *Connection, void *Message, u32 MessageSize, socket
 
   socket_op_result OpResult = SocketOpResult_Fail;
   s64 SocketReturnValue = 0;
+  s32 BytesAvailable = 0;
 
   // We may have disconnected on a previous attempt to read/write this frame
   if (IsConnected(Connection))
@@ -137,13 +139,24 @@ NetworkOp(network_connection *Connection, void *Message, u32 MessageSize, socket
       case SocketOp_Read:
       {
         u32 Flags = 0;
-        SocketReturnValue = recv(Connection->Socket.Id, (void*)Message, MessageSize, Flags);
+        BytesAvailable = (s32)recv(Connection->Socket.Id, (void*)Message, MessageSize, MSG_PEEK);
+
+        if (BytesAvailable >= MessageSize)
+        {
+          SocketReturnValue = recv(Connection->Socket.Id, (void*)Message, MessageSize, Flags);
+        }
+
       } break;
 
       case SocketOp_Write:
       {
         u32 Flags = MSG_NOSIGNAL;
+        // FIXME(Jesse): This can fail if the underlying TCP implementations
+        // internal buffer is unable to send MessageSize bytes.  In that case
+        // the Assert below will fire.  This is insufficient as it will result
+        // in a corrupt message stream.
         SocketReturnValue = send(Connection->Socket.Id, (void*)Message, MessageSize , Flags);
+        Assert(MessageSize == SocketReturnValue);
       } break;
 
       InvalidDefaultCase;

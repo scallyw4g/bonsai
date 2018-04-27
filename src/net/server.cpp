@@ -109,8 +109,8 @@ main(int ArgCount, char **Arguments)
             == SocketOpResult_CompletedRW)
         {
           *Client = InputMessage.Client;
+          Send(Connection, &ServerState);
         }
-        Send(Connection, &ServerState);
       }
       else
       {

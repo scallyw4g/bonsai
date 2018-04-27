@@ -1180,7 +1180,7 @@ DebugDrawNetworkHud(ui_render_group *Group, game_state *GameState, debug_state *
       ++ClientIndex)
   {
     client_state *Client = &ServerState->Clients[ClientIndex];
-    BufferColumn(Client->Counter, 4, Group, WHITE);
+    BufferColumn(Client->Counter, 6, Group, WHITE);
   }
 
   return;
