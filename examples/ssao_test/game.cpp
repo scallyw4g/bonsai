@@ -193,6 +193,9 @@ GameInit( platform *Plat, memory_arena *GameMemory, os *Os)
 
   SpawnPlayer(GameState, GameState->Player, Canonical_Position( V3(0,8,2), World_Position(0,0,0) ));
 
+  GameState->Network = {Socket_NonBlocking};
+  GameState->Network.Address.sin_addr.s_addr = inet_addr("127.0.0.1");
+
   return GameState;
 }
 
@@ -217,13 +220,14 @@ PingServer(network_connection *Connection, server_state *ServerState)
 }
 
 EXPORT void
-GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys, network_connection *Network)
+GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 {
   TIMED_FUNCTION();
   Assert(GlobalDebugState);
   game_mode *Mode = &GameState->Mode;
   Mode->TimeRunning += Plat->dt;
 
+  network_connection *Network = &GameState->Network;
   if (IsConnected(Network))
   {
     PingServer(Network, &GameState->ServerState);

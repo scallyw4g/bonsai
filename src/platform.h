@@ -14,7 +14,7 @@ struct os;
 
 typedef void (*GameCallback)(void*);
 typedef game_state* (*game_init_proc)(platform*, memory_arena*, os *Os);
-typedef void (*game_main_proc)(platform*, game_state*, hotkeys*, network_connection*);
+typedef void (*game_main_proc)(platform*, game_state*, hotkeys*);
 typedef void (*game_init_globals_proc)(platform*);
 typedef void (*game_thread_callback_proc)(work_queue_entry*);
 

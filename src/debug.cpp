@@ -1170,6 +1170,19 @@ void
 DebugDrawNetworkHud(ui_render_group *Group, game_state *GameState, debug_state *DebugState)
 {
   layout *Layout = Group->Layout;
+  network_connection *Conn = &GameState->Network;
+
+  AdvanceSpaces(2, Layout);
+
+  if (Conn->Connected)
+    BufferText("O", Group, GREEN);
+  else
+    BufferText("X", Group, RED);
+
+  AdvanceSpaces(2, Layout);
+
+  BufferText("Network", Group, WHITE);
+
   NewLine(Layout);
   NewLine(Layout);
 
@@ -1180,7 +1193,7 @@ DebugDrawNetworkHud(ui_render_group *Group, game_state *GameState, debug_state *
       ++ClientIndex)
   {
     client_state *Client = &ServerState->Clients[ClientIndex];
-    BufferColumn(Client->Counter, 6, Group, WHITE);
+    BufferColumn(Client->Counter, 7, Group, WHITE);
   }
 
   return;
@@ -1418,7 +1431,6 @@ DebugFrameEnd(platform *Plat, game_state *GameState, u64 FrameCycles)
 
     case DebugUIType_Network:
     {
-      BufferText("Network", &Group, WHITE);
       DebugDrawNetworkHud(&Group, GameState, DebugState);
     } break;
 
