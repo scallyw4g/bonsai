@@ -26,6 +26,8 @@ RejectIncomingConnnections(socket_t *ListeningSocket)
   Assert(errno == EAGAIN || errno == EWOULDBLOCK);
 }
 
+global_variable u32 ClientId = 0;
+
 inline void
 CheckForConnectingClient(socket_t *ListeningSocket, network_connection *ClientConnection)
 {
@@ -62,6 +64,9 @@ CheckForConnectingClient(socket_t *ListeningSocket, network_connection *ClientCo
     ClientConnection->Socket.Id = SocketId;
     ClientConnection->Socket.Type = Socket_NonBlocking;
     ClientConnection->Connected = True;
+
+    handshake_message Handshake = {++ClientId};
+    Send(ClientConnection, &Handshake);
   }
   else
   {

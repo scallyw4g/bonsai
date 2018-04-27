@@ -18,6 +18,11 @@ struct client_to_server_message
   client_state Client;
 };
 
+struct handshake_message
+{
+  u32 ClientId;
+};
+
 enum socket_type
 {
   Socket_Blocking,
