@@ -63,7 +63,7 @@ CheckForConnectingClient(socket_t *ListeningSocket, network_connection *ClientCo
     Info("Connection Accepted");
     ClientConnection->Socket.Id = SocketId;
     ClientConnection->Socket.Type = Socket_NonBlocking;
-    ClientConnection->Connected = True;
+    ClientConnection->State = ConnectionState_Connected;
 
     handshake_message Handshake = {++ClientId};
     Send(ClientConnection, &Handshake);

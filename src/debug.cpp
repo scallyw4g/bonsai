@@ -1174,7 +1174,7 @@ DebugDrawNetworkHud(ui_render_group *Group, game_state *GameState, debug_state *
 
   AdvanceSpaces(2, Layout);
 
-  if (Conn->Connected)
+  if (IsConnected(Conn))
     BufferText("O", Group, GREEN);
   else
     BufferText("X", Group, RED);

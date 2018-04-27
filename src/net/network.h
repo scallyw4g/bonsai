@@ -70,11 +70,18 @@ CreateAddress()
   return Address;
 }
 
+enum connection_state
+{
+  ConnectionState_Disconnected,
+  ConnectionState_AwaitingHandshake,
+  ConnectionState_Connected
+};
+
 struct network_connection
 {
   sockaddr_in Address;
   socket_t Socket;
-  b32 Connected;
+  connection_state State;
 
   network_connection(socket_type Type)
   {
@@ -107,7 +114,7 @@ enum socket_op
 inline b32
 IsConnected(network_connection *Conn)
 {
-  b32 Result = Conn->Connected;
+  b32 Result = (Conn->State == ConnectionState_Connected);
   return Result;
 }
 
@@ -119,7 +126,7 @@ Disconnect(network_connection *Connection)
 
   close(Connection->Socket.Id);
   Connection->Socket = NullSocket;
-  Connection->Connected = False;
+  Connection->State = ConnectionState_Disconnected;
 
   Assert(!IsConnected(Connection));
 

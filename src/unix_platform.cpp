@@ -439,7 +439,7 @@ ConnectToServer(network_connection *Connection)
   if (ConnectStatus == 0)
   {
       Debug("Connected");
-      Connection->Connected = True;
+      Connection->State = ConnectionState_AwaitingHandshake;
   }
   else if (ConnectStatus == -1)
   {
