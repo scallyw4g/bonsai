@@ -20,7 +20,7 @@ struct client_to_server_message
 
 struct handshake_message
 {
-  u32 ClientId;
+  s32 ClientId;
 };
 
 enum socket_type
@@ -83,11 +83,14 @@ struct network_connection
   socket_t Socket;
   connection_state State;
 
+  s32 ClientId;
+
   network_connection(socket_type Type)
   {
     Clear(this);
     this->Socket = CreateSocket(Type);
     this->Address = CreateAddress();
+    this->ClientId = -1;
   }
 
   network_connection() = default;
@@ -133,6 +136,7 @@ Disconnect(network_connection *Connection)
   close(Connection->Socket.Id);
   Connection->Socket = NullSocket;
   Connection->State = ConnectionState_Disconnected;
+  Connection->ClientId = -1;
 
   Assert(!IsConnected(Connection));
 

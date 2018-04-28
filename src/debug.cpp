@@ -1193,7 +1193,12 @@ DebugDrawNetworkHud(ui_render_group *Group, game_state *GameState, debug_state *
       ++ClientIndex)
   {
     client_state *Client = &ServerState->Clients[ClientIndex];
-    BufferColumn(Client->Counter, 7, Group, WHITE);
+    u32 Color = WHITE;
+
+    if (Conn->ClientId == ClientIndex)
+      Color = GREEN;
+
+    BufferColumn(Client->Counter, 7, Group, Color);
   }
 
   return;

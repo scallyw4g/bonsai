@@ -212,6 +212,7 @@ PingServer(network_connection *Connection, server_state *ServerState)
     if (ReadMessage == SocketOpResult_CompletedRW)
     {
       Connection->State = ConnectionState_Connected;
+      Connection->ClientId = Handshake.ClientId;
     }
 
   }
