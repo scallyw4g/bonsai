@@ -63,6 +63,7 @@ CheckForConnectingClient(socket_t *ListeningSocket, network_connection *ClientCo
     ClientConnection->Socket.Type = Socket_NonBlocking;
     ClientConnection->State = ConnectionState_Connected;
 
+
     handshake_message Handshake = {ClientConnection->ClientId};
     Send(ClientConnection, &Handshake);
   }
@@ -85,7 +86,8 @@ main(int ArgCount, char **Arguments)
         sizeof(IncomingConnections.Address));
 
   if( BindResult < 0)
-    { Error("Bind Failed"); return 1; }
+    { Error("Bind Failed"); perror(strerror(errno)); return 1; }
+
 
   Debug("Bind Successful");
 

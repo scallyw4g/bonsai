@@ -202,7 +202,7 @@ GameInit( platform *Plat, memory_arena *GameMemory, os *Os)
 client_state Client = {};
 
 inline void
-PingServer(network_connection *Connection, server_state *ServerState)
+PingServer(network_connection *Connection, server_state *ServerState, canonical_position *PlayerP)
 {
   if (Connection->State == ConnectionState_AwaitingHandshake)
   {
@@ -218,7 +218,8 @@ PingServer(network_connection *Connection, server_state *ServerState)
   }
   else if(Connection->State == ConnectionState_Connected)
   {
-   ++Client.Counter;
+    ++Client.Counter;
+    Client.P = *PlayerP;
 
     client_to_server_message Message = {};
     Message.Client = Client;
@@ -227,8 +228,8 @@ PingServer(network_connection *Connection, server_state *ServerState)
     if (FlushIncomingMessages(Connection, ServerState)
         == SocketOpResult_CompletedRW)
     {
-      // TODO(Jesse): Multiple clients - update remote ones!
     }
+
   }
   else
   {
@@ -247,7 +248,20 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   Mode->TimeRunning += Plat->dt;
 
   network_connection *Network = &GameState->Network;
-  PingServer(Network, &GameState->ServerState);
+  PingServer(Network, &GameState->ServerState, &GameState->Player->P);
+
+  for (u32 ClientIndex = 0;
+      ClientIndex < MAX_CLIENTS;
+      ++ClientIndex)
+  {
+    client_state *Client = &GameState->ServerState.Clients[ClientIndex];
+    if (Network->ClientId != ClientIndex)
+    {
+      entity RemoteEntity = *GameState->Player;
+      RemoteEntity.P = Client->P;
+      BufferEntity( &GameState->World->Mesh, &RemoteEntity, Plat->Graphics, GameState->World->ChunkDim);
+    }
+  }
 
   ClearFramebuffers(Plat->Graphics);
   DoGameplay(Plat, GameState, Hotkeys);

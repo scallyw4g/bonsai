@@ -1181,7 +1181,9 @@ DebugDrawNetworkHud(ui_render_group *Group, game_state *GameState, debug_state *
 
   AdvanceSpaces(2, Layout);
 
-  BufferText("Network", Group, WHITE);
+  BufferText("Network - ClientId :", Group, WHITE);
+  AdvanceSpaces(1, Layout);
+  BufferColumn( Conn->ClientId, 2, Group, WHITE);
 
   NewLine(Layout);
   NewLine(Layout);
