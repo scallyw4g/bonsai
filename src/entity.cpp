@@ -424,6 +424,38 @@ SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset)
   return;
 }
 
+#include <float.h>
+
+void
+SpawnFire(entity *Entity, random_series *Entropy, v3 Offset)
+{
+  particle_system_init_params Params = {};
+
+  Params.Entropy.Seed = RandomU32(Entropy);
+
+  Params.Colors[0] = BLACK;
+  Params.Colors[1] = DARK_DARK_RED;
+  Params.Colors[2] = DARK_RED;
+  Params.Colors[3] = ORANGE;
+  Params.Colors[4] = YELLOW;
+  Params.Colors[5] = WHITE;
+
+  Params.SpawnRegion = aabb(Offset, V3(1.2f));
+
+  // FIXME(Jesse): Make a mode for infinite emission
+  Params.EmissionLifespan = FLT_MAX;
+  Params.ParticleLifespan = 0.55f;
+  Params.EmissionChance = 1.0f;
+
+  Params.Physics.Speed = 18;
+  Params.Physics.Drag = 2.0f;
+  Params.Physics.Mass = 0.3f;
+
+  SpawnParticleSystem(Entity->Emitter, &Params );
+
+  return;
+}
+
 void
 SpawnPlayer(game_state *GameState, entity *Player, canonical_position InitialP)
 {

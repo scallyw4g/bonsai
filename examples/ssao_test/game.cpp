@@ -202,6 +202,8 @@ GameInit( platform *Plat, memory_arena *GameMemory, os *Os)
 client_state Client = {};
 
 inline void
+
+#include <float.h>
 PingServer(network_connection *Connection, server_state *ServerState, canonical_position *PlayerP)
 {
   if (Connection->State == ConnectionState_AwaitingHandshake)
