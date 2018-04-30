@@ -554,6 +554,7 @@ graphics *
 GraphicsInit(memory_arena *GraphicsMemory)
 {
   graphics *Result = PUSH_STRUCT_CHECKED(graphics, GraphicsMemory, 1);
+  Result->Memory = GraphicsMemory;
 
   Result->Camera = PUSH_STRUCT_CHECKED(camera, GraphicsMemory, 1);
   InitCamera(Result->Camera, CameraInitialFront, 1000.0f);
@@ -2361,27 +2362,31 @@ DrawFolie(untextured_3d_geometry_buffer *Mesh, graphics *Graphics, aabb *AABB)
   return;
 }
 
-#if 0
+#if 1
 void
 DrawParticle(
     canonical_position *P,
-    untextured_3d_geometry_buffer *Mesh,
-    g_buffer_render_group *gBuffer,
-    shadow_render_group *SG,
+    untextured_3d_geometry_buffer *Source,
+    untextured_3d_geometry_buffer *Dest,
+    graphics *Graphics,
     chunk_dimension WorldChunkDim,
-    camera *Camera,
     particle *Particle,
     r32 Diameter,
     u8 ColorIndex
   )
 {
-  v3 VertexData[6];
-
   v3 FaceColors[FACE_VERT_COUNT];
   FillColorArray(ColorIndex, FaceColors, FACE_VERT_COUNT);;
 
-  v3 MinP = GetRenderP(WorldChunkDim, (*P)+Particle->Offset, Camera);
+  v3 MinP = GetRenderP(WorldChunkDim, (*P)+Particle->Offset, Graphics->Camera);
 
+  r32 Scale =  1.0f;
+
+  v3 RenderOffset = MinP;
+
+#if 1
+  BufferVerts( Source, Dest, RenderOffset, Scale, Graphics);
+#else
   RightFaceVertexData( MinP, V3(Diameter), VertexData);
   BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, RightFaceNormalData, FaceColors);
 
@@ -2399,6 +2404,7 @@ DrawParticle(
 
   BackFaceVertexData( MinP, V3(Diameter), VertexData);
   BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, BackFaceNormalData, FaceColors);
+#endif
 
   return;
 }
@@ -2412,6 +2418,10 @@ BufferEntity(
     chunk_dimension WorldChunkDim
   )
 {
+#if DEBUG_PARTICLE_EFFECTS
+  return;
+#endif
+
   TIMED_FUNCTION();
   // Debug light code
   /* v3 LightP = GetRenderP(world, Entity->P + Entity->Model.Dim/2); */
@@ -2420,7 +2430,7 @@ BufferEntity(
 
   chunk_data *Model = Entity->Model.Chunk;
 
-  // DrawParticleSystem( world, Entity->Emitter, &Entity->P, Camera );
+  /* DrawParticleSystem( world, Entity->Emitter, &Entity->P, Camera ); */
 
   if (Model && Spawned(Entity))
   {

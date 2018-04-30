@@ -101,7 +101,6 @@ GetCollision(world *World, entity *Entity, v3 Offset = V3(0,0,0) )
 
 inline void
 SpawnLoot(entity *Entity, random_series *Entropy, model *GameModels)
-
 {
   b32 ShouldSpawnLoot = (RandomU32(Entropy) % LOOT_CHANCE) == 0;
 
@@ -116,6 +115,7 @@ SpawnLoot(entity *Entity, random_series *Entropy, model *GameModels)
 
   return;
 }
+
 entity *
 GetFreeEntity(game_state *GameState)
 {
@@ -413,7 +413,7 @@ SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset)
 
   Params.EmissionLifespan = 0.10f;
   Params.ParticleLifespan = 0.55f;
-  Params.EmissionChance = 8.0f;
+  Params.EmissionChance = 2.0f;
 
   Params.Physics.Speed = 18;
   Params.Physics.Drag = 2.0f;
@@ -424,6 +424,7 @@ SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset)
   return;
 }
 
+// FIXME(Jesse): Remove the FLT_MAX EmissionLifespan below
 #include <float.h>
 
 void
@@ -440,18 +441,20 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset)
   Params.Colors[4] = YELLOW;
   Params.Colors[5] = WHITE;
 
-  Params.SpawnRegion = aabb(Offset, V3(1.2f));
+  Params.SpawnRegion = aabb(Offset, V3(0.25f));
 
   // FIXME(Jesse): Make a mode for infinite emission
   Params.EmissionLifespan = FLT_MAX;
-  Params.ParticleLifespan = 0.55f;
-  Params.EmissionChance = 1.0f;
+  Params.ParticleLifespan = 1.0f;
+  Params.EmissionChance = 2.0f;
 
   Params.Physics.Speed = 18;
-  Params.Physics.Drag = 2.0f;
+  Params.Physics.Drag = 2.2f;
   Params.Physics.Mass = 0.3f;
 
-  SpawnParticleSystem(Entity->Emitter, &Params );
+  Params.Physics.Velocity = V3(0.0f, 0.0f, 25.0f);
+
+  SpawnParticleSystem(Entity->Emitter, &Params);
 
   return;
 }
@@ -482,6 +485,9 @@ SpawnPlayer(game_state *GameState, entity *Player, canonical_position InitialP)
       RateOfFire,
       Health
     );
+
+  v3 Offset = (Player->Model.Dim/2.0f)*Player->Scale;
+  SpawnFire(Player, &GameState->Entropy, Offset);
 
   return;
 }
@@ -749,8 +755,106 @@ UpdateVisibleRegion(game_state *GameState, world_position WorldDisp)
   return;
 }
 
+b32
+SpawnParticle(particle_system *System)
+{
+  b32 Spawn = ((RandomUnilateral(&System->Entropy)) * System->EmissionChance) >= 0.5f;
+
+  if (Spawn)
+  {
+    particle *Particle = &System->Particles[System->ActiveParticles++];
+    Assert(System->ActiveParticles < PARTICLES_PER_SYSTEM);
+
+    r32 X = RandomBilateral(&System->Entropy);
+    r32 Y = RandomBilateral(&System->Entropy);
+    r32 Z = RandomBilateral(&System->Entropy);
+
+    v3 Random = V3(X,Y,Z);
+
+    Particle->Offset = (Random*System->SpawnRegion.Radius) + System->SpawnRegion.Center;
+
+    Particle->Physics = System->ParticlePhysics;
+    Particle->Physics.Force = Normalize(Random);
+
+    Particle->RemainingLifespan = System->ParticleLifespan;
+  }
+
+  return Spawn;
+}
+
+inline b32
+ShouldEmit(particle_system *System)
+{
+  b32 Result = (System->EmissionLifespan >= 0);
+  return Result;
+}
+
 void
-SimulatePlayer( game_state *GameState, entity *Player, hotkeys *Hotkeys, r32 dt )
+SimulateAndRenderParticleSystems(
+    game_state *GameState,
+    graphics *Graphics,
+    untextured_3d_geometry_buffer *Dest,
+    entity *SystemEntity,
+    r32 dt,
+    v3 EntityDelta
+  )
+{
+  /* world *World                  = GameState->World; */
+  /* chunk_dimension WorldChunkDim = World->ChunkDim; */
+  particle_system *System       = SystemEntity->Emitter;
+  // noise_3d *Turb             = GameState->Turb;
+
+  if (Inactive(System))
+    return;
+
+  System->EmissionLifespan -= dt;
+
+  if (ShouldEmit(System))
+  {
+    while (SpawnParticle(System));
+  }
+
+  for ( s32 ParticleIndex = 0;
+        ParticleIndex < System->ActiveParticles;
+        ++ParticleIndex)
+  {
+    particle *Particle = &System->Particles[ParticleIndex];
+
+    v3 Delta = PhysicsUpdate(&Particle->Physics, dt);
+
+    Particle->Offset += Delta;
+    Particle->Offset -= EntityDelta;
+
+    r32 MinDiameter = 0.3f;
+
+    /* r32 LastDiameter = (Particle->RemainingLifespan / System->ParticleLifespan) + MinDiameter; */
+
+    Particle->RemainingLifespan -= dt;
+
+    if ( Particle->RemainingLifespan < 0)
+    {
+      // Swap out last partcile for the current partcile and decrement
+      particle *SwapParticle = &System->Particles[System->ActiveParticles--];
+      *Particle = *SwapParticle;
+      continue;
+    }
+
+    r32 Diameter = (Particle->RemainingLifespan / System->ParticleLifespan) + MinDiameter;
+
+    /* r32 DiameterDiff = LastDiameter-Diameter; */
+    /* Particle->Offset += DiameterDiff; */
+
+    u8 ColorIndex = (u8)((Particle->RemainingLifespan / System->ParticleLifespan) * (PARTICLE_SYSTEM_COLOR_COUNT-0.0001f));
+    Assert(ColorIndex >= 0 && ColorIndex <= PARTICLE_SYSTEM_COLOR_COUNT);
+
+    DrawVoxel( Dest, Graphics, Particle->Offset, ColorIndex, V3(Diameter));
+  }
+
+  return;
+}
+
+void
+SimulatePlayer( game_state *GameState, graphics *Graphics, entity *Player, hotkeys *Hotkeys, r32 dt )
 {
   TIMED_FUNCTION();
   if (Spawned(Player))
@@ -786,20 +890,18 @@ SimulatePlayer( game_state *GameState, entity *Player, hotkeys *Hotkeys, r32 dt 
     if (Inactive(Player->Emitter))
     {
       v3 Offset = (Player->Model.Dim/2.0f)*Player->Scale;
-      SpawnExplosion(Player, &GameState->Entropy, Offset);
+      SpawnFire(Player, &GameState->Entropy, Offset);
     }
 #endif
 
-#if 0
-    SimulateAndRenderParticleSystems(GameState, &GameState->World->Mesh, Player, dt, PlayerDelta);
-#endif
+    SimulateAndRenderParticleSystems(GameState, Graphics, &GameState->World->Mesh, Player, dt, PlayerDelta);
   }
 
   return;
 }
 
 void
-SimulateEntities(game_state *GameState, entity *Player, hotkeys *Hotkeys, r32 dt)
+SimulateEntities(game_state *GameState, graphics *Graphics, entity *Player, hotkeys *Hotkeys, r32 dt)
 {
   TIMED_FUNCTION();
 
@@ -835,7 +937,7 @@ SimulateEntities(game_state *GameState, entity *Player, hotkeys *Hotkeys, r32 dt
 
       case EntityType_Player:
       {
-        SimulatePlayer(GameState, Entity, Hotkeys, dt);
+        SimulatePlayer(GameState, Graphics, Player, Hotkeys, dt);
       } break;
 
       InvalidDefaultCase;

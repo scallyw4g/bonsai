@@ -43,8 +43,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 #endif
 
 
-
-  SimulatePlayer(GameState, GameState->Player, Hotkeys, Plat->dt);
+  SimulatePlayer(GameState, Graphics, GameState->Player, Hotkeys, Plat->dt);
   //SimulateEntities(GameState, GameState->Player, Hotkeys, Plat->dt);
 
   UpdateCameraP(Plat, World, GameState->Player->P, Camera);

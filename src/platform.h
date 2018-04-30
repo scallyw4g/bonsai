@@ -168,13 +168,6 @@ struct os
   b32 ContinueRunning;
 };
 
-struct logical_frame_state
-{
-  u64 LogicalFrame;
-  u64 FrameDiff;
-  r32 LogicalFrameTime;
-};
-
 void
 DumpGlErrorEnum(int Error)
 {
@@ -232,31 +225,6 @@ DumpGlErrorEnum(int Error)
   }
 
   return;
-}
-
-
-inline void
-UpdateLogicalFrameCount(logical_frame_state *State, r32 dt)
-{
-  State->LogicalFrameTime += dt;
-  State->FrameDiff = 0;
-
-  if (State->LogicalFrameTime >= TargetFrameTime)
-  {
-    s32 FramesElapsed = State->LogicalFrameTime / TargetFrameTime;
-    State->LogicalFrame += FramesElapsed;
-    State->LogicalFrameTime -= (TargetFrameTime*FramesElapsed);
-    State->FrameDiff = FramesElapsed;
-  }
-
-  return;
-}
-
-inline b32
-CurrentFrameIsLogicalFrame(logical_frame_state *State)
-{
-  b32 Result = (State->FrameDiff > 0);
-  return Result;
 }
 
 inline b32

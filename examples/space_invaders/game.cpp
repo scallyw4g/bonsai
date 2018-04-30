@@ -41,107 +41,6 @@ SpawnEnemies(game_state *GameState, r32 dt)
   return;
 }
 
-b32
-SpawnParticle(particle_system *System)
-{
-  b32 Spawn = ((RandomUnilateral(&System->Entropy)) * System->EmissionChance) >= 0.5f;
-
-  if (Spawn)
-  {
-    particle *Particle = &System->Particles[System->ActiveParticles++];
-    Assert(System->ActiveParticles < PARTICLES_PER_SYSTEM);
-
-    r32 X = RandomBilateral(&System->Entropy);
-    r32 Y = RandomBilateral(&System->Entropy);
-    r32 Z = RandomBilateral(&System->Entropy);
-
-    v3 Random = V3(X,Y,Z);
-
-    Particle->Offset = (Random*System->SpawnRegion.Radius) + System->SpawnRegion.Center;
-
-    Particle->Physics = System->ParticlePhysics;
-    Particle->Physics.Force = Normalize(Random);
-
-    Particle->RemainingLifespan = System->ParticleLifespan;
-  }
-
-  return Spawn;
-}
-
-inline b32
-ShouldEmit(particle_system *System)
-{
-  b32 Result = (System->EmissionLifespan >= 0);
-  return Result;
-}
-
-void
-SimulateAndRenderParticleSystems(
-    game_state *GameState,
-    mesh_buffer_target *Mesh,
-    entity *SystemEntity,
-    r32 dt,
-    v3 EntityDelta
-  )
-{
-  world *World = GameState->World;
-  chunk_dimension WorldChunkDim = World->ChunkDim;
-  camera *Camera = GameState->Camera;
-  particle_system *System = SystemEntity->Emitter;
-  g_buffer_render_group *gBuffer = GameState->gBuffer;
-  shadow_render_group *SG = GameState->SG;
-  // noise_3d *Turb = GameState->Turb;
-
-  if (Inactive(System))
-    return;
-
-  System->EmissionLifespan -= dt;
-
-  if ( CurrentFrameIsLogicalFrame(&GameState->Frame) && ShouldEmit(System) )
-  {
-    while (SpawnParticle(System));
-  }
-
-  for ( s32 ParticleIndex = 0;
-        ParticleIndex < System->ActiveParticles;
-        ++ParticleIndex)
-  {
-    particle *Particle = &System->Particles[ParticleIndex];
-
-    v3 Delta = PhysicsUpdate(&Particle->Physics, dt);
-
-    Particle->Offset += Delta;
-    Particle->Offset -= EntityDelta;
-
-    r32 MinDiameter = 0.3f;
-    r32 LastDiameter = (Particle->RemainingLifespan / System->ParticleLifespan) + MinDiameter;
-
-    Particle->RemainingLifespan -= dt;
-
-    if ( Particle->RemainingLifespan < 0)
-    {
-      // Swap out last partcile for the current partcile and decrement
-      particle *SwapParticle = &System->Particles[System->ActiveParticles--];
-      *Particle = *SwapParticle;
-      continue;
-    }
-
-    r32 Diameter = (Particle->RemainingLifespan / System->ParticleLifespan) + MinDiameter;
-    r32 DiameterDiff = LastDiameter-Diameter;
-
-    Particle->Offset += DiameterDiff;
-
-    u8 ColorIndex = (u8)((Particle->RemainingLifespan / System->ParticleLifespan) * (PARTICLE_SYSTEM_COLOR_COUNT-0.0001f));
-    Assert(ColorIndex >= 0 && ColorIndex <= PARTICLE_SYSTEM_COLOR_COUNT);
-
-    DrawParticle(&SystemEntity->P, Mesh, gBuffer, SG, WorldChunkDim, Camera, Particle, Diameter, System->Colors[ColorIndex]);
-
-
-  }
-
-  return;
-}
-
 #if 0
 void
 AllocateParticleSystems(platform *Plat, game_state *GameState)
@@ -534,12 +433,9 @@ GameInit( platform *Plat, memory_arena *GameMemory)
   game_state *GameState = PUSH_STRUCT_CHECKED(game_state, GameMemory, 1);
   GameState->Memory = GameMemory;
 
-
   memory_arena *GraphicsMemory = PUSH_STRUCT_CHECKED(memory_arena, GameMemory, 1);
   SubArena(GameMemory, GraphicsMemory, Megabytes(8));
 
-
-  //FIXME(Jesse): Sub-arena for GraphicsMemory
   shadow_render_group *SG = PUSH_STRUCT_CHECKED(shadow_render_group, GameState->Memory, 1);
   if (!InitializeShadowBuffer(SG, GameState->Memory))
   {

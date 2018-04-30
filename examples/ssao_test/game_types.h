@@ -21,7 +21,6 @@ struct game_state
   model   *Models;
   noise_3d *Turb;
   event_queue EventQueue;
-  logical_frame_state Frame;
   aabb *FolieTable;
   entity *EntityTable[TOTAL_ENTITY_COUNT];
 };
