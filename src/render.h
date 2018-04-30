@@ -186,29 +186,29 @@ GetViewMatrix(chunk_dimension WorldChunkDim, camera *Camera)
 #define BUFFER_VERTS_TO_CARD(BufferId, Mesh)                                                            \
   GL_Global->glEnableVertexAttribArray(AttributeIndex);                                                 \
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, BufferId);                                                   \
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(v3), Mesh->Verts, GL_STATIC_DRAW); \
-  GL_Global->glVertexAttribPointer( AttributeIndex, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);                \
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(*Mesh->Verts), Mesh->Verts, GL_STATIC_DRAW); \
+  GL_Global->glVertexAttribPointer( AttributeIndex, sizeof(*Mesh->Verts)/sizeof(Mesh->Verts[0].E[0]), GL_FLOAT, GL_FALSE, 0, (void*)0);                \
   ++AttributeIndex;
 
 #define BUFFER_COLORS_TO_CARD(BufferId, Mesh)                                                            \
   GL_Global->glEnableVertexAttribArray(AttributeIndex);                                                  \
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, BufferId);                                                    \
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(v4), Mesh->Colors, GL_STATIC_DRAW); \
-  GL_Global->glVertexAttribPointer(AttributeIndex, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);                  \
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(*Mesh->Colors), Mesh->Colors, GL_STATIC_DRAW); \
+  GL_Global->glVertexAttribPointer(AttributeIndex, sizeof(*Mesh->Colors)/sizeof(Mesh->Colors[0].E[0]), GL_FLOAT, GL_FALSE, 0, (void*)0);                  \
   ++AttributeIndex;
 
 #define BUFFER_NORMALS_TO_CARD(BufferId, Mesh)                                                            \
   GL_Global->glEnableVertexAttribArray(AttributeIndex);                                                   \
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, BufferId);                                                     \
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(v3), Mesh->Normals, GL_STATIC_DRAW); \
-  GL_Global->glVertexAttribPointer(AttributeIndex, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);                   \
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(*Mesh->Normals), Mesh->Normals, GL_STATIC_DRAW); \
+  GL_Global->glVertexAttribPointer(AttributeIndex, sizeof(*Mesh->Normals)/sizeof(Mesh->Normals[0].E[0]), GL_FLOAT, GL_FALSE, 0, (void*)0);                   \
   ++AttributeIndex;
 
 #define BUFFER_UVS_TO_CARD(BufferId, Mesh)                                                           \
   GL_Global->glEnableVertexAttribArray(AttributeIndex);                                              \
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, RG->UVBuffer);                                            \
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(v2), Geo->UVs, GL_STATIC_DRAW); \
-  GL_Global->glVertexAttribPointer(AttributeIndex, 2, GL_FLOAT, GL_FALSE, 0, (void*)0 );             \
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(*Geo->UVs), Geo->UVs, GL_STATIC_DRAW); \
+  GL_Global->glVertexAttribPointer(AttributeIndex, sizeof(*Geo->UVs)/sizeof(Geo->UVs[0].x), GL_FLOAT, GL_FALSE, 0, (void*)0 );             \
   ++AttributeIndex;
 
 

@@ -22,8 +22,8 @@ BufferVertsDirect(
     return;
   }
 
-  memcpy( &Dest->Verts[Dest->CurrentIndex],  Positions,  sizeof(v3)*NumVerts );
-  memcpy( &Dest->Colors[Dest->CurrentIndex],  Colors,  sizeof(v4)*NumVerts );
+  memcpy( &Dest->Verts[Dest->CurrentIndex] , Positions, sizeof(*Positions)*NumVerts );
+  memcpy( &Dest->Colors[Dest->CurrentIndex], Colors   , sizeof(*Colors)*NumVerts );
   Dest->CurrentIndex += NumVerts;
 
   return;
@@ -35,9 +35,9 @@ BufferVertsDirect(
 
     s32 NumVerts,
 
-    v3 *VertsPositions,
+    v3 *Positions,
     v3 *Normals,
-    v4 *VertColors
+    v4 *Colors
   )
 {
   TIMED_FUNCTION();
@@ -48,9 +48,10 @@ BufferVertsDirect(
     return;
   }
 
-  memcpy( &Dest->Verts[Dest->CurrentIndex],   VertsPositions,  NumVerts*sizeof(v3) );
-  memcpy( &Dest->Normals[Dest->CurrentIndex], Normals,         NumVerts*sizeof(v3) );
-  memcpy( &Dest->Colors[Dest->CurrentIndex],  VertColors,      NumVerts*sizeof(v4) );
+  memcpy( &Dest->Verts[Dest->CurrentIndex]  , Positions, sizeof(*Positions)*NumVerts );
+  memcpy( &Dest->Normals[Dest->CurrentIndex], Normals,   sizeof(*Normals)*NumVerts );
+  memcpy( &Dest->Colors[Dest->CurrentIndex] , Colors   , sizeof(*Colors)*NumVerts );
+
   Dest->CurrentIndex += NumVerts;
 }
 
@@ -82,8 +83,8 @@ BufferVertsDirect(
 
   Assert(NumVerts % VERTS_PER_FACE == 0);
 
-  memcpy( &Dest->Normals[Dest->CurrentIndex],  Normals,    NumVerts*sizeof(v3) );
-  memcpy( &Dest->Colors[Dest->CurrentIndex],   VertColors, NumVerts*sizeof(v4) );
+  memcpy( &Dest->Normals[Dest->CurrentIndex],  Normals,    sizeof(*Normals)*NumVerts );
+  memcpy( &Dest->Colors[Dest->CurrentIndex],   VertColors, sizeof(*VertColors)*NumVerts );
 
 
   for ( s32 VertIndex = 0;
@@ -150,9 +151,9 @@ BufferVertsDirect(
   }
 #else
   s32 sizeofData = NumVerts * sizeof(v3);
-  memcpy( &Dest->VertexData[Dest->CurrentIndex],  VertsPositions,  sizeofData );
-  memcpy( &Dest->NormalData[Dest->CurrentIndex],  Normals,         sizeofData );
-  memcpy( &Dest->ColorData[Dest->CurrentIndex],   VertColors,      sizeofData );
+  memcpy( &Dest->Verts[Dest->CurrentIndex]  , Positions, sizeof(*Positions)*NumVerts );
+  memcpy( &Dest->Normals[Dest->CurrentIndex], Normals,   sizeof(*Normals)*NumVerts );
+  memcpy( &Dest->Colors[Dest->CurrentIndex] , Colors   , sizeof(*Colors)*NumVerts );
   Dest->CurrentIndex += NumVerts;
 #endif
 
