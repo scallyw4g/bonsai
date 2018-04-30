@@ -283,17 +283,17 @@ static v4 default_palette[PALETTE_SIZE] = {
   V4(0x11, 0x11, 0x11, 0xff)
 };
 
-inline v3
+inline v4
 GetColorData(int ColorIndex)
 {
   Assert(ColorIndex < PALETTE_SIZE);
   v4 Color = default_palette[ColorIndex];
-  v3 Result = Color.rgb / 255.0f;
+  v4 Result = V4(Color.rgb/255.0f, 1.0f);
   return Result;;
 }
 
 inline void
-FillColorArray(s32 ColorIndex, v3 *Array, s32 Count)
+FillColorArray(s32 ColorIndex, v4 *Array, s32 Count)
 {
   while (Count--)
   {

@@ -864,7 +864,7 @@ AllocateMesh(untextured_3d_geometry_buffer *Mesh, u32 NumVerts, memory_arena *Me
   Assert(NumVerts % 6 == 0);
 
   Mesh->Verts   = PUSH_STRUCT_CHECKED(v3, Memory, NumVerts );
-  Mesh->Colors  = PUSH_STRUCT_CHECKED(v3, Memory, NumVerts );
+  Mesh->Colors  = PUSH_STRUCT_CHECKED(v4, Memory, NumVerts );
   Mesh->Normals = PUSH_STRUCT_CHECKED(v3, Memory, NumVerts );
 
   Mesh->Allocated = NumVerts;

@@ -193,8 +193,8 @@ GetViewMatrix(chunk_dimension WorldChunkDim, camera *Camera)
 #define BUFFER_COLORS_TO_CARD(BufferId, Mesh)                                                            \
   GL_Global->glEnableVertexAttribArray(AttributeIndex);                                                  \
   GL_Global->glBindBuffer(GL_ARRAY_BUFFER, BufferId);                                                    \
-  GL_Global->glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(v3), Mesh->Colors, GL_STATIC_DRAW); \
-  GL_Global->glVertexAttribPointer(AttributeIndex, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);                  \
+  GL_Global->glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(v4), Mesh->Colors, GL_STATIC_DRAW); \
+  GL_Global->glVertexAttribPointer(AttributeIndex, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);                  \
   ++AttributeIndex;
 
 #define BUFFER_NORMALS_TO_CARD(BufferId, Mesh)                                                            \

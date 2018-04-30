@@ -1,10 +1,10 @@
 layout(location = 0) in vec3 vertexPosition_modelspace;
-layout(location = 1) in vec3 vertexColor;
+layout(location = 1) in vec4 vertexColor;
 layout(location = 2) in vec3 vertexNormal_modelspace;
 
 out vec3 vertexP_worldspace;
 out vec3 vertexN_worldspace;
-out vec3 MaterialColor;
+out vec4 MaterialColor;
 
 uniform mat4 ViewProjection;
 uniform mat4 Model;
@@ -12,6 +12,9 @@ uniform mat4 Model;
 void main()
 {
   MaterialColor = vertexColor;
+
+  /* MaterialColor = vec4(0.0f); */
+  /* MaterialColor.a = 1.0f; */
 
   vertexP_worldspace = vec4(Model * vec4(vertexPosition_modelspace, 1)).xyz;
   vertexN_worldspace = vec4(Model * vec4(vertexNormal_modelspace, 1)).xyz;

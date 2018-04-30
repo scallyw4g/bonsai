@@ -910,7 +910,7 @@ DrawVoxel( untextured_3d_geometry_buffer *Mesh, graphics *Graphics,
 {
   TIMED_FUNCTION();
 
-  v3 FaceColors[FACE_VERT_COUNT];
+  v4 FaceColors[FACE_VERT_COUNT];
   FillColorArray(ColorIndex, FaceColors, FACE_VERT_COUNT);;
 
   v3 VertexData[6];
@@ -1019,7 +1019,7 @@ DEBUG_DrawLine( untextured_3d_geometry_buffer *Mesh, graphics *Graphics,
   P1.x = P1.x - (Thickness/2.0f);
   P2.x = P2.x - (Thickness/2.0f);
 
-  v3 FaceColors[FACE_VERT_COUNT];
+  v4 FaceColors[FACE_VERT_COUNT];
   FillColorArray(ColorIndex, FaceColors, FACE_VERT_COUNT);;
 
   {
@@ -1643,7 +1643,7 @@ BufferTriangle(untextured_3d_geometry_buffer *Mesh, graphics *Graphics, v3 *Vert
   // TODO(Jesse): Is this necessary to avoid some pointer aliasing bug?
   memcpy( VertBuffer, Verts, 9 * sizeof(r32) );
 
-  v3 FaceColors[FACE_VERT_COUNT];
+  v4 FaceColors[FACE_VERT_COUNT];
   FillColorArray(ColorIndex, FaceColors, FACE_VERT_COUNT);;
 
   BufferVertsChecked(
@@ -2395,7 +2395,7 @@ DrawParticle(
     u8 ColorIndex
   )
 {
-  v3 FaceColors[FACE_VERT_COUNT];
+  v4 FaceColors[FACE_VERT_COUNT];
   FillColorArray(ColorIndex, FaceColors, FACE_VERT_COUNT);;
 
   v3 MinP = GetRenderP(WorldChunkDim, (*P)+Particle->Offset, Graphics->Camera);

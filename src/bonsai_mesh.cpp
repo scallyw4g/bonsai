@@ -11,7 +11,7 @@ BufferVertsDirect(
     untextured_2d_geometry_buffer *Dest,
     s32 NumVerts,
     v3 *Positions,
-    v3 *Colors
+    v4 *Colors
   )
 {
   TIMED_FUNCTION();
@@ -22,9 +22,8 @@ BufferVertsDirect(
     return;
   }
 
-  s32 sizeofData = NumVerts * sizeof(v3);
-  memcpy( &Dest->Verts[Dest->CurrentIndex],  Positions,  sizeofData );
-  memcpy( &Dest->Colors[Dest->CurrentIndex],  Colors,  sizeofData );
+  memcpy( &Dest->Verts[Dest->CurrentIndex],  Positions,  sizeof(v3)*NumVerts );
+  memcpy( &Dest->Colors[Dest->CurrentIndex],  Colors,  sizeof(v4)*NumVerts );
   Dest->CurrentIndex += NumVerts;
 
   return;
@@ -38,7 +37,7 @@ BufferVertsDirect(
 
     v3 *VertsPositions,
     v3 *Normals,
-    const v3 *VertColors
+    v4 *VertColors
   )
 {
   TIMED_FUNCTION();
@@ -49,10 +48,9 @@ BufferVertsDirect(
     return;
   }
 
-  s32 sizeofData = NumVerts * sizeof(v3);
-  memcpy( &Dest->Verts[Dest->CurrentIndex],   VertsPositions,  sizeofData );
-  memcpy( &Dest->Normals[Dest->CurrentIndex], Normals,         sizeofData );
-  memcpy( &Dest->Colors[Dest->CurrentIndex],  VertColors,      sizeofData );
+  memcpy( &Dest->Verts[Dest->CurrentIndex],   VertsPositions,  NumVerts*sizeof(v3) );
+  memcpy( &Dest->Normals[Dest->CurrentIndex], Normals,         NumVerts*sizeof(v3) );
+  memcpy( &Dest->Colors[Dest->CurrentIndex],  VertColors,      NumVerts*sizeof(v4) );
   Dest->CurrentIndex += NumVerts;
 }
 
@@ -64,7 +62,8 @@ BufferVertsDirect(
 
     v3 *VertsPositions,
     v3 *Normals,
-    const v3 *VertColors,
+    v4 *VertColors,
+
     v3 Offset,
     v3 Scale
   )
@@ -83,9 +82,8 @@ BufferVertsDirect(
 
   Assert(NumVerts % VERTS_PER_FACE == 0);
 
-  s32 sizeofData = NumVerts * sizeof(v3);
-  memcpy( &Dest->Normals[Dest->CurrentIndex],  Normals,         sizeofData );
-  memcpy( &Dest->Colors[Dest->CurrentIndex],   VertColors,      sizeofData );
+  memcpy( &Dest->Normals[Dest->CurrentIndex],  Normals,    NumVerts*sizeof(v3) );
+  memcpy( &Dest->Colors[Dest->CurrentIndex],   VertColors, NumVerts*sizeof(v4) );
 
 
   for ( s32 VertIndex = 0;
@@ -175,7 +173,8 @@ BufferVertsChecked(
 
     v3* Positions,
     v3* Normals,
-    const v3* Colors,
+    v4* Colors,
+
     v3 Offset = V3(0),
     v3 Scale = V3(1)
   )
@@ -271,7 +270,7 @@ BuildEntityMesh(chunk_data *chunk, chunk_dimension Dim)
         v3 Diameter = V3(1.0f);
         v3 VertexData[6];
 
-        v3 FaceColors[FACE_VERT_COUNT];
+        v4 FaceColors[FACE_VERT_COUNT];
         FillColorArray(Voxel->Color, FaceColors, FACE_VERT_COUNT);
 
         voxel_position rightVoxel = LocalVoxelP + Voxel_Position(1, 0, 0);
@@ -355,7 +354,7 @@ BuildWorldChunkMesh(world *World, world_chunk *WorldChunk, chunk_dimension World
 
         v3 Diameter = V3(1.0f);
         v3 VertexData[FACE_VERT_COUNT];
-        v3 FaceColors[FACE_VERT_COUNT];
+        v4 FaceColors[FACE_VERT_COUNT];
         FillColorArray(Voxel->Color, FaceColors, FACE_VERT_COUNT);;
 
         TIMED_BLOCK("Canonicalize");
