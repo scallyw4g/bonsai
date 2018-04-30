@@ -2,7 +2,7 @@ in vec3 vertexP_worldspace;
 in vec3 vertexN_worldspace;
 in vec3 MaterialColor;
 
-layout (location = 0) out vec3 gColor;
+layout (location = 0) out vec4 gColor;
 layout (location = 1) out vec3 gNormal;
 layout (location = 2) out vec4 gPosition;
 
@@ -22,5 +22,5 @@ void main()
   gPosition.w = Linearize(gl_FragCoord.z); // Depth
 
   gNormal = vertexN_worldspace;
-  gColor = MaterialColor;
+  gColor = vec4(MaterialColor, 1);
 }

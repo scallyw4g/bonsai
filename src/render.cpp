@@ -498,7 +498,7 @@ InitGbufferRenderGroup( g_buffer_render_group *gBuffer, memory_arena *GraphicsMe
 
   v2i ScreenDim = V2i(SCR_WIDTH, SCR_HEIGHT);
   gBuffer->Textures->Color    = MakeTexture_RGBA( ScreenDim, 0, GraphicsMemory);
-  gBuffer->Textures->Normal   = MakeTexture_RGBA( ScreenDim, 0, GraphicsMemory);
+  gBuffer->Textures->Normal   = MakeTexture_RGB( ScreenDim, 0, GraphicsMemory);
   gBuffer->Textures->Position = MakeTexture_RGBA( ScreenDim, 0, GraphicsMemory);
 
   FramebufferTexture(&gBuffer->FBO, gBuffer->Textures->Color);

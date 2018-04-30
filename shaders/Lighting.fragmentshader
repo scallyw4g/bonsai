@@ -58,10 +58,15 @@ vec2 poissonDisk[16] = vec2[](
 void main()
 {
   vec3 Diffuse      = texture(gColor, UV).rgb;
+  float Emission    = texture(gColor, UV).a;
+
   vec3 FragNormal   = texture(gNormal, UV).rgb;   // modelspace
   vec3 FragPosition = texture(gPosition, UV).rgb; // worldspace
 
   vec3 AmbientLight = Diffuse * GlobalLightIntensity;
+
+  AmbientLight = vec3(Emission);
+
   vec3 AccumulatedLight = AmbientLight;
 
   for ( int LightIndex = 0;
