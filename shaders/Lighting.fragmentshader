@@ -63,8 +63,7 @@ void main()
   vec3 FragNormal   = texture(gNormal, UV).rgb;   // modelspace
   vec3 FragPosition = texture(gPosition, UV).rgb; // worldspace
 
-  vec3 AmbientLight = Diffuse * GlobalLightIntensity;
-  /* AmbientLight = vec3(Emission); */
+  vec3 AmbientLight = Diffuse * GlobalLightIntensity * Emission;
 
   vec3 AccumulatedLight = AmbientLight;
 

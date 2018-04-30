@@ -906,12 +906,12 @@ RenderPostBuffer(post_processing_group *PostGroup, untextured_3d_geometry_buffer
 
 inline void
 DrawVoxel( untextured_3d_geometry_buffer *Mesh, graphics *Graphics,
-           v3 RenderP, int ColorIndex, v3 Diameter)
+           v3 RenderP, int ColorIndex, v3 Diameter, r32 Emission = 1.0f)
 {
   TIMED_FUNCTION();
 
   v4 FaceColors[FACE_VERT_COUNT];
-  FillColorArray(ColorIndex, FaceColors, FACE_VERT_COUNT);;
+  FillColorArray(ColorIndex, FaceColors, FACE_VERT_COUNT, Emission);
 
   v3 VertexData[6];
 

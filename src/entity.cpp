@@ -463,7 +463,7 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset, game_lights *GameLi
 
   SpawnParticleSystem(Entity->Emitter, &Params);
 
-  PushLight(GameLights, Offset, V3(3,1,0), LightType_Point);
+  PushLight(GameLights, Offset, 5.0f*V3(3,1,0), LightType_Point);
 
   return;
 }
@@ -851,7 +851,7 @@ SimulateAndRenderParticleSystems(
     u8 ColorIndex = (u8)((Particle->RemainingLifespan / System->ParticleLifespan) * (PARTICLE_SYSTEM_COLOR_COUNT-0.0001f));
     Assert(ColorIndex >= 0 && ColorIndex <= PARTICLE_SYSTEM_COLOR_COUNT);
 
-    DrawVoxel( Dest, Graphics, Particle->Offset, System->Colors[ColorIndex], Diameter);
+    DrawVoxel( Dest, Graphics, Particle->Offset, System->Colors[ColorIndex], Diameter, Length(5.0f*V3(3,1,0)) );
   }
 
   return;
