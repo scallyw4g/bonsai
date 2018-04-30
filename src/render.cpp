@@ -110,6 +110,22 @@ MakeTexture_RGBA(v2i Dim, const void* Data, memory_arena *Mem)
 }
 
 texture *
+MakeTexture_SingleChannel(v2i Dim, memory_arena *Mem)
+{
+  texture *Texture = GenTexture(Dim, Mem);
+
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F,
+      Texture->Dim.x, Texture->Dim.y, 0,  GL_RED, GL_FLOAT, 0);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+  glBindTexture(GL_TEXTURE_2D, 0);
+
+  return Texture;
+}
+
+texture *
 MakeTexture_RGB(v2i Dim, const v3* Data, memory_arena *Mem)
 {
   texture *Texture = GenTexture(Dim, Mem);
@@ -460,7 +476,7 @@ InitAoRenderGroup(ao_render_group *AoGroup, memory_arena *GraphicsMemory,
   v2i ScreenDim = V2i(SCR_WIDTH, SCR_HEIGHT);
   AssertNoGlErrors;
 
-  AoGroup->Texture = MakeTexture_RGBA( ScreenDim, 0, GraphicsMemory);
+  AoGroup->Texture = MakeTexture_SingleChannel( ScreenDim, GraphicsMemory);
 
   FramebufferTexture(&AoGroup->FBO, AoGroup->Texture);
   SetDrawBuffers(&AoGroup->FBO);

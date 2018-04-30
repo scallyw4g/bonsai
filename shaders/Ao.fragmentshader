@@ -1,5 +1,5 @@
 in vec2 UV;
-out vec4 Output;
+out float Output;
 
 uniform sampler2D gColor;
 uniform sampler2D gPosition;
@@ -71,9 +71,9 @@ void main()
       AO -= (OccluderContribution * Occluded);
   }
 
-  Output = vec4(vec3(AO), 1);
+  Output = AO;
 #else
-  Output = vec4(1);
+  Output = 1.0f;
 #endif
 
 }
