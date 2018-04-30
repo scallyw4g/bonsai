@@ -431,7 +431,7 @@ SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset)
 #include <float.h>
 
 void
-SpawnFire(entity *Entity, random_series *Entropy, v3 Offset)
+SpawnFire(entity *Entity, random_series *Entropy, v3 Offset, game_lights *GameLights)
 {
   particle_system_init_params Params = {};
 
@@ -463,11 +463,13 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset)
 
   SpawnParticleSystem(Entity->Emitter, &Params);
 
+  PushLight(GameLights, Offset, V3(3,1,0), LightType_Point);
+
   return;
 }
 
 void
-SpawnPlayer(game_state *GameState, entity *Player, canonical_position InitialP)
+SpawnPlayer(game_state *GameState, game_lights *GameLights, entity *Player, canonical_position InitialP)
 {
   physics Physics = {};
   Physics.Drag = 6.0f;
@@ -494,7 +496,7 @@ SpawnPlayer(game_state *GameState, entity *Player, canonical_position InitialP)
     );
 
   v3 Offset = V3(4.5f, -0.5f, 2.0f);
-  SpawnFire(Player, &GameState->Entropy, Offset);
+  SpawnFire(Player, &GameState->Entropy, Offset, GameLights);
 
   return;
 }
@@ -892,7 +894,7 @@ SimulatePlayer( game_state *GameState, graphics *Graphics, entity *Player, hotke
     if (Inactive(Player->Emitter))
     {
       v3 Offset = (Player->Model.Dim/2.0f)*Player->Scale;
-      SpawnFire(Player, &GameState->Entropy, Offset);
+      SpawnFire(Player, &GameState->Entropy, Offset, &Graphics->SG->GameLights);
     }
 #endif
 

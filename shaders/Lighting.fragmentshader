@@ -11,7 +11,9 @@ uniform sampler2D Ssao;
 
 
 uniform int LightCount;
+
 uniform vec3 LightPositions[MAX_LIGHTS];
+uniform vec3 LightColors[MAX_LIGHTS];
 
 uniform mat4 ShadowMVP;
 
@@ -48,7 +50,6 @@ vec2 poissonDisk[16] = vec2[](
 // Tuning
   float gamma = 2.2f;
   float GlobalLightIntensity = 0.1f; // 1.0 represents full sun
-  vec3 LightColor = vec3(0,0,15);
 
   float materialShininess = 15.0f;
 //
@@ -67,17 +68,9 @@ void main()
       LightIndex < LightCount;
       ++LightIndex)
   {
-    if (LightIndex == 0)
-    {
-      LightColor = vec3(0,15,0);
-    }
-
-    if (LightIndex == 1)
-    {
-      LightColor = vec3(0,0,15);
-    }
-
     vec3 LightPosition = LightPositions[LightIndex];
+    vec3 LightColor = LightColors[LightIndex];
+
     vec3 FragToLight = normalize(LightPosition - FragPosition);
 
     float LightCosTheta = clamp( dot( FragNormal, FragToLight), 0.0f, 1.0f);

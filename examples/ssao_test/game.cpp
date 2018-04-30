@@ -190,7 +190,7 @@ GameInit( platform *Plat, memory_arena *GameMemory, os *Os)
   GameState->Models = AllocateGameModels(GameState, GameState->Memory);
   GameState->Player = GetFreeEntity(GameState);
 
-  SpawnPlayer(GameState, GameState->Player, Canonical_Position( V3(0,8,2), World_Position(0,0,0) ));
+  SpawnPlayer(GameState, &Plat->Graphics->SG->GameLights, GameState->Player, Canonical_Position( V3(0,8,2), World_Position(0,0,0) ));
 
   GameState->Network = {Socket_NonBlocking};
   GameState->Network.Address.sin_addr.s_addr = inet_addr("127.0.0.1");

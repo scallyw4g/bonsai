@@ -16,6 +16,7 @@ struct light
 {
   int Type;
   v3 Position;
+  v3 Color;
 } Lights[MAX_LIGHTS];
 
 

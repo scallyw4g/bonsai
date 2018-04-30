@@ -71,6 +71,7 @@ struct light
 {
   light_type Type;
   v3 Position;
+  v3 Color;
 };
 
 struct game_lights
