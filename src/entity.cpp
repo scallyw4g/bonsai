@@ -382,11 +382,14 @@ SpawnParticleSystem(particle_system *System, particle_system_init_params *Params
 
   System->SpawnRegion = Params->SpawnRegion;
   System->ParticlePhysics = Params->Physics;
+  System->SystemMovementCoefficient = Params->SystemMovementCoefficient;
 
   System->EmissionLifespan = Params->EmissionLifespan;
   System->EmissionChance = Params->EmissionChance;
 
   System->ParticleLifespan = Params->ParticleLifespan;
+
+  System->StartingDiameter = Params->StartingDiameter;
 
   System->Entropy = Params->Entropy;
 
@@ -441,18 +444,22 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset)
   Params.Colors[4] = YELLOW;
   Params.Colors[5] = WHITE;
 
-  Params.SpawnRegion = aabb(Offset, V3(0.25f));
+  Params.SpawnRegion = aabb(Offset, V3(0.2f));
 
   // FIXME(Jesse): Make a mode for infinite emission
   Params.EmissionLifespan = FLT_MAX;
-  Params.ParticleLifespan = 1.0f;
-  Params.EmissionChance = 2.0f;
+  Params.ParticleLifespan = 0.35f;
+  Params.EmissionChance = 4.0f;
 
-  Params.Physics.Speed = 18;
+  Params.Physics.Speed = 8;
   Params.Physics.Drag = 2.2f;
-  Params.Physics.Mass = 0.3f;
+  Params.Physics.Mass = 1.0f;
 
-  Params.Physics.Velocity = V3(0.0f, 0.0f, 25.0f);
+  Params.Physics.Velocity = V3(0.0f, 0.0f, 7.0f);
+
+  Params.StartingDiameter = V3(0.40f);
+
+  Params.SystemMovementCoefficient = 0.1f;
 
   SpawnParticleSystem(Entity->Emitter, &Params);
 
@@ -486,7 +493,7 @@ SpawnPlayer(game_state *GameState, entity *Player, canonical_position InitialP)
       Health
     );
 
-  v3 Offset = (Player->Model.Dim/2.0f)*Player->Scale;
+  v3 Offset = V3(4.5f, -0.5f, 2.0f);
   SpawnFire(Player, &GameState->Entropy, Offset);
 
   return;
@@ -823,11 +830,9 @@ SimulateAndRenderParticleSystems(
     v3 Delta = PhysicsUpdate(&Particle->Physics, dt);
 
     Particle->Offset += Delta;
-    Particle->Offset -= EntityDelta;
+    Particle->Offset -= EntityDelta * System->SystemMovementCoefficient;
 
-    r32 MinDiameter = 0.3f;
-
-    /* r32 LastDiameter = (Particle->RemainingLifespan / System->ParticleLifespan) + MinDiameter; */
+    v3 MinDiameter = V3(0.1f);
 
     Particle->RemainingLifespan -= dt;
 
@@ -839,15 +844,12 @@ SimulateAndRenderParticleSystems(
       continue;
     }
 
-    r32 Diameter = (Particle->RemainingLifespan / System->ParticleLifespan) + MinDiameter;
-
-    /* r32 DiameterDiff = LastDiameter-Diameter; */
-    /* Particle->Offset += DiameterDiff; */
+    v3 Diameter = ((Particle->RemainingLifespan / System->ParticleLifespan) + MinDiameter) * System->StartingDiameter;
 
     u8 ColorIndex = (u8)((Particle->RemainingLifespan / System->ParticleLifespan) * (PARTICLE_SYSTEM_COLOR_COUNT-0.0001f));
     Assert(ColorIndex >= 0 && ColorIndex <= PARTICLE_SYSTEM_COLOR_COUNT);
 
-    DrawVoxel( Dest, Graphics, Particle->Offset, ColorIndex, V3(Diameter));
+    DrawVoxel( Dest, Graphics, Particle->Offset, System->Colors[ColorIndex], Diameter);
   }
 
   return;

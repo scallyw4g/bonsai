@@ -2418,10 +2418,6 @@ BufferEntity(
     chunk_dimension WorldChunkDim
   )
 {
-#if DEBUG_PARTICLE_EFFECTS
-  return;
-#endif
-
   TIMED_FUNCTION();
   // Debug light code
   /* v3 LightP = GetRenderP(world, Entity->P + Entity->Model.Dim/2); */

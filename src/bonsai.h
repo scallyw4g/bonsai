@@ -245,11 +245,14 @@ struct particle_system_init_params
 {
   aabb SpawnRegion;
   physics Physics;
+  r32 SystemMovementCoefficient;
 
   r32 EmissionLifespan;
   r32 EmissionChance;
 
   r32 ParticleLifespan;
+
+  v3 StartingDiameter;
 
   random_series Entropy;
 
@@ -265,11 +268,15 @@ struct particle_system
 
   aabb SpawnRegion;
 
+  v3 StartingDiameter;
+
   r32 EmissionLifespan;
 
   r32 ParticleLifespan;
   r32 EmissionChance;
+
   physics ParticlePhysics;
+  r32 SystemMovementCoefficient;
 
   u8 Colors[PARTICLE_SYSTEM_COLOR_COUNT];
 
