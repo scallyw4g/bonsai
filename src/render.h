@@ -15,8 +15,11 @@ Draw_(u64 N, const char * Caller)
 
   if ( DrawCall->Caller )
   {
-    // If this assert fires, we need to implement hash collisions here
-    Assert(StringsMatch(DrawCall->Caller, Caller));
+    while(DrawCall->Caller && StringsMatch(DrawCall->Caller, Caller))
+    {
+      DrawCall = &Global_DrawCalls[++Index];
+    }
+    DrawCall->Caller = Caller;
   }
   else
   {
