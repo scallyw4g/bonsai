@@ -514,12 +514,16 @@ InitGbufferRenderGroup( g_buffer_render_group *gBuffer, memory_arena *GraphicsMe
 }
 
 void
-PushLight(game_lights *Lights, v3 Position, v3 Color, light_type Type)
+DoLight(game_lights *Lights, v3 Position, v3 Color, light_type Type)
 {
-  light *Light = (*Lights)[Lights->Count++];
-  Light->Position = Position;
-  Light->Color = Color;
-  Light->Type = Type;
+  if (Lights->Count < MAX_LIGHTS)
+  {
+    light *Light = (*Lights)[Lights->Count++];
+    Light->Position = Position;
+    Light->Color = Color;
+    Light->Type = Type;
+  }
+
   return;
 }
 
@@ -551,8 +555,6 @@ InitializeShadowBuffer(shadow_render_group *SG, memory_arena *GraphicsMemory)
   GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
   SG->GameLights.Lights = PUSH_STRUCT_CHECKED(light, GraphicsMemory, MAX_LIGHTS);
-  PushLight(&SG->GameLights, V3(0.0f, 0.0f, 17.0f), V3(0,0,13), LightType_Point);
-  PushLight(&SG->GameLights, V3(0.0f, 0.0f, 20.0f), V3(10,0,0), LightType_Point);
 
  return true;
 }

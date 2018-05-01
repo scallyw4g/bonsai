@@ -1,6 +1,6 @@
 
 
-inline v3
+inline void
 PhysicsUpdate(physics *Physics, r32 dt)
 {
   v3 Acceleration = SafeDivide(Physics->Force*Physics->Speed, Physics->Mass);
@@ -11,11 +11,11 @@ PhysicsUpdate(physics *Physics, r32 dt)
   Physics->Velocity -=
     Physics->Velocity*Physics->Drag*dt;
 
-  v3 Delta =
+  Physics->Delta =
     (Physics->Velocity*dt) + (0.5f*Acceleration*Square(dt));
 
-  Physics->Velocity = SafeDivide(Delta, dt);
+  Physics->Velocity = SafeDivide(Physics->Delta, dt);
 
-  return Delta;
+  return;
 }
 

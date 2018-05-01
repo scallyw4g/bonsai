@@ -35,6 +35,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   shadow_render_group   *SG       = Graphics->SG;
   camera                *Camera   = Graphics->Camera;
 
+  SG->GameLights.Count = 0;
 
 #if DEBUG_DRAW_WORLD_AXIES
   DEBUG_DrawLine(&World->Mesh, gBuffer, SG, Camera, V3(0,0,0), V3(10000, 0, 0), RED, 0.5f );
@@ -42,12 +43,12 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   DEBUG_DrawLine(&World->Mesh, gBuffer, SG, Camera, V3(0,0,0), V3(0, 0, 10000), TEAL, 0.5f );
 #endif
 
-
-  SimulatePlayer(GameState, Graphics, GameState->Player, Hotkeys, Plat->dt);
-  //SimulateEntities(GameState, GameState->Player, Hotkeys, Plat->dt);
+  SimulateEntities(GameState, Graphics, GameState->Player, Hotkeys, Plat->dt);
 
   UpdateCameraP(Plat, World, GameState->Player->P, Camera);
   GlobalCameraTheta += Plat->dt*0.5;
+
+  SimulateAndRenderParticleSystems(GameState, Graphics, Plat->dt);
 
   //
   // Draw World
@@ -67,13 +68,6 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   END_BLOCK("BufferMeshes");
 
   TIMED_BLOCK("RenderToScreen");
-    { // Debug Lighting
-      GlobalLightTheta += (Plat->dt * TWOPI) / 20;
-      SG->GameLights.Lights[0].Position += 0.1*V3( Sin(GlobalLightTheta), Cos(GlobalLightTheta), 0.0f);
-      SG->GameLights.Lights[1].Position += 0.2*V3( Sin(GlobalLightTheta), Cos(GlobalLightTheta), 0.0f);
-      DrawVoxel( &World->Mesh, Graphics, SG->GameLights.Lights[0].Position, BLUE, V3(1.0f));
-      DrawVoxel( &World->Mesh, Graphics, SG->GameLights.Lights[1].Position, RED, V3(1.0f));
-    }
 
     RenderGBuffer(&World->Mesh, Graphics);
 

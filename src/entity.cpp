@@ -463,8 +463,6 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset, game_lights *GameLi
 
   SpawnParticleSystem(Entity->Emitter, &Params);
 
-  PushLight(GameLights, Offset, 5.0f*V3(3,1,0), LightType_Point);
-
   return;
 }
 
@@ -799,13 +797,13 @@ ShouldEmit(particle_system *System)
 }
 
 void
-SimulateAndRenderParticleSystems(
+SimulateAndRenderParticleSystem(
     game_state *GameState,
     graphics *Graphics,
     untextured_3d_geometry_buffer *Dest,
     entity *SystemEntity,
-    r32 dt,
-    v3 EntityDelta
+    v3 EntityDelta,
+    r32 dt
   )
 {
   /* world *World                  = GameState->World; */
@@ -823,15 +821,16 @@ SimulateAndRenderParticleSystems(
     while (SpawnParticle(System));
   }
 
+  v3 EmissionColor = 2.0f*V3(3,1,0);
   for ( s32 ParticleIndex = 0;
         ParticleIndex < System->ActiveParticles;
         ++ParticleIndex)
   {
     particle *Particle = &System->Particles[ParticleIndex];
 
-    v3 Delta = PhysicsUpdate(&Particle->Physics, dt);
+    PhysicsUpdate(&Particle->Physics, dt);
 
-    Particle->Offset += Delta;
+    Particle->Offset += Particle->Physics.Delta;
     Particle->Offset -= EntityDelta * System->SystemMovementCoefficient;
 
     v3 MinDiameter = V3(0.1f);
@@ -851,8 +850,11 @@ SimulateAndRenderParticleSystems(
     u8 ColorIndex = (u8)((Particle->RemainingLifespan / System->ParticleLifespan) * (PARTICLE_SYSTEM_COLOR_COUNT-0.0001f));
     Assert(ColorIndex >= 0 && ColorIndex <= PARTICLE_SYSTEM_COLOR_COUNT);
 
-    DrawVoxel( Dest, Graphics, Particle->Offset, System->Colors[ColorIndex], Diameter, Length(5.0f*V3(3,1,0)) );
+    DrawVoxel( Dest, Graphics, Particle->Offset, System->Colors[ColorIndex], Diameter,  LengthSq(EmissionColor) );
   }
+
+  v3 RenderSpaceP = GetRenderP(SystemEntity->P, Graphics->Camera) + System->SpawnRegion.Center;
+  DoLight(&Graphics->SG->GameLights, RenderSpaceP, EmissionColor, LightType_Point);
 
   return;
 }
@@ -866,10 +868,10 @@ SimulatePlayer( game_state *GameState, graphics *Graphics, entity *Player, hotke
     Player->Physics.Force += GetCameraRelativeInput(Hotkeys, GameState->Plat->Graphics->Camera)*dt;
     /* Player->Physics.Force += GetOrthographicInputs(Hotkeys)*dt; */
 
-    v3 PlayerDelta = PhysicsUpdate(&Player->Physics, dt);
+    PhysicsUpdate(&Player->Physics, dt);
 
     world_position OriginalPlayerP = Player->P.WorldP;
-    UpdateEntityP( GameState, Player, PlayerDelta );
+    UpdateEntityP( GameState, Player, Player->Physics.Delta );
 
     world_position WorldDisp = ( Player->P.WorldP - OriginalPlayerP );
     UpdateVisibleRegion(GameState, WorldDisp);
@@ -897,8 +899,6 @@ SimulatePlayer( game_state *GameState, graphics *Graphics, entity *Player, hotke
       SpawnFire(Player, &GameState->Entropy, Offset, &Graphics->SG->GameLights);
     }
 #endif
-
-    SimulateAndRenderParticleSystems(GameState, Graphics, &GameState->World->Mesh, Player, dt, PlayerDelta);
   }
 
   return;
@@ -918,25 +918,26 @@ SimulateEntities(game_state *GameState, graphics *Graphics, entity *Player, hotk
     if (!Spawned(Entity))
         continue;
 
-    v3 Delta = {};
-
     switch (Entity->Type)
     {
       case EntityType_Enemy:
       {
         SimulateEnemy(GameState, Entity, Player, dt);
-        Delta = PhysicsUpdate(&Entity->Physics, dt);
+        PhysicsUpdate(&Entity->Physics, dt);
+        UpdateEntityP(GameState, Entity, Entity->Physics.Delta);
       } break;
 
       case EntityType_PlayerProjectile:
       case EntityType_EnemyProjectile:
       {
-        Delta = PhysicsUpdate(&Entity->Physics, dt);
+        UpdateEntityP(GameState, Entity, Entity->Physics.Delta);
+        PhysicsUpdate(&Entity->Physics, dt);
       } break;
 
       case EntityType_ParticleSystem:
       {
-        Delta = PhysicsUpdate(&Entity->Physics, dt);
+        UpdateEntityP(GameState, Entity, Entity->Physics.Delta);
+        PhysicsUpdate(&Entity->Physics, dt);
       } break;
 
       case EntityType_Player:
@@ -946,12 +947,22 @@ SimulateEntities(game_state *GameState, graphics *Graphics, entity *Player, hotk
 
       InvalidDefaultCase;
     }
+  }
 
-    UpdateEntityP(GameState, Entity, Delta);
+  return;
+}
 
-#if 0
-    SimulateAndRenderParticleSystems(GameState, &GameState->World->Mesh, Entity, dt, Delta);
-#endif
+inline void
+SimulateAndRenderParticleSystems(game_state *GameState, graphics *Graphics, r32 Dt)
+{
+  TIMED_FUNCTION();
+
+  for ( s32 EntityIndex = 0;
+        EntityIndex < TOTAL_ENTITY_COUNT;
+        ++EntityIndex )
+  {
+    entity *Entity = GameState->EntityTable[EntityIndex];
+    SimulateAndRenderParticleSystem(GameState, Graphics, &GameState->World->Mesh, Entity, Entity->Physics.Delta, Dt);
   }
 
   return;

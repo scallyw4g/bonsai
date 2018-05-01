@@ -222,6 +222,7 @@ struct physics
 {
   v3 Velocity;
   v3 Force;
+  v3 Delta;
 
   r32 Drag;
   r32 Mass;
