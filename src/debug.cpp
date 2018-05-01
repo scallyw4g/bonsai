@@ -1182,8 +1182,11 @@ DebugDrawNetworkHud(ui_render_group *Group, game_state *GameState, debug_state *
   AdvanceSpaces(2, Layout);
 
   BufferText("Network - ClientId :", Group, WHITE);
-  AdvanceSpaces(1, Layout);
-  BufferColumn( Conn->ClientId, 2, Group, WHITE);
+  if (Conn->Client)
+  {
+    AdvanceSpaces(1, Layout);
+    BufferColumn( Conn->Client->Id, 2, Group, WHITE);
+  }
 
   NewLine(Layout);
   NewLine(Layout);
@@ -1197,7 +1200,7 @@ DebugDrawNetworkHud(ui_render_group *Group, game_state *GameState, debug_state *
     client_state *Client = &ServerState->Clients[ClientIndex];
     u32 Color = WHITE;
 
-    if (Conn->ClientId == ClientIndex)
+    if (Conn->Client && Conn->Client->Id == ClientIndex)
       Color = GREEN;
 
     BufferColumn(Client->Counter, 7, Group, Color);

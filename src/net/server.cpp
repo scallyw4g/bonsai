@@ -64,7 +64,7 @@ CheckForConnectingClient(socket_t *ListeningSocket, network_connection *ClientCo
     ClientConnection->State = ConnectionState_Connected;
 
 
-    handshake_message Handshake = {ClientConnection->ClientId};
+    handshake_message Handshake = {ClientConnection->Client->Id};
     Send(ClientConnection, &Handshake);
   }
   else
@@ -100,6 +100,14 @@ main(int ArgCount, char **Arguments)
   client_to_server_message InputMessage = {};
   server_to_client_message ServerState = {};
 
+  for (u32 ClientIndex = 0;
+      ClientIndex < MAX_CLIENTS;
+      ++ClientIndex)
+  {
+    network_connection *Connection = &ClientConnections[ClientIndex];
+    Connection->Client = &ServerState.Clients[ClientIndex];
+  }
+
   for(;;)
   {
     for (u32 ClientIndex = 0;
@@ -109,13 +117,9 @@ main(int ArgCount, char **Arguments)
       network_connection *Connection = &ClientConnections[ClientIndex];
       client_state *Client = &ServerState.Clients[ClientIndex];
 
-      // TODO(Jesse): Condense these two ID values into one
-      //
       // These get overwritten when disconnecting and therefore must be written
       // each time through this loop.
-      Connection->ClientId = ClientIndex;
-      Client->Id = ClientIndex;
-      //
+      Connection->Client->Id = ClientIndex;
 
       if (IsConnected(Connection))
       {

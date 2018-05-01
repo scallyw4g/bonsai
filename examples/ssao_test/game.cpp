@@ -197,9 +197,9 @@ GameInit( platform *Plat, memory_arena *GameMemory, os *Os)
 
 client_state Client = {};
 
-inline void
-
 #include <float.h>
+
+inline void
 PingServer(network_connection *Connection, server_state *ServerState, canonical_position *PlayerP)
 {
   if (Connection->State == ConnectionState_AwaitingHandshake)
@@ -210,7 +210,9 @@ PingServer(network_connection *Connection, server_state *ServerState, canonical_
     if (ReadMessage == SocketOpResult_CompletedRW)
     {
       Connection->State = ConnectionState_Connected;
-      Connection->ClientId = Handshake.ClientId;
+
+      Connection->Client = &ServerState->Clients[Handshake.ClientId];
+      Connection->Client->Id = Handshake.ClientId;
     }
 
   }
@@ -257,7 +259,7 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
       ++ClientIndex)
   {
     client_state *Client = &GameState->ServerState.Clients[ClientIndex];
-    if ( (Client->Id != -1) && Network->ClientId != ClientIndex)
+    if ( (Client->Id != -1) && Network->Client && Network->Client->Id != ClientIndex)
     {
       GameState->Player2->P = Client->P;
     }

@@ -3,8 +3,8 @@
 
 struct client_state
 {
+  s32 Id;
   u32 Counter;
-  u32 Id;
   canonical_position P;
 };
 
@@ -80,18 +80,17 @@ enum connection_state
 
 struct network_connection
 {
+  client_state *Client;
+
   sockaddr_in Address;
   socket_t Socket;
   connection_state State;
-
-  s32 ClientId;
 
   network_connection(socket_type Type)
   {
     Clear(this);
     this->Socket = CreateSocket(Type);
     this->Address = CreateAddress();
-    this->ClientId = -1;
   }
 
   network_connection() = default;
@@ -137,7 +136,8 @@ Disconnect(network_connection *Connection)
   close(Connection->Socket.Id);
   Connection->Socket = NullSocket;
   Connection->State = ConnectionState_Disconnected;
-  Connection->ClientId = -1;
+
+  Connection->Client->Id = -1;
 
   Assert(!IsConnected(Connection));
 
