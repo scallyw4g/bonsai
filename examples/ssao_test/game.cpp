@@ -192,12 +192,15 @@ GameInit( platform *Plat, memory_arena *GameMemory, os *Os)
   GameState->Network = {Socket_NonBlocking};
   GameState->Network.Address.sin_addr.s_addr = inet_addr("127.0.0.1");
 
+  for (u32 ClientIndex = 0;
+      ClientIndex < MAX_CLIENTS;
+      ++ClientIndex)
+  {
+    GameState->ServerState.Clients[ClientIndex].Id = ClientIndex;;
+  }
+
   return GameState;
 }
-
-client_state Client = {};
-
-#include <float.h>
 
 inline void
 PingServer(network_connection *Connection, server_state *ServerState, canonical_position *PlayerP)
@@ -212,22 +215,23 @@ PingServer(network_connection *Connection, server_state *ServerState, canonical_
       Connection->State = ConnectionState_Connected;
 
       Connection->Client = &ServerState->Clients[Handshake.ClientId];
-      Connection->Client->Id = Handshake.ClientId;
+      Assert(Connection->Client->Id == Handshake.ClientId);
     }
 
   }
   else if(Connection->State == ConnectionState_Connected)
   {
-    ++Client.Counter;
-    Client.P = *PlayerP;
+    ++Connection->Client->Counter;
+    Connection->Client->P = *PlayerP;
 
-    client_to_server_message Message = {};
-    Message.Client = Client;
+    client_to_server_message Message = {*Connection->Client};
     Send(Connection, &Message);
 
     if (FlushIncomingMessages(Connection, ServerState)
         == SocketOpResult_CompletedRW)
     {
+      Assert(ServerState->Clients[0].Id == 0);
+      Assert(ServerState->Clients[1].Id == 1);
     }
 
   }

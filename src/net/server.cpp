@@ -106,6 +106,7 @@ main(int ArgCount, char **Arguments)
   {
     network_connection *Connection = &ClientConnections[ClientIndex];
     Connection->Client = &ServerState.Clients[ClientIndex];
+    Connection->Client->Id = ClientIndex;
   }
 
   for(;;)

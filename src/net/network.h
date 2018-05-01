@@ -137,7 +137,10 @@ Disconnect(network_connection *Connection)
   Connection->Socket = NullSocket;
   Connection->State = ConnectionState_Disconnected;
 
-  Connection->Client->Id = -1;
+  // Clients aren't required to have this pointer hooked up so we've got to
+  // check for it before overwriting.
+  if (Connection->Client)
+    Connection->Client->Id = -1;
 
   Assert(!IsConnected(Connection));
 

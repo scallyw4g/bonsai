@@ -1172,38 +1172,52 @@ DebugDrawNetworkHud(ui_render_group *Group, game_state *GameState, debug_state *
   layout *Layout = Group->Layout;
   network_connection *Conn = &GameState->Network;
 
+  BufferText("Network", Group, WHITE);
   AdvanceSpaces(2, Layout);
 
   if (IsConnected(Conn))
+  {
     BufferText("O", Group, GREEN);
-  else
-    BufferText("X", Group, RED);
+    NewLine(Layout);
+    NewLine(Layout);
 
-  AdvanceSpaces(2, Layout);
+    AdvanceSpaces(2, Layout);
 
-  BufferText("Network - ClientId :", Group, WHITE);
-  if (Conn->Client)
-  {
-    AdvanceSpaces(1, Layout);
-    BufferColumn( Conn->Client->Id, 2, Group, WHITE);
+    if (Conn->Client)
+    {
+      BufferText("ClientId", Group, WHITE);
+      BufferColumn( Conn->Client->Id, 2, Group, WHITE);
+    }
+
+    NewLine(Layout);
+
+    server_state *ServerState = &GameState->ServerState;
+
+    for (u32 ClientIndex = 0;
+        ClientIndex < MAX_CLIENTS;
+        ++ClientIndex)
+    {
+      client_state *Client = &ServerState->Clients[ClientIndex];
+      Assert(Client->Id == ClientIndex);
+
+      u32 Color = WHITE;
+
+      if (Conn->Client->Id == ClientIndex)
+        Color = GREEN;
+
+      AdvanceSpaces(1, Layout);
+      BufferText("Id:", Group, WHITE);
+      BufferColumn( Client->Id, 2, Group, WHITE);
+      AdvanceSpaces(2, Layout);
+      BufferColumn(Client->Counter, 7, Group, Color);
+      NewLine(Layout);
+    }
+
   }
-
-  NewLine(Layout);
-  NewLine(Layout);
-
-  server_state *ServerState = &GameState->ServerState;
-
-  for (u32 ClientIndex = 0;
-      ClientIndex < MAX_CLIENTS;
-      ++ClientIndex)
+  else
   {
-    client_state *Client = &ServerState->Clients[ClientIndex];
-    u32 Color = WHITE;
-
-    if (Conn->Client && Conn->Client->Id == ClientIndex)
-      Color = GREEN;
-
-    BufferColumn(Client->Counter, 7, Group, Color);
+    BufferText("X", Group, RED);
+    NewLine(Layout);
   }
 
   return;
