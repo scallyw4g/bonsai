@@ -9,6 +9,7 @@ struct game_state
   world         *World;
   platform      *Plat;
   entity        *Player;
+  entity        *Player2;
   memory_arena *Memory;
 
   random_series Entropy;

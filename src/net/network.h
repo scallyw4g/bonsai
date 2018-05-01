@@ -4,6 +4,7 @@
 struct client_state
 {
   u32 Counter;
+  u32 Id;
   canonical_position P;
 };
 

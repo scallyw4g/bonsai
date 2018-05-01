@@ -560,7 +560,7 @@ InitializeShadowBuffer(shadow_render_group *SG, memory_arena *GraphicsMemory)
 }
 
 void
-InitCamera(camera* Camera, v3 CameraFront, float FocalLength)
+InitCamera(camera* Camera, float FocalLength)
 {
   Camera->Frust.farClip = FocalLength;
   Camera->Frust.nearClip = 0.1f;
@@ -568,7 +568,7 @@ InitCamera(camera* Camera, v3 CameraFront, float FocalLength)
   Camera->Frust.FOV = 45.0f;
   Camera->Up = WORLD_Z;
   Camera->Right = WORLD_X;
-  Camera->Front = CameraFront;
+  Camera->Front = V3(0,0,0);
   return;
 }
 
@@ -579,7 +579,7 @@ GraphicsInit(memory_arena *GraphicsMemory)
   Result->Memory = GraphicsMemory;
 
   Result->Camera = PUSH_STRUCT_CHECKED(camera, GraphicsMemory, 1);
-  InitCamera(Result->Camera, CameraInitialFront, 1000.0f);
+  InitCamera(Result->Camera, 1000.0f);
 
   shadow_render_group *SG = PUSH_STRUCT_CHECKED(shadow_render_group, GraphicsMemory, 1);
   if (!InitializeShadowBuffer(SG, GraphicsMemory))
@@ -2456,8 +2456,8 @@ BufferEntity(
     /* DEBUG_DrawPointMarker( world, RenderP , RED, 2.0f ) ; */
 
 #if DEBUG_DRAW_COLLISION_VOLUMES
-    aabb AABB = GetRenderSpaceAABB(World->ChunkDim, Entity, Camera);
-    DEBUG_DrawAABB(world, AABB, Quaternion(), PINK);
+    aabb AABB = GetRenderSpaceAABB(WorldChunkDim, Entity, Graphics->Camera);
+    DEBUG_DrawAABB(Mesh, Graphics, AABB, Quaternion(), PINK);
 #endif
 
     if (IsSet(Model, Chunk_Initialized))

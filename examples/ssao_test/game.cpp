@@ -182,9 +182,12 @@ GameInit( platform *Plat, memory_arena *GameMemory, os *Os)
   AllocateEntityTable(Plat, GameState);
 
   GameState->Models = AllocateGameModels(GameState, GameState->Memory);
-  GameState->Player = GetFreeEntity(GameState);
 
-  SpawnPlayer(GameState, &Plat->Graphics->SG->GameLights, GameState->Player, Canonical_Position( V3(0,8,2), World_Position(0,0,0) ));
+  GameState->Player = GetFreeEntity(GameState);
+  SpawnPlayer(GameState, GameState->Player, Canonical_Position( V3(0,8,2), World_Position(0,0,0) ));
+
+  GameState->Player2 = GetFreeEntity(GameState);
+  SpawnPlayer(GameState, GameState->Player2, Canonical_Position( 0 ) );
 
   GameState->Network = {Socket_NonBlocking};
   GameState->Network.Address.sin_addr.s_addr = inet_addr("127.0.0.1");
@@ -245,21 +248,20 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   network_connection *Network = &GameState->Network;
   PingServer(Network, &GameState->ServerState, &GameState->Player->P);
 
+  ClearFramebuffers(Plat->Graphics);
+
+  DoGameplay(Plat, GameState, Hotkeys);
+
   for (u32 ClientIndex = 0;
       ClientIndex < MAX_CLIENTS;
       ++ClientIndex)
   {
     client_state *Client = &GameState->ServerState.Clients[ClientIndex];
-    if (Network->ClientId != ClientIndex)
+    if ( (Client->Id != -1) && Network->ClientId != ClientIndex)
     {
-      entity RemoteEntity = *GameState->Player;
-      RemoteEntity.P = Client->P;
-      BufferEntity( &GameState->World->Mesh, &RemoteEntity, Plat->Graphics, GameState->World->ChunkDim);
+      GameState->Player2->P = Client->P;
     }
   }
-
-  ClearFramebuffers(Plat->Graphics);
-  DoGameplay(Plat, GameState, Hotkeys);
 
   return;
 }

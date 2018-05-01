@@ -25,7 +25,7 @@
 
 #define NOISE_FREQUENCY 40L
 
-#define DEFAULT_ENTROPY_SEED 3426543
+#define DEFAULT_ENTROPY_SEED 3426544
 
 #define WORLD_GRAVITY V3(0.0f, 0.0f, 0.0f)
 
@@ -75,7 +75,8 @@
 #define DEBUG_ENTITY_COLLISION_VOL_RADIUS V3(3.0f, 3.0f, 0.5f)
 
 #define DEBUG_CHUNK_AABB              0
-#define DEBUG_DRAW_COLLISION_VOLUMES  0
+#define DEBUG_DRAW_COLLISION_VOLUMES  1
+
 #define DEBUG_WORLD_GENERATION        0
 #define DEBUG_DRAW_SHADOW_MAP_TEXTURE 1
 #define DEBUG_HIGHLIGHT_VOID_CHUNKS   0
@@ -84,7 +85,7 @@
 #define DEBUG_PARTICLE_EFFECTS        1
 
 #define DEBUG_FONT_SIZE               18
-#define DEFAULT_LINE_THICKNESS       0.5f
+#define DEFAULT_LINE_THICKNESS       0.25f
 
 #define DEBUG_FRAMES_TO_RUN           -1
 
@@ -101,7 +102,7 @@ global_variable r32 DEBUG_CAMERA_FOCAL_LENGTH = 50.0f;
 #define FINAL_POSITION_BIT (POSITION_BIT_WIDTH*3)
 #define FINAL_COLOR_BIT ((FINAL_POSITION_BIT+COLOR_BIT_WIDTH))
 
-debug_global u32 DEBUG_NOISE_SEED = 65435;
+debug_global u32 DEBUG_NOISE_SEED = 64324;
 
 debug_global s32 numFrames = 0;
 debug_global r64 accumulatedTime = 0;

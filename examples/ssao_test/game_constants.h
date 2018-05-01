@@ -1,6 +1,6 @@
-#define CD_X 20
-#define CD_Y 20
-#define CD_Z 4
+#define CD_X 16
+#define CD_Y 16
+#define CD_Z 8
 
 // Visible Region XYZ - Must be > (3,3,3)
 #define VR_X 16
@@ -20,8 +20,6 @@
 
 #define SHADOW_MAP_Z_MIN (-100.0f)
 #define SHADOW_MAP_Z_MAX ( 100.0f)
-
-debug_global v3 CameraInitialFront = {{ 1, 1,-1 }};
 
 #define VOLUME_VISIBLE_REGION (VR_X*VR_X*VR_X)
 

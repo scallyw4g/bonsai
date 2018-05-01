@@ -109,9 +109,13 @@ main(int ArgCount, char **Arguments)
       network_connection *Connection = &ClientConnections[ClientIndex];
       client_state *Client = &ServerState.Clients[ClientIndex];
 
+      // TODO(Jesse): Condense these two ID values into one
+      //
       // These get overwritten when disconnecting and therefore must be written
       // each time through this loop.
       Connection->ClientId = ClientIndex;
+      Client->Id = ClientIndex;
+      //
 
       if (IsConnected(Connection))
       {

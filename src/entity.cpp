@@ -431,7 +431,7 @@ SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset)
 #include <float.h>
 
 void
-SpawnFire(entity *Entity, random_series *Entropy, v3 Offset, game_lights *GameLights)
+SpawnFire(entity *Entity, random_series *Entropy, v3 Offset)
 {
   particle_system_init_params Params = {};
 
@@ -467,8 +467,10 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset, game_lights *GameLi
 }
 
 void
-SpawnPlayer(game_state *GameState, game_lights *GameLights, entity *Player, canonical_position InitialP)
+SpawnPlayer(game_state *GameState, entity *Player, canonical_position InitialP)
 {
+  Info("Player Spawned");
+
   physics Physics = {};
   Physics.Drag = 6.0f;
   Physics.Mass = 7.0f;
@@ -494,7 +496,7 @@ SpawnPlayer(game_state *GameState, game_lights *GameLights, entity *Player, cano
     );
 
   v3 Offset = V3(4.5f, -0.5f, 2.0f);
-  SpawnFire(Player, &GameState->Entropy, Offset, GameLights);
+  SpawnFire(Player, &GameState->Entropy, Offset);
 
   return;
 }
@@ -892,13 +894,6 @@ SimulatePlayer( game_state *GameState, graphics *Graphics, entity *Player, hotke
       Player->FireCooldown = Player->RateOfFire;
     }
 
-#if DEBUG_PARTICLE_EFFECTS
-    if (Inactive(Player->Emitter))
-    {
-      v3 Offset = (Player->Model.Dim/2.0f)*Player->Scale;
-      SpawnFire(Player, &GameState->Entropy, Offset, &Graphics->SG->GameLights);
-    }
-#endif
   }
 
   return;
@@ -942,7 +937,10 @@ SimulateEntities(game_state *GameState, graphics *Graphics, entity *Player, hotk
 
       case EntityType_Player:
       {
-        SimulatePlayer(GameState, Graphics, Player, Hotkeys, dt);
+        if (Entity == GameState->Player)
+        {
+          SimulatePlayer(GameState, Graphics, Entity, Hotkeys, dt);
+        }
       } break;
 
       InvalidDefaultCase;
