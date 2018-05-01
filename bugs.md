@@ -1,3 +1,11 @@
+# Apr 30 2018 - 2:00 - closed - Generic macro for copying color buffers
+* opengl
+* memory
+* macro
+Had an issue when sending data to the card.  Added an emission property to the
+color data, which increased the stride from 3 floats to 4.  The stride value
+was hard-coded, which resulted in a corruput-looking draw.
+
 # Apr 18 2018 - 2:00 - closed - Socket blocking instead of non-blocking
 * network
 * init
