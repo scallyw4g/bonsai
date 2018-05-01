@@ -8,13 +8,11 @@ struct game_state
 {
   world         *World;
   platform      *Plat;
-  entity        *Player;
-  entity        *Player2;
-  memory_arena *Memory;
+  memory_arena  *Memory;
 
   random_series Entropy;
 
-  server_state ServerState = {};
+  server_state ServerState;
 
   network_connection Network;
 
@@ -22,7 +20,9 @@ struct game_state
   model   *Models;
   noise_3d *Turb;
   event_queue EventQueue;
-  aabb *FolieTable;
+
   entity *EntityTable[TOTAL_ENTITY_COUNT];
+
+  entity *Players[MAX_CLIENTS];
 };
 

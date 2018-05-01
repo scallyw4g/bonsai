@@ -23,7 +23,7 @@ OrbitCameraAroundTarget(camera *Camera)
 }
 
 void
-DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
+DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys, entity *Player)
 {
   TIMED_FUNCTION();
 
@@ -43,10 +43,12 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   DEBUG_DrawLine(&World->Mesh, gBuffer, SG, Camera, V3(0,0,0), V3(0, 0, 10000), TEAL, 0.5f );
 #endif
 
-  SimulateEntities(GameState, Graphics, GameState->Player, Hotkeys, Plat->dt);
+  SimulatePlayers(GameState, Graphics, Hotkeys, Plat->dt);
 
-  UpdateCameraP(Plat, World, GameState->Player->P, Camera);
+  UpdateCameraP(Plat, World, Player->P, Camera);
   GlobalCameraTheta += Plat->dt*0.5;
+
+  SimulateEntities(GameState, Graphics, Hotkeys, Plat->dt);
 
   SimulateAndRenderParticleSystems(GameState, Graphics, Plat->dt);
 
@@ -183,11 +185,13 @@ GameInit( platform *Plat, memory_arena *GameMemory, os *Os)
 
   GameState->Models = AllocateGameModels(GameState, GameState->Memory);
 
-  GameState->Player = GetFreeEntity(GameState);
-  SpawnPlayer(GameState, GameState->Player, Canonical_Position( V3(0,8,2), World_Position(0,0,0) ));
-
-  GameState->Player2 = GetFreeEntity(GameState);
-  SpawnPlayer(GameState, GameState->Player2, Canonical_Position( 0 ) );
+  for (s32 EntityIndex = 0;
+      EntityIndex < MAX_CLIENTS;
+      ++ EntityIndex)
+  {
+    GameState->Players[EntityIndex] =
+      AllocateEntity(Plat, GameState->Memory, Chunk_Dimension(0,0,0));
+  }
 
   GameState->Network = {Socket_NonBlocking};
   GameState->Network.Address.sin_addr.s_addr = inet_addr("127.0.0.1");
@@ -202,42 +206,45 @@ GameInit( platform *Plat, memory_arena *GameMemory, os *Os)
   return GameState;
 }
 
-inline void
-PingServer(network_connection *Connection, server_state *ServerState, canonical_position *PlayerP)
+inline b32
+AwaitHandshake(network_connection *Connection, server_state *ServerState)
 {
-  if (Connection->State == ConnectionState_AwaitingHandshake)
+  b32 Result = False;
+
+  Assert(Connection->State == ConnectionState_AwaitingHandshake
+      || Connection->State == ConnectionState_Disconnected);
+
+  handshake_message Handshake = {};
+  socket_op_result ReadMessage = Read(Connection, &Handshake);
+
+  if (ReadMessage == SocketOpResult_CompletedRW)
   {
-    handshake_message Handshake = {};
-    socket_op_result ReadMessage = Read(Connection, &Handshake);
+    Connection->State = ConnectionState_Connected;
 
-    if (ReadMessage == SocketOpResult_CompletedRW)
-    {
-      Connection->State = ConnectionState_Connected;
-
-      Connection->Client = &ServerState->Clients[Handshake.ClientId];
-      Assert(Connection->Client->Id == Handshake.ClientId);
-    }
-
+    Connection->Client = &ServerState->Clients[Handshake.ClientId];
+    Assert(Connection->Client->Id == Handshake.ClientId);
+    Result = True;
   }
-  else if(Connection->State == ConnectionState_Connected)
+
+  return Result;
+}
+
+inline void
+NetworkUpdate(network_connection *Connection, server_state *ServerState, canonical_position *PlayerP)
+{
+  Assert(Connection->State == ConnectionState_Connected);
+
+  ++Connection->Client->Counter;
+  Connection->Client->P = *PlayerP;
+
+  client_to_server_message Message = {*Connection->Client};
+  Send(Connection, &Message);
+
+  if (FlushIncomingMessages(Connection, ServerState)
+      == SocketOpResult_CompletedRW)
   {
-    ++Connection->Client->Counter;
-    Connection->Client->P = *PlayerP;
-
-    client_to_server_message Message = {*Connection->Client};
-    Send(Connection, &Message);
-
-    if (FlushIncomingMessages(Connection, ServerState)
-        == SocketOpResult_CompletedRW)
-    {
-      Assert(ServerState->Clients[0].Id == 0);
-      Assert(ServerState->Clients[1].Id == 1);
-    }
-
-  }
-  else
-  {
-    Assert(Connection->State == ConnectionState_Disconnected);
+    Assert(ServerState->Clients[0].Id == 0);
+    Assert(ServerState->Clients[1].Id == 1);
   }
 
   return;
@@ -252,11 +259,25 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   Mode->TimeRunning += Plat->dt;
 
   network_connection *Network = &GameState->Network;
-  PingServer(Network, &GameState->ServerState, &GameState->Player->P);
+
+  entity *Player = GetPlayer(*GameState->Players, Network->Client);
 
   ClearFramebuffers(Plat->Graphics);
 
-  DoGameplay(Plat, GameState, Hotkeys);
+  if (Player)
+  {
+    NetworkUpdate(Network, &GameState->ServerState, &Player->P);
+    DoGameplay(Plat, GameState, Hotkeys, Player);
+  }
+  else
+  {
+    if ( AwaitHandshake(Network, &GameState->ServerState) )
+    {
+      entity *Player = GetPlayer(*GameState->Players, Network->Client);
+      SpawnPlayer(GameState, Player,  Canonical_Position(V3(0,8,2), World_Position(0,0,0))  );
+    }
+    return;
+  }
 
   for (u32 ClientIndex = 0;
       ClientIndex < MAX_CLIENTS;
@@ -265,7 +286,7 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
     client_state *Client = &GameState->ServerState.Clients[ClientIndex];
     if ( (Client->Id != -1) && Network->Client && Network->Client->Id != ClientIndex)
     {
-      GameState->Player2->P = Client->P;
+      GameState->Players[ClientIndex]->P = Client->P;
     }
   }
 

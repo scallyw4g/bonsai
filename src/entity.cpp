@@ -725,8 +725,9 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
 }
 
 void
-SimulateEnemy(game_state *GameState, entity *Enemy, entity *Player, r32 dt)
+SimulateEnemy(game_state *GameState, entity *Enemy, r32 dt)
 {
+#if 0
   v3 PlayerP = GetAbsoluteP(Player->P, GameState->World->ChunkDim);
   v3 EnemyP = GetAbsoluteP(Enemy->P, GameState->World->ChunkDim);
 
@@ -750,6 +751,8 @@ SimulateEnemy(game_state *GameState, entity *Enemy, entity *Player, r32 dt)
   }
 
   return;
+#endif
+
 }
 
 void
@@ -867,7 +870,10 @@ SimulatePlayer( game_state *GameState, graphics *Graphics, entity *Player, hotke
   TIMED_FUNCTION();
   if (Spawned(Player))
   {
-    Player->Physics.Force += GetCameraRelativeInput(Hotkeys, GameState->Plat->Graphics->Camera)*dt;
+    if (Hotkeys)
+    {
+      Player->Physics.Force += GetCameraRelativeInput(Hotkeys, GameState->Plat->Graphics->Camera)*dt;
+    }
     /* Player->Physics.Force += GetOrthographicInputs(Hotkeys)*dt; */
 
     PhysicsUpdate(&Player->Physics, dt);
@@ -880,6 +886,7 @@ SimulatePlayer( game_state *GameState, graphics *Graphics, entity *Player, hotke
 
     Player->FireCooldown -= dt;
 
+#if 0
     // Regular Fire
     if ( Hotkeys->Player_Fire && (Player->FireCooldown < 0) )
     {
@@ -893,6 +900,7 @@ SimulatePlayer( game_state *GameState, graphics *Graphics, entity *Player, hotke
       SpawnProjectile(GameState, &Player->P, V3(0,1,0), EntityType_PlayerProton);
       Player->FireCooldown = Player->RateOfFire;
     }
+#endif
 
   }
 
@@ -900,7 +908,7 @@ SimulatePlayer( game_state *GameState, graphics *Graphics, entity *Player, hotke
 }
 
 void
-SimulateEntities(game_state *GameState, graphics *Graphics, entity *Player, hotkeys *Hotkeys, r32 dt)
+SimulateEntities(game_state *GameState, graphics *Graphics, hotkeys *Hotkeys, r32 dt)
 {
   TIMED_FUNCTION();
 
@@ -917,7 +925,7 @@ SimulateEntities(game_state *GameState, graphics *Graphics, entity *Player, hotk
     {
       case EntityType_Enemy:
       {
-        SimulateEnemy(GameState, Entity, Player, dt);
+        SimulateEnemy(GameState, Entity, dt);
         PhysicsUpdate(&Entity->Physics, dt);
         UpdateEntityP(GameState, Entity, Entity->Physics.Delta);
       } break;
@@ -937,10 +945,6 @@ SimulateEntities(game_state *GameState, graphics *Graphics, entity *Player, hotk
 
       case EntityType_Player:
       {
-        if (Entity == GameState->Player)
-        {
-          SimulatePlayer(GameState, Graphics, Entity, Hotkeys, dt);
-        }
       } break;
 
       InvalidDefaultCase;
@@ -948,6 +952,42 @@ SimulateEntities(game_state *GameState, graphics *Graphics, entity *Player, hotk
   }
 
   return;
+}
+
+entity *
+GetPlayer(entity *Players, client_state *OurClient)
+{
+  entity *Player = 0;
+
+  if (OurClient)
+  {
+    Player = Players + OurClient->Id;
+  }
+
+  return Player;
+}
+
+void
+SimulatePlayers(game_state *GameState, graphics *Graphics, hotkeys *Hotkeys, r32 dt)
+{
+  entity *LocalPlayer = GetPlayer(*GameState->Players, GameState->Network.Client);
+
+  for (u32 PlayerIndex = 0;
+      PlayerIndex < MAX_CLIENTS;
+      ++PlayerIndex)
+  {
+    entity *Entity = GameState->Players[PlayerIndex];
+
+    if (LocalPlayer == Entity)
+    {
+      SimulatePlayer(GameState, Graphics, Entity, Hotkeys, dt );
+    }
+    else
+    {
+      SimulatePlayer(GameState, Graphics, Entity, 0, dt );
+    }
+
+  }
 }
 
 inline void

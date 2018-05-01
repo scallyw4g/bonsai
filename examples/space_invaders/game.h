@@ -5,7 +5,7 @@ struct game_state
 {
   world         *World;
   platform      *Plat;
-  entity        *Player;
+  entity        *Players;
   camera        *Camera;
 
   g_buffer_render_group *gBuffer;

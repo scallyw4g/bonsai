@@ -1178,8 +1178,6 @@ DebugDrawNetworkHud(ui_render_group *Group, game_state *GameState, debug_state *
   if (IsConnected(Conn))
   {
     BufferText("O", Group, GREEN);
-    NewLine(Layout);
-    NewLine(Layout);
 
     AdvanceSpaces(2, Layout);
 
@@ -1188,6 +1186,9 @@ DebugDrawNetworkHud(ui_render_group *Group, game_state *GameState, debug_state *
       BufferText("ClientId", Group, WHITE);
       BufferColumn( Conn->Client->Id, 2, Group, WHITE);
     }
+
+    NewLine(Layout);
+    NewLine(Layout);
 
     NewLine(Layout);
 
