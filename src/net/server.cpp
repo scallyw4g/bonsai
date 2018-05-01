@@ -27,7 +27,7 @@ RejectIncomingConnnections(socket_t *ListeningSocket)
 }
 
 inline void
-CheckForConnectingClient(socket_t *ListeningSocket, network_connection *ClientConnection)
+CheckForConnectingClient(socket_t *ListeningSocket, network_connection *ClientConnection, u32 ClientId)
 {
   Assert(ListeningSocket->Type == Socket_NonBlocking);
 
@@ -63,6 +63,7 @@ CheckForConnectingClient(socket_t *ListeningSocket, network_connection *ClientCo
     ClientConnection->Socket.Id = SocketId;
     ClientConnection->Socket.Type = Socket_NonBlocking;
     ClientConnection->State = ConnectionState_Connected;
+    ClientConnection->Client->Id = ClientId;
 
 
     handshake_message Handshake = {ClientConnection->Client->Id};
@@ -108,7 +109,7 @@ main(int ArgCount, char **Arguments)
   {
     network_connection *Connection = &ClientConnections[ClientIndex];
     Connection->Client = &ServerState.Clients[ClientIndex];
-    Connection->Client->Id = ClientIndex;
+    Connection->Client->Id = -1;
   }
 
   for(;;)
@@ -119,12 +120,6 @@ main(int ArgCount, char **Arguments)
     {
       network_connection *Connection = &ClientConnections[ClientIndex];
       client_state *Client = &ServerState.Clients[ClientIndex];
-
-      // FIXME(Jesse): Write on connection instead of here?
-      //
-      // These get overwritten when disconnecting and therefore must be written
-      // each time through this loop.
-      Connection->Client->Id = ClientIndex;
 
       if (IsConnected(Connection))
       {
@@ -137,7 +132,7 @@ main(int ArgCount, char **Arguments)
       }
       else
       {
-        CheckForConnectingClient(&IncomingConnections.Socket, Connection);
+        CheckForConnectingClient(&IncomingConnections.Socket, Connection, ClientIndex);
       }
     }
 

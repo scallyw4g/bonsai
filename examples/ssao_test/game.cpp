@@ -198,7 +198,7 @@ GameInit( platform *Plat, memory_arena *GameMemory, os *Os)
       ClientIndex < MAX_CLIENTS;
       ++ClientIndex)
   {
-    GameState->ServerState.Clients[ClientIndex].Id = ClientIndex;;
+    GameState->ServerState.Clients[ClientIndex].Id = -1;
   }
 
   return GameState;
@@ -220,7 +220,7 @@ AwaitHandshake(network_connection *Connection, server_state *ServerState)
     Connection->State = ConnectionState_Connected;
 
     Connection->Client = &ServerState->Clients[Handshake.ClientId];
-    Assert(Connection->Client->Id == Handshake.ClientId);
+    Connection->Client->Id = Handshake.ClientId;
     Result = True;
   }
 
@@ -230,8 +230,6 @@ AwaitHandshake(network_connection *Connection, server_state *ServerState)
 inline void
 NetworkUpdate(network_connection *Connection, server_state *ServerState, canonical_position *PlayerP)
 {
-  Assert(Connection->State == ConnectionState_Connected);
-
   ++Connection->Client->Counter;
   Connection->Client->P = *PlayerP;
 
@@ -240,10 +238,7 @@ NetworkUpdate(network_connection *Connection, server_state *ServerState, canonic
 
   if (FlushIncomingMessages(Connection, ServerState)
       == SocketOpResult_CompletedRW)
-  {
-    Assert(ServerState->Clients[0].Id == 0);
-    Assert(ServerState->Clients[1].Id == 1);
-  }
+  {}
 
   return;
 }
@@ -274,7 +269,6 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
       Player = GetPlayer(GameState->Players, Network->Client);
       SpawnPlayer(GameState, Player,  Canonical_Position(V3(0,8,2), World_Position(0,0,0))  );
     }
-    return;
   }
 
   for (u32 ClientIndex = 0;
@@ -282,9 +276,17 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
       ++ClientIndex)
   {
     client_state *Client = &GameState->ServerState.Clients[ClientIndex];
-    if ( (Client->Id != -1) && Network->Client && Network->Client->Id != ClientIndex)
+    if ( Client->Id > -1
+         && Network->Client
+         && Network->Client->Id != ClientIndex)
     {
-      GameState->Players[ClientIndex]->P = Client->P;
+      entity *Entity = GameState->Players[ClientIndex];
+      Entity->P = Client->P;
+
+      if (Unspawned(Entity))
+      {
+        SpawnPlayer(GameState, Entity, Canonical_Position(V3(0,8,2), World_Position(0,0,0))  );
+      }
     }
   }
 

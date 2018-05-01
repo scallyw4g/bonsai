@@ -1199,7 +1199,6 @@ DebugDrawNetworkHud(ui_render_group *Group, game_state *GameState, debug_state *
         ++ClientIndex)
     {
       client_state *Client = &ServerState->Clients[ClientIndex];
-      Assert(Client->Id == ClientIndex);
 
       u32 Color = WHITE;
 
