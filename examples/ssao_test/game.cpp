@@ -189,8 +189,7 @@ GameInit( platform *Plat, memory_arena *GameMemory, os *Os)
       EntityIndex < MAX_CLIENTS;
       ++ EntityIndex)
   {
-    GameState->Players[EntityIndex] =
-      AllocateEntity(Plat, GameState->Memory, Chunk_Dimension(0,0,0));
+    GameState->Players[EntityIndex] = GetFreeEntity(GameState);
   }
 
   GameState->Network = {Socket_NonBlocking};
@@ -260,7 +259,7 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
   network_connection *Network = &GameState->Network;
 
-  entity *Player = GetPlayer(*GameState->Players, Network->Client);
+  entity *Player = GetPlayer(GameState->Players, Network->Client);
 
   ClearFramebuffers(Plat->Graphics);
 
@@ -273,7 +272,7 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   {
     if ( AwaitHandshake(Network, &GameState->ServerState) )
     {
-      entity *Player = GetPlayer(*GameState->Players, Network->Client);
+      Player = GetPlayer(GameState->Players, Network->Client);
       SpawnPlayer(GameState, Player,  Canonical_Position(V3(0,8,2), World_Position(0,0,0))  );
     }
     return;

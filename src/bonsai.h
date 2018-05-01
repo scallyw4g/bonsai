@@ -60,6 +60,7 @@ enum entity_state
   EntityState_Initialized      = 1 << 0,
   EntityState_Spawned          = 1 << 1,
   EntityState_Destroyed        = 1 << 2,
+  EntityState_Reserved         = 1 << 3,
 };
 
 enum entity_type
@@ -569,6 +570,13 @@ inline b32
 Inactive(particle_system *System)
 {
   b32 Result = !Active(System);
+  return Result;
+}
+
+inline b32
+Reserved(entity *Entity)
+{
+  b32 Result = Entity->State == EntityState_Reserved;
   return Result;
 }
 

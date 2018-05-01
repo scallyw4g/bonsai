@@ -126,9 +126,11 @@ GetFreeEntity(game_state *GameState)
         ++EntityIndex )
   {
     entity *TestEntity = GameState->EntityTable[EntityIndex];
-    if (Unspawned(TestEntity) && !Destroyed(TestEntity))
+    if (Unspawned(TestEntity) && !Destroyed(TestEntity) && !Reserved(TestEntity) )
     {
       Result = TestEntity;
+
+      Result->State = EntityState_Reserved;
       break;
     }
   }
@@ -955,13 +957,13 @@ SimulateEntities(game_state *GameState, graphics *Graphics, hotkeys *Hotkeys, r3
 }
 
 entity *
-GetPlayer(entity *Players, client_state *OurClient)
+GetPlayer(entity **Players, client_state *OurClient)
 {
   entity *Player = 0;
 
   if (OurClient)
   {
-    Player = Players + OurClient->Id;
+    Player = Players[OurClient->Id];
   }
 
   return Player;
@@ -970,7 +972,7 @@ GetPlayer(entity *Players, client_state *OurClient)
 void
 SimulatePlayers(game_state *GameState, graphics *Graphics, hotkeys *Hotkeys, r32 dt)
 {
-  entity *LocalPlayer = GetPlayer(*GameState->Players, GameState->Network.Client);
+  entity *LocalPlayer = GetPlayer(GameState->Players, GameState->Network.Client);
 
   for (u32 PlayerIndex = 0;
       PlayerIndex < MAX_CLIENTS;
