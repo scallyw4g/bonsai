@@ -1,11 +1,11 @@
-#define CD_X 16
-#define CD_Y 16
-#define CD_Z 16
+#define CD_X 20
+#define CD_Y 20
+#define CD_Z 4
 
 // Visible Region XYZ - Must be > (3,3,3)
-#define VR_X 8
-#define VR_Y 8
-#define VR_Z 8
+#define VR_X 16
+#define VR_Y 16
+#define VR_Z 3
 
 
 #define WORLD_CHUNK_DIM Chunk_Dimension(CD_X,CD_Y,CD_Z)
@@ -33,4 +33,4 @@ global_variable r32 CAMERA_FOCAL_LENGTH = 150.0f;
 
 debug_global r32 GlobalCameraTheta = 0;
 
-#define PLAYER_MODEL MODELS_PATH"/chr_rain.vox"
+#define PLAYER_MODEL MODELS_PATH"/chr_old.vox"

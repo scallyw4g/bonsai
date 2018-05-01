@@ -197,6 +197,10 @@ struct camera
   canonical_position P;
   canonical_position Target; // TODO : Can this just be a v3?
 
+  r32 Pitch;
+  r32 Roll;
+  r32 Yaw;
+
   v3 Front;
   v3 Right;
   v3 Up;
@@ -879,7 +883,7 @@ AllocateChunk(memory_arena *WorldStorage, chunk_dimension Dim)
   Result->Voxels = PUSH_STRUCT_CHECKED(voxel, WorldStorage , Volume(Dim));
 
   // TODO(Jesse): Allocate this based on actual need?
-  AllocateMesh(&Result->Mesh, 15000, WorldStorage);
+  AllocateMesh(&Result->Mesh, 20000, WorldStorage);
 
   ZeroChunk(Result, Volume(Dim));
 

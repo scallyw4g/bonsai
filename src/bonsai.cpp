@@ -170,7 +170,7 @@ GetOrthographicInputs(hotkeys *Hotkeys)
 inline v3
 GetCameraRelativeInput(hotkeys *Hotkeys, camera *Camera)
 {
-  v3 Right = Camera->Right;
+  v3 Right = -1.0f*Camera->Right;
   v3 Forward = Camera->Front;
 
   v3 UpdateDir = V3(0,0,0);
@@ -449,7 +449,7 @@ AllocateAndInitNoise3d(game_state *GameState, noise_3d *Noise, chunk_dimension D
 inline v2
 GetMouseDelta(platform *Plat)
 {
-  float mouseSpeed = 1.00f;
+  float mouseSpeed = -0.001f;
 
   v2 Result = {};
 
@@ -468,11 +468,16 @@ UpdateCameraP(platform *Plat, world *World, canonical_position NewTarget, camera
 
   v2 MouseDelta = GetMouseDelta(Plat);
 
-  v3 FrontDelta = ((-1.0f*MouseDelta.x*Camera->Right) + (MouseDelta.y*Camera->Up)) * 0.001f;
-  Camera->Front = Normalize(Camera->Front + FrontDelta);
+  Camera->Yaw += MouseDelta.x;
 
-  Camera->Right = Normalize(Cross(Camera->Front, Camera->Up));
-  Camera->Up = Normalize(-1.0f*Cross(Camera->Front, Camera->Right));
+  r32 Px = Sin(Camera->Yaw);
+  r32 Py = Cos(Camera->Yaw);
+  r32 Pz = -0.25f;
+
+  Camera->Front = V3(Px, Py, Pz);
+
+  Camera->Right = Normalize(Cross(V3(0,0,1), Camera->Front));
+  Camera->Up = Normalize(Cross(Camera->Front, Camera->Right));
 
   Camera->Target = NewTarget;
   Camera->P = Canonicalize(WorldChunkDim, NewTarget - (Camera->Front*FocalLength));
@@ -554,7 +559,7 @@ AllocateAndInitWorld( game_state *GameState, world_position Center,
   World->Gravity = WORLD_GRAVITY;
   World->Center = Center;
 
-  s32 BufferVertices = Kilobytes(8);
+  s32 BufferVertices = Megabytes(32);
   AllocateMesh(&World->Mesh, BufferVertices, Plat->Memory);
 
   world_position Min = Center - Radius;

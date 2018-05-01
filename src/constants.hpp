@@ -20,12 +20,11 @@
 
 #define MAX_VISIBLE_POINT V3(VR_X*CD_X, VR_Y*CD_Y, VR_Z*CD_Z)
 
-#define WORLD_HASH_SIZE 1024
-#define FREELIST_SIZE 1024
+#define WORLD_HASH_SIZE 2048
+#define FREELIST_SIZE 2048
 
-#define NOISE_FREQUENCY 80L
+#define NOISE_FREQUENCY 40L
 
-// This must match the corresponding define in the SSAO shader
 #define DEFAULT_ENTROPY_SEED 3426543
 
 #define WORLD_GRAVITY V3(0.0f, 0.0f, 0.0f)
