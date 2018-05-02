@@ -1,4 +1,6 @@
+#define SERVER_IP "34.214.168.166"
 #define REMOTE_PORT 1337
+
 #define MAX_CLIENTS 2
 
 struct client_state

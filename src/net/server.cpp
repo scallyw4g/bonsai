@@ -80,7 +80,7 @@ CheckForConnectingClient(socket_t *ListeningSocket, network_connection *ClientCo
 int
 main(int ArgCount, char **Arguments)
 {
-  network_connection IncomingConnections = { Socket_NonBlocking, "127.0.0.1" };
+  network_connection IncomingConnections = { Socket_NonBlocking, SERVER_IP };
 
   s32 BindResult =
     bind(IncomingConnections.Socket.Id,
@@ -97,8 +97,8 @@ main(int ArgCount, char **Arguments)
 
   Debug("Listening");
 
-  network_connection ClientConnections[MAX_CLIENTS] = { {Socket_NonBlocking, "127.0.0.1"},
-                                                        {Socket_NonBlocking, "127.0.0.1"} };
+  network_connection ClientConnections[MAX_CLIENTS] = { {Socket_NonBlocking, "Ignored"},
+                                                        {Socket_NonBlocking, "Ignored"} };
 
   client_to_server_message InputMessage = {};
   server_to_client_message ServerState = {};
