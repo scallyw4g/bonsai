@@ -192,8 +192,7 @@ GameInit( platform *Plat, memory_arena *GameMemory, os *Os)
     GameState->Players[EntityIndex] = GetFreeEntity(GameState);
   }
 
-  GameState->Network = {Socket_NonBlocking};
-  GameState->Network.Address.sin_addr.s_addr = inet_addr("127.0.0.1");
+  GameState->Network = {Socket_NonBlocking, "127.0.0.1"};
 
   for (u32 ClientIndex = 0;
       ClientIndex < MAX_CLIENTS;

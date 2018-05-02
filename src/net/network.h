@@ -63,11 +63,12 @@ CreateSocket(socket_type Type)
 }
 
 inline sockaddr_in
-CreateAddress()
+CreateAddress(const char* IP)
 {
   sockaddr_in Address = {};
   Address.sin_family = AF_INET;
   Address.sin_port = htons( REMOTE_PORT );
+  Address.sin_addr.s_addr = inet_addr(IP);
   return Address;
 }
 
@@ -86,14 +87,12 @@ struct network_connection
   socket_t Socket;
   connection_state State;
 
-  network_connection(socket_type Type)
+  network_connection(socket_type Type, const char* IP)
   {
     Clear(this);
     this->Socket = CreateSocket(Type);
-    this->Address = CreateAddress();
+    this->Address = CreateAddress(IP);
   }
-
-  network_connection() = default;
 };
 
 global_variable socket_t NullSocket = {};

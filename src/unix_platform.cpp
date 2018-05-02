@@ -1,8 +1,8 @@
 #include <stdio.h>
 
 // network layer
-#include<sys/socket.h> //socket
-#include<arpa/inet.h>  //inet_addr
+#include <sys/socket.h> //socket
+#include <arpa/inet.h>  //inet_addr
 
 // mmap
 #include <sys/mman.h>

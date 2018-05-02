@@ -48,6 +48,7 @@ CheckForConnectingClient(socket_t *ListeningSocket, network_connection *ClientCo
       case EAGAIN:
       {
         // No incoming connections
+        Info("No Connections");
       } break;
 
       default:
@@ -78,7 +79,7 @@ CheckForConnectingClient(socket_t *ListeningSocket, network_connection *ClientCo
 int
 main(int ArgCount, char **Arguments)
 {
-  network_connection IncomingConnections = { Socket_NonBlocking };
+  network_connection IncomingConnections = { Socket_NonBlocking, "127.0.0.1" };
 
   s32 BindResult =
     bind(IncomingConnections.Socket.Id,
@@ -95,7 +96,8 @@ main(int ArgCount, char **Arguments)
 
   Debug("Listening");
 
-  network_connection ClientConnections[MAX_CLIENTS] = {};
+  network_connection ClientConnections[MAX_CLIENTS] = { {Socket_NonBlocking, "127.0.0.1"},
+                                                        {Socket_NonBlocking, "127.0.0.1"} };
 
   client_to_server_message InputMessage = {};
   server_to_client_message ServerState = {};
@@ -118,6 +120,8 @@ main(int ArgCount, char **Arguments)
       network_connection *Connection = &ClientConnections[ClientIndex];
       client_state *Client = &ServerState.Clients[ClientIndex];
 
+      // FIXME(Jesse): Write on connection instead of here?
+      //
       // These get overwritten when disconnecting and therefore must be written
       // each time through this loop.
       Connection->Client->Id = ClientIndex;
