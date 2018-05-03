@@ -1,4 +1,6 @@
-#define SERVER_IP "34.214.168.166"
+//#define SERVER_IP "34.214.168.166"
+#define SERVER_IP "127.0.0.1"
+
 #define REMOTE_PORT 1337
 
 #define MAX_CLIENTS 2
@@ -95,6 +97,7 @@ struct network_connection
     this->Socket = CreateSocket(Type);
     this->Address = CreateAddress(IP);
   }
+
 };
 
 global_variable socket_t NullSocket = {};

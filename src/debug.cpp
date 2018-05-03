@@ -1167,32 +1167,32 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState)
 }
 
 void
-DebugDrawNetworkHud(ui_render_group *Group, game_state *GameState, debug_state *DebugState)
+DebugDrawNetworkHud(ui_render_group *Group,
+    network_connection *Network,
+    server_state *ServerState,
+    debug_state *DebugState)
 {
   layout *Layout = Group->Layout;
-  network_connection *Conn = &GameState->Network;
 
   BufferText("Network", Group, WHITE);
   AdvanceSpaces(2, Layout);
 
-  if (IsConnected(Conn))
+  if (IsConnected(Network))
   {
     BufferText("O", Group, GREEN);
 
     AdvanceSpaces(2, Layout);
 
-    if (Conn->Client)
+    if (Network->Client)
     {
       BufferText("ClientId", Group, WHITE);
-      BufferColumn( Conn->Client->Id, 2, Group, WHITE);
+      BufferColumn( Network->Client->Id, 2, Group, WHITE);
     }
 
     NewLine(Layout);
     NewLine(Layout);
 
     NewLine(Layout);
-
-    server_state *ServerState = &GameState->ServerState;
 
     for (u32 ClientIndex = 0;
         ClientIndex < MAX_CLIENTS;
@@ -1202,7 +1202,7 @@ DebugDrawNetworkHud(ui_render_group *Group, game_state *GameState, debug_state *
 
       u32 Color = WHITE;
 
-      if (Conn->Client->Id == ClientIndex)
+      if (Network->Client->Id == ClientIndex)
         Color = GREEN;
 
       AdvanceSpaces(1, Layout);
@@ -1455,7 +1455,7 @@ DebugFrameEnd(platform *Plat, game_state *GameState, u64 FrameCycles)
 
     case DebugUIType_Network:
     {
-      DebugDrawNetworkHud(&Group, GameState, DebugState);
+      DebugDrawNetworkHud(&Group, &Plat->Network, &GameState->ServerState, DebugState);
     } break;
 
     case DebugUIType_CallGraph:

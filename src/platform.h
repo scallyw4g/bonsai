@@ -138,6 +138,7 @@ struct platform
   void* (*PushStructChecked_)(memory_arena *Memory, umm sizeofStruct, const char* StructName, s32 Line, const char* File);
 
   graphics *Graphics;
+  network_connection Network;
 
   v2 MouseP;
   v2 MouseDP;
@@ -157,6 +158,14 @@ struct platform
 #if BONSAI_INTERNAL
   debug_state DebugState;
 #endif
+
+  // FIXME(Jesse): This initializes the Network thing twice.  Can we get around
+  // that?
+  platform(socket_type Type, const char* Ip) : Network(Type, Ip)
+  {
+    Clear(this);
+    this->Network = network_connection(Type, Ip);
+  }
 };
 
 struct os

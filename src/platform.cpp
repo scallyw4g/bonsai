@@ -435,7 +435,7 @@ main(s32 NumArgs, char ** Args)
   /* AllocateAndInitializeArena(&Debug_RecordingState->RecordedMainMemory, Gigabytes(3)); */
 #endif
 
-  platform Plat = {};
+  platform Plat = { Socket_NonBlocking, SERVER_IP };
   PlatformInit(&Plat, PlatMemory);
 
   os Os = {};
@@ -537,9 +537,9 @@ main(s32 NumArgs, char ** Args)
     /* DEBUG_FRAME_RECORD(Debug_RecordingState, &Hotkeys); */
 
     END_BLOCK("Frame Preamble");
-    if (IsDisconnected(&GameState->Network))
+    if (IsDisconnected(&Plat.Network))
     {
-      ConnectToServer(&GameState->Network);
+      ConnectToServer(&Plat.Network);
     }
 
     GameUpdateAndRender(&Plat,

@@ -43,7 +43,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys, entity *Play
   DEBUG_DrawLine(&World->Mesh, gBuffer, SG, Camera, V3(0,0,0), V3(0, 0, 10000), TEAL, 0.5f );
 #endif
 
-  SimulatePlayers(GameState, Graphics, Hotkeys, Plat->dt);
+  SimulatePlayers(GameState, Player, Graphics, Hotkeys, Plat->dt);
 
   UpdateCameraP(Plat, World, Player->P, Camera);
   GlobalCameraTheta += Plat->dt*0.5;
@@ -192,8 +192,6 @@ GameInit( platform *Plat, memory_arena *GameMemory, os *Os)
     GameState->Players[EntityIndex] = GetFreeEntity(GameState);
   }
 
-  GameState->Network = {Socket_NonBlocking, SERVER_IP };
-
   for (u32 ClientIndex = 0;
       ClientIndex < MAX_CLIENTS;
       ++ClientIndex)
@@ -251,7 +249,7 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   game_mode *Mode = &GameState->Mode;
   Mode->TimeRunning += Plat->dt;
 
-  network_connection *Network = &GameState->Network;
+  network_connection *Network = &Plat->Network;
 
   entity *Player = GetPlayer(GameState->Players, Network->Client);
 

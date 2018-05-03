@@ -14,8 +14,6 @@ struct game_state
 
   server_state ServerState;
 
-  network_connection Network;
-
   game_mode Mode;
   model   *Models;
   noise_3d *Turb;

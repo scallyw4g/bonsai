@@ -970,10 +970,8 @@ GetPlayer(entity **Players, client_state *OurClient)
 }
 
 void
-SimulatePlayers(game_state *GameState, graphics *Graphics, hotkeys *Hotkeys, r32 dt)
+SimulatePlayers(game_state *GameState, entity* LocalPlayer, graphics *Graphics, hotkeys *Hotkeys, r32 dt)
 {
-  entity *LocalPlayer = GetPlayer(GameState->Players, GameState->Network.Client);
-
   for (u32 PlayerIndex = 0;
       PlayerIndex < MAX_CLIENTS;
       ++PlayerIndex)
