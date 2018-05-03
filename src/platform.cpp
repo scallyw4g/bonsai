@@ -232,8 +232,14 @@ InitializeOpenGlExtensions(gl_extensions *Gl, os *Os)
 #if LINUX
   // TODO(Jesse): Not getting vsync on my arch laptop...
   Gl->glSwapInterval = (PFNSWAPINTERVALPROC)bonsaiGlGetProcAddress("glXSwapIntervalEXT");
-  Assert( Gl->glSwapInterval );
-  Gl->glSwapInterval(Os->Display, Os->Window, VsyncFrames);
+  if ( Gl->glSwapInterval )
+  {
+    Gl->glSwapInterval(Os->Display, Os->Window, VsyncFrames);
+  }
+  else
+  {
+    Info("No Vsync");
+  }
 #elif WIN32
   Gl->glSwapInterval = (PFNSWAPINTERVALPROC)bonsaiGlGetProcAddress("wglSwapIntervalEXT");
   Assert( Gl->glSwapInterval );
@@ -346,8 +352,12 @@ SearchForProjectRoot(void)
 void
 QueryAndSetGlslVersion(platform *Plat)
 {
+  char *GL_Version = (char*)glGetString ( GL_VERSION );
+  Info("GL verison : %s", GL_Version );
+
   r64 GLSL_Version = atof((char*)glGetString ( GL_SHADING_LANGUAGE_VERSION ));
   Info("GLSL verison : %f", GLSL_Version );
+
 
   if (GLSL_Version >= 3.3)
     Plat->GlslVersion = "330";
