@@ -3,15 +3,14 @@
 
 #include <vector>
 
-class PerlinNoise {
+class perlin_noise {
   // The permutation vector
   std::vector<int> p;
 
  public:
-  // Initialize with the reference values for the permutation vector
-  PerlinNoise();
-  // Generate a new permutation vector based on the value of seed
-  PerlinNoise(unsigned int seed);
+  perlin_noise() = delete;
+  perlin_noise(unsigned int seed = DEBUG_NOISE_SEED);
+
   // Get a noise value, for 2D images z can have any value
   double noise(double x, double y, double z);
  private:

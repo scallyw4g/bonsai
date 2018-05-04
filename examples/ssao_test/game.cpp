@@ -91,7 +91,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys, entity *Play
 }
 
 void
-InitializeVoxels(PerlinNoise *Noise,  world_chunk *Chunk)
+InitializeVoxels(perlin_noise *Noise,  world_chunk *Chunk)
 {
   chunk_dimension Dim = WORLD_CHUNK_DIM;
   ZeroChunk(Chunk->Data, Volume(WORLD_CHUNK_DIM));
@@ -160,7 +160,7 @@ GameInit( platform *Plat, memory_arena *GameMemory, os *Os)
 
   game_state *GameState = PUSH_STRUCT_CHECKED(game_state, GameMemory, 1);
   GameState->Memory = GameMemory;
-  GameState->Noise = PerlinNoise(DEBUG_NOISE_SEED);
+  GameState->Noise = perlin_noise(DEBUG_NOISE_SEED);
 
 
   GameState->Turb = PUSH_STRUCT_CHECKED(noise_3d, GameState->Memory, 1);

@@ -13,7 +13,7 @@ struct game_state
   random_series Entropy;
 
   server_state ServerState;
-  PerlinNoise Noise;
+  perlin_noise Noise;
 
   game_mode Mode;
   model   *Models;

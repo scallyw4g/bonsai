@@ -48,7 +48,7 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory)
 }
 
 void
-InitChunkPerlin(PerlinNoise *Noise, world_chunk *WorldChunk, v3 WorldChunkDim, u32 ColorIndex)
+InitChunkPerlin(perlin_noise *Noise, world_chunk *WorldChunk, v3 WorldChunkDim, u32 ColorIndex)
 {
   Assert(WorldChunk);
 

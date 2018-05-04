@@ -1,6 +1,6 @@
-#include <perlin.h>
 #include <stdio.h>
 #include <constants.hpp>
+#include <perlin.h>
 
 #include <bonsai_math.h>
 

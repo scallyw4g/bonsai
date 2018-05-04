@@ -12,11 +12,10 @@
 
 // I ADDED AN EXTRA METHOD THAT GENERATES A NEW PERMUTATION VECTOR (THIS IS NOT PRESENT IN THE ORIGINAL IMPLEMENTATION)
 
-// Initialize with the reference values for the permutation vector
-PerlinNoise::PerlinNoise()
-{
-  // Gymnastics to make MSVC happy :/
+// Generate a new permutation vector based on the value of seed
+perlin_noise::perlin_noise(unsigned int seed) {
 
+  // Gymnastics to make MSVC happy :/
   int IV[] = {
         151,160,137,91,90,15,131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,
         8,99,37,240,21,10,23,190, 6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,
@@ -34,12 +33,9 @@ PerlinNoise::PerlinNoise()
 
   std::vector<int> InitialVector(IV, IV + sizeof(IV) / sizeof(int) );
   p = InitialVector;
+
 	// Duplicate the permutation vector
 	p.insert(p.end(), p.begin(), p.end());
-}
-
-// Generate a new permutation vector based on the value of seed
-PerlinNoise::PerlinNoise(unsigned int seed) {
 	p.resize(256);
 
 	// Fill p with values from 0 to 255
@@ -55,7 +51,7 @@ PerlinNoise::PerlinNoise(unsigned int seed) {
 	p.insert(p.end(), p.begin(), p.end());
 }
 
-double PerlinNoise::noise(double x, double y, double z) {
+double perlin_noise::noise(double x, double y, double z) {
 	// Find the unit cube that contains the point
 	int X = (int) floor(x) & 255;
 	int Y = (int) floor(y) & 255;
@@ -85,17 +81,17 @@ double PerlinNoise::noise(double x, double y, double z) {
 	return res;
 }
 
-double PerlinNoise::fade(double t) { 
+double perlin_noise::fade(double t) { 
   double res = t * t * t * (t * (t * 6 - 15) + 10);
 	return res;
 }
 
-double PerlinNoise::lerp(double t, double a, double b) { 
+double perlin_noise::lerp(double t, double a, double b) { 
   double res = a + t * (b - a); 
 	return res;
 }
 
-double PerlinNoise::grad(int hash, double x, double y, double z) {
+double perlin_noise::grad(int hash, double x, double y, double z) {
 	int h = hash & 15;
 	// Convert lower 4 bits of hash inot 12 gradient directions
 	double u = h < 8 ? x : y,
