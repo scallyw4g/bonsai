@@ -48,7 +48,7 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory)
 }
 
 void
-InitChunkPerlin(world_chunk *WorldChunk, v3 WorldChunkDim, u32 ColorIndex)
+InitChunkPerlin(PerlinNoise *Noise, world_chunk *WorldChunk, v3 WorldChunkDim, u32 ColorIndex)
 {
   Assert(WorldChunk);
 
@@ -84,7 +84,7 @@ InitChunkPerlin(world_chunk *WorldChunk, v3 WorldChunkDim, u32 ColorIndex)
         double InY = ((double)y + (double)WorldChunkDim.y * (double)WorldChunk->WorldP.y)/NOISE_FREQUENCY;
         double InZ = ((double)z + (double)WorldChunkDim.z * (double)WorldChunk->WorldP.z)/NOISE_FREQUENCY;
 
-        r32 noiseValue = (r32)GlobalNoise.noise(InX, InY, InZ);
+        r32 noiseValue = (r32)Noise->noise(InX, InY, InZ);
 
         s32 Noise01 = Floori(noiseValue + 0.5f);
 
@@ -125,14 +125,16 @@ PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
 }
 
 inline void
-QueueChunkForInit(work_queue *Queue, world_chunk *Chunk)
+QueueChunkForInit(game_state *GameState, work_queue *Queue, world_chunk *Chunk)
 {
   Assert( NotSet(Chunk, Chunk_Queued ) );
   Assert( NotSet(Chunk, Chunk_Initialized) );
 
-  work_queue_entry Entry;
+  work_queue_entry Entry = {};
+
   Entry.Input = (void*)Chunk;
   Entry.Flags = WorkEntry_InitWorldChunk;
+  Entry.GameState = GameState;
 
 
   SetFlag(Chunk, Chunk_Queued);
@@ -383,7 +385,7 @@ QueueChunksForInit(game_state *GameState, world_position WorldDisp)
         {
           Chunk = GetFreeChunk(GameState->Memory, GameState->World, P);
           Assert(Chunk);
-          QueueChunkForInit(&GameState->Plat->Queue, Chunk);
+          QueueChunkForInit(GameState, &GameState->Plat->Queue, Chunk);
         }
       }
     }
@@ -573,7 +575,7 @@ AllocateAndInitWorld( game_state *GameState, world_position Center,
       {
         world_chunk *chunk = AllocateWorldChunk(GameState->Memory, World, World_Position(x,y,z));
         Assert(chunk);
-        QueueChunkForInit(&GameState->Plat->Queue, chunk);
+        QueueChunkForInit(GameState, &GameState->Plat->Queue, chunk);
       }
     }
   }

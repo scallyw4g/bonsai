@@ -91,14 +91,14 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys, entity *Play
 }
 
 void
-InitializeVoxels(world_chunk *Chunk)
+InitializeVoxels(PerlinNoise *Noise,  world_chunk *Chunk)
 {
   chunk_dimension Dim = WORLD_CHUNK_DIM;
   ZeroChunk(Chunk->Data, Volume(WORLD_CHUNK_DIM));
 
   if ( Chunk->WorldP.z == 0 )
   {
-    InitChunkPerlin(Chunk, V3(Dim), GRASS_GREEN);
+    InitChunkPerlin(Noise, Chunk, V3(Dim), GRASS_GREEN);
 
     for ( int z = 0; z < Dim.z; ++ z)
     {
@@ -132,7 +132,7 @@ GameThreadCallback(work_queue_entry *Entry)
   {
     case WorkEntry_InitWorldChunk:
     {
-      InitializeVoxels( (world_chunk*)Entry->Input);
+      InitializeVoxels(&Entry->GameState->Noise, (world_chunk*)Entry->Input);
     } break;
 
     InvalidDefaultCase;
@@ -158,11 +158,10 @@ GameInit( platform *Plat, memory_arena *GameMemory, os *Os)
 
   Init_Global_QuadVertexBuffer();
 
-  PerlinNoise Noise(DEBUG_NOISE_SEED);
-  GlobalNoise = Noise;
-
   game_state *GameState = PUSH_STRUCT_CHECKED(game_state, GameMemory, 1);
   GameState->Memory = GameMemory;
+  GameState->Noise = PerlinNoise(DEBUG_NOISE_SEED);
+
 
   GameState->Turb = PUSH_STRUCT_CHECKED(noise_3d, GameState->Memory, 1);
   AllocateAndInitNoise3d(GameState, GameState->Turb, Chunk_Dimension(8,8,8) );
