@@ -166,8 +166,7 @@ GameInit( platform *Plat, memory_arena *GameMemory, os *Os)
 
   Init_Global_QuadVertexBuffer();
 
-  srand(DEBUG_NOISE_SEED);
-  PerlinNoise Noise(rand());
+  PerlinNoise Noise(DEBUG_NOISE_SEED);
   GlobalNoise = Noise;
 
   game_state *GameState = PUSH_STRUCT_CHECKED(game_state, GameMemory, 1);
