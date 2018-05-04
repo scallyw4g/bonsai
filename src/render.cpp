@@ -2540,7 +2540,7 @@ BufferWorld(world *World, graphics *Graphics, camera *Camera)
 
         BufferWorldChunk(World, Chunk, Graphics);
 
-#if BONSAI_INTERNAL
+#if 0
         if (GetDebugState()->Debug_RedrawEveryPush)
         {
           DrawGBufferToFullscreenQuad( Global_Plat, Graphics, WORLD_CHUNK_DIM);

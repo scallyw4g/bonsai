@@ -1,9 +1,6 @@
 
 #include <bonsai_types.h>
 
-debug_global os *Global_Os = 0;
-debug_global platform *Global_Plat = 0;
-
 #include <globals.h>
 
 global_variable r32 GlobalLightTheta = 0;
@@ -150,9 +147,6 @@ InitGlobals(platform *Plat, os *Os)
 #if BONSAI_INTERNAL
   GlobalDebugState = &Plat->DebugState;
 #endif
-
-  Global_Os = Os;
-  Global_Plat = Plat;
 }
 
 EXPORT void*
