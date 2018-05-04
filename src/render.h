@@ -17,7 +17,9 @@ Draw_(u64 N, const char * Caller)
   {
     while(DrawCall->Caller && StringsMatch(DrawCall->Caller, Caller))
     {
-      DrawCall = &Global_DrawCalls[++Index];
+      ++Index;
+      Index = Index % Global_DrawCallArrayLength;
+      DrawCall = &Global_DrawCalls[Index];
     }
     DrawCall->Caller = Caller;
   }
