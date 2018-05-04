@@ -20,9 +20,6 @@
 
 #include <platform.h>
 
-// TODO(Jesse): Axe this!!
-static gl_extensions *GL_Global = 0;
-
 debug_global platform *Global_Plat = 0;
 debug_global os *Global_Os = 0;
 
@@ -147,9 +144,9 @@ Length(char *Str)
   return Result;
 }
 
-#define DefGlProc(ProcType, ProcName) Gl->ProcName = (ProcType)bonsaiGlGetProcAddress(#ProcName); Assert(Gl->ProcName)
+#define DefGlProc(ProcType, ProcName) ProcName = (ProcType)bonsaiGlGetProcAddress(#ProcName); Assert(ProcName)
 void
-InitializeOpenGlExtensions(gl_extensions *Gl, os *Os)
+InitializeOpenGlExtensions(os *Os)
 {
   Info("Initializing OpenGL Extensions");
 
@@ -159,6 +156,9 @@ InitializeOpenGlExtensions(gl_extensions *Gl, os *Os)
   Debug(glExtensionString);
   Debug(glxExtensionString);
 #endif
+
+  // Somehow on linux this is irrelevant..
+#if 0
 
   /*
    * 1.3
@@ -221,6 +221,7 @@ InitializeOpenGlExtensions(gl_extensions *Gl, os *Os)
   // DefGlProc(PFNGLFRAMEBUFFERTEXTUREPROC, glFramebufferTexture);
 
 
+#endif
 
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LEQUAL);
@@ -231,19 +232,19 @@ InitializeOpenGlExtensions(gl_extensions *Gl, os *Os)
   u32 VsyncFrames = 1;
 #if LINUX
   // TODO(Jesse): Not getting vsync on my arch laptop...
-  Gl->glSwapInterval = (PFNSWAPINTERVALPROC)bonsaiGlGetProcAddress("glXSwapIntervalEXT");
-  if ( Gl->glSwapInterval )
+  PFNSWAPINTERVALPROC glSwapInterval = (PFNSWAPINTERVALPROC)bonsaiGlGetProcAddress("glXSwapIntervalEXT");
+  if ( glSwapInterval )
   {
-    Gl->glSwapInterval(Os->Display, Os->Window, VsyncFrames);
+    glSwapInterval(Os->Display, Os->Window, VsyncFrames);
   }
   else
   {
     Info("No Vsync");
   }
 #elif WIN32
-  Gl->glSwapInterval = (PFNSWAPINTERVALPROC)bonsaiGlGetProcAddress("wglSwapIntervalEXT");
-  Assert( Gl->glSwapInterval );
-  Gl->glSwapInterval(VsyncFrames);
+  PFNSWAPINTERVALPROC glSwapInterval = (PFNSWAPINTERVALPROC)bonsaiGlGetProcAddress("wglSwapIntervalEXT");
+  Assert( glSwapInterval );
+  glSwapInterval(VsyncFrames);
 #endif
 
   return;
@@ -476,8 +477,7 @@ main(s32 NumArgs, char ** Args)
 
   Assert(Os.Window);
 
-  InitializeOpenGlExtensions(&Plat.GL, &Os);
-  GL_Global = &Plat.GL;
+  InitializeOpenGlExtensions(&Os);
 
   INIT_DEUBG_STATE(&Plat, DebugMemory);
 

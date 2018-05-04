@@ -147,8 +147,6 @@ GameThreadCallback(work_queue_entry *Entry)
 EXPORT void
 InitGlobals(platform *Plat, os *Os)
 {
-  GL_Global = &Plat->GL;
-
 #if BONSAI_INTERNAL
   GlobalDebugState = &Plat->DebugState;
 #endif

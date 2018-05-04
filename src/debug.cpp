@@ -55,8 +55,8 @@ BindShaderUniforms(shader *Shader);
 b32
 InitDebugOverlayFramebuffer(debug_text_render_group *RG, memory_arena *DebugArena, const char *DebugFont)
 {
-  GL_Global->glGenFramebuffers(1, &RG->FBO.ID);
-  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO.ID);
+  glGenFramebuffers(1, &RG->FBO.ID);
+  glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO.ID);
 
   v2i ScreenDim = V2i(SCR_WIDTH, SCR_HEIGHT);
 
@@ -65,17 +65,17 @@ InitDebugOverlayFramebuffer(debug_text_render_group *RG, memory_arena *DebugAren
 
   FramebufferTexture(&RG->FBO, RG->CompositedTexture);
 
-  GL_Global->glGenBuffers(1, &RG->SolidUIVertexBuffer);
-  GL_Global->glGenBuffers(1, &RG->SolidUIColorBuffer);
+  glGenBuffers(1, &RG->SolidUIVertexBuffer);
+  glGenBuffers(1, &RG->SolidUIColorBuffer);
 
-  GL_Global->glGenBuffers(1, &RG->VertexBuffer);
-  GL_Global->glGenBuffers(1, &RG->UVBuffer);
-  GL_Global->glGenBuffers(1, &RG->ColorBuffer);
+  glGenBuffers(1, &RG->VertexBuffer);
+  glGenBuffers(1, &RG->UVBuffer);
+  glGenBuffers(1, &RG->ColorBuffer);
 
   RG->Text2DShader = LoadShaders("TextVertexShader.vertexshader",
                                  "TextVertexShader.fragmentshader", DebugArena);
 
-  RG->TextureUniformID = GL_Global->glGetUniformLocation(RG->Text2DShader.ID, "myTextureSampler");
+  RG->TextureUniformID = glGetUniformLocation(RG->Text2DShader.ID, "myTextureSampler");
 
   RG->DebugFontTextureShader = MakeSimpleTextureShader(&RG->FontTexture, DebugArena);
   RG->DebugTextureShader = MakeSimpleTextureShader(RG->CompositedTexture, DebugArena);
@@ -151,7 +151,7 @@ InitDebugState(platform *Plat, memory_arena *DebugMemory)
 void
 UseShader(shader *Shader)
 {
-  GL_Global->glUseProgram(Shader->ID);
+  glUseProgram(Shader->ID);
   BindShaderUniforms(Shader);
   return;
 }
@@ -161,7 +161,7 @@ FlushBuffer(debug_text_render_group *RG, untextured_2d_geometry_buffer *Buffer, 
 {
   TIMED_FUNCTION();
 
-  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
   SetViewport(V2(SCR_WIDTH, SCR_HEIGHT));
   UseShader(&RG->SolidUIShader);
 
@@ -173,8 +173,8 @@ FlushBuffer(debug_text_render_group *RG, untextured_2d_geometry_buffer *Buffer, 
   Draw(Buffer->CurrentIndex);
   Buffer->CurrentIndex = 0;
 
-  GL_Global->glDisableVertexAttribArray(0);
-  GL_Global->glDisableVertexAttribArray(1);
+  glDisableVertexAttribArray(0);
+  glDisableVertexAttribArray(1);
 
   AssertNoGlErrors;
 
@@ -184,14 +184,14 @@ FlushBuffer(debug_text_render_group *RG, untextured_2d_geometry_buffer *Buffer, 
 void
 FlushBuffer(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo, v2 ViewportDim)
 {
-  GL_Global->glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
   SetViewport(V2(SCR_WIDTH, SCR_HEIGHT));
-  GL_Global->glUseProgram(RG->Text2DShader.ID);
+  glUseProgram(RG->Text2DShader.ID);
 
   // Bind Font texture
-  GL_Global->glActiveTexture(GL_TEXTURE0);
+  glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, RG->FontTexture.ID);
-  GL_Global->glUniform1i(RG->TextureUniformID, 0);
+  glUniform1i(RG->TextureUniformID, 0);
 
   BEGIN_CARD_BUFFERING();
     BUFFER_VERTS_TO_CARD(RG->SolidUIVertexBuffer, Geo);
@@ -207,9 +207,9 @@ FlushBuffer(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo, v2 Vi
 
   glDisable(GL_BLEND);
 
-  GL_Global->glDisableVertexAttribArray(0);
-  GL_Global->glDisableVertexAttribArray(1);
-  GL_Global->glDisableVertexAttribArray(2);
+  glDisableVertexAttribArray(0);
+  glDisableVertexAttribArray(1);
+  glDisableVertexAttribArray(2);
 
   AssertNoGlErrors;
 }
@@ -1256,14 +1256,14 @@ void
 CleanupText2D(debug_text_render_group *RG)
 {
   // Delete buffers
-  GL_Global->glDeleteBuffers(1, &RG->VertexBuffer);
-  GL_Global->glDeleteBuffers(1, &RG->UVBuffer);
+  glDeleteBuffers(1, &RG->VertexBuffer);
+  glDeleteBuffers(1, &RG->UVBuffer);
 
   // Delete texture
   glDeleteTextures(1, &RG->FontTexture.ID);
 
   // Delete shader
-  GL_Global->glDeleteProgram(RG->Text2DShader.ID);
+  glDeleteProgram(RG->Text2DShader.ID);
 
   return;
 }
