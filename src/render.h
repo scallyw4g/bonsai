@@ -188,40 +188,40 @@ GetViewMatrix(chunk_dimension WorldChunkDim, camera *Camera)
 #define BEGIN_CARD_BUFFERING() { u32 AttributeIndex = 0;
 #define END_CARD_BUFFERING()   }
 
-#define BUFFER_VERTS_TO_CARD(BufferId, Mesh)                                                                                               \
-  TIMED_BLOCK("Buffer Verts");                                                                                                             \
+#define BUFFER_VERTS_TO_CARD(BufferId, Mesh)                                                                                    \
+  TIMED_BLOCK("Buffer Verts");                                                                                                  \
   glEnableVertexAttribArray(AttributeIndex);                                                                                    \
   glBindBuffer(GL_ARRAY_BUFFER, BufferId);                                                                                      \
   glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(*Mesh->Verts), Mesh->Verts, GL_STATIC_DRAW);                          \
   glVertexAttribPointer( AttributeIndex, sizeof(*Mesh->Verts)/sizeof(Mesh->Verts[0].E[0]), GL_FLOAT, GL_FALSE, 0, (void*)0);    \
-  ++AttributeIndex;                                                                                                                        \
+  ++AttributeIndex;                                                                                                             \
   END_BLOCK();
 
-#define BUFFER_COLORS_TO_CARD(BufferId, Mesh)                                                                                              \
-  TIMED_BLOCK("Buffer Colors");                                                                                                            \
+#define BUFFER_COLORS_TO_CARD(BufferId, Mesh)                                                                                   \
+  TIMED_BLOCK("Buffer Colors");                                                                                                 \
   glEnableVertexAttribArray(AttributeIndex);                                                                                    \
   glBindBuffer(GL_ARRAY_BUFFER, BufferId);                                                                                      \
   glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(*Mesh->Colors), Mesh->Colors, GL_STATIC_DRAW);                        \
   glVertexAttribPointer(AttributeIndex, sizeof(*Mesh->Colors)/sizeof(Mesh->Colors[0].E[0]), GL_FLOAT, GL_FALSE, 0, (void*)0);   \
-  ++AttributeIndex;                                                                                                                        \
+  ++AttributeIndex;                                                                                                             \
   END_BLOCK();
 
-#define BUFFER_NORMALS_TO_CARD(BufferId, Mesh)                                                                                             \
-  TIMED_BLOCK("Buffer Normals");                                                                                                           \
+#define BUFFER_NORMALS_TO_CARD(BufferId, Mesh)                                                                                  \
+  TIMED_BLOCK("Buffer Normals");                                                                                                \
   glEnableVertexAttribArray(AttributeIndex);                                                                                    \
   glBindBuffer(GL_ARRAY_BUFFER, BufferId);                                                                                      \
   glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(*Mesh->Normals), Mesh->Normals, GL_STATIC_DRAW);                      \
   glVertexAttribPointer(AttributeIndex, sizeof(*Mesh->Normals)/sizeof(Mesh->Normals[0].E[0]), GL_FLOAT, GL_FALSE, 0, (void*)0); \
-  ++AttributeIndex;                                                                                                                        \
+  ++AttributeIndex;                                                                                                             \
   END_BLOCK();
 
-#define BUFFER_UVS_TO_CARD(BufferId, Mesh)                                                                                                 \
-  TIMED_BLOCK("Buffer UVs");                                                                                                               \
+#define BUFFER_UVS_TO_CARD(BufferId, Mesh)                                                                                      \
+  TIMED_BLOCK("Buffer UVs");                                                                                                    \
   glEnableVertexAttribArray(AttributeIndex);                                                                                    \
   glBindBuffer(GL_ARRAY_BUFFER, RG->UVBuffer);                                                                                  \
   glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(*Geo->UVs), Geo->UVs, GL_STATIC_DRAW);                                \
   glVertexAttribPointer(AttributeIndex, sizeof(*Geo->UVs)/sizeof(Geo->UVs[0].x), GL_FLOAT, GL_FALSE, 0, (void*)0 );             \
-  ++AttributeIndex;                                                                                                                        \
+  ++AttributeIndex;                                                                                                             \
   END_BLOCK();
 
 

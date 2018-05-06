@@ -1416,72 +1416,12 @@ BufferChunkMesh(
   if ( Chunk->Mesh.CurrentIndex == 0)
     return;
 
-#if 1
   v3 ModelBasisP =
     GetRenderP( WorldChunkDim, Canonical_Position(Offset, WorldP), Graphics->Camera);
 
   BufferVertsChecked(Dest, Graphics, Chunk->Mesh.CurrentIndex,
       Chunk->Mesh.Verts, Chunk->Mesh.Normals, Chunk->Mesh.Colors,
       ModelBasisP, V3(Scale));
-
-#else
-  r32 FaceColors[FACE_COLOR_SIZE];
-  v3 ModelBasisP =
-    GetRenderP( WorldChunkDim, Canonical_Position(Offset, WorldP), Camera);
-  for (int VoxIndex = 0;
-       VoxIndex < chunk->BoundaryVoxelCount;
-       ++VoxIndex )
-  {
-    r32 VertexData[BYTES_PER_FACE];
-    VoxelsIndexed ++;
-
-    boundary_voxel *V = &chunk->BoundaryVoxels[VoxIndex];
-
-    GetColorData(V->V.Color, &FaceColors[0]);;
-
-    r32 Diameter = 1.0f*Scale;
-
-    v3 MinP = ModelBasisP + (V->Offset * Scale);
-
-    if ( IsSet( V, Voxel_RightFace ) )
-    {
-      RightFaceVertexData( MinP, V3(Diameter), VertexData);
-      BufferVerts(Mesh, RG, SG, Camera, 6, VertexData, RightFaceNormalData, FaceColors, sizeof(VertexData));
-    }
-
-    if ( IsSet( V, Voxel_LeftFace ) )
-    {
-      LeftFaceVertexData( MinP, V3(Diameter), VertexData);
-      BufferVerts(Mesh, RG, SG, Camera, 6, VertexData, LeftFaceNormalData, FaceColors, sizeof(VertexData));
-    }
-
-    if ( IsSet( V, Voxel_BottomFace ) )
-    {
-      BottomFaceVertexData( MinP, V3(Diameter), VertexData);
-      BufferVerts(Mesh, RG, SG, Camera, 6, VertexData, BottomFaceNormalData, FaceColors, sizeof(VertexData));
-    }
-
-    if ( IsSet( V, Voxel_TopFace ) )
-    {
-      TopFaceVertexData( MinP, V3(Diameter), VertexData);
-      BufferVerts(Mesh, RG, SG, Camera, 6, VertexData, TopFaceNormalData, FaceColors, sizeof(VertexData));
-    }
-
-    if ( IsSet( V, Voxel_FrontFace ) )
-    {
-      FrontFaceVertexData( MinP, V3(Diameter), VertexData);
-      BufferVerts(Mesh, RG, SG, Camera, 6, VertexData, FrontFaceNormalData, FaceColors, sizeof(VertexData));
-    }
-
-    if ( IsSet( V, Voxel_BackFace ) )
-    {
-      BackFaceVertexData( MinP, V3(Diameter), VertexData);
-      BufferVerts(Mesh, RG, SG, Camera, 6, VertexData, BackFaceNormalData, FaceColors, sizeof(VertexData));
-    }
-
-  }
-#endif
-
 
   return;
 }
@@ -2451,14 +2391,8 @@ BufferEntity(
   //
 
   chunk_data *Model = Entity->Model.Chunk;
-
-  /* DrawParticleSystem( world, Entity->Emitter, &Entity->P, Camera ); */
-
   if (Model && Spawned(Entity))
   {
-    /* v3 RenderP = GetRenderP(World->ChunkDim, Entity->P, Camera) + ((Entity->Model.Dim/2.0f) * Entity->Scale); */
-    /* DEBUG_DrawPointMarker( world, RenderP , RED, 2.0f ) ; */
-
 #if DEBUG_DRAW_COLLISION_VOLUMES
     aabb AABB = GetRenderSpaceAABB(WorldChunkDim, Entity, Graphics->Camera);
     DEBUG_DrawAABB(Mesh, Graphics, AABB, Quaternion(), PINK);
