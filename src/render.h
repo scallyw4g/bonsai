@@ -185,16 +185,26 @@ GetViewMatrix(chunk_dimension WorldChunkDim, camera *Camera)
   return Result;
 }
 
+inline void
+BufferDataToCard(u32 BufferId, u32 Stride, u32 ByteCount, void *Data, u32 *AttributeIndex)
+{
+  glEnableVertexAttribArray(*AttributeIndex);
+  glBindBuffer(GL_ARRAY_BUFFER, BufferId);
+  glBufferData(GL_ARRAY_BUFFER, ByteCount, Data, GL_STATIC_DRAW);
+  glVertexAttribPointer(*AttributeIndex, Stride, GL_FLOAT, GL_FALSE, 0, (void*)0);
+  *AttributeIndex += 1;
+
+  return;
+}
+
 template <typename T> inline void
 BufferVertsToCard(u32 BufferId, T *Mesh, u32 *AttributeIndex)
 {
   TIMED_FUNCTION();
+  u32 ByteCount = Mesh->CurrentIndex*sizeof(*Mesh->Verts);
+  u32 Stride = sizeof(*Mesh->Verts)/sizeof(Mesh->Verts[0].E[0]);
 
-  glEnableVertexAttribArray(*AttributeIndex);
-  glBindBuffer(GL_ARRAY_BUFFER, BufferId);
-  glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(*Mesh->Verts), Mesh->Verts, GL_STATIC_DRAW);
-  glVertexAttribPointer( *AttributeIndex, sizeof(*Mesh->Verts)/sizeof(Mesh->Verts[0].E[0]), GL_FLOAT, GL_FALSE, 0, (void*)0);
-  *AttributeIndex += 1;
+  BufferDataToCard(BufferId, Stride, ByteCount, (void*)Mesh->Verts, AttributeIndex);
 
   return;
 }
@@ -203,11 +213,10 @@ template <typename T> inline void
 BufferColorsToCard(u32 BufferId, T *Mesh, u32* AttributeIndex)
 {
   TIMED_FUNCTION();
-  glEnableVertexAttribArray(*AttributeIndex);
-  glBindBuffer(GL_ARRAY_BUFFER, BufferId);
-  glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(*Mesh->Colors), Mesh->Colors, GL_STATIC_DRAW);
-  glVertexAttribPointer(*AttributeIndex, sizeof(*Mesh->Colors)/sizeof(Mesh->Colors[0].E[0]), GL_FLOAT, GL_FALSE, 0, (void*)0);
-  *AttributeIndex += 1;
+  u32 Stride = sizeof(*Mesh->Colors)/sizeof(Mesh->Colors[0].E[0]);
+  u32 ByteCount = Mesh->CurrentIndex*sizeof(*Mesh->Colors);
+
+  BufferDataToCard(BufferId, Stride, ByteCount, (void*)Mesh->Colors, AttributeIndex);
 
   return;
 }
@@ -216,11 +225,10 @@ template <typename T> inline void
 BufferNormalsToCard(u32 BufferId, T *Mesh, u32 *AttributeIndex)
 {
   TIMED_FUNCTION();
-  glEnableVertexAttribArray(*AttributeIndex);
-  glBindBuffer(GL_ARRAY_BUFFER, BufferId);
-  glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(*Mesh->Normals), Mesh->Normals, GL_STATIC_DRAW);
-  glVertexAttribPointer(*AttributeIndex, sizeof(*Mesh->Normals)/sizeof(Mesh->Normals[0].E[0]), GL_FLOAT, GL_FALSE, 0, (void*)0);
-  *AttributeIndex += 1;
+  u32 Stride = sizeof(*Mesh->Normals)/sizeof(Mesh->Normals[0].E[0]);
+  u32 ByteCount = Mesh->CurrentIndex*sizeof(*Mesh->Normals);
+
+  BufferDataToCard(BufferId, Stride, ByteCount, (void*)Mesh->Normals, AttributeIndex);
 
   return;
 }
@@ -229,11 +237,10 @@ template <typename T> inline void
 BufferUVsToCard(u32 BufferId, T *Mesh, u32 *AttributeIndex)
 {
   TIMED_FUNCTION();
-  glEnableVertexAttribArray(*AttributeIndex);
-  glBindBuffer(GL_ARRAY_BUFFER, BufferId);
-  glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(*Mesh->UVs), Mesh->UVs, GL_STATIC_DRAW);
-  glVertexAttribPointer(*AttributeIndex, sizeof(*Mesh->UVs)/sizeof(Mesh->UVs[0].x), GL_FLOAT, GL_FALSE, 0, (void*)0 );
-  *AttributeIndex += 1;
+  u32 ByteCount = Mesh->CurrentIndex*sizeof(*Mesh->UVs);
+  u32 Stride = sizeof(*Mesh->UVs)/sizeof(Mesh->UVs[0].x);
+
+  BufferDataToCard(BufferId, Stride, ByteCount, (void*)Mesh->UVs, AttributeIndex);
 
   return;
 }
