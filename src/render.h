@@ -185,45 +185,58 @@ GetViewMatrix(chunk_dimension WorldChunkDim, camera *Camera)
   return Result;
 }
 
-#define BEGIN_CARD_BUFFERING() { u32 AttributeIndex = 0;
-#define END_CARD_BUFFERING()   }
+template <typename T> inline void
+BufferVertsToCard(u32 BufferId, T *Mesh, u32 *AttributeIndex)
+{
+  TIMED_FUNCTION();
 
-#define BUFFER_VERTS_TO_CARD(BufferId, Mesh)                                                                                    \
-  TIMED_BLOCK("Buffer Verts");                                                                                                  \
-  glEnableVertexAttribArray(AttributeIndex);                                                                                    \
-  glBindBuffer(GL_ARRAY_BUFFER, BufferId);                                                                                      \
-  glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(*Mesh->Verts), Mesh->Verts, GL_STATIC_DRAW);                          \
-  glVertexAttribPointer( AttributeIndex, sizeof(*Mesh->Verts)/sizeof(Mesh->Verts[0].E[0]), GL_FLOAT, GL_FALSE, 0, (void*)0);    \
-  ++AttributeIndex;                                                                                                             \
-  END_BLOCK();
+  glEnableVertexAttribArray(*AttributeIndex);
+  glBindBuffer(GL_ARRAY_BUFFER, BufferId);
+  glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(*Mesh->Verts), Mesh->Verts, GL_STATIC_DRAW);
+  glVertexAttribPointer( *AttributeIndex, sizeof(*Mesh->Verts)/sizeof(Mesh->Verts[0].E[0]), GL_FLOAT, GL_FALSE, 0, (void*)0);
+  *AttributeIndex += 1;
 
-#define BUFFER_COLORS_TO_CARD(BufferId, Mesh)                                                                                   \
-  TIMED_BLOCK("Buffer Colors");                                                                                                 \
-  glEnableVertexAttribArray(AttributeIndex);                                                                                    \
-  glBindBuffer(GL_ARRAY_BUFFER, BufferId);                                                                                      \
-  glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(*Mesh->Colors), Mesh->Colors, GL_STATIC_DRAW);                        \
-  glVertexAttribPointer(AttributeIndex, sizeof(*Mesh->Colors)/sizeof(Mesh->Colors[0].E[0]), GL_FLOAT, GL_FALSE, 0, (void*)0);   \
-  ++AttributeIndex;                                                                                                             \
-  END_BLOCK();
+  return;
+}
 
-#define BUFFER_NORMALS_TO_CARD(BufferId, Mesh)                                                                                  \
-  TIMED_BLOCK("Buffer Normals");                                                                                                \
-  glEnableVertexAttribArray(AttributeIndex);                                                                                    \
-  glBindBuffer(GL_ARRAY_BUFFER, BufferId);                                                                                      \
-  glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(*Mesh->Normals), Mesh->Normals, GL_STATIC_DRAW);                      \
-  glVertexAttribPointer(AttributeIndex, sizeof(*Mesh->Normals)/sizeof(Mesh->Normals[0].E[0]), GL_FLOAT, GL_FALSE, 0, (void*)0); \
-  ++AttributeIndex;                                                                                                             \
-  END_BLOCK();
+template <typename T> inline void
+BufferColorsToCard(u32 BufferId, T *Mesh, u32* AttributeIndex)
+{
+  TIMED_FUNCTION();
+  glEnableVertexAttribArray(*AttributeIndex);
+  glBindBuffer(GL_ARRAY_BUFFER, BufferId);
+  glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(*Mesh->Colors), Mesh->Colors, GL_STATIC_DRAW);
+  glVertexAttribPointer(*AttributeIndex, sizeof(*Mesh->Colors)/sizeof(Mesh->Colors[0].E[0]), GL_FLOAT, GL_FALSE, 0, (void*)0);
+  *AttributeIndex += 1;
 
-#define BUFFER_UVS_TO_CARD(BufferId, Mesh)                                                                                      \
-  TIMED_BLOCK("Buffer UVs");                                                                                                    \
-  glEnableVertexAttribArray(AttributeIndex);                                                                                    \
-  glBindBuffer(GL_ARRAY_BUFFER, RG->UVBuffer);                                                                                  \
-  glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(*Geo->UVs), Geo->UVs, GL_STATIC_DRAW);                                \
-  glVertexAttribPointer(AttributeIndex, sizeof(*Geo->UVs)/sizeof(Geo->UVs[0].x), GL_FLOAT, GL_FALSE, 0, (void*)0 );             \
-  ++AttributeIndex;                                                                                                             \
-  END_BLOCK();
+  return;
+}
 
+template <typename T> inline void
+BufferNormalsToCard(u32 BufferId, T *Mesh, u32 *AttributeIndex)
+{
+  TIMED_FUNCTION();
+  glEnableVertexAttribArray(*AttributeIndex);
+  glBindBuffer(GL_ARRAY_BUFFER, BufferId);
+  glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(*Mesh->Normals), Mesh->Normals, GL_STATIC_DRAW);
+  glVertexAttribPointer(*AttributeIndex, sizeof(*Mesh->Normals)/sizeof(Mesh->Normals[0].E[0]), GL_FLOAT, GL_FALSE, 0, (void*)0);
+  *AttributeIndex += 1;
+
+  return;
+}
+
+template <typename T> inline void
+BufferUVsToCard(u32 BufferId, T *Mesh, u32 *AttributeIndex)
+{
+  TIMED_FUNCTION();
+  glEnableVertexAttribArray(*AttributeIndex);
+  glBindBuffer(GL_ARRAY_BUFFER, BufferId);
+  glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(*Mesh->UVs), Mesh->UVs, GL_STATIC_DRAW);
+  glVertexAttribPointer(*AttributeIndex, sizeof(*Mesh->UVs)/sizeof(Mesh->UVs[0].x), GL_FLOAT, GL_FALSE, 0, (void*)0 );
+  *AttributeIndex += 1;
+
+  return;
+}
 
 
 #endif

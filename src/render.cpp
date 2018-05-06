@@ -855,11 +855,10 @@ RenderWorldToGBuffer(untextured_3d_geometry_buffer *Mesh, g_buffer_render_group 
   BindShaderUniforms(&RG->gBufferShader);
 
   TIMED_BLOCK("gBuffer - Bind and buffer data");
-    BEGIN_CARD_BUFFERING();
-      BUFFER_VERTS_TO_CARD(RG->vertexbuffer, Mesh);
-      BUFFER_COLORS_TO_CARD(RG->colorbuffer, Mesh);
-      BUFFER_NORMALS_TO_CARD(RG->normalbuffer, Mesh);
-    END_CARD_BUFFERING();
+    u32 AttributeIndex = 0;
+    BufferVertsToCard(RG->vertexbuffer, Mesh, &AttributeIndex);
+    BufferColorsToCard(RG->colorbuffer, Mesh, &AttributeIndex);
+    BufferNormalsToCard(RG->normalbuffer, Mesh, &AttributeIndex);
   END_BLOCK("gBuffer - Bind and buffer data");
 
   Draw(Mesh->CurrentIndex);
@@ -897,10 +896,9 @@ RenderPostBuffer(post_processing_group *PostGroup, untextured_3d_geometry_buffer
   BindShaderUniforms(&PostGroup->Shader);
 
   TIMED_BLOCK("PostBuffer - Bind and buffer data");
-    BEGIN_CARD_BUFFERING();
-      BUFFER_VERTS_TO_CARD(PostGroup->VertexBuffer, Mesh);
-      BUFFER_COLORS_TO_CARD(PostGroup->ColorBuffer, Mesh);
-    END_CARD_BUFFERING();
+    u32 AttributeIndex = 0;
+    BufferVertsToCard(PostGroup->VertexBuffer, Mesh, &AttributeIndex);
+    BufferColorsToCard(PostGroup->ColorBuffer, Mesh, &AttributeIndex);
   END_BLOCK("PostBuffer - Bind and buffer data");
 
   Draw(Mesh->CurrentIndex);

@@ -166,10 +166,9 @@ FlushBuffer(debug_text_render_group *RG, untextured_2d_geometry_buffer *Buffer, 
   SetViewport(V2(SCR_WIDTH, SCR_HEIGHT));
   UseShader(&RG->SolidUIShader);
 
-  BEGIN_CARD_BUFFERING();
-    BUFFER_VERTS_TO_CARD(RG->SolidUIVertexBuffer, Buffer);
-    BUFFER_COLORS_TO_CARD(RG->SolidUIColorBuffer, Buffer);
-  END_CARD_BUFFERING();
+  u32 AttributeIndex = 0;
+  BufferVertsToCard(RG->SolidUIVertexBuffer, Buffer, &AttributeIndex);
+  BufferColorsToCard(RG->SolidUIColorBuffer, Buffer, &AttributeIndex);
 
   Draw(Buffer->CurrentIndex);
   Buffer->CurrentIndex = 0;
@@ -194,11 +193,10 @@ FlushBuffer(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo, v2 Vi
   glBindTexture(GL_TEXTURE_2D, RG->FontTexture.ID);
   glUniform1i(RG->TextureUniformID, 0);
 
-  BEGIN_CARD_BUFFERING();
-    BUFFER_VERTS_TO_CARD(RG->SolidUIVertexBuffer, Geo);
-    BUFFER_UVS_TO_CARD(RG->UVBuffer, Geo);
-    BUFFER_COLORS_TO_CARD(RG->SolidUIColorBuffer, Geo);
-  END_CARD_BUFFERING();
+  u32 AttributeIndex = 0;
+  BufferVertsToCard(RG->SolidUIVertexBuffer, Geo, &AttributeIndex);
+  BufferUVsToCard(RG->UVBuffer, Geo, &AttributeIndex);
+  BufferColorsToCard(RG->SolidUIColorBuffer, Geo, &AttributeIndex);
 
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
