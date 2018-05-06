@@ -8,7 +8,6 @@ debug_global b32 DebugGlobal_RedrawEveryPush = 0;
 void
 DebugRegisterArena(const char *Name, memory_arena *Arena)
 {
-  /* debug_state *State = GetDebugState(); */
   b32 Registered = False;
   for ( u32 Index = 0;
         Index < REGISTERED_MEMORY_ARENA_COUNT;
@@ -125,25 +124,27 @@ MakeSolidUIShader(memory_arena *DebugMemory)
 void
 InitDebugState(platform *Plat, memory_arena *DebugMemory)
 {
-  GlobalDebugState = &Plat->DebugState;
-  GlobalDebugState->Memory = DebugMemory;
-  GlobalDebugState->GetCycleCount = Plat->GetCycleCount;
+  debug_state *DebugState = &Plat->DebugState;
+  DebugState->Memory = DebugMemory;
+  DebugState->GetCycleCount = Plat->GetCycleCount;
 
-  GlobalDebugState->FreeScopeSentinel.Parent = &GlobalDebugState->FreeScopeSentinel;
-  GlobalDebugState->FreeScopeSentinel.Child = &GlobalDebugState->FreeScopeSentinel;
+  DebugState->FreeScopeSentinel.Parent = &DebugState->FreeScopeSentinel;
+  DebugState->FreeScopeSentinel.Child = &DebugState->FreeScopeSentinel;
 
   s32 BufferVertices = Kilobytes(1024);
-  AllocateMesh(&GlobalDebugState->LineMesh, BufferVertices, DebugMemory);
+  AllocateMesh(&DebugState->LineMesh, BufferVertices, DebugMemory);
 
-  if (!InitDebugOverlayFramebuffer(&GlobalDebugState->TextRenderGroup, DebugMemory, "Holstein.DDS"))
+  if (!InitDebugOverlayFramebuffer(&DebugState->TextRenderGroup, DebugMemory, "Holstein.DDS"))
   { Error("Initializing Debug Overlay Framebuffer"); }
 
-  AllocateAndInitGeoBuffer(&GlobalDebugState->TextRenderGroup.TextGeo, 1024, DebugMemory);
-  AllocateAndInitGeoBuffer(&GlobalDebugState->TextRenderGroup.UIGeo, 1024, DebugMemory);
+  AllocateAndInitGeoBuffer(&DebugState->TextRenderGroup.TextGeo, 1024, DebugMemory);
+  AllocateAndInitGeoBuffer(&DebugState->TextRenderGroup.UIGeo, 1024, DebugMemory);
 
-  GlobalDebugState->TextRenderGroup.SolidUIShader = MakeSolidUIShader(GlobalDebugState->Memory);
+  DebugState->TextRenderGroup.SolidUIShader = MakeSolidUIShader(DebugState->Memory);
 
-  GlobalDebugState->Initialized = True;
+  DebugState->Initialized = True;
+
+  GlobalDebugState = DebugState;
 
   return;
 }

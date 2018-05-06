@@ -1,23 +1,8 @@
 
 #include <bonsai_types.h>
-
-#include <globals.h>
-
-global_variable r32 GlobalLightTheta = 0;
-
 #include <bonsai.cpp>
-
 #include <physics.cpp>
 #include <entity.cpp>
-
-void
-OrbitCameraAroundTarget(camera *Camera)
-{
-  Camera->P.Offset.x += 0.5f*Sin(GlobalCameraTheta);
-  Camera->P.Offset.y += 0.5f*Cos(GlobalCameraTheta);
-
-  return;
-}
 
 void
 DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys, entity *Player)
@@ -43,7 +28,6 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys, entity *Play
   SimulatePlayers(GameState, Player, Graphics, Hotkeys, Plat->dt);
 
   UpdateCameraP(Plat, World, Player->P, Camera);
-  GlobalCameraTheta += Plat->dt*0.5;
 
   SimulateEntities(GameState, Graphics, Hotkeys, Plat->dt);
 
@@ -141,20 +125,10 @@ GameThreadCallback(work_queue_entry *Entry)
   return;
 }
 
-EXPORT void
-InitGlobals(platform *Plat, os *Os)
-{
-#if BONSAI_INTERNAL
-  GlobalDebugState = &Plat->DebugState;
-#endif
-}
-
-EXPORT void*
+EXPORT game_state*
 GameInit( platform *Plat, memory_arena *GameMemory, os *Os)
 {
   Info("Initializing Game");
-
-  InitGlobals(Plat, Os);
 
   Init_Global_QuadVertexBuffer();
 
@@ -235,7 +209,7 @@ EXPORT void
 GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 {
   TIMED_FUNCTION();
-  Assert(GlobalDebugState);
+
   game_mode *Mode = &GameState->Mode;
   Mode->TimeRunning += Plat->dt;
 

@@ -455,6 +455,8 @@ main(s32 NumArgs, char ** Args)
   Global_Plat = &Plat;
   Global_Os = &Os;
 
+  hotkeys Hotkeys = {};
+
   GameLibIsNew(GAME_LIB);  // Hack to initialize the LastGameLibTime static
 
   shared_lib GameLib = OpenLibrary(GAME_LIB);
@@ -465,9 +467,6 @@ main(s32 NumArgs, char ** Args)
 
   game_main_proc GameUpdateAndRender = (game_main_proc)GetProcFromLib(GameLib, "GameUpdateAndRender");
   if (!GameUpdateAndRender) { Error("Retreiving GameUpdateAndRender from Game Lib :( "); return False; }
-
-  game_init_globals_proc InitGlobals = (game_init_globals_proc)GetProcFromLib(GameLib, "InitGlobals");
-  if (!InitGlobals) { Error("Retreiving InitGlobals from Game Lib :( "); return False; }
 
   GameThreadCallback = (game_thread_callback_proc)GetProcFromLib(GameLib, "GameThreadCallback");
   if (!GameThreadCallback) { Error("Retreiving GameThreadCallback from Game Lib :( "); return False; }
@@ -481,11 +480,7 @@ main(s32 NumArgs, char ** Args)
 
   INIT_DEUBG_STATE(&Plat, DebugMemory);
 
-  InitGlobals(&Plat);
-
   QueryAndSetGlslVersion(&Plat);
-
-  hotkeys Hotkeys = {};
 
   Plat.Graphics = GraphicsInit(GraphicsMemory);
   if (!Plat.Graphics) { Error("Initializing Graphics"); return False; }
@@ -538,10 +533,7 @@ main(s32 NumArgs, char ** Args)
       GameLib = OpenLibrary(GAME_LIB);
 
       GameUpdateAndRender = (game_main_proc)GetProcFromLib(GameLib, "GameUpdateAndRender");
-      InitGlobals = (game_init_globals_proc)GetProcFromLib(GameLib, "InitGlobals");
       GameThreadCallback = (game_thread_callback_proc)GetProcFromLib(GameLib, "GameThreadCallback");
-
-      InitGlobals(&Plat);
     }
 
     /* DEBUG_FRAME_RECORD(Debug_RecordingState, &Hotkeys); */

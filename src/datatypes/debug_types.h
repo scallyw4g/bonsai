@@ -127,9 +127,10 @@ struct debug_draw_call
 debug_global const u32 Global_DrawCallArrayLength = 128;
 debug_global debug_draw_call Global_DrawCalls[Global_DrawCallArrayLength] = {};
 debug_global debug_draw_call NullDrawCall = {};
+debug_global debug_state *GlobalDebugState = 0;
 
-debug_global debug_state *GlobalDebugState;
-inline debug_state* GetDebugState() {
+inline debug_state*
+GetDebugState() {
   Assert(GlobalDebugState && GlobalDebugState->Initialized);
   return GlobalDebugState;
 }
