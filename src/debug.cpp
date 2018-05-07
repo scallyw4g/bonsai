@@ -1379,6 +1379,20 @@ PrintScopeTree(debug_profile_scope *Scope, s32 Depth = 0)
 }
 
 void
+DebugDrawGraphicsHud(ui_render_group *Group, platform *Plat, debug_state *DebugState)
+{
+  layout *Layout = Group->Layout;
+  BufferText("Graphics", Group, WHITE);
+
+  NewLine(Layout);
+  NewLine(Layout);
+
+  BufferMemorySize(DebugState->BytesBufferedToCard, Group, WHITE);
+
+  return;
+}
+
+void
 DebugFrameEnd(platform *Plat, game_state *GameState, u64 FrameCycles)
 {
   TIMED_FUNCTION();
@@ -1452,6 +1466,11 @@ DebugFrameEnd(platform *Plat, game_state *GameState, u64 FrameCycles)
     {
     } break;
 
+    case DebugUIType_Graphics:
+    {
+      DebugDrawGraphicsHud(&Group, Plat, DebugState);
+    } break;
+
     case DebugUIType_Network:
     {
       DebugDrawNetworkHud(&Group, &Plat->Network, &GameState->ServerState, DebugState);
@@ -1480,6 +1499,8 @@ DebugFrameEnd(platform *Plat, game_state *GameState, u64 FrameCycles)
 
   FlushBuffer(RG, &RG->UIGeo, ViewportDim);
   FlushBuffer(RG, TextGeo, ViewportDim);
+
+  DebugState->BytesBufferedToCard = 0;
 
   return;
 }

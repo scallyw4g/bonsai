@@ -59,6 +59,7 @@ enum debug_ui_type
 {
   DebugUIType_None,
 
+  DebugUIType_Graphics,
   DebugUIType_Network,
   DebugUIType_CallGraph,
   DebugUIType_MemoryHud,
@@ -87,6 +88,7 @@ struct debug_state
 
   debug_ui_type UIType = DebugUIType_Network;
 
+  u64 BytesBufferedToCard;
   u64 FrameCount;
   b32 Initialized;
   b32 Debug_RedrawEveryPush;

@@ -188,6 +188,11 @@ GetViewMatrix(chunk_dimension WorldChunkDim, camera *Camera)
 inline void
 BufferDataToCard(u32 BufferId, u32 Stride, u32 ByteCount, void *Data, u32 *AttributeIndex)
 {
+#if BONSAI_INTERNAL
+  debug_state *DebugState = GetDebugState();
+  DebugState->BytesBufferedToCard += ByteCount;
+#endif
+
   glEnableVertexAttribArray(*AttributeIndex);
   glBindBuffer(GL_ARRAY_BUFFER, BufferId);
   glBufferData(GL_ARRAY_BUFFER, ByteCount, Data, GL_STATIC_DRAW);
