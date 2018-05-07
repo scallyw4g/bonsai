@@ -92,7 +92,7 @@ struct debug_state
   u64 FrameCount;
   b32 Initialized;
   b32 Debug_RedrawEveryPush;
-  b32 DebugDoScopeProfiling;
+  b32 DebugDoScopeProfiling = True;
 
   u64 (*GetCycleCount)(void);
 

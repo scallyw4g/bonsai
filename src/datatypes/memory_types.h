@@ -159,7 +159,6 @@ PushSize(memory_arena *Arena, umm SizeIn)
 
     // And point back
     Arena->Prev = Allocated;
-
   }
 
   u8* Result = Arena->FirstFreeByte;

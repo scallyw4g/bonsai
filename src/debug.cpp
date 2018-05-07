@@ -741,8 +741,8 @@ GetStatsFor(debug_state *State, debug_profile_scope *Scope)
   return Result;
 }
 
-u32
-HoverAndClickExpand(ui_render_group *Group, registered_memory_arena *Arena, u32 Color, u32 HoverColor)
+template <typename T> u32
+HoverAndClickExpand(ui_render_group *Group, T *Expandable, u32 Color, u32 HoverColor)
 {
   u32 DrawColor = Color;
 
@@ -752,25 +752,7 @@ HoverAndClickExpand(ui_render_group *Group, registered_memory_arena *Arena, u32 
     {
       DrawColor = HoverColor;
       if (Group->Input->LMB.WasPressed)
-        Arena->Expanded = !Arena->Expanded;
-    }
-  }
-
-  return DrawColor;
-}
-
-u32
-HoverAndClickExpand(ui_render_group *Group, debug_profile_scope *Scope, u32 Color, u32 HoverColor)
-{
-  u32 DrawColor = Color;
-
-  {
-    rect2 EntryBounds = GetNextLineBounds(Group->Layout);
-    if ( IsInsideRect(EntryBounds, Group->MouseP) )
-    {
-      DrawColor = HoverColor;
-      if (Group->Input->LMB.WasPressed)
-        Scope->Expanded = !Scope->Expanded;
+        Expandable->Expanded = !Expandable->Expanded;
     }
   }
 
