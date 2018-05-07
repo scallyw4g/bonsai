@@ -130,6 +130,8 @@ GameInit( platform *Plat, memory_arena *GameMemory, os *Os)
 {
   Info("Initializing Game");
 
+  GlobalDebugState = &Plat->DebugState;
+
   Init_Global_QuadVertexBuffer();
 
   game_state *GameState = PUSH_STRUCT_CHECKED(game_state, GameMemory, 1);

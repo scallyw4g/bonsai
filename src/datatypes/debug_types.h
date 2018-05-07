@@ -62,7 +62,7 @@ enum debug_ui_type
   DebugUIType_Graphics,
   DebugUIType_Network,
   DebugUIType_CallGraph,
-  DebugUIType_MemoryHud,
+  DebugUIType_Memory,
   DebugUIType_DrawCalls,
 
   DebugUIType_Count
@@ -86,7 +86,7 @@ struct debug_state
 
   untextured_3d_geometry_buffer LineMesh;
 
-  debug_ui_type UIType = DebugUIType_Network;
+  debug_ui_type UIType = DebugUIType_Memory;
 
   u64 BytesBufferedToCard;
   u64 FrameCount;

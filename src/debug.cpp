@@ -122,9 +122,53 @@ MakeSolidUIShader(memory_arena *DebugMemory)
 }
 
 void
+FreeScopes(debug_state *DebugState, debug_profile_scope *ScopeToFree)
+{
+  if (!ScopeToFree) return;
+
+  ++DebugState->FreeScopeCount;
+
+  FreeScopes(DebugState, ScopeToFree->Child);
+  FreeScopes(DebugState, ScopeToFree->Sibling);
+
+  *ScopeToFree = NullScope;
+
+  debug_profile_scope *Sentinel = &DebugState->FreeScopeSentinel;
+  debug_profile_scope *First = Sentinel->Child;
+
+  Sentinel->Child = ScopeToFree;
+  First->Parent = ScopeToFree;
+
+  ScopeToFree->Parent = Sentinel;
+  ScopeToFree->Child = First;
+
+  Assert(Sentinel->Parent);
+
+  return;
+}
+
+void
+AdvanceScopeTrees(debug_state *State)
+{
+  if (!State->DebugDoScopeProfiling) return;
+
+  { // Advance to the next scope and reinitialize
+    State->ReadScopeIndex = (State->ReadScopeIndex+1) % ROOT_SCOPE_COUNT;
+    debug_scope_tree *WriteScope = State->GetWriteScopeTree();
+    if (WriteScope)
+    {
+      FreeScopes(State, WriteScope->Root);
+      InitScopeTree(State, WriteScope);
+    }
+  }
+
+}
+
+void
 InitDebugState(platform *Plat, memory_arena *DebugMemory)
 {
   debug_state *DebugState = &Plat->DebugState;
+
   DebugState->Memory = DebugMemory;
   DebugState->GetCycleCount = Plat->GetCycleCount;
 
@@ -142,9 +186,9 @@ InitDebugState(platform *Plat, memory_arena *DebugMemory)
 
   DebugState->TextRenderGroup.SolidUIShader = MakeSolidUIShader(DebugState->Memory);
 
-  DebugState->Initialized = True;
+  AdvanceScopeTrees(DebugState);
 
-  GlobalDebugState = DebugState;
+  DebugState->Initialized = True;
 
   return;
 }
@@ -346,32 +390,6 @@ CalculateFramePercentage(debug_profile_entry *Entry, u64 CycleDelta)
   return FramePerc;
 }
 #endif
-
-void
-FreeScopes(debug_state *DebugState, debug_profile_scope *ScopeToFree)
-{
-  if (!ScopeToFree) return;
-
-  ++DebugState->FreeScopeCount;
-
-  FreeScopes(DebugState, ScopeToFree->Child);
-  FreeScopes(DebugState, ScopeToFree->Sibling);
-
-  *ScopeToFree = NullScope;
-
-  debug_profile_scope *Sentinel = &DebugState->FreeScopeSentinel;
-  debug_profile_scope *First = Sentinel->Child;
-
-  Sentinel->Child = ScopeToFree;
-  First->Parent = ScopeToFree;
-
-  ScopeToFree->Parent = Sentinel;
-  ScopeToFree->Child = First;
-
-  Assert(Sentinel->Parent);
-
-  return;
-}
 
 void
 PrintFreeScopes(debug_state *State)
@@ -824,17 +842,7 @@ DebugFrameBegin(hotkeys *Hotkeys, r32 Dt, u64 Cycles)
     }
   }
 
-  if (!State->DebugDoScopeProfiling) return;
-
-  { // Advance to the next scope and reinitialize
-    State->ReadScopeIndex = (State->ReadScopeIndex+1) % ROOT_SCOPE_COUNT;
-    debug_scope_tree *WriteScope = State->GetWriteScopeTree();
-    if (WriteScope)
-    {
-      FreeScopes(State, WriteScope->Root);
-      InitScopeTree(State, WriteScope);
-    }
-  }
+  AdvanceScopeTrees(State);
 
   return;
 }
@@ -1482,7 +1490,7 @@ DebugFrameEnd(platform *Plat, game_state *GameState, u64 FrameCycles)
       DebugDrawCallGraph(&Group, DebugState, Dt.Max);
     } break;
 
-    case DebugUIType_MemoryHud:
+    case DebugUIType_Memory:
     {
       BufferText("Memory Arenas", &Group, WHITE);
       DebugDrawMemoryHud(&Group, DebugState);

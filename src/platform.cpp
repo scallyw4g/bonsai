@@ -290,6 +290,8 @@ PlatformInit(platform *Plat, memory_arena *Memory)
     CreateThread( ThreadMain, Params );
   }
 
+  GlobalDebugState = &Plat->DebugState;
+
   return True;
 }
 
@@ -446,7 +448,7 @@ main(s32 NumArgs, char ** Args)
   /* AllocateAndInitializeArena(&Debug_RecordingState->RecordedMainMemory, Gigabytes(3)); */
 #endif
 
-  platform Plat = { Socket_NonBlocking, SERVER_IP };
+  platform Plat = {};
   PlatformInit(&Plat, PlatMemory);
 
   os Os = {};
