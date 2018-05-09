@@ -426,21 +426,21 @@ BufferQuad(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, v2 MinP, 
   return Result;
 }
 
-rect2
+r32
 BufferTextAt(ui_render_group *Group, layout *Layout, const char *Text, u32 Color)
 {
   textured_2d_geometry_buffer *TextGeo = &Group->TextGroup->TextGeo;
 
   s32 QuadCount = strlen(Text);
 
-  rect2 Result = { Layout->At, Layout->At };
+  r32 DeltaX = 0;
 
   for ( s32 CharIndex = 0;
       CharIndex < QuadCount;
       CharIndex++ )
   {
     v2 MinP = Layout->Basis + Layout->At + V2(Layout->FontSize*CharIndex, 0);
-    Result.Max = BufferQuad(Group, TextGeo, MinP, V2(Layout->FontSize));
+    v2 MaxP = BufferQuad(Group, TextGeo, MinP, V2(Layout->FontSize));
 
     char character = Text[CharIndex];
     v2 UV = V2( (character%16)/16.0f, (character/16)/16.0f );
@@ -450,10 +450,12 @@ BufferTextAt(ui_render_group *Group, layout *Layout, const char *Text, u32 Color
 
     TextGeo->CurrentIndex += 6;
 
+    DeltaX += (MaxP.x - MinP.x);
+
     continue;
   }
 
-  return Result;
+  return DeltaX;
 }
 
 debug_global u64 LastFrameCycleCount = 0;
@@ -496,8 +498,8 @@ AdvanceClip(layout *Layout)
 inline void
 BufferValue(const char *Text, ui_render_group *Group, layout *Layout, u32 ColorIndex)
 {
-  rect2 TextBox = BufferTextAt(Group, Layout, Text, ColorIndex);
-  Layout->At.x = TextBox.Max.x;
+  r32 DeltaX = BufferTextAt(Group, Layout, Text, ColorIndex);
+  Layout->At.x += DeltaX;
 
   AdvanceClip(Layout);
 
@@ -1150,10 +1152,6 @@ EndClipRect(ui_render_group *Group, layout *Layout, untextured_2d_geometry_buffe
   v2 MinP = Layout->Clip.Min + Basis;
   v2 Dim = (Layout->Clip.Max + Basis) - MinP;
 
-  Print(Layout->Clip.Min);
-  Print(Dim);
-
-
   BufferQuad(Group, Geo, MinP, Dim, 1.0f);
   BufferColors(Group, Geo, V3(0.2f));
   Geo->CurrentIndex+=6;
@@ -1198,8 +1196,9 @@ BufferDebugPushMetaData(ui_render_group *Group, debug_state *State, registered_m
     push_metadata *Meta = &GetDebugState()->MetaTable[MetaIndex];
     if (Meta->Arena == Arena)
     {
+      BufferThousands(Meta->PushCount, Group, Layout, WHITE, 8);
+      AdvanceSpaces(1, Layout);
       BufferValue(Meta->Name, Group, Layout, WHITE);
-      BufferThousands(Meta->PushCount, Group, Layout, WHITE);
       NewLine(Layout);
     }
   }
