@@ -37,23 +37,40 @@ DebugRegisterArena(const char *Name, memory_arena *Arena, debug_state *DebugStat
   return;
 }
 
+b32
+AreEqual(push_metadata *First, push_metadata *Second)
+{
+  b32 Result = (First->Arena == Second->Arena &&
+                First->Name == Second->Name);
+  return Result;
+}
+
 void
-WritePushMetadata(push_metadata Metadata)
+WritePushMetadata(push_metadata InputMeta)
 {
   debug_state *DebugState = GetDebugState();
 
-  u32 HashValue = (u32)(((u64)Metadata.StructType & (u64)Metadata.Arena) % META_TABLE_SIZE);
+  u32 HashValue = (u32)(((u64)InputMeta.Name & (u64)InputMeta.Arena) % META_TABLE_SIZE);
   u32 FirstHashValue = HashValue;
 
-  push_metadata *Meta = &DebugState->MetaTable[HashValue];
-  while (Meta->StructType)
+  push_metadata *PickMeta = &DebugState->MetaTable[HashValue];
+  while (PickMeta->Name)
   {
-    Meta = &DebugState->MetaTable[(++HashValue)%META_TABLE_SIZE];
+    if (AreEqual(PickMeta, &InputMeta))
+    {
+      PickMeta->PushCount++;
+      return;
+    }
+
+    PickMeta = &DebugState->MetaTable[(++HashValue)%META_TABLE_SIZE];
     if (HashValue == FirstHashValue)
     {
       Error("DebugState->MetaTable is full");
     }
   }
+
+  *PickMeta = InputMeta;
+  PickMeta->PushCount++;
 
   return;
 }
@@ -79,18 +96,18 @@ GetRegisteredMemoryArena( memory_arena *Arena)
 }
 
 inline void*
-PushStructChecked_(memory_arena *Arena, umm Size, const char* StructType, s32 Line, const char* File)
+PushStructChecked_(memory_arena *Arena, umm Size, const char* Name, s32 Line, const char* File)
 {
   void* Result = PushStruct( Arena, Size );
 
 #ifndef BONSAI_NO_PUSH_METADATA
-  push_metadata Metadata = {StructType, Arena, Size};
+  push_metadata Metadata = {Name, Arena, Size};
   WritePushMetadata(Metadata);
 #endif
 
   if (!Result)
   {
-    Error("Pushing %s on Line: %d, in file %s", StructType, Line, File);
+    Error("Pushing %s on Line: %d, in file %s", Name, Line, File);
     Assert(False);
     return False;
   }
@@ -1152,8 +1169,38 @@ DebugDrawDrawCalls(ui_render_group *Group, debug_state *DebugState)
 }
 
 void
+PrintDebugPushMetaData( debug_state *State)
+{
+  for ( u32 Index = 0;
+        Index < REGISTERED_MEMORY_ARENA_COUNT;
+        ++Index )
+  {
+    registered_memory_arena *Current = &GetDebugState()->RegisteredMemoryArenas[Index];
+    if (!Current->Arena) continue;
+
+    Print(Current->Name);
+
+    memory_arena *Arena = Current->Arena;
+    for ( u32 MetaIndex = 0;
+        MetaIndex < META_TABLE_SIZE;
+        ++MetaIndex)
+    {
+      push_metadata *Meta = &GetDebugState()->MetaTable[MetaIndex];
+      if (Meta->Arena == Arena)
+      {
+        Print(Meta->Name);
+        Print(Meta->PushCount);
+      }
+    }
+  }
+
+}
+
+void
 DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState)
 {
+  PrintDebugPushMetaData(DebugState);
+
   layout *Layout = Group->Layout;
   NewLine(Layout);
 

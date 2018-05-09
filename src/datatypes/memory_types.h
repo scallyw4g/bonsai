@@ -323,9 +323,10 @@ PushStruct(memory_arena *Memory, umm sizeofStruct)
 
 struct push_metadata
 {
-  const char* StructType;
+  const char* Name;
   memory_arena *Arena;
   umm Size;
+  u32 PushCount;
 };
 
 inline void

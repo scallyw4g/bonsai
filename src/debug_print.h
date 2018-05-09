@@ -79,8 +79,8 @@ Log(const char* fmt...)
   va_end(args);
 }
 
-#define Print(Pos) \
-  Print_P( Pos, #Pos )
+#define Print(Var) \
+  Print_P( Var, #Var )
 
 void
 Print_Binary( unsigned int input )
@@ -107,6 +107,12 @@ Print_Binary( unsigned int input )
 /*   Log(" -- Sibling %x \n", name, E->Sibling); */
 /*   Log(" -- Child %x \n", name, E->Child); */
 /* } */
+
+inline void
+Print_P( const char *C, const char* name)
+{
+  Log(" -- %s \n", C);
+}
 
 inline void
 Print_P( input_event E, const char* name)
