@@ -73,12 +73,13 @@ struct registered_memory_arena
   memory_arena *Arena;
   const char* Name;
   b32 Expanded;
+  push_metadata *FirstPushMeta;
+  push_metadata *LastPushMeta;
 };
 
 #define REGISTERED_MEMORY_ARENA_COUNT 32
-registered_memory_arena Global_RegisteredMemoryArenas[REGISTERED_MEMORY_ARENA_COUNT];
-
-#define ROOT_SCOPE_COUNT 60
+#define ROOT_SCOPE_COUNT 128
+#define META_TABLE_SIZE 1024
 struct debug_state
 {
   memory_arena            *Memory;
@@ -92,9 +93,7 @@ struct debug_state
   u64 FrameCount;
   b32 Initialized;
   b32 Debug_RedrawEveryPush;
-  b32 DebugDoScopeProfiling = True;
-
-  u64 (*GetCycleCount)(void);
+  b32 DebugDoScopeProfiling;// = True;
 
   debug_profile_scope FreeScopeSentinel;
   debug_profile_scope **WriteScope;
@@ -103,6 +102,10 @@ struct debug_state
   u32 ReadScopeIndex;
   s32 FreeScopeCount;
   u64 NumScopes;
+
+  push_metadata MetaTable[META_TABLE_SIZE];
+  registered_memory_arena RegisteredMemoryArenas[REGISTERED_MEMORY_ARENA_COUNT];
+
 
   debug_scope_tree *GetReadScopeTree()
   {
@@ -218,7 +221,7 @@ struct debug_timed_function
       DebugState->WriteScope = &this->Scope->Child;
 
       this->Scope->Name = Name;
-      this->StartingCycleCount = DebugState->GetCycleCount(); // Intentionally last
+      this->StartingCycleCount = GetCycleCount(); // Intentionally last
     }
 
     /* Debug(" "); */
@@ -235,7 +238,7 @@ struct debug_timed_function
 
     Assert (DebugState->WriteScope);
 
-    u64 EndingCycleCount = DebugState->GetCycleCount(); // Intentionally first
+    u64 EndingCycleCount = GetCycleCount(); // Intentionally first
     u64 CycleCount = (EndingCycleCount - this->StartingCycleCount);
     DebugState->CurrentScope->CycleCount = CycleCount;
 
@@ -249,7 +252,7 @@ struct debug_timed_function
   }
 };
 
-#define INIT_DEUBG_STATE(PlatPtr, MemArena) InitDebugState(PlatPtr, MemArena)
+#define INIT_DEBUG_STATE(PlatPtr, MemArena) InitDebugState(PlatPtr, MemArena)
 
 #define TIMED_FUNCTION() debug_timed_function FunctionTimer(__FUNCTION_NAME__)
 #define TIMED_BLOCK(BlockName) { debug_timed_function BlockTimer(BlockName)
@@ -261,7 +264,7 @@ struct debug_timed_function
 
 #else
 
-#define INIT_DEUBG_STATE(...)
+#define INIT_DEBUG_STATE(...)
 
 #define TIMED_FUNCTION(...)
 #define TIMED_BLOCK(...)

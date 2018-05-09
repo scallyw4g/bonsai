@@ -20,9 +20,6 @@
 
 #include <platform.h>
 
-debug_global platform *Global_Plat = 0;
-debug_global os *Global_Os = 0;
-
 #include <texture.cpp>
 #include <shader.cpp>
 #include <bonsai_vertex.h>
@@ -144,7 +141,8 @@ Length(char *Str)
   return Result;
 }
 
-#define DefGlProc(ProcType, ProcName) ProcName = (ProcType)bonsaiGlGetProcAddress(#ProcName); Assert(ProcName)
+#define DefGlProc(ProcType, ProcName) \
+  ProcType ProcName = (ProcType)bonsaiGlGetProcAddress(#ProcName); Assert(ProcName)
 void
 InitializeOpenGlExtensions(os *Os)
 {
@@ -158,7 +156,7 @@ InitializeOpenGlExtensions(os *Os)
 #endif
 
   // Somehow on linux this is irrelevant..
-#if 0
+#if 1
 
   /*
    * 1.3
@@ -256,11 +254,6 @@ PlatformInit(platform *Plat, memory_arena *Memory)
   Plat->GetHighPrecisionClock = GetHighPrecisionClock;
   Plat->PushStruct = PushStruct;
   Plat->PushStructChecked_ = PushStructChecked_;
-  Plat->GetCycleCount = GetCycleCount;
-
-  // Initialized from globals
-  Plat->WindowHeight = SCR_HEIGHT;
-  Plat->WindowWidth = SCR_WIDTH;
 
   Plat->Memory = Memory;
 
@@ -438,24 +431,36 @@ main(s32 NumArgs, char ** Args)
   if (!SearchForProjectRoot()) { Error("Couldn't find root dir, exiting."); return False; }
   Info("Found Bonsai Root : %s", GetCwd() );
 
-  registered_memory_arena(DebugMemory);
-  registered_memory_arena(PlatMemory);
-  registered_memory_arena(GraphicsMemory);
-  registered_memory_arena(GameMemory);
+  platform Plat = {};
+
+  memory_arena *DebugMemory    = PlatformAllocateArena();
+  memory_arena *PlatMemory     = PlatformAllocateArena();
+  memory_arena *GraphicsMemory = PlatformAllocateArena();
+  memory_arena *GameMemory     = PlatformAllocateArena();
+
+  DEBUG_REGISTER_ARENA(DebugMemory   , &Plat.DebugState);
+  DEBUG_REGISTER_ARENA(PlatMemory    , &Plat.DebugState);
+  DEBUG_REGISTER_ARENA(GraphicsMemory, &Plat.DebugState);
+  DEBUG_REGISTER_ARENA(GameMemory    , &Plat.DebugState);
 
 #if BONSAI_INTERNAL
   /* debug_recording_state *Debug_RecordingState = PUSH_STRUCT_CHECKED(debug_recording_state, GameMemory, 1); */
   /* AllocateAndInitializeArena(&Debug_RecordingState->RecordedMainMemory, Gigabytes(3)); */
 #endif
 
-  platform Plat = {};
-  PlatformInit(&Plat, PlatMemory);
 
   os Os = {};
-  Os.ContinueRunning = True;
 
-  Global_Plat = &Plat;
-  Global_Os = &Os;
+  b32 WindowSuccess = OpenAndInitializeWindow(&Os, &Plat);
+  if (!WindowSuccess) { Error("Initializing Window :( "); return False; }
+
+  Assert(Os.Window);
+
+
+  InitializeOpenGlExtensions(&Os);
+  INIT_DEBUG_STATE(&Plat, DebugMemory);
+
+  PlatformInit(&Plat, PlatMemory);
 
   hotkeys Hotkeys = {};
 
@@ -473,15 +478,6 @@ main(s32 NumArgs, char ** Args)
   GameThreadCallback = (game_thread_callback_proc)GetProcFromLib(GameLib, "GameThreadCallback");
   if (!GameThreadCallback) { Error("Retreiving GameThreadCallback from Game Lib :( "); return False; }
 
-  b32 WindowSuccess = OpenAndInitializeWindow(&Os, &Plat);
-  if (!WindowSuccess) { Error("Initializing Window :( "); return False; }
-
-  Assert(Os.Window);
-
-  InitializeOpenGlExtensions(&Os);
-
-  INIT_DEUBG_STATE(&Plat, DebugMemory);
-
   QueryAndSetGlslVersion(&Plat);
 
   Plat.Graphics = GraphicsInit(GraphicsMemory);
@@ -496,7 +492,7 @@ main(s32 NumArgs, char ** Args)
 
 
 #if BONSAI_INTERNAL
-  u64 LastCycles = GetDebugState()->GetCycleCount();
+  u64 LastCycles = GetCycleCount();
 #endif
 
   r64 LastMs = Plat.GetHighPrecisionClock();
@@ -507,7 +503,7 @@ main(s32 NumArgs, char ** Args)
     LastMs = CurrentMS;
 
 #if BONSAI_INTERNAL
-    u64 CurrentCycles = GetDebugState()->GetCycleCount();
+    u64 CurrentCycles = GetCycleCount();
     u64 FrameCycles = CurrentCycles - LastCycles;
     LastCycles = CurrentCycles;
 #endif

@@ -62,8 +62,8 @@ memory_arena*
 PlatformAllocateArena(umm RequestedBytes = Megabytes(1))
 {
   u64 PageSize = PlatformGetPageSize();
-  u64 BytePagePad = PageSize - (RequestedBytes % PageSize);
-  umm AllocationSize = RequestedBytes + BytePagePad;
+  u64 ToNextPage = PageSize - (RequestedBytes % PageSize);
+  umm AllocationSize = RequestedBytes + ToNextPage + (2*PageSize); // Add additional pages for Arena, and memprotect page
   Assert(AllocationSize % PageSize == 0);
 
   u8 *Bytes = (u8*)mmap(0, AllocationSize, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANONYMOUS, -1, 0);
@@ -81,19 +81,34 @@ PlatformAllocateArena(umm RequestedBytes = Megabytes(1))
     }
   }
 
-  memory_arena *NewArena = (memory_arena*)Bytes;
+  memory_arena TempArena = {};
 
-  NewArena->FirstFreeByte = (u8*)(Bytes + PageSize);
-  NewArena->Remaining = AllocationSize - sizeof(memory_arena);
-  NewArena->TotalSize = AllocationSize;
-  NewArena->NextBlockSize = AllocationSize * 2;
+  TempArena.Start = (u8*)(Bytes);
+  TempArena.At = TempArena.Start;
+
+  TempArena.End = Bytes + AllocationSize;
+  TempArena.NextBlockSize = AllocationSize * 2;
+
 #if MEMPROTECT
-  NewArena->MemProtect = True;
+  TempArena.MemProtect = True;
 #endif
 
-  Assert((umm)NewArena->FirstFreeByte % PageSize == 0);
+#if MEMPROTECT_OVERFLOW
+  AdvanceToBytesBeforeNextPage(sizeof(memory_arena), &TempArena);
+#endif
 
-  return NewArena;
+#if MEMPROTECT_UNDERFLOW
+  NotImplemented;
+#endif
+
+  memory_arena *Result = PUSH_STRUCT_CHECKED(memory_arena, &TempArena, 1);
+  *Result = TempArena;
+
+  Assert((umm)Result->Start % PageSize == 0);
+  Assert(OnPageBoundary(Result, PageSize));
+  Assert(Remaining(Result) >= RequestedBytes);
+
+  return Result;
 }
 
 #if PLATFORM_THREADING_IMPLEMENTATIONS
@@ -135,15 +150,6 @@ CreateThread( void* (*ThreadMain)(void*), thread_startup_params *Params)
 }
 
 #endif // PLATFORM_THREADING_IMPLEMENTATIONS
-
-__inline__ u64
-GetCycleCount()
-{
-  unsigned hi, lo;
-  __asm__ __volatile__ ("rdtsc" : "=a"(lo), "=d"(hi));
-  u64 Result = ( (u64)lo)|( ((u64)hi)<<32 );
-  return Result;
-}
 
 #if PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS
 
@@ -197,6 +203,8 @@ OpenAndInitializeWindow( os *Os, platform *Plat)
   XSetWindowAttributes WindowAttribs;
   WindowAttribs.colormap = ColorInfo;
   WindowAttribs.event_mask = WindowEventMasks;
+
+  Assert(Plat->WindowWidth && Plat->WindowHeight);
 
   Window win = XCreateWindow(Os->Display, RootWindow,
       0, 0,

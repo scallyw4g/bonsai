@@ -13,8 +13,12 @@ struct m4
   bool
   operator==(m4 &M2)
   {
-    NotImplemented;
-    return true;
+    b32 Result = this->E[0] == M2.E[0];
+    Result &= this->E[1] == M2.E[1];
+    Result &= this->E[2] == M2.E[2];
+    Result &= this->E[3] == M2.E[3];
+
+    return Result;
   }
 
   m4(v4 Row0, v4 Row1, v4 Row2, v4 Row3)

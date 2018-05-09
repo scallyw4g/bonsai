@@ -6,14 +6,14 @@ debug_profile_scope NullScope = {};
 debug_global b32 DebugGlobal_RedrawEveryPush = 0;
 
 void
-DebugRegisterArena(const char *Name, memory_arena *Arena)
+DebugRegisterArena(const char *Name, memory_arena *Arena, debug_state *DebugState)
 {
   b32 Registered = False;
   for ( u32 Index = 0;
         Index < REGISTERED_MEMORY_ARENA_COUNT;
         ++Index )
   {
-    registered_memory_arena *Current = &Global_RegisteredMemoryArenas[Index];
+    registered_memory_arena *Current = &DebugState->RegisteredMemoryArenas[Index];
 
     if (!Current->Name)
     {
@@ -30,10 +30,73 @@ DebugRegisterArena(const char *Name, memory_arena *Arena)
   }
   else
   {
+    Error("Too many arenas registered");
     Error("Registering Arena : %s", Name);
   }
 
   return;
+}
+
+void
+WritePushMetadata(registered_memory_arena *RegArena, push_metadata Metadata)
+{
+  debug_state *DebugState = GetDebugState();
+
+  u32 HashValue = (u32)(((u64)Metadata.StructType & (u64)Metadata.Arena) % META_TABLE_SIZE);
+  u32 FirstHashValue = HashValue;
+
+  push_metadata *Meta = &DebugState->MetaTable[HashValue];
+  while (Meta->StructType)
+  {
+    Meta = &DebugState->MetaTable[(++HashValue)%META_TABLE_SIZE];
+    if (HashValue == FirstHashValue)
+    {
+      Error("DebugState->MetaTable is full");
+    }
+  }
+
+  return;
+}
+
+registered_memory_arena *
+GetRegisteredMemoryArena( memory_arena *Arena)
+{
+  registered_memory_arena *Result = 0;
+
+  for ( u32 Index = 0;
+        Index < REGISTERED_MEMORY_ARENA_COUNT;
+        ++Index )
+  {
+    registered_memory_arena *Current = &GetDebugState()->RegisteredMemoryArenas[Index];
+    if (Current->Arena == Arena)
+    {
+      Result = Current;
+      break;
+    }
+  }
+
+  return Result;
+}
+
+inline void*
+PushStructChecked_(memory_arena *Arena, umm Size, const char* StructType, s32 Line, const char* File)
+{
+  void* Result = PushStruct( Arena, Size );
+
+#if BONSAI_INTERNAL
+  /* push_metadata Metadata = {StructType, Arena, Size}; */
+  /* registered_memory_arena *RegArena = GetRegisteredMemoryArena(Arena); */
+  /* WritePushMetadata(RegArena, Metadata); */
+#endif
+
+  if (!Result)
+  {
+    Error("Pushing %s on Line: %d, in file %s", StructType, Line, File);
+    Assert(False);
+    return False;
+  }
+
+  return Result;
 }
 
 texture *
@@ -167,28 +230,27 @@ AdvanceScopeTrees(debug_state *State)
 void
 InitDebugState(platform *Plat, memory_arena *DebugMemory)
 {
-  debug_state *DebugState = &Plat->DebugState;
+  GlobalDebugState = &Plat->DebugState;
 
-  DebugState->Memory = DebugMemory;
-  DebugState->GetCycleCount = Plat->GetCycleCount;
+  GlobalDebugState->Memory = DebugMemory;
 
-  DebugState->FreeScopeSentinel.Parent = &DebugState->FreeScopeSentinel;
-  DebugState->FreeScopeSentinel.Child = &DebugState->FreeScopeSentinel;
+  GlobalDebugState->FreeScopeSentinel.Parent = &GlobalDebugState->FreeScopeSentinel;
+  GlobalDebugState->FreeScopeSentinel.Child = &GlobalDebugState->FreeScopeSentinel;
+
+  AdvanceScopeTrees(GlobalDebugState);
+
+  GlobalDebugState->Initialized = True;
 
   s32 BufferVertices = Kilobytes(1024);
-  AllocateMesh(&DebugState->LineMesh, BufferVertices, DebugMemory);
+  AllocateMesh(&GlobalDebugState->LineMesh, BufferVertices, DebugMemory);
 
-  if (!InitDebugOverlayFramebuffer(&DebugState->TextRenderGroup, DebugMemory, "Holstein.DDS"))
+  if (!InitDebugOverlayFramebuffer(&GlobalDebugState->TextRenderGroup, DebugMemory, "Holstein.DDS"))
   { Error("Initializing Debug Overlay Framebuffer"); }
 
-  AllocateAndInitGeoBuffer(&DebugState->TextRenderGroup.TextGeo, 1024, DebugMemory);
-  AllocateAndInitGeoBuffer(&DebugState->TextRenderGroup.UIGeo, 1024, DebugMemory);
+  AllocateAndInitGeoBuffer(&GlobalDebugState->TextRenderGroup.TextGeo, 1024, DebugMemory);
+  AllocateAndInitGeoBuffer(&GlobalDebugState->TextRenderGroup.UIGeo, 1024, DebugMemory);
 
-  DebugState->TextRenderGroup.SolidUIShader = MakeSolidUIShader(DebugState->Memory);
-
-  AdvanceScopeTrees(DebugState);
-
-  DebugState->Initialized = True;
+  GlobalDebugState->TextRenderGroup.SolidUIShader = MakeSolidUIShader(GlobalDebugState->Memory);
 
   return;
 }
@@ -928,18 +990,56 @@ struct memory_arena_stats
   u64 Remaining;
 };
 
+template <typename T> b32
+AreEqual(T First, T Second)
+{
+  b32 Result = True;
+  umm TypeSize = sizeof(T);
+
+  u8* FirstPtr = (u8*)&First;
+  u8* SecondPtr = (u8*)&Second;
+
+  for (umm Index = 0;
+      Index < TypeSize;
+      ++Index)
+  {
+    Result = Result && ( FirstPtr[Index] == SecondPtr[Index]);
+  }
+
+  return Result;
+}
+
+void
+DebugPrintArenaStats(memory_arena *Arena)
+{
+  Print( Remaining(Arena) );
+  Print( TotalSize(Arena) );
+  Print( Arena->Pushes );
+  Debug("");
+}
+
+void
+DebugPrintMemStats(memory_arena_stats *Stats)
+{
+  Print(Stats->Allocations);
+  Print(Stats->Pushes);
+  Print(Stats->TotalAllocated);
+  Print(Stats->Remaining);
+
+  return;
+}
+
 memory_arena_stats
 GetMemoryArenaStats(memory_arena *Arena)
 {
-  TIMED_FUNCTION();
   memory_arena_stats Result = {};
 
   while (Arena)
   {
     Result.Allocations++;
     Result.Pushes += Arena->Pushes;
-    Result.TotalAllocated += Arena->TotalSize;
-    Result.Remaining += Arena->Remaining;
+    Result.TotalAllocated += TotalSize(Arena);
+    Result.Remaining += Remaining(Arena);
 
     Arena = Arena->Prev;
   }
@@ -956,7 +1056,7 @@ GetTotalMemoryArenaStats()
         Index < REGISTERED_MEMORY_ARENA_COUNT;
         ++Index )
   {
-    registered_memory_arena *Current = &Global_RegisteredMemoryArenas[Index];
+    registered_memory_arena *Current = &GetDebugState()->RegisteredMemoryArenas[Index];
     if (!Current->Arena) continue;
 
     memory_arena_stats CurrentStats = GetMemoryArenaStats(Current->Arena);
@@ -1066,7 +1166,7 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState)
         Index < REGISTERED_MEMORY_ARENA_COUNT;
         ++Index )
   {
-    registered_memory_arena *Current = &Global_RegisteredMemoryArenas[Index];
+    registered_memory_arena *Current = &GetDebugState()->RegisteredMemoryArenas[Index];
     if (!Current->Arena) continue;
 
     memory_arena_stats MemStats = GetMemoryArenaStats(Current->Arena);
@@ -1133,12 +1233,12 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState)
       memory_arena *CurrentArena = Current->Arena;
       while (CurrentArena)
       {
-        u64 CurrentUsed = CurrentArena->TotalSize - CurrentArena->Remaining;
-        r32 CurrentPerc = SafeDivide0(CurrentUsed, CurrentArena->TotalSize);
+        u64 CurrentUsed = TotalSize(CurrentArena) - Remaining(CurrentArena);
+        r32 CurrentPerc = SafeDivide0(CurrentUsed, TotalSize(CurrentArena));
 
         ColumnRight(6, MemorySize(CurrentUsed), Group, WHITE);
         BufferBarGraph(Group, &Group->TextGroup->UIGeo, Layout, GraphWidth, CurrentPerc);
-        ColumnRight(6, MemorySize(CurrentArena->Remaining), Group, WHITE);
+        ColumnRight(6, MemorySize(Remaining(CurrentArena)), Group, WHITE);
         NewLine(Layout);
 
         CurrentArena = CurrentArena->Prev;
@@ -1416,15 +1516,15 @@ DebugFrameEnd(platform *Plat, game_state *GameState, u64 FrameCycles)
 
     {
       // Main line
-      memory_arena_stats TotalStats = GetTotalMemoryArenaStats();
+      /* memory_arena_stats TotalStats = GetTotalMemoryArenaStats(); */
 
-      BufferThousands(TotalStats.Allocations, &Group, WHITE);
-      AdvanceSpaces(1, &Layout);
-      BufferText("Allocations", &Group, WHITE);
+      /* BufferThousands(TotalStats.Allocations, &Group, WHITE); */
+      /* AdvanceSpaces(1, &Layout); */
+      /* BufferText("Allocations", &Group, WHITE); */
 
-      BufferThousands(TotalStats.Pushes, &Group, WHITE);
-      AdvanceSpaces(1, &Layout);
-      BufferText("Pushes", &Group, WHITE);
+      /* BufferThousands(TotalStats.Pushes, &Group, WHITE); */
+      /* AdvanceSpaces(1, &Layout); */
+      /* BufferText("Pushes", &Group, WHITE); */
 
       u32 TotalDrawCalls = 0;
 
@@ -1463,7 +1563,7 @@ DebugFrameEnd(platform *Plat, game_state *GameState, u64 FrameCycles)
 
     case DebugUIType_Network:
     {
-      DebugDrawNetworkHud(&Group, &Plat->Network, &GameState->ServerState, DebugState);
+      DebugDrawNetworkHud(&Group, &Plat->Network, GameState->ServerState, DebugState);
     } break;
 
     case DebugUIType_CallGraph:

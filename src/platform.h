@@ -132,7 +132,6 @@ struct platform
   work_queue Queue;
   thread_startup_params *Threads;
   r64 (*GetHighPrecisionClock)(void);
-  u64 (*GetCycleCount)(void);
   umm (*Allocate)(u8 Bytes);
   void* (*PushStruct)(memory_arena *Memory, umm sizeofStruct );
   void* (*PushStructChecked_)(memory_arena *Memory, umm sizeofStruct, const char* StructName, s32 Line, const char* File);
@@ -148,8 +147,8 @@ struct platform
   gl_extensions GL;
 
   r32 dt;
-  s32 WindowWidth;
-  s32 WindowHeight;
+  s32 WindowWidth = SCR_WIDTH;
+  s32 WindowHeight = SCR_HEIGHT;
 
   const char *GlslVersion;
 
@@ -166,7 +165,7 @@ struct os
   display Display;
   gl_context GlContext;
 
-  b32 ContinueRunning;
+  b32 ContinueRunning = True;
 };
 
 void

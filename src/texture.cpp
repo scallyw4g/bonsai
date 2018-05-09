@@ -178,4 +178,111 @@ LoadDDS(const char * FilePath)
   return Result;
 }
 
+// TODO(Jesse): Why are these allocated on the heap?  Seems unnecessary..
+texture *
+GenTexture(v2i Dim, memory_arena *Mem)
+{
+  texture *Texture = PUSH_STRUCT_CHECKED(texture, Mem, 1);
+  Texture->Dim = Dim;
+
+  glGenTextures(1, &Texture->ID);
+  Assert(Texture->ID);
+
+  glBindTexture(GL_TEXTURE_2D, Texture->ID);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+  /* glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE); */
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+
+  return Texture;
+}
+
+texture *
+MakeTexture_RGBA(v2i Dim, const void* Data, memory_arena *Mem)
+{
+  texture *Texture = GenTexture(Dim, Mem);
+
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F,
+      Texture->Dim.x, Texture->Dim.y, 0,  GL_RGBA, GL_FLOAT, Data);
+
+  glBindTexture(GL_TEXTURE_2D, 0);
+
+  return Texture;
+}
+
+texture *
+MakeTexture_SingleChannel(v2i Dim, memory_arena *Mem)
+{
+  texture *Texture = GenTexture(Dim, Mem);
+
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F,
+      Texture->Dim.x, Texture->Dim.y, 0,  GL_RED, GL_FLOAT, 0);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+  glBindTexture(GL_TEXTURE_2D, 0);
+
+  return Texture;
+}
+
+texture *
+MakeTexture_RGB(v2i Dim, const v3* Data, memory_arena *Mem)
+{
+  texture *Texture = GenTexture(Dim, Mem);
+
+  // TODO(Jesse): 32F is only necessary for reprojection of Position for
+  // calculating AO.  Consider passing this in when creating a Texture?
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F,
+      Texture->Dim.x, Texture->Dim.y, 0,  GL_RGB, GL_FLOAT, Data);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+  glBindTexture(GL_TEXTURE_2D, 0);
+
+  return Texture;
+}
+
+texture *
+MakeDepthTexture(v2i Dim, memory_arena *Mem)
+{
+  texture *Texture = GenTexture(Dim, Mem);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F,
+    Texture->Dim.x, Texture->Dim.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+  r32 BorderColors[4] = {1};
+  glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, &BorderColors[0]);
+
+  glBindTexture(GL_TEXTURE_2D, 0);
+
+  return Texture;
+}
+
+void
+FramebufferDepthTexture(g_buffer_render_group *Group, texture *Tex)
+{
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+      GL_TEXTURE_2D, Tex->ID, 0);
+  return;
+}
+
+void
+FramebufferTexture(framebuffer *FBO, texture *Tex)
+{
+  u32 Attachment = FBO->Attachments++;
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + Attachment,
+      GL_TEXTURE_2D, Tex->ID, 0);
+
+  return;
+}
+
+
 #endif

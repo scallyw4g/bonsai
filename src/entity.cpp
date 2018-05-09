@@ -966,6 +966,7 @@ GetPlayer(entity **Players, client_state *OurClient)
     Player = Players[OurClient->Id];
   }
 
+/*   Player = Players[0]; */
   return Player;
 }
 

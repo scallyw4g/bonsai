@@ -21,13 +21,13 @@ set( EXECUTABLE_OUTPUT_PATH ${BIN} )
 add_executable(Bonsai ${SRC}/platform.cpp)
 add_executable(Server ${SRC}/net/server.cpp)
 add_executable(test_m4 ${TESTS}/m4.cpp)
+add_executable(test_allocation ${TESTS}/allocation.cpp)
 
 # Engine include dirs
 include_directories(${SRC})
 include_directories(${SRC}/datatypes)
 
 add_definitions( -DGL_GLEXT_PROTOTYPES=1 )
-
 
 ################################ USER INCLUDES ################################
 
@@ -48,6 +48,7 @@ target_link_libraries(Bonsai ${OPENGL_LIBRARIES})
 target_link_libraries(Game ${OPENGL_LIBRARIES})
 target_link_libraries(Server ${OPENGL_LIBRARIES})
 target_link_libraries(test_m4 ${OPENGL_LIBRARIES})
+target_link_libraries(test_allocation ${OPENGL_LIBRARIES})
 
 
 add_custom_target(run /usr/bin/optirun ${BIN}/Bonsai
@@ -55,9 +56,15 @@ add_custom_target(run /usr/bin/optirun ${BIN}/Bonsai
                   COMMENT "Running Bonsai")
 
 add_custom_target(tests ${BIN}/test_m4
-                  COMMENT "Running M4 Tests")
+                        ${BIN}/test_allocation
+                        COMMENT "Running M4 Tests")
 
-add_definitions( -DBONSAI_INTERNAL=1 )
+target_compile_definitions(Bonsai  PUBLIC BONSAI_INTERNAL=1)
+target_compile_definitions(Server  PUBLIC BONSAI_INTERNAL=1)
+target_compile_definitions(Game    PUBLIC BONSAI_INTERNAL=1)
+target_compile_definitions(test_m4 PUBLIC BONSAI_INTERNAL=1)
+target_compile_definitions(test_allocation PUBLIC BONSAI_INTERNAL=1)
+
 
 
 #

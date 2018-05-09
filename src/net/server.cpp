@@ -5,6 +5,9 @@
 
 #include <bonsai_types.h>
 #include <unix_platform.cpp>
+#include <texture.cpp>
+#include <shader.cpp>
+#include <debug.cpp>
 
 inline void
 RejectIncomingConnnections(socket_t *ListeningSocket)

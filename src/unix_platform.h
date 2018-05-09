@@ -66,3 +66,12 @@ WakeThread( semaphore *Semaphore )
   return;
 }
 
+__inline__ u64
+GetCycleCount()
+{
+  unsigned hi, lo;
+  __asm__ __volatile__ ("rdtsc" : "=a"(lo), "=d"(hi));
+  u64 Result = ( (u64)lo)|( ((u64)hi)<<32 );
+  return Result;
+}
+

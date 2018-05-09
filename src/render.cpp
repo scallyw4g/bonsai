@@ -72,95 +72,6 @@ RenderQuad()
 
 
 
-
-// TODO(Jesse): Why are these allocated on the heap?  Seems unnecessary..
-texture *
-GenTexture(v2i Dim, memory_arena *Mem)
-{
-  texture *Texture = PUSH_STRUCT_CHECKED(texture, Mem, 1);
-  Texture->Dim = Dim;
-
-  glGenTextures(1, &Texture->ID);
-  Assert(Texture->ID);
-
-  glBindTexture(GL_TEXTURE_2D, Texture->ID);
-
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-  /* glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE); */
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
-
-  return Texture;
-}
-
-texture *
-MakeTexture_RGBA(v2i Dim, const void* Data, memory_arena *Mem)
-{
-  texture *Texture = GenTexture(Dim, Mem);
-
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F,
-      Texture->Dim.x, Texture->Dim.y, 0,  GL_RGBA, GL_FLOAT, Data);
-
-  glBindTexture(GL_TEXTURE_2D, 0);
-
-  return Texture;
-}
-
-texture *
-MakeTexture_SingleChannel(v2i Dim, memory_arena *Mem)
-{
-  texture *Texture = GenTexture(Dim, Mem);
-
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F,
-      Texture->Dim.x, Texture->Dim.y, 0,  GL_RED, GL_FLOAT, 0);
-
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-  glBindTexture(GL_TEXTURE_2D, 0);
-
-  return Texture;
-}
-
-texture *
-MakeTexture_RGB(v2i Dim, const v3* Data, memory_arena *Mem)
-{
-  texture *Texture = GenTexture(Dim, Mem);
-
-  // TODO(Jesse): 32F is only necessary for reprojection of Position for
-  // calculating AO.  Consider passing this in when creating a Texture?
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F,
-      Texture->Dim.x, Texture->Dim.y, 0,  GL_RGB, GL_FLOAT, Data);
-
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-  glBindTexture(GL_TEXTURE_2D, 0);
-
-  return Texture;
-}
-
-texture *
-MakeDepthTexture(v2i Dim, memory_arena *Mem)
-{
-  texture *Texture = GenTexture(Dim, Mem);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F,
-    Texture->Dim.x, Texture->Dim.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
-
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-
-  r32 BorderColors[4] = {1};
-  glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, &BorderColors[0]);
-
-  glBindTexture(GL_TEXTURE_2D, 0);
-
-  return Texture;
-}
-
 void
 InitSsaoKernel(v3 *Kernel, s32 Count, random_series *Entropy)
 {
@@ -205,70 +116,6 @@ AllocateAndInitSsaoNoise(ao_render_group *AoGroup, memory_arena *GraphicsMemory)
   return SsaoNoiseTexture;
 }
 
-
-s32
-GetShaderUniform(shader *Shader, const char *Name)
-{
-  s32 Result = glGetUniformLocation(Shader->ID, Name);
-  if (Result == INVALID_SHADER_UNIFORM)
-  {
-    Warn("Couldn't retreive %s shader uniform - was it optimized out?", Name);
-  }
-
-  return Result;
-}
-
-shader_uniform *
-PushShaderUniform( memory_arena *Mem, const char *Name)
-{
-  shader_uniform *Uniform = PUSH_STRUCT_CHECKED(shader_uniform, Mem, 1);
-  Uniform->Name = Name;
-  return Uniform;
-}
-
-/*
- * Unfortunately the c pre-processor makes us pass in the type and the name
- * we're going to access it with.
- */
-#define BasicTypeUniformAllocators(type, TypeName)                             \
-  shader_uniform *                                                             \
-  PushShaderUniform( memory_arena *Mem, const char *Name, type *Value)         \
-  {                                                                            \
-    shader_uniform *Uniform = PushShaderUniform(Mem, Name);                    \
-    Uniform->TypeName = Value;                                                 \
-    Uniform->Type = ShaderUniform_##TypeName;                                  \
-    return Uniform;                                                            \
-  }                                                                            \
-  shader_uniform *                                                             \
-  GetUniform(memory_arena *Mem, shader *Shader, type *Value, const char *Name) \
-  {                                                                            \
-    shader_uniform *Uniform = PushShaderUniform(Mem, Name, Value);             \
-    Uniform->ID = GetShaderUniform(Shader, Name);                              \
-    return Uniform;                                                            \
-  }
-
-BasicTypeUniformAllocators(camera, Camera)
-BasicTypeUniformAllocators(texture, Texture)
-BasicTypeUniformAllocators(light, Light)
-BasicTypeUniformAllocators(m4, M4)
-BasicTypeUniformAllocators(v3, V3)
-/* BasicTypeUniformAllocators(u32, U32) */ // Not sure this is useful
-BasicTypeUniformAllocators(s32, S32)
-BasicTypeUniformAllocators(r32, R32)
-
-shader
-MakeSimpleTextureShader(texture *Texture, memory_arena *GraphicsMemory)
-{
-  shader SimpleTextureShader = LoadShaders( "Passthrough.vertexshader",
-                                            "SimpleTexture.fragmentshader",
-                                            GraphicsMemory );
-
-  SimpleTextureShader.FirstUniform = GetUniform(GraphicsMemory, &SimpleTextureShader, Texture, "Texture");
-
-  AssertNoGlErrors;
-
-  return SimpleTextureShader;
-}
 
 shader
 MakeLightingShader(memory_arena *GraphicsMemory,
@@ -366,24 +213,6 @@ CreateGbuffer(memory_arena *Memory)
 }
 
 void
-FramebufferDepthTexture(g_buffer_render_group *Group, texture *Tex)
-{
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-      GL_TEXTURE_2D, Tex->ID, 0);
-  return;
-}
-
-void
-FramebufferTexture(framebuffer *FBO, texture *Tex)
-{
-  u32 Attachment = FBO->Attachments++;
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + Attachment,
-      GL_TEXTURE_2D, Tex->ID, 0);
-
-  return;
-}
-
-void
 SetDrawBuffers(framebuffer *FBO)
 {
   // TODO(Jesse): Transient storage?
@@ -397,17 +226,6 @@ SetDrawBuffers(framebuffer *FBO)
   }
 
   glDrawBuffers(FBO->Attachments, Attachments);
-}
-
-b32
-CheckAndClearFramebuffer()
-{
-  b32 Result = (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
-
-  glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-  return Result;
 }
 
 shader
@@ -662,76 +480,6 @@ GetShadowMapMVP(camera *Camera, light *GlobalLight)
   m4 depthViewMatrix =  LookAt(GlobalLight->Position, Target, Up);
 
   return depthProjectionMatrix * depthViewMatrix;
-}
-
-void
-BindShaderUniforms(shader *Shader)
-{
-  TIMED_FUNCTION();
-
-  shader_uniform *Uniform = Shader->FirstUniform;
-
-  u32 TextureUnit = 0;
-
-  while (Uniform)
-  {
-    switch(Uniform->Type)
-    {
-      case ShaderUniform_Texture:
-      {
-        Assert(TextureUnit < 8); // TODO(Jesse): Query max gpu textures?
-
-        glActiveTexture(GL_TEXTURE0 + TextureUnit);
-        glUniform1i(Uniform->ID, TextureUnit);
-        glBindTexture(GL_TEXTURE_2D, Uniform->Texture->ID);
-
-        TextureUnit++;
-      } break;
-
-      case ShaderUniform_U32:
-      {
-        glUniform1ui(Uniform->ID, *Uniform->U32);
-      } break;
-
-      case ShaderUniform_R32:
-      {
-        glUniform1f(Uniform->ID, *Uniform->R32);
-      } break;
-
-      case ShaderUniform_S32:
-      {
-        glUniform1i(Uniform->ID, *Uniform->S32);
-      } break;
-
-      case ShaderUniform_M4:
-      {
-        glUniformMatrix4fv(Uniform->ID, 1, GL_FALSE, (r32*)Uniform->M4);
-      } break;
-
-      case ShaderUniform_V3:
-      {
-        glUniform3fv(Uniform->ID, 1, (r32*)Uniform->V3);
-      } break;
-
-      case ShaderUniform_Light:
-      {
-        glUniform3fv(Uniform->ID, 1, &Uniform->Light->Position.E[0]);
-      } break;
-
-      case ShaderUniform_Camera:
-      {
-        v3 ViewPosition = GetRenderP(Uniform->Camera->P, Uniform->Camera);
-        glUniform3fv(Uniform->ID, 1, &ViewPosition.E[0]);
-      }break;;
-
-      InvalidDefaultCase;
-    }
-
-    Uniform = Uniform->Next;
-    AssertNoGlErrors;
-  }
-
-  AssertNoGlErrors;
 }
 
 void

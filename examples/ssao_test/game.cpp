@@ -158,12 +158,15 @@ GameInit( platform *Plat, memory_arena *GameMemory, os *Os)
     GameState->Players[EntityIndex] = GetFreeEntity(GameState);
   }
 
+  GameState->ServerState = PUSH_STRUCT_CHECKED(server_state, GameMemory, 1);
   for (u32 ClientIndex = 0;
       ClientIndex < MAX_CLIENTS;
       ++ClientIndex)
   {
-    GameState->ServerState.Clients[ClientIndex].Id = -1;
+    GameState->ServerState->Clients[ClientIndex].Id = -1;
   }
+
+
 
   return GameState;
 }
@@ -223,12 +226,12 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
   if (Player)
   {
-    NetworkUpdate(Network, &GameState->ServerState, &Player->P);
+    NetworkUpdate(Network, GameState->ServerState, &Player->P);
     DoGameplay(Plat, GameState, Hotkeys, Player);
   }
   else
   {
-    if ( AwaitHandshake(Network, &GameState->ServerState) )
+    if ( AwaitHandshake(Network, GameState->ServerState) )
     {
       Player = GetPlayer(GameState->Players, Network->Client);
       SpawnPlayer(GameState, Player,  Canonical_Position(V3(0,8,2), World_Position(0,0,0))  );
@@ -239,7 +242,7 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
       ClientIndex < MAX_CLIENTS;
       ++ClientIndex)
   {
-    client_state *Client = &GameState->ServerState.Clients[ClientIndex];
+    client_state *Client = &GameState->ServerState->Clients[ClientIndex];
     if ( Client->Id > -1
          && Network->Client
          && Network->Client->Id != ClientIndex)

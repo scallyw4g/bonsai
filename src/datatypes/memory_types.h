@@ -1,8 +1,5 @@
 #include <sys/mman.h>
 
-#define registered_memory_arena(Arena) \
-  memory_arena *Arena = PlatformAllocateArena(); \
-  DEBUG_REGISTER_ARENA(Arena);
 
 inline u64
 Kilobytes(u32 Bytes)
@@ -45,9 +42,9 @@ Clear(T *Struct)
 
 struct memory_arena
 {
-  u8* FirstFreeByte;
-  umm Remaining;
-  umm TotalSize;
+  u8* Start;
+  u8* At;
+  u8* End;
   umm NextBlockSize;
 
   memory_arena *Prev;
@@ -62,12 +59,24 @@ struct memory_arena
 #endif
 };
 
+#if BONSAI_INTERNAL
+
+void*
+PushStructChecked_(memory_arena *Arena, umm Size, const char* StructType, s32 Line, const char* File);
+
 #define PUSH_STRUCT_CHECKED(Type, Arena, Number) \
   (Type*)PushStructChecked_( Arena, sizeof(Type)*Number, #Type, __LINE__, __FILE__ );
 
+#else
+
+#define PUSH_STRUCT_CHECKED(Type, Arena, Number) \
+  (Type*)PushStruct( Arena, sizeof(Type)*Number );
+
+#endif
+
 #if BONSAI_INTERNAL
-#define DEBUG_REGISTER_ARENA(Arena) \
-  DebugRegisterArena(#Arena, Arena)
+#define DEBUG_REGISTER_ARENA(Arena, DebugState) \
+  DebugRegisterArena(#Arena, Arena, DebugState)
 #else
 #define DEBUG_REGISTER_ARENA(...)
 #endif
@@ -84,11 +93,11 @@ struct memory_arena
 inline void
 SubArena_( memory_arena *Src, memory_arena *Dest, umm Size)
 {
-  Dest->FirstFreeByte = (u8*)PushSize(Src, Size);
+  Dest->At = (u8*)PushSize(Src, Size);
   Dest->Remaining = Size;
   Dest->TotalSize = Size;
 
-  Assert(Dest->FirstFreeByte);
+  Assert(Dest->At);
 
   return;
 }
@@ -99,8 +108,8 @@ AllocateAndInitializeArena_(memory_arena *Arena, umm Size)
   Arena->Remaining = Size;
   Arena->TotalSize = Size;
 
-  Arena->FirstFreeByte = Allocate(Arena->Remaining);
-  Assert(Arena->FirstFreeByte);
+  Arena->At = Allocate(Arena->Remaining);
+  Assert(Arena->At);
   return;
 }
 #endif
@@ -115,15 +124,123 @@ PlatformProtectPage(u8* Mem);
 u64
 PlatformGetPageSize();
 
+
+void
+ReallocateArena(memory_arena *Arena, umm MinSize)
+{
+  u64 AllocationSize = Arena->NextBlockSize;
+  if (MinSize > AllocationSize)
+    AllocationSize = MinSize;
+
+  memory_arena *Allocated = PlatformAllocateArena(AllocationSize);
+
+#if MEMPROTECT
+  Allocated->MemProtect = Arena->MemProtect;
+#endif
+
+  // TODO(Jesse): Can these copies be avoided with some more clever pointer-swapping?
+  memory_arena PrevArena = *Arena;
+  memory_arena NewArena = *Allocated;
+
+  // Swap
+  *Allocated = PrevArena;
+  *Arena = NewArena;
+
+  // And point back
+  Arena->Prev = Allocated;
+
+  Assert( (Arena->End - Arena->At) >= MinSize);
+  return;
+}
+
+b32
+OnPageBoundary(memory_arena *Arena, umm PageSize)
+{
+  b32 Result = (umm)Arena->At % PageSize == 0;
+  return Result;
+}
+
+inline void
+SetToPageBoundary(memory_arena *Arena)
+{
+  u64 PageSize = PlatformGetPageSize();
+  umm At = (umm)Arena->At;
+  umm ToNextPage = PageSize - (At % PageSize);
+  Assert( (At+ToNextPage) % PageSize == 0);
+
+  if (ToNextPage != PageSize) // We're on a page boundary
+  {
+    Arena->At += ToNextPage;
+    Assert(Arena->At <= Arena->End);
+    Assert((umm)Arena->At % PageSize == 0);
+  }
+
+  return;
+}
+
+void
+AdvanceToBytesBeforeNextPage(umm Bytes, memory_arena *Arena)
+{
+  umm PageSize = PlatformGetPageSize();
+
+  umm At = (umm)Arena->At;
+  umm AtInPage = (At % PageSize);
+  umm AtToPageBoundary = PageSize - AtInPage;
+
+  if (AtToPageBoundary < Bytes)
+  {
+    SetToPageBoundary(Arena);
+    AdvanceToBytesBeforeNextPage(Bytes, Arena);
+  }
+  else
+  {
+    umm EndOfBytes = (umm)Arena->At + Bytes;
+    umm EndToNextPage = PageSize - (EndOfBytes % PageSize);
+    Arena->At += EndToNextPage;
+
+    Assert( (EndOfBytes+EndToNextPage) % PageSize == 0);
+    Assert( ((umm)Arena->At + Bytes) % PageSize == 0);
+  }
+
+#if 0
+  Assert(Bytes < PageSize); // TODO(Jesse): Prove this is unnecessary
+
+  umm EndOfBytes = (umm)Arena->At + Bytes;
+  umm StartingPage = (umm)Arena->At - ((umm)Arena->At % PageSize);
+  umm StartingPageToEndOfBytes = EndOfBytes - StartingPage;
+
+  umm EndToNextPage = PageSize - StartingPageToEndOfBytes;
+  Assert( (EndOfBytes+EndToNextPage) % PageSize == 0);
+
+  Arena->At += EndToNextPage;
+  Assert(Arena->At <= Arena->End);
+#endif
+
+  return;
+}
+
+umm
+TotalSize(memory_arena *Arena)
+{
+  Assert(Arena->At <= Arena->End);
+  umm Result = Arena->End - Arena->Start;
+  return Result;
+}
+
+umm
+Remaining(memory_arena *Arena)
+{
+  Assert(Arena->At <= Arena->End);
+  umm Result = Arena->End - Arena->At;
+  return Result;
+}
+
 u8*
 PushSize(memory_arena *Arena, umm SizeIn)
 {
-
-#if BONSAI_INTERNAL
-  ++Arena->Pushes;
-#endif
-
   umm RequestedSize = SizeIn;
+  Assert(Arena->At <= Arena->End);
+  Assert(Remaining(Arena) <= TotalSize(Arena));
 
 #if MEMPROTECT
   u64 PageSize = PlatformGetPageSize();
@@ -131,81 +248,72 @@ PushSize(memory_arena *Arena, umm SizeIn)
   {
     u32 Pages = (SizeIn/PageSize) + 1;
     RequestedSize = (Pages*PageSize) + PageSize;
+    SetToPageBoundary(Arena);
     Assert( RequestedSize % PageSize == 0 );
-    Assert( (umm)Arena->FirstFreeByte % PageSize == 0);
+    Assert( (umm)Arena->At % PageSize == 0);
   }
 #endif
+  Assert(Arena->At <= Arena->End);
 
-  b32 ArenaIsFull = RequestedSize > Arena->Remaining;
+  umm RemainingInArena = Remaining(Arena);
+  b32 ArenaIsFull = RequestedSize > RemainingInArena;
   if (ArenaIsFull) // Reallocate the arena
   {
-    u64 AllocationSize = Arena->NextBlockSize;
-    if (RequestedSize > AllocationSize)
-      AllocationSize = RequestedSize;
-
-    memory_arena *Allocated = PlatformAllocateArena(AllocationSize);
-
-#if MEMPROTECT
-    Allocated->MemProtect = Arena->MemProtect;
-#endif
-
-    // TODO(Jesse): Can these copies be avoided with some more clever pointer-swapping?
-    memory_arena PrevArena = *Arena;
-    memory_arena NewArena = *Allocated;
-
-    // Swap
-    *Allocated = PrevArena;
-    *Arena = NewArena;
-
-    // And point back
-    Arena->Prev = Allocated;
+    ReallocateArena(Arena, RequestedSize);
   }
 
-  u8* Result = Arena->FirstFreeByte;
+  u8* Result = Arena->At;
+  Assert(Arena->At <= Arena->End);
 
 #if MEMPROTECT_OVERFLOW
   if (Arena->MemProtect)
   {
-    umm EndOfStruct = (umm)Arena->FirstFreeByte + SizeIn;
+    umm EndOfStruct = (umm)Arena->At + SizeIn;
     umm EndToNextPage = PageSize - (EndOfStruct % PageSize);
     Assert( (EndOfStruct+EndToNextPage) % PageSize == 0);
 
-    Result = Arena->FirstFreeByte + EndToNextPage;
+    Result = Arena->At + EndToNextPage;
     u8* LastPage = Result + SizeIn;
     Assert( (u64)LastPage % PageSize == 0)
 
     mprotect(LastPage, PageSize, PROT_NONE);
   }
 #endif
+  Assert(Arena->At <= Arena->End);
 
 #if MEMPROTECT_UNDERFLOW
   if (Arena->MemProtect)
   {
-    umm At = (umm)Arena->FirstFreeByte;
+    umm At = (umm)Arena->At;
     umm NextPageOffset = PageSize - (At % PageSize);
     Assert( (At+NextPageOffset) % PageSize == 0)
 
-    u8* NextPage = Arena->FirstFreeByte + NextPageOffset;
+    u8* NextPage = Arena->At + NextPageOffset;
     mprotect(NextPage, PageSize, PROT_NONE);
 
     Result = NextPage + PageSize;
   }
 #endif
 
-  Arena->FirstFreeByte += RequestedSize;
-  Arena->Remaining -= RequestedSize;
-  *Arena->FirstFreeByte = 0;
+  Assert(Arena->At <= Arena->End);
+  Arena->At += RequestedSize;
+  Assert(Arena->At <= Arena->End);
 
 #if MEMPROTECT
+  ++Arena->Pushes;
+
   if (Arena->MemProtect)
   {
     Assert( ((umm)Result+SizeIn) % PageSize == 0);
-    Assert( (umm)Arena->FirstFreeByte % PageSize == 0);
+    Assert( (umm)Arena->At % PageSize == 0);
   }
 #endif
 
+  Assert(Arena->At <= Arena->End);
+
   return Result;
 }
+
 void*
 PushStruct(memory_arena *Memory, umm sizeofStruct)
 {
@@ -213,29 +321,12 @@ PushStruct(memory_arena *Memory, umm sizeofStruct)
   return Result;
 }
 
-inline void*
-PushStructChecked_(memory_arena *Arena, umm Size, const char* StructType, s32 Line, const char* File)
+struct push_metadata
 {
-  void* Result = PushStruct( Arena, Size );
-
-  if (!Result)
-  {
-    Error("Pushing %s on Line: %d, in file %s", StructType, Line, File);
-    Assert(False);
-    return False;
-  }
-
-  return Result;
-}
-
-inline void
-Rewind(memory_arena *Memory)
-{
-  Memory->FirstFreeByte = Memory->FirstFreeByte - (Memory->TotalSize - Memory->Remaining);
-  Memory->Remaining = Memory->TotalSize;
-
-  return;
-}
+  const char* StructType;
+  memory_arena *Arena;
+  umm Size;
+};
 
 inline void
 MemCopy(u8 *Src, u8 *Dest, umm Size)
@@ -248,20 +339,5 @@ MemCopy(u8 *Src, u8 *Dest, umm Size)
      Dest[BytesCopied] = Src[BytesCopied];
   }
 
-}
-
-inline void
-CopyArena(memory_arena *Src, memory_arena *Dest)
-{
-  Rewind(Dest);
-  Assert(Dest->Remaining >= Src->TotalSize);
-
-  u8 *FirstSrcByte = Src->FirstFreeByte - (Src->TotalSize - Src->Remaining);
-
-  u8 *FirstDestByte = (u8*)PushSize(Dest, Src->TotalSize);
-
-  MemCopy( FirstSrcByte, FirstDestByte, Src->TotalSize);
-
-  return;
 }
 

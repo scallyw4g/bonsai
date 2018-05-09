@@ -2,6 +2,8 @@ void BreakHere() { return; }
 
 #include <assert_types.h>
 
+#include <basic_types.h>
+
 #ifdef _WIN32
 #include <win32_platform.h>
 #else
@@ -10,7 +12,6 @@ void BreakHere() { return; }
 
 #include <platform_constants.h>
 
-#include <basic_types.h>
 #include <memory_types.h>
 #include <vector_types.h>
 
