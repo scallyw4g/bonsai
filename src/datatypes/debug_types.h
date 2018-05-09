@@ -9,10 +9,12 @@ struct clip_rect
 struct layout
 {
   v2 At;
+
   r32 FontSize;
   r32 LineHeight;
   u32 Depth;
 
+  v2 Basis;
   clip_rect Clip;
 };
 
