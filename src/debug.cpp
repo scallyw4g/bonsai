@@ -1515,15 +1515,15 @@ DebugFrameEnd(platform *Plat, game_state *GameState, u64 FrameCycles)
 
     {
       // Main line
-      /* memory_arena_stats TotalStats = GetTotalMemoryArenaStats(); */
+      memory_arena_stats TotalStats = GetTotalMemoryArenaStats();
 
-      /* BufferThousands(TotalStats.Allocations, &Group, WHITE); */
-      /* AdvanceSpaces(1, &Layout); */
-      /* BufferText("Allocations", &Group, WHITE); */
+      BufferThousands(TotalStats.Allocations, &Group, WHITE);
+      AdvanceSpaces(1, &Layout);
+      BufferText("Allocations", &Group, WHITE);
 
-      /* BufferThousands(TotalStats.Pushes, &Group, WHITE); */
-      /* AdvanceSpaces(1, &Layout); */
-      /* BufferText("Pushes", &Group, WHITE); */
+      BufferThousands(TotalStats.Pushes, &Group, WHITE);
+      AdvanceSpaces(1, &Layout);
+      BufferText("Pushes", &Group, WHITE);
 
       u32 TotalDrawCalls = 0;
 
