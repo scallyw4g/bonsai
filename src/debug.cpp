@@ -38,7 +38,7 @@ DebugRegisterArena(const char *Name, memory_arena *Arena, debug_state *DebugStat
 }
 
 void
-WritePushMetadata(registered_memory_arena *RegArena, push_metadata Metadata)
+WritePushMetadata(push_metadata Metadata)
 {
   debug_state *DebugState = GetDebugState();
 
@@ -83,10 +83,9 @@ PushStructChecked_(memory_arena *Arena, umm Size, const char* StructType, s32 Li
 {
   void* Result = PushStruct( Arena, Size );
 
-#if BONSAI_INTERNAL
-  /* push_metadata Metadata = {StructType, Arena, Size}; */
-  /* registered_memory_arena *RegArena = GetRegisteredMemoryArena(Arena); */
-  /* WritePushMetadata(RegArena, Metadata); */
+#ifndef BONSAI_NO_PUSH_METADATA
+  push_metadata Metadata = {StructType, Arena, Size};
+  WritePushMetadata(Metadata);
 #endif
 
   if (!Result)

@@ -251,10 +251,6 @@ InitializeOpenGlExtensions(os *Os)
 b32
 PlatformInit(platform *Plat, memory_arena *Memory)
 {
-  Plat->GetHighPrecisionClock = GetHighPrecisionClock;
-  Plat->PushStruct = PushStruct;
-  Plat->PushStructChecked_ = PushStructChecked_;
-
   Plat->Memory = Memory;
 
   u32 LogicalCoreCount = GetLogicalCoreCount();
@@ -433,34 +429,31 @@ main(s32 NumArgs, char ** Args)
 
   platform Plat = {};
 
+  os Os = {};
+  b32 WindowSuccess = OpenAndInitializeWindow(&Os, &Plat);
+  if (!WindowSuccess) { Error("Initializing Window :( "); return False; }
+  Assert(Os.Window);
+  InitializeOpenGlExtensions(&Os);
+
+
   memory_arena *DebugMemory    = PlatformAllocateArena();
+  DEBUG_REGISTER_ARENA(DebugMemory   , &Plat.DebugState);
+  INIT_DEBUG_STATE(&Plat, DebugMemory);
+
   memory_arena *PlatMemory     = PlatformAllocateArena();
   memory_arena *GraphicsMemory = PlatformAllocateArena();
   memory_arena *GameMemory     = PlatformAllocateArena();
 
-  DEBUG_REGISTER_ARENA(DebugMemory   , &Plat.DebugState);
   DEBUG_REGISTER_ARENA(PlatMemory    , &Plat.DebugState);
   DEBUG_REGISTER_ARENA(GraphicsMemory, &Plat.DebugState);
   DEBUG_REGISTER_ARENA(GameMemory    , &Plat.DebugState);
+
+  PlatformInit(&Plat, PlatMemory);
 
 #if BONSAI_INTERNAL
   /* debug_recording_state *Debug_RecordingState = PUSH_STRUCT_CHECKED(debug_recording_state, GameMemory, 1); */
   /* AllocateAndInitializeArena(&Debug_RecordingState->RecordedMainMemory, Gigabytes(3)); */
 #endif
-
-
-  os Os = {};
-
-  b32 WindowSuccess = OpenAndInitializeWindow(&Os, &Plat);
-  if (!WindowSuccess) { Error("Initializing Window :( "); return False; }
-
-  Assert(Os.Window);
-
-
-  InitializeOpenGlExtensions(&Os);
-  INIT_DEBUG_STATE(&Plat, DebugMemory);
-
-  PlatformInit(&Plat, PlatMemory);
 
   hotkeys Hotkeys = {};
 
@@ -495,7 +488,7 @@ main(s32 NumArgs, char ** Args)
   u64 LastCycles = GetCycleCount();
 #endif
 
-  r64 LastMs = Plat.GetHighPrecisionClock();
+  r64 LastMs = GetHighPrecisionClock();
   while ( Os.ContinueRunning )
   {
     r64 CurrentMS = GetHighPrecisionClock();

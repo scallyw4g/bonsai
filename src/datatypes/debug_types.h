@@ -78,7 +78,7 @@ struct registered_memory_arena
 };
 
 #define REGISTERED_MEMORY_ARENA_COUNT 32
-#define ROOT_SCOPE_COUNT 128
+#define ROOT_SCOPE_COUNT 64
 #define META_TABLE_SIZE 1024
 struct debug_state
 {
@@ -93,7 +93,7 @@ struct debug_state
   u64 FrameCount;
   b32 Initialized;
   b32 Debug_RedrawEveryPush;
-  b32 DebugDoScopeProfiling;// = True;
+  b32 DebugDoScopeProfiling = True;
 
   debug_profile_scope FreeScopeSentinel;
   debug_profile_scope **WriteScope;
@@ -104,6 +104,7 @@ struct debug_state
   u64 NumScopes;
 
   push_metadata MetaTable[META_TABLE_SIZE];
+
   registered_memory_arena RegisteredMemoryArenas[REGISTERED_MEMORY_ARENA_COUNT];
 
 

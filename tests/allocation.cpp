@@ -1,3 +1,5 @@
+#define BONSAI_NO_PUSH_METADATA
+
 #include <bonsai_types.h>
 #include <unix_platform.cpp>
 
@@ -360,6 +362,7 @@ ArenaAllocation()
 s32
 main(s32 ArgCount, char **Args)
 {
+
 #if MEMPROTECT_OVERFLOW
   ArenaAllocation();
 

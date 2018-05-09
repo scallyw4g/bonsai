@@ -95,18 +95,17 @@ PlatformAllocateArena(umm RequestedBytes = Megabytes(1))
 
 #if MEMPROTECT_OVERFLOW
   AdvanceToBytesBeforeNextPage(sizeof(memory_arena), &TempArena);
-#endif
+  memory_arena *Result = (memory_arena*)PushSize(&TempArena, sizeof(memory_arena));
 
-#if MEMPROTECT_UNDERFLOW
-  NotImplemented;
-#endif
-
-  memory_arena *Result = PUSH_STRUCT_CHECKED(memory_arena, &TempArena, 1);
   *Result = TempArena;
 
   Assert((umm)Result->Start % PageSize == 0);
   Assert(OnPageBoundary(Result, PageSize));
   Assert(Remaining(Result) >= RequestedBytes);
+#else
+  NotImplemented
+#endif
+
 
   return Result;
 }

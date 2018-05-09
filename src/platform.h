@@ -131,10 +131,6 @@ struct platform
 {
   work_queue Queue;
   thread_startup_params *Threads;
-  r64 (*GetHighPrecisionClock)(void);
-  umm (*Allocate)(u8 Bytes);
-  void* (*PushStruct)(memory_arena *Memory, umm sizeofStruct );
-  void* (*PushStructChecked_)(memory_arena *Memory, umm sizeofStruct, const char* StructName, s32 Line, const char* File);
 
   graphics *Graphics;
   network_connection Network = { Socket_NonBlocking, SERVER_IP };
