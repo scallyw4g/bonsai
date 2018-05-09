@@ -4,6 +4,7 @@ Session.vim
 .exrc
 tags
 cscope.out
+core
 
 
 external
