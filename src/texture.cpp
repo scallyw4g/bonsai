@@ -98,14 +98,16 @@ LoadDDS(const char * FilePath)
   FILE *TextureFile = fopen(FilePath, "rb");
 
   if (!TextureFile){
-    Assert(!"Couldn't open shader - Shit!");
+    Error("Couldn't open shader - Shit!");
+    Assert(False);
     return Result;
   }
 
   char filecode[4];
   fread(filecode, 1, 4, TextureFile);
   if (strncmp(filecode, "DDS ", 4) != 0) {
-    Assert(!"Invalid File format opening DDS file");
+    Error("Invalid File format opening DDS file");
+    Assert(False);
     fclose(TextureFile);
     return Result;
   }
@@ -113,10 +115,10 @@ LoadDDS(const char * FilePath)
   u32 Header[124];
   fread(&Header, 124, 1, TextureFile);
 
-  u32 height      = Header[2];
-  u32 width       = Header[3];
+  s32 height      = (s32)Header[2];
+  s32 width       = (s32)Header[3];
   u32 linearSize  = Header[4];
-  u32 mipMapCount = Header[6];
+  s32 mipMapCount = (s32)Header[6];
   u32 fourCC      = Header[20];
 
   Result.Dim.x = (s32)width;
@@ -148,7 +150,7 @@ LoadDDS(const char * FilePath)
     return Result;
   }
 
-  unsigned int offset = 0;
+  s32 offset = 0;
 
   glGenTextures(1, &Result.ID);
 
@@ -156,10 +158,10 @@ LoadDDS(const char * FilePath)
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 
-  u32 blockSize = (format == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT) ? 8 : 16;
-  for (unsigned int level = 0; level < mipMapCount && (width || height); ++level)
+  s32 blockSize = (format == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT) ? 8 : 16;
+  for (s32 level = 0; level < mipMapCount && (width || height); ++level)
   {
-    unsigned int size = ((width+3)/4)*((height+3)/4)*blockSize;
+    s32 size = ((width+3)/4)*((height+3)/4)*blockSize;
     glCompressedTexImage2D(GL_TEXTURE_2D, level, format, width, height,
       0, size, buffer + offset);
 
@@ -267,7 +269,7 @@ MakeDepthTexture(v2i Dim, memory_arena *Mem)
 }
 
 void
-FramebufferDepthTexture(g_buffer_render_group *Group, texture *Tex)
+FramebufferDepthTexture(texture *Tex)
 {
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
       GL_TEXTURE_2D, Tex->ID, 0);

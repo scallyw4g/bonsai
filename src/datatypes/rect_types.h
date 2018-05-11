@@ -10,16 +10,16 @@ struct aabb
   v3 Center;
   v3 Radius;
 
-  aabb(v3 Center, v3 Radius)
+  aabb(v3 Center_in, v3 Radius_in)
   {
-    this->Center = Center;
-    this->Radius = Radius;
+    this->Center = Center_in;
+    this->Radius = Radius_in;
   }
 
-  aabb(world_position Center, world_position Radius)
+  aabb(world_position Center_in, world_position Radius_in)
   {
-    this->Center = V3(Center);
-    this->Radius = V3(Radius);
+    this->Center = V3(Center_in);
+    this->Radius = V3(Radius_in);
   }
 
   aabb()

@@ -165,7 +165,7 @@ struct untextured_3d_geometry_buffer
   v4 *Colors;
   v3 *Normals;
 
-  s32 Allocated;
+  u32 Allocated;
   s32 CurrentIndex;
 };
 
@@ -211,11 +211,17 @@ struct debug_text_render_group
   shader DebugFontTextureShader;
   shader DebugTextureShader;
 
-  u32 TextureUniformID;
+  s32 TextureUniformID;
 };
 
-global_variable m4 IdentityMatrix = {V4(1, 0, 0 ,0),
-                                     V4(0, 1, 0 ,0),
-                                     V4(0, 0, 1 ,0),
-                                     V4(0, 0, 0 ,0)};
+m4*
+IdentityMatrix()
+{
+  global_variable m4 Result = {V4(1, 0, 0 ,0),
+                                       V4(0, 1, 0 ,0),
+                                       V4(0, 0, 1 ,0),
+                                       V4(0, 0, 0 ,0)};
+
+  return &Result;
+}
 

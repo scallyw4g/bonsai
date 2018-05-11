@@ -540,7 +540,7 @@ main(s32 NumArgs, char ** Args)
                         &Hotkeys);
 
     TIMED_BLOCK("Frame End");
-    DEBUG_FRAME_END(&Plat, GameState, FrameCycles);
+    DEBUG_FRAME_END(&Plat, GameState);
 
     BonsaiSwapBuffers(&Os);
 

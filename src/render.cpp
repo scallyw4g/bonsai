@@ -202,8 +202,8 @@ CreateGbuffer(memory_arena *Memory)
 {
   g_buffer_render_group *gBuffer = PUSH_STRUCT_CHECKED(g_buffer_render_group, Memory, 1);
   gBuffer->FBO = GenFramebuffer();
-  gBuffer->ViewProjection = IdentityMatrix;
-  gBuffer->ShadowMVP = IdentityMatrix;
+  gBuffer->ViewProjection = *(IdentityMatrix());
+  gBuffer->ShadowMVP = *(IdentityMatrix());
 
   glGenBuffers(1, &gBuffer->vertexbuffer);
   glGenBuffers(1, &gBuffer->colorbuffer);
@@ -239,7 +239,7 @@ CreateGbufferShader(memory_arena *GraphicsMemory, m4 *ViewProjection, camera *Ca
   *Current = GetUniform(GraphicsMemory, &Shader, ViewProjection, "ViewProjection");
   Current = &(*Current)->Next;
 
-  *Current = GetUniform(GraphicsMemory, &Shader, &IdentityMatrix, "Model");
+  *Current = GetUniform(GraphicsMemory, &Shader, IdentityMatrix(), "Model");
   Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, &Camera->Frust.farClip, "FarClip");
@@ -329,7 +329,7 @@ InitGbufferRenderGroup( g_buffer_render_group *gBuffer, memory_arena *GraphicsMe
   SetDrawBuffers(&gBuffer->FBO);
 
   texture *DepthTexture    = MakeDepthTexture( ScreenDim, GraphicsMemory );
-  FramebufferDepthTexture(gBuffer, DepthTexture);
+  FramebufferDepthTexture(DepthTexture);
 
   b32 Result = CheckAndClearFramebuffer();
   return Result;
@@ -465,12 +465,11 @@ inline m4
 GetShadowMapMVP(camera *Camera, light *GlobalLight)
 {
   // Compute the MVP matrix from the light's point of view
-  v3 Translate = GetRenderP(Camera->Target, Camera);
+  /* v3 Translate = GetRenderP(Camera->Target, Camera); */
   m4 depthProjectionMatrix = Orthographic(SHADOW_MAP_X,
                                           SHADOW_MAP_Y,
                                           SHADOW_MAP_Z_MIN,
-                                          SHADOW_MAP_Z_MAX,
-                                          Translate);
+                                          SHADOW_MAP_Z_MAX);
 
   v3 Front = Normalize(GlobalLight->Position);
   v3 Right = Cross( Front, V3(0,1,0) );
@@ -1881,7 +1880,7 @@ Compute0thLod(world_chunk *WorldChunk, chunk_dimension WorldChunkDim)
 inline b32
 IsBoundaryVoxel(chunk_data *Chunk, voxel_position Offset, chunk_dimension Dim)
 {
-  s32 VoxelIndex = GetIndex(Offset, Chunk, Dim);
+  s32 VoxelIndex = GetIndex(Offset, Dim);
   voxel *V = &Chunk->Voxels[VoxelIndex];
 
   b32 Result = False;

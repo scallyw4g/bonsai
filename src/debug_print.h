@@ -49,7 +49,7 @@ Log(const char* fmt...)
       }
       else if (*fmt == 'b')
       {
-        b32 BoolVal = va_arg(args, int);
+        b32 BoolVal = (b32)va_arg(args, int);
         const char *Output = 0;
 
         if (BoolVal)
@@ -111,7 +111,7 @@ Print_Binary( unsigned int input )
 inline void
 Print_P( const char *C, const char* name)
 {
-  Log(" -- %s \n", C);
+  Log(" %s -- %s \n", name, C);
 }
 
 inline void

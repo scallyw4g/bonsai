@@ -251,7 +251,7 @@ LoadModel(memory_arena *WorldStorage, char const *filepath)
           {
             boundary_voxel *Voxel = &LocalVoxelCache[VoxelCacheIndex];
             Voxel->Offset -= Min;
-            s32 Index = GetIndex(Voxel->Offset, Result.Chunk, Result.Dim);
+            s32 Index = GetIndex(Voxel->Offset, Result.Dim);
             Result.Chunk->Voxels[Index] = Voxel->V;
           }
 

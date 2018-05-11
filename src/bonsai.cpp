@@ -75,7 +75,7 @@ InitChunkPerlin(perlin_noise *Noise, world_chunk *WorldChunk, v3 WorldChunkDim, 
     {
       for ( s32 x = 0; x < Dim.x; ++ x)
       {
-        s32 i = GetIndex(Voxel_Position(x,y,z), chunk, Dim);
+        s32 i = GetIndex(Voxel_Position(x,y,z), Dim);
         chunk->Voxels[i].Flags = Voxel_Uninitialzied;
 
         Assert( NotSet(&chunk->Voxels[i], Voxel_Filled) );

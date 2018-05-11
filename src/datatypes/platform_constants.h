@@ -30,12 +30,12 @@
 
 // Wrapper so assertions give us file/line numbers
 #define AssertNoGlErrors {            \
-  int glErrorNo = glGetError();       \
+  u32 glErrorNo = glGetError();       \
   DumpGlErrorEnum(glErrorNo);         \
   Assert(glErrorNo == GL_NO_ERROR); }
 
 #define ArrayCount(a) (sizeof(a)/sizeof(a[0]))
-#define InvalidDefaultCase default: {Assert(!"Invalid Default Case");} break
+#define InvalidDefaultCase default: {Error("InvalidDefaultCase"); Assert(False);} break
 
 #define LOCAL_PERSIST static
 
@@ -53,15 +53,16 @@
 #endif
 
 
+#define global_variable static
+#define debug_global static
+
+
 /*
  *  MSVC
  */
 #ifdef _MSC_VER
 
-#define __FUNCTION_NAME__ __FUNCTION__
-
-#define global_variable static
-#define debug_global static
+#define BONSAI_FUNCTION_NAME __FUNCTION__
 
 #define VariadicOutputDebugString(FormatString, ...) {    \
     char Buffer[1024] = {};                               \
@@ -95,11 +96,7 @@
  */
 #else
 
-#define __FUNCTION_NAME__ __func__
-
-// Hush up gcc about unreferenced globals
-#define global_variable static __attribute__((unused))
-#define debug_global static __attribute__((unused))
+#define BONSAI_FUNCTION_NAME __func__
 
 #define Info(...)  printf("   Info - ");  printf(__VA_ARGS__); printf("\n")
 #define Debug(...) printf(__VA_ARGS__);   printf("\n")

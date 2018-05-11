@@ -92,7 +92,7 @@ InitializeVoxels(perlin_noise *Noise,  world_chunk *Chunk)
         {
           if (z==0)
           {
-            s32 i = GetIndex(Voxel_Position(x,y,z), Chunk->Data, Dim);
+            s32 i = GetIndex(Voxel_Position(x,y,z), Dim);
             voxel *Vox = &Chunk->Data->Voxels[i];
             SetFlag(Vox, Voxel_Filled);
             Vox->Color = GRASS_GREEN;

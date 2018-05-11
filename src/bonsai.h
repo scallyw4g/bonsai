@@ -122,7 +122,7 @@ struct boundary_voxel
   voxel V;
   voxel_position Offset;
 
-  boundary_voxel(s32 x, s32 y, s32 z, s32 w)
+  boundary_voxel(s32 x, s32 y, s32 z, u8 w)
   {
     this->Offset.x = x;
     this->Offset.y = y;
@@ -133,10 +133,10 @@ struct boundary_voxel
     this->V.Flags = Voxel_Uninitialzied;
   }
 
-  boundary_voxel(voxel *V, voxel_position Offset)
+  boundary_voxel(voxel *V_in, voxel_position Offset_in)
   {
-    this->V = *V;
-    this->Offset = Offset;
+    this->V = *V_in;
+    this->Offset = Offset_in;
   }
 };
 
@@ -165,10 +165,10 @@ struct plane
   v3 Normal;
   float d;
 
-  plane( v3 P, v3 Normal )
+  plane( v3 P_in, v3 Normal_in )
   {
-    this->P = P;
-    this->Normal = Normal;
+    this->P = P_in;
+    this->Normal = Normal_in;
 
     this->d = -1.0f * (Normal.x*P.x + Normal.y*P.y + Normal.z*P.z);
 
@@ -217,9 +217,9 @@ struct random_series
 {
   u64 Seed;
 
-  random_series(u64 Seed = DEFAULT_ENTROPY_SEED)
+  random_series(u64 Seed_in = DEFAULT_ENTROPY_SEED)
   {
-    this->Seed = Seed;
+    this->Seed = Seed_in;
   }
 };
 
@@ -321,17 +321,17 @@ struct frame_event
 
   frame_event *Next;
 
-  frame_event(frame_event_type Type)
+  frame_event(frame_event_type Type_in)
   {
-    this->Type = Type;
+    this->Type = Type_in;
     this->Entity = 0;
     this->Next = 0;
   }
 
-  frame_event(entity *Entity, frame_event_type Type)
+  frame_event(entity *Entity_in, frame_event_type Type_in)
   {
-    this->Type = Type;
-    this->Entity = Entity;
+    this->Type = Type_in;
+    this->Entity = Entity_in;
     this->Next = 0;
   }
 };
@@ -602,7 +602,8 @@ RandomU32(random_series *Entropy)
   // Values from Knuth
   u64 A = 6364136223846793005;
   u64 B = 1442695040888963407;
-  u64 Mod = (1L << 63);
+  u64 One = 1;
+  u64 Mod = (One << 63);
 
   Entropy->Seed = ((A * Entropy->Seed) + B) % Mod;
 
@@ -791,9 +792,9 @@ GetWorldChunkHash(world_position P)
   TIMED_FUNCTION();
   // TODO(Jesse): Better hash function!
   u32 i =
-    (P.x) +
-    (P.y*WORLD_CHUNK_DIM.x) +
-    (P.z*WORLD_CHUNK_DIM.x*WORLD_CHUNK_DIM.y);
+    (u32)((P.x) +
+          (P.y*WORLD_CHUNK_DIM.x) +
+          (P.z*WORLD_CHUNK_DIM.x*WORLD_CHUNK_DIM.y));
 
   u32 HashIndex = i % WORLD_HASH_SIZE;
   Assert(HashIndex < WORLD_HASH_SIZE);
@@ -848,7 +849,7 @@ FreeWorldChunk(world *World, world_chunk *chunk)
 }
 
 inline s32
-GetIndex(voxel_position P, chunk_data *chunk, chunk_dimension Dim)
+GetIndex(voxel_position P, chunk_dimension Dim)
 {
   s32 i =
     (P.x) +
@@ -861,9 +862,9 @@ GetIndex(voxel_position P, chunk_data *chunk, chunk_dimension Dim)
 }
 
 inline s32
-GetIndex(v3 Offset, chunk_data *Chunk, chunk_dimension Dim)
+GetIndex(v3 Offset, chunk_dimension Dim)
 {
-  s32 Index = GetIndex( Voxel_Position(Offset), Chunk, Dim);
+  s32 Index = GetIndex( Voxel_Position(Offset), Dim);
   return Index;
 }
 
@@ -888,7 +889,12 @@ chunk_data*
 AllocateChunk(memory_arena *WorldStorage, chunk_dimension Dim)
 {
   chunk_data *Result = PUSH_STRUCT_CHECKED(chunk_data, WorldStorage, 1);;
-  Result->Voxels = PUSH_STRUCT_CHECKED(voxel, WorldStorage , Volume(Dim));
+
+  s32 Vol = Volume(Dim);
+  if (Vol)
+  {
+    Result->Voxels = PUSH_STRUCT_CHECKED(voxel, WorldStorage , Vol );
+  }
 
   // TODO(Jesse): Allocate this based on actual need?
   AllocateMesh(&Result->Mesh, 20000, WorldStorage);
@@ -940,22 +946,19 @@ AllocateWorldChunk(memory_arena *Storage, world *World, world_position WorldP)
   return Result;
 }
 
+#if DEBUG_OPTIMIZE_TRI_COUNT
 inline bool
 IsFacingPoint( v3 FaceToPoint, v3 FaceNormal )
 {
   bool Result = false;
 
-#if DEBUG_OPTIMIZE_TRI_COUNT
   if ( Dot(FaceToPoint, FaceNormal) > 0 )
   {
     Result = true;
   }
-#else
-  Result=true;
-#endif
-
   return Result;
 }
+#endif
 
 world_chunk*
 GetWorldChunk( world *World, world_position P )
@@ -983,7 +986,7 @@ GetWorldChunk( world *World, world_position P )
 inline b32
 IsFilled( chunk_data *chunk, voxel_position VoxelP, chunk_dimension Dim)
 {
-  int i = GetIndex(VoxelP, chunk, Dim);
+  int i = GetIndex(VoxelP, Dim);
 
   Assert(i > -1);
   Assert(i < Volume(Dim));
@@ -1040,7 +1043,7 @@ IsFilledInChunk( chunk_data *Chunk, voxel_position VoxelP, chunk_dimension Dim)
 
   if (Chunk && IsSet(Chunk, Chunk_Initialized) )
   {
-    s32 i = GetIndex(VoxelP, Chunk, Dim);
+    s32 i = GetIndex(VoxelP, Dim);
 
     Assert(i > -1);
     Assert(i < Volume(Dim));

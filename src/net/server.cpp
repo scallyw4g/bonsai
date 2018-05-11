@@ -30,7 +30,7 @@ RejectIncomingConnnections(socket_t *ListeningSocket)
 }
 
 inline void
-CheckForConnectingClient(socket_t *ListeningSocket, network_connection *ClientConnection, u32 ClientId)
+CheckForConnectingClient(socket_t *ListeningSocket, network_connection *ClientConnection, s32 ClientId)
 {
   Assert(ListeningSocket->Type == Socket_NonBlocking);
 
@@ -111,7 +111,7 @@ main(int ArgCount, char **Arguments)
   client_to_server_message InputMessage = {};
   server_to_client_message ServerState = {};
 
-  for (u32 ClientIndex = 0;
+  for (s32 ClientIndex = 0;
       ClientIndex < MAX_CLIENTS;
       ++ClientIndex)
   {
@@ -122,7 +122,7 @@ main(int ArgCount, char **Arguments)
 
   for(;;)
   {
-    for (u32 ClientIndex = 0;
+    for (s32 ClientIndex = 0;
         ClientIndex < MAX_CLIENTS;
         ++ClientIndex)
     {
@@ -146,6 +146,4 @@ main(int ArgCount, char **Arguments)
 
     RejectIncomingConnnections(&IncomingConnections.Socket);
   }
-
-  return 0;
 }

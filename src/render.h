@@ -6,7 +6,7 @@
   Draw_(VertexCount, __FUNCTION__);
 
 void
-Draw_(u64 N, const char * Caller)
+Draw_(u32 N, const char * Caller)
 {
   TIMED_FUNCTION();
   u64 Index = ((u64)Caller) % Global_DrawCallArrayLength;
@@ -29,27 +29,27 @@ Draw_(u64 N, const char * Caller)
   }
 
   DrawCall->Count++;
-  glDrawArrays(GL_TRIANGLES, 0, N);
+  glDrawArrays(GL_TRIANGLES, 0, (s32)N);
 }
 #else
 void
-Draw(u64 N)
+Draw(u32 N)
 {
-  glDrawArrays(GL_TRIANGLES, 0, N);
+  glDrawArrays(GL_TRIANGLES, 0, (s32)N);
 }
 #endif
 
 inline void
 SetViewport(v2 Dim)
 {
-  glViewport(0, 0, Dim.x, Dim.y);
+  glViewport(0, 0, (s32)Dim.x, (s32)Dim.y);
   return;
 }
 
 // TODO(Jesse): This only gets used when computing the shadow map, so I'm not
 // even sure if it works ATM
 inline m4
-Orthographic( r32 X, r32 Y, r32 Zmin, r32 Zmax, v3 Translate )
+Orthographic( r32 X, r32 Y, r32 Zmin, r32 Zmax)
 {
   r32 r = X;
   r32 l = -X;
@@ -196,7 +196,7 @@ BufferDataToCard(u32 BufferId, u32 Stride, u32 ByteCount, void *Data, u32 *Attri
   glEnableVertexAttribArray(*AttributeIndex);
   glBindBuffer(GL_ARRAY_BUFFER, BufferId);
   glBufferData(GL_ARRAY_BUFFER, ByteCount, Data, GL_STATIC_DRAW);
-  glVertexAttribPointer(*AttributeIndex, Stride, GL_FLOAT, GL_FALSE, 0, (void*)0);
+  glVertexAttribPointer(*AttributeIndex, (s32)Stride, GL_FLOAT, GL_FALSE, 0, (void*)0);
   *AttributeIndex += 1;
 
   return;

@@ -124,6 +124,13 @@ Max(r32 A, r32 B)
   return Result;
 }
 
+inline u32
+Max(u32 A, u32 B)
+{
+  u32 Result = A > B ? A : B;
+  return Result;
+}
+
 inline u64
 Max(u64 A, u64 B)
 {
@@ -204,7 +211,11 @@ Lerp(r32 t, canonical_position p1, canonical_position p2)
 
   canonical_position Result;
   Result.Offset = (1.0f-t)*p1.Offset + t*p2.Offset;
-  Result.WorldP = (1.0f-t)*p1.WorldP + t*p2.WorldP;
+
+  NotImplemented;
+  // This is buggy I believe.  We should be getting full double world position
+  // coordinates, doing a lerp on those, then recanonicalizing.
+  // Result.WorldP = (1.0f-t)*p1.WorldP + t*p2.WorldP;
 
   Result = Canonicalize(Result);
 
@@ -257,7 +268,8 @@ Area(v2 A)
   Assert(A.x > 0);
   Assert(A.y > 0);
 
-  s32 Result = A.x * A.y;
+  s32 Result = (s32)(A.x * A.y);
+  Assert(Result >= 0);
   return Result;
 }
 
@@ -283,10 +295,10 @@ Length( canonical_position P )
   return Result;
 }
 
-inline float
+inline r32
 Length( voxel_position Vec )
 {
-  float Result = sqrt(LengthSq(Vec));
+  r32 Result = (r32)sqrt(LengthSq(Vec));
   return Result;
 }
 

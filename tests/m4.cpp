@@ -10,10 +10,10 @@ s32
 main(s32 ArgCount, char **Args)
 {
   {
-    m4 M1 = IdentityMatrix;
-    m4 M2 = IdentityMatrix;
+    m4 *M1 = IdentityMatrix();
+    m4 *M2 = IdentityMatrix();
 
-    Assert( M1 * M2 == IdentityMatrix);
+    Assert( *M1 * *M2 == *(IdentityMatrix()));
   }
 
   return 0;

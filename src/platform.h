@@ -165,7 +165,7 @@ struct os
 };
 
 void
-DumpGlErrorEnum(int Error)
+DumpGlErrorEnum(u32 Error)
 {
   if ( Error != 0 )
   {

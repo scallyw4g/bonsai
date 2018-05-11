@@ -36,12 +36,12 @@ PrintSemValue( semaphore *Semaphore )
 #endif
 
 
-u64 InvalidSysconfReturn = ((u64)-1);
 
 u64
 PlatformGetPageSize()
 {
-  u64 PageSize = sysconf(_SC_PAGESIZE);
+  u64 InvalidSysconfReturn = ((u64)-1);
+  u64 PageSize = (u64)sysconf(_SC_PAGESIZE);
   Assert(PageSize != InvalidSysconfReturn);
   return PageSize;
 }
@@ -51,7 +51,7 @@ PlatformProtectPage(u8* Mem)
 {
   u64 PageSize = PlatformGetPageSize();
 
-  Assert((s64)Mem % PageSize == 0);
+  Assert((u64)Mem % PageSize == 0);
 
   mprotect(Mem, PageSize, PROT_NONE);
   u8* Result = Mem + PageSize;
@@ -73,11 +73,13 @@ PlatformAllocateArena(umm RequestedBytes = Megabytes(1))
     s32 Error = errno;
     if (Error == ENOMEM)
     {
-      Assert(!"Out of memory, or something..");
+      Error("Out of memory, or something..");
+      Assert(False);
     }
     else
     {
-      Assert(!"Unknown error allocating virtual memory!");
+      Error("Unknown error allocating virtual memory!");
+      Assert(False);
     }
   }
 
@@ -128,10 +130,10 @@ CreateSemaphore(void)
   return Result;
 }
 
-int
+s32
 GetLogicalCoreCount()
 {
-  int Result = sysconf(_SC_NPROCESSORS_ONLN);
+  s32 Result = (s32)sysconf(_SC_NPROCESSORS_ONLN);
   return Result;
 }
 
@@ -304,7 +306,7 @@ ProcessOsMessages(os *Os, platform *Plat)
 
       case KeyRelease:
       {
-        int KeySym = XLookupKeysym(&Event.xkey, 0);
+        u64 KeySym = XLookupKeysym(&Event.xkey, 0);
         switch (KeySym)
         {
 
@@ -338,7 +340,7 @@ ProcessOsMessages(os *Os, platform *Plat)
 
       case KeyPress:
       {
-        int KeySym = XLookupKeysym(&Event.xkey, 0);
+        u64 KeySym = XLookupKeysym(&Event.xkey, 0);
         switch (KeySym)
         {
 
@@ -424,12 +426,6 @@ BonsaiSwapBuffers(os *Os)
 }
 
 #endif // PLATFORM_GL_IMPLEMENTATIONS
-
-inline void
-SetMouseP(v2 P)
-{
-  return;
-}
 
 inline void
 ConnectToServer(network_connection *Connection)

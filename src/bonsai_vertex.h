@@ -48,7 +48,7 @@ RightFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
   return;
 }
 
-v3 RightFaceNormalData[] =
+global_variable v3 RightFaceNormalData[] =
 {
   {{1, 0, 0}},
   {{1, 0, 0}},
@@ -76,7 +76,7 @@ LeftFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
   return;
 }
 
-v3 LeftFaceNormalData[] =
+global_variable v3 LeftFaceNormalData[] =
 {
   {{-1, 0, 0}},
   {{-1, 0, 0}},
@@ -108,7 +108,7 @@ BackFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
   return;
 }
 
-v3 BackFaceNormalData[] =
+global_variable v3 BackFaceNormalData[] =
 {
   {{0,-1, 0}},
   {{0,-1, 0}},
@@ -136,7 +136,7 @@ FrontFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
   return;
 }
 
-v3 FrontFaceNormalData[] =
+global_variable v3 FrontFaceNormalData[] =
 {
   {{0, 1, 0}},
   {{0, 1, 0}},
@@ -168,7 +168,7 @@ TopFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
   return;
 }
 
-v3 TopFaceNormalData[] =
+global_variable v3 TopFaceNormalData[] =
 {
   {{0, 0, 1}},
   {{0, 0, 1}},
@@ -197,7 +197,7 @@ BottomFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
   return;
 }
 
-v3 BottomFaceNormalData[] =
+global_variable v3 BottomFaceNormalData[] =
 {
   {{0, 0, -1}},
   {{0, 0, -1}},

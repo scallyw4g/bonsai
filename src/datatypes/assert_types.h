@@ -10,14 +10,14 @@
 #define Assert(condition) \
   if (!(condition)) { Debug(" ! Failed - '%s' on Line: %d in File: %s", #condition, __LINE__, __FILE__); RuntimeBreak(); }
 
-#define InvalidCodePath() Assert(!"Invalid Code Path");
+#define InvalidCodePath() Error("Invalid Code Path"); Assert(False)
 #else
 #define Assert(...)
 #define InvalidCodePath(...)
 #endif
 
 #if BONSAI_INTERNAL
-#define NotImplemented Assert(!"Implement Meeeeee!!!")
+#define NotImplemented Error("Implement Me!"); Assert(False)
 #else
 #define NotImplemented Implement Meeeeee!!!
 #endif

@@ -43,11 +43,11 @@ operator*(m4 A, m4 B)
 {
   m4 Result;
 
-  for(u32 Row = 0; Row < 4; ++Row)
+  for(s32 Row = 0; Row < 4; ++Row)
   {
-    for(u32 Column = 0; Column < 4; ++Column)
+    for(s32 Column = 0; Column < 4; ++Column)
     {
-      for(u32 ResultIndex = 0; ResultIndex < 4; ++ResultIndex)
+      for(s32 ResultIndex = 0; ResultIndex < 4; ++ResultIndex)
       {
         Result[Row][Column] += A[ResultIndex][Column] * B[Row][ResultIndex];
       }
@@ -69,4 +69,3 @@ Translate( v3 v )
 
   return Result;
 }
-

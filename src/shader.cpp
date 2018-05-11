@@ -4,8 +4,6 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
-using namespace std;
-
 #include <string.h>
 
 
@@ -19,6 +17,7 @@ using namespace std;
 
 
 #define INVALID_SHADER_UNIFORM (-1)
+#define INVALID_SHADER (u32)(-1)
 
 char *
 ReadEntireFileIntoString(const char *Filepath, memory_arena *Memory)
@@ -29,10 +28,11 @@ char *FileContents = 0;
 if (File)
 {
   fseek(File, 0L, SEEK_END);
-  int FileSize = ftell(File);
+  umm FileSize = (umm)ftell(File);
 
   rewind(File);
-  FileContents = (char*)PushSize(Memory, FileSize + 1);
+  // TODO(Jesse): Transient storage
+  FileContents = (char*)PushSize(Memory, (FileSize+1));
   fread(FileContents, 1, FileSize, File);
 }
 else
@@ -43,34 +43,34 @@ else
 return FileContents;
 }
 
-s32
+u32
 CompileShader(const char *Header, const char *Code, u32 Type)
 {
-const int InfoLogLength = 0;
+  const int InfoLogLength = 0;
 
-u32 ShaderID = glCreateShader(Type);
+  u32 ShaderID = glCreateShader(Type);
 
-const char *Sources[2] = {Header, Code};
+  const char *Sources[2] = {Header, Code};
 
-// Compile
-glShaderSource(ShaderID, 2, Sources, NULL);
-glCompileShader(ShaderID);
+  // Compile
+  glShaderSource(ShaderID, 2, Sources, NULL);
+  glCompileShader(ShaderID);
 
-// Check Status
-s32 Result = GL_FALSE;
-glGetShaderiv(ShaderID, GL_COMPILE_STATUS, &Result);
-glGetShaderiv(ShaderID, GL_INFO_LOG_LENGTH, (s32*)&InfoLogLength);
-if ( InfoLogLength > 0 )
-{
-  char VertexShaderErrorMessage[InfoLogLength+1] = {};
-  glGetShaderInfoLog(ShaderID, InfoLogLength, NULL, VertexShaderErrorMessage);
-  Error("Shader : %s", VertexShaderErrorMessage);
-  return INVALID_SHADER_UNIFORM;
-}
-else
-{
-  return ShaderID;
-}
+  // Check Status
+  s32 Result = GL_FALSE;
+  glGetShaderiv(ShaderID, GL_COMPILE_STATUS, &Result);
+  glGetShaderiv(ShaderID, GL_INFO_LOG_LENGTH, (s32*)&InfoLogLength);
+  if ( InfoLogLength > 0 )
+  {
+    char VertexShaderErrorMessage[InfoLogLength+1] = {};
+    glGetShaderInfoLog(ShaderID, InfoLogLength, NULL, VertexShaderErrorMessage);
+    Error("Shader : %s", VertexShaderErrorMessage);
+    return INVALID_SHADER;
+  }
+  else
+  {
+    return ShaderID;
+  }
 }
 
 shader
@@ -94,8 +94,8 @@ s32 Result = GL_FALSE;
 int InfoLogLength;
 
 
-s32 VertexShaderID = CompileShader(HeaderCode, VertexShaderCode, GL_VERTEX_SHADER);
-s32 FragmentShaderID = CompileShader(HeaderCode, FragShaderCode, GL_FRAGMENT_SHADER);
+u32 VertexShaderID = CompileShader(HeaderCode, VertexShaderCode, GL_VERTEX_SHADER);
+u32 FragmentShaderID = CompileShader(HeaderCode, FragShaderCode, GL_FRAGMENT_SHADER);
 
 // Link the program
 u32 ProgramID = glCreateProgram();
@@ -109,7 +109,8 @@ glGetProgramiv(ProgramID, GL_LINK_STATUS, &Result);
 glGetProgramiv(ProgramID, GL_INFO_LOG_LENGTH, &InfoLogLength);
 if ( InfoLogLength > 0 )
 {
-  char ProgramErrorMessage[InfoLogLength+1];
+  // TODO(Jesse): Transient storage
+  char *ProgramErrorMessage = PUSH_STRUCT_CHECKED(char, Memory, InfoLogLength+1);
   glGetProgramInfoLog(ProgramID, InfoLogLength, NULL, ProgramErrorMessage);
   Error("%s", ProgramErrorMessage);
 }
@@ -222,7 +223,7 @@ BindShaderUniforms(shader *Shader)
         Assert(TextureUnit < 8); // TODO(Jesse): Query max gpu textures?
 
         glActiveTexture(GL_TEXTURE0 + TextureUnit);
-        glUniform1i(Uniform->ID, TextureUnit);
+        glUniform1i(Uniform->ID, (s32)TextureUnit);
         glBindTexture(GL_TEXTURE_2D, Uniform->Texture->ID);
 
         TextureUnit++;

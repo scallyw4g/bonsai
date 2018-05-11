@@ -39,10 +39,10 @@ struct socket_t
   s32 Id;
   socket_type Type;
 
-  socket_t(socket_type Type)
+  socket_t(socket_type Type_in)
   {
     Clear(this);
-    this->Type = Type;
+    this->Type = Type_in;
   }
 
   socket_t() {
@@ -53,10 +53,10 @@ struct socket_t
 inline socket_t
 CreateSocket(socket_type Type)
 {
-  u32 SocketType = SOCK_STREAM | (Type == Socket_Blocking ? 0:SOCK_NONBLOCK);
+  s32 SocketType = SOCK_STREAM | (Type == Socket_Blocking ? 0:SOCK_NONBLOCK);
 
   socket_t Socket = {Type};
-  Socket.Id = socket(AF_INET , SocketType, 0);
+  Socket.Id = socket(AF_INET, SocketType, 0);
 
   if (Socket.Id == -1)
   {
@@ -100,8 +100,6 @@ struct network_connection
 
 };
 
-global_variable socket_t NullSocket = {};
-
 enum socket_op_result
 {
   SocketOpResult_Noop,
@@ -138,7 +136,7 @@ Disconnect(network_connection *Connection)
   Assert(Connection->Socket.Id);
 
   close(Connection->Socket.Id);
-  Connection->Socket = NullSocket;
+  Clear(&Connection->Socket);
   Connection->State = ConnectionState_Disconnected;
 
   // Clients aren't required to have this pointer hooked up so we've got to
@@ -159,7 +157,7 @@ NetworkOp(network_connection *Connection, void *Message, u32 MessageSize, socket
 
   socket_op_result OpResult = SocketOpResult_Fail;
   s64 SocketReturnValue = 0;
-  s32 BytesAvailable = 0;
+  u64 BytesAvailable = 0;
 
   // We may have disconnected on a previous attempt to read/write this frame
   // therefore this check must be here
@@ -169,8 +167,8 @@ NetworkOp(network_connection *Connection, void *Message, u32 MessageSize, socket
     {
       case SocketOp_Read:
       {
-        u32 Flags = 0;
-        BytesAvailable = (s32)recv(Connection->Socket.Id, (void*)Message, MessageSize, MSG_PEEK);
+        s32 Flags = 0;
+        BytesAvailable = (u64)recv(Connection->Socket.Id, (void*)Message, MessageSize, MSG_PEEK);
 
         if (BytesAvailable >= MessageSize)
         {
@@ -181,7 +179,7 @@ NetworkOp(network_connection *Connection, void *Message, u32 MessageSize, socket
 
       case SocketOp_Write:
       {
-        u32 Flags = MSG_NOSIGNAL;
+        s32 Flags = MSG_NOSIGNAL;
         // FIXME(Jesse): This can fail if the underlying TCP implementations
         // internal buffer is unable to send MessageSize bytes.  In that case
         // the Assert below will fire.  This is insufficient as it will result

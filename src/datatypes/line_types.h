@@ -6,16 +6,16 @@ struct linei
 
   linei() {}
 
-  linei(voxel_position MinP, voxel_position MaxP)
+  linei(voxel_position MinP_in, voxel_position MaxP_in)
   {
-    this->MinP = MinP;
-    this->MaxP = MaxP;
+    this->MinP = MinP_in;
+    this->MaxP = MaxP_in;
   }
 
-  linei(v3 MinP, v3 MaxP)
+  linei(v3 MinP_in, v3 MaxP_in)
   {
-    this->MinP = Voxel_Position(MinP);
-    this->MaxP = Voxel_Position(MaxP);
+    this->MinP = Voxel_Position(MinP_in);
+    this->MaxP = Voxel_Position(MaxP_in);
   }
 
 };
@@ -27,16 +27,16 @@ struct line
 
   line() {}
 
-  line(v3 MinP, v3 MaxP)
+  line(v3 MinP_in, v3 MaxP_in)
   {
-    this->MinP = MinP;
-    this->MaxP = MaxP;
+    this->MinP = MinP_in;
+    this->MaxP = MaxP_in;
   }
 
-  line(voxel_position MinP, voxel_position MaxP)
+  line(voxel_position MinP_in, voxel_position MaxP_in)
   {
-    this->MinP = V3(MinP);
-    this->MaxP = V3(MaxP);
+    this->MinP = V3(MinP_in);
+    this->MaxP = V3(MaxP_in);
   }
 };
 

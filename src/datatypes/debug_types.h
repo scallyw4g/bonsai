@@ -22,7 +22,7 @@ struct ui_render_group
 {
   layout *Layout;
   debug_text_render_group *TextGroup;
-  v2 ViewportDim;
+  /* v2 ViewportDim; */
   v2 MouseP;
   struct input *Input;
 };
@@ -52,9 +52,9 @@ struct debug_profile_scope
 
 struct debug_scope_tree
 {
-  r32 FrameMs;
   u64 TotalCycles;
   debug_profile_scope *Root;
+  r32 FrameMs;
 };
 
 enum debug_ui_type
@@ -164,7 +164,7 @@ struct debug_recording_state
   hotkeys Inputs[DEBUG_RECORD_INPUT_SIZE];
 };
 
-debug_profile_scope NullDebugProfileScope = {};
+global_variable debug_profile_scope NullDebugProfileScope = {};
 
 debug_profile_scope * GetProfileScope(debug_state *State);
 
@@ -257,12 +257,12 @@ struct debug_timed_function
 
 #define INIT_DEBUG_STATE(PlatPtr, MemArena) InitDebugState(PlatPtr, MemArena)
 
-#define TIMED_FUNCTION() debug_timed_function FunctionTimer(__FUNCTION_NAME__)
+#define TIMED_FUNCTION() debug_timed_function FunctionTimer(BONSAI_FUNCTION_NAME)
 #define TIMED_BLOCK(BlockName) { debug_timed_function BlockTimer(BlockName)
 #define END_BLOCK(BlockName) }
 
 #define DEBUG_FRAME_RECORD(...) DoDebugFrameRecord(__VA_ARGS__)
-#define DEBUG_FRAME_END(Plat, GameState, Cycles) DebugFrameEnd(Plat, GameState, Cycles)
+#define DEBUG_FRAME_END(Plat, GameState) DebugFrameEnd(Plat, GameState)
 #define DEBUG_FRAME_BEGIN(Hotkeys, dt, Cycles) DebugFrameBegin(Hotkeys, dt, Cycles)
 
 #else

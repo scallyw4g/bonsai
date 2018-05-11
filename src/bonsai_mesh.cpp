@@ -9,7 +9,7 @@ RenderGBuffer(untextured_3d_geometry_buffer *Target, graphics *Graphics);
 inline void
 BufferVertsDirect(
     untextured_2d_geometry_buffer *Dest,
-    s32 NumVerts,
+    u32 NumVerts,
     v3 *Positions,
     v4 *Colors
   )
@@ -33,7 +33,7 @@ inline void
 BufferVertsDirect(
     untextured_3d_geometry_buffer *Dest,
 
-    s32 NumVerts,
+    u32 NumVerts,
 
     v3 *Positions,
     v3 *Normals,
@@ -59,7 +59,7 @@ inline void
 BufferVertsDirect(
     untextured_3d_geometry_buffer *Dest,
 
-    s32 NumVerts,
+    u32 NumVerts,
 
     v3 *VertsPositions,
     v3 *Normals,
@@ -265,7 +265,7 @@ BuildEntityMesh(chunk_data *chunk, chunk_dimension Dim)
 
         voxel_position P = Voxel_Position(x,y,z);
 
-        voxel *Voxel = &chunk->Voxels[GetIndex(P, chunk, Dim)];
+        voxel *Voxel = &chunk->Voxels[GetIndex(P, Dim)];
 
         v3 VP = V3(P);
         v3 Diameter = V3(1.0f);
@@ -351,7 +351,7 @@ BuildWorldChunkMesh(world *World, world_chunk *WorldChunk, chunk_dimension World
         if ( !IsFilledInWorld( World, WorldChunk, CurrentP ) )
           continue;
 
-        voxel *Voxel = &chunk->Voxels[GetIndex(CurrentP.Offset, chunk, WorldChunkDim)];
+        voxel *Voxel = &chunk->Voxels[GetIndex(CurrentP.Offset, WorldChunkDim)];
 
         v3 Diameter = V3(1.0f);
         v3 VertexData[FACE_VERT_COUNT];

@@ -1,10 +1,10 @@
 #include <sys/mman.h>
 
 
-inline u64
+inline u32
 Kilobytes(u32 Bytes)
 {
-  u64 Result = Bytes * 1024;
+  u32 Result = Bytes * 1024;
   return Result;
 }
 
@@ -57,6 +57,7 @@ struct memory_arena
 #endif
 
 #endif
+  u8 Pad[4];
 };
 
 #if BONSAI_INTERNAL
@@ -65,7 +66,7 @@ void*
 PushStructChecked_(memory_arena *Arena, umm Size, const char* StructType, s32 Line, const char* File);
 
 #define PUSH_STRUCT_CHECKED(Type, Arena, Number) \
-  (Type*)PushStructChecked_( Arena, sizeof(Type)*Number, #Type, __LINE__, __FILE__ );
+  (Type*)PushStructChecked_( Arena, sizeof(Type)*(umm)Number, #Type, __LINE__, __FILE__ );
 
 #else
 
@@ -149,7 +150,7 @@ ReallocateArena(memory_arena *Arena, umm MinSize)
   // And point back
   Arena->Prev = Allocated;
 
-  Assert( (Arena->End - Arena->At) >= MinSize);
+  Assert( (umm)(Arena->End - Arena->At) >= MinSize);
   return;
 }
 
@@ -223,7 +224,7 @@ umm
 TotalSize(memory_arena *Arena)
 {
   Assert(Arena->At <= Arena->End);
-  umm Result = Arena->End - Arena->Start;
+  umm Result = (umm)(Arena->End - Arena->Start);
   return Result;
 }
 
@@ -231,7 +232,7 @@ umm
 Remaining(memory_arena *Arena)
 {
   Assert(Arena->At <= Arena->End);
-  umm Result = Arena->End - Arena->At;
+  umm Result = (umm)(Arena->End - Arena->At);
   return Result;
 }
 
@@ -246,7 +247,7 @@ PushSize(memory_arena *Arena, umm SizeIn)
   u64 PageSize = PlatformGetPageSize();
   if (Arena->MemProtect)
   {
-    u32 Pages = (SizeIn/PageSize) + 1;
+    u32 Pages = (u32)((SizeIn/PageSize) + 1);
     RequestedSize = (Pages*PageSize) + PageSize;
     SetToPageBoundary(Arena);
     Assert( RequestedSize % PageSize == 0 );

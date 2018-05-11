@@ -99,7 +99,6 @@ if (UNIX)
   set(GAME_COMPILED_LIB ${BIN}/libGame.so)
   set(GAME_LOADABLE_LIB ${BIN}/libGameLoadable.so)
 
-  add_definitions( -Wall )
 
   find_package(Threads REQUIRED)
   find_package(X11 REQUIRED)
@@ -129,6 +128,25 @@ endif()
 
 ### GCC
 
+
+add_definitions( -Wpedantic )
+add_definitions( -Wno-missing-prototypes )
+add_definitions( -Wno-undef )
+add_definitions( -Wno-c++98-compat-pedantic )
+add_definitions( -Wno-old-style-cast )
+add_definitions( -Wno-gnu-anonymous-struct )
+add_definitions( -Wno-float-equal )
+add_definitions( -Wno-padded )
+add_definitions( -Wno-double-promotion )
+add_definitions( -Wno-switch-enum )
+
+# TODO(Jesse): Do an alignment pass on allocator.
+add_definitions( -Wno-cast-align )
+
+# TODO(Jesse): Should this be turned on again?
+add_definitions( -Wno-sign-conversion )
+
+
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
   message(STATUS "Compiling with g++")
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
@@ -136,6 +154,7 @@ elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
   add_definitions( -MDd -EHsc -DMSVC=1 )
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL Clang)
   message(STATUS "Compiling with Clang")
+  # add_definitions( -Weverything )
 else()
   message(FATAL_ERROR "Unsupported Compiler")
 endif()

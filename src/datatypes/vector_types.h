@@ -513,7 +513,7 @@ World_Position(v3 V)
   Result.z = (int)V.z;
 
   return Result;
-};
+}
 
 inline voxel_position
 Voxel_Position(int P)
@@ -525,7 +525,7 @@ Voxel_Position(int P)
   Result.z = P;
 
   return Result;
-};
+}
 
 inline voxel_position
 Voxel_Position(int x, int y, int z)
@@ -537,7 +537,7 @@ Voxel_Position(int x, int y, int z)
   Result.z = z;
 
   return Result;
-};
+}
 
 inline world_position
 World_Position(s32 P)
@@ -561,13 +561,15 @@ Chunk_Dimension(int x, int y, int z)
   return Result;
 }
 
-inline int
+inline s32
 Volume(v3 Dim)
 {
-  return (Dim.x*Dim.y*Dim.z);
+  s32 Result = (s32)(Dim.x*Dim.y*Dim.z);
+  Assert(Result > 0);
+  return Result;
 }
 
-inline int
+inline s32
 Volume(chunk_dimension Dim)
 {
   return (Dim.x*Dim.y*Dim.z);
@@ -580,7 +582,8 @@ V2(r32 F)
   return Result;
 }
 
-v2 V2(float x,float y)
+v2
+V2(float x,float y)
 {
   v2 Result = {x,y};
   return Result;
