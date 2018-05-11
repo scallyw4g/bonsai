@@ -8,10 +8,10 @@ Kilobytes(u32 Bytes)
   return Result;
 }
 
-inline u64
+inline u32
 Megabytes(u32 Number)
 {
-  u64 Result = Number*Kilobytes(1024);
+  u32 Result = Number*Kilobytes(1024);
   return Result;
 }
 

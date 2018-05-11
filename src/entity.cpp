@@ -142,7 +142,7 @@ GetFreeEntity(game_state *GameState)
 }
 
 entity *
-AllocateEntity(platform *Plat, memory_arena *Memory, chunk_dimension ModelDim)
+AllocateEntity(memory_arena *Memory, chunk_dimension ModelDim)
 {
   entity *Entity = PUSH_STRUCT_CHECKED(entity, Memory, 1);
   Entity->Model.Chunk = AllocateChunk(Memory, ModelDim);
@@ -157,14 +157,14 @@ AllocateEntity(platform *Plat, memory_arena *Memory, chunk_dimension ModelDim)
 }
 
 void
-AllocateEntityTable(platform *Plat, game_state *GameState)
+AllocateEntityTable(game_state *GameState)
 {
   for (s32 EntityIndex = 0;
       EntityIndex < TOTAL_ENTITY_COUNT;
       ++ EntityIndex)
   {
     GameState->EntityTable[EntityIndex] =
-      AllocateEntity(Plat, GameState->Memory, Chunk_Dimension(0,0,0));
+      AllocateEntity(GameState->Memory, Chunk_Dimension(0,0,0));
   }
 
   return;
@@ -247,7 +247,7 @@ SpawnEntity(
 }
 
 entity *
-AllocateEntity(platform *Plat, memory_arena *Memory)
+AllocateEntity(memory_arena *Memory)
 {
   entity *Entity = PUSH_STRUCT_CHECKED(entity, Memory, 1);
   Entity->Emitter = PUSH_STRUCT_CHECKED(particle_system, Memory, 1);
@@ -258,19 +258,19 @@ AllocateEntity(platform *Plat, memory_arena *Memory)
 }
 
 entity *
-AllocatePlayer(platform *Plat, memory_arena *Memory)
+AllocatePlayer(memory_arena *Memory)
 {
   /* entity *Player = AllocateEntity(Plat, Memory, DEBUG_ENTITY_DIM); */
-  entity *Player = AllocateEntity(Plat, Memory);
+  entity *Player = AllocateEntity(Memory);
 
   return Player;
 }
 
+#if 0
 void
 SpawnEnemy(world *World, entity **WorldEntities, entity *Enemy, random_series *EnemyEntropy, model *GameModels)
 {
   NotImplemented;
-#if 0
 #if DEBUG_PARTICLE_EFFECTS
   return;
 #endif
@@ -319,8 +319,8 @@ SpawnEnemy(world *World, entity **WorldEntities, entity *Enemy, random_series *E
     SpawnEnemy(World, WorldEntities, Enemy, EnemyEntropy, GameModels);
 
   return;
-#endif
 }
+#endif
 
 void
 SpawnProjectile(game_state *GameState,
@@ -545,8 +545,6 @@ void
 ProcessCollisionRule(
     entity        *First,
     entity        *Second,
-    random_series *Entropy,
-    model         *GameModels,
     event_queue   *EventQueue
   )
 {
@@ -627,7 +625,7 @@ ProcessCollisionRule(
 }
 
 void
-DoEntityCollisions(game_state *GameState, entity *Entity, random_series *Entropy, chunk_dimension WorldChunkDim)
+DoEntityCollisions(game_state *GameState, entity *Entity, chunk_dimension WorldChunkDim)
 {
   TIMED_FUNCTION();
 
@@ -645,7 +643,7 @@ DoEntityCollisions(game_state *GameState, entity *Entity, random_series *Entropy
       continue;
 
     if (GetCollision(Entity, TestEntity, WorldChunkDim))
-      ProcessCollisionRule(Entity, TestEntity, Entropy, GameState->Models, &GameState->EventQueue);
+      ProcessCollisionRule(Entity, TestEntity, &GameState->EventQueue);
   }
 
   return;
@@ -726,10 +724,10 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
   return;
 }
 
+#if 0
 void
 SimulateEnemy(game_state *GameState, entity *Enemy, r32 dt)
 {
-#if 0
   v3 PlayerP = GetAbsoluteP(Player->P, GameState->World->ChunkDim);
   v3 EnemyP = GetAbsoluteP(Enemy->P, GameState->World->ChunkDim);
 
@@ -753,9 +751,8 @@ SimulateEnemy(game_state *GameState, entity *Enemy, r32 dt)
   }
 
   return;
-#endif
-
 }
+#endif
 
 void
 UpdateVisibleRegion(game_state *GameState, world_position WorldDisp)
@@ -805,7 +802,6 @@ ShouldEmit(particle_system *System)
 
 void
 SimulateAndRenderParticleSystem(
-    game_state *GameState,
     graphics *Graphics,
     untextured_3d_geometry_buffer *Dest,
     entity *SystemEntity,
@@ -867,7 +863,7 @@ SimulateAndRenderParticleSystem(
 }
 
 void
-SimulatePlayer( game_state *GameState, graphics *Graphics, entity *Player, hotkeys *Hotkeys, r32 dt )
+SimulatePlayer( game_state *GameState, entity *Player, hotkeys *Hotkeys, r32 dt )
 {
   TIMED_FUNCTION();
   if (Spawned(Player))
@@ -910,7 +906,7 @@ SimulatePlayer( game_state *GameState, graphics *Graphics, entity *Player, hotke
 }
 
 void
-SimulateEntities(game_state *GameState, graphics *Graphics, hotkeys *Hotkeys, r32 dt)
+SimulateEntities(game_state *GameState, r32 dt)
 {
   TIMED_FUNCTION();
 
@@ -927,9 +923,10 @@ SimulateEntities(game_state *GameState, graphics *Graphics, hotkeys *Hotkeys, r3
     {
       case EntityType_Enemy:
       {
-        SimulateEnemy(GameState, Entity, dt);
-        PhysicsUpdate(&Entity->Physics, dt);
-        UpdateEntityP(GameState, Entity, Entity->Physics.Delta);
+        NotImplemented;
+        /* SimulateEnemy(GameState, Entity, dt); */
+        /* PhysicsUpdate(&Entity->Physics, dt); */
+        /* UpdateEntityP(GameState, Entity, Entity->Physics.Delta); */
       } break;
 
       case EntityType_PlayerProjectile:
@@ -971,7 +968,7 @@ GetPlayer(entity **Players, client_state *OurClient)
 }
 
 void
-SimulatePlayers(game_state *GameState, entity* LocalPlayer, graphics *Graphics, hotkeys *Hotkeys, r32 dt)
+SimulatePlayers(game_state *GameState, entity* LocalPlayer, hotkeys *Hotkeys, r32 dt)
 {
   for (u32 PlayerIndex = 0;
       PlayerIndex < MAX_CLIENTS;
@@ -981,11 +978,11 @@ SimulatePlayers(game_state *GameState, entity* LocalPlayer, graphics *Graphics, 
 
     if (LocalPlayer == Entity)
     {
-      SimulatePlayer(GameState, Graphics, Entity, Hotkeys, dt );
+      SimulatePlayer(GameState, Entity, Hotkeys, dt );
     }
     else
     {
-      SimulatePlayer(GameState, Graphics, Entity, 0, dt );
+      SimulatePlayer(GameState, Entity, 0, dt );
     }
 
   }
@@ -1001,7 +998,7 @@ SimulateAndRenderParticleSystems(game_state *GameState, graphics *Graphics, r32 
         ++EntityIndex )
   {
     entity *Entity = GameState->EntityTable[EntityIndex];
-    SimulateAndRenderParticleSystem(GameState, Graphics, &GameState->World->Mesh, Entity, Entity->Physics.Delta, Dt);
+    SimulateAndRenderParticleSystem(Graphics, &GameState->World->Mesh, Entity, Entity->Physics.Delta, Dt);
   }
 
   return;

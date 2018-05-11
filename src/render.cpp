@@ -120,7 +120,7 @@ AllocateAndInitSsaoNoise(ao_render_group *AoGroup, memory_arena *GraphicsMemory)
 shader
 MakeLightingShader(memory_arena *GraphicsMemory,
     g_buffer_textures *gTextures, texture *ShadowMap, texture *Ssao,
-    m4 *ViewProjection, m4 *ShadowMVP, game_lights *Lights, camera *Camera)
+    m4 *ShadowMVP, game_lights *Lights, camera *Camera)
 {
   shader Shader = LoadShaders( "Lighting.vertexshader", "Lighting.fragmentshader", GraphicsMemory);
 
@@ -202,8 +202,8 @@ CreateGbuffer(memory_arena *Memory)
 {
   g_buffer_render_group *gBuffer = PUSH_STRUCT_CHECKED(g_buffer_render_group, Memory, 1);
   gBuffer->FBO = GenFramebuffer();
-  gBuffer->ViewProjection = *(IdentityMatrix());
-  gBuffer->ShadowMVP = *(IdentityMatrix());
+  gBuffer->ViewProjection = IdentityMatrix;
+  gBuffer->ShadowMVP = IdentityMatrix;
 
   glGenBuffers(1, &gBuffer->vertexbuffer);
   glGenBuffers(1, &gBuffer->colorbuffer);
@@ -239,7 +239,7 @@ CreateGbufferShader(memory_arena *GraphicsMemory, m4 *ViewProjection, camera *Ca
   *Current = GetUniform(GraphicsMemory, &Shader, ViewProjection, "ViewProjection");
   Current = &(*Current)->Next;
 
-  *Current = GetUniform(GraphicsMemory, &Shader, IdentityMatrix(), "Model");
+  *Current = GetUniform(GraphicsMemory, &Shader, &IdentityMatrix, "Model");
   Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, &Camera->Frust.farClip, "FarClip");
@@ -285,8 +285,7 @@ MakeSsaoShader(memory_arena *GraphicsMemory, g_buffer_textures *gTextures,
 }
 
 bool
-InitAoRenderGroup(ao_render_group *AoGroup, memory_arena *GraphicsMemory,
-                  g_buffer_textures *Textures, m4 *ViewProjection)
+InitAoRenderGroup(ao_render_group *AoGroup, memory_arena *GraphicsMemory)
 {
   glBindFramebuffer(GL_FRAMEBUFFER, AoGroup->FBO.ID);
 
@@ -420,7 +419,7 @@ GraphicsInit(memory_arena *GraphicsMemory)
   AssertNoGlErrors;
 
   ao_render_group *AoGroup = CreateAoRenderGroup(GraphicsMemory);
-  if (!InitAoRenderGroup(AoGroup, GraphicsMemory, gBuffer->Textures, &gBuffer->ViewProjection))
+  if (!InitAoRenderGroup(AoGroup, GraphicsMemory))
   {
     Error("Initializing ao_render_group"); return False;
   }
@@ -429,8 +428,7 @@ GraphicsInit(memory_arena *GraphicsMemory)
 
   gBuffer->LightingShader =
     MakeLightingShader(GraphicsMemory, gBuffer->Textures, SG->ShadowMap,
-                       AoGroup->Texture, &gBuffer->ViewProjection,
-                       &gBuffer->ShadowMVP, &SG->GameLights, Result->Camera);
+                       AoGroup->Texture, &gBuffer->ShadowMVP, &SG->GameLights, Result->Camera);
 
   gBuffer->gBufferShader =
     CreateGbufferShader(GraphicsMemory, &gBuffer->ViewProjection, Result->Camera);
@@ -462,7 +460,7 @@ GraphicsInit(memory_arena *GraphicsMemory)
 }
 
 inline m4
-GetShadowMapMVP(camera *Camera, light *GlobalLight)
+GetShadowMapMVP(light *GlobalLight)
 {
   // Compute the MVP matrix from the light's point of view
   /* v3 Translate = GetRenderP(Camera->Target, Camera); */
@@ -521,14 +519,14 @@ RenderAoTexture(ao_render_group *AoGroup)
 }
 
 void
-DrawGBufferToFullscreenQuad( platform *Plat, graphics *Graphics, world_position WorldChunkDim)
+DrawGBufferToFullscreenQuad( platform *Plat, graphics *Graphics)
 {
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   SetViewport(V2(Plat->WindowWidth, Plat->WindowHeight));
 
   glUseProgram(Graphics->gBuffer->LightingShader.ID);
 
-  Graphics->gBuffer->ShadowMVP = NdcToScreenSpace * GetShadowMapMVP(Graphics->Camera, &Graphics->SG->GameLights.Lights[0]);
+  Graphics->gBuffer->ShadowMVP = NdcToScreenSpace * GetShadowMapMVP(&Graphics->SG->GameLights.Lights[0]);
 
   BindShaderUniforms(&Graphics->gBuffer->LightingShader);
 
@@ -554,11 +552,11 @@ DEBUG_CopyTextureToMemory(texture *Texture)
 }
 #endif
 
+#if 0
 void
 RenderShadowMap(untextured_3d_geometry_buffer *Mesh, graphics *Graphics)
 {
   TIMED_FUNCTION();
-#if 0
   SetViewport(V2(SHADOW_MAP_RESOLUTION_X, SHADOW_MAP_RESOLUTION_Y));
 
   m4 MVP = GetShadowMapMVP(Camera, &SG->GameLights[0]);
@@ -587,8 +585,8 @@ RenderShadowMap(untextured_3d_geometry_buffer *Mesh, graphics *Graphics)
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
   return;
-#endif
 }
+#endif
 
 void
 RenderWorldToGBuffer(untextured_3d_geometry_buffer *Mesh, g_buffer_render_group *RG)
@@ -623,7 +621,7 @@ RenderGBuffer(untextured_3d_geometry_buffer *Mesh, graphics *Graphics)
 {
   TIMED_FUNCTION();
 
-  RenderShadowMap(Mesh, Graphics);
+  /* RenderShadowMap(Mesh, Graphics); */
 
   RenderWorldToGBuffer(Mesh, Graphics->gBuffer);
 
@@ -713,7 +711,7 @@ IsBottomChunkBoundary( chunk_dimension ChunkDim, int idx )
 }
 
 inline float
-GetTheta(v3 P1, v3 P2, v3 Axis)
+GetTheta(v3 P1, v3 P2)
 {
   float DotP1P2 = Dot(P1,P2);
 
@@ -740,7 +738,7 @@ RotatePoint(v3 P1, v3 P2)
   P2 = Normalize(P2);
   v3 Axis = Normalize(Cross(P1, P2));
 
-  float theta = GetTheta(P1, P2, Axis);
+  float theta = GetTheta(P1, P2);
 
   Quaternion Result( (Axis*sin(theta/2)), cos(theta/2) );
 
@@ -861,7 +859,7 @@ DEBUG_DrawLine(untextured_3d_geometry_buffer *Mesh, graphics *Graphics, line Lin
 }
 
 void
-DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, graphics *Graphics, v3 MinP, v3 MaxP, Quaternion Rotation, int ColorIndex, float Thickness = DEFAULT_LINE_THICKNESS )
+DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, graphics *Graphics, v3 MinP, v3 MaxP, int ColorIndex, float Thickness = DEFAULT_LINE_THICKNESS )
 {
   /* v3 HalfDim = (GetRenderP(world, MaxCP) - GetRenderP(world, MinCP)) / 2; */
 
@@ -935,46 +933,35 @@ DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, graphics *Graphics, v3 MinP,
 }
 
 inline void
-DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, graphics *Graphics,  aabb Rect, Quaternion Rotation, int ColorIndex, float Thickness = DEFAULT_LINE_THICKNESS )
+DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, graphics *Graphics,  aabb Rect, int ColorIndex, float Thickness = DEFAULT_LINE_THICKNESS )
 {
   v3 MinP = Rect.Center - Rect.Radius;
   v3 MaxP = Rect.Center + Rect.Radius;
-  DEBUG_DrawAABB( Mesh, Graphics, MinP, MaxP, Rotation, ColorIndex, Thickness );
+  DEBUG_DrawAABB( Mesh, Graphics, MinP, MaxP, ColorIndex, Thickness );
   return;
-}
-
-inline v3
-GetModelSpaceP(chunk_data *chunk, v3 P)
-{
-  /* v3 HalfDim = chunk->Dim/2; */
-  /* v3 Result = P - HalfDim; */
-
-  v3 Result = P;
-
-  return Result;
 }
 
 inline void
 DEBUG_DrawChunkAABB( untextured_3d_geometry_buffer *Mesh, graphics *Graphics,
-    world_position WorldP, chunk_dimension WorldChunkDim, Quaternion Rotation,
+    world_position WorldP, chunk_dimension WorldChunkDim,
     s32 ColorIndex , r32 Thickness = DEFAULT_LINE_THICKNESS)
 {
   v3 MinP = GetRenderP(WorldChunkDim, Canonical_Position(V3(0,0,0), WorldP), Graphics->Camera);
   v3 MaxP = GetRenderP(WorldChunkDim, Canonical_Position(WorldChunkDim, WorldP), Graphics->Camera);
 
-  DEBUG_DrawAABB(Mesh, Graphics, MinP, MaxP, Rotation, ColorIndex, Thickness);
+  DEBUG_DrawAABB(Mesh, Graphics, MinP, MaxP, ColorIndex, Thickness);
   return;
 }
 
 inline void
 DEBUG_DrawChunkAABB(untextured_3d_geometry_buffer *Mesh, graphics *Graphics,
-    world_chunk *chunk, chunk_dimension WorldChunkDim, Quaternion Rotation, s32
+    world_chunk *chunk, chunk_dimension WorldChunkDim, s32
     ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS)
 {
   v3 MinP = GetRenderP(WorldChunkDim, Canonical_Position(V3(0,0,0), chunk->WorldP), Graphics->Camera);
   v3 MaxP = GetRenderP(WorldChunkDim, Canonical_Position(WorldChunkDim, chunk->WorldP), Graphics->Camera);
 
-  DEBUG_DrawAABB(Mesh, Graphics, MinP, MaxP , Rotation, ColorIndex, Thickness);
+  DEBUG_DrawAABB(Mesh, Graphics, MinP, MaxP, ColorIndex, Thickness);
   return;
 }
 
@@ -1387,10 +1374,10 @@ FindBoundaryVoxelsAlongEdge(
 }
 #endif
 
+#if 0
 void
 Compute0thLod(world_chunk *WorldChunk, chunk_dimension WorldChunkDim)
 {
-#if 0
   /* v3 RenderOffset = GetRenderP( WorldChunkDim, WorldChunk->WorldP, GameState->Camera); */
 
   v3 SurfaceNormal = {};
@@ -1874,8 +1861,8 @@ Compute0thLod(world_chunk *WorldChunk, chunk_dimension WorldChunkDim)
 /* chunk->flags = SetFlag(chunk->flags, Chunk_LodGenerated); */
 
   return;
-#endif
 }
+#endif
 
 inline b32
 IsBoundaryVoxel(chunk_data *Chunk, voxel_position Offset, chunk_dimension Dim)
@@ -1998,13 +1985,13 @@ TraverseSurfaceToBoundary(
   return CurrentP;
 }
 
+#if 0
 inline void
 Draw0thLod(untextured_3d_geometry_buffer *Mesh, g_buffer_render_group *gBuffer, shadow_render_group *SG, camera *Camera, world_chunk *Chunk, v3 RenderOffset)
 {
   /* for ( s32 PointIndex = 0; PointIndex < Chunk->PB.Count; ++PointIndex ) */
   /*   DEBUG_DrawPointMarker(world, V3(Chunk->PB.Points[PointIndex]) + RenderOffset, Color--, 1.0f); */
 
-#if 0
 
   v3 Verts[3] = {};
   Verts[0] = V3(Chunk->PB.Points[0]) + RenderOffset;
@@ -2019,9 +2006,9 @@ Draw0thLod(untextured_3d_geometry_buffer *Mesh, g_buffer_render_group *gBuffer, 
     BufferTriangle(Mesh, gBuffer, SG, Camera, &Verts[0], Chunk->Normal, Color);
   }
 
-#endif
   return;
 }
+#endif
 
 b32
 CanBuildWorldChunkBoundary(world *World, world_chunk *Chunk)
@@ -2076,27 +2063,16 @@ DrawFolie(untextured_3d_geometry_buffer *Mesh, graphics *Graphics, aabb *AABB)
 #if 1
 void
 DrawParticle(
-    canonical_position *P,
     untextured_3d_geometry_buffer *Source,
     untextured_3d_geometry_buffer *Dest,
     graphics *Graphics,
-    chunk_dimension WorldChunkDim,
-    particle *Particle,
-    r32 Diameter,
     u8 ColorIndex
   )
 {
   v4 FaceColors[FACE_VERT_COUNT];
   FillColorArray(ColorIndex, FaceColors, FACE_VERT_COUNT);;
-
-  v3 MinP = GetRenderP(WorldChunkDim, (*P)+Particle->Offset, Graphics->Camera);
-
-  r32 Scale =  1.0f;
-
-  v3 RenderOffset = MinP;
-
 #if 1
-  BufferVerts( Source, Dest, RenderOffset, Scale, Graphics);
+  BufferVerts( Source, Dest, Graphics);
 #else
   RightFaceVertexData( MinP, V3(Diameter), VertexData);
   BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, RightFaceNormalData, FaceColors);
@@ -2140,7 +2116,7 @@ BufferEntity(
   {
 #if DEBUG_DRAW_COLLISION_VOLUMES
     aabb AABB = GetRenderSpaceAABB(WorldChunkDim, Entity, Graphics->Camera);
-    DEBUG_DrawAABB(Mesh, Graphics, AABB, Quaternion(), PINK);
+    DEBUG_DrawAABB(Mesh, Graphics, AABB, PINK);
 #endif
 
     if (IsSet(Model, Chunk_Initialized))
@@ -2193,7 +2169,7 @@ BufferWorldChunk(
 }
 
 void
-BufferWorld(world *World, graphics *Graphics, camera *Camera)
+BufferWorld(world *World, graphics *Graphics)
 {
   TIMED_FUNCTION();
 
@@ -2243,7 +2219,7 @@ BufferWorld(world *World, graphics *Graphics, camera *Camera)
 
 void
 BufferEntities( entity **EntityTable, untextured_3d_geometry_buffer *Mesh,
-                graphics *Graphics, camera *Camera, world *World)
+                graphics *Graphics, world *World)
 {
   TIMED_FUNCTION();
   for ( s32 EntityIndex = 0;

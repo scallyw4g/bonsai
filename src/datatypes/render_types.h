@@ -214,14 +214,8 @@ struct debug_text_render_group
   s32 TextureUniformID;
 };
 
-m4*
-IdentityMatrix()
-{
-  global_variable m4 Result = {V4(1, 0, 0 ,0),
-                                       V4(0, 1, 0 ,0),
-                                       V4(0, 0, 1 ,0),
-                                       V4(0, 0, 0 ,0)};
-
-  return &Result;
-}
+global_variable m4 IdentityMatrix = {V4(1, 0, 0 ,0),
+                                     V4(0, 1, 0 ,0),
+                                     V4(0, 0, 1 ,0),
+                                     V4(0, 0, 0 ,0)};
 

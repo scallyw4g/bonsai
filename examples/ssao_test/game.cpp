@@ -25,11 +25,11 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys, entity *Play
   DEBUG_DrawLine(&World->Mesh, gBuffer, SG, Camera, V3(0,0,0), V3(0, 0, 10000), TEAL, 0.5f );
 #endif
 
-  SimulatePlayers(GameState, Player, Graphics, Hotkeys, Plat->dt);
+  SimulatePlayers(GameState, Player, Hotkeys, Plat->dt);
 
   UpdateCameraP(Plat, World, Player->P, Camera);
 
-  SimulateEntities(GameState, Graphics, Hotkeys, Plat->dt);
+  SimulateEntities(GameState, Plat->dt);
 
   SimulateAndRenderParticleSystems(GameState, Graphics, Plat->dt);
 
@@ -46,8 +46,8 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys, entity *Play
     GetViewMatrix(WorldChunkDim, Camera);
 
   TIMED_BLOCK("BufferMeshes");
-    BufferWorld(World, Graphics, Camera);
-    BufferEntities( GameState->EntityTable, &World->Mesh, Graphics, Camera, World);
+    BufferWorld(World, Graphics);
+    BufferEntities( GameState->EntityTable, &World->Mesh, Graphics, World);
   END_BLOCK("BufferMeshes");
 
   TIMED_BLOCK("RenderToScreen");
@@ -56,7 +56,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys, entity *Play
 
     RenderAoTexture(AoGroup);
 
-    DrawGBufferToFullscreenQuad( Plat, Graphics, World->ChunkDim);
+    DrawGBufferToFullscreenQuad(Plat, Graphics);
 
   #if DEBUG_DRAW_SHADOW_MAP_TEXTURE
     // DrawTexturedQuad(&GetDebugState()->TextRenderGroup->DebugTextureShader);
@@ -118,15 +118,13 @@ GameThreadCallback(work_queue_entry *Entry)
     {
       InitializeVoxels(&Entry->GameState->Noise, (world_chunk*)Entry->Input);
     } break;
-
-    InvalidDefaultCase;
   }
 
   return;
 }
 
 EXPORT game_state*
-GameInit( platform *Plat, memory_arena *GameMemory, os *Os)
+GameInit( platform *Plat, memory_arena *GameMemory)
 {
   Info("Initializing Game");
 
@@ -147,7 +145,7 @@ GameInit( platform *Plat, memory_arena *GameMemory, os *Os)
 
   GameState->World = AllocateAndInitWorld(GameState, World_Position(0), VISIBLE_REGION_RADIUS, WORLD_CHUNK_DIM, VISIBLE_REGION);
 
-  AllocateEntityTable(Plat, GameState);
+  AllocateEntityTable(GameState);
 
   GameState->Models = AllocateGameModels(GameState, GameState->Memory);
 
@@ -238,7 +236,7 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
     }
   }
 
-  for (u32 ClientIndex = 0;
+  for (s32 ClientIndex = 0;
       ClientIndex < MAX_CLIENTS;
       ++ClientIndex)
   {

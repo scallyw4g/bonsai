@@ -1,6 +1,3 @@
-#ifndef BONSAI_PLATFORM_CPP
-#define BONSAI_PLATFORM_CPP
-
 
 #include <iostream>
 
@@ -81,8 +78,6 @@ ThreadMain(void *Input)
     }
 
   }
-
-  return 0;
 }
 
 void
@@ -420,7 +415,7 @@ FrameEnd(void)
 }
 
 s32
-main(s32 NumArgs, char ** Args)
+main()
 {
   Info("Initializing Bonsai");
 
@@ -492,7 +487,7 @@ main(s32 NumArgs, char ** Args)
   while ( Os.ContinueRunning )
   {
     r64 CurrentMS = GetHighPrecisionClock();
-    Plat.dt = (CurrentMS - LastMs)/1000.0f;
+    Plat.dt = (r32)((CurrentMS - LastMs)/1000.0f);
     LastMs = CurrentMS;
 
 #if BONSAI_INTERNAL
@@ -558,5 +553,3 @@ main(s32 NumArgs, char ** Args)
 
   return True;
 }
-
-#endif

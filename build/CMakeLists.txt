@@ -145,6 +145,7 @@ add_definitions( -Wno-cast-align )
 
 # TODO(Jesse): Should this be turned on again?
 add_definitions( -Wno-sign-conversion )
+add_definitions( -Wno-global-constructors )
 
 
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
@@ -154,7 +155,7 @@ elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
   add_definitions( -MDd -EHsc -DMSVC=1 )
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL Clang)
   message(STATUS "Compiling with Clang")
-  # add_definitions( -Weverything )
+  add_definitions( -Weverything )
 else()
   message(FATAL_ERROR "Unsupported Compiler")
 endif()

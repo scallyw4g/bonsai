@@ -6,7 +6,7 @@
 #include <render.cpp>
 
 void
-FillChunk(chunk_data *chunk, chunk_dimension Dim, u32 ColorIndex = BLACK)
+FillChunk(chunk_data *chunk, chunk_dimension Dim, u8 ColorIndex = BLACK)
 {
   s32 Vol = Volume(Dim);
 
@@ -48,7 +48,7 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory)
 }
 
 void
-InitChunkPerlin(perlin_noise *Noise, world_chunk *WorldChunk, v3 WorldChunkDim, u32 ColorIndex)
+InitChunkPerlin(perlin_noise *Noise, world_chunk *WorldChunk, v3 WorldChunkDim, u8 ColorIndex)
 {
   Assert(WorldChunk);
 
@@ -561,7 +561,7 @@ AllocateAndInitWorld( game_state *GameState, world_position Center,
   World->Gravity = WORLD_GRAVITY;
   World->Center = Center;
 
-  s32 BufferVertices = Megabytes(32);
+  u32 BufferVertices = Megabytes(32);
   AllocateMesh(&World->Mesh, BufferVertices, Plat->Memory);
 
   world_position Min = Center - Radius;

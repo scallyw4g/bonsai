@@ -210,7 +210,7 @@ LoadModel(memory_arena *WorldStorage, char const *filepath)
             s32 X = (s32)ReadChar(ModelFile, &bytesRemaining);
             s32 Y = (s32)ReadChar(ModelFile, &bytesRemaining);
             s32 Z = (s32)ReadChar(ModelFile, &bytesRemaining);
-            s32 W = (s32)ReadChar(ModelFile, &bytesRemaining); // Color
+            u8 W = ReadChar(ModelFile, &bytesRemaining); // Color
 
             voxel_position TestP = Voxel_Position(X,Y,Z);
             if (IsInsideDim(ReportedDim, TestP))

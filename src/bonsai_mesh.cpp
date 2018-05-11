@@ -87,7 +87,7 @@ BufferVertsDirect(
   memcpy( &Dest->Colors[Dest->CurrentIndex],   VertColors, sizeof(*VertColors)*NumVerts );
 
 
-  for ( s32 VertIndex = 0;
+  for ( u32 VertIndex = 0;
         VertIndex < NumVerts;
         VertIndex += VERTS_PER_FACE )
   {
@@ -170,7 +170,7 @@ BufferVertsChecked(
     untextured_3d_geometry_buffer *Target,
     graphics *Graphics,
 
-    s32 NumVerts,
+    u32 NumVerts,
 
     v3* Positions,
     v3* Normals,
@@ -208,10 +208,6 @@ inline void
 BufferVerts(
     untextured_3d_geometry_buffer *Source,
     untextured_3d_geometry_buffer *Dest,
-
-    v3 RenderOffset,
-    r32 Scale,
-
     graphics *Graphics
   )
 {
