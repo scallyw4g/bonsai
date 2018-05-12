@@ -22,7 +22,10 @@ struct test_struct_8
   u8 Data;
 };
 
-u32 HitSegfault = False;
+global_variable u32 HitSegfault = False;
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-parameter"
 
 void
 BreakSegfaultHandler(int sig, siginfo_t *si, void *data)
@@ -42,6 +45,10 @@ SegfaultHandler(int sig, siginfo_t *si, void *data)
   uc->uc_mcontext.gregs[REG_RIP] += instruction_length;
 }
 
+#pragma clang diagnostic pop
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdisabled-macro-expansion"
 void
 NoExpectedSegfault()
 {
@@ -69,6 +76,7 @@ ExpectSegfault()
     exit(1);
   }
 }
+#pragma clang diagnostic pop
 
 void
 AssertNoSegfault()
@@ -85,7 +93,7 @@ AssertSegfault()
 }
 
 template <typename T> void
-TestAllocation(T Struct, memory_arena *Arena)
+TestAllocation(memory_arena *Arena)
 {
   T *Test = PUSH_STRUCT_CHECKED( T, Arena, 1);
   Assert(Test);
@@ -107,12 +115,8 @@ TestAllocation(T Struct, memory_arena *Arena)
   return;
 }
 
-test_struct_8     Type8   = {};
-test_struct_64    Type64  = {};
-test_struct_128   Type128 = {};
-
-umm PageSize = PlatformGetPageSize();
-umm TwoPages = PageSize*2;
+global_variable umm PageSize = PlatformGetPageSize();
+global_variable umm TwoPages = PageSize*2;
 
 
 void
@@ -203,21 +207,21 @@ SingleAllocations()
   // Single allocation of 64bit type
   {
     memory_arena Arena = {};
-    TestAllocation(Type64, &Arena);
+    TestAllocation<test_struct_8>(&Arena);
     Assert(Arena.Prev);
   }
 
   // Single allocation of 8bit type
   {
     memory_arena Arena = {};
-    TestAllocation(Type8, &Arena);
+    TestAllocation<test_struct_64>(&Arena);
     Assert(Arena.Prev);
   }
 
   // Single allocation of 128bit type
   {
     memory_arena Arena = {};
-    TestAllocation(Type128, &Arena);
+    TestAllocation<test_struct_128>(&Arena);
     Assert(Arena.Prev);
   }
 
@@ -236,7 +240,7 @@ MultipleAllocations()
       memory_arena *PrevArena = Arena.Prev;
       while ( Arena.Prev == PrevArena )
       {
-        TestAllocation(Type64, &Arena);
+        TestAllocation<test_struct_64>(&Arena);
       }
     }
 
@@ -244,7 +248,7 @@ MultipleAllocations()
       memory_arena *PrevArena = Arena.Prev;
       while ( Arena.Prev == PrevArena )
       {
-        TestAllocation(Type64, &Arena);
+        TestAllocation<test_struct_64>(&Arena);
       }
     }
 
@@ -260,7 +264,7 @@ MultipleAllocations()
       memory_arena *PrevArena = Arena.Prev;
       while ( Arena.Prev == PrevArena )
       {
-        TestAllocation(Type64, &Arena);
+        TestAllocation<test_struct_64>(&Arena);
       }
     }
 
@@ -269,9 +273,9 @@ MultipleAllocations()
       Arena.MemProtect = False;
       while ( Arena.Prev == PrevArena )
       {
-        TestAllocation(Type8, &Arena);
-        TestAllocation(Type128, &Arena);
-        TestAllocation(Type64, &Arena);
+        TestAllocation<test_struct_8>(&Arena);
+        TestAllocation<test_struct_128>(&Arena);
+        TestAllocation<test_struct_64>(&Arena);
       }
     }
 
@@ -279,7 +283,7 @@ MultipleAllocations()
       memory_arena *PrevArena = Arena.Prev;
       while ( Arena.Prev == PrevArena )
       {
-        TestAllocation(Type64, &Arena);
+        TestAllocation<test_struct_64>(&Arena);
       }
     }
   }
@@ -295,7 +299,7 @@ MultipleAllocations()
       memory_arena *PrevArena = Arena.Prev;
       while ( Arena.Prev == PrevArena )
       {
-        TestAllocation(Type64, &Arena);
+        TestAllocation<test_struct_64>(&Arena);
       }
     }
 
@@ -304,9 +308,9 @@ MultipleAllocations()
       Arena.MemProtect = False;
       while ( Arena.Prev == PrevArena )
       {
-        TestAllocation(Type8, &Arena);
-        TestAllocation(Type128, &Arena);
-        TestAllocation(Type64, &Arena);
+        TestAllocation<test_struct_8>(&Arena);
+        TestAllocation<test_struct_128>(&Arena);
+        TestAllocation<test_struct_64>(&Arena);
       }
     }
 
@@ -314,9 +318,9 @@ MultipleAllocations()
       memory_arena *PrevArena = Arena.Prev;
       while ( Arena.Prev == PrevArena )
       {
-        TestAllocation(Type8, &Arena);
-        TestAllocation(Type128, &Arena);
-        TestAllocation(Type64, &Arena);
+        TestAllocation<test_struct_8>(&Arena);
+        TestAllocation<test_struct_128>(&Arena);
+        TestAllocation<test_struct_64>(&Arena);
       }
     }
 
@@ -360,7 +364,7 @@ ArenaAllocation()
 }
 
 s32
-main(s32 ArgCount, char **Args)
+main()
 {
 
 #if MEMPROTECT_OVERFLOW
