@@ -37,9 +37,11 @@ DebugRegisterArena(const char *Name, memory_arena *Arena, debug_state *DebugStat
 }
 
 b32
-AreEqual(push_metadata *First, push_metadata *Second)
+PushesMatch(push_metadata *First, push_metadata *Second)
 {
   b32 Result = (First->Arena == Second->Arena &&
+                First->StructSize == Second->StructSize &&
+                First->StructCount == Second->StructCount &&
                 First->Name == Second->Name);
   return Result;
 }
@@ -55,7 +57,7 @@ WritePushMetadata(push_metadata InputMeta)
   push_metadata *PickMeta = &DebugState->MetaTable[HashValue];
   while (PickMeta->Name)
   {
-    if (AreEqual(PickMeta, &InputMeta))
+    if (PushesMatch(PickMeta, &InputMeta))
     {
       PickMeta->PushCount++;
       return;
@@ -95,12 +97,14 @@ GetRegisteredMemoryArena( memory_arena *Arena)
 }
 
 inline void*
-PushStructChecked_(memory_arena *Arena, umm Size, const char* Name, s32 Line, const char* File)
+PushStructChecked_(memory_arena *Arena, umm StructSize, umm StructCount, const char* Name, s32 Line, const char* File)
 {
-  void* Result = PushStruct( Arena, Size );
+  umm PushSize = StructCount * StructSize;
+
+  void* Result = PushStruct( Arena, PushSize );
 
 #ifndef BONSAI_NO_PUSH_METADATA
-  push_metadata Metadata = {Name, Arena, Size, 0};
+  push_metadata Metadata = {Name, Arena, StructSize, StructCount, 0};
   WritePushMetadata(Metadata);
 #endif
 
@@ -1017,25 +1021,6 @@ struct memory_arena_stats
   u64 Remaining;
 };
 
-template <typename T> b32
-AreEqual(T First, T Second)
-{
-  b32 Result = True;
-  umm TypeSize = sizeof(T);
-
-  u8* FirstPtr = (u8*)&First;
-  u8* SecondPtr = (u8*)&Second;
-
-  for (umm Index = 0;
-      Index < TypeSize;
-      ++Index)
-  {
-    Result = Result && ( FirstPtr[Index] == SecondPtr[Index]);
-  }
-
-  return Result;
-}
-
 void
 DebugPrintArenaStats(memory_arena *Arena)
 {
@@ -1195,7 +1180,17 @@ BufferDebugPushMetaData(ui_render_group *Group, /* debug_state *State, */ regist
     push_metadata *Meta = &GetDebugState()->MetaTable[MetaIndex];
     if (Meta->Arena == Arena)
     {
+
+  /* const char* Name; */
+  /* memory_arena *Arena; */
+  /* umm StructSize; */
+  /* umm StructCount; */
+  /* u32 PushCount; */
+
+      BufferThousands(Meta->StructSize, Group, Layout, WHITE, 8);
+      BufferThousands(Meta->StructCount, Group, Layout, WHITE, 8);
       BufferThousands(Meta->PushCount, Group, Layout, WHITE, 8);
+
       AdvanceSpaces(1, Layout);
       BufferValue(Meta->Name, Group, Layout, WHITE);
       NewLine(Layout);

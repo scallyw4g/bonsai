@@ -63,10 +63,10 @@ struct memory_arena
 #if BONSAI_INTERNAL
 
 void*
-PushStructChecked_(memory_arena *Arena, umm Size, const char* StructType, s32 Line, const char* File);
+PushStructChecked_(memory_arena *Arena, umm StructCount, umm StructSize, const char* Name, s32 Line, const char* File);
 
 #define PUSH_STRUCT_CHECKED(Type, Arena, Number) \
-  (Type*)PushStructChecked_( Arena, sizeof(Type)*(umm)Number, #Type, __LINE__, __FILE__ );
+  (Type*)PushStructChecked_( Arena, sizeof(Type), (umm)Number, #Type, __LINE__, __FILE__ );
 
 #else
 
@@ -326,7 +326,9 @@ struct push_metadata
 {
   const char* Name;
   memory_arena *Arena;
-  umm Size;
+  umm StructSize;
+  umm StructCount;
+
   u32 PushCount;
 };
 
