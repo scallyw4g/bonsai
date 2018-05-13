@@ -112,6 +112,8 @@ PlatformAllocateArena(umm RequestedBytes = Megabytes(1))
 
   *Result = TempArena;
 
+  Result->Start = Result->At;
+
   Assert((umm)Result->Start % PageSize == 0);
   Assert(OnPageBoundary(Result, PageSize));
   Assert(Remaining(Result) >= RequestedBytes);
@@ -119,8 +121,21 @@ PlatformAllocateArena(umm RequestedBytes = Megabytes(1))
   NotImplemented
 #endif
 
-
   return Result;
+}
+
+void
+PlatformUnprotectArena(memory_arena *Arena)
+{
+  umm Size = Arena->End - Arena->Start;
+  s32 Err = mprotect(Arena->Start, Size, PROT_READ|PROT_WRITE);
+  if (Err == -1)
+  {
+    Error("Unprotecting arena failed");
+    Assert(False);
+  }
+
+  return;
 }
 
 #if PLATFORM_THREADING_IMPLEMENTATIONS

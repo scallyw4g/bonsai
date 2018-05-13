@@ -415,6 +415,9 @@ FrameEnd(void)
   {
      Global_DrawCalls[DrawCountIndex] = NullDrawCall;
   }
+
+  PlatformUnprotectArena(TranArena);
+  TranArena->At = TranArena->Start;
 }
 
 s32
@@ -435,7 +438,7 @@ main()
 
   // These two arenas must be initialized before the the debug state can be
   memory_arena *DebugMemory = PlatformAllocateArena();
-  TranArena                 = PlatformAllocateArena();
+  TranArena                 = PlatformAllocateArena(Megabytes(3));
 
   DEBUG_REGISTER_ARENA(DebugMemory, &Plat.DebugState);
   DEBUG_REGISTER_ARENA(TranArena  , &Plat.DebugState);
