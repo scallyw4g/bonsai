@@ -416,8 +416,21 @@ FrameEnd(void)
      Global_DrawCalls[DrawCountIndex] = NullDrawCall;
   }
 
+  for ( u32 MetaIndex = 0;
+      MetaIndex < META_TABLE_SIZE;
+      ++MetaIndex)
+  {
+    push_metadata *Meta = &GetDebugState()->MetaTable[MetaIndex];
+    if (Meta->Arena == TranArena)
+    {
+      Clear(Meta);
+    }
+  }
+
   PlatformUnprotectArena(TranArena);
   TranArena->At = TranArena->Start;
+  TranArena->Pushes = 0;
+
 }
 
 s32
