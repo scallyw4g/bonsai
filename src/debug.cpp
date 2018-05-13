@@ -1169,7 +1169,16 @@ DebugDrawDrawCalls(ui_render_group *Group)
 void
 BufferDebugPushMetaData(ui_render_group *Group, /* debug_state *State, */ registered_memory_arena *Current, layout *Layout)
 {
-  BufferValue(Current->Name, Group, Layout, WHITE);
+  BufferValue("Total Size", Group, Layout, WHITE);
+  AdvanceSpaces(3, Layout);
+
+  BufferValue("Struct Count", Group, Layout, WHITE);
+  AdvanceSpaces(1, Layout);
+
+  BufferValue("Push Count", Group, Layout, WHITE);
+  AdvanceSpaces(3, Layout);
+
+  BufferValue("Name", Group, Layout, WHITE);
   NewLine(Layout);
 
   memory_arena *Arena = Current->Arena;
@@ -1181,15 +1190,9 @@ BufferDebugPushMetaData(ui_render_group *Group, /* debug_state *State, */ regist
     if (Meta->Arena == Arena)
     {
 
-  /* const char* Name; */
-  /* memory_arena *Arena; */
-  /* umm StructSize; */
-  /* umm StructCount; */
-  /* u32 PushCount; */
-
-      BufferThousands(Meta->StructSize, Group, Layout, WHITE, 8);
-      BufferThousands(Meta->StructCount, Group, Layout, WHITE, 8);
-      BufferThousands(Meta->PushCount, Group, Layout, WHITE, 8);
+      BufferMemorySize(Meta->StructSize*Meta->StructCount, Group, Layout, WHITE);
+      BufferThousands(Meta->StructCount, Group, Layout, WHITE, 13);
+      BufferThousands(Meta->PushCount, Group, Layout, WHITE, 13);
 
       AdvanceSpaces(1, Layout);
       BufferValue(Meta->Name, Group, Layout, WHITE);
