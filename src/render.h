@@ -9,26 +9,27 @@ void
 Draw_(u32 N, const char * Caller)
 {
   TIMED_FUNCTION();
+
   u64 Index = ((u64)Caller) % Global_DrawCallArrayLength;
 
   debug_draw_call *DrawCall = &Global_DrawCalls[Index];
 
-  if ( DrawCall->Caller )
+  if (DrawCall->Caller)
   {
-    while(DrawCall->Caller && StringsMatch(DrawCall->Caller, Caller))
+    while( DrawCall->Caller &&
+           !(StringsMatch(DrawCall->Caller, Caller) && DrawCall->N == N)
+         )
     {
       ++Index;
       Index = Index % Global_DrawCallArrayLength;
       DrawCall = &Global_DrawCalls[Index];
     }
-    DrawCall->Caller = Caller;
-  }
-  else
-  {
-    DrawCall->Caller = Caller;
   }
 
-  DrawCall->Count++;
+  DrawCall->Caller = Caller;
+  DrawCall->N = N;
+  DrawCall->Calls++;
+
   glDrawArrays(GL_TRIANGLES, 0, (s32)N);
 }
 #else
@@ -206,7 +207,7 @@ template <typename T> inline void
 BufferVertsToCard(u32 BufferId, T *Mesh, u32 *AttributeIndex)
 {
   TIMED_FUNCTION();
-  u32 ByteCount = Mesh->CurrentIndex*sizeof(*Mesh->Verts);
+  u32 ByteCount = Mesh->At*sizeof(*Mesh->Verts);
   u32 Stride = sizeof(*Mesh->Verts)/sizeof(Mesh->Verts[0].E[0]);
 
   BufferDataToCard(BufferId, Stride, ByteCount, (void*)Mesh->Verts, AttributeIndex);
@@ -219,7 +220,7 @@ BufferColorsToCard(u32 BufferId, T *Mesh, u32* AttributeIndex)
 {
   TIMED_FUNCTION();
   u32 Stride = sizeof(*Mesh->Colors)/sizeof(Mesh->Colors[0].E[0]);
-  u32 ByteCount = Mesh->CurrentIndex*sizeof(*Mesh->Colors);
+  u32 ByteCount = Mesh->At*sizeof(*Mesh->Colors);
 
   BufferDataToCard(BufferId, Stride, ByteCount, (void*)Mesh->Colors, AttributeIndex);
 
@@ -231,7 +232,7 @@ BufferNormalsToCard(u32 BufferId, T *Mesh, u32 *AttributeIndex)
 {
   TIMED_FUNCTION();
   u32 Stride = sizeof(*Mesh->Normals)/sizeof(Mesh->Normals[0].E[0]);
-  u32 ByteCount = Mesh->CurrentIndex*sizeof(*Mesh->Normals);
+  u32 ByteCount = Mesh->At*sizeof(*Mesh->Normals);
 
   BufferDataToCard(BufferId, Stride, ByteCount, (void*)Mesh->Normals, AttributeIndex);
 
@@ -242,7 +243,7 @@ template <typename T> inline void
 BufferUVsToCard(u32 BufferId, T *Mesh, u32 *AttributeIndex)
 {
   TIMED_FUNCTION();
-  u32 ByteCount = Mesh->CurrentIndex*sizeof(*Mesh->UVs);
+  u32 ByteCount = Mesh->At*sizeof(*Mesh->UVs);
   u32 Stride = sizeof(*Mesh->UVs)/sizeof(Mesh->UVs[0].x);
 
   BufferDataToCard(BufferId, Stride, ByteCount, (void*)Mesh->UVs, AttributeIndex);

@@ -762,7 +762,7 @@ GetPosition(s32 Index, chunk_dimension Dim)
 void
 ZeroMesh( untextured_3d_geometry_buffer *Mesh )
 {
-  Mesh->CurrentIndex = 0;
+  Mesh->At = 0;
   return;
 }
 
@@ -881,8 +881,8 @@ AllocateMesh(untextured_3d_geometry_buffer *Mesh, u32 NumVerts, memory_arena *Me
   Mesh->Colors  = PUSH_STRUCT_CHECKED(v4, Memory, NumVerts );
   Mesh->Normals = PUSH_STRUCT_CHECKED(v3, Memory, NumVerts );
 
-  Mesh->Allocated = NumVerts;
-  Mesh->CurrentIndex = 0;
+  Mesh->End = NumVerts + 1;
+  Mesh->At = 0;
 }
 
 chunk_data*
@@ -897,7 +897,7 @@ AllocateChunk(memory_arena *WorldStorage, chunk_dimension Dim)
   }
 
   // TODO(Jesse): Allocate this based on actual need?
-  AllocateMesh(&Result->Mesh, 20000, WorldStorage);
+  AllocateMesh(&Result->Mesh, 15000, WorldStorage);
 
   ZeroChunk(Result, Volume(Dim));
 

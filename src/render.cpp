@@ -8,7 +8,6 @@
 #include <stdio.h>
 
 #include <colors.h>
-
 #include <bonsai_mesh.cpp>
 
 global_variable u32 Global_QuadVertexBuffer;
@@ -569,7 +568,7 @@ RenderShadowMap(untextured_3d_geometry_buffer *Mesh, graphics *Graphics)
   // 1rst attribute buffer : vertices
   glEnableVertexAttribArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, RG->vertexbuffer);
-  glBufferData(GL_ARRAY_BUFFER, Mesh->CurrentIndex*sizeof(v3), Mesh->VertexData, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, Mesh->At*sizeof(v3), Mesh->VertexData, GL_STATIC_DRAW);
   glVertexAttribPointer(
     0,                  // The attribute we want to configure
     3,                  // size
@@ -579,7 +578,7 @@ RenderShadowMap(untextured_3d_geometry_buffer *Mesh, graphics *Graphics)
     (void*)0            // array buffer offset
   );
 
-  Draw(Mesh->CurrentIndex);
+  Draw(Mesh->At);
 
   glDisableVertexAttribArray(0);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -606,8 +605,8 @@ RenderWorldToGBuffer(untextured_3d_geometry_buffer *Mesh, g_buffer_render_group 
     BufferNormalsToCard(RG->normalbuffer, Mesh, &AttributeIndex);
   END_BLOCK("gBuffer - Bind and buffer data");
 
-  Draw(Mesh->CurrentIndex);
-  Mesh->CurrentIndex = 0;
+  Draw(Mesh->At);
+  Mesh->At = 0;
 
   glDisableVertexAttribArray(0);
   glDisableVertexAttribArray(1);
@@ -646,8 +645,8 @@ RenderPostBuffer(post_processing_group *PostGroup, untextured_3d_geometry_buffer
     BufferColorsToCard(PostGroup->ColorBuffer, Mesh, &AttributeIndex);
   END_BLOCK("PostBuffer - Bind and buffer data");
 
-  Draw(Mesh->CurrentIndex);
-  Mesh->CurrentIndex = 0;
+  Draw(Mesh->At);
+  Mesh->At = 0;
 
   glDisableVertexAttribArray(0);
   glDisableVertexAttribArray(1);
@@ -1145,13 +1144,13 @@ BufferChunkMesh(
 {
   TIMED_FUNCTION();
 
-  if ( Chunk->Mesh.CurrentIndex == 0)
+  if ( Chunk->Mesh.At == 0)
     return;
 
   v3 ModelBasisP =
     GetRenderP( WorldChunkDim, Canonical_Position(Offset, WorldP), Graphics->Camera);
 
-  BufferVertsChecked(Dest, Graphics, Chunk->Mesh.CurrentIndex,
+  BufferVertsChecked(Dest, Graphics, Chunk->Mesh.At,
       Chunk->Mesh.Verts, Chunk->Mesh.Normals, Chunk->Mesh.Colors,
       ModelBasisP, V3(Scale));
 

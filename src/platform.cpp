@@ -31,8 +31,6 @@ global_variable s64 LastGameLibTime;
 global_variable game_thread_callback_proc GameThreadCallback;
 
 
-// TODO(Jesse): Clear this each frame
-global_variable memory_arena *TranArena = {};
 
 
 b32
@@ -435,15 +433,18 @@ main()
   Assert(Os.Window);
   InitializeOpenGlExtensions(&Os);
 
-  memory_arena *DebugMemory    = PlatformAllocateArena();
-  DEBUG_REGISTER_ARENA(DebugMemory   , &Plat.DebugState);
+  // These two arenas must be initialized before the the debug state can be
+  memory_arena *DebugMemory = PlatformAllocateArena();
+  TranArena                 = PlatformAllocateArena();
+
+  DEBUG_REGISTER_ARENA(DebugMemory, &Plat.DebugState);
+  DEBUG_REGISTER_ARENA(TranArena  , &Plat.DebugState);
+
   INIT_DEBUG_STATE(&Plat, DebugMemory);
 
   memory_arena *PlatMemory     = PlatformAllocateArena();
   memory_arena *GraphicsMemory = PlatformAllocateArena();
   memory_arena *GameMemory     = PlatformAllocateArena();
-
-  TranArena      = PlatformAllocateArena();
 
 
   DEBUG_REGISTER_ARENA(PlatMemory    , &Plat.DebugState);

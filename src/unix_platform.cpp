@@ -7,6 +7,7 @@
 // mmap
 #include <sys/mman.h>
 #include <sys/time.h>
+#include <sys/resource.h> // get/set rlimits
 
 #include <platform.h>
 
@@ -66,13 +67,23 @@ PlatformAllocateArena(umm RequestedBytes = Megabytes(1))
   umm AllocationSize = RequestedBytes + ToNextPage + (2*PageSize); // Add additional pages for Arena, and memprotect page
   Assert(AllocationSize % PageSize == 0);
 
-  u8 *Bytes = (u8*)mmap(0, AllocationSize, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANONYMOUS, -1, 0);
+  u32 Protection = PROT_READ|PROT_WRITE;
+  u32 Flags = MAP_SHARED|MAP_ANONYMOUS|MAP_NORESERVE;
+
+  u8 *Bytes = (u8*)mmap(0, AllocationSize, Protection, Flags,  -1, 0);
   if (Bytes == MAP_FAILED)
   {
     Bytes = 0;
     s32 Error = errno;
     if (Error == ENOMEM)
     {
+
+      struct rlimit AsLimit = {};
+      getrlimit(RLIMIT_AS, &AsLimit);
+
+      struct rlimit DataLimit = {};
+      getrlimit(RLIMIT_DATA, &DataLimit);
+
       Error("Out of memory, or something..");
       Assert(False);
     }
@@ -224,7 +235,6 @@ OpenAndInitializeWindow( os *Os, platform *Plat)
   glXMakeCurrent(Os->Display, win, Os->GlContext);
 
   Os->Window = win;
-
   return True;
 }
 

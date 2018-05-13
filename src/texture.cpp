@@ -1,6 +1,9 @@
 #ifndef BONSAI_TEXTURE_H
 #define BONSAI_TEXTURE_H
 
+// TODO(Jesse): Clear this each frame
+global_variable memory_arena *TranArena = {};
+
 #include <stdio.h>
 #include <string.h>
 #include <texture.hpp>
@@ -128,7 +131,7 @@ LoadDDS(const char * FilePath)
   unsigned int bufsize;
 
   bufsize = mipMapCount > 1 ? linearSize * 2 : linearSize;
-  buffer = (unsigned char*)malloc(bufsize * sizeof(unsigned char));
+  buffer = PUSH_STRUCT_CHECKED(u8, TranArena, bufsize);
   fread(buffer, 1, bufsize, TextureFile);
   fclose(TextureFile);
 
@@ -146,7 +149,6 @@ LoadDDS(const char * FilePath)
     format = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
     break;
   default:
-    free(buffer);
     return Result;
   }
 
@@ -174,8 +176,6 @@ LoadDDS(const char * FilePath)
     if(height < 1) height = 1;
 
   }
-
-  free(buffer);
 
   return Result;
 }

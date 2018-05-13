@@ -165,8 +165,8 @@ struct untextured_3d_geometry_buffer
   v4 *Colors;
   v3 *Normals;
 
-  u32 Allocated;
-  s32 CurrentIndex;
+  u32 End;
+  s32 At;
 };
 
 struct textured_2d_geometry_buffer
@@ -175,8 +175,8 @@ struct textured_2d_geometry_buffer
   v3 *Colors;
   v2 *UVs;
 
-  u32 Allocated;
-  u32 CurrentIndex;
+  u32 End;
+  u32 At;
 };
 
 struct untextured_2d_geometry_buffer
@@ -184,8 +184,8 @@ struct untextured_2d_geometry_buffer
   v3 *Verts;
   v3 *Colors;
 
-  u32 Allocated;
-  u32 CurrentIndex;
+  u32 End;
+  u32 At;
 };
 
 struct debug_text_render_group

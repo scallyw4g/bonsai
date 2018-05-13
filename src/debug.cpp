@@ -4,6 +4,7 @@
 
 debug_global b32 DebugGlobal_RedrawEveryPush = 0;
 
+
 void
 DebugRegisterArena(const char *Name, memory_arena *Arena, debug_state *DebugState)
 {
@@ -173,7 +174,9 @@ AllocateAndInitGeoBuffer(textured_2d_geometry_buffer *Geo, u32 VertCount, memory
   Geo->Verts = PUSH_STRUCT_CHECKED(v3, DebugArena, VertCount);
   Geo->Colors = PUSH_STRUCT_CHECKED(v3, DebugArena, VertCount);
   Geo->UVs = PUSH_STRUCT_CHECKED(v2, DebugArena, VertCount);
-  Geo->Allocated = VertCount;
+
+  Geo->End = VertCount + 1;
+  Geo->At = 0;
 }
 
 void
@@ -181,7 +184,9 @@ AllocateAndInitGeoBuffer(untextured_2d_geometry_buffer *Geo, u32 VertCount, memo
 {
   Geo->Verts = PUSH_STRUCT_CHECKED(v3, DebugArena, VertCount);
   Geo->Colors = PUSH_STRUCT_CHECKED(v3, DebugArena, VertCount);
-  Geo->Allocated = VertCount;
+
+  Geo->End = VertCount + 1;
+  Geo->At = 0;
   return;
 }
 
@@ -260,8 +265,7 @@ InitDebugState(platform *Plat, memory_arena *DebugMemory)
 
   GlobalDebugState->Initialized = True;
 
-  u32 BufferVertices = Kilobytes(1024);
-  AllocateMesh(&GlobalDebugState->LineMesh, BufferVertices, DebugMemory);
+  AllocateMesh(&GlobalDebugState->LineMesh, 1024, DebugMemory);
 
   if (!InitDebugOverlayFramebuffer(&GlobalDebugState->TextRenderGroup, DebugMemory, "Holstein.DDS"))
   { Error("Initializing Debug Overlay Framebuffer"); }
@@ -295,8 +299,8 @@ FlushBuffer(debug_text_render_group *RG, untextured_2d_geometry_buffer *Buffer)
   BufferVertsToCard(RG->SolidUIVertexBuffer, Buffer, &AttributeIndex);
   BufferColorsToCard(RG->SolidUIColorBuffer, Buffer, &AttributeIndex);
 
-  Draw(Buffer->CurrentIndex);
-  Buffer->CurrentIndex = 0;
+  Draw(Buffer->At);
+  Buffer->At = 0;
 
   glDisableVertexAttribArray(0);
   glDisableVertexAttribArray(1);
@@ -326,8 +330,8 @@ FlushBuffer(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo)
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  Draw(Geo->CurrentIndex);
-  Geo->CurrentIndex = 0;
+  Draw(Geo->At);
+  Geo->At = 0;
 
   glDisable(GL_BLEND);
 
@@ -346,7 +350,7 @@ BufferTextUVs(textured_2d_geometry_buffer *Geo, v2 UV)
   v2 uv_down_right = V2( UV.x+1.0f/16.0f, (UV.y + 1.0f/16.0f) );
   v2 uv_down_left  = V2( UV.x           , (UV.y + 1.0f/16.0f) );
 
-  u32 StartingIndex = Geo->CurrentIndex;
+  u32 StartingIndex = Geo->At;
   Geo->UVs[StartingIndex++] = uv_up_left;
   Geo->UVs[StartingIndex++] = uv_down_left;
   Geo->UVs[StartingIndex++] = uv_up_right;
@@ -373,19 +377,19 @@ BufferColors(v3 *Colors, u32 StartingIndex, v3 Color)
 void
 BufferColors(ui_render_group *Group, textured_2d_geometry_buffer *Geo, v3 Color)
 {
-  if (Geo->CurrentIndex + 6 > Geo->Allocated)
+  if (BufferIsFull(Geo, 6))
     FlushBuffer(Group->TextGroup, Geo);
 
-  BufferColors(Geo->Colors, Geo->CurrentIndex, Color);
+  BufferColors(Geo->Colors, Geo->At, Color);
 }
 
 void
 BufferColors(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, v3 Color)
 {
-  if (Geo->CurrentIndex + 6 > Geo->Allocated)
+  if (BufferIsFull(Geo, 6))
     FlushBuffer(Group->TextGroup, Geo);
 
-  BufferColors(Geo->Colors, Geo->CurrentIndex, Color);
+  BufferColors(Geo->Colors, Geo->At, Color);
 }
 
 v2
@@ -412,20 +416,20 @@ BufferQuadDirect(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z)
 v2
 BufferQuad(ui_render_group *Group, textured_2d_geometry_buffer *Geo, v2 MinP, v2 Dim, r32 Z = 0.0f)
 {
-  if (Geo->CurrentIndex + 6 > Geo->Allocated)
+  if (BufferIsFull(Geo, 6))
     FlushBuffer(Group->TextGroup, Geo);
 
-  v2 Result = BufferQuadDirect(Geo->Verts, Geo->CurrentIndex, MinP, Dim, Z);
+  v2 Result = BufferQuadDirect(Geo->Verts, Geo->At, MinP, Dim, Z);
   return Result;
 }
 
 v2
 BufferQuad(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, v2 MinP, v2 Dim, r32 Z = 0.0f)
 {
-  if (Geo->CurrentIndex + 6 > Geo->Allocated)
+  if (BufferIsFull(Geo, 6))
     FlushBuffer(Group->TextGroup, Geo);
 
-  v2 Result = BufferQuadDirect(Geo->Verts, Geo->CurrentIndex, MinP, Dim, Z);
+  v2 Result = BufferQuadDirect(Geo->Verts, Geo->At, MinP, Dim, Z);
   return Result;
 }
 
@@ -451,7 +455,7 @@ BufferTextAt(ui_render_group *Group, layout *Layout, const char *Text, u32 Color
 
     BufferColors(Group, TextGeo, getDefaultPalette()[Color].xyz);
 
-    TextGeo->CurrentIndex += 6;
+    TextGeo->At += 6;
 
     DeltaX += (MaxP.x - MinP.x);
 
@@ -586,8 +590,8 @@ MemorySize(u64 Number)
   return Global_CharBuffer;
 }
 
-inline void
-BufferMemorySize(u64 Number, ui_render_group *Group, layout *Layout, u32 ColorIndex)
+inline char*
+FormatMemorySize(u64 Number)
 {
   r64 KB = (r64)Kilobytes(1);
   r64 MB = (r64)Megabytes(1);
@@ -612,15 +616,34 @@ BufferMemorySize(u64 Number, ui_render_group *Group, layout *Layout, u32 ColorIn
     Units = 'G';
   }
 
-  char Buffer[32];
-  sprintf(Buffer, "%.1f%c", (r32)Display, Units);
-  BufferValue( Buffer, Group, Layout, ColorIndex);
+#if 0
+  char *Buffer = PUSH_STRUCT_CHECKED(char, TranArena, Megabytes(1));
 
-  return;
+  for (u32 Index = 0;
+      Index < Megabytes(1);
+      ++Index)
+  {
+    Buffer[Index] = 0;
+  }
+
+#endif
+
+  char *Buffer = PUSH_STRUCT_CHECKED(char, TranArena, 32);
+  sprintf(Buffer, "%.1f%c", (r32)Display, Units);
+
+  return Buffer;
 }
 
 inline void
-BufferThousands(u64 Number, ui_render_group *Group, layout *Layout, u32 ColorIndex, u32 Columns)
+BufferMemorySize(u64 Number, ui_render_group *Group, layout *Layout, u32 ColorIndex)
+{
+  char *Buffer = FormatMemorySize(Number);
+  BufferValue( Buffer, Group, Layout, ColorIndex);
+  return;
+}
+
+inline char*
+FormatThousands(u64 Number)
 {
   u64 OneThousand = 1000;
   r32 Display = (r32)Number;
@@ -632,13 +655,23 @@ BufferThousands(u64 Number, ui_render_group *Group, layout *Layout, u32 ColorInd
     Units = 'K';
   }
 
-  char Buffer[32];
+  char *Buffer = PUSH_STRUCT_CHECKED(char, TranArena, 32);
   sprintf(Buffer, "%.1f%c", Display, Units);
+
+  return Buffer;
+}
+
+inline void
+BufferThousands(u64 Number, ui_render_group *Group, layout *Layout, u32 ColorIndex, u32 Columns)
+{
+  char  *Buffer = FormatThousands(Number);
+
   {
     u32 Len = (u32)strlen(Buffer);
     u32 Pad = Max(Columns-Len, 0U);
     AdvanceSpaces(Pad, Layout);
   }
+
   BufferValue( Buffer, Group, Layout, ColorIndex);
 
   return;
@@ -922,13 +955,6 @@ DebugFrameBegin(hotkeys *Hotkeys, r32 Dt, u64 Cycles)
   return;
 }
 
-b32
-BufferIsFull(untextured_2d_geometry_buffer *Buffer, u32 VertsToPush)
-{
-  b32 Result = (Buffer->CurrentIndex + VertsToPush) > Buffer->Allocated;
-  return Result;
-}
-
 inline void
 PadBottom(layout *Layout, r32 Pad)
 {
@@ -989,9 +1015,9 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, r32 MaxMs)
         Color = V3(0.8f, 0.8f, 0.0f);
       }
 
-      BufferColors(Group->TextGroup->UIGeo.Colors, Group->TextGroup->UIGeo.CurrentIndex, Color);
+      BufferColors(Group->TextGroup->UIGeo.Colors, Group->TextGroup->UIGeo.At, Color);
 
-      Group->TextGroup->UIGeo.CurrentIndex+=6;
+      Group->TextGroup->UIGeo.At+=6;
     }
   END_BLOCK("Frame Ticker");
 
@@ -1095,11 +1121,11 @@ BufferBarGraph(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, layou
 
   BufferQuad(Group, Geo, MinP, BarDim);
   BufferColors(Group, Geo, V3(0.25f));
-  Geo->CurrentIndex+=6;
+  Geo->At+=6;
 
   BufferQuad(Group, Geo, MinP, PercBarDim);
   BufferColors(Group, Geo, Color);
-  Geo->CurrentIndex+=6;
+  Geo->At+=6;
 
   Layout->At.x += BarDim.x;
 
@@ -1138,7 +1164,7 @@ EndClipRect(ui_render_group *Group, layout *Layout, untextured_2d_geometry_buffe
 
   BufferQuad(Group, Geo, MinP, Dim, 1.0f);
   BufferColors(Group, Geo, V3(0.2f));
-  Geo->CurrentIndex+=6;
+  Geo->At+=6;
   return;
 }
 
@@ -1156,29 +1182,65 @@ DebugDrawDrawCalls(ui_render_group *Group)
      debug_draw_call *DrawCall = &Global_DrawCalls[DrawCountIndex];
      if (DrawCall->Caller)
      {
-       BufferColumn(DrawCall->Count, 4, Group, Layout, WHITE);
+       BufferThousands(DrawCall->Calls, Group, Layout, WHITE);
+       BufferThousands(DrawCall->N, Group, Layout, WHITE);
        AdvanceSpaces(2, Layout);
        BufferValue(DrawCall->Caller, Group, Layout, WHITE);
        NewLine(Layout);
      }
   }
 
+  return;
+}
 
+// TODO(Jesse): Can this be consolidated with the layout struct?
+struct table_column
+{
+  u32 Max;
+};
+
+#define MAX_TABLE_COLUMNS 4
+struct table_layout
+{
+  layout Layout;
+
+  table_column Columns[MAX_TABLE_COLUMNS];
+  u32 ColumnIndex;
+};
+
+void
+Column(const char* ColumnText, ui_render_group *Group, table_layout *Table, u8 Color)
+{
+  table_column *Column = &Table->Columns[(Table->ColumnIndex++)%MAX_TABLE_COLUMNS];
+
+  u32 TextLength = (u32)strlen(ColumnText);
+  Column->Max = Max(Column->Max, TextLength + 1);
+
+  u32 Pad = Column->Max - TextLength;
+
+  AdvanceSpaces(Pad, &Table->Layout);
+
+  BufferValue(ColumnText, Group, &Table->Layout, Color);
+
+  return;
 }
 
 void
-BufferDebugPushMetaData(ui_render_group *Group, /* debug_state *State, */ registered_memory_arena *Current, layout *Layout)
+BufferDebugPushMetaData(ui_render_group *Group, registered_memory_arena *Current, layout *BasisLayout)
 {
-  BufferValue("Total Size", Group, Layout, WHITE);
-  AdvanceSpaces(3, Layout);
+  local_persist table_layout Table = {};
 
-  BufferValue("Struct Count", Group, Layout, WHITE);
-  AdvanceSpaces(1, Layout);
+  Table.Layout = *BasisLayout;
+  Table.Layout.Basis = { BasisLayout->Clip.Max.x, BasisLayout->Clip.Min.y };
 
-  BufferValue("Push Count", Group, Layout, WHITE);
-  AdvanceSpaces(3, Layout);
+  layout *Layout = &Table.Layout;
 
-  BufferValue("Name", Group, Layout, WHITE);
+  BeginClipRect(Layout);
+
+  Column("Size", Group, &Table, WHITE);
+  Column("Structs", Group, &Table, WHITE);
+  Column("Push Count", Group, &Table, WHITE);
+  Column("Name", Group, &Table, WHITE);
   NewLine(Layout);
 
   memory_arena *Arena = Current->Arena;
@@ -1190,16 +1252,16 @@ BufferDebugPushMetaData(ui_render_group *Group, /* debug_state *State, */ regist
     if (Meta->Arena == Arena)
     {
 
-      BufferMemorySize(Meta->StructSize*Meta->StructCount, Group, Layout, WHITE);
-      BufferThousands(Meta->StructCount, Group, Layout, WHITE, 13);
-      BufferThousands(Meta->PushCount, Group, Layout, WHITE, 13);
-
-      AdvanceSpaces(1, Layout);
-      BufferValue(Meta->Name, Group, Layout, WHITE);
+      umm AllocationSize = Meta->StructSize*Meta->StructCount;
+      Column( FormatMemorySize(AllocationSize), Group, &Table, WHITE);
+      Column( FormatThousands(Meta->StructCount), Group, &Table, WHITE);
+      Column( FormatThousands(Meta->PushCount), Group, &Table, WHITE);
+      Column(Meta->Name, Group, &Table, WHITE);
       NewLine(Layout);
     }
   }
 
+  EndClipRect(Group, Layout, &Group->TextGroup->UIGeo, Layout->Basis);
 }
 
 void
@@ -1298,14 +1360,8 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState)
 
     EndClipRect(Group, Layout, &Group->TextGroup->UIGeo);
 
-    layout MetadataLayout = *Layout;
-    MetadataLayout.Basis = { Layout->Clip.Max.x, Layout->Clip.Min.y };
+    BufferDebugPushMetaData(Group, Current, Layout);
 
-    BeginClipRect(&MetadataLayout);
-
-    BufferDebugPushMetaData(Group, Current, &MetadataLayout);
-
-    EndClipRect(Group, &MetadataLayout, &Group->TextGroup->UIGeo, MetadataLayout.Basis);
 
     continue;
   }
@@ -1590,7 +1646,11 @@ DebugFrameEnd(platform *Plat, game_state *GameState)
            DrawCountIndex < Global_DrawCallArrayLength;
            ++ DrawCountIndex)
       {
-         TotalDrawCalls += Global_DrawCalls[DrawCountIndex].Count;
+        debug_draw_call *Call = &Global_DrawCalls[DrawCountIndex];
+        if (Call->Caller)
+        {
+          TotalDrawCalls += Call->Calls;
+        }
       }
 
       BufferColumn(TotalDrawCalls, 6, &Group, &Layout, WHITE);

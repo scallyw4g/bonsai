@@ -129,7 +129,8 @@ struct debug_state
 struct debug_draw_call
 {
   const char * Caller;
-  u32 Count;
+  u32 N;
+  u32 Calls;
 };
 
 debug_global const u32 Global_DrawCallArrayLength = 128;

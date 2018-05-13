@@ -53,6 +53,7 @@
 #endif
 
 
+#define local_persist static
 #define global_variable static
 #define debug_global static
 

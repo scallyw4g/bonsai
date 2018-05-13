@@ -37,3 +37,6 @@ void BreakHere() { return; }
 
 #include <bonsai.h>
 #include <game_types.h>
+
+#include <mesh_types.h>
+

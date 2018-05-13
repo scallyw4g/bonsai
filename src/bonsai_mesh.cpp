@@ -15,16 +15,16 @@ BufferVertsDirect(
   )
 {
   TIMED_FUNCTION();
-  if ( Dest->CurrentIndex + NumVerts > Dest->Allocated )
+  if (BufferIsFull(Dest, NumVerts))
   {
     Assert(false);
-    Error("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->CurrentIndex, Dest->Allocated);
+    Error("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1);
     return;
   }
 
-  memcpy( &Dest->Verts[Dest->CurrentIndex] , Positions, sizeof(*Positions)*NumVerts );
-  memcpy( &Dest->Colors[Dest->CurrentIndex], Colors   , sizeof(*Colors)*NumVerts );
-  Dest->CurrentIndex += NumVerts;
+  memcpy( &Dest->Verts[Dest->At] , Positions, sizeof(*Positions)*NumVerts );
+  memcpy( &Dest->Colors[Dest->At], Colors   , sizeof(*Colors)*NumVerts );
+  Dest->At += NumVerts;
 
   return;
 }
@@ -41,18 +41,18 @@ BufferVertsDirect(
   )
 {
   TIMED_FUNCTION();
-  if ( Dest->CurrentIndex + NumVerts > Dest->Allocated )
+  if (BufferIsFull(Dest, NumVerts))
   {
     Assert(false);
-    Error("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->CurrentIndex, Dest->Allocated);
+    Error("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End -1);
     return;
   }
 
-  memcpy( &Dest->Verts[Dest->CurrentIndex]  , Positions, sizeof(*Positions)*NumVerts );
-  memcpy( &Dest->Normals[Dest->CurrentIndex], Normals,   sizeof(*Normals)*NumVerts );
-  memcpy( &Dest->Colors[Dest->CurrentIndex] , Colors   , sizeof(*Colors)*NumVerts );
+  memcpy( &Dest->Verts[Dest->At]  , Positions, sizeof(*Positions)*NumVerts );
+  memcpy( &Dest->Normals[Dest->At], Normals,   sizeof(*Normals)*NumVerts );
+  memcpy( &Dest->Colors[Dest->At] , Colors   , sizeof(*Colors)*NumVerts );
 
-  Dest->CurrentIndex += NumVerts;
+  Dest->At += NumVerts;
 }
 
 inline void
@@ -70,10 +70,10 @@ BufferVertsDirect(
   )
 {
   TIMED_FUNCTION();
-  if ( Dest->CurrentIndex + NumVerts > Dest->Allocated )
+  if (BufferIsFull(Dest, NumVerts))
   {
     Assert(false);
-    Error("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->CurrentIndex, Dest->Allocated);
+    Error("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1);
     return;
   }
 
@@ -83,8 +83,8 @@ BufferVertsDirect(
 
   Assert(NumVerts % VERTS_PER_FACE == 0);
 
-  memcpy( &Dest->Normals[Dest->CurrentIndex],  Normals,    sizeof(*Normals)*NumVerts );
-  memcpy( &Dest->Colors[Dest->CurrentIndex],   VertColors, sizeof(*VertColors)*NumVerts );
+  memcpy( &Dest->Normals[Dest->At],  Normals,    sizeof(*Normals)*NumVerts );
+  memcpy( &Dest->Colors[Dest->At],   VertColors, sizeof(*VertColors)*NumVerts );
 
 
   for ( u32 VertIndex = 0;
@@ -126,14 +126,14 @@ BufferVertsDirect(
     v3 Result4 = {{ Vert4.F[0], Vert4.F[1], Vert4.F[2] }};
     v3 Result5 = {{ Vert5.F[0], Vert5.F[1], Vert5.F[2] }};
 
-    Dest->Verts[Dest->CurrentIndex + 0] = Result0;
-    Dest->Verts[Dest->CurrentIndex + 1] = Result1;
-    Dest->Verts[Dest->CurrentIndex + 2] = Result2;
-    Dest->Verts[Dest->CurrentIndex + 3] = Result3;
-    Dest->Verts[Dest->CurrentIndex + 4] = Result4;
-    Dest->Verts[Dest->CurrentIndex + 5] = Result5;
+    Dest->Verts[Dest->At + 0] = Result0;
+    Dest->Verts[Dest->At + 1] = Result1;
+    Dest->Verts[Dest->At + 2] = Result2;
+    Dest->Verts[Dest->At + 3] = Result3;
+    Dest->Verts[Dest->At + 4] = Result4;
+    Dest->Verts[Dest->At + 5] = Result5;
 
-    Dest->CurrentIndex += VERTS_PER_FACE;
+    Dest->At += VERTS_PER_FACE;
   }
 
 #else
@@ -144,17 +144,17 @@ BufferVertsDirect(
         VertIndex < NumVerts;
         ++VertIndex )
   {
-    Dest->VertexData[Dest->CurrentIndex] = VertsPositions[VertIndex]*Scale + Offset;
-    Dest->NormalData[Dest->CurrentIndex] = Normals[VertIndex];
-    Dest->ColorData[Dest->CurrentIndex] = VertColors[VertIndex];
-    ++Dest->CurrentIndex;
+    Dest->VertexData[Dest->At] = VertsPositions[VertIndex]*Scale + Offset;
+    Dest->NormalData[Dest->At] = Normals[VertIndex];
+    Dest->ColorData[Dest->At] = VertColors[VertIndex];
+    ++Dest->At;
   }
 #else
   s32 sizeofData = NumVerts * sizeof(v3);
-  memcpy( &Dest->Verts[Dest->CurrentIndex]  , Positions, sizeof(*Positions)*NumVerts );
-  memcpy( &Dest->Normals[Dest->CurrentIndex], Normals,   sizeof(*Normals)*NumVerts );
-  memcpy( &Dest->Colors[Dest->CurrentIndex] , Colors   , sizeof(*Colors)*NumVerts );
-  Dest->CurrentIndex += NumVerts;
+  memcpy( &Dest->Verts[Dest->At]  , Positions, sizeof(*Positions)*NumVerts );
+  memcpy( &Dest->Normals[Dest->At], Normals,   sizeof(*Normals)*NumVerts );
+  memcpy( &Dest->Colors[Dest->At] , Colors   , sizeof(*Colors)*NumVerts );
+  Dest->At += NumVerts;
 #endif
 
 
@@ -182,19 +182,21 @@ BufferVertsChecked(
 {
   TIMED_FUNCTION();
 
-  umm LastRequestedIndex = Target->CurrentIndex + NumVerts;
-  if ( LastRequestedIndex >= Target->Allocated )
+  if (BufferIsFull(Target, NumVerts))
   {
-    u32 VertsRemaining = Target->Allocated - Target->CurrentIndex;
-    BufferVertsDirect( Target, VertsRemaining, Positions, Normals, Colors, Offset, Scale);
+    u32 VertsRemaining = Target->End - Target->At;
+    u32 Pad = VertsRemaining % 6;
 
-    Positions += VertsRemaining;
-    Normals += VertsRemaining;
-    Colors += VertsRemaining;
+    u32 PushVerts = VertsRemaining - Pad;
+    BufferVertsDirect( Target, PushVerts, Positions, Normals, Colors, Offset, Scale);
+
+    Positions += PushVerts;
+    Normals += PushVerts;
+    Colors += PushVerts;
 
     RenderGBuffer(Target, Graphics);
 
-    BufferVertsChecked(Target, Graphics, NumVerts-VertsRemaining, Positions, Normals, Colors, Offset, Scale);
+    BufferVertsChecked(Target, Graphics, NumVerts-PushVerts, Positions, Normals, Colors, Offset, Scale);
   }
   else
   {
@@ -215,21 +217,21 @@ BufferVerts(
   TIMED_FUNCTION();
 
 #if 1
-  BufferVertsChecked(Dest, Graphics, Source->CurrentIndex, Source->Verts,
+  BufferVertsChecked(Dest, Graphics, Source->At, Source->Verts,
       Source->Normals, Source->Colors);
   return;
 #else
   for ( s32 VertIndex = 0;
-        VertIndex < Source->CurrentIndex;
+        VertIndex < Source->At;
         ++VertIndex )
   {
     v3 XYZ = (Source->VertexData[VertIndex]*Scale) + RenderOffset;
 
 #if 1
-    Dest->VertexData[Dest->CurrentIndex] =  XYZ;
-    Dest->NormalData[Dest->CurrentIndex] = Source->NormalData[VertIndex];
-    Dest->ColorData[Dest->CurrentIndex]  = Source->ColorData[VertIndex];
-    ++Dest->CurrentIndex;
+    Dest->VertexData[Dest->At] =  XYZ;
+    Dest->NormalData[Dest->At] = Source->NormalData[VertIndex];
+    Dest->ColorData[Dest->At]  = Source->ColorData[VertIndex];
+    ++Dest->At;
 #else
 
     BufferVerts(Dest, gBuffer, SG, Camera,

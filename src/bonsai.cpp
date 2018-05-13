@@ -539,16 +539,14 @@ world *
 AllocateAndInitWorld( game_state *GameState, world_position Center,
     world_position Radius, voxel_position WorldChunkDim, chunk_dimension VisibleRegion)
 {
-  platform *Plat = GameState->Plat;
-
   /*
    *  Allocate stuff
    */
-  world *World = PUSH_STRUCT_CHECKED(world, Plat->Memory, 1 );
+  world *World = PUSH_STRUCT_CHECKED(world, GameState->Memory, 1 );
   GameState->World = World;
 
-  World->ChunkHash = PUSH_STRUCT_CHECKED(world_chunk*, Plat->Memory, WORLD_HASH_SIZE );
-  World->FreeChunks = PUSH_STRUCT_CHECKED(world_chunk*, Plat->Memory, FREELIST_SIZE );
+  World->ChunkHash = PUSH_STRUCT_CHECKED(world_chunk*, GameState->Memory, WORLD_HASH_SIZE );
+  World->FreeChunks = PUSH_STRUCT_CHECKED(world_chunk*, GameState->Memory, FREELIST_SIZE );
 
   Assert(World->FreeChunkCount == 0);
 
@@ -561,8 +559,8 @@ AllocateAndInitWorld( game_state *GameState, world_position Center,
   World->Gravity = WORLD_GRAVITY;
   World->Center = Center;
 
-  u32 BufferVertices = Megabytes(32);
-  AllocateMesh(&World->Mesh, BufferVertices, Plat->Memory);
+  u32 BufferVertices = (32*6) * 32;
+  AllocateMesh(&World->Mesh, BufferVertices, GameState->Memory);
 
   world_position Min = Center - Radius;
   world_position Max = Center + Radius + 1;
