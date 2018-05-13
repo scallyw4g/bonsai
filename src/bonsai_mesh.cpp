@@ -182,7 +182,8 @@ BufferVertsChecked(
 {
   TIMED_FUNCTION();
 
-  if ( Target->CurrentIndex + NumVerts > Target->Allocated )
+  umm LastRequestedIndex = Target->CurrentIndex + NumVerts;
+  if ( LastRequestedIndex >= Target->Allocated )
   {
     u32 VertsRemaining = Target->Allocated - Target->CurrentIndex;
     BufferVertsDirect( Target, VertsRemaining, Positions, Normals, Colors, Offset, Scale);
