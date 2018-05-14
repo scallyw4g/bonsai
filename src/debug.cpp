@@ -119,21 +119,6 @@ PushStructChecked_(memory_arena *Arena, umm StructSize, umm StructCount, const c
   return Result;
 }
 
-texture *
-MakeTexture_RGBA( v2i Dim, const void* Data, memory_arena *Memory);
-
-void
-FramebufferTexture(framebuffer *FBO, texture *Tex);
-
-shader
-MakeSimpleTextureShader(texture *Texture, memory_arena *GraphicsMemory);
-
-b32
-CheckAndClearFramebuffer();
-
-void
-BindShaderUniforms(shader *Shader);
-
 b32
 InitDebugOverlayFramebuffer(debug_text_render_group *RG, memory_arena *DebugArena, const char *DebugFont)
 {
