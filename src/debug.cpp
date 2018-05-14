@@ -496,7 +496,7 @@ inline void
 AdvanceClip(layout *Layout)
 {
   Layout->Clip.Min.x = Min(Layout->At.x, Layout->Clip.Min.x);
-  Layout->Clip.Min.y = Min(Layout->At.y, Layout->Clip.Min.y);
+  Layout->Clip.Min.y = Max(Layout->At.y, Layout->Clip.Min.y);
 
   Layout->Clip.Max.x = Max(Layout->At.x, Layout->Clip.Max.x);
   Layout->Clip.Max.y = Max(Layout->At.y, Layout->Clip.Max.y);
@@ -779,14 +779,12 @@ BufferNumberAsText(u32 Number, layout *Layout, debug_text_render_group *RG, v2 V
 #endif
 
 inline void
-BufferScopeTreeEntry(ui_render_group *Group, debug_profile_scope *Scope,
+BufferScopeTreeEntry(ui_render_group *Group, debug_profile_scope *Scope, layout *Layout,
     u32 Color, u64 TotalCycles, u64 TotalFrameCycles, u64 CallCount, u32 Depth)
 {
   Assert(TotalFrameCycles);
   r32 Percentage = 100.0f * (r32)SafeDivide0((r64)TotalCycles, (r64)TotalFrameCycles);
   u64 AvgCycles = (u64)SafeDivide0(TotalCycles, CallCount);
-
-  layout *Layout = Group->Layout;
 
   BufferColumn(Percentage, 6, Group, Layout,  Color);
   BufferThousands(AvgCycles, Group, Layout, Color);
@@ -884,7 +882,7 @@ HoverAndClickExpand(ui_render_group *Group, layout *Layout, T *Expandable, u32 C
 }
 
 void
-BufferFirstCallToEach(ui_render_group *Group, debug_profile_scope *Scope, debug_state *State, u64 TotalFrameCycles, u32 Depth)
+BufferFirstCallToEach(ui_render_group *Group, debug_profile_scope *Scope, debug_state *State, layout *Layout, u64 TotalFrameCycles, u32 Depth)
 {
   if (!Scope) return;
 
@@ -901,20 +899,18 @@ BufferFirstCallToEach(ui_render_group *Group, debug_profile_scope *Scope, debug_
     *Scope->Stats = GetStatsFor(State, Scope);
   }
 
-  layout *Layout = Group->Layout;
-
   if (Scope->Stats->IsFirst)
   {
     u32 MainColor = HoverAndClickExpand(Group, Layout, Scope, WHITE, TEAL);
 
-    BufferScopeTreeEntry(Group, Scope, MainColor, Scope->Stats->CumulativeCycles, TotalFrameCycles, Scope->Stats->Calls, Depth);
+    BufferScopeTreeEntry(Group, Scope, Layout, MainColor, Scope->Stats->CumulativeCycles, TotalFrameCycles, Scope->Stats->Calls, Depth);
 
     if (Scope->Expanded)
-      BufferFirstCallToEach(Group, Scope->Stats->MaxScope->Child, State, TotalFrameCycles, Depth+1);
+      BufferFirstCallToEach(Group, Scope->Stats->MaxScope->Child, State, Layout, TotalFrameCycles, Depth+1);
 
   }
 
-  BufferFirstCallToEach(Group, Scope->Sibling, State, TotalFrameCycles, Depth);
+  BufferFirstCallToEach(Group, Scope->Sibling, State, Layout, TotalFrameCycles, Depth);
 
   return;
 }
@@ -970,9 +966,8 @@ SetFontSize(layout *Layout, r32 FontSize)
 }
 
 void
-DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, r32 MaxMs)
+DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Layout, r32 MaxMs)
 {
-  layout *Layout = Group->Layout;
   v2 MouseP = Group->MouseP;
 
   SetFontSize(Layout, 80);
@@ -1033,7 +1028,7 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, r32 MaxMs)
     { // Call Graph
       PadBottom(Layout, 15);
       NewLine(Layout);
-      BufferFirstCallToEach(Group, ReadTree->Root, DebugState, ReadTree->TotalCycles, 0);
+      BufferFirstCallToEach(Group, ReadTree->Root, DebugState, Layout, ReadTree->TotalCycles, 0);
     }
   END_BLOCK("Call Graph");
 }
@@ -1165,13 +1160,13 @@ EndClipRect(ui_render_group *Group, layout *Layout, untextured_2d_geometry_buffe
   BufferQuad(Group, Geo, MinP, Dim, 1.0f);
   BufferColors(Group, Geo, V3(0.2f));
   Geo->At+=6;
+
   return;
 }
 
 void
-DebugDrawDrawCalls(ui_render_group *Group)
+DebugDrawDrawCalls(ui_render_group *Group, layout *Layout)
 {
-  layout *Layout = Group->Layout;
   NewLine(Layout);
   NewLine(Layout);
 
@@ -1193,25 +1188,11 @@ DebugDrawDrawCalls(ui_render_group *Group)
   return;
 }
 
-// TODO(Jesse): Can this be consolidated with the layout struct?
-struct table_column
-{
-  u32 Max;
-};
-
-#define MAX_TABLE_COLUMNS 4
-struct table_layout
-{
-  layout Layout;
-
-  table_column Columns[MAX_TABLE_COLUMNS];
-  u32 ColumnIndex;
-};
-
 void
 Column(const char* ColumnText, ui_render_group *Group, table_layout *Table, u8 Color)
 {
-  table_column *Column = &Table->Columns[(Table->ColumnIndex++)%MAX_TABLE_COLUMNS];
+  Table->ColumnIndex = (Table->ColumnIndex+1)%MAX_TABLE_COLUMNS;
+  table_column *Column = &Table->Columns[Table->ColumnIndex];
 
   u32 TextLength = (u32)strlen(ColumnText);
   Column->Max = Max(Column->Max, TextLength + 1);
@@ -1226,21 +1207,21 @@ Column(const char* ColumnText, ui_render_group *Group, table_layout *Table, u8 C
 }
 
 void
-BufferDebugPushMetaData(ui_render_group *Group, registered_memory_arena *Current, layout *BasisLayout)
+BufferDebugPushMetaData(ui_render_group *Group, registered_memory_arena *Current, v2 Basis)
 {
-  local_persist table_layout Table = {};
+  table_layout *Table = &Current->Table;
+  layout *Layout = &Table->Layout;
 
-  Table.Layout = *BasisLayout;
-  Table.Layout.Basis = { BasisLayout->Clip.Max.x, BasisLayout->Clip.Min.y };
-
-  layout *Layout = &Table.Layout;
+  Clear(Layout);
+  Layout->Basis = Basis;
+  SetFontSize(Layout, 24);
 
   BeginClipRect(Layout);
 
-  Column("Size", Group, &Table, WHITE);
-  Column("Structs", Group, &Table, WHITE);
-  Column("Push Count", Group, &Table, WHITE);
-  Column("Name", Group, &Table, WHITE);
+  Column("Size", Group, Table, WHITE);
+  Column("Structs", Group, Table, WHITE);
+  Column("Push Count", Group, Table, WHITE);
+  Column("Name", Group, Table, WHITE);
   NewLine(Layout);
 
   memory_arena *Arena = Current->Arena;
@@ -1253,10 +1234,10 @@ BufferDebugPushMetaData(ui_render_group *Group, registered_memory_arena *Current
     {
 
       umm AllocationSize = Meta->StructSize*Meta->StructCount;
-      Column( FormatMemorySize(AllocationSize), Group, &Table, WHITE);
-      Column( FormatThousands(Meta->StructCount), Group, &Table, WHITE);
-      Column( FormatThousands(Meta->PushCount), Group, &Table, WHITE);
-      Column(Meta->Name, Group, &Table, WHITE);
+      Column( FormatMemorySize(AllocationSize), Group, Table, WHITE);
+      Column( FormatThousands(Meta->StructCount), Group, Table, WHITE);
+      Column( FormatThousands(Meta->PushCount), Group, Table, WHITE);
+      Column(Meta->Name, Group, Table, WHITE);
       NewLine(Layout);
     }
   }
@@ -1265,9 +1246,8 @@ BufferDebugPushMetaData(ui_render_group *Group, registered_memory_arena *Current
 }
 
 void
-DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState)
+DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState, layout *Layout)
 {
-  layout *Layout = Group->Layout;
   NewLine(Layout);
 
   /* BufferValue("Free Scopes : ", Layout, RG, ViewportDim, WHITE); */
@@ -1284,7 +1264,6 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState)
     memory_arena_stats MemStats = GetMemoryArenaStats(Current->Arena);
     u64 TotalUsed = MemStats.TotalAllocated - MemStats.Remaining;
 
-    BeginClipRect(Layout);
 
     {
       SetFontSize(Layout, 36);
@@ -1294,9 +1273,13 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState)
       BufferValue(MemorySize(MemStats.TotalAllocated), Group, Layout, Color);
     }
 
+
+    BeginClipRect(Layout);
+
     ++Layout->Depth;
     NewLine(Layout);
     SetFontSize(Layout, 28);
+
 
     if (!Current->Expanded)
     {
@@ -1360,8 +1343,8 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState)
 
     EndClipRect(Group, Layout, &Group->TextGroup->UIGeo);
 
-    BufferDebugPushMetaData(Group, Current, Layout);
-
+    v2 BasisP =  {Layout->Clip.Max.x, Layout->Clip.Min.y};
+    BufferDebugPushMetaData(Group, Current, BasisP);
 
     continue;
   }
@@ -1373,9 +1356,9 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState)
 void
 DebugDrawNetworkHud(ui_render_group *Group,
     network_connection *Network,
-    server_state *ServerState)
+    server_state *ServerState,
+    layout *Layout)
 {
-  layout *Layout = Group->Layout;
 
   BufferValue("Network", Group, Layout, WHITE);
   AdvanceSpaces(2, Layout);
@@ -1583,9 +1566,8 @@ PrintScopeTree(debug_profile_scope *Scope, s32 Depth = 0)
 }
 
 void
-DebugDrawGraphicsHud(ui_render_group *Group, debug_state *DebugState)
+DebugDrawGraphicsHud(ui_render_group *Group, debug_state *DebugState, layout *Layout)
 {
-  layout *Layout = Group->Layout;
   BufferValue("Graphics", Group, Layout, WHITE);
 
   NewLine(Layout);
@@ -1613,7 +1595,6 @@ DebugFrameEnd(platform *Plat, game_state *GameState)
   SetFontSize(&Layout, DEBUG_FONT_SIZE);
 
   ui_render_group Group = {};
-  Group.Layout = &Layout;
   Group.TextGroup = RG;
   /* Group.ViewportDim = ViewportDim; */
   Group.MouseP = MouseP;
@@ -1676,30 +1657,30 @@ DebugFrameEnd(platform *Plat, game_state *GameState)
 
     case DebugUIType_Graphics:
     {
-      DebugDrawGraphicsHud(&Group, DebugState);
+      DebugDrawGraphicsHud(&Group, DebugState, &Layout);
     } break;
 
     case DebugUIType_Network:
     {
-      DebugDrawNetworkHud(&Group, &Plat->Network, GameState->ServerState);
+      DebugDrawNetworkHud(&Group, &Plat->Network, GameState->ServerState, &Layout);
     } break;
 
     case DebugUIType_CallGraph:
     {
       BufferValue("Call Graphs", &Group, &Layout, WHITE);
-      DebugDrawCallGraph(&Group, DebugState, Dt.Max);
+      DebugDrawCallGraph(&Group, DebugState, &Layout, Dt.Max);
     } break;
 
     case DebugUIType_Memory:
     {
       BufferValue("Memory Arenas", &Group, &Layout, WHITE);
-      DebugDrawMemoryHud(&Group, DebugState);
+      DebugDrawMemoryHud(&Group, DebugState, &Layout);
     } break;
 
     case DebugUIType_DrawCalls:
     {
       BufferValue("Draw  Calls", &Group, &Layout, WHITE);
-      DebugDrawDrawCalls(&Group);
+      DebugDrawDrawCalls(&Group, &Layout);
     } break;
 
     InvalidDefaultCase;

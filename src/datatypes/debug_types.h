@@ -20,7 +20,6 @@ struct layout
 
 struct ui_render_group
 {
-  layout *Layout;
   debug_text_render_group *TextGroup;
   /* v2 ViewportDim; */
   v2 MouseP;
@@ -70,11 +69,27 @@ enum debug_ui_type
   DebugUIType_Count
 };
 
+// TODO(Jesse): Can this be consolidated with the layout struct?
+struct table_column
+{
+  u32 Max;
+};
+
+#define MAX_TABLE_COLUMNS 4
+struct table_layout
+{
+  layout Layout;
+
+  table_column Columns[MAX_TABLE_COLUMNS];
+  u32 ColumnIndex;
+};
+
 struct registered_memory_arena
 {
   memory_arena *Arena;
   const char* Name;
   b32 Expanded;
+  table_layout Table;
   push_metadata *FirstPushMeta;
   push_metadata *LastPushMeta;
 };
