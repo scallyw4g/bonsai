@@ -287,12 +287,12 @@ UseShader(shader *Shader)
 }
 
 void
-FlushBuffer(debug_text_render_group *RG, untextured_2d_geometry_buffer *Buffer)
+FlushBuffer(debug_text_render_group *RG, untextured_2d_geometry_buffer *Buffer, v2 ScreenDim)
 {
   TIMED_FUNCTION();
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  SetViewport(V2(SCR_WIDTH, SCR_HEIGHT));
+  SetViewport(ScreenDim);
   UseShader(&RG->SolidUIShader);
 
   u32 AttributeIndex = 0;
@@ -311,10 +311,10 @@ FlushBuffer(debug_text_render_group *RG, untextured_2d_geometry_buffer *Buffer)
 }
 
 void
-FlushBuffer(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo)
+FlushBuffer(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo, v2 ScreenDim)
 {
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  SetViewport(V2(SCR_WIDTH, SCR_HEIGHT));
+  SetViewport(ScreenDim);
   glUseProgram(RG->Text2DShader.ID);
 
   // Bind Font texture
@@ -378,7 +378,7 @@ void
 BufferColors(ui_render_group *Group, textured_2d_geometry_buffer *Geo, v3 Color)
 {
   if (BufferIsFull(Geo, 6))
-    FlushBuffer(Group->TextGroup, Geo);
+    FlushBuffer(Group->TextGroup, Geo, Group->ScreenDim);
 
   BufferColors(Geo->Colors, Geo->At, Color);
 }
@@ -387,20 +387,20 @@ void
 BufferColors(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, v3 Color)
 {
   if (BufferIsFull(Geo, 6))
-    FlushBuffer(Group->TextGroup, Geo);
+    FlushBuffer(Group->TextGroup, Geo, Group->ScreenDim);
 
   BufferColors(Geo->Colors, Geo->At, Color);
 }
 
 v2
-BufferQuadDirect(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z)
+BufferQuadDirect(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z, v2 ScreenDim )
 {
   v3 vertex_up_left    = V3( MinP.x       , MinP.y       , Z);
   v3 vertex_up_right   = V3( MinP.x+Dim.x , MinP.y       , Z);
   v3 vertex_down_right = V3( MinP.x+Dim.x , MinP.y+Dim.y , Z);
   v3 vertex_down_left  = V3( MinP.x       , MinP.y+Dim.y , Z);
 
-  v3 ToClipSpace = (1.0f / V3(SCR_WIDTH, SCR_HEIGHT, 1));
+  v3 ToClipSpace = (1.0f / V3(ScreenDim.x, ScreenDim.y, 1.0f));
 
   // Native OpenGL screen coordinates are {0,0} at the bottom-left corner. This
   // maps the origin to the top-left of the screen.
@@ -421,9 +421,9 @@ v2
 BufferQuad(ui_render_group *Group, textured_2d_geometry_buffer *Geo, v2 MinP, v2 Dim, r32 Z = 0.0f)
 {
   if (BufferIsFull(Geo, 6))
-    FlushBuffer(Group->TextGroup, Geo);
+    FlushBuffer(Group->TextGroup, Geo, Group->ScreenDim);
 
-  v2 Result = BufferQuadDirect(Geo->Verts, Geo->At, MinP, Dim, Z);
+  v2 Result = BufferQuadDirect(Geo->Verts, Geo->At, MinP, Dim, Z, Group->ScreenDim);
   return Result;
 }
 
@@ -431,9 +431,9 @@ v2
 BufferQuad(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, v2 MinP, v2 Dim, r32 Z = 0.0f)
 {
   if (BufferIsFull(Geo, 6))
-    FlushBuffer(Group->TextGroup, Geo);
+    FlushBuffer(Group->TextGroup, Geo, Group->ScreenDim);
 
-  v2 Result = BufferQuadDirect(Geo->Verts, Geo->At, MinP, Dim, Z);
+  v2 Result = BufferQuadDirect(Geo->Verts, Geo->At, MinP, Dim, Z, Group->ScreenDim);
   return Result;
 }
 
@@ -758,19 +758,19 @@ BufferNumberAsText(r64 Number, ui_render_group *Group, u32 ColorIndex)
 }
 
 inline void
-BufferNumberAsText(u64 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim, u32 ColorIndex)
+BufferNumberAsText(u64 Number, layout *Layout, debug_text_render_group *RG, v2 ScreenDim, u32 ColorIndex)
 {
   Layout->At.x += Layout->FontSize;
-  BufferValue(Number, Layout, RG, ViewportDim, ColorIndex);
+  BufferValue(Number, Layout, RG, ScreenDim, ColorIndex);
   Layout->At.x += Layout->FontSize;
   return;
 }
 
 inline void
-BufferNumberAsText(u32 Number, layout *Layout, debug_text_render_group *RG, v2 ViewportDim, u32 ColorIndex)
+BufferNumberAsText(u32 Number, layout *Layout, debug_text_render_group *RG, v2 ScreenDim, u32 ColorIndex)
 {
   Layout->At.x += Layout->FontSize;
-  BufferValue(Number, Layout, RG, ViewportDim, ColorIndex);
+  BufferValue(Number, Layout, RG, ScreenDim, ColorIndex);
   Layout->At.x += Layout->FontSize;
   return;
 }
@@ -992,8 +992,8 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Layo
       if ( Tree == DebugState->GetReadScopeTree() )
         Color = V3(0.8f, 0.8f, 0.0f);
 
-      v2 AspectCorrectMinP = (MinP); // / ViewportDim ) * V2((r32)SCR_HEIGHT, (r32)SCR_WIDTH);
-      v2 AspectCorrectDrawDim = (DrawDim); // / ViewportDim ) * V2((r32)SCR_HEIGHT, (r32)SCR_WIDTH);
+      v2 AspectCorrectMinP = (MinP); // / ScreenDim ) * V2((r32)SCR_HEIGHT, (r32)SCR_WIDTH);
+      v2 AspectCorrectDrawDim = (DrawDim); // / ScreenDim ) * V2((r32)SCR_HEIGHT, (r32)SCR_WIDTH);
 
       /* Print(MouseP); */
       /* Print(AspectCorrectMinP); */
@@ -1249,8 +1249,8 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState, layout *Layo
 {
   NewLine(Layout, &Group->Font);
 
-  /* BufferValue("Free Scopes : ", Layout, RG, ViewportDim, WHITE); */
-  /* BufferColumn(DebugState->FreeScopeCount, 4, Layout, RG, ViewportDim, WHITE); */
+  /* BufferValue("Free Scopes : ", Layout, RG, ScreenDim, WHITE); */
+  /* BufferColumn(DebugState->FreeScopeCount, 4, Layout, RG, ScreenDim, WHITE); */
   /* NewLine(Layout, &Group->Font); */
 
   for ( u32 Index = 0;
@@ -1581,27 +1581,24 @@ void
 DebugFrameEnd(platform *Plat, game_state *GameState)
 {
   TIMED_FUNCTION();
-  debug_state *DebugState = GetDebugState();
-  debug_text_render_group *RG = &DebugState->TextRenderGroup;
+  debug_state *DebugState              = GetDebugState();
+  debug_text_render_group *RG          = &DebugState->TextRenderGroup;
   textured_2d_geometry_buffer *TextGeo = &RG->TextGeo;
 
-  /* v2 ViewportDim = V2(Plat->WindowWidth, Plat->WindowHeight); */
-  v2 MouseP = V2(Plat->MouseP.x, Plat->WindowHeight - Plat->MouseP.y);
-
-  min_max_avg_dt Dt = ComputeMinMaxAvgDt(DebugState->ScopeTrees);
-
-  layout Layout = {};
-
+  layout Layout         = {};
   ui_render_group Group = {};
-  Group.TextGroup = RG;
-  /* Group.ViewportDim = ViewportDim; */
-  Group.MouseP = MouseP;
-  Group.Input = &Plat->Input;
+  min_max_avg_dt Dt     = {};
+
+  Group.TextGroup       = RG;
+  Group.Input           = &Plat->Input;
+  Group.ScreenDim       = V2(Plat->WindowWidth, Plat->WindowHeight);
+  Group.MouseP          = V2(Plat->MouseP.x, Plat->WindowHeight - Plat->MouseP.y);
 
   SetFontSize(&Group.Font, DEBUG_FONT_SIZE);
 
+
   TIMED_BLOCK("Draw Status Bar");
-    /* Layout.At.y = (r32)SCR_HEIGHT - Group.Font.Size; */
+    Dt = ComputeMinMaxAvgDt(DebugState->ScopeTrees);
     BufferColumn(Dt.Max, 6, &Group, &Layout, WHITE);
     NewLine(&Layout, &Group.Font);
 
@@ -1686,8 +1683,8 @@ DebugFrameEnd(platform *Plat, game_state *GameState)
     InvalidDefaultCase;
   }
 
-  FlushBuffer(RG, &RG->UIGeo);
-  FlushBuffer(RG, TextGeo);
+  FlushBuffer(RG, &RG->UIGeo, Group.ScreenDim);
+  FlushBuffer(RG, TextGeo, Group.ScreenDim);
 
   DebugState->BytesBufferedToCard = 0;
 

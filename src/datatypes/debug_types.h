@@ -26,6 +26,7 @@ struct ui_render_group
   debug_text_render_group *TextGroup;
   font Font;
   v2 MouseP;
+  v2 ScreenDim;
   struct input *Input;
 
   /* v2 ViewportDim; */
