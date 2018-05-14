@@ -463,9 +463,9 @@ main()
   memory_arena *GameMemory     = PlatformAllocateArena();
 
 
+  DEBUG_REGISTER_ARENA(GameMemory    , &Plat.DebugState);
   DEBUG_REGISTER_ARENA(PlatMemory    , &Plat.DebugState);
   DEBUG_REGISTER_ARENA(GraphicsMemory, &Plat.DebugState);
-  DEBUG_REGISTER_ARENA(GameMemory    , &Plat.DebugState);
 
   PlatformInit(&Plat, PlatMemory);
 

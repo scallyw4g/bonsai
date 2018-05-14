@@ -400,14 +400,14 @@ BufferQuadDirect(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z)
   v3 vertex_down_right = V3( MinP.x+Dim.x , MinP.y       , Z);
   v3 vertex_down_left  = V3( MinP.x       , MinP.y       , Z);
 
-  v3 XYClip = (1.0f / V3(SCR_WIDTH, SCR_HEIGHT, 1));
+  v3 ToClipSpace = (1.0f / V3(SCR_WIDTH, SCR_HEIGHT, 1));
 
-  Dest[StartingIndex++] = (vertex_up_left * XYClip) * 2.0f - 1;
-  Dest[StartingIndex++] = (vertex_down_left * XYClip) * 2.0f - 1;
-  Dest[StartingIndex++] = (vertex_up_right * XYClip) * 2.0f - 1;
-  Dest[StartingIndex++] = (vertex_down_right * XYClip) * 2.0f - 1;
-  Dest[StartingIndex++] = (vertex_up_right * XYClip) * 2.0f - 1;
-  Dest[StartingIndex++] = (vertex_down_left * XYClip) * 2.0f - 1;
+  Dest[StartingIndex++] = (vertex_up_left * ToClipSpace) * 2.0f - 1;
+  Dest[StartingIndex++] = (vertex_down_left * ToClipSpace) * 2.0f - 1;
+  Dest[StartingIndex++] = (vertex_up_right * ToClipSpace) * 2.0f - 1;
+  Dest[StartingIndex++] = (vertex_down_right * ToClipSpace) * 2.0f - 1;
+  Dest[StartingIndex++] = (vertex_up_right * ToClipSpace) * 2.0f - 1;
+  Dest[StartingIndex++] = (vertex_down_left * ToClipSpace) * 2.0f - 1;
 
   v2 Max = vertex_up_right.xy;
   return Max;
@@ -1130,10 +1130,10 @@ ColumnLeft(u32 Width, const char *Text, ui_render_group* Group, layout *Layout, 
 }
 
 void
-ColumnRight(u32 Width, const char *Text, ui_render_group* Group, layout *Layout, u32 ColorIndex )
+ColumnRight(s32 Width, const char *Text, ui_render_group* Group, layout *Layout, u32 ColorIndex )
 {
-  u32 Len = (u32)strlen(Text);
-  u32 Pad = Max(Width-Len, 0U);
+  s32 Len = (s32)strlen(Text);
+  s32 Pad = Max(Width-Len, 0);
   AdvanceSpaces(Pad, Layout, &Group->Font);
   BufferValue(Text, Group, Layout, ColorIndex);
 }
@@ -1148,6 +1148,7 @@ BeginClipRect(layout *Layout)
 void
 EndClipRect(ui_render_group *Group, layout *Layout, untextured_2d_geometry_buffer *Geo, v2 Basis = V2(0,0))
 {
+
   v2 MinP = Layout->Clip.Min + Basis;
   v2 Dim = (Layout->Clip.Max + Basis) - MinP;
 
@@ -1592,7 +1593,6 @@ DebugFrameEnd(platform *Plat, game_state *GameState)
   /* Group.ViewportDim = ViewportDim; */
   Group.MouseP = MouseP;
   Group.Input = &Plat->Input;
-  Group.Font = { 10, 13 };
 
   SetFontSize(&Group.Font, DEBUG_FONT_SIZE);
 
