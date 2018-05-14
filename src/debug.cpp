@@ -484,7 +484,7 @@ inline void
 AdvanceClip(layout *Layout)
 {
   Layout->Clip.Min.x = Min(Layout->At.x, Layout->Clip.Min.x);
-  Layout->Clip.Min.y = Max(Layout->At.y, Layout->Clip.Min.y);
+  Layout->Clip.Min.y = Min(Layout->At.y, Layout->Clip.Min.y);
 
   Layout->Clip.Max.x = Max(Layout->At.x, Layout->Clip.Max.x);
   Layout->Clip.Max.y = Max(Layout->At.y, Layout->Clip.Max.y);
@@ -1149,7 +1149,7 @@ ColumnRight(s32 Width, const char *Text, ui_render_group* Group, layout *Layout,
 inline void
 BeginClipRect(layout *Layout)
 {
-  Layout->Clip = {};
+  Layout->Clip = {V2(FLT_MAX, FLT_MAX), V2(-FLT_MAX, -FLT_MAX)};
   return;
 }
 
@@ -1209,13 +1209,13 @@ Column(const char* ColumnText, ui_render_group *Group, table_layout *Table, u8 C
   return;
 }
 
-void
+layout *
 BufferDebugPushMetaData(ui_render_group *Group, registered_memory_arena *Current, v2 Basis)
 {
   table_layout *Table = &Current->Table;
   layout *Layout = &Table->Layout;
-
   Clear(Layout);
+
   Layout->Basis = Basis;
   SetFontSize(&Group->Font, 24);
 
@@ -1245,7 +1245,10 @@ BufferDebugPushMetaData(ui_render_group *Group, registered_memory_arena *Current
     }
   }
 
+  NewLine(Layout, &Group->Font);
   EndClipRect(Group, Layout, &Group->TextGroup->UIGeo, Layout->Basis);
+
+  return Layout;
 }
 
 void
@@ -1344,10 +1347,13 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState, layout *Layo
 
     --Layout->Depth;
 
-    EndClipRect(Group, Layout, &Group->TextGroup->UIGeo);
+    v2 BasisP =  {Layout->Clip.Max.x + 100.0f, Layout->Clip.Min.y};
 
-    v2 BasisP =  {Layout->Clip.Max.x, Layout->Clip.Min.y};
-    BufferDebugPushMetaData(Group, Current, BasisP);
+    layout *DebugMetaLayout = BufferDebugPushMetaData(Group, Current, BasisP);
+    Layout->At = Max(Layout->Clip.Max, BasisP + DebugMetaLayout->Clip.Max);
+    AdvanceClip(Layout);
+
+    EndClipRect(Group, Layout, &Group->TextGroup->UIGeo);
 
     continue;
   }

@@ -14,6 +14,8 @@
 #include <GL/glx.h>
 #include <X11/keysymdef.h>
 
+
+
 inline bool
 AtomicCompareExchange( volatile unsigned int *Source, unsigned int Exchange, unsigned int Comparator )
 {

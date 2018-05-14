@@ -430,7 +430,6 @@ SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset)
 }
 
 // FIXME(Jesse): Remove the FLT_MAX EmissionLifespan below
-#include <float.h>
 
 void
 SpawnFire(entity *Entity, random_series *Entropy, v3 Offset)

@@ -145,6 +145,15 @@ Max(s32 A, s32 B)
   return Result;
 }
 
+inline v2
+Max(v2 A, v2 B)
+{
+  v2 Result;
+  Result.x = Max(A.x, B.x);
+  Result.y = Max(A.y, B.y);
+  return Result;
+}
+
 inline s32
 Abs(s32 Int)
 {
