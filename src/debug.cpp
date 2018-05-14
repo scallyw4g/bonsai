@@ -4,7 +4,6 @@
 
 debug_global b32 DebugGlobal_RedrawEveryPush = 0;
 
-
 void
 DebugRegisterArena(const char *Name, memory_arena *Arena, debug_state *DebugState)
 {
@@ -789,14 +788,16 @@ BufferScopeTreeEntry(ui_render_group *Group, debug_profile_scope *Scope, layout 
   }
 
   BufferValue(Scope->Name, Group, Layout, Color);
-
   NewLine(Layout, &Group->Font);
+
+  return;
 }
 
 inline rect2
 GetNextLineBounds(layout *Layout, font *Font)
 {
   v2 StartingP = Layout->At;
+
   // FIXME(Jesse): Should line length be systemized somehow?
   v2 EndingP = Layout->At + V2(100000.0f, Font->LineHeight);
   rect2 Result = { StartingP, EndingP };
@@ -953,8 +954,8 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Layo
 {
   v2 MouseP = Group->MouseP;
 
-  SetFontSize(&Group->Font, 80);
   NewLine(Layout, &Group->Font);
+  SetFontSize(&Group->Font, 80);
 
   TIMED_BLOCK("Frame Ticker");
     for (u32 TreeIndex = 0;
@@ -964,10 +965,13 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Layo
       debug_scope_tree *Tree = &DebugState->ScopeTrees[TreeIndex];
 
       r32 Perc = SafeDivide0(Tree->FrameMs, MaxMs);
-      v2 MinP = V2(Layout->At.x, Layout->At.y);
-      v2 QuadDim = V2(15.0, (Group->Font.Size) * Perc);
 
-      v2 DrawDim = BufferQuad(Group, &Group->TextGroup->UIGeo, MinP, QuadDim);
+      v2 MinP = Layout->At;
+      v2 MaxDim = V2(15.0, Group->Font.Size);
+      v2 QuadDim = V2(15.0, (Group->Font.Size) * Perc);
+      v2 Offset = MaxDim - QuadDim;
+
+      v2 DrawDim = BufferQuad(Group, &Group->TextGroup->UIGeo, MinP + Offset, QuadDim);
       Layout->At.x = DrawDim.x + 5.0f;
 
       v3 Color = V3(0.5f, 0.5f, 0.5f);
@@ -977,17 +981,7 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Layo
       if ( Tree == DebugState->GetReadScopeTree() )
         Color = V3(0.8f, 0.8f, 0.0f);
 
-      v2 AspectCorrectMinP = (MinP); // / ScreenDim ) * V2((r32)SCR_HEIGHT, (r32)SCR_WIDTH);
-      v2 AspectCorrectDrawDim = (DrawDim); // / ScreenDim ) * V2((r32)SCR_HEIGHT, (r32)SCR_WIDTH);
-
-      /* Print(MouseP); */
-      /* Print(AspectCorrectMinP); */
-      /* Print(AspectCorrectDrawDim); */
-      /* Print(MinP); */
-      /* Print(DrawDim); */
-      /* Debug("------------------------------"); */
-
-      if (MouseP > AspectCorrectMinP && MouseP < AspectCorrectDrawDim)
+      if (MouseP > MinP && MouseP < DrawDim)
       {
         DebugState->ReadScopeIndex = TreeIndex;
         Color = V3(0.8f, 0.8f, 0.0f);
@@ -1007,6 +1001,7 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Layo
       BufferColumn(ReadTree->FrameMs, 4, Group, Layout, WHITE);
       BufferThousands(ReadTree->TotalCycles, Group, Layout, WHITE);
     }
+    NewLine(Layout, &Group->Font);
 
     { // Call Graph
       PadBottom(Layout, 15);
@@ -1577,7 +1572,7 @@ DebugFrameEnd(platform *Plat, game_state *GameState)
   Group.TextGroup       = RG;
   Group.Input           = &Plat->Input;
   Group.ScreenDim       = V2(Plat->WindowWidth, Plat->WindowHeight);
-  Group.MouseP          = V2(Plat->MouseP.x, Plat->WindowHeight - Plat->MouseP.y);
+  Group.MouseP          = V2(Plat->MouseP.x, Plat->MouseP.y);
 
   SetFontSize(&Group.Font, DEBUG_FONT_SIZE);
 
@@ -1624,7 +1619,6 @@ DebugFrameEnd(platform *Plat, game_state *GameState)
     }
 
     BufferColumn(Dt.Min, 6, &Group, &Layout, WHITE);
-
   END_BLOCK("Status Bar");
 
   SetFontSize(&Group.Font, 32);
