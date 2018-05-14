@@ -6,12 +6,15 @@ struct clip_rect
   v2 Max;
 };
 
+struct font
+{
+  r32 Size;
+  r32 LineHeight;
+};
+
 struct layout
 {
   v2 At;
-
-  r32 FontSize;
-  r32 LineHeight;
   u32 Depth;
 
   v2 Basis;
@@ -21,9 +24,11 @@ struct layout
 struct ui_render_group
 {
   debug_text_render_group *TextGroup;
-  /* v2 ViewportDim; */
+  font Font;
   v2 MouseP;
   struct input *Input;
+
+  /* v2 ViewportDim; */
 };
 
 struct debug_profile_scope;
