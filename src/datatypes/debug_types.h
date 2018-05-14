@@ -110,7 +110,7 @@ struct debug_state
 
   untextured_3d_geometry_buffer LineMesh;
 
-  debug_ui_type UIType = DebugUIType_Memory;
+  debug_ui_type UIType = DebugUIType_CallGraph;
 
   u64 BytesBufferedToCard;
   u64 FrameCount;

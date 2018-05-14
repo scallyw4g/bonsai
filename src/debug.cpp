@@ -958,6 +958,8 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Layo
   SetFontSize(&Group->Font, 80);
 
   TIMED_BLOCK("Frame Ticker");
+    v2 StartingAt = Layout->At;
+
     for (u32 TreeIndex = 0;
         TreeIndex < ROOT_SCOPE_COUNT;
         ++TreeIndex )
@@ -991,23 +993,45 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Layo
 
       Group->TextGroup->UIGeo.At+=6;
     }
-  END_BLOCK("Frame Ticker");
 
-  TIMED_BLOCK("Call Graph");
 
-    SetFontSize(&Group->Font, 30);
-    debug_scope_tree *ReadTree = DebugState->GetReadScopeTree();
+    r32 MaxBarHeight = Group->Font.Size;
+    v2 QuadDim = V2(Layout->At.x, 2.0f);
+    {
+      r32 MsPerc = SafeDivide0(33.333f, MaxMs);
+      r32 MinPOffset = MaxBarHeight * MsPerc;
+      v2 MinP = { StartingAt.x, StartingAt.y + Group->Font.Size - MinPOffset };
+
+      BufferQuad(Group, &Group->TextGroup->UIGeo, MinP, QuadDim, 1.0f);
+      BufferColors(Group->TextGroup->UIGeo.Colors, Group->TextGroup->UIGeo.At, V3(1,1,0));
+      Group->TextGroup->UIGeo.At+=6;
+    }
+
+    {
+      r32 MsPerc = SafeDivide0(16.666f, MaxMs);
+      r32 MinPOffset = MaxBarHeight * MsPerc;
+      v2 MinP = { StartingAt.x, StartingAt.y + Group->Font.Size - MinPOffset };
+
+      BufferQuad(Group, &Group->TextGroup->UIGeo, MinP, QuadDim, 1.0f);
+      BufferColors(Group->TextGroup->UIGeo.Colors, Group->TextGroup->UIGeo.At, V3(0,1,0));
+      Group->TextGroup->UIGeo.At+=6;
+    }
+
     { // Current ReadTree info
+      SetFontSize(&Group->Font, 30);
+      debug_scope_tree *ReadTree = DebugState->GetReadScopeTree();
       BufferColumn(ReadTree->FrameMs, 4, Group, Layout, WHITE);
       BufferThousands(ReadTree->TotalCycles, Group, Layout, WHITE);
     }
     NewLine(Layout, &Group->Font);
 
-    { // Call Graph
-      PadBottom(Layout, 15);
-      NewLine(Layout, &Group->Font);
-      BufferFirstCallToEach(Group, ReadTree->Root, DebugState, Layout, ReadTree->TotalCycles, 0);
-    }
+  END_BLOCK("Frame Ticker");
+
+  TIMED_BLOCK("Call Graph");
+    PadBottom(Layout, 15);
+    NewLine(Layout, &Group->Font);
+    debug_scope_tree *ReadTree = DebugState->GetReadScopeTree();
+    BufferFirstCallToEach(Group, ReadTree->Root, DebugState, Layout, ReadTree->TotalCycles, 0);
   END_BLOCK("Call Graph");
 }
 
