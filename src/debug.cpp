@@ -847,10 +847,10 @@ GetStatsFor(debug_state *State, debug_profile_scope *Scope)
   return Result;
 }
 
-template <typename T> u32
-HoverAndClickExpand(ui_render_group *Group, layout *Layout, T *Expandable, u32 Color, u32 HoverColor)
+template <typename T> u8
+HoverAndClickExpand(ui_render_group *Group, layout *Layout, T *Expandable, u8 Color, u8 HoverColor)
 {
-  u32 DrawColor = Color;
+  u8 DrawColor = Color;
 
   {
     rect2 EntryBounds = GetNextLineBounds(Layout, &Group->Font);
@@ -1252,13 +1252,17 @@ BufferDebugPushMetaData(ui_render_group *Group, registered_memory_arena *Current
 }
 
 void
-DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState, layout *Layout)
+DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState, layout *BasisLayout)
 {
-  NewLine(Layout, &Group->Font);
+  local_persist table_layout MemoryHudTable = {};
 
-  /* BufferValue("Free Scopes : ", Layout, RG, ScreenDim, WHITE); */
-  /* BufferColumn(DebugState->FreeScopeCount, 4, Layout, RG, ScreenDim, WHITE); */
-  /* NewLine(Layout, &Group->Font); */
+  layout *Layout = &MemoryHudTable.Layout;
+  Clear(Layout);
+
+  *Layout = *BasisLayout;
+
+  BufferValue("Memory Arenas", Group, Layout, WHITE);
+  NewLine(Layout, &Group->Font);
 
   for ( u32 Index = 0;
         Index < REGISTERED_MEMORY_ARENA_COUNT;
@@ -1274,9 +1278,10 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState, layout *Layo
     {
       SetFontSize(&Group->Font, 36);
       NewLine(Layout, &Group->Font);
-      u32 Color = HoverAndClickExpand(Group, Layout, Current, WHITE, TEAL);
-      ColumnLeft(15, Current->Name, Group, Layout, Color);
-      BufferValue(MemorySize(MemStats.TotalAllocated), Group, Layout, Color);
+      u8 Color = HoverAndClickExpand(Group, Layout, Current, WHITE, TEAL);
+
+      Column(Current->Name, Group, &MemoryHudTable, Color);
+      Column(MemorySize(MemStats.TotalAllocated), Group, &MemoryHudTable, Color);
     }
 
 
@@ -1679,7 +1684,6 @@ DebugFrameEnd(platform *Plat, game_state *GameState)
 
     case DebugUIType_Memory:
     {
-      BufferValue("Memory Arenas", &Group, &Layout, WHITE);
       DebugDrawMemoryHud(&Group, DebugState, &Layout);
     } break;
 
