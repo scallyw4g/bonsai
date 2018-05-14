@@ -395,21 +395,25 @@ BufferColors(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, v3 Colo
 v2
 BufferQuadDirect(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z)
 {
-  v3 vertex_up_left    = V3( MinP.x       , MinP.y+Dim.y , Z);
-  v3 vertex_up_right   = V3( MinP.x+Dim.x , MinP.y+Dim.y , Z);
-  v3 vertex_down_right = V3( MinP.x+Dim.x , MinP.y       , Z);
-  v3 vertex_down_left  = V3( MinP.x       , MinP.y       , Z);
+  v3 vertex_up_left    = V3( MinP.x       , MinP.y       , Z);
+  v3 vertex_up_right   = V3( MinP.x+Dim.x , MinP.y       , Z);
+  v3 vertex_down_right = V3( MinP.x+Dim.x , MinP.y+Dim.y , Z);
+  v3 vertex_down_left  = V3( MinP.x       , MinP.y+Dim.y , Z);
 
   v3 ToClipSpace = (1.0f / V3(SCR_WIDTH, SCR_HEIGHT, 1));
 
-  Dest[StartingIndex++] = (vertex_up_left * ToClipSpace) * 2.0f - 1;
-  Dest[StartingIndex++] = (vertex_down_left * ToClipSpace) * 2.0f - 1;
-  Dest[StartingIndex++] = (vertex_up_right * ToClipSpace) * 2.0f - 1;
-  Dest[StartingIndex++] = (vertex_down_right * ToClipSpace) * 2.0f - 1;
-  Dest[StartingIndex++] = (vertex_up_right * ToClipSpace) * 2.0f - 1;
-  Dest[StartingIndex++] = (vertex_down_left * ToClipSpace) * 2.0f - 1;
+  // Native OpenGL screen coordinates are {0,0} at the bottom-left corner. This
+  // maps the origin to the top-left of the screen.
+  v3 InvertY = V3(1.0f, -1.0f, 1.0f);
 
-  v2 Max = vertex_up_right.xy;
+  Dest[StartingIndex++] = InvertY * ((vertex_up_left    * ToClipSpace) * 2.0f - 1);
+  Dest[StartingIndex++] = InvertY * ((vertex_down_left  * ToClipSpace) * 2.0f - 1);
+  Dest[StartingIndex++] = InvertY * ((vertex_up_right   * ToClipSpace) * 2.0f - 1);
+  Dest[StartingIndex++] = InvertY * ((vertex_down_right * ToClipSpace) * 2.0f - 1);
+  Dest[StartingIndex++] = InvertY * ((vertex_up_right   * ToClipSpace) * 2.0f - 1);
+  Dest[StartingIndex++] = InvertY * ((vertex_down_left  * ToClipSpace) * 2.0f - 1);
+
+  v2 Max = vertex_down_right.xy;
   return Max;
 }
 
@@ -551,14 +555,12 @@ AdvanceSpaces(u32 N, layout *Layout, font *Font)
 inline void
 NewLine(layout *Layout, font *Font)
 {
-  Layout->At.y -= (Font->LineHeight);
+  Layout->At.y += (Font->LineHeight);
   Layout->At.x = 0;
   AdvanceSpaces(Layout->Depth, Layout, Font);
   AdvanceClip(Layout);
   return;
 }
-
-static char Global_CharBuffer[32];
 
 inline char*
 MemorySize(u64 Number)
@@ -586,8 +588,10 @@ MemorySize(u64 Number)
     Units = 'G';
   }
 
-  sprintf(Global_CharBuffer, "%.1f%c", (r32)Display, Units);
-  return Global_CharBuffer;
+
+  char *Buffer = PUSH_STRUCT_CHECKED(char, TranArena, 32);
+  sprintf(Buffer, "%.1f%c", (r32)Display, Units);
+  return Buffer;
 }
 
 inline char*
@@ -948,7 +952,7 @@ DebugFrameBegin(hotkeys *Hotkeys, r32 Dt, u64 Cycles)
 inline void
 PadBottom(layout *Layout, r32 Pad)
 {
-  Layout->At.y -= Pad;
+  Layout->At.y += Pad;
 }
 
 void
@@ -1597,7 +1601,7 @@ DebugFrameEnd(platform *Plat, game_state *GameState)
   SetFontSize(&Group.Font, DEBUG_FONT_SIZE);
 
   TIMED_BLOCK("Draw Status Bar");
-    Layout.At.y = (r32)SCR_HEIGHT - Group.Font.Size;
+    /* Layout.At.y = (r32)SCR_HEIGHT - Group.Font.Size; */
     BufferColumn(Dt.Max, 6, &Group, &Layout, WHITE);
     NewLine(&Layout, &Group.Font);
 
