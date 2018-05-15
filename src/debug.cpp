@@ -546,6 +546,14 @@ NewLine(layout *Layout, font *Font)
   return;
 }
 
+inline void
+NewRow(table_layout *Table, font *Font)
+{
+  Table->ColumnIndex = 0;
+  NewLine(&Table->Layout, Font);
+  return;
+}
+
 inline char*
 MemorySize(u64 Number)
 {
@@ -1212,7 +1220,7 @@ Column(const char* ColumnText, ui_render_group *Group, table_layout *Table, u8 C
 layout *
 BufferDebugPushMetaData(ui_render_group *Group, registered_memory_arena *Current, v2 Basis)
 {
-  table_layout *Table = &Current->Table;
+  table_layout *Table = &Current->MetadataTable;
   layout *Layout = &Table->Layout;
   Clear(Layout);
 
@@ -1252,17 +1260,22 @@ BufferDebugPushMetaData(ui_render_group *Group, registered_memory_arena *Current
 }
 
 void
+BufferArenaBargraph(table_layout *BargraphTable, ui_render_group *Group, umm TotalUsed, r32 TotalPerc, umm Remaining)
+{
+  Column( FormatMemorySize(TotalUsed), Group, BargraphTable, WHITE);
+  BufferBarGraph(Group, &Group->TextGroup->UIGeo, &BargraphTable->Layout, TotalPerc);
+  Column( FormatMemorySize(Remaining), Group, BargraphTable, WHITE);
+  NewRow(BargraphTable, &Group->Font);
+
+  return;
+}
+
+void
 DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState, layout *BasisLayout)
 {
   local_persist table_layout MemoryHudTable = {};
 
-  layout *Layout = &MemoryHudTable.Layout;
-  Clear(Layout);
-
-  *Layout = *BasisLayout;
-
-  BufferValue("Memory Arenas", Group, Layout, WHITE);
-  NewLine(Layout, &Group->Font);
+  MemoryHudTable.Layout = *BasisLayout;
 
   for ( u32 Index = 0;
         Index < REGISTERED_MEMORY_ARENA_COUNT;
@@ -1277,63 +1290,61 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState, layout *Basi
 
     {
       SetFontSize(&Group->Font, 36);
-      NewLine(Layout, &Group->Font);
-      u8 Color = HoverAndClickExpand(Group, Layout, Current, WHITE, TEAL);
+      NewLine(&MemoryHudTable.Layout, &Group->Font);
+      u8 Color = HoverAndClickExpand(Group, &MemoryHudTable.Layout, Current, WHITE, TEAL);
 
       Column(Current->Name, Group, &MemoryHudTable, Color);
       Column(MemorySize(MemStats.TotalAllocated), Group, &MemoryHudTable, Color);
+      NewRow(&MemoryHudTable, &Group->Font);
     }
 
 
-    BeginClipRect(Layout);
+    BeginClipRect(&MemoryHudTable.Layout);
 
-    ++Layout->Depth;
-    NewLine(Layout, &Group->Font);
+    ++MemoryHudTable.Layout.Depth;
     SetFontSize(&Group->Font, 28);
 
 
     if (!Current->Expanded)
     {
-      --Layout->Depth;
+      --MemoryHudTable.Layout.Depth;
       continue;
     }
 
 
     {
-      BufferValue("Allocs", Group, Layout, WHITE);
-      AdvanceSpaces(4, Layout, &Group->Font);
-      BufferValue(MemStats.Allocations, Group, Layout, WHITE);
-      NewLine(Layout, &Group->Font);
+      table_layout *StatsTable = &Current->StatsTable;
+      StatsTable->Layout = MemoryHudTable.Layout;
 
-      BufferValue("Pushes", Group, Layout, WHITE);
-      AdvanceSpaces(4, Layout, &Group->Font);
-      BufferValue(MemStats.Pushes, Group, Layout, WHITE);
-      NewLine(Layout, &Group->Font);
+      Column("Allocs", Group, StatsTable, WHITE);
+      Column(FormatMemorySize(MemStats.Allocations), Group, StatsTable, WHITE);
+      NewRow(StatsTable, &Group->Font);
 
-      BufferValue("Remaining", Group, Layout, WHITE);
-      AdvanceSpaces(1, Layout, &Group->Font);
-      BufferMemorySize(MemStats.Remaining, Group, Layout, WHITE);
-      NewLine(Layout, &Group->Font);
+      Column("Pushes", Group, StatsTable, WHITE);
+      Column(FormatThousands(MemStats.Pushes), Group, StatsTable, WHITE);
+      NewRow(StatsTable, &Group->Font);
 
-      BufferValue("Total", Group, Layout, WHITE);
-      AdvanceSpaces(5, Layout, &Group->Font);
-      BufferMemorySize(MemStats.TotalAllocated, Group, Layout, WHITE);
+      Column("Remaining", Group, StatsTable, WHITE);
+      Column(FormatMemorySize(MemStats.Remaining), Group, StatsTable, WHITE);
+      NewRow(StatsTable, &Group->Font);
+
+      Column("Total", Group, StatsTable, WHITE);
+      Column(FormatMemorySize(MemStats.TotalAllocated), Group, StatsTable, WHITE);
+      NewRow(StatsTable, &Group->Font);
+
+      MemoryHudTable.Layout = StatsTable->Layout;
     }
 
     {
+      table_layout *BargraphTable = &Current->BargraphTable;
+      BargraphTable->Layout = MemoryHudTable.Layout;
       SetFontSize(&Group->Font, 22);
-      NewLine(Layout, &Group->Font);
+
+      NewRow(BargraphTable, &Group->Font);
 
       r32 TotalPerc = (r32)SafeDivide0(TotalUsed, MemStats.TotalAllocated);
-
-      NewLine(Layout, &Group->Font);
-
-      ColumnRight(6, MemorySize(TotalUsed), Group, Layout, WHITE);
-      BufferBarGraph(Group, &Group->TextGroup->UIGeo, Layout, TotalPerc);
-      ColumnRight(6, MemorySize(MemStats.Remaining), Group, Layout, WHITE);
-
-      NewLine(Layout, &Group->Font);
-      NewLine(Layout, &Group->Font);
+      BufferArenaBargraph(BargraphTable, Group, TotalUsed, TotalPerc, MemStats.Remaining);
+      NewRow(BargraphTable, &Group->Font);
 
       memory_arena *CurrentArena = Current->Arena;
       while (CurrentArena)
@@ -1341,24 +1352,23 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState, layout *Basi
         u64 CurrentUsed = TotalSize(CurrentArena) - Remaining(CurrentArena);
         r32 CurrentPerc = (r32)SafeDivide0(CurrentUsed, TotalSize(CurrentArena));
 
-        ColumnRight(6, MemorySize(CurrentUsed), Group, Layout, WHITE);
-        BufferBarGraph(Group, &Group->TextGroup->UIGeo, Layout, CurrentPerc);
-        ColumnRight(6, MemorySize(Remaining(CurrentArena)), Group, Layout, WHITE);
-        NewLine(Layout, &Group->Font);
+        BufferArenaBargraph(BargraphTable, Group, CurrentUsed, CurrentPerc, Remaining(CurrentArena));
 
         CurrentArena = CurrentArena->Prev;
       }
+
+      MemoryHudTable.Layout = BargraphTable->Layout;
     }
 
-    --Layout->Depth;
+    --MemoryHudTable.Layout.Depth;
 
-    v2 BasisP =  {Layout->Clip.Max.x + 100.0f, Layout->Clip.Min.y};
+    v2 BasisP =  { MemoryHudTable.Layout.Clip.Max.x + 100.0f, MemoryHudTable.Layout.Clip.Min.y};
 
     layout *DebugMetaLayout = BufferDebugPushMetaData(Group, Current, BasisP);
-    Layout->At = Max(Layout->Clip.Max, BasisP + DebugMetaLayout->Clip.Max);
-    AdvanceClip(Layout);
+    MemoryHudTable.Layout.At = Max(MemoryHudTable.Layout.Clip.Max, BasisP + DebugMetaLayout->Clip.Max);
+    AdvanceClip(&MemoryHudTable.Layout);
 
-    EndClipRect(Group, Layout, &Group->TextGroup->UIGeo);
+    EndClipRect(Group, &MemoryHudTable.Layout, &Group->TextGroup->UIGeo);
 
     continue;
   }
@@ -1684,6 +1694,8 @@ DebugFrameEnd(platform *Plat, game_state *GameState)
 
     case DebugUIType_Memory:
     {
+      BufferValue("Memory Arenas", &Group, &Layout, WHITE);
+      NewLine(&Layout, &Group.Font);
       DebugDrawMemoryHud(&Group, DebugState, &Layout);
     } break;
 

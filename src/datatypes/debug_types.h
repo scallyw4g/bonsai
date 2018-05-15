@@ -95,9 +95,10 @@ struct registered_memory_arena
   memory_arena *Arena;
   const char* Name;
   b32 Expanded;
-  table_layout Table;
-  push_metadata *FirstPushMeta;
-  push_metadata *LastPushMeta;
+
+  table_layout StatsTable;
+  table_layout BargraphTable;
+  table_layout MetadataTable;
 };
 
 #define REGISTERED_MEMORY_ARENA_COUNT 32
