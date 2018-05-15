@@ -4,6 +4,27 @@
 
 debug_global b32 DebugGlobal_RedrawEveryPush = 0;
 
+v2
+GetAbsoluteMin(layout *Layout)
+{
+  v2 Result = Layout->Clip.Min + Layout->Basis;
+  return Result;
+}
+
+v2
+GetAbsoluteMax(layout *Layout)
+{
+  v2 Result = Layout->Clip.Max + Layout->Basis;
+  return Result;
+}
+
+v2
+GetAbsoluteAt(layout *Layout)
+{
+  v2 Result = Layout->At + Layout->Basis;
+  return Result;
+}
+
 void
 DebugRegisterArena(const char *Name, memory_arena *Arena, debug_state *DebugState)
 {
@@ -804,10 +825,10 @@ BufferScopeTreeEntry(ui_render_group *Group, debug_profile_scope *Scope, layout 
 inline rect2
 GetNextLineBounds(layout *Layout, font *Font)
 {
-  v2 StartingP = Layout->At;
+  v2 StartingP = GetAbsoluteAt(Layout);
 
   // FIXME(Jesse): Should line length be systemized somehow?
-  v2 EndingP = Layout->At + V2(100000.0f, Font->LineHeight);
+  v2 EndingP = StartingP + V2(100000.0f, Font->LineHeight);
   rect2 Result = { StartingP, EndingP };
   return Result;
 }
@@ -1321,25 +1342,13 @@ BufferMemoryBargraphTable(ui_render_group *Group, memory_arena_stats MemStats, u
   return BargraphTable->Layout.Clip.Max;
 }
 
-v2
-GetAbsoluteMin(layout *Layout)
-{
-  v2 Result = Layout->Clip.Min + Layout->Basis;
-  return Result;
-}
-
-v2
-GetAbsoluteMax(layout *Layout)
-{
-  v2 Result = Layout->Clip.Max + Layout->Basis;
-  return Result;
-}
-
 void
-DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState, layout *BasisLayout)
+DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState, v2 LayoutBasisP)
 {
   local_persist table_layout MemoryHudArenaTable = {};
-  MemoryHudArenaTable.Layout = *BasisLayout;
+
+  MemoryHudArenaTable.Layout.At = {};
+  MemoryHudArenaTable.Layout.Basis = LayoutBasisP;
 
   for ( u32 Index = 0;
         Index < REGISTERED_MEMORY_ARENA_COUNT;
@@ -1368,28 +1377,33 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState, layout *Basi
       BeginClipRect(&MemoryHudArenaTable.Layout);
       SetFontSize(&Group->Font, 28);
 
-      table_layout *StatsTable = &Current->StatsTable;
+      table_layout *StatsTable    = &Current->StatsTable;
       table_layout *BargraphTable = &Current->BargraphTable;
-      table_layout *MetaTable = &Current->MetadataTable;
+      table_layout *MetaTable     = &Current->MetadataTable;
 
       {
-        v2 BasisP = MemoryHudArenaTable.Layout.At;
+        v2 BasisP = GetAbsoluteAt(&MemoryHudArenaTable.Layout);
         BufferMemoryStatsTable(MemStats, Group, StatsTable, BasisP);
       }
 
       {
-        v2 BasisP = { GetAbsoluteMin(&StatsTable->Layout).x, GetAbsoluteMax(&StatsTable->Layout).y };
+        v2 BasisP = { GetAbsoluteMin(&StatsTable->Layout).x,
+                      GetAbsoluteMax(&StatsTable->Layout).y };
         BufferMemoryBargraphTable(Group, MemStats, TotalUsed, Current->Arena, BargraphTable, BasisP);
       }
 
 
       {
-        v2 BasisP = { Max( StatsTable->Layout.Clip.Max.x, BargraphTable->Layout.Clip.Max.x ), MemoryHudArenaTable.Layout.At.y };
+        v2 BasisP = { Max( StatsTable->Layout.Clip.Max.x,
+                            BargraphTable->Layout.Clip.Max.x ),
+                     GetAbsoluteAt(&MemoryHudArenaTable.Layout).y };
         BufferDebugPushMetaData(Group, Current, MetaTable, BasisP);
       }
 
-      MemoryHudArenaTable.Layout.At = Max( GetAbsoluteMax(&BargraphTable->Layout),
-                                           GetAbsoluteMax(&MetaTable->Layout) );
+      MemoryHudArenaTable.Layout.At = {};
+      MemoryHudArenaTable.Layout.Basis = V2( MemoryHudArenaTable.Layout.Basis.x,
+                                             Max( GetAbsoluteMax(&BargraphTable->Layout).y,
+                                                  GetAbsoluteMax(&MetaTable->Layout).y ));
 
       AdvanceClip(&MemoryHudArenaTable.Layout);
     }
@@ -1720,7 +1734,8 @@ DebugFrameEnd(platform *Plat, game_state *GameState)
     {
       BufferValue("Memory Arenas", &Group, &Layout, WHITE);
       NewLine(&Layout, &Group.Font);
-      DebugDrawMemoryHud(&Group, DebugState, &Layout);
+      v2 BasisP = Layout.At;
+      DebugDrawMemoryHud(&Group, DebugState, BasisP);
     } break;
 
     case DebugUIType_DrawCalls:
