@@ -504,11 +504,10 @@ PrintFreeScopes(debug_state *State)
 inline void
 AdvanceClip(layout *Layout)
 {
-  Layout->Clip.Min.x = Min(Layout->At.x, Layout->Clip.Min.x);
-  Layout->Clip.Min.y = Min(Layout->At.y, Layout->Clip.Min.y);
+  Layout->Clip.Min = Min(Layout->At, Layout->Clip.Min);
+  Layout->Clip.Max = Max(Layout->At, Layout->Clip.Max);
 
-  Layout->Clip.Max.x = Max(Layout->At.x, Layout->Clip.Max.x);
-  Layout->Clip.Max.y = Max(Layout->At.y, Layout->Clip.Max.y);
+  return;
 }
 
 inline void
@@ -1343,12 +1342,12 @@ BufferMemoryBargraphTable(ui_render_group *Group, memory_arena_stats MemStats, u
 }
 
 void
-DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState, v2 LayoutBasisP)
+DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState, v2 OriginalBasisP)
 {
   local_persist table_layout MemoryHudArenaTable = {};
 
   MemoryHudArenaTable.Layout.At = {};
-  MemoryHudArenaTable.Layout.Basis = LayoutBasisP;
+  MemoryHudArenaTable.Layout.Basis = OriginalBasisP;
 
   for ( u32 Index = 0;
         Index < REGISTERED_MEMORY_ARENA_COUNT;
@@ -1394,9 +1393,10 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState, v2 LayoutBas
 
 
       {
-        v2 BasisP = { Max( StatsTable->Layout.Clip.Max.x,
-                            BargraphTable->Layout.Clip.Max.x ),
-                     GetAbsoluteAt(&MemoryHudArenaTable.Layout).y };
+        v2 BasisP = { 100.0f + Max(StatsTable->Layout.Clip.Max.x,
+                                   BargraphTable->Layout.Clip.Max.x),
+                      GetAbsoluteAt(&MemoryHudArenaTable.Layout).y };
+
         BufferDebugPushMetaData(Group, Current, MetaTable, BasisP);
       }
 
