@@ -1118,7 +1118,7 @@ BufferBarGraph(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, layou
   r32 BarHeight = Group->Font.Size;
   r32 BarWidth = 200.0f;
 
-  v2 MinP = Layout->At; // + V2(0, BarHeight);
+  v2 MinP = Layout->At + Layout->Basis;
   v2 BarDim = V2(BarWidth, BarHeight);
   v2 PercBarDim = V2(BarWidth, BarHeight) * V2(PercFilled, 1);
 
@@ -1209,7 +1209,6 @@ Column(const char* ColumnText, ui_render_group *Group, table_layout *Table, u8 C
   Column->Max = Max(Column->Max, TextLength + 1);
 
   u32 Pad = Column->Max - TextLength;
-
   AdvanceSpaces(Pad, &Table->Layout, &Group->Font);
 
   BufferValue(ColumnText, Group, &Table->Layout, Color);
@@ -1300,21 +1299,20 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState, layout *Basi
 
 
     BeginClipRect(&MemoryHudTable.Layout);
-
-    ++MemoryHudTable.Layout.Depth;
     SetFontSize(&Group->Font, 28);
 
 
     if (!Current->Expanded)
     {
-      --MemoryHudTable.Layout.Depth;
       continue;
     }
 
 
+    v2 BasisP = MemoryHudTable.Layout.At;
+    table_layout *StatsTable = &Current->StatsTable;
     {
-      table_layout *StatsTable = &Current->StatsTable;
-      StatsTable->Layout = MemoryHudTable.Layout;
+      StatsTable->Layout = {};
+      StatsTable->Layout.Basis = BasisP;
 
       Column("Allocs", Group, StatsTable, WHITE);
       Column(FormatMemorySize(MemStats.Allocations), Group, StatsTable, WHITE);
@@ -1332,12 +1330,13 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState, layout *Basi
       Column(FormatMemorySize(MemStats.TotalAllocated), Group, StatsTable, WHITE);
       NewRow(StatsTable, &Group->Font);
 
-      MemoryHudTable.Layout = StatsTable->Layout;
     }
 
+    BasisP.y += StatsTable->Layout.Clip.Max.y;
+    table_layout *BargraphTable = &Current->BargraphTable;
     {
-      table_layout *BargraphTable = &Current->BargraphTable;
-      BargraphTable->Layout = MemoryHudTable.Layout;
+      BargraphTable->Layout = {};
+      BargraphTable->Layout.Basis = BasisP;
       SetFontSize(&Group->Font, 22);
 
       NewRow(BargraphTable, &Group->Font);
@@ -1356,16 +1355,15 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState, layout *Basi
 
         CurrentArena = CurrentArena->Prev;
       }
-
-      MemoryHudTable.Layout = BargraphTable->Layout;
     }
 
-    --MemoryHudTable.Layout.Depth;
-
-    v2 BasisP =  { MemoryHudTable.Layout.Clip.Max.x + 100.0f, MemoryHudTable.Layout.Clip.Min.y};
+    BasisP = { Max( StatsTable->Layout.Clip.Max.x,
+                    BargraphTable->Layout.Clip.Max.x ),
+              MemoryHudTable.Layout.At.y };
 
     layout *DebugMetaLayout = BufferDebugPushMetaData(Group, Current, BasisP);
-    MemoryHudTable.Layout.At = Max(MemoryHudTable.Layout.Clip.Max, BasisP + DebugMetaLayout->Clip.Max);
+
+    MemoryHudTable.Layout.At = Max(BargraphTable->Layout.Basis + BargraphTable->Layout.Clip.Max, BasisP + DebugMetaLayout->Clip.Max);
     AdvanceClip(&MemoryHudTable.Layout);
 
     EndClipRect(Group, &MemoryHudTable.Layout, &Group->TextGroup->UIGeo);
