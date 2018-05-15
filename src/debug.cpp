@@ -1217,9 +1217,8 @@ Column(const char* ColumnText, ui_render_group *Group, table_layout *Table, u8 C
 }
 
 layout *
-BufferDebugPushMetaData(ui_render_group *Group, registered_memory_arena *Current, v2 Basis)
+BufferDebugPushMetaData(ui_render_group *Group, registered_memory_arena *Current, table_layout *Table, v2 Basis)
 {
-  table_layout *Table = &Current->MetadataTable;
   layout *Layout = &Table->Layout;
   Clear(Layout);
 
@@ -1269,12 +1268,78 @@ BufferArenaBargraph(table_layout *BargraphTable, ui_render_group *Group, umm Tot
   return;
 }
 
+v2
+BufferMemoryStatsTable(memory_arena_stats MemStats, ui_render_group *Group, table_layout *StatsTable, v2 BasisP)
+{
+  StatsTable->Layout = {};
+  StatsTable->Layout.Basis = BasisP;
+
+  Column("Allocs", Group, StatsTable, WHITE);
+  Column(FormatMemorySize(MemStats.Allocations), Group, StatsTable, WHITE);
+  NewRow(StatsTable, &Group->Font);
+
+  Column("Pushes", Group, StatsTable, WHITE);
+  Column(FormatThousands(MemStats.Pushes), Group, StatsTable, WHITE);
+  NewRow(StatsTable, &Group->Font);
+
+  Column("Remaining", Group, StatsTable, WHITE);
+  Column(FormatMemorySize(MemStats.Remaining), Group, StatsTable, WHITE);
+  NewRow(StatsTable, &Group->Font);
+
+  Column("Total", Group, StatsTable, WHITE);
+  Column(FormatMemorySize(MemStats.TotalAllocated), Group, StatsTable, WHITE);
+  NewRow(StatsTable, &Group->Font);
+
+  return StatsTable->Layout.Clip.Max;
+}
+
+
+
+v2
+BufferMemoryBargraphTable(ui_render_group *Group, memory_arena_stats MemStats, umm TotalUsed, memory_arena *CurrentArena, table_layout *BargraphTable, v2 BasisP)
+{
+  BargraphTable->Layout = {};
+  BargraphTable->Layout.Basis = BasisP;
+  SetFontSize(&Group->Font, 22);
+
+  NewRow(BargraphTable, &Group->Font);
+
+  r32 TotalPerc = (r32)SafeDivide0(TotalUsed, MemStats.TotalAllocated);
+  BufferArenaBargraph(BargraphTable, Group, TotalUsed, TotalPerc, MemStats.Remaining);
+  NewRow(BargraphTable, &Group->Font);
+
+  while (CurrentArena)
+  {
+    u64 CurrentUsed = TotalSize(CurrentArena) - Remaining(CurrentArena);
+    r32 CurrentPerc = (r32)SafeDivide0(CurrentUsed, TotalSize(CurrentArena));
+
+    BufferArenaBargraph(BargraphTable, Group, CurrentUsed, CurrentPerc, Remaining(CurrentArena));
+
+    CurrentArena = CurrentArena->Prev;
+  }
+
+  return BargraphTable->Layout.Clip.Max;
+}
+
+v2
+GetAbsoluteMin(layout *Layout)
+{
+  v2 Result = Layout->Clip.Min + Layout->Basis;
+  return Result;
+}
+
+v2
+GetAbsoluteMax(layout *Layout)
+{
+  v2 Result = Layout->Clip.Max + Layout->Basis;
+  return Result;
+}
+
 void
 DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState, layout *BasisLayout)
 {
-  local_persist table_layout MemoryHudTable = {};
-
-  MemoryHudTable.Layout = *BasisLayout;
+  local_persist table_layout MemoryHudArenaTable = {};
+  MemoryHudArenaTable.Layout = *BasisLayout;
 
   for ( u32 Index = 0;
         Index < REGISTERED_MEMORY_ARENA_COUNT;
@@ -1289,84 +1354,45 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState, layout *Basi
 
     {
       SetFontSize(&Group->Font, 36);
-      NewLine(&MemoryHudTable.Layout, &Group->Font);
-      u8 Color = HoverAndClickExpand(Group, &MemoryHudTable.Layout, Current, WHITE, TEAL);
+      NewLine(&MemoryHudArenaTable.Layout, &Group->Font);
+      u8 Color = HoverAndClickExpand(Group, &MemoryHudArenaTable.Layout, Current, WHITE, TEAL);
 
-      Column(Current->Name, Group, &MemoryHudTable, Color);
-      Column(MemorySize(MemStats.TotalAllocated), Group, &MemoryHudTable, Color);
-      NewRow(&MemoryHudTable, &Group->Font);
+      Column(Current->Name, Group, &MemoryHudArenaTable, Color);
+      Column(MemorySize(MemStats.TotalAllocated), Group, &MemoryHudArenaTable, Color);
+      NewRow(&MemoryHudArenaTable, &Group->Font);
     }
 
 
-    BeginClipRect(&MemoryHudTable.Layout);
-    SetFontSize(&Group->Font, 28);
-
-
-    if (!Current->Expanded)
+    if (Current->Expanded)
     {
-      continue;
-    }
+      BeginClipRect(&MemoryHudArenaTable.Layout);
+      SetFontSize(&Group->Font, 28);
 
+      table_layout *StatsTable = &Current->StatsTable;
+      table_layout *BargraphTable = &Current->BargraphTable;
+      table_layout *MetaTable = &Current->MetadataTable;
 
-    v2 BasisP = MemoryHudTable.Layout.At;
-    table_layout *StatsTable = &Current->StatsTable;
-    {
-      StatsTable->Layout = {};
-      StatsTable->Layout.Basis = BasisP;
-
-      Column("Allocs", Group, StatsTable, WHITE);
-      Column(FormatMemorySize(MemStats.Allocations), Group, StatsTable, WHITE);
-      NewRow(StatsTable, &Group->Font);
-
-      Column("Pushes", Group, StatsTable, WHITE);
-      Column(FormatThousands(MemStats.Pushes), Group, StatsTable, WHITE);
-      NewRow(StatsTable, &Group->Font);
-
-      Column("Remaining", Group, StatsTable, WHITE);
-      Column(FormatMemorySize(MemStats.Remaining), Group, StatsTable, WHITE);
-      NewRow(StatsTable, &Group->Font);
-
-      Column("Total", Group, StatsTable, WHITE);
-      Column(FormatMemorySize(MemStats.TotalAllocated), Group, StatsTable, WHITE);
-      NewRow(StatsTable, &Group->Font);
-
-    }
-
-    BasisP.y += StatsTable->Layout.Clip.Max.y;
-    table_layout *BargraphTable = &Current->BargraphTable;
-    {
-      BargraphTable->Layout = {};
-      BargraphTable->Layout.Basis = BasisP;
-      SetFontSize(&Group->Font, 22);
-
-      NewRow(BargraphTable, &Group->Font);
-
-      r32 TotalPerc = (r32)SafeDivide0(TotalUsed, MemStats.TotalAllocated);
-      BufferArenaBargraph(BargraphTable, Group, TotalUsed, TotalPerc, MemStats.Remaining);
-      NewRow(BargraphTable, &Group->Font);
-
-      memory_arena *CurrentArena = Current->Arena;
-      while (CurrentArena)
       {
-        u64 CurrentUsed = TotalSize(CurrentArena) - Remaining(CurrentArena);
-        r32 CurrentPerc = (r32)SafeDivide0(CurrentUsed, TotalSize(CurrentArena));
-
-        BufferArenaBargraph(BargraphTable, Group, CurrentUsed, CurrentPerc, Remaining(CurrentArena));
-
-        CurrentArena = CurrentArena->Prev;
+        v2 BasisP = MemoryHudArenaTable.Layout.At;
+        BufferMemoryStatsTable(MemStats, Group, StatsTable, BasisP);
       }
+
+      {
+        v2 BasisP = { GetAbsoluteMin(&StatsTable->Layout).x, GetAbsoluteMax(&StatsTable->Layout).y };
+        BufferMemoryBargraphTable(Group, MemStats, TotalUsed, Current->Arena, BargraphTable, BasisP);
+      }
+
+
+      {
+        v2 BasisP = { Max( StatsTable->Layout.Clip.Max.x, BargraphTable->Layout.Clip.Max.x ), MemoryHudArenaTable.Layout.At.y };
+        BufferDebugPushMetaData(Group, Current, MetaTable, BasisP);
+      }
+
+      MemoryHudArenaTable.Layout.At = Max( GetAbsoluteMax(&BargraphTable->Layout),
+                                           GetAbsoluteMax(&MetaTable->Layout) );
+
+      AdvanceClip(&MemoryHudArenaTable.Layout);
     }
-
-    BasisP = { Max( StatsTable->Layout.Clip.Max.x,
-                    BargraphTable->Layout.Clip.Max.x ),
-              MemoryHudTable.Layout.At.y };
-
-    layout *DebugMetaLayout = BufferDebugPushMetaData(Group, Current, BasisP);
-
-    MemoryHudTable.Layout.At = Max(BargraphTable->Layout.Basis + BargraphTable->Layout.Clip.Max, BasisP + DebugMetaLayout->Clip.Max);
-    AdvanceClip(&MemoryHudTable.Layout);
-
-    EndClipRect(Group, &MemoryHudTable.Layout, &Group->TextGroup->UIGeo);
 
     continue;
   }
