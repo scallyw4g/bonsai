@@ -60,7 +60,7 @@ DebugRegisterArena(const char *Name, memory_arena *Arena, debug_state *DebugStat
 b32
 PushesMatch(push_metadata *First, push_metadata *Second)
 {
-  b32 Result = (First->Arena == Second->Arena &&
+  b32 Result = (First->ArenaHash == Second->ArenaHash &&
                 First->StructSize == Second->StructSize &&
                 First->StructCount == Second->StructCount &&
                 First->Name == Second->Name);
@@ -72,7 +72,7 @@ WritePushMetadata(push_metadata InputMeta)
 {
   debug_state *DebugState = GetDebugState();
 
-  u32 HashValue = (u32)(((u64)InputMeta.Name & (u64)InputMeta.Arena) % META_TABLE_SIZE);
+  u32 HashValue = (u32)(((u64)InputMeta.Name & (u64)InputMeta.ArenaHash) % META_TABLE_SIZE);
   u32 FirstHashValue = HashValue;
 
   push_metadata *PickMeta = &DebugState->MetaTable[HashValue];
@@ -125,7 +125,7 @@ PushStructChecked_(memory_arena *Arena, umm StructSize, umm StructCount, const c
   void* Result = PushStruct( Arena, PushSize );
 
 #ifndef BONSAI_NO_PUSH_METADATA
-  push_metadata Metadata = {Name, Arena, StructSize, StructCount, 0};
+  push_metadata Metadata = {Name, HashArena(Arena), StructSize, StructCount, 0};
   WritePushMetadata(Metadata);
 #endif
 
@@ -1132,7 +1132,7 @@ GetTotalMemoryArenaStats()
   return TotalStats;
 }
 
-void
+inline b32
 BufferBarGraph(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, layout *Layout, r32 PercFilled)
 {
   r32 BarHeight = Group->Font.Size;
@@ -1148,12 +1148,19 @@ BufferBarGraph(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, layou
   BufferColors(Group, Geo, V3(0.25f));
   Geo->At+=6;
 
+  rect2 BarRect = { MinP, MinP + BarDim };
+  b32 Result = IsInsideRect(BarRect, Group->MouseP);
+
+  if (Result)
+    Color = {{ 1, 0, 1 }};
+
   BufferQuad(Group, Geo, MinP, PercBarDim);
   BufferColors(Group, Geo, Color);
   Geo->At+=6;
 
   Layout->At.x += BarDim.x;
 
+  return Result;
 }
 
 void
@@ -1259,9 +1266,8 @@ BufferDebugPushMetaData(ui_render_group *Group, registered_memory_arena *Current
       ++MetaIndex)
   {
     push_metadata *Meta = &GetDebugState()->MetaTable[MetaIndex];
-    if (Meta->Arena == Arena)
+    if (Meta->ArenaHash == HashArena(Arena))
     {
-
       umm AllocationSize = Meta->StructSize*Meta->StructCount*Meta->PushCount;
       Column( FormatMemorySize(AllocationSize), Group, Table, WHITE);
       Column( FormatThousands(Meta->StructCount), Group, Table, WHITE);
@@ -1277,15 +1283,15 @@ BufferDebugPushMetaData(ui_render_group *Group, registered_memory_arena *Current
   return Layout;
 }
 
-void
+inline b32
 BufferArenaBargraph(table_layout *BargraphTable, ui_render_group *Group, umm TotalUsed, r32 TotalPerc, umm Remaining)
 {
   Column( FormatMemorySize(TotalUsed), Group, BargraphTable, WHITE);
-  BufferBarGraph(Group, &Group->TextGroup->UIGeo, &BargraphTable->Layout, TotalPerc);
+  b32 Hover = BufferBarGraph(Group, &Group->TextGroup->UIGeo, &BargraphTable->Layout, TotalPerc);
   Column( FormatMemorySize(Remaining), Group, BargraphTable, WHITE);
   NewRow(BargraphTable, &Group->Font);
 
-  return;
+  return Hover;
 }
 
 v2
@@ -1313,9 +1319,7 @@ BufferMemoryStatsTable(memory_arena_stats MemStats, ui_render_group *Group, tabl
   return StatsTable->Layout.Clip.Max;
 }
 
-
-
-v2
+memory_arena *
 BufferMemoryBargraphTable(ui_render_group *Group, memory_arena_stats MemStats, umm TotalUsed, memory_arena *CurrentArena, table_layout *BargraphTable, v2 BasisP)
 {
   BargraphTable->Layout = {};
@@ -1328,17 +1332,19 @@ BufferMemoryBargraphTable(ui_render_group *Group, memory_arena_stats MemStats, u
   BufferArenaBargraph(BargraphTable, Group, TotalUsed, TotalPerc, MemStats.Remaining);
   NewRow(BargraphTable, &Group->Font);
 
+  memory_arena *Result = 0;
   while (CurrentArena)
   {
     u64 CurrentUsed = TotalSize(CurrentArena) - Remaining(CurrentArena);
     r32 CurrentPerc = (r32)SafeDivide0(CurrentUsed, TotalSize(CurrentArena));
 
-    BufferArenaBargraph(BargraphTable, Group, CurrentUsed, CurrentPerc, Remaining(CurrentArena));
+    b32 IsHovering = BufferArenaBargraph(BargraphTable, Group, CurrentUsed, CurrentPerc, Remaining(CurrentArena));
+    if (IsHovering) Result = CurrentArena;
 
     CurrentArena = CurrentArena->Prev;
   }
 
-  return BargraphTable->Layout.Clip.Max;
+  return Result;
 }
 
 void
@@ -1385,10 +1391,11 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState, v2 OriginalB
         BufferMemoryStatsTable(MemStats, Group, StatsTable, BasisP);
       }
 
+      memory_arena *SelectedArena = 0;
       {
         v2 BasisP = { GetAbsoluteMin(&StatsTable->Layout).x,
                       GetAbsoluteMax(&StatsTable->Layout).y };
-        BufferMemoryBargraphTable(Group, MemStats, TotalUsed, Current->Arena, BargraphTable, BasisP);
+        SelectedArena = BufferMemoryBargraphTable(Group, MemStats, TotalUsed, Current->Arena, BargraphTable, BasisP);
       }
 
 

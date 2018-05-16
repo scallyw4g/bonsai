@@ -421,7 +421,7 @@ FrameEnd(void)
       ++MetaIndex)
   {
     push_metadata *Meta = &GetDebugState()->MetaTable[MetaIndex];
-    if (Meta->Arena == TranArena)
+    if (Meta->ArenaHash == HashArena(TranArena))
     {
       Clear(Meta);
     }
