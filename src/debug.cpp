@@ -1251,8 +1251,15 @@ struct selected_memory_arena
   umm HeadArenaHash;
 };
 
+#define MAX_SELECTED_ARENAS 32
+struct selected_arenas
+{
+  u32 Count;
+  selected_memory_arena Arenas[MAX_SELECTED_ARENAS];
+};
+
 layout *
-BufferDebugPushMetaData(ui_render_group *Group, selected_memory_arena *SelectedArena, table_layout *Table, v2 Basis)
+BufferDebugPushMetaData(ui_render_group *Group, selected_arenas *SelectedArena, table_layout *Table, v2 Basis)
 {
   layout *Layout = &Table->Layout;
   Clear(Layout);
@@ -1273,7 +1280,9 @@ BufferDebugPushMetaData(ui_render_group *Group, selected_memory_arena *SelectedA
       ++MetaIndex)
   {
     push_metadata *Meta = &GetDebugState()->MetaTable[MetaIndex];
-    if (Meta->ArenaHash == SelectedArena->ArenaHash)
+
+    if (SelectedArena->Count &&
+        Meta->ArenaHash == SelectedArena->Arenas[0].ArenaHash)
     {
       umm AllocationSize = Meta->StructSize*Meta->StructCount*Meta->PushCount;
       Column( FormatMemorySize(AllocationSize), Group, Table, WHITE);
@@ -1298,7 +1307,8 @@ BufferArenaBargraph(table_layout *BargraphTable, ui_render_group *Group, umm Tot
   Column( FormatMemorySize(Remaining), Group, BargraphTable, WHITE);
   NewRow(BargraphTable, &Group->Font);
 
-  return Hover;
+  b32 Click = (Hover && Group->Input->LMB.WasPressed);
+  return Click;
 }
 
 v2
@@ -1326,7 +1336,7 @@ BufferMemoryStatsTable(memory_arena_stats MemStats, ui_render_group *Group, tabl
   return StatsTable->Layout.Clip.Max;
 }
 
-umm
+memory_arena *
 BufferMemoryBargraphTable(ui_render_group *Group, memory_arena_stats MemStats, umm TotalUsed, memory_arena *CurrentArena, table_layout *BargraphTable, v2 BasisP)
 {
   BargraphTable->Layout = {};
@@ -1339,14 +1349,14 @@ BufferMemoryBargraphTable(ui_render_group *Group, memory_arena_stats MemStats, u
   BufferArenaBargraph(BargraphTable, Group, TotalUsed, TotalPerc, MemStats.Remaining);
   NewRow(BargraphTable, &Group->Font);
 
-  umm Result = 0;
+  memory_arena *Result = 0;
   while (CurrentArena)
   {
     u64 CurrentUsed = TotalSize(CurrentArena) - Remaining(CurrentArena);
     r32 CurrentPerc = (r32)SafeDivide0(CurrentUsed, TotalSize(CurrentArena));
 
-    b32 IsHovering = BufferArenaBargraph(BargraphTable, Group, CurrentUsed, CurrentPerc, Remaining(CurrentArena));
-    if (IsHovering) Result = HashArena(CurrentArena);
+    b32 GotClicked = BufferArenaBargraph(BargraphTable, Group, CurrentUsed, CurrentPerc, Remaining(CurrentArena));
+    if (GotClicked) Result = CurrentArena;
 
     CurrentArena = CurrentArena->Prev;
   }
@@ -1398,14 +1408,18 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState, v2 OriginalB
         BufferMemoryStatsTable(MemStats, Group, StatsTable, BasisP);
       }
 
-      selected_memory_arena SelectedArena = { HashArena(Current->Arena), HashArenaHead(Current->Arena) };
+      global_variable selected_arenas SelectedArenas = {}; // TODO(Jesse): Probably allocate this on the heap instead of statically
       {
         v2 BasisP = { GetAbsoluteMin(&StatsTable->Layout).x,
                       GetAbsoluteMax(&StatsTable->Layout).y };
-        umm ArenaHash = BufferMemoryBargraphTable(Group, MemStats, TotalUsed, Current->Arena, BargraphTable, BasisP);
-        if (ArenaHash)
+        memory_arena *Arena = BufferMemoryBargraphTable(Group, MemStats, TotalUsed, Current->Arena, BargraphTable, BasisP);
+        if (Arena)
         {
-          SelectedArena.ArenaHash = ArenaHash;
+          selected_memory_arena *Selected = &SelectedArenas.Arenas[SelectedArenas.Count++];
+          Assert(SelectedArenas.Count < MAX_SELECTED_ARENAS);
+
+          Selected->ArenaHash = HashArena(Arena);
+          Selected->HeadArenaHash = HashArenaHead(Current->Arena);
         }
       }
 
@@ -1415,7 +1429,7 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState, v2 OriginalB
                                    BargraphTable->Layout.Clip.Max.x),
                       GetAbsoluteAt(&MemoryHudArenaTable.Layout).y };
 
-        BufferDebugPushMetaData(Group, &SelectedArena, MetaTable, BasisP);
+        BufferDebugPushMetaData(Group, &SelectedArenas, MetaTable, BasisP);
       }
 
       MemoryHudArenaTable.Layout.At = {};
