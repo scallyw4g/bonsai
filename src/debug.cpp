@@ -1258,8 +1258,11 @@ struct selected_arenas
   selected_memory_arena Arenas[MAX_SELECTED_ARENAS];
 };
 
+// TODO(Jesse): Think about where this is allocated more carefully
+static push_metadata CollatedMeta[META_TABLE_SIZE] = {};
+
 layout *
-BufferDebugPushMetaData(ui_render_group *Group, selected_arenas *SelectedArena, table_layout *Table, v2 Basis)
+BufferDebugPushMetaData(ui_render_group *Group, selected_arenas *SelectedArenas, umm CurrentArenaHead, table_layout *Table, v2 Basis)
 {
   layout *Layout = &Table->Layout;
   Clear(Layout);
@@ -1280,18 +1283,38 @@ BufferDebugPushMetaData(ui_render_group *Group, selected_arenas *SelectedArena, 
       ++MetaIndex)
   {
     push_metadata *Meta = &GetDebugState()->MetaTable[MetaIndex];
+    push_metadata Collated = {};
 
-    if (SelectedArena->Count &&
-        Meta->ArenaHash == SelectedArena->Arenas[0].ArenaHash)
+    if (Meta->HeadArenaHash == CurrentArenaHead)
     {
-      umm AllocationSize = Meta->StructSize*Meta->StructCount*Meta->PushCount;
-      Column( FormatMemorySize(AllocationSize), Group, Table, WHITE);
-      Column( FormatThousands(Meta->StructCount), Group, Table, WHITE);
-      Column( FormatThousands(Meta->PushCount), Group, Table, WHITE);
-      Column(Meta->Name, Group, Table, WHITE);
-      NewLine(Layout, &Group->Font);
+      for (u32 ArenaIndex = 0;
+          ArenaIndex < SelectedArenas->Count;
+          ++ArenaIndex)
+      {
+        selected_memory_arena *Selected = &SelectedArenas->Arenas[ArenaIndex];
+        if (Selected->ArenaHash == Meta->ArenaHash)
+        {
+          Collated.Name = Meta->Name;
+          Collated.StructSize = Meta->StructSize;
+
+          Collated.PushCount += Meta->PushCount;
+        }
+      }
+
+      if (Collated.Name)
+      {
+        umm AllocationSize = Meta->StructSize*Meta->StructCount*Meta->PushCount;
+        Column( FormatMemorySize(AllocationSize), Group, Table, WHITE);
+        Column( FormatThousands(Meta->StructCount), Group, Table, WHITE);
+        Column( FormatThousands(Meta->PushCount), Group, Table, WHITE);
+        Column(Meta->Name, Group, Table, WHITE);
+        NewLine(Layout, &Group->Font);
+      }
     }
+
+    continue;
   }
+
 
   NewLine(Layout, &Group->Font);
   EndClipRect(Group, Layout, &Group->TextGroup->UIGeo, Layout->Basis);
@@ -1429,7 +1452,7 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState, v2 OriginalB
                                    BargraphTable->Layout.Clip.Max.x),
                       GetAbsoluteAt(&MemoryHudArenaTable.Layout).y };
 
-        BufferDebugPushMetaData(Group, &SelectedArenas, MetaTable, BasisP);
+        BufferDebugPushMetaData(Group, &SelectedArenas, HashArenaHead(Current->Arena), MetaTable, BasisP);
       }
 
       MemoryHudArenaTable.Layout.At = {};
