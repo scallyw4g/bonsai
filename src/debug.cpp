@@ -58,7 +58,7 @@ DebugRegisterArena(const char *Name, memory_arena *Arena, debug_state *DebugStat
 }
 
 b32
-PushesMatchArenaOnly(push_metadata *First, push_metadata *Second)
+PushesShareHeadArena(push_metadata *First, push_metadata *Second)
 {
   b32 Result = (First->HeadArenaHash == Second->HeadArenaHash &&
                 First->StructSize    == Second->StructSize    &&
@@ -68,7 +68,7 @@ PushesMatchArenaOnly(push_metadata *First, push_metadata *Second)
 }
 
 b32
-PushesMatch(push_metadata *First, push_metadata *Second)
+PushesMatchExactly(push_metadata *First, push_metadata *Second)
 {
   b32 Result = (First->ArenaHash     == Second->ArenaHash     &&
                 First->HeadArenaHash == Second->HeadArenaHash &&
@@ -98,63 +98,53 @@ GetRegisteredMemoryArena( memory_arena *Arena)
   return Result;
 }
 
+typedef b32 (*meta_comparator)(push_metadata*, push_metadata*);
 void
-WritePushMetadataArenaOnly(push_metadata *InputMeta, push_metadata *MetaTable)
+WriteToMetaTable(push_metadata *Query, push_metadata *Table, meta_comparator Comparator)
 {
-  u32 HashValue = (u32)(((u64)InputMeta->Name & (u64)InputMeta->ArenaHash) % META_TABLE_SIZE);
+  u32 HashValue = (u32)(((u64)Query->Name & (u64)Query->ArenaHash) % META_TABLE_SIZE);
   u32 FirstHashValue = HashValue;
 
-  push_metadata *PickMeta = MetaTable + HashValue;
+  push_metadata *PickMeta = Table + HashValue;
   while (PickMeta->Name)
   {
-    if (PushesMatchArenaOnly(PickMeta, InputMeta))
+    if (Comparator(PickMeta, Query))
     {
-      PickMeta->PushCount += InputMeta->PushCount;
-      return;
+      break;
     }
 
     HashValue = (HashValue+1)%META_TABLE_SIZE;
-    PickMeta = MetaTable + HashValue;
+    PickMeta = Table + HashValue;
     if (HashValue == FirstHashValue)
     {
-      Error("MetaTable is full");
+      Error("Meta Table is full");
       break;
     }
   }
 
-  *PickMeta = *InputMeta;
-  PickMeta->PushCount++;
+  if (PickMeta->Name)
+  {
+    PickMeta->PushCount += Query->PushCount;
+  }
+  else
+  {
+    *PickMeta = *Query;
+  }
 
+  return;
+}
+
+void
+CollateMetadata(push_metadata *InputMeta, push_metadata *MetaTable)
+{
+  WriteToMetaTable(InputMeta, MetaTable, PushesShareHeadArena);
   return;
 }
 
 void
 WritePushMetadata(push_metadata *InputMeta, push_metadata *MetaTable)
 {
-  u32 HashValue = (u32)(((u64)InputMeta->Name & (u64)InputMeta->ArenaHash) % META_TABLE_SIZE);
-  u32 FirstHashValue = HashValue;
-
-  push_metadata *PickMeta = MetaTable + HashValue;
-  while (PickMeta->Name)
-  {
-    if (PushesMatch(PickMeta, InputMeta))
-    {
-      PickMeta->PushCount += InputMeta->PushCount;
-      return;
-    }
-
-    HashValue = (HashValue+1)%META_TABLE_SIZE;
-    PickMeta = MetaTable + HashValue;
-    if (HashValue == FirstHashValue)
-    {
-      Error("MetaTable is full");
-      break;
-    }
-  }
-
-  *PickMeta = *InputMeta;
-  PickMeta->PushCount++;
-
+  WriteToMetaTable(InputMeta, MetaTable, PushesMatchExactly);
   return;
 }
 
@@ -1297,27 +1287,18 @@ struct selected_arenas
   selected_memory_arena Arenas[MAX_SELECTED_ARENAS];
 };
 
-// TODO(Jesse): Think about where this is allocated more carefully
-static push_metadata
-CollatedMeta[META_TABLE_SIZE] = {};
-
 layout *
 BufferDebugPushMetaData(ui_render_group *Group, selected_arenas *SelectedArenas, umm CurrentArenaHead, table_layout *Table, v2 Basis)
 {
+  push_metadata CollatedMetaTable[META_TABLE_SIZE] = {};
+
   layout *Layout = &Table->Layout;
   Clear(Layout);
-
-  for ( u32 MetaIndex = 0;
-      MetaIndex < META_TABLE_SIZE;
-      ++MetaIndex)
-  {
-    CollatedMeta[MetaIndex] = {};
-  }
-
   Layout->Basis = Basis;
+  BeginClipRect(Layout);
+
   SetFontSize(&Group->Font, 24);
 
-  BeginClipRect(Layout);
 
   Column("Size", Group, Table, WHITE);
   Column("Structs", Group, Table, WHITE);
@@ -1339,7 +1320,7 @@ BufferDebugPushMetaData(ui_render_group *Group, selected_arenas *SelectedArenas,
       if (Meta->HeadArenaHash == CurrentArenaHead &&
           Meta->ArenaHash == Selected->ArenaHash )
       {
-        WritePushMetadataArenaOnly(Meta, CollatedMeta);
+        CollateMetadata(Meta, CollatedMetaTable);
       }
     }
   }
@@ -1348,7 +1329,7 @@ BufferDebugPushMetaData(ui_render_group *Group, selected_arenas *SelectedArenas,
       MetaIndex < META_TABLE_SIZE;
       ++MetaIndex)
   {
-    push_metadata *Collated = &CollatedMeta[MetaIndex];
+    push_metadata *Collated = &CollatedMetaTable[MetaIndex];
     if (Collated->Name)
     {
       umm AllocationSize = Collated->StructSize*Collated->StructCount*Collated->PushCount;
