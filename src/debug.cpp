@@ -1164,7 +1164,7 @@ GetTotalMemoryArenaStats()
 }
 
 inline b32
-BufferBarGraph(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, layout *Layout, r32 PercFilled)
+BufferBarGraph(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, layout *Layout, r32 PercFilled, v3 Color)
 {
   r32 BarHeight = Group->Font.Size;
   r32 BarWidth = 200.0f;
@@ -1173,16 +1173,14 @@ BufferBarGraph(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, layou
   v2 BarDim = V2(BarWidth, BarHeight);
   v2 PercBarDim = V2(BarWidth, BarHeight) * V2(PercFilled, 1);
 
-  v3 Color = {{ 1, 1, 0 }};
-
   BufferQuad(Group, Geo, MinP, BarDim);
   BufferColors(Group, Geo, V3(0.25f));
   Geo->At+=6;
 
   rect2 BarRect = { MinP, MinP + BarDim };
-  b32 Result = IsInsideRect(BarRect, Group->MouseP);
+  b32 Hovering = IsInsideRect(BarRect, Group->MouseP);
 
-  if (Result)
+  if (Hovering)
     Color = {{ 1, 0, 1 }};
 
   BufferQuad(Group, Geo, MinP, PercBarDim);
@@ -1191,7 +1189,7 @@ BufferBarGraph(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, layou
 
   Layout->At.x += BarDim.x;
 
-  return Result;
+  return Hovering;
 }
 
 void
@@ -1280,7 +1278,7 @@ struct selected_memory_arena
   umm HeadArenaHash;
 };
 
-#define MAX_SELECTED_ARENAS 32
+#define MAX_SELECTED_ARENAS 128
 struct selected_arenas
 {
   u32 Count;
@@ -1351,10 +1349,10 @@ BufferDebugPushMetaData(ui_render_group *Group, selected_arenas *SelectedArenas,
 }
 
 inline b32
-BufferArenaBargraph(table_layout *BargraphTable, ui_render_group *Group, umm TotalUsed, r32 TotalPerc, umm Remaining)
+BufferArenaBargraph(table_layout *BargraphTable, ui_render_group *Group, umm TotalUsed, r32 TotalPerc, umm Remaining, v3 Color )
 {
   Column( FormatMemorySize(TotalUsed), Group, BargraphTable, WHITE);
-  b32 Hover = BufferBarGraph(Group, &Group->TextGroup->UIGeo, &BargraphTable->Layout, TotalPerc);
+  b32 Hover = BufferBarGraph(Group, &Group->TextGroup->UIGeo, &BargraphTable->Layout, TotalPerc, Color);
   Column( FormatMemorySize(Remaining), Group, BargraphTable, WHITE);
   NewRow(BargraphTable, &Group->Font);
 
@@ -1387,8 +1385,8 @@ BufferMemoryStatsTable(memory_arena_stats MemStats, ui_render_group *Group, tabl
   return StatsTable->Layout.Clip.Max;
 }
 
-memory_arena *
-BufferMemoryBargraphTable(ui_render_group *Group, memory_arena_stats MemStats, umm TotalUsed, memory_arena *CurrentArena, table_layout *BargraphTable, v2 BasisP)
+void
+BufferMemoryBargraphTable(ui_render_group *Group, selected_arenas *SelectedArenas, memory_arena_stats MemStats, umm TotalUsed, memory_arena *HeadArena, table_layout *BargraphTable, v2 BasisP)
 {
   BargraphTable->Layout = {};
   BargraphTable->Layout.Basis = BasisP;
@@ -1397,22 +1395,61 @@ BufferMemoryBargraphTable(ui_render_group *Group, memory_arena_stats MemStats, u
   NewRow(BargraphTable, &Group->Font);
 
   r32 TotalPerc = (r32)SafeDivide0(TotalUsed, MemStats.TotalAllocated);
-  BufferArenaBargraph(BargraphTable, Group, TotalUsed, TotalPerc, MemStats.Remaining);
+  BufferArenaBargraph(BargraphTable, Group, TotalUsed, TotalPerc, MemStats.Remaining, V3(1,1,0));
   NewRow(BargraphTable, &Group->Font);
 
-  memory_arena *Result = 0;
+
+  memory_arena *CurrentArena = HeadArena;
   while (CurrentArena)
   {
+    v3 Color = V3(1,1,0);
+    for (u32 ArenaIndex = 0;
+        ArenaIndex < SelectedArenas->Count;
+        ++ArenaIndex)
+    {
+      selected_memory_arena *Selected = &SelectedArenas->Arenas[ArenaIndex];
+      if (Selected->ArenaHash == HashArena(CurrentArena))
+      {
+        Color = V3(1,0,1);
+      }
+    }
+
     u64 CurrentUsed = TotalSize(CurrentArena) - Remaining(CurrentArena);
     r32 CurrentPerc = (r32)SafeDivide0(CurrentUsed, TotalSize(CurrentArena));
 
-    b32 GotClicked = BufferArenaBargraph(BargraphTable, Group, CurrentUsed, CurrentPerc, Remaining(CurrentArena));
-    if (GotClicked) Result = CurrentArena;
+    b32 GotClicked = BufferArenaBargraph(BargraphTable, Group, CurrentUsed, CurrentPerc, Remaining(CurrentArena), Color);
+
+    if (GotClicked)
+    {
+      selected_memory_arena *Found = 0;
+      for (u32 ArenaIndex = 0;
+          ArenaIndex < SelectedArenas->Count;
+          ++ArenaIndex)
+      {
+        selected_memory_arena *Selected = &SelectedArenas->Arenas[ArenaIndex];
+        if (Selected->ArenaHash == HashArena(CurrentArena))
+        {
+          Found = Selected;
+          break;
+        }
+      }
+      if (Found)
+      {
+        *Found = SelectedArenas->Arenas[--SelectedArenas->Count];
+      }
+      else
+      {
+        selected_memory_arena *Selected = &SelectedArenas->Arenas[SelectedArenas->Count++];
+        Selected->ArenaHash = HashArena(CurrentArena);
+        Selected->HeadArenaHash = HashArenaHead(CurrentArena);
+      }
+
+    }
 
     CurrentArena = CurrentArena->Prev;
   }
 
-  return Result;
+  return;
 }
 
 void
@@ -1463,15 +1500,7 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState, v2 OriginalB
       {
         v2 BasisP = { GetAbsoluteMin(&StatsTable->Layout).x,
                       GetAbsoluteMax(&StatsTable->Layout).y };
-        memory_arena *Arena = BufferMemoryBargraphTable(Group, MemStats, TotalUsed, Current->Arena, BargraphTable, BasisP);
-        if (Arena)
-        {
-          selected_memory_arena *Selected = &SelectedArenas.Arenas[SelectedArenas.Count++];
-          Assert(SelectedArenas.Count < MAX_SELECTED_ARENAS);
-
-          Selected->ArenaHash = HashArena(Arena);
-          Selected->HeadArenaHash = HashArenaHead(Current->Arena);
-        }
+        BufferMemoryBargraphTable(Group, &SelectedArenas, MemStats, TotalUsed, Current->Arena, BargraphTable, BasisP);
       }
 
 
