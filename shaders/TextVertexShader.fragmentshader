@@ -11,4 +11,9 @@ uniform sampler2D myTextureSampler;
 void main()
 {
   color = texture( myTextureSampler, UV ) * vec4(VertColor, 1);
+
+  if (color.a < 0.3f)
+  {
+    discard;
+  }
 }
