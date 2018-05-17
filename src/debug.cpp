@@ -1245,8 +1245,14 @@ Column(const char* ColumnText, ui_render_group *Group, table_layout *Table, u8 C
   return;
 }
 
+struct selected_memory_arena
+{
+  umm ArenaHash;
+  umm HeadArenaHash;
+};
+
 layout *
-BufferDebugPushMetaData(ui_render_group *Group, registered_memory_arena *Current, table_layout *Table, v2 Basis)
+BufferDebugPushMetaData(ui_render_group *Group, selected_memory_arena *SelectedArena, table_layout *Table, v2 Basis)
 {
   layout *Layout = &Table->Layout;
   Clear(Layout);
@@ -1262,13 +1268,12 @@ BufferDebugPushMetaData(ui_render_group *Group, registered_memory_arena *Current
   Column("Name", Group, Table, WHITE);
   NewLine(Layout, &Group->Font);
 
-  memory_arena *Arena = Current->Arena;
   for ( u32 MetaIndex = 0;
       MetaIndex < META_TABLE_SIZE;
       ++MetaIndex)
   {
     push_metadata *Meta = &GetDebugState()->MetaTable[MetaIndex];
-    if (Meta->HeadArenaHash == HashArenaHead(Arena))
+    if (Meta->ArenaHash == SelectedArena->ArenaHash)
     {
       umm AllocationSize = Meta->StructSize*Meta->StructCount*Meta->PushCount;
       Column( FormatMemorySize(AllocationSize), Group, Table, WHITE);
@@ -1321,7 +1326,7 @@ BufferMemoryStatsTable(memory_arena_stats MemStats, ui_render_group *Group, tabl
   return StatsTable->Layout.Clip.Max;
 }
 
-memory_arena *
+umm
 BufferMemoryBargraphTable(ui_render_group *Group, memory_arena_stats MemStats, umm TotalUsed, memory_arena *CurrentArena, table_layout *BargraphTable, v2 BasisP)
 {
   BargraphTable->Layout = {};
@@ -1334,14 +1339,14 @@ BufferMemoryBargraphTable(ui_render_group *Group, memory_arena_stats MemStats, u
   BufferArenaBargraph(BargraphTable, Group, TotalUsed, TotalPerc, MemStats.Remaining);
   NewRow(BargraphTable, &Group->Font);
 
-  memory_arena *Result = 0;
+  umm Result = 0;
   while (CurrentArena)
   {
     u64 CurrentUsed = TotalSize(CurrentArena) - Remaining(CurrentArena);
     r32 CurrentPerc = (r32)SafeDivide0(CurrentUsed, TotalSize(CurrentArena));
 
     b32 IsHovering = BufferArenaBargraph(BargraphTable, Group, CurrentUsed, CurrentPerc, Remaining(CurrentArena));
-    if (IsHovering) Result = CurrentArena;
+    if (IsHovering) Result = HashArena(CurrentArena);
 
     CurrentArena = CurrentArena->Prev;
   }
@@ -1393,11 +1398,15 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState, v2 OriginalB
         BufferMemoryStatsTable(MemStats, Group, StatsTable, BasisP);
       }
 
-      memory_arena *SelectedArena = 0;
+      selected_memory_arena SelectedArena = { HashArena(Current->Arena), HashArenaHead(Current->Arena) };
       {
         v2 BasisP = { GetAbsoluteMin(&StatsTable->Layout).x,
                       GetAbsoluteMax(&StatsTable->Layout).y };
-        SelectedArena = BufferMemoryBargraphTable(Group, MemStats, TotalUsed, Current->Arena, BargraphTable, BasisP);
+        umm ArenaHash = BufferMemoryBargraphTable(Group, MemStats, TotalUsed, Current->Arena, BargraphTable, BasisP);
+        if (ArenaHash)
+        {
+          SelectedArena.ArenaHash = ArenaHash;
+        }
       }
 
 
@@ -1406,7 +1415,7 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState, v2 OriginalB
                                    BargraphTable->Layout.Clip.Max.x),
                       GetAbsoluteAt(&MemoryHudArenaTable.Layout).y };
 
-        BufferDebugPushMetaData(Group, Current, MetaTable, BasisP);
+        BufferDebugPushMetaData(Group, &SelectedArena, MetaTable, BasisP);
       }
 
       MemoryHudArenaTable.Layout.At = {};
