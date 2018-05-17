@@ -311,6 +311,8 @@ InitDebugState(platform *Plat, memory_arena *DebugMemory)
 
   GlobalDebugState->TextRenderGroup.SolidUIShader = MakeSolidUIShader(GlobalDebugState->Memory);
 
+  GlobalDebugState->SelectedArenas = PUSH_STRUCT_CHECKED(selected_arenas, GlobalDebugState->Memory, 1);
+
   return;
 }
 
@@ -1272,19 +1274,6 @@ Column(const char* ColumnText, ui_render_group *Group, table_layout *Table, u8 C
   return;
 }
 
-struct selected_memory_arena
-{
-  umm ArenaHash;
-  umm HeadArenaHash;
-};
-
-#define MAX_SELECTED_ARENAS 128
-struct selected_arenas
-{
-  u32 Count;
-  selected_memory_arena Arenas[MAX_SELECTED_ARENAS];
-};
-
 layout *
 BufferDebugPushMetaData(ui_render_group *Group, selected_arenas *SelectedArenas, umm CurrentArenaHead, table_layout *Table, v2 Basis)
 {
@@ -1393,16 +1382,17 @@ BufferMemoryBargraphTable(ui_render_group *Group, selected_arenas *SelectedArena
   SetFontSize(&Group->Font, 22);
 
   NewRow(BargraphTable, &Group->Font);
+  v3 DefaultColor = V3(0.5f, 0.5f, 0.0);
 
   r32 TotalPerc = (r32)SafeDivide0(TotalUsed, MemStats.TotalAllocated);
-  BufferArenaBargraph(BargraphTable, Group, TotalUsed, TotalPerc, MemStats.Remaining, V3(1,1,0));
+  b32 TobbleAllArenas = BufferArenaBargraph(BargraphTable, Group, TotalUsed, TotalPerc, MemStats.Remaining, DefaultColor);
   NewRow(BargraphTable, &Group->Font);
 
 
   memory_arena *CurrentArena = HeadArena;
   while (CurrentArena)
   {
-    v3 Color = V3(1,1,0);
+    v3 Color = DefaultColor;
     for (u32 ArenaIndex = 0;
         ArenaIndex < SelectedArenas->Count;
         ++ArenaIndex)
@@ -1410,7 +1400,7 @@ BufferMemoryBargraphTable(ui_render_group *Group, selected_arenas *SelectedArena
       selected_memory_arena *Selected = &SelectedArenas->Arenas[ArenaIndex];
       if (Selected->ArenaHash == HashArena(CurrentArena))
       {
-        Color = V3(1,0,1);
+        Color = V3(0.85f, 0.85f, 0.0f);
       }
     }
 
@@ -1419,7 +1409,7 @@ BufferMemoryBargraphTable(ui_render_group *Group, selected_arenas *SelectedArena
 
     b32 GotClicked = BufferArenaBargraph(BargraphTable, Group, CurrentUsed, CurrentPerc, Remaining(CurrentArena), Color);
 
-    if (GotClicked)
+    if (TobbleAllArenas || GotClicked)
     {
       selected_memory_arena *Found = 0;
       for (u32 ArenaIndex = 0;
@@ -1496,11 +1486,11 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState, v2 OriginalB
         BufferMemoryStatsTable(MemStats, Group, StatsTable, BasisP);
       }
 
-      global_variable selected_arenas SelectedArenas = {}; // TODO(Jesse): Probably allocate this on the heap instead of statically
+      selected_arenas *SelectedArenas = DebugState->SelectedArenas;
       {
         v2 BasisP = { GetAbsoluteMin(&StatsTable->Layout).x,
                       GetAbsoluteMax(&StatsTable->Layout).y };
-        BufferMemoryBargraphTable(Group, &SelectedArenas, MemStats, TotalUsed, Current->Arena, BargraphTable, BasisP);
+        BufferMemoryBargraphTable(Group, SelectedArenas, MemStats, TotalUsed, Current->Arena, BargraphTable, BasisP);
       }
 
 
@@ -1509,7 +1499,7 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState, v2 OriginalB
                                    BargraphTable->Layout.Clip.Max.x),
                       GetAbsoluteAt(&MemoryHudArenaTable.Layout).y };
 
-        BufferDebugPushMetaData(Group, &SelectedArenas, HashArenaHead(Current->Arena), MetaTable, BasisP);
+        BufferDebugPushMetaData(Group, SelectedArenas, HashArenaHead(Current->Arena), MetaTable, BasisP);
       }
 
       MemoryHudArenaTable.Layout.At = {};

@@ -101,6 +101,19 @@ struct registered_memory_arena
   table_layout MetadataTable;
 };
 
+struct selected_memory_arena
+{
+  umm ArenaHash;
+  umm HeadArenaHash;
+};
+
+#define MAX_SELECTED_ARENAS 128
+struct selected_arenas
+{
+  u32 Count;
+  selected_memory_arena Arenas[MAX_SELECTED_ARENAS];
+};
+
 #define REGISTERED_MEMORY_ARENA_COUNT 32
 #define ROOT_SCOPE_COUNT 64
 #define META_TABLE_SIZE 512
@@ -112,6 +125,8 @@ struct debug_state
   untextured_3d_geometry_buffer LineMesh;
 
   debug_ui_type UIType = DebugUIType_Memory;
+
+  selected_arenas *SelectedArenas;
 
   u64 BytesBufferedToCard;
   u64 FrameCount;
