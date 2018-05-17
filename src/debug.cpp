@@ -60,10 +60,10 @@ DebugRegisterArena(const char *Name, memory_arena *Arena, debug_state *DebugStat
 b32
 PushesMatch(push_metadata *First, push_metadata *Second)
 {
-  b32 Result = (First->ArenaHash == Second->ArenaHash &&
-                First->StructSize == Second->StructSize &&
-                First->StructCount == Second->StructCount &&
-                First->Name == Second->Name);
+  b32 Result = (First->ArenaHash     == Second->ArenaHash     &&
+                First->StructSize    == Second->StructSize    &&
+                First->StructCount   == Second->StructCount   &&
+                First->Name          == Second->Name);
   return Result;
 }
 
@@ -84,10 +84,12 @@ WritePushMetadata(push_metadata InputMeta)
       return;
     }
 
-    PickMeta = &DebugState->MetaTable[(++HashValue)%META_TABLE_SIZE];
+    HashValue = (HashValue+1)%META_TABLE_SIZE;
+    PickMeta = &DebugState->MetaTable[HashValue];
     if (HashValue == FirstHashValue)
     {
       Error("DebugState->MetaTable is full");
+      break;
     }
   }
 
@@ -125,8 +127,8 @@ PushStructChecked_(memory_arena *Arena, umm StructSize, umm StructCount, const c
   void* Result = PushStruct( Arena, PushSize );
 
 #ifndef BONSAI_NO_PUSH_METADATA
-  push_metadata Metadata = {Name, HashArena(Arena), StructSize, StructCount, 0};
-  WritePushMetadata(Metadata);
+  push_metadata ArenaMetadata = {Name, HashArena(Arena), HashArenaHead(Arena), StructSize, StructCount, 0};
+  WritePushMetadata(ArenaMetadata);
 #endif
 
   if (!Result)
@@ -1266,7 +1268,7 @@ BufferDebugPushMetaData(ui_render_group *Group, registered_memory_arena *Current
       ++MetaIndex)
   {
     push_metadata *Meta = &GetDebugState()->MetaTable[MetaIndex];
-    if (Meta->ArenaHash == HashArena(Arena))
+    if (Meta->HeadArenaHash == HashArenaHead(Arena))
     {
       umm AllocationSize = Meta->StructSize*Meta->StructCount*Meta->PushCount;
       Column( FormatMemorySize(AllocationSize), Group, Table, WHITE);

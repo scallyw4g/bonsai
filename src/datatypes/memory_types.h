@@ -326,6 +326,7 @@ struct push_metadata
 {
   const char* Name;
   umm ArenaHash;
+  umm HeadArenaHash;
   umm StructSize;
   umm StructCount;
 
@@ -343,6 +344,13 @@ MemCopy(u8 *Src, u8 *Dest, umm Size)
      Dest[BytesCopied] = Src[BytesCopied];
   }
 
+}
+
+inline umm
+HashArenaHead(memory_arena *Arena)
+{
+  umm Result = (umm)Arena;
+  return Result;
 }
 
 inline umm
