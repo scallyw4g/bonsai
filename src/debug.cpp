@@ -1274,6 +1274,13 @@ Column(const char* ColumnText, ui_render_group *Group, table_layout *Table, u8 C
   return;
 }
 
+umm
+GetAllocationSize(push_metadata *Meta)
+{
+  umm AllocationSize = Meta->StructSize*Meta->StructCount*Meta->PushCount;
+  return AllocationSize;
+}
+
 layout *
 BufferDebugPushMetaData(ui_render_group *Group, selected_arenas *SelectedArenas, umm CurrentArenaHead, table_layout *Table, v2 Basis)
 {
@@ -1293,6 +1300,8 @@ BufferDebugPushMetaData(ui_render_group *Group, selected_arenas *SelectedArenas,
   Column("Name", Group, Table, WHITE);
   NewLine(Layout, &Group->Font);
 
+
+  // Pick out relevant metadata and write to collation table
   for ( u32 MetaIndex = 0;
       MetaIndex < META_TABLE_SIZE;
       ++MetaIndex)
@@ -1312,14 +1321,50 @@ BufferDebugPushMetaData(ui_render_group *Group, selected_arenas *SelectedArenas,
     }
   }
 
+  // Densely pack collated records
+  u32 PackedRecords = 0;
   for ( u32 MetaIndex = 0;
       MetaIndex < META_TABLE_SIZE;
+      ++MetaIndex)
+  {
+    push_metadata *Record = &CollatedMetaTable[MetaIndex];
+    if (Record->Name)
+    {
+      CollatedMetaTable[PackedRecords++] = *Record;
+    }
+  }
+
+  // Sort collation table
+  for ( u32 MetaIndex = 0;
+      MetaIndex < PackedRecords;
+      ++MetaIndex)
+  {
+    push_metadata *SortValue = &CollatedMetaTable[MetaIndex];
+    for ( u32 TestMetaIndex = 0;
+        TestMetaIndex < PackedRecords;
+        ++TestMetaIndex)
+    {
+      push_metadata *TestValue = &CollatedMetaTable[TestMetaIndex];
+
+      if ( GetAllocationSize(SortValue) > GetAllocationSize(TestValue) )
+      {
+        push_metadata Temp = *SortValue;
+        *SortValue = *TestValue;
+        *TestValue = Temp;
+      }
+    }
+  }
+
+
+  // Buffer collation table text
+  for ( u32 MetaIndex = 0;
+      MetaIndex < PackedRecords;
       ++MetaIndex)
   {
     push_metadata *Collated = &CollatedMetaTable[MetaIndex];
     if (Collated->Name)
     {
-      umm AllocationSize = Collated->StructSize*Collated->StructCount*Collated->PushCount;
+      umm AllocationSize = GetAllocationSize(Collated);
       Column( FormatMemorySize(AllocationSize), Group, Table, WHITE);
       Column( FormatThousands(Collated->StructCount), Group, Table, WHITE);
       Column( FormatThousands(Collated->PushCount), Group, Table, WHITE);
