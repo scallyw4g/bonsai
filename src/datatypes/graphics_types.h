@@ -11,6 +11,7 @@ struct post_processing_group
 struct graphics
 {
   camera *Camera;
+  game_lights *Lights;
 
   g_buffer_render_group * gBuffer;
   ao_render_group       * AoGroup;

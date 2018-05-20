@@ -239,6 +239,7 @@ MakeTexture_RGB(v2i Dim, const v3* Data, memory_arena *Mem)
 
   // TODO(Jesse): 32F is only necessary for reprojection of Position for
   // calculating AO.  Consider passing this in when creating a Texture?
+
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F,
       Texture->Dim.x, Texture->Dim.y, 0,  GL_RGB, GL_FLOAT, Data);
 

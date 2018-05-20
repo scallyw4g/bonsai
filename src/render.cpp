@@ -123,44 +123,50 @@ MakeLightingShader(memory_arena *GraphicsMemory,
 {
   shader Shader = LoadShaders( "Lighting.vertexshader", "Lighting.fragmentshader", GraphicsMemory);
 
+  AssertNoGlErrors;
   shader_uniform **Current = &Shader.FirstUniform;
+  AssertNoGlErrors;
 
   *Current = GetUniform(GraphicsMemory, &Shader, gTextures->Color, "gColor");
   Current = &(*Current)->Next;
+  AssertNoGlErrors;
 
   *Current = GetUniform(GraphicsMemory, &Shader, gTextures->Normal, "gNormal");
   Current = &(*Current)->Next;
 
+  AssertNoGlErrors;
   *Current = GetUniform(GraphicsMemory, &Shader, gTextures->Position, "gPosition");
   Current = &(*Current)->Next;
+  AssertNoGlErrors;
 
   *Current = GetUniform(GraphicsMemory, &Shader, ShadowMap, "shadowMap");
   Current = &(*Current)->Next;
 
+  AssertNoGlErrors;
   *Current = GetUniform(GraphicsMemory, &Shader, Ssao, "Ssao");
   Current = &(*Current)->Next;
 
+  AssertNoGlErrors;
   *Current = GetUniform(GraphicsMemory, &Shader, ShadowMVP, "ShadowMVP");
   Current = &(*Current)->Next;
 
-  char LightUniformName[64];
+  AssertNoGlErrors;
+  *Current = GetUniform(GraphicsMemory, &Shader, Lights->ColorTex, "LightColors");
+  Current = &(*Current)->Next;
 
-  for ( u32 LightIndex = 0;
-        LightIndex < MAX_LIGHTS;
-        ++LightIndex)
-  {
-    sprintf(LightUniformName, "LightPositions[%u]", LightIndex);
-    *Current = GetUniform(GraphicsMemory, &Shader, &(*Lights)[LightIndex]->Position, LightUniformName);
-    Current = &(*Current)->Next;
+  AssertNoGlErrors;
+  *Current = GetUniform(GraphicsMemory, &Shader, Lights->PositionTex, "LightPositions");
+  Current = &(*Current)->Next;
 
-    sprintf(LightUniformName, "LightColors[%u]", LightIndex);
-    *Current = GetUniform(GraphicsMemory, &Shader, &(*Lights)[LightIndex]->Color, LightUniformName);
-    Current = &(*Current)->Next;
-  }
+  AssertNoGlErrors;
+  *Current = GetUniform(GraphicsMemory, &Shader, &Lights->IndexToUV, "LightIndexToUV");
+  Current = &(*Current)->Next;
 
+  AssertNoGlErrors;
   *Current = GetUniform(GraphicsMemory, &Shader, &Lights->Count, "LightCount");
   Current = &(*Current)->Next;
 
+  AssertNoGlErrors;
   *Current = GetUniform(GraphicsMemory, &Shader, Camera, "CameraP");
   Current = &(*Current)->Next;
 
@@ -334,14 +340,13 @@ InitGbufferRenderGroup( g_buffer_render_group *gBuffer, memory_arena *GraphicsMe
 }
 
 void
-DoLight(game_lights *Lights, v3 Position, v3 Color, light_type Type)
+DoLight(game_lights *Lights, v3 Position, v3 Color)
 {
   if (Lights->Count < MAX_LIGHTS)
   {
     light *Light = (*Lights)[Lights->Count++];
     Light->Position = Position;
     Light->Color = Color;
-    Light->Type = Type;
   }
 
   return;
@@ -374,8 +379,6 @@ InitializeShadowBuffer(shadow_render_group *SG, memory_arena *GraphicsMemory)
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-  SG->GameLights.Lights = PUSH_STRUCT_CHECKED(light, GraphicsMemory, MAX_LIGHTS);
-
  return true;
 }
 
@@ -392,15 +395,66 @@ InitCamera(camera* Camera, float FocalLength)
   return;
 }
 
+game_lights *
+LightingInit(memory_arena *GraphicsMemory)
+{
+  game_lights *Lights = PUSH_STRUCT_CHECKED(game_lights, GraphicsMemory, 1);
+  Lights->Lights      = PUSH_STRUCT_CHECKED(light, GraphicsMemory, MAX_LIGHTS);
+
+  Lights->ColorTex    = MakeTexture_RGB(V2i(MAX_LIGHTS, 1), 0, GraphicsMemory);
+  Lights->PositionTex = MakeTexture_RGB(V2i(MAX_LIGHTS, 1), 0, GraphicsMemory);
+  AssertNoGlErrors;
+
+  Lights->IndexToUV = 1.0f / MAX_LIGHTS;
+
+  return Lights;
+}
+
+
+void
+UpdateLightingTextures(game_lights *Lights)
+{
+  v3 *PosData = PUSH_STRUCT_CHECKED(v3, TranArena, MAX_LIGHTS);
+  v3 *ColorData = PUSH_STRUCT_CHECKED(v3, TranArena, MAX_LIGHTS);
+
+  for (u32 LightIndex = 0;
+      LightIndex < MAX_LIGHTS;
+      ++LightIndex)
+  {
+    PosData[LightIndex] = Lights->Lights[LightIndex].Position;
+    ColorData[LightIndex] = Lights->Lights[LightIndex].Color;
+  }
+
+  u32 Type = GL_TEXTURE_2D;
+
+  glBindTexture(Type, Lights->PositionTex->ID);
+  glTexImage2D( Type, 0, GL_RGB32F,
+                Lights->PositionTex->Dim.x, Lights->PositionTex->Dim.y,
+                0,  GL_RGB, GL_FLOAT, PosData);
+  AssertNoGlErrors;
+
+  glBindTexture(Type, Lights->ColorTex->ID);
+  glTexImage2D( Type, 0, GL_RGB32F,
+                Lights->ColorTex->Dim.x, Lights->ColorTex->Dim.y,
+                0,  GL_RGB, GL_FLOAT, ColorData);
+  AssertNoGlErrors;
+
+  return;
+}
+
 graphics *
 GraphicsInit(memory_arena *GraphicsMemory)
 {
   graphics *Result = PUSH_STRUCT_CHECKED(graphics, GraphicsMemory, 1);
   Result->Memory = GraphicsMemory;
 
+  Result->Lights = LightingInit(GraphicsMemory);
+
+  AssertNoGlErrors;
   Result->Camera = PUSH_STRUCT_CHECKED(camera, GraphicsMemory, 1);
   InitCamera(Result->Camera, 1000.0f);
 
+  AssertNoGlErrors;
   shadow_render_group *SG = PUSH_STRUCT_CHECKED(shadow_render_group, GraphicsMemory, 1);
   if (!InitializeShadowBuffer(SG, GraphicsMemory))
   {
@@ -422,19 +476,24 @@ GraphicsInit(memory_arena *GraphicsMemory)
   {
     Error("Initializing ao_render_group"); return False;
   }
+  AssertNoGlErrors;
 
   texture *SsaoNoiseTexture = AllocateAndInitSsaoNoise(AoGroup, GraphicsMemory);
 
+  AssertNoGlErrors;
   gBuffer->LightingShader =
     MakeLightingShader(GraphicsMemory, gBuffer->Textures, SG->ShadowMap,
-                       AoGroup->Texture, &gBuffer->ShadowMVP, &SG->GameLights, Result->Camera);
+                       AoGroup->Texture, &gBuffer->ShadowMVP, Result->Lights, Result->Camera);
+  AssertNoGlErrors;
 
   gBuffer->gBufferShader =
     CreateGbufferShader(GraphicsMemory, &gBuffer->ViewProjection, Result->Camera);
 
+  AssertNoGlErrors;
   AoGroup->Shader =
     MakeSsaoShader(GraphicsMemory, gBuffer->Textures, SsaoNoiseTexture,
                    &AoGroup->NoiseTile, &gBuffer->ViewProjection);
+  AssertNoGlErrors;
 
   AoGroup->SsaoKernelUniform = GetShaderUniform(&AoGroup->Shader, "SsaoKernel");
 
@@ -525,7 +584,8 @@ DrawGBufferToFullscreenQuad( platform *Plat, graphics *Graphics)
 
   glUseProgram(Graphics->gBuffer->LightingShader.ID);
 
-  Graphics->gBuffer->ShadowMVP = NdcToScreenSpace * GetShadowMapMVP(&Graphics->SG->GameLights.Lights[0]);
+  UpdateLightingTextures(Graphics->Lights);
+  Graphics->gBuffer->ShadowMVP = NdcToScreenSpace * GetShadowMapMVP(&Graphics->Lights->Lights[0]);
 
   BindShaderUniforms(&Graphics->gBuffer->LightingShader);
 

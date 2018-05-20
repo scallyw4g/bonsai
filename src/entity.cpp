@@ -823,7 +823,7 @@ SimulateAndRenderParticleSystem(
     while (SpawnParticle(System));
   }
 
-  v3 EmissionColor = 2.0f*V3(3,1,0);
+  v3 EmissionColor = Normalize(V3(3,1,0));
   for ( s32 ParticleIndex = 0;
         ParticleIndex < System->ActiveParticles;
         ++ParticleIndex)
@@ -852,11 +852,17 @@ SimulateAndRenderParticleSystem(
     u8 ColorIndex = (u8)((Particle->RemainingLifespan / System->ParticleLifespan) * (PARTICLE_SYSTEM_COLOR_COUNT-0.0001f));
     Assert(ColorIndex >= 0 && ColorIndex <= PARTICLE_SYSTEM_COLOR_COUNT);
 
-    DrawVoxel( Dest, Graphics, Particle->Offset, System->Colors[ColorIndex], Diameter,  LengthSq(EmissionColor) );
+    DrawVoxel( Dest, Graphics, Particle->Offset, System->Colors[ColorIndex], Diameter, Length(EmissionColor) );
   }
 
   v3 RenderSpaceP = GetRenderP(SystemEntity->P, Graphics->Camera) + System->SpawnRegion.Center;
-  DoLight(&Graphics->SG->GameLights, RenderSpaceP, EmissionColor, LightType_Point);
+
+  for (u32 i = 0;
+      i < 128;
+      ++i)
+  {
+    DoLight(Graphics->Lights, RenderSpaceP + V3(1,0,0), EmissionColor);
+  }
 
   return;
 }

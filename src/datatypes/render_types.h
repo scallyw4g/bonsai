@@ -58,25 +58,20 @@ debug_global float g_quad_vertex_buffer_data[] =
    1.0f,  1.0f, 1.0f,
 };
 
-enum light_type
-{
-  LightType_Undefined,
-
-  LightType_Directional,
-  LightType_Spot,
-  LightType_Point,
-};
-
 struct light
 {
-  light_type Type;
   v3 Position;
   v3 Color;
 };
 
 struct game_lights
 {
+  texture *ColorTex;
+  texture *PositionTex;
+
   s32 Count;
+  r32 IndexToUV;
+
   light *Lights;
 
   light *
@@ -155,8 +150,6 @@ struct shadow_render_group
   shader DepthShader;
 
   texture *ShadowMap;
-
-  game_lights GameLights;
 };
 
 struct untextured_3d_geometry_buffer

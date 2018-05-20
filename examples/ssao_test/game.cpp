@@ -14,10 +14,11 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys, entity *Play
   graphics              *Graphics = Plat->Graphics;
   g_buffer_render_group *gBuffer  = Graphics->gBuffer;
   ao_render_group       *AoGroup  = Graphics->AoGroup;
-  shadow_render_group   *SG       = Graphics->SG;
+  /* shadow_render_group   *SG       = Graphics->SG; */
   camera                *Camera   = Graphics->Camera;
 
-  SG->GameLights.Count = 0;
+  if (Graphics->Lights)
+    Graphics->Lights->Count = 0;
 
 #if DEBUG_DRAW_WORLD_AXIES
   DEBUG_DrawLine(&World->Mesh, gBuffer, SG, Camera, V3(0,0,0), V3(10000, 0, 0), RED, 0.5f );

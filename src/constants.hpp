@@ -114,7 +114,10 @@ debug_global s32 VoxelsIndexed = 0;
 #define FACE_VERT_COUNT 6
 
 #define MAX_CHUNK_EDGES 8
-#define MAX_LIGHTS 32
+
+// THIS MUST MATCH THE DEFINE IN header.glsl
+// Also must be a power of two
+#define MAX_LIGHTS 1024
 
 #define MIN_LOD_DISTANCE 300
 

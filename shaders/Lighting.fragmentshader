@@ -1,5 +1,5 @@
 
-in vec2 UV;
+in vec2 gBufferUV;
 out vec4 OutColor;
 
 
@@ -11,9 +11,10 @@ uniform sampler2D Ssao;
 
 
 uniform int LightCount;
+uniform r32 LightIndexToUV;
+uniform sampler2D LightColors;
+uniform sampler2D LightPositions;
 
-uniform vec3 LightPositions[MAX_LIGHTS];
-uniform vec3 LightColors[MAX_LIGHTS];
 
 uniform mat4 ShadowMVP;
 
@@ -49,7 +50,7 @@ vec2 poissonDisk[16] = vec2[](
 
 // Tuning
   float gamma = 2.2f;
-  float GlobalLightIntensity = 0.05f; // 1.0 represents full sun
+  float GlobalLightIntensity = 0.2f; // 1.0 represents full sun
 
   float materialShininess = 15.0f;
 //
@@ -57,22 +58,25 @@ vec2 poissonDisk[16] = vec2[](
 
 void main()
 {
-  vec3 Diffuse      = texture(gColor, UV).rgb;
-  float Emission    = texture(gColor, UV).a;
+  vec3 Diffuse      = texture(gColor, gBufferUV).rgb;
+  float Emission    = texture(gColor, gBufferUV).a;
 
-  vec3 FragNormal   = texture(gNormal, UV).rgb;   // modelspace
-  vec3 FragPosition = texture(gPosition, UV).rgb; // worldspace
+  vec3 FragNormal   = texture(gNormal, gBufferUV).rgb;   // modelspace
+  vec3 FragPosition = texture(gPosition, gBufferUV).rgb; // worldspace
 
   vec3 AmbientLight = Diffuse * GlobalLightIntensity * Emission;
 
   vec3 AccumulatedLight = AmbientLight;
 
-  for ( int LightIndex = 0;
+#if 1
+  for ( s32 LightIndex = 0;
       LightIndex < LightCount;
       ++LightIndex)
   {
-    vec3 LightPosition = LightPositions[LightIndex];
-    vec3 LightColor = LightColors[LightIndex];
+    v2 LightUV = V2( r32(LightIndex)*LightIndexToUV, 0.5f);
+
+    vec3 LightPosition = texture(LightPositions, LightUV).rgb;
+    vec3 LightColor = texture(LightColors, LightUV).rgb;
 
     vec3 FragToLight = normalize(LightPosition - FragPosition);
 
@@ -81,20 +85,17 @@ void main()
     float Distance = distance(FragPosition, LightPosition);
     float LightAtt = 1.0f/(Distance*Distance);
 
-
     vec3 reflectionVector = reflect(FragToLight, FragNormal);
     vec3 FragToCamera = normalize(FragPosition - CameraP);
     float cosAngle = max(0.0, dot(FragToCamera, reflectionVector));
     float SpecularPower = pow(cosAngle, materialShininess);
 
-
     vec3 DirectLight = (Diffuse + LightColor) * LightCosTheta * LightAtt;
     vec3 SpecularLight = (Diffuse + LightColor) * SpecularPower * LightAtt;
 
-
     AccumulatedLight += DirectLight + SpecularLight;
   }
-
+#endif
 
 #if USE_AO_SHADER
   vec2 texelSize = 1.0 / vec2(textureSize(Ssao, 0));
@@ -105,7 +106,7 @@ void main()
   for (int i = 0; i < AoBlurSize; ++i) {
      for (int j = 0; j < AoBlurSize; ++j) {
         vec2 TexOffset = (hlim + vec2(float(i), float(j))) * texelSize;
-        AccumAO += texture(Ssao, UV + TexOffset).r;
+        AccumAO += texture(Ssao, gBufferUV + TexOffset).r;
      }
   }
 
