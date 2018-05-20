@@ -17,16 +17,6 @@ precision highp sampler2DShadow;
 #define u32 unsigned int
 #define s32 int
 
-
-// THIS MUST MATCH THE DEFINE IN constants.hpp
-#define MAX_LIGHTS 1024
-struct light
-{
-  v3 Position;
-  v3 Color;
-};
-
-
 #define USE_AO_SHADER 1
 #define USE_SHADOW_MAPPING 0
 

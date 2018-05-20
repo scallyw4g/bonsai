@@ -123,52 +123,42 @@ MakeLightingShader(memory_arena *GraphicsMemory,
 {
   shader Shader = LoadShaders( "Lighting.vertexshader", "Lighting.fragmentshader", GraphicsMemory);
 
-  AssertNoGlErrors;
   shader_uniform **Current = &Shader.FirstUniform;
-  AssertNoGlErrors;
 
   *Current = GetUniform(GraphicsMemory, &Shader, gTextures->Color, "gColor");
   Current = &(*Current)->Next;
-  AssertNoGlErrors;
 
   *Current = GetUniform(GraphicsMemory, &Shader, gTextures->Normal, "gNormal");
   Current = &(*Current)->Next;
 
-  AssertNoGlErrors;
   *Current = GetUniform(GraphicsMemory, &Shader, gTextures->Position, "gPosition");
   Current = &(*Current)->Next;
-  AssertNoGlErrors;
 
   *Current = GetUniform(GraphicsMemory, &Shader, ShadowMap, "shadowMap");
   Current = &(*Current)->Next;
 
-  AssertNoGlErrors;
   *Current = GetUniform(GraphicsMemory, &Shader, Ssao, "Ssao");
   Current = &(*Current)->Next;
 
-  AssertNoGlErrors;
   *Current = GetUniform(GraphicsMemory, &Shader, ShadowMVP, "ShadowMVP");
   Current = &(*Current)->Next;
 
-  AssertNoGlErrors;
   *Current = GetUniform(GraphicsMemory, &Shader, Lights->ColorTex, "LightColors");
   Current = &(*Current)->Next;
 
-  AssertNoGlErrors;
   *Current = GetUniform(GraphicsMemory, &Shader, Lights->PositionTex, "LightPositions");
   Current = &(*Current)->Next;
 
-  AssertNoGlErrors;
   *Current = GetUniform(GraphicsMemory, &Shader, &Lights->IndexToUV, "LightIndexToUV");
   Current = &(*Current)->Next;
 
-  AssertNoGlErrors;
   *Current = GetUniform(GraphicsMemory, &Shader, &Lights->Count, "LightCount");
   Current = &(*Current)->Next;
 
-  AssertNoGlErrors;
   *Current = GetUniform(GraphicsMemory, &Shader, Camera, "CameraP");
   Current = &(*Current)->Next;
+
+  AssertNoGlErrors;
 
 #if 0
   if (Lights)
@@ -284,7 +274,6 @@ MakeSsaoShader(memory_arena *GraphicsMemory, g_buffer_textures *gTextures,
   Current = &(*Current)->Next;
 
   AssertNoGlErrors;
-
 
   return Shader;
 }
@@ -450,18 +439,15 @@ GraphicsInit(memory_arena *GraphicsMemory)
 
   Result->Lights = LightingInit(GraphicsMemory);
 
-  AssertNoGlErrors;
   Result->Camera = PUSH_STRUCT_CHECKED(camera, GraphicsMemory, 1);
   InitCamera(Result->Camera, 1000.0f);
 
-  AssertNoGlErrors;
   shadow_render_group *SG = PUSH_STRUCT_CHECKED(shadow_render_group, GraphicsMemory, 1);
   if (!InitializeShadowBuffer(SG, GraphicsMemory))
   {
     Error("Initializing Shadow Buffer"); return False;
   }
 
-  AssertNoGlErrors;
 
   g_buffer_render_group *gBuffer = CreateGbuffer(GraphicsMemory);
   if (!InitGbufferRenderGroup(gBuffer, GraphicsMemory))
@@ -469,31 +455,25 @@ GraphicsInit(memory_arena *GraphicsMemory)
     Error("Initializing g_buffer_render_group"); return False;
   }
 
-  AssertNoGlErrors;
 
   ao_render_group *AoGroup = CreateAoRenderGroup(GraphicsMemory);
   if (!InitAoRenderGroup(AoGroup, GraphicsMemory))
   {
     Error("Initializing ao_render_group"); return False;
   }
-  AssertNoGlErrors;
 
   texture *SsaoNoiseTexture = AllocateAndInitSsaoNoise(AoGroup, GraphicsMemory);
 
-  AssertNoGlErrors;
   gBuffer->LightingShader =
     MakeLightingShader(GraphicsMemory, gBuffer->Textures, SG->ShadowMap,
                        AoGroup->Texture, &gBuffer->ShadowMVP, Result->Lights, Result->Camera);
-  AssertNoGlErrors;
 
   gBuffer->gBufferShader =
     CreateGbufferShader(GraphicsMemory, &gBuffer->ViewProjection, Result->Camera);
 
-  AssertNoGlErrors;
   AoGroup->Shader =
     MakeSsaoShader(GraphicsMemory, gBuffer->Textures, SsaoNoiseTexture,
                    &AoGroup->NoiseTile, &gBuffer->ViewProjection);
-  AssertNoGlErrors;
 
   AoGroup->SsaoKernelUniform = GetShaderUniform(&AoGroup->Shader, "SsaoKernel");
 
