@@ -15,58 +15,120 @@
 // - More secure. Change another line and you can inject code.
 // - Loading from memory, stream, etc
 
-bool
-loadOBJ( const char * FilePath)
+struct v3_array
 {
-  Log("Loading OBJ file %s...\n", FilePath);
+  v3 *Elements;
 
-  std::vector<unsigned int> vertexIndices, uvIndices, normalIndices;
-  std::vector<glm::vec3> temp_vertices;
-  std::vector<glm::vec2> temp_uvs;
-  std::vector<glm::vec3> temp_normals;
+  u32 At;
+  u32 End;
+};
 
+v3_array
+V3_Array(u32 Count, memory_arena *Memory)
+{
+  v3 *Elements = PUSH_STRUCT_CHECKED(v3, Memory, Count );
+  v3_array Result= {Elements, 0, Count + 1};
 
-  FILE * file = fopen(FilePath, "r");
+  return Result;
+}
 
-  if( file == NULL ){
-    Error("Reading File %s: ", FilePath);
+inline void
+Push(v3 Vec, v3_array *Array)
+{
+  Array->Elements[Array->At++] = Vec;
+  Assert( Array->At < Array->End );
+  return;
+}
+
+bool
+LoadObj( const char * FilePath, memory_arena *Memory)
+{
+  Info("Loading .obj file : %s \n", FilePath);
+
+  FILE * ObjFile = fopen(FilePath, "r");
+  if(!ObjFile)
+  {
+    Error("Reading ObjFile : %s: ", FilePath);
     return false;
   }
 
-  while( 1 )
-  {
+  u32 VertCount   = 0;
+  u32 UVCount     = 0;
+  u32 NormalCount = 0;
 
-    char lineHeader[1024];
-    int Type = fscanf(file, "%s", lineHeader);
+  while(True)
+  {
+    char LineType[32] = {};
+    int Type = fscanf(ObjFile, "%s", LineType);
     if (Type == EOF) { break; }
 
-    if ( strcmp( lineHeader, "v" ) == 0 )
+    if ( strcmp( LineType, "v" ) == 0 )
     {
-      glm::vec3 vertex;
-      fscanf(file, "%f %f %f\n", &vertex.x, &vertex.y, &vertex.z );
-      temp_vertices.push_back(vertex);
+      ++VertCount;
     }
-    else if ( strcmp( lineHeader, "vt" ) == 0 )
+    else if ( strcmp( LineType, "vt" ) == 0 )
+    {
+      ++UVCount;
+    }
+    else if ( strcmp( LineType, "vn" ) == 0 )
+    {
+      ++NormalCount;
+    }
+    else if ( strcmp( LineType, "f" ) == 0 )
+    {
+      VertCount   += 3;
+      UVCount     += 3;
+      NormalCount += 3;
+    }
+    else
+    {
+      // Probably a comment, eat up the rest of the line
+      char discard[1024];
+      fgets(discard, 1024, ObjFile);
+    }
+  }
+
+  /* Assert(VertCount == UVCount); */
+  Assert(VertCount == NormalCount);
+
+  v3_array TempVerts   = V3_Array(VertCount, Memory);
+  v3_array TempNormals = V3_Array(NormalCount, Memory);
+
+
+  while( True )
+  {
+    char LineType[32] = {};
+    int Type = fscanf(ObjFile, "%s", LineType);
+    if (Type == EOF) { break; }
+
+    if ( strcmp( LineType, "v" ) == 0 )
+    {
+      v3 Vert = {};
+      fscanf(ObjFile, "%f %f %f\n", &Vert.x, &Vert.y, &Vert.z );
+      Push(Vert, &TempVerts);
+    }
+    else if ( strcmp( LineType, "vn" ) == 0 )
+    {
+      v3 Normal = {};
+      fscanf(ObjFile, "%f %f %f\n", &Normal.x, &Normal.y, &Normal.z );
+      Push(Normal, &TempNormals);
+    }
+#if 0
+    else if ( strcmp( LineType, "vt" ) == 0 )
     {
       glm::vec2 uv;
-      fscanf(file, "%f %f\n", &uv.x, &uv.y );
+      fscanf(ObjFile, "%f %f\n", &uv.x, &uv.y );
       uv.y = -uv.y; // Invert V coordinate since we will only use DDS texture, which are inverted.
       temp_uvs.push_back(uv);
     }
-    else if ( strcmp( lineHeader, "vn" ) == 0 )
-    {
-      glm::vec3 normal;
-      fscanf(file, "%f %f %f\n", &normal.x, &normal.y, &normal.z );
-      temp_normals.push_back(normal);
-    }
-    else if ( strcmp( lineHeader, "f" ) == 0 )
+    else if ( strcmp( LineType, "f" ) == 0 )
     {
       std::string vertex1, vertex2, vertex3;
       unsigned int vertexIndex[3], uvIndex[3], normalIndex[3];
-      int matches = fscanf(file, "%d/%d/%d %d/%d/%d %d/%d/%d\n", &vertexIndex[0], &uvIndex[0], &normalIndex[0], &vertexIndex[1], &uvIndex[1], &normalIndex[1], &vertexIndex[2], &uvIndex[2], &normalIndex[2] );
+      int matches = fscanf(ObjFile, "%d/%d/%d %d/%d/%d %d/%d/%d\n", &vertexIndex[0], &uvIndex[0], &normalIndex[0], &vertexIndex[1], &uvIndex[1], &normalIndex[1], &vertexIndex[2], &uvIndex[2], &normalIndex[2] );
       if (matches != 9)
       {
-        Log("File can't be read by our simple parser :-( Try exporting with other options\n");
+        Log("ObjFile can't be read by our simple parser :-( Try exporting with other options\n");
         return false;
       }
       vertexIndices.push_back(vertexIndex[0]);
@@ -79,23 +141,27 @@ loadOBJ( const char * FilePath)
       normalIndices.push_back(normalIndex[1]);
       normalIndices.push_back(normalIndex[2]);
     }
+#endif
     else
     {
       // Probably a comment, eat up the rest of the line
       char discard[1000];
-      fgets(discard, 1000, file);
+      fgets(discard, 1000, ObjFile);
     }
 
   }
 
+#if 0
+  -- Add back in when we do VAOs with indices --
+
   // For each vertex of each triangle
-  for( unsigned int i=0; i<vertexIndices.size(); i++ )
+  for( u32 VertIndex  = 0; VertIndex < vertexIndices.size(); ++VertIndex )
   {
 
     // Get the indices of its attributes
-    unsigned int vertexIndex = vertexIndices[i];
-    unsigned int uvIndex = uvIndices[i];
-    unsigned int normalIndex = normalIndices[i];
+    unsigned int vertexIndex = vertexIndices[VertIndex];
+    unsigned int uvIndex = uvIndices[VertIndex];
+    unsigned int normalIndex = normalIndices[VertIndex];
 
     // Get the attributes thanks to the index
     glm::vec3 vertex = temp_vertices[ vertexIndex-1 ];
@@ -108,6 +174,7 @@ loadOBJ( const char * FilePath)
     out_normals .push_back(normal);
 
   }
+#endif
 
   return true;
 }

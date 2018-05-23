@@ -3,6 +3,7 @@
 #include <bonsai.cpp>
 #include <physics.cpp>
 #include <entity.cpp>
+#include <objloader.cpp>
 
 void
 DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys, entity *Player)
@@ -165,6 +166,8 @@ GameInit( platform *Plat, memory_arena *GameMemory)
     GameState->ServerState->Clients[ClientIndex].Id = -1;
   }
 
+
+  LoadObj("models/cube.obj", GameMemory);
 
 
   return GameState;
