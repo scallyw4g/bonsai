@@ -453,12 +453,15 @@ UpdateCameraP(platform *Plat, world *World, canonical_position NewTarget, camera
   v2 MouseDelta = GetMouseDelta(Plat);
 
   Camera->Yaw += MouseDelta.x;
+  Camera->Pitch += MouseDelta.y;
+
+  Camera->Pitch = ClampBetween(0.0, Camera->Pitch, PIf);
 
   r32 Px = Sin(Camera->Yaw);
   r32 Py = Cos(Camera->Yaw);
-  r32 Pz = -0.25f;
+  r32 Pz = Cos(Camera->Pitch);
 
-  Camera->Front = V3(Px, Py, Pz);
+  Camera->Front = Normalize(V3(Px, Py, Pz));
 
   Camera->Right = Normalize(Cross(V3(0,0,1), Camera->Front));
   Camera->Up = Normalize(Cross(Camera->Front, Camera->Right));

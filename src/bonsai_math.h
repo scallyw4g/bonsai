@@ -186,16 +186,19 @@ Pow2(int p)
   return Result;
 }
 
-float
+inline r32
+ClampBetween(r32 Min, r32 Value, r32 Max)
+{
+  if (Value > Max) { Value = Max; }
+  if (Value < Min) { Value = Min; }
+  return Value;
+}
+
+inline r32
 ClampBilateral(float F)
 {
-  if (F > 1)
-    F=1;
-
-  if (F < -1)
-    F=-1;
-
-  return F;
+  r32 Result = ClampBetween(-1.0f, F, 1.0f);
+  return Result;
 }
 
 int clamp0(int i)
