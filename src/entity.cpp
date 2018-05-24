@@ -857,12 +857,16 @@ SimulateAndRenderParticleSystem(
 
   v3 RenderSpaceP = GetRenderP(SystemEntity->P, Graphics->Camera) + System->SpawnRegion.Center;
 
+#if 0
   for (u32 i = 0;
       i < 128;
       ++i)
   {
     DoLight(Graphics->Lights, RenderSpaceP + V3(1,0,0), EmissionColor);
   }
+#else
+    DoLight(Graphics->Lights, RenderSpaceP + V3(1,0,0), EmissionColor);
+#endif
 
   return;
 }

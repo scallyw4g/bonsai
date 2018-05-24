@@ -159,7 +159,7 @@ struct untextured_3d_geometry_buffer
   v3 *Normals;
 
   u32 End;
-  s32 At;
+  u32 At;
 };
 
 struct textured_2d_geometry_buffer

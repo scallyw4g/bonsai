@@ -28,24 +28,6 @@ FillChunk(chunk_data *chunk, chunk_dimension Dim, u8 ColorIndex = BLACK)
   SetFlag(chunk, Chunk_Initialized);
 }
 
-model *
-AllocateGameModels(game_state *GameState, memory_arena *Memory)
-{
-  model *Result = PUSH_STRUCT_CHECKED(model, GameState->Memory, ModelIndex_Count);
-
-  Result[ModelIndex_Enemy] = LoadModel(Memory, ENEMY_MODEL);
-  Result[ModelIndex_Player] = LoadModel(Memory, PLAYER_MODEL);
-  Result[ModelIndex_Loot] = LoadModel(Memory, LOOT_MODEL);
-
-  chunk_dimension ProjectileDim = Chunk_Dimension(1,30,1);
-  Result[ModelIndex_Projectile].Chunk = AllocateChunk(Memory, ProjectileDim);
-  Result[ModelIndex_Projectile].Dim = ProjectileDim;
-  FillChunk(Result[ModelIndex_Projectile].Chunk, ProjectileDim, GREEN);
-
-  Result[ModelIndex_Proton] = LoadModel(Memory, PROJECTILE_MODEL);
-
-  return Result;
-}
 
 void
 InitChunkPerlin(perlin_noise *Noise, world_chunk *WorldChunk, v3 WorldChunkDim, u8 ColorIndex)

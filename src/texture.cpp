@@ -1,7 +1,6 @@
 #ifndef BONSAI_TEXTURE_H
 #define BONSAI_TEXTURE_H
 
-// TODO(Jesse): Clear this each frame
 global_variable memory_arena *TranArena = {};
 
 #include <stdio.h>

@@ -15,6 +15,14 @@
 // - More secure. Change another line and you can inject code.
 // - Loading from memory, stream, etc
 
+struct u32_array
+{
+  u32 *Elements;
+
+  u32 At;
+  u32 End;
+};
+
 struct v3_array
 {
   v3 *Elements;
@@ -23,6 +31,14 @@ struct v3_array
   u32 End;
 };
 
+u32_array
+U32_Array(u32 Count, memory_arena *Memory)
+{
+  u32 *Elements = PUSH_STRUCT_CHECKED(u32, Memory, Count );
+  u32_array Result= {Elements, 0, Count + 1};
+
+  return Result;
+}
 v3_array
 V3_Array(u32 Count, memory_arena *Memory)
 {
@@ -32,16 +48,16 @@ V3_Array(u32 Count, memory_arena *Memory)
   return Result;
 }
 
-inline void
-Push(v3 Vec, v3_array *Array)
+template <typename T, typename T_a>inline void
+Push(T Vec, T_a *Array)
 {
   Array->Elements[Array->At++] = Vec;
   Assert( Array->At < Array->End );
   return;
 }
 
-bool
-LoadObj( const char * FilePath, memory_arena *Memory)
+model
+LoadObj(memory_arena *Memory, const char * FilePath)
 {
   Info("Loading .obj file : %s \n", FilePath);
 
@@ -49,14 +65,16 @@ LoadObj( const char * FilePath, memory_arena *Memory)
   if(!ObjFile)
   {
     Error("Reading ObjFile : %s: ", FilePath);
-    return false;
+    model Result = {};
+    return Result;
   }
 
   u32 VertCount   = 0;
   u32 UVCount     = 0;
   u32 NormalCount = 0;
+  u32 FaceCount   = 0;
 
-  while(True)
+  while (True)
   {
     char LineType[32] = {};
     int Type = fscanf(ObjFile, "%s", LineType);
@@ -76,9 +94,7 @@ LoadObj( const char * FilePath, memory_arena *Memory)
     }
     else if ( strcmp( LineType, "f" ) == 0 )
     {
-      VertCount   += 3;
-      UVCount     += 3;
-      NormalCount += 3;
+      ++FaceCount;
     }
     else
     {
@@ -88,14 +104,19 @@ LoadObj( const char * FilePath, memory_arena *Memory)
     }
   }
 
+  rewind(ObjFile);
+
   /* Assert(VertCount == UVCount); */
-  Assert(VertCount == NormalCount);
+  /* Assert(VertCount == NormalCount); */
 
-  v3_array TempVerts   = V3_Array(VertCount, Memory);
-  v3_array TempNormals = V3_Array(NormalCount, Memory);
+  // FIXME(Jesse): Use TranArena for these
+  v3_array TempVerts       = V3_Array(VertCount, Memory);
+  v3_array TempNormals     = V3_Array(NormalCount, Memory);
 
+  u32_array VertIndicies   = U32_Array(FaceCount*3, Memory);
+  u32_array NormalIndicies = U32_Array(FaceCount*3, Memory);
 
-  while( True )
+  while (True)
   {
     char LineType[32] = {};
     int Type = fscanf(ObjFile, "%s", LineType);
@@ -121,27 +142,30 @@ LoadObj( const char * FilePath, memory_arena *Memory)
       uv.y = -uv.y; // Invert V coordinate since we will only use DDS texture, which are inverted.
       temp_uvs.push_back(uv);
     }
+#endif
     else if ( strcmp( LineType, "f" ) == 0 )
     {
-      std::string vertex1, vertex2, vertex3;
-      unsigned int vertexIndex[3], uvIndex[3], normalIndex[3];
-      int matches = fscanf(ObjFile, "%d/%d/%d %d/%d/%d %d/%d/%d\n", &vertexIndex[0], &uvIndex[0], &normalIndex[0], &vertexIndex[1], &uvIndex[1], &normalIndex[1], &vertexIndex[2], &uvIndex[2], &normalIndex[2] );
+      u32 vIndex[3], discard[3], nIndex[3];
+      int matches = fscanf(ObjFile, "%d/%d/%d %d/%d/%d %d/%d/%d\n", &vIndex[0], &discard[0], &nIndex[0],
+                                                                    &vIndex[1], &discard[1], &nIndex[1],
+                                                                    &vIndex[2], &discard[2], &nIndex[2] );
+
       if (matches != 9)
       {
-        Log("ObjFile can't be read by our simple parser :-( Try exporting with other options\n");
-        return false;
+        Error("ObjFile can't be read");
+        model Result = {};
+        return Result;
       }
-      vertexIndices.push_back(vertexIndex[0]);
-      vertexIndices.push_back(vertexIndex[1]);
-      vertexIndices.push_back(vertexIndex[2]);
-      uvIndices    .push_back(uvIndex[0]);
-      uvIndices    .push_back(uvIndex[1]);
-      uvIndices    .push_back(uvIndex[2]);
-      normalIndices.push_back(normalIndex[0]);
-      normalIndices.push_back(normalIndex[1]);
-      normalIndices.push_back(normalIndex[2]);
+
+      Push(vIndex[0], &VertIndicies );
+      Push(vIndex[1], &VertIndicies );
+      Push(vIndex[2], &VertIndicies );
+
+      Push(nIndex[0], &NormalIndicies );
+      Push(nIndex[1], &NormalIndicies );
+      Push(nIndex[2], &NormalIndicies );
+
     }
-#endif
     else
     {
       // Probably a comment, eat up the rest of the line
@@ -151,30 +175,31 @@ LoadObj( const char * FilePath, memory_arena *Memory)
 
   }
 
-#if 0
-  -- Add back in when we do VAOs with indices --
+  untextured_3d_geometry_buffer Mesh = {};
+  AllocateMesh(&Mesh, FaceCount*3, Memory);
 
-  // For each vertex of each triangle
-  for( u32 VertIndex  = 0; VertIndex < vertexIndices.size(); ++VertIndex )
+#if 1
+  for( u32 Index = 0;
+       Index < VertIndicies.At;
+       ++Index )
   {
+    u32 TempVertIndex = VertIndicies.Elements[Index];
+    u32 TempNormalIndex = NormalIndicies.Elements[Index];
 
-    // Get the indices of its attributes
-    unsigned int vertexIndex = vertexIndices[VertIndex];
-    unsigned int uvIndex = uvIndices[VertIndex];
-    unsigned int normalIndex = normalIndices[VertIndex];
+    v3 Vertex = TempVerts.Elements[TempVertIndex-1];
+    v3 Normal = TempNormals.Elements[TempNormalIndex-1];
 
-    // Get the attributes thanks to the index
-    glm::vec3 vertex = temp_vertices[ vertexIndex-1 ];
-    glm::vec2 uv = temp_uvs[ uvIndex-1 ];
-    glm::vec3 normal = temp_normals[ normalIndex-1 ];
-
-    // Put the attributes in buffers
-    out_vertices.push_back(vertex);
-    out_uvs     .push_back(uv);
-    out_normals .push_back(normal);
-
+    Mesh.Verts[Mesh.At] = Vertex;
+    Mesh.Normals[Mesh.At] = Normal;
+    Mesh.At++;
+    Assert(Mesh.At < Mesh.End);
   }
 #endif
 
-  return true;
+  model Result = {};
+  Result.Chunk = PUSH_STRUCT_CHECKED(chunk_data, Memory, 1);;
+  Result.Chunk->Mesh = Mesh;
+  SetFlag(&Result, Chunk_Initialized);
+
+  return Result;
 }

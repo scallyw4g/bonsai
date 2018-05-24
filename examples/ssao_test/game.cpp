@@ -125,6 +125,25 @@ GameThreadCallback(work_queue_entry *Entry)
   return;
 }
 
+model *
+AllocateGameModels(game_state *GameState, memory_arena *Memory)
+{
+  model *Result = PUSH_STRUCT_CHECKED(model, GameState->Memory, ModelIndex_Count);
+
+  Result[ModelIndex_Enemy] = LoadModel(Memory, ENEMY_MODEL);
+  Result[ModelIndex_Player] = LoadObj(Memory, "models/MaleLow.obj");
+  Result[ModelIndex_Loot] = LoadModel(Memory, LOOT_MODEL);
+
+  chunk_dimension ProjectileDim = Chunk_Dimension(1,30,1);
+  Result[ModelIndex_Projectile].Chunk = AllocateChunk(Memory, ProjectileDim);
+  Result[ModelIndex_Projectile].Dim = ProjectileDim;
+  FillChunk(Result[ModelIndex_Projectile].Chunk, ProjectileDim, GREEN);
+
+  Result[ModelIndex_Proton] = LoadModel(Memory, PROJECTILE_MODEL);
+
+  return Result;
+}
+
 EXPORT game_state*
 GameInit( platform *Plat, memory_arena *GameMemory)
 {
@@ -165,10 +184,6 @@ GameInit( platform *Plat, memory_arena *GameMemory)
   {
     GameState->ServerState->Clients[ClientIndex].Id = -1;
   }
-
-
-  LoadObj("models/cube.obj", GameMemory);
-
 
   return GameState;
 }
