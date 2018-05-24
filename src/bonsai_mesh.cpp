@@ -81,7 +81,7 @@ BufferVertsDirect(
   __m128 mmScale = _mm_set_ps(0, Scale.z, Scale.y, Scale.x);
   __m128 mmOffset = _mm_set_ps(0, Offset.z, Offset.y, Offset.x);
 
-  Assert(NumVerts % VERTS_PER_FACE == 0);
+  Assert(NumVerts % 3 == 0);
 
   memcpy( &Dest->Normals[Dest->At],  Normals,    sizeof(*Normals)*NumVerts );
   memcpy( &Dest->Colors[Dest->At],   VertColors, sizeof(*VertColors)*NumVerts );
@@ -89,51 +89,33 @@ BufferVertsDirect(
 
   for ( u32 VertIndex = 0;
         VertIndex < NumVerts;
-        VertIndex += VERTS_PER_FACE )
+        VertIndex += 3 )
   {
     v3 VertSrc0 = VertsPositions[VertIndex + 0];
     v3 VertSrc1 = VertsPositions[VertIndex + 1];
     v3 VertSrc2 = VertsPositions[VertIndex + 2];
-    v3 VertSrc3 = VertsPositions[VertIndex + 3];
-    v3 VertSrc4 = VertsPositions[VertIndex + 4];
-    v3 VertSrc5 = VertsPositions[VertIndex + 5];
 
     f32_reg Vert0;
     f32_reg Vert1;
     f32_reg Vert2;
-    f32_reg Vert3;
-    f32_reg Vert4;
-    f32_reg Vert5;
 
     Vert0.Sse = _mm_set_ps(0, VertSrc0.z, VertSrc0.y, VertSrc0.x);
     Vert1.Sse = _mm_set_ps(0, VertSrc1.z, VertSrc1.y, VertSrc1.x);
     Vert2.Sse = _mm_set_ps(0, VertSrc2.z, VertSrc2.y, VertSrc2.x);
-    Vert3.Sse = _mm_set_ps(0, VertSrc3.z, VertSrc3.y, VertSrc3.x);
-    Vert4.Sse = _mm_set_ps(0, VertSrc4.z, VertSrc4.y, VertSrc4.x);
-    Vert5.Sse = _mm_set_ps(0, VertSrc5.z, VertSrc5.y, VertSrc5.x);
 
     Vert0.Sse = _mm_add_ps( _mm_mul_ps(Vert0.Sse, mmScale), mmOffset);
     Vert1.Sse = _mm_add_ps( _mm_mul_ps(Vert1.Sse, mmScale), mmOffset);
     Vert2.Sse = _mm_add_ps( _mm_mul_ps(Vert2.Sse, mmScale), mmOffset);
-    Vert3.Sse = _mm_add_ps( _mm_mul_ps(Vert3.Sse, mmScale), mmOffset);
-    Vert4.Sse = _mm_add_ps( _mm_mul_ps(Vert4.Sse, mmScale), mmOffset);
-    Vert5.Sse = _mm_add_ps( _mm_mul_ps(Vert5.Sse, mmScale), mmOffset);
 
     v3 Result0 = {{ Vert0.F[0], Vert0.F[1], Vert0.F[2] }};
     v3 Result1 = {{ Vert1.F[0], Vert1.F[1], Vert1.F[2] }};
     v3 Result2 = {{ Vert2.F[0], Vert2.F[1], Vert2.F[2] }};
-    v3 Result3 = {{ Vert3.F[0], Vert3.F[1], Vert3.F[2] }};
-    v3 Result4 = {{ Vert4.F[0], Vert4.F[1], Vert4.F[2] }};
-    v3 Result5 = {{ Vert5.F[0], Vert5.F[1], Vert5.F[2] }};
 
     Dest->Verts[Dest->At + 0] = Result0;
     Dest->Verts[Dest->At + 1] = Result1;
     Dest->Verts[Dest->At + 2] = Result2;
-    Dest->Verts[Dest->At + 3] = Result3;
-    Dest->Verts[Dest->At + 4] = Result4;
-    Dest->Verts[Dest->At + 5] = Result5;
 
-    Dest->At += VERTS_PER_FACE;
+    Dest->At += 3;
   }
 
 #else
