@@ -126,19 +126,6 @@ StrStr(char *Str1, char *Str2)
   return Result;
 }
 
-s32
-Length(char *Str)
-{
-  s32 Result = 0;
-  while (Str)
-  {
-    Result ++;
-    Str++;
-  }
-
-  return Result;
-}
-
 #define DefGlProc(ProcType, ProcName) \
   ProcType ProcName = (ProcType)bonsaiGlGetProcAddress(#ProcName); Assert(ProcName)
 void

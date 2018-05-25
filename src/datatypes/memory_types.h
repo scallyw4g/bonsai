@@ -228,11 +228,11 @@ TotalSize(memory_arena *Arena)
   return Result;
 }
 
-umm
-Remaining(memory_arena *Arena)
+template <typename T> umm
+Remaining(T *Sizable)
 {
-  Assert(Arena->At <= Arena->End);
-  umm Result = (umm)(Arena->End - Arena->At);
+  Assert(Sizable->At <= Sizable->End);
+  umm Result = (umm)(Sizable->End - Sizable->At);
   return Result;
 }
 

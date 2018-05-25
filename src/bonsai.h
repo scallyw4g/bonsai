@@ -875,6 +875,7 @@ AllocateMesh(untextured_3d_geometry_buffer *Mesh, u32 NumVerts, memory_arena *Me
   Mesh->Colors  = PUSH_STRUCT_CHECKED(v4, Memory, NumVerts );
   Mesh->Normals = PUSH_STRUCT_CHECKED(v3, Memory, NumVerts );
 
+  // FIXME(Jesse): This should not have to add 1
   Mesh->End = NumVerts + 1;
   Mesh->At = 0;
 }

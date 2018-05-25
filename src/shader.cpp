@@ -20,27 +20,29 @@
 #define INVALID_SHADER (u32)(-1)
 
 char *
-ReadEntireFileIntoString(const char *Filepath, memory_arena *Memory)
+ReadEntireFileIntoString(const char *Filepath, memory_arena *Memory, umm *Length = 0)
 {
-FILE *File = fopen(Filepath, "r");
-char *FileContents = 0;
+  FILE *File = fopen(Filepath, "r");
+  char *FileContents = 0;
 
-if (File)
-{
-  fseek(File, 0L, SEEK_END);
-  umm FileSize = (umm)ftell(File);
+  if (File)
+  {
+    fseek(File, 0L, SEEK_END);
+    umm FileSize = (umm)ftell(File);
+    if (Length)
+      *Length = FileSize;
 
-  rewind(File);
-  // TODO(Jesse): Transient storage
-  FileContents = (char*)PushSize(Memory, (FileSize+1));
-  fread(FileContents, 1, FileSize, File);
-}
-else
-{
-  Error("Opening %s", Filepath);
-}
+    rewind(File);
+    // TODO(Jesse): Transient storage
+    FileContents = (char*)PushSize(Memory, (FileSize+1));
+    fread(FileContents, 1, FileSize, File);
+  }
+  else
+  {
+    Error("Opening %s", Filepath);
+  }
 
-return FileContents;
+  return FileContents;
 }
 
 u32

@@ -1,12 +1,3 @@
-# 3ds Max Wavefront OBJ Exporter v0.97b - (c)2007 guruware
-# File Created: 12.03.2016 23:28:17
-
-mtllib Rock_6.mtl
-
-#
-# object Rock_6
-#
-
 v  -0.4228 0.9109 0.4695
 v  -0.5430 0.8542 0.4462
 v  -0.5004 0.7892 0.4729
@@ -3249,9 +3240,6 @@ vt 0.8965 0.1938 0.0000
 vt 0.8877 0.1752 0.0000
 # 1122 texture coords
 
-g Rock_6
-usemtl Rock_6
-s 1
 f 1/1/1 2/2/2 3/3/3 4/4/4 
 f 4/4/4 3/3/3 5/5/5 6/6/6 
 f 7/7/7 8/8/8 9/9/9 4/4/4 

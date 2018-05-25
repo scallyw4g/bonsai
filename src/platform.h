@@ -226,7 +226,15 @@ DumpGlErrorEnum(u32 Error)
 inline b32
 StringsMatch(const char *S1, const char *S2)
 {
-  b32 Result = strcmp(S1, S2) == 0;
+  const char *S1At = S1;
+  const char *S2At = S2;
+
+  b32 Result = (*S1At == *S2At);
+  while (Result && (*S1At || *S2At))
+  {
+    Result &= (*S1At++ == *S2At++);
+  }
+
   return Result;
 }
 

@@ -77,7 +77,7 @@ BufferVertsDirect(
     return;
   }
 
-#if 1
+#if 0
   __m128 mmScale = _mm_set_ps(0, Scale.z, Scale.y, Scale.x);
   __m128 mmOffset = _mm_set_ps(0, Offset.z, Offset.y, Offset.x);
 
@@ -122,13 +122,13 @@ BufferVertsDirect(
 
   // Left this here for futrue benchmarking.  The memcpy path is fastest by ~2x
 #if 1
-  for ( s32 VertIndex = 0;
+  for ( u32 VertIndex = 0;
         VertIndex < NumVerts;
         ++VertIndex )
   {
-    Dest->VertexData[Dest->At] = VertsPositions[VertIndex]*Scale + Offset;
-    Dest->NormalData[Dest->At] = Normals[VertIndex];
-    Dest->ColorData[Dest->At] = VertColors[VertIndex];
+    Dest->Verts[Dest->At] = VertsPositions[VertIndex]*Scale + Offset;
+    Dest->Normals[Dest->At] = Normals[VertIndex];
+    Dest->Colors[Dest->At] = VertColors[VertIndex];
     ++Dest->At;
   }
 #else
@@ -255,6 +255,7 @@ BuildEntityMesh(chunk_data *chunk, chunk_dimension Dim)
         v4 FaceColors[FACE_VERT_COUNT];
         FillColorArray(Voxel->Color, FaceColors, FACE_VERT_COUNT);
 
+
         voxel_position rightVoxel = LocalVoxelP + Voxel_Position(1, 0, 0);
         voxel_position leftVoxel = LocalVoxelP - Voxel_Position(1, 0, 0);
 
@@ -321,6 +322,8 @@ BuildWorldChunkMesh(world *World, world_chunk *WorldChunk, chunk_dimension World
   canonical_position frontVoxel;
   canonical_position backVoxel;
 
+  random_series ColorEntropy = {33453};
+
   for ( int z = 0; z < WorldChunkDim.z ; ++z )
   {
     for ( int y = 0; y < WorldChunkDim.y ; ++y )
@@ -337,7 +340,19 @@ BuildWorldChunkMesh(world *World, world_chunk *WorldChunk, chunk_dimension World
         v3 Diameter = V3(1.0f);
         v3 VertexData[FACE_VERT_COUNT];
         v4 FaceColors[FACE_VERT_COUNT];
-        FillColorArray(Voxel->Color, FaceColors, FACE_VERT_COUNT);;
+        FillColorArray(Voxel->Color, FaceColors, FACE_VERT_COUNT);
+
+        v4 Perturb = 0.08f*FaceColors[0]*V4(RandomBilateral(&ColorEntropy),
+                                           RandomBilateral(&ColorEntropy),
+                                           RandomBilateral(&ColorEntropy),
+                                           1.0f);
+
+        for (u32 ColorIndex = 0;
+            ColorIndex < FACE_VERT_COUNT;
+            ++ColorIndex)
+        {
+          FaceColors[ColorIndex] += Perturb;
+        }
 
         TIMED_BLOCK("Canonicalize");
           rightVoxel = Canonicalize(WorldChunkDim, CurrentP + V3(1, 0, 0));

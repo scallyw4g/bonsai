@@ -940,7 +940,28 @@ operator/=(v3& A, float f)
   return A;
 }
 
-v4 operator*(v4 A, int B)
+v4
+operator*(v4 A, float B)
+{
+  v4 Result(0,0,0,0);
+
+  Result.x = A.x * B;
+  Result.y = A.y * B;
+  Result.z = A.z * B;
+  Result.w = A.w * B;
+
+  return Result;
+}
+
+v4
+operator*(float B, v4 A)
+{
+  v4 Result = A*B;
+  return Result;
+}
+
+v4
+operator*(v4 A, int B)
 {
   v4 Result(0,0,0,0);
 
@@ -950,6 +971,46 @@ v4 operator*(v4 A, int B)
   Result.w = A.w * (float)B;
 
   return Result;
+}
+
+inline v4
+operator+(v4 A, v4 B)
+{
+  v4 Result;
+
+  Result.x = A.x + B.x;
+  Result.y = A.y + B.y;
+  Result.z = A.z + B.z;
+  Result.w = A.w + B.w;
+
+  return Result;
+}
+
+inline v4
+operator*(v4 A, v4 B)
+{
+  v4 Result;
+
+  Result.x = A.x * B.x;
+  Result.y = A.y * B.y;
+  Result.z = A.z * B.z;
+  Result.w = A.w * B.w;
+
+  return Result;
+}
+
+inline v4&
+operator+=(v4 &A, v4 B)
+{
+  A = A + B;
+  return A;
+}
+
+inline v4&
+operator*=(v4 &A, v4 B)
+{
+  A = A * B;
+  return A;
 }
 
 v4 operator*=(v4 A, int B)
@@ -966,18 +1027,6 @@ operator==(v4 A, v4 B)
     A[1] == B[1] &&
     A[2] == B[2] &&
     A[3] == B[3]);
-
-  return Result;
-}
-
-v4 operator+(v4 A, v4 B)
-{
-  v4 Result(0,0,0,0);
-
-  Result.x = A.x + B.x;
-  Result.y = A.y + B.y;
-  Result.z = A.z + B.z;
-  Result.w = A.w + B.w;
 
   return Result;
 }

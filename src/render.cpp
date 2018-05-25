@@ -779,7 +779,7 @@ RotatePoint(v3 P1, v3 P2)
 
   float theta = GetTheta(P1, P2);
 
-  Quaternion Result( (Axis*sin(theta/2)), cos(theta/2) );
+  Quaternion Result = Quaternion((Axis*sin(theta/2)), cos(theta/2));
 
   if (Length(Result.xyz) == 0)  // The resulting rotation was inconsequential
     Result = Quaternion();
