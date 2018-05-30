@@ -167,10 +167,9 @@ BufferVertsChecked(
   if (BufferIsFull(Target, NumVerts))
   {
     u32 VertsRemaining = Target->End - Target->At;
-    u32 Pad = VertsRemaining % 6;
-
+    u32 Pad = VertsRemaining % 3;
     u32 PushVerts = VertsRemaining - Pad;
-    BufferVertsDirect( Target, PushVerts, Positions, Normals, Colors, Offset, Scale);
+    BufferVertsChecked( Target, Graphics, PushVerts, Positions, Normals, Colors, Offset, Scale);
 
     Positions += PushVerts;
     Normals += PushVerts;
