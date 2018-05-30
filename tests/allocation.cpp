@@ -175,6 +175,7 @@ ArenaAdvancements()
 
   {
     memory_arena Arena = {};
+    Assert( OnPageBoundary(&Arena, PageSize) == True);
 
     Arena.At = (u8*)(PageSize);
     Assert( OnPageBoundary(&Arena, PageSize) == True);
@@ -189,6 +190,7 @@ ArenaAdvancements()
 
   {
     umm SizeofType = sizeof(memory_arena);
+
     {
       memory_arena Arena = {};
       Arena.End = (u8*)TwoPages;
@@ -361,23 +363,30 @@ MultipleAllocations()
 void
 ArenaAllocation()
 {
-  memory_arena *Arena = PlatformAllocateArena(Megabytes(1));
-  Assert( Remaining(Arena) == Megabytes(1) );
+  {
+    memory_arena *Arena = PlatformAllocateArena(Megabytes(1));
+    Assert( Remaining(Arena) >= Megabytes(1) );
 
-  Clear(Arena);
+    Clear(Arena);
 
-  u8 *ArenaBytes = (u8*)Arena;
-  u8 *LastArenaByte = ArenaBytes + sizeof(memory_arena) - 1;
-  u8 *FirstMemprotectedByte = ArenaBytes + sizeof(memory_arena);
+    u8 *ArenaBytes = (u8*)Arena;
+    u8 *LastArenaByte = ArenaBytes + sizeof(memory_arena) - 1;
+    u8 *FirstMemprotectedByte = ArenaBytes + sizeof(memory_arena);
 
-  ExpectSegfault();
-  *FirstMemprotectedByte = 0;
-  AssertSegfault();
-  NoExpectedSegfault();
+    ExpectSegfault();
+    *FirstMemprotectedByte = 0;
+    AssertSegfault();
+    NoExpectedSegfault();
 
 
-  *LastArenaByte = 0;
-  AssertNoSegfault();
+    *LastArenaByte = 0;
+    AssertNoSegfault();
+  }
+
+  {
+    memory_arena *Arena = PlatformAllocateArena(32);
+    Assert(Remaining(Arena) >= 32);
+  }
 
   return;
 }

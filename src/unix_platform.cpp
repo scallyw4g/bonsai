@@ -61,6 +61,14 @@ PlatformProtectPage(u8* Mem)
   return Result;
 }
 
+void
+PlatformDeallocateArena(memory_arena *Arena)
+{
+  s32 Deallocated = (munmap(Arena->Start, TotalSize(Arena)) == 0);
+  Assert(Deallocated);
+  return;
+}
+
 memory_arena*
 PlatformAllocateArena(umm RequestedBytes = Megabytes(1))
 {
@@ -72,6 +80,7 @@ PlatformAllocateArena(umm RequestedBytes = Megabytes(1))
   u32 Protection = PROT_READ|PROT_WRITE;
   u32 Flags = MAP_SHARED|MAP_ANONYMOUS|MAP_NORESERVE;
 
+  errno = 0;
   u8 *Bytes = (u8*)mmap(0, AllocationSize, Protection, Flags,  -1, 0);
   if (Bytes == MAP_FAILED)
   {
@@ -109,14 +118,13 @@ PlatformAllocateArena(umm RequestedBytes = Megabytes(1))
 #endif
 
 #if MEMPROTECT_OVERFLOW
-  AdvanceToBytesBeforeNextPage(sizeof(memory_arena), &TempArena);
+  /* AdvanceToBytesBeforeNextPage(sizeof(memory_arena), &TempArena); */
   memory_arena *Result = (memory_arena*)PushSize(&TempArena, sizeof(memory_arena));
 
   *Result = TempArena;
 
-  Result->Start = Result->At;
-
   Assert((umm)Result->Start % PageSize == 0);
+  Assert((umm)Result->At % PageSize == 0);
   Assert(OnPageBoundary(Result, PageSize));
   Assert(Remaining(Result) >= RequestedBytes);
 #else
