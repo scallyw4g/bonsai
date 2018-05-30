@@ -1,3 +1,26 @@
+# May 29 2018 - 0:00 - closed - Geometry buffer over-allocated by 1
+* off-by-one
+* allocation
+I noticed that geometry buffers were actually setting their End pointer to one
+past the end of the actual memory.  I assume this never got written to (they're
+memprotected) because we operate on triangles, thus access elements three at a
+time, and one was not enough to cause an overwrite crash.
+
+# May 29 2018 - 0:40 - closed - Using extra page on arena reallocation
+* memory
+* arenas
+* allocator
+This manifested when trying to initially allocate an arena with a very small
+size (32 bytes).  Probably should not have been trying to allocate that little
+of an arena in the first place, but it caught a bug.
+
+# May 29 2018 - 7:00 - closed - Overflowing page table on linux
+* memory
+* allocator
+On linux, memprotecting pages adds an entry to the virtual page table, which
+eventually overflows with _many_ small allocations.  Turning off memprotect on
+the transient arena fixes the issue for now.
+
 # Apr 30 2018 - 2:00 - closed - Generic macro for copying color buffers
 * opengl
 * memory
