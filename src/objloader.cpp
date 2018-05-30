@@ -5,16 +5,6 @@
 
 #include "objloader.hpp"
 
-// Very, VERY simple OBJ loader.
-// Here is a short list of features a real function would provide :
-// - Binary files. Reading a model should be just a few memcpy's away, not parsing a file at runtime. In short : OBJ is not very great.
-// - Animations & bones (includes bones weights)
-// - Multiple UVs
-// - All attributes should be optional, not "forced"
-// - More stable. Change a line in the OBJ file and it crashes.
-// - More secure. Change another line and you can inject code.
-// - Loading from memory, stream, etc
-
 struct u32_static_array
 {
   u32 *Elements;
@@ -238,6 +228,13 @@ GetObjStats(stream_cursor Cursor, memory_arena *Memory)
   return Result;
 }
 
+/*
+ * This loader doesn't support ngon faces.  The mesh must be triangulated
+ * before exporting from blender.
+ *
+ * Note that triangulating a mesh with bent normals at export time (in blender)
+ * seems to not re-bend the triangulated normals and everything looks borked.
+ */
 model
 LoadObj(memory_arena *PermMem, const char * FilePath)
 {
@@ -264,21 +261,12 @@ LoadObj(memory_arena *PermMem, const char * FilePath)
     if ( StringsMatch(LineType, "v") )
     {
       v3 Vert = {{ PopFloat(&Stream, TranArena), PopFloat(&Stream, TranArena), PopFloat(&Stream, TranArena) }};
-      v3 SwappedVert = Vert;
-      /* SwappedVert.y = Vert.z; */
-      /* SwappedVert.z = Vert.y; */
-
-      Push(SwappedVert*20.0f, &TempVerts);
+      Push(Vert, &TempVerts);
     }
     else if ( StringsMatch(LineType, "vn") )
     {
-
-      v3 Normal = {{ PopFloat(&Stream, TranArena), PopFloat(&Stream, TranArena), PopFloat(&Stream, TranArena) }};
-      v3 SwappedNormal = Normal;
-      /* SwappedNormal.y = Normal.z; */
-      /* SwappedNormal.z = Normal.y; */
-
-      Push(SwappedNormal, &TempNormals);
+      v3 Normal = Normalize({{ PopFloat(&Stream, TranArena), PopFloat(&Stream, TranArena), PopFloat(&Stream, TranArena) }});
+      Push(Normal, &TempNormals);
     }
 #if 0
     else if ( StringsMatch(LineType, "vt") )
@@ -291,6 +279,10 @@ LoadObj(memory_arena *PermMem, const char * FilePath)
     {
       s32 vIndex[3] = {};
       s32 nIndex[3] = {};
+
+      // We don't currently support vertex-only meshes
+      Assert(Stats.VertCount);
+      Assert(Stats.NormalCount);
 
       if (Stats.UVCount)
       {

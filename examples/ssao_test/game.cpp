@@ -131,8 +131,8 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory)
   model *Result = PUSH_STRUCT_CHECKED(model, GameState->Memory, ModelIndex_Count);
 
   Result[ModelIndex_Enemy] = LoadModel(Memory, ENEMY_MODEL);
-  Result[ModelIndex_Player] = LoadObj(Memory, "models/sphere.obj");
-  /* Result[ModelIndex_Player] = LoadModel(Memory, PLAYER_MODEL); */
+  /* Result[ModelIndex_Player] = LoadObj(Memory, "models/test.obj"); */
+  Result[ModelIndex_Player] = LoadModel(Memory, PLAYER_MODEL);
   Result[ModelIndex_Loot] = LoadModel(Memory, LOOT_MODEL);
 
   chunk_dimension ProjectileDim = Chunk_Dimension(1,30,1);
@@ -149,9 +149,9 @@ EXPORT game_state*
 GameInit( platform *Plat, memory_arena *GameMemory, memory_arena *TranArena_in /*, os *Os */)
 {
   Info("Initializing Game");
-  TranArena = TranArena_in;
 
   GlobalDebugState = &Plat->DebugState;
+  TranArena = TranArena_in;
 
   Init_Global_QuadVertexBuffer();
 

@@ -865,8 +865,16 @@ SimulateAndRenderParticleSystem(
     DoLight(Graphics->Lights, RenderSpaceP + V3(1,0,0), EmissionColor);
   }
 #else
-    DoLight(Graphics->Lights, RenderSpaceP, 10.0f*EmissionColor);
-    DrawVoxel( Dest, Graphics, RenderSpaceP, RED, V3(2.0f) );
+  static r32 Ymod = 0;
+  static r32 Xmod = 0;
+
+  Ymod += dt;
+  Xmod += dt;
+
+  v3 Offset = V3(Sin(Xmod), Cos(Ymod), 1.0f)*20.0f;
+
+  DoLight(Graphics->Lights, Offset, 10.0f*EmissionColor);
+  DrawVoxel( Dest, Graphics,Offset, RED, V3(2.0f) );
 #endif
 
   return;

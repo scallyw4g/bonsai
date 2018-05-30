@@ -381,6 +381,7 @@ InitCamera(camera* Camera, float FocalLength)
   Camera->Up = WORLD_Z;
   Camera->Right = WORLD_X;
   Camera->Front = V3(0,0,0);
+  Camera->Pitch = PIf;
   return;
 }
 
