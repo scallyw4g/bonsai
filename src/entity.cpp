@@ -880,9 +880,10 @@ SimulatePlayer( game_state *GameState, entity *Player, hotkeys *Hotkeys, r32 dt 
   TIMED_FUNCTION();
   if (Spawned(Player))
   {
+    camera *Camera =  GameState->Plat->Graphics->Camera;
     if (Hotkeys)
     {
-      Player->Physics.Force += GetCameraRelativeInput(Hotkeys, GameState->Plat->Graphics->Camera)*dt;
+      Player->Physics.Force += GetCameraRelativeInput(Hotkeys, Camera)*dt;
     }
     /* Player->Physics.Force += GetOrthographicInputs(Hotkeys)*dt; */
 
@@ -900,7 +901,7 @@ SimulatePlayer( game_state *GameState, entity *Player, hotkeys *Hotkeys, r32 dt 
     if ( Hotkeys->Player_Fire && (Player->FireCooldown < 0) )
     {
       canonical_position SpawnP = Canonicalize(Player->P + V3(0, 0, 2));
-      entity *Projectile = SpawnProjectile(GameState, &SpawnP, V3(0,PROJECTILE_SPEED,0), EntityType_PlayerProjectile);
+      entity *Projectile = SpawnProjectile(GameState, &SpawnP, PROJECTILE_SPEED*Normalize(Camera->Front*V3(1,1,0)), EntityType_PlayerProjectile);
       SpawnFire(Projectile, &GameState->Entropy, V3(0));
       Player->FireCooldown = Player->RateOfFire;
     }
