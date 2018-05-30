@@ -1111,7 +1111,6 @@ DebugPrintArenaStats(memory_arena *Arena)
   Print( Remaining(Arena) );
   Print( TotalSize(Arena) );
   Print( Arena->Pushes );
-  Debug("");
 }
 
 void

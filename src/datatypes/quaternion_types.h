@@ -1,4 +1,6 @@
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
 union Quaternion
 {
   struct { float x, y, z, w; };
@@ -27,6 +29,7 @@ union Quaternion
     this->w = W;
   }
 };
+#pragma GCC diagnostic pop
 
 Quaternion
 operator*(Quaternion A, Quaternion B)

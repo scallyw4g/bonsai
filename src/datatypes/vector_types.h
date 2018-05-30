@@ -11,49 +11,50 @@ struct v2
   r32 x, y;
 };
 
-
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
 union v3
 {
-  struct { float x, y, z; };
-  struct { float r, g, b; };
+  struct { r32 x, y, z; };
+  struct { r32 r, g, b; };
 
   struct {
     v2 xy;
-    float Ignored0_;
+    r32 Ignored0_;
   };
 
   struct {
-    float Ignored1_;
+    r32 Ignored1_;
     v2 yz;
   };
 
-  float E[3];
+  r32 E[3];
 };
 
 
 // Note: OpenGL matrices have x first
 union v4
 {
-  struct { float x, y, z, w; };
-  struct { float r, g, b, a; };
+  struct { r32 x, y, z, w; };
+  struct { r32 r, g, b, a; };
 
   struct {
     v2 xy;
-    float Ignored0_;
-    float Ignored01_;
+    r32 Ignored0_;
+    r32 Ignored01_;
   };
 
   struct {
     v3 xyz;
-    float Ignored02_;
+    r32 Ignored02_;
   };
 
   struct {
     v3 rgb;
-    float Ignored03_;
+    r32 Ignored03_;
   };
 
-  float E[4];
+  r32 E[4];
 
 
   v4()
@@ -90,6 +91,7 @@ union v4
   }
 
 };
+#pragma GCC diagnostic pop
 
 v4
 V4(v3 V, r32 w)
