@@ -496,13 +496,23 @@ SpawnPlayer(game_state *GameState, entity *Player, canonical_position InitialP)
 }
 
 void
-EntityWorldCollision(entity *Entity)
+EntityWorldCollision(entity *Entity, collision_event *Event )
 {
   Assert(Entity->Type != EntityType_None);
 
   switch (Entity->Type)
   {
     case EntityType_Player: {} break;
+
+    case EntityType_PlayerProjectile:
+    {
+      if (Event->Chunk)
+      {
+        s32 i = GetIndex(Voxel_Position(Event->CP.Offset), WORLD_CHUNK_DIM);
+        Event->Chunk->Data->Voxels[i] = {};
+      }
+      Unspawn(Entity);
+    } break;
 
     default:
     {
@@ -652,7 +662,7 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
 
   chunk_dimension WorldChunkDim = World->ChunkDim;
 
-  collision_event C;
+  collision_event C = {};
 
   while ( Remaining != V3(0,0,0) )
   {
@@ -676,7 +686,7 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
         Entity->P.Offset.x++;
 
       Entity->P = Canonicalize(WorldChunkDim, Entity->P);
-      EntityWorldCollision(Entity);
+      EntityWorldCollision(Entity, &C);
     }
 
 
@@ -695,7 +705,7 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
         Entity->P.Offset.y++;
 
       Entity->P = Canonicalize(WorldChunkDim, Entity->P);
-      EntityWorldCollision(Entity);
+      EntityWorldCollision(Entity, &C);
     }
 
     Entity->P.Offset.z += StepDelta.z;
@@ -713,7 +723,7 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
         Entity->P.Offset.z++;
 
       Entity->P = Canonicalize(WorldChunkDim, Entity->P);
-      EntityWorldCollision(Entity);
+      EntityWorldCollision(Entity, &C);
     }
 
     if (Unspawned(Entity) || Destroyed(Entity))
@@ -729,7 +739,7 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
   // Entites that aren't moving can still be positioned outside the world if
   // the player moves the world to do so
   if (AssertCollision.didCollide )
-    EntityWorldCollision(Entity);
+    EntityWorldCollision(Entity, &C);
 
   return;
 }

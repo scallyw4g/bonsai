@@ -223,6 +223,7 @@ GetCollision( world *World, canonical_position TestP, v3 CollisionDim)
         {
           Collision.CP = LoopTestP;
           Collision.didCollide = true;
+          Collision.Chunk = 0;
           goto end;
         }
 
@@ -230,6 +231,7 @@ GetCollision( world *World, canonical_position TestP, v3 CollisionDim)
         {
           Collision.CP = LoopTestP;
           Collision.didCollide = true;
+          Collision.Chunk = chunk;
           goto end;
         }
 

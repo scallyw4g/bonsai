@@ -153,12 +153,6 @@ struct chunk_data
   voxel *Voxels;
 };
 
-struct collision_event
-{
-  canonical_position CP;
-  bool didCollide;
-};
-
 struct plane
 {
   v3 P;
@@ -367,6 +361,14 @@ struct world_chunk
 
   entity_list *Occupiers;
 };
+
+struct collision_event
+{
+  world_chunk *Chunk;
+  canonical_position CP;
+  bool didCollide;
+};
+
 
 struct free_world_chunk
 {
