@@ -211,7 +211,7 @@ AllocateAndInitGeoBuffer(textured_2d_geometry_buffer *Geo, u32 VertCount, memory
   Geo->Colors = PUSH_STRUCT_CHECKED(v3, DebugArena, VertCount);
   Geo->UVs = PUSH_STRUCT_CHECKED(v2, DebugArena, VertCount);
 
-  Geo->End = VertCount + 1;
+  Geo->End = VertCount;
   Geo->At = 0;
 }
 
@@ -221,7 +221,7 @@ AllocateAndInitGeoBuffer(untextured_2d_geometry_buffer *Geo, u32 VertCount, memo
   Geo->Verts = PUSH_STRUCT_CHECKED(v3, DebugArena, VertCount);
   Geo->Colors = PUSH_STRUCT_CHECKED(v3, DebugArena, VertCount);
 
-  Geo->End = VertCount + 1;
+  Geo->End = VertCount;
   Geo->At = 0;
   return;
 }
