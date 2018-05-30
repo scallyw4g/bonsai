@@ -124,7 +124,7 @@ struct debug_state
 
   untextured_3d_geometry_buffer LineMesh;
 
-  debug_ui_type UIType = DebugUIType_Memory;
+  debug_ui_type UIType;
 
   selected_arenas *SelectedArenas;
 
@@ -132,7 +132,7 @@ struct debug_state
   u64 FrameCount;
   b32 Initialized;
   b32 Debug_RedrawEveryPush;
-  b32 DebugDoScopeProfiling = True;
+  b32 DebugDoScopeProfiling = False;
 
   debug_profile_scope FreeScopeSentinel;
   debug_profile_scope **WriteScope;

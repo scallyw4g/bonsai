@@ -52,7 +52,7 @@ vec2 poissonDisk[16] = vec2[](
   float gamma = 2.2f;
   float GlobalLightIntensity = 0.2f; // 1.0 represents full sun
 
-  float materialShininess = 15.0f;
+  float materialShininess = 20.0f;
 //
 
 

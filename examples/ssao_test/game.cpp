@@ -22,9 +22,9 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys, entity *Play
     Graphics->Lights->Count = 0;
 
 #if DEBUG_DRAW_WORLD_AXIES
-  DEBUG_DrawLine(&World->Mesh, gBuffer, SG, Camera, V3(0,0,0), V3(10000, 0, 0), RED, 0.5f );
-  DEBUG_DrawLine(&World->Mesh, gBuffer, SG, Camera, V3(0,0,0), V3(0, 10000, 0), GREEN, 0.5f );
-  DEBUG_DrawLine(&World->Mesh, gBuffer, SG, Camera, V3(0,0,0), V3(0, 0, 10000), TEAL, 0.5f );
+  DEBUG_DrawLine(&World->Mesh, Graphics, V3(0,0,0), V3(10000, 0, 0), RED, 0.5f );
+  DEBUG_DrawLine(&World->Mesh, Graphics, V3(0,0,0), V3(0, 10000, 0), GREEN, 0.5f );
+  DEBUG_DrawLine(&World->Mesh, Graphics, V3(0,0,0), V3(0, 0, 10000), BLUE, 0.5f );
 #endif
 
   SimulatePlayers(GameState, Player, Hotkeys, Plat->dt);
@@ -132,6 +132,7 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory)
 
   Result[ModelIndex_Enemy] = LoadModel(Memory, ENEMY_MODEL);
   Result[ModelIndex_Player] = LoadObj(Memory, "models/sphere.obj");
+  /* Result[ModelIndex_Player] = LoadModel(Memory, PLAYER_MODEL); */
   Result[ModelIndex_Loot] = LoadModel(Memory, LOOT_MODEL);
 
   chunk_dimension ProjectileDim = Chunk_Dimension(1,30,1);
@@ -145,9 +146,10 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory)
 }
 
 EXPORT game_state*
-GameInit( platform *Plat, memory_arena *GameMemory)
+GameInit( platform *Plat, memory_arena *GameMemory, memory_arena *TranArena_in /*, os *Os */)
 {
   Info("Initializing Game");
+  TranArena = TranArena_in;
 
   GlobalDebugState = &Plat->DebugState;
 
