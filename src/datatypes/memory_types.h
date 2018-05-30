@@ -1,6 +1,5 @@
 #include <sys/mman.h>
 
-
 inline u32
 Kilobytes(u32 Bytes)
 {
@@ -115,6 +114,9 @@ AllocateAndInitializeArena_(memory_arena *Arena, umm Size)
 }
 #endif
 
+
+void
+PlatformDeallocateArena(memory_arena *Arena);
 
 memory_arena*
 PlatformAllocateArena(umm Bytes);
@@ -277,7 +279,14 @@ PushSize(memory_arena *Arena, umm SizeIn)
     u8* LastPage = Result + SizeIn;
     Assert( (u64)LastPage % PageSize == 0)
 
-    mprotect(LastPage, PageSize, PROT_NONE);
+    s32 ProtectSuccess = (mprotect(LastPage, PageSize, PROT_NONE) == 0);
+
+    if (!ProtectSuccess)
+    {
+      Error("mprotect failed");
+      PlatformDebugStacktrace();
+      Assert(False);
+    }
   }
 #endif
   Assert(Arena->At <= Arena->End);
@@ -290,6 +299,7 @@ PushSize(memory_arena *Arena, umm SizeIn)
     Assert( (At+NextPageOffset) % PageSize == 0)
 
     u8* NextPage = Arena->At + NextPageOffset;
+    Assert( (umm)NextPage % PageSize == 0);
     mprotect(NextPage, PageSize, PROT_NONE);
 
     Result = NextPage + PageSize;
@@ -358,5 +368,17 @@ HashArena(memory_arena *Arena)
 {
   umm Result = (umm)Arena->Start;
   return Result;
+}
+
+inline void
+Deallocate(memory_arena *Arena)
+{
+  memory_arena *Current = Arena;
+  while(Current)
+  {
+    memory_arena *Next = Current->Prev;
+    PlatformDeallocateArena(Current);
+    Current = Next;
+  }
 }
 

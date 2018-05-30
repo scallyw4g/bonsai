@@ -23,6 +23,10 @@
 // Valgrind
 // #include "/usr/include/valgrind/callgrind.h"
 
+// Backtrace
+#include <errno.h>
+#include <execinfo.h>
+
 
 
 #define GAME_LIB "./bin/libGameLoadable.so"
@@ -73,5 +77,14 @@ GetCycleCount()
   __asm__ __volatile__ ("rdtsc" : "=a"(lo), "=d"(hi));
   u64 Result = ( (u64)lo)|( ((u64)hi)<<32 );
   return Result;
+}
+
+void
+PlatformDebugStacktrace()
+{
+  void *StackSymbols[32];
+  s32 SymbolCount = backtrace(StackSymbols, 32);
+  backtrace_symbols_fd(StackSymbols, SymbolCount, STDERR_FILENO);
+  return;
 }
 

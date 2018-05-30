@@ -72,6 +72,8 @@ PlatformDeallocateArena(memory_arena *Arena)
 memory_arena*
 PlatformAllocateArena(umm RequestedBytes = Megabytes(1))
 {
+  // FIXME(Jesse): We shouldn't really be able to ask for < 1MB worth of space
+
   u64 PageSize = PlatformGetPageSize();
   u64 ToNextPage = PageSize - (RequestedBytes % PageSize);
   umm AllocationSize = RequestedBytes + ToNextPage + (2*PageSize); // Add additional pages for Arena, and memprotect page

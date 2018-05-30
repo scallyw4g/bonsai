@@ -414,10 +414,13 @@ FrameEnd(void)
     }
   }
 
+#if 1
   PlatformUnprotectArena(TranArena);
   TranArena->At = TranArena->Start;
   TranArena->Pushes = 0;
+#endif
 
+  return;
 }
 
 s32
@@ -438,7 +441,8 @@ main()
 
   // These two arenas must be initialized before the the debug state can be
   memory_arena *DebugMemory = PlatformAllocateArena();
-  TranArena                 = PlatformAllocateArena(Megabytes(3));
+  TranArena                 = PlatformAllocateArena(Megabytes(8));
+  TranArena->MemProtect = False;
 
   DEBUG_REGISTER_ARENA(DebugMemory, &Plat.DebugState);
   DEBUG_REGISTER_ARENA(TranArena  , &Plat.DebugState);
@@ -482,7 +486,7 @@ main()
   Plat.Graphics = GraphicsInit(GraphicsMemory);
   if (!Plat.Graphics) { Error("Initializing Graphics"); return False; }
 
-  game_state *GameState = GameInit(&Plat, GameMemory, &Os);
+  game_state *GameState = GameInit(&Plat, GameMemory, TranArena, &Os);
   if (!GameState) { Error("Initializing Game State :( "); return False; }
 
   /*
@@ -555,7 +559,8 @@ main()
     FrameEnd();
 
     END_BLOCK("Frame End");
-
+    /* Info("Frame End"); */
+    /* RuntimeBreak(); */
   }
 
   Info("Shutting Down");

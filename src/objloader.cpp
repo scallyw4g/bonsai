@@ -239,43 +239,46 @@ GetObjStats(stream_cursor Cursor, memory_arena *Memory)
 }
 
 model
-LoadObj(memory_arena *Memory, const char * FilePath)
+LoadObj(memory_arena *PermMem, const char * FilePath)
 {
   Info("Loading .obj file : %s \n", FilePath);
 
-
-  // FIXME(Jesse): Use TranArena
-
-
   umm Length = 0;
-  char *Start = ReadEntireFileIntoString(FilePath, Memory, &Length);
+  char *Start = ReadEntireFileIntoString(FilePath, TranArena, &Length);
   if (!Start) { model M = {}; return M; }
 
   stream_cursor Stream = StreamCursor(Start, Length);
-  obj_stats Stats = GetObjStats(Stream, Memory);
+  obj_stats Stats = GetObjStats(Stream, TranArena);
 
-  //
-  // FIXME(Jesse): Use TranArena for these
-  v3_static_array TempVerts       = V3_Static_Array(Stats.VertCount, Memory);
-  v3_static_array TempNormals     = V3_Static_Array(Stats.NormalCount, Memory);
+  v3_static_array TempVerts       = V3_Static_Array(Stats.VertCount, TranArena);
+  v3_static_array TempNormals     = V3_Static_Array(Stats.NormalCount, TranArena);
 
-  u32_static_array VertIndicies   = U32_Static_Array(Stats.FaceCount*3, Memory);
-  u32_static_array NormalIndicies = U32_Static_Array(Stats.FaceCount*3, Memory);
+  u32_static_array VertIndicies   = U32_Static_Array(Stats.FaceCount*3, TranArena);
+  u32_static_array NormalIndicies = U32_Static_Array(Stats.FaceCount*3, TranArena);
 
   while (Stream.At < Stream.End)
   {
-    char *LineType = PopWord(&Stream, Memory);
+    char *LineType = PopWord(&Stream, TranArena);
     if (LineType == 0) { break; }
 
     if ( StringsMatch(LineType, "v") )
     {
-      v3 Vert = {{ PopFloat(&Stream, Memory), PopFloat(&Stream, Memory), PopFloat(&Stream, Memory) }};
-      Push(Vert*3.0f, &TempVerts);
+      v3 Vert = {{ PopFloat(&Stream, TranArena), PopFloat(&Stream, TranArena), PopFloat(&Stream, TranArena) }};
+      v3 SwappedVert = Vert;
+      /* SwappedVert.y = Vert.z; */
+      /* SwappedVert.z = Vert.y; */
+
+      Push(SwappedVert*20.0f, &TempVerts);
     }
     else if ( StringsMatch(LineType, "vn") )
     {
-      v3 Normal = {{ PopFloat(&Stream, Memory), PopFloat(&Stream, Memory), PopFloat(&Stream, Memory) }};
-      Push(Normal, &TempNormals);
+
+      v3 Normal = {{ PopFloat(&Stream, TranArena), PopFloat(&Stream, TranArena), PopFloat(&Stream, TranArena) }};
+      v3 SwappedNormal = Normal;
+      /* SwappedNormal.y = Normal.z; */
+      /* SwappedNormal.z = Normal.y; */
+
+      Push(SwappedNormal, &TempNormals);
     }
 #if 0
     else if ( StringsMatch(LineType, "vt") )
@@ -291,28 +294,28 @@ LoadObj(memory_arena *Memory, const char * FilePath)
 
       if (Stats.UVCount)
       {
-        vIndex[0] = PopU32(&Stream, Memory, "/");
-        /* Discard UV*/ PopU32(&Stream, Memory, "/");
-        nIndex[0] = PopU32(&Stream, Memory);
+        vIndex[0] = PopU32(&Stream, TranArena, "/");
+        /* Discard UV*/ PopU32(&Stream, TranArena, "/");
+        nIndex[0] = PopU32(&Stream, TranArena);
 
-        vIndex[1] = PopU32(&Stream, Memory, "/");
-        /* Discard UV*/ PopU32(&Stream, Memory, "/");
-        nIndex[1] = PopU32(&Stream, Memory);
+        vIndex[1] = PopU32(&Stream, TranArena, "/");
+        /* Discard UV*/ PopU32(&Stream, TranArena, "/");
+        nIndex[1] = PopU32(&Stream, TranArena);
 
-        vIndex[2] = PopU32(&Stream, Memory, "/");
-        /* Discard UV*/ PopU32(&Stream, Memory, "/");
-        nIndex[2] = PopU32(&Stream, Memory);
+        vIndex[2] = PopU32(&Stream, TranArena, "/");
+        /* Discard UV*/ PopU32(&Stream, TranArena, "/");
+        nIndex[2] = PopU32(&Stream, TranArena);
       }
       else
       {
-        vIndex[0] = PopU32(&Stream, Memory, "//");
-        nIndex[0] = PopU32(&Stream, Memory);
+        vIndex[0] = PopU32(&Stream, TranArena, "//");
+        nIndex[0] = PopU32(&Stream, TranArena);
 
-        vIndex[1] = PopU32(&Stream, Memory, "//");
-        nIndex[1] = PopU32(&Stream, Memory);
+        vIndex[1] = PopU32(&Stream, TranArena, "//");
+        nIndex[1] = PopU32(&Stream, TranArena);
 
-        vIndex[2] = PopU32(&Stream, Memory, "//");
-        nIndex[2] = PopU32(&Stream, Memory);
+        vIndex[2] = PopU32(&Stream, TranArena, "//");
+        nIndex[2] = PopU32(&Stream, TranArena);
       }
 
       Push(vIndex[0]-1, &VertIndicies );
@@ -338,7 +341,7 @@ LoadObj(memory_arena *Memory, const char * FilePath)
   Assert(Remaining(&NormalIndicies) == 0 );
 
   untextured_3d_geometry_buffer Mesh = {};
-  AllocateMesh(&Mesh, Stats.FaceCount*3, Memory);
+  AllocateMesh(&Mesh, Stats.FaceCount*3, PermMem);
 
   for( u32 Index = 0;
        Index < VertIndicies.At;
@@ -354,13 +357,13 @@ LoadObj(memory_arena *Memory, const char * FilePath)
     Mesh.Normals[Mesh.At] = Normal;
     Mesh.At++;
 
-    Assert(Mesh.At < Mesh.End);
+    Assert(Mesh.At <= Mesh.End);
   }
 
-  Assert(Mesh.At+1 == Mesh.End);
+  Assert(Mesh.At == Mesh.End);
 
   model Result = {};
-  Result.Chunk = PUSH_STRUCT_CHECKED(chunk_data, Memory, 1);;
+  Result.Chunk = PUSH_STRUCT_CHECKED(chunk_data, PermMem, 1);;
   Result.Chunk->Mesh = Mesh;
   SetFlag(&Result, Chunk_Initialized);
 
