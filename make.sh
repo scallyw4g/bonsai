@@ -8,6 +8,6 @@ if [ "$WIN32" == "1" ]; then
 else # Win32
   echo " -- Building Linux"
   cd build
-  make "$@" 2>&1
+  make Bonsai Game "$@" 2>&1
 fi
 

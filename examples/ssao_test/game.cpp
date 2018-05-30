@@ -131,7 +131,7 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory)
   model *Result = PUSH_STRUCT_CHECKED(model, GameState->Memory, ModelIndex_Count);
 
   Result[ModelIndex_Enemy] = LoadModel(Memory, ENEMY_MODEL);
-  /* Result[ModelIndex_Player] = LoadObj(Memory, "models/test.obj"); */
+  /* Result[ModelIndex_Player] = LoadObj(Memory, "models/icosphere.obj"); */
   Result[ModelIndex_Player] = LoadModel(Memory, PLAYER_MODEL);
   Result[ModelIndex_Loot] = LoadModel(Memory, LOOT_MODEL);
 

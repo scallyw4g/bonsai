@@ -62,14 +62,14 @@
 
 #define ENEMY_SPEED 800
 #define PLAYER_SPEED 13000
-#define PROJECTILE_SPEED 1500
+#define PROJECTILE_SPEED 10
 
 #define ENEMY_DRAG 0
 
 #define LOOT_CHANCE 1
 
 #define PROJECTILE_DRAG 0
-#define PROJECTILE_AABB Chunk_Dimension(1,3,1)
+#define PROJECTILE_AABB Chunk_Dimension(1,1,1)
 
 #define DEBUG_ENTITY_DIM     Chunk_Dimension(3,3,1)
 #define DEBUG_ENTITY_COLLISION_VOL_RADIUS V3(3.0f, 3.0f, 0.5f)

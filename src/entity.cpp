@@ -2,12 +2,7 @@
 inline void
 Deactivate(particle_system *System)
 {
-  particle_system NullSystem = {};
-  Assert(System->EmissionLifespan <= 0);
-  Assert(System->ActiveParticles <= 0);
-
-  *System = NullSystem;
-
+  Clear(System);
   return;
 }
 
@@ -322,7 +317,7 @@ SpawnEnemy(world *World, entity **WorldEntities, entity *Enemy, random_series *E
 }
 #endif
 
-void
+entity *
 SpawnProjectile(game_state *GameState,
                 canonical_position *P,
                 v3 Velocity,
@@ -330,10 +325,9 @@ SpawnProjectile(game_state *GameState,
   )
 {
   model *GameModels = GameState->Models;
-
   entity *Projectile = GetFreeEntity(GameState);
 
-  v3 CollisionVolumeRadius = V3(PROJECTILE_AABB)/2;
+  v3 CollisionVolumeRadius = V3(1);
 
   physics Physics = {};
   Physics.Velocity = Velocity;
@@ -345,7 +339,7 @@ SpawnProjectile(game_state *GameState,
 
   SpawnEntity(
     Projectile,
-    &GameModels[ModelIndex_Projectile],
+    0,
     ProjectileType,
 
     &Physics,
@@ -357,24 +351,23 @@ SpawnProjectile(game_state *GameState,
     RateOfFire,
     Health);
 
+  /* switch (ProjectileType) */
+  /* { */
+  /*   case EntityType_PlayerProton: */
+  /*   { */
+  /*     Projectile->Model = GameModels[ModelIndex_Proton]; */
+  /*   } break; */
 
-  switch (ProjectileType)
-  {
-    case EntityType_PlayerProton:
-    {
-      Projectile->Model = GameModels[ModelIndex_Proton];
-    } break;
+  /*   case EntityType_PlayerProjectile: */
+  /*   case EntityType_EnemyProjectile: */
+  /*   { */
+  /*     Projectile->Model = GameModels[ModelIndex_Projectile]; */
+  /*   } break; */
 
-    case EntityType_PlayerProjectile:
-    case EntityType_EnemyProjectile:
-    {
-      Projectile->Model = GameModels[ModelIndex_Projectile];
-    } break;
+  /*   InvalidDefaultCase; */
+  /* } */
 
-    InvalidDefaultCase;
-  }
-
-  return;
+  return Projectile;
 }
 
 void
@@ -852,10 +845,10 @@ SimulateAndRenderParticleSystem(
     u8 ColorIndex = (u8)((Particle->RemainingLifespan / System->ParticleLifespan) * (PARTICLE_SYSTEM_COLOR_COUNT-0.0001f));
     Assert(ColorIndex >= 0 && ColorIndex <= PARTICLE_SYSTEM_COLOR_COUNT);
 
-    DrawVoxel( Dest, Graphics, Particle->Offset, System->Colors[ColorIndex], Diameter, Length(EmissionColor) );
+    v3 RenderSpaceP = GetRenderP(SystemEntity->P, Graphics->Camera);
+    DrawVoxel( Dest, Graphics, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, Length(EmissionColor) );
   }
 
-  v3 RenderSpaceP = V3(10, 0, 10) + GetRenderP(SystemEntity->P, Graphics->Camera) + System->SpawnRegion.Center;
 
 #if 0
   for (u32 i = 0;
@@ -865,16 +858,17 @@ SimulateAndRenderParticleSystem(
     DoLight(Graphics->Lights, RenderSpaceP + V3(1,0,0), EmissionColor);
   }
 #else
-  static r32 Ymod = 0;
-  static r32 Xmod = 0;
+  /* static r32 Ymod = 0; */
+  /* static r32 Xmod = 0; */
 
-  Ymod += dt;
-  Xmod += dt;
+  /* Ymod += dt; */
+  /* Xmod += dt; */
 
-  v3 Offset = V3(Sin(Xmod), Cos(Ymod), 1.0f)*20.0f;
+  /* v3 Offset = V3(Sin(Xmod), Cos(Ymod), 1.0f)*20.0f; */
 
-  DoLight(Graphics->Lights, Offset, 10.0f*EmissionColor);
-  DrawVoxel( Dest, Graphics,Offset, RED, V3(2.0f) );
+  v3 RenderSpaceP = GetRenderP(SystemEntity->P, Graphics->Camera);
+  DoLight(Graphics->Lights, RenderSpaceP, 10.0f*EmissionColor);
+  /* DrawVoxel( Dest, Graphics,Offset, RED, V3(2.0f) ); */
 #endif
 
   return;
@@ -902,14 +896,16 @@ SimulatePlayer( game_state *GameState, entity *Player, hotkeys *Hotkeys, r32 dt 
 
     Player->FireCooldown -= dt;
 
-#if 0
     // Regular Fire
     if ( Hotkeys->Player_Fire && (Player->FireCooldown < 0) )
     {
-      SpawnProjectile(GameState, &Player->P, V3(0,PROJECTILE_SPEED,0), EntityType_PlayerProjectile);
+      canonical_position SpawnP = Canonicalize(Player->P + V3(0, 0, 2));
+      entity *Projectile = SpawnProjectile(GameState, &SpawnP, V3(0,PROJECTILE_SPEED,0), EntityType_PlayerProjectile);
+      SpawnFire(Projectile, &GameState->Entropy, V3(0));
       Player->FireCooldown = Player->RateOfFire;
     }
 
+#if 0
     // Proton Torpedo!!
     if ( Hotkeys->Player_Proton && (Player->FireCooldown < 0) )
     {
