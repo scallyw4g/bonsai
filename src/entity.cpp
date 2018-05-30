@@ -698,6 +698,24 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
       EntityWorldCollision(Entity);
     }
 
+    Entity->P.Offset.z += StepDelta.z;
+    Entity->P = Canonicalize(WorldChunkDim, Entity->P);
+    C = GetCollision(World, Entity);
+    if (C.didCollide)
+    {
+      Entity->Physics.Velocity.z = 0;
+      Entity->P.Offset.z = C.CP.Offset.z;
+      Entity->P.WorldP.z = C.CP.WorldP.z;
+
+      if (StepDelta.z > 0)
+        Entity->P.Offset.z -= (Entity->CollisionVolumeRadius.z*2);
+      else
+        Entity->P.Offset.z++;
+
+      Entity->P = Canonicalize(WorldChunkDim, Entity->P);
+      EntityWorldCollision(Entity);
+    }
+
     if (Unspawned(Entity) || Destroyed(Entity))
       break;
 
@@ -901,7 +919,8 @@ SimulatePlayer( game_state *GameState, entity *Player, hotkeys *Hotkeys, r32 dt 
     if ( Hotkeys->Player_Fire && (Player->FireCooldown < 0) )
     {
       canonical_position SpawnP = Canonicalize(Player->P + V3(0, 0, 2));
-      entity *Projectile = SpawnProjectile(GameState, &SpawnP, PROJECTILE_SPEED*Normalize(Camera->Front*V3(1,1,0)), EntityType_PlayerProjectile);
+      v3 InitialProjVelocity = PROJECTILE_SPEED * (Normalize(V3(Camera->Front.x, Camera->Front.y, 0.25f) ));
+      entity *Projectile = SpawnProjectile(GameState, &SpawnP, InitialProjVelocity, EntityType_PlayerProjectile);
       SpawnFire(Projectile, &GameState->Entropy, V3(0));
       Player->FireCooldown = Player->RateOfFire;
     }
@@ -947,14 +966,14 @@ SimulateEntities(game_state *GameState, r32 dt)
       case EntityType_PlayerProjectile:
       case EntityType_EnemyProjectile:
       {
-        UpdateEntityP(GameState, Entity, Entity->Physics.Delta);
         PhysicsUpdate(&Entity->Physics, dt);
+        UpdateEntityP(GameState, Entity, Entity->Physics.Delta);
       } break;
 
       case EntityType_ParticleSystem:
       {
-        UpdateEntityP(GameState, Entity, Entity->Physics.Delta);
         PhysicsUpdate(&Entity->Physics, dt);
+        UpdateEntityP(GameState, Entity, Entity->Physics.Delta);
       } break;
 
       case EntityType_Player:

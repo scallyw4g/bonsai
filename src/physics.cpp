@@ -3,7 +3,7 @@
 inline void
 PhysicsUpdate(physics *Physics, r32 dt)
 {
-  v3 Acceleration = SafeDivide(Physics->Force*Physics->Speed, Physics->Mass);
+  v3 Acceleration = SafeDivide(Physics->Force*Physics->Speed, Physics->Mass) + V3(0.0f,0.0f, -98.0f);
 
   Physics->Force -=
     Physics->Force*Physics->Drag*dt;
