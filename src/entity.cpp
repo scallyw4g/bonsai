@@ -496,7 +496,7 @@ SpawnPlayer(game_state *GameState, entity *Player, canonical_position InitialP)
 }
 
 void
-EntityWorldCollision(entity *Entity, collision_event *Event )
+EntityWorldCollision(world *World, entity *Entity, collision_event *Event )
 {
   Assert(Entity->Type != EntityType_None);
 
@@ -509,7 +509,10 @@ EntityWorldCollision(entity *Entity, collision_event *Event )
       if (Event->Chunk)
       {
         s32 i = GetIndex(Voxel_Position(Event->CP.Offset), WORLD_CHUNK_DIM);
-        Event->Chunk->Data->Voxels[i] = {};
+        world_chunk *Chunk = Event->Chunk;
+        Chunk->Data->Voxels[i] = {};
+        ZeroMesh(&Chunk->Data->Mesh);
+        BuildWorldChunkMesh(World, Chunk, WORLD_CHUNK_DIM);
       }
       Unspawn(Entity);
     } break;
@@ -686,7 +689,7 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
         Entity->P.Offset.x++;
 
       Entity->P = Canonicalize(WorldChunkDim, Entity->P);
-      EntityWorldCollision(Entity, &C);
+      EntityWorldCollision(World, Entity, &C);
     }
 
 
@@ -705,7 +708,7 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
         Entity->P.Offset.y++;
 
       Entity->P = Canonicalize(WorldChunkDim, Entity->P);
-      EntityWorldCollision(Entity, &C);
+      EntityWorldCollision(World, Entity, &C);
     }
 
     Entity->P.Offset.z += StepDelta.z;
@@ -723,7 +726,7 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
         Entity->P.Offset.z++;
 
       Entity->P = Canonicalize(WorldChunkDim, Entity->P);
-      EntityWorldCollision(Entity, &C);
+      EntityWorldCollision(World, Entity, &C);
     }
 
     if (Unspawned(Entity) || Destroyed(Entity))
@@ -739,7 +742,7 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
   // Entites that aren't moving can still be positioned outside the world if
   // the player moves the world to do so
   if (AssertCollision.didCollide )
-    EntityWorldCollision(Entity, &C);
+    EntityWorldCollision(World, Entity, &C);
 
   return;
 }
@@ -851,7 +854,8 @@ SimulateAndRenderParticleSystem(
   {
     particle *Particle = &System->Particles[ParticleIndex];
 
-    PhysicsUpdate(&Particle->Physics, dt);
+    b32 ApplyGravity = False;
+    PhysicsUpdate(&Particle->Physics, dt, ApplyGravity);
 
     Particle->Offset += Particle->Physics.Delta;
     Particle->Offset -= EntityDelta * System->SystemMovementCoefficient;
@@ -878,25 +882,10 @@ SimulateAndRenderParticleSystem(
   }
 
 
-#if 0
-  for (u32 i = 0;
-      i < 128;
-      ++i)
-  {
-    DoLight(Graphics->Lights, RenderSpaceP + V3(1,0,0), EmissionColor);
-  }
-#else
-  /* static r32 Ymod = 0; */
-  /* static r32 Xmod = 0; */
-
-  /* Ymod += dt; */
-  /* Xmod += dt; */
-
-  /* v3 Offset = V3(Sin(Xmod), Cos(Ymod), 1.0f)*20.0f; */
-
+#if 1
   v3 RenderSpaceP = GetRenderP(SystemEntity->P, Graphics->Camera);
   DoLight(Graphics->Lights, RenderSpaceP, 10.0f*EmissionColor);
-  /* DrawVoxel( Dest, Graphics,Offset, RED, V3(2.0f) ); */
+  DrawVoxel( Dest, Graphics, RenderSpaceP, RED, V3(1.0f) );
 #endif
 
   return;
