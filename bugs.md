@@ -1,3 +1,12 @@
+# Jun 1 2018 - 5:00 - closed - Memory arenas rewinding to a bad point
+* memory
+* arenas
+* allocation
+Memory arena Start pointers were recently changed to be the first byte of the
+entire system allocation, which when reset to, caused the actual arena to be
+overwritten.  Adding a secondary pointer to the first byte used for the
+allocations fixed the issue;
+
 # May 29 2018 - 0:00 - closed - Geometry buffer over-allocated by 1
 * off-by-one
 * allocation
