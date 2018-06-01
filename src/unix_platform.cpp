@@ -73,7 +73,6 @@ memory_arena*
 PlatformAllocateArena(umm RequestedBytes = Megabytes(1))
 {
   // FIXME(Jesse): We shouldn't really be able to ask for < 1MB worth of space
-
   u64 PageSize = PlatformGetPageSize();
   u64 ToNextPage = PageSize - (RequestedBytes % PageSize);
   umm AllocationSize = RequestedBytes + ToNextPage + (2*PageSize); // Add additional pages for Arena, and memprotect page
@@ -119,11 +118,12 @@ PlatformAllocateArena(umm RequestedBytes = Megabytes(1))
   TempArena.MemProtect = True;
 #endif
 
+  memory_arena *Result = (memory_arena*)PushSize(&TempArena, sizeof(memory_arena));
+  *Result = TempArena;
+  Result->FirstUsableByte = Result->At;
+
 #if MEMPROTECT_OVERFLOW
   /* AdvanceToBytesBeforeNextPage(sizeof(memory_arena), &TempArena); */
-  memory_arena *Result = (memory_arena*)PushSize(&TempArena, sizeof(memory_arena));
-
-  *Result = TempArena;
 
   Assert((umm)Result->Start % PageSize == 0);
   Assert((umm)Result->At % PageSize == 0);

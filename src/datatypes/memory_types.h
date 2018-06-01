@@ -29,19 +29,27 @@ Terabytes(u32 Number)
 }
 
 template <typename T> inline void
-Clear(T *Struct)
+Fill(T *Struct, u8 ByteValue)
 {
   for ( u32 Byte = 0;
       Byte < sizeof(T);
       ++Byte)
   {
-    *(((u8*)Struct) + Byte) = 0;
+    *(((u8*)Struct) + Byte) = ByteValue;
   }
+}
+
+template <typename T> inline void
+Clear(T *Struct)
+{
+  Fill(Struct, 0);
 }
 
 struct memory_arena
 {
-  u8* Start;
+  u8* Start;           // Note(Jesse): First byte of the allocation (for unmapping)
+  u8* FirstUsableByte; // Note(Jesse): First byte for userland allocations
+
   u8* At;
   u8* End;
   umm NextBlockSize;
@@ -153,6 +161,8 @@ ReallocateArena(memory_arena *Arena, umm MinSize)
   Arena->Prev = Allocated;
 
   Assert( (umm)(Arena->End - Arena->At) >= MinSize);
+  Assert(Arena->At <= Arena->End);
+
   return;
 }
 
@@ -266,7 +276,6 @@ PushSize(memory_arena *Arena, umm SizeIn)
   }
 
   u8* Result = Arena->At;
-  Assert(Arena->At <= Arena->End);
 
 #if MEMPROTECT_OVERFLOW
   if (Arena->MemProtect)
@@ -289,7 +298,6 @@ PushSize(memory_arena *Arena, umm SizeIn)
     }
   }
 #endif
-  Assert(Arena->At <= Arena->End);
 
 #if MEMPROTECT_UNDERFLOW
   if (Arena->MemProtect)
@@ -306,9 +314,7 @@ PushSize(memory_arena *Arena, umm SizeIn)
   }
 #endif
 
-  Assert(Arena->At <= Arena->End);
   Arena->At += RequestedSize;
-  Assert(Arena->At <= Arena->End);
 
 #if MEMPROTECT
   ++Arena->Pushes;
@@ -320,8 +326,8 @@ PushSize(memory_arena *Arena, umm SizeIn)
   }
 #endif
 
-  Assert(Arena->At <= Arena->End);
 
+  Assert(Arena->At <= Arena->End);
   return Result;
 }
 

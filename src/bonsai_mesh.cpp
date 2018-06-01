@@ -77,7 +77,7 @@ BufferVertsDirect(
     return;
   }
 
-#if 0
+#if 1
   __m128 mmScale = _mm_set_ps(0, Scale.z, Scale.y, Scale.x);
   __m128 mmOffset = _mm_set_ps(0, Offset.z, Offset.y, Offset.x);
 

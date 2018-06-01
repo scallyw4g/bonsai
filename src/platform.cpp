@@ -414,11 +414,9 @@ FrameEnd(void)
     }
   }
 
-#if 1
   PlatformUnprotectArena(TranArena);
-  TranArena->At = TranArena->Start;
+  TranArena->At = TranArena->FirstUsableByte;
   TranArena->Pushes = 0;
-#endif
 
   return;
 }
@@ -550,6 +548,7 @@ main()
                         &Hotkeys);
 
     TIMED_BLOCK("Frame End");
+
     DEBUG_FRAME_END(&Plat, GameState);
 
     BonsaiSwapBuffers(&Os);

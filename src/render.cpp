@@ -404,6 +404,7 @@ LightingInit(memory_arena *GraphicsMemory)
 void
 UpdateLightingTextures(game_lights *Lights)
 {
+
   v3 *PosData = PUSH_STRUCT_CHECKED(v3, TranArena, MAX_LIGHTS);
   v3 *ColorData = PUSH_STRUCT_CHECKED(v3, TranArena, MAX_LIGHTS);
 
@@ -2182,7 +2183,6 @@ BufferWorldChunk(
 
 #if 1
     BufferChunkMesh( &World->Mesh, World->ChunkDim, ChunkData, Chunk->WorldP, Graphics);
-
 #else
   if (CanBuildWorldChunkBoundary(world, Chunk))
   {

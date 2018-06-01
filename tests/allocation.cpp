@@ -7,6 +7,11 @@
 #include <shader.cpp>
 #include <debug.cpp>
 
+struct test_struct_1k
+{
+  u8 Data[1024];
+};
+
 struct test_struct_128
 {
   u8 Data[16];
@@ -114,22 +119,31 @@ AssertSegfault()
 template <typename T> void
 TestAllocation(memory_arena *Arena)
 {
+  memory_arena Initial = *Arena;
+
   T *Test = PUSH_STRUCT_CHECKED( T, Arena, 1);
   Assert(Test);
-
   Clear(Test);
+
   AssertNoSegfault();
 
-  ExpectSegfault();
   if (Arena->MemProtect)
   {
+    ExpectSegfault();
     T *NextThing = Test + 1;
     u8 *NextByte = ((u8*)NextThing) + 1;
 
     *NextByte = 0;
     AssertSegfault();
   }
+
   NoExpectedSegfault();
+  if (Initial.Prev == Arena->Prev)
+  {
+    Assert(Initial.Start == Arena->Start);
+    Assert(Initial.End == Arena->End);
+    Assert(Initial.NextBlockSize == Arena->NextBlockSize);
+  }
 
   return;
 }
@@ -391,6 +405,86 @@ ArenaAllocation()
   return;
 }
 
+void
+UnprotectedAllocations()
+{
+  NoExpectedSegfault();
+
+  {
+    memory_arena *Arena = PlatformAllocateArena(Megabytes(1));
+    Assert( Remaining(Arena) >= Megabytes(1) );
+
+    Arena->MemProtect = False;
+
+    TestAllocation<test_struct_1k>(Arena);
+    AssertNoSegfault();
+  }
+
+  {
+    umm AllocationSize = 32;
+    memory_arena *Arena = PlatformAllocateArena(AllocationSize);
+    Assert( Remaining(Arena) >= AllocationSize );
+    Arena->MemProtect = False;
+
+    TestAllocation<test_struct_1k>(Arena);
+    TestAllocation<test_struct_1k>(Arena);
+    TestAllocation<test_struct_1k>(Arena);
+    TestAllocation<test_struct_1k>(Arena);
+
+    TestAllocation<test_struct_1k>(Arena);
+    TestAllocation<test_struct_1k>(Arena);
+    TestAllocation<test_struct_1k>(Arena);
+    TestAllocation<test_struct_1k>(Arena);
+
+    AssertNoSegfault();
+
+    RuntimeBreak();
+
+    Assert(Arena->Prev);
+    Assert(Arena->MemProtect == False);
+    Assert(Arena->MemProtect == Arena->Prev->MemProtect);
+  }
+
+
+  {
+    const u32 StructCount = 1024;
+    test_struct_1k *Structs[StructCount];
+
+    memory_arena *Arena = PlatformAllocateArena(Megabytes(32));
+    Arena->MemProtect = False;
+
+    memory_arena Initial = *Arena;
+    Assert( Remaining(Arena) >= Megabytes(1) );
+
+    for (u32 StructIndex = 0;
+        StructIndex < StructCount;
+        ++StructIndex)
+    {
+      Structs[StructIndex] = PUSH_STRUCT_CHECKED(test_struct_1k, Arena, 1);
+      Fill(Structs[StructIndex], (u8)255);
+    }
+
+    TestAllocation<test_struct_1k>(Arena);
+    AssertNoSegfault();
+
+    NoExpectedSegfault();
+
+    Assert(Initial.Prev == Arena->Prev);
+    Assert(Initial.Start == Arena->Start);
+    Assert(Initial.End == Arena->End);
+    Assert(Initial.NextBlockSize == Arena->NextBlockSize);
+
+    AssertNoSegfault();
+  }
+
+  {
+    memory_arena *Arena = PlatformAllocateArena(32);
+    Assert(Remaining(Arena) >= 32);
+  }
+
+  return;
+}
+
 s32
 main()
 {
@@ -403,6 +497,8 @@ main()
   SingleAllocations();
 
   MultipleAllocations();
+
+  UnprotectedAllocations();
 #endif
 
   return 0;

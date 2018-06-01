@@ -1125,10 +1125,11 @@ DebugPrintMemStats(memory_arena_stats *Stats)
 }
 
 memory_arena_stats
-GetMemoryArenaStats(memory_arena *Arena)
+GetMemoryArenaStats(memory_arena *ArenaIn)
 {
   memory_arena_stats Result = {};
 
+  memory_arena *Arena = ArenaIn;
   while (Arena)
   {
     Result.Allocations++;
