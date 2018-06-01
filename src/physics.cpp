@@ -1,9 +1,10 @@
 
 
 inline void
-PhysicsUpdate(physics *Physics, r32 dt)
+PhysicsUpdate(physics *Physics, r32 dt, b32 ApplyGravity = True)
 {
-  v3 Acceleration = SafeDivide(Physics->Force*Physics->Speed, Physics->Mass) + V3(0.0f,0.0f, -98.0f);
+  v3 Gravity = ApplyGravity ? V3(0.0f,0.0f, -98.0f) : V3(0);
+  v3 Acceleration = SafeDivide(Physics->Force*Physics->Speed, Physics->Mass) + Gravity;
 
   Physics->Force -=
     Physics->Force*Physics->Drag*dt;
