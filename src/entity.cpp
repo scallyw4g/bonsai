@@ -878,14 +878,22 @@ SimulateAndRenderParticleSystem(
     Assert(ColorIndex >= 0 && ColorIndex <= PARTICLE_SYSTEM_COLOR_COUNT);
 
     v3 RenderSpaceP = GetRenderP(SystemEntity->P, Graphics->Camera);
-    DrawVoxel( Dest, Graphics, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, Length(EmissionColor) );
+    DrawVoxel( Dest, Graphics, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, 3.0f );
+
+#if 1
+    if (RandomUnilateral(&System->Entropy) > 0.9)
+    {
+      DoLight(Graphics->Lights, RenderSpaceP + Particle->Offset, EmissionColor);
+    }
+#endif
   }
 
 
-#if 1
-  v3 RenderSpaceP = GetRenderP(SystemEntity->P, Graphics->Camera);
+#if 0
+  v3 RenderSpaceP = GetRenderP(SystemEntity->P, Graphics->Camera) + System->SpawnRegion.Center;
   DoLight(Graphics->Lights, RenderSpaceP, 10.0f*EmissionColor);
-  DrawVoxel( Dest, Graphics, RenderSpaceP, RED, V3(1.0f) );
+  DoLight(Graphics->Lights, RenderSpaceP, 10.0f*EmissionColor);
+  DrawVoxel( Dest, Graphics, RenderSpaceP, RED, V3(1) );
 #endif
 
   return;

@@ -69,17 +69,10 @@ struct game_lights
   texture *ColorTex;
   texture *PositionTex;
 
-  s32 Count;
   r32 IndexToUV;
 
+  s32 Count;
   light *Lights;
-
-  light *
-  operator[](s32 Index)
-  {
-    light *Result = &this->Lights[Index];
-    return Result;
-  }
 };
 
 struct RenderBasis

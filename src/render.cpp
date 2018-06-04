@@ -331,9 +331,11 @@ InitGbufferRenderGroup( g_buffer_render_group *gBuffer, memory_arena *GraphicsMe
 void
 DoLight(game_lights *Lights, v3 Position, v3 Color)
 {
+  Assert(Lights->Count < MAX_LIGHTS);
+
   if (Lights->Count < MAX_LIGHTS)
   {
-    light *Light = (*Lights)[Lights->Count++];
+    light *Light = Lights->Lights + Lights->Count++;
     Light->Position = Position;
     Light->Color = Color;
   }
@@ -409,7 +411,7 @@ UpdateLightingTextures(game_lights *Lights)
   v3 *ColorData = PUSH_STRUCT_CHECKED(v3, TranArena, MAX_LIGHTS);
 
   for (u32 LightIndex = 0;
-      LightIndex < MAX_LIGHTS;
+      LightIndex < Lights->Count;
       ++LightIndex)
   {
     PosData[LightIndex] = Lights->Lights[LightIndex].Position;

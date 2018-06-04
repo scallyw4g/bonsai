@@ -68,15 +68,16 @@ void main()
 
   vec3 AccumulatedLight = AmbientLight;
 
+
 #if 1
   for ( s32 LightIndex = 0;
       LightIndex < LightCount;
       ++LightIndex)
   {
-    v2 LightUV = V2( r32(LightIndex)*LightIndexToUV, 0.5f);
+    ivec2 LightUV = ivec2(LightIndex, 0);
 
-    vec3 LightPosition = texture(LightPositions, LightUV).rgb;
-    vec3 LightColor = texture(LightColors, LightUV).rgb;
+    vec3 LightPosition = texelFetch(LightPositions, LightUV, 0).rgb;
+    vec3 LightColor = texelFetch(LightColors, LightUV, 0).rgb;
 
     vec3 FragToLight = normalize(LightPosition - FragPosition);
 

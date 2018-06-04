@@ -394,7 +394,7 @@ BindHotkeysToInput(hotkeys *Hotkeys, input *Input)
 }
 
 void
-FrameEnd(void)
+FrameEnd(game_state *GameState)
 {
   for( u32 DrawCountIndex = 0;
        DrawCountIndex < Global_DrawCallArrayLength;
@@ -417,6 +417,9 @@ FrameEnd(void)
   PlatformUnprotectArena(TranArena);
   TranArena->At = TranArena->FirstUsableByte;
   TranArena->Pushes = 0;
+
+  game_lights *Lights = GameState->Plat->Graphics->Lights;
+  Lights->Count = 0;
 
   return;
 }
@@ -555,7 +558,7 @@ main()
 
     /* WaitForFrameTime(LastMs, 30.0f); */
 
-    FrameEnd();
+    FrameEnd(GameState);
 
     END_BLOCK("Frame End");
     /* Info("Frame End"); */

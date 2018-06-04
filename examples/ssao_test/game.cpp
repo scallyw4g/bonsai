@@ -18,9 +18,6 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys, entity *Play
   /* shadow_render_group   *SG       = Graphics->SG; */
   camera                *Camera   = Graphics->Camera;
 
-  if (Graphics->Lights)
-    Graphics->Lights->Count = 0;
-
 #if DEBUG_DRAW_WORLD_AXIES
   DEBUG_DrawLine(&World->Mesh, Graphics, V3(0,0,0), V3(10000, 0, 0), RED, 0.5f );
   DEBUG_DrawLine(&World->Mesh, Graphics, V3(0,0,0), V3(0, 10000, 0), GREEN, 0.5f );
