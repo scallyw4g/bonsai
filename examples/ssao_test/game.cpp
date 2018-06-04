@@ -79,7 +79,7 @@ InitializeVoxels(perlin_noise *Noise,  world_chunk *Chunk)
   chunk_dimension Dim = WORLD_CHUNK_DIM;
   ZeroChunk(Chunk->Data, Volume(WORLD_CHUNK_DIM));
 
-  if ( Chunk->WorldP.z == 0 )
+  /* if ( Chunk->WorldP.z == 0 ) */
   {
     InitChunkPerlin(Noise, Chunk, V3(Dim), GRASS_GREEN);
 
@@ -89,7 +89,7 @@ InitializeVoxels(perlin_noise *Noise,  world_chunk *Chunk)
       {
         for ( int x = 0; x < Dim.x; ++ x)
         {
-          if (z==0)
+          if (z==0 &&  Chunk->WorldP.z == 0)
           {
             s32 i = GetIndex(Voxel_Position(x,y,z), Dim);
             voxel *Vox = &Chunk->Data->Voxels[i];
@@ -250,7 +250,7 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
     if ( AwaitHandshake(Network, GameState->ServerState) )
     {
       Player = GetPlayer(GameState->Players, Network->Client);
-      SpawnPlayer(GameState, Player,  Canonical_Position(V3(0,8,2), World_Position(0,0,0))  );
+      SpawnPlayer(GameState, Player,  Canonical_Position(V3(0,0,0), World_Position(-4,3,0))  );
     }
   }
 

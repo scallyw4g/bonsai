@@ -72,7 +72,7 @@
 #define PROJECTILE_AABB Chunk_Dimension(1,1,1)
 
 #define DEBUG_ENTITY_DIM     Chunk_Dimension(3,3,1)
-#define DEBUG_ENTITY_COLLISION_VOL_RADIUS V3(3.0f, 3.0f, 0.5f)
+#define DEBUG_ENTITY_COLLISION_VOL_RADIUS V3(1.0f, 1.0f, 3.0f)
 
 #define DEBUG_CHUNK_AABB              0
 #define DEBUG_DRAW_COLLISION_VOLUMES  1

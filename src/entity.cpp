@@ -80,16 +80,17 @@ GetCollision(entity **Entities, entity *Entity, chunk_dimension WorldChunkDim)
   return Result;
 }
 
+// TODO(Jesse): This offset is only used to check if entities are grounded.
+// Can we do that in a more intelligent way?
 collision_event
 GetCollision(world *World, entity *Entity, v3 Offset = V3(0,0,0) )
 {
-  collision_event C;
-  C.didCollide = false;
+  collision_event C = {};
 
   if ( !Spawned(Entity) )
     return C;
 
-  C = GetCollision( World, Canonicalize(World->ChunkDim, Entity->P + Offset), Entity->CollisionVolumeRadius*2);
+  C = GetCollision( World, Canonicalize(World->ChunkDim, Entity->P + Offset), Entity->CollisionVolumeRadius*2.0f);
 
   return C;
 }
@@ -327,7 +328,7 @@ SpawnProjectile(game_state *GameState,
   model *GameModels = GameState->Models;
   entity *Projectile = GetFreeEntity(GameState);
 
-  v3 CollisionVolumeRadius = V3(1);
+  v3 CollisionVolumeRadius = V3(0.25f);
 
   physics Physics = {};
   Physics.Velocity = Velocity;
@@ -351,21 +352,23 @@ SpawnProjectile(game_state *GameState,
     RateOfFire,
     Health);
 
-  /* switch (ProjectileType) */
-  /* { */
-  /*   case EntityType_PlayerProton: */
-  /*   { */
-  /*     Projectile->Model = GameModels[ModelIndex_Proton]; */
-  /*   } break; */
+#if 0
+  switch (ProjectileType)
+  {
+    case EntityType_PlayerProton:
+    {
+      Projectile->Model = GameModels[ModelIndex_Proton];
+    } break;
 
-  /*   case EntityType_PlayerProjectile: */
-  /*   case EntityType_EnemyProjectile: */
-  /*   { */
-  /*     Projectile->Model = GameModels[ModelIndex_Projectile]; */
-  /*   } break; */
+    case EntityType_PlayerProjectile:
+    case EntityType_EnemyProjectile:
+    {
+      Projectile->Model = GameModels[ModelIndex_Projectile];
+    } break;
 
-  /*   InvalidDefaultCase; */
-  /* } */
+    InvalidDefaultCase;
+  }
+#endif
 
   return Projectile;
 }
@@ -474,15 +477,21 @@ SpawnPlayer(game_state *GameState, entity *Player, canonical_position InitialP)
   r32 RateOfFire = 0.8f;
   u32 Health = PLAYER_MAX_HP;
 
+
+  model *Model = &GameState->Models[ModelIndex_Player];
+  /* v3 CollisionVolumeRadius = V3(1.1f); */
+  v3 CollisionVolumeRadius = Model->Dim * Scale;
+  Print(CollisionVolumeRadius);
+
   SpawnEntity(
       Player,
-      &GameState->Models[ModelIndex_Player],
+      Model,
       EntityType_Player,
 
       &Physics,
 
       &InitialP,
-      DEBUG_ENTITY_COLLISION_VOL_RADIUS,
+      CollisionVolumeRadius,
 
       Scale,
       RateOfFire,
@@ -658,14 +667,10 @@ void
 UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
 {
   TIMED_FUNCTION();
-
   world *World = GameState->World;
-
-  v3 Remaining = GrossDelta;
-
   chunk_dimension WorldChunkDim = World->ChunkDim;
-
   collision_event C = {};
+  v3 Remaining = GrossDelta;
 
   while ( Remaining != V3(0,0,0) )
   {

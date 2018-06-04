@@ -1,3 +1,9 @@
+# Jun 4 2018 - 1:00 - closed - Collision detection offset weirdness
+* collision detection
+The GetCollision call had some old/crappy code that was calculating the
+wrong bounds for the collision check.  Changing to a more sane inclusive
+min exclusive max scenario fixed the issue.
+
 # Jun 1 2018 - 5:00 - closed - Memory arenas rewinding to a bad point
 * memory
 * arenas

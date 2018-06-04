@@ -195,13 +195,14 @@ ClampBetween(r32 Min, r32 Value, r32 Max)
 }
 
 inline r32
-ClampBilateral(float F)
+ClampBilateral(r32 F)
 {
   r32 Result = ClampBetween(-1.0f, F, 1.0f);
   return Result;
 }
 
-int clamp0(int i)
+s32
+clamp0(s32 i)
 {
   if (i < 0)
     i = 0;
@@ -209,20 +210,44 @@ int clamp0(int i)
   return i;
 }
 
-int Floori(float f)
+s32
+Floori(r32 f)
 {
-  int Result;
-  Result = (int)(f);
+  s32 Result;
+  Result = (s32)(f);
   return Result;
 }
 
-float Floorf(float f)
+r32
+Floorf(r32 f)
 {
-  float Result;
-  int i =  (int)(f);
-  Result = (float)i;
+  r32 Result;
+  s32 i =  (s32)(f);
+  Result = (r32)i;
   return Result;
 }
+
+r32
+Ceilf(r32 F)
+{
+  r32 Result = ceil(F);
+  return Result;
+}
+
+s32
+Ceil(r32 F)
+{
+  s32 Result = (s32)Ceilf(F);
+  return Result;
+}
+
+v3
+Ceil(v3 Vec)
+{
+  v3 Result = {{ Ceilf(Vec.x), Ceilf(Vec.y), Ceilf(Vec.z) }};
+  return Result;
+}
+
 
 canonical_position
 Lerp(r32 t, canonical_position p1, canonical_position p2)
@@ -294,10 +319,10 @@ Area(v2 A)
   return Result;
 }
 
-inline int
+inline s32
 LengthSq( voxel_position P )
 {
-  int Result = P.x*P.x + P.y*P.y + P.z*P.z;
+  s32 Result = P.x*P.x + P.y*P.y + P.z*P.z;
   return Result;
 }
 
