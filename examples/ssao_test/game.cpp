@@ -79,7 +79,7 @@ InitializeVoxels(perlin_noise *Noise,  world_chunk *Chunk)
   chunk_dimension Dim = WORLD_CHUNK_DIM;
   ZeroChunk(Chunk->Data, Volume(WORLD_CHUNK_DIM));
 
-  /* if ( Chunk->WorldP.z == 0 ) */
+  if ( Chunk->WorldP.z == 0 )
   {
     InitChunkPerlin(Noise, Chunk, V3(Dim), GRASS_GREEN);
 

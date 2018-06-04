@@ -479,8 +479,7 @@ SpawnPlayer(game_state *GameState, entity *Player, canonical_position InitialP)
 
 
   model *Model = &GameState->Models[ModelIndex_Player];
-  /* v3 CollisionVolumeRadius = V3(1.1f); */
-  v3 CollisionVolumeRadius = Model->Dim * Scale;
+  v3 CollisionVolumeRadius = Model->Dim * Scale * 0.5f;
   Print(CollisionVolumeRadius);
 
   SpawnEntity(
