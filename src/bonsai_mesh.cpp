@@ -331,6 +331,11 @@ BuildWorldChunkMesh(world *World, world_chunk *WorldChunk, chunk_dimension World
       {
         canonical_position CurrentP  = Canonical_Position(WorldChunkDim, V3(x,y,z), WorldChunk->WorldP);
 
+        v4 Perturb = 0.08f*V4(RandomBilateral(&ColorEntropy),
+                              RandomBilateral(&ColorEntropy),
+                              RandomBilateral(&ColorEntropy),
+                              1.0f);
+
         if ( !IsFilledInWorld( World, WorldChunk, CurrentP ) )
           continue;
 
@@ -341,16 +346,12 @@ BuildWorldChunkMesh(world *World, world_chunk *WorldChunk, chunk_dimension World
         v4 FaceColors[FACE_VERT_COUNT];
         FillColorArray(Voxel->Color, FaceColors, FACE_VERT_COUNT);
 
-        v4 Perturb = 0.08f*FaceColors[0]*V4(RandomBilateral(&ColorEntropy),
-                                           RandomBilateral(&ColorEntropy),
-                                           RandomBilateral(&ColorEntropy),
-                                           1.0f);
 
         for (u32 ColorIndex = 0;
             ColorIndex < FACE_VERT_COUNT;
             ++ColorIndex)
         {
-          FaceColors[ColorIndex] += Perturb;
+          FaceColors[ColorIndex] += Perturb*FaceColors[0];
         }
 
         TIMED_BLOCK("Canonicalize");
