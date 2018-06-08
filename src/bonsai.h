@@ -930,16 +930,14 @@ InsertChunkIntoWorld(world *World, world_chunk *chunk)
 }
 
 world_chunk*
-AllocateWorldChunk(memory_arena *Storage, world *World, world_position WorldP)
+AllocateWorldChunk(memory_arena *Storage, world *World, world_position WorldP, chunk_dimension Dim = WORLD_CHUNK_DIM)
 {
   world_chunk *Result = PUSH_STRUCT_CHECKED(world_chunk, Storage, 1);
-
-  Result->Data = AllocateChunk(Storage, World->ChunkDim);
-  Assert(Result->Data);
-
+  Result->Data = AllocateChunk(Storage, Dim);
   Result->WorldP = WorldP;
 
-  InsertChunkIntoWorld(World, Result);
+  if (World)
+    InsertChunkIntoWorld(World, Result);
 
   return Result;
 }

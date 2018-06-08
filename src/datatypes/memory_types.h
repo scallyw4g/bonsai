@@ -122,6 +122,8 @@ AllocateAndInitializeArena_(memory_arena *Arena, umm Size)
 }
 #endif
 
+void
+PlatformUnprotectArena(memory_arena *Arena);
 
 void
 PlatformDeallocateArena(memory_arena *Arena);
@@ -387,4 +389,13 @@ Deallocate(memory_arena *Arena)
     Current = Next;
   }
 }
+
+inline void
+Rewind(memory_arena *Arena)
+{
+  Deallocate(Arena->Prev);
+  PlatformUnprotectArena(Arena);
+  Arena->At = Arena->FirstUsableByte;
+}
+
 

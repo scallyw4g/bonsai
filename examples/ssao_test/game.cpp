@@ -74,48 +74,59 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys, entity *Play
 }
 
 void
-InitializeVoxels(perlin_noise *Noise,  world_chunk *Chunk)
+InitializeVoxels(perlin_noise *Noise,  world_chunk *DestChunk, memory_arena *Memory)
 {
-  chunk_dimension Dim = WORLD_CHUNK_DIM;
-  ZeroChunk(Chunk->Data, Volume(WORLD_CHUNK_DIM));
+  ZeroChunk(DestChunk->Data, Volume(WORLD_CHUNK_DIM));
 
-  if ( Chunk->WorldP.z == 0 )
+  if (DestChunk->WorldP.z > 0)
   {
-    InitChunkPerlin(Noise, Chunk, V3(Dim), GRASS_GREEN);
+    UnSetFlag(DestChunk, Chunk_Queued);
+    SetFlag( DestChunk, (chunk_flag)(Chunk_BuildMesh|Chunk_Initialized));
+    return;
+  }
 
-    for ( int z = 0; z < Dim.z; ++ z)
+  chunk_dimension SynChunkDim = WORLD_CHUNK_DIM + 2;
+  chunk_dimension SynChunkP = DestChunk->WorldP - 1;
+  world_chunk *SyntheticChunk = AllocateWorldChunk(Memory, 0, SynChunkP, SynChunkDim );
+  InitChunkPerlin(Noise, SyntheticChunk, SynChunkDim, GRASS_GREEN);
+
+  chunk_dimension DestChunkDim = WORLD_CHUNK_DIM;
+  for ( int z = 0; z < DestChunkDim.z; ++ z)
+  {
+    for ( int y = 0; y < DestChunkDim.y; ++ y)
     {
-      for ( int y = 0; y < Dim.y; ++ y)
+      for ( int x = 0; x < DestChunkDim.x; ++ x)
       {
-        for ( int x = 0; x < Dim.x; ++ x)
+        s32 DestIndex = GetIndex(Voxel_Position(x,y,z), DestChunkDim);
+        s32 SynIndex = GetIndex(Voxel_Position(x,y,z)+1, SynChunkDim);
+
+        voxel *DestV = &DestChunk->Data->Voxels[DestIndex];
+        *DestV = SyntheticChunk->Data->Voxels[SynIndex];
+
+        if (z == 0 && DestChunk->WorldP.z == 0)
         {
-          if (z==0 &&  Chunk->WorldP.z == 0)
-          {
-            s32 i = GetIndex(Voxel_Position(x,y,z), Dim);
-            voxel *Vox = &Chunk->Data->Voxels[i];
-            SetFlag(Vox, Voxel_Filled);
-            Vox->Color = GRASS_GREEN;
-          }
+          SetFlag(DestV, Voxel_Filled);
+          DestV->Color = GRASS_GREEN;
         }
       }
     }
-
   }
 
-  UnSetFlag(Chunk, Chunk_Queued);
-  SetFlag(Chunk, Chunk_Initialized);
+
+  UnSetFlag(DestChunk, Chunk_Queued);
+  SetFlag( DestChunk, (chunk_flag)(Chunk_BuildMesh|Chunk_Initialized));
 
   return;
 }
 
 EXPORT void
-GameThreadCallback(work_queue_entry *Entry)
+GameThreadCallback(work_queue_entry *Entry, memory_arena *ThreadArena)
 {
   switch (Entry->Flags)
   {
     case WorkEntry_InitWorldChunk:
     {
-      InitializeVoxels(&Entry->GameState->Noise, (world_chunk*)Entry->Input);
+      InitializeVoxels(&Entry->GameState->Noise, (world_chunk*)Entry->Input, ThreadArena);
     } break;
   }
 
@@ -250,7 +261,7 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
     if ( AwaitHandshake(Network, GameState->ServerState) )
     {
       Player = GetPlayer(GameState->Players, Network->Client);
-      SpawnPlayer(GameState, Player,  Canonical_Position(V3(0,0,0), World_Position(-4,3,0))  );
+      SpawnPlayer(GameState, Player,  Canonical_Position(V3(0,0,0), World_Position(0,0,2))  );
     }
   }
 

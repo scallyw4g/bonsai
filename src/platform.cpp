@@ -62,6 +62,10 @@ ThreadMain(void *Input)
 
   work_queue *Queue = ThreadParams->Queue;
 
+  // TODO(Jesse): Clear this every frame
+  memory_arena ThreadArena = {};
+  ThreadArena.MemProtect = False;
+
   for (;;)
   {
     ThreadSleep( &Queue->Semaphore );
@@ -76,10 +80,12 @@ ThreadMain(void *Input)
       if ( Exchanged )
       {
         work_queue_entry Entry = Queue->Entries[DequeueIndex];
-        GameThreadCallback(&Entry);
+        GameThreadCallback(&Entry, &ThreadArena);
       }
     }
 
+    // FIXME(Jesse): Don't leak everything we ever allocate on here!
+    /* Rewind(&ThreadArena); */
   }
 }
 

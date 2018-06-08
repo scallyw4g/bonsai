@@ -30,7 +30,7 @@ FillChunk(chunk_data *chunk, chunk_dimension Dim, u8 ColorIndex = BLACK)
 
 
 void
-InitChunkPerlin(perlin_noise *Noise, world_chunk *WorldChunk, v3 WorldChunkDim, u8 ColorIndex)
+InitChunkPerlin(perlin_noise *Noise, world_chunk *WorldChunk, chunk_dimension Dim, u8 ColorIndex)
 {
   Assert(WorldChunk);
 
@@ -44,12 +44,10 @@ InitChunkPerlin(perlin_noise *Noise, world_chunk *WorldChunk, v3 WorldChunkDim, 
   }
 #endif
 
-  ZeroChunk(WorldChunk->Data, Volume(WorldChunkDim));
+  ZeroChunk(WorldChunk->Data, Volume(Dim));
 
   chunk_data *chunk = WorldChunk->Data;
   /* CALLGRIND_TOGGLE_COLLECT; */
-
-  chunk_dimension Dim = WORLD_CHUNK_DIM;
 
   for ( s32 z = 0; z < Dim.z; ++ z)
   {
@@ -62,9 +60,9 @@ InitChunkPerlin(perlin_noise *Noise, world_chunk *WorldChunk, v3 WorldChunkDim, 
 
         Assert( NotSet(&chunk->Voxels[i], Voxel_Filled) );
 
-        double InX = ((double)x + (double)WorldChunkDim.x * (double)WorldChunk->WorldP.x)/NOISE_FREQUENCY;
-        double InY = ((double)y + (double)WorldChunkDim.y * (double)WorldChunk->WorldP.y)/NOISE_FREQUENCY;
-        double InZ = ((double)z + (double)WorldChunkDim.z * (double)WorldChunk->WorldP.z)/NOISE_FREQUENCY;
+        double InX = ((double)x + ( (double)WORLD_CHUNK_DIM.x*(double)WorldChunk->WorldP.x))/NOISE_FREQUENCY;
+        double InY = ((double)y + ( (double)WORLD_CHUNK_DIM.y*(double)WorldChunk->WorldP.y))/NOISE_FREQUENCY;
+        double InZ = ((double)z + ( (double)WORLD_CHUNK_DIM.z*(double)WorldChunk->WorldP.z))/NOISE_FREQUENCY;
 
         r32 noiseValue = (r32)Noise->noise(InX, InY, InZ);
 
@@ -88,7 +86,6 @@ InitChunkPerlin(perlin_noise *Noise, world_chunk *WorldChunk, v3 WorldChunkDim, 
     }
   }
 
-  SetFlag( WorldChunk, Chunk_BuildMesh  );
   return;
 }
 

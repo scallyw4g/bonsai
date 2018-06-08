@@ -397,13 +397,13 @@ InitializeVoxels( game_state *GameState, world_chunk *Chunk )
 }
 
 EXPORT void
-GameThreadCallback(work_queue_entry *Entry)
+GameThreadCallback(work_queue_entry *Entry, memory_arena *ThreadArena)
 {
   switch (Entry->Flags)
   {
     case WorkEntry_InitWorldChunk:
     {
-      InitializeVoxels(Entry->GameState, (world_chunk*)Entry->Input);
+      InitializeVoxels(Entry->GameState, (world_chunk*)Entry->Input, ThreadArena);
     } break;
 
     InvalidDefaultCase;
