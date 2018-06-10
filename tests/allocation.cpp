@@ -7,6 +7,30 @@
 #include <shader.cpp>
 #include <debug.cpp>
 
+#define RED_TERMINAL "\x1b[31m"
+#define BLUE_TERMINAL "\x1b[34m"
+#define GREEN_TERMINAL "\x1b[32m"
+#define WHITE_TERMINAL "\x1b[37m"
+
+#define PrevLine "\x1b[F"
+#define Newline "\n"
+
+u32 TestsFailed = 0;
+u32 TestsPassed = 0;
+
+#define TestThat(condition)                                                                                              \
+  if (!(condition)) {                                                                                                    \
+    ++TestsFailed;                                                                                                       \
+    Debug(RED_TERMINAL "   Failed" WHITE_TERMINAL " - '%s' during %s " Newline, #condition, __FUNCTION__ ); \
+    PlatformDebugStacktrace();                                                                                           \
+    Debug("\n\n"); \
+  } else {                                                                                                               \
+    ++TestsPassed;                                                                                                       \
+    Debug(PrevLine GREEN_TERMINAL " %u " WHITE_TERMINAL "Tests Passed", TestsPassed);                                     \
+  }
+
+
+
 struct test_struct_1k
 {
   u8 Data[1024];
@@ -15,6 +39,11 @@ struct test_struct_1k
 struct test_struct_128
 {
   u8 Data[16];
+};
+
+struct test_struct_32
+{
+  u32 Data;
 };
 
 struct test_struct_64
@@ -55,7 +84,8 @@ void
 BreakSegfaultHandler(int sig, siginfo_t *si, void *data)
 {
   HitSegfault = True;
-  Error("Unexpected Segfault");
+  Debug(RED_TERMINAL "   CRASH! " WHITE_TERMINAL);
+  PlatformDebugStacktrace();
   RuntimeBreak();
 }
 
@@ -105,14 +135,14 @@ ExpectSegfault()
 void
 AssertNoSegfault()
 {
-  Assert(HitSegfault == False);
+  TestThat(HitSegfault == False);
   HitSegfault = False;
 }
 
 void
 AssertSegfault()
 {
-  Assert(HitSegfault == True);
+  TestThat(HitSegfault == True);
   HitSegfault = False;
 }
 
@@ -122,7 +152,7 @@ TestAllocation(memory_arena *Arena)
   memory_arena Initial = *Arena;
 
   T *Test = PUSH_STRUCT_CHECKED( T, Arena, 1);
-  Assert(Test);
+  TestThat(Test);
   Clear(Test);
 
   AssertNoSegfault();
@@ -140,9 +170,9 @@ TestAllocation(memory_arena *Arena)
   NoExpectedSegfault();
   if (Initial.Prev == Arena->Prev)
   {
-    Assert(Initial.Start == Arena->Start);
-    Assert(Initial.End == Arena->End);
-    Assert(Initial.NextBlockSize == Arena->NextBlockSize);
+    TestThat(Initial.Start == Arena->Start);
+    TestThat(Initial.End == Arena->End);
+    TestThat(Initial.NextBlockSize == Arena->NextBlockSize);
   }
 
   return;
@@ -152,54 +182,50 @@ global_variable umm PageSize = PlatformGetPageSize();
 global_variable umm TwoPages = PageSize*2;
 
 
+b32
+TestSetToPageBoundary() {
+  memory_arena Arena = {};
+  SetToPageBoundary(&Arena);
+  TestThat(Arena.At == 0);
+
+  Arena.At = (u8*)1;
+  Arena.End = (u8*)PageSize;
+  SetToPageBoundary(&Arena);
+  TestThat((umm)Arena.At == PageSize);
+
+  SetToPageBoundary(&Arena);
+  TestThat((umm)Arena.At == PageSize);
+
+  Arena.End = (u8*)TwoPages;
+  AdvanceToBytesBeforeNextPage(sizeof(memory_arena), &Arena);
+  TestThat((umm)Arena.At == TwoPages-sizeof(memory_arena));
+}
+
+
+b32
+TestOnPageBoundary() {
+  memory_arena Arena = {};
+  TestThat( OnPageBoundary(&Arena, PageSize) == True);
+
+  Arena.At = (u8*)(PageSize);
+  TestThat( OnPageBoundary(&Arena, PageSize) == True);
+
+  Arena.At = (u8*)(PageSize-1);
+  TestThat( OnPageBoundary(&Arena, PageSize) == False);
+
+  Arena.At = (u8*)1;
+  TestThat( OnPageBoundary(&Arena, PageSize) == False);
+}
+
+
+
+
 void
 ArenaAdvancements()
 {
-  {
-    memory_arena Arena = {};
-    SetToPageBoundary(&Arena);
-    Assert(Arena.At == 0);
+  TestSetToPageBoundary();
 
-    Arena.At = (u8*)1;
-    Arena.End = (u8*)PageSize;
-    SetToPageBoundary(&Arena);
-    Assert((umm)Arena.At == PageSize);
-
-    SetToPageBoundary(&Arena);
-    Assert((umm)Arena.At == PageSize);
-  }
-
-  {
-    memory_arena Arena = {};
-    SetToPageBoundary(&Arena);
-    Assert(Arena.At == 0);
-
-    Arena.At = (u8*)1;
-    Arena.End = (u8*)PageSize;
-    SetToPageBoundary(&Arena);
-    Assert((umm)Arena.At == PageSize);
-
-    SetToPageBoundary(&Arena);
-    Assert((umm)Arena.At == PageSize);
-
-    Arena.End = (u8*)TwoPages;
-    AdvanceToBytesBeforeNextPage(sizeof(memory_arena), &Arena);
-    Assert((umm)Arena.At == TwoPages-sizeof(memory_arena));
-  }
-
-  {
-    memory_arena Arena = {};
-    Assert( OnPageBoundary(&Arena, PageSize) == True);
-
-    Arena.At = (u8*)(PageSize);
-    Assert( OnPageBoundary(&Arena, PageSize) == True);
-
-    Arena.At = (u8*)(PageSize-1);
-    Assert( OnPageBoundary(&Arena, PageSize) == False);
-
-    Arena.At = (u8*)1;
-    Assert( OnPageBoundary(&Arena, PageSize) == False);
-  }
+  TestOnPageBoundary();
 
 
   {
@@ -211,7 +237,7 @@ ArenaAdvancements()
       Arena.At = (u8*)(PageSize-1);
 
       AdvanceToBytesBeforeNextPage(SizeofType, &Arena);
-      Assert((umm)Arena.At == TwoPages-SizeofType);
+      TestThat((umm)Arena.At == TwoPages-SizeofType);
     }
 
     {
@@ -220,7 +246,7 @@ ArenaAdvancements()
       Arena.At = (u8*)(PageSize-SizeofType-1);
 
       AdvanceToBytesBeforeNextPage(SizeofType, &Arena);
-      Assert((umm)Arena.At == PageSize-SizeofType);
+      TestThat((umm)Arena.At == PageSize-SizeofType);
     }
 
     {
@@ -229,7 +255,7 @@ ArenaAdvancements()
       Arena.At = (u8*)(PageSize-SizeofType);
 
       AdvanceToBytesBeforeNextPage(SizeofType, &Arena);
-      Assert((umm)Arena.At == TwoPages-SizeofType);
+      TestThat((umm)Arena.At == TwoPages-SizeofType);
     }
   }
 
@@ -243,21 +269,21 @@ SingleAllocations()
   {
     memory_arena Arena = {};
     TestAllocation<test_struct_8>(&Arena);
-    Assert(Arena.Prev);
+    TestThat(Arena.Prev);
   }
 
   // Single allocation of 8bit type
   {
     memory_arena Arena = {};
     TestAllocation<test_struct_64>(&Arena);
-    Assert(Arena.Prev);
+    TestThat(Arena.Prev);
   }
 
   // Single allocation of 128bit type
   {
     memory_arena Arena = {};
     TestAllocation<test_struct_128>(&Arena);
-    Assert(Arena.Prev);
+    TestThat(Arena.Prev);
   }
 
   return;
@@ -269,7 +295,7 @@ MultipleAllocations()
   // Several Arena re-allocations
   {
     memory_arena Arena = {};
-    Assert(Arena.Prev == 0);
+    TestThat(Arena.Prev == 0);
 
     {
       memory_arena *PrevArena = Arena.Prev;
@@ -293,7 +319,7 @@ MultipleAllocations()
   // Several Arena re-allocations with memprotect turned off in the middle
   {
     memory_arena Arena = {};
-    Assert(Arena.Prev == 0);
+    TestThat(Arena.Prev == 0);
 
     {
       memory_arena *PrevArena = Arena.Prev;
@@ -328,7 +354,7 @@ MultipleAllocations()
   // and accumulated by GetMemoryArenaStats
   {
     memory_arena Arena = {};
-    Assert(Arena.Prev == 0);
+    TestThat(Arena.Prev == 0);
 
     {
       memory_arena *PrevArena = Arena.Prev;
@@ -364,9 +390,9 @@ MultipleAllocations()
       memory_arena_stats MemStats2 = GetMemoryArenaStats(&Arena);
       memory_arena_stats MemStats3 = GetMemoryArenaStats(&Arena);
 
-      Assert( AreEqual(MemStats1,  MemStats2) );
-      Assert( AreEqual(MemStats1,  MemStats3) );
-      Assert( AreEqual(MemStats2,  MemStats3) );
+      TestThat( AreEqual(MemStats1,  MemStats2) );
+      TestThat( AreEqual(MemStats1,  MemStats3) );
+      TestThat( AreEqual(MemStats2,  MemStats3) );
     }
 
   }
@@ -379,7 +405,7 @@ ArenaAllocation()
 {
   {
     memory_arena *Arena = PlatformAllocateArena(Megabytes(1));
-    Assert( Remaining(Arena) >= Megabytes(1) );
+    TestThat( Remaining(Arena) >= Megabytes(1) );
 
     Clear(Arena);
 
@@ -399,7 +425,7 @@ ArenaAllocation()
 
   {
     memory_arena *Arena = PlatformAllocateArena(32);
-    Assert(Remaining(Arena) >= 32);
+    TestThat(Remaining(Arena) >= 32);
   }
 
   return;
@@ -412,7 +438,7 @@ UnprotectedAllocations()
 
   {
     memory_arena *Arena = PlatformAllocateArena(Megabytes(1));
-    Assert( Remaining(Arena) >= Megabytes(1) );
+    TestThat( Remaining(Arena) >= Megabytes(1) );
 
     Arena->MemProtect = False;
 
@@ -423,7 +449,7 @@ UnprotectedAllocations()
   {
     umm AllocationSize = 32;
     memory_arena *Arena = PlatformAllocateArena(AllocationSize);
-    Assert( Remaining(Arena) >= AllocationSize );
+    TestThat( Remaining(Arena) >= AllocationSize );
     Arena->MemProtect = False;
 
     TestAllocation<test_struct_1k>(Arena);
@@ -438,11 +464,9 @@ UnprotectedAllocations()
 
     AssertNoSegfault();
 
-    RuntimeBreak();
-
-    Assert(Arena->Prev);
-    Assert(Arena->MemProtect == False);
-    Assert(Arena->MemProtect == Arena->Prev->MemProtect);
+    TestThat(Arena->Prev);
+    TestThat(Arena->MemProtect == False);
+    TestThat(Arena->MemProtect == Arena->Prev->MemProtect);
   }
 
 
@@ -454,7 +478,7 @@ UnprotectedAllocations()
     Arena->MemProtect = False;
 
     memory_arena Initial = *Arena;
-    Assert( Remaining(Arena) >= Megabytes(1) );
+    TestThat( Remaining(Arena) >= Megabytes(1) );
 
     for (u32 StructIndex = 0;
         StructIndex < StructCount;
@@ -469,17 +493,33 @@ UnprotectedAllocations()
 
     NoExpectedSegfault();
 
-    Assert(Initial.Prev == Arena->Prev);
-    Assert(Initial.Start == Arena->Start);
-    Assert(Initial.End == Arena->End);
-    Assert(Initial.NextBlockSize == Arena->NextBlockSize);
+    TestThat(Initial.Prev == Arena->Prev);
+    TestThat(Initial.Start == Arena->Start);
+    TestThat(Initial.End == Arena->End);
+    TestThat(Initial.NextBlockSize == Arena->NextBlockSize);
 
     AssertNoSegfault();
   }
 
   {
     memory_arena *Arena = PlatformAllocateArena(32);
-    Assert(Remaining(Arena) >= 32);
+    TestThat(Remaining(Arena) >= 32);
+  }
+
+  {
+    memory_arena *TestArena = PlatformAllocateArena(32);
+    TestArena->MemProtect = False;
+
+    PUSH_STRUCT_CHECKED(test_struct_32, TestArena, 1);
+
+    PUSH_STRUCT_CHECKED(test_struct_64, TestArena, 1);
+    PUSH_STRUCT_CHECKED(test_struct_64, TestArena, 1);
+    PUSH_STRUCT_CHECKED(test_struct_64, TestArena, 1);
+
+    PUSH_STRUCT_CHECKED(test_struct_1k, TestArena, 1);
+    PUSH_STRUCT_CHECKED(test_struct_1k, TestArena, 1);
+
+    VaporizeArena(TestArena);
   }
 
   return;
@@ -488,18 +528,28 @@ UnprotectedAllocations()
 s32
 main()
 {
+    Debug("\n%s", BLUE_TERMINAL "---" WHITE_TERMINAL " Starting Allocation Tests " BLUE_TERMINAL "---" WHITE_TERMINAL);
+    Debug("%s\n", BLUE_TERMINAL "------------------------------------------------" WHITE_TERMINAL);
 
 #if MEMPROTECT_OVERFLOW
-  ArenaAllocation();
+    ArenaAllocation();
 
-  ArenaAdvancements();
+    ArenaAdvancements();
 
-  SingleAllocations();
+    SingleAllocations();
 
-  MultipleAllocations();
+    MultipleAllocations();
 
-  UnprotectedAllocations();
+    /* UnprotectedAllocations(); */
 #endif
+
+  Debug("\n%s\n", BLUE_TERMINAL "------------------------------------------------" WHITE_TERMINAL);                                                                                          \
+  if (TestsFailed)
+  {
+    Debug(GREEN_TERMINAL " %u " WHITE_TERMINAL "Tests Passed", TestsPassed);
+    Debug(RED_TERMINAL   " %u " WHITE_TERMINAL "Tests Failed", TestsFailed);
+    Debug(Newline);
+  }
 
   return 0;
 }
