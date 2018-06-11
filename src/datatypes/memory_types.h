@@ -47,8 +47,7 @@ Clear(T *Struct)
 
 struct memory_arena
 {
-  u8* Start;           // Note(Jesse): First byte of the allocation (for unmapping)
-  u8* FirstUsableByte; // Note(Jesse): First byte for userland allocations
+  u8* Start;
 
   u8* At;
   u8* End;
@@ -129,7 +128,7 @@ void
 PlatformDeallocateArena(memory_arena *Arena);
 
 memory_arena*
-PlatformAllocateArena(umm Bytes);
+PlatformAllocateArena(umm Bytes, b32 MemProtect);
 
 u8*
 PlatformProtectPage(u8* Mem);
@@ -145,22 +144,13 @@ ReallocateArena(memory_arena *Arena, umm MinSize)
   if (MinSize > AllocationSize)
     AllocationSize = MinSize;
 
-  memory_arena *Allocated = PlatformAllocateArena(AllocationSize);
+  memory_arena *NewArena = PlatformAllocateArena(AllocationSize, Arena->MemProtect);
 
-#if MEMPROTECT
-  Allocated->MemProtect = Arena->MemProtect;
-#endif
+  memory_arena OldArena = *Arena;
+  *Arena = *NewArena;
+  *NewArena = OldArena;
 
-  // TODO(Jesse): Can these copies be avoided with some more clever pointer-swapping?
-  memory_arena PrevArena = *Arena;
-  memory_arena NewArena = *Allocated;
-
-  // Swap
-  *Allocated = PrevArena;
-  *Arena = NewArena;
-
-  // And point back
-  Arena->Prev = Allocated;
+  Arena->Prev = NewArena;
 
   Assert( (umm)(Arena->End - Arena->At) >= MinSize);
   Assert(Arena->At <= Arena->End);
@@ -379,23 +369,22 @@ HashArena(memory_arena *Arena)
 }
 
 inline void
-Deallocate(memory_arena *Arena)
+VaporizeArena(memory_arena *Arena)
 {
-  memory_arena *Current = Arena;
-  while(Current)
+  if(Arena->Prev)
   {
-    memory_arena *Next = Current->Prev;
-    PlatformDeallocateArena(Current);
-    Current = Next;
+    VaporizeArena(Arena->Prev);
   }
+
+  PlatformDeallocateArena(Arena);
 }
 
-inline void
-Rewind(memory_arena *Arena)
-{
-  Deallocate(Arena->Prev);
-  PlatformUnprotectArena(Arena);
-  Arena->At = Arena->FirstUsableByte;
-}
+/* inline void */
+/* Rewind(memory_arena *Arena) */
+/* { */
+/*   PlatformUnprotectArena(Arena->Prev); */
+/*   Deallocate(Arena->Prev); */
+/*   Arena->At = Arena->FirstUsableByte; */
+/* } */
 
 

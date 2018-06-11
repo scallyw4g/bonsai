@@ -18,15 +18,15 @@
 u32 TestsFailed = 0;
 u32 TestsPassed = 0;
 
-#define TestThat(condition)                                                                                              \
-  if (!(condition)) {                                                                                                    \
-    ++TestsFailed;                                                                                                       \
+#define TestThat(condition)                                                                                 \
+  if (!(condition)) {                                                                                       \
+    ++TestsFailed;                                                                                          \
     Debug(RED_TERMINAL "   Failed" WHITE_TERMINAL " - '%s' during %s " Newline, #condition, __FUNCTION__ ); \
-    PlatformDebugStacktrace();                                                                                           \
-    Debug("\n\n"); \
-  } else {                                                                                                               \
-    ++TestsPassed;                                                                                                       \
-    Debug(PrevLine GREEN_TERMINAL " %u " WHITE_TERMINAL "Tests Passed", TestsPassed);                                     \
+    PlatformDebugStacktrace();                                                                              \
+    Debug(Newline Newline);                                                                                 \
+  } else {                                                                                                  \
+    ++TestsPassed;                                                                                          \
+    Debug(PrevLine GREEN_TERMINAL " %u " WHITE_TERMINAL "Tests Passed", TestsPassed);                       \
   }
 
 
@@ -168,12 +168,6 @@ TestAllocation(memory_arena *Arena)
   }
 
   NoExpectedSegfault();
-  if (Initial.Prev == Arena->Prev)
-  {
-    TestThat(Initial.Start == Arena->Start);
-    TestThat(Initial.End == Arena->End);
-    TestThat(Initial.NextBlockSize == Arena->NextBlockSize);
-  }
 
   return;
 }
@@ -436,7 +430,12 @@ UnprotectedAllocations()
 {
   NoExpectedSegfault();
 
-  {
+  { // Tiny allocation works
+    memory_arena *Arena = PlatformAllocateArena(32);
+    TestThat(Remaining(Arena) >= 32);
+  }
+
+  { // Most basic allocation works
     memory_arena *Arena = PlatformAllocateArena(Megabytes(1));
     TestThat( Remaining(Arena) >= Megabytes(1) );
 
@@ -446,67 +445,51 @@ UnprotectedAllocations()
     AssertNoSegfault();
   }
 
-  {
+  { // Arena Reallocation works
     umm AllocationSize = 32;
     memory_arena *Arena = PlatformAllocateArena(AllocationSize);
     TestThat( Remaining(Arena) >= AllocationSize );
     Arena->MemProtect = False;
 
-    TestAllocation<test_struct_1k>(Arena);
-    TestAllocation<test_struct_1k>(Arena);
-    TestAllocation<test_struct_1k>(Arena);
-    TestAllocation<test_struct_1k>(Arena);
-
-    TestAllocation<test_struct_1k>(Arena);
-    TestAllocation<test_struct_1k>(Arena);
-    TestAllocation<test_struct_1k>(Arena);
-    TestAllocation<test_struct_1k>(Arena);
+    while (!Arena->Prev)
+    {
+      TestAllocation<test_struct_1k>(Arena);
+    }
 
     AssertNoSegfault();
 
-    TestThat(Arena->Prev);
     TestThat(Arena->MemProtect == False);
     TestThat(Arena->MemProtect == Arena->Prev->MemProtect);
   }
 
 
-  {
+  { // Writing to each allocation works
     const u32 StructCount = 1024;
     test_struct_1k *Structs[StructCount];
 
-    memory_arena *Arena = PlatformAllocateArena(Megabytes(32));
+
+    memory_arena *Arena = PlatformAllocateArena(Kilobytes(1));
     Arena->MemProtect = False;
 
     memory_arena Initial = *Arena;
-    TestThat( Remaining(Arena) >= Megabytes(1) );
 
     for (u32 StructIndex = 0;
         StructIndex < StructCount;
         ++StructIndex)
     {
+      PUSH_STRUCT_CHECKED(test_struct_32, Arena, 1);
+      PUSH_STRUCT_CHECKED(test_struct_64, Arena, 1);
+
       Structs[StructIndex] = PUSH_STRUCT_CHECKED(test_struct_1k, Arena, 1);
       Fill(Structs[StructIndex], (u8)255);
+      AssertNoSegfault();
     }
 
     TestAllocation<test_struct_1k>(Arena);
     AssertNoSegfault();
-
-    NoExpectedSegfault();
-
-    TestThat(Initial.Prev == Arena->Prev);
-    TestThat(Initial.Start == Arena->Start);
-    TestThat(Initial.End == Arena->End);
-    TestThat(Initial.NextBlockSize == Arena->NextBlockSize);
-
-    AssertNoSegfault();
   }
 
-  {
-    memory_arena *Arena = PlatformAllocateArena(32);
-    TestThat(Remaining(Arena) >= 32);
-  }
-
-  {
+  { // Arena De-allocation works
     memory_arena *TestArena = PlatformAllocateArena(32);
     TestArena->MemProtect = False;
 
@@ -517,9 +500,25 @@ UnprotectedAllocations()
     PUSH_STRUCT_CHECKED(test_struct_64, TestArena, 1);
 
     PUSH_STRUCT_CHECKED(test_struct_1k, TestArena, 1);
-    PUSH_STRUCT_CHECKED(test_struct_1k, TestArena, 1);
+
+    test_struct_1k *TestStruct = PUSH_STRUCT_CHECKED(test_struct_1k, TestArena, 1);
 
     VaporizeArena(TestArena);
+    AssertNoSegfault();
+
+    { // Since we're using virtual memory writing to the freed pages directly
+      // after should give us a memory fault - on linux at least.
+      ExpectSegfault();
+
+      *(u8*)TestArena = 0;
+      AssertSegfault();
+
+      *(u8*)TestStruct = 0;
+      AssertSegfault();
+
+      NoExpectedSegfault();
+    }
+
   }
 
   return;
@@ -540,16 +539,13 @@ main()
 
     MultipleAllocations();
 
-    /* UnprotectedAllocations(); */
+    UnprotectedAllocations();
 #endif
 
   Debug("\n%s\n", BLUE_TERMINAL "------------------------------------------------" WHITE_TERMINAL);                                                                                          \
-  if (TestsFailed)
-  {
-    Debug(GREEN_TERMINAL " %u " WHITE_TERMINAL "Tests Passed", TestsPassed);
-    Debug(RED_TERMINAL   " %u " WHITE_TERMINAL "Tests Failed", TestsFailed);
-    Debug(Newline);
-  }
+  Debug(GREEN_TERMINAL " %u " WHITE_TERMINAL "Tests Passed", TestsPassed);
+  Debug(RED_TERMINAL   " %u " WHITE_TERMINAL "Tests Failed", TestsFailed);
+  Debug(Newline);
 
   return 0;
 }

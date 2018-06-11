@@ -43,6 +43,8 @@ PrintSemValue( semaphore *Semaphore )
 u64
 PlatformGetPageSize()
 {
+  // TODO(Jesse): Have this initialize a static so we don't eat a syscall every
+  // time this gets called
   u64 InvalidSysconfReturn = ((u64)-1);
   u64 PageSize = (u64)sysconf(_SC_PAGESIZE);
   Assert(PageSize != InvalidSysconfReturn);
@@ -64,24 +66,33 @@ PlatformProtectPage(u8* Mem)
 void
 PlatformDeallocateArena(memory_arena *Arena)
 {
-  s32 Deallocated = (munmap(Arena->Start, TotalSize(Arena)) == 0);
-  Assert(Deallocated);
+  {
+    s32 Deallocated = (munmap(Arena->Start, TotalSize(Arena)) == 0);
+    Assert(Deallocated);
+  }
+
+#if MEMPROTECT_OVERFLOW
+  {
+    umm PageSize = PlatformGetPageSize();
+    u8 *ArenaBytes =  (u8*)Arena - ((umm)Arena % PageSize);
+    s32 Deallocated = (munmap(ArenaBytes, PageSize*2) == 0);
+    Assert(Deallocated);
+  }
+#else
+  NotImplemented;
+#endif
+
   return;
 }
 
-memory_arena*
-PlatformAllocateArena(umm RequestedBytes = Megabytes(1))
+u8*
+PlatformAllocateSize(umm AllocationSize)
 {
-  // FIXME(Jesse): We shouldn't really be able to ask for < 1MB worth of space
-  u64 PageSize = PlatformGetPageSize();
-  u64 ToNextPage = PageSize - (RequestedBytes % PageSize);
-  umm AllocationSize = RequestedBytes + ToNextPage + (2*PageSize); // Add additional pages for Arena, and memprotect page
-  Assert(AllocationSize % PageSize == 0);
+  Assert(AllocationSize % PlatformGetPageSize() == 0);
 
   u32 Protection = PROT_READ|PROT_WRITE;
   u32 Flags = MAP_SHARED|MAP_ANONYMOUS|MAP_NORESERVE;
 
-  errno = 0;
   u8 *Bytes = (u8*)mmap(0, AllocationSize, Protection, Flags,  -1, 0);
   if (Bytes == MAP_FAILED)
   {
@@ -89,45 +100,58 @@ PlatformAllocateArena(umm RequestedBytes = Megabytes(1))
     s32 Error = errno;
     if (Error == ENOMEM)
     {
-
-      struct rlimit AsLimit = {};
-      getrlimit(RLIMIT_AS, &AsLimit);
-
-      struct rlimit DataLimit = {};
-      getrlimit(RLIMIT_DATA, &DataLimit);
-
-      Error("Out of memory, or something..");
+      Error("Out of memory, or exhausted virtual page table.");
       Assert(False);
     }
     else
     {
-      Error("Unknown error allocating virtual memory!");
+      Error("Unknown error allocating pages.");
       Assert(False);
     }
   }
 
-  memory_arena TempArena = {};
+  return Bytes;
+}
 
-  TempArena.Start = (u8*)(Bytes);
-  TempArena.At = TempArena.Start;
+memory_arena*
+PlatformAllocateArena(umm RequestedBytes = Megabytes(1), b32 MemProtect = True)
+{
+  // FIXME(Jesse): We shouldn't really be able to ask for < 1MB worth of space
+  u64 PageSize = PlatformGetPageSize();
+  u64 ToNextPage = PageSize - (RequestedBytes % PageSize);
+  umm AllocationSize = RequestedBytes + ToNextPage;
 
-  TempArena.End = Bytes + AllocationSize;
-  TempArena.NextBlockSize = AllocationSize * 2;
-
-#if MEMPROTECT
-  TempArena.MemProtect = True;
-#endif
-
-  memory_arena *Result = (memory_arena*)PushSize(&TempArena, sizeof(memory_arena));
-  *Result = TempArena;
-  Result->FirstUsableByte = Result->At;
+  Assert(AllocationSize % PageSize == 0);
 
 #if MEMPROTECT_OVERFLOW
-  /* AdvanceToBytesBeforeNextPage(sizeof(memory_arena), &TempArena); */
+  Assert(sizeof(memory_arena) < PageSize);
+  u8 *ArenaBytes = PlatformAllocateSize(PageSize*2);
+  ArenaBytes += (PageSize - sizeof(memory_arena));
+
+#elif MEMPROTECT_UNDERFLOW
+  NotImplemented;
+#else
+  u8 *ArenaBytes = PlatformAllocateSize(PageSize);
+#endif
+
+  memory_arena *Result = (memory_arena*)ArenaBytes;
+
+  u8 *Bytes = PlatformAllocateSize(AllocationSize);
+  Result->Start = Bytes;
+  Result->At = Bytes;
+
+  Result->End = Bytes + AllocationSize;
+  Result->NextBlockSize = AllocationSize * 2;
+  Result->MemProtect = MemProtect;
+
+#if MEMPROTECT_OVERFLOW
+  if (Result->MemProtect)
+  {
+    Assert(OnPageBoundary(Result, PageSize));
+    PlatformProtectPage(ArenaBytes + sizeof(memory_arena));
+  }
 
   Assert((umm)Result->Start % PageSize == 0);
-  Assert((umm)Result->At % PageSize == 0);
-  Assert(OnPageBoundary(Result, PageSize));
   Assert(Remaining(Result) >= RequestedBytes);
 #else
   NotImplemented

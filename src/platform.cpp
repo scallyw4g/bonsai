@@ -62,10 +62,6 @@ ThreadMain(void *Input)
 
   work_queue *Queue = ThreadParams->Queue;
 
-  // TODO(Jesse): Clear this every frame
-  memory_arena ThreadArena = {};
-  ThreadArena.MemProtect = False;
-
   for (;;)
   {
     ThreadSleep( &Queue->Semaphore );
@@ -79,13 +75,16 @@ ThreadMain(void *Input)
                                         DequeueIndex);
       if ( Exchanged )
       {
+        memory_arena *ThreadArena = PlatformAllocateArena(1024);
+        ThreadArena->MemProtect = False;
+
         work_queue_entry Entry = Queue->Entries[DequeueIndex];
-        GameThreadCallback(&Entry, &ThreadArena);
+        GameThreadCallback(&Entry, ThreadArena);
+
+        PlatformUnprotectArena(ThreadArena);
+        VaporizeArena(ThreadArena);
       }
     }
-
-    // FIXME(Jesse): Don't leak everything we ever allocate on here!
-    /* Rewind(&ThreadArena); */
   }
 }
 
@@ -421,7 +420,7 @@ FrameEnd(game_state *GameState)
   }
 
   PlatformUnprotectArena(TranArena);
-  TranArena->At = TranArena->FirstUsableByte;
+  TranArena->At = TranArena->Start;
   TranArena->Pushes = 0;
 
   game_lights *Lights = GameState->Plat->Graphics->Lights;
