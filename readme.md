@@ -21,7 +21,7 @@ fast-paced arcade style games.
 * Entity System
 * Asset Loader
 
-# Todo and Known Bugs:
+# Wishlist
 
 
 -------------------------------------------------------------------------------
@@ -33,15 +33,6 @@ fast-paced arcade style games.
 ## Particle System
 
 [ ] Turbulance
-
--------------------------------------------------------------------------------
-## World
-
-[ ] There's a collision detection bug when the world is small and a
-model is pretty big.  Think 3^3 8^3 chunks with a 16^3 model
-
-[ ] If you're going really fast and try to update your position outside
-the VisibleRegion you collide with the edge of the world and stop moving
 
 -------------------------------------------------------------------------------
 ## Voxel Loader
@@ -57,7 +48,7 @@ editor mode!
 
 
 # Building
-Ensure you have [CMake](https://cmake.org/download) and g++, clang or MSVC 
+Ensure you have [CMake](https://cmake.org/download) and gcc or clang
 
 ## On Linux:
 
@@ -76,13 +67,6 @@ make && make run
 ```
 
 ## On Windows:
-Tested on VS2012 && VS2015
-
-- `git clone https://github.com/jjbandit/bonsai`
-- Run CMake from the GUI
-- Set source code to $BONSAI_DIRECTORY/build
-- Set "Where to build the binaries" to $BONSAI_DIRECTORY/bin
-- Click "Configure" followed by "Generate" and finally "Open Project"
-- Build with Visual Studio `F7` should do it
-
-
+```
+TODO(Jesse): Fix the build.
+```
