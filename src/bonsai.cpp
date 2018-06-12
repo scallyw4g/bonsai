@@ -422,12 +422,7 @@ inline v2
 GetMouseDelta(platform *Plat)
 {
   float mouseSpeed = -0.001f;
-
-  v2 Result = {};
-
-  if (Plat->Input.LMB.IsDown)
-    Result = Plat->MouseDP * mouseSpeed;
-
+  v2 Result = Plat->MouseDP * mouseSpeed;
   return Result;
 }
 
@@ -435,15 +430,26 @@ void
 UpdateCameraP(platform *Plat, world *World, canonical_position NewTarget, camera *Camera)
 {
   TIMED_FUNCTION();
-  float FocalLength = CAMERA_FOCAL_LENGTH;
   chunk_dimension WorldChunkDim = World->ChunkDim;
 
   v2 MouseDelta = GetMouseDelta(Plat);
 
-  Camera->Yaw += MouseDelta.x;
-  Camera->Pitch += MouseDelta.y;
+  if (Plat->Input.LMB.IsDown)
+  {
+    Camera->Yaw += MouseDelta.x;
+    Camera->Pitch += MouseDelta.y;
+    Camera->Pitch = ClampBetween(0.0, Camera->Pitch, PIf);
+  }
 
-  Camera->Pitch = ClampBetween(0.0, Camera->Pitch, PIf);
+  if (Plat->Input.RMB.IsDown)
+  {
+    Camera->DistanceFromTarget += MouseDelta.y*100.0f;
+  }
+
+  if (Camera->DistanceFromTarget >= 0)
+  {
+    Camera->DistanceFromTarget = CAMERA_FOCAL_LENGTH;
+  }
 
   r32 Px = Sin(Camera->Yaw);
   r32 Py = Cos(Camera->Yaw);
@@ -455,7 +461,7 @@ UpdateCameraP(platform *Plat, world *World, canonical_position NewTarget, camera
   Camera->Up = Normalize(Cross(Camera->Front, Camera->Right));
 
   Camera->Target = NewTarget;
-  Camera->P = Canonicalize(WorldChunkDim, NewTarget - (Camera->Front*FocalLength));
+  Camera->P = Canonicalize(WorldChunkDim, NewTarget - (Camera->Front*Camera->DistanceFromTarget));
 
 #if 1
 
