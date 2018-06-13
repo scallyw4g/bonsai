@@ -116,7 +116,7 @@ struct selected_arenas
 
 #define REGISTERED_MEMORY_ARENA_COUNT 32
 #define ROOT_SCOPE_COUNT 64
-#define META_TABLE_SIZE 1024
+#define META_TABLE_SIZE 4096
 struct debug_state
 {
   memory_arena            *Memory;

@@ -118,7 +118,7 @@ WriteToMetaTable(push_metadata *Query, push_metadata *Table, meta_comparator Com
     if (HashValue == FirstHashValue)
     {
       Error("Meta Table is full");
-      break;
+      return;
     }
   }
 
