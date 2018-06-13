@@ -30,6 +30,48 @@ FillChunk(chunk_data *chunk, chunk_dimension Dim, u8 ColorIndex = BLACK)
 
 
 void
+CopyChunkOffset(world_chunk *Src, voxel_position SrcChunkDim, world_chunk *Dest, voxel_position DestChunkDim, voxel_position Offset)
+{
+  for ( int z = 0; z < DestChunkDim.z; ++ z)
+  {
+    for ( int y = 0; y < DestChunkDim.y; ++ y)
+    {
+      for ( int x = 0; x < DestChunkDim.x; ++ x)
+      {
+        s32 DestIndex = GetIndex(Voxel_Position(x,y,z), DestChunkDim);
+        s32 SynIndex = GetIndex(Voxel_Position(x,y,z) + Offset, SrcChunkDim);
+        Dest->Data->Voxels[DestIndex] = Src->Data->Voxels[SynIndex];
+      }
+    }
+  }
+
+  return;
+}
+
+void
+InitChunkPlane(u32 zIndex, world_chunk *Chunk, chunk_dimension ChunkDim, u8 Color )
+{
+  for ( int z = 0; z < ChunkDim.z; ++ z)
+  {
+    for ( int y = 0; y < ChunkDim.y; ++ y)
+    {
+      for ( int x = 0; x < ChunkDim.x; ++ x)
+      {
+        if (z==zIndex)
+        {
+          s32 Index = GetIndex(Voxel_Position(x,y,z), ChunkDim);
+          Chunk->Data->Voxels[Index].Flags = Voxel_Filled;
+          Chunk->Data->Voxels[Index].Color = Color;
+        }
+      }
+    }
+  }
+
+  return;
+}
+
+
+void
 InitChunkPerlin(perlin_noise *Noise, world_chunk *WorldChunk, chunk_dimension Dim, u8 ColorIndex)
 {
   Assert(WorldChunk);
@@ -46,9 +88,7 @@ InitChunkPerlin(perlin_noise *Noise, world_chunk *WorldChunk, chunk_dimension Di
 
   ZeroChunk(WorldChunk->Data, Volume(Dim));
 
-  chunk_data *chunk = WorldChunk->Data;
-  /* CALLGRIND_TOGGLE_COLLECT; */
-
+  chunk_data *ChunkData = WorldChunk->Data;
   for ( s32 z = 0; z < Dim.z; ++ z)
   {
     for ( s32 y = 0; y < Dim.y; ++ y)
@@ -56,9 +96,9 @@ InitChunkPerlin(perlin_noise *Noise, world_chunk *WorldChunk, chunk_dimension Di
       for ( s32 x = 0; x < Dim.x; ++ x)
       {
         s32 i = GetIndex(Voxel_Position(x,y,z), Dim);
-        chunk->Voxels[i].Flags = Voxel_Uninitialzied;
+        ChunkData->Voxels[i].Flags = Voxel_Uninitialzied;
 
-        Assert( NotSet(&chunk->Voxels[i], Voxel_Filled) );
+        Assert( NotSet(&ChunkData->Voxels[i], Voxel_Filled) );
 
         double InX = ((double)x + ( (double)WORLD_CHUNK_DIM.x*(double)WorldChunk->WorldP.x))/NOISE_FREQUENCY;
         double InY = ((double)y + ( (double)WORLD_CHUNK_DIM.y*(double)WorldChunk->WorldP.y))/NOISE_FREQUENCY;
@@ -66,22 +106,22 @@ InitChunkPerlin(perlin_noise *Noise, world_chunk *WorldChunk, chunk_dimension Di
 
         r32 noiseValue = (r32)Noise->noise(InX, InY, InZ);
 
-        s32 Noise01 = Floori(noiseValue + 0.5f);
+        s32 NoiseChoice = Floori(noiseValue + 0.5f);
 
-        Assert(Noise01 == 0 || Noise01 == 1);
+        Assert(NoiseChoice == 0 || NoiseChoice == 1);
 
-        SetFlag(&chunk->Voxels[i], (voxel_flag)(Noise01 * Voxel_Filled));
+        SetFlag(&ChunkData->Voxels[i], (voxel_flag)(NoiseChoice * Voxel_Filled));
 
-        if (Noise01 == 0)
+        if (NoiseChoice)
         {
-          Assert( NotSet(&chunk->Voxels[i], Voxel_Filled) );
+          ChunkData->Voxels[i].Color = ColorIndex;
+          Assert( IsSet(&ChunkData->Voxels[i], Voxel_Filled) );
         }
         else
         {
-          Assert( IsSet(&chunk->Voxels[i], Voxel_Filled) );
-          /* WorldChunk->Filled ++; */
-          chunk->Voxels[i].Color = ColorIndex;
+          Assert( NotSet(&ChunkData->Voxels[i], Voxel_Filled) );
         }
+
       }
     }
   }
@@ -446,7 +486,7 @@ UpdateCameraP(platform *Plat, world *World, canonical_position NewTarget, camera
     Camera->DistanceFromTarget += MouseDelta.y*100.0f;
   }
 
-  if (Camera->DistanceFromTarget >= 0)
+  if (Camera->DistanceFromTarget <= 0)
   {
     Camera->DistanceFromTarget = CAMERA_FOCAL_LENGTH;
   }

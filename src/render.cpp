@@ -1191,6 +1191,10 @@ BufferChunkMesh(
   if ( Chunk->Mesh.At == 0)
     return;
 
+#if DEBUG_CHUNK_AABB
+  DEBUG_DrawChunkAABB(Dest, Graphics, WorldP, WorldChunkDim, PINK, 0.1f);
+#endif
+
   v3 ModelBasisP =
     GetRenderP( WorldChunkDim, Canonical_Position(Offset, WorldP), Graphics->Camera);
 
@@ -2061,8 +2065,6 @@ CanBuildWorldChunkBoundary(world *World, world_chunk *Chunk)
 
   world_position ChunkP = Chunk->WorldP;
 
-  Result &= IsSet(Chunk, Chunk_BuildMesh );
-
   // Bail early to save the cache most of the time.. does this even help?
   if (!Result) return Result;
 
@@ -2203,8 +2205,6 @@ BufferWorldChunk(
     Draw0thLod( GameState, Chunk, ChunkRenderOffset);
   }
 
-  DEBUG_DrawChunkAABB( GameState->world, Chunk, GameState->Camera, Quaternion(), 0);
-
 #endif
 
   return;
@@ -2232,8 +2232,8 @@ BufferWorld(world *World, graphics *Graphics)
       {
         /* DEBUG_DrawChunkAABB( World, Chunk, Camera, Quaternion(), BLUE ); */
 
-        if ( IsSet( Chunk, Chunk_BuildMesh  ) )
-          BuildWorldChunkMesh(World, Chunk, World->ChunkDim);
+        /* if ( IsSet( Chunk, Chunk_BuildMesh  ) ) */
+        /*   BuildWorldChunkMesh(World, Chunk, World->ChunkDim); */
 
         BufferWorldChunk(World, Chunk, Graphics);
 

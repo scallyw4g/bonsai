@@ -118,6 +118,7 @@ struct input
 
   input_event RMB;
   input_event LMB;
+  input_event MMB;
   input_event W;
   input_event A;
   input_event S;

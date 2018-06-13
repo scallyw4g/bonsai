@@ -34,11 +34,10 @@ enum chunk_flag
   Chunk_Uninitialized   = 0 << 0,
   Chunk_Initialized     = 1 << 1,
 
-  Chunk_BuildMesh       = 1 << 2,
-  Chunk_Queued          = 1 << 3,
-  Chunk_Garbage         = 1 << 4,
-  Chunk_Collected       = 1 << 5,
-  /* Chunk_LodGenerated = 1 << 6, */
+  Chunk_Queued          = 1 << 2,
+  Chunk_Garbage         = 1 << 3,
+  Chunk_Collected       = 1 << 4,
+  /* Chunk_LodGenerated = 1 << 5, */
 };
 
 enum voxel_flag
@@ -195,6 +194,8 @@ struct camera
   r32 Pitch;
   r32 Roll;
   r32 Yaw;
+
+  r32 DistanceFromTarget;
 
   v3 Front;
   v3 Right;
@@ -895,7 +896,7 @@ AllocateChunk(memory_arena *WorldStorage, chunk_dimension Dim)
   }
 
   // TODO(Jesse): Allocate this based on actual need?
-  AllocateMesh(&Result->Mesh, 15000, WorldStorage);
+  AllocateMesh(&Result->Mesh, 25000, WorldStorage);
 
   ZeroChunk(Result, Volume(Dim));
 
@@ -1055,6 +1056,16 @@ NotFilledInChunk( chunk_data *Chunk, voxel_position VoxelP, chunk_dimension Dim)
 {
   b32 Result = !IsFilledInChunk(Chunk, VoxelP, Dim);
   return Result;
+}
+
+inline b32
+NotFilledInChunk(chunk_data *Chunk, s32 Index)
+{
+  Assert(Chunk);
+  Assert(Index > -1);
+
+  b32 NotFilled = !IsSet(&Chunk->Voxels[Index], Voxel_Filled);
+  return NotFilled;
 }
 
 inline b32

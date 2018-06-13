@@ -25,7 +25,7 @@
 inline void
 RightFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
-  TIMED_FUNCTION();
+  /* TIMED_FUNCTION(); */
   v3 MaxP = MinP + Diameter;
 
   //  0    1
@@ -61,7 +61,7 @@ global_variable v3 RightFaceNormalData[] =
 inline void
 LeftFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
-  TIMED_FUNCTION();
+  /* TIMED_FUNCTION(); */
   r32 Temp[] = {
     MinP.x , MinP.y +  Diameter.y , MinP.z +  Diameter.z ,
     MinP.x , MinP.y               , MinP.z               ,
@@ -89,7 +89,7 @@ global_variable v3 LeftFaceNormalData[] =
 inline void
 BackFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
-  TIMED_FUNCTION();
+  /* TIMED_FUNCTION(); */
   v3 MaxP = MinP + Diameter;
 
   //  0    1
@@ -121,7 +121,7 @@ global_variable v3 BackFaceNormalData[] =
 inline void
 FrontFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
-  TIMED_FUNCTION();
+  /* TIMED_FUNCTION(); */
   r32 Temp[] = {
     MinP.x + Diameter.x , MinP.y + Diameter.y , MinP.z + Diameter.z ,
     MinP.x              , MinP.y + Diameter.y , MinP.z              ,
@@ -149,7 +149,7 @@ global_variable v3 FrontFaceNormalData[] =
 inline void
 TopFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
-  TIMED_FUNCTION();
+  /* TIMED_FUNCTION(); */
   v3 MaxP = MinP + Diameter;
 
   //  0    1
@@ -182,7 +182,7 @@ global_variable v3 TopFaceNormalData[] =
 inline void
 BottomFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
-  TIMED_FUNCTION();
+  /* TIMED_FUNCTION(); */
   r32 Temp[] = {
     MinP.x + Diameter.x , MinP.y + Diameter.y , MinP.z ,
     MinP.x              , MinP.y              , MinP.z ,

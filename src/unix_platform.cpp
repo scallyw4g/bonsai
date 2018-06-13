@@ -340,6 +340,16 @@ ProcessOsMessages(os *Os, platform *Plat)
           Plat->Input.LMB.WasPressed = True;
           Plat->Input.LMB.IsDown = True;
         }
+        if (Event.xbutton.button == Button2)
+        {
+          Plat->Input.MMB.WasPressed = True;
+          Plat->Input.MMB.IsDown = True;
+        }
+        if (Event.xbutton.button == Button3)
+        {
+          Plat->Input.RMB.WasPressed = True;
+          Plat->Input.RMB.IsDown = True;
+        }
       } break;
 
       case ButtonRelease:
@@ -348,6 +358,16 @@ ProcessOsMessages(os *Os, platform *Plat)
         {
           Plat->Input.LMB.WasPressed = False;
           Plat->Input.LMB.IsDown = False;
+        }
+        if (Event.xbutton.button == Button2)
+        {
+          Plat->Input.MMB.WasPressed = False;
+          Plat->Input.MMB.IsDown = False;
+        }
+        if (Event.xbutton.button == Button3)
+        {
+          Plat->Input.RMB.WasPressed = False;
+          Plat->Input.RMB.IsDown = False;
         }
       } break;
 

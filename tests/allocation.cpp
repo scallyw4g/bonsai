@@ -7,28 +7,7 @@
 #include <shader.cpp>
 #include <debug.cpp>
 
-#define RED_TERMINAL "\x1b[31m"
-#define BLUE_TERMINAL "\x1b[34m"
-#define GREEN_TERMINAL "\x1b[32m"
-#define WHITE_TERMINAL "\x1b[37m"
-
-#define PrevLine "\x1b[F"
-#define Newline "\n"
-
-u32 TestsFailed = 0;
-u32 TestsPassed = 0;
-
-#define TestThat(condition)                                                                                 \
-  if (!(condition)) {                                                                                       \
-    ++TestsFailed;                                                                                          \
-    Debug(RED_TERMINAL "   Failed" WHITE_TERMINAL " - '%s' during %s " Newline, #condition, __FUNCTION__ ); \
-    PlatformDebugStacktrace();                                                                              \
-    Debug(Newline Newline);                                                                                 \
-  } else {                                                                                                  \
-    ++TestsPassed;                                                                                          \
-    Debug(PrevLine GREEN_TERMINAL " %u " WHITE_TERMINAL "Tests Passed", TestsPassed);                       \
-  }
-
+#include <test_utils.cpp>
 
 
 struct test_struct_1k
@@ -527,8 +506,7 @@ UnprotectedAllocations()
 s32
 main()
 {
-    Debug("\n%s", BLUE_TERMINAL "---" WHITE_TERMINAL " Starting Allocation Tests " BLUE_TERMINAL "---" WHITE_TERMINAL);
-    Debug("%s\n", BLUE_TERMINAL "------------------------------------------------" WHITE_TERMINAL);
+  TestSuiteBegin("Allocation");
 
 #if MEMPROTECT_OVERFLOW
     ArenaAllocation();
@@ -542,10 +520,7 @@ main()
     UnprotectedAllocations();
 #endif
 
-  Debug("\n%s\n", BLUE_TERMINAL "------------------------------------------------" WHITE_TERMINAL);                                                                                          \
-  Debug(GREEN_TERMINAL " %u " WHITE_TERMINAL "Tests Passed", TestsPassed);
-  Debug(RED_TERMINAL   " %u " WHITE_TERMINAL "Tests Failed", TestsFailed);
-  Debug(Newline);
+  TestSuiteEnd();
 
   return 0;
 }

@@ -14,7 +14,7 @@ BufferVertsDirect(
     v4 *Colors
   )
 {
-  TIMED_FUNCTION();
+  /* TIMED_FUNCTION(); */
   if (BufferIsFull(Dest, NumVerts))
   {
     Assert(false);
@@ -40,7 +40,7 @@ BufferVertsDirect(
     v4 *Colors
   )
 {
-  TIMED_FUNCTION();
+  /* TIMED_FUNCTION(); */
   if (BufferIsFull(Dest, NumVerts))
   {
     Assert(false);
@@ -69,7 +69,7 @@ BufferVertsDirect(
     v3 Scale
   )
 {
-  TIMED_FUNCTION();
+  /* TIMED_FUNCTION(); */
   if (BufferIsFull(Dest, NumVerts))
   {
     Assert(false);
@@ -162,7 +162,7 @@ BufferVertsChecked(
     v3 Scale = V3(1)
   )
 {
-  TIMED_FUNCTION();
+  /* TIMED_FUNCTION(); */
 
   if (BufferIsFull(Target, NumVerts))
   {
@@ -195,7 +195,7 @@ BufferVerts(
     graphics *Graphics
   )
 {
-  TIMED_FUNCTION();
+  /* TIMED_FUNCTION(); */
 
 #if 1
   BufferVertsChecked(Dest, Graphics, Source->At, Source->Verts,
@@ -230,8 +230,6 @@ BufferVerts(
 void
 BuildEntityMesh(chunk_data *chunk, chunk_dimension Dim)
 {
-  UnSetFlag(chunk, Chunk_BuildMesh  );
-
   for ( int z = 0; z < Dim.z ; ++z )
   {
     for ( int y = 0; y < Dim.y ; ++y )
@@ -304,13 +302,129 @@ BuildEntityMesh(chunk_data *chunk, chunk_dimension Dim)
 }
 
 void
+BuildWorldChunkMesh(world_chunk *ReadChunk, chunk_dimension ReadChunkDim, world_chunk *WriteChunk, chunk_dimension WriteChunkDim)
+{
+  /* TIMED_FUNCTION(); */
+
+  chunk_data *WriteChunkData = WriteChunk->Data;
+  chunk_data *ReadChunkData = ReadChunk->Data;
+
+  Assert(IsSet(ReadChunk, Chunk_Initialized));
+  Assert(IsSet(WriteChunk, Chunk_Initialized));
+
+  Assert(NotSet(WriteChunkData, Chunk_Queued));
+  Assert(NotSet(ReadChunkData, Chunk_Queued));
+
+  voxel_position rightVoxel;
+  voxel_position leftVoxel;
+  voxel_position topVoxel;
+  voxel_position botVoxel;
+  voxel_position frontVoxel;
+  voxel_position backVoxel;
+
+  s32 rightVoxelReadIndex;
+  s32 leftVoxelReadIndex;
+  s32 topVoxelReadIndex;
+  s32 botVoxelReadIndex;
+  s32 frontVoxelReadIndex;
+  s32 backVoxelReadIndex;
+
+  random_series ColorEntropy = {33453};
+
+  for ( int z = 0; z < WriteChunkDim.z ; ++z )
+  {
+    for ( int y = 0; y < WriteChunkDim.y ; ++y )
+    {
+      for ( int x = 0; x < WriteChunkDim.x ; ++x )
+      {
+        voxel_position CurrentP  = Voxel_Position(x,y,z);
+
+        v4 Perturb = 0.08f*V4(RandomBilateral(&ColorEntropy),
+                              RandomBilateral(&ColorEntropy),
+                              RandomBilateral(&ColorEntropy),
+                              1.0f);
+
+        if ( NotFilledInChunk( WriteChunkData, CurrentP, WriteChunkDim ) )
+          continue;
+
+        v3 Diameter = V3(1.0f);
+        v3 VertexData[FACE_VERT_COUNT];
+        v4 FaceColors[FACE_VERT_COUNT];
+
+        voxel *Voxel = &WriteChunkData->Voxels[GetIndex(CurrentP, WriteChunkDim)];
+        FillColorArray(Voxel->Color, FaceColors, FACE_VERT_COUNT);
+
+#if 0
+        for (u32 ColorIndex = 0;
+            ColorIndex < FACE_VERT_COUNT;
+            ++ColorIndex)
+        {
+          FaceColors[ColorIndex] += Perturb*FaceColors[0];
+        }
+#endif
+
+        rightVoxel = CurrentP + Voxel_Position(1, 0, 0);
+        rightVoxelReadIndex = GetIndex(rightVoxel+1, ReadChunkDim);
+
+        leftVoxel  = CurrentP - Voxel_Position(1, 0, 0);
+        leftVoxelReadIndex  = GetIndex(leftVoxel+1, ReadChunkDim);
+
+        topVoxel   = CurrentP + Voxel_Position(0, 0, 1);
+        topVoxelReadIndex   = GetIndex(topVoxel+1, ReadChunkDim);
+
+        botVoxel   = CurrentP - Voxel_Position(0, 0, 1);
+        botVoxelReadIndex   = GetIndex(botVoxel+1, ReadChunkDim);
+
+        frontVoxel = CurrentP + Voxel_Position(0, 1, 0);
+        frontVoxelReadIndex = GetIndex(frontVoxel+1, ReadChunkDim);
+
+        backVoxel  = CurrentP - Voxel_Position(0, 1, 0);
+        backVoxelReadIndex  = GetIndex(backVoxel+1, ReadChunkDim);
+
+        // FIXME(Jesse): This should use a BufferVertsChecked path
+        if ( NotFilledInChunk( ReadChunkData, rightVoxelReadIndex) )
+        {
+          RightFaceVertexData( V3(CurrentP), Diameter, VertexData);
+          BufferVertsDirect(&WriteChunkData->Mesh, 6, VertexData, RightFaceNormalData, FaceColors);
+        }
+        if ( NotFilledInChunk( ReadChunkData, leftVoxelReadIndex) )
+        {
+          LeftFaceVertexData( V3(CurrentP), Diameter, VertexData);
+          BufferVertsDirect(&WriteChunkData->Mesh, 6, VertexData, LeftFaceNormalData, FaceColors);
+        }
+        if ( NotFilledInChunk( ReadChunkData, botVoxelReadIndex) )
+        {
+          BottomFaceVertexData( V3(CurrentP), Diameter, VertexData);
+          BufferVertsDirect(&WriteChunkData->Mesh, 6, VertexData, BottomFaceNormalData, FaceColors);
+        }
+        if ( NotFilledInChunk( ReadChunkData, topVoxelReadIndex) )
+        {
+          TopFaceVertexData( V3(CurrentP), Diameter, VertexData);
+          BufferVertsDirect(&WriteChunkData->Mesh, 6, VertexData, TopFaceNormalData, FaceColors);
+        }
+        if ( NotFilledInChunk( ReadChunkData, frontVoxelReadIndex) )
+        {
+          FrontFaceVertexData( V3(CurrentP), Diameter, VertexData);
+          BufferVertsDirect(&WriteChunkData->Mesh, 6, VertexData, FrontFaceNormalData, FaceColors);
+        }
+        if ( NotFilledInChunk( ReadChunkData, backVoxelReadIndex) )
+        {
+          BackFaceVertexData( V3(CurrentP), Diameter, VertexData);
+          BufferVertsDirect(&WriteChunkData->Mesh, 6, VertexData, BackFaceNormalData, FaceColors);
+        }
+      }
+    }
+  }
+}
+
+void
 BuildWorldChunkMesh(world *World, world_chunk *WorldChunk, chunk_dimension WorldChunkDim)
 {
   TIMED_FUNCTION();
 
   chunk_data *chunk = WorldChunk->Data;
 
-  UnSetFlag( chunk, Chunk_BuildMesh  );
+  Assert(IsSet(chunk, Chunk_Initialized));
 
   Assert(NotSet(chunk, Chunk_Queued));
 

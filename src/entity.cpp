@@ -520,6 +520,8 @@ EntityWorldCollision(world *World, entity *Entity, collision_event *Event )
         world_chunk *Chunk = Event->Chunk;
         Chunk->Data->Voxels[i] = {};
         ZeroMesh(&Chunk->Data->Mesh);
+        NotImplemented;
+        // TODO(Jesse): This path needs to call CanBuildWorldChunkMesh or something similar
         BuildWorldChunkMesh(World, Chunk, WORLD_CHUNK_DIM);
       }
       Unspawn(Entity);
@@ -884,7 +886,7 @@ SimulateAndRenderParticleSystem(
     v3 RenderSpaceP = GetRenderP(SystemEntity->P, Graphics->Camera);
     DrawVoxel( Dest, Graphics, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, 3.0f );
 
-#if 1
+#if 0
     if (RandomUnilateral(&System->Entropy) > 0.9)
     {
       DoLight(Graphics->Lights, RenderSpaceP + Particle->Offset, EmissionColor);
@@ -893,11 +895,9 @@ SimulateAndRenderParticleSystem(
   }
 
 
-#if 0
+#if 1
   v3 RenderSpaceP = GetRenderP(SystemEntity->P, Graphics->Camera) + System->SpawnRegion.Center;
   DoLight(Graphics->Lights, RenderSpaceP, 10.0f*EmissionColor);
-  DoLight(Graphics->Lights, RenderSpaceP, 10.0f*EmissionColor);
-  DrawVoxel( Dest, Graphics, RenderSpaceP, RED, V3(1) );
 #endif
 
   return;

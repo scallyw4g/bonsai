@@ -15,19 +15,21 @@ set( TESTS ${ROOT}/tests )
 set( SRC ${ROOT}/src )
 set( BIN ${ROOT}/bin )
 
+# Engine include dirs
+include_directories(${SRC})
+include_directories(${SRC}/datatypes)
+include_directories(${TESTS})
+
 set( LIBRARY_OUTPUT_PATH ${BIN} )
 set( EXECUTABLE_OUTPUT_PATH ${BIN} )
 
 add_executable(Bonsai ${SRC}/platform.cpp)
 add_executable(Server ${SRC}/net/server.cpp)
 add_executable(test_m4 ${TESTS}/m4.cpp)
+add_executable(test_chunk ${TESTS}/chunk.cpp)
 add_executable(test_string ${TESTS}/string.cpp)
 add_executable(test_objloader ${TESTS}/objloader.cpp)
 add_executable(test_allocation ${TESTS}/allocation.cpp)
-
-# Engine include dirs
-include_directories(${SRC})
-include_directories(${SRC}/datatypes)
 
 add_definitions( -DGL_GLEXT_PROTOTYPES=1 )
 
@@ -50,6 +52,7 @@ target_link_libraries(Bonsai ${OPENGL_LIBRARIES})
 target_link_libraries(Game ${OPENGL_LIBRARIES})
 target_link_libraries(Server ${OPENGL_LIBRARIES})
 target_link_libraries(test_m4 ${OPENGL_LIBRARIES})
+target_link_libraries(test_chunk ${OPENGL_LIBRARIES})
 target_link_libraries(test_string ${OPENGL_LIBRARIES})
 target_link_libraries(test_objloader ${OPENGL_LIBRARIES})
 target_link_libraries(test_allocation ${OPENGL_LIBRARIES})
@@ -59,6 +62,7 @@ add_custom_target(run /usr/bin/optirun ${BIN}/Bonsai
                   COMMENT "Running Bonsai")
 
 add_custom_target(tests ${BIN}/test_m4
+                        ${BIN}/test_chunk
                         ${BIN}/test_string
                         ${BIN}/test_objloader
                         ${BIN}/test_allocation
@@ -68,6 +72,7 @@ target_compile_definitions(Bonsai  PUBLIC BONSAI_INTERNAL=1)
 target_compile_definitions(Server  PUBLIC BONSAI_INTERNAL=1)
 target_compile_definitions(Game    PUBLIC BONSAI_INTERNAL=1)
 target_compile_definitions(test_m4 PUBLIC BONSAI_INTERNAL=1)
+target_compile_definitions(test_chunk PUBLIC BONSAI_INTERNAL=1)
 target_compile_definitions(test_string PUBLIC BONSAI_INTERNAL=1)
 target_compile_definitions(test_objloader PUBLIC BONSAI_INTERNAL=1)
 target_compile_definitions(test_allocation PUBLIC BONSAI_INTERNAL=1)
@@ -113,6 +118,10 @@ if (UNIX)
   target_link_libraries(Bonsai X11)                       # Xlib
   target_link_libraries(Bonsai ${CMAKE_THREAD_LIBS_INIT}) # -lpthread
   target_link_libraries(Bonsai ${CMAKE_DL_LIBS})          # .so loader
+
+  target_link_libraries(test_chunk X11)                       # Xlib
+  target_link_libraries(test_chunk ${CMAKE_THREAD_LIBS_INIT}) # -lpthread
+  target_link_libraries(test_chunk ${CMAKE_DL_LIBS})          # .so loader
 
   target_link_libraries(test_m4 X11)                       # Xlib
   target_link_libraries(test_m4 ${CMAKE_THREAD_LIBS_INIT}) # -lpthread
