@@ -15,6 +15,14 @@
 #include <X11/keysymdef.h>
 
 
+debug_global __thread u64 ThreadLocal_ThreadIndex = 0;
+
+inline b32
+AtomicCompareExchange( volatile char **Source, const char *Exchange, const char *Comparator )
+{
+  bool Result = __sync_bool_compare_and_swap ( Source, Comparator, Exchange );
+  return Result;
+}
 
 inline bool
 AtomicCompareExchange( volatile unsigned int *Source, unsigned int Exchange, unsigned int Comparator )
@@ -40,16 +48,33 @@ PrintSemValue( semaphore *Semaphore )
 
 
 
+// TODO(Jesse): Have these initialize a static so we don't eat a syscall every time
 u64
 PlatformGetPageSize()
 {
-  // TODO(Jesse): Have this initialize a static so we don't eat a syscall every
   // time this gets called
   u64 InvalidSysconfReturn = ((u64)-1);
   u64 PageSize = (u64)sysconf(_SC_PAGESIZE);
   Assert(PageSize != InvalidSysconfReturn);
   return PageSize;
 }
+
+s32
+GetLogicalCoreCount()
+{
+  s32 Result = (s32)sysconf(_SC_NPROCESSORS_ONLN);
+  return Result;
+}
+// TODO(Jesse): Have these initialize a static so we don't eat a syscall every time
+
+u32
+GetWorkerThreadCount()
+{
+  u32 LogicalCoreCount = GetLogicalCoreCount();
+  u32 ThreadCount = LogicalCoreCount -1 + DEBUG_THREAD_COUNT_BIAS; // -1 because we already have a main thread
+  return ThreadCount;
+}
+
 
 u8*
 PlatformProtectPage(u8* Mem)
@@ -189,13 +214,6 @@ CreateSemaphore(void)
   semaphore Result;
   sem_init(&Result, 0, 0);
 
-  return Result;
-}
-
-s32
-GetLogicalCoreCount()
-{
-  s32 Result = (s32)sysconf(_SC_NPROCESSORS_ONLN);
   return Result;
 }
 

@@ -116,7 +116,7 @@ struct selected_arenas
 
 #define REGISTERED_MEMORY_ARENA_COUNT 32
 #define ROOT_SCOPE_COUNT 64
-#define META_TABLE_SIZE 4096
+#define META_TABLE_SIZE (16 * 1024)
 struct debug_state
 {
   memory_arena            *Memory;
@@ -142,7 +142,7 @@ struct debug_state
   s32 FreeScopeCount;
   u64 NumScopes;
 
-  push_metadata MetaTable[META_TABLE_SIZE];
+  push_metadata **MetaTables;
 
   registered_memory_arena RegisteredMemoryArenas[REGISTERED_MEMORY_ARENA_COUNT];
 

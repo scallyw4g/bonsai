@@ -35,12 +35,20 @@ DebugRegisterArena(const char *Name, memory_arena *Arena, debug_state *DebugStat
   {
     registered_memory_arena *Current = &DebugState->RegisteredMemoryArenas[Index];
 
-    if (!Current->Name)
+    const char *CurrentName = Current->Name;
+    if (!CurrentName)
     {
-      Current->Name = Name;
-      Current->Arena = Arena;
-      Registered = True;
-      break;
+      if (AtomicCompareExchange( (volatile char **)&Current->Name, Name, CurrentName ))
+      {
+        Current->Arena = Arena;
+        Registered = True;
+        break;
+      }
+      else
+      {
+        Debug("Contiue Branch");
+        continue;
+      }
     }
   }
 
@@ -152,12 +160,11 @@ inline void*
 PushStructChecked_(memory_arena *Arena, umm StructSize, umm StructCount, const char* Name, s32 Line, const char* File)
 {
   umm PushSize = StructCount * StructSize;
-
   void* Result = PushStruct( Arena, PushSize );
 
 #ifndef BONSAI_NO_PUSH_METADATA
   push_metadata ArenaMetadata = {Name, HashArena(Arena), HashArenaHead(Arena), StructSize, StructCount, 1};
-  WritePushMetadata(&ArenaMetadata, GetDebugState()->MetaTable);
+  WritePushMetadata(&ArenaMetadata, GetDebugState()->MetaTables[ThreadLocal_ThreadIndex]);
 #endif
 
   if (!Result)
@@ -300,6 +307,22 @@ InitDebugState(platform *Plat, memory_arena *DebugMemory)
   AdvanceScopeTrees(GlobalDebugState);
 
   GlobalDebugState->Initialized = True;
+
+  u32 TotalThreadCount = GetWorkerThreadCount() + 1;
+
+  {
+    umm PushSize = TotalThreadCount * sizeof(push_metadata*);
+    GlobalDebugState->MetaTables = (push_metadata**)PushStruct(DebugMemory, PushSize);
+  }
+
+  for (u32 ThreadIndex = 0;
+      ThreadIndex < TotalThreadCount;
+      ++ThreadIndex)
+  {
+    umm PushSize = META_TABLE_SIZE * sizeof(push_metadata);
+    GlobalDebugState->MetaTables[ThreadIndex] = (push_metadata*)PushStruct(DebugMemory, PushSize);
+  }
+
 
   AllocateMesh(&GlobalDebugState->LineMesh, 1024, DebugMemory);
 
@@ -1302,21 +1325,28 @@ BufferDebugPushMetaData(ui_render_group *Group, selected_arenas *SelectedArenas,
 
 
   // Pick out relevant metadata and write to collation table
-  for ( u32 MetaIndex = 0;
-      MetaIndex < META_TABLE_SIZE;
-      ++MetaIndex)
-  {
-    push_metadata *Meta = &GetDebugState()->MetaTable[MetaIndex];
 
-    for (u32 ArenaIndex = 0;
-        ArenaIndex < SelectedArenas->Count;
-        ++ArenaIndex)
+  u32 TotalThreadCount = GetWorkerThreadCount() + 1;
+  for ( u32 ThreadIndex = 0;
+      ThreadIndex < TotalThreadCount;
+      ++ThreadIndex)
+  {
+    for ( u32 MetaIndex = 0;
+        MetaIndex < META_TABLE_SIZE;
+        ++MetaIndex)
     {
-      selected_memory_arena *Selected = &SelectedArenas->Arenas[ArenaIndex];
-      if (Meta->HeadArenaHash == CurrentArenaHead &&
-          Meta->ArenaHash == Selected->ArenaHash )
+      push_metadata *Meta = &GetDebugState()->MetaTables[ThreadIndex][MetaIndex];
+
+      for (u32 ArenaIndex = 0;
+          ArenaIndex < SelectedArenas->Count;
+          ++ArenaIndex)
       {
-        CollateMetadata(Meta, CollatedMetaTable);
+        selected_memory_arena *Selected = &SelectedArenas->Arenas[ArenaIndex];
+        if (Meta->HeadArenaHash == CurrentArenaHead &&
+            Meta->ArenaHash == Selected->ArenaHash )
+        {
+          CollateMetadata(Meta, CollatedMetaTable);
+        }
       }
     }
   }

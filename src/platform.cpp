@@ -33,6 +33,7 @@ global_variable game_thread_callback_proc GameThreadCallback;
 
 
 
+
 b32
 GameLibIsNew(const char *LibPath)
 {
@@ -62,6 +63,13 @@ ThreadMain(void *Input)
 
   work_queue *Queue = ThreadParams->Queue;
 
+  memory_arena *ThreadArena = PlatformAllocateArena(128);
+  ThreadArena->MemProtect = False;
+
+  ThreadLocal_ThreadIndex = ThreadParams->Self.ThreadIndex;
+
+  DEBUG_REGISTER_ARENA(ThreadArena, GetDebugState());
+
   for (;;)
   {
     ThreadSleep( &Queue->Semaphore );
@@ -75,16 +83,14 @@ ThreadMain(void *Input)
                                         DequeueIndex);
       if ( Exchanged )
       {
-        memory_arena *ThreadArena = PlatformAllocateArena(1024);
-        ThreadArena->MemProtect = False;
-
         work_queue_entry Entry = Queue->Entries[DequeueIndex];
         GameThreadCallback(&Entry, ThreadArena);
-
-        PlatformUnprotectArena(ThreadArena);
-        VaporizeArena(ThreadArena);
       }
     }
+
+    PlatformUnprotectArena(ThreadArena);
+    RewindArena(ThreadArena);
+
   }
 }
 
@@ -244,8 +250,7 @@ PlatformInit(platform *Plat, memory_arena *Memory)
   Plat->Memory = Memory;
 
   u32 LogicalCoreCount = GetLogicalCoreCount();
-  u32 ThreadCount = LogicalCoreCount -1 + DEBUG_THREAD_COUNT_BIAS; // -1 because we already have a main thread
-
+  u32 ThreadCount = GetWorkerThreadCount();
   Info("Detected %d Logical cores, creating %d threads", LogicalCoreCount, ThreadCount);
 
   Plat->Queue.EnqueueIndex = 0;
@@ -263,7 +268,7 @@ PlatformInit(platform *Plat, memory_arena *Memory)
       ++ ThreadIndex )
   {
     thread_startup_params *Params = &Plat->Threads[ThreadIndex];
-    Params->Self.ThreadIndex = ThreadIndex;
+    Params->Self.ThreadIndex = ThreadIndex + 1;
     Params->Queue = Queue;
 
     CreateThread( ThreadMain, Params );
@@ -408,20 +413,25 @@ FrameEnd(game_state *GameState)
      Global_DrawCalls[DrawCountIndex] = NullDrawCall;
   }
 
-  for ( u32 MetaIndex = 0;
-      MetaIndex < META_TABLE_SIZE;
-      ++MetaIndex)
+  u32 TotalThreadCount = GetWorkerThreadCount() + 1;
+  for ( u32 ThreadIndex = 0;
+      ThreadIndex < TotalThreadCount;
+      ++ThreadIndex)
   {
-    push_metadata *Meta = &GetDebugState()->MetaTable[MetaIndex];
-    if (Meta->ArenaHash == HashArena(TranArena))
+    for ( u32 MetaIndex = 0;
+        MetaIndex < META_TABLE_SIZE;
+        ++MetaIndex)
     {
-      Clear(Meta);
+      push_metadata *Meta = &GetDebugState()->MetaTables[ThreadIndex][MetaIndex];
+      if (Meta->ArenaHash == HashArena(TranArena))
+      {
+        Clear(Meta);
+      }
     }
   }
 
   PlatformUnprotectArena(TranArena);
-  TranArena->At = TranArena->Start;
-  TranArena->Pushes = 0;
+  RewindArena(TranArena);
 
   game_lights *Lights = GameState->Plat->Graphics->Lights;
   Lights->Count = 0;

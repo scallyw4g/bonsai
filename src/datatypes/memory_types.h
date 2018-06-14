@@ -72,7 +72,7 @@ void*
 PushStructChecked_(memory_arena *Arena, umm StructCount, umm StructSize, const char* Name, s32 Line, const char* File);
 
 #define PUSH_STRUCT_CHECKED(Type, Arena, Number) \
-  (Type*)PushStructChecked_( Arena, sizeof(Type), (umm)Number, #Type, __LINE__, __FILE__ );
+  (Type*)PushStructChecked_( Arena, sizeof(Type), (umm)Number, #Type, __LINE__, __FILE__ )
 
 #else
 
@@ -374,17 +374,29 @@ VaporizeArena(memory_arena *Arena)
   if(Arena->Prev)
   {
     VaporizeArena(Arena->Prev);
+    Arena->Prev = 0;
   }
 
   PlatformDeallocateArena(Arena);
 }
 
-/* inline void */
-/* Rewind(memory_arena *Arena) */
-/* { */
-/*   PlatformUnprotectArena(Arena->Prev); */
-/*   Deallocate(Arena->Prev); */
-/*   Arena->At = Arena->FirstUsableByte; */
-/* } */
+inline void
+RewindArena(memory_arena *Arena)
+{
+  if (Arena->Prev)
+  {
+    PlatformUnprotectArena(Arena->Prev);
+    VaporizeArena(Arena->Prev);
+    Arena->Prev = 0;
+  }
+
+  Arena->At = Arena->Start;
+
+#if BONSAI_INTERNAL
+  Arena->Pushes = 0;
+#endif
+
+  return;
+}
 
 
