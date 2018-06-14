@@ -90,7 +90,6 @@ ThreadMain(void *Input)
 
     PlatformUnprotectArena(ThreadArena);
     RewindArena(ThreadArena);
-
   }
 }
 
@@ -413,22 +412,6 @@ FrameEnd(game_state *GameState)
      Global_DrawCalls[DrawCountIndex] = NullDrawCall;
   }
 
-  u32 TotalThreadCount = GetWorkerThreadCount() + 1;
-  for ( u32 ThreadIndex = 0;
-      ThreadIndex < TotalThreadCount;
-      ++ThreadIndex)
-  {
-    for ( u32 MetaIndex = 0;
-        MetaIndex < META_TABLE_SIZE;
-        ++MetaIndex)
-    {
-      push_metadata *Meta = &GetDebugState()->MetaTables[ThreadIndex][MetaIndex];
-      if (Meta->ArenaHash == HashArena(TranArena))
-      {
-        Clear(Meta);
-      }
-    }
-  }
 
   PlatformUnprotectArena(TranArena);
   RewindArena(TranArena);

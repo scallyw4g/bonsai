@@ -380,6 +380,9 @@ VaporizeArena(memory_arena *Arena)
   PlatformDeallocateArena(Arena);
 }
 
+void
+ClearMetaRecordsFor(memory_arena *Arena);
+
 inline void
 RewindArena(memory_arena *Arena)
 {
@@ -394,6 +397,7 @@ RewindArena(memory_arena *Arena)
 
 #if BONSAI_INTERNAL
   Arena->Pushes = 0;
+  ClearMetaRecordsFor(Arena);
 #endif
 
   return;

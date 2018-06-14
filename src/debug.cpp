@@ -163,6 +163,10 @@ PushStructChecked_(memory_arena *Arena, umm StructSize, umm StructCount, const c
   void* Result = PushStruct( Arena, PushSize );
 
 #ifndef BONSAI_NO_PUSH_METADATA
+  // @meta_table_thread_bug
+  // FIXME(Jesse): Another thread reading from this meta table at the same
+  // time can cause a half-written record to get collated.  We need a lock in
+  // here to ensure that doesn't happen.
   push_metadata ArenaMetadata = {Name, HashArena(Arena), HashArenaHead(Arena), StructSize, StructCount, 1};
   WritePushMetadata(&ArenaMetadata, GetDebugState()->MetaTables[ThreadLocal_ThreadIndex]);
 #endif
@@ -175,6 +179,32 @@ PushStructChecked_(memory_arena *Arena, umm StructSize, umm StructCount, const c
   }
 
   return Result;
+}
+
+inline void
+ClearMetaRecordsFor(memory_arena *Arena)
+{
+  u32 TotalThreadCount = GetWorkerThreadCount() + 1;
+  for ( u32 ThreadIndex = 0;
+      ThreadIndex < TotalThreadCount;
+      ++ThreadIndex)
+  {
+    for ( u32 MetaIndex = 0;
+        MetaIndex < META_TABLE_SIZE;
+        ++MetaIndex)
+    {
+      push_metadata *Meta = &GetDebugState()->MetaTables[ThreadIndex][MetaIndex];
+      if (Meta->ArenaHash == HashArena(Arena))
+      {
+        // @meta_table_thread_bug
+        // FIXME(Jesse): Another thread writing to this meta record at the same
+        // time will corrupt this record. Put a lock around this clear.
+        Clear(Meta);
+      }
+    }
+  }
+
+  return;
 }
 
 b32
@@ -1326,6 +1356,10 @@ BufferDebugPushMetaData(ui_render_group *Group, selected_arenas *SelectedArenas,
 
   // Pick out relevant metadata and write to collation table
 
+  // @meta_table_thread_bug
+  // FIXME(Jesse): Another thread writing to this meta table at the same
+  // time can cause a half-written record to get collated.  We need a lock in
+  // here to ensure that doesn't happen.
   u32 TotalThreadCount = GetWorkerThreadCount() + 1;
   for ( u32 ThreadIndex = 0;
       ThreadIndex < TotalThreadCount;
