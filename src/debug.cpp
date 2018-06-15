@@ -106,10 +106,10 @@ GetRegisteredMemoryArena( memory_arena *Arena)
   return Result;
 }
 
-typedef b32 (*meta_comparator)(push_metadata*, push_metadata*);
 void
 WriteToMetaTable(push_metadata *Query, push_metadata *Table, meta_comparator Comparator)
 {
+
   u32 HashValue = (u32)(((u64)Query->Name & (u64)Query->ArenaHash) % META_TABLE_SIZE);
   u32 FirstHashValue = HashValue;
 
@@ -152,7 +152,11 @@ CollateMetadata(push_metadata *InputMeta, push_metadata *MetaTable)
 void
 WritePushMetadata(push_metadata *InputMeta, push_metadata *MetaTable)
 {
+  debug_state *DebugState = GetDebugState();
+  PlatformLockMutex(DebugState->MetaTableMutexes + ThreadLocal_ThreadIndex);
   WriteToMetaTable(InputMeta, MetaTable, PushesMatchExactly);
+  PlatformUnlockMutex(DebugState->MetaTableMutexes + ThreadLocal_ThreadIndex);
+
   return;
 }
 
@@ -184,6 +188,9 @@ PushStructChecked_(memory_arena *Arena, umm StructSize, umm StructCount, const c
 inline void
 ClearMetaRecordsFor(memory_arena *Arena)
 {
+  debug_state *DebugState = GetDebugState();
+  PlatformLockMutex(DebugState->MetaTableMutexes + ThreadLocal_ThreadIndex);
+
   u32 TotalThreadCount = GetWorkerThreadCount() + 1;
   for ( u32 ThreadIndex = 0;
       ThreadIndex < TotalThreadCount;
@@ -203,6 +210,8 @@ ClearMetaRecordsFor(memory_arena *Arena)
       }
     }
   }
+
+  PlatformUnlockMutex(DebugState->MetaTableMutexes + ThreadLocal_ThreadIndex);
 
   return;
 }
@@ -353,6 +362,15 @@ InitDebugState(platform *Plat, memory_arena *DebugMemory)
     GlobalDebugState->MetaTables[ThreadIndex] = (push_metadata*)PushStruct(DebugMemory, PushSize);
   }
 
+  GlobalDebugState->MetaTableMutexes = (mutex*)PushStruct(DebugMemory, sizeof(mutex)*TotalThreadCount);
+
+  for (u32 ThreadIndex = 0;
+      ThreadIndex < TotalThreadCount;
+      ++ThreadIndex)
+  {
+    mutex *Mutex = GlobalDebugState->MetaTableMutexes + ThreadIndex;
+    PlatformInitializeMutex(Mutex);
+  }
 
   AllocateMesh(&GlobalDebugState->LineMesh, 1024, DebugMemory);
 
@@ -1335,7 +1353,7 @@ GetAllocationSize(push_metadata *Meta)
 }
 
 layout *
-BufferDebugPushMetaData(ui_render_group *Group, selected_arenas *SelectedArenas, umm CurrentArenaHead, table_layout *Table, v2 Basis)
+BufferDebugPushMetaData(debug_state *DebugState, ui_render_group *Group, selected_arenas *SelectedArenas, umm CurrentArenaHead, table_layout *Table, v2 Basis)
 {
   push_metadata CollatedMetaTable[META_TABLE_SIZE] = {};
 
@@ -1361,6 +1379,15 @@ BufferDebugPushMetaData(ui_render_group *Group, selected_arenas *SelectedArenas,
   // time can cause a half-written record to get collated.  We need a lock in
   // here to ensure that doesn't happen.
   u32 TotalThreadCount = GetWorkerThreadCount() + 1;
+
+
+  for ( u32 ThreadIndex = 0;
+      ThreadIndex < TotalThreadCount;
+      ++ThreadIndex)
+  {
+    PlatformLockMutex(DebugState->MetaTableMutexes + ThreadIndex);
+  }
+
   for ( u32 ThreadIndex = 0;
       ThreadIndex < TotalThreadCount;
       ++ThreadIndex)
@@ -1383,6 +1410,13 @@ BufferDebugPushMetaData(ui_render_group *Group, selected_arenas *SelectedArenas,
         }
       }
     }
+  }
+
+  for ( u32 ThreadIndex = 0;
+      ThreadIndex < TotalThreadCount;
+      ++ThreadIndex)
+  {
+    PlatformUnlockMutex(DebugState->MetaTableMutexes + ThreadIndex);
   }
 
   // Densely pack collated records
@@ -1608,7 +1642,7 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState, v2 OriginalB
                                    BargraphTable->Layout.Clip.Max.x),
                       GetAbsoluteAt(&MemoryHudArenaTable.Layout).y };
 
-        BufferDebugPushMetaData(Group, SelectedArenas, HashArenaHead(Current->Arena), MetaTable, BasisP);
+        BufferDebugPushMetaData(DebugState, Group, SelectedArenas, HashArenaHead(Current->Arena), MetaTable, BasisP);
       }
 
       MemoryHudArenaTable.Layout.At = {};

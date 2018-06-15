@@ -47,6 +47,40 @@ PrintSemValue( semaphore *Semaphore )
 #endif
 
 
+void
+PlatformInitializeMutex(mutex *Mutex)
+{
+  pthread_mutex_init(Mutex, NULL);
+  return;
+}
+
+void
+PlatformUnlockMutex(mutex *Mutex)
+{
+  s32 Fail = pthread_mutex_unlock(Mutex);
+
+  if (Fail)
+  {
+    Error("Failed to un-lock mutex");
+    Assert(False);
+  }
+
+  return;
+}
+
+void
+PlatformLockMutex(mutex *Mutex)
+{
+  s32 Fail = pthread_mutex_lock(Mutex);
+
+  if (Fail)
+  {
+    Error("Failed to aquire lock");
+    Assert(False);
+  }
+
+  return;
+}
 
 // TODO(Jesse): Have these initialize a static so we don't eat a syscall every time
 u64

@@ -143,6 +143,7 @@ struct debug_state
   u64 NumScopes;
 
   push_metadata **MetaTables;
+  mutex *MetaTableMutexes;
 
   registered_memory_arena RegisteredMemoryArenas[REGISTERED_MEMORY_ARENA_COUNT];
 
@@ -174,6 +175,8 @@ debug_global const u32 Global_DrawCallArrayLength = 128;
 debug_global debug_draw_call Global_DrawCalls[Global_DrawCallArrayLength] = {};
 debug_global debug_draw_call NullDrawCall = {};
 debug_global debug_state *GlobalDebugState = 0;
+
+typedef b32 (*meta_comparator)(push_metadata*, push_metadata*);
 
 inline debug_state*
 GetDebugState() {

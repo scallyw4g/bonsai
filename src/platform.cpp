@@ -67,7 +67,6 @@ ThreadMain(void *Input)
   ThreadArena->MemProtect = False;
 
   ThreadLocal_ThreadIndex = ThreadParams->Self.ThreadIndex;
-
   DEBUG_REGISTER_ARENA(ThreadArena, GetDebugState());
 
   for (;;)

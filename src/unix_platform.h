@@ -63,6 +63,8 @@ typedef Window window;
 typedef Display* display;
 typedef GLXContext gl_context;
 
+typedef pthread_mutex_t mutex;
+
 inline void
 WakeThread( semaphore *Semaphore )
 {
