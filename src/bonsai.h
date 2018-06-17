@@ -35,9 +35,8 @@ enum chunk_flag
   Chunk_Initialized     = 1 << 1,
 
   Chunk_Queued          = 1 << 2,
-  Chunk_Garbage         = 1 << 3,
-  Chunk_Collected       = 1 << 4,
-  /* Chunk_LodGenerated = 1 << 5, */
+  Chunk_Complete        = 1 << 3,
+
 };
 
 enum voxel_flag
@@ -810,10 +809,7 @@ FreeWorldChunk(world *World, world_chunk *chunk)
 {
   TIMED_FUNCTION();
 
-  // Only free chunks that have been initialized, or chunks that had previously
-  // been marked as garbage and have been flushed all the way through the world
-  // initialization queue.
-  if ( IsSet(chunk->Data->Flags, Chunk_Initialized) || IsSet(chunk->Data->Flags, Chunk_Collected) )
+  if ( chunk->Data->Flags == Chunk_Complete )
   {
     // Unlink from middle of linked list
     if (chunk->Prev)
@@ -839,13 +835,10 @@ FreeWorldChunk(world *World, world_chunk *chunk)
     World->FreeChunks[World->FreeChunkCount++] = chunk;
 
     ZeroChunk(chunk->Data, Volume(World->ChunkDim));
-
-    Assert( NotSet(chunk->Data->Flags, Chunk_Initialized) );
-    Assert( NotSet(chunk->Data->Flags, Chunk_Queued) );
   }
   else
   {
-    SetFlag(chunk, Chunk_Garbage);
+    // Wait on queued chunks to complete initialization / mesh-generation phase
   }
 
   return;
@@ -919,6 +912,9 @@ InsertChunkIntoWorld(world *World, world_chunk *chunk)
       Last = Last->Next;
     }
 
+    Assert(chunk->Next == 0);
+    Assert(chunk->Prev == 0);
+
     Last->Next = chunk;
     chunk->Prev = Last;
   }
@@ -931,14 +927,11 @@ InsertChunkIntoWorld(world *World, world_chunk *chunk)
 }
 
 world_chunk*
-AllocateWorldChunk(memory_arena *Storage, world *World, world_position WorldP, chunk_dimension Dim = WORLD_CHUNK_DIM)
+AllocateWorldChunk(memory_arena *Storage, world_position WorldP, chunk_dimension Dim = WORLD_CHUNK_DIM)
 {
   world_chunk *Result = PUSH_STRUCT_CHECKED(world_chunk, Storage, 1);
   Result->Data = AllocateChunk(Storage, Dim);
   Result->WorldP = WorldP;
-
-  if (World)
-    InsertChunkIntoWorld(World, Result);
 
   return Result;
 }
@@ -972,10 +965,7 @@ GetWorldChunk( world *World, world_position P )
     Result = Result->Next;
   }
 
-  if (Result)
-  {
-    Assert(Result->WorldP == P)
-  }
+  Assert(!Result || Result->WorldP == P);
 
   return Result;
 }

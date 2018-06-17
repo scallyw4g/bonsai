@@ -22,8 +22,8 @@ main()
   world_position  SynChunkP = World_Position(0);
 
   { // Ensure copy works as intended
-    world_chunk *SyntheticChunk = AllocateWorldChunk(Memory, 0, SynChunkP, SynChunkDim);
-    world_chunk *DestChunk = AllocateWorldChunk(Memory, 0, DestChunkP, DestChunkDim);
+    world_chunk *SyntheticChunk = AllocateWorldChunk(Memory, SynChunkP, SynChunkDim);
+    world_chunk *DestChunk = AllocateWorldChunk(Memory, DestChunkP, DestChunkDim);
 
     InitChunkPlane(0, SyntheticChunk, SynChunkDim, GRASS_GREEN);
     CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, DestChunkDim, Voxel_Position(1));
@@ -44,8 +44,8 @@ main()
   }
 
   { // Ensure copy works as intended
-    world_chunk *SyntheticChunk = AllocateWorldChunk(Memory, 0, SynChunkP, SynChunkDim);
-    world_chunk *DestChunk = AllocateWorldChunk(Memory, 0, DestChunkP, DestChunkDim);
+    world_chunk *SyntheticChunk = AllocateWorldChunk(Memory,SynChunkP, SynChunkDim);
+    world_chunk *DestChunk = AllocateWorldChunk(Memory, DestChunkP, DestChunkDim);
 
     InitChunkPlane(1, SyntheticChunk, SynChunkDim, GRASS_GREEN);
     CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, DestChunkDim, Voxel_Position(1));

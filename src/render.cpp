@@ -2181,11 +2181,8 @@ BufferWorldChunk(
   )
 {
   chunk_data *ChunkData = Chunk->Data;
-
-  if (NotSet(ChunkData, Chunk_Initialized))
-    return;
-
 #if 1
+  if (ChunkData->Flags == Chunk_Complete)
     BufferChunkMesh( &World->Mesh, World->ChunkDim, ChunkData, Chunk->WorldP, Graphics);
 #else
   if (CanBuildWorldChunkBoundary(world, Chunk))
@@ -2230,23 +2227,7 @@ BufferWorld(world *World, graphics *Graphics)
     {
       if ( (Chunk->WorldP >= Min && Chunk->WorldP < Max) )
       {
-        /* DEBUG_DrawChunkAABB( World, Chunk, Camera, Quaternion(), BLUE ); */
-
-        /* if ( IsSet( Chunk, Chunk_BuildMesh  ) ) */
-        /*   BuildWorldChunkMesh(World, Chunk, World->ChunkDim); */
-
         BufferWorldChunk(World, Chunk, Graphics);
-
-#if 0
-        if (GetDebugState()->Debug_RedrawEveryPush)
-        {
-          DrawGBufferToFullscreenQuad( Global_Plat, Graphics, WORLD_CHUNK_DIM);
-          glXSwapBuffers(Global_Os->Display, Global_Os->Window);
-          RuntimeBreak();
-          ClearFramebuffers(Graphics);
-        }
-#endif
-
         Chunk = Chunk->Next;
       }
       else

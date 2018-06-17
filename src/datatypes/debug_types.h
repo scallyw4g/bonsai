@@ -240,6 +240,8 @@ GetProfileScope(debug_state *State)
   return Result;
 }
 
+debug_global __thread u64 ThreadLocal_ThreadIndex = 0;
+
 struct debug_timed_function
 {
   u64 StartingCycleCount;

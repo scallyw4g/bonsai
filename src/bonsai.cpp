@@ -76,18 +76,6 @@ InitChunkPerlin(perlin_noise *Noise, world_chunk *WorldChunk, chunk_dimension Di
 {
   Assert(WorldChunk);
 
-#if DEBUG_OPTIMIZE_WORLD_GC
-  // If the chunk was marked as garbage before it had been initialized we can
-  // simply mark it as collected and skip it.
-  if ( IsSet(WorldChunk, Chunk_Garbage) )
-  {
-    SetFlag(WorldChunk, Chunk_Collected);
-    return;
-  }
-#endif
-
-  ZeroChunk(WorldChunk->Data, Volume(Dim));
-
   chunk_data *ChunkData = WorldChunk->Data;
   for ( s32 z = 0; z < Dim.z; ++ z)
   {
@@ -146,8 +134,7 @@ PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
 inline void
 QueueChunkForInit(game_state *GameState, work_queue *Queue, world_chunk *Chunk)
 {
-  Assert( NotSet(Chunk, Chunk_Queued ) );
-  Assert( NotSet(Chunk, Chunk_Initialized) );
+  Assert( Chunk->Data->Flags == Chunk_Uninitialized);
 
   work_queue_entry Entry = {};
 
@@ -156,7 +143,7 @@ QueueChunkForInit(game_state *GameState, work_queue *Queue, world_chunk *Chunk)
   Entry.GameState = GameState;
 
 
-  SetFlag(Chunk, Chunk_Queued);
+  Chunk->Data->Flags = Chunk_Queued;
 
   PushWorkQueueEntry(Queue, &Entry);
 
@@ -343,23 +330,19 @@ GetFreeChunk(memory_arena *Storage, world *World, world_position P)
 
   if (World->FreeChunkCount == 0)
   {
-    Result = AllocateWorldChunk(Storage, World, P);
-    Assert(Result);
+    Result = AllocateWorldChunk(Storage, P);
   }
   else
   {
-    Assert(World->FreeChunkCount > 0);
     Result = World->FreeChunks[--World->FreeChunkCount];
-    Result->WorldP = P;
-
-    Assert(Result->Next == 0);
-    Assert(Result->Prev == 0);
-
-    InsertChunkIntoWorld(World, Result);
   }
 
-  Assert( NotSet(Result, Chunk_Queued) );
-  Assert( NotSet(Result, Chunk_Initialized) );
+  Assert(Result->Data->Flags == Chunk_Uninitialized);
+  Assert(Result->Next == 0);
+  Assert(Result->Prev == 0);
+
+  Result->WorldP = P;
+  InsertChunkIntoWorld(World, Result);
 
   return Result;
 }
@@ -368,8 +351,6 @@ void
 QueueChunksForInit(game_state *GameState, world_position WorldDisp)
 {
   TIMED_FUNCTION();
-
-  if (LengthSq(V3(WorldDisp)) == 0) return;
 
   world *World = GameState->World;
 
@@ -394,7 +375,6 @@ QueueChunksForInit(game_state *GameState, world_position WorldDisp)
         if (!Chunk)
         {
           Chunk = GetFreeChunk(GameState->Memory, GameState->World, P);
-          Assert(Chunk);
           QueueChunkForInit(GameState, &GameState->Plat->Queue, Chunk);
         }
       }
@@ -590,8 +570,7 @@ AllocateAndInitWorld( game_state *GameState, world_position Center,
     {
       for ( s32 x = Min.x; x <= Max.x; ++ x )
       {
-        world_chunk *chunk = AllocateWorldChunk(GameState->Memory, World, World_Position(x,y,z));
-        Assert(chunk);
+        world_chunk *chunk = GetFreeChunk(GameState->Memory, World, World_Position(x,y,z));
         QueueChunkForInit(GameState, &GameState->Plat->Queue, chunk);
       }
     }

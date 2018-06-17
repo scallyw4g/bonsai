@@ -90,3 +90,18 @@ PlatformDebugStacktrace()
   return;
 }
 
+
+inline b32
+AtomicCompareExchange( volatile char **Source, const char *Exchange, const char *Comparator )
+{
+  bool Result = __sync_bool_compare_and_swap ( Source, Comparator, Exchange );
+  return Result;
+}
+
+inline bool
+AtomicCompareExchange( volatile unsigned int *Source, unsigned int Exchange, unsigned int Comparator )
+{
+  bool Result = __sync_bool_compare_and_swap ( Source, Comparator, Exchange );
+  return Result;
+}
+

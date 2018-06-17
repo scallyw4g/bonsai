@@ -312,9 +312,6 @@ BuildWorldChunkMesh(world_chunk *ReadChunk, chunk_dimension ReadChunkDim, world_
   Assert(IsSet(ReadChunk, Chunk_Initialized));
   Assert(IsSet(WriteChunk, Chunk_Initialized));
 
-  Assert(NotSet(WriteChunkData, Chunk_Queued));
-  Assert(NotSet(ReadChunkData, Chunk_Queued));
-
   voxel_position rightVoxel;
   voxel_position leftVoxel;
   voxel_position topVoxel;
