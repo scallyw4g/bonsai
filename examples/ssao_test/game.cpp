@@ -76,7 +76,13 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys, entity *Play
 void
 InitializeVoxels(perlin_noise *Noise, world_chunk *DestChunk, memory_arena *Memory, world *World)
 {
-  Assert(DestChunk->Data->Flags == Chunk_Queued);
+  Assert( IsSet(DestChunk, Chunk_Queued) );
+
+  if (IsSet(DestChunk, Chunk_Garbage))
+  {
+    DestChunk->Data->Flags = Chunk_Collected;
+    return;
+  }
 
 #if 0
   // Don't blow out the Flags for this chunk or risk assertions on other

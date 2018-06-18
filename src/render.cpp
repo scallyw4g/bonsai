@@ -2183,7 +2183,18 @@ BufferWorldChunk(
   chunk_data *ChunkData = Chunk->Data;
 #if 1
   if (ChunkData->Flags == Chunk_Complete)
+  {
     BufferChunkMesh( &World->Mesh, World->ChunkDim, ChunkData, Chunk->WorldP, Graphics);
+  }
+  else if (IsSet(ChunkData, Chunk_Queued))
+  {
+    DEBUG_DrawChunkAABB(&World->Mesh, Graphics, Chunk, WORLD_CHUNK_DIM, TEAL, 0.1f);
+  }
+  else
+  {
+    DEBUG_DrawChunkAABB(&World->Mesh, Graphics, Chunk, WORLD_CHUNK_DIM, RED, 0.1f);
+  }
+
 #else
   if (CanBuildWorldChunkBoundary(world, Chunk))
   {
@@ -2232,6 +2243,7 @@ BufferWorld(world *World, graphics *Graphics)
       }
       else
       TIMED_BLOCK("Free World Chunk");
+        DEBUG_DrawChunkAABB(&World->Mesh, Graphics, Chunk, WORLD_CHUNK_DIM, PINK, 0.1f);
         world_chunk *ChunkToFree = Chunk;
         Chunk = Chunk->Next;
         FreeWorldChunk(World, ChunkToFree);

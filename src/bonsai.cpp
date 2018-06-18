@@ -348,7 +348,7 @@ GetFreeChunk(memory_arena *Storage, world *World, world_position P)
 }
 
 void
-QueueChunksForInit(game_state *GameState, world_position WorldDisp)
+QueueChunksForInit(game_state *GameState)
 {
   TIMED_FUNCTION();
 
@@ -357,8 +357,8 @@ QueueChunksForInit(game_state *GameState, world_position WorldDisp)
   world_position WorldCenter = World->Center;
   world_position VRHalfDim = World->VisibleRegion/2;
 
-  world_position Min = WorldCenter - VRHalfDim + WorldDisp;
-  world_position Max = WorldCenter + VRHalfDim + WorldDisp;
+  world_position Min = WorldCenter - VRHalfDim;
+  world_position Max = WorldCenter + VRHalfDim;
 
   // TODO(Jesse): This could be miles more efficient by only iterating over the
   // chunks that need to be initialized instead of all chunks multiple times.

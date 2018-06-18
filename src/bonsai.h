@@ -36,6 +36,8 @@ enum chunk_flag
 
   Chunk_Queued          = 1 << 2,
   Chunk_Complete        = 1 << 3,
+  Chunk_Garbage         = 1 << 4,
+  Chunk_Collected       = 1 << 5,
 
 };
 
@@ -809,7 +811,7 @@ FreeWorldChunk(world *World, world_chunk *chunk)
 {
   TIMED_FUNCTION();
 
-  if ( chunk->Data->Flags == Chunk_Complete )
+  if ( chunk->Data->Flags == Chunk_Complete || chunk->Data->Flags == Chunk_Collected  )
   {
     // Unlink from middle of linked list
     if (chunk->Prev)
@@ -838,7 +840,7 @@ FreeWorldChunk(world *World, world_chunk *chunk)
   }
   else
   {
-    // Wait on queued chunks to complete initialization / mesh-generation phase
+    SetFlag(chunk, Chunk_Garbage);
   }
 
   return;

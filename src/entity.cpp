@@ -786,11 +786,8 @@ SimulateEnemy(game_state *GameState, entity *Enemy, r32 dt)
 void
 UpdateVisibleRegion(game_state *GameState, world_position WorldDisp)
 {
-  if ( Length(WorldDisp) > 0 )
-  {
-    GameState->World->Center += WorldDisp;
-    QueueChunksForInit(GameState, WorldDisp);
-  }
+  GameState->World->Center += WorldDisp;
+  QueueChunksForInit(GameState);
 
   return;
 }
