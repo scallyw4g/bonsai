@@ -254,8 +254,8 @@ PlatformInit(platform *Plat, memory_arena *Memory)
   Plat->Queue.EnqueueIndex = 0;
   Plat->Queue.DequeueIndex = 0;
 
-  Plat->Queue.Entries = PUSH_STRUCT_CHECKED(work_queue_entry,  Plat->Memory, WORK_QUEUE_SIZE, True);
-  Plat->Threads = PUSH_STRUCT_CHECKED(thread_startup_params,  Plat->Memory, ThreadCount, True);
+  Plat->Queue.Entries = Allocate(work_queue_entry,  Plat->Memory, WORK_QUEUE_SIZE, True);
+  Plat->Threads = Allocate(thread_startup_params,  Plat->Memory, ThreadCount, True);
 
   work_queue *Queue = &Plat->Queue;
 
@@ -459,7 +459,7 @@ main()
   PlatformInit(&Plat, PlatMemory);
 
 #if BONSAI_INTERNAL
-  /* debug_recording_state *Debug_RecordingState = PUSH_STRUCT_CHECKED(debug_recording_state, GameMemory, 1); */
+  /* debug_recording_state *Debug_RecordingState = Allocate(debug_recording_state, GameMemory, 1); */
   /* AllocateAndInitializeArena(&Debug_RecordingState->RecordedMainMemory, Gigabytes(3)); */
 #endif
 

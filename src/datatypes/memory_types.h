@@ -74,19 +74,17 @@ struct mt_memory_arena
 };
 
 #if BONSAI_INTERNAL
-void*
-PushStructChecked_(memory_arena *Arena, umm StructCount, umm StructSize, b32 MemProtect, const char* Name, s32 Line, const char* File);
 
-void*
-PushStructChecked_(mt_memory_arena *Arena, umm StructCount, umm StructSize, b32 MemProtect, const char* Name, s32 Line, const char* File);
+void* Allocate_(memory_arena *Arena, umm StructSize, umm StructCount, b32 MemProtect, const char* Name, s32 Line, const char* File);
+void* Allocate_(mt_memory_arena *Arena, umm StructSize, umm StructCount, b32 MemProtect, const char* Name, s32 Line, const char* File);
 
-#define PUSH_STRUCT_CHECKED(Type, Arena, Number, MemProtect) \
-  (Type*)PushStructChecked_( Arena, sizeof(Type), (umm)Number, MemProtect, #Type, __LINE__, __FILE__ )
+#define Allocate(Type, Arena, Number, MemProtect) \
+  (Type*)Allocate_( Arena, sizeof(Type), (umm)Number, MemProtect, #Type, __LINE__, __FILE__ )
 
 #else
 
-#define PUSH_STRUCT_CHECKED(Type, Arena, Number, MemProtect) \
-  (Type*)PushStruct( Arena, sizeof(Type)*Number, MemProtect );
+#define Allocate(Type, Arena, Number) \
+  (Type*)Allocate_( Arena, sizeof(Type)*Number)
 
 #endif
 

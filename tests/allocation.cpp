@@ -130,7 +130,7 @@ TestAllocation(memory_arena *Arena)
 {
   memory_arena Initial = *Arena;
 
-  T *Test = PUSH_STRUCT_CHECKED( T, Arena, 1);
+  T *Test = Allocate( T, Arena, 1);
   TestThat(Test);
   Clear(Test);
 
@@ -456,10 +456,10 @@ UnprotectedAllocations()
         StructIndex < StructCount;
         ++StructIndex)
     {
-      PUSH_STRUCT_CHECKED(test_struct_32, Arena, 1);
-      PUSH_STRUCT_CHECKED(test_struct_64, Arena, 1);
+      Allocate(test_struct_32, Arena, 1);
+      Allocate(test_struct_64, Arena, 1);
 
-      Structs[StructIndex] = PUSH_STRUCT_CHECKED(test_struct_1k, Arena, 1);
+      Structs[StructIndex] = Allocate(test_struct_1k, Arena, 1);
       Fill(Structs[StructIndex], (u8)255);
       AssertNoSegfault();
     }
@@ -472,15 +472,15 @@ UnprotectedAllocations()
     memory_arena *TestArena = PlatformAllocateArena(32);
     TestArena->MemProtect = False;
 
-    PUSH_STRUCT_CHECKED(test_struct_32, TestArena, 1);
+    Allocate(test_struct_32, TestArena, 1);
 
-    PUSH_STRUCT_CHECKED(test_struct_64, TestArena, 1);
-    PUSH_STRUCT_CHECKED(test_struct_64, TestArena, 1);
-    PUSH_STRUCT_CHECKED(test_struct_64, TestArena, 1);
+    Allocate(test_struct_64, TestArena, 1);
+    Allocate(test_struct_64, TestArena, 1);
+    Allocate(test_struct_64, TestArena, 1);
 
-    PUSH_STRUCT_CHECKED(test_struct_1k, TestArena, 1);
+    Allocate(test_struct_1k, TestArena, 1);
 
-    test_struct_1k *TestStruct = PUSH_STRUCT_CHECKED(test_struct_1k, TestArena, 1);
+    test_struct_1k *TestStruct = Allocate(test_struct_1k, TestArena, 1);
 
     VaporizeArena(TestArena);
     AssertNoSegfault();

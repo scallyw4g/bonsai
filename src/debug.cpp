@@ -161,12 +161,13 @@ WritePushMetadata(push_metadata *InputMeta, push_metadata *MetaTable)
 }
 
 inline void*
-PushStructChecked_(memory_arena *Arena, umm StructSize, umm StructCount, b32 MemProtect, const char* Name, s32 Line, const char* File)
+Allocate_(memory_arena *Arena, umm StructSize, umm StructCount, b32 MemProtect, const char* Name, s32 Line, const char* File)
 {
 #if MEMPROTECT
   b32 StartingMemProtection = Arena->MemProtect;
   Arena->MemProtect = MemProtect;
 #endif
+
   umm PushSize = StructCount * StructSize;
   void* Result = PushStruct( Arena, PushSize );
 
@@ -189,10 +190,10 @@ PushStructChecked_(memory_arena *Arena, umm StructSize, umm StructCount, b32 Mem
 }
 
 inline void*
-PushStructChecked_(mt_memory_arena *Arena, umm StructSize, umm StructCount, b32 MemProtect, const char* Name, s32 Line, const char* File)
+Allocate_(mt_memory_arena *Arena, umm StructSize, umm StructCount, b32 MemProtect, const char* Name, s32 Line, const char* File)
 {
   PlatformLockMutex(&Arena->Mut);
-  void *Result = PushStructChecked_(Arena->Arena, StructSize, StructCount, MemProtect, Name, Line, File);
+  void *Result = Allocate_(Arena->Arena, StructSize, StructCount, MemProtect, Name, Line, File);
   PlatformUnlockMutex(&Arena->Mut);
 
   return Result;
@@ -266,9 +267,9 @@ InitDebugOverlayFramebuffer(debug_text_render_group *RG, memory_arena *DebugAren
 void
 AllocateAndInitGeoBuffer(textured_2d_geometry_buffer *Geo, u32 VertCount, memory_arena *DebugArena)
 {
-  Geo->Verts = PUSH_STRUCT_CHECKED(v3, DebugArena, VertCount, True);
-  Geo->Colors = PUSH_STRUCT_CHECKED(v3, DebugArena, VertCount, True);
-  Geo->UVs = PUSH_STRUCT_CHECKED(v2, DebugArena, VertCount, True);
+  Geo->Verts = Allocate(v3, DebugArena, VertCount, True);
+  Geo->Colors = Allocate(v3, DebugArena, VertCount, True);
+  Geo->UVs = Allocate(v2, DebugArena, VertCount, True);
 
   Geo->End = VertCount;
   Geo->At = 0;
@@ -277,8 +278,8 @@ AllocateAndInitGeoBuffer(textured_2d_geometry_buffer *Geo, u32 VertCount, memory
 void
 AllocateAndInitGeoBuffer(untextured_2d_geometry_buffer *Geo, u32 VertCount, memory_arena *DebugArena)
 {
-  Geo->Verts = PUSH_STRUCT_CHECKED(v3, DebugArena, VertCount, True);
-  Geo->Colors = PUSH_STRUCT_CHECKED(v3, DebugArena, VertCount, True);
+  Geo->Verts = Allocate(v3, DebugArena, VertCount, True);
+  Geo->Colors = Allocate(v3, DebugArena, VertCount, True);
 
   Geo->End = VertCount;
   Geo->At = 0;
@@ -385,15 +386,15 @@ InitDebugState(platform *Plat, mt_memory_arena *DebugMemory)
       PlatformInitializeMutex(Mutex);
     }
 
-  } //  Can now call PUSH_STRUCT_CHECKED
+  } //  Can now call Allocate
 
 
-  GlobalDebugState->ScopeTrees = PUSH_STRUCT_CHECKED(debug_scope_tree*, DebugMemory, TotalThreadCount, True);
+  GlobalDebugState->ScopeTrees = Allocate(debug_scope_tree*, DebugMemory, TotalThreadCount, True);
   for (u32 ThreadIndex = 0;
       ThreadIndex < TotalThreadCount;
       ++ThreadIndex)
   {
-    GlobalDebugState->ScopeTrees[ThreadIndex] = PUSH_STRUCT_CHECKED(debug_scope_tree, DebugMemory, TOTAL_ROOT_SCOPES, True);
+    GlobalDebugState->ScopeTrees[ThreadIndex] = Allocate(debug_scope_tree, DebugMemory, TOTAL_ROOT_SCOPES, True);
 
     for (u32 TreeIndex = 0;
         TreeIndex < TOTAL_ROOT_SCOPES;
@@ -415,7 +416,7 @@ InitDebugState(platform *Plat, mt_memory_arena *DebugMemory)
 
   GlobalDebugState->TextRenderGroup.SolidUIShader = MakeSolidUIShader(GlobalDebugState->Memory);
 
-  GlobalDebugState->SelectedArenas = PUSH_STRUCT_CHECKED(selected_arenas, GlobalDebugState->Memory, 1, True);
+  GlobalDebugState->SelectedArenas = Allocate(selected_arenas, GlobalDebugState->Memory, 1, True);
 
   return;
 }
@@ -738,7 +739,7 @@ MemorySize(u64 Number)
   }
 
 
-  char *Buffer = PUSH_STRUCT_CHECKED(char, TranArena, 32, True);
+  char *Buffer = Allocate(char, TranArena, 32, True);
   sprintf(Buffer, "%.1f%c", (r32)Display, Units);
   return Buffer;
 }
@@ -770,7 +771,7 @@ FormatMemorySize(u64 Number)
   }
 
 #if 0
-  char *Buffer = PUSH_STRUCT_CHECKED(char, TranArena, Megabytes(1));
+  char *Buffer = Allocate(char, TranArena, Megabytes(1));
 
   for (u32 Index = 0;
       Index < Megabytes(1);
@@ -781,7 +782,7 @@ FormatMemorySize(u64 Number)
 
 #endif
 
-  char *Buffer = PUSH_STRUCT_CHECKED(char, TranArena, 32, True);
+  char *Buffer = Allocate(char, TranArena, 32, True);
   sprintf(Buffer, "%.1f%c", (r32)Display, Units);
 
   return Buffer;
@@ -808,7 +809,7 @@ FormatThousands(u64 Number)
     Units = 'K';
   }
 
-  char *Buffer = PUSH_STRUCT_CHECKED(char, TranArena, 32, True);
+  char *Buffer = Allocate(char, TranArena, 32, True);
   sprintf(Buffer, "%.1f%c", Display, Units);
 
   return Buffer;
@@ -1037,7 +1038,7 @@ BufferFirstCallToEach(ui_render_group *Group, debug_profile_scope *Scope, debug_
 
   if (!Scope->Stats)
   {
-    Scope->Stats = PUSH_STRUCT_CHECKED(scope_stats, State->Memory, 1, False);
+    Scope->Stats = Allocate(scope_stats, State->Memory, 1, False);
     *Scope->Stats = GetStatsFor(State, Scope);
   }
 

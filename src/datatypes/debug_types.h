@@ -228,7 +228,7 @@ GetProfileScope(debug_state *State)
   }
   else
   {
-    Result = PUSH_STRUCT_CHECKED(debug_profile_scope, State->Memory, 1, False);
+    Result = Allocate(debug_profile_scope, State->Memory, 1, False);
   }
 
   if (Result)

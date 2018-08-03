@@ -323,7 +323,7 @@ void
 AllocateAndInitNoise3d(game_state *GameState, noise_3d *Noise, chunk_dimension Dim)
 {
   Noise->Dim = Dim;
-  Noise->Voxels = PUSH_STRUCT_CHECKED(voxel, GameState->Memory, Volume(Dim), True);
+  Noise->Voxels = Allocate(voxel, GameState->Memory, Volume(Dim), True);
 }
 
 inline v2
@@ -429,11 +429,11 @@ AllocateAndInitWorld( game_state *GameState, world_position Center,
   /*
    *  Allocate stuff
    */
-  world *World = PUSH_STRUCT_CHECKED(world, GameState->Memory, 1 , True);
+  world *World = Allocate(world, GameState->Memory, 1 , True);
   GameState->World = World;
 
-  World->ChunkHash = PUSH_STRUCT_CHECKED(world_chunk*, GameState->Memory, WORLD_HASH_SIZE , True);
-  World->FreeChunks = PUSH_STRUCT_CHECKED(world_chunk*, GameState->Memory, FREELIST_SIZE , True);
+  World->ChunkHash = Allocate(world_chunk*, GameState->Memory, WORLD_HASH_SIZE , True);
+  World->FreeChunks = Allocate(world_chunk*, GameState->Memory, FREELIST_SIZE , True);
 
   Assert(World->FreeChunkCount == 0);
 

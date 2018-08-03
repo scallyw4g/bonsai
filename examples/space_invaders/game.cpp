@@ -50,7 +50,7 @@ AllocateParticleSystems(platform *Plat, game_state *GameState)
       ++SystemIndex)
   {
     GameState->ParticleSystems[SystemIndex] =
-      PUSH_STRUCT_CHECKED(particle_system, GameState->World->WorldStorage.Arena, 1);
+      Allocate(particle_system, GameState->World->WorldStorage.Arena, 1);
   }
 
   return;
@@ -429,13 +429,13 @@ GameInit( platform *Plat, memory_arena *GameMemory)
   PerlinNoise Noise(rand());
   GlobalNoise = Noise;
 
-  game_state *GameState = PUSH_STRUCT_CHECKED(game_state, GameMemory, 1);
+  game_state *GameState = Allocate(game_state, GameMemory, 1);
   GameState->Memory = GameMemory;
 
-  memory_arena *GraphicsMemory = PUSH_STRUCT_CHECKED(memory_arena, GameMemory, 1);
+  memory_arena *GraphicsMemory = Allocate(memory_arena, GameMemory, 1);
   SubArena(GameMemory, GraphicsMemory, Megabytes(8));
 
-  shadow_render_group *SG = PUSH_STRUCT_CHECKED(shadow_render_group, GameState->Memory, 1);
+  shadow_render_group *SG = Allocate(shadow_render_group, GameState->Memory, 1);
   if (!InitializeShadowBuffer(SG, GameState->Memory))
   {
     Error("Initializing Shadow Buffer"); return False;
@@ -459,7 +459,7 @@ GameInit( platform *Plat, memory_arena *GameMemory)
 
   texture *SsaoNoiseTexture = AllocateAndInitSsaoNoise(AoGroup, GraphicsMemory);
 
-  camera *Camera = PUSH_STRUCT_CHECKED(camera, GameState->Memory, 1);
+  camera *Camera = Allocate(camera, GameState->Memory, 1);
   InitCamera(Camera, V3(0,1,0), 5000.0f);
 
   gBuffer->LightingShader =
@@ -483,7 +483,7 @@ GameInit( platform *Plat, memory_arena *GameMemory)
 
 
 
-  GameState->Turb = PUSH_STRUCT_CHECKED(noise_3d, GameState->Memory, 1);
+  GameState->Turb = Allocate(noise_3d, GameState->Memory, 1);
   AllocateAndInitNoise3d(GameState, GameState->Turb, Chunk_Dimension(8,8,8) );
 
   // This needs to be off for shadow maps to work correctly
@@ -512,16 +512,16 @@ GameInit( platform *Plat, memory_arena *GameMemory)
   AllocateAndInitWorld(GameState, PlayerInitialP.WorldP, VISIBLE_REGION_RADIUS, WORLD_CHUNK_DIM, VISIBLE_REGION);
 
   GameState->Models =
-    PUSH_STRUCT_CHECKED(model, GameState->Memory, ModelIndex_Count);
+    Allocate(model, GameState->Memory, ModelIndex_Count);
   AllocateGameModels(GameState, GameState->Memory);
 
   AllocateEntityTable(Plat, GameState);
 
   GameState->EventQueue.Queue =
-    PUSH_STRUCT_CHECKED(frame_event*, GameState->Memory, TOTAL_FRAME_EVENT_COUNT);
+    Allocate(frame_event*, GameState->Memory, TOTAL_FRAME_EVENT_COUNT);
 
   frame_event *TempFrameEvents =
-    PUSH_STRUCT_CHECKED(frame_event, GameState->Memory, TOTAL_FRAME_EVENT_COUNT);
+    Allocate(frame_event, GameState->Memory, TOTAL_FRAME_EVENT_COUNT);
 
   frame_event **Next = &GameState->EventQueue.FirstFreeEvent;
 
@@ -535,7 +535,7 @@ GameInit( platform *Plat, memory_arena *GameMemory)
   }
 
   GameState->FolieTable =
-    PUSH_STRUCT_CHECKED(aabb, GameState->Memory, TOTAL_FOLIE_COUNT);
+    Allocate(aabb, GameState->Memory, TOTAL_FOLIE_COUNT);
 
   /* AllocateParticleSystems(Plat, GameState); */
 
