@@ -57,8 +57,11 @@ struct debug_profile_scope
 
 struct debug_scope_tree
 {
-  u64 TotalCycles;
   debug_profile_scope *Root;
+  debug_profile_scope **WriteScope;
+  debug_profile_scope *CurrentScope;
+
+  u64 TotalCycles;
   r32 FrameMs;
 };
 
@@ -114,17 +117,19 @@ struct selected_arenas
   selected_memory_arena Arenas[MAX_SELECTED_ARENAS];
 };
 
+debug_global __thread u64 ThreadLocal_ThreadIndex = 0;
+
 #define REGISTERED_MEMORY_ARENA_COUNT 32
-#define ROOT_SCOPE_COUNT 64
+#define TOTAL_ROOT_SCOPES 64
 #define META_TABLE_SIZE (16 * 1024)
 struct debug_state
 {
-  memory_arena            *Memory;
+  mt_memory_arena            *Memory;
   debug_text_render_group TextRenderGroup;
 
   untextured_3d_geometry_buffer LineMesh;
 
-  debug_ui_type UIType;
+  debug_ui_type UIType = DebugUIType_CallGraph;
 
   selected_arenas *SelectedArenas;
 
@@ -132,12 +137,10 @@ struct debug_state
   u64 FrameCount;
   b32 Initialized;
   b32 Debug_RedrawEveryPush;
-  b32 DebugDoScopeProfiling = False;
+  b32 DebugDoScopeProfiling = True;
 
   debug_profile_scope FreeScopeSentinel;
-  debug_profile_scope **WriteScope;
-  debug_profile_scope *CurrentScope;
-  debug_scope_tree ScopeTrees[ROOT_SCOPE_COUNT];
+  debug_scope_tree **ScopeTrees;
   u32 ReadScopeIndex;
   s32 FreeScopeCount;
   u64 NumScopes;
@@ -150,7 +153,7 @@ struct debug_state
 
   debug_scope_tree *GetReadScopeTree()
   {
-    debug_scope_tree *RootScope = &this->ScopeTrees[this->ReadScopeIndex];
+    debug_scope_tree *RootScope = &this->ScopeTrees[ThreadLocal_ThreadIndex][this->ReadScopeIndex];
     return RootScope;
   }
 
@@ -158,8 +161,8 @@ struct debug_state
   {
     if (!this->DebugDoScopeProfiling) return 0;
 
-    s32 Index = (this->ReadScopeIndex + 1) % ROOT_SCOPE_COUNT;
-    debug_scope_tree *RootScope = &this->ScopeTrees[Index];
+    s32 Index = (this->ReadScopeIndex + 1) % TOTAL_ROOT_SCOPES;
+    debug_scope_tree *RootScope = &this->ScopeTrees[ThreadLocal_ThreadIndex][Index];
     return RootScope;
   }
 };
@@ -225,13 +228,7 @@ GetProfileScope(debug_state *State)
   }
   else
   {
-#if MEMPROTECT
-    State->Memory->MemProtect = False;
-#endif
-    Result = PUSH_STRUCT_CHECKED(debug_profile_scope, State->Memory, 1);
-#if MEMPROTECT
-    State->Memory->MemProtect = True;
-#endif
+    Result = PUSH_STRUCT_CHECKED(debug_profile_scope, State->Memory, 1, False);
   }
 
   if (Result)
@@ -239,8 +236,6 @@ GetProfileScope(debug_state *State)
 
   return Result;
 }
-
-debug_global __thread u64 ThreadLocal_ThreadIndex = 0;
 
 struct debug_timed_function
 {
@@ -251,7 +246,7 @@ struct debug_timed_function
   {
     debug_state *DebugState = GetDebugState();
     if (!DebugState->DebugDoScopeProfiling) return;
-    Assert (DebugState->WriteScope);
+    Assert (DebugState->ScopeTrees[ThreadLocal_ThreadIndex]->WriteScope);
 
     ++DebugState->NumScopes;
 
@@ -259,21 +254,19 @@ struct debug_timed_function
 
     if (this->Scope)
     {
-      this->Scope->Parent = DebugState->CurrentScope;
+      debug_profile_scope *CurrentScope = DebugState->ScopeTrees[ThreadLocal_ThreadIndex]->CurrentScope;
+      this->Scope->Parent = CurrentScope;
 
-      (*DebugState->WriteScope) = this->Scope;
-      DebugState->CurrentScope = this->Scope;
+      debug_scope_tree *Tree = DebugState->ScopeTrees[ThreadLocal_ThreadIndex];
 
-      DebugState->WriteScope = &this->Scope->Child;
+      (*Tree->WriteScope) = this->Scope;
+      CurrentScope = this->Scope;
+
+      Tree->WriteScope = &this->Scope->Child;
 
       this->Scope->Name = Name;
       this->StartingCycleCount = GetCycleCount(); // Intentionally last
     }
-
-    /* Debug(" "); */
-    /* Debug("Pushing %s", Name); */
-    /* PrintScopeTree(DebugState->RootScope); */
-
   }
 
   ~debug_timed_function()
@@ -282,20 +275,21 @@ struct debug_timed_function
     if (!DebugState->DebugDoScopeProfiling) return;
     if (!this->Scope) return;
 
-    Assert (DebugState->WriteScope);
 
     u64 EndingCycleCount = GetCycleCount(); // Intentionally first
     u64 CycleCount = (EndingCycleCount - this->StartingCycleCount);
-    DebugState->CurrentScope->CycleCount = CycleCount;
 
-    /* Debug(" "); */
-    /* Debug("Popping %s", DebugState->CurrentScope->Name); */
+    debug_scope_tree *Tree = DebugState->ScopeTrees[ThreadLocal_ThreadIndex];
+    Assert (Tree->WriteScope);
+
+    debug_profile_scope *CurrentScope = Tree->CurrentScope;
+    CurrentScope->CycleCount = CycleCount;
 
     // 'Pop' the scope stack
-    DebugState->WriteScope = &DebugState->CurrentScope->Sibling;
-    DebugState->CurrentScope = DebugState->CurrentScope->Parent;
-    /* PrintScopeTree(DebugState->RootScope); */
+    Tree->WriteScope = &CurrentScope->Sibling;
+    CurrentScope = CurrentScope->Parent;
   }
+
 };
 
 #define INIT_DEBUG_STATE(PlatPtr, MemArena) InitDebugState(PlatPtr, MemArena)

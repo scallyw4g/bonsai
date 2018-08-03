@@ -869,9 +869,9 @@ GetIndex(v3 Offset, chunk_dimension Dim)
 void
 AllocateMesh(untextured_3d_geometry_buffer *Mesh, u32 NumVerts, memory_arena *Memory)
 {
-  Mesh->Verts   = PUSH_STRUCT_CHECKED(v3, Memory, NumVerts );
-  Mesh->Colors  = PUSH_STRUCT_CHECKED(v4, Memory, NumVerts );
-  Mesh->Normals = PUSH_STRUCT_CHECKED(v3, Memory, NumVerts );
+  Mesh->Verts   = PUSH_STRUCT_CHECKED(v3, Memory, NumVerts, True);
+  Mesh->Colors  = PUSH_STRUCT_CHECKED(v4, Memory, NumVerts, True);
+  Mesh->Normals = PUSH_STRUCT_CHECKED(v3, Memory, NumVerts, True);
 
   Mesh->End = NumVerts;
   Mesh->At = 0;
@@ -882,12 +882,12 @@ AllocateMesh(untextured_3d_geometry_buffer *Mesh, u32 NumVerts, memory_arena *Me
 chunk_data*
 AllocateChunk(memory_arena *WorldStorage, chunk_dimension Dim)
 {
-  chunk_data *Result = PUSH_STRUCT_CHECKED(chunk_data, WorldStorage, 1);;
+  chunk_data *Result = PUSH_STRUCT_CHECKED(chunk_data, WorldStorage, 1, True);
 
   s32 Vol = Volume(Dim);
   if (Vol)
   {
-    Result->Voxels = PUSH_STRUCT_CHECKED(voxel, WorldStorage , Vol );
+    Result->Voxels = PUSH_STRUCT_CHECKED(voxel, WorldStorage , Vol , True);
   }
 
   // TODO(Jesse): Allocate this based on actual need?
@@ -931,7 +931,7 @@ InsertChunkIntoWorld(world *World, world_chunk *chunk)
 world_chunk*
 AllocateWorldChunk(memory_arena *Storage, world_position WorldP, chunk_dimension Dim = WORLD_CHUNK_DIM)
 {
-  world_chunk *Result = PUSH_STRUCT_CHECKED(world_chunk, Storage, 1);
+  world_chunk *Result = PUSH_STRUCT_CHECKED(world_chunk, Storage, 1, True);
   Result->Data = AllocateChunk(Storage, Dim);
   Result->WorldP = WorldP;
 

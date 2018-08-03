@@ -7,6 +7,8 @@
 #define TWOPI (2.0*PI)
 #define PIf (float(PI))
 
+#define U64_MAX ((u64)-1)
+
 // 8 Bit types
 typedef uint8_t  u8;
 

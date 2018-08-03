@@ -112,7 +112,7 @@ glGetProgramiv(ProgramID, GL_INFO_LOG_LENGTH, &InfoLogLength);
 if ( InfoLogLength > 0 )
 {
   // TODO(Jesse): Transient storage
-  char *ProgramErrorMessage = PUSH_STRUCT_CHECKED(char, Memory, InfoLogLength+1);
+  char *ProgramErrorMessage = PUSH_STRUCT_CHECKED(char, Memory, InfoLogLength+1, True);
   glGetProgramInfoLog(ProgramID, InfoLogLength, NULL, ProgramErrorMessage);
   Error("%s", ProgramErrorMessage);
 }
@@ -145,7 +145,7 @@ GetShaderUniform(shader *Shader, const char *Name)
 shader_uniform *
 PushShaderUniform( memory_arena *Mem, const char *Name)
 {
-  shader_uniform *Uniform = PUSH_STRUCT_CHECKED(shader_uniform, Mem, 1);
+  shader_uniform *Uniform = PUSH_STRUCT_CHECKED(shader_uniform, Mem, 1, True);
   Uniform->Name = Name;
   return Uniform;
 }

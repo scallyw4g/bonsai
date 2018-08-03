@@ -161,16 +161,16 @@ WritePushMetadata(push_metadata *InputMeta, push_metadata *MetaTable)
 }
 
 inline void*
-PushStructChecked_(memory_arena *Arena, umm StructSize, umm StructCount, const char* Name, s32 Line, const char* File)
+PushStructChecked_(memory_arena *Arena, umm StructSize, umm StructCount, b32 MemProtect, const char* Name, s32 Line, const char* File)
 {
+#if MEMPROTECT
+  b32 StartingMemProtection = Arena->MemProtect;
+  Arena->MemProtect = MemProtect;
+#endif
   umm PushSize = StructCount * StructSize;
   void* Result = PushStruct( Arena, PushSize );
 
 #ifndef BONSAI_NO_PUSH_METADATA
-  // @meta_table_thread_bug
-  // FIXME(Jesse): Another thread reading from this meta table at the same
-  // time can cause a half-written record to get collated.  We need a lock in
-  // here to ensure that doesn't happen.
   push_metadata ArenaMetadata = {Name, HashArena(Arena), HashArenaHead(Arena), StructSize, StructCount, 1};
   WritePushMetadata(&ArenaMetadata, GetDebugState()->MetaTables[ThreadLocal_ThreadIndex]);
 #endif
@@ -181,6 +181,19 @@ PushStructChecked_(memory_arena *Arena, umm StructSize, umm StructCount, const c
     Assert(False);
     return False;
   }
+
+#if MEMPROTECT
+  Arena->MemProtect = StartingMemProtection;
+#endif
+  return Result;
+}
+
+inline void*
+PushStructChecked_(mt_memory_arena *Arena, umm StructSize, umm StructCount, b32 MemProtect, const char* Name, s32 Line, const char* File)
+{
+  PlatformLockMutex(&Arena->Mut);
+  void *Result = PushStructChecked_(Arena->Arena, StructSize, StructCount, MemProtect, Name, Line, File);
+  PlatformUnlockMutex(&Arena->Mut);
 
   return Result;
 }
@@ -253,9 +266,9 @@ InitDebugOverlayFramebuffer(debug_text_render_group *RG, memory_arena *DebugAren
 void
 AllocateAndInitGeoBuffer(textured_2d_geometry_buffer *Geo, u32 VertCount, memory_arena *DebugArena)
 {
-  Geo->Verts = PUSH_STRUCT_CHECKED(v3, DebugArena, VertCount);
-  Geo->Colors = PUSH_STRUCT_CHECKED(v3, DebugArena, VertCount);
-  Geo->UVs = PUSH_STRUCT_CHECKED(v2, DebugArena, VertCount);
+  Geo->Verts = PUSH_STRUCT_CHECKED(v3, DebugArena, VertCount, True);
+  Geo->Colors = PUSH_STRUCT_CHECKED(v3, DebugArena, VertCount, True);
+  Geo->UVs = PUSH_STRUCT_CHECKED(v2, DebugArena, VertCount, True);
 
   Geo->End = VertCount;
   Geo->At = 0;
@@ -264,8 +277,8 @@ AllocateAndInitGeoBuffer(textured_2d_geometry_buffer *Geo, u32 VertCount, memory
 void
 AllocateAndInitGeoBuffer(untextured_2d_geometry_buffer *Geo, u32 VertCount, memory_arena *DebugArena)
 {
-  Geo->Verts = PUSH_STRUCT_CHECKED(v3, DebugArena, VertCount);
-  Geo->Colors = PUSH_STRUCT_CHECKED(v3, DebugArena, VertCount);
+  Geo->Verts = PUSH_STRUCT_CHECKED(v3, DebugArena, VertCount, True);
+  Geo->Colors = PUSH_STRUCT_CHECKED(v3, DebugArena, VertCount, True);
 
   Geo->End = VertCount;
   Geo->At = 0;
@@ -273,20 +286,22 @@ AllocateAndInitGeoBuffer(untextured_2d_geometry_buffer *Geo, u32 VertCount, memo
 }
 
 void
-InitScopeTree(debug_state *State, debug_scope_tree *WriteScopeTree)
+InitScopeTree(debug_scope_tree *Tree)
 {
-  State->NumScopes = 0;
-  State->CurrentScope = 0;
-  State->WriteScope = &WriteScopeTree->Root;
+  debug_profile_scope *Root = Tree->Root;
+  Clear(Tree);
+  Tree->WriteScope   = &Root;
+  Tree->CurrentScope = Root;
+
   return;
 }
 
 shader
-MakeSolidUIShader(memory_arena *DebugMemory)
+MakeSolidUIShader(mt_memory_arena *DebugMemory)
 {
   shader SimpleTextureShader = LoadShaders( "SimpleColor.vertexshader",
                                             "SimpleColor.fragmentshader",
-                                            DebugMemory );
+                                            DebugMemory->Arena );
   return SimpleTextureShader;
 }
 
@@ -322,19 +337,18 @@ AdvanceScopeTrees(debug_state *State)
   if (!State->DebugDoScopeProfiling) return;
 
   { // Advance to the next scope and reinitialize
-    State->ReadScopeIndex = (State->ReadScopeIndex+1) % ROOT_SCOPE_COUNT;
+    State->ReadScopeIndex = (State->ReadScopeIndex+1) % TOTAL_ROOT_SCOPES;
     debug_scope_tree *WriteScope = State->GetWriteScopeTree();
     if (WriteScope)
     {
       FreeScopes(State, WriteScope->Root);
-      InitScopeTree(State, WriteScope);
+      InitScopeTree(WriteScope);
     }
   }
-
 }
 
 void
-InitDebugState(platform *Plat, memory_arena *DebugMemory)
+InitDebugState(platform *Plat, mt_memory_arena *DebugMemory)
 {
   GlobalDebugState = &Plat->DebugState;
 
@@ -343,46 +357,65 @@ InitDebugState(platform *Plat, memory_arena *DebugMemory)
   GlobalDebugState->FreeScopeSentinel.Parent = &GlobalDebugState->FreeScopeSentinel;
   GlobalDebugState->FreeScopeSentinel.Child = &GlobalDebugState->FreeScopeSentinel;
 
-  AdvanceScopeTrees(GlobalDebugState);
+  /* AdvanceScopeTrees(GlobalDebugState); */
 
   GlobalDebugState->Initialized = True;
-
   u32 TotalThreadCount = GetWorkerThreadCount() + 1;
 
-  {
+  { // Initializing debug memory allocation system
+
     umm PushSize = TotalThreadCount * sizeof(push_metadata*);
     GlobalDebugState->MetaTables = (push_metadata**)PushStruct(DebugMemory, PushSize);
-  }
 
+    for (u32 ThreadIndex = 0;
+        ThreadIndex < TotalThreadCount;
+        ++ThreadIndex)
+    {
+      umm PushSize = META_TABLE_SIZE * sizeof(push_metadata);
+      GlobalDebugState->MetaTables[ThreadIndex] = (push_metadata*)PushStruct(DebugMemory, PushSize);
+    }
+
+    GlobalDebugState->MetaTableMutexes = (mutex*)PushStruct(DebugMemory, sizeof(mutex)*TotalThreadCount);
+
+    for (u32 ThreadIndex = 0;
+        ThreadIndex < TotalThreadCount;
+        ++ThreadIndex)
+    {
+      mutex *Mutex = GlobalDebugState->MetaTableMutexes + ThreadIndex;
+      PlatformInitializeMutex(Mutex);
+    }
+
+  } //  Can now call PUSH_STRUCT_CHECKED
+
+
+  GlobalDebugState->ScopeTrees = PUSH_STRUCT_CHECKED(debug_scope_tree*, DebugMemory, TotalThreadCount, True);
   for (u32 ThreadIndex = 0;
       ThreadIndex < TotalThreadCount;
       ++ThreadIndex)
   {
-    umm PushSize = META_TABLE_SIZE * sizeof(push_metadata);
-    GlobalDebugState->MetaTables[ThreadIndex] = (push_metadata*)PushStruct(DebugMemory, PushSize);
+    GlobalDebugState->ScopeTrees[ThreadIndex] = PUSH_STRUCT_CHECKED(debug_scope_tree, DebugMemory, TOTAL_ROOT_SCOPES, True);
+
+    for (u32 TreeIndex = 0;
+        TreeIndex < TOTAL_ROOT_SCOPES;
+        ++TreeIndex)
+    {
+      GlobalDebugState->ScopeTrees[ThreadIndex]->Root = GetProfileScope(GlobalDebugState);
+      InitScopeTree(GlobalDebugState->ScopeTrees[ThreadIndex]);
+    }
   }
 
-  GlobalDebugState->MetaTableMutexes = (mutex*)PushStruct(DebugMemory, sizeof(mutex)*TotalThreadCount);
 
-  for (u32 ThreadIndex = 0;
-      ThreadIndex < TotalThreadCount;
-      ++ThreadIndex)
-  {
-    mutex *Mutex = GlobalDebugState->MetaTableMutexes + ThreadIndex;
-    PlatformInitializeMutex(Mutex);
-  }
+  AllocateMesh(&GlobalDebugState->LineMesh, 1024, DebugMemory->Arena);
 
-  AllocateMesh(&GlobalDebugState->LineMesh, 1024, DebugMemory);
-
-  if (!InitDebugOverlayFramebuffer(&GlobalDebugState->TextRenderGroup, DebugMemory, "Holstein.DDS"))
+  if (!InitDebugOverlayFramebuffer(&GlobalDebugState->TextRenderGroup, DebugMemory->Arena, "Holstein.DDS"))
   { Error("Initializing Debug Overlay Framebuffer"); }
 
-  AllocateAndInitGeoBuffer(&GlobalDebugState->TextRenderGroup.TextGeo, 1024, DebugMemory);
-  AllocateAndInitGeoBuffer(&GlobalDebugState->TextRenderGroup.UIGeo, 1024, DebugMemory);
+  AllocateAndInitGeoBuffer(&GlobalDebugState->TextRenderGroup.TextGeo, 1024, DebugMemory->Arena);
+  AllocateAndInitGeoBuffer(&GlobalDebugState->TextRenderGroup.UIGeo, 1024, DebugMemory->Arena);
 
   GlobalDebugState->TextRenderGroup.SolidUIShader = MakeSolidUIShader(GlobalDebugState->Memory);
 
-  GlobalDebugState->SelectedArenas = PUSH_STRUCT_CHECKED(selected_arenas, GlobalDebugState->Memory, 1);
+  GlobalDebugState->SelectedArenas = PUSH_STRUCT_CHECKED(selected_arenas, GlobalDebugState->Memory, 1, True);
 
   return;
 }
@@ -705,7 +738,7 @@ MemorySize(u64 Number)
   }
 
 
-  char *Buffer = PUSH_STRUCT_CHECKED(char, TranArena, 32);
+  char *Buffer = PUSH_STRUCT_CHECKED(char, TranArena, 32, True);
   sprintf(Buffer, "%.1f%c", (r32)Display, Units);
   return Buffer;
 }
@@ -748,7 +781,7 @@ FormatMemorySize(u64 Number)
 
 #endif
 
-  char *Buffer = PUSH_STRUCT_CHECKED(char, TranArena, 32);
+  char *Buffer = PUSH_STRUCT_CHECKED(char, TranArena, 32, True);
   sprintf(Buffer, "%.1f%c", (r32)Display, Units);
 
   return Buffer;
@@ -775,7 +808,7 @@ FormatThousands(u64 Number)
     Units = 'K';
   }
 
-  char *Buffer = PUSH_STRUCT_CHECKED(char, TranArena, 32);
+  char *Buffer = PUSH_STRUCT_CHECKED(char, TranArena, 32, True);
   sprintf(Buffer, "%.1f%c", Display, Units);
 
   return Buffer;
@@ -1004,14 +1037,7 @@ BufferFirstCallToEach(ui_render_group *Group, debug_profile_scope *Scope, debug_
 
   if (!Scope->Stats)
   {
-#if MEMPROTECT
-    State->Memory->MemProtect = False;
-#endif
-    Scope->Stats = PUSH_STRUCT_CHECKED(scope_stats, State->Memory, 1);
-#if MEMPROTECT
-    State->Memory->MemProtect = True;
-#endif
-
+    Scope->Stats = PUSH_STRUCT_CHECKED(scope_stats, State->Memory, 1, False);
     *Scope->Stats = GetStatsFor(State, Scope);
   }
 
@@ -1062,7 +1088,7 @@ DebugFrameBegin(hotkeys *Hotkeys, r32 Dt, u64 Cycles)
     }
   }
 
-  AdvanceScopeTrees(State);
+  /* AdvanceScopeTrees(State); */
 
   return;
 }
@@ -1093,10 +1119,10 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Layo
     v2 StartingAt = Layout->At;
 
     for (u32 TreeIndex = 0;
-        TreeIndex < ROOT_SCOPE_COUNT;
+        TreeIndex < TOTAL_ROOT_SCOPES;
         ++TreeIndex )
     {
-      debug_scope_tree *Tree = &DebugState->ScopeTrees[TreeIndex];
+      debug_scope_tree *Tree = &DebugState->ScopeTrees[ThreadLocal_ThreadIndex][TreeIndex];
 
       r32 Perc = SafeDivide0(Tree->FrameMs, MaxMs);
 
@@ -1731,7 +1757,7 @@ ComputeMinMaxAvgDt(debug_scope_tree *ScopeTrees)
   min_max_avg_dt Dt = {};
 
     for (u32 TreeIndex = 0;
-        TreeIndex < ROOT_SCOPE_COUNT;
+        TreeIndex < TOTAL_ROOT_SCOPES;
         ++TreeIndex )
     {
       debug_scope_tree *Tree = &ScopeTrees[TreeIndex];
@@ -1740,7 +1766,7 @@ ComputeMinMaxAvgDt(debug_scope_tree *ScopeTrees)
       Dt.Max = Max(Dt.Max, Tree->FrameMs);
       Dt.Avg += Tree->FrameMs;
     }
-    Dt.Avg /= (r32)ROOT_SCOPE_COUNT;
+    Dt.Avg /= (r32)TOTAL_ROOT_SCOPES;
 
   return Dt;
 }
@@ -1839,6 +1865,7 @@ DoDebugFrameRecord(
   return;
 }
 
+#if 0
 void
 PrintScopeTree(debug_profile_scope *Scope, s32 Depth = 0)
 {
@@ -1871,6 +1898,7 @@ PrintScopeTree(debug_profile_scope *Scope, s32 Depth = 0)
 
   return;
 }
+#endif
 
 void
 DebugDrawGraphicsHud(ui_render_group *Group, debug_state *DebugState, layout *Layout)
@@ -1906,7 +1934,7 @@ DebugFrameEnd(platform *Plat, game_state *GameState)
 
 
   TIMED_BLOCK("Draw Status Bar");
-    Dt = ComputeMinMaxAvgDt(DebugState->ScopeTrees);
+    Dt = ComputeMinMaxAvgDt(DebugState->ScopeTrees[ThreadLocal_ThreadIndex]);
     BufferColumn(Dt.Max, 6, &Group, &Layout, WHITE);
     NewLine(&Layout, &Group.Font);
 

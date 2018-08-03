@@ -135,7 +135,7 @@ GameThreadCallback(work_queue_entry *Entry, memory_arena *ThreadArena)
 model *
 AllocateGameModels(game_state *GameState, memory_arena *Memory)
 {
-  model *Result = PUSH_STRUCT_CHECKED(model, GameState->Memory, ModelIndex_Count);
+  model *Result = PUSH_STRUCT_CHECKED(model, GameState->Memory, ModelIndex_Count, True);
 
   Result[ModelIndex_Enemy] = LoadModel(Memory, ENEMY_MODEL);
   Result[ModelIndex_Player] = LoadObj(Memory, "models/icosphere.obj");
@@ -162,12 +162,12 @@ GameInit( platform *Plat, memory_arena *GameMemory, memory_arena *TranArena_in /
 
   Init_Global_QuadVertexBuffer();
 
-  game_state *GameState = PUSH_STRUCT_CHECKED(game_state, GameMemory, 1);
+  game_state *GameState = PUSH_STRUCT_CHECKED(game_state, GameMemory, 1, True);
   GameState->Memory = GameMemory;
   GameState->Noise = perlin_noise(DEBUG_NOISE_SEED);
 
 
-  GameState->Turb = PUSH_STRUCT_CHECKED(noise_3d, GameState->Memory, 1);
+  GameState->Turb = PUSH_STRUCT_CHECKED(noise_3d, GameState->Memory, 1, True);
   AllocateAndInitNoise3d(GameState, GameState->Turb, Chunk_Dimension(8,8,8) );
 
   GameState->Plat = Plat;
@@ -186,7 +186,7 @@ GameInit( platform *Plat, memory_arena *GameMemory, memory_arena *TranArena_in /
     GameState->Players[EntityIndex] = GetFreeEntity(GameState);
   }
 
-  GameState->ServerState = PUSH_STRUCT_CHECKED(server_state, GameMemory, 1);
+  GameState->ServerState = PUSH_STRUCT_CHECKED(server_state, GameMemory, 1, True);
   for (u32 ClientIndex = 0;
       ClientIndex < MAX_CLIENTS;
       ++ClientIndex)

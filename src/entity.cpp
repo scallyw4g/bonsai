@@ -140,9 +140,9 @@ GetFreeEntity(game_state *GameState)
 entity *
 AllocateEntity(memory_arena *Memory, chunk_dimension ModelDim)
 {
-  entity *Entity = PUSH_STRUCT_CHECKED(entity, Memory, 1);
+  entity *Entity = PUSH_STRUCT_CHECKED(entity, Memory, 1, True);
   Entity->Model.Chunk = AllocateChunk(Memory, ModelDim);
-  Entity->Emitter = PUSH_STRUCT_CHECKED(particle_system, Memory, 1);
+  Entity->Emitter = PUSH_STRUCT_CHECKED(particle_system, Memory, 1, True);
 
   FillChunk(Entity->Model.Chunk, ModelDim, BLACK);
   Entity->Model.Dim = ModelDim;
@@ -245,8 +245,8 @@ SpawnEntity(
 entity *
 AllocateEntity(memory_arena *Memory)
 {
-  entity *Entity = PUSH_STRUCT_CHECKED(entity, Memory, 1);
-  Entity->Emitter = PUSH_STRUCT_CHECKED(particle_system, Memory, 1);
+  entity *Entity = PUSH_STRUCT_CHECKED(entity, Memory, 1, True);
+  Entity->Emitter = PUSH_STRUCT_CHECKED(particle_system, Memory, 1, True);
 
   Entity->Scale = 1.0f;
 

@@ -68,6 +68,8 @@ InitChunkPlane(u32 zIndex, world_chunk *Chunk, chunk_dimension ChunkDim, u8 Colo
 void
 InitChunkPerlin(perlin_noise *Noise, world_chunk *WorldChunk, chunk_dimension Dim, u8 ColorIndex)
 {
+  TIMED_FUNCTION();
+
   Assert(WorldChunk);
 
   chunk_data *ChunkData = WorldChunk->Data;

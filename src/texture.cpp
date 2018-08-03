@@ -130,7 +130,7 @@ LoadDDS(const char * FilePath)
   unsigned int bufsize;
 
   bufsize = mipMapCount > 1 ? linearSize * 2 : linearSize;
-  buffer = PUSH_STRUCT_CHECKED(u8, TranArena, bufsize);
+  buffer = PUSH_STRUCT_CHECKED(u8, TranArena, bufsize, True);
   fread(buffer, 1, bufsize, TextureFile);
   fclose(TextureFile);
 
@@ -183,7 +183,7 @@ LoadDDS(const char * FilePath)
 texture *
 GenTexture(v2i Dim, memory_arena *Mem)
 {
-  texture *Texture = PUSH_STRUCT_CHECKED(texture, Mem, 1);
+  texture *Texture = PUSH_STRUCT_CHECKED(texture, Mem, 1, True);
   Texture->Dim = Dim;
 
   glGenTextures(1, &Texture->ID);

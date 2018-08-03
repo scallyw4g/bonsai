@@ -254,8 +254,8 @@ PlatformInit(platform *Plat, memory_arena *Memory)
   Plat->Queue.EnqueueIndex = 0;
   Plat->Queue.DequeueIndex = 0;
 
-  Plat->Queue.Entries = PUSH_STRUCT_CHECKED(work_queue_entry,  Plat->Memory, WORK_QUEUE_SIZE);
-  Plat->Threads = PUSH_STRUCT_CHECKED(thread_startup_params,  Plat->Memory, ThreadCount);
+  Plat->Queue.Entries = PUSH_STRUCT_CHECKED(work_queue_entry,  Plat->Memory, WORK_QUEUE_SIZE, True);
+  Plat->Threads = PUSH_STRUCT_CHECKED(thread_startup_params,  Plat->Memory, ThreadCount, True);
 
   work_queue *Queue = &Plat->Queue;
 
@@ -438,14 +438,14 @@ main()
   InitializeOpenGlExtensions(&Os);
 
   // These two arenas must be initialized before the the debug state can be
-  memory_arena *DebugMemory = PlatformAllocateArena();
-  TranArena                 = PlatformAllocateArena(Megabytes(8));
+  mt_memory_arena DebugMemory = PlatformAllocateMtArena();
+  TranArena                   = PlatformAllocateArena(Megabytes(8));
   TranArena->MemProtect = False;
 
-  DEBUG_REGISTER_ARENA(DebugMemory, &Plat.DebugState);
+  DEBUG_REGISTER_ARENA(DebugMemory.Arena, &Plat.DebugState);
   DEBUG_REGISTER_ARENA(TranArena  , &Plat.DebugState);
 
-  INIT_DEBUG_STATE(&Plat, DebugMemory);
+  INIT_DEBUG_STATE(&Plat, &DebugMemory);
 
   memory_arena *PlatMemory     = PlatformAllocateArena();
   memory_arena *GraphicsMemory = PlatformAllocateArena();

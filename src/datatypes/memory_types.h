@@ -45,6 +45,8 @@ Clear(T *Struct)
   Fill(Struct, 0);
 }
 
+#define INVALID_THREAD_HANDLE U64_MAX
+
 struct memory_arena
 {
   u8* Start;
@@ -57,27 +59,34 @@ struct memory_arena
 
 #if BONSAI_INTERNAL
   umm Pushes;
+  u64 OwnedByThread = INVALID_THREAD_HANDLE;
+#endif
 
-#if MEMPROTECT
+#if BONSAI_INTERNAL && MEMPROTECT
   b32 MemProtect = true;
 #endif
+};
 
-#endif
-  u8 Pad[4];
+struct mt_memory_arena
+{
+  mutex Mut;
+  memory_arena *Arena;
 };
 
 #if BONSAI_INTERNAL
+void*
+PushStructChecked_(memory_arena *Arena, umm StructCount, umm StructSize, b32 MemProtect, const char* Name, s32 Line, const char* File);
 
 void*
-PushStructChecked_(memory_arena *Arena, umm StructCount, umm StructSize, const char* Name, s32 Line, const char* File);
+PushStructChecked_(mt_memory_arena *Arena, umm StructCount, umm StructSize, b32 MemProtect, const char* Name, s32 Line, const char* File);
 
-#define PUSH_STRUCT_CHECKED(Type, Arena, Number) \
-  (Type*)PushStructChecked_( Arena, sizeof(Type), (umm)Number, #Type, __LINE__, __FILE__ )
+#define PUSH_STRUCT_CHECKED(Type, Arena, Number, MemProtect) \
+  (Type*)PushStructChecked_( Arena, sizeof(Type), (umm)Number, MemProtect, #Type, __LINE__, __FILE__ )
 
 #else
 
-#define PUSH_STRUCT_CHECKED(Type, Arena, Number) \
-  (Type*)PushStruct( Arena, sizeof(Type)*Number );
+#define PUSH_STRUCT_CHECKED(Type, Arena, Number, MemProtect) \
+  (Type*)PushStruct( Arena, sizeof(Type)*Number, MemProtect );
 
 #endif
 
@@ -320,6 +329,13 @@ PushSize(memory_arena *Arena, umm SizeIn)
 
 
   Assert(Arena->At <= Arena->End);
+  return Result;
+}
+
+void*
+PushStruct(mt_memory_arena *Memory, umm sizeofStruct)
+{
+  void* Result = PushSize(Memory->Arena, sizeofStruct);
   return Result;
 }
 

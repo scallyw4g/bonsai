@@ -31,7 +31,7 @@ struct stream_cursor
 u32_static_array
 U32_Static_Array(u32 Count, memory_arena *Memory)
 {
-  u32 *Elements = PUSH_STRUCT_CHECKED(u32, Memory, Count );
+  u32 *Elements = PUSH_STRUCT_CHECKED(u32, Memory, Count , True);
   u32_static_array Result= {Elements, 0, Count};
 
   return Result;
@@ -40,7 +40,7 @@ U32_Static_Array(u32 Count, memory_arena *Memory)
 v3_static_array
 V3_Static_Array(u32 Count, memory_arena *Memory)
 {
-  v3 *Elements = PUSH_STRUCT_CHECKED(v3, Memory, Count );
+  v3 *Elements = PUSH_STRUCT_CHECKED(v3, Memory, Count , True);
   v3_static_array Result= {Elements, 0, Count};
 
   return Result;
@@ -106,7 +106,7 @@ done:
 
   Cursor->At = At;
 
-  char *Result = PUSH_STRUCT_CHECKED(char, Arena, ResultLength + 1);
+  char *Result = PUSH_STRUCT_CHECKED(char, Arena, ResultLength + 1, True);
   MemCopy((u8*)Start, (u8*)Result, ResultLength);
 
   return Result;
@@ -355,7 +355,7 @@ LoadObj(memory_arena *PermMem, const char * FilePath)
   Assert(Mesh.At == Mesh.End);
 
   model Result = {};
-  Result.Chunk = PUSH_STRUCT_CHECKED(chunk_data, PermMem, 1);;
+  Result.Chunk = PUSH_STRUCT_CHECKED(chunk_data, PermMem, 1, True);;
   Result.Chunk->Mesh = Mesh;
   SetFlag(&Result, Chunk_Initialized);
 
