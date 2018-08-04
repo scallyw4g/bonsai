@@ -69,6 +69,7 @@ struct debug_scope_tree
 struct debug_scope_tree_list
 {
   debug_scope_tree List[SCOPE_TREE_COUNT];
+  mutex Mutex;
 };
 
 enum debug_ui_type
@@ -145,8 +146,11 @@ struct debug_state
   b32 DebugDoScopeProfiling = True;
 
   debug_profile_scope FreeScopeSentinel;
+  /* mutex FreeScopeMutex; */
+
   debug_scope_tree_list *ThreadScopeTrees;
   u32 ReadScopeIndex;
+  u32 WriteScopeIndex;
   s32 FreeScopeCount;
   u64 NumScopes;
 
@@ -166,8 +170,7 @@ struct debug_state
   {
     if (!this->DebugDoScopeProfiling) return 0;
 
-    s32 Index = (this->ReadScopeIndex + 1) % SCOPE_TREE_COUNT;
-    debug_scope_tree *RootScope = &this->ThreadScopeTrees[ThreadLocal_ThreadIndex].List[Index];
+    debug_scope_tree *RootScope = &this->ThreadScopeTrees[ThreadLocal_ThreadIndex].List[this->WriteScopeIndex];
     return RootScope;
   }
 };
@@ -217,35 +220,11 @@ global_variable debug_profile_scope NullDebugProfileScope = {};
 
 debug_profile_scope * GetProfileScope(debug_state *State);
 
-debug_profile_scope *
-GetProfileScope(debug_state *State)
-{
-  debug_profile_scope *Result = 0;
-  debug_profile_scope *Sentinel = &State->FreeScopeSentinel;
-
-  if (Sentinel->Child != Sentinel)
-  {
-    Result = Sentinel->Child;
-
-    Sentinel->Child = Sentinel->Child->Child;
-    Sentinel->Child->Child->Parent = Sentinel;
-    --State->FreeScopeCount;
-  }
-  else
-  {
-    Result = Allocate(debug_profile_scope, State->Memory, 1, False);
-  }
-
-  if (Result)
-    *Result = NullDebugProfileScope;
-
-  return Result;
-}
-
 struct debug_timed_function
 {
   u64 StartingCycleCount;
   debug_profile_scope *Scope;
+  debug_scope_tree *Tree;
 
   debug_timed_function(const char *Name)
   {
@@ -256,20 +235,22 @@ struct debug_timed_function
     ++DebugState->NumScopes;
 
     this->Scope = GetProfileScope(DebugState);
+    this->Tree = DebugState->GetWriteScopeTree();
 
     if (this->Scope)
     {
-      debug_scope_tree *WriteTree = DebugState->GetWriteScopeTree();
-      debug_profile_scope *CurrentScope = WriteTree->CurrentScope;
+      debug_profile_scope *CurrentScope = this->Tree->CurrentScope;
       this->Scope->Parent = CurrentScope;
 
-      (*WriteTree->WriteScope) = this->Scope;
-      WriteTree->WriteScope = &this->Scope->Child;
-      WriteTree->CurrentScope = this->Scope;
+      (*this->Tree->WriteScope) = this->Scope;
+      this->Tree->WriteScope = &this->Scope->Child;
+      this->Tree->CurrentScope = this->Scope;
 
       this->Scope->Name = Name;
       this->StartingCycleCount = GetCycleCount(); // Intentionally last
     }
+
+    return;
   }
 
   ~debug_timed_function()
@@ -278,19 +259,17 @@ struct debug_timed_function
     if (!DebugState->DebugDoScopeProfiling) return;
     if (!this->Scope) return;
 
-
     u64 EndingCycleCount = GetCycleCount(); // Intentionally first
     u64 CycleCount = (EndingCycleCount - this->StartingCycleCount);
 
-    debug_scope_tree *Tree = DebugState->GetWriteScopeTree();
-    Assert (Tree->WriteScope);
-
-    debug_profile_scope *CurrentScope = Tree->CurrentScope;
+    debug_profile_scope *CurrentScope = this->Tree->CurrentScope;
     CurrentScope->CycleCount = CycleCount;
 
     // 'Pop' the scope stack
-    Tree->WriteScope = &CurrentScope->Sibling;
+    this->Tree->WriteScope = &CurrentScope->Sibling;
     CurrentScope = CurrentScope->Parent;
+
+    return;
   }
 
 };

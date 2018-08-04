@@ -335,7 +335,32 @@ AdvanceScopeTrees(debug_state *State)
 {
   if (!State->DebugDoScopeProfiling) return;
 
+  // Note(Jesse): These mutexes are necessary because incrementing and modding
+  // isn't threadsafe.  If that operation could be done atomically, we could
+  // get rid of these locks I think.
+  for (u32 MutIndex = 0;
+      MutIndex < GetWorkerThreadCount();
+      ++MutIndex)
+  {
+    if (MutIndex == ThreadLocal_ThreadIndex)
+      continue;
+
+    PlatformLockMutex(&State->ThreadScopeTrees[MutIndex].Mutex);
+  }
+
   State->ReadScopeIndex = (State->ReadScopeIndex+1) % SCOPE_TREE_COUNT;
+  State->WriteScopeIndex = (State->WriteScopeIndex+1) % SCOPE_TREE_COUNT;
+
+  for (u32 MutIndex = 0;
+      MutIndex < GetWorkerThreadCount();
+      ++MutIndex)
+  {
+    if (MutIndex == ThreadLocal_ThreadIndex)
+      continue;
+
+    PlatformUnlockMutex(&State->ThreadScopeTrees[MutIndex].Mutex);
+  }
+
   debug_scope_tree *WriteTree = State->GetWriteScopeTree();
 
   FreeScopes(State, WriteTree->Root);
@@ -344,17 +369,55 @@ AdvanceScopeTrees(debug_state *State)
   return;
 }
 
+
+debug_profile_scope *
+GetProfileScope(debug_state *State)
+{
+  debug_profile_scope *Result = 0;
+  debug_profile_scope *Sentinel = &State->FreeScopeSentinel;
+
+  // @memory-leak: Reinstate this in an MT-Safe way!
+#if 0
+  PlatformLockMutex(&State->FreeScopeMutex);
+  if (Sentinel->Child != Sentinel)
+  {
+    Result = Sentinel->Child;
+
+    Sentinel->Child = Sentinel->Child->Child;
+    Sentinel->Child->Child->Parent = Sentinel;
+    --State->FreeScopeCount;
+  }
+  else
+  {
+    Result = Allocate(debug_profile_scope, State->Memory, 1, False);
+  }
+
+  if (Result)
+    *Result = NullDebugProfileScope;
+
+  PlatformUnlockMutex(&State->FreeScopeMutex);
+#else
+    Result = Allocate(debug_profile_scope, State->Memory, 1, False);
+#endif
+
+  return Result;
+}
+
 void
 InitScopeTrees(mt_memory_arena *DebugMemory, u32 TotalThreadCount)
 {
   GlobalDebugState->FreeScopeSentinel.Parent = &GlobalDebugState->FreeScopeSentinel;
   GlobalDebugState->FreeScopeSentinel.Child = &GlobalDebugState->FreeScopeSentinel;
+  /* PlatformInitializeMutex(&GlobalDebugState->FreeScopeMutex); */
+
+  GlobalDebugState->WriteScopeIndex = GlobalDebugState->ReadScopeIndex + 1;
 
   GlobalDebugState->ThreadScopeTrees = Allocate(debug_scope_tree_list, DebugMemory, TotalThreadCount, True);
   for (u32 ThreadIndex = 0;
       ThreadIndex < TotalThreadCount;
       ++ThreadIndex)
   {
+    PlatformInitializeMutex(&GlobalDebugState->ThreadScopeTrees[ThreadIndex].Mutex);
     for (u32 TreeIndex = 0;
         TreeIndex < SCOPE_TREE_COUNT;
         ++TreeIndex)
@@ -1131,23 +1194,30 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Layo
 
       v2 MinP = Layout->At;
       v2 MaxDim = V2(15.0, Group->Font.Size);
+
+      v3 Color = V3(0.5f, 0.5f, 0.5f);
+      if ( Tree == DebugState->GetWriteScopeTree() )
+      {
+        Color = V3(0.8f, 0.0f, 0.0f);
+        Perc = 0.05f;
+      }
+
+      if ( Tree == DebugState->GetReadScopeTree() )
+        Color = V3(0.8f, 0.8f, 0.0f);
+
       v2 QuadDim = V2(15.0, (Group->Font.Size) * Perc);
       v2 Offset = MaxDim - QuadDim;
 
       v2 DrawDim = BufferQuad(Group, &Group->TextGroup->UIGeo, MinP + Offset, QuadDim);
       Layout->At.x = DrawDim.x + 5.0f;
 
-      v3 Color = V3(0.5f, 0.5f, 0.5f);
-      if ( Tree == DebugState->GetWriteScopeTree() )
-        Color = V3(0.8f, 0.0f, 0.0f);
-
-      if ( Tree == DebugState->GetReadScopeTree() )
-        Color = V3(0.8f, 0.8f, 0.0f);
-
       if (MouseP > MinP && MouseP < DrawDim)
       {
-        DebugState->ReadScopeIndex = TreeIndex;
-        Color = V3(0.8f, 0.8f, 0.0f);
+        if (TreeIndex != DebugState->WriteScopeIndex)
+        {
+          DebugState->ReadScopeIndex = TreeIndex;
+          Color = V3(0.8f, 0.8f, 0.0f);
+        }
       }
 
       BufferColors(Group->TextGroup->UIGeo.Colors, Group->TextGroup->UIGeo.At, Color);
