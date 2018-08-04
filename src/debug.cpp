@@ -320,12 +320,12 @@ FreeScopes(debug_state *DebugState, debug_profile_scope *ScopeToFree)
   debug_profile_scope *First = Sentinel->Child;
 
   Sentinel->Child = ScopeToFree;
-  First->Parent = ScopeToFree;
+  First->Sibling = ScopeToFree;
 
-  ScopeToFree->Parent = Sentinel;
+  ScopeToFree->Sibling = Sentinel;
   ScopeToFree->Child = First;
 
-  Assert(Sentinel->Parent);
+  Assert(Sentinel->Sibling);
 
   return;
 }
@@ -406,7 +406,7 @@ GetProfileScope(debug_state *State)
 void
 InitScopeTrees(mt_memory_arena *DebugMemory, u32 TotalThreadCount)
 {
-  GlobalDebugState->FreeScopeSentinel.Parent = &GlobalDebugState->FreeScopeSentinel;
+  GlobalDebugState->FreeScopeSentinel.Sibling = &GlobalDebugState->FreeScopeSentinel;
   GlobalDebugState->FreeScopeSentinel.Child = &GlobalDebugState->FreeScopeSentinel;
   /* PlatformInitializeMutex(&GlobalDebugState->FreeScopeMutex); */
 

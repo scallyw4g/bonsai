@@ -48,9 +48,9 @@ struct debug_profile_scope
   const char* Name;
   b32 Expanded;
 
-  debug_profile_scope *Parent;
   debug_profile_scope *Sibling;
   debug_profile_scope *Child;
+  debug_profile_scope *Parent;
 
   scope_stats *Stats;
 };
@@ -59,7 +59,8 @@ struct debug_scope_tree
 {
   debug_profile_scope *Root;
   debug_profile_scope **WriteScope;
-  debug_profile_scope *CurrentScope;
+
+  debug_profile_scope *ParentOfNextScope;
 
   u64 TotalCycles;
   r32 FrameMs;
@@ -239,12 +240,11 @@ struct debug_timed_function
 
     if (this->Scope)
     {
-      debug_profile_scope *CurrentScope = this->Tree->CurrentScope;
-      this->Scope->Parent = CurrentScope;
-
       (*this->Tree->WriteScope) = this->Scope;
       this->Tree->WriteScope = &this->Scope->Child;
-      this->Tree->CurrentScope = this->Scope;
+
+      this->Scope->Parent = this->Tree->ParentOfNextScope;
+      this->Tree->ParentOfNextScope = this->Scope;
 
       this->Scope->Name = Name;
       this->StartingCycleCount = GetCycleCount(); // Intentionally last
@@ -261,13 +261,11 @@ struct debug_timed_function
 
     u64 EndingCycleCount = GetCycleCount(); // Intentionally first
     u64 CycleCount = (EndingCycleCount - this->StartingCycleCount);
-
-    debug_profile_scope *CurrentScope = this->Tree->CurrentScope;
-    CurrentScope->CycleCount = CycleCount;
+    this->Scope->CycleCount = CycleCount;
 
     // 'Pop' the scope stack
-    this->Tree->WriteScope = &CurrentScope->Sibling;
-    CurrentScope = CurrentScope->Parent;
+    this->Tree->WriteScope = &this->Scope->Sibling;
+    this->Tree->ParentOfNextScope = this->Scope->Parent;
 
     return;
   }
