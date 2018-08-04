@@ -995,7 +995,8 @@ inline void
 BufferScopeTreeEntry(ui_render_group *Group, debug_profile_scope *Scope, layout *Layout,
     u32 Color, u64 TotalCycles, u64 TotalFrameCycles, u64 CallCount, u32 Depth)
 {
-  Assert(TotalFrameCycles);
+  /* Assert(TotalFrameCycles); */
+
   r32 Percentage = 100.0f * (r32)SafeDivide0((r64)TotalCycles, (r64)TotalFrameCycles);
   u64 AvgCycles = (u64)SafeDivide0(TotalCycles, CallCount);
 
@@ -1043,11 +1044,11 @@ IsInsideRect(rect2 Rect, v2 P)
 }
 
 scope_stats
-GetStatsFor(debug_state *State, debug_profile_scope *Scope)
+GetStatsFor( debug_profile_scope *Scope, debug_profile_scope *Root)
 {
   scope_stats Result = {};
 
-  debug_profile_scope *Next = State->GetReadScopeTree()->Root;
+  debug_profile_scope *Next = Root;
   if (Scope->Parent) Next = Scope->Parent->Child; // Selects first sibling
 
   while (Next)
@@ -1097,7 +1098,7 @@ HoverAndClickExpand(ui_render_group *Group, layout *Layout, T *Expandable, u8 Co
 }
 
 void
-BufferFirstCallToEach(ui_render_group *Group, debug_profile_scope *Scope, debug_state *State, layout *Layout, u64 TotalFrameCycles, u32 Depth)
+BufferFirstCallToEach(ui_render_group *Group, debug_profile_scope *Scope, debug_profile_scope *TreeRoot, mt_memory_arena *Memory, layout *Layout, u64 TotalFrameCycles, u32 Depth)
 {
   if (!Scope) return;
 
@@ -1105,8 +1106,8 @@ BufferFirstCallToEach(ui_render_group *Group, debug_profile_scope *Scope, debug_
   {
     if (!Scope->Stats)
     {
-      Scope->Stats = Allocate(scope_stats, State->Memory, 1, False);
-      *Scope->Stats = GetStatsFor(State, Scope);
+      Scope->Stats = Allocate(scope_stats, Memory, 1, False);
+      *Scope->Stats = GetStatsFor(Scope, TreeRoot);
     }
 
     if (Scope->Stats->IsFirst)
@@ -1116,11 +1117,11 @@ BufferFirstCallToEach(ui_render_group *Group, debug_profile_scope *Scope, debug_
       BufferScopeTreeEntry(Group, Scope, Layout, MainColor, Scope->Stats->CumulativeCycles, TotalFrameCycles, Scope->Stats->Calls, Depth);
 
       if (Scope->Expanded)
-        BufferFirstCallToEach(Group, Scope->Stats->MaxScope->Child, State, Layout, TotalFrameCycles, Depth+1);
+        BufferFirstCallToEach(Group, Scope->Stats->MaxScope->Child, TreeRoot, Memory, Layout, TotalFrameCycles, Depth+1);
     }
   }
 
-  BufferFirstCallToEach(Group, Scope->Sibling, State, Layout, TotalFrameCycles, Depth);
+  BufferFirstCallToEach(Group, Scope->Sibling, TreeRoot, Memory, Layout, TotalFrameCycles, Depth);
 
   return;
 }
@@ -1259,10 +1260,18 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Layo
   END_BLOCK("Frame Ticker");
 
   TIMED_BLOCK("Call Graph");
-    PadBottom(Layout, 15);
-    NewLine(Layout, &Group->Font);
-    debug_scope_tree *ReadTree = DebugState->GetReadScopeTree();
-    BufferFirstCallToEach(Group, ReadTree->Root, DebugState, Layout, ReadTree->TotalCycles, 0);
+
+    u32 TotalThreadCount = GetWorkerThreadCount() + 1;
+    for ( u32 ThreadIndex = 0;
+        ThreadIndex < TotalThreadCount;
+        ++ThreadIndex)
+    {
+      PadBottom(Layout, 15);
+      NewLine(Layout, &Group->Font);
+      debug_scope_tree *ReadTree = &DebugState->ThreadScopeTrees[ThreadIndex].List[DebugState->ReadScopeIndex];
+      BufferFirstCallToEach(Group, ReadTree->Root, ReadTree->Root, DebugState->Memory, Layout, ReadTree->TotalCycles, 0);
+    }
+
   END_BLOCK("Call Graph");
 }
 

@@ -52,6 +52,7 @@ perlin_noise::perlin_noise(unsigned int seed) {
 }
 
 double perlin_noise::noise(double x, double y, double z) {
+  TIMED_FUNCTION();
 	// Find the unit cube that contains the point
 	int X = (int) floor(x) & 255;
 	int Y = (int) floor(y) & 255;
