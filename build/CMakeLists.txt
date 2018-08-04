@@ -30,6 +30,7 @@ add_executable(test_chunk ${TESTS}/chunk.cpp)
 add_executable(test_string ${TESTS}/string.cpp)
 add_executable(test_objloader ${TESTS}/objloader.cpp)
 add_executable(test_allocation ${TESTS}/allocation.cpp)
+add_executable(test_callgraph ${TESTS}/callgraph.cpp)
 
 add_definitions( -DGL_GLEXT_PROTOTYPES=1 )
 
@@ -56,6 +57,7 @@ target_link_libraries(test_chunk ${OPENGL_LIBRARIES})
 target_link_libraries(test_string ${OPENGL_LIBRARIES})
 target_link_libraries(test_objloader ${OPENGL_LIBRARIES})
 target_link_libraries(test_allocation ${OPENGL_LIBRARIES})
+target_link_libraries(test_callgraph ${OPENGL_LIBRARIES})
 
 add_custom_target(run /usr/bin/optirun ${BIN}/Bonsai
                   DEPENDS Bonsai
@@ -66,6 +68,7 @@ add_custom_target(tests ${BIN}/test_m4
                         ${BIN}/test_string
                         ${BIN}/test_objloader
                         ${BIN}/test_allocation
+                        ${BIN}/test_callgraph
                         COMMENT "Running M4 Tests")
 
 target_compile_definitions(Bonsai  PUBLIC BONSAI_INTERNAL=1)
@@ -76,6 +79,7 @@ target_compile_definitions(test_chunk PUBLIC BONSAI_INTERNAL=1)
 target_compile_definitions(test_string PUBLIC BONSAI_INTERNAL=1)
 target_compile_definitions(test_objloader PUBLIC BONSAI_INTERNAL=1)
 target_compile_definitions(test_allocation PUBLIC BONSAI_INTERNAL=1)
+target_compile_definitions(test_callgraph PUBLIC BONSAI_INTERNAL=1)
 
 
 
