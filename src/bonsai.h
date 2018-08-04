@@ -934,6 +934,7 @@ AllocateWorldChunk(memory_arena *Storage, world_position WorldP, chunk_dimension
   world_chunk *Result = Allocate(world_chunk, Storage, 1, True);
   Result->Data = AllocateChunk(Storage, Dim);
   Result->WorldP = WorldP;
+  Storage->MemProtect = True;
 
   return Result;
 }

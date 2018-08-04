@@ -290,7 +290,11 @@ void
 InitScopeTree(debug_scope_tree *Tree)
 {
   debug_profile_scope *Root = Tree->Root;
+  Assert(Root);
+
   Clear(Tree);
+
+  Tree->Root         = Root;
   Tree->WriteScope   = &Root;
   Tree->CurrentScope = Root;
 
@@ -337,15 +341,13 @@ AdvanceScopeTrees(debug_state *State)
 {
   if (!State->DebugDoScopeProfiling) return;
 
-  { // Advance to the next scope and reinitialize
-    State->ReadScopeIndex = (State->ReadScopeIndex+1) % TOTAL_ROOT_SCOPES;
-    debug_scope_tree *WriteScope = State->GetWriteScopeTree();
-    if (WriteScope)
-    {
-      FreeScopes(State, WriteScope->Root);
-      InitScopeTree(WriteScope);
-    }
-  }
+  State->ReadScopeIndex = (State->ReadScopeIndex+1) % TOTAL_ROOT_SCOPES;
+  debug_scope_tree *WriteTree = State->GetWriteScopeTree();
+
+  FreeScopes(State, WriteTree->Root);
+  InitScopeTree(WriteTree);
+
+  return;
 }
 
 void
@@ -357,8 +359,6 @@ InitDebugState(platform *Plat, mt_memory_arena *DebugMemory)
 
   GlobalDebugState->FreeScopeSentinel.Parent = &GlobalDebugState->FreeScopeSentinel;
   GlobalDebugState->FreeScopeSentinel.Child = &GlobalDebugState->FreeScopeSentinel;
-
-  /* AdvanceScopeTrees(GlobalDebugState); */
 
   GlobalDebugState->Initialized = True;
   u32 TotalThreadCount = GetWorkerThreadCount() + 1;
@@ -400,11 +400,10 @@ InitDebugState(platform *Plat, mt_memory_arena *DebugMemory)
         TreeIndex < TOTAL_ROOT_SCOPES;
         ++TreeIndex)
     {
-      GlobalDebugState->ScopeTrees[ThreadIndex]->Root = GetProfileScope(GlobalDebugState);
-      InitScopeTree(GlobalDebugState->ScopeTrees[ThreadIndex]);
+      GlobalDebugState->ScopeTrees[ThreadIndex][TreeIndex].Root = GetProfileScope(GlobalDebugState);
+      InitScopeTree(&GlobalDebugState->ScopeTrees[ThreadIndex][TreeIndex]);
     }
   }
-
 
   AllocateMesh(&GlobalDebugState->LineMesh, 1024, DebugMemory->Arena);
 
@@ -1036,21 +1035,23 @@ BufferFirstCallToEach(ui_render_group *Group, debug_profile_scope *Scope, debug_
 {
   if (!Scope) return;
 
-  if (!Scope->Stats)
+  if (Scope->Name)
   {
-    Scope->Stats = Allocate(scope_stats, State->Memory, 1, False);
-    *Scope->Stats = GetStatsFor(State, Scope);
-  }
+    if (!Scope->Stats)
+    {
+      Scope->Stats = Allocate(scope_stats, State->Memory, 1, False);
+      *Scope->Stats = GetStatsFor(State, Scope);
+    }
 
-  if (Scope->Stats->IsFirst)
-  {
-    u32 MainColor = HoverAndClickExpand(Group, Layout, Scope, WHITE, TEAL);
+    if (Scope->Stats->IsFirst)
+    {
+      u32 MainColor = HoverAndClickExpand(Group, Layout, Scope, WHITE, TEAL);
 
-    BufferScopeTreeEntry(Group, Scope, Layout, MainColor, Scope->Stats->CumulativeCycles, TotalFrameCycles, Scope->Stats->Calls, Depth);
+      BufferScopeTreeEntry(Group, Scope, Layout, MainColor, Scope->Stats->CumulativeCycles, TotalFrameCycles, Scope->Stats->Calls, Depth);
 
-    if (Scope->Expanded)
-      BufferFirstCallToEach(Group, Scope->Stats->MaxScope->Child, State, Layout, TotalFrameCycles, Depth+1);
-
+      if (Scope->Expanded)
+        BufferFirstCallToEach(Group, Scope->Stats->MaxScope->Child, State, Layout, TotalFrameCycles, Depth+1);
+    }
   }
 
   BufferFirstCallToEach(Group, Scope->Sibling, State, Layout, TotalFrameCycles, Depth);
@@ -1080,16 +1081,15 @@ DebugFrameBegin(hotkeys *Hotkeys, r32 Dt, u64 Cycles)
     State->UIType = (debug_ui_type)(((s32)State->UIType + 1) % (s32)DebugUIType_Count);
   }
 
-  { // Record dt/cycles for the frame we're finishing with
-    debug_scope_tree *WriteScope = State->GetWriteScopeTree();
-    if (WriteScope)
-    {
-      WriteScope->FrameMs = Dt*1000.0f;
-      WriteScope->TotalCycles = Cycles;
-    }
+  // Record dt/cycles for the frame we're finishing with
+  debug_scope_tree *WriteTree = State->GetWriteScopeTree();
+  if (WriteTree)
+  {
+    WriteTree->FrameMs = Dt*1000.0f;
+    WriteTree->TotalCycles = Cycles;
   }
 
-  /* AdvanceScopeTrees(State); */
+  AdvanceScopeTrees(State);
 
   return;
 }
@@ -1124,6 +1124,7 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Layo
         ++TreeIndex )
     {
       debug_scope_tree *Tree = &DebugState->ScopeTrees[ThreadLocal_ThreadIndex][TreeIndex];
+      Assert(Tree->CurrentScope);
 
       r32 Perc = SafeDivide0(Tree->FrameMs, MaxMs);
 

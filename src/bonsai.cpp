@@ -351,7 +351,7 @@ UpdateCameraP(platform *Plat, world *World, canonical_position NewTarget, camera
 
   if (Plat->Input.RMB.IsDown)
   {
-    Camera->DistanceFromTarget += MouseDelta.y*100.0f;
+    Camera->DistanceFromTarget += MouseDelta.y*200.0f;
   }
 
   if (Camera->DistanceFromTarget <= 0)
