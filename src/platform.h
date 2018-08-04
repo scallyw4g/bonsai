@@ -239,5 +239,32 @@ StringsMatch(const char *S1, const char *S2)
   return Result;
 }
 
+inline b32
+Contains(const char *S1, const char *S2)
+{
+  const char *S1At = S1;
+  while (*S1At)
+  {
+    const char *S2At = S2;
+
+    b32 Result = (*S1At == *S2At);
+    while (Result && *S1At && *S2At)
+    {
+      Result &= (*S1At++ == *S2At++);
+    }
+
+    if (Result && *S2At == 0)
+    {
+      return True;
+    }
+    else
+    {
+      ++S1At;
+    }
+  }
+
+  return False;
+}
+
 #endif
 

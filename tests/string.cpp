@@ -134,6 +134,22 @@ TestStreamCursor()
   return;
 }
 
+void
+TestContains()
+{
+  Assert( Contains("abc", "abc") );
+  Assert( Contains("abcd", "abc") );
+  Assert( Contains("dabc", "abc") );
+  Assert( Contains("dabcd", "abc") );
+
+  Assert(!Contains("bc", "abc") );
+  Assert(!Contains("bacd", "abc") );
+  Assert(!Contains("dacb", "abc") );
+  Assert(!Contains("adbcd", "abc") );
+
+  return;
+}
+
 s32
 main()
 {
@@ -175,7 +191,7 @@ main()
 
   TestStreamCursor();
 
-
+  TestContains();
 
   return 0;
 }

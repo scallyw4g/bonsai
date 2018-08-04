@@ -445,7 +445,7 @@ main()
   DEBUG_REGISTER_ARENA(DebugMemory.Arena, &Plat.DebugState);
   DEBUG_REGISTER_ARENA(TranArena  , &Plat.DebugState);
 
-  INIT_DEBUG_STATE(&Plat, &DebugMemory);
+  INIT_DEBUG_STATE(&Plat.DebugState, &DebugMemory);
 
   memory_arena *PlatMemory     = PlatformAllocateArena();
   memory_arena *GraphicsMemory = PlatformAllocateArena();

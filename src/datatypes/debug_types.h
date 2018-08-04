@@ -65,6 +65,12 @@ struct debug_scope_tree
   r32 FrameMs;
 };
 
+#define SCOPE_TREE_COUNT 64
+struct debug_scope_tree_list
+{
+  debug_scope_tree List[SCOPE_TREE_COUNT];
+};
+
 enum debug_ui_type
 {
   DebugUIType_None,
@@ -120,7 +126,6 @@ struct selected_arenas
 debug_global __thread u64 ThreadLocal_ThreadIndex = 0;
 
 #define REGISTERED_MEMORY_ARENA_COUNT 32
-#define TOTAL_ROOT_SCOPES 64
 #define META_TABLE_SIZE (16 * 1024)
 struct debug_state
 {
@@ -140,7 +145,7 @@ struct debug_state
   b32 DebugDoScopeProfiling = True;
 
   debug_profile_scope FreeScopeSentinel;
-  debug_scope_tree **ScopeTrees;
+  debug_scope_tree_list *ThreadScopeTrees;
   u32 ReadScopeIndex;
   s32 FreeScopeCount;
   u64 NumScopes;
@@ -153,7 +158,7 @@ struct debug_state
 
   debug_scope_tree *GetReadScopeTree()
   {
-    debug_scope_tree *RootScope = &this->ScopeTrees[ThreadLocal_ThreadIndex][this->ReadScopeIndex];
+    debug_scope_tree *RootScope = &this->ThreadScopeTrees[ThreadLocal_ThreadIndex].List[this->ReadScopeIndex];
     return RootScope;
   }
 
@@ -161,8 +166,8 @@ struct debug_state
   {
     if (!this->DebugDoScopeProfiling) return 0;
 
-    s32 Index = (this->ReadScopeIndex + 1) % TOTAL_ROOT_SCOPES;
-    debug_scope_tree *RootScope = &this->ScopeTrees[ThreadLocal_ThreadIndex][Index];
+    s32 Index = (this->ReadScopeIndex + 1) % SCOPE_TREE_COUNT;
+    debug_scope_tree *RootScope = &this->ThreadScopeTrees[ThreadLocal_ThreadIndex].List[Index];
     return RootScope;
   }
 };
@@ -246,7 +251,7 @@ struct debug_timed_function
   {
     debug_state *DebugState = GetDebugState();
     if (!DebugState->DebugDoScopeProfiling) return;
-    Assert (DebugState->ScopeTrees[ThreadLocal_ThreadIndex]->WriteScope);
+    /* Assert (DebugState->ThreadScopeTrees[ThreadLocal_ThreadIndex].List[0]->WriteScope); */
 
     ++DebugState->NumScopes;
 
@@ -254,15 +259,13 @@ struct debug_timed_function
 
     if (this->Scope)
     {
-      debug_profile_scope *CurrentScope = DebugState->ScopeTrees[ThreadLocal_ThreadIndex]->CurrentScope;
+      debug_scope_tree *WriteTree = DebugState->GetWriteScopeTree();
+      debug_profile_scope *CurrentScope = WriteTree->CurrentScope;
       this->Scope->Parent = CurrentScope;
 
-      debug_scope_tree *Tree = DebugState->ScopeTrees[ThreadLocal_ThreadIndex];
-
-      (*Tree->WriteScope) = this->Scope;
-      CurrentScope = this->Scope;
-
-      Tree->WriteScope = &this->Scope->Child;
+      (*WriteTree->WriteScope) = this->Scope;
+      WriteTree->WriteScope = &this->Scope->Child;
+      WriteTree->CurrentScope = this->Scope;
 
       this->Scope->Name = Name;
       this->StartingCycleCount = GetCycleCount(); // Intentionally last
@@ -279,7 +282,7 @@ struct debug_timed_function
     u64 EndingCycleCount = GetCycleCount(); // Intentionally first
     u64 CycleCount = (EndingCycleCount - this->StartingCycleCount);
 
-    debug_scope_tree *Tree = DebugState->ScopeTrees[ThreadLocal_ThreadIndex];
+    debug_scope_tree *Tree = DebugState->GetWriteScopeTree();
     Assert (Tree->WriteScope);
 
     debug_profile_scope *CurrentScope = Tree->CurrentScope;
@@ -292,7 +295,7 @@ struct debug_timed_function
 
 };
 
-#define INIT_DEBUG_STATE(PlatPtr, MemArena) InitDebugState(PlatPtr, MemArena)
+#define INIT_DEBUG_STATE(DebugStatePtr, MemArena) InitDebugState(DebugStatePtr, MemArena)
 
 #define TIMED_FUNCTION() debug_timed_function FunctionTimer(BONSAI_FUNCTION_NAME)
 #define TIMED_BLOCK(BlockName) { debug_timed_function BlockTimer(BlockName)

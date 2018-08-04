@@ -139,6 +139,11 @@ if (UNIX)
   target_link_libraries(test_objloader ${CMAKE_THREAD_LIBS_INIT}) # -lpthread
   target_link_libraries(test_objloader ${CMAKE_DL_LIBS})          # .so loader
 
+  target_link_libraries(test_callgraph X11)                       # Xlib
+  target_link_libraries(test_callgraph ${CMAKE_THREAD_LIBS_INIT}) # -lpthread
+  target_link_libraries(test_callgraph ${CMAKE_DL_LIBS})          # .so loader
+
+
 elseif(WIN32)
 
   set(GAME_COMPILED_LIB ${BIN}/Debug/Game.dll)

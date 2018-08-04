@@ -289,14 +289,8 @@ AllocateAndInitGeoBuffer(untextured_2d_geometry_buffer *Geo, u32 VertCount, memo
 void
 InitScopeTree(debug_scope_tree *Tree)
 {
-  debug_profile_scope *Root = Tree->Root;
-  Assert(Root);
-
   Clear(Tree);
-
-  Tree->Root         = Root;
-  Tree->WriteScope   = &Root;
-  Tree->CurrentScope = Root;
+  Tree->WriteScope   = &Tree->Root;
 
   return;
 }
@@ -341,7 +335,7 @@ AdvanceScopeTrees(debug_state *State)
 {
   if (!State->DebugDoScopeProfiling) return;
 
-  State->ReadScopeIndex = (State->ReadScopeIndex+1) % TOTAL_ROOT_SCOPES;
+  State->ReadScopeIndex = (State->ReadScopeIndex+1) % SCOPE_TREE_COUNT;
   debug_scope_tree *WriteTree = State->GetWriteScopeTree();
 
   FreeScopes(State, WriteTree->Root);
@@ -351,59 +345,68 @@ AdvanceScopeTrees(debug_state *State)
 }
 
 void
-InitDebugState(platform *Plat, mt_memory_arena *DebugMemory)
+InitScopeTrees(mt_memory_arena *DebugMemory, u32 TotalThreadCount)
 {
-  GlobalDebugState = &Plat->DebugState;
-
-  GlobalDebugState->Memory = DebugMemory;
-
   GlobalDebugState->FreeScopeSentinel.Parent = &GlobalDebugState->FreeScopeSentinel;
   GlobalDebugState->FreeScopeSentinel.Child = &GlobalDebugState->FreeScopeSentinel;
 
-  GlobalDebugState->Initialized = True;
-  u32 TotalThreadCount = GetWorkerThreadCount() + 1;
-
-  { // Initializing debug memory allocation system
-
-    umm PushSize = TotalThreadCount * sizeof(push_metadata*);
-    GlobalDebugState->MetaTables = (push_metadata**)PushStruct(DebugMemory, PushSize);
-
-    for (u32 ThreadIndex = 0;
-        ThreadIndex < TotalThreadCount;
-        ++ThreadIndex)
-    {
-      umm PushSize = META_TABLE_SIZE * sizeof(push_metadata);
-      GlobalDebugState->MetaTables[ThreadIndex] = (push_metadata*)PushStruct(DebugMemory, PushSize);
-    }
-
-    GlobalDebugState->MetaTableMutexes = (mutex*)PushStruct(DebugMemory, sizeof(mutex)*TotalThreadCount);
-
-    for (u32 ThreadIndex = 0;
-        ThreadIndex < TotalThreadCount;
-        ++ThreadIndex)
-    {
-      mutex *Mutex = GlobalDebugState->MetaTableMutexes + ThreadIndex;
-      PlatformInitializeMutex(Mutex);
-    }
-
-  } //  Can now call Allocate
-
-
-  GlobalDebugState->ScopeTrees = Allocate(debug_scope_tree*, DebugMemory, TotalThreadCount, True);
+  GlobalDebugState->ThreadScopeTrees = Allocate(debug_scope_tree_list, DebugMemory, TotalThreadCount, True);
   for (u32 ThreadIndex = 0;
       ThreadIndex < TotalThreadCount;
       ++ThreadIndex)
   {
-    GlobalDebugState->ScopeTrees[ThreadIndex] = Allocate(debug_scope_tree, DebugMemory, TOTAL_ROOT_SCOPES, True);
-
     for (u32 TreeIndex = 0;
-        TreeIndex < TOTAL_ROOT_SCOPES;
+        TreeIndex < SCOPE_TREE_COUNT;
         ++TreeIndex)
     {
-      GlobalDebugState->ScopeTrees[ThreadIndex][TreeIndex].Root = GetProfileScope(GlobalDebugState);
-      InitScopeTree(&GlobalDebugState->ScopeTrees[ThreadIndex][TreeIndex]);
+      GlobalDebugState->ThreadScopeTrees[ThreadIndex].List[TreeIndex].Root = GetProfileScope(GlobalDebugState);
+      InitScopeTree(&GlobalDebugState->ThreadScopeTrees[ThreadIndex].List[TreeIndex]);
     }
   }
+
+  return;
+}
+
+void
+InitDebugMemoryAllocationSystem(mt_memory_arena *DebugMemory, u32 TotalThreadCount)
+{
+  umm PushSize = TotalThreadCount * sizeof(push_metadata*);
+  GlobalDebugState->MetaTables = (push_metadata**)PushStruct(DebugMemory, PushSize);
+
+  for (u32 ThreadIndex = 0;
+      ThreadIndex < TotalThreadCount;
+      ++ThreadIndex)
+  {
+    umm PushSize = META_TABLE_SIZE * sizeof(push_metadata);
+    GlobalDebugState->MetaTables[ThreadIndex] = (push_metadata*)PushStruct(DebugMemory, PushSize);
+  }
+
+  GlobalDebugState->MetaTableMutexes = (mutex*)PushStruct(DebugMemory, sizeof(mutex)*TotalThreadCount);
+
+  for (u32 ThreadIndex = 0;
+      ThreadIndex < TotalThreadCount;
+      ++ThreadIndex)
+  {
+    mutex *Mutex = GlobalDebugState->MetaTableMutexes + ThreadIndex;
+    PlatformInitializeMutex(Mutex);
+  }
+
+  return;
+}
+
+void
+InitDebugState(debug_state *DebugState, mt_memory_arena *DebugMemory)
+{
+  GlobalDebugState = DebugState;
+
+  GlobalDebugState->Memory = DebugMemory;
+
+  GlobalDebugState->Initialized = True;
+  u32 TotalThreadCount = GetWorkerThreadCount() + 1;
+
+  InitDebugMemoryAllocationSystem(DebugMemory, TotalThreadCount);
+
+  InitScopeTrees(DebugMemory, TotalThreadCount);
 
   AllocateMesh(&GlobalDebugState->LineMesh, 1024, DebugMemory->Arena);
 
@@ -1120,12 +1123,10 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Layo
     v2 StartingAt = Layout->At;
 
     for (u32 TreeIndex = 0;
-        TreeIndex < TOTAL_ROOT_SCOPES;
+        TreeIndex < SCOPE_TREE_COUNT;
         ++TreeIndex )
     {
-      debug_scope_tree *Tree = &DebugState->ScopeTrees[ThreadLocal_ThreadIndex][TreeIndex];
-      Assert(Tree->CurrentScope);
-
+      debug_scope_tree *Tree = &DebugState->ThreadScopeTrees[ThreadLocal_ThreadIndex].List[TreeIndex];
       r32 Perc = SafeDivide0(Tree->FrameMs, MaxMs);
 
       v2 MinP = Layout->At;
@@ -1752,23 +1753,23 @@ struct min_max_avg_dt
 };
 
 min_max_avg_dt
-ComputeMinMaxAvgDt(debug_scope_tree *ScopeTrees)
+ComputeMinMaxAvgDt(debug_scope_tree_list *ScopeTrees)
 {
   TIMED_FUNCTION();
 
   min_max_avg_dt Dt = {};
 
     for (u32 TreeIndex = 0;
-        TreeIndex < TOTAL_ROOT_SCOPES;
+        TreeIndex < SCOPE_TREE_COUNT;
         ++TreeIndex )
     {
-      debug_scope_tree *Tree = &ScopeTrees[TreeIndex];
+      debug_scope_tree *Tree = &ScopeTrees->List[TreeIndex];
 
       Dt.Min = Min(Dt.Min, Tree->FrameMs);
       Dt.Max = Max(Dt.Max, Tree->FrameMs);
       Dt.Avg += Tree->FrameMs;
     }
-    Dt.Avg /= (r32)TOTAL_ROOT_SCOPES;
+    Dt.Avg /= (r32)SCOPE_TREE_COUNT;
 
   return Dt;
 }
@@ -1936,7 +1937,7 @@ DebugFrameEnd(platform *Plat, game_state *GameState)
 
 
   TIMED_BLOCK("Draw Status Bar");
-    Dt = ComputeMinMaxAvgDt(DebugState->ScopeTrees[ThreadLocal_ThreadIndex]);
+    Dt = ComputeMinMaxAvgDt(&DebugState->ThreadScopeTrees[ThreadLocal_ThreadIndex]);
     BufferColumn(Dt.Max, 6, &Group, &Layout, WHITE);
     NewLine(&Layout, &Group.Font);
 
