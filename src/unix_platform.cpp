@@ -40,6 +40,8 @@ PlatformInitializeMutex(mutex *Mutex)
 void
 PlatformUnlockMutex(mutex *Mutex)
 {
+  /* TIMED_MUTEX_UNLOCK(); */
+
   s32 Fail = pthread_mutex_unlock(Mutex);
 
   if (Fail)
@@ -54,6 +56,8 @@ PlatformUnlockMutex(mutex *Mutex)
 void
 PlatformLockMutex(mutex *Mutex)
 {
+  /* TIMED_MUTEX_LOCK(); */
+
   s32 Fail = pthread_mutex_lock(Mutex);
 
   if (Fail)
@@ -92,6 +96,12 @@ GetWorkerThreadCount()
   return ThreadCount;
 }
 
+u32
+GetTotalThreadCount()
+{
+  u32 Result = GetWorkerThreadCount() + 1;
+  return Result;
+}
 
 u8*
 PlatformProtectPage(u8* Mem)

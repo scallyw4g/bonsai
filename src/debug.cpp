@@ -217,9 +217,6 @@ ClearMetaRecordsFor(memory_arena *Arena)
       push_metadata *Meta = &GetDebugState()->MetaTables[ThreadIndex][MetaIndex];
       if (Meta->ArenaHash == HashArena(Arena))
       {
-        // @meta_table_thread_bug
-        // FIXME(Jesse): Another thread writing to this meta record at the same
-        // time will corrupt this record. Put a lock around this clear.
         Clear(Meta);
       }
     }
@@ -339,12 +336,9 @@ AdvanceScopeTrees(debug_state *State)
   // isn't threadsafe.  If that operation could be done atomically, we could
   // get rid of these locks I think.
   for (u32 MutIndex = 0;
-      MutIndex < GetWorkerThreadCount();
+      MutIndex < GetTotalThreadCount();
       ++MutIndex)
   {
-    if (MutIndex == ThreadLocal_ThreadIndex)
-      continue;
-
     PlatformLockMutex(&State->ThreadScopeTrees[MutIndex].Mutex);
   }
 
@@ -352,12 +346,9 @@ AdvanceScopeTrees(debug_state *State)
   State->WriteScopeIndex = (State->WriteScopeIndex+1) % SCOPE_TREE_COUNT;
 
   for (u32 MutIndex = 0;
-      MutIndex < GetWorkerThreadCount();
+      MutIndex < GetTotalThreadCount();
       ++MutIndex)
   {
-    if (MutIndex == ThreadLocal_ThreadIndex)
-      continue;
-
     PlatformUnlockMutex(&State->ThreadScopeTrees[MutIndex].Mutex);
   }
 
@@ -1481,11 +1472,6 @@ BufferDebugPushMetaData(debug_state *DebugState, ui_render_group *Group, selecte
 
 
   // Pick out relevant metadata and write to collation table
-
-  // @meta_table_thread_bug
-  // FIXME(Jesse): Another thread writing to this meta table at the same
-  // time can cause a half-written record to get collated.  We need a lock in
-  // here to ensure that doesn't happen.
   u32 TotalThreadCount = GetWorkerThreadCount() + 1;
 
 

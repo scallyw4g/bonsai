@@ -82,8 +82,10 @@ ThreadMain(void *Input)
                                         DequeueIndex);
       if ( Exchanged )
       {
+        PlatformLockMutex(&GetDebugState()->ThreadScopeTrees[ThreadLocal_ThreadIndex].Mutex);
         work_queue_entry Entry = Queue->Entries[DequeueIndex];
         GameThreadCallback(&Entry, ThreadArena);
+        PlatformUnlockMutex(&GetDebugState()->ThreadScopeTrees[ThreadLocal_ThreadIndex].Mutex);
       }
     }
 

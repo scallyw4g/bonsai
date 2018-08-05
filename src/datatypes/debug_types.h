@@ -231,7 +231,6 @@ struct debug_timed_function
   {
     debug_state *DebugState = GetDebugState();
     if (!DebugState->DebugDoScopeProfiling) return;
-    /* Assert (DebugState->ThreadScopeTrees[ThreadLocal_ThreadIndex].List[0]->WriteScope); */
 
     ++DebugState->NumScopes;
 
