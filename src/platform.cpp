@@ -71,6 +71,8 @@ ThreadMain(void *Input)
 
   for (;;)
   {
+    WORKER_THREAD_WAIT_FOR_DEBUG_SYSTEM();
+
     ThreadSleep( &Queue->Semaphore );
 
     b32 Exchanged = False;
@@ -82,10 +84,8 @@ ThreadMain(void *Input)
                                         DequeueIndex);
       if ( Exchanged )
       {
-        PlatformLockMutex(&GetDebugState()->ThreadScopeTrees[ThreadLocal_ThreadIndex].Mutex);
         work_queue_entry Entry = Queue->Entries[DequeueIndex];
         GameThreadCallback(&Entry, ThreadArena);
-        PlatformUnlockMutex(&GetDebugState()->ThreadScopeTrees[ThreadLocal_ThreadIndex].Mutex);
       }
     }
 
@@ -250,21 +250,20 @@ PlatformInit(platform *Plat, memory_arena *Memory)
   Plat->Memory = Memory;
 
   u32 LogicalCoreCount = GetLogicalCoreCount();
-  u32 ThreadCount = GetWorkerThreadCount();
-  Info("Detected %d Logical cores, creating %d threads", LogicalCoreCount, ThreadCount);
+  u32 WorkerThreadCount = GetWorkerThreadCount();
+  Info("Detected %d Logical cores, creating %d threads", LogicalCoreCount, WorkerThreadCount);
 
   Plat->Queue.EnqueueIndex = 0;
   Plat->Queue.DequeueIndex = 0;
 
   Plat->Queue.Entries = Allocate(work_queue_entry,  Plat->Memory, WORK_QUEUE_SIZE, True);
-  Plat->Threads = Allocate(thread_startup_params,  Plat->Memory, ThreadCount, True);
+  Plat->Threads = Allocate(thread_startup_params,  Plat->Memory, WorkerThreadCount, True);
 
   work_queue *Queue = &Plat->Queue;
-
   Queue->Semaphore = CreateSemaphore();
 
   for (u32 ThreadIndex = 0;
-      ThreadIndex < ThreadCount;
+      ThreadIndex < WorkerThreadCount;
       ++ ThreadIndex )
   {
     thread_startup_params *Params = &Plat->Threads[ThreadIndex];

@@ -70,7 +70,6 @@ struct debug_scope_tree
 struct debug_scope_tree_list
 {
   debug_scope_tree List[SCOPE_TREE_COUNT];
-  mutex Mutex;
 };
 
 enum debug_ui_type
@@ -126,6 +125,7 @@ struct selected_arenas
 };
 
 debug_global __thread u64 ThreadLocal_ThreadIndex = 0;
+debug_global __thread debug_scope_tree *ThreadLocal_WriteTree = 0;
 
 #define REGISTERED_MEMORY_ARENA_COUNT 32
 #define META_TABLE_SIZE (16 * 1024)
@@ -147,7 +147,7 @@ struct debug_state
   b32 DebugDoScopeProfiling = True;
 
   debug_profile_scope FreeScopeSentinel;
-  /* mutex FreeScopeMutex; */
+  mutex FreeScopeMutex;
 
   debug_scope_tree_list *ThreadScopeTrees;
   u32 ReadScopeIndex;
@@ -160,6 +160,8 @@ struct debug_state
 
   registered_memory_arena RegisteredMemoryArenas[REGISTERED_MEMORY_ARENA_COUNT];
 
+  b32 MainThreadBlocksWorkerThreads;
+  s32 WorkerThreadsWaiting;
 
   debug_scope_tree *GetReadScopeTree()
   {
@@ -169,8 +171,6 @@ struct debug_state
 
   debug_scope_tree *GetWriteScopeTree()
   {
-    if (!this->DebugDoScopeProfiling) return 0;
-
     debug_scope_tree *RootScope = &this->ThreadScopeTrees[ThreadLocal_ThreadIndex].List[this->WriteScopeIndex];
     return RootScope;
   }
@@ -230,6 +230,7 @@ struct debug_timed_function
   debug_timed_function(const char *Name)
   {
     debug_state *DebugState = GetDebugState();
+    Clear(this);
     if (!DebugState->DebugDoScopeProfiling) return;
 
     ++DebugState->NumScopes;
@@ -281,6 +282,8 @@ struct debug_timed_function
 #define DEBUG_FRAME_END(Plat, GameState) DebugFrameEnd(Plat, GameState)
 #define DEBUG_FRAME_BEGIN(Hotkeys, dt, Cycles) DebugFrameBegin(Hotkeys, dt, Cycles)
 
+#define WORKER_THREAD_WAIT_FOR_DEBUG_SYSTEM(...) WorkerThreadWaitForDebugSystem()
+
 #else
 
 #define INIT_DEBUG_STATE(...)
@@ -292,6 +295,8 @@ struct debug_timed_function
 #define DEBUG_FRAME_RECORD(...)
 #define DEBUG_FRAME_END(...)
 #define DEBUG_FRAME_BEGIN(...)
+
+#define WORKER_THREAD_WAIT_FOR_DEBUG_SYSTEM(...)
 
 #endif
 

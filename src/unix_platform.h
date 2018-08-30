@@ -36,6 +36,7 @@
 #define EXPORT extern "C" __attribute__((visibility("default")))
 
 #define CompleteAllWrites  asm volatile("" ::: "memory"); _mm_sfence()
+#define CompleteAllReads  asm volatile("" ::: "memory"); _mm_lfence()
 
 /*
  * glX Business
@@ -90,6 +91,27 @@ PlatformDebugStacktrace()
   return;
 }
 
+
+inline void
+AtomicDecrement( volatile s32 *Source )
+{
+  __sync_sub_and_fetch( Source, 1 );
+  return;
+}
+
+inline void
+AtomicIncrement( volatile s32 *Source )
+{
+  __sync_add_and_fetch( Source, 1 );
+  return;
+}
+
+inline u32
+AtomicExchange( volatile u32 *Source, const u32 Exchange )
+{
+  u32 Result = __sync_lock_test_and_set( Source, Exchange );
+  return Result;
+}
 
 inline b32
 AtomicCompareExchange( volatile char **Source, const char *Exchange, const char *Comparator )

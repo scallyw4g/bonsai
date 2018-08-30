@@ -332,25 +332,21 @@ AdvanceScopeTrees(debug_state *State)
 {
   if (!State->DebugDoScopeProfiling) return;
 
-  // Note(Jesse): These mutexes are necessary because incrementing and modding
-  // isn't threadsafe.  If that operation could be done atomically, we could
-  // get rid of these locks I think.
-  for (u32 MutIndex = 0;
-      MutIndex < GetTotalThreadCount();
-      ++MutIndex)
-  {
-    PlatformLockMutex(&State->ThreadScopeTrees[MutIndex].Mutex);
-  }
+  State->MainThreadBlocksWorkerThreads = True;
 
-  State->ReadScopeIndex = (State->ReadScopeIndex+1) % SCOPE_TREE_COUNT;
-  State->WriteScopeIndex = (State->WriteScopeIndex+1) % SCOPE_TREE_COUNT;
+  u32 NewWriteScopeIndex = (State->WriteScopeIndex+1) % SCOPE_TREE_COUNT;
+  u32 NewReadScopeIndex = (State->ReadScopeIndex+1) % SCOPE_TREE_COUNT;
 
-  for (u32 MutIndex = 0;
-      MutIndex < GetTotalThreadCount();
-      ++MutIndex)
-  {
-    PlatformUnlockMutex(&State->ThreadScopeTrees[MutIndex].Mutex);
-  }
+  u32 WorkerThreadCount = GetWorkerThreadCount();
+  while (State->WorkerThreadsWaiting < WorkerThreadCount);
+
+  CompleteAllWrites;
+  CompleteAllReads;
+
+  AtomicExchange(&State->WriteScopeIndex, NewWriteScopeIndex);
+  AtomicExchange(&State->ReadScopeIndex, NewReadScopeIndex);
+
+  State->MainThreadBlocksWorkerThreads = False;
 
   debug_scope_tree *WriteTree = State->GetWriteScopeTree();
 
@@ -367,8 +363,8 @@ GetProfileScope(debug_state *State)
   debug_profile_scope *Result = 0;
   debug_profile_scope *Sentinel = &State->FreeScopeSentinel;
 
-  // @memory-leak: Reinstate this in an MT-Safe way!
 #if 0
+  // @memory-leak: Reinstate this in an MT-Safe way!
   PlatformLockMutex(&State->FreeScopeMutex);
   if (Sentinel->Child != Sentinel)
   {
@@ -399,7 +395,7 @@ InitScopeTrees(mt_memory_arena *DebugMemory, u32 TotalThreadCount)
 {
   GlobalDebugState->FreeScopeSentinel.Sibling = &GlobalDebugState->FreeScopeSentinel;
   GlobalDebugState->FreeScopeSentinel.Child = &GlobalDebugState->FreeScopeSentinel;
-  /* PlatformInitializeMutex(&GlobalDebugState->FreeScopeMutex); */
+  PlatformInitializeMutex(&GlobalDebugState->FreeScopeMutex);
 
   GlobalDebugState->WriteScopeIndex = GlobalDebugState->ReadScopeIndex + 1;
 
@@ -408,7 +404,6 @@ InitScopeTrees(mt_memory_arena *DebugMemory, u32 TotalThreadCount)
       ThreadIndex < TotalThreadCount;
       ++ThreadIndex)
   {
-    PlatformInitializeMutex(&GlobalDebugState->ThreadScopeTrees[ThreadIndex].Mutex);
     for (u32 TreeIndex = 0;
         TreeIndex < SCOPE_TREE_COUNT;
         ++TreeIndex)
@@ -1113,6 +1108,20 @@ BufferFirstCallToEach(ui_render_group *Group, debug_profile_scope *Scope, debug_
   }
 
   BufferFirstCallToEach(Group, Scope->Sibling, TreeRoot, Memory, Layout, TotalFrameCycles, Depth);
+
+  return;
+}
+
+inline void
+WorkerThreadWaitForDebugSystem()
+{
+  debug_state *DebugState = GetDebugState();
+  if (DebugState->MainThreadBlocksWorkerThreads)
+  {
+    AtomicIncrement(&DebugState->WorkerThreadsWaiting);
+    while(DebugState->MainThreadBlocksWorkerThreads);
+    AtomicDecrement(&DebugState->WorkerThreadsWaiting);
+  }
 
   return;
 }

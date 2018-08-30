@@ -241,7 +241,9 @@ PlatformUnprotectArena(memory_arena *Arena)
 inline void
 ThreadSleep( semaphore *Semaphore )
 {
+  AtomicIncrement(&GetDebugState()->WorkerThreadsWaiting);
   sem_wait(Semaphore);
+  AtomicDecrement(&GetDebugState()->WorkerThreadsWaiting);
   return;
 }
 
