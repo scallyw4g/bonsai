@@ -647,6 +647,15 @@ RandomBilateral(random_series *Entropy)
   return Result;
 }
 
+inline v3
+RandomV3(random_series *Entropy)
+{
+  v3 Result =  {RandomUnilateral(Entropy),
+                RandomUnilateral(Entropy),
+                RandomUnilateral(Entropy)};
+  return Result;
+}
+
 #if 0
 inline u8
 GetVoxelColor(packed_voxel *V)

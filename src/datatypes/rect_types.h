@@ -5,6 +5,13 @@ struct rect2
   v2 Max;
 };
 
+rect2
+RectMinDim(v2 Min, v2 Dim)
+{
+  rect2 Result = {Min, Min+Dim};
+  return Result;
+}
+
 struct aabb
 {
   v3 Center;

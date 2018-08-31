@@ -605,14 +605,18 @@ BufferQuadDirect(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z, v2 ScreenD
 
   // Native OpenGL screen coordinates are {0,0} at the bottom-left corner. This
   // maps the origin to the top-left of the screen.
-  v3 InvertY = V3(1.0f, -1.0f, 1.0f);
+  //
+  // It is also true that Z goes _into_ the screen, which makes 1.0f the bottom
+  // of the unit cube.  It makes more sense to think of 1.0f as the top of the
+  // cube when stacking UI elements such as text, so invert that too.
+  v3 InvertYZ = V3(1.0f, -1.0f, -1.0f);
 
-  Dest[StartingIndex++] = InvertY * ((vertex_up_left    * ToClipSpace) * 2.0f - 1);
-  Dest[StartingIndex++] = InvertY * ((vertex_down_left  * ToClipSpace) * 2.0f - 1);
-  Dest[StartingIndex++] = InvertY * ((vertex_up_right   * ToClipSpace) * 2.0f - 1);
-  Dest[StartingIndex++] = InvertY * ((vertex_down_right * ToClipSpace) * 2.0f - 1);
-  Dest[StartingIndex++] = InvertY * ((vertex_up_right   * ToClipSpace) * 2.0f - 1);
-  Dest[StartingIndex++] = InvertY * ((vertex_down_left  * ToClipSpace) * 2.0f - 1);
+  Dest[StartingIndex++] = InvertYZ * ((vertex_up_left    * ToClipSpace) * 2.0f - 1);
+  Dest[StartingIndex++] = InvertYZ * ((vertex_down_left  * ToClipSpace) * 2.0f - 1);
+  Dest[StartingIndex++] = InvertYZ * ((vertex_up_right   * ToClipSpace) * 2.0f - 1);
+  Dest[StartingIndex++] = InvertYZ * ((vertex_down_right * ToClipSpace) * 2.0f - 1);
+  Dest[StartingIndex++] = InvertYZ * ((vertex_up_right   * ToClipSpace) * 2.0f - 1);
+  Dest[StartingIndex++] = InvertYZ * ((vertex_down_left  * ToClipSpace) * 2.0f - 1);
 
   v2 Max = vertex_down_right.xy;
   return Max;
@@ -634,14 +638,58 @@ BufferQuad(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, v2 MinP, 
   if (BufferIsFull(Geo, 6))
     FlushBuffer(Group->TextGroup, Geo, Group->ScreenDim);
 
-  v2 Result = BufferQuadDirect(Geo->Verts, Geo->At, MinP, Dim, Z, Group->ScreenDim);
-  return Result;
+  v2 MaxP = BufferQuadDirect(Geo->Verts, Geo->At, MinP, Dim, Z, Group->ScreenDim);
+  return MaxP;
+}
+
+inline r32
+BufferChar(ui_render_group *Group, textured_2d_geometry_buffer *Geo, u32 CharIndex, v2 MinP, font *Font, const char *Text, u32 Color)
+{
+  char Char = Text[CharIndex];
+  v2 UV = V2( (Char%16)/16.0f, (Char/16)/16.0f );
+
+  { // Black Drop-shadow
+    BufferQuad(Group, Geo, MinP+V2(3), V2(Font->Size), 1.0f);
+    BufferTextUVs(Geo, UV);
+    BufferColors(Group, Geo, getDefaultPalette()[BLACK].xyz);
+    Geo->At += 6;
+  }
+
+  v2 MaxP = BufferQuad(Group, Geo, MinP, V2(Font->Size), 1.0f);
+  BufferTextUVs(Geo, UV);
+  BufferColors(Group, Geo, getDefaultPalette()[Color].xyz);
+  Geo->At += 6;
+
+  r32 DeltaX = (MaxP.x - MinP.x);
+
+  return DeltaX;
 }
 
 r32
-BufferTextAt(ui_render_group *Group, layout *Layout, font *Font, const char *Text, u32 Color)
+BufferTextAt(ui_render_group *Group, v2 BasisP, font *Font, const char *Text, u32 Color)
 {
-  textured_2d_geometry_buffer *TextGeo = &Group->TextGroup->TextGeo;
+  textured_2d_geometry_buffer *Geo = &Group->TextGroup->TextGeo;
+
+  s32 QuadCount = (s32)strlen(Text);
+
+  r32 DeltaX = 0;
+
+  for ( s32 CharIndex = 0;
+      CharIndex < QuadCount;
+      CharIndex++ )
+  {
+    v2 MinP = BasisP + V2(Font->Size*CharIndex, 0);
+    DeltaX += BufferChar(Group, Geo, CharIndex, MinP, Font, Text, Color);
+    continue;
+  }
+
+  return DeltaX;
+}
+
+r32
+BufferText(ui_render_group *Group, layout *Layout, font *Font, const char *Text, u32 Color)
+{
+  textured_2d_geometry_buffer *Geo = &Group->TextGroup->TextGeo;
 
   s32 QuadCount = (s32)strlen(Text);
 
@@ -652,18 +700,7 @@ BufferTextAt(ui_render_group *Group, layout *Layout, font *Font, const char *Tex
       CharIndex++ )
   {
     v2 MinP = Layout->Basis + Layout->At + V2(Font->Size*CharIndex, 0);
-    v2 MaxP = BufferQuad(Group, TextGeo, MinP, V2(Font->Size));
-
-    char character = Text[CharIndex];
-    v2 UV = V2( (character%16)/16.0f, (character/16)/16.0f );
-    BufferTextUVs(TextGeo, UV);
-
-    BufferColors(Group, TextGeo, getDefaultPalette()[Color].xyz);
-
-    TextGeo->At += 6;
-
-    DeltaX += (MaxP.x - MinP.x);
-
+    DeltaX += BufferChar(Group, Geo, CharIndex, MinP, Font, Text, Color);
     continue;
   }
 
@@ -709,7 +746,7 @@ AdvanceClip(layout *Layout)
 inline void
 BufferValue(const char *Text, ui_render_group *Group, layout *Layout, u32 ColorIndex)
 {
-  r32 DeltaX = BufferTextAt(Group, Layout, &Group->Font, Text, ColorIndex);
+  r32 DeltaX = BufferText(Group, Layout, &Group->Font, Text, ColorIndex);
   Layout->At.x += DeltaX;
 
   AdvanceClip(Layout);
@@ -1193,6 +1230,25 @@ Column(const char* ColumnText, ui_render_group *Group, table_layout *Table, u8 C
 
 v3 ColorTable [] = 
 {
+  {0.5f, 0.5f, 0.5f},
+  {0.5f, 1.0f, 1.0f},
+  {0.5f, 0.5f, 1.0f},
+  {0.5f, 1.0f, 0.5f},
+  {1.0f, 1.0f, 0.5f},
+  {1.0f, 0.5f, 0.5f},
+  {0.5f, 1.0f, 0.5f},
+  {1.0f, 0.5f, 1.0f},
+
+  {0.5f, 0.5f, 0.5f},
+  {1.0f, 1.0f, 1.0f},
+  {1.0f, 0.5f, 0.5f},
+  {1.0f, 1.0f, 0.5f},
+  {1.0f, 0.5f, 1.0f},
+  {0.5f, 0.5f, 1.0f},
+  {0.5f, 1.0f, 1.0f},
+  {1.0f, 0.5f, 1.0f},
+  {0.5f, 1.0f, 0.5f},
+
   {0.0f, 0.0f, 0.0f},
   {1.0f, 1.0f, 1.0f},
   {1.0f, 0.0f, 0.0f},
@@ -1203,30 +1259,18 @@ v3 ColorTable [] =
   {1.0f, 0.0f, 1.0f},
   {0.0f, 1.0f, 0.0f},
 
-  {1.0f, 1.0f, 1.0f},
-  {0.5f, 0.5f, 0.5f},
-  {0.5f, 1.0f, 1.0f},
-  {0.5f, 0.5f, 1.0f},
-  {0.5f, 1.0f, 0.5f},
-  {1.0f, 1.0f, 0.5f},
-  {1.0f, 0.5f, 0.5f},
-  {0.5f, 1.0f, 0.5f},
-  {1.0f, 0.5f, 1.0f},
-
-  {0.5f, 0.5f, 0.5f},
-  {1.0f, 1.0f, 1.0f},
-  {1.0f, 0.5f, 0.5f},
-  {1.0f, 1.0f, 0.5f},
-  {1.0f, 0.5f, 1.0f},
-  {0.5f, 0.5f, 1.0f},
-  {0.5f, 1.0f, 1.0f},
-  {1.0f, 0.5f, 1.0f},
-  {0.5f, 1.0f, 0.5f},
 };
 
 void
+DoTooltip(ui_render_group *Group, const char *Text)
+{
+  BufferTextAt(Group, Group->MouseP + V2(12, -7), &Group->Font, Text, WHITE);
+  return;
+}
+
+void
 DrawScopeBar(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, debug_profile_scope *Scope,
-             table_layout *Layout, u64 FrameTotalCycles, u64 FrameStartCycle, r32 TotalGraphWidth, u32 ColorIndex = 0)
+             table_layout *Layout, u64 FrameTotalCycles, u64 FrameStartCycle, r32 TotalGraphWidth, random_series *Entropy, u32 ColorIndex = 0)
 {
   if (!Scope) return;
 
@@ -1241,25 +1285,36 @@ DrawScopeBar(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, debug_p
       r32 BarWidth = FramePerc*TotalGraphWidth;
       v2 BarDim = V2(BarWidth, BarHeight);
 
-      v2 MinP = Layout->Layout.At + Layout->Layout.Basis;
-
       // Advance to the appropriate starting place along graph
       u64 StartCycleOffset = Scope->StartingCycle - FrameStartCycle;
       r32 XOffset = ((r32)StartCycleOffset/(r32)FrameTotalCycles)*TotalGraphWidth;
 
-      BufferQuad(Group, Geo, MinP + V2(XOffset, 0), BarDim);
-      BufferColors(Group, Geo, ColorTable[(ColorIndex++%ArrayCount(ColorTable))] );
+      v2 MinP = Layout->Layout.At + Layout->Layout.Basis + V2(XOffset, 0);
+      v2 QuadMaxP = BufferQuad(Group, Geo, MinP, BarDim);
+      b32 Hovering = IsInsideRect(RectMinDim(MinP, BarDim), Group->MouseP);
+
+      v3 Color = RandomV3(Entropy);
+      if (Hovering)
+      {
+        Color = {{ 1, 1, 1 }};
+        DoTooltip(Group, Scope->Name);
+      }
+
+      BufferColors(Group, Geo, Color);
       Geo->At+=6;
 
       if (Scope->Expanded)
-        DrawScopeBar(Group, Geo, Scope->Stats->MaxScope->Child, Layout, FrameTotalCycles, FrameStartCycle, TotalGraphWidth, ColorIndex);
+      {
+        Layout->Layout.At.y += Group->Font.LineHeight;
+        DrawScopeBar(Group, Geo, Scope->Stats->MaxScope->Child, Layout, FrameTotalCycles, FrameStartCycle, TotalGraphWidth, Entropy, ColorIndex);
+        Layout->Layout.At.y -= Group->Font.LineHeight;
+      }
     }
   }
 
-  DrawScopeBar(Group, Geo, Scope->Sibling, Layout, FrameTotalCycles, FrameStartCycle, TotalGraphWidth, ColorIndex);
+  DrawScopeBar(Group, Geo, Scope->Sibling, Layout, FrameTotalCycles, FrameStartCycle, TotalGraphWidth, Entropy, ColorIndex);
 
   return;
-
 }
 
 void
@@ -1296,7 +1351,8 @@ DebugDrawPerfBargraph(ui_render_group *Group, debug_state *DebugState, layout *L
   r32 TotalGraphWidth = 2000.0f;
   /* BufferHorizontalBar(Group, Geo, &TableLayout.Layout, TotalGraphWidth, V3(0.5f)); */
 
-  DrawScopeBar(Group, Geo, ReadTree->Root, &TableLayout, ReadTree->TotalCycles, ReadTree->StartingCycle, TotalGraphWidth);
+  random_series Entropy = {};
+  DrawScopeBar(Group, Geo, ReadTree->Root, &TableLayout, ReadTree->TotalCycles, ReadTree->StartingCycle, TotalGraphWidth, &Entropy);
 
   return;
 }
