@@ -45,6 +45,7 @@ struct scope_stats
 struct debug_profile_scope
 {
   u64 CycleCount;
+  u64 StartingCycle;
   const char* Name;
   b32 Expanded;
 
@@ -63,6 +64,7 @@ struct debug_scope_tree
   debug_profile_scope *ParentOfNextScope;
 
   u64 TotalCycles;
+  u64 StartingCycle;
   r32 FrameMs;
 };
 
@@ -223,7 +225,6 @@ debug_profile_scope * GetProfileScope(debug_state *State);
 
 struct debug_timed_function
 {
-  u64 StartingCycleCount;
   debug_profile_scope *Scope;
   debug_scope_tree *Tree;
 
@@ -247,7 +248,7 @@ struct debug_timed_function
       this->Tree->ParentOfNextScope = this->Scope;
 
       this->Scope->Name = Name;
-      this->StartingCycleCount = GetCycleCount(); // Intentionally last
+      this->Scope->StartingCycle = GetCycleCount(); // Intentionally last
     }
 
     return;
@@ -260,7 +261,7 @@ struct debug_timed_function
     if (!this->Scope) return;
 
     u64 EndingCycleCount = GetCycleCount(); // Intentionally first
-    u64 CycleCount = (EndingCycleCount - this->StartingCycleCount);
+    u64 CycleCount = (EndingCycleCount - this->Scope->StartingCycle);
     this->Scope->CycleCount = CycleCount;
 
     // 'Pop' the scope stack
@@ -280,7 +281,7 @@ struct debug_timed_function
 
 #define DEBUG_FRAME_RECORD(...) DoDebugFrameRecord(__VA_ARGS__)
 #define DEBUG_FRAME_END(Plat, GameState) DebugFrameEnd(Plat, GameState)
-#define DEBUG_FRAME_BEGIN(Hotkeys, dt, Cycles) DebugFrameBegin(Hotkeys, dt, Cycles)
+#define DEBUG_FRAME_BEGIN(Hotkeys, dt, PreviousFrameTotalCycles, ThisFrameStartingCycle) DebugFrameBegin(Hotkeys, dt, PreviousFrameTotalCycles, ThisFrameStartingCycle)
 
 #define WORKER_THREAD_WAIT_FOR_DEBUG_SYSTEM(...) WorkerThreadWaitForDebugSystem()
 

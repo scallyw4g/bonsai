@@ -505,9 +505,9 @@ main()
     LastMs = CurrentMS;
 
 #if BONSAI_INTERNAL
-    u64 CurrentCycles = GetCycleCount();
-    u64 FrameCycles = CurrentCycles - LastCycles;
-    LastCycles = CurrentCycles;
+    u64 CurrentFrameStartingCycles = GetCycleCount();
+    u64 PreviousFrameTotalCycles = CurrentFrameStartingCycles - LastCycles;
+    LastCycles = CurrentFrameStartingCycles;
 #endif
 
     if (Plat.dt > 1.0f)
@@ -517,7 +517,7 @@ main()
     }
 
     ClearWasPressedFlags((input_event*)&Plat.Input);
-    DEBUG_FRAME_BEGIN(&Hotkeys, Plat.dt, FrameCycles);
+    DEBUG_FRAME_BEGIN(&Hotkeys, Plat.dt, PreviousFrameTotalCycles, CurrentFrameStartingCycles);
 
     TIMED_BLOCK("Frame Preamble");
 
@@ -539,14 +539,12 @@ main()
     /* DEBUG_FRAME_RECORD(Debug_RecordingState, &Hotkeys); */
 
     END_BLOCK("Frame Preamble");
-    if (IsDisconnected(&Plat.Network))
-    {
-      ConnectToServer(&Plat.Network);
-    }
 
-    GameUpdateAndRender(&Plat,
-                        GameState,
-                        &Hotkeys);
+    TIMED_BLOCK("Network Connect");
+      if (IsDisconnected(&Plat.Network)) { ConnectToServer(&Plat.Network); }
+    END_BLOCK("Network Connect");
+
+    GameUpdateAndRender(&Plat, GameState, &Hotkeys);
 
     TIMED_BLOCK("Frame End");
 

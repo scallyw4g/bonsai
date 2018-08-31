@@ -328,9 +328,15 @@ FreeScopes(debug_state *DebugState, debug_profile_scope *ScopeToFree)
 }
 
 void
-AdvanceScopeTrees(debug_state *State)
+AdvanceScopeTrees(debug_state *State, r32 Dt, u64 PreviousFrameTotalCycles, u64 ThisFrameStartingCycle)
 {
   if (!State->DebugDoScopeProfiling) return;
+
+  {
+    debug_scope_tree *WriteTree = State->GetWriteScopeTree();
+    WriteTree->FrameMs = Dt*1000.0f;
+    WriteTree->TotalCycles = ThisFrameStartingCycle - WriteTree->StartingCycle;
+  }
 
   State->MainThreadBlocksWorkerThreads = True;
 
@@ -349,9 +355,10 @@ AdvanceScopeTrees(debug_state *State)
   State->MainThreadBlocksWorkerThreads = False;
 
   debug_scope_tree *WriteTree = State->GetWriteScopeTree();
-
   FreeScopes(State, WriteTree->Root);
   InitScopeTree(WriteTree);
+
+  WriteTree->StartingCycle = ThisFrameStartingCycle;
 
   return;
 }
@@ -1127,7 +1134,7 @@ WorkerThreadWaitForDebugSystem()
 }
 
 void
-DebugFrameBegin(hotkeys *Hotkeys, r32 Dt, u64 Cycles)
+DebugFrameBegin(hotkeys *Hotkeys, r32 Dt, u64 PreviousFrameTotalCycles, u64 ThisFrameStartingCycle)
 {
   debug_state *State = GetDebugState();
 
@@ -1148,15 +1155,7 @@ DebugFrameBegin(hotkeys *Hotkeys, r32 Dt, u64 Cycles)
     State->UIType = (debug_ui_type)(((s32)State->UIType + 1) % (s32)DebugUIType_Count);
   }
 
-  // Record dt/cycles for the frame we're finishing with
-  debug_scope_tree *WriteTree = State->GetWriteScopeTree();
-  if (WriteTree)
-  {
-    WriteTree->FrameMs = Dt*1000.0f;
-    WriteTree->TotalCycles = Cycles;
-  }
-
-  AdvanceScopeTrees(State);
+  AdvanceScopeTrees(State, Dt, PreviousFrameTotalCycles, ThisFrameStartingCycle);
 
   return;
 }
@@ -1172,6 +1171,133 @@ SetFontSize(font *Font, r32 FontSize)
 {
   Font->Size = FontSize;
   Font->LineHeight = FontSize * 1.3f;
+  return;
+}
+
+void
+Column(const char* ColumnText, ui_render_group *Group, table_layout *Table, u8 Color)
+{
+  Table->ColumnIndex = (Table->ColumnIndex+1)%MAX_TABLE_COLUMNS;
+  table_column *Column = &Table->Columns[Table->ColumnIndex];
+
+  u32 TextLength = (u32)strlen(ColumnText);
+  Column->Max = Max(Column->Max, TextLength + 1);
+
+  u32 Pad = Column->Max - TextLength;
+  AdvanceSpaces(Pad, &Table->Layout, &Group->Font);
+
+  BufferValue(ColumnText, Group, &Table->Layout, Color);
+
+  return;
+}
+
+v3 ColorTable [] = 
+{
+  {0.0f, 0.0f, 0.0f},
+  {1.0f, 1.0f, 1.0f},
+  {1.0f, 0.0f, 0.0f},
+  {1.0f, 1.0f, 0.0f},
+  {1.0f, 0.0f, 1.0f},
+  {0.0f, 0.0f, 1.0f},
+  {0.0f, 1.0f, 1.0f},
+  {1.0f, 0.0f, 1.0f},
+  {0.0f, 1.0f, 0.0f},
+
+  {1.0f, 1.0f, 1.0f},
+  {0.5f, 0.5f, 0.5f},
+  {0.5f, 1.0f, 1.0f},
+  {0.5f, 0.5f, 1.0f},
+  {0.5f, 1.0f, 0.5f},
+  {1.0f, 1.0f, 0.5f},
+  {1.0f, 0.5f, 0.5f},
+  {0.5f, 1.0f, 0.5f},
+  {1.0f, 0.5f, 1.0f},
+
+  {0.5f, 0.5f, 0.5f},
+  {1.0f, 1.0f, 1.0f},
+  {1.0f, 0.5f, 0.5f},
+  {1.0f, 1.0f, 0.5f},
+  {1.0f, 0.5f, 1.0f},
+  {0.5f, 0.5f, 1.0f},
+  {0.5f, 1.0f, 1.0f},
+  {1.0f, 0.5f, 1.0f},
+  {0.5f, 1.0f, 0.5f},
+};
+
+void
+DrawScopeBar(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, debug_profile_scope *Scope,
+             table_layout *Layout, u64 FrameTotalCycles, u64 FrameStartCycle, r32 TotalGraphWidth, u32 ColorIndex = 0)
+{
+  if (!Scope) return;
+
+  if (Scope->Name)
+  {
+    Assert(Scope->Stats);
+    if (Scope->Stats->IsFirst)
+    {
+      r32 FramePerc = (r32)Scope->CycleCount / (r32)FrameTotalCycles;
+
+      r32 BarHeight = Group->Font.Size;
+      r32 BarWidth = FramePerc*TotalGraphWidth;
+      v2 BarDim = V2(BarWidth, BarHeight);
+
+      v2 MinP = Layout->Layout.At + Layout->Layout.Basis;
+
+      // Advance to the appropriate starting place along graph
+      u64 StartCycleOffset = Scope->StartingCycle - FrameStartCycle;
+      r32 XOffset = ((r32)StartCycleOffset/(r32)FrameTotalCycles)*TotalGraphWidth;
+
+      BufferQuad(Group, Geo, MinP + V2(XOffset, 0), BarDim);
+      BufferColors(Group, Geo, ColorTable[(ColorIndex++%ArrayCount(ColorTable))] );
+      Geo->At+=6;
+
+      if (Scope->Expanded)
+        DrawScopeBar(Group, Geo, Scope->Stats->MaxScope->Child, Layout, FrameTotalCycles, FrameStartCycle, TotalGraphWidth, ColorIndex);
+    }
+  }
+
+  DrawScopeBar(Group, Geo, Scope->Sibling, Layout, FrameTotalCycles, FrameStartCycle, TotalGraphWidth, ColorIndex);
+
+  return;
+
+}
+
+void
+BufferHorizontalBar(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, layout *Layout, r32 TotalGraphWidth, v3 Color)
+{
+  v2 MinP = Layout->At + Layout->Basis;
+  v2 BarDim = V2(TotalGraphWidth, Group->Font.LineHeight);
+
+  BufferQuad(Group, Geo, MinP, BarDim);
+  BufferColors(Group, Geo, Color);
+  Geo->At+=6;
+
+  Layout->At.x += TotalGraphWidth;
+
+  return;
+}
+
+void
+DebugDrawPerfBargraph(ui_render_group *Group, debug_state *DebugState, layout *Layout)
+{
+  NewLine(Layout, &Group->Font);
+
+  local_persist table_layout TableLayout = {};
+
+  TableLayout.Layout = *Layout;
+  TableLayout.Layout.Basis += V2(15.0f);
+
+  SetFontSize(&Group->Font, 36);
+  NewLine(&TableLayout.Layout, &Group->Font);
+
+  untextured_2d_geometry_buffer *Geo = &Group->TextGroup->UIGeo;
+  debug_scope_tree *ReadTree = DebugState->GetReadScopeTree();
+
+  r32 TotalGraphWidth = 2000.0f;
+  /* BufferHorizontalBar(Group, Geo, &TableLayout.Layout, TotalGraphWidth, V3(0.5f)); */
+
+  DrawScopeBar(Group, Geo, ReadTree->Root, &TableLayout, ReadTree->TotalCycles, ReadTree->StartingCycle, TotalGraphWidth);
+
   return;
 }
 
@@ -1432,23 +1558,6 @@ DebugDrawDrawCalls(ui_render_group *Group, layout *Layout)
        NewLine(Layout, &Group->Font);
      }
   }
-
-  return;
-}
-
-void
-Column(const char* ColumnText, ui_render_group *Group, table_layout *Table, u8 Color)
-{
-  Table->ColumnIndex = (Table->ColumnIndex+1)%MAX_TABLE_COLUMNS;
-  table_column *Column = &Table->Columns[Table->ColumnIndex];
-
-  u32 TextLength = (u32)strlen(ColumnText);
-  Column->Max = Max(Column->Max, TextLength + 1);
-
-  u32 Pad = Column->Max - TextLength;
-  AdvanceSpaces(Pad, &Table->Layout, &Group->Font);
-
-  BufferValue(ColumnText, Group, &Table->Layout, Color);
 
   return;
 }
@@ -2078,6 +2187,7 @@ DebugFrameEnd(platform *Plat, game_state *GameState)
     {
       BufferValue("Call Graphs", &Group, &Layout, WHITE);
       DebugDrawCallGraph(&Group, DebugState, &Layout, Dt.Max);
+      DebugDrawPerfBargraph(&Group, DebugState, &Layout);
     } break;
 
     case DebugUIType_Memory:
