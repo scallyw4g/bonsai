@@ -1307,16 +1307,15 @@ DrawScopeBar(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, debug_p
 
     BufferColors(Group, Geo, Color);
     Geo->At+=6;
-
-    if (Scope->Expanded)
-    {
-      Layout->Layout.At.y += Group->Font.LineHeight;
-      DrawScopeBar(Group, Geo, Scope->Stats->MaxScope->Child, Layout, FrameTotalCycles, FrameStartCycle, TotalGraphWidth, Entropy, ColorIndex);
-      Layout->Layout.At.y -= Group->Font.LineHeight;
-    }
   }
 
   DrawScopeBar(Group, Geo, Scope->Sibling, Layout, FrameTotalCycles, FrameStartCycle, TotalGraphWidth, Entropy, ColorIndex);
+
+  if (Scope->Expanded)
+  {
+    Layout->Layout.At.y += Group->Font.LineHeight;
+    DrawScopeBar(Group, Geo, Scope->Stats->MaxScope->Child, Layout, FrameTotalCycles, FrameStartCycle, TotalGraphWidth, Entropy, ColorIndex);
+  }
 
   return;
 }
