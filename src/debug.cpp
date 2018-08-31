@@ -332,8 +332,12 @@ AdvanceScopeTrees(debug_state *State, r32 Dt, u64 PreviousFrameTotalCycles, u64 
 {
   if (!State->DebugDoScopeProfiling) return;
 
+  u32 TotalThreadCount = GetTotalThreadCount();
+  for ( u32 ThreadIndex = 0;
+      ThreadIndex < TotalThreadCount;
+      ++ThreadIndex)
   {
-    debug_scope_tree *WriteTree = State->GetWriteScopeTree();
+    debug_scope_tree *WriteTree = &State->ThreadScopeTrees[ThreadIndex].List[State->WriteScopeIndex];
     WriteTree->FrameMs = Dt*1000.0f;
     WriteTree->TotalCycles = ThisFrameStartingCycle - WriteTree->StartingCycle;
   }
@@ -352,13 +356,17 @@ AdvanceScopeTrees(debug_state *State, r32 Dt, u64 PreviousFrameTotalCycles, u64 
   AtomicExchange(&State->WriteScopeIndex, NewWriteScopeIndex);
   AtomicExchange(&State->ReadScopeIndex, NewReadScopeIndex);
 
+  for ( u32 ThreadIndex = 0;
+      ThreadIndex < TotalThreadCount;
+      ++ThreadIndex)
+  {
+    debug_scope_tree *WriteTree = &State->ThreadScopeTrees[ThreadIndex].List[State->WriteScopeIndex];
+    FreeScopes(State, WriteTree->Root);
+    InitScopeTree(WriteTree);
+    WriteTree->StartingCycle = ThisFrameStartingCycle;
+  }
+
   State->MainThreadBlocksWorkerThreads = False;
-
-  debug_scope_tree *WriteTree = State->GetWriteScopeTree();
-  FreeScopes(State, WriteTree->Root);
-  InitScopeTree(WriteTree);
-
-  WriteTree->StartingCycle = ThisFrameStartingCycle;
 
   return;
 }
@@ -707,7 +715,6 @@ BufferText(ui_render_group *Group, layout *Layout, font *Font, const char *Text,
   return DeltaX;
 }
 
-debug_global u64 LastFrameCycleCount = 0;
 #if 0
 inline r32
 CalculateFramePercentage(debug_profile_entry *Entry, u64 CycleDelta)
@@ -1277,38 +1284,35 @@ DrawScopeBar(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, debug_p
   if (Scope->Name)
   {
     Assert(Scope->Stats);
-    if (Scope->Stats->IsFirst)
+    r32 FramePerc = (r32)Scope->CycleCount / (r32)FrameTotalCycles;
+
+    r32 BarHeight = Group->Font.Size;
+    r32 BarWidth = FramePerc*TotalGraphWidth;
+    v2 BarDim = V2(BarWidth, BarHeight);
+
+    // Advance to the appropriate starting place along graph
+    u64 StartCycleOffset = Scope->StartingCycle - FrameStartCycle;
+    r32 XOffset = ((r32)StartCycleOffset/(r32)FrameTotalCycles)*TotalGraphWidth;
+
+    v2 MinP = Layout->Layout.At + Layout->Layout.Basis + V2(XOffset, 0);
+    v2 QuadMaxP = BufferQuad(Group, Geo, MinP, BarDim);
+    b32 Hovering = IsInsideRect(RectMinDim(MinP, BarDim), Group->MouseP);
+
+    v3 Color = RandomV3(Entropy);
+    if (Hovering)
     {
-      r32 FramePerc = (r32)Scope->CycleCount / (r32)FrameTotalCycles;
+      Color = {{ 1, 1, 1 }};
+      DoTooltip(Group, Scope->Name);
+    }
 
-      r32 BarHeight = Group->Font.Size;
-      r32 BarWidth = FramePerc*TotalGraphWidth;
-      v2 BarDim = V2(BarWidth, BarHeight);
+    BufferColors(Group, Geo, Color);
+    Geo->At+=6;
 
-      // Advance to the appropriate starting place along graph
-      u64 StartCycleOffset = Scope->StartingCycle - FrameStartCycle;
-      r32 XOffset = ((r32)StartCycleOffset/(r32)FrameTotalCycles)*TotalGraphWidth;
-
-      v2 MinP = Layout->Layout.At + Layout->Layout.Basis + V2(XOffset, 0);
-      v2 QuadMaxP = BufferQuad(Group, Geo, MinP, BarDim);
-      b32 Hovering = IsInsideRect(RectMinDim(MinP, BarDim), Group->MouseP);
-
-      v3 Color = RandomV3(Entropy);
-      if (Hovering)
-      {
-        Color = {{ 1, 1, 1 }};
-        DoTooltip(Group, Scope->Name);
-      }
-
-      BufferColors(Group, Geo, Color);
-      Geo->At+=6;
-
-      if (Scope->Expanded)
-      {
-        Layout->Layout.At.y += Group->Font.LineHeight;
-        DrawScopeBar(Group, Geo, Scope->Stats->MaxScope->Child, Layout, FrameTotalCycles, FrameStartCycle, TotalGraphWidth, Entropy, ColorIndex);
-        Layout->Layout.At.y -= Group->Font.LineHeight;
-      }
+    if (Scope->Expanded)
+    {
+      Layout->Layout.At.y += Group->Font.LineHeight;
+      DrawScopeBar(Group, Geo, Scope->Stats->MaxScope->Child, Layout, FrameTotalCycles, FrameStartCycle, TotalGraphWidth, Entropy, ColorIndex);
+      Layout->Layout.At.y -= Group->Font.LineHeight;
     }
   }
 
@@ -1352,7 +1356,16 @@ DebugDrawPerfBargraph(ui_render_group *Group, debug_state *DebugState, layout *L
   /* BufferHorizontalBar(Group, Geo, &TableLayout.Layout, TotalGraphWidth, V3(0.5f)); */
 
   random_series Entropy = {};
-  DrawScopeBar(Group, Geo, ReadTree->Root, &TableLayout, ReadTree->TotalCycles, ReadTree->StartingCycle, TotalGraphWidth, &Entropy);
+
+  u32 TotalThreadCount = GetTotalThreadCount();
+  for ( u32 ThreadIndex = 0;
+      ThreadIndex < TotalThreadCount;
+      ++ThreadIndex)
+  {
+    NewLine(&TableLayout.Layout, &Group->Font);
+    debug_scope_tree *ReadTree = &DebugState->ThreadScopeTrees[ThreadIndex].List[DebugState->ReadScopeIndex];
+    DrawScopeBar(Group, Geo, ReadTree->Root, &TableLayout, ReadTree->TotalCycles, ReadTree->StartingCycle, TotalGraphWidth, &Entropy);
+  }
 
   return;
 }

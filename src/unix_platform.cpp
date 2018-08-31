@@ -83,10 +83,9 @@ PlatformGetPageSize()
 s32
 GetLogicalCoreCount()
 {
-  s32 Result = (s32)sysconf(_SC_NPROCESSORS_ONLN);
-  return Result;
+  local_persist s32 CoreCount = (s32)sysconf(_SC_NPROCESSORS_ONLN);
+  return CoreCount;
 }
-// TODO(Jesse): Have these initialize a static so we don't eat a syscall every time
 
 u32
 GetWorkerThreadCount()
