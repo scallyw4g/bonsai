@@ -9,6 +9,16 @@
 
 #define U64_MAX ((u64)-1)
 
+#define local_persist static
+#define global_variable static
+#define debug_global static
+
+#define True  1
+#define False 0
+
+#define ArrayCount(a) (sizeof(a)/sizeof(a[0]))
+#define InvalidDefaultCase default: {Error("InvalidDefaultCase"); Assert(False);} break
+
 // 8 Bit types
 typedef uint8_t  u8;
 
@@ -31,3 +41,4 @@ typedef uint64_t u64;
 typedef u64      umm;
 typedef double   r64;
 
+debug_global b32 Global_TriggerRuntimeBreak = False;

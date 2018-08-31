@@ -493,31 +493,29 @@ main()
    */
 
 
-#if BONSAI_INTERNAL
-  u64 LastCycles = GetCycleCount();
-#endif
-
   r64 LastMs = GetHighPrecisionClock();
   while ( Os.ContinueRunning )
   {
+#if BONSAI_INTERNAL
+    u64 CurrentFrameStartingCycles = GetCycleCount();
+#endif
+
     r64 CurrentMS = GetHighPrecisionClock();
     Plat.dt = (r32)((CurrentMS - LastMs)/1000.0f);
     LastMs = CurrentMS;
 
 #if BONSAI_INTERNAL
-    u64 CurrentFrameStartingCycles = GetCycleCount();
-    u64 PreviousFrameTotalCycles = CurrentFrameStartingCycles - LastCycles;
-    LastCycles = CurrentFrameStartingCycles;
+    r32 RealDt = Plat.dt;
 #endif
 
-    if (Plat.dt > 1.0f)
+    if (Plat.dt > 0.1f)
     {
-      Warn("DT exceeded 1s, truncating.");
-      Plat.dt = 1.0f;
+      Warn("DT exceeded 100ms, truncating.");
+      Plat.dt = 0.1f;
     }
 
     ClearWasPressedFlags((input_event*)&Plat.Input);
-    DEBUG_FRAME_BEGIN(&Hotkeys, Plat.dt, PreviousFrameTotalCycles, CurrentFrameStartingCycles);
+    DEBUG_FRAME_BEGIN(&Hotkeys, RealDt, CurrentFrameStartingCycles);
 
     TIMED_BLOCK("Frame Preamble");
 

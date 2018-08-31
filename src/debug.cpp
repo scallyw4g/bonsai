@@ -328,7 +328,7 @@ FreeScopes(debug_state *DebugState, debug_profile_scope *ScopeToFree)
 }
 
 void
-AdvanceScopeTrees(debug_state *State, r32 Dt, u64 PreviousFrameTotalCycles, u64 ThisFrameStartingCycle)
+AdvanceScopeTrees(debug_state *State, r32 Dt, u64 ThisFrameStartingCycle)
 {
   if (!State->DebugDoScopeProfiling) return;
 
@@ -1186,7 +1186,7 @@ WorkerThreadWaitForDebugSystem()
 }
 
 void
-DebugFrameBegin(hotkeys *Hotkeys, r32 Dt, u64 PreviousFrameTotalCycles, u64 ThisFrameStartingCycle)
+DebugFrameBegin(hotkeys *Hotkeys, r32 Dt, u64 ThisFrameStartingCycle)
 {
   debug_state *State = GetDebugState();
 
@@ -1207,7 +1207,7 @@ DebugFrameBegin(hotkeys *Hotkeys, r32 Dt, u64 PreviousFrameTotalCycles, u64 This
     State->UIType = (debug_ui_type)(((s32)State->UIType + 1) % (s32)DebugUIType_Count);
   }
 
-  AdvanceScopeTrees(State, Dt, PreviousFrameTotalCycles, ThisFrameStartingCycle);
+  AdvanceScopeTrees(State, Dt, ThisFrameStartingCycle);
 
   return;
 }
@@ -1303,7 +1303,7 @@ DrawScopeBar(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, debug_p
     r32 XOffset = ((r32)StartCycleOffset/(r32)FrameTotalCycles)*TotalGraphWidth;
 
     v2 MinP = Layout->At + Layout->Basis + V2(XOffset, 0);
-    v2 QuadMaxP = BufferQuad(Group, Geo, MinP, BarDim);
+    v2 QuadMaxP = BufferQuad(Group, Geo, MinP, BarDim, 1.0f);
     b32 Hovering = IsInsideRect(RectMinDim(MinP, BarDim), Group->MouseP);
 
     v3 Color = RandomV3(Entropy);
@@ -1329,7 +1329,8 @@ DrawScopeBar(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, debug_p
 }
 
 void
-BufferHorizontalBar(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, layout *Layout, r32 TotalGraphWidth, v3 Color)
+BufferHorizontalBar(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, layout *Layout,
+                    r32 TotalGraphWidth, v3 Color)
 {
   v2 MinP = Layout->At + Layout->Basis;
   v2 BarDim = V2(TotalGraphWidth, Group->Font.LineHeight);
@@ -1359,6 +1360,8 @@ FormatString(const char* FormatString, ...)
 void
 DebugDrawPerfBargraph(ui_render_group *Group, debug_state *DebugState, layout *Layout)
 {
+  TriggeredRuntimeBreak();
+
   NewLine(Layout, &Group->Font);
 
   SetFontSize(&Group->Font, 36);
@@ -1367,10 +1370,8 @@ DebugDrawPerfBargraph(ui_render_group *Group, debug_state *DebugState, layout *L
   untextured_2d_geometry_buffer *Geo = &Group->TextGroup->UIGeo;
   debug_scope_tree *ReadTree = DebugState->GetReadScopeTree();
 
-  r32 TotalGraphWidth = 2000.0f;
-  /* BufferHorizontalBar(Group, Geo, Layout, TotalGraphWidth, V3(0.5f)); */
-
   random_series Entropy = {};
+  r32 TotalGraphWidth = 2000.0f;
 
   u32 TotalThreadCount = GetTotalThreadCount();
   for ( u32 ThreadIndex = 0;
@@ -1384,6 +1385,8 @@ DebugDrawPerfBargraph(ui_render_group *Group, debug_state *DebugState, layout *L
 
     debug_scope_tree *ReadTree = &DebugState->ThreadScopeTrees[ThreadIndex].List[DebugState->ReadScopeIndex];
     DrawScopeBar(Group, Geo, ReadTree->Root, Layout, ReadTree->TotalCycles, ReadTree->StartingCycle, TotalGraphWidth, &Entropy);
+
+    BufferHorizontalBar(Group, Geo, Layout, TotalGraphWidth, V3(0.5f));
   }
 
   return;
@@ -1619,7 +1622,7 @@ EndClipRect(ui_render_group *Group, layout *Layout, untextured_2d_geometry_buffe
   v2 MinP = Layout->Clip.Min + Basis;
   v2 Dim = (Layout->Clip.Max + Basis) - MinP;
 
-  BufferQuad(Group, Geo, MinP, Dim, 1.0f);
+  BufferQuad(Group, Geo, MinP, Dim, 0.0f);
   BufferColors(Group, Geo, V3(0.2f));
   Geo->At+=6;
 
@@ -1903,7 +1906,6 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState, v2 OriginalB
     memory_arena_stats MemStats = GetMemoryArenaStats(Current->Arena);
     u64 TotalUsed = MemStats.TotalAllocated - MemStats.Remaining;
 
-
     {
       SetFontSize(&Group->Font, 36);
       NewLine(&MemoryHudArenaTable.Layout, &Group->Font);
@@ -1917,7 +1919,6 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState, v2 OriginalB
 
     if (Current->Expanded)
     {
-      BeginClipRect(&MemoryHudArenaTable.Layout);
       SetFontSize(&Group->Font, 28);
 
       table_layout *StatsTable    = &Current->StatsTable;

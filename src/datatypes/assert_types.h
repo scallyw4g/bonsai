@@ -8,10 +8,13 @@
 #define Assert(condition) \
   if (!(condition)) { Debug(" ! Failed - '%s' on Line: %d in File: %s", #condition, __LINE__, __FILE__); RuntimeBreak(); }
 
+
 #define InvalidCodePath() Error("Invalid Code Path"); Assert(False)
 #else
 #define Assert(...)
 #define InvalidCodePath(...)
+#define RuntimeBreak(...)
+#define TriggeredRuntimeBreak(...)
 #endif
 
 #if BONSAI_INTERNAL

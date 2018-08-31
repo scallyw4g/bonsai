@@ -7,18 +7,12 @@
  *  Common
  */
 
-#define True  1
-#define False 0
-
 // Screen Resolution
 
 #define SCREEN_RATIO 2
 
 #define SCR_WIDTH (3840/SCREEN_RATIO)
 #define SCR_HEIGHT (2160/SCREEN_RATIO)
-
-
-#define TargetFrameTime 0.0166666666f
 
 /*
  *  Paths
@@ -34,10 +28,6 @@
   DumpGlErrorEnum(glErrorNo);         \
   Assert(glErrorNo == GL_NO_ERROR); }
 
-#define ArrayCount(a) (sizeof(a)/sizeof(a[0]))
-#define InvalidDefaultCase default: {Error("InvalidDefaultCase"); Assert(False);} break
-
-#define LOCAL_PERSIST static
 
 
 /*
@@ -52,10 +42,6 @@
 #error "Unfortunately, Underflow and Overflow protection at the same time is impossible"
 #endif
 
-
-#define local_persist static
-#define global_variable static
-#define debug_global static
 
 
 /*
@@ -104,8 +90,8 @@
 #define Error(...) printf(" ! Error - "); printf(__VA_ARGS__); printf("\n")
 #define Warn(...)  printf(" * Warn - "); printf(__VA_ARGS__); printf("\n")
 
-
 #define RuntimeBreak() raise(SIGTRAP)
+#define TriggeredRuntimeBreak() Global_TriggerRuntimeBreak ? RuntimeBreak() : 0 ;
 
 
 #endif // _MSC_VER
