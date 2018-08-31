@@ -847,6 +847,14 @@ MemorySize(u64 Number)
 }
 
 inline char*
+FormatU32(u32 Number)
+{
+  char *Buffer = Allocate(char, TranArena, 32, True);
+  sprintf(Buffer, "%u", Number);
+  return Buffer;
+}
+
+inline char*
 FormatMemorySize(u64 Number)
 {
   r64 KB = (r64)Kilobytes(1);
@@ -1277,7 +1285,7 @@ DoTooltip(ui_render_group *Group, const char *Text)
 
 void
 DrawScopeBar(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, debug_profile_scope *Scope,
-             table_layout *Layout, u64 FrameTotalCycles, u64 FrameStartCycle, r32 TotalGraphWidth, random_series *Entropy, u32 ColorIndex = 0)
+             layout *Layout, u64 FrameTotalCycles, u64 FrameStartCycle, r32 TotalGraphWidth, random_series *Entropy, u32 ColorIndex = 0)
 {
   if (!Scope) return;
 
@@ -1294,7 +1302,7 @@ DrawScopeBar(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, debug_p
     u64 StartCycleOffset = Scope->StartingCycle - FrameStartCycle;
     r32 XOffset = ((r32)StartCycleOffset/(r32)FrameTotalCycles)*TotalGraphWidth;
 
-    v2 MinP = Layout->Layout.At + Layout->Layout.Basis + V2(XOffset, 0);
+    v2 MinP = Layout->At + Layout->Basis + V2(XOffset, 0);
     v2 QuadMaxP = BufferQuad(Group, Geo, MinP, BarDim);
     b32 Hovering = IsInsideRect(RectMinDim(MinP, BarDim), Group->MouseP);
 
@@ -1313,7 +1321,7 @@ DrawScopeBar(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, debug_p
 
   if (Scope->Expanded)
   {
-    Layout->Layout.At.y += Group->Font.LineHeight;
+    Layout->At.y += Group->Font.LineHeight;
     DrawScopeBar(Group, Geo, Scope->Stats->MaxScope->Child, Layout, FrameTotalCycles, FrameStartCycle, TotalGraphWidth, Entropy, ColorIndex);
   }
 
@@ -1335,35 +1343,47 @@ BufferHorizontalBar(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, 
   return;
 }
 
+char *
+FormatString(const char* FormatString, ...)
+{
+  char *Buffer = Allocate(char, TranArena, 1024, True);
+
+  va_list Arguments;
+  va_start(Arguments, FormatString);
+  vsnprintf(Buffer, 1023, FormatString, Arguments);
+  va_end(Arguments);
+
+  return Buffer;
+}
+
 void
 DebugDrawPerfBargraph(ui_render_group *Group, debug_state *DebugState, layout *Layout)
 {
   NewLine(Layout, &Group->Font);
 
-  local_persist table_layout TableLayout = {};
-
-  TableLayout.Layout = *Layout;
-  TableLayout.Layout.Basis += V2(15.0f);
-
   SetFontSize(&Group->Font, 36);
-  NewLine(&TableLayout.Layout, &Group->Font);
+  NewLine(Layout, &Group->Font);
 
   untextured_2d_geometry_buffer *Geo = &Group->TextGroup->UIGeo;
   debug_scope_tree *ReadTree = DebugState->GetReadScopeTree();
 
   r32 TotalGraphWidth = 2000.0f;
-  /* BufferHorizontalBar(Group, Geo, &TableLayout.Layout, TotalGraphWidth, V3(0.5f)); */
+  /* BufferHorizontalBar(Group, Geo, Layout, TotalGraphWidth, V3(0.5f)); */
 
   random_series Entropy = {};
 
   u32 TotalThreadCount = GetTotalThreadCount();
   for ( u32 ThreadIndex = 0;
-      ThreadIndex < TotalThreadCount;
-      ++ThreadIndex)
+        ThreadIndex < TotalThreadCount;
+        ++ThreadIndex)
   {
-    NewLine(&TableLayout.Layout, &Group->Font);
+    NewLine(Layout, &Group->Font);
+    char *ThreadName = FormatString("Thread %u", ThreadIndex);
+    BufferText(Group, Layout, &Group->Font, ThreadName, WHITE);
+    NewLine(Layout, &Group->Font);
+
     debug_scope_tree *ReadTree = &DebugState->ThreadScopeTrees[ThreadIndex].List[DebugState->ReadScopeIndex];
-    DrawScopeBar(Group, Geo, ReadTree->Root, &TableLayout, ReadTree->TotalCycles, ReadTree->StartingCycle, TotalGraphWidth, &Entropy);
+    DrawScopeBar(Group, Geo, ReadTree->Root, Layout, ReadTree->TotalCycles, ReadTree->StartingCycle, TotalGraphWidth, &Entropy);
   }
 
   return;

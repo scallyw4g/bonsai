@@ -1,7 +1,6 @@
 #include <iostream>
 #include <cstdarg>
 
-
 void
 Log(const char* fmt...)
 {
