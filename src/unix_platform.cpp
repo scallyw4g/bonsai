@@ -33,16 +33,15 @@ PrintSemValue( semaphore *Semaphore )
 void
 PlatformInitializeMutex(mutex *Mutex)
 {
-  pthread_mutex_init(Mutex, NULL);
+  pthread_mutex_init(&Mutex->M, NULL);
   return;
 }
 
 void
 PlatformUnlockMutex(mutex *Mutex)
 {
-  /* TIMED_MUTEX_UNLOCK(); */
-
-  s32 Fail = pthread_mutex_unlock(Mutex);
+  s32 Fail = pthread_mutex_unlock(&Mutex->M);
+  TIMED_MUTEX_RELEASED(Mutex);
 
   if (Fail)
   {
@@ -56,9 +55,11 @@ PlatformUnlockMutex(mutex *Mutex)
 void
 PlatformLockMutex(mutex *Mutex)
 {
-  /* TIMED_MUTEX_LOCK(); */
+  TIMED_MUTEX_WAITING(Mutex);
 
-  s32 Fail = pthread_mutex_lock(Mutex);
+  s32 Fail = pthread_mutex_lock(&Mutex->M);
+
+  TIMED_MUTEX_AQUIRED(Mutex);
 
   if (Fail)
   {

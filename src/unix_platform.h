@@ -64,7 +64,8 @@ typedef Window window;
 typedef Display* display;
 typedef GLXContext gl_context;
 
-typedef pthread_mutex_t mutex;
+typedef pthread_mutex_t native_mutex;
+
 
 inline void
 WakeThread( semaphore *Semaphore )
@@ -91,6 +92,19 @@ PlatformDebugStacktrace()
   return;
 }
 
+inline void
+AtomicDecrement( volatile u32 *Source )
+{
+  __sync_sub_and_fetch( Source, 1 );
+  return;
+}
+
+inline u32
+AtomicIncrement( volatile u32 *Source )
+{
+  u32 Result = __sync_fetch_and_add( Source, 1 );
+  return Result;
+}
 
 inline void
 AtomicDecrement( volatile s32 *Source )

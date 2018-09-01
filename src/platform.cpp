@@ -494,12 +494,13 @@ main()
   while ( Os.ContinueRunning )
   {
     r64 CurrentMS = GetHighPrecisionClock();
-    Plat.dt = (r32)((CurrentMS - LastMs)/1000.0f);
+    r32 RealDt = (r32)((CurrentMS - LastMs)/1000.0f);
     LastMs = CurrentMS;
 
     ClearWasPressedFlags((input_event*)&Plat.Input);
-    DEBUG_FRAME_BEGIN(&Hotkeys, Plat.dt); // Intentionally use dt pre-truncation
+    DEBUG_FRAME_BEGIN(&Hotkeys, RealDt);
 
+    Plat.dt = RealDt;
     if (Plat.dt > 0.1f)
     {
       Warn("DT exceeded 100ms, truncating.");
@@ -543,7 +544,7 @@ main()
 
     END_BLOCK("Frame End");
 
-    AdvanceScopeTrees(GetDebugState(), Plat.dt);
+    AdvanceScopeTrees(GetDebugState(), RealDt);
   }
 
   Info("Shutting Down");

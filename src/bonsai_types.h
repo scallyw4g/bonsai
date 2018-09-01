@@ -12,6 +12,7 @@ void BreakHere() { return; }
 
 #include <platform_constants.h>
 
+#include <mutex.h> // Move this to just above debug_types
 #include <memory_types.h>
 #include <vector_types.h>
 

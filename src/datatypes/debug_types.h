@@ -148,6 +148,9 @@ struct debug_state
   b32 Debug_RedrawEveryPush;
   b32 DebugDoScopeProfiling = True;
 
+  mutex_op_record *MutexOpRecords;
+  volatile u32 NextMutexOpRecord;
+
   debug_profile_scope FreeScopeSentinel;
   mutex FreeScopeMutex;
 
@@ -285,6 +288,14 @@ struct debug_timed_function
 
 #define WORKER_THREAD_WAIT_FOR_DEBUG_SYSTEM(...) WorkerThreadWaitForDebugSystem()
 
+inline void DebugTimedMutexWaiting(mutex *Mut);
+inline void DebugTimedMutexAquired(mutex *Mut);
+inline void DebugTimedMutexReleased(mutex *Mut);
+
+#define TIMED_MUTEX_WAITING(Mut) DebugTimedMutexWaiting(Mut)
+#define TIMED_MUTEX_AQUIRED(Mut) DebugTimedMutexAquired(Mut)
+#define TIMED_MUTEX_RELEASED(Mut) DebugTimedMutexReleased(Mut)
+
 #else
 
 #define INIT_DEBUG_STATE(...)
@@ -292,6 +303,10 @@ struct debug_timed_function
 #define TIMED_FUNCTION(...)
 #define TIMED_BLOCK(...)
 #define END_BLOCK(...)
+
+#define TIMED_MUTEX_WAITING(...)
+#define TIMED_MUTEX_AQUIRED(...)
+#define TIMED_MUTEX_RELEASED(...)
 
 #define DEBUG_FRAME_RECORD(...)
 #define DEBUG_FRAME_END(...)

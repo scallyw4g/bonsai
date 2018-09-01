@@ -3,6 +3,57 @@
 #include <stdio.h>
 
 debug_global b32 DebugGlobal_RedrawEveryPush = 0;
+#define TOTAL_MUTEX_OP_RECORDS (1024*1024*1024)
+
+inline void
+InitializeMutexOpRecords(debug_state *State, memory_arena *Memory)
+{
+  // FIXME(Jesse): Once the debug arena has its mt-safe-ness removed, do this allocation on an arena
+  umm PushSize = TOTAL_MUTEX_OP_RECORDS * sizeof(mutex_op_record);
+  State->MutexOpRecords = (mutex_op_record*)PushStruct(Memory, PushSize);
+  return;
+}
+
+inline mutex_op_record *
+GetMutexOpRecord(mutex *Mutex, mutex_op Op, debug_state *State)
+{
+  mutex_op_record *Record = 0;
+  if (State->NextMutexOpRecord < TOTAL_MUTEX_OP_RECORDS)
+  {
+    Record = State->MutexOpRecords + AtomicIncrement(&State->NextMutexOpRecord);
+    Record->Cycle = GetCycleCount();
+    Record->ThreadIndex = ThreadLocal_ThreadIndex;
+    Record->Op = Op;
+    Record->Mutex = Mutex;
+  }
+  else
+  {
+    Warn("Total debug mutex operations of %u exceeded, discarding record info.", TOTAL_MUTEX_OP_RECORDS);
+  }
+
+  return Record;
+}
+
+inline void
+DebugTimedMutexWaiting(mutex *Mutex)
+{
+  mutex_op_record *Record = GetMutexOpRecord(Mutex, MutexOp_Waiting, GetDebugState());
+  return;
+}
+
+inline void
+DebugTimedMutexAquired(mutex *Mutex)
+{
+  mutex_op_record *Record = GetMutexOpRecord(Mutex, MutexOp_Aquired, GetDebugState());
+  return;
+}
+
+inline void
+DebugTimedMutexReleased(mutex *Mutex)
+{
+  mutex_op_record *Record = GetMutexOpRecord(Mutex, MutexOp_Released, GetDebugState());
+  return;
+}
 
 v2
 GetAbsoluteMin(layout *Layout)
@@ -351,10 +402,12 @@ AdvanceScopeTrees(debug_state *State, r32 Dt)
   END_BLOCK("WriteTree Stats Recording");
 
   TIMED_BLOCK("Worker Thread Shutdown");
-    State->MainThreadBlocksWorkerThreads = True;
-    u32 WorkerThreadCount = GetWorkerThreadCount();
-    while (State->WorkerThreadsWaiting < WorkerThreadCount);
-  END_BLOCK("Worker Thread Shutdown");
+
+  TIMED_BLOCK("Waiting for Workers to Finish");
+  State->MainThreadBlocksWorkerThreads = True;
+  u32 WorkerThreadCount = GetWorkerThreadCount();
+  while (State->WorkerThreadsWaiting < WorkerThreadCount);
+  END_BLOCK("Waiting for Workers to Finish");
 
   TIMED_BLOCK("Advance And Free Trees");
   State->WriteScopeIndex = (State->WriteScopeIndex+1) % SCOPE_TREE_COUNT;
@@ -389,6 +442,7 @@ AdvanceScopeTrees(debug_state *State, r32 Dt)
   }
 
   State->MainThreadBlocksWorkerThreads = False;
+  END_BLOCK("Worker Thread Shutdown");
 
   return;
 }
@@ -492,7 +546,10 @@ InitDebugState(debug_state *DebugState, mt_memory_arena *DebugMemory)
 
   InitDebugMemoryAllocationSystem(DebugMemory, TotalThreadCount);
 
+  InitializeMutexOpRecords(DebugState, DebugMemory->Arena);
+
   InitScopeTrees(DebugMemory, TotalThreadCount);
+
 
   AllocateMesh(&GlobalDebugState->LineMesh, 1024, DebugMemory->Arena);
 
@@ -717,7 +774,7 @@ BufferTextAt(ui_render_group *Group, v2 BasisP, font *Font, const char *Text, u3
 }
 
 r32
-BufferText(ui_render_group *Group, layout *Layout, font *Font, const char *Text, u32 Color)
+BufferText(const char* Text, u32 Color, layout *Layout, font *Font, ui_render_group *Group)
 {
   textured_2d_geometry_buffer *Geo = &Group->TextGroup->TextGeo;
 
@@ -775,7 +832,7 @@ AdvanceClip(layout *Layout)
 inline void
 BufferValue(const char *Text, ui_render_group *Group, layout *Layout, u32 ColorIndex)
 {
-  r32 DeltaX = BufferText(Group, Layout, &Group->Font, Text, ColorIndex);
+  r32 DeltaX = BufferText(Text, ColorIndex, Layout, &Group->Font, Group);
   Layout->At.x += DeltaX;
 
   AdvanceClip(Layout);
@@ -834,6 +891,14 @@ NewRow(table_layout *Table, font *Font)
   Table->ColumnIndex = 0;
   NewLine(&Table->Layout, Font);
   return;
+}
+
+r32
+BufferLine(const char* Text, u32 Color, layout *Layout, font *Font, ui_render_group *Group)
+{
+  r32 Result = BufferText(Text, Color, Layout, Font, Group);
+  NewLine(Layout, Font);
+  return Result;
 }
 
 inline char*
@@ -1311,46 +1376,67 @@ DoTooltip(ui_render_group *Group, const char *Text)
   return;
 }
 
-void
-DrawScopeBar(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, debug_profile_scope *Scope,
-             layout *Layout, u64 FrameTotalCycles, u64 FrameStartCycle, r32 TotalGraphWidth, random_series *Entropy, u32 ColorIndex = 0)
+r32
+GetXOffsetForHorizontalBar(u64 StartCycleOffset, u64 FrameTotalCycles, r32 TotalGraphWidth)
 {
-  if (!Scope) return;
+  r32 XOffset = ((r32)StartCycleOffset/(r32)FrameTotalCycles)*TotalGraphWidth;
+  return XOffset;
+}
 
-  if (Scope->Name)
-  {
-    Assert(Scope->Stats);
-    r32 FramePerc = (r32)Scope->CycleCount / (r32)FrameTotalCycles;
+struct cycle_range
+{
+  u64 StartCycle;
+  u64 TotalCycles;
+};
+
+void
+DrawCycleBar( cycle_range *Range, cycle_range *Frame, r32 TotalGraphWidth, const char *Tooltip, v3 Color,
+              ui_render_group *Group, untextured_2d_geometry_buffer *Geo, layout *Layout)
+{
+    r32 FramePerc = (r32)Range->TotalCycles / (r32)Frame->TotalCycles;
 
     r32 BarHeight = Group->Font.Size;
     r32 BarWidth = FramePerc*TotalGraphWidth;
     v2 BarDim = V2(BarWidth, BarHeight);
 
     // Advance to the appropriate starting place along graph
-    u64 StartCycleOffset = Scope->StartingCycle - FrameStartCycle;
-    r32 XOffset = ((r32)StartCycleOffset/(r32)FrameTotalCycles)*TotalGraphWidth;
+    u64 StartCycleOffset = Range->StartCycle - Frame->StartCycle;
+    r32 XOffset = GetXOffsetForHorizontalBar(StartCycleOffset, Frame->TotalCycles, TotalGraphWidth);
 
     v2 MinP = Layout->At + Layout->Basis + V2(XOffset, 0);
     v2 QuadMaxP = BufferQuad(Group, Geo, MinP, BarDim, 1.0f);
     b32 Hovering = IsInsideRect(RectMinDim(MinP, BarDim), Group->MouseP);
 
-    v3 Color = RandomV3(Entropy);
     if (Hovering)
     {
-      Color = {{ 1, 1, 1 }};
-      DoTooltip(Group, Scope->Name);
+      Color *= 0.5f;
+      if (Tooltip) { DoTooltip(Group, Tooltip); }
     }
 
     BufferColors(Group, Geo, Color);
     Geo->At+=6;
+}
+
+void
+DrawScopeBar(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, debug_profile_scope *Scope,
+             layout *Layout, u64 FrameTotalCycles, u64 FrameStartCycle, r32 TotalGraphWidth, random_series *Entropy)
+{
+  if (!Scope) return;
+
+  if (Scope->Name)
+  {
+    cycle_range Range = {Scope->StartingCycle, Scope->CycleCount};
+    cycle_range Frame = {FrameStartCycle, FrameTotalCycles};
+    DrawCycleBar( &Range, &Frame, TotalGraphWidth, Scope->Name, RandomV3(Entropy),
+        Group, Geo, Layout);
   }
 
-  DrawScopeBar(Group, Geo, Scope->Sibling, Layout, FrameTotalCycles, FrameStartCycle, TotalGraphWidth, Entropy, ColorIndex);
+  DrawScopeBar(Group, Geo, Scope->Sibling, Layout, FrameTotalCycles, FrameStartCycle, TotalGraphWidth, Entropy);
 
   if (Scope->Expanded)
   {
     Layout->At.y += Group->Font.LineHeight;
-    DrawScopeBar(Group, Geo, Scope->Stats->MaxScope->Child, Layout, FrameTotalCycles, FrameStartCycle, TotalGraphWidth, Entropy, ColorIndex);
+    DrawScopeBar(Group, Geo, Scope->Stats->MaxScope->Child, Layout, FrameTotalCycles, FrameStartCycle, TotalGraphWidth, Entropy);
   }
 
   return;
@@ -1385,18 +1471,69 @@ FormatString(const char* FormatString, ...)
   return Buffer;
 }
 
-void
-DebugDrawPerfBargraph(ui_render_group *Group, debug_state *DebugState, layout *Layout)
+mutex_op_record *
+FindRecord(mutex_op_record *WaitRecord, mutex_op_record *FinalRecord, mutex_op SearchOp)
 {
-  TriggeredRuntimeBreak();
+  Assert(WaitRecord->Op == MutexOp_Waiting);
 
+  mutex_op_record *Result = 0;;
+  mutex_op_record *SearchRecord = WaitRecord;
+
+  while (SearchRecord < FinalRecord)
+  {
+    if (SearchRecord->Op == SearchOp &&
+        SearchRecord->Mutex == WaitRecord->Mutex &&
+        SearchRecord->ThreadIndex == WaitRecord->ThreadIndex)
+    {
+      Result = SearchRecord;
+      break;
+    }
+
+    ++SearchRecord;
+  }
+
+  return Result;
+}
+
+void
+DrawWaitingBar(mutex_op_record *WaitRecord, mutex_op_record *AquiredRecord, mutex_op_record *ReleasedRecord,
+               ui_render_group *Group, layout *Layout, font *Font, u64 FrameStartingCycle, u64 FrameTotalCycles, r32 TotalGraphWidth)
+{
+  Assert(WaitRecord->Op == MutexOp_Waiting);
+  Assert(AquiredRecord->Op == MutexOp_Aquired);
+  Assert(ReleasedRecord->Op == MutexOp_Released);
+
+  Assert(AquiredRecord->Mutex == WaitRecord->Mutex);
+  Assert(ReleasedRecord->Mutex == WaitRecord->Mutex);
+
+  u64 WaitCycleCount = AquiredRecord->Cycle - WaitRecord->Cycle;
+  u64 AquiredCycleCount = ReleasedRecord->Cycle - AquiredRecord->Cycle;
+
+  u64 StartCycleOffset = FrameStartingCycle - WaitRecord->Cycle;
+  u32 xOffset = GetXOffsetForHorizontalBar(StartCycleOffset, FrameTotalCycles, TotalGraphWidth);
+
+  untextured_2d_geometry_buffer *Geo = &Group->TextGroup->UIGeo;
+  cycle_range FrameRange = {FrameStartingCycle, FrameTotalCycles};
+
+  cycle_range WaitRange = {WaitRecord->Cycle, WaitCycleCount};
+  DrawCycleBar( &WaitRange, &FrameRange, TotalGraphWidth, 0, V3(1, 0, 0), Group, Geo, Layout);
+
+  cycle_range AquiredRange = {AquiredRecord->Cycle, AquiredCycleCount};
+  DrawCycleBar( &AquiredRange, &FrameRange, TotalGraphWidth, 0, V3(0, 1, 0), Group, Geo, Layout);
+
+  return;
+}
+
+void
+DebugDrawPerfBargraph(ui_render_group *Group, debug_state *State, layout *Layout)
+{
   NewLine(Layout, &Group->Font);
 
   SetFontSize(&Group->Font, 36);
   NewLine(Layout, &Group->Font);
 
   untextured_2d_geometry_buffer *Geo = &Group->TextGroup->UIGeo;
-  debug_scope_tree *ReadTree = DebugState->GetReadScopeTree();
+  debug_scope_tree *ReadTree = State->GetReadScopeTree();
 
   random_series Entropy = {};
   r32 TotalGraphWidth = 2000.0f;
@@ -1408,14 +1545,54 @@ DebugDrawPerfBargraph(ui_render_group *Group, debug_state *DebugState, layout *L
   {
     NewLine(Layout, &Group->Font);
     char *ThreadName = FormatString("Thread %u", ThreadIndex);
-    BufferText(Group, Layout, &Group->Font, ThreadName, WHITE);
-    NewLine(Layout, &Group->Font);
+    BufferLine(ThreadName, WHITE, Layout, &Group->Font, Group);
 
-    debug_scope_tree *ReadTree = &DebugState->ThreadScopeTrees[ThreadIndex].List[DebugState->ReadScopeIndex];
+    debug_scope_tree *ReadTree = &State->ThreadScopeTrees[ThreadIndex].List[State->ReadScopeIndex];
     DrawScopeBar(Group, Geo, ReadTree->Root, Layout, ReadTree->TotalCycles, ReadTree->StartingCycle, TotalGraphWidth, &Entropy);
 
     BufferHorizontalBar(Group, Geo, Layout, TotalGraphWidth, V3(0.5f));
   }
+
+  TIMED_BLOCK("Worker Thread Shutdown");
+  TIMED_BLOCK("Waiting for Workers to Finish");
+  State->MainThreadBlocksWorkerThreads = True;
+  u32 WorkerThreadCount = GetWorkerThreadCount();
+  while (State->WorkerThreadsWaiting < WorkerThreadCount);
+  END_BLOCK("Waiting for Workers to Finish");
+
+  TIMED_BLOCK("Mutex Record Collation");
+
+  NewLine(Layout, &Group->Font);
+
+  mutex_op_record *FinalRecord = State->MutexOpRecords + State->NextMutexOpRecord;
+  u64 FrameTotalCycles = State->GetReadScopeTree()->TotalCycles;
+  u64 FrameStartingCycle = State->GetReadScopeTree()->StartingCycle;
+  for (u32 OpRecordIndex = 0;
+      OpRecordIndex < State->NextMutexOpRecord;
+      ++OpRecordIndex)
+  {
+    mutex_op_record *CurrentRecord = State->MutexOpRecords + OpRecordIndex;
+    if (CurrentRecord->Op == MutexOp_Waiting)
+    {
+      mutex_op_record *Aquired =  FindRecord(CurrentRecord, FinalRecord, MutexOp_Aquired);
+      mutex_op_record *Released = FindRecord(CurrentRecord, FinalRecord, MutexOp_Released);
+      if (Aquired && Released)
+      {
+        r32 yOffset = CurrentRecord->ThreadIndex * Group->Font.LineHeight;
+        Layout->At.y += yOffset;
+        DrawWaitingBar(CurrentRecord, Aquired, Released, Group, Layout, &Group->Font, FrameStartingCycle, FrameTotalCycles, TotalGraphWidth);
+        Layout->At.y -= yOffset;
+      }
+      else
+      {
+        Warn("Unclosed mutex record, skipping");
+      }
+    }
+  }
+  END_BLOCK("Mutex Record Collation");
+
+  State->MainThreadBlocksWorkerThreads = False;
+  END_BLOCK("Worker Thread Shutdown");
 
   return;
 }
@@ -2336,6 +2513,7 @@ DebugFrameEnd(platform *Plat, game_state *GameState)
      Global_DrawCalls[DrawCountIndex] = NullDrawCall;
   }
 
+  DebugState->NextMutexOpRecord = 0;
 
   return;
 }
