@@ -130,7 +130,7 @@ TestAllocation(memory_arena *Arena)
 {
   memory_arena Initial = *Arena;
 
-  T *Test = Allocate( T, Arena, 1);
+  T *Test = Allocate( T, Arena, 1, Arena->MemProtect);
   TestThat(Test);
   Clear(Test);
 
@@ -432,7 +432,9 @@ UnprotectedAllocations()
 
     while (!Arena->Prev)
     {
+      Assert(Arena->MemProtect == False);
       TestAllocation<test_struct_1k>(Arena);
+      Assert(Arena->MemProtect == False);
     }
 
     AssertNoSegfault();
@@ -456,10 +458,10 @@ UnprotectedAllocations()
         StructIndex < StructCount;
         ++StructIndex)
     {
-      Allocate(test_struct_32, Arena, 1);
-      Allocate(test_struct_64, Arena, 1);
+      Allocate(test_struct_32, Arena, 1, True);
+      Allocate(test_struct_64, Arena, 1, True);
 
-      Structs[StructIndex] = Allocate(test_struct_1k, Arena, 1);
+      Structs[StructIndex] = Allocate(test_struct_1k, Arena, 1, True);
       Fill(Structs[StructIndex], (u8)255);
       AssertNoSegfault();
     }
@@ -472,15 +474,15 @@ UnprotectedAllocations()
     memory_arena *TestArena = PlatformAllocateArena(32);
     TestArena->MemProtect = False;
 
-    Allocate(test_struct_32, TestArena, 1);
+    Allocate(test_struct_32, TestArena, 1, True);
 
-    Allocate(test_struct_64, TestArena, 1);
-    Allocate(test_struct_64, TestArena, 1);
-    Allocate(test_struct_64, TestArena, 1);
+    Allocate(test_struct_64, TestArena, 1, True);
+    Allocate(test_struct_64, TestArena, 1, True);
+    Allocate(test_struct_64, TestArena, 1, True);
 
-    Allocate(test_struct_1k, TestArena, 1);
+    Allocate(test_struct_1k, TestArena, 1, True);
 
-    test_struct_1k *TestStruct = Allocate(test_struct_1k, TestArena, 1);
+    test_struct_1k *TestStruct = Allocate(test_struct_1k, TestArena, 1, True);
 
     VaporizeArena(TestArena);
     AssertNoSegfault();

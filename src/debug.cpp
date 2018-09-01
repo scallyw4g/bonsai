@@ -515,10 +515,16 @@ InitDebugMemoryAllocationSystem(debug_state *State)
 {
   u32 TotalThreadCount = GetTotalThreadCount();
 
-  // FIXME(Jesse): Once the mt-safe arena is gone this can be allocated on an arena .. maybe
-  memory_arena BoostrapArena = {};
+  // FIXME(Jesse): Can this be allocated in a more sensible way?
   umm Size = TotalThreadCount * sizeof(debug_thread_state);
-  GlobalDebugState->ThreadStates = (debug_thread_state*)PushStruct(&BoostrapArena, Size);
+
+  // FIXME(Jesse): This should allocate roughly enough space (maybe more than necessary)
+  // for the Size parameter, however it seems to be under-allocating, which causes
+  // the PushStruct to allocate again.  Bad bad bad.
+  memory_arena *BoostrapArena = PlatformAllocateArena(Size);
+  DEBUG_REGISTER_ARENA(BoostrapArena, State);
+  GlobalDebugState->ThreadStates = (debug_thread_state*)PushStruct(BoostrapArena, Size);
+  //
 
   for (u32 ThreadIndex = 0;
       ThreadIndex < TotalThreadCount;

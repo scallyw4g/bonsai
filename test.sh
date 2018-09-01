@@ -1,6 +1,6 @@
 #! /bin/bash
 
-for file in $(find bin/test*); do
-  echo "Running $file"
-  $file
+for test_executable in $(find bin/test*); do
+  echo "Running $test_executable"
+  $test_executable
 done

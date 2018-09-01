@@ -28,6 +28,7 @@ main()
     InitChunkPlane(0, SyntheticChunk, SynChunkDim, GRASS_GREEN);
     CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, DestChunkDim, Voxel_Position(1));
     SetFlag(DestChunk, Chunk_Initialized);
+    SetFlag(SyntheticChunk, Chunk_Initialized);
 
     for ( int z = 0; z < DestChunkDim.z; ++ z)
     {
@@ -50,6 +51,7 @@ main()
     InitChunkPlane(1, SyntheticChunk, SynChunkDim, GRASS_GREEN);
     CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, DestChunkDim, Voxel_Position(1));
     SetFlag(DestChunk, Chunk_Initialized);
+    SetFlag(SyntheticChunk, Chunk_Initialized);
 
     for ( int z = 0; z < DestChunkDim.z; ++ z)
     {

@@ -33,13 +33,16 @@ FunctionOne()
 s32
 main()
 {
+  u32 TotalThreadCount = GetTotalThreadCount();
+
   debug_state DebugState = {};
   GlobalDebugState = &DebugState;
+  GlobalDebugState->Initialized = True;
 
-  TranArena           = PlatformAllocateArena(Megabytes(8));
+  TranArena = PlatformAllocateArena(Megabytes(8));
 
-  InitDebugMemoryAllocationSystem(&DebugState, TotalThreadCount);
-  InitScopeTrees(&Memory, TotalThreadCount);
+  InitDebugMemoryAllocationSystem(&DebugState);
+  InitScopeTrees(GetDebugMemoryAllocator(), TotalThreadCount);
 
   DebugState.Initialized = True;
 
