@@ -384,6 +384,8 @@ AdvanceScopeTrees(debug_state *State, r32 Dt)
 
     debug_scope_tree *NextFramesTree = &State->ThreadScopeTrees[ThreadIndex].List[State->WriteScopeIndex];
     NextFramesTree->StartingCycle = CurrentCycles;
+
+    State->ThreadFrameData[ThreadIndex].NextMutexOpRecord = 0;
   }
 
   State->MainThreadBlocksWorkerThreads = False;
