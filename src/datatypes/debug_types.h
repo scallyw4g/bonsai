@@ -1,5 +1,7 @@
 #if BONSAI_INTERNAL
 
+#define DEBUG_FRAMES_TRACKED 64
+
 struct clip_rect
 {
   v2 Min;
@@ -68,10 +70,9 @@ struct debug_scope_tree
   r32 FrameMs;
 };
 
-#define SCOPE_TREE_COUNT 64
 struct debug_scope_tree_list
 {
-  debug_scope_tree List[SCOPE_TREE_COUNT];
+  debug_scope_tree List[DEBUG_FRAMES_TRACKED];
 };
 
 enum debug_ui_type

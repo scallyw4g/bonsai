@@ -410,8 +410,8 @@ AdvanceScopeTrees(debug_state *State, r32 Dt)
   END_BLOCK("Waiting for Workers to Finish");
 
   TIMED_BLOCK("Advance And Free Trees");
-  State->WriteScopeIndex = (State->WriteScopeIndex+1) % SCOPE_TREE_COUNT;
-  State->ReadScopeIndex = (State->ReadScopeIndex+1) % SCOPE_TREE_COUNT;
+  State->WriteScopeIndex = (State->WriteScopeIndex+1) % DEBUG_FRAMES_TRACKED;
+  State->ReadScopeIndex = (State->ReadScopeIndex+1) % DEBUG_FRAMES_TRACKED;
 
   for ( u32 ThreadIndex = 0;
       ThreadIndex < TotalThreadCount;
@@ -496,7 +496,7 @@ InitScopeTrees(mt_memory_arena *DebugMemory, u32 TotalThreadCount)
       ++ThreadIndex)
   {
     for (u32 TreeIndex = 0;
-        TreeIndex < SCOPE_TREE_COUNT;
+        TreeIndex < DEBUG_FRAMES_TRACKED;
         ++TreeIndex)
     {
       GlobalDebugState->ThreadScopeTrees[ThreadIndex].List[TreeIndex].Root = GetProfileScope(GlobalDebugState);
@@ -1264,6 +1264,8 @@ BufferFirstCallToEach(ui_render_group *Group, debug_profile_scope *Scope, debug_
 inline void
 WorkerThreadWaitForDebugSystem()
 {
+  TIMED_FUNCTION();
+
   debug_state *DebugState = GetDebugState();
   if (DebugState->MainThreadBlocksWorkerThreads)
   {
@@ -1609,7 +1611,7 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Layo
     v2 StartingAt = Layout->At;
 
     for (u32 TreeIndex = 0;
-        TreeIndex < SCOPE_TREE_COUNT;
+        TreeIndex < DEBUG_FRAMES_TRACKED;
         ++TreeIndex )
     {
       debug_scope_tree *Tree = &DebugState->ThreadScopeTrees[ThreadLocal_ThreadIndex].List[TreeIndex];
@@ -2237,7 +2239,7 @@ ComputeMinMaxAvgDt(debug_scope_tree_list *ScopeTrees)
   min_max_avg_dt Dt = {};
 
     for (u32 TreeIndex = 0;
-        TreeIndex < SCOPE_TREE_COUNT;
+        TreeIndex < DEBUG_FRAMES_TRACKED;
         ++TreeIndex )
     {
       debug_scope_tree *Tree = &ScopeTrees->List[TreeIndex];
@@ -2246,7 +2248,7 @@ ComputeMinMaxAvgDt(debug_scope_tree_list *ScopeTrees)
       Dt.Max = Max(Dt.Max, Tree->FrameMs);
       Dt.Avg += Tree->FrameMs;
     }
-    Dt.Avg /= (r32)SCOPE_TREE_COUNT;
+    Dt.Avg /= (r32)DEBUG_FRAMES_TRACKED;
 
   return Dt;
 }
