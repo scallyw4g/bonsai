@@ -8,20 +8,22 @@
 #include <debug.cpp>
 #include <objloader.cpp>
 
+#include <test_utils.cpp>
+
 void
 TestPopWord(stream_cursor *Stream, memory_arena *Memory)
 {
   {
     char *Word = PopWord(Stream, Memory);
-    Assert(StringsMatch(Word, "word1"));
+    TestThat(StringsMatch(Word, "word1"));
   }
   {
     char *Word = PopWord(Stream, Memory);
-    Assert(StringsMatch(Word, "word2"));
+    TestThat(StringsMatch(Word, "word2"));
   }
   {
     char *Word = PopWord(Stream, Memory);
-    Assert(StringsMatch(Word, "word3"));
+    TestThat(StringsMatch(Word, "word3"));
   }
 
   return;
@@ -32,15 +34,15 @@ TestPopU32(stream_cursor *Stream, memory_arena *Memory)
 {
   {
     u32 N = PopU32(Stream, Memory);
-    Assert(N == 1);
+    TestThat(N == 1);
   }
   {
     u32 N = PopU32(Stream, Memory);
-    Assert(N == 2);
+    TestThat(N == 2);
   }
   {
     u32 N = PopU32(Stream, Memory);
-    Assert(N == 3);
+    TestThat(N == 3);
   }
 
   return;
@@ -105,15 +107,15 @@ TestStreamCursor()
     stream_cursor Stream = StreamCursor(TestData);
     {
       u32 N = PopU32(&Stream, Memory, "/");
-      Assert(N == 1);
+      TestThat(N == 1);
     }
     {
       u32 N = PopU32(&Stream, Memory, "/");
-      Assert(N == 2);
+      TestThat(N == 2);
     }
     {
       u32 N = PopU32(&Stream, Memory);
-      Assert(N == 3);
+      TestThat(N == 3);
     }
   }
 
@@ -122,11 +124,11 @@ TestStreamCursor()
     stream_cursor Stream = StreamCursor(TestData);
     {
       u32 N = PopU32(&Stream, Memory, "/");
-      Assert(N == 1);
+      TestThat(N == 1);
     }
     {
       u32 N = PopU32(&Stream, Memory);
-      Assert(N == 3);
+      TestThat(N == 3);
     }
   }
 
@@ -137,15 +139,15 @@ TestStreamCursor()
 void
 TestContains()
 {
-  Assert( Contains("abc", "abc") );
-  Assert( Contains("abcd", "abc") );
-  Assert( Contains("dabc", "abc") );
-  Assert( Contains("dabcd", "abc") );
+  TestThat( Contains("abc", "abc") );
+  TestThat( Contains("abcd", "abc") );
+  TestThat( Contains("dabc", "abc") );
+  TestThat( Contains("dabcd", "abc") );
 
-  Assert(!Contains("bc", "abc") );
-  Assert(!Contains("bacd", "abc") );
-  Assert(!Contains("dacb", "abc") );
-  Assert(!Contains("adbcd", "abc") );
+  TestThat(!Contains("bc", "abc") );
+  TestThat(!Contains("bacd", "abc") );
+  TestThat(!Contains("dacb", "abc") );
+  TestThat(!Contains("adbcd", "abc") );
 
   return;
 }
@@ -153,47 +155,49 @@ TestContains()
 s32
 main()
 {
+  TestSuiteBegin("String");
   {
     const char *Test1 = "v";
     const char *Test2 = "v";
-    Assert(StringsMatch(Test1, Test2));
+    TestThat(StringsMatch(Test1, Test2));
   }
 
   {
     const char *Test1 = "vv";
     const char *Test2 = "vv";
-    Assert(StringsMatch(Test1, Test2));
+    TestThat(StringsMatch(Test1, Test2));
   }
 
   {
     const char *Test1 = "v v";
     const char *Test2 = "v v";
-    Assert(StringsMatch(Test1, Test2));
+    TestThat(StringsMatch(Test1, Test2));
   }
 
   {
     const char *Test1 = "vv";
     const char *Test2 = "v";
-    Assert(!StringsMatch(Test1, Test2));
+    TestThat(!StringsMatch(Test1, Test2));
   }
 
   {
     const char *Test1 = "v";
     const char *Test2 = "vv";
-    Assert(!StringsMatch(Test1, Test2));
+    TestThat(!StringsMatch(Test1, Test2));
   }
 
   {
     const char *TestData = "   \n   word1";
     const char *Word = EatAllCharacters(TestData, " \n");
-    Assert(StringsMatch(Word, "word1"));
+    TestThat(StringsMatch(Word, "word1"));
   }
 
   TestStreamCursor();
 
   TestContains();
 
-  return 0;
+  TestSuiteEnd();
+  exit(TestsFailed);
 }
 
 

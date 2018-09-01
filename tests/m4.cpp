@@ -6,17 +6,22 @@
 #include <shader.cpp>
 #include <debug.cpp>
 
+#include <test_utils.cpp>
+
 s32
 main()
 {
+  TestSuiteBegin("Matrix");
+
   {
     m4 M1 = IdentityMatrix;
     m4 M2 = IdentityMatrix;
 
-    Assert( M1 * M2 == IdentityMatrix);
+    TestThat( M1 * M2 == IdentityMatrix);
   }
 
-  return 0;
+  TestSuiteEnd();
+  exit(TestsFailed);
 }
 
 

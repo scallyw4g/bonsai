@@ -523,7 +523,6 @@ main()
 #endif
 
   TestSuiteEnd();
-
-  return 0;
+  exit(TestsFailed);
 }
 
