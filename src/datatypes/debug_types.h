@@ -70,9 +70,11 @@ struct debug_scope_tree
   r32 FrameMs;
 };
 
-struct debug_scope_tree_list
+struct debug_frame_data
 {
-  debug_scope_tree List[DEBUG_FRAMES_TRACKED];
+  debug_scope_tree ScopeTrees[DEBUG_FRAMES_TRACKED];
+  mutex_op_record *MutexOpRecords;
+  u32 NextMutexOpRecord;
 };
 
 enum debug_ui_type
@@ -149,13 +151,10 @@ struct debug_state
   b32 Debug_RedrawEveryPush;
   b32 DebugDoScopeProfiling = True;
 
-  mutex_op_record *MutexOpRecords;
-  volatile u32 NextMutexOpRecord;
-
   debug_profile_scope FreeScopeSentinel;
   mutex FreeScopeMutex;
 
-  debug_scope_tree_list *ThreadScopeTrees;
+  debug_frame_data *ThreadFrameData;
   u32 ReadScopeIndex;
   u32 WriteScopeIndex;
   s32 FreeScopeCount;
@@ -171,13 +170,13 @@ struct debug_state
 
   debug_scope_tree *GetReadScopeTree()
   {
-    debug_scope_tree *RootScope = &this->ThreadScopeTrees[ThreadLocal_ThreadIndex].List[this->ReadScopeIndex];
+    debug_scope_tree *RootScope = &this->ThreadFrameData[ThreadLocal_ThreadIndex].ScopeTrees[this->ReadScopeIndex];
     return RootScope;
   }
 
   debug_scope_tree *GetWriteScopeTree()
   {
-    debug_scope_tree *RootScope = &this->ThreadScopeTrees[ThreadLocal_ThreadIndex].List[this->WriteScopeIndex];
+    debug_scope_tree *RootScope = &this->ThreadFrameData[ThreadLocal_ThreadIndex].ScopeTrees[this->WriteScopeIndex];
     return RootScope;
   }
 };

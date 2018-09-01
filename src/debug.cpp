@@ -9,8 +9,15 @@ inline void
 InitializeMutexOpRecords(debug_state *State, memory_arena *Memory)
 {
   // FIXME(Jesse): Once the debug arena has its mt-safe-ness removed, do this allocation on an arena
+  u32 TotalThreadCount = GetTotalThreadCount();
   umm PushSize = TOTAL_MUTEX_OP_RECORDS * sizeof(mutex_op_record);
-  State->MutexOpRecords = (mutex_op_record*)PushStruct(Memory, PushSize);
+
+  for ( umm ThreadIndex = 0;
+        ThreadIndex < TotalThreadCount;
+        ++ThreadIndex)
+  {
+    State->ThreadFrameData[ThreadIndex].MutexOpRecords = (mutex_op_record*)PushStruct(Memory, PushSize);
+  }
   return;
 }
 
@@ -18,11 +25,10 @@ inline mutex_op_record *
 GetMutexOpRecord(mutex *Mutex, mutex_op Op, debug_state *State)
 {
   mutex_op_record *Record = 0;
-  if (State->NextMutexOpRecord < TOTAL_MUTEX_OP_RECORDS)
+  if (State->ThreadFrameData[ThreadLocal_ThreadIndex].NextMutexOpRecord < TOTAL_MUTEX_OP_RECORDS)
   {
-    Record = State->MutexOpRecords + AtomicIncrement(&State->NextMutexOpRecord);
+    Record = State->ThreadFrameData[ThreadLocal_ThreadIndex].MutexOpRecords + State->ThreadFrameData[ThreadLocal_ThreadIndex].NextMutexOpRecord++;
     Record->Cycle = GetCycleCount();
-    Record->ThreadIndex = ThreadLocal_ThreadIndex;
     Record->Op = Op;
     Record->Mutex = Mutex;
   }
@@ -396,7 +402,7 @@ AdvanceScopeTrees(debug_state *State, r32 Dt)
         ThreadIndex < TotalThreadCount;
         ++ThreadIndex)
     {
-      debug_scope_tree *WriteTree = &State->ThreadScopeTrees[ThreadIndex].List[State->WriteScopeIndex];
+      debug_scope_tree *WriteTree = &State->ThreadFrameData[ThreadIndex].ScopeTrees[State->WriteScopeIndex];
       WriteTree->FrameMs = Dt*1000.0f;
     }
   END_BLOCK("WriteTree Stats Recording");
@@ -417,7 +423,7 @@ AdvanceScopeTrees(debug_state *State, r32 Dt)
       ThreadIndex < TotalThreadCount;
       ++ThreadIndex)
   {
-    debug_scope_tree *WriteTree = &State->ThreadScopeTrees[ThreadIndex].List[State->WriteScopeIndex];
+    debug_scope_tree *WriteTree = &State->ThreadFrameData[ThreadIndex].ScopeTrees[State->WriteScopeIndex];
     FreeScopes(State, WriteTree->Root);
     InitScopeTree(WriteTree);
   }
@@ -432,10 +438,10 @@ AdvanceScopeTrees(debug_state *State, r32 Dt)
       ThreadIndex < TotalThreadCount;
       ++ThreadIndex)
   {
-    debug_scope_tree *ThisFramesTree = &State->ThreadScopeTrees[ThreadIndex].List[State->ReadScopeIndex];
+    debug_scope_tree *ThisFramesTree = &State->ThreadFrameData[ThreadIndex].ScopeTrees[State->ReadScopeIndex];
     ThisFramesTree->TotalCycles = CurrentCycles - ThisFramesTree->StartingCycle;
 
-    debug_scope_tree *NextFramesTree = &State->ThreadScopeTrees[ThreadIndex].List[State->WriteScopeIndex];
+    debug_scope_tree *NextFramesTree = &State->ThreadFrameData[ThreadIndex].ScopeTrees[State->WriteScopeIndex];
     NextFramesTree->StartingCycle = CurrentCycles;
 
     State->ThreadFrameData[ThreadIndex].NextMutexOpRecord = 0;
@@ -490,7 +496,6 @@ InitScopeTrees(mt_memory_arena *DebugMemory, u32 TotalThreadCount)
 
   GlobalDebugState->WriteScopeIndex = GlobalDebugState->ReadScopeIndex + 1;
 
-  GlobalDebugState->ThreadScopeTrees = Allocate(debug_scope_tree_list, DebugMemory, TotalThreadCount, True);
   for (u32 ThreadIndex = 0;
       ThreadIndex < TotalThreadCount;
       ++ThreadIndex)
@@ -499,8 +504,8 @@ InitScopeTrees(mt_memory_arena *DebugMemory, u32 TotalThreadCount)
         TreeIndex < DEBUG_FRAMES_TRACKED;
         ++TreeIndex)
     {
-      GlobalDebugState->ThreadScopeTrees[ThreadIndex].List[TreeIndex].Root = GetProfileScope(GlobalDebugState);
-      InitScopeTree(&GlobalDebugState->ThreadScopeTrees[ThreadIndex].List[TreeIndex]);
+      GlobalDebugState->ThreadFrameData[ThreadIndex].ScopeTrees[TreeIndex].Root = GetProfileScope(GlobalDebugState);
+      InitScopeTree(&GlobalDebugState->ThreadFrameData[ThreadIndex].ScopeTrees[TreeIndex]);
     }
   }
 
@@ -542,9 +547,13 @@ InitDebugState(debug_state *DebugState, mt_memory_arena *DebugMemory)
   GlobalDebugState->Memory = DebugMemory;
 
   GlobalDebugState->Initialized = True;
-  u32 TotalThreadCount = GetWorkerThreadCount() + 1;
+  u32 TotalThreadCount = GetTotalThreadCount();
 
   InitDebugMemoryAllocationSystem(DebugMemory, TotalThreadCount);
+
+  // FIXME(Jesse): Once the mt-safe arena is gone this can be allocated on an arena I think
+  umm Size = TotalThreadCount * sizeof(debug_frame_data);
+  GlobalDebugState->ThreadFrameData = (debug_frame_data*)PushStruct(DebugMemory, Size);
 
   InitializeMutexOpRecords(DebugState, DebugMemory->Arena);
 
@@ -1484,8 +1493,7 @@ FindRecord(mutex_op_record *WaitRecord, mutex_op_record *FinalRecord, mutex_op S
   while (SearchRecord < FinalRecord)
   {
     if (SearchRecord->Op == SearchOp &&
-        SearchRecord->Mutex == WaitRecord->Mutex &&
-        SearchRecord->ThreadIndex == WaitRecord->ThreadIndex)
+        SearchRecord->Mutex == WaitRecord->Mutex)
     {
       Result = SearchRecord;
       break;
@@ -1526,8 +1534,15 @@ DrawWaitingBar(mutex_op_record *WaitRecord, mutex_op_record *AquiredRecord, mute
   return;
 }
 
+inline debug_frame_data*
+GetThreadDebugState(debug_state *State, u32 ThreadIndex)
+{
+  debug_frame_data *Result = State->ThreadFrameData + ThreadIndex;
+  return Result;
+}
+
 void
-DebugDrawPerfBargraph(ui_render_group *Group, debug_state *State, layout *Layout)
+DebugDrawPerfBargraph(ui_render_group *Group, debug_state *DebugState, layout *Layout)
 {
   NewLine(Layout, &Group->Font);
 
@@ -1535,7 +1550,7 @@ DebugDrawPerfBargraph(ui_render_group *Group, debug_state *State, layout *Layout
   NewLine(Layout, &Group->Font);
 
   untextured_2d_geometry_buffer *Geo = &Group->TextGroup->UIGeo;
-  debug_scope_tree *ReadTree = State->GetReadScopeTree();
+  debug_scope_tree *ReadTree = DebugState->GetReadScopeTree();
 
   random_series Entropy = {};
   r32 TotalGraphWidth = 2000.0f;
@@ -1549,7 +1564,7 @@ DebugDrawPerfBargraph(ui_render_group *Group, debug_state *State, layout *Layout
     char *ThreadName = FormatString("Thread %u", ThreadIndex);
     BufferLine(ThreadName, WHITE, Layout, &Group->Font, Group);
 
-    debug_scope_tree *ReadTree = &State->ThreadScopeTrees[ThreadIndex].List[State->ReadScopeIndex];
+    debug_scope_tree *ReadTree = &DebugState->ThreadFrameData[ThreadIndex].ScopeTrees[DebugState->ReadScopeIndex];
     DrawScopeBar(Group, Geo, ReadTree->Root, Layout, ReadTree->TotalCycles, ReadTree->StartingCycle, TotalGraphWidth, &Entropy);
 
     BufferHorizontalBar(Group, Geo, Layout, TotalGraphWidth, V3(0.5f));
@@ -1557,43 +1572,56 @@ DebugDrawPerfBargraph(ui_render_group *Group, debug_state *State, layout *Layout
 
   TIMED_BLOCK("Worker Thread Shutdown");
   TIMED_BLOCK("Waiting for Workers to Finish");
-  State->MainThreadBlocksWorkerThreads = True;
+  DebugState->MainThreadBlocksWorkerThreads = True;
   u32 WorkerThreadCount = GetWorkerThreadCount();
-  while (State->WorkerThreadsWaiting < WorkerThreadCount);
+  while (DebugState->WorkerThreadsWaiting < WorkerThreadCount);
   END_BLOCK("Waiting for Workers to Finish");
 
   TIMED_BLOCK("Mutex Record Collation");
 
   NewLine(Layout, &Group->Font);
 
-  mutex_op_record *FinalRecord = State->MutexOpRecords + State->NextMutexOpRecord;
-  u64 FrameTotalCycles = State->GetReadScopeTree()->TotalCycles;
-  u64 FrameStartingCycle = State->GetReadScopeTree()->StartingCycle;
-  for (u32 OpRecordIndex = 0;
-      OpRecordIndex < State->NextMutexOpRecord;
-      ++OpRecordIndex)
+
+  u64 FrameTotalCycles = DebugState->GetReadScopeTree()->TotalCycles;
+  u64 FrameStartingCycle = DebugState->GetReadScopeTree()->StartingCycle;
+
+
+  for ( u32 ThreadIndex = 0;
+        ThreadIndex < TotalThreadCount;
+        ++ThreadIndex)
   {
-    mutex_op_record *CurrentRecord = State->MutexOpRecords + OpRecordIndex;
-    if (CurrentRecord->Op == MutexOp_Waiting)
+    debug_frame_data *ThreadState = GetThreadDebugState(DebugState, ThreadIndex);
+    mutex_op_record *FinalRecord = ThreadState->MutexOpRecords + ThreadState->NextMutexOpRecord;
+
+    for (u32 OpRecordIndex = 0;
+        OpRecordIndex < ThreadState->NextMutexOpRecord;
+        ++OpRecordIndex)
     {
-      mutex_op_record *Aquired =  FindRecord(CurrentRecord, FinalRecord, MutexOp_Aquired);
-      mutex_op_record *Released = FindRecord(CurrentRecord, FinalRecord, MutexOp_Released);
-      if (Aquired && Released)
+      mutex_op_record *CurrentRecord = ThreadState->MutexOpRecords + OpRecordIndex;
+      if (CurrentRecord->Op == MutexOp_Waiting)
       {
-        r32 yOffset = CurrentRecord->ThreadIndex * Group->Font.LineHeight;
-        Layout->At.y += yOffset;
-        DrawWaitingBar(CurrentRecord, Aquired, Released, Group, Layout, &Group->Font, FrameStartingCycle, FrameTotalCycles, TotalGraphWidth);
-        Layout->At.y -= yOffset;
-      }
-      else
-      {
-        Warn("Unclosed mutex record, skipping");
+        mutex_op_record *Aquired =  FindRecord(CurrentRecord, FinalRecord, MutexOp_Aquired);
+        mutex_op_record *Released = FindRecord(CurrentRecord, FinalRecord, MutexOp_Released);
+        if (Aquired && Released)
+        {
+          r32 yOffset = ThreadIndex * Group->Font.LineHeight;
+          Layout->At.y += yOffset;
+          DrawWaitingBar(CurrentRecord, Aquired, Released, Group, Layout, &Group->Font, FrameStartingCycle, FrameTotalCycles, TotalGraphWidth);
+          Layout->At.y -= yOffset;
+        }
+        else
+        {
+          Warn("Unclosed mutex record, skipping");
+        }
       }
     }
+
+    // FIXME(Jesse): This needs to be moved when we do read/write buffers
+    ThreadState->NextMutexOpRecord = 0;
   }
   END_BLOCK("Mutex Record Collation");
 
-  State->MainThreadBlocksWorkerThreads = False;
+  DebugState->MainThreadBlocksWorkerThreads = False;
   END_BLOCK("Worker Thread Shutdown");
 
   return;
@@ -1614,7 +1642,7 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Layo
         TreeIndex < DEBUG_FRAMES_TRACKED;
         ++TreeIndex )
     {
-      debug_scope_tree *Tree = &DebugState->ThreadScopeTrees[ThreadLocal_ThreadIndex].List[TreeIndex];
+      debug_scope_tree *Tree = &DebugState->ThreadFrameData[ThreadLocal_ThreadIndex].ScopeTrees[TreeIndex];
       r32 Perc = SafeDivide0(Tree->FrameMs, MaxMs);
 
       v2 MinP = Layout->At;
@@ -1692,7 +1720,7 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Layo
     {
       PadBottom(Layout, 15);
       NewLine(Layout, &Group->Font);
-      debug_scope_tree *ReadTree = &DebugState->ThreadScopeTrees[ThreadIndex].List[DebugState->ReadScopeIndex];
+      debug_scope_tree *ReadTree = &DebugState->ThreadFrameData[ThreadIndex].ScopeTrees[DebugState->ReadScopeIndex];
       BufferFirstCallToEach(Group, ReadTree->Root, ReadTree->Root, DebugState->Memory, Layout, ReadTree->TotalCycles, 0);
     }
 
@@ -2232,7 +2260,7 @@ struct min_max_avg_dt
 };
 
 min_max_avg_dt
-ComputeMinMaxAvgDt(debug_scope_tree_list *ScopeTrees)
+ComputeMinMaxAvgDt(debug_frame_data *ScopeTrees)
 {
   TIMED_FUNCTION();
 
@@ -2242,7 +2270,7 @@ ComputeMinMaxAvgDt(debug_scope_tree_list *ScopeTrees)
         TreeIndex < DEBUG_FRAMES_TRACKED;
         ++TreeIndex )
     {
-      debug_scope_tree *Tree = &ScopeTrees->List[TreeIndex];
+      debug_scope_tree *Tree = &ScopeTrees->ScopeTrees[TreeIndex];
 
       Dt.Min = Min(Dt.Min, Tree->FrameMs);
       Dt.Max = Max(Dt.Max, Tree->FrameMs);
@@ -2416,7 +2444,7 @@ DebugFrameEnd(platform *Plat, game_state *GameState)
 
 
   TIMED_BLOCK("Draw Status Bar");
-    Dt = ComputeMinMaxAvgDt(&DebugState->ThreadScopeTrees[ThreadLocal_ThreadIndex]);
+    Dt = ComputeMinMaxAvgDt(&DebugState->ThreadFrameData[ThreadLocal_ThreadIndex]);
     BufferColumn(Dt.Max, 6, &Group, &Layout, WHITE);
     NewLine(&Layout, &Group.Font);
 
@@ -2515,7 +2543,6 @@ DebugFrameEnd(platform *Plat, game_state *GameState)
      Global_DrawCalls[DrawCountIndex] = NullDrawCall;
   }
 
-  DebugState->NextMutexOpRecord = 0;
 
   return;
 }
