@@ -36,13 +36,9 @@ main()
   debug_state DebugState = {};
   GlobalDebugState = &DebugState;
 
-  TranArena         = PlatformAllocateArena(Megabytes(8));
-  mt_memory_arena Memory = PlatformAllocateMtArena(Megabytes(32));
-  DebugState.Memory = &Memory;
+  TranArena           = PlatformAllocateArena(Megabytes(8));
 
-  u32 TotalThreadCount = 4;
-
-  InitDebugMemoryAllocationSystem(&Memory, TotalThreadCount);
+  InitDebugMemoryAllocationSystem(&DebugState, TotalThreadCount);
   InitScopeTrees(&Memory, TotalThreadCount);
 
   DebugState.Initialized = True;

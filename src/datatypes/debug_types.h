@@ -70,11 +70,14 @@ struct debug_scope_tree
   r32 FrameMs;
 };
 
-struct debug_frame_data
+struct debug_thread_state
 {
-  debug_scope_tree ScopeTrees[DEBUG_FRAMES_TRACKED];
+  memory_arena *Memory;
+
   mutex_op_record *MutexOpRecords;
   u32 NextMutexOpRecord;
+
+  debug_scope_tree ScopeTrees[DEBUG_FRAMES_TRACKED];
 };
 
 enum debug_ui_type
@@ -136,7 +139,6 @@ debug_global __thread debug_scope_tree *ThreadLocal_WriteTree = 0;
 #define META_TABLE_SIZE (16 * 1024)
 struct debug_state
 {
-  mt_memory_arena            *Memory;
   debug_text_render_group TextRenderGroup;
 
   untextured_3d_geometry_buffer LineMesh;
@@ -154,7 +156,7 @@ struct debug_state
   debug_profile_scope FreeScopeSentinel;
   mutex FreeScopeMutex;
 
-  debug_frame_data *ThreadFrameData;
+  debug_thread_state *ThreadStates;
   u32 ReadScopeIndex;
   u32 WriteScopeIndex;
   s32 FreeScopeCount;
@@ -170,13 +172,13 @@ struct debug_state
 
   debug_scope_tree *GetReadScopeTree()
   {
-    debug_scope_tree *RootScope = &this->ThreadFrameData[ThreadLocal_ThreadIndex].ScopeTrees[this->ReadScopeIndex];
+    debug_scope_tree *RootScope = &this->ThreadStates[ThreadLocal_ThreadIndex].ScopeTrees[this->ReadScopeIndex];
     return RootScope;
   }
 
   debug_scope_tree *GetWriteScopeTree()
   {
-    debug_scope_tree *RootScope = &this->ThreadFrameData[ThreadLocal_ThreadIndex].ScopeTrees[this->WriteScopeIndex];
+    debug_scope_tree *RootScope = &this->ThreadStates[ThreadLocal_ThreadIndex].ScopeTrees[this->WriteScopeIndex];
     return RootScope;
   }
 };
@@ -276,7 +278,7 @@ struct debug_timed_function
 
 };
 
-#define INIT_DEBUG_STATE(DebugStatePtr, MemArena) InitDebugState(DebugStatePtr, MemArena)
+#define INIT_DEBUG_STATE(DebugStatePtr) InitDebugState(DebugStatePtr)
 
 #define TIMED_FUNCTION() debug_timed_function FunctionTimer(BONSAI_FUNCTION_NAME)
 #define TIMED_BLOCK(BlockName) { debug_timed_function BlockTimer(BlockName)

@@ -163,16 +163,6 @@ PlatformAllocateSize(umm AllocationSize)
   return Bytes;
 }
 
-mt_memory_arena
-PlatformAllocateMtArena(umm RequestedBytes = Megabytes(1), b32 MemProtect = True)
-{
-  mt_memory_arena Result = {};
-  Result.Arena = PlatformAllocateArena(RequestedBytes, MemProtect);
-  PlatformInitializeMutex(&Result.Mut);
-
-  return Result;
-}
-
 memory_arena*
 PlatformAllocateArena(umm RequestedBytes = Megabytes(1), b32 MemProtect = True)
 {

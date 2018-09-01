@@ -67,16 +67,9 @@ struct memory_arena
 #endif
 };
 
-struct mt_memory_arena
-{
-  mutex Mut;
-  memory_arena *Arena;
-};
-
 #if BONSAI_INTERNAL
 
 void* Allocate_(memory_arena *Arena, umm StructSize, umm StructCount, b32 MemProtect, const char* Name, s32 Line, const char* File);
-void* Allocate_(mt_memory_arena *Arena, umm StructSize, umm StructCount, b32 MemProtect, const char* Name, s32 Line, const char* File);
 
 #define Allocate(Type, Arena, Number, MemProtect) \
   (Type*)Allocate_( Arena, sizeof(Type), (umm)Number, MemProtect, #Type, __LINE__, __FILE__ )
@@ -327,13 +320,6 @@ PushSize(memory_arena *Arena, umm SizeIn)
 
 
   Assert(Arena->At <= Arena->End);
-  return Result;
-}
-
-void*
-PushStruct(mt_memory_arena *Memory, umm sizeofStruct)
-{
-  void* Result = PushSize(Memory->Arena, sizeofStruct);
   return Result;
 }
 

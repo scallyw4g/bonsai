@@ -5,6 +5,15 @@
 debug_global b32 DebugGlobal_RedrawEveryPush = 0;
 #define TOTAL_MUTEX_OP_RECORDS (1024*1024*1024)
 
+
+inline memory_arena *
+GetDebugMemoryAllocator()
+{
+  debug_state *State = GetDebugState();
+  memory_arena *Arena = State->ThreadStates[ThreadLocal_ThreadIndex].Memory;
+  return Arena;
+}
+
 inline void
 InitializeMutexOpRecords(debug_state *State, memory_arena *Memory)
 {
@@ -16,7 +25,7 @@ InitializeMutexOpRecords(debug_state *State, memory_arena *Memory)
         ThreadIndex < TotalThreadCount;
         ++ThreadIndex)
   {
-    State->ThreadFrameData[ThreadIndex].MutexOpRecords = (mutex_op_record*)PushStruct(Memory, PushSize);
+    State->ThreadStates[ThreadIndex].MutexOpRecords = (mutex_op_record*)PushStruct(Memory, PushSize);
   }
   return;
 }
@@ -25,9 +34,9 @@ inline mutex_op_record *
 GetMutexOpRecord(mutex *Mutex, mutex_op Op, debug_state *State)
 {
   mutex_op_record *Record = 0;
-  if (State->ThreadFrameData[ThreadLocal_ThreadIndex].NextMutexOpRecord < TOTAL_MUTEX_OP_RECORDS)
+  if (State->ThreadStates[ThreadLocal_ThreadIndex].NextMutexOpRecord < TOTAL_MUTEX_OP_RECORDS)
   {
-    Record = State->ThreadFrameData[ThreadLocal_ThreadIndex].MutexOpRecords + State->ThreadFrameData[ThreadLocal_ThreadIndex].NextMutexOpRecord++;
+    Record = State->ThreadStates[ThreadLocal_ThreadIndex].MutexOpRecords + State->ThreadStates[ThreadLocal_ThreadIndex].NextMutexOpRecord++;
     Record->Cycle = GetCycleCount();
     Record->Op = Op;
     Record->Mutex = Mutex;
@@ -246,16 +255,6 @@ Allocate_(memory_arena *Arena, umm StructSize, umm StructCount, b32 MemProtect, 
   return Result;
 }
 
-inline void*
-Allocate_(mt_memory_arena *Arena, umm StructSize, umm StructCount, b32 MemProtect, const char* Name, s32 Line, const char* File)
-{
-  PlatformLockMutex(&Arena->Mut);
-  void *Result = Allocate_(Arena->Arena, StructSize, StructCount, MemProtect, Name, Line, File);
-  PlatformUnlockMutex(&Arena->Mut);
-
-  return Result;
-}
-
 inline void
 ClearMetaRecordsFor(memory_arena *Arena)
 {
@@ -352,11 +351,11 @@ InitScopeTree(debug_scope_tree *Tree)
 }
 
 shader
-MakeSolidUIShader(mt_memory_arena *DebugMemory)
+MakeSolidUIShader(memory_arena *Memory)
 {
   shader SimpleTextureShader = LoadShaders( "SimpleColor.vertexshader",
                                             "SimpleColor.fragmentshader",
-                                            DebugMemory->Arena );
+                                             Memory);
   return SimpleTextureShader;
 }
 
@@ -402,7 +401,7 @@ AdvanceScopeTrees(debug_state *State, r32 Dt)
         ThreadIndex < TotalThreadCount;
         ++ThreadIndex)
     {
-      debug_scope_tree *WriteTree = &State->ThreadFrameData[ThreadIndex].ScopeTrees[State->WriteScopeIndex];
+      debug_scope_tree *WriteTree = &State->ThreadStates[ThreadIndex].ScopeTrees[State->WriteScopeIndex];
       WriteTree->FrameMs = Dt*1000.0f;
     }
   END_BLOCK("WriteTree Stats Recording");
@@ -423,7 +422,7 @@ AdvanceScopeTrees(debug_state *State, r32 Dt)
       ThreadIndex < TotalThreadCount;
       ++ThreadIndex)
   {
-    debug_scope_tree *WriteTree = &State->ThreadFrameData[ThreadIndex].ScopeTrees[State->WriteScopeIndex];
+    debug_scope_tree *WriteTree = &State->ThreadStates[ThreadIndex].ScopeTrees[State->WriteScopeIndex];
     FreeScopes(State, WriteTree->Root);
     InitScopeTree(WriteTree);
   }
@@ -438,13 +437,13 @@ AdvanceScopeTrees(debug_state *State, r32 Dt)
       ThreadIndex < TotalThreadCount;
       ++ThreadIndex)
   {
-    debug_scope_tree *ThisFramesTree = &State->ThreadFrameData[ThreadIndex].ScopeTrees[State->ReadScopeIndex];
+    debug_scope_tree *ThisFramesTree = &State->ThreadStates[ThreadIndex].ScopeTrees[State->ReadScopeIndex];
     ThisFramesTree->TotalCycles = CurrentCycles - ThisFramesTree->StartingCycle;
 
-    debug_scope_tree *NextFramesTree = &State->ThreadFrameData[ThreadIndex].ScopeTrees[State->WriteScopeIndex];
+    debug_scope_tree *NextFramesTree = &State->ThreadStates[ThreadIndex].ScopeTrees[State->WriteScopeIndex];
     NextFramesTree->StartingCycle = CurrentCycles;
 
-    State->ThreadFrameData[ThreadIndex].NextMutexOpRecord = 0;
+    State->ThreadStates[ThreadIndex].NextMutexOpRecord = 0;
   }
 
   State->MainThreadBlocksWorkerThreads = False;
@@ -452,7 +451,6 @@ AdvanceScopeTrees(debug_state *State, r32 Dt)
 
   return;
 }
-
 
 debug_profile_scope *
 GetProfileScope(debug_state *State)
@@ -481,14 +479,14 @@ GetProfileScope(debug_state *State)
 
   PlatformUnlockMutex(&State->FreeScopeMutex);
 #else
-    Result = Allocate(debug_profile_scope, State->Memory, 1, False);
+    Result = Allocate(debug_profile_scope, GetDebugMemoryAllocator(), 1, False);
 #endif
 
   return Result;
 }
 
 void
-InitScopeTrees(mt_memory_arena *DebugMemory, u32 TotalThreadCount)
+InitScopeTrees(memory_arena *DebugMemory, u32 TotalThreadCount)
 {
   GlobalDebugState->FreeScopeSentinel.Sibling = &GlobalDebugState->FreeScopeSentinel;
   GlobalDebugState->FreeScopeSentinel.Child = &GlobalDebugState->FreeScopeSentinel;
@@ -504,8 +502,8 @@ InitScopeTrees(mt_memory_arena *DebugMemory, u32 TotalThreadCount)
         TreeIndex < DEBUG_FRAMES_TRACKED;
         ++TreeIndex)
     {
-      GlobalDebugState->ThreadFrameData[ThreadIndex].ScopeTrees[TreeIndex].Root = GetProfileScope(GlobalDebugState);
-      InitScopeTree(&GlobalDebugState->ThreadFrameData[ThreadIndex].ScopeTrees[TreeIndex]);
+      GlobalDebugState->ThreadStates[ThreadIndex].ScopeTrees[TreeIndex].Root = GetProfileScope(GlobalDebugState);
+      InitScopeTree(&GlobalDebugState->ThreadStates[ThreadIndex].ScopeTrees[TreeIndex]);
     }
   }
 
@@ -513,26 +511,42 @@ InitScopeTrees(mt_memory_arena *DebugMemory, u32 TotalThreadCount)
 }
 
 void
-InitDebugMemoryAllocationSystem(mt_memory_arena *DebugMemory, u32 TotalThreadCount)
+InitDebugMemoryAllocationSystem(debug_state *State)
 {
+  u32 TotalThreadCount = GetTotalThreadCount();
+
+  // FIXME(Jesse): Once the mt-safe arena is gone this can be allocated on an arena .. maybe
+  memory_arena BoostrapArena = {};
+  umm Size = TotalThreadCount * sizeof(debug_thread_state);
+  GlobalDebugState->ThreadStates = (debug_thread_state*)PushStruct(&BoostrapArena, Size);
+
+  for (u32 ThreadIndex = 0;
+      ThreadIndex < TotalThreadCount;
+      ++ThreadIndex)
+  {
+    memory_arena *ThreadArena = PlatformAllocateArena();
+    State->ThreadStates[ThreadIndex].Memory = ThreadArena;
+    DEBUG_REGISTER_ARENA(ThreadArena, State);
+  }
+
   umm PushSize = TotalThreadCount * sizeof(push_metadata*);
-  GlobalDebugState->MetaTables = (push_metadata**)PushStruct(DebugMemory, PushSize);
+  State->MetaTables = (push_metadata**)PushStruct(GetDebugMemoryAllocator(), PushSize);
 
   for (u32 ThreadIndex = 0;
       ThreadIndex < TotalThreadCount;
       ++ThreadIndex)
   {
     umm PushSize = META_TABLE_SIZE * sizeof(push_metadata);
-    GlobalDebugState->MetaTables[ThreadIndex] = (push_metadata*)PushStruct(DebugMemory, PushSize);
+    State->MetaTables[ThreadIndex] = (push_metadata*)PushStruct(GetDebugMemoryAllocator(), PushSize);
   }
 
-  GlobalDebugState->MetaTableMutexes = (mutex*)PushStruct(DebugMemory, sizeof(mutex)*TotalThreadCount);
+  State->MetaTableMutexes = (mutex*)PushStruct(GetDebugMemoryAllocator(), sizeof(mutex)*TotalThreadCount);
 
   for (u32 ThreadIndex = 0;
       ThreadIndex < TotalThreadCount;
       ++ThreadIndex)
   {
-    mutex *Mutex = GlobalDebugState->MetaTableMutexes + ThreadIndex;
+    mutex *Mutex = State->MetaTableMutexes + ThreadIndex;
     PlatformInitializeMutex(Mutex);
   }
 
@@ -540,37 +554,31 @@ InitDebugMemoryAllocationSystem(mt_memory_arena *DebugMemory, u32 TotalThreadCou
 }
 
 void
-InitDebugState(debug_state *DebugState, mt_memory_arena *DebugMemory)
+InitDebugState(debug_state *DebugState)
 {
   GlobalDebugState = DebugState;
-
-  GlobalDebugState->Memory = DebugMemory;
 
   GlobalDebugState->Initialized = True;
   u32 TotalThreadCount = GetTotalThreadCount();
 
-  InitDebugMemoryAllocationSystem(DebugMemory, TotalThreadCount);
+  InitDebugMemoryAllocationSystem(DebugState);
 
-  // FIXME(Jesse): Once the mt-safe arena is gone this can be allocated on an arena I think
-  umm Size = TotalThreadCount * sizeof(debug_frame_data);
-  GlobalDebugState->ThreadFrameData = (debug_frame_data*)PushStruct(DebugMemory, Size);
+  InitializeMutexOpRecords(DebugState, GetDebugMemoryAllocator());
 
-  InitializeMutexOpRecords(DebugState, DebugMemory->Arena);
-
-  InitScopeTrees(DebugMemory, TotalThreadCount);
+  InitScopeTrees(GetDebugMemoryAllocator(), TotalThreadCount);
 
 
-  AllocateMesh(&GlobalDebugState->LineMesh, 1024, DebugMemory->Arena);
+  AllocateMesh(&GlobalDebugState->LineMesh, 1024, GetDebugMemoryAllocator());
 
-  if (!InitDebugOverlayFramebuffer(&GlobalDebugState->TextRenderGroup, DebugMemory->Arena, "Holstein.DDS"))
+  if (!InitDebugOverlayFramebuffer(&GlobalDebugState->TextRenderGroup, GetDebugMemoryAllocator(), "Holstein.DDS"))
   { Error("Initializing Debug Overlay Framebuffer"); }
 
-  AllocateAndInitGeoBuffer(&GlobalDebugState->TextRenderGroup.TextGeo, 1024, DebugMemory->Arena);
-  AllocateAndInitGeoBuffer(&GlobalDebugState->TextRenderGroup.UIGeo, 1024, DebugMemory->Arena);
+  AllocateAndInitGeoBuffer(&GlobalDebugState->TextRenderGroup.TextGeo, 1024, GetDebugMemoryAllocator());
+  AllocateAndInitGeoBuffer(&GlobalDebugState->TextRenderGroup.UIGeo, 1024, GetDebugMemoryAllocator());
 
-  GlobalDebugState->TextRenderGroup.SolidUIShader = MakeSolidUIShader(GlobalDebugState->Memory);
+  GlobalDebugState->TextRenderGroup.SolidUIShader = MakeSolidUIShader(GetDebugMemoryAllocator());
 
-  GlobalDebugState->SelectedArenas = Allocate(selected_arenas, GlobalDebugState->Memory, 1, True);
+  GlobalDebugState->SelectedArenas = Allocate(selected_arenas, GetDebugMemoryAllocator(), 1, True);
 
   return;
 }
@@ -1240,7 +1248,7 @@ HoverAndClickExpand(ui_render_group *Group, layout *Layout, T *Expandable, u8 Co
 }
 
 void
-BufferFirstCallToEach(ui_render_group *Group, debug_profile_scope *Scope, debug_profile_scope *TreeRoot, mt_memory_arena *Memory, layout *Layout, u64 TotalFrameCycles, u32 Depth)
+BufferFirstCallToEach(ui_render_group *Group, debug_profile_scope *Scope, debug_profile_scope *TreeRoot, memory_arena *Memory, layout *Layout, u64 TotalFrameCycles, u32 Depth)
 {
   TIMED_FUNCTION();
 
@@ -1534,10 +1542,10 @@ DrawWaitingBar(mutex_op_record *WaitRecord, mutex_op_record *AquiredRecord, mute
   return;
 }
 
-inline debug_frame_data*
+inline debug_thread_state*
 GetThreadDebugState(debug_state *State, u32 ThreadIndex)
 {
-  debug_frame_data *Result = State->ThreadFrameData + ThreadIndex;
+  debug_thread_state *Result = State->ThreadStates + ThreadIndex;
   return Result;
 }
 
@@ -1564,7 +1572,7 @@ DebugDrawPerfBargraph(ui_render_group *Group, debug_state *DebugState, layout *L
     char *ThreadName = FormatString("Thread %u", ThreadIndex);
     BufferLine(ThreadName, WHITE, Layout, &Group->Font, Group);
 
-    debug_scope_tree *ReadTree = &DebugState->ThreadFrameData[ThreadIndex].ScopeTrees[DebugState->ReadScopeIndex];
+    debug_scope_tree *ReadTree = &DebugState->ThreadStates[ThreadIndex].ScopeTrees[DebugState->ReadScopeIndex];
     DrawScopeBar(Group, Geo, ReadTree->Root, Layout, ReadTree->TotalCycles, ReadTree->StartingCycle, TotalGraphWidth, &Entropy);
 
     BufferHorizontalBar(Group, Geo, Layout, TotalGraphWidth, V3(0.5f));
@@ -1581,16 +1589,14 @@ DebugDrawPerfBargraph(ui_render_group *Group, debug_state *DebugState, layout *L
 
   NewLine(Layout, &Group->Font);
 
-
   u64 FrameTotalCycles = DebugState->GetReadScopeTree()->TotalCycles;
   u64 FrameStartingCycle = DebugState->GetReadScopeTree()->StartingCycle;
-
 
   for ( u32 ThreadIndex = 0;
         ThreadIndex < TotalThreadCount;
         ++ThreadIndex)
   {
-    debug_frame_data *ThreadState = GetThreadDebugState(DebugState, ThreadIndex);
+    debug_thread_state *ThreadState = GetThreadDebugState(DebugState, ThreadIndex);
     mutex_op_record *FinalRecord = ThreadState->MutexOpRecords + ThreadState->NextMutexOpRecord;
 
     for (u32 OpRecordIndex = 0;
@@ -1642,7 +1648,7 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Layo
         TreeIndex < DEBUG_FRAMES_TRACKED;
         ++TreeIndex )
     {
-      debug_scope_tree *Tree = &DebugState->ThreadFrameData[ThreadLocal_ThreadIndex].ScopeTrees[TreeIndex];
+      debug_scope_tree *Tree = &DebugState->ThreadStates[ThreadLocal_ThreadIndex].ScopeTrees[TreeIndex];
       r32 Perc = SafeDivide0(Tree->FrameMs, MaxMs);
 
       v2 MinP = Layout->At;
@@ -1720,8 +1726,8 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Layo
     {
       PadBottom(Layout, 15);
       NewLine(Layout, &Group->Font);
-      debug_scope_tree *ReadTree = &DebugState->ThreadFrameData[ThreadIndex].ScopeTrees[DebugState->ReadScopeIndex];
-      BufferFirstCallToEach(Group, ReadTree->Root, ReadTree->Root, DebugState->Memory, Layout, ReadTree->TotalCycles, 0);
+      debug_scope_tree *ReadTree = &DebugState->ThreadStates[ThreadIndex].ScopeTrees[DebugState->ReadScopeIndex];
+      BufferFirstCallToEach(Group, ReadTree->Root, ReadTree->Root, GetDebugMemoryAllocator(), Layout, ReadTree->TotalCycles, 0);
     }
 
   END_BLOCK("Call Graph");
@@ -2260,7 +2266,7 @@ struct min_max_avg_dt
 };
 
 min_max_avg_dt
-ComputeMinMaxAvgDt(debug_frame_data *ScopeTrees)
+ComputeMinMaxAvgDt(debug_thread_state *ThreadState)
 {
   TIMED_FUNCTION();
 
@@ -2270,7 +2276,7 @@ ComputeMinMaxAvgDt(debug_frame_data *ScopeTrees)
         TreeIndex < DEBUG_FRAMES_TRACKED;
         ++TreeIndex )
     {
-      debug_scope_tree *Tree = &ScopeTrees->ScopeTrees[TreeIndex];
+      debug_scope_tree *Tree = &ThreadState->ScopeTrees[TreeIndex];
 
       Dt.Min = Min(Dt.Min, Tree->FrameMs);
       Dt.Max = Max(Dt.Max, Tree->FrameMs);
@@ -2444,7 +2450,7 @@ DebugFrameEnd(platform *Plat, game_state *GameState)
 
 
   TIMED_BLOCK("Draw Status Bar");
-    Dt = ComputeMinMaxAvgDt(&DebugState->ThreadFrameData[ThreadLocal_ThreadIndex]);
+    Dt = ComputeMinMaxAvgDt(&DebugState->ThreadStates[ThreadLocal_ThreadIndex]);
     BufferColumn(Dt.Max, 6, &Group, &Layout, WHITE);
     NewLine(&Layout, &Group.Font);
 

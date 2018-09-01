@@ -435,20 +435,17 @@ main()
   Assert(Os.Window);
   InitializeOpenGlExtensions(&Os);
 
-  // These two arenas must be initialized before the the debug state can be
-  mt_memory_arena DebugMemory = PlatformAllocateMtArena();
+  // This arena must be initialized before the the debug state can be
   TranArena                   = PlatformAllocateArena(Megabytes(8));
   TranArena->MemProtect = False;
 
-  DEBUG_REGISTER_ARENA(DebugMemory.Arena, &Plat.DebugState);
   DEBUG_REGISTER_ARENA(TranArena  , &Plat.DebugState);
 
-  INIT_DEBUG_STATE(&Plat.DebugState, &DebugMemory);
+  INIT_DEBUG_STATE(&Plat.DebugState);
 
   memory_arena *PlatMemory     = PlatformAllocateArena();
   memory_arena *GraphicsMemory = PlatformAllocateArena();
   memory_arena *GameMemory     = PlatformAllocateArena();
-
 
   DEBUG_REGISTER_ARENA(GameMemory    , &Plat.DebugState);
   DEBUG_REGISTER_ARENA(PlatMemory    , &Plat.DebugState);
