@@ -10,6 +10,7 @@ struct hotkeys
 #if BONSAI_INTERNAL
   b32 Debug_RedrawEveryPush;
   b32 Debug_ToggleLoopedGamePlayback;
+  b32 Debug_ToggleGlobalDebugBreak;
   b32 Debug_Pause;
   b32 Debug_ToggleProfile;
   b32 Debug_NextUiState;

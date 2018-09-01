@@ -356,6 +356,8 @@ QueryAndSetGlslVersion(platform *Plat)
 void
 ClearWasPressedFlags(input_event *Input)
 {
+  TIMED_FUNCTION();
+
   u32 TotalEvents = sizeof(input)/sizeof(input_event);
 
   for ( u32 EventIndex = 0;
@@ -386,6 +388,9 @@ BindHotkeysToInput(hotkeys *Hotkeys, input *Input)
   if (Input->F1.WasPressed)
     Hotkeys->Debug_NextUiState = True;
 
+  if (Input->F2.WasPressed)
+    Hotkeys->Debug_ToggleGlobalDebugBreak = True;
+
   Hotkeys->Debug_RedrawEveryPush = Input->F2.WasPressed;
 #endif
 
@@ -405,14 +410,6 @@ BindHotkeysToInput(hotkeys *Hotkeys, input *Input)
 void
 FrameEnd(game_state *GameState)
 {
-  for( u32 DrawCountIndex = 0;
-       DrawCountIndex < Global_DrawCallArrayLength;
-       ++ DrawCountIndex)
-  {
-     Global_DrawCalls[DrawCountIndex] = NullDrawCall;
-  }
-
-
   PlatformUnprotectArena(TranArena);
   RewindArena(TranArena);
 
@@ -496,26 +493,18 @@ main()
   r64 LastMs = GetHighPrecisionClock();
   while ( Os.ContinueRunning )
   {
-#if BONSAI_INTERNAL
-    u64 CurrentFrameStartingCycles = GetCycleCount();
-#endif
-
     r64 CurrentMS = GetHighPrecisionClock();
     Plat.dt = (r32)((CurrentMS - LastMs)/1000.0f);
     LastMs = CurrentMS;
 
-#if BONSAI_INTERNAL
-    r32 RealDt = Plat.dt;
-#endif
+    ClearWasPressedFlags((input_event*)&Plat.Input);
+    DEBUG_FRAME_BEGIN(&Hotkeys, Plat.dt); // Intentionally use dt pre-truncation
 
     if (Plat.dt > 0.1f)
     {
       Warn("DT exceeded 100ms, truncating.");
       Plat.dt = 0.1f;
     }
-
-    ClearWasPressedFlags((input_event*)&Plat.Input);
-    DEBUG_FRAME_BEGIN(&Hotkeys, RealDt, CurrentFrameStartingCycles);
 
     TIMED_BLOCK("Frame Preamble");
 
@@ -547,16 +536,14 @@ main()
     TIMED_BLOCK("Frame End");
 
     DEBUG_FRAME_END(&Plat, GameState);
-
-    BonsaiSwapBuffers(&Os);
-
-    /* WaitForFrameTime(LastMs, 30.0f); */
-
     FrameEnd(GameState);
 
+    /* WaitForFrameTime(LastMs, 30.0f); */
+    BonsaiSwapBuffers(&Os);
+
     END_BLOCK("Frame End");
-    /* Info("Frame End"); */
-    /* RuntimeBreak(); */
+
+    AdvanceScopeTrees(GetDebugState(), Plat.dt);
   }
 
   Info("Shutting Down");

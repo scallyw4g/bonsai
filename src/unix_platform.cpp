@@ -69,13 +69,11 @@ PlatformLockMutex(mutex *Mutex)
   return;
 }
 
-// TODO(Jesse): Have these initialize a static so we don't eat a syscall every time
 u64
 PlatformGetPageSize()
 {
-  // time this gets called
   u64 InvalidSysconfReturn = ((u64)-1);
-  u64 PageSize = (u64)sysconf(_SC_PAGESIZE);
+  local_persist u64 PageSize = (u64)sysconf(_SC_PAGESIZE);
   Assert(PageSize != InvalidSysconfReturn);
   return PageSize;
 }

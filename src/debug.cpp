@@ -286,6 +286,8 @@ AllocateAndInitGeoBuffer(untextured_2d_geometry_buffer *Geo, u32 VertCount, memo
 void
 InitScopeTree(debug_scope_tree *Tree)
 {
+  /* TIMED_FUNCTION(); */ // Cannot be timed because it has to run to initialize the scope tree system
+
   Clear(Tree);
   Tree->WriteScope   = &Tree->Root;
 
@@ -304,6 +306,8 @@ MakeSolidUIShader(mt_memory_arena *DebugMemory)
 void
 FreeScopes(debug_state *DebugState, debug_profile_scope *ScopeToFree)
 {
+  /* TIMED_FUNCTION(); */ // Seems to behave poorly when timed.
+
   if (!ScopeToFree) return;
 
   ++DebugState->FreeScopeCount;
@@ -328,33 +332,33 @@ FreeScopes(debug_state *DebugState, debug_profile_scope *ScopeToFree)
 }
 
 void
-AdvanceScopeTrees(debug_state *State, r32 Dt, u64 ThisFrameStartingCycle)
+AdvanceScopeTrees(debug_state *State, r32 Dt)
 {
+  TIMED_FUNCTION();
+
   if (!State->DebugDoScopeProfiling) return;
 
   u32 TotalThreadCount = GetTotalThreadCount();
-  for ( u32 ThreadIndex = 0;
-      ThreadIndex < TotalThreadCount;
-      ++ThreadIndex)
-  {
-    debug_scope_tree *WriteTree = &State->ThreadScopeTrees[ThreadIndex].List[State->WriteScopeIndex];
-    WriteTree->FrameMs = Dt*1000.0f;
-    WriteTree->TotalCycles = ThisFrameStartingCycle - WriteTree->StartingCycle;
-  }
 
-  State->MainThreadBlocksWorkerThreads = True;
+  TIMED_BLOCK("WriteTree Stats Recording");
+    for ( u32 ThreadIndex = 0;
+        ThreadIndex < TotalThreadCount;
+        ++ThreadIndex)
+    {
+      debug_scope_tree *WriteTree = &State->ThreadScopeTrees[ThreadIndex].List[State->WriteScopeIndex];
+      WriteTree->FrameMs = Dt*1000.0f;
+    }
+  END_BLOCK("WriteTree Stats Recording");
 
-  u32 NewWriteScopeIndex = (State->WriteScopeIndex+1) % SCOPE_TREE_COUNT;
-  u32 NewReadScopeIndex = (State->ReadScopeIndex+1) % SCOPE_TREE_COUNT;
+  TIMED_BLOCK("Worker Thread Shutdown");
+    State->MainThreadBlocksWorkerThreads = True;
+    u32 WorkerThreadCount = GetWorkerThreadCount();
+    while (State->WorkerThreadsWaiting < WorkerThreadCount);
+  END_BLOCK("Worker Thread Shutdown");
 
-  u32 WorkerThreadCount = GetWorkerThreadCount();
-  while (State->WorkerThreadsWaiting < WorkerThreadCount);
-
-  CompleteAllWrites;
-  CompleteAllReads;
-
-  AtomicExchange(&State->WriteScopeIndex, NewWriteScopeIndex);
-  AtomicExchange(&State->ReadScopeIndex, NewReadScopeIndex);
+  TIMED_BLOCK("Advance And Free Trees");
+  State->WriteScopeIndex = (State->WriteScopeIndex+1) % SCOPE_TREE_COUNT;
+  State->ReadScopeIndex = (State->ReadScopeIndex+1) % SCOPE_TREE_COUNT;
 
   for ( u32 ThreadIndex = 0;
       ThreadIndex < TotalThreadCount;
@@ -363,7 +367,23 @@ AdvanceScopeTrees(debug_state *State, r32 Dt, u64 ThisFrameStartingCycle)
     debug_scope_tree *WriteTree = &State->ThreadScopeTrees[ThreadIndex].List[State->WriteScopeIndex];
     FreeScopes(State, WriteTree->Root);
     InitScopeTree(WriteTree);
-    WriteTree->StartingCycle = ThisFrameStartingCycle;
+  }
+  END_BLOCK("Advance And Free Trees");
+
+  /*
+   * Finally, record frame cycle counts
+   */
+
+  u64 CurrentCycles = GetCycleCount();
+  for ( u32 ThreadIndex = 0;
+      ThreadIndex < TotalThreadCount;
+      ++ThreadIndex)
+  {
+    debug_scope_tree *ThisFramesTree = &State->ThreadScopeTrees[ThreadIndex].List[State->ReadScopeIndex];
+    ThisFramesTree->TotalCycles = CurrentCycles - ThisFramesTree->StartingCycle;
+
+    debug_scope_tree *NextFramesTree = &State->ThreadScopeTrees[ThreadIndex].List[State->WriteScopeIndex];
+    NextFramesTree->StartingCycle = CurrentCycles;
   }
 
   State->MainThreadBlocksWorkerThreads = False;
@@ -1040,6 +1060,7 @@ inline void
 BufferScopeTreeEntry(ui_render_group *Group, debug_profile_scope *Scope, layout *Layout,
     u32 Color, u64 TotalCycles, u64 TotalFrameCycles, u64 CallCount, u32 Depth)
 {
+  TIMED_FUNCTION();
   /* Assert(TotalFrameCycles); */
 
   r32 Percentage = 100.0f * (r32)SafeDivide0((r64)TotalCycles, (r64)TotalFrameCycles);
@@ -1145,6 +1166,8 @@ HoverAndClickExpand(ui_render_group *Group, layout *Layout, T *Expandable, u8 Co
 void
 BufferFirstCallToEach(ui_render_group *Group, debug_profile_scope *Scope, debug_profile_scope *TreeRoot, mt_memory_arena *Memory, layout *Layout, u64 TotalFrameCycles, u32 Depth)
 {
+  TIMED_FUNCTION();
+
   if (!Scope) return;
 
   if (Scope->Name)
@@ -1186,13 +1209,18 @@ WorkerThreadWaitForDebugSystem()
 }
 
 void
-DebugFrameBegin(hotkeys *Hotkeys, r32 Dt, u64 ThisFrameStartingCycle)
+DebugFrameBegin(hotkeys *Hotkeys, r32 Dt)
 {
   debug_state *State = GetDebugState();
 
   if ( Hotkeys->Debug_RedrawEveryPush )
   {
     State->Debug_RedrawEveryPush = !State->Debug_RedrawEveryPush;
+  }
+
+  if ( Hotkeys->Debug_ToggleGlobalDebugBreak )
+  {
+    Global_TriggerRuntimeBreak = !Global_TriggerRuntimeBreak;
   }
 
   if ( Hotkeys->Debug_ToggleProfile )
@@ -1206,8 +1234,6 @@ DebugFrameBegin(hotkeys *Hotkeys, r32 Dt, u64 ThisFrameStartingCycle)
     Hotkeys->Debug_NextUiState = False;
     State->UIType = (debug_ui_type)(((s32)State->UIType + 1) % (s32)DebugUIType_Count);
   }
-
-  AdvanceScopeTrees(State, Dt, ThisFrameStartingCycle);
 
   return;
 }
@@ -2300,6 +2326,14 @@ DebugFrameEnd(platform *Plat, game_state *GameState)
   FlushBuffer(RG, TextGeo, Group.ScreenDim);
 
   DebugState->BytesBufferedToCard = 0;
+
+  for( u32 DrawCountIndex = 0;
+       DrawCountIndex < Global_DrawCallArrayLength;
+       ++ DrawCountIndex)
+  {
+     Global_DrawCalls[DrawCountIndex] = NullDrawCall;
+  }
+
 
   return;
 }

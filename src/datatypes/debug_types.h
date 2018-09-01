@@ -281,7 +281,7 @@ struct debug_timed_function
 
 #define DEBUG_FRAME_RECORD(...) DoDebugFrameRecord(__VA_ARGS__)
 #define DEBUG_FRAME_END(Plat, GameState) DebugFrameEnd(Plat, GameState)
-#define DEBUG_FRAME_BEGIN(Hotkeys, dt, ThisFrameStartingCycle) DebugFrameBegin(Hotkeys, dt, ThisFrameStartingCycle)
+#define DEBUG_FRAME_BEGIN(Hotkeys, dt) DebugFrameBegin(Hotkeys, dt)
 
 #define WORKER_THREAD_WAIT_FOR_DEBUG_SYSTEM(...) WorkerThreadWaitForDebugSystem()
 

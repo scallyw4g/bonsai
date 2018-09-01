@@ -23,6 +23,7 @@ PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
 inline void
 QueueChunkForInit(game_state *GameState, work_queue *Queue, world_chunk *Chunk)
 {
+  TIMED_FUNCTION();
   Assert( Chunk->Data->Flags == Chunk_Uninitialized);
 
   work_queue_entry Entry = {};
@@ -214,6 +215,7 @@ ClampMinus1toInfinity( voxel_position V )
 world_chunk*
 GetFreeChunk(memory_arena *Storage, world *World, world_position P)
 {
+  TIMED_FUNCTION();
   world_chunk *Result = 0;
 
   if (World->FreeChunkCount == 0)
