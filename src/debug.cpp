@@ -3,7 +3,6 @@
 #include <stdio.h>
 
 debug_global b32 DebugGlobal_RedrawEveryPush = 0;
-#define TOTAL_MUTEX_OP_RECORDS (1024*1024*1024)
 
 
 inline memory_arena *
@@ -12,78 +11,6 @@ GetDebugMemoryAllocator()
   debug_state *State = GetDebugState();
   memory_arena *Arena = State->ThreadStates[ThreadLocal_ThreadIndex].Memory;
   return Arena;
-}
-
-inline void
-AdvanceClip(layout *Layout, v2 TestP)
-{
-  Layout->Clip.Min = Min(TestP, Layout->Clip.Min);
-  Layout->Clip.Max = Max(TestP, Layout->Clip.Max);
-  return;
-}
-
-inline void
-AdvanceClip(layout *Layout)
-{
-  Layout->Clip.Min = Min(Layout->At, Layout->Clip.Min);
-  Layout->Clip.Max = Max(Layout->At, Layout->Clip.Max);
-  return;
-}
-
-inline void
-InitializeMutexOpRecords(debug_state *State, memory_arena *Memory)
-{
-  // FIXME(Jesse): Once the debug arena has its mt-safe-ness removed, do this allocation on an arena
-  u32 TotalThreadCount = GetTotalThreadCount();
-  umm PushSize = TOTAL_MUTEX_OP_RECORDS * sizeof(mutex_op_record);
-
-  for ( umm ThreadIndex = 0;
-        ThreadIndex < TotalThreadCount;
-        ++ThreadIndex)
-  {
-    State->ThreadStates[ThreadIndex].MutexOpRecords = (mutex_op_record*)PushStruct(Memory, PushSize);
-  }
-  return;
-}
-
-inline mutex_op_record *
-GetMutexOpRecord(mutex *Mutex, mutex_op Op, debug_state *State)
-{
-  mutex_op_record *Record = 0;
-  if (State->ThreadStates[ThreadLocal_ThreadIndex].NextMutexOpRecord < TOTAL_MUTEX_OP_RECORDS)
-  {
-    Record = State->ThreadStates[ThreadLocal_ThreadIndex].MutexOpRecords + State->ThreadStates[ThreadLocal_ThreadIndex].NextMutexOpRecord++;
-    Record->Cycle = GetCycleCount();
-    Record->Op = Op;
-    Record->Mutex = Mutex;
-  }
-  else
-  {
-    Warn("Total debug mutex operations of %u exceeded, discarding record info.", TOTAL_MUTEX_OP_RECORDS);
-  }
-
-  return Record;
-}
-
-inline void
-DebugTimedMutexWaiting(mutex *Mutex)
-{
-  mutex_op_record *Record = GetMutexOpRecord(Mutex, MutexOp_Waiting, GetDebugState());
-  return;
-}
-
-inline void
-DebugTimedMutexAquired(mutex *Mutex)
-{
-  mutex_op_record *Record = GetMutexOpRecord(Mutex, MutexOp_Aquired, GetDebugState());
-  return;
-}
-
-inline void
-DebugTimedMutexReleased(mutex *Mutex)
-{
-  mutex_op_record *Record = GetMutexOpRecord(Mutex, MutexOp_Released, GetDebugState());
-  return;
 }
 
 v2
@@ -106,6 +33,10 @@ GetAbsoluteAt(layout *Layout)
   v2 Result = Layout->At + Layout->Basis;
   return Result;
 }
+
+
+/****************************  Arena Introspection  **************************/
+
 
 void
 DebugRegisterArena(const char *Name, memory_arena *Arena, debug_state *DebugState)
@@ -240,12 +171,34 @@ WritePushMetadata(push_metadata *InputMeta, push_metadata *MetaTable)
   return;
 }
 
-inline debug_thread_state*
-GetThreadDebugState(debug_state *State, u32 ThreadIndex)
+inline void
+ClearMetaRecordsFor(memory_arena *Arena)
 {
-  debug_thread_state *Result = State->ThreadStates + ThreadIndex;
-  return Result;
+  debug_state *DebugState = GetDebugState();
+
+  u32 TotalThreadCount = GetWorkerThreadCount() + 1;
+  for ( u32 ThreadIndex = 0;
+      ThreadIndex < TotalThreadCount;
+      ++ThreadIndex)
+  {
+    for ( u32 MetaIndex = 0;
+        MetaIndex < META_TABLE_SIZE;
+        ++MetaIndex)
+    {
+      push_metadata *Meta = GetThreadDebugState(GetDebugState(), ThreadLocal_ThreadIndex)->MetaTable + MetaIndex;
+      if (Meta->ArenaHash == HashArena(Arena))
+      {
+        Clear(Meta);
+      }
+    }
+  }
+
+  return;
 }
+
+
+/****************************  Memory Allocator  *****************************/
+
 
 inline void*
 Allocate_(memory_arena *Arena, umm StructSize, umm StructCount, b32 MemProtect, const char* Name, s32 Line, const char* File)
@@ -276,86 +229,9 @@ Allocate_(memory_arena *Arena, umm StructSize, umm StructCount, b32 MemProtect, 
   return Result;
 }
 
-inline void
-ClearMetaRecordsFor(memory_arena *Arena)
-{
-  debug_state *DebugState = GetDebugState();
 
-  u32 TotalThreadCount = GetWorkerThreadCount() + 1;
-  for ( u32 ThreadIndex = 0;
-      ThreadIndex < TotalThreadCount;
-      ++ThreadIndex)
-  {
-    for ( u32 MetaIndex = 0;
-        MetaIndex < META_TABLE_SIZE;
-        ++MetaIndex)
-    {
-      push_metadata *Meta = GetThreadDebugState(GetDebugState(), ThreadLocal_ThreadIndex)->MetaTable + MetaIndex;
-      if (Meta->ArenaHash == HashArena(Arena))
-      {
-        Clear(Meta);
-      }
-    }
-  }
+/*************************  Profile Scope Trees  *****************************/
 
-  return;
-}
-
-b32
-InitDebugOverlayFramebuffer(debug_text_render_group *RG, memory_arena *DebugArena, const char *DebugFont)
-{
-  glGenFramebuffers(1, &RG->FBO.ID);
-  glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO.ID);
-
-  v2i ScreenDim = V2i(SCR_WIDTH, SCR_HEIGHT);
-
-  RG->FontTexture = LoadDDS(DebugFont);
-  RG->CompositedTexture = MakeTexture_RGBA( ScreenDim, 0, DebugArena);
-
-  FramebufferTexture(&RG->FBO, RG->CompositedTexture);
-
-  glGenBuffers(1, &RG->SolidUIVertexBuffer);
-  glGenBuffers(1, &RG->SolidUIColorBuffer);
-
-  glGenBuffers(1, &RG->VertexBuffer);
-  glGenBuffers(1, &RG->UVBuffer);
-  glGenBuffers(1, &RG->ColorBuffer);
-
-  RG->Text2DShader = LoadShaders("TextVertexShader.vertexshader",
-                                 "TextVertexShader.fragmentshader", DebugArena);
-
-  RG->TextureUniformID = glGetUniformLocation(RG->Text2DShader.ID, "myTextureSampler");
-
-  RG->DebugFontTextureShader = MakeSimpleTextureShader(&RG->FontTexture, DebugArena);
-  RG->DebugTextureShader = MakeSimpleTextureShader(RG->CompositedTexture, DebugArena);
-
-  if (!CheckAndClearFramebuffer())
-    return False;
-
-  return True;
-}
-
-void
-AllocateAndInitGeoBuffer(textured_2d_geometry_buffer *Geo, u32 VertCount, memory_arena *DebugArena)
-{
-  Geo->Verts = Allocate(v3, DebugArena, VertCount, True);
-  Geo->Colors = Allocate(v3, DebugArena, VertCount, True);
-  Geo->UVs = Allocate(v2, DebugArena, VertCount, True);
-
-  Geo->End = VertCount;
-  Geo->At = 0;
-}
-
-void
-AllocateAndInitGeoBuffer(untextured_2d_geometry_buffer *Geo, u32 VertCount, memory_arena *DebugArena)
-{
-  Geo->Verts = Allocate(v3, DebugArena, VertCount, True);
-  Geo->Colors = Allocate(v3, DebugArena, VertCount, True);
-
-  Geo->End = VertCount;
-  Geo->At = 0;
-  return;
-}
 
 void
 InitScopeTree(debug_scope_tree *Tree)
@@ -366,15 +242,6 @@ InitScopeTree(debug_scope_tree *Tree)
   Tree->WriteScope   = &Tree->Root;
 
   return;
-}
-
-shader
-MakeSolidUIShader(memory_arena *Memory)
-{
-  shader SimpleTextureShader = LoadShaders( "SimpleColor.vertexshader",
-                                            "SimpleColor.fragmentshader",
-                                             Memory);
-  return SimpleTextureShader;
 }
 
 void
@@ -478,7 +345,7 @@ GetProfileScope(debug_state *State)
   }
   else
   {
-    Result = Allocate(debug_profile_scope, State->Memory, 1, False);
+    Result = Allocate(debug_profile_scope, GetDebugMemoryAllocator(), 1, False);
   }
 
   if (Result)
@@ -518,6 +385,90 @@ InitScopeTrees(memory_arena *DebugMemory, u32 TotalThreadCount)
 }
 
 void
+PrintFreeScopes(debug_state *State)
+{
+  debug_profile_scope *Sentinel = &State->FreeScopeSentinel;
+  debug_profile_scope *Current = Sentinel->Child;
+
+  while(Current != Sentinel)
+  {
+    Log("%s", Current->Name);
+    Current = Current->Child;
+  }
+
+  return;
+}
+
+
+/************************  Debug System Initialization  **********************/
+
+
+b32
+InitDebugOverlayFramebuffer(debug_text_render_group *RG, memory_arena *DebugArena, const char *DebugFont)
+{
+  glGenFramebuffers(1, &RG->FBO.ID);
+  glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO.ID);
+
+  v2i ScreenDim = V2i(SCR_WIDTH, SCR_HEIGHT);
+
+  RG->FontTexture = LoadDDS(DebugFont);
+  RG->CompositedTexture = MakeTexture_RGBA( ScreenDim, 0, DebugArena);
+
+  FramebufferTexture(&RG->FBO, RG->CompositedTexture);
+
+  glGenBuffers(1, &RG->SolidUIVertexBuffer);
+  glGenBuffers(1, &RG->SolidUIColorBuffer);
+
+  glGenBuffers(1, &RG->VertexBuffer);
+  glGenBuffers(1, &RG->UVBuffer);
+  glGenBuffers(1, &RG->ColorBuffer);
+
+  RG->Text2DShader = LoadShaders("TextVertexShader.vertexshader",
+                                 "TextVertexShader.fragmentshader", DebugArena);
+
+  RG->TextureUniformID = glGetUniformLocation(RG->Text2DShader.ID, "myTextureSampler");
+
+  RG->DebugFontTextureShader = MakeSimpleTextureShader(&RG->FontTexture, DebugArena);
+  RG->DebugTextureShader = MakeSimpleTextureShader(RG->CompositedTexture, DebugArena);
+
+  if (!CheckAndClearFramebuffer())
+    return False;
+
+  return True;
+}
+
+void
+AllocateAndInitGeoBuffer(textured_2d_geometry_buffer *Geo, u32 VertCount, memory_arena *DebugArena)
+{
+  Geo->Verts = Allocate(v3, DebugArena, VertCount, True);
+  Geo->Colors = Allocate(v3, DebugArena, VertCount, True);
+  Geo->UVs = Allocate(v2, DebugArena, VertCount, True);
+
+  Geo->End = VertCount;
+  Geo->At = 0;
+}
+
+void
+AllocateAndInitGeoBuffer(untextured_2d_geometry_buffer *Geo, u32 VertCount, memory_arena *DebugArena)
+{
+  Geo->Verts = Allocate(v3, DebugArena, VertCount, True);
+  Geo->Colors = Allocate(v3, DebugArena, VertCount, True);
+
+  Geo->End = VertCount;
+  Geo->At = 0;
+  return;
+}
+
+shader
+MakeSolidUIShader(memory_arena *Memory)
+{
+  shader SimpleTextureShader = LoadShaders( "SimpleColor.vertexshader",
+                                            "SimpleColor.fragmentshader",
+                                             Memory);
+  return SimpleTextureShader;
+}
+
+void
 InitDebugMemoryAllocationSystem(debug_state *State)
 {
   u32 TotalThreadCount = GetTotalThreadCount();
@@ -546,6 +497,22 @@ InitDebugMemoryAllocationSystem(debug_state *State)
       (push_metadata*)PushStruct(GetDebugMemoryAllocator(), MetaTableSize);
   }
 
+  return;
+}
+
+inline void
+InitializeMutexOpRecords(debug_state *State, memory_arena *Memory)
+{
+  // FIXME(Jesse): Once the debug arena has its mt-safe-ness removed, do this allocation on an arena
+  u32 TotalThreadCount = GetTotalThreadCount();
+  umm PushSize = TOTAL_MUTEX_OP_RECORDS * sizeof(mutex_op_record);
+
+  for ( umm ThreadIndex = 0;
+        ThreadIndex < TotalThreadCount;
+        ++ThreadIndex)
+  {
+    State->ThreadStates[ThreadIndex].MutexOpRecords = (mutex_op_record*)PushStruct(Memory, PushSize);
+  }
   return;
 }
 
@@ -579,13 +546,52 @@ InitDebugState(debug_state *DebugState)
   return;
 }
 
-void
-UseShader(shader *Shader)
+
+/*******************************  Clip Rect **********************************/
+
+
+inline void
+AdvanceClip(layout *Layout, v2 TestP)
 {
-  glUseProgram(Shader->ID);
-  BindShaderUniforms(Shader);
+  Layout->Clip.Min = Min(TestP, Layout->Clip.Min);
+  Layout->Clip.Max = Max(TestP, Layout->Clip.Max);
   return;
 }
+
+inline void
+AdvanceClip(layout *Layout)
+{
+  Layout->Clip.Min = Min(Layout->At, Layout->Clip.Min);
+  Layout->Clip.Max = Max(Layout->At, Layout->Clip.Max);
+  return;
+}
+
+inline void
+BeginClipRect(layout *Layout)
+{
+  Layout->Clip = {V2(FLT_MAX, FLT_MAX), V2(-FLT_MAX, -FLT_MAX)};
+  return;
+}
+
+v2 BufferQuad(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, v2 MinP, v2 Dim, r32 Z);
+void BufferColors(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, v3 Color);
+
+void
+EndClipRect(ui_render_group *Group, layout *Layout, untextured_2d_geometry_buffer *Geo)
+{
+  v2 MinP = Layout->Clip.Min + Layout->Basis;
+  v2 Dim = (Layout->Clip.Max + Layout->Basis) - Layout->Clip.Min;
+
+  BufferQuad(Group, Geo, MinP, Dim, 0.0f);
+  BufferColors(Group, Geo, V3(0.2f));
+  Geo->At+=6;
+
+  return;
+}
+
+
+/******************************  2D Buffering ********************************/
+
 
 void
 FlushBuffer(debug_text_render_group *RG, untextured_2d_geometry_buffer *Buffer, v2 ScreenDim)
@@ -742,26 +748,6 @@ BufferQuad(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, v2 MinP, 
   return MaxP;
 }
 
-inline void
-BeginClipRect(layout *Layout)
-{
-  Layout->Clip = {V2(FLT_MAX, FLT_MAX), V2(-FLT_MAX, -FLT_MAX)};
-  return;
-}
-
-void
-EndClipRect(ui_render_group *Group, layout *Layout, untextured_2d_geometry_buffer *Geo)
-{
-  v2 MinP = Layout->Clip.Min + Layout->Basis;
-  v2 Dim = (Layout->Clip.Max + Layout->Basis) - Layout->Clip.Min;
-
-  BufferQuad(Group, Geo, MinP, Dim, 0.0f);
-  BufferColors(Group, Geo, V3(0.2f));
-  Geo->At+=6;
-
-  return;
-}
-
 inline r32
 BufferChar(ui_render_group *Group, textured_2d_geometry_buffer *Geo, u32 CharIndex, v2 MinP, font *Font, const char *Text, u32 Color)
 {
@@ -806,7 +792,6 @@ BufferTextAt(ui_render_group *Group, v2 BasisP, font *Font, const char *Text, u3
   return DeltaX;
 }
 
-
 r32
 BufferText(const char* Text, u32 Color, layout *Layout, font *Font, ui_render_group *Group)
 {
@@ -828,32 +813,6 @@ BufferText(const char* Text, u32 Color, layout *Layout, font *Font, ui_render_gr
   Layout->At.x += DeltaX;
   AdvanceClip(Layout);
   return DeltaX;
-}
-
-#if 0
-inline r32
-CalculateFramePercentage(debug_profile_entry *Entry, u64 CycleDelta)
-{
-  u64 TotalCycles = Entry->CycleCount;
-  r32 FramePerc = (r32)((r64)TotalCycles/(r64)CycleDelta)*100;
-
-  return FramePerc;
-}
-#endif
-
-void
-PrintFreeScopes(debug_state *State)
-{
-  debug_profile_scope *Sentinel = &State->FreeScopeSentinel;
-  debug_profile_scope *Current = Sentinel->Child;
-
-  while(Current != Sentinel)
-  {
-    Log("%s", Current->Name);
-    Current = Current->Child;
-  }
-
-  return;
 }
 
 inline void
@@ -890,6 +849,22 @@ BufferValue(u32 Number, ui_render_group *Group, layout *Layout, u32 ColorIndex)
   return;
 }
 
+
+/*****************************  Text Helpers  ********************************/
+
+char *
+FormatString(const char* FormatString, ...)
+{
+  char *Buffer = Allocate(char, TranArena, 1024, True);
+
+  va_list Arguments;
+  va_start(Arguments, FormatString);
+  vsnprintf(Buffer, 1023, FormatString, Arguments);
+  va_end(Arguments);
+
+  return Buffer;
+}
+
 inline void
 AdvanceSpaces(u32 N, layout *Layout, font *Font)
 {
@@ -908,20 +883,20 @@ NewLine(layout *Layout, font *Font)
   return;
 }
 
-inline void
-NewRow(table_layout *Table, font *Font)
-{
-  Table->ColumnIndex = 0;
-  NewLine(&Table->Layout, Font);
-  return;
-}
-
 r32
 BufferLine(const char* Text, u32 Color, layout *Layout, font *Font, ui_render_group *Group)
 {
   r32 xOffset = BufferText(Text, Color, Layout, Font, Group);
   NewLine(Layout, Font);
   return xOffset;
+}
+
+inline void
+NewRow(table_layout *Table, font *Font)
+{
+  Table->ColumnIndex = 0;
+  NewLine(&Table->Layout, Font);
+  return;
 }
 
 inline char*
@@ -1107,45 +1082,6 @@ BufferColumn( r32 Perc, u32 ColumnWidth, ui_render_group *Group, layout *Layout,
   return;
 }
 
-
-#if 0
-inline void
-BufferNumberAsText(r32 Number, ui_render_group *Group, u32 ColorIndex)
-{
-  Layout->At.x += Layout->FontSize;
-  BufferValue(Number, Group, ColorIndex);
-  Layout->At.x += Layout->FontSize;
-  return;
-}
-
-inline void
-BufferNumberAsText(r64 Number, ui_render_group *Group, u32 ColorIndex)
-{
-  Layout->At.x += Layout->FontSize;
-  BufferValue((r32)Number, Group, ColorIndex);
-  Layout->At.x += Layout->FontSize;
-  return;
-}
-
-inline void
-BufferNumberAsText(u64 Number, layout *Layout, debug_text_render_group *RG, v2 ScreenDim, u32 ColorIndex)
-{
-  Layout->At.x += Layout->FontSize;
-  BufferValue(Number, Layout, RG, ScreenDim, ColorIndex);
-  Layout->At.x += Layout->FontSize;
-  return;
-}
-
-inline void
-BufferNumberAsText(u32 Number, layout *Layout, debug_text_render_group *RG, v2 ScreenDim, u32 ColorIndex)
-{
-  Layout->At.x += Layout->FontSize;
-  BufferValue(Number, Layout, RG, ScreenDim, ColorIndex);
-  Layout->At.x += Layout->FontSize;
-  return;
-}
-#endif
-
 inline void
 BufferScopeTreeEntry(ui_render_group *Group, debug_profile_scope *Scope, layout *Layout,
     u32 Color, u64 TotalCycles, u64 TotalFrameCycles, u64 CallCount, u32 Depth)
@@ -1282,52 +1218,6 @@ BufferFirstCallToEach(ui_render_group *Group, debug_profile_scope *Scope, debug_
 }
 
 inline void
-WorkerThreadWaitForDebugSystem()
-{
-  TIMED_FUNCTION();
-
-  debug_state *DebugState = GetDebugState();
-  if (DebugState->MainThreadBlocksWorkerThreads)
-  {
-    AtomicIncrement(&DebugState->WorkerThreadsWaiting);
-    while(DebugState->MainThreadBlocksWorkerThreads);
-    AtomicDecrement(&DebugState->WorkerThreadsWaiting);
-  }
-
-  return;
-}
-
-void
-DebugFrameBegin(hotkeys *Hotkeys, r32 Dt)
-{
-  debug_state *State = GetDebugState();
-
-  if ( Hotkeys->Debug_RedrawEveryPush )
-  {
-    State->Debug_RedrawEveryPush = !State->Debug_RedrawEveryPush;
-  }
-
-  if ( Hotkeys->Debug_ToggleGlobalDebugBreak )
-  {
-    Global_TriggerRuntimeBreak = !Global_TriggerRuntimeBreak;
-  }
-
-  if ( Hotkeys->Debug_ToggleProfile )
-  {
-    Hotkeys->Debug_ToggleProfile = False;
-    State->DebugDoScopeProfiling = !State->DebugDoScopeProfiling;
-  }
-
-  if ( Hotkeys->Debug_NextUiState )
-  {
-    Hotkeys->Debug_NextUiState = False;
-    State->UIType = (debug_ui_type)(((s32)State->UIType + 1) % (s32)DebugUIType_Count);
-  }
-
-  return;
-}
-
-inline void
 PadBottom(layout *Layout, r32 Pad)
 {
   Layout->At.y += Pad;
@@ -1358,39 +1248,6 @@ Column(const char* ColumnText, ui_render_group *Group, table_layout *Table, u8 C
   return;
 }
 
-v3 ColorTable [] = 
-{
-  {0.5f, 0.5f, 0.5f},
-  {0.5f, 1.0f, 1.0f},
-  {0.5f, 0.5f, 1.0f},
-  {0.5f, 1.0f, 0.5f},
-  {1.0f, 1.0f, 0.5f},
-  {1.0f, 0.5f, 0.5f},
-  {0.5f, 1.0f, 0.5f},
-  {1.0f, 0.5f, 1.0f},
-
-  {0.5f, 0.5f, 0.5f},
-  {1.0f, 1.0f, 1.0f},
-  {1.0f, 0.5f, 0.5f},
-  {1.0f, 1.0f, 0.5f},
-  {1.0f, 0.5f, 1.0f},
-  {0.5f, 0.5f, 1.0f},
-  {0.5f, 1.0f, 1.0f},
-  {1.0f, 0.5f, 1.0f},
-  {0.5f, 1.0f, 0.5f},
-
-  {0.0f, 0.0f, 0.0f},
-  {1.0f, 1.0f, 1.0f},
-  {1.0f, 0.0f, 0.0f},
-  {1.0f, 1.0f, 0.0f},
-  {1.0f, 0.0f, 1.0f},
-  {0.0f, 0.0f, 1.0f},
-  {0.0f, 1.0f, 1.0f},
-  {1.0f, 0.0f, 1.0f},
-  {0.0f, 1.0f, 0.0f},
-
-};
-
 void
 DoTooltip(ui_render_group *Group, const char *Text)
 {
@@ -1398,18 +1255,151 @@ DoTooltip(ui_render_group *Group, const char *Text)
   return;
 }
 
+
+/**************************  Utility Functions  ******************************/
+
+
+inline void
+WorkerThreadWaitForDebugSystem()
+{
+  TIMED_FUNCTION();
+
+  debug_state *DebugState = GetDebugState();
+  if (DebugState->MainThreadBlocksWorkerThreads)
+  {
+    AtomicIncrement(&DebugState->WorkerThreadsWaiting);
+    while(DebugState->MainThreadBlocksWorkerThreads);
+    AtomicDecrement(&DebugState->WorkerThreadsWaiting);
+  }
+
+  return;
+}
+
+void
+CleanupText2D(debug_text_render_group *RG)
+{
+  // Delete buffers
+  glDeleteBuffers(1, &RG->VertexBuffer);
+  glDeleteBuffers(1, &RG->UVBuffer);
+
+  // Delete texture
+  glDeleteTextures(1, &RG->FontTexture.ID);
+
+  // Delete shader
+  glDeleteProgram(RG->Text2DShader.ID);
+
+  return;
+}
+
+min_max_avg_dt
+ComputeMinMaxAvgDt(debug_thread_state *ThreadState)
+{
+  TIMED_FUNCTION();
+
+  min_max_avg_dt Dt = {};
+
+    for (u32 TreeIndex = 0;
+        TreeIndex < DEBUG_FRAMES_TRACKED;
+        ++TreeIndex )
+    {
+      debug_scope_tree *Tree = &ThreadState->ScopeTrees[TreeIndex];
+
+      Dt.Min = Min(Dt.Min, Tree->FrameMs);
+      Dt.Max = Max(Dt.Max, Tree->FrameMs);
+      Dt.Avg += Tree->FrameMs;
+    }
+    Dt.Avg /= (r32)DEBUG_FRAMES_TRACKED;
+
+  return Dt;
+}
+
+inline void
+DoDebugFrameRecord(
+    debug_recording_state *State,
+    hotkeys *Hotkeys)
+{
+  {
+    static b32 Toggled = False;
+    if (Hotkeys->Debug_ToggleLoopedGamePlayback  && !Toggled)
+    {
+      Toggled = True;
+      State->Mode = (debug_recording_mode)((State->Mode + 1) % RecordingMode_Count);
+
+      switch (State->Mode)
+      {
+        case RecordingMode_Clear:
+        {
+          Log("Clear");
+          State->FramesRecorded = 0;
+          State->FramesPlayedBack = 0;
+        } break;
+
+        case RecordingMode_Record:
+        {
+          NotImplemented;
+          Log("Recording");
+          //CopyArena(MainMemory, &State->RecordedMainMemory);
+        } break;
+
+        case RecordingMode_Playback:
+        {
+          NotImplemented;
+          Log("Playback");
+          //CopyArena(&State->RecordedMainMemory, MainMemory);
+        } break;
+
+        InvalidDefaultCase;
+      }
+
+    }
+    else if (!Hotkeys->Debug_ToggleLoopedGamePlayback)
+    {
+      Toggled = False;
+    }
+  }
+
+  switch (State->Mode)
+  {
+    case RecordingMode_Clear:
+    {
+    } break;
+
+    case RecordingMode_Record:
+    {
+      NotImplemented;
+      Assert(State->FramesRecorded < DEBUG_RECORD_INPUT_SIZE);
+      Hotkeys->Debug_ToggleLoopedGamePlayback = False;
+      State->Inputs[State->FramesRecorded++] = *Hotkeys;
+    } break;
+
+    case RecordingMode_Playback:
+    {
+      NotImplemented;
+      *Hotkeys = State->Inputs[State->FramesPlayedBack++];
+
+      if (State->FramesPlayedBack == State->FramesRecorded)
+      {
+        State->FramesPlayedBack = 0;
+        //CopyArena(&State->RecordedMainMemory, MainMemory);
+      }
+
+    } break;
+
+    InvalidDefaultCase;
+  }
+
+  return;
+}
+
+/****************************  Mutex Introspection  **************************/
+
+
 r32
 GetXOffsetForHorizontalBar(u64 StartCycleOffset, u64 FrameTotalCycles, r32 TotalGraphWidth)
 {
   r32 XOffset = ((r32)StartCycleOffset/(r32)FrameTotalCycles)*TotalGraphWidth;
   return XOffset;
 }
-
-struct cycle_range
-{
-  u64 StartCycle;
-  u64 TotalCycles;
-};
 
 void
 DrawCycleBar( cycle_range *Range, cycle_range *Frame, r32 TotalGraphWidth, const char *Tooltip, v3 Color,
@@ -1442,57 +1432,46 @@ DrawCycleBar( cycle_range *Range, cycle_range *Frame, r32 TotalGraphWidth, const
     return;
 }
 
-void
-DrawScopeBarsRecursive(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, debug_profile_scope *Scope,
-                       layout *Layout, cycle_range *Frame, r32 TotalGraphWidth, random_series *Entropy)
+inline mutex_op_record *
+GetMutexOpRecord(mutex *Mutex, mutex_op Op, debug_state *State)
 {
-  if (!Scope) return;
-  Assert(Scope->Name);
+  if (!State->DebugDoScopeProfiling) return 0;
 
-  cycle_range Range = {Scope->StartingCycle, Scope->CycleCount};
-
-  DrawCycleBar( &Range, Frame, TotalGraphWidth, Scope->Name, RandomV3(Entropy), Group, Geo, Layout);
-
-  if (Scope->Expanded)
+  mutex_op_record *Record = 0;
+  if (State->ThreadStates[ThreadLocal_ThreadIndex].NextMutexOpRecord < TOTAL_MUTEX_OP_RECORDS)
   {
-    layout ChildrensLayout = *Layout;
-    NewLine(&ChildrensLayout, &Group->Font);
-    DrawScopeBarsRecursive(Group, Geo, Scope->Child, &ChildrensLayout, Frame, TotalGraphWidth, Entropy);
-    Layout->Clip = ChildrensLayout.Clip;
+    Record = State->ThreadStates[ThreadLocal_ThreadIndex].MutexOpRecords + (State->ThreadStates[ThreadLocal_ThreadIndex].NextMutexOpRecord++);
+    Record->Cycle = GetCycleCount();
+    Record->Op = Op;
+    Record->Mutex = Mutex;
+  }
+  else
+  {
+    Warn("Total debug mutex operations of %u exceeded, discarding record info.", TOTAL_MUTEX_OP_RECORDS);
   }
 
-  DrawScopeBarsRecursive(Group, Geo, Scope->Sibling, Layout, Frame, TotalGraphWidth, Entropy);
+  return Record;
+}
 
+inline void
+DebugTimedMutexWaiting(mutex *Mutex)
+{
+  mutex_op_record *Record = GetMutexOpRecord(Mutex, MutexOp_Waiting, GetDebugState());
   return;
 }
 
-void
-BufferHorizontalBar(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, layout *Layout,
-                    r32 TotalGraphWidth, v3 Color)
+inline void
+DebugTimedMutexAquired(mutex *Mutex)
 {
-  v2 MinP = Layout->At + Layout->Basis;
-  v2 BarDim = V2(TotalGraphWidth, Group->Font.LineHeight);
-
-  BufferQuad(Group, Geo, MinP, BarDim);
-  BufferColors(Group, Geo, Color);
-  Geo->At+=6;
-
-  Layout->At.x += TotalGraphWidth;
-
+  mutex_op_record *Record = GetMutexOpRecord(Mutex, MutexOp_Aquired, GetDebugState());
   return;
 }
 
-char *
-FormatString(const char* FormatString, ...)
+inline void
+DebugTimedMutexReleased(mutex *Mutex)
 {
-  char *Buffer = Allocate(char, TranArena, 1024, True);
-
-  va_list Arguments;
-  va_start(Arguments, FormatString);
-  vsnprintf(Buffer, 1023, FormatString, Arguments);
-  va_end(Arguments);
-
-  return Buffer;
+  mutex_op_record *Record = GetMutexOpRecord(Mutex, MutexOp_Released, GetDebugState());
+  return;
 }
 
 mutex_op_record *
@@ -1547,6 +1526,50 @@ DrawWaitingBar(mutex_op_record *WaitRecord, mutex_op_record *AquiredRecord, mute
   return;
 }
 
+
+/**********************  Cycle Counted Bargraph ******************************/
+
+
+void
+DrawScopeBarsRecursive(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, debug_profile_scope *Scope,
+                       layout *Layout, cycle_range *Frame, r32 TotalGraphWidth, random_series *Entropy)
+{
+  if (!Scope) return;
+  Assert(Scope->Name);
+
+  cycle_range Range = {Scope->StartingCycle, Scope->CycleCount};
+
+  DrawCycleBar( &Range, Frame, TotalGraphWidth, Scope->Name, RandomV3(Entropy), Group, Geo, Layout);
+
+  if (Scope->Expanded)
+  {
+    layout ChildrensLayout = *Layout;
+    NewLine(&ChildrensLayout, &Group->Font);
+    DrawScopeBarsRecursive(Group, Geo, Scope->Child, &ChildrensLayout, Frame, TotalGraphWidth, Entropy);
+    Layout->Clip = ChildrensLayout.Clip;
+  }
+
+  DrawScopeBarsRecursive(Group, Geo, Scope->Sibling, Layout, Frame, TotalGraphWidth, Entropy);
+
+  return;
+}
+
+void
+BufferHorizontalBar(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, layout *Layout,
+                    r32 TotalGraphWidth, v3 Color)
+{
+  v2 MinP = Layout->At + Layout->Basis;
+  v2 BarDim = V2(TotalGraphWidth, Group->Font.LineHeight);
+
+  BufferQuad(Group, Geo, MinP, BarDim);
+  BufferColors(Group, Geo, Color);
+  Geo->At+=6;
+
+  Layout->At.x += TotalGraphWidth;
+
+  return;
+}
+
 void
 DebugDrawThreadGraph(ui_render_group *Group, debug_state *DebugState, layout *Layout)
 {
@@ -1581,15 +1604,13 @@ DebugDrawThreadGraph(ui_render_group *Group, debug_state *DebugState, layout *La
     EndClipRect(Group, Layout, Geo);
   }
 
-
-#if 1
-  TIMED_BLOCK("Mutex Record Collation");
-
   NewLine(Layout, &Group->Font);
 
   u64 FrameTotalCycles = DebugState->GetReadScopeTree()->TotalCycles;
   u64 FrameStartingCycle = DebugState->GetReadScopeTree()->StartingCycle;
 
+  u32 UnclosedMutexRecords = 0;
+  TIMED_BLOCK("Mutex Record Collation");
   for ( u32 ThreadIndex = 0;
         ThreadIndex < TotalThreadCount;
         ++ThreadIndex)
@@ -1615,19 +1636,20 @@ DebugDrawThreadGraph(ui_render_group *Group, debug_state *DebugState, layout *La
         }
         else
         {
-          Warn("Unclosed mutex record, skipping");
+          ++UnclosedMutexRecords;
         }
       }
     }
-
-    // FIXME(Jesse): This needs to be moved when we do read/write buffers
-    ThreadState->NextMutexOpRecord = 0;
   }
+  Print(UnclosedMutexRecords);
   END_BLOCK("Mutex Record Collation");
-#endif
 
   return;
 }
+
+
+/*****************************  Call Graph  **********************************/
+
 
 void
 DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Layout, r32 MaxMs)
@@ -1729,34 +1751,6 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Layo
   END_BLOCK("Call Graph");
 }
 
-struct memory_arena_stats
-{
-  u64 Allocations;
-  u64 Pushes;
-
-  u64 TotalAllocated;
-  u64 Remaining;
-};
-
-void
-DebugPrintArenaStats(memory_arena *Arena)
-{
-  Print( Remaining(Arena) );
-  Print( TotalSize(Arena) );
-  Print( Arena->Pushes );
-}
-
-void
-DebugPrintMemStats(memory_arena_stats *Stats)
-{
-  Print(Stats->Allocations);
-  Print(Stats->Pushes);
-  Print(Stats->TotalAllocated);
-  Print(Stats->Remaining);
-
-  return;
-}
-
 memory_arena_stats
 GetMemoryArenaStats(memory_arena *ArenaIn)
 {
@@ -1796,35 +1790,6 @@ GetTotalMemoryArenaStats()
   }
 
   return TotalStats;
-}
-
-inline b32
-BufferBarGraph(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, layout *Layout, r32 PercFilled, v3 Color)
-{
-  r32 BarHeight = Group->Font.Size;
-  r32 BarWidth = 200.0f;
-
-  v2 MinP = Layout->At + Layout->Basis;
-  v2 BarDim = V2(BarWidth, BarHeight);
-  v2 PercBarDim = V2(BarWidth, BarHeight) * V2(PercFilled, 1);
-
-  BufferQuad(Group, Geo, MinP, BarDim);
-  BufferColors(Group, Geo, V3(0.25f));
-  Geo->At+=6;
-
-  rect2 BarRect = { MinP, MinP + BarDim };
-  b32 Hovering = IsInsideRect(BarRect, Group->MouseP);
-
-  if (Hovering)
-    Color = {{ 1, 0, 1 }};
-
-  BufferQuad(Group, Geo, MinP, PercBarDim);
-  BufferColors(Group, Geo, Color);
-  Geo->At+=6;
-
-  Layout->At.x += BarDim.x;
-
-  return Hovering;
 }
 
 void
@@ -1983,6 +1948,39 @@ BufferDebugPushMetaData(debug_state *DebugState, ui_render_group *Group, selecte
   EndClipRect(Group, Layout, &Group->TextGroup->UIGeo);
 
   return Layout;
+}
+
+
+/*******************************  Arena UI  **********************************/
+
+
+inline b32
+BufferBarGraph(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, layout *Layout, r32 PercFilled, v3 Color)
+{
+  r32 BarHeight = Group->Font.Size;
+  r32 BarWidth = 200.0f;
+
+  v2 MinP = Layout->At + Layout->Basis;
+  v2 BarDim = V2(BarWidth, BarHeight);
+  v2 PercBarDim = V2(BarWidth, BarHeight) * V2(PercFilled, 1);
+
+  BufferQuad(Group, Geo, MinP, BarDim);
+  BufferColors(Group, Geo, V3(0.25f));
+  Geo->At+=6;
+
+  rect2 BarRect = { MinP, MinP + BarDim };
+  b32 Hovering = IsInsideRect(BarRect, Group->MouseP);
+
+  if (Hovering)
+    Color = {{ 1, 0, 1 }};
+
+  BufferQuad(Group, Geo, MinP, PercBarDim);
+  BufferColors(Group, Geo, Color);
+  Geo->At+=6;
+
+  Layout->At.x += BarDim.x;
+
+  return Hovering;
 }
 
 inline b32
@@ -2163,6 +2161,10 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState, v2 OriginalB
   return;
 }
 
+
+/*******************************  Network UI  ********************************/
+
+
 void
 DebugDrawNetworkHud(ui_render_group *Group,
     network_connection *Network,
@@ -2219,163 +2221,9 @@ DebugDrawNetworkHud(ui_render_group *Group,
   return;
 }
 
-struct min_max_avg_dt
-{
-  r32 Min;
-  r32 Max;
-  r32 Avg;
-};
 
-min_max_avg_dt
-ComputeMinMaxAvgDt(debug_thread_state *ThreadState)
-{
-  TIMED_FUNCTION();
+/******************************  Graphics UI  ********************************/
 
-  min_max_avg_dt Dt = {};
-
-    for (u32 TreeIndex = 0;
-        TreeIndex < DEBUG_FRAMES_TRACKED;
-        ++TreeIndex )
-    {
-      debug_scope_tree *Tree = &ThreadState->ScopeTrees[TreeIndex];
-
-      Dt.Min = Min(Dt.Min, Tree->FrameMs);
-      Dt.Max = Max(Dt.Max, Tree->FrameMs);
-      Dt.Avg += Tree->FrameMs;
-    }
-    Dt.Avg /= (r32)DEBUG_FRAMES_TRACKED;
-
-  return Dt;
-}
-
-void
-CleanupText2D(debug_text_render_group *RG)
-{
-  // Delete buffers
-  glDeleteBuffers(1, &RG->VertexBuffer);
-  glDeleteBuffers(1, &RG->UVBuffer);
-
-  // Delete texture
-  glDeleteTextures(1, &RG->FontTexture.ID);
-
-  // Delete shader
-  glDeleteProgram(RG->Text2DShader.ID);
-
-  return;
-}
-
-inline void
-DoDebugFrameRecord(
-    debug_recording_state *State,
-    hotkeys *Hotkeys)
-{
-  {
-    static b32 Toggled = False;
-    if (Hotkeys->Debug_ToggleLoopedGamePlayback  && !Toggled)
-    {
-      Toggled = True;
-      State->Mode = (debug_recording_mode)((State->Mode + 1) % RecordingMode_Count);
-
-      switch (State->Mode)
-      {
-        case RecordingMode_Clear:
-        {
-          Log("Clear");
-          State->FramesRecorded = 0;
-          State->FramesPlayedBack = 0;
-        } break;
-
-        case RecordingMode_Record:
-        {
-          NotImplemented;
-          Log("Recording");
-          //CopyArena(MainMemory, &State->RecordedMainMemory);
-        } break;
-
-        case RecordingMode_Playback:
-        {
-          NotImplemented;
-          Log("Playback");
-          //CopyArena(&State->RecordedMainMemory, MainMemory);
-        } break;
-
-        InvalidDefaultCase;
-      }
-
-    }
-    else if (!Hotkeys->Debug_ToggleLoopedGamePlayback)
-    {
-      Toggled = False;
-    }
-  }
-
-  switch (State->Mode)
-  {
-    case RecordingMode_Clear:
-    {
-    } break;
-
-    case RecordingMode_Record:
-    {
-      NotImplemented;
-      Assert(State->FramesRecorded < DEBUG_RECORD_INPUT_SIZE);
-      Hotkeys->Debug_ToggleLoopedGamePlayback = False;
-      State->Inputs[State->FramesRecorded++] = *Hotkeys;
-    } break;
-
-    case RecordingMode_Playback:
-    {
-      NotImplemented;
-      *Hotkeys = State->Inputs[State->FramesPlayedBack++];
-
-      if (State->FramesPlayedBack == State->FramesRecorded)
-      {
-        State->FramesPlayedBack = 0;
-        //CopyArena(&State->RecordedMainMemory, MainMemory);
-      }
-
-    } break;
-
-    InvalidDefaultCase;
-  }
-
-  return;
-}
-
-#if 0
-void
-PrintScopeTree(debug_profile_scope *Scope, s32 Depth = 0)
-{
-  if (!Scope)
-    return;
-
-  s32 CurDepth = Depth;
-
-  while (CurDepth--)
-  {
-    printf("%s", "  ");
-  }
-
-  if (Depth > 0)
-    printf("%s", " `- ");
-
-  printf("%d %s", Depth, Scope->Name);
-
-  debug_state *DebugState = GetDebugState();
-  if (DebugState->WriteScope == &Scope->Child)
-    printf(" %s", "<-- Child \n");
-  else if (DebugState->WriteScope == &Scope->Sibling)
-    printf(" %s", "<-- Sibling \n");
-  else
-    printf("%s", "\n");
-
-
-  PrintScopeTree(Scope->Child, Depth+1);
-  PrintScopeTree(Scope->Sibling, Depth);
-
-  return;
-}
-#endif
 
 void
 DebugDrawGraphicsHud(ui_render_group *Group, debug_state *DebugState, layout *Layout)
@@ -2389,6 +2237,10 @@ DebugDrawGraphicsHud(ui_render_group *Group, debug_state *DebugState, layout *La
 
   return;
 }
+
+
+/****************************  Frame Start/End  ******************************/
+
 
 void
 DebugFrameEnd(platform *Plat, game_state *GameState)
@@ -2510,6 +2362,37 @@ DebugFrameEnd(platform *Plat, game_state *GameState)
   {
      Global_DrawCalls[DrawCountIndex] = NullDrawCall;
   }
+
+  return;
+}
+
+void
+DebugFrameBegin(hotkeys *Hotkeys, r32 Dt)
+{
+  debug_state *State = GetDebugState();
+
+  if ( Hotkeys->Debug_RedrawEveryPush )
+  {
+    State->Debug_RedrawEveryPush = !State->Debug_RedrawEveryPush;
+  }
+
+  if ( Hotkeys->Debug_ToggleGlobalDebugBreak )
+  {
+    Global_TriggerRuntimeBreak = !Global_TriggerRuntimeBreak;
+  }
+
+  if ( Hotkeys->Debug_ToggleProfile )
+  {
+    Hotkeys->Debug_ToggleProfile = False;
+    State->DebugDoScopeProfiling = !State->DebugDoScopeProfiling;
+  }
+
+  if ( Hotkeys->Debug_NextUiState )
+  {
+    Hotkeys->Debug_NextUiState = False;
+    State->UIType = (debug_ui_type)(((s32)State->UIType + 1) % (s32)DebugUIType_Count);
+  }
+
 
   return;
 }

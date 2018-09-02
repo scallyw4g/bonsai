@@ -1,3 +1,5 @@
+#define TOTAL_MUTEX_OP_RECORDS (1024*1024*1024)
+
 enum mutex_op
 {
   MutexOp_Waiting,

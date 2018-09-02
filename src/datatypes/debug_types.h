@@ -2,6 +2,28 @@
 
 #define DEBUG_FRAMES_TRACKED 64
 
+struct cycle_range
+{
+  u64 StartCycle;
+  u64 TotalCycles;
+};
+
+struct memory_arena_stats
+{
+  u64 Allocations;
+  u64 Pushes;
+
+  u64 TotalAllocated;
+  u64 Remaining;
+};
+
+struct min_max_avg_dt
+{
+  r32 Min;
+  r32 Max;
+  r32 Avg;
+};
+
 struct clip_rect
 {
   v2 Min;
@@ -197,10 +219,17 @@ debug_global debug_state *GlobalDebugState = 0;
 
 typedef b32 (*meta_comparator)(push_metadata*, push_metadata*);
 
-inline debug_state*
+inline debug_state *
 GetDebugState() {
   Assert(GlobalDebugState && GlobalDebugState->Initialized);
   return GlobalDebugState;
+}
+
+inline debug_thread_state *
+GetThreadDebugState(debug_state *State, u32 ThreadIndex)
+{
+  debug_thread_state *Result = State->ThreadStates + ThreadIndex;
+  return Result;
 }
 
 enum debug_recording_mode

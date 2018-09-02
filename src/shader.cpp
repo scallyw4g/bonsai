@@ -130,6 +130,7 @@ Shader.ID = ProgramID;
 return Shader;
 }
 
+
 s32
 GetShaderUniform(shader *Shader, const char *Name)
 {
@@ -149,7 +150,6 @@ PushShaderUniform( memory_arena *Mem, const char *Name)
   Uniform->Name = Name;
   return Uniform;
 }
-
 
 /*
  * Unfortunately the c pre-processor makes us pass in the type and the name
@@ -275,5 +275,13 @@ BindShaderUniforms(shader *Shader)
   }
 
   AssertNoGlErrors;
+}
+
+void
+UseShader(shader *Shader)
+{
+  glUseProgram(Shader->ID);
+  BindShaderUniforms(Shader);
+  return;
 }
 

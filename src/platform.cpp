@@ -533,6 +533,14 @@ main()
 
     TIMED_BLOCK("Frame End");
 
+    TIMED_BLOCK("Worker Thread Shutdown");
+    TIMED_BLOCK("Waiting for Workers to Finish");
+    GetDebugState()->MainThreadBlocksWorkerThreads = True;
+    u32 WorkerThreadCount = GetWorkerThreadCount();
+    while (GetDebugState()->WorkerThreadsWaiting < WorkerThreadCount);
+    END_BLOCK("Waiting for Workers to Finish");
+
+
     DEBUG_FRAME_END(&Plat, GameState);
     FrameEnd(GameState);
 
@@ -540,13 +548,6 @@ main()
     BonsaiSwapBuffers(&Os);
 
     END_BLOCK("Frame End");
-
-    TIMED_BLOCK("Worker Thread Shutdown");
-    TIMED_BLOCK("Waiting for Workers to Finish");
-    GetDebugState()->MainThreadBlocksWorkerThreads = True;
-    u32 WorkerThreadCount = GetWorkerThreadCount();
-    while (GetDebugState()->WorkerThreadsWaiting < WorkerThreadCount);
-    END_BLOCK("Waiting for Workers to Finish");
 
     AdvanceScopeTrees(GetDebugState(), RealDt);
 
