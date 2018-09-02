@@ -726,6 +726,26 @@ BufferQuad(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, v2 MinP, 
   return MaxP;
 }
 
+inline void
+BeginClipRect(layout *Layout)
+{
+  Layout->Clip = {V2(FLT_MAX, FLT_MAX), V2(-FLT_MAX, -FLT_MAX)};
+  return;
+}
+
+void
+EndClipRect(ui_render_group *Group, layout *Layout, untextured_2d_geometry_buffer *Geo)
+{
+  v2 MinP = Layout->Clip.Min + Layout->Basis;
+  v2 Dim = (Layout->Clip.Max + Layout->Basis) - Layout->Clip.Min;
+
+  BufferQuad(Group, Geo, MinP, Dim, 0.0f);
+  BufferColors(Group, Geo, V3(0.2f));
+  Geo->At+=6;
+
+  return;
+}
+
 inline r32
 BufferChar(ui_render_group *Group, textured_2d_geometry_buffer *Geo, u32 CharIndex, v2 MinP, font *Font, const char *Text, u32 Color)
 {
@@ -1400,7 +1420,7 @@ DrawCycleBar( cycle_range *Range, cycle_range *Frame, r32 TotalGraphWidth, const
     r32 XOffset = GetXOffsetForHorizontalBar(StartCycleOffset, Frame->TotalCycles, TotalGraphWidth);
 
     v2 MinP = Layout->At + Layout->Basis + V2(XOffset, 0);
-    v2 QuadMaxP = BufferQuad(Group, Geo, MinP, BarDim, 1.0f);
+    v2 QuadMaxP = BufferQuad(Group, Geo, MinP, BarDim);
     b32 Hovering = IsInsideRect(RectMinDim(MinP, BarDim), Group->MouseP);
 
     if (Hovering)
@@ -1414,26 +1434,31 @@ DrawCycleBar( cycle_range *Range, cycle_range *Frame, r32 TotalGraphWidth, const
 }
 
 void
-DrawScopeBar(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, debug_profile_scope *Scope,
-             layout *Layout, u64 FrameTotalCycles, u64 FrameStartCycle, r32 TotalGraphWidth, random_series *Entropy)
+DrawScopeBarsRecursive(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, debug_profile_scope *Scope,
+                       layout *Layout, u64 FrameTotalCycles, u64 FrameStartCycle, r32 TotalGraphWidth, random_series *Entropy)
 {
   if (!Scope) return;
+  Assert(Scope->Name);
 
-  if (Scope->Name)
+  debug_profile_scope *ChildIterator = Scope;
+
+  while(ChildIterator)
   {
-    cycle_range Range = {Scope->StartingCycle, Scope->CycleCount};
+    cycle_range Range = {ChildIterator->StartingCycle, ChildIterator->CycleCount};
     cycle_range Frame = {FrameStartCycle, FrameTotalCycles};
-    DrawCycleBar( &Range, &Frame, TotalGraphWidth, Scope->Name, RandomV3(Entropy),
-        Group, Geo, Layout);
+    DrawCycleBar( &Range, &Frame, TotalGraphWidth, ChildIterator->Name, RandomV3(Entropy), Group, Geo, Layout);
+    if (ChildIterator->Expanded)
+    {
+      v2 At = Layout->At;
+      NewLine(Layout, &Group->Font);
+      DrawScopeBarsRecursive(Group, Geo, ChildIterator->Child, Layout, FrameTotalCycles, FrameStartCycle, TotalGraphWidth, Entropy);
+      Layout->At = At;
+    }
+
+    ChildIterator = ChildIterator->Sibling;
   }
 
-  DrawScopeBar(Group, Geo, Scope->Sibling, Layout, FrameTotalCycles, FrameStartCycle, TotalGraphWidth, Entropy);
-
-  if (Scope->Expanded)
-  {
-    Layout->At.y += Group->Font.LineHeight;
-    DrawScopeBar(Group, Geo, Scope->Stats->MaxScope->Child, Layout, FrameTotalCycles, FrameStartCycle, TotalGraphWidth, Entropy);
-  }
+  DrawScopeBarsRecursive(Group, Geo, Scope->Sibling, Layout, FrameTotalCycles, FrameStartCycle, TotalGraphWidth, Entropy);
 
   return;
 }
@@ -1520,7 +1545,7 @@ DrawWaitingBar(mutex_op_record *WaitRecord, mutex_op_record *AquiredRecord, mute
 }
 
 void
-DebugDrawPerfBargraph(ui_render_group *Group, debug_state *DebugState, layout *Layout)
+DebugDrawThreadGraph(ui_render_group *Group, debug_state *DebugState, layout *Layout)
 {
   NewLine(Layout, &Group->Font);
 
@@ -1538,14 +1563,17 @@ DebugDrawPerfBargraph(ui_render_group *Group, debug_state *DebugState, layout *L
         ThreadIndex < TotalThreadCount;
         ++ThreadIndex)
   {
+    BeginClipRect(Layout);
+
     NewLine(Layout, &Group->Font);
     char *ThreadName = FormatString("Thread %u", ThreadIndex);
     BufferLine(ThreadName, WHITE, Layout, &Group->Font, Group);
 
     debug_scope_tree *ReadTree = &DebugState->ThreadStates[ThreadIndex].ScopeTrees[DebugState->ReadScopeIndex];
-    DrawScopeBar(Group, Geo, ReadTree->Root, Layout, ReadTree->TotalCycles, ReadTree->StartingCycle, TotalGraphWidth, &Entropy);
+    DrawScopeBarsRecursive(Group, Geo, ReadTree->Root, Layout, ReadTree->TotalCycles, ReadTree->StartingCycle, TotalGraphWidth, &Entropy);
+    Layout->At.y = Layout->Clip.Max.y;
 
-    BufferHorizontalBar(Group, Geo, Layout, TotalGraphWidth, V3(0.5f));
+    EndClipRect(Group, Layout, Geo);
   }
 
 
@@ -1655,7 +1683,7 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Layo
       r32 MinPOffset = MaxBarHeight * MsPerc;
       v2 MinP = { StartingAt.x, StartingAt.y + Group->Font.Size - MinPOffset };
 
-      BufferQuad(Group, &Group->TextGroup->UIGeo, MinP, QuadDim, 1.0f);
+      BufferQuad(Group, &Group->TextGroup->UIGeo, MinP, QuadDim);
       BufferColors(Group->TextGroup->UIGeo.Colors, Group->TextGroup->UIGeo.At, V3(1,1,0));
       Group->TextGroup->UIGeo.At+=6;
     }
@@ -1665,7 +1693,7 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Layo
       r32 MinPOffset = MaxBarHeight * MsPerc;
       v2 MinP = { StartingAt.x, StartingAt.y + Group->Font.Size - MinPOffset };
 
-      BufferQuad(Group, &Group->TextGroup->UIGeo, MinP, QuadDim, 1.0f);
+      BufferQuad(Group, &Group->TextGroup->UIGeo, MinP, QuadDim);
       BufferColors(Group->TextGroup->UIGeo.Colors, Group->TextGroup->UIGeo.At, V3(0,1,0));
       Group->TextGroup->UIGeo.At+=6;
     }
@@ -1812,27 +1840,6 @@ ColumnRight(s32 Width, const char *Text, ui_render_group* Group, layout *Layout,
   BufferValue(Text, Group, Layout, ColorIndex);
 }
 
-inline void
-BeginClipRect(layout *Layout)
-{
-  Layout->Clip = {V2(FLT_MAX, FLT_MAX), V2(-FLT_MAX, -FLT_MAX)};
-  return;
-}
-
-void
-EndClipRect(ui_render_group *Group, layout *Layout, untextured_2d_geometry_buffer *Geo, v2 Basis = V2(0,0))
-{
-
-  v2 MinP = Layout->Clip.Min + Basis;
-  v2 Dim = (Layout->Clip.Max + Basis) - MinP;
-
-  BufferQuad(Group, Geo, MinP, Dim, 0.0f);
-  BufferColors(Group, Geo, V3(0.2f));
-  Geo->At+=6;
-
-  return;
-}
-
 void
 DebugDrawDrawCalls(ui_render_group *Group, layout *Layout)
 {
@@ -1968,7 +1975,7 @@ BufferDebugPushMetaData(debug_state *DebugState, ui_render_group *Group, selecte
 
 
   NewLine(Layout, &Group->Font);
-  EndClipRect(Group, Layout, &Group->TextGroup->UIGeo, Layout->Basis);
+  EndClipRect(Group, Layout, &Group->TextGroup->UIGeo);
 
   return Layout;
 }
@@ -2467,7 +2474,7 @@ DebugFrameEnd(platform *Plat, game_state *GameState)
     {
       BufferValue("Call Graphs", &Group, &Layout, WHITE);
       DebugDrawCallGraph(&Group, DebugState, &Layout, Dt.Max);
-      DebugDrawPerfBargraph(&Group, DebugState, &Layout);
+      DebugDrawThreadGraph(&Group, DebugState, &Layout);
     } break;
 
     case DebugUIType_Memory:
