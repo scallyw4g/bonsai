@@ -15,6 +15,22 @@ GetDebugMemoryAllocator()
 }
 
 inline void
+AdvanceClip(layout *Layout, v2 TestP)
+{
+  Layout->Clip.Min = Min(TestP, Layout->Clip.Min);
+  Layout->Clip.Max = Max(TestP, Layout->Clip.Max);
+  return;
+}
+
+inline void
+AdvanceClip(layout *Layout)
+{
+  Layout->Clip.Min = Min(Layout->At, Layout->Clip.Min);
+  Layout->Clip.Max = Max(Layout->At, Layout->Clip.Max);
+  return;
+}
+
+inline void
 InitializeMutexOpRecords(debug_state *State, memory_arena *Memory)
 {
   // FIXME(Jesse): Once the debug arena has its mt-safe-ness removed, do this allocation on an arena
@@ -707,7 +723,7 @@ BufferQuadDirect(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z, v2 ScreenD
 }
 
 v2
-BufferQuad(ui_render_group *Group, textured_2d_geometry_buffer *Geo, v2 MinP, v2 Dim, r32 Z = 0.0f)
+BufferQuad(ui_render_group *Group, textured_2d_geometry_buffer *Geo, v2 MinP, v2 Dim, r32 Z = 0.5f)
 {
   if (BufferIsFull(Geo, 6))
     FlushBuffer(Group->TextGroup, Geo, Group->ScreenDim);
@@ -717,7 +733,7 @@ BufferQuad(ui_render_group *Group, textured_2d_geometry_buffer *Geo, v2 MinP, v2
 }
 
 v2
-BufferQuad(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, v2 MinP, v2 Dim, r32 Z = 0.0f)
+BufferQuad(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, v2 MinP, v2 Dim, r32 Z = 0.5f)
 {
   if (BufferIsFull(Geo, 6))
     FlushBuffer(Group->TextGroup, Geo, Group->ScreenDim);
@@ -790,6 +806,7 @@ BufferTextAt(ui_render_group *Group, v2 BasisP, font *Font, const char *Text, u3
   return DeltaX;
 }
 
+
 r32
 BufferText(const char* Text, u32 Color, layout *Layout, font *Font, ui_render_group *Group)
 {
@@ -808,6 +825,8 @@ BufferText(const char* Text, u32 Color, layout *Layout, font *Font, ui_render_gr
     continue;
   }
 
+  Layout->At.x += DeltaX;
+  AdvanceClip(Layout);
   return DeltaX;
 }
 
@@ -838,22 +857,9 @@ PrintFreeScopes(debug_state *State)
 }
 
 inline void
-AdvanceClip(layout *Layout)
-{
-  Layout->Clip.Min = Min(Layout->At, Layout->Clip.Min);
-  Layout->Clip.Max = Max(Layout->At, Layout->Clip.Max);
-
-  return;
-}
-
-inline void
 BufferValue(const char *Text, ui_render_group *Group, layout *Layout, u32 ColorIndex)
 {
   r32 DeltaX = BufferText(Text, ColorIndex, Layout, &Group->Font, Group);
-  Layout->At.x += DeltaX;
-
-  AdvanceClip(Layout);
-
   return;
 }
 
@@ -913,9 +919,9 @@ NewRow(table_layout *Table, font *Font)
 r32
 BufferLine(const char* Text, u32 Color, layout *Layout, font *Font, ui_render_group *Group)
 {
-  r32 Result = BufferText(Text, Color, Layout, Font, Group);
+  r32 xOffset = BufferText(Text, Color, Layout, Font, Group);
   NewLine(Layout, Font);
-  return Result;
+  return xOffset;
 }
 
 inline char*
@@ -1431,6 +1437,9 @@ DrawCycleBar( cycle_range *Range, cycle_range *Frame, r32 TotalGraphWidth, const
 
     BufferColors(Group, Geo, Color);
     Geo->At+=6;
+
+    AdvanceClip(Layout, QuadMaxP);
+    return;
 }
 
 void
@@ -1446,7 +1455,9 @@ DrawScopeBarsRecursive(ui_render_group *Group, untextured_2d_geometry_buffer *Ge
   {
     cycle_range Range = {ChildIterator->StartingCycle, ChildIterator->CycleCount};
     cycle_range Frame = {FrameStartCycle, FrameTotalCycles};
+
     DrawCycleBar( &Range, &Frame, TotalGraphWidth, ChildIterator->Name, RandomV3(Entropy), Group, Geo, Layout);
+
     if (ChildIterator->Expanded)
     {
       v2 At = Layout->At;
@@ -1571,7 +1582,8 @@ DebugDrawThreadGraph(ui_render_group *Group, debug_state *DebugState, layout *La
 
     debug_scope_tree *ReadTree = &DebugState->ThreadStates[ThreadIndex].ScopeTrees[DebugState->ReadScopeIndex];
     DrawScopeBarsRecursive(Group, Geo, ReadTree->Root, Layout, ReadTree->TotalCycles, ReadTree->StartingCycle, TotalGraphWidth, &Entropy);
-    Layout->At.y = Layout->Clip.Max.y;
+
+    Layout->At.y = Layout->Clip.Max.y; // Advance vertical at for next thread
 
     EndClipRect(Group, Layout, Geo);
   }
