@@ -12,4 +12,10 @@ for test_executable in $(find bin/test*); do
 done
 
 
+if [ "$TESTS_PASSED" -eq 0 ]; then
+  echo "All Tests Passed"
+else
+  echo "One or more failures.  Inspect log for details."
+fi
+
 exit "$TESTS_PASSED"

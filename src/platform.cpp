@@ -534,11 +534,6 @@ main()
     TIMED_BLOCK("Frame End");
 
     TIMED_BLOCK("Worker Thread Shutdown");
-    TIMED_BLOCK("Waiting for Workers to Finish");
-    GetDebugState()->MainThreadBlocksWorkerThreads = True;
-    u32 WorkerThreadCount = GetWorkerThreadCount();
-    while (GetDebugState()->WorkerThreadsWaiting < WorkerThreadCount);
-    END_BLOCK("Waiting for Workers to Finish");
 
 
     DEBUG_FRAME_END(&Plat, GameState);
@@ -549,9 +544,8 @@ main()
 
     END_BLOCK("Frame End");
 
-    AdvanceScopeTrees(GetDebugState(), RealDt);
+    AdvanceScopeTrees(RealDt);
 
-    GetDebugState()->MainThreadBlocksWorkerThreads = False;
     END_BLOCK("Worker Thread Shutdown");
 
   }

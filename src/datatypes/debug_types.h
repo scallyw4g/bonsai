@@ -182,8 +182,10 @@ struct debug_state
   mutex FreeScopeMutex;
 
   debug_thread_state *ThreadStates;
+
   u32 ReadScopeIndex;
   u32 WriteScopeIndex;
+
   s32 FreeScopeCount;
   u64 NumScopes;
 
@@ -192,13 +194,13 @@ struct debug_state
   volatile b32 MainThreadBlocksWorkerThreads;
   volatile s32 WorkerThreadsWaiting;
 
-  debug_scope_tree *GetReadScopeTree()
+  debug_scope_tree* GetReadScopeTree()
   {
     debug_scope_tree *RootScope = &this->ThreadStates[ThreadLocal_ThreadIndex].ScopeTrees[this->ReadScopeIndex];
     return RootScope;
   }
 
-  debug_scope_tree *GetWriteScopeTree()
+  debug_scope_tree* GetWriteScopeTree()
   {
     debug_scope_tree *RootScope = &this->ThreadStates[ThreadLocal_ThreadIndex].ScopeTrees[this->WriteScopeIndex];
     return RootScope;
@@ -321,8 +323,6 @@ struct debug_timed_function
 #define DEBUG_FRAME_END(Plat, GameState) DebugFrameEnd(Plat, GameState)
 #define DEBUG_FRAME_BEGIN(Hotkeys, dt) DebugFrameBegin(Hotkeys, dt)
 
-#define WORKER_THREAD_WAIT_FOR_DEBUG_SYSTEM(...) WorkerThreadWaitForDebugSystem()
-
 inline void DebugTimedMutexWaiting(mutex *Mut);
 inline void DebugTimedMutexAquired(mutex *Mut);
 inline void DebugTimedMutexReleased(mutex *Mut);
@@ -330,6 +330,10 @@ inline void DebugTimedMutexReleased(mutex *Mut);
 #define TIMED_MUTEX_WAITING(Mut) DebugTimedMutexWaiting(Mut)
 #define TIMED_MUTEX_AQUIRED(Mut) DebugTimedMutexAquired(Mut)
 #define TIMED_MUTEX_RELEASED(Mut) DebugTimedMutexReleased(Mut)
+
+#define WORKER_THREAD_WAIT_FOR_DEBUG_SYSTEM(...) WorkerThreadWaitForDebugSystem()
+#define SUSPEND_WORKER_THREADS()  DebugSuspendWorkerThreads()
+#define RESUME_WORKER_THREADS()  DebugResumeWorkerThreads()
 
 #else
 
@@ -348,6 +352,7 @@ inline void DebugTimedMutexReleased(mutex *Mut);
 #define DEBUG_FRAME_BEGIN(...)
 
 #define WORKER_THREAD_WAIT_FOR_DEBUG_SYSTEM(...)
+#define SUSPEND_WORKER_THREADS(...)
 
 #endif
 

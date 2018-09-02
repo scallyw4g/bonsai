@@ -5,36 +5,6 @@
 debug_global b32 DebugGlobal_RedrawEveryPush = 0;
 
 
-inline memory_arena *
-GetDebugMemoryAllocator()
-{
-  debug_state *State = GetDebugState();
-  memory_arena *Arena = State->ThreadStates[ThreadLocal_ThreadIndex].Memory;
-  return Arena;
-}
-
-v2
-GetAbsoluteMin(layout *Layout)
-{
-  v2 Result = Layout->Clip.Min + Layout->Basis;
-  return Result;
-}
-
-v2
-GetAbsoluteMax(layout *Layout)
-{
-  v2 Result = Layout->Clip.Max + Layout->Basis;
-  return Result;
-}
-
-v2
-GetAbsoluteAt(layout *Layout)
-{
-  v2 Result = Layout->At + Layout->Basis;
-  return Result;
-}
-
-
 /****************************  Arena Introspection  **************************/
 
 
@@ -230,6 +200,194 @@ Allocate_(memory_arena *Arena, umm StructSize, umm StructCount, b32 MemProtect, 
 }
 
 
+/**************************  Utility Functions  ******************************/
+
+
+inline void
+WorkerThreadWaitForDebugSystem()
+{
+  TIMED_FUNCTION();
+
+  debug_state *DebugState = GetDebugState();
+  if (DebugState->MainThreadBlocksWorkerThreads)
+  {
+    AtomicIncrement(&DebugState->WorkerThreadsWaiting);
+    while(DebugState->MainThreadBlocksWorkerThreads);
+    AtomicDecrement(&DebugState->WorkerThreadsWaiting);
+  }
+
+  return;
+}
+
+inline void
+DebugResumeWorkerThreads()
+{
+  TIMED_FUNCTION();
+  debug_state *State = GetDebugState();
+  State->MainThreadBlocksWorkerThreads = False;
+  return;
+}
+
+inline void
+DebugSuspendWorkerThreads()
+{
+  TIMED_FUNCTION();
+  debug_state *State = GetDebugState();
+
+  State->MainThreadBlocksWorkerThreads = True;
+
+  u32 WorkerThreadCount = GetWorkerThreadCount();
+  while (State->WorkerThreadsWaiting < WorkerThreadCount);
+
+  return;
+}
+
+void
+CleanupText2D(debug_text_render_group *RG)
+{
+  // Delete buffers
+  glDeleteBuffers(1, &RG->VertexBuffer);
+  glDeleteBuffers(1, &RG->UVBuffer);
+
+  // Delete texture
+  glDeleteTextures(1, &RG->FontTexture.ID);
+
+  // Delete shader
+  glDeleteProgram(RG->Text2DShader.ID);
+
+  return;
+}
+
+min_max_avg_dt
+ComputeMinMaxAvgDt(debug_thread_state *ThreadState)
+{
+  TIMED_FUNCTION();
+
+  min_max_avg_dt Dt = {};
+
+    for (u32 TreeIndex = 0;
+        TreeIndex < DEBUG_FRAMES_TRACKED;
+        ++TreeIndex )
+    {
+      debug_scope_tree *Tree = &ThreadState->ScopeTrees[TreeIndex];
+
+      Dt.Min = Min(Dt.Min, Tree->FrameMs);
+      Dt.Max = Max(Dt.Max, Tree->FrameMs);
+      Dt.Avg += Tree->FrameMs;
+    }
+    Dt.Avg /= (r32)DEBUG_FRAMES_TRACKED;
+
+  return Dt;
+}
+
+inline void
+DoDebugFrameRecord(
+    debug_recording_state *State,
+    hotkeys *Hotkeys)
+{
+  {
+    static b32 Toggled = False;
+    if (Hotkeys->Debug_ToggleLoopedGamePlayback  && !Toggled)
+    {
+      Toggled = True;
+      State->Mode = (debug_recording_mode)((State->Mode + 1) % RecordingMode_Count);
+
+      switch (State->Mode)
+      {
+        case RecordingMode_Clear:
+        {
+          Log("Clear");
+          State->FramesRecorded = 0;
+          State->FramesPlayedBack = 0;
+        } break;
+
+        case RecordingMode_Record:
+        {
+          NotImplemented;
+          Log("Recording");
+          //CopyArena(MainMemory, &State->RecordedMainMemory);
+        } break;
+
+        case RecordingMode_Playback:
+        {
+          NotImplemented;
+          Log("Playback");
+          //CopyArena(&State->RecordedMainMemory, MainMemory);
+        } break;
+
+        InvalidDefaultCase;
+      }
+
+    }
+    else if (!Hotkeys->Debug_ToggleLoopedGamePlayback)
+    {
+      Toggled = False;
+    }
+  }
+
+  switch (State->Mode)
+  {
+    case RecordingMode_Clear:
+    {
+    } break;
+
+    case RecordingMode_Record:
+    {
+      NotImplemented;
+      Assert(State->FramesRecorded < DEBUG_RECORD_INPUT_SIZE);
+      Hotkeys->Debug_ToggleLoopedGamePlayback = False;
+      State->Inputs[State->FramesRecorded++] = *Hotkeys;
+    } break;
+
+    case RecordingMode_Playback:
+    {
+      NotImplemented;
+      *Hotkeys = State->Inputs[State->FramesPlayedBack++];
+
+      if (State->FramesPlayedBack == State->FramesRecorded)
+      {
+        State->FramesPlayedBack = 0;
+        //CopyArena(&State->RecordedMainMemory, MainMemory);
+      }
+
+    } break;
+
+    InvalidDefaultCase;
+  }
+
+  return;
+}
+
+inline memory_arena *
+GetDebugMemoryAllocator()
+{
+  debug_state *State = GetDebugState();
+  memory_arena *Arena = State->ThreadStates[ThreadLocal_ThreadIndex].Memory;
+  return Arena;
+}
+
+v2
+GetAbsoluteMin(layout *Layout)
+{
+  v2 Result = Layout->Clip.Min + Layout->Basis;
+  return Result;
+}
+
+v2
+GetAbsoluteMax(layout *Layout)
+{
+  v2 Result = Layout->Clip.Max + Layout->Basis;
+  return Result;
+}
+
+v2
+GetAbsoluteAt(layout *Layout)
+{
+  v2 Result = Layout->At + Layout->Basis;
+  return Result;
+}
+
+
 /*************************  Profile Scope Trees  *****************************/
 
 
@@ -273,13 +431,17 @@ FreeScopes(debug_state *DebugState, debug_profile_scope *ScopeToFree)
 }
 
 void
-AdvanceScopeTrees(debug_state *State, r32 Dt)
+AdvanceScopeTrees(r32 Dt)
 {
   TIMED_FUNCTION();
 
+  debug_state *State = GetDebugState();
   if (!State->DebugDoScopeProfiling) return;
 
+  SUSPEND_WORKER_THREADS();
+
   u32 TotalThreadCount = GetTotalThreadCount();
+  Assert(State->WorkerThreadsWaiting == GetWorkerThreadCount());
 
   TIMED_BLOCK("WriteTree Stats Recording");
     for ( u32 ThreadIndex = 0;
@@ -316,12 +478,15 @@ AdvanceScopeTrees(debug_state *State, r32 Dt)
   {
     debug_scope_tree *ThisFramesTree = &State->ThreadStates[ThreadIndex].ScopeTrees[State->ReadScopeIndex];
     ThisFramesTree->TotalCycles = CurrentCycles - ThisFramesTree->StartingCycle;
+    Assert(ThisFramesTree->TotalCycles > 0);
 
     debug_scope_tree *NextFramesTree = &State->ThreadStates[ThreadIndex].ScopeTrees[State->WriteScopeIndex];
     NextFramesTree->StartingCycle = CurrentCycles;
 
     State->ThreadStates[ThreadIndex].NextMutexOpRecord = 0;
   }
+
+  RESUME_WORKER_THREADS();
 
   return;
 }
@@ -489,9 +654,9 @@ InitDebugMemoryAllocationSystem(debug_state *State)
       ThreadIndex < TotalThreadCount;
       ++ThreadIndex)
   {
-    memory_arena *ThreadArena = PlatformAllocateArena();
-    State->ThreadStates[ThreadIndex].Memory = ThreadArena;
-    DEBUG_REGISTER_ARENA(ThreadArena, State);
+    memory_arena *DebugThreadArena = PlatformAllocateArena();
+    State->ThreadStates[ThreadIndex].Memory = DebugThreadArena;
+    DEBUG_REGISTER_ARENA(DebugThreadArena, State);
 
     State->ThreadStates[ThreadIndex].MetaTable =
       (push_metadata*)PushStruct(GetDebugMemoryAllocator(), MetaTableSize);
@@ -1255,141 +1420,6 @@ DoTooltip(ui_render_group *Group, const char *Text)
   return;
 }
 
-
-/**************************  Utility Functions  ******************************/
-
-
-inline void
-WorkerThreadWaitForDebugSystem()
-{
-  TIMED_FUNCTION();
-
-  debug_state *DebugState = GetDebugState();
-  if (DebugState->MainThreadBlocksWorkerThreads)
-  {
-    AtomicIncrement(&DebugState->WorkerThreadsWaiting);
-    while(DebugState->MainThreadBlocksWorkerThreads);
-    AtomicDecrement(&DebugState->WorkerThreadsWaiting);
-  }
-
-  return;
-}
-
-void
-CleanupText2D(debug_text_render_group *RG)
-{
-  // Delete buffers
-  glDeleteBuffers(1, &RG->VertexBuffer);
-  glDeleteBuffers(1, &RG->UVBuffer);
-
-  // Delete texture
-  glDeleteTextures(1, &RG->FontTexture.ID);
-
-  // Delete shader
-  glDeleteProgram(RG->Text2DShader.ID);
-
-  return;
-}
-
-min_max_avg_dt
-ComputeMinMaxAvgDt(debug_thread_state *ThreadState)
-{
-  TIMED_FUNCTION();
-
-  min_max_avg_dt Dt = {};
-
-    for (u32 TreeIndex = 0;
-        TreeIndex < DEBUG_FRAMES_TRACKED;
-        ++TreeIndex )
-    {
-      debug_scope_tree *Tree = &ThreadState->ScopeTrees[TreeIndex];
-
-      Dt.Min = Min(Dt.Min, Tree->FrameMs);
-      Dt.Max = Max(Dt.Max, Tree->FrameMs);
-      Dt.Avg += Tree->FrameMs;
-    }
-    Dt.Avg /= (r32)DEBUG_FRAMES_TRACKED;
-
-  return Dt;
-}
-
-inline void
-DoDebugFrameRecord(
-    debug_recording_state *State,
-    hotkeys *Hotkeys)
-{
-  {
-    static b32 Toggled = False;
-    if (Hotkeys->Debug_ToggleLoopedGamePlayback  && !Toggled)
-    {
-      Toggled = True;
-      State->Mode = (debug_recording_mode)((State->Mode + 1) % RecordingMode_Count);
-
-      switch (State->Mode)
-      {
-        case RecordingMode_Clear:
-        {
-          Log("Clear");
-          State->FramesRecorded = 0;
-          State->FramesPlayedBack = 0;
-        } break;
-
-        case RecordingMode_Record:
-        {
-          NotImplemented;
-          Log("Recording");
-          //CopyArena(MainMemory, &State->RecordedMainMemory);
-        } break;
-
-        case RecordingMode_Playback:
-        {
-          NotImplemented;
-          Log("Playback");
-          //CopyArena(&State->RecordedMainMemory, MainMemory);
-        } break;
-
-        InvalidDefaultCase;
-      }
-
-    }
-    else if (!Hotkeys->Debug_ToggleLoopedGamePlayback)
-    {
-      Toggled = False;
-    }
-  }
-
-  switch (State->Mode)
-  {
-    case RecordingMode_Clear:
-    {
-    } break;
-
-    case RecordingMode_Record:
-    {
-      NotImplemented;
-      Assert(State->FramesRecorded < DEBUG_RECORD_INPUT_SIZE);
-      Hotkeys->Debug_ToggleLoopedGamePlayback = False;
-      State->Inputs[State->FramesRecorded++] = *Hotkeys;
-    } break;
-
-    case RecordingMode_Playback:
-    {
-      NotImplemented;
-      *Hotkeys = State->Inputs[State->FramesPlayedBack++];
-
-      if (State->FramesPlayedBack == State->FramesRecorded)
-      {
-        State->FramesPlayedBack = 0;
-        //CopyArena(&State->RecordedMainMemory, MainMemory);
-      }
-
-    } break;
-
-    InvalidDefaultCase;
-  }
-
-  return;
-}
 
 /****************************  Mutex Introspection  **************************/
 

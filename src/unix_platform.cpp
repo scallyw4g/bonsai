@@ -355,6 +355,7 @@ Terminate(os *Os)
 b32
 ProcessOsMessages(os *Os, platform *Plat)
 {
+  TIMED_FUNCTION();
 
   XEvent Event;
   b32 EventFound =
