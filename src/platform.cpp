@@ -541,7 +541,18 @@ main()
 
     END_BLOCK("Frame End");
 
+    TIMED_BLOCK("Worker Thread Shutdown");
+    TIMED_BLOCK("Waiting for Workers to Finish");
+    GetDebugState()->MainThreadBlocksWorkerThreads = True;
+    u32 WorkerThreadCount = GetWorkerThreadCount();
+    while (GetDebugState()->WorkerThreadsWaiting < WorkerThreadCount);
+    END_BLOCK("Waiting for Workers to Finish");
+
     AdvanceScopeTrees(GetDebugState(), RealDt);
+
+    GetDebugState()->MainThreadBlocksWorkerThreads = False;
+    END_BLOCK("Worker Thread Shutdown");
+
   }
 
   Info("Shutting Down");

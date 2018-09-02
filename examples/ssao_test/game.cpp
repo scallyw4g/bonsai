@@ -76,6 +76,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys, entity *Play
 void
 InitializeVoxels(perlin_noise *Noise, world_chunk *DestChunk, memory_arena *Memory, world *World)
 {
+  TIMED_FUNCTION();
   Assert( IsSet(DestChunk, Chunk_Queued) );
 
   if (IsSet(DestChunk, Chunk_Garbage))

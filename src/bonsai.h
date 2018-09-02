@@ -900,7 +900,7 @@ AllocateChunk(memory_arena *WorldStorage, chunk_dimension Dim)
   }
 
   // TODO(Jesse): Allocate this based on actual need?
-  AllocateMesh(&Result->Mesh, 25000, WorldStorage);
+  AllocateMesh(&Result->Mesh, 15000, WorldStorage);
 
   ZeroChunk(Result, Volume(Dim));
 

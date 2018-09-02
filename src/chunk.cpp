@@ -26,6 +26,7 @@ FillChunk(chunk_data *chunk, chunk_dimension Dim, u8 ColorIndex = BLACK)
 void
 CopyChunkOffset(world_chunk *Src, voxel_position SrcChunkDim, world_chunk *Dest, voxel_position DestChunkDim, voxel_position Offset)
 {
+  TIMED_FUNCTION();
   for ( int z = 0; z < DestChunkDim.z; ++ z)
   {
     for ( int y = 0; y < DestChunkDim.y; ++ y)

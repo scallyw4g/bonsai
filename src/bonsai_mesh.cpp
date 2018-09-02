@@ -14,7 +14,7 @@ BufferVertsDirect(
     v4 *Colors
   )
 {
-  /* TIMED_FUNCTION(); */
+  TIMED_FUNCTION();
   if (BufferIsFull(Dest, NumVerts))
   {
     Assert(false);
@@ -40,7 +40,7 @@ BufferVertsDirect(
     v4 *Colors
   )
 {
-  /* TIMED_FUNCTION(); */
+  TIMED_FUNCTION();
   if (BufferIsFull(Dest, NumVerts))
   {
     Assert(false);
@@ -69,7 +69,7 @@ BufferVertsDirect(
     v3 Scale
   )
 {
-  /* TIMED_FUNCTION(); */
+  TIMED_FUNCTION();
   if (BufferIsFull(Dest, NumVerts))
   {
     Assert(false);
@@ -162,7 +162,7 @@ BufferVertsChecked(
     v3 Scale = V3(1)
   )
 {
-  /* TIMED_FUNCTION(); */
+  TIMED_FUNCTION();
 
   if (BufferIsFull(Target, NumVerts))
   {
@@ -195,7 +195,7 @@ BufferVerts(
     graphics *Graphics
   )
 {
-  /* TIMED_FUNCTION(); */
+  TIMED_FUNCTION();
 
 #if 1
   BufferVertsChecked(Dest, Graphics, Source->At, Source->Verts,
@@ -304,7 +304,7 @@ BuildEntityMesh(chunk_data *chunk, chunk_dimension Dim)
 void
 BuildWorldChunkMesh(world_chunk *ReadChunk, chunk_dimension ReadChunkDim, world_chunk *WriteChunk, chunk_dimension WriteChunkDim)
 {
-  /* TIMED_FUNCTION(); */
+  TIMED_FUNCTION();
 
   chunk_data *WriteChunkData = WriteChunk->Data;
   chunk_data *ReadChunkData = ReadChunk->Data;

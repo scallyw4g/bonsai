@@ -1,4 +1,5 @@
 #define BONSAI_NO_PUSH_METADATA
+#define BONSAI_NO_TIMED_FUNCTIONS
 
 #include <bonsai_types.h>
 #include <unix_platform.cpp>

@@ -213,6 +213,7 @@ PlatformAllocateArena(umm RequestedBytes = Megabytes(1), b32 MemProtect = True)
 void
 PlatformUnprotectArena(memory_arena *Arena)
 {
+  TIMED_FUNCTION();
   umm Size = Arena->End - Arena->Start;
   s32 Err = mprotect(Arena->Start, Size, PROT_READ|PROT_WRITE);
   if (Err == -1)
@@ -229,6 +230,8 @@ PlatformUnprotectArena(memory_arena *Arena)
 inline void
 ThreadSleep( semaphore *Semaphore )
 {
+  TIMED_FUNCTION();
+
   AtomicIncrement(&GetDebugState()->WorkerThreadsWaiting);
   sem_wait(Semaphore);
   AtomicDecrement(&GetDebugState()->WorkerThreadsWaiting);

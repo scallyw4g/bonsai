@@ -74,8 +74,11 @@ struct debug_thread_state
 {
   memory_arena *Memory;
 
+
   mutex_op_record *MutexOpRecords;
   u32 NextMutexOpRecord;
+
+  push_metadata *MetaTable;
 
   debug_scope_tree ScopeTrees[DEBUG_FRAMES_TRACKED];
 };
@@ -162,13 +165,10 @@ struct debug_state
   s32 FreeScopeCount;
   u64 NumScopes;
 
-  push_metadata **MetaTables;
-  mutex *MetaTableMutexes;
-
   registered_memory_arena RegisteredMemoryArenas[REGISTERED_MEMORY_ARENA_COUNT];
 
-  b32 MainThreadBlocksWorkerThreads;
-  s32 WorkerThreadsWaiting;
+  volatile b32 MainThreadBlocksWorkerThreads;
+  volatile s32 WorkerThreadsWaiting;
 
   debug_scope_tree *GetReadScopeTree()
   {
@@ -226,7 +226,7 @@ struct debug_recording_state
 
 global_variable debug_profile_scope NullDebugProfileScope = {};
 
-debug_profile_scope * GetProfileScope(debug_state *State);
+debug_profile_scope *GetProfileScope(debug_state *State);
 
 struct debug_timed_function
 {
@@ -235,6 +235,7 @@ struct debug_timed_function
 
   debug_timed_function(const char *Name)
   {
+#ifndef BONSAI_NO_TIMED_FUNCTIONS
     debug_state *DebugState = GetDebugState();
     Clear(this);
     if (!DebugState->DebugDoScopeProfiling) return;
@@ -257,10 +258,12 @@ struct debug_timed_function
     }
 
     return;
+#endif
   }
 
   ~debug_timed_function()
   {
+#ifndef BONSAI_NO_TIMED_FUNCTIONS
     debug_state *DebugState = GetDebugState();
     if (!DebugState->DebugDoScopeProfiling) return;
     if (!this->Scope) return;
@@ -274,6 +277,7 @@ struct debug_timed_function
     this->Tree->ParentOfNextScope = this->Scope->Parent;
 
     return;
+#endif
   }
 
 };

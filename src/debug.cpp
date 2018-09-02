@@ -219,11 +219,16 @@ void
 WritePushMetadata(push_metadata *InputMeta, push_metadata *MetaTable)
 {
   debug_state *DebugState = GetDebugState();
-  PlatformLockMutex(DebugState->MetaTableMutexes + ThreadLocal_ThreadIndex);
   WriteToMetaTable(InputMeta, MetaTable, PushesMatchExactly);
-  PlatformUnlockMutex(DebugState->MetaTableMutexes + ThreadLocal_ThreadIndex);
 
   return;
+}
+
+inline debug_thread_state*
+GetThreadDebugState(debug_state *State, u32 ThreadIndex)
+{
+  debug_thread_state *Result = State->ThreadStates + ThreadIndex;
+  return Result;
 }
 
 inline void*
@@ -239,7 +244,7 @@ Allocate_(memory_arena *Arena, umm StructSize, umm StructCount, b32 MemProtect, 
 
 #ifndef BONSAI_NO_PUSH_METADATA
   push_metadata ArenaMetadata = {Name, HashArena(Arena), HashArenaHead(Arena), StructSize, StructCount, 1};
-  WritePushMetadata(&ArenaMetadata, GetDebugState()->MetaTables[ThreadLocal_ThreadIndex]);
+  WritePushMetadata(&ArenaMetadata, GetThreadDebugState(GetDebugState(), ThreadLocal_ThreadIndex)->MetaTable);
 #endif
 
   if (!Result)
@@ -259,7 +264,6 @@ inline void
 ClearMetaRecordsFor(memory_arena *Arena)
 {
   debug_state *DebugState = GetDebugState();
-  PlatformLockMutex(DebugState->MetaTableMutexes + ThreadLocal_ThreadIndex);
 
   u32 TotalThreadCount = GetWorkerThreadCount() + 1;
   for ( u32 ThreadIndex = 0;
@@ -270,15 +274,13 @@ ClearMetaRecordsFor(memory_arena *Arena)
         MetaIndex < META_TABLE_SIZE;
         ++MetaIndex)
     {
-      push_metadata *Meta = &GetDebugState()->MetaTables[ThreadIndex][MetaIndex];
+      push_metadata *Meta = GetThreadDebugState(GetDebugState(), ThreadLocal_ThreadIndex)->MetaTable + MetaIndex;
       if (Meta->ArenaHash == HashArena(Arena))
       {
         Clear(Meta);
       }
     }
   }
-
-  PlatformUnlockMutex(DebugState->MetaTableMutexes + ThreadLocal_ThreadIndex);
 
   return;
 }
@@ -406,14 +408,6 @@ AdvanceScopeTrees(debug_state *State, r32 Dt)
     }
   END_BLOCK("WriteTree Stats Recording");
 
-  TIMED_BLOCK("Worker Thread Shutdown");
-
-  TIMED_BLOCK("Waiting for Workers to Finish");
-  State->MainThreadBlocksWorkerThreads = True;
-  u32 WorkerThreadCount = GetWorkerThreadCount();
-  while (State->WorkerThreadsWaiting < WorkerThreadCount);
-  END_BLOCK("Waiting for Workers to Finish");
-
   TIMED_BLOCK("Advance And Free Trees");
   State->WriteScopeIndex = (State->WriteScopeIndex+1) % DEBUG_FRAMES_TRACKED;
   State->ReadScopeIndex = (State->ReadScopeIndex+1) % DEBUG_FRAMES_TRACKED;
@@ -445,9 +439,6 @@ AdvanceScopeTrees(debug_state *State, r32 Dt)
 
     State->ThreadStates[ThreadIndex].NextMutexOpRecord = 0;
   }
-
-  State->MainThreadBlocksWorkerThreads = False;
-  END_BLOCK("Worker Thread Shutdown");
 
   return;
 }
@@ -526,6 +517,7 @@ InitDebugMemoryAllocationSystem(debug_state *State)
   GlobalDebugState->ThreadStates = (debug_thread_state*)PushStruct(BoostrapArena, Size);
   //
 
+  umm MetaTableSize = META_TABLE_SIZE * sizeof(push_metadata);
   for (u32 ThreadIndex = 0;
       ThreadIndex < TotalThreadCount;
       ++ThreadIndex)
@@ -533,27 +525,9 @@ InitDebugMemoryAllocationSystem(debug_state *State)
     memory_arena *ThreadArena = PlatformAllocateArena();
     State->ThreadStates[ThreadIndex].Memory = ThreadArena;
     DEBUG_REGISTER_ARENA(ThreadArena, State);
-  }
 
-  umm PushSize = TotalThreadCount * sizeof(push_metadata*);
-  State->MetaTables = (push_metadata**)PushStruct(GetDebugMemoryAllocator(), PushSize);
-
-  for (u32 ThreadIndex = 0;
-      ThreadIndex < TotalThreadCount;
-      ++ThreadIndex)
-  {
-    umm PushSize = META_TABLE_SIZE * sizeof(push_metadata);
-    State->MetaTables[ThreadIndex] = (push_metadata*)PushStruct(GetDebugMemoryAllocator(), PushSize);
-  }
-
-  State->MetaTableMutexes = (mutex*)PushStruct(GetDebugMemoryAllocator(), sizeof(mutex)*TotalThreadCount);
-
-  for (u32 ThreadIndex = 0;
-      ThreadIndex < TotalThreadCount;
-      ++ThreadIndex)
-  {
-    mutex *Mutex = State->MetaTableMutexes + ThreadIndex;
-    PlatformInitializeMutex(Mutex);
+    State->ThreadStates[ThreadIndex].MetaTable =
+      (push_metadata*)PushStruct(GetDebugMemoryAllocator(), MetaTableSize);
   }
 
   return;
@@ -1150,8 +1124,7 @@ inline void
 BufferScopeTreeEntry(ui_render_group *Group, debug_profile_scope *Scope, layout *Layout,
     u32 Color, u64 TotalCycles, u64 TotalFrameCycles, u64 CallCount, u32 Depth)
 {
-  TIMED_FUNCTION();
-  /* Assert(TotalFrameCycles); */
+  Assert(TotalFrameCycles);
 
   r32 Percentage = 100.0f * (r32)SafeDivide0((r64)TotalCycles, (r64)TotalFrameCycles);
   u64 AvgCycles = (u64)SafeDivide0(TotalCycles, CallCount);
@@ -1256,8 +1229,6 @@ HoverAndClickExpand(ui_render_group *Group, layout *Layout, T *Expandable, u8 Co
 void
 BufferFirstCallToEach(ui_render_group *Group, debug_profile_scope *Scope, debug_profile_scope *TreeRoot, memory_arena *Memory, layout *Layout, u64 TotalFrameCycles, u32 Depth)
 {
-  TIMED_FUNCTION();
-
   if (!Scope) return;
 
   if (Scope->Name)
@@ -1548,13 +1519,6 @@ DrawWaitingBar(mutex_op_record *WaitRecord, mutex_op_record *AquiredRecord, mute
   return;
 }
 
-inline debug_thread_state*
-GetThreadDebugState(debug_state *State, u32 ThreadIndex)
-{
-  debug_thread_state *Result = State->ThreadStates + ThreadIndex;
-  return Result;
-}
-
 void
 DebugDrawPerfBargraph(ui_render_group *Group, debug_state *DebugState, layout *Layout)
 {
@@ -1584,13 +1548,8 @@ DebugDrawPerfBargraph(ui_render_group *Group, debug_state *DebugState, layout *L
     BufferHorizontalBar(Group, Geo, Layout, TotalGraphWidth, V3(0.5f));
   }
 
-  TIMED_BLOCK("Worker Thread Shutdown");
-  TIMED_BLOCK("Waiting for Workers to Finish");
-  DebugState->MainThreadBlocksWorkerThreads = True;
-  u32 WorkerThreadCount = GetWorkerThreadCount();
-  while (DebugState->WorkerThreadsWaiting < WorkerThreadCount);
-  END_BLOCK("Waiting for Workers to Finish");
 
+#if 1
   TIMED_BLOCK("Mutex Record Collation");
 
   NewLine(Layout, &Group->Font);
@@ -1632,9 +1591,7 @@ DebugDrawPerfBargraph(ui_render_group *Group, debug_state *DebugState, layout *L
     ThreadState->NextMutexOpRecord = 0;
   }
   END_BLOCK("Mutex Record Collation");
-
-  DebugState->MainThreadBlocksWorkerThreads = False;
-  END_BLOCK("Worker Thread Shutdown");
+#endif
 
   return;
 }
@@ -1935,18 +1892,11 @@ BufferDebugPushMetaData(debug_state *DebugState, ui_render_group *Group, selecte
       ThreadIndex < TotalThreadCount;
       ++ThreadIndex)
   {
-    PlatformLockMutex(DebugState->MetaTableMutexes + ThreadIndex);
-  }
-
-  for ( u32 ThreadIndex = 0;
-      ThreadIndex < TotalThreadCount;
-      ++ThreadIndex)
-  {
     for ( u32 MetaIndex = 0;
         MetaIndex < META_TABLE_SIZE;
         ++MetaIndex)
     {
-      push_metadata *Meta = &GetDebugState()->MetaTables[ThreadIndex][MetaIndex];
+      push_metadata *Meta = &GetDebugState()->ThreadStates[ThreadIndex].MetaTable[MetaIndex];
 
       for (u32 ArenaIndex = 0;
           ArenaIndex < SelectedArenas->Count;
@@ -1960,13 +1910,6 @@ BufferDebugPushMetaData(debug_state *DebugState, ui_render_group *Group, selecte
         }
       }
     }
-  }
-
-  for ( u32 ThreadIndex = 0;
-      ThreadIndex < TotalThreadCount;
-      ++ThreadIndex)
-  {
-    PlatformUnlockMutex(DebugState->MetaTableMutexes + ThreadIndex);
   }
 
   // Densely pack collated records
@@ -2439,6 +2382,7 @@ void
 DebugFrameEnd(platform *Plat, game_state *GameState)
 {
   TIMED_FUNCTION();
+
   debug_state *DebugState              = GetDebugState();
   debug_text_render_group *RG          = &DebugState->TextRenderGroup;
   textured_2d_geometry_buffer *TextGeo = &RG->TextGeo;
@@ -2554,7 +2498,6 @@ DebugFrameEnd(platform *Plat, game_state *GameState)
   {
      Global_DrawCalls[DrawCountIndex] = NullDrawCall;
   }
-
 
   return;
 }
