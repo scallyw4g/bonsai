@@ -1444,32 +1444,24 @@ DrawCycleBar( cycle_range *Range, cycle_range *Frame, r32 TotalGraphWidth, const
 
 void
 DrawScopeBarsRecursive(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, debug_profile_scope *Scope,
-                       layout *Layout, u64 FrameTotalCycles, u64 FrameStartCycle, r32 TotalGraphWidth, random_series *Entropy)
+                       layout *Layout, cycle_range *Frame, r32 TotalGraphWidth, random_series *Entropy)
 {
   if (!Scope) return;
   Assert(Scope->Name);
 
-  debug_profile_scope *ChildIterator = Scope;
+  cycle_range Range = {Scope->StartingCycle, Scope->CycleCount};
 
-  while(ChildIterator)
+  DrawCycleBar( &Range, Frame, TotalGraphWidth, Scope->Name, RandomV3(Entropy), Group, Geo, Layout);
+
+  if (Scope->Expanded)
   {
-    cycle_range Range = {ChildIterator->StartingCycle, ChildIterator->CycleCount};
-    cycle_range Frame = {FrameStartCycle, FrameTotalCycles};
-
-    DrawCycleBar( &Range, &Frame, TotalGraphWidth, ChildIterator->Name, RandomV3(Entropy), Group, Geo, Layout);
-
-    if (ChildIterator->Expanded)
-    {
-      v2 At = Layout->At;
-      NewLine(Layout, &Group->Font);
-      DrawScopeBarsRecursive(Group, Geo, ChildIterator->Child, Layout, FrameTotalCycles, FrameStartCycle, TotalGraphWidth, Entropy);
-      Layout->At = At;
-    }
-
-    ChildIterator = ChildIterator->Sibling;
+    layout ChildrensLayout = *Layout;
+    NewLine(&ChildrensLayout, &Group->Font);
+    DrawScopeBarsRecursive(Group, Geo, Scope->Child, &ChildrensLayout, Frame, TotalGraphWidth, Entropy);
+    Layout->Clip = ChildrensLayout.Clip;
   }
 
-  DrawScopeBarsRecursive(Group, Geo, Scope->Sibling, Layout, FrameTotalCycles, FrameStartCycle, TotalGraphWidth, Entropy);
+  DrawScopeBarsRecursive(Group, Geo, Scope->Sibling, Layout, Frame, TotalGraphWidth, Entropy);
 
   return;
 }
@@ -1580,8 +1572,9 @@ DebugDrawThreadGraph(ui_render_group *Group, debug_state *DebugState, layout *La
     char *ThreadName = FormatString("Thread %u", ThreadIndex);
     BufferLine(ThreadName, WHITE, Layout, &Group->Font, Group);
 
+    cycle_range Frame = {ReadTree->StartingCycle, ReadTree->TotalCycles};
     debug_scope_tree *ReadTree = &DebugState->ThreadStates[ThreadIndex].ScopeTrees[DebugState->ReadScopeIndex];
-    DrawScopeBarsRecursive(Group, Geo, ReadTree->Root, Layout, ReadTree->TotalCycles, ReadTree->StartingCycle, TotalGraphWidth, &Entropy);
+    DrawScopeBarsRecursive(Group, Geo, ReadTree->Root, Layout, &Frame, TotalGraphWidth, &Entropy);
 
     Layout->At.y = Layout->Clip.Max.y; // Advance vertical at for next thread
 
