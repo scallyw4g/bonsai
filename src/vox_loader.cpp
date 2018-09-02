@@ -2,12 +2,6 @@
 #include <string.h>
 #include <bonsai_mesh.cpp>
 
-// Number of bytes per int according to .vox file format
-#define VOX_INT_BYTES 4
-#define VOX_CHAR_BYTES 1
-
-
-
 
 
 
@@ -35,24 +29,24 @@ enum Chunk_ID
 inline unsigned char
 ReadChar(FILE* File, int* byteCounter)
 {
-  unsigned char c;
-  fread(&c, 1, VOX_CHAR_BYTES, File);
-  *byteCounter -= VOX_CHAR_BYTES;
+  u8 c;
+  ReadBytes(&c, sizeof(u8), File);
+  *byteCounter -= sizeof(u8);
   return c;
 }
 
 inline int
 ReadInt(FILE* File)
 {
-  int i;
-  fread(&i, 1, VOX_INT_BYTES, File);
+  s32 i;
+  ReadBytes((u8*)&i, sizeof(s32), File);
   return i;
 }
 
 inline int
 ReadInt(FILE* File, int* byteCounter)
 {
-  *byteCounter -= VOX_INT_BYTES;
+  *byteCounter -= sizeof(s32);
   return ReadInt(File);
 }
 

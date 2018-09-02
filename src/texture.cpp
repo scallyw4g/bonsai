@@ -105,17 +105,21 @@ LoadDDS(const char * FilePath)
     return Result;
   }
 
-  char filecode[4];
-  fread(filecode, 1, 4, TextureFile);
-  if (strncmp(filecode, "DDS ", 4) != 0) {
+  const u32 FileCodeLength = 4;
+  char filecode[FileCodeLength];
+
+  ReadBytes((u8*)filecode, FileCodeLength, TextureFile);
+  if (strncmp(filecode, "DDS ", FileCodeLength) != 0)
+  {
     Error("Invalid File format opening DDS file");
     Assert(False);
     fclose(TextureFile);
     return Result;
   }
 
-  u32 Header[124];
-  fread(&Header, 124, 1, TextureFile);
+  const u32 HeaderLength = 124;
+  u32 Header[HeaderLength];
+  ReadBytes((u8*)Header, HeaderLength, TextureFile);
 
   s32 height      = (s32)Header[2];
   s32 width       = (s32)Header[3];
@@ -126,13 +130,13 @@ LoadDDS(const char * FilePath)
   Result.Dim.x = (s32)width;
   Result.Dim.y = (s32)height;
 
-  unsigned char *buffer;
-  unsigned int bufsize;
+  u32 BufferSize = mipMapCount > 1 ? linearSize * 2 : linearSize;
+  u8* Buffer = Allocate(u8, TranArena, BufferSize, True);
 
-  bufsize = mipMapCount > 1 ? linearSize * 2 : linearSize;
-  buffer = Allocate(u8, TranArena, bufsize, True);
-  fread(buffer, 1, bufsize, TextureFile);
-  fclose(TextureFile);
+  ReadBytes(Buffer, BufferSize, TextureFile);
+
+  s32 Closed = fclose(TextureFile);
+  Assert(Closed == 0);
 
   unsigned int format;
 
@@ -164,7 +168,7 @@ LoadDDS(const char * FilePath)
   {
     s32 size = ((width+3)/4)*((height+3)/4)*blockSize;
     glCompressedTexImage2D(GL_TEXTURE_2D, level, format, width, height,
-      0, size, buffer + offset);
+      0, size, Buffer + offset);
 
     offset += size;
     width  /= 2;

@@ -518,9 +518,10 @@ ProcessOsMessages(os *Os, platform *Plat)
 char*
 GetCwd()
 {
-  global_variable char GlobalCwdBuffer[GlobalCwdBufferLength];
-  getcwd(GlobalCwdBuffer, GlobalCwdBufferLength);
-  return (GlobalCwdBuffer);
+  // @memory-leak
+  // FIXME(Jesse): get_current_dir_name mallocs interally .. do we care?
+  global_variable char *Result = get_current_dir_name();
+  return (Result);
 }
 
 b32
@@ -613,4 +614,5 @@ ConnectToServer(network_connection *Connection)
 
   return;
 }
+
 

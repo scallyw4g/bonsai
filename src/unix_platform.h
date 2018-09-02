@@ -141,3 +141,13 @@ AtomicCompareExchange( volatile unsigned int *Source, unsigned int Exchange, uns
   return Result;
 }
 
+void
+ReadBytes(u8* Dest, u64 BytesToRead, FILE *Src)
+{
+  Assert(BytesToRead);
+  s32 BytesRead = fread(Dest, 1, BytesToRead, Src);
+  Assert(BytesRead != 0);
+  return;
+}
+
+

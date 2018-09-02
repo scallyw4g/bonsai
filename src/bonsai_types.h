@@ -1,16 +1,14 @@
 void BreakHere() { return; }
 
 #include <assert_types.h>
-
 #include <basic_types.h>
+#include <platform_constants.h>
 
 #ifdef _WIN32
 #include <win32_platform.h>
 #else
 #include <unix_platform.h>
 #endif
-
-#include <platform_constants.h>
 
 #include <memory_types.h>
 #include <vector_types.h>

@@ -35,7 +35,7 @@ ReadEntireFileIntoString(const char *Filepath, memory_arena *Memory, umm *Length
     rewind(File);
     // TODO(Jesse): Transient storage
     FileContents = (char*)PushSize(Memory, (FileSize+1));
-    fread(FileContents, 1, FileSize, File);
+    ReadBytes((u8*)FileContents, FileSize, File);
   }
   else
   {
