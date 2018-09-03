@@ -155,7 +155,7 @@ ClearMetaRecordsFor(memory_arena *Arena)
         MetaIndex < META_TABLE_SIZE;
         ++MetaIndex)
     {
-      push_metadata *Meta = GetThreadDebugState(GetDebugState(), ThreadLocal_ThreadIndex)->MetaTable + MetaIndex;
+      push_metadata *Meta = GetThreadDebugState(ThreadLocal_ThreadIndex)->MetaTable + MetaIndex;
       if (Meta->ArenaHash == HashArena(Arena))
       {
         Clear(Meta);
@@ -183,7 +183,7 @@ Allocate_(memory_arena *Arena, umm StructSize, umm StructCount, b32 MemProtect, 
 
 #ifndef BONSAI_NO_PUSH_METADATA
   push_metadata ArenaMetadata = {Name, HashArena(Arena), HashArenaHead(Arena), StructSize, StructCount, 1};
-  WritePushMetadata(&ArenaMetadata, GetThreadDebugState(GetDebugState(), ThreadLocal_ThreadIndex)->MetaTable);
+  WritePushMetadata(&ArenaMetadata, GetThreadDebugState(ThreadLocal_ThreadIndex)->MetaTable);
 #endif
 
   if (!Result)
@@ -893,7 +893,7 @@ BufferQuadDirect(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z, v2 ScreenD
   return Max;
 }
 
-v2
+inline v2
 BufferQuad(ui_render_group *Group, textured_2d_geometry_buffer *Geo, v2 MinP, v2 Dim, r32 Z = 0.5f)
 {
   if (BufferIsFull(Geo, 6))
@@ -903,7 +903,7 @@ BufferQuad(ui_render_group *Group, textured_2d_geometry_buffer *Geo, v2 MinP, v2
   return Result;
 }
 
-v2
+inline v2
 BufferQuad(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, v2 MinP, v2 Dim, r32 Z = 0.5f)
 {
   if (BufferIsFull(Geo, 6))
@@ -1614,6 +1614,8 @@ DebugDrawThreadGraph(ui_render_group *Group, debug_state *DebugState, layout *La
   random_series Entropy = {};
   r32 TotalGraphWidth = 2000.0f;
 
+  r32 MinY = Layout->At.y;
+
   u32 TotalThreadCount = GetTotalThreadCount();
   for ( u32 ThreadIndex = 0;
         ThreadIndex < TotalThreadCount;
@@ -1636,6 +1638,34 @@ DebugDrawThreadGraph(ui_render_group *Group, debug_state *DebugState, layout *La
 
   NewLine(Layout, &Group->Font);
 
+  r32 TotalMs = GetThreadDebugState(ThreadLocal_ThreadIndex)->ScopeTrees[DebugState->ReadScopeIndex].FrameMs;
+
+  if (TotalMs)
+  {
+    r32 MarkerWidth = 3.0f;
+
+    {
+      r32 FramePerc = 16.66666f/TotalMs;
+      r32 xOffset = FramePerc*TotalGraphWidth;
+      v2 MinP16ms = { xOffset, MinY };
+      v2 MaxP16ms = { xOffset+MarkerWidth, Layout->At.y };
+      v2 Dim = MaxP16ms - MinP16ms;
+      BufferQuad(Group, Geo, MinP16ms, Dim);
+      BufferColors(Group, Geo, V3(0,1,0));
+      Geo->At+=6;
+    }
+    {
+      r32 FramePerc = 33.333333f/TotalMs;
+      r32 xOffset = FramePerc*TotalGraphWidth;
+      v2 MinP16ms = { xOffset, MinY };
+      v2 MaxP16ms = { xOffset+MarkerWidth, Layout->At.y };
+      v2 Dim = MaxP16ms - MinP16ms;
+      BufferQuad(Group, Geo, MinP16ms, Dim);
+      BufferColors(Group, Geo, V3(1,1,0));
+      Geo->At+=6;
+    }
+  }
+
   u64 FrameTotalCycles = DebugState->GetReadScopeTree()->TotalCycles;
   u64 FrameStartingCycle = DebugState->GetReadScopeTree()->StartingCycle;
 
@@ -1645,7 +1675,7 @@ DebugDrawThreadGraph(ui_render_group *Group, debug_state *DebugState, layout *La
         ThreadIndex < TotalThreadCount;
         ++ThreadIndex)
   {
-    debug_thread_state *ThreadState = GetThreadDebugState(DebugState, ThreadIndex);
+    debug_thread_state *ThreadState = GetThreadDebugState(ThreadIndex);
     mutex_op_record *FinalRecord = ThreadState->MutexOpRecords + ThreadState->NextMutexOpRecord;
 
     for (u32 OpRecordIndex = 0;

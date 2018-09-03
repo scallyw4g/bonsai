@@ -228,8 +228,9 @@ GetDebugState() {
 }
 
 inline debug_thread_state *
-GetThreadDebugState(debug_state *State, u32 ThreadIndex)
+GetThreadDebugState(u32 ThreadIndex)
 {
+  debug_state *State = GetDebugState();
   debug_thread_state *Result = State->ThreadStates + ThreadIndex;
   return Result;
 }
