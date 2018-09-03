@@ -443,15 +443,21 @@ AdvanceScopeTrees(r32 Dt)
   u32 TotalThreadCount = GetTotalThreadCount();
   Assert(State->WorkerThreadsWaiting == GetWorkerThreadCount());
 
+  u32 ThisFrameWriteScopeIndex = State->WriteScopeIndex;
+  s32 PrevFrameWriteScopeIndex = State->WriteScopeIndex == 0 ?
+    (DEBUG_FRAMES_TRACKED-1) :
+    (State->WriteScopeIndex-1);
+
+  Assert(PrevFrameWriteScopeIndex >= 0);
+  Assert(PrevFrameWriteScopeIndex < DEBUG_FRAMES_TRACKED);
+
   for ( u32 ThreadIndex = 0;
       ThreadIndex < TotalThreadCount;
       ++ThreadIndex)
   {
-    debug_scope_tree *WriteTree = &State->ThreadStates[ThreadIndex].ScopeTrees[State->WriteScopeIndex];
+    debug_scope_tree *WriteTree = &State->ThreadStates[ThreadIndex].ScopeTrees[PrevFrameWriteScopeIndex];
     WriteTree->FrameMs = Dt*1000.0f;
   }
-
-  u32 PrevWriteScopeIndex = State->WriteScopeIndex;
 
   TIMED_BLOCK("Advance And Free Trees");
   State->WriteScopeIndex = (State->WriteScopeIndex+1) % DEBUG_FRAMES_TRACKED;
@@ -476,7 +482,7 @@ AdvanceScopeTrees(r32 Dt)
       ThreadIndex < TotalThreadCount;
       ++ThreadIndex)
   {
-    debug_scope_tree *ThisFramesTree = &State->ThreadStates[ThreadIndex].ScopeTrees[PrevWriteScopeIndex];
+    debug_scope_tree *ThisFramesTree = &State->ThreadStates[ThreadIndex].ScopeTrees[ThisFrameWriteScopeIndex];
     ThisFramesTree->TotalCycles = CurrentCycles - ThisFramesTree->StartingCycle;
     Assert(ThisFramesTree->TotalCycles > 0);
 
@@ -1901,114 +1907,6 @@ GetAllocationSize(push_metadata *Meta)
   return AllocationSize;
 }
 
-layout *
-BufferDebugPushMetaData(debug_state *DebugState, ui_render_group *Group, selected_arenas *SelectedArenas, umm CurrentArenaHead, table_layout *Table, v2 Basis)
-{
-  push_metadata CollatedMetaTable[META_TABLE_SIZE] = {};
-
-  layout *Layout = &Table->Layout;
-  Clear(Layout);
-  Layout->Basis = Basis;
-  BeginClipRect(Layout);
-
-  SetFontSize(&Group->Font, 24);
-
-
-  Column("Size", Group, Table, WHITE);
-  Column("Structs", Group, Table, WHITE);
-  Column("Push Count", Group, Table, WHITE);
-  Column("Name", Group, Table, WHITE);
-  NewLine(Layout, &Group->Font);
-
-
-  // Pick out relevant metadata and write to collation table
-  u32 TotalThreadCount = GetWorkerThreadCount() + 1;
-
-
-  for ( u32 ThreadIndex = 0;
-      ThreadIndex < TotalThreadCount;
-      ++ThreadIndex)
-  {
-    for ( u32 MetaIndex = 0;
-        MetaIndex < META_TABLE_SIZE;
-        ++MetaIndex)
-    {
-      push_metadata *Meta = &GetDebugState()->ThreadStates[ThreadIndex].MetaTable[MetaIndex];
-
-      for (u32 ArenaIndex = 0;
-          ArenaIndex < SelectedArenas->Count;
-          ++ArenaIndex)
-      {
-        selected_memory_arena *Selected = &SelectedArenas->Arenas[ArenaIndex];
-        if (Meta->HeadArenaHash == CurrentArenaHead &&
-            Meta->ArenaHash == Selected->ArenaHash )
-        {
-          CollateMetadata(Meta, CollatedMetaTable);
-        }
-      }
-    }
-  }
-
-  // Densely pack collated records
-  u32 PackedRecords = 0;
-  for ( u32 MetaIndex = 0;
-      MetaIndex < META_TABLE_SIZE;
-      ++MetaIndex)
-  {
-    push_metadata *Record = &CollatedMetaTable[MetaIndex];
-    if (Record->Name)
-    {
-      CollatedMetaTable[PackedRecords++] = *Record;
-    }
-  }
-
-  // Sort collation table
-  for ( u32 MetaIndex = 0;
-      MetaIndex < PackedRecords;
-      ++MetaIndex)
-  {
-    push_metadata *SortValue = &CollatedMetaTable[MetaIndex];
-    for ( u32 TestMetaIndex = 0;
-        TestMetaIndex < PackedRecords;
-        ++TestMetaIndex)
-    {
-      push_metadata *TestValue = &CollatedMetaTable[TestMetaIndex];
-
-      if ( GetAllocationSize(SortValue) > GetAllocationSize(TestValue) )
-      {
-        push_metadata Temp = *SortValue;
-        *SortValue = *TestValue;
-        *TestValue = Temp;
-      }
-    }
-  }
-
-
-  // Buffer collation table text
-  for ( u32 MetaIndex = 0;
-      MetaIndex < PackedRecords;
-      ++MetaIndex)
-  {
-    push_metadata *Collated = &CollatedMetaTable[MetaIndex];
-    if (Collated->Name)
-    {
-      umm AllocationSize = GetAllocationSize(Collated);
-      Column( FormatMemorySize(AllocationSize), Group, Table, WHITE);
-      Column( FormatThousands(Collated->StructCount), Group, Table, WHITE);
-      Column( FormatThousands(Collated->PushCount), Group, Table, WHITE);
-      Column(Collated->Name, Group, Table, WHITE);
-      NewLine(Layout, &Group->Font);
-    }
-
-    continue;
-  }
-
-
-  NewLine(Layout, &Group->Font);
-  EndClipRect(Group, Layout, &Group->TextGroup->UIGeo);
-
-  return Layout;
-}
 
 
 /*******************************  Arena UI  **********************************/
@@ -2146,6 +2044,115 @@ BufferMemoryBargraphTable(ui_render_group *Group, selected_arenas *SelectedArena
   }
 
   return;
+}
+
+layout *
+BufferDebugPushMetaData(debug_state *DebugState, ui_render_group *Group, selected_arenas *SelectedArenas, umm CurrentArenaHead, table_layout *Table, v2 Basis)
+{
+  push_metadata CollatedMetaTable[META_TABLE_SIZE] = {};
+
+  layout *Layout = &Table->Layout;
+  Clear(Layout);
+  Layout->Basis = Basis;
+  BeginClipRect(Layout);
+
+  SetFontSize(&Group->Font, 24);
+
+
+  Column("Size", Group, Table, WHITE);
+  Column("Structs", Group, Table, WHITE);
+  Column("Push Count", Group, Table, WHITE);
+  Column("Name", Group, Table, WHITE);
+  NewLine(Layout, &Group->Font);
+
+
+  // Pick out relevant metadata and write to collation table
+  u32 TotalThreadCount = GetWorkerThreadCount() + 1;
+
+
+  for ( u32 ThreadIndex = 0;
+      ThreadIndex < TotalThreadCount;
+      ++ThreadIndex)
+  {
+    for ( u32 MetaIndex = 0;
+        MetaIndex < META_TABLE_SIZE;
+        ++MetaIndex)
+    {
+      push_metadata *Meta = &GetDebugState()->ThreadStates[ThreadIndex].MetaTable[MetaIndex];
+
+      for (u32 ArenaIndex = 0;
+          ArenaIndex < SelectedArenas->Count;
+          ++ArenaIndex)
+      {
+        selected_memory_arena *Selected = &SelectedArenas->Arenas[ArenaIndex];
+        if (Meta->HeadArenaHash == CurrentArenaHead &&
+            Meta->ArenaHash == Selected->ArenaHash )
+        {
+          CollateMetadata(Meta, CollatedMetaTable);
+        }
+      }
+    }
+  }
+
+  // Densely pack collated records
+  u32 PackedRecords = 0;
+  for ( u32 MetaIndex = 0;
+      MetaIndex < META_TABLE_SIZE;
+      ++MetaIndex)
+  {
+    push_metadata *Record = &CollatedMetaTable[MetaIndex];
+    if (Record->Name)
+    {
+      CollatedMetaTable[PackedRecords++] = *Record;
+    }
+  }
+
+  // Sort collation table
+  for ( u32 MetaIndex = 0;
+      MetaIndex < PackedRecords;
+      ++MetaIndex)
+  {
+    push_metadata *SortValue = &CollatedMetaTable[MetaIndex];
+    for ( u32 TestMetaIndex = 0;
+        TestMetaIndex < PackedRecords;
+        ++TestMetaIndex)
+    {
+      push_metadata *TestValue = &CollatedMetaTable[TestMetaIndex];
+
+      if ( GetAllocationSize(SortValue) > GetAllocationSize(TestValue) )
+      {
+        push_metadata Temp = *SortValue;
+        *SortValue = *TestValue;
+        *TestValue = Temp;
+      }
+    }
+  }
+
+
+  // Buffer collation table text
+  for ( u32 MetaIndex = 0;
+      MetaIndex < PackedRecords;
+      ++MetaIndex)
+  {
+    push_metadata *Collated = &CollatedMetaTable[MetaIndex];
+    if (Collated->Name)
+    {
+      umm AllocationSize = GetAllocationSize(Collated);
+      Column( FormatMemorySize(AllocationSize), Group, Table, WHITE);
+      Column( FormatThousands(Collated->StructCount), Group, Table, WHITE);
+      Column( FormatThousands(Collated->PushCount), Group, Table, WHITE);
+      Column(Collated->Name, Group, Table, WHITE);
+      NewLine(Layout, &Group->Font);
+    }
+
+    continue;
+  }
+
+
+  NewLine(Layout, &Group->Font);
+  EndClipRect(Group, Layout, &Group->TextGroup->UIGeo);
+
+  return Layout;
 }
 
 void
