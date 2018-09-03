@@ -443,15 +443,15 @@ AdvanceScopeTrees(r32 Dt)
   u32 TotalThreadCount = GetTotalThreadCount();
   Assert(State->WorkerThreadsWaiting == GetWorkerThreadCount());
 
-  TIMED_BLOCK("WriteTree Stats Recording");
-    for ( u32 ThreadIndex = 0;
-        ThreadIndex < TotalThreadCount;
-        ++ThreadIndex)
-    {
-      debug_scope_tree *WriteTree = &State->ThreadStates[ThreadIndex].ScopeTrees[State->WriteScopeIndex];
-      WriteTree->FrameMs = Dt*1000.0f;
-    }
-  END_BLOCK("WriteTree Stats Recording");
+  for ( u32 ThreadIndex = 0;
+      ThreadIndex < TotalThreadCount;
+      ++ThreadIndex)
+  {
+    debug_scope_tree *WriteTree = &State->ThreadStates[ThreadIndex].ScopeTrees[State->WriteScopeIndex];
+    WriteTree->FrameMs = Dt*1000.0f;
+  }
+
+  u32 PrevWriteScopeIndex = State->WriteScopeIndex;
 
   TIMED_BLOCK("Advance And Free Trees");
   State->WriteScopeIndex = (State->WriteScopeIndex+1) % DEBUG_FRAMES_TRACKED;
@@ -476,7 +476,7 @@ AdvanceScopeTrees(r32 Dt)
       ThreadIndex < TotalThreadCount;
       ++ThreadIndex)
   {
-    debug_scope_tree *ThisFramesTree = &State->ThreadStates[ThreadIndex].ScopeTrees[State->ReadScopeIndex];
+    debug_scope_tree *ThisFramesTree = &State->ThreadStates[ThreadIndex].ScopeTrees[PrevWriteScopeIndex];
     ThisFramesTree->TotalCycles = CurrentCycles - ThisFramesTree->StartingCycle;
     Assert(ThisFramesTree->TotalCycles > 0);
 
