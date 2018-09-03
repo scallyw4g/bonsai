@@ -63,7 +63,7 @@ ThreadMain(void *Input)
 
   work_queue *Queue = ThreadParams->Queue;
 
-  memory_arena *ThreadArena = PlatformAllocateArena(128);
+  memory_arena *ThreadArena = PlatformAllocateArena();
   ThreadArena->MemProtect = False;
 
   ThreadLocal_ThreadIndex = ThreadParams->Self.ThreadIndex;

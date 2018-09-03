@@ -95,14 +95,12 @@ struct debug_scope_tree
 struct debug_thread_state
 {
   memory_arena *Memory;
-
-
-  mutex_op_record *MutexOpRecords;
-  u32 NextMutexOpRecord;
-
   push_metadata *MetaTable;
 
+  u32 WriteIndex;
+
   debug_scope_tree ScopeTrees[DEBUG_FRAMES_TRACKED];
+  mutex_op_array MutexOps[DEBUG_FRAMES_TRACKED];
 };
 
 enum debug_ui_type
@@ -158,7 +156,8 @@ struct selected_arenas
 };
 
 debug_global __thread u64 ThreadLocal_ThreadIndex = 0;
-debug_global __thread debug_scope_tree *ThreadLocal_WriteTree = 0;
+
+inline debug_thread_state * GetThreadDebugState(u32 ThreadIndex);
 
 #define REGISTERED_MEMORY_ARENA_COUNT 32
 #define META_TABLE_SIZE (16 * 1024)
@@ -184,7 +183,6 @@ struct debug_state
   debug_thread_state *ThreadStates;
 
   u32 ReadScopeIndex;
-  u32 WriteScopeIndex;
 
   s32 FreeScopeCount;
   u64 NumScopes;
@@ -202,7 +200,8 @@ struct debug_state
 
   debug_scope_tree* GetWriteScopeTree()
   {
-    debug_scope_tree *RootScope = &this->ThreadStates[ThreadLocal_ThreadIndex].ScopeTrees[this->WriteScopeIndex];
+    debug_thread_state *ThreadState = GetThreadDebugState(ThreadLocal_ThreadIndex);
+    debug_scope_tree *RootScope = ThreadState->ScopeTrees + ThreadState->WriteIndex;
     return RootScope;
   }
 };

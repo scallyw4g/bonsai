@@ -23,3 +23,9 @@ struct mutex_op_record
   mutex_op Op;
 };
 
+struct mutex_op_array
+{
+  u32 NextRecord;
+  mutex_op_record Records[TOTAL_MUTEX_OP_RECORDS];
+};
+
