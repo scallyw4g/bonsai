@@ -664,6 +664,7 @@ InitDebugMemoryAllocationSystem(debug_state *State)
       ++ThreadIndex)
   {
     debug_thread_state *ThreadState = GetThreadDebugState(ThreadIndex);
+    Assert((umm)ThreadState % 64 == 0);
 
     memory_arena *DebugThreadArena = PlatformAllocateArena();
     ThreadState->Memory = DebugThreadArena;

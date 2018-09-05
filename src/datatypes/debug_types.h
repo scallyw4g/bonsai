@@ -104,9 +104,7 @@ struct debug_thread_state
 
   u8 Pad[28];
 };
-
-// Make sure we stay at a cache line friendly size
-CAssert(sizeof(debug_thread_state) == 64);
+CAssert(sizeof(debug_thread_state) == 64); // Make sure we stay at a cache friendly size
 
 enum debug_ui_type
 {

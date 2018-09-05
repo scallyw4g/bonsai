@@ -59,8 +59,6 @@ GameLibIsNew(const char *LibPath)
 THREAD_MAIN_RETURN
 ThreadMain(void *Input)
 {
-  PlatformSetWorkerThreadPriority();
-
   thread_startup_params *ThreadParams = (thread_startup_params *)Input;
 
   work_queue *Queue = ThreadParams->Queue;
@@ -424,8 +422,6 @@ s32
 main()
 {
   Info("Initializing Bonsai");
-
-  PlatformSetMainThreadPriority();
 
   if (!SearchForProjectRoot()) { Error("Couldn't find root dir, exiting."); return False; }
   Info("Found Bonsai Root : %s", GetCwd() );

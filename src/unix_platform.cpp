@@ -644,17 +644,39 @@ PlatformSetThreadPriority(s32 Priority)
   return;
 }
 
+// It seemed to me doing this actually made performance _worse_
+#if 0
 inline void
 PlatformSetMainThreadPriority()
 {
-  PlatformSetThreadPriority(99);
+  cpu_set_t Cpu;
+  CPU_ZERO(&Cpu);
+  CPU_SET(0, &Cpu);
+
+/*   int SetSuccessful = pthread_setaffinity_np(pthread_self(), sizeof(Cpu), &Cpu); */
+/*   if (SetSuccessful == -1) */
+/*   { */
+/*     Error("Setting CPU affinity"); */
+/*   } */
+
+  /* PlatformSetThreadPriority(99); */
   return;
 }
 
 inline void
 PlatformSetWorkerThreadPriority()
 {
-  PlatformSetThreadPriority(90);
+  cpu_set_t Cpu;
+  CPU_ZERO(&Cpu);
+  CPU_SET(1, &Cpu);
+
+  /* int SetSuccessful = pthread_setaffinity_np(pthread_self(), sizeof(Cpu), &Cpu); */
+  /* if (SetSuccessful == -1) */
+  /* { */
+  /*   Error("Setting CPU affinity"); */
+  /* } */
+
+  /* PlatformSetThreadPriority(90); */
   return;
 }
-
+#endif
