@@ -210,6 +210,7 @@ WorkerThreadWaitForDebugSystem()
 
   debug_thread_state *ThreadState = GetThreadDebugState(ThreadLocal_ThreadIndex);
   debug_thread_state *MainThreadState = GetThreadDebugState(0);
+  Assert(ThreadState != MainThreadState);
   ThreadState->WriteIndex = MainThreadState->WriteIndex;
   ThreadState->MutexOps[ThreadState->WriteIndex].NextRecord = 0;
 

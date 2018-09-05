@@ -142,6 +142,23 @@ OnPageBoundary(memory_arena *Arena, umm PageSize)
   return Result;
 }
 
+inline u32
+AlignTo(u32 Mem, umm Alignment)
+{
+  Assert(Alignment);
+  umm At = (umm)Mem;
+  umm ToNextAlignment = Alignment - (At % Alignment);
+  Assert( (At+ToNextAlignment) % Alignment == 0);
+
+  if (ToNextAlignment != Alignment) // We're on a page boundary
+  {
+    At += ToNextAlignment;
+    Assert(At % Alignment == 0);
+  }
+
+  return At;
+}
+
 inline u8*
 AlignTo(u8 *Ptr, umm Alignment)
 {

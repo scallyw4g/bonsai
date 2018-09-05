@@ -146,12 +146,17 @@ struct noise_3d
   chunk_dimension Dim;
 };
 
+#pragma pack(push, 1)
 struct chunk_data
 {
   chunk_flag Flags;
-  untextured_3d_geometry_buffer Mesh;
+  untextured_3d_geometry_buffer Mesh; // 32
   voxel *Voxels;
+
+  u8 Pad[20];
 };
+CAssert(sizeof(chunk_data) == 64);
+#pragma pack(pop)
 
 struct plane
 {
@@ -346,6 +351,7 @@ struct entity_list
   entity *Next;
 };
 
+#pragma pack(push, 1)
 struct world_chunk
 {
   chunk_data *Data;
@@ -362,7 +368,11 @@ struct world_chunk
   /* s32 Filled; */
 
   entity_list *Occupiers;
+
+  u8 Pad[8];
 };
+CAssert(sizeof(world_chunk) == 64);
+#pragma pack(pop)
 
 struct collision_event
 {
@@ -786,15 +796,15 @@ ZeroChunk( chunk_data *Chunk, s32 Volume )
 
   Chunk->Flags = Chunk_Uninitialized;
 
-  // TODO(Jesse): Pretty sure this is not necessary
-  for ( s32 VoxelIndex = 0;
-        VoxelIndex < Volume;
-        ++VoxelIndex)
-  {
-    voxel *Voxel = &Chunk->Voxels[VoxelIndex];
-    Voxel->Flags = Voxel_Uninitialzied;
-    Voxel->Color = 0;
-  }
+  /* // TODO(Jesse): Pretty sure this is not necessary */
+  /* for ( s32 VoxelIndex = 0; */
+  /*       VoxelIndex < Volume; */
+  /*       ++VoxelIndex) */
+  /* { */
+  /*   voxel *Voxel = &Chunk->Voxels[VoxelIndex]; */
+  /*   Voxel->Flags = Voxel_Uninitialzied; */
+  /*   Voxel->Color = 0; */
+  /* } */
 
   return;
 }
@@ -878,9 +888,9 @@ GetIndex(v3 Offset, chunk_dimension Dim)
 void
 AllocateMesh(untextured_3d_geometry_buffer *Mesh, u32 NumVerts, memory_arena *Memory)
 {
-  Mesh->Verts   = Allocate(v3, Memory, NumVerts);
-  Mesh->Colors  = Allocate(v4, Memory, NumVerts);
-  Mesh->Normals = Allocate(v3, Memory, NumVerts);
+  Mesh->Verts   = AllocateAligned(v3, Memory, NumVerts, 64);
+  Mesh->Colors  = AllocateAligned(v4, Memory, NumVerts, 64);
+  Mesh->Normals = AllocateAligned(v3, Memory, NumVerts, 64);
 
   Mesh->End = NumVerts;
   Mesh->At = 0;
@@ -891,17 +901,15 @@ AllocateMesh(untextured_3d_geometry_buffer *Mesh, u32 NumVerts, memory_arena *Me
 chunk_data*
 AllocateChunk(memory_arena *WorldStorage, chunk_dimension Dim)
 {
-  s32 Vol = Volume(Dim);
+  // Note(Jesse): Not sure the alignment is completely necessary, but it may be
+  // because multiple threads go to town on these memory blocks
+  s32 Vol = AlignTo((umm)Volume(Dim), 64);
 
-  chunk_data *Result = Allocate(chunk_data, WorldStorage, 1);
-
-  if (Vol)
-  {
-    Result->Voxels = Allocate(voxel, WorldStorage , Vol);
-  }
+  chunk_data *Result = AllocateAligned(chunk_data, WorldStorage, 1, 64);
+  if (Vol) { Result->Voxels = AllocateAligned(voxel, WorldStorage , Vol, 64); }
 
   // TODO(Jesse): Allocate this based on actual need?
-  AllocateMesh(&Result->Mesh, 15000, WorldStorage);
+  AllocateMesh(&Result->Mesh, Kilobytes(12), WorldStorage);
 
   ZeroChunk(Result, Vol);
 
@@ -941,7 +949,7 @@ InsertChunkIntoWorld(world *World, world_chunk *chunk)
 world_chunk*
 AllocateWorldChunk(memory_arena *Storage, world_position WorldP, chunk_dimension Dim = WORLD_CHUNK_DIM)
 {
-  world_chunk *Result = Allocate(world_chunk, Storage, 1);
+  world_chunk *Result = AllocateAligned(world_chunk, Storage, 1, 64);
   Result->Data = AllocateChunk(Storage, Dim);
   Result->WorldP = WorldP;
 
