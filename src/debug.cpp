@@ -171,15 +171,10 @@ ClearMetaRecordsFor(memory_arena *Arena)
 
 
 inline void*
-Allocate_(memory_arena *Arena, umm StructSize, umm StructCount, b32 MemProtect, const char* Name, s32 Line, const char* File)
+Allocate_(memory_arena *Arena, umm StructSize, umm StructCount, const char* Name, s32 Line, const char* File, umm Alignment, b32 MemProtect)
 {
-#if MEMPROTECT
-  b32 StartingMemProtection = Arena->MemProtect;
-  Arena->MemProtect = MemProtect;
-#endif
-
   umm PushSize = StructCount * StructSize;
-  void* Result = PushStruct( Arena, PushSize );
+  void* Result = PushStruct( Arena, PushSize, Alignment, MemProtect);
 
 #ifndef BONSAI_NO_PUSH_METADATA
   push_metadata ArenaMetadata = {Name, HashArena(Arena), HashArenaHead(Arena), StructSize, StructCount, 1};
@@ -193,9 +188,6 @@ Allocate_(memory_arena *Arena, umm StructSize, umm StructCount, b32 MemProtect, 
     return False;
   }
 
-#if MEMPROTECT
-  Arena->MemProtect = StartingMemProtection;
-#endif
   return Result;
 }
 
@@ -440,14 +432,13 @@ AdvanceScopeTrees(r32 Dt)
 {
   TIMED_FUNCTION();
 
+  SUSPEND_WORKER_THREADS();
+
   debug_state *State = GetDebugState();
   debug_thread_state *MainThreadState = GetThreadDebugState(0);
   if (!State->DebugDoScopeProfiling) return;
 
-  SUSPEND_WORKER_THREADS();
-
   u32 TotalThreadCount = GetTotalThreadCount();
-  Assert(State->WorkerThreadsWaiting == GetWorkerThreadCount());
 
   u32 ThisFrameWriteScopeIndex = MainThreadState->WriteIndex;
   s32 PrevFrameWriteScopeIndex = MainThreadState->WriteIndex == 0 ?
@@ -466,8 +457,10 @@ AdvanceScopeTrees(r32 Dt)
   }
 
   TIMED_BLOCK("Advance And Free Trees");
-  MainThreadState->WriteIndex = (MainThreadState->WriteIndex+1) % DEBUG_FRAMES_TRACKED;
-  State->ReadScopeIndex = (State->ReadScopeIndex+1) % DEBUG_FRAMES_TRACKED;
+  u32 NextWriteIndex = (MainThreadState->WriteIndex+1) % DEBUG_FRAMES_TRACKED;
+  u32 NextReadIndex = (State->ReadScopeIndex+1) % DEBUG_FRAMES_TRACKED;
+  AtomicExchange(&MainThreadState->WriteIndex, NextWriteIndex);
+  AtomicExchange(&State->ReadScopeIndex, NextReadIndex);
 
   for ( u32 ThreadIndex = 0;
       ThreadIndex < TotalThreadCount;
@@ -507,7 +500,7 @@ GetProfileScope(debug_state *State)
   debug_profile_scope *Result = 0;
   debug_profile_scope *Sentinel = &State->FreeScopeSentinel;
 
-#if 1
+#if 0
   // @memory-leak: Reinstate this in an MT-Safe way!
   PlatformLockMutex(&State->FreeScopeMutex);
   if (Sentinel->Child != Sentinel)
@@ -528,7 +521,7 @@ GetProfileScope(debug_state *State)
 
   PlatformUnlockMutex(&State->FreeScopeMutex);
 #else
-    Result = Allocate(debug_profile_scope, GetDebugMemoryAllocator(), 1, False);
+    Result = AllocateProtection(debug_profile_scope, GetDebugMemoryAllocator(), 1, False);
 #endif
 
   return Result;
@@ -550,9 +543,14 @@ InitScopeTrees(memory_arena *DebugMemory, u32 TotalThreadCount)
         ++TreeIndex)
     {
       debug_thread_state *ThreadState = GetThreadDebugState(ThreadIndex);
+
+      /* ThreadState->MutexOps = Allocate(mutex_op_array, DebugMemory, DEBUG_FRAMES_TRACKED, True); */
+      /* ThreadState->ScopeTrees = Allocate(debug_scope_tree, DebugMemory, DEBUG_FRAMES_TRACKED, True); */
+
       ThreadState->ScopeTrees[TreeIndex].Root = GetProfileScope(GlobalDebugState);
       InitScopeTree(ThreadState->ScopeTrees + TreeIndex);
       ThreadState->WriteIndex = GlobalDebugState->ReadScopeIndex + 1;
+
     }
   }
 
@@ -615,9 +613,9 @@ InitDebugOverlayFramebuffer(debug_text_render_group *RG, memory_arena *DebugAren
 void
 AllocateAndInitGeoBuffer(textured_2d_geometry_buffer *Geo, u32 VertCount, memory_arena *DebugArena)
 {
-  Geo->Verts = Allocate(v3, DebugArena, VertCount, True);
-  Geo->Colors = Allocate(v3, DebugArena, VertCount, True);
-  Geo->UVs = Allocate(v2, DebugArena, VertCount, True);
+  Geo->Verts = Allocate(v3, DebugArena, VertCount);
+  Geo->Colors = Allocate(v3, DebugArena, VertCount);
+  Geo->UVs = Allocate(v2, DebugArena, VertCount);
 
   Geo->End = VertCount;
   Geo->At = 0;
@@ -626,8 +624,8 @@ AllocateAndInitGeoBuffer(textured_2d_geometry_buffer *Geo, u32 VertCount, memory
 void
 AllocateAndInitGeoBuffer(untextured_2d_geometry_buffer *Geo, u32 VertCount, memory_arena *DebugArena)
 {
-  Geo->Verts = Allocate(v3, DebugArena, VertCount, True);
-  Geo->Colors = Allocate(v3, DebugArena, VertCount, True);
+  Geo->Verts = Allocate(v3, DebugArena, VertCount);
+  Geo->Colors = Allocate(v3, DebugArena, VertCount);
 
   Geo->End = VertCount;
   Geo->At = 0;
@@ -656,7 +654,7 @@ InitDebugMemoryAllocationSystem(debug_state *State)
   // the PushStruct to allocate again.  Bad bad bad.
   memory_arena *BoostrapArena = PlatformAllocateArena(Size);
   DEBUG_REGISTER_ARENA(BoostrapArena, State);
-  GlobalDebugState->ThreadStates = (debug_thread_state*)PushStruct(BoostrapArena, Size);
+  GlobalDebugState->ThreadStates = (debug_thread_state*)PushStruct(BoostrapArena, Size, 64);
   //
 
   umm MetaTableSize = META_TABLE_SIZE * sizeof(push_metadata);
@@ -664,12 +662,15 @@ InitDebugMemoryAllocationSystem(debug_state *State)
       ThreadIndex < TotalThreadCount;
       ++ThreadIndex)
   {
+    debug_thread_state *ThreadState = GetThreadDebugState(ThreadIndex);
+
     memory_arena *DebugThreadArena = PlatformAllocateArena();
-    State->ThreadStates[ThreadIndex].Memory = DebugThreadArena;
+    ThreadState->Memory = DebugThreadArena;
     DEBUG_REGISTER_ARENA(DebugThreadArena, State);
 
-    State->ThreadStates[ThreadIndex].MetaTable =
-      (push_metadata*)PushStruct(GetDebugMemoryAllocator(), MetaTableSize);
+    ThreadState->MetaTable = (push_metadata*)PushStruct(GetDebugMemoryAllocator(), MetaTableSize, 64);
+    ThreadState->MutexOps = AllocateAligned(mutex_op_array, DebugThreadArena, DEBUG_FRAMES_TRACKED, 64);
+    ThreadState->ScopeTrees = AllocateAligned(debug_scope_tree, DebugThreadArena, DEBUG_FRAMES_TRACKED, 64);
   }
 
   return;
@@ -697,7 +698,7 @@ InitDebugState(debug_state *DebugState)
 
   GlobalDebugState->TextRenderGroup.SolidUIShader = MakeSolidUIShader(GetDebugMemoryAllocator());
 
-  GlobalDebugState->SelectedArenas = Allocate(selected_arenas, GetDebugMemoryAllocator(), 1, True);
+  GlobalDebugState->SelectedArenas = Allocate(selected_arenas, GetDebugMemoryAllocator(), 1);
 
   return;
 }
@@ -1011,7 +1012,7 @@ BufferValue(u32 Number, ui_render_group *Group, layout *Layout, u32 ColorIndex)
 char *
 FormatString(const char* FormatString, ...)
 {
-  char *Buffer = Allocate(char, TranArena, 1024, True);
+  char *Buffer = AllocateProtection(char, TranArena, 1024, False);
 
   va_list Arguments;
   va_start(Arguments, FormatString);
@@ -1082,7 +1083,7 @@ MemorySize(u64 Number)
   }
 
 
-  char *Buffer = Allocate(char, TranArena, 32, True);
+  char *Buffer = AllocateProtection(char, TranArena, 32, False);
   sprintf(Buffer, "%.1f%c", (r32)Display, Units);
   return Buffer;
 }
@@ -1090,7 +1091,7 @@ MemorySize(u64 Number)
 inline char*
 FormatU32(u32 Number)
 {
-  char *Buffer = Allocate(char, TranArena, 32, True);
+  char *Buffer = AllocateProtection(char, TranArena, 32, False);
   sprintf(Buffer, "%u", Number);
   return Buffer;
 }
@@ -1122,7 +1123,7 @@ FormatMemorySize(u64 Number)
   }
 
 #if 0
-  char *Buffer = Allocate(char, TranArena, Megabytes(1));
+  char *Buffer = AllocateProtection(char, TranArena, Megabytes(1, False));
 
   for (u32 Index = 0;
       Index < Megabytes(1);
@@ -1133,7 +1134,7 @@ FormatMemorySize(u64 Number)
 
 #endif
 
-  char *Buffer = Allocate(char, TranArena, 32, True);
+  char *Buffer = AllocateProtection(char, TranArena, 32, False);
   sprintf(Buffer, "%.1f%c", (r32)Display, Units);
 
   return Buffer;
@@ -1160,7 +1161,7 @@ FormatThousands(u64 Number)
     Units = 'K';
   }
 
-  char *Buffer = Allocate(char, TranArena, 32, True);
+  char *Buffer = AllocateProtection(char, TranArena, 32, False);
   sprintf(Buffer, "%.1f%c", Display, Units);
 
   return Buffer;
@@ -1353,7 +1354,7 @@ BufferFirstCallToEach(ui_render_group *Group, debug_profile_scope *Scope, debug_
   {
     if (!Scope->Stats)
     {
-      Scope->Stats = Allocate(scope_stats, Memory, 1, False);
+      Scope->Stats = AllocateProtection(scope_stats, Memory, 1, False);
       *Scope->Stats = GetStatsFor(Scope, TreeRoot);
     }
 

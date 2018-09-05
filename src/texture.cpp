@@ -131,7 +131,7 @@ LoadDDS(const char * FilePath)
   Result.Dim.y = (s32)height;
 
   u32 BufferSize = mipMapCount > 1 ? linearSize * 2 : linearSize;
-  u8* Buffer = Allocate(u8, TranArena, BufferSize, True);
+  u8* Buffer = Allocate(u8, TranArena, BufferSize);
 
   ReadBytes(Buffer, BufferSize, TextureFile);
 
@@ -187,7 +187,7 @@ LoadDDS(const char * FilePath)
 texture *
 GenTexture(v2i Dim, memory_arena *Mem)
 {
-  texture *Texture = Allocate(texture, Mem, 1, True);
+  texture *Texture = Allocate(texture, Mem, 1);
   Texture->Dim = Dim;
 
   glGenTextures(1, &Texture->ID);

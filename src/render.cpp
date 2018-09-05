@@ -108,7 +108,7 @@ AllocateAndInitSsaoNoise(ao_render_group *AoGroup, memory_arena *GraphicsMemory)
   InitSsaoKernel(AoGroup->SsaoKernel, ArrayCount(AoGroup->SsaoKernel), &SsaoEntropy);
 
   // TODO(Jesse): Transient arena for this instead of stack allocation ?
-  v3 *SsaoNoise = Allocate(v3, GraphicsMemory, 16, True);
+  v3 *SsaoNoise = Allocate(v3, GraphicsMemory, 16);
   InitSsaoNoise(SsaoNoise, 16, &SsaoEntropy);
 
   texture *SsaoNoiseTexture = MakeTexture_RGB(SsaoNoiseDim, SsaoNoise, GraphicsMemory);
@@ -186,7 +186,7 @@ GenFramebuffer()
 ao_render_group *
 CreateAoRenderGroup(memory_arena *Mem)
 {
-  ao_render_group *Result = Allocate(ao_render_group, Mem, 1, True);
+  ao_render_group *Result = Allocate(ao_render_group, Mem, 1);
   Result->FBO = GenFramebuffer();
 
   return Result;
@@ -195,7 +195,7 @@ CreateAoRenderGroup(memory_arena *Mem)
 g_buffer_render_group *
 CreateGbuffer(memory_arena *Memory)
 {
-  g_buffer_render_group *gBuffer = Allocate(g_buffer_render_group, Memory, 1, True);
+  g_buffer_render_group *gBuffer = Allocate(g_buffer_render_group, Memory, 1);
   gBuffer->FBO = GenFramebuffer();
   gBuffer->ViewProjection = IdentityMatrix;
   gBuffer->ShadowMVP = IdentityMatrix;
@@ -304,7 +304,7 @@ InitGbufferRenderGroup( g_buffer_render_group *gBuffer, memory_arena *GraphicsMe
 {
   glBindFramebuffer(GL_FRAMEBUFFER, gBuffer->FBO.ID);
 
-  gBuffer->Textures = Allocate(g_buffer_textures, GraphicsMemory, 1, True);
+  gBuffer->Textures = Allocate(g_buffer_textures, GraphicsMemory, 1);
 
   v2i ScreenDim = V2i(SCR_WIDTH, SCR_HEIGHT);
   gBuffer->Textures->Color    = MakeTexture_RGBA( ScreenDim, 0, GraphicsMemory);
@@ -390,8 +390,8 @@ InitCamera(camera* Camera, float FocalLength)
 game_lights *
 LightingInit(memory_arena *GraphicsMemory)
 {
-  game_lights *Lights = Allocate(game_lights, GraphicsMemory, 1, True);
-  Lights->Lights      = Allocate(light, GraphicsMemory, MAX_LIGHTS, True);
+  game_lights *Lights = Allocate(game_lights, GraphicsMemory, 1);
+  Lights->Lights      = Allocate(light, GraphicsMemory, MAX_LIGHTS);
 
   Lights->ColorTex    = MakeTexture_RGB(V2i(MAX_LIGHTS, 1), 0, GraphicsMemory);
   Lights->PositionTex = MakeTexture_RGB(V2i(MAX_LIGHTS, 1), 0, GraphicsMemory);
@@ -407,8 +407,8 @@ void
 UpdateLightingTextures(game_lights *Lights)
 {
 
-  v3 *PosData = Allocate(v3, TranArena, MAX_LIGHTS, True);
-  v3 *ColorData = Allocate(v3, TranArena, MAX_LIGHTS, True);
+  v3 *PosData = AllocateProtection(v3, TranArena, MAX_LIGHTS, False);
+  v3 *ColorData = AllocateProtection(v3, TranArena, MAX_LIGHTS, False);
 
   for (u32 LightIndex = 0;
       LightIndex < Lights->Count;
@@ -438,15 +438,15 @@ UpdateLightingTextures(game_lights *Lights)
 graphics *
 GraphicsInit(memory_arena *GraphicsMemory)
 {
-  graphics *Result = Allocate(graphics, GraphicsMemory, 1, True);
+  graphics *Result = Allocate(graphics, GraphicsMemory, 1);
   Result->Memory = GraphicsMemory;
 
   Result->Lights = LightingInit(GraphicsMemory);
 
-  Result->Camera = Allocate(camera, GraphicsMemory, 1, True);
+  Result->Camera = Allocate(camera, GraphicsMemory, 1);
   InitCamera(Result->Camera, 1000.0f);
 
-  shadow_render_group *SG = Allocate(shadow_render_group, GraphicsMemory, 1, True);
+  shadow_render_group *SG = Allocate(shadow_render_group, GraphicsMemory, 1);
   if (!InitializeShadowBuffer(SG, GraphicsMemory))
   {
     Error("Initializing Shadow Buffer"); return False;

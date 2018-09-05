@@ -35,6 +35,11 @@ struct test_struct_8
   u8 Data;
 };
 
+struct test_struct_16
+{
+  u8 Data[2];
+};
+
 template <typename T> b32
 AreEqual(T First, T Second)
 {
@@ -125,22 +130,23 @@ AssertSegfault()
   HitSegfault = False;
 }
 
-template <typename T> void
-TestAllocation(memory_arena *Arena)
+template <typename T> T*
+TestAllocation(memory_arena *Arena, b32 MemProtect = True, umm Alignment = 1)
 {
   memory_arena Initial = *Arena;
 
-  T *Test = Allocate( T, Arena, 1, Arena->MemProtect);
+  T *Test = AllocateAlignedProtection( T, Arena, 1, Alignment, MemProtect);
   TestThat(Test);
   Clear(Test);
 
   AssertNoSegfault();
 
-  if (Arena->MemProtect)
+  if (MemProtect)
   {
     ExpectSegfault();
     T *NextThing = Test + 1;
-    u8 *NextByte = ((u8*)NextThing) + 1;
+    u8 *NextByte = ((u8*)NextThing);
+    NextByte = AlignTo(NextByte, Alignment);
 
     *NextByte = 0;
     AssertSegfault();
@@ -148,15 +154,126 @@ TestAllocation(memory_arena *Arena)
 
   NoExpectedSegfault();
 
-  return;
+  return Test;
 }
 
 global_variable umm PageSize = PlatformGetPageSize();
 global_variable umm TwoPages = PageSize*2;
 
 
+
+template <typename T> void
+TestAlignmentHelper(memory_arena *Arena, b32 MemProtect)
+{
+  {
+    T* Result = TestAllocation<T>(Arena, MemProtect, 8);
+    TestThat((umm)Result % 8 == 0);
+  }
+  {
+    T* Result = TestAllocation<T>(Arena, MemProtect, 16);
+    TestThat((umm)Result % 16 == 0);
+  }
+  {
+    T* Result = TestAllocation<T>(Arena, MemProtect, 64);
+    TestThat((umm)Result % 64 == 0);
+  }
+
+  {
+    T* Result = TestAllocation<T>(Arena, MemProtect, 8);
+    TestThat((umm)Result % 8 == 0);
+  }
+  {
+    T* Result = TestAllocation<T>(Arena, MemProtect, 16);
+    TestThat((umm)Result % 16 == 0);
+  }
+  {
+    T* Result = TestAllocation<T>(Arena, MemProtect, 64);
+    TestThat((umm)Result % 64 == 0);
+  }
+
+  return;
+}
+
+void
+TestAlignment()
+{
+  {
+    memory_arena Arena = {};
+    Arena.At = (u8*)1;
+    Arena.End = (u8*)Gigabytes(1);
+    {
+      umm Align = 8;
+      AlignTo(&Arena, Align);
+      TestThat((umm)Arena.At == Align);
+    }
+
+    {
+      umm Align = 16;
+      AlignTo(&Arena, Align);
+      TestThat((umm)Arena.At == Align);
+    }
+
+    {
+      umm Align = 24;
+      AlignTo(&Arena, Align);
+      TestThat((umm)Arena.At == Align);
+    }
+
+    {
+      umm Align = 32;
+      AlignTo(&Arena, Align);
+      TestThat((umm)Arena.At == Align);
+    }
+
+    {
+      umm Align = 64;
+      AlignTo(&Arena, Align);
+      TestThat((umm)Arena.At == Align);
+
+      AlignTo(&Arena, Align);
+      TestThat((umm)Arena.At == Align);
+    }
+
+
+    {
+      /* Arena.At = (u8*)633; */
+      /* TestAlignmentHelper<test_struct_8>(&Arena, True); */
+    }
+
+  }
+
+
+
+  {
+    memory_arena Arena = {};
+    TestAlignmentHelper<test_struct_8>(&Arena, True);
+  }
+  {
+    memory_arena Arena = {};
+    TestAlignmentHelper<test_struct_16>(&Arena, True);
+  }
+  {
+    memory_arena Arena = {};
+    TestAlignmentHelper<test_struct_32>(&Arena, True);
+  }
+  {
+    memory_arena Arena = {};
+    TestAlignmentHelper<test_struct_64>(&Arena, True);
+  }
+
+
+  {
+    memory_arena Arena = {};
+    test_struct_128 *Struct = TestAllocation<test_struct_128>(&Arena, True, 4096);
+    Assert((umm)Struct % 4096 == 0);
+  }
+
+  return;
+}
+
 b32
-TestSetToPageBoundary() {
+TestSetToPageBoundary()
+{
   memory_arena Arena = {};
   SetToPageBoundary(&Arena);
   TestThat(Arena.At == 0);
@@ -176,7 +293,8 @@ TestSetToPageBoundary() {
 
 
 b32
-TestOnPageBoundary() {
+TestOnPageBoundary()
+{
   memory_arena Arena = {};
   TestThat( OnPageBoundary(&Arena, PageSize) == True);
 
@@ -304,12 +422,11 @@ MultipleAllocations()
 
     {
       memory_arena *PrevArena = Arena.Prev;
-      Arena.MemProtect = False;
       while ( Arena.Prev == PrevArena )
       {
-        TestAllocation<test_struct_8>(&Arena);
-        TestAllocation<test_struct_128>(&Arena);
-        TestAllocation<test_struct_64>(&Arena);
+        TestAllocation<test_struct_8>(&Arena, False);
+        TestAllocation<test_struct_128>(&Arena, False);
+        TestAllocation<test_struct_64>(&Arena, False);
       }
     }
 
@@ -339,12 +456,11 @@ MultipleAllocations()
 
     {
       memory_arena *PrevArena = Arena.Prev;
-      Arena.MemProtect = False;
       while ( Arena.Prev == PrevArena )
       {
-        TestAllocation<test_struct_8>(&Arena);
-        TestAllocation<test_struct_128>(&Arena);
-        TestAllocation<test_struct_64>(&Arena);
+        TestAllocation<test_struct_8>(&Arena, False);
+        TestAllocation<test_struct_128>(&Arena, False);
+        TestAllocation<test_struct_64>(&Arena, False);
       }
     }
 
@@ -394,11 +510,13 @@ ArenaAllocation()
 
     *LastArenaByte = 0;
     AssertNoSegfault();
+    VaporizeArena(Arena);
   }
 
   {
     memory_arena *Arena = PlatformAllocateArena(32);
     TestThat(Remaining(Arena) >= 32);
+    VaporizeArena(Arena);
   }
 
   return;
@@ -412,35 +530,30 @@ UnprotectedAllocations()
   { // Tiny allocation works
     memory_arena *Arena = PlatformAllocateArena(32);
     TestThat(Remaining(Arena) >= 32);
+    VaporizeArena(Arena);
   }
 
   { // Most basic allocation works
     memory_arena *Arena = PlatformAllocateArena(Megabytes(1));
     TestThat( Remaining(Arena) >= Megabytes(1) );
 
-    Arena->MemProtect = False;
-
-    TestAllocation<test_struct_1k>(Arena);
+    TestAllocation<test_struct_1k>(Arena, False);
     AssertNoSegfault();
+    VaporizeArena(Arena);
   }
 
   { // Arena Reallocation works
     umm AllocationSize = 32;
     memory_arena *Arena = PlatformAllocateArena(AllocationSize);
     TestThat( Remaining(Arena) >= AllocationSize );
-    Arena->MemProtect = False;
 
     while (!Arena->Prev)
     {
-      Assert(Arena->MemProtect == False);
-      TestAllocation<test_struct_1k>(Arena);
-      Assert(Arena->MemProtect == False);
+      TestAllocation<test_struct_1k>(Arena, False);
     }
 
     AssertNoSegfault();
-
-    TestThat(Arena->MemProtect == False);
-    TestThat(Arena->MemProtect == Arena->Prev->MemProtect);
+    VaporizeArena(Arena);
   }
 
 
@@ -450,39 +563,37 @@ UnprotectedAllocations()
 
 
     memory_arena *Arena = PlatformAllocateArena(Kilobytes(1));
-    Arena->MemProtect = False;
-
     memory_arena Initial = *Arena;
 
     for (u32 StructIndex = 0;
         StructIndex < StructCount;
         ++StructIndex)
     {
-      Allocate(test_struct_32, Arena, 1, True);
-      Allocate(test_struct_64, Arena, 1, True);
+      AllocateProtection(test_struct_32, Arena, 1, False);
+      AllocateProtection(test_struct_64, Arena, 1, False);
 
-      Structs[StructIndex] = Allocate(test_struct_1k, Arena, 1, True);
+      Structs[StructIndex] = AllocateProtection(test_struct_1k, Arena, 1, False);
       Fill(Structs[StructIndex], (u8)255);
       AssertNoSegfault();
     }
 
-    TestAllocation<test_struct_1k>(Arena);
+    TestAllocation<test_struct_1k>(Arena, False);
     AssertNoSegfault();
+    VaporizeArena(Arena);
   }
 
   { // Arena De-allocation works
     memory_arena *TestArena = PlatformAllocateArena(32);
-    TestArena->MemProtect = False;
 
-    Allocate(test_struct_32, TestArena, 1, True);
+    AllocateProtection(test_struct_32, TestArena, 1, False);
 
-    Allocate(test_struct_64, TestArena, 1, True);
-    Allocate(test_struct_64, TestArena, 1, True);
-    Allocate(test_struct_64, TestArena, 1, True);
+    AllocateProtection(test_struct_64, TestArena, 1, False);
+    AllocateProtection(test_struct_64, TestArena, 1, False);
+    AllocateProtection(test_struct_64, TestArena, 1, False);
 
-    Allocate(test_struct_1k, TestArena, 1, True);
+    AllocateProtection(test_struct_1k, TestArena, 1, False);
 
-    test_struct_1k *TestStruct = Allocate(test_struct_1k, TestArena, 1, True);
+    test_struct_1k *TestStruct = AllocateProtection(test_struct_1k, TestArena, 1, False);
 
     VaporizeArena(TestArena);
     AssertNoSegfault();
@@ -520,6 +631,9 @@ main()
     MultipleAllocations();
 
     UnprotectedAllocations();
+
+    TestAlignment();
+
 #endif
 
   TestSuiteEnd();

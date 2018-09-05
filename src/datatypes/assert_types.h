@@ -4,6 +4,8 @@
 #define DEBUG 1
 #endif
 
+#define CAssert(condition) static_assert((condition), #condition )
+
 #if BONSAI_INTERNAL
 #define Assert(condition) \
   if (!(condition)) { Debug(" ! Failed - '%s' on Line: %d in File: %s", #condition, __LINE__, __FILE__); RuntimeBreak(); }

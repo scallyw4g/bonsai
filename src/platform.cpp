@@ -64,7 +64,6 @@ ThreadMain(void *Input)
   work_queue *Queue = ThreadParams->Queue;
 
   memory_arena *ThreadArena = PlatformAllocateArena();
-  ThreadArena->MemProtect = False;
 
   ThreadLocal_ThreadIndex = ThreadParams->Self.ThreadIndex;
   DEBUG_REGISTER_ARENA(ThreadArena, GetDebugState());
@@ -256,8 +255,8 @@ PlatformInit(platform *Plat, memory_arena *Memory)
   Plat->Queue.EnqueueIndex = 0;
   Plat->Queue.DequeueIndex = 0;
 
-  Plat->Queue.Entries = Allocate(work_queue_entry,  Plat->Memory, WORK_QUEUE_SIZE, True);
-  Plat->Threads = Allocate(thread_startup_params,  Plat->Memory, WorkerThreadCount, True);
+  Plat->Queue.Entries = Allocate(work_queue_entry,  Plat->Memory, WORK_QUEUE_SIZE);
+  Plat->Threads = Allocate(thread_startup_params,  Plat->Memory, WorkerThreadCount);
 
   work_queue *Queue = &Plat->Queue;
   Queue->Semaphore = CreateSemaphore();
@@ -437,7 +436,6 @@ main()
 
   // This arena must be initialized before the the debug state can be
   TranArena                   = PlatformAllocateArena(Megabytes(8));
-  TranArena->MemProtect = False;
 
   DEBUG_REGISTER_ARENA(TranArena  , &Plat.DebugState);
 

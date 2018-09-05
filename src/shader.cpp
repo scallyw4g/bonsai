@@ -33,8 +33,8 @@ ReadEntireFileIntoString(const char *Filepath, memory_arena *Memory, umm *Length
       *Length = FileSize;
 
     rewind(File);
-    // TODO(Jesse): Transient storage
-    FileContents = (char*)PushSize(Memory, (FileSize+1));
+    // TODO(Jesse): Transient Storage
+    FileContents = (char*)PushStruct(Memory, (FileSize+1));
     ReadBytes((u8*)FileContents, FileSize, File);
   }
   else
@@ -112,7 +112,7 @@ glGetProgramiv(ProgramID, GL_INFO_LOG_LENGTH, &InfoLogLength);
 if ( InfoLogLength > 0 )
 {
   // TODO(Jesse): Transient storage
-  char *ProgramErrorMessage = Allocate(char, Memory, InfoLogLength+1, True);
+  char *ProgramErrorMessage = Allocate(char, Memory, InfoLogLength+1);
   glGetProgramInfoLog(ProgramID, InfoLogLength, NULL, ProgramErrorMessage);
   Error("%s", ProgramErrorMessage);
 }
@@ -146,7 +146,7 @@ GetShaderUniform(shader *Shader, const char *Name)
 shader_uniform *
 PushShaderUniform( memory_arena *Mem, const char *Name)
 {
-  shader_uniform *Uniform = Allocate(shader_uniform, Mem, 1, True);
+  shader_uniform *Uniform = Allocate(shader_uniform, Mem, 1);
   Uniform->Name = Name;
   return Uniform;
 }

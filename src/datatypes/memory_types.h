@@ -1,28 +1,28 @@
 #include <sys/mman.h>
 
-inline u32
-Kilobytes(u32 Bytes)
+inline umm
+Kilobytes(umm Bytes)
 {
-  u32 Result = Bytes * 1024;
+  umm Result = Bytes * 1024;
   return Result;
 }
 
-inline u32
-Megabytes(u32 Number)
+inline umm
+Megabytes(umm Number)
 {
-  u32 Result = Number*Kilobytes(1024);
+  umm Result = Number*Kilobytes(1024);
   return Result;
 }
 
 inline u64
-Gigabytes(u32 Number)
+Gigabytes(umm Number)
 {
   u64 Result = Number*Megabytes(1024);
   return Result;
 }
 
 inline u64
-Terabytes(u32 Number)
+Terabytes(umm Number)
 {
   u64 Result = Number*Gigabytes(1024);
   return Result;
@@ -31,7 +31,7 @@ Terabytes(u32 Number)
 template <typename T> inline void
 Fill(T *Struct, u8 ByteValue)
 {
-  for ( u32 Byte = 0;
+  for ( umm Byte = 0;
       Byte < sizeof(T);
       ++Byte)
   {
@@ -61,65 +61,42 @@ struct memory_arena
   umm Pushes;
   u64 OwnedByThread = INVALID_THREAD_HANDLE;
 #endif
-
-#if BONSAI_INTERNAL && MEMPROTECT
-  b32 MemProtect = true;
-#endif
 };
 
 #if BONSAI_INTERNAL
 
-void* Allocate_(memory_arena *Arena, umm StructSize, umm StructCount, b32 MemProtect, const char* Name, s32 Line, const char* File);
+void* Allocate_(memory_arena *Arena, umm StructSize, umm StructCount, const char* Name, s32 Line, const char* File, umm Alignment = 1, b32 MemProtect = True);
 
-#define Allocate(Type, Arena, Number, MemProtect) \
-  (Type*)Allocate_( Arena, sizeof(Type), (umm)Number, MemProtect, #Type, __LINE__, __FILE__ )
+#define AllocateProtection(Type, Arena, Number, Protection) \
+  (Type*)Allocate_( Arena, sizeof(Type), (umm)Number, #Type, __LINE__, __FILE__, 1, Protection )
 
-#else
+#define AllocateAlignedProtection(Type, Arena, Number, Alignment, Protection) \
+  (Type*)Allocate_( Arena, sizeof(Type), (umm)Number, #Type, __LINE__, __FILE__, Alignment, Protection )
+
+#define AllocateAligned(Type, Arena, Number, Alignment) \
+  (Type*)Allocate_( Arena, sizeof(Type), (umm)Number, #Type, __LINE__, __FILE__, Alignment )
 
 #define Allocate(Type, Arena, Number) \
-  (Type*)Allocate_( Arena, sizeof(Type)*Number)
+  (Type*)Allocate_( Arena, sizeof(Type), (umm)Number, #Type, __LINE__, __FILE__)
 
-#endif
-
-#if BONSAI_INTERNAL
 #define DEBUG_REGISTER_ARENA(Arena, DebugState) \
   DebugRegisterArena(#Arena, Arena, DebugState)
+
 #else
+
+#define AllocateUnprotectedAligned(Type, Arena, Number, Alignment) \
+  (Type*)Allocate_( Arena, sizeof(Type), (umm)Number, Alignment, False )
+
+#define AllocateAligned(Type, Arena, Number, Alignment) \
+  (Type*)Allocate_( Arena, sizeof(Type), (umm)Number, Alignment )
+
+#define Allocate(Type, Arena, Number) \
+  (Type*)Allocate_( Arena, sizeof(Type), (umm)Number)
+
 #define DEBUG_REGISTER_ARENA(...)
+
 #endif
 
-#if 0
-#define SubArena(Src, Dest, Size) \
-  SubArena_(Src, Dest, Size); \
-  DEBUG_REGISTER_ARENA(#Dest, Dest)
-
-#define AllocateAndInitializeArena(Arena, Size) \
-  AllocateAndInitializeArena_(Arena, Size); \
-  DEBUG_REGISTER_ARENA(#Arena, Arena)
-
-inline void
-SubArena_( memory_arena *Src, memory_arena *Dest, umm Size)
-{
-  Dest->At = (u8*)PushSize(Src, Size);
-  Dest->Remaining = Size;
-  Dest->TotalSize = Size;
-
-  Assert(Dest->At);
-
-  return;
-}
-
-inline void
-AllocateAndInitializeArena_(memory_arena *Arena, umm Size)
-{
-  Arena->Remaining = Size;
-  Arena->TotalSize = Size;
-
-  Arena->At = Allocate(Arena->Remaining);
-  Assert(Arena->At);
-  return;
-}
-#endif
 
 void
 PlatformUnprotectArena(memory_arena *Arena);
@@ -138,13 +115,13 @@ PlatformGetPageSize();
 
 
 void
-ReallocateArena(memory_arena *Arena, umm MinSize)
+ReallocateArena(memory_arena *Arena, umm MinSize, b32 MemProtect)
 {
   u64 AllocationSize = Arena->NextBlockSize;
   if (MinSize > AllocationSize)
     AllocationSize = MinSize;
 
-  memory_arena *NewArena = PlatformAllocateArena(AllocationSize, Arena->MemProtect);
+  memory_arena *NewArena = PlatformAllocateArena(AllocationSize, MemProtect);
 
   memory_arena OldArena = *Arena;
   *Arena = *NewArena;
@@ -165,21 +142,36 @@ OnPageBoundary(memory_arena *Arena, umm PageSize)
   return Result;
 }
 
+inline u8*
+AlignTo(u8 *Ptr, umm Alignment)
+{
+  Assert(Alignment);
+  umm At = (umm)Ptr;
+  umm ToNextAlignment = Alignment - (At % Alignment);
+  Assert( (At+ToNextAlignment) % Alignment == 0);
+
+  if (ToNextAlignment != Alignment) // We're on a page boundary
+  {
+    At += ToNextAlignment;
+    Assert(At % Alignment == 0);
+  }
+
+  return (u8*)At;
+}
+
+inline void
+AlignTo(memory_arena *Arena, umm Alignment)
+{
+  Arena->At = AlignTo(Arena->At, Alignment);
+  Assert(Arena->At <= Arena->End);
+  return;
+}
+
 inline void
 SetToPageBoundary(memory_arena *Arena)
 {
-  u64 PageSize = PlatformGetPageSize();
-  umm At = (umm)Arena->At;
-  umm ToNextPage = PageSize - (At % PageSize);
-  Assert( (At+ToNextPage) % PageSize == 0);
-
-  if (ToNextPage != PageSize) // We're on a page boundary
-  {
-    Arena->At += ToNextPage;
-    Assert(Arena->At <= Arena->End);
-    Assert((umm)Arena->At % PageSize == 0);
-  }
-
+  umm Align = PlatformGetPageSize();
+  AlignTo(Arena, Align);
   return;
 }
 
@@ -241,17 +233,25 @@ Remaining(T *Sizable)
 }
 
 u8*
-PushSize(memory_arena *Arena, umm SizeIn)
+PushSize(memory_arena *Arena, umm SizeIn, umm Alignment, b32 MemProtect)
 {
-  umm RequestedSize = SizeIn;
+  umm ToAlignment = Alignment - (SizeIn % Alignment);
+  umm AlignCorrectedSizeIn = SizeIn;
+
+  if (ToAlignment != Alignment)
+  {
+    AlignCorrectedSizeIn += ToAlignment;
+  }
+
+  umm RequestedSize = AlignCorrectedSizeIn;
   Assert(Arena->At <= Arena->End);
-  Assert(Remaining(Arena) <= TotalSize(Arena));
+  Assert(Remaining(Arena) <= TotalSize(Arena)); // Sanity Check
 
 #if MEMPROTECT
   u64 PageSize = PlatformGetPageSize();
-  if (Arena->MemProtect)
+  if (MemProtect)
   {
-    u32 Pages = (u32)((SizeIn/PageSize) + 1);
+    u32 Pages = (u32)((AlignCorrectedSizeIn/PageSize) + 1);
     RequestedSize = (Pages*PageSize) + PageSize;
     SetToPageBoundary(Arena);
     Assert( RequestedSize % PageSize == 0 );
@@ -264,20 +264,20 @@ PushSize(memory_arena *Arena, umm SizeIn)
   b32 ArenaIsFull = RequestedSize > RemainingInArena;
   if (ArenaIsFull) // Reallocate the arena
   {
-    ReallocateArena(Arena, RequestedSize);
+    ReallocateArena(Arena, RequestedSize, MemProtect);
   }
 
   u8* Result = Arena->At;
 
 #if MEMPROTECT_OVERFLOW
-  if (Arena->MemProtect)
+  if (MemProtect)
   {
-    umm EndOfStruct = (umm)Arena->At + SizeIn;
+    umm EndOfStruct = (umm)Arena->At + AlignCorrectedSizeIn;
     umm EndToNextPage = PageSize - (EndOfStruct % PageSize);
     Assert( (EndOfStruct+EndToNextPage) % PageSize == 0);
 
     Result = Arena->At + EndToNextPage;
-    u8* LastPage = Result + SizeIn;
+    u8* LastPage = Result + AlignCorrectedSizeIn;
     Assert( (u64)LastPage % PageSize == 0)
 
     s32 ProtectSuccess = (mprotect(LastPage, PageSize, PROT_NONE) == 0);
@@ -311,22 +311,25 @@ PushSize(memory_arena *Arena, umm SizeIn)
 #if MEMPROTECT
   ++Arena->Pushes;
 
-  if (Arena->MemProtect)
+  if (MemProtect)
   {
-    Assert( ((umm)Result+SizeIn) % PageSize == 0);
+    Assert( ((umm)Result+AlignCorrectedSizeIn) % PageSize == 0);
     Assert( (umm)Arena->At % PageSize == 0);
   }
 #endif
 
 
   Assert(Arena->At <= Arena->End);
+  Assert((umm)Result % Alignment == 0);
+
+  Assert(Remaining(Arena) <= TotalSize(Arena)); // Sanity Check
   return Result;
 }
 
 void*
-PushStruct(memory_arena *Memory, umm sizeofStruct)
+PushStruct(memory_arena *Memory, umm sizeofStruct, umm Alignment = 1, b32 MemProtect = True)
 {
-  void* Result = PushSize(Memory, sizeofStruct);
+  void* Result = PushSize(Memory, sizeofStruct, Alignment, MemProtect);
   return Result;
 }
 

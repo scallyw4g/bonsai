@@ -116,6 +116,7 @@ PlatformProtectPage(u8* Mem)
 void
 PlatformDeallocateArena(memory_arena *Arena)
 {
+  if (Arena->Start)
   {
     s32 Deallocated = (munmap(Arena->Start, TotalSize(Arena)) == 0);
     Assert(Deallocated);
@@ -192,10 +193,9 @@ PlatformAllocateArena(umm RequestedBytes = Megabytes(1), b32 MemProtect = True)
 
   Result->End = Bytes + AllocationSize;
   Result->NextBlockSize = AllocationSize * 2;
-  Result->MemProtect = MemProtect;
 
 #if MEMPROTECT_OVERFLOW
-  if (Result->MemProtect)
+  if (MemProtect)
   {
     Assert(OnPageBoundary(Result, PageSize));
     PlatformProtectPage(ArenaBytes + sizeof(memory_arena));

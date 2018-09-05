@@ -97,11 +97,16 @@ struct debug_thread_state
   memory_arena *Memory;
   push_metadata *MetaTable;
 
+  debug_scope_tree *ScopeTrees;
+  mutex_op_array *MutexOps;
+
   u32 WriteIndex;
 
-  debug_scope_tree ScopeTrees[DEBUG_FRAMES_TRACKED];
-  mutex_op_array MutexOps[DEBUG_FRAMES_TRACKED];
+  u8 Pad[28];
 };
+
+// Make sure we stay at a cache line friendly size
+CAssert(sizeof(debug_thread_state) == 64);
 
 enum debug_ui_type
 {

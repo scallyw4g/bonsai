@@ -136,7 +136,7 @@ GameThreadCallback(work_queue_entry *Entry, memory_arena *ThreadArena)
 model *
 AllocateGameModels(game_state *GameState, memory_arena *Memory)
 {
-  model *Result = Allocate(model, GameState->Memory, ModelIndex_Count, True);
+  model *Result = Allocate(model, GameState->Memory, ModelIndex_Count);
 
   Result[ModelIndex_Enemy] = LoadModel(Memory, ENEMY_MODEL);
   Result[ModelIndex_Player] = LoadObj(Memory, "models/icosphere.obj");
@@ -163,12 +163,12 @@ GameInit( platform *Plat, memory_arena *GameMemory, memory_arena *TranArena_in /
 
   Init_Global_QuadVertexBuffer();
 
-  game_state *GameState = Allocate(game_state, GameMemory, 1, True);
+  game_state *GameState = Allocate(game_state, GameMemory, 1);
   GameState->Memory = GameMemory;
   GameState->Noise = perlin_noise(DEBUG_NOISE_SEED);
 
 
-  GameState->Turb = Allocate(noise_3d, GameState->Memory, 1, True);
+  GameState->Turb = Allocate(noise_3d, GameState->Memory, 1);
   AllocateAndInitNoise3d(GameState, GameState->Turb, Chunk_Dimension(8,8,8) );
 
   GameState->Plat = Plat;
@@ -187,7 +187,7 @@ GameInit( platform *Plat, memory_arena *GameMemory, memory_arena *TranArena_in /
     GameState->Players[EntityIndex] = GetFreeEntity(GameState);
   }
 
-  GameState->ServerState = Allocate(server_state, GameMemory, 1, True);
+  GameState->ServerState = Allocate(server_state, GameMemory, 1);
   for (u32 ClientIndex = 0;
       ClientIndex < MAX_CLIENTS;
       ++ClientIndex)
