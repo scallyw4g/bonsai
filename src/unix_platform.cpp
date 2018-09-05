@@ -616,4 +616,45 @@ ConnectToServer(network_connection *Connection)
   return;
 }
 
+inline void
+PlatformSetThreadPriority(s32 Priority)
+{
+  sched_param Param = {};
+  Param.sched_priority = Priority;
+  int Error = sched_setscheduler(0, SCHED_FIFO, &Param);
+  if (Error)
+  {
+    Error("Setting Scheduler for main thread");
+
+    switch (errno)
+    {
+      case EINVAL:
+      {
+        Error(" Invalid arguments: pid is negative or param is NULL.");
+        Error(" (sched_setscheduler()) policy is not one of the recognized policies.");
+        Error(" (sched_setscheduler()) param does not make sense for the specified policy.");
+      }  break;
+
+      case EPERM:  { Error("  The calling thread does not have appropriate privileges."); break; }
+      case ESRCH:  { Error("  The thread whose ID is pid could not be found."); break; }
+      InvalidDefaultCase;
+    }
+  }
+
+  return;
+}
+
+inline void
+PlatformSetMainThreadPriority()
+{
+  PlatformSetThreadPriority(99);
+  return;
+}
+
+inline void
+PlatformSetWorkerThreadPriority()
+{
+  PlatformSetThreadPriority(90);
+  return;
+}
 

@@ -163,11 +163,8 @@ endif()
 
 
 add_definitions( -Wpedantic )
-add_definitions( -Wno-missing-prototypes )
 add_definitions( -Wno-undef )
-add_definitions( -Wno-c++98-compat-pedantic )
 add_definitions( -Wno-old-style-cast )
-add_definitions( -Wno-gnu-anonymous-struct )
 add_definitions( -Wno-float-equal )
 add_definitions( -Wno-padded )
 add_definitions( -Wno-double-promotion )
@@ -178,7 +175,6 @@ add_definitions( -Wno-cast-align )
 
 # TODO(Jesse): Should this be turned on again?
 add_definitions( -Wno-sign-conversion )
-add_definitions( -Wno-global-constructors )
 
 
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
@@ -189,6 +185,11 @@ elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL Clang)
   message(STATUS "Compiling with Clang")
   add_definitions( -Weverything )
+  add_definitions( -Wno-c++98-compat-pedantic )
+  add_definitions( -Wno-gnu-anonymous-struct )
+  add_definitions( -Wno-missing-prototypes )
+  # TODO(Jesse): Should this be turned on again?
+  add_definitions( -Wno-global-constructors )
 else()
   message(FATAL_ERROR "Unsupported Compiler")
 endif()
