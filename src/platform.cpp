@@ -70,7 +70,7 @@ ThreadMain(void *Input)
 
   for (;;)
   {
-    WORKER_THREAD_WAIT_FOR_DEBUG_SYSTEM();
+    WORKER_THREAD_ADVANCE_DEBUG_SYSTEM();
 
     ThreadSleep( &Queue->Semaphore );
 
@@ -485,13 +485,9 @@ main()
    */
 
 
-  r64 LastMs = GetHighPrecisionClock();
+  r32 RealDt = 0;
   while ( Os.ContinueRunning )
   {
-    r64 CurrentMS = GetHighPrecisionClock();
-    r32 RealDt = (r32)((CurrentMS - LastMs)/1000.0f);
-    LastMs = CurrentMS;
-
     ClearWasPressedFlags((input_event*)&Plat.Input);
     DEBUG_FRAME_BEGIN(&Hotkeys, RealDt);
 
@@ -542,10 +538,9 @@ main()
 
     END_BLOCK("Frame End");
 
-    AdvanceScopeTrees(RealDt);
+    RealDt = AdvanceDebugSystem();
 
     END_BLOCK("Worker Thread Shutdown");
-
   }
 
   Info("Shutting Down");

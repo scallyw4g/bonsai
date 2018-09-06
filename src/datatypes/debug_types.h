@@ -89,7 +89,7 @@ struct debug_scope_tree
 
   u64 TotalCycles;
   u64 StartingCycle;
-  r32 FrameMs;
+  r64 FrameMs;
 };
 
 struct debug_thread_state
@@ -98,11 +98,13 @@ struct debug_thread_state
   push_metadata *MetaTable;
 
   debug_scope_tree *ScopeTrees;
+  debug_profile_scope *FirstFreeScope;
+
   mutex_op_array *MutexOps;
 
   u32 WriteIndex;
 
-  u8 Pad[28];
+  u8 Pad[20];
 };
 CAssert(sizeof(debug_thread_state) == 64); // Make sure we stay at a cache friendly size
 
@@ -260,7 +262,7 @@ struct debug_recording_state
 
 global_variable debug_profile_scope NullDebugProfileScope = {};
 
-debug_profile_scope *GetProfileScope(debug_state *State);
+debug_profile_scope *GetProfileScope(debug_thread_state *State);
 
 struct debug_timed_function
 {
@@ -276,7 +278,7 @@ struct debug_timed_function
 
     ++DebugState->NumScopes;
 
-    this->Scope = GetProfileScope(DebugState);
+    this->Scope = GetProfileScope(GetThreadDebugState(ThreadLocal_ThreadIndex));
     this->Tree = DebugState->GetWriteScopeTree();
 
     if (this->Scope)
@@ -334,7 +336,7 @@ inline void DebugTimedMutexReleased(mutex *Mut);
 #define TIMED_MUTEX_AQUIRED(Mut) DebugTimedMutexAquired(Mut)
 #define TIMED_MUTEX_RELEASED(Mut) DebugTimedMutexReleased(Mut)
 
-#define WORKER_THREAD_WAIT_FOR_DEBUG_SYSTEM(...) WorkerThreadWaitForDebugSystem()
+#define WORKER_THREAD_ADVANCE_DEBUG_SYSTEM(...) WorkerThreadAdvanceDebugSystem()
 #define SUSPEND_WORKER_THREADS()  DebugSuspendWorkerThreads()
 #define RESUME_WORKER_THREADS()  DebugResumeWorkerThreads()
 
