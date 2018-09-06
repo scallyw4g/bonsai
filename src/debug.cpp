@@ -244,6 +244,7 @@ WorkerThreadAdvanceDebugSystem()
 
   debug_thread_state *ThreadState = GetThreadDebugState(ThreadLocal_ThreadIndex);
   debug_thread_state *MainThreadState = GetThreadDebugState(0);
+  Assert(ThreadState != MainThreadState);
 
   u32 LastWriteIndex = ThreadState->WriteIndex;
 
@@ -284,7 +285,11 @@ AdvanceDebugSystem()
 
   /* SUSPEND_WORKER_THREADS(); */
 
-  WorkerThreadAdvanceDebugSystem();
+  {
+    debug_scope_tree *WriteTree = MainThreadState->ScopeTrees + MainThreadState->WriteIndex;
+    FreeScopes(MainThreadState, WriteTree->Root);
+    InitScopeTree(WriteTree);
+  }
 
   END_BLOCK("Advance And Free Trees");
 
