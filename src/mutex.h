@@ -1,4 +1,4 @@
-#define TOTAL_MUTEX_OP_RECORDS (1024*1024*1024)
+#define TOTAL_MUTEX_OP_RECORDS (4096)
 
 enum mutex_op
 {
