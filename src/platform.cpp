@@ -534,10 +534,10 @@ main()
     FrameEnd(GameState);
 
     /* WaitForFrameTime(LastMs, 30.0f); */
-    BonsaiSwapBuffers(&Os);
 
     END_BLOCK("Frame End");
 
+    BonsaiSwapBuffers(&Os);
     RealDt = AdvanceDebugSystem();
 
     END_BLOCK("Worker Thread Shutdown");

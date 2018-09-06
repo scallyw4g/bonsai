@@ -86,10 +86,6 @@ struct debug_scope_tree
   debug_profile_scope **WriteScope;
 
   debug_profile_scope *ParentOfNextScope;
-
-  u64 TotalCycles;
-  u64 StartingCycle;
-  r64 FrameMs;
 };
 
 struct debug_thread_state
@@ -160,6 +156,13 @@ struct selected_arenas
   selected_memory_arena Arenas[MAX_SELECTED_ARENAS];
 };
 
+struct frame_stats
+{
+  u64 TotalCycles;
+  u64 StartingCycle;
+  r64 FrameMs;
+};
+
 debug_global __thread u64 ThreadLocal_ThreadIndex = 0;
 
 inline debug_thread_state * GetThreadDebugState(u32 ThreadIndex);
@@ -185,6 +188,7 @@ struct debug_state
   debug_profile_scope FreeScopeSentinel;
   mutex FreeScopeMutex;
 
+  frame_stats Frames[DEBUG_FRAMES_TRACKED];
   debug_thread_state *ThreadStates;
 
   u32 ReadScopeIndex;
