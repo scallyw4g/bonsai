@@ -408,8 +408,6 @@ struct world
 
 
 
-#include <render.h>
-
 
 
 inline void

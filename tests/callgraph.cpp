@@ -33,6 +33,8 @@ FunctionOne()
 s32
 main()
 {
+  TestSuiteBegin("callgraph");
+
   u32 TotalThreadCount = GetTotalThreadCount();
 
   debug_state DebugState = {};
@@ -42,13 +44,11 @@ main()
   TranArena = PlatformAllocateArena(Megabytes(8));
 
   InitDebugMemoryAllocationSystem(&DebugState);
-  InitScopeTrees(GetDebugMemoryAllocator(), TotalThreadCount);
+  InitScopeTrees(ThreadsafeDebugMemoryAllocator(), TotalThreadCount);
 
   DebugState.Initialized = True;
 
   TIMED_FUNCTION();
-
-  TestSuiteBegin("callgraph");
 
   debug_scope_tree *Tree = DebugState.GetWriteScopeTree();
 

@@ -63,7 +63,7 @@ struct memory_arena
 #endif
 };
 
-#if BONSAI_INTERNAL
+#ifndef BONSAI_NO_DEBUG_MEMORY_ALLOCATOR
 
 void* Allocate_(memory_arena *Arena, umm StructSize, umm StructCount, const char* Name, s32 Line, const char* File, umm Alignment = 1, b32 MemProtect = True);
 
@@ -84,14 +84,17 @@ void* Allocate_(memory_arena *Arena, umm StructSize, umm StructCount, const char
 
 #else
 
-#define AllocateUnprotectedAligned(Type, Arena, Number, Alignment) \
-  (Type*)Allocate_( Arena, sizeof(Type), (umm)Number, Alignment, False )
+#define AllocateProtection(Type, Arena, Number, Protection) \
+  (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, 1, False);
+
+#define AllocateAlignedProtection(Type, Arena, Number, Alignment, Protection) \
+  (Type*)Allocate_( Arena, sizeof(Type)*(umm)Number, Alignment, False)
 
 #define AllocateAligned(Type, Arena, Number, Alignment) \
-  (Type*)Allocate_( Arena, sizeof(Type), (umm)Number, Alignment )
+  (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, Alignment, False)
 
 #define Allocate(Type, Arena, Number) \
-  (Type*)Allocate_( Arena, sizeof(Type), (umm)Number)
+  (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, 1, False)
 
 #define DEBUG_REGISTER_ARENA(...)
 

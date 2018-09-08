@@ -19,31 +19,6 @@
 #define INVALID_SHADER_UNIFORM (-1)
 #define INVALID_SHADER (u32)(-1)
 
-char *
-ReadEntireFileIntoString(const char *Filepath, memory_arena *Memory, umm *Length = 0)
-{
-  FILE *File = fopen(Filepath, "r");
-  char *FileContents = 0;
-
-  if (File)
-  {
-    fseek(File, 0L, SEEK_END);
-    umm FileSize = (umm)ftell(File);
-    if (Length)
-      *Length = FileSize;
-
-    rewind(File);
-    // TODO(Jesse): Transient Storage
-    FileContents = (char*)PushStruct(Memory, (FileSize+1));
-    ReadBytes((u8*)FileContents, FileSize, File);
-  }
-  else
-  {
-    Error("Opening %s", Filepath);
-  }
-
-  return FileContents;
-}
 
 u32
 CompileShader(const char *Header, const char *Code, u32 Type)
@@ -87,9 +62,9 @@ Snprintf(ComputedVertPath, 2048, "%s/%s", SHADER_PATH, VertShaderPath);
 char ComputedFragPath[2048] = {};
 Snprintf(ComputedFragPath, 2048, "%s/%s", SHADER_PATH, FragFilePath);
 
-char *HeaderCode       = ReadEntireFileIntoString(SHADER_PATH SHADER_HEADER, Memory);
-char *VertexShaderCode = ReadEntireFileIntoString(ComputedVertPath, Memory);
-char *FragShaderCode   = ReadEntireFileIntoString(ComputedFragPath, Memory);
+const char *HeaderCode       = ReadEntireFileIntoString(SHADER_PATH SHADER_HEADER, Memory);
+const char *VertexShaderCode = ReadEntireFileIntoString(ComputedVertPath, Memory);
+const char *FragShaderCode   = ReadEntireFileIntoString(ComputedFragPath, Memory);
 
 
 s32 Result = GL_FALSE;

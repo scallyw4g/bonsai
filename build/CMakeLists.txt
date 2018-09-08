@@ -24,6 +24,9 @@ set( LIBRARY_OUTPUT_PATH ${BIN} )
 set( EXECUTABLE_OUTPUT_PATH ${BIN} )
 
 add_executable(Bonsai ${SRC}/platform.cpp)
+
+add_executable(ttf ${SRC}/font/ttf.cpp)
+
 add_executable(Server ${SRC}/net/server.cpp)
 add_executable(test_m4 ${TESTS}/m4.cpp)
 add_executable(test_chunk ${TESTS}/chunk.cpp)
@@ -74,6 +77,9 @@ add_custom_target(tests ${BIN}/test_m4
 target_compile_definitions(Bonsai  PUBLIC BONSAI_INTERNAL=1)
 target_compile_definitions(Server  PUBLIC BONSAI_INTERNAL=1)
 target_compile_definitions(Game    PUBLIC BONSAI_INTERNAL=1)
+
+target_compile_definitions(ttf PUBLIC BONSAI_INTERNAL=1)
+
 target_compile_definitions(test_m4 PUBLIC BONSAI_INTERNAL=1)
 target_compile_definitions(test_chunk PUBLIC BONSAI_INTERNAL=1)
 target_compile_definitions(test_string PUBLIC BONSAI_INTERNAL=1)

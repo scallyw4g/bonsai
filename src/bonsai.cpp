@@ -1,5 +1,6 @@
 #include <vox_loader.cpp>
 #include <perlin.cpp>
+#include <render.h>
 
 #include <shader.cpp>
 #include <texture.cpp> // Only used for font .DDS atm

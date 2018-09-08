@@ -17,6 +17,7 @@
 
 #include <platform.h>
 
+#include <render.h>
 #include <texture.cpp>
 #include <shader.cpp>
 #include <bonsai_vertex.h>

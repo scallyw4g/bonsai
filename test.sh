@@ -3,7 +3,6 @@
 TESTS_PASSED=0
 
 for test_executable in $(find bin/test*); do
-  echo "Running $test_executable"
   if  $test_executable && [ "$TESTS_PASSED" == "0" ]; then
     TESTS_PASSED=0
   else
@@ -13,8 +12,10 @@ done
 
 
 if [ "$TESTS_PASSED" -eq 0 ]; then
+  echo ""
   echo "All Tests Passed"
 else
+  echo ""
   echo "One or more failures.  Inspect log for details."
 fi
 

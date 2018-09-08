@@ -21,13 +21,6 @@ struct v3_static_array
   umm End;
 };
 
-struct stream_cursor
-{
-  const char *Start;
-  const char *At;
-  const char *End;
-};
-
 u32_static_array
 U32_Static_Array(u32 Count, memory_arena *Memory)
 {
@@ -54,137 +47,6 @@ Push(T Vec, T_a *Array)
   return;
 }
 
-b32
-Contains(const char* Haystack, char Needle)
-{
-  b32 Result = False;
-  while (*Haystack)
-  {
-    Result |= (Needle == *Haystack++);
-  }
-  return Result;
-}
-
-const char *
-EatAllCharacters(const char *At, const char *Characters)
-{
-  while ( Contains(Characters, *At) )
-  {
-    ++At;
-  }
-
-  return At;
-}
-
-char *
-ReadUntilTerminatorList(stream_cursor *Cursor, const char *TerminatorList, memory_arena *Arena)
-{
-  const char *Start = Cursor->At;
-  const char *At = Cursor->At;
-  const char *Head = Cursor->At;
-
-  umm ResultLength = 0;
-  b32 FoundTerminator = False;
-
-  while (Remaining(Cursor) && *At++)
-  {
-    ResultLength = (umm)(At - Head);
-    const char *TerminatorAt = TerminatorList;
-    while (*TerminatorAt)
-    {
-      if(*At == *TerminatorAt)
-      {
-        FoundTerminator = True;
-        ResultLength = (umm)(At - Head);
-        At = EatAllCharacters(At, TerminatorList);
-        goto done;
-      }
-      ++TerminatorAt;
-    }
-  }
-done:
-
-  Cursor->At = At;
-
-  char *Result = Allocate(char, Arena, ResultLength + 1);
-  MemCopy((u8*)Start, (u8*)Result, ResultLength);
-
-  return Result;
-}
-
-void
-EatWhitespace(stream_cursor *Cursor)
-{
-  Cursor->At = EatAllCharacters(Cursor->At, "\n ");
-  return;
-}
-
-char *
-PopWord(stream_cursor *Cursor, memory_arena *Arena, const char *Delimeters = 0)
-{
-  if (!Delimeters)
-    Delimeters = " \n";
-
-  EatWhitespace(Cursor);
-  char *Result = ReadUntilTerminatorList(Cursor, Delimeters, Arena);
-  return Result;
-}
-
-char *
-PopLine(stream_cursor *Cursor, memory_arena *Arena)
-{
-  char *Result = ReadUntilTerminatorList(Cursor, "\n", Arena);
-  return Result;
-}
-
-r32
-PopFloat(stream_cursor *Cursor, memory_arena *Arena)
-{
-  char *Float = PopWord(Cursor, Arena);
-  r32 Result = (r32)atof(Float);
-  return Result;
-}
-
-u32
-PopU32(stream_cursor *Cursor, memory_arena *Arena, const char* Delim = 0)
-{
-  char *Str = PopWord(Cursor, Arena, Delim);
-  u32 Result = (u32)atoi(Str);
-  return Result;
-}
-
-
-stream_cursor
-StreamCursor(const char *Data, umm Length)
-{
-  stream_cursor Result = {};
-  Result.Start = Data;
-  Result.At = Data;
-  Result.End = Data + Length + 1;
-
-  return Result;
-}
-
-umm
-Length(const char *Str)
-{
-  const char *Start = Str;
-  const char *End = Str;
-
-  while (*End++);
-
-  umm Result = (umm)(End - Start);
-  return Result;
-}
-
-stream_cursor
-StreamCursor(const char *Data)
-{
-  umm DataLen = Length(Data);
-  stream_cursor Result = StreamCursor(Data, DataLen);
-  return Result;
-}
-
 struct obj_stats
 {
   u32 VertCount;
@@ -194,7 +56,7 @@ struct obj_stats
 };
 
 obj_stats
-GetObjStats(stream_cursor Cursor, memory_arena *Memory)
+GetObjStats(ansi_stream Cursor, memory_arena *Memory)
 {
   obj_stats Result = {};
 
@@ -241,10 +103,10 @@ LoadObj(memory_arena *PermMem, const char * FilePath)
   Info("Loading .obj file : %s \n", FilePath);
 
   umm Length = 0;
-  char *Start = ReadEntireFileIntoString(FilePath, TranArena, &Length);
-  if (!Start) { model M = {}; return M; }
+  binary_stream BinaryStream = BinaryStreamFromFile(FilePath, PermMem);
+  if (!BinaryStream.Start) { model M = {}; return M; }
 
-  stream_cursor Stream = StreamCursor(Start, Length);
+  ansi_stream Stream = AnsiStream(&BinaryStream);
   obj_stats Stats = GetObjStats(Stream, TranArena);
 
   v3_static_array TempVerts       = V3_Static_Array(Stats.VertCount, TranArena);
