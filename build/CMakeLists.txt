@@ -59,7 +59,7 @@ target_link_libraries(test_objloader ${OPENGL_LIBRARIES})
 target_link_libraries(test_allocation ${OPENGL_LIBRARIES})
 target_link_libraries(test_callgraph ${OPENGL_LIBRARIES})
 
-add_custom_target(run /usr/bin/optirun ${BIN}/Bonsai
+add_custom_target(run ${BIN}/Bonsai
                   DEPENDS Bonsai
                   COMMENT "Running Bonsai")
 
