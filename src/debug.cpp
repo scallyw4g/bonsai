@@ -249,9 +249,9 @@ AdvanceThreadState(debug_thread_state *ThreadState, u32 NextFrameId)
   InitScopeTree(NextWriteTree);
 
   ThreadState->MutexOps[NextWriteIndex].NextRecord = 0;
-  ThreadState->FrameId = NextFrameId;
+  ThreadState->CurrentFrame = NextFrameId;
 
-  NextWriteTree->FrameId = NextFrameId;
+  NextWriteTree->FrameRecorded = NextFrameId;
 
   return;
 }
@@ -275,8 +275,8 @@ WorkerThreadAdvanceDebugSystem()
   debug_thread_state *MainThreadState = GetThreadDebugState(0);
   Assert(ThreadState != MainThreadState);
 
-  u32 NextFrameId = MainThreadState->FrameId;  // TODO(Jesse): Should maybe be an atomic read?
-  if (NextFrameId != ThreadState->FrameId)
+  u32 NextFrameId = MainThreadState->CurrentFrame;  // TODO(Jesse): Should maybe be an atomic read?
+  if (NextFrameId != ThreadState->CurrentFrame)
   {
     AdvanceThreadState(ThreadState, NextFrameId);
   }
@@ -302,11 +302,11 @@ AdvanceDebugSystem()
   u64 CurrentCycles = GetCycleCount();
 
   debug_thread_state *MainThreadState = GetThreadDebugState(0);
-  u32 ThisFrameWriteIndex = MainThreadState->FrameId % DEBUG_FRAMES_TRACKED;
+  u32 ThisFrameWriteIndex = MainThreadState->CurrentFrame % DEBUG_FRAMES_TRACKED;
   u32 NextFrameWriteIndex = GetNextDebugFrameIndex(ThisFrameWriteIndex);
 
-  AtomicIncrement(&MainThreadState->FrameId);
-  AdvanceThreadState(MainThreadState, MainThreadState->FrameId);
+  AtomicIncrement(&MainThreadState->CurrentFrame);
+  AdvanceThreadState(MainThreadState, MainThreadState->CurrentFrame);
 
   SharedState->ReadScopeIndex = GetNextDebugFrameIndex(SharedState->ReadScopeIndex);
 
@@ -534,7 +534,7 @@ InitScopeTrees(memory_arena *DebugMemory, u32 TotalThreadCount)
 
       ThreadState->ScopeTrees[TreeIndex].Root = GetProfileScope(ThreadState);
       InitScopeTree(ThreadState->ScopeTrees + TreeIndex);
-      ThreadState->FrameId = GlobalDebugState->ReadScopeIndex + 1;
+      ThreadState->CurrentFrame = GlobalDebugState->ReadScopeIndex + 1;
     }
   }
 
@@ -1470,7 +1470,7 @@ GetMutexOpRecord(mutex *Mutex, mutex_op Op, debug_state *State)
 
   mutex_op_record *Record = 0;
   debug_thread_state *ThreadState = GetThreadDebugState(ThreadLocal_ThreadIndex);
-  u32 WriteIndex = ThreadState->FrameId % DEBUG_FRAMES_TRACKED;
+  u32 WriteIndex = ThreadState->CurrentFrame % DEBUG_FRAMES_TRACKED;
   mutex_op_array *MutexOps = &ThreadState->MutexOps[WriteIndex];
 
   if (MutexOps->NextRecord < TOTAL_MUTEX_OP_RECORDS)
@@ -1637,11 +1637,7 @@ DebugDrawCycleThreadGraph(ui_render_group *Group, debug_state *SharedState, layo
 
     debug_thread_state *ThreadState = GetThreadDebugState(ThreadIndex);
     debug_scope_tree *ReadTree = ThreadState->ScopeTrees + SharedState->ReadScopeIndex;
-
-    char * FrameName = FormatString("Frame %u", ReadTree->FrameId);
-    BufferLine(FrameName, WHITE, Layout, &Group->Font, Group);
-
-    if (MainThreadReadTree->FrameId == ReadTree->FrameId)
+    if (MainThreadReadTree->FrameRecorded == ReadTree->FrameRecorded)
     {
       DrawScopeBarsRecursive(Group, Geo, ReadTree->Root, Layout, &FrameCycles, TotalGraphWidth, &Entropy);
     }
@@ -1790,7 +1786,7 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Layo
       if (MouseP > MinP && MouseP < DrawDim)
       {
         debug_thread_state *MainThreadState = GetThreadDebugState(0);
-        if (FrameIndex != MainThreadState->FrameId % DEBUG_FRAMES_TRACKED)
+        if (FrameIndex != MainThreadState->CurrentFrame % DEBUG_FRAMES_TRACKED)
         {
           DebugState->ReadScopeIndex = FrameIndex;
           Color = V3(0.8f, 0.8f, 0.0f);
@@ -1853,7 +1849,7 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Layo
       debug_thread_state *MainThreadState = GetThreadDebugState(0);
       debug_scope_tree *MainThreadReadTree    = MainThreadState->ScopeTrees + DebugState->ReadScopeIndex;
 
-      if (MainThreadReadTree->FrameId == ReadTree->FrameId)
+      if (MainThreadReadTree->FrameRecorded == ReadTree->FrameRecorded)
       {
         PadBottom(Layout, 15);
         NewLine(Layout, &Group->Font);

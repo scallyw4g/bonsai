@@ -87,7 +87,7 @@ struct debug_scope_tree
   debug_profile_scope **WriteScope;
   debug_profile_scope *ParentOfNextScope;
 
-  u64 FrameId;
+  u64 FrameRecorded;
 };
 
 struct debug_thread_state
@@ -100,7 +100,7 @@ struct debug_thread_state
 
   mutex_op_array *MutexOps;
 
-  u32 FrameId;
+  u32 CurrentFrame;
 
   u8 Pad[20];
 };
@@ -210,7 +210,7 @@ struct debug_state
   debug_scope_tree* GetWriteScopeTree()
   {
     debug_thread_state *ThreadState = GetThreadDebugState(ThreadLocal_ThreadIndex);
-    debug_scope_tree *RootScope = ThreadState->ScopeTrees + (ThreadState->FrameId % DEBUG_FRAMES_TRACKED);
+    debug_scope_tree *RootScope = ThreadState->ScopeTrees + (ThreadState->CurrentFrame % DEBUG_FRAMES_TRACKED);
     return RootScope;
   }
 };
