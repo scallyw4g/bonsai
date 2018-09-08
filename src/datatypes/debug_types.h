@@ -1,6 +1,6 @@
 #if BONSAI_INTERNAL
 
-#define DEBUG_FRAMES_TRACKED 64
+#define DEBUG_FRAMES_TRACKED (64)
 
 struct cycle_range
 {
@@ -83,9 +83,11 @@ struct debug_profile_scope
 struct debug_scope_tree
 {
   debug_profile_scope *Root;
-  debug_profile_scope **WriteScope;
 
+  debug_profile_scope **WriteScope;
   debug_profile_scope *ParentOfNextScope;
+
+  u64 FrameId;
 };
 
 struct debug_thread_state
@@ -98,7 +100,7 @@ struct debug_thread_state
 
   mutex_op_array *MutexOps;
 
-  u32 WriteIndex;
+  u32 FrameId;
 
   u8 Pad[20];
 };
@@ -180,7 +182,6 @@ struct debug_state
   selected_arenas *SelectedArenas;
 
   u64 BytesBufferedToCard;
-  u64 FrameCount;
   b32 Initialized;
   b32 Debug_RedrawEveryPush;
   b32 DebugDoScopeProfiling = True;
@@ -192,7 +193,6 @@ struct debug_state
   debug_thread_state *ThreadStates;
 
   u32 ReadScopeIndex;
-
   s32 FreeScopeCount;
   u64 NumScopes;
 
@@ -210,7 +210,7 @@ struct debug_state
   debug_scope_tree* GetWriteScopeTree()
   {
     debug_thread_state *ThreadState = GetThreadDebugState(ThreadLocal_ThreadIndex);
-    debug_scope_tree *RootScope = ThreadState->ScopeTrees + ThreadState->WriteIndex;
+    debug_scope_tree *RootScope = ThreadState->ScopeTrees + (ThreadState->FrameId % DEBUG_FRAMES_TRACKED);
     return RootScope;
   }
 };

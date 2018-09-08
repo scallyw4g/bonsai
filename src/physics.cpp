@@ -3,7 +3,7 @@
 inline void
 PhysicsUpdate(physics *Physics, r32 dt, b32 ApplyGravity = True)
 {
-  v3 Gravity = ApplyGravity ? V3(0.0f,0.0f, -700.0f) : V3(0);
+  v3 Gravity = ApplyGravity ? V3(0.0f,0.0f, -1000.0f) : V3(0);
   v3 Acceleration = SafeDivide(Physics->Force*Physics->Speed, Physics->Mass) + Gravity;
 
   Physics->Force -=

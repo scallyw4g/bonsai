@@ -225,53 +225,71 @@ FreeScopes(debug_thread_state *ThreadState, debug_profile_scope *ScopeToFree)
   return;
 }
 
+// TODO(Jesse): Replace this expression everywhere!!!
+inline u32
+GetNextDebugFrameIndex(u32 Current)
+{
+  u32 Result = (Current + 1) % DEBUG_FRAMES_TRACKED;
+  return Result;
+}
+
 inline void
-WorkerThreadAdvanceDebugSystem()
+AdvanceThreadState(debug_thread_state *ThreadState, u32 NextFrameId)
 {
   /* TIMED_FUNCTION(); */
   // Can this actually be timed if we're freeing scopes?  I think it can,
   // because we're freeing the _next_ frames scopes, however it's behaving
   // badly when turned on
 
-  debug_state *DebugState = GetDebugState();
+  u32 NextWriteIndex = NextFrameId % DEBUG_FRAMES_TRACKED;
 
-  /* if (DebugState->MainThreadBlocksWorkerThreads) */
-  /* { */
-  /*   AtomicIncrement(&DebugState->WorkerThreadsWaiting); */
-  /*   while(DebugState->MainThreadBlocksWorkerThreads); */
-  /*   AtomicDecrement(&DebugState->WorkerThreadsWaiting); */
-  /* } */
+  debug_scope_tree *NextWriteTree = ThreadState->ScopeTrees + NextWriteIndex;
+
+  FreeScopes(ThreadState, NextWriteTree->Root);
+  InitScopeTree(NextWriteTree);
+
+  ThreadState->MutexOps[NextWriteIndex].NextRecord = 0;
+  ThreadState->FrameId = NextFrameId;
+
+  NextWriteTree->FrameId = NextFrameId;
+
+  return;
+}
+
+inline void
+WorkerThreadAdvanceDebugSystem()
+{
+  Assert(ThreadLocal_ThreadIndex != 0);
+
+#if 0
+  debug_state *SharedState = GetDebugState();
+  if (SharedState->MainThreadBlocksWorkerThreads)
+  {
+    AtomicIncrement(&SharedState->WorkerThreadsWaiting);
+    while(SharedState->MainThreadBlocksWorkerThreads);
+    AtomicDecrement(&SharedState->WorkerThreadsWaiting);
+  }
+#endif
 
   debug_thread_state *ThreadState = GetThreadDebugState(ThreadLocal_ThreadIndex);
   debug_thread_state *MainThreadState = GetThreadDebugState(0);
   Assert(ThreadState != MainThreadState);
 
-  u32 LastWriteIndex = ThreadState->WriteIndex;
-
-  ThreadState->WriteIndex = MainThreadState->WriteIndex;
-  ThreadState->MutexOps[ThreadState->WriteIndex].NextRecord = 0;
-
-  if (LastWriteIndex != ThreadState->WriteIndex)
+  u32 NextFrameId = MainThreadState->FrameId;  // TODO(Jesse): Should maybe be an atomic read?
+  if (NextFrameId != ThreadState->FrameId)
   {
-    for (u32 WriteIndex = LastWriteIndex;
-             WriteIndex != ThreadState->WriteIndex;
-             )
-    {
-      debug_scope_tree *WriteTree = ThreadState->ScopeTrees + ThreadState->WriteIndex;
-      FreeScopes(ThreadState, WriteTree->Root);
-      InitScopeTree(WriteTree);
-
-      WriteIndex = ++WriteIndex % DEBUG_FRAMES_TRACKED;
-    }
+    AdvanceThreadState(ThreadState, NextFrameId);
   }
 
   return;
 }
 
+
 r32
 AdvanceDebugSystem()
 {
   TIMED_FUNCTION();
+  Assert(ThreadLocal_ThreadIndex == 0);
 
   local_persist r32 LastMs = (r32)GetHighPrecisionClock();
   r32 CurrentMS = (r32)GetHighPrecisionClock();
@@ -281,28 +299,25 @@ AdvanceDebugSystem()
   debug_state *SharedState = GetDebugState();
   if (!SharedState->DebugDoScopeProfiling) return Dt;
 
-  debug_thread_state *MainThreadState = GetThreadDebugState(0);
-  u32 ThisFrameWriteScopeIndex = MainThreadState->WriteIndex;
-
   u64 CurrentCycles = GetCycleCount();
 
-  u32 NextWriteIndex = (MainThreadState->WriteIndex+1) % DEBUG_FRAMES_TRACKED;
-  u32 NextReadIndex = (SharedState->ReadScopeIndex+1) % DEBUG_FRAMES_TRACKED;
-  AtomicExchange(&MainThreadState->WriteIndex, NextWriteIndex);
-  AtomicExchange(&SharedState->ReadScopeIndex, NextReadIndex);
+  debug_thread_state *MainThreadState = GetThreadDebugState(0);
+  u32 ThisFrameWriteIndex = MainThreadState->FrameId % DEBUG_FRAMES_TRACKED;
+  u32 NextFrameWriteIndex = GetNextDebugFrameIndex(ThisFrameWriteIndex);
+
+  AtomicIncrement(&MainThreadState->FrameId);
+  AdvanceThreadState(MainThreadState, MainThreadState->FrameId);
+
+  SharedState->ReadScopeIndex = GetNextDebugFrameIndex(SharedState->ReadScopeIndex);
 
   /* Record frame cycle counts */
 
-  frame_stats *ThisFrame = SharedState->Frames + ThisFrameWriteScopeIndex;
+  frame_stats *ThisFrame = SharedState->Frames + ThisFrameWriteIndex;
   ThisFrame->FrameMs = Dt * 1000.0;
   ThisFrame->TotalCycles = CurrentCycles - ThisFrame->StartingCycle;
 
-  frame_stats *NextFrame = SharedState->Frames + MainThreadState->WriteIndex;
+  frame_stats *NextFrame = SharedState->Frames + NextFrameWriteIndex;
   NextFrame->StartingCycle = CurrentCycles;
-
-  debug_scope_tree *NextFramesTree = MainThreadState->ScopeTrees + MainThreadState->WriteIndex;
-  FreeScopes(MainThreadState, NextFramesTree->Root);
-  InitScopeTree(NextFramesTree);
 
   return Dt;
 }
@@ -519,8 +534,7 @@ InitScopeTrees(memory_arena *DebugMemory, u32 TotalThreadCount)
 
       ThreadState->ScopeTrees[TreeIndex].Root = GetProfileScope(ThreadState);
       InitScopeTree(ThreadState->ScopeTrees + TreeIndex);
-      ThreadState->WriteIndex = GlobalDebugState->ReadScopeIndex + 1;
-
+      ThreadState->FrameId = GlobalDebugState->ReadScopeIndex + 1;
     }
   }
 
@@ -1419,37 +1433,33 @@ void
 DrawCycleBar( cycle_range *Range, cycle_range *Frame, r32 TotalGraphWidth, const char *Tooltip, v3 Color,
               ui_render_group *Group, untextured_2d_geometry_buffer *Geo, layout *Layout)
 {
-  // FIXME(Jesse): Find a better way of doing synchronization here
-  // We could be passing in a tree from the last loop around through the buffer,
-  // so make sure we only draw frames we care about;
-  if (Frame->StartCycle < Range->StartCycle)
+  Assert(Frame->StartCycle < Range->StartCycle);
+
+  r32 FramePerc = (r32)Range->TotalCycles / (r32)Frame->TotalCycles;
+
+  r32 BarHeight = Group->Font.Size;
+  r32 BarWidth = FramePerc*TotalGraphWidth;
+  v2 BarDim = V2(BarWidth, BarHeight);
+
+  // Advance to the appropriate starting place along graph
+  u64 StartCycleOffset = Range->StartCycle - Frame->StartCycle;
+  r32 XOffset = GetXOffsetForHorizontalBar(StartCycleOffset, Frame->TotalCycles, TotalGraphWidth);
+
+  v2 MinP = Layout->At + Layout->Basis + V2(XOffset, 0);
+  v2 QuadMaxP = BufferQuad(Group, Geo, MinP, BarDim);
+  b32 Hovering = IsInsideRect(RectMinDim(MinP, BarDim), Group->MouseP);
+
+  if (Hovering)
   {
-
-    r32 FramePerc = (r32)Range->TotalCycles / (r32)Frame->TotalCycles;
-
-    r32 BarHeight = Group->Font.Size;
-    r32 BarWidth = FramePerc*TotalGraphWidth;
-    v2 BarDim = V2(BarWidth, BarHeight);
-
-    // Advance to the appropriate starting place along graph
-    u64 StartCycleOffset = Range->StartCycle - Frame->StartCycle;
-    r32 XOffset = GetXOffsetForHorizontalBar(StartCycleOffset, Frame->TotalCycles, TotalGraphWidth);
-
-    v2 MinP = Layout->At + Layout->Basis + V2(XOffset, 0);
-    v2 QuadMaxP = BufferQuad(Group, Geo, MinP, BarDim);
-    b32 Hovering = IsInsideRect(RectMinDim(MinP, BarDim), Group->MouseP);
-
-    if (Hovering)
-    {
-      Color *= 0.5f;
-      if (Tooltip) { DoTooltip(Group, Tooltip); }
-    }
-
-    BufferColors(Group, Geo, Color);
-    Geo->At+=6;
-
-    AdvanceClip(Layout, QuadMaxP);
+    Color *= 0.5f;
+    if (Tooltip) { DoTooltip(Group, Tooltip); }
   }
+
+  BufferColors(Group, Geo, Color);
+  Geo->At+=6;
+
+  AdvanceClip(Layout, QuadMaxP);
+
   return;
 }
 
@@ -1460,7 +1470,7 @@ GetMutexOpRecord(mutex *Mutex, mutex_op Op, debug_state *State)
 
   mutex_op_record *Record = 0;
   debug_thread_state *ThreadState = GetThreadDebugState(ThreadLocal_ThreadIndex);
-  u32 WriteIndex = ThreadState->WriteIndex;
+  u32 WriteIndex = ThreadState->FrameId % DEBUG_FRAMES_TRACKED;
   mutex_op_array *MutexOps = &ThreadState->MutexOps[WriteIndex];
 
   if (MutexOps->NextRecord < TOTAL_MUTEX_OP_RECORDS)
@@ -1596,7 +1606,7 @@ BufferHorizontalBar(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, 
 }
 
 void
-DebugDrawThreadGraph(ui_render_group *Group, debug_state *SharedState, layout *Layout)
+DebugDrawCycleThreadGraph(ui_render_group *Group, debug_state *SharedState, layout *Layout)
 {
   random_series Entropy = {};
   r32 TotalGraphWidth = 2000.0f;
@@ -1608,9 +1618,13 @@ DebugDrawThreadGraph(ui_render_group *Group, debug_state *SharedState, layout *L
 
   r32 MinY = Layout->At.y;
 
-  u32 TotalThreadCount = GetTotalThreadCount();
-  frame_stats *FrameStats = SharedState->Frames + SharedState->ReadScopeIndex;
-  cycle_range FrameCycles = {FrameStats->StartingCycle, FrameStats->TotalCycles};
+  u32 TotalThreadCount                = GetTotalThreadCount();
+  frame_stats *FrameStats             = SharedState->Frames + SharedState->ReadScopeIndex;
+  cycle_range FrameCycles             = {FrameStats->StartingCycle, FrameStats->TotalCycles};
+
+  debug_thread_state *MainThreadState = GetThreadDebugState(0);
+  debug_scope_tree *MainThreadReadTree    = MainThreadState->ScopeTrees + SharedState->ReadScopeIndex;
+
   for ( u32 ThreadIndex = 0;
         ThreadIndex < TotalThreadCount;
         ++ThreadIndex)
@@ -1621,10 +1635,15 @@ DebugDrawThreadGraph(ui_render_group *Group, debug_state *SharedState, layout *L
     char *ThreadName = FormatString("Thread %u", ThreadIndex);
     BufferLine(ThreadName, WHITE, Layout, &Group->Font, Group);
 
+    debug_thread_state *ThreadState = GetThreadDebugState(ThreadIndex);
+    debug_scope_tree *ReadTree = ThreadState->ScopeTrees + SharedState->ReadScopeIndex;
+
+    char * FrameName = FormatString("Frame %u", ReadTree->FrameId);
+    BufferLine(FrameName, WHITE, Layout, &Group->Font, Group);
+
+    if (MainThreadReadTree->FrameId == ReadTree->FrameId)
     {
-      debug_thread_state *ThreadState = GetThreadDebugState(ThreadIndex);
-      debug_scope_tree *ThreadTree = ThreadState->ScopeTrees + SharedState->ReadScopeIndex;
-      DrawScopeBarsRecursive(Group, Geo, ThreadTree->Root, Layout, &FrameCycles, TotalGraphWidth, &Entropy);
+      DrawScopeBarsRecursive(Group, Geo, ReadTree->Root, Layout, &FrameCycles, TotalGraphWidth, &Entropy);
     }
 
     Layout->At.y = Layout->Clip.Max.y; // Advance vertical at for next thread
@@ -1666,6 +1685,7 @@ DebugDrawThreadGraph(ui_render_group *Group, debug_state *SharedState, layout *L
   u64 FrameTotalCycles = Frame->TotalCycles;
   u64 FrameStartingCycle = Frame->StartingCycle;
 
+#if 0
   u32 UnclosedMutexRecords = 0;
   u32 TotalMutexRecords = 0;
   TIMED_BLOCK("Mutex Record Collation");
@@ -1701,6 +1721,7 @@ DebugDrawThreadGraph(ui_render_group *Group, debug_state *SharedState, layout *L
     }
   }
   END_BLOCK("Mutex Record Collation");
+#endif
 
   return;
 }
@@ -1769,7 +1790,7 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Layo
       if (MouseP > MinP && MouseP < DrawDim)
       {
         debug_thread_state *MainThreadState = GetThreadDebugState(0);
-        if (FrameIndex != MainThreadState->WriteIndex)
+        if (FrameIndex != MainThreadState->FrameId % DEBUG_FRAMES_TRACKED)
         {
           DebugState->ReadScopeIndex = FrameIndex;
           Color = V3(0.8f, 0.8f, 0.0f);
@@ -1829,9 +1850,15 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Layo
       debug_scope_tree *ReadTree = ThreadState->ScopeTrees + DebugState->ReadScopeIndex;
       frame_stats *Frame = DebugState->Frames + DebugState->ReadScopeIndex;
 
-      PadBottom(Layout, 15);
-      NewLine(Layout, &Group->Font);
-      BufferFirstCallToEach(Group, ReadTree->Root, ReadTree->Root, GetDebugMemoryAllocator(), Layout, Frame->TotalCycles, 0);
+      debug_thread_state *MainThreadState = GetThreadDebugState(0);
+      debug_scope_tree *MainThreadReadTree    = MainThreadState->ScopeTrees + DebugState->ReadScopeIndex;
+
+      if (MainThreadReadTree->FrameId == ReadTree->FrameId)
+      {
+        PadBottom(Layout, 15);
+        NewLine(Layout, &Group->Font);
+        BufferFirstCallToEach(Group, ReadTree->Root, ReadTree->Root, GetDebugMemoryAllocator(), Layout, Frame->TotalCycles, 0);
+      }
     }
 
   END_BLOCK("Call Graph");
@@ -2418,7 +2445,7 @@ DebugFrameEnd(platform *Plat, game_state *GameState)
     {
       BufferValue("Call Graphs", &Group, &Layout, WHITE);
       DebugDrawCallGraph(&Group, DebugState, &Layout, Dt.Max);
-      DebugDrawThreadGraph(&Group, DebugState, &Layout);
+      DebugDrawCycleThreadGraph(&Group, DebugState, &Layout);
     } break;
 
     case DebugUIType_Memory:

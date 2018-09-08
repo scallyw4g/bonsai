@@ -99,6 +99,13 @@ AtomicDecrement( volatile u32 *Source )
   return;
 }
 
+inline u64
+AtomicIncrement( volatile u64 *Source )
+{
+  u64 Result = __sync_fetch_and_add( Source, 1 );
+  return Result;
+}
+
 inline u32
 AtomicIncrement( volatile u32 *Source )
 {
