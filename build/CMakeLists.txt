@@ -175,6 +175,7 @@ add_definitions( -Wno-float-equal )
 add_definitions( -Wno-padded )
 add_definitions( -Wno-double-promotion )
 add_definitions( -Wno-switch-enum )
+add_definitions( -Wno-multichar )
 
 # TODO(Jesse): Do an alignment pass on allocator.
 add_definitions( -Wno-cast-align )
