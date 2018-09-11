@@ -53,6 +53,7 @@ ReadU8Array(binary_stream *Source, u32 Count)
 {
   u8 *Result = Source->At;
   Source->At += Count;
+  Assert(Source->At <= Source->End);
   return Result;
 }
 
@@ -61,6 +62,7 @@ ReadU16Array(binary_stream *Source, u32 Count)
 {
   u16 *Result = (u16*)Source->At;
   Source->At += sizeof(u16)*Count;
+  Assert(Source->At <= Source->End);
   return Result;
 }
 
@@ -69,6 +71,7 @@ ReadS16Array(binary_stream *Source, u32 Count)
 {
   s16 *Result = (s16*)Source->At;
   Source->At += sizeof(s16)*Count;
+  Assert(Source->At <= Source->End);
   return Result;
 }
 
@@ -77,6 +80,7 @@ ReadS16(binary_stream *Source)
 {
   s16 Result = ReadS16(Source->At);
   Source->At += sizeof(s16);
+  Assert(Source->At <= Source->End);
   return Result;
 }
 
@@ -85,6 +89,7 @@ ReadU16(binary_stream *Source)
 {
   u16 Result = ReadU16(Source->At);
   Source->At += sizeof(u16);
+  Assert(Source->At <= Source->End);
   return Result;
 }
 
@@ -93,6 +98,7 @@ ReadS64(binary_stream *Source)
 {
   s64 Result = ReadS64(Source->At);
   Source->At += sizeof(s64);
+  Assert(Source->At <= Source->End);
   return Result;
 }
 
@@ -101,8 +107,37 @@ ReadU32(binary_stream *Source)
 {
   u32 Result = ReadU32(Source->At);
   Source->At += sizeof(u32);
+  Assert(Source->At <= Source->End);
   return Result;
 }
+
+struct head_table
+{
+  // Technically the spec says these are 32bit fixed point numbers, but IDC
+  // because I never use them
+  u32 Version;
+  u32 FontRevision;
+
+  u32 ChecksumAdjustment;
+
+  u32 MagicNumber;
+  u16 Flags;
+  u16 UnitsPerEm;
+
+  s64 Created;
+  s64 Modified;
+
+  s16 xMin;
+  s16 yMin;
+  s16 xMax;
+  s16 yMax;
+
+  u16 MacStyle;
+  u16 LowestRecPPEM;
+  u16 FontDirectionHint;
+  u16 IndexToLocFormat;
+  u16 GlyphDataFormat;
+};
 
 struct simple_glyph
 {
@@ -438,12 +473,15 @@ GetGlyphIdForCharacterCode(u32 GlyphQueryIndex, ttf *Font)
     binary_stream TableStream = {};
     TableStream.Start = Start;
     TableStream.At = Start;
+    TableStream.End = Start+4;
 
     u16 Format = ReadU16(&TableStream);
+    u16 Length = ReadU16(&TableStream);
+
+    TableStream.End = Start+Length;
     if (Format == 4)
     {
       /* RuntimeBreak(); */
-      u16 Length        = ReadU16(&TableStream);
       u16 Lang          = ReadU16(&TableStream);
       u16 SegCountX2    = ReadU16(&TableStream);
       u16 SegCount      = SegCountX2/2;
@@ -498,34 +536,6 @@ GetGlyphIdForCharacterCode(u32 GlyphQueryIndex, ttf *Font)
   return 0;
 }
 
-struct head_table
-{
-  // Technically the spec says these are 32bit fixed point numbers, but IDC
-  // because I never use them
-  u32 Version;
-  u32 FontRevision;
-
-  u32 ChecksumAdjustment;
-
-  u32 MagicNumber;
-  u16 Flags;
-  u16 UnitsPerEm;
-
-  s64 Created;
-  s64 Modified;
-
-  s16 xMin;
-  s16 yMin;
-  s16 xMax;
-  s16 yMax;
-
-  u16 MacStyle;
-  u16 LowestRecPPEM;
-  u16 FontDirectionHint;
-  u16 IndexToLocFormat;
-  u16 GlyphDataFormat;
-};
-
 inline head_table*
 ParseHeadTable(binary_stream *Stream, memory_arena *Arena)
 {
@@ -559,17 +569,62 @@ ParseHeadTable(binary_stream *Stream, memory_arena *Arena)
   return Result;
 }
 
+#define SHORT_INDEX_LOCATION_FORMAT 0
+#define LONG_INDEX_LOCATION_FORMAT 1
+
+inline binary_stream
+GetStreamForGlyphIndex(u32 GlyphIndex, ttf *Font, memory_arena *Arena)
+{
+  binary_stream HeadStream = BinaryStream(Font->head);
+  head_table *HeadTable = ParseHeadTable(&HeadStream, Arena);
+
+  binary_stream Result;
+  if (HeadTable->IndexToLocFormat == SHORT_INDEX_LOCATION_FORMAT)
+  {
+    u32 GlyphIndexOffset = GlyphIndex * sizeof(u16);
+    u16 StartOffset = ReadU16(Font->loca->Data+ GlyphIndexOffset) *2;
+    u16 EndOffset = ReadU16(Font->loca->Data+ GlyphIndexOffset + sizeof(u16)) *2;
+
+    u8* Start = Font->glyf->Data + StartOffset;
+    u8* End = Font->glyf->Data + EndOffset;
+    Result = BinaryStream(Start, End);
+  }
+  else if (HeadTable->IndexToLocFormat == LONG_INDEX_LOCATION_FORMAT)
+  {
+    u32 FirstOffset = ReadU32(Font->loca->Data);
+    u32 FirstEndOffset = ReadU32(Font->loca->Data+1);
+
+
+    u32 StartOffset = ReadU32(Font->loca->Data+GlyphIndex);
+    u32 EndOffset = ReadU32(Font->loca->Data+GlyphIndex+1);
+
+    u8* Start = Font->glyf->Data + StartOffset;
+    u8* End = Font->glyf->Data + EndOffset;
+    Result = BinaryStream(Start, End);
+  }
+  else
+  {
+    InvalidCodePath();
+  }
+
+  return Result;
+}
+
 inline void
 DumpGlyphTable(ttf* Font, memory_arena* Arena)
 {
-  u32 GlyphIndex =  GetGlyphIdForCharacterCode(111, Font);
+  /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('o', Font); */
+  /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('@', Font); */
+  u32 GlyphIndex =  GetGlyphIdForCharacterCode(' ', Font);
+  /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('.', Font); */
 
-  binary_stream HeadStream = BinaryStream(Font->head);
-  Print(Font->head->Length);
-  head_table *HeadTable = ParseHeadTable(&HeadStream, Arena);
+  binary_stream GlyphStream = GetStreamForGlyphIndex(GlyphIndex, Font, Arena);
 
-  binary_stream GlyphStream = BinaryStream(Font->glyf);
-  simple_glyph Glyph = ParseGlyph(&GlyphStream, Arena);
+  // A glyph stream with 0 length means there's no glyph
+  if (Remaining(&GlyphStream) > 0)
+  {
+    simple_glyph Glyph = ParseGlyph(&GlyphStream, Arena);
+  }
 
   return;
 }
@@ -579,7 +634,6 @@ main()
 {
   memory_arena Arena = {};
   ttf Font = InitTTF("roboto_for_powerline.ttf", &Arena);
-
   DumpGlyphTable(&Font, &Arena);
 
   return 0;
