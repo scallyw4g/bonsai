@@ -51,6 +51,18 @@ AnsiStream(binary_stream *Input)
 }
 
 binary_stream
+BinaryStream(u8* Start, u8* End)
+{
+  binary_stream Result = {
+    Start,
+    Start,
+    End
+  };
+
+  return Result;
+}
+
+binary_stream
 BinaryStreamFromFile(const char* SourceFile, memory_arena *Memory)
 {
   FILE *File = fopen(SourceFile, "r");

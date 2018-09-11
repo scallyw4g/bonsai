@@ -126,6 +126,12 @@ Print_P( u64 N, const char* name)
 }
 
 inline void
+Print_P( u16 N, const char* name)
+{
+  Log(" -- %s == %u \n", name, N);
+}
+
+inline void
 Print_P( u32 N, const char* name)
 {
   Log(" -- %s == %u \n", name, N);
