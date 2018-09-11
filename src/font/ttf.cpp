@@ -34,6 +34,13 @@ ReadU16(u8* Source)
   return Result;
 }
 
+inline s64
+ReadS64(u8* Source)
+{
+  s64 Result = ((u64)Source[0]<<56) + ((u64)Source[1]<<48) + ((u64)Source[2]<<40) + ((u64)Source[3]<<32) + ((u64)Source[4]<<24) + ((u64)Source[5]<<16) + ((u64)Source[6]<<8) + ((u64)Source[7]);
+  return Result;
+}
+
 inline u32
 ReadU32(u8* Source)
 {
@@ -81,6 +88,14 @@ ReadU16(binary_stream *Source)
   return Result;
 }
 
+inline s64
+ReadS64(binary_stream *Source)
+{
+  s64 Result = ReadS64(Source->At);
+  Source->At += sizeof(s64);
+  return Result;
+}
+
 inline u32
 ReadU32(binary_stream *Source)
 {
@@ -93,11 +108,10 @@ struct simple_glyph
 {
   s16 ContourCount;
 
-  // FIXME(Jesse): Appears my accessors for s16 types are fucked?
-  /* s16 xMin; */
-  /* s16 yMin; */
-  /* s16 xMax; */
-  /* s16 yMax; */
+  s16 xMin;
+  s16 yMin;
+  s16 xMax;
+  s16 yMax;
 
   u16* EndPointsOfContours;
 
@@ -276,10 +290,9 @@ InitTTF(const char* SourceFile, memory_arena *Arena)
     font_table *CurrentTable = ParseFontTable(&Source, Arena);
 
     u32 Checksum = CalculateTableChecksum(CurrentTable);
-    if (Checksum == CurrentTable->Checksum)
-    { AssignTable(CurrentTable, &Result); }
-    else
-    { Error("Invalid checksum encountered when reading table %s", CurrentTable->HumanTag); }
+    if (!Checksum == CurrentTable->Checksum) { Error("Invalid checksum encountered when reading table %s", CurrentTable->HumanTag); }
+
+    AssignTable(CurrentTable, &Result);
   }
 
 
@@ -339,19 +352,10 @@ ParseGlyph(binary_stream *Stream, memory_arena *Arena)
   simple_glyph Glyph = {};
   Glyph.ContourCount = ReadS16(Stream);
 
-#if 0
-  // FIXME(Jesse): Appears my accessors for s16 types are fucked?
-  Glyph.xMin                = ReadS16(Stream);
-  Glyph.yMin                = ReadS16(Stream);
-  Glyph.xMax                = ReadS16(Stream);
-  Glyph.yMax                = ReadS16(Stream);
-#else
-  /* ReadS16(Stream); */
-  /* ReadS16(Stream); */
-  /* ReadS16(Stream); */
-  /* ReadS16(Stream); */
-  Stream->At += 4*sizeof(u16);
-#endif
+  Glyph.xMin = ReadS16(Stream);
+  Glyph.yMin = ReadS16(Stream);
+  Glyph.xMax = ReadS16(Stream);
+  Glyph.yMax = ReadS16(Stream);
 
   Glyph.EndPointsOfContours = ReadU16Array(Stream, Glyph.ContourCount);
 
@@ -409,8 +413,8 @@ ParseGlyph(binary_stream *Stream, memory_arena *Arena)
 #define UnsupportedPlatform(platform_id) \
   case platform_id: { Error("Unsupported Platform %s", #platform_id); } break;
 
-binary_stream
-GetStreamForGlyph(u32 GlyphQueryIndex, ttf *Font)
+u16
+GetGlyphIdForCharacterCode(u32 GlyphQueryIndex, ttf *Font)
 {
   font_table *Cmap = Font->cmap;
   u32 Checksum = CalculateTableChecksum(Cmap);
@@ -476,34 +480,95 @@ GetStreamForGlyph(u32 GlyphQueryIndex, ttf *Font)
 
             u32 G = Start + RangeOffset;
             u16 GlyphIndex = ReadU16(IdRangeOffset + SegIdx + G) + Delta;
+            return GlyphIndex;
           }
           else
           {
             // TODO(Jesse): Does overflowing _actually_ wrap correctly here?
             u16 GlyphIndex = Delta + GlyphQueryIndex;
+            return GlyphIndex;
           }
 
         }
 
       }
-
-      u16* glyphIdArray = 0;
     }
   }
 
-  u32 Offset = 0;
-  u32 Length = 0;
+  return 0;
+}
 
-  u8* At = Font->glyf->Data + Offset;
+struct head_table
+{
+  // Technically the spec says these are 32bit fixed point numbers, but IDC
+  // because I never use them
+  u32 Version;
+  u32 FontRevision;
 
-  binary_stream GlyphStream = BinaryStream(At, At+Length );
-  return GlyphStream;
+  u32 ChecksumAdjustment;
+
+  u32 MagicNumber;
+  u16 Flags;
+  u16 UnitsPerEm;
+
+  s64 Created;
+  s64 Modified;
+
+  s16 xMin;
+  s16 yMin;
+  s16 xMax;
+  s16 yMax;
+
+  u16 MacStyle;
+  u16 LowestRecPPEM;
+  u16 FontDirectionHint;
+  u16 IndexToLocFormat;
+  u16 GlyphDataFormat;
+};
+
+inline head_table*
+ParseHeadTable(binary_stream *Stream, memory_arena *Arena)
+{
+  head_table *Result = Allocate(head_table, Arena, 1);
+
+  Result->Version = ReadU32(Stream);
+  Assert(Result->Version == 0x00010000);
+
+  Result->FontRevision       = ReadU32(Stream);
+
+  Result->ChecksumAdjustment = ReadU32(Stream);
+  Result->MagicNumber        = ReadU32(Stream);
+  Assert(Result->MagicNumber == 0x5F0F3CF5);
+
+  Result->Flags             = ReadU16(Stream);
+  Result->UnitsPerEm        = ReadU16(Stream);
+  Result->Created           = ReadS64(Stream);
+  Result->Modified          = ReadS64(Stream);
+  Result->xMin              = ReadS16(Stream);
+  Result->yMin              = ReadS16(Stream);
+  Result->xMax              = ReadS16(Stream);
+  Result->yMax              = ReadS16(Stream);
+  Result->MacStyle          = ReadU16(Stream);
+  Result->LowestRecPPEM     = ReadU16(Stream);
+  Result->FontDirectionHint = ReadU16(Stream);
+  Result->IndexToLocFormat  = ReadU16(Stream);
+  Result->GlyphDataFormat   = ReadU16(Stream);
+
+  Assert(Stream->At == Stream->End);
+
+  return Result;
 }
 
 inline void
 DumpGlyphTable(ttf* Font, memory_arena* Arena)
 {
-  binary_stream GlyphStream = GetStreamForGlyph(42, Font);
+  u32 GlyphIndex =  GetGlyphIdForCharacterCode(111, Font);
+
+  binary_stream HeadStream = BinaryStream(Font->head);
+  Print(Font->head->Length);
+  head_table *HeadTable = ParseHeadTable(&HeadStream, Arena);
+
+  binary_stream GlyphStream = BinaryStream(Font->glyf);
   simple_glyph Glyph = ParseGlyph(&GlyphStream, Arena);
 
   return;
