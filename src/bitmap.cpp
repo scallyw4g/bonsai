@@ -13,8 +13,8 @@ struct bitmap_image_header
   u32 ColorMapsUsed;        // ??
   u32 NumSignificantColors; // ??
   u32 RedMask;
-  u32 BlueMask;
   u32 GreenMask;
+  u32 BlueMask;
   u32 AlphaMask; // This is not technically defined in the spec, but I observed GIMP requiring it
 };
 
@@ -86,9 +86,9 @@ WriteBitmapToDisk(bitmap *Bitmap, const char *Filename)
   Header.Image.yPixelsPerMeter      = 2835;
   Header.Image.ColorMapsUsed        = 0;
   Header.Image.NumSignificantColors = 0;
-  Header.Image.RedMask              = 0xFF000000;
-  Header.Image.BlueMask             = 0x00FF0000;
+  Header.Image.RedMask              = 0x000000FF;
   Header.Image.GreenMask            = 0x0000FF00;
+  Header.Image.BlueMask             = 0x00FF0000;
 
 
   u32 SizeWritten = 0;
