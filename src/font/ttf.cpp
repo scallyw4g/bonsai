@@ -5,6 +5,7 @@
 
 #include <bonsai_types.h>
 #include <unix_platform.cpp>
+#include <bitmap.cpp>
 
 
 inline u8
