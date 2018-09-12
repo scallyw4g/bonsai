@@ -6,6 +6,14 @@
 #include <bonsai_types.h>
 #include <unix_platform.cpp>
 
+
+inline u8
+ReadU8(u8* Source)
+{
+  u8 Result = Source[0];
+  return Result;
+}
+
 inline s16
 ReadS16(s16* Source)
 {
@@ -71,6 +79,15 @@ ReadS16Array(binary_stream *Source, u32 Count)
 {
   s16 *Result = (s16*)Source->At;
   Source->At += sizeof(s16)*Count;
+  Assert(Source->At <= Source->End);
+  return Result;
+}
+
+inline u8
+ReadU8(binary_stream *Source)
+{
+  u8 Result = ReadU8(Source->At);
+  Source->At += sizeof(u8);
   Assert(Source->At <= Source->End);
   return Result;
 }
@@ -407,9 +424,8 @@ ParseGlyph(binary_stream *Stream, memory_arena *Arena)
 
   Glyph.Flags = Stream->At;
 
-  u16 NumContourPoints = ReadU16(Glyph.EndPointsOfContours+Glyph.ContourCount-1);
+  u16 NumContourPoints = 1+ReadU16(Glyph.EndPointsOfContours+Glyph.ContourCount-1);
   ttf_vert *ContourVerts = Allocate(ttf_vert, Arena, NumContourPoints);
-
 
   u8* FlagsAt = Glyph.Flags;
   u8* xAt = Glyph.xCoords;
@@ -429,6 +445,8 @@ ParseGlyph(binary_stream *Stream, memory_arena *Arena)
     else
     {
       Flag = *FlagsAt++;
+      Assert((Flag & 64) == 0);
+      Assert((Flag & 128) == 0);
       if (Flag & TTFFlag_Repeat)
       {
         RepeatCount = *FlagsAt++;
@@ -438,6 +456,56 @@ ParseGlyph(binary_stream *Stream, memory_arena *Arena)
 
     ContourVerts[PointIndex].Flags = Flag;
   }
+
+  binary_stream VertStream = BinaryStream(FlagsAt, (u8*)0xFFFFFFFFFFFFFFFF);
+  s16 X = 0;
+  for (u32 PointIndex = 0;
+      PointIndex < NumContourPoints;
+      ++PointIndex)
+  {
+    ttf_vert *Vert = ContourVerts + PointIndex;
+    if (Vert->Flags & TTFFlag_ShortX)
+    {
+      u16 Delta = ReadU8(&VertStream);
+      X += (Vert->Flags & TTFFlag_DualX) ? Delta : -Delta;
+    }
+    else
+    {
+      if (!(Vert->Flags & TTFFlag_DualX))
+      {
+        X += ReadU16(&VertStream);
+      }
+    }
+
+    Vert->x = X;
+    Assert(Vert->x >= Glyph.xMin);
+    Assert(Vert->x <= Glyph.xMax);
+  }
+
+  s16 Y = 0;
+  for (u32 PointIndex = 0;
+      PointIndex < NumContourPoints;
+      ++PointIndex)
+  {
+    ttf_vert *Vert = ContourVerts + PointIndex;
+    if (Vert->Flags & TTFFlag_ShortY)
+    {
+      u16 Delta = ReadU8(&VertStream);
+      Y += (Vert->Flags & TTFFlag_DualY) ? Delta : -Delta;
+    }
+    else
+    {
+      if (!(Vert->Flags & TTFFlag_DualY))
+      {
+        Y += ReadU16(&VertStream);
+      }
+    }
+
+    Vert->y = Y;
+    Assert(Vert->y >= Glyph.yMin);
+    Assert(Vert->y <= Glyph.yMax);
+  }
+
 
   return Glyph;
 }
@@ -614,14 +682,14 @@ inline void
 DumpGlyphTable(ttf* Font, memory_arena* Arena)
 {
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('o', Font); */
+  u32 GlyphIndex =  GetGlyphIdForCharacterCode('a', Font);
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('@', Font); */
-  u32 GlyphIndex =  GetGlyphIdForCharacterCode(' ', Font);
+  /* u32 GlyphIndex =  GetGlyphIdForCharacterCode(' ', Font); */
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('.', Font); */
 
   binary_stream GlyphStream = GetStreamForGlyphIndex(GlyphIndex, Font, Arena);
 
-  // A glyph stream with 0 length means there's no glyph
-  if (Remaining(&GlyphStream) > 0)
+  if (Remaining(&GlyphStream) > 0) // A glyph stream with 0 length means there's no glyph
   {
     simple_glyph Glyph = ParseGlyph(&GlyphStream, Arena);
   }
