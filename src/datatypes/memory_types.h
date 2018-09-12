@@ -236,11 +236,11 @@ AdvanceToBytesBeforeNextPage(umm Bytes, memory_arena *Arena)
   return;
 }
 
-umm
-TotalSize(memory_arena *Arena)
+template <typename T> umm
+TotalSize(T *Sizable)
 {
-  Assert(Arena->At <= Arena->End);
-  umm Result = (umm)(Arena->End - Arena->Start);
+  Assert(Sizable->At <= Sizable->End);
+  umm Result = (umm)(Sizable->End - Sizable->Start) * sizeof(Sizable->Start[0]);
   return Result;
 }
 

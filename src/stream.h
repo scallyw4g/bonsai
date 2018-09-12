@@ -1,6 +1,13 @@
 #include <string>
 
-struct binary_stream
+struct binary_stream_u32
+{
+  u32* Start;
+  u32* At;
+  u32* End;
+};
+
+struct binary_stream_u8
 {
   u8* Start;
   u8* At;
@@ -39,7 +46,7 @@ AnsiStream(const char *Input)
 }
 
 ansi_stream
-AnsiStream(binary_stream *Input)
+AnsiStream(binary_stream_u8 *Input)
 {
   ansi_stream Result = {};
 
@@ -50,19 +57,40 @@ AnsiStream(binary_stream *Input)
   return Result;
 }
 
-binary_stream
+binary_stream_u8
 BinaryStream(u8* Start, u8* End)
 {
-  binary_stream Result = {
+  binary_stream_u8 Result = {
     Start,
     Start,
     End
   };
-
   return Result;
 }
 
-binary_stream
+binary_stream_u32
+BinaryStream(u32* Start, u32* End)
+{
+  binary_stream_u32 Result = {
+    Start,
+    Start,
+    End
+  };
+  return Result;
+}
+
+binary_stream_u8
+BinaryStreamU8(u8* Start, u8* End)
+{
+  binary_stream_u8 Result = {
+    Start,
+    Start,
+    End
+  };
+  return Result;
+}
+
+binary_stream_u8
 BinaryStreamFromFile(const char* SourceFile, memory_arena *Memory)
 {
   FILE *File = fopen(SourceFile, "r");
@@ -82,7 +110,7 @@ BinaryStreamFromFile(const char* SourceFile, memory_arena *Memory)
     Error("Opening %s", SourceFile);
   }
 
-  binary_stream Result = {
+  binary_stream_u8 Result = {
     FileContents,
     FileContents,
     FileContents + FileSize
@@ -94,7 +122,7 @@ BinaryStreamFromFile(const char* SourceFile, memory_arena *Memory)
 ansi_stream
 AnsiStreamFromFile(const char* SourceFile, memory_arena *Memory)
 {
-  binary_stream Binary = BinaryStreamFromFile(SourceFile, Memory);
+  binary_stream_u8 Binary = BinaryStreamFromFile(SourceFile, Memory);
   ansi_stream Result = AnsiStream(&Binary);
   return Result;
 }

@@ -29,6 +29,7 @@ add_executable(ttf ${SRC}/font/ttf.cpp)
 
 add_executable(Server ${SRC}/net/server.cpp)
 add_executable(test_m4 ${TESTS}/m4.cpp)
+add_executable(test_bitmap ${TESTS}/bitmap.cpp)
 add_executable(test_chunk ${TESTS}/chunk.cpp)
 add_executable(test_string ${TESTS}/string.cpp)
 add_executable(test_objloader ${TESTS}/objloader.cpp)
@@ -67,6 +68,7 @@ add_custom_target(run ${BIN}/Bonsai
                   COMMENT "Running Bonsai")
 
 add_custom_target(tests ${BIN}/test_m4
+                        ${BIN}/test_bitmap
                         ${BIN}/test_chunk
                         ${BIN}/test_string
                         ${BIN}/test_objloader
@@ -81,6 +83,7 @@ target_compile_definitions(Game    PUBLIC BONSAI_INTERNAL=1)
 target_compile_definitions(ttf PUBLIC BONSAI_INTERNAL=1)
 
 target_compile_definitions(test_m4 PUBLIC BONSAI_INTERNAL=1)
+target_compile_definitions(test_bitmap PUBLIC BONSAI_INTERNAL=1)
 target_compile_definitions(test_chunk PUBLIC BONSAI_INTERNAL=1)
 target_compile_definitions(test_string PUBLIC BONSAI_INTERNAL=1)
 target_compile_definitions(test_objloader PUBLIC BONSAI_INTERNAL=1)

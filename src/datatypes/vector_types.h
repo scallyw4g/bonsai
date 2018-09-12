@@ -592,6 +592,13 @@ V2(float x,float y)
 }
 
 v2i
+V2i(s32 P)
+{
+  v2i Result = {P,P};
+  return Result;
+}
+
+v2i
 V2i(s32 x, s32 y)
 {
   v2i Result = {x,y};

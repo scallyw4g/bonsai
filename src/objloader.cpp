@@ -103,7 +103,7 @@ LoadObj(memory_arena *PermMem, const char * FilePath)
   Info("Loading .obj file : %s \n", FilePath);
 
   umm Length = 0;
-  binary_stream BinaryStream = BinaryStreamFromFile(FilePath, PermMem);
+  binary_stream_u8 BinaryStream = BinaryStreamFromFile(FilePath, PermMem);
   if (!BinaryStream.Start) { model M = {}; return M; }
 
   ansi_stream Stream = AnsiStream(&BinaryStream);

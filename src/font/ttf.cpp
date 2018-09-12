@@ -58,7 +58,7 @@ ReadU32(u8* Source)
 }
 
 inline u8*
-ReadU8Array(binary_stream *Source, u32 Count)
+ReadU8Array(binary_stream_u8 *Source, u32 Count)
 {
   u8 *Result = Source->At;
   Source->At += Count;
@@ -67,7 +67,7 @@ ReadU8Array(binary_stream *Source, u32 Count)
 }
 
 inline u16*
-ReadU16Array(binary_stream *Source, u32 Count)
+ReadU16Array(binary_stream_u8 *Source, u32 Count)
 {
   u16 *Result = (u16*)Source->At;
   Source->At += sizeof(u16)*Count;
@@ -76,7 +76,7 @@ ReadU16Array(binary_stream *Source, u32 Count)
 }
 
 inline s16*
-ReadS16Array(binary_stream *Source, u32 Count)
+ReadS16Array(binary_stream_u8 *Source, u32 Count)
 {
   s16 *Result = (s16*)Source->At;
   Source->At += sizeof(s16)*Count;
@@ -85,7 +85,7 @@ ReadS16Array(binary_stream *Source, u32 Count)
 }
 
 inline u8
-ReadU8(binary_stream *Source)
+ReadU8(binary_stream_u8 *Source)
 {
   u8 Result = ReadU8(Source->At);
   Source->At += sizeof(u8);
@@ -94,7 +94,7 @@ ReadU8(binary_stream *Source)
 }
 
 inline s16
-ReadS16(binary_stream *Source)
+ReadS16(binary_stream_u8 *Source)
 {
   s16 Result = ReadS16(Source->At);
   Source->At += sizeof(s16);
@@ -103,7 +103,7 @@ ReadS16(binary_stream *Source)
 }
 
 inline u16
-ReadU16(binary_stream *Source)
+ReadU16(binary_stream_u8 *Source)
 {
   u16 Result = ReadU16(Source->At);
   Source->At += sizeof(u16);
@@ -112,7 +112,7 @@ ReadU16(binary_stream *Source)
 }
 
 inline s64
-ReadS64(binary_stream *Source)
+ReadS64(binary_stream_u8 *Source)
 {
   s64 Result = ReadS64(Source->At);
   Source->At += sizeof(s64);
@@ -121,7 +121,7 @@ ReadS64(binary_stream *Source)
 }
 
 inline u32
-ReadU32(binary_stream *Source)
+ReadU32(binary_stream_u8 *Source)
 {
   u32 Result = ReadU32(Source->At);
   Source->At += sizeof(u32);
@@ -211,10 +211,10 @@ struct offset_subtable
   u16 RangeShift;
 };
 
-binary_stream
+binary_stream_u8
 BinaryStream(font_table *Table)
 {
-  binary_stream Result = BinaryStream(Table->Data, Table->Data+Table->Length);
+  binary_stream_u8 Result = BinaryStream(Table->Data, Table->Data+Table->Length);
   return Result;
 }
 
@@ -264,7 +264,7 @@ AssignTable(font_table *Table, ttf *Font)
 }
 
 inline font_table*
-ParseFontTable(binary_stream *Source, memory_arena *Arena)
+ParseFontTable(binary_stream_u8 *Source, memory_arena *Arena)
 {
   font_table *Result = Allocate(font_table, Arena, 1);
   Result->Tag          = ReadU32(Source);
@@ -279,7 +279,7 @@ ParseFontTable(binary_stream *Source, memory_arena *Arena)
 }
 
 offset_subtable
-ParseOffsetSubtable(binary_stream *Source)
+ParseOffsetSubtable(binary_stream_u8 *Source)
 {
   Assert(Source->At == Source->Start);
 
@@ -331,7 +331,7 @@ CalculateTableChecksum(font_table *Table)
 ttf
 InitTTF(const char* SourceFile, memory_arena *Arena)
 {
-  binary_stream Source = BinaryStreamFromFile(SourceFile, Arena);
+  binary_stream_u8 Source = BinaryStreamFromFile(SourceFile, Arena);
 
   offset_subtable TableOffsets = ParseOffsetSubtable(&Source);
 
@@ -400,7 +400,7 @@ struct ttf_vert
 /* }; */
 
 simple_glyph
-ParseGlyph(binary_stream *Stream, memory_arena *Arena)
+ParseGlyph(binary_stream_u8 *Stream, memory_arena *Arena)
 {
   simple_glyph Glyph = {};
   Glyph.ContourCount = ReadS16(Stream);
@@ -458,7 +458,7 @@ ParseGlyph(binary_stream *Stream, memory_arena *Arena)
     ContourVerts[PointIndex].Flags = Flag;
   }
 
-  binary_stream VertStream = BinaryStream(FlagsAt, (u8*)0xFFFFFFFFFFFFFFFF);
+  binary_stream_u8 VertStream = BinaryStream(FlagsAt, (u8*)0xFFFFFFFFFFFFFFFF);
   s16 X = 0;
   for (u32 PointIndex = 0;
       PointIndex < NumContourPoints;
@@ -524,7 +524,7 @@ GetGlyphIdForCharacterCode(u32 GlyphQueryIndex, ttf *Font)
   u32 Checksum = CalculateTableChecksum(Cmap);
   Assert(Checksum == Cmap->Checksum);
 
-  binary_stream CmapStream = BinaryStream(Cmap);
+  binary_stream_u8 CmapStream = BinaryStream(Cmap);
   u16 TableVersion = ReadU16(&CmapStream);
   Assert(TableVersion == 0);
 
@@ -539,7 +539,7 @@ GetGlyphIdForCharacterCode(u32 GlyphQueryIndex, ttf *Font)
     u32 Offset             = ReadU32(&CmapStream);
     u8* Start              = CmapStream.Start + Offset;
 
-    binary_stream TableStream = {};
+    binary_stream_u8 TableStream = {};
     TableStream.Start = Start;
     TableStream.At = Start;
     TableStream.End = Start+4;
@@ -606,7 +606,7 @@ GetGlyphIdForCharacterCode(u32 GlyphQueryIndex, ttf *Font)
 }
 
 inline head_table*
-ParseHeadTable(binary_stream *Stream, memory_arena *Arena)
+ParseHeadTable(binary_stream_u8 *Stream, memory_arena *Arena)
 {
   head_table *Result = Allocate(head_table, Arena, 1);
 
@@ -641,13 +641,13 @@ ParseHeadTable(binary_stream *Stream, memory_arena *Arena)
 #define SHORT_INDEX_LOCATION_FORMAT 0
 #define LONG_INDEX_LOCATION_FORMAT 1
 
-inline binary_stream
+inline binary_stream_u8
 GetStreamForGlyphIndex(u32 GlyphIndex, ttf *Font, memory_arena *Arena)
 {
-  binary_stream HeadStream = BinaryStream(Font->head);
+  binary_stream_u8 HeadStream = BinaryStream(Font->head);
   head_table *HeadTable = ParseHeadTable(&HeadStream, Arena);
 
-  binary_stream Result;
+  binary_stream_u8 Result;
   if (HeadTable->IndexToLocFormat == SHORT_INDEX_LOCATION_FORMAT)
   {
     u32 GlyphIndexOffset = GlyphIndex * sizeof(u16);
@@ -688,7 +688,7 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode(' ', Font); */
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('.', Font); */
 
-  binary_stream GlyphStream = GetStreamForGlyphIndex(GlyphIndex, Font, Arena);
+  binary_stream_u8 GlyphStream = GetStreamForGlyphIndex(GlyphIndex, Font, Arena);
 
   if (Remaining(&GlyphStream) > 0) // A glyph stream with 0 length means there's no glyph
   {
