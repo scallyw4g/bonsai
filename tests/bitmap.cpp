@@ -57,7 +57,7 @@ main()
   u32 SecondBitmapPixelCount = 0;
   {
     bitmap Bitmap = AllocateBitmap(V2i(8), &Arena);
-    ClearTo(0xFFFFFFFF, &Bitmap);
+    FillBitmap(0xFFFFFFFF, &Bitmap);
 
     {
       b32 Wrote = WriteBitmapToDisk(&Bitmap, "white.bmp");

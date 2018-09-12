@@ -195,6 +195,20 @@ Print_P( v3 P, const char* name)
 }
 
 inline void
+Print_P( v2i P, const char* name)
+{
+#if 0
+  if ( Abs(P.x) < 0.000001f )
+    P.x = 0;
+
+  if ( Abs(P.y) < 0.000001f )
+    P.y = 0;
+#endif
+
+  Log(" %s %d %d \n", name, P.x, P.y );
+}
+
+inline void
 Print_P( v2 P, const char* name)
 {
 #if 0

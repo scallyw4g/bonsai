@@ -152,7 +152,7 @@ PackRGBALinearTo255(v4 Color)
 }
 
 inline void
-ClearTo(u32 C, bitmap *Bitmap)
+FillBitmap(u32 C, bitmap *Bitmap)
 {
   while (Bitmap->Pixels.At < Bitmap->Pixels.End)
   {
@@ -160,4 +160,11 @@ ClearTo(u32 C, bitmap *Bitmap)
     Bitmap->Pixels.At++;
   }
   return;
+}
+
+inline u32
+PixelCount(bitmap *Bitmap)
+{
+  u32 Result = Bitmap->Dim.x*Bitmap->Dim.y;
+  return Result;
 }

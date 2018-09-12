@@ -159,9 +159,7 @@ struct head_table
 
 struct ttf_vert
 {
-  s16 x;
-  s16 y;
-
+  v2i P;
   u16 Flags;
 };
 
@@ -398,8 +396,8 @@ ParseGlyph(binary_stream_u8 *Stream, memory_arena *Arena)
   s16 xMax = ReadS16(Stream);
   s16 yMax = ReadS16(Stream);
 
-  Glyph.Maximum.x = xMax - xMin;
-  Glyph.Maximum.y = xMax - xMin;
+  Glyph.Maximum.x = xMax - xMin + 1; // Add one to put from 0-based to 1-based
+  Glyph.Maximum.y = yMax - yMin + 1; // coordinate system
 
   u16 *EndPointsOfContours = ReadU16Array(Stream, ContourCount);
 
@@ -408,7 +406,6 @@ ParseGlyph(binary_stream_u8 *Stream, memory_arena *Arena)
       ++PointIndex)
   {
     u16 EndOfContour = ReadU16(EndPointsOfContours + PointIndex);
-    Print(EndOfContour);
   }
 
   u16 InstructionLength = ReadU16(Stream);
@@ -466,9 +463,9 @@ ParseGlyph(binary_stream_u8 *Stream, memory_arena *Arena)
       }
     }
 
-    Vert->x = X;
-    Assert(Vert->x >= xMin);
-    Assert(Vert->x <= xMax);
+    Vert->P.x = X - xMin;
+    Assert(Vert->P.x >= 0);
+    Assert(Vert->P.x <= Glyph.Maximum.x);
   }
 
   s16 Y = 0;
@@ -490,9 +487,9 @@ ParseGlyph(binary_stream_u8 *Stream, memory_arena *Arena)
       }
     }
 
-    Vert->y = Y;
-    Assert(Vert->y >= yMin);
-    Assert(Vert->y <= yMax);
+    Vert->P.y = Y - yMin;
+    Assert(Vert->P.y >= 0);
+    Assert(Vert->P.y <= Glyph.Maximum.y);
   }
 
 
@@ -667,6 +664,15 @@ GetStreamForGlyphIndex(u32 GlyphIndex, ttf *Font, memory_arena *Arena)
   return Result;
 }
 
+inline u32
+GetPixelIndex(v2i PixelP, bitmap* Bitmap)
+{
+  Assert(PixelP.x < Bitmap->Dim.x);
+  Assert(PixelP.y < Bitmap->Dim.y);
+  u32 Result = PixelP.x + (PixelP.y*Bitmap->Dim.x);
+  return Result;
+}
+
 inline void
 DumpGlyphTable(ttf* Font, memory_arena* Arena)
 {
@@ -681,6 +687,30 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
   if (Remaining(&GlyphStream) > 0) // A glyph stream with 0 length means there's no glyph
   {
     simple_glyph Glyph = ParseGlyph(&GlyphStream, Arena);
+    bitmap Bitmap = AllocateBitmap(Glyph.Maximum, Arena);
+    FillBitmap(0xFFFFFFFF, &Bitmap);
+
+    v2i LastP = {};
+    for (u32 VertIndex = 0;
+        VertIndex < Glyph.ContourVertCount;
+        ++VertIndex)
+    {
+      ttf_vert *Vert = Glyph.Verts + VertIndex;
+
+      u32 PixelIndex = GetPixelIndex(Vert->P, &Bitmap);
+      Assert(PixelIndex < PixelCount(&Bitmap));
+
+      if (Vert->Flags & TTFFlag_OnCurve)
+      {
+        *(Bitmap.Pixels.Start + PixelIndex) = 0;
+      }
+      else
+      {
+        *(Bitmap.Pixels.Start + PixelIndex) = 0x00FF00FF;
+      }
+    }
+
+    WriteBitmapToDisk(&Bitmap, "glyph.bmp");
   }
 
   return;
