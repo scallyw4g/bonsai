@@ -157,24 +157,20 @@ struct head_table
   u16 GlyphDataFormat;
 };
 
+struct ttf_vert
+{
+  s16 x;
+  s16 y;
+
+  u16 Flags;
+};
+
 struct simple_glyph
 {
-  s16 ContourCount;
+  v2i Maximum;
 
-  s16 xMin;
-  s16 yMin;
-  s16 xMax;
-  s16 yMax;
-
-  u16* EndPointsOfContours;
-
-  u16 InstructionLength;
-  u8* Instructions; // [InstructionLength]
-
-  u8* Flags;
-
-  u8* xCoords;
-  u8* yCoords;
+  s16 ContourVertCount;
+  ttf_vert *Verts;
 };
 
 struct font_table
@@ -362,14 +358,6 @@ enum ttf_flag
   TTFFlag_DualY   = 1 << 5,
 };
 
-struct ttf_vert
-{
-  s16 x;
-  s16 y;
-
-  u16 Flags;
-};
-
 /* struct encoding_subtable */
 /* { */
 /*   u16 PlatformId; */
@@ -403,40 +391,40 @@ simple_glyph
 ParseGlyph(binary_stream_u8 *Stream, memory_arena *Arena)
 {
   simple_glyph Glyph = {};
-  Glyph.ContourCount = ReadS16(Stream);
+  u32 ContourCount = ReadS16(Stream);
 
-  Glyph.xMin = ReadS16(Stream);
-  Glyph.yMin = ReadS16(Stream);
-  Glyph.xMax = ReadS16(Stream);
-  Glyph.yMax = ReadS16(Stream);
+  s16 xMin = ReadS16(Stream);
+  s16 yMin = ReadS16(Stream);
+  s16 xMax = ReadS16(Stream);
+  s16 yMax = ReadS16(Stream);
 
-  Glyph.EndPointsOfContours = ReadU16Array(Stream, Glyph.ContourCount);
+  Glyph.Maximum.x = xMax - xMin;
+  Glyph.Maximum.y = xMax - xMin;
+
+  u16 *EndPointsOfContours = ReadU16Array(Stream, ContourCount);
 
   for (u32 PointIndex = 0;
-      PointIndex < Glyph.ContourCount;
+      PointIndex < ContourCount;
       ++PointIndex)
   {
-    u16 EndOfContour = ReadU16(Glyph.EndPointsOfContours + PointIndex);
+    u16 EndOfContour = ReadU16(EndPointsOfContours + PointIndex);
     Print(EndOfContour);
   }
 
-  Glyph.InstructionLength = ReadU16(Stream);
-  Glyph.Instructions = ReadU8Array(Stream, Glyph.InstructionLength);
+  u16 InstructionLength = ReadU16(Stream);
+  u8* Instructions = ReadU8Array(Stream, InstructionLength);
 
-  Glyph.Flags = Stream->At;
+  u8* Flags = Stream->At;
+  u8* FlagsAt = Flags;
 
-  u16 NumContourPoints = 1+ReadU16(Glyph.EndPointsOfContours+Glyph.ContourCount-1);
-  ttf_vert *ContourVerts = Allocate(ttf_vert, Arena, NumContourPoints);
-
-  u8* FlagsAt = Glyph.Flags;
-  u8* xAt = Glyph.xCoords;
-  u8* yAt = Glyph.yCoords;
+  Glyph.ContourVertCount = 1+ReadU16(EndPointsOfContours+ContourCount-1);
+  Glyph.Verts = Allocate(ttf_vert, Arena, Glyph.ContourVertCount);
 
   b32 RepeatCount = 0;
   u8 Flag = 0;
 
   for (u32 PointIndex = 0;
-      PointIndex < NumContourPoints;
+      PointIndex < Glyph.ContourVertCount;
       ++PointIndex)
   {
     if (RepeatCount)
@@ -451,20 +439,20 @@ ParseGlyph(binary_stream_u8 *Stream, memory_arena *Arena)
       if (Flag & TTFFlag_Repeat)
       {
         RepeatCount = *FlagsAt++;
-        Assert(PointIndex + RepeatCount < NumContourPoints);
+        Assert(PointIndex + RepeatCount < Glyph.ContourVertCount);
       }
     }
 
-    ContourVerts[PointIndex].Flags = Flag;
+    Glyph.Verts[PointIndex].Flags = Flag;
   }
 
   binary_stream_u8 VertStream = BinaryStream(FlagsAt, (u8*)0xFFFFFFFFFFFFFFFF);
   s16 X = 0;
   for (u32 PointIndex = 0;
-      PointIndex < NumContourPoints;
+      PointIndex < Glyph.ContourVertCount;
       ++PointIndex)
   {
-    ttf_vert *Vert = ContourVerts + PointIndex;
+    ttf_vert *Vert = Glyph.Verts + PointIndex;
     if (Vert->Flags & TTFFlag_ShortX)
     {
       u16 Delta = ReadU8(&VertStream);
@@ -479,16 +467,16 @@ ParseGlyph(binary_stream_u8 *Stream, memory_arena *Arena)
     }
 
     Vert->x = X;
-    Assert(Vert->x >= Glyph.xMin);
-    Assert(Vert->x <= Glyph.xMax);
+    Assert(Vert->x >= xMin);
+    Assert(Vert->x <= xMax);
   }
 
   s16 Y = 0;
   for (u32 PointIndex = 0;
-      PointIndex < NumContourPoints;
+      PointIndex < Glyph.ContourVertCount;
       ++PointIndex)
   {
-    ttf_vert *Vert = ContourVerts + PointIndex;
+    ttf_vert *Vert = Glyph.Verts + PointIndex;
     if (Vert->Flags & TTFFlag_ShortY)
     {
       u16 Delta = ReadU8(&VertStream);
@@ -503,8 +491,8 @@ ParseGlyph(binary_stream_u8 *Stream, memory_arena *Arena)
     }
 
     Vert->y = Y;
-    Assert(Vert->y >= Glyph.yMin);
-    Assert(Vert->y <= Glyph.yMax);
+    Assert(Vert->y >= yMin);
+    Assert(Vert->y <= yMax);
   }
 
 
