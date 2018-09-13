@@ -676,8 +676,8 @@ GetPixelIndex(v2i PixelP, bitmap* Bitmap)
 inline void
 DumpGlyphTable(ttf* Font, memory_arena* Arena)
 {
-  /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('o', Font); */
-  u32 GlyphIndex =  GetGlyphIdForCharacterCode('a', Font);
+  u32 GlyphIndex =  GetGlyphIdForCharacterCode('o', Font);
+  /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('a', Font); */
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('@', Font); */
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode(' ', Font); */
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('.', Font); */
@@ -690,23 +690,20 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
     bitmap Bitmap = AllocateBitmap(Glyph.Maximum, Arena);
     FillBitmap(0xFFFFFFFF, &Bitmap);
 
-    v2i LastP = {};
+    v2 At = V2(Glyph.Verts->P);
     for (u32 VertIndex = 0;
         VertIndex < Glyph.ContourVertCount;
         ++VertIndex)
     {
       ttf_vert *Vert = Glyph.Verts + VertIndex;
-
-      u32 PixelIndex = GetPixelIndex(Vert->P, &Bitmap);
-      Assert(PixelIndex < PixelCount(&Bitmap));
-
-      if (Vert->Flags & TTFFlag_OnCurve)
+      v2 VertP = V2(Vert->P);
+      v2 CurrentToVert = Normalize(VertP-At) * 0.5f;
+      while(Abs(Length(VertP - At)) > 0.5f)
       {
+        u32 PixelIndex = GetPixelIndex(V2i(At), &Bitmap);
+        Assert(PixelIndex < PixelCount(&Bitmap));
         *(Bitmap.Pixels.Start + PixelIndex) = 0;
-      }
-      else
-      {
-        *(Bitmap.Pixels.Start + PixelIndex) = 0x00FF00FF;
+        At += CurrentToVert;
       }
     }
 

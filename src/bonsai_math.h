@@ -327,6 +327,13 @@ LengthSq( voxel_position P )
 }
 
 inline float
+LengthSq( v2 Vec )
+{
+  float Result = Vec.x*Vec.x + Vec.y*Vec.y;
+  return Result;
+}
+
+inline float
 LengthSq( v3 Vec )
 {
   float Result = Vec.x*Vec.x + Vec.y*Vec.y + Vec.z*Vec.z;
@@ -338,6 +345,13 @@ Length( canonical_position P )
 {
   v3 Offset = P.Offset + (P.WorldP * WORLD_CHUNK_DIM);
   float Result = sqrt(LengthSq(Offset));
+  return Result;
+}
+
+inline r32
+Length( v2 Vec )
+{
+  r32 Result = (r32)sqrt(LengthSq(Vec));
   return Result;
 }
 
@@ -359,6 +373,24 @@ inline float
 Square( float f )
 {
   float Result = f*f;
+  return Result;
+}
+
+inline v2
+Normalize(v2 Vec, float length)
+{
+  if (length == 0) return V2(0,0);
+
+  v2 Result = Vec;
+  Result.x = Result.x/length;
+  Result.y = Result.y/length;
+  return Result;
+}
+
+inline v2
+Normalize(v2 A)
+{
+  v2 Result = Normalize(A, Length(A));
   return Result;
 }
 

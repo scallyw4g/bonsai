@@ -578,6 +578,15 @@ Volume(chunk_dimension Dim)
 }
 
 inline v2
+V2(v2i V)
+{
+  v2 Result;
+  Result.x = V.x;
+  Result.y = V.y;
+  return Result;
+}
+
+inline v2
 V2(r32 F)
 {
   v2 Result = {F, F};
@@ -588,6 +597,15 @@ v2
 V2(float x,float y)
 {
   v2 Result = {x,y};
+  return Result;
+}
+
+v2i
+V2i(v2 V)
+{
+  v2i Result;
+  Result.x = V.x;
+  Result.y = V.y;
   return Result;
 }
 
@@ -612,14 +630,11 @@ V2i(u32 x, u32 y)
   return Result;
 }
 
-v2 operator+=(v2 P1, v2 P2)
+void
+operator+=(v2& P1, v2 P2)
 {
-  v2 Result;
-
-  Result.x = P1.x + P2.x;
-  Result.y = P1.y + P2.y;
-
-  return Result;
+  P1.x += P2.x;
+  P1.y += P2.y;
 }
 
 v2
