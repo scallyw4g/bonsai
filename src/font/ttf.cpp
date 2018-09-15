@@ -689,22 +689,47 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
     simple_glyph Glyph = ParseGlyph(&GlyphStream, Arena);
     bitmap Bitmap = AllocateBitmap(Glyph.Maximum, Arena);
     FillBitmap(0xFFFFFFFF, &Bitmap);
+    u32 Black = 0x00000000;
+    u32 Red = 0x000000FF;
 
     v2 At = V2(Glyph.Verts->P);
+    v2 LastVertP = At;
+
+    u32 CurrentColor = (Glyph.Verts->Flags&TTFFlag_OnCurve) ?  Black : Red;
+    u32 TargetColor = Black;
+
     for (u32 VertIndex = 0;
         VertIndex < Glyph.ContourVertCount;
         ++VertIndex)
     {
       ttf_vert *Vert = Glyph.Verts + VertIndex;
+
+      if (Vert->Flags & TTFFlag_OnCurve)
+      {
+        TargetColor = Black;
+        Debug("On  Curve %d %d", Vert->P.x, Vert->P.y);
+      }
+      else
+      {
+        TargetColor = Red;
+        Debug("Off Curve %d %d", Vert->P.x, Vert->P.y);
+      }
+
+
       v2 VertP = V2(Vert->P);
       v2 CurrentToVert = Normalize(VertP-At) * 0.5f;
       while(Abs(Length(VertP - At)) > 0.5f)
       {
+        r32 t = SafeDivide0(LengthSq(LastVertP-At), LengthSq(LastVertP-VertP));
+        u32 PixelColor = Lerp(t, CurrentColor, TargetColor);
         u32 PixelIndex = GetPixelIndex(V2i(At), &Bitmap);
         Assert(PixelIndex < PixelCount(&Bitmap));
-        *(Bitmap.Pixels.Start + PixelIndex) = 0;
+        *(Bitmap.Pixels.Start + PixelIndex) = PixelColor;
         At += CurrentToVert;
       }
+
+      LastVertP = VertP;
+      CurrentColor = TargetColor;
     }
 
     WriteBitmapToDisk(&Bitmap, "glyph.bmp");
