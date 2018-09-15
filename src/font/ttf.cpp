@@ -670,6 +670,7 @@ GetPixelIndex(v2i PixelP, bitmap* Bitmap)
   Assert(PixelP.x < Bitmap->Dim.x);
   Assert(PixelP.y < Bitmap->Dim.y);
   u32 Result = PixelP.x + (PixelP.y*Bitmap->Dim.x);
+  Assert(Result < PixelCount(Bitmap));
   return Result;
 }
 
@@ -686,23 +687,74 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
 
   if (Remaining(&GlyphStream) > 0) // A glyph stream with 0 length means there's no glyph
   {
+    v4 White = V4(1,1,1,1);
+    v4 Black = {};
+    v4 Red   = V4(1,0,0,0);
+    v4 Pink  = V4(1,0,1,0);
+    v4 Green = V4(0,1,0,0);
+
     simple_glyph Glyph = ParseGlyph(&GlyphStream, Arena);
     bitmap Bitmap = AllocateBitmap(Glyph.Maximum, Arena);
-    FillBitmap(0xFFFFFFFF, &Bitmap);
-    u32 Black = 0x00000000;
-    u32 Red = 0x000000FF;
+    FillBitmap(PackRGBALinearTo255(White), &Bitmap);
 
+
+    ttf_vert* StartVert = Glyph.Verts;
+    ttf_vert* EndVert = StartVert + 1;
+    Assert(StartVert->Flags & TTFFlag_OnCurve);
+
+    while (! (EndVert->Flags & TTFFlag_OnCurve))
+    {
+      ++EndVert;
+    }
+    ++EndVert;
+
+
+    u32 NumPoints = EndVert - StartVert;
+    v2* TempVerts = Allocate(v2, Arena, NumPoints); // TODO(Jesse): Temp-memory?
+
+    for (r32 t = 0.0f;
+        t < 1.0f;
+        t += 0.001)
+    {
+      for (u32 VertIndex = 0;
+          VertIndex < NumPoints;
+          ++VertIndex)
+      {
+        TempVerts[VertIndex] = V2(StartVert[VertIndex].P);
+      }
+
+      for (u32 Outer = NumPoints;
+          Outer > 1;
+          --Outer)
+      {
+        for (u32 Inner = 0;
+            Inner < Outer;
+            ++Inner)
+        {
+          Assert(Inner < NumPoints);
+          v2 tVec01 = (TempVerts[Inner+1]-TempVerts[Inner]) * t;
+          TempVerts[Inner] = TempVerts[Inner+1] - tVec01;
+        }
+      }
+
+      u32 PixelIndex = GetPixelIndex(V2i(TempVerts[0]), &Bitmap);
+      *(Bitmap.Pixels.Start + PixelIndex) = PackRGBALinearTo255(Lerp(t, Green, Pink));
+    }
+
+
+#if 1
     v2 At = V2(Glyph.Verts->P);
     v2 LastVertP = At;
 
-    u32 CurrentColor = (Glyph.Verts->Flags&TTFFlag_OnCurve) ?  Black : Red;
-    u32 TargetColor = Black;
+    v4 CurrentColor = (Glyph.Verts->Flags&TTFFlag_OnCurve) ?  Black : Red;
+    v4 TargetColor = Black;
 
     for (u32 VertIndex = 0;
         VertIndex < Glyph.ContourVertCount;
         ++VertIndex)
     {
       ttf_vert *Vert = Glyph.Verts + VertIndex;
+      v2 VertP = V2(Vert->P);
 
       if (Vert->Flags & TTFFlag_OnCurve)
       {
@@ -716,14 +768,12 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
       }
 
 
-      v2 VertP = V2(Vert->P);
       v2 CurrentToVert = Normalize(VertP-At) * 0.5f;
       while(Abs(Length(VertP - At)) > 0.5f)
       {
         r32 t = SafeDivide0(LengthSq(LastVertP-At), LengthSq(LastVertP-VertP));
-        u32 PixelColor = Lerp(t, CurrentColor, TargetColor);
+        u32 PixelColor = PackRGBALinearTo255(Lerp(t, CurrentColor, TargetColor));
         u32 PixelIndex = GetPixelIndex(V2i(At), &Bitmap);
-        Assert(PixelIndex < PixelCount(&Bitmap));
         *(Bitmap.Pixels.Start + PixelIndex) = PixelColor;
         At += CurrentToVert;
       }
@@ -731,9 +781,11 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
       LastVertP = VertP;
       CurrentColor = TargetColor;
     }
+#endif
 
     WriteBitmapToDisk(&Bitmap, "glyph.bmp");
   }
+
 
   return;
 }

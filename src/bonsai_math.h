@@ -268,12 +268,20 @@ Lerp(r32 t, canonical_position p1, canonical_position p2)
   return Result;
 }
 
+v4
+Lerp(r32 t, v4 p1, v4 p2)
+{
+  Assert(t<=1);
+  Assert(t>=0);
+  v4 Result = (1.0f-t)*p1 + t*p2;
+  return Result;
+}
+
 v3
 Lerp(r32 t, v3 p1, v3 p2)
 {
   Assert(t<=1);
   Assert(t>=0);
-
   v3 Result = (1.0f-t)*p1 + t*p2;
   return Result;
 }
@@ -283,7 +291,6 @@ Lerp(r32 t, v2 p1, v2 p2)
 {
   Assert(t<=1);
   Assert(t>=0);
-
   v2 Result = (1.0f-t)*p1 + t*p2;
   return Result;
 }
@@ -293,7 +300,6 @@ Lerp(r32 t, r32 p1, r32 p2)
 {
   Assert(t<=1);
   Assert(t>=0);
-
   r32 Result = (1.0f-t)*p1 + t*p2;
   return Result;
 }
@@ -303,7 +309,6 @@ Area(v2i A)
 {
   Assert(A.x > 0);
   Assert(A.y > 0);
-
   s32 Result = A.x * A.y;
   return Result;
 }
@@ -313,7 +318,6 @@ Area(v2 A)
 {
   Assert(A.x > 0);
   Assert(A.y > 0);
-
   s32 Result = (s32)(A.x * A.y);
   Assert(Result >= 0);
   return Result;

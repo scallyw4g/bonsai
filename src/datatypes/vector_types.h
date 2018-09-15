@@ -657,14 +657,21 @@ operator*(v2 P1, r32 F)
   return Result;
 }
 
+v2i
+operator-(v2i P1, v2i P2)
+{
+  v2i Result;
+  Result.x = P1.x - P2.x;
+  Result.y = P1.y - P2.y;
+  return Result;
+}
+
 v2
 operator-(v2 P1, v2 P2)
 {
   v2 Result;
-
   Result.x = P1.x - P2.x;
   Result.y = P1.y - P2.y;
-
   return Result;
 }
 
@@ -722,6 +729,15 @@ operator/(r32 B, v3 A)
   Result.y = B/A.y;
   Result.z = B/A.z;
 
+  return Result;
+}
+
+inline v2i
+operator/(v2i A, s32 B)
+{
+  v2i Result;
+  Result.x = A.x / B;
+  Result.y = A.y / B;
   return Result;
 }
 
