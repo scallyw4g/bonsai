@@ -695,7 +695,7 @@ WrapToCurveIndex(u32 IndexWanted, u32 CurveStart, u32 CurveEnd)
   if (Result > CurveEnd)
   {
     u32 Remaining = Result - CurveEnd;
-    Result = CurveStart + Remaining;
+    Result = CurveStart + Remaining - 1;
   }
   return Result;
 }
@@ -703,12 +703,12 @@ WrapToCurveIndex(u32 IndexWanted, u32 CurveStart, u32 CurveEnd)
 inline void
 DumpGlyphTable(ttf* Font, memory_arena* Arena)
 {
-  u32 GlyphIndex =  GetGlyphIdForCharacterCode('o', Font);
+  /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('o', Font); */
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('a', Font); */
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('r', Font); */
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('@', Font); */
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('#', Font); */
-  /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('&', Font); */
+  u32 GlyphIndex =  GetGlyphIdForCharacterCode('&', Font);
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode(' ', Font); */
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('.', Font); */
 
@@ -735,7 +735,8 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
       u32 ContourVertCount = Contour->EndIndex - Contour->StartIndex;
       u32 AtIndex = Contour->StartIndex;
 
-      while ( AtIndex < Contour->EndIndex)
+      u32 VertsProcessed = 0;
+      while ( VertsProcessed <= ContourVertCount)
       {
         Assert(Glyph.Verts[AtIndex].Flags & TTFFlag_OnCurve);
 
@@ -746,7 +747,6 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
           CurveEndIndex = WrapToCurveIndex(CurveEndIndex+1, Contour->StartIndex, Contour->EndIndex);
           ++VertCount;
         }
-        CurveEndIndex = WrapToCurveIndex(CurveEndIndex+1, Contour->StartIndex, Contour->EndIndex);
         ++VertCount;
 
 
@@ -783,10 +783,8 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
           *(Bitmap.Pixels.Start + PixelIndex) = PackRGBALinearTo255(Lerp(t, Green, Pink));
         }
 
-        if (CurveEndIndex < AtIndex)
-          break;
-
-        AtIndex = CurveEndIndex -1;
+        VertsProcessed += VertCount -1;
+        AtIndex = CurveEndIndex;
       }
     }
 
