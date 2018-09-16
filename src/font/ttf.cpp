@@ -724,6 +724,13 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
     v4 Pink  = V4(1,0,1,0);
     v4 Green = V4(0,1,0,0);
 
+    u32 PackedWhite = PackRGBALinearTo255(White );
+    u32 PackedBlack = PackRGBALinearTo255(Black );
+    u32 PackedRed   = PackRGBALinearTo255(Red   );
+    u32 PackedBlue  = PackRGBALinearTo255(Blue  );
+    u32 PackedPink  = PackRGBALinearTo255(Pink  );
+    u32 PackedGreen = PackRGBALinearTo255(Green );
+
     simple_glyph Glyph = ParseGlyph(&GlyphStream, Arena);
     bitmap Bitmap = AllocateBitmap(Glyph.Maximum, Arena);
     FillBitmap(PackRGBALinearTo255(White), &Bitmap);
@@ -802,6 +809,37 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
 
         VertsProcessed += VertCount -1;
         AtIndex = CurveEndIndex;
+      }
+    }
+
+    for (u32 yIndex = 0;
+        yIndex < Bitmap.Dim.y;
+        ++yIndex)
+    {
+      s32 TransitionCount = 0;
+      for (u32 xIndex = 0;
+          xIndex < Bitmap.Dim.x;
+          ++xIndex)
+      {
+        u32 PixelIndex = GetPixelIndex(V2i(xIndex, yIndex), &Bitmap);
+        u32 PixelColor = Bitmap.Pixels.Start[PixelIndex];
+        if (PixelColor == PackedGreen)
+        {
+          TransitionCount = 1;
+        }
+        else if (PixelColor == PackedRed)
+        {
+          TransitionCount = 0;
+        }
+
+        if (TransitionCount > 0)
+        {
+          Bitmap.Pixels.Start[PixelIndex] = PackedBlack;
+        }
+        else
+        {
+          Bitmap.Pixels.Start[PixelIndex] = PackedWhite;
+        }
       }
     }
 
