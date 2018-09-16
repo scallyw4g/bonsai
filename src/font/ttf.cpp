@@ -163,12 +163,21 @@ struct ttf_vert
   u16 Flags;
 };
 
+struct ttf_contour
+{
+  u32 StartIndex;
+  u32 EndIndex;
+};
+
 struct simple_glyph
 {
   v2i Maximum;
 
+  s16 ContourCount;
+  ttf_contour* Contours;
+
   s16 VertCount;
-  ttf_vert *Verts;
+  ttf_vert* Verts;
 };
 
 struct font_table
@@ -389,7 +398,9 @@ simple_glyph
 ParseGlyph(binary_stream_u8 *Stream, memory_arena *Arena)
 {
   simple_glyph Glyph = {};
-  u32 ContourCount = ReadS16(Stream);
+
+  Glyph.ContourCount = ReadS16(Stream);
+  Glyph.Contours = Allocate(ttf_contour, Arena, Glyph.ContourCount);
 
   s16 xMin = ReadS16(Stream);
   s16 yMin = ReadS16(Stream);
@@ -399,13 +410,16 @@ ParseGlyph(binary_stream_u8 *Stream, memory_arena *Arena)
   Glyph.Maximum.x = xMax - xMin + 1; // Add one to put from 0-based to 1-based
   Glyph.Maximum.y = yMax - yMin + 1; // coordinate system
 
-  u16 *EndPointsOfContours = ReadU16Array(Stream, ContourCount);
+  u16 *EndPointsOfContours = ReadU16Array(Stream, Glyph.ContourCount);
 
-  for (u32 PointIndex = 0;
-      PointIndex < ContourCount;
-      ++PointIndex)
+  u16 NextStart = 0;
+  for (u32 ContourIndex = 0;
+      ContourIndex < Glyph.ContourCount;
+      ++ContourIndex)
   {
-    u16 EndOfContour = ReadU16(EndPointsOfContours + PointIndex);
+    Glyph.Contours[ContourIndex].StartIndex = NextStart;
+    Glyph.Contours[ContourIndex].EndIndex = ReadU16(EndPointsOfContours + ContourIndex);
+    NextStart = Glyph.Contours[ContourIndex].EndIndex + 1;
   }
 
   u16 InstructionLength = ReadU16(Stream);
@@ -414,7 +428,7 @@ ParseGlyph(binary_stream_u8 *Stream, memory_arena *Arena)
   u8* Flags = Stream->At;
   u8* FlagsAt = Flags;
 
-  Glyph.VertCount = 1+ReadU16(EndPointsOfContours+ContourCount-1);
+  Glyph.VertCount = 1+ReadU16(EndPointsOfContours+Glyph.ContourCount-1);
   Glyph.Verts = Allocate(ttf_vert, Arena, Glyph.VertCount);
 
   b32 RepeatCount = 0;
@@ -691,10 +705,10 @@ GetNextOnCurveVert(ttf_vert* Start)
 inline void
 DumpGlyphTable(ttf* Font, memory_arena* Arena)
 {
-  u32 GlyphIndex =  GetGlyphIdForCharacterCode('o', Font);
+  /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('o', Font); */
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('a', Font); */
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('r', Font); */
-  /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('@', Font); */
+  u32 GlyphIndex =  GetGlyphIdForCharacterCode('@', Font);
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode(' ', Font); */
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('.', Font); */
 
@@ -712,51 +726,59 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
     bitmap Bitmap = AllocateBitmap(Glyph.Maximum, Arena);
     FillBitmap(PackRGBALinearTo255(White), &Bitmap);
 
-    u32 VertsProcessed = 0;
-    ttf_vert* NextStartVert = Glyph.Verts;
-    while ( VertsProcessed < Glyph.VertCount)
+    for (u32 ContourIndex = 0;
+        ContourIndex < Glyph.ContourCount;
+        ++ContourIndex)
     {
-      ttf_vert* StartVert = NextStartVert;
-      ttf_vert* EndVert = GetNextOnCurveVert(StartVert);
+      ttf_contour* Contour = Glyph.Contours + ContourIndex;
+      ttf_vert* NextStartVert = Glyph.Verts + Contour->StartIndex;
 
-      u32 VertCount = EndVert - StartVert;
-      v2* TempVerts = Allocate(v2, Arena, VertCount); // TODO(Jesse): Temp-memory?
-
-      for (r32 t = 0.0f;
-          t < 1.0f;
-          t += 0.001)
+      u32 ContourVertCount = Contour->EndIndex - Contour->StartIndex;
+      u32 VertsProcessed = 0;
+      while ( VertsProcessed < ContourVertCount)
       {
-        for (u32 VertIndex = 0;
-            VertIndex < VertCount;
-            ++VertIndex)
-        {
-          TempVerts[VertIndex] = V2(StartVert[VertIndex].P);
-        }
+        ttf_vert* StartVert = NextStartVert;
+        ttf_vert* EndVert = GetNextOnCurveVert(StartVert);
 
-        for (u32 Outer = VertCount;
-            Outer > 1;
-            --Outer)
+        u32 VertCount = EndVert - StartVert;
+        v2* TempVerts = Allocate(v2, Arena, VertCount); // TODO(Jesse): Temp-memory?
+
+        for (r32 t = 0.0f;
+            t < 1.0f;
+            t += 0.001)
         {
-          for (u32 Inner = 0;
-              Inner < Outer;
-              ++Inner)
+          for (u32 VertIndex = 0;
+              VertIndex < VertCount;
+              ++VertIndex)
           {
-            Assert(Inner < VertCount);
-            v2 tVec01 = (TempVerts[Inner+1]-TempVerts[Inner]) * t;
-            TempVerts[Inner] = TempVerts[Inner+1] - tVec01;
+            TempVerts[VertIndex] = V2(StartVert[VertIndex].P);
           }
+
+          for (u32 Outer = VertCount;
+              Outer > 1;
+              --Outer)
+          {
+            for (u32 Inner = 0;
+                Inner < Outer;
+                ++Inner)
+            {
+              Assert(Inner < VertCount);
+              v2 tVec01 = (TempVerts[Inner+1]-TempVerts[Inner]) * t;
+              TempVerts[Inner] = TempVerts[Inner+1] - tVec01;
+            }
+          }
+
+          u32 PixelIndex = GetPixelIndex(V2i(TempVerts[0]), &Bitmap);
+          *(Bitmap.Pixels.Start + PixelIndex) = PackRGBALinearTo255(Lerp(t, Green, Pink));
         }
 
-        u32 PixelIndex = GetPixelIndex(V2i(TempVerts[0]), &Bitmap);
-        *(Bitmap.Pixels.Start + PixelIndex) = PackRGBALinearTo255(Lerp(t, Green, Pink));
+        NextStartVert = EndVert -1;
+        VertsProcessed += VertCount;
+        Print(VertsProcessed);
       }
-
-      NextStartVert = EndVert -1;
-      VertsProcessed += VertCount;
-      Print(VertsProcessed);
     }
 
-#if 1
+#if 0
     v2 At = V2(Glyph.Verts->P);
     v2 LastVertP = At;
 
