@@ -688,6 +688,18 @@ GetPixelIndex(v2i PixelP, bitmap* Bitmap)
   return Result;
 }
 
+u32
+WrapToCurveIndex(u32 IndexWanted, u32 CurveStart, u32 CurveEnd)
+{
+  u32 Result = IndexWanted;
+  if (Result > CurveEnd)
+  {
+    u32 Remaining = Result - CurveEnd;
+    Result = CurveStart + Remaining;
+  }
+  return Result;
+}
+
 inline void
 DumpGlyphTable(ttf* Font, memory_arena* Arena)
 {
@@ -727,29 +739,31 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
       {
         Assert(Glyph.Verts[AtIndex].Flags & TTFFlag_OnCurve);
 
-        u32 CurveEndIndex = AtIndex + 1;
-        while ( CurveEndIndex < Contour->EndIndex &&
-            !(Glyph.Verts[CurveEndIndex].Flags & TTFFlag_OnCurve) )
+        u32 VertCount = 1;
+        u32 CurveEndIndex = WrapToCurveIndex(AtIndex+1, Contour->StartIndex, Contour->EndIndex);
+        while ( !(Glyph.Verts[CurveEndIndex].Flags & TTFFlag_OnCurve) )
         {
-          ++CurveEndIndex;
+          CurveEndIndex = WrapToCurveIndex(CurveEndIndex+1, Contour->StartIndex, Contour->EndIndex);
+          ++VertCount;
         }
-        ++CurveEndIndex;
+        CurveEndIndex = WrapToCurveIndex(CurveEndIndex+1, Contour->StartIndex, Contour->EndIndex);
+        ++VertCount;
 
 
 
-        u32 VertCount = CurveEndIndex - AtIndex;
         v2* TempVerts = Allocate(v2, Arena, VertCount); // TODO(Jesse): Temp-memory?
 
-        ttf_vert* ContourVerts = Glyph.Verts + AtIndex;
         for (r32 t = 0.0f;
             t < 1.0f;
             t += 0.001)
         {
+
           for (u32 VertIndex = 0;
               VertIndex < VertCount;
               ++VertIndex)
           {
-            TempVerts[VertIndex] = V2(ContourVerts[VertIndex].P);
+            u32 CurveVertIndex = WrapToCurveIndex(AtIndex + VertIndex, Contour->StartIndex, Contour->EndIndex);
+            TempVerts[VertIndex] = V2(Glyph.Verts[CurveVertIndex].P);
           }
 
           for (u32 Outer = VertCount;
@@ -768,6 +782,9 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
           u32 PixelIndex = GetPixelIndex(V2i(TempVerts[0]), &Bitmap);
           *(Bitmap.Pixels.Start + PixelIndex) = PackRGBALinearTo255(Lerp(t, Green, Pink));
         }
+
+        if (CurveEndIndex < AtIndex)
+          break;
 
         AtIndex = CurveEndIndex -1;
       }
