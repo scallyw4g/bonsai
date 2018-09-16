@@ -1,5 +1,150 @@
 
 void
+AllocateMesh(untextured_3d_geometry_buffer *Mesh, u32 NumVerts, memory_arena *Memory);
+
+chunk_data*
+AllocateChunk(memory_arena *WorldStorage, chunk_dimension Dim)
+{
+  // Note(Jesse): Not sure the alignment is completely necessary, but it may be
+  // because multiple threads go to town on these memory blocks
+  s32 Vol = AlignTo((umm)Volume(Dim), 64);
+
+  chunk_data *Result = AllocateAligned(chunk_data, WorldStorage, 1, 64);
+  if (Vol) { Result->Voxels = AllocateAligned(voxel, WorldStorage , Vol, 64); }
+
+  // TODO(Jesse): Allocate this based on actual need?
+  AllocateMesh(&Result->Mesh, Kilobytes(12), WorldStorage);
+
+  ZeroChunk(Result, Vol);
+
+  return Result;
+}
+
+world_chunk*
+GetWorldChunk( world *World, world_position P )
+{
+  TIMED_FUNCTION();
+  u32 HashIndex = GetWorldChunkHash(P);
+  world_chunk *Result = World->ChunkHash[HashIndex];
+
+  while (Result)
+  {
+    if ( Result->WorldP == P )
+        break;
+
+    Result = Result->Next;
+  }
+
+  Assert(!Result || Result->WorldP == P);
+
+  return Result;
+}
+
+inline b32
+IsFilledInChunk( chunk_data *Chunk, voxel_position VoxelP, chunk_dimension Dim)
+{
+  b32 isFilled = True;
+
+  if (Chunk && IsSet(Chunk, Chunk_Initialized) )
+  {
+    s32 i = GetIndex(VoxelP, Dim);
+
+    Assert(i > -1);
+    Assert(i < Volume(Dim));
+
+    isFilled = IsSet(&Chunk->Voxels[i], Voxel_Filled);
+  }
+
+  return isFilled;
+}
+
+inline b32
+NotFilledInChunk( chunk_data *Chunk, voxel_position VoxelP, chunk_dimension Dim)
+{
+  b32 Result = !IsFilledInChunk(Chunk, VoxelP, Dim);
+  return Result;
+}
+
+inline b32
+IsFilledInWorld( world *World, world_chunk *chunk, canonical_position VoxelP )
+{
+  TIMED_FUNCTION();
+  b32 isFilled = true;
+
+  if ( chunk )
+  {
+    world_chunk *localChunk = chunk;
+
+    if ( chunk->WorldP != VoxelP.WorldP )
+    {
+      localChunk = GetWorldChunk(World, VoxelP.WorldP);
+    }
+
+    isFilled = localChunk && IsFilledInChunk(localChunk->Data, Voxel_Position(VoxelP.Offset), World->ChunkDim );
+  }
+
+  return isFilled;
+}
+
+inline b32
+NotFilledInChunk(chunk_data *Chunk, s32 Index)
+{
+  Assert(Chunk);
+  Assert(Index > -1);
+
+  b32 NotFilled = !IsSet(&Chunk->Voxels[Index], Voxel_Filled);
+  return NotFilled;
+}
+
+inline b32
+NotFilledInWorld( world *World, world_chunk *chunk, canonical_position VoxelP )
+{
+  TIMED_FUNCTION();
+  b32 Result = !(IsFilledInWorld(World, chunk, VoxelP));
+  return Result;
+}
+
+void
+InsertChunkIntoWorld(world *World, world_chunk *chunk)
+{
+  u32 HashIndex = GetWorldChunkHash(chunk->WorldP);
+  world_chunk *Last = World->ChunkHash[HashIndex];;
+
+  if (Last)
+  {
+    Assert(Last->WorldP != chunk->WorldP);
+
+    while (Last->Next)
+    {
+      Assert(Last->WorldP != chunk->WorldP);
+      Last = Last->Next;
+    }
+
+    Assert(chunk->Next == 0);
+    Assert(chunk->Prev == 0);
+
+    Last->Next = chunk;
+    chunk->Prev = Last;
+  }
+  else
+  {
+    World->ChunkHash[HashIndex] = chunk;
+  }
+
+  return;
+}
+
+world_chunk*
+AllocateWorldChunk(memory_arena *Storage, world_position WorldP, chunk_dimension Dim = WORLD_CHUNK_DIM)
+{
+  world_chunk *Result = AllocateAligned(world_chunk, Storage, 1, 64);
+  Result->Data = AllocateChunk(Storage, Dim);
+  Result->WorldP = WorldP;
+
+  return Result;
+}
+
+void
 FillChunk(chunk_data *chunk, chunk_dimension Dim, u8 ColorIndex = BLACK)
 {
   s32 Vol = Volume(Dim);
@@ -21,7 +166,6 @@ FillChunk(chunk_data *chunk, chunk_dimension Dim, u8 ColorIndex = BLACK)
 
   SetFlag(chunk, Chunk_Initialized);
 }
-
 
 void
 CopyChunkOffset(world_chunk *Src, voxel_position SrcChunkDim, world_chunk *Dest, voxel_position DestChunkDim, voxel_position Offset)
@@ -64,7 +208,6 @@ InitChunkPlane(u32 zIndex, world_chunk *Chunk, chunk_dimension ChunkDim, u8 Colo
 
   return;
 }
-
 
 void
 InitChunkPerlin(perlin_noise *Noise, world_chunk *WorldChunk, chunk_dimension Dim, u8 ColorIndex)

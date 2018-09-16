@@ -1,6 +1,3 @@
-#ifndef BONSAI_MESH_CPP
-#define BONSAI_MESH_CPP
-
 #include <colors.h>
 
 void
@@ -510,7 +507,16 @@ BuildWorldChunkMesh(world *World, world_chunk *WorldChunk, chunk_dimension World
   }
 }
 
+void
+AllocateMesh(untextured_3d_geometry_buffer *Mesh, u32 NumVerts, memory_arena *Memory)
+{
+  Mesh->Verts   = AllocateAligned(v3, Memory, NumVerts, 64);
+  Mesh->Colors  = AllocateAligned(v4, Memory, NumVerts, 64);
+  Mesh->Normals = AllocateAligned(v3, Memory, NumVerts, 64);
 
+  Mesh->End = NumVerts;
+  Mesh->At = 0;
 
+  return;
+}
 
-#endif

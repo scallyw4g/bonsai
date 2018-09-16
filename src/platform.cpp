@@ -21,6 +21,9 @@
 #include <texture.cpp>
 #include <shader.cpp>
 #include <bonsai_vertex.h>
+#include <perlin.cpp>
+#include <chunk.cpp>
+#include <bonsai_mesh.cpp>
 #include <debug.cpp>
 #include <render.cpp>
 

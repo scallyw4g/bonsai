@@ -7,7 +7,6 @@
 #include <stdio.h>
 
 #include <colors.h>
-#include <bonsai_mesh.cpp>
 
 global_variable u32 Global_QuadVertexBuffer;
 global_variable v3 GlobalLightPosition = {{0.20f, 1.0f, 1.0f}};

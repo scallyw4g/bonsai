@@ -65,7 +65,8 @@ struct memory_arena
 
 #ifndef BONSAI_NO_DEBUG_MEMORY_ALLOCATOR
 
-void* Allocate_(memory_arena *Arena, umm StructSize, umm StructCount, const char* Name, s32 Line, const char* File, umm Alignment = 1, b32 MemProtect = True);
+void*
+Allocate_(memory_arena *Arena, umm StructSize, umm StructCount, const char* Name, s32 Line, const char* File, umm Alignment = 1, b32 MemProtect = True);
 
 #define AllocateProtection(Type, Arena, Number, Protection) \
   (Type*)Allocate_( Arena, sizeof(Type), (umm)Number, #Type, __LINE__, __FILE__, 1, Protection )

@@ -9,6 +9,9 @@
 #include <test_utils.cpp>
 
 global_variable memory_arena *TranArena = {};
+#include <perlin.cpp>
+#include <chunk.cpp>
+#include <bonsai_mesh.cpp>
 #include <objloader.cpp>
 
 s32

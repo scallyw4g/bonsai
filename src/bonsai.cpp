@@ -1,3 +1,4 @@
+#include <chunk.cpp>
 #include <vox_loader.cpp>
 #include <perlin.cpp>
 #include <render.h>
@@ -5,7 +6,6 @@
 #include <shader.cpp>
 #include <texture.cpp> // Only used for font .DDS atm
 #include <render.cpp>
-#include <chunk.cpp>
 
 void
 PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
