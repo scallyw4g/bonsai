@@ -1,10 +1,10 @@
 #define BONSAI_NO_MUTEX_TRACKING
 #define BONSAI_NO_TIMED_FUNCTIONS
 #define BONSAI_NO_PUSH_METADATA
-#define BONSAI_NO_DEBUG_MEMORY_ALLOCATOR
 
 #include <bonsai_types.h>
 #include <unix_platform.cpp>
+#include <debug_data_system.cpp>
 #include <bitmap.cpp>
 
 
@@ -691,12 +691,12 @@ GetPixelIndex(v2i PixelP, bitmap* Bitmap)
 inline void
 DumpGlyphTable(ttf* Font, memory_arena* Arena)
 {
-  /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('o', Font); */
+  u32 GlyphIndex =  GetGlyphIdForCharacterCode('o', Font);
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('a', Font); */
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('r', Font); */
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('@', Font); */
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('#', Font); */
-  u32 GlyphIndex =  GetGlyphIdForCharacterCode('&', Font);
+  /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('&', Font); */
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode(' ', Font); */
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('.', Font); */
 
@@ -757,10 +757,9 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
               --Outer)
           {
             for (u32 Inner = 0;
-                Inner < Outer;
+                Inner < Outer-1;
                 ++Inner)
             {
-              Assert(Inner < VertCount);
               v2 tVec01 = (TempVerts[Inner+1]-TempVerts[Inner]) * t;
               TempVerts[Inner] = TempVerts[Inner+1] - tVec01;
             }
