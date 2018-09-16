@@ -688,27 +688,15 @@ GetPixelIndex(v2i PixelP, bitmap* Bitmap)
   return Result;
 }
 
-ttf_vert *
-GetNextOnCurveVert(ttf_vert* Start)
-{
-  Assert(Start->Flags & TTFFlag_OnCurve);
-  ttf_vert* EndVert = Start + 1;
-  while (! (EndVert->Flags & TTFFlag_OnCurve))
-  {
-    ++EndVert;
-  }
-  ++EndVert;
-
-  return EndVert;
-}
-
 inline void
 DumpGlyphTable(ttf* Font, memory_arena* Arena)
 {
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('o', Font); */
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('a', Font); */
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('r', Font); */
-  u32 GlyphIndex =  GetGlyphIdForCharacterCode('@', Font);
+  /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('@', Font); */
+  /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('#', Font); */
+  u32 GlyphIndex =  GetGlyphIdForCharacterCode('&', Font);
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode(' ', Font); */
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('.', Font); */
 
@@ -731,18 +719,28 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
         ++ContourIndex)
     {
       ttf_contour* Contour = Glyph.Contours + ContourIndex;
-      ttf_vert* NextStartVert = Glyph.Verts + Contour->StartIndex;
 
       u32 ContourVertCount = Contour->EndIndex - Contour->StartIndex;
-      u32 VertsProcessed = 0;
-      while ( VertsProcessed < ContourVertCount)
-      {
-        ttf_vert* StartVert = NextStartVert;
-        ttf_vert* EndVert = GetNextOnCurveVert(StartVert);
+      u32 AtIndex = Contour->StartIndex;
 
-        u32 VertCount = EndVert - StartVert;
+      while ( AtIndex < Contour->EndIndex)
+      {
+        Assert(Glyph.Verts[AtIndex].Flags & TTFFlag_OnCurve);
+
+        u32 CurveEndIndex = AtIndex + 1;
+        while ( CurveEndIndex < Contour->EndIndex &&
+            !(Glyph.Verts[CurveEndIndex].Flags & TTFFlag_OnCurve) )
+        {
+          ++CurveEndIndex;
+        }
+        ++CurveEndIndex;
+
+
+
+        u32 VertCount = CurveEndIndex - AtIndex;
         v2* TempVerts = Allocate(v2, Arena, VertCount); // TODO(Jesse): Temp-memory?
 
+        ttf_vert* ContourVerts = Glyph.Verts + AtIndex;
         for (r32 t = 0.0f;
             t < 1.0f;
             t += 0.001)
@@ -751,7 +749,7 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
               VertIndex < VertCount;
               ++VertIndex)
           {
-            TempVerts[VertIndex] = V2(StartVert[VertIndex].P);
+            TempVerts[VertIndex] = V2(ContourVerts[VertIndex].P);
           }
 
           for (u32 Outer = VertCount;
@@ -772,9 +770,7 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
           *(Bitmap.Pixels.Start + PixelIndex) = PackRGBALinearTo255(Lerp(t, Green, Pink));
         }
 
-        NextStartVert = EndVert -1;
-        VertsProcessed += VertCount;
-        Print(VertsProcessed);
+        AtIndex = CurveEndIndex -1;
       }
     }
 
