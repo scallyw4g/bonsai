@@ -706,9 +706,9 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('o', Font); */
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('a', Font); */
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('r', Font); */
-  /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('@', Font); */
+  u32 GlyphIndex =  GetGlyphIdForCharacterCode('@', Font);
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('#', Font); */
-  u32 GlyphIndex =  GetGlyphIdForCharacterCode('&', Font);
+  /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('&', Font); */
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('c', Font); */
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode(' ', Font); */
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('.', Font); */
@@ -764,7 +764,7 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
 
         for (r32 t = 0.0f;
             t < 1.0f;
-            t += 0.001)
+            t += 0.0001)
         {
 
           for (u32 VertIndex = 0;
@@ -802,6 +802,12 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
           {
             Color = Green;
           }
+          else
+          if ( (TangentMax.x > PointOnCurve.x && TangentMax.y < PointOnCurve.y) ||
+               (TangentMax.x < PointOnCurve.x && TangentMax.y < PointOnCurve.y) )
+          {
+            Color = Blue;
+          }
 
           u32 PixelIndex = GetPixelIndex(V2i(PointOnCurve), &Bitmap);
           Bitmap.Pixels.Start[PixelIndex] = PackRGBALinearTo255(Color);
@@ -812,6 +818,7 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
       }
     }
 
+#if 0
     for (u32 yIndex = 0;
         yIndex < Bitmap.Dim.y;
         ++yIndex)
@@ -826,10 +833,12 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
         if (PixelColor == PackedGreen)
         {
           TransitionCount = 1;
+          continue;
         }
-        else if (PixelColor == PackedRed)
+        else if (PixelColor == PackedBlue)
         {
           TransitionCount = 0;
+          continue;
         }
 
         if (TransitionCount > 0)
@@ -842,6 +851,7 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
         }
       }
     }
+#endif
 
 #if 0
     v2 At = V2(Glyph.Verts->P);
