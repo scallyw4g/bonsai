@@ -46,9 +46,8 @@ ReadBitmapFromDisk(const char *Filename, memory_arena *Arena)
   {
     SizeReadFromDisk += fread(&Header, 1, sizeof(Header), File);
 
-    // For now, we only support reading bitmaps that are top-down ie. Origin in top-left corner
-    Assert(Header.Image.HeightInPixels < 0);
-    Header.Image.HeightInPixels = -Header.Image.HeightInPixels;
+    // For now, we only support reading bitmaps that are bottom-up ie. Origin in top-left corner
+    Header.Image.HeightInPixels = Header.Image.HeightInPixels;
 
     PixelCount = Header.Image.WidthInPixels*Header.Image.HeightInPixels;
     Pixels = Allocate(u32, Arena, PixelCount);
@@ -77,7 +76,7 @@ WriteBitmapToDisk(bitmap *Bitmap, const char *Filename)
 
   Header.Image.SizeOfImageHeader    = sizeof(bitmap_image_header);
   Header.Image.WidthInPixels        = Bitmap->Dim.x;
-  Header.Image.HeightInPixels       = -Bitmap->Dim.y;
+  Header.Image.HeightInPixels       = Bitmap->Dim.y;
   Header.Image.ColorPlanes          = 1;
   Header.Image.BPP                  = 32;
   Header.Image.CompressionType      = 3;
