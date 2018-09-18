@@ -706,8 +706,8 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('o', Font); */
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('a', Font); */
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('r', Font); */
-  u32 GlyphIndex =  GetGlyphIdForCharacterCode('@', Font);
-  /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('#', Font); */
+  /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('@', Font); */
+  u32 GlyphIndex =  GetGlyphIdForCharacterCode('#', Font);
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('&', Font); */
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('c', Font); */
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode(' ', Font); */
@@ -762,6 +762,8 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
 
         v2* TempVerts = Allocate(v2, Arena, VertCount); // TODO(Jesse): Temp-memory?
 
+        v4 LastColor = Red;
+        u32 LastPixelIndex = 0;
         for (r32 t = 0.0f;
             t < 1.0f;
             t += 0.0001)
@@ -797,20 +799,33 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
           v4 Color = Red;
 
           // On-curve transition
-          if ( (TangentMax.x > PointOnCurve.x && TangentMax.y > PointOnCurve.y) ||
-               (TangentMax.x < PointOnCurve.x && TangentMax.y > PointOnCurve.y) )
+          if ( (TangentMax.x >= PointOnCurve.x && TangentMax.y > PointOnCurve.y) ||
+               (TangentMax.x <= PointOnCurve.x && TangentMax.y > PointOnCurve.y) )
           {
             Color = Green;
           }
           else
-          if ( (TangentMax.x > PointOnCurve.x && TangentMax.y < PointOnCurve.y) ||
-               (TangentMax.x < PointOnCurve.x && TangentMax.y < PointOnCurve.y) )
+          if ( (TangentMax.x >= PointOnCurve.x && TangentMax.y <= PointOnCurve.y) ||
+               (TangentMax.x <= PointOnCurve.x && TangentMax.y <= PointOnCurve.y) )
           {
             Color = Blue;
           }
 
           u32 PixelIndex = GetPixelIndex(V2i(PointOnCurve), &Bitmap);
           Bitmap.Pixels.Start[PixelIndex] = PackRGBALinearTo255(Color);
+
+          if (LastColor == Green && Color == Blue)
+          {
+            Bitmap.Pixels.Start[PixelIndex] = PackRGBALinearTo255(Green);
+          }
+
+          if (LastColor == Blue && Color == Green)
+          {
+            Bitmap.Pixels.Start[LastPixelIndex] = PackRGBALinearTo255(Green);
+          }
+
+          LastColor = Color;
+          LastPixelIndex = PixelIndex;
         }
 
         VertsProcessed += VertCount -1;
@@ -818,7 +833,7 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
       }
     }
 
-#if 0
+#if 1
     for (u32 yIndex = 0;
         yIndex < Bitmap.Dim.y;
         ++yIndex)
