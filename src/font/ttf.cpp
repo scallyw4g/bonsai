@@ -402,110 +402,112 @@ ParseGlyph(binary_stream_u8 *Stream, memory_arena *Arena)
   Glyph.ContourCount = ReadS16(Stream);
   Glyph.Contours = Allocate(ttf_contour, Arena, Glyph.ContourCount);
 
-  s16 xMin = ReadS16(Stream);
-  s16 yMin = ReadS16(Stream);
-  s16 xMax = ReadS16(Stream);
-  s16 yMax = ReadS16(Stream);
-
-  Glyph.Maximum.x = xMax - xMin + 1; // Add one to put from 0-based to 1-based
-  Glyph.Maximum.y = yMax - yMin + 1; // coordinate system
-
-  u16 *EndPointsOfContours = ReadU16Array(Stream, Glyph.ContourCount);
-
-  u16 NextStart = 0;
-  for (u32 ContourIndex = 0;
-      ContourIndex < Glyph.ContourCount;
-      ++ContourIndex)
+  if (Glyph.ContourCount > 0) // We don't support compound glyphs, yet
   {
-    Glyph.Contours[ContourIndex].StartIndex = NextStart;
-    Glyph.Contours[ContourIndex].EndIndex = ReadU16(EndPointsOfContours + ContourIndex);
-    NextStart = Glyph.Contours[ContourIndex].EndIndex + 1;
-  }
+    s16 xMin = ReadS16(Stream);
+    s16 yMin = ReadS16(Stream);
+    s16 xMax = ReadS16(Stream);
+    s16 yMax = ReadS16(Stream);
 
-  u16 InstructionLength = ReadU16(Stream);
-  u8* Instructions = ReadU8Array(Stream, InstructionLength);
+    Glyph.Maximum.x = xMax - xMin + 1; // Add one to put from 0-based to 1-based
+    Glyph.Maximum.y = yMax - yMin + 1; // coordinate system
 
-  u8* Flags = Stream->At;
-  u8* FlagsAt = Flags;
+    u16 *EndPointsOfContours = ReadU16Array(Stream, Glyph.ContourCount);
 
-  Glyph.VertCount = 1+ReadU16(EndPointsOfContours+Glyph.ContourCount-1);
-  Glyph.Verts = Allocate(ttf_vert, Arena, Glyph.VertCount);
-
-  b32 RepeatCount = 0;
-  u8 Flag = 0;
-
-  for (u32 PointIndex = 0;
-      PointIndex < Glyph.VertCount;
-      ++PointIndex)
-  {
-    if (RepeatCount)
+    u16 NextStart = 0;
+    for (u32 ContourIndex = 0;
+        ContourIndex < Glyph.ContourCount;
+        ++ContourIndex)
     {
-      --RepeatCount;
+      Glyph.Contours[ContourIndex].StartIndex = NextStart;
+      Glyph.Contours[ContourIndex].EndIndex = ReadU16(EndPointsOfContours + ContourIndex);
+      NextStart = Glyph.Contours[ContourIndex].EndIndex + 1;
     }
-    else
+
+    u16 InstructionLength = ReadU16(Stream);
+    u8* Instructions = ReadU8Array(Stream, InstructionLength);
+
+    u8* Flags = Stream->At;
+    u8* FlagsAt = Flags;
+
+    Glyph.VertCount = 1+ReadU16(EndPointsOfContours+Glyph.ContourCount-1);
+    Glyph.Verts = Allocate(ttf_vert, Arena, Glyph.VertCount);
+
+    b32 RepeatCount = 0;
+    u8 Flag = 0;
+
+    for (u32 PointIndex = 0;
+        PointIndex < Glyph.VertCount;
+        ++PointIndex)
     {
-      Flag = *FlagsAt++;
-      Assert((Flag & 64) == 0);
-      Assert((Flag & 128) == 0);
-      if (Flag & TTFFlag_Repeat)
+      if (RepeatCount)
       {
-        RepeatCount = *FlagsAt++;
-        Assert(PointIndex + RepeatCount < Glyph.VertCount);
+        --RepeatCount;
       }
-    }
-
-    Glyph.Verts[PointIndex].Flags = Flag;
-  }
-
-  binary_stream_u8 VertStream = BinaryStream(FlagsAt, (u8*)0xFFFFFFFFFFFFFFFF);
-  s16 X = 0;
-  for (u32 PointIndex = 0;
-      PointIndex < Glyph.VertCount;
-      ++PointIndex)
-  {
-    ttf_vert *Vert = Glyph.Verts + PointIndex;
-    if (Vert->Flags & TTFFlag_ShortX)
-    {
-      u16 Delta = ReadU8(&VertStream);
-      X += (Vert->Flags & TTFFlag_DualX) ? Delta : -Delta;
-    }
-    else
-    {
-      if (!(Vert->Flags & TTFFlag_DualX))
+      else
       {
-        X += ReadU16(&VertStream);
+        Flag = *FlagsAt++;
+        Assert((Flag & 64) == 0);
+        Assert((Flag & 128) == 0);
+        if (Flag & TTFFlag_Repeat)
+        {
+          RepeatCount = *FlagsAt++;
+          Assert(PointIndex + RepeatCount < Glyph.VertCount);
+        }
       }
+
+      Glyph.Verts[PointIndex].Flags = Flag;
     }
 
-    Vert->P.x = X - xMin;
-    Assert(Vert->P.x >= 0);
-    Assert(Vert->P.x <= Glyph.Maximum.x);
-  }
-
-  s16 Y = 0;
-  for (u32 PointIndex = 0;
-      PointIndex < Glyph.VertCount;
-      ++PointIndex)
-  {
-    ttf_vert *Vert = Glyph.Verts + PointIndex;
-    if (Vert->Flags & TTFFlag_ShortY)
+    binary_stream_u8 VertStream = BinaryStream(FlagsAt, (u8*)0xFFFFFFFFFFFFFFFF);
+    s16 X = 0;
+    for (u32 PointIndex = 0;
+        PointIndex < Glyph.VertCount;
+        ++PointIndex)
     {
-      u16 Delta = ReadU8(&VertStream);
-      Y += (Vert->Flags & TTFFlag_DualY) ? Delta : -Delta;
-    }
-    else
-    {
-      if (!(Vert->Flags & TTFFlag_DualY))
+      ttf_vert *Vert = Glyph.Verts + PointIndex;
+      if (Vert->Flags & TTFFlag_ShortX)
       {
-        Y += ReadU16(&VertStream);
+        u16 Delta = ReadU8(&VertStream);
+        X += (Vert->Flags & TTFFlag_DualX) ? Delta : -Delta;
       }
+      else
+      {
+        if (!(Vert->Flags & TTFFlag_DualX))
+        {
+          X += ReadU16(&VertStream);
+        }
+      }
+
+      Vert->P.x = X - xMin;
+      Assert(Vert->P.x >= 0);
+      Assert(Vert->P.x <= Glyph.Maximum.x);
     }
 
-    Vert->P.y = Y - yMin;
-    Assert(Vert->P.y >= 0);
-    Assert(Vert->P.y <= Glyph.Maximum.y);
-  }
+    s16 Y = 0;
+    for (u32 PointIndex = 0;
+        PointIndex < Glyph.VertCount;
+        ++PointIndex)
+    {
+      ttf_vert *Vert = Glyph.Verts + PointIndex;
+      if (Vert->Flags & TTFFlag_ShortY)
+      {
+        u16 Delta = ReadU8(&VertStream);
+        Y += (Vert->Flags & TTFFlag_DualY) ? Delta : -Delta;
+      }
+      else
+      {
+        if (!(Vert->Flags & TTFFlag_DualY))
+        {
+          Y += ReadU16(&VertStream);
+        }
+      }
 
+      Vert->P.y = Y - yMin;
+      Assert(Vert->P.y >= 0);
+      Assert(Vert->P.y <= Glyph.Maximum.y);
+    }
+  }
 
   return Glyph;
 }
@@ -549,7 +551,6 @@ GetGlyphIdForCharacterCode(u32 GlyphQueryIndex, ttf *Font)
     TableStream.End = Start+Length;
     if (Format == 4)
     {
-      /* RuntimeBreak(); */
       u16 Lang          = ReadU16(&TableStream);
       u16 SegCountX2    = ReadU16(&TableStream);
       u16 SegCount      = SegCountX2/2;
@@ -700,23 +701,18 @@ WrapToCurveIndex(u32 IndexWanted, u32 CurveStart, u32 CurveEnd)
   return Result;
 }
 
-inline void
-DumpGlyphTable(ttf* Font, memory_arena* Arena)
+bitmap
+RasterizeGlyph(binary_stream_u8 *GlyphStream, memory_arena* Arena)
 {
-  /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('o', Font); */
-  /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('a', Font); */
-  /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('r', Font); */
-  /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('@', Font); */
-  /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('#', Font); */
-  u32 GlyphIndex =  GetGlyphIdForCharacterCode('&', Font);
-  /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('c', Font); */
-  /* u32 GlyphIndex =  GetGlyphIdForCharacterCode(' ', Font); */
-  /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('.', Font); */
-  /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('w', Font); */
+#define DO_RASTERIZE        1
+#define DO_AA               1
+#define WRITE_DEBUG_BITMAPS 0
 
-  binary_stream_u8 GlyphStream = GetStreamForGlyphIndex(GlyphIndex, Font, Arena);
+  u32 SamplesPerPixel = 16;
+  v2i OutputSize = V2i(64,64);
 
-  if (Remaining(&GlyphStream) > 0) // A glyph stream with 0 length means there's no glyph
+  bitmap OutputBitmap = {};
+  if (Remaining(GlyphStream) > 0) // A glyph stream with 0 length means there's no glyph
   {
     v4 White = V4(1,1,1,1);
     v4 Black = {};
@@ -725,8 +721,6 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
     v4 Pink  = V4(1,0,1,0);
     v4 Green = V4(0,1,0,0);
 
-    u32 SamplesPerPixel = 16;
-    v2i OutputSize = V2i(256,256);
     v2i SamplingBitmapSize = OutputSize*SamplesPerPixel;
 
     u32 PackedWhite = PackRGBALinearTo255(White );
@@ -736,246 +730,248 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
     u32 PackedPink  = PackRGBALinearTo255(Pink  );
     u32 PackedGreen = PackRGBALinearTo255(Green );
 
-    simple_glyph Glyph = ParseGlyph(&GlyphStream, Arena);
-    r32 GlyphAspectRatio = (r32)Glyph.Maximum.x / (r32)Glyph.Maximum.y;
-    v2 AspectCorrection = {};
-    if (GlyphAspectRatio < 1.0f)
+    simple_glyph Glyph = ParseGlyph(GlyphStream, Arena);
+    if (Glyph.ContourCount > 0) // We don't support compound glyphs, yet
     {
-      AspectCorrection = V2(GlyphAspectRatio, 1);
-    }
-    else
-    {
-      AspectCorrection = V2(1, 1.0f/GlyphAspectRatio);
-    }
-
-    v2 ScaleFactor = (SamplingBitmapSize/Glyph.Maximum)*AspectCorrection;
-
-    bitmap SamplingBitmap = AllocateBitmap(SamplingBitmapSize, Arena);
-    FillBitmap(PackRGBALinearTo255(White), &SamplingBitmap);
-
-    for (u32 ContourIndex = 0;
-        ContourIndex < Glyph.ContourCount;
-        ++ContourIndex)
-    {
-      ttf_contour* Contour = Glyph.Contours + ContourIndex;
-
-      u32 ContourVertCount = Contour->EndIndex - Contour->StartIndex;
-      u32 AtIndex = Contour->StartIndex;
-
-      u32 VertsProcessed = 0;
-      while ( VertsProcessed <= ContourVertCount)
+      r32 GlyphAspectRatio = (r32)Glyph.Maximum.x / (r32)Glyph.Maximum.y;
+      v2 AspectCorrection = {};
+      if (GlyphAspectRatio < 1.0f)
       {
-        Assert(Glyph.Verts[AtIndex].Flags & TTFFlag_OnCurve);
+        AspectCorrection = V2(GlyphAspectRatio, 1);
+      }
+      else
+      {
+        AspectCorrection = V2(1, 1.0f/GlyphAspectRatio);
+      }
 
-        u32 VertCount = 1;
-        u32 CurveEndIndex = WrapToCurveIndex(AtIndex+1, Contour->StartIndex, Contour->EndIndex);
-        while ( !(Glyph.Verts[CurveEndIndex].Flags & TTFFlag_OnCurve) )
+      v2 ScaleFactor = (SamplingBitmapSize/Glyph.Maximum)*AspectCorrection;
+
+      bitmap SamplingBitmap = AllocateBitmap(SamplingBitmapSize, Arena);
+      FillBitmap(PackRGBALinearTo255(White), &SamplingBitmap);
+
+      OutputBitmap = AllocateBitmap(OutputSize, Arena);
+      FillBitmap(PackRGBALinearTo255(White), &OutputBitmap);
+
+
+      for (u32 ContourIndex = 0;
+          ContourIndex < Glyph.ContourCount;
+          ++ContourIndex)
+      {
+        ttf_contour* Contour = Glyph.Contours + ContourIndex;
+
+        u32 ContourVertCount = Contour->EndIndex - Contour->StartIndex;
+        u32 AtIndex = Contour->StartIndex;
+
+        u32 VertsProcessed = 0;
+        while (VertsProcessed <= ContourVertCount)
         {
-          CurveEndIndex = WrapToCurveIndex(CurveEndIndex+1, Contour->StartIndex, Contour->EndIndex);
-          ++VertCount;
-        }
-        ++VertCount;
+          Assert(Glyph.Verts[AtIndex].Flags & TTFFlag_OnCurve);
 
-
-
-        v2* TempVerts = Allocate(v2, Arena, VertCount); // TODO(Jesse): Temp-memory?
-
-        v4 LastColor = Red;
-        u32 LastPixelIndex = 0;
-        for (r32 t = 0.0f;
-            t < 1.0f;
-            t += 0.0001)
-        {
-
-          for (u32 VertIndex = 0;
-              VertIndex < VertCount;
-              ++VertIndex)
+          u32 VertCount = 1;
+          u32 CurveEndIndex = WrapToCurveIndex(AtIndex+1, Contour->StartIndex, Contour->EndIndex);
+          while ( !(Glyph.Verts[CurveEndIndex].Flags & TTFFlag_OnCurve) )
           {
-            u32 CurveVertIndex = WrapToCurveIndex(AtIndex + VertIndex, Contour->StartIndex, Contour->EndIndex);
-            TempVerts[VertIndex] = V2(Glyph.Verts[CurveVertIndex].P) * ScaleFactor;
+            CurveEndIndex = WrapToCurveIndex(CurveEndIndex+1, Contour->StartIndex, Contour->EndIndex);
+            ++VertCount;
+          }
+          ++VertCount;
+
+
+
+          v2* TempVerts = Allocate(v2, Arena, VertCount); // TODO(Jesse): Temp-memory?
+
+          v4 LastColor = Red;
+          u32 LastPixelIndex = 0;
+          for (r32 t = 0.0f;
+              t < 1.0f;
+              t += 0.0001)
+          {
+
+            for (u32 VertIndex = 0;
+                VertIndex < VertCount;
+                ++VertIndex)
+            {
+              u32 CurveVertIndex = WrapToCurveIndex(AtIndex + VertIndex, Contour->StartIndex, Contour->EndIndex);
+              TempVerts[VertIndex] = V2(Glyph.Verts[CurveVertIndex].P) * ScaleFactor;
+            }
+
+            v2 TangentMax = {};
+            for (u32 Outer = VertCount;
+                Outer > 1;
+                --Outer)
+            {
+              for (u32 Inner = 0;
+                  Inner < Outer-1;
+                  ++Inner)
+              {
+                v2 tVec01 = (TempVerts[Inner+1]-TempVerts[Inner]) * t;
+                TempVerts[Inner] = TempVerts[Inner+1] - tVec01;
+                if (Inner == Outer-2)
+                {
+                  TangentMax = TempVerts[Inner+1];
+                }
+              }
+            }
+
+            v2 PointOnCurve = TempVerts[0];
+            v4 Color = Red;
+
+            // On-curve transition
+            if ( (TangentMax.x >= PointOnCurve.x && TangentMax.y > PointOnCurve.y) ||
+                 (TangentMax.x <= PointOnCurve.x && TangentMax.y > PointOnCurve.y) )
+            {
+              Color = Green;
+            }
+            else
+            if ( (TangentMax.x >= PointOnCurve.x && TangentMax.y <= PointOnCurve.y) ||
+                 (TangentMax.x <= PointOnCurve.x && TangentMax.y <= PointOnCurve.y) )
+            {
+              Color = Blue;
+            }
+
+            u32 PixelIndex = GetPixelIndex(V2i(PointOnCurve), &SamplingBitmap);
+            SamplingBitmap.Pixels.Start[PixelIndex] = PackRGBALinearTo255(Color);
+
+            if (LastColor == Green && Color == Blue)
+            {
+              SamplingBitmap.Pixels.Start[PixelIndex] = PackRGBALinearTo255(Green);
+            }
+
+            if (LastColor == Blue && Color == Green)
+            {
+              SamplingBitmap.Pixels.Start[LastPixelIndex] = PackRGBALinearTo255(Green);
+            }
+
+            LastColor = Color;
+            LastPixelIndex = PixelIndex;
           }
 
-          v2 TangentMax = {};
-          for (u32 Outer = VertCount;
-              Outer > 1;
-              --Outer)
+          VertsProcessed += VertCount -1;
+          AtIndex = CurveEndIndex;
+        }
+      }
+
+#if DO_RASTERIZE
+      for (u32 yIndex = 0;
+          yIndex < SamplingBitmap.Dim.y;
+          ++yIndex)
+      {
+        s32 TransitionCount = 0;
+        for (u32 xIndex = 0;
+            xIndex < SamplingBitmap.Dim.x;
+            ++xIndex)
+        {
+          u32 PixelIndex = GetPixelIndex(V2i(xIndex, yIndex), &SamplingBitmap);
+          u32 PixelColor = SamplingBitmap.Pixels.Start[PixelIndex];
+          if (PixelColor == PackedGreen)
           {
-            for (u32 Inner = 0;
-                Inner < Outer-1;
-                ++Inner)
+            TransitionCount = 1;
+            continue;
+          }
+          else if (PixelColor == PackedBlue)
+          {
+            TransitionCount = 0;
+            continue;
+          }
+
+          if (TransitionCount > 0)
+          {
+            SamplingBitmap.Pixels.Start[PixelIndex] = PackedBlack;
+          }
+          else
+          {
+            SamplingBitmap.Pixels.Start[PixelIndex] = PackedWhite;
+          }
+        }
+      }
+#endif
+
+#if DO_RASTERIZE && DO_AA
+      r32 SampleContrib = 1.0f/((r32)SamplesPerPixel*(r32)SamplesPerPixel);
+      for (u32 yPixelIndex = 0;
+          yPixelIndex < OutputBitmap.Dim.y;
+          ++yPixelIndex)
+      {
+        for (u32 xPixelIndex = 0;
+            xPixelIndex < OutputBitmap.Dim.x;
+            ++xPixelIndex)
+        {
+          r32 Coverage = 0.0f;
+
+          u32 yStart = yPixelIndex*SamplesPerPixel;
+          for (u32 ySampleIndex = yStart;
+              ySampleIndex < yStart+SamplesPerPixel;
+              ++ySampleIndex)
+          {
+            u32 xStart = xPixelIndex*SamplesPerPixel;
+            for (u32 xSampleIndex = xStart;
+                xSampleIndex < xStart+SamplesPerPixel;
+                ++xSampleIndex)
             {
-              v2 tVec01 = (TempVerts[Inner+1]-TempVerts[Inner]) * t;
-              TempVerts[Inner] = TempVerts[Inner+1] - tVec01;
-              if (Inner == Outer-2)
+              if (xSampleIndex < SamplingBitmap.Dim.x && ySampleIndex < SamplingBitmap.Dim.y)
               {
-                TangentMax = TempVerts[Inner+1];
+                u32 SampleIndex = GetPixelIndex(V2i(xSampleIndex, ySampleIndex), &SamplingBitmap);
+                u32 PixelColor = SamplingBitmap.Pixels.Start[SampleIndex];
+                Coverage += PixelColor == PackedWhite ? SampleContrib : 0;
               }
             }
           }
 
-          v2 PointOnCurve = TempVerts[0];
-          v4 Color = Red;
-
-          // On-curve transition
-          if ( (TangentMax.x >= PointOnCurve.x && TangentMax.y > PointOnCurve.y) ||
-               (TangentMax.x <= PointOnCurve.x && TangentMax.y > PointOnCurve.y) )
-          {
-            Color = Green;
-          }
-          else
-          if ( (TangentMax.x >= PointOnCurve.x && TangentMax.y <= PointOnCurve.y) ||
-               (TangentMax.x <= PointOnCurve.x && TangentMax.y <= PointOnCurve.y) )
-          {
-            Color = Blue;
-          }
-
-          u32 PixelIndex = GetPixelIndex(V2i(PointOnCurve), &SamplingBitmap);
-          SamplingBitmap.Pixels.Start[PixelIndex] = PackRGBALinearTo255(Color);
-
-          if (LastColor == Green && Color == Blue)
-          {
-            SamplingBitmap.Pixels.Start[PixelIndex] = PackRGBALinearTo255(Green);
-          }
-
-          if (LastColor == Blue && Color == Green)
-          {
-            SamplingBitmap.Pixels.Start[LastPixelIndex] = PackRGBALinearTo255(Green);
-          }
-
-          LastColor = Color;
-          LastPixelIndex = PixelIndex;
-        }
-
-        VertsProcessed += VertCount -1;
-        AtIndex = CurveEndIndex;
-      }
-    }
-
-#define DO_RASTERIZE 1
-#define DO_AA        1
-
-#if DO_RASTERIZE
-    for (u32 yIndex = 0;
-        yIndex < SamplingBitmap.Dim.y;
-        ++yIndex)
-    {
-      s32 TransitionCount = 0;
-      for (u32 xIndex = 0;
-          xIndex < SamplingBitmap.Dim.x;
-          ++xIndex)
-      {
-        u32 PixelIndex = GetPixelIndex(V2i(xIndex, yIndex), &SamplingBitmap);
-        u32 PixelColor = SamplingBitmap.Pixels.Start[PixelIndex];
-        if (PixelColor == PackedGreen)
-        {
-          TransitionCount = 1;
-          continue;
-        }
-        else if (PixelColor == PackedBlue)
-        {
-          TransitionCount = 0;
-          continue;
-        }
-
-        if (TransitionCount > 0)
-        {
-          SamplingBitmap.Pixels.Start[PixelIndex] = PackedBlack;
-        }
-        else
-        {
-          SamplingBitmap.Pixels.Start[PixelIndex] = PackedWhite;
+          u32 PixelIndex = GetPixelIndex(V2i(xPixelIndex, yPixelIndex), &OutputBitmap);
+          OutputBitmap.Pixels.Start[PixelIndex] = PackRGBALinearTo255(V4(1,1,1,0) * Coverage);
         }
       }
-    }
-#endif
-
-#if DO_RASTERIZE && DO_AA
-    bitmap OutputBitmap = AllocateBitmap(OutputSize, Arena);
-    FillBitmap(PackRGBALinearTo255(White), &OutputBitmap);
-
-    r32 SampleContrib = 1.0f/((r32)SamplesPerPixel*(r32)SamplesPerPixel);
-    for (u32 yPixelIndex = 0;
-        yPixelIndex < OutputBitmap.Dim.y;
-        ++yPixelIndex)
-    {
-      for (u32 xPixelIndex = 0;
-          xPixelIndex < OutputBitmap.Dim.x;
-          ++xPixelIndex)
-      {
-        r32 Coverage = 0.0f;
-
-        u32 yStart = yPixelIndex*SamplesPerPixel;
-        for (u32 ySampleIndex = yStart;
-            ySampleIndex < yStart+SamplesPerPixel;
-            ++ySampleIndex)
-        {
-          u32 xStart = xPixelIndex*SamplesPerPixel;
-          for (u32 xSampleIndex = xStart;
-              xSampleIndex < xStart+SamplesPerPixel;
-              ++xSampleIndex)
-          {
-            if (xSampleIndex < SamplingBitmap.Dim.x && ySampleIndex < SamplingBitmap.Dim.y)
-            {
-              u32 SampleIndex = GetPixelIndex(V2i(xSampleIndex, ySampleIndex), &SamplingBitmap);
-              u32 PixelColor = SamplingBitmap.Pixels.Start[SampleIndex];
-              Coverage += PixelColor == PackedWhite ? SampleContrib : 0;
-            }
-          }
-        }
-
-        u32 PixelIndex = GetPixelIndex(V2i(xPixelIndex, yPixelIndex), &OutputBitmap);
-        OutputBitmap.Pixels.Start[PixelIndex] = PackRGBALinearTo255(V4(1,1,1,0) * Coverage);
-      }
-    }
 #endif
 
 #if 0
-    v2 At = V2(Glyph.Verts->P);
-    v2 LastVertP = At;
+      v2 At = V2(Glyph.Verts->P);
+      v2 LastVertP = At;
 
-    v4 CurrentColor = (Glyph.Verts->Flags&TTFFlag_OnCurve) ?  Black : Red;
-    v4 TargetColor = Black;
+      v4 CurrentColor = (Glyph.Verts->Flags&TTFFlag_OnCurve) ?  Black : Red;
+      v4 TargetColor = Black;
 
-    for (u32 VertIndex = 0;
-        VertIndex < Glyph.VertCount;
-        ++VertIndex)
-    {
-      ttf_vert *Vert = Glyph.Verts + VertIndex;
-      v2 VertP = V2(Vert->P);
-
-      if (Vert->Flags & TTFFlag_OnCurve)
+      for (u32 VertIndex = 0;
+          VertIndex < Glyph.VertCount;
+          ++VertIndex)
       {
-        TargetColor = Black;
-        Debug("On  Curve %d %d", Vert->P.x, Vert->P.y);
-      }
-      else
-      {
-        TargetColor = Red;
-        Debug("Off Curve %d %d", Vert->P.x, Vert->P.y);
-      }
+        ttf_vert *Vert = Glyph.Verts + VertIndex;
+        v2 VertP = V2(Vert->P);
+
+        if (Vert->Flags & TTFFlag_OnCurve)
+        {
+          TargetColor = Black;
+          Debug("On  Curve %d %d", Vert->P.x, Vert->P.y);
+        }
+        else
+        {
+          TargetColor = Red;
+          Debug("Off Curve %d %d", Vert->P.x, Vert->P.y);
+        }
 
 
-      v2 CurrentToVert = Normalize(VertP-At) * 0.5f;
-      while(Abs(Length(VertP - At)) > 0.5f)
-      {
-        r32 t = SafeDivide0(LengthSq(LastVertP-At), LengthSq(LastVertP-VertP));
-        u32 PixelColor = PackRGBALinearTo255(Lerp(t, CurrentColor, TargetColor));
-        u32 PixelIndex = GetPixelIndex(V2i(At), &Bitmap);
-        *(Bitmap.Pixels.Start + PixelIndex) = PixelColor;
-        At += CurrentToVert;
-      }
+        v2 CurrentToVert = Normalize(VertP-At) * 0.5f;
+        while(Abs(Length(VertP - At)) > 0.5f)
+        {
+          r32 t = SafeDivide0(LengthSq(LastVertP-At), LengthSq(LastVertP-VertP));
+          u32 PixelColor = PackRGBALinearTo255(Lerp(t, CurrentColor, TargetColor));
+          u32 PixelIndex = GetPixelIndex(V2i(At), &Bitmap);
+          *(Bitmap.Pixels.Start + PixelIndex) = PixelColor;
+          At += CurrentToVert;
+        }
 
-      LastVertP = VertP;
-      CurrentColor = TargetColor;
-    }
+        LastVertP = VertP;
+        CurrentColor = TargetColor;
+      }
 #endif
+    }
 
+#if WRITE_DEBUG_BITMAPS
     WriteBitmapToDisk(&SamplingBitmap, "sample_glyph.bmp");
     WriteBitmapToDisk(&OutputBitmap, "output_glyph.bmp");
+#endif
   }
 
-
-  return;
+  return OutputBitmap;
 }
 
 int
@@ -983,7 +979,24 @@ main()
 {
   memory_arena Arena = {};
   ttf Font = InitTTF("roboto_for_powerline.ttf", &Arena);
-  DumpGlyphTable(&Font, &Arena);
+
+  for (u32 GlyphNumber = 0;
+      GlyphNumber < 256;
+      ++GlyphNumber)
+  {
+    Debug("Rasterizing Glyph %d", GlyphNumber);
+
+    u32 GlyphIndex =  GetGlyphIdForCharacterCode(GlyphNumber, &Font);
+    binary_stream_u8 GlyphStream = GetStreamForGlyphIndex(GlyphIndex, &Font, &Arena);
+    bitmap GlyphBitmap = RasterizeGlyph(&GlyphStream, &Arena);
+
+    if ( PixelCount(&GlyphBitmap) )
+    {
+      char Name[128] = {};
+      sprintf(Name, "Glyph_%d.bmp", GlyphNumber);
+      WriteBitmapToDisk(&GlyphBitmap, Name);
+    }
+  }
 
   return 0;
 }
