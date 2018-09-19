@@ -651,8 +651,9 @@ GetStreamForGlyphIndex(u32 GlyphIndex, ttf *Font, memory_arena *Arena)
   if (HeadTable->IndexToLocFormat == SHORT_INDEX_LOCATION_FORMAT)
   {
     u32 GlyphIndexOffset = GlyphIndex * sizeof(u16);
-    u16 StartOffset = ReadU16(Font->loca->Data+ GlyphIndexOffset) *2;
-    u16 EndOffset = ReadU16(Font->loca->Data+ GlyphIndexOffset + sizeof(u16)) *2;
+    u32 StartOffset = ReadU16(Font->loca->Data+ GlyphIndexOffset) *2;
+    u32 EndOffset = ReadU16(Font->loca->Data+ GlyphIndexOffset + sizeof(u16)) *2;
+    Assert(StartOffset <= EndOffset);
 
     u8* Start = Font->glyf->Data + StartOffset;
     u8* End = Font->glyf->Data + EndOffset;
@@ -977,25 +978,28 @@ RasterizeGlyph(binary_stream_u8 *GlyphStream, memory_arena* Arena)
 int
 main()
 {
-  memory_arena Arena = {};
-  ttf Font = InitTTF("roboto_for_powerline.ttf", &Arena);
+  memory_arena* PermArena = PlatformAllocateArena();
+  ttf Font = InitTTF("roboto_for_powerline.ttf", PermArena);
 
+  memory_arena* TempArena = PlatformAllocateArena();
   for (u32 GlyphNumber = 0;
-      GlyphNumber < 256;
+      GlyphNumber < 65536;
       ++GlyphNumber)
   {
-    Debug("Rasterizing Glyph %d", GlyphNumber);
 
     u32 GlyphIndex =  GetGlyphIdForCharacterCode(GlyphNumber, &Font);
-    binary_stream_u8 GlyphStream = GetStreamForGlyphIndex(GlyphIndex, &Font, &Arena);
-    bitmap GlyphBitmap = RasterizeGlyph(&GlyphStream, &Arena);
+    binary_stream_u8 GlyphStream = GetStreamForGlyphIndex(GlyphIndex, &Font, TempArena);
+    bitmap GlyphBitmap = RasterizeGlyph(&GlyphStream, TempArena);
 
     if ( PixelCount(&GlyphBitmap) )
     {
+      Debug("Rasterized Glyph %d", GlyphNumber);
       char Name[128] = {};
       sprintf(Name, "Glyph_%d.bmp", GlyphNumber);
       WriteBitmapToDisk(&GlyphBitmap, Name);
     }
+
+    RewindArena(TempArena);
   }
 
   return 0;

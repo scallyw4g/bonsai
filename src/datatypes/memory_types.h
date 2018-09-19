@@ -408,7 +408,7 @@ void
 ClearMetaRecordsFor(memory_arena *Arena);
 
 inline void
-RewindArena(memory_arena *Arena)
+RewindArena(memory_arena *Arena, umm RestartBlockSize = Megabytes(1) )
 {
   if (Arena->Prev)
   {
@@ -417,14 +417,18 @@ RewindArena(memory_arena *Arena)
     Arena->Prev = 0;
   }
 
+  PlatformUnprotectArena(Arena);
+
   Arena->At = Arena->Start;
+  Arena->NextBlockSize = RestartBlockSize;
 
 #if BONSAI_INTERNAL
+#ifndef BONSAI_NO_PUSH_METADATA
   Arena->Pushes = 0;
   ClearMetaRecordsFor(Arena);
+#endif
 #endif
 
   return;
 }
-
 

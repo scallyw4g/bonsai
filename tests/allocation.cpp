@@ -1,4 +1,5 @@
 #define BONSAI_NO_PUSH_METADATA
+#define BONSAI_NO_TIMED_FUNCTIONS
 
 #include <bonsai_types.h>
 #include <unix_platform.cpp>
@@ -631,6 +632,34 @@ main()
     UnprotectedAllocations();
 
     TestAlignment();
+
+    u32 Lots = 100000;
+    {
+      memory_arena *Arena = PlatformAllocateArena();
+      for (u32 AllocationIndex = 0;
+          AllocationIndex < Lots;
+          ++AllocationIndex)
+      {
+        while (!Arena->Prev)
+        {
+          test_struct_1k* Thing = Allocate(test_struct_1k, Arena, 10);
+        }
+
+        RewindArena(Arena);
+        Arena->NextBlockSize = Megabytes(1);
+      }
+    }
+
+    {
+      for (u32 AllocationIndex = 0;
+          AllocationIndex < Lots;
+          ++AllocationIndex)
+      {
+        memory_arena *Arena = PlatformAllocateArena(Megabytes(1));
+        VaporizeArena(Arena);
+      }
+    }
+
 #endif
 
   TestSuiteEnd();
