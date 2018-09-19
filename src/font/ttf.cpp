@@ -712,6 +712,7 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('c', Font); */
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode(' ', Font); */
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('.', Font); */
+  /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('w', Font); */
 
   binary_stream_u8 GlyphStream = GetStreamForGlyphIndex(GlyphIndex, Font, Arena);
 
@@ -737,7 +738,16 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
 
     simple_glyph Glyph = ParseGlyph(&GlyphStream, Arena);
     r32 GlyphAspectRatio = (r32)Glyph.Maximum.x / (r32)Glyph.Maximum.y;
-    v2 AspectCorrection = V2(GlyphAspectRatio, 1);
+    v2 AspectCorrection = {};
+    if (GlyphAspectRatio < 1.0f)
+    {
+      AspectCorrection = V2(GlyphAspectRatio, 1);
+    }
+    else
+    {
+      AspectCorrection = V2(1, 1.0f/GlyphAspectRatio);
+    }
+
     v2 ScaleFactor = (SamplingBitmapSize/Glyph.Maximum)*AspectCorrection;
 
     bitmap SamplingBitmap = AllocateBitmap(SamplingBitmapSize, Arena);
