@@ -724,6 +724,10 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
     v4 Pink  = V4(1,0,1,0);
     v4 Green = V4(0,1,0,0);
 
+    u32 SamplesPerPixel = 16;
+    v2i OutputSize = V2i(256,256);
+    v2i SamplingBitmapSize = OutputSize*SamplesPerPixel;
+
     u32 PackedWhite = PackRGBALinearTo255(White );
     u32 PackedBlack = PackRGBALinearTo255(Black );
     u32 PackedRed   = PackRGBALinearTo255(Red   );
@@ -732,12 +736,9 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
     u32 PackedGreen = PackRGBALinearTo255(Green );
 
     simple_glyph Glyph = ParseGlyph(&GlyphStream, Arena);
-
-    u32 SamplesPerPixel = 16;
-    v2i OutputSize = V2i(64, 64);
-    v2i SamplingBitmapSize = OutputSize*SamplesPerPixel;
-
-    v2 ScaleFactor = SamplingBitmapSize/Glyph.Maximum;
+    r32 GlyphAspectRatio = (r32)Glyph.Maximum.x / (r32)Glyph.Maximum.y;
+    v2 AspectCorrection = V2(GlyphAspectRatio, 1);
+    v2 ScaleFactor = (SamplingBitmapSize/Glyph.Maximum)*AspectCorrection;
 
     bitmap SamplingBitmap = AllocateBitmap(SamplingBitmapSize, Arena);
     FillBitmap(PackRGBALinearTo255(White), &SamplingBitmap);
@@ -912,7 +913,6 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
           }
         }
 
-        Print(Coverage);
         u32 PixelIndex = GetPixelIndex(V2i(xPixelIndex, yPixelIndex), &OutputBitmap);
         OutputBitmap.Pixels.Start[PixelIndex] = PackRGBALinearTo255(V4(1,1,1,0) * Coverage);
       }
