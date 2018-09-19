@@ -732,6 +732,15 @@ operator/(r32 B, v3 A)
   return Result;
 }
 
+inline v2
+operator/(v2i A, v2i B)
+{
+  v2 Result;
+  Result.x = (r32)A.x / (r32)B.x;
+  Result.y = (r32)A.y / (r32)B.y;
+  return Result;
+}
+
 inline v2i
 operator/(v2i A, s32 B)
 {

@@ -732,7 +732,13 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
     u32 PackedGreen = PackRGBALinearTo255(Green );
 
     simple_glyph Glyph = ParseGlyph(&GlyphStream, Arena);
-    bitmap Bitmap = AllocateBitmap(Glyph.Maximum, Arena);
+
+    v2i TargetSize = V2i(128, 128);
+
+    v2 ScaleFactor = TargetSize/Glyph.Maximum;
+    Print(ScaleFactor);
+
+    bitmap Bitmap = AllocateBitmap(TargetSize, Arena);
     FillBitmap(PackRGBALinearTo255(White), &Bitmap);
 
     for (u32 ContourIndex = 0;
@@ -774,7 +780,7 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
               ++VertIndex)
           {
             u32 CurveVertIndex = WrapToCurveIndex(AtIndex + VertIndex, Contour->StartIndex, Contour->EndIndex);
-            TempVerts[VertIndex] = V2(Glyph.Verts[CurveVertIndex].P);
+            TempVerts[VertIndex] = V2(Glyph.Verts[CurveVertIndex].P) * ScaleFactor;
           }
 
           v2 TangentMax = {};
