@@ -637,6 +637,22 @@ operator+=(v2& P1, v2 P2)
   P1.y += P2.y;
 }
 
+v2i
+operator*(v2i A, u32 B)
+{
+  v2i Result;
+  Result.x = A.x * B;
+  Result.y = A.y * B;
+  return Result;
+}
+
+v2i
+operator*(u32 A, v2i B)
+{
+  v2i Result = B*A;
+  return Result;
+}
+
 v2
 operator*(v2 A, v2 B)
 {

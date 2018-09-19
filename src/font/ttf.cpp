@@ -707,8 +707,8 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('a', Font); */
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('r', Font); */
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('@', Font); */
-  u32 GlyphIndex =  GetGlyphIdForCharacterCode('#', Font);
-  /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('&', Font); */
+  /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('#', Font); */
+  u32 GlyphIndex =  GetGlyphIdForCharacterCode('&', Font);
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('c', Font); */
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode(' ', Font); */
   /* u32 GlyphIndex =  GetGlyphIdForCharacterCode('.', Font); */
@@ -733,13 +733,14 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
 
     simple_glyph Glyph = ParseGlyph(&GlyphStream, Arena);
 
-    v2i TargetSize = V2i(128, 128);
+    u32 SamplesPerPixel = 16;
+    v2i OutputSize = V2i(64, 64);
+    v2i SamplingBitmapSize = OutputSize*SamplesPerPixel;
 
-    v2 ScaleFactor = TargetSize/Glyph.Maximum;
-    Print(ScaleFactor);
+    v2 ScaleFactor = SamplingBitmapSize/Glyph.Maximum;
 
-    bitmap Bitmap = AllocateBitmap(TargetSize, Arena);
-    FillBitmap(PackRGBALinearTo255(White), &Bitmap);
+    bitmap SamplingBitmap = AllocateBitmap(SamplingBitmapSize, Arena);
+    FillBitmap(PackRGBALinearTo255(White), &SamplingBitmap);
 
     for (u32 ContourIndex = 0;
         ContourIndex < Glyph.ContourCount;
@@ -817,17 +818,17 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
             Color = Blue;
           }
 
-          u32 PixelIndex = GetPixelIndex(V2i(PointOnCurve), &Bitmap);
-          Bitmap.Pixels.Start[PixelIndex] = PackRGBALinearTo255(Color);
+          u32 PixelIndex = GetPixelIndex(V2i(PointOnCurve), &SamplingBitmap);
+          SamplingBitmap.Pixels.Start[PixelIndex] = PackRGBALinearTo255(Color);
 
           if (LastColor == Green && Color == Blue)
           {
-            Bitmap.Pixels.Start[PixelIndex] = PackRGBALinearTo255(Green);
+            SamplingBitmap.Pixels.Start[PixelIndex] = PackRGBALinearTo255(Green);
           }
 
           if (LastColor == Blue && Color == Green)
           {
-            Bitmap.Pixels.Start[LastPixelIndex] = PackRGBALinearTo255(Green);
+            SamplingBitmap.Pixels.Start[LastPixelIndex] = PackRGBALinearTo255(Green);
           }
 
           LastColor = Color;
@@ -839,18 +840,21 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
       }
     }
 
-#if 1
+#define DO_RASTERIZE 1
+#define DO_AA        1
+
+#if DO_RASTERIZE
     for (u32 yIndex = 0;
-        yIndex < Bitmap.Dim.y;
+        yIndex < SamplingBitmap.Dim.y;
         ++yIndex)
     {
       s32 TransitionCount = 0;
       for (u32 xIndex = 0;
-          xIndex < Bitmap.Dim.x;
+          xIndex < SamplingBitmap.Dim.x;
           ++xIndex)
       {
-        u32 PixelIndex = GetPixelIndex(V2i(xIndex, yIndex), &Bitmap);
-        u32 PixelColor = Bitmap.Pixels.Start[PixelIndex];
+        u32 PixelIndex = GetPixelIndex(V2i(xIndex, yIndex), &SamplingBitmap);
+        u32 PixelColor = SamplingBitmap.Pixels.Start[PixelIndex];
         if (PixelColor == PackedGreen)
         {
           TransitionCount = 1;
@@ -864,12 +868,53 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
 
         if (TransitionCount > 0)
         {
-          Bitmap.Pixels.Start[PixelIndex] = PackedBlack;
+          SamplingBitmap.Pixels.Start[PixelIndex] = PackedBlack;
         }
         else
         {
-          Bitmap.Pixels.Start[PixelIndex] = PackedWhite;
+          SamplingBitmap.Pixels.Start[PixelIndex] = PackedWhite;
         }
+      }
+    }
+#endif
+
+#if DO_RASTERIZE && DO_AA
+    bitmap OutputBitmap = AllocateBitmap(OutputSize, Arena);
+    FillBitmap(PackRGBALinearTo255(White), &OutputBitmap);
+
+    r32 SampleContrib = 1.0f/((r32)SamplesPerPixel*(r32)SamplesPerPixel);
+    for (u32 yPixelIndex = 0;
+        yPixelIndex < OutputBitmap.Dim.y;
+        ++yPixelIndex)
+    {
+      for (u32 xPixelIndex = 0;
+          xPixelIndex < OutputBitmap.Dim.x;
+          ++xPixelIndex)
+      {
+        r32 Coverage = 0.0f;
+
+        u32 yStart = yPixelIndex*SamplesPerPixel;
+        for (u32 ySampleIndex = yStart;
+            ySampleIndex < yStart+SamplesPerPixel;
+            ++ySampleIndex)
+        {
+          u32 xStart = xPixelIndex*SamplesPerPixel;
+          for (u32 xSampleIndex = xStart;
+              xSampleIndex < xStart+SamplesPerPixel;
+              ++xSampleIndex)
+          {
+            if (xSampleIndex < SamplingBitmap.Dim.x && ySampleIndex < SamplingBitmap.Dim.y)
+            {
+              u32 SampleIndex = GetPixelIndex(V2i(xSampleIndex, ySampleIndex), &SamplingBitmap);
+              u32 PixelColor = SamplingBitmap.Pixels.Start[SampleIndex];
+              Coverage += PixelColor == PackedWhite ? SampleContrib : 0;
+            }
+          }
+        }
+
+        Print(Coverage);
+        u32 PixelIndex = GetPixelIndex(V2i(xPixelIndex, yPixelIndex), &OutputBitmap);
+        OutputBitmap.Pixels.Start[PixelIndex] = PackRGBALinearTo255(V4(1,1,1,0) * Coverage);
       }
     }
 #endif
@@ -915,7 +960,8 @@ DumpGlyphTable(ttf* Font, memory_arena* Arena)
     }
 #endif
 
-    WriteBitmapToDisk(&Bitmap, "glyph.bmp");
+    WriteBitmapToDisk(&SamplingBitmap, "sample_glyph.bmp");
+    WriteBitmapToDisk(&OutputBitmap, "output_glyph.bmp");
   }
 
 
