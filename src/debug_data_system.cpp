@@ -234,6 +234,14 @@ GetTotalMemoryArenaStats()
 /**************************  Utility Functions  ******************************/
 
 
+inline v2
+GetUVForCharCode(u32 Char)
+{
+  v2 Result = V2( (Char%16)/16.0f, (Char/16)/16.0f );
+  return Result;
+}
+
+
 void
 InitScopeTree(debug_scope_tree *Tree)
 {

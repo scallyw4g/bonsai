@@ -243,7 +243,7 @@ inline r32
 BufferChar(ui_render_group *Group, textured_2d_geometry_buffer *Geo, u32 CharIndex, v2 MinP, font *Font, const char *Text, u32 Color)
 {
   char Char = Text[CharIndex];
-  v2 UV = V2( (Char%16)/16.0f, (Char/16)/16.0f );
+  v2 UV = GetUVForCharCode(Char);
 
   { // Black Drop-shadow
     BufferQuad(Group, Geo, MinP+V2(3), V2(Font->Size), 1.0f);

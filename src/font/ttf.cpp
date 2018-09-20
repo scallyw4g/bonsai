@@ -7,6 +7,20 @@
 #include <debug_data_system.cpp>
 #include <bitmap.cpp>
 
+v4 White = V4(1,1,1,1);
+v4 Black = {};
+v4 Red   = V4(1,0,0,0);
+v4 Blue   = V4(0,0,1,0);
+v4 Pink  = V4(1,0,1,0);
+v4 Green = V4(0,1,0,0);
+
+u32 PackedWhite = PackRGBALinearTo255(White );
+u32 PackedBlack = PackRGBALinearTo255(Black );
+u32 PackedRed   = PackRGBALinearTo255(Red   );
+u32 PackedBlue  = PackRGBALinearTo255(Blue  );
+u32 PackedPink  = PackRGBALinearTo255(Pink  );
+u32 PackedGreen = PackRGBALinearTo255(Green );
+
 
 inline u8
 ReadU8(u8* Source)
@@ -668,33 +682,18 @@ WrapToCurveIndex(u32 IndexWanted, u32 CurveStart, u32 CurveEnd)
 }
 
 bitmap
-RasterizeGlyph(binary_stream_u8 *GlyphStream, memory_arena* Arena)
+RasterizeGlyph(v2i OutputSize, binary_stream_u8 *GlyphStream, memory_arena* Arena)
 {
 #define DO_RASTERIZE        1
 #define DO_AA               1
 #define WRITE_DEBUG_BITMAPS 0
 
-  u32 SamplesPerPixel = 16;
-  v2i OutputSize = V2i(64,64);
+  u32 SamplesPerPixel = 8;
 
   bitmap OutputBitmap = {};
   if (Remaining(GlyphStream) > 0) // A glyph stream with 0 length means there's no glyph
   {
-    v4 White = V4(1,1,1,1);
-    v4 Black = {};
-    v4 Red   = V4(1,0,0,0);
-    v4 Blue   = V4(0,0,1,0);
-    v4 Pink  = V4(1,0,1,0);
-    v4 Green = V4(0,1,0,0);
-
     v2i SamplingBitmapSize = OutputSize*SamplesPerPixel;
-
-    u32 PackedWhite = PackRGBALinearTo255(White );
-    u32 PackedBlack = PackRGBALinearTo255(Black );
-    u32 PackedRed   = PackRGBALinearTo255(Red   );
-    u32 PackedBlue  = PackRGBALinearTo255(Blue  );
-    u32 PackedPink  = PackRGBALinearTo255(Pink  );
-    u32 PackedGreen = PackRGBALinearTo255(Green );
 
     simple_glyph Glyph = ParseGlyph(GlyphStream, Arena);
     if (Glyph.ContourCount > 0) // We don't support compound glyphs, yet
@@ -940,33 +939,66 @@ RasterizeGlyph(binary_stream_u8 *GlyphStream, memory_arena* Arena)
   return OutputBitmap;
 }
 
+void
+CopyBitmapOffset(bitmap *Source, bitmap *Dest, v2i Offset)
+{
+  for (u32 ySourcePixel = 0;
+      ySourcePixel < Source->Dim.y;
+      ++ySourcePixel)
+  {
+    for (u32 xSourcePixel = 0;
+        xSourcePixel < Source->Dim.x;
+        ++xSourcePixel)
+    {
+      u32 SourcePixelIndex = GetPixelIndex(V2i(xSourcePixel, ySourcePixel), Source);
+      u32 DestPixelIndex = GetPixelIndex( V2i(xSourcePixel, ySourcePixel) + Offset, Dest);
+
+      Dest->Pixels.Start[DestPixelIndex] = Source->Pixels.Start[SourcePixelIndex] ;
+    }
+  }
+
+  return;
+}
+
 int
 main()
 {
   memory_arena* PermArena = PlatformAllocateArena();
-  ttf Font = InitTTF("fonts/inconsolata.otf", PermArena);
+  ttf Font = InitTTF("fonts/hack.ttf", PermArena);
 
   memory_arena* TempArena = PlatformAllocateArena();
-  for (u32 GlyphNumber = 32;
-      GlyphNumber < 65536;
-      ++GlyphNumber)
-  {
 
-    u32 GlyphIndex =  GetGlyphIdForCharacterCode(GlyphNumber, &Font);
+  v2i GlyphSize = V2i(16, 16);
+  bitmap TextureAtlasBitmap = AllocateBitmap(16*GlyphSize, PermArena);
+  FillBitmap(PackedWhite, &TextureAtlasBitmap);
+
+  for (u32 CharCode = 0;
+      CharCode < 256;
+      ++CharCode)
+  {
+    u32 GlyphIndex =  GetGlyphIdForCharacterCode(CharCode, &Font);
     if (!GlyphIndex) continue;
     binary_stream_u8 GlyphStream = GetStreamForGlyphIndex(GlyphIndex, &Font, TempArena);
-    bitmap GlyphBitmap = RasterizeGlyph(&GlyphStream, TempArena);
+    bitmap GlyphBitmap = RasterizeGlyph(GlyphSize, &GlyphStream, TempArena);
 
     if ( PixelCount(&GlyphBitmap) )
     {
-      Debug("Rasterized Glyph %d", GlyphNumber);
+      Debug("Rasterized Glyph %d", CharCode);
+
+#if 1
+      v2 UV = GetUVForCharCode(CharCode);
+      CopyBitmapOffset(&GlyphBitmap, &TextureAtlasBitmap, V2i(UV*V2(TextureAtlasBitmap.Dim)) );
+#else
       char Name[128] = {};
-      sprintf(Name, "Glyph_%d.bmp", GlyphNumber);
+      sprintf(Name, "Glyph_%d.bmp", CharCode);
       WriteBitmapToDisk(&GlyphBitmap, Name);
+#endif
     }
 
     RewindArena(TempArena);
   }
+
+  WriteBitmapToDisk(&TextureAtlasBitmap, "texture_atlas.bmp");
 
   return 0;
 }

@@ -691,6 +691,16 @@ operator-(v2 P1, v2 P2)
   return Result;
 }
 
+v2i operator+(v2i P1, v2i P2)
+{
+  v2i Result;
+
+  Result.x = P1.x + P2.x;
+  Result.y = P1.y + P2.y;
+
+  return Result;
+}
+
 v2 operator+(v2 P1, v2 P2)
 {
   v2 Result;
