@@ -6,6 +6,7 @@ global_variable memory_arena *TranArena = {};
 #include <stdio.h>
 #include <string.h>
 #include <texture.hpp>
+#include <bitmap.cpp>
 
 #if 0
 GLuint loadBMP_custom(const char * FilePath){
@@ -91,6 +92,30 @@ GLuint loadBMP_custom(const char * FilePath){
 #define FOURCC_DXT1 0x31545844 // Equivalent to "DXT1" in ASCII
 #define FOURCC_DXT3 0x33545844 // Equivalent to "DXT3" in ASCII
 #define FOURCC_DXT5 0x35545844 // Equivalent to "DXT5" in ASCII
+
+
+
+texture
+LoadBitmap(const char* FilePath, memory_arena *Arena)
+{
+  bitmap TexBitmap = ReadBitmapFromDisk(FilePath, Arena);
+
+  texture Result = {};
+  Result.Dim = TexBitmap.Dim;
+  glGenTextures(1, &Result.ID);
+  glBindTexture(GL_TEXTURE_2D, Result.ID);
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8,
+      TexBitmap.Dim.x,
+      TexBitmap.Dim.y,
+      0,
+      GL_RGBA,
+      GL_UNSIGNED_BYTE,
+      TexBitmap.Pixels.Start);
+
+  return Result;
+}
 
 texture
 LoadDDS(const char * FilePath)
