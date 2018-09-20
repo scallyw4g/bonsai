@@ -214,6 +214,16 @@ struct offset_subtable
   u16 RangeShift;
 };
 
+enum ttf_flag
+{
+  TTFFlag_OnCurve = 1 << 0,
+  TTFFlag_ShortX  = 1 << 1,
+  TTFFlag_ShortY  = 1 << 2,
+  TTFFlag_Repeat  = 1 << 3,
+  TTFFlag_DualX   = 1 << 4,
+  TTFFlag_DualY   = 1 << 5,
+};
+
 binary_stream_u8
 BinaryStream(font_table *Table)
 {
@@ -355,45 +365,6 @@ InitTTF(const char* SourceFile, memory_arena *Arena)
   return Result;
 }
 
-enum ttf_flag
-{
-  TTFFlag_OnCurve = 1 << 0,
-  TTFFlag_ShortX  = 1 << 1,
-  TTFFlag_ShortY  = 1 << 2,
-  TTFFlag_Repeat  = 1 << 3,
-  TTFFlag_DualX   = 1 << 4,
-  TTFFlag_DualY   = 1 << 5,
-};
-
-/* struct encoding_subtable */
-/* { */
-/*   u16 PlatformId; */
-/*   u16 PlatformSpecificId; */
-/*   u16 Format; */
-
-/*   u32 Offset; */
-/*   u8 *Start; */
-/* }; */
-
-/* enum platform_id */
-/* { */
-/*   PlatformId_Unicode  = 0, */
-/*   PlatformId_Mac      = 1, */
-/*   PlatformId_Reserved = 2, */
-/*   PlatformId_Win32    = 3, */
-/* }; */
-
-/* enum platform_specific_id_unicode */
-/* { */
-/*   UnicodePlatform_Default       = 0, */
-/*   UnicodePlatform_V11           = 1, */
-/*   UnicodePlatform_ISO10646      = 2, // Deprecated */
-/*   UnicodePlatform_V2_BMP        = 3, */
-/*   UnicodePlatform_V2_Full       = 4, */
-/*   UnicodePlatform_Variation     = 5, */
-/*   UnicodePlatform_Full_Coverage = 6, */
-/* }; */
-
 simple_glyph
 ParseGlyph(binary_stream_u8 *Stream, memory_arena *Arena)
 {
@@ -519,7 +490,7 @@ ParseGlyph(binary_stream_u8 *Stream, memory_arena *Arena)
   case platform_id: { Error("Unsupported Platform %s", #platform_id); } break;
 
 u16
-GetGlyphIdForCharacterCode(u32 GlyphQueryIndex, ttf *Font)
+GetGlyphIdForCharacterCode(u32 UnicodeCodepoint, ttf *Font)
 {
   font_table *Cmap = Font->cmap;
   u32 Checksum = CalculateTableChecksum(Cmap);
@@ -574,25 +545,19 @@ GetGlyphIdForCharacterCode(u32 GlyphQueryIndex, ttf *Font)
         u16 Delta = ReadU16(IdDelta+SegIdx);
         u16 RangeOffset = ReadU16(IdRangeOffset+SegIdx);
 
-        /* u16 TestDelta = End - Start; */
-        /* Assert(TestDelta == Delta); */
-        /* Assert(Start <= End); */
-
-        if (GlyphQueryIndex >= Start && GlyphQueryIndex <= End)
+        if (UnicodeCodepoint >= Start && UnicodeCodepoint <= End)
         {
           if (RangeOffset)
           {
-            // TODO(Jesse): Does this actually work?
-            NotImplemented;
+            u32 G = Start+RangeOffset;
+            u16 GlyphIndex = ReadU16( &IdRangeOffset[SegIdx] + RangeOffset / 2 + (UnicodeCodepoint - Start) );
 
-            u32 G = Start + RangeOffset;
-            u16 GlyphIndex = ReadU16(IdRangeOffset + SegIdx + G) + Delta;
-            return GlyphIndex;
+            u32 Result = GlyphIndex ? GlyphIndex + Delta : GlyphIndex;
+            return Result;
           }
           else
           {
-            // TODO(Jesse): Does overflowing _actually_ wrap correctly here?
-            u16 GlyphIndex = Delta + GlyphQueryIndex;
+            u16 GlyphIndex = Delta + UnicodeCodepoint;
             return GlyphIndex;
           }
 
@@ -665,8 +630,8 @@ GetStreamForGlyphIndex(u32 GlyphIndex, ttf *Font, memory_arena *Arena)
     u32 FirstEndOffset = ReadU32(Font->loca->Data+1);
 
 
-    u32 StartOffset = ReadU32(Font->loca->Data+GlyphIndex);
-    u32 EndOffset = ReadU32(Font->loca->Data+GlyphIndex+1);
+    u32 StartOffset = ReadU32(Font->loca->Data+(GlyphIndex*4));
+    u32 EndOffset = ReadU32(Font->loca->Data+(GlyphIndex*4)+4);
 
     u8* Start = Font->glyf->Data + StartOffset;
     u8* End = Font->glyf->Data + EndOffset;
@@ -979,15 +944,16 @@ int
 main()
 {
   memory_arena* PermArena = PlatformAllocateArena();
-  ttf Font = InitTTF("go_mono.ttf", PermArena);
+  ttf Font = InitTTF("fonts/inconsolata.otf", PermArena);
 
   memory_arena* TempArena = PlatformAllocateArena();
-  for (u32 GlyphNumber = 0;
+  for (u32 GlyphNumber = 32;
       GlyphNumber < 65536;
       ++GlyphNumber)
   {
 
     u32 GlyphIndex =  GetGlyphIdForCharacterCode(GlyphNumber, &Font);
+    if (!GlyphIndex) continue;
     binary_stream_u8 GlyphStream = GetStreamForGlyphIndex(GlyphIndex, &Font, TempArena);
     bitmap GlyphBitmap = RasterizeGlyph(&GlyphStream, TempArena);
 
