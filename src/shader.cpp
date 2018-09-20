@@ -21,16 +21,18 @@
 
 
 u32
-CompileShader(const char *Header, const char *Code, u32 Type)
+CompileShader(ansi_stream Header, ansi_stream Code, u32 Type)
 {
   const int InfoLogLength = 0;
 
   u32 ShaderID = glCreateShader(Type);
 
-  const char *Sources[2] = {Header, Code};
+  const char *Sources[2] = {Header.Start, Code.Start};
+  const s32 Lengths[2] = {(s32)TotalSize(&Header), (s32)TotalSize(&Code)};
+
 
   // Compile
-  glShaderSource(ShaderID, 2, Sources, NULL);
+  glShaderSource(ShaderID, 2, Sources, Lengths);
   glCompileShader(ShaderID);
 
   // Check Status
@@ -62,9 +64,9 @@ Snprintf(ComputedVertPath, 2048, "%s/%s", SHADER_PATH, VertShaderPath);
 char ComputedFragPath[2048] = {};
 Snprintf(ComputedFragPath, 2048, "%s/%s", SHADER_PATH, FragFilePath);
 
-const char *HeaderCode       = ReadEntireFileIntoString(SHADER_PATH SHADER_HEADER, Memory);
-const char *VertexShaderCode = ReadEntireFileIntoString(ComputedVertPath, Memory);
-const char *FragShaderCode   = ReadEntireFileIntoString(ComputedFragPath, Memory);
+ansi_stream HeaderCode       = ReadEntireFileIntoString(SHADER_PATH SHADER_HEADER, Memory);
+ansi_stream VertexShaderCode = ReadEntireFileIntoString(ComputedVertPath, Memory);
+ansi_stream FragShaderCode   = ReadEntireFileIntoString(ComputedFragPath, Memory);
 
 
 s32 Result = GL_FALSE;

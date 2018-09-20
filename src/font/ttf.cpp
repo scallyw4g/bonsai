@@ -979,7 +979,7 @@ int
 main()
 {
   memory_arena* PermArena = PlatformAllocateArena();
-  ttf Font = InitTTF("roboto_for_powerline.ttf", PermArena);
+  ttf Font = InitTTF("go_mono.ttf", PermArena);
 
   memory_arena* TempArena = PlatformAllocateArena();
   for (u32 GlyphNumber = 0;

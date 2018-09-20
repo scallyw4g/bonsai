@@ -127,11 +127,11 @@ AnsiStreamFromFile(const char* SourceFile, memory_arena *Memory)
   return Result;
 }
 
-const char *
+ansi_stream
 ReadEntireFileIntoString(const char *SourceFile, memory_arena *Memory)
 {
   ansi_stream Stream = AnsiStreamFromFile(SourceFile, Memory);
-  return Stream.Start;
+  return Stream;
 }
 
 b32
