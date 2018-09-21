@@ -685,7 +685,7 @@ WrapToCurveIndex(u32 IndexWanted, u32 CurveStart, u32 CurveEnd)
 }
 
 bitmap
-RasterizeGlyph(v2i OutputSize, v2i MaxGlyphSize, binary_stream_u8 *GlyphStream, memory_arena* Arena)
+RasterizeGlyph(v2i OutputSize, v2i FontMaxGlyphSize, v2i FontMinGlyphP, binary_stream_u8 *GlyphStream, memory_arena* Arena)
 {
 #define DO_RASTERIZE        1
 #define DO_AA               1
@@ -735,8 +735,10 @@ RasterizeGlyph(v2i OutputSize, v2i MaxGlyphSize, binary_stream_u8 *GlyphStream, 
 
           v2* TempVerts = Allocate(v2, Arena, VertCount); // TODO(Jesse): Temp-memory?
 
-          v2 ScaleRelativeToMaxGlyph = V2(Glyph.Dim) / V2(MaxGlyphSize);
-          v2 ScaleFactor = (SamplingBitmapSize/Glyph.Dim)*ScaleRelativeToMaxGlyph;
+          v2 EmSpaceToPixelSpace = V2(Glyph.Dim) / V2(FontMaxGlyphSize);
+          v2i BaselineOffset = Glyph.MinP - FontMinGlyphP;
+
+          v2 ScaleFactor = (SamplingBitmapSize/Glyph.Dim)*EmSpaceToPixelSpace;
 
           v4 LastColor = Red;
           u32 LastPixelIndex = 0;
@@ -750,7 +752,7 @@ RasterizeGlyph(v2i OutputSize, v2i MaxGlyphSize, binary_stream_u8 *GlyphStream, 
                 ++VertIndex)
             {
               u32 CurveVertIndex = WrapToCurveIndex(AtIndex + VertIndex, Contour->StartIndex, Contour->EndIndex);
-              TempVerts[VertIndex] = V2(Glyph.Verts[CurveVertIndex].P) * ScaleFactor;
+              TempVerts[VertIndex] = V2(Glyph.Verts[CurveVertIndex].P + BaselineOffset) * ScaleFactor;
             }
 
             v2 TangentMax = {};
@@ -880,6 +882,11 @@ RasterizeGlyph(v2i OutputSize, v2i MaxGlyphSize, binary_stream_u8 *GlyphStream, 
 
           OutputBitmap.Pixels.Start[PixelIndex] = PackRGBALinearTo255(V4(1,1,1,0) * OneMinusAlpha);
           OutputBitmap.Pixels.Start[PixelIndex] |= PackRGBALinearTo255(V4(0.0f, 0.0f, 0.0f, Alpha));
+
+          if (xPixelIndex == (OutputBitmap.Dim.x-1) || yPixelIndex == (OutputBitmap.Dim.y-1))
+          {
+            OutputBitmap.Pixels.Start[PixelIndex] = PackedRed;
+          }
         }
       }
 #endif
@@ -966,7 +973,9 @@ main()
 
   binary_stream_u8 HeadStream = BinaryStream(Font.head);
   head_table *HeadTable = ParseHeadTable(&HeadStream, PermArena);
-  v2i MaxGlyphSize = { HeadTable->xMax - HeadTable->xMin, HeadTable->yMax - HeadTable->yMin };
+  v2i FontMaxGlyphSize = { HeadTable->xMax - HeadTable->xMin, HeadTable->yMax - HeadTable->yMin };
+  v2i FontMinGlyphP = V2i(HeadTable->xMin, HeadTable->yMin);
+
   v2i GlyphSize = V2i(64, 64);
 
   bitmap TextureAtlasBitmap = AllocateBitmap(16*GlyphSize, PermArena);
@@ -979,7 +988,7 @@ main()
     u32 GlyphIndex =  GetGlyphIdForCharacterCode(CharCode, &Font);
     if (!GlyphIndex) continue;
     binary_stream_u8 GlyphStream = GetStreamForGlyphIndex(GlyphIndex, &Font, TempArena);
-    bitmap GlyphBitmap = RasterizeGlyph(GlyphSize, MaxGlyphSize, &GlyphStream, TempArena);
+    bitmap GlyphBitmap = RasterizeGlyph(GlyphSize, FontMaxGlyphSize, FontMinGlyphP, &GlyphStream, TempArena);
 
     if ( PixelCount(&GlyphBitmap) )
     {
