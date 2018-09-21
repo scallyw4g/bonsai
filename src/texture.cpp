@@ -96,28 +96,6 @@ GLuint loadBMP_custom(const char * FilePath){
 
 
 texture
-LoadBitmap(const char* FilePath, memory_arena *Arena)
-{
-  bitmap TexBitmap = ReadBitmapFromDisk(FilePath, Arena);
-
-  texture Result = {};
-  Result.Dim = TexBitmap.Dim;
-  glGenTextures(1, &Result.ID);
-  glBindTexture(GL_TEXTURE_2D, Result.ID);
-  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8,
-      TexBitmap.Dim.x,
-      TexBitmap.Dim.y,
-      0,
-      GL_RGBA,
-      GL_UNSIGNED_BYTE,
-      TexBitmap.Pixels.Start);
-
-  return Result;
-}
-
-texture
 LoadDDS(const char * FilePath)
 {
   texture Result = {};
@@ -220,8 +198,13 @@ GenTexture(v2i Dim, memory_arena *Mem)
 
   glBindTexture(GL_TEXTURE_2D, Texture->ID);
 
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  // Note(Jesse): This is required to be set if mipmapping is off.  The default behavior
+  // is to lerp between the two closest mipmap levels, and when there is only one level
+  // that fails, at least on my GL implementation.
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  //
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
@@ -232,7 +215,7 @@ GenTexture(v2i Dim, memory_arena *Mem)
 }
 
 texture *
-MakeTexture_RGBA(v2i Dim, const void* Data, memory_arena *Mem)
+MakeTexture_RGBA(v2i Dim, v4* Data, memory_arena *Mem)
 {
   texture *Texture = GenTexture(Dim, Mem);
 
@@ -313,6 +296,27 @@ FramebufferTexture(framebuffer *FBO, texture *Tex)
       GL_TEXTURE_2D, Tex->ID, 0);
 
   return;
+}
+
+texture*
+LoadBitmap(const char* FilePath, memory_arena *Arena)
+{
+  bitmap TexBitmap = ReadBitmapFromDisk(FilePath, Arena);
+  u32 BitmapPixelCount = PixelCount(&TexBitmap);
+
+  v4* PixelData = Allocate(v4, Arena, BitmapPixelCount);
+
+  for (u32 PixelIndex = 0;
+      PixelIndex < BitmapPixelCount;
+      ++PixelIndex)
+  {
+    PixelData[PixelIndex] = Unpack255RGBAToLinear(TexBitmap.Pixels.Start[PixelIndex]);
+    PixelData[PixelIndex].a = 1;
+  }
+
+  texture* Result = MakeTexture_RGBA(TexBitmap.Dim, PixelData, Arena);
+
+  return Result;
 }
 
 

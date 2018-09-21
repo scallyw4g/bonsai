@@ -295,10 +295,29 @@ OpenLibrary(const char *filename)
   return Result;
 }
 
+void
+HandleGlDebugMessage(GLenum Source, GLenum Type, GLuint Id, GLenum Severity,
+                     GLsizei MessageLength, const GLchar* Message, const void* UserData)
+{
+  if (Severity == GL_DEBUG_SEVERITY_NOTIFICATION)
+  {
+  }
+  else
+  {
+    Debug("GL - %s", Message);
+  }
+
+  return;
+}
+
 b32
 OpenAndInitializeWindow( os *Os, platform *Plat)
 {
-  GLint GlAttribs[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
+  GLint GlAttribs[] = {
+    GLX_RGBA,
+    GLX_DEPTH_SIZE, 24,
+    GLX_DOUBLEBUFFER,
+    None };
 
   Os->Display = XOpenDisplay(0);
   if (!Os->Display) { Error("Cannot connect to X Server"); return False; }
@@ -306,8 +325,12 @@ OpenAndInitializeWindow( os *Os, platform *Plat)
   window RootWindow = DefaultRootWindow(Os->Display);
   if (!RootWindow) { Error("Unable to get RootWindow"); return False; }
 
-  XVisualInfo *VisualInfo = glXChooseVisual(Os->Display, 0, GlAttribs);
+  s32 Screen = DefaultScreen(Os->Display);
+
+  XVisualInfo *VisualInfo = glXChooseVisual(Os->Display, Screen, GlAttribs);
   if (!VisualInfo) { Error("Unable to get Visual Info"); return False; }
+
+  Assert(VisualInfo->screen == Screen);
 
   Colormap ColorInfo = XCreateColormap(Os->Display, RootWindow, VisualInfo->visual, AllocNone);
 
@@ -328,10 +351,36 @@ OpenAndInitializeWindow( os *Os, platform *Plat)
   XMapWindow(Os->Display, win);
   XStoreName(Os->Display, win, "Bonsai");
 
-  Os->GlContext = glXCreateContext(Os->Display, VisualInfo, NULL, GL_TRUE);
+  const s32 FramebufferAttributes[] = {None};
+
+  s32 ValidConfigCount = 0;
+  GLXFBConfig* ValidConfigs =
+    glXChooseFBConfig( Os->Display,  VisualInfo->screen, FramebufferAttributes, &ValidConfigCount);
+
+  Assert(ValidConfigCount);
+  GLXFBConfig FramebufferConfig = ValidConfigs[0];
+
+  const s32 OpenGlContextAttribs[] = {
+    GLX_CONTEXT_MAJOR_VERSION_ARB, 3,
+    GLX_CONTEXT_MINOR_VERSION_ARB, 0,
+    GLX_CONTEXT_FLAGS_ARB, GLX_CONTEXT_DEBUG_BIT_ARB,
+    GLX_CONTEXT_PROFILE_MASK_ARB, GLX_CONTEXT_CORE_PROFILE_BIT_ARB,
+    None
+  };
+
+  GLXContext ShareContext = 0;
+  PFNGLXCREATECONTEXTATTRIBSARBPROC glXCreateContextAttribsARB =
+    (PFNGLXCREATECONTEXTATTRIBSARBPROC)bonsaiGlGetProcAddress("glXCreateContextAttribsARB");
+  Assert(glXCreateContextAttribsARB);
+
+  Os->GlContext = glXCreateContextAttribsARB(Os->Display, FramebufferConfig, ShareContext, GL_TRUE, OpenGlContextAttribs);
   if (!Os->GlContext) { Error("Unable to Create GLXContext"); return False; }
 
+  Assert(Os->Display != None && Os->GlContext);
+
   glXMakeCurrent(Os->Display, win, Os->GlContext);
+
+  glDebugMessageCallback(HandleGlDebugMessage, 0);
 
   Os->Window = win;
   return True;

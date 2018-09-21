@@ -6,7 +6,7 @@ CleanupText2D(debug_text_render_group *RG)
   glDeleteBuffers(1, &RG->UVBuffer);
 
   // Delete texture
-  glDeleteTextures(1, &RG->FontTexture.ID);
+  glDeleteTextures(1, &RG->FontTexture->ID);
 
   // Delete shader
   glDeleteProgram(RG->Text2DShader.ID);
@@ -39,7 +39,7 @@ InitDebugOverlayFramebuffer(debug_text_render_group *RG, memory_arena *DebugAren
 
   RG->TextureUniformID = glGetUniformLocation(RG->Text2DShader.ID, "myTextureSampler");
 
-  RG->DebugFontTextureShader = MakeSimpleTextureShader(&RG->FontTexture, DebugArena);
+  RG->DebugFontTextureShader = MakeSimpleTextureShader(RG->FontTexture, DebugArena);
   RG->DebugTextureShader = MakeSimpleTextureShader(RG->CompositedTexture, DebugArena);
 
   if (!CheckAndClearFramebuffer())
@@ -117,7 +117,7 @@ FlushBuffer(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo, v2 Sc
 
   // Bind Font texture
   glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, RG->FontTexture.ID);
+  glBindTexture(GL_TEXTURE_2D, RG->FontTexture->ID);
   glUniform1i(RG->TextureUniformID, 0);
 
   u32 AttributeIndex = 0;

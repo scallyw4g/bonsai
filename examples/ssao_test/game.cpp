@@ -57,9 +57,9 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys, entity *Play
 
     DrawGBufferToFullscreenQuad(Plat, Graphics);
 
-  #if DEBUG_DRAW_SHADOW_MAP_TEXTURE
-    // DrawTexturedQuad(&GetDebugState()->TextRenderGroup->DebugTextureShader);
-    /* DrawTexturedQuad(&GetDebugState()->TextRenderGroup->DebugFontTextureShader); */
+  #if 1
+    /* DrawTexturedQuad(&GetDebugState()->TextRenderGroup.DebugTextureShader); */
+    DrawTexturedQuad(&GetDebugState()->TextRenderGroup.DebugFontTextureShader);
     /* DrawTexturedQuad(&SG->DebugTextureShader); */
     /* DrawTexturedQuad(&gBuffer->DebugPositionTextureShader); */
     /* DrawTexturedQuad(&gBuffer->DebugNormalTextureShader); */

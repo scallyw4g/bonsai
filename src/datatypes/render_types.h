@@ -50,12 +50,12 @@ struct texture
 
 debug_global float g_quad_vertex_buffer_data[] =
 {
-  -1.0f, -1.0f, 1.0f,
-   1.0f, -1.0f, 1.0f,
-  -1.0f,  1.0f, 1.0f,
-  -1.0f,  1.0f, 1.0f,
-   1.0f, -1.0f, 1.0f,
-   1.0f,  1.0f, 1.0f,
+  -1.0f, -1.0f, 0.0f,
+   1.0f, -1.0f, 0.0f,
+  -1.0f,  1.0f, 0.0f,
+  -1.0f,  1.0f, 0.0f,
+   1.0f, -1.0f, 0.0f,
+   1.0f,  1.0f, 0.0f,
 };
 
 struct light
@@ -178,7 +178,7 @@ struct debug_text_render_group
 {
   framebuffer FBO;
 
-  texture FontTexture;
+  texture *FontTexture;
   texture *CompositedTexture;
 
   u32 SolidUIVertexBuffer;

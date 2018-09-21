@@ -130,10 +130,10 @@ Unpack255RGBAToLinear(u32 C)
   u8 A =  0xFF & (C>>24);
 
   v4 Color = {};
-  Color.r = R/255.0f;
-  Color.g = G/255.0f;
-  Color.b = B/255.0f;
-  Color.a = A/255.0f;
+  Color.r = (r32)R/255.0f;
+  Color.g = (r32)G/255.0f;
+  Color.b = (r32)B/255.0f;
+  Color.a = (r32)A/255.0f;
 
   return Color;
 }

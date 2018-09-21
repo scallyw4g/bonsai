@@ -12,6 +12,7 @@
 #define PLATFORM_THREADING_IMPLEMENTATIONS 1
 #define PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS 1
 #define PLATFORM_GL_IMPLEMENTATIONS 1
+
 #include <unix_platform.cpp>
 #endif
 
@@ -210,12 +211,19 @@ InitializeOpenGlExtensions(os *Os)
   DefGlProc(PFNGLGENVERTEXARRAYSPROC, glGenVertexArrays);
   DefGlProc(PFNGLBINDVERTEXARRAYPROC, glBindVertexArray);
 
+
   /*
    * 3.2
    */
   // My laptop is running 3.1ES, but this worked with GLEW, so presumably
   // it can be loaded somehow..  Maybe the _EXT or _ARB one?
   // DefGlProc(PFNGLFRAMEBUFFERTEXTUREPROC, glFramebufferTexture);
+
+  /*
+   * 4.3
+   */
+  DefGlProc(PFNGLXCREATECONTEXTATTRIBSARBPROC, glXCreateContextAttribsARB);
+
 
 
 #endif
@@ -437,6 +445,8 @@ main()
   if (!WindowSuccess) { Error("Initializing Window :( "); return False; }
   Assert(Os.Window);
   InitializeOpenGlExtensions(&Os);
+
+  AssertNoGlErrors;
 
   // This arena must be initialized before the the debug state can be
   TranArena                   = PlatformAllocateArena(Megabytes(8));

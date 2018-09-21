@@ -178,6 +178,23 @@ Print_P( voxel_position P, const char* name)
 }
 
 inline void
+Print_P( v4 P, const char* name)
+{
+#if 0
+  if ( Abs(P.x) < 0.000001f )
+    P.x = 0;
+
+  if ( Abs(P.y) < 0.000001f )
+    P.y = 0;
+
+  if ( Abs(P.z) < 0.000001f )
+    P.z = 0;
+#endif
+
+  Log(" %s %f %f %f %f \n", name, P.x, P.y, P.z, P.w );
+}
+
+inline void
 Print_P( v3 P, const char* name)
 {
 #if 0
