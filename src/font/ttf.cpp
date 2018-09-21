@@ -185,7 +185,8 @@ struct ttf_contour
 
 struct simple_glyph
 {
-  v2i Maximum;
+  v2i MinP;
+  v2i Dim;
 
   s16 ContourCount;
   ttf_contour* Contours;
@@ -394,8 +395,10 @@ ParseGlyph(binary_stream_u8 *Stream, memory_arena *Arena)
     s16 xMax = ReadS16(Stream);
     s16 yMax = ReadS16(Stream);
 
-    Glyph.Maximum.x = xMax - xMin + 1; // Add one to put from 0-based to 1-based
-    Glyph.Maximum.y = yMax - yMin + 1; // coordinate system
+    Glyph.MinP = { xMin, yMin };
+
+    Glyph.Dim.x = xMax - xMin + 1; // Add one to put from 0-based to 1-based
+    Glyph.Dim.y = yMax - yMin + 1; // coordinate system
 
     u16 *EndPointsOfContours = ReadU16Array(Stream, Glyph.ContourCount);
 
@@ -466,7 +469,7 @@ ParseGlyph(binary_stream_u8 *Stream, memory_arena *Arena)
 
       Vert->P.x = X - xMin;
       Assert(Vert->P.x >= 0);
-      Assert(Vert->P.x <= Glyph.Maximum.x);
+      Assert(Vert->P.x <= Glyph.Dim.x);
     }
 
     s16 Y = 0;
@@ -490,7 +493,7 @@ ParseGlyph(binary_stream_u8 *Stream, memory_arena *Arena)
 
       Vert->P.y = Y - yMin;
       Assert(Vert->P.y >= 0);
-      Assert(Vert->P.y <= Glyph.Maximum.y);
+      Assert(Vert->P.y <= Glyph.Dim.y);
     }
   }
 
@@ -682,7 +685,7 @@ WrapToCurveIndex(u32 IndexWanted, u32 CurveStart, u32 CurveEnd)
 }
 
 bitmap
-RasterizeGlyph(v2i OutputSize, binary_stream_u8 *GlyphStream, memory_arena* Arena)
+RasterizeGlyph(v2i OutputSize, v2i MaxGlyphSize, binary_stream_u8 *GlyphStream, memory_arena* Arena)
 {
 #define DO_RASTERIZE        1
 #define DO_AA               1
@@ -699,17 +702,6 @@ RasterizeGlyph(v2i OutputSize, binary_stream_u8 *GlyphStream, memory_arena* Aren
     simple_glyph Glyph = ParseGlyph(GlyphStream, Arena);
     if (Glyph.ContourCount > 0) // We don't support compound glyphs, yet
     {
-      r32 GlyphAspectRatio = (r32)Glyph.Maximum.x / (r32)Glyph.Maximum.y;
-      v2 AspectCorrection = {};
-      if (GlyphAspectRatio < 1.0f)
-      {
-        AspectCorrection = V2(GlyphAspectRatio, 1);
-      }
-      else
-      {
-        AspectCorrection = V2(1, 1.0f/GlyphAspectRatio);
-      }
-
       FillBitmap(PackRGBALinearTo255(White), &SamplingBitmap);
 
       OutputBitmap = AllocateBitmap(OutputSize, Arena);
@@ -742,7 +734,9 @@ RasterizeGlyph(v2i OutputSize, binary_stream_u8 *GlyphStream, memory_arena* Aren
 
 
           v2* TempVerts = Allocate(v2, Arena, VertCount); // TODO(Jesse): Temp-memory?
-          v2 ScaleFactor = (SamplingBitmapSize/Glyph.Maximum)*AspectCorrection;
+
+          v2 ScaleRelativeToMaxGlyph = V2(Glyph.Dim) / V2(MaxGlyphSize);
+          v2 ScaleFactor = (SamplingBitmapSize/Glyph.Dim)*ScaleRelativeToMaxGlyph;
 
           v4 LastColor = Red;
           u32 LastPixelIndex = 0;
@@ -970,7 +964,11 @@ main()
 
   memory_arena* TempArena = PlatformAllocateArena();
 
-  v2i GlyphSize = V2i(16, 16);
+  binary_stream_u8 HeadStream = BinaryStream(Font.head);
+  head_table *HeadTable = ParseHeadTable(&HeadStream, PermArena);
+  v2i MaxGlyphSize = { HeadTable->xMax - HeadTable->xMin, HeadTable->yMax - HeadTable->yMin };
+  v2i GlyphSize = V2i(64, 64);
+
   bitmap TextureAtlasBitmap = AllocateBitmap(16*GlyphSize, PermArena);
   FillBitmap(PackedPink, &TextureAtlasBitmap);
 
@@ -981,7 +979,7 @@ main()
     u32 GlyphIndex =  GetGlyphIdForCharacterCode(CharCode, &Font);
     if (!GlyphIndex) continue;
     binary_stream_u8 GlyphStream = GetStreamForGlyphIndex(GlyphIndex, &Font, TempArena);
-    bitmap GlyphBitmap = RasterizeGlyph(GlyphSize, &GlyphStream, TempArena);
+    bitmap GlyphBitmap = RasterizeGlyph(GlyphSize, MaxGlyphSize, &GlyphStream, TempArena);
 
     if ( PixelCount(&GlyphBitmap) )
     {

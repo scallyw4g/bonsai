@@ -8,6 +8,11 @@ uniform sampler2D TextTextureSampler;
 void main()
 {
   vec4 BitmapTexel = texture( TextTextureSampler, UV );
+
+  if (BitmapTexel.a == 0.0f)
+    discard;
+
   color = vec4(VertColor, BitmapTexel.a);
   /* color = BitmapTexel; */
+
 }
