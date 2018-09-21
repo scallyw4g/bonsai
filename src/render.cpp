@@ -305,14 +305,14 @@ InitGbufferRenderGroup( g_buffer_render_group *gBuffer, memory_arena *GraphicsMe
   gBuffer->Textures = Allocate(g_buffer_textures, GraphicsMemory, 1);
 
   v2i ScreenDim = V2i(SCR_WIDTH, SCR_HEIGHT);
-  gBuffer->Textures->Color    = MakeTexture_RGBA( ScreenDim, 0, GraphicsMemory);
+  gBuffer->Textures->Color    = MakeTexture_RGBA( ScreenDim, (v4*)0, GraphicsMemory);
 
   // FIXME(Jesse): This makes GL 3 fail on the FRAMEBUFFER_COMPLETE check
   // if it's an RGB texture.  We only need three channels for normal so this
   // should probably be an RGB
-  gBuffer->Textures->Normal   = MakeTexture_RGBA( ScreenDim, 0, GraphicsMemory);
+  gBuffer->Textures->Normal   = MakeTexture_RGBA( ScreenDim, (v4*)0, GraphicsMemory);
 
-  gBuffer->Textures->Position = MakeTexture_RGBA( ScreenDim, 0, GraphicsMemory);
+  gBuffer->Textures->Position = MakeTexture_RGBA( ScreenDim, (v4*)0, GraphicsMemory);
 
   FramebufferTexture(&gBuffer->FBO, gBuffer->Textures->Color);
   FramebufferTexture(&gBuffer->FBO, gBuffer->Textures->Normal);

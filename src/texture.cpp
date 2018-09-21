@@ -215,6 +215,19 @@ GenTexture(v2i Dim, memory_arena *Mem)
 }
 
 texture *
+MakeTexture_RGBA(v2i Dim, u32* Data, memory_arena *Mem)
+{
+  texture *Texture = GenTexture(Dim, Mem);
+
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8,
+      Texture->Dim.x, Texture->Dim.y, 0,  GL_RGBA, GL_UNSIGNED_BYTE, Data);
+
+  glBindTexture(GL_TEXTURE_2D, 0);
+
+  return Texture;
+}
+
+texture *
 MakeTexture_RGBA(v2i Dim, v4* Data, memory_arena *Mem)
 {
   texture *Texture = GenTexture(Dim, Mem);
@@ -302,20 +315,7 @@ texture*
 LoadBitmap(const char* FilePath, memory_arena *Arena)
 {
   bitmap TexBitmap = ReadBitmapFromDisk(FilePath, Arena);
-  u32 BitmapPixelCount = PixelCount(&TexBitmap);
-
-  v4* PixelData = Allocate(v4, Arena, BitmapPixelCount);
-
-  for (u32 PixelIndex = 0;
-      PixelIndex < BitmapPixelCount;
-      ++PixelIndex)
-  {
-    PixelData[PixelIndex] = Unpack255RGBAToLinear(TexBitmap.Pixels.Start[PixelIndex]);
-    PixelData[PixelIndex].a = 1;
-  }
-
-  texture* Result = MakeTexture_RGBA(TexBitmap.Dim, PixelData, Arena);
-
+  texture* Result = MakeTexture_RGBA(TexBitmap.Dim, TexBitmap.Pixels.Start, Arena);
   return Result;
 }
 

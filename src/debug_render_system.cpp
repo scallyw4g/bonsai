@@ -23,7 +23,7 @@ InitDebugOverlayFramebuffer(debug_text_render_group *RG, memory_arena *DebugAren
   v2i ScreenDim = V2i(SCR_WIDTH, SCR_HEIGHT);
 
   RG->FontTexture = LoadBitmap(DebugFont, DebugArena);
-  RG->CompositedTexture = MakeTexture_RGBA( ScreenDim, 0, DebugArena);
+  RG->CompositedTexture = MakeTexture_RGBA( ScreenDim, (v4*)0, DebugArena);
 
   FramebufferTexture(&RG->FBO, RG->CompositedTexture);
 
