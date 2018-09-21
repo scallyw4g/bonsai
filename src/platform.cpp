@@ -441,7 +441,14 @@ main()
   platform Plat = {};
 
   os Os = {};
-  b32 WindowSuccess = OpenAndInitializeWindow(&Os, &Plat);
+
+#if BONSAI_INTERNAL
+  s32 DebugFlags = GLX_CONTEXT_DEBUG_BIT_ARB;
+#else
+  s32 DebugFlags = 0;
+#endif
+
+  b32 WindowSuccess = OpenAndInitializeWindow(&Os, &Plat, DebugFlags);
   if (!WindowSuccess) { Error("Initializing Window :( "); return False; }
   Assert(Os.Window);
   InitializeOpenGlExtensions(&Os);
