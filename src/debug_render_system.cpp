@@ -37,7 +37,7 @@ InitDebugOverlayFramebuffer(debug_text_render_group *RG, memory_arena *DebugAren
   RG->Text2DShader = LoadShaders("TextVertexShader.vertexshader",
                                  "TextVertexShader.fragmentshader", DebugArena);
 
-  RG->TextureUniformID = glGetUniformLocation(RG->Text2DShader.ID, "myTextureSampler");
+  RG->TextureUniformID = glGetUniformLocation(RG->Text2DShader.ID, "TextTextureSampler");
 
   RG->DebugFontTextureShader = MakeSimpleTextureShader(RG->FontTexture, DebugArena);
   RG->DebugTextureShader = MakeSimpleTextureShader(RG->CompositedTexture, DebugArena);
@@ -143,10 +143,12 @@ FlushBuffer(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo, v2 Sc
 void
 BufferTextUVs(textured_2d_geometry_buffer *Geo, v2 UV)
 {
-  v2 uv_up_left    = V2( UV.x           , UV.y );
-  v2 uv_up_right   = V2( UV.x+1.0f/16.0f, UV.y );
-  v2 uv_down_right = V2( UV.x+1.0f/16.0f, (UV.y + 1.0f/16.0f) );
-  v2 uv_down_left  = V2( UV.x           , (UV.y + 1.0f/16.0f) );
+  r32 OneOverSixteen = 1.0f/16.0f;
+
+  v2 uv_up_left    = V2( UV.x                , UV.y+OneOverSixteen);
+  v2 uv_up_right   = V2( UV.x+OneOverSixteen , UV.y+OneOverSixteen);
+  v2 uv_down_right = V2( UV.x+OneOverSixteen , UV.y);
+  v2 uv_down_left  = V2( UV.x                , UV.y);
 
   u32 StartingIndex = Geo->At;
   Geo->UVs[StartingIndex++] = uv_up_left;
@@ -248,13 +250,13 @@ BufferChar(ui_render_group *Group, textured_2d_geometry_buffer *Geo, u32 CharInd
   { // Black Drop-shadow
     BufferQuad(Group, Geo, MinP+V2(3), V2(Font->Size), 1.0f);
     BufferTextUVs(Geo, UV);
-    BufferColors(Group, Geo, getDefaultPalette()[BLACK].xyz);
+    BufferColors(Group, Geo, GetColorData(BLACK).xyz);
     Geo->At += 6;
   }
 
   v2 MaxP = BufferQuad(Group, Geo, MinP, V2(Font->Size), 1.0f);
   BufferTextUVs(Geo, UV);
-  BufferColors(Group, Geo, getDefaultPalette()[Color].xyz);
+  BufferColors(Group, Geo, GetColorData(Color).xyz);
   Geo->At += 6;
 
   r32 DeltaX = (MaxP.x - MinP.x);

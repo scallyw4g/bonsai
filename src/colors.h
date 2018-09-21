@@ -292,7 +292,7 @@ getDefaultPalette()
 }
 
 inline v4
-GetColorData(int ColorIndex, r32 Emission)
+GetColorData(int ColorIndex, r32 Emission = 0.0f)
 {
   Assert(ColorIndex < PALETTE_SIZE);
   v4 Color = getDefaultPalette()[ColorIndex];

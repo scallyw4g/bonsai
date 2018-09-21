@@ -883,6 +883,7 @@ RasterizeGlyph(v2i OutputSize, binary_stream_u8 *GlyphStream, memory_arena* Aren
 
           u32 PixelIndex = GetPixelIndex(V2i(xPixelIndex, yPixelIndex), &OutputBitmap);
           r32 Alpha = 1.0f - OneMinusAlpha;
+
           OutputBitmap.Pixels.Start[PixelIndex] = PackRGBALinearTo255(V4(1,1,1,0) * OneMinusAlpha);
           OutputBitmap.Pixels.Start[PixelIndex] |= PackRGBALinearTo255(V4(0.0f, 0.0f, 0.0f, Alpha));
         }
@@ -971,7 +972,7 @@ main()
 
   v2i GlyphSize = V2i(16, 16);
   bitmap TextureAtlasBitmap = AllocateBitmap(16*GlyphSize, PermArena);
-  FillBitmap(PackedWhite, &TextureAtlasBitmap);
+  FillBitmap(PackedPink, &TextureAtlasBitmap);
 
   for (u32 CharCode = 0;
       CharCode < 256;
