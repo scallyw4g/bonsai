@@ -7,10 +7,10 @@
 #include <debug_data_system.cpp>
 #include <bitmap.cpp>
 
-v4 White = V4(1,1,1,1);
+v4 White = V4(1,1,1,0);
 v4 Black = {};
 v4 Red   = V4(1,0,0,0);
-v4 Blue   = V4(0,0,1,0);
+v4 Blue  = V4(0,0,1,0);
 v4 Pink  = V4(1,0,1,0);
 v4 Green = V4(0,1,0,0);
 
@@ -689,11 +689,12 @@ RasterizeGlyph(v2i OutputSize, binary_stream_u8 *GlyphStream, memory_arena* Aren
 #define WRITE_DEBUG_BITMAPS 0
 
   u32 SamplesPerPixel = 8;
+  v2i SamplingBitmapSize = OutputSize*SamplesPerPixel;
+  bitmap SamplingBitmap = AllocateBitmap(SamplingBitmapSize, Arena);
 
   bitmap OutputBitmap = {};
   if (Remaining(GlyphStream) > 0) // A glyph stream with 0 length means there's no glyph
   {
-    v2i SamplingBitmapSize = OutputSize*SamplesPerPixel;
 
     simple_glyph Glyph = ParseGlyph(GlyphStream, Arena);
     if (Glyph.ContourCount > 0) // We don't support compound glyphs, yet
@@ -709,9 +710,6 @@ RasterizeGlyph(v2i OutputSize, binary_stream_u8 *GlyphStream, memory_arena* Aren
         AspectCorrection = V2(1, 1.0f/GlyphAspectRatio);
       }
 
-      v2 ScaleFactor = (SamplingBitmapSize/Glyph.Maximum)*AspectCorrection;
-
-      bitmap SamplingBitmap = AllocateBitmap(SamplingBitmapSize, Arena);
       FillBitmap(PackRGBALinearTo255(White), &SamplingBitmap);
 
       OutputBitmap = AllocateBitmap(OutputSize, Arena);
@@ -744,6 +742,7 @@ RasterizeGlyph(v2i OutputSize, binary_stream_u8 *GlyphStream, memory_arena* Aren
 
 
           v2* TempVerts = Allocate(v2, Arena, VertCount); // TODO(Jesse): Temp-memory?
+          v2 ScaleFactor = (SamplingBitmapSize/Glyph.Maximum)*AspectCorrection;
 
           v4 LastColor = Red;
           u32 LastPixelIndex = 0;
@@ -861,7 +860,7 @@ RasterizeGlyph(v2i OutputSize, binary_stream_u8 *GlyphStream, memory_arena* Aren
             xPixelIndex < OutputBitmap.Dim.x;
             ++xPixelIndex)
         {
-          r32 Coverage = 0.0f;
+          r32 OneMinusAlpha = 0.0f;
 
           u32 yStart = yPixelIndex*SamplesPerPixel;
           for (u32 ySampleIndex = yStart;
@@ -877,13 +876,15 @@ RasterizeGlyph(v2i OutputSize, binary_stream_u8 *GlyphStream, memory_arena* Aren
               {
                 u32 SampleIndex = GetPixelIndex(V2i(xSampleIndex, ySampleIndex), &SamplingBitmap);
                 u32 PixelColor = SamplingBitmap.Pixels.Start[SampleIndex];
-                Coverage += PixelColor == PackedWhite ? SampleContrib : 0;
+                OneMinusAlpha += PixelColor == PackedWhite ? SampleContrib : 0.0f;
               }
             }
           }
 
           u32 PixelIndex = GetPixelIndex(V2i(xPixelIndex, yPixelIndex), &OutputBitmap);
-          OutputBitmap.Pixels.Start[PixelIndex] = PackRGBALinearTo255(V4(1,1,1,0) * Coverage);
+          r32 Alpha = 1.0f - OneMinusAlpha;
+          OutputBitmap.Pixels.Start[PixelIndex] = PackRGBALinearTo255(V4(1,1,1,0) * OneMinusAlpha);
+          OutputBitmap.Pixels.Start[PixelIndex] |= PackRGBALinearTo255(V4(0.0f, 0.0f, 0.0f, Alpha));
         }
       }
 #endif
