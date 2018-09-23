@@ -165,7 +165,7 @@ PlatformAllocateSize(umm AllocationSize)
 }
 
 memory_arena*
-PlatformAllocateArena(umm RequestedBytes = Megabytes(1), b32 MemProtect = True)
+PlatformAllocateArena(umm RequestedBytes /* = Megabytes(1) */, b32 MemProtect /* = True */)
 {
   // FIXME(Jesse): We shouldn't really be able to ask for < 1MB worth of space
   u64 PageSize = PlatformGetPageSize();

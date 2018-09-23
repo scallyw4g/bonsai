@@ -1,8 +1,6 @@
 #ifndef BONSAI_TEXTURE_H
 #define BONSAI_TEXTURE_H
 
-global_variable memory_arena *TranArena = {};
-
 #include <stdio.h>
 #include <string.h>
 #include <texture.hpp>

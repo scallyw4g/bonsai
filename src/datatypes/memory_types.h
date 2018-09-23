@@ -109,7 +109,7 @@ void
 PlatformDeallocateArena(memory_arena *Arena);
 
 memory_arena*
-PlatformAllocateArena(umm Bytes, b32 MemProtect);
+PlatformAllocateArena(umm Bytes = Megabytes(1), b32 MemProtect = True);
 
 u8*
 PlatformProtectPage(u8* Mem);

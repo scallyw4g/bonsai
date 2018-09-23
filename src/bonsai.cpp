@@ -4,7 +4,8 @@
 #include <render.h>
 
 #include <shader.cpp>
-#include <texture.cpp> // Only used for font .DDS atm
+
+#include <texture.cpp>
 #include <render.cpp>
 
 void

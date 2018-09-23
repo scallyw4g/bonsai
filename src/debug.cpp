@@ -19,7 +19,7 @@ InitDebugState(debug_state *DebugState)
 
   AllocateMesh(&GlobalDebugState->LineMesh, 1024, ThreadsafeDebugMemoryAllocator());
 
-  if (!InitDebugOverlayFramebuffer(&GlobalDebugState->TextRenderGroup, ThreadsafeDebugMemoryAllocator(), "texture_atlas.bmp"))
+  if (!InitDebugOverlayFramebuffer(&GlobalDebugState->TextRenderGroup, ThreadsafeDebugMemoryAllocator(), "texture_atlas_0.bmp"))
   { Error("Initializing Debug Overlay Framebuffer"); }
 
   AllocateAndInitGeoBuffer(&GlobalDebugState->TextRenderGroup.TextGeo, 1024, ThreadsafeDebugMemoryAllocator());

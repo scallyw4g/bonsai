@@ -4,8 +4,13 @@
 
 #include <bonsai_types.h>
 #include <unix_platform.cpp>
+
+
+global_variable memory_arena *TranArena = PlatformAllocateArena();
 #include <debug_data_system.cpp>
+
 #include <bitmap.cpp>
+
 
 v4 White = V4(1,1,1,0);
 v4 Black = {};
@@ -186,7 +191,7 @@ struct ttf_contour
 struct simple_glyph
 {
   v2i MinP;
-  v2i Dim;
+  v2i EmSpaceDim;
 
   s16 ContourCount;
   ttf_contour* Contours;
@@ -397,8 +402,8 @@ ParseGlyph(binary_stream_u8 *Stream, memory_arena *Arena)
 
     Glyph.MinP = { xMin, yMin };
 
-    Glyph.Dim.x = xMax - xMin + 1; // Add one to put from 0-based to 1-based
-    Glyph.Dim.y = yMax - yMin + 1; // coordinate system
+    Glyph.EmSpaceDim.x = xMax - xMin + 1; // Add one to put from 0-based to 1-based
+    Glyph.EmSpaceDim.y = yMax - yMin + 1; // coordinate system
 
     u16 *EndPointsOfContours = ReadU16Array(Stream, Glyph.ContourCount);
 
@@ -469,7 +474,7 @@ ParseGlyph(binary_stream_u8 *Stream, memory_arena *Arena)
 
       Vert->P.x = X - xMin;
       Assert(Vert->P.x >= 0);
-      Assert(Vert->P.x <= Glyph.Dim.x);
+      Assert(Vert->P.x <= Glyph.EmSpaceDim.x);
     }
 
     s16 Y = 0;
@@ -493,7 +498,7 @@ ParseGlyph(binary_stream_u8 *Stream, memory_arena *Arena)
 
       Vert->P.y = Y - yMin;
       Assert(Vert->P.y >= 0);
-      Assert(Vert->P.y <= Glyph.Dim.y);
+      Assert(Vert->P.y <= Glyph.EmSpaceDim.y);
     }
   }
 
@@ -685,15 +690,15 @@ WrapToCurveIndex(u32 IndexWanted, u32 CurveStart, u32 CurveEnd)
 }
 
 bitmap
-RasterizeGlyph(v2i OutputSize, v2i FontMaxGlyphSize, v2i FontMinGlyphP, binary_stream_u8 *GlyphStream, memory_arena* Arena)
+RasterizeGlyph(v2i OutputSize, v2i FontMaxEmDim, v2i FontMinGlyphP, binary_stream_u8 *GlyphStream, memory_arena* Arena)
 {
 #define DO_RASTERIZE        1
 #define DO_AA               1
-#define WRITE_DEBUG_BITMAPS 0
+#define WRITE_DEBUG_BITMAPS 1
 
   u32 SamplesPerPixel = 8;
-  v2i SamplingBitmapSize = OutputSize*SamplesPerPixel;
-  bitmap SamplingBitmap = AllocateBitmap(SamplingBitmapSize, Arena);
+  v2i SamplingBitmapDim = OutputSize*SamplesPerPixel;
+  bitmap SamplingBitmap = AllocateBitmap(SamplingBitmapDim, Arena);
 
   bitmap OutputBitmap = {};
   if (Remaining(GlyphStream) > 0) // A glyph stream with 0 length means there's no glyph
@@ -735,10 +740,15 @@ RasterizeGlyph(v2i OutputSize, v2i FontMaxGlyphSize, v2i FontMinGlyphP, binary_s
 
           v2* TempVerts = Allocate(v2, Arena, VertCount); // TODO(Jesse): Temp-memory?
 
-          v2 EmSpaceToPixelSpace = V2(Glyph.Dim) / V2(FontMaxGlyphSize);
           v2i BaselineOffset = Glyph.MinP - FontMinGlyphP;
 
-          v2 ScaleFactor = (SamplingBitmapSize/Glyph.Dim)*EmSpaceToPixelSpace;
+          // Here we have to subtract one from everything because we're going
+          // from a dimension [1, Dim] to an indexable range [0, Dim-1]
+          //
+          // TODO(Jesse): Is there a better way of making that adjustment?
+          v2i One = V2i(1,1);
+          v2 EmScale = V2(Glyph.EmSpaceDim-One) / V2(FontMaxEmDim-One);
+          v2 EmSpaceToPixelSpace = EmScale*( (SamplingBitmapDim-One) / (Glyph.EmSpaceDim-One) );
 
           v4 LastColor = Red;
           u32 LastPixelIndex = 0;
@@ -752,7 +762,7 @@ RasterizeGlyph(v2i OutputSize, v2i FontMaxGlyphSize, v2i FontMinGlyphP, binary_s
                 ++VertIndex)
             {
               u32 CurveVertIndex = WrapToCurveIndex(AtIndex + VertIndex, Contour->StartIndex, Contour->EndIndex);
-              TempVerts[VertIndex] = V2(Glyph.Verts[CurveVertIndex].P + BaselineOffset) * ScaleFactor;
+              TempVerts[VertIndex] = V2(Glyph.Verts[CurveVertIndex].P + BaselineOffset) * EmSpaceToPixelSpace;
             }
 
             v2 TangentMax = {};
@@ -969,45 +979,58 @@ main()
   memory_arena* PermArena = PlatformAllocateArena();
   ttf Font = InitTTF("fonts/hack.ttf", PermArena);
 
-  memory_arena* TempArena = PlatformAllocateArena();
-
   binary_stream_u8 HeadStream = BinaryStream(Font.head);
   head_table *HeadTable = ParseHeadTable(&HeadStream, PermArena);
-  v2i FontMaxGlyphSize = { HeadTable->xMax - HeadTable->xMin, HeadTable->yMax - HeadTable->yMin };
+  v2i FontMaxEmDim = { HeadTable->xMax - HeadTable->xMin, HeadTable->yMax - HeadTable->yMin };
   v2i FontMinGlyphP = V2i(HeadTable->xMin, HeadTable->yMin);
 
   v2i GlyphSize = V2i(64, 64);
 
   bitmap TextureAtlasBitmap = AllocateBitmap(16*GlyphSize, PermArena);
-  FillBitmap(PackedPink, &TextureAtlasBitmap);
 
-  for (u32 CharCode = 0;
-      CharCode < 256;
-      ++CharCode)
+  u32 AtlasCount = 65536/256;
+  for (u32 AtlasIndex = 0;
+  AtlasIndex < AtlasCount;
+  ++AtlasIndex)
   {
-    u32 GlyphIndex =  GetGlyphIdForCharacterCode(CharCode, &Font);
-    if (!GlyphIndex) continue;
-    binary_stream_u8 GlyphStream = GetStreamForGlyphIndex(GlyphIndex, &Font, TempArena);
-    bitmap GlyphBitmap = RasterizeGlyph(GlyphSize, FontMaxGlyphSize, FontMinGlyphP, &GlyphStream, TempArena);
+    FillBitmap(PackedPink, &TextureAtlasBitmap);
 
-    if ( PixelCount(&GlyphBitmap) )
+    u32 GlyphsRasterized = 0;
+    for (u32 CharCode = AtlasIndex*256;
+        CharCode < (AtlasIndex*256)+256;
+        ++CharCode)
     {
-      Debug("Rasterized Glyph %d", CharCode);
+      u32 GlyphIndex =  GetGlyphIdForCharacterCode(CharCode, &Font);
+      if (!GlyphIndex) continue;
+      binary_stream_u8 GlyphStream = GetStreamForGlyphIndex(GlyphIndex, &Font, TranArena);
+      bitmap GlyphBitmap = RasterizeGlyph(GlyphSize, FontMaxEmDim, FontMinGlyphP, &GlyphStream, TranArena);
+
+      if ( PixelCount(&GlyphBitmap) )
+      {
+        Debug("Rasterized Glyph %d (%d)", CharCode, GlyphsRasterized);
+        ++GlyphsRasterized;
 
 #if 1
-      v2 UV = GetUVForCharCode(CharCode);
-      CopyBitmapOffset(&GlyphBitmap, &TextureAtlasBitmap, V2i(UV*V2(TextureAtlasBitmap.Dim)) );
+        v2 UV = GetUVForCharCode(CharCode % 256);
+        CopyBitmapOffset(&GlyphBitmap, &TextureAtlasBitmap, V2i(UV*V2(TextureAtlasBitmap.Dim)) );
 #else
-      char Name[128] = {};
-      sprintf(Name, "Glyph_%d.bmp", CharCode);
-      WriteBitmapToDisk(&GlyphBitmap, Name);
+        char Name[128] = {};
+        sprintf(Name, "Glyph_%d.bmp", CharCode);
+        WriteBitmapToDisk(&GlyphBitmap, Name);
 #endif
+      }
+
+      RewindArena(TranArena);
     }
 
-    RewindArena(TempArena);
-  }
+    if (GlyphsRasterized)
+    {
+      char* AtlasName = FormatString(TranArena, "texture_atlas_%d.bmp", AtlasIndex);
+      WriteBitmapToDisk(&TextureAtlasBitmap, AtlasName);
+    }
 
-  WriteBitmapToDisk(&TextureAtlasBitmap, "texture_atlas.bmp");
+    GlyphsRasterized = 0;
+  }
 
   return 0;
 }

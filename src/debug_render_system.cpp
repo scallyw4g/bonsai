@@ -358,19 +358,6 @@ EndClipRect(ui_render_group *Group, layout *Layout, untextured_2d_geometry_buffe
 
 /*****************************  Text Helpers  ********************************/
 
-char *
-FormatString(const char* FormatString, ...)
-{
-  char *Buffer = AllocateProtection(char, TranArena, 1024, False);
-
-  va_list Arguments;
-  va_start(Arguments, FormatString);
-  vsnprintf(Buffer, 1023, FormatString, Arguments);
-  va_end(Arguments);
-
-  return Buffer;
-}
-
 inline void
 AdvanceSpaces(u32 N, layout *Layout, font *Font)
 {

@@ -234,13 +234,39 @@ GetTotalMemoryArenaStats()
 /**************************  Utility Functions  ******************************/
 
 
+
+char *
+FormatString(memory_arena *Memory, const char* FormatString, ...)
+{
+  char *Buffer = AllocateProtection(char, Memory, 1024, False);
+
+  va_list Arguments;
+  va_start(Arguments, FormatString);
+  vsnprintf(Buffer, 1023, FormatString, Arguments);
+  va_end(Arguments);
+
+  return Buffer;
+}
+
+char *
+FormatString(const char* FormatString, ...)
+{
+  char *Buffer = AllocateProtection(char, TranArena, 1024, False);
+
+  va_list Arguments;
+  va_start(Arguments, FormatString);
+  vsnprintf(Buffer, 1023, FormatString, Arguments);
+  va_end(Arguments);
+
+  return Buffer;
+}
+
 inline v2
 GetUVForCharCode(u32 Char)
 {
   v2 Result = V2( (Char%16)/16.0f, (Char/16)/16.0f );
   return Result;
 }
-
 
 void
 InitScopeTree(debug_scope_tree *Tree)

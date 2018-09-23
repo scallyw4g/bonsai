@@ -1,5 +1,7 @@
 
 #include <bonsai_types.h>
+global_variable memory_arena *TranArena = PlatformAllocateArena();
+
 #include <bonsai.cpp>
 #include <physics.cpp>
 #include <entity.cpp>
@@ -59,7 +61,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys, entity *Play
 
   #if 1
     /* DrawTexturedQuad(&GetDebugState()->TextRenderGroup.DebugTextureShader); */
-    DrawTexturedQuad(&GetDebugState()->TextRenderGroup.DebugFontTextureShader);
+    /* DrawTexturedQuad(&GetDebugState()->TextRenderGroup.DebugFontTextureShader); */
     /* DrawTexturedQuad(&SG->DebugTextureShader); */
     /* DrawTexturedQuad(&gBuffer->DebugPositionTextureShader); */
     /* DrawTexturedQuad(&gBuffer->DebugNormalTextureShader); */

@@ -19,6 +19,9 @@
 #include <platform.h>
 
 #include <render.h>
+
+global_variable memory_arena *TranArena = PlatformAllocateArena(Megabytes(8));
+
 #include <texture.cpp>
 #include <shader.cpp>
 #include <bonsai_vertex.h>
@@ -455,8 +458,6 @@ main()
 
   AssertNoGlErrors;
 
-  // This arena must be initialized before the the debug state can be
-  TranArena                   = PlatformAllocateArena(Megabytes(8));
 
   DEBUG_REGISTER_ARENA(TranArena  , &Plat.DebugState);
 

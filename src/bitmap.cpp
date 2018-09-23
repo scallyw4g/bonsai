@@ -153,6 +153,7 @@ PackRGBALinearTo255(v4 Color)
 inline void
 FillBitmap(u32 C, bitmap *Bitmap)
 {
+  Bitmap->Pixels.At = Bitmap->Pixels.Start;
   while (Bitmap->Pixels.At < Bitmap->Pixels.End)
   {
     *Bitmap->Pixels.At = C;

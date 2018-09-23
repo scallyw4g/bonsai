@@ -673,6 +673,20 @@ operator*(v2 P1, r32 F)
   return Result;
 }
 
+v2
+operator*(v2i A, v2 B)
+{
+  v2 Result = { V2(A) * B };
+  return Result;
+}
+
+v2
+operator*(v2 A, v2i B)
+{
+  v2 Result = B*A;
+  return Result;
+}
+
 v2i
 operator-(v2i P1, v2i P2)
 {
@@ -758,15 +772,6 @@ operator/(r32 B, v3 A)
   return Result;
 }
 
-inline v2
-operator/(v2i A, v2i B)
-{
-  v2 Result;
-  Result.x = (r32)A.x / (r32)B.x;
-  Result.y = (r32)A.y / (r32)B.y;
-  return Result;
-}
-
 inline v2i
 operator/(v2i A, s32 B)
 {
@@ -782,6 +787,27 @@ operator/(v2 A, v2 B)
   v2 Result;
   Result.x = A.x / B.x;
   Result.y = A.y / B.y;
+  return Result;
+}
+
+inline v2
+operator/(v2i A, v2 B)
+{
+  v2 Result = V2(A) / B;
+  return Result;
+}
+
+inline v2
+operator/(v2 A, v2i B)
+{
+  v2 Result = B/A;
+  return Result;
+}
+
+inline v2
+operator/(v2i A, v2i B)
+{
+  v2 Result = V2(A)/V2(B);
   return Result;
 }
 
