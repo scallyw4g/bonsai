@@ -94,7 +94,7 @@ GLuint loadBMP_custom(const char * FilePath){
 
 
 texture
-LoadDDS(const char * FilePath)
+LoadDDS(const char * FilePath, memory_arena *Arena)
 {
   texture Result = {};
 
@@ -132,7 +132,7 @@ LoadDDS(const char * FilePath)
   Result.Dim.y = (s32)height;
 
   u32 BufferSize = mipMapCount > 1 ? linearSize * 2 : linearSize;
-  u8* Buffer = Allocate(u8, TranArena, BufferSize);
+  u8* Buffer = Allocate(u8, Arena, BufferSize);
 
   ReadBytes(Buffer, BufferSize, TextureFile);
 

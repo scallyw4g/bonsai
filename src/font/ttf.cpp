@@ -10,6 +10,7 @@ global_variable memory_arena *TranArena = PlatformAllocateArena();
 #include <debug_data_system.cpp>
 
 #include <bitmap.cpp>
+#include <string.cpp>
 
 
 v4 White = V4(1,1,1,0);

@@ -156,12 +156,11 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory)
 }
 
 EXPORT game_state*
-GameInit( platform *Plat, memory_arena *GameMemory, memory_arena *TranArena_in /*, os *Os */)
+GameInit( platform *Plat, memory_arena *GameMemory )
 {
   Info("Initializing Game");
 
   GlobalDebugState = &Plat->DebugState;
-  TranArena = TranArena_in;
 
   Init_Global_QuadVertexBuffer();
 

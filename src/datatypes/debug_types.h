@@ -333,9 +333,9 @@ struct debug_timed_function
 #define DEBUG_FRAME_BEGIN(Hotkeys, dt) DebugFrameBegin(Hotkeys, dt)
 
 #ifndef BONSAI_NO_MUTEX_TRACKING
-inline void DebugTimedMutexWaiting(mutex *Mut);
-inline void DebugTimedMutexAquired(mutex *Mut);
-inline void DebugTimedMutexReleased(mutex *Mut);
+void DebugTimedMutexWaiting(mutex *Mut);
+void DebugTimedMutexAquired(mutex *Mut);
+void DebugTimedMutexReleased(mutex *Mut);
 #define TIMED_MUTEX_WAITING(Mut) DebugTimedMutexWaiting(Mut)
 #define TIMED_MUTEX_AQUIRED(Mut) DebugTimedMutexAquired(Mut)
 #define TIMED_MUTEX_RELEASED(Mut) DebugTimedMutexReleased(Mut)

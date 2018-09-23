@@ -20,14 +20,15 @@
 
 #include <render.h>
 
-global_variable memory_arena *TranArena = PlatformAllocateArena(Megabytes(8));
-
 #include <texture.cpp>
 #include <shader.cpp>
 #include <bonsai_vertex.h>
 #include <perlin.cpp>
 #include <chunk.cpp>
 #include <bonsai_mesh.cpp>
+
+global_variable memory_arena *TranArena = PlatformAllocateArena();
+#include <string.cpp>
 #include <debug.cpp>
 #include <render.cpp>
 
@@ -499,7 +500,7 @@ main()
   Plat.Graphics = GraphicsInit(GraphicsMemory);
   if (!Plat.Graphics) { Error("Initializing Graphics"); return False; }
 
-  game_state *GameState = GameInit(&Plat, GameMemory, TranArena, &Os);
+  game_state *GameState = GameInit(&Plat, GameMemory );
   if (!GameState) { Error("Initializing Game State :( "); return False; }
 
   /*
