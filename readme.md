@@ -21,6 +21,12 @@ fast-paced arcade style games.
 * Entity System
 * Asset Loader
 
+## Performance Profiler Features
+
+* Memory allocation tracking
+* Call graph tracking per frame (routine % of frame, CPU cycles, # of calls)
+* Works across all threads
+
 # Wishlist
 
 
