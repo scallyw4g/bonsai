@@ -1,15 +1,9 @@
 struct xml_tag
 {
-  const char* Selector;
-  umm StartOffset;
-  umm EndOffset;
+  counted_string Selector;
+  umm TagStartOffset; // Relative to start of stream
+  // umm TagEndOffset;   // Relative to start of stream
 };
-
-v3*
-ParseV3Array(xml_tag Tag, memory_arena* Memory)
-{
-  return 0;
-}
 
 xml_tag
 GetFirstMatchingTag(ansi_stream *Stream, ansi_stream* Selector)
@@ -17,17 +11,29 @@ GetFirstMatchingTag(ansi_stream *Stream, ansi_stream* Selector)
   xml_tag Result = {};
   /* RuntimeBreak(); */
 
-  const char* SelectorTag = PopWord(Selector, TranArena);
+  counted_string SelectorTag = PopWordCounted(Selector);
   while (Remaining(Stream))
   {
-    const char* TagName = PopXmlTag(Stream, TranArena);
+    counted_string TagName = PopXmlTag(Stream);
 
-    if (StringsMatch(SelectorTag, TagName))
+    if (StringsMatch(&SelectorTag, &TagName))
     {
       Result.Selector = TagName;
-      break;
+      Result.TagStartOffset = TagName.Start - Stream->Start;
+
+      while (Remaining(Stream))
+      {
+        counted_string EndTag = PopWordCounted(Stream);
+        if (EndTag.Start[EndTag.Count-1] == '>')
+        {
+          /* Result.TagEndOffset = ?? ; */
+          goto finished;
+        }
+      }
     }
   }
+
+  finished:
 
   return Result;
 }
@@ -37,7 +43,7 @@ GetColladaMetadata(ansi_stream *Stream, memory_arena* PermMemory)
 {
   ansi_stream SelectorStream = AnsiStream("COLLADA library_geometries geometry source#Cube-mesh-positions float_array#Cube-mesh-positions-array");
   xml_tag PositionsTag = GetFirstMatchingTag(Stream, &SelectorStream);
-  v3* Verts = ParseV3Array(PositionsTag, PermMemory);
+  /* v3* Verts = ParseV3Array(PositionsTag, PermMemory); */
 
   mesh_metadata Result = {};
   return Result;

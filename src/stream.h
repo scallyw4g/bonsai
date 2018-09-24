@@ -1,5 +1,11 @@
 #include <string>
 
+struct counted_string
+{
+  const char* Start;
+  umm Count;
+};
+
 struct binary_stream_u32
 {
   u32* Start;
@@ -29,7 +35,7 @@ Length(const char *Str)
 
   while (*End++);
 
-  umm Result = (umm)(End - Start);
+  umm Result = (umm)(End - Start) - 1;
   return Result;
 }
 
@@ -40,7 +46,7 @@ AnsiStream(const char *Input)
 
   Result.Start = Input;
   Result.At    = Input;
-  Result.End   = Input + Length(Input);
+  Result.End   = Input + Length(Input) + 1;
 
   return Result;
 }
@@ -154,6 +160,38 @@ EatAllCharacters(ansi_stream *Cursor, const char *Characters)
   }
 }
 
+counted_string
+ReadUntilTerminatorList(ansi_stream *Cursor, const char *TerminatorList)
+{
+  const char *Start = Cursor->At;
+
+  umm ResultLength = 0;
+  b32 FoundTerminator = False;
+
+  while (Remaining(Cursor) && *Cursor->At++)
+  {
+    ResultLength = (umm)(Cursor->At - Start);
+    const char *TerminatorAt = TerminatorList;
+    while (*TerminatorAt)
+    {
+      if(*Cursor->At == *TerminatorAt)
+      {
+        FoundTerminator = True;
+        ResultLength = (umm)(Cursor->At - Start);
+        EatAllCharacters(Cursor, TerminatorList);
+        goto done;
+      }
+      ++TerminatorAt;
+    }
+  }
+done:
+
+  counted_string Result = {};
+  Result.Start = Start;
+  Result.Count = ResultLength;
+  return Result;
+}
+
 char *
 ReadUntilTerminatorList(ansi_stream *Cursor, const char *TerminatorList, memory_arena *Arena)
 {
@@ -193,6 +231,19 @@ EatWhitespace(ansi_stream *Cursor)
   return;
 }
 
+
+counted_string
+PopWordCounted(ansi_stream *Cursor, const char *Delimeters = 0)
+{
+  if (!Delimeters)
+    Delimeters = " \n";
+
+  EatWhitespace(Cursor);
+
+  counted_string Result = ReadUntilTerminatorList(Cursor, Delimeters);
+  return Result;
+}
+
 char *
 PopWord(ansi_stream *Cursor, memory_arena *Arena, const char *Delimeters = 0)
 {
@@ -204,8 +255,8 @@ PopWord(ansi_stream *Cursor, memory_arena *Arena, const char *Delimeters = 0)
   return Result;
 }
 
-char *
-PopXmlTag(ansi_stream *Cursor, memory_arena *Arena)
+counted_string
+PopXmlTag(ansi_stream *Cursor)
 {
   if (*Cursor->At == '<')
     Cursor->At++;
@@ -213,7 +264,8 @@ PopXmlTag(ansi_stream *Cursor, memory_arena *Arena)
   EatWhitespace(Cursor);
 
   const char* Delimeters = " \n";
-  char *Result = ReadUntilTerminatorList(Cursor, Delimeters, Arena);
+
+  counted_string Result = ReadUntilTerminatorList(Cursor, Delimeters);
   return Result;
 }
 

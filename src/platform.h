@@ -240,6 +240,28 @@ StringsMatch(const char *S1, const char *S2)
 }
 
 inline b32
+StringsMatch(counted_string* S1, counted_string* S2)
+{
+  b32 Result = True;
+
+  if (S1->Count == S2->Count)
+  {
+    for (u32 CharIndex = 0;
+        CharIndex < S1->Count;
+        ++CharIndex)
+    {
+      Result = (Result && (S1->Start[CharIndex] == S2->Start[CharIndex]));
+    }
+  }
+  else
+  {
+    Result = False;
+  }
+
+  return Result;
+}
+
+inline b32
 Contains(const char *S1, const char *S2)
 {
   const char *S1At = S1;
