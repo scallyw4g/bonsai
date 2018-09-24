@@ -39,6 +39,15 @@ Length(const char *Str)
   return Result;
 }
 
+counted_string
+CountedString(char *S)
+{
+  counted_string Result = {};
+  Result.Start = S;
+  Result.Count = Length(S);
+  return Result;
+}
+
 ansi_stream
 AnsiStream(const char *Input)
 {

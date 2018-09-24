@@ -1,3 +1,4 @@
+#include <string.cpp>
 struct xml_tag
 {
   counted_string Selector;
@@ -32,20 +33,32 @@ AdvanceStreamToEndOfOpeningTag(ansi_stream *XmlStream, counted_string XmlStreamT
 }
 
 xml_tag
-GetFirstMatchingTag(ansi_stream *XmlStream, ansi_stream* SelectorStream, counted_string *ParentSelector)
+GetFirstMatchingTag(ansi_stream *XmlStream, ansi_stream* SelectorStream, counted_string *ParentSelectorName)
 {
   xml_tag Result = {};
   /* RuntimeBreak(); */
 
-  counted_string SelectorTag = PopWordCounted(SelectorStream);
+  counted_string SearchSelector = PopWordCounted(SelectorStream);
+
   while (Remaining(XmlStream))
   {
     counted_string XmlStreamTag = PopXmlTag(XmlStream);
 
-    if (StringsMatch(&SelectorTag, &XmlStreamTag))
+    if (StringsMatch(&SearchSelector, &XmlStreamTag))
     {
       Result = AdvanceStreamToEndOfOpeningTag(XmlStream, XmlStreamTag);
-      GetFirstMatchingTag(XmlStream, SelectorStream, &SelectorTag);
+
+      // NOTE(Jesse): This omits the opening '<' in favor of not having to add
+      // it every time we pop a selector off the selector stream
+      char* ParentClosingTag = FormatString("/%.*s>", SearchSelector.Count, SearchSelector.Start);
+      counted_string Parent = CountedString(ParentClosingTag);
+
+      GetFirstMatchingTag(XmlStream, SelectorStream, &Parent);
+    }
+
+    if (StringsMatch(ParentSelectorName, &XmlStreamTag))
+    {
+      break;
     }
   }
 
@@ -58,7 +71,9 @@ GetColladaMetadata(ansi_stream *Stream, memory_arena* PermMemory)
   // ansi_stream SelectorStream = AnsiStream("COLLADA library_geometries geometry source#Cube-mesh-positions float_array#Cube-mesh-positions-array");
 
   ansi_stream SelectorStream = AnsiStream("COLLADA library_geometries geometry");
-  xml_tag PositionsTag = GetFirstMatchingTag(Stream, &SelectorStream, 0);
+
+  counted_string ZeroString = {};
+  xml_tag PositionsTag = GetFirstMatchingTag(Stream, &SelectorStream, &ZeroString);
   /* v3* Verts = ParseV3Array(PositionsTag, PermMemory); */
 
   mesh_metadata Result = {};
