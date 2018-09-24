@@ -1,18 +1,48 @@
-mesh_metadata
-GetColladaMetadata(ansi_stream Stream, memory_arena *TranArena)
+struct xml_tag
 {
+  const char* Selector;
+  umm StartOffset;
+  umm EndOffset;
+};
+
+v3*
+ParseV3Array(xml_tag Tag, memory_arena* Memory)
+{
+  return 0;
+}
+
+xml_tag
+GetFirstMatchingTag(ansi_stream *Stream, ansi_stream* Selector)
+{
+  xml_tag Result = {};
+  /* RuntimeBreak(); */
+
+  const char* SelectorTag = PopWord(Selector, TranArena);
+  while (Remaining(Stream))
+  {
+    const char* TagName = PopWord(Stream, TranArena);
+
+    if (StringsMatch(SelectorTag, TagName))
+    {
+      Result.Selector = TagName;
+      break;
+    }
+  }
+
+  return Result;
+}
+
+mesh_metadata
+GetColladaMetadata(ansi_stream *Stream, memory_arena* PermMemory)
+{
+  ansi_stream SelectorStream = AnsiStream("<COLLADA <library_geometries <geometry source#Cube-mesh-positions <float_array#Cube-mesh-positions-array");
+  xml_tag PositionsTag = GetFirstMatchingTag(Stream, &SelectorStream);
+  v3* Verts = ParseV3Array(PositionsTag, PermMemory);
+
   mesh_metadata Result = {};
   return Result;
 }
 
-
-/*
- * This loader doesn't support ngon faces.  The mesh must be triangulated
- * before exporting from blender.
- *
- * Note that triangulating a mesh with bent normals at export time (in blender)
- * seems to not re-bend the triangulated normals and everything looks borked.
- */
 model
 LoadCollada(memory_arena *PermMem, const char * FilePath)
 {
@@ -23,8 +53,7 @@ LoadCollada(memory_arena *PermMem, const char * FilePath)
   if (!BinaryStream.Start) { model M = {}; return M; }
 
   ansi_stream Stream = AnsiStream(&BinaryStream);
-  mesh_metadata Stats = GetColladaMetadata(Stream, TranArena);
-
+  mesh_metadata Stats = GetColladaMetadata(&Stream, PermMem);
 
 
   model Result = {};
