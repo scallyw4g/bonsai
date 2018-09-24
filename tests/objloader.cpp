@@ -13,7 +13,7 @@
 #include <bonsai_mesh.cpp>
 
 global_variable memory_arena *TranArena = PlatformAllocateArena();
-#include <objloader.cpp>
+#include <loaders/obj.cpp>
 
 s32
 main()

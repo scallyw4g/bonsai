@@ -5,7 +5,7 @@ global_variable memory_arena *TranArena = PlatformAllocateArena();
 #include <bonsai.cpp>
 #include <physics.cpp>
 #include <entity.cpp>
-#include <objloader.cpp>
+#include <loaders/obj.cpp>
 
 void
 DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys, entity *Player)

@@ -3,8 +3,6 @@
 #include <string>
 #include <cstring>
 
-#include "objloader.hpp"
-
 struct u32_static_array
 {
   u32 *Elements;
