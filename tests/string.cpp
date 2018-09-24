@@ -149,6 +149,40 @@ TestContains()
   return;
 }
 
+void
+TestReadUntilTerminatorList()
+{
+  const char *Text = "property='> some thing >'";
+
+
+  {
+    ansi_stream Stream = AnsiStream(Text);
+
+    counted_string Result = ReadUntilTerminatorList(&Stream, "'");
+    TestThat(Result.Start[Result.Count] == '\'');
+    TestThat(Stream.At[0] == '>');
+  }
+
+  {
+    ansi_stream Stream = AnsiStream(Text);
+
+    counted_string Result = ReadUntilTerminatorList(&Stream, "=> \"'");
+    TestThat(Result.Start[Result.Count] == '=');
+    TestThat(Stream.At[0] == '\'');
+  }
+
+  {
+    ansi_stream Stream = AnsiStream(Text);
+
+    counted_string Result = ReadUntilTerminatorList(&Stream, "pr");
+    TestThat(Result.Count == 0);
+    TestThat(Result.Start[Result.Count] == 'p');
+    TestThat(Stream.At[0] == 'r');
+  }
+
+  return;
+}
+
 s32
 main()
 {
@@ -186,6 +220,8 @@ main()
   TestStreamCursor();
 
   TestContains();
+
+  TestReadUntilTerminatorList();
 
   TestSuiteEnd();
   exit(TestsFailed);

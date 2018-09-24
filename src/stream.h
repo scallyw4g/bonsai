@@ -40,7 +40,7 @@ Length(const char *Str)
 }
 
 counted_string
-CountedString(char *S)
+CountedString(const char *S)
 {
   counted_string Result = {};
   Result.Start = S;
@@ -174,61 +174,39 @@ ReadUntilTerminatorList(ansi_stream *Cursor, const char *TerminatorList)
 {
   const char *Start = Cursor->At;
 
-  umm ResultLength = 0;
-  b32 FoundTerminator = False;
-
-  while (Remaining(Cursor) && *Cursor->At++)
+  while (Remaining(Cursor) && *Cursor->At)
   {
-    ResultLength = (umm)(Cursor->At - Start);
     const char *TerminatorAt = TerminatorList;
     while (*TerminatorAt)
     {
       if(*Cursor->At == *TerminatorAt)
       {
-        FoundTerminator = True;
-        ResultLength = (umm)(Cursor->At - Start);
-        EatAllCharacters(Cursor, TerminatorList);
-        goto done;
+        goto finished;
       }
       ++TerminatorAt;
     }
+
+    ++Cursor->At;
   }
-done:
+
+finished:
 
   counted_string Result = {};
   Result.Start = Start;
-  Result.Count = ResultLength;
+  Result.Count = (umm)(Cursor->At - Start);
+
+  ++Cursor->At;
+
   return Result;
 }
 
 char *
 ReadUntilTerminatorList(ansi_stream *Cursor, const char *TerminatorList, memory_arena *Arena)
 {
-  const char *Start = Cursor->At;
+  counted_string String = ReadUntilTerminatorList(Cursor, TerminatorList);
 
-  umm ResultLength = 0;
-  b32 FoundTerminator = False;
-
-  while (Remaining(Cursor) && *Cursor->At++)
-  {
-    ResultLength = (umm)(Cursor->At - Start);
-    const char *TerminatorAt = TerminatorList;
-    while (*TerminatorAt)
-    {
-      if(*Cursor->At == *TerminatorAt)
-      {
-        FoundTerminator = True;
-        ResultLength = (umm)(Cursor->At - Start);
-        EatAllCharacters(Cursor, TerminatorList);
-        goto done;
-      }
-      ++TerminatorAt;
-    }
-  }
-done:
-
-  char *Result = Allocate(char, Arena, ResultLength + 1);
-  MemCopy((u8*)Start, (u8*)Result, ResultLength);
+  char *Result = Allocate(char, Arena, String.Count + 1);
+  MemCopy((u8*)String.Start, (u8*)Result, String.Count);
 
   return Result;
 }
@@ -261,27 +239,91 @@ PopWord(ansi_stream *Cursor, memory_arena *Arena, const char *Delimeters = 0)
 
   EatWhitespace(Cursor);
   char *Result = ReadUntilTerminatorList(Cursor, Delimeters, Arena);
+  EatAllCharacters(Cursor, Delimeters);
   return Result;
+}
+
+void
+EatQuotedString(ansi_stream *Cursor)
+{
+  if (*Cursor->At == '"' || *Cursor->At == '\'' )
+  {
+    ++Cursor->At;
+  }
+  else
+  {
+    Assert( *(Cursor->At-1) == '"' || *(Cursor->At-1) == '\'' );
+  }
+
+  while (*Cursor->At != '"' && *Cursor->At != '\'')
+  {
+    ++Cursor->At;
+  }
+
+  ++Cursor->At;
+
+  return;
 }
 
 counted_string
 PopXmlTag(ansi_stream *Cursor)
 {
-  if (*Cursor->At == '<')
-    Cursor->At++;
+  Assert(*Cursor->At == '<');
+
+  ++Cursor->At;
+
+  const char* NameDelimeters = "> ";
+  counted_string Name = ReadUntilTerminatorList(Cursor, NameDelimeters);
+
+  const char* PropertyDelimeters = "> =\"'";
+  while ( *(Cursor->At-1) != '>' )
+  {
+    ReadUntilTerminatorList(Cursor, PropertyDelimeters);
+
+    switch( *(Cursor->At-1) )
+    {
+      case '>':
+      case ' ':
+      {
+      } break;
+
+      case '\'':
+      case '"':
+      {
+        EatQuotedString(Cursor);
+      } break;
+
+      case '=':
+      {
+        switch(*Cursor->At)
+        {
+          case '"':
+          case '\'':
+          {
+            EatQuotedString(Cursor);
+          } break;
+
+          default:
+          {
+            PopWordCounted(Cursor);
+          } break;
+        }
+      } break;
+
+      InvalidDefaultCase;
+    }
+
+  }
 
   EatWhitespace(Cursor);
-
-  const char* Delimeters = "> \n";
-
-  counted_string Result = ReadUntilTerminatorList(Cursor, Delimeters);
-  return Result;
+  return Name;
 }
 
 char *
 PopLine(ansi_stream *Cursor, memory_arena *Arena)
 {
   char *Result = ReadUntilTerminatorList(Cursor, "\n", Arena);
+  EatWhitespace(Cursor);
   return Result;
 }
 

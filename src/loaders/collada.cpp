@@ -36,27 +36,28 @@ xml_tag
 GetFirstMatchingTag(ansi_stream *XmlStream, ansi_stream* SelectorStream, counted_string *ParentSelectorName)
 {
   xml_tag Result = {};
-  /* RuntimeBreak(); */
 
   counted_string SearchSelector = PopWordCounted(SelectorStream);
 
   while (Remaining(XmlStream))
   {
-    counted_string XmlStreamTag = PopXmlTag(XmlStream);
+    counted_string MatchTagName = PopXmlTag(XmlStream);
 
-    if (StringsMatch(&SearchSelector, &XmlStreamTag))
+    if (StringsMatch(&SearchSelector, &MatchTagName))
     {
-      Result = AdvanceStreamToEndOfOpeningTag(XmlStream, XmlStreamTag);
-
       // NOTE(Jesse): This omits the opening '<' in favor of not having to add
       // it every time we pop a selector off the selector stream
       char* ParentClosingTag = FormatString("/%.*s>", SearchSelector.Count, SearchSelector.Start);
       counted_string Parent = CountedString(ParentClosingTag);
 
-      GetFirstMatchingTag(XmlStream, SelectorStream, &Parent);
+      xml_tag ChildTag = GetFirstMatchingTag(XmlStream, SelectorStream, &Parent);
+      if (ChildTag.Selector.Count)
+      {
+        Result = ChildTag;
+      }
     }
 
-    if (StringsMatch(ParentSelectorName, &XmlStreamTag))
+    if (StringsMatch(ParentSelectorName, &MatchTagName))
     {
       break;
     }
@@ -85,7 +86,6 @@ LoadCollada(memory_arena *PermMem, const char * FilePath)
 {
   Info("Loading .dae file : %s \n", FilePath);
 
-  umm Length = 0;
   binary_stream_u8 BinaryStream = BinaryStreamFromFile(FilePath, PermMem);
   if (!BinaryStream.Start) { model M = {}; return M; }
 
