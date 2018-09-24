@@ -6,9 +6,9 @@
  * seems to not re-bend the triangulated normals and everything looks borked.
  */
 model
-LoadObj(memory_arena *PermMem, const char * FilePath)
+LoadCollada(memory_arena *PermMem, const char * FilePath)
 {
-  Info("Loading .obj file : %s \n", FilePath);
+  Info("Loading .dae file : %s \n", FilePath);
 
   umm Length = 0;
   binary_stream_u8 BinaryStream = BinaryStreamFromFile(FilePath, PermMem);
