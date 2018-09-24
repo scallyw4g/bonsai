@@ -1,3 +1,38 @@
+mesh_metadata
+GetObjMetadata(ansi_stream Cursor, memory_arena *Memory)
+{
+  mesh_metadata Result = {};
+
+  while (Cursor.At < Cursor.End)
+  {
+    char *LineType = PopWord(&Cursor, Memory);
+    if (LineType == 0) { break; }
+
+    if ( StringsMatch(LineType, "v"))
+    {
+      ++Result.VertCount;
+    }
+    else if ( StringsMatch(LineType, "vt") )
+    {
+      ++Result.UVCount;
+    }
+    else if ( StringsMatch(LineType, "vn") )
+    {
+      ++Result.NormalCount;
+    }
+    else if ( StringsMatch(LineType, "f") )
+    {
+      ++Result.FaceCount;
+    }
+    else
+    {
+      // Irrelevant.
+    }
+  }
+
+  return Result;
+}
+
 /*
  * This loader doesn't support ngon faces.  The mesh must be triangulated
  * before exporting from blender.
@@ -15,7 +50,7 @@ LoadObj(memory_arena *PermMem, const char * FilePath)
   if (!BinaryStream.Start) { model M = {}; return M; }
 
   ansi_stream Stream = AnsiStream(&BinaryStream);
-  obj_stats Stats = GetObjStats(Stream, TranArena);
+  mesh_metadata Stats = GetObjMetadata(Stream, TranArena);
 
   v3_static_array TempVerts       = V3_Static_Array(Stats.VertCount, TranArena);
   v3_static_array TempNormals     = V3_Static_Array(Stats.NormalCount, TranArena);

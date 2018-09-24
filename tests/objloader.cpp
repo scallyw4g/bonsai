@@ -25,7 +25,7 @@ main()
 
   {
     ansi_stream Stream = AnsiStreamFromFile("test.obj", Memory);
-    obj_stats Stats = GetObjStats(Stream, Memory);
+    mesh_metadata Stats = GetObjMetadata(Stream, Memory);
     TestThat(Stats.VertCount == 2);
     TestThat(Stats.NormalCount == 2);
     TestThat(Stats.FaceCount == 2);
@@ -35,7 +35,7 @@ main()
   {
     const char *TestData = "v whatever\nv whatever\nvn whatever\nvn whatever\nf whatever\nf whatever";
     ansi_stream Stream = AnsiStreamFromFile("test.obj", Memory);
-    obj_stats Stats = GetObjStats(Stream, Memory);
+    mesh_metadata Stats = GetObjMetadata(Stream, Memory);
     TestThat(Stats.VertCount == 2);
     TestThat(Stats.NormalCount == 2);
     TestThat(Stats.FaceCount == 2);

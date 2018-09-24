@@ -40,7 +40,7 @@ Push(T Vec, T_a *Array)
   return;
 }
 
-struct obj_stats
+struct mesh_metadata
 {
   u32 VertCount;
   u32 NormalCount;
@@ -48,37 +48,3 @@ struct obj_stats
   u32 FaceCount;
 };
 
-obj_stats
-GetObjStats(ansi_stream Cursor, memory_arena *Memory)
-{
-  obj_stats Result = {};
-
-  while (Cursor.At < Cursor.End)
-  {
-    char *LineType = PopWord(&Cursor, Memory);
-    if (LineType == 0) { break; }
-
-    if ( StringsMatch(LineType, "v"))
-    {
-      ++Result.VertCount;
-    }
-    else if ( StringsMatch(LineType, "vt") )
-    {
-      ++Result.UVCount;
-    }
-    else if ( StringsMatch(LineType, "vn") )
-    {
-      ++Result.NormalCount;
-    }
-    else if ( StringsMatch(LineType, "f") )
-    {
-      ++Result.FaceCount;
-    }
-    else
-    {
-      // Irrelevant.
-    }
-  }
-
-  return Result;
-}

@@ -29,6 +29,7 @@ add_executable(ttf ${SRC}/font/ttf.cpp)
 
 add_executable(Server ${SRC}/net/server.cpp)
 add_executable(test_m4 ${TESTS}/m4.cpp)
+add_executable(test_collada ${TESTS}/colladaloader.cpp)
 add_executable(test_bitmap ${TESTS}/bitmap.cpp)
 add_executable(test_chunk ${TESTS}/chunk.cpp)
 add_executable(test_string ${TESTS}/string.cpp)
@@ -55,19 +56,13 @@ find_package(OpenGL REQUIRED)
 include_directories(${OPENGL_INCLUDE_DIRS} )
 target_link_libraries(Bonsai ${OPENGL_LIBRARIES})
 target_link_libraries(Game ${OPENGL_LIBRARIES})
-target_link_libraries(Server ${OPENGL_LIBRARIES})
-target_link_libraries(test_m4 ${OPENGL_LIBRARIES})
-target_link_libraries(test_chunk ${OPENGL_LIBRARIES})
-target_link_libraries(test_string ${OPENGL_LIBRARIES})
-target_link_libraries(test_objloader ${OPENGL_LIBRARIES})
-target_link_libraries(test_allocation ${OPENGL_LIBRARIES})
-target_link_libraries(test_callgraph ${OPENGL_LIBRARIES})
 
 add_custom_target(run ${BIN}/Bonsai
                   DEPENDS Bonsai
                   COMMENT "Running Bonsai")
 
 add_custom_target(tests ${BIN}/test_m4
+                        ${BIN}/test_collada
                         ${BIN}/test_bitmap
                         ${BIN}/test_chunk
                         ${BIN}/test_string
@@ -83,6 +78,7 @@ target_compile_definitions(Game    PUBLIC BONSAI_INTERNAL=1)
 target_compile_definitions(ttf PUBLIC BONSAI_INTERNAL=1)
 
 target_compile_definitions(test_m4 PUBLIC BONSAI_INTERNAL=1)
+target_compile_definitions(test_collada PUBLIC BONSAI_INTERNAL=1)
 target_compile_definitions(test_bitmap PUBLIC BONSAI_INTERNAL=1)
 target_compile_definitions(test_chunk PUBLIC BONSAI_INTERNAL=1)
 target_compile_definitions(test_string PUBLIC BONSAI_INTERNAL=1)
@@ -132,29 +128,7 @@ if (UNIX)
   target_link_libraries(Bonsai ${CMAKE_THREAD_LIBS_INIT}) # -lpthread
   target_link_libraries(Bonsai ${CMAKE_DL_LIBS})          # .so loader
 
-  target_link_libraries(test_chunk X11)                       # Xlib
-  target_link_libraries(test_chunk ${CMAKE_THREAD_LIBS_INIT}) # -lpthread
-  target_link_libraries(test_chunk ${CMAKE_DL_LIBS})          # .so loader
-
-  target_link_libraries(test_m4 X11)                       # Xlib
-  target_link_libraries(test_m4 ${CMAKE_THREAD_LIBS_INIT}) # -lpthread
-  target_link_libraries(test_m4 ${CMAKE_DL_LIBS})          # .so loader
-
-  target_link_libraries(test_string X11)                       # Xlib
-  target_link_libraries(test_string ${CMAKE_THREAD_LIBS_INIT}) # -lpthread
-  target_link_libraries(test_string ${CMAKE_DL_LIBS})          # .so loader
-
-  target_link_libraries(test_objloader X11)                       # Xlib
-  target_link_libraries(test_objloader ${CMAKE_THREAD_LIBS_INIT}) # -lpthread
-  target_link_libraries(test_objloader ${CMAKE_DL_LIBS})          # .so loader
-
-  target_link_libraries(test_callgraph X11)                       # Xlib
-  target_link_libraries(test_callgraph ${CMAKE_THREAD_LIBS_INIT}) # -lpthread
-  target_link_libraries(test_callgraph ${CMAKE_DL_LIBS})          # .so loader
-
-
-elseif(WIN32)
-
+elseif(WIN32) 
   set(GAME_COMPILED_LIB ${BIN}/Debug/Game.dll)
   set(GAME_LOADABLE_LIB ${BIN}/Debug/GameLoadable.dll)
 
