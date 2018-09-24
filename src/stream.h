@@ -205,6 +205,19 @@ PopWord(ansi_stream *Cursor, memory_arena *Arena, const char *Delimeters = 0)
 }
 
 char *
+PopXmlTag(ansi_stream *Cursor, memory_arena *Arena)
+{
+  if (*Cursor->At == '<')
+    Cursor->At++;
+
+  EatWhitespace(Cursor);
+
+  const char* Delimeters = " \n";
+  char *Result = ReadUntilTerminatorList(Cursor, Delimeters, Arena);
+  return Result;
+}
+
+char *
 PopLine(ansi_stream *Cursor, memory_arena *Arena)
 {
   char *Result = ReadUntilTerminatorList(Cursor, "\n", Arena);

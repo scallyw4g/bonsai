@@ -20,7 +20,7 @@ GetFirstMatchingTag(ansi_stream *Stream, ansi_stream* Selector)
   const char* SelectorTag = PopWord(Selector, TranArena);
   while (Remaining(Stream))
   {
-    const char* TagName = PopWord(Stream, TranArena);
+    const char* TagName = PopXmlTag(Stream, TranArena);
 
     if (StringsMatch(SelectorTag, TagName))
     {
@@ -35,7 +35,7 @@ GetFirstMatchingTag(ansi_stream *Stream, ansi_stream* Selector)
 mesh_metadata
 GetColladaMetadata(ansi_stream *Stream, memory_arena* PermMemory)
 {
-  ansi_stream SelectorStream = AnsiStream("<COLLADA <library_geometries <geometry source#Cube-mesh-positions <float_array#Cube-mesh-positions-array");
+  ansi_stream SelectorStream = AnsiStream("COLLADA library_geometries geometry source#Cube-mesh-positions float_array#Cube-mesh-positions-array");
   xml_tag PositionsTag = GetFirstMatchingTag(Stream, &SelectorStream);
   v3* Verts = ParseV3Array(PositionsTag, PermMemory);
 
