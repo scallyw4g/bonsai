@@ -695,9 +695,9 @@ RasterizeGlyph(v2i OutputSize, v2i FontMaxEmDim, v2i FontMinGlyphP, binary_strea
 {
 #define DO_RASTERIZE        1
 #define DO_AA               1
-#define WRITE_DEBUG_BITMAPS 1
+#define WRITE_DEBUG_BITMAPS 0
 
-  u32 SamplesPerPixel = 8;
+  u32 SamplesPerPixel = 4;
   v2i SamplingBitmapDim = OutputSize*SamplesPerPixel;
   bitmap SamplingBitmap = AllocateBitmap(SamplingBitmapDim, Arena);
 
@@ -985,7 +985,7 @@ main()
   v2i FontMaxEmDim = { HeadTable->xMax - HeadTable->xMin, HeadTable->yMax - HeadTable->yMin };
   v2i FontMinGlyphP = V2i(HeadTable->xMin, HeadTable->yMin);
 
-  v2i GlyphSize = V2i(64, 64);
+  v2i GlyphSize = V2i(32, 32);
 
   bitmap TextureAtlasBitmap = AllocateBitmap(16*GlyphSize, PermArena);
 
