@@ -1,39 +1,53 @@
 struct xml_tag
 {
   counted_string Selector;
-  umm TagStartOffset; // Relative to start of stream
-  // umm TagEndOffset;   // Relative to start of stream
+
+  umm OpeningStartOffset; // Relative to start of stream
+  // umm OpeningEndOffset;   // Relative to start of stream
+
+  umm ClosingStartOffset; // Relative to start of stream
+  umm ClosingEndOffset;   // Relative to start of stream
 };
 
+
 xml_tag
-GetFirstMatchingTag(ansi_stream *Stream, ansi_stream* Selector)
+AdvanceStreamToEndOfOpeningTag(ansi_stream *XmlStream, counted_string XmlStreamTag)
+{
+  xml_tag Result = {};
+
+  Result.Selector = XmlStreamTag;
+  Result.OpeningStartOffset = XmlStreamTag.Start - XmlStream->Start;
+
+  while (Remaining(XmlStream))
+  {
+    counted_string EndTag = PopWordCounted(XmlStream);
+    if (EndTag.Start[EndTag.Count-1] == '>')
+    {
+      // Result.OpeningEndOffset = (EndTag.Start - XmlStream->Start) - Result.OpeningStartOffset + EndTag.Count;
+      break;
+    }
+  }
+
+  return Result;
+}
+
+xml_tag
+GetFirstMatchingTag(ansi_stream *XmlStream, ansi_stream* SelectorStream, counted_string *ParentSelector)
 {
   xml_tag Result = {};
   /* RuntimeBreak(); */
 
-  counted_string SelectorTag = PopWordCounted(Selector);
-  while (Remaining(Stream))
+  counted_string SelectorTag = PopWordCounted(SelectorStream);
+  while (Remaining(XmlStream))
   {
-    counted_string TagName = PopXmlTag(Stream);
+    counted_string XmlStreamTag = PopXmlTag(XmlStream);
 
-    if (StringsMatch(&SelectorTag, &TagName))
+    if (StringsMatch(&SelectorTag, &XmlStreamTag))
     {
-      Result.Selector = TagName;
-      Result.TagStartOffset = TagName.Start - Stream->Start;
-
-      while (Remaining(Stream))
-      {
-        counted_string EndTag = PopWordCounted(Stream);
-        if (EndTag.Start[EndTag.Count-1] == '>')
-        {
-          /* Result.TagEndOffset = ?? ; */
-          goto finished;
-        }
-      }
+      Result = AdvanceStreamToEndOfOpeningTag(XmlStream, XmlStreamTag);
+      GetFirstMatchingTag(XmlStream, SelectorStream, &SelectorTag);
     }
   }
-
-  finished:
 
   return Result;
 }
@@ -41,8 +55,10 @@ GetFirstMatchingTag(ansi_stream *Stream, ansi_stream* Selector)
 mesh_metadata
 GetColladaMetadata(ansi_stream *Stream, memory_arena* PermMemory)
 {
-  ansi_stream SelectorStream = AnsiStream("COLLADA library_geometries geometry source#Cube-mesh-positions float_array#Cube-mesh-positions-array");
-  xml_tag PositionsTag = GetFirstMatchingTag(Stream, &SelectorStream);
+  // ansi_stream SelectorStream = AnsiStream("COLLADA library_geometries geometry source#Cube-mesh-positions float_array#Cube-mesh-positions-array");
+
+  ansi_stream SelectorStream = AnsiStream("COLLADA library_geometries geometry");
+  xml_tag PositionsTag = GetFirstMatchingTag(Stream, &SelectorStream, 0);
   /* v3* Verts = ParseV3Array(PositionsTag, PermMemory); */
 
   mesh_metadata Result = {};

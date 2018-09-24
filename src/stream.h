@@ -263,7 +263,7 @@ PopXmlTag(ansi_stream *Cursor)
 
   EatWhitespace(Cursor);
 
-  const char* Delimeters = " \n";
+  const char* Delimeters = "> \n";
 
   counted_string Result = ReadUntilTerminatorList(Cursor, Delimeters);
   return Result;
