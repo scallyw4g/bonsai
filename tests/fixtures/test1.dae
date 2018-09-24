@@ -1,0 +1,16 @@
+<xml>
+
+  <outer-target boolean count=32 prop='> some thing >' prop="> some thing >" >
+    <inner-target>
+      <novalue />
+    </inner-target>
+  </outer-target>
+
+  <outer-target>
+    <inner-target>
+      <value> 4 </value>
+    </inner-target>
+  </outer-target>
+
+</xml>
+
