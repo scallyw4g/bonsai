@@ -46,17 +46,25 @@ main()
     counted_string Expected = CountedString("outer-target");
     TestThat( StringsMatch(&Tag.Selector, &Expected) );
   }
+#endif
 
   {
     counted_string Selector = CountedString("xml outer-target inner-target value");
     ansi_stream XmlStream = AnsiStream(&FileStream);
-    ansi_stream SelectorStream = AnsiStream(Selector.Start);
+    xml_token_stream XmlTokens = TokenizeXmlStream(&XmlStream, Memory);
+    for (u32 TokenIndex = 0;
+        TokenIndex < Count(&XmlTokens);
+        ++TokenIndex)
+    {
+      Print(XmlTokens.Start + TokenIndex);
+    }
 
-    xml_tag Tag = GetFirstMatchingTag(&XmlStream, &SelectorStream, &ZeroString);
-    counted_string Expected = CountedString("value");
-    TestThat( StringsMatch(&Tag.Selector, &Expected) );
+    /* ansi_stream SelectorStream = AnsiStream(Selector.Start); */
+    /* xml_tag Tag = GetFirstMatchingTag(&XmlStream, &SelectorStream, &ZeroString); */
+    /* counted_string Expected = CountedString("value"); */
+    /* TestThat( StringsMatch(&Tag.Selector, &Expected) ); */
+
   }
-#endif
 
   TestSuiteEnd();
   exit(TestsFailed);

@@ -1,14 +1,27 @@
 <xml>
 
-  <outer-target boolean count=32 prop='> some thing >' prop="> some thing >" >
+  <outer-target
+
+
+                 boolean
+
+                 a-counted-property=32
+                 string-property-1='< text, yay! >'
+                 string-property-2="> more text, yay! <"
+   >
+
     <inner-target>
-      <novalue />
+      <value>
+      </value>
     </inner-target>
   </outer-target>
 
   <outer-target>
     <inner-target>
-      <value> 4 </value>
+      <novalue self-closing-tag-property="hi" / >
+      <novalue self-closing-tag-property="hi" />
+      <novalue self-closing-tag-property="hi"   
+        />
     </inner-target>
   </outer-target>
 

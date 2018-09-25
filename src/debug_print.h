@@ -58,6 +58,20 @@ Log(const char* fmt...)
 
         std::cout << Output;
       }
+      else if (*fmt == '.')
+      {
+        Assert(*(++fmt) == '*')
+        Assert(*(++fmt) == 's')
+        u32 Count = va_arg(args, u32);
+        char* String = va_arg(args, char*);
+        for (u32 CharIndex = 0;
+            CharIndex < Count;
+            ++CharIndex)
+        {
+          std::cout << String[CharIndex];
+        }
+
+      }
       else
       {
         va_arg(args, void*);
@@ -106,6 +120,7 @@ Print_Binary( unsigned int input )
 /*   Log(" -- Sibling %x \n", name, E->Sibling); */
 /*   Log(" -- Child %x \n", name, E->Child); */
 /* } */
+
 
 inline void
 Print_P( const char *C, const char* name)
@@ -249,3 +264,51 @@ Print_P( m4 *Mat, const char* name)
   Log(" %f %f %f %f ", Mat->E[3].E[0], Mat->E[3].E[1], Mat->E[3].E[2], Mat->E[3].E[3] );
   Log("");
 }
+
+inline void
+Print_P(counted_string String, const char* Name)
+{
+  Log("%s %.*s", Name, String.Count, String.Start);
+}
+
+inline void
+Print_P( xml_token *Token, const char* name)
+{
+  switch (Token->Type)
+  {
+    case XmlTokenType_Boolean:
+    {
+      Print(Token->Boolean);
+    } break;
+
+    case XmlTokenType_Float:
+    {
+      Log("%.*s = %.*s", Token->Property.Name.Count, Token->Property.Name.Start, Token->Property.Value.Count, Token->Property.Value.Start);
+    } break;
+
+    case XmlTokenType_Int:
+    {
+      Log("%.*s = %.*s", Token->Property.Name.Count, Token->Property.Name.Start, Token->Property.Value.Count, Token->Property.Value.Start);
+    } break;
+
+    case XmlTokenType_Property:
+    {
+      Log("%.*s = \"%.*s\"", Token->Property.Name.Count, Token->Property.Name.Start, Token->Property.Value.Count, Token->Property.Value.Start);
+    } break;
+
+    case XmlTokenType_OpenTag:
+    {
+      Print(Token->OpenTag);
+    } break;
+
+    case XmlTokenType_CloseTag:
+    {
+      Print(Token->CloseTag);
+    } break;
+
+    InvalidDefaultCase;
+  }
+
+  Log("");
+}
+

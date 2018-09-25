@@ -150,6 +150,19 @@ ReadEntireFileIntoString(const char *SourceFile, memory_arena *Memory)
 }
 
 b32
+Contains(counted_string Haystack, char Needle)
+{
+  b32 Result = False;
+  for (u32 Index = 0;
+      Index < Haystack.Count;
+      ++Index)
+  {
+    Result |= (Needle == Haystack.Start[Index]);
+  }
+  return Result;
+}
+
+b32
 Contains(const char* Haystack, char Needle)
 {
   b32 Result = False;
@@ -195,7 +208,10 @@ finished:
   Result.Start = Start;
   Result.Count = (umm)(Cursor->At - Start);
 
-  ++Cursor->At;
+  if (Remaining(Cursor))
+  {
+    ++Cursor->At;
+  }
 
   return Result;
 }
@@ -203,6 +219,9 @@ finished:
 char *
 ReadUntilTerminatorList(ansi_stream *Cursor, const char *TerminatorList, memory_arena *Arena)
 {
+  // TODO(Jesse): Make this return a counted string and everything that depends on
+  // it _NOT_ rely on the fact it's currently null terminated
+
   counted_string String = ReadUntilTerminatorList(Cursor, TerminatorList);
 
   char *Result = Allocate(char, Arena, String.Count + 1);
@@ -243,8 +262,8 @@ PopWord(ansi_stream *Cursor, memory_arena *Arena, const char *Delimeters = 0)
   return Result;
 }
 
-void
-EatQuotedString(ansi_stream *Cursor)
+counted_string
+PopQuotedString(ansi_stream* Cursor, memory_arena* Arena)
 {
   if (*Cursor->At == '"' || *Cursor->At == '\'' )
   {
@@ -255,68 +274,11 @@ EatQuotedString(ansi_stream *Cursor)
     Assert( *(Cursor->At-1) == '"' || *(Cursor->At-1) == '\'' );
   }
 
-  while (*Cursor->At != '"' && *Cursor->At != '\'')
-  {
-    ++Cursor->At;
-  }
+  char Terminator[2] = {};
+  Terminator[0] = *(Cursor->At-1);
 
-  ++Cursor->At;
-
-  return;
-}
-
-counted_string
-PopXmlTag(ansi_stream *Cursor)
-{
-  Assert(*Cursor->At == '<');
-
-  ++Cursor->At;
-
-  const char* NameDelimeters = "> ";
-  counted_string Name = ReadUntilTerminatorList(Cursor, NameDelimeters);
-
-  const char* PropertyDelimeters = "> =\"'";
-  while ( *(Cursor->At-1) != '>' )
-  {
-    ReadUntilTerminatorList(Cursor, PropertyDelimeters);
-
-    switch( *(Cursor->At-1) )
-    {
-      case '>':
-      case ' ':
-      {
-      } break;
-
-      case '\'':
-      case '"':
-      {
-        EatQuotedString(Cursor);
-      } break;
-
-      case '=':
-      {
-        switch(*Cursor->At)
-        {
-          case '"':
-          case '\'':
-          {
-            EatQuotedString(Cursor);
-          } break;
-
-          default:
-          {
-            PopWordCounted(Cursor);
-          } break;
-        }
-      } break;
-
-      InvalidDefaultCase;
-    }
-
-  }
-
-  EatWhitespace(Cursor);
-  return Name;
+  counted_string Result = CountedString(ReadUntilTerminatorList(Cursor, Terminator, Arena));
+  return Result;
 }
 
 char *

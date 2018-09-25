@@ -253,6 +253,13 @@ Remaining(T *Sizable)
   return Result;
 }
 
+template <typename T> umm
+Count(T *Sizable)
+{
+  umm Result = (umm)(Sizable->At-Sizable->Start);
+  return Result;
+}
+
 u8*
 PushSize(memory_arena *Arena, umm SizeIn, umm Alignment, b32 MemProtect)
 {
