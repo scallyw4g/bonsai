@@ -1,5 +1,7 @@
 void BreakHere() { return; }
 
+#include <cstdarg>
+
 #include <assert_types.h>
 #include <basic_types.h>
 #include <platform_constants.h>

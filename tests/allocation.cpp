@@ -39,25 +39,6 @@ struct test_struct_16
   u8 Data[2];
 };
 
-template <typename T> b32
-AreEqual(T First, T Second)
-{
-  b32 Result = True;
-  umm TypeSize = sizeof(T);
-
-  u8* FirstPtr = (u8*)&First;
-  u8* SecondPtr = (u8*)&Second;
-
-  for (umm Index = 0;
-      Index < TypeSize;
-      ++Index)
-  {
-    Result = Result && ( FirstPtr[Index] == SecondPtr[Index]);
-  }
-
-  return Result;
-}
-
 global_variable u32 HitSegfault = False;
 
 #pragma clang diagnostic push

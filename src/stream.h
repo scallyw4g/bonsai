@@ -48,6 +48,13 @@ CountedString(const char *S)
   return Result;
 }
 
+counted_string
+CS(const char *S)
+{
+  counted_string Result = CountedString(S);
+  return Result;
+}
+
 ansi_stream
 AnsiStream(const char *Input)
 {

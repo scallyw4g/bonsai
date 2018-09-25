@@ -260,6 +260,25 @@ Count(T *Sizable)
   return Result;
 }
 
+template <typename T> b32
+AreEqual(T First, T Second)
+{
+  b32 Result = True;
+  umm TypeSize = sizeof(T);
+
+  u8* FirstPtr = (u8*)&First;
+  u8* SecondPtr = (u8*)&Second;
+
+  for (umm Index = 0;
+      Index < TypeSize;
+      ++Index)
+  {
+    Result = Result && ( FirstPtr[Index] == SecondPtr[Index]);
+  }
+
+  return Result;
+}
+
 u8*
 PushSize(memory_arena *Arena, umm SizeIn, umm Alignment, b32 MemProtect)
 {

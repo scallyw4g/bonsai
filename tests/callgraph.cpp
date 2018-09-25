@@ -8,6 +8,9 @@
 
 #include <test_utils.cpp>
 
+global_variable memory_arena* TranArena = PlatformAllocateArena();
+#include <bonsai_string.cpp>
+
 
 void
 FunctionThree()

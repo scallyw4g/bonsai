@@ -1,5 +1,4 @@
 #include <iostream>
-#include <cstdarg>
 
 void
 Log(const char* fmt...)
@@ -283,17 +282,17 @@ Print_P( xml_token *Token, const char* name)
 
     case XmlTokenType_Float:
     {
-      Log("%.*s = %.*s", Token->Property.Name.Count, Token->Property.Name.Start, Token->Property.Value.Count, Token->Property.Value.Start);
+      Log("Float %.*s = %.*s", Token->Property.Name.Count, Token->Property.Name.Start, Token->Property.Value.Count, Token->Property.Value.Start);
     } break;
 
     case XmlTokenType_Int:
     {
-      Log("%.*s = %.*s", Token->Property.Name.Count, Token->Property.Name.Start, Token->Property.Value.Count, Token->Property.Value.Start);
+      Log("Int %.*s = %.*s", Token->Property.Name.Count, Token->Property.Name.Start, Token->Property.Value.Count, Token->Property.Value.Start);
     } break;
 
     case XmlTokenType_Property:
     {
-      Log("%.*s = \"%.*s\"", Token->Property.Name.Count, Token->Property.Name.Start, Token->Property.Value.Count, Token->Property.Value.Start);
+      Log("String %.*s = \"%.*s\"", Token->Property.Name.Count, Token->Property.Name.Start, Token->Property.Value.Count, Token->Property.Value.Start);
     } break;
 
     case XmlTokenType_OpenTag:

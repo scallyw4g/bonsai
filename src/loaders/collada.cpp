@@ -1,4 +1,3 @@
-#include <string.cpp>
 #include <xml.cpp>
 
 mesh_metadata

@@ -1,3 +1,40 @@
+b32
+operator==(xml_token T1, xml_token T2)
+{
+  b32 Result = False;
+
+  if (T1.Type == T2.Type)
+  {
+    switch (T1.Type)
+    {
+      case XmlTokenType_Float:
+      case XmlTokenType_Int:
+      case XmlTokenType_Property:
+      {
+        Result = StringsMatch(&T1.Property.Name, &T2.Property.Name) &&
+                 StringsMatch(&T1.Property.Value, &T2.Property.Value);
+      } break;
+
+      case XmlTokenType_OpenTag:
+      {
+        Result = StringsMatch(&T1.OpenTag, &T2.OpenTag);
+      } break;
+
+      case XmlTokenType_CloseTag:
+      {
+        Result = StringsMatch(&T1.CloseTag, &T2.CloseTag);
+      } break;
+
+      case XmlTokenType_Boolean:
+      {
+        Result = StringsMatch(&T1.Boolean, &T2.Boolean);
+      } break;
+
+      InvalidDefaultCase;
+    }
+  }
+  return Result;
+}
 
 xml_tag
 AdvanceStreamToEndOfOpeningTag(ansi_stream *XmlStream, counted_string XmlStreamTag)
