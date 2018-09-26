@@ -1,4 +1,3 @@
-
 struct post_processing_group
 {
   framebuffer FBO;
