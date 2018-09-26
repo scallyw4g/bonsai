@@ -277,7 +277,7 @@ Print_P( xml_token *Token, const char* name)
   {
     case XmlTokenType_Boolean:
     {
-      Print(Token->Boolean);
+      Log("Boolean %.*s", Token->Property.Name.Count, Token->Property.Name.Start);
     } break;
 
     case XmlTokenType_Float:
@@ -297,12 +297,12 @@ Print_P( xml_token *Token, const char* name)
 
     case XmlTokenType_OpenTag:
     {
-      Print(Token->OpenTag);
+      Log("OpenTag %.*s", Token->Property.Name.Count, Token->Property.Name.Start);
     } break;
 
     case XmlTokenType_CloseTag:
     {
-      Print(Token->CloseTag);
+      Log("CloseTag %.*s", Token->Property.Name.Count, Token->Property.Name.Start);
     } break;
 
     InvalidDefaultCase;

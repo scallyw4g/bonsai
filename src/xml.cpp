@@ -16,18 +16,12 @@ operator==(xml_token T1, xml_token T2)
       } break;
 
       case XmlTokenType_OpenTag:
-      {
-        Result = StringsMatch(&T1.OpenTag, &T2.OpenTag);
-      } break;
-
       case XmlTokenType_CloseTag:
-      {
-        Result = StringsMatch(&T1.CloseTag, &T2.CloseTag);
-      } break;
-
       case XmlTokenType_Boolean:
       {
-        Result = StringsMatch(&T1.Boolean, &T2.Boolean);
+        Assert(!T1.Property.Value.Count);
+        Assert(!T2.Property.Value.Count);
+        Result = StringsMatch(&T1.Property.Name, &T2.Property.Name);
       } break;
 
       InvalidDefaultCase;

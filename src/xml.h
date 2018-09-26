@@ -32,14 +32,7 @@ struct xml_property
 struct xml_token
 {
   xml_token_type Type;
-
-  union
-  {
-    counted_string OpenTag;
-    counted_string CloseTag;
-    counted_string Boolean;
-    xml_property Property;
-  };
+  xml_property Property;
 };
 
 struct xml_token_stream
@@ -73,7 +66,7 @@ XmlCloseTag(counted_string Name)
 {
   xml_token Result = {};
   Result.Type = XmlTokenType_CloseTag;
-  Result.CloseTag = Name;
+  Result.Property.Name = Name;
   return Result;
 }
 
@@ -82,7 +75,7 @@ XmlOpenTag(counted_string Name)
 {
   xml_token Result = {};
   Result.Type = XmlTokenType_OpenTag;
-  Result.OpenTag = Name;
+  Result.Property.Name = Name;
   return Result;
 }
 
@@ -100,7 +93,7 @@ XmlBooleanProperty(counted_string Name)
 {
   xml_token Result = {};
   Result.Type = XmlTokenType_Boolean;
-  Result.Boolean = Name;
+  Result.Property.Name = Name;
   return Result;
 }
 
