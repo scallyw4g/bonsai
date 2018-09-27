@@ -26,32 +26,10 @@ main()
   counted_string ZeroString = {};
   memory_arena *Memory = PlatformAllocateArena(Megabytes(1));
 
-  binary_stream_u8 FileStream = BinaryStreamFromFile("tests/fixtures/test1.dae", Memory);
-  TestThat(FileStream.Start);
-
-#if 0
-  {
-    counted_string Selector = CountedString("xml");
-    ansi_stream XmlStream = AnsiStream(&FileStream);
-    ansi_stream SelectorStream = AnsiStream(Selector.Start);
-
-    xml_tag Tag = GetFirstMatchingTag(&XmlStream, &SelectorStream, &ZeroString);
-    TestThat( StringsMatch(&Tag.Selector, &Selector) );
-  }
+  ansi_stream XmlStream = AnsiStreamFromFile("tests/fixtures/test1.dae", Memory);
+  TestThat(XmlStream.Start);
 
   {
-    counted_string Selector = CountedString("xml outer-target");
-    ansi_stream XmlStream = AnsiStream(&FileStream);
-    ansi_stream SelectorStream = AnsiStream(Selector.Start);
-
-    xml_tag Tag = GetFirstMatchingTag(&XmlStream, &SelectorStream, &ZeroString);
-    counted_string Expected = CountedString("outer-target");
-    TestThat( StringsMatch(&Tag.Selector, &Expected) );
-  }
-#endif
-
-  {
-    ansi_stream XmlStream = AnsiStream(&FileStream);
     xml_token_stream XmlTokens = TokenizeXmlStream(&XmlStream, Memory);
     umm TokenCount = Count(&XmlTokens);
 
@@ -65,8 +43,8 @@ main()
 #endif
 
 
-    xml_token XmlOpen = XmlOpenTag(CS("xml"));
-    xml_token XmlClose = XmlCloseTag(CS("xml"));
+    xml_token XmlOpen   = XmlOpenTag(CS("xml"));
+    xml_token XmlClose  = XmlCloseTag(CS("xml"));
     xml_token OuterOpen = XmlOpenTag(CS("outer"));
     xml_token InnerOpen = XmlOpenTag(CS("inner"));
     xml_token ValueOpen = XmlOpenTag(CS("value"));
@@ -77,7 +55,7 @@ main()
 
     xml_token CommentProperty = XmlStringProperty( CS("comment"), CS("a tag such as this '<value/>' fails right now.  Fix this!"""));
 
-    XmlTokens.At = XmlTokens.Start;
+    Rewind(&XmlTokens);
 
     TestThat(*XmlTokens.At++ == XmlOpen);
 
@@ -132,18 +110,23 @@ main()
       TestThat(*XmlTokens.At++ == InnerClose);
 
       TestThat(*XmlTokens.At++ == OuterClose);
+      TestThat(*XmlTokens.At++ == XmlClose);
     }
 
-    TestThat(*XmlTokens.At++ == XmlClose);
-
     TestThat(Count(&XmlTokens) == TokenCount);
+    Rewind(&XmlTokens);
 
+    {
+      ansi_stream Selector = AnsiStream("xml outer-target inner-target value");
 
-    counted_string Selector = CountedString("xml outer-target inner-target value");
-    /* ansi_stream SelectorStream = AnsiStream(Selector.Start); */
-    /* xml_tag Tag = GetFirstMatchingTag(&XmlStream, &SelectorStream, &ZeroString); */
-    /* counted_string Expected = CountedString("value"); */
-    /* TestThat( StringsMatch(&Tag.Selector, &Expected) ); */
+      xml_tag ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector, &ZeroString);
+
+      xml_token OpenExpected = XmlOpenTag(CS("value"));
+      xml_token CloseExpected = XmlCloseTag(CS("value"));
+
+      /* TestThat(*ResultTag.Open == OpenExpected); */
+      /* TestThat(*ResultTag.Close == CloseExpected); */
+    }
 
   }
 

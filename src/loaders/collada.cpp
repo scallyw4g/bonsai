@@ -8,7 +8,7 @@ GetColladaMetadata(ansi_stream *Stream, memory_arena* PermMemory)
   ansi_stream SelectorStream = AnsiStream("COLLADA library_geometries geometry");
 
   counted_string ZeroString = {};
-  xml_tag PositionsTag = GetFirstMatchingTag(Stream, &SelectorStream, &ZeroString);
+  /* xml_tag PositionsTag = GetFirstMatchingTag(Stream, &SelectorStream, &ZeroString); */
   /* v3* Verts = ParseV3Array(PositionsTag, PermMemory); */
 
   mesh_metadata Result = {};

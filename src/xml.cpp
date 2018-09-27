@@ -31,64 +31,10 @@ operator==(xml_token T1, xml_token T2)
 }
 
 xml_tag
-AdvanceStreamToEndOfOpeningTag(ansi_stream *XmlStream, counted_string XmlStreamTag)
+GetFirstMatchingTag(xml_token_stream *XmlStream, ansi_stream* SelectorStream, counted_string *ParentSelectorName)
 {
   xml_tag Result = {};
 
-  Result.Selector = XmlStreamTag;
-  Result.OpeningStartOffset = XmlStreamTag.Start - XmlStream->Start;
-
-  while (Remaining(XmlStream))
-  {
-    counted_string EndTag = PopWordCounted(XmlStream);
-    if (EndTag.Start[EndTag.Count-1] == '>')
-    {
-      // Result.OpeningEndOffset = (EndTag.Start - XmlStream->Start) - Result.OpeningStartOffset + EndTag.Count;
-      break;
-    }
-  }
-
-  return Result;
-}
-
-xml_tag
-GetFirstMatchingTag(ansi_stream *XmlStream, ansi_stream* SelectorStream, counted_string *ParentSelectorName)
-{
-  xml_tag Result = {};
-
-#if 0
-  counted_string SearchSelector = PopWordCounted(SelectorStream);
-
-  if (!SearchSelector.Count )
-    return Result;
-
-  while (Remaining(XmlStream))
-  {
-    counted_string MatchTagName = PopXmlTag(XmlStream);
-
-    if (StringsMatch(&SearchSelector, &MatchTagName))
-    {
-      Result.Selector = MatchTagName;
-      // NOTE(Jesse): This omits the opening '<' in favor of not having to add
-      // it every time we pop a selector off the selector stream.  Furthermore,
-      // having any whitespace between the slash and the ending tag name breaks
-      // this.  FURTHERMORE, the end tag brace is not included..feelsbadman
-      char* ParentClosingTag = FormatString("/%.*s", SearchSelector.Count, SearchSelector.Start);
-      counted_string Parent = CountedString(ParentClosingTag);
-
-      xml_tag ChildTag = GetFirstMatchingTag(XmlStream, SelectorStream, &Parent);
-      if (ChildTag.Selector.Count)
-      {
-        Result = ChildTag;
-      }
-    }
-
-    if (StringsMatch(ParentSelectorName, &MatchTagName))
-    {
-      break;
-    }
-  }
-#endif
 
   return Result;
 }
@@ -187,4 +133,11 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
   }
 
   return Result;
+}
+
+inline void
+Rewind(xml_token_stream *Stream)
+{
+  Stream->At = Stream->Start;
+  return;
 }

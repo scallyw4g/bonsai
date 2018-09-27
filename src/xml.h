@@ -1,14 +1,3 @@
-struct xml_tag
-{
-  counted_string Selector;
-
-  umm OpeningStartOffset; // Relative to start of stream
-  // umm OpeningEndOffset;   // Relative to start of stream
-
-  /* umm ClosingStartOffset; // Relative to start of stream */
-  /* umm ClosingEndOffset;   // Relative to start of stream */
-};
-
 enum xml_token_type
 {
   XmlTokenType_Unknown,
@@ -40,6 +29,14 @@ struct xml_token_stream
   xml_token* Start;
   xml_token* At;
   xml_token* End;
+};
+
+struct xml_tag
+{
+  xml_token *Open;
+  xml_token *Close;
+
+  xml_token_stream *Properties;
 };
 
 xml_token_stream
