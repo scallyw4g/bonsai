@@ -23,7 +23,6 @@ main()
 {
   TestSuiteBegin("Collada Loader");
 
-  counted_string ZeroString = {};
   memory_arena *Memory = PlatformAllocateArena(Megabytes(1));
 
   ansi_stream XmlStream = AnsiStreamFromFile("tests/fixtures/test1.dae", Memory);
@@ -117,12 +116,11 @@ main()
     Rewind(&XmlTokens);
 
     {
-      ansi_stream Selector = AnsiStream("xml outer-target inner-target value");
+      /* xml_token_stream Selector = TokenizeSelector(CS("xml outer-target inner-target value")); */
+      /* xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector); */
 
-      xml_tag ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector, &ZeroString);
-
-      xml_token OpenExpected = XmlOpenTag(CS("value"));
-      xml_token CloseExpected = XmlCloseTag(CS("value"));
+      /* xml_token OpenExpected = XmlOpenTag(CS("value")); */
+      /* xml_token CloseExpected = XmlCloseTag(CS("value")); */
 
       /* TestThat(*ResultTag.Open == OpenExpected); */
       /* TestThat(*ResultTag.Close == CloseExpected); */

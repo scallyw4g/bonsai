@@ -1,3 +1,4 @@
+// NOTE(Jesse): This has to be here because it does a string compare
 b32
 operator==(xml_token T1, xml_token T2)
 {
@@ -27,14 +28,57 @@ operator==(xml_token T1, xml_token T2)
       InvalidDefaultCase;
     }
   }
+
   return Result;
 }
 
-xml_tag
-GetFirstMatchingTag(xml_token_stream *XmlStream, ansi_stream* SelectorStream, counted_string *ParentSelectorName)
+b32
+operator!=(xml_token T1, xml_token T2)
 {
-  xml_tag Result = {};
+  b32 Result = !(T1 == T2);
+  return Result;
+}
 
+xml_tag*
+GetFirstMatchingTag(xml_token_stream* Tokens, xml_token_stream* Selectors)
+{
+  xml_tag* Result = {};
+
+  umm SelectorHash = XmlSelectorHash(Selectors);
+
+  xml_tag* PossibleTag = Tokens->Hashes[SelectorHash];
+
+  while (PossibleTag)
+  {
+    xml_tag *CurrentTag = PossibleTag;
+
+    b32 Valid = True;
+    s32 MaxSelectorIndex = Count(Selectors) -1;
+    for (s32 SelectorIndex = MaxSelectorIndex;
+        SelectorIndex >= 0;
+        --SelectorIndex)
+    {
+      // FIXME(Jesse): Do work to check #id-selector as well!
+      if (Selectors->Start[SelectorIndex] != *CurrentTag->Open)
+      {
+        Valid = False;
+        break;
+      }
+
+      CurrentTag = CurrentTag->Parent;
+    }
+
+
+    if (Valid)
+    {
+      Result = PossibleTag;
+      break;
+    }
+    else
+    {
+      PossibleTag = PossibleTag->Next;
+    }
+  }
 
   return Result;
 }
@@ -132,6 +176,14 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
     EatWhitespace(Xml);
   }
 
+  return Result;
+}
+
+xml_token_stream
+TokenizeSelector(counted_string Selector)
+{
+  xml_token_stream Result = {};
+  NotImplemented;
   return Result;
 }
 

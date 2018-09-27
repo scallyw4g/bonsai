@@ -1,3 +1,5 @@
+#include <bonsai_hashtable.h>
+
 enum xml_token_type
 {
   XmlTokenType_Unknown,
@@ -24,19 +26,23 @@ struct xml_token
   xml_property Property;
 };
 
+struct xml_tag
+{
+  xml_token* Open;
+  xml_token* Close;
+  xml_tag* Parent;
+  xml_tag* Next; // TODO(Jesse): Can this be factored out of here?
+
+  struct xml_token_stream* Properties;
+};
+
 struct xml_token_stream
 {
   xml_token* Start;
   xml_token* At;
   xml_token* End;
-};
 
-struct xml_tag
-{
-  xml_token *Open;
-  xml_token *Close;
-
-  xml_token_stream *Properties;
+  hashtable<xml_tag> Hashes;
 };
 
 xml_token_stream
@@ -121,3 +127,11 @@ XmlIntProperty(counted_string Name, counted_string Value)
   return Result;
 }
 
+umm
+XmlSelectorHash(xml_token_stream* Stream)
+{
+  umm Result = {};
+
+  NotImplemented;
+  return Result;
+}
