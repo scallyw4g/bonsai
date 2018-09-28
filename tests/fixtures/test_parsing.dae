@@ -8,7 +8,21 @@
     </inner>
   </outer>
 
-  <outer> <inner> <value> </value> </inner> </outer>
+  <outer>
+    <inner>
+      <value> 42 </value>
+    </inner>
+  </outer>
+
+  <outer>
+    <inner>
+      <value> 42 </value>
+    </inner>
+  </outer>
+
+
+  <outer><inner><value> 42 </value></inner></outer>
+  <outer> <inner> <value> 42 </value> </inner> </outer>
 
   <outer >
     <inner >

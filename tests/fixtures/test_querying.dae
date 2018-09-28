@@ -1,5 +1,9 @@
 <xml>
 
+  <fake-value>42</fake-value>
+
+  <fake-value> 42 </fake-value>
+
   <fake-value>
     42
   </fake-value>

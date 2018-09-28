@@ -128,11 +128,8 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
   xml_token_stream Result = {};
 
   EatWhitespace(Xml);
-  if (*Xml->At != '<')
-  {
-    Error("Invalid XML Stream");
-    return Result;;
-  }
+  if (*Xml->At != '<') { Error("Invalid XML Stream"); return Result; }
+
   // TODO(Jesse): Better way of allocating this?
   Result = AllocateXmlTokenStream(10000, Memory);
 
@@ -141,9 +138,9 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
   {
     const char* NameDelimeters = "\n> <";
 
-    b32 StreamValueIsTag = *Xml->At == '<';
+    b32 StreamValueIsTag = Xml->At[0] == '<' || Xml->At[0] == '/';
 
-    b32 StreamValueIsCloseTag = StreamValueIsTag && Xml->At[1] == '/';
+    b32 StreamValueIsCloseTag = StreamValueIsTag && (Xml->At[0] == '/' || Xml->At[1] == '/');
     b32 StreamValueIsOpenTag = StreamValueIsTag && (!StreamValueIsCloseTag);
 
     if (StreamValueIsTag)
@@ -156,7 +153,7 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
       ++Xml->At;
     }
 
-    counted_string StreamValue = CountedString(ReadUntilTerminatorList(Xml, NameDelimeters, Memory));
+    counted_string StreamValue = CS(ReadUntilTerminatorList(Xml, NameDelimeters, Memory));
 
     if (StreamValueIsOpenTag)
     {

@@ -55,7 +55,7 @@ ParsingTest()
 
     TestThat(*XmlTokens.At++ == XmlOpen);
 
-    { // Well formatted
+    {
       TestThat(*XmlTokens.At++ == OuterOpen);
       TestThat(*XmlTokens.At++ == InnerOpen);
       TestThat(*XmlTokens.At++ == ValueOpen);
@@ -64,7 +64,34 @@ ParsingTest()
       TestThat(*XmlTokens.At++ == InnerClose);
       TestThat(*XmlTokens.At++ == OuterClose);
     }
-    { // Single line
+    {
+      TestThat(*XmlTokens.At++ == OuterOpen);
+      TestThat(*XmlTokens.At++ == InnerOpen);
+      TestThat(*XmlTokens.At++ == ValueOpen);
+
+      TestThat(*XmlTokens.At++ == ValueClose);
+      TestThat(*XmlTokens.At++ == InnerClose);
+      TestThat(*XmlTokens.At++ == OuterClose);
+    }
+    {
+      TestThat(*XmlTokens.At++ == OuterOpen);
+      TestThat(*XmlTokens.At++ == InnerOpen);
+      TestThat(*XmlTokens.At++ == ValueOpen);
+
+      TestThat(*XmlTokens.At++ == ValueClose);
+      TestThat(*XmlTokens.At++ == InnerClose);
+      TestThat(*XmlTokens.At++ == OuterClose);
+    }
+    {
+      TestThat(*XmlTokens.At++ == OuterOpen);
+      TestThat(*XmlTokens.At++ == InnerOpen);
+      TestThat(*XmlTokens.At++ == ValueOpen);
+
+      TestThat(*XmlTokens.At++ == ValueClose);
+      TestThat(*XmlTokens.At++ == InnerClose);
+      TestThat(*XmlTokens.At++ == OuterClose);
+    }
+    {
       TestThat(*XmlTokens.At++ == OuterOpen);
       TestThat(*XmlTokens.At++ == InnerOpen);
       TestThat(*XmlTokens.At++ == ValueOpen);
