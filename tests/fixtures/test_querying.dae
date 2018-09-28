@@ -16,10 +16,10 @@
     <inner>
       <fake-value />
       <second-value>
-        43
+        42
       </second-value>
       <second-value>
-        42
+        43
       </second-value>
     </inner>
   </outer>

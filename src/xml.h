@@ -49,7 +49,7 @@ struct xml_token_stream
   xml_token* At;
   xml_token* End;
 
-  hashtable<xml_tag> Hashes;
+  hashtable<xml_tag*> Hashes;
 };
 
 xml_token_stream
@@ -61,7 +61,7 @@ AllocateXmlTokenStream(umm TokenCount, memory_arena* Memory)
   Result.End = Result.Start + TokenCount;
 
   // TODO(Jesse): Profile this and see if it's reasonable
-  Result.Hashes = AllocateHashtable<xml_tag>(TokenCount/10, Memory);
+  Result.Hashes = AllocateHashtable<xml_tag*>(TokenCount/10, Memory);
 
   return Result;
 }
@@ -139,13 +139,13 @@ XmlIntProperty(counted_string Name, counted_string Value)
   return Result;
 }
 
-xml_tag
-XmlOpenTag(xml_token* Open, xml_tag *Parent, umm HashValue)
+xml_tag*
+XmlTag(xml_token* Open, xml_tag *Parent, umm HashValue, memory_arena* Memory)
 {
-  xml_tag Result = {};
-  Result.Open = Open;
-  Result.Parent = Parent;
-  Result.HashValue = HashValue;
+  xml_tag* Result = Allocate(xml_tag, Memory, 1);
+  Result->Open = Open;
+  Result->Parent = Parent;
+  Result->HashValue = HashValue;
   return Result;
 }
 

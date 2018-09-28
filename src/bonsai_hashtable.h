@@ -3,15 +3,6 @@ struct hashtable
 {
   umm ElementCount;
   T* Elements;
-
-  T* operator[](umm HashIndex)
-  {
-    Assert(HashIndex < this->ElementCount);
-
-    T* Result = this->Elements + HashIndex;
-    return Result;
-  }
-
 };
 
 template <typename T> hashtable<T>
@@ -22,4 +13,3 @@ AllocateHashtable(umm ElementCount, memory_arena* Memory)
   Result.ElementCount = ElementCount;
   return Result;
 }
-

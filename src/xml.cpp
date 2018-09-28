@@ -1,4 +1,5 @@
-// NOTE(Jesse): This has to be here because it does a string compare
+// NOTE(Jesse): This has to be here instead of in the .h file because it does a string compare
+// Sad times.
 b32
 operator==(xml_token T1, xml_token T2)
 {
@@ -66,7 +67,7 @@ GetFirstMatchingTag(xml_token_stream* Tokens, xml_token_stream* Selectors)
 
   umm SelectorHash = XmlSelectorHash(Selectors, Tokens->Hashes.ElementCount);
 
-  xml_tag* HashedTag = Tokens->Hashes[SelectorHash];
+  xml_tag* HashedTag = Tokens->Hashes.Elements[SelectorHash];
 
   while (HashedTag)
   {
@@ -162,22 +163,13 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
       HashValue = (HashValue + Hash(&StreamValue)) % Result.Hashes.ElementCount;
 
       xml_token* OpenToken = PushToken(&Result, XmlOpenToken(StreamValue));
-      xml_tag OpenTag = XmlOpenTag(OpenToken, Parent, HashValue);
+      xml_tag* OpenTag = XmlTag(OpenToken, Parent, HashValue, Memory);
 
-      xml_tag* Bucket = Result.Hashes.Elements + HashValue;
-      if (Bucket->Open)
-      {
-        while(Bucket->NextInHash) Bucket = Bucket->NextInHash;
-        xml_tag* Tmp = Result.Hashes.Elements + HashValue;
-        *Bucket = OpenTag;
-        OpenTag.NextInHash = Tmp;
-      }
-      else
-      {
-        *Bucket = OpenTag;
-      }
+      xml_tag** Bucket = Result.Hashes.Elements + HashValue;
+      while (*Bucket) Bucket = &(*Bucket)->NextInHash;
 
-      Parent = Bucket;
+      *Bucket = OpenTag;
+      Parent = OpenTag;
     }
     else if (StreamValueIsCloseTag)
     {

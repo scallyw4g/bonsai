@@ -271,6 +271,49 @@ Print_P(counted_string String, const char* Name)
 }
 
 inline void
+Print_P( xml_tag *Tag, const char* name)
+{
+  xml_token* Token = Tag->Open;
+
+  switch (Token->Type)
+  {
+    case XmlTokenType_Boolean:
+    {
+      Log("Boolean %.*s", Token->Property.Name.Count, Token->Property.Name.Start);
+    } break;
+
+    case XmlTokenType_Float:
+    {
+      Log("Float %.*s = %.*s", Token->Property.Name.Count, Token->Property.Name.Start, Token->Property.Value.Count, Token->Property.Value.Start);
+    } break;
+
+    case XmlTokenType_Int:
+    {
+      Log("Int %.*s = %.*s", Token->Property.Name.Count, Token->Property.Name.Start, Token->Property.Value.Count, Token->Property.Value.Start);
+    } break;
+
+    case XmlTokenType_Property:
+    {
+      Log("String %.*s = \"%.*s\"", Token->Property.Name.Count, Token->Property.Name.Start, Token->Property.Value.Count, Token->Property.Value.Start);
+    } break;
+
+    case XmlTokenType_Open:
+    {
+      Log("OpenToken %.*s", Token->Property.Name.Count, Token->Property.Name.Start);
+    } break;
+
+    case XmlTokenType_Close:
+    {
+      Log("CloseToken %.*s", Token->Property.Name.Count, Token->Property.Name.Start);
+    } break;
+
+    InvalidDefaultCase;
+  }
+
+  return;
+}
+
+inline void
 Print_P( xml_token *Token, const char* name)
 {
   switch (Token->Type)

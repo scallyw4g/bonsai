@@ -175,6 +175,30 @@ ParsingTest()
   return;
 }
 
+
+void
+DumpHashTable(hashtable<xml_tag*> * Hash)
+{
+  for (u32 ElementIndex = 0;
+      ElementIndex < Hash->ElementCount;
+      ++ElementIndex)
+  {
+    xml_tag* Element = Hash->Elements[ElementIndex];
+    if (Element)
+    {
+      Print(ElementIndex);
+      Print(Element);
+      while (Element = Element->NextInHash)
+      {
+        Print(Element);
+      }
+    }
+  }
+
+  return;
+}
+
+
 void
 QueryingTest()
 {
@@ -235,6 +259,15 @@ main()
   memory_arena *Memory = PlatformAllocateArena(Megabytes(1));
   ansi_stream XmlStream = AnsiStreamFromFile("models/model.dae", Memory);
   xml_token_stream XmlTokens = TokenizeXmlStream(&XmlStream, Memory);
+
+  {
+    ansi_stream SelectorStream = AnsiStream("?xml COLLADA library_geometries geometry mesh source float_array");
+    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+    xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
+    Print(ResultTag->Value);
+  }
+
+
 
   TestSuiteEnd();
   exit(TestsFailed);
