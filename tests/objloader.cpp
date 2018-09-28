@@ -12,9 +12,9 @@
 #include <chunk.cpp>
 #include <bonsai_mesh.cpp>
 
-global_variable memory_arena *TranArena = PlatformAllocateArena();
-#include <bonsai_string.cpp>
 #include <loaders/common.h>
+
+global_variable memory_arena* TranArena = {};
 #include <loaders/obj.cpp>
 
 s32

@@ -1,8 +1,7 @@
 
 #include <bonsai_types.h>
-global_variable memory_arena *TranArena = PlatformAllocateArena();
 
-#include <bonsai_string.cpp>
+global_variable memory_arena *TranArena = PlatformAllocateArena();
 #include <bonsai.cpp>
 #include <physics.cpp>
 #include <entity.cpp>

@@ -12,9 +12,6 @@
 #include <chunk.cpp>
 #include <bonsai_mesh.cpp>
 
-global_variable memory_arena *TranArena = PlatformAllocateArena();
-
-#include <bonsai_string.cpp>
 #include <loaders/common.h>
 #include <loaders/collada.cpp>
 

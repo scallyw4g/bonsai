@@ -900,7 +900,7 @@ DebugDrawCycleThreadGraph(ui_render_group *Group, debug_state *SharedState, layo
     BeginClipRect(Layout);
 
     NewLine(Layout, &Group->Font);
-    char *ThreadName = FormatString("Thread %u", ThreadIndex);
+    char *ThreadName = FormatString(TranArena, "Thread %u", ThreadIndex);
     BufferLine(ThreadName, WHITE, Layout, &Group->Font, Group);
 
     debug_thread_state *ThreadState = GetThreadDebugState(ThreadIndex);

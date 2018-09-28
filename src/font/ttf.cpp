@@ -6,11 +6,9 @@
 #include <unix_platform.cpp>
 
 
-global_variable memory_arena *TranArena = PlatformAllocateArena();
 #include <debug_data_system.cpp>
 
 #include <bitmap.cpp>
-#include <bonsai_string.cpp>
 
 
 v4 White = V4(1,1,1,0);
@@ -978,6 +976,7 @@ int
 main()
 {
   memory_arena* PermArena = PlatformAllocateArena();
+  memory_arena *TempArena = PlatformAllocateArena();
   ttf Font = InitTTF("fonts/hack.ttf", PermArena);
 
   binary_stream_u8 HeadStream = BinaryStream(Font.head);
@@ -1003,8 +1002,8 @@ main()
     {
       u32 GlyphIndex =  GetGlyphIdForCharacterCode(CharCode, &Font);
       if (!GlyphIndex) continue;
-      binary_stream_u8 GlyphStream = GetStreamForGlyphIndex(GlyphIndex, &Font, TranArena);
-      bitmap GlyphBitmap = RasterizeGlyph(GlyphSize, FontMaxEmDim, FontMinGlyphP, &GlyphStream, TranArena);
+      binary_stream_u8 GlyphStream = GetStreamForGlyphIndex(GlyphIndex, &Font, TempArena);
+      bitmap GlyphBitmap = RasterizeGlyph(GlyphSize, FontMaxEmDim, FontMinGlyphP, &GlyphStream, TempArena);
 
       if ( PixelCount(&GlyphBitmap) )
       {
@@ -1021,12 +1020,12 @@ main()
 #endif
       }
 
-      RewindArena(TranArena);
+      RewindArena(TempArena);
     }
 
     if (GlyphsRasterized)
     {
-      char* AtlasName = FormatString(TranArena, "texture_atlas_%d.bmp", AtlasIndex);
+      char* AtlasName = FormatString(TempArena, "texture_atlas_%d.bmp", AtlasIndex);
       WriteBitmapToDisk(&TextureAtlasBitmap, AtlasName);
     }
 

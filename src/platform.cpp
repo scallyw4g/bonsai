@@ -18,8 +18,6 @@
 
 #include <platform.h>
 
-global_variable memory_arena *TranArena = PlatformAllocateArena();
-#include <bonsai_string.cpp>
 #include <render.h>
 
 #include <texture.cpp>
@@ -29,6 +27,7 @@ global_variable memory_arena *TranArena = PlatformAllocateArena();
 #include <chunk.cpp>
 #include <bonsai_mesh.cpp>
 
+global_variable memory_arena *TranArena = PlatformAllocateArena();
 #include <debug.cpp>
 #include <render.cpp>
 
