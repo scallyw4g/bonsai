@@ -308,6 +308,7 @@ Print_P( xml_token *Token, const char* name)
     InvalidDefaultCase;
   }
 
-  Log("");
+  return;
 }
+
 

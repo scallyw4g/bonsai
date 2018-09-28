@@ -42,7 +42,7 @@ operator!=(xml_token T1, xml_token T2)
 umm
 XmlSelectorHash(xml_token_stream* Selectors, umm TargetHashSize)
 {
-  umm Result = {};
+  umm SelectorHashValue = {};
 
   s32 SelectorCount = Count(Selectors);
 
@@ -50,12 +50,13 @@ XmlSelectorHash(xml_token_stream* Selectors, umm TargetHashSize)
       SelectorIndex < SelectorCount;
       ++SelectorIndex)
   {
-    Result = (Result + Hash(Selectors->Start + SelectorIndex)) % TargetHashSize;
+    xml_token* Selector = Selectors->Start + SelectorIndex;
+    SelectorHashValue = (SelectorHashValue + Hash(Selector)) % TargetHashSize;
   }
 
-  Result = Result % TargetHashSize;
+  SelectorHashValue = SelectorHashValue % TargetHashSize;
 
-  return Result;
+  return SelectorHashValue;
 }
 
 xml_tag*
@@ -65,11 +66,11 @@ GetFirstMatchingTag(xml_token_stream* Tokens, xml_token_stream* Selectors)
 
   umm SelectorHash = XmlSelectorHash(Selectors, Tokens->Hashes.ElementCount);
 
-  xml_tag* PossibleTag = Tokens->Hashes[SelectorHash];
+  xml_tag* HashedTag = Tokens->Hashes[SelectorHash];
 
-  while (PossibleTag)
+  while (HashedTag)
   {
-    xml_tag *CurrentTag = PossibleTag;
+    xml_tag *CurrentTag = HashedTag;
 
     b32 Valid = True;
     s32 MaxSelectorIndex = Count(Selectors) -1;
@@ -77,15 +78,31 @@ GetFirstMatchingTag(xml_token_stream* Tokens, xml_token_stream* Selectors)
         SelectorIndex >= 0;
         --SelectorIndex)
     {
+      xml_token* CurrentSelector = &Selectors->Start[SelectorIndex];
+
       // FIXME(Jesse): Do work to check #id-selector as well!
       if (CurrentTag && CurrentTag->Open &&
-          Selectors->Start[SelectorIndex] == *CurrentTag->Open)
+          *CurrentSelector == *CurrentTag->Open)
       {
         CurrentTag = CurrentTag->Parent;
       }
       else
       {
-        Valid = False;
+        b32 FoundMatchingTag = False;
+        while (CurrentTag)
+        {
+          if ( CurrentTag->Open && *CurrentSelector == *CurrentTag->Open)
+          {
+            FoundMatchingTag = True;
+            break;
+          }
+          else
+          {
+            CurrentTag = CurrentTag->Sibling;
+          }
+        }
+
+        Valid = FoundMatchingTag;
         break;
       }
     }
@@ -93,12 +110,12 @@ GetFirstMatchingTag(xml_token_stream* Tokens, xml_token_stream* Selectors)
 
     if (Valid)
     {
-      Result = PossibleTag;
+      Result = HashedTag;
       break;
     }
     else
     {
-      PossibleTag = PossibleTag->Next;
+      HashedTag = HashedTag->Next;
     }
   }
 
@@ -119,7 +136,6 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
   // TODO(Jesse): Better way of allocating this?
   Result = AllocateXmlTokenStream(10000, Memory);
 
-  umm RunningHash = 0;
   xml_tag* Parent = 0;
   while ( Remaining(Xml) )
   {
@@ -135,17 +151,29 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
     if (ClosingTag)
     {
       PushToken(&Result, XmlCloseToken(TagName));
+      Parent = Parent->Parent;
     }
     else
     {
-      RunningHash = (RunningHash + Hash(&TagName)) % Result.Hashes.ElementCount;
+      umm HashValue = Parent ? Parent->HashValue : 0;
+      HashValue = (HashValue + Hash(&TagName)) % Result.Hashes.ElementCount;
+
       xml_token* OpenToken = PushToken(&Result, XmlOpenToken(TagName));
-      xml_tag OpenTag = XmlOpenTag(OpenToken, Parent);
+      xml_tag OpenTag = XmlOpenTag(OpenToken, Parent, HashValue);
 
-      Assert(!Result.Hashes.Elements[RunningHash].Open);
-      Result.Hashes.Elements[RunningHash] = OpenTag;
+      xml_tag* Bucket = Result.Hashes.Elements + HashValue;
+      if (Bucket->Open)
+      {
+        xml_tag* Tmp = Result.Hashes.Elements + HashValue;
+        *Bucket = OpenTag;
+        OpenTag.Sibling = Tmp;
+      }
+      else
+      {
+        *Bucket = OpenTag;
+      }
 
-      Parent = &Result.Hashes.Elements[RunningHash];
+      Parent = Bucket;
     }
 
     const char* PropertyDelimeters = "\n> =";
@@ -168,6 +196,7 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
             if (PropertyName.Count == 1 && PropertyName.Start[0] == '/')
             {
               PushToken(&Result, XmlCloseToken(TagName));
+              Parent = Parent->Parent;
             }
             else
             {

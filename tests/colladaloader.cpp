@@ -154,26 +154,36 @@ QueryingTest()
   xml_token_stream XmlTokens = TokenizeXmlStream(&XmlStream, Memory);
 
   {
-    ansi_stream SelectorStream = AnsiStream("xml outer inner value");
+    ansi_stream SelectorStream = AnsiStream("xml first-value");
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
-
-    /* xml_token OpenExpected = XmlOpenToken(CS("value")); */
-    /* TestThat(*ResultTag->Open == OpenExpected); */
-
-    /* xml_token CloseExpected = XmlCloseToken(CS("value")); */
-    /* TestThat(*ResultTag.Close == CloseExpected); */
+    xml_token OpenExpected = XmlOpenToken(CS("first-value"));
+    TestThat(*ResultTag->Open == OpenExpected);
   }
 
   {
-    ansi_stream SelectorStream = AnsiStream("xml outer inner value");
+    ansi_stream SelectorStream = AnsiStream("xml outer inner second-value");
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
-
-    /* xml_token OpenExpected = XmlOpenToken(CS("value")); */
-    /* TestThat(*ResultTag->Open == OpenExpected); */
+    xml_token OpenExpected = XmlOpenToken(CS("second-value"));
+    TestThat(*ResultTag->Open == OpenExpected);
   }
 
+  {
+    ansi_stream SelectorStream = AnsiStream("xml third-value");
+    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+    xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
+    xml_token OpenExpected = XmlOpenToken(CS("third-value"));
+    TestThat(*ResultTag->Open == OpenExpected);
+  }
+
+  {
+    ansi_stream SelectorStream = AnsiStream("xml outer inner fourth-value");
+    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+    xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
+    xml_token OpenExpected = XmlOpenToken(CS("fourth-value"));
+    TestThat(*ResultTag->Open == OpenExpected);
+  }
   return;
 }
 
