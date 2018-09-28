@@ -8,8 +8,8 @@ enum xml_token_type
   XmlTokenType_Float,
   XmlTokenType_Int,
   XmlTokenType_Property,
-  XmlTokenType_OpenTag,
-  XmlTokenType_CloseTag,
+  XmlTokenType_Open,
+  XmlTokenType_Close,
 
   XmlTokenType_Count
 };
@@ -53,31 +53,36 @@ AllocateXmlTokenStream(umm TokenCount, memory_arena* Memory)
   Result.At = Result.Start;
   Result.End = Result.Start + TokenCount;
 
+  // TODO(Jesse): Profile this and see if it's reasonable
+  Result.Hashes = AllocateHashtable<xml_tag>(TokenCount/10, Memory);
+
   return Result;
 }
 
-inline void
+inline xml_token*
 PushToken(xml_token_stream* Stream, xml_token Token)
 {
   Assert(Stream->At < Stream->End);
-  *Stream->At++ = Token;
-  return;
+  *Stream->At = Token;
+  xml_token* Result = Stream->At;
+  Stream->At++;
+  return Result;
 }
 
 xml_token
-XmlCloseTag(counted_string Name)
+XmlCloseToken(counted_string Name)
 {
   xml_token Result = {};
-  Result.Type = XmlTokenType_CloseTag;
+  Result.Type = XmlTokenType_Close;
   Result.Property.Name = Name;
   return Result;
 }
 
 xml_token
-XmlOpenTag(counted_string Name)
+XmlOpenToken(counted_string Name)
 {
   xml_token Result = {};
-  Result.Type = XmlTokenType_OpenTag;
+  Result.Type = XmlTokenType_Open;
   Result.Property.Name = Name;
   return Result;
 }
@@ -127,11 +132,34 @@ XmlIntProperty(counted_string Name, counted_string Value)
   return Result;
 }
 
-umm
-XmlSelectorHash(xml_token_stream* Stream)
+xml_tag
+XmlOpenTag(xml_token* Open, xml_tag *Parent)
 {
-  umm Result = {};
+  xml_tag Result = {};
+  Result.Open = Open;
+  Result.Parent = Parent;
+  return Result;
+}
 
-  NotImplemented;
+inline umm
+Hash(counted_string* String)
+{
+  umm Result = 0;
+
+  for (umm CharIndex = 0;
+      CharIndex < String->Count;
+      ++CharIndex)
+  {
+    // TODO(Jesse): Better Hash Function!
+    Result = Result ^ 0x056A09B3220F6F2D + String->Start[CharIndex] + (String->Start[CharIndex] << 8);
+  }
+
+  return Result;
+}
+
+inline umm
+Hash(xml_token* Token)
+{
+  umm Result = Hash(&Token->Property.Name) + Hash(&Token->Property.Value);
   return Result;
 }

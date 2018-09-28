@@ -18,15 +18,12 @@ global_variable memory_arena *TranArena = PlatformAllocateArena();
 #include <loaders/common.h>
 #include <loaders/collada.cpp>
 
-s32
-main()
+void
+ParsingTest()
 {
-  TestSuiteBegin("Collada Loader");
-
   memory_arena *Memory = PlatformAllocateArena(Megabytes(1));
 
-  ansi_stream XmlStream = AnsiStreamFromFile("tests/fixtures/test1.dae", Memory);
-  TestThat(XmlStream.Start);
+  ansi_stream XmlStream = AnsiStreamFromFile("tests/fixtures/test_parsing.dae", Memory);
 
   {
     xml_token_stream XmlTokens = TokenizeXmlStream(&XmlStream, Memory);
@@ -42,15 +39,15 @@ main()
 #endif
 
 
-    xml_token XmlOpen   = XmlOpenTag(CS("xml"));
-    xml_token XmlClose  = XmlCloseTag(CS("xml"));
-    xml_token OuterOpen = XmlOpenTag(CS("outer"));
-    xml_token InnerOpen = XmlOpenTag(CS("inner"));
-    xml_token ValueOpen = XmlOpenTag(CS("value"));
+    xml_token XmlOpen   = XmlOpenToken(CS("xml"));
+    xml_token XmlClose  = XmlCloseToken(CS("xml"));
+    xml_token OuterOpen = XmlOpenToken(CS("outer"));
+    xml_token InnerOpen = XmlOpenToken(CS("inner"));
+    xml_token ValueOpen = XmlOpenToken(CS("value"));
 
-    xml_token OuterClose = XmlCloseTag(CS("outer"));
-    xml_token InnerClose = XmlCloseTag(CS("inner"));
-    xml_token ValueClose = XmlCloseTag(CS("value"));
+    xml_token OuterClose = XmlCloseToken(CS("outer"));
+    xml_token InnerClose = XmlCloseToken(CS("inner"));
+    xml_token ValueClose = XmlCloseToken(CS("value"));
 
     xml_token CommentProperty = XmlStringProperty( CS("comment"), CS("a tag such as this '<value/>' fails right now.  Fix this!"""));
 
@@ -58,7 +55,16 @@ main()
 
     TestThat(*XmlTokens.At++ == XmlOpen);
 
-    {
+    { // Well formatted
+      TestThat(*XmlTokens.At++ == OuterOpen);
+      TestThat(*XmlTokens.At++ == InnerOpen);
+      TestThat(*XmlTokens.At++ == ValueOpen);
+
+      TestThat(*XmlTokens.At++ == ValueClose);
+      TestThat(*XmlTokens.At++ == InnerClose);
+      TestThat(*XmlTokens.At++ == OuterClose);
+    }
+    { // Single line
       TestThat(*XmlTokens.At++ == OuterOpen);
       TestThat(*XmlTokens.At++ == InnerOpen);
       TestThat(*XmlTokens.At++ == ValueOpen);
@@ -68,7 +74,7 @@ main()
       TestThat(*XmlTokens.At++ == OuterClose);
     }
 
-    {
+    { // With the comment property
       TestThat(*XmlTokens.At++ == OuterOpen);
       TestThat(*XmlTokens.At++ == InnerOpen);
 
@@ -85,6 +91,24 @@ main()
       TestThat(*XmlTokens.At++ == InnerClose);
       TestThat(*XmlTokens.At++ == OuterClose);
     }
+    { // With the comment property on a single line
+      TestThat(*XmlTokens.At++ == OuterOpen);
+      TestThat(*XmlTokens.At++ == InnerOpen);
+
+      TestThat(*XmlTokens.At++ == ValueOpen);
+      TestThat(*XmlTokens.At++ == CommentProperty);
+      TestThat(*XmlTokens.At++ == ValueClose);
+
+      TestThat(*XmlTokens.At++ == ValueOpen);
+      TestThat(*XmlTokens.At++ == ValueClose);
+
+      TestThat(*XmlTokens.At++ == ValueOpen);
+      TestThat(*XmlTokens.At++ == ValueClose);
+
+      TestThat(*XmlTokens.At++ == InnerClose);
+      TestThat(*XmlTokens.At++ == OuterClose);
+    }
+
 
     {
       xml_token BooleanProp = XmlBooleanProperty(CS("boolean"));
@@ -114,19 +138,53 @@ main()
 
     TestThat(Count(&XmlTokens) == TokenCount);
     Rewind(&XmlTokens);
-
-    {
-      /* xml_token_stream Selector = TokenizeSelector(CS("xml outer-target inner-target value")); */
-      /* xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector); */
-
-      /* xml_token OpenExpected = XmlOpenTag(CS("value")); */
-      /* xml_token CloseExpected = XmlCloseTag(CS("value")); */
-
-      /* TestThat(*ResultTag.Open == OpenExpected); */
-      /* TestThat(*ResultTag.Close == CloseExpected); */
-    }
-
   }
+
+  VaporizeArena(Memory);
+
+  return;
+}
+
+void
+QueryingTest()
+{
+  memory_arena *Memory = PlatformAllocateArena(Megabytes(1));
+
+  ansi_stream XmlStream = AnsiStreamFromFile("tests/fixtures/test_querying.dae", Memory);
+  xml_token_stream XmlTokens = TokenizeXmlStream(&XmlStream, Memory);
+
+  {
+    ansi_stream SelectorStream = AnsiStream("xml outer inner value");
+    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+    xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
+
+    /* xml_token OpenExpected = XmlOpenToken(CS("value")); */
+    /* TestThat(*ResultTag->Open == OpenExpected); */
+
+    /* xml_token CloseExpected = XmlCloseToken(CS("value")); */
+    /* TestThat(*ResultTag.Close == CloseExpected); */
+  }
+
+  {
+    ansi_stream SelectorStream = AnsiStream("xml outer inner value");
+    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+    xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
+
+    /* xml_token OpenExpected = XmlOpenToken(CS("value")); */
+    /* TestThat(*ResultTag->Open == OpenExpected); */
+  }
+
+  return;
+}
+
+s32
+main()
+{
+  TestSuiteBegin("Collada Loader");
+
+  ParsingTest();
+
+  QueryingTest();
 
   TestSuiteEnd();
   exit(TestsFailed);

@@ -15,7 +15,6 @@ void BreakHere() { return; }
 #include <memory_types.h>
 #include <stream.h>
 #include <vector_types.h>
-#include <xml.h>
 
 #include <game_constants.h>
 
@@ -34,7 +33,10 @@ void BreakHere() { return; }
 #include <mutex.h>
 
 #include <debug_types.h>
+
+#include <xml.h>
 #include <debug_print.h>
+
 
 #include <bonsai_vertex.h>
 #include <net/network.h>

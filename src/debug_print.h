@@ -295,14 +295,14 @@ Print_P( xml_token *Token, const char* name)
       Log("String %.*s = \"%.*s\"", Token->Property.Name.Count, Token->Property.Name.Start, Token->Property.Value.Count, Token->Property.Value.Start);
     } break;
 
-    case XmlTokenType_OpenTag:
+    case XmlTokenType_Open:
     {
-      Log("OpenTag %.*s", Token->Property.Name.Count, Token->Property.Name.Start);
+      Log("OpenToken %.*s", Token->Property.Name.Count, Token->Property.Name.Start);
     } break;
 
-    case XmlTokenType_CloseTag:
+    case XmlTokenType_Close:
     {
-      Log("CloseTag %.*s", Token->Property.Name.Count, Token->Property.Name.Start);
+      Log("CloseToken %.*s", Token->Property.Name.Count, Token->Property.Name.Start);
     } break;
 
     InvalidDefaultCase;

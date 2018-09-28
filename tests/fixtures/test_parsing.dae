@@ -7,6 +7,8 @@
     </inner>
   </outer>
 
+  <outer> <inner> <value> </value> </inner> </outer>
+
   <outer >
     <inner >
       <value comment="a tag such as this '<value/>' fails right now.  Fix this!" />
@@ -15,6 +17,8 @@
         />
     </inner >
   </outer >
+
+  <outer > <inner > <value comment="a tag such as this '<value/>' fails right now.  Fix this!" /> <value />  <value  /> </inner > </outer > 
 
   <outer
 

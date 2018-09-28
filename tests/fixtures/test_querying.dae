@@ -1,0 +1,35 @@
+<xml>
+
+  <outer>
+    <inner>
+      <fake-value> </fake-value>
+      <fake-value />
+      <value />
+    </inner>
+  </outer>
+
+  <outer >
+    <inner >
+      <fake-value comment="a tag such as this '<value/>' fails right now.  Fix this!" />
+    </inner >
+  </outer >
+
+  <outer
+
+
+                 boolean
+
+                 int-property=42
+                 float-property=42.42
+                 string-property-1='< text, yay! >'
+                 string-property-2="> more text, yay! <"
+   >
+
+    <inner>
+      <value>
+      </value>
+    </inner>
+  </outer>
+
+</xml>
+

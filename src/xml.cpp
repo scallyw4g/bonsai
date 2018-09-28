@@ -16,8 +16,8 @@ operator==(xml_token T1, xml_token T2)
                  StringsMatch(&T1.Property.Value, &T2.Property.Value);
       } break;
 
-      case XmlTokenType_OpenTag:
-      case XmlTokenType_CloseTag:
+      case XmlTokenType_Open:
+      case XmlTokenType_Close:
       case XmlTokenType_Boolean:
       {
         Assert(!T1.Property.Value.Count);
@@ -39,12 +39,31 @@ operator!=(xml_token T1, xml_token T2)
   return Result;
 }
 
+umm
+XmlSelectorHash(xml_token_stream* Selectors, umm TargetHashSize)
+{
+  umm Result = {};
+
+  s32 SelectorCount = Count(Selectors);
+
+  for (umm SelectorIndex = 0;
+      SelectorIndex < SelectorCount;
+      ++SelectorIndex)
+  {
+    Result = (Result + Hash(Selectors->Start + SelectorIndex)) % TargetHashSize;
+  }
+
+  Result = Result % TargetHashSize;
+
+  return Result;
+}
+
 xml_tag*
 GetFirstMatchingTag(xml_token_stream* Tokens, xml_token_stream* Selectors)
 {
   xml_tag* Result = {};
 
-  umm SelectorHash = XmlSelectorHash(Selectors);
+  umm SelectorHash = XmlSelectorHash(Selectors, Tokens->Hashes.ElementCount);
 
   xml_tag* PossibleTag = Tokens->Hashes[SelectorHash];
 
@@ -59,13 +78,16 @@ GetFirstMatchingTag(xml_token_stream* Tokens, xml_token_stream* Selectors)
         --SelectorIndex)
     {
       // FIXME(Jesse): Do work to check #id-selector as well!
-      if (Selectors->Start[SelectorIndex] != *CurrentTag->Open)
+      if (CurrentTag && CurrentTag->Open &&
+          Selectors->Start[SelectorIndex] == *CurrentTag->Open)
+      {
+        CurrentTag = CurrentTag->Parent;
+      }
+      else
       {
         Valid = False;
         break;
       }
-
-      CurrentTag = CurrentTag->Parent;
     }
 
 
@@ -97,6 +119,8 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
   // TODO(Jesse): Better way of allocating this?
   Result = AllocateXmlTokenStream(10000, Memory);
 
+  umm RunningHash = 0;
+  xml_tag* Parent = 0;
   while ( Remaining(Xml) )
   {
     const char* NameDelimeters = "\n> ";
@@ -110,11 +134,18 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
 
     if (ClosingTag)
     {
-      PushToken(&Result, XmlCloseTag(TagName));
+      PushToken(&Result, XmlCloseToken(TagName));
     }
     else
     {
-      PushToken(&Result, XmlOpenTag(TagName));
+      RunningHash = (RunningHash + Hash(&TagName)) % Result.Hashes.ElementCount;
+      xml_token* OpenToken = PushToken(&Result, XmlOpenToken(TagName));
+      xml_tag OpenTag = XmlOpenTag(OpenToken, Parent);
+
+      Assert(!Result.Hashes.Elements[RunningHash].Open);
+      Result.Hashes.Elements[RunningHash] = OpenTag;
+
+      Parent = &Result.Hashes.Elements[RunningHash];
     }
 
     const char* PropertyDelimeters = "\n> =";
@@ -136,7 +167,7 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
           {
             if (PropertyName.Count == 1 && PropertyName.Start[0] == '/')
             {
-              PushToken(&Result, XmlCloseTag(TagName));
+              PushToken(&Result, XmlCloseToken(TagName));
             }
             else
             {
@@ -180,10 +211,17 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
 }
 
 xml_token_stream
-TokenizeSelector(counted_string Selector)
+TokenizeSelector(ansi_stream* Selector, memory_arena* Memory)
 {
-  xml_token_stream Result = {};
-  NotImplemented;
+  // TODO(Jesse): Better or more accurate way of allocating this size?
+  xml_token_stream Result = AllocateXmlTokenStream(100, Memory);
+
+  while (Remaining(Selector))
+  {
+    counted_string TagName = PopWordCounted(Selector);
+    PushToken(&Result, XmlOpenToken(TagName));
+  }
+
   return Result;
 }
 
@@ -193,3 +231,4 @@ Rewind(xml_token_stream *Stream)
   Stream->At = Stream->Start;
   return;
 }
+

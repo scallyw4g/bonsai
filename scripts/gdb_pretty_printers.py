@@ -38,9 +38,9 @@ class xml_token_printer:
             type_string == "Int" or
             type_string == "Property"):
             return "%s" % (value_string)
-        elif type_string == "OpenTag":
+        elif type_string == "Open":
             return "<%s>" % (value_string)
-        elif  type_string == "CloseTag":
+        elif  type_string == "Close":
             return "</%s>" % (value_string)
         elif  type_string == "Unknown":
             return "Zero Token"
