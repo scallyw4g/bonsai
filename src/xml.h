@@ -31,14 +31,14 @@ struct xml_tag
   xml_token* Open;
   xml_token* Close;
   xml_tag* Parent;
-  xml_tag* Sibling;
+
+  union {
+    xml_tag* Sibling;
+    xml_tag* NextInHash;
+  };
 
   umm HashValue;
   counted_string Value;
-
-  xml_tag* Next; // TODO(Jesse): Can this be factored out of here?  It's only
-                 // purpose is to walk the chain in the hash table.  Maybe
-                 // convert to do local probing instead of a linked-list?
 
   struct xml_token_stream* Properties;
 };

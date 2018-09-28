@@ -115,7 +115,7 @@ GetFirstMatchingTag(xml_token_stream* Tokens, xml_token_stream* Selectors)
     }
     else
     {
-      HashedTag = HashedTag->Next;
+      HashedTag = HashedTag->Sibling;
     }
   }
 
@@ -167,9 +167,10 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
       xml_tag* Bucket = Result.Hashes.Elements + HashValue;
       if (Bucket->Open)
       {
+        while(Bucket->NextInHash) Bucket = Bucket->NextInHash;
         xml_tag* Tmp = Result.Hashes.Elements + HashValue;
         *Bucket = OpenTag;
-        OpenTag.Sibling = Tmp;
+        OpenTag.NextInHash = Tmp;
       }
       else
       {

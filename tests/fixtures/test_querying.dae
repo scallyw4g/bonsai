@@ -16,6 +16,9 @@
     <inner>
       <fake-value />
       <second-value>
+        43
+      </second-value>
+      <second-value>
         42
       </second-value>
     </inner>
