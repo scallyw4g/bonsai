@@ -148,7 +148,7 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
       ++Xml->At;
     }
 
-    if (StreamValueIsCloseTag)
+    if (Xml->At[0] == '/')
     {
       ++Xml->At;
     }

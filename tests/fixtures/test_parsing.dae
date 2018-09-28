@@ -1,5 +1,7 @@
 <xml>
 
+  <value>42</value>
+
   <outer>
     <inner>
       <value>
@@ -16,12 +18,12 @@
 
   <outer>
     <inner>
-      <value> 42 </value>
+      <value>42</value>
     </inner>
   </outer>
 
 
-  <outer><inner><value> 42 </value></inner></outer>
+  <outer><inner><value>42</value></inner></outer>
   <outer> <inner> <value> 42 </value> </inner> </outer>
 
   <outer >

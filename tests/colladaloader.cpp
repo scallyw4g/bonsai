@@ -55,6 +55,9 @@ ParsingTest()
 
     TestThat(*XmlTokens.At++ == XmlOpen);
 
+    TestThat(*XmlTokens.At++ == ValueOpen);
+    TestThat(*XmlTokens.At++ == ValueClose);
+
     {
       TestThat(*XmlTokens.At++ == OuterOpen);
       TestThat(*XmlTokens.At++ == InnerOpen);
