@@ -5,11 +5,11 @@
   <fake-value> 42 </fake-value>
 
   <fake-value>
-    42
+    42   
   </fake-value>
 
   <first-value>
-    42
+    42 42
   </first-value>
 
   <outer>

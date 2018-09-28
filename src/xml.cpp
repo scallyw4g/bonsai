@@ -154,10 +154,12 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
       ++Xml->At;
     }
 
-    counted_string StreamValue = CS(ReadUntilTerminatorList(Xml, NameDelimeters, Memory));
+
+    counted_string StreamValue = {};
 
     if (StreamValueIsOpenTag)
     {
+      StreamValue = CS(ReadUntilTerminatorList(Xml, NameDelimeters, Memory));
       Assert(!StreamValueIsCloseTag);
       umm HashValue = Parent ? Parent->HashValue : 0;
       HashValue = (HashValue + Hash(&StreamValue)) % Result.Hashes.ElementCount;
@@ -173,12 +175,15 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
     }
     else if (StreamValueIsCloseTag)
     {
+      StreamValue = CS(ReadUntilTerminatorList(Xml, NameDelimeters, Memory));
       Assert(!StreamValueIsOpenTag);
       PushToken(&Result, XmlCloseToken(StreamValue));
       Parent = Parent->Parent;
     }
     else
     {
+      StreamValue = CS(ReadUntilTerminatorList(Xml, "<", Memory));
+      Trim(&StreamValue);
       Parent->Value = StreamValue;
       EatWhitespace(Xml);
       continue;

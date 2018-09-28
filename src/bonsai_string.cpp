@@ -88,3 +88,46 @@ FormatString(const char* FormatString, ...)
   return Buffer;
 }
 
+void
+Trim(counted_string* String)
+{
+  s32 Count = String->Count;
+  const char* Start = String->Start;
+
+  for (s32 CharIndex = 0;
+      CharIndex < String->Count;
+      ++CharIndex)
+  {
+    if (Start[CharIndex] == ' ' || Start[CharIndex] == '\n')
+    {
+      --Count;
+      Start = Start + CharIndex + 1;
+    }
+    else
+    {
+      break;
+    }
+  }
+
+  Assert(Count >= 0);
+
+  for (s32 CharIndex = String->Count-1;
+      CharIndex >= 0;
+      --CharIndex)
+  {
+    if (String->Start[CharIndex] == ' ' || String->Start[CharIndex] == '\n')
+    {
+      --Count;
+    }
+    else
+    {
+      break;
+    }
+  }
+
+  Assert(Count >= 0);
+  String->Count = Count;
+  String->Start = Start;
+
+  return;
+}

@@ -207,6 +207,7 @@ QueryingTest()
   ansi_stream XmlStream = AnsiStreamFromFile("tests/fixtures/test_querying.dae", Memory);
   xml_token_stream XmlTokens = TokenizeXmlStream(&XmlStream, Memory);
   counted_string TheMeaningOfLifeTheUniverseAndEverything = CS("42");
+  counted_string FourtyTwoTwice = CS("42 42");
 
   {
     ansi_stream SelectorStream = AnsiStream("xml first-value");
@@ -214,7 +215,7 @@ QueryingTest()
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
     xml_token OpenExpected = XmlOpenToken(CS("first-value"));
     TestThat(*ResultTag->Open == OpenExpected);
-    TestThat(StringsMatch(&ResultTag->Value, &TheMeaningOfLifeTheUniverseAndEverything));
+    TestThat(StringsMatch(&ResultTag->Value, &FourtyTwoTwice));
   }
 
   {
@@ -264,7 +265,6 @@ main()
     ansi_stream SelectorStream = AnsiStream("?xml COLLADA library_geometries geometry mesh source float_array");
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
-    Print(ResultTag->Value);
   }
 
 
