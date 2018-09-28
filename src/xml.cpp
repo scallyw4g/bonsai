@@ -139,26 +139,32 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
   xml_tag* Parent = 0;
   while ( Remaining(Xml) )
   {
-    const char* NameDelimeters = "\n> ";
+    const char* NameDelimeters = "\n> <";
 
-    ++Xml->At; // Skip the first '<'
+    b32 StreamValueIsTag = *Xml->At == '<';
 
-    b32 ClosingTag = *Xml->At == '/';
-    ClosingTag ?  ++Xml->At : Xml->At ;
+    b32 StreamValueIsCloseTag = StreamValueIsTag && Xml->At[1] == '/';
+    b32 StreamValueIsOpenTag = StreamValueIsTag && (!StreamValueIsCloseTag);
 
-    counted_string TagName = CountedString(ReadUntilTerminatorList(Xml, NameDelimeters, Memory));
-
-    if (ClosingTag)
+    if (StreamValueIsTag)
     {
-      PushToken(&Result, XmlCloseToken(TagName));
-      Parent = Parent->Parent;
+      ++Xml->At;
     }
-    else
-    {
-      umm HashValue = Parent ? Parent->HashValue : 0;
-      HashValue = (HashValue + Hash(&TagName)) % Result.Hashes.ElementCount;
 
-      xml_token* OpenToken = PushToken(&Result, XmlOpenToken(TagName));
+    if (StreamValueIsCloseTag)
+    {
+      ++Xml->At;
+    }
+
+    counted_string StreamValue = CountedString(ReadUntilTerminatorList(Xml, NameDelimeters, Memory));
+
+    if (StreamValueIsOpenTag)
+    {
+      Assert(!StreamValueIsCloseTag);
+      umm HashValue = Parent ? Parent->HashValue : 0;
+      HashValue = (HashValue + Hash(&StreamValue)) % Result.Hashes.ElementCount;
+
+      xml_token* OpenToken = PushToken(&Result, XmlOpenToken(StreamValue));
       xml_tag OpenTag = XmlOpenTag(OpenToken, Parent, HashValue);
 
       xml_tag* Bucket = Result.Hashes.Elements + HashValue;
@@ -174,6 +180,18 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
       }
 
       Parent = Bucket;
+    }
+    else if (StreamValueIsCloseTag)
+    {
+      Assert(!StreamValueIsOpenTag);
+      PushToken(&Result, XmlCloseToken(StreamValue));
+      Parent = Parent->Parent;
+    }
+    else
+    {
+      Parent->Value = StreamValue;
+      EatWhitespace(Xml);
+      continue;
     }
 
     const char* PropertyDelimeters = "\n> =";
@@ -195,7 +213,7 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
           {
             if (PropertyName.Count == 1 && PropertyName.Start[0] == '/')
             {
-              PushToken(&Result, XmlCloseToken(TagName));
+              PushToken(&Result, XmlCloseToken(StreamValue));
               Parent = Parent->Parent;
             }
             else

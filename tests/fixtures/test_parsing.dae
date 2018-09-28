@@ -3,6 +3,7 @@
   <outer>
     <inner>
       <value>
+        42
       </value>
     </inner>
   </outer>

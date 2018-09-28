@@ -34,6 +34,7 @@ struct xml_tag
   xml_tag* Sibling;
 
   umm HashValue;
+  counted_string Value;
 
   xml_tag* Next; // TODO(Jesse): Can this be factored out of here?  It's only
                  // purpose is to walk the chain in the hash table.  Maybe

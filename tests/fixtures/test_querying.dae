@@ -1,12 +1,19 @@
 <xml>
 
-  <fake-value />
-  <first-value />
+  <fake-value>
+    42
+  </fake-value>
+
+  <first-value>
+    42
+  </first-value>
 
   <outer>
     <inner>
       <fake-value />
-      <second-value />
+      <second-value>
+        42
+      </second-value>
     </inner>
   </outer>
 
@@ -15,12 +22,14 @@
 <xml>
 
   <fake-value />
-  <third-value />
+  <third-value>
+    42
+  </third-value>
 
   <outer>
     <inner>
       <fake-value />
-      <fourth-value></fourth-value>
+      <fourth-value> 42 </fourth-value>
     </inner>
   </outer>
 

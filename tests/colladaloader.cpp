@@ -152,6 +152,7 @@ QueryingTest()
 
   ansi_stream XmlStream = AnsiStreamFromFile("tests/fixtures/test_querying.dae", Memory);
   xml_token_stream XmlTokens = TokenizeXmlStream(&XmlStream, Memory);
+  counted_string TheMeaningOfLifeTheUniverseAndEverything = CS("42");
 
   {
     ansi_stream SelectorStream = AnsiStream("xml first-value");
@@ -159,6 +160,7 @@ QueryingTest()
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
     xml_token OpenExpected = XmlOpenToken(CS("first-value"));
     TestThat(*ResultTag->Open == OpenExpected);
+    TestThat(StringsMatch(&ResultTag->Value, &TheMeaningOfLifeTheUniverseAndEverything));
   }
 
   {
@@ -167,6 +169,7 @@ QueryingTest()
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
     xml_token OpenExpected = XmlOpenToken(CS("second-value"));
     TestThat(*ResultTag->Open == OpenExpected);
+    TestThat(StringsMatch(&ResultTag->Value, &TheMeaningOfLifeTheUniverseAndEverything));
   }
 
   {
@@ -175,6 +178,7 @@ QueryingTest()
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
     xml_token OpenExpected = XmlOpenToken(CS("third-value"));
     TestThat(*ResultTag->Open == OpenExpected);
+    TestThat(StringsMatch(&ResultTag->Value, &TheMeaningOfLifeTheUniverseAndEverything));
   }
 
   {
@@ -183,7 +187,9 @@ QueryingTest()
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
     xml_token OpenExpected = XmlOpenToken(CS("fourth-value"));
     TestThat(*ResultTag->Open == OpenExpected);
+    TestThat(StringsMatch(&ResultTag->Value, &TheMeaningOfLifeTheUniverseAndEverything));
   }
+
   return;
 }
 
@@ -195,6 +201,10 @@ main()
   ParsingTest();
 
   QueryingTest();
+
+  memory_arena *Memory = PlatformAllocateArena(Megabytes(1));
+  ansi_stream XmlStream = AnsiStreamFromFile("models/model.dae", Memory);
+  xml_token_stream XmlTokens = TokenizeXmlStream(&XmlStream, Memory);
 
   TestSuiteEnd();
   exit(TestsFailed);
