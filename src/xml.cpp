@@ -157,7 +157,8 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
   // TODO(Jesse): Better way of allocating this?
   Result = AllocateXmlTokenStream(10000, Memory);
 
-  xml_tag* Parent = 0;
+  xml_tag* CurrentlyOpenTag = 0;
+  xml_tag* LastClosedTag = 0;
   while ( Remaining(Xml) )
   {
     const char* NameDelimeters = "\n> </";
@@ -189,36 +190,40 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
       b32 IsSelfClosingTag = Xml->At[-1] == '/';
 
       xml_token* OpenToken = PushToken(&Result, XmlOpenToken(StreamValue));
-      xml_tag* OpenTag = XmlTag(OpenToken, Parent, HashValue, Memory);
+      xml_tag* OpenTag = XmlTag(OpenToken, CurrentlyOpenTag, HashValue, Memory);
+      xml_tag** Bucket = Result.Hashes.Table + HashValue;
+      while (*Bucket) Bucket = &(*Bucket)->NextInHash;
+      *Bucket = OpenTag;
+
+      CurrentlyOpenTag = OpenTag;
+      if (LastClosedTag)
+      {
+        LastClosedTag->Sibling = OpenTag;
+      }
 
       if (IsSelfClosingTag)
       {
         PushToken(&Result, XmlCloseToken(StreamValue));
         ++Xml->At;
-      }
 
-      xml_tag** Bucket = Result.Hashes.Table + HashValue;
-      while (*Bucket) Bucket = &(*Bucket)->NextInHash;
-
-      *Bucket = OpenTag;
-      if (Parent)
-      {
-        Parent->Sibling = OpenTag;
+        LastClosedTag = CurrentlyOpenTag;
+        CurrentlyOpenTag = CurrentlyOpenTag->Parent;
       }
-      Parent = OpenTag;
     }
     else if (StreamValueIsCloseTag)
     {
       StreamValue = CS(ReadUntilTerminatorList(Xml, NameDelimeters, Memory));
       Assert(!StreamValueIsOpenTag);
       PushToken(&Result, XmlCloseToken(StreamValue));
-      Parent = Parent->Parent;
+
+      LastClosedTag = CurrentlyOpenTag;
+      CurrentlyOpenTag = CurrentlyOpenTag->Parent;
     }
     else
     {
       StreamValue = CS(ReadUntilTerminatorList(Xml, "<", Memory));
       Trim(&StreamValue);
-      Parent->Value = StreamValue;
+      CurrentlyOpenTag->Value = StreamValue;
       EatWhitespace(Xml);
       continue;
     }
@@ -243,7 +248,7 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
             if (PropertyName.Count == 1 && PropertyName.Start[0] == '/')
             {
               PushToken(&Result, XmlCloseToken(StreamValue));
-              Parent = Parent->Parent;
+              CurrentlyOpenTag = CurrentlyOpenTag->Parent;
             }
             else
             {
@@ -261,7 +266,7 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
                 counted_string PropValue = PopQuotedString(Xml, Memory);
                 if (StringsMatch(&PropertyName, CS("id")))
                 {
-                  Parent->Open->Property.Id = PropValue;
+                  CurrentlyOpenTag->Open->Property.Id = PropValue;
                 }
                 else
                 {

@@ -56,3 +56,25 @@
   </outer>
 
 </xml>
+
+<xml>
+  <library_lights>
+    <light id="Lamp-light" name="Lamp">
+      <technique_common>
+        <point>
+          <color sid="color">1 1 1</color>
+          <constant_attenuation>1</constant_attenuation>
+          <linear_attenuation>0</linear_attenuation>
+          <quadratic_attenuation>0.00111109</quadratic_attenuation>
+        </point>
+      </technique_common>
+    </light>
+  </library_lights>
+
+  <library_effects>
+    <effect id="material-effect">
+      <color>1 2 3 4</color>
+    </effect>
+  </library_effects>
+
+</xml>
