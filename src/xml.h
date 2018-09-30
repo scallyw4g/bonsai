@@ -35,10 +35,8 @@ struct xml_tag
   xml_token* Close;
   xml_tag* Parent;
 
-  union {
-    xml_tag* Sibling;
-    xml_tag* NextInHash;
-  };
+  xml_tag* Sibling;
+  xml_tag* NextInHash;
 
   umm HashValue;
   counted_string Value;

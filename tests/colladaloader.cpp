@@ -239,7 +239,15 @@ QueryingTest()
   {
     ansi_stream SelectorStream = AnsiStream("xml first-value#id-value");
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
-    /* RuntimeBreak(); */
+    xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
+    xml_token OpenExpected = XmlOpenToken(CS("first-value"), CS("id-value"));
+    TestThat(*ResultTag->Open == OpenExpected);
+    TestThat(StringsMatch(&ResultTag->Value, &TheMeaningOfLifeTheUniverseAndEverything));
+  }
+
+  {
+    ansi_stream SelectorStream = AnsiStream("xml first-value#id-value");
+    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
     xml_token OpenExpected = XmlOpenToken(CS("first-value"), CS("id-value"));
     TestThat(*ResultTag->Open == OpenExpected);

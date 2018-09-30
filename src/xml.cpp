@@ -84,7 +84,7 @@ GetFirstMatchingTag(xml_token_stream* Tokens, xml_token_stream* Selectors)
       }
       else
       {
-        HashedTag = HashedTag->Sibling;
+        HashedTag = HashedTag->NextInHash;
       }
   }
 
@@ -175,6 +175,10 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
       while (*Bucket) Bucket = &(*Bucket)->NextInHash;
 
       *Bucket = OpenTag;
+      if (Parent)
+      {
+        Parent->Sibling = OpenTag;
+      }
       Parent = OpenTag;
     }
     else if (StreamValueIsCloseTag)
