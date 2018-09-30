@@ -320,20 +320,9 @@ QueryingTest()
   return;
 }
 
-s32
-main()
+void
+BlenderCubeQueryTest()
 {
-  TestSuiteBegin("Collada Loader");
-
-  XmlTests();
-
-  TokenizingTest();
-
-  HashingTest();
-
-  QueryingTest();
-
-
   memory_arena *Memory = PlatformAllocateArena(Megabytes(1));
   ansi_stream XmlStream = AnsiStreamFromFile("tests/fixtures/blender_cube.dae", Memory);
   xml_token_stream XmlTokens = TokenizeXmlStream(&XmlStream, Memory);
@@ -379,6 +368,47 @@ main()
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
     TestThat( StringsMatch(ResultTag->Value, CS("1") ) );
   }
+
+  {
+    ansi_stream SelectorStream = AnsiStream("?xml COLLADA library_visual_scenes visual_scene#Scene node#Cube instance_geometry bind_material technique_common instance_material");
+    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+    xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
+    TestThat(ResultTag);
+  }
+
+  {
+    ansi_stream SelectorStream = AnsiStream("?xml COLLADA library_visual_scenes visual_scene#Scene node#Cube instance_geometry bind_material technique_common");
+    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+    xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
+    TestThat(*ResultTag->Open == XmlOpenToken(CS("technique_common")) );
+    TestThat(ResultTag);
+  }
+
+  {
+    ansi_stream SelectorStream = AnsiStream("?xml COLLADA library_lights light#Lamp-light extra technique ray_samp");
+    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+    xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
+    TestThat(*ResultTag->Open == XmlOpenToken(CS("ray_samp")) );
+    TestThat(StringsMatch(ResultTag->Value, CS("1")));
+  }
+
+  return;
+}
+
+s32
+main()
+{
+  TestSuiteBegin("Collada Loader");
+
+  XmlTests();
+
+  TokenizingTest();
+
+  HashingTest();
+
+  QueryingTest();
+
+  BlenderCubeQueryTest();
 
   TestSuiteEnd();
   exit(TestsFailed);
