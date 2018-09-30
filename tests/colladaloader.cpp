@@ -293,9 +293,10 @@ main()
   xml_token_stream XmlTokens = TokenizeXmlStream(&XmlStream, Memory);
 
   {
-    ansi_stream SelectorStream = AnsiStream("?xml COLLADA library_geometries geometry mesh source float_array#Cube-mesh-positions-array");
+    ansi_stream SelectorStream = AnsiStream("?xml COLLADA library_geometries geometry#Cube-mesh mesh source#Cube-mesh-positions float_array#Cube-mesh-positions-array");
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
+    TestThat( StringsMatch(ResultTag->Value, CS("1 -1 -1 -1 -0.9999998 -1 0.9486669 -1.104168 1.050864 -0.687431 -0.8150698 0.9838108 1 -0.334378 -1.0002 -1 -0.3343777 -1.0002 0.9999997 -0.3343785 0.9998002 -1 -0.490265 0.9998002 0 -0.9999999 -1 -5.36442e-7 -1 1 0.01414924 -0.463192 1.581099 0 -0.3343778 -1.0002 0.666179 -0.4452514 1.351506 0.5 -1 -1 0.4999994 -1.384452 1.069946 0.5 -0.3343779 -1.0002 -0.5000001 -0.9999999 -1 -0.5000005 -0.9999999 1 -0.5 -0.3343778 -1.0002 -0.4022939 -0.4422637 1.400678 1 0 -1.000144 0.9999999 0 0.9998559 -0.9999999 0 -1.000144 -1 0 0.9998559 0 0 -1.000144 0 0 1.643503 0.6661792 0 1.35158 0.5 0 -1.000144 -0.4999999 0 -1.000144 -0.4369376 0 1.463367") ) );
   }
 
   TestSuiteEnd();
