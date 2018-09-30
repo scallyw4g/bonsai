@@ -16,6 +16,40 @@
 #include <loaders/collada.cpp>
 
 void
+DumpHashTable(hashtable<xml_tag*> * Hash)
+{
+  for (u32 ElementIndex = 0;
+      ElementIndex < Hash->Size;
+      ++ElementIndex)
+  {
+    xml_tag* Element = Hash->Table[ElementIndex];
+    if (Element)
+    {
+      Log("");
+      Print(ElementIndex);
+      Print(Element);
+      while (Element = Element->NextInHash)
+      {
+        Print(Element);
+      }
+    }
+  }
+
+  return;
+}
+
+void
+DumpXmlStream(xml_token_stream *Stream, umm TokenCount)
+{
+  for (u32 TokenIndex = 0;
+      TokenIndex < TokenCount;
+      ++TokenIndex)
+  {
+    Print(Stream->Start + TokenIndex);
+  }
+}
+
+void
 TokenizingTest()
 {
   memory_arena *Memory = PlatformAllocateArena(Megabytes(1));
@@ -52,6 +86,9 @@ TokenizingTest()
     Rewind(&XmlTokens);
 
     TestThat(*XmlTokens.At++ == XmlOpen);
+
+    TestThat(*XmlTokens.At++ == ValueOpen);
+    TestThat(*XmlTokens.At++ == ValueClose);
 
     TestThat(*XmlTokens.At++ == IdValueOpen);
     TestThat(*XmlTokens.At++ == ValueClose);
@@ -179,28 +216,6 @@ HashingTest()
   memory_arena *Memory = PlatformAllocateArena(Megabytes(1));
   ansi_stream XmlStream = AnsiStreamFromFile("tests/fixtures/test_parsing.dae", Memory);
 
-}
-
-void
-DumpHashTable(hashtable<xml_tag*> * Hash)
-{
-  for (u32 ElementIndex = 0;
-      ElementIndex < Hash->Size;
-      ++ElementIndex)
-  {
-    xml_tag* Element = Hash->Table[ElementIndex];
-    if (Element)
-    {
-      Log("");
-      Print(ElementIndex);
-      Print(Element);
-      while (Element = Element->NextInHash)
-      {
-        Print(Element);
-      }
-    }
-  }
-
   return;
 }
 
@@ -285,6 +300,17 @@ QueryingTest()
     TestThat(StringsMatch(&ResultTag->Value, &TheMeaningOfLifeTheUniverseAndEverything));
   }
 
+#if 0
+  {
+    ansi_stream SelectorStream = AnsiStream("xml outer inner#second-fourth-value fourth-value");
+    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+    xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
+    xml_token OpenExpected = XmlOpenToken(CS("fourth-value"));
+    TestThat(*ResultTag->Open == OpenExpected);
+    TestThat(StringsMatch(&ResultTag->Value, &TheMeaningOfLifeTheUniverseAndEverything));
+  }
+#endif
+
   return;
 }
 
@@ -306,7 +332,7 @@ main()
   ansi_stream XmlStream = AnsiStreamFromFile("tests/fixtures/blender_cube.dae", Memory);
   xml_token_stream XmlTokens = TokenizeXmlStream(&XmlStream, Memory);
 
-  /* DumpHashTable(&XmlTokens.Hashes); */
+  DumpHashTable(&XmlTokens.Hashes);
 
   {
     ansi_stream SelectorStream = AnsiStream("?xml COLLADA library_geometries geometry#Cube-mesh mesh source#Cube-mesh-positions float_array#Cube-mesh-positions-array");
@@ -326,6 +352,12 @@ main()
   {
     ansi_stream SelectorStream = AnsiStream("?xml COLLADA library_effects effect#Material-effect profile_COMMON technique phong emission color");
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+
+    {
+      umm TokenCount = Count(&XmlTokens);
+      /* DumpXmlStream(&XmlTokens, TokenCount); */
+    }
+
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
     TestThat( StringsMatch(ResultTag->Value, CS("0 0 0 1") ) );
   }

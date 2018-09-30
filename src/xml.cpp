@@ -143,7 +143,7 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
   xml_tag* Parent = 0;
   while ( Remaining(Xml) )
   {
-    const char* NameDelimeters = "\n> <";
+    const char* NameDelimeters = "\n> </";
 
     b32 StreamValueIsTag = Xml->At[0] == '<' || Xml->At[0] == '/';
 
@@ -169,8 +169,16 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
       Assert(!StreamValueIsCloseTag);
       umm HashValue = Hash(&StreamValue) % Result.Hashes.Size;
 
+      b32 IsSelfClosingTag = Xml->At[-1] == '/';
+
       xml_token* OpenToken = PushToken(&Result, XmlOpenToken(StreamValue));
       xml_tag* OpenTag = XmlTag(OpenToken, Parent, HashValue, Memory);
+
+      if (IsSelfClosingTag)
+      {
+        PushToken(&Result, XmlCloseToken(StreamValue));
+        ++Xml->At;
+      }
 
       xml_tag** Bucket = Result.Hashes.Table + HashValue;
       while (*Bucket) Bucket = &(*Bucket)->NextInHash;

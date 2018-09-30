@@ -45,3 +45,14 @@
   </outer>
 
 </xml>
+
+
+<xml>
+
+  <outer>
+    <inner id="second-fourth-value">
+      <fourth-value> 42 </fourth-value>
+    </inner>
+  </outer>
+
+</xml>

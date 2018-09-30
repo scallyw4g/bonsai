@@ -1,5 +1,7 @@
 <xml>
 
+  <value/>
+
   <value id="value-id">42</value>
 
   <outer>
