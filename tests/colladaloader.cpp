@@ -68,18 +68,17 @@ TokenizingTest()
     }
 #endif
 
-
     xml_token XmlOpen   = XmlOpenToken(CS("xml"));
-    xml_token XmlClose  = XmlCloseToken(CS("xml"));
+    xml_token XmlClose  = XmlCloseToken(CS("xml"), 0);
     xml_token OuterOpen = XmlOpenToken(CS("outer"));
     xml_token InnerOpen = XmlOpenToken(CS("inner"));
 
     xml_token ValueOpen = XmlOpenToken(CS("value"));
     xml_token IdValueOpen = XmlOpenToken(CS("value"), CS("value-id"));
 
-    xml_token OuterClose = XmlCloseToken(CS("outer"));
-    xml_token InnerClose = XmlCloseToken(CS("inner"));
-    xml_token ValueClose = XmlCloseToken(CS("value"));
+    xml_token OuterClose = XmlCloseToken(CS("outer"), 0);
+    xml_token InnerClose = XmlCloseToken(CS("inner"), 0);
+    xml_token ValueClose = XmlCloseToken(CS("value"), 0);
 
     xml_token CommentProperty = XmlStringProperty( CS("comment"), CS("a tag such as this '<value/>' fails right now.  Fix this!"""));
 

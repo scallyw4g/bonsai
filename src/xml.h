@@ -77,9 +77,22 @@ PushToken(xml_token_stream* Stream, xml_token Token)
   return Result;
 }
 
-xml_token
-XmlCloseToken(counted_string Name)
+
+struct xml_parsing_at_indicators
 {
+  xml_tag* LastClosedTag;
+  xml_tag* CurrentlyOpenTag;
+};
+
+xml_token
+XmlCloseToken(counted_string Name, xml_parsing_at_indicators* TagsAt)
+{
+  if (TagsAt)
+  {
+    TagsAt->LastClosedTag = TagsAt->CurrentlyOpenTag;
+    TagsAt->CurrentlyOpenTag = TagsAt->CurrentlyOpenTag->Parent;
+  }
+
   xml_token Result = {};
   Result.Type = XmlTokenType_Close;
   Result.Property.Name = Name;
