@@ -65,19 +65,33 @@ XmlSelectorHash(xml_token_stream* Selectors, umm TargetHashSize)
 xml_tag*
 GetFirstMatchingTag(xml_token_stream* Tokens, xml_token_stream* Selectors)
 {
-  xml_tag* Result = {};
+  b32 Valid = True;
+  s32 MaxSelectorIndex = Count(Selectors) -1;
+
+  xml_tag* RootTag = 0;
 
   umm SelectorHash = XmlSelectorHash(Selectors, Tokens->Hashes.ElementCount);
-
   xml_tag* HashedTag = Tokens->Hashes.Elements[SelectorHash];
+  xml_token* FirstSelector = &Selectors->Start[MaxSelectorIndex];
 
   while (HashedTag)
   {
-    xml_tag *CurrentTag = HashedTag;
+      if (HashedTag->Open &&
+          *FirstSelector == *HashedTag->Open)
+      {
+        RootTag = HashedTag;
+        break;
+      }
+      else
+      {
+        HashedTag = HashedTag->Sibling;
+      }
+  }
 
-    b32 Valid = True;
-    s32 MaxSelectorIndex = Count(Selectors) -1;
-    for (s32 SelectorIndex = MaxSelectorIndex;
+  if (RootTag)
+  {
+    xml_tag *CurrentTag = RootTag->Parent;
+    for (s32 SelectorIndex = MaxSelectorIndex-1; // We've already checked the first selector
         SelectorIndex >= 0;
         --SelectorIndex)
     {
@@ -97,10 +111,7 @@ GetFirstMatchingTag(xml_token_stream* Tokens, xml_token_stream* Selectors)
               *CurrentSelector == *CurrentTag->Open)
           {
             FoundMatchingTag = True;
-            if (SelectorIndex == MaxSelectorIndex)
-            {
-              HashedTag = CurrentTag;
-            }
+            CurrentTag = CurrentTag->Parent;
             break;
           }
           else
@@ -110,22 +121,11 @@ GetFirstMatchingTag(xml_token_stream* Tokens, xml_token_stream* Selectors)
         }
 
         Valid = FoundMatchingTag;
-        break;
       }
-    }
-
-
-    if (Valid)
-    {
-      Result = HashedTag;
-      break;
-    }
-    else
-    {
-      HashedTag = HashedTag->Sibling;
     }
   }
 
+  xml_tag* Result = Valid ? RootTag : 0;
   return Result;
 }
 
