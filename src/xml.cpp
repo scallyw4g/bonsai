@@ -42,6 +42,7 @@ operator!=(xml_token T1, xml_token T2)
   return Result;
 }
 
+#if 0
 umm
 XmlSelectorHash(xml_token_stream* Selectors, umm TargetHashSize)
 {
@@ -61,6 +62,7 @@ XmlSelectorHash(xml_token_stream* Selectors, umm TargetHashSize)
 
   return SelectorHashValue;
 }
+#endif
 
 xml_tag*
 GetFirstMatchingTag(xml_token_stream* Tokens, xml_token_stream* Selectors)
@@ -70,9 +72,9 @@ GetFirstMatchingTag(xml_token_stream* Tokens, xml_token_stream* Selectors)
 
   xml_tag* RootTag = 0;
 
-  umm SelectorHash = XmlSelectorHash(Selectors, Tokens->Hashes.ElementCount);
-  xml_tag* HashedTag = Tokens->Hashes.Elements[SelectorHash];
-  xml_token* FirstSelector = &Selectors->Start[MaxSelectorIndex];
+  umm SelectorHash = Hash(Selectors->Start + MaxSelectorIndex) % Tokens->Hashes.Size;
+  xml_tag* HashedTag = Tokens->Hashes.Table[SelectorHash];
+  xml_token* FirstSelector = Selectors->Start + MaxSelectorIndex;
 
   while (HashedTag)
   {
@@ -165,13 +167,12 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
     {
       StreamValue = CS(ReadUntilTerminatorList(Xml, NameDelimeters, Memory));
       Assert(!StreamValueIsCloseTag);
-      umm HashValue = Parent ? Parent->HashValue : 0;
-      HashValue = (HashValue + Hash(&StreamValue)) % Result.Hashes.ElementCount;
+      umm HashValue = Hash(&StreamValue) % Result.Hashes.Size;
 
       xml_token* OpenToken = PushToken(&Result, XmlOpenToken(StreamValue));
       xml_tag* OpenTag = XmlTag(OpenToken, Parent, HashValue, Memory);
 
-      xml_tag** Bucket = Result.Hashes.Elements + HashValue;
+      xml_tag** Bucket = Result.Hashes.Table + HashValue;
       while (*Bucket) Bucket = &(*Bucket)->NextInHash;
 
       *Bucket = OpenTag;

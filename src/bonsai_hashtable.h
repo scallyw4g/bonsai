@@ -1,15 +1,15 @@
 template <typename T>
 struct hashtable
 {
-  umm ElementCount;
-  T* Elements;
+  umm Size;
+  T* Table;
 };
 
 template <typename T> hashtable<T>
-AllocateHashtable(umm ElementCount, memory_arena* Memory)
+AllocateHashtable(umm Count, memory_arena* Memory)
 {
   hashtable<T> Result = {};
-  Result.Elements = Allocate(T, Memory, ElementCount);
-  Result.ElementCount = ElementCount;
+  Result.Table = Allocate(T, Memory, Count);
+  Result.Size = Count;
   return Result;
 }
