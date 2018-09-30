@@ -300,7 +300,6 @@ QueryingTest()
     TestThat(StringsMatch(&ResultTag->Value, &TheMeaningOfLifeTheUniverseAndEverything));
   }
 
-#if 0
   {
     ansi_stream SelectorStream = AnsiStream("xml outer inner#second-fourth-value fourth-value");
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
@@ -309,7 +308,6 @@ QueryingTest()
     TestThat(*ResultTag->Open == OpenExpected);
     TestThat(StringsMatch(&ResultTag->Value, &TheMeaningOfLifeTheUniverseAndEverything));
   }
-#endif
 
   return;
 }

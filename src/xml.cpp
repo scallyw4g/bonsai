@@ -65,32 +65,39 @@ XmlSelectorHash(xml_token_stream* Selectors, umm TargetHashSize)
 #endif
 
 xml_tag*
+GetNextMatchingRootTag(xml_tag* Current, xml_token* SearchTag)
+{
+  xml_tag* Result = 0;
+
+  while (Current)
+  {
+    if (Current->Open && // TODO(Jesse): Should this not be an Assert(Current->Open) ?
+        *SearchTag == *Current->Open)
+    {
+      Result = Current;
+      break;
+    }
+    else
+    {
+      Current = Current->NextInHash;
+    }
+  }
+
+  return Result;
+}
+
+xml_tag*
 GetFirstMatchingTag(xml_token_stream* Tokens, xml_token_stream* Selectors)
 {
   b32 Valid = True;
   s32 MaxSelectorIndex = Count(Selectors) -1;
 
-  xml_tag* RootTag = 0;
-
   umm SelectorHash = Hash(Selectors->Start + MaxSelectorIndex) % Tokens->Hashes.Size;
-  xml_tag* HashedTag = Tokens->Hashes.Table[SelectorHash];
   xml_token* FirstSelector = Selectors->Start + MaxSelectorIndex;
 
-  while (HashedTag)
-  {
-      if (HashedTag->Open &&
-          *FirstSelector == *HashedTag->Open)
-      {
-        RootTag = HashedTag;
-        break;
-      }
-      else
-      {
-        HashedTag = HashedTag->NextInHash;
-      }
-  }
+  xml_tag* RootTag = GetNextMatchingRootTag(Tokens->Hashes.Table[SelectorHash], FirstSelector);
 
-  if (RootTag)
+  while (RootTag)
   {
     xml_tag *CurrentTag = RootTag->Parent;
     for (s32 SelectorIndex = MaxSelectorIndex-1; // We've already checked the first selector
@@ -103,6 +110,7 @@ GetFirstMatchingTag(xml_token_stream* Tokens, xml_token_stream* Selectors)
           *CurrentSelector == *CurrentTag->Open)
       {
         CurrentTag = CurrentTag->Parent;
+        Valid = True;
       }
       else
       {
@@ -121,8 +129,17 @@ GetFirstMatchingTag(xml_token_stream* Tokens, xml_token_stream* Selectors)
             Valid = False;
           }
         }
+
+        if (!Valid)
+        {
+          RootTag = GetNextMatchingRootTag(RootTag->NextInHash, FirstSelector);
+          break;
+        }
       }
     }
+
+    if (Valid)
+      break;
   }
 
   xml_tag* Result = Valid ? RootTag : 0;
