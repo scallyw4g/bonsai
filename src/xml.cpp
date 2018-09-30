@@ -104,23 +104,21 @@ GetFirstMatchingTag(xml_token_stream* Tokens, xml_token_stream* Selectors)
       }
       else
       {
-        b32 FoundMatchingTag = False;
         while (CurrentTag)
         {
           if (CurrentTag->Open &&
               *CurrentSelector == *CurrentTag->Open)
           {
-            FoundMatchingTag = True;
             CurrentTag = CurrentTag->Parent;
+            Valid = True;
             break;
           }
           else
           {
             CurrentTag = CurrentTag->Sibling;
+            Valid = False;
           }
         }
-
-        Valid = FoundMatchingTag;
       }
     }
   }
