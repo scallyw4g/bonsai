@@ -36,6 +36,27 @@ StringsMatch(counted_string* S1, counted_string* S2)
 }
 
 inline b32
+StringsMatch(counted_string S1, counted_string* S2)
+{
+  b32 Result = StringsMatch(&S1, S2);
+  return Result;
+}
+
+inline b32
+StringsMatch(counted_string* S1, counted_string S2)
+{
+  b32 Result = StringsMatch(S1, &S2);
+  return Result;
+}
+
+inline b32
+StringsMatch(counted_string S1, counted_string S2)
+{
+  b32 Result = StringsMatch(&S1, &S2);
+  return Result;
+}
+
+inline b32
 Contains(const char *S1, const char *S2)
 {
   const char *S1At = S1;
@@ -117,4 +138,25 @@ Trim(counted_string* String)
   String->Start = Start;
 
   return;
+}
+
+counted_string
+Split(counted_string* String, char SplitTarget)
+{
+  counted_string Result = {};
+
+  for (u32 CharIndex = 0;
+      CharIndex < String->Count;
+      ++CharIndex)
+  {
+    if (String->Start[CharIndex] == SplitTarget)
+    {
+      Result.Start = String->Start + CharIndex + 1;
+      Result.Count = String->Count - CharIndex - 1;
+
+      String->Count = CharIndex;
+    }
+  }
+
+  return Result;
 }

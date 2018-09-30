@@ -21,9 +21,11 @@ operator==(xml_token T1, xml_token T2)
       case XmlTokenType_Close:
       case XmlTokenType_Boolean:
       {
-        Assert(!T1.Property.Value.Count);
-        Assert(!T2.Property.Value.Count);
         Result = StringsMatch(&T1.Property.Name, &T2.Property.Name);
+        if (T1.Property.Id.Count || T2.Property.Id.Count)
+        {
+          Result = Result && StringsMatch(&T1.Property.Id, &T2.Property.Id);
+        }
       } break;
 
       InvalidDefaultCase;
@@ -81,7 +83,6 @@ GetFirstMatchingTag(xml_token_stream* Tokens, xml_token_stream* Selectors)
     {
       xml_token* CurrentSelector = &Selectors->Start[SelectorIndex];
 
-      // FIXME(Jesse): Do work to check #id-selector as well!
       if (CurrentTag && CurrentTag->Open &&
           *CurrentSelector == *CurrentTag->Open)
       {
@@ -92,9 +93,14 @@ GetFirstMatchingTag(xml_token_stream* Tokens, xml_token_stream* Selectors)
         b32 FoundMatchingTag = False;
         while (CurrentTag)
         {
-          if ( CurrentTag->Open && *CurrentSelector == *CurrentTag->Open)
+          if (CurrentTag->Open &&
+              *CurrentSelector == *CurrentTag->Open)
           {
             FoundMatchingTag = True;
+            if (SelectorIndex == MaxSelectorIndex)
+            {
+              HashedTag = CurrentTag;
+            }
             break;
           }
           else
@@ -225,7 +231,14 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
               case '\'':
               {
                 counted_string PropValue = PopQuotedString(Xml, Memory);
-                PushToken(&Result, XmlStringProperty(PropertyName, PropValue));
+                if (StringsMatch(&PropertyName, CS("id")))
+                {
+                  Parent->Open->Property.Id = PropValue;
+                }
+                else
+                {
+                  PushToken(&Result, XmlStringProperty(PropertyName, PropValue));
+                }
               } break;
 
               default:
@@ -261,7 +274,9 @@ TokenizeSelector(ansi_stream* Selector, memory_arena* Memory)
   while (Remaining(Selector))
   {
     counted_string TagName = PopWordCounted(Selector);
-    PushToken(&Result, XmlOpenToken(TagName));
+    counted_string TagId = Split(&TagName, '#');
+
+    PushToken(&Result, XmlOpenToken(TagName, TagId));
   }
 
   return Result;

@@ -1,6 +1,6 @@
 <xml>
 
-  <value>42</value>
+  <value id="value-id">42</value>
 
   <outer>
     <inner>

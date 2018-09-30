@@ -40,7 +40,9 @@ ParsingTest()
     xml_token XmlClose  = XmlCloseToken(CS("xml"));
     xml_token OuterOpen = XmlOpenToken(CS("outer"));
     xml_token InnerOpen = XmlOpenToken(CS("inner"));
+
     xml_token ValueOpen = XmlOpenToken(CS("value"));
+    xml_token IdValueOpen = XmlOpenToken(CS("value"), CS("value-id"));
 
     xml_token OuterClose = XmlCloseToken(CS("outer"));
     xml_token InnerClose = XmlCloseToken(CS("inner"));
@@ -52,7 +54,7 @@ ParsingTest()
 
     TestThat(*XmlTokens.At++ == XmlOpen);
 
-    TestThat(*XmlTokens.At++ == ValueOpen);
+    TestThat(*XmlTokens.At++ == IdValueOpen);
     TestThat(*XmlTokens.At++ == ValueClose);
 
     {
@@ -183,6 +185,7 @@ DumpHashTable(hashtable<xml_tag*> * Hash)
     xml_tag* Element = Hash->Elements[ElementIndex];
     if (Element)
     {
+      Log("");
       Print(ElementIndex);
       Print(Element);
       while (Element = Element->NextInHash)
@@ -195,6 +198,22 @@ DumpHashTable(hashtable<xml_tag*> * Hash)
   return;
 }
 
+void
+XmlTests()
+{
+  xml_token RegularOpenToken = XmlOpenToken(CS("open"));
+  xml_token OpenTokenWithId = XmlOpenToken(CS("open"), CS("id-value"));
+
+  TestThat(RegularOpenToken == RegularOpenToken);
+  TestThat(StringsMatch(RegularOpenToken.Property.Name, CS("open")));
+  TestThat(RegularOpenToken.Property.Id.Count == 0);
+
+  TestThat(OpenTokenWithId == OpenTokenWithId);
+  TestThat(StringsMatch(OpenTokenWithId.Property.Name, CS("open")));
+  TestThat(StringsMatch(OpenTokenWithId.Property.Id, CS("id-value")));
+
+  return;
+}
 
 void
 QueryingTest()
@@ -206,6 +225,8 @@ QueryingTest()
   counted_string TheMeaningOfLifeTheUniverseAndEverything = CS("42");
   counted_string FourtyTwoTwice = CS("42 42");
 
+  /* DumpHashTable(&XmlTokens.Hashes); */
+
   {
     ansi_stream SelectorStream = AnsiStream("xml first-value");
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
@@ -213,6 +234,16 @@ QueryingTest()
     xml_token OpenExpected = XmlOpenToken(CS("first-value"));
     TestThat(*ResultTag->Open == OpenExpected);
     TestThat(StringsMatch(&ResultTag->Value, &FourtyTwoTwice));
+  }
+
+  {
+    ansi_stream SelectorStream = AnsiStream("xml first-value#id-value");
+    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+    /* RuntimeBreak(); */
+    xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
+    xml_token OpenExpected = XmlOpenToken(CS("first-value"), CS("id-value"));
+    TestThat(*ResultTag->Open == OpenExpected);
+    TestThat(StringsMatch(&ResultTag->Value, &TheMeaningOfLifeTheUniverseAndEverything));
   }
 
   {
@@ -250,21 +281,22 @@ main()
 {
   TestSuiteBegin("Collada Loader");
 
+  XmlTests();
+
   ParsingTest();
 
   QueryingTest();
+
 
   memory_arena *Memory = PlatformAllocateArena(Megabytes(1));
   ansi_stream XmlStream = AnsiStreamFromFile("models/model.dae", Memory);
   xml_token_stream XmlTokens = TokenizeXmlStream(&XmlStream, Memory);
 
   {
-    ansi_stream SelectorStream = AnsiStream("?xml COLLADA library_geometries geometry mesh source float_array");
+    ansi_stream SelectorStream = AnsiStream("?xml COLLADA library_geometries geometry mesh source float_array#Cube-mesh-positions-array");
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
   }
-
-
 
   TestSuiteEnd();
   exit(TestsFailed);

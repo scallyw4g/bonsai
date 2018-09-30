@@ -17,7 +17,10 @@ enum xml_token_type
 struct xml_property
 {
   counted_string Name;
-  counted_string Value;
+  union {
+    counted_string Value;
+    counted_string Id;
+  };
 };
 
 struct xml_token
@@ -86,11 +89,12 @@ XmlCloseToken(counted_string Name)
 }
 
 xml_token
-XmlOpenToken(counted_string Name)
+XmlOpenToken(counted_string Name, counted_string Id = {})
 {
   xml_token Result = {};
   Result.Type = XmlTokenType_Open;
   Result.Property.Name = Name;
+  Result.Property.Id = Id;
   return Result;
 }
 
@@ -168,6 +172,6 @@ Hash(counted_string* String)
 inline umm
 Hash(xml_token* Token)
 {
-  umm Result = Hash(&Token->Property.Name) + Hash(&Token->Property.Value);
+  umm Result = Hash(&Token->Property.Name); // + Hash(&Token->Property.Value);
   return Result;
 }

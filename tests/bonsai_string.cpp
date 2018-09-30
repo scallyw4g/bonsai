@@ -183,6 +183,21 @@ TestReadUntilTerminatorList()
   return;
 }
 
+void
+TestSplit()
+{
+  counted_string Thing = CS("thing#stuff");
+  counted_string Stuff = Split(&Thing, '#');
+
+  counted_string ExpectedThing = CS("thing");
+  counted_string ExpectedStuff = CS("stuff");
+
+  TestThat(StringsMatch(&Thing, &ExpectedThing));
+  TestThat(StringsMatch(&Stuff, &ExpectedStuff));
+
+  return;
+}
+
 s32
 main()
 {
@@ -222,6 +237,8 @@ main()
   TestContains();
 
   TestReadUntilTerminatorList();
+
+  TestSplit();
 
   TestSuiteEnd();
   exit(TestsFailed);
