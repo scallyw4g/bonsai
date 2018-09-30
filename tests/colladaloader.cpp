@@ -289,7 +289,7 @@ main()
 
 
   memory_arena *Memory = PlatformAllocateArena(Megabytes(1));
-  ansi_stream XmlStream = AnsiStreamFromFile("models/model.dae", Memory);
+  ansi_stream XmlStream = AnsiStreamFromFile("tests/fixtures/blender_cube.dae", Memory);
   xml_token_stream XmlTokens = TokenizeXmlStream(&XmlStream, Memory);
 
   {
