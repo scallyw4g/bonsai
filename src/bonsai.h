@@ -150,7 +150,7 @@ struct noise_3d
 struct chunk_data
 {
   chunk_flag Flags;
-  untextured_3d_geometry_buffer Mesh; // 32
+  untextured_3d_geometry_buffer Mesh; // 32 bytes
   voxel *Voxels;
 
   u8 Pad[20];

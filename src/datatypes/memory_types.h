@@ -254,8 +254,17 @@ Remaining(T *Sizable)
 }
 
 template <typename T> umm
-Count(T *Sizable)
+TotalElements(T *Sizable)
 {
+  Assert(Sizable->At >= Sizable->Start);
+  umm Result = (umm)(Sizable->End-Sizable->Start);
+  return Result;
+}
+
+template <typename T> umm
+AtElements(T *Sizable)
+{
+  Assert(Sizable->At >= Sizable->Start);
   umm Result = (umm)(Sizable->At-Sizable->Start);
   return Result;
 }

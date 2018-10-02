@@ -13,6 +13,7 @@
 #include <bonsai_mesh.cpp>
 
 #include <loaders/common.h>
+global_variable memory_arena* TranArena = PlatformAllocateArena();
 #include <loaders/collada.cpp>
 
 void
@@ -57,7 +58,7 @@ TokenizingTest()
 
   {
     xml_token_stream XmlTokens = TokenizeXmlStream(&XmlStream, Memory);
-    umm TokenCount = Count(&XmlTokens);
+    umm TokenCount = AtElements(&XmlTokens);
 
 #if 0
     for (u32 TokenIndex = 0;
@@ -200,7 +201,7 @@ TokenizingTest()
       TestThat(*XmlTokens.At++ == XmlClose);
     }
 
-    TestThat(Count(&XmlTokens) == TokenCount);
+    TestThat(AtElements(&XmlTokens) == TokenCount);
     Rewind(&XmlTokens);
   }
 
@@ -236,7 +237,7 @@ XmlTests()
 }
 
 void
-QueryingTest()
+ContrivedQueryingTest()
 {
   memory_arena *Memory = PlatformAllocateArena(Megabytes(1));
 
@@ -406,9 +407,13 @@ main()
 
   HashingTest();
 
-  QueryingTest();
+  ContrivedQueryingTest();
 
   BlenderCubeQueryTest();
+
+  memory_arena* Memory = PlatformAllocateArena();
+  /* model Cube = LoadCollada(Memory, "tests/fixtures/blender_cube.dae"); */
+
 
   TestSuiteEnd();
   exit(TestsFailed);

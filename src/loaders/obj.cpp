@@ -140,15 +140,16 @@ LoadObj(memory_arena *PermMem, const char * FilePath)
   untextured_3d_geometry_buffer Mesh = {};
   AllocateMesh(&Mesh, Stats.FaceCount*3, PermMem);
 
+  u32 VertCount = (u32)AtElements(&VertIndicies);
   for( u32 Index = 0;
-       Index < VertIndicies.At;
+       Index < VertCount;
        ++Index )
   {
-    u32 vIndex = VertIndicies.Elements[Index];
-    u32 nIndex = NormalIndicies.Elements[Index];
+    u32 vIndex = VertIndicies.Start[Index];
+    u32 nIndex = NormalIndicies.Start[Index];
 
-    v3 Vertex = TempVerts.Elements[vIndex];
-    v3 Normal = TempNormals.Elements[nIndex];
+    v3 Vertex = TempVerts.Start[vIndex];
+    v3 Normal = TempNormals.Start[nIndex];
 
     Mesh.Verts[Mesh.At] = Vertex;
     Mesh.Normals[Mesh.At] = Normal;

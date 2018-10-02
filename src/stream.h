@@ -56,6 +56,30 @@ CS(const char *S)
 }
 
 ansi_stream
+AnsiStream(counted_string String)
+{
+  ansi_stream Result = {};
+
+  Result.Start = String.Start;
+  Result.At    = String.Start;
+  Result.End   = String.Start + String.Count;
+
+  return Result;
+}
+
+ansi_stream
+AnsiStream(counted_string* String)
+{
+  ansi_stream Result = {};
+
+  Result.Start = String->Start;
+  Result.At    = String->Start;
+  Result.End   = String->Start + String->Count;
+
+  return Result;
+}
+
+ansi_stream
 AnsiStream(const char *Input)
 {
   ansi_stream Result = {};

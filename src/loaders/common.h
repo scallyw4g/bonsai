@@ -1,24 +1,46 @@
+struct r32_static_array
+{
+  r32* Start;
+  r32* At;
+  r32* End;
+};
+
 struct u32_static_array
 {
-  u32 *Elements;
-
-  umm At;
-  umm End;
+  u32* Start;
+  u32* At;
+  u32* End;
 };
 
 struct v3_static_array
 {
-  v3 *Elements;
-
-  umm At;
-  umm End;
+  v3* Start;
+  v3* At;
+  v3* End;
 };
+
+r32_static_array
+R32_Static_Array(u32 Count, memory_arena *Memory)
+{
+  r32 *Elements = Allocate(r32, Memory, Count);
+  r32_static_array Result = {};
+
+  Result.Start = Elements;
+  Result.At = Elements;
+  Result.End = Elements + Count;
+
+  return Result;
+}
 
 u32_static_array
 U32_Static_Array(u32 Count, memory_arena *Memory)
 {
-  u32 *Elements = Allocate(u32, Memory, Count );
-  u32_static_array Result= {Elements, 0, Count};
+  u32 *Elements = Allocate(u32, Memory, Count);
+  u32_static_array Result = {};
+
+  Result.Start = Elements;
+  Result.At = Elements;
+  Result.End = Elements + Count;
 
   return Result;
 }
@@ -26,8 +48,12 @@ U32_Static_Array(u32 Count, memory_arena *Memory)
 v3_static_array
 V3_Static_Array(u32 Count, memory_arena *Memory)
 {
-  v3 *Elements = Allocate(v3, Memory, Count );
-  v3_static_array Result= {Elements, 0, Count};
+  v3 *Elements = Allocate(v3, Memory, Count);
+  v3_static_array Result = {};
+
+  Result.Start = Elements;
+  Result.At = Elements;
+  Result.End = Elements + Count;
 
   return Result;
 }
@@ -36,7 +62,8 @@ template <typename T, typename T_a>inline void
 Push(T Vec, T_a *Array)
 {
   Assert( Array->At < Array->End );
-  Array->Elements[Array->At++] = Vec;
+  *Array->At = Vec;
+  ++Array->At;
   return;
 }
 

@@ -90,7 +90,8 @@ xml_tag*
 GetFirstMatchingTag(xml_token_stream* Tokens, xml_token_stream* Selectors)
 {
   b32 Valid = True;
-  s32 MaxSelectorIndex = Count(Selectors) -1;
+  s32 MaxSelectorIndex = AtElements(Selectors) -1;
+  Print(MaxSelectorIndex);
 
   umm SelectorHash = Hash(Selectors->Start + MaxSelectorIndex) % Tokens->Hashes.Size;
   xml_token* FirstSelector = Selectors->Start + MaxSelectorIndex;
@@ -305,6 +306,16 @@ TokenizeSelector(ansi_stream* Selector, memory_arena* Memory)
   }
 
   return Result;
+}
+
+xml_tag*
+GetFirstMatchingTag(xml_token_stream* Tokens, counted_string* Selectors, memory_arena* Memory)
+{
+  ansi_stream SelectorStream = AnsiStream(Selectors);
+  xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+  xml_tag* ResultTag = GetFirstMatchingTag(Tokens, &Selector);
+
+  return ResultTag;
 }
 
 inline void
