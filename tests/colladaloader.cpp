@@ -412,7 +412,7 @@ main()
   BlenderCubeQueryTest();
 
   memory_arena* Memory = PlatformAllocateArena();
-  /* model Cube = LoadCollada(Memory, "tests/fixtures/blender_cube.dae"); */
+  model Cube = LoadCollada(Memory, "tests/fixtures/blender_cube.dae");
 
 
   TestSuiteEnd();

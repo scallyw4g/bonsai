@@ -2263,4 +2263,5 @@ BufferEntities( entity **EntityTable, untextured_3d_geometry_buffer *Mesh,
     BufferEntity( Mesh, Entity, Graphics, World->ChunkDim);
   }
 
+  return;
 }

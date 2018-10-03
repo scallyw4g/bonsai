@@ -146,7 +146,7 @@ ReadXYZIChunk(FILE *File, int* byteCounter)
 }
 
 model
-LoadModel(memory_arena *WorldStorage, char const *filepath)
+LoadVoxModel(memory_arena *WorldStorage, char const *filepath)
 {
   model Result;
   s32 totalChunkBytes = 0;

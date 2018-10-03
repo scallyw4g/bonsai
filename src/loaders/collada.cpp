@@ -43,6 +43,8 @@ ParseV3Array(umm ElementCount, ansi_stream FloatStream, memory_arena* Memory)
     }
     ++Result.At;
   }
+
+  return Result;
 }
 
 r32_static_array
@@ -58,7 +60,6 @@ ParseFloatArray(umm TotalFloatCount, ansi_stream FloatStream, memory_arena* Memo
     Result.Start[DestIndex] = StringToFloat(&Float);
   }
 }
-
 
 void
 Dump(v3_static_array* Array)
@@ -119,33 +120,34 @@ LoadCollada(memory_arena *Memory, const char * FilePath)
   Dump(&Positions);
 
 
-  untextured_3d_geometry_buffer Buffer = {};
-  AllocateMesh(&Buffer, TotalVertexCount, Memory);
+  model Result = {};
+  Result.Chunk = AllocateChunk(Memory, Chunk_Dimension(0,0,0));
 
-  counted_string CurrentTriangle = PopWordCounted(&Triangles);
-  umm NormalIndex = 0;
-  while (CurrentTriangle.Count)
   {
-    Assert(StringsMatch(CurrentTriangle, CS("3")));
-
-    for (u32 VertIndex = 0;
-        VertIndex < 3;
-        ++VertIndex)
+    counted_string CurrentTriangle = PopWordCounted(&Triangles);
+    umm NormalIndex = 0;
+    while (CurrentTriangle.Count)
     {
-      Assert(Buffer.At < Buffer.End);
+      Assert(StringsMatch(CurrentTriangle, CS("3")));
 
-      u32 CurrentIndex = (u32)StringToInt(PopWordCounted(&VertIndices));
-      Assert(CurrentIndex < TotalElements(&Positions));
+      for (u32 VertIndex = 0;
+          VertIndex < 3;
+          ++VertIndex)
+      {
+        Assert(Result.Chunk->Mesh.At < Result.Chunk->Mesh.End);
 
-      Buffer.Verts[Buffer.At] = Positions.Start[CurrentIndex];
-      Buffer.Normals[Buffer.At] = Normals.Start[NormalIndex++];
-      Buffer.At++;
+        u32 CurrentIndex = (u32)StringToInt(PopWordCounted(&VertIndices));
+        Assert(CurrentIndex < TotalElements(&Positions));
+
+        Result.Chunk->Mesh.Verts[Result.Chunk->Mesh.At] = Positions.Start[CurrentIndex];
+        Result.Chunk->Mesh.Normals[Result.Chunk->Mesh.At] = Normalize(Normals.Start[NormalIndex++]);
+        Result.Chunk->Mesh.At++;
+      }
+
+      CurrentTriangle = PopWordCounted(&Triangles);
     }
-
-
-    CurrentTriangle = PopWordCounted(&Triangles);
   }
 
-  model Result = {};
+  Result.Chunk->Flags = Chunk_Initialized;
   return Result;
 }

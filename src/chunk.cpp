@@ -3,18 +3,17 @@ void
 AllocateMesh(untextured_3d_geometry_buffer *Mesh, u32 NumVerts, memory_arena *Memory);
 
 chunk_data*
-AllocateChunk(memory_arena *WorldStorage, chunk_dimension Dim)
+AllocateChunk(memory_arena *Storage, chunk_dimension Dim)
 {
   // Note(Jesse): Not sure the alignment is completely necessary, but it may be
   // because multiple threads go to town on these memory blocks
   s32 Vol = AlignTo((umm)Volume(Dim), 64);
 
-  chunk_data *Result = AllocateAligned(chunk_data, WorldStorage, 1, 64);
-  if (Vol) { Result->Voxels = AllocateAligned(voxel, WorldStorage , Vol, 64); }
+  chunk_data *Result = AllocateAligned(chunk_data, Storage, 1, 64);
+  if (Vol) { Result->Voxels = AllocateAligned(voxel, Storage , Vol, 64); }
 
   // TODO(Jesse): Allocate this based on actual need?
-  AllocateMesh(&Result->Mesh, Kilobytes(12), WorldStorage);
-
+  AllocateMesh(&Result->Mesh, Kilobytes(12), Storage);
   ZeroChunk(Result, Vol);
 
   return Result;

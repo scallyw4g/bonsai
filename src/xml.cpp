@@ -91,7 +91,6 @@ GetFirstMatchingTag(xml_token_stream* Tokens, xml_token_stream* Selectors)
 {
   b32 Valid = True;
   s32 MaxSelectorIndex = AtElements(Selectors) -1;
-  Print(MaxSelectorIndex);
 
   umm SelectorHash = Hash(Selectors->Start + MaxSelectorIndex) % Tokens->Hashes.Size;
   xml_token* FirstSelector = Selectors->Start + MaxSelectorIndex;
