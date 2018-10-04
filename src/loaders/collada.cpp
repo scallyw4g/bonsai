@@ -117,30 +117,31 @@ LoadCollada(memory_arena *Memory, const char * FilePath)
   Assert(TotalElements(&Positions) == TotalVertexCount);
   Assert(TotalElements(&Normals) == TotalVertexCount);
 
-  Dump(&Positions);
-
+  /* Dump(&Positions); */
 
   model Result = {};
   Result.Chunk = AllocateChunk(Memory, Chunk_Dimension(0,0,0));
 
   {
     counted_string CurrentTriangle = PopWordCounted(&Triangles);
-    umm NormalIndex = 0;
     while (CurrentTriangle.Count)
     {
       Assert(StringsMatch(CurrentTriangle, CS("3")));
 
-      for (u32 VertIndex = 0;
-          VertIndex < 3;
-          ++VertIndex)
+      for (u32 PolygonAttrIndex = 0;
+          PolygonAttrIndex < 3;
+          ++PolygonAttrIndex)
       {
         Assert(Result.Chunk->Mesh.At < Result.Chunk->Mesh.End);
 
-        u32 CurrentIndex = (u32)StringToInt(PopWordCounted(&VertIndices));
-        Assert(CurrentIndex < TotalElements(&Positions));
+        u32 VertIndex = (u32)StringToInt(PopWordCounted(&VertIndices));
+        u32 NormalIndex = (u32)StringToInt(PopWordCounted(&VertIndices));
+        Assert(VertIndex < TotalElements(&Positions));
+        Assert(NormalIndex < TotalElements(&Positions));
 
-        Result.Chunk->Mesh.Verts[Result.Chunk->Mesh.At] = Positions.Start[CurrentIndex];
-        Result.Chunk->Mesh.Normals[Result.Chunk->Mesh.At] = Normalize(Normals.Start[NormalIndex++]);
+        Result.Chunk->Mesh.Verts[Result.Chunk->Mesh.At] = Positions.Start[VertIndex];
+        Result.Chunk->Mesh.Normals[Result.Chunk->Mesh.At] = Normalize(Normals.Start[NormalIndex]);
+
         Result.Chunk->Mesh.At++;
       }
 
