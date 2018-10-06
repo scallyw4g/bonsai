@@ -212,6 +212,7 @@ struct model
 {
   chunk_data *Chunk;
   chunk_dimension Dim;
+  animation *Animation;
 };
 
 struct random_series
