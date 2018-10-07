@@ -40,8 +40,8 @@ GetNextMatchingRootTag(xml_tag* Current, xml_token* SearchTag)
 
   while (Current)
   {
-    if (Current->Open && // TODO(Jesse): Should this not be an Assert(Current->Open) ?
-        TokensAreEqual(SearchTag, Current->Open))
+    Assert(Current->Open);
+    if(TokensAreEqual(SearchTag, Current->Open))
     {
       Result = Current;
       break;
