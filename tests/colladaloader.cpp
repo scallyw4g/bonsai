@@ -85,93 +85,93 @@ TokenizingTest()
 
     Rewind(&XmlTokens);
 
-    TestThat(*XmlTokens.At++ == XmlOpen);
+    TestThat(TokensAreEqual(XmlTokens.At++, &XmlOpen));
 
-    TestThat(*XmlTokens.At++ == ValueOpen);
-    TestThat(*XmlTokens.At++ == ValueClose);
+    TestThat(TokensAreEqual(XmlTokens.At++, &ValueOpen));
+    TestThat(TokensAreEqual(XmlTokens.At++, &ValueClose));
 
-    TestThat(*XmlTokens.At++ == IdValueOpen);
-    TestThat(*XmlTokens.At++ == ValueClose);
+    TestThat(TokensAreEqual(XmlTokens.At++, &IdValueOpen));
+    TestThat(TokensAreEqual(XmlTokens.At++, &ValueClose));
 
     {
-      TestThat(*XmlTokens.At++ == OuterOpen);
-      TestThat(*XmlTokens.At++ == InnerOpen);
-      TestThat(*XmlTokens.At++ == ValueOpen);
+      TestThat(TokensAreEqual(XmlTokens.At++, &OuterOpen));
+      TestThat(TokensAreEqual(XmlTokens.At++, &InnerOpen));
+      TestThat(TokensAreEqual(XmlTokens.At++, &ValueOpen));
 
-      TestThat(*XmlTokens.At++ == ValueClose);
-      TestThat(*XmlTokens.At++ == InnerClose);
-      TestThat(*XmlTokens.At++ == OuterClose);
+      TestThat(TokensAreEqual(XmlTokens.At++, &ValueClose));
+      TestThat(TokensAreEqual(XmlTokens.At++, &InnerClose));
+      TestThat(TokensAreEqual(XmlTokens.At++, &OuterClose));
     }
     {
-      TestThat(*XmlTokens.At++ == OuterOpen);
-      TestThat(*XmlTokens.At++ == InnerOpen);
-      TestThat(*XmlTokens.At++ == ValueOpen);
+      TestThat(TokensAreEqual(XmlTokens.At++, &OuterOpen));
+      TestThat(TokensAreEqual(XmlTokens.At++, &InnerOpen));
+      TestThat(TokensAreEqual(XmlTokens.At++, &ValueOpen));
 
-      TestThat(*XmlTokens.At++ == ValueClose);
-      TestThat(*XmlTokens.At++ == InnerClose);
-      TestThat(*XmlTokens.At++ == OuterClose);
+      TestThat(TokensAreEqual(XmlTokens.At++, &ValueClose));
+      TestThat(TokensAreEqual(XmlTokens.At++, &InnerClose));
+      TestThat(TokensAreEqual(XmlTokens.At++, &OuterClose));
     }
     {
-      TestThat(*XmlTokens.At++ == OuterOpen);
-      TestThat(*XmlTokens.At++ == InnerOpen);
-      TestThat(*XmlTokens.At++ == ValueOpen);
+      TestThat(TokensAreEqual(XmlTokens.At++, &OuterOpen));
+      TestThat(TokensAreEqual(XmlTokens.At++, &InnerOpen));
+      TestThat(TokensAreEqual(XmlTokens.At++, &ValueOpen));
 
-      TestThat(*XmlTokens.At++ == ValueClose);
-      TestThat(*XmlTokens.At++ == InnerClose);
-      TestThat(*XmlTokens.At++ == OuterClose);
+      TestThat(TokensAreEqual(XmlTokens.At++, &ValueClose));
+      TestThat(TokensAreEqual(XmlTokens.At++, &InnerClose));
+      TestThat(TokensAreEqual(XmlTokens.At++, &OuterClose));
     }
     {
-      TestThat(*XmlTokens.At++ == OuterOpen);
-      TestThat(*XmlTokens.At++ == InnerOpen);
-      TestThat(*XmlTokens.At++ == ValueOpen);
+      TestThat(TokensAreEqual(XmlTokens.At++, &OuterOpen));
+      TestThat(TokensAreEqual(XmlTokens.At++, &InnerOpen));
+      TestThat(TokensAreEqual(XmlTokens.At++, &ValueOpen));
 
-      TestThat(*XmlTokens.At++ == ValueClose);
-      TestThat(*XmlTokens.At++ == InnerClose);
-      TestThat(*XmlTokens.At++ == OuterClose);
+      TestThat(TokensAreEqual(XmlTokens.At++, &ValueClose));
+      TestThat(TokensAreEqual(XmlTokens.At++, &InnerClose));
+      TestThat(TokensAreEqual(XmlTokens.At++, &OuterClose));
     }
     {
-      TestThat(*XmlTokens.At++ == OuterOpen);
-      TestThat(*XmlTokens.At++ == InnerOpen);
-      TestThat(*XmlTokens.At++ == ValueOpen);
+      TestThat(TokensAreEqual(XmlTokens.At++, &OuterOpen));
+      TestThat(TokensAreEqual(XmlTokens.At++, &InnerOpen));
+      TestThat(TokensAreEqual(XmlTokens.At++, &ValueOpen));
 
-      TestThat(*XmlTokens.At++ == ValueClose);
-      TestThat(*XmlTokens.At++ == InnerClose);
-      TestThat(*XmlTokens.At++ == OuterClose);
+      TestThat(TokensAreEqual(XmlTokens.At++, &ValueClose));
+      TestThat(TokensAreEqual(XmlTokens.At++, &InnerClose));
+      TestThat(TokensAreEqual(XmlTokens.At++, &OuterClose));
     }
 
     { // With the comment property
-      TestThat(*XmlTokens.At++ == OuterOpen);
-      TestThat(*XmlTokens.At++ == InnerOpen);
+      TestThat(TokensAreEqual(XmlTokens.At++, &OuterOpen));
+      TestThat(TokensAreEqual(XmlTokens.At++, &InnerOpen));
 
-      TestThat(*XmlTokens.At++ == ValueOpen);
-      TestThat(*XmlTokens.At++ == CommentProperty);
-      TestThat(*XmlTokens.At++ == ValueClose);
+      TestThat(TokensAreEqual(XmlTokens.At++, &ValueOpen));
+      TestThat(TokensAreEqual(XmlTokens.At++, &CommentProperty));
+      TestThat(TokensAreEqual(XmlTokens.At++, &ValueClose));
 
-      TestThat(*XmlTokens.At++ == ValueOpen);
-      TestThat(*XmlTokens.At++ == ValueClose);
+      TestThat(TokensAreEqual(XmlTokens.At++, &ValueOpen));
+      TestThat(TokensAreEqual(XmlTokens.At++, &ValueClose));
 
-      TestThat(*XmlTokens.At++ == ValueOpen);
-      TestThat(*XmlTokens.At++ == ValueClose);
+      TestThat(TokensAreEqual(XmlTokens.At++, &ValueOpen));
+      TestThat(TokensAreEqual(XmlTokens.At++, &ValueClose));
 
-      TestThat(*XmlTokens.At++ == InnerClose);
-      TestThat(*XmlTokens.At++ == OuterClose);
+      TestThat(TokensAreEqual(XmlTokens.At++, &InnerClose));
+      TestThat(TokensAreEqual(XmlTokens.At++, &OuterClose));
     }
     { // With the comment property on a single line
-      TestThat(*XmlTokens.At++ == OuterOpen);
-      TestThat(*XmlTokens.At++ == InnerOpen);
+      TestThat(TokensAreEqual(XmlTokens.At++, &OuterOpen));
+      TestThat(TokensAreEqual(XmlTokens.At++, &InnerOpen));
 
-      TestThat(*XmlTokens.At++ == ValueOpen);
-      TestThat(*XmlTokens.At++ == CommentProperty);
-      TestThat(*XmlTokens.At++ == ValueClose);
+      TestThat(TokensAreEqual(XmlTokens.At++, &ValueOpen));
+      TestThat(TokensAreEqual(XmlTokens.At++, &CommentProperty));
+      TestThat(TokensAreEqual(XmlTokens.At++, &ValueClose));
 
-      TestThat(*XmlTokens.At++ == ValueOpen);
-      TestThat(*XmlTokens.At++ == ValueClose);
+      TestThat(TokensAreEqual(XmlTokens.At++, &ValueOpen));
+      TestThat(TokensAreEqual(XmlTokens.At++, &ValueClose));
 
-      TestThat(*XmlTokens.At++ == ValueOpen);
-      TestThat(*XmlTokens.At++ == ValueClose);
+      TestThat(TokensAreEqual(XmlTokens.At++, &ValueOpen));
+      TestThat(TokensAreEqual(XmlTokens.At++, &ValueClose));
 
-      TestThat(*XmlTokens.At++ == InnerClose);
-      TestThat(*XmlTokens.At++ == OuterClose);
+      TestThat(TokensAreEqual(XmlTokens.At++, &InnerClose));
+      TestThat(TokensAreEqual(XmlTokens.At++, &OuterClose));
     }
 
 
@@ -184,21 +184,21 @@ TokenizingTest()
       xml_token StringProp2   = XmlPropertyToken(CS("string-property-2"), CS("> more text, yay! <"));
 
 
-      TestThat(*XmlTokens.At++ == OuterOpen);
+      TestThat(TokensAreEqual(XmlTokens.At++, &OuterOpen));
 
-      TestThat(*XmlTokens.At++ == BooleanProp);
-      TestThat(*XmlTokens.At++ == IntProp);
-      TestThat(*XmlTokens.At++ == FloatProp);
-      TestThat(*XmlTokens.At++ == StringProp1);
-      TestThat(*XmlTokens.At++ == StringProp2);
+      TestThat(TokensAreEqual(XmlTokens.At++, &BooleanProp));
+      TestThat(TokensAreEqual(XmlTokens.At++, &IntProp));
+      TestThat(TokensAreEqual(XmlTokens.At++, &FloatProp));
+      TestThat(TokensAreEqual(XmlTokens.At++, &StringProp1));
+      TestThat(TokensAreEqual(XmlTokens.At++, &StringProp2));
 
-      TestThat(*XmlTokens.At++ == InnerOpen);
-      TestThat(*XmlTokens.At++ == ValueOpen);
-      TestThat(*XmlTokens.At++ == ValueClose);
-      TestThat(*XmlTokens.At++ == InnerClose);
+      TestThat(TokensAreEqual(XmlTokens.At++, &InnerOpen));
+      TestThat(TokensAreEqual(XmlTokens.At++, &ValueOpen));
+      TestThat(TokensAreEqual(XmlTokens.At++, &ValueClose));
+      TestThat(TokensAreEqual(XmlTokens.At++, &InnerClose));
 
-      TestThat(*XmlTokens.At++ == OuterClose);
-      TestThat(*XmlTokens.At++ == XmlClose);
+      TestThat(TokensAreEqual(XmlTokens.At++, &OuterClose));
+      TestThat(TokensAreEqual(XmlTokens.At++, &XmlClose));
     }
 
     TestThat(AtElements(&XmlTokens) == TokenCount);
@@ -225,11 +225,11 @@ XmlTests()
   xml_token RegularOpenToken = XmlOpenToken(CS("open"));
   xml_token OpenTokenWithId = XmlOpenToken(CS("open"), CS("id-value"));
 
-  TestThat(RegularOpenToken == RegularOpenToken);
+  TestThat(TokensAreEqual(&RegularOpenToken, &RegularOpenToken));
   TestThat(StringsMatch(RegularOpenToken.Property.Name, CS("open")));
   TestThat(RegularOpenToken.Property.Id.Count == 0);
 
-  TestThat(OpenTokenWithId == OpenTokenWithId);
+  TestThat(TokensAreEqual(&OpenTokenWithId, &OpenTokenWithId));
   TestThat(StringsMatch(OpenTokenWithId.Property.Name, CS("open")));
   TestThat(StringsMatch(OpenTokenWithId.Property.Id, CS("id-value")));
 
@@ -251,7 +251,7 @@ ContrivedQueryingTest()
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
     xml_token OpenExpected = XmlOpenToken(CS("first-value"));
-    TestThat(*ResultTag->Open == OpenExpected);
+    TestThat(TokensAreEqual(ResultTag->Open, &OpenExpected));
     TestThat(StringsMatch(&ResultTag->Value, &FourtyTwoTwice));
   }
 
@@ -260,7 +260,7 @@ ContrivedQueryingTest()
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
     xml_token OpenExpected = XmlOpenToken(CS("first-value"), CS("id-value"));
-    TestThat(*ResultTag->Open == OpenExpected);
+    TestThat(TokensAreEqual(ResultTag->Open, &OpenExpected));
     TestThat(StringsMatch(&ResultTag->Value, &TheMeaningOfLifeTheUniverseAndEverything));
   }
 
@@ -269,7 +269,7 @@ ContrivedQueryingTest()
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
     xml_token OpenExpected = XmlOpenToken(CS("first-value"), CS("id-value"));
-    TestThat(*ResultTag->Open == OpenExpected);
+    TestThat(TokensAreEqual(ResultTag->Open, &OpenExpected));
     TestThat(StringsMatch(&ResultTag->Value, &TheMeaningOfLifeTheUniverseAndEverything));
   }
 
@@ -278,7 +278,7 @@ ContrivedQueryingTest()
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
     xml_token OpenExpected = XmlOpenToken(CS("second-value"));
-    TestThat(*ResultTag->Open == OpenExpected);
+    TestThat(TokensAreEqual(ResultTag->Open, &OpenExpected));
     TestThat(StringsMatch(&ResultTag->Value, &TheMeaningOfLifeTheUniverseAndEverything));
   }
 
@@ -287,7 +287,7 @@ ContrivedQueryingTest()
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
     xml_token OpenExpected = XmlOpenToken(CS("third-value"));
-    TestThat(*ResultTag->Open == OpenExpected);
+    TestThat(TokensAreEqual(ResultTag->Open, &OpenExpected));
     TestThat(StringsMatch(&ResultTag->Value, &TheMeaningOfLifeTheUniverseAndEverything));
   }
 
@@ -296,7 +296,7 @@ ContrivedQueryingTest()
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
     xml_token OpenExpected = XmlOpenToken(CS("fourth-value"));
-    TestThat(*ResultTag->Open == OpenExpected);
+    TestThat(TokensAreEqual(ResultTag->Open, &OpenExpected));
     TestThat(StringsMatch(&ResultTag->Value, &TheMeaningOfLifeTheUniverseAndEverything));
   }
 
@@ -305,7 +305,7 @@ ContrivedQueryingTest()
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
     xml_token OpenExpected = XmlOpenToken(CS("fourth-value"));
-    TestThat(*ResultTag->Open == OpenExpected);
+    TestThat(TokensAreEqual(ResultTag->Open, &OpenExpected));
     TestThat(StringsMatch(&ResultTag->Value, &TheMeaningOfLifeTheUniverseAndEverything));
   }
 
@@ -315,7 +315,7 @@ ContrivedQueryingTest()
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
     xml_token OpenExpected = XmlOpenToken(CS("color"));
-    TestThat(*ResultTag->Open == OpenExpected);
+    TestThat(TokensAreEqual(ResultTag->Open, &OpenExpected));
     TestThat(StringsMatch(&ResultTag->Value, CS("1 2 3 4")));
   }
   return;
@@ -381,7 +381,8 @@ BlenderCubeQueryTest()
     ansi_stream SelectorStream = AnsiStream("?xml COLLADA library_visual_scenes visual_scene#Scene node#Cube instance_geometry bind_material technique_common");
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
-    TestThat(*ResultTag->Open == XmlOpenToken(CS("technique_common")) );
+    xml_token Expected = XmlOpenToken(CS("technique_common"));
+    TestThat(TokensAreEqual(ResultTag->Open, &Expected));
     TestThat(ResultTag);
   }
 
@@ -389,7 +390,8 @@ BlenderCubeQueryTest()
     ansi_stream SelectorStream = AnsiStream("?xml COLLADA library_lights light#Lamp-light extra technique ray_samp");
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
-    TestThat(*ResultTag->Open == XmlOpenToken(CS("ray_samp")) );
+    xml_token Expected = XmlOpenToken(CS("ray_samp"));
+    TestThat(TokensAreEqual(ResultTag->Open, &Expected));
     TestThat(StringsMatch(ResultTag->Value, CS("1")));
   }
 

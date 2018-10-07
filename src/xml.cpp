@@ -1,30 +1,30 @@
 // NOTE(Jesse): This has to be here instead of in the .h file because it does a string compare
 // Sad times.
 b32
-operator==(xml_token T1, xml_token T2)
+TokensAreEqual(xml_token* T1, xml_token* T2)
 {
   b32 Result = False;
 
-  if (T1.Type == T2.Type)
+  if (T1->Type == T2->Type)
   {
-    switch (T1.Type)
+    switch (T1->Type)
     {
       case XmlTokenType_Float:
       case XmlTokenType_Int:
       case XmlTokenType_Property:
       {
-        Result = StringsMatch(&T1.Property.Name, &T2.Property.Name) &&
-                 StringsMatch(&T1.Property.Value, &T2.Property.Value);
+        Result = StringsMatch(&T1->Property.Name, &T2->Property.Name) &&
+                 StringsMatch(&T1->Property.Value, &T2->Property.Value);
       } break;
 
       case XmlTokenType_Open:
       case XmlTokenType_Close:
       case XmlTokenType_Boolean:
       {
-        Result = StringsMatch(&T1.Property.Name, &T2.Property.Name);
-        if (T1.Property.Id.Count || T2.Property.Id.Count)
+        Result = StringsMatch(&T1->Property.Name, &T2->Property.Name);
+        if (T1->Property.Id.Count || T2->Property.Id.Count)
         {
-          Result = Result && StringsMatch(&T1.Property.Id, &T2.Property.Id);
+          Result = Result && StringsMatch(&T1->Property.Id, &T2->Property.Id);
         }
       } break;
 
@@ -36,9 +36,9 @@ operator==(xml_token T1, xml_token T2)
 }
 
 b32
-operator!=(xml_token T1, xml_token T2)
+TokensAreNotEqual(xml_token* T1, xml_token* T2)
 {
-  b32 Result = !(T1 == T2);
+  b32 Result = !TokensAreEqual(T1, T2);
   return Result;
 }
 
@@ -72,7 +72,7 @@ GetNextMatchingRootTag(xml_tag* Current, xml_token* SearchTag)
   while (Current)
   {
     if (Current->Open && // TODO(Jesse): Should this not be an Assert(Current->Open) ?
-        *SearchTag == *Current->Open)
+        TokensAreEqual(SearchTag, Current->Open))
     {
       Result = Current;
       break;
@@ -107,7 +107,7 @@ GetFirstMatchingTag(xml_token_stream* Tokens, xml_token_stream* Selectors)
       xml_token* CurrentSelector = &Selectors->Start[SelectorIndex];
 
       if (CurrentTag && CurrentTag->Open &&
-          *CurrentSelector == *CurrentTag->Open)
+          TokensAreEqual(CurrentSelector, CurrentTag->Open))
       {
         CurrentTag = CurrentTag->Parent;
         Valid = True;
@@ -117,7 +117,7 @@ GetFirstMatchingTag(xml_token_stream* Tokens, xml_token_stream* Selectors)
         while (CurrentTag)
         {
           if (CurrentTag->Open &&
-              *CurrentSelector == *CurrentTag->Open)
+              TokensAreEqual(CurrentSelector, CurrentTag->Open) )
           {
             CurrentTag = CurrentTag->Parent;
             Valid = True;
@@ -272,6 +272,7 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
                 counted_string PropValue = PopQuotedString(Xml, Memory);
                 if (StringsMatch(&PropertyName, CS("id")))
                 {
+                  // TODO(Jesse): This should be removed once we can query properties by name from xml_tags
                   TagsAt.CurrentlyOpenTag->Open->Property.Id = PropValue;
                   PushProperty(TagsAt.CurrentlyOpenTag, XmlProperty(PropertyName, PropValue, Memory));
                 }
