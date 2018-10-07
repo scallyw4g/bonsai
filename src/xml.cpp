@@ -1,5 +1,3 @@
-// NOTE(Jesse): This has to be here instead of in the .h file because it does a string compare
-// Sad times.
 b32
 TokensAreEqual(xml_token* T1, xml_token* T2)
 {
@@ -34,35 +32,6 @@ TokensAreEqual(xml_token* T1, xml_token* T2)
 
   return Result;
 }
-
-b32
-TokensAreNotEqual(xml_token* T1, xml_token* T2)
-{
-  b32 Result = !TokensAreEqual(T1, T2);
-  return Result;
-}
-
-#if 0
-umm
-XmlSelectorHash(xml_token_stream* Selectors, umm TargetHashSize)
-{
-  umm SelectorHashValue = {};
-
-  s32 SelectorCount = Count(Selectors);
-
-  for (umm SelectorIndex = 0;
-      SelectorIndex < SelectorCount;
-      ++SelectorIndex)
-  {
-    xml_token* Selector = Selectors->Start + SelectorIndex;
-    SelectorHashValue = (SelectorHashValue + Hash(Selector)) % TargetHashSize;
-  }
-
-  SelectorHashValue = SelectorHashValue % TargetHashSize;
-
-  return SelectorHashValue;
-}
-#endif
 
 xml_tag*
 GetNextMatchingRootTag(xml_tag* Current, xml_token* SearchTag)
