@@ -75,7 +75,7 @@ TokenizingTest()
     xml_token InnerOpen = XmlOpenToken(CS("inner"));
 
     xml_token ValueOpen = XmlOpenToken(CS("value"));
-    xml_token IdValueOpen = XmlOpenToken(CS("value"), CS("value-id"));
+    xml_token IdValue   = XmlPropertyToken(CS("id"), CS("value-id"));
 
     xml_token OuterClose = XmlCloseToken(CS("outer"), 0);
     xml_token InnerClose = XmlCloseToken(CS("inner"), 0);
@@ -90,7 +90,8 @@ TokenizingTest()
     TestThat(TokensAreEqual(XmlTokens.At++, &ValueOpen));
     TestThat(TokensAreEqual(XmlTokens.At++, &ValueClose));
 
-    TestThat(TokensAreEqual(XmlTokens.At++, &IdValueOpen));
+    TestThat(TokensAreEqual(XmlTokens.At++, &ValueOpen));
+    TestThat(TokensAreEqual(XmlTokens.At++, &IdValue));
     TestThat(TokensAreEqual(XmlTokens.At++, &ValueClose));
 
     {
@@ -223,15 +224,10 @@ void
 XmlTests()
 {
   xml_token RegularOpenToken = XmlOpenToken(CS("open"));
-  xml_token OpenTokenWithId = XmlOpenToken(CS("open"), CS("id-value"));
 
   TestThat(TokensAreEqual(&RegularOpenToken, &RegularOpenToken));
   TestThat(StringsMatch(RegularOpenToken.Property.Name, CS("open")));
-  TestThat(RegularOpenToken.Property.Id.Count == 0);
-
-  TestThat(TokensAreEqual(&OpenTokenWithId, &OpenTokenWithId));
-  TestThat(StringsMatch(OpenTokenWithId.Property.Name, CS("open")));
-  TestThat(StringsMatch(OpenTokenWithId.Property.Id, CS("id-value")));
+  TestThat(RegularOpenToken.Property.Value.Count == 0);
 
   return;
 }
@@ -260,7 +256,7 @@ ContrivedQueryingTest()
     ansi_stream SelectorStream = AnsiStream("xml first-value#id-value");
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
-    xml_token OpenExpected = XmlOpenToken(CS("first-value"), ActualIdValue);
+    xml_token OpenExpected = XmlOpenToken(CS("first-value"));
     TestThat(TokensAreEqual(ResultTag->Open, &OpenExpected));
     TestThat(StringsMatch(&ResultTag->Value, &TheMeaningOfLifeTheUniverseAndEverything));
 
@@ -272,7 +268,7 @@ ContrivedQueryingTest()
     ansi_stream SelectorStream = AnsiStream("xml first-value#id-value");
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
-    xml_token OpenExpected = XmlOpenToken(CS("first-value"), CS("id-value"));
+    xml_token OpenExpected = XmlOpenToken(CS("first-value"));
     TestThat(TokensAreEqual(ResultTag->Open, &OpenExpected));
     TestThat(StringsMatch(&ResultTag->Value, &TheMeaningOfLifeTheUniverseAndEverything));
   }
@@ -327,7 +323,7 @@ ContrivedQueryingTest()
     ansi_stream SelectorStream = AnsiStream("xml library_lights light#Lamp-light");
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
-    xml_token OpenExpected = XmlOpenToken(CS("light"), CS("Lamp-light"));
+    xml_token OpenExpected = XmlOpenToken(CS("light"));
     TestThat(TokensAreEqual(ResultTag->Open, &OpenExpected));
 
     counted_string NameValue = CS("Lamp");

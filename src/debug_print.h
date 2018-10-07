@@ -298,8 +298,8 @@ Print_P( xml_token *Token, const char* name)
     case XmlTokenType_Open:
     {
       Log("OpenToken %.*s", Token->Property.Name.Count, Token->Property.Name.Start);
-      if (Token->Property.Id.Count)
-        { Log("Id %.*s", Token->Property.Id.Count, Token->Property.Id.Start); }
+      if (Token->Property.Value.Count)
+        { Log("Id %.*s", Token->Property.Value.Count, Token->Property.Value.Start); }
     } break;
 
     case XmlTokenType_Close:

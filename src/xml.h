@@ -17,10 +17,8 @@ enum xml_token_type
 struct xml_property
 {
   counted_string Name;
-  union {
-    counted_string Value;
-    counted_string Id;
-  };
+  counted_string Value;
+
   // TODO(Jesse): This could be factored out of here if the xml_tag.Properties
   // thing was a xml_token_stream* - which would require a two-pass parser most
   // likely.  ie. Tokenizer and AST builder
@@ -103,12 +101,11 @@ XmlCloseToken(counted_string Name, xml_parsing_at_indicators* TagsAt)
 }
 
 xml_token
-XmlOpenToken(counted_string Name, counted_string Id = {})
+XmlOpenToken(counted_string Name)
 {
   xml_token Result = {};
   Result.Type = XmlTokenType_Open;
   Result.Property.Name = Name;
-  Result.Property.Id = Id;
   return Result;
 }
 

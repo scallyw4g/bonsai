@@ -1,3 +1,37 @@
+inline counted_string*
+GetPropertyValue(xml_tag* Tag, counted_string PropertyName)
+{
+  xml_property* At = Tag->Properties;
+  counted_string* Result = 0;
+
+  while (At)
+  {
+    if (StringsMatch(At->Name, PropertyName))
+    {
+      Result = &At->Value;
+      break;
+    }
+
+    At = At->Next;
+  }
+
+  return Result;
+}
+
+inline void
+PushProperty(xml_tag* Target, xml_property *Prop)
+{
+  if (!Target->Properties)
+  {
+    Target->NextPropertySlot = &Target->Properties;
+  }
+
+  *Target->NextPropertySlot = Prop;
+  Target->NextPropertySlot = &Prop->Next;
+
+  return;
+}
+
 b32
 TokensAreEqual(xml_token* T1, xml_token* T2)
 {
@@ -20,9 +54,9 @@ TokensAreEqual(xml_token* T1, xml_token* T2)
       case XmlTokenType_Boolean:
       {
         Result = StringsMatch(&T1->Property.Name, &T2->Property.Name);
-        if (T1->Property.Id.Count || T2->Property.Id.Count)
+        if (T1->Property.Value.Count || T2->Property.Value.Count)
         {
-          Result = Result && StringsMatch(&T1->Property.Id, &T2->Property.Id);
+          Result = Result && StringsMatch(&T1->Property.Value, &T2->Property.Value);
         }
       } break;
 
@@ -33,15 +67,35 @@ TokensAreEqual(xml_token* T1, xml_token* T2)
   return Result;
 }
 
+b32
+TagsAreEqual(xml_tag* T1, xml_tag* T2)
+{
+  b32 Result = False;
+
+  if (T1 && T2 && TokensAreEqual(T1->Open, T2->Open))
+  {
+    Result = True;
+
+    counted_string* Id1 = GetPropertyValue(T1, CS("id"));
+    counted_string* Id2 = GetPropertyValue(T2, CS("id"));
+    if ( (Id1 || Id2) && (!StringsMatch(Id1,Id2)) )
+    {
+      Result = False;
+    }
+  }
+
+  return Result;
+}
+
 xml_tag*
-GetNextMatchingRootTag(xml_tag* Current, xml_token* SearchTag)
+GetNextMatchingRootTag(xml_tag* Current, xml_tag* SearchTag)
 {
   xml_tag* Result = 0;
 
   while (Current)
   {
     Assert(Current->Open);
-    if(TokensAreEqual(SearchTag, Current->Open))
+    if(TagsAreEqual(Current, SearchTag))
     {
       Result = Current;
       break;
@@ -55,28 +109,49 @@ GetNextMatchingRootTag(xml_tag* Current, xml_token* SearchTag)
   return Result;
 }
 
+xml_tag
+XmlTagFromReverseStream(xml_token_stream** Stream)
+{
+  xml_tag Result = {};
+
+  while ((*Stream)->At->Type == XmlTokenType_Property)
+  {
+    PushProperty(&Result, &(*Stream)->At->Property);
+    --(*Stream)->At;
+    Assert((*Stream)->At >= (*Stream)->Start);
+  }
+
+  Assert((*Stream)->At->Type == XmlTokenType_Open);
+  Result.Open = (*Stream)->At;
+
+  --(*Stream)->At;
+  Assert((*Stream)->At >= (*Stream)->Start);
+
+  return Result;
+}
+
 xml_tag*
 GetFirstMatchingTag(xml_token_stream* Tokens, xml_token_stream* Selectors)
 {
   b32 Valid = True;
-  s32 MaxSelectorIndex = AtElements(Selectors) -1;
+  Selectors->At = Selectors->End-1;
 
-  umm SelectorHash = Hash(Selectors->Start + MaxSelectorIndex) % Tokens->Hashes.Size;
-  xml_token* FirstSelector = Selectors->Start + MaxSelectorIndex;
+  xml_tag FirstSelector = XmlTagFromReverseStream(&Selectors);
+  xml_token_stream FirstSelectorStream = *Selectors;
 
-  xml_tag* RootTag = GetNextMatchingRootTag(Tokens->Hashes.Table[SelectorHash], FirstSelector);
+  umm SelectorHash = Hash(FirstSelector.Open) % Tokens->Hashes.Size;
+
+  xml_tag* RootTag = GetNextMatchingRootTag(Tokens->Hashes.Table[SelectorHash], &FirstSelector);
 
   while (RootTag)
   {
     xml_tag *CurrentTag = RootTag->Parent;
-    for (s32 SelectorIndex = MaxSelectorIndex-1; // We've already checked the first selector
-        SelectorIndex >= 0;
-        --SelectorIndex)
+    *Selectors = FirstSelectorStream;
+    while (Selectors->At > Selectors->Start)
     {
-      xml_token* CurrentSelector = &Selectors->Start[SelectorIndex];
+      xml_tag CurrentSelector = XmlTagFromReverseStream(&Selectors);
 
-      if (CurrentTag && CurrentTag->Open &&
-          TokensAreEqual(CurrentSelector, CurrentTag->Open))
+      if (TagsAreEqual(&CurrentSelector, CurrentTag))
       {
         CurrentTag = CurrentTag->Parent;
         Valid = True;
@@ -85,8 +160,7 @@ GetFirstMatchingTag(xml_token_stream* Tokens, xml_token_stream* Selectors)
       {
         while (CurrentTag)
         {
-          if (CurrentTag->Open &&
-              TokensAreEqual(CurrentSelector, CurrentTag->Open) )
+          if (TagsAreEqual(&CurrentSelector, CurrentTag))
           {
             CurrentTag = CurrentTag->Parent;
             Valid = True;
@@ -101,7 +175,7 @@ GetFirstMatchingTag(xml_token_stream* Tokens, xml_token_stream* Selectors)
 
         if (!Valid)
         {
-          RootTag = GetNextMatchingRootTag(RootTag->NextInHash, FirstSelector);
+          RootTag = GetNextMatchingRootTag(RootTag->NextInHash, &FirstSelector);
           break;
         }
       }
@@ -113,20 +187,6 @@ GetFirstMatchingTag(xml_token_stream* Tokens, xml_token_stream* Selectors)
 
   xml_tag* Result = Valid ? RootTag : 0;
   return Result;
-}
-
-inline void
-PushProperty(xml_tag* Target, xml_property *Prop)
-{
-  if (!Target->Properties)
-  {
-    Target->NextPropertySlot = &Target->Properties;
-  }
-
-  *Target->NextPropertySlot = Prop;
-  Target->NextPropertySlot = &Prop->Next;
-
-  return;
 }
 
 xml_token_stream
@@ -239,15 +299,7 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
               case '\'':
               {
                 counted_string PropValue = PopQuotedString(Xml, Memory);
-                if (StringsMatch(&PropertyName, CS("id")))
-                {
-                  // TODO(Jesse): This should be removed once we can query properties by name from xml_tags
-                  TagsAt.CurrentlyOpenTag->Open->Property.Id = PropValue;
-                }
-                else
-                {
-                  PushToken(&Result, XmlPropertyToken(PropertyName, PropValue));
-                }
+                PushToken(&Result, XmlPropertyToken(PropertyName, PropValue));
                 PushProperty(TagsAt.CurrentlyOpenTag, XmlProperty(PropertyName, PropValue, Memory));
               } break;
 
@@ -286,9 +338,14 @@ TokenizeSelector(ansi_stream* Selector, memory_arena* Memory)
     counted_string TagName = PopWordCounted(Selector);
     counted_string TagId = Split(&TagName, '#');
 
-    PushToken(&Result, XmlOpenToken(TagName, TagId));
+    PushToken(&Result, XmlOpenToken(TagName));
+    if (TagId.Count)
+    {
+      PushToken(&Result, XmlPropertyToken(CS("id"), TagId));
+    }
   }
 
+  Result.End = Result.At;
   return Result;
 }
 
@@ -309,22 +366,3 @@ Rewind(xml_token_stream *Stream)
   return;
 }
 
-inline counted_string*
-GetPropertyValue(xml_tag* Tag, counted_string PropertyName)
-{
-  xml_property* At = Tag->Properties;
-  counted_string* Result = 0;
-
-  while (At)
-  {
-    if (StringsMatch(At->Name, PropertyName))
-    {
-      Result = &At->Value;
-      break;
-    }
-
-    At = At->Next;
-  }
-
-  return Result;
-}

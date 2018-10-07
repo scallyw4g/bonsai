@@ -1,13 +1,10 @@
 inline b32
 StringsMatch(const char *S1, const char *S2)
 {
-  const char *S1At = S1;
-  const char *S2At = S2;
-
-  b32 Result = (*S1At == *S2At);
-  while (Result && (*S1At || *S2At))
+  b32 Result = S1 && S2;
+  while (Result && (*S1 || *S2))
   {
-    Result &= (*S1At++ == *S2At++);
+    Result &= (*S1++ == *S2++);
   }
 
   return Result;
@@ -18,7 +15,7 @@ StringsMatch(counted_string* S1, counted_string* S2)
 {
   b32 Result = True;
 
-  if (S1->Count == S2->Count)
+  if (S1 && S2 && S1->Count == S2->Count)
   {
     for (u32 CharIndex = 0;
         CharIndex < S1->Count;
