@@ -90,62 +90,49 @@ LoadCollada(memory_arena *Memory, const char * FilePath)
   counted_string NormalsSelector     = CS("?xml COLLADA library_geometries geometry#Cube-mesh mesh source#Cube-mesh-normals float_array#Cube-mesh-normals-array");
   counted_string VertexCountSelector = CS("?xml COLLADA library_geometries geometry#Cube-mesh mesh polylist vcount");
   counted_string VertIndicesSelector = CS("?xml COLLADA library_geometries geometry#Cube-mesh mesh polylist p");
-
-  counted_string PositionString   = GetFirstMatchingTag(&XmlTokens, &PositionsSelector, Memory)->Value;
-  counted_string NormalString     = GetFirstMatchingTag(&XmlTokens, &NormalsSelector, Memory)->Value;
-  ansi_stream Triangles  = AnsiStream(GetFirstMatchingTag(&XmlTokens, &VertexCountSelector, Memory)->Value);
-  ansi_stream VertIndices = AnsiStream(GetFirstMatchingTag(&XmlTokens, &VertIndicesSelector, Memory)->Value);
-
-  u32 TotalTriangleCount = 0;
-
-  // TODO(Jesse): This is complete garbage and should be gotten from XML
-  {
-    counted_string CurrentTriangle = PopWordCounted(&Triangles);
-    while (CurrentTriangle.Count)
-    {
-      ++TotalTriangleCount;
-      CurrentTriangle = PopWordCounted(&Triangles);
-    }
-    Triangles.At = Triangles.Start;
-  }
+  counted_string PolylistSelector    = CS("?xml COLLADA library_geometries geometry#Cube-mesh mesh polylist");
 
 
-  umm TotalVertexCount = 3*TotalTriangleCount;
-  v3_static_array Positions = ParseV3Array(TotalVertexCount, AnsiStream(PositionString), Memory);
-  v3_static_array Normals = ParseV3Array(TotalVertexCount, AnsiStream(NormalString), Memory);
+  ansi_stream Triangles         = AnsiStream(GetFirstMatchingTag(&XmlTokens, &VertexCountSelector, Memory)->Value);
+  ansi_stream VertIndices       = AnsiStream(GetFirstMatchingTag(&XmlTokens, &VertIndicesSelector, Memory)->Value);
 
-  Assert(TotalElements(&Positions) == TotalVertexCount);
-  Assert(TotalElements(&Normals) == TotalVertexCount);
+  xml_tag* Polylist             = GetFirstMatchingTag(&XmlTokens, &PolylistSelector, Memory);
+  u32 TotalTriangleCount        = StringToInt(GetPropertyValue(Polylist, CS("count")));
 
-  /* Dump(&Positions); */
+  xml_tag* PositionTag          = GetFirstMatchingTag(&XmlTokens, &PositionsSelector, Memory);
+  xml_tag* NormalTag            = GetFirstMatchingTag(&XmlTokens, &NormalsSelector, Memory);
+  counted_string PositionString = PositionTag->Value;
+  counted_string NormalString   = NormalTag->Value;
+  u32 PositionCount             = StringToInt(GetPropertyValue(PositionTag, CS("count")));
+  u32 NormalCount               = StringToInt(GetPropertyValue(NormalTag, CS("count")));
+  v3_static_array Positions     = ParseV3Array(PositionCount, AnsiStream(PositionString), Memory);
+  v3_static_array Normals       = ParseV3Array(NormalCount, AnsiStream(NormalString), Memory);
 
   model Result = {};
   Result.Chunk = AllocateChunk(Memory, Chunk_Dimension(0,0,0));
 
+  for (u32 TriangleIndex = 0;
+      TriangleIndex < TotalTriangleCount;
+      ++TriangleIndex)
   {
     counted_string CurrentTriangle = PopWordCounted(&Triangles);
-    while (CurrentTriangle.Count)
+    Assert(StringsMatch(CurrentTriangle, CS("3")));
+
+    for (u32 VertIndex = 0;
+        VertIndex < 3;
+        ++VertIndex)
     {
-      Assert(StringsMatch(CurrentTriangle, CS("3")));
+      Assert(Result.Chunk->Mesh.At < Result.Chunk->Mesh.End);
 
-      for (u32 PolygonAttrIndex = 0;
-          PolygonAttrIndex < 3;
-          ++PolygonAttrIndex)
-      {
-        Assert(Result.Chunk->Mesh.At < Result.Chunk->Mesh.End);
+      u32 PositionIndex = (u32)StringToInt(PopWordCounted(&VertIndices));
+      u32 NormalIndex = (u32)StringToInt(PopWordCounted(&VertIndices));
+      Assert(PositionIndex < TotalElements(&Positions));
+      Assert(NormalIndex < TotalElements(&Normals));
 
-        u32 VertIndex = (u32)StringToInt(PopWordCounted(&VertIndices));
-        u32 NormalIndex = (u32)StringToInt(PopWordCounted(&VertIndices));
-        Assert(VertIndex < TotalElements(&Positions));
-        Assert(NormalIndex < TotalElements(&Positions));
+      Result.Chunk->Mesh.Verts[Result.Chunk->Mesh.At] = Positions.Start[PositionIndex];
+      Result.Chunk->Mesh.Normals[Result.Chunk->Mesh.At] = Normalize(Normals.Start[NormalIndex]);
 
-        Result.Chunk->Mesh.Verts[Result.Chunk->Mesh.At] = Positions.Start[VertIndex];
-        Result.Chunk->Mesh.Normals[Result.Chunk->Mesh.At] = Normalize(Normals.Start[NormalIndex]);
-
-        Result.Chunk->Mesh.At++;
-      }
-
-      CurrentTriangle = PopWordCounted(&Triangles);
+      Result.Chunk->Mesh.At++;
     }
   }
 
