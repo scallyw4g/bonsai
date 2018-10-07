@@ -21,6 +21,10 @@ struct xml_property
     counted_string Value;
     counted_string Id;
   };
+  // TODO(Jesse): This could be factored out of here if the xml_tag.Properties
+  // thing was a xml_token_stream* - which would require a two-pass parser most
+  // likely.  ie. Tokenizer and AST builder
+  xml_property* Next;
 };
 
 struct xml_token
@@ -32,16 +36,16 @@ struct xml_token
 struct xml_tag
 {
   xml_token* Open;
-  xml_token* Close;
-  xml_tag* Parent;
 
+  xml_tag* Parent;
   xml_tag* Sibling;
   xml_tag* NextInHash;
 
   umm HashValue;
   counted_string Value;
 
-  struct xml_token_stream* Properties;
+  xml_property* Properties;
+  xml_property** NextPropertySlot;
 };
 
 struct xml_token_stream
@@ -77,7 +81,6 @@ PushToken(xml_token_stream* Stream, xml_token Token)
   return Result;
 }
 
-
 struct xml_parsing_at_indicators
 {
   xml_tag* LastClosedTag;
@@ -109,6 +112,15 @@ XmlOpenToken(counted_string Name, counted_string Id = {})
   return Result;
 }
 
+xml_property*
+XmlProperty(counted_string Name, counted_string Value, memory_arena* Memory)
+{
+  xml_property* Prop = Allocate(xml_property, Memory, 1);
+  Prop->Name = Name;
+  Prop->Value = Value;
+  return Prop;
+}
+
 xml_property
 XmlProperty(counted_string Name, counted_string Value)
 {
@@ -119,7 +131,7 @@ XmlProperty(counted_string Name, counted_string Value)
 }
 
 xml_token
-XmlBooleanProperty(counted_string Name)
+XmlBooleanToken(counted_string Name)
 {
   xml_token Result = {};
   Result.Type = XmlTokenType_Boolean;
@@ -128,7 +140,7 @@ XmlBooleanProperty(counted_string Name)
 }
 
 xml_token
-XmlStringProperty(counted_string Name, counted_string Value)
+XmlPropertyToken(counted_string Name, counted_string Value)
 {
   xml_token Result = {};
   Result.Type = XmlTokenType_Property;
@@ -137,7 +149,7 @@ XmlStringProperty(counted_string Name, counted_string Value)
 }
 
 xml_token
-XmlFloatProperty(counted_string Name, counted_string Value)
+XmlFloatToken(counted_string Name, counted_string Value)
 {
   xml_token Result = {};
   Result.Type = XmlTokenType_Float;
@@ -146,7 +158,7 @@ XmlFloatProperty(counted_string Name, counted_string Value)
 }
 
 xml_token
-XmlIntProperty(counted_string Name, counted_string Value)
+XmlIntToken(counted_string Name, counted_string Value)
 {
   xml_token Result = {};
   Result.Type = XmlTokenType_Int;

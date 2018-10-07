@@ -81,7 +81,7 @@ TokenizingTest()
     xml_token InnerClose = XmlCloseToken(CS("inner"), 0);
     xml_token ValueClose = XmlCloseToken(CS("value"), 0);
 
-    xml_token CommentProperty = XmlStringProperty( CS("comment"), CS("a tag such as this '<value/>' fails right now.  Fix this!"""));
+    xml_token CommentProperty = XmlPropertyToken( CS("comment"), CS("a tag such as this '<value/>' fails right now.  Fix this!"""));
 
     Rewind(&XmlTokens);
 
@@ -176,12 +176,12 @@ TokenizingTest()
 
 
     {
-      xml_token BooleanProp = XmlBooleanProperty(CS("boolean"));
-      xml_token IntProp     = XmlIntProperty(CS("int-property"), CS("42"));
-      xml_token FloatProp   = XmlFloatProperty(CS("float-property"), CS("42.42"));
+      xml_token BooleanProp = XmlBooleanToken(CS("boolean"));
+      xml_token IntProp     = XmlIntToken(CS("int-property"), CS("42"));
+      xml_token FloatProp   = XmlFloatToken(CS("float-property"), CS("42.42"));
 
-      xml_token StringProp1   = XmlStringProperty(CS("string-property-1"), CS("< text, yay! >"));
-      xml_token StringProp2   = XmlStringProperty(CS("string-property-2"), CS("> more text, yay! <"));
+      xml_token StringProp1   = XmlPropertyToken(CS("string-property-1"), CS("< text, yay! >"));
+      xml_token StringProp2   = XmlPropertyToken(CS("string-property-2"), CS("> more text, yay! <"));
 
 
       TestThat(*XmlTokens.At++ == OuterOpen);

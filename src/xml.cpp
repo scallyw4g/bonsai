@@ -146,6 +146,20 @@ GetFirstMatchingTag(xml_token_stream* Tokens, xml_token_stream* Selectors)
   return Result;
 }
 
+inline void
+PushProperty(xml_tag* Target, xml_property *Prop)
+{
+  if (!Target->Properties)
+  {
+    Target->NextPropertySlot = &Target->Properties;
+  }
+
+  *Target->NextPropertySlot = Prop;
+  Target->NextPropertySlot = &Prop->Next;
+
+  return;
+}
+
 xml_token_stream
 TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
 {
@@ -244,7 +258,7 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
             }
             else
             {
-              PushToken(&Result, XmlBooleanProperty(PropertyName) );
+              PushToken(&Result, XmlBooleanToken(PropertyName) );
             }
           } break;
 
@@ -259,10 +273,11 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
                 if (StringsMatch(&PropertyName, CS("id")))
                 {
                   TagsAt.CurrentlyOpenTag->Open->Property.Id = PropValue;
+                  PushProperty(TagsAt.CurrentlyOpenTag, XmlProperty(PropertyName, PropValue, Memory));
                 }
                 else
                 {
-                  PushToken(&Result, XmlStringProperty(PropertyName, PropValue));
+                  PushToken(&Result, XmlPropertyToken(PropertyName, PropValue));
                 }
               } break;
 
@@ -270,9 +285,9 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
               {
                 counted_string PropValue = PopWordCounted(Xml);
                 if( Contains(PropValue, '.') )
-                  PushToken(&Result, XmlFloatProperty(PropertyName, PropValue));
+                  PushToken(&Result, XmlFloatToken(PropertyName, PropValue));
                 else
-                  PushToken(&Result, XmlIntProperty(PropertyName, PropValue));
+                  PushToken(&Result, XmlIntToken(PropertyName, PropValue));
               } break;
 
             }
