@@ -243,12 +243,12 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
                 {
                   // TODO(Jesse): This should be removed once we can query properties by name from xml_tags
                   TagsAt.CurrentlyOpenTag->Open->Property.Id = PropValue;
-                  PushProperty(TagsAt.CurrentlyOpenTag, XmlProperty(PropertyName, PropValue, Memory));
                 }
                 else
                 {
                   PushToken(&Result, XmlPropertyToken(PropertyName, PropValue));
                 }
+                PushProperty(TagsAt.CurrentlyOpenTag, XmlProperty(PropertyName, PropValue, Memory));
               } break;
 
               default:
@@ -309,3 +309,22 @@ Rewind(xml_token_stream *Stream)
   return;
 }
 
+inline counted_string*
+GetPropertyValue(xml_tag* Tag, counted_string PropertyName)
+{
+  xml_property* At = Tag->Properties;
+  counted_string* Result = 0;
+
+  while (At)
+  {
+    if (StringsMatch(At->Name, PropertyName))
+    {
+      Result = &At->Value;
+      break;
+    }
+
+    At = At->Next;
+  }
+
+  return Result;
+}

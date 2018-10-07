@@ -256,12 +256,16 @@ ContrivedQueryingTest()
   }
 
   {
+    counted_string ActualIdValue = CS("id-value");
     ansi_stream SelectorStream = AnsiStream("xml first-value#id-value");
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
-    xml_token OpenExpected = XmlOpenToken(CS("first-value"), CS("id-value"));
+    xml_token OpenExpected = XmlOpenToken(CS("first-value"), ActualIdValue);
     TestThat(TokensAreEqual(ResultTag->Open, &OpenExpected));
     TestThat(StringsMatch(&ResultTag->Value, &TheMeaningOfLifeTheUniverseAndEverything));
+
+    counted_string* ResultIdValue = GetPropertyValue(ResultTag, CS("id"));
+    TestThat(StringsMatch(ResultIdValue, ActualIdValue));
   }
 
   {
@@ -318,6 +322,19 @@ ContrivedQueryingTest()
     TestThat(TokensAreEqual(ResultTag->Open, &OpenExpected));
     TestThat(StringsMatch(&ResultTag->Value, CS("1 2 3 4")));
   }
+
+  {
+    ansi_stream SelectorStream = AnsiStream("xml library_lights light#Lamp-light");
+    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+    xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
+    xml_token OpenExpected = XmlOpenToken(CS("light"), CS("Lamp-light"));
+    TestThat(TokensAreEqual(ResultTag->Open, &OpenExpected));
+
+    counted_string NameValue = CS("Lamp");
+    counted_string* ResultNameValue = GetPropertyValue(ResultTag, CS("name"));
+    TestThat(StringsMatch(NameValue, ResultNameValue));
+  }
+
   return;
 }
 
