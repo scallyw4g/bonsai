@@ -46,17 +46,17 @@ LoadObj(memory_arena *PermMem, const char * FilePath)
   Info("Loading .obj file : %s \n", FilePath);
 
   umm Length = 0;
-  binary_stream_u8 BinaryStream = BinaryStreamFromFile(FilePath, PermMem);
+  u8_stream BinaryStream = U8_StreamFromFile(FilePath, PermMem);
   if (!BinaryStream.Start) { model M = {}; return M; }
 
   ansi_stream Stream = AnsiStream(&BinaryStream);
   mesh_metadata Stats = GetObjMetadata(Stream, TranArena);
 
-  v3_static_array TempVerts       = V3_Static_Array(Stats.VertCount, TranArena);
-  v3_static_array TempNormals     = V3_Static_Array(Stats.NormalCount, TranArena);
+  v3_stream TempVerts       = V3_Stream(Stats.VertCount, TranArena);
+  v3_stream TempNormals     = V3_Stream(Stats.NormalCount, TranArena);
 
-  u32_static_array VertIndicies   = U32_Static_Array(Stats.FaceCount*3, TranArena);
-  u32_static_array NormalIndicies = U32_Static_Array(Stats.FaceCount*3, TranArena);
+  u32_stream VertIndicies   = U32_Stream(Stats.FaceCount*3, TranArena);
+  u32_stream NormalIndicies = U32_Stream(Stats.FaceCount*3, TranArena);
 
   while (Stream.At < Stream.End)
   {

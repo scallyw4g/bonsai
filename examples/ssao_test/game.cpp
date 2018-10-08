@@ -6,7 +6,6 @@ global_variable memory_arena *TranArena = PlatformAllocateArena();
 #include <physics.cpp>
 #include <entity.cpp>
 
-#include <loaders/common.h>
 #include <loaders/obj.cpp>
 #include <loaders/collada.cpp>
 

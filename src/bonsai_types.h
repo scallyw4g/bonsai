@@ -13,8 +13,8 @@ void BreakHere() { return; }
 #endif
 
 #include <memory_types.h>
-#include <stream.h>
 #include <vector_types.h>
+#include <stream.h>
 #include <animation.h>
 
 #include <game_constants.h>

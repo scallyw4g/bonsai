@@ -76,7 +76,7 @@ ReadU32(u8* Source)
 }
 
 inline u8*
-ReadU8Array(binary_stream_u8 *Source, u32 Count)
+ReadU8Array(u8_stream *Source, u32 Count)
 {
   u8 *Result = Source->At;
   Source->At += Count;
@@ -85,7 +85,7 @@ ReadU8Array(binary_stream_u8 *Source, u32 Count)
 }
 
 inline u16*
-ReadU16Array(binary_stream_u8 *Source, u32 Count)
+ReadU16Array(u8_stream *Source, u32 Count)
 {
   u16 *Result = (u16*)Source->At;
   Source->At += sizeof(u16)*Count;
@@ -94,7 +94,7 @@ ReadU16Array(binary_stream_u8 *Source, u32 Count)
 }
 
 inline s16*
-ReadS16Array(binary_stream_u8 *Source, u32 Count)
+ReadS16Array(u8_stream *Source, u32 Count)
 {
   s16 *Result = (s16*)Source->At;
   Source->At += sizeof(s16)*Count;
@@ -103,7 +103,7 @@ ReadS16Array(binary_stream_u8 *Source, u32 Count)
 }
 
 inline u8
-ReadU8(binary_stream_u8 *Source)
+ReadU8(u8_stream *Source)
 {
   u8 Result = ReadU8(Source->At);
   Source->At += sizeof(u8);
@@ -112,7 +112,7 @@ ReadU8(binary_stream_u8 *Source)
 }
 
 inline s16
-ReadS16(binary_stream_u8 *Source)
+ReadS16(u8_stream *Source)
 {
   s16 Result = ReadS16(Source->At);
   Source->At += sizeof(s16);
@@ -121,7 +121,7 @@ ReadS16(binary_stream_u8 *Source)
 }
 
 inline u16
-ReadU16(binary_stream_u8 *Source)
+ReadU16(u8_stream *Source)
 {
   u16 Result = ReadU16(Source->At);
   Source->At += sizeof(u16);
@@ -130,7 +130,7 @@ ReadU16(binary_stream_u8 *Source)
 }
 
 inline s64
-ReadS64(binary_stream_u8 *Source)
+ReadS64(u8_stream *Source)
 {
   s64 Result = ReadS64(Source->At);
   Source->At += sizeof(s64);
@@ -139,7 +139,7 @@ ReadS64(binary_stream_u8 *Source)
 }
 
 inline u32
-ReadU32(binary_stream_u8 *Source)
+ReadU32(u8_stream *Source)
 {
   u32 Result = ReadU32(Source->At);
   Source->At += sizeof(u32);
@@ -243,10 +243,10 @@ enum ttf_flag
   TTFFlag_DualY   = 1 << 5,
 };
 
-binary_stream_u8
-BinaryStream(font_table *Table)
+u8_stream
+U8_Stream(font_table *Table)
 {
-  binary_stream_u8 Result = BinaryStream(Table->Data, Table->Data+Table->Length);
+  u8_stream Result = U8_Stream(Table->Data, Table->Data+Table->Length);
   return Result;
 }
 
@@ -296,7 +296,7 @@ AssignTable(font_table *Table, ttf *Font)
 }
 
 inline font_table*
-ParseFontTable(binary_stream_u8 *Source, memory_arena *Arena)
+ParseFontTable(u8_stream *Source, memory_arena *Arena)
 {
   font_table *Result = Allocate(font_table, Arena, 1);
   Result->Tag          = ReadU32(Source);
@@ -311,7 +311,7 @@ ParseFontTable(binary_stream_u8 *Source, memory_arena *Arena)
 }
 
 offset_subtable
-ParseOffsetSubtable(binary_stream_u8 *Source)
+ParseOffsetSubtable(u8_stream *Source)
 {
   Assert(Source->At == Source->Start);
 
@@ -363,7 +363,7 @@ CalculateTableChecksum(font_table *Table)
 ttf
 InitTTF(const char* SourceFile, memory_arena *Arena)
 {
-  binary_stream_u8 Source = BinaryStreamFromFile(SourceFile, Arena);
+  u8_stream Source = U8_StreamFromFile(SourceFile, Arena);
 
   offset_subtable TableOffsets = ParseOffsetSubtable(&Source);
 
@@ -385,7 +385,7 @@ InitTTF(const char* SourceFile, memory_arena *Arena)
 }
 
 simple_glyph
-ParseGlyph(binary_stream_u8 *Stream, memory_arena *Arena)
+ParseGlyph(u8_stream *Stream, memory_arena *Arena)
 {
   simple_glyph Glyph = {};
 
@@ -451,7 +451,7 @@ ParseGlyph(binary_stream_u8 *Stream, memory_arena *Arena)
       Glyph.Verts[PointIndex].Flags = Flag;
     }
 
-    binary_stream_u8 VertStream = BinaryStream(FlagsAt, (u8*)0xFFFFFFFFFFFFFFFF);
+    u8_stream VertStream = U8_Stream(FlagsAt, (u8*)0xFFFFFFFFFFFFFFFF);
     s16 X = 0;
     for (u32 PointIndex = 0;
         PointIndex < Glyph.VertCount;
@@ -517,7 +517,7 @@ GetGlyphIdForCharacterCode(u32 UnicodeCodepoint, ttf *Font)
   u32 Checksum = CalculateTableChecksum(Cmap);
   Assert(Checksum == Cmap->Checksum);
 
-  binary_stream_u8 CmapStream = BinaryStream(Cmap);
+  u8_stream CmapStream = U8_Stream(Cmap);
   u16 TableVersion = ReadU16(&CmapStream);
   Assert(TableVersion == 0);
 
@@ -532,7 +532,7 @@ GetGlyphIdForCharacterCode(u32 UnicodeCodepoint, ttf *Font)
     u32 Offset             = ReadU32(&CmapStream);
     u8* Start              = CmapStream.Start + Offset;
 
-    binary_stream_u8 TableStream = {};
+    u8_stream TableStream = {};
     TableStream.Start = Start;
     TableStream.At = Start;
     TableStream.End = Start+4;
@@ -592,7 +592,7 @@ GetGlyphIdForCharacterCode(u32 UnicodeCodepoint, ttf *Font)
 }
 
 inline head_table*
-ParseHeadTable(binary_stream_u8 *Stream, memory_arena *Arena)
+ParseHeadTable(u8_stream *Stream, memory_arena *Arena)
 {
   head_table *Result = Allocate(head_table, Arena, 1);
 
@@ -627,13 +627,13 @@ ParseHeadTable(binary_stream_u8 *Stream, memory_arena *Arena)
 #define SHORT_INDEX_LOCATION_FORMAT 0
 #define LONG_INDEX_LOCATION_FORMAT 1
 
-inline binary_stream_u8
+inline u8_stream
 GetStreamForGlyphIndex(u32 GlyphIndex, ttf *Font, memory_arena *Arena)
 {
-  binary_stream_u8 HeadStream = BinaryStream(Font->head);
+  u8_stream HeadStream = U8_Stream(Font->head);
   head_table *HeadTable = ParseHeadTable(&HeadStream, Arena);
 
-  binary_stream_u8 Result;
+  u8_stream Result = {};
   if (HeadTable->IndexToLocFormat == SHORT_INDEX_LOCATION_FORMAT)
   {
     u32 GlyphIndexOffset = GlyphIndex * sizeof(u16);
@@ -643,7 +643,7 @@ GetStreamForGlyphIndex(u32 GlyphIndex, ttf *Font, memory_arena *Arena)
 
     u8* Start = Font->glyf->Data + StartOffset;
     u8* End = Font->glyf->Data + EndOffset;
-    Result = BinaryStream(Start, End);
+    Result = U8_Stream(Start, End);
   }
   else if (HeadTable->IndexToLocFormat == LONG_INDEX_LOCATION_FORMAT)
   {
@@ -656,7 +656,7 @@ GetStreamForGlyphIndex(u32 GlyphIndex, ttf *Font, memory_arena *Arena)
 
     u8* Start = Font->glyf->Data + StartOffset;
     u8* End = Font->glyf->Data + EndOffset;
-    Result = BinaryStream(Start, End);
+    Result = U8_Stream(Start, End);
   }
   else
   {
@@ -689,7 +689,7 @@ WrapToCurveIndex(u32 IndexWanted, u32 CurveStart, u32 CurveEnd)
 }
 
 bitmap
-RasterizeGlyph(v2i OutputSize, v2i FontMaxEmDim, v2i FontMinGlyphP, binary_stream_u8 *GlyphStream, memory_arena* Arena)
+RasterizeGlyph(v2i OutputSize, v2i FontMaxEmDim, v2i FontMinGlyphP, u8_stream *GlyphStream, memory_arena* Arena)
 {
 #define DO_RASTERIZE        1
 #define DO_AA               1
@@ -979,7 +979,7 @@ main()
   memory_arena *TempArena = PlatformAllocateArena();
   ttf Font = InitTTF("fonts/hack.ttf", PermArena);
 
-  binary_stream_u8 HeadStream = BinaryStream(Font.head);
+  u8_stream HeadStream = U8_Stream(Font.head);
   head_table *HeadTable = ParseHeadTable(&HeadStream, PermArena);
   v2i FontMaxEmDim = { HeadTable->xMax - HeadTable->xMin, HeadTable->yMax - HeadTable->yMin };
   v2i FontMinGlyphP = V2i(HeadTable->xMin, HeadTable->yMin);
@@ -1002,7 +1002,7 @@ main()
     {
       u32 GlyphIndex =  GetGlyphIdForCharacterCode(CharCode, &Font);
       if (!GlyphIndex) continue;
-      binary_stream_u8 GlyphStream = GetStreamForGlyphIndex(GlyphIndex, &Font, TempArena);
+      u8_stream GlyphStream = GetStreamForGlyphIndex(GlyphIndex, &Font, TempArena);
       bitmap GlyphBitmap = RasterizeGlyph(GlyphSize, FontMaxEmDim, FontMinGlyphP, &GlyphStream, TempArena);
 
       if ( PixelCount(&GlyphBitmap) )

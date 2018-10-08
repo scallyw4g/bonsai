@@ -6,14 +6,14 @@ struct counted_string
   umm Count;
 };
 
-struct binary_stream_u32
+struct u32_stream
 {
   u32* Start;
   u32* At;
   u32* End;
 };
 
-struct binary_stream_u8
+struct u8_stream
 {
   u8* Start;
   u8* At;
@@ -26,6 +26,75 @@ struct ansi_stream
   const char* At;
   const char* End;
 };
+
+struct r32_stream
+{
+  r32* Start;
+  r32* At;
+  r32* End;
+};
+
+struct v3_stream
+{
+  v3* Start;
+  v3* At;
+  v3* End;
+};
+
+template <typename element_t, typename stream_t>inline void
+Push(element_t Element, stream_t *Array)
+{
+  Assert( Array->At < Array->End );
+  *Array->At = Element;
+  return;
+}
+
+struct mesh_metadata
+{
+  u32 VertCount;
+  u32 NormalCount;
+  u32 UVCount;
+  u32 FaceCount;
+};
+
+r32_stream
+R32_Stream(u32 Count, memory_arena *Memory)
+{
+  r32 *Elements = Allocate(r32, Memory, Count);
+  r32_stream Result = {};
+
+  Result.Start = Elements;
+  Result.At = Elements;
+  Result.End = Elements + Count;
+
+  return Result;
+}
+
+u32_stream
+U32_Stream(u32 Count, memory_arena *Memory)
+{
+  u32 *Elements = Allocate(u32, Memory, Count);
+  u32_stream Result = {};
+
+  Result.Start = Elements;
+  Result.At = Elements;
+  Result.End = Elements + Count;
+
+  return Result;
+}
+
+v3_stream
+V3_Stream(u32 Count, memory_arena *Memory)
+{
+  v3 *Elements = Allocate(v3, Memory, Count);
+  v3_stream Result = {};
+
+  Result.Start = Elements;
+  Result.At = Elements;
+  Result.End = Elements + Count;
+
+  return Result;
+}
 
 umm
 Length(const char *Str)
@@ -92,7 +161,7 @@ AnsiStream(const char *Input)
 }
 
 ansi_stream
-AnsiStream(binary_stream_u8 *Input)
+AnsiStream(u8_stream *Input)
 {
   ansi_stream Result = {};
 
@@ -103,10 +172,10 @@ AnsiStream(binary_stream_u8 *Input)
   return Result;
 }
 
-binary_stream_u8
-BinaryStream(u8* Start, u8* End)
+u8_stream
+U8_Stream(u8* Start, u8* End)
 {
-  binary_stream_u8 Result = {
+  u8_stream Result = {
     Start,
     Start,
     End
@@ -114,10 +183,10 @@ BinaryStream(u8* Start, u8* End)
   return Result;
 }
 
-binary_stream_u32
-BinaryStream(u32* Start, u32* End)
+u32_stream
+U32_Stream(u32* Start, u32* End)
 {
-  binary_stream_u32 Result = {
+  u32_stream Result = {
     Start,
     Start,
     End
@@ -125,19 +194,8 @@ BinaryStream(u32* Start, u32* End)
   return Result;
 }
 
-binary_stream_u8
-BinaryStreamU8(u8* Start, u8* End)
-{
-  binary_stream_u8 Result = {
-    Start,
-    Start,
-    End
-  };
-  return Result;
-}
-
-binary_stream_u8
-BinaryStreamFromFile(const char* SourceFile, memory_arena *Memory)
+u8_stream
+U8_StreamFromFile(const char* SourceFile, memory_arena *Memory)
 {
   FILE *File = fopen(SourceFile, "r");
   u8* FileContents = 0;
@@ -156,7 +214,7 @@ BinaryStreamFromFile(const char* SourceFile, memory_arena *Memory)
     Error("Opening %s", SourceFile);
   }
 
-  binary_stream_u8 Result = {
+  u8_stream Result = {
     FileContents,
     FileContents,
     FileContents + FileSize
@@ -168,7 +226,7 @@ BinaryStreamFromFile(const char* SourceFile, memory_arena *Memory)
 ansi_stream
 AnsiStreamFromFile(const char* SourceFile, memory_arena *Memory)
 {
-  binary_stream_u8 Binary = BinaryStreamFromFile(SourceFile, Memory);
+  u8_stream Binary = U8_StreamFromFile(SourceFile, Memory);
   ansi_stream Result = AnsiStream(&Binary);
   return Result;
 }
@@ -267,7 +325,6 @@ EatWhitespace(ansi_stream *Cursor)
   EatAllCharacters(Cursor, "\n ");
   return;
 }
-
 
 counted_string
 PopWordCounted(ansi_stream *Cursor, const char *Delimeters = 0)
