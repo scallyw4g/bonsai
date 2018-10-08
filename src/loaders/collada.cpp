@@ -76,6 +76,40 @@ Dump(v3_stream* Array)
   return;
 }
 
+void
+Dump(hashtable<xml_tag*> * Hash)
+{
+  for (u32 ElementIndex = 0;
+      ElementIndex < Hash->Size;
+      ++ElementIndex)
+  {
+    xml_tag* Element = Hash->Table[ElementIndex];
+    if (Element)
+    {
+      Log("");
+      Print(ElementIndex);
+      Print(Element);
+      while (Element = Element->NextInHash)
+      {
+        Print(Element);
+      }
+    }
+  }
+
+  return;
+}
+
+void
+Dump(xml_token_stream *Stream, umm TokenCount)
+{
+  for (u32 TokenIndex = 0;
+      TokenIndex < TokenCount;
+      ++TokenIndex)
+  {
+    Print(Stream->Start + TokenIndex);
+  }
+}
+
 model
 LoadCollada(memory_arena *Memory, const char * FilePath)
 {
@@ -137,6 +171,22 @@ LoadCollada(memory_arena *Memory, const char * FilePath)
       }
     }
 
+  }
+
+  { // Load animation data
+
+    counted_string xKeyframeTimesSelector     = CS("?xml COLLADA library_animations animation#Cube_location_X source#Cube_location_X-input float_array#Cube_location_X-input-array");
+    counted_string xKeyframePositionsSelector = CS("?xml COLLADA library_animations animation#Cube_location_X source#Cube_location_X-output float_array#Cube_location_X-output-array");
+
+    xml_tag* xKeyframeTimeTag = GetFirstMatchingTag(&XmlTokens, &xKeyframeTimesSelector, Memory);
+    xml_tag* xKeyframePositionsTag = GetFirstMatchingTag(&XmlTokens, &xKeyframePositionsSelector, Memory);
+
+    if (xKeyframePositionsTag && xKeyframeTimeTag)
+    {
+      u32 TotalKeyframeCount = 0;
+      r32_stream xKeyframeTimes = ParseFloatArray(TotalKeyframeCount, AnsiStream(xKeyframeTimeTag->Value), Memory);
+      r32_stream xKeyframePositions = ParseFloatArray(TotalKeyframeCount, AnsiStream(xKeyframePositionsTag->Value), Memory);
+    }
   }
 
   Result.Chunk->Flags = Chunk_Initialized;

@@ -298,8 +298,6 @@ Print_P( xml_token *Token, const char* name)
     case XmlTokenType_Open:
     {
       Log("OpenToken %.*s", Token->Property.Name.Count, Token->Property.Name.Start);
-      if (Token->Property.Value.Count)
-        { Log("Id %.*s", Token->Property.Value.Count, Token->Property.Value.Start); }
     } break;
 
     case XmlTokenType_Close:
@@ -318,6 +316,14 @@ Print_P( xml_tag *Tag, const char* name)
 {
   xml_token* Token = Tag->Open;
   Print_P(Token, name);
+
+  xml_property* Current = Tag->Properties;
+  while (Current)
+  {
+    Print_P(Current->Name, name);
+    Print_P(Current->Value, name);
+    Current = Current->Next;
+  }
 
   return;
 }

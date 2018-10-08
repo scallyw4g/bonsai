@@ -13,3 +13,4 @@ AllocateHashtable(umm Count, memory_arena* Memory)
   Result.Size = Count;
   return Result;
 }
+
