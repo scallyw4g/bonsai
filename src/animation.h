@@ -1,14 +1,13 @@
 
 struct keyframe
 {
-  r32 StartTime;
-  r32 EndTime;
+  r32 tEnd;
   v3 PositionInterp;
 };
 
 struct animation
 {
-  r32 Duration;
+  r32 t;
   u32 KeyframeCount;
   keyframe *Keyframes;
 };

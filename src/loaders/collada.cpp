@@ -59,6 +59,8 @@ ParseFloatArray(umm TotalFloatCount, ansi_stream FloatStream, memory_arena* Memo
     counted_string Float = PopWordCounted(&FloatStream);
     Result.Start[DestIndex] = StringToFloat(&Float);
   }
+
+  return Result;
 }
 
 void
@@ -108,6 +110,17 @@ Dump(xml_token_stream *Stream, umm TokenCount)
   {
     Print(Stream->Start + TokenIndex);
   }
+}
+
+animation
+AllocateAnimation(u32 KeyframeCount, memory_arena* Memory)
+{
+  animation Result = {};
+
+  Result.KeyframeCount = KeyframeCount;
+  Result.Keyframes = Allocate(keyframe, Memory, KeyframeCount);
+
+  return Result;
 }
 
 model
@@ -177,16 +190,35 @@ LoadCollada(memory_arena *Memory, const char * FilePath)
 
     counted_string xKeyframeTimesSelector     = CS("?xml COLLADA library_animations animation#Cube_location_X source#Cube_location_X-input float_array#Cube_location_X-input-array");
     counted_string xKeyframePositionsSelector = CS("?xml COLLADA library_animations animation#Cube_location_X source#Cube_location_X-output float_array#Cube_location_X-output-array");
+    counted_string yKeyframePositionsSelector = CS("?xml COLLADA library_animations animation#Cube_location_Y source#Cube_location_Y-output float_array#Cube_location_Y-output-array");
+    counted_string zKeyframePositionsSelector = CS("?xml COLLADA library_animations animation#Cube_location_Z source#Cube_location_Z-output float_array#Cube_location_Z-output-array");
 
     xml_tag* xKeyframeTimeTag = GetFirstMatchingTag(&XmlTokens, &xKeyframeTimesSelector, Memory);
     xml_tag* xKeyframePositionsTag = GetFirstMatchingTag(&XmlTokens, &xKeyframePositionsSelector, Memory);
+    xml_tag* yKeyframePositionsTag = GetFirstMatchingTag(&XmlTokens, &yKeyframePositionsSelector, Memory);
+    xml_tag* zKeyframePositionsTag = GetFirstMatchingTag(&XmlTokens, &zKeyframePositionsSelector, Memory);
 
-    if (xKeyframePositionsTag && xKeyframeTimeTag)
+    u32 TotalKeyframeCount = StringToInt(GetPropertyValue(xKeyframeTimeTag, CS("count")));
+    Assert( TotalKeyframeCount == StringToInt(GetPropertyValue(xKeyframePositionsTag, CS("count"))) );
+
+    r32_stream xKeyframeTimes = ParseFloatArray(TotalKeyframeCount, AnsiStream(xKeyframeTimeTag->Value), Memory);
+    r32_stream xKeyframePositions = ParseFloatArray(TotalKeyframeCount, AnsiStream(xKeyframePositionsTag->Value), Memory);
+    r32_stream yKeyframePositions = ParseFloatArray(TotalKeyframeCount, AnsiStream(yKeyframePositionsTag->Value), Memory);
+    r32_stream zKeyframePositions = ParseFloatArray(TotalKeyframeCount, AnsiStream(zKeyframePositionsTag->Value), Memory);
+
+    animation Animation = AllocateAnimation(TotalKeyframeCount, Memory);
+
+    for (u32 KeyframeIndex = 0;
+        KeyframeIndex < TotalKeyframeCount;
+        ++KeyframeIndex)
     {
-      u32 TotalKeyframeCount = 0;
-      r32_stream xKeyframeTimes = ParseFloatArray(TotalKeyframeCount, AnsiStream(xKeyframeTimeTag->Value), Memory);
-      r32_stream xKeyframePositions = ParseFloatArray(TotalKeyframeCount, AnsiStream(xKeyframePositionsTag->Value), Memory);
+      Animation.Keyframes[KeyframeIndex].PositionInterp.x = xKeyframePositions.Start[KeyframeIndex];
+      Animation.Keyframes[KeyframeIndex].PositionInterp.y = yKeyframePositions.Start[KeyframeIndex];
+      Animation.Keyframes[KeyframeIndex].PositionInterp.z = zKeyframePositions.Start[KeyframeIndex];
+      Animation.Keyframes[KeyframeIndex].tEnd = xKeyframeTimes.Start[KeyframeIndex];
     }
+
+    Result.Animation = Animation;
   }
 
   Result.Chunk->Flags = Chunk_Initialized;
