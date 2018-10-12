@@ -218,6 +218,8 @@ LoadCollada(memory_arena *Memory, const char * FilePath)
       Animation.Keyframes[KeyframeIndex].tEnd = xKeyframeTimes.Start[KeyframeIndex];
     }
 
+    Animation.tEnd = xKeyframeTimes.Start[TotalKeyframeCount-1];
+
     Result.Animation = Animation;
   }
 

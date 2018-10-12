@@ -50,7 +50,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys, entity *Play
 
   TIMED_BLOCK("BufferMeshes");
     BufferWorld(World, Graphics);
-    BufferEntities( GameState->EntityTable, &World->Mesh, Graphics, World);
+    BufferEntities( GameState->EntityTable, &World->Mesh, Graphics, World, Plat->dt);
   END_BLOCK("BufferMeshes");
 
   TIMED_BLOCK("RenderToScreen");
@@ -143,7 +143,7 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory)
   model *Result = Allocate(model, GameState->Memory, ModelIndex_Count);
 
   Result[ModelIndex_Enemy] = LoadVoxModel(Memory, ENEMY_MODEL);
-  Result[ModelIndex_Player] = LoadCollada(Memory, "models/model.dae");
+  Result[ModelIndex_Player] = LoadCollada(Memory, "models/cube.dae");
   /* Result[ModelIndex_Player] = LoadVoxModel(Memory, PLAYER_MODEL); */
   Result[ModelIndex_Loot] = LoadVoxModel(Memory, LOOT_MODEL);
 

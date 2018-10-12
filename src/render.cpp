@@ -2145,7 +2145,8 @@ BufferEntity(
     untextured_3d_geometry_buffer *Mesh,
     entity *Entity,
     graphics *Graphics,
-    chunk_dimension WorldChunkDim
+    chunk_dimension WorldChunkDim,
+    r32 dt
   )
 {
   TIMED_FUNCTION();
@@ -2162,9 +2163,17 @@ BufferEntity(
     DEBUG_DrawAABB(Mesh, Graphics, AABB, PINK);
 #endif
 
+    animation* Animation = &Entity->Model.Animation;
+    v3 AnimationOffset = {};
+    if (Animation->KeyframeCount)
+    {
+      Animation->t += dt;
+      AnimationOffset = GetInterpolatedPosition(Animation);
+    }
+
     if (IsSet(Model, Chunk_Initialized))
     {
-      BufferChunkMesh(Mesh, WorldChunkDim, Model, Entity->P.WorldP, Graphics, Entity->Scale, Entity->P.Offset);
+      BufferChunkMesh(Mesh, WorldChunkDim, Model, Entity->P.WorldP, Graphics, Entity->Scale, Entity->P.Offset + AnimationOffset);
     }
   }
 
@@ -2252,7 +2261,7 @@ BufferWorld(world *World, graphics *Graphics)
 
 void
 BufferEntities( entity **EntityTable, untextured_3d_geometry_buffer *Mesh,
-                graphics *Graphics, world *World)
+                graphics *Graphics, world *World, r32 dt)
 {
   TIMED_FUNCTION();
   for ( s32 EntityIndex = 0;
@@ -2260,7 +2269,7 @@ BufferEntities( entity **EntityTable, untextured_3d_geometry_buffer *Mesh,
         ++EntityIndex)
   {
     entity *Entity = EntityTable[EntityIndex];
-    BufferEntity( Mesh, Entity, Graphics, World->ChunkDim);
+    BufferEntity( Mesh, Entity, Graphics, World->ChunkDim, dt);
   }
 
   return;

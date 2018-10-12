@@ -174,7 +174,7 @@
   <library_animations>
     <animation id="Cube_location_X">
       <source id="Cube_location_X-input">
-        <float_array id="Cube_location_X-input-array" count="3">0.04166662 1.25 2.5</float_array>
+        <float_array id="Cube_location_X-input-array" count="3">0.0 1.25 2.5</float_array>
         <technique_common>
           <accessor source="#Cube_location_X-input-array" count="3" stride="1">
             <param name="TIME" type="float"/>
@@ -226,7 +226,7 @@
     </animation>
     <animation id="Cube_location_Y">
       <source id="Cube_location_Y-input">
-        <float_array id="Cube_location_Y-input-array" count="3">0.04166662 1.25 2.5</float_array>
+        <float_array id="Cube_location_Y-input-array" count="3">0.0 1.25 2.5</float_array>
         <technique_common>
           <accessor source="#Cube_location_Y-input-array" count="3" stride="1">
             <param name="TIME" type="float"/>
@@ -278,7 +278,7 @@
     </animation>
     <animation id="Cube_location_Z">
       <source id="Cube_location_Z-input">
-        <float_array id="Cube_location_Z-input-array" count="3">0.04166662 1.25 2.5</float_array>
+        <float_array id="Cube_location_Z-input-array" count="3">0.0 1.25 2.5</float_array>
         <technique_common>
           <accessor source="#Cube_location_Z-input-array" count="3" stride="1">
             <param name="TIME" type="float"/>

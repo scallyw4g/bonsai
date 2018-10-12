@@ -15,6 +15,7 @@ void BreakHere() { return; }
 #include <memory_types.h>
 #include <vector_types.h>
 #include <stream.h>
+#include <bonsai_math.h>
 #include <animation.h>
 
 #include <game_constants.h>
