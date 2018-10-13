@@ -110,6 +110,28 @@ XmlTagFromReverseStream(xml_token_stream** Stream)
   return Result;
 }
 
+xml_token_stream
+TokenizeSelector(ansi_stream* Selector, memory_arena* Memory)
+{
+  // TODO(Jesse): Better or more accurate way of allocating this size?
+  xml_token_stream Result = AllocateXmlTokenStream(100, Memory);
+
+  while (Remaining(Selector))
+  {
+    counted_string TagName = PopWordCounted(Selector);
+    counted_string TagId = Split(&TagName, '#');
+
+    PushToken(&Result, XmlOpenToken(TagName));
+    if (TagId.Count)
+    {
+      PushToken(&Result, XmlPropertyToken(CS("id"), TagId));
+    }
+  }
+
+  Result.End = Result.At;
+  return Result;
+}
+
 xml_tag*
 GetFirstMatchingTag(xml_token_stream* Tokens, xml_token_stream* Selectors)
 {
@@ -155,6 +177,16 @@ GetFirstMatchingTag(xml_token_stream* Tokens, xml_token_stream* Selectors)
 
   xml_tag* Result = Valid ? RootTag : 0;
   return Result;
+}
+
+xml_tag*
+GetFirstMatchingTag(xml_token_stream* Tokens, counted_string* Selectors, memory_arena* Memory)
+{
+  ansi_stream SelectorStream = AnsiStream(Selectors);
+  xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+  xml_tag* ResultTag = GetFirstMatchingTag(Tokens, &Selector);
+
+  return ResultTag;
 }
 
 xml_token_stream
@@ -293,38 +325,6 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
   }
 
   return Result;
-}
-
-xml_token_stream
-TokenizeSelector(ansi_stream* Selector, memory_arena* Memory)
-{
-  // TODO(Jesse): Better or more accurate way of allocating this size?
-  xml_token_stream Result = AllocateXmlTokenStream(100, Memory);
-
-  while (Remaining(Selector))
-  {
-    counted_string TagName = PopWordCounted(Selector);
-    counted_string TagId = Split(&TagName, '#');
-
-    PushToken(&Result, XmlOpenToken(TagName));
-    if (TagId.Count)
-    {
-      PushToken(&Result, XmlPropertyToken(CS("id"), TagId));
-    }
-  }
-
-  Result.End = Result.At;
-  return Result;
-}
-
-xml_tag*
-GetFirstMatchingTag(xml_token_stream* Tokens, counted_string* Selectors, memory_arena* Memory)
-{
-  ansi_stream SelectorStream = AnsiStream(Selectors);
-  xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
-  xml_tag* ResultTag = GetFirstMatchingTag(Tokens, &Selector);
-
-  return ResultTag;
 }
 
 inline void
