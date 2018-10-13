@@ -135,11 +135,11 @@ LoadCollada(memory_arena *Memory, const char * FilePath)
   model Result = {};
 
   { // Load vertex/normal data
-    counted_string PositionsSelector   = CS("?xml COLLADA library_geometries geometry#Cube-mesh mesh source#Cube-mesh-positions float_array#Cube-mesh-positions-array");
-    counted_string NormalsSelector     = CS("?xml COLLADA library_geometries geometry#Cube-mesh mesh source#Cube-mesh-normals float_array#Cube-mesh-normals-array");
-    counted_string VertexCountSelector = CS("?xml COLLADA library_geometries geometry#Cube-mesh mesh polylist vcount");
-    counted_string VertIndicesSelector = CS("?xml COLLADA library_geometries geometry#Cube-mesh mesh polylist p");
-    counted_string PolylistSelector    = CS("?xml COLLADA library_geometries geometry#Cube-mesh mesh polylist");
+    counted_string PositionsSelector   = CS("geometry#Cube-mesh float_array#Cube-mesh-positions-array");
+    counted_string NormalsSelector     = CS("geometry#Cube-mesh float_array#Cube-mesh-normals-array");
+    counted_string VertexCountSelector = CS("geometry#Cube-mesh polylist vcount");
+    counted_string VertIndicesSelector = CS("geometry#Cube-mesh polylist p");
+    counted_string PolylistSelector    = CS("geometry#Cube-mesh polylist");
 
 
     ansi_stream Triangles         = AnsiStream(GetFirstMatchingTag(&XmlTokens, &VertexCountSelector, Memory)->Value);
