@@ -87,28 +87,6 @@ TagsAreEqual(xml_tag* T1, xml_tag* T2)
   return Result;
 }
 
-xml_tag*
-GetNextMatchingRootTag(xml_tag* Current, xml_tag* SearchTag)
-{
-  xml_tag* Result = 0;
-
-  while (Current)
-  {
-    Assert(Current->Open);
-    if(TagsAreEqual(Current, SearchTag))
-    {
-      Result = Current;
-      break;
-    }
-    else
-    {
-      Current = Current->NextInHash;
-    }
-  }
-
-  return Result;
-}
-
 xml_tag
 XmlTagFromReverseStream(xml_token_stream** Stream)
 {
@@ -138,18 +116,17 @@ GetFirstMatchingTag(xml_token_stream* Tokens, xml_token_stream* Selectors)
   b32 Valid = True;
   Selectors->At = Selectors->End-1;
 
-  xml_tag FirstSelector = XmlTagFromReverseStream(&Selectors);
   xml_token_stream FirstSelectorStream = *Selectors;
-
+  xml_tag FirstSelector = XmlTagFromReverseStream(&Selectors);
   umm SelectorHash = Hash(FirstSelector.Open) % Tokens->Hashes.Size;
 
-  xml_tag* RootTag = GetNextMatchingRootTag(Tokens->Hashes.Table[SelectorHash], &FirstSelector);
-
+  xml_tag* RootTag = Tokens->Hashes.Table[SelectorHash];
   while (RootTag)
   {
-    xml_tag *CurrentTag = RootTag->Parent;
+    xml_tag *CurrentTag = RootTag;
     *Selectors = FirstSelectorStream;
     xml_tag CurrentSelector = XmlTagFromReverseStream(&Selectors);
+
     while (CurrentTag && Selectors->At >= Selectors->Start)
     {
       if (TagsAreEqual(&CurrentSelector, CurrentTag))
@@ -167,7 +144,7 @@ GetFirstMatchingTag(xml_token_stream* Tokens, xml_token_stream* Selectors)
 
     if (!Valid)
     {
-      RootTag = GetNextMatchingRootTag(RootTag->NextInHash, &FirstSelector);
+      RootTag = RootTag->NextInHash;
     }
     else
     {
