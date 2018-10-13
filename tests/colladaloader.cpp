@@ -296,6 +296,13 @@ ContrivedQueryingTest()
     TestThat(StringsMatch(NameValue, ResultNameValue));
   }
 
+  {
+    ansi_stream SelectorStream = AnsiStream("xml outer#foo target");
+    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+    xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
+    TestThat(!ResultTag);
+  }
+
   return;
 }
 

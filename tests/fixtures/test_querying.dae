@@ -76,5 +76,13 @@
       <color>1 2 3 4</color>
     </effect>
   </library_effects>
+</xml>
 
+<xml>
+  <outer>
+    <target/>
+  </outer>
+
+  <outer id="foo">
+  </outer>
 </xml>

@@ -124,8 +124,10 @@ XmlTagFromReverseStream(xml_token_stream** Stream)
   Assert((*Stream)->At->Type == XmlTokenType_Open);
   Result.Open = (*Stream)->At;
 
-  --(*Stream)->At;
-  Assert((*Stream)->At >= (*Stream)->Start);
+  if((*Stream)->At >= (*Stream)->Start)
+  {
+    --(*Stream)->At;
+  }
 
   return Result;
 }
@@ -147,42 +149,31 @@ GetFirstMatchingTag(xml_token_stream* Tokens, xml_token_stream* Selectors)
   {
     xml_tag *CurrentTag = RootTag->Parent;
     *Selectors = FirstSelectorStream;
-    while (Selectors->At > Selectors->Start)
+    xml_tag CurrentSelector = XmlTagFromReverseStream(&Selectors);
+    while (CurrentTag && Selectors->At >= Selectors->Start)
     {
-      xml_tag CurrentSelector = XmlTagFromReverseStream(&Selectors);
-
       if (TagsAreEqual(&CurrentSelector, CurrentTag))
       {
-        CurrentTag = CurrentTag->Parent;
+        CurrentSelector = XmlTagFromReverseStream(&Selectors);
         Valid = True;
       }
       else
       {
-        while (CurrentTag)
-        {
-          if (TagsAreEqual(&CurrentSelector, CurrentTag))
-          {
-            CurrentTag = CurrentTag->Parent;
-            Valid = True;
-            break;
-          }
-          else
-          {
-            CurrentTag = CurrentTag->Sibling;
-            Valid = False;
-          }
-        }
-
-        if (!Valid)
-        {
-          RootTag = GetNextMatchingRootTag(RootTag->NextInHash, &FirstSelector);
-          break;
-        }
+        Valid = False;
       }
+
+      CurrentTag = CurrentTag->Parent;
     }
 
-    if (Valid)
+    if (!Valid)
+    {
+      RootTag = GetNextMatchingRootTag(RootTag->NextInHash, &FirstSelector);
+    }
+    else
+    {
       break;
+    }
+
   }
 
   xml_tag* Result = Valid ? RootTag : 0;

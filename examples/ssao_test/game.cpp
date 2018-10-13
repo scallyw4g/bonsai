@@ -143,7 +143,7 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory)
   model *Result = Allocate(model, GameState->Memory, ModelIndex_Count);
 
   Result[ModelIndex_Enemy] = LoadVoxModel(Memory, ENEMY_MODEL);
-  Result[ModelIndex_Player] = LoadCollada(Memory, "models/animated_cube.dae");
+  Result[ModelIndex_Player] = LoadCollada(Memory, "models/cube.dae");
   /* Result[ModelIndex_Player] = LoadVoxModel(Memory, PLAYER_MODEL); */
   Result[ModelIndex_Loot] = LoadVoxModel(Memory, LOOT_MODEL);
 
