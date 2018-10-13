@@ -303,6 +303,23 @@ ContrivedQueryingTest()
     TestThat(!ResultTag);
   }
 
+  {
+    ansi_stream SelectorStream = AnsiStream("inner fourth-value");
+    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+    xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
+    TestThat(ResultTag);
+    TestThat(StringsMatch(ResultTag->Value, CS("42")));
+  }
+
+  {
+    ansi_stream SelectorStream = AnsiStream("inner#second-fourth-value fourth-value");
+    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+    xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
+    TestThat(ResultTag);
+    TestThat(StringsMatch(ResultTag->Value, CS("42")));
+  }
+
+
   return;
 }
 
