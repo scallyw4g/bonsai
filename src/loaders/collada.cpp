@@ -198,29 +198,32 @@ LoadCollada(memory_arena *Memory, const char * FilePath)
     xml_tag* yKeyframePositionsTag = GetFirstMatchingTag(&XmlTokens, &yKeyframePositionsSelector, Memory);
     xml_tag* zKeyframePositionsTag = GetFirstMatchingTag(&XmlTokens, &zKeyframePositionsSelector, Memory);
 
-    u32 TotalKeyframeCount = StringToInt(GetPropertyValue(xKeyframeTimeTag, CS("count")));
-    Assert( TotalKeyframeCount == StringToInt(GetPropertyValue(xKeyframePositionsTag, CS("count"))) );
-
-    r32_stream xKeyframeTimes = ParseFloatArray(TotalKeyframeCount, AnsiStream(xKeyframeTimeTag->Value), Memory);
-    r32_stream xKeyframePositions = ParseFloatArray(TotalKeyframeCount, AnsiStream(xKeyframePositionsTag->Value), Memory);
-    r32_stream yKeyframePositions = ParseFloatArray(TotalKeyframeCount, AnsiStream(yKeyframePositionsTag->Value), Memory);
-    r32_stream zKeyframePositions = ParseFloatArray(TotalKeyframeCount, AnsiStream(zKeyframePositionsTag->Value), Memory);
-
-    animation Animation = AllocateAnimation(TotalKeyframeCount, Memory);
-
-    for (u32 KeyframeIndex = 0;
-        KeyframeIndex < TotalKeyframeCount;
-        ++KeyframeIndex)
+    if (xKeyframeTimeTag)
     {
-      Animation.Keyframes[KeyframeIndex].PositionInterp.x = xKeyframePositions.Start[KeyframeIndex];
-      Animation.Keyframes[KeyframeIndex].PositionInterp.y = yKeyframePositions.Start[KeyframeIndex];
-      Animation.Keyframes[KeyframeIndex].PositionInterp.z = zKeyframePositions.Start[KeyframeIndex];
-      Animation.Keyframes[KeyframeIndex].tEnd = xKeyframeTimes.Start[KeyframeIndex];
+      u32 TotalKeyframeCount = StringToInt(GetPropertyValue(xKeyframeTimeTag, CS("count")));
+      Assert( TotalKeyframeCount == StringToInt(GetPropertyValue(xKeyframePositionsTag, CS("count"))) );
+
+      r32_stream xKeyframeTimes = ParseFloatArray(TotalKeyframeCount, AnsiStream(xKeyframeTimeTag->Value), Memory);
+      r32_stream xKeyframePositions = ParseFloatArray(TotalKeyframeCount, AnsiStream(xKeyframePositionsTag->Value), Memory);
+      r32_stream yKeyframePositions = ParseFloatArray(TotalKeyframeCount, AnsiStream(yKeyframePositionsTag->Value), Memory);
+      r32_stream zKeyframePositions = ParseFloatArray(TotalKeyframeCount, AnsiStream(zKeyframePositionsTag->Value), Memory);
+
+      animation Animation = AllocateAnimation(TotalKeyframeCount, Memory);
+
+      for (u32 KeyframeIndex = 0;
+          KeyframeIndex < TotalKeyframeCount;
+          ++KeyframeIndex)
+      {
+        Animation.Keyframes[KeyframeIndex].PositionInterp.x = xKeyframePositions.Start[KeyframeIndex];
+        Animation.Keyframes[KeyframeIndex].PositionInterp.y = yKeyframePositions.Start[KeyframeIndex];
+        Animation.Keyframes[KeyframeIndex].PositionInterp.z = zKeyframePositions.Start[KeyframeIndex];
+        Animation.Keyframes[KeyframeIndex].tEnd = xKeyframeTimes.Start[KeyframeIndex];
+      }
+
+      Animation.tEnd = xKeyframeTimes.Start[TotalKeyframeCount-1];
+
+      Result.Animation = Animation;
     }
-
-    Animation.tEnd = xKeyframeTimes.Start[TotalKeyframeCount-1];
-
-    Result.Animation = Animation;
   }
 
   Result.Chunk->Flags = Chunk_Initialized;
