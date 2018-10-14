@@ -134,25 +134,30 @@ LoadCollada(memory_arena *Memory, const char * FilePath)
   xml_token_stream XmlTokens = TokenizeXmlStream(&AnsiXml, Memory);
   model Result = {};
 
-  counted_string VisualSceneElementSelector = CS("library_visual_scenes node:type=NODE");
+  counted_string VisualSceneElementSelector = CS("library_visual_scenes node:type=NODE instance_geometry");
   xml_tag_stream SceneElements = GetAllMatchingTags(&XmlTokens, &VisualSceneElementSelector, Memory);
 
-  while ( Remaining(&SceneElements) )
+  u32 SceneObjects = TotalElements(&SceneElements);
+  for ( u32 ObjectIndex = 0;
+       ObjectIndex < SceneObjects;
+       ++ObjectIndex )
   {
     // TODO(Jesse): WTF - why do we have to tell this template we're returning
     // an xml_tag* ?  Is that just C++ being braindead or is there a way to get
-    // it to infer element_t properly?
-    xml_tag* Tag = Pop<xml_tag*>(&SceneElements);
-  }
+    // it to properly infer element_t?
+    xml_tag* Tag = SceneElements.Start[ObjectIndex];
+    counted_string* GeometryName = GetPropertyValue(Tag, CS("name"));
+    counted_string* GeometryId = GetPropertyValue(Tag, CS("url"));
 
+    Assert(GeometryName && GeometryId);
 
-  { // Load vertex/normal data
-    counted_string PositionsSelector   = CS("geometry:id=Cube-mesh float_array:id=Cube-mesh-positions-array");
-    counted_string NormalsSelector     = CS("geometry:id=Cube-mesh float_array:id=Cube-mesh-normals-array");
-    counted_string VertexCountSelector = CS("geometry:id=Cube-mesh polylist vcount");
-    counted_string VertIndicesSelector = CS("geometry:id=Cube-mesh polylist p");
-    counted_string PolylistSelector    = CS("geometry:id=Cube-mesh polylist");
+    /* mesh* Mesh = LoadMeshData(&XmlTokens, GeometryName, GeometryId); */
 
+    counted_string PositionsSelector   = FormatCountedString(Memory, "geometry%.*s float_array%.*s-positions-array", GeometryId->Count, GeometryId->Start, GeometryId->Count, GeometryId->Start);
+    counted_string NormalsSelector     = FormatCountedString(Memory, "geometry%.*s float_array%.*s-normals-array", GeometryId->Count, GeometryId->Start, GeometryId->Count, GeometryId->Start);
+    counted_string VertexCountSelector = FormatCountedString(Memory, "geometry%.*s polylist vcount", GeometryId->Count, GeometryId->Start);
+    counted_string VertIndicesSelector = FormatCountedString(Memory, "geometry%.*s polylist p", GeometryId->Count, GeometryId->Start);
+    counted_string PolylistSelector    = FormatCountedString(Memory, "geometry%.*s polylist", GeometryId->Count, GeometryId->Start);
 
     ansi_stream Triangles         = AnsiStream(GetFirstMatchingTag(&XmlTokens, &VertexCountSelector)->Value);
     ansi_stream VertIndices       = AnsiStream(GetFirstMatchingTag(&XmlTokens, &VertIndicesSelector)->Value);

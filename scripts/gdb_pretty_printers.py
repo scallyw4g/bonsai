@@ -47,11 +47,6 @@ class xml_token_printer:
         else:
             return "Invalid type string encountered in pretty printer {}".format(type_string)
 
-
-
-
-
-
 def bonsai_pretty_printers():
     pp = gdb.printing.RegexpCollectionPrettyPrinter("bonsai_printers")
     pp.add_printer('counted_string'       , '^counted_string$' , counted_string_printer)
