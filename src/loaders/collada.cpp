@@ -123,6 +123,61 @@ AllocateAnimation(u32 KeyframeCount, memory_arena* Memory)
   return Result;
 }
 
+chunk_data*
+LoadMeshData(xml_token_stream* XmlTokens, counted_string* GeometryId, memory_arena* PermMemory, memory_arena* TempMemory)
+{
+  counted_string PositionsSelector   = FormatCountedString(TempMemory, "geometry%.*s float_array%.*s-positions-array", GeometryId->Count, GeometryId->Start, GeometryId->Count, GeometryId->Start);
+  counted_string NormalsSelector     = FormatCountedString(TempMemory, "geometry%.*s float_array%.*s-normals-array", GeometryId->Count, GeometryId->Start, GeometryId->Count, GeometryId->Start);
+  counted_string VertexCountSelector = FormatCountedString(TempMemory, "geometry%.*s polylist vcount", GeometryId->Count, GeometryId->Start);
+  counted_string VertIndicesSelector = FormatCountedString(TempMemory, "geometry%.*s polylist p", GeometryId->Count, GeometryId->Start);
+  counted_string PolylistSelector    = FormatCountedString(TempMemory, "geometry%.*s polylist", GeometryId->Count, GeometryId->Start);
+
+  ansi_stream Triangles         = AnsiStream(GetFirstMatchingTag(XmlTokens, &VertexCountSelector)->Value);
+  ansi_stream VertIndices       = AnsiStream(GetFirstMatchingTag(XmlTokens, &VertIndicesSelector)->Value);
+
+  xml_tag* Polylist             = GetFirstMatchingTag(XmlTokens, &PolylistSelector);
+  u32 TotalTriangleCount        = StringToInt(GetPropertyValue(Polylist, CS("count")));
+
+  xml_tag* PositionTag          = GetFirstMatchingTag(XmlTokens, &PositionsSelector);
+  xml_tag* NormalTag            = GetFirstMatchingTag(XmlTokens, &NormalsSelector);
+  counted_string PositionString = PositionTag->Value;
+  counted_string NormalString   = NormalTag->Value;
+  u32 PositionCount             = StringToInt(GetPropertyValue(PositionTag, CS("count")));
+  u32 NormalCount               = StringToInt(GetPropertyValue(NormalTag, CS("count")));
+
+  v3_stream Positions           = ParseV3Array(PositionCount, AnsiStream(PositionString), TempMemory);
+  v3_stream Normals             = ParseV3Array(NormalCount, AnsiStream(NormalString), TempMemory);
+
+  chunk_data* Result = AllocateChunk(PermMemory, Chunk_Dimension(0,0,0));
+
+  for (u32 TriangleIndex = 0;
+      TriangleIndex < TotalTriangleCount;
+      ++TriangleIndex)
+  {
+    counted_string CurrentTriangle = PopWordCounted(&Triangles);
+    Assert(StringsMatch(CurrentTriangle, CS("3")));
+
+    for (u32 VertIndex = 0;
+        VertIndex < 3;
+        ++VertIndex)
+    {
+      Assert(Result->Mesh.At < Result->Mesh.End);
+
+      u32 PositionIndex = (u32)StringToInt(PopWordCounted(&VertIndices));
+      u32 NormalIndex = (u32)StringToInt(PopWordCounted(&VertIndices));
+      Assert(PositionIndex < TotalElements(&Positions));
+      Assert(NormalIndex < TotalElements(&Normals));
+
+      Result->Mesh.Verts[Result->Mesh.At] = Positions.Start[PositionIndex];
+      Result->Mesh.Normals[Result->Mesh.At] = Normalize(Normals.Start[NormalIndex]);
+
+      Result->Mesh.At++;
+    }
+  }
+
+  return Result;
+}
+
 model
 LoadCollada(memory_arena *Memory, const char * FilePath)
 {
@@ -142,65 +197,13 @@ LoadCollada(memory_arena *Memory, const char * FilePath)
        ObjectIndex < SceneObjects;
        ++ObjectIndex )
   {
-    // TODO(Jesse): WTF - why do we have to tell this template we're returning
-    // an xml_tag* ?  Is that just C++ being braindead or is there a way to get
-    // it to properly infer element_t?
     xml_tag* Tag = SceneElements.Start[ObjectIndex];
     counted_string* GeometryName = GetPropertyValue(Tag, CS("name"));
     counted_string* GeometryId = GetPropertyValue(Tag, CS("url"));
 
     Assert(GeometryName && GeometryId);
 
-    /* mesh* Mesh = LoadMeshData(&XmlTokens, GeometryName, GeometryId); */
-
-    counted_string PositionsSelector   = FormatCountedString(Memory, "geometry%.*s float_array%.*s-positions-array", GeometryId->Count, GeometryId->Start, GeometryId->Count, GeometryId->Start);
-    counted_string NormalsSelector     = FormatCountedString(Memory, "geometry%.*s float_array%.*s-normals-array", GeometryId->Count, GeometryId->Start, GeometryId->Count, GeometryId->Start);
-    counted_string VertexCountSelector = FormatCountedString(Memory, "geometry%.*s polylist vcount", GeometryId->Count, GeometryId->Start);
-    counted_string VertIndicesSelector = FormatCountedString(Memory, "geometry%.*s polylist p", GeometryId->Count, GeometryId->Start);
-    counted_string PolylistSelector    = FormatCountedString(Memory, "geometry%.*s polylist", GeometryId->Count, GeometryId->Start);
-
-    ansi_stream Triangles         = AnsiStream(GetFirstMatchingTag(&XmlTokens, &VertexCountSelector)->Value);
-    ansi_stream VertIndices       = AnsiStream(GetFirstMatchingTag(&XmlTokens, &VertIndicesSelector)->Value);
-
-    xml_tag* Polylist             = GetFirstMatchingTag(&XmlTokens, &PolylistSelector);
-    u32 TotalTriangleCount        = StringToInt(GetPropertyValue(Polylist, CS("count")));
-
-    xml_tag* PositionTag          = GetFirstMatchingTag(&XmlTokens, &PositionsSelector);
-    xml_tag* NormalTag            = GetFirstMatchingTag(&XmlTokens, &NormalsSelector);
-    counted_string PositionString = PositionTag->Value;
-    counted_string NormalString   = NormalTag->Value;
-    u32 PositionCount             = StringToInt(GetPropertyValue(PositionTag, CS("count")));
-    u32 NormalCount               = StringToInt(GetPropertyValue(NormalTag, CS("count")));
-    v3_stream Positions     = ParseV3Array(PositionCount, AnsiStream(PositionString), Memory);
-    v3_stream Normals       = ParseV3Array(NormalCount, AnsiStream(NormalString), Memory);
-
-    Result.Chunk = AllocateChunk(Memory, Chunk_Dimension(0,0,0));
-
-    for (u32 TriangleIndex = 0;
-        TriangleIndex < TotalTriangleCount;
-        ++TriangleIndex)
-    {
-      counted_string CurrentTriangle = PopWordCounted(&Triangles);
-      Assert(StringsMatch(CurrentTriangle, CS("3")));
-
-      for (u32 VertIndex = 0;
-          VertIndex < 3;
-          ++VertIndex)
-      {
-        Assert(Result.Chunk->Mesh.At < Result.Chunk->Mesh.End);
-
-        u32 PositionIndex = (u32)StringToInt(PopWordCounted(&VertIndices));
-        u32 NormalIndex = (u32)StringToInt(PopWordCounted(&VertIndices));
-        Assert(PositionIndex < TotalElements(&Positions));
-        Assert(NormalIndex < TotalElements(&Normals));
-
-        Result.Chunk->Mesh.Verts[Result.Chunk->Mesh.At] = Positions.Start[PositionIndex];
-        Result.Chunk->Mesh.Normals[Result.Chunk->Mesh.At] = Normalize(Normals.Start[NormalIndex]);
-
-        Result.Chunk->Mesh.At++;
-      }
-    }
-
+    Result.Chunk = LoadMeshData(&XmlTokens, GeometryId, Memory, TranArena);
   }
 
   { // Load animation data
