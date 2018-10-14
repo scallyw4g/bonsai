@@ -135,6 +135,15 @@ LoadCollada(memory_arena *Memory, const char * FilePath)
   model Result = {};
 
   counted_string VisualSceneElementSelector = CS("library_visual_scenes node:type=NODE");
+  xml_tag_stream SceneElements = GetAllMatchingTags(&XmlTokens, &VisualSceneElementSelector, Memory);
+
+  while ( Remaining(&SceneElements) )
+  {
+    // TODO(Jesse): WTF - why do we have to tell this template we're returning
+    // an xml_tag* ?  Is that just C++ being braindead or is there a way to get
+    // it to infer element_t properly?
+    xml_tag* Tag = Pop<xml_tag*>(&SceneElements);
+  }
 
 
   { // Load vertex/normal data
@@ -145,14 +154,14 @@ LoadCollada(memory_arena *Memory, const char * FilePath)
     counted_string PolylistSelector    = CS("geometry:id=Cube-mesh polylist");
 
 
-    ansi_stream Triangles         = AnsiStream(GetFirstMatchingTag(&XmlTokens, &VertexCountSelector, Memory)->Value);
-    ansi_stream VertIndices       = AnsiStream(GetFirstMatchingTag(&XmlTokens, &VertIndicesSelector, Memory)->Value);
+    ansi_stream Triangles         = AnsiStream(GetFirstMatchingTag(&XmlTokens, &VertexCountSelector)->Value);
+    ansi_stream VertIndices       = AnsiStream(GetFirstMatchingTag(&XmlTokens, &VertIndicesSelector)->Value);
 
-    xml_tag* Polylist             = GetFirstMatchingTag(&XmlTokens, &PolylistSelector, Memory);
+    xml_tag* Polylist             = GetFirstMatchingTag(&XmlTokens, &PolylistSelector);
     u32 TotalTriangleCount        = StringToInt(GetPropertyValue(Polylist, CS("count")));
 
-    xml_tag* PositionTag          = GetFirstMatchingTag(&XmlTokens, &PositionsSelector, Memory);
-    xml_tag* NormalTag            = GetFirstMatchingTag(&XmlTokens, &NormalsSelector, Memory);
+    xml_tag* PositionTag          = GetFirstMatchingTag(&XmlTokens, &PositionsSelector);
+    xml_tag* NormalTag            = GetFirstMatchingTag(&XmlTokens, &NormalsSelector);
     counted_string PositionString = PositionTag->Value;
     counted_string NormalString   = NormalTag->Value;
     u32 PositionCount             = StringToInt(GetPropertyValue(PositionTag, CS("count")));
@@ -196,10 +205,10 @@ LoadCollada(memory_arena *Memory, const char * FilePath)
     counted_string yKeyframePositionsSelector = CS("library_animations animation:id=Cube_location_Y source:id=Cube_location_Y-output float_array:id=Cube_location_Y-output-array");
     counted_string zKeyframePositionsSelector = CS("library_animations animation:id=Cube_location_Z source:id=Cube_location_Z-output float_array:id=Cube_location_Z-output-array");
 
-    xml_tag* xKeyframeTimeTag = GetFirstMatchingTag(&XmlTokens, &xKeyframeTimesSelector, Memory);
-    xml_tag* xKeyframePositionsTag = GetFirstMatchingTag(&XmlTokens, &xKeyframePositionsSelector, Memory);
-    xml_tag* yKeyframePositionsTag = GetFirstMatchingTag(&XmlTokens, &yKeyframePositionsSelector, Memory);
-    xml_tag* zKeyframePositionsTag = GetFirstMatchingTag(&XmlTokens, &zKeyframePositionsSelector, Memory);
+    xml_tag* xKeyframeTimeTag = GetFirstMatchingTag(&XmlTokens, &xKeyframeTimesSelector);
+    xml_tag* xKeyframePositionsTag = GetFirstMatchingTag(&XmlTokens, &xKeyframePositionsSelector);
+    xml_tag* yKeyframePositionsTag = GetFirstMatchingTag(&XmlTokens, &yKeyframePositionsSelector);
+    xml_tag* zKeyframePositionsTag = GetFirstMatchingTag(&XmlTokens, &zKeyframePositionsSelector);
 
     if (xKeyframeTimeTag)
     {

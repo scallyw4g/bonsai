@@ -49,6 +49,14 @@ Push(element_t Element, stream_t *Array)
   return;
 }
 
+template <typename element_t, typename stream_t> inline element_t
+Pop(stream_t *Stream)
+{
+  Assert(Remaining(Stream));
+  element_t Element = *Stream->At++;
+  return Element;
+}
+
 struct mesh_metadata
 {
   u32 VertCount;

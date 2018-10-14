@@ -249,13 +249,20 @@ GetFirstMatchingTag(xml_token_stream* Tokens, xml_token_stream* Selectors)
 }
 
 xml_tag*
-GetFirstMatchingTag(xml_token_stream* Tokens, counted_string* SelectorString, memory_arena* Memory)
+GetFirstMatchingTag(xml_token_stream* Tokens, counted_string* SelectorString)
+{
+  ansi_stream SelectorStream = AnsiStream(SelectorString);
+  xml_token_stream Selectors = TokenizeSelector(&SelectorStream, TranArena);
+  xml_tag* Result = GetFirstMatchingTag(Tokens, &Selectors);
+  return Result;
+}
+
+xml_tag_stream
+GetAllMatchingTags(xml_token_stream* Tokens, counted_string* SelectorString, memory_arena* Memory)
 {
   ansi_stream SelectorStream = AnsiStream(SelectorString);
   xml_token_stream Selectors = TokenizeSelector(&SelectorStream, Memory);
-  xml_tag_stream ResultStream = GetCountMatchingTags(Tokens, &Selectors, 1, Memory);
-
-  xml_tag *Result = ResultStream.Start[0];
+  xml_tag_stream Result = GetAllMatchingTags(Tokens, &Selectors, Memory);
   return Result;
 }
 
