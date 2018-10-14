@@ -102,11 +102,13 @@ XmlTagFromReverseStream(xml_token_stream** Stream)
   Assert((*Stream)->At->Type == XmlTokenType_Open);
   Result.Open = (*Stream)->At;
 
-  if((*Stream)->At >= (*Stream)->Start)
+  if((*Stream)->At > (*Stream)->Start)
   {
     --(*Stream)->At;
   }
 
+
+  Assert((*Stream)->At >= (*Stream)->Start);
   return Result;
 }
 
@@ -132,8 +134,21 @@ TokenizeSelector(ansi_stream* Selector, memory_arena* Memory)
   return Result;
 }
 
-xml_tag*
-GetFirstMatchingTag(xml_token_stream* Tokens, xml_token_stream* Selectors)
+inline u32
+CountTagsInHashBucket(xml_tag *Tag)
+{
+  u32 Count = 0;
+  while (Tag)
+  {
+    ++Count;
+    Tag = Tag->NextInHash;
+  }
+
+  return Count;
+}
+
+xml_tag_stream
+GetCountMatchingTags(xml_token_stream* Tokens, xml_token_stream* Selectors, u32 Count, memory_arena* Memory)
 {
   b32 Valid = True;
   Selectors->At = Selectors->End-1;
@@ -143,17 +158,20 @@ GetFirstMatchingTag(xml_token_stream* Tokens, xml_token_stream* Selectors)
   umm SelectorHash = Hash(FirstSelector.Open) % Tokens->Hashes.Size;
 
   xml_tag* RootTag = Tokens->Hashes.Table[SelectorHash];
-  while (RootTag)
+
+  u32 MaxTagCount = CountTagsInHashBucket(RootTag);
+  xml_tag_stream Result = AllocateXmlTagStream(MaxTagCount, Memory);
+
+  while (Count && RootTag)
   {
     xml_tag *CurrentTag = RootTag;
     *Selectors = FirstSelectorStream;
     xml_tag CurrentSelector = XmlTagFromReverseStream(&Selectors);
 
-    while (CurrentTag && Selectors->At >= Selectors->Start)
+    while (CurrentTag)
     {
       if (TagsAreEqual(&CurrentSelector, CurrentTag))
       {
-        CurrentSelector = XmlTagFromReverseStream(&Selectors);
         Valid = True;
       }
       else
@@ -161,32 +179,60 @@ GetFirstMatchingTag(xml_token_stream* Tokens, xml_token_stream* Selectors)
         Valid = False;
       }
 
+      if (Valid)
+      {
+        if (Remaining(Selectors) < TotalElements(Selectors))
+          CurrentSelector = XmlTagFromReverseStream(&Selectors);
+        else
+          break;
+      }
+
       CurrentTag = CurrentTag->Parent;
     }
 
-    if (!Valid)
+    if (Valid)
     {
-      RootTag = RootTag->NextInHash;
-    }
-    else
-    {
-      break;
+      Push(RootTag, &Result);
+      Result.At++;
+      Assert(Result.At <= Result.End);
+
+      --Count;
     }
 
+    RootTag = RootTag->NextInHash;
   }
 
-  xml_tag* Result = Valid ? RootTag : 0;
+
+  Assert(Result.At <= Result.End);
+  Result.End = Result.At;
+
+  return Result;
+}
+
+xml_tag_stream
+GetAllMatchingTags(xml_token_stream* Tokens, xml_token_stream* Selectors, memory_arena* Memory)
+{
+  xml_tag_stream Result = GetCountMatchingTags(Tokens, Selectors, UINT_MAX, Memory);
   return Result;
 }
 
 xml_tag*
-GetFirstMatchingTag(xml_token_stream* Tokens, counted_string* Selectors, memory_arena* Memory)
+GetFirstMatchingTag(xml_token_stream* Tokens, xml_token_stream* Selectors)
 {
-  ansi_stream SelectorStream = AnsiStream(Selectors);
-  xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
-  xml_tag* ResultTag = GetFirstMatchingTag(Tokens, &Selector);
+  xml_tag_stream ResultStream = GetCountMatchingTags(Tokens, Selectors, 1, TranArena);
+  xml_tag* Result = ResultStream.Start[0];
+  return Result;
+}
 
-  return ResultTag;
+xml_tag*
+GetFirstMatchingTag(xml_token_stream* Tokens, counted_string* SelectorString, memory_arena* Memory)
+{
+  ansi_stream SelectorStream = AnsiStream(SelectorString);
+  xml_token_stream Selectors = TokenizeSelector(&SelectorStream, Memory);
+  xml_tag_stream ResultStream = GetCountMatchingTags(Tokens, &Selectors, 1, Memory);
+
+  xml_tag *Result = ResultStream.Start[0];
+  return Result;
 }
 
 xml_token_stream

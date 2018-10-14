@@ -320,6 +320,16 @@ ContrivedQueryingTest()
   }
 
 
+  {
+    ansi_stream SelectorStream = AnsiStream("second-value");
+    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+    xml_tag_stream Results = GetAllMatchingTags(&XmlTokens, &Selector, Memory);
+
+    TestThat(TotalElements(&Results) == 2);
+    TestThat(StringsMatch(Results.Start[0]->Value, CS("42")));
+    TestThat(StringsMatch(Results.Start[1]->Value, CS("43")));
+  }
+
   return;
 }
 
