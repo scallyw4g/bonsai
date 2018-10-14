@@ -305,6 +305,14 @@ finished:
   return Result;
 }
 
+counted_string
+ReadUntilTerminatorList(counted_string* String, const char* TerminatorList)
+{
+  ansi_stream Cursor = AnsiStream(String);
+  counted_string Result = ReadUntilTerminatorList(&Cursor, TerminatorList);
+  return Result;
+}
+
 char *
 ReadUntilTerminatorList(ansi_stream *Cursor, const char *TerminatorList, memory_arena *Arena)
 {

@@ -134,6 +134,9 @@ LoadCollada(memory_arena *Memory, const char * FilePath)
   xml_token_stream XmlTokens = TokenizeXmlStream(&AnsiXml, Memory);
   model Result = {};
 
+  counted_string VisualSceneElementSelector = CS("library_visual_scenes node:type=NODE");
+
+
   { // Load vertex/normal data
     counted_string PositionsSelector   = CS("geometry#Cube-mesh float_array#Cube-mesh-positions-array");
     counted_string NormalsSelector     = CS("geometry#Cube-mesh float_array#Cube-mesh-normals-array");

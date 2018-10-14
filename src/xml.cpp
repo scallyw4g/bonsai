@@ -33,6 +33,17 @@ PushProperty(xml_tag* Target, xml_property *Prop)
 }
 
 b32
+PropertiesMatch(xml_property* P1, xml_property* P2)
+{
+  b32 Result = StringsMatch(&P1->Name, &P2->Name);
+  if (P1->Value.Count || P2->Value.Count)
+  {
+    Result = Result && StringsMatch(&P1->Value, &P2->Value);
+  }
+  return Result;
+}
+
+b32
 TokensAreEqual(xml_token* T1, xml_token* T2)
 {
   b32 Result = False;
@@ -44,20 +55,11 @@ TokensAreEqual(xml_token* T1, xml_token* T2)
       case XmlTokenType_Float:
       case XmlTokenType_Int:
       case XmlTokenType_Property:
-      {
-        Result = StringsMatch(&T1->Property.Name, &T2->Property.Name) &&
-                 StringsMatch(&T1->Property.Value, &T2->Property.Value);
-      } break;
-
       case XmlTokenType_Open:
       case XmlTokenType_Close:
       case XmlTokenType_Boolean:
       {
-        Result = StringsMatch(&T1->Property.Name, &T2->Property.Name);
-        if (T1->Property.Value.Count || T2->Property.Value.Count)
-        {
-          Result = Result && StringsMatch(&T1->Property.Value, &T2->Property.Value);
-        }
+        Result = PropertiesMatch(&T1->Property, &T2->Property);
       } break;
 
       InvalidDefaultCase;
@@ -68,20 +70,38 @@ TokensAreEqual(xml_token* T1, xml_token* T2)
 }
 
 b32
-TagsAreEqual(xml_tag* T1, xml_tag* T2)
+TagsAreEqual(xml_tag* QueryTag, xml_tag* T2)
 {
   b32 Result = False;
 
-  if (T1 && T2 && TokensAreEqual(T1->Open, T2->Open))
+  if (QueryTag && T2 && TokensAreEqual(QueryTag->Open, T2->Open))
   {
     Result = True;
 
-    counted_string* Id1 = GetPropertyValue(T1, CS("id"));
-    counted_string* Id2 = GetPropertyValue(T2, CS("id"));
-    if ( (Id1 || Id2) && (!StringsMatch(Id1,Id2)) )
+    xml_property *QueryProperty = QueryTag->Properties;
+    while (QueryProperty)
     {
       Result = False;
+      xml_property *CurrentProperty = T2->Properties;
+      while (CurrentProperty)
+      {
+        if (PropertiesMatch(QueryProperty, CurrentProperty))
+        {
+          Result = True;
+          break;
+        }
+
+        CurrentProperty = CurrentProperty->Next;
+      }
+
+      if (!Result)
+      {
+        break;
+      }
+
+      QueryProperty = QueryProperty->Next;
     }
+
   }
 
   return Result;
