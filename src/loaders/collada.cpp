@@ -138,11 +138,11 @@ LoadCollada(memory_arena *Memory, const char * FilePath)
 
 
   { // Load vertex/normal data
-    counted_string PositionsSelector   = CS("geometry#Cube-mesh float_array#Cube-mesh-positions-array");
-    counted_string NormalsSelector     = CS("geometry#Cube-mesh float_array#Cube-mesh-normals-array");
-    counted_string VertexCountSelector = CS("geometry#Cube-mesh polylist vcount");
-    counted_string VertIndicesSelector = CS("geometry#Cube-mesh polylist p");
-    counted_string PolylistSelector    = CS("geometry#Cube-mesh polylist");
+    counted_string PositionsSelector   = CS("geometry:id=Cube-mesh float_array:id=Cube-mesh-positions-array");
+    counted_string NormalsSelector     = CS("geometry:id=Cube-mesh float_array:id=Cube-mesh-normals-array");
+    counted_string VertexCountSelector = CS("geometry:id=Cube-mesh polylist vcount");
+    counted_string VertIndicesSelector = CS("geometry:id=Cube-mesh polylist p");
+    counted_string PolylistSelector    = CS("geometry:id=Cube-mesh polylist");
 
 
     ansi_stream Triangles         = AnsiStream(GetFirstMatchingTag(&XmlTokens, &VertexCountSelector, Memory)->Value);
@@ -191,10 +191,10 @@ LoadCollada(memory_arena *Memory, const char * FilePath)
 
   { // Load animation data
 
-    counted_string xKeyframeTimesSelector     = CS("?xml COLLADA library_animations animation#Cube_location_X source#Cube_location_X-input float_array#Cube_location_X-input-array");
-    counted_string xKeyframePositionsSelector = CS("?xml COLLADA library_animations animation#Cube_location_X source#Cube_location_X-output float_array#Cube_location_X-output-array");
-    counted_string yKeyframePositionsSelector = CS("?xml COLLADA library_animations animation#Cube_location_Y source#Cube_location_Y-output float_array#Cube_location_Y-output-array");
-    counted_string zKeyframePositionsSelector = CS("?xml COLLADA library_animations animation#Cube_location_Z source#Cube_location_Z-output float_array#Cube_location_Z-output-array");
+    counted_string xKeyframeTimesSelector     = CS("library_animations animation:id=Cube_location_X source:id=Cube_location_X-input float_array:id=Cube_location_X-input-array");
+    counted_string xKeyframePositionsSelector = CS("library_animations animation:id=Cube_location_X source:id=Cube_location_X-output float_array:id=Cube_location_X-output-array");
+    counted_string yKeyframePositionsSelector = CS("library_animations animation:id=Cube_location_Y source:id=Cube_location_Y-output float_array:id=Cube_location_Y-output-array");
+    counted_string zKeyframePositionsSelector = CS("library_animations animation:id=Cube_location_Z source:id=Cube_location_Z-output float_array:id=Cube_location_Z-output-array");
 
     xml_tag* xKeyframeTimeTag = GetFirstMatchingTag(&XmlTokens, &xKeyframeTimesSelector, Memory);
     xml_tag* xKeyframePositionsTag = GetFirstMatchingTag(&XmlTokens, &xKeyframePositionsSelector, Memory);

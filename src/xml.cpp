@@ -141,12 +141,16 @@ TokenizeSelector(ansi_stream* Selector, memory_arena* Memory)
   while (Remaining(Selector))
   {
     counted_string TagName = PopWordCounted(Selector);
-    counted_string TagId = Split(&TagName, '#');
-
+    counted_string TagProperties = Split(&TagName, ':');
     PushToken(&Result, XmlOpenToken(TagName));
-    if (TagId.Count)
+
+    while (TagProperties.Count)
     {
-      PushToken(&Result, XmlPropertyToken(CS("id"), TagId));
+      counted_string PropName = TagProperties;
+      TagProperties = Split(&PropName, ':');
+      counted_string PropValue = Split(&PropName, '=');
+
+      PushToken(&Result, XmlPropertyToken(PropName, PropValue));
     }
   }
 

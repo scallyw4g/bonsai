@@ -218,7 +218,7 @@ ContrivedQueryingTest()
 
   {
     counted_string ActualIdValue = CS("id-value");
-    ansi_stream SelectorStream = AnsiStream("xml first-value#id-value");
+    ansi_stream SelectorStream = AnsiStream("xml first-value:id=id-value");
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
     xml_token OpenExpected = XmlOpenToken(CS("first-value"));
@@ -230,7 +230,7 @@ ContrivedQueryingTest()
   }
 
   {
-    ansi_stream SelectorStream = AnsiStream("xml first-value#id-value");
+    ansi_stream SelectorStream = AnsiStream("xml first-value:id=id-value");
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
     xml_token OpenExpected = XmlOpenToken(CS("first-value"));
@@ -266,7 +266,7 @@ ContrivedQueryingTest()
   }
 
   {
-    ansi_stream SelectorStream = AnsiStream("xml outer inner#second-fourth-value fourth-value");
+    ansi_stream SelectorStream = AnsiStream("xml outer inner:id=second-fourth-value fourth-value");
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
     xml_token OpenExpected = XmlOpenToken(CS("fourth-value"));
@@ -276,7 +276,7 @@ ContrivedQueryingTest()
 
 
   {
-    ansi_stream SelectorStream = AnsiStream("xml library_effects effect#material-effect color");
+    ansi_stream SelectorStream = AnsiStream("xml library_effects effect:id=material-effect color");
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
     xml_token OpenExpected = XmlOpenToken(CS("color"));
@@ -285,7 +285,7 @@ ContrivedQueryingTest()
   }
 
   {
-    ansi_stream SelectorStream = AnsiStream("xml library_lights light#Lamp-light");
+    ansi_stream SelectorStream = AnsiStream("xml library_lights light:id=Lamp-light");
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
     xml_token OpenExpected = XmlOpenToken(CS("light"));
@@ -297,7 +297,7 @@ ContrivedQueryingTest()
   }
 
   {
-    ansi_stream SelectorStream = AnsiStream("xml outer#foo target");
+    ansi_stream SelectorStream = AnsiStream("xml outer:id=foo target");
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
     TestThat(!ResultTag);
@@ -312,7 +312,7 @@ ContrivedQueryingTest()
   }
 
   {
-    ansi_stream SelectorStream = AnsiStream("inner#second-fourth-value fourth-value");
+    ansi_stream SelectorStream = AnsiStream("inner:id=second-fourth-value fourth-value");
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
     TestThat(ResultTag);
@@ -341,56 +341,56 @@ BlenderCubeQueryTest()
   xml_token_stream XmlTokens = TokenizeXmlStream(&XmlStream, Memory);
 
   {
-    ansi_stream SelectorStream = AnsiStream("?xml COLLADA library_geometries geometry#Cube-mesh mesh source#Cube-mesh-positions float_array#Cube-mesh-positions-array");
+    ansi_stream SelectorStream = AnsiStream("?xml COLLADA library_geometries geometry:id=Cube-mesh mesh source:id=Cube-mesh-positions float_array:id=Cube-mesh-positions-array");
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
     TestThat( StringsMatch(ResultTag->Value, CS("1 1 -1 1 -1 -1 -1 -0.9999998 -1 -0.9999997 1 -1 1 0.9999995 1 0.9999994 -1.000001 1 -1 -0.9999997 1 -1 1 1") ) );
   }
 
   {
-    ansi_stream SelectorStream = AnsiStream("?xml COLLADA library_geometries geometry#Cube-mesh mesh source#Cube-mesh-normals float_array#Cube-mesh-normals-array");
+    ansi_stream SelectorStream = AnsiStream("?xml COLLADA library_geometries geometry:id=Cube-mesh mesh source:id=Cube-mesh-normals float_array:id=Cube-mesh-normals-array");
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
     TestThat( StringsMatch(ResultTag->Value, CS("0 0 -1 0 0 1 1 0 -2.38419e-7 0 -1 -4.76837e-7 -1 2.38419e-7 -1.49012e-7 2.68221e-7 1 2.38419e-7 0 0 -1 0 0 1 1 -5.96046e-7 3.27825e-7 -4.76837e-7 -1 0 -1 2.38419e-7 -1.19209e-7 2.08616e-7 1 0") ) );
   }
 
   {
-    ansi_stream SelectorStream = AnsiStream("?xml COLLADA library_effects effect#Material-effect profile_COMMON technique phong emission color");
+    ansi_stream SelectorStream = AnsiStream("?xml COLLADA library_effects effect:id=Material-effect profile_COMMON technique phong emission color");
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
     TestThat( StringsMatch(ResultTag->Value, CS("0 0 0 1") ) );
   }
 
   {
-    ansi_stream SelectorStream = AnsiStream("?xml COLLADA library_effects effect#Material-effect profile_COMMON technique phong ambient color");
+    ansi_stream SelectorStream = AnsiStream("?xml COLLADA library_effects effect:id=Material-effect profile_COMMON technique phong ambient color");
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
     TestThat( StringsMatch(ResultTag->Value, CS("0 0 0 1") ) );
   }
 
   {
-    ansi_stream SelectorStream = AnsiStream("?xml COLLADA library_effects effect#Material-effect profile_COMMON technique phong shininess float");
+    ansi_stream SelectorStream = AnsiStream("?xml COLLADA library_effects effect:id=Material-effect profile_COMMON technique phong shininess float");
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
     TestThat( StringsMatch(ResultTag->Value, CS("50") ) );
   }
 
   {
-    ansi_stream SelectorStream = AnsiStream("?xml COLLADA library_effects effect#Material-effect profile_COMMON technique phong index_of_refraction float");
+    ansi_stream SelectorStream = AnsiStream("?xml COLLADA library_effects effect:id=Material-effect profile_COMMON technique phong index_of_refraction float");
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
     TestThat( StringsMatch(ResultTag->Value, CS("1") ) );
   }
 
   {
-    ansi_stream SelectorStream = AnsiStream("?xml COLLADA library_visual_scenes visual_scene#Scene node#Cube instance_geometry bind_material technique_common instance_material");
+    ansi_stream SelectorStream = AnsiStream("?xml COLLADA library_visual_scenes visual_scene:id=Scene node:id=Cube instance_geometry bind_material technique_common instance_material");
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
     TestThat(ResultTag);
   }
 
   {
-    ansi_stream SelectorStream = AnsiStream("?xml COLLADA library_visual_scenes visual_scene#Scene node#Cube instance_geometry bind_material technique_common");
+    ansi_stream SelectorStream = AnsiStream("?xml COLLADA library_visual_scenes visual_scene:id=Scene node:id=Cube instance_geometry bind_material technique_common");
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
     xml_token Expected = XmlOpenToken(CS("technique_common"));
@@ -399,7 +399,7 @@ BlenderCubeQueryTest()
   }
 
   {
-    ansi_stream SelectorStream = AnsiStream("?xml COLLADA library_lights light#Lamp-light extra technique ray_samp");
+    ansi_stream SelectorStream = AnsiStream("?xml COLLADA library_lights light:id=Lamp-light extra technique ray_samp");
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
     xml_tag* ResultTag = GetFirstMatchingTag(&XmlTokens, &Selector);
     xml_token Expected = XmlOpenToken(CS("ray_samp"));
