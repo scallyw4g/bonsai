@@ -324,10 +324,33 @@ ContrivedQueryingTest()
     ansi_stream SelectorStream = AnsiStream("second-value");
     xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
     xml_tag_stream Results = GetAllMatchingTags(&XmlTokens, &Selector, Memory);
-
     TestThat(TotalElements(&Results) == 2);
     TestThat(StringsMatch(Results.Start[0]->Value, CS("42")));
     TestThat(StringsMatch(Results.Start[1]->Value, CS("43")));
+  }
+
+  {
+    ansi_stream SelectorStream = AnsiStream("first-value:id=id-value:name=bar");
+    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+    xml_tag* Result = GetFirstMatchingTag(&XmlTokens, &Selector);
+    TestThat(Result);
+    TestThat( StringsMatch(GetPropertyValue(Result, CS("name")), CS("bar")) );
+  }
+
+  {
+    ansi_stream SelectorStream = AnsiStream("light:name=Lamp");
+    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+    xml_tag* Result = GetFirstMatchingTag(&XmlTokens, &Selector);
+    TestThat(Result);
+    TestThat( GetPropertyValue(Result, CS("id")) == 0);
+  }
+
+  {
+    ansi_stream SelectorStream = AnsiStream("light:id=Lamp-light:name=Lamp");
+    xml_token_stream Selector = TokenizeSelector(&SelectorStream, Memory);
+    xml_tag* Result = GetFirstMatchingTag(&XmlTokens, &Selector);
+    TestThat(Result);
+    TestThat( StringsMatch(GetPropertyValue(Result, CS("id")), CS("Lamp-light")) );
   }
 
   return;

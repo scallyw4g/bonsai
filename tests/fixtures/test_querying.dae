@@ -59,6 +59,7 @@
 
 <xml>
   <library_lights>
+    <light name="Lamp"/>
     <light id="Lamp-light" name="Lamp">
       <technique_common>
         <point>
@@ -69,6 +70,7 @@
         </point>
       </technique_common>
     </light>
+    <light name="Lamp"/>
   </library_lights>
 
   <library_effects>
@@ -83,6 +85,5 @@
     <target/>
   </outer>
 
-  <outer id="foo">
-  </outer>
+  <first-value id="id-value" name="bar"/>
 </xml>
