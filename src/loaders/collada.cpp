@@ -178,6 +178,34 @@ LoadMeshData(xml_token_stream* XmlTokens, counted_string* GeometryId, memory_are
   return Result;
 }
 
+xml_tag*
+ParseKeyframesForAxis(xml_token_stream* XmlTokens, char Axis, xml_tag** TimeTag, counted_string* GeometryName)
+{
+  counted_string xChannelSelector = FormatCountedString(TranArena, "library_animations channel:target=%.*s/location.%c", GeometryName->Count, GeometryName->Start, Axis);
+  xml_tag* xChannel = GetFirstMatchingTag(XmlTokens, &xChannelSelector);
+  counted_string* xChannelId = GetPropertyValue(xChannel, CS("source"));
+
+  counted_string xInputSelector = FormatCountedString(TranArena, "library_animations sampler%.*s input:semantic=INPUT", xChannelId->Count, xChannelId->Start);
+  xml_tag* xInputSourceTag = GetFirstMatchingTag(XmlTokens, &xInputSelector);
+  counted_string* xInputLocationSourceId = GetPropertyValue(xInputSourceTag, CS("source"));
+
+  counted_string xInputLocationSelector = FormatCountedString(TranArena, "library_animations animation source%.*s float_array", xInputLocationSourceId->Count, xInputLocationSourceId->Start);
+  xml_tag* xKeyframeTimeTag = GetFirstMatchingTag(XmlTokens, &xInputLocationSelector);
+
+
+
+  counted_string xOutputSelector = FormatCountedString(TranArena, "library_animations sampler%.*s input:semantic=OUTPUT", xChannelId->Count, xChannelId->Start);
+  xml_tag* xOutputSourceTag = GetFirstMatchingTag(XmlTokens, &xOutputSelector);
+  counted_string* xOutputLocationSourceId = GetPropertyValue(xOutputSourceTag, CS("source"));
+
+  counted_string xOutputLocationSelector = FormatCountedString(TranArena, "library_animations animation source%.*s float_array", xOutputLocationSourceId->Count, xOutputLocationSourceId->Start);
+  xml_tag* xKeyframePositionsTag = GetFirstMatchingTag(XmlTokens, &xOutputLocationSelector);
+
+
+  *TimeTag = xKeyframeTimeTag;
+  return xKeyframePositionsTag;
+}
+
 model
 LoadCollada(memory_arena *Memory, const char * FilePath)
 {
@@ -193,6 +221,11 @@ LoadCollada(memory_arena *Memory, const char * FilePath)
   xml_tag_stream SceneElements = GetAllMatchingTags(&XmlTokens, &VisualSceneElementSelector, Memory);
 
   u32 SceneObjects = TotalElements(&SceneElements);
+
+  // NOTE(Jesse): At the moment we only support loading one meshed object per
+  // .dae file but in the future we could support more!
+  Assert(SceneObjects <= 1);
+
   for ( u32 ObjectIndex = 0;
        ObjectIndex < SceneObjects;
        ++ObjectIndex )
@@ -204,46 +237,39 @@ LoadCollada(memory_arena *Memory, const char * FilePath)
     Assert(GeometryName && GeometryId);
 
     Result.Chunk = LoadMeshData(&XmlTokens, GeometryId, Memory, TranArena);
-  }
 
-  { // Load animation data
 
-    counted_string xKeyframeTimesSelector     = CS("library_animations animation:id=Cube_location_X source:id=Cube_location_X-input float_array:id=Cube_location_X-input-array");
-    counted_string xKeyframePositionsSelector = CS("library_animations animation:id=Cube_location_X source:id=Cube_location_X-output float_array:id=Cube_location_X-output-array");
-    counted_string yKeyframePositionsSelector = CS("library_animations animation:id=Cube_location_Y source:id=Cube_location_Y-output float_array:id=Cube_location_Y-output-array");
-    counted_string zKeyframePositionsSelector = CS("library_animations animation:id=Cube_location_Z source:id=Cube_location_Z-output float_array:id=Cube_location_Z-output-array");
+    xml_tag* xKeyframeTimeTag = 0;
+    xml_tag* yKeyframeTimeTag = 0;
+    xml_tag* zKeyframeTimeTag = 0;
 
-    xml_tag* xKeyframeTimeTag = GetFirstMatchingTag(&XmlTokens, &xKeyframeTimesSelector);
-    xml_tag* xKeyframePositionsTag = GetFirstMatchingTag(&XmlTokens, &xKeyframePositionsSelector);
-    xml_tag* yKeyframePositionsTag = GetFirstMatchingTag(&XmlTokens, &yKeyframePositionsSelector);
-    xml_tag* zKeyframePositionsTag = GetFirstMatchingTag(&XmlTokens, &zKeyframePositionsSelector);
+    xml_tag* xKeyframePositionsTag = ParseKeyframesForAxis(&XmlTokens, 'X', &xKeyframeTimeTag, GeometryName);
+    xml_tag* yKeyframePositionsTag = ParseKeyframesForAxis(&XmlTokens, 'Y', &yKeyframeTimeTag, GeometryName);
+    xml_tag* zKeyframePositionsTag = ParseKeyframesForAxis(&XmlTokens, 'Z', &zKeyframeTimeTag, GeometryName);
 
-    if (xKeyframeTimeTag)
+    u32 TotalKeyframeCount = StringToInt(GetPropertyValue(xKeyframeTimeTag, CS("count")));
+    Assert( TotalKeyframeCount == StringToInt(GetPropertyValue(xKeyframePositionsTag, CS("count"))) );
+
+    r32_stream xKeyframeTimes = ParseFloatArray(TotalKeyframeCount, AnsiStream(xKeyframeTimeTag->Value), Memory);
+    r32_stream xKeyframePositions = ParseFloatArray(TotalKeyframeCount, AnsiStream(xKeyframePositionsTag->Value), Memory);
+    r32_stream yKeyframePositions = ParseFloatArray(TotalKeyframeCount, AnsiStream(yKeyframePositionsTag->Value), Memory);
+    r32_stream zKeyframePositions = ParseFloatArray(TotalKeyframeCount, AnsiStream(zKeyframePositionsTag->Value), Memory);
+
+    animation Animation = AllocateAnimation(TotalKeyframeCount, Memory);
+
+    for (u32 KeyframeIndex = 0;
+        KeyframeIndex < TotalKeyframeCount;
+        ++KeyframeIndex)
     {
-      u32 TotalKeyframeCount = StringToInt(GetPropertyValue(xKeyframeTimeTag, CS("count")));
-      Assert( TotalKeyframeCount == StringToInt(GetPropertyValue(xKeyframePositionsTag, CS("count"))) );
-
-      r32_stream xKeyframeTimes = ParseFloatArray(TotalKeyframeCount, AnsiStream(xKeyframeTimeTag->Value), Memory);
-      r32_stream xKeyframePositions = ParseFloatArray(TotalKeyframeCount, AnsiStream(xKeyframePositionsTag->Value), Memory);
-      r32_stream yKeyframePositions = ParseFloatArray(TotalKeyframeCount, AnsiStream(yKeyframePositionsTag->Value), Memory);
-      r32_stream zKeyframePositions = ParseFloatArray(TotalKeyframeCount, AnsiStream(zKeyframePositionsTag->Value), Memory);
-
-      animation Animation = AllocateAnimation(TotalKeyframeCount, Memory);
-
-      for (u32 KeyframeIndex = 0;
-          KeyframeIndex < TotalKeyframeCount;
-          ++KeyframeIndex)
-      {
-        Animation.Keyframes[KeyframeIndex].PositionInterp.x = xKeyframePositions.Start[KeyframeIndex];
-        Animation.Keyframes[KeyframeIndex].PositionInterp.y = yKeyframePositions.Start[KeyframeIndex];
-        Animation.Keyframes[KeyframeIndex].PositionInterp.z = zKeyframePositions.Start[KeyframeIndex];
-        Animation.Keyframes[KeyframeIndex].tEnd = xKeyframeTimes.Start[KeyframeIndex];
-      }
-
-      Animation.tEnd = xKeyframeTimes.Start[TotalKeyframeCount-1];
-
-      Result.Animation = Animation;
+      Animation.Keyframes[KeyframeIndex].PositionInterp.x = xKeyframePositions.Start[KeyframeIndex];
+      Animation.Keyframes[KeyframeIndex].PositionInterp.y = yKeyframePositions.Start[KeyframeIndex];
+      Animation.Keyframes[KeyframeIndex].PositionInterp.z = zKeyframePositions.Start[KeyframeIndex];
+      Animation.Keyframes[KeyframeIndex].tEnd = xKeyframeTimes.Start[KeyframeIndex];
     }
+
+    Animation.tEnd = xKeyframeTimes.Start[TotalKeyframeCount-1];
+
+    Result.Animation = Animation;
   }
 
   Result.Chunk->Flags = Chunk_Initialized;
