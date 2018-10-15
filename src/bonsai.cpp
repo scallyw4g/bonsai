@@ -1,4 +1,6 @@
 #include <chunk.cpp>
+#include <bonsai_mesh.cpp>
+#include <world_chunk.cpp>
 #include <vox_loader.cpp>
 #include <perlin.cpp>
 #include <render.h>

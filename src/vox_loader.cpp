@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <string.h>
-#include <bonsai_mesh.cpp>
 
 
 

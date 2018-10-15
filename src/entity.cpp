@@ -998,14 +998,13 @@ SimulateEntities(game_state *GameState, r32 dt)
 entity *
 GetPlayer(entity **Players, client_state *OurClient)
 {
-  entity *Player = 0;
+  entity *Player = Players[0];
 
   if (OurClient)
   {
     Player = Players[OurClient->Id];
   }
 
-/*   Player = Players[0]; */
   return Player;
 }
 
