@@ -2165,11 +2165,8 @@ BufferEntity(
 
     animation* Animation = &Entity->Model.Animation;
     v3 AnimationOffset = {};
-    if (Animation->KeyframeCount)
-    {
-      Animation->t += dt;
-      AnimationOffset = GetInterpolatedPosition(Animation);
-    }
+    Animation->t += dt;
+    AnimationOffset = GetInterpolatedPosition(Animation);
 
     if (IsSet(Model, Chunk_Initialized))
     {

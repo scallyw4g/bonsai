@@ -113,12 +113,18 @@ Dump(xml_token_stream *Stream, umm TokenCount)
 }
 
 animation
-AllocateAnimation(u32 KeyframeCount, memory_arena* Memory)
+AllocateAnimation(v3i KeyframeCount, memory_arena* Memory)
 {
   animation Result = {};
 
-  Result.KeyframeCount = KeyframeCount;
-  Result.Keyframes = Allocate(keyframe, Memory, KeyframeCount);
+  Result.xKeyframeCount = KeyframeCount.x;
+  Result.xKeyframes = Allocate(keyframe, Memory, KeyframeCount.x);
+
+  Result.yKeyframeCount = KeyframeCount.y;
+  Result.yKeyframes = Allocate(keyframe, Memory, KeyframeCount.y);
+
+  Result.zKeyframeCount = KeyframeCount.z;
+  Result.zKeyframes = Allocate(keyframe, Memory, KeyframeCount.z);
 
   return Result;
 }
@@ -247,28 +253,53 @@ LoadCollada(memory_arena *Memory, const char * FilePath)
     xml_tag* yKeyframePositionsTag = ParseKeyframesForAxis(&XmlTokens, 'Y', &yKeyframeTimeTag, GeometryName);
     xml_tag* zKeyframePositionsTag = ParseKeyframesForAxis(&XmlTokens, 'Z', &zKeyframeTimeTag, GeometryName);
 
-    u32 TotalKeyframeCount = StringToInt(GetPropertyValue(xKeyframeTimeTag, CS("count")));
-    Assert( TotalKeyframeCount == StringToInt(GetPropertyValue(xKeyframePositionsTag, CS("count"))) );
+    u32 xKeyframeCount = StringToInt(GetPropertyValue(xKeyframeTimeTag, CS("count")));
+    u32 yKeyframeCount = StringToInt(GetPropertyValue(yKeyframeTimeTag, CS("count")));
+    u32 zKeyframeCount = StringToInt(GetPropertyValue(zKeyframeTimeTag, CS("count")));
 
-    r32_stream xKeyframeTimes = ParseFloatArray(TotalKeyframeCount, AnsiStream(xKeyframeTimeTag->Value), Memory);
-    r32_stream xKeyframePositions = ParseFloatArray(TotalKeyframeCount, AnsiStream(xKeyframePositionsTag->Value), Memory);
-    r32_stream yKeyframePositions = ParseFloatArray(TotalKeyframeCount, AnsiStream(yKeyframePositionsTag->Value), Memory);
-    r32_stream zKeyframePositions = ParseFloatArray(TotalKeyframeCount, AnsiStream(zKeyframePositionsTag->Value), Memory);
+    Assert( xKeyframeCount == StringToInt(GetPropertyValue(xKeyframePositionsTag, CS("count"))) );
+    Assert( yKeyframeCount == StringToInt(GetPropertyValue(yKeyframePositionsTag, CS("count"))) );
+    Assert( zKeyframeCount == StringToInt(GetPropertyValue(zKeyframePositionsTag, CS("count"))) );
 
-    animation Animation = AllocateAnimation(TotalKeyframeCount, Memory);
+    r32_stream xKeyframeTimes = ParseFloatArray(xKeyframeCount, AnsiStream(xKeyframeTimeTag->Value), Memory);
+    r32_stream yKeyframeTimes = ParseFloatArray(yKeyframeCount, AnsiStream(yKeyframeTimeTag->Value), Memory);
+    r32_stream zKeyframeTimes = ParseFloatArray(zKeyframeCount, AnsiStream(zKeyframeTimeTag->Value), Memory);
 
+    r32_stream xKeyframePositions = ParseFloatArray(xKeyframeCount, AnsiStream(xKeyframePositionsTag->Value), Memory);
+    r32_stream yKeyframePositions = ParseFloatArray(yKeyframeCount, AnsiStream(yKeyframePositionsTag->Value), Memory);
+    r32_stream zKeyframePositions = ParseFloatArray(zKeyframeCount, AnsiStream(zKeyframePositionsTag->Value), Memory);
+
+    animation Animation = AllocateAnimation(V3i(xKeyframeCount, yKeyframeCount, zKeyframeCount), Memory);
+
+    r32 MaxKeyframeTime = 0;
     for (u32 KeyframeIndex = 0;
-        KeyframeIndex < TotalKeyframeCount;
+        KeyframeIndex < xKeyframeCount;
         ++KeyframeIndex)
     {
-      Animation.Keyframes[KeyframeIndex].PositionInterp.x = xKeyframePositions.Start[KeyframeIndex];
-      Animation.Keyframes[KeyframeIndex].PositionInterp.y = yKeyframePositions.Start[KeyframeIndex];
-      Animation.Keyframes[KeyframeIndex].PositionInterp.z = zKeyframePositions.Start[KeyframeIndex];
-      Animation.Keyframes[KeyframeIndex].tEnd = xKeyframeTimes.Start[KeyframeIndex];
+      Animation.xKeyframes[KeyframeIndex].Value = xKeyframePositions.Start[KeyframeIndex];
+      Animation.xKeyframes[KeyframeIndex].tEnd = xKeyframeTimes.Start[KeyframeIndex];
+      MaxKeyframeTime = Max(MaxKeyframeTime, xKeyframeTimes.Start[KeyframeIndex]);
     }
 
-    Animation.tEnd = xKeyframeTimes.Start[TotalKeyframeCount-1];
+    for (u32 KeyFrameIndex = 0;
+        KeyFrameIndex < yKeyframeCount;
+        ++KeyFrameIndex)
+    {
+      Animation.yKeyframes[KeyFrameIndex].Value = yKeyframePositions.Start[KeyFrameIndex];
+      Animation.yKeyframes[KeyFrameIndex].tEnd = yKeyframeTimes.Start[KeyFrameIndex];
+      MaxKeyframeTime = Max(MaxKeyframeTime, yKeyframeTimes.Start[KeyFrameIndex]);
+    }
 
+    for (u32 KeyframeIndex = 0;
+        KeyframeIndex < zKeyframeCount;
+        ++KeyframeIndex)
+    {
+      Animation.zKeyframes[KeyframeIndex].Value = zKeyframePositions.Start[KeyframeIndex];
+      Animation.zKeyframes[KeyframeIndex].tEnd = zKeyframeTimes.Start[KeyframeIndex];
+      MaxKeyframeTime = Max(MaxKeyframeTime, zKeyframeTimes.Start[KeyframeIndex]);
+    }
+
+    Animation.tEnd = MaxKeyframeTime;
     Result.Animation = Animation;
   }
 

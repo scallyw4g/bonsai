@@ -13,6 +13,24 @@ struct v2
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
+union v3i
+{
+  struct { s32 x, y, z; };
+  struct { s32 r, g, b; };
+
+  struct {
+    v2i xy;
+    s32 Ignored0_;
+  };
+
+  struct {
+    s32 Ignored1_;
+    v2i yz;
+  };
+
+  s32 E[3];
+};
+
 union v3
 {
   struct { r32 x, y, z; };
@@ -425,6 +443,13 @@ operator*(voxel_position P1, float f)
 
 typedef voxel_position chunk_dimension;
 typedef voxel_position world_position;
+
+inline v3i
+V3i(s32 X, s32 Y, s32 Z)
+{
+  v3i Result = { X, Y, Z };
+  return Result;
+}
 
 inline v3
 V3(r32 I)

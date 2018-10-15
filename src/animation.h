@@ -1,46 +1,64 @@
 
 struct keyframe
 {
-  r32 tStart;
   r32 tEnd;
-  v3 PositionInterp;
+  r32 Value;
 };
 
 struct animation
 {
   r64 t;
   r64 tEnd;
-  u32 KeyframeCount;
-  keyframe *Keyframes;
+
+  u32 xKeyframeCount;
+  keyframe* xKeyframes;
+
+  u32 yKeyframeCount;
+  keyframe* yKeyframes;
+
+  u32 zKeyframeCount;
+  keyframe* zKeyframes;
 };
 
 
-v3
-GetInterpolatedPosition(animation* Animation)
+r32
+Interpolate(animation* Animation, keyframe* Keyframes, u32 KeyframeCount)
 {
-
-  if (Animation->t >= Animation->tEnd)
-    { Animation->t -= Animation->tEnd; }
-
-  v3 LastP = {};
-  v3 P = {};
+  r32 PrevKeyframeValue = Keyframes[KeyframeCount-1].Value;
+  r32 P = {};
+  r32 tStart = {};
 
   for (u32 KeyframeIndex = 0;
-      KeyframeIndex < Animation->KeyframeCount;
+      KeyframeIndex < KeyframeCount;
       ++KeyframeIndex)
   {
-    keyframe* Keyframe = Animation->Keyframes + KeyframeIndex;
-    if (Animation->t >= Keyframe->tStart  && Animation->t <= Keyframe->tEnd)
+    keyframe* Keyframe = Keyframes + KeyframeIndex;
+    if (Animation->t >= tStart  && Animation->t <= Keyframe->tEnd)
     {
-      r32 t01 = Animation->t / Animation->tEnd;
-      P = Lerp(t01, LastP, Keyframe->PositionInterp);
+      r32 tAt = Animation->t - tStart;
+      r32 t01 = tAt / (Keyframe->tEnd - tStart);
+      P = Lerp(t01, PrevKeyframeValue, Keyframe->Value);
       break;
     }
     else
     {
-      LastP = Keyframe->PositionInterp;
+      PrevKeyframeValue = Keyframe->Value;
+      tStart = Keyframe->tEnd;
     }
   }
 
   return P;
+}
+
+v3
+GetInterpolatedPosition(animation* Animation)
+{
+  if (Animation->t >= Animation->tEnd) { Animation->t -= Animation->tEnd; }
+
+  r32 xP = Interpolate(Animation, Animation->xKeyframes, Animation->xKeyframeCount);
+  r32 yP = Interpolate(Animation, Animation->yKeyframes, Animation->yKeyframeCount);
+  r32 zP = Interpolate(Animation, Animation->zKeyframes, Animation->zKeyframeCount);
+
+  v3 Result = V3(xP, yP, zP);
+  return Result;
 }
