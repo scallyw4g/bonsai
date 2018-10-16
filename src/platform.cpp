@@ -480,9 +480,9 @@ main()
 
   hotkeys Hotkeys = {};
 
-  GameLibIsNew(GAME_LIB);  // Hack to initialize the LastGameLibTime static
+  GameLibIsNew(DEFAULT_GAME_LIB);  // Hack to initialize the LastGameLibTime static
 
-  shared_lib GameLib = OpenLibrary(GAME_LIB);
+  shared_lib GameLib = OpenLibrary(DEFAULT_GAME_LIB);
   if (!GameLib) { Error("Loading GameLib :( "); return False; }
 
   game_init_proc GameInit = (game_init_proc)GetProcFromLib(GameLib, "GameInit");
@@ -528,10 +528,10 @@ main()
 
     BindHotkeysToInput(&Hotkeys, &Plat.Input);
 
-    if ( GameLibIsNew(GAME_LIB) )
+    if ( GameLibIsNew(DEFAULT_GAME_LIB) )
     {
       CloseLibrary(GameLib);
-      GameLib = OpenLibrary(GAME_LIB);
+      GameLib = OpenLibrary(DEFAULT_GAME_LIB);
 
       GameUpdateAndRender = (game_main_proc)GetProcFromLib(GameLib, "GameUpdateAndRender");
       GameThreadCallback = (game_thread_callback_proc)GetProcFromLib(GameLib, "GameThreadCallback");

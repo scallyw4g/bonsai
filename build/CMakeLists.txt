@@ -42,21 +42,31 @@ add_definitions( -DGL_GLEXT_PROTOTYPES=1 )
 ################################ USER INCLUDES ################################
 
 #set( GAME_SRC_DIR ${EXAMPLES}/space_invaders )
-#set( GAME_SRC_DIR ${EXAMPLES}/ssao_test )
-set( GAME_SRC_DIR ${EXAMPLES}/animation_test )
 
 ###############################################################################
 
-include_directories(${GAME_SRC_DIR})
+set( SSAO_TEST_SRC ${EXAMPLES}/ssao_test )
+include_directories(${SSAO_TEST_SRC})
+add_library(SsaoTest SHARED ${SSAO_TEST_SRC}/game.cpp)
+target_include_directories(SsaoTest PRIVATE ${SSAO_TEST_SRC})
+set_target_properties(SsaoTest PROPERTIES OUTPUT_NAME "SsaoTest")
+set_target_properties(SsaoTest PROPERTIES PREFIX "")
+set_target_properties(SsaoTest PROPERTIES SUFFIX "")
 
-add_library(Game SHARED ${GAME_SRC_DIR}/game.cpp)
-target_include_directories(Game PRIVATE ${GAME_SRC_DIR})
+set( ANIMATION_TEST_SRC ${EXAMPLES}/animation_test )
+include_directories(${ANIMATION_TEST_SRC})
+add_library(AnimationTest SHARED ${ANIMATION_TEST_SRC}/game.cpp)
+target_include_directories(AnimationTest PRIVATE ${ANIMATION_TEST_SRC})
+set_target_properties(AnimationTest PROPERTIES OUTPUT_NAME "AnimationTest")
+set_target_properties(AnimationTest PROPERTIES PREFIX "")
+set_target_properties(AnimationTest PROPERTIES SUFFIX "")
 
 # Link with Opengl
 find_package(OpenGL REQUIRED)
 include_directories(${OPENGL_INCLUDE_DIRS} )
 target_link_libraries(Bonsai ${OPENGL_LIBRARIES})
-target_link_libraries(Game ${OPENGL_LIBRARIES})
+target_link_libraries(SsaoTest ${OPENGL_LIBRARIES})
+target_link_libraries(AnimationTest ${OPENGL_LIBRARIES})
 
 add_custom_target(run ${BIN}/Bonsai
                   DEPENDS Bonsai
@@ -72,9 +82,10 @@ add_custom_target(tests ${BIN}/test_m4
                         ${BIN}/test_callgraph
                         COMMENT "Running M4 Tests")
 
-target_compile_definitions(Bonsai  PUBLIC BONSAI_INTERNAL=1)
-target_compile_definitions(Server  PUBLIC BONSAI_INTERNAL=1)
-target_compile_definitions(Game    PUBLIC BONSAI_INTERNAL=1)
+target_compile_definitions(Bonsai         PUBLIC BONSAI_INTERNAL=1)
+target_compile_definitions(Server         PUBLIC BONSAI_INTERNAL=1)
+target_compile_definitions(SsaoTest       PUBLIC BONSAI_INTERNAL=1)
+target_compile_definitions(AnimationTest  PUBLIC BONSAI_INTERNAL=1)
 
 target_compile_definitions(ttf PUBLIC BONSAI_INTERNAL=1)
 
@@ -118,10 +129,6 @@ add_definitions( -std=c++11 )
 
 if (UNIX)
 
-  set(GAME_COMPILED_LIB ${BIN}/libGame.so)
-  set(GAME_LOADABLE_LIB ${BIN}/libGameLoadable.so)
-
-
   find_package(Threads REQUIRED)
   find_package(X11 REQUIRED)
 
@@ -130,8 +137,6 @@ if (UNIX)
   target_link_libraries(Bonsai ${CMAKE_DL_LIBS})          # .so loader
 
 elseif(WIN32) 
-  set(GAME_COMPILED_LIB ${BIN}/Debug/Game.dll)
-  set(GAME_LOADABLE_LIB ${BIN}/Debug/GameLoadable.dll)
 
 else()
 
@@ -180,6 +185,22 @@ else()
 endif()
 
 # Rename the Game lib once it's finished so the platform can re-load it
-add_custom_command( TARGET Game POST_BUILD
+get_property(ssaoTestBinary TARGET SsaoTest PROPERTY OUTPUT_NAME)
+add_custom_command( TARGET SsaoTest POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy
-                    ${GAME_COMPILED_LIB} ${GAME_LOADABLE_LIB} )
+                    ../bin/${ssaoTestBinary} ../bin/${ssaoTestBinary}Loadable.so )
+
+get_property(animationTestBinary TARGET AnimationTest PROPERTY OUTPUT_NAME)
+add_custom_command( TARGET SsaoTest POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy
+                    ../bin/${animationTestBinary} ../bin/${animationTestBinary}Loadable.so )
+
+
+
+
+
+
+
+
+
+

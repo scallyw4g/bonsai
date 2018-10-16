@@ -29,7 +29,7 @@
 
 
 
-#define GAME_LIB "./bin/libGameLoadable.so"
+#define DEFAULT_GAME_LIB "./bin/AnimationTestLoadable.so"
 
 #define THREAD_MAIN_RETURN void*
 
