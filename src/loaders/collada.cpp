@@ -212,6 +212,25 @@ ParseKeyframesForAxis(xml_token_stream* XmlTokens, char Axis, xml_tag** TimeTag,
   return xKeyframePositionsTag;
 }
 
+r32
+CopyKeyframeData(keyframe* DestKeyframes, r32_stream* KeyframePositions, r32_stream*  KeyframeTimes)
+{
+  u32 KeyframeCount = TotalElements(KeyframePositions);
+  Assert(KeyframeCount == TotalElements(KeyframeTimes));
+
+  r32 MaxKeyframeTime = 0.0f;
+  for (u32 KeyframeIndex = 0;
+      KeyframeIndex < KeyframeCount;
+      ++KeyframeIndex)
+  {
+    DestKeyframes[KeyframeIndex].Value = KeyframePositions->Start[KeyframeIndex];
+    DestKeyframes[KeyframeIndex].tEnd = KeyframeTimes->Start[KeyframeIndex];
+    MaxKeyframeTime = Max(MaxKeyframeTime, KeyframeTimes->Start[KeyframeIndex]);
+  }
+
+  return MaxKeyframeTime;
+}
+
 model
 LoadCollada(memory_arena *Memory, const char * FilePath)
 {
@@ -271,35 +290,13 @@ LoadCollada(memory_arena *Memory, const char * FilePath)
 
     animation Animation = AllocateAnimation(V3i(xKeyframeCount, yKeyframeCount, zKeyframeCount), Memory);
 
-    r32 MaxKeyframeTime = 0;
-    for (u32 KeyframeIndex = 0;
-        KeyframeIndex < xKeyframeCount;
-        ++KeyframeIndex)
-    {
-      Animation.xKeyframes[KeyframeIndex].Value = xKeyframePositions.Start[KeyframeIndex];
-      Animation.xKeyframes[KeyframeIndex].tEnd = xKeyframeTimes.Start[KeyframeIndex];
-      MaxKeyframeTime = Max(MaxKeyframeTime, xKeyframeTimes.Start[KeyframeIndex]);
-    }
 
-    for (u32 KeyFrameIndex = 0;
-        KeyFrameIndex < yKeyframeCount;
-        ++KeyFrameIndex)
-    {
-      Animation.yKeyframes[KeyFrameIndex].Value = yKeyframePositions.Start[KeyFrameIndex];
-      Animation.yKeyframes[KeyFrameIndex].tEnd = yKeyframeTimes.Start[KeyFrameIndex];
-      MaxKeyframeTime = Max(MaxKeyframeTime, yKeyframeTimes.Start[KeyFrameIndex]);
-    }
+    r32 xMaxKeyframeTime = CopyKeyframeData(Animation.xKeyframes, &xKeyframePositions, &xKeyframeTimes);
+    r32 yMaxKeyframeTime = CopyKeyframeData(Animation.yKeyframes, &yKeyframePositions, &yKeyframeTimes);
+    r32 zMaxKeyframeTime = CopyKeyframeData(Animation.zKeyframes, &zKeyframePositions, &zKeyframeTimes);
 
-    for (u32 KeyframeIndex = 0;
-        KeyframeIndex < zKeyframeCount;
-        ++KeyframeIndex)
-    {
-      Animation.zKeyframes[KeyframeIndex].Value = zKeyframePositions.Start[KeyframeIndex];
-      Animation.zKeyframes[KeyframeIndex].tEnd = zKeyframeTimes.Start[KeyframeIndex];
-      MaxKeyframeTime = Max(MaxKeyframeTime, zKeyframeTimes.Start[KeyframeIndex]);
-    }
 
-    Animation.tEnd = MaxKeyframeTime;
+    Animation.tEnd = Max(Max(xMaxKeyframeTime, yMaxKeyframeTime), zMaxKeyframeTime);
     Result.Animation = Animation;
   }
 
