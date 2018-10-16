@@ -921,6 +921,7 @@ SimulatePlayer( game_state *GameState, entity *Player, hotkeys *Hotkeys, r32 dt 
     world_position WorldDisp = ( Player->P.WorldP - OriginalPlayerP );
     UpdateVisibleRegion(GameState, WorldDisp);
 
+#if 0
     Player->FireCooldown -= dt;
 
     // Regular Fire
@@ -933,7 +934,6 @@ SimulatePlayer( game_state *GameState, entity *Player, hotkeys *Hotkeys, r32 dt 
       Player->FireCooldown = Player->RateOfFire;
     }
 
-#if 0
     // Proton Torpedo!!
     if ( Hotkeys->Player_Proton && (Player->FireCooldown < 0) )
     {

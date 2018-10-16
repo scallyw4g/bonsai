@@ -254,7 +254,7 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
   ClearFramebuffers(Plat->Graphics);
 
-  if (Player)
+  if (IsConnected(Network))
   {
     NetworkUpdate(Network, GameState->ServerState, &Player->P);
     DoGameplay(Plat, GameState, Hotkeys, Player);
@@ -264,6 +264,7 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
     if ( AwaitHandshake(Network, GameState->ServerState) )
     {
       Player = GetPlayer(GameState->Players, Network->Client);
+      Unspawn(Player);
       SpawnPlayer(GameState, Player,  Canonical_Position(V3(0,0,2), World_Position(0,0,0))  );
     }
   }
