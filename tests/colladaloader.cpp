@@ -1,10 +1,8 @@
-
 #define BONSAI_NO_PUSH_METADATA
+#define BONSAI_NO_DEBUG_MEMORY_ALLOCATOR
 
 #include <bonsai_types.h>
 #include <unix_platform.cpp>
-
-#include <debug_data_system.cpp>
 
 #include <test_utils.cpp>
 
@@ -13,6 +11,7 @@
 #include <bonsai_mesh.cpp>
 
 global_variable memory_arena* TranArena = PlatformAllocateArena();
+#include <stream.cpp>
 #include <loaders/collada.cpp>
 
 void

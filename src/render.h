@@ -16,6 +16,7 @@ Draw_(u32 N, const char * Caller)
 
   if (DrawCall->Caller)
   {
+    debug_draw_call* First = DrawCall;
     while( DrawCall->Caller &&
            !(StringsMatch(DrawCall->Caller, Caller) && DrawCall->N == N)
          )
@@ -23,6 +24,11 @@ Draw_(u32 N, const char * Caller)
       ++Index;
       Index = Index % Global_DrawCallArrayLength;
       DrawCall = &Global_DrawCalls[Index];
+      if (DrawCall == First)
+      {
+        Error("Draw Call table full!");
+        break;
+      }
     }
   }
 

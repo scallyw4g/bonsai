@@ -8,7 +8,7 @@ if [ "$WIN32" == "1" ]; then
 else # Win32
   echo " -- Building Linux"
   cd build
-  make Bonsai DebugSystem AnimationTest "$@" 2>&1
+  make all "$@" 2>&1
 fi
 
 

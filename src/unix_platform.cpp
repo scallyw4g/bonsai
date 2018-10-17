@@ -289,7 +289,7 @@ OpenLibrary(const char *filename)
   }
   else
   {
-    Info("Game Lib loaded!");
+    Info("Library (%s) loaded!", filename);
   }
 
   return Result;

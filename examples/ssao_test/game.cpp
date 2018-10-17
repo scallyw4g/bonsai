@@ -1,4 +1,6 @@
 #include <bonsai_types.h>
+#include <game_types.h>
+#include <game_constants.h>
 
 global_variable memory_arena *TranArena = PlatformAllocateArena();
 #include <bonsai.cpp>
@@ -15,7 +17,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys, entity *Play
 
   world                 *World    = GameState->World;
   chunk_dimension WorldChunkDim   = World->ChunkDim;
-  graphics              *Graphics = Plat->Graphics;
+  graphics              *Graphics = GameState->Graphics;
   g_buffer_render_group *gBuffer  = Graphics->gBuffer;
   ao_render_group       *AoGroup  = Graphics->AoGroup;
   /* shadow_render_group   *SG       = Graphics->SG; */
@@ -48,7 +50,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys, entity *Play
     GetViewMatrix(WorldChunkDim, Camera);
 
   TIMED_BLOCK("BufferMeshes");
-    BufferWorld(World, Graphics);
+    BufferWorld(World, Graphics, VISIBLE_REGION_RADIUS);
     BufferEntities( GameState->EntityTable, &World->Mesh, Graphics, World, Plat->dt);
   END_BLOCK("BufferMeshes");
 
@@ -167,6 +169,8 @@ GameInit( platform *Plat, memory_arena *GameMemory )
   GameState->Memory = GameMemory;
   GameState->Noise = perlin_noise(DEBUG_NOISE_SEED);
 
+  GameState->Graphics = GraphicsInit(GameMemory);
+  if (!GameState->Graphics) { Error("Initializing Graphics"); return False; }
 
   GameState->Turb = Allocate(noise_3d, GameState->Memory, 1);
   AllocateAndInitNoise3d(GameState, GameState->Turb, Chunk_Dimension(8,8,8) );
@@ -249,7 +253,7 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
   entity *Player = GetPlayer(GameState->Players, Network->Client);
 
-  ClearFramebuffers(Plat->Graphics);
+  ClearFramebuffers(GameState->Graphics);
 
   if (IsConnected(Network))
   {
@@ -284,6 +288,8 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
       }
     }
   }
+
+  GameState->Graphics->Lights->Count =  0;
 
   return;
 }

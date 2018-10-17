@@ -182,26 +182,35 @@ DebugFrameBegin(hotkeys *Hotkeys, r32 Dt)
   return;
 }
 
+EXPORT void
+InitDebugSystem(b32 DoInitDebugRenderSystem = True)
+{
+  Internal_DebugState.FrameEnd                       = DebugFrameEnd;
+  Internal_DebugState.FrameBegin                     = DebugFrameBegin;
+  Internal_DebugState.RegisterArena                  = RegisterArena;
+  Internal_DebugState.WorkerThreadAdvanceDebugSystem = WorkerThreadAdvanceDebugSystem;
+  Internal_DebugState.MainThreadAdvanceDebugSystem   = MainThreadAdvanceDebugSystem;
+  Internal_DebugState.MutexWait                      = MutexWait;
+  Internal_DebugState.MutexAquired                   = MutexAquired;
+  Internal_DebugState.MutexReleased                  = MutexReleased;
+  Internal_DebugState.GetProfileScope                = GetProfileScope;
+  Internal_DebugState.Debug_Allocate                 = DEBUG_Allocate;
+  Internal_DebugState.RegisterThread                 = RegisterThread;
+  Internal_DebugState.ClearMetaRecordsFor            = ClearMetaRecordsFor;
+
+  Internal_DebugState.Initialized = True;
+
+  InitDebugDataSystem(&Internal_DebugState);
+  if (DoInitDebugRenderSystem) { InitDebugRenderSystem(&Internal_DebugState); }
+  return;
+}
+
 EXPORT debug_state*
-GetDebugState_Internal()
+GetDebugState_Internal(b32 InitRenderSystem)
 {
   if (!Internal_DebugState.Initialized)
   {
-    Internal_DebugState.FrameEnd                       = DebugFrameEnd;
-    Internal_DebugState.FrameBegin                     = DebugFrameBegin;
-    Internal_DebugState.RegisterArena                  = RegisterArena;
-    Internal_DebugState.WorkerThreadAdvanceDebugSystem = WorkerThreadAdvanceDebugSystem;
-    Internal_DebugState.MainThreadAdvanceDebugSystem   = MainThreadAdvanceDebugSystem;
-    Internal_DebugState.MutexWait                      = MutexWait;
-    Internal_DebugState.MutexAquired                   = MutexAquired;
-    Internal_DebugState.MutexReleased                  = MutexReleased;
-    Internal_DebugState.GetProfileScope                = GetProfileScope;
-    Internal_DebugState.Debug_Allocate                 = DEBUG_Allocate;
-    Internal_DebugState.RegisterThread                 = RegisterThread;
-    Internal_DebugState.ClearMetaRecordsFor            = ClearMetaRecordsFor;
-
-    InitDebugDataSystem(&Internal_DebugState);
-    InitDebugRenderSystem(&Internal_DebugState);
+    InitDebugSystem();
   }
 
   return &Internal_DebugState;

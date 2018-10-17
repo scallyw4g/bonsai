@@ -5,10 +5,8 @@
 #include <bonsai_types.h>
 #include <unix_platform.cpp>
 
-
-#include <debug_data_system.cpp>
-
 #include <bitmap.cpp>
+#include <stream.cpp>
 
 
 v4 White = V4(1,1,1,0);

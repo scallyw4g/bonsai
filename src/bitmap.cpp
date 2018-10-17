@@ -168,3 +168,11 @@ PixelCount(bitmap *Bitmap)
   u32 Result = Bitmap->Dim.x*Bitmap->Dim.y;
   return Result;
 }
+
+inline v2
+GetUVForCharCode(u32 Char)
+{
+  v2 Result = V2( (Char%16)/16.0f, (Char/16)/16.0f );
+  return Result;
+}
+

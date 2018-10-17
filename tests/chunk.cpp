@@ -1,5 +1,5 @@
 #define BONSAI_NO_PUSH_METADATA
-#define BONSAI_NO_TIMED_FUNCTIONS
+#define BONSAI_NO_DEBUG_MEMORY_ALLOCATOR
 
 #include <bonsai_types.h>
 #include <unix_platform.cpp>
@@ -7,9 +7,12 @@
 #include <chunk.cpp>
 #include <bonsai_mesh.cpp>
 #include <perlin.cpp>
-#include <debug_data_system.cpp>
+
+global_variable chunk_dimension WORLD_CHUNK_DIM = Chunk_Dimension(8,8,8);
+#include <world_chunk.cpp>
 
 #include <test_utils.cpp>
+
 
 s32
 main()

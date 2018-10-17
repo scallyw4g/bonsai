@@ -184,6 +184,7 @@ typedef debug_profile_scope* (*debug_get_profile_scope_proc)(debug_thread_state*
 typedef void* (*debug_allocate_proc)(memory_arena*, umm, umm, const char*, s32 , const char*, umm, b32);
 typedef void (*debug_register_thread_proc)(u32);
 typedef void (*debug_clear_meta_records_proc)(memory_arena*);
+typedef void (*debug_init_debug_system_proc)(b32);
 
 
 
@@ -245,6 +246,7 @@ struct debug_state
   debug_allocate_proc                       Debug_Allocate;
   debug_register_thread_proc                RegisterThread;
   debug_clear_meta_records_proc             ClearMetaRecordsFor;
+  debug_init_debug_system_proc              InitDebugSystem;
 };
 
 typedef debug_state* (*get_debug_state_proc)();
@@ -302,7 +304,8 @@ struct debug_timed_function
 
   debug_timed_function(const char *Name)
   {
-#ifndef BONSAI_NO_TIMED_FUNCTIONS
+    if (!GetDebugState) return;
+
     debug_state *DebugState = GetDebugState();
     Clear(this);
     if (!DebugState->DebugDoScopeProfiling) return;
@@ -325,12 +328,12 @@ struct debug_timed_function
     }
 
     return;
-#endif
   }
 
   ~debug_timed_function()
   {
-#ifndef BONSAI_NO_TIMED_FUNCTIONS
+    if (!GetDebugState) return;
+
     debug_state *DebugState = GetDebugState();
     if (!DebugState->DebugDoScopeProfiling) return;
     if (!this->Scope) return;
@@ -344,7 +347,6 @@ struct debug_timed_function
     this->Tree->ParentOfNextScope = this->Scope->Parent;
 
     return;
-#endif
   }
 
 };

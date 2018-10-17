@@ -88,11 +88,11 @@ struct memory_arena
 #define AllocateProtection(Type, Arena, Number, Protection) \
   (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, 1, False);
 
-/* #define AllocateAlignedProtection(Type, Arena, Number, Alignment, Protection) \ */
-/*   (Type*)Allocate_( Arena, sizeof(Type)*(umm)Number, Alignment, False) */
+#define AllocateAlignedProtection(Type, Arena, Number, Alignment, Protection) \
+  (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, Alignment, Protection)
 
 #define AllocateAligned(Type, Arena, Number, Alignment) \
-  (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, Alignment, False)
+  (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, Alignment, True)
 
 #define Allocate(Type, Arena, Number) \
   (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, 1, False)

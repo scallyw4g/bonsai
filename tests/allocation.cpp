@@ -1,5 +1,5 @@
 #define BONSAI_NO_PUSH_METADATA
-#define BONSAI_NO_TIMED_FUNCTIONS
+#define BONSAI_NO_DEBUG_MEMORY_ALLOCATOR
 
 #include <bonsai_types.h>
 #include <unix_platform.cpp>
@@ -111,17 +111,18 @@ AssertSegfault()
 }
 
 template <typename T> T*
-TestAllocation(memory_arena *Arena, b32 MemProtect = True, umm Alignment = 1)
+TestAllocation(memory_arena *Arena, b32 Protection = True, umm Alignment = 1)
 {
   memory_arena Initial = *Arena;
 
-  T *Test = AllocateAlignedProtection( T, Arena, 1, Alignment, MemProtect);
+  /* T *Test = (T*)Allocate_( Arena, sizeof(T), Alignment, Protection); */
+  T *Test = AllocateAlignedProtection( T, Arena, 1, Alignment, Protection);
   TestThat(Test);
   Clear(Test);
 
   AssertNoSegfault();
 
-  if (MemProtect)
+  if (Protection)
   {
     ExpectSegfault();
     T *NextThing = Test + 1;

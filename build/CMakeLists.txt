@@ -62,6 +62,7 @@ include_directories(${OPENGL_INCLUDE_DIRS} )
 target_link_libraries(Bonsai ${OPENGL_LIBRARIES})
 target_link_libraries(SsaoTest ${OPENGL_LIBRARIES})
 target_link_libraries(AnimationTest ${OPENGL_LIBRARIES})
+target_link_libraries(test_callgraph ${OPENGL_LIBRARIES})
 
 add_custom_target(run ${BIN}/Bonsai
                   DEPENDS Bonsai
@@ -131,6 +132,9 @@ if (UNIX)
   target_link_libraries(Bonsai X11)                       # Xlib
   target_link_libraries(Bonsai ${CMAKE_THREAD_LIBS_INIT}) # -lpthread
   target_link_libraries(Bonsai ${CMAKE_DL_LIBS})          # .so loader
+
+  target_link_libraries(test_callgraph X11)               # Xlib
+  target_link_libraries(test_callgraph ${CMAKE_DL_LIBS})  # .so loader
 
 elseif(WIN32) 
 

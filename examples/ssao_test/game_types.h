@@ -9,6 +9,7 @@ struct game_state
   world         *World;
   platform      *Plat;
   memory_arena  *Memory;
+  graphics      *Graphics;
 
   random_series Entropy;
 
