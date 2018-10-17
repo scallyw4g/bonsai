@@ -216,7 +216,6 @@ LoadVoxModel(memory_arena *WorldStorage, char const *filepath)
           chunk_dimension Min = Chunk_Dimension(minX, minY, minZ);
 
           chunk_dimension ModelDim = Max - Min;
-          Print(ModelDim);
 
           // TODO(Jesse): Load models in multiple chunks instead of one
           // monolithic one. The storage for chunks must be as large as the
