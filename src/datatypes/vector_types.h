@@ -773,6 +773,20 @@ operator%(v3 A, int i)
   return Result;
 }
 
+inline v2
+operator/(v2 A, r32 B)
+{
+  v2 Result = {A.x/B, A.y/B};
+  return Result;
+}
+
+inline v2
+operator/(r32 A, v2 B)
+{
+  v2 Result = {A/B.x, A/B.y};
+  return Result;
+}
+
 inline v3
 operator/(v3 A, r32 B)
 {
