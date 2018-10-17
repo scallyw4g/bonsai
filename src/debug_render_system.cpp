@@ -353,7 +353,7 @@ void
 EndClipRect(ui_render_group *Group, layout *Layout, untextured_2d_geometry_buffer *Geo)
 {
   v2 MinP = Layout->Clip.Min + Layout->Basis;
-  v2 Dim = (Layout->Clip.Max + Layout->Basis) - Layout->Clip.Min;
+  v2 Dim = Layout->Clip.Max - Layout->Clip.Min;
 
   BufferQuad(Group, Geo, MinP, Dim, 0.0f);
   BufferColors(Group, Geo, V3(0.2f));
