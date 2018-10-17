@@ -1,4 +1,4 @@
-layout(location = 0) in vec3 vertexPosition_screenspace;
+layout(location = 0) in vec3 VertP_NDC;
 layout(location = 1) in vec2 vertexUV;
 layout(location = 2) in vec3 InColor;
 
@@ -9,6 +9,6 @@ void main()
 {
   UV = vertexUV;
   VertColor = InColor;
-  gl_Position = vec4(vertexPosition_screenspace, 1);
+  gl_Position = vec4(VertP_NDC, 1.0f);
 }
 

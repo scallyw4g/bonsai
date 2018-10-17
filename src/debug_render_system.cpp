@@ -199,33 +199,33 @@ BufferColors(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, v3 Colo
   BufferColors(Geo->Colors, Geo->At, Color);
 }
 
+#define TO_NDC(P) ((P * ToNDC) - 1.0f)
+
 v2
 BufferQuadDirect(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z, v2 ScreenDim )
 {
-  v3 vertex_up_left    = V3( MinP.x       , MinP.y       , Z);
-  v3 vertex_up_right   = V3( MinP.x+Dim.x , MinP.y       , Z);
-  v3 vertex_down_right = V3( MinP.x+Dim.x , MinP.y+Dim.y , Z);
-  v3 vertex_down_left  = V3( MinP.x       , MinP.y+Dim.y , Z);
+  // Note(Jesse): Z==0 is farthest back, Z==1 is closest to the camera
+  Assert(Z >= 0.0f && Z <= 1.0f);
 
-  v3 ToClipSpace = (2.0f / V3(ScreenDim.x, ScreenDim.y, 1.0f));
+  v3 vertex_up_left    = V3( MinP.x       , MinP.y      , Z);
+  v3 vertex_up_right   = V3( MinP.x+Dim.x , MinP.y      , Z);
+  v3 vertex_down_right = V3( MinP.x+Dim.x , MinP.y+Dim.y, Z);
+  v3 vertex_down_left  = V3( MinP.x       , MinP.y+Dim.y, Z);
+
+  v3 ToNDC = 2.0f/V3(ScreenDim.x, ScreenDim.y, 1.0f);
 
   // Native OpenGL screen coordinates are {0,0} at the bottom-left corner. This
   // maps the origin to the top-left of the screen.
-  //
-  // It is also true that Z goes _into_ the screen, which makes 1.0f the bottom
-  // of the unit cube.  It makes more sense to think of 1.0f as the top of the
-  // cube when stacking UI elements such as text, so invert that too.
   v3 InvertYZ = V3(1.0f, -1.0f, -1.0f);
 
-  Dest[StartingIndex++] = InvertYZ * (vertex_up_left    * ToClipSpace - 1.0f);
-  Dest[StartingIndex++] = InvertYZ * (vertex_down_left  * ToClipSpace - 1.0f);
-  Dest[StartingIndex++] = InvertYZ * (vertex_up_right   * ToClipSpace - 1.0f);
-  Dest[StartingIndex++] = InvertYZ * (vertex_down_right * ToClipSpace - 1.0f);
-  Dest[StartingIndex++] = InvertYZ * (vertex_up_right   * ToClipSpace - 1.0f);
-  Dest[StartingIndex++] = InvertYZ * (vertex_down_left  * ToClipSpace - 1.0f);
+  Dest[StartingIndex++] = InvertYZ * TO_NDC(vertex_up_left);
+  Dest[StartingIndex++] = InvertYZ * TO_NDC(vertex_down_left);
+  Dest[StartingIndex++] = InvertYZ * TO_NDC(vertex_up_right);
+  Dest[StartingIndex++] = InvertYZ * TO_NDC(vertex_down_right);
+  Dest[StartingIndex++] = InvertYZ * TO_NDC(vertex_up_right);
+  Dest[StartingIndex++] = InvertYZ * TO_NDC(vertex_down_left);
 
-  v2 Max = vertex_down_right.xy;
-  return Max;
+  return vertex_down_right.xy;
 }
 
 inline v2
@@ -255,7 +255,7 @@ BufferChar(ui_render_group *Group, textured_2d_geometry_buffer *Geo, u32 CharInd
   v2 UV = GetUVForCharCode(Char);
 
   { // Black Drop-shadow
-    BufferQuad(Group, Geo, MinP+V2(3), V2(Font->Size), 1.0f);
+    BufferQuad(Group, Geo, MinP+V2(3), V2(Font->Size), 0.99f);
     BufferTextUVs(Geo, UV);
     BufferColors(Group, Geo, GetColorData(BLACK).xyz);
     Geo->At += 6;

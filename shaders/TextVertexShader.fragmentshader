@@ -13,6 +13,4 @@ void main()
     discard;
 
   color = vec4(VertColor, BitmapTexel.a);
-  /* color = BitmapTexel; */
-
 }
