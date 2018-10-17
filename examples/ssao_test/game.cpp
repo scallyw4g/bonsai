@@ -1,4 +1,3 @@
-
 #include <bonsai_types.h>
 
 global_variable memory_arena *TranArena = PlatformAllocateArena();
@@ -161,8 +160,6 @@ EXPORT game_state*
 GameInit( platform *Plat, memory_arena *GameMemory )
 {
   Info("Initializing Game");
-
-  GlobalDebugState = &Plat->DebugState;
 
   Init_Global_QuadVertexBuffer();
 

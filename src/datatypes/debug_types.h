@@ -169,6 +169,25 @@ debug_global __thread u64 ThreadLocal_ThreadIndex = 0;
 
 inline debug_thread_state * GetThreadDebugState(u32 ThreadIndex);
 
+struct platform;
+struct server_state;
+struct hotkeys;
+typedef void (*debug_frame_end_proc)(platform*, server_state*);
+typedef void (*debug_frame_begin_proc)(hotkeys*, r32);
+typedef void (*debug_register_arena_proc)(const char*, memory_arena*);
+typedef void (*debug_worker_thread_advance_data_system)();
+typedef r32 (*debug_main_thread_advance_data_system)();
+typedef void (*debug_mutex_waiting_proc)(mutex*);
+typedef void (*debug_mutex_aquired_proc)(mutex*);
+typedef void (*debug_mutex_released_proc)(mutex*);
+typedef debug_profile_scope* (*debug_get_profile_scope_proc)(debug_thread_state*);
+typedef void* (*debug_allocate_proc)(memory_arena*, umm, umm, const char*, s32 , const char*, umm, b32);
+typedef void (*debug_register_thread_proc)(u32);
+typedef void (*debug_clear_meta_records_proc)(memory_arena*);
+
+
+
+
 #define REGISTERED_MEMORY_ARENA_COUNT 32
 #define META_TABLE_SIZE (16 * 1024)
 struct debug_state
@@ -201,9 +220,9 @@ struct debug_state
   volatile b32 MainThreadBlocksWorkerThreads;
   volatile s32 WorkerThreadsWaiting;
 
-  debug_scope_tree* GetReadScopeTree()
+  debug_scope_tree* GetReadScopeTree(u32 ThreadIndex)
   {
-    debug_scope_tree *RootScope = &this->ThreadStates[ThreadLocal_ThreadIndex].ScopeTrees[this->ReadScopeIndex];
+    debug_scope_tree *RootScope = &this->ThreadStates[ThreadIndex].ScopeTrees[this->ReadScopeIndex];
     return RootScope;
   }
 
@@ -213,7 +232,24 @@ struct debug_state
     debug_scope_tree *RootScope = ThreadState->ScopeTrees + (ThreadState->CurrentFrame % DEBUG_FRAMES_TRACKED);
     return RootScope;
   }
+
+  debug_frame_end_proc                      FrameEnd;
+  debug_frame_begin_proc                    FrameBegin;
+  debug_register_arena_proc                 RegisterArena;
+  debug_worker_thread_advance_data_system   WorkerThreadAdvanceDebugSystem;
+  debug_main_thread_advance_data_system     MainThreadAdvanceDebugSystem;
+  debug_mutex_waiting_proc                  MutexWait;
+  debug_mutex_aquired_proc                  MutexAquired;
+  debug_mutex_released_proc                 MutexReleased;
+  debug_get_profile_scope_proc              GetProfileScope;
+  debug_allocate_proc                       Debug_Allocate;
+  debug_register_thread_proc                RegisterThread;
+  debug_clear_meta_records_proc             ClearMetaRecordsFor;
 };
+
+typedef debug_state* (*get_debug_state_proc)();
+get_debug_state_proc GetDebugState;
+
 
 struct debug_draw_call
 {
@@ -225,15 +261,8 @@ struct debug_draw_call
 debug_global const u32 Global_DrawCallArrayLength = 128;
 debug_global debug_draw_call Global_DrawCalls[Global_DrawCallArrayLength] = {};
 debug_global debug_draw_call NullDrawCall = {};
-debug_global debug_state *GlobalDebugState = 0;
 
 typedef b32 (*meta_comparator)(push_metadata*, push_metadata*);
-
-inline debug_state *
-GetDebugState() {
-  Assert(GlobalDebugState && GlobalDebugState->Initialized);
-  return GlobalDebugState;
-}
 
 inline debug_thread_state *
 GetThreadDebugState(u32 ThreadIndex)
@@ -266,8 +295,6 @@ struct debug_recording_state
 
 global_variable debug_profile_scope NullDebugProfileScope = {};
 
-debug_profile_scope *GetProfileScope(debug_thread_state *State);
-
 struct debug_timed_function
 {
   debug_profile_scope *Scope;
@@ -282,7 +309,7 @@ struct debug_timed_function
 
     ++DebugState->NumScopes;
 
-    this->Scope = GetProfileScope(GetThreadDebugState(ThreadLocal_ThreadIndex));
+    this->Scope = DebugState->GetProfileScope(GetThreadDebugState(ThreadLocal_ThreadIndex));
     this->Tree = DebugState->GetWriteScopeTree();
 
     if (this->Scope)
@@ -322,23 +349,21 @@ struct debug_timed_function
 
 };
 
-#define INIT_DEBUG_STATE(DebugStatePtr) InitDebugState(DebugStatePtr)
-
 #define TIMED_FUNCTION() debug_timed_function FunctionTimer(BONSAI_FUNCTION_NAME)
 #define TIMED_BLOCK(BlockName) { debug_timed_function BlockTimer(BlockName)
 #define END_BLOCK(BlockName) }
 
 #define DEBUG_FRAME_RECORD(...) DoDebugFrameRecord(__VA_ARGS__)
-#define DEBUG_FRAME_END(Plat, GameState) DebugFrameEnd(Plat, GameState)
-#define DEBUG_FRAME_BEGIN(Hotkeys, dt) DebugFrameBegin(Hotkeys, dt)
+#define DEBUG_FRAME_END(Plat, ServerState) GetDebugState()->FrameEnd(Plat, ServerState)
+#define DEBUG_FRAME_BEGIN(Hotkeys, dt) GetDebugState()->FrameBegin(Hotkeys, dt)
 
 #ifndef BONSAI_NO_MUTEX_TRACKING
 void DebugTimedMutexWaiting(mutex *Mut);
 void DebugTimedMutexAquired(mutex *Mut);
 void DebugTimedMutexReleased(mutex *Mut);
-#define TIMED_MUTEX_WAITING(Mut) DebugTimedMutexWaiting(Mut)
-#define TIMED_MUTEX_AQUIRED(Mut) DebugTimedMutexAquired(Mut)
-#define TIMED_MUTEX_RELEASED(Mut) DebugTimedMutexReleased(Mut)
+#define TIMED_MUTEX_WAITING(Mut)  GetDebugState()->MutexWait(Mut)
+#define TIMED_MUTEX_AQUIRED(Mut)  GetDebugState()->MutexAquired(Mut)
+#define TIMED_MUTEX_RELEASED(Mut) GetDebugState()->MutexReleased(Mut)
 #else
 #define TIMED_MUTEX_WAITING(...)
 #define TIMED_MUTEX_AQUIRED(...)
@@ -346,13 +371,14 @@ void DebugTimedMutexReleased(mutex *Mut);
 
 #endif
 
-#define WORKER_THREAD_ADVANCE_DEBUG_SYSTEM(...) WorkerThreadAdvanceDebugSystem()
+#define WORKER_THREAD_ADVANCE_DEBUG_SYSTEM() GetDebugState()->WorkerThreadAdvanceDebugSystem()
+#define MAIN_THREAD_ADVANCE_DEBUG_SYSTEM() GetDebugState()->MainThreadAdvanceDebugSystem()
 #define SUSPEND_WORKER_THREADS()  DebugSuspendWorkerThreads()
 #define RESUME_WORKER_THREADS()  DebugResumeWorkerThreads()
 
-#else
+#define DEBUG_CLEAR_META_RECORDS_FOR(Arena) GetDebugState()->ClearMetaRecordsFor(Arena)
 
-#define INIT_DEBUG_STATE(...)
+#else
 
 #define TIMED_FUNCTION(...)
 #define TIMED_BLOCK(...)
@@ -367,6 +393,7 @@ void DebugTimedMutexReleased(mutex *Mut);
 #define DEBUG_FRAME_BEGIN(...)
 
 #define WORKER_THREAD_WAIT_FOR_DEBUG_SYSTEM(...)
+#define MAIN_THREAD_ADVANCE_DEBUG_SYSTEM(...) RealDt
 #define SUSPEND_WORKER_THREADS(...)
 
 #endif

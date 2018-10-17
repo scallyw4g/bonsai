@@ -7,8 +7,9 @@ debug_global b32 DebugGlobal_RedrawEveryPush = 0;
 
 
 void
-DebugRegisterArena(const char *Name, memory_arena *Arena, debug_state *DebugState)
+RegisterArena(const char *Name, memory_arena *Arena)
 {
+  debug_state* DebugState = GetDebugState();
   b32 Registered = False;
   for ( u32 Index = 0;
         Index < REGISTERED_MEMORY_ARENA_COUNT;
@@ -77,7 +78,7 @@ ClearMetaRecordsFor(memory_arena *Arena)
         MetaIndex < META_TABLE_SIZE;
         ++MetaIndex)
     {
-      push_metadata *Meta = GetThreadDebugState(ThreadLocal_ThreadIndex)->MetaTable + MetaIndex;
+      push_metadata *Meta = GetThreadDebugState(ThreadIndex)->MetaTable + MetaIndex;
       if (Meta->ArenaHash == HashArena(Arena))
       {
         Clear(Meta);
@@ -89,7 +90,19 @@ ClearMetaRecordsFor(memory_arena *Arena)
 }
 
 
-/*******************************  Arena Metadata  **********************************/
+/*****************************  Thread Metadata  *****************************/
+
+
+void
+RegisterThread(u32 ThreadIndex)
+{
+  ThreadLocal_ThreadIndex = ThreadIndex;
+  return;
+}
+
+
+
+/*****************************  Arena Metadata  ******************************/
 
 
 registered_memory_arena *
@@ -168,8 +181,8 @@ WritePushMetadata(push_metadata *InputMeta, push_metadata *MetaTable)
 /****************************  Memory Allocator  *****************************/
 
 
-inline void*
-Allocate_(memory_arena *Arena, umm StructSize, umm StructCount, const char* Name, s32 Line, const char* File, umm Alignment, b32 MemProtect)
+void*
+DEBUG_Allocate(memory_arena* Arena, umm StructSize, umm StructCount, const char* Name, s32 Line, const char* File, umm Alignment, b32 MemProtect)
 {
   umm PushSize = StructCount * StructSize;
   void* Result = PushStruct( Arena, PushSize, Alignment, MemProtect);
@@ -255,7 +268,13 @@ InitScopeTree(debug_scope_tree *Tree)
 void
 FreeScopes(debug_thread_state *ThreadState, debug_profile_scope *ScopeToFree)
 {
-  /* TIMED_FUNCTION(); */ // Seems to behave poorly when timed.
+  // Behaves poorly when timed because it adds a profile scope for every
+  // profile scope present, which has the net effect of adding infinite scopes
+  // over the course of the program.
+  //
+  // Can be timed by wrapping the call site with a TIMED_BLOCK
+  //
+  /* TIMED_FUNCTION(); */
 
   if (!ScopeToFree) return;
 
@@ -330,9 +349,8 @@ WorkerThreadAdvanceDebugSystem()
   return;
 }
 
-
 r32
-AdvanceDebugSystem()
+MainThreadAdvanceDebugSystem()
 {
   TIMED_FUNCTION();
   Assert(ThreadLocal_ThreadIndex == 0);
@@ -347,7 +365,7 @@ AdvanceDebugSystem()
 
   u64 CurrentCycles = GetCycleCount();
 
-  debug_thread_state *MainThreadState = GetThreadDebugState(0);
+  debug_thread_state *MainThreadState = GetThreadDebugState(ThreadLocal_ThreadIndex);
   u32 ThisFrameWriteIndex = MainThreadState->CurrentFrame % DEBUG_FRAMES_TRACKED;
   u32 NextFrameWriteIndex = GetNextDebugFrameIndex(ThisFrameWriteIndex);
 
@@ -551,6 +569,7 @@ GetProfileScope(debug_thread_state *State)
 void
 InitScopeTrees(memory_arena *DebugMemory, u32 TotalThreadCount)
 {
+  Assert(ThreadLocal_ThreadIndex == 0);
   u64 CurrentCycles = GetCycleCount();
   for (u32 ThreadIndex = 0;
       ThreadIndex < TotalThreadCount;
@@ -564,7 +583,7 @@ InitScopeTrees(memory_arena *DebugMemory, u32 TotalThreadCount)
 
       ThreadState->ScopeTrees[TreeIndex].Root = GetProfileScope(ThreadState);
       InitScopeTree(ThreadState->ScopeTrees + TreeIndex);
-      ThreadState->CurrentFrame = GlobalDebugState->ReadScopeIndex + 1;
+      ThreadState->CurrentFrame = GetDebugState()->ReadScopeIndex + 1;
     }
   }
 
@@ -593,44 +612,6 @@ PrintFreeScopes(debug_state *State)
 }
 #endif
 
-
-/************************  Debug System Initialization  **********************/
-
-void
-InitDebugMemoryAllocationSystem(debug_state *State)
-{
-  u32 TotalThreadCount = GetTotalThreadCount();
-
-  // FIXME(Jesse): Can this be allocated in a more sensible way?
-  umm Size = TotalThreadCount * sizeof(debug_thread_state);
-
-  // FIXME(Jesse): This should allocate roughly enough space (maybe more than necessary)
-  // for the Size parameter, however it seems to be under-allocating, which causes
-  // the PushStruct to allocate again.  Bad bad bad.
-  memory_arena *BoostrapArena = PlatformAllocateArena(Size);
-  DEBUG_REGISTER_ARENA(BoostrapArena, State);
-  GlobalDebugState->ThreadStates = (debug_thread_state*)PushStruct(BoostrapArena, Size, 64);
-  //
-
-  umm MetaTableSize = META_TABLE_SIZE * sizeof(push_metadata);
-  for (u32 ThreadIndex = 0;
-      ThreadIndex < TotalThreadCount;
-      ++ThreadIndex)
-  {
-    debug_thread_state *ThreadState = GetThreadDebugState(ThreadIndex);
-    Assert((umm)ThreadState % 64 == 0);
-
-    memory_arena *DebugThreadArena = PlatformAllocateArena();
-    ThreadState->Memory = DebugThreadArena;
-    DEBUG_REGISTER_ARENA(DebugThreadArena, State);
-
-    ThreadState->MetaTable = (push_metadata*)PushStruct(ThreadsafeDebugMemoryAllocator(), MetaTableSize, 64);
-    ThreadState->MutexOps = AllocateAligned(mutex_op_array, DebugThreadArena, DEBUG_FRAMES_TRACKED, 64);
-    ThreadState->ScopeTrees = AllocateAligned(debug_scope_tree, DebugThreadArena, DEBUG_FRAMES_TRACKED, 64);
-  }
-
-  return;
-}
 
 
 /*******************************  Clip Rect **********************************/
@@ -692,21 +673,21 @@ GetMutexOpRecord(mutex *Mutex, mutex_op Op, debug_state *State)
 }
 
 inline void
-DebugTimedMutexWaiting(mutex *Mutex)
+MutexWait(mutex *Mutex)
 {
   mutex_op_record *Record = GetMutexOpRecord(Mutex, MutexOp_Waiting, GetDebugState());
   return;
 }
 
 inline void
-DebugTimedMutexAquired(mutex *Mutex)
+MutexAquired(mutex *Mutex)
 {
   mutex_op_record *Record = GetMutexOpRecord(Mutex, MutexOp_Aquired, GetDebugState());
   return;
 }
 
 inline void
-DebugTimedMutexReleased(mutex *Mutex)
+MutexReleased(mutex *Mutex)
 {
   mutex_op_record *Record = GetMutexOpRecord(Mutex, MutexOp_Released, GetDebugState());
   return;
@@ -742,8 +723,7 @@ FindRecord(mutex_op_record *WaitRecord, mutex_op_record *FinalRecord, mutex_op S
 inline u32
 GetTotalMutexOpsForReadFrame()
 {
-  debug_state *GlobalDebugState = GetDebugState();
-  u32 ReadIndex = GlobalDebugState->ReadScopeIndex;
+  u32 ReadIndex = GetDebugState()->ReadScopeIndex;
 
   u32 OpCount = 0;
   for (u32 ThreadIndex = 0;
@@ -762,6 +742,62 @@ GetAllocationSize(push_metadata *Meta)
 {
   umm AllocationSize = Meta->StructSize*Meta->StructCount*Meta->PushCount;
   return AllocationSize;
+}
+
+
+/************************  Debug System Initialization  **********************/
+
+
+void
+InitDebugMemoryAllocationSystem(debug_state *State)
+{
+  u32 TotalThreadCount = GetTotalThreadCount();
+
+  // FIXME(Jesse): Can this be allocated in a more sensible way?
+  umm Size = TotalThreadCount * sizeof(debug_thread_state);
+
+  // FIXME(Jesse): This should allocate roughly enough space (maybe more than necessary)
+  // for the Size parameter, however it seems to be under-allocating, which causes
+  // the PushStruct to allocate again.  Bad bad bad.
+  memory_arena *BoostrapArena = PlatformAllocateArena(Size);
+  DEBUG_REGISTER_ARENA(BoostrapArena);
+  State->ThreadStates = (debug_thread_state*)PushStruct(BoostrapArena, Size, 64);
+  //
+
+  umm MetaTableSize = META_TABLE_SIZE * sizeof(push_metadata);
+  for (u32 ThreadIndex = 0;
+      ThreadIndex < TotalThreadCount;
+      ++ThreadIndex)
+  {
+    debug_thread_state *ThreadState = GetThreadDebugState(ThreadIndex);
+    Assert((umm)ThreadState % 64 == 0);
+
+    memory_arena *DebugThreadArena = PlatformAllocateArena();
+    ThreadState->Memory = DebugThreadArena;
+    DEBUG_REGISTER_ARENA(DebugThreadArena);
+
+    ThreadState->MetaTable = (push_metadata*)PushStruct(ThreadsafeDebugMemoryAllocator(), MetaTableSize, 64);
+    ThreadState->MutexOps = AllocateAligned(mutex_op_array, DebugThreadArena, DEBUG_FRAMES_TRACKED, 64);
+    ThreadState->ScopeTrees = AllocateAligned(debug_scope_tree, DebugThreadArena, DEBUG_FRAMES_TRACKED, 64);
+  }
+
+  return;
+}
+
+void
+InitDebugDataSystem(debug_state *DebugState)
+{
+  DebugState->Initialized = True;
+  u32 TotalThreadCount = GetTotalThreadCount();
+
+
+  InitDebugMemoryAllocationSystem(DebugState);
+
+  InitScopeTrees(ThreadsafeDebugMemoryAllocator(), TotalThreadCount);
+
+
+
+  return;
 }
 
 #endif // BONSAI_INTERNAL

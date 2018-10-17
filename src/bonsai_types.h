@@ -18,8 +18,6 @@ void BreakHere() { return; }
 #include <bonsai_math.h>
 #include <animation.h>
 
-#include <game_constants.h>
-
 #include <colors.h>
 #include <line_types.h>
 #include <matrix_types.h>
@@ -44,7 +42,6 @@ void BreakHere() { return; }
 #include <net/network.h>
 
 #include <bonsai.h>
-#include <game_types.h>
 
 #include <mesh_types.h>
 #include <bonsai_string.cpp>

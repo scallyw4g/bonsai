@@ -65,31 +65,31 @@ struct memory_arena
 
 #ifndef BONSAI_NO_DEBUG_MEMORY_ALLOCATOR
 
-void*
-Allocate_(memory_arena *Arena, umm StructSize, umm StructCount, const char* Name, s32 Line, const char* File, umm Alignment = 1, b32 MemProtect = True);
-
 #define AllocateProtection(Type, Arena, Number, Protection) \
-  (Type*)Allocate_( Arena, sizeof(Type), (umm)Number, #Type, __LINE__, __FILE__, 1, Protection )
+  (Type*)GetDebugState()->Debug_Allocate( Arena, sizeof(Type), (umm)Number, #Type, __LINE__, __FILE__, 1, Protection )
 
 #define AllocateAlignedProtection(Type, Arena, Number, Alignment, Protection) \
-  (Type*)Allocate_( Arena, sizeof(Type), (umm)Number, #Type, __LINE__, __FILE__, Alignment, Protection )
+  (Type*)GetDebugState()->Debug_Allocate( Arena, sizeof(Type), (umm)Number, #Type, __LINE__, __FILE__, Alignment, Protection )
 
 #define AllocateAligned(Type, Arena, Number, Alignment) \
-  (Type*)Allocate_( Arena, sizeof(Type), (umm)Number, #Type, __LINE__, __FILE__, Alignment )
+  (Type*)GetDebugState()->Debug_Allocate( Arena, sizeof(Type), (umm)Number, #Type, __LINE__, __FILE__, Alignment, True)
 
 #define Allocate(Type, Arena, Number) \
-  (Type*)Allocate_( Arena, sizeof(Type), (umm)Number, #Type, __LINE__, __FILE__)
+  (Type*)GetDebugState()->Debug_Allocate( Arena, sizeof(Type), (umm)Number, #Type, __LINE__, __FILE__, 1, True)
 
-#define DEBUG_REGISTER_ARENA(Arena, DebugState) \
-  DebugRegisterArena(#Arena, Arena, DebugState)
+#define DEBUG_REGISTER_ARENA(Arena) \
+  GetDebugState()->RegisterArena(#Arena, Arena)
+
+#define DEBUG_REGISTER_THREAD(ThreadIndex) \
+  GetDebugState()->RegisterThread(ThreadIndex)
 
 #else
 
 #define AllocateProtection(Type, Arena, Number, Protection) \
   (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, 1, False);
 
-#define AllocateAlignedProtection(Type, Arena, Number, Alignment, Protection) \
-  (Type*)Allocate_( Arena, sizeof(Type)*(umm)Number, Alignment, False)
+/* #define AllocateAlignedProtection(Type, Arena, Number, Alignment, Protection) \ */
+/*   (Type*)Allocate_( Arena, sizeof(Type)*(umm)Number, Alignment, False) */
 
 #define AllocateAligned(Type, Arena, Number, Alignment) \
   (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, Alignment, False)
@@ -437,33 +437,5 @@ VaporizeArena(memory_arena *Arena)
   }
 
   PlatformDeallocateArena(Arena);
-}
-
-void
-ClearMetaRecordsFor(memory_arena *Arena);
-
-inline void
-RewindArena(memory_arena *Arena, umm RestartBlockSize = Megabytes(1) )
-{
-  if (Arena->Prev)
-  {
-    PlatformUnprotectArena(Arena->Prev);
-    VaporizeArena(Arena->Prev);
-    Arena->Prev = 0;
-  }
-
-  PlatformUnprotectArena(Arena);
-
-  Arena->At = Arena->Start;
-  Arena->NextBlockSize = RestartBlockSize;
-
-#if BONSAI_INTERNAL
-#ifndef BONSAI_NO_PUSH_METADATA
-  Arena->Pushes = 0;
-  ClearMetaRecordsFor(Arena);
-#endif
-#endif
-
-  return;
 }
 

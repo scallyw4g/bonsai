@@ -1,3 +1,5 @@
+#include <stream.cpp>
+#include <canonical_position.cpp>
 #include <chunk.cpp>
 #include <bonsai_mesh.cpp>
 #include <world_chunk.cpp>
@@ -5,6 +7,7 @@
 #include <perlin.cpp>
 #include <render.h>
 
+#include <render_position.cpp>
 #include <shader.cpp>
 
 #include <texture.cpp>
@@ -360,9 +363,9 @@ UpdateCameraP(platform *Plat, world *World, canonical_position NewTarget, camera
     Camera->DistanceFromTarget += MouseDelta.y*200.0f;
   }
 
-  if (Camera->DistanceFromTarget <= 0)
+  if (Camera->DistanceFromTarget <= 0.1f)
   {
-    Camera->DistanceFromTarget = CAMERA_FOCAL_LENGTH;
+    Camera->DistanceFromTarget = 0.1f;
   }
 
   r32 Px = Sin(Camera->Yaw);

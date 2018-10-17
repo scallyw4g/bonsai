@@ -1,39 +1,34 @@
 #if BONSAI_INTERNAL
 
+#define BONSAI_CONTAINS_DEBUG_ALLOCATE_IMPL
+
 #include <stdio.h>
+#include <bonsai_types.h>
+
+#include <unix_platform.cpp>
 #include <debug_data_system.cpp>
+
+#include <texture.cpp>
+
+// FIXME(Jesse): this is a hack so that we can use BindShaderUniforms.  The
+// Debug system never actually binds a camera, so there's not any reason for
+// this to be required for it to use that function, but C isn't smart enough to
+// figure that out.
+global_variable chunk_dimension WORLD_CHUNK_DIM = Chunk_Dimension(0,0,0);
+#include <render_position.cpp>
+#include <stream.cpp>
+#include <shader.cpp>
+
+#include <render.h>
+#include <bonsai_mesh.cpp>
+
+memory_arena* TranArena = PlatformAllocateArena();
 #include <debug_render_system.cpp>
 
+debug_state Internal_DebugState = {};
 
 void
-InitDebugState(debug_state *DebugState)
-{
-  GlobalDebugState = DebugState;
-
-  GlobalDebugState->Initialized = True;
-  u32 TotalThreadCount = GetTotalThreadCount();
-
-  InitDebugMemoryAllocationSystem(DebugState);
-
-  InitScopeTrees(ThreadsafeDebugMemoryAllocator(), TotalThreadCount);
-
-  AllocateMesh(&GlobalDebugState->LineMesh, 1024, ThreadsafeDebugMemoryAllocator());
-
-  if (!InitDebugOverlayFramebuffer(&GlobalDebugState->TextRenderGroup, ThreadsafeDebugMemoryAllocator(), "texture_atlas_0.bmp"))
-  { Error("Initializing Debug Overlay Framebuffer"); }
-
-  AllocateAndInitGeoBuffer(&GlobalDebugState->TextRenderGroup.TextGeo, 1024, ThreadsafeDebugMemoryAllocator());
-  AllocateAndInitGeoBuffer(&GlobalDebugState->TextRenderGroup.UIGeo, 1024, ThreadsafeDebugMemoryAllocator());
-
-  GlobalDebugState->TextRenderGroup.SolidUIShader = MakeSolidUIShader(ThreadsafeDebugMemoryAllocator());
-
-  GlobalDebugState->SelectedArenas = Allocate(selected_arenas, ThreadsafeDebugMemoryAllocator(), 1);
-
-  return;
-}
-
-void
-DebugFrameEnd(platform *Plat, game_state *GameState)
+DebugFrameEnd(platform *Plat, server_state* ServerState)
 {
   TIMED_FUNCTION();
 
@@ -114,7 +109,7 @@ DebugFrameEnd(platform *Plat, game_state *GameState)
 
     case DebugUIType_Network:
     {
-      DebugDrawNetworkHud(&Group, &Plat->Network, GameState->ServerState, &Layout);
+      DebugDrawNetworkHud(&Group, &Plat->Network, ServerState, &Layout);
     } break;
 
     case DebugUIType_CallGraph:
@@ -187,6 +182,30 @@ DebugFrameBegin(hotkeys *Hotkeys, r32 Dt)
   return;
 }
 
-#endif // DEBUG
+EXPORT debug_state*
+GetDebugState_Internal()
+{
+  if (!Internal_DebugState.Initialized)
+  {
+    Internal_DebugState.FrameEnd                       = DebugFrameEnd;
+    Internal_DebugState.FrameBegin                     = DebugFrameBegin;
+    Internal_DebugState.RegisterArena                  = RegisterArena;
+    Internal_DebugState.WorkerThreadAdvanceDebugSystem = WorkerThreadAdvanceDebugSystem;
+    Internal_DebugState.MainThreadAdvanceDebugSystem   = MainThreadAdvanceDebugSystem;
+    Internal_DebugState.MutexWait                      = MutexWait;
+    Internal_DebugState.MutexAquired                   = MutexAquired;
+    Internal_DebugState.MutexReleased                  = MutexReleased;
+    Internal_DebugState.GetProfileScope                = GetProfileScope;
+    Internal_DebugState.Debug_Allocate                 = DEBUG_Allocate;
+    Internal_DebugState.RegisterThread                 = RegisterThread;
+    Internal_DebugState.ClearMetaRecordsFor            = ClearMetaRecordsFor;
 
+    InitDebugDataSystem(&Internal_DebugState);
+    InitDebugRenderSystem(&Internal_DebugState);
+  }
+
+  return &Internal_DebugState;
+}
+
+#endif // DEBUG
 

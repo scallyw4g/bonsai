@@ -1,3 +1,4 @@
+#define BONSAI_NO_PUSH_METADATA
 
 #include <iostream>
 
@@ -18,26 +19,23 @@
 
 #include <platform.h>
 
-#include <render.h>
-
-#include <texture.cpp>
-#include <shader.cpp>
-#include <bonsai_vertex.h>
-#include <perlin.cpp>
-#include <chunk.cpp>
-#include <bonsai_mesh.cpp>
-
 global_variable memory_arena *TranArena = PlatformAllocateArena();
-#include <debug.cpp>
-#include <render.cpp>
 
 #include <sys/types.h>
 #include <sys/stat.h>
 
+/* #include <texture.cpp> */
+/* #include <stream.cpp> */
+/* #include <game_constants.h> */
+/* #include <render_position.cpp> */
+/* #include <shader.cpp> */
+/* #include <render_init.cpp> */
+
+
+
 
 global_variable s64 LastGameLibTime;
 global_variable game_thread_callback_proc GameThreadCallback;
-
 
 
 
@@ -68,13 +66,15 @@ THREAD_MAIN_RETURN
 ThreadMain(void *Input)
 {
   thread_startup_params *ThreadParams = (thread_startup_params *)Input;
+  DEBUG_REGISTER_THREAD(ThreadParams->Self.ThreadIndex);
+
+  // TODO(Jesse): Is this unnecessary now?
+  ThreadLocal_ThreadIndex = ThreadParams->Self.ThreadIndex;
 
   work_queue *Queue = ThreadParams->Queue;
 
   memory_arena *ThreadArena = PlatformAllocateArena();
-
-  ThreadLocal_ThreadIndex = ThreadParams->Self.ThreadIndex;
-  DEBUG_REGISTER_ARENA(ThreadArena, GetDebugState());
+  DEBUG_REGISTER_ARENA(ThreadArena);
 
   for (;;)
   {
@@ -287,8 +287,6 @@ PlatformInit(platform *Plat, memory_arena *Memory)
     CreateThread( ThreadMain, Params );
   }
 
-  GlobalDebugState = &Plat->DebugState;
-
   return True;
 }
 
@@ -427,10 +425,21 @@ FrameEnd(game_state *GameState)
   PlatformUnprotectArena(TranArena);
   RewindArena(TranArena);
 
-  game_lights *Lights = GameState->Plat->Graphics->Lights;
-  Lights->Count = 0;
-
   return;
+}
+
+server_state*
+ServerInit(memory_arena* Memory)
+{
+  server_state* ServerState = Allocate(server_state, Memory, 1);
+  for (u32 ClientIndex = 0;
+      ClientIndex < MAX_CLIENTS;
+      ++ClientIndex)
+  {
+    ServerState->Clients[ClientIndex].Id = -1;
+  }
+
+  return ServerState;
 }
 
 s32
@@ -451,25 +460,28 @@ main()
   s32 DebugFlags = 0;
 #endif
 
+  shared_lib DebugLib = OpenLibrary("./bin/libDebugSystem.so");
+  if (!DebugLib) { Error("Loading DebugLib :( "); return False; }
+
+  GetDebugState = (get_debug_state_proc)GetProcFromLib(DebugLib, "GetDebugState_Internal");
+  if (!GetDebugState) { Error("Retreiving GetDebugState from Debug Lib :( "); return False; }
+
   b32 WindowSuccess = OpenAndInitializeWindow(&Os, &Plat, DebugFlags);
   if (!WindowSuccess) { Error("Initializing Window :( "); return False; }
+
   Assert(Os.Window);
   InitializeOpenGlExtensions(&Os);
 
   AssertNoGlErrors;
 
 
-  DEBUG_REGISTER_ARENA(TranArena  , &Plat.DebugState);
-
-  INIT_DEBUG_STATE(&Plat.DebugState);
+  DEBUG_REGISTER_ARENA(TranArena);
 
   memory_arena *PlatMemory     = PlatformAllocateArena();
-  memory_arena *GraphicsMemory = PlatformAllocateArena();
   memory_arena *GameMemory     = PlatformAllocateArena();
 
-  DEBUG_REGISTER_ARENA(GameMemory    , &Plat.DebugState);
-  DEBUG_REGISTER_ARENA(PlatMemory    , &Plat.DebugState);
-  DEBUG_REGISTER_ARENA(GraphicsMemory, &Plat.DebugState);
+  DEBUG_REGISTER_ARENA(GameMemory);
+  DEBUG_REGISTER_ARENA(PlatMemory);
 
   PlatformInit(&Plat, PlatMemory);
 
@@ -481,6 +493,7 @@ main()
   hotkeys Hotkeys = {};
 
   GameLibIsNew(DEFAULT_GAME_LIB);  // Hack to initialize the LastGameLibTime static
+
 
   shared_lib GameLib = OpenLibrary(DEFAULT_GAME_LIB);
   if (!GameLib) { Error("Loading GameLib :( "); return False; }
@@ -496,11 +509,12 @@ main()
 
   QueryAndSetGlslVersion(&Plat);
 
-  Plat.Graphics = GraphicsInit(GraphicsMemory);
-  if (!Plat.Graphics) { Error("Initializing Graphics"); return False; }
-
-  game_state *GameState = GameInit(&Plat, GameMemory );
+  game_state* GameState = GameInit(&Plat, GameMemory );
   if (!GameState) { Error("Initializing Game State :( "); return False; }
+
+  server_state* ServerState = ServerInit(GameMemory);
+  Assert(ServerState);
+
 
   /*
    *  Main Game loop
@@ -548,21 +562,12 @@ main()
     GameUpdateAndRender(&Plat, GameState, &Hotkeys);
 
     TIMED_BLOCK("Frame End");
-
-    TIMED_BLOCK("Worker Thread Shutdown");
-
-
-    DEBUG_FRAME_END(&Plat, GameState);
-    FrameEnd(GameState);
-
-    /* WaitForFrameTime(LastMs, 30.0f); */
-
+      DEBUG_FRAME_END(&Plat, ServerState);
+      FrameEnd(GameState);
     END_BLOCK("Frame End");
 
     BonsaiSwapBuffers(&Os);
-    RealDt = AdvanceDebugSystem();
-
-    END_BLOCK("Worker Thread Shutdown");
+    RealDt = MAIN_THREAD_ADVANCE_DEBUG_SYSTEM();
   }
 
   Info("Shutting Down");

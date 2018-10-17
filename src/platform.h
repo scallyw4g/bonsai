@@ -133,7 +133,6 @@ struct platform
   work_queue Queue;
   thread_startup_params *Threads;
 
-  graphics *Graphics;
   network_connection Network = { Socket_NonBlocking, SERVER_IP };
 
   v2 MouseP;
@@ -150,10 +149,6 @@ struct platform
   const char *GlslVersion;
 
   input Input;
-
-#if BONSAI_INTERNAL
-  debug_state DebugState;
-#endif
 };
 
 struct os

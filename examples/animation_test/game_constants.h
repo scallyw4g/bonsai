@@ -7,7 +7,7 @@
 #define VR_Y 8
 #define VR_Z 8
 
-#define WORLD_CHUNK_DIM Chunk_Dimension(CD_X,CD_Y,CD_Z)
+global_variable chunk_dimension WORLD_CHUNK_DIM = Chunk_Dimension(CD_X,CD_Y,CD_Z);
 
 // Texture Resolution
 #define SHADOW_MAP_RESOLUTION_X (4096)

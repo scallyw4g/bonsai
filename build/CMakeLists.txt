@@ -25,6 +25,9 @@ set( EXECUTABLE_OUTPUT_PATH ${BIN} )
 
 add_executable(Bonsai ${SRC}/platform.cpp)
 
+# HACK(Jesse): REMOVE THIS ASAP
+target_include_directories(Bonsai PRIVATE ${EXAMPLES}/animation_test)
+
 add_executable(ttf ${SRC}/font/ttf.cpp)
 
 add_executable(Server ${SRC}/net/server.cpp)
@@ -39,24 +42,16 @@ add_executable(test_callgraph ${TESTS}/callgraph.cpp)
 
 add_definitions( -DGL_GLEXT_PROTOTYPES=1 )
 
-################################ USER INCLUDES ################################
+add_library(DebugSystem SHARED ${SRC}/debug.cpp)
 
-#set( GAME_SRC_DIR ${EXAMPLES}/space_invaders )
-
-###############################################################################
-
-set( SSAO_TEST_SRC ${EXAMPLES}/ssao_test )
-include_directories(${SSAO_TEST_SRC})
-add_library(SsaoTest SHARED ${SSAO_TEST_SRC}/game.cpp)
-target_include_directories(SsaoTest PRIVATE ${SSAO_TEST_SRC})
+add_library(SsaoTest SHARED ${EXAMPLES}/ssao_test/game.cpp)
+target_include_directories(SsaoTest PRIVATE ${EXAMPLES}/ssao_test)
 set_target_properties(SsaoTest PROPERTIES OUTPUT_NAME "SsaoTest")
 set_target_properties(SsaoTest PROPERTIES PREFIX "")
 set_target_properties(SsaoTest PROPERTIES SUFFIX "")
 
-set( ANIMATION_TEST_SRC ${EXAMPLES}/animation_test )
-include_directories(${ANIMATION_TEST_SRC})
-add_library(AnimationTest SHARED ${ANIMATION_TEST_SRC}/game.cpp)
-target_include_directories(AnimationTest PRIVATE ${ANIMATION_TEST_SRC})
+add_library(AnimationTest SHARED ${EXAMPLES}/animation_test/game.cpp)
+target_include_directories(AnimationTest PRIVATE ${EXAMPLES}/animation_test)
 set_target_properties(AnimationTest PROPERTIES OUTPUT_NAME "AnimationTest")
 set_target_properties(AnimationTest PROPERTIES PREFIX "")
 set_target_properties(AnimationTest PROPERTIES SUFFIX "")
@@ -85,6 +80,7 @@ add_custom_target(tests ${BIN}/test_m4
 target_compile_definitions(Bonsai         PUBLIC BONSAI_INTERNAL=1)
 target_compile_definitions(Server         PUBLIC BONSAI_INTERNAL=1)
 target_compile_definitions(SsaoTest       PUBLIC BONSAI_INTERNAL=1)
+target_compile_definitions(DebugSystem    PUBLIC BONSAI_INTERNAL=1)
 target_compile_definitions(AnimationTest  PUBLIC BONSAI_INTERNAL=1)
 
 target_compile_definitions(ttf PUBLIC BONSAI_INTERNAL=1)
@@ -191,7 +187,7 @@ add_custom_command( TARGET SsaoTest POST_BUILD
                     ../bin/${ssaoTestBinary} ../bin/${ssaoTestBinary}Loadable.so )
 
 get_property(animationTestBinary TARGET AnimationTest PROPERTY OUTPUT_NAME)
-add_custom_command( TARGET SsaoTest POST_BUILD
+add_custom_command( TARGET AnimationTest POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy
                     ../bin/${animationTestBinary} ../bin/${animationTestBinary}Loadable.so )
 

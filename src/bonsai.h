@@ -807,62 +807,6 @@ ZeroChunk( chunk_data *Chunk, s32 Volume )
   return;
 }
 
-u32
-GetWorldChunkHash(world_position P)
-{
-  TIMED_FUNCTION();
-  // TODO(Jesse): Better hash function!
-  u32 i =
-    (u32)((P.x) +
-          (P.y*WORLD_CHUNK_DIM.x) +
-          (P.z*WORLD_CHUNK_DIM.x*WORLD_CHUNK_DIM.y));
-
-  u32 HashIndex = i % WORLD_HASH_SIZE;
-  Assert(HashIndex < WORLD_HASH_SIZE);
-
-  return HashIndex;
-}
-
-void
-FreeWorldChunk(world *World, world_chunk *chunk)
-{
-  TIMED_FUNCTION();
-
-  if ( chunk->Data->Flags == Chunk_Complete || chunk->Data->Flags == Chunk_Collected  )
-  {
-    // Unlink from middle of linked list
-    if (chunk->Prev)
-    {
-      chunk->Prev->Next = chunk->Next;
-    }
-
-    if (chunk->Next)
-    {
-      chunk->Next->Prev = chunk->Prev;
-    }
-
-    // Unlink from head end of linked list
-    if (!chunk->Prev)
-    {
-      World->ChunkHash[GetWorldChunkHash(chunk->WorldP)] = chunk->Next;
-    }
-
-    chunk->Prev = 0;
-    chunk->Next = 0;
-
-    Assert(World->FreeChunkCount < FREELIST_SIZE);
-    World->FreeChunks[World->FreeChunkCount++] = chunk;
-
-    ZeroChunk(chunk->Data, Volume(World->ChunkDim));
-  }
-  else
-  {
-    SetFlag(chunk, Chunk_Garbage);
-  }
-
-  return;
-}
-
 inline s32
 GetIndex(voxel_position P, chunk_dimension Dim)
 {

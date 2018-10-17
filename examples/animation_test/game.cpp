@@ -1,9 +1,15 @@
+#define BONSAI_NO_PUSH_METADATA
+
 #include <bonsai_types.h>
+#include <game_types.h>
+#include <game_constants.h>
 
 global_variable memory_arena *TranArena = PlatformAllocateArena();
 #include <bonsai.cpp>
 #include <physics.cpp>
 #include <entity.cpp>
+
+#include <unix_platform.cpp>
 
 #include <loaders/obj.cpp>
 #include <loaders/collada.cpp>
@@ -50,13 +56,13 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 
   world                 *World    = GameState->World;
   chunk_dimension WorldChunkDim   = World->ChunkDim;
-  graphics              *Graphics = Plat->Graphics;
+  graphics              *Graphics = GameState->Graphics;
   g_buffer_render_group *gBuffer  = Graphics->gBuffer;
   ao_render_group       *AoGroup  = Graphics->AoGroup;
   camera                *Camera   = Graphics->Camera;
 
   entity *Player = GetPlayer(GameState->Players, 0);
-  ClearFramebuffers(Plat->Graphics);
+  ClearFramebuffers(Graphics);
 
   SimulatePlayers(GameState, Player, Hotkeys, Plat->dt);
 
@@ -71,7 +77,7 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
     GetViewMatrix(WorldChunkDim, Camera);
 
   TIMED_BLOCK("BufferMeshes");
-    BufferWorld(World, Graphics);
+    BufferWorld(World, Graphics, VISIBLE_REGION_RADIUS);
     BufferEntities( GameState->EntityTable, &World->Mesh, Graphics, World, Plat->dt);
   END_BLOCK("BufferMeshes");
 
@@ -81,6 +87,8 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
     DrawGBufferToFullscreenQuad(Plat, Graphics);
   END_BLOCK("RenderToScreen");
 
+  Graphics->Lights->Count = 0;
+
   return;
 }
 
@@ -89,14 +97,14 @@ GameInit( platform *Plat, memory_arena *GameMemory )
 {
   Info("Initializing Game");
 
-  GlobalDebugState = &Plat->DebugState;
-
   Init_Global_QuadVertexBuffer();
 
   game_state *GameState = Allocate(game_state, GameMemory, 1);
   GameState->Memory = GameMemory;
   GameState->Noise = perlin_noise(DEBUG_NOISE_SEED);
 
+  GameState->Graphics = GraphicsInit(GameMemory);
+  if (!GameState->Graphics) { Error("Initializing Graphics"); return False; }
 
   GameState->Turb = Allocate(noise_3d, GameState->Memory, 1);
   AllocateAndInitNoise3d(GameState, GameState->Turb, Chunk_Dimension(8,8,8) );
@@ -115,14 +123,6 @@ GameInit( platform *Plat, memory_arena *GameMemory )
       ++ EntityIndex)
   {
     GameState->Players[EntityIndex] = GetFreeEntity(GameState);
-  }
-
-  GameState->ServerState = Allocate(server_state, GameMemory, 1);
-  for (u32 ClientIndex = 0;
-      ClientIndex < MAX_CLIENTS;
-      ++ClientIndex)
-  {
-    GameState->ServerState->Clients[ClientIndex].Id = -1;
   }
 
   return GameState;

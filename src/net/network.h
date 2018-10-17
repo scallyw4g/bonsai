@@ -12,11 +12,11 @@ struct client_state
   canonical_position P;
 };
 
-struct server_to_client_message
+struct server_state
 {
   client_state Clients[MAX_CLIENTS];
 };
-typedef server_to_client_message server_state;
+typedef server_state server_to_client_message;
 
 struct client_to_server_message
 {

@@ -1017,14 +1017,14 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Layo
 
       v3 Color = V3(0.5f, 0.5f, 0.5f);
 
-      debug_scope_tree *Tree = &DebugState->ThreadStates[ThreadLocal_ThreadIndex].ScopeTrees[FrameIndex];
+      debug_scope_tree *Tree = GetThreadDebugState(0)->ScopeTrees + FrameIndex;
       if ( Tree == DebugState->GetWriteScopeTree() )
       {
         Color = V3(0.8f, 0.0f, 0.0f);
         Perc = 0.05f;
       }
 
-      if ( Tree == DebugState->GetReadScopeTree() )
+      if ( Tree == DebugState->GetReadScopeTree(0) )
         Color = V3(0.8f, 0.8f, 0.0f);
 
       v2 QuadDim = V2(15.0, (Group->Font.Size) * Perc);
@@ -1545,6 +1545,28 @@ DebugDrawGraphicsHud(ui_render_group *Group, debug_state *DebugState, layout *La
   NewLine(Layout, &Group->Font);
 
   BufferMemorySize(DebugState->BytesBufferedToCard, Group, Layout, WHITE);
+
+  return;
+}
+
+
+/******************************  Initialize  *********************************/
+
+
+void
+InitDebugRenderSystem(debug_state *DebugState)
+{
+  AllocateMesh(&DebugState->LineMesh, 1024, ThreadsafeDebugMemoryAllocator());
+
+  if (!InitDebugOverlayFramebuffer(&DebugState->TextRenderGroup, ThreadsafeDebugMemoryAllocator(), "texture_atlas_0.bmp"))
+  { Error("Initializing Debug Overlay Framebuffer"); }
+
+  AllocateAndInitGeoBuffer(&DebugState->TextRenderGroup.TextGeo, 1024, ThreadsafeDebugMemoryAllocator());
+  AllocateAndInitGeoBuffer(&DebugState->TextRenderGroup.UIGeo, 1024, ThreadsafeDebugMemoryAllocator());
+
+  DebugState->TextRenderGroup.SolidUIShader = MakeSolidUIShader(ThreadsafeDebugMemoryAllocator());
+
+  DebugState->SelectedArenas = Allocate(selected_arenas, ThreadsafeDebugMemoryAllocator(), 1);
 
   return;
 }

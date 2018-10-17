@@ -38,7 +38,7 @@ PlatformInitializeMutex(mutex *Mutex)
 }
 
 void
-PlatformUnlockMutex(mutex *Mutex)
+PlatformUnlockMutex(mutex *Mutex, u32 ThreadIndex)
 {
   s32 Fail = pthread_mutex_unlock(&Mutex->M);
   TIMED_MUTEX_RELEASED(Mutex);
@@ -53,7 +53,7 @@ PlatformUnlockMutex(mutex *Mutex)
 }
 
 void
-PlatformLockMutex(mutex *Mutex)
+PlatformLockMutex(mutex *Mutex, u32 ThreadIndex)
 {
   TIMED_MUTEX_WAITING(Mutex);
 
@@ -729,3 +729,29 @@ PlatformSetWorkerThreadPriority()
   return;
 }
 #endif
+
+inline void
+RewindArena(memory_arena *Arena, umm RestartBlockSize = Megabytes(1) )
+{
+  if (Arena->Prev)
+  {
+    PlatformUnprotectArena(Arena->Prev);
+    VaporizeArena(Arena->Prev);
+    Arena->Prev = 0;
+  }
+
+  PlatformUnprotectArena(Arena);
+
+  Arena->At = Arena->Start;
+  Arena->NextBlockSize = RestartBlockSize;
+
+#if BONSAI_INTERNAL
+#ifndef BONSAI_NO_PUSH_METADATA
+  Arena->Pushes = 0;
+  DEBUG_CLEAR_META_RECORDS_FOR(Arena);
+#endif
+#endif
+
+  return;
+}
+

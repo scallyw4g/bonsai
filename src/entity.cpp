@@ -827,6 +827,21 @@ ShouldEmit(particle_system *System)
 }
 
 void
+DoLight(game_lights *Lights, v3 Position, v3 Color)
+{
+  Assert(Lights->Count < MAX_LIGHTS);
+
+  if (Lights->Count < MAX_LIGHTS)
+  {
+    light *Light = Lights->Lights + Lights->Count++;
+    Light->Position = Position;
+    Light->Color = Color;
+  }
+
+ return;
+}
+
+void
 SimulateAndRenderParticleSystem(
     graphics *Graphics,
     untextured_3d_geometry_buffer *Dest,
@@ -880,7 +895,7 @@ SimulateAndRenderParticleSystem(
     u8 ColorIndex = (u8)((Particle->RemainingLifespan / System->ParticleLifespan) * (PARTICLE_SYSTEM_COLOR_COUNT-0.0001f));
     Assert(ColorIndex >= 0 && ColorIndex <= PARTICLE_SYSTEM_COLOR_COUNT);
 
-    v3 RenderSpaceP = GetRenderP(SystemEntity->P, Graphics->Camera);
+    v3 RenderSpaceP = GetRenderP(SystemEntity->P, Graphics->Camera, WORLD_CHUNK_DIM);
     DrawVoxel( Dest, Graphics, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, 3.0f );
 
 #if 0
@@ -893,7 +908,7 @@ SimulateAndRenderParticleSystem(
 
 
 #if 1
-  v3 RenderSpaceP = GetRenderP(SystemEntity->P, Graphics->Camera) + System->SpawnRegion.Center;
+  v3 RenderSpaceP = GetRenderP(SystemEntity->P, Graphics->Camera, WORLD_CHUNK_DIM) + System->SpawnRegion.Center;
   DoLight(Graphics->Lights, RenderSpaceP, 10.0f*EmissionColor);
 #endif
 
@@ -906,7 +921,7 @@ SimulatePlayer( game_state *GameState, entity *Player, hotkeys *Hotkeys, r32 dt 
   TIMED_FUNCTION();
   if (Spawned(Player))
   {
-    camera *Camera =  GameState->Plat->Graphics->Camera;
+    camera *Camera =  GameState->Graphics->Camera;
     if (Hotkeys)
     {
       Player->Physics.Force += GetCameraRelativeInput(Hotkeys, Camera)*dt;
