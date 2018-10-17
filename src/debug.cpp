@@ -6,7 +6,7 @@
 #include <unix_platform.cpp>
 #include <debug_data_system.cpp>
 
-//
+
 // FIXME(Jesse): this is a hack so that we can use BindShaderUniforms.  The
 // Debug system never actually binds a camera, so there's not any reason for
 // this to be required for it to use that function, but C isn't smart enough to
@@ -14,6 +14,8 @@
 global_variable chunk_dimension WORLD_CHUNK_DIM = Chunk_Dimension(0,0,0);
 memory_arena* TranArena = PlatformAllocateArena();
 #include <debug_render_system.cpp>
+
+
 
 debug_state Internal_DebugState = {};
 
@@ -209,5 +211,4 @@ GetDebugState_Internal(b32 InitRenderSystem)
   return &Internal_DebugState;
 }
 
-#endif // DEBUG
-
+#endif

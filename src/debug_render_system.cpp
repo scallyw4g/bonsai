@@ -1151,6 +1151,10 @@ ColumnRight(s32 Width, const char *Text, ui_render_group* Group, layout *Layout,
 /******************************              *********************************/
 
 
+debug_global const u32 Global_DrawCallArrayLength = 128;
+debug_global debug_draw_call Global_DrawCalls[Global_DrawCallArrayLength] = {};
+debug_global debug_draw_call NullDrawCall = {};
+
 void
 TrackDrawCall(const char* Caller, u32 VertexCount)
 {
