@@ -1,3 +1,10 @@
+#include <texture.cpp>
+#include <render_position.cpp>
+#include <stream.cpp>
+#include <shader.cpp>
+#include <render.h>
+#include <bonsai_mesh.cpp>
+
 void
 CleanupText2D(debug_text_render_group *RG)
 {

@@ -573,7 +573,7 @@ GetHighPrecisionClock()
   clock_gettime(CLOCK_MONOTONIC, &Time);
 
   r64 SecondsAsMs = (r64)Time.tv_sec*1000.0;
-  r64 NsAsMs = Time.tv_nsec/1000000;
+  r64 NsAsMs = Time.tv_nsec/1000000.0;
 
   r64 Ms = SecondsAsMs + NsAsMs;
   return Ms;

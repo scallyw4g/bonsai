@@ -124,4 +124,3 @@ GameInit( platform *Plat, memory_arena *GameMemory )
 
   return GameState;
 }
-

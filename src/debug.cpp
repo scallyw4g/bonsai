@@ -3,24 +3,14 @@
 #define BONSAI_CONTAINS_DEBUG_ALLOCATE_IMPL
 
 #include <bonsai_types.h>
-
 #include <unix_platform.cpp>
 #include <debug_data_system.cpp>
-
-#include <texture.cpp>
 
 // FIXME(Jesse): this is a hack so that we can use BindShaderUniforms.  The
 // Debug system never actually binds a camera, so there's not any reason for
 // this to be required for it to use that function, but C isn't smart enough to
 // figure that out.
 global_variable chunk_dimension WORLD_CHUNK_DIM = Chunk_Dimension(0,0,0);
-#include <render_position.cpp>
-#include <stream.cpp>
-#include <shader.cpp>
-
-#include <render.h>
-#include <bonsai_mesh.cpp>
-
 memory_arena* TranArena = PlatformAllocateArena();
 #include <debug_render_system.cpp>
 

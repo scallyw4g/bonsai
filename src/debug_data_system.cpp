@@ -348,9 +348,9 @@ MainThreadAdvanceDebugSystem()
   TIMED_FUNCTION();
   Assert(ThreadLocal_ThreadIndex == 0);
 
-  local_persist r32 LastMs = (r32)GetHighPrecisionClock();
-  r32 CurrentMS = (r32)GetHighPrecisionClock();
-  r32 Dt = (r32)((CurrentMS - LastMs)/1000.0f);
+  local_persist r64 LastMs = GetHighPrecisionClock();
+  r64 CurrentMS = GetHighPrecisionClock();
+  r64 Dt = (CurrentMS - LastMs)/1000.0;
   LastMs = CurrentMS;
 
   debug_state *SharedState = GetDebugState();
