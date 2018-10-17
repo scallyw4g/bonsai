@@ -5,6 +5,7 @@
 #include <render.h>
 #include <bonsai_mesh.cpp>
 
+
 void
 CleanupText2D(debug_text_render_group *RG)
 {
@@ -87,8 +88,9 @@ MakeSolidUIShader(memory_arena *Memory)
 }
 
 
-
-/******************************  2D Buffering ********************************/
+/******************************                *******************************/
+/******************************  2D Buffering  *******************************/
+/******************************                *******************************/
 
 
 void
@@ -363,7 +365,9 @@ EndClipRect(ui_render_group *Group, layout *Layout, untextured_2d_geometry_buffe
 }
 
 
+/*****************************                ********************************/
 /*****************************  Text Helpers  ********************************/
+/*****************************                ********************************/
 
 inline void
 AdvanceSpaces(u32 N, layout *Layout, font *Font)
@@ -770,7 +774,9 @@ DoTooltip(ui_render_group *Group, const char *Text)
 }
 
 
+/****************************                       **************************/
 /****************************  Mutex Introspection  **************************/
+/****************************                       **************************/
 
 
 void
@@ -837,7 +843,9 @@ DrawWaitingBar(mutex_op_record *WaitRecord, mutex_op_record *AquiredRecord, mute
 }
 
 
-/************************  Thread Perf Bargraph ******************************/
+/************************                        *****************************/
+/************************  Thread Perf Bargraph  *****************************/
+/************************                        *****************************/
 
 
 void
@@ -998,7 +1006,9 @@ DebugDrawCycleThreadGraph(ui_render_group *Group, debug_state *SharedState, layo
 }
 
 
-/*****************************  Call Graph  **********************************/
+/******************************              *********************************/
+/******************************  Call Graph  *********************************/
+/******************************              *********************************/
 
 
 void
@@ -1135,6 +1145,44 @@ ColumnRight(s32 Width, const char *Text, ui_render_group* Group, layout *Layout,
   BufferValue(Text, Group, Layout, ColorIndex);
 }
 
+
+/******************************              *********************************/
+/******************************  Draw Calls  *********************************/
+/******************************              *********************************/
+
+
+void
+TrackDrawCall(const char* Caller, u32 VertexCount)
+{
+  u64 Index = ((u64)Caller) % Global_DrawCallArrayLength;
+
+  debug_draw_call *DrawCall = &Global_DrawCalls[Index];
+
+  if (DrawCall->Caller)
+  {
+    debug_draw_call* First = DrawCall;
+    while( DrawCall->Caller &&
+           !(StringsMatch(DrawCall->Caller, Caller) && DrawCall->N == VertexCount)
+         )
+    {
+      ++Index;
+      Index = Index % Global_DrawCallArrayLength;
+      DrawCall = &Global_DrawCalls[Index];
+      if (DrawCall == First)
+      {
+        Error("Draw Call table full!");
+        break;
+      }
+    }
+  }
+
+  DrawCall->Caller = Caller;
+  DrawCall->N = VertexCount;
+  DrawCall->Calls++;
+
+  return;
+}
+
 void
 DebugDrawDrawCalls(ui_render_group *Group, layout *Layout)
 {
@@ -1160,7 +1208,9 @@ DebugDrawDrawCalls(ui_render_group *Group, layout *Layout)
 }
 
 
+/*******************************            **********************************/
 /*******************************  Arena UI  **********************************/
+/*******************************            **********************************/
 
 
 inline b32
@@ -1480,7 +1530,9 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState, v2 OriginalB
 }
 
 
+/*******************************              ********************************/
 /*******************************  Network UI  ********************************/
+/*******************************              ********************************/
 
 
 void
@@ -1540,7 +1592,9 @@ DebugDrawNetworkHud(ui_render_group *Group,
 }
 
 
+/******************************               ********************************/
 /******************************  Graphics UI  ********************************/
+/******************************               ********************************/
 
 
 void
@@ -1557,7 +1611,9 @@ DebugDrawGraphicsHud(ui_render_group *Group, debug_state *DebugState, layout *La
 }
 
 
+/******************************              *********************************/
 /******************************  Initialize  *********************************/
+/******************************              *********************************/
 
 
 void

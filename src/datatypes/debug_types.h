@@ -185,6 +185,7 @@ typedef void* (*debug_allocate_proc)(memory_arena*, umm, umm, const char*, s32 ,
 typedef void (*debug_register_thread_proc)(u32);
 typedef void (*debug_clear_meta_records_proc)(memory_arena*);
 typedef void (*debug_init_debug_system_proc)(b32);
+typedef void (*debug_track_draw_call_proc)(const char*, u32);
 
 
 
@@ -247,6 +248,7 @@ struct debug_state
   debug_register_thread_proc                RegisterThread;
   debug_clear_meta_records_proc             ClearMetaRecordsFor;
   debug_init_debug_system_proc              InitDebugSystem;
+  debug_track_draw_call_proc                TrackDrawCall;
 };
 
 typedef debug_state* (*get_debug_state_proc)();
@@ -259,10 +261,6 @@ struct debug_draw_call
   u32 N;
   u32 Calls;
 };
-
-debug_global const u32 Global_DrawCallArrayLength = 128;
-debug_global debug_draw_call Global_DrawCalls[Global_DrawCallArrayLength] = {};
-debug_global debug_draw_call NullDrawCall = {};
 
 typedef b32 (*meta_comparator)(push_metadata*, push_metadata*);
 
@@ -379,6 +377,7 @@ void DebugTimedMutexReleased(mutex *Mut);
 #define RESUME_WORKER_THREADS()  DebugResumeWorkerThreads()
 
 #define DEBUG_CLEAR_META_RECORDS_FOR(Arena) GetDebugState()->ClearMetaRecordsFor(Arena)
+#define DEBUG_TRACK_DRAW_CALL(CallingFunction, VertCount) GetDebugState()->TrackDrawCall(CallingFunction, VertCount)
 
 #else
 
@@ -397,6 +396,9 @@ void DebugTimedMutexReleased(mutex *Mut);
 #define WORKER_THREAD_WAIT_FOR_DEBUG_SYSTEM(...)
 #define MAIN_THREAD_ADVANCE_DEBUG_SYSTEM(...) RealDt
 #define SUSPEND_WORKER_THREADS(...)
+
+#define DEBUG_CLEAR_META_RECORDS_FOR(...)
+#define DEBUG_TRACK_DRAW_CALL(...)
 
 #endif
 

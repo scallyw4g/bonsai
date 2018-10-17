@@ -1,6 +1,10 @@
 #if BONSAI_INTERNAL
 
 debug_global b32 DebugGlobal_RedrawEveryPush = 0;
+debug_global const u32 Global_DrawCallArrayLength = 128;
+debug_global debug_draw_call Global_DrawCalls[Global_DrawCallArrayLength] = {};
+debug_global debug_draw_call NullDrawCall = {};
+
 
 
 /****************************  Arena Introspection  **************************/

@@ -1,50 +1,11 @@
 #ifndef RENDER_H
 #define RENDER_H
 
-#if BONSAI_INTERNAL
-#define Draw(VertexCount) \
-  Draw_(VertexCount, __FUNCTION__);
-
-void
-Draw_(u32 N, const char * Caller)
-{
-  TIMED_FUNCTION();
-
-  u64 Index = ((u64)Caller) % Global_DrawCallArrayLength;
-
-  debug_draw_call *DrawCall = &Global_DrawCalls[Index];
-
-  if (DrawCall->Caller)
-  {
-    debug_draw_call* First = DrawCall;
-    while( DrawCall->Caller &&
-           !(StringsMatch(DrawCall->Caller, Caller) && DrawCall->N == N)
-         )
-    {
-      ++Index;
-      Index = Index % Global_DrawCallArrayLength;
-      DrawCall = &Global_DrawCalls[Index];
-      if (DrawCall == First)
-      {
-        Error("Draw Call table full!");
-        break;
-      }
-    }
-  }
-
-  DrawCall->Caller = Caller;
-  DrawCall->N = N;
-  DrawCall->Calls++;
-
-  glDrawArrays(GL_TRIANGLES, 0, (s32)N);
-}
-#else
-void
-Draw(u32 N)
-{
-  glDrawArrays(GL_TRIANGLES, 0, (s32)N);
-}
-#endif
+#define Draw(VertexCount) do {                      \
+  TIMED_BLOCK("Draw");                              \
+  DEBUG_TRACK_DRAW_CALL(__FUNCTION__, VertexCount); \
+  glDrawArrays(GL_TRIANGLES, 0, (s32)VertexCount);  \
+  END_BLOCK(); } while (0)
 
 inline void
 SetViewport(v2 Dim)

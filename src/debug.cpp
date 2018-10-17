@@ -6,6 +6,7 @@
 #include <unix_platform.cpp>
 #include <debug_data_system.cpp>
 
+//
 // FIXME(Jesse): this is a hack so that we can use BindShaderUniforms.  The
 // Debug system never actually binds a camera, so there's not any reason for
 // this to be required for it to use that function, but C isn't smart enough to
@@ -15,6 +16,8 @@ memory_arena* TranArena = PlatformAllocateArena();
 #include <debug_render_system.cpp>
 
 debug_state Internal_DebugState = {};
+
+
 
 void
 DebugFrameEnd(platform *Plat, server_state* ServerState)
@@ -174,18 +177,19 @@ DebugFrameBegin(hotkeys *Hotkeys, r32 Dt)
 EXPORT void
 InitDebugSystem(b32 DoInitDebugRenderSystem = True)
 {
-  Internal_DebugState.FrameEnd                       = DebugFrameEnd;
-  Internal_DebugState.FrameBegin                     = DebugFrameBegin;
-  Internal_DebugState.RegisterArena                  = RegisterArena;
-  Internal_DebugState.WorkerThreadAdvanceDebugSystem = WorkerThreadAdvanceDebugSystem;
-  Internal_DebugState.MainThreadAdvanceDebugSystem   = MainThreadAdvanceDebugSystem;
-  Internal_DebugState.MutexWait                      = MutexWait;
-  Internal_DebugState.MutexAquired                   = MutexAquired;
-  Internal_DebugState.MutexReleased                  = MutexReleased;
-  Internal_DebugState.GetProfileScope                = GetProfileScope;
-  Internal_DebugState.Debug_Allocate                 = DEBUG_Allocate;
-  Internal_DebugState.RegisterThread                 = RegisterThread;
-  Internal_DebugState.ClearMetaRecordsFor            = ClearMetaRecordsFor;
+  Internal_DebugState.FrameEnd                        = DebugFrameEnd;
+  Internal_DebugState.FrameBegin                      = DebugFrameBegin;
+  Internal_DebugState.RegisterArena                   = RegisterArena;
+  Internal_DebugState.WorkerThreadAdvanceDebugSystem  = WorkerThreadAdvanceDebugSystem;
+  Internal_DebugState.MainThreadAdvanceDebugSystem    = MainThreadAdvanceDebugSystem;
+  Internal_DebugState.MutexWait                       = MutexWait;
+  Internal_DebugState.MutexAquired                    = MutexAquired;
+  Internal_DebugState.MutexReleased                   = MutexReleased;
+  Internal_DebugState.GetProfileScope                 = GetProfileScope;
+  Internal_DebugState.Debug_Allocate                  = DEBUG_Allocate;
+  Internal_DebugState.RegisterThread                  = RegisterThread;
+  Internal_DebugState.ClearMetaRecordsFor             = ClearMetaRecordsFor;
+  Internal_DebugState.TrackDrawCall                   = TrackDrawCall;
 
   Internal_DebugState.Initialized = True;
 
