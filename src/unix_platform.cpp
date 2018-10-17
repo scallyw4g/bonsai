@@ -1,19 +1,4 @@
-#include <stdio.h>
-
-// network layer
-#include <sys/socket.h> //socket
-#include <arpa/inet.h>  //inet_addr
-
-// mmap
-#include <sys/mman.h>
-#include <sys/time.h>
-#include <sys/resource.h> // get/set rlimits
-
 #include <platform.h>
-
-#include <GL/glx.h>
-#include <X11/keysymdef.h>
-
 
 #if 0
 inline void
@@ -580,8 +565,6 @@ IsFilesystemRoot(char *Filepath)
   b32 Result = ( Filepath[0] == '/' && Filepath[1] == 0 );
   return Result;
 }
-
-#include <time.h>
 
 inline r64
 GetHighPrecisionClock()

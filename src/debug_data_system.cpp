@@ -354,27 +354,28 @@ MainThreadAdvanceDebugSystem()
   LastMs = CurrentMS;
 
   debug_state *SharedState = GetDebugState();
-  if (!SharedState->DebugDoScopeProfiling) return Dt;
+  if (SharedState->DebugDoScopeProfiling)
+  {
+    u64 CurrentCycles = GetCycleCount();
 
-  u64 CurrentCycles = GetCycleCount();
+    debug_thread_state *MainThreadState = GetThreadDebugState(ThreadLocal_ThreadIndex);
+    u32 ThisFrameWriteIndex = MainThreadState->CurrentFrame % DEBUG_FRAMES_TRACKED;
+    u32 NextFrameWriteIndex = GetNextDebugFrameIndex(ThisFrameWriteIndex);
 
-  debug_thread_state *MainThreadState = GetThreadDebugState(ThreadLocal_ThreadIndex);
-  u32 ThisFrameWriteIndex = MainThreadState->CurrentFrame % DEBUG_FRAMES_TRACKED;
-  u32 NextFrameWriteIndex = GetNextDebugFrameIndex(ThisFrameWriteIndex);
+    AtomicIncrement(&MainThreadState->CurrentFrame);
+    AdvanceThreadState(MainThreadState, MainThreadState->CurrentFrame);
 
-  AtomicIncrement(&MainThreadState->CurrentFrame);
-  AdvanceThreadState(MainThreadState, MainThreadState->CurrentFrame);
+    SharedState->ReadScopeIndex = GetNextDebugFrameIndex(SharedState->ReadScopeIndex);
 
-  SharedState->ReadScopeIndex = GetNextDebugFrameIndex(SharedState->ReadScopeIndex);
+    /* Record frame cycle counts */
 
-  /* Record frame cycle counts */
+    frame_stats *ThisFrame = SharedState->Frames + ThisFrameWriteIndex;
+    ThisFrame->FrameMs = Dt * 1000.0;
+    ThisFrame->TotalCycles = CurrentCycles - ThisFrame->StartingCycle;
 
-  frame_stats *ThisFrame = SharedState->Frames + ThisFrameWriteIndex;
-  ThisFrame->FrameMs = Dt * 1000.0;
-  ThisFrame->TotalCycles = CurrentCycles - ThisFrame->StartingCycle;
-
-  frame_stats *NextFrame = SharedState->Frames + NextFrameWriteIndex;
-  NextFrame->StartingCycle = CurrentCycles;
+    frame_stats *NextFrame = SharedState->Frames + NextFrameWriteIndex;
+    NextFrame->StartingCycle = CurrentCycles;
+  }
 
   return Dt;
 }

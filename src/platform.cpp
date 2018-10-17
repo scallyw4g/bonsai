@@ -1,45 +1,23 @@
 #define BONSAI_NO_PUSH_METADATA
-
-#include <iostream>
+#define DEFAULT_GAME_LIB "./bin/AnimationTestLoadable.so"
 
 #include <bonsai_types.h>
-
-#include <constants.hpp>
 
 #if BONSAI_WIN32
 #include <win32_platform.cpp>
 #else
-
 #define PLATFORM_THREADING_IMPLEMENTATIONS 1
 #define PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS 1
 #define PLATFORM_GL_IMPLEMENTATIONS 1
-
 #include <unix_platform.cpp>
 #endif
-
-#include <platform.h>
-
-global_variable memory_arena *TranArena = PlatformAllocateArena();
-
-#include <sys/types.h>
-#include <sys/stat.h>
-
-/* #include <texture.cpp> */
-/* #include <stream.cpp> */
-/* #include <game_constants.h> */
-/* #include <render_position.cpp> */
-/* #include <shader.cpp> */
-/* #include <render_init.cpp> */
-
-
-
 
 global_variable s64 LastGameLibTime;
 global_variable game_thread_callback_proc GameThreadCallback;
 
 
 
-
+#include <sys/stat.h>
 b32
 GameLibIsNew(const char *LibPath)
 {
@@ -419,15 +397,6 @@ BindHotkeysToInput(hotkeys *Hotkeys, input *Input)
   return;
 }
 
-void
-FrameEnd(game_state *GameState)
-{
-  PlatformUnprotectArena(TranArena);
-  RewindArena(TranArena);
-
-  return;
-}
-
 server_state*
 ServerInit(memory_arena* Memory)
 {
@@ -474,8 +443,6 @@ main()
 
   AssertNoGlErrors;
 
-
-  DEBUG_REGISTER_ARENA(TranArena);
 
   memory_arena *PlatMemory     = PlatformAllocateArena();
   memory_arena *GameMemory     = PlatformAllocateArena();
@@ -555,16 +522,13 @@ main()
 
     END_BLOCK("Frame Preamble");
 
-    TIMED_BLOCK("Network Connect");
+    TIMED_BLOCK("Network Ops");
       if (IsDisconnected(&Plat.Network)) { ConnectToServer(&Plat.Network); }
-    END_BLOCK("Network Connect");
+    END_BLOCK("Network Ops");
 
     GameUpdateAndRender(&Plat, GameState, &Hotkeys);
 
-    TIMED_BLOCK("Frame End");
-      DEBUG_FRAME_END(&Plat, ServerState);
-      FrameEnd(GameState);
-    END_BLOCK("Frame End");
+    DEBUG_FRAME_END(&Plat, ServerState);
 
     BonsaiSwapBuffers(&Os);
     RealDt = MAIN_THREAD_ADVANCE_DEBUG_SYSTEM();

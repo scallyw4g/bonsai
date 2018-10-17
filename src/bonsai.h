@@ -1,7 +1,5 @@
-#include <stdio.h>
 #include <constants.hpp>
 #include <perlin.h>
-#include <platform.h>
 
 enum frame_event_type
 {

@@ -1,10 +1,4 @@
-#include <cstring>
-#include <csignal>
-#include <sstream>
-#include <stdio.h>
-
 #include <colors.h>
-
 #include <render_init.cpp>
 
 

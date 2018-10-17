@@ -9,27 +9,27 @@
 // dlopen
 #include <dlfcn.h>
 
-// Xlib
 #include <X11/X.h>
 #include <X11/Xlib.h>
+#include <X11/keysymdef.h>
+
 #include <GL/gl.h>
 #include <GL/glext.h>
 #include <GL/glx.h>
 
 #include <semaphore.h>
 
-#include<arpa/inet.h> //inet_addr
-
-// Valgrind
-// #include "/usr/include/valgrind/callgrind.h"
-
 // Backtrace
 #include <errno.h>
 #include <execinfo.h>
 
+#include <arpa/inet.h>  // inet_addr
+#include <sys/socket.h>
+
+#include <sys/mman.h>   // mmap
 
 
-#define DEFAULT_GAME_LIB "./bin/AnimationTestLoadable.so"
+
 
 #define THREAD_MAIN_RETURN void*
 

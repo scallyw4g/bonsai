@@ -1,8 +1,6 @@
 #ifndef BONSAI_PLAT_CONSTANTS_H
 #define BONSAI_PLAT_CONSTANTS_H
 
-#include <stdio.h>
-
 /*
  *  Common
  */

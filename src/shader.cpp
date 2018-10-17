@@ -1,24 +1,5 @@
-#include <stdio.h>
-#include <string>
-#include <vector>
-#include <iostream>
-#include <fstream>
-#include <algorithm>
-#include <string.h>
-
-
-
-
-
-
-
-
-
-
-
 #define INVALID_SHADER_UNIFORM (-1)
 #define INVALID_SHADER (u32)(-1)
-
 
 u32
 CompileShader(ansi_stream Header, ansi_stream Code, u32 Type)

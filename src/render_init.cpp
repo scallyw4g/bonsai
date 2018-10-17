@@ -1,26 +1,4 @@
-#include <cstring>
-#include <csignal>
-
-#include <sstream>
-
-
-#include <stdio.h>
-
 #include <colors.h>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 void
 InitSsaoKernel(v3 *Kernel, s32 Count, random_series *Entropy)

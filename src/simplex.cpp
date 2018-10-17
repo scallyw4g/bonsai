@@ -14,7 +14,6 @@ but attribution is appreciated.
 */
 
 #include "simplex.hpp"
-#include <cmath>
 
 // Private static member definitions
 const double Simplex::F2 = 0.5 * (sqrt( 3.0 ) - 1.0);

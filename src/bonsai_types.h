@@ -1,6 +1,12 @@
 void BreakHere() { return; }
 
+// TODO(Jesse): Get rid of these!!
 #include <cstdarg>
+#include <stdio.h>
+#include <iostream>
+#include <cmath>
+#include <string.h>
+//
 
 #include <assert_types.h>
 #include <basic_types.h>
@@ -27,8 +33,6 @@ void BreakHere() { return; }
 #include <render_types.h>
 #include <graphics_types.h>
 #include <platform_types.h>
-
-#include <string.h> // TODO(Jesse): Get rid of this shit!!
 
 #include <mutex.h>
 

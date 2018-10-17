@@ -1,5 +1,3 @@
-#include <sys/mman.h>
-
 inline umm
 Kilobytes(umm Bytes)
 {

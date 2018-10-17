@@ -246,8 +246,6 @@ Read(network_connection *Connection, T *Message)
   return Result;
 }
 
-#include <sys/ioctl.h>
-
 template <typename T> socket_op_result
 FlushIncomingMessages(network_connection *Connection, T *Message)
 {

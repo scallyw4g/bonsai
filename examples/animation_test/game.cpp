@@ -1,6 +1,5 @@
-#define BONSAI_NO_PUSH_METADATA
-
 #include <bonsai_types.h>
+#include <platform.h>
 #include <game_types.h>
 #include <game_constants.h>
 
@@ -8,8 +7,6 @@ global_variable memory_arena *TranArena = PlatformAllocateArena();
 #include <bonsai.cpp>
 #include <physics.cpp>
 #include <entity.cpp>
-
-#include <unix_platform.cpp>
 
 #include <loaders/obj.cpp>
 #include <loaders/collada.cpp>

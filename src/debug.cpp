@@ -2,7 +2,6 @@
 
 #define BONSAI_CONTAINS_DEBUG_ALLOCATE_IMPL
 
-#include <stdio.h>
 #include <bonsai_types.h>
 
 #include <unix_platform.cpp>

@@ -1,9 +1,3 @@
-#if 1
-// Apparently we don't need these?
-#include <cmath>
-#include <math.h>
-#include <time.h>
-#endif
 
 #if 0
 // TODO(Jesse): Write actual/working fModf!

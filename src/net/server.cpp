@@ -1,8 +1,3 @@
-#include<stdio.h>
-#include<sys/socket.h>
-#include<arpa/inet.h> //inet_addr
-#include<unistd.h>    //write
-
 #include <bonsai_types.h>
 #include <unix_platform.cpp>
 
