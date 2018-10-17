@@ -207,7 +207,7 @@ BufferQuadDirect(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z, v2 ScreenD
   v3 vertex_down_right = V3( MinP.x+Dim.x , MinP.y+Dim.y , Z);
   v3 vertex_down_left  = V3( MinP.x       , MinP.y+Dim.y , Z);
 
-  v3 ToClipSpace = (1.0f / V3(ScreenDim.x, ScreenDim.y, 1.0f));
+  v3 ToClipSpace = (2.0f / V3(ScreenDim.x, ScreenDim.y, 1.0f));
 
   // Native OpenGL screen coordinates are {0,0} at the bottom-left corner. This
   // maps the origin to the top-left of the screen.
@@ -217,12 +217,12 @@ BufferQuadDirect(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z, v2 ScreenD
   // cube when stacking UI elements such as text, so invert that too.
   v3 InvertYZ = V3(1.0f, -1.0f, -1.0f);
 
-  Dest[StartingIndex++] = InvertYZ * ((vertex_up_left    * ToClipSpace) * 2.0f - 1);
-  Dest[StartingIndex++] = InvertYZ * ((vertex_down_left  * ToClipSpace) * 2.0f - 1);
-  Dest[StartingIndex++] = InvertYZ * ((vertex_up_right   * ToClipSpace) * 2.0f - 1);
-  Dest[StartingIndex++] = InvertYZ * ((vertex_down_right * ToClipSpace) * 2.0f - 1);
-  Dest[StartingIndex++] = InvertYZ * ((vertex_up_right   * ToClipSpace) * 2.0f - 1);
-  Dest[StartingIndex++] = InvertYZ * ((vertex_down_left  * ToClipSpace) * 2.0f - 1);
+  Dest[StartingIndex++] = InvertYZ * (vertex_up_left    * ToClipSpace - 1.0f);
+  Dest[StartingIndex++] = InvertYZ * (vertex_down_left  * ToClipSpace - 1.0f);
+  Dest[StartingIndex++] = InvertYZ * (vertex_up_right   * ToClipSpace - 1.0f);
+  Dest[StartingIndex++] = InvertYZ * (vertex_down_right * ToClipSpace - 1.0f);
+  Dest[StartingIndex++] = InvertYZ * (vertex_up_right   * ToClipSpace - 1.0f);
+  Dest[StartingIndex++] = InvertYZ * (vertex_down_left  * ToClipSpace - 1.0f);
 
   v2 Max = vertex_down_right.xy;
   return Max;
