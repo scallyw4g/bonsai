@@ -261,6 +261,8 @@ InitializeShadowBuffer(shadow_render_group *SG, memory_arena *GraphicsMemory, v2
 {
   // The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
   glGenFramebuffers(1, &SG->FramebufferName);
+  Assert(SG->FramebufferName);
+
   glBindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
 
   SG->ShadowMap = MakeDepthTexture(ShadowMapResolution, GraphicsMemory);
@@ -287,16 +289,19 @@ InitializeShadowBuffer(shadow_render_group *SG, memory_arena *GraphicsMemory, v2
 }
 
 void
-InitCamera(camera* Camera, float FocalLength)
+StandardCamera(camera* Camera, float FarClip)
 {
-  Camera->Frust.farClip = FocalLength;
-  Camera->Frust.nearClip = 0.1f;
+  Camera->Frust.farClip = FarClip;
+  Camera->Frust.nearClip = 1.0f;
   Camera->Frust.width = 30.0f;
   Camera->Frust.FOV = 45.0f;
   Camera->Up = WORLD_Z;
   Camera->Right = WORLD_X;
   Camera->Front = V3(0,0,0);
   Camera->Pitch = PIf;
+
+  Camera->DistanceFromTarget = 600.0f;
+
   return;
 }
 
@@ -324,14 +329,15 @@ GraphicsInit(memory_arena *GraphicsMemory)
   Result->Lights = LightingInit(GraphicsMemory);
 
   Result->Camera = Allocate(camera, GraphicsMemory, 1);
-  InitCamera(Result->Camera, 1000.0f);
+  StandardCamera(Result->Camera, 1000.0f);
 
-  /* shadow_render_group *SG = Allocate(shadow_render_group, GraphicsMemory, 1); */
-  /* if (!InitializeShadowBuffer(SG, GraphicsMemory, v2i())) */
-  /* { */
-  /*   Error("Initializing Shadow Buffer"); return False; */
-  /* } */
-
+#if 0
+  shadow_render_group *SG = Allocate(shadow_render_group, GraphicsMemory, 1);
+  if (!InitializeShadowBuffer(SG, GraphicsMemory, v2i()))
+  {
+    Error("Initializing Shadow Buffer"); return False;
+  }
+#endif
 
   g_buffer_render_group *gBuffer = CreateGbuffer(GraphicsMemory);
   if (!InitGbufferRenderGroup(gBuffer, GraphicsMemory))
