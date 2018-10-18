@@ -100,7 +100,7 @@ struct debug_thread_state
 
   mutex_op_array *MutexOps;
 
-  u32 CurrentFrame;
+  u32 WriteIndex;
 
   u8 Pad[20];
 };
@@ -165,29 +165,30 @@ struct frame_stats
   r64 FrameMs;
 };
 
-debug_global __thread u64 ThreadLocal_ThreadIndex = 0;
-
-inline debug_thread_state * GetThreadDebugState(u32 ThreadIndex);
-
 struct platform;
 struct server_state;
 struct hotkeys;
 typedef void (*debug_frame_end_proc)(platform*, server_state*);
 typedef void (*debug_frame_begin_proc)(hotkeys*, r32);
 typedef void (*debug_register_arena_proc)(const char*, memory_arena*);
-typedef void (*debug_worker_thread_advance_data_system)();
-typedef r32 (*debug_main_thread_advance_data_system)();
+typedef void (*debug_worker_thread_advance_data_system)(void);
+typedef r32 (*debug_main_thread_advance_data_system)(void);
 typedef void (*debug_mutex_waiting_proc)(mutex*);
 typedef void (*debug_mutex_aquired_proc)(mutex*);
 typedef void (*debug_mutex_released_proc)(mutex*);
-typedef debug_profile_scope* (*debug_get_profile_scope_proc)(debug_thread_state*);
+typedef debug_profile_scope* (*debug_get_profile_scope_proc)();
 typedef void* (*debug_allocate_proc)(memory_arena*, umm, umm, const char*, s32 , const char*, umm, b32);
 typedef void (*debug_register_thread_proc)(u32);
 typedef void (*debug_clear_meta_records_proc)(memory_arena*);
 typedef void (*debug_init_debug_system_proc)(b32);
 typedef void (*debug_track_draw_call_proc)(const char*, u32);
+typedef debug_thread_state* (*debug_get_thread_local_state)(void);
 
 
+
+struct debug_state;
+typedef debug_state* (*get_debug_state_proc)();
+get_debug_state_proc GetDebugState;
 
 
 #define REGISTERED_MEMORY_ARENA_COUNT 32
@@ -230,8 +231,8 @@ struct debug_state
 
   debug_scope_tree* GetWriteScopeTree()
   {
-    debug_thread_state *ThreadState = GetThreadDebugState(ThreadLocal_ThreadIndex);
-    debug_scope_tree *RootScope = ThreadState->ScopeTrees + (ThreadState->CurrentFrame % DEBUG_FRAMES_TRACKED);
+    debug_thread_state* ThreadState = GetDebugState()->GetThreadLocalState();
+    debug_scope_tree* RootScope = ThreadState->ScopeTrees + (ThreadState->WriteIndex % DEBUG_FRAMES_TRACKED);
     return RootScope;
   }
 
@@ -249,10 +250,8 @@ struct debug_state
   debug_clear_meta_records_proc             ClearMetaRecordsFor;
   debug_init_debug_system_proc              InitDebugSystem;
   debug_track_draw_call_proc                TrackDrawCall;
+  debug_get_thread_local_state              GetThreadLocalState;
 };
-
-typedef debug_state* (*get_debug_state_proc)();
-get_debug_state_proc GetDebugState;
 
 
 struct debug_draw_call
@@ -263,14 +262,6 @@ struct debug_draw_call
 };
 
 typedef b32 (*meta_comparator)(push_metadata*, push_metadata*);
-
-inline debug_thread_state *
-GetThreadDebugState(u32 ThreadIndex)
-{
-  debug_state *State = GetDebugState();
-  debug_thread_state *Result = State->ThreadStates + ThreadIndex;
-  return Result;
-}
 
 enum debug_recording_mode
 {
@@ -310,7 +301,7 @@ struct debug_timed_function
 
     ++DebugState->NumScopes;
 
-    this->Scope = DebugState->GetProfileScope(GetThreadDebugState(ThreadLocal_ThreadIndex));
+    this->Scope = DebugState->GetProfileScope();
     this->Tree = DebugState->GetWriteScopeTree();
 
     if (this->Scope)

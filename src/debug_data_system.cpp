@@ -1,7 +1,36 @@
 #if BONSAI_INTERNAL
 
+debug_global __thread u64 ThreadLocal_ThreadIndex = 0;
 debug_global b32 DebugGlobal_RedrawEveryPush = 0;
 
+
+
+/*****************************                   *****************************/
+/*****************************  Thread Metadata  *****************************/
+/*****************************                   *****************************/
+
+
+void
+RegisterThread(u32 ThreadIndex)
+{
+  ThreadLocal_ThreadIndex = ThreadIndex;
+  return;
+}
+
+inline debug_thread_state*
+GetThreadLocalStateFor(u32 ThreadIndex)
+{
+  debug_state *State = GetDebugState();
+  debug_thread_state *Result = State->ThreadStates + ThreadIndex;
+  return Result;
+}
+
+inline debug_thread_state*
+GetThreadLocalState()
+{
+  debug_thread_state* Result = GetThreadLocalStateFor(ThreadLocal_ThreadIndex);
+  return Result;
+}
 
 
 /****************************                       **************************/
@@ -81,7 +110,7 @@ ClearMetaRecordsFor(memory_arena *Arena)
         MetaIndex < META_TABLE_SIZE;
         ++MetaIndex)
     {
-      push_metadata *Meta = GetThreadDebugState(ThreadIndex)->MetaTable + MetaIndex;
+      push_metadata *Meta = GetThreadLocalStateFor(ThreadIndex)->MetaTable + MetaIndex;
       if (Meta->ArenaHash == HashArena(Arena))
       {
         Clear(Meta);
@@ -91,20 +120,6 @@ ClearMetaRecordsFor(memory_arena *Arena)
 
   return;
 }
-
-
-/*****************************                   *****************************/
-/*****************************  Thread Metadata  *****************************/
-/*****************************                   *****************************/
-
-
-void
-RegisterThread(u32 ThreadIndex)
-{
-  ThreadLocal_ThreadIndex = ThreadIndex;
-  return;
-}
-
 
 
 /*****************************                  ******************************/
@@ -198,7 +213,7 @@ DEBUG_Allocate(memory_arena* Arena, umm StructSize, umm StructCount, const char*
 
 #ifndef BONSAI_NO_PUSH_METADATA
   push_metadata ArenaMetadata = {Name, HashArena(Arena), HashArenaHead(Arena), StructSize, StructCount, 1};
-  WritePushMetadata(&ArenaMetadata, GetThreadDebugState(ThreadLocal_ThreadIndex)->MetaTable);
+  WritePushMetadata(&ArenaMetadata, GetThreadLocalStateFor(ThreadLocal_ThreadIndex)->MetaTable);
 #endif
 
   if (!Result)
@@ -318,7 +333,7 @@ AdvanceThreadState(debug_thread_state *ThreadState, u32 NextFrameId)
   InitScopeTree(NextWriteTree);
 
   ThreadState->MutexOps[NextWriteIndex].NextRecord = 0;
-  ThreadState->CurrentFrame = NextFrameId;
+  ThreadState->WriteIndex = NextFrameId;
 
   NextWriteTree->FrameRecorded = NextFrameId;
 
@@ -340,12 +355,12 @@ WorkerThreadAdvanceDebugSystem()
   }
 #endif
 
-  debug_thread_state *ThreadState = GetThreadDebugState(ThreadLocal_ThreadIndex);
-  debug_thread_state *MainThreadState = GetThreadDebugState(0);
+  debug_thread_state *ThreadState = GetThreadLocalStateFor(ThreadLocal_ThreadIndex);
+  debug_thread_state *MainThreadState = GetThreadLocalStateFor(0);
   Assert(ThreadState != MainThreadState);
 
-  u32 NextFrameId = MainThreadState->CurrentFrame;  // TODO(Jesse): Should maybe be an atomic read?
-  if (NextFrameId != ThreadState->CurrentFrame)
+  u32 NextFrameId = MainThreadState->WriteIndex;  // TODO(Jesse): Should maybe be an atomic read?
+  if (NextFrameId != ThreadState->WriteIndex)
   {
     AdvanceThreadState(ThreadState, NextFrameId);
   }
@@ -369,12 +384,12 @@ MainThreadAdvanceDebugSystem()
   {
     u64 CurrentCycles = GetCycleCount();
 
-    debug_thread_state *MainThreadState = GetThreadDebugState(ThreadLocal_ThreadIndex);
-    u32 ThisFrameWriteIndex = MainThreadState->CurrentFrame % DEBUG_FRAMES_TRACKED;
+    debug_thread_state *MainThreadState = GetThreadLocalStateFor(ThreadLocal_ThreadIndex);
+    u32 ThisFrameWriteIndex = MainThreadState->WriteIndex % DEBUG_FRAMES_TRACKED;
     u32 NextFrameWriteIndex = GetNextDebugFrameIndex(ThisFrameWriteIndex);
 
-    AtomicIncrement(&MainThreadState->CurrentFrame);
-    AdvanceThreadState(MainThreadState, MainThreadState->CurrentFrame);
+    AtomicIncrement(&MainThreadState->WriteIndex);
+    AdvanceThreadState(MainThreadState, MainThreadState->WriteIndex);
 
     SharedState->ReadScopeIndex = GetNextDebugFrameIndex(SharedState->ReadScopeIndex);
 
@@ -553,9 +568,10 @@ GetAbsoluteAt(layout *Layout)
 
 
 debug_profile_scope *
-GetProfileScope(debug_thread_state *State)
+GetProfileScope()
 {
   debug_profile_scope *Result = 0;
+  debug_thread_state *State = GetThreadLocalState();
 
   if (State->FirstFreeScope)
   {
@@ -586,18 +602,11 @@ InitScopeTrees(memory_arena *DebugMemory, u32 TotalThreadCount)
         TreeIndex < DEBUG_FRAMES_TRACKED;
         ++TreeIndex)
     {
-      debug_thread_state *ThreadState = GetThreadDebugState(ThreadIndex);
-
-      ThreadState->ScopeTrees[TreeIndex].Root = GetProfileScope(ThreadState);
+      debug_thread_state *ThreadState = GetThreadLocalStateFor(ThreadIndex);
       InitScopeTree(ThreadState->ScopeTrees + TreeIndex);
-      ThreadState->CurrentFrame = GetDebugState()->ReadScopeIndex + 1;
+      ThreadState->WriteIndex = GetDebugState()->ReadScopeIndex + 1;
     }
   }
-
-  /* debug_state *SharedState = GetDebugState(); */
-  /* debug_thread_state *MainThreadState = GetThreadDebugState(0); */
-  /* frame_stats *FirstFrame = SharedState->Frames + MainThreadState->WriteIndex; */
-  /* FirstFrame->StartingCycle = GetCycleCount(); */
 
   return;
 }
@@ -662,8 +671,8 @@ GetMutexOpRecord(mutex *Mutex, mutex_op Op, debug_state *State)
   if (!State->DebugDoScopeProfiling) return 0;
 
   mutex_op_record *Record = 0;
-  debug_thread_state *ThreadState = GetThreadDebugState(ThreadLocal_ThreadIndex);
-  u32 WriteIndex = ThreadState->CurrentFrame % DEBUG_FRAMES_TRACKED;
+  debug_thread_state *ThreadState = GetThreadLocalStateFor(ThreadLocal_ThreadIndex);
+  u32 WriteIndex = ThreadState->WriteIndex % DEBUG_FRAMES_TRACKED;
   mutex_op_array *MutexOps = &ThreadState->MutexOps[WriteIndex];
 
   if (MutexOps->NextRecord < TOTAL_MUTEX_OP_RECORDS)
@@ -741,7 +750,7 @@ GetTotalMutexOpsForReadFrame()
       ThreadIndex < GetTotalThreadCount();
       ++ThreadIndex)
   {
-    debug_thread_state *ThreadState = GetThreadDebugState(ThreadIndex);
+    debug_thread_state *ThreadState = GetThreadLocalStateFor(ThreadIndex);
     OpCount += ThreadState->MutexOps[ReadIndex].NextRecord;
   }
 
@@ -782,7 +791,7 @@ InitDebugMemoryAllocationSystem(debug_state *State)
       ThreadIndex < TotalThreadCount;
       ++ThreadIndex)
   {
-    debug_thread_state *ThreadState = GetThreadDebugState(ThreadIndex);
+    debug_thread_state *ThreadState = GetThreadLocalStateFor(ThreadIndex);
     Assert((umm)ThreadState % 64 == 0);
 
     memory_arena *DebugThreadArena = PlatformAllocateArena();

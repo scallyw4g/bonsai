@@ -4,6 +4,7 @@
 
 #include <bonsai_types.h>
 #include <unix_platform.cpp>
+
 #include <debug_data_system.cpp>
 
 
@@ -192,6 +193,7 @@ InitDebugSystem(b32 DoInitDebugRenderSystem = True)
   Internal_DebugState.RegisterThread                  = RegisterThread;
   Internal_DebugState.ClearMetaRecordsFor             = ClearMetaRecordsFor;
   Internal_DebugState.TrackDrawCall                   = TrackDrawCall;
+  Internal_DebugState.GetThreadLocalState             = GetThreadLocalState;
 
   Internal_DebugState.Initialized = True;
 

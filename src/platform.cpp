@@ -46,9 +46,6 @@ ThreadMain(void *Input)
   thread_startup_params *ThreadParams = (thread_startup_params *)Input;
   DEBUG_REGISTER_THREAD(ThreadParams->Self.ThreadIndex);
 
-  // TODO(Jesse): Is this unnecessary now?
-  ThreadLocal_ThreadIndex = ThreadParams->Self.ThreadIndex;
-
   work_queue *Queue = ThreadParams->Queue;
 
   memory_arena *ThreadArena = PlatformAllocateArena();

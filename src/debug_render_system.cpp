@@ -905,7 +905,7 @@ DebugDrawCycleThreadGraph(ui_render_group *Group, debug_state *SharedState, layo
   frame_stats *FrameStats             = SharedState->Frames + SharedState->ReadScopeIndex;
   cycle_range FrameCycles             = {FrameStats->StartingCycle, FrameStats->TotalCycles};
 
-  debug_thread_state *MainThreadState = GetThreadDebugState(0);
+  debug_thread_state *MainThreadState = GetThreadLocalStateFor(0);
   debug_scope_tree *MainThreadReadTree    = MainThreadState->ScopeTrees + SharedState->ReadScopeIndex;
 
   for ( u32 ThreadIndex = 0;
@@ -918,7 +918,7 @@ DebugDrawCycleThreadGraph(ui_render_group *Group, debug_state *SharedState, layo
     char *ThreadName = FormatString(TranArena, "Thread %u", ThreadIndex);
     BufferLine(ThreadName, WHITE, Layout, &Group->Font, Group);
 
-    debug_thread_state *ThreadState = GetThreadDebugState(ThreadIndex);
+    debug_thread_state *ThreadState = GetThreadLocalStateFor(ThreadIndex);
     debug_scope_tree *ReadTree = ThreadState->ScopeTrees + SharedState->ReadScopeIndex;
     if (MainThreadReadTree->FrameRecorded == ReadTree->FrameRecorded)
     {
@@ -972,7 +972,7 @@ DebugDrawCycleThreadGraph(ui_render_group *Group, debug_state *SharedState, layo
         ThreadIndex < TotalThreadCount;
         ++ThreadIndex)
   {
-    debug_thread_state *ThreadState = GetThreadDebugState(ThreadIndex);
+    debug_thread_state *ThreadState = GetThreadLocalStateFor(ThreadIndex);
     mutex_op_array *MutexOps = ThreadState->MutexOps + SharedState->ReadScopeIndex;
     mutex_op_record *FinalRecord = MutexOps->Records + MutexOps->NextRecord;
 
@@ -1034,7 +1034,7 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Layo
 
       v3 Color = V3(0.5f, 0.5f, 0.5f);
 
-      debug_scope_tree *Tree = GetThreadDebugState(0)->ScopeTrees + FrameIndex;
+      debug_scope_tree *Tree = GetThreadLocalStateFor(0)->ScopeTrees + FrameIndex;
       if ( Tree == DebugState->GetWriteScopeTree() )
       {
         Color = V3(0.8f, 0.0f, 0.0f);
@@ -1052,8 +1052,8 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Layo
 
       if (MouseP > MinP && MouseP < DrawDim)
       {
-        debug_thread_state *MainThreadState = GetThreadDebugState(0);
-        if (FrameIndex != MainThreadState->CurrentFrame % DEBUG_FRAMES_TRACKED)
+        debug_thread_state *MainThreadState = GetThreadLocalStateFor(0);
+        if (FrameIndex != MainThreadState->WriteIndex % DEBUG_FRAMES_TRACKED)
         {
           DebugState->ReadScopeIndex = FrameIndex;
           Color = V3(0.8f, 0.8f, 0.0f);
@@ -1109,11 +1109,11 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Layo
         ThreadIndex < TotalThreadCount;
         ++ThreadIndex)
     {
-      debug_thread_state *ThreadState = GetThreadDebugState(ThreadIndex);
+      debug_thread_state *ThreadState = GetThreadLocalStateFor(ThreadIndex);
       debug_scope_tree *ReadTree = ThreadState->ScopeTrees + DebugState->ReadScopeIndex;
       frame_stats *Frame = DebugState->Frames + DebugState->ReadScopeIndex;
 
-      debug_thread_state *MainThreadState = GetThreadDebugState(0);
+      debug_thread_state *MainThreadState = GetThreadLocalStateFor(0);
       debug_scope_tree *MainThreadReadTree    = MainThreadState->ScopeTrees + DebugState->ReadScopeIndex;
 
       if (MainThreadReadTree->FrameRecorded == ReadTree->FrameRecorded)
