@@ -55,6 +55,13 @@ ThreadMain(void *Input)
   {
     WORKER_THREAD_ADVANCE_DEBUG_SYSTEM();
 
+    if (MainThreadBlocksWorkerThreads)
+    {
+      AtomicIncrement(&WorkerThreadsWaiting);
+      while(MainThreadBlocksWorkerThreads);
+      AtomicDecrement(&WorkerThreadsWaiting);
+    }
+
     ThreadSleep( &Queue->Semaphore );
 
     b32 Exchanged = False;

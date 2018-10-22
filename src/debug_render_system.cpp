@@ -1001,7 +1001,6 @@ BufferFirstCallToEach(ui_render_group *Group, debug_profile_scope *Scope, debug_
     if (Scope->Stats->IsFirst)
     {
       u32 MainColor = HoverAndClickExpand(Group, Layout, Scope, WHITE, TEAL);
-
       BufferScopeTreeEntry(Group, Scope, Layout, MainColor, Scope->Stats->CumulativeCycles, TotalFrameCycles, Scope->Stats->Calls, Depth);
 
       if (Scope->Expanded)

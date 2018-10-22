@@ -15,6 +15,9 @@ PrintSemValue( semaphore *Semaphore )
 }
 #endif
 
+global_variable volatile b32 MainThreadBlocksWorkerThreads;
+global_variable volatile s32 WorkerThreadsWaiting;
+
 void
 PlatformInitializeMutex(mutex *Mutex)
 {
@@ -217,9 +220,9 @@ ThreadSleep( semaphore *Semaphore )
 {
   TIMED_FUNCTION();
 
-  AtomicIncrement(&GetDebugState()->WorkerThreadsWaiting);
+  AtomicIncrement(&WorkerThreadsWaiting);
   sem_wait(Semaphore);
-  AtomicDecrement(&GetDebugState()->WorkerThreadsWaiting);
+  AtomicDecrement(&WorkerThreadsWaiting);
   return;
 }
 
@@ -379,10 +382,34 @@ GetProcFromLib(shared_lib Lib, const char *Name)
 }
 
 inline void
+ResumeWorkerThreads()
+{
+  TIMED_FUNCTION();
+  MainThreadBlocksWorkerThreads = False;
+  return;
+}
+
+inline void
+SuspendWorkerThreads()
+{
+  TIMED_FUNCTION();
+  MainThreadBlocksWorkerThreads = True;
+
+  u32 WorkerThreadCount = GetWorkerThreadCount();
+  while (WorkerThreadsWaiting < WorkerThreadCount);
+
+  return;
+}
+
+
+inline void
 Terminate(os *Os)
 {
   XDestroyWindow(Os->Display, Os->Window);
   XCloseDisplay(Os->Display);
+
+  SuspendWorkerThreads();
+
   return;
 }
 

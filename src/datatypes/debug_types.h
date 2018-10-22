@@ -220,9 +220,6 @@ struct debug_state
 
   registered_memory_arena RegisteredMemoryArenas[REGISTERED_MEMORY_ARENA_COUNT];
 
-  volatile b32 MainThreadBlocksWorkerThreads;
-  volatile s32 WorkerThreadsWaiting;
-
   debug_scope_tree* GetReadScopeTree(u32 ThreadIndex)
   {
     debug_scope_tree *RootScope = &this->ThreadStates[ThreadIndex].ScopeTrees[this->ReadScopeIndex];
@@ -364,8 +361,6 @@ void DebugTimedMutexReleased(mutex *Mut);
 
 #define WORKER_THREAD_ADVANCE_DEBUG_SYSTEM() GetDebugState()->WorkerThreadAdvanceDebugSystem()
 #define MAIN_THREAD_ADVANCE_DEBUG_SYSTEM() GetDebugState()->MainThreadAdvanceDebugSystem()
-#define SUSPEND_WORKER_THREADS()  DebugSuspendWorkerThreads()
-#define RESUME_WORKER_THREADS()  DebugResumeWorkerThreads()
 
 #define DEBUG_CLEAR_META_RECORDS_FOR(Arena) GetDebugState()->ClearMetaRecordsFor(Arena)
 #define DEBUG_TRACK_DRAW_CALL(CallingFunction, VertCount) GetDebugState()->TrackDrawCall(CallingFunction, VertCount)
@@ -386,7 +381,6 @@ void DebugTimedMutexReleased(mutex *Mut);
 
 #define WORKER_THREAD_WAIT_FOR_DEBUG_SYSTEM(...)
 #define MAIN_THREAD_ADVANCE_DEBUG_SYSTEM(...) RealDt
-#define SUSPEND_WORKER_THREADS(...)
 
 #define DEBUG_CLEAR_META_RECORDS_FOR(...)
 #define DEBUG_TRACK_DRAW_CALL(...)

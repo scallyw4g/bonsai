@@ -345,16 +345,6 @@ WorkerThreadAdvanceDebugSystem()
 {
   Assert(ThreadLocal_ThreadIndex != 0);
 
-#if 0
-  debug_state *SharedState = GetDebugState();
-  if (SharedState->MainThreadBlocksWorkerThreads)
-  {
-    AtomicIncrement(&SharedState->WorkerThreadsWaiting);
-    while(SharedState->MainThreadBlocksWorkerThreads);
-    AtomicDecrement(&SharedState->WorkerThreadsWaiting);
-  }
-#endif
-
   debug_thread_state *ThreadState = GetThreadLocalStateFor(ThreadLocal_ThreadIndex);
   debug_thread_state *MainThreadState = GetThreadLocalStateFor(0);
   Assert(ThreadState != MainThreadState);
@@ -404,29 +394,6 @@ MainThreadAdvanceDebugSystem()
   }
 
   return Dt;
-}
-
-inline void
-DebugResumeWorkerThreads()
-{
-  TIMED_FUNCTION();
-  debug_state *State = GetDebugState();
-  State->MainThreadBlocksWorkerThreads = False;
-  return;
-}
-
-inline void
-DebugSuspendWorkerThreads()
-{
-  TIMED_FUNCTION();
-  debug_state *State = GetDebugState();
-
-  State->MainThreadBlocksWorkerThreads = True;
-
-  u32 WorkerThreadCount = GetWorkerThreadCount();
-  while (State->WorkerThreadsWaiting < WorkerThreadCount);
-
-  return;
 }
 
 min_max_avg_dt
