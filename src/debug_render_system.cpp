@@ -706,35 +706,6 @@ HoverAndClickExpand(ui_render_group *Group, layout *Layout, T *Expandable, u8 Co
   return DrawColor;
 }
 
-void
-BufferFirstCallToEach(ui_render_group *Group, debug_profile_scope *Scope, debug_profile_scope *TreeRoot, memory_arena *Memory, layout *Layout, u64 TotalFrameCycles, u32 Depth)
-{
-  if (!Scope) return;
-
-  if (Scope->Name)
-  {
-    if (!Scope->Stats)
-    {
-      Scope->Stats = AllocateProtection(scope_stats, Memory, 1, False);
-      *Scope->Stats = GetStatsFor(Scope, TreeRoot);
-    }
-
-    if (Scope->Stats->IsFirst)
-    {
-      u32 MainColor = HoverAndClickExpand(Group, Layout, Scope, WHITE, TEAL);
-
-      BufferScopeTreeEntry(Group, Scope, Layout, MainColor, Scope->Stats->CumulativeCycles, TotalFrameCycles, Scope->Stats->Calls, Depth);
-
-      if (Scope->Expanded)
-        BufferFirstCallToEach(Group, Scope->Stats->MaxScope->Child, TreeRoot, Memory, Layout, TotalFrameCycles, Depth+1);
-    }
-  }
-
-  BufferFirstCallToEach(Group, Scope->Sibling, TreeRoot, Memory, Layout, TotalFrameCycles, Depth);
-
-  return;
-}
-
 inline void
 PadBottom(layout *Layout, r32 Pad)
 {
@@ -779,7 +750,7 @@ DoTooltip(ui_render_group *Group, const char *Text)
 /****************************                       **************************/
 
 
-void
+b32
 DrawCycleBar( cycle_range *Range, cycle_range *Frame, r32 TotalGraphWidth, const char *Tooltip, v3 Color,
               ui_render_group *Group, untextured_2d_geometry_buffer *Geo, layout *Layout)
 {
@@ -810,7 +781,7 @@ DrawCycleBar( cycle_range *Range, cycle_range *Frame, r32 TotalGraphWidth, const
 
   AdvanceClip(Layout, QuadMaxP);
 
-  return;
+  return Hovering;
 }
 
 void
@@ -856,8 +827,11 @@ DrawScopeBarsRecursive(ui_render_group *Group, untextured_2d_geometry_buffer *Ge
   Assert(Scope->Name);
 
   cycle_range Range = {Scope->StartingCycle, Scope->CycleCount};
+  v3 Color = RandomV3(Entropy);
 
-  DrawCycleBar( &Range, Frame, TotalGraphWidth, Scope->Name, RandomV3(Entropy), Group, Geo, Layout);
+  b32 Hovering = DrawCycleBar( &Range, Frame, TotalGraphWidth, Scope->Name, Color, Group, Geo, Layout);
+  if (Hovering && Group->Input->LMB.WasPressed)
+    Scope->Expanded = !Scope->Expanded;
 
   if (Scope->Expanded)
   {
@@ -1010,6 +984,35 @@ DebugDrawCycleThreadGraph(ui_render_group *Group, debug_state *SharedState, layo
 /******************************  Call Graph  *********************************/
 /******************************              *********************************/
 
+
+void
+BufferFirstCallToEach(ui_render_group *Group, debug_profile_scope *Scope, debug_profile_scope *TreeRoot, memory_arena *Memory, layout *Layout, u64 TotalFrameCycles, u32 Depth)
+{
+  if (!Scope) return;
+
+  if (Scope->Name)
+  {
+    if (!Scope->Stats)
+    {
+      Scope->Stats = AllocateProtection(scope_stats, Memory, 1, False);
+      *Scope->Stats = GetStatsFor(Scope, TreeRoot);
+    }
+
+    if (Scope->Stats->IsFirst)
+    {
+      u32 MainColor = HoverAndClickExpand(Group, Layout, Scope, WHITE, TEAL);
+
+      BufferScopeTreeEntry(Group, Scope, Layout, MainColor, Scope->Stats->CumulativeCycles, TotalFrameCycles, Scope->Stats->Calls, Depth);
+
+      if (Scope->Expanded)
+        BufferFirstCallToEach(Group, Scope->Stats->MaxScope->Child, TreeRoot, Memory, Layout, TotalFrameCycles, Depth+1);
+    }
+  }
+
+  BufferFirstCallToEach(Group, Scope->Sibling, TreeRoot, Memory, Layout, TotalFrameCycles, Depth);
+
+  return;
+}
 
 void
 DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Layout, r64 MaxMs)
