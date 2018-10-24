@@ -1023,27 +1023,6 @@ GetPlayer(entity **Players, client_state *OurClient)
   return Player;
 }
 
-void
-SimulatePlayers(game_state *GameState, entity* LocalPlayer, hotkeys *Hotkeys, r32 dt)
-{
-  for (u32 PlayerIndex = 0;
-      PlayerIndex < MAX_CLIENTS;
-      ++PlayerIndex)
-  {
-    entity *Entity = GameState->Players[PlayerIndex];
-
-    if (LocalPlayer == Entity)
-    {
-      SimulatePlayer(GameState, Entity, Hotkeys, dt );
-    }
-    else
-    {
-      SimulatePlayer(GameState, Entity, 0, dt );
-    }
-
-  }
-}
-
 inline void
 SimulateAndRenderParticleSystems(game_state *GameState, graphics *Graphics, r32 Dt)
 {

@@ -36,7 +36,7 @@ Interpolate(animation* Animation, keyframe* Keyframes, u32 KeyframeCount)
     if (Animation->t >= tStart  && Animation->t <= Keyframe->tEnd)
     {
       r32 tAt = Animation->t - tStart;
-      r32 t01 = tAt / (Keyframe->tEnd - tStart);
+      r32 t01 = SafeDivide0(tAt, (Keyframe->tEnd - tStart));
       P = Lerp(t01, PrevKeyframeValue, Keyframe->Value);
       break;
     }

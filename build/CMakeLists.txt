@@ -25,9 +25,6 @@ set( EXECUTABLE_OUTPUT_PATH ${BIN} )
 
 add_executable(Bonsai ${SRC}/platform.cpp)
 
-# HACK(Jesse): REMOVE THIS ASAP
-target_include_directories(Bonsai PRIVATE ${EXAMPLES}/animation_test)
-
 add_executable(ttf ${SRC}/font/ttf.cpp)
 
 add_executable(Server ${SRC}/net/server.cpp)

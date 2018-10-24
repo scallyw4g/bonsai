@@ -1,6 +1,3 @@
-#ifndef BONSAI_PLAT_CONSTANTS_H
-#define BONSAI_PLAT_CONSTANTS_H
-
 /*
  *  Common
  */
@@ -93,5 +90,3 @@
 
 
 #endif // _MSC_VER
-
-#endif // BONSAI_PLAT_CONTANTS_H

@@ -12,6 +12,27 @@ global_variable memory_arena *TranArena = PlatformAllocateArena();
 #include <loaders/collada.cpp>
 
 void
+SimulatePlayers(game_state *GameState, entity* LocalPlayer, hotkeys *Hotkeys, r32 dt)
+{
+  for (u32 PlayerIndex = 0;
+      PlayerIndex < MAX_CLIENTS;
+      ++PlayerIndex)
+  {
+    entity *Entity = GameState->Players[PlayerIndex];
+
+    if (LocalPlayer == Entity)
+    {
+      SimulatePlayer(GameState, Entity, Hotkeys, dt );
+    }
+    else
+    {
+      SimulatePlayer(GameState, Entity, 0, dt );
+    }
+
+  }
+}
+
+void
 DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys, entity *Player)
 {
   TIMED_FUNCTION();

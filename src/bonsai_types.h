@@ -1,12 +1,22 @@
 void BreakHere() { return; }
 
 // TODO(Jesse): Get rid of these!!
-#include <cstdarg>
 #include <stdio.h>
+#include <cstdarg>
 #include <iostream>
 #include <cmath>
 #include <string.h>
+
+#include <inttypes.h>
+#include <climits>
+#include <float.h>
 //
+
+
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 
 #include <assert_types.h>
 #include <basic_types.h>
@@ -49,3 +59,4 @@ void BreakHere() { return; }
 
 #include <mesh_types.h>
 #include <bonsai_string.cpp>
+

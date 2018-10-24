@@ -15,13 +15,10 @@ struct game_state
 
   perlin_noise Noise;
 
-  game_mode Mode;
   model   *Models;
-  noise_3d *Turb;
   event_queue EventQueue;
 
   entity *EntityTable[TOTAL_ENTITY_COUNT];
-
-  entity *Players[MAX_CLIENTS];
+  entity *Player;
 };
 

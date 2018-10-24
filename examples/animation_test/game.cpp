@@ -12,6 +12,27 @@ global_variable memory_arena *TranArena = PlatformAllocateArena();
 #include <loaders/collada.cpp>
 
 
+void
+SimulatePlayers(game_state *GameState, entity* LocalPlayer, hotkeys *Hotkeys, r32 dt)
+{
+  for (u32 PlayerIndex = 0;
+      PlayerIndex < MAX_CLIENTS;
+      ++PlayerIndex)
+  {
+    entity *Entity = GameState->Player;
+
+    if (LocalPlayer == Entity)
+    {
+      SimulatePlayer(GameState, Entity, Hotkeys, dt );
+    }
+    else
+    {
+      SimulatePlayer(GameState, Entity, 0, dt );
+    }
+
+  }
+}
+
 model *
 AllocateGameModels(game_state *GameState, memory_arena *Memory)
 {
@@ -58,7 +79,7 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   ao_render_group       *AoGroup  = Graphics->AoGroup;
   camera                *Camera   = Graphics->Camera;
 
-  entity *Player = GetPlayer(GameState->Players, 0);
+  entity *Player = GameState->Player;
   ClearFramebuffers(Graphics);
 
   SimulatePlayers(GameState, Player, Hotkeys, Plat->dt);
@@ -103,9 +124,6 @@ GameInit( platform *Plat, memory_arena *GameMemory )
   GameState->Graphics = GraphicsInit(GameMemory);
   if (!GameState->Graphics) { Error("Initializing Graphics"); return False; }
 
-  GameState->Turb = Allocate(noise_3d, GameState->Memory, 1);
-  AllocateAndInitNoise3d(GameState, GameState->Turb, Chunk_Dimension(8,8,8) );
-
   GameState->Plat = Plat;
   GameState->Entropy.Seed = DEBUG_NOISE_SEED;
 
@@ -115,12 +133,8 @@ GameInit( platform *Plat, memory_arena *GameMemory )
 
   GameState->Models = AllocateGameModels(GameState, GameState->Memory);
 
-  for (s32 EntityIndex = 0;
-      EntityIndex < MAX_CLIENTS;
-      ++ EntityIndex)
-  {
-    GameState->Players[EntityIndex] = GetFreeEntity(GameState);
-  }
+  GameState->Player = GetFreeEntity(GameState);
+  SpawnPlayer(GameState, GameState->Player, Canonical_Position(0));
 
   return GameState;
 }

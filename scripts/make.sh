@@ -11,4 +11,8 @@ else # Win32
   make DebugSystem Bonsai AnimationTest "$@" 2>&1
 fi
 
+if [ "$EMCC" == "1" ]; then
+  ./scripts/emcc.sh
+fi
+
 
