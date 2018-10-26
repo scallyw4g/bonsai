@@ -137,12 +137,33 @@ Max(s32 A, s32 B)
   return Result;
 }
 
+inline v3
+Max(v3 A, v3 B)
+{
+  v3 Result;
+  Result.x = Max(A.x, B.x);
+  Result.y = Max(A.y, B.y);
+  Result.z = Max(A.z, B.z);
+
+  return Result;
+}
+
 inline v2
 Max(v2 A, v2 B)
 {
   v2 Result;
   Result.x = Max(A.x, B.x);
   Result.y = Max(A.y, B.y);
+  return Result;
+}
+
+inline v3
+Min(v3 A, v3 B)
+{
+  v3 Result;
+  Result.x = Min(A.x, B.x);
+  Result.y = Min(A.y, B.y);
+  Result.z = Min(A.z, B.z);
   return Result;
 }
 

@@ -129,7 +129,7 @@ AllocateAnimation(v3i KeyframeCount, memory_arena* Memory)
   return Result;
 }
 
-chunk_data*
+loaded_collada_mesh
 LoadMeshData(xml_token_stream* XmlTokens, counted_string* GeometryId, memory_arena* PermMemory, memory_arena* TempMemory)
 {
   counted_string PositionsSelector   = FormatCountedString(TempMemory, "geometry%.*s float_array%.*s-positions-array", GeometryId->Count, GeometryId->Start, GeometryId->Count, GeometryId->Start);
@@ -154,7 +154,11 @@ LoadMeshData(xml_token_stream* XmlTokens, counted_string* GeometryId, memory_are
   v3_stream Positions           = ParseV3Array(PositionCount, AnsiStream(PositionString), TempMemory);
   v3_stream Normals             = ParseV3Array(NormalCount, AnsiStream(NormalString), TempMemory);
 
-  chunk_data* Result = AllocateChunk(PermMemory, Chunk_Dimension(0,0,0));
+
+  chunk_data* ChunkData = AllocateChunk(PermMemory, Chunk_Dimension(0,0,0));
+
+  v3 MaxP = V3(0);
+  v3 MinP = V3(FLT_MAX);
 
   for (u32 TriangleIndex = 0;
       TriangleIndex < TotalTriangleCount;
@@ -167,19 +171,27 @@ LoadMeshData(xml_token_stream* XmlTokens, counted_string* GeometryId, memory_are
         VertIndex < 3;
         ++VertIndex)
     {
-      Assert(Result->Mesh.At < Result->Mesh.End);
+      Assert(ChunkData->Mesh.At < ChunkData->Mesh.End);
 
       u32 PositionIndex = (u32)StringToInt(PopWordCounted(&VertIndices));
       u32 NormalIndex = (u32)StringToInt(PopWordCounted(&VertIndices));
       Assert(PositionIndex < TotalElements(&Positions));
       Assert(NormalIndex < TotalElements(&Normals));
 
-      Result->Mesh.Verts[Result->Mesh.At] = Positions.Start[PositionIndex];
-      Result->Mesh.Normals[Result->Mesh.At] = Normalize(Normals.Start[NormalIndex]);
+      v3 P = Positions.Start[PositionIndex];
+      ChunkData->Mesh.Verts[ChunkData->Mesh.At] = P;
+      MaxP = Max(P, MaxP);
+      MinP = Min(P, MinP);
 
-      Result->Mesh.At++;
+      ChunkData->Mesh.Normals[ChunkData->Mesh.At] = Normalize(Normals.Start[NormalIndex]);
+
+      ChunkData->Mesh.At++;
     }
   }
+
+  loaded_collada_mesh Result = {};
+  Result.ChunkData = ChunkData;
+  Result.Dim = MaxP - MinP;
 
   return Result;
 }
@@ -261,8 +273,9 @@ LoadCollada(memory_arena *Memory, const char * FilePath)
 
     Assert(GeometryName && GeometryId);
 
-    Result.Chunk = LoadMeshData(&XmlTokens, GeometryId, Memory, TranArena);
-
+    loaded_collada_mesh ColladaMesh = LoadMeshData(&XmlTokens, GeometryId, Memory, TranArena);
+    Result.Chunk = ColladaMesh.ChunkData;
+    Result.Dim = Voxel_Position(ColladaMesh.Dim);
 
     xml_tag* xKeyframeTimeTag = 0;
     xml_tag* yKeyframeTimeTag = 0;

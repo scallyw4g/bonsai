@@ -40,7 +40,7 @@ enum chunk_flag
 
 enum voxel_flag
 {
-  Voxel_Uninitialzied =   0,
+  Voxel_Empty       =   0,
   Voxel_Filled     = 1 << 0,
 
   Voxel_LeftFace   = 1 << 1,
@@ -127,7 +127,7 @@ struct boundary_voxel
 
     this->V.Color = w;
 
-    this->V.Flags = Voxel_Uninitialzied;
+    this->V.Flags = Voxel_Empty;
   }
 
   boundary_voxel(voxel *V_in, voxel_position Offset_in)

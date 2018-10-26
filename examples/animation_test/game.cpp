@@ -60,7 +60,15 @@ GameThreadCallback(work_queue_entry *Entry, memory_arena *ThreadArena)
   {
     case WorkEntry_InitWorldChunk:
     {
-      InitializeWorldChunkPerlin(&Entry->GameState->Noise, (world_chunk*)Entry->Input, ThreadArena, Entry->GameState->World);
+      world_chunk* Dest = (world_chunk*)Entry->Input;
+      if (Dest->WorldP.z == -1)
+      {
+        InitializeWorldChunkPerlinPlane(&Entry->GameState->Noise, Dest, ThreadArena, Entry->GameState->World);
+      }
+      else
+      {
+        InitializeWorldChunkEmpty(Dest);
+      }
     } break;
   }
 

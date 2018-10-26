@@ -388,14 +388,6 @@ DrawTitleScreen(game_state *GameState)
   TextOutAt( GameState->Plat, RG, &RG->TextGeo, "Press `Space` to Start", V2(0, 0), FontSize);
 }
 
-void
-InitializeVoxels( game_state *GameState, world_chunk *Chunk )
-{
-  UnSetFlag(Chunk, Chunk_Queued);
-  SetFlag(Chunk, Chunk_Initialized);
-  return;
-}
-
 EXPORT void
 GameThreadCallback(work_queue_entry *Entry, memory_arena *ThreadArena)
 {
@@ -403,7 +395,7 @@ GameThreadCallback(work_queue_entry *Entry, memory_arena *ThreadArena)
   {
     case WorkEntry_InitWorldChunk:
     {
-      InitializeVoxels(Entry->GameState, (world_chunk*)Entry->Input, ThreadArena);
+      /* InitChunkPerlinPlane(Entry->GameState, (world_chunk*)Entry->Input, ThreadArena); */
     } break;
 
     InvalidDefaultCase;

@@ -186,6 +186,60 @@ InitChunkPlane(u32 zIndex, world_chunk *Chunk, chunk_dimension ChunkDim, u8 Colo
 }
 
 void
+InitChunkPerlinPlane(perlin_noise *Noise, world_chunk *WorldChunk, chunk_dimension Dim, u8 ColorIndex)
+{
+  TIMED_FUNCTION();
+
+  Assert(WorldChunk);
+
+  chunk_data *ChunkData = WorldChunk->Data;
+  for ( s32 z = 0; z < Dim.z; ++ z)
+  {
+    for ( s32 y = 0; y < Dim.y; ++ y)
+    {
+      for ( s32 x = 0; x < Dim.x; ++ x)
+      {
+        s32 i = GetIndex(Voxel_Position(x,y,z), Dim);
+        ChunkData->Voxels[i].Flags = Voxel_Empty;
+
+        Assert( NotSet(&ChunkData->Voxels[i], Voxel_Filled) );
+
+        double InX = ((double)x + ( (double)WORLD_CHUNK_DIM.x*(double)WorldChunk->WorldP.x))/NOISE_FREQUENCY;
+        double InY = ((double)y + ( (double)WORLD_CHUNK_DIM.y*(double)WorldChunk->WorldP.y))/NOISE_FREQUENCY;
+        double InZ = 1.0f;
+
+        r32 NoiseValue = (r32)Noise->noise(InX, InY, InZ);
+
+        r32 zSlices = (1.0f/WORLD_CHUNK_DIM.z) * (r32)z;
+
+        s32 NoiseChoice = 0;
+        if (NoiseValue > zSlices)
+        {
+          NoiseChoice = 1;
+        }
+
+        Assert(NoiseChoice == 0 || NoiseChoice == 1);
+
+        SetFlag(&ChunkData->Voxels[i], (voxel_flag)(NoiseChoice * Voxel_Filled));
+
+        if (NoiseChoice)
+        {
+          ChunkData->Voxels[i].Color = ColorIndex;
+          Assert( IsSet(&ChunkData->Voxels[i], Voxel_Filled) );
+        }
+        else
+        {
+          Assert( NotSet(&ChunkData->Voxels[i], Voxel_Filled) );
+        }
+
+      }
+    }
+  }
+
+  return;
+}
+
+void
 InitChunkPerlin(perlin_noise *Noise, world_chunk *WorldChunk, chunk_dimension Dim, u8 ColorIndex)
 {
   TIMED_FUNCTION();
@@ -200,7 +254,7 @@ InitChunkPerlin(perlin_noise *Noise, world_chunk *WorldChunk, chunk_dimension Di
       for ( s32 x = 0; x < Dim.x; ++ x)
       {
         s32 i = GetIndex(Voxel_Position(x,y,z), Dim);
-        ChunkData->Voxels[i].Flags = Voxel_Uninitialzied;
+        ChunkData->Voxels[i].Flags = Voxel_Empty;
 
         Assert( NotSet(&ChunkData->Voxels[i], Voxel_Filled) );
 
@@ -465,7 +519,7 @@ InitializeWorldChunkPerlin(perlin_noise *Noise, world_chunk *DestChunk, memory_a
         ++VoxelIndex)
   {
     voxel *Voxel = &DestChunk->Data->Voxels[VoxelIndex];
-    Voxel->Flags = Voxel_Uninitialzied;
+    Voxel->Flags = Voxel_Empty;
     Voxel->Color = 0;
   }
 #endif
@@ -488,3 +542,127 @@ InitializeWorldChunkPerlin(perlin_noise *Noise, world_chunk *DestChunk, memory_a
   return;
 }
 
+void
+InitializeWorldChunkPlane(world_chunk *DestChunk, memory_arena* Memory)
+{
+  TIMED_FUNCTION();
+  Assert( IsSet(DestChunk, Chunk_Queued) );
+
+  if (IsSet(DestChunk, Chunk_Garbage))
+  {
+    DestChunk->Data->Flags = Chunk_Collected;
+    return;
+  }
+
+#if 0
+  // Don't blow out the Flags for this chunk or risk assertions on other
+  // threads that rely on that flag being set for every item on the queue
+  ZeroChunk(DestChunk->Data, Volume(WORLD_CHUNK_DIM));
+#else
+  ZeroMesh(&DestChunk->Data->Mesh);
+  for ( s32 VoxelIndex = 0;
+        VoxelIndex < Volume(WORLD_CHUNK_DIM);
+        ++VoxelIndex)
+  {
+    voxel *Voxel = &DestChunk->Data->Voxels[VoxelIndex];
+    Voxel->Flags = Voxel_Empty;
+    Voxel->Color = 0;
+  }
+#endif
+
+  chunk_dimension SynChunkDim = WORLD_CHUNK_DIM + 2;
+  chunk_dimension SynChunkP = DestChunk->WorldP - 1;
+
+  world_chunk *SyntheticChunk = AllocateWorldChunk(Memory, SynChunkP, SynChunkDim );
+
+  InitChunkPlane(1, SyntheticChunk, SynChunkDim, GREEN);
+  CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WORLD_CHUNK_DIM, Voxel_Position(1));
+
+  SetFlag(DestChunk, Chunk_Initialized);
+  SetFlag(SyntheticChunk, Chunk_Initialized);
+
+  BuildWorldChunkMesh(SyntheticChunk, SynChunkDim, DestChunk, WORLD_CHUNK_DIM);
+
+  DestChunk->Data->Flags = Chunk_Complete;
+
+  return;
+}
+
+void
+InitializeWorldChunkPerlinPlane(perlin_noise *Noise, world_chunk *DestChunk, memory_arena *Memory, world *World)
+{
+  TIMED_FUNCTION();
+  Assert( IsSet(DestChunk, Chunk_Queued) );
+
+  if (IsSet(DestChunk, Chunk_Garbage))
+  {
+    DestChunk->Data->Flags = Chunk_Collected;
+    return;
+  }
+
+#if 0
+  // Don't blow out the Flags for this chunk or risk assertions on other
+  // threads that rely on that flag being set for every item on the queue
+  ZeroChunk(DestChunk->Data, Volume(WORLD_CHUNK_DIM));
+#else
+  ZeroMesh(&DestChunk->Data->Mesh);
+  for ( s32 VoxelIndex = 0;
+        VoxelIndex < Volume(WORLD_CHUNK_DIM);
+        ++VoxelIndex)
+  {
+    voxel *Voxel = &DestChunk->Data->Voxels[VoxelIndex];
+    Voxel->Flags = Voxel_Empty;
+    Voxel->Color = 0;
+  }
+#endif
+
+  chunk_dimension SynChunkDim = WORLD_CHUNK_DIM + 2;
+  chunk_dimension SynChunkP = DestChunk->WorldP - 1;
+
+  world_chunk *SyntheticChunk = AllocateWorldChunk(Memory, SynChunkP, SynChunkDim );
+
+  InitChunkPerlinPlane(Noise, SyntheticChunk, SynChunkDim, GRASS_GREEN);
+  CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WORLD_CHUNK_DIM, Voxel_Position(1));
+
+  SetFlag(DestChunk, Chunk_Initialized);
+  SetFlag(SyntheticChunk, Chunk_Initialized);
+
+  BuildWorldChunkMesh(SyntheticChunk, SynChunkDim, DestChunk, WORLD_CHUNK_DIM);
+
+  DestChunk->Data->Flags = Chunk_Complete;
+
+  return;
+}
+
+void
+InitializeWorldChunkEmpty(world_chunk *DestChunk)
+{
+  TIMED_FUNCTION();
+  Assert( IsSet(DestChunk, Chunk_Queued) );
+
+  if (IsSet(DestChunk, Chunk_Garbage))
+  {
+    DestChunk->Data->Flags = Chunk_Collected;
+    return;
+  }
+
+#if 0
+  // Don't blow out the Flags for this chunk or risk assertions on other
+  // threads that rely on that flag being set for every item on the queue
+  ZeroChunk(DestChunk->Data, Volume(WORLD_CHUNK_DIM));
+#else
+  ZeroMesh(&DestChunk->Data->Mesh);
+  for ( s32 VoxelIndex = 0;
+        VoxelIndex < Volume(WORLD_CHUNK_DIM);
+        ++VoxelIndex)
+  {
+    voxel *Voxel = &DestChunk->Data->Voxels[VoxelIndex];
+    Voxel->Flags = Voxel_Empty;
+    Voxel->Color = 0;
+  }
+#endif
+
+  DestChunk->Data->Flags = Chunk_Complete;
+
+  return;
+}
