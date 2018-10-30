@@ -2,6 +2,14 @@
  *  Common
  */
 
+#define RED_TERMINAL "\x1b[31m"
+#define BLUE_TERMINAL "\x1b[34m"
+#define GREEN_TERMINAL "\x1b[32m"
+#define YELLOW_TERMINAL "\x1b[33m"
+#define WHITE_TERMINAL "\x1b[37m"
+
+#define Newline "\n"
+
 // Screen Resolution
 
 #define SCREEN_RATIO 2
@@ -80,10 +88,10 @@
 
 #define BONSAI_FUNCTION_NAME __func__
 
-#define Info(...)  printf("   Info - ");  printf(__VA_ARGS__); printf("\n")
+#define Info(...)  printf(BLUE_TERMINAL "   Info" WHITE_TERMINAL " - ");  printf(__VA_ARGS__); printf("\n")
 #define Debug(...) printf(__VA_ARGS__);   printf("\n")
-#define Error(...) printf(" ! Error - "); printf(__VA_ARGS__); printf("\n")
-#define Warn(...)  printf(" * Warn - "); printf(__VA_ARGS__); printf("\n")
+#define Error(...) printf(RED_TERMINAL " ! Error" WHITE_TERMINAL " - "); printf(__VA_ARGS__); printf("\n")
+#define Warn(...)  printf(YELLOW_TERMINAL " * Warn" WHITE_TERMINAL " - "); printf(__VA_ARGS__); printf("\n")
 
 #define RuntimeBreak() raise(SIGTRAP)
 #define TriggeredRuntimeBreak() Global_TriggerRuntimeBreak ? RuntimeBreak() : 0 ;

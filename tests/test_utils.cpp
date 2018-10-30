@@ -1,11 +1,3 @@
-
-#define RED_TERMINAL "\x1b[31m"
-#define BLUE_TERMINAL "\x1b[34m"
-#define GREEN_TERMINAL "\x1b[32m"
-#define WHITE_TERMINAL "\x1b[37m"
-
-#define Newline "\n"
-
 u32 TestsFailed = 0;
 u32 TestsPassed = 0;
 

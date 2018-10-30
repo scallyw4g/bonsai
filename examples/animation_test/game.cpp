@@ -130,7 +130,7 @@ GameInit( platform *Plat, memory_arena *GameMemory )
   GameState->Plat = Plat;
   GameState->Entropy.Seed = DEBUG_NOISE_SEED;
 
-  world_position WorldCenter = World_Position(0, 0, 10);
+  world_position WorldCenter = World_Position(0, 0, 0);
 
   GameState->World = AllocateAndInitWorld(GameState, WorldCenter, VISIBLE_REGION_RADIUS, WORLD_CHUNK_DIM, VISIBLE_REGION);
 
