@@ -289,7 +289,7 @@ InitializeShadowBuffer(shadow_render_group *SG, memory_arena *GraphicsMemory, v2
 }
 
 void
-StandardCamera(camera* Camera, float FarClip)
+StandardCamera(camera* Camera, float FarClip, float DistanceFromTarget = 600.0f)
 {
   Camera->Frust.farClip = FarClip;
   Camera->Frust.nearClip = 1.0f;
@@ -300,7 +300,7 @@ StandardCamera(camera* Camera, float FarClip)
   Camera->Front = V3(0,0,0);
   Camera->Pitch = PIf;
 
-  Camera->DistanceFromTarget = 600.0f;
+  Camera->DistanceFromTarget = DistanceFromTarget;
 
   return;
 }

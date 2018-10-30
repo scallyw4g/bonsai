@@ -132,6 +132,8 @@ GameInit( platform *Plat, memory_arena *GameMemory )
   GameState->Graphics = GraphicsInit(GameMemory);
   if (!GameState->Graphics) { Error("Initializing Graphics"); return False; }
 
+  StandardCamera(GameState->Graphics->Camera, 1000.0f, 300.0f);
+
   GameState->Plat = Plat;
   GameState->Entropy.Seed = DEBUG_NOISE_SEED;
 
