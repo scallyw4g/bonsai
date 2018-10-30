@@ -61,14 +61,7 @@ GameThreadCallback(work_queue_entry *Entry, memory_arena *ThreadArena)
     case WorkEntry_InitWorldChunk:
     {
       world_chunk* Dest = (world_chunk*)Entry->Input;
-      if (Dest->WorldP.z == -1)
-      {
-        InitializeWorldChunkPerlinPlane(&Entry->GameState->Noise, Dest, ThreadArena, Entry->GameState->World);
-      }
-      else
-      {
-        InitializeWorldChunkEmpty(Dest);
-      }
+      InitializeWorldChunkPerlinPlane(&Entry->GameState->Noise, Dest, ThreadArena, Entry->GameState->World, 0);
     } break;
   }
 
@@ -137,14 +130,16 @@ GameInit( platform *Plat, memory_arena *GameMemory )
   GameState->Plat = Plat;
   GameState->Entropy.Seed = DEBUG_NOISE_SEED;
 
-  GameState->World = AllocateAndInitWorld(GameState, World_Position(0), VISIBLE_REGION_RADIUS, WORLD_CHUNK_DIM, VISIBLE_REGION);
+  world_position WorldCenter = World_Position(0, 0, 10);
+
+  GameState->World = AllocateAndInitWorld(GameState, WorldCenter, VISIBLE_REGION_RADIUS, WORLD_CHUNK_DIM, VISIBLE_REGION);
 
   AllocateEntityTable(GameState);
 
   GameState->Models = AllocateGameModels(GameState, GameState->Memory);
 
   GameState->Player = GetFreeEntity(GameState);
-  SpawnPlayer(GameState, GameState->Player, Canonical_Position(0));
+  SpawnPlayer(GameState, GameState->Player, Canonical_Position(Voxel_Position(0), WorldCenter));
 
   return GameState;
 }

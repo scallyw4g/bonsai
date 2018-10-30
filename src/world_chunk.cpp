@@ -186,7 +186,7 @@ InitChunkPlane(u32 zIndex, world_chunk *Chunk, chunk_dimension ChunkDim, u8 Colo
 }
 
 void
-InitChunkPerlinPlane(perlin_noise *Noise, world_chunk *WorldChunk, chunk_dimension Dim, u8 ColorIndex)
+InitChunkPerlinPlane(perlin_noise *Noise, world_chunk *WorldChunk, chunk_dimension Dim, u8 ColorIndex, u32 Amplitude, s64 zMaxHeight)
 {
   TIMED_FUNCTION();
 
@@ -199,39 +199,31 @@ InitChunkPerlinPlane(perlin_noise *Noise, world_chunk *WorldChunk, chunk_dimensi
     {
       for ( s32 x = 0; x < Dim.x; ++ x)
       {
-        s32 i = GetIndex(Voxel_Position(x,y,z), Dim);
-        ChunkData->Voxels[i].Flags = Voxel_Empty;
-
-        Assert( NotSet(&ChunkData->Voxels[i], Voxel_Filled) );
+        s32 VoxIndex = GetIndex(Voxel_Position(x,y,z), Dim);
+        ChunkData->Voxels[VoxIndex].Flags = Voxel_Empty;
+        Assert( NotSet(&ChunkData->Voxels[VoxIndex], Voxel_Filled) );
 
         double InX = ((double)x + ( (double)WORLD_CHUNK_DIM.x*(double)WorldChunk->WorldP.x))/NOISE_FREQUENCY;
         double InY = ((double)y + ( (double)WORLD_CHUNK_DIM.y*(double)WorldChunk->WorldP.y))/NOISE_FREQUENCY;
-        double InZ = 1.0f;
+        double InZ = 1.0;
 
-        r32 NoiseValue = (r32)Noise->noise(InX, InY, InZ);
+        s64 zAbsolute = z + (WORLD_CHUNK_DIM.z*WorldChunk->WorldP.z);
+        r64 zSlicesAt = (1.0/(r64)Amplitude) * (r64)zAbsolute;
 
-        r32 zSlices = (1.0f/WORLD_CHUNK_DIM.z) * (r32)z;
+        r64 NoiseValue = Noise->noise(InX, InY, InZ);
 
-        s32 NoiseChoice = 0;
-        if (NoiseValue > zSlices)
-        {
-          NoiseChoice = 1;
-        }
-
-        Assert(NoiseChoice == 0 || NoiseChoice == 1);
-
-        SetFlag(&ChunkData->Voxels[i], (voxel_flag)(NoiseChoice * Voxel_Filled));
+        b32 NoiseChoice = NoiseValue > zSlicesAt ? True : False;
+        SetFlag(&ChunkData->Voxels[VoxIndex], (voxel_flag)(NoiseChoice * Voxel_Filled));
 
         if (NoiseChoice)
         {
-          ChunkData->Voxels[i].Color = ColorIndex;
-          Assert( IsSet(&ChunkData->Voxels[i], Voxel_Filled) );
+          ChunkData->Voxels[VoxIndex].Color = ColorIndex;
+          Assert( IsSet(&ChunkData->Voxels[VoxIndex], Voxel_Filled) );
         }
         else
         {
-          Assert( NotSet(&ChunkData->Voxels[i], Voxel_Filled) );
+          Assert( NotSet(&ChunkData->Voxels[VoxIndex], Voxel_Filled) );
         }
-
       }
     }
   }
@@ -589,7 +581,7 @@ InitializeWorldChunkPlane(world_chunk *DestChunk, memory_arena* Memory)
 }
 
 void
-InitializeWorldChunkPerlinPlane(perlin_noise *Noise, world_chunk *DestChunk, memory_arena *Memory, world *World)
+InitializeWorldChunkPerlinPlane(perlin_noise *Noise, world_chunk *DestChunk, memory_arena *Memory, world *World, s32 zMaxHeight)
 {
   TIMED_FUNCTION();
   Assert( IsSet(DestChunk, Chunk_Queued) );
@@ -621,7 +613,7 @@ InitializeWorldChunkPerlinPlane(perlin_noise *Noise, world_chunk *DestChunk, mem
 
   world_chunk *SyntheticChunk = AllocateWorldChunk(Memory, SynChunkP, SynChunkDim );
 
-  InitChunkPerlinPlane(Noise, SyntheticChunk, SynChunkDim, GRASS_GREEN);
+  InitChunkPerlinPlane(Noise, SyntheticChunk, SynChunkDim, GRASS_GREEN, WORLD_CHUNK_DIM.z*10, zMaxHeight);
   CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WORLD_CHUNK_DIM, Voxel_Position(1));
 
   SetFlag(DestChunk, Chunk_Initialized);
