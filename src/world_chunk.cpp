@@ -186,7 +186,7 @@ InitChunkPlane(u32 zIndex, world_chunk *Chunk, chunk_dimension ChunkDim, u8 Colo
 }
 
 void
-InitChunkPerlinPlane(perlin_noise *Noise, world_chunk *WorldChunk, chunk_dimension Dim, u8 ColorIndex, u32 Amplitude, s64 zMaxHeight)
+InitChunkPerlinPlane(perlin_noise *Noise, world_chunk *WorldChunk, chunk_dimension Dim, u8 ColorIndex, u32 Amplitude, s64 zMin)
 {
   TIMED_FUNCTION();
 
@@ -207,7 +207,7 @@ InitChunkPerlinPlane(perlin_noise *Noise, world_chunk *WorldChunk, chunk_dimensi
         double InY = ((double)y + ( (double)WORLD_CHUNK_DIM.y*(double)WorldChunk->WorldP.y))/NOISE_FREQUENCY;
         double InZ = 1.0;
 
-        s64 zAbsolute = z + (WORLD_CHUNK_DIM.z*WorldChunk->WorldP.z);
+        s64 zAbsolute = z - (zMin-Amplitude) + (WORLD_CHUNK_DIM.z*WorldChunk->WorldP.z);
         r64 zSlicesAt = (1.0/(r64)Amplitude) * (r64)zAbsolute;
 
         r64 NoiseValue = Noise->noise(InX, InY, InZ);
@@ -581,7 +581,7 @@ InitializeWorldChunkPlane(world_chunk *DestChunk, memory_arena* Memory)
 }
 
 void
-InitializeWorldChunkPerlinPlane(perlin_noise *Noise, world_chunk *DestChunk, memory_arena *Memory, world *World, s32 zMaxHeight)
+InitializeWorldChunkPerlinPlane(perlin_noise *Noise, world_chunk *DestChunk, memory_arena *Memory, world *World, s32 zMin)
 {
   TIMED_FUNCTION();
   Assert( IsSet(DestChunk, Chunk_Queued) );
@@ -613,7 +613,7 @@ InitializeWorldChunkPerlinPlane(perlin_noise *Noise, world_chunk *DestChunk, mem
 
   world_chunk *SyntheticChunk = AllocateWorldChunk(Memory, SynChunkP, SynChunkDim );
 
-  InitChunkPerlinPlane(Noise, SyntheticChunk, SynChunkDim, GRASS_GREEN, WORLD_CHUNK_DIM.z*10, zMaxHeight);
+  InitChunkPerlinPlane(Noise, SyntheticChunk, SynChunkDim, GRASS_GREEN, WORLD_CHUNK_DIM.z*10, zMin);
   CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WORLD_CHUNK_DIM, Voxel_Position(1));
 
   SetFlag(DestChunk, Chunk_Initialized);
