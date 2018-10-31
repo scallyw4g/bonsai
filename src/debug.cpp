@@ -3,6 +3,7 @@
 #define BONSAI_CONTAINS_DEBUG_ALLOCATE_IMPL
 
 #include <bonsai_types.h>
+#include <bonsai_vertex.h>
 #include <unix_platform.cpp>
 
 #include <debug_data_system.cpp>

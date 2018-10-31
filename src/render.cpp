@@ -280,7 +280,7 @@ RenderPostBuffer(post_processing_group *PostGroup, untextured_3d_geometry_buffer
 
 inline void
 DrawVoxel( untextured_3d_geometry_buffer *Mesh, graphics *Graphics,
-           v3 RenderP, int ColorIndex, v3 Diameter, r32 Emission = 1.0f)
+           v3 Center, int ColorIndex, v3 Radius, r32 Emission = 1.0f)
 {
   TIMED_FUNCTION();
 
@@ -289,23 +289,22 @@ DrawVoxel( untextured_3d_geometry_buffer *Mesh, graphics *Graphics,
 
   v3 VertexData[6];
 
-  v3 Center = RenderP - (Diameter*0.5);
-  RightFaceVertexData( Center, Diameter, VertexData);
+  RightFaceVertexData( Center, Radius, VertexData);
   BufferVertsChecked(Mesh, Graphics, 6, VertexData, RightFaceNormalData, FaceColors);
 
-  LeftFaceVertexData( Center, Diameter, VertexData);
+  LeftFaceVertexData( Center, Radius, VertexData);
   BufferVertsChecked(Mesh, Graphics, 6, VertexData, LeftFaceNormalData, FaceColors);
 
-  BottomFaceVertexData( Center, Diameter, VertexData);
+  BottomFaceVertexData( Center, Radius, VertexData);
   BufferVertsChecked(Mesh, Graphics, 6, VertexData, BottomFaceNormalData, FaceColors);
 
-  TopFaceVertexData( Center, Diameter, VertexData);
+  TopFaceVertexData( Center, Radius, VertexData);
   BufferVertsChecked(Mesh, Graphics, 6, VertexData, TopFaceNormalData, FaceColors);
 
-  FrontFaceVertexData( Center, Diameter, VertexData);
+  FrontFaceVertexData( Center, Radius, VertexData);
   BufferVertsChecked(Mesh, Graphics, 6, VertexData, FrontFaceNormalData, FaceColors);
 
-  BackFaceVertexData( Center, Diameter, VertexData);
+  BackFaceVertexData( Center, Radius, VertexData);
   BufferVertsChecked(Mesh, Graphics, 6, VertexData, BackFaceNormalData, FaceColors);
 
   return;
@@ -1687,7 +1686,6 @@ DrawFolie(untextured_3d_geometry_buffer *Mesh, graphics *Graphics, aabb *AABB)
   return;
 }
 
-#if 1
 void
 DrawParticle(
     untextured_3d_geometry_buffer *Source,
@@ -1698,31 +1696,9 @@ DrawParticle(
 {
   v4 FaceColors[FACE_VERT_COUNT];
   FillColorArray(ColorIndex, FaceColors, FACE_VERT_COUNT);;
-#if 1
   BufferVerts( Source, Dest, Graphics);
-#else
-  RightFaceVertexData( MinP, V3(Diameter), VertexData);
-  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, RightFaceNormalData, FaceColors);
-
-  LeftFaceVertexData( MinP, V3(Diameter), VertexData);
-  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, LeftFaceNormalData, FaceColors);
-
-  BottomFaceVertexData( MinP, V3(Diameter), VertexData);
-  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, BottomFaceNormalData, FaceColors);
-
-  TopFaceVertexData( MinP, V3(Diameter), VertexData);
-  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, TopFaceNormalData, FaceColors);
-
-  FrontFaceVertexData( MinP, V3(Diameter), VertexData);
-  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, FrontFaceNormalData, FaceColors);
-
-  BackFaceVertexData( MinP, V3(Diameter), VertexData);
-  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, BackFaceNormalData, FaceColors);
-#endif
-
   return;
 }
-#endif
 
 void
 BufferEntity(

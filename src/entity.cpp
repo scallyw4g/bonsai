@@ -442,7 +442,7 @@ SpawnParticleSystem(particle_system *System, particle_system_init_params *Params
 
   System->ParticleLifespan = Params->ParticleLifespan;
 
-  System->StartingDiameter = Params->StartingDiameter;
+  System->StartingRadius = Params->StartingRadius;
 
   System->Entropy = Params->Entropy;
 
@@ -509,7 +509,7 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset)
 
   Params.Physics.Velocity = V3(0.0f, 0.0f, 7.0f);
 
-  Params.StartingDiameter = V3(0.40f);
+  Params.StartingRadius = V3(0.2f);
 
   Params.SystemMovementCoefficient = 0.1f;
 
@@ -901,7 +901,7 @@ SimulateAndRenderParticleSystem(
     Particle->Offset += Particle->Physics.Delta;
     Particle->Offset -= EntityDelta * System->SystemMovementCoefficient;
 
-    v3 MinDiameter = V3(0.1f);
+    v3 MinRadius = V3(0.05f);
 
     Particle->RemainingLifespan -= dt;
 
@@ -913,13 +913,13 @@ SimulateAndRenderParticleSystem(
       continue;
     }
 
-    v3 Diameter = ((Particle->RemainingLifespan / System->ParticleLifespan) + MinDiameter) * System->StartingDiameter;
+    v3 Radius = ((Particle->RemainingLifespan / System->ParticleLifespan) + MinRadius) * System->StartingRadius;
 
     u8 ColorIndex = (u8)((Particle->RemainingLifespan / System->ParticleLifespan) * (PARTICLE_SYSTEM_COLOR_COUNT-0.0001f));
     Assert(ColorIndex >= 0 && ColorIndex <= PARTICLE_SYSTEM_COLOR_COUNT);
 
     v3 RenderSpaceP = GetRenderP(SystemEntity->P, Graphics->Camera, WORLD_CHUNK_DIM);
-    DrawVoxel( Dest, Graphics, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, 3.0f );
+    DrawVoxel( Dest, Graphics, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Radius, 3.0f );
 
 #if 0
     if (RandomUnilateral(&System->Entropy) > 0.9)
@@ -927,8 +927,8 @@ SimulateAndRenderParticleSystem(
       DoLight(Graphics->Lights, RenderSpaceP + Particle->Offset, EmissionColor);
     }
 #endif
-  }
 
+  }
 
 #if 1
   v3 RenderSpaceP = GetRenderP(SystemEntity->P, Graphics->Camera, WORLD_CHUNK_DIM) + System->SpawnRegion.Center;

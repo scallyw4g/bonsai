@@ -1,4 +1,5 @@
 #include <bonsai_types.h>
+#include <bonsai_vertex.h>
 #include <platform.h>
 #include <game_types.h>
 #include <game_constants.h>
@@ -84,9 +85,9 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   ClearFramebuffers(Graphics);
 
 #if DEBUG_DRAW_WORLD_AXIES
-  DEBUG_DrawLine(&World->Mesh, Graphics, V3(0,0,0), V3(10000, 0, 0), RED, 0.5f );
-  DEBUG_DrawLine(&World->Mesh, Graphics, V3(0,0,0), V3(0, 10000, 0), GREEN, 0.5f );
-  DEBUG_DrawLine(&World->Mesh, Graphics, V3(0,0,0), V3(0, 0, 10000), BLUE, 0.5f );
+  DEBUG_DrawLine(&World->Mesh, Graphics, V3(0,0,0), V3(10000, 0, 0), RED, 0.2f );
+  DEBUG_DrawLine(&World->Mesh, Graphics, V3(0,0,0), V3(0, 10000, 0), GREEN, 0.2f );
+  DEBUG_DrawLine(&World->Mesh, Graphics, V3(0,0,0), V3(0, 0, 10000), BLUE, 0.2f );
 #endif
 
   if (Hotkeys->Player_Spawn)

@@ -322,7 +322,7 @@ BuildWorldChunkMesh(world_chunk *ReadChunk, chunk_dimension ReadChunkDim, world_
         if ( NotFilledInChunk( WriteChunkData, CurrentP, WriteChunkDim ) )
           continue;
 
-        v3 Diameter = V3(1.0f);
+        v3 Radius = V3(0.5f);
         v3 VertexData[FACE_VERT_COUNT];
         v4 FaceColors[FACE_VERT_COUNT];
 
@@ -359,32 +359,32 @@ BuildWorldChunkMesh(world_chunk *ReadChunk, chunk_dimension ReadChunkDim, world_
         // FIXME(Jesse): This should use a BufferVertsChecked path
         if ( NotFilledInChunk( ReadChunkData, rightVoxelReadIndex) )
         {
-          RightFaceVertexData( V3(CurrentP), Diameter, VertexData);
+          RightFaceVertexData( V3(CurrentP), Radius, VertexData);
           BufferVertsDirect(&WriteChunkData->Mesh, 6, VertexData, RightFaceNormalData, FaceColors);
         }
         if ( NotFilledInChunk( ReadChunkData, leftVoxelReadIndex) )
         {
-          LeftFaceVertexData( V3(CurrentP), Diameter, VertexData);
+          LeftFaceVertexData( V3(CurrentP), Radius, VertexData);
           BufferVertsDirect(&WriteChunkData->Mesh, 6, VertexData, LeftFaceNormalData, FaceColors);
         }
         if ( NotFilledInChunk( ReadChunkData, botVoxelReadIndex) )
         {
-          BottomFaceVertexData( V3(CurrentP), Diameter, VertexData);
+          BottomFaceVertexData( V3(CurrentP), Radius, VertexData);
           BufferVertsDirect(&WriteChunkData->Mesh, 6, VertexData, BottomFaceNormalData, FaceColors);
         }
         if ( NotFilledInChunk( ReadChunkData, topVoxelReadIndex) )
         {
-          TopFaceVertexData( V3(CurrentP), Diameter, VertexData);
+          TopFaceVertexData( V3(CurrentP), Radius, VertexData);
           BufferVertsDirect(&WriteChunkData->Mesh, 6, VertexData, TopFaceNormalData, FaceColors);
         }
         if ( NotFilledInChunk( ReadChunkData, frontVoxelReadIndex) )
         {
-          FrontFaceVertexData( V3(CurrentP), Diameter, VertexData);
+          FrontFaceVertexData( V3(CurrentP), Radius, VertexData);
           BufferVertsDirect(&WriteChunkData->Mesh, 6, VertexData, FrontFaceNormalData, FaceColors);
         }
         if ( NotFilledInChunk( ReadChunkData, backVoxelReadIndex) )
         {
-          BackFaceVertexData( V3(CurrentP), Diameter, VertexData);
+          BackFaceVertexData( V3(CurrentP), Radius, VertexData);
           BufferVertsDirect(&WriteChunkData->Mesh, 6, VertexData, BackFaceNormalData, FaceColors);
         }
       }
@@ -430,7 +430,7 @@ BuildWorldChunkMesh(world *World, world_chunk *WorldChunk, chunk_dimension World
 
         voxel *Voxel = &chunk->Voxels[GetIndex(CurrentP.Offset, WorldChunkDim)];
 
-        v3 Diameter = V3(1.0f);
+        v3 Radius = V3(0.5f);
         v3 VertexData[FACE_VERT_COUNT];
         v4 FaceColors[FACE_VERT_COUNT];
         FillColorArray(Voxel->Color, FaceColors, FACE_VERT_COUNT);
@@ -455,32 +455,32 @@ BuildWorldChunkMesh(world *World, world_chunk *WorldChunk, chunk_dimension World
         // FIXME(Jesse): This should use a BufferVertsChecked path
         if ( !IsFilledInWorld( World, WorldChunk, rightVoxel ) )
         {
-          RightFaceVertexData( CurrentP.Offset, Diameter, VertexData);
+          RightFaceVertexData( CurrentP.Offset, Radius, VertexData);
           BufferVertsDirect(&chunk->Mesh, 6, VertexData, RightFaceNormalData, FaceColors);
         }
         if ( !IsFilledInWorld( World, WorldChunk, leftVoxel ) )
         {
-          LeftFaceVertexData( CurrentP.Offset, Diameter, VertexData);
+          LeftFaceVertexData( CurrentP.Offset, Radius, VertexData);
           BufferVertsDirect(&chunk->Mesh, 6, VertexData, LeftFaceNormalData, FaceColors);
         }
         if ( !IsFilledInWorld( World, WorldChunk, botVoxel   ) )
         {
-          BottomFaceVertexData( CurrentP.Offset, Diameter, VertexData);
+          BottomFaceVertexData( CurrentP.Offset, Radius, VertexData);
           BufferVertsDirect(&chunk->Mesh, 6, VertexData, BottomFaceNormalData, FaceColors);
         }
         if ( !IsFilledInWorld( World, WorldChunk, topVoxel   ) )
         {
-          TopFaceVertexData( CurrentP.Offset, Diameter, VertexData);
+          TopFaceVertexData( CurrentP.Offset, Radius, VertexData);
           BufferVertsDirect(&chunk->Mesh, 6, VertexData, TopFaceNormalData, FaceColors);
         }
         if ( !IsFilledInWorld( World, WorldChunk, frontVoxel ) )
         {
-          FrontFaceVertexData( CurrentP.Offset, Diameter, VertexData);
+          FrontFaceVertexData( CurrentP.Offset, Radius, VertexData);
           BufferVertsDirect(&chunk->Mesh, 6, VertexData, FrontFaceNormalData, FaceColors);
         }
         if ( !IsFilledInWorld( World, WorldChunk, backVoxel  ) )
         {
-          BackFaceVertexData( CurrentP.Offset, Diameter, VertexData);
+          BackFaceVertexData( CurrentP.Offset, Radius, VertexData);
           BufferVertsDirect(&chunk->Mesh, 6, VertexData, BackFaceNormalData, FaceColors);
         }
       }

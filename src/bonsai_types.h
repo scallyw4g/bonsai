@@ -52,7 +52,6 @@ void BreakHere() { return; }
 #include <debug_print.h>
 
 
-#include <bonsai_vertex.h>
 #include <net/network.h>
 
 #include <bonsai.h>

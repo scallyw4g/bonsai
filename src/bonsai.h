@@ -257,7 +257,7 @@ struct particle_system_init_params
 
   r32 ParticleLifespan;
 
-  v3 StartingDiameter;
+  v3 StartingRadius;
 
   random_series Entropy;
 
@@ -273,7 +273,7 @@ struct particle_system
 
   aabb SpawnRegion;
 
-  v3 StartingDiameter;
+  v3 StartingRadius;
 
   r32 EmissionLifespan;
 

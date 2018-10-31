@@ -2,6 +2,7 @@
 #define BONSAI_NO_DEBUG_MEMORY_ALLOCATOR
 
 #include <bonsai_types.h>
+#include <bonsai_vertex.h>
 #include <unix_platform.cpp>
 
 #include <chunk.cpp>

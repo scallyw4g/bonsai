@@ -243,7 +243,7 @@ BuildEntityMesh(chunk_data *chunk, chunk_dimension Dim)
         voxel *Voxel = &chunk->Voxels[GetIndex(P, Dim)];
 
         v3 VP = V3(P);
-        v3 Diameter = V3(1.0f);
+        v3 Radius = V3(0.5f);
         v3 VertexData[6];
 
         v4 FaceColors[FACE_VERT_COUNT];
@@ -264,32 +264,32 @@ BuildEntityMesh(chunk_data *chunk, chunk_dimension Dim)
         // FIXME(Jesse): This should use a BufferVertsChecked path
         if ( (!IsInsideDim(Dim, rightVoxel)) || NotFilled( chunk, rightVoxel, Dim))
         {
-          RightFaceVertexData( VP, Diameter, VertexData);
+          RightFaceVertexData( VP, Radius, VertexData);
           BufferVertsDirect(&chunk->Mesh, 6, VertexData, RightFaceNormalData, FaceColors);
         }
         if ( (!IsInsideDim( Dim, leftVoxel  )) || NotFilled( chunk, leftVoxel, Dim))
         {
-          LeftFaceVertexData( VP, Diameter, VertexData);
+          LeftFaceVertexData( VP, Radius, VertexData);
           BufferVertsDirect(&chunk->Mesh, 6, VertexData, LeftFaceNormalData, FaceColors);
         }
         if ( (!IsInsideDim( Dim, botVoxel   )) || NotFilled( chunk, botVoxel, Dim))
         {
-          BottomFaceVertexData( VP, Diameter, VertexData);
+          BottomFaceVertexData( VP, Radius, VertexData);
           BufferVertsDirect(&chunk->Mesh, 6, VertexData, BottomFaceNormalData, FaceColors);
         }
         if ( (!IsInsideDim( Dim, topVoxel   )) || NotFilled( chunk, topVoxel, Dim))
         {
-          TopFaceVertexData( VP, Diameter, VertexData);
+          TopFaceVertexData( VP, Radius, VertexData);
           BufferVertsDirect(&chunk->Mesh, 6, VertexData, TopFaceNormalData, FaceColors);
         }
         if ( (!IsInsideDim( Dim, frontVoxel )) || NotFilled( chunk, frontVoxel, Dim))
         {
-          FrontFaceVertexData( VP, Diameter, VertexData);
+          FrontFaceVertexData( VP, Radius, VertexData);
           BufferVertsDirect(&chunk->Mesh, 6, VertexData, FrontFaceNormalData, FaceColors);
         }
         if ( (!IsInsideDim( Dim, backVoxel  )) || NotFilled( chunk, backVoxel, Dim))
         {
-          BackFaceVertexData( VP, Diameter, VertexData);
+          BackFaceVertexData( VP, Radius, VertexData);
           BufferVertsDirect(&chunk->Mesh, 6, VertexData, BackFaceNormalData, FaceColors);
         }
 
