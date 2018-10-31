@@ -109,6 +109,18 @@ union v4
   }
 
 };
+
+union voxel_position
+{
+  struct {
+    s32 x;
+    s32 y;
+    s32 z;
+  };
+
+  s32 E[3];
+};
+
 #pragma GCC diagnostic pop
 
 v4
@@ -120,22 +132,15 @@ V4(v3 V, r32 w)
 
 v4 V4(float x, float y, float z, float w)
 {
-  v4 Result;
+v4 Result;
 
-  Result.x = x;
-  Result.y = y;
-  Result.z = z;
-  Result.w = w;
+Result.x = x;
+Result.y = y;
+Result.z = z;
+Result.w = w;
 
-  return Result;
+return Result;
 }
-
-struct voxel_position
-{
-  s32 x;
-  s32 y;
-  s32 z;
-};
 
 inline voxel_position
 Voxel_Position(v3 Offset)

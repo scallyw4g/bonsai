@@ -70,7 +70,7 @@ LoadObj(memory_arena *PermMem, const char * FilePath)
     }
     else if ( StringsMatch(LineType, "vn") )
     {
-      v3 Normal = Normalize({{ PopFloat(&Stream, TranArena), PopFloat(&Stream, TranArena), PopFloat(&Stream, TranArena) }});
+      v3 Normal = Normalize( V3(PopFloat(&Stream, TranArena), PopFloat(&Stream, TranArena), PopFloat(&Stream, TranArena) ) );
       Push(Normal, &TempNormals);
     }
 #if 0

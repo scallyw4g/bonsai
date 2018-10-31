@@ -680,59 +680,27 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
     v3 StepDelta = GetAtomicUpdateVector(Remaining);
     Remaining -= StepDelta;
 
-    Entity->P.Offset.x += StepDelta.x;
-    Entity->P = Canonicalize(WorldChunkDim, Entity->P);
-    C = GetCollision(World, Entity);
-    if (C.didCollide)
+    for (u32 AxisIndex = 0;
+        AxisIndex < 3;
+        ++AxisIndex)
     {
-      Entity->Physics.Velocity.x = 0;
-      Entity->P.Offset.x = C.CP.Offset.x;
-      Entity->P.WorldP.x = C.CP.WorldP.x;
-
-      if (StepDelta.x > 0)
-        Entity->P.Offset.x -= (Entity->CollisionVolumeRadius.x*2);
-      else
-        Entity->P.Offset.x++;
-
+      Entity->P.Offset.E[AxisIndex] += StepDelta.E[AxisIndex];
       Entity->P = Canonicalize(WorldChunkDim, Entity->P);
-      EntityWorldCollision(World, Entity, &C);
-    }
+      C = GetCollision(World, Entity);
+      if (C.didCollide)
+      {
+        Entity->Physics.Velocity.E[AxisIndex] = 0;
+        Entity->P.Offset.E[AxisIndex] = C.CP.Offset.E[AxisIndex];
+        Entity->P.WorldP.E[AxisIndex] = C.CP.WorldP.E[AxisIndex];
 
+        if (StepDelta.E[AxisIndex] > 0)
+          Entity->P.Offset.E[AxisIndex] -= (Entity->CollisionVolumeRadius.E[AxisIndex]*2);
+        else
+          Entity->P.Offset.E[AxisIndex]++;
 
-    Entity->P.Offset.y += StepDelta.y;
-    Entity->P = Canonicalize(WorldChunkDim, Entity->P);
-    C = GetCollision(World, Entity);
-    if (C.didCollide)
-    {
-      Entity->Physics.Velocity.y = 0;
-      Entity->P.Offset.y = C.CP.Offset.y;
-      Entity->P.WorldP.y = C.CP.WorldP.y;
-
-      if (StepDelta.y > 0)
-        Entity->P.Offset.y -= (Entity->CollisionVolumeRadius.y*2);
-      else
-        Entity->P.Offset.y++;
-
-      Entity->P = Canonicalize(WorldChunkDim, Entity->P);
-      EntityWorldCollision(World, Entity, &C);
-    }
-
-    Entity->P.Offset.z += StepDelta.z;
-    Entity->P = Canonicalize(WorldChunkDim, Entity->P);
-    C = GetCollision(World, Entity);
-    if (C.didCollide)
-    {
-      Entity->Physics.Velocity.z = 0;
-      Entity->P.Offset.z = C.CP.Offset.z;
-      Entity->P.WorldP.z = C.CP.WorldP.z;
-
-      if (StepDelta.z > 0)
-        Entity->P.Offset.z -= (Entity->CollisionVolumeRadius.z*2);
-      else
-        Entity->P.Offset.z++;
-
-      Entity->P = Canonicalize(WorldChunkDim, Entity->P);
-      EntityWorldCollision(World, Entity, &C);
+        Entity->P = Canonicalize(WorldChunkDim, Entity->P);
+        EntityWorldCollision(World, Entity, &C);
+      }
     }
 
     if (Unspawned(Entity) || Destroyed(Entity))
