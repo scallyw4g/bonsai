@@ -92,7 +92,7 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   if (Hotkeys->Player_Spawn)
   {
     Unspawn(Player);
-    world_position PlayerChunkP = World_Position(0, 0, -2);
+    world_position PlayerChunkP = World_Position(3, 5, -5);
     SpawnPlayer(GameState, Player, Canonical_Position(Voxel_Position(0,0,0), PlayerChunkP) );
     World->Center = PlayerChunkP;
   }

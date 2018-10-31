@@ -80,6 +80,61 @@ GetCollision(entity **Entities, entity *Entity, chunk_dimension WorldChunkDim)
   return Result;
 }
 
+collision_event
+GetCollision( world *World, canonical_position TestP, v3 CollisionRadius)
+{
+  collision_event Collision = {};
+
+  chunk_dimension WorldChunkDim = World->ChunkDim;
+
+  TestP = Canonicalize(WorldChunkDim, TestP);
+
+  voxel_position MinP = Voxel_Position(TestP.Offset - CollisionRadius);
+  voxel_position MaxP = Voxel_Position(Ceil(TestP.Offset + CollisionRadius));
+
+  for ( int z = MinP.z; z < MaxP.z; z++ )
+  {
+    for ( int y = MinP.y; y < MaxP.y; y++ )
+    {
+      for ( int x = MinP.x; x < MaxP.x; x++ )
+      {
+        canonical_position LoopTestP = Canonicalize( WorldChunkDim, V3(x,y,z), TestP.WorldP );
+        world_chunk *Chunk = GetWorldChunk( World, LoopTestP.WorldP );
+
+#if 0
+        // TODO(Jesse): Can we somehow atomically pull this one off the queue
+        // and initialize it on demand?
+        if (Chunk && NotSet(Chunk->Data->flags, Chunk_Initialized) )
+        {
+          Chunk->Data->flags = (Chunk->Data->flags, Chunk_Queued);
+          InitializeVoxels(Chunk);
+        }
+#endif
+
+        if (!Chunk)
+        {
+          Collision.CP = LoopTestP;
+          Collision.didCollide = true;
+          Collision.Chunk = 0;
+          goto end;
+        }
+
+        if ( IsFilledInChunk(Chunk->Data, Voxel_Position(LoopTestP.Offset), World->ChunkDim) )
+        {
+          Collision.CP = LoopTestP;
+          Collision.didCollide = true;
+          Collision.Chunk = Chunk;
+          goto end;
+        }
+
+      }
+    }
+  }
+  end:
+
+  return Collision;
+}
+
 // TODO(Jesse): This offset is only used to check if entities are grounded.
 // Can we do that in a more intelligent way?
 collision_event
@@ -90,7 +145,7 @@ GetCollision(world *World, entity *Entity, v3 Offset = V3(0,0,0) )
   if ( !Spawned(Entity) )
     return C;
 
-  C = GetCollision( World, Canonicalize(World->ChunkDim, Entity->P + Offset), Entity->CollisionVolumeRadius*2.0f);
+  C = GetCollision( World, Canonicalize(World->ChunkDim, Entity->P + Offset), Entity->CollisionVolumeRadius);
 
   return C;
 }
@@ -469,7 +524,7 @@ SpawnPlayer(game_state *GameState, entity *Player, canonical_position InitialP)
   Info("Player Spawned");
 
   physics Physics = {};
-  Physics.Drag = 6.0f;
+  Physics.Drag = 15.0f;
   Physics.Mass = 7.0f;
   Physics.Speed = PLAYER_SPEED;
 
@@ -689,14 +744,14 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
       C = GetCollision(World, Entity);
       if (C.didCollide)
       {
-        Entity->Physics.Velocity.E[AxisIndex] = 0;
-        Entity->P.Offset.E[AxisIndex] = C.CP.Offset.E[AxisIndex];
-        Entity->P.WorldP.E[AxisIndex] = C.CP.WorldP.E[AxisIndex];
+        s32 Sign = GetSign(StepDelta.E[AxisIndex]);
 
-        if (StepDelta.E[AxisIndex] > 0)
-          Entity->P.Offset.E[AxisIndex] -= (Entity->CollisionVolumeRadius.E[AxisIndex]*2);
-        else
-          Entity->P.Offset.E[AxisIndex]++;
+        Entity->Physics.Velocity.E[AxisIndex] = 0;
+
+        Entity->P.Offset.E[AxisIndex] =
+          (C.CP.Offset.E[AxisIndex] - (1.0f*Sign) ) - (Entity->CollisionVolumeRadius.E[AxisIndex]*Sign);
+
+        Entity->P.WorldP.E[AxisIndex] = C.CP.WorldP.E[AxisIndex];
 
         Entity->P = Canonicalize(WorldChunkDim, Entity->P);
         EntityWorldCollision(World, Entity, &C);
@@ -711,7 +766,7 @@ UpdateEntityP(game_state *GameState, entity *Entity, v3 GrossDelta)
 
   Entity->P = Canonicalize(WorldChunkDim, Entity->P);
 
-  collision_event AssertCollision = GetCollision(World, Entity );
+  collision_event AssertCollision = GetCollision(World, Entity);
 
   // Entites that aren't moving can still be positioned outside the world if
   // the player moves the world to do so
