@@ -515,11 +515,15 @@ main()
 
     if ( GameLibIsNew(DEFAULT_GAME_LIB) )
     {
+      SuspendWorkerThreads();
+
       CloseLibrary(GameLib);
       GameLib = OpenLibrary(DEFAULT_GAME_LIB);
 
       GameUpdateAndRender = (game_main_proc)GetProcFromLib(GameLib, "GameUpdateAndRender");
       GameThreadCallback = (game_thread_callback_proc)GetProcFromLib(GameLib, "GameThreadCallback");
+
+      ResumeWorkerThreads();
     }
 
     /* DEBUG_FRAME_RECORD(Debug_RecordingState, &Hotkeys); */

@@ -73,15 +73,29 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
 {
   TIMED_FUNCTION();
 
-  world                 *World    = GameState->World;
-  chunk_dimension WorldChunkDim   = World->ChunkDim;
-  graphics              *Graphics = GameState->Graphics;
-  g_buffer_render_group *gBuffer  = Graphics->gBuffer;
-  ao_render_group       *AoGroup  = Graphics->AoGroup;
-  camera                *Camera   = Graphics->Camera;
+  world                 *World         = GameState->World;
+  chunk_dimension        WorldChunkDim = World->ChunkDim;
+  graphics              *Graphics      = GameState->Graphics;
+  g_buffer_render_group *gBuffer       = Graphics->gBuffer;
+  ao_render_group       *AoGroup       = Graphics->AoGroup;
+  camera                *Camera        = Graphics->Camera;
 
   entity *Player = GameState->Player;
   ClearFramebuffers(Graphics);
+
+#if DEBUG_DRAW_WORLD_AXIES
+  DEBUG_DrawLine(&World->Mesh, Graphics, V3(0,0,0), V3(10000, 0, 0), RED, 0.5f );
+  DEBUG_DrawLine(&World->Mesh, Graphics, V3(0,0,0), V3(0, 10000, 0), GREEN, 0.5f );
+  DEBUG_DrawLine(&World->Mesh, Graphics, V3(0,0,0), V3(0, 0, 10000), BLUE, 0.5f );
+#endif
+
+  if (Hotkeys->Player_Spawn)
+  {
+    Unspawn(Player);
+    world_position PlayerChunkP = World_Position(0, 0, -2);
+    SpawnPlayer(GameState, Player, Canonical_Position(Voxel_Position(0,0,0), PlayerChunkP) );
+    World->Center = PlayerChunkP;
+  }
 
   SimulatePlayers(GameState, Player, Hotkeys, Plat->dt);
 

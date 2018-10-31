@@ -246,7 +246,7 @@ CopyKeyframeData(keyframe* DestKeyframes, r32_stream* KeyframePositions, r32_str
 model
 LoadCollada(memory_arena *Memory, const char * FilePath)
 {
-  Info("Loading .dae file : %s \n", FilePath);
+  Info("Loading .dae file : %s", FilePath);
 
   ansi_stream AnsiXml = AnsiStreamFromFile(FilePath, Memory);
   if (!AnsiXml.Start) { model M = {}; return M; }
