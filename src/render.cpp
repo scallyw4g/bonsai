@@ -768,7 +768,7 @@ BufferChunkMesh(
     v3 Offset = V3(0)
   )
 {
-  TIMED_FUNCTION();
+  /* TIMED_FUNCTION(); */
 
   if (!Src || Src->At == 0)
     return;

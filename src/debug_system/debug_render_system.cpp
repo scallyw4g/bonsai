@@ -991,10 +991,62 @@ DebugDrawCycleThreadGraph(ui_render_group *Group, debug_state *SharedState, layo
 /******************************              *********************************/
 
 
+struct called_function
+{
+  const char* Name;
+  u32 CallCount;
+};
+
+#define MAX_RECORDED_FUNCTION_CALLS 128
+static called_function ProgramFunctionCalls[MAX_RECORDED_FUNCTION_CALLS];
+static called_function NullFunctionCall = {};
+
+void
+CollateAllFunctionCalls(debug_profile_scope* Current)
+{
+  if (!Current || !Current->Name)
+    return;
+
+  for ( u32 FunctionIndex = 0;
+      FunctionIndex < MAX_RECORDED_FUNCTION_CALLS;
+      ++FunctionIndex)
+  {
+    called_function *Func = ProgramFunctionCalls + FunctionIndex;
+    if (Func->Name == Current->Name)
+    {
+      Func->CallCount++;
+      break;
+    }
+    else if (!Func->Name)
+    {
+      Func->Name = Current->Name;
+      Func->CallCount++;
+      break;
+    }
+
+    if (FunctionIndex == MAX_RECORDED_FUNCTION_CALLS-1)
+    {
+      Warn("MAX_RECORDED_FUNCTION_CALLS limit reached");
+    }
+  }
+
+  if (Current->Sibling)
+  {
+    CollateAllFunctionCalls(Current->Sibling);
+  }
+
+  if (Current->Child)
+  {
+    CollateAllFunctionCalls(Current->Child);
+  }
+
+  return;
+}
+
 void
 BufferFirstCallToEach(ui_render_group *Group,
     debug_profile_scope *Scope, debug_profile_scope *TreeRoot,
-    memory_arena *Memory, layout *CallgraphLayout, u64 TotalFrameCycles, u32 Depth)
+    memory_arena *Memory, layout *CallgraphLayout, table_layout* FunctionCallListingLayout, u64 TotalFrameCycles, u32 Depth)
 {
   if (!Scope) return;
 
@@ -1013,11 +1065,12 @@ BufferFirstCallToEach(ui_render_group *Group,
       BufferScopeTreeEntry(Group, Scope, CallgraphLayout, MainColor, Scope->Stats->CumulativeCycles, TotalFrameCycles, Scope->Stats->Calls, Depth);
 
       if (Scope->Expanded)
-        BufferFirstCallToEach(Group, Scope->Stats->MaxScope->Child, TreeRoot, Memory, CallgraphLayout, TotalFrameCycles, Depth+1);
+        BufferFirstCallToEach(Group, Scope->Stats->MaxScope->Child, TreeRoot, Memory, CallgraphLayout, FunctionCallListingLayout, TotalFrameCycles, Depth+1);
     }
+
   }
 
-  BufferFirstCallToEach(Group, Scope->Sibling, TreeRoot, Memory, CallgraphLayout, TotalFrameCycles, Depth);
+  BufferFirstCallToEach(Group, Scope->Sibling, TreeRoot, Memory, CallgraphLayout, FunctionCallListingLayout, TotalFrameCycles, Depth);
 
   return;
 }
@@ -1112,9 +1165,12 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Call
 
   END_BLOCK("Frame Ticker");
 
+  u32 TotalThreadCount = GetWorkerThreadCount() + 1;
+
+  debug_thread_state *MainThreadState = GetThreadLocalStateFor(0);
+  debug_scope_tree *MainThreadReadTree    = MainThreadState->ScopeTrees + DebugState->ReadScopeIndex;
   TIMED_BLOCK("Call Graph");
 
-    u32 TotalThreadCount = GetWorkerThreadCount() + 1;
     for ( u32 ThreadIndex = 0;
         ThreadIndex < TotalThreadCount;
         ++ThreadIndex)
@@ -1123,18 +1179,38 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Call
       debug_scope_tree *ReadTree = ThreadState->ScopeTrees + DebugState->ReadScopeIndex;
       frame_stats *Frame = DebugState->Frames + DebugState->ReadScopeIndex;
 
-      debug_thread_state *MainThreadState = GetThreadLocalStateFor(0);
-      debug_scope_tree *MainThreadReadTree    = MainThreadState->ScopeTrees + DebugState->ReadScopeIndex;
-
       if (MainThreadReadTree->FrameRecorded == ReadTree->FrameRecorded)
       {
         PadBottom(CallgraphLayout, 15);
         NewLine(CallgraphLayout, &Group->Font);
-        BufferFirstCallToEach(Group, ReadTree->Root, ReadTree->Root, ThreadsafeDebugMemoryAllocator(), CallgraphLayout, Frame->TotalCycles, 0);
+        BufferFirstCallToEach(Group, ReadTree->Root, ReadTree->Root, ThreadsafeDebugMemoryAllocator(), CallgraphLayout, 0, Frame->TotalCycles, 0);
       }
     }
 
   END_BLOCK("Call Graph");
+
+  CollateAllFunctionCalls(MainThreadReadTree->Root);
+
+
+  clip_rect NullClipRect = {};
+  local_persist table_layout FunctionCallLayout;
+  FunctionCallLayout.Layout.At = V2(0,0);
+  FunctionCallLayout.Layout.Clip = NullClipRect;
+  FunctionCallLayout.Layout.Basis = V2(CallgraphLayout->Clip.Max.x, 100);
+  for ( u32 FunctionIndex = 0;
+      FunctionIndex < MAX_RECORDED_FUNCTION_CALLS;
+      ++FunctionIndex)
+  {
+    called_function *Func = ProgramFunctionCalls + FunctionIndex;
+    if (Func->Name)
+    {
+      Column( Func->Name, Group, &FunctionCallLayout, WHITE);
+      Column( FormatU32(Func->CallCount), Group, &FunctionCallLayout, WHITE);
+      NewRow(&FunctionCallLayout, &Group->Font);
+    }
+  }
+
+  return;
 }
 
 void

@@ -141,6 +141,13 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
      Global_DrawCalls[DrawCountIndex] = NullDrawCall;
   }
 
+  for ( u32 FunctionIndex = 0;
+      FunctionIndex < MAX_RECORDED_FUNCTION_CALLS;
+      ++FunctionIndex)
+  {
+    ProgramFunctionCalls[FunctionIndex] = NullFunctionCall;
+  }
+
   return;
 }
 
