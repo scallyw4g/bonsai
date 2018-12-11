@@ -1018,6 +1018,7 @@ CollateAllFunctionCalls(debug_profile_scope* Current)
     {
       Func->Name = Current->Name;
       Func->CallCount++;
+      u32 SwapIndex = MAX_RECORDED_FUNCTION_CALLS;
       for (s32 PrevIndex = (s32)FunctionIndex -1;
           PrevIndex >= 0;
           --PrevIndex)
@@ -1025,13 +1026,18 @@ CollateAllFunctionCalls(debug_profile_scope* Current)
         Prev = ProgramFunctionCalls + PrevIndex;
         if (Prev->CallCount < Func->CallCount)
         {
-          called_function Temp = *Prev;
-          *Prev = *Func;
-          *Func = Temp;
-          Func = Prev;
+          SwapIndex = PrevIndex;
         }
         else
           break;
+      }
+
+      if(SwapIndex < MAX_RECORDED_FUNCTION_CALLS)
+      {
+        called_function* Swap = ProgramFunctionCalls + SwapIndex;
+        called_function Temp = *Swap;
+        *Swap = *Func;
+        *Func = Temp;
       }
 
       break;
