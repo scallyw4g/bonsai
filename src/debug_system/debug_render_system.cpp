@@ -1007,22 +1007,37 @@ CollateAllFunctionCalls(debug_profile_scope* Current)
   if (!Current || !Current->Name)
     return;
 
+  called_function* Prev = 0;
   for ( u32 FunctionIndex = 0;
       FunctionIndex < MAX_RECORDED_FUNCTION_CALLS;
       ++FunctionIndex)
   {
-    called_function *Func = ProgramFunctionCalls + FunctionIndex;
-    if (Func->Name == Current->Name)
-    {
-      Func->CallCount++;
-      break;
-    }
-    else if (!Func->Name)
+    called_function* Func = ProgramFunctionCalls + FunctionIndex;
+
+    if (Func->Name == Current->Name || !Func->Name)
     {
       Func->Name = Current->Name;
       Func->CallCount++;
+      for (s32 PrevIndex = (s32)FunctionIndex -1;
+          PrevIndex >= 0;
+          --PrevIndex)
+      {
+        Prev = ProgramFunctionCalls + PrevIndex;
+        if (Prev->CallCount < Func->CallCount)
+        {
+          called_function Temp = *Prev;
+          *Prev = *Func;
+          *Func = Temp;
+          Func = Prev;
+        }
+        else
+          break;
+      }
+
       break;
     }
+
+    Prev = Func;
 
     if (FunctionIndex == MAX_RECORDED_FUNCTION_CALLS-1)
     {
@@ -1189,8 +1204,8 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Call
 
   END_BLOCK("Call Graph");
 
-  CollateAllFunctionCalls(MainThreadReadTree->Root);
 
+  CollateAllFunctionCalls(MainThreadReadTree->Root);
 
   clip_rect NullClipRect = {};
   local_persist table_layout FunctionCallLayout;
