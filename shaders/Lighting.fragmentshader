@@ -10,7 +10,7 @@ uniform sampler2D shadowMap;
 uniform sampler2D Ssao;
 
 
-uniform int LightCount;
+uniform s32 LightCount;
 uniform r32 LightIndexToUV;
 uniform sampler2D LightColors;
 uniform sampler2D LightPositions;

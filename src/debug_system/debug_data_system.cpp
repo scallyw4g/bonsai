@@ -1,6 +1,6 @@
 #if BONSAI_INTERNAL
 
-debug_global __thread u64 ThreadLocal_ThreadIndex = 0;
+debug_global __thread u32 ThreadLocal_ThreadIndex = 0;
 debug_global b32 DebugGlobal_RedrawEveryPush = 0;
 
 
@@ -52,7 +52,7 @@ RegisterArena(const char *Name, memory_arena *Arena)
     const char *CurrentName = Current->Name;
     if (!CurrentName)
     {
-      if (AtomicCompareExchange( (volatile char **)&Current->Name, Name, CurrentName ))
+      if (AtomicCompareExchange( (volatile char **)&Current->Name, (volatile char*)Name, (volatile char*)CurrentName ))
       {
         Current->Arena = Arena;
         Registered = True;
@@ -99,8 +99,6 @@ PushesMatchExactly(push_metadata *First, push_metadata *Second)
 inline void
 ClearMetaRecordsFor(memory_arena *Arena)
 {
-  debug_state *DebugState = GetDebugState();
-
   u32 TotalThreadCount = GetWorkerThreadCount() + 1;
   for ( u32 ThreadIndex = 0;
       ThreadIndex < TotalThreadCount;
@@ -193,7 +191,6 @@ CollateMetadata(push_metadata *InputMeta, push_metadata *MetaTable)
 void
 WritePushMetadata(push_metadata *InputMeta, push_metadata *MetaTable)
 {
-  debug_state *DebugState = GetDebugState();
   WriteToMetaTable(InputMeta, MetaTable, PushesMatchExactly);
 
   return;
@@ -221,25 +218,6 @@ DEBUG_Allocate(memory_arena* Arena, umm StructSize, umm StructCount, const char*
     Error("Pushing %s on Line: %d, in file %s", Name, Line, File);
     Assert(False);
     return False;
-  }
-
-  return Result;
-}
-
-memory_arena_stats
-GetMemoryArenaStats(memory_arena *ArenaIn)
-{
-  memory_arena_stats Result = {};
-
-  memory_arena *Arena = ArenaIn;
-  while (Arena)
-  {
-    Result.Allocations++;
-    Result.Pushes += Arena->Pushes;
-    Result.TotalAllocated += TotalSize(Arena);
-    Result.Remaining += Remaining(Arena);
-
-    Arena = Arena->Prev;
   }
 
   return Result;
@@ -393,7 +371,7 @@ MainThreadAdvanceDebugSystem()
     NextFrame->StartingCycle = CurrentCycles;
   }
 
-  return Dt;
+  return (r32)Dt;
 }
 
 min_max_avg_dt
@@ -557,10 +535,9 @@ GetProfileScope()
 }
 
 void
-InitScopeTrees(memory_arena *DebugMemory, u32 TotalThreadCount)
+InitScopeTrees(u32 TotalThreadCount)
 {
   Assert(ThreadLocal_ThreadIndex == 0);
-  u64 CurrentCycles = GetCycleCount();
   for (u32 ThreadIndex = 0;
       ThreadIndex < TotalThreadCount;
       ++ThreadIndex)
@@ -633,7 +610,7 @@ GetXOffsetForHorizontalBar(u64 StartCycleOffset, u64 FrameTotalCycles, r32 Total
 }
 
 inline mutex_op_record *
-GetMutexOpRecord(mutex *Mutex, mutex_op Op, debug_state *State)
+ReserveMutexOpRecord(mutex *Mutex, mutex_op Op, debug_state *State)
 {
   if (!State->DebugDoScopeProfiling) return 0;
 
@@ -660,21 +637,21 @@ GetMutexOpRecord(mutex *Mutex, mutex_op Op, debug_state *State)
 inline void
 MutexWait(mutex *Mutex)
 {
-  mutex_op_record *Record = GetMutexOpRecord(Mutex, MutexOp_Waiting, GetDebugState());
+  /* mutex_op_record *Record = */ ReserveMutexOpRecord(Mutex, MutexOp_Waiting, GetDebugState());
   return;
 }
 
 inline void
 MutexAquired(mutex *Mutex)
 {
-  mutex_op_record *Record = GetMutexOpRecord(Mutex, MutexOp_Aquired, GetDebugState());
+  /* mutex_op_record *Record = */ ReserveMutexOpRecord(Mutex, MutexOp_Aquired, GetDebugState());
   return;
 }
 
 inline void
 MutexReleased(mutex *Mutex)
 {
-  mutex_op_record *Record = GetMutexOpRecord(Mutex, MutexOp_Released, GetDebugState());
+  /* mutex_op_record *Record = */ ReserveMutexOpRecord(Mutex, MutexOp_Released, GetDebugState());
   return;
 }
 
@@ -779,7 +756,7 @@ InitDebugDataSystem(debug_state *DebugState)
   InitDebugMemoryAllocationSystem(DebugState);
 
   u32 TotalThreadCount = GetTotalThreadCount();
-  InitScopeTrees(ThreadsafeDebugMemoryAllocator(), TotalThreadCount);
+  InitScopeTrees(TotalThreadCount);
   return;
 }
 

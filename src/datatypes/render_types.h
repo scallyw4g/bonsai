@@ -71,7 +71,7 @@ struct game_lights
 
   r32 IndexToUV;
 
-  s32 Count;
+  s32 Count; // Must be signed because of the shader
   light *Lights;
 };
 

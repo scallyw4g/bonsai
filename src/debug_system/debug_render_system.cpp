@@ -320,7 +320,7 @@ BufferText(const char* Text, u32 Color, layout *Layout, font *Font, ui_render_gr
 inline void
 BufferValue(const char *Text, ui_render_group *Group, layout *Layout, u32 ColorIndex)
 {
-  r32 DeltaX = BufferText(Text, ColorIndex, Layout, &Group->Font, Group);
+  /* r32 DeltaX = */ BufferText(Text, ColorIndex, Layout, &Group->Font, Group);
   return;
 }
 
@@ -432,6 +432,14 @@ MemorySize(u64 Number)
 
   char *Buffer = AllocateProtection(char, TranArena, 32, False);
   sprintf(Buffer, "%.1f%c", (r32)Display, Units);
+  return Buffer;
+}
+
+inline char*
+FormatU64(u64 Number)
+{
+  char *Buffer = AllocateProtection(char, TranArena, 32, False);
+  sprintf(Buffer, "%lu", Number);
   return Buffer;
 }
 
@@ -653,36 +661,42 @@ IsInsideRect(rect2 Rect, v2 P)
 }
 
 scope_stats
-GetStatsFor( debug_profile_scope *Scope, debug_profile_scope *Root)
+GetStatsFor( debug_profile_scope *Target, debug_profile_scope *Root)
 {
   scope_stats Result = {};
 
-  debug_profile_scope *Next = Root;
-  if (Scope->Parent) Next = Scope->Parent->Child; // Selects first sibling
+  debug_profile_scope *Current = Root;
+  if (Target->Parent) Current = Target->Parent->Child; // Selects first sibling
 
-  while (Next)
+  while (Current)
   {
-    if (Next == Scope) // Find Ourselves
+    if (Current == Target) // Find Ourselves
     {
       if (Result.Calls == 0) // We're first
       {
         Result.IsFirst = True;
       }
+      else
+      {
+        break;
+      }
     }
 
-    if (StringsMatch(Next->Name, Scope->Name))
+    // These are compile-time string constants, so we can compare pointers to
+    // find equality
+    if (Current->Name == Target->Name)
     {
       ++Result.Calls;
-      Result.CumulativeCycles += Next->CycleCount;
+      Result.CumulativeCycles += Current->CycleCount;
 
-      if (!Result.MinScope || Next->CycleCount < Result.MinScope->CycleCount)
-        Result.MinScope = Next;
+      if (!Result.MinScope || Current->CycleCount < Result.MinScope->CycleCount)
+        Result.MinScope = Current;
 
-      if (!Result.MaxScope || Next->CycleCount > Result.MaxScope->CycleCount)
-        Result.MaxScope = Next;
+      if (!Result.MaxScope || Current->CycleCount > Result.MaxScope->CycleCount)
+        Result.MaxScope = Current;
     }
 
-    Next = Next->Sibling;
+    Current = Current->Sibling;
   }
 
   return Result;
@@ -786,7 +800,7 @@ DrawCycleBar( cycle_range *Range, cycle_range *Frame, r32 TotalGraphWidth, const
 
 void
 DrawWaitingBar(mutex_op_record *WaitRecord, mutex_op_record *AquiredRecord, mutex_op_record *ReleasedRecord,
-               ui_render_group *Group, layout *Layout, font *Font, u64 FrameStartingCycle, u64 FrameTotalCycles, r32 TotalGraphWidth)
+               ui_render_group *Group, layout *Layout, u64 FrameStartingCycle, u64 FrameTotalCycles, r32 TotalGraphWidth)
 {
   Assert(WaitRecord->Op == MutexOp_Waiting);
   Assert(AquiredRecord->Op == MutexOp_Aquired);
@@ -797,9 +811,6 @@ DrawWaitingBar(mutex_op_record *WaitRecord, mutex_op_record *AquiredRecord, mute
 
   u64 WaitCycleCount = AquiredRecord->Cycle - WaitRecord->Cycle;
   u64 AquiredCycleCount = ReleasedRecord->Cycle - AquiredRecord->Cycle;
-
-  u64 StartCycleOffset = FrameStartingCycle - WaitRecord->Cycle;
-  u32 xOffset = GetXOffsetForHorizontalBar(StartCycleOffset, FrameTotalCycles, TotalGraphWidth);
 
   untextured_2d_geometry_buffer *Geo = &Group->TextGroup->UIGeo;
   cycle_range FrameRange = {FrameStartingCycle, FrameTotalCycles};
@@ -906,9 +917,9 @@ DebugDrawCycleThreadGraph(ui_render_group *Group, debug_state *SharedState, layo
 
   NewLine(Layout, &Group->Font);
 
-  r32 TotalMs = FrameStats->FrameMs;
+  r32 TotalMs = (r32)FrameStats->FrameMs;
 
-  if (TotalMs)
+  if (TotalMs > 0.0f)
   {
     r32 MarkerWidth = 3.0f;
 
@@ -933,10 +944,6 @@ DebugDrawCycleThreadGraph(ui_render_group *Group, debug_state *SharedState, layo
       Geo->At+=6;
     }
   }
-
-  frame_stats *Frame = SharedState->Frames + SharedState->ReadScopeIndex;
-  u64 FrameTotalCycles = Frame->TotalCycles;
-  u64 FrameStartingCycle = Frame->StartingCycle;
 
 #if 0
   u32 UnclosedMutexRecords = 0;
@@ -992,6 +999,7 @@ BufferFirstCallToEach(ui_render_group *Group, debug_profile_scope *Scope, debug_
 
   if (Scope->Name)
   {
+
     if (!Scope->Stats)
     {
       Scope->Stats = AllocateProtection(scope_stats, Memory, 1, False);
@@ -1106,7 +1114,6 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Layo
   TIMED_BLOCK("Call Graph");
 
     u32 TotalThreadCount = GetWorkerThreadCount() + 1;
-    u64 TotalCycles = 0;
     for ( u32 ThreadIndex = 0;
         ThreadIndex < TotalThreadCount;
         ++ThreadIndex)
@@ -1354,7 +1361,7 @@ BufferMemoryBargraphTable(ui_render_group *Group, selected_arenas *SelectedArena
 }
 
 layout *
-BufferDebugPushMetaData(debug_state *DebugState, ui_render_group *Group, selected_arenas *SelectedArenas, umm CurrentArenaHead, table_layout *Table, v2 Basis)
+BufferDebugPushMetaData(ui_render_group *Group, selected_arenas *SelectedArenas, umm CurrentArenaHead, table_layout *Table, v2 Basis)
 {
   push_metadata CollatedMetaTable[META_TABLE_SIZE] = {};
 
@@ -1487,6 +1494,7 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState, v2 OriginalB
 
       Column(Current->Name, Group, &MemoryHudArenaTable, Color);
       Column(MemorySize(MemStats.TotalAllocated), Group, &MemoryHudArenaTable, Color);
+      Column(FormatU64(MemStats.Pushes), Group, &MemoryHudArenaTable, Color);
       NewRow(&MemoryHudArenaTable, &Group->Font);
     }
 
@@ -1517,7 +1525,7 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState, v2 OriginalB
                                    BargraphTable->Layout.Clip.Max.x),
                       GetAbsoluteAt(&MemoryHudArenaTable.Layout).y };
 
-        BufferDebugPushMetaData(DebugState, Group, SelectedArenas, HashArenaHead(Current->Arena), MetaTable, BasisP);
+        BufferDebugPushMetaData(Group, SelectedArenas, HashArenaHead(Current->Arena), MetaTable, BasisP);
       }
 
       MemoryHudArenaTable.Layout.At = {};
@@ -1623,9 +1631,9 @@ DebugDrawGraphicsHud(ui_render_group *Group, debug_state *DebugState, layout *La
 
 
 void
-InitDebugRenderSystem(debug_state *DebugState)
+InitDebugRenderSystem(debug_state *DebugState, heap_allocator *Heap)
 {
-  AllocateMesh(&DebugState->LineMesh, 1024, ThreadsafeDebugMemoryAllocator());
+  AllocateMesh(&DebugState->LineMesh, 1024, Heap);
 
   if (!InitDebugOverlayFramebuffer(&DebugState->TextRenderGroup, ThreadsafeDebugMemoryAllocator(), "texture_atlas_0.bmp"))
   { Error("Initializing Debug Overlay Framebuffer"); }

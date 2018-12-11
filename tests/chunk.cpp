@@ -1,15 +1,21 @@
 #define BONSAI_NO_PUSH_METADATA
 #define BONSAI_NO_DEBUG_MEMORY_ALLOCATOR
 
+#define VR_X 8
+#define VR_Y 8
+#define VR_Z 8
+
 #include <bonsai_types.h>
-#include <bonsai_vertex.h>
 #include <unix_platform.cpp>
+
+#include <heap_memory_types.cpp>
 
 #include <chunk.cpp>
 #include <bonsai_mesh.cpp>
 #include <perlin.cpp>
 
 global_variable chunk_dimension WORLD_CHUNK_DIM = Chunk_Dimension(8,8,8);
+#include <threadsafe.cpp>
 #include <world_chunk.cpp>
 
 #include <test_utils.cpp>
@@ -52,7 +58,7 @@ main()
   }
 
   { // Ensure copy works as intended
-    world_chunk *SyntheticChunk = AllocateWorldChunk(Memory,SynChunkP, SynChunkDim);
+    world_chunk *SyntheticChunk = AllocateWorldChunk(Memory, SynChunkP, SynChunkDim);
     world_chunk *DestChunk = AllocateWorldChunk(Memory, DestChunkP, DestChunkDim);
 
     InitChunkPlane(1, SyntheticChunk, SynChunkDim, GRASS_GREEN);

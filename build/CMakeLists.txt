@@ -1,3 +1,5 @@
+set(CMAKE_C_COMPILER "/usr/bin/clang")
+set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
 
 cmake_minimum_required (VERSION 3.0)
 
@@ -18,28 +20,37 @@ set( BIN ${ROOT}/bin )
 # Engine include dirs
 include_directories(${SRC})
 include_directories(${SRC}/datatypes)
-include_directories(${TESTS})
 
 set( LIBRARY_OUTPUT_PATH ${BIN} )
 set( EXECUTABLE_OUTPUT_PATH ${BIN} )
 
-add_executable(Bonsai ${SRC}/platform.cpp)
-
-add_executable(ttf ${SRC}/font/ttf.cpp)
-
-add_executable(Server ${SRC}/net/server.cpp)
-add_executable(test_m4 ${TESTS}/m4.cpp)
-add_executable(test_collada ${TESTS}/colladaloader.cpp)
-add_executable(test_bitmap ${TESTS}/bitmap.cpp)
-add_executable(test_chunk ${TESTS}/chunk.cpp)
-add_executable(test_string ${TESTS}/bonsai_string.cpp)
-add_executable(test_objloader ${TESTS}/objloader.cpp)
+add_executable(Bonsai          ${SRC}/platform.cpp)
+add_executable(ttf             ${SRC}/font/ttf.cpp)
+add_executable(Server          ${SRC}/net/server.cpp)
+add_executable(test_m4         ${TESTS}/m4.cpp)
+add_executable(test_collada    ${TESTS}/colladaloader.cpp)
+add_executable(test_bitmap     ${TESTS}/bitmap.cpp)
+add_executable(test_chunk      ${TESTS}/chunk.cpp)
+add_executable(test_string     ${TESTS}/bonsai_string.cpp)
+add_executable(test_objloader  ${TESTS}/objloader.cpp)
 add_executable(test_allocation ${TESTS}/allocation.cpp)
-add_executable(test_callgraph ${TESTS}/callgraph.cpp)
+add_executable(test_callgraph  ${TESTS}/callgraph.cpp)
+add_executable(test_heap_allocation ${TESTS}/heap_allocation.cpp)
+
+target_include_directories(test_m4         PRIVATE ${TESTS})
+target_include_directories(test_collada    PRIVATE ${TESTS})
+target_include_directories(test_bitmap     PRIVATE ${TESTS})
+target_include_directories(test_chunk      PRIVATE ${TESTS})
+target_include_directories(test_string     PRIVATE ${TESTS})
+target_include_directories(test_objloader  PRIVATE ${TESTS})
+target_include_directories(test_allocation PRIVATE ${TESTS})
+target_include_directories(test_callgraph  PRIVATE ${TESTS})
+target_include_directories(test_heap_allocation  PRIVATE ${TESTS})
 
 add_definitions( -DGL_GLEXT_PROTOTYPES=1 )
 
-add_library(DebugSystem SHARED ${SRC}/debug.cpp)
+add_library(DebugSystem SHARED ${SRC}/debug_system/debug.cpp)
+target_include_directories(DebugSystem PRIVATE ${SRC}/debug_system)
 
 add_library(SsaoTest SHARED ${EXAMPLES}/ssao_test/game.cpp)
 target_include_directories(SsaoTest PRIVATE ${EXAMPLES}/ssao_test)
@@ -53,12 +64,19 @@ set_target_properties(AnimationTest PROPERTIES OUTPUT_NAME "AnimationTest")
 set_target_properties(AnimationTest PROPERTIES PREFIX "")
 set_target_properties(AnimationTest PROPERTIES SUFFIX "")
 
+add_library(WorldGen SHARED ${EXAMPLES}/world_gen/game.cpp)
+target_include_directories(WorldGen PRIVATE ${EXAMPLES}/world_gen)
+set_target_properties(WorldGen PROPERTIES OUTPUT_NAME "WorldGen")
+set_target_properties(WorldGen PROPERTIES PREFIX "")
+set_target_properties(WorldGen PROPERTIES SUFFIX "")
+
 # Link with Opengl
 find_package(OpenGL REQUIRED)
 include_directories(${OPENGL_INCLUDE_DIRS} )
 target_link_libraries(Bonsai ${OPENGL_LIBRARIES})
 target_link_libraries(SsaoTest ${OPENGL_LIBRARIES})
 target_link_libraries(AnimationTest ${OPENGL_LIBRARIES})
+target_link_libraries(WorldGen ${OPENGL_LIBRARIES})
 target_link_libraries(test_callgraph ${OPENGL_LIBRARIES})
 
 add_custom_target(run ${BIN}/Bonsai
@@ -73,6 +91,7 @@ add_custom_target(tests ${BIN}/test_m4
                         ${BIN}/test_objloader
                         ${BIN}/test_allocation
                         ${BIN}/test_callgraph
+                        ${BIN}/test_heap_allocation
                         COMMENT "Running M4 Tests")
 
 target_compile_definitions(Bonsai         PUBLIC BONSAI_INTERNAL=1)
@@ -80,6 +99,7 @@ target_compile_definitions(Server         PUBLIC BONSAI_INTERNAL=1)
 target_compile_definitions(SsaoTest       PUBLIC BONSAI_INTERNAL=1)
 target_compile_definitions(DebugSystem    PUBLIC BONSAI_INTERNAL=1)
 target_compile_definitions(AnimationTest  PUBLIC BONSAI_INTERNAL=1)
+target_compile_definitions(WorldGen  PUBLIC BONSAI_INTERNAL=1)
 
 target_compile_definitions(ttf PUBLIC BONSAI_INTERNAL=1)
 
@@ -91,6 +111,7 @@ target_compile_definitions(test_string PUBLIC BONSAI_INTERNAL=1)
 target_compile_definitions(test_objloader PUBLIC BONSAI_INTERNAL=1)
 target_compile_definitions(test_allocation PUBLIC BONSAI_INTERNAL=1)
 target_compile_definitions(test_callgraph PUBLIC BONSAI_INTERNAL=1)
+target_compile_definitions(test_heap_allocation PUBLIC BONSAI_INTERNAL=1)
 
 
 
@@ -133,7 +154,7 @@ if (UNIX)
   target_link_libraries(test_callgraph X11)               # Xlib
   target_link_libraries(test_callgraph ${CMAKE_DL_LIBS})  # .so loader
 
-elseif(WIN32) 
+elseif(WIN32)
 
 else()
 
@@ -175,8 +196,16 @@ elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL Clang)
   add_definitions( -Wno-c++98-compat-pedantic )
   add_definitions( -Wno-gnu-anonymous-struct )
   add_definitions( -Wno-missing-prototypes )
+  add_definitions( -Wno-zero-as-null-pointer-constant)
+  add_definitions( -Wno-format-nonliteral )
+  add_definitions( -Wno-cast-qual )
+  add_definitions( -Wno-unused-function )
+  add_definitions( -Wno-four-char-constants )
+
+
   # TODO(Jesse): Should this be turned on again?
   add_definitions( -Wno-global-constructors )
+
 else()
   message(FATAL_ERROR "Unsupported Compiler")
 endif()
@@ -186,6 +215,11 @@ get_property(ssaoTestBinary TARGET SsaoTest PROPERTY OUTPUT_NAME)
 add_custom_command( TARGET SsaoTest POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy
                     ../bin/${ssaoTestBinary} ../bin/${ssaoTestBinary}Loadable.so )
+
+get_property(worldGenBinary TARGET WorldGen PROPERTY OUTPUT_NAME)
+add_custom_command( TARGET WorldGen POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy
+                    ../bin/${worldGenBinary} ../bin/${worldGenBinary}Loadable.so )
 
 get_property(animationTestBinary TARGET AnimationTest PROPERTY OUTPUT_NAME)
 add_custom_command( TARGET AnimationTest POST_BUILD

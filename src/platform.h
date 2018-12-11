@@ -1,29 +1,61 @@
-// FIXME(Jesse): Define per application!
-#define WORK_QUEUE_SIZE (2048)
+#define WORK_QUEUE_SIZE (65536*2)
 
 struct platform;
 struct network_connection;
 struct game_state;
 struct memory_arena;
+struct heap_allocator;
 struct hotkeys;
 struct work_queue_entry;
 struct os;
+struct thread_local_state;
+
+
+#define EXPAND(E) #E
+#define TO_STRING(Text) EXPAND(Text)
+
+#define BONSAI_API_MAIN_THREAD_CALLBACK_NAME          MainThreadCallback
+#define BONSAI_API_MAIN_THREAD_INIT_CALLBACK_NAME     InitMainThreadCallback
+#define BONSAI_API_WORKER_THREAD_CALLBACK_NAME        WorkerThreadCallback
+#define BONSAI_API_WORKER_THREAD_INIT_CALLBACK_NAME   InitWorkerThreadCallback
+
+#define BONSAI_API_MAIN_THREAD_CALLBACK_PARAMS         platform *Plat, game_state *GameState, hotkeys *Hotkeys
+#define BONSAI_API_MAIN_THREAD_INIT_CALLBACK_PARAMS    platform *Plat, memory_arena *GameMemory, get_debug_state_proc GetDebugState_in
+#define BONSAI_API_WORKER_THREAD_CALLBACK_PARAMS       work_queue_entry* Entry, thread_local_state* Thread
+#define BONSAI_API_WORKER_THREAD_INIT_CALLBACK_PARAMS  thread_local_state* Thread, game_state* GameState
+
+
+#define BONSAI_API_MAIN_THREAD_CALLBACK() \
+  exported_function void BONSAI_API_MAIN_THREAD_CALLBACK_NAME(BONSAI_API_MAIN_THREAD_CALLBACK_PARAMS)
+
+#define BONSAI_API_MAIN_THREAD_INIT_CALLBACK() \
+  exported_function game_state* BONSAI_API_MAIN_THREAD_INIT_CALLBACK_NAME(BONSAI_API_MAIN_THREAD_INIT_CALLBACK_PARAMS)
+
+#define BONSAI_API_WORKER_THREAD_CALLBACK() \
+  exported_function void BONSAI_API_WORKER_THREAD_CALLBACK_NAME(BONSAI_API_WORKER_THREAD_CALLBACK_PARAMS)
+
+#define BONSAI_API_WORKER_THREAD_INIT_CALLBACK() \
+  exported_function void BONSAI_API_WORKER_THREAD_INIT_CALLBACK_NAME(BONSAI_API_WORKER_THREAD_INIT_CALLBACK_PARAMS)
 
 typedef void (*GameCallback)(void*);
-typedef game_state* (*game_init_proc)(platform*, memory_arena*);
-typedef void (*game_main_proc)(platform*, game_state*, hotkeys*);
-typedef void (*game_init_globals_proc)(platform*);
-typedef void (*game_thread_callback_proc)(work_queue_entry*, memory_arena*);
 
-enum work_queue_entry_flags
+
+typedef void (*bonsai_main_thread_callback)        (BONSAI_API_MAIN_THREAD_CALLBACK_PARAMS);
+typedef void (*bonsai_worker_thread_init_callback) (BONSAI_API_WORKER_THREAD_INIT_CALLBACK_PARAMS);
+
+typedef void        (*bonsai_worker_thread_callback)    (BONSAI_API_WORKER_THREAD_CALLBACK_PARAMS);
+typedef game_state* (*bonsai_main_thread_init_callback) (BONSAI_API_MAIN_THREAD_INIT_CALLBACK_PARAMS);
+
+enum work_queue_entry_type
 {
-  WorkEntry_InitWorldChunk = 1 << 0,
+  WorkEntryType_None           =      0,
+  WorkEntryType_InitWorldChunk = 1 << 0,
 };
 struct work_queue_entry
 {
   game_state *GameState;
   void *Input;
-  work_queue_entry_flags Flags;
+  work_queue_entry_type Type;
 };
 
 struct thread
@@ -35,14 +67,16 @@ struct thread
 struct work_queue
 {
   semaphore Semaphore;
-  volatile unsigned int EnqueueIndex;
-  volatile unsigned int DequeueIndex;
+  volatile u32 EnqueueIndex;
+  volatile u32 DequeueIndex;
   work_queue_entry *Entries;
 };
 
 struct thread_startup_params
 {
-  work_queue *Queue;
+  bonsai_worker_thread_init_callback InitProc;
+  game_state* GameState;
+  work_queue* Queue;
   thread Self;
 };
 
@@ -142,8 +176,6 @@ struct platform
   r32 dt;
   s32 WindowWidth = SCR_WIDTH;
   s32 WindowHeight = SCR_HEIGHT;
-
-  const char *GlslVersion;
 
   input Input;
 };

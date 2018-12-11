@@ -46,8 +46,8 @@ AllocateAndInitSsaoNoise(ao_render_group *AoGroup, memory_arena *GraphicsMemory)
 
 shader
 MakeLightingShader(memory_arena *GraphicsMemory,
-    g_buffer_textures *gTextures, texture *ShadowMap, texture *Ssao,
-    m4 *ShadowMVP, game_lights *Lights, camera *Camera)
+    g_buffer_textures *gTextures,/* texture *ShadowMap,*/ texture *Ssao,
+    /*m4 *ShadowMVP, */ game_lights *Lights, camera *Camera)
 {
   shader Shader = LoadShaders( "Lighting.vertexshader", "Lighting.fragmentshader", GraphicsMemory);
 
@@ -355,8 +355,8 @@ GraphicsInit(memory_arena *GraphicsMemory)
   texture *SsaoNoiseTexture = AllocateAndInitSsaoNoise(AoGroup, GraphicsMemory);
 
   gBuffer->LightingShader =
-    MakeLightingShader(GraphicsMemory, gBuffer->Textures, 0,
-                       AoGroup->Texture, &gBuffer->ShadowMVP, Result->Lights, Result->Camera);
+    MakeLightingShader(GraphicsMemory, gBuffer->Textures, /* shadowMapTexturePtr, */
+                       AoGroup->Texture, /* &gBuffer->ShadowMVP, */Result->Lights, Result->Camera);
 
   gBuffer->gBufferShader =
     CreateGbufferShader(GraphicsMemory, &gBuffer->ViewProjection, Result->Camera);

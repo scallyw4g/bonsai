@@ -7,8 +7,8 @@ struct keyframe
 
 struct animation
 {
-  r64 t;
-  r64 tEnd;
+  r32 t;
+  r32 tEnd;
 
   u32 xKeyframeCount;
   keyframe* xKeyframes;

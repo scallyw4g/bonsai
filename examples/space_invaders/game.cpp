@@ -1,14 +1,7 @@
-
-#include <bonsai_types.h>
-
-#include <globals.h>
-
-#include <game.h>
-#include <game_constants.h>
-
-#include <bonsai.cpp>
-#include <physics.cpp>
-#include <entity.cpp>
+#include <bonsai_engine.h>
+global_variable memory_arena *TranArena = PlatformAllocateArena();
+#include <bonsai_engine.cpp>
+#include <bonsai_asset_loaders.cpp>
 
 r32
 GetLevel(r64 Time)
@@ -388,14 +381,22 @@ DrawTitleScreen(game_state *GameState)
   TextOutAt( GameState->Plat, RG, &RG->TextGeo, "Press `Space` to Start", V2(0, 0), FontSize);
 }
 
-EXPORT void
-GameThreadCallback(work_queue_entry *Entry, memory_arena *ThreadArena)
+BONSAI_API_GAME_THREAD_CALLBACK()
 {
   switch (Entry->Flags)
   {
     case WorkEntry_InitWorldChunk:
     {
-      /* InitChunkPerlinPlane(Entry->GameState, (world_chunk*)Entry->Input, ThreadArena); */
+      world_chunk* DestChunk = (world_chunk*)Entry->Input;
+      s32 Amplititude = 10;
+      s32 StartingZDepth = -120;
+
+      untextured_3d_geometry_buffer* DestMeshBuffer = ThreadSafeUnlinkFirst(Thread->FirstFreeMesh);
+      if (!DestMeshBuffer) { DestMeshBuffer = AllocateMesh(Thread->PermMemory, CD_X*CD_Y*CD_Z*VERTS_PER_FACE*6); }
+
+      InitializeWorldChunkPerlinPlane(Thread, &Entry->GameState->Noise,
+                                      DestChunk, DestMeshBuffer,
+                                      Amplititude, StartingZDepth);
     } break;
 
     InvalidDefaultCase;
@@ -404,14 +405,7 @@ GameThreadCallback(work_queue_entry *Entry, memory_arena *ThreadArena)
   return;
 }
 
-EXPORT void
-InitGlobals(platform *Plat)
-{
-  INIT_DEUBG_STATE(Plat);
-}
-
-EXPORT void*
-GameInit( platform *Plat, memory_arena *GameMemory)
+BONSAI_API_GAME_INIT_CALLBACK()
 {
   Info("Initializing Game");
 
@@ -539,8 +533,7 @@ GameInit( platform *Plat, memory_arena *GameMemory)
   return GameState;
 }
 
-EXPORT void
-GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys, network_connection *Network)
+BONSAI_API_MAIN_THREAD_CALLBACK()
 {
   game_mode *Mode = &GameState->Mode;
   Mode->TimeRunning += Plat->dt;

@@ -1,8 +1,8 @@
 
 #if 0
 // TODO(Jesse): Write actual/working fModf!
-float
-myFmodf( float F, float mod )
+r32
+myFmodf( r32 F, r32 mod )
 {
   int intF = (int)F;
   int intMod = (int)mod;
@@ -15,7 +15,7 @@ myFmodf( float F, float mod )
 
   int ResultMantissa = Fmantissa % ModMantissa;
 
-  float Result = ResultMantissa | ( intF & invMask );
+  r32 Result = ResultMantissa | ( intF & invMask );
 
   return Result;
 }
@@ -24,14 +24,14 @@ myFmodf( float F, float mod )
 inline r32
 Sin(r32 Theta)
 {
-  r32 Result = sin(Theta);
+  r32 Result = (r32)sin(Theta);
   return Result;
 }
 
 inline r32
 Cos(r32 Theta)
 {
-  r32 Result = cos(Theta);
+  r32 Result = (r32)cos(Theta);
   return Result;
 }
 
@@ -88,6 +88,13 @@ SafeDivide0(v3 Dividend, r32 Divisor)
 }
 #endif
 
+inline r64
+Min(r64 A, r64 B)
+{
+  r64 Result = A < B ? A : B;
+  return Result;
+}
+
 inline r32
 Min(r32 A, r32 B)
 {
@@ -109,12 +116,20 @@ Min(s32 A, s32 B)
   return Result;
 }
 
+inline r64
+Max(r64 A, r64 B)
+{
+  r64 Result = A > B ? A : B;
+  return Result;
+}
+
 inline r32
 Max(r32 A, r32 B)
 {
   r32 Result = A > B ? A : B;
   return Result;
 }
+
 
 inline u32
 Max(u32 A, u32 B)
@@ -243,7 +258,7 @@ Floorf(r32 f)
 r32
 Ceilf(r32 F)
 {
-  r32 Result = ceil(F);
+  r32 Result = (r32)ceil(F);
   return Result;
 }
 
@@ -289,7 +304,7 @@ Lerp(r32 t, v2 p1, v2 p2)
   return Result;
 }
 
-float
+r32
 Lerp(r32 t, r32 p1, r32 p2)
 {
   Assert(t<=1.0f);
@@ -324,17 +339,17 @@ LengthSq( voxel_position P )
   return Result;
 }
 
-inline float
+inline r32
 LengthSq( v2 Vec )
 {
-  float Result = Vec.x*Vec.x + Vec.y*Vec.y;
+  r32 Result = Vec.x*Vec.x + Vec.y*Vec.y;
   return Result;
 }
 
-inline float
+inline r32
 LengthSq( v3 Vec )
 {
-  float Result = Vec.x*Vec.x + Vec.y*Vec.y + Vec.z*Vec.z;
+  r32 Result = Vec.x*Vec.x + Vec.y*Vec.y + Vec.z*Vec.z;
   return Result;
 }
 
@@ -352,22 +367,22 @@ Length( voxel_position Vec )
   return Result;
 }
 
-inline float
+inline r32
 Length( v3 Vec )
 {
-  float Result = sqrt(LengthSq(Vec));
+  r32 Result = (r32)sqrt(LengthSq(Vec));
   return Result;
 }
 
-inline float
-Square( float f )
+inline r32
+Square( r32 f )
 {
-  float Result = f*f;
+  r32 Result = f*f;
   return Result;
 }
 
 inline v2
-Normalize(v2 Vec, float length)
+Normalize(v2 Vec, r32 length)
 {
   if (length == 0) return V2(0,0);
 
@@ -385,7 +400,7 @@ Normalize(v2 A)
 }
 
 inline v3
-Normalize( v3 Vec, float length)
+Normalize( v3 Vec, r32 length)
 {
   if (length == 0) return V3(0,0,0);
 
@@ -412,10 +427,10 @@ Normalize(voxel_position A)
   return Result;
 }
 
-inline float
+inline r32
 Dot( v3 A, v3 B)
 {
-  float Result;
+  r32 Result;
   Result = (A.x*B.x) + (A.y*B.y) + (A.z*B.z);
   return Result;
 }
@@ -464,7 +479,7 @@ GetSign( s32 f )
 }
 
 inline Sign
-GetSign( float f )
+GetSign( r32 f )
 {
   Sign Result = Zero;
 

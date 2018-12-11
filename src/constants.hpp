@@ -1,27 +1,16 @@
-#ifndef GAME_CONSTANTS
-#define GAME_CONSTANTS
-
 #define CHUNK_VOL (CHUNK_HEIGHT*CHUNK_WIDTH*CHUNK_DEPTH)
 
 // 6 verticies per face, 6 faces per voxel
 #define VERTS_PER_FACE 6
-#define VERT_PER_VOXEL (VERTS_PER_FACE*6)
-
-// 3 floats per vert
-#define BYTES_PER_VERT (sizeof(r32)*3)
-#define BYTES_PER_FACE (BYTES_PER_VERT*6)
-
-#define VOXEL_DIAMETER (1.0f)
-#define VOXEL_RADIUS (VOXEL_DIAMETER/2.0f)
+#define VERTS_PER_VOXEL (VERTS_PER_FACE*6)
 
 #define WORLD_X V3(1,0,0)
 #define WORLD_Y V3(0,1,0)
 #define WORLD_Z V3(0,0,1)
 
-#define MAX_VISIBLE_POINT V3(VR_X*CD_X, VR_Y*CD_Y, VR_Z*CD_Z)
-
-#define WORLD_HASH_SIZE 2048
-#define FREELIST_SIZE 2048
+#define WORLD_HASH_SIZE_MULTIPLIER 8
+#define WORLD_HASH_SIZE (VR_X*VR_Y*VR_Z*WORLD_HASH_SIZE_MULTIPLIER)
+#define FREELIST_SIZE (65536)
 
 #define NOISE_FREQUENCY 100L
 
@@ -61,7 +50,7 @@
 #define PARTICLES_PER_SYSTEM   1024
 
 #define ENEMY_SPEED 800
-#define PLAYER_SPEED 13000
+#define PLAYER_SPEED 80000
 #define PROJECTILE_SPEED 60
 
 #define ENEMY_DRAG 0
@@ -81,7 +70,7 @@
 #define DEBUG_DRAW_SHADOW_MAP_TEXTURE 1
 #define DEBUG_HIGHLIGHT_VOID_CHUNKS   0
 #define DEBUG_DRAW_WORLD_AXIES        1
-#define DEBUG_THREAD_COUNT_BIAS       -1
+#define DEBUG_THREAD_COUNT_BIAS       0
 #define DEBUG_PARTICLE_EFFECTS        1
 
 #define DEBUG_FONT_SIZE               18
@@ -121,4 +110,7 @@ debug_global s32 VoxelsIndexed = 0;
 
 #define MIN_LOD_DISTANCE 300
 
-#endif
+#define VISIBLE_REGION Chunk_Dimension(VR_X,VR_Y,VR_Z)
+
+#define VISIBLE_REGION_RADIUS (VISIBLE_REGION/2)
+#define VISIBLE_REGION_VOLUME (VR_X*VR_X*VR_X)

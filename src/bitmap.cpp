@@ -57,7 +57,7 @@ ReadBitmapFromDisk(const char *Filename, memory_arena *Arena)
   fclose(File);
 
   Assert(Header.Image.CompressionType == 3);
-  Assert(SizeReadFromDisk == Header.FileSizeInBytes);
+  Assert(SizeReadFromDisk == (s32)Header.FileSizeInBytes);
 
   bitmap Result = {};
   Result.Dim = V2i(Header.Image.WidthInPixels, Header.Image.HeightInPixels);
@@ -71,7 +71,7 @@ WriteBitmapToDisk(bitmap *Bitmap, const char *Filename)
 {
   bitmap_header Header = {};
   Header.Type = 0x4D42;
-  Header.FileSizeInBytes = sizeof(Header) + TotalSize(&Bitmap->Pixels);
+  Header.FileSizeInBytes = SafeTruncateToU32(sizeof(Header) + TotalSize(&Bitmap->Pixels));
   Header.OffsetToPixelData = sizeof(Header);
 
   Header.Image.SizeOfImageHeader    = sizeof(bitmap_image_header);
@@ -80,7 +80,7 @@ WriteBitmapToDisk(bitmap *Bitmap, const char *Filename)
   Header.Image.ColorPlanes          = 1;
   Header.Image.BPP                  = 32;
   Header.Image.CompressionType      = 3;
-  Header.Image.SizeInBytes          = TotalSize(&Bitmap->Pixels);
+  Header.Image.SizeInBytes          = SafeTruncateToU32(TotalSize(&Bitmap->Pixels));
   Header.Image.xPixelsPerMeter      = 2835;
   Header.Image.yPixelsPerMeter      = 2835;
   Header.Image.ColorMapsUsed        = 0;
@@ -141,10 +141,10 @@ Unpack255RGBAToLinear(u32 C)
 u32
 PackRGBALinearTo255(v4 Color)
 {
-  u8 R = Color.r*255;
-  u8 G = Color.g*255;
-  u8 B = Color.b*255;
-  u8 A = Color.a*255;
+  u8 R = (u8)(Color.r*255);
+  u8 G = (u8)(Color.g*255);
+  u8 B = (u8)(Color.b*255);
+  u8 A = (u8)(Color.a*255);
 
   u32 C =   A<<24 | B<<16 | G<<8 | R;
   return C;

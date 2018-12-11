@@ -270,8 +270,9 @@ Print_P(counted_string String, const char* Name)
 }
 
 inline void
-Print_P( xml_token *Token, const char* name)
+Print_P( xml_token *Token, const char* Name)
 {
+  Log("Name: %s", Name);
   switch (Token->Type)
   {
     case XmlTokenType_Boolean:
@@ -311,16 +312,16 @@ Print_P( xml_token *Token, const char* name)
 }
 
 inline void
-Print_P( xml_tag *Tag, const char* name)
+Print_P( xml_tag *Tag, const char* Name)
 {
   xml_token* Token = Tag->Open;
-  Print_P(Token, name);
+  Print_P(Token, Name);
 
   xml_property* Current = Tag->Properties;
   while (Current)
   {
-    Print_P(Current->Name, name);
-    Print_P(Current->Value, name);
+    Print_P(Current->Name, Name);
+    Print_P(Current->Value, Name);
     Current = Current->Next;
   }
 

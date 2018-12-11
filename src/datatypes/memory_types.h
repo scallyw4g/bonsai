@@ -106,6 +106,9 @@ PlatformUnprotectArena(memory_arena *Arena);
 void
 PlatformDeallocateArena(memory_arena *Arena);
 
+u8*
+PlatformAllocateSize(umm AllocationSize);
+
 memory_arena*
 PlatformAllocateArena(umm Bytes = Megabytes(1), b32 MemProtect = True);
 
@@ -144,11 +147,11 @@ OnPageBoundary(memory_arena *Arena, umm PageSize)
   return Result;
 }
 
-inline u32
-AlignTo(u32 Mem, umm Alignment)
+inline u64
+AlignTo(umm Mem, umm Alignment)
 {
   Assert(Alignment);
-  umm At = (umm)Mem;
+  umm At = Mem;
   umm ToNextAlignment = Alignment - (At % Alignment);
   Assert( (At+ToNextAlignment) % Alignment == 0);
 
@@ -437,3 +440,18 @@ VaporizeArena(memory_arena *Arena)
   PlatformDeallocateArena(Arena);
 }
 
+inline u32
+SafeTruncateToU32(umm Size)
+{
+  Assert(Size <= 0xFFFFFFFF);
+  u32 Result = (u32)Size;
+  return Result;
+}
+
+inline u16
+SafeTruncateToU16(umm Size)
+{
+  Assert(Size <= 0xFFFF);
+  u16 Result = (u16)Size;
+  return Result;
+}

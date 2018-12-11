@@ -2,10 +2,11 @@
 #define BONSAI_NO_DEBUG_MEMORY_ALLOCATOR
 
 #include <bonsai_types.h>
-#include <bonsai_vertex.h>
 #include <unix_platform.cpp>
 
 #include <test_utils.cpp>
+
+#include <heap_memory_types.cpp>
 
 #include <perlin.cpp>
 #include <chunk.cpp>
@@ -180,7 +181,7 @@ void
 HashingTest()
 {
   memory_arena *Memory = PlatformAllocateArena(Megabytes(1));
-  ansi_stream XmlStream = AnsiStreamFromFile("tests/fixtures/test_parsing.dae", Memory);
+  AnsiStreamFromFile("tests/fixtures/test_parsing.dae", Memory);
 
   return;
 }
@@ -454,7 +455,8 @@ main()
   }
 
   memory_arena* Memory = PlatformAllocateArena();
-  model Cube = LoadCollada(Memory, "tests/fixtures/blender_cube.dae");
+  heap_allocator Heap = InitHeap(Gigabytes(1));
+  LoadCollada(Memory, &Heap, "tests/fixtures/blender_cube.dae");
 
   TestSuiteEnd();
   exit(TestsFailed);

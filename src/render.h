@@ -41,7 +41,7 @@ Orthographic( r32 X, r32 Y, r32 Zmin, r32 Zmax)
 inline m4
 Perspective(radians FOV, v2 WindowDim, r32 NearClip, r32 FarClip)
 {
-  r32 TanHalfFOV = tan(FOV / 2.0f);
+  r32 TanHalfFOV = (r32)tan(FOV / 2.0f);
   r32 Aspect = WindowDim.x/WindowDim.y;
 
   r32 Z = (-(FarClip+NearClip)) / (FarClip-NearClip);

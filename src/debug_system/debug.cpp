@@ -1,10 +1,9 @@
 #if BONSAI_INTERNAL
 
-#define BONSAI_CONTAINS_DEBUG_ALLOCATE_IMPL
 
 #include <bonsai_types.h>
-#include <bonsai_vertex.h>
 #include <unix_platform.cpp>
+#include <heap_memory_types.cpp>
 
 #include <debug_data_system.cpp>
 
@@ -14,16 +13,14 @@
 // this to be required for it to use that function, but C isn't smart enough to
 // figure that out.
 global_variable chunk_dimension WORLD_CHUNK_DIM = Chunk_Dimension(0,0,0);
-memory_arena* TranArena = PlatformAllocateArena();
+//
+
+global_variable memory_arena* TranArena = PlatformAllocateArena();
 #include <debug_render_system.cpp>
 
+global_variable debug_state Internal_DebugState = {};
 
-
-debug_state Internal_DebugState = {};
-
-
-
-void
+function void
 DebugFrameEnd(platform *Plat, server_state* ServerState)
 {
   TIMED_FUNCTION();
@@ -147,8 +144,8 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   return;
 }
 
-void
-DebugFrameBegin(hotkeys *Hotkeys, r32 Dt)
+function void
+DebugFrameBegin(hotkeys *Hotkeys)
 {
   debug_state *State = GetDebugState();
 
@@ -178,7 +175,10 @@ DebugFrameBegin(hotkeys *Hotkeys, r32 Dt)
   return;
 }
 
-EXPORT void
+exported_function debug_state*
+GetDebugState_Internal();
+
+exported_function void
 InitDebugSystem(b32 DoInitDebugRenderSystem = True)
 {
   Internal_DebugState.FrameEnd                        = DebugFrameEnd;
@@ -198,16 +198,20 @@ InitDebugSystem(b32 DoInitDebugRenderSystem = True)
 
   Internal_DebugState.Initialized = True;
 
+  GetDebugState = GetDebugState_Internal;
+
+  heap_allocator Heap = InitHeap(Megabytes(128));
   InitDebugDataSystem(&Internal_DebugState);
-  if (DoInitDebugRenderSystem) { InitDebugRenderSystem(&Internal_DebugState); }
+  if (DoInitDebugRenderSystem) { InitDebugRenderSystem(&Internal_DebugState, &Heap); }
   return;
 }
 
-EXPORT debug_state*
-GetDebugState_Internal(b32 InitRenderSystem)
+exported_function debug_state*
+GetDebugState_Internal()
 {
   if (!Internal_DebugState.Initialized)
   {
+    GetDebugState = GetDebugState_Internal;
     InitDebugSystem();
   }
 

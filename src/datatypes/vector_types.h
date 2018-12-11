@@ -452,7 +452,7 @@ typedef voxel_position world_position;
 inline v3i
 V3i(s32 X, s32 Y, s32 Z)
 {
-  v3i Result = { X, Y, Z };
+  v3i Result = {{ X, Y, Z }};
   return Result;
 }
 
@@ -634,8 +634,8 @@ v2i
 V2i(v2 V)
 {
   v2i Result;
-  Result.x = V.x;
-  Result.y = V.y;
+  Result.x = (s32)V.x;
+  Result.y = (s32)V.y;
   return Result;
 }
 

@@ -1,5 +1,6 @@
-u32 TestsFailed = 0;
-u32 TestsPassed = 0;
+global_variable u32 TestsFailed = 0;
+
+global_variable u32 TestsPassed = 0;
 
 #define TestThat(condition)                                                                                 \
   if (!(condition)) {                                                                                       \

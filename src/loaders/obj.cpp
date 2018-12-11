@@ -41,11 +41,10 @@ GetObjMetadata(ansi_stream Cursor, memory_arena *Memory)
  * seems to not re-bend the triangulated normals and everything looks borked.
  */
 model
-LoadObj(memory_arena *PermMem, const char * FilePath)
+LoadObj(memory_arena *PermMem, heap_allocator *Heap, const char * FilePath)
 {
   Info("Loading .obj file : %s \n", FilePath);
 
-  umm Length = 0;
   u8_stream BinaryStream = U8_StreamFromFile(FilePath, PermMem);
   if (!BinaryStream.Start) { model M = {}; return M; }
 
@@ -138,7 +137,7 @@ LoadObj(memory_arena *PermMem, const char * FilePath)
   Assert(Remaining(&NormalIndicies) == 0 );
 
   untextured_3d_geometry_buffer Mesh = {};
-  AllocateMesh(&Mesh, Stats.FaceCount*3, PermMem);
+  AllocateMesh(&Mesh, Stats.FaceCount*3, Heap);
 
   u32 VertCount = (u32)AtElements(&VertIndicies);
   for( u32 Index = 0;
@@ -161,9 +160,7 @@ LoadObj(memory_arena *PermMem, const char * FilePath)
   Assert(Mesh.At == Mesh.End);
 
   model Result = {};
-  Result.Chunk = Allocate(chunk_data, PermMem, 1);;
-  Result.Chunk->Mesh = Mesh;
-  SetFlag(&Result, Chunk_Initialized);
+  Result.Mesh = Mesh;
 
   return Result;
 }

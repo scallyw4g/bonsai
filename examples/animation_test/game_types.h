@@ -11,12 +11,16 @@ struct game_state
   memory_arena  *Memory;
   graphics      *Graphics;
 
+  heap_allocator Heap;
+
   random_series Entropy;
 
   perlin_noise Noise;
 
   model   *Models;
   event_queue EventQueue;
+
+  mesh_freelist MeshFreelist;
 
   entity *EntityTable[TOTAL_ENTITY_COUNT];
   entity *Player;

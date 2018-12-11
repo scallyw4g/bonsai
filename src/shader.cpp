@@ -135,7 +135,7 @@ BasicTypeUniformAllocators(texture, Texture)
 BasicTypeUniformAllocators(light, Light)
 BasicTypeUniformAllocators(m4, M4)
 BasicTypeUniformAllocators(v3, V3)
-/* BasicTypeUniformAllocators(u32, U32) */ // Not sure this is useful
+BasicTypeUniformAllocators(u32, U32)
 BasicTypeUniformAllocators(s32, S32)
 BasicTypeUniformAllocators(r32, R32)
 
@@ -221,18 +221,19 @@ BindShaderUniforms(shader *Shader)
 
       case ShaderUniform_Camera:
       {
-        v3 ViewPosition = GetRenderP(WORLD_CHUNK_DIM, Uniform->Camera->P, Uniform->Camera);
+        v3 ViewPosition = GetRenderP(WORLD_CHUNK_DIM, Uniform->Camera->CurrentP, Uniform->Camera);
         glUniform3fv(Uniform->ID, 1, &ViewPosition.E[0]);
       } break;
 
       InvalidDefaultCase;
     }
 
-    Uniform = Uniform->Next;
     AssertNoGlErrors;
+
+    Uniform = Uniform->Next;
   }
 
-  AssertNoGlErrors;
+  return;
 }
 
 void

@@ -25,7 +25,6 @@ struct game_mode
   r64 TimeRunning;
 };
 
-
 enum chunk_flag
 {
   Chunk_Uninitialized   = 0 << 0,
@@ -40,7 +39,7 @@ enum chunk_flag
 
 enum voxel_flag
 {
-  Voxel_Empty       =   0,
+  Voxel_Empty      =      0,
   Voxel_Filled     = 1 << 0,
 
   Voxel_LeftFace   = 1 << 1,
@@ -147,10 +146,9 @@ struct noise_3d
 struct chunk_data
 {
   chunk_flag Flags;
-  untextured_3d_geometry_buffer Mesh; // 32 bytes
   voxel *Voxels;
 
-  u8 Pad[20];
+  u8 Pad[52];
 };
 CAssert(sizeof(chunk_data) == 64);
 #pragma pack(pop)
@@ -191,8 +189,10 @@ struct camera
 {
   frustum Frust;
 
-  canonical_position P;
-  canonical_position Target; // TODO : Can this just be a v3?
+  canonical_position TargetP;
+  canonical_position CurrentP;
+
+  canonical_position ViewingTarget; // TODO : Can this just be a v3?
 
   r32 Pitch;
   r32 Roll;
@@ -207,7 +207,7 @@ struct camera
 
 struct model
 {
-  chunk_data *Chunk;
+  untextured_3d_geometry_buffer Mesh; // 32 bytes
   chunk_dimension Dim;
   animation Animation;
 };
@@ -257,7 +257,7 @@ struct particle_system_init_params
 
   r32 ParticleLifespan;
 
-  v3 StartingRadius;
+  v3 StartingDiameter;
 
   random_series Entropy;
 
@@ -273,7 +273,7 @@ struct particle_system
 
   aabb SpawnRegion;
 
-  v3 StartingRadius;
+  v3 StartingDiameter;
 
   r32 EmissionLifespan;
 
@@ -352,22 +352,14 @@ struct entity_list
 #pragma pack(push, 1)
 struct world_chunk
 {
-  chunk_data *Data;
-
-  // TODO(Jesse): This is only for looking up chunks in the hashtable and
-  // should be factored out of this struct somehow as it's cold data
-  world_chunk *Next;
-  world_chunk *Prev;
+  chunk_data* Data;
+  untextured_3d_geometry_buffer* Mesh;
+  entity_list* Occupiers;
 
   world_position WorldP;
-
   v3 Normal;
 
-  /* s32 Filled; */
-
-  entity_list *Occupiers;
-
-  u8 Pad[8];
+  u8 Reserved[16];
 };
 CAssert(sizeof(world_chunk) == 64);
 #pragma pack(pop)
@@ -389,7 +381,6 @@ struct free_world_chunk
 struct world
 {
   world_chunk **ChunkHash;
-
   world_chunk **FreeChunks;
   int FreeChunkCount;
 
@@ -398,8 +389,6 @@ struct world
   chunk_dimension ChunkDim;
 
   world_position Center;
-
-  v3 Gravity;
 
   untextured_3d_geometry_buffer Mesh;
 };
@@ -461,13 +450,6 @@ inline void
 SetFlag( world_chunk *Chunk, chunk_flag Flag )
 {
   SetFlag(Chunk->Data, Flag);
-  return;
-}
-
-inline void
-SetFlag( model *Model, chunk_flag Flag )
-{
-  SetFlag(Model->Chunk, Flag);
   return;
 }
 
@@ -653,12 +635,19 @@ RandomBilateral(random_series *Entropy)
   return Result;
 }
 
+inline b32
+RandomChoice(random_series* Entropy)
+{
+  b32 Result = RandomBilateral(Entropy) > 0.0f;
+  return Result;
+}
+
 inline v3
 RandomV3(random_series *Entropy)
 {
-  v3 Result =  {RandomUnilateral(Entropy),
-                RandomUnilateral(Entropy),
-                RandomUnilateral(Entropy)};
+  v3 Result =  {{ RandomUnilateral(Entropy),
+                  RandomUnilateral(Entropy),
+                  RandomUnilateral(Entropy) }};
   return Result;
 }
 
@@ -786,22 +775,9 @@ ZeroMesh( untextured_3d_geometry_buffer *Mesh )
 }
 
 void
-ZeroChunk( chunk_data *Chunk, s32 Volume )
+ZeroChunk( chunk_data *Chunk )
 {
-  ZeroMesh(&Chunk->Mesh);
-
   Chunk->Flags = Chunk_Uninitialized;
-
-  /* // TODO(Jesse): Pretty sure this is not necessary */
-  /* for ( s32 VoxelIndex = 0; */
-  /*       VoxelIndex < Volume; */
-  /*       ++VoxelIndex) */
-  /* { */
-  /*   voxel *Voxel = &Chunk->Voxels[VoxelIndex]; */
-  /*   Voxel->Flags = Voxel_Uninitialzied; */
-  /*   Voxel->Color = 0; */
-  /* } */
-
   return;
 }
 

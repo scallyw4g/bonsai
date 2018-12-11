@@ -8,11 +8,18 @@ Canonicalize(canonical_position P )
   return Result;
 }
 
-inline float
+inline r32
 Length( canonical_position P )
 {
   v3 Offset = P.Offset + (P.WorldP * WORLD_CHUNK_DIM);
-  float Result = sqrt(LengthSq(Offset));
+  r32 Result = (r32)sqrt(LengthSq(Offset));
+  return Result;
+}
+
+inline v3
+ToV3(canonical_position P)
+{
+  v3 Result = P.Offset + (P.WorldP*WORLD_CHUNK_DIM);
   return Result;
 }
 
@@ -22,16 +29,9 @@ Lerp(r32 t, canonical_position p1, canonical_position p2)
   Assert(t<=1);
   Assert(t>=0);
 
-  canonical_position Result;
-  Result.Offset = (1.0f-t)*p1.Offset + t*p2.Offset;
+  v3 ToP2 = ToV3(p2 - p1);
 
-  NotImplemented;
-  // This is buggy I believe.  We should be getting full double world position
-  // coordinates, doing a lerp on those, then recanonicalizing.
-  // Result.WorldP = (1.0f-t)*p1.WorldP + t*p2.WorldP;
-
-  Result = Canonicalize(Result);
-
+  canonical_position Result = Canonicalize(p1 + (t*ToP2));
   return Result;
 }
 

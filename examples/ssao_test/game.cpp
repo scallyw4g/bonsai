@@ -1,16 +1,7 @@
-#include <bonsai_types.h>
-#include <bonsai_vertex.h>
-#include <platform.h>
-#include <game_types.h>
-#include <game_constants.h>
-
+#include <bonsai_engine.h>
 global_variable memory_arena *TranArena = PlatformAllocateArena();
-#include <bonsai.cpp>
-#include <physics.cpp>
-#include <entity.cpp>
-
-#include <loaders/obj.cpp>
-#include <loaders/collada.cpp>
+#include <bonsai_engine.cpp>
+#include <bonsai_asset_loaders.cpp>
 
 void
 SimulatePlayers(game_state *GameState, entity* LocalPlayer, hotkeys *Hotkeys, r32 dt)
@@ -73,7 +64,7 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys, entity *Play
     GetViewMatrix(WorldChunkDim, Camera);
 
   TIMED_BLOCK("BufferMeshes");
-    BufferWorld(World, Graphics, VISIBLE_REGION_RADIUS);
+    BufferWorld(GameState, World, Graphics, VISIBLE_REGION_RADIUS);
     BufferEntities( GameState->EntityTable, &World->Mesh, Graphics, World, Plat->dt);
   END_BLOCK("BufferMeshes");
 
@@ -101,82 +92,24 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys, entity *Play
   return;
 }
 
-EXPORT void
-GameThreadCallback(work_queue_entry *Entry, memory_arena *ThreadArena)
-{
-  switch (Entry->Flags)
-  {
-    case WorkEntry_InitWorldChunk:
-    {
-      InitializeWorldChunkPerlin(&Entry->GameState->Noise, (world_chunk*)Entry->Input, ThreadArena, Entry->GameState->World);
-    } break;
-  }
-
-  return;
-}
-
 model *
 AllocateGameModels(game_state *GameState, memory_arena *Memory)
 {
   model *Result = Allocate(model, GameState->Memory, ModelIndex_Count);
 
-  Result[ModelIndex_Enemy] = LoadVoxModel(Memory, ENEMY_MODEL);
-  Result[ModelIndex_Player] = LoadCollada(Memory, "models/two-axis-animated-cube.dae");
+  Result[ModelIndex_Enemy] = LoadVoxModel(Memory, &GameState->Heap, ENEMY_MODEL);
+  Result[ModelIndex_Player] = LoadCollada(Memory, &GameState->Heap, "models/two-axis-animated-cube.dae");
   /* Result[ModelIndex_Player] = LoadVoxModel(Memory, PLAYER_MODEL); */
-  Result[ModelIndex_Loot] = LoadVoxModel(Memory, LOOT_MODEL);
+  Result[ModelIndex_Loot] = LoadVoxModel(Memory, &GameState->Heap, LOOT_MODEL);
 
-  chunk_dimension ProjectileDim = Chunk_Dimension(1,30,1);
-  Result[ModelIndex_Projectile].Chunk = AllocateChunk(Memory, ProjectileDim);
-  Result[ModelIndex_Projectile].Dim = ProjectileDim;
-  FillChunk(Result[ModelIndex_Projectile].Chunk, ProjectileDim, GREEN);
+  /* chunk_dimension ProjectileDim = Chunk_Dimension(1,30,1); */
+  /* Result[ModelIndex_Projectile].Chunk = AllocateChunk(Memory, &GameState->Heap, ProjectileDim); */
+  /* Result[ModelIndex_Projectile].Dim = ProjectileDim; */
+  /* FillChunk(Result[ModelIndex_Projectile].Chunk, ProjectileDim, GREEN); */
 
-  Result[ModelIndex_Proton] = LoadVoxModel(Memory, PROJECTILE_MODEL);
+  Result[ModelIndex_Proton] = LoadVoxModel(Memory, &GameState->Heap, PROJECTILE_MODEL);
 
   return Result;
-}
-
-EXPORT game_state*
-GameInit( platform *Plat, memory_arena *GameMemory )
-{
-  Info("Initializing Game");
-
-  Init_Global_QuadVertexBuffer();
-
-  game_state *GameState = Allocate(game_state, GameMemory, 1);
-  GameState->Memory = GameMemory;
-  GameState->Noise = perlin_noise(DEBUG_NOISE_SEED);
-
-  GameState->Graphics = GraphicsInit(GameMemory);
-  if (!GameState->Graphics) { Error("Initializing Graphics"); return False; }
-
-  GameState->Turb = Allocate(noise_3d, GameState->Memory, 1);
-  AllocateAndInitNoise3d(GameState, GameState->Turb, Chunk_Dimension(8,8,8) );
-
-  GameState->Plat = Plat;
-  GameState->Entropy.Seed = DEBUG_NOISE_SEED;
-
-  GameState->World = AllocateAndInitWorld(GameState, World_Position(0), VISIBLE_REGION_RADIUS, WORLD_CHUNK_DIM, VISIBLE_REGION);
-
-  AllocateEntityTable(GameState);
-
-  GameState->Models = AllocateGameModels(GameState, GameState->Memory);
-
-  for (s32 EntityIndex = 0;
-      EntityIndex < MAX_CLIENTS;
-      ++ EntityIndex)
-  {
-    GameState->Players[EntityIndex] = GetFreeEntity(GameState);
-  }
-
-  GameState->ServerState = Allocate(server_state, GameMemory, 1);
-  for (u32 ClientIndex = 0;
-      ClientIndex < MAX_CLIENTS;
-      ++ClientIndex)
-  {
-    GameState->ServerState->Clients[ClientIndex].Id = -1;
-  }
-
-  return GameState;
 }
 
 inline b32
@@ -218,8 +151,7 @@ NetworkUpdate(network_connection *Connection, server_state *ServerState, canonic
   return;
 }
 
-EXPORT void
-GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
+BONSAI_API_MAIN_THREAD_CALLBACK()
 {
   TIMED_FUNCTION();
 
@@ -269,4 +201,48 @@ GameUpdateAndRender(platform *Plat, game_state *GameState, hotkeys *Hotkeys)
   GameState->Graphics->Lights->Count =  0;
 
   return;
+}
+
+BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
+{
+  Info("Initializing Game");
+  GetDebugState = GetDebugState_in;
+
+  Init_Global_QuadVertexBuffer();
+
+  game_state *GameState = Allocate(game_state, GameMemory, 1);
+  GameState->Memory = GameMemory;
+  GameState->Noise = perlin_noise(DEBUG_NOISE_SEED);
+
+  GameState->Graphics = GraphicsInit(GameMemory);
+  if (!GameState->Graphics) { Error("Initializing Graphics"); return False; }
+
+  GameState->Turb = Allocate(noise_3d, GameState->Memory, 1);
+  AllocateAndInitNoise3d(GameState, GameState->Turb, Chunk_Dimension(8,8,8) );
+
+  GameState->Plat = Plat;
+  GameState->Entropy.Seed = DEBUG_NOISE_SEED;
+
+  GameState->World = AllocateAndInitWorld(GameState, World_Position(0), WORLD_CHUNK_DIM, VISIBLE_REGION);
+
+  AllocateEntityTable(GameState);
+
+  GameState->Models = AllocateGameModels(GameState, GameState->Memory);
+
+  for (s32 EntityIndex = 0;
+      EntityIndex < MAX_CLIENTS;
+      ++ EntityIndex)
+  {
+    GameState->Players[EntityIndex] = GetFreeEntity(GameState);
+  }
+
+  GameState->ServerState = Allocate(server_state, GameMemory, 1);
+  for (u32 ClientIndex = 0;
+      ClientIndex < MAX_CLIENTS;
+      ++ClientIndex)
+  {
+    GameState->ServerState->Clients[ClientIndex].Id = -1;
+  }
+
+  return GameState;
 }

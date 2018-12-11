@@ -1,7 +1,7 @@
 inline v3
 GetRenderP(canonical_position P, camera *Camera, world_position WorldChunkDim)
 {
-  v3 CameraOffset = Camera->Target.Offset + (Camera->Target.WorldP * WorldChunkDim);
+  v3 CameraOffset = Camera->ViewingTarget.Offset + (Camera->ViewingTarget.WorldP * WorldChunkDim);
   v3 Result = P.Offset + (P.WorldP * WORLD_CHUNK_DIM) - CameraOffset;
   return Result;
 }
@@ -66,8 +66,8 @@ inline m4
 GetViewMatrix(chunk_dimension WorldChunkDim, camera *Camera)
 {
   m4 Result = LookAt(
-    GetRenderP(WorldChunkDim, Camera->P, Camera),
-    GetRenderP(WorldChunkDim, Camera->Target, Camera),
+    GetRenderP(WorldChunkDim, Camera->CurrentP, Camera),
+    GetRenderP(WorldChunkDim, Camera->ViewingTarget, Camera),
     Camera->Up
   );
 

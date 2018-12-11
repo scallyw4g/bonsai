@@ -1,5 +1,4 @@
 #define BONSAI_NO_MUTEX_TRACKING
-#define BONSAI_NO_TIMED_FUNCTIONS
 #define BONSAI_NO_PUSH_METADATA
 
 #include <bonsai_types.h>
@@ -9,19 +8,19 @@
 #include <stream.cpp>
 
 
-v4 White = V4(1,1,1,0);
-v4 Black = {};
-v4 Red   = V4(1,0,0,0);
-v4 Blue  = V4(0,0,1,0);
-v4 Pink  = V4(1,0,1,0);
-v4 Green = V4(0,1,0,0);
+global_variable v4 White = V4(1,1,1,0);
+global_variable v4 Black = {};
+global_variable v4 Red   = V4(1,0,0,0);
+global_variable v4 Blue  = V4(0,0,1,0);
+global_variable v4 Pink  = V4(1,0,1,0);
+global_variable v4 Green = V4(0,1,0,0);
 
-u32 PackedWhite = PackRGBALinearTo255(White );
-u32 PackedBlack = PackRGBALinearTo255(Black );
-u32 PackedRed   = PackRGBALinearTo255(Red   );
-u32 PackedBlue  = PackRGBALinearTo255(Blue  );
-u32 PackedPink  = PackRGBALinearTo255(Pink  );
-u32 PackedGreen = PackRGBALinearTo255(Green );
+global_variable u32 PackedWhite = PackRGBALinearTo255(White );
+global_variable u32 PackedBlack = PackRGBALinearTo255(Black );
+global_variable u32 PackedRed   = PackRGBALinearTo255(Red   );
+global_variable u32 PackedBlue  = PackRGBALinearTo255(Blue  );
+global_variable u32 PackedPink  = PackRGBALinearTo255(Pink  );
+global_variable u32 PackedGreen = PackRGBALinearTo255(Green );
 
 
 inline u8
@@ -248,9 +247,6 @@ U8_Stream(font_table *Table)
   return Result;
 }
 
-#define PushArray(Type, Count, Arena) \
-
-
 char *
 HumanTag(u32 Tag, memory_arena *Memory)
 {
@@ -373,7 +369,7 @@ InitTTF(const char* SourceFile, memory_arena *Arena)
     font_table *CurrentTable = ParseFontTable(&Source, Arena);
 
     u32 Checksum = CalculateTableChecksum(CurrentTable);
-    if (!Checksum == CurrentTable->Checksum) { Error("Invalid checksum encountered when reading table %s", CurrentTable->HumanTag); }
+    if (Checksum != CurrentTable->Checksum) { Error("Invalid checksum encountered when reading table %s", CurrentTable->HumanTag); }
 
     AssignTable(CurrentTable, &Result);
   }
@@ -405,17 +401,18 @@ ParseGlyph(u8_stream *Stream, memory_arena *Arena)
     u16 *EndPointsOfContours = ReadU16Array(Stream, Glyph.ContourCount);
 
     u16 NextStart = 0;
-    for (u32 ContourIndex = 0;
+    for (u16 ContourIndex = 0;
         ContourIndex < Glyph.ContourCount;
         ++ContourIndex)
     {
       Glyph.Contours[ContourIndex].StartIndex = NextStart;
       Glyph.Contours[ContourIndex].EndIndex = ReadU16(EndPointsOfContours + ContourIndex);
-      NextStart = Glyph.Contours[ContourIndex].EndIndex + 1;
+      NextStart = SafeTruncateToU16(Glyph.Contours[ContourIndex].EndIndex + 1);
     }
 
     u16 InstructionLength = ReadU16(Stream);
-    u8* Instructions = ReadU8Array(Stream, InstructionLength);
+
+    /* u8* Instructions = */ ReadU8Array(Stream, InstructionLength);
 
     u8* Flags = Stream->At;
     u8* FlagsAt = Flags;
@@ -423,10 +420,10 @@ ParseGlyph(u8_stream *Stream, memory_arena *Arena)
     Glyph.VertCount = 1+ReadU16(EndPointsOfContours+Glyph.ContourCount-1);
     Glyph.Verts = Allocate(ttf_vert, Arena, Glyph.VertCount);
 
-    b32 RepeatCount = 0;
+    s16 RepeatCount = 0;
     u8 Flag = 0;
 
-    for (u32 PointIndex = 0;
+    for (s16 PointIndex = 0;
         PointIndex < Glyph.VertCount;
         ++PointIndex)
     {
@@ -451,7 +448,7 @@ ParseGlyph(u8_stream *Stream, memory_arena *Arena)
 
     u8_stream VertStream = U8_Stream(FlagsAt, (u8*)0xFFFFFFFFFFFFFFFF);
     s16 X = 0;
-    for (u32 PointIndex = 0;
+    for (s16 PointIndex = 0;
         PointIndex < Glyph.VertCount;
         ++PointIndex)
     {
@@ -475,7 +472,7 @@ ParseGlyph(u8_stream *Stream, memory_arena *Arena)
     }
 
     s16 Y = 0;
-    for (u32 PointIndex = 0;
+    for (s16 PointIndex = 0;
         PointIndex < Glyph.VertCount;
         ++PointIndex)
     {
@@ -502,11 +499,11 @@ ParseGlyph(u8_stream *Stream, memory_arena *Arena)
   return Glyph;
 }
 
-#define DebugCase(platform_id) \
-  case platform_id: { Info("Platform Id : %s", #platform_id);
+/* #define DebugCase(platform_id) \ */
+/*   case platform_id: { Info("Platform Id : %s", #platform_id); */
 
-#define UnsupportedPlatform(platform_id) \
-  case platform_id: { Error("Unsupported Platform %s", #platform_id); } break;
+/* #define UnsupportedPlatform(platform_id) \ */
+/*   case platform_id: { Error("Unsupported Platform %s", #platform_id); } break; */
 
 u16
 GetGlyphIdForCharacterCode(u32 UnicodeCodepoint, ttf *Font)
@@ -525,8 +522,8 @@ GetGlyphIdForCharacterCode(u32 UnicodeCodepoint, ttf *Font)
       SubtableIndex < NumSubtables;
       ++SubtableIndex)
   {
-    u16 PlatformId         = ReadU16(&CmapStream);
-    u16 PlatformSpecificId = ReadU16(&CmapStream);
+    /* u16 PlatformId         = */ ReadU16(&CmapStream);
+    /* u16 PlatformSpecificId = */ ReadU16(&CmapStream);
     u32 Offset             = ReadU32(&CmapStream);
     u8* Start              = CmapStream.Start + Offset;
 
@@ -541,12 +538,12 @@ GetGlyphIdForCharacterCode(u32 UnicodeCodepoint, ttf *Font)
     TableStream.End = Start+Length;
     if (Format == 4)
     {
-      u16 Lang          = ReadU16(&TableStream);
+      /* u16 Lang          = */ ReadU16(&TableStream);
       u16 SegCountX2    = ReadU16(&TableStream);
       u16 SegCount      = SegCountX2/2;
-      u16 SearchRange   = ReadU16(&TableStream);
-      u16 EntrySelector = ReadU16(&TableStream);
-      u16 RangeShift    = ReadU16(&TableStream);
+      /* u16 SearchRange   = */ ReadU16(&TableStream);
+      /* u16 EntrySelector = */ ReadU16(&TableStream);
+      /* u16 RangeShift    = */ ReadU16(&TableStream);
 
       u16* EndCodes      = ReadU16Array(&TableStream, SegCount);
       u16 Pad            = ReadU16(&TableStream);
@@ -559,24 +556,24 @@ GetGlyphIdForCharacterCode(u32 UnicodeCodepoint, ttf *Font)
           SegIdx < SegCount;
           ++SegIdx)
       {
-        u16 Start = ReadU16(StartCodes+SegIdx);
+        u16 StartCode = ReadU16(StartCodes+SegIdx);
         u16 End = ReadU16(EndCodes+SegIdx);
         u16 Delta = ReadU16(IdDelta+SegIdx);
         u16 RangeOffset = ReadU16(IdRangeOffset+SegIdx);
 
-        if (UnicodeCodepoint >= Start && UnicodeCodepoint <= End)
+        if (UnicodeCodepoint >= StartCode && UnicodeCodepoint <= End)
         {
           if (RangeOffset)
           {
-            u32 G = Start+RangeOffset;
-            u16 GlyphIndex = ReadU16( &IdRangeOffset[SegIdx] + RangeOffset / 2 + (UnicodeCodepoint - Start) );
+            /* u16 G = StartCode+RangeOffset; */
 
-            u32 Result = GlyphIndex ? GlyphIndex + Delta : GlyphIndex;
+            u16 GlyphIndex = ReadU16( &IdRangeOffset[SegIdx] + RangeOffset / 2 + (UnicodeCodepoint - StartCode) );
+            u16 Result = GlyphIndex ? GlyphIndex + Delta : GlyphIndex;
             return Result;
           }
           else
           {
-            u16 GlyphIndex = Delta + UnicodeCodepoint;
+            u16 GlyphIndex = SafeTruncateToU16(Delta + UnicodeCodepoint);
             return GlyphIndex;
           }
 
@@ -645,8 +642,8 @@ GetStreamForGlyphIndex(u32 GlyphIndex, ttf *Font, memory_arena *Arena)
   }
   else if (HeadTable->IndexToLocFormat == LONG_INDEX_LOCATION_FORMAT)
   {
-    u32 FirstOffset = ReadU32(Font->loca->Data);
-    u32 FirstEndOffset = ReadU32(Font->loca->Data+1);
+    /* u32 FirstOffset = */ ReadU32(Font->loca->Data);
+    /* u32 FirstEndOffset = */ ReadU32(Font->loca->Data+1);
 
 
     u32 StartOffset = ReadU32(Font->loca->Data+(GlyphIndex*4));
@@ -693,7 +690,7 @@ RasterizeGlyph(v2i OutputSize, v2i FontMaxEmDim, v2i FontMinGlyphP, u8_stream *G
 #define DO_AA               1
 #define WRITE_DEBUG_BITMAPS 0
 
-  u32 SamplesPerPixel = 4;
+  s32 SamplesPerPixel = 4;
   v2i SamplingBitmapDim = OutputSize*SamplesPerPixel;
   bitmap SamplingBitmap = AllocateBitmap(SamplingBitmapDim, Arena);
 
@@ -710,7 +707,7 @@ RasterizeGlyph(v2i OutputSize, v2i FontMaxEmDim, v2i FontMinGlyphP, u8_stream *G
       FillBitmap(PackRGBALinearTo255(White), &OutputBitmap);
 
 
-      for (u32 ContourIndex = 0;
+      for (u16 ContourIndex = 0;
           ContourIndex < Glyph.ContourCount;
           ++ContourIndex)
       {
@@ -819,12 +816,12 @@ RasterizeGlyph(v2i OutputSize, v2i FontMaxEmDim, v2i FontMinGlyphP, u8_stream *G
       }
 
 #if DO_RASTERIZE
-      for (u32 yIndex = 0;
+      for (s32 yIndex = 0;
           yIndex < SamplingBitmap.Dim.y;
           ++yIndex)
       {
         s32 TransitionCount = 0;
-        for (u32 xIndex = 0;
+        for (s32 xIndex = 0;
             xIndex < SamplingBitmap.Dim.x;
             ++xIndex)
         {
@@ -855,23 +852,23 @@ RasterizeGlyph(v2i OutputSize, v2i FontMaxEmDim, v2i FontMinGlyphP, u8_stream *G
 
 #if DO_RASTERIZE && DO_AA
       r32 SampleContrib = 1.0f/((r32)SamplesPerPixel*(r32)SamplesPerPixel);
-      for (u32 yPixelIndex = 0;
+      for (s32 yPixelIndex = 0;
           yPixelIndex < OutputBitmap.Dim.y;
           ++yPixelIndex)
       {
-        for (u32 xPixelIndex = 0;
+        for (s32 xPixelIndex = 0;
             xPixelIndex < OutputBitmap.Dim.x;
             ++xPixelIndex)
         {
           r32 OneMinusAlpha = 0.0f;
 
-          u32 yStart = yPixelIndex*SamplesPerPixel;
-          for (u32 ySampleIndex = yStart;
+          s32 yStart = yPixelIndex*SamplesPerPixel;
+          for (s32 ySampleIndex = yStart;
               ySampleIndex < yStart+SamplesPerPixel;
               ++ySampleIndex)
           {
-            u32 xStart = xPixelIndex*SamplesPerPixel;
-            for (u32 xSampleIndex = xStart;
+            s32 xStart = xPixelIndex*SamplesPerPixel;
+            for (s32 xSampleIndex = xStart;
                 xSampleIndex < xStart+SamplesPerPixel;
                 ++xSampleIndex)
             {
@@ -952,11 +949,11 @@ RasterizeGlyph(v2i OutputSize, v2i FontMaxEmDim, v2i FontMinGlyphP, u8_stream *G
 void
 CopyBitmapOffset(bitmap *Source, bitmap *Dest, v2i Offset)
 {
-  for (u32 ySourcePixel = 0;
+  for (s32 ySourcePixel = 0;
       ySourcePixel < Source->Dim.y;
       ++ySourcePixel)
   {
-    for (u32 xSourcePixel = 0;
+    for (s32 xSourcePixel = 0;
         xSourcePixel < Source->Dim.x;
         ++xSourcePixel)
     {

@@ -2,10 +2,11 @@
 #define BONSAI_NO_DEBUG_MEMORY_ALLOCATOR
 
 #include <bonsai_types.h>
-#include <bonsai_vertex.h>
 #include <unix_platform.cpp>
 
 #include <test_utils.cpp>
+
+#include <heap_memory_types.cpp>
 
 #include <perlin.cpp>
 #include <chunk.cpp>
@@ -33,7 +34,6 @@ main()
   }
 
   {
-    const char *TestData = "v whatever\nv whatever\nvn whatever\nvn whatever\nf whatever\nf whatever";
     ansi_stream Stream = AnsiStreamFromFile("test.obj", Memory);
     mesh_metadata Stats = GetObjMetadata(Stream, Memory);
     TestThat(Stats.VertCount == 2);

@@ -3,6 +3,13 @@ global_variable memory_arena *TranArena = PlatformAllocateArena();
 #include <bonsai_engine.cpp>
 #include <bonsai_asset_loaders.cpp>
 
+#define RANDOM_HOTKEY_MASHING 0
+#if RANDOM_HOTKEY_MASHING
+static u32 HotkeyFrameTimeout = 0;
+static random_series HotkeyEntropy = {};
+static hotkeys StashedHotkeys = {};
+#endif
+
 
 void
 SimulatePlayers(game_state *GameState, entity* LocalPlayer, hotkeys *Hotkeys, r32 dt)
@@ -12,7 +19,6 @@ SimulatePlayers(game_state *GameState, entity* LocalPlayer, hotkeys *Hotkeys, r3
       ++PlayerIndex)
   {
     entity *Entity = GameState->Player;
-
     if (LocalPlayer == Entity)
     {
       SimulatePlayer(GameState, Entity, Hotkeys, dt );
@@ -47,25 +53,25 @@ AllocateGameModels(game_state *GameState, memory_arena *Memory)
 
 BONSAI_API_WORKER_THREAD_CALLBACK()
 {
-  Thread->MeshFreelist = &Entry->GameState->MeshFreelist;
-  Thread->Noise = &Entry->GameState->Noise;
-
   switch (Entry->Type)
   {
     case WorkEntryType_InitWorldChunk:
     {
-      world_chunk* Dest = (world_chunk*)Entry->Input;
-      if (!ChunkIsGarbage(Dest))
+      world_chunk* DestChunk = (world_chunk*)Entry->Input;
+      if (!ChunkIsGarbage(DestChunk))
       {
+        s32 Amplititude = 30;
+        s32 StartingZDepth = -10;
+
         InitializeWorldChunkPerlinPlane(Thread,
-                                        Dest,
-                                        10, -10);
+                                        DestChunk,
+                                        Amplititude, StartingZDepth);
+
       }
     } break;
 
     InvalidDefaultCase;
   }
-
 
   return;
 }
@@ -84,6 +90,24 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   entity *Player = GameState->Player;
   ClearFramebuffers(Graphics);
 
+#if RANDOM_HOTKEY_MASHING
+  if (HotkeyFrameTimeout == 0)
+  {
+    Hotkeys->Left = RandomChoice(&HotkeyEntropy);
+    Hotkeys->Right = RandomChoice(&HotkeyEntropy);
+    Hotkeys->Forward = RandomChoice(&HotkeyEntropy);
+    Hotkeys->Backward = RandomChoice(&HotkeyEntropy);
+    StashedHotkeys = *Hotkeys;
+    HotkeyFrameTimeout = 100;
+  }
+  else
+  {
+    HotkeyFrameTimeout--;
+    *Hotkeys = StashedHotkeys;
+  }
+#endif
+
+
 #if DEBUG_DRAW_WORLD_AXIES
   DEBUG_DrawLine(&World->Mesh, Graphics, V3(0,0,0), V3(10000, 0, 0), RED, 0.5f );
   DEBUG_DrawLine(&World->Mesh, Graphics, V3(0,0,0), V3(0, 10000, 0), GREEN, 0.5f );
@@ -99,6 +123,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   }
 
   SimulatePlayers(GameState, Player, Hotkeys, Plat->dt);
+
+  CollectUnusedChunks(World, &GameState->MeshFreelist, GameState->Memory);
 
   UpdateCameraP(Plat, World, Player->P, Camera);
 
@@ -129,6 +155,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 {
   Info("Initializing Game");
+
+  Assert(GetDebugState_in);
   GetDebugState = GetDebugState_in;
 
   Init_Global_QuadVertexBuffer();
@@ -140,22 +168,28 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   GameState->Graphics = GraphicsInit(GameMemory);
   if (!GameState->Graphics) { Error("Initializing Graphics"); return False; }
 
-  StandardCamera(GameState->Graphics->Camera, 1000.0f, 300.0f);
+  StandardCamera(GameState->Graphics->Camera, 10000.0f, 300.0f);
 
   GameState->Plat = Plat;
   GameState->Entropy.Seed = DEBUG_NOISE_SEED;
 
   world_position WorldCenter = World_Position(0, 0, 0);
 
+  GameState->Heap = InitHeap(Gigabytes(4));
   GameState->World = AllocateAndInitWorld(GameState, WorldCenter, WORLD_CHUNK_DIM, VISIBLE_REGION);
 
   AllocateEntityTable(GameState);
 
-  GameState->Heap = InitHeap(Gigabytes(1));
   GameState->Models = AllocateGameModels(GameState, GameState->Memory);
 
   GameState->Player = GetFreeEntity(GameState);
   SpawnPlayer(GameState, GameState->Player, Canonical_Position(Voxel_Position(0), WorldCenter));
 
   return GameState;
+}
+
+BONSAI_API_WORKER_THREAD_INIT_CALLBACK()
+{
+  Thread->MeshFreelist = &GameState->MeshFreelist;
+  Thread->Noise = &GameState->Noise;
 }

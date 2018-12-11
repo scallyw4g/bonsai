@@ -225,7 +225,7 @@ BufferVerts(
 }
 
 void
-BuildEntityMesh(chunk_data *chunk, chunk_dimension Dim)
+BuildEntityMesh(chunk_data *Chunk, untextured_3d_geometry_buffer* Mesh, chunk_dimension Dim)
 {
   for ( int z = 0; z < Dim.z ; ++z )
   {
@@ -235,15 +235,15 @@ BuildEntityMesh(chunk_data *chunk, chunk_dimension Dim)
       {
         voxel_position LocalVoxelP = Voxel_Position(x,y,z);
 
-        if ( NotFilled( chunk, LocalVoxelP, Dim) )
+        if ( NotFilled( Chunk, LocalVoxelP, Dim) )
           continue;
 
         voxel_position P = Voxel_Position(x,y,z);
 
-        voxel *Voxel = &chunk->Voxels[GetIndex(P, Dim)];
+        voxel *Voxel = &Chunk->Voxels[GetIndex(P, Dim)];
 
         v3 VP = V3(P);
-        v3 Radius = V3(0.5f);
+        v3 Diameter = V3(1.0f);
         v3 VertexData[6];
 
         v4 FaceColors[FACE_VERT_COUNT];
@@ -262,35 +262,35 @@ BuildEntityMesh(chunk_data *chunk, chunk_dimension Dim)
 
 
         // FIXME(Jesse): This should use a BufferVertsChecked path
-        if ( (!IsInsideDim(Dim, rightVoxel)) || NotFilled( chunk, rightVoxel, Dim))
+        if ( (!IsInsideDim(Dim, rightVoxel)) || NotFilled( Chunk, rightVoxel, Dim))
         {
-          RightFaceVertexData( VP, Radius, VertexData);
-          BufferVertsDirect(&chunk->Mesh, 6, VertexData, RightFaceNormalData, FaceColors);
+          RightFaceVertexData( VP, Diameter, VertexData);
+          BufferVertsDirect(Mesh, 6, VertexData, RightFaceNormalData, FaceColors);
         }
-        if ( (!IsInsideDim( Dim, leftVoxel  )) || NotFilled( chunk, leftVoxel, Dim))
+        if ( (!IsInsideDim( Dim, leftVoxel  )) || NotFilled( Chunk, leftVoxel, Dim))
         {
-          LeftFaceVertexData( VP, Radius, VertexData);
-          BufferVertsDirect(&chunk->Mesh, 6, VertexData, LeftFaceNormalData, FaceColors);
+          LeftFaceVertexData( VP, Diameter, VertexData);
+          BufferVertsDirect(Mesh, 6, VertexData, LeftFaceNormalData, FaceColors);
         }
-        if ( (!IsInsideDim( Dim, botVoxel   )) || NotFilled( chunk, botVoxel, Dim))
+        if ( (!IsInsideDim( Dim, botVoxel   )) || NotFilled( Chunk, botVoxel, Dim))
         {
-          BottomFaceVertexData( VP, Radius, VertexData);
-          BufferVertsDirect(&chunk->Mesh, 6, VertexData, BottomFaceNormalData, FaceColors);
+          BottomFaceVertexData( VP, Diameter, VertexData);
+          BufferVertsDirect(Mesh, 6, VertexData, BottomFaceNormalData, FaceColors);
         }
-        if ( (!IsInsideDim( Dim, topVoxel   )) || NotFilled( chunk, topVoxel, Dim))
+        if ( (!IsInsideDim( Dim, topVoxel   )) || NotFilled( Chunk, topVoxel, Dim))
         {
-          TopFaceVertexData( VP, Radius, VertexData);
-          BufferVertsDirect(&chunk->Mesh, 6, VertexData, TopFaceNormalData, FaceColors);
+          TopFaceVertexData( VP, Diameter, VertexData);
+          BufferVertsDirect(Mesh, 6, VertexData, TopFaceNormalData, FaceColors);
         }
-        if ( (!IsInsideDim( Dim, frontVoxel )) || NotFilled( chunk, frontVoxel, Dim))
+        if ( (!IsInsideDim( Dim, frontVoxel )) || NotFilled( Chunk, frontVoxel, Dim))
         {
-          FrontFaceVertexData( VP, Radius, VertexData);
-          BufferVertsDirect(&chunk->Mesh, 6, VertexData, FrontFaceNormalData, FaceColors);
+          FrontFaceVertexData( VP, Diameter, VertexData);
+          BufferVertsDirect(Mesh, 6, VertexData, FrontFaceNormalData, FaceColors);
         }
-        if ( (!IsInsideDim( Dim, backVoxel  )) || NotFilled( chunk, backVoxel, Dim))
+        if ( (!IsInsideDim( Dim, backVoxel  )) || NotFilled( Chunk, backVoxel, Dim))
         {
-          BackFaceVertexData( VP, Radius, VertexData);
-          BufferVertsDirect(&chunk->Mesh, 6, VertexData, BackFaceNormalData, FaceColors);
+          BackFaceVertexData( VP, Diameter, VertexData);
+          BufferVertsDirect(Mesh, 6, VertexData, BackFaceNormalData, FaceColors);
         }
 
       }
@@ -301,9 +301,9 @@ BuildEntityMesh(chunk_data *chunk, chunk_dimension Dim)
 void
 AllocateMesh(untextured_3d_geometry_buffer *Mesh, u32 NumVerts, memory_arena *Memory)
 {
-  Mesh->Verts   = AllocateAligned(v3, Memory, NumVerts, 64);
-  Mesh->Normals = AllocateAligned(v3, Memory, NumVerts, 64);
-  Mesh->Colors  = AllocateAligned(v4, Memory, NumVerts, 64);
+  Mesh->Verts   = Allocate(v3, Memory, NumVerts);
+  Mesh->Normals = Allocate(v3, Memory, NumVerts);
+  Mesh->Colors  = Allocate(v4, Memory, NumVerts);
 
   Mesh->End = NumVerts;
   Mesh->At = 0;
@@ -311,3 +311,31 @@ AllocateMesh(untextured_3d_geometry_buffer *Mesh, u32 NumVerts, memory_arena *Me
   return;
 }
 
+void
+AllocateMesh(untextured_3d_geometry_buffer *Mesh, u32 NumVerts, heap_allocator *Heap)
+{
+  Mesh->Verts   = (v3*)HeapAllocate(Heap, sizeof(v3)*NumVerts);
+  Mesh->Normals = (v3*)HeapAllocate(Heap, sizeof(v3)*NumVerts);
+  Mesh->Colors  = (v4*)HeapAllocate(Heap, sizeof(v4)*NumVerts);
+
+  Mesh->End = NumVerts;
+  Mesh->At = 0;
+
+  return;
+}
+
+untextured_3d_geometry_buffer*
+AllocateMesh(heap_allocator* Heap, u32 NumVerts)
+{
+  untextured_3d_geometry_buffer* Result = (untextured_3d_geometry_buffer*)HeapAllocate(Heap, sizeof(untextured_3d_geometry_buffer));
+  AllocateMesh(Result, NumVerts, Heap);
+  return Result;
+}
+
+untextured_3d_geometry_buffer*
+AllocateMesh(memory_arena* Arena, u32 NumVerts)
+{
+  untextured_3d_geometry_buffer* Result = Allocate(untextured_3d_geometry_buffer, Arena, 1);
+  AllocateMesh(Result, NumVerts, Arena);
+  return Result;
+}

@@ -60,6 +60,10 @@
     PrintConsole(Buffer); }
 
 
+#define GlDebugMessage(...)  PrintConsole(" * Gl Debug Message - ");             \
+                             VariadicOutputDebugString(__VA_ARGS__); \
+                             PrintConsole("\n")
+
 #define Info(...)  PrintConsole("   Info - ");             \
                    VariadicOutputDebugString(__VA_ARGS__); \
                    PrintConsole("\n")
@@ -88,10 +92,12 @@
 
 #define BONSAI_FUNCTION_NAME __func__
 
+
 #define Info(...)  printf(BLUE_TERMINAL "   Info" WHITE_TERMINAL " - ");  printf(__VA_ARGS__); printf("\n")
 #define Debug(...) printf(__VA_ARGS__);   printf("\n")
 #define Error(...) printf(RED_TERMINAL " ! Error" WHITE_TERMINAL " - "); printf(__VA_ARGS__); printf("\n")
 #define Warn(...)  printf(YELLOW_TERMINAL " * Warn" WHITE_TERMINAL " - "); printf(__VA_ARGS__); printf("\n")
+#define OpenGlDebugMessage(...)  printf(YELLOW_TERMINAL " * OpenGl Debug Message" WHITE_TERMINAL " - "); printf(__VA_ARGS__); printf("\n")
 
 #define RuntimeBreak() raise(SIGTRAP)
 #define TriggeredRuntimeBreak() Global_TriggerRuntimeBreak ? RuntimeBreak() : 0 ;

@@ -33,10 +33,12 @@
 
 #define THREAD_MAIN_RETURN void*
 
-#define EXPORT extern "C" __attribute__((visibility("default")))
+#define exported_function extern "C" __attribute__((visibility("default")))
+#define function static
 
-#define CompleteAllWrites  asm volatile("" ::: "memory"); _mm_sfence()
-#define CompleteAllReads  asm volatile("" ::: "memory"); _mm_lfence()
+#define ReadBarrier  asm volatile("" ::: "memory"); _mm_lfence()
+#define WriteBarrier asm volatile("" ::: "memory"); _mm_sfence()
+#define FullBarrier  asm volatile("" ::: "memory"); _mm_sfence(); _mm_lfence()
 
 /*
  * glX Business
@@ -135,14 +137,28 @@ AtomicExchange( volatile u32 *Source, const u32 Exchange )
 }
 
 inline b32
-AtomicCompareExchange( volatile char **Source, const char *Exchange, const char *Comparator )
+AtomicCompareExchange( volatile char **Source, volatile char *Exchange, volatile char *Comparator )
 {
   bool Result = __sync_bool_compare_and_swap ( Source, Comparator, Exchange );
   return Result;
 }
 
 inline bool
-AtomicCompareExchange( volatile unsigned int *Source, unsigned int Exchange, unsigned int Comparator )
+AtomicCompareExchange( volatile void** Source, void* Exchange, void* Comparator )
+{
+  bool Result = __sync_bool_compare_and_swap ( Source, Comparator, Exchange );
+  return Result;
+}
+
+inline bool
+AtomicCompareExchange( volatile u64 *Source, u64 Exchange, u64 Comparator )
+{
+  bool Result = __sync_bool_compare_and_swap ( Source, Comparator, Exchange );
+  return Result;
+}
+
+inline bool
+AtomicCompareExchange( volatile u32 *Source, u32 Exchange, u32 Comparator )
 {
   bool Result = __sync_bool_compare_and_swap ( Source, Comparator, Exchange );
   return Result;
@@ -152,7 +168,7 @@ void
 ReadBytes(u8* Dest, u64 BytesToRead, FILE *Src)
 {
   Assert(BytesToRead);
-  s32 BytesRead = fread(Dest, 1, BytesToRead, Src);
+  s64 BytesRead = fread(Dest, 1, BytesToRead, Src);
   Assert(BytesRead != 0);
   return;
 }

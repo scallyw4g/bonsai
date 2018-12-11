@@ -32,9 +32,6 @@ main()
 {
   TestSuiteBegin("callgraph");
 
-
-  u32 TotalThreadCount = GetTotalThreadCount();
-
   shared_lib DebugLib = OpenLibrary("./bin/libDebugSystem.so");
   if (!DebugLib) { Error("Loading DebugLib :( "); return False; }
 
@@ -45,6 +42,9 @@ main()
   if (!InitDebugSystem) { Error("Retreiving InitDebugSystem from Debug Lib :( "); return False; }
 
   InitDebugSystem(False);
+
+  debug_state* DebugState = GetDebugState();
+  DebugState->DebugDoScopeProfiling = True;
 
   TIMED_FUNCTION();
 

@@ -1,7 +1,8 @@
 #define BONSAI_NO_PUSH_METADATA
-#define DEFAULT_GAME_LIB "./bin/AnimationTestLoadable.so"
+#define DEFAULT_GAME_LIB "./bin/WorldGenLoadable.so"
 
 #include <bonsai_types.h>
+#include <heap_memory_types.cpp>
 
 #if BONSAI_WIN32
 #include <win32_platform.cpp>
@@ -13,7 +14,7 @@
 #endif
 
 global_variable s64 LastGameLibTime;
-global_variable game_thread_callback_proc GameThreadCallback;
+global_variable bonsai_worker_thread_callback BONSAI_API_WORKER_THREAD_CALLBACK_NAME;
 
 
 
@@ -40,16 +41,34 @@ GameLibIsNew(const char *LibPath)
   return Result;
 }
 
+thread_local_state
+DefaultThreadLocalState()
+{
+  thread_local_state Thread = {};
+
+  Thread.TempMemory = PlatformAllocateArena();
+  Thread.PermMemory = PlatformAllocateArena();
+
+  DEBUG_REGISTER_ARENA(Thread.TempMemory);
+  DEBUG_REGISTER_ARENA(Thread.PermMemory);
+
+  return Thread;
+}
+
 THREAD_MAIN_RETURN
 ThreadMain(void *Input)
 {
   thread_startup_params *ThreadParams = (thread_startup_params *)Input;
   DEBUG_REGISTER_THREAD(ThreadParams->Self.ThreadIndex);
 
-  work_queue *Queue = ThreadParams->Queue;
+  thread_local_state Thread = DefaultThreadLocalState();
 
-  memory_arena *ThreadArena = PlatformAllocateArena();
-  DEBUG_REGISTER_ARENA(ThreadArena);
+  if (ThreadParams->InitProc)
+  {
+    ThreadParams->InitProc(&Thread, ThreadParams->GameState);
+  }
+
+  work_queue *Queue = ThreadParams->Queue;
 
   for (;;)
   {
@@ -69,32 +88,19 @@ ThreadMain(void *Input)
     {
       u32 DequeueIndex = Queue->DequeueIndex;
       Exchanged = AtomicCompareExchange(&Queue->DequeueIndex,
-                                        (DequeueIndex+1)%WORK_QUEUE_SIZE,
+                                        (DequeueIndex+1)% WORK_QUEUE_SIZE,
                                         DequeueIndex);
       if ( Exchanged )
       {
-        work_queue_entry Entry = Queue->Entries[DequeueIndex];
-        GameThreadCallback(&Entry, ThreadArena);
+        work_queue_entry* Entry = Queue->Entries + DequeueIndex;
+        BONSAI_API_WORKER_THREAD_CALLBACK_NAME(Entry, &Thread);
+        Entry->Type = WorkEntryType_None;
       }
     }
 
-    PlatformUnprotectArena(ThreadArena);
-    RewindArena(ThreadArena);
+    PlatformUnprotectArena(Thread.TempMemory);
+    RewindArena(Thread.TempMemory);
   }
-}
-
-void
-PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
-{
-  Queue->Entries[Queue->EnqueueIndex] = *Entry;
-
-  CompleteAllWrites;
-
-  Queue->EnqueueIndex = (Queue->EnqueueIndex+1) % WORK_QUEUE_SIZE;
-
-  WakeThread( &Queue->Semaphore );
-
-  return;
 }
 
 b32
@@ -240,7 +246,29 @@ InitializeOpenGlExtensions(os *Os)
   return;
 }
 
-b32
+inline void
+PlatformLaunchWorkerThreads(platform *Plat, bonsai_worker_thread_init_callback WorkerThreadInit, game_state* GameState)
+{
+  work_queue *Queue = &Plat->Queue;
+  u32 WorkerThreadCount = GetWorkerThreadCount();
+
+  for (u32 ThreadIndex = 0;
+      ThreadIndex < WorkerThreadCount;
+      ++ ThreadIndex )
+  {
+    thread_startup_params *Params = &Plat->Threads[ThreadIndex];
+    Params->Self.ThreadIndex = ThreadIndex + 1;
+    Params->Queue = Queue;
+    Params->InitProc = WorkerThreadInit;
+    Params->GameState = GameState;
+
+    CreateThread( ThreadMain, Params );
+  }
+
+  return;
+}
+
+void
 PlatformInit(platform *Plat, memory_arena *Memory)
 {
   Plat->Memory = Memory;
@@ -258,18 +286,7 @@ PlatformInit(platform *Plat, memory_arena *Memory)
   work_queue *Queue = &Plat->Queue;
   Queue->Semaphore = CreateSemaphore();
 
-  for (u32 ThreadIndex = 0;
-      ThreadIndex < WorkerThreadCount;
-      ++ ThreadIndex )
-  {
-    thread_startup_params *Params = &Plat->Threads[ThreadIndex];
-    Params->Self.ThreadIndex = ThreadIndex + 1;
-    Params->Queue = Queue;
-
-    CreateThread( ThreadMain, Params );
-  }
-
-  return True;
+  return;
 }
 
 /*
@@ -329,22 +346,23 @@ SearchForProjectRoot(void)
   return Result;
 }
 
-void
-QueryAndSetGlslVersion(platform *Plat)
+b32
+CheckShadingLanguageVersion()
 {
-  char *GL_Version = (char*)glGetString ( GL_VERSION );
-  Info("GL verison : %s", GL_Version );
+  char *OpenGlVersion = (char*)glGetString ( GL_VERSION );
+  r32 ShadingLanguageVersion = (r32)atof((char*)glGetString ( GL_SHADING_LANGUAGE_VERSION ));
 
-  r64 GLSL_Version = atof((char*)glGetString ( GL_SHADING_LANGUAGE_VERSION ));
-  Info("GLSL verison : %f", GLSL_Version );
+  Info("OpenGl Verison : %s", OpenGlVersion );
+  Info("Shading Language Verison : %f", ShadingLanguageVersion );
 
+  r32 RequiredShadingLanguageVersion = 3.3f;
+  if (ShadingLanguageVersion < RequiredShadingLanguageVersion)
+  {
+    Error("Unsupported Version of GLSL :: Got %f, Needed: %f", ShadingLanguageVersion, RequiredShadingLanguageVersion);
+  }
 
-  if (GLSL_Version >= 3.3)
-    Plat->GlslVersion = "330";
-  else
-    Plat->GlslVersion = "310ES";
-
-  return;
+  b32 Result = (ShadingLanguageVersion > RequiredShadingLanguageVersion);
+  return Result;
 }
 
 void
@@ -443,13 +461,19 @@ main()
   if (!WindowSuccess) { Error("Initializing Window :( "); return False; }
 
   Assert(Os.Window);
+
+  AssertNoGlErrors;
+
   InitializeOpenGlExtensions(&Os);
+
+  b32 ShadingLanguageIsRecentEnough = CheckShadingLanguageVersion();
+  if (!ShadingLanguageIsRecentEnough) {  return False; }
 
   AssertNoGlErrors;
 
 
-  memory_arena *PlatMemory     = PlatformAllocateArena();
-  memory_arena *GameMemory     = PlatformAllocateArena();
+  memory_arena *PlatMemory = PlatformAllocateArena();
+  memory_arena *GameMemory = PlatformAllocateArena();
 
   DEBUG_REGISTER_ARENA(GameMemory);
   DEBUG_REGISTER_ARENA(PlatMemory);
@@ -465,27 +489,27 @@ main()
 
   GameLibIsNew(DEFAULT_GAME_LIB);  // Hack to initialize the LastGameLibTime static
 
-
   shared_lib GameLib = OpenLibrary(DEFAULT_GAME_LIB);
   if (!GameLib) { Error("Loading GameLib :( "); return False; }
 
-  game_init_proc GameInit = (game_init_proc)GetProcFromLib(GameLib, "GameInit");
-  if (!GameInit) { Error("Retreiving GameInit from Game Lib :( "); return False; }
+  bonsai_main_thread_init_callback GameInit = (bonsai_main_thread_init_callback)GetProcFromLib(GameLib, TO_STRING(BONSAI_API_MAIN_THREAD_INIT_CALLBACK_NAME));
+  if (!GameInit) { Error("Retreiving " TO_STRING(BONSAI_API_MAIN_THREAD_INIT_CALLBACK_NAME) " from Game Lib :( "); return False; }
 
-  game_main_proc GameUpdateAndRender = (game_main_proc)GetProcFromLib(GameLib, "GameUpdateAndRender");
-  if (!GameUpdateAndRender) { Error("Retreiving GameUpdateAndRender from Game Lib :( "); return False; }
+  bonsai_main_thread_callback BONSAI_API_MAIN_THREAD_CALLBACK_NAME = (bonsai_main_thread_callback)GetProcFromLib(GameLib, TO_STRING(BONSAI_API_MAIN_THREAD_CALLBACK_NAME));
+  if (!BONSAI_API_MAIN_THREAD_CALLBACK_NAME) { Error("Retreiving " TO_STRING(BONSAI_API_MAIN_THREAD_CALLBACK_NAME) " from Game Lib :( "); return False; }
 
-  GameThreadCallback = (game_thread_callback_proc)GetProcFromLib(GameLib, "GameThreadCallback");
-  if (!GameThreadCallback) { Error("Retreiving GameThreadCallback from Game Lib :( "); return False; }
+  BONSAI_API_WORKER_THREAD_CALLBACK_NAME = (bonsai_worker_thread_callback)GetProcFromLib(GameLib, TO_STRING(BONSAI_API_WORKER_THREAD_CALLBACK_NAME) );
+  if (!BONSAI_API_WORKER_THREAD_CALLBACK_NAME) { Error("Retreiving " TO_STRING(BONSAI_API_WORKER_THREAD_CALLBACK_NAME) " from Game Lib :( "); return False; }
 
-  QueryAndSetGlslVersion(&Plat);
+  bonsai_worker_thread_init_callback WorkerThreadInitCallback = (bonsai_worker_thread_init_callback)GetProcFromLib(GameLib, TO_STRING(BONSAI_API_WORKER_THREAD_INIT_CALLBACK_NAME));
 
-  game_state* GameState = GameInit(&Plat, GameMemory );
+  game_state* GameState = GameInit(&Plat, GameMemory, GetDebugState);
   if (!GameState) { Error("Initializing Game State :( "); return False; }
 
   server_state* ServerState = ServerInit(GameMemory);
   Assert(ServerState);
 
+  PlatformLaunchWorkerThreads(&Plat, WorkerThreadInitCallback, GameState);
 
   /*
    *  Main Game loop
@@ -496,7 +520,7 @@ main()
   while ( Os.ContinueRunning )
   {
     ClearWasPressedFlags((input_event*)&Plat.Input);
-    DEBUG_FRAME_BEGIN(&Hotkeys, RealDt);
+    DEBUG_FRAME_BEGIN(&Hotkeys);
 
     Plat.dt = RealDt;
     if (Plat.dt > 0.1f)
@@ -520,8 +544,8 @@ main()
       CloseLibrary(GameLib);
       GameLib = OpenLibrary(DEFAULT_GAME_LIB);
 
-      GameUpdateAndRender = (game_main_proc)GetProcFromLib(GameLib, "GameUpdateAndRender");
-      GameThreadCallback = (game_thread_callback_proc)GetProcFromLib(GameLib, "GameThreadCallback");
+      BONSAI_API_MAIN_THREAD_CALLBACK_NAME = (bonsai_main_thread_callback)GetProcFromLib(GameLib, TO_STRING(BONSAI_API_MAIN_THREAD_CALLBACK_NAME));
+      BONSAI_API_WORKER_THREAD_CALLBACK_NAME = (bonsai_worker_thread_callback)GetProcFromLib(GameLib, TO_STRING(BONSAI_API_WORKER_THREAD_CALLBACK_NAME));
 
       ResumeWorkerThreads();
     }
@@ -534,7 +558,7 @@ main()
       if (IsDisconnected(&Plat.Network)) { ConnectToServer(&Plat.Network); }
     END_BLOCK("Network Ops");
 
-    GameUpdateAndRender(&Plat, GameState, &Hotkeys);
+    BONSAI_API_MAIN_THREAD_CALLBACK_NAME(&Plat, GameState, &Hotkeys);
 
     DEBUG_FRAME_END(&Plat, ServerState);
 

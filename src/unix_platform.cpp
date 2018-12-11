@@ -16,7 +16,7 @@ PrintSemValue( semaphore *Semaphore )
 #endif
 
 global_variable volatile b32 MainThreadBlocksWorkerThreads;
-global_variable volatile s32 WorkerThreadsWaiting;
+global_variable volatile u32 WorkerThreadsWaiting;
 
 void
 PlatformInitializeMutex(mutex *Mutex)
@@ -26,7 +26,7 @@ PlatformInitializeMutex(mutex *Mutex)
 }
 
 void
-PlatformUnlockMutex(mutex *Mutex, u32 ThreadIndex)
+PlatformUnlockMutex(mutex *Mutex)
 {
   s32 Fail = pthread_mutex_unlock(&Mutex->M);
   TIMED_MUTEX_RELEASED(Mutex);
@@ -41,7 +41,7 @@ PlatformUnlockMutex(mutex *Mutex, u32 ThreadIndex)
 }
 
 void
-PlatformLockMutex(mutex *Mutex, u32 ThreadIndex)
+PlatformLockMutex(mutex *Mutex)
 {
   TIMED_MUTEX_WAITING(Mutex);
 
@@ -287,12 +287,43 @@ void
 HandleGlDebugMessage(GLenum Source, GLenum Type, GLuint Id, GLenum Severity,
                      GLsizei MessageLength, const GLchar* Message, const void* UserData)
 {
-  if (Severity == GL_DEBUG_SEVERITY_NOTIFICATION)
+  if (Severity != GL_DEBUG_SEVERITY_NOTIFICATION)
   {
-  }
-  else
-  {
-    Debug("GL - %s", Message);
+
+    const char* MessageTypeName = 0;
+    switch(Type) {
+      case(GL_DEBUG_TYPE_ERROR):
+      {
+        MessageTypeName = "ERROR";
+      } break;
+      case(GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR):
+      {
+        MessageTypeName = "DEPRECATED_BEHAVIOR";
+      } break;
+      case(GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR):
+      {
+        MessageTypeName = "UNDEFINED_BEHAVIOR";
+      } break;
+      case(GL_DEBUG_TYPE_PORTABILITY):
+      {
+        MessageTypeName = "PORTABILITY";
+      } break;
+      case(GL_DEBUG_TYPE_PERFORMANCE):
+      {
+        MessageTypeName = "PERFORMANCE";
+      } break;
+      case(GL_DEBUG_TYPE_OTHER):
+      {
+        MessageTypeName = "OTHER";
+      } break;
+      InvalidDefaultCase;
+    }
+
+    OpenGlDebugMessage("Source %u, Type: %s, Id %u - %.*s", Source, MessageTypeName, Id, MessageLength, Message);
+    if (UserData)
+    {
+      OpenGlDebugMessage("User Data At %p", UserData);
+    }
   }
 
   return;
@@ -369,6 +400,9 @@ OpenAndInitializeWindow( os *Os, platform *Plat, s32 DebugFlags)
   glXMakeCurrent(Os->Display, win, Os->GlContext);
 
   glDebugMessageCallback(HandleGlDebugMessage, 0);
+  glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+
+  AssertNoGlErrors;
 
   Os->Window = win;
   return True;
@@ -756,8 +790,8 @@ RewindArena(memory_arena *Arena, umm RestartBlockSize = Megabytes(1) )
   Arena->NextBlockSize = RestartBlockSize;
 
 #if BONSAI_INTERNAL
-#ifndef BONSAI_NO_PUSH_METADATA
   Arena->Pushes = 0;
+#ifndef BONSAI_NO_PUSH_METADATA
   DEBUG_CLEAR_META_RECORDS_FOR(Arena);
 #endif
 #endif

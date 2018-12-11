@@ -5,8 +5,6 @@
 #include <unix_platform.cpp>
 
 
-#include <debug_data_system.cpp>
-
 #include <test_utils.cpp>
 
 
@@ -114,8 +112,6 @@ AssertSegfault()
 template <typename T> T*
 TestAllocation(memory_arena *Arena, b32 Protection = True, umm Alignment = 1)
 {
-  memory_arena Initial = *Arena;
-
   /* T *Test = (T*)Allocate_( Arena, sizeof(T), Alignment, Protection); */
   T *Test = AllocateAlignedProtection( T, Arena, 1, Alignment, Protection);
   TestThat(Test);
@@ -253,7 +249,7 @@ TestAlignment()
   return;
 }
 
-b32
+void
 TestSetToPageBoundary()
 {
   memory_arena Arena = {};
@@ -271,10 +267,12 @@ TestSetToPageBoundary()
   Arena.End = (u8*)TwoPages;
   AdvanceToBytesBeforeNextPage(sizeof(memory_arena), &Arena);
   TestThat((umm)Arena.At == TwoPages-sizeof(memory_arena));
+
+  return;
 }
 
 
-b32
+void
 TestOnPageBoundary()
 {
   memory_arena Arena = {};
@@ -288,6 +286,8 @@ TestOnPageBoundary()
 
   Arena.At = (u8*)1;
   TestThat( OnPageBoundary(&Arena, PageSize) == False);
+
+  return;
 }
 
 
@@ -545,7 +545,6 @@ UnprotectedAllocations()
 
 
     memory_arena *Arena = PlatformAllocateArena(Kilobytes(1));
-    memory_arena Initial = *Arena;
 
     for (u32 StructIndex = 0;
         StructIndex < StructCount;

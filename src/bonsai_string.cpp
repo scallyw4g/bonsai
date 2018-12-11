@@ -110,10 +110,10 @@ FormatCountedString(memory_arena *Memory, const char* FormatString, ...)
 void
 Trim(counted_string* String)
 {
-  s32 Count = String->Count;
+  umm Count = String->Count;
   const char* Start = String->Start;
 
-  for (s32 CharIndex = 0;
+  for (umm CharIndex = 0;
       CharIndex < String->Count;
       ++CharIndex)
   {
@@ -130,7 +130,7 @@ Trim(counted_string* String)
 
   Assert(Count >= 0);
 
-  for (s32 CharIndex = String->Count-1;
+  for (s64 CharIndex = (s64)String->Count-1;
       CharIndex >= 0;
       --CharIndex)
   {

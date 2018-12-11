@@ -1,7 +1,9 @@
 #include <stream.cpp>
 #include <canonical_position.cpp>
 #include <chunk.cpp>
+#include <heap_memory_types.cpp>
 #include <bonsai_mesh.cpp>
+#include <threadsafe.cpp>
 #include <world_chunk.cpp>
 #include <vox_loader.cpp>
 #include <perlin.cpp>
@@ -13,12 +15,16 @@
 #include <texture.cpp>
 #include <render.cpp>
 
+
 void
 PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
 {
-  Queue->Entries[Queue->EnqueueIndex] = *Entry;
+  work_queue_entry* Dest = Queue->Entries + Queue->EnqueueIndex;
+  Assert(Dest->Type == WorkEntryType_None);
 
-  CompleteAllWrites;
+  *Dest = *Entry;
+
+  WriteBarrier;
 
   Queue->EnqueueIndex = (Queue->EnqueueIndex+1) % WORK_QUEUE_SIZE;
 
@@ -28,7 +34,7 @@ PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
 }
 
 inline void
-QueueChunkForInit(game_state *GameState, work_queue *Queue, world_chunk *Chunk)
+QueueChunkForInit( game_state *GameState, work_queue *Queue, world_chunk *Chunk)
 {
   TIMED_FUNCTION();
   Assert( Chunk->Data->Flags == Chunk_Uninitialized);
@@ -36,7 +42,7 @@ QueueChunkForInit(game_state *GameState, work_queue *Queue, world_chunk *Chunk)
   work_queue_entry Entry = {};
 
   Entry.Input = (void*)Chunk;
-  Entry.Flags = WorkEntry_InitWorldChunk;
+  Entry.Type = WorkEntryType_InitWorldChunk;
   Entry.GameState = GameState;
 
   Chunk->Data->Flags = Chunk_Queued;
@@ -94,6 +100,62 @@ GetCameraRelativeInput(hotkeys *Hotkeys, camera *Camera)
   UpdateDir = Normalize(UpdateDir, Length(UpdateDir));
 
   return UpdateDir;
+}
+
+collision_event
+GetCollision( world *World, canonical_position TestP, v3 CollisionDim)
+{
+  collision_event Collision;
+  Collision.didCollide = false;
+
+  chunk_dimension WorldChunkDim = World->ChunkDim;
+
+  TestP = Canonicalize(WorldChunkDim, TestP);
+
+  voxel_position MinP = Voxel_Position(TestP.Offset);
+  voxel_position MaxP = Voxel_Position(Ceil(TestP.Offset + CollisionDim));
+
+  for ( int z = MinP.z; z < MaxP.z; z++ )
+  {
+    for ( int y = MinP.y; y < MaxP.y; y++ )
+    {
+      for ( int x = MinP.x; x < MaxP.x; x++ )
+      {
+        canonical_position LoopTestP = Canonicalize( WorldChunkDim, V3(x,y,z), TestP.WorldP );
+        world_chunk *chunk = GetWorldChunk( World, LoopTestP.WorldP );
+
+#if 0
+        // TODO(Jesse): Can we somehow atomically pull this one off the queue
+        // and initialize it on demand?
+        if (chunk && NotSet(chunk->Data->flags, Chunk_Initialized) )
+        {
+          chunk->Data->flags = (chunk->Data->flags, Chunk_Queued);
+          InitializeVoxels(chunk);
+        }
+#endif
+
+        if (!chunk)
+        {
+          Collision.CP = LoopTestP;
+          Collision.didCollide = true;
+          Collision.Chunk = 0;
+          goto end;
+        }
+
+        if ( IsFilledInChunk(chunk->Data, Voxel_Position(LoopTestP.Offset), World->ChunkDim) )
+        {
+          Collision.CP = LoopTestP;
+          Collision.didCollide = true;
+          Collision.Chunk = chunk;
+          goto end;
+        }
+
+      }
+    }
+  }
+  end:
+
+  return Collision;
 }
 
 v3
@@ -161,68 +223,6 @@ ClampMinus1toInfinity( voxel_position V )
     Result.z = -1;
 
   return Result;
-}
-
-world_chunk*
-GetFreeChunk(memory_arena *Storage, world *World, world_position P)
-{
-  TIMED_FUNCTION();
-  world_chunk *Result = 0;
-
-  if (World->FreeChunkCount == 0)
-  {
-    Result = AllocateWorldChunk(Storage, P);
-  }
-  else
-  {
-    Result = World->FreeChunks[--World->FreeChunkCount];
-  }
-
-  Assert(Result->Data->Flags == Chunk_Uninitialized);
-  Assert(Result->Next == 0);
-  Assert(Result->Prev == 0);
-
-  Result->WorldP = P;
-  InsertChunkIntoWorld(World, Result);
-
-  return Result;
-}
-
-void
-QueueChunksForInit(game_state *GameState)
-{
-  TIMED_FUNCTION();
-
-  world *World = GameState->World;
-
-  world_position WorldCenter = World->Center;
-  world_position VRHalfDim = World->VisibleRegion/2;
-
-  world_position Min = WorldCenter - VRHalfDim;
-  world_position Max = WorldCenter + VRHalfDim;
-
-  // TODO(Jesse): This could be miles more efficient by only iterating over the
-  // chunks that need to be initialized instead of all chunks multiple times.
-
-  for (s32 z = Min.z; z <= Max.z; ++ z)
-  {
-    for (s32 y = Min.y; y <= Max.y; ++ y)
-    {
-      for (s32 x = Min.x; x <= Max.x; ++ x)
-      {
-        world_position P = World_Position(x,y,z);
-        world_chunk *Chunk = GetWorldChunk( World, P );
-
-        if (!Chunk)
-        {
-          Chunk = GetFreeChunk(GameState->Memory, GameState->World, P);
-          QueueChunkForInit(GameState, &GameState->Plat->Queue, Chunk);
-        }
-      }
-    }
-  }
-
-  return;
 }
 
 inline b32
@@ -319,10 +319,12 @@ UpdateCameraP(platform *Plat, world *World, canonical_position NewTarget, camera
   Camera->Front = Normalize(V3(Px, Py, Pz));
 
   Camera->Right = Normalize(Cross(V3(0,0,1), Camera->Front));
-  Camera->Up = Normalize(Cross(Camera->Front, Camera->Right));
+  Camera->Up = V3(0,0,1); // Normalize(Cross(Camera->Front, Camera->Right));
 
-  Camera->Target = NewTarget;
-  Camera->P = Canonicalize(WorldChunkDim, NewTarget - (Camera->Front*Camera->DistanceFromTarget));
+  Camera->ViewingTarget = NewTarget;
+
+  Camera->TargetP = Canonicalize(WorldChunkDim, NewTarget - (Camera->Front*Camera->DistanceFromTarget));
+  Camera->CurrentP = Lerp(0.20f, Camera->CurrentP, Camera->TargetP);
 
 #if 1
 
@@ -330,7 +332,7 @@ UpdateCameraP(platform *Plat, world *World, canonical_position NewTarget, camera
   // Frustum computation
   //
   v3 FrustLength = V3(0.0f,0.0f, Camera->Frust.farClip);
-  v3 FarHeight = ( V3( 0.0f, ((Camera->Frust.farClip - Camera->Frust.nearClip)/cos(Camera->Frust.FOV/2)) * sin(Camera->Frust.FOV/2), 0.0f));
+  v3 FarHeight = ( V3( 0.0f, ((Camera->Frust.farClip - Camera->Frust.nearClip)/(r32)cos(Camera->Frust.FOV/2.0f)) * (r32)sin(Camera->Frust.FOV/2.0f), 0.0f));
   v3 FarWidth = V3( FarHeight.y, 0.0f, 0.0f);
 
   v3 MaxMax = FrustLength + FarHeight + FarWidth;
@@ -355,7 +357,7 @@ UpdateCameraP(platform *Plat, world *World, canonical_position NewTarget, camera
   MinMin = Rotate(MinMin, FinalRotation);
   MinMax = Rotate(MinMax, FinalRotation);
 
-  v3 CameraRenderP = GetRenderP(WorldChunkDim, Camera->P, Camera);
+  v3 CameraRenderP = GetRenderP(WorldChunkDim, Camera->CurrentP, Camera);
 
   plane Top(CameraRenderP,   Normalize(Cross(MaxMax, MaxMin)));
   plane Bot(CameraRenderP,   Normalize(Cross(MinMin, MinMax)));
@@ -376,8 +378,8 @@ UpdateCameraP(platform *Plat, world *World, canonical_position NewTarget, camera
 }
 
 world *
-AllocateAndInitWorld( game_state *GameState, world_position Center,
-    world_position Radius, voxel_position WorldChunkDim, chunk_dimension VisibleRegion)
+AllocateAndInitWorld( game_state *GameState,
+                      world_position Center, voxel_position WorldChunkDim, chunk_dimension VisibleRegion)
 {
   /*
    *  Allocate stuff
@@ -396,26 +398,10 @@ AllocateAndInitWorld( game_state *GameState, world_position Center,
   World->ChunkDim = WorldChunkDim;
   World->VisibleRegion = VisibleRegion;
 
-  World->Gravity = WORLD_GRAVITY;
   World->Center = Center;
 
-  u32 BufferVertices = Megabytes(1);
+  u32 BufferVertices = (u32)Megabytes(12);
   AllocateMesh(&World->Mesh, BufferVertices, GameState->Memory);
-
-  world_position Min = Center - Radius;
-  world_position Max = Center + Radius + 1;
-
-  for ( s32 z = Min.z; z <= Max.z; ++ z )
-  {
-    for ( s32 y = Min.y; y <= Max.y; ++ y )
-    {
-      for ( s32 x = Min.x; x <= Max.x; ++ x )
-      {
-        world_chunk *chunk = GetFreeChunk(GameState->Memory, World, World_Position(x,y,z));
-        QueueChunkForInit(GameState, &GameState->Plat->Queue, chunk);
-      }
-    }
-  }
 
   return World;
 }

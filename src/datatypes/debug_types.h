@@ -19,9 +19,9 @@ struct memory_arena_stats
 
 struct min_max_avg_dt
 {
-  r32 Min;
-  r32 Max;
-  r32 Avg;
+  r64 Min;
+  r64 Max;
+  r64 Avg;
 };
 
 struct clip_rect
@@ -169,7 +169,7 @@ struct platform;
 struct server_state;
 struct hotkeys;
 typedef void (*debug_frame_end_proc)(platform*, server_state*);
-typedef void (*debug_frame_begin_proc)(hotkeys*, r32);
+typedef void (*debug_frame_begin_proc)(hotkeys*);
 typedef void (*debug_register_arena_proc)(const char*, memory_arena*);
 typedef void (*debug_worker_thread_advance_data_system)(void);
 typedef r32 (*debug_main_thread_advance_data_system)(void);
@@ -188,10 +188,10 @@ typedef debug_thread_state* (*debug_get_thread_local_state)(void);
 
 struct debug_state;
 typedef debug_state* (*get_debug_state_proc)();
-get_debug_state_proc GetDebugState;
+static get_debug_state_proc GetDebugState;
 
 
-#define REGISTERED_MEMORY_ARENA_COUNT 32
+#define REGISTERED_MEMORY_ARENA_COUNT 128
 #define META_TABLE_SIZE (16 * 1024)
 struct debug_state
 {
@@ -206,7 +206,7 @@ struct debug_state
   u64 BytesBufferedToCard;
   b32 Initialized;
   b32 Debug_RedrawEveryPush;
-  b32 DebugDoScopeProfiling = True;
+  b32 DebugDoScopeProfiling = False;
 
   debug_profile_scope FreeScopeSentinel;
   mutex FreeScopeMutex;
@@ -337,13 +337,32 @@ struct debug_timed_function
 
 };
 
+memory_arena_stats
+GetMemoryArenaStats(memory_arena *ArenaIn)
+{
+  memory_arena_stats Result = {};
+
+  memory_arena *Arena = ArenaIn;
+  while (Arena)
+  {
+    Result.Allocations++;
+    Result.Pushes += Arena->Pushes;
+    Result.TotalAllocated += TotalSize(Arena);
+    Result.Remaining += Remaining(Arena);
+
+    Arena = Arena->Prev;
+  }
+
+  return Result;
+}
+
 #define TIMED_FUNCTION() debug_timed_function FunctionTimer(BONSAI_FUNCTION_NAME)
 #define TIMED_BLOCK(BlockName) { debug_timed_function BlockTimer(BlockName)
 #define END_BLOCK(BlockName) }
 
 #define DEBUG_FRAME_RECORD(...) DoDebugFrameRecord(__VA_ARGS__)
 #define DEBUG_FRAME_END(Plat, ServerState) GetDebugState()->FrameEnd(Plat, ServerState)
-#define DEBUG_FRAME_BEGIN(Hotkeys, dt) GetDebugState()->FrameBegin(Hotkeys, dt)
+#define DEBUG_FRAME_BEGIN(Hotkeys) GetDebugState()->FrameBegin(Hotkeys)
 
 #ifndef BONSAI_NO_MUTEX_TRACKING
 void DebugTimedMutexWaiting(mutex *Mut);
@@ -386,4 +405,5 @@ void DebugTimedMutexReleased(mutex *Mut);
 #define DEBUG_TRACK_DRAW_CALL(...)
 
 #endif
+
 

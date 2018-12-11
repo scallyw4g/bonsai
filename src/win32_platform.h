@@ -42,7 +42,8 @@ global_variable HANDLE Stdout = GetStdHandle(STD_OUTPUT_HANDLE);
 
 #define GAME_LIB (GAME_LIB_PATH".dll")
 
-#define EXPORT extern "C" __declspec( dllexport )
+#define exported_function extern "C" __declspec( dllexport )
+#define function static
 
 #define THREAD_MAIN_RETURN DWORD WINAPI
 #define GAME_MAIN_PROC FARPROC GameMain

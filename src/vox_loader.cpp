@@ -134,9 +134,10 @@ ReadXYZIChunk(FILE *File, int* byteCounter)
 }
 
 model
-LoadVoxModel(memory_arena *WorldStorage, char const *filepath)
+LoadVoxModel(memory_arena *WorldStorage, heap_allocator *Heap, char const *filepath)
 {
-  model Result;
+  model Result = {};
+  chunk_data* Chunk = 0;
   s32 totalChunkBytes = 0;
   chunk_dimension ReportedDim = {};
 
@@ -221,8 +222,8 @@ LoadVoxModel(memory_arena *WorldStorage, char const *filepath)
           // monolithic one. The storage for chunks must be as large as the
           // largest chunk we will EVER load, which should definately not be
           // decided at compile time.
-          Result.Chunk = AllocateChunk(WorldStorage, ModelDim);
-          Assert(Result.Chunk);
+          Chunk = AllocateChunk(WorldStorage, ModelDim);
+          Assert(Chunk);
 
           Result.Dim = ModelDim;
 
@@ -233,12 +234,12 @@ LoadVoxModel(memory_arena *WorldStorage, char const *filepath)
             boundary_voxel *Voxel = &LocalVoxelCache[VoxelCacheIndex];
             Voxel->Offset -= Min;
             s32 Index = GetIndex(Voxel->Offset, Result.Dim);
-            Result.Chunk->Voxels[Index] = Voxel->V;
+            Chunk->Voxels[Index] = Voxel->V;
           }
 
           free(LocalVoxelCache);
 
-          SetFlag(&Result, Chunk_Initialized);
+          SetFlag(Chunk, Chunk_Initialized);
 
           // TODO(Jesse): Are we really done?
           goto loaded;
@@ -257,7 +258,8 @@ LoadVoxModel(memory_arena *WorldStorage, char const *filepath)
 
 loaded:
 
-  BuildEntityMesh(Result.Chunk, Result.Dim);
+  AllocateMesh(&Result.Mesh, 6*VERTS_PER_FACE*Volume(Result.Dim), Heap);
+  BuildEntityMesh(Chunk, &Result.Mesh, Result.Dim);
 
   return Result;
 }

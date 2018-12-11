@@ -23,22 +23,19 @@
 #define WIND_CCW 0
 
 inline void
-RightFaceVertexData( v3 Center, v3 Radius, v3 *Result)
+RightFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
   /* TIMED_FUNCTION(); */
-  v3 Max = Center + Radius;
-  v3 Min = Center - Radius;
+  v3 MaxP = MinP + Diameter;
 
-  //  0(3) -- 1(7)
+  //  0    1
   //
-  //   |        |
-  //
-  //  2(2) -- 3(6)
+  //  2    3
 
-  v3 P0 = {{ Max.x , Min.y , Max.z }};
-  v3 P1 = {{ Max.x , Max.y , Max.z }};
-  v3 P2 = {{ Max.x , Min.y , Min.z }};
-  v3 P3 = {{ Max.x , Max.y , Min.z }};
+  v3 P0 = {{ MaxP.x, MinP.y, MaxP.z }};
+  v3 P1 = {{ MaxP.x, MaxP.y, MaxP.z }};
+  v3 P2 = {{ MaxP.x, MinP.y, MinP.z }};
+  v3 P3 = {{ MaxP.x, MaxP.y, MinP.z }};
 
 #if WIND_CCW
   v3 Temp[] = { P2, P1, P0, P2, P3, P1 };
@@ -62,31 +59,17 @@ global_variable v3 RightFaceNormalData[] =
 };
 
 inline void
-LeftFaceVertexData( v3 Center, v3 Radius, v3 *Result)
+LeftFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
   /* TIMED_FUNCTION(); */
-
-  //  0(4) -- 1(0)
-  //
-  //   |        |
-  //
-  //  2(5) -- 3(1)
-
-  v3 Min = Center - Radius;
-  v3 Max = Center + Radius;
-
-
-  v3 P0 = {{Min.x, Max.y, Max.z}};
-  v3 P1 = {{Min.x, Min.y, Max.z}};
-  v3 P2 = {{Min.x, Max.y, Min.z}};
-  v3 P3 = {{Min.x, Min.y, Min.z}};
-
-#if WIND_CCW
-  v3 Temp[] = { P2, P1, P0, P2, P3, P1 };
-#else
-  v3 Temp[] = { P0, P1, P2, P1, P3, P2 };
-#endif
-
+  r32 Temp[] = {
+    MinP.x , MinP.y +  Diameter.y , MinP.z +  Diameter.z ,
+    MinP.x , MinP.y               , MinP.z               ,
+    MinP.x , MinP.y +  Diameter.y , MinP.z               ,
+    MinP.x , MinP.y               , MinP.z               ,
+    MinP.x , MinP.y +  Diameter.y , MinP.z +  Diameter.z ,
+    MinP.x , MinP.y               , MinP.z +  Diameter.z ,
+  };
 
   memcpy(Result, Temp, sizeof(Temp));
 
@@ -104,28 +87,21 @@ global_variable v3 LeftFaceNormalData[] =
 };
 
 inline void
-BackFaceVertexData( v3 Center, v3 Radius, v3 *Result)
+BackFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
   /* TIMED_FUNCTION(); */
-  v3 Min = Center - Radius;
-  v3 Max = Center + Radius;
+  v3 MaxP = MinP + Diameter;
 
-  //  0(0) -- 1(3)
+  //  0    1
   //
-  //   |        |
-  //
-  //  2(1) -- 3(2)
+  //  2    3
 
-  v3 P0 = {{ Min.x, Min.y, Max.z }};
-  v3 P1 = {{ Max.x, Min.y, Max.z }};
-  v3 P2 = {{ Min.x, Min.y, Min.z }};
-  v3 P3 = {{ Max.x, Min.y, Min.z }};
+  v3 P0 = {{ MinP.x, MinP.y, MaxP.z }};
+  v3 P1 = {{ MaxP.x, MinP.y, MaxP.z }};
+  v3 P2 = {{ MinP.x, MinP.y, MinP.z }};
+  v3 P3 = {{ MaxP.x, MinP.y, MinP.z }};
 
-#if WIND_CCW
-  v3 Temp[] = { P2, P1, P0, P2, P3, P1 };
-#else
   v3 Temp[] = { P0, P1, P2, P1, P3, P2 };
-#endif
 
   memcpy(Result, Temp, sizeof(Temp));
 
@@ -143,30 +119,20 @@ global_variable v3 BackFaceNormalData[] =
 };
 
 inline void
-FrontFaceVertexData( v3 Center, v3 Radius, v3 *Result)
+FrontFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
   /* TIMED_FUNCTION(); */
-  v3 Min = Center - Radius;
-  v3 Max = Center + Radius;
-
-  //  0(7) -- 1(4)
-  //
-  //   |        |
-  //
-  //  2(6) -- 3(5)
-
-  v3 P0 = {{Min.x , Max.y, Max.z}};
-  v3 P1 = {{Max.x , Max.y, Max.z}};
-  v3 P2 = {{Min.x , Max.y, Min.z}};
-  v3 P3 = {{Max.x , Max.y, Min.z}};
-
-#if WIND_CCW
-  v3 Temp[] = { P2, P1, P0, P2, P3, P1 };
-#else
-  v3 Temp[] = { P0, P1, P2, P1, P3, P2 };
-#endif
+  r32 Temp[] = {
+    MinP.x + Diameter.x , MinP.y + Diameter.y , MinP.z + Diameter.z ,
+    MinP.x              , MinP.y + Diameter.y , MinP.z              ,
+    MinP.x + Diameter.x , MinP.y + Diameter.y , MinP.z              ,
+    MinP.x              , MinP.y + Diameter.y , MinP.z              ,
+    MinP.x + Diameter.x , MinP.y + Diameter.y , MinP.z + Diameter.z ,
+    MinP.x              , MinP.y + Diameter.y , MinP.z + Diameter.z ,
+  };
 
   memcpy(Result, Temp, sizeof(Temp));
+
   return;
 }
 
@@ -181,28 +147,21 @@ global_variable v3 FrontFaceNormalData[] =
 };
 
 inline void
-TopFaceVertexData( v3 Center, v3 Radius, v3 *Result)
+TopFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
   /* TIMED_FUNCTION(); */
-  v3 Min = Center - Radius;
-  v3 Max = Center + Radius;
+  v3 MaxP = MinP + Diameter;
 
-  //  0(4) -- 1(7)
+  //  0    1
   //
-  //   |        |
-  //
-  //  2(0) -- 3(3)
+  //  2    3
 
-  v3 P0 = {{ Min.x, Max.y, Max.z }};
-  v3 P1 = {{ Max.x, Max.y, Max.z }};
-  v3 P2 = {{ Min.x, Min.y, Max.z }};
-  v3 P3 = {{ Max.x, Min.y, Max.z }};
+  v3 P0 = {{ MinP.x, MaxP.y, MaxP.z }};
+  v3 P1 = {{ MaxP.x, MaxP.y, MaxP.z }};
+  v3 P2 = {{ MinP.x, MinP.y, MaxP.z }};
+  v3 P3 = {{ MaxP.x, MinP.y, MaxP.z }};
 
-#if WIND_CCW
-  v3 Temp[] = { P2, P1, P0, P2, P3, P1 };
-#else
   v3 Temp[] = { P0, P1, P2, P1, P3, P2 };
-#endif
 
   memcpy(Result, Temp, sizeof(Temp));
 
@@ -221,28 +180,17 @@ global_variable v3 TopFaceNormalData[] =
 };
 
 inline void
-BottomFaceVertexData( v3 Center, v3 Radius, v3 *Result)
+BottomFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
   /* TIMED_FUNCTION(); */
-  v3 Min = Center - Radius;
-  v3 Max = Center + Radius;
-
-  //  0(1) -- 1(2)
-  //
-  //   |        |
-  //
-  //  2(5) -- 3(6)
-
-  v3 P0 = {{ Min.x, Min.y, Min.z }};
-  v3 P1 = {{ Max.x, Min.y, Min.z }};
-  v3 P2 = {{ Min.x, Max.y, Min.z }};
-  v3 P3 = {{ Max.x, Max.y, Min.z }};
-
-#if WIND_CCW
-  v3 Temp[] = { P2, P1, P0, P2, P3, P1 };
-#else
-  v3 Temp[] = { P0, P1, P2, P1, P3, P2 };
-#endif
+  r32 Temp[] = {
+    MinP.x + Diameter.x , MinP.y + Diameter.y , MinP.z ,
+    MinP.x              , MinP.y              , MinP.z ,
+    MinP.x + Diameter.x , MinP.y              , MinP.z ,
+    MinP.x              , MinP.y              , MinP.z ,
+    MinP.x + Diameter.x , MinP.y + Diameter.y , MinP.z ,
+    MinP.x              , MinP.y + Diameter.y , MinP.z ,
+  };
 
   memcpy(Result, Temp, sizeof(Temp));
 
