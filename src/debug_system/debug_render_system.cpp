@@ -382,7 +382,6 @@ NewLine(layout *Layout, font *Font)
 {
   Layout->At.y += (Font->LineHeight);
   Layout->At.x = 0;
-  AdvanceSpaces(Layout->Depth, Layout, Font);
   AdvanceClip(Layout);
   return;
 }
@@ -993,7 +992,9 @@ DebugDrawCycleThreadGraph(ui_render_group *Group, debug_state *SharedState, layo
 
 
 void
-BufferFirstCallToEach(ui_render_group *Group, debug_profile_scope *Scope, debug_profile_scope *TreeRoot, memory_arena *Memory, layout *Layout, u64 TotalFrameCycles, u32 Depth)
+BufferFirstCallToEach(ui_render_group *Group,
+    debug_profile_scope *Scope, debug_profile_scope *TreeRoot,
+    memory_arena *Memory, layout *CallgraphLayout, u64 TotalFrameCycles, u32 Depth)
 {
   if (!Scope) return;
 
@@ -1008,29 +1009,29 @@ BufferFirstCallToEach(ui_render_group *Group, debug_profile_scope *Scope, debug_
 
     if (Scope->Stats->IsFirst)
     {
-      u32 MainColor = HoverAndClickExpand(Group, Layout, Scope, WHITE, TEAL);
-      BufferScopeTreeEntry(Group, Scope, Layout, MainColor, Scope->Stats->CumulativeCycles, TotalFrameCycles, Scope->Stats->Calls, Depth);
+      u32 MainColor = HoverAndClickExpand(Group, CallgraphLayout, Scope, WHITE, TEAL);
+      BufferScopeTreeEntry(Group, Scope, CallgraphLayout, MainColor, Scope->Stats->CumulativeCycles, TotalFrameCycles, Scope->Stats->Calls, Depth);
 
       if (Scope->Expanded)
-        BufferFirstCallToEach(Group, Scope->Stats->MaxScope->Child, TreeRoot, Memory, Layout, TotalFrameCycles, Depth+1);
+        BufferFirstCallToEach(Group, Scope->Stats->MaxScope->Child, TreeRoot, Memory, CallgraphLayout, TotalFrameCycles, Depth+1);
     }
   }
 
-  BufferFirstCallToEach(Group, Scope->Sibling, TreeRoot, Memory, Layout, TotalFrameCycles, Depth);
+  BufferFirstCallToEach(Group, Scope->Sibling, TreeRoot, Memory, CallgraphLayout, TotalFrameCycles, Depth);
 
   return;
 }
 
 void
-DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Layout, r64 MaxMs)
+DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *CallgraphLayout, r64 MaxMs)
 {
   v2 MouseP = Group->MouseP;
 
-  NewLine(Layout, &Group->Font);
+  NewLine(CallgraphLayout, &Group->Font);
   SetFontSize(&Group->Font, 80);
 
   TIMED_BLOCK("Frame Ticker");
-    v2 StartingAt = Layout->At;
+    v2 StartingAt = CallgraphLayout->At;
 
     for (u32 FrameIndex = 0;
         FrameIndex < DEBUG_FRAMES_TRACKED;
@@ -1039,7 +1040,7 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Layo
       frame_stats *Frame = DebugState->Frames + FrameIndex;
       r32 Perc = (r32)SafeDivide0(Frame->FrameMs, MaxMs);
 
-      v2 MinP = Layout->At;
+      v2 MinP = CallgraphLayout->At;
       v2 MaxDim = V2(15.0, Group->Font.Size);
 
       v3 Color = V3(0.5f, 0.5f, 0.5f);
@@ -1058,7 +1059,7 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Layo
       v2 Offset = MaxDim - QuadDim;
 
       v2 DrawDim = BufferQuad(Group, &Group->TextGroup->UIGeo, MinP + Offset, QuadDim);
-      Layout->At.x = DrawDim.x + 5.0f;
+      CallgraphLayout->At.x = DrawDim.x + 5.0f;
 
       if (MouseP > MinP && MouseP < DrawDim)
       {
@@ -1077,7 +1078,7 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Layo
 
 
     r32 MaxBarHeight = Group->Font.Size;
-    v2 QuadDim = V2(Layout->At.x, 2.0f);
+    v2 QuadDim = V2(CallgraphLayout->At.x, 2.0f);
     {
       r32 MsPerc = (r32)SafeDivide0(33.333, MaxMs);
       r32 MinPOffset = MaxBarHeight * MsPerc;
@@ -1101,13 +1102,13 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Layo
     { // Current ReadTree info
       SetFontSize(&Group->Font, 30);
       frame_stats *Frame = DebugState->Frames + DebugState->ReadScopeIndex;
-      BufferColumn(Frame->FrameMs, 4, Group, Layout, WHITE);
-      BufferThousands(Frame->TotalCycles, Group, Layout, WHITE);
+      BufferColumn(Frame->FrameMs, 4, Group, CallgraphLayout, WHITE);
+      BufferThousands(Frame->TotalCycles, Group, CallgraphLayout, WHITE);
 
       u32 TotalMutexOps = GetTotalMutexOpsForReadFrame();
-      BufferThousands(TotalMutexOps, Group, Layout, WHITE);
+      BufferThousands(TotalMutexOps, Group, CallgraphLayout, WHITE);
     }
-    NewLine(Layout, &Group->Font);
+    NewLine(CallgraphLayout, &Group->Font);
 
   END_BLOCK("Frame Ticker");
 
@@ -1127,9 +1128,9 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Layo
 
       if (MainThreadReadTree->FrameRecorded == ReadTree->FrameRecorded)
       {
-        PadBottom(Layout, 15);
-        NewLine(Layout, &Group->Font);
-        BufferFirstCallToEach(Group, ReadTree->Root, ReadTree->Root, ThreadsafeDebugMemoryAllocator(), Layout, Frame->TotalCycles, 0);
+        PadBottom(CallgraphLayout, 15);
+        NewLine(CallgraphLayout, &Group->Font);
+        BufferFirstCallToEach(Group, ReadTree->Root, ReadTree->Root, ThreadsafeDebugMemoryAllocator(), CallgraphLayout, Frame->TotalCycles, 0);
       }
     }
 

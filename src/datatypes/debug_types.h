@@ -39,8 +39,6 @@ struct font
 struct layout
 {
   v2 At;
-  u32 Depth;
-
   v2 Basis;
   clip_rect Clip;
 };

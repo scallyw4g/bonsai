@@ -26,7 +26,8 @@ AllocateWorldChunk(memory_arena *Storage, world_position WorldP, chunk_dimension
 inline u32
 GetWorldChunkHash(world_position P)
 {
-  TIMED_FUNCTION();
+  /* TIMED_FUNCTION(); */
+
   u32 I =
     (u32)((P.x) +
          (P.y*VR_X) +
@@ -78,7 +79,7 @@ InsertChunkIntoWorld(world *World, world_chunk *Chunk)
 function world_chunk*
 GetWorldChunkFor(memory_arena *Storage, world *World, world_position P)
 {
-  TIMED_FUNCTION();
+  /* TIMED_FUNCTION(); */
   world_chunk *Result = 0;
 
   if (World->FreeChunkCount == 0)
@@ -130,37 +131,6 @@ FreeWorldChunk(world *World, world_chunk *Chunk , mesh_freelist* MeshFreelist, m
 
   if ( Chunk->Data->Flags == Chunk_Complete || Chunk->Data->Flags == Chunk_Collected  )
   {
-#if 0
-    u32 FirstChunkHashIndex = GetWorldChunkHash(Chunk->WorldP);
-
-    world_chunk** LastChunk = World->ChunkHash + FirstChunkHashIndex;
-
-    u32 AtIndex = FirstChunkHashIndex;
-    world_chunk** AtChunk = World->ChunkHash + FirstChunkHashIndex;
-    world_chunk** ThisChunk = World->ChunkHash + FirstChunkHashIndex;
-    while (*AtChunk && GetWorldChunkHash((*AtChunk)->WorldP) == FirstChunkHashIndex)
-    {
-      if ((*AtChunk)->WorldP == Chunk->WorldP)
-      {
-        ThisChunk = AtChunk;
-      }
-
-      LastChunk = AtChunk;
-      AtChunk = World->ChunkHash + GetNextWorldChunkHash(AtIndex);
-    }
-
-    if (ThisChunk == LastChunk)
-    {
-      *ThisChunk = 0;
-    }
-    else
-    {
-      *ThisChunk = *LastChunk;
-      *LastChunk = 0;
-    }
-
-#endif
-
     if (Chunk->Mesh)
     {
       DeallocateMesh(Chunk, MeshFreelist, Memory);
@@ -182,7 +152,7 @@ FreeWorldChunk(world *World, world_chunk *Chunk , mesh_freelist* MeshFreelist, m
 function world_chunk*
 GetWorldChunk( world *World, world_position P )
 {
-  TIMED_FUNCTION();
+  /* TIMED_FUNCTION(); */
   u32 HashIndex = GetWorldChunkHash(P);
 
   world_chunk *Result = World->ChunkHash[HashIndex];
@@ -282,7 +252,7 @@ CollectUnusedChunks(world *World, mesh_freelist* MeshFreelist, memory_arena* Mem
 function inline b32
 IsFilledInWorld( world *World, world_chunk *chunk, canonical_position VoxelP )
 {
-  TIMED_FUNCTION();
+  /* TIMED_FUNCTION(); */
   b32 isFilled = true;
 
   if ( chunk )
@@ -303,7 +273,7 @@ IsFilledInWorld( world *World, world_chunk *chunk, canonical_position VoxelP )
 inline b32
 NotFilledInWorld( world *World, world_chunk *chunk, canonical_position VoxelP )
 {
-  TIMED_FUNCTION();
+  /* TIMED_FUNCTION(); */
   b32 Result = !(IsFilledInWorld(World, chunk, VoxelP));
   return Result;
 }
