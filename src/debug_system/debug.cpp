@@ -105,11 +105,16 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
       DebugDrawNetworkHud(&Group, &Plat->Network, ServerState, &Layout);
     } break;
 
+    case DebugUIType_CollatedFunctionCalls:
+    {
+      DebugDrawCollatedFunctionCalls(&Group, DebugState, Layout.At);
+    } break;
+
     case DebugUIType_CallGraph:
     {
       BufferValue("Call Graphs", &Group, &Layout, WHITE);
-      DebugDrawCallGraph(&Group, DebugState, &Layout, Dt.Max);
-      DebugDrawCycleThreadGraph(&Group, DebugState, &Layout);
+      clip_rect CycleGraphClip = DebugDrawCallGraph(&Group, DebugState, &Layout, Dt.Max);
+      DebugDrawCycleThreadGraph(&Group, DebugState, V2(CycleGraphClip.Max.x + 20, Layout.At.y));
     } break;
 
     case DebugUIType_Memory:

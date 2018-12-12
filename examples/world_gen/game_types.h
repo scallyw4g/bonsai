@@ -25,5 +25,9 @@ struct game_state
 
   entity *EntityTable[TOTAL_ENTITY_COUNT];
   entity *Player;
+
+#if BONSAI_INTERNAL
+  get_debug_state_proc GetDebugState;
+#endif
 };
 

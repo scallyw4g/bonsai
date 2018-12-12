@@ -5,6 +5,7 @@
 #include <render.h>
 #include <bonsai_mesh.cpp>
 
+debug_global clip_rect NullClipRect = {};
 
 void
 CleanupText2D(debug_text_render_group *RG)
@@ -435,7 +436,7 @@ MemorySize(u64 Number)
 }
 
 inline char*
-FormatU64(u64 Number)
+ToString(u64 Number)
 {
   char *Buffer = AllocateProtection(char, TranArena, 32, False);
   sprintf(Buffer, "%lu", Number);
@@ -443,10 +444,18 @@ FormatU64(u64 Number)
 }
 
 inline char*
-FormatU32(u32 Number)
+ToString(u32 Number)
 {
   char *Buffer = AllocateProtection(char, TranArena, 32, False);
   sprintf(Buffer, "%u", Number);
+  return Buffer;
+}
+
+inline char*
+ToString(r32 Number)
+{
+  char *Buffer = AllocateProtection(char, TranArena, 32, False);
+  sprintf(Buffer, "%.2f", Number);
   return Buffer;
 }
 
@@ -475,18 +484,6 @@ FormatMemorySize(u64 Number)
     Display = Number / GB;
     Units = 'G';
   }
-
-#if 0
-  char *Buffer = AllocateProtection(char, TranArena, Megabytes(1, False));
-
-  for (u32 Index = 0;
-      Index < Megabytes(1);
-      ++Index)
-  {
-    Buffer[Index] = 0;
-  }
-
-#endif
 
   char *Buffer = AllocateProtection(char, TranArena, 32, False);
   sprintf(Buffer, "%.1f%c", (r32)Display, Units);
@@ -607,36 +604,53 @@ BufferColumn( r32 Perc, u32 ColumnWidth, ui_render_group *Group, layout *Layout,
   return;
 }
 
+void
+Column(const char* ColumnText, ui_render_group *Group, table_layout *Table, u8 Color)
+{
+  Table->ColumnIndex = (Table->ColumnIndex+1)%MAX_TABLE_COLUMNS;
+  table_column *Column = Table->Columns + Table->ColumnIndex;
+
+  u32 TextLength = (u32)strlen(ColumnText);
+  Column->Max = Max(Column->Max, TextLength + 1);
+
+  u32 Pad = Column->Max - TextLength;
+  AdvanceSpaces(Pad, &Table->Layout, &Group->Font);
+
+  BufferValue(ColumnText, Group, &Table->Layout, Color);
+
+  return;
+}
+
 inline void
-BufferScopeTreeEntry(ui_render_group *Group, debug_profile_scope *Scope, layout *Layout,
-    u32 Color, u64 TotalCycles, u64 TotalFrameCycles, u64 CallCount, u32 Depth)
+BufferScopeTreeEntry(ui_render_group *Group, debug_profile_scope *Scope, table_layout *Layout,
+    u8 Color, u64 TotalCycles, u64 TotalFrameCycles, u64 CallCount, u32 Depth)
 {
   Assert(TotalFrameCycles);
 
   r32 Percentage = 100.0f * (r32)SafeDivide0((r64)TotalCycles, (r64)TotalFrameCycles);
   u64 AvgCycles = (u64)SafeDivide0(TotalCycles, CallCount);
 
-  BufferColumn(Percentage, 6, Group, Layout, Color);
-  BufferThousands(AvgCycles,  Group, Layout, Color);
-  BufferColumn(CallCount, 5,  Group, Layout, Color);
+  Column(ToString(Percentage), Group, Layout, Color);
+  Column(ToString(AvgCycles),  Group, Layout, Color);
+  Column(ToString(CallCount),  Group, Layout, Color);
 
-  AdvanceSpaces((Depth*2)+1, Layout, &Group->Font);
+  AdvanceSpaces((Depth*2)+1, &Layout->Layout, &Group->Font);
 
   if (Scope->Expanded && Scope->Child)
   {
-    BufferValue("-", Group, Layout, Color);
+    BufferValue("-", Group, &Layout->Layout, Color);
   }
   else if (Scope->Child)
   {
-    BufferValue("+", Group, Layout, Color);
+    BufferValue("+", Group, &Layout->Layout, Color);
   }
   else
   {
-    AdvanceSpaces(1, Layout, &Group->Font);
+    AdvanceSpaces(1, &Layout->Layout, &Group->Font);
   }
 
-  BufferValue(Scope->Name, Group, Layout, Color);
-  NewLine(Layout, &Group->Font);
+  BufferValue(Scope->Name, Group, &Layout->Layout, Color);
+  NewRow(Layout, &Group->Font);
 
   return;
 }
@@ -730,23 +744,6 @@ SetFontSize(font *Font, r32 FontSize)
 {
   Font->Size = FontSize;
   Font->LineHeight = FontSize * 1.3f;
-  return;
-}
-
-void
-Column(const char* ColumnText, ui_render_group *Group, table_layout *Table, u8 Color)
-{
-  Table->ColumnIndex = (Table->ColumnIndex+1)%MAX_TABLE_COLUMNS;
-  table_column *Column = &Table->Columns[Table->ColumnIndex];
-
-  u32 TextLength = (u32)strlen(ColumnText);
-  Column->Max = Max(Column->Max, TextLength + 1);
-
-  u32 Pad = Column->Max - TextLength;
-  AdvanceSpaces(Pad, &Table->Layout, &Group->Font);
-
-  BufferValue(ColumnText, Group, &Table->Layout, Color);
-
   return;
 }
 
@@ -873,11 +870,17 @@ BufferHorizontalBar(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, 
 }
 
 void
-DebugDrawCycleThreadGraph(ui_render_group *Group, debug_state *SharedState, layout *Layout)
+DebugDrawCycleThreadGraph(ui_render_group *Group, debug_state *SharedState, v2 BasisP)
 {
   random_series Entropy = {};
-  r32 TotalGraphWidth = 2000.0f;
+  r32 TotalGraphWidth = 1500.0f;
   untextured_2d_geometry_buffer *Geo = &Group->TextGroup->UIGeo;
+
+  layout Layout_ = {};
+  Layout_.Basis = BasisP;
+
+  layout* Layout = &Layout_;
+
 
   NewLine(Layout, &Group->Font);
   SetFontSize(&Group->Font, 36);
@@ -1067,7 +1070,7 @@ CollateAllFunctionCalls(debug_profile_scope* Current)
 void
 BufferFirstCallToEach(ui_render_group *Group,
     debug_profile_scope *Scope, debug_profile_scope *TreeRoot,
-    memory_arena *Memory, layout *CallgraphLayout, table_layout* FunctionCallListingLayout, u64 TotalFrameCycles, u32 Depth)
+    memory_arena *Memory, table_layout* CallgraphLayout, u64 TotalFrameCycles, u32 Depth)
 {
   if (!Scope) return;
 
@@ -1082,30 +1085,59 @@ BufferFirstCallToEach(ui_render_group *Group,
 
     if (Scope->Stats->IsFirst)
     {
-      u32 MainColor = HoverAndClickExpand(Group, CallgraphLayout, Scope, WHITE, TEAL);
+      u8 MainColor = (u8)HoverAndClickExpand(Group, &CallgraphLayout->Layout, Scope, WHITE, TEAL);
       BufferScopeTreeEntry(Group, Scope, CallgraphLayout, MainColor, Scope->Stats->CumulativeCycles, TotalFrameCycles, Scope->Stats->Calls, Depth);
 
       if (Scope->Expanded)
-        BufferFirstCallToEach(Group, Scope->Stats->MaxScope->Child, TreeRoot, Memory, CallgraphLayout, FunctionCallListingLayout, TotalFrameCycles, Depth+1);
+        BufferFirstCallToEach(Group, Scope->Stats->MaxScope->Child, TreeRoot, Memory, CallgraphLayout, TotalFrameCycles, Depth+1);
     }
 
   }
 
-  BufferFirstCallToEach(Group, Scope->Sibling, TreeRoot, Memory, CallgraphLayout, FunctionCallListingLayout, TotalFrameCycles, Depth);
+  BufferFirstCallToEach(Group, Scope->Sibling, TreeRoot, Memory, CallgraphLayout, TotalFrameCycles, Depth);
 
   return;
 }
 
 void
-DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *CallgraphLayout, r64 MaxMs)
+DebugDrawCollatedFunctionCalls(ui_render_group *Group, debug_state *DebugState, v2 BasisP)
+{
+  local_persist table_layout FunctionCallLayout;
+  TIMED_BLOCK("Collated Function Calls");
+  debug_thread_state *MainThreadState = GetThreadLocalStateFor(0);
+  debug_scope_tree *MainThreadReadTree = MainThreadState->ScopeTrees + DebugState->ReadScopeIndex;
+
+  CollateAllFunctionCalls(MainThreadReadTree->Root);
+
+  FunctionCallLayout.Layout.At = V2(0,0);
+  FunctionCallLayout.Layout.Clip = NullClipRect;
+  FunctionCallLayout.Layout.Basis = BasisP;
+  for ( u32 FunctionIndex = 0;
+      FunctionIndex < MAX_RECORDED_FUNCTION_CALLS;
+      ++FunctionIndex)
+  {
+    called_function *Func = ProgramFunctionCalls + FunctionIndex;
+    if (Func->Name)
+    {
+      Column( Func->Name, Group, &FunctionCallLayout, WHITE);
+      Column( ToString(Func->CallCount), Group, &FunctionCallLayout, WHITE);
+      NewRow(&FunctionCallLayout, &Group->Font);
+    }
+  }
+  END_BLOCK("Collated Function Calls");
+
+}
+
+clip_rect
+DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *MainLayout, r64 MaxMs)
 {
   v2 MouseP = Group->MouseP;
 
-  NewLine(CallgraphLayout, &Group->Font);
+  NewLine(MainLayout, &Group->Font);
   SetFontSize(&Group->Font, 80);
 
   TIMED_BLOCK("Frame Ticker");
-    v2 StartingAt = CallgraphLayout->At;
+    v2 StartingAt = MainLayout->At;
 
     for (u32 FrameIndex = 0;
         FrameIndex < DEBUG_FRAMES_TRACKED;
@@ -1114,7 +1146,7 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Call
       frame_stats *Frame = DebugState->Frames + FrameIndex;
       r32 Perc = (r32)SafeDivide0(Frame->FrameMs, MaxMs);
 
-      v2 MinP = CallgraphLayout->At;
+      v2 MinP = MainLayout->At;
       v2 MaxDim = V2(15.0, Group->Font.Size);
 
       v3 Color = V3(0.5f, 0.5f, 0.5f);
@@ -1133,7 +1165,8 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Call
       v2 Offset = MaxDim - QuadDim;
 
       v2 DrawDim = BufferQuad(Group, &Group->TextGroup->UIGeo, MinP + Offset, QuadDim);
-      CallgraphLayout->At.x = DrawDim.x + 5.0f;
+      MainLayout->At.x = DrawDim.x + 5.0f;
+      AdvanceClip(MainLayout, MainLayout->At + V2(0, Group->Font.Size));
 
       if (MouseP > MinP && MouseP < DrawDim)
       {
@@ -1152,7 +1185,7 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Call
 
 
     r32 MaxBarHeight = Group->Font.Size;
-    v2 QuadDim = V2(CallgraphLayout->At.x, 2.0f);
+    v2 QuadDim = V2(MainLayout->At.x, 2.0f);
     {
       r32 MsPerc = (r32)SafeDivide0(33.333, MaxMs);
       r32 MinPOffset = MaxBarHeight * MsPerc;
@@ -1176,13 +1209,13 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Call
     { // Current ReadTree info
       SetFontSize(&Group->Font, 30);
       frame_stats *Frame = DebugState->Frames + DebugState->ReadScopeIndex;
-      BufferColumn(Frame->FrameMs, 4, Group, CallgraphLayout, WHITE);
-      BufferThousands(Frame->TotalCycles, Group, CallgraphLayout, WHITE);
+      BufferColumn(Frame->FrameMs, 4, Group, MainLayout, WHITE);
+      BufferThousands(Frame->TotalCycles, Group, MainLayout, WHITE);
 
       u32 TotalMutexOps = GetTotalMutexOpsForReadFrame();
-      BufferThousands(TotalMutexOps, Group, CallgraphLayout, WHITE);
+      BufferThousands(TotalMutexOps, Group, MainLayout, WHITE);
     }
-    NewLine(CallgraphLayout, &Group->Font);
+    NewLine(MainLayout, &Group->Font);
 
   END_BLOCK("Frame Ticker");
 
@@ -1190,48 +1223,40 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Call
 
   debug_thread_state *MainThreadState = GetThreadLocalStateFor(0);
   debug_scope_tree *MainThreadReadTree    = MainThreadState->ScopeTrees + DebugState->ReadScopeIndex;
+
+  local_persist table_layout CallgraphTableLayout;
   TIMED_BLOCK("Call Graph");
 
-    for ( u32 ThreadIndex = 0;
-        ThreadIndex < TotalThreadCount;
-        ++ThreadIndex)
-    {
-      debug_thread_state *ThreadState = GetThreadLocalStateFor(ThreadIndex);
-      debug_scope_tree *ReadTree = ThreadState->ScopeTrees + DebugState->ReadScopeIndex;
-      frame_stats *Frame = DebugState->Frames + DebugState->ReadScopeIndex;
+  CallgraphTableLayout.Layout.At = V2(0,0);
+  CallgraphTableLayout.Layout.Clip = NullClipRect;
+  CallgraphTableLayout.Layout.Basis = V2(0, MainLayout->Clip.Max.y);
 
-      if (MainThreadReadTree->FrameRecorded == ReadTree->FrameRecorded)
-      {
-        PadBottom(CallgraphLayout, 15);
-        NewLine(CallgraphLayout, &Group->Font);
-        BufferFirstCallToEach(Group, ReadTree->Root, ReadTree->Root, ThreadsafeDebugMemoryAllocator(), CallgraphLayout, 0, Frame->TotalCycles, 0);
-      }
-    }
+  NewRow(&CallgraphTableLayout, &Group->Font);
+  Column("Frame %",  Group,  &CallgraphTableLayout,  WHITE);
+  Column("Cycles",   Group,  &CallgraphTableLayout,  WHITE);
+  Column("Calls",    Group,  &CallgraphTableLayout,  WHITE);
+  Column("Name",     Group,  &CallgraphTableLayout,  WHITE);
+  NewRow(&CallgraphTableLayout, &Group->Font);
 
-  END_BLOCK("Call Graph");
-
-
-  CollateAllFunctionCalls(MainThreadReadTree->Root);
-
-  clip_rect NullClipRect = {};
-  local_persist table_layout FunctionCallLayout;
-  FunctionCallLayout.Layout.At = V2(0,0);
-  FunctionCallLayout.Layout.Clip = NullClipRect;
-  FunctionCallLayout.Layout.Basis = V2(CallgraphLayout->Clip.Max.x, 100);
-  for ( u32 FunctionIndex = 0;
-      FunctionIndex < MAX_RECORDED_FUNCTION_CALLS;
-      ++FunctionIndex)
+  for ( u32 ThreadIndex = 0;
+      ThreadIndex < TotalThreadCount;
+      ++ThreadIndex)
   {
-    called_function *Func = ProgramFunctionCalls + FunctionIndex;
-    if (Func->Name)
+    debug_thread_state *ThreadState = GetThreadLocalStateFor(ThreadIndex);
+    debug_scope_tree *ReadTree = ThreadState->ScopeTrees + DebugState->ReadScopeIndex;
+    frame_stats *Frame = DebugState->Frames + DebugState->ReadScopeIndex;
+
+    if (MainThreadReadTree->FrameRecorded == ReadTree->FrameRecorded)
     {
-      Column( Func->Name, Group, &FunctionCallLayout, WHITE);
-      Column( FormatU32(Func->CallCount), Group, &FunctionCallLayout, WHITE);
-      NewRow(&FunctionCallLayout, &Group->Font);
+      BufferFirstCallToEach(Group, ReadTree->Root, ReadTree->Root, ThreadsafeDebugMemoryAllocator(), &CallgraphTableLayout, Frame->TotalCycles, 0);
+      NewRow(&CallgraphTableLayout, &Group->Font);
     }
   }
 
-  return;
+  END_BLOCK("Call Graph");
+
+  clip_rect Result = CallgraphTableLayout.Layout.Clip;
+  return Result;
 }
 
 void
@@ -1592,7 +1617,7 @@ DebugDrawMemoryHud(ui_render_group *Group, debug_state *DebugState, v2 OriginalB
 
       Column(Current->Name, Group, &MemoryHudArenaTable, Color);
       Column(MemorySize(MemStats.TotalAllocated), Group, &MemoryHudArenaTable, Color);
-      Column(FormatU64(MemStats.Pushes), Group, &MemoryHudArenaTable, Color);
+      Column(ToString(MemStats.Pushes), Group, &MemoryHudArenaTable, Color);
       NewRow(&MemoryHudArenaTable, &Group->Font);
     }
 

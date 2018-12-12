@@ -111,6 +111,7 @@ enum debug_ui_type
   DebugUIType_Graphics,
   DebugUIType_Network,
   DebugUIType_CallGraph,
+  DebugUIType_CollatedFunctionCalls,
   DebugUIType_Memory,
   DebugUIType_DrawCalls,
 
@@ -197,7 +198,7 @@ struct debug_state
 
   untextured_3d_geometry_buffer LineMesh;
 
-  debug_ui_type UIType;
+  debug_ui_type UIType = DebugUIType_CallGraph;
 
   selected_arenas *SelectedArenas;
 

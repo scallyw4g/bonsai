@@ -1,5 +1,6 @@
 #define BONSAI_NO_PUSH_METADATA
 #define DEFAULT_GAME_LIB "./bin/WorldGenLoadable.so"
+#define DEFAULT_DEBUG_LIB "./bin/libDebugSystem.so"
 
 #include <bonsai_types.h>
 #include <heap_memory_types.cpp>
@@ -20,16 +21,16 @@ global_variable bonsai_worker_thread_callback BONSAI_API_WORKER_THREAD_CALLBACK_
 
 #include <sys/stat.h>
 b32
-GameLibIsNew(const char *LibPath)
+LibIsNew(const char *LibPath, s64 *LastLibTime)
 {
   b32 Result = False;
   struct stat StatStruct;
 
   if (stat(LibPath, &StatStruct) == 0)
   {
-    if (StatStruct.st_mtime > LastGameLibTime)
+    if (StatStruct.st_mtime > *LastLibTime)
     {
-      LastGameLibTime = (u64)StatStruct.st_mtime;
+      *LastLibTime = (u64)StatStruct.st_mtime;
       Result = True;
     }
   }
@@ -451,7 +452,7 @@ main()
   s32 DebugFlags = 0;
 #endif
 
-  shared_lib DebugLib = OpenLibrary("./bin/libDebugSystem.so");
+  shared_lib DebugLib = OpenLibrary(DEFAULT_DEBUG_LIB);
   if (!DebugLib) { Error("Loading DebugLib :( "); return False; }
 
   GetDebugState = (get_debug_state_proc)GetProcFromLib(DebugLib, "GetDebugState_Internal");
@@ -487,7 +488,7 @@ main()
 
   hotkeys Hotkeys = {};
 
-  GameLibIsNew(DEFAULT_GAME_LIB);  // Hack to initialize the LastGameLibTime static
+  LibIsNew(DEFAULT_GAME_LIB, &LastGameLibTime);  // Hack to initialize the LastGameLibTime static
 
   shared_lib GameLib = OpenLibrary(DEFAULT_GAME_LIB);
   if (!GameLib) { Error("Loading GameLib :( "); return False; }
@@ -537,7 +538,7 @@ main()
 
     BindHotkeysToInput(&Hotkeys, &Plat.Input);
 
-    if ( GameLibIsNew(DEFAULT_GAME_LIB) )
+    if ( LibIsNew(DEFAULT_GAME_LIB, &LastGameLibTime) )
     {
       SuspendWorkerThreads();
 
@@ -549,6 +550,36 @@ main()
 
       ResumeWorkerThreads();
     }
+
+    // TODO(Jesse): Doing this properly requires some extra-credit work first.
+    //
+    // 1) We need the game code to be able to call GetDebugState() willy-nilly,
+    // so when the debug lib gets refreshed it has to be passed to the game
+    // code somehow.
+    //
+    // Possibly allow the game code to export the function pointer it uses for
+    // GetDebugState, then we can just overwrite it from here..?  Or have the
+    // game code store a pointer to the actual debug_state that we can
+    // overwrite.  That kinda seems like a step backwards though.
+    //
+    // 2) Reloading the debug lib as it stands will wipe out any data in the
+    // debug_state, so if that wants to be preserved it's gotta get copied
+    // somewhere, or live outside the debug lib.  Might make sense to have the
+    // platform layer allocate and pass the debug_state around and the
+    // debug_lib is just a pile of functions to operate on it ..?
+
+#if 0
+    local_persist s64 LastDebugLibTime;
+    if ( LibIsNew(DEFAULT_DEBUG_LIB, &LastDebugLibTime) )
+    {
+      CloseLibrary(DebugLib);
+      DebugLib = OpenLibrary(DEFAULT_DEBUG_LIB);
+      if (!DebugLib) { Error("Loading DebugLib :( "); return False; }
+
+      GetDebugState = (get_debug_state_proc)GetProcFromLib(DebugLib, "GetDebugState_Internal");
+      if (!GetDebugState) { Error("Retreiving GetDebugState from Debug Lib :( "); return False; }
+    }
+#endif
 
     /* DEBUG_FRAME_RECORD(Debug_RecordingState, &Hotkeys); */
 

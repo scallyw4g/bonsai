@@ -80,6 +80,13 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 {
   TIMED_FUNCTION();
 
+#if BONSAI_INTERNAL
+  if (!GetDebugState)
+  {
+    GetDebugState = GameState->GetDebugState;
+  }
+#endif
+
   world                 *World         = GameState->World;
   chunk_dimension        WorldChunkDim = World->ChunkDim;
   graphics              *Graphics      = GameState->Graphics;
@@ -156,12 +163,19 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 {
   Info("Initializing Game");
 
-  Assert(GetDebugState_in);
-  GetDebugState = GetDebugState_in;
-
   Init_Global_QuadVertexBuffer();
 
+#if BONSAI_INTERNAL
+  GetDebugState = GetDebugState_in;
+#endif
+
   game_state *GameState = Allocate(game_state, GameMemory, 1);
+
+#if BONSAI_INTERNAL
+  Assert(GetDebugState_in);
+  GameState->GetDebugState = GetDebugState_in;
+#endif
+
   GameState->Memory = GameMemory;
   GameState->Noise = perlin_noise(DEBUG_NOISE_SEED);
 
