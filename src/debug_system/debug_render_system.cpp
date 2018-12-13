@@ -673,6 +673,7 @@ IsInsideRect(rect2 Rect, v2 P)
   return Result;
 }
 
+#if 0
 scope_stats
 GetStatsFor( debug_profile_scope *Target, debug_profile_scope *Root)
 {
@@ -714,6 +715,7 @@ GetStatsFor( debug_profile_scope *Target, debug_profile_scope *Root)
 
   return Result;
 }
+#endif
 
 template <typename T> u8
 HoverAndClickExpand(ui_render_group *Group, layout *Layout, T *Expandable, u8 Color, u8 HoverColor)
@@ -916,10 +918,10 @@ DebugDrawCycleThreadGraph(ui_render_group *Group, debug_state *SharedState, v2 B
       DrawScopeBarsRecursive(Group, Geo, ReadTree->Root, Layout, &FrameCycles, TotalGraphWidth, &Entropy);
     }
 
-    /* NewRow(&CycleGraphTable, &Group->Font); */
-    Layout->At.y = Layout->Clip.Max.y; // Advance vertical at for next thread
+    Layout->At.y = Layout->Clip.Max.y + 25; // Advance vertical at for next thread
 
     EndClipRect(Group, Layout, Geo);
+    NewRow(&CycleGraphTable, &Group->Font);
   }
 
   NewLine(Layout, &Group->Font);
@@ -1072,34 +1074,61 @@ CollateAllFunctionCalls(debug_profile_scope* Current)
   return;
 }
 
-void
-BufferFirstCallToEach(ui_render_group *Group,
-    debug_profile_scope *Scope, debug_profile_scope *TreeRoot,
-    memory_arena *Memory, table_layout* CallgraphLayout, u64 TotalFrameCycles, u32 Depth)
+unique_debug_profile_scope *
+ListContainsScope(unique_debug_profile_scope* List, debug_profile_scope* Query)
 {
-  if (!Scope) return;
-
-  if (Scope->Name)
+  unique_debug_profile_scope* Result = 0;
+  while (List)
   {
-
-    if (!Scope->Stats)
+    if (StringsMatch(List->Name, Query->Name))
     {
-      Scope->Stats = AllocateProtection(scope_stats, Memory, 1, False);
-      *Scope->Stats = GetStatsFor(Scope, TreeRoot);
+      Result = List;
+      break;
     }
-
-    if (Scope->Stats->IsFirst)
-    {
-      u8 MainColor = (u8)HoverAndClickExpand(Group, &CallgraphLayout->Layout, Scope, WHITE, TEAL);
-      BufferScopeTreeEntry(Group, Scope, CallgraphLayout, MainColor, Scope->Stats->CumulativeCycles, TotalFrameCycles, Scope->Stats->Calls, Depth);
-
-      if (Scope->Expanded)
-        BufferFirstCallToEach(Group, Scope->Stats->MaxScope->Child, TreeRoot, Memory, CallgraphLayout, TotalFrameCycles, Depth+1);
-    }
-
+    List = List->NextUnique;
   }
 
-  BufferFirstCallToEach(Group, Scope->Sibling, TreeRoot, Memory, CallgraphLayout, TotalFrameCycles, Depth);
+  return Result;
+}
+
+void
+BufferFirstCallToEach(ui_render_group *Group,
+    debug_profile_scope *Scope_in, debug_profile_scope *TreeRoot,
+    memory_arena *Memory, table_layout* CallgraphLayout, u64 TotalFrameCycles, u32 Depth)
+{
+  unique_debug_profile_scope* UniqueScopes = {};
+
+  debug_profile_scope* CurrentUniqueScopeQuery = Scope_in;
+  while (CurrentUniqueScopeQuery)
+  {
+    unique_debug_profile_scope* GotUniqueScope = ListContainsScope(UniqueScopes, CurrentUniqueScopeQuery);
+    if (!GotUniqueScope )
+    {
+      GotUniqueScope = AllocateProtection(unique_debug_profile_scope, TranArena, 1, False);
+      GotUniqueScope->NextUnique = UniqueScopes;
+      UniqueScopes = GotUniqueScope;
+    }
+
+    GotUniqueScope->Name = CurrentUniqueScopeQuery->Name;
+    GotUniqueScope->CallCount++;
+    GotUniqueScope->TotalCycles += CurrentUniqueScopeQuery->CycleCount;
+    GotUniqueScope->MinCycles = Min(CurrentUniqueScopeQuery->CycleCount, GotUniqueScope->MinCycles);
+    GotUniqueScope->MaxCycles = Max(CurrentUniqueScopeQuery->CycleCount, GotUniqueScope->MaxCycles);
+    GotUniqueScope->Scope = CurrentUniqueScopeQuery;
+
+    CurrentUniqueScopeQuery = CurrentUniqueScopeQuery->Sibling;
+  }
+
+  while (UniqueScopes)
+  {
+    u8 MainColor = (u8)HoverAndClickExpand(Group, &CallgraphLayout->Layout, UniqueScopes->Scope, WHITE, TEAL);
+    BufferScopeTreeEntry(Group, UniqueScopes->Scope, CallgraphLayout, MainColor, UniqueScopes->TotalCycles, TotalFrameCycles, UniqueScopes->CallCount, Depth);
+
+    if (UniqueScopes->Scope->Expanded)
+      BufferFirstCallToEach(Group, UniqueScopes->Scope->Child, TreeRoot, Memory, CallgraphLayout, TotalFrameCycles, Depth+1);
+
+    UniqueScopes = UniqueScopes->NextUnique;
+  }
 
   return;
 }

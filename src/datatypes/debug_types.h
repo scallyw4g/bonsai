@@ -54,28 +54,30 @@ struct ui_render_group
   /* v2 ViewportDim; */
 };
 
-struct debug_profile_scope;
-struct scope_stats
-{
-  debug_profile_scope *MinScope;
-  debug_profile_scope *MaxScope;
-  b32 IsFirst;
-  u32 Calls;
-  u64 CumulativeCycles;
-};
 
 struct debug_profile_scope
 {
   u64 CycleCount;
   u64 StartingCycle;
   const char* Name;
+
   b32 Expanded;
 
   debug_profile_scope *Sibling;
   debug_profile_scope *Child;
   debug_profile_scope *Parent;
+};
 
-  scope_stats *Stats;
+struct unique_debug_profile_scope
+{
+  const char* Name;
+  u32 CallCount;
+  u64 TotalCycles;
+  u64 MinCycles;
+  u64 MaxCycles;
+
+  debug_profile_scope* Scope;
+  unique_debug_profile_scope* NextUnique;
 };
 
 struct debug_scope_tree
@@ -205,7 +207,7 @@ struct debug_state
   u64 BytesBufferedToCard;
   b32 Initialized;
   b32 Debug_RedrawEveryPush;
-  b32 DebugDoScopeProfiling = False;
+  b32 DebugDoScopeProfiling = True;
 
   debug_profile_scope FreeScopeSentinel;
   mutex FreeScopeMutex;
