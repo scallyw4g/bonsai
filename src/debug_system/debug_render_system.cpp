@@ -789,7 +789,7 @@ DrawCycleBar( cycle_range *Range, cycle_range *Frame, r32 TotalGraphWidth, const
   BufferColors(Group, Geo, Color);
   Geo->At+=6;
 
-  AdvanceClip(Layout, QuadMaxP);
+  AdvanceClip(Layout, QuadMaxP - Layout->Basis);
 
   return Hovering;
 }
@@ -830,25 +830,29 @@ void
 DrawScopeBarsRecursive(ui_render_group *Group, untextured_2d_geometry_buffer *Geo, debug_profile_scope *Scope,
                        layout *Layout, cycle_range *Frame, r32 TotalGraphWidth, random_series *Entropy)
 {
-  if (!Scope) return;
-  Assert(Scope->Name);
-
-  cycle_range Range = {Scope->StartingCycle, Scope->CycleCount};
-  v3 Color = RandomV3(Entropy);
-
-  b32 Hovering = DrawCycleBar( &Range, Frame, TotalGraphWidth, Scope->Name, Color, Group, Geo, Layout);
-  if (Hovering && Group->Input->LMB.WasPressed)
-    Scope->Expanded = !Scope->Expanded;
-
-  if (Scope->Expanded)
+  while (Scope)
   {
-    layout ChildrensLayout = *Layout;
-    NewLine(&ChildrensLayout, &Group->Font);
-    DrawScopeBarsRecursive(Group, Geo, Scope->Child, &ChildrensLayout, Frame, TotalGraphWidth, Entropy);
-    Layout->Clip = ChildrensLayout.Clip;
-  }
+    Assert(Scope->Name);
 
-  DrawScopeBarsRecursive(Group, Geo, Scope->Sibling, Layout, Frame, TotalGraphWidth, Entropy);
+    cycle_range Range = {Scope->StartingCycle, Scope->CycleCount};
+    v3 Color = RandomV3(Entropy);
+
+    b32 Hovering = DrawCycleBar( &Range, Frame, TotalGraphWidth, Scope->Name, Color, Group, Geo, Layout);
+    if (Hovering && Group->Input->LMB.WasPressed)
+      Scope->Expanded = !Scope->Expanded;
+
+    if (Scope->Expanded)
+    {
+      layout ChildrensLayout = *Layout;
+      NewLine(&ChildrensLayout, &Group->Font);
+      DrawScopeBarsRecursive(Group, Geo, Scope->Child, &ChildrensLayout, Frame, TotalGraphWidth, Entropy);
+      AdvanceClip(&ChildrensLayout);
+      Layout->Clip.Max = Max(ChildrensLayout.Clip.Max, Layout->Clip.Max);
+      Layout->Clip.Min = Max(ChildrensLayout.Clip.Min, Layout->Clip.Min);
+    }
+
+    Scope = Scope->Sibling;
+  }
 
   return;
 }
@@ -876,17 +880,17 @@ DebugDrawCycleThreadGraph(ui_render_group *Group, debug_state *SharedState, v2 B
   r32 TotalGraphWidth = 1500.0f;
   untextured_2d_geometry_buffer *Geo = &Group->TextGroup->UIGeo;
 
-  layout Layout_ = {};
-  Layout_.Basis = BasisP;
 
-  layout* Layout = &Layout_;
+  local_persist table_layout CycleGraphTable;
+  CycleGraphTable.Layout.At = V2(0,0);
+  CycleGraphTable.Layout.Clip = NullClipRect;
+  CycleGraphTable.Layout.Basis = BasisP;
 
+  layout* Layout = &CycleGraphTable.Layout;
 
-  NewLine(Layout, &Group->Font);
-  SetFontSize(&Group->Font, 36);
-  NewLine(Layout, &Group->Font);
+  SetFontSize(&Group->Font, 30);
 
-  r32 MinY = Layout->At.y;
+  r32 MinY = Layout->Basis.y + Layout->At.y;
 
   u32 TotalThreadCount                = GetTotalThreadCount();
   frame_stats *FrameStats             = SharedState->Frames + SharedState->ReadScopeIndex;
@@ -901,9 +905,9 @@ DebugDrawCycleThreadGraph(ui_render_group *Group, debug_state *SharedState, v2 B
   {
     BeginClipRect(Layout);
 
-    NewLine(Layout, &Group->Font);
     char *ThreadName = FormatString(TranArena, "Thread %u", ThreadIndex);
-    BufferLine(ThreadName, WHITE, Layout, &Group->Font, Group);
+    Column(ThreadName, Group, &CycleGraphTable, WHITE);
+    NewRow(&CycleGraphTable, &Group->Font);
 
     debug_thread_state *ThreadState = GetThreadLocalStateFor(ThreadIndex);
     debug_scope_tree *ReadTree = ThreadState->ScopeTrees + SharedState->ReadScopeIndex;
@@ -912,6 +916,7 @@ DebugDrawCycleThreadGraph(ui_render_group *Group, debug_state *SharedState, v2 B
       DrawScopeBarsRecursive(Group, Geo, ReadTree->Root, Layout, &FrameCycles, TotalGraphWidth, &Entropy);
     }
 
+    /* NewRow(&CycleGraphTable, &Group->Font); */
     Layout->At.y = Layout->Clip.Max.y; // Advance vertical at for next thread
 
     EndClipRect(Group, Layout, Geo);
@@ -928,8 +933,8 @@ DebugDrawCycleThreadGraph(ui_render_group *Group, debug_state *SharedState, v2 B
     {
       r32 FramePerc = 16.66666f/TotalMs;
       r32 xOffset = FramePerc*TotalGraphWidth;
-      v2 MinP16ms = { xOffset, MinY };
-      v2 MaxP16ms = { xOffset+MarkerWidth, Layout->At.y };
+      v2 MinP16ms = Layout->Basis + V2( xOffset, MinY );
+      v2 MaxP16ms = Layout->Basis + V2( xOffset+MarkerWidth, Layout->At.y );
       v2 Dim = MaxP16ms - MinP16ms;
       BufferQuad(Group, Geo, MinP16ms, Dim);
       BufferColors(Group, Geo, V3(0,1,0));
@@ -938,8 +943,8 @@ DebugDrawCycleThreadGraph(ui_render_group *Group, debug_state *SharedState, v2 B
     {
       r32 FramePerc = 33.333333f/TotalMs;
       r32 xOffset = FramePerc*TotalGraphWidth;
-      v2 MinP16ms = { xOffset, MinY };
-      v2 MaxP16ms = { xOffset+MarkerWidth, Layout->At.y };
+      v2 MinP16ms = Layout->Basis + V2( xOffset, MinY );
+      v2 MaxP16ms = Layout->Basis + V2( xOffset+MarkerWidth, Layout->At.y );
       v2 Dim = MaxP16ms - MinP16ms;
       BufferQuad(Group, Geo, MinP16ms, Dim);
       BufferColors(Group, Geo, V3(1,1,0));
@@ -1259,6 +1264,7 @@ DebugDrawCallGraph(ui_render_group *Group, debug_state *DebugState, layout *Main
   return Result;
 }
 
+#if 0
 void
 ColumnLeft(u32 Width, const char *Text, ui_render_group* Group, layout *Layout, u32 ColorIndex )
 {
@@ -1276,7 +1282,7 @@ ColumnRight(s32 Width, const char *Text, ui_render_group* Group, layout *Layout,
   AdvanceSpaces(Pad, Layout, &Group->Font);
   BufferValue(Text, Group, Layout, ColorIndex);
 }
-
+#endif
 
 /******************************              *********************************/
 /******************************  Draw Calls  *********************************/
