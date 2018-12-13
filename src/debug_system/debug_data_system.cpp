@@ -273,16 +273,21 @@ FreeScopes(debug_thread_state *ThreadState, debug_profile_scope *ScopeToFree)
   //
   /* TIMED_FUNCTION(); */
 
-  if (!ScopeToFree) return;
 
-  FreeScopes(ThreadState, ScopeToFree->Child);
-  FreeScopes(ThreadState, ScopeToFree->Sibling);
+  debug_profile_scope* Current = ScopeToFree;
+  while (Current)
+  {
+    debug_profile_scope* Next = Current->Sibling;
 
-  Clear(ScopeToFree);
+    FreeScopes(ThreadState, Current->Child);
 
-  debug_profile_scope *FirstFree = ThreadState->FirstFreeScope;
-  ThreadState->FirstFreeScope = ScopeToFree;
-  ScopeToFree->Sibling = FirstFree;
+    Clear(Current);
+
+    Current->Sibling = ThreadState->FirstFreeScope;
+    ThreadState->FirstFreeScope = Current;
+
+    Current = Next;
+  }
 
   return;
 }
