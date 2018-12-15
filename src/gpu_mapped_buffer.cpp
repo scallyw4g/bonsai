@@ -21,6 +21,8 @@ FlushBuffersToCard(gpu_mapped_element_buffer* Buffer)
 
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+  /* Buffer->CopyIndex = (Buffer->CopyIndex + 1) % 2 */
+
   return;
 }
 

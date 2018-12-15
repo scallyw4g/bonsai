@@ -814,23 +814,7 @@ BufferChunkMesh(
 
   v3 ModelBasisP =
     GetRenderP( WorldChunkDim, Canonical_Position(Offset, WorldP), Graphics->Camera);
-
-  if (Dest->At + Src->At <= Dest->ElementCount)
-  {
-
-    BufferVertsDirect(Dest->VertexMemory + Dest->At,
-                      Dest->NormalMemory + Dest->At,
-                      Dest->ColorMemory + Dest->At,
-                      Src->At,
-                      Src->Verts, Src->Normals, Src->Colors,
-                      ModelBasisP, V3(Scale));
-
-    Dest->At += Src->At;
-  }
-  else
-  {
-    Error("Ran out of memory on gpu_mapped_element_buffer");
-  }
+  BufferVertsChecked(Src, Dest, ModelBasisP, V3(Scale));
 
   return;
 }
@@ -1802,9 +1786,9 @@ DrawParticle(
 }
 #endif
 
-void
+template <typename T>void
 BufferEntity(
-    untextured_3d_geometry_buffer *Dest,
+    T* Dest,
     entity *Entity,
     animation *Animation,
     graphics *Graphics,
@@ -1921,8 +1905,8 @@ BufferWorld(game_state* GameState, T* Dest, world *World, graphics *Graphics, wo
   }
 }
 
-void
-BufferEntities( entity **EntityTable, untextured_3d_geometry_buffer *Mesh,
+template <typename T>void
+BufferEntities( entity **EntityTable, T* Dest,
                 graphics *Graphics, world *World, r32 dt)
 {
   TIMED_FUNCTION();
@@ -1931,7 +1915,7 @@ BufferEntities( entity **EntityTable, untextured_3d_geometry_buffer *Mesh,
         ++EntityIndex)
   {
     entity *Entity = EntityTable[EntityIndex];
-    BufferEntity( Mesh, Entity, 0, Graphics, World->ChunkDim, dt);
+    BufferEntity( Dest, Entity, 0, Graphics, World->ChunkDim, dt);
   }
 
   return;

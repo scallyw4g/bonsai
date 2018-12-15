@@ -81,7 +81,6 @@ BufferDataToCard(u32 BufferId, u32 Stride, u32 ByteCount, void *Data, u32 *Attri
   DebugState->BytesBufferedToCard += ByteCount;
 #endif
 
-
   glEnableVertexAttribArray(*AttributeIndex);
   glBindBuffer(GL_ARRAY_BUFFER, BufferId);
   glBufferData(GL_ARRAY_BUFFER, ByteCount, Data, GL_STATIC_DRAW);

@@ -157,6 +157,8 @@ struct gpu_mapped_element_buffer
 
   u32 ElementCount;
   u32 At;
+
+  u32 CopyIndex;
 };
 
 struct untextured_3d_geometry_buffer

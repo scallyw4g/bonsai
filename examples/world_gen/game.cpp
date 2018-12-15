@@ -147,7 +147,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   TIMED_BLOCK("BufferMeshes");
     BufferWorld(GameState, &GameState->GpuBuffer, World, Graphics, VISIBLE_REGION_RADIUS);
-    /* BufferEntities( GameState->EntityTable, &World->Mesh, Graphics, World, Plat->dt); */
+    BufferEntities( GameState->EntityTable, &GameState->GpuBuffer, Graphics, World, Plat->dt);
   END_BLOCK("BufferMeshes");
 
   TIMED_BLOCK("RenderToScreen");

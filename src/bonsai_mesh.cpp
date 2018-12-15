@@ -154,6 +154,32 @@ BufferVertsDirect(
 
 inline void
 BufferVertsChecked(
+    untextured_3d_geometry_buffer* Src,
+    gpu_mapped_element_buffer* Dest,
+    v3 Offset = V3(0),
+    v3 Scale = V3(1)
+  )
+{
+  if (Dest->At + Src->At <= Dest->ElementCount)
+  {
+
+    BufferVertsDirect(Dest->VertexMemory + Dest->At,
+                      Dest->NormalMemory + Dest->At,
+                      Dest->ColorMemory + Dest->At,
+                      Src->At,
+                      Src->Verts, Src->Normals, Src->Colors,
+                      Offset, Scale);
+
+    Dest->At += Src->At;
+  }
+  else
+  {
+    Error("Ran out of memory on gpu_mapped_element_buffer");
+  }
+}
+
+inline void
+BufferVertsChecked(
     untextured_3d_geometry_buffer *Target,
     graphics *Graphics,
 
