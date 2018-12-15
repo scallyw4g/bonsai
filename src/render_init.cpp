@@ -374,9 +374,8 @@ GraphicsInit(memory_arena *GraphicsMemory)
     AoGroup->DebugSsaoShader            = MakeSimpleTextureShader(AoGroup->Texture            , GraphicsMemory);
   }
 
-  // FIXME(Jesse): Our face widing is totally fucked
-  /* glEnable(GL_CULL_FACE); */
-  /* glCullFace(GL_BACK); */
+  glEnable(GL_CULL_FACE);
+  glCullFace(GL_BACK);
 
   AssertNoGlErrors;
 

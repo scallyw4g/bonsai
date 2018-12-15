@@ -4,28 +4,25 @@
 
 
 
-//    Not sure why I drew this, but it was kinda fun..
+//                 Not sure why I drew this, but it was kinda fun..
 //
-//     4              7
-//       +-----------+
-//      /|          /|      Z
-//     / |         / |      ^
-//  0 +-----------3  |      |
-//    |  |        |  |      |   Y
-//    |  +--------|--+      |  /
-//    | / 5       | /   6   | /
-//    |/          |/        |/
-//    +-----------+         +-----------> X
-//  1              2
+//                        top
+//                    4 --------- 7
+//                   /|          /|     Z
+//                  / |         / |     ^
+//                 0 --------- 3  |     |
+//                 |  |        |  |     |   Y
+//                 |  5 -------|- 6     |  /
+//          left   | /         | /      | /
+//                 |/          |/       |/
+//                 1 --------- 2        o-----------> X
 //
+//                   back
 
-
-#define WIND_CCW 0
 
 inline void
 RightFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
-  /* TIMED_FUNCTION(); */
   v3 MaxP = MinP + Diameter;
 
   //  0    1
@@ -37,12 +34,7 @@ RightFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
   v3 P2 = {{ MaxP.x, MinP.y, MinP.z }};
   v3 P3 = {{ MaxP.x, MaxP.y, MinP.z }};
 
-#if WIND_CCW
   v3 Temp[] = { P2, P1, P0, P2, P3, P1 };
-#else
-  v3 Temp[] = { P0, P1, P2, P1, P3, P2 };
-#endif
-
   memcpy(Result, Temp, sizeof(Temp));
 
   return;
@@ -61,16 +53,18 @@ global_variable v3 RightFaceNormalData[] =
 inline void
 LeftFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
-  /* TIMED_FUNCTION(); */
-  r32 Temp[] = {
-    MinP.x , MinP.y +  Diameter.y , MinP.z +  Diameter.z ,
-    MinP.x , MinP.y               , MinP.z               ,
-    MinP.x , MinP.y +  Diameter.y , MinP.z               ,
-    MinP.x , MinP.y               , MinP.z               ,
-    MinP.x , MinP.y +  Diameter.y , MinP.z +  Diameter.z ,
-    MinP.x , MinP.y               , MinP.z +  Diameter.z ,
-  };
+  v3 MaxP = MinP + Diameter;
 
+  //  0    1
+  //
+  //  2    3
+
+  v3 P0 = {{ MinP.x, MaxP.y, MaxP.z }};
+  v3 P1 = {{ MinP.x, MinP.y, MaxP.z }};
+  v3 P2 = {{ MinP.x, MaxP.y, MinP.z }};
+  v3 P3 = {{ MinP.x, MinP.y, MinP.z }};
+
+  v3 Temp[] = { P2, P1, P0, P2, P3, P1 };
   memcpy(Result, Temp, sizeof(Temp));
 
   return;
@@ -89,20 +83,18 @@ global_variable v3 LeftFaceNormalData[] =
 inline void
 BackFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
-  /* TIMED_FUNCTION(); */
   v3 MaxP = MinP + Diameter;
 
-  //  0    1
+  //  0    3
   //
-  //  2    3
+  //  1    2
 
   v3 P0 = {{ MinP.x, MinP.y, MaxP.z }};
   v3 P1 = {{ MaxP.x, MinP.y, MaxP.z }};
   v3 P2 = {{ MinP.x, MinP.y, MinP.z }};
   v3 P3 = {{ MaxP.x, MinP.y, MinP.z }};
 
-  v3 Temp[] = { P0, P1, P2, P1, P3, P2 };
-
+  v3 Temp[] = { P0, P2, P1, P1, P2, P3 };
   memcpy(Result, Temp, sizeof(Temp));
 
   return;
@@ -121,17 +113,20 @@ global_variable v3 BackFaceNormalData[] =
 inline void
 FrontFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
-  /* TIMED_FUNCTION(); */
-  r32 Temp[] = {
-    MinP.x + Diameter.x , MinP.y + Diameter.y , MinP.z + Diameter.z ,
-    MinP.x              , MinP.y + Diameter.y , MinP.z              ,
-    MinP.x + Diameter.x , MinP.y + Diameter.y , MinP.z              ,
-    MinP.x              , MinP.y + Diameter.y , MinP.z              ,
-    MinP.x + Diameter.x , MinP.y + Diameter.y , MinP.z + Diameter.z ,
-    MinP.x              , MinP.y + Diameter.y , MinP.z + Diameter.z ,
-  };
+  v3 MaxP = MinP + Diameter;
 
+  //  7    4
+  //
+  //  6    5
+
+  v3 P7 = {{ MaxP.x, MaxP.y, MaxP.z }};
+  v3 P4 = {{ MinP.x, MaxP.y, MaxP.z }};
+  v3 P6 = {{ MaxP.x, MaxP.y, MinP.z }};
+  v3 P5 = {{ MinP.x, MaxP.y, MinP.z }};
+
+  v3 Temp[] = { P7, P6, P4, P4, P6, P5 };
   memcpy(Result, Temp, sizeof(Temp));
+
 
   return;
 }
@@ -149,20 +144,18 @@ global_variable v3 FrontFaceNormalData[] =
 inline void
 TopFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
-  /* TIMED_FUNCTION(); */
   v3 MaxP = MinP + Diameter;
 
-  //  0    1
+  //  4    7
   //
-  //  2    3
+  //  0    3
 
-  v3 P0 = {{ MinP.x, MaxP.y, MaxP.z }};
-  v3 P1 = {{ MaxP.x, MaxP.y, MaxP.z }};
-  v3 P2 = {{ MinP.x, MinP.y, MaxP.z }};
+  v3 P4 = {{ MinP.x, MaxP.y, MaxP.z }};
+  v3 P7 = {{ MaxP.x, MaxP.y, MaxP.z }};
+  v3 P0 = {{ MinP.x, MinP.y, MaxP.z }};
   v3 P3 = {{ MaxP.x, MinP.y, MaxP.z }};
 
-  v3 Temp[] = { P0, P1, P2, P1, P3, P2 };
-
+  v3 Temp[] = { P4, P0, P7, P7, P0, P3 };
   memcpy(Result, Temp, sizeof(Temp));
 
   return;
