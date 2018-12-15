@@ -151,9 +151,9 @@ struct gpu_mapped_element_buffer
   u32 NormalHandle;
   u32 ColorHandle;
 
-  v3 *VertexMemory;
-  v3 *NormalMemory;
-  v4 *ColorMemory;
+  v3 *Verts;
+  v3 *Normals;
+  v4 *Colors;
 
   u32 ElementCount;
   u32 At;

@@ -48,14 +48,25 @@ typedef game_state* (*bonsai_main_thread_init_callback) (BONSAI_API_MAIN_THREAD_
 
 enum work_queue_entry_type
 {
-  WorkEntryType_None           =      0,
-  WorkEntryType_InitWorldChunk = 1 << 0,
+  WorkEntryType_None            =      0,
+  WorkEntryType_InitWorldChunk  = 1 << 1,
+  WorkEntryType_CopyToGpuBuffer = 1 << 2,
+};
+struct gpu_buffer_copy_params
+{
+  untextured_3d_geometry_buffer* Src;
+  untextured_3d_geometry_buffer Dest;
+  v3 Basis;
 };
 struct work_queue_entry
 {
-  game_state *GameState;
-  void *Input;
   work_queue_entry_type Type;
+  game_state *GameState;
+
+  union {
+    void *Input;
+    gpu_buffer_copy_params GpuCopyParams;
+  };
 };
 
 struct thread

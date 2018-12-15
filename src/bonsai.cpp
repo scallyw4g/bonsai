@@ -14,7 +14,6 @@
 
 #include <texture.cpp>
 #include <gpu_mapped_buffer.cpp>
-#include <render.cpp>
 
 
 void
@@ -33,6 +32,8 @@ PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
 
   return;
 }
+
+#include <render.cpp>
 
 inline void
 QueueChunkForInit( game_state *GameState, work_queue *Queue, world_chunk *Chunk)

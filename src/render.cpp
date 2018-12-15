@@ -794,33 +794,6 @@ ClearFramebuffers(graphics *Graphics)
 
 void
 BufferChunkMesh(
-    gpu_mapped_element_buffer     *Dest,
-    untextured_3d_geometry_buffer *Src,
-    chunk_dimension WorldChunkDim,
-    world_position WorldP,
-    graphics *Graphics,
-    r32 Scale = 1.0f,
-    v3 Offset = V3(0)
-  )
-{
-  /* TIMED_FUNCTION(); */
-
-  if (!Src || Src->At == 0)
-    return;
-
-#if DEBUG_CHUNK_AABB
-  DEBUG_DrawChunkAABB(Dest, Graphics, WorldP, WorldChunkDim, PINK, 0.1f);
-#endif
-
-  v3 ModelBasisP =
-    GetRenderP( WorldChunkDim, Canonical_Position(Offset, WorldP), Graphics->Camera);
-  BufferVertsChecked(Src, Dest, ModelBasisP, V3(Scale));
-
-  return;
-}
-
-void
-BufferChunkMesh(
     untextured_3d_geometry_buffer *Dest,
     untextured_3d_geometry_buffer *Src,
     chunk_dimension WorldChunkDim,
@@ -1761,7 +1734,7 @@ DrawParticle(
   v4 FaceColors[FACE_VERT_COUNT];
   FillColorArray(ColorIndex, FaceColors, FACE_VERT_COUNT);;
 #if 1
-  BufferVerts( Source, Dest, Graphics);
+  BufferVertsChecked( Source, Dest, Graphics);
 #else
   RightFaceVertexData( MinP, V3(Diameter), VertexData);
   BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, RightFaceNormalData, FaceColors);
@@ -1816,23 +1789,51 @@ BufferEntity(
       AnimationOffset = GetInterpolatedPosition(Animation);
     }
 
-    BufferChunkMesh(Dest, &Entity->Model.Mesh, WorldChunkDim, Entity->P.WorldP, Graphics, Entity->Scale, Entity->P.Offset + AnimationOffset);
+    /* BufferChunkMesh(Dest, &Entity->Model.Mesh, WorldChunkDim, Entity->P.WorldP, Graphics, Entity->Scale, Entity->P.Offset + AnimationOffset); */
   }
 
   return;
 }
 
+template <typename T> untextured_3d_geometry_buffer
+ReserveBufferSpace(T* Src, u32 ElementsToReserve)
+{
+  untextured_3d_geometry_buffer Result = {};
+
+  Result.Verts = Src->Verts + Src->At;
+  Result.Colors = Src->Colors + Src->At;
+  Result.Normals = Src->Normals + Src->At;
+
+  Result.End = ElementsToReserve;
+
+  Src->At += ElementsToReserve;
+
+  return Result;
+}
+
+#if 0
 void
 BufferWorldChunk(
     untextured_3d_geometry_buffer *Dest,
     world_chunk *Chunk,
-    graphics *Graphics
+    camera* Camera,
+    work_queue* Queue
   )
 {
   chunk_data *ChunkData = Chunk->Data;
   if (ChunkData->Flags == Chunk_MeshComplete)
   {
-    BufferChunkMesh( Dest, Chunk->Mesh, WORLD_CHUNK_DIM, Chunk->WorldP, Graphics);
+    untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(Dest, Chunk->Mesh->At);
+    v3 ModelBasisP = GetRenderP( WORLD_CHUNK_DIM, Canonical_Position(V3(0), Chunk->WorldP), Camera);
+
+
+    work_queue_entry Entry = {};
+    Entry.Type = WorkEntryType_CopyToGpuBuffer;
+    Entry.GpuCopyParams.Src = Chunk->Mesh;
+    Entry.GpuCopyParams.Dest = CopyDest;
+    Entry.GpuCopyParams.Basis = ModelBasisP;
+
+    PushWorkQueueEntry(Queue, &Entry);
   }
   else if (IsSet(ChunkData, Chunk_Queued))
   {
@@ -1846,18 +1847,34 @@ BufferWorldChunk(
 
   return;
 }
+#endif
 
+#if 1
 void
 BufferWorldChunk(
     gpu_mapped_element_buffer *Dest,
     world_chunk *Chunk,
-    graphics *Graphics
+    graphics *Graphics,
+    work_queue* Queue
   )
 {
+  if (!Chunk || !Chunk->Mesh)
+    return;
+
   chunk_data *ChunkData = Chunk->Data;
   if (ChunkData->Flags == Chunk_MeshComplete)
   {
-    BufferChunkMesh( Dest, Chunk->Mesh, WORLD_CHUNK_DIM, Chunk->WorldP, Graphics);
+    untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(Dest, Chunk->Mesh->At);
+    v3 ModelBasisP = GetRenderP( WORLD_CHUNK_DIM, Canonical_Position(V3(0), Chunk->WorldP), Graphics->Camera);
+
+
+    work_queue_entry Entry = {};
+    Entry.Type = WorkEntryType_CopyToGpuBuffer;
+    Entry.GpuCopyParams.Src = Chunk->Mesh;
+    Entry.GpuCopyParams.Dest = CopyDest;
+    Entry.GpuCopyParams.Basis = ModelBasisP;
+
+    PushWorkQueueEntry(Queue, &Entry);
   }
   else if (IsSet(ChunkData, Chunk_Queued))
   {
@@ -1871,6 +1888,7 @@ BufferWorldChunk(
 
   return;
 }
+#endif
 
 inline void QueueChunkForInit(game_state *GameState, work_queue *Queue, world_chunk *Chunk);
 
@@ -1893,7 +1911,7 @@ BufferWorld(game_state* GameState, T* Dest, world *World, graphics *Graphics, wo
 
         if (Chunk)
         {
-          BufferWorldChunk(Dest, Chunk, Graphics);
+          /* BufferWorldChunk(Dest, Chunk, Graphics, &GameState->Plat->Queue); */
         }
         else
         {

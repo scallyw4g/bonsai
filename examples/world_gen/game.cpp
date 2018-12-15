@@ -62,12 +62,19 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       {
         s32 Amplititude = 30;
         s32 StartingZDepth = -10;
-
         InitializeWorldChunkPerlinPlane(Thread,
                                         DestChunk,
                                         Amplititude, StartingZDepth);
 
       }
+    } break;
+
+    case WorkEntryType_CopyToGpuBuffer:
+    {
+      untextured_3d_geometry_buffer* Src = Entry->GpuCopyParams.Src;
+      untextured_3d_geometry_buffer* Dest = &Entry->GpuCopyParams.Dest;
+      v3 Basis = Entry->GpuCopyParams.Basis;
+      BufferVertsChecked(Src, Dest, Basis, V3(1.0f));
     } break;
 
     InvalidDefaultCase;

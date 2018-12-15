@@ -7,8 +7,7 @@ inline void
 BufferVertsDirect(
     untextured_2d_geometry_buffer *Dest,
     u32 NumVerts,
-    v3 *Positions,
-    v4 *Colors
+    v3 *Positions, v4 *Colors
   )
 {
   TIMED_FUNCTION();
@@ -29,12 +28,8 @@ BufferVertsDirect(
 inline void
 BufferVertsDirect(
     untextured_3d_geometry_buffer *Dest,
-
     u32 NumVerts,
-
-    v3 *Positions,
-    v3 *Normals,
-    v4 *Colors
+    v3 *Positions, v3 *Normals, v4 *Colors
   )
 {
   TIMED_FUNCTION();
@@ -54,16 +49,9 @@ BufferVertsDirect(
 
 inline void
 BufferVertsDirect(
-    v3 *DestVerts,
-    v3 *DestNormals,
-    v4 *DestColors,
-
+    v3 *DestVerts, v3 *DestNormals, v4 *DestColors, 
     u32 NumVerts,
-
-    v3 *SrcVerts,
-    v3 *SrcNormals,
-    v4 *SrcVertColors,
-
+    v3 *SrcVerts, v3 *SrcNormals, v4 *SrcVertColors, 
     v3 Offset,
     v3 Scale
   )
@@ -120,13 +108,8 @@ BufferVertsDirect(
 inline void
 BufferVertsDirect(
     untextured_3d_geometry_buffer *Dest,
-
     u32 NumVerts,
-
-    v3 *VertsPositions,
-    v3 *Normals,
-    v4 *VertColors,
-
+    v3 *VertsPositions, v3 *Normals, v4 *VertColors, 
     v3 Offset,
     v3 Scale
   )
@@ -155,6 +138,32 @@ BufferVertsDirect(
 inline void
 BufferVertsChecked(
     untextured_3d_geometry_buffer* Src,
+    untextured_3d_geometry_buffer* Dest,
+    v3 Offset = V3(0),
+    v3 Scale = V3(1)
+  )
+{
+  if (Dest->At + Src->At <= Dest->End)
+  {
+
+    BufferVertsDirect(Dest->Verts + Dest->At,
+                      Dest->Normals + Dest->At,
+                      Dest->Colors + Dest->At,
+                      Src->At,
+                      Src->Verts, Src->Normals, Src->Colors,
+                      Offset, Scale);
+
+    Dest->At += Src->At;
+  }
+  else
+  {
+    Error("Ran out of memory on untextured_3d_geometry_buffer");
+  }
+}
+
+inline void
+BufferVertsChecked(
+    untextured_3d_geometry_buffer* Src,
     gpu_mapped_element_buffer* Dest,
     v3 Offset = V3(0),
     v3 Scale = V3(1)
@@ -163,9 +172,9 @@ BufferVertsChecked(
   if (Dest->At + Src->At <= Dest->ElementCount)
   {
 
-    BufferVertsDirect(Dest->VertexMemory + Dest->At,
-                      Dest->NormalMemory + Dest->At,
-                      Dest->ColorMemory + Dest->At,
+    BufferVertsDirect(Dest->Verts + Dest->At,
+                      Dest->Normals + Dest->At,
+                      Dest->Colors + Dest->At,
                       Src->At,
                       Src->Verts, Src->Normals, Src->Colors,
                       Offset, Scale);
@@ -182,13 +191,8 @@ inline void
 BufferVertsChecked(
     untextured_3d_geometry_buffer *Target,
     graphics *Graphics,
-
     u32 NumVerts,
-
-    v3* Positions,
-    v3* Normals,
-    v4* Colors,
-
+    v3* Positions, v3* Normals, v4* Colors, 
     v3 Offset = V3(0),
     v3 Scale = V3(1)
   )
@@ -219,7 +223,7 @@ BufferVertsChecked(
 }
 
 inline void
-BufferVerts(
+BufferVertsChecked(
     untextured_3d_geometry_buffer *Source,
     untextured_3d_geometry_buffer *Dest,
     graphics *Graphics
