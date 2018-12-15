@@ -1,8 +1,5 @@
 #include <colors.h>
 
-void
-RenderGBuffer(untextured_3d_geometry_buffer *Target, graphics *Graphics);
-
 inline void
 BufferVertsDirect(
     untextured_2d_geometry_buffer *Dest,
@@ -163,34 +160,7 @@ BufferVertsChecked(
 
 inline void
 BufferVertsChecked(
-    untextured_3d_geometry_buffer* Src,
-    gpu_mapped_element_buffer* Dest,
-    v3 Offset = V3(0),
-    v3 Scale = V3(1)
-  )
-{
-  if (Dest->At + Src->At <= Dest->ElementCount)
-  {
-
-    BufferVertsDirect(Dest->Verts + Dest->At,
-                      Dest->Normals + Dest->At,
-                      Dest->Colors + Dest->At,
-                      Src->At,
-                      Src->Verts, Src->Normals, Src->Colors,
-                      Offset, Scale);
-
-    Dest->At += Src->At;
-  }
-  else
-  {
-    Error("Ran out of memory on gpu_mapped_element_buffer");
-  }
-}
-
-inline void
-BufferVertsChecked(
     untextured_3d_geometry_buffer *Target,
-    graphics *Graphics,
     u32 NumVerts,
     v3* Positions, v3* Normals, v4* Colors, 
     v3 Offset = V3(0),
@@ -201,6 +171,8 @@ BufferVertsChecked(
 
   if (BufferIsFull(Target, NumVerts))
   {
+    Error("Ran ouf of space buffering verts");
+#if 0
     u32 VertsRemaining = Target->End - Target->At;
     u32 Pad = VertsRemaining % 3;
     u32 PushVerts = VertsRemaining - Pad;
@@ -213,6 +185,7 @@ BufferVertsChecked(
     RenderGBuffer(Target, Graphics);
 
     BufferVertsChecked(Target, Graphics, NumVerts-PushVerts, Positions, Normals, Colors, Offset, Scale);
+#endif
   }
   else
   {
@@ -220,45 +193,6 @@ BufferVertsChecked(
   }
 
   return;
-}
-
-inline void
-BufferVertsChecked(
-    untextured_3d_geometry_buffer *Source,
-    untextured_3d_geometry_buffer *Dest,
-    graphics *Graphics
-  )
-{
-  TIMED_FUNCTION();
-
-#if 1
-  BufferVertsChecked(Dest, Graphics, Source->At, Source->Verts,
-      Source->Normals, Source->Colors);
-  return;
-#else
-  for ( s32 VertIndex = 0;
-        VertIndex < Source->At;
-        ++VertIndex )
-  {
-    v3 XYZ = (Source->VertexData[VertIndex]*Scale) + RenderOffset;
-
-#if 1
-    Dest->VertexData[Dest->At] =  XYZ;
-    Dest->NormalData[Dest->At] = Source->NormalData[VertIndex];
-    Dest->ColorData[Dest->At]  = Source->ColorData[VertIndex];
-    ++Dest->At;
-#else
-
-    BufferVerts(Dest, gBuffer, SG, Camera,
-        1,
-        &XYZ,
-        Source->NormalData + VertIndex,
-        Source->ColorData + VertIndex);
-#endif
-
-  }
-#endif
-
 }
 
 void

@@ -52,17 +52,17 @@ add_definitions( -DGL_GLEXT_PROTOTYPES=1 )
 add_library(DebugSystem SHARED ${SRC}/debug_system/debug.cpp)
 target_include_directories(DebugSystem PRIVATE ${SRC}/debug_system)
 
-add_library(SsaoTest SHARED ${EXAMPLES}/ssao_test/game.cpp)
-target_include_directories(SsaoTest PRIVATE ${EXAMPLES}/ssao_test)
-set_target_properties(SsaoTest PROPERTIES OUTPUT_NAME "SsaoTest")
-set_target_properties(SsaoTest PROPERTIES PREFIX "")
-set_target_properties(SsaoTest PROPERTIES SUFFIX "")
+# add_library(SsaoTest SHARED ${EXAMPLES}/ssao_test/game.cpp)
+# target_include_directories(SsaoTest PRIVATE ${EXAMPLES}/ssao_test)
+# set_target_properties(SsaoTest PROPERTIES OUTPUT_NAME "SsaoTest")
+# set_target_properties(SsaoTest PROPERTIES PREFIX "")
+# set_target_properties(SsaoTest PROPERTIES SUFFIX "")
 
-add_library(AnimationTest SHARED ${EXAMPLES}/animation_test/game.cpp)
-target_include_directories(AnimationTest PRIVATE ${EXAMPLES}/animation_test)
-set_target_properties(AnimationTest PROPERTIES OUTPUT_NAME "AnimationTest")
-set_target_properties(AnimationTest PROPERTIES PREFIX "")
-set_target_properties(AnimationTest PROPERTIES SUFFIX "")
+# add_library(AnimationTest SHARED ${EXAMPLES}/animation_test/game.cpp)
+# target_include_directories(AnimationTest PRIVATE ${EXAMPLES}/animation_test)
+# set_target_properties(AnimationTest PROPERTIES OUTPUT_NAME "AnimationTest")
+# set_target_properties(AnimationTest PROPERTIES PREFIX "")
+# set_target_properties(AnimationTest PROPERTIES SUFFIX "")
 
 add_library(WorldGen SHARED ${EXAMPLES}/world_gen/game.cpp)
 target_include_directories(WorldGen PRIVATE ${EXAMPLES}/world_gen)
@@ -74,8 +74,8 @@ set_target_properties(WorldGen PROPERTIES SUFFIX "")
 find_package(OpenGL REQUIRED)
 include_directories(${OPENGL_INCLUDE_DIRS} )
 target_link_libraries(Bonsai ${OPENGL_LIBRARIES})
-target_link_libraries(SsaoTest ${OPENGL_LIBRARIES})
-target_link_libraries(AnimationTest ${OPENGL_LIBRARIES})
+# target_link_libraries(SsaoTest ${OPENGL_LIBRARIES})
+# target_link_libraries(AnimationTest ${OPENGL_LIBRARIES})
 target_link_libraries(WorldGen ${OPENGL_LIBRARIES})
 target_link_libraries(test_callgraph ${OPENGL_LIBRARIES})
 
@@ -96,9 +96,9 @@ add_custom_target(tests ${BIN}/test_m4
 
 target_compile_definitions(Bonsai         PUBLIC BONSAI_INTERNAL=1)
 target_compile_definitions(Server         PUBLIC BONSAI_INTERNAL=1)
-target_compile_definitions(SsaoTest       PUBLIC BONSAI_INTERNAL=1)
 target_compile_definitions(DebugSystem    PUBLIC BONSAI_INTERNAL=1)
-target_compile_definitions(AnimationTest  PUBLIC BONSAI_INTERNAL=1)
+# target_compile_definitions(SsaoTest       PUBLIC BONSAI_INTERNAL=1)
+# target_compile_definitions(AnimationTest  PUBLIC BONSAI_INTERNAL=1)
 target_compile_definitions(WorldGen  PUBLIC BONSAI_INTERNAL=1)
 
 target_compile_definitions(ttf PUBLIC BONSAI_INTERNAL=1)
@@ -211,20 +211,21 @@ else()
 endif()
 
 # Rename the Game lib once it's finished so the platform can re-load it
-get_property(ssaoTestBinary TARGET SsaoTest PROPERTY OUTPUT_NAME)
-add_custom_command( TARGET SsaoTest POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E copy
-                    ../bin/${ssaoTestBinary} ../bin/${ssaoTestBinary}Loadable.so )
+
+# get_property(ssaoTestBinary TARGET SsaoTest PROPERTY OUTPUT_NAME)
+# add_custom_command( TARGET SsaoTest POST_BUILD
+#                     COMMAND ${CMAKE_COMMAND} -E copy
+#                     ../bin/${ssaoTestBinary} ../bin/${ssaoTestBinary}Loadable.so )
 
 get_property(worldGenBinary TARGET WorldGen PROPERTY OUTPUT_NAME)
 add_custom_command( TARGET WorldGen POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy
                     ../bin/${worldGenBinary} ../bin/${worldGenBinary}Loadable.so )
 
-get_property(animationTestBinary TARGET AnimationTest PROPERTY OUTPUT_NAME)
-add_custom_command( TARGET AnimationTest POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E copy
-                    ../bin/${animationTestBinary} ../bin/${animationTestBinary}Loadable.so )
+# get_property(animationTestBinary TARGET AnimationTest PROPERTY OUTPUT_NAME)
+# add_custom_command( TARGET AnimationTest POST_BUILD
+#                     COMMAND ${CMAKE_COMMAND} -E copy
+#                     ../bin/${animationTestBinary} ../bin/${animationTestBinary}Loadable.so )
 
 
 

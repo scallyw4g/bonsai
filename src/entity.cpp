@@ -858,7 +858,7 @@ SimulateAndRenderParticleSystem(
     Assert(ColorIndex >= 0 && ColorIndex <= PARTICLE_SYSTEM_COLOR_COUNT);
 
     v3 RenderSpaceP = GetRenderP(SystemEntity->P, Graphics->Camera, WORLD_CHUNK_DIM);
-    DrawVoxel( Dest, Graphics, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, 3.0f );
+    DrawVoxel( Dest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, 3.0f );
 
 #if 0
     if (RandomUnilateral(&System->Entropy) > 0.9)
