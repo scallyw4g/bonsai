@@ -1,4 +1,4 @@
-#define WORK_QUEUE_SIZE (65536*2)
+#define WORK_QUEUE_SIZE (65536*4)
 
 struct platform;
 struct network_connection;

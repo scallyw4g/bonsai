@@ -1,6 +1,3 @@
-#ifndef RENDER_H
-#define RENDER_H
-
 #define Draw(VertexCount) do {                      \
   TIMED_BLOCK("Draw");                              \
   DEBUG_TRACK_DRAW_CALL(__FUNCTION__, VertexCount); \
@@ -84,6 +81,7 @@ BufferDataToCard(u32 BufferId, u32 Stride, u32 ByteCount, void *Data, u32 *Attri
   DebugState->BytesBufferedToCard += ByteCount;
 #endif
 
+
   glEnableVertexAttribArray(*AttributeIndex);
   glBindBuffer(GL_ARRAY_BUFFER, BufferId);
   glBufferData(GL_ARRAY_BUFFER, ByteCount, Data, GL_STATIC_DRAW);
@@ -140,6 +138,3 @@ BufferUVsToCard(u32 BufferId, T *Mesh, u32 *AttributeIndex)
 
   return;
 }
-
-
-#endif

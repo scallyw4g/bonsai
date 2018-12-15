@@ -104,19 +104,19 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   SimulateEntities(GameState, Plat->dt);
 
-  SimulateAndRenderParticleSystems(GameState, Graphics, Plat->dt);
+  SimulateAndRenderParticleSystems(GameState->EntityTable, &GameState->Mesh, Graphics, Plat->dt);
 
   gBuffer->ViewProjection =
     GetProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
     GetViewMatrix(WorldChunkDim, Camera);
 
   TIMED_BLOCK("BufferMeshes");
-    BufferWorld(GameState, World, Graphics, VISIBLE_REGION_RADIUS);
-    BufferEntities( GameState->EntityTable, &World->Mesh, Graphics, World, Plat->dt);
+    BufferWorld(GameState, &GameState->Mesh, World, Graphics, VISIBLE_REGION_RADIUS);
+    BufferEntities( GameState->EntityTable, &GameState->Mesh, Graphics, World, Plat->dt);
   END_BLOCK("BufferMeshes");
 
   TIMED_BLOCK("RenderToScreen");
-    RenderGBuffer(&World->Mesh, Graphics);
+    RenderGBuffer(&GameState->Mesh, Graphics);
     RenderAoTexture(AoGroup);
     DrawGBufferToFullscreenQuad(Plat, Graphics);
   END_BLOCK("RenderToScreen");

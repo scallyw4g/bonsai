@@ -389,8 +389,6 @@ struct world
   chunk_dimension ChunkDim;
 
   world_position Center;
-
-  untextured_3d_geometry_buffer Mesh;
 };
 
 

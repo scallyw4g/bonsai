@@ -54,6 +54,71 @@ BufferVertsDirect(
 
 inline void
 BufferVertsDirect(
+    v3 *DestVerts,
+    v3 *DestNormals,
+    v4 *DestColors,
+
+    u32 NumVerts,
+
+    v3 *SrcVerts,
+    v3 *SrcNormals,
+    v4 *SrcVertColors,
+
+    v3 Offset,
+    v3 Scale
+  )
+{
+  TIMED_FUNCTION();
+
+  __m128 mmScale = _mm_set_ps(0, Scale.z, Scale.y, Scale.x);
+  __m128 mmOffset = _mm_set_ps(0, Offset.z, Offset.y, Offset.x);
+
+  Assert(NumVerts % 3 == 0);
+
+  memcpy( DestNormals,  SrcNormals,    sizeof(*SrcNormals)*NumVerts );
+  memcpy( DestColors,   SrcVertColors, sizeof(*SrcVertColors)*NumVerts );
+
+
+  for ( u32 VertIndex = 0;
+        VertIndex < NumVerts;
+        VertIndex += 3 )
+  {
+    v3 VertSrc0 = SrcVerts[VertIndex + 0];
+    v3 VertSrc1 = SrcVerts[VertIndex + 1];
+    v3 VertSrc2 = SrcVerts[VertIndex + 2];
+
+    f32_reg Vert0;
+    f32_reg Vert1;
+    f32_reg Vert2;
+
+    Vert0.Sse = _mm_set_ps(0, VertSrc0.z, VertSrc0.y, VertSrc0.x);
+    Vert1.Sse = _mm_set_ps(0, VertSrc1.z, VertSrc1.y, VertSrc1.x);
+    Vert2.Sse = _mm_set_ps(0, VertSrc2.z, VertSrc2.y, VertSrc2.x);
+
+    Vert0.Sse = _mm_add_ps( _mm_mul_ps(Vert0.Sse, mmScale), mmOffset);
+    Vert1.Sse = _mm_add_ps( _mm_mul_ps(Vert1.Sse, mmScale), mmOffset);
+    Vert2.Sse = _mm_add_ps( _mm_mul_ps(Vert2.Sse, mmScale), mmOffset);
+
+    v3 Result0 = {{ Vert0.F[0], Vert0.F[1], Vert0.F[2] }};
+    v3 Result1 = {{ Vert1.F[0], Vert1.F[1], Vert1.F[2] }};
+    v3 Result2 = {{ Vert2.F[0], Vert2.F[1], Vert2.F[2] }};
+
+    DestVerts[0] = Result0;
+    DestVerts[1] = Result1;
+    DestVerts[2] = Result2;
+
+    DestVerts += 3;
+    DestNormals += 3;
+    DestColors += 3;
+  }
+
+
+
+  return;
+}
+
+inline void
+BufferVertsDirect(
     untextured_3d_geometry_buffer *Dest,
 
     u32 NumVerts,
@@ -74,76 +139,19 @@ BufferVertsDirect(
     return;
   }
 
-#if 1
-  __m128 mmScale = _mm_set_ps(0, Scale.z, Scale.y, Scale.x);
-  __m128 mmOffset = _mm_set_ps(0, Offset.z, Offset.y, Offset.x);
+  BufferVertsDirect(Dest->Verts + Dest->At,
+                    Dest->Normals + Dest->At,
+                    Dest->Colors + Dest->At,
+                    NumVerts,
+                    VertsPositions, Normals, VertColors,
+                    Offset, Scale);
 
-  Assert(NumVerts % 3 == 0);
-
-  memcpy( &Dest->Normals[Dest->At],  Normals,    sizeof(*Normals)*NumVerts );
-  memcpy( &Dest->Colors[Dest->At],   VertColors, sizeof(*VertColors)*NumVerts );
-
-
-  for ( u32 VertIndex = 0;
-        VertIndex < NumVerts;
-        VertIndex += 3 )
-  {
-    v3 VertSrc0 = VertsPositions[VertIndex + 0];
-    v3 VertSrc1 = VertsPositions[VertIndex + 1];
-    v3 VertSrc2 = VertsPositions[VertIndex + 2];
-
-    f32_reg Vert0;
-    f32_reg Vert1;
-    f32_reg Vert2;
-
-    Vert0.Sse = _mm_set_ps(0, VertSrc0.z, VertSrc0.y, VertSrc0.x);
-    Vert1.Sse = _mm_set_ps(0, VertSrc1.z, VertSrc1.y, VertSrc1.x);
-    Vert2.Sse = _mm_set_ps(0, VertSrc2.z, VertSrc2.y, VertSrc2.x);
-
-    Vert0.Sse = _mm_add_ps( _mm_mul_ps(Vert0.Sse, mmScale), mmOffset);
-    Vert1.Sse = _mm_add_ps( _mm_mul_ps(Vert1.Sse, mmScale), mmOffset);
-    Vert2.Sse = _mm_add_ps( _mm_mul_ps(Vert2.Sse, mmScale), mmOffset);
-
-    v3 Result0 = {{ Vert0.F[0], Vert0.F[1], Vert0.F[2] }};
-    v3 Result1 = {{ Vert1.F[0], Vert1.F[1], Vert1.F[2] }};
-    v3 Result2 = {{ Vert2.F[0], Vert2.F[1], Vert2.F[2] }};
-
-    Dest->Verts[Dest->At + 0] = Result0;
-    Dest->Verts[Dest->At + 1] = Result1;
-    Dest->Verts[Dest->At + 2] = Result2;
-
-    Dest->At += 3;
-  }
-
-#else
-
-  // Left this here for futrue benchmarking.  The memcpy path is fastest by ~2x
-#if 1
-  for ( u32 VertIndex = 0;
-        VertIndex < NumVerts;
-        ++VertIndex )
-  {
-    Dest->Verts[Dest->At] = VertsPositions[VertIndex]*Scale + Offset;
-    Dest->Normals[Dest->At] = Normals[VertIndex];
-    Dest->Colors[Dest->At] = VertColors[VertIndex];
-    ++Dest->At;
-  }
-#else
-  s32 sizeofData = NumVerts * sizeof(v3);
-  memcpy( &Dest->Verts[Dest->At]  , Positions, sizeof(*Positions)*NumVerts );
-  memcpy( &Dest->Normals[Dest->At], Normals,   sizeof(*Normals)*NumVerts );
-  memcpy( &Dest->Colors[Dest->At] , Colors   , sizeof(*Colors)*NumVerts );
   Dest->At += NumVerts;
-#endif
-
-
-#endif
 
 
   return;
 }
 
-#if 1
 inline void
 BufferVertsChecked(
     untextured_3d_geometry_buffer *Target,
@@ -183,7 +191,6 @@ BufferVertsChecked(
 
   return;
 }
-#endif
 
 inline void
 BufferVerts(

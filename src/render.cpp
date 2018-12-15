@@ -214,6 +214,29 @@ RenderShadowMap(untextured_3d_geometry_buffer *Mesh, graphics *Graphics)
 #endif
 
 void
+RenderWorldToGBuffer(gpu_mapped_element_buffer* GpuBuffer, g_buffer_render_group *RG)
+{
+  TIMED_FUNCTION();
+  glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO.ID);
+  glUseProgram(RG->gBufferShader.ID);
+
+  SetViewport( V2(SCR_WIDTH, SCR_HEIGHT) );
+
+  BindShaderUniforms(&RG->gBufferShader);
+
+  FlushBuffersToCard(GpuBuffer);
+
+  Draw(GpuBuffer->At);
+  GpuBuffer->At = 0;
+
+  glDisableVertexAttribArray(0);
+  glDisableVertexAttribArray(1);
+  glDisableVertexAttribArray(2);
+
+  return;
+}
+
+void
 RenderWorldToGBuffer(untextured_3d_geometry_buffer *Mesh, g_buffer_render_group *RG)
 {
   TIMED_FUNCTION();
@@ -237,6 +260,18 @@ RenderWorldToGBuffer(untextured_3d_geometry_buffer *Mesh, g_buffer_render_group 
   glDisableVertexAttribArray(0);
   glDisableVertexAttribArray(1);
   glDisableVertexAttribArray(2);
+
+  return;
+}
+
+inline void
+RenderGBuffer(gpu_mapped_element_buffer *Buffers, graphics *Graphics)
+{
+  TIMED_FUNCTION();
+
+  RenderWorldToGBuffer(Buffers, Graphics->gBuffer);
+
+  AssertNoGlErrors;
 
   return;
 }
@@ -568,8 +603,8 @@ DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, graphics *Graphics,  aabb Re
 
 inline void
 DEBUG_DrawChunkAABB( untextured_3d_geometry_buffer *Mesh, graphics *Graphics,
-    world_position WorldP, chunk_dimension WorldChunkDim,
-    s32 ColorIndex , r32 Thickness = DEFAULT_LINE_THICKNESS)
+                     world_position WorldP, chunk_dimension WorldChunkDim,
+                     s32 ColorIndex , r32 Thickness = DEFAULT_LINE_THICKNESS)
 {
   v3 MinP = GetRenderP(WorldChunkDim, Canonical_Position(V3(0,0,0), WorldP), Graphics->Camera);
   v3 MaxP = GetRenderP(WorldChunkDim, Canonical_Position(WorldChunkDim, WorldP), Graphics->Camera);
@@ -580,11 +615,11 @@ DEBUG_DrawChunkAABB( untextured_3d_geometry_buffer *Mesh, graphics *Graphics,
 
 inline void
 DEBUG_DrawChunkAABB(untextured_3d_geometry_buffer *Mesh, graphics *Graphics,
-    world_chunk *chunk, chunk_dimension WorldChunkDim, s32
-    ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS)
+                    world_chunk *Chunk, chunk_dimension WorldChunkDim, s32
+                    ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS)
 {
-  v3 MinP = GetRenderP(WorldChunkDim, Canonical_Position(V3(0,0,0), chunk->WorldP), Graphics->Camera);
-  v3 MaxP = GetRenderP(WorldChunkDim, Canonical_Position(WorldChunkDim, chunk->WorldP), Graphics->Camera);
+  v3 MinP = GetRenderP(WorldChunkDim, Canonical_Position(V3(0,0,0), Chunk->WorldP), Graphics->Camera);
+  v3 MaxP = GetRenderP(WorldChunkDim, Canonical_Position(WorldChunkDim, Chunk->WorldP), Graphics->Camera);
 
   DEBUG_DrawAABB(Mesh, Graphics, MinP, MaxP, ColorIndex, Thickness);
   return;
@@ -753,6 +788,49 @@ ClearFramebuffers(graphics *Graphics)
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  return;
+}
+
+void
+BufferChunkMesh(
+    gpu_mapped_element_buffer     *Dest,
+    untextured_3d_geometry_buffer *Src,
+    chunk_dimension WorldChunkDim,
+    world_position WorldP,
+    graphics *Graphics,
+    r32 Scale = 1.0f,
+    v3 Offset = V3(0)
+  )
+{
+  /* TIMED_FUNCTION(); */
+
+  if (!Src || Src->At == 0)
+    return;
+
+#if DEBUG_CHUNK_AABB
+  DEBUG_DrawChunkAABB(Dest, Graphics, WorldP, WorldChunkDim, PINK, 0.1f);
+#endif
+
+  v3 ModelBasisP =
+    GetRenderP( WorldChunkDim, Canonical_Position(Offset, WorldP), Graphics->Camera);
+
+  if (Dest->At + Src->At <= Dest->ElementCount)
+  {
+
+    BufferVertsDirect(Dest->VertexMemory + Dest->At,
+                      Dest->NormalMemory + Dest->At,
+                      Dest->ColorMemory + Dest->At,
+                      Src->At,
+                      Src->Verts, Src->Normals, Src->Colors,
+                      ModelBasisP, V3(Scale));
+
+    Dest->At += Src->At;
+  }
+  else
+  {
+    Error("Ran out of memory on gpu_mapped_element_buffer");
+  }
 
   return;
 }
@@ -1762,7 +1840,7 @@ BufferEntity(
 
 void
 BufferWorldChunk(
-    world *World,
+    untextured_3d_geometry_buffer *Dest,
     world_chunk *Chunk,
     graphics *Graphics
   )
@@ -1770,15 +1848,41 @@ BufferWorldChunk(
   chunk_data *ChunkData = Chunk->Data;
   if (ChunkData->Flags == Chunk_Complete)
   {
-    BufferChunkMesh( &World->Mesh, Chunk->Mesh, World->ChunkDim, Chunk->WorldP, Graphics);
+    BufferChunkMesh( Dest, Chunk->Mesh, WORLD_CHUNK_DIM, Chunk->WorldP, Graphics);
   }
   else if (IsSet(ChunkData, Chunk_Queued))
   {
-    DEBUG_DrawChunkAABB(&World->Mesh, Graphics, Chunk, WORLD_CHUNK_DIM, TEAL, 0.1f);
+    // Note(Jesse): This is really slow so use judiciously
+    /* DEBUG_DrawChunkAABB(&World->Mesh, Graphics, Chunk, WORLD_CHUNK_DIM, TEAL, 0.1f); */
   }
   else
   {
-    DEBUG_DrawChunkAABB(&World->Mesh, Graphics, Chunk, WORLD_CHUNK_DIM, RED, 0.1f);
+    /* DEBUG_DrawChunkAABB(&World->Mesh, Graphics, Chunk, WORLD_CHUNK_DIM, RED, 0.1f); */
+  }
+
+  return;
+}
+
+void
+BufferWorldChunk(
+    gpu_mapped_element_buffer *Dest,
+    world_chunk *Chunk,
+    graphics *Graphics
+  )
+{
+  chunk_data *ChunkData = Chunk->Data;
+  if (ChunkData->Flags == Chunk_Complete)
+  {
+    BufferChunkMesh( Dest, Chunk->Mesh, WORLD_CHUNK_DIM, Chunk->WorldP, Graphics);
+  }
+  else if (IsSet(ChunkData, Chunk_Queued))
+  {
+    // Note(Jesse): This is really slow so use judiciously
+    /* DEBUG_DrawChunkAABB(&World->Mesh, Graphics, Chunk, WORLD_CHUNK_DIM, TEAL, 0.1f); */
+  }
+  else
+  {
+    /* DEBUG_DrawChunkAABB(&World->Mesh, Graphics, Chunk, WORLD_CHUNK_DIM, RED, 0.1f); */
   }
 
   return;
@@ -1786,8 +1890,8 @@ BufferWorldChunk(
 
 inline void QueueChunkForInit(game_state *GameState, work_queue *Queue, world_chunk *Chunk);
 
-void
-BufferWorld(game_state* GameState, world *World, graphics *Graphics, world_position VisibleRadius)
+template <typename T>void
+BufferWorld(game_state* GameState, T* Dest, world *World, graphics *Graphics, world_position VisibleRadius)
 {
   TIMED_FUNCTION();
 
@@ -1805,7 +1909,7 @@ BufferWorld(game_state* GameState, world *World, graphics *Graphics, world_posit
 
         if (Chunk)
         {
-          BufferWorldChunk(World, Chunk, Graphics);
+          BufferWorldChunk(Dest, Chunk, Graphics);
         }
         else
         {

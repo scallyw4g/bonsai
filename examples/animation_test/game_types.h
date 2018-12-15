@@ -24,5 +24,6 @@ struct game_state
 
   entity *EntityTable[TOTAL_ENTITY_COUNT];
   entity *Player;
+  untextured_3d_geometry_buffer Mesh;
 };
 

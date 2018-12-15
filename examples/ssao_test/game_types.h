@@ -24,6 +24,8 @@ struct game_state
   event_queue EventQueue;
   mesh_freelist MeshFreelist;
 
+  untextured_3d_geometry_buffer Mesh;
+
   entity *EntityTable[TOTAL_ENTITY_COUNT];
 
   entity *Players[MAX_CLIENTS];

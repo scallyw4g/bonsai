@@ -145,6 +145,20 @@ struct shadow_render_group
   texture *ShadowMap;
 };
 
+struct gpu_mapped_element_buffer
+{
+  u32 VertexHandle;
+  u32 NormalHandle;
+  u32 ColorHandle;
+
+  v3 *VertexMemory;
+  v3 *NormalMemory;
+  v4 *ColorMemory;
+
+  u32 ElementCount;
+  u32 At;
+};
+
 struct untextured_3d_geometry_buffer
 {
   v3 *Verts;

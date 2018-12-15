@@ -986,7 +986,7 @@ GetPlayer(entity **Players, client_state *OurClient)
 }
 
 inline void
-SimulateAndRenderParticleSystems(game_state *GameState, graphics *Graphics, r32 Dt)
+SimulateAndRenderParticleSystems(entity** EntityTable, untextured_3d_geometry_buffer* GeoDest, graphics *Graphics, r32 Dt)
 {
   TIMED_FUNCTION();
 
@@ -994,8 +994,8 @@ SimulateAndRenderParticleSystems(game_state *GameState, graphics *Graphics, r32 
         EntityIndex < TOTAL_ENTITY_COUNT;
         ++EntityIndex )
   {
-    entity *Entity = GameState->EntityTable[EntityIndex];
-    SimulateAndRenderParticleSystem(Graphics, &GameState->World->Mesh, Entity, Entity->Physics.Delta, Dt);
+    entity *Entity = EntityTable[EntityIndex];
+    SimulateAndRenderParticleSystem(Graphics, GeoDest, Entity, Entity->Physics.Delta, Dt);
   }
 
   return;

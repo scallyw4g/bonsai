@@ -13,6 +13,7 @@
 #include <shader.cpp>
 
 #include <texture.cpp>
+#include <gpu_mapped_buffer.cpp>
 #include <render.cpp>
 
 
@@ -399,9 +400,6 @@ AllocateAndInitWorld( game_state *GameState,
   World->VisibleRegion = VisibleRegion;
 
   World->Center = Center;
-
-  u32 BufferVertices = (u32)Megabytes(12);
-  AllocateMesh(&World->Mesh, BufferVertices, GameState->Memory);
 
   return World;
 }
