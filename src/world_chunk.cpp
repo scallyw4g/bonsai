@@ -129,7 +129,7 @@ FreeWorldChunk(world *World, world_chunk *Chunk , mesh_freelist* MeshFreelist, m
 {
   TIMED_FUNCTION();
 
-  if ( Chunk->Data->Flags == Chunk_Complete || Chunk->Data->Flags == Chunk_Collected  )
+  if ( Chunk->Data->Flags == Chunk_MeshComplete || Chunk->Data->Flags == Chunk_Collected  )
   {
     if (Chunk->Mesh)
     {
@@ -198,7 +198,7 @@ CollectUnusedChunks(world *World, mesh_freelist* MeshFreelist, memory_arena* Mem
       {
 
 #if 1
-        if ( (*Chunk)->Data->Flags == Chunk_Complete || (*Chunk)->Data->Flags == Chunk_Collected  )
+        if ( (*Chunk)->Data->Flags == Chunk_MeshComplete || (*Chunk)->Data->Flags == Chunk_Collected  )
         {
           /* ++ChunksCollected; */
           u32 ChunkHash = GetWorldChunkHash(ChunkP);
@@ -672,7 +672,7 @@ InitializeWorldChunkPerlin(perlin_noise *Noise,
   BuildWorldChunkMesh(SyntheticChunk, SynChunkDim, DestChunk,  WORLD_CHUNK_DIM, DestGeometry);
   DestChunk->Mesh = DestGeometry;
 
-  DestChunk->Data->Flags = Chunk_Complete;
+  DestChunk->Data->Flags = Chunk_MeshComplete;
 
   return;
 }
@@ -717,7 +717,7 @@ InitializeWorldChunkPlane(world_chunk *DestChunk, untextured_3d_geometry_buffer*
 
   BuildWorldChunkMesh(SyntheticChunk, SynChunkDim, DestChunk, WORLD_CHUNK_DIM, DestGeometry);
 
-  DestChunk->Data->Flags = Chunk_Complete;
+  DestChunk->Data->Flags = Chunk_MeshComplete;
 
   return;
 }
@@ -784,7 +784,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread,
     BuildWorldChunkMesh(SyntheticChunk, SynChunkDim, DestChunk, WORLD_CHUNK_DIM, DestChunk->Mesh);
   }
 
-  DestChunk->Data->Flags = Chunk_Complete;
+  DestChunk->Data->Flags = Chunk_MeshComplete;
 
   return;
 }
@@ -816,7 +816,7 @@ InitializeWorldChunkEmpty(world_chunk *DestChunk)
   }
 #endif
 
-  DestChunk->Data->Flags = Chunk_Complete;
+  DestChunk->Data->Flags = Chunk_MeshComplete;
 
   return;
 }

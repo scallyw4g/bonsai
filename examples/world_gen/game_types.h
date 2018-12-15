@@ -26,7 +26,8 @@ struct game_state
   entity *EntityTable[TOTAL_ENTITY_COUNT];
   entity *Player;
 
-  gpu_mapped_element_buffer GpuBuffer;
+  gpu_mapped_element_buffer GpuBuffers[2];
+  u32 GpuBufferWriteIndex;
 
 #if BONSAI_INTERNAL
   get_debug_state_proc GetDebugState;

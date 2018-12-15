@@ -1830,7 +1830,7 @@ BufferWorldChunk(
   )
 {
   chunk_data *ChunkData = Chunk->Data;
-  if (ChunkData->Flags == Chunk_Complete)
+  if (ChunkData->Flags == Chunk_MeshComplete)
   {
     BufferChunkMesh( Dest, Chunk->Mesh, WORLD_CHUNK_DIM, Chunk->WorldP, Graphics);
   }
@@ -1855,7 +1855,7 @@ BufferWorldChunk(
   )
 {
   chunk_data *ChunkData = Chunk->Data;
-  if (ChunkData->Flags == Chunk_Complete)
+  if (ChunkData->Flags == Chunk_MeshComplete)
   {
     BufferChunkMesh( Dest, Chunk->Mesh, WORLD_CHUNK_DIM, Chunk->WorldP, Graphics);
   }

@@ -94,7 +94,10 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   ao_render_group       *AoGroup       = Graphics->AoGroup;
   camera                *Camera        = Graphics->Camera;
 
-  MapGpuElementBuffer(&GameState->GpuBuffer);
+  GameState->GpuBufferWriteIndex = (GameState->GpuBufferWriteIndex + 1) % 2;
+  gpu_mapped_element_buffer* GpuBuffer = GameState->GpuBuffers + GameState->GpuBufferWriteIndex;
+
+  MapGpuElementBuffer(GpuBuffer);
 
   entity *Player = GameState->Player;
   ClearFramebuffers(Graphics);
@@ -146,12 +149,12 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     GetViewMatrix(WorldChunkDim, Camera);
 
   TIMED_BLOCK("BufferMeshes");
-    BufferWorld(GameState, &GameState->GpuBuffer, World, Graphics, VISIBLE_REGION_RADIUS);
-    BufferEntities( GameState->EntityTable, &GameState->GpuBuffer, Graphics, World, Plat->dt);
+    BufferWorld(GameState, GpuBuffer, World, Graphics, VISIBLE_REGION_RADIUS);
+    BufferEntities( GameState->EntityTable, GpuBuffer, Graphics, World, Plat->dt);
   END_BLOCK("BufferMeshes");
 
   TIMED_BLOCK("RenderToScreen");
-    RenderGBuffer(&GameState->GpuBuffer, Graphics);
+    RenderGBuffer(GpuBuffer, Graphics);
     RenderAoTexture(AoGroup);
     DrawGBufferToFullscreenQuad(Plat, Graphics);
   END_BLOCK("RenderToScreen");
@@ -201,7 +204,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   GameState->Player = GetFreeEntity(GameState);
   SpawnPlayer(GameState, GameState->Player, Canonical_Position(Voxel_Position(0), WorldCenter));
 
-  AllocateGpuElementBuffer(&GameState->GpuBuffer, (u32)Megabytes(32));
+  AllocateGpuElementBuffer(GameState->GpuBuffers + 0, (u32)Megabytes(32));
+  AllocateGpuElementBuffer(GameState->GpuBuffers + 1, (u32)Megabytes(32));
 
   return GameState;
 }

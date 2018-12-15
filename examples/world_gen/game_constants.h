@@ -1,5 +1,5 @@
-#define CD_X 16
-#define CD_Y 16
+#define CD_X 32
+#define CD_Y 32
 #define CD_Z 16
 
 // Visible Region XYZ - Must be > (3,3,3)

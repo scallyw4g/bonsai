@@ -31,9 +31,10 @@ enum chunk_flag
   Chunk_Initialized     = 1 << 1,
 
   Chunk_Queued          = 1 << 2,
-  Chunk_Complete        = 1 << 3,
-  Chunk_Garbage         = 1 << 4,
-  Chunk_Collected       = 1 << 5,
+  Chunk_MeshComplete    = 1 << 3,
+  Chunk_GpuMeshComplete = 1 << 4,
+  Chunk_Garbage         = 1 << 5,
+  Chunk_Collected       = 1 << 6,
 
 };
 
@@ -354,7 +355,7 @@ struct world_chunk
 {
   chunk_data* Data;
   untextured_3d_geometry_buffer* Mesh;
-  entity_list* Occupiers;
+  gpu_mapped_element_buffer* GpuMesh;
 
   world_position WorldP;
   v3 Normal;

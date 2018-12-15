@@ -19,7 +19,7 @@ IsFilledInChunk( chunk_data *Chunk, voxel_position VoxelP, chunk_dimension Dim)
 {
   b32 isFilled = True;
 
-  if (Chunk && ( IsSet(Chunk, Chunk_Initialized) || IsSet(Chunk, Chunk_Complete) ))
+  if (Chunk && ( IsSet(Chunk, Chunk_Initialized) || IsSet(Chunk, Chunk_MeshComplete) ))
   {
     s32 i = GetIndex(VoxelP, Dim);
 
