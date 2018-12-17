@@ -77,17 +77,18 @@ struct thread
 
 struct work_queue
 {
-  semaphore Semaphore;
   volatile u32 EnqueueIndex;
   volatile u32 DequeueIndex;
   work_queue_entry *Entries;
+  semaphore* GlobalQueueSemaphore;
 };
 
 struct thread_startup_params
 {
   bonsai_worker_thread_init_callback InitProc;
   game_state* GameState;
-  work_queue* Queue;
+  work_queue* LowPriority;
+  work_queue* HighPriority;
   thread Self;
 };
 
@@ -172,7 +173,10 @@ struct input
 
 struct platform
 {
-  work_queue Queue;
+  work_queue LowPriority;
+  work_queue HighPriority;
+  semaphore QueueSemaphore;
+
   thread_startup_params *Threads;
 
   network_connection Network = { Socket_NonBlocking, SERVER_IP };

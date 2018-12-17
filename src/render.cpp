@@ -1784,7 +1784,6 @@ BufferWorldChunk(
     untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(Dest, Chunk->Mesh->At);
     v3 ModelBasisP = GetRenderP( WORLD_CHUNK_DIM, Canonical_Position(V3(0), Chunk->WorldP), Graphics->Camera);
 
-
     work_queue_entry Entry = {};
     Entry.Type = WorkEntryType_CopyToGpuBuffer;
     Entry.GpuCopyParams.Src = Chunk->Mesh;
@@ -1807,7 +1806,8 @@ BufferWorldChunk(
 }
 #endif
 
-inline void QueueChunkForInit(game_state *GameState, work_queue *Queue, world_chunk *Chunk);
+inline void
+QueueChunkForInit(game_state *GameState, work_queue *Queue, world_chunk *Chunk);
 
 void
 BufferWorld(game_state* GameState, untextured_3d_geometry_buffer* Dest, world *World, graphics *Graphics, world_position VisibleRadius)
@@ -1828,12 +1828,12 @@ BufferWorld(game_state* GameState, untextured_3d_geometry_buffer* Dest, world *W
 
         if (Chunk)
         {
-          BufferWorldChunk(Dest, Chunk, Graphics, &GameState->Plat->Queue);
+          BufferWorldChunk(Dest, Chunk, Graphics, &GameState->Plat->HighPriority);
         }
         else
         {
           Chunk = GetWorldChunkFor(GameState->Memory, World, P);
-          QueueChunkForInit(GameState, &GameState->Plat->Queue, Chunk);
+          QueueChunkForInit(GameState, &GameState->Plat->LowPriority, Chunk);
         }
       }
     }

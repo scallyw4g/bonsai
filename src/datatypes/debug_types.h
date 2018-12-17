@@ -251,7 +251,6 @@ struct debug_state
   debug_get_thread_local_state              GetThreadLocalState;
 };
 
-
 struct debug_draw_call
 {
   const char * Caller;

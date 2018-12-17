@@ -98,7 +98,7 @@ void main()
   }
 #endif
 
-#if USE_AO_SHADER
+#if USE_SSAO_SHADER
   vec2 texelSize = 1.0 / vec2(textureSize(Ssao, 0));
   float AccumAO = 0.0;
 

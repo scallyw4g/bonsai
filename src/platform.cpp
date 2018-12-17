@@ -14,13 +14,15 @@
 #include <unix_platform.cpp>
 #endif
 
+
 global_variable s64 LastGameLibTime;
 global_variable bonsai_worker_thread_callback BONSAI_API_WORKER_THREAD_CALLBACK_NAME;
 
+#include <work_queue.cpp>
 
 
 #include <sys/stat.h>
-b32
+function b32
 LibIsNew(const char *LibPath, s64 *LastLibTime)
 {
   b32 Result = False;
@@ -42,7 +44,7 @@ LibIsNew(const char *LibPath, s64 *LastLibTime)
   return Result;
 }
 
-thread_local_state
+function thread_local_state
 DefaultThreadLocalState()
 {
   thread_local_state Thread = {};
@@ -50,26 +52,50 @@ DefaultThreadLocalState()
   Thread.TempMemory = PlatformAllocateArena();
   Thread.PermMemory = PlatformAllocateArena();
 
-  DEBUG_REGISTER_ARENA(Thread.TempMemory);
+  // NOTE(Jesse): As it stands the debug system doesn't do any locking when
+  // constructing the debug arena stats, so we can't ever free memory allocated
+  // on debug registered arenas on threads outside the main one.
+  //
+  /* DEBUG_REGISTER_ARENA(Thread.TempMemory); */
+
   DEBUG_REGISTER_ARENA(Thread.PermMemory);
 
   return Thread;
 }
 
-THREAD_MAIN_RETURN
+function void
+DrainQueue(work_queue* Queue, thread_local_state* Thread)
+{
+  for (;;)
+  {
+    u32 DequeueIndex = Queue->DequeueIndex;
+    if ( DequeueIndex == Queue->EnqueueIndex)
+    {
+      break;
+    }
+    else
+    {
+      b32 Exchanged = AtomicCompareExchange(&Queue->DequeueIndex,
+                                        (DequeueIndex+1)% WORK_QUEUE_SIZE,
+                                        DequeueIndex);
+      if ( Exchanged )
+      {
+        work_queue_entry* Entry = Queue->Entries + DequeueIndex;
+        BONSAI_API_WORKER_THREAD_CALLBACK_NAME(Entry, Thread);
+        Entry->Type = WorkEntryType_None;
+      }
+    }
+  }
+}
+
+function THREAD_MAIN_RETURN
 ThreadMain(void *Input)
 {
   thread_startup_params *ThreadParams = (thread_startup_params *)Input;
   DEBUG_REGISTER_THREAD(ThreadParams->Self.ThreadIndex);
 
   thread_local_state Thread = DefaultThreadLocalState();
-
-  if (ThreadParams->InitProc)
-  {
-    ThreadParams->InitProc(&Thread, ThreadParams->GameState);
-  }
-
-  work_queue *Queue = ThreadParams->Queue;
+  if (ThreadParams->InitProc) { ThreadParams->InitProc(&Thread, ThreadParams->GameState); }
 
   for (;;)
   {
@@ -82,20 +108,33 @@ ThreadMain(void *Input)
       AtomicDecrement(&WorkerThreadsWaiting);
     }
 
-    ThreadSleep( &Queue->Semaphore );
+    // This is a pointer to a single semaphore for all queues, so only sleeping
+    // on one is sufficient, and equal to sleeping on all, because they all
+    // point to the same semaphore
+    ThreadSleep( ThreadParams->HighPriority->GlobalQueueSemaphore );
 
-    b32 Exchanged = False;
-    while (!Exchanged)
+    DrainQueue(ThreadParams->HighPriority, &Thread);
+
+    work_queue* LowPriority = ThreadParams->LowPriority;
+    for (;;)
     {
-      u32 DequeueIndex = Queue->DequeueIndex;
-      Exchanged = AtomicCompareExchange(&Queue->DequeueIndex,
-                                        (DequeueIndex+1)% WORK_QUEUE_SIZE,
-                                        DequeueIndex);
-      if ( Exchanged )
+      u32 DequeueIndex = LowPriority->DequeueIndex;
+      if ( DequeueIndex == LowPriority->EnqueueIndex ||
+           !QueueIsEmpty(ThreadParams->HighPriority) )
       {
-        work_queue_entry* Entry = Queue->Entries + DequeueIndex;
-        BONSAI_API_WORKER_THREAD_CALLBACK_NAME(Entry, &Thread);
-        Entry->Type = WorkEntryType_None;
+        break;
+      }
+      else
+      {
+        b32 Exchanged = AtomicCompareExchange(&LowPriority->DequeueIndex,
+                                          (DequeueIndex+1)% WORK_QUEUE_SIZE,
+                                          DequeueIndex);
+        if ( Exchanged )
+        {
+          work_queue_entry* Entry = LowPriority->Entries + DequeueIndex;
+          BONSAI_API_WORKER_THREAD_CALLBACK_NAME(Entry, &Thread);
+          Entry->Type = WorkEntryType_None;
+        }
       }
     }
 
@@ -104,7 +143,7 @@ ThreadMain(void *Input)
   }
 }
 
-b32
+function b32
 StrMatch(char *Str1, char *Str2)
 {
   char *Haystack = Str1;
@@ -120,7 +159,7 @@ StrMatch(char *Str1, char *Str2)
   return Result;
 }
 
-b32
+function b32
 StrStr(char *Str1, char *Str2)
 {
   b32 Result = StrMatch(Str1, Str2);
@@ -135,7 +174,7 @@ StrStr(char *Str1, char *Str2)
 
 #define DefGlProc(ProcType, ProcName) \
   ProcType ProcName = (ProcType)bonsaiGlGetProcAddress(#ProcName); Assert(ProcName)
-void
+function void
 InitializeOpenGlExtensions(os *Os)
 {
   Info("Initializing OpenGL Extensions");
@@ -247,10 +286,9 @@ InitializeOpenGlExtensions(os *Os)
   return;
 }
 
-inline void
+function void
 PlatformLaunchWorkerThreads(platform *Plat, bonsai_worker_thread_init_callback WorkerThreadInit, game_state* GameState)
 {
-  work_queue *Queue = &Plat->Queue;
   u32 WorkerThreadCount = GetWorkerThreadCount();
 
   for (u32 ThreadIndex = 0;
@@ -259,7 +297,8 @@ PlatformLaunchWorkerThreads(platform *Plat, bonsai_worker_thread_init_callback W
   {
     thread_startup_params *Params = &Plat->Threads[ThreadIndex];
     Params->Self.ThreadIndex = ThreadIndex + 1;
-    Params->Queue = Queue;
+    Params->HighPriority = &Plat->HighPriority;
+    Params->LowPriority = &Plat->LowPriority;
     Params->InitProc = WorkerThreadInit;
     Params->GameState = GameState;
 
@@ -269,7 +308,19 @@ PlatformLaunchWorkerThreads(platform *Plat, bonsai_worker_thread_init_callback W
   return;
 }
 
-void
+function void
+InitQueue(work_queue* Queue, memory_arena* Memory, semaphore* Semaphore)
+{
+  Queue->EnqueueIndex = 0;
+  Queue->DequeueIndex = 0;
+
+  Queue->Entries = Allocate(work_queue_entry, Memory, WORK_QUEUE_SIZE);
+  Queue->GlobalQueueSemaphore = Semaphore;
+
+  return;
+}
+
+function void
 PlatformInit(platform *Plat, memory_arena *Memory)
 {
   Plat->Memory = Memory;
@@ -278,22 +329,21 @@ PlatformInit(platform *Plat, memory_arena *Memory)
   u32 WorkerThreadCount = GetWorkerThreadCount();
   Info("Detected %d Logical cores, creating %d threads", LogicalCoreCount, WorkerThreadCount);
 
-  Plat->Queue.EnqueueIndex = 0;
-  Plat->Queue.DequeueIndex = 0;
+  Plat->QueueSemaphore = CreateSemaphore();
 
-  Plat->Queue.Entries = Allocate(work_queue_entry,  Plat->Memory, WORK_QUEUE_SIZE);
+  InitQueue(&Plat->LowPriority, Plat->Memory, &Plat->QueueSemaphore);
+  InitQueue(&Plat->HighPriority, Plat->Memory, &Plat->QueueSemaphore);
+
   Plat->Threads = Allocate(thread_startup_params,  Plat->Memory, WorkerThreadCount);
-
-  work_queue *Queue = &Plat->Queue;
-  Queue->Semaphore = CreateSemaphore();
 
   return;
 }
 
+#if 0
 /*
  *  Poor mans vsync
  */
-void
+function void
 WaitForFrameTime(r64 FrameStartMs, float FPS)
 {
   TIMED_FUNCTION();
@@ -307,8 +357,9 @@ WaitForFrameTime(r64 FrameStartMs, float FPS)
 
   return;
 }
+#endif
 
-inline b32
+function inline b32
 FileExists(const char *Path)
 {
   b32 Result = False;
@@ -322,7 +373,7 @@ FileExists(const char *Path)
   return Result;
 }
 
-b32
+function b32
 SearchForProjectRoot(void)
 {
   b32 Result = False;
@@ -347,7 +398,7 @@ SearchForProjectRoot(void)
   return Result;
 }
 
-b32
+function b32
 CheckShadingLanguageVersion()
 {
   char *OpenGlVersion = (char*)glGetString ( GL_VERSION );
@@ -366,7 +417,7 @@ CheckShadingLanguageVersion()
   return Result;
 }
 
-void
+function void
 ClearWasPressedFlags(input_event *Input)
 {
   TIMED_FUNCTION();
@@ -387,7 +438,7 @@ ClearWasPressedFlags(input_event *Input)
   }
 }
 
-void
+function void
 BindHotkeysToInput(hotkeys *Hotkeys, input *Input)
 {
 
@@ -420,7 +471,7 @@ BindHotkeysToInput(hotkeys *Hotkeys, input *Input)
   return;
 }
 
-server_state*
+function server_state*
 ServerInit(memory_arena* Memory)
 {
   server_state* ServerState = Allocate(server_state, Memory, 1);

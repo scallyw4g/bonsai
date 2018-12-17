@@ -160,6 +160,22 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     BufferEntities( GameState->EntityTable, &GpuMap->Buffer, Graphics, World, Plat->dt);
   END_BLOCK("BufferMeshes");
 
+#if 0
+  thread_local_state Thread = {};
+
+  Thread.PermMemory = GameState->Memory;
+  Thread.TempMemory = TranArena;
+
+  Thread.MeshFreelist = &GameState->MeshFreelist;
+  Thread.Noise = &GameState->Noise;
+
+  DrainQueue(&Plat->HighPriority, &Thread);
+#endif
+
+  TIMED_BLOCK("Wait for worker threads");
+    for (;;) { if (QueueIsEmpty(&Plat->HighPriority)) { break; } }
+  END_BLOCK("Wait for worker threads");
+
   TIMED_BLOCK("RenderToScreen");
     RenderGBuffer(GpuMap, Graphics);
     RenderAoTexture(AoGroup);
@@ -211,8 +227,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   GameState->Player = GetFreeEntity(GameState);
   SpawnPlayer(GameState, GameState->Player, Canonical_Position(Voxel_Position(0), WorldCenter));
 
-  AllocateGpuElementBuffer(GameState->GpuBuffers + 0, (u32)Megabytes(32));
-  AllocateGpuElementBuffer(GameState->GpuBuffers + 1, (u32)Megabytes(32));
+  AllocateGpuElementBuffer(GameState->GpuBuffers + 0, (u32)Megabytes(64));
+  AllocateGpuElementBuffer(GameState->GpuBuffers + 1, (u32)Megabytes(64));
 
   return GameState;
 }

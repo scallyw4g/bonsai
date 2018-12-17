@@ -227,12 +227,15 @@ memory_arena_stats
 GetTotalMemoryArenaStats()
 {
   TIMED_FUNCTION();
+
   memory_arena_stats TotalStats = {};
+  debug_state *DebugState = GetDebugState();
+
   for ( u32 Index = 0;
         Index < REGISTERED_MEMORY_ARENA_COUNT;
         ++Index )
   {
-    registered_memory_arena *Current = &GetDebugState()->RegisteredMemoryArenas[Index];
+    registered_memory_arena *Current = DebugState->RegisteredMemoryArenas + Index;
     if (!Current->Arena) continue;
 
     memory_arena_stats CurrentStats = GetMemoryArenaStats(Current->Arena);

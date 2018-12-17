@@ -201,7 +201,7 @@ PlatformAllocateArena(umm RequestedBytes /* = Megabytes(1) */, b32 MemProtect /*
 void
 PlatformUnprotectArena(memory_arena *Arena)
 {
-  TIMED_FUNCTION();
+  /* TIMED_FUNCTION(); */
   umm Size = Arena->End - Arena->Start;
   s32 Err = mprotect(Arena->Start, Size, PROT_READ|PROT_WRITE);
   if (Err == -1)

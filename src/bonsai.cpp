@@ -14,6 +14,7 @@
 
 #include <texture.cpp>
 #include <gpu_mapped_buffer.cpp>
+#include <work_queue.cpp>
 
 
 void
@@ -24,11 +25,11 @@ PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
 
   *Dest = *Entry;
 
-  WriteBarrier;
+  FullBarrier;
 
   Queue->EnqueueIndex = (Queue->EnqueueIndex+1) % WORK_QUEUE_SIZE;
 
-  WakeThread( &Queue->Semaphore );
+  WakeThread( Queue->GlobalQueueSemaphore );
 
   return;
 }

@@ -1,11 +1,11 @@
 #define CD_X 32
 #define CD_Y 32
-#define CD_Z 16
+#define CD_Z 32
 
 // Visible Region XYZ - Must be > (3,3,3)
-#define VR_X 16
-#define VR_Y 16
-#define VR_Z 16
+#define VR_X 32
+#define VR_Y 32
+#define VR_Z 32
 
 global_variable chunk_dimension WORLD_CHUNK_DIM = Chunk_Dimension(CD_X,CD_Y,CD_Z);
 

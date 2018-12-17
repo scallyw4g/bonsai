@@ -174,14 +174,12 @@ GetWorldChunk( world *World, world_position P )
 function void
 CollectUnusedChunks(world *World, mesh_freelist* MeshFreelist, memory_arena* Memory)
 {
+  TIMED_FUNCTION();
   world_chunk ** WorldHash = World->ChunkHash;
 
   world_position CenterP = World->Center;
   world_position Min = CenterP - VISIBLE_REGION_RADIUS;
   world_position Max = CenterP + VISIBLE_REGION_RADIUS;
-
-  /* u32 ChunksCollected = 0; */
-  /* u32 ChunksPresentInHashtable = 0; */
 
   for (u32 ChunkIndex = 0;
       ChunkIndex < WORLD_HASH_SIZE;
@@ -191,13 +189,11 @@ CollectUnusedChunks(world *World, mesh_freelist* MeshFreelist, memory_arena* Mem
 
     if (*Chunk)
     {
-      /* ++ChunksPresentInHashtable; */
       world_position ChunkP = (*Chunk)->WorldP;
 
       if ( !(ChunkP >= Min && ChunkP <= Max) )
       {
 
-#if 1
         if ( (*Chunk)->Data->Flags == Chunk_MeshComplete || (*Chunk)->Data->Flags == Chunk_Collected  )
         {
           /* ++ChunksCollected; */
@@ -217,13 +213,11 @@ CollectUnusedChunks(world *World, mesh_freelist* MeshFreelist, memory_arena* Mem
 
           if (Chunk == LastChunkOfSameHashValue)
           {
-            /* Log("Chunk is last, zeroing"); */
             FreeWorldChunk(World, *Chunk, MeshFreelist, Memory);
             *Chunk = 0;
           }
           else
           {
-            /* Log("Chunk is not last, swapping"); */
             FreeWorldChunk(World, *Chunk, MeshFreelist, Memory);
             *Chunk = *LastChunkOfSameHashValue;
             *LastChunkOfSameHashValue = 0;
@@ -235,7 +229,7 @@ CollectUnusedChunks(world *World, mesh_freelist* MeshFreelist, memory_arena* Mem
         {
           SetFlag(*Chunk, Chunk_Garbage);
         }
-#endif
+
       }
     }
   }

@@ -17,6 +17,6 @@ precision highp sampler2DShadow;
 #define u32 unsigned int
 #define s32 int
 
-#define USE_AO_SHADER 1
+#define USE_SSAO_SHADER 1
 #define USE_SHADOW_MAPPING 0
 
