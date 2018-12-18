@@ -1,4 +1,3 @@
-#include <colors.h>
 #include <render_init.cpp>
 
 
@@ -36,16 +35,9 @@ RenderQuad()
 
   glEnableVertexAttribArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, Global_QuadVertexBuffer);
-  glVertexAttribPointer(
-    0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-    3,                  // size
-    GL_FLOAT,           // type
-    GL_FALSE,           // normalized?
-    0,                  // stride
-    (void*)0            // array buffer offset
-  );
+  glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
-  Draw(6); // 2*3 indices starting at 0 -> 2 triangles
+  Draw(6);
 
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glDisableVertexAttribArray(0);
@@ -74,7 +66,7 @@ GetShadowMapMVP(light *GlobalLight)
 void
 DrawTexturedQuad(shader *SimpleTextureShader)
 {
-  r32 Scale = 1.0f;
+  r32 Scale = 0.5f;
 
   glDepthFunc(GL_LEQUAL);
 

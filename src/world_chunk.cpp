@@ -462,7 +462,6 @@ BuildWorldChunkMesh(world_chunk *ReadChunk, chunk_dimension ReadChunkDim,
 
         voxel *Voxel = &WriteChunkData->Voxels[GetIndex(CurrentP, WriteChunkDim)];
         FillColorArray(Voxel->Color, FaceColors, FACE_VERT_COUNT);
-
 #if 0
         for (u32 ColorIndex = 0;
             ColorIndex < FACE_VERT_COUNT;

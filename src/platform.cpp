@@ -447,15 +447,21 @@ BindHotkeysToInput(hotkeys *Hotkeys, input *Input)
   Hotkeys->Debug_ToggleLoopedGamePlayback = Input->F11.WasPressed;
 
   if (Input->F10.WasPressed)
+  {
     Hotkeys->Debug_ToggleProfile = True;
+  }
 
   if (Input->F1.WasPressed)
+  {
     Hotkeys->Debug_NextUiState = True;
+  }
 
   if (Input->F2.WasPressed)
-    Hotkeys->Debug_ToggleGlobalDebugBreak = True;
+  {
+    Hotkeys->Debug_ToggleTriggeredRuntimeBreak = True;
+  }
 
-  Hotkeys->Debug_RedrawEveryPush = Input->F2.WasPressed;
+  /* Hotkeys->Debug_RedrawEveryPush = Input->F2.WasPressed; */
 #endif
 
   Hotkeys->Left = Input->A.IsDown;

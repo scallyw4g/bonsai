@@ -1,4 +1,3 @@
-#include <colors.h>
 
 void
 InitSsaoKernel(v3 *Kernel, s32 Count, random_series *Entropy)

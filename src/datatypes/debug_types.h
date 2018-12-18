@@ -208,6 +208,7 @@ struct debug_state
   b32 Initialized;
   b32 Debug_RedrawEveryPush;
   b32 DebugDoScopeProfiling = True;
+  b32 TriggerRuntimeBreak;
 
   debug_profile_scope FreeScopeSentinel;
   mutex FreeScopeMutex;

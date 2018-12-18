@@ -149,7 +149,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   SimulateEntities(GameState, Plat->dt);
 
-  /* SimulateAndRenderParticleSystems(GameState, Graphics, Plat->dt); */
+  SimulateAndRenderParticleSystems(GameState->EntityTable, &GpuMap->Buffer, Graphics, Plat->dt);
 
   gBuffer->ViewProjection =
     GetProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
@@ -180,6 +180,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     RenderGBuffer(GpuMap, Graphics);
     RenderAoTexture(AoGroup);
     DrawGBufferToFullscreenQuad(Plat, Graphics);
+    /* DrawTexturedQuad(&Graphics->gBuffer->DebugColorTextureShader); */
   END_BLOCK("RenderToScreen");
 
   Graphics->Lights->Count = 0;

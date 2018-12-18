@@ -35,5 +35,3 @@ typedef int64_t  s64;
 typedef uint64_t u64;
 typedef u64      umm;
 typedef double   r64;
-
-debug_global b32 Global_TriggerRuntimeBreak = False;

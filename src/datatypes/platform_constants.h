@@ -100,7 +100,7 @@
 #define OpenGlDebugMessage(...)  printf(YELLOW_TERMINAL " * OpenGl Debug Message" WHITE_TERMINAL " - "); printf(__VA_ARGS__); printf("\n")
 
 #define RuntimeBreak() raise(SIGTRAP)
-#define TriggeredRuntimeBreak() Global_TriggerRuntimeBreak ? RuntimeBreak() : 0 ;
+#define TriggeredRuntimeBreak() GetDebugState()->TriggerRuntimeBreak ? RuntimeBreak() : 0 ;
 
 
 #endif // _MSC_VER

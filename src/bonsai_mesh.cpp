@@ -1,4 +1,3 @@
-#include <colors.h>
 
 inline void
 BufferVertsDirect(
@@ -46,9 +45,9 @@ BufferVertsDirect(
 
 inline void
 BufferVertsDirect(
-    v3 *DestVerts, v3 *DestNormals, v4 *DestColors, 
+    v3 *DestVerts, v3 *DestNormals, v4 *DestColors,
     u32 NumVerts,
-    v3 *SrcVerts, v3 *SrcNormals, v4 *SrcVertColors, 
+    v3 *SrcVerts, v3 *SrcNormals, v4 *SrcVertColors,
     v3 Offset,
     v3 Scale
   )
@@ -62,7 +61,6 @@ BufferVertsDirect(
 
   memcpy( DestNormals,  SrcNormals,    sizeof(*SrcNormals)*NumVerts );
   memcpy( DestColors,   SrcVertColors, sizeof(*SrcVertColors)*NumVerts );
-
 
   for ( u32 VertIndex = 0;
         VertIndex < NumVerts;

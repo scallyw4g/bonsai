@@ -1,6 +1,6 @@
 layout(location = 0) in vec3 vertexPosition_modelspace;
-layout(location = 1) in vec4 vertexColor;
-layout(location = 2) in vec3 vertexNormal_modelspace;
+layout(location = 1) in vec3 vertexNormal_modelspace;
+layout(location = 2) in vec4 vertexColor;
 
 out vec3 vertexP_worldspace;
 out vec3 vertexN_worldspace;

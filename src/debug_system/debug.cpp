@@ -166,9 +166,10 @@ DebugFrameBegin(hotkeys *Hotkeys)
     State->Debug_RedrawEveryPush = !State->Debug_RedrawEveryPush;
   }
 
-  if ( Hotkeys->Debug_ToggleGlobalDebugBreak )
+  if ( Hotkeys->Debug_ToggleTriggeredRuntimeBreak )
   {
-    Global_TriggerRuntimeBreak = !Global_TriggerRuntimeBreak;
+    Hotkeys->Debug_ToggleTriggeredRuntimeBreak = False;
+    State->TriggerRuntimeBreak = !State->TriggerRuntimeBreak;
   }
 
   if ( Hotkeys->Debug_ToggleProfile )
