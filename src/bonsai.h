@@ -350,17 +350,27 @@ struct entity_list
   entity *Next;
 };
 
+#define POINT_BUFFER_SIZE (12)
+struct point_buffer
+{
+  s32 Count;
+  voxel_position Points[POINT_BUFFER_SIZE];
+};
+
 #pragma pack(push, 1)
 struct world_chunk
 {
   chunk_data* Data;
   untextured_3d_geometry_buffer* Mesh;
-  gpu_mapped_element_buffer* GpuMesh;
+  untextured_3d_geometry_buffer* LodMesh;
+  point_buffer* PB;
 
   world_position WorldP;
   v3 Normal;
 
-  u8 Reserved[16];
+  u32 Filled;
+
+  u8 Reserved[4];
 };
 CAssert(sizeof(world_chunk) == 64);
 #pragma pack(pop)

@@ -270,9 +270,9 @@ BuildEntityMesh(chunk_data *Chunk, untextured_3d_geometry_buffer* Mesh, chunk_di
 void
 AllocateMesh(untextured_3d_geometry_buffer *Mesh, u32 NumVerts, memory_arena *Memory)
 {
-  Mesh->Verts   = Allocate(v3, Memory, NumVerts);
-  Mesh->Normals = Allocate(v3, Memory, NumVerts);
-  Mesh->Colors  = Allocate(v4, Memory, NumVerts);
+  Mesh->Verts   = AllocateAlignedProtection(v3, Memory, NumVerts, 64, False);
+  Mesh->Normals = AllocateAlignedProtection(v3, Memory, NumVerts, 64, False);
+  Mesh->Colors  = AllocateAlignedProtection(v4, Memory, NumVerts, 64, False);
 
   Mesh->End = NumVerts;
   Mesh->At = 0;
@@ -304,7 +304,7 @@ AllocateMesh(heap_allocator* Heap, u32 NumVerts)
 untextured_3d_geometry_buffer*
 AllocateMesh(memory_arena* Arena, u32 NumVerts)
 {
-  untextured_3d_geometry_buffer* Result = Allocate(untextured_3d_geometry_buffer, Arena, 1);
+  untextured_3d_geometry_buffer* Result = AllocateAlignedProtection(untextured_3d_geometry_buffer, Arena, 1, 64, False);
   AllocateMesh(Result, NumVerts, Arena);
   return Result;
 }

@@ -359,16 +359,16 @@ OpenAndInitializeWindow( os *Os, platform *Plat, s32 DebugFlags)
 
   Assert(Plat->WindowWidth && Plat->WindowHeight);
 
-  Window win = XCreateWindow(Os->Display, RootWindow,
-      0, 0,
-      Plat->WindowWidth, Plat->WindowHeight,
-      0, VisualInfo->depth, InputOutput, VisualInfo->visual,
-      CWColormap | CWEventMask, &WindowAttribs);
+  window xWindow = XCreateWindow( Os->Display, RootWindow,
+                                  0, 0,
+                                  Plat->WindowWidth, Plat->WindowHeight,
+                                  0, VisualInfo->depth, InputOutput, VisualInfo->visual,
+                                  CWColormap | CWEventMask, &WindowAttribs);
 
-  if (!win) { Error("Unable to Create Window"); return False; }
+  if (!xWindow) { Error("Unable to Create Window"); return False; }
 
-  XMapWindow(Os->Display, win);
-  XStoreName(Os->Display, win, "Bonsai");
+  XMapWindow(Os->Display, xWindow);
+  XStoreName(Os->Display, xWindow, "Bonsai");
 
   const s32 FramebufferAttributes[] = {None};
 
@@ -397,14 +397,14 @@ OpenAndInitializeWindow( os *Os, platform *Plat, s32 DebugFlags)
 
   Assert(Os->Display != None && Os->GlContext);
 
-  glXMakeCurrent(Os->Display, win, Os->GlContext);
+  glXMakeCurrent(Os->Display, xWindow, Os->GlContext);
 
   glDebugMessageCallback(HandleGlDebugMessage, 0);
   glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 
   AssertNoGlErrors;
 
-  Os->Window = win;
+  Os->Window = xWindow;
   return True;
 }
 

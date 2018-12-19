@@ -16,9 +16,13 @@ ChunkIsGarbage(world_chunk* Chunk)
 function world_chunk*
 AllocateWorldChunk(memory_arena *Storage, world_position WorldP, chunk_dimension Dim = WORLD_CHUNK_DIM)
 {
+  u32 MaxLodMeshVerts = POINT_BUFFER_SIZE*3;
+
   world_chunk *Result = AllocateAlignedProtection(world_chunk, Storage, 1, 64, false);
-  Result->Data = AllocateChunk(Storage, Dim);
-  Result->WorldP = WorldP;
+  Result->PB          = AllocateAlignedProtection(point_buffer, Storage, 1, 64, False);
+  Result->LodMesh     = AllocateMesh(Storage, MaxLodMeshVerts);
+  Result->Data        = AllocateChunk(Storage, Dim);
+  Result->WorldP      = WorldP;
 
   return Result;
 }
@@ -138,6 +142,9 @@ FreeWorldChunk(world *World, world_chunk *Chunk , mesh_freelist* MeshFreelist, m
 
     Assert(World->FreeChunkCount < FREELIST_SIZE);
     World->FreeChunks[World->FreeChunkCount++] = Chunk;
+
+    Chunk->PB->Count = 0;
+    Chunk->LodMesh->At = 0;
 
     ZeroChunk(Chunk->Data);
   }
@@ -285,9 +292,12 @@ CopyChunkOffset(world_chunk *Src, voxel_position SrcChunkDim, world_chunk *Dest,
         s32 DestIndex = GetIndex(Voxel_Position(x,y,z), DestChunkDim);
         s32 SynIndex = GetIndex(Voxel_Position(x,y,z) + Offset, SrcChunkDim);
         Dest->Data->Voxels[DestIndex] = Src->Data->Voxels[SynIndex];
+        Dest->Filled += Dest->Data->Voxels[DestIndex].Flags & Voxel_Filled;
+        CAssert(Voxel_Filled == 1);
       }
     }
   }
+
 
   return;
 }

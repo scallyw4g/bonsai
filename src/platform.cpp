@@ -334,7 +334,7 @@ PlatformInit(platform *Plat, memory_arena *Memory)
   InitQueue(&Plat->LowPriority, Plat->Memory, &Plat->QueueSemaphore);
   InitQueue(&Plat->HighPriority, Plat->Memory, &Plat->QueueSemaphore);
 
-  Plat->Threads = Allocate(thread_startup_params,  Plat->Memory, WorkerThreadCount);
+  Plat->Threads = Allocate(thread_startup_params, Plat->Memory, WorkerThreadCount);
 
   return;
 }
@@ -528,7 +528,6 @@ main()
   if (!ShadingLanguageIsRecentEnough) {  return False; }
 
   AssertNoGlErrors;
-
 
   memory_arena *PlatMemory = PlatformAllocateArena();
   memory_arena *GameMemory = PlatformAllocateArena();

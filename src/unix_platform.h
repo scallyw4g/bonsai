@@ -61,12 +61,12 @@ typedef int thread_id;
 typedef sem_t semaphore;
 
 typedef void* shared_lib;
-typedef Window window;
 
 typedef Display* display;
 typedef GLXContext gl_context;
 
 typedef pthread_mutex_t native_mutex;
+typedef Window window;
 
 
 inline void

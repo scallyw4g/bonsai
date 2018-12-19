@@ -66,6 +66,8 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
                                         DestChunk,
                                         Amplititude, StartingZDepth);
 
+        Compute0thLod(DestChunk, WORLD_CHUNK_DIM);
+        BufferLod(DestChunk->LodMesh, DestChunk);
       }
     } break;
 
