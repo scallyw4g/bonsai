@@ -15,7 +15,7 @@ uniform vec3 SsaoKernel[SSAO_KERNEL_SIZE];
 uniform mat4 ViewProjection;
 
 // Tuning
-  float SsaoRadius = 0.85f;
+  float SsaoRadius = 1.0f;
   float DepthThreshold = 0.004f;
 //
 
@@ -29,17 +29,19 @@ void main()
 
   vec3 Noise = texture(SsaoNoiseTexture, UV*SsaoNoiseTile.xy).xyz;
 
-  vec3 Right = normalize(Noise - FragNormal);
-  vec3 Front = cross(FragNormal, Right);
-  mat3 Reorientation = mat3(Right, Front, FragNormal) * SsaoRadius;
+  vec3 Up = FragNormal; // This must be true, because we're trying to reorient a hemisphere along the fragments normal.
+  vec3 Right = cross(Noise - Up, Up);
+  vec3 Front = cross(Up, Right);
+  mat3 Reorientation = mat3(Right, Front, Up) * SsaoRadius;
 
   float AO = 1.0f;
   float OccluderContribution = 1.0f/float(SSAO_KERNEL_SIZE);
 
   // NOTE(Jesse): I was getting some artifacts when at 90deg to a surface so I
   // added a bias to the sample.
-  float AoBias = 0.0008f;
-  float AoBiasFragDepth = FragDepth - AoBias;
+  /* float Bias = 0.0008f; */
+  float Bias = 0.0000f;
+  float BiasedFragDepth = FragDepth - Bias;
 
   for ( int KernelIndex = 0;
         KernelIndex < SSAO_KERNEL_SIZE;
@@ -58,17 +60,20 @@ void main()
     SampleUV = (SampleUV.xy * 0.5) + 0.5;
 
     // get Sample depth:
-    float sampleDepth = texture(gPosition, SampleUV).w;
+    float SampleDepth = texture(gPosition, SampleUV).w;
+    float DepthDelta = (BiasedFragDepth - SampleDepth);
 
-    float DepthDelta = (AoBiasFragDepth - sampleDepth);
+#if 0
+    float DistanceToThreshhold = DepthDelta - DepthThreshold;
+    float ThreshholdPerc = clamp(DistanceToThreshhold / DepthThreshold, 0, 1);
+
+    AO -= (OccluderContribution * ThreshholdPerc);
+#else
     float Occluded = clamp((DepthDelta * 10000000.0f), 0.0f, 1.0f);
-
-    // TODO(Jesse): Can this be made into a multiplier instead of checking
-    // against DepthDelta somehow?
-    /* float DistanceFalloff = (1.0f/ (1.0f+DepthDelta) ); */
 
     if (DepthDelta < DepthThreshold)
       AO -= (OccluderContribution * Occluded);
+#endif
   }
 
   Output = AO;
