@@ -12,7 +12,6 @@
 
 #include <chunk.cpp>
 #include <bonsai_mesh.cpp>
-#include <perlin.cpp>
 
 global_variable chunk_dimension WORLD_CHUNK_DIM = Chunk_Dimension(8,8,8);
 #include <threadsafe.cpp>

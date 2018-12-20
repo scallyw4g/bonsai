@@ -62,6 +62,9 @@ void BreakHere() { return; }
 #include <bonsai_string.cpp>
 #include <heap_memory_types.h>
 
+// TODO(Jesse): This includes some stdlib shit. Rewrite it.
+#include <perlin.h>
+
 struct free_mesh
 {
   untextured_3d_geometry_buffer* Mesh;
