@@ -30,8 +30,8 @@ void main()
   vec3 Noise = texture(SsaoNoiseTexture, UV*SsaoNoiseTile.xy).xyz;
 
   vec3 Up = FragNormal; // This must be true, because we're trying to reorient a hemisphere along the fragments normal.
-  vec3 Right = cross(Noise - Up, Up);
-  vec3 Front = cross(Up, Right);
+  vec3 Right = normalize(cross(Noise - Up, Up));
+  vec3 Front = normalize(cross(Up, Right));
   mat3 Reorientation = mat3(Right, Front, Up) * SsaoRadius;
 
   float AO = 1.0f;
