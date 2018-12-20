@@ -362,14 +362,12 @@ struct world_chunk
   chunk_data* Data;
   untextured_3d_geometry_buffer* Mesh;
   untextured_3d_geometry_buffer* LodMesh;
-  point_buffer* PB;
 
   world_position WorldP;
-  v3 Normal;
 
   u32 Filled;
 
-  u8 Reserved[4];
+  u8 Reserved[24];
 };
 CAssert(sizeof(world_chunk) == 64);
 #pragma pack(pop)

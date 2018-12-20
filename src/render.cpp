@@ -564,8 +564,8 @@ DEBUG_DrawChunkAABB( untextured_3d_geometry_buffer *Mesh, graphics *Graphics,
 
 inline void
 DEBUG_DrawChunkAABB(untextured_3d_geometry_buffer *Mesh, graphics *Graphics,
-                    world_chunk *Chunk, chunk_dimension WorldChunkDim, s32
-                    ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS)
+                    world_chunk *Chunk, chunk_dimension WorldChunkDim,
+                    s32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS)
 {
   v3 MinP = GetRenderP(WorldChunkDim, Canonical_Position(V3(0,0,0), Chunk->WorldP), Graphics->Camera);
   v3 MaxP = GetRenderP(WorldChunkDim, Canonical_Position(WorldChunkDim, Chunk->WorldP), Graphics->Camera);
@@ -981,9 +981,10 @@ FindBoundaryVoxelsAlongEdge(
 
 #if 1
 void
-Compute0thLod(world_chunk *WorldChunk, chunk_dimension WorldChunkDim)
+Compute0thLod(untextured_3d_geometry_buffer* Dest, world_chunk *WorldChunk, chunk_dimension WorldChunkDim)
 {
   TIMED_FUNCTION();
+
   /* v3 RenderOffset = GetRenderP( WorldChunkDim, WorldChunk->WorldP, GameState->Camera); */
 
   v3 SurfaceNormal = {};
@@ -1021,20 +1022,21 @@ Compute0thLod(world_chunk *WorldChunk, chunk_dimension WorldChunkDim)
   if (HalfEmpty)
     SurfaceNormal *= -1.0f;
 
+  DEBUG_DrawAABB(Dest, V3(0), V3(WorldChunkDim), TEAL, 0.05f);
+
   // FIXME(Jesse): Sometimes the surface is perfectly balanced within the
   // chunk, in which case the normal turns out to be zero.
   SurfaceNormal = Normalize(SurfaceNormal);
   if ( Length(SurfaceNormal) == 0 )
   {
-    // DEBUG_DrawChunkAABB( WorldChunk, GameState->Camera, WorldChunkDim, Quaternion() , RED );
+    /* DEBUG_DrawAABB(Dest, V3(0), V3(WorldChunkDim), RED, 0.05f); */
     return;
   }
 
-  WorldChunk->Normal = SurfaceNormal;
-
   /* DEBUG_DrawVectorAt(world, RenderOffset + ChunkMidpoint - (SurfaceNormal*10), SurfaceNormal*20, BLACK, 0.5f ); */
 
-  point_buffer *PB = WorldChunk->PB;
+  point_buffer TempBuffer = {};
+  point_buffer *PB = &TempBuffer;
 
   {
     voxel_position Start = Voxel_Position(0, 0, 0);
@@ -1105,7 +1107,29 @@ Compute0thLod(world_chunk *WorldChunk, chunk_dimension WorldChunkDim)
   }
 
 
+  {
+    for ( s32 PointIndex = 0; PointIndex < PB->Count; ++PointIndex )
+    {
+      DrawVoxel( Dest, V3(PB->Points[PointIndex]), PointIndex, V3(0.2f));
+    }
+  }
 
+  {
+    v3 Verts[3] = {};
+    Verts[0] = V3(PB->Points[0]);
+
+    s32 Color = 42;
+    s32 VertIndex = 1;
+    while ( (VertIndex + 1) < PB->Count )
+    {
+      Verts[1] = V3(PB->Points[VertIndex]);
+      Verts[2] = V3(PB->Points[++VertIndex]);
+      BufferTriangle(Dest, Verts, SurfaceNormal, Color);
+    }
+  }
+
+
+#if 1
   // Sort the vertices based on distance to closest points
   for (s32 PBIndexOuter = 0;
       PBIndexOuter < PB->Count;
@@ -1114,14 +1138,13 @@ Compute0thLod(world_chunk *WorldChunk, chunk_dimension WorldChunkDim)
     voxel_position CurrentVert = PB->Points[PBIndexOuter];
     s32 ShortestLength = INT_MAX;
 
-    // Loop through remaining points and find next closest point, collapsing
-    // points that are very close to each other
     for (s32 PBIndexInner = PBIndexOuter + 1;
         PBIndexInner < PB->Count;
         ++PBIndexInner)
     {
       s32 TestLength = LengthSq(CurrentVert - PB->Points[PBIndexInner]);
 
+      // Collapse points that are very close to each other
       /* if ( TestLength < 11 ) */
       /* { */
       /*   PB->Points[PBIndexOuter] = PB->Points[PB->Count-1]; */
@@ -1141,6 +1164,7 @@ Compute0thLod(world_chunk *WorldChunk, chunk_dimension WorldChunkDim)
     }
 
   }
+#endif
 
     /* if (PB->Count == 5) */
 #if 0
@@ -1727,31 +1751,6 @@ ReserveBufferSpace(untextured_3d_geometry_buffer* Src, u32 ElementsToReserve)
   return Result;
 }
 
-#if 1
-inline void
-BufferLod(untextured_3d_geometry_buffer *Dest, world_chunk *Chunk)
-{
-  /* for ( s32 PointIndex = 0; PointIndex < Chunk->PB->Count; ++PointIndex ) */
-  /*   DEBUG_DrawPointMarker(world, V3(Chunk->PB->Points[PointIndex]), Color--, 1.0f); */
-
-
-  v3 Verts[3] = {};
-  Verts[0] = V3(Chunk->PB->Points[0]);
-
-
-  s32 Color = 42;
-  s32 VertIndex = 1;
-  while ( (VertIndex + 1) < Chunk->PB->Count )
-  {
-    Verts[1] = V3(Chunk->PB->Points[VertIndex]);
-    Verts[2] = V3(Chunk->PB->Points[++VertIndex]);
-    BufferTriangle(Dest, Verts, Chunk->Normal, Color);
-  }
-
-  return;
-}
-#endif
-
 void
 BufferWorldChunk(
     untextured_3d_geometry_buffer *Dest,
@@ -1766,7 +1765,7 @@ BufferWorldChunk(
   chunk_data *ChunkData = Chunk->Data;
   if (ChunkData->Flags == Chunk_MeshComplete)
   {
-#if 0
+#if 1
     {
       untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(Dest, Chunk->Mesh->At);
       v3 ModelBasisP = GetRenderP( WORLD_CHUNK_DIM, Canonical_Position(V3(0), Chunk->WorldP), Graphics->Camera);
@@ -1782,21 +1781,16 @@ BufferWorldChunk(
 #endif
 
 #if 1
-    if (Chunk->PB)
-    {
-      u32 TriangleCount = Chunk->PB->Count -2;
-      untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(Dest, TriangleCount*3);
+    untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(Dest, Chunk->LodMesh->At);
+    v3 ModelBasisP = GetRenderP(WORLD_CHUNK_DIM, Chunk->WorldP, Graphics->Camera);
 
-      v3 ModelBasisP = GetRenderP(WORLD_CHUNK_DIM, Chunk->WorldP, Graphics->Camera);
+    work_queue_entry Entry = {};
+    Entry.Type = WorkEntryType_CopyToGpuBuffer;
+    Entry.GpuCopyParams.Src = Chunk->LodMesh;
+    Entry.GpuCopyParams.Dest = CopyDest;
+    Entry.GpuCopyParams.Basis = ModelBasisP;
 
-      work_queue_entry Entry = {};
-      Entry.Type = WorkEntryType_CopyToGpuBuffer;
-      Entry.GpuCopyParams.Src = Chunk->LodMesh;
-      Entry.GpuCopyParams.Dest = CopyDest;
-      Entry.GpuCopyParams.Basis = ModelBasisP;
-
-      PushWorkQueueEntry(Queue, &Entry);
-    }
+    PushWorkQueueEntry(Queue, &Entry);
 #endif
   }
   else if (IsSet(ChunkData, Chunk_Queued))

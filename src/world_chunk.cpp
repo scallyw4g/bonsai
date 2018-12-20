@@ -19,8 +19,8 @@ AllocateWorldChunk(memory_arena *Storage, world_position WorldP, chunk_dimension
   u32 MaxLodMeshVerts = POINT_BUFFER_SIZE*3;
 
   world_chunk *Result = AllocateAlignedProtection(world_chunk, Storage, 1, 64, false);
-  Result->PB          = AllocateAlignedProtection(point_buffer, Storage, 1, 64, False);
-  Result->LodMesh     = AllocateMesh(Storage, MaxLodMeshVerts);
+  // FIXME(Jesse): The *2048 is an unnecessary debugging crutch .. take it out
+  Result->LodMesh     = AllocateMesh(Storage, MaxLodMeshVerts*2048);
   Result->Data        = AllocateChunk(Storage, Dim);
   Result->WorldP      = WorldP;
 
@@ -143,7 +143,6 @@ FreeWorldChunk(world *World, world_chunk *Chunk , mesh_freelist* MeshFreelist, m
     Assert(World->FreeChunkCount < FREELIST_SIZE);
     World->FreeChunks[World->FreeChunkCount++] = Chunk;
 
-    Chunk->PB->Count = 0;
     Chunk->LodMesh->At = 0;
 
     ZeroChunk(Chunk->Data);

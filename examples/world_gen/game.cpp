@@ -66,8 +66,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
                                         DestChunk,
                                         Amplititude, StartingZDepth);
 
-        Compute0thLod(DestChunk, WORLD_CHUNK_DIM);
-        BufferLod(DestChunk->LodMesh, DestChunk);
+        Compute0thLod(DestChunk->LodMesh, DestChunk, WORLD_CHUNK_DIM);
       }
     } break;
 
@@ -88,6 +87,8 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 BONSAI_API_MAIN_THREAD_CALLBACK()
 {
   TIMED_FUNCTION();
+
+  glDisable(GL_CULL_FACE);
 
 #if BONSAI_INTERNAL
   if (!GetDebugState)
