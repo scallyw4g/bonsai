@@ -788,6 +788,17 @@ ZeroChunk( chunk_data *Chunk )
 }
 
 inline s32
+GetIndexUnsafe(voxel_position P, chunk_dimension Dim)
+{
+  s32 i =
+    (P.x) +
+    (P.y*Dim.x) +
+    (P.z*Dim.x*Dim.y);
+
+  return i;
+}
+
+inline s32
 GetIndex(voxel_position P, chunk_dimension Dim)
 {
   s32 i =

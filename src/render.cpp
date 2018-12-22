@@ -926,6 +926,28 @@ RayTraceCollision(chunk_data *Chunk, chunk_dimension Dim, v3 StartingP, v3 Ray, 
 }
 
 inline void
+BufferTriangle(untextured_3d_geometry_buffer* Dest, triangle* Triangle, s32 ColorIndex)
+{
+  v3 VertBuffer[3];
+  v3 NormalBuffer[3] = {V3(0), V3(0), V3(1)};
+
+  VertBuffer[0] = V3(Triangle->E0->P0);
+  VertBuffer[1] = V3(Triangle->E0->P1);
+  VertBuffer[2] = V3(Triangle->E1->P1);
+
+  v4 FaceColors[FACE_VERT_COUNT];
+  FillColorArray(ColorIndex, FaceColors, FACE_VERT_COUNT);
+
+  BufferVertsChecked(
+    Dest,
+    3,
+    VertBuffer,
+    NormalBuffer,
+    FaceColors);
+
+}
+
+inline void
 BufferTriangle(untextured_3d_geometry_buffer *Mesh, v3 *Verts, v3 Normal, s32 ColorIndex)
 {
   v3 VertBuffer[3];
@@ -979,11 +1001,248 @@ FindBoundaryVoxelsAlongEdge(
 }
 #endif
 
-#if 1
+inline b32
+HasUnfilledNeighbors(u32 Index, world_chunk* Chunk, chunk_dimension ChunkDim)
+{
+  TIMED_FUNCTION();
+
+  chunk_data *ChunkData = Chunk->Data;
+
+  Assert(IsSet(Chunk, Chunk_Initialized) || IsSet(Chunk, Chunk_MeshComplete));
+
+  u32 VolumeChunkDim = Volume(ChunkDim);
+  voxel_position CurrentP = GetPosition(Index, ChunkDim);
+
+  voxel_position RightVoxel = CurrentP + Voxel_Position(1, 0, 0);
+  voxel_position LeftVoxel  = CurrentP - Voxel_Position(1, 0, 0);
+  voxel_position TopVoxel   = CurrentP + Voxel_Position(0, 0, 1);
+  voxel_position BotVoxel   = CurrentP - Voxel_Position(0, 0, 1);
+  voxel_position FrontVoxel = CurrentP + Voxel_Position(0, 1, 0);
+  voxel_position BackVoxel  = CurrentP - Voxel_Position(0, 1, 0);
+
+  u32 RightVoxelReadIndex = GetIndexUnsafe(RightVoxel, ChunkDim);
+  u32 LeftVoxelReadIndex  = GetIndexUnsafe(LeftVoxel, ChunkDim);
+  u32 TopVoxelReadIndex   = GetIndexUnsafe(TopVoxel, ChunkDim);
+  u32 BotVoxelReadIndex   = GetIndexUnsafe(BotVoxel, ChunkDim);
+  u32 FrontVoxelReadIndex = GetIndexUnsafe(FrontVoxel, ChunkDim);
+  u32 BackVoxelReadIndex  = GetIndexUnsafe(BackVoxel, ChunkDim);
+
+  b32 Result = False;
+
+  if (RightVoxelReadIndex < VolumeChunkDim)
+    Result |= NotFilledInChunk( ChunkData, RightVoxelReadIndex);
+
+  if (LeftVoxelReadIndex < VolumeChunkDim)
+    Result |= NotFilledInChunk( ChunkData, LeftVoxelReadIndex);
+
+  if (BotVoxelReadIndex < VolumeChunkDim)
+    Result |= NotFilledInChunk( ChunkData, BotVoxelReadIndex);
+
+  if (TopVoxelReadIndex < VolumeChunkDim)
+    Result |= NotFilledInChunk( ChunkData, TopVoxelReadIndex);
+
+  if (FrontVoxelReadIndex < VolumeChunkDim)
+    Result |= NotFilledInChunk( ChunkData, FrontVoxelReadIndex);
+
+  if (BackVoxelReadIndex < VolumeChunkDim)
+    Result |= NotFilledInChunk( ChunkData, BackVoxelReadIndex);
+
+  return Result;
+}
+
+function edge*
+Edge(voxel_position P0, voxel_position P1, memory_arena* Memory)
+{
+  edge* Result = Allocate(edge, Memory, 1);
+  Result->P0 = P0;
+  Result->P1 = P1;
+  Result->LengthSq = LengthSq(P1 - P0);
+
+  return Result;
+}
+
+function triangle*
+Triangle(edge* E0, edge* E1, edge* E2, memory_arena* Memory)
+{
+  triangle* Result = Allocate(triangle, Memory, 1);
+  Result->E0 = E0;
+  Result->E1 = E1;
+  Result->E2 = E2;
+
+  return Result;
+}
+
+function void
+Triangulate(untextured_3d_geometry_buffer* Dest, world_chunk* Chunk, chunk_dimension ChunkDim,  memory_arena* TempMem)
+{
+  TIMED_FUNCTION();
+
+  u32 WorldChunkVolume = Volume(ChunkDim);
+
+  u32 BoundaryVoxelCount = 0;
+  voxel_position* BoundaryVoxels = Allocate(voxel_position, TempMem, WorldChunkVolume);
+
+  u32 EdgesAddedCount = 0;
+  edge** EdgesAdded = Allocate(edge*, TempMem, WorldChunkVolume);
+
+  u32 TriangleCount = 0;
+  triangle** Triangles = Allocate(triangle*, TempMem, WorldChunkVolume);
+
+  for (s32 z = 0;
+      z < ChunkDim.z;
+      ++z)
+  {
+    for (s32 y = 0;
+        y < ChunkDim.y;
+        ++y)
+    {
+      for (s32 x = 0;
+          x < ChunkDim.x;
+          ++x)
+      {
+        voxel_position P = Voxel_Position(x, y, z);
+        u32 vIndex = GetIndex(P, ChunkDim);
+        voxel *V = Chunk->Data->Voxels + vIndex;
+        if (IsSet(V, Voxel_Filled) &&
+            HasUnfilledNeighbors(vIndex, Chunk, ChunkDim))
+        {
+          BoundaryVoxels[BoundaryVoxelCount++] = P;
+        }
+      }
+    }
+  }
+
+  if (BoundaryVoxelCount >= 3)
+  {
+    triangle* BaseTriangle = 0;
+    {
+      voxel_position P0 = BoundaryVoxels[0];
+      BoundaryVoxels[0] = BoundaryVoxels[BoundaryVoxelCount--];
+
+      edge* ShortestEdge = 0;
+      edge* SecondShortestEdge = 0;
+
+      u32 ShortestEdgeIndex = 0;
+      u32 SecondShortestEdgeIndex = 0;
+
+      for (u32 InnerIndex = 0;
+          InnerIndex < BoundaryVoxelCount;
+          ++InnerIndex)
+      {
+        voxel_position P1 = BoundaryVoxels[InnerIndex];
+        edge* TestEdge = Edge(P0, P1, TempMem);
+
+        if (!ShortestEdge)
+        {
+          ShortestEdge = TestEdge;
+          SecondShortestEdge = TestEdge;
+        }
+
+        if (TestEdge->LengthSq < ShortestEdge->LengthSq)
+        {
+          SecondShortestEdge = ShortestEdge;
+          SecondShortestEdgeIndex = ShortestEdgeIndex;
+          ShortestEdge = TestEdge;
+          ShortestEdgeIndex = InnerIndex;
+        }
+        else if (TestEdge->LengthSq < SecondShortestEdge->LengthSq)
+        {
+          SecondShortestEdge = TestEdge;
+          SecondShortestEdgeIndex = InnerIndex;
+        }
+      }
+
+      BoundaryVoxels[ShortestEdgeIndex] = BoundaryVoxels[BoundaryVoxelCount--];
+      BoundaryVoxels[SecondShortestEdgeIndex] = BoundaryVoxels[BoundaryVoxelCount--];
+
+      edge* ThirdEdge = Edge(ShortestEdge->P1, SecondShortestEdge->P1, TempMem);
+
+      EdgesAdded[EdgesAddedCount++] = ShortestEdge;
+      EdgesAdded[EdgesAddedCount++] = SecondShortestEdge;
+      EdgesAdded[EdgesAddedCount++] = ThirdEdge;
+
+      BaseTriangle = Triangle(ShortestEdge, SecondShortestEdge, ThirdEdge, TempMem);
+      Triangles[TriangleCount++] = BaseTriangle;
+    }
+
+
+    voxel_position Minimum = Min(BaseTriangle->E0->P0, BaseTriangle->E0->P1);
+    Minimum = Min(Minimum, BaseTriangle->E1->P1);
+
+    voxel_position Maximum = Max(BaseTriangle->E0->P0, BaseTriangle->E0->P1);
+    Maximum = Max(Maximum, BaseTriangle->E1->P1);
+
+    v3 Radius = (V3(Maximum) - V3(Minimum)) / 2.0f;
+    v3 Center = V3(Minimum) + Radius;
+
+    aabb MeshAABB(Center, Radius);
+
+    while (BoundaryVoxelCount)
+    {
+      r32 ShortestDistance = FLT_MAX;
+      u32 ShortestDistanceIndex = UINT_MAX;
+      v3 ShortestP = V3(FLT_MAX);
+      for (u32 BoundaryVoxelIndex = 0;
+          BoundaryVoxelIndex < BoundaryVoxelCount;
+          ++BoundaryVoxelIndex)
+      {
+        v3 P = V3(BoundaryVoxels[BoundaryVoxelIndex]);
+        r32 DistanceToAABBCenter = LengthSq(P - Center);
+        if (DistanceToAABBCenter < ShortestDistance)
+        {
+          ShortestDistance = DistanceToAABBCenter;
+          ShortestDistanceIndex = BoundaryVoxelIndex;
+          ShortestP = P;
+        }
+      }
+
+      r32 LeastEdgeSum = FLT_MAX;
+      edge* FoundEdge = 0;
+      for (u32 EdgeIndex = 0;
+          EdgeIndex < EdgesAddedCount;
+          ++EdgeIndex)
+      {
+        edge* CurrentEdge = EdgesAdded[EdgeIndex];
+
+        r32 TotalDistance = LengthSq(CurrentEdge->P0 - ShortestP);
+        TotalDistance += LengthSq(CurrentEdge->P1 - ShortestP);
+
+        if (TotalDistance < LeastEdgeSum)
+        {
+          LeastEdgeSum = TotalDistance;
+          FoundEdge = CurrentEdge;
+        }
+      }
+
+      edge* NewEdge0 = Edge(FoundEdge->P0, BoundaryVoxels[ShortestDistanceIndex], TempMem);
+      edge* NewEdge1 = Edge(FoundEdge->P1, BoundaryVoxels[ShortestDistanceIndex], TempMem);
+      EdgesAdded[EdgesAddedCount++] = NewEdge0;
+      EdgesAdded[EdgesAddedCount++] = NewEdge1;
+      BoundaryVoxels[ShortestDistanceIndex] = BoundaryVoxels[BoundaryVoxelCount--];
+
+      triangle* NewTri = Triangle(FoundEdge, NewEdge0, NewEdge1, TempMem);
+      Triangles[TriangleCount++] = NewTri;
+
+      FoundEdge->OppositeTri = NewTri;
+    }
+  }
+
+  for (u32 TriangleIndex = 0;
+      TriangleIndex < TriangleCount;
+      ++TriangleIndex)
+  {
+    BufferTriangle(Dest, Triangles[TriangleIndex], RED);
+  }
+
+  return;
+}
+
 void
 Compute0thLod(untextured_3d_geometry_buffer* Dest, world_chunk *WorldChunk, chunk_dimension WorldChunkDim)
 {
   TIMED_FUNCTION();
+
+#if 1
 
   /* v3 RenderOffset = GetRenderP( WorldChunkDim, WorldChunk->WorldP, GameState->Camera); */
 
@@ -1129,7 +1388,6 @@ Compute0thLod(untextured_3d_geometry_buffer* Dest, world_chunk *WorldChunk, chun
   }
 
 
-#if 1
   // Sort the vertices based on distance to closest points
   for (s32 PBIndexOuter = 0;
       PBIndexOuter < PB->Count;
@@ -1491,7 +1749,6 @@ Compute0thLod(untextured_3d_geometry_buffer* Dest, world_chunk *WorldChunk, chun
 
   return;
 }
-#endif
 
 inline b32
 IsBoundaryVoxel(chunk_data *Chunk, voxel_position Offset, chunk_dimension Dim)
@@ -1623,8 +1880,6 @@ CanBuildWorldChunkBoundary(world *World, world_chunk *Chunk)
 
   world_position ChunkP = Chunk->WorldP;
 
-  // Bail early to save the cache most of the time.. does this even help?
-  if (!Result) return Result;
 
   world_position Left  = ChunkP - Voxel_Position(1, 0, 0);
   world_position Right = ChunkP + Voxel_Position(1, 0, 0);
@@ -1633,6 +1888,7 @@ CanBuildWorldChunkBoundary(world *World, world_chunk *Chunk)
   world_position Front = ChunkP + Voxel_Position(0, 0, 1);
   world_position Back  = ChunkP - Voxel_Position(0, 0, 1);
 
+  // We could try bailing early to save the cache sometimes
   world_chunk *TestChunk = GetWorldChunk( World, Left );
   Result &= TestChunk && IsSet(TestChunk, Chunk_Initialized);
 
@@ -1765,7 +2021,7 @@ BufferWorldChunk(
   chunk_data *ChunkData = Chunk->Data;
   if (ChunkData->Flags == Chunk_MeshComplete)
   {
-#if 1
+#if 0
     {
       untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(Dest, Chunk->Mesh->At);
       v3 ModelBasisP = GetRenderP( WORLD_CHUNK_DIM, Canonical_Position(V3(0), Chunk->WorldP), Graphics->Camera);
