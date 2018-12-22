@@ -931,9 +931,9 @@ BufferTriangle(untextured_3d_geometry_buffer* Dest, triangle* Triangle, s32 Colo
   v3 VertBuffer[3];
   v3 NormalBuffer[3] = {V3(0), V3(0), V3(1)};
 
-  VertBuffer[0] = V3(Triangle->E0->P0);
-  VertBuffer[1] = V3(Triangle->E0->P1);
-  VertBuffer[2] = V3(Triangle->E1->P1);
+  VertBuffer[0] = V3(Triangle->Edges[0]->P0);
+  VertBuffer[1] = V3(Triangle->Edges[0]->P1);
+  VertBuffer[2] = V3(Triangle->Edges[1]->P1);
 
   v4 FaceColors[FACE_VERT_COUNT];
   FillColorArray(ColorIndex, FaceColors, FACE_VERT_COUNT);
@@ -1065,11 +1065,21 @@ function triangle*
 Triangle(edge* E0, edge* E1, edge* E2, memory_arena* Memory)
 {
   triangle* Result = Allocate(triangle, Memory, 1);
-  Result->E0 = E0;
-  Result->E1 = E1;
-  Result->E2 = E2;
+  Result->Edges[0] = E0;
+  Result->Edges[1] = E1;
+  Result->Edges[2] = E2;
 
   return Result;
+}
+
+function void
+Swap(voxel_position* P1, voxel_position* P2)
+{
+  voxel_position Tmp = *P1;
+  *P1 = *P2;
+  *P2 = Tmp;
+
+  return;
 }
 
 function void
@@ -1079,7 +1089,8 @@ Triangulate(untextured_3d_geometry_buffer* Dest, world_chunk* Chunk, chunk_dimen
 
   u32 WorldChunkVolume = Volume(ChunkDim);
 
-  u32 BoundaryVoxelCount = 0;
+  u32 LastBoundaryVoxelIndex = 0;
+  u32 TotalBoundaryVoxelCount = 0;
   voxel_position* BoundaryVoxels = Allocate(voxel_position, TempMem, WorldChunkVolume);
 
   u32 EdgesAddedCount = 0;
@@ -1106,18 +1117,21 @@ Triangulate(untextured_3d_geometry_buffer* Dest, world_chunk* Chunk, chunk_dimen
         if (IsSet(V, Voxel_Filled) &&
             HasUnfilledNeighbors(vIndex, Chunk, ChunkDim))
         {
-          BoundaryVoxels[BoundaryVoxelCount++] = P;
+          BoundaryVoxels[TotalBoundaryVoxelCount++] = P;
         }
       }
     }
   }
 
-  if (BoundaryVoxelCount >= 3)
+
+  if (TotalBoundaryVoxelCount >= 3)
   {
+    LastBoundaryVoxelIndex = TotalBoundaryVoxelCount -1;
     triangle* BaseTriangle = 0;
     {
       voxel_position P0 = BoundaryVoxels[0];
-      BoundaryVoxels[0] = BoundaryVoxels[BoundaryVoxelCount--];
+      Swap(BoundaryVoxels, BoundaryVoxels + LastBoundaryVoxelIndex);
+      --LastBoundaryVoxelIndex;
 
       edge* ShortestEdge = 0;
       edge* SecondShortestEdge = 0;
@@ -1126,7 +1140,7 @@ Triangulate(untextured_3d_geometry_buffer* Dest, world_chunk* Chunk, chunk_dimen
       u32 SecondShortestEdgeIndex = 0;
 
       for (u32 InnerIndex = 0;
-          InnerIndex < BoundaryVoxelCount;
+          InnerIndex < LastBoundaryVoxelIndex;
           ++InnerIndex)
       {
         voxel_position P1 = BoundaryVoxels[InnerIndex];
@@ -1152,8 +1166,11 @@ Triangulate(untextured_3d_geometry_buffer* Dest, world_chunk* Chunk, chunk_dimen
         }
       }
 
-      BoundaryVoxels[ShortestEdgeIndex] = BoundaryVoxels[BoundaryVoxelCount--];
-      BoundaryVoxels[SecondShortestEdgeIndex] = BoundaryVoxels[BoundaryVoxelCount--];
+      Swap(BoundaryVoxels + ShortestEdgeIndex, BoundaryVoxels + LastBoundaryVoxelIndex);
+      --LastBoundaryVoxelIndex;
+
+      Swap(BoundaryVoxels + SecondShortestEdgeIndex, BoundaryVoxels + LastBoundaryVoxelIndex);
+      --LastBoundaryVoxelIndex;
 
       edge* ThirdEdge = Edge(ShortestEdge->P1, SecondShortestEdge->P1, TempMem);
 
@@ -1166,24 +1183,24 @@ Triangulate(untextured_3d_geometry_buffer* Dest, world_chunk* Chunk, chunk_dimen
     }
 
 
-    voxel_position Minimum = Min(BaseTriangle->E0->P0, BaseTriangle->E0->P1);
-    Minimum = Min(Minimum, BaseTriangle->E1->P1);
+    voxel_position Minimum = Min(BaseTriangle->Edges[0]->P0, BaseTriangle->Edges[0]->P1);
+    Minimum = Min(Minimum, BaseTriangle->Edges[1]->P1);
 
-    voxel_position Maximum = Max(BaseTriangle->E0->P0, BaseTriangle->E0->P1);
-    Maximum = Max(Maximum, BaseTriangle->E1->P1);
+    voxel_position Maximum = Max(BaseTriangle->Edges[0]->P0, BaseTriangle->Edges[0]->P1);
+    Maximum = Max(Maximum, BaseTriangle->Edges[1]->P1);
 
     v3 Radius = (V3(Maximum) - V3(Minimum)) / 2.0f;
     v3 Center = V3(Minimum) + Radius;
 
     aabb MeshAABB(Center, Radius);
 
-    while (BoundaryVoxelCount)
+    while (LastBoundaryVoxelIndex)
     {
       r32 ShortestDistance = FLT_MAX;
       u32 ShortestDistanceIndex = UINT_MAX;
       v3 ShortestP = V3(FLT_MAX);
       for (u32 BoundaryVoxelIndex = 0;
-          BoundaryVoxelIndex < BoundaryVoxelCount;
+          BoundaryVoxelIndex < LastBoundaryVoxelIndex;
           ++BoundaryVoxelIndex)
       {
         v3 P = V3(BoundaryVoxels[BoundaryVoxelIndex]);
@@ -1218,12 +1235,12 @@ Triangulate(untextured_3d_geometry_buffer* Dest, world_chunk* Chunk, chunk_dimen
       edge* NewEdge1 = Edge(FoundEdge->P1, BoundaryVoxels[ShortestDistanceIndex], TempMem);
       EdgesAdded[EdgesAddedCount++] = NewEdge0;
       EdgesAdded[EdgesAddedCount++] = NewEdge1;
-      BoundaryVoxels[ShortestDistanceIndex] = BoundaryVoxels[BoundaryVoxelCount--];
+
+      Swap(BoundaryVoxels+ShortestDistanceIndex, BoundaryVoxels+LastBoundaryVoxelIndex);
+      --LastBoundaryVoxelIndex;
 
       triangle* NewTri = Triangle(FoundEdge, NewEdge0, NewEdge1, TempMem);
       Triangles[TriangleCount++] = NewTri;
-
-      FoundEdge->OppositeTri = NewTri;
     }
   }
 

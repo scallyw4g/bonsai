@@ -11,15 +11,11 @@ struct edge
   voxel_position P0;
   voxel_position P1;
   r32 LengthSq;
-
-  triangle* OppositeTri;
 };
 
 struct triangle
 {
-  edge* E0;
-  edge* E1;
-  edge* E2;
+  edge* Edges[3];
 };
 
 inline void
