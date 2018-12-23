@@ -4,20 +4,6 @@
   glDrawArrays(GL_TRIANGLES, 0, (s32)VertexCount);  \
   END_BLOCK(); } while (0)
 
-struct triangle;
-
-struct edge
-{
-  voxel_position P0;
-  voxel_position P1;
-  r32 LengthSq;
-};
-
-struct triangle
-{
-  edge* Edges[3];
-};
-
 inline void
 SetViewport(v2 Dim)
 {

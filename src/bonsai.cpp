@@ -4,6 +4,7 @@
 #include <heap_memory_types.cpp>
 #include <bonsai_mesh.cpp>
 #include <threadsafe.cpp>
+#include <triangle.cpp>
 #include <world_chunk.cpp>
 #include <vox_loader.cpp>
 #include <render.h>

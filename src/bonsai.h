@@ -357,17 +357,20 @@ struct point_buffer
 };
 
 #pragma pack(push, 1)
+struct current_triangles;
 struct world_chunk
 {
   chunk_data* Data;
   untextured_3d_geometry_buffer* Mesh;
   untextured_3d_geometry_buffer* LodMesh;
 
+  current_triangles* CurrentTriangles;
+
   world_position WorldP;
 
   u32 Filled;
 
-  u8 Reserved[24];
+  u8 Reserved[16];
 };
 CAssert(sizeof(world_chunk) == 64);
 #pragma pack(pop)

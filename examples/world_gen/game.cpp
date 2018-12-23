@@ -67,7 +67,8 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
                                         Amplititude, StartingZDepth);
 
         /* Compute0thLod(DestChunk->LodMesh, DestChunk, WORLD_CHUNK_DIM); */
-        Triangulate(DestChunk->LodMesh, DestChunk, WORLD_CHUNK_DIM, Thread->TempMemory);
+        /* Triangulate(DestChunk->LodMesh, DestChunk, WORLD_CHUNK_DIM, Thread->TempMemory); */
+        Triangulate(DestChunk->LodMesh, DestChunk->CurrentTriangles, DestChunk, Thread->TempMemory);
       }
     } break;
 
@@ -160,7 +161,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     GetViewMatrix(WorldChunkDim, Camera);
 
   TIMED_BLOCK("BufferMeshes");
-    BufferWorld(GameState, &GpuMap->Buffer, World, Graphics, VISIBLE_REGION_RADIUS);
+    BufferWorld(GameState, &GpuMap->Buffer, World, Graphics, VISIBLE_REGION_RADIUS, Hotkeys);
     BufferEntities( GameState->EntityTable, &GpuMap->Buffer, Graphics, World, Plat->dt);
   END_BLOCK("BufferMeshes");
 

@@ -925,49 +925,6 @@ RayTraceCollision(chunk_data *Chunk, chunk_dimension Dim, v3 StartingP, v3 Ray, 
   return Voxel_Position(Result);
 }
 
-inline void
-BufferTriangle(untextured_3d_geometry_buffer* Dest, triangle* Triangle, s32 ColorIndex)
-{
-  v3 VertBuffer[3];
-  v3 NormalBuffer[3] = {V3(0), V3(0), V3(1)};
-
-  VertBuffer[0] = V3(Triangle->Edges[0]->P0);
-  VertBuffer[1] = V3(Triangle->Edges[0]->P1);
-  VertBuffer[2] = V3(Triangle->Edges[1]->P1);
-
-  v4 FaceColors[FACE_VERT_COUNT];
-  FillColorArray(ColorIndex, FaceColors, FACE_VERT_COUNT);
-
-  BufferVertsChecked(
-    Dest,
-    3,
-    VertBuffer,
-    NormalBuffer,
-    FaceColors);
-
-}
-
-inline void
-BufferTriangle(untextured_3d_geometry_buffer *Mesh, v3 *Verts, v3 Normal, s32 ColorIndex)
-{
-  v3 VertBuffer[3];
-  v3 NormalBuffer[3] = {Normal, Normal, Normal};
-
-  // TODO(Jesse): Is this necessary to avoid some pointer aliasing bug?
-  memcpy( VertBuffer, Verts, 9 * sizeof(r32) );
-
-  v4 FaceColors[FACE_VERT_COUNT];
-  FillColorArray(ColorIndex, FaceColors, FACE_VERT_COUNT);;
-
-  BufferVertsChecked(
-    Mesh,
-    3,
-    VertBuffer,
-    NormalBuffer,
-    FaceColors);
-
-}
-
 #if 1
 inline void
 FindBoundaryVoxelsAlongEdge(
@@ -1001,55 +958,6 @@ FindBoundaryVoxelsAlongEdge(
 }
 #endif
 
-inline b32
-HasUnfilledNeighbors(u32 Index, world_chunk* Chunk, chunk_dimension ChunkDim)
-{
-  TIMED_FUNCTION();
-
-  chunk_data *ChunkData = Chunk->Data;
-
-  Assert(IsSet(Chunk, Chunk_Initialized) || IsSet(Chunk, Chunk_MeshComplete));
-
-  u32 VolumeChunkDim = Volume(ChunkDim);
-  voxel_position CurrentP = GetPosition(Index, ChunkDim);
-
-  voxel_position RightVoxel = CurrentP + Voxel_Position(1, 0, 0);
-  voxel_position LeftVoxel  = CurrentP - Voxel_Position(1, 0, 0);
-  voxel_position TopVoxel   = CurrentP + Voxel_Position(0, 0, 1);
-  voxel_position BotVoxel   = CurrentP - Voxel_Position(0, 0, 1);
-  voxel_position FrontVoxel = CurrentP + Voxel_Position(0, 1, 0);
-  voxel_position BackVoxel  = CurrentP - Voxel_Position(0, 1, 0);
-
-  u32 RightVoxelReadIndex = GetIndexUnsafe(RightVoxel, ChunkDim);
-  u32 LeftVoxelReadIndex  = GetIndexUnsafe(LeftVoxel, ChunkDim);
-  u32 TopVoxelReadIndex   = GetIndexUnsafe(TopVoxel, ChunkDim);
-  u32 BotVoxelReadIndex   = GetIndexUnsafe(BotVoxel, ChunkDim);
-  u32 FrontVoxelReadIndex = GetIndexUnsafe(FrontVoxel, ChunkDim);
-  u32 BackVoxelReadIndex  = GetIndexUnsafe(BackVoxel, ChunkDim);
-
-  b32 Result = False;
-
-  if (RightVoxelReadIndex < VolumeChunkDim)
-    Result |= NotFilledInChunk( ChunkData, RightVoxelReadIndex);
-
-  if (LeftVoxelReadIndex < VolumeChunkDim)
-    Result |= NotFilledInChunk( ChunkData, LeftVoxelReadIndex);
-
-  if (BotVoxelReadIndex < VolumeChunkDim)
-    Result |= NotFilledInChunk( ChunkData, BotVoxelReadIndex);
-
-  if (TopVoxelReadIndex < VolumeChunkDim)
-    Result |= NotFilledInChunk( ChunkData, TopVoxelReadIndex);
-
-  if (FrontVoxelReadIndex < VolumeChunkDim)
-    Result |= NotFilledInChunk( ChunkData, FrontVoxelReadIndex);
-
-  if (BackVoxelReadIndex < VolumeChunkDim)
-    Result |= NotFilledInChunk( ChunkData, BackVoxelReadIndex);
-
-  return Result;
-}
-
 function edge*
 Edge(voxel_position P0, voxel_position P1, memory_arena* Memory)
 {
@@ -1061,37 +969,14 @@ Edge(voxel_position P0, voxel_position P1, memory_arena* Memory)
   return Result;
 }
 
-function triangle*
-Triangle(edge* E0, edge* E1, edge* E2, memory_arena* Memory)
-{
-  triangle* Result = Allocate(triangle, Memory, 1);
-  Result->Edges[0] = E0;
-  Result->Edges[1] = E1;
-  Result->Edges[2] = E2;
-
-  return Result;
-}
-
+#if 0
 function void
-Swap(voxel_position* P1, voxel_position* P2)
-{
-  voxel_position Tmp = *P1;
-  *P1 = *P2;
-  *P2 = Tmp;
-
-  return;
-}
-
-function void
-Triangulate(untextured_3d_geometry_buffer* Dest, world_chunk* Chunk, chunk_dimension ChunkDim,  memory_arena* TempMem)
+Triangulate(untextured_3d_geometry_buffer* Dest, world_chunk* Chunk, chunk_dimension ChunkDim, memory_arena* TempMem)
 {
   TIMED_FUNCTION();
 
   u32 WorldChunkVolume = Volume(ChunkDim);
 
-  u32 LastBoundaryVoxelIndex = 0;
-  u32 TotalBoundaryVoxelCount = 0;
-  voxel_position* BoundaryVoxels = Allocate(voxel_position, TempMem, WorldChunkVolume);
 
   u32 EdgesAddedCount = 0;
   edge** EdgesAdded = Allocate(edge*, TempMem, WorldChunkVolume);
@@ -1099,34 +984,12 @@ Triangulate(untextured_3d_geometry_buffer* Dest, world_chunk* Chunk, chunk_dimen
   u32 TriangleCount = 0;
   triangle** Triangles = Allocate(triangle*, TempMem, WorldChunkVolume);
 
-  for (s32 z = 0;
-      z < ChunkDim.z;
-      ++z)
-  {
-    for (s32 y = 0;
-        y < ChunkDim.y;
-        ++y)
-    {
-      for (s32 x = 0;
-          x < ChunkDim.x;
-          ++x)
-      {
-        voxel_position P = Voxel_Position(x, y, z);
-        u32 vIndex = GetIndex(P, ChunkDim);
-        voxel *V = Chunk->Data->Voxels + vIndex;
-        if (IsSet(V, Voxel_Filled) &&
-            HasUnfilledNeighbors(vIndex, Chunk, ChunkDim))
-        {
-          BoundaryVoxels[TotalBoundaryVoxelCount++] = P;
-        }
-      }
-    }
-  }
+  boundary_voxels BoundaryVoxelList = GetBoundingVoxels(Chunk, TempMem);
+  voxel_position* BoundaryVoxels = BoundaryVoxelList.Points;
 
-
-  if (TotalBoundaryVoxelCount >= 3)
+  if (BoundaryVoxelList.Count >= 3)
   {
-    LastBoundaryVoxelIndex = TotalBoundaryVoxelCount -1;
+    u32 LastBoundaryVoxelIndex = BoundaryVoxelList.Count -1;
     triangle* BaseTriangle = 0;
     {
       voxel_position P0 = BoundaryVoxels[0];
@@ -1253,6 +1116,7 @@ Triangulate(untextured_3d_geometry_buffer* Dest, world_chunk* Chunk, chunk_dimen
 
   return;
 }
+#endif
 
 void
 Compute0thLod(untextured_3d_geometry_buffer* Dest, world_chunk *WorldChunk, chunk_dimension WorldChunkDim)
@@ -2029,7 +1893,8 @@ BufferWorldChunk(
     untextured_3d_geometry_buffer *Dest,
     world_chunk *Chunk,
     graphics *Graphics,
-    work_queue* Queue
+    work_queue* Queue,
+    hotkeys* Hotkeys
   )
 {
   if (!Chunk || !Chunk->Mesh)
@@ -2052,6 +1917,16 @@ BufferWorldChunk(
       PushWorkQueueEntry(Queue, &Entry);
     }
 #endif
+
+    /* if (Chunk->CurrentTriangles->Count == 0) */
+    /* { */
+    /*   Triangulate(Chunk->LodMesh, Chunk->CurrentTriangles, Chunk, TranArena); */
+    /* } */
+
+    if (Hotkeys->Debug_Triangulate)
+    {
+      Triangulate(Chunk->LodMesh, Chunk->CurrentTriangles, Chunk, TranArena);
+    }
 
 #if 1
     untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(Dest, Chunk->LodMesh->At);
@@ -2083,7 +1958,7 @@ inline void
 QueueChunkForInit(game_state *GameState, work_queue *Queue, world_chunk *Chunk);
 
 void
-BufferWorld(game_state* GameState, untextured_3d_geometry_buffer* Dest, world *World, graphics *Graphics, world_position VisibleRadius)
+BufferWorld(game_state* GameState, untextured_3d_geometry_buffer* Dest, world *World, graphics *Graphics, world_position VisibleRadius, hotkeys* Hotkeys)
 {
   TIMED_FUNCTION();
 
@@ -2101,7 +1976,7 @@ BufferWorld(game_state* GameState, untextured_3d_geometry_buffer* Dest, world *W
 
         if (Chunk)
         {
-          BufferWorldChunk(Dest, Chunk, Graphics, &GameState->Plat->HighPriority);
+          BufferWorldChunk(Dest, Chunk, Graphics, &GameState->Plat->HighPriority, Hotkeys);
         }
         else
         {

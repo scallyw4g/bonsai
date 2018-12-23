@@ -15,6 +15,7 @@
 
 global_variable chunk_dimension WORLD_CHUNK_DIM = Chunk_Dimension(8,8,8);
 #include <threadsafe.cpp>
+#include <triangle.cpp>
 #include <world_chunk.cpp>
 
 #include <test_utils.cpp>

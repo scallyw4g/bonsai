@@ -58,6 +58,7 @@ void BreakHere() { return; }
 
 #include <bonsai.h>
 
+#include <triangle.h>
 #include <mesh_types.h>
 #include <bonsai_string.cpp>
 #include <heap_memory_types.h>

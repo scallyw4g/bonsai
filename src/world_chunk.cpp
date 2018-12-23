@@ -24,6 +24,14 @@ AllocateWorldChunk(memory_arena *Storage, world_position WorldP, chunk_dimension
   Result->Data        = AllocateChunk(Storage, Dim);
   Result->WorldP      = WorldP;
 
+  Result->CurrentTriangles = AllocateCurrentTriangles(2*4096, Storage);
+  Result->CurrentTriangles->SurfacePoints = AllocateAlignedProtection(boundary_voxels, Storage, 1, 64, False);
+
+  // TODO(Jesse): Allocate in a more sensible way?
+  Result->CurrentTriangles->SurfacePoints->Points = AllocateAlignedProtection(voxel_position, Storage, Volume(WORLD_CHUNK_DIM), 64, False);
+
+  SeedTriangulation(Result->CurrentTriangles, Storage);
+
   return Result;
 }
 
@@ -144,6 +152,8 @@ FreeWorldChunk(world *World, world_chunk *Chunk , mesh_freelist* MeshFreelist, m
     World->FreeChunks[World->FreeChunkCount++] = Chunk;
 
     Chunk->LodMesh->At = 0;
+    // FIXME(Jesse): Memoryleak
+    SeedTriangulation( Chunk->CurrentTriangles, Memory);
 
     ZeroChunk(Chunk->Data);
   }
