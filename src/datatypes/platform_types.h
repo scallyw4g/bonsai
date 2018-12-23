@@ -14,7 +14,8 @@ struct hotkeys
   b32 Debug_Pause;
   b32 Debug_ToggleProfile;
   b32 Debug_NextUiState;
-  b32 Debug_Triangulate;
+  b32 Debug_TriangulateIncrement;
+  b32 Debug_TriangulateDecrement;
 #endif
 
   b32 Left;

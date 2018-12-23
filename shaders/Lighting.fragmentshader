@@ -69,7 +69,7 @@ void main()
   vec3 AccumulatedLight = AmbientLight;
 
 
-#if 1
+#if 0
   for ( s32 LightIndex = 0;
       LightIndex < LightCount;
       ++LightIndex)

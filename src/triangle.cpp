@@ -1,5 +1,3 @@
-#define UNINITIALIZED_BOUNDARY_VOXEL_STRUCT UINT_MAX
-
 function void
 SeedTriangulation(current_triangles* CurrentTriangles, memory_arena* Memory)
 {
@@ -24,8 +22,6 @@ SeedTriangulation(current_triangles* CurrentTriangles, memory_arena* Memory)
 
   triangle* Seed1 = Triangle(&TempPoints[2], &TempPoints[3], &TempPoints[0], Memory);
   PushTriangle(CurrentTriangles, Seed1);
-
-  CurrentTriangles->SurfacePoints->Count = UNINITIALIZED_BOUNDARY_VOXEL_STRUCT;
 
   return;
 }
@@ -116,9 +112,9 @@ BufferTriangle(untextured_3d_geometry_buffer* Dest, triangle* Triangle, s32 Colo
   v3 VertBuffer[3];
   v3 NormalBuffer[3] = {V3(0), V3(0), V3(1)};
 
-  VertBuffer[0] = V3(*Triangle->Points[0]);
-  VertBuffer[1] = V3(*Triangle->Points[1]);
-  VertBuffer[2] = V3(*Triangle->Points[2]);
+  VertBuffer[0] = V3( *(Triangle->Points[0]) );
+  VertBuffer[1] = V3( *(Triangle->Points[1]) );
+  VertBuffer[2] = V3( *(Triangle->Points[2]) );
 
   v4 FaceColors[FACE_VERT_COUNT];
   FillColorArray(ColorIndex, FaceColors, FACE_VERT_COUNT);
@@ -154,68 +150,50 @@ BufferTriangle(untextured_3d_geometry_buffer *Mesh, v3 *Verts, v3 Normal, s32 Co
 }
 
 function void
-TriangulateUntilPoint(untextured_3d_geometry_buffer* Dest, current_triangles* CurrentTriangles, world_chunk* Chunk, memory_arena* TempMem)
+TriangulateUntilIndex(untextured_3d_geometry_buffer* Dest, current_triangles* CurrentTriangles, memory_arena* TempMem, u32 MaxIndex)
 {
-  if (CurrentTriangles->SurfacePoints->Count == UNINITIALIZED_BOUNDARY_VOXEL_STRUCT)
+  Assert(MaxIndex < CurrentTriangles->SurfacePoints->Count);
+  Dest->At = 0;
+  SeedTriangulation(CurrentTriangles, TempMem);
+
+  for (u32 PointIndex = 0;
+      PointIndex <= MaxIndex;
+      ++PointIndex)
   {
-    CurrentTriangles->SurfacePoints->Count = 0;
-    GetBoundingVoxels(Chunk, CurrentTriangles->SurfacePoints);
+    voxel_position* Point = CurrentTriangles->SurfacePoints->Points + PointIndex;
+    triangle* Closest = FindClosestFace(CurrentTriangles, Point);
+
+    SplitFace(CurrentTriangles, Closest, Point, TempMem);
   }
 
-#if 1
-  if (CurrentTriangles->SurfacePoints->Count >= 3)
+  for (u32 FaceIndex = 0;
+      FaceIndex < CurrentTriangles->Count;
+      ++FaceIndex)
   {
-#if 0
-    voxel_position P0 = BoundaryVoxels.Points[BoundaryVoxels.Count-1];
-    voxel_position P1 = BoundaryVoxels.Points[BoundaryVoxels.Count-2];
-    voxel_position P2 = BoundaryVoxels.Points[BoundaryVoxels.Count-3];
-    BoundaryVoxels.Count -= 3;
-#endif
-
-    for (u32 PointIndex = 0;
-        PointIndex < CurrentTriangles->SurfacePoints->Count;
-        ++PointIndex)
-    {
-      voxel_position* Point = CurrentTriangles->SurfacePoints->Points + PointIndex;
-      triangle* Closest = FindClosestFace(CurrentTriangles, Point);
-
-      SplitFace(CurrentTriangles, Closest, Point, TempMem);
-    }
-
-    for (u32 FaceIndex = 0;
-        FaceIndex < CurrentTriangles->Count;
-        ++FaceIndex)
-    {
-      triangle* Face = CurrentTriangles->Tris[FaceIndex];
-      BufferTriangle(Dest, Face, RED);
-    }
-
+    triangle* Face = CurrentTriangles->Tris[FaceIndex];
+    BufferTriangle(Dest, Face, RED);
   }
-#endif
+
+  u32 NextIndex = MaxIndex + 1;
+  if (NextIndex < CurrentTriangles->SurfacePoints->Count)
+  {
+    voxel_position* ThisPoint = CurrentTriangles->SurfacePoints->Points + MaxIndex;
+    DrawVoxel( Dest, V3(*ThisPoint), GREEN, V3(0.25f));
+
+    voxel_position* NextPoint = CurrentTriangles->SurfacePoints->Points + NextIndex;
+    triangle* Closest = FindClosestFace(CurrentTriangles, NextPoint);
+    DrawVoxel( Dest, V3(*NextPoint), TEAL, V3(0.25f));
+    BufferTriangle(Dest, Closest, TEAL);
+  }
 
   return;
 }
 
 function void
-Triangulate(untextured_3d_geometry_buffer* Dest, current_triangles* CurrentTriangles, world_chunk* Chunk, memory_arena* TempMem)
+Triangulate(untextured_3d_geometry_buffer* Dest, current_triangles* CurrentTriangles, memory_arena* TempMem)
 {
-  if (CurrentTriangles->SurfacePoints->Count == UNINITIALIZED_BOUNDARY_VOXEL_STRUCT)
-  {
-    CurrentTriangles->SurfacePoints->Count = 0;
-    GetBoundingVoxels(Chunk, CurrentTriangles->SurfacePoints);
-  }
-
   if (CurrentTriangles->SurfacePoints->Count >= 3)
   {
-#if 0
-    voxel_position P0 = BoundaryVoxels.Points[BoundaryVoxels.Count-1];
-    voxel_position P1 = BoundaryVoxels.Points[BoundaryVoxels.Count-2];
-    voxel_position P2 = BoundaryVoxels.Points[BoundaryVoxels.Count-3];
-    BoundaryVoxels.Count -= 3;
-#endif
-
-#if 1
-
     for (u32 PointIndex = 0;
         PointIndex < CurrentTriangles->SurfacePoints->Count;
         ++PointIndex)
@@ -234,7 +212,22 @@ Triangulate(untextured_3d_geometry_buffer* Dest, current_triangles* CurrentTrian
       BufferTriangle(Dest, Face, RED);
     }
 
-#endif
+  }
+
+  return;
+}
+
+function void
+TriangulateSingle(untextured_3d_geometry_buffer* Dest, current_triangles* CurrentTriangles, voxel_position* Point, triangle* Closest, memory_arena* TempMem)
+{
+  SplitFace(CurrentTriangles, Closest, Point, TempMem);
+
+  for (u32 FaceIndex = 0;
+      FaceIndex < CurrentTriangles->Count;
+      ++FaceIndex)
+  {
+    triangle* Face = CurrentTriangles->Tris[FaceIndex];
+    BufferTriangle(Dest, Face, RED);
   }
 
   return;

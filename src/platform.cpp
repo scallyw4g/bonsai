@@ -461,7 +461,8 @@ BindHotkeysToInput(hotkeys *Hotkeys, input *Input)
     Hotkeys->Debug_ToggleTriggeredRuntimeBreak = True;
   }
 
-  Hotkeys->Debug_Triangulate = Input->F3.WasPressed;
+  Hotkeys->Debug_TriangulateDecrement = Input->F3.WasPressed;
+  Hotkeys->Debug_TriangulateIncrement = Input->F4.WasPressed;
 
   /* Hotkeys->Debug_RedrawEveryPush = Input->F2.WasPressed; */
 #endif

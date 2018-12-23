@@ -263,39 +263,6 @@ RenderPostBuffer(post_processing_group *PostGroup, untextured_3d_geometry_buffer
   glDisableVertexAttribArray(1);
 }
 
-inline void
-DrawVoxel( untextured_3d_geometry_buffer *Mesh,
-           v3 RenderP, int ColorIndex, v3 Diameter, r32 Emission = 1.0f)
-{
-  TIMED_FUNCTION();
-
-  v4 FaceColors[FACE_VERT_COUNT];
-  FillColorArray(ColorIndex, FaceColors, FACE_VERT_COUNT, Emission);
-
-  v3 VertexData[6];
-
-  v3 Center = RenderP - (Diameter*0.5);
-  RightFaceVertexData( Center, Diameter, VertexData);
-  BufferVertsChecked(Mesh, 6, VertexData, RightFaceNormalData, FaceColors);
-
-  LeftFaceVertexData( Center, Diameter, VertexData);
-  BufferVertsChecked(Mesh, 6, VertexData, LeftFaceNormalData, FaceColors);
-
-  BottomFaceVertexData( Center, Diameter, VertexData);
-  BufferVertsChecked(Mesh, 6, VertexData, BottomFaceNormalData, FaceColors);
-
-  TopFaceVertexData( Center, Diameter, VertexData);
-  BufferVertsChecked(Mesh, 6, VertexData, TopFaceNormalData, FaceColors);
-
-  FrontFaceVertexData( Center, Diameter, VertexData);
-  BufferVertsChecked(Mesh, 6, VertexData, FrontFaceNormalData, FaceColors);
-
-  BackFaceVertexData( Center, Diameter, VertexData);
-  BufferVertsChecked(Mesh, 6, VertexData, BackFaceNormalData, FaceColors);
-
-  return;
-}
-
 inline bool
 IsRightChunkBoundary( chunk_dimension ChunkDim, int idx )
 {
@@ -1923,9 +1890,31 @@ BufferWorldChunk(
     /*   Triangulate(Chunk->LodMesh, Chunk->CurrentTriangles, Chunk, TranArena); */
     /* } */
 
-    if (Hotkeys->Debug_Triangulate)
+
+    current_triangles *CurrentTriangles = Chunk->CurrentTriangles;
+    if ( (Hotkeys->Debug_TriangulateIncrement || Hotkeys->Debug_TriangulateDecrement) &&
+         (CurrentTriangles->SurfacePoints->Count > 0))
     {
-      Triangulate(Chunk->LodMesh, Chunk->CurrentTriangles, Chunk, TranArena);
+
+      if (Hotkeys->Debug_TriangulateIncrement)
+      {
+        if (CurrentTriangles->CurrentPointIndex+1 < CurrentTriangles->SurfacePoints->Count)
+        {
+          ++CurrentTriangles->CurrentPointIndex;
+        }
+        TriangulateUntilIndex(Chunk->LodMesh, Chunk->CurrentTriangles, TranArena, CurrentTriangles->CurrentPointIndex);
+      }
+
+      if (Hotkeys->Debug_TriangulateDecrement)
+      {
+        if (CurrentTriangles->CurrentPointIndex > 0)
+        {
+          --CurrentTriangles->CurrentPointIndex;
+        }
+        TriangulateUntilIndex(Chunk->LodMesh, Chunk->CurrentTriangles, TranArena, CurrentTriangles->CurrentPointIndex);
+      }
+
+      Print(CurrentTriangles->CurrentPointIndex);
     }
 
 #if 1

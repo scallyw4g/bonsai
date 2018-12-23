@@ -80,6 +80,26 @@ DeleteFace(current_triangles* CurrentTris, u32 DeletionIndex)
   return;
 }
 
+
+#if 1
+function r32
+ComputeMatchSum(triangle *Triangle, voxel_position* Point)
+{
+  r32 Result = 0.0f;
+
+  voxel_position** Points = Triangle->Points;
+  v3 P0 = Normalize(V3(*Points[0]));
+  v3 P1 = Normalize(V3(*Points[1]));
+  v3 P2 = Normalize(V3(*Points[2]));
+  v3 PNormalized = Normalize(V3(*Point));
+
+  Result += Dot(P0, PNormalized);
+  Result += Dot(P1, PNormalized);
+  Result += Dot(P2, PNormalized);
+
+  return Result;
+}
+#else
 function r32
 ComputeMatchSum(triangle *Triangle, voxel_position* Point)
 {
@@ -91,11 +111,12 @@ ComputeMatchSum(triangle *Triangle, voxel_position* Point)
 
   return Result;
 }
+#endif
 
 function triangle*
 FindClosestFace(current_triangles* CurrentTriangles, voxel_position* Point)
 {
-  triangle* BestMatch = 0;
+  triangle* BestMatch = CurrentTriangles->Tris[0];
   r32 BestMatchSum = FLT_MAX;
 
   for (u32 FaceIndex = 0;
@@ -111,6 +132,7 @@ FindClosestFace(current_triangles* CurrentTriangles, voxel_position* Point)
     }
   }
 
+  Assert(BestMatch);
   return BestMatch;
 }
 

@@ -67,8 +67,12 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
                                         Amplititude, StartingZDepth);
 
         /* Compute0thLod(DestChunk->LodMesh, DestChunk, WORLD_CHUNK_DIM); */
+
+        Assert(DestChunk->CurrentTriangles->SurfacePoints->Count == 0);
+        GetBoundingVoxels(DestChunk, DestChunk->CurrentTriangles->SurfacePoints);
+
         /* Triangulate(DestChunk->LodMesh, DestChunk, WORLD_CHUNK_DIM, Thread->TempMemory); */
-        Triangulate(DestChunk->LodMesh, DestChunk->CurrentTriangles, DestChunk, Thread->TempMemory);
+        /* Triangulate(DestChunk->LodMesh, DestChunk->CurrentTriangles, DestChunk, Thread->TempMemory); */
       }
     } break;
 
