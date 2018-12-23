@@ -50,7 +50,7 @@ enum work_queue_entry_type
 {
   WorkEntryType_None            =      0,
   WorkEntryType_InitWorldChunk  = 1 << 1,
-  WorkEntryType_CopyToGpuBuffer = 1 << 2,
+  WorkEntryType_CopyBuffer      = 1 << 2,
 };
 struct gpu_buffer_copy_params
 {

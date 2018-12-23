@@ -80,8 +80,8 @@ DeleteFace(current_triangles* CurrentTris, u32 DeletionIndex)
   return;
 }
 
-
 #if 1
+
 function r32
 ComputeMatchSum(triangle *Triangle, voxel_position* Point)
 {
@@ -99,6 +99,7 @@ ComputeMatchSum(triangle *Triangle, voxel_position* Point)
 
   return Result;
 }
+
 #else
 function r32
 ComputeMatchSum(triangle *Triangle, voxel_position* Point)

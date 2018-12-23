@@ -152,7 +152,9 @@ BufferVertsChecked(
   }
   else
   {
+    Assert(False);
     Error("Ran out of memory on untextured_3d_geometry_buffer");
+    /* PlatformDebugStacktrace(); */
   }
 }
 
@@ -341,3 +343,4 @@ DrawVoxel( untextured_3d_geometry_buffer *Mesh,
 
   return;
 }
+

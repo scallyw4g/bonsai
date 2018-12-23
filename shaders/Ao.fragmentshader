@@ -9,13 +9,13 @@ uniform sampler2D SsaoNoiseTexture;
 uniform vec3 SsaoNoiseTile;
 
 // This must match the corresponding define in constants.h
-const int SSAO_KERNEL_SIZE = 8;
+const int SSAO_KERNEL_SIZE = 32;
 uniform vec3 SsaoKernel[SSAO_KERNEL_SIZE];
 
 uniform mat4 ViewProjection;
 
 // Tuning
-  float SsaoRadius = 1.0f;
+  float SsaoRadius = 0.35f;
   float DepthThreshold = 0.004f;
 //
 
@@ -35,7 +35,7 @@ void main()
   mat3 Reorientation = mat3(Right, Front, Up) * SsaoRadius;
 
   float AO = 1.0f;
-  float OccluderContribution = 1.0f/float(SSAO_KERNEL_SIZE);
+  float OccluderContribution = 0.5f/float(SSAO_KERNEL_SIZE);
 
   // NOTE(Jesse): I was getting some artifacts when at 90deg to a surface so I
   // added a bias to the sample.

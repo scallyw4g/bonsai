@@ -66,20 +66,21 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
                                         DestChunk,
                                         Amplititude, StartingZDepth);
 
-        /* Compute0thLod(DestChunk->LodMesh, DestChunk, WORLD_CHUNK_DIM); */
+        Compute0thLod(DestChunk->LodMesh, DestChunk, WORLD_CHUNK_DIM);
 
-        Assert(DestChunk->CurrentTriangles->SurfacePoints->Count == 0);
-        GetBoundingVoxels(DestChunk, DestChunk->CurrentTriangles->SurfacePoints);
+        /* Assert(DestChunk->CurrentTriangles->SurfacePoints->Count == 0); */
+        /* GetBoundingVoxels(DestChunk, DestChunk->CurrentTriangles->SurfacePoints); */
 
         /* Triangulate(DestChunk->LodMesh, DestChunk, WORLD_CHUNK_DIM, Thread->TempMemory); */
         /* Triangulate(DestChunk->LodMesh, DestChunk->CurrentTriangles, DestChunk, Thread->TempMemory); */
       }
     } break;
 
-    case WorkEntryType_CopyToGpuBuffer:
+    case WorkEntryType_CopyBuffer:
     {
       untextured_3d_geometry_buffer* Src = Entry->GpuCopyParams.Src;
       untextured_3d_geometry_buffer* Dest = &Entry->GpuCopyParams.Dest;
+      Assert(Src->At <= Dest->End);
       v3 Basis = Entry->GpuCopyParams.Basis;
       BufferVertsChecked(Src, Dest, Basis, V3(1.0f));
     } break;

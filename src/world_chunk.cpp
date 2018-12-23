@@ -152,6 +152,8 @@ FreeWorldChunk(world *World, world_chunk *Chunk , mesh_freelist* MeshFreelist, m
     World->FreeChunks[World->FreeChunkCount++] = Chunk;
 
     Chunk->LodMesh->At = 0;
+    Chunk->LodMesh_Complete = False;
+
     // FIXME(Jesse): Memoryleak
     SeedTriangulation( Chunk->CurrentTriangles, Memory);
     Chunk->CurrentTriangles->CurrentPointIndex = 0;

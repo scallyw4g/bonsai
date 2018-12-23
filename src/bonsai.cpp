@@ -5,6 +5,7 @@
 #include <bonsai_mesh.cpp>
 #include <threadsafe.cpp>
 #include <triangle.cpp>
+#include <lod.cpp>
 #include <world_chunk.cpp>
 #include <vox_loader.cpp>
 #include <render.h>
