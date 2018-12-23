@@ -324,7 +324,14 @@ PushSize(memory_arena *Arena, umm SizeIn, umm Alignment, b32 MemProtect)
     ReallocateArena(Arena, RequestedSize, MemProtect);
   }
 
+  umm AtToAlignment = Alignment - ((umm)Arena->At % Alignment);
+  if (AtToAlignment != Alignment)
+  {
+    Arena->At += AtToAlignment;
+  }
+
   u8* Result = Arena->At;
+  Assert(((umm)Arena->At % Alignment) == 0);
 
 #if MEMPROTECT_OVERFLOW
   if (MemProtect)

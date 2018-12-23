@@ -597,6 +597,19 @@ UnprotectedAllocations()
   return;
 }
 
+void
+UnprotectedAlignment()
+{
+  memory_arena Arena = {};
+  Arena.At = (u8*)1;
+  Arena.End = (u8*)0xffffffffffff;
+
+  test_struct_64* SecondThing = AllocateAlignedProtection(test_struct_64, &Arena, 1, 64, False);
+
+
+  TestThat((umm)SecondThing % 64 == 0);
+}
+
 s32
 main()
 {
@@ -614,6 +627,8 @@ main()
     UnprotectedAllocations();
 
     TestAlignment();
+
+    UnprotectedAlignment();
 #endif
 
   TestSuiteEnd();
