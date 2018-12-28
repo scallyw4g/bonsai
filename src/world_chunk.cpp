@@ -763,6 +763,35 @@ GetMeshForChunk(mesh_freelist* Freelist, memory_arena* PermMemory)
 }
 
 function void
+ClipAndDisplaceToMinDim(untextured_3d_geometry_buffer* Buffer, v3 Min, v3 Dim)
+{
+  v3 Max = Min+Dim;
+  for (u32 VertIndex = 0;
+      VertIndex < Buffer->At;
+      ++VertIndex)
+  {
+    v3* Vert = Buffer->Verts + VertIndex;
+    for (u32 AxisIndex = 0;
+        AxisIndex < 3;
+        ++AxisIndex)
+    {
+      if (Vert->E[AxisIndex] > Max.E[AxisIndex])
+      {
+        Vert->E[AxisIndex] = Dim.E[AxisIndex];
+      }
+      else if (Vert->E[AxisIndex] < Min.E[AxisIndex])
+      {
+        Vert->E[AxisIndex] = 0;
+      }
+      else
+      {
+        Vert->E[AxisIndex] -= Min.E[AxisIndex];
+      }
+    }
+  }
+}
+
+function void
 InitializeWorldChunkPerlinPlane(thread_local_state *Thread,
                                 world_chunk *DestChunk, s32 Amplititude, s32 zMin)
 {
@@ -800,6 +829,13 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread,
     BuildWorldChunkMesh(SyntheticChunk, SynChunkDim, DestChunk, WORLD_CHUNK_DIM, DestChunk->Mesh);
   }
 
+#if 1
+  Compute0thLod(DestChunk->LodMesh, SyntheticChunk, SynChunkDim);
+  ClipAndDisplaceToMinDim(DestChunk->LodMesh, V3(1.0f), V3(WORLD_CHUNK_DIM));
+#else
+  Compute0thLod(DestChunk->LodMesh, DestChunk, WORLD_CHUNK_DIM);
+#endif
+  DestChunk->LodMesh_Complete = True;
   DestChunk->Data->Flags = Chunk_MeshComplete;
 
   return;

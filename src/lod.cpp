@@ -14,12 +14,22 @@ FindBoundaryVoxelsAlongEdge(
 
   while ( IsInsideDim(Dim, CurrentP) )
   {
+    b32 TransitionToFilled = !StartIsFilled;
 
     b32 CurrentPIsFilled = IsFilledInChunk(Data, CurrentP, Dim);
     if (CurrentPIsFilled != StartIsFilled)
     {
       Assert(PB->Count < POINT_BUFFER_SIZE);
-      PB->Points[PB->Count++] = CurrentP;
+
+      if (TransitionToFilled)
+      {
+        PB->Points[PB->Count++] = CurrentP;
+      }
+      else
+      {
+        PB->Points[PB->Count++] = CurrentP - Iter;
+      }
+
       StartIsFilled = CurrentPIsFilled;
     }
 
@@ -156,13 +166,6 @@ Compute0thLod(untextured_3d_geometry_buffer* Dest, world_chunk *WorldChunk, chun
   }
 
 
-  { // Debug drawing
-    for ( s32 PointIndex = 0; PointIndex < PB->Count; ++PointIndex )
-    {
-      DrawVoxel( Dest, V3(PB->Points[PointIndex]), PointIndex, V3(0.2f));
-    }
-  }
-
 #if 1
   // Sort the vertices based on distance to closest points
   for (s32 PBIndexOuter = 0;
@@ -200,6 +203,14 @@ Compute0thLod(untextured_3d_geometry_buffer* Dest, world_chunk *WorldChunk, chun
   }
 #endif
 
+  // Debug drawing
+  for ( s32 PointIndex = 0; PointIndex < PB->Count; ++PointIndex )
+  {
+    DrawVoxel( Dest, V3(PB->Points[PointIndex]), PointIndex, V3(0.2f));
+  }
+
+
+  // Draw
   {
     v3 Verts[3] = {};
     Verts[0] = V3(PB->Points[0]);
@@ -214,7 +225,6 @@ Compute0thLod(untextured_3d_geometry_buffer* Dest, world_chunk *WorldChunk, chun
     }
   }
 
-    WorldChunk->LodMesh_Complete = True;
 
     /* if (PB->Count == 5) */
 #if 0

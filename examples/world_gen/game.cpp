@@ -66,8 +66,6 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
                                         DestChunk,
                                         Amplititude, StartingZDepth);
 
-        Compute0thLod(DestChunk->LodMesh, DestChunk, WORLD_CHUNK_DIM);
-
         /* Assert(DestChunk->CurrentTriangles->SurfacePoints->Count == 0); */
         /* GetBoundingVoxels(DestChunk, DestChunk->CurrentTriangles->SurfacePoints); */
 
@@ -238,8 +236,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   GameState->Player = GetFreeEntity(GameState);
   SpawnPlayer(GameState, GameState->Player, Canonical_Position(Voxel_Position(0), WorldCenter));
 
-  AllocateGpuElementBuffer(GameState->GpuBuffers + 0, (u32)Megabytes(1));
-  AllocateGpuElementBuffer(GameState->GpuBuffers + 1, (u32)Megabytes(1));
+  AllocateGpuElementBuffer(GameState->GpuBuffers + 0, (u32)Megabytes(4));
+  AllocateGpuElementBuffer(GameState->GpuBuffers + 1, (u32)Megabytes(4));
 
   return GameState;
 }
