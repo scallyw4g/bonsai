@@ -786,6 +786,12 @@ RewindArena(memory_arena *Arena, umm RestartBlockSize = Megabytes(1) )
 
   PlatformUnprotectArena(Arena);
 
+  u8* ClearByte = Arena->Start;
+  while( ClearByte < Arena->At )
+  {
+    *ClearByte++ = 0;
+  }
+
   Arena->At = Arena->Start;
   Arena->NextBlockSize = RestartBlockSize;
 
