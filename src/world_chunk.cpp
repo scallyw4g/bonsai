@@ -304,7 +304,15 @@ CopyChunkOffset(world_chunk *Src, voxel_position SrcChunkDim, world_chunk *Dest,
       {
         s32 DestIndex = GetIndex(Voxel_Position(x,y,z), DestChunkDim);
         s32 SynIndex = GetIndex(Voxel_Position(x,y,z) + Offset, SrcChunkDim);
+
+#if 1
         Dest->Data->Voxels[DestIndex] = Src->Data->Voxels[SynIndex];
+#else
+        voxel vSrc = Src->Data->Voxels[SynIndex];
+        voxel *vDest = Dest->Data->Voxels[DestIndex];
+        vDest = vSrc;
+#endif
+
         Dest->Filled += Dest->Data->Voxels[DestIndex].Flags & Voxel_Filled;
         CAssert(Voxel_Filled == 1);
       }
@@ -792,6 +800,80 @@ ClipAndDisplaceToMinDim(untextured_3d_geometry_buffer* Buffer, v3 Min, v3 Dim)
 }
 
 function void
+FindEdgeIntersections(point_buffer* Dest, chunk_data* ChunkData, chunk_dimension ChunkDim)
+{
+  {
+    voxel_position Start = Voxel_Position(0, 0, 0);
+
+    {
+      voxel_position Iter  = Voxel_Position(1, 0, 0);
+      FindBoundaryVoxelsAlongEdge(ChunkData, ChunkDim, Start, Iter, Dest);
+    }
+    {
+      voxel_position Iter  = Voxel_Position(0, 1, 0);
+      FindBoundaryVoxelsAlongEdge(ChunkData, ChunkDim, Start, Iter, Dest);
+    }
+    {
+      voxel_position Iter  = Voxel_Position(0, 0, 1);
+      FindBoundaryVoxelsAlongEdge(ChunkData, ChunkDim, Start, Iter, Dest);
+    }
+  }
+
+  {
+    voxel_position Start = Voxel_Position(0, ChunkDim.y-1, ChunkDim.z-1);
+
+    {
+      voxel_position Iter  = Voxel_Position(1, 0, 0);
+      FindBoundaryVoxelsAlongEdge(ChunkData, ChunkDim, Start, Iter, Dest);
+    }
+    {
+      voxel_position Iter  = Voxel_Position(0,-1, 0);
+      FindBoundaryVoxelsAlongEdge(ChunkData, ChunkDim, Start, Iter, Dest);
+    }
+    {
+      voxel_position Iter  = Voxel_Position(0, 0,-1);
+      FindBoundaryVoxelsAlongEdge(ChunkData, ChunkDim, Start, Iter, Dest);
+    }
+  }
+
+  {
+    voxel_position Start = Voxel_Position(ChunkDim.x-1, ChunkDim.y-1, 0);
+
+    {
+      voxel_position Iter  = Voxel_Position(-1, 0, 0);
+      FindBoundaryVoxelsAlongEdge(ChunkData, ChunkDim, Start, Iter, Dest);
+    }
+    {
+      voxel_position Iter  = Voxel_Position(0,-1, 0);
+      FindBoundaryVoxelsAlongEdge(ChunkData, ChunkDim, Start, Iter, Dest);
+    }
+    {
+      voxel_position Iter  = Voxel_Position(0, 0, 1);
+      FindBoundaryVoxelsAlongEdge(ChunkData, ChunkDim, Start, Iter, Dest);
+    }
+  }
+
+  {
+    voxel_position Start = Voxel_Position(ChunkDim.x-1, 0, ChunkDim.z-1);
+
+    {
+      voxel_position Iter  = Voxel_Position(-1, 0, 0);
+      FindBoundaryVoxelsAlongEdge(ChunkData, ChunkDim, Start, Iter, Dest);
+    }
+    {
+      voxel_position Iter  = Voxel_Position(0, 1, 0);
+      FindBoundaryVoxelsAlongEdge(ChunkData, ChunkDim, Start, Iter, Dest);
+    }
+    {
+      voxel_position Iter  = Voxel_Position(0, 0,-1);
+      FindBoundaryVoxelsAlongEdge(ChunkData, ChunkDim, Start, Iter, Dest);
+    }
+  }
+
+  return;
+}
+
+function void
 InitializeWorldChunkPerlinPlane(thread_local_state *Thread,
                                 world_chunk *DestChunk, s32 Amplititude, s32 zMin)
 {
@@ -829,12 +911,106 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread,
     BuildWorldChunkMesh(SyntheticChunk, SynChunkDim, DestChunk, WORLD_CHUNK_DIM, DestChunk->Mesh);
   }
 
+
+  { // Compute 0th LOD
+
+    /* u32 WorldChunkVolume = Volume(WORLD_CHUNK_DIM); */
+    /* boundary_voxels* BoundingPoints = AllocateBoundaryVoxels(WorldChunkVolume, Thread->TempMemory); */
+    /* GetBoundingVoxels(DestChunk, BoundingPoints); */
+    /* v3 BoundingVoxelMidpoint = (V3(BoundingPoints->Max - BoundingPoints->Min) / 2.0f) + V3(BoundingPoints->Min); */
+
+    chunk_dimension NewSynChunkDim = WORLD_CHUNK_DIM+Voxel_Position(1);
+    CopyChunkOffset(SyntheticChunk, SynChunkDim, SyntheticChunk, NewSynChunkDim, Voxel_Position(1));
+    SynChunkDim = NewSynChunkDim;
+
+    point_buffer TempBuffer = {};
+    point_buffer *EdgeBoundaryVoxels = &TempBuffer;
+
+    FindEdgeIntersections(EdgeBoundaryVoxels, SyntheticChunk->Data, NewSynChunkDim);
+
 #if 1
-  Compute0thLod(DestChunk->LodMesh, SyntheticChunk, SynChunkDim, Thread->TempMemory);
-  /* ClipAndDisplaceToMinDim(DestChunk->LodMesh, V3(1.0f), V3(WORLD_CHUNK_DIM)); */
-#else
-  Compute0thLod(DestChunk->LodMesh, DestChunk, WORLD_CHUNK_DIM);
+    // Sort the vertices based on distance to closest points
+    for (s32 PBIndexOuter = 0;
+        PBIndexOuter < EdgeBoundaryVoxels->Count;
+        ++PBIndexOuter)
+    {
+      voxel_position CurrentVert = EdgeBoundaryVoxels->Points[PBIndexOuter];
+      s32 ShortestLength = INT_MAX;
+
+      for (s32 PBIndexInner = PBIndexOuter + 1;
+          PBIndexInner < EdgeBoundaryVoxels->Count;
+          ++PBIndexInner)
+      {
+        s32 TestLength = LengthSq(CurrentVert - EdgeBoundaryVoxels->Points[PBIndexInner]);
+
+        if ( TestLength < ShortestLength )
+        {
+          ShortestLength = TestLength;
+          Swap(EdgeBoundaryVoxels->Points+PBIndexOuter+1, EdgeBoundaryVoxels->Points+PBIndexInner );
+        }
+      }
+
+    }
 #endif
+
+#if 0
+    // Find closest bounding point to the midpoint of the bounding volume
+    u32 FoundPointIndex = 0;
+    r32 ShortestLength = FLT_MAX;
+    for ( u32 PointIndex = 0;
+          PointIndex < BoundingPoints->At;
+          ++PointIndex)
+    {
+      voxel_position* TestP = BoundingPoints->Points + PointIndex;
+      r32 TestLength = LengthSq(V3(*TestP) - BoundingVoxelMidpoint);
+      if  (TestLength < ShortestLength)
+      {
+        ShortestLength = TestLength;
+        FoundPointIndex = PointIndex;
+      }
+    }
+
+    DrawVoxel(DestChunk->LodMesh, V3(BoundingPoints->Points[FoundPointIndex]), PINK, V3(0.75f));
+    DEBUG_DrawAABB(DestChunk->LodMesh, V3(BoundingPoints->Min), V3(BoundingPoints->Max), TEAL );
+
+
+    for ( u32 PointIndex = 0;
+          PointIndex < BoundingPoints->At;
+          ++PointIndex )
+    {
+      DrawVoxel( DestChunk->LodMesh, V3(BoundingPoints->Points[PointIndex]), RED, V3(0.5f));
+    }
+#endif
+
+    /* DEBUG_DrawAABB(DestChunk->LodMesh, V3(0), V3(WORLD_CHUNK_DIM), PINK); */
+
+#if 1
+    for ( s32 PointIndex = 0;
+          PointIndex < EdgeBoundaryVoxels->Count;
+          ++PointIndex )
+    {
+      DrawVoxel( DestChunk->LodMesh, V3(EdgeBoundaryVoxels->Points[PointIndex]), GREEN, V3(0.6f));
+    }
+#endif
+
+
+    // Draw
+    {
+      v3 Verts[3] = {};
+      Verts[0] = V3(EdgeBoundaryVoxels->Points[0]);
+
+      s32 Color = 42;
+      s32 VertIndex = 1;
+      while ( (VertIndex + 1) < EdgeBoundaryVoxels->Count )
+      {
+        Verts[1] = V3(EdgeBoundaryVoxels->Points[VertIndex]);
+        Verts[2] = V3(EdgeBoundaryVoxels->Points[++VertIndex]);
+        BufferTriangle(DestChunk->LodMesh, Verts, V3(0,0,1), Color);
+      }
+    }
+
+  }
+
   DestChunk->LodMesh_Complete = True;
   DestChunk->Data->Flags = Chunk_MeshComplete;
 

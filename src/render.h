@@ -38,17 +38,17 @@ Orthographic( r32 X, r32 Y, r32 Zmin, r32 Zmax)
 inline m4
 Perspective(radians FOV, v2 WindowDim, r32 NearClip, r32 FarClip)
 {
-  r32 TanHalfFOV = (r32)tan(FOV / 2.0f);
+  r32 FocalLength = (r32)tan(FOV / 2.0f);
   r32 Aspect = WindowDim.x/WindowDim.y;
 
   r32 Z = (-(FarClip+NearClip)) / (FarClip-NearClip);
   r32 ZZ = (-(2.0f*FarClip*NearClip)) / (FarClip - NearClip);
 
   m4 Result = {
-    V4(1.0f/(Aspect*TanHalfFOV) , 0               , 0  , 0)     ,
-    V4(0                        , 1.0f/TanHalfFOV , 0  , 0)     ,
-    V4(0                        , 0               , Z  , -1.0f) ,
-    V4(0                        , 0               , ZZ , 0)     ,
+    V4(1.0f/(Aspect*FocalLength) , 0                , 0  , 0)     ,
+    V4(0                         , 1.0f/FocalLength , 0  , 0)     ,
+    V4(0                         , 0                , Z  , -1.0f) ,
+    V4(0                         , 0                , ZZ , 0)     ,
   };
 
   return Result;

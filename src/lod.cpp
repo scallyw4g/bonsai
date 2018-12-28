@@ -44,22 +44,17 @@ Compute0thLod(untextured_3d_geometry_buffer* Dest, world_chunk *WorldChunk, chun
 {
   TIMED_FUNCTION();
 
-  /* v3 RenderOffset = GetRenderP( WorldChunkDim, WorldChunk->WorldP, GameState->Camera); */
-
   u32 WorldChunkVolume = Volume(WorldChunkDim);
 
-  /* boundary_voxels* BoundingPoints = AllocateBoundaryVoxels(WorldChunkVolume, TempArena); */
-  /* GetBoundingVoxels(WorldChunk, BoundingPoints); */
-  /* v3 BoundingVoxelMidpoint = (V3(BoundingPoints->Max - BoundingPoints->Min) / 2.0f) + V3(BoundingPoints->Min); */
+  boundary_voxels* BoundingPoints = AllocateBoundaryVoxels(WorldChunkVolume, TempArena);
+  GetBoundingVoxels(WorldChunk, BoundingPoints);
+  v3 BoundingVoxelMidpoint = (V3(BoundingPoints->Max - BoundingPoints->Min) / 2.0f) + V3(BoundingPoints->Min);
 
 #if 0
   v3 SurfaceNormal = {};
 
-
-
   b32 HalfFull = WorldChunk->Filled >= WorldChunkVolume/2 ? True : False ;
   b32 HalfEmpty = !HalfFull;
-
 
   // Loop through the chunk and find the surface normal
   for ( u32 VoxelIndex = 0;
@@ -211,21 +206,23 @@ Compute0thLod(untextured_3d_geometry_buffer* Dest, world_chunk *WorldChunk, chun
   u32 FoundPointIndex = 0;
   r32 ShortestLength = FLT_MAX;
 
-  /* for ( u32 PointIndex = 0; */
-  /*       PointIndex < BoundingPoints->At; */
-  /*       ++PointIndex) */
-  /* { */
-  /*   voxel_position* TestP = BoundingPoints->Points + PointIndex; */
-  /*   r32 TestLength = LengthSq(V3(*TestP) - BoundingVoxelMidpoint); */
-  /*   if  (TestLength < ShortestLength) */
-  /*   { */
-  /*     ShortestLength = TestLength; */
-  /*     FoundPointIndex = PointIndex; */
-  /*   } */
-  /* } */
+  for ( u32 PointIndex = 0;
+        PointIndex < BoundingPoints->At;
+        ++PointIndex)
+  {
+    voxel_position* TestP = BoundingPoints->Points + PointIndex;
+    r32 TestLength = LengthSq(V3(*TestP) - BoundingVoxelMidpoint);
+    if  (TestLength < ShortestLength)
+    {
+      ShortestLength = TestLength;
+      FoundPointIndex = PointIndex;
+    }
+  }
 
-  /* DrawVoxel(Dest, V3(BoundingPoints->Points[FoundPointIndex]), PINK, V3(1)); */
-  /* DEBUG_DrawAABB(Dest, V3(BoundingPoints->Min), V3(BoundingPoints->Max), TEAL ); */
+  DrawVoxel(Dest, V3(BoundingPoints->Points[FoundPointIndex]), PINK, V3(1));
+  DEBUG_DrawAABB(Dest, V3(BoundingPoints->Min), V3(BoundingPoints->Max), TEAL );
+
+  DEBUG_DrawAABB(Dest, V3(0), V3(WorldChunkDim), PINK);
 
 #if 0
   for ( u32 PointIndex = 0;
