@@ -315,7 +315,7 @@ inline void
 DrawVoxel( untextured_3d_geometry_buffer *Mesh,
            v3 RenderP, int ColorIndex, v3 Diameter, r32 Emission = 1.0f)
 {
-  TIMED_FUNCTION();
+  /* TIMED_FUNCTION(); */
 
   v4 FaceColors[FACE_VERT_COUNT];
   FillColorArray(ColorIndex, FaceColors, FACE_VERT_COUNT, Emission);

@@ -157,7 +157,7 @@ FreeWorldChunk(world *World, world_chunk *Chunk , mesh_freelist* MeshFreelist, m
     // FIXME(Jesse): Memoryleak
     SeedTriangulation( Chunk->CurrentTriangles, Memory);
     Chunk->CurrentTriangles->CurrentPointIndex = 0;
-    Chunk->CurrentTriangles->SurfacePoints->Count = 0;
+    Chunk->CurrentTriangles->SurfacePoints->End = 0;
 
     ZeroChunk(Chunk->Data);
   }
@@ -830,8 +830,8 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread,
   }
 
 #if 1
-  Compute0thLod(DestChunk->LodMesh, SyntheticChunk, SynChunkDim);
-  ClipAndDisplaceToMinDim(DestChunk->LodMesh, V3(1.0f), V3(WORLD_CHUNK_DIM));
+  Compute0thLod(DestChunk->LodMesh, SyntheticChunk, SynChunkDim, Thread->TempMemory);
+  /* ClipAndDisplaceToMinDim(DestChunk->LodMesh, V3(1.0f), V3(WORLD_CHUNK_DIM)); */
 #else
   Compute0thLod(DestChunk->LodMesh, DestChunk, WORLD_CHUNK_DIM);
 #endif

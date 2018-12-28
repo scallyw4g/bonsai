@@ -40,17 +40,22 @@ FindBoundaryVoxelsAlongEdge(
 }
 
 void
-Compute0thLod(untextured_3d_geometry_buffer* Dest, world_chunk *WorldChunk, chunk_dimension WorldChunkDim)
+Compute0thLod(untextured_3d_geometry_buffer* Dest, world_chunk *WorldChunk, chunk_dimension WorldChunkDim, memory_arena* TempArena)
 {
   TIMED_FUNCTION();
 
   /* v3 RenderOffset = GetRenderP( WorldChunkDim, WorldChunk->WorldP, GameState->Camera); */
 
-  v3 SurfaceNormal = {};
-  v3 ChunkMidpoint = WorldChunkDim/2.0f;
-  /* DEBUG_DrawPointMarker(world, ChunkMidpoint + RenderOffset, GREEN, 0.5f); */
-
   u32 WorldChunkVolume = Volume(WorldChunkDim);
+
+  /* boundary_voxels* BoundingPoints = AllocateBoundaryVoxels(WorldChunkVolume, TempArena); */
+  /* GetBoundingVoxels(WorldChunk, BoundingPoints); */
+  /* v3 BoundingVoxelMidpoint = (V3(BoundingPoints->Max - BoundingPoints->Min) / 2.0f) + V3(BoundingPoints->Min); */
+
+#if 0
+  v3 SurfaceNormal = {};
+
+
 
   b32 HalfFull = WorldChunk->Filled >= WorldChunkVolume/2 ? True : False ;
   b32 HalfEmpty = !HalfFull;
@@ -70,11 +75,11 @@ Compute0thLod(untextured_3d_geometry_buffer* Dest, world_chunk *WorldChunk, chun
     // here to avoid this branch, which could be a large perf win
     if ( HalfFull && NotFilledInChunk( WorldChunk->Data, VoxelP, WorldChunkDim ) )
     {
-      SurfaceNormal += Normalize( VoxelP - ChunkMidpoint );
+      SurfaceNormal += Normalize( VoxelP - BoundingVoxelMidpoint );
     }
     else if ( HalfEmpty && IsFilledInChunk( WorldChunk->Data, VoxelP, WorldChunkDim ) )
     {
-      SurfaceNormal += Normalize( VoxelP - ChunkMidpoint );
+      SurfaceNormal += Normalize( VoxelP - BoundingVoxelMidpoint );
     }
   }
 
@@ -92,7 +97,8 @@ Compute0thLod(untextured_3d_geometry_buffer* Dest, world_chunk *WorldChunk, chun
     return;
   }
 
-  /* DEBUG_DrawVectorAt(world, RenderOffset + ChunkMidpoint - (SurfaceNormal*10), SurfaceNormal*20, BLACK, 0.5f ); */
+  /* DEBUG_DrawVectorAt(world, RenderOffset + BoundingVoxelMidpoint - (SurfaceNormal*10), SurfaceNormal*20, BLACK, 0.5f ); */
+#endif
 
   point_buffer TempBuffer = {};
   point_buffer *PB = &TempBuffer;
@@ -193,21 +199,51 @@ Compute0thLod(untextured_3d_geometry_buffer* Dest, world_chunk *WorldChunk, chun
       if ( TestLength < ShortestLength )
       {
         ShortestLength = TestLength;
-
-        voxel_position Temp = PB->Points[PBIndexOuter + 1];
-        PB->Points[PBIndexOuter + 1] = PB->Points[PBIndexInner];
-        PB->Points[PBIndexInner] = Temp;
+        Swap(PB->Points+PBIndexOuter+1, PB->Points+PBIndexInner );
       }
     }
 
   }
 #endif
 
-  // Debug drawing
-  for ( s32 PointIndex = 0; PointIndex < PB->Count; ++PointIndex )
+  // Find closest bounding point to the midpoint of the bounding volume
+
+  u32 FoundPointIndex = 0;
+  r32 ShortestLength = FLT_MAX;
+
+  /* for ( u32 PointIndex = 0; */
+  /*       PointIndex < BoundingPoints->At; */
+  /*       ++PointIndex) */
+  /* { */
+  /*   voxel_position* TestP = BoundingPoints->Points + PointIndex; */
+  /*   r32 TestLength = LengthSq(V3(*TestP) - BoundingVoxelMidpoint); */
+  /*   if  (TestLength < ShortestLength) */
+  /*   { */
+  /*     ShortestLength = TestLength; */
+  /*     FoundPointIndex = PointIndex; */
+  /*   } */
+  /* } */
+
+  /* DrawVoxel(Dest, V3(BoundingPoints->Points[FoundPointIndex]), PINK, V3(1)); */
+  /* DEBUG_DrawAABB(Dest, V3(BoundingPoints->Min), V3(BoundingPoints->Max), TEAL ); */
+
+#if 0
+  for ( u32 PointIndex = 0;
+        PointIndex < BoundingPoints->At;
+        ++PointIndex )
   {
-    DrawVoxel( Dest, V3(PB->Points[PointIndex]), PointIndex, V3(0.2f));
+    DrawVoxel( Dest, V3(BoundingPoints->Points[PointIndex]), RED, V3(0.5f));
   }
+#endif
+
+#if 0
+  for ( s32 PointIndex = 0;
+        PointIndex < PB->Count;
+        ++PointIndex )
+  {
+    DrawVoxel( Dest, V3(PB->Points[PointIndex]), PointIndex, V3(0.5f));
+  }
+#endif
 
 
   // Draw
@@ -221,7 +257,7 @@ Compute0thLod(untextured_3d_geometry_buffer* Dest, world_chunk *WorldChunk, chun
     {
       Verts[1] = V3(PB->Points[VertIndex]);
       Verts[2] = V3(PB->Points[++VertIndex]);
-      BufferTriangle(Dest, Verts, SurfaceNormal, Color);
+      BufferTriangle(Dest, Verts, V3(0,0,1), Color);
     }
   }
 

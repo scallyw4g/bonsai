@@ -78,7 +78,7 @@ HasUnfilledNeighbors(u32 Index, world_chunk* Chunk, chunk_dimension ChunkDim)
 function void
 GetBoundingVoxels(world_chunk* Chunk, boundary_voxels* Dest)
 {
-  TIMED_FUNCTION();
+  /* TIMED_FUNCTION(); */
   for (s32 z = 0;
       z < WORLD_CHUNK_DIM.z;
       ++z)
@@ -97,7 +97,11 @@ GetBoundingVoxels(world_chunk* Chunk, boundary_voxels* Dest)
         if (IsSet(V, Voxel_Filled) &&
             HasUnfilledNeighbors(vIndex, Chunk, WORLD_CHUNK_DIM))
         {
-          Dest->Points[Dest->Count++] = P;
+          Assert(Dest->At < Dest->End);
+          Dest->Points[Dest->At++] = P;
+
+          Dest->Min = Min(P, Dest->Min);
+          Dest->Max = Max(P, Dest->Max);
         }
       }
     }
@@ -152,7 +156,7 @@ BufferTriangle(untextured_3d_geometry_buffer *Mesh, v3 *Verts, v3 Normal, s32 Co
 function void
 TriangulateUntilIndex(untextured_3d_geometry_buffer* Dest, current_triangles* CurrentTriangles, memory_arena* TempMem, u32 MaxIndex)
 {
-  Assert(MaxIndex < CurrentTriangles->SurfacePoints->Count);
+  Assert(MaxIndex < CurrentTriangles->SurfacePoints->End);
   Dest->At = 0;
   SeedTriangulation(CurrentTriangles, TempMem);
 
@@ -175,7 +179,7 @@ TriangulateUntilIndex(untextured_3d_geometry_buffer* Dest, current_triangles* Cu
   }
 
   u32 NextIndex = MaxIndex + 1;
-  if (NextIndex < CurrentTriangles->SurfacePoints->Count)
+  if (NextIndex < CurrentTriangles->SurfacePoints->End)
   {
     voxel_position* ThisPoint = CurrentTriangles->SurfacePoints->Points + MaxIndex;
     DrawVoxel( Dest, V3(*ThisPoint), GREEN, V3(0.25f));
@@ -192,10 +196,10 @@ TriangulateUntilIndex(untextured_3d_geometry_buffer* Dest, current_triangles* Cu
 function void
 Triangulate(untextured_3d_geometry_buffer* Dest, current_triangles* CurrentTriangles, memory_arena* TempMem)
 {
-  if (CurrentTriangles->SurfacePoints->Count >= 3)
+  if (CurrentTriangles->SurfacePoints->End >= 3)
   {
     for (u32 PointIndex = 0;
-        PointIndex < CurrentTriangles->SurfacePoints->Count;
+        PointIndex < CurrentTriangles->SurfacePoints->End;
         ++PointIndex)
     {
       voxel_position* Point = CurrentTriangles->SurfacePoints->Points + PointIndex;

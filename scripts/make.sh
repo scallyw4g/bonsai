@@ -8,7 +8,7 @@ if [ "$WIN32" == "1" ]; then
 else # Win32
   echo " -- Building Linux"
   cd build
-  CMAKE_CXX_COMPILER="/usr/bin/clang" make Bonsai WorldGen "$@" 2>&1
+  CMAKE_CXX_COMPILER="/usr/bin/clang" make DebugSystem Bonsai WorldGen "$@" 2>&1
 fi
 
 if [ "$EMCC" == "1" ]; then

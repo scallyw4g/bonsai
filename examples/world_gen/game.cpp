@@ -145,7 +145,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   {
     Unspawn(Player);
     world_position PlayerChunkP = World_Position(0, 0, -2);
-    SpawnPlayer(GameState, Player, Canonical_Position(Voxel_Position(0,0,0), PlayerChunkP) );
+    SpawnPlayer(GameState, Player,  Canonical_Position(V3(0,0,2), World_Position(0,0,0))  );
     World->Center = PlayerChunkP;
   }
 

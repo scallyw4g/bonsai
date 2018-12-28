@@ -17,7 +17,11 @@ struct triangle
 struct boundary_voxels
 {
   voxel_position* Points;
-  u32 Count;
+  u32 At;
+  u32 End;
+
+  voxel_position Min;
+  voxel_position Max;
 };
 
 struct current_triangles
@@ -33,6 +37,22 @@ struct current_triangles
   u32 CurrentPointIndex;
   boundary_voxels* SurfacePoints;
 };
+
+function boundary_voxels*
+AllocateBoundaryVoxels(u32 Count, memory_arena* Memory)
+{
+  boundary_voxels* Result =  Allocate(boundary_voxels, Memory, 1);
+  Assert(Result->At == 0);
+
+  Result->Points = Allocate(voxel_position, Memory, Count);
+  Result->End = Count;
+  Assert(Result->At == 0);
+
+  Result->Min = Voxel_Position(INT_MAX);
+  Result->Max = Voxel_Position(INT_MIN);
+
+  return Result;
+}
 
 function current_triangles*
 AllocateCurrentTriangles(u32 Count, memory_arena* Memory)

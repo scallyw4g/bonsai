@@ -175,7 +175,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     {
       Player = GetPlayer(GameState->Players, Network->Client);
       Unspawn(Player);
-      SpawnPlayer(GameState, Player,  Canonical_Position(V3(0,0,2), World_Position(0,0,0))  );
+      SpawnPlayer(GameState, Player,  Canonical_Position(V3(0,0,4), World_Position(0,0,0))  );
     }
   }
 

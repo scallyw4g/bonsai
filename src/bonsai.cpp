@@ -5,12 +5,13 @@
 #include <bonsai_mesh.cpp>
 #include <threadsafe.cpp>
 #include <triangle.cpp>
+#include <render_position.cpp>
+#include <debug_draw.cpp>
 #include <lod.cpp>
 #include <world_chunk.cpp>
 #include <vox_loader.cpp>
 #include <render.h>
 
-#include <render_position.cpp>
 #include <shader.cpp>
 
 #include <texture.cpp>
