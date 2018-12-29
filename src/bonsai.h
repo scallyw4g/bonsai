@@ -354,6 +354,9 @@ struct point_buffer
 {
   s32 Count;
   voxel_position Points[POINT_BUFFER_SIZE];
+
+  voxel_position Min;
+  voxel_position Max;
 };
 
 #pragma pack(push, 1)

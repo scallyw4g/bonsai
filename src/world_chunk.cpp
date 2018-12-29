@@ -140,9 +140,11 @@ function void
 FreeWorldChunk(world *World, world_chunk *Chunk , mesh_freelist* MeshFreelist, memory_arena* Memory)
 {
   TIMED_FUNCTION();
-
   if ( Chunk->Data->Flags == Chunk_MeshComplete || Chunk->Data->Flags == Chunk_Collected  )
   {
+    Chunk->LodMesh_Complete = False;
+    Chunk->LodMesh->At = 0;
+
     if (Chunk->Mesh)
     {
       DeallocateMesh(Chunk, MeshFreelist, Memory);
@@ -151,8 +153,6 @@ FreeWorldChunk(world *World, world_chunk *Chunk , mesh_freelist* MeshFreelist, m
     Assert(World->FreeChunkCount < FREELIST_SIZE);
     World->FreeChunks[World->FreeChunkCount++] = Chunk;
 
-    Chunk->LodMesh->At = 0;
-    Chunk->LodMesh_Complete = False;
 
     // FIXME(Jesse): Memoryleak
     SeedTriangulation( Chunk->CurrentTriangles, Memory);
@@ -914,11 +914,6 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread,
 
   { // Compute 0th LOD
 
-    /* u32 WorldChunkVolume = Volume(WORLD_CHUNK_DIM); */
-    /* boundary_voxels* BoundingPoints = AllocateBoundaryVoxels(WorldChunkVolume, Thread->TempMemory); */
-    /* GetBoundingVoxels(DestChunk, BoundingPoints); */
-    /* v3 BoundingVoxelMidpoint = (V3(BoundingPoints->Max - BoundingPoints->Min) / 2.0f) + V3(BoundingPoints->Min); */
-
     chunk_dimension NewSynChunkDim = WORLD_CHUNK_DIM+Voxel_Position(1);
     CopyChunkOffset(SyntheticChunk, SynChunkDim, SyntheticChunk, NewSynChunkDim, Voxel_Position(1));
     SynChunkDim = NewSynChunkDim;
@@ -926,7 +921,19 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread,
     point_buffer TempBuffer = {};
     point_buffer *EdgeBoundaryVoxels = &TempBuffer;
 
+    TempBuffer.Min = Voxel_Position(INT_MAX);
+    TempBuffer.Max = Voxel_Position(INT_MIN);
+
     FindEdgeIntersections(EdgeBoundaryVoxels, SyntheticChunk->Data, NewSynChunkDim);
+
+    /* DrawVoxel(DestChunk->LodMesh, V3(TempBuffer.Min), GREEN, V3(0.75f)); */
+    /* DrawVoxel(DestChunk->LodMesh, V3(TempBuffer.Max), RED, V3(0.75f)); */
+
+    /* for (s32 EdgeVoxelIndex = 0; */
+    /*     EdgeVoxelIndex < EdgeBoundaryVoxels->Count; */
+    /*     ++EdgeVoxelIndex) */
+    /* { */
+    /* } */
 
 #if 1
     // Sort the vertices based on distance to closest points
@@ -953,8 +960,14 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread,
     }
 #endif
 
-#if 0
-    // Find closest bounding point to the midpoint of the bounding volume
+
+#if 0  // Find closest bounding point to the midpoint of the bounding volume
+
+    u32 WorldChunkVolume = Volume(WORLD_CHUNK_DIM);
+    boundary_voxels* BoundingPoints = AllocateBoundaryVoxels(WorldChunkVolume, Thread->TempMemory);
+    GetBoundingVoxels(DestChunk, BoundingPoints);
+    v3 BoundingVoxelMidpoint = (V3(BoundingPoints->Max - BoundingPoints->Min) / 2.0f) + V3(BoundingPoints->Min);
+
     u32 FoundPointIndex = 0;
     r32 ShortestLength = FLT_MAX;
     for ( u32 PointIndex = 0;
@@ -971,20 +984,21 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread,
     }
 
     DrawVoxel(DestChunk->LodMesh, V3(BoundingPoints->Points[FoundPointIndex]), PINK, V3(0.75f));
-    DEBUG_DrawAABB(DestChunk->LodMesh, V3(BoundingPoints->Min), V3(BoundingPoints->Max), TEAL );
 
+    /* DEBUG_DrawAABB(DestChunk->LodMesh, V3(BoundingPoints->Min), V3(BoundingPoints->Max), TEAL ); */
 
-    for ( u32 PointIndex = 0;
-          PointIndex < BoundingPoints->At;
-          ++PointIndex )
-    {
-      DrawVoxel( DestChunk->LodMesh, V3(BoundingPoints->Points[PointIndex]), RED, V3(0.5f));
-    }
+    /* for ( u32 PointIndex = 0; */
+    /*       PointIndex < BoundingPoints->At; */
+    /*       ++PointIndex ) */
+    /* { */
+    /*   DrawVoxel( DestChunk->LodMesh, V3(BoundingPoints->Points[PointIndex]), RED, V3(0.5f)); */
+    /* } */
+
 #endif
 
-    /* DEBUG_DrawAABB(DestChunk->LodMesh, V3(0), V3(WORLD_CHUNK_DIM), PINK); */
+    DEBUG_DrawAABB(DestChunk->LodMesh, V3(0), V3(WORLD_CHUNK_DIM), PINK);
 
-#if 1
+#if 0
     for ( s32 PointIndex = 0;
           PointIndex < EdgeBoundaryVoxels->Count;
           ++PointIndex )
@@ -995,18 +1009,30 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread,
 
 
     // Draw
+    if (EdgeBoundaryVoxels->Count)
     {
       v3 Verts[3] = {};
-      Verts[0] = V3(EdgeBoundaryVoxels->Points[0]);
+
+      // TODO(Jesse): Actually find closest point to the center of the volume for higher accuracy surface?
+      v3 EdgeBoundaryVoxelsMidpoint = V3(EdgeBoundaryVoxels->Min) + (V3(EdgeBoundaryVoxels->Max - EdgeBoundaryVoxels->Min)/2.0f);
+      Verts[0] = EdgeBoundaryVoxelsMidpoint;
+
+      DrawVoxel(DestChunk->LodMesh, EdgeBoundaryVoxelsMidpoint, GREEN, V3(0.75f));
 
       s32 Color = 42;
-      s32 VertIndex = 1;
-      while ( (VertIndex + 1) < EdgeBoundaryVoxels->Count )
+      s32 VertIndex = 0;
+      while ( (VertIndex+1) < EdgeBoundaryVoxels->Count )
       {
         Verts[1] = V3(EdgeBoundaryVoxels->Points[VertIndex]);
-        Verts[2] = V3(EdgeBoundaryVoxels->Points[++VertIndex]);
+        Verts[2] = V3(EdgeBoundaryVoxels->Points[VertIndex + 1]);
         BufferTriangle(DestChunk->LodMesh, Verts, V3(0,0,1), Color);
+        ++VertIndex;
       }
+
+      Verts[1] = V3(EdgeBoundaryVoxels->Points[VertIndex]);
+      Verts[2] = V3(EdgeBoundaryVoxels->Points[0]);
+      BufferTriangle(DestChunk->LodMesh, Verts, V3(0,0,1), Color);
+
     }
 
   }

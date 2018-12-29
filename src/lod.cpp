@@ -23,13 +23,17 @@ FindBoundaryVoxelsAlongEdge(
 
       if (TransitionToFilled)
       {
-        PB->Points[PB->Count++] = CurrentP;
+        PB->Points[PB->Count] = CurrentP;
       }
       else
       {
-        PB->Points[PB->Count++] = CurrentP - Iter;
+        PB->Points[PB->Count] = CurrentP - Iter;
       }
 
+      PB->Min = Min(PB->Min, PB->Points[PB->Count]);
+      PB->Max = Max(PB->Max, PB->Points[PB->Count]);
+
+      ++PB->Count;
       StartIsFilled = CurrentPIsFilled;
     }
 
