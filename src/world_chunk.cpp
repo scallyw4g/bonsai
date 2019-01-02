@@ -873,6 +873,151 @@ FindEdgeIntersections(point_buffer* Dest, chunk_data* ChunkData, chunk_dimension
   return;
 }
 
+function b32
+VertsAreCoplanar(voxel_position* V1, voxel_position* V2)
+{
+  b32 Result = ( V1->x == V2->x && (V1->x == 0 || V1->x == WORLD_CHUNK_DIM.x) ) ||
+               ( V1->y == V2->y && (V1->y == 0 || V1->y == WORLD_CHUNK_DIM.y) ) ||
+               ( V1->z == V2->z && (V1->z == 0 || V1->z == WORLD_CHUNK_DIM.z) )  ;
+  return Result;
+}
+
+function b32
+VertsAreNotCoplanar(voxel_position* V1, voxel_position* V2)
+{
+  b32 Result = !VertsAreCoplanar(V1, V2);
+  return Result;
+}
+
+function voxel_position*
+GetPrevCoplanarVertex(voxel_position* Query, point_buffer* Points)
+{
+  voxel_position* Result = 0;
+
+  voxel_position* Current = Query + 1;
+  voxel_position* Last = Points->Points + Points->Count-1;
+
+  while (Current != Query)
+  {
+    if (Current < Points->Points) { Current = Last; }
+
+    if ( VertsAreCoplanar(Current, Query) )
+    {
+      Result = Current;
+      break;
+    }
+
+    --Current;
+  }
+
+  return Result;
+}
+
+function voxel_position*
+GetNextCoplanarVertex(voxel_position* Query, point_buffer* Points)
+{
+  voxel_position* Result = 0;
+
+  voxel_position* Current = Query + 1;
+  voxel_position* OnePastLast = Points->Points + Points->Count;
+
+  while (Current != Query)
+  {
+    if (Current == OnePastLast) { Current = Points->Points; }
+
+    if ( VertsAreCoplanar(Current, Query) )
+    {
+      Result = Current;
+      break;
+    }
+
+    ++Current;
+  }
+
+  return Result;
+}
+
+function voxel_position*
+GetClosestCoplanarVertex(voxel_position* Query, point_buffer* Points)
+{
+  r32 ShortestLength = FLT_MAX;
+  voxel_position* Result = 0;
+
+  voxel_position* Current = Points->Points;
+  voxel_position* OnePastLast = Points->Points + Points->Count;
+
+  while (Current != Query)
+  {
+    if (Current == OnePastLast) { Current = Points->Points; }
+
+    r32 CurrentLength = LengthSq(*Query - *Current);
+    if ( VertsAreCoplanar(Current, Query) &&
+         CurrentLength < ShortestLength )
+    {
+      ShortestLength = CurrentLength;
+      Result = Current;
+    }
+
+    ++Current;
+  }
+
+  return Result;
+}
+
+#define MAX_COPLANAR_VERT_COUNT 32
+function u32
+GetAllCoplanarVerts(voxel_position* Query, point_buffer* Points, voxel_position* Results)
+{
+  u32 Count = 0;
+  voxel_position* Current = Points->Points;
+  voxel_position* OnePastLast = Points->Points + Points->Count;
+
+  while (Current != OnePastLast)
+  {
+    Assert(Count < MAX_COPLANAR_VERT_COUNT);
+    if (Current == Query) { ++Current; continue; }
+    if ( VertsAreCoplanar(Current, Query) ) { Results[Count++] = *Current; }
+
+    ++Current;
+  }
+
+  return Count;
+}
+
+function b32
+TrianglesAreEqual(triangle* T1, triangle* T2)
+{
+  b32 Result = (
+    ( T1->Points[0] == T2->Points[0] || T1->Points[0] == T2->Points[1] || T1->Points[0] == T2->Points[2] ) &&
+    ( T1->Points[1] == T2->Points[0] || T1->Points[1] == T2->Points[1] || T1->Points[1] == T2->Points[2] ) &&
+    ( T1->Points[2] == T2->Points[0] || T1->Points[2] == T2->Points[1] || T1->Points[2] == T2->Points[2] ) );
+
+  return Result;
+}
+
+function b32
+TriangleIsUniqueInSet(triangle* Query, triangle** Set, u32 SetCount)
+{
+  b32 Result = True;
+
+  for (u32 TestIndex = 0;
+      TestIndex < SetCount;
+      ++TestIndex)
+  {
+    triangle* Test = Set[TestIndex];
+
+    if (TrianglesAreEqual(Query, Test))
+    {
+      Result = False;
+      break;
+    }
+  }
+
+
+
+  return Result;
+}
+
 function void
 InitializeWorldChunkPerlinPlane(thread_local_state *Thread,
                                 world_chunk *DestChunk, s32 Amplititude, s32 zMin)
@@ -929,112 +1074,132 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread,
     /* DrawVoxel(DestChunk->LodMesh, V3(TempBuffer.Min), GREEN, V3(0.75f)); */
     /* DrawVoxel(DestChunk->LodMesh, V3(TempBuffer.Max), RED, V3(0.75f)); */
 
-    /* for (s32 EdgeVoxelIndex = 0; */
-    /*     EdgeVoxelIndex < EdgeBoundaryVoxels->Count; */
-    /*     ++EdgeVoxelIndex) */
-    /* { */
-    /* } */
-
-#if 1
-    // Sort the vertices based on distance to closest points
-    for (s32 PBIndexOuter = 0;
-        PBIndexOuter < EdgeBoundaryVoxels->Count;
-        ++PBIndexOuter)
-    {
-      voxel_position CurrentVert = EdgeBoundaryVoxels->Points[PBIndexOuter];
-      s32 ShortestLength = INT_MAX;
-
-      for (s32 PBIndexInner = PBIndexOuter + 1;
-          PBIndexInner < EdgeBoundaryVoxels->Count;
-          ++PBIndexInner)
-      {
-        s32 TestLength = LengthSq(CurrentVert - EdgeBoundaryVoxels->Points[PBIndexInner]);
-
-        if ( TestLength < ShortestLength )
-        {
-          ShortestLength = TestLength;
-          Swap(EdgeBoundaryVoxels->Points+PBIndexOuter+1, EdgeBoundaryVoxels->Points+PBIndexInner );
-        }
-      }
-
-    }
-#endif
-
-
-#if 0  // Find closest bounding point to the midpoint of the bounding volume
-
+#if 1  // Find closest bounding point to the midpoint of the bounding volume
     u32 WorldChunkVolume = Volume(WORLD_CHUNK_DIM);
     boundary_voxels* BoundingPoints = AllocateBoundaryVoxels(WorldChunkVolume, Thread->TempMemory);
     GetBoundingVoxels(DestChunk, BoundingPoints);
-    v3 BoundingVoxelMidpoint = (V3(BoundingPoints->Max - BoundingPoints->Min) / 2.0f) + V3(BoundingPoints->Min);
 
-    u32 FoundPointIndex = 0;
+    voxel_position BoundingVoxelMidpoint = EdgeBoundaryVoxels->Min + ((EdgeBoundaryVoxels->Max - EdgeBoundaryVoxels->Min)/2.0f);
+    /* v3 BoundingVoxelMidpoint = V3(EdgeBoundaryVoxels->Min) + (V3(EdgeBoundaryVoxels->Max - EdgeBoundaryVoxels->Min)/2.0f); */
+    /* v3 BoundingVoxelMidpoint = (V3(BoundingPoints->Max - BoundingPoints->Min) / 2.0f) + V3(BoundingPoints->Min); */
+
+    // TODO(Jesse): Actually find closest point to the center of the volume for higher accuracy surface?
+    voxel_position FoundCenterPoint = BoundingVoxelMidpoint;
     r32 ShortestLength = FLT_MAX;
     for ( u32 PointIndex = 0;
           PointIndex < BoundingPoints->At;
           ++PointIndex)
     {
       voxel_position* TestP = BoundingPoints->Points + PointIndex;
+      /* DrawVoxel(DestChunk->LodMesh, V3(*TestP), RED, V3(0.25f)); */
+
       r32 TestLength = LengthSq(V3(*TestP) - BoundingVoxelMidpoint);
       if  (TestLength < ShortestLength)
       {
         ShortestLength = TestLength;
-        FoundPointIndex = PointIndex;
+        FoundCenterPoint = *TestP;
       }
     }
 
-    DrawVoxel(DestChunk->LodMesh, V3(BoundingPoints->Points[FoundPointIndex]), PINK, V3(0.75f));
-
-    /* DEBUG_DrawAABB(DestChunk->LodMesh, V3(BoundingPoints->Min), V3(BoundingPoints->Max), TEAL ); */
-
-    /* for ( u32 PointIndex = 0; */
-    /*       PointIndex < BoundingPoints->At; */
-    /*       ++PointIndex ) */
-    /* { */
-    /*   DrawVoxel( DestChunk->LodMesh, V3(BoundingPoints->Points[PointIndex]), RED, V3(0.5f)); */
-    /* } */
-
 #endif
 
-    DEBUG_DrawAABB(DestChunk->LodMesh, V3(0), V3(WORLD_CHUNK_DIM), PINK);
-
-#if 0
+#if 1
+    random_series Entropy = {6543};
     for ( s32 PointIndex = 0;
           PointIndex < EdgeBoundaryVoxels->Count;
           ++PointIndex )
     {
-      DrawVoxel( DestChunk->LodMesh, V3(EdgeBoundaryVoxels->Points[PointIndex]), GREEN, V3(0.6f));
+      DrawVoxel( DestChunk->LodMesh, V3(EdgeBoundaryVoxels->Points[PointIndex]), RandomU32(&Entropy) % (ArrayCount(DefaultPalette)-1), V3(0.6f));
     }
+    ClipAndDisplaceToMinDim(DestChunk->LodMesh, V3(0), V3(WORLD_CHUNK_DIM) );
+#endif
+
+    if (EdgeBoundaryVoxels->Count)
+    {
+      DEBUG_DrawAABB(DestChunk->LodMesh, V3(0), V3(WORLD_CHUNK_DIM), PINK);
+      DrawVoxel(DestChunk->LodMesh, V3(FoundCenterPoint), PINK, V3(0.35f));
+
+#if 1
+      const u32 MaxTriangles = 128;
+      u32 TriangleCount = 0;
+      triangle* Triangles[MaxTriangles];
+
+      if (EdgeBoundaryVoxels->Count)
+      {
+        voxel_position* CurrentVert = EdgeBoundaryVoxels->Points;
+        voxel_position* OnePastLastVert = EdgeBoundaryVoxels->Points + EdgeBoundaryVoxels->Count;
+
+        while ( CurrentVert < OnePastLastVert )
+        {
+          voxel_position CoplanarVerts[MAX_COPLANAR_VERT_COUNT] = {};
+          u32 CoplanarCount = GetAllCoplanarVerts(CurrentVert, EdgeBoundaryVoxels, CoplanarVerts);
+
+          while (CoplanarCount)
+          {
+            voxel_position* CoplanarVert = CoplanarVerts + CoplanarCount-1;
+            Assert(VertsAreCoplanar(CurrentVert, CoplanarVert));
+            Assert(TriangleCount < MaxTriangles);
+            triangle* TestTriangle = Triangle(&FoundCenterPoint, CurrentVert, CoplanarVert, Thread->TempMemory);
+
+            if ( TriangleIsUniqueInSet(TestTriangle, Triangles, TriangleCount) )
+            {
+              Triangles[TriangleCount++] = TestTriangle;
+            }
+
+            --CoplanarCount;
+          }
+
+          /* voxel_position* PrevPlanarToCurrent = GetPrevCoplanarVertex(CurrentVert, EdgeBoundaryVoxels); */
+          /* if (PrevPlanarToCurrent) */
+          /* { */
+          /*   Assert(TriangleCount < MaxTriangles); */
+          /*   Triangles[TriangleCount++] = Triangle(&FoundCenterPoint, CurrentVert, PrevPlanarToCurrent, Thread->TempMemory); */
+          /* } */
+
+          ++CurrentVert;
+        }
+
+      }
+
+
+      u32 Color = 0;
+      for (u32 TriIndex  = 0;
+          TriIndex < TriangleCount;
+          ++TriIndex)
+      {
+        BufferTriangle(DestChunk->LodMesh, Triangles[TriIndex], V3(0,0,1), Color);
+        ++Color;
+      }
+      Print(TriangleCount);
 #endif
 
 
-    // Draw
-    if (EdgeBoundaryVoxels->Count)
-    {
-      v3 Verts[3] = {};
-
-      // TODO(Jesse): Actually find closest point to the center of the volume for higher accuracy surface?
-      v3 EdgeBoundaryVoxelsMidpoint = V3(EdgeBoundaryVoxels->Min) + (V3(EdgeBoundaryVoxels->Max - EdgeBoundaryVoxels->Min)/2.0f);
-      Verts[0] = EdgeBoundaryVoxelsMidpoint;
-
-      DrawVoxel(DestChunk->LodMesh, EdgeBoundaryVoxelsMidpoint, GREEN, V3(0.75f));
-
-      s32 Color = 42;
-      s32 VertIndex = 0;
-      while ( (VertIndex+1) < EdgeBoundaryVoxels->Count )
+#if 0
+      // Draw
+      if (EdgeBoundaryVoxels->Count)
       {
+        v3 Verts[3] = {};
+
+        Verts[0] = FoundCenterPoint;
+
+        s32 Color = 42;
+        s32 VertIndex = 0;
+        while ( (VertIndex+1) < EdgeBoundaryVoxels->Count )
+        {
+          Verts[1] = V3(EdgeBoundaryVoxels->Points[VertIndex]);
+          Verts[2] = V3(EdgeBoundaryVoxels->Points[VertIndex + 1]);
+          BufferTriangle(DestChunk->LodMesh, Verts, V3(0,0,1), Color);
+          ++VertIndex;
+          Color += 10;
+        }
+
         Verts[1] = V3(EdgeBoundaryVoxels->Points[VertIndex]);
-        Verts[2] = V3(EdgeBoundaryVoxels->Points[VertIndex + 1]);
+        Verts[2] = V3(EdgeBoundaryVoxels->Points[0]);
         BufferTriangle(DestChunk->LodMesh, Verts, V3(0,0,1), Color);
-        ++VertIndex;
       }
 
-      Verts[1] = V3(EdgeBoundaryVoxels->Points[VertIndex]);
-      Verts[2] = V3(EdgeBoundaryVoxels->Points[0]);
-      BufferTriangle(DestChunk->LodMesh, Verts, V3(0,0,1), Color);
-
+#endif
     }
-
   }
 
   DestChunk->LodMesh_Complete = True;

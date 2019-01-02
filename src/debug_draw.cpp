@@ -24,13 +24,13 @@ DEBUG_DrawLine( untextured_3d_geometry_buffer *Mesh,
   {
     v3 localVertexData[] =
     {
-      {{P1.x, P1.y, P1.z}},
-      {{P2.x, P2.y, P2.z}},
-      {{P1.x + Thickness, P1.y,  P1.z}},
+      {{P1.x             , P1.y , P1.z}} ,
+      {{P2.x             , P2.y , P2.z}} ,
+      {{P1.x + Thickness , P1.y , P1.z}} ,
 
-      {{P2.x, P2.y, P2.z}},
-      {{P1.x + Thickness, P1.y, P1.z}},
-      {{P2.x + Thickness, P2.y, P2.z}},
+      {{P1.x + Thickness , P1.y , P1.z}} ,
+      {{P2.x             , P2.y , P2.z}} ,
+      {{P2.x + Thickness , P2.y , P2.z}} ,
     };
 
 
@@ -41,22 +41,36 @@ DEBUG_DrawLine( untextured_3d_geometry_buffer *Mesh,
         FaceColors);
   }
 
-  P1.x = P1.x + (Thickness/2.0f);
-  P2.x = P2.x + (Thickness/2.0f);
+  {
+    v3 localVertexData[] =
+    {
+      {{P1.x , P1.y             , P1.z}} ,
+      {{P2.x , P2.y             , P2.z}} ,
+      {{P1.x , P1.y + Thickness , P1.z}} ,
 
-  P1.y = P1.y - (Thickness/2.0f);
-  P2.y = P2.y - (Thickness/2.0f);
+      {{P1.x , P1.y + Thickness , P1.z}} ,
+      {{P2.x , P2.y             , P2.z}} ,
+      {{P2.x , P2.y + Thickness , P2.z}} ,
+    };
+
+
+    BufferVertsChecked(Mesh,
+        6,
+        localVertexData,
+        localNormalData,
+        FaceColors);
+  }
 
   {
     v3 localVertexData[] =
     {
-      {{P1.x, P1.y, P1.z}},
-      {{P2.x, P2.y, P2.z}},
-      {{P1.x, P1.y + Thickness,  P1.z}},
+      {{P1.x , P1.y , P1.z}}              ,
+      {{P2.x , P2.y , P2.z}}              ,
+      {{P1.x , P1.y , P1.z + Thickness }} ,
 
-      {{P2.x, P2.y, P2.z}},
-      {{P1.x, P1.y + Thickness, P1.z}},
-      {{P2.x, P2.y + Thickness, P2.z}},
+      {{P1.x , P1.y , P1.z + Thickness }} ,
+      {{P2.x , P2.y , P2.z             }} ,
+      {{P2.x , P2.y , P2.z + Thickness }} ,
     };
 
 

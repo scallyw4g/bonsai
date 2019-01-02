@@ -111,14 +111,14 @@ GetBoundingVoxels(world_chunk* Chunk, boundary_voxels* Dest)
 }
 
 inline void
-BufferTriangle(untextured_3d_geometry_buffer* Dest, triangle* Triangle, s32 ColorIndex)
+BufferTriangle(untextured_3d_geometry_buffer* Dest, triangle* Triangle, v3 Normal, s32 ColorIndex)
 {
   v3 VertBuffer[3];
-  v3 NormalBuffer[3] = {V3(0), V3(0), V3(1)};
+  v3 NormalBuffer[3] = {Normal, Normal, Normal};
 
-  VertBuffer[0] = V3( *(Triangle->Points[0]) );
-  VertBuffer[1] = V3( *(Triangle->Points[1]) );
-  VertBuffer[2] = V3( *(Triangle->Points[2]) );
+  VertBuffer[0] = V3(Triangle->Points[0]);
+  VertBuffer[1] = V3(Triangle->Points[1]);
+  VertBuffer[2] = V3(Triangle->Points[2]);
 
   v4 FaceColors[FACE_VERT_COUNT];
   FillColorArray(ColorIndex, FaceColors, FACE_VERT_COUNT);
@@ -153,6 +153,7 @@ BufferTriangle(untextured_3d_geometry_buffer *Mesh, v3 *Verts, v3 Normal, s32 Co
 
 }
 
+#if 0
 function void
 TriangulateUntilIndex(untextured_3d_geometry_buffer* Dest, current_triangles* CurrentTriangles, memory_arena* TempMem, u32 MaxIndex)
 {
@@ -175,7 +176,7 @@ TriangulateUntilIndex(untextured_3d_geometry_buffer* Dest, current_triangles* Cu
       ++FaceIndex)
   {
     triangle* Face = CurrentTriangles->Tris[FaceIndex];
-    BufferTriangle(Dest, Face, RED);
+    BufferTriangle(Dest, Face, V3(0,0,1), RED);
   }
 
   u32 NextIndex = MaxIndex + 1;
@@ -187,7 +188,7 @@ TriangulateUntilIndex(untextured_3d_geometry_buffer* Dest, current_triangles* Cu
     voxel_position* NextPoint = CurrentTriangles->SurfacePoints->Points + NextIndex;
     triangle* Closest = FindClosestFace(CurrentTriangles, NextPoint);
     DrawVoxel( Dest, V3(*NextPoint), TEAL, V3(0.25f));
-    BufferTriangle(Dest, Closest, TEAL);
+    BufferTriangle(Dest, Closest, V3(0,0,1), TEAL);
   }
 
   return;
@@ -213,7 +214,7 @@ Triangulate(untextured_3d_geometry_buffer* Dest, current_triangles* CurrentTrian
         ++FaceIndex)
     {
       triangle* Face = CurrentTriangles->Tris[FaceIndex];
-      BufferTriangle(Dest, Face, RED);
+      BufferTriangle(Dest, Face, V3(0,0,1), RED);
     }
 
   }
@@ -231,8 +232,9 @@ TriangulateSingle(untextured_3d_geometry_buffer* Dest, current_triangles* Curren
       ++FaceIndex)
   {
     triangle* Face = CurrentTriangles->Tris[FaceIndex];
-    BufferTriangle(Dest, Face, RED);
+    BufferTriangle(Dest, Face, V3(0,0,1), RED);
   }
 
   return;
 }
+#endif

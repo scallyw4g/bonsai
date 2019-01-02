@@ -43,6 +43,7 @@ FindBoundaryVoxelsAlongEdge(
   return;
 }
 
+#if 0
 void
 Compute0thLod(untextured_3d_geometry_buffer* Dest, world_chunk *WorldChunk, chunk_dimension WorldChunkDim, memory_arena* TempArena)
 {
@@ -198,7 +199,7 @@ Compute0thLod(untextured_3d_geometry_buffer* Dest, world_chunk *WorldChunk, chun
       if ( TestLength < ShortestLength )
       {
         ShortestLength = TestLength;
-        Swap(PB->Points+PBIndexOuter+1, PB->Points+PBIndexInner );
+        /* Swap(PB->Points+PBIndexOuter+1, PB->Points+PBIndexInner ); */
       }
     }
 
@@ -589,3 +590,4 @@ Compute0thLod(untextured_3d_geometry_buffer* Dest, world_chunk *WorldChunk, chun
   return;
 }
 
+#endif

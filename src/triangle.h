@@ -9,7 +9,7 @@ struct edge
 
 struct triangle
 {
-  voxel_position* Points[3];
+  voxel_position Points[3];
   u32 Index;
   /* edge* Edges[3]; */
 };
@@ -73,9 +73,9 @@ Triangle(voxel_position* P0, voxel_position* P1, voxel_position* P2, memory_aren
   /* edge* E1 = Edge(P0, P2, Memory); */
   /* edge* E2 = Edge(P1, P2, Memory); */
 
-  Result->Points[0] = P0;
-  Result->Points[1] = P1;
-  Result->Points[2] = P2;
+  Result->Points[0] = *P0;
+  Result->Points[1] = *P1;
+  Result->Points[2] = *P2;
 
   return Result;
 }
@@ -99,6 +99,8 @@ DeleteFace(current_triangles* CurrentTris, u32 DeletionIndex)
 
   return;
 }
+
+#if 0
 
 #if 1
 
@@ -172,6 +174,8 @@ SplitFace(current_triangles* CurrentTriangles, triangle* Closest, voxel_position
 
   return;
 }
+
+#endif
 
 function void
 Swap(voxel_position* P1, voxel_position* P2)

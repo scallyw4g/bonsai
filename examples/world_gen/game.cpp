@@ -60,8 +60,8 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       world_chunk* DestChunk = (world_chunk*)Entry->Input;
       if (!ChunkIsGarbage(DestChunk))
       {
-        s32 Amplititude = 30;
-        s32 StartingZDepth = -10;
+        s32 Amplititude = 100;
+        s32 StartingZDepth = -100;
         InitializeWorldChunkPerlinPlane(Thread,
                                         DestChunk,
                                         Amplititude, StartingZDepth);
@@ -79,6 +79,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       untextured_3d_geometry_buffer* Src = Entry->GpuCopyParams.Src;
       untextured_3d_geometry_buffer* Dest = &Entry->GpuCopyParams.Dest;
       Assert(Src->At <= Dest->End);
+
       v3 Basis = Entry->GpuCopyParams.Basis;
       BufferVertsChecked(Src, Dest, Basis, V3(1.0f));
     } break;

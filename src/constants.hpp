@@ -50,7 +50,7 @@
 #define PARTICLES_PER_SYSTEM   1024
 
 #define ENEMY_SPEED 800
-#define PLAYER_SPEED 200000
+#define PLAYER_SPEED 20000
 #define PROJECTILE_SPEED 60
 
 #define ENEMY_DRAG 0
@@ -74,7 +74,7 @@
 #define DEBUG_PARTICLE_EFFECTS        1
 
 #define DEBUG_FONT_SIZE               18
-#define DEFAULT_LINE_THICKNESS       0.25f
+#define DEFAULT_LINE_THICKNESS       0.15f
 
 #define DEBUG_FRAMES_TO_RUN           -1
 

@@ -1131,6 +1131,7 @@ BufferWorldChunk(
     }
 #endif
 
+#if 1
     current_triangles *CurrentTriangles = Chunk->CurrentTriangles;
     if ( (Hotkeys->Debug_TriangulateIncrement || Hotkeys->Debug_TriangulateDecrement) &&
          (CurrentTriangles->SurfacePoints->End > 0))
@@ -1142,7 +1143,7 @@ BufferWorldChunk(
         {
           ++CurrentTriangles->CurrentPointIndex;
         }
-        TriangulateUntilIndex(Chunk->LodMesh, Chunk->CurrentTriangles, TranArena, CurrentTriangles->CurrentPointIndex);
+        /* TriangulateUntilIndex(Chunk->LodMesh, Chunk->CurrentTriangles, TranArena, CurrentTriangles->CurrentPointIndex); */
       }
 
       if (Hotkeys->Debug_TriangulateDecrement)
@@ -1151,9 +1152,10 @@ BufferWorldChunk(
         {
           --CurrentTriangles->CurrentPointIndex;
         }
-        TriangulateUntilIndex(Chunk->LodMesh, Chunk->CurrentTriangles, TranArena, CurrentTriangles->CurrentPointIndex);
+        /* TriangulateUntilIndex(Chunk->LodMesh, Chunk->CurrentTriangles, TranArena, CurrentTriangles->CurrentPointIndex); */
       }
     }
+#endif
 
 #if 1
     if (Chunk->LodMesh_Complete && Chunk->LodMesh->At)
