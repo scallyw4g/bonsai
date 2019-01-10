@@ -1069,21 +1069,16 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread,
     TempBuffer.Min = Voxel_Position(INT_MAX);
     TempBuffer.Max = Voxel_Position(INT_MIN);
 
+    /* FindEdgeIntersections(EdgeBoundaryVoxels, DestChunk->Data, WORLD_CHUNK_DIM); */
     FindEdgeIntersections(EdgeBoundaryVoxels, SyntheticChunk->Data, NewSynChunkDim);
 
-    /* DrawVoxel(DestChunk->LodMesh, V3(TempBuffer.Min), GREEN, V3(0.75f)); */
-    /* DrawVoxel(DestChunk->LodMesh, V3(TempBuffer.Max), RED, V3(0.75f)); */
-
-#if 1  // Find closest bounding point to the midpoint of the bounding volume
+    // Find closest bounding point to the midpoint of the bounding volume
     u32 WorldChunkVolume = Volume(WORLD_CHUNK_DIM);
     boundary_voxels* BoundingPoints = AllocateBoundaryVoxels(WorldChunkVolume, Thread->TempMemory);
     GetBoundingVoxels(DestChunk, BoundingPoints);
 
     voxel_position BoundingVoxelMidpoint = EdgeBoundaryVoxels->Min + ((EdgeBoundaryVoxels->Max - EdgeBoundaryVoxels->Min)/2.0f);
-    /* v3 BoundingVoxelMidpoint = V3(EdgeBoundaryVoxels->Min) + (V3(EdgeBoundaryVoxels->Max - EdgeBoundaryVoxels->Min)/2.0f); */
-    /* v3 BoundingVoxelMidpoint = (V3(BoundingPoints->Max - BoundingPoints->Min) / 2.0f) + V3(BoundingPoints->Min); */
 
-    // TODO(Jesse): Actually find closest point to the center of the volume for higher accuracy surface?
     voxel_position FoundCenterPoint = BoundingVoxelMidpoint;
     r32 ShortestLength = FLT_MAX;
     for ( u32 PointIndex = 0;
@@ -1100,8 +1095,6 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread,
         FoundCenterPoint = *TestP;
       }
     }
-
-#endif
 
 #if 1
     random_series Entropy = {6543};
