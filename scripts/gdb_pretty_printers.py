@@ -1,6 +1,13 @@
 import gdb;
 from pprint import pprint;
 
+class v4_printer:
+    def __init__(self, val):
+        self.val = val
+
+    def to_string(self):
+        return self.val['E']
+
 class counted_string_printer:
     def __init__(self, val):
         self.val = val
@@ -52,6 +59,7 @@ def bonsai_pretty_printers():
     pp.add_printer('counted_string'       , '^counted_string$' , counted_string_printer)
     pp.add_printer('xml_token_printer'    , '^xml_token$'      , xml_token_printer)
     pp.add_printer('xml_property_printer' , '^xml_property$'   , xml_property_printer)
+    pp.add_printer('v4'                   , '^v4$'             , v4_printer)
     return pp
 
 gdb.printing.register_pretty_printer(

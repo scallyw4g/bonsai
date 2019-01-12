@@ -161,8 +161,18 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   SimulateAndRenderParticleSystems(GameState->EntityTable, &GpuMap->Buffer, Graphics, Plat->dt);
 
   gBuffer->ViewProjection =
-    GetProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
-    GetViewMatrix(WorldChunkDim, Camera);
+    ProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
+    ViewMatrix(WorldChunkDim, Camera);
+
+  m4 InverseViewProjection = {};
+  b32 Inverted = Inverse((r32*)&gBuffer->ViewProjection, (r32*)&InverseViewProjection);
+  Assert(Inverted);
+
+  v3 MouseWorldP = Unproject(Plat->MouseP,
+                             V2(Plat->WindowWidth, Plat->WindowHeight),
+                             &InverseViewProjection);
+
+  DrawVoxel( &GpuMap->Buffer, MouseWorldP, GREEN, V3(5.0f));
 
   TIMED_BLOCK("BufferMeshes");
     BufferWorld(GameState, &GpuMap->Buffer, World, Graphics, VISIBLE_REGION_RADIUS, Hotkeys);
@@ -184,6 +194,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   TIMED_BLOCK("Wait for worker threads");
     for (;;) { if (QueueIsEmpty(&Plat->HighPriority)) { break; } }
   END_BLOCK("Wait for worker threads");
+
 
   TIMED_BLOCK("RenderToScreen");
     RenderGBuffer(GpuMap, Graphics);

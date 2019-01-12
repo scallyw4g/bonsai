@@ -1,4 +1,3 @@
-
 struct m4
 {
   v4 E[4];
@@ -38,6 +37,28 @@ struct m4
   }
 };
 
+inline v4
+TransformColumnMajor(m4 A, v4 P)
+{
+    v4 R;
+    R.x = P.x*A.E[0][0] + P.y*A.E[1][0] + P.z*A.E[2][0] + P.w*A.E[3][0];
+    R.y = P.x*A.E[0][1] + P.y*A.E[1][1] + P.z*A.E[2][1] + P.w*A.E[3][1];
+    R.z = P.x*A.E[0][2] + P.y*A.E[1][2] + P.z*A.E[2][2] + P.w*A.E[3][2];
+    R.w = P.x*A.E[0][3] + P.y*A.E[1][3] + P.z*A.E[2][3] + P.w*A.E[3][3];
+    return(R);
+}
+
+inline v4
+TransformRowMajor(m4 A, v4 P)
+{
+    v4 R;
+    R.x = P.x*A.E[0][0] + P.y*A.E[0][1] + P.z*A.E[0][2] + P.w*A.E[0][3];
+    R.y = P.x*A.E[1][0] + P.y*A.E[1][1] + P.z*A.E[1][2] + P.w*A.E[1][3];
+    R.z = P.x*A.E[2][0] + P.y*A.E[2][1] + P.z*A.E[2][2] + P.w*A.E[2][3];
+    R.w = P.x*A.E[3][0] + P.y*A.E[3][1] + P.z*A.E[3][2] + P.w*A.E[3][3];
+    return(R);
+}
+
 m4
 operator*(m4 A, m4 B)
 {
@@ -69,3 +90,16 @@ Translate( v3 v )
 
   return Result;
 }
+
+v3
+Unproject(v2 ScreenP, v2 ScreenDim, m4 *InvViewProj)
+{
+  v4 ClipCoords = (2.0f * V4(V3(ScreenP / ScreenDim, 0.99f), 1.0f)) -1.0f;
+  ClipCoords.y *= -1;
+
+  v4 WorldSpace = TransformColumnMajor(*InvViewProj, ClipCoords);
+  v3 Result = WorldSpace.xyz / WorldSpace.w;
+
+  return Result;
+}
+

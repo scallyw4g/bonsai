@@ -1163,7 +1163,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread,
         BufferTriangle(DestChunk->LodMesh, Triangles[TriIndex], V3(0,0,1), Color);
         ++Color;
       }
-      Print(TriangleCount);
+      /* Print(TriangleCount); */
 #endif
 
 

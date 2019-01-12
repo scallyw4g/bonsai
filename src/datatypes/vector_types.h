@@ -294,6 +294,19 @@ operator-(voxel_position Pos, v3 Vec)
   return Result;
 }
 
+inline v4
+operator-(v4 Vec, r32 F)
+{
+  v4 Result;
+
+  Result.x = Vec.x - F;
+  Result.y = Vec.y - F;
+  Result.z = Vec.z - F;
+  Result.w = Vec.w - F;
+
+  return Result;
+}
+
 inline v3
 operator-(v3 Vec, voxel_position Pos)
 {

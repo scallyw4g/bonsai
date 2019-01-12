@@ -60,8 +60,8 @@ DoGameplay(platform *Plat, game_state *GameState, hotkeys *Hotkeys, entity *Play
   //
 
   gBuffer->ViewProjection =
-    GetProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
-    GetViewMatrix(WorldChunkDim, Camera);
+    ProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
+    ViewMatrix(WorldChunkDim, Camera);
 
   TIMED_BLOCK("BufferMeshes");
     BufferWorld(GameState, &GameState->Mesh, World, Graphics, VISIBLE_REGION_RADIUS);
