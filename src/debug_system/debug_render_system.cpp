@@ -378,13 +378,17 @@ AdvanceSpaces(u32 N, layout *Layout, font *Font)
   return;
 }
 
-inline void
+inline rect2
 NewLine(layout *Layout, font *Font)
 {
+  v2 Min = { Layout->Basis.x, Layout->Basis.y + Layout->At.y };
   Layout->At.y += (Font->LineHeight);
+  v2 Max = Layout->Basis + Layout->At;
+
+  rect2 Bounds = RectMinMax(Min, Max);
   Layout->At.x = 0;
   AdvanceClip(Layout);
-  return;
+  return Bounds;
 }
 
 r32
@@ -395,12 +399,12 @@ BufferLine(const char* Text, u32 Color, layout *Layout, font *Font, ui_render_gr
   return xOffset;
 }
 
-inline void
+inline rect2
 NewRow(table_layout *Table, font *Font)
 {
   Table->ColumnIndex = 0;
-  NewLine(&Table->Layout, Font);
-  return;
+  rect2 Bounds = NewLine(&Table->Layout, Font);
+  return Bounds;
 }
 
 inline char*
@@ -612,8 +616,24 @@ BufferColumn( r32 Perc, u32 ColumnWidth, ui_render_group *Group, layout *Layout,
   return;
 }
 
-void
-Column(const char* ColumnText, ui_render_group *Group, table_layout *Table, u8 Color)
+inline b32
+IsInsideRect(rect2 Rect, v2 P)
+{
+  b32 Result = (P > Rect.Min && P < Rect.Max);
+  return Result;
+}
+
+function v2
+GetTextBounds(u32 TextLength, font* Font)
+{
+  v2 Result = {};
+  Result.x = TextLength * Font->Size;
+  Result.y = Font->LineHeight;
+  return Result;
+}
+
+function rect2
+Column(const char* ColumnText, ui_render_group *Group, table_layout *Table, u8 Color, u8 HoverColor = TEAL)
 {
   Table->ColumnIndex = (Table->ColumnIndex+1)%MAX_TABLE_COLUMNS;
   table_column *Column = Table->Columns + Table->ColumnIndex;
@@ -624,9 +644,32 @@ Column(const char* ColumnText, ui_render_group *Group, table_layout *Table, u8 C
   u32 Pad = Column->Max - TextLength;
   AdvanceSpaces(Pad, &Table->Layout, &Group->Font);
 
-  BufferValue(ColumnText, Group, &Table->Layout, Color);
+  v2 Min = Table->Layout.Basis + Table->Layout.At;
+  v2 Max = Min + GetTextBounds(TextLength, &Group->Font);
 
-  return;
+  u8 UseColor = Color;
+  rect2 Bounds = RectMinMax(Min, Max);
+  if (IsInsideRect(Bounds, Group->MouseP))
+  {
+    UseColor = HoverColor;
+  }
+
+  BufferValue(ColumnText, Group, &Table->Layout, UseColor);
+
+  return Bounds;
+}
+
+function b32
+Button(const char* ColumnText, ui_render_group *Group, table_layout *Table, u8 Color)
+{
+  b32 Result = False;
+  rect2 Bounds = Column(ColumnText, Group, Table, Color);
+  if (IsInsideRect(Bounds, Group->MouseP) && Group->Input->LMB.WasPressed)
+  {
+    Result = True;
+  }
+
+  return Result;
 }
 
 inline void
@@ -671,13 +714,6 @@ GetNextLineBounds(layout *Layout, font *Font)
   // FIXME(Jesse): Should line length be systemized somehow?
   v2 EndingP = StartingP + V2(100000.0f, Font->LineHeight);
   rect2 Result = { StartingP, EndingP };
-  return Result;
-}
-
-inline b32
-IsInsideRect(rect2 Rect, v2 P)
-{
-  b32 Result = (P > Rect.Min && P < Rect.Max);
   return Result;
 }
 
@@ -839,24 +875,34 @@ DrawWaitingBar(mutex_op_record *WaitRecord, mutex_op_record *AquiredRecord, mute
 void
 DrawPickedChunks(ui_render_group* Group, v2 LayoutBasis)
 {
-  local_persist table_layout Layout;
-  Layout.Layout.At = V2(0,0);
-  Layout.Layout.Clip = NullClipRect;
-  Layout.Layout.Basis = LayoutBasis;
+  local_persist table_layout PickedTable;
+  PickedTable.Layout.At = V2(0,0);
+  PickedTable.Layout.Clip = NullClipRect;
+  PickedTable.Layout.Basis = LayoutBasis;
 
   world_chunk** PickedChunks = GetDebugState()->PickedChunks;
-  u32 PickedChunkCount = GetDebugState()->PickedChunkCount;
+  u32* PickedChunkCount = GetDebugState()->PickedChunkCount;
 
+  BeginClipRect(&PickedTable.Layout);
   for (u32 ChunkIndex = 0;
-      ChunkIndex < PickedChunkCount;
+      ChunkIndex < *PickedChunkCount;
       ++ChunkIndex)
   {
     world_chunk *Chunk = PickedChunks[ChunkIndex];
-    Column(ToString(Chunk->WorldP.x), Group, &Layout, WHITE);
-    Column(ToString(Chunk->WorldP.y), Group, &Layout, WHITE);
-    Column(ToString(Chunk->WorldP.z), Group, &Layout, WHITE);
-    NewRow(&Layout, &Group->Font);
+    Column(ToString(Chunk->WorldP.x), Group, &PickedTable, WHITE, TEAL);
+    Column(ToString(Chunk->WorldP.y), Group, &PickedTable, WHITE, TEAL);
+    Column(ToString(Chunk->WorldP.z), Group, &PickedTable, WHITE, TEAL);
+    if (Button("X", Group, &PickedTable, RED))
+    {
+      PickedChunks[ChunkIndex] = PickedChunks[*PickedChunkCount-1];
+      *PickedChunkCount = *PickedChunkCount-1;
+    }
+
+    NewRow(&PickedTable, &Group->Font);
   }
+
+  untextured_2d_geometry_buffer *Geo = &Group->TextGroup->UIGeo;
+  EndClipRect(Group, &PickedTable.Layout, Geo);
 
   return;
 }

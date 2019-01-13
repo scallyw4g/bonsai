@@ -196,7 +196,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     BufferEntities( GameState->EntityTable, &GpuMap->Buffer, Graphics, World, Plat->dt);
   END_BLOCK("BufferMeshes");
 
-  GetDebugState()->PickedChunkCount = PickedChunkCount;
+  GetDebugState()->PickedChunkCount = &PickedChunkCount;
   GetDebugState()->PickedChunks = PickedChunks;
 
   for (u32 ChunkIndex = 0;

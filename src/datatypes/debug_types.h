@@ -54,7 +54,6 @@ struct ui_render_group
   /* v2 ViewportDim; */
 };
 
-
 struct debug_profile_scope
 {
   u64 CycleCount;
@@ -207,7 +206,7 @@ struct debug_state
   selected_arenas *SelectedArenas;
 
   world_chunk **PickedChunks;
-  u32 PickedChunkCount;
+  u32* PickedChunkCount;
 
   u64 BytesBufferedToCard;
   b32 Initialized;

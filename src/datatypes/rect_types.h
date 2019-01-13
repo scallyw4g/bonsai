@@ -6,6 +6,13 @@ struct rect2
 };
 
 rect2
+RectMinMax(v2 Min, v2 Max)
+{
+  rect2 Result = {Min, Max};
+  return Result;
+}
+
+rect2
 RectMinDim(v2 Min, v2 Dim)
 {
   rect2 Result = {Min, Min+Dim};
