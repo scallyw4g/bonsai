@@ -62,6 +62,7 @@ struct ray
   v3 Dir;
 };
 
+// TODO(Jesse): This could be optimized significantly
 b32
 Intersect(aabb AABB, ray Ray)
 {

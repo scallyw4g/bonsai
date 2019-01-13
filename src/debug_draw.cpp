@@ -134,6 +134,8 @@ DEBUG_DrawLine(untextured_3d_geometry_buffer *Mesh, line Line, int ColorIndex, r
 void
 DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, v3 MinP, v3 MaxP, int ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS )
 {
+  TIMED_FUNCTION();
+
   /* v3 HalfDim = (GetRenderP(world, MaxCP) - GetRenderP(world, MinCP)) / 2; */
 
   // Start in model space

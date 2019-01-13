@@ -1097,6 +1097,7 @@ BufferEntity(
 untextured_3d_geometry_buffer
 ReserveBufferSpace(untextured_3d_geometry_buffer* Reservation, u32 ElementsToReserve)
 {
+  TIMED_FUNCTION();
   Assert(ElementsToReserve);
 
   untextured_3d_geometry_buffer Result = {};
@@ -1148,7 +1149,7 @@ BufferWorldChunk(
     }
 #endif
 
-#if 1
+#if 0
     current_triangles *CurrentTriangles = Chunk->CurrentTriangles;
     if ( (Hotkeys->Debug_TriangulateIncrement || Hotkeys->Debug_TriangulateDecrement) &&
          (CurrentTriangles->SurfacePoints->End > 0))
@@ -1228,6 +1229,7 @@ BufferWorld(game_state* GameState, untextured_3d_geometry_buffer* Dest, world *W
 
         if (Chunk)
         {
+          TIMED_BLOCK("Mouse Ray Intersection");
           v3 MinP = GetRenderP(WORLD_CHUNK_DIM, Canonical_Position(V3(0,0,0), Chunk->WorldP), Graphics->Camera);
           v3 MaxP = GetRenderP(WORLD_CHUNK_DIM, Canonical_Position(WORLD_CHUNK_DIM, Chunk->WorldP), Graphics->Camera);
 
@@ -1239,6 +1241,7 @@ BufferWorld(game_state* GameState, untextured_3d_geometry_buffer* Dest, world *W
           }
 
           BufferWorldChunk(Dest, Chunk, Graphics, &GameState->Plat->HighPriority, Hotkeys);
+          END_BLOCK();
         }
         else
         {

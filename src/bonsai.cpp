@@ -22,6 +22,7 @@
 void
 PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
 {
+  TIMED_FUNCTION();
   work_queue_entry* Dest = Queue->Entries + Queue->EnqueueIndex;
   Assert(Dest->Type == WorkEntryType_None);
 
