@@ -4,6 +4,10 @@ DEBUG_DrawLine( untextured_3d_geometry_buffer *Mesh,
 {
   // 2 verts per line, 3 r32s per vert
 
+#if BONSAI_INTERNAL
+  u32 MeshStartingAt = Mesh->At;
+#endif
+
   v3 localNormalData[] =
   {
     {{0, 0, 0}},
@@ -80,6 +84,12 @@ DEBUG_DrawLine( untextured_3d_geometry_buffer *Mesh,
         localNormalData,
         FaceColors);
   }
+
+#if BONSAI_INTERNAL
+#define VERTS_PER_LINE (18)
+  u32 VertsBuffered = Mesh->At - MeshStartingAt;
+  Assert(VertsBuffered == VERTS_PER_LINE);
+#endif
 
 #if 0
   // This is for anti-aliasing the lines; it draws extra triangles along the edges which can be set to alpha 0
@@ -173,6 +183,8 @@ DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, v3 MinP, v3 MaxP, int ColorI
   // Render
   //
   // Top
+#define LINES_PER_AABB (12)
+#define VERTS_PER_AABB (VERTS_PER_LINE*LINES_PER_AABB)
   DEBUG_DrawLine(Mesh, TopRL, TopRR, ColorIndex, Thickness);
   DEBUG_DrawLine(Mesh, TopFL, TopFR, ColorIndex, Thickness);
   DEBUG_DrawLine(Mesh, TopFL, TopRL, ColorIndex, Thickness);

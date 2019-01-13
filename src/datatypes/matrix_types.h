@@ -91,15 +91,3 @@ Translate( v3 v )
   return Result;
 }
 
-v3
-Unproject(v2 ScreenP, v2 ScreenDim, m4 *InvViewProj)
-{
-  v4 ClipCoords = (2.0f * V4(V3(ScreenP / ScreenDim, 0.99f), 1.0f)) -1.0f;
-  ClipCoords.y *= -1;
-
-  v4 WorldSpace = TransformColumnMajor(*InvViewProj, ClipCoords);
-  v3 Result = WorldSpace.xyz / WorldSpace.w;
-
-  return Result;
-}
-

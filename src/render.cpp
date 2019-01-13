@@ -12,6 +12,23 @@ global_variable m4 NdcToScreenSpace =
   V4(0.5, 0.5, 0.5, 1.0)
 };
 
+v3
+Unproject(v2 ScreenP, r32 ClipZDepth, v2 ScreenDim, m4 *InvViewProj)
+{
+  TIMED_FUNCTION();
+
+  Assert(ClipZDepth <= 1.0f);
+  Assert(ClipZDepth >= 0.0f);
+
+  v4 ClipCoords = (2.0f * V4(V3(ScreenP / ScreenDim, ClipZDepth), 1.0f)) -1.0f;
+  ClipCoords.y *= -1;
+
+  v4 WorldSpace = TransformColumnMajor(*InvViewProj, ClipCoords);
+  v3 Result = WorldSpace.xyz / WorldSpace.w;
+
+  return Result;
+}
+
 void
 Init_Global_QuadVertexBuffer()
 {
@@ -1193,7 +1210,7 @@ inline void
 QueueChunkForInit(game_state *GameState, work_queue *Queue, world_chunk *Chunk);
 
 void
-BufferWorld(game_state* GameState, untextured_3d_geometry_buffer* Dest, world *World, graphics *Graphics, world_position VisibleRadius, hotkeys* Hotkeys)
+BufferWorld(game_state* GameState, untextured_3d_geometry_buffer* Dest, world *World, graphics *Graphics, world_position VisibleRadius, hotkeys* Hotkeys, ray PickRay)
 {
   TIMED_FUNCTION();
 
@@ -1211,6 +1228,16 @@ BufferWorld(game_state* GameState, untextured_3d_geometry_buffer* Dest, world *W
 
         if (Chunk)
         {
+          v3 MinP = GetRenderP(WORLD_CHUNK_DIM, Canonical_Position(V3(0,0,0), Chunk->WorldP), Graphics->Camera);
+          v3 MaxP = GetRenderP(WORLD_CHUNK_DIM, Canonical_Position(WORLD_CHUNK_DIM, Chunk->WorldP), Graphics->Camera);
+
+          aabb ChunkAABB = MinMaxAABB(MinP, MaxP);
+          if (Chunk->Mesh && Intersect(ChunkAABB, PickRay) )
+          {
+            untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(Dest, VERTS_PER_AABB);
+            DEBUG_DrawChunkAABB(&CopyDest, Graphics, Chunk, WORLD_CHUNK_DIM, PINK, 0.5f);
+          }
+
           BufferWorldChunk(Dest, Chunk, Graphics, &GameState->Plat->HighPriority, Hotkeys);
         }
         else

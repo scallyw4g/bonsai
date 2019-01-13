@@ -168,14 +168,22 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   b32 Inverted = Inverse((r32*)&gBuffer->ViewProjection, (r32*)&InverseViewProjection);
   Assert(Inverted);
 
-  v3 MouseWorldP = Unproject(Plat->MouseP,
-                             V2(Plat->WindowWidth, Plat->WindowHeight),
-                             &InverseViewProjection);
+  v3 MouseMinWorldP = Unproject( Plat->MouseP,
+                                 0.0f,
+                                 V2(Plat->WindowWidth, Plat->WindowHeight),
+                                 &InverseViewProjection);
 
-  DrawVoxel( &GpuMap->Buffer, MouseWorldP, GREEN, V3(5.0f));
+  v3 MouseMaxWorldP = Unproject( Plat->MouseP,
+                                 1.0f,
+                                 V2(Plat->WindowWidth, Plat->WindowHeight),
+                                 &InverseViewProjection);
+
+
+  v3 RayDirection = Normalize(MouseMaxWorldP - MouseMinWorldP);
+  ray PickRay = { MouseMinWorldP, RayDirection };
 
   TIMED_BLOCK("BufferMeshes");
-    BufferWorld(GameState, &GpuMap->Buffer, World, Graphics, VISIBLE_REGION_RADIUS, Hotkeys);
+    BufferWorld(GameState, &GpuMap->Buffer, World, Graphics, VISIBLE_REGION_RADIUS, Hotkeys, PickRay);
     BufferEntities( GameState->EntityTable, &GpuMap->Buffer, Graphics, World, Plat->dt);
   END_BLOCK("BufferMeshes");
 

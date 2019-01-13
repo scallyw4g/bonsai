@@ -29,13 +29,17 @@ struct aabb
     this->Radius = V3(Radius_in);
   }
 
-  aabb()
-  {
-    this->Center = V3(0,0,0);
-    this->Radius = V3(0,0,0);
-  }
-
+  aabb() { Clear(this); }
 };
+
+inline aabb
+MinMaxAABB(v3 Min, v3 Max)
+{
+  v3 Radius = (Max - Min)/2.0f;
+  v3 Center = Min + Radius;
+  aabb Result(Center, Radius);
+  return Result;
+}
 
 inline aabb
 operator+(aabb AABB, v3 V)
@@ -52,3 +56,65 @@ HalfDim( v3 P1 )
   return Result;
 }
 
+struct ray
+{
+  v3 Origin;
+  v3 Dir;
+};
+
+b32
+Intersect(aabb AABB, ray Ray)
+{
+  v3 min = AABB.Center - AABB.Radius;;
+  v3 max = AABB.Center + AABB.Radius;;
+
+  r32 tmin = (min.x - Ray.Origin.x) / Ray.Dir.x;
+  r32 tmax = (max.x - Ray.Origin.x) / Ray.Dir.x;
+
+  if (tmin > tmax)
+  {
+    r32 temp = tmin;
+    tmin = tmax;
+    tmax = temp;
+  }
+
+  r32 tymin = (min.y - Ray.Origin.y) / Ray.Dir.y;
+  r32 tymax = (max.y - Ray.Origin.y) / Ray.Dir.y;
+
+  if (tymin > tymax)
+  {
+    r32 temp = tymin;
+    tymin = tymax;
+    tymax = temp;
+  }
+
+  if ((tmin > tymax) || (tymin > tmax))
+  return false;
+
+  if (tymin > tmin)
+  tmin = tymin;
+
+  if (tymax < tmax)
+  tmax = tymax;
+
+  r32 tzmin = (min.z - Ray.Origin.z) / Ray.Dir.z;
+  r32 tzmax = (max.z - Ray.Origin.z) / Ray.Dir.z;
+
+  if (tzmin > tzmax)
+  {
+    r32 temp = tzmin;
+    tzmin = tzmax;
+    tzmax = temp;
+  }
+
+  if ((tmin > tzmax) || (tzmin > tmax))
+  return false;
+
+  if (tzmin > tmin)
+  tmin = tzmin;
+
+  if (tzmax < tmax)
+  tmax = tzmax;
+
+  return true;
+}
