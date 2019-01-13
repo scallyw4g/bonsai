@@ -110,11 +110,12 @@ enum debug_ui_type
 {
   DebugUIType_None,
 
-  DebugUIType_Graphics,
-  DebugUIType_Network,
+  DebugUIType_PickedChunks,
   DebugUIType_CallGraph,
   DebugUIType_CollatedFunctionCalls,
   DebugUIType_Memory,
+  DebugUIType_Graphics,
+  DebugUIType_Network,
   DebugUIType_DrawCalls,
 
   DebugUIType_Count
@@ -192,6 +193,7 @@ typedef debug_state* (*get_debug_state_proc)();
 static get_debug_state_proc GetDebugState;
 
 
+struct world_chunk;
 #define REGISTERED_MEMORY_ARENA_COUNT 128
 #define META_TABLE_SIZE (16 * 1024)
 struct debug_state
@@ -203,6 +205,9 @@ struct debug_state
   debug_ui_type UIType = DebugUIType_None;
 
   selected_arenas *SelectedArenas;
+
+  world_chunk **PickedChunks;
+  u32 PickedChunkCount;
 
   u64 BytesBufferedToCard;
   b32 Initialized;

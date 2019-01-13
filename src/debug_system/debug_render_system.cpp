@@ -444,6 +444,14 @@ ToString(u64 Number)
 }
 
 inline char*
+ToString(s32 Number)
+{
+  char *Buffer = AllocateProtection(char, TranArena, 32, False);
+  sprintf(Buffer, "%i", Number);
+  return Buffer;
+}
+
+inline char*
 ToString(u32 Number)
 {
   char *Buffer = AllocateProtection(char, TranArena, 32, False);
@@ -821,6 +829,38 @@ DrawWaitingBar(mutex_op_record *WaitRecord, mutex_op_record *AquiredRecord, mute
 
   return;
 }
+
+
+/****************************                 ********************************/
+/****************************  Picked Chunks  ********************************/
+/****************************                 ********************************/
+
+
+void
+DrawPickedChunks(ui_render_group* Group, v2 LayoutBasis)
+{
+  local_persist table_layout Layout;
+  Layout.Layout.At = V2(0,0);
+  Layout.Layout.Clip = NullClipRect;
+  Layout.Layout.Basis = LayoutBasis;
+
+  world_chunk** PickedChunks = GetDebugState()->PickedChunks;
+  u32 PickedChunkCount = GetDebugState()->PickedChunkCount;
+
+  for (u32 ChunkIndex = 0;
+      ChunkIndex < PickedChunkCount;
+      ++ChunkIndex)
+  {
+    world_chunk *Chunk = PickedChunks[ChunkIndex];
+    Column(ToString(Chunk->WorldP.x), Group, &Layout, WHITE);
+    Column(ToString(Chunk->WorldP.y), Group, &Layout, WHITE);
+    Column(ToString(Chunk->WorldP.z), Group, &Layout, WHITE);
+    NewRow(&Layout, &Group->Font);
+  }
+
+  return;
+}
+
 
 
 /************************                        *****************************/

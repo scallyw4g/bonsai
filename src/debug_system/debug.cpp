@@ -95,6 +95,11 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     {
     } break;
 
+    case DebugUIType_PickedChunks:
+    {
+      DrawPickedChunks(&Group, Layout.At);
+    } break;
+
     case DebugUIType_Graphics:
     {
       DebugDrawGraphicsHud(&Group, DebugState, &Layout);

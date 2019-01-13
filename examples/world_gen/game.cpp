@@ -190,13 +190,14 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     PickedChunkCount = 0;
   }
 
-  Print(PickedChunkCount);
-  Print(Hotkeys->Debug_MousePick);
 
   TIMED_BLOCK("BufferMeshes");
     BufferWorld(GameState, &GpuMap->Buffer, World, Graphics, VISIBLE_REGION_RADIUS, Hotkeys, PickRay, PickedChunks, &PickedChunkCount);
     BufferEntities( GameState->EntityTable, &GpuMap->Buffer, Graphics, World, Plat->dt);
   END_BLOCK("BufferMeshes");
+
+  GetDebugState()->PickedChunkCount = PickedChunkCount;
+  GetDebugState()->PickedChunks = PickedChunks;
 
   for (u32 ChunkIndex = 0;
       ChunkIndex < PickedChunkCount;
