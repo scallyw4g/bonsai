@@ -313,7 +313,7 @@ CopyChunkOffset(world_chunk *Src, voxel_position SrcChunkDim, world_chunk *Dest,
         vDest = vSrc;
 #endif
 
-        Dest->Filled += Dest->Data->Voxels[DestIndex].Flags & Voxel_Filled;
+        Dest->FilledCount += Dest->Data->Voxels[DestIndex].Flags & Voxel_Filled;
         CAssert(Voxel_Filled == 1);
       }
     }

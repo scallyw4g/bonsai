@@ -1123,8 +1123,8 @@ BufferWorldChunk(
     untextured_3d_geometry_buffer *Dest,
     world_chunk *Chunk,
     graphics *Graphics,
-    work_queue* Queue,
-    hotkeys* Hotkeys
+    work_queue* Queue
+    /* hotkeys* Hotkeys */
   )
 {
   if (!Chunk || !Chunk->Mesh)
@@ -1210,8 +1210,9 @@ BufferWorldChunk(
 inline void
 QueueChunkForInit(game_state *GameState, work_queue *Queue, world_chunk *Chunk);
 
+#define MAX_PICKED_WORLD_CHUNKS 32
 void
-BufferWorld(game_state* GameState, untextured_3d_geometry_buffer* Dest, world *World, graphics *Graphics, world_position VisibleRadius, hotkeys* Hotkeys, ray PickRay)
+BufferWorld(game_state* GameState, untextured_3d_geometry_buffer* Dest, world *World, graphics *Graphics, world_position VisibleRadius, hotkeys* Hotkeys, ray PickRay, world_chunk** PickedChunks, u32* PickedChunkCount)
 {
   TIMED_FUNCTION();
 
@@ -1227,23 +1228,23 @@ BufferWorld(game_state* GameState, untextured_3d_geometry_buffer* Dest, world *W
         world_position P = World_Position(x,y,z);
         world_chunk *Chunk = GetWorldChunk( World, P );
 
-        if (Chunk)
+        if (Chunk && Chunk->Mesh)
         {
           TIMED_BLOCK("Mouse Ray Intersection");
           v3 MinP = GetRenderP(WORLD_CHUNK_DIM, Canonical_Position(V3(0,0,0), Chunk->WorldP), Graphics->Camera);
           v3 MaxP = GetRenderP(WORLD_CHUNK_DIM, Canonical_Position(WORLD_CHUNK_DIM, Chunk->WorldP), Graphics->Camera);
-
           aabb ChunkAABB = MinMaxAABB(MinP, MaxP);
-          if (Chunk->Mesh && Intersect(ChunkAABB, PickRay) )
+
+          if (Hotkeys->Debug_MousePick && *PickedChunkCount < MAX_PICKED_WORLD_CHUNKS && Intersect(ChunkAABB, PickRay) )
           {
-            untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(Dest, VERTS_PER_AABB);
-            DEBUG_DrawChunkAABB(&CopyDest, Graphics, Chunk, WORLD_CHUNK_DIM, PINK, 0.5f);
+            PickedChunks[*PickedChunkCount] = Chunk;
+            *PickedChunkCount = *PickedChunkCount+1;
           }
 
-          BufferWorldChunk(Dest, Chunk, Graphics, &GameState->Plat->HighPriority, Hotkeys);
+          BufferWorldChunk(Dest, Chunk, Graphics, &GameState->Plat->HighPriority/*, Hotkeys*/);
           END_BLOCK();
         }
-        else
+        else if (!Chunk)
         {
           Chunk = GetWorldChunkFor(GameState->Memory, World, P);
           QueueChunkForInit(GameState, &GameState->Plat->LowPriority, Chunk);

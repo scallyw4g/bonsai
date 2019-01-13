@@ -366,15 +366,17 @@ struct world_chunk
   chunk_data* Data;
   untextured_3d_geometry_buffer* Mesh;
   untextured_3d_geometry_buffer* LodMesh;
-  b32 LodMesh_Complete;
 
   current_triangles* CurrentTriangles;
 
   world_position WorldP;
 
-  u32 Filled;
+  u32 FilledCount;
 
-  u8 Reserved[12];
+  b32 Picked;
+  b32 LodMesh_Complete;
+
+  u8 Reserved[8];
 };
 CAssert(sizeof(world_chunk) == 64);
 #pragma pack(pop)

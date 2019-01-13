@@ -182,10 +182,30 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   v3 RayDirection = Normalize(MouseMaxWorldP - MouseMinWorldP);
   ray PickRay = { MouseMinWorldP, RayDirection };
 
+  debug_global u32 PickedChunkCount = 0;
+  debug_global world_chunk* PickedChunks[MAX_PICKED_WORLD_CHUNKS];
+
+  if (Hotkeys->Debug_MousePick)
+  {
+    PickedChunkCount = 0;
+  }
+
+  Print(PickedChunkCount);
+  Print(Hotkeys->Debug_MousePick);
+
   TIMED_BLOCK("BufferMeshes");
-    BufferWorld(GameState, &GpuMap->Buffer, World, Graphics, VISIBLE_REGION_RADIUS, Hotkeys, PickRay);
+    BufferWorld(GameState, &GpuMap->Buffer, World, Graphics, VISIBLE_REGION_RADIUS, Hotkeys, PickRay, PickedChunks, &PickedChunkCount);
     BufferEntities( GameState->EntityTable, &GpuMap->Buffer, Graphics, World, Plat->dt);
   END_BLOCK("BufferMeshes");
+
+  for (u32 ChunkIndex = 0;
+      ChunkIndex < PickedChunkCount;
+      ++ChunkIndex)
+  {
+    world_chunk *Chunk = PickedChunks[ChunkIndex];
+    untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
+    DEBUG_DrawChunkAABB(&CopyDest, Graphics, Chunk, WORLD_CHUNK_DIM, PINK, 0.5f);
+  }
 
 #if 0
   thread_local_state Thread = {};
