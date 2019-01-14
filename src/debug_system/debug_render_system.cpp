@@ -872,6 +872,41 @@ DrawWaitingBar(mutex_op_record *WaitRecord, mutex_op_record *AquiredRecord, mute
 /****************************                 ********************************/
 
 
+inline b32
+Hover(ui_render_group* Group, clickable_section *Clickable)
+{
+  b32 Result = IsInsideRect(Rect2(Clickable), Group->MouseP);
+  return Result;
+}
+
+inline b32
+Clicked(ui_render_group* Group, clickable_section *Clickable)
+{
+  b32 Result = Hover(Group, Clickable) && Group->Input->LMB.WasPressed;
+  return Result;
+}
+
+inline void
+EndClickable(ui_render_group* Group, table_layout* Table, clickable_section *Clickable)
+{
+  Clickable->Max = Table->Layout.Basis + Table->Layout.At;
+
+  if (Clickable->Min.y == Clickable->Max.y)
+  {
+    Clickable->Max.y += Group->Font.LineHeight;
+  }
+
+  return;
+}
+
+inline clickable_section
+StartClickable(table_layout* Table)
+{
+  v2 StartingAt = Table->Layout.At + Table->Layout.Basis;
+  clickable_section Result = {StartingAt, StartingAt};
+  return Result;
+}
+
 void
 DrawPickedChunks(ui_render_group* Group, v2 LayoutBasis)
 {
@@ -889,9 +924,21 @@ DrawPickedChunks(ui_render_group* Group, v2 LayoutBasis)
       ++ChunkIndex)
   {
     world_chunk *Chunk = PickedChunks[ChunkIndex];
+
+    clickable_section Clickable = StartClickable(&PickedTable);
     Column(ToString(Chunk->WorldP.x), Group, &PickedTable, WHITE, TEAL);
     Column(ToString(Chunk->WorldP.y), Group, &PickedTable, WHITE, TEAL);
     Column(ToString(Chunk->WorldP.z), Group, &PickedTable, WHITE, TEAL);
+    EndClickable(Group, &PickedTable, &Clickable);
+
+    if (Hover(Group, &Clickable))
+    {
+    }
+
+    if (Clicked(Group, &Clickable))
+    {
+    }
+
     if (Button("X", Group, &PickedTable, RED))
     {
       PickedChunks[ChunkIndex] = PickedChunks[*PickedChunkCount-1];
