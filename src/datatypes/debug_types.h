@@ -43,15 +43,17 @@ struct layout
   clip_rect Clip;
 };
 
-struct ui_render_group
+struct debug_ui_render_group
 {
+  framebuffer GameGeometryFBO;
+  untextured_3d_geometry_buffer GameGeo;
+
   debug_text_render_group *TextGroup;
+
   font Font;
   v2 MouseP;
   v2 ScreenDim;
   struct input *Input;
-
-  /* v2 ViewportDim; */
 };
 
 struct debug_profile_scope

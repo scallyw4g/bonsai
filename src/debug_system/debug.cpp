@@ -29,14 +29,14 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   debug_text_render_group *RG          = &DebugState->TextRenderGroup;
   textured_2d_geometry_buffer *TextGeo = &RG->TextGeo;
 
-  layout Layout         = {};
-  ui_render_group Group = {};
-  min_max_avg_dt Dt     = {};
+  layout Layout               = {};
+  debug_ui_render_group Group = {};
+  min_max_avg_dt Dt           = {};
 
-  Group.TextGroup       = RG;
-  Group.Input           = &Plat->Input;
-  Group.ScreenDim       = V2(Plat->WindowWidth, Plat->WindowHeight);
-  Group.MouseP          = V2(Plat->MouseP.x, Plat->MouseP.y);
+  Group.TextGroup             = RG;
+  Group.Input                 = &Plat->Input;
+  Group.ScreenDim             = V2(Plat->WindowWidth, Plat->WindowHeight);
+  Group.MouseP                = V2(Plat->MouseP.x, Plat->MouseP.y);
 
   SetFontSize(&Group.Font, DEBUG_FONT_SIZE);
 

@@ -192,10 +192,7 @@ struct debug_text_render_group
 
   u32 SolidUIVertexBuffer;
   u32 SolidUIColorBuffer;
-
-  u32 VertexBuffer;
-  u32 UVBuffer;
-  u32 ColorBuffer;
+  u32 SolidUIUVBuffer;
 
   shader Text2DShader;
   textured_2d_geometry_buffer TextGeo;
