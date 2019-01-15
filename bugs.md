@@ -1,3 +1,24 @@
+# Jan 10 2019 - 8:00 - closed - FlushBuffersToCard not calling glEnableVertexAttribArray
+* opnegl
+* gpu-mapped-element-buffer
+* nsight
+I had an incomplete understanding of what exactly glEnableVertexAttribArray did
+and as such failed to call it when unmapping vertex buffers for a new render to
+texture path.  The other path happened to work because no other render calls
+fall between the start and end of the buffer map-unmap pair.  Used nsight to
+finally figure out what the issue was.
+
+# Jan 8 2019 - 3:00 - closed - Unproject error due to column-vs-row major matrices
+* inverse-projection
+* matrix
+* math
+* opengl
+Opengl matrices are column-major and the Bonsai application matrices are
+row-major.  Confused by this when doing a row-major tranform on a point did not
+produce the correct result.  Ended up remembering that opengl matrices are
+column-major, implemented the opposite transform, and everything worked.
+
+
 # Jun 4 2018 - 1:00 - closed - Collision detection offset weirdness
 * collision detection
 The GetCollision call had some old/crappy code that was calculating the
