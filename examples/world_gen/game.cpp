@@ -164,6 +164,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     ProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
     ViewMatrix(WorldChunkDim, Camera);
 
+  DEBUG_REGISTER_VIEW_PROJECTION_MATRIX(gBuffer->ViewProjection);
+
   m4 InverseViewProjection = {};
   b32 Inverted = Inverse((r32*)&gBuffer->ViewProjection, (r32*)&InverseViewProjection);
   Assert(Inverted);
@@ -190,7 +192,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     PickedChunkCount = 0;
   }
 
-
   TIMED_BLOCK("BufferMeshes");
     BufferWorld(GameState, &GpuMap->Buffer, World, Graphics, VISIBLE_REGION_RADIUS, Hotkeys, PickRay, PickedChunks, &PickedChunkCount);
     BufferEntities( GameState->EntityTable, &GpuMap->Buffer, Graphics, World, Plat->dt);
@@ -205,7 +206,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   {
     world_chunk *Chunk = PickedChunks[ChunkIndex];
     untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
-    DEBUG_DrawChunkAABB(&CopyDest, Graphics, Chunk, WORLD_CHUNK_DIM, PINK, 0.5f);
+    DEBUG_DrawChunkAABB(&CopyDest, Graphics, Chunk, WORLD_CHUNK_DIM, GREEN, 0.35f);
   }
 
 #if 0
@@ -229,7 +230,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     RenderGBuffer(GpuMap, Graphics);
     RenderAoTexture(AoGroup);
     DrawGBufferToFullscreenQuad(Plat, Graphics);
-    /* DrawTexturedQuad(&Graphics->gBuffer->DebugColorTextureShader); */
   END_BLOCK("RenderToScreen");
 
   Graphics->Lights->Count = 0;

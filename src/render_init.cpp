@@ -127,10 +127,6 @@ CreateGbuffer(memory_arena *Memory)
   gBuffer->ViewProjection = IdentityMatrix;
   gBuffer->ShadowMVP = IdentityMatrix;
 
-  glGenBuffers(1, &gBuffer->vertexbuffer);
-  glGenBuffers(1, &gBuffer->colorbuffer);
-  glGenBuffers(1, &gBuffer->normalbuffer);
-
   return gBuffer;
 }
 
@@ -141,7 +137,6 @@ SetDrawBuffers(framebuffer *FBO)
   u32 Attachments[32] = {};
   for (u32 AttIndex = 0;
       AttIndex < FBO->Attachments;
-
       ++AttIndex)
   {
     Attachments[AttIndex] =  GL_COLOR_ATTACHMENT0 + AttIndex;
@@ -229,11 +224,11 @@ InitAoRenderGroup(ao_render_group *AoGroup, memory_arena *GraphicsMemory)
 bool
 InitGbufferRenderGroup( g_buffer_render_group *gBuffer, memory_arena *GraphicsMemory)
 {
+  v2i ScreenDim = V2i(SCR_WIDTH, SCR_HEIGHT);
+
   glBindFramebuffer(GL_FRAMEBUFFER, gBuffer->FBO.ID);
 
   gBuffer->Textures = Allocate(g_buffer_textures, GraphicsMemory, 1);
-
-  v2i ScreenDim = V2i(SCR_WIDTH, SCR_HEIGHT);
   gBuffer->Textures->Color    = MakeTexture_RGBA( ScreenDim, (v4*)0, GraphicsMemory);
 
   // FIXME(Jesse): This makes GL 3 fail on the FRAMEBUFFER_COMPLETE check

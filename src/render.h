@@ -1,9 +1,3 @@
-#define Draw(VertexCount) do {                      \
-  TIMED_BLOCK("Draw");                              \
-  DEBUG_TRACK_DRAW_CALL(__FUNCTION__, VertexCount); \
-  glDrawArrays(GL_TRIANGLES, 0, (s32)VertexCount);  \
-  END_BLOCK(); } while (0)
-
 inline void
 SetViewport(v2 Dim)
 {
@@ -167,3 +161,4 @@ BufferUVsToCard(u32 BufferId, T *Mesh, u32 *AttributeIndex)
 
   return;
 }
+

@@ -1,64 +1,5 @@
 #include <render_init.cpp>
-
-
-global_variable u32 Global_QuadVertexBuffer;
-global_variable v3 GlobalLightPosition = {{0.20f, 1.0f, 1.0f}};
-
-global_variable m4 NdcToScreenSpace =
-{
-  V4(0.5, 0.0, 0.0, 0.0),
-  V4(0.0, 0.5, 0.0, 0.0),
-  V4(0.0, 0.0, 0.5, 0.0),
-  V4(0.5, 0.5, 0.5, 1.0)
-};
-
-v3
-Unproject(v2 ScreenP, r32 ClipZDepth, v2 ScreenDim, m4 *InvViewProj)
-{
-  TIMED_FUNCTION();
-
-  Assert(ClipZDepth <= 1.0f);
-  Assert(ClipZDepth >= 0.0f);
-
-  v4 ClipCoords = (2.0f * V4(V3(ScreenP / ScreenDim, ClipZDepth), 1.0f)) -1.0f;
-  ClipCoords.y *= -1;
-
-  v4 WorldSpace = TransformColumnMajor(*InvViewProj, ClipCoords);
-  v3 Result = WorldSpace.xyz / WorldSpace.w;
-
-  return Result;
-}
-
-void
-Init_Global_QuadVertexBuffer()
-{
-  glGenBuffers(1, &Global_QuadVertexBuffer);
-  Assert(Global_QuadVertexBuffer);
-
-  glBindBuffer(GL_ARRAY_BUFFER, Global_QuadVertexBuffer);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-  return;
-}
-
-void
-RenderQuad()
-{
-  if (!Global_QuadVertexBuffer)
-  {
-    Init_Global_QuadVertexBuffer();
-  }
-
-  glEnableVertexAttribArray(0);
-  glBindBuffer(GL_ARRAY_BUFFER, Global_QuadVertexBuffer);
-  glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-
-  Draw(6);
-
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-  glDisableVertexAttribArray(0);
-}
+#include <render_utils.cpp>
 
 inline m4
 GetShadowMapMVP(light *GlobalLight)
@@ -78,26 +19,6 @@ GetShadowMapMVP(light *GlobalLight)
   m4 depthViewMatrix =  LookAt(GlobalLight->Position, Target, Up);
 
   return depthProjectionMatrix * depthViewMatrix;
-}
-
-void
-DrawTexturedQuad(shader *SimpleTextureShader)
-{
-  r32 Scale = 0.5f;
-
-  glDepthFunc(GL_LEQUAL);
-
-  texture *Texture = SimpleTextureShader->FirstUniform->Texture;
-  SetViewport( V2(Texture->Dim.x, Texture->Dim.y)*Scale );
-
-  glUseProgram(SimpleTextureShader->ID);
-
-  BindShaderUniforms(SimpleTextureShader);
-
-  RenderQuad();
-  AssertNoGlErrors;
-
-  return;
 }
 
 void
@@ -234,7 +155,6 @@ RenderWorldToGBuffer(gpu_mapped_element_buffer* GpuMap, g_buffer_render_group *R
   BindShaderUniforms(&RG->gBufferShader);
 
   FlushBuffersToCard(GpuMap);
-
   Draw(GpuMap->Buffer.At);
   GpuMap->Buffer.At = 0;
 
@@ -490,8 +410,13 @@ ClearFramebuffers(graphics *Graphics)
   glClearDepth(1.0f);
 
 #if BONSAI_INTERNAL
-  debug_text_render_group *TextRG = &GetDebugState()->TextRenderGroup;
+  debug_state* DebugState = GetDebugState();
+
+  debug_text_render_group *TextRG = &DebugState->TextRenderGroup;
   glBindFramebuffer(GL_FRAMEBUFFER, TextRG->FBO.ID);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  glBindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
 

@@ -48,7 +48,8 @@ struct texture
   v2i Dim;
 };
 
-debug_global float g_quad_vertex_buffer_data[] =
+debug_global float
+g_quad_vertex_buffer_data[] =
 {
   -1.0f, -1.0f, 1.0f,
    1.0f, -1.0f, 1.0f,
@@ -115,10 +116,6 @@ struct g_buffer_render_group
   framebuffer FBO;
 
   g_buffer_textures *Textures;
-
-  u32 colorbuffer;
-  u32 vertexbuffer;
-  u32 normalbuffer;
 
   shader LightingShader;
   shader gBufferShader;
@@ -210,4 +207,16 @@ global_variable m4 IdentityMatrix = {V4(1, 0, 0 ,0),
                                      V4(0, 1, 0 ,0),
                                      V4(0, 0, 1 ,0),
                                      V4(0, 0, 0 ,0)};
+
+untextured_3d_geometry_buffer
+Untextured3dGeometryBuffer(v3* Verts, v4* Colors, v3* Normals, u32 Count)
+{
+  untextured_3d_geometry_buffer Result = {};
+  Result.Verts = Verts;
+  Result.Colors = Colors;
+  Result.Normals = Normals;
+  Result.At = Count;
+
+  return Result;
+}
 

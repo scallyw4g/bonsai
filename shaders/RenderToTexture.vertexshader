@@ -1,0 +1,14 @@
+layout(location = 0) in vec3 vertexPosition_modelspace;
+layout(location = 1) in vec3 vertexNormal_modelspace;
+layout(location = 2) in vec4 vertexColor;
+
+out vec4 Color;
+
+uniform mat4 ViewProjection;
+
+void main()
+{
+  Color = vertexColor;
+  gl_Position = ViewProjection * vec4(vertexPosition_modelspace, 1);
+}
+

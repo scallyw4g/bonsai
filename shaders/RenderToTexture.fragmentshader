@@ -1,0 +1,9 @@
+layout (location = 0) out vec3 TargetTexture;
+
+in vec4 Color;
+
+void main()
+{
+  TargetTexture = Color.rgb;
+}
+

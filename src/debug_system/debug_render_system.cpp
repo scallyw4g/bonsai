@@ -2,8 +2,12 @@
 #include <render_position.cpp>
 #include <stream.cpp>
 #include <shader.cpp>
+#include <render_init.cpp>
+
 #include <render.h>
+#include <render_utils.cpp>
 #include <bonsai_mesh.cpp>
+#include <gpu_mapped_buffer.cpp>
 
 debug_global clip_rect NullClipRect = {};
 
@@ -85,6 +89,21 @@ MakeSolidUIShader(memory_arena *Memory)
                                             "SimpleColor.fragmentshader",
                                              Memory);
   return SimpleTextureShader;
+}
+
+shader
+MakeRenderToTextureShader(memory_arena *Memory, m4 *ViewProjection)
+{
+  shader Shader = LoadShaders( "RenderToTexture.vertexshader",
+                               "RenderToTexture.fragmentshader",
+                                Memory);
+
+  shader_uniform **Current = &Shader.FirstUniform;
+
+  *Current = GetUniform(Memory, &Shader, ViewProjection, "ViewProjection");
+  Current = &(*Current)->Next;
+
+  return Shader;
 }
 
 
@@ -930,8 +949,16 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
     Column(ToString(Chunk->WorldP.z), Group, &PickedTable, WHITE, TEAL);
     EndClickable(Group, &PickedTable, &Clickable);
 
-    if (Hover(Group, &Clickable))
+    /* if (Hover(Group, &Clickable)) */
     {
+      v3 Basis = V3(0);
+      untextured_3d_geometry_buffer* Src = Chunk->LodMesh;
+      untextured_3d_geometry_buffer* Dest = &Group->GameGeo->Buffer;
+      /* TriggeredRuntimeBreak(); */
+      BufferVertsChecked(Src, Dest, Basis, V3(1.0f));
+
+      /* untextured_3d_geometry_buffer QuadBuffer = Untextured3dGeometryBuffer((v3*)g_quad_vertex_buffer_data, Src->Colors, Src->Normals, ArrayCount(g_quad_vertex_buffer_data)/3); */
+      /* BufferVertsChecked(&QuadBuffer, Dest, Basis, V3(1.0f)); */
     }
 
     if (Clicked(Group, &Clickable))
@@ -1920,7 +1947,7 @@ DebugDrawGraphicsHud(debug_ui_render_group *Group, debug_state *DebugState, layo
 /******************************              *********************************/
 
 
-void
+b32
 InitDebugRenderSystem(debug_state *DebugState, heap_allocator *Heap)
 {
   AllocateMesh(&DebugState->LineMesh, 1024, Heap);
@@ -1931,12 +1958,32 @@ InitDebugRenderSystem(debug_state *DebugState, heap_allocator *Heap)
   AllocateAndInitGeoBuffer(&DebugState->TextRenderGroup.TextGeo, 1024, ThreadsafeDebugMemoryAllocator());
   AllocateAndInitGeoBuffer(&DebugState->TextRenderGroup.UIGeo, 1024, ThreadsafeDebugMemoryAllocator());
 
-  AllocateAndInitGeoBuffer(&DebugState->TextRenderGroup.UIGeo, 1024, ThreadsafeDebugMemoryAllocator());
+  AllocateGpuElementBuffer(&DebugState->GameGeo, (u32)Kilobytes(64));
 
   DebugState->TextRenderGroup.SolidUIShader = MakeSolidUIShader(ThreadsafeDebugMemoryAllocator());
 
   DebugState->SelectedArenas = Allocate(selected_arenas, ThreadsafeDebugMemoryAllocator(), 1);
 
-  return;
+  DebugState->GameGeoFBO = GenFramebuffer();
+  glBindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID);
+
+  v2i TextureDim = V2i(1024,1024);
+  DebugState->GameGeoTexture = MakeTexture_RGBA(TextureDim, (v4*)0, ThreadsafeDebugMemoryAllocator());
+  FramebufferTexture(&DebugState->GameGeoFBO, DebugState->GameGeoTexture);
+  SetDrawBuffers(&DebugState->GameGeoFBO);
+
+  texture *DepthTexture    = MakeDepthTexture( TextureDim, ThreadsafeDebugMemoryAllocator() );
+  FramebufferDepthTexture(DepthTexture);
+
+  b32 Result = CheckAndClearFramebuffer();
+  Assert(Result);
+
+  DebugState->GameGeoShader = MakeRenderToTextureShader(ThreadsafeDebugMemoryAllocator(),
+                                                        &DebugState->ViewProjection);
+
+  DebugState->DebugGameGeoTextureShader = MakeSimpleTextureShader(DebugState->GameGeoTexture,
+                                                                  ThreadsafeDebugMemoryAllocator());
+
+  return Result;
 }
 

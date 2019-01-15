@@ -7,7 +7,6 @@
 
 #include <debug_data_system.cpp>
 
-
 // FIXME(Jesse): this is a hack so that we can use BindShaderUniforms.  The
 // Debug system never actually binds a camera, so there's not any reason for
 // this to be required for it to use that function, but C isn't smart enough to
@@ -25,42 +24,44 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
 {
   TIMED_FUNCTION();
 
-  debug_state *DebugState              = GetDebugState();
-  debug_text_render_group *RG          = &DebugState->TextRenderGroup;
-  textured_2d_geometry_buffer *TextGeo = &RG->TextGeo;
+  debug_state *DebugState            = GetDebugState();
+  debug_text_render_group *TextGroup = &DebugState->TextRenderGroup;
 
-  layout Layout               = {};
-  debug_ui_render_group Group = {};
+  MapGpuElementBuffer(&DebugState->GameGeo);
+
   min_max_avg_dt Dt           = {};
+  layout Layout               = {};
 
-  Group.TextGroup             = RG;
-  Group.Input                 = &Plat->Input;
-  Group.ScreenDim             = V2(Plat->WindowWidth, Plat->WindowHeight);
-  Group.MouseP                = V2(Plat->MouseP.x, Plat->MouseP.y);
+  debug_ui_render_group DebugUiGroup = {};
+  DebugUiGroup.TextGroup             = TextGroup;
+  DebugUiGroup.GameGeo               = &DebugState->GameGeo;
+  DebugUiGroup.GameGeoShader         = &DebugState->GameGeoShader;
+  DebugUiGroup.Input                 = &Plat->Input;
+  DebugUiGroup.ScreenDim             = V2(Plat->WindowWidth, Plat->WindowHeight);
+  DebugUiGroup.MouseP                = V2(Plat->MouseP.x, Plat->MouseP.y);
 
-  SetFontSize(&Group.Font, DEBUG_FONT_SIZE);
-
+  SetFontSize(&DebugUiGroup.Font, DEBUG_FONT_SIZE);
 
   TIMED_BLOCK("Draw Status Bar");
     Dt = ComputeMinMaxAvgDt();
-    BufferColumn(Dt.Max, 6, &Group, &Layout, WHITE);
-    NewLine(&Layout, &Group.Font);
+    BufferColumn(Dt.Max, 6, &DebugUiGroup, &Layout, WHITE);
+    NewLine(&Layout, &DebugUiGroup.Font);
 
-    BufferColumn(Dt.Avg, 6, &Group, &Layout, WHITE);
-    BufferColumn(Plat->dt*1000.0f, 6, &Group, &Layout, WHITE);
-    BufferValue("ms", &Group, &Layout, WHITE);
+    BufferColumn(Dt.Avg, 6, &DebugUiGroup, &Layout, WHITE);
+    BufferColumn(Plat->dt*1000.0f, 6, &DebugUiGroup, &Layout, WHITE);
+    BufferValue("ms", &DebugUiGroup, &Layout, WHITE);
 
     {
       // Main line
       memory_arena_stats TotalStats = GetTotalMemoryArenaStats();
 
-      BufferThousands(TotalStats.Allocations, &Group, &Layout, WHITE);
-      AdvanceSpaces(1, &Layout, &Group.Font);
-      BufferValue("Allocations", &Group, &Layout, WHITE);
+      BufferThousands(TotalStats.Allocations, &DebugUiGroup, &Layout, WHITE);
+      AdvanceSpaces(1, &Layout, &DebugUiGroup.Font);
+      BufferValue("Allocations", &DebugUiGroup, &Layout, WHITE);
 
-      BufferThousands(TotalStats.Pushes, &Group, &Layout, WHITE);
-      AdvanceSpaces(1, &Layout, &Group.Font);
-      BufferValue("Pushes", &Group, &Layout, WHITE);
+      BufferThousands(TotalStats.Pushes, &DebugUiGroup, &Layout, WHITE);
+      AdvanceSpaces(1, &Layout, &DebugUiGroup.Font);
+      BufferValue("Pushes", &DebugUiGroup, &Layout, WHITE);
 
       u32 TotalDrawCalls = 0;
 
@@ -75,19 +76,19 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
         }
       }
 
-      BufferColumn(TotalDrawCalls, 6, &Group, &Layout, WHITE);
-      AdvanceSpaces(1, &Layout, &Group.Font);
-      BufferValue("Draw Calls", &Group, &Layout, WHITE);
+      BufferColumn(TotalDrawCalls, 6, &DebugUiGroup, &Layout, WHITE);
+      AdvanceSpaces(1, &Layout, &DebugUiGroup.Font);
+      BufferValue("Draw Calls", &DebugUiGroup, &Layout, WHITE);
 
-      NewLine(&Layout, &Group.Font);
+      NewLine(&Layout, &DebugUiGroup.Font);
     }
 
-    BufferColumn(Dt.Min, 6, &Group, &Layout, WHITE);
+    BufferColumn(Dt.Min, 6, &DebugUiGroup, &Layout, WHITE);
   END_BLOCK("Status Bar");
 
-  SetFontSize(&Group.Font, 32);
-  NewLine(&Layout, &Group.Font);
-  NewLine(&Layout, &Group.Font);
+  SetFontSize(&DebugUiGroup.Font, 32);
+  NewLine(&Layout, &DebugUiGroup.Font);
+  NewLine(&Layout, &DebugUiGroup.Font);
 
   switch (DebugState->UIType)
   {
@@ -97,50 +98,52 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
 
     case DebugUIType_PickedChunks:
     {
-      DrawPickedChunks(&Group, Layout.At);
+      BufferValue("PickedChunks", &DebugUiGroup, &Layout, WHITE);
+      NewLine(&Layout, &DebugUiGroup.Font);
+      DrawPickedChunks(&DebugUiGroup, Layout.At);
     } break;
 
     case DebugUIType_Graphics:
     {
-      DebugDrawGraphicsHud(&Group, DebugState, &Layout);
+      DebugDrawGraphicsHud(&DebugUiGroup, DebugState, &Layout);
     } break;
 
     case DebugUIType_Network:
     {
-      DebugDrawNetworkHud(&Group, &Plat->Network, ServerState, &Layout);
+      DebugDrawNetworkHud(&DebugUiGroup, &Plat->Network, ServerState, &Layout);
     } break;
 
     case DebugUIType_CollatedFunctionCalls:
     {
-      DebugDrawCollatedFunctionCalls(&Group, DebugState, Layout.At);
+      DebugDrawCollatedFunctionCalls(&DebugUiGroup, DebugState, Layout.At);
     } break;
 
     case DebugUIType_CallGraph:
     {
-      BufferValue("Call Graphs", &Group, &Layout, WHITE);
-      clip_rect CycleGraphClip = DebugDrawCallGraph(&Group, DebugState, &Layout, Dt.Max);
-      DebugDrawCycleThreadGraph(&Group, DebugState, V2(CycleGraphClip.Max.x + 20, Layout.At.y));
+      BufferValue("Call Graphs", &DebugUiGroup, &Layout, WHITE);
+      clip_rect CycleGraphClip = DebugDrawCallGraph(&DebugUiGroup, DebugState, &Layout, Dt.Max);
+      DebugDrawCycleThreadGraph(&DebugUiGroup, DebugState, V2(CycleGraphClip.Max.x + 20, Layout.At.y));
     } break;
 
     case DebugUIType_Memory:
     {
-      BufferValue("Memory Arenas", &Group, &Layout, WHITE);
-      NewLine(&Layout, &Group.Font);
+      BufferValue("Memory Arenas", &DebugUiGroup, &Layout, WHITE);
+      NewLine(&Layout, &DebugUiGroup.Font);
       v2 BasisP = Layout.At;
-      DebugDrawMemoryHud(&Group, DebugState, BasisP);
+      DebugDrawMemoryHud(&DebugUiGroup, DebugState, BasisP);
     } break;
 
     case DebugUIType_DrawCalls:
     {
-      BufferValue("Draw  Calls", &Group, &Layout, WHITE);
-      DebugDrawDrawCalls(&Group, &Layout);
+      BufferValue("Draw  Calls", &DebugUiGroup, &Layout, WHITE);
+      DebugDrawDrawCalls(&DebugUiGroup, &Layout);
     } break;
 
     InvalidDefaultCase;
   }
 
-  FlushBuffer(RG, &RG->UIGeo, Group.ScreenDim);
-  FlushBuffer(RG, TextGeo, Group.ScreenDim);
+  FlushBuffer(TextGroup, &TextGroup->UIGeo, DebugUiGroup.ScreenDim);
+  FlushBuffer(TextGroup, &TextGroup->TextGeo, DebugUiGroup.ScreenDim);
 
   DebugState->BytesBufferedToCard = 0;
 
@@ -157,6 +160,21 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   {
     ProgramFunctionCalls[FunctionIndex] = NullFunctionCall;
   }
+
+  glBindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID);
+  FlushBuffersToCard(&DebugState->GameGeo);
+
+  glUseProgram(DebugUiGroup.GameGeoShader->ID);
+
+  SetViewport(V2(1024, 1024));
+
+  BindShaderUniforms(DebugUiGroup.GameGeoShader);
+
+  Draw(DebugState->GameGeo.Buffer.At);
+  DebugState->GameGeo.Buffer.At = 0;
+
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  DrawTexturedQuad(&GetDebugState()->DebugGameGeoTextureShader);
 
   return;
 }

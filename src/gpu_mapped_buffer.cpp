@@ -2,17 +2,23 @@
 inline void
 FlushBuffersToCard(gpu_mapped_element_buffer* GpuMap)
 {
+  glEnableVertexAttribArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, GpuMap->VertexHandle);
   u32 BufferUnmapped = glUnmapBuffer(GL_ARRAY_BUFFER);
   GpuMap->Buffer.Verts = 0;
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
-  glBindBuffer(GL_ARRAY_BUFFER, GpuMap->ColorHandle);
-  BufferUnmapped += glUnmapBuffer(GL_ARRAY_BUFFER);
-  GpuMap->Buffer.Colors = 0;
-
+  glEnableVertexAttribArray(1);
   glBindBuffer(GL_ARRAY_BUFFER, GpuMap->NormalHandle);
   BufferUnmapped += glUnmapBuffer(GL_ARRAY_BUFFER);
   GpuMap->Buffer.Normals = 0;
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+  glEnableVertexAttribArray(2);
+  glBindBuffer(GL_ARRAY_BUFFER, GpuMap->ColorHandle);
+  BufferUnmapped += glUnmapBuffer(GL_ARRAY_BUFFER);
+  GpuMap->Buffer.Colors = 0;
+  glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
   if (!BufferUnmapped)
   {

@@ -45,10 +45,9 @@ struct layout
 
 struct debug_ui_render_group
 {
-  framebuffer GameGeometryFBO;
-  untextured_3d_geometry_buffer GameGeo;
-
   debug_text_render_group *TextGroup;
+  gpu_mapped_element_buffer *GameGeo;
+  shader *GameGeoShader;
 
   font Font;
   v2 MouseP;
@@ -200,8 +199,14 @@ struct world_chunk;
 struct debug_state
 {
   debug_text_render_group TextRenderGroup;
-
   untextured_3d_geometry_buffer LineMesh;
+
+  framebuffer GameGeoFBO;
+  texture *GameGeoTexture;
+  shader GameGeoShader;
+  m4 ViewProjection;
+  gpu_mapped_element_buffer GameGeo;
+  shader DebugGameGeoTextureShader;
 
   debug_ui_type UIType = DebugUIType_None;
 
@@ -391,6 +396,8 @@ void DebugTimedMutexReleased(mutex *Mut);
 #define DEBUG_CLEAR_META_RECORDS_FOR(Arena) GetDebugState()->ClearMetaRecordsFor(Arena)
 #define DEBUG_TRACK_DRAW_CALL(CallingFunction, VertCount) GetDebugState()->TrackDrawCall(CallingFunction, VertCount)
 
+#define DEBUG_REGISTER_VIEW_PROJECTION_MATRIX(ViewProjPtr) GetDebugState()->ViewProjection = ViewProjPtr;
+
 #else
 
 #define TIMED_FUNCTION(...)
@@ -410,6 +417,8 @@ void DebugTimedMutexReleased(mutex *Mut);
 
 #define DEBUG_CLEAR_META_RECORDS_FOR(...)
 #define DEBUG_TRACK_DRAW_CALL(...)
+
+#define DEBUG_REGISTER_VIEW_PROJECTION_MATRIX(...)
 
 #endif
 
