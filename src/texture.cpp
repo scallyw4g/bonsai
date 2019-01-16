@@ -4,6 +4,9 @@
 #define FOURCC_DXT3 0x33545844 // Equivalent to "DXT3" in ASCII
 #define FOURCC_DXT5 0x35545844 // Equivalent to "DXT5" in ASCII
 
+// Note(Jesse): Must match shader define in header.glsl
+#define DEBUG_TEXTURE_DIM 512
+
 texture
 LoadDDS(const char * FilePath, memory_arena *Arena)
 {
@@ -143,27 +146,28 @@ MakeTexture_RGBA(v2i Dim, u32* Data, memory_arena *Mem, u32 MaxTextureSlices = 1
   }
   else
   {
-    // TODO(Jesse): This _should_ be able to be glTexImage3D, but the driver is 
-    // throwing an error I believe is incorrect.. ?
+    // TODO(Jesse): This _should_ be able to be glTexImage3D, but the driver is
+    // throwing an error .. why?!
 #if 0
     glTexImage3D(GL_TEXTURE_3D, MaxTextureSlices, InternalFormat,
         Texture->Dim.x, Texture->Dim.y, MaxTextureSlices,
         0, TextureFormat, ElementType,
         0);
 #else
-    glTexStorage3D(GL_TEXTURE_3D, MaxTextureSlices, InternalFormat,
-                   Texture->Dim.x, Texture->Dim.y, MaxTextureSlices);
+    u32 Mips = MaxTextureSlices;
+    glTexStorage3D(GL_TEXTURE_3D, Mips, InternalFormat,
+                   DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM, MaxTextureSlices);
 #endif
 
     u32 xOffset = 0;
     u32 yOffset = 0;
     u32 zOffset = 0;
 
+    u32 TextureDepth = 1;
     glTexSubImage3D(GL_TEXTURE_3D, 0,
         xOffset, yOffset, zOffset,
-        Texture->Dim.x, Texture->Dim.y, 1,
+        Texture->Dim.x, Texture->Dim.y, TextureDepth,
         TextureFormat, ElementType, Data);
-
   }
 
   glBindTexture(TextureDimensionality, 0);
@@ -172,23 +176,15 @@ MakeTexture_RGBA(v2i Dim, u32* Data, memory_arena *Mem, u32 MaxTextureSlices = 1
 }
 
 texture *
-MakeTexture_RGBA(v2i Dim, v4* Data, memory_arena *Mem, s32 TextureSlice = -1)
+MakeTexture_RGBA(v2i Dim, v4* Data, memory_arena *Mem)
 {
   texture *Texture = GenTexture(Dim, Mem);
 
   u32 TextureFormat = GL_RGBA;
   u32 InternalFormat = GL_RGBA32F;
   u32 ElementType = GL_FLOAT;
-  if (TextureSlice == -1)
-  {
-    glTexImage2D(GL_TEXTURE_2D, 0, InternalFormat,
-        Texture->Dim.x, Texture->Dim.y, 0,  TextureFormat, ElementType, Data);
-  }
-  else
-  {
-    glTexImage3D(GL_TEXTURE_3D, 0, InternalFormat,
-        Texture->Dim.x, Texture->Dim.y, TextureSlice, 0, TextureFormat, ElementType, Data);
-  }
+  glTexImage2D(GL_TEXTURE_2D, 0, InternalFormat,
+      Texture->Dim.x, Texture->Dim.y, 0,  TextureFormat, ElementType, Data);
 
   glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -257,11 +253,20 @@ FramebufferDepthTexture(texture *Tex)
 }
 
 void
+FramebufferTextureLayer(framebuffer *FBO, texture *Tex, debug_texture_array_slice Layer)
+{
+  u32 Attachment = FBO->Attachments++;
+  glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + Attachment,
+                            Tex->ID, 0, Layer);
+  return;
+}
+
+void
 FramebufferTexture(framebuffer *FBO, texture *Tex)
 {
   u32 Attachment = FBO->Attachments++;
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + Attachment,
-      GL_TEXTURE_2D, Tex->ID, 0);
+                         GL_TEXTURE_2D, Tex->ID, 0);
 
   return;
 }

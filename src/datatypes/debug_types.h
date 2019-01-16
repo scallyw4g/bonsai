@@ -205,7 +205,6 @@ struct debug_state
   camera Camera;
 
   framebuffer GameGeoFBO;
-  texture *GameGeoTexture;
   shader GameGeoShader;
   m4 ViewProjection;
   gpu_mapped_element_buffer GameGeo;

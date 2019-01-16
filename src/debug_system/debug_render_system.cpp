@@ -32,7 +32,6 @@ b32
 InitDebugOverlayFramebuffer(debug_text_render_group *RG, memory_arena *DebugArena, const char *DebugFont)
 {
   RG->FontTexture = LoadBitmap(DebugFont, DebugArena, DebugTextureArraySlice_Count);
-  /* Print(RG->FontTexture->ID); */
 
   glGenBuffers(1, &RG->SolidUIVertexBuffer);
   glGenBuffers(1, &RG->SolidUIColorBuffer);
@@ -990,7 +989,9 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
     }
 
     NewRow(&PickedTable, &Group->Font);
-    v2 QuadMax = DrawTexturedQuadAt( Group, &Group->TextGroup->TextGeo, GetAbsoluteAt(&PickedTable.Layout), V2(512));
+    v2 QuadMax = DrawTexturedQuadAt( Group, &Group->TextGroup->TextGeo,
+                                     GetAbsoluteAt(&PickedTable.Layout),
+                                     V2(512));
     PickedTable.Layout.At+=QuadMax;
     AdvanceClip(&PickedTable.Layout);
     NewRow(&PickedTable, &Group->Font);
@@ -1010,12 +1011,12 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
   UpdateCameraP(Canonical_Position(0), &DebugState->Camera);
 
   DebugState->ViewProjection =
-    ProjectionMatrix(&DebugState->Camera, 1024, 1024) *
+    ProjectionMatrix(&DebugState->Camera, DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM) *
     ViewMatrix(WORLD_CHUNK_DIM, &DebugState->Camera);
 
   glUseProgram(Group->GameGeoShader->ID);
 
-  SetViewport(V2(1024, 1024));
+  SetViewport(V2(DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM));
 
   BindShaderUniforms(Group->GameGeoShader);
 
@@ -2015,11 +2016,10 @@ InitDebugRenderSystem(debug_state *DebugState, heap_allocator *Heap)
   DebugState->GameGeoFBO = GenFramebuffer();
   glBindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID);
 
-  v2i TextureDim = V2i(1024,1024);
-  DebugState->GameGeoTexture = MakeTexture_RGBA(TextureDim, (v4*)0, ThreadsafeDebugMemoryAllocator());
-  FramebufferTexture(&DebugState->GameGeoFBO, DebugState->GameGeoTexture);
+  FramebufferTextureLayer(&DebugState->GameGeoFBO, DebugState->TextRenderGroup.FontTexture, DebugTextureArraySlice_Viewport);
   SetDrawBuffers(&DebugState->GameGeoFBO);
 
+  v2i TextureDim = V2i(DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM);
   texture *DepthTexture    = MakeDepthTexture( TextureDim, ThreadsafeDebugMemoryAllocator() );
   FramebufferDepthTexture(DepthTexture);
 
@@ -2028,9 +2028,6 @@ InitDebugRenderSystem(debug_state *DebugState, heap_allocator *Heap)
 
   DebugState->GameGeoShader = MakeRenderToTextureShader(ThreadsafeDebugMemoryAllocator(),
                                                         &DebugState->ViewProjection);
-
-  DebugState->DebugGameGeoTextureShader = MakeSimpleTextureShader(DebugState->GameGeoTexture,
-                                                                  ThreadsafeDebugMemoryAllocator());
 
   StandardCamera(&DebugState->Camera, 300.0f, 100.0f);
 

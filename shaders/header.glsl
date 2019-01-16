@@ -22,3 +22,5 @@ precision highp sampler3D;
 #define USE_SSAO_SHADER 1
 #define USE_SHADOW_MAPPING 0
 
+// Note(Jesse): Must match corresponding C++ define
+#define DEBUG_TEXTURE_DIM 512
