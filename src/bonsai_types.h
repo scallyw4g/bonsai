@@ -47,6 +47,8 @@ void BreakHere() { return; }
 
 #include <mutex.h>
 
+#include <camera_types.h>
+
 #include <debug_types.h>
 
 #include <xml.h>

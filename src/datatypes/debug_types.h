@@ -201,6 +201,9 @@ struct debug_state
   debug_text_render_group TextRenderGroup;
   untextured_3d_geometry_buffer LineMesh;
 
+  // For the GameGeo
+  camera Camera;
+
   framebuffer GameGeoFBO;
   texture *GameGeoTexture;
   shader GameGeoShader;
@@ -212,6 +215,7 @@ struct debug_state
 
   selected_arenas *SelectedArenas;
 
+  world_chunk *HotChunk;
   world_chunk **PickedChunks;
   u32* PickedChunkCount;
 

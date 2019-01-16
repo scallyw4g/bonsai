@@ -11,8 +11,16 @@
 // Debug system never actually binds a camera, so there's not any reason for
 // this to be required for it to use that function, but C isn't smart enough to
 // figure that out.
+//
+// FIXME(Jesse): we now have camera code in here that potentially needs to know
+// this value!  I think it works by accident because the camera always looks at
+// the origin.
 global_variable chunk_dimension WORLD_CHUNK_DIM = Chunk_Dimension(0,0,0);
 //
+
+#include <canonical_position.cpp>
+#include <render_position.cpp>
+#include <camera.cpp>
 
 global_variable memory_arena* TranArena = PlatformAllocateArena();
 #include <debug_render_system.cpp>
@@ -26,8 +34,6 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
 
   debug_state *DebugState            = GetDebugState();
   debug_text_render_group *TextGroup = &DebugState->TextRenderGroup;
-
-  MapGpuElementBuffer(&DebugState->GameGeo);
 
   min_max_avg_dt Dt           = {};
   layout Layout               = {};
@@ -160,18 +166,6 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   {
     ProgramFunctionCalls[FunctionIndex] = NullFunctionCall;
   }
-
-  glBindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID);
-  FlushBuffersToCard(&DebugState->GameGeo);
-
-  glUseProgram(DebugUiGroup.GameGeoShader->ID);
-
-  SetViewport(V2(1024, 1024));
-
-  BindShaderUniforms(DebugUiGroup.GameGeoShader);
-
-  Draw(DebugState->GameGeo.Buffer.At);
-  DebugState->GameGeo.Buffer.At = 0;
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   DrawTexturedQuad(&GetDebugState()->DebugGameGeoTextureShader);

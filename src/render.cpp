@@ -224,62 +224,6 @@ IsBottomChunkBoundary( chunk_dimension ChunkDim, int idx )
   return (idx/(int)ChunkDim.x) % (int)ChunkDim.y == 0;
 }
 
-inline r32
-GetTheta(v3 P1, v3 P2)
-{
-  r32 DotP1P2 = Dot(P1,P2);
-
-  r32 LP1, LP2;
-
-  LP1 = Length(P1);
-  LP2 = Length(P2);
-
-  Assert(LP1 != 0);
-  Assert(LP2 != 0);
-
-  r32 cosTheta = DotP1P2 / (LP1*LP2);
-  cosTheta = ClampBilateral(cosTheta);
-  r32 Theta = (r32)acos( cosTheta );
-
-  Assert(Theta >= -1 || Theta <= 1);
-  return Theta;
-}
-
-inline Quaternion
-RotatePoint(v3 P1, v3 P2)
-{
-  P1 = Normalize(P1);
-  P2 = Normalize(P2);
-  v3 Axis = Normalize(Cross(P1, P2));
-
-  r32 Theta = GetTheta(P1, P2);
-
-  Quaternion Result = Quaternion((Axis*(r32)sin(Theta/2.0f)), (r32)cos(Theta/2.0f));
-
-  if (Length(Result.xyz) == 0)  // The resulting rotation was inconsequential
-    Result = Quaternion();
-
-  return Result;
-}
-
-inline v3
-Rotate(v3 P, Quaternion Rotation)
-{
-  v3 Result = ((Rotation * Quaternion(P,0)) * Conjugate(Rotation)).xyz;
-  return Result;
-}
-
-inline line
-Rotate(line Line, Quaternion Rotation)
-{
-  line Result;
-
-  Result.MinP = Rotate(Line.MinP, Rotation);
-  Result.MaxP = Rotate(Line.MaxP, Rotation);
-
-  return Result;
-}
-
 #if 0
 inline r32
 DistanceToPlane(plane *Plane, v3 P)

@@ -1,5 +1,4 @@
 #include <texture.cpp>
-#include <render_position.cpp>
 #include <stream.cpp>
 #include <shader.cpp>
 #include <render_init.cpp>
@@ -928,13 +927,17 @@ StartClickable(table_layout* Table)
 void
 DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 {
+  debug_state* DebugState = GetDebugState();
+
   local_persist table_layout PickedTable;
   PickedTable.Layout.At = V2(0,0);
   PickedTable.Layout.Clip = NullClipRect;
   PickedTable.Layout.Basis = LayoutBasis;
 
-  world_chunk** PickedChunks = GetDebugState()->PickedChunks;
-  u32* PickedChunkCount = GetDebugState()->PickedChunkCount;
+  world_chunk** PickedChunks = DebugState->PickedChunks;
+  u32* PickedChunkCount = DebugState->PickedChunkCount;
+
+  MapGpuElementBuffer(&DebugState->GameGeo);
 
   BeginClipRect(&PickedTable.Layout);
   for (u32 ChunkIndex = 0;
@@ -943,26 +946,17 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
   {
     world_chunk *Chunk = PickedChunks[ChunkIndex];
 
+    u8 MainColor = Chunk == DebugState->HotChunk ? PINK : WHITE;
+
     clickable_section Clickable = StartClickable(&PickedTable);
-    Column(ToString(Chunk->WorldP.x), Group, &PickedTable, WHITE, TEAL);
-    Column(ToString(Chunk->WorldP.y), Group, &PickedTable, WHITE, TEAL);
-    Column(ToString(Chunk->WorldP.z), Group, &PickedTable, WHITE, TEAL);
+    Column(ToString(Chunk->WorldP.x), Group, &PickedTable, MainColor, TEAL);
+    Column(ToString(Chunk->WorldP.y), Group, &PickedTable, MainColor, TEAL);
+    Column(ToString(Chunk->WorldP.z), Group, &PickedTable, MainColor, TEAL);
     EndClickable(Group, &PickedTable, &Clickable);
-
-    /* if (Hover(Group, &Clickable)) */
-    {
-      v3 Basis = V3(0);
-      untextured_3d_geometry_buffer* Src = Chunk->LodMesh;
-      untextured_3d_geometry_buffer* Dest = &Group->GameGeo->Buffer;
-      /* TriggeredRuntimeBreak(); */
-      BufferVertsChecked(Src, Dest, Basis, V3(1.0f));
-
-      /* untextured_3d_geometry_buffer QuadBuffer = Untextured3dGeometryBuffer((v3*)g_quad_vertex_buffer_data, Src->Colors, Src->Normals, ArrayCount(g_quad_vertex_buffer_data)/3); */
-      /* BufferVertsChecked(&QuadBuffer, Dest, Basis, V3(1.0f)); */
-    }
 
     if (Clicked(Group, &Clickable))
     {
+      DebugState->HotChunk = Chunk;
     }
 
     if (Button("X", Group, &PickedTable, RED))
@@ -973,6 +967,32 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 
     NewRow(&PickedTable, &Group->Font);
   }
+
+  if (DebugState->HotChunk)
+  {
+    v3 Basis = V3(0);
+    untextured_3d_geometry_buffer* Src = DebugState->HotChunk->LodMesh;
+    untextured_3d_geometry_buffer* Dest = &Group->GameGeo->Buffer;
+    BufferVertsChecked(Src, Dest, Basis, V3(1.0f));
+  }
+
+  glBindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID);
+  FlushBuffersToCard(&DebugState->GameGeo);
+
+  UpdateCameraP(Canonical_Position(0), &DebugState->Camera);
+
+  DebugState->ViewProjection =
+    ProjectionMatrix(&DebugState->Camera, 1024, 1024) *
+    ViewMatrix(WORLD_CHUNK_DIM, &DebugState->Camera);
+
+  glUseProgram(Group->GameGeoShader->ID);
+
+  SetViewport(V2(1024, 1024));
+
+  BindShaderUniforms(Group->GameGeoShader);
+
+  Draw(DebugState->GameGeo.Buffer.At);
+  DebugState->GameGeo.Buffer.At = 0;
 
   untextured_2d_geometry_buffer *Geo = &Group->TextGroup->UIGeo;
   EndClipRect(Group, &PickedTable.Layout, Geo);
@@ -1983,6 +2003,8 @@ InitDebugRenderSystem(debug_state *DebugState, heap_allocator *Heap)
 
   DebugState->DebugGameGeoTextureShader = MakeSimpleTextureShader(DebugState->GameGeoTexture,
                                                                   ThreadsafeDebugMemoryAllocator());
+
+  StandardCamera(&DebugState->Camera, 300.0f, 100.0f);
 
   return Result;
 }

@@ -2,7 +2,7 @@
 // FeelsBadMan.
 
 inline canonical_position
-Canonicalize(canonical_position P )
+Canonicalize(canonical_position P)
 {
   canonical_position Result = Canonicalize(WORLD_CHUNK_DIM, P);
   return Result;

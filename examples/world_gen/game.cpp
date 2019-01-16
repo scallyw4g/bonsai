@@ -154,7 +154,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   CollectUnusedChunks(World, &GameState->MeshFreelist, GameState->Memory);
 
-  UpdateCameraP(Plat, World, Player->P, Camera);
+  UpdateGameCamera(Plat, Player->P, Camera);
 
   SimulateEntities(GameState, Plat->dt);
 
@@ -163,8 +163,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   gBuffer->ViewProjection =
     ProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
     ViewMatrix(WorldChunkDim, Camera);
-
-  DEBUG_REGISTER_VIEW_PROJECTION_MATRIX(gBuffer->ViewProjection);
 
   m4 InverseViewProjection = {};
   b32 Inverted = Inverse((r32*)&gBuffer->ViewProjection, (r32*)&InverseViewProjection);
