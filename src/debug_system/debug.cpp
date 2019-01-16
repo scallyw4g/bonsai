@@ -168,7 +168,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   }
 
   /* glBindFramebuffer(GL_FRAMEBUFFER, 0); */
-  /* DrawTexturedQuad(&GetDebugState()->DebugGameGeoTextureShader); */
+  /* DrawTexturedQuad(&GetDebugState()->TextRenderGroup.DebugTextureShader); */
 
   return;
 }

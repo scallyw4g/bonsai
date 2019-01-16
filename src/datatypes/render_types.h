@@ -184,23 +184,22 @@ struct debug_text_render_group
 {
   framebuffer FBO;
 
-  texture *FontTexture;
-  texture *CompositedTexture;
-
   u32 SolidUIVertexBuffer;
   u32 SolidUIColorBuffer;
   u32 SolidUIUVBuffer;
 
+  texture *FontTexture;
+  shader DebugFontTextureShader;
+
+  texture *CompositedTexture;
+  shader DebugTextureShader;
+
   shader Text2DShader;
+  s32 TextTextureUniform;
   textured_2d_geometry_buffer TextGeo;
 
   shader SolidUIShader;
   untextured_2d_geometry_buffer UIGeo;
-
-  shader DebugFontTextureShader;
-  shader DebugTextureShader;
-
-  s32 TextureUniformID;
 };
 
 global_variable m4 IdentityMatrix = {V4(1, 0, 0 ,0),

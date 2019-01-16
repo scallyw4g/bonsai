@@ -37,8 +37,8 @@ InitDebugOverlayFramebuffer(debug_text_render_group *RG, memory_arena *DebugAren
   v2i ScreenDim = V2i(SCR_WIDTH, SCR_HEIGHT);
 
   RG->FontTexture = LoadBitmap(DebugFont, DebugArena);
-  RG->CompositedTexture = MakeTexture_RGBA( ScreenDim, (v4*)0, DebugArena);
 
+  RG->CompositedTexture = MakeTexture_RGBA( ScreenDim, (v4*)0, DebugArena);
   FramebufferTexture(&RG->FBO, RG->CompositedTexture);
 
   glGenBuffers(1, &RG->SolidUIVertexBuffer);
@@ -48,7 +48,7 @@ InitDebugOverlayFramebuffer(debug_text_render_group *RG, memory_arena *DebugAren
   RG->Text2DShader = LoadShaders("TextVertexShader.vertexshader",
                                  "TextVertexShader.fragmentshader", DebugArena);
 
-  RG->TextureUniformID = glGetUniformLocation(RG->Text2DShader.ID, "TextTextureSampler");
+  RG->TextTextureUniform = glGetUniformLocation(RG->Text2DShader.ID, "TextTextureSampler");
 
   RG->DebugFontTextureShader = MakeSimpleTextureShader(RG->FontTexture, DebugArena);
   RG->DebugTextureShader = MakeSimpleTextureShader(RG->CompositedTexture, DebugArena);
@@ -145,7 +145,9 @@ FlushBuffer(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo, v2 Sc
   // Bind Font texture
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, RG->FontTexture->ID);
-  glUniform1i(RG->TextureUniformID, 0);
+  //
+
+  glUniform1i(RG->TextTextureUniform, 0); // Assign texture unit 0 to the TextTexureUniform
 
   u32 AttributeIndex = 0;
   BufferVertsToCard(  RG->SolidUIVertexBuffer, Geo, &AttributeIndex);
