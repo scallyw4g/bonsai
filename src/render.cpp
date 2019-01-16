@@ -356,10 +356,6 @@ ClearFramebuffers(graphics *Graphics)
 #if BONSAI_INTERNAL
   debug_state* DebugState = GetDebugState();
 
-  debug_text_render_group *TextRG = &DebugState->TextRenderGroup;
-  glBindFramebuffer(GL_FRAMEBUFFER, TextRG->FBO.ID);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
   glBindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif

@@ -1,9 +1,9 @@
-in vec2 UV;
+in vec3 UV;
 in vec3 VertColor;
 
 out vec4 color;
 
-uniform sampler2D TextTextureSampler;
+uniform sampler3D TextTextureSampler;
 
 void main()
 {

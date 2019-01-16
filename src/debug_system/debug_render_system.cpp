@@ -31,15 +31,8 @@ CleanupText2D(debug_text_render_group *RG)
 b32
 InitDebugOverlayFramebuffer(debug_text_render_group *RG, memory_arena *DebugArena, const char *DebugFont)
 {
-  glGenFramebuffers(1, &RG->FBO.ID);
-  glBindFramebuffer(GL_FRAMEBUFFER, RG->FBO.ID);
-
-  v2i ScreenDim = V2i(SCR_WIDTH, SCR_HEIGHT);
-
-  RG->FontTexture = LoadBitmap(DebugFont, DebugArena);
-
-  RG->CompositedTexture = MakeTexture_RGBA( ScreenDim, (v4*)0, DebugArena);
-  FramebufferTexture(&RG->FBO, RG->CompositedTexture);
+  RG->FontTexture = LoadBitmap(DebugFont, DebugArena, DebugTextureArraySlice_Count);
+  /* Print(RG->FontTexture->ID); */
 
   glGenBuffers(1, &RG->SolidUIVertexBuffer);
   glGenBuffers(1, &RG->SolidUIColorBuffer);
@@ -50,11 +43,7 @@ InitDebugOverlayFramebuffer(debug_text_render_group *RG, memory_arena *DebugAren
 
   RG->TextTextureUniform = glGetUniformLocation(RG->Text2DShader.ID, "TextTextureSampler");
 
-  RG->DebugFontTextureShader = MakeSimpleTextureShader(RG->FontTexture, DebugArena);
-  RG->DebugTextureShader = MakeSimpleTextureShader(RG->CompositedTexture, DebugArena);
-
-  if (!CheckAndClearFramebuffer())
-    return False;
+  /* RG->DebugFontTextureShader = MakeSimpleTextureShader(RG->FontTexture, DebugArena); */
 
   return True;
 }
@@ -62,9 +51,9 @@ InitDebugOverlayFramebuffer(debug_text_render_group *RG, memory_arena *DebugAren
 void
 AllocateAndInitGeoBuffer(textured_2d_geometry_buffer *Geo, u32 VertCount, memory_arena *DebugArena)
 {
-  Geo->Verts = Allocate(v3, DebugArena, VertCount);
+  Geo->Verts  = Allocate(v3, DebugArena, VertCount);
   Geo->Colors = Allocate(v3, DebugArena, VertCount);
-  Geo->UVs = Allocate(v2, DebugArena, VertCount);
+  Geo->UVs    = Allocate(v3, DebugArena, VertCount);
 
   Geo->End = VertCount;
   Geo->At = 0;
@@ -144,7 +133,7 @@ FlushBuffer(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo, v2 Sc
 
   // Bind Font texture
   glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, RG->FontTexture->ID);
+  glBindTexture(GL_TEXTURE_3D, RG->FontTexture->ID);
   //
 
   glUniform1i(RG->TextTextureUniform, 0); // Assign texture unit 0 to the TextTexureUniform
@@ -170,12 +159,12 @@ FlushBuffer(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo, v2 Sc
 }
 
 void
-BufferUVForQuad(textured_2d_geometry_buffer* Geo)
+BufferUVForQuad(textured_2d_geometry_buffer* Geo, debug_texture_array_slice Slice)
 {
-  v2 uv_up_left    = V2(0, 1);
-  v2 uv_up_right   = V2(1, 1);
-  v2 uv_down_right = V2(1, 0);
-  v2 uv_down_left  = V2(0, 0);
+  v3 uv_up_left    = V3(0, 1, Slice);
+  v3 uv_up_right   = V3(1, 1, Slice);
+  v3 uv_down_right = V3(1, 0, Slice);
+  v3 uv_down_left  = V3(0, 0, Slice);
 
   u32 StartingIndex = Geo->At;
   Geo->UVs[StartingIndex++] = uv_up_left;
@@ -190,14 +179,14 @@ BufferUVForQuad(textured_2d_geometry_buffer* Geo)
 }
 
 void
-BufferTextUVs(textured_2d_geometry_buffer *Geo, v2 UV)
+BufferTextUVs(textured_2d_geometry_buffer *Geo, v2 UV, debug_texture_array_slice Slice)
 {
   r32 OneOverSixteen = 1.0f/16.0f;
 
-  v2 uv_up_left    = V2( UV.x                , UV.y+OneOverSixteen);
-  v2 uv_up_right   = V2( UV.x+OneOverSixteen , UV.y+OneOverSixteen);
-  v2 uv_down_right = V2( UV.x+OneOverSixteen , UV.y);
-  v2 uv_down_left  = V2( UV.x                , UV.y);
+  v3 uv_up_left    = V3( UV.x                , UV.y+OneOverSixteen , (r32)Slice);
+  v3 uv_up_right   = V3( UV.x+OneOverSixteen , UV.y+OneOverSixteen , (r32)Slice);
+  v3 uv_down_right = V3( UV.x+OneOverSixteen , UV.y                , (r32)Slice);
+  v3 uv_down_left  = V3( UV.x                , UV.y                , (r32)Slice);
 
   u32 StartingIndex = Geo->At;
   Geo->UVs[StartingIndex++] = uv_up_left;
@@ -298,13 +287,13 @@ BufferChar(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, u32 C
 
   { // Black Drop-shadow
     BufferQuad(Group, Geo, MinP+V2(3), V2(Font->Size), 0.99f);
-    BufferTextUVs(Geo, UV);
+    BufferTextUVs(Geo, UV, DebugTextureArraySlice_Font);
     BufferColors(Group, Geo, GetColorData(BLACK).xyz);
     Geo->At += 6;
   }
 
   v2 MaxP = BufferQuad(Group, Geo, MinP, V2(Font->Size), 1.0f);
-  BufferTextUVs(Geo, UV);
+  BufferTextUVs(Geo, UV, DebugTextureArraySlice_Font);
   BufferColors(Group, Geo, GetColorData(Color).xyz);
   Geo->At += 6;
 
@@ -952,7 +941,7 @@ DrawTexturedQuadAt(debug_ui_render_group* Group, textured_2d_geometry_buffer* Ge
   u8 Color = WHITE;
 
   v2 MaxP = BufferQuad(Group, Geo, MinP, Dim, 1.0f);
-  BufferUVForQuad(Geo);
+  BufferUVForQuad(Geo, DebugTextureArraySlice_Viewport);
   BufferColors(Group, Geo, GetColorData(Color).xyz);
   Geo->At += 6;
 

@@ -165,7 +165,7 @@ struct textured_2d_geometry_buffer
 {
   v3 *Verts;
   v3 *Colors;
-  v2 *UVs;
+  v3 *UVs;
 
   u32 End;
   u32 At;
@@ -180,23 +180,26 @@ struct untextured_2d_geometry_buffer
   u32 At;
 };
 
+enum debug_texture_array_slice
+{
+  DebugTextureArraySlice_Font,
+  DebugTextureArraySlice_Viewport,
+
+  DebugTextureArraySlice_Count,
+};
+
 struct debug_text_render_group
 {
-  framebuffer FBO;
-
   u32 SolidUIVertexBuffer;
   u32 SolidUIColorBuffer;
   u32 SolidUIUVBuffer;
 
   texture *FontTexture;
-  shader DebugFontTextureShader;
-
-  texture *CompositedTexture;
-  shader DebugTextureShader;
-
   shader Text2DShader;
   s32 TextTextureUniform;
   textured_2d_geometry_buffer TextGeo;
+
+  shader DebugFontTextureShader;
 
   shader SolidUIShader;
   untextured_2d_geometry_buffer UIGeo;

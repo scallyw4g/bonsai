@@ -97,7 +97,7 @@ LoadDDS(const char * FilePath, memory_arena *Arena)
 
 // TODO(Jesse): Why are these allocated on the heap?  Seems unnecessary..
 texture *
-GenTexture(v2i Dim, memory_arena *Mem)
+GenTexture(v2i Dim, memory_arena *Mem, u32 TextureDimensionality = GL_TEXTURE_2D)
 {
   texture *Texture = Allocate(texture, Mem, 1);
   Texture->Dim = Dim;
@@ -105,44 +105,90 @@ GenTexture(v2i Dim, memory_arena *Mem)
   glGenTextures(1, &Texture->ID);
   Assert(Texture->ID);
 
-  glBindTexture(GL_TEXTURE_2D, Texture->ID);
+  glBindTexture(TextureDimensionality, Texture->ID);
 
   // Note(Jesse): This is required to be set if mipmapping is off.  The default behavior
   // is to lerp between the two closest mipmap levels, and when there is only one level
   // that fails, at least on my GL implementation.
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(TextureDimensionality, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   //
 
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-  /* glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE); */
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+  glTexParameteri(TextureDimensionality, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(TextureDimensionality, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(TextureDimensionality, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(TextureDimensionality, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+  /* glTexParameteri(TextureDimensionality, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE); */
+  glTexParameteri(TextureDimensionality, GL_TEXTURE_COMPARE_MODE, GL_NONE);
 
   return Texture;
 }
 
 texture *
-MakeTexture_RGBA(v2i Dim, u32* Data, memory_arena *Mem)
+MakeTexture_RGBA(v2i Dim, u32* Data, memory_arena *Mem, u32 MaxTextureSlices = 1)
 {
-  texture *Texture = GenTexture(Dim, Mem);
+  Assert(MaxTextureSlices);
 
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8,
-      Texture->Dim.x, Texture->Dim.y, 0,  GL_RGBA, GL_UNSIGNED_BYTE, Data);
+  b32 Multidimensional = MaxTextureSlices > 1;
 
-  glBindTexture(GL_TEXTURE_2D, 0);
+  u32 TextureDimensionality = Multidimensional ? GL_TEXTURE_3D : GL_TEXTURE_2D;
+  texture *Texture = GenTexture(Dim, Mem, TextureDimensionality);
+
+  u32 InternalFormat = GL_RGBA8;
+  u32 TextureFormat = GL_RGBA;
+  u32 ElementType = GL_UNSIGNED_BYTE;
+  if (MaxTextureSlices == 1)
+  {
+    glTexImage2D(GL_TEXTURE_2D, 0, InternalFormat,
+        Texture->Dim.x, Texture->Dim.y, 0,  TextureFormat, ElementType, Data);
+  }
+  else
+  {
+    // TODO(Jesse): This _should_ be able to be glTexImage3D, but the driver is 
+    // throwing an error I believe is incorrect.. ?
+#if 0
+    glTexImage3D(GL_TEXTURE_3D, MaxTextureSlices, InternalFormat,
+        Texture->Dim.x, Texture->Dim.y, MaxTextureSlices,
+        0, TextureFormat, ElementType,
+        0);
+#else
+    glTexStorage3D(GL_TEXTURE_3D, MaxTextureSlices, InternalFormat,
+                   Texture->Dim.x, Texture->Dim.y, MaxTextureSlices);
+#endif
+
+    u32 xOffset = 0;
+    u32 yOffset = 0;
+    u32 zOffset = 0;
+
+    glTexSubImage3D(GL_TEXTURE_3D, 0,
+        xOffset, yOffset, zOffset,
+        Texture->Dim.x, Texture->Dim.y, 1,
+        TextureFormat, ElementType, Data);
+
+  }
+
+  glBindTexture(TextureDimensionality, 0);
 
   return Texture;
 }
 
 texture *
-MakeTexture_RGBA(v2i Dim, v4* Data, memory_arena *Mem)
+MakeTexture_RGBA(v2i Dim, v4* Data, memory_arena *Mem, s32 TextureSlice = -1)
 {
   texture *Texture = GenTexture(Dim, Mem);
 
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F,
-      Texture->Dim.x, Texture->Dim.y, 0,  GL_RGBA, GL_FLOAT, Data);
+  u32 TextureFormat = GL_RGBA;
+  u32 InternalFormat = GL_RGBA32F;
+  u32 ElementType = GL_FLOAT;
+  if (TextureSlice == -1)
+  {
+    glTexImage2D(GL_TEXTURE_2D, 0, InternalFormat,
+        Texture->Dim.x, Texture->Dim.y, 0,  TextureFormat, ElementType, Data);
+  }
+  else
+  {
+    glTexImage3D(GL_TEXTURE_3D, 0, InternalFormat,
+        Texture->Dim.x, Texture->Dim.y, TextureSlice, 0, TextureFormat, ElementType, Data);
+  }
 
   glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -218,6 +264,14 @@ FramebufferTexture(framebuffer *FBO, texture *Tex)
       GL_TEXTURE_2D, Tex->ID, 0);
 
   return;
+}
+
+texture*
+LoadBitmap(const char* FilePath, memory_arena *Arena, u32 SliceCount)
+{
+  bitmap TexBitmap = ReadBitmapFromDisk(FilePath, Arena);
+  texture* Result = MakeTexture_RGBA(TexBitmap.Dim, TexBitmap.Pixels.Start, Arena, SliceCount);
+  return Result;
 }
 
 texture*
