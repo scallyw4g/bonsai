@@ -168,6 +168,26 @@ FlushBuffer(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo, v2 Sc
 }
 
 void
+BufferUVForQuad(textured_2d_geometry_buffer* Geo)
+{
+  v2 uv_up_left    = V2(0, 1);
+  v2 uv_up_right   = V2(1, 1);
+  v2 uv_down_right = V2(1, 0);
+  v2 uv_down_left  = V2(0, 0);
+
+  u32 StartingIndex = Geo->At;
+  Geo->UVs[StartingIndex++] = uv_up_left;
+  Geo->UVs[StartingIndex++] = uv_down_left;
+  Geo->UVs[StartingIndex++] = uv_up_right;
+
+  Geo->UVs[StartingIndex++] = uv_down_right;
+  Geo->UVs[StartingIndex++] = uv_up_right;
+  Geo->UVs[StartingIndex++] = uv_down_left;
+
+  return;
+}
+
+void
 BufferTextUVs(textured_2d_geometry_buffer *Geo, v2 UV)
 {
   r32 OneOverSixteen = 1.0f/16.0f;
@@ -924,6 +944,19 @@ StartClickable(table_layout* Table)
   return Result;
 }
 
+function v2
+DrawTexturedQuadAt(debug_ui_render_group* Group, textured_2d_geometry_buffer* Geo, v2 MinP, v2 Dim)
+{
+  u8 Color = WHITE;
+
+  v2 MaxP = BufferQuad(Group, Geo, MinP, Dim, 1.0f);
+  BufferUVForQuad(Geo);
+  BufferColors(Group, Geo, GetColorData(Color).xyz);
+  Geo->At += 6;
+
+  return MaxP;
+}
+
 void
 DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 {
@@ -965,6 +998,10 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
       *PickedChunkCount = *PickedChunkCount-1;
     }
 
+    NewRow(&PickedTable, &Group->Font);
+    v2 QuadMax = DrawTexturedQuadAt( Group, &Group->TextGroup->TextGeo, GetAbsoluteAt(&PickedTable.Layout), V2(512));
+    PickedTable.Layout.At+=QuadMax;
+    AdvanceClip(&PickedTable.Layout);
     NewRow(&PickedTable, &Group->Font);
   }
 

@@ -167,8 +167,8 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     ProgramFunctionCalls[FunctionIndex] = NullFunctionCall;
   }
 
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  DrawTexturedQuad(&GetDebugState()->DebugGameGeoTextureShader);
+  /* glBindFramebuffer(GL_FRAMEBUFFER, 0); */
+  /* DrawTexturedQuad(&GetDebugState()->DebugGameGeoTextureShader); */
 
   return;
 }
