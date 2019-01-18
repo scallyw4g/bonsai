@@ -1,5 +1,6 @@
 #define BONSAI_NO_MUTEX_TRACKING
 #define BONSAI_NO_PUSH_METADATA
+#define BONSAI_NO_DEBUG_MEMORY_ALLOCATOR
 
 #include <bonsai_types.h>
 #include <unix_platform.cpp>
@@ -565,16 +566,14 @@ GetGlyphIdForCharacterCode(u32 UnicodeCodepoint, ttf *Font)
         {
           if (RangeOffset)
           {
-            /* u16 G = StartCode+RangeOffset; */
-
             u16 GlyphIndex = ReadU16( &IdRangeOffset[SegIdx] + RangeOffset / 2 + (UnicodeCodepoint - StartCode) );
             u16 Result = GlyphIndex ? GlyphIndex + Delta : GlyphIndex;
             return Result;
           }
           else
           {
-            u16 GlyphIndex = SafeTruncateToU16(Delta + UnicodeCodepoint);
-            return GlyphIndex;
+            u32 GlyphIndex = Delta + UnicodeCodepoint;
+            return GlyphIndex & 0xFFFF;
           }
 
         }
@@ -632,8 +631,8 @@ GetStreamForGlyphIndex(u32 GlyphIndex, ttf *Font, memory_arena *Arena)
   if (HeadTable->IndexToLocFormat == SHORT_INDEX_LOCATION_FORMAT)
   {
     u32 GlyphIndexOffset = GlyphIndex * sizeof(u16);
-    u32 StartOffset = ReadU16(Font->loca->Data+ GlyphIndexOffset) *2;
-    u32 EndOffset = ReadU16(Font->loca->Data+ GlyphIndexOffset + sizeof(u16)) *2;
+    u32 StartOffset = ReadU16(Font->loca->Data + GlyphIndexOffset) *2;
+    u32 EndOffset = ReadU16(Font->loca->Data + GlyphIndexOffset + sizeof(u16)) *2;
     Assert(StartOffset <= EndOffset);
 
     u8* Start = Font->glyf->Data + StartOffset;
@@ -884,8 +883,7 @@ RasterizeGlyph(v2i OutputSize, v2i FontMaxEmDim, v2i FontMinGlyphP, u8_stream *G
           u32 PixelIndex = GetPixelIndex(V2i(xPixelIndex, yPixelIndex), &OutputBitmap);
           r32 Alpha = 1.0f - OneMinusAlpha;
 
-          OutputBitmap.Pixels.Start[PixelIndex] = PackRGBALinearTo255(V4(1,1,1,0) * OneMinusAlpha);
-          OutputBitmap.Pixels.Start[PixelIndex] |= PackRGBALinearTo255(V4(0.0f, 0.0f, 0.0f, Alpha));
+          OutputBitmap.Pixels.Start[PixelIndex] = PackRGBALinearTo255(V4(1.0f, 1.0f, 1.0f, Alpha));
 
           if (xPixelIndex == (OutputBitmap.Dim.x-1) || yPixelIndex == (OutputBitmap.Dim.y-1))
           {
@@ -995,7 +993,7 @@ main()
         CharCode < (AtlasIndex*256)+256;
         ++CharCode)
     {
-      u32 GlyphIndex =  GetGlyphIdForCharacterCode(CharCode, &Font);
+      u32 GlyphIndex = GetGlyphIdForCharacterCode(CharCode, &Font);
       if (!GlyphIndex) continue;
       u8_stream GlyphStream = GetStreamForGlyphIndex(GlyphIndex, &Font, TempArena);
       bitmap GlyphBitmap = RasterizeGlyph(GlyphSize, FontMaxEmDim, FontMinGlyphP, &GlyphStream, TempArena);
