@@ -514,6 +514,12 @@ GetAbsoluteAt(layout *Layout)
   return Result;
 }
 
+rect2
+GetAbsoluteClip(layout *Layout)
+{
+  rect2 Result = { Layout->Basis+Layout->Clip.Min, Layout->Basis+Layout->Clip.Max };
+  return Result;
+}
 
 /*************************                       *****************************/
 /*************************  Profile Scope Trees  *****************************/

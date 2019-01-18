@@ -200,6 +200,7 @@ struct debug_state
 {
   debug_text_render_group TextRenderGroup;
   untextured_3d_geometry_buffer LineMesh;
+  debug_ui_type UIType = DebugUIType_None;
 
   // For the GameGeo
   camera Camera;
@@ -210,7 +211,7 @@ struct debug_state
   gpu_mapped_element_buffer GameGeo;
   shader DebugGameGeoTextureShader;
 
-  debug_ui_type UIType = DebugUIType_None;
+  b32 ActiveDebugInteraction;
 
   selected_arenas *SelectedArenas;
 

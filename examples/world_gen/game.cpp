@@ -154,7 +154,11 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   CollectUnusedChunks(World, &GameState->MeshFreelist, GameState->Memory);
 
-  UpdateGameCamera(Plat, Player->P, Camera);
+  v2 MouseDelta = GetMouseDelta(Plat);
+  if (!GetDebugState()->ActiveDebugInteraction)
+  {
+    UpdateGameCamera(MouseDelta, &Plat->Input, Player->P, Camera);
+  }
 
   SimulateEntities(GameState, Plat->dt);
 

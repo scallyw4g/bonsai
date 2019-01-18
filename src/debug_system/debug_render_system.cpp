@@ -945,7 +945,7 @@ DrawTexturedQuadAt(debug_ui_render_group* Group, textured_2d_geometry_buffer* Ge
   return MaxP;
 }
 
-void
+function void
 DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 {
   debug_state* DebugState = GetDebugState();
@@ -987,44 +987,68 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
     }
 
     NewRow(&PickedTable, &Group->Font);
-
-    v2 QuadDim = V2(512);
-    DrawTexturedQuadAt( Group, &Group->TextGroup->TextGeo,
-                        GetAbsoluteAt(&PickedTable.Layout),
-                        QuadDim);
-    PickedTable.Layout.At += QuadDim;
-    AdvanceClip(&PickedTable.Layout);
-    NewRow(&PickedTable, &Group->Font);
   }
 
   if (DebugState->HotChunk)
   {
-    v3 Basis = V3(0);
+    v3 Basis = -0.5f*V3(WORLD_CHUNK_DIM);
     untextured_3d_geometry_buffer* Src = DebugState->HotChunk->LodMesh;
     untextured_3d_geometry_buffer* Dest = &Group->GameGeo->Buffer;
     BufferVertsChecked(Src, Dest, Basis, V3(1.0f));
   }
 
-  glBindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID);
-  FlushBuffersToCard(&DebugState->GameGeo);
+  { // Draw hotchunk to the GameGeo FBO
+    glBindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID);
+    FlushBuffersToCard(&DebugState->GameGeo);
 
-  UpdateCameraP(Canonical_Position(0), &DebugState->Camera);
+    DebugState->ViewProjection =
+      ProjectionMatrix(&DebugState->Camera, DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM) *
+      ViewMatrix(WORLD_CHUNK_DIM, &DebugState->Camera);
 
-  DebugState->ViewProjection =
-    ProjectionMatrix(&DebugState->Camera, DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM) *
-    ViewMatrix(WORLD_CHUNK_DIM, &DebugState->Camera);
+    glUseProgram(Group->GameGeoShader->ID);
 
-  glUseProgram(Group->GameGeoShader->ID);
+    SetViewport(V2(DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM));
 
-  SetViewport(V2(DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM));
+    BindShaderUniforms(Group->GameGeoShader);
 
-  BindShaderUniforms(Group->GameGeoShader);
+    Draw(DebugState->GameGeo.Buffer.At);
+    DebugState->GameGeo.Buffer.At = 0;
+  }
 
-  Draw(DebugState->GameGeo.Buffer.At);
-  DebugState->GameGeo.Buffer.At = 0;
+  if (DebugState->HotChunk)
+  {
+    NewRow(&PickedTable, &Group->Font);
+
+    v2 QuadDim = V2(512);
+    DrawTexturedQuadAt( Group, &Group->TextGroup->TextGeo,
+                        GetAbsoluteAt(&PickedTable.Layout),
+                        QuadDim);
+
+    PickedTable.Layout.At += QuadDim;
+    AdvanceClip(&PickedTable.Layout);
+  }
 
   untextured_2d_geometry_buffer *Geo = &Group->TextGroup->UIGeo;
   EndClipRect(Group, &PickedTable.Layout, Geo);
+
+  rect2 ClipForView = GetAbsoluteClip(&PickedTable.Layout);
+  if (IsInsideRect(ClipForView, Group->MouseP))
+  {
+    GetDebugState()->ActiveDebugInteraction = True;
+
+    local_persist v2 LastMouseP;
+    v2 MouseDelta = 0.005f*(Group->MouseP - LastMouseP);
+    UpdateGameCamera( MouseDelta,
+                      Group->Input,
+                      Canonical_Position(0),
+                      &DebugState->Camera);
+
+    LastMouseP = Group->MouseP;
+  }
+  else
+  {
+    GetDebugState()->ActiveDebugInteraction = False;
+  }
 
   return;
 }
@@ -2029,7 +2053,7 @@ InitDebugRenderSystem(debug_state *DebugState, heap_allocator *Heap)
   DebugState->GameGeoShader = MakeRenderToTextureShader(ThreadsafeDebugMemoryAllocator(),
                                                         &DebugState->ViewProjection);
 
-  StandardCamera(&DebugState->Camera, 300.0f, 100.0f);
+  StandardCamera(&DebugState->Camera, 1000.0f, 100.0f);
 
   return Result;
 }

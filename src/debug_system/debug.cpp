@@ -7,15 +7,9 @@
 
 #include <debug_data_system.cpp>
 
-// FIXME(Jesse): this is a hack so that we can use BindShaderUniforms.  The
-// Debug system never actually binds a camera, so there's not any reason for
-// this to be required for it to use that function, but C isn't smart enough to
-// figure that out.
-//
-// FIXME(Jesse): we now have camera code in here that potentially needs to know
-// this value!  I think it works by accident because the camera always looks at
-// the origin.
-global_variable chunk_dimension WORLD_CHUNK_DIM = Chunk_Dimension(0,0,0);
+// FIXME(Jesse): we now have camera code in here that needs to know this value
+// for realz!
+global_variable chunk_dimension WORLD_CHUNK_DIM = Chunk_Dimension(32,32,16);
 //
 
 #include <canonical_position.cpp>

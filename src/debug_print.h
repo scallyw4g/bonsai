@@ -328,5 +328,12 @@ Print_P( xml_tag *Tag, const char* Name)
   return;
 }
 
-
-
+inline void
+Print_P( camera *Camera, const char* name)
+{
+  Log("\n %s ", name );
+  Print(Camera->TargetP);
+  Print(Camera->CurrentP);
+  Print(Camera->ViewingTarget);
+  Log("");
+}

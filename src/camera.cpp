@@ -76,24 +76,22 @@ UpdateCameraP(canonical_position NewTarget, camera *Camera)
 inline v2
 GetMouseDelta(platform *Plat)
 {
-  float mouseSpeed = -0.001f;
+  r32 mouseSpeed = -0.001f;
   v2 Result = Plat->MouseDP * mouseSpeed;
   return Result;
 }
 
 function void
-UpdateGameCamera(platform* Plat, canonical_position NewTarget, camera* Camera)
+UpdateGameCamera(v2 MouseDelta, input *Input, canonical_position NewTarget, camera* Camera)
 {
-  v2 MouseDelta = GetMouseDelta(Plat);
-
-  if (Plat->Input.LMB.IsDown)
+  if (Input->LMB.IsDown)
   {
     Camera->Yaw += MouseDelta.x;
     Camera->Pitch += MouseDelta.y;
     Camera->Pitch = ClampBetween(0.0, Camera->Pitch, PIf);
   }
 
-  if (Plat->Input.RMB.IsDown)
+  if (Input->RMB.IsDown)
   {
     Camera->DistanceFromTarget += MouseDelta.y*200.0f;
   }
