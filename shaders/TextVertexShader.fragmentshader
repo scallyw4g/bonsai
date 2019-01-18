@@ -9,10 +9,11 @@ void main()
 {
   // TODO(Jesse): Pass the UVs in a more sensible format??
   vec4 BitmapTexel = texelFetch( TextTextureSampler,
-                                 ivec3(UV*vec3(DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM, 1)), 0);
+                                 ivec3(UV*vec3(DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM, 1)),
+                                 0);
 
   if (BitmapTexel.a == 0.0f)
     discard;
 
-  color = vec4(VertColor, BitmapTexel.a);
+  color = vec4(VertColor * BitmapTexel.rgb * BitmapTexel.a, BitmapTexel.a);
 }

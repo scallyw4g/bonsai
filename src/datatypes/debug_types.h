@@ -190,7 +190,7 @@ typedef debug_thread_state* (*debug_get_thread_local_state)(void);
 
 struct debug_state;
 typedef debug_state* (*get_debug_state_proc)();
-static get_debug_state_proc GetDebugState;
+function get_debug_state_proc GetDebugState;
 
 
 struct world_chunk;

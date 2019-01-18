@@ -42,8 +42,6 @@ InitDebugOverlayFramebuffer(debug_text_render_group *RG, memory_arena *DebugAren
 
   RG->TextTextureUniform = glGetUniformLocation(RG->Text2DShader.ID, "TextTextureSampler");
 
-  /* RG->DebugFontTextureShader = MakeSimpleTextureShader(RG->FontTexture, DebugArena); */
-
   return True;
 }
 
@@ -158,7 +156,7 @@ FlushBuffer(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo, v2 Sc
 }
 
 void
-BufferUVForQuad(textured_2d_geometry_buffer* Geo, debug_texture_array_slice Slice)
+BufferUVForQuad(textured_2d_geometry_buffer* Geo, u32 Slice)
 {
   v3 uv_up_left    = V3(0, 1, Slice);
   v3 uv_up_right   = V3(1, 1, Slice);
@@ -972,9 +970,9 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
     u8 MainColor = Chunk == DebugState->HotChunk ? PINK : WHITE;
 
     clickable_section Clickable = StartClickable(&PickedTable);
-    Column(ToString(Chunk->WorldP.x), Group, &PickedTable, MainColor, TEAL);
-    Column(ToString(Chunk->WorldP.y), Group, &PickedTable, MainColor, TEAL);
-    Column(ToString(Chunk->WorldP.z), Group, &PickedTable, MainColor, TEAL);
+      Column(ToString(Chunk->WorldP.x), Group, &PickedTable, MainColor, MainColor);
+      Column(ToString(Chunk->WorldP.y), Group, &PickedTable, MainColor, MainColor);
+      Column(ToString(Chunk->WorldP.z), Group, &PickedTable, MainColor, MainColor);
     EndClickable(Group, &PickedTable, &Clickable);
 
     if (Clicked(Group, &Clickable))
@@ -989,10 +987,12 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
     }
 
     NewRow(&PickedTable, &Group->Font);
-    v2 QuadMax = DrawTexturedQuadAt( Group, &Group->TextGroup->TextGeo,
-                                     GetAbsoluteAt(&PickedTable.Layout),
-                                     V2(512));
-    PickedTable.Layout.At+=QuadMax;
+
+    v2 QuadDim = V2(512);
+    DrawTexturedQuadAt( Group, &Group->TextGroup->TextGeo,
+                        GetAbsoluteAt(&PickedTable.Layout),
+                        QuadDim);
+    PickedTable.Layout.At += QuadDim;
     AdvanceClip(&PickedTable.Layout);
     NewRow(&PickedTable, &Group->Font);
   }
@@ -2020,7 +2020,7 @@ InitDebugRenderSystem(debug_state *DebugState, heap_allocator *Heap)
   SetDrawBuffers(&DebugState->GameGeoFBO);
 
   v2i TextureDim = V2i(DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM);
-  texture *DepthTexture    = MakeDepthTexture( TextureDim, ThreadsafeDebugMemoryAllocator() );
+  texture *DepthTexture = MakeDepthTexture( TextureDim, ThreadsafeDebugMemoryAllocator() );
   FramebufferDepthTexture(DepthTexture);
 
   b32 Result = CheckAndClearFramebuffer();

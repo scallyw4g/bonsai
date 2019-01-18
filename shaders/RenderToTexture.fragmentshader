@@ -1,9 +1,9 @@
-layout (location = 0) out vec3 TargetTexture;
+layout (location = 0) out vec4 TargetTexture;
 
 in vec4 Color;
 
 void main()
 {
-  TargetTexture = Color.rgb;
+  TargetTexture = Color;
 }
 
