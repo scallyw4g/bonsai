@@ -136,6 +136,13 @@ struct table_layout
   u32 ColumnIndex;
 };
 
+struct window_layout
+{
+  table_layout Table;
+
+  v2 MaxClip;
+};
+
 struct registered_memory_arena
 {
   memory_arena *Arena;

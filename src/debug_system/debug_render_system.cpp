@@ -277,19 +277,24 @@ BufferQuad(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo, v2 
 }
 
 inline r32
-BufferChar(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, u32 CharIndex, v2 MinP, font *Font, const char *Text, u32 Color)
+BufferChar(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, u32 CharIndex, v2 MinP, font *Font, const char *Text, u32 Color, v2 MaxClip = V2(0))
 {
+
   char Char = Text[CharIndex];
   v2 UV = GetUVForCharCode(Char);
 
   { // Black Drop-shadow
-    BufferQuad(Group, Geo, MinP+V2(3), V2(Font->Size), 0.99f);
+    BufferQuad(Group, Geo, MinP + (0.1f*V2(Font->Size)), V2(Font->Size), 0.99f);
     BufferTextUVs(Geo, UV, DebugTextureArraySlice_Font);
     BufferColors(Group, Geo, GetColorData(BLACK).xyz);
     Geo->At += 6;
   }
 
   v2 MaxP = BufferQuad(Group, Geo, MinP, V2(Font->Size), 1.0f);
+  if (MinP > MaxClip || MaxP > MaxClip)
+  {
+  }
+
   BufferTextUVs(Geo, UV, DebugTextureArraySlice_Font);
   BufferColors(Group, Geo, GetColorData(Color).xyz);
   Geo->At += 6;
@@ -300,7 +305,7 @@ BufferChar(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, u32 C
 }
 
 r32
-BufferTextAt(debug_ui_render_group *Group, v2 BasisP, font *Font, const char *Text, u32 Color)
+BufferValue(const char* Text, debug_ui_render_group *Group, layout *Layout, u32 Color, v2 MaxClip = V2(0))
 {
   textured_2d_geometry_buffer *Geo = &Group->TextGroup->TextGeo;
 
@@ -312,42 +317,14 @@ BufferTextAt(debug_ui_render_group *Group, v2 BasisP, font *Font, const char *Te
       CharIndex < QuadCount;
       CharIndex++ )
   {
-    v2 MinP = BasisP + V2(Font->Size*CharIndex, 0);
-    DeltaX += BufferChar(Group, Geo, CharIndex, MinP, Font, Text, Color);
-    continue;
-  }
-
-  return DeltaX;
-}
-
-r32
-BufferText(const char* Text, u32 Color, layout *Layout, font *Font, debug_ui_render_group *Group)
-{
-  textured_2d_geometry_buffer *Geo = &Group->TextGroup->TextGeo;
-
-  s32 QuadCount = (s32)strlen(Text);
-
-  r32 DeltaX = 0;
-
-  for ( s32 CharIndex = 0;
-      CharIndex < QuadCount;
-      CharIndex++ )
-  {
-    v2 MinP = Layout->Basis + Layout->At + V2(Font->Size*CharIndex, 0);
-    DeltaX += BufferChar(Group, Geo, CharIndex, MinP, Font, Text, Color);
+    v2 MinP = Layout->Basis + Layout->At + V2(Group->Font.Size*CharIndex, 0);
+    DeltaX += BufferChar(Group, Geo, CharIndex, MinP, &Group->Font, Text, Color, MaxClip);
     continue;
   }
 
   Layout->At.x += DeltaX;
   AdvanceClip(Layout);
   return DeltaX;
-}
-
-inline void
-BufferValue(const char *Text, debug_ui_render_group *Group, layout *Layout, u32 ColorIndex)
-{
-  /* r32 DeltaX = */ BufferText(Text, ColorIndex, Layout, &Group->Font, Group);
-  return;
 }
 
 inline void
@@ -419,7 +396,7 @@ NewLine(layout *Layout, font *Font)
 r32
 BufferLine(const char* Text, u32 Color, layout *Layout, font *Font, debug_ui_render_group *Group)
 {
-  r32 xOffset = BufferText(Text, Color, Layout, Font, Group);
+  r32 xOffset = BufferValue(Text, Group, Layout, Color);
   NewLine(Layout, Font);
   return xOffset;
 }
@@ -658,7 +635,7 @@ GetTextBounds(u32 TextLength, font* Font)
 }
 
 function rect2
-Column(const char* ColumnText, debug_ui_render_group *Group, table_layout *Table, u8 Color, u8 HoverColor = TEAL)
+Column(const char* ColumnText, debug_ui_render_group *Group, table_layout *Table, u8 Color, u8 HoverColor = TEAL, v2 MaxClip = V2(0))
 {
   Table->ColumnIndex = (Table->ColumnIndex+1)%MAX_TABLE_COLUMNS;
   table_column *Column = Table->Columns + Table->ColumnIndex;
@@ -679,8 +656,15 @@ Column(const char* ColumnText, debug_ui_render_group *Group, table_layout *Table
     UseColor = HoverColor;
   }
 
-  BufferValue(ColumnText, Group, &Table->Layout, UseColor);
+  BufferValue(ColumnText, Group, &Table->Layout, UseColor, MaxClip);
 
+  return Bounds;
+}
+
+function rect2
+Column(const char* ColumnText, debug_ui_render_group *Group, window_layout *Window, u8 Color, u8 HoverColor = TEAL)
+{
+  rect2 Bounds = Column(ColumnText, Group, &Window->Table, Color, HoverColor, Window->MaxClip);
   return Bounds;
 }
 
@@ -818,10 +802,31 @@ SetFontSize(font *Font, r32 FontSize)
   return;
 }
 
+r32
+BufferTextAt(debug_ui_render_group *Group, v2 BasisP, const char *Text, u32 Color)
+{
+  textured_2d_geometry_buffer *Geo = &Group->TextGroup->TextGeo;
+
+  s32 QuadCount = (s32)strlen(Text);
+
+  r32 DeltaX = 0;
+
+  for ( s32 CharIndex = 0;
+      CharIndex < QuadCount;
+      CharIndex++ )
+  {
+    v2 MinP = BasisP + V2(Group->Font.Size*CharIndex, 0);
+    DeltaX += BufferChar(Group, Geo, CharIndex, MinP, &Group->Font, Text, Color);
+    continue;
+  }
+
+  return DeltaX;
+}
+
 void
 DoTooltip(debug_ui_render_group *Group, const char *Text)
 {
-  BufferTextAt(Group, Group->MouseP + V2(12, -7), &Group->Font, Text, WHITE);
+  BufferTextAt(Group, Group->MouseP+V2(12, -7), Text, WHITE);
   return;
 }
 
@@ -950,17 +955,19 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 {
   debug_state* DebugState = GetDebugState();
 
-  local_persist table_layout PickedTable;
-  PickedTable.Layout.At = V2(0,0);
-  PickedTable.Layout.Clip = NullClipRect;
-  PickedTable.Layout.Basis = LayoutBasis;
+  local_persist window_layout PickerWindow;
+
+  table_layout *PickerTable = &PickerWindow.Table;
+  PickerTable->Layout.At = V2(0,0);
+  PickerTable->Layout.Clip = NullClipRect;
+  PickerTable->Layout.Basis = LayoutBasis;
 
   world_chunk** PickedChunks = DebugState->PickedChunks;
   u32* PickedChunkCount = DebugState->PickedChunkCount;
 
   MapGpuElementBuffer(&DebugState->GameGeo);
 
-  BeginClipRect(&PickedTable.Layout);
+  BeginClipRect(&PickerTable->Layout);
   for (u32 ChunkIndex = 0;
       ChunkIndex < *PickedChunkCount;
       ++ChunkIndex)
@@ -969,24 +976,24 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 
     u8 MainColor = Chunk == DebugState->HotChunk ? PINK : WHITE;
 
-    clickable_section Clickable = StartClickable(&PickedTable);
-      Column(ToString(Chunk->WorldP.x), Group, &PickedTable, MainColor, MainColor);
-      Column(ToString(Chunk->WorldP.y), Group, &PickedTable, MainColor, MainColor);
-      Column(ToString(Chunk->WorldP.z), Group, &PickedTable, MainColor, MainColor);
-    EndClickable(Group, &PickedTable, &Clickable);
+    clickable_section Clickable = StartClickable(PickerTable);
+      Column(ToString(Chunk->WorldP.x), Group, PickerTable, MainColor, MainColor);
+      Column(ToString(Chunk->WorldP.y), Group, PickerTable, MainColor, MainColor);
+      Column(ToString(Chunk->WorldP.z), Group, PickerTable, MainColor, MainColor);
+    EndClickable(Group, PickerTable, &Clickable);
 
     if (Clicked(Group, &Clickable))
     {
       DebugState->HotChunk = Chunk;
     }
 
-    if (Button("X", Group, &PickedTable, RED))
+    if (Button("X", Group, PickerTable, RED))
     {
       PickedChunks[ChunkIndex] = PickedChunks[*PickedChunkCount-1];
       *PickedChunkCount = *PickedChunkCount-1;
     }
 
-    NewRow(&PickedTable, &Group->Font);
+    NewRow(PickerTable, &Group->Font);
   }
 
   if (DebugState->HotChunk)
@@ -1017,38 +1024,45 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 
   if (DebugState->HotChunk)
   {
-    NewRow(&PickedTable, &Group->Font);
+    NewRow(PickerTable, &Group->Font);
 
     v2 QuadDim = V2(512);
     DrawTexturedQuadAt( Group, &Group->TextGroup->TextGeo,
-                        GetAbsoluteAt(&PickedTable.Layout),
+                        GetAbsoluteAt(&PickerTable->Layout),
                         QuadDim);
 
-    PickedTable.Layout.At += QuadDim;
-    AdvanceClip(&PickedTable.Layout);
+    PickerTable->Layout.At += QuadDim;
+    AdvanceClip(&PickerTable->Layout);
   }
 
   untextured_2d_geometry_buffer *Geo = &Group->TextGroup->UIGeo;
-  EndClipRect(Group, &PickedTable.Layout, Geo);
+  EndClipRect(Group, &PickerTable->Layout, Geo);
 
-  rect2 ClipForView = GetAbsoluteClip(&PickedTable.Layout);
+  rect2 ClipForView = GetAbsoluteClip(&PickerTable->Layout);
+  v2 MouseDelta = {};
   if (IsInsideRect(ClipForView, Group->MouseP))
   {
     GetDebugState()->ActiveDebugInteraction = True;
-
     local_persist v2 LastMouseP;
-    v2 MouseDelta = 0.005f*(Group->MouseP - LastMouseP);
-    UpdateGameCamera( MouseDelta,
-                      Group->Input,
-                      Canonical_Position(0),
-                      &DebugState->Camera);
-
+    MouseDelta = 0.005f*(Group->MouseP - LastMouseP);
     LastMouseP = Group->MouseP;
   }
   else
   {
     GetDebugState()->ActiveDebugInteraction = False;
   }
+
+  UpdateGameCamera( MouseDelta,
+                    Group->Input,
+                    Canonical_Position(0),
+                    &DebugState->Camera);
+
+  if (Length(PickerWindow.MaxClip) == 0.0f)
+  {
+    PickerWindow.MaxClip = PickerTable->Layout.Clip.Max;
+  }
+
+
 
   return;
 }
