@@ -26,6 +26,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
 {
   TIMED_FUNCTION();
 
+
   debug_state *DebugState            = GetDebugState();
   debug_text_render_group *TextGroup = &DebugState->TextRenderGroup;
 
@@ -38,7 +39,10 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   DebugUiGroup.GameGeoShader         = &DebugState->GameGeoShader;
   DebugUiGroup.Input                 = &Plat->Input;
   DebugUiGroup.ScreenDim             = V2(Plat->WindowWidth, Plat->WindowHeight);
-  DebugUiGroup.MouseP                = V2(Plat->MouseP.x, Plat->MouseP.y);
+  DebugUiGroup.MouseP                = Plat->MouseP;
+  DebugUiGroup.MouseDP               = Plat->MouseDP;
+
+  DebugState->ActiveDebugInteraction = False;
 
   SetFontSize(&DebugUiGroup.Font, DEBUG_FONT_SIZE);
 

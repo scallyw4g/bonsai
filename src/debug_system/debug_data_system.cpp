@@ -612,7 +612,7 @@ AdvanceClip(layout *Layout)
 inline void
 BeginClipRect(layout *Layout)
 {
-  Layout->Clip = {V2(FLT_MAX, FLT_MAX), V2(-FLT_MAX, -FLT_MAX)};
+  Clear(&Layout->Clip);
   return;
 }
 

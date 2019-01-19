@@ -155,23 +155,23 @@ Voxel_Position(v3 Offset)
 }
 
 
-inline bool
+inline b32
 operator==(v2 P1, v2 P2)
 {
-  bool Result = ( P1.x == P2.x && P1.y == P2.y);
+  b32 Result = ( P1.x == P2.x && P1.y == P2.y);
   return Result;
 }
 
-inline bool
+inline b32
 operator!=(v2 P1, v2 P2)
 {
-  bool Result = !(P1 == P2);
+  b32 Result = !(P1 == P2);
   return Result;
 }
-inline bool
+inline b32
 operator==(v3 P1, v3 P2)
 {
-  bool Result;
+  b32 Result;
 
   Result = (
     P1.x == P2.x &&
@@ -181,17 +181,17 @@ operator==(v3 P1, v3 P2)
   return Result;
 }
 
-inline bool
+inline b32
 operator!=(v3 P1, v3 P2)
 {
-  bool Result = !(P1 == P2);
+  b32 Result = !(P1 == P2);
   return Result;
 }
 
-inline bool
+inline b32
 operator==(voxel_position P1, voxel_position P2)
 {
-  bool Result;
+  b32 Result;
 
   Result = (
     P1.x == P2.x &&
@@ -201,10 +201,10 @@ operator==(voxel_position P1, voxel_position P2)
   return Result;
 }
 
-inline bool
+inline b32
 operator!=(voxel_position P1, voxel_position P2)
 {
-  bool Result = !(P1 == P2);
+  b32 Result = !(P1 == P2);
   return Result;
 }
 
@@ -355,30 +355,30 @@ operator-(voxel_position P1, voxel_position P2)
   return Result;
 }
 
-inline bool
+inline b32
 operator>(v2 P1, v2 P2)
 {
-  bool Result = true;
+  b32 Result = true;
 
   Result &= P1.x > P2.x;
   Result &= P1.y > P2.y;
 
   return Result;
 }
-inline bool
+inline b32
 operator<(v2 P1, v2 P2)
 {
-  bool Result = true;
+  b32 Result = true;
 
   Result &= P1.x < P2.x;
   Result &= P1.y < P2.y;
 
   return Result;
 }
-inline bool
+inline b32
 operator<(v3 P1, v3 P2)
 {
-  bool Result = true;
+  b32 Result = true;
 
   Result &= P1.x < P2.x;
   Result &= P1.y < P2.y;
@@ -387,10 +387,10 @@ operator<(v3 P1, v3 P2)
   return Result;
 }
 
-inline bool
+inline b32
 operator>(v3 P1, v3 P2)
 {
-  bool Result = true;
+  b32 Result = true;
 
   Result &= P1.x > P2.x;
   Result &= P1.y > P2.y;
@@ -399,10 +399,10 @@ operator>(v3 P1, v3 P2)
   return Result;
 }
 
-inline bool
+inline b32
 operator<(voxel_position P1, voxel_position P2)
 {
-  bool Result = true;
+  b32 Result = true;
 
   Result &= P1.x < P2.x;
   Result &= P1.y < P2.y;
@@ -411,10 +411,10 @@ operator<(voxel_position P1, voxel_position P2)
   return Result;
 }
 
-inline bool
+inline b32
 operator>(voxel_position P1, voxel_position P2)
 {
-  bool Result = true;
+  b32 Result = true;
 
   Result &= P1.x > P2.x;
   Result &= P1.y > P2.y;
@@ -423,10 +423,10 @@ operator>(voxel_position P1, voxel_position P2)
   return Result;
 }
 
-inline bool
+inline b32
 operator<=(voxel_position P1, voxel_position P2)
 {
-  bool Result = true;
+  b32 Result = true;
 
   Result &= P1.x <= P2.x;
   Result &= P1.y <= P2.y;
@@ -435,10 +435,21 @@ operator<=(voxel_position P1, voxel_position P2)
   return Result;
 }
 
-inline bool
+inline b32
+operator>=(v2 P1, v2 P2)
+{
+  b32 Result = true;
+
+  Result &= P1.x >= P2.x;
+  Result &= P1.y >= P2.y;
+
+  return Result;
+}
+
+inline b32
 operator>=(voxel_position P1, voxel_position P2)
 {
-  bool Result = true;
+  b32 Result = true;
 
   Result &= P1.x >= P2.x;
   Result &= P1.y >= P2.y;

@@ -230,7 +230,7 @@ BufferColors(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo, v
 #define TO_NDC(P) ((P * ToNDC) - 1.0f)
 
 v2
-BufferQuadDirect(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z, v2 ScreenDim )
+BufferQuadDirect(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z, v2 ScreenDim, v2 MaxClip)
 {
   // Note(Jesse): Z==0 is farthest back, Z==1 is closest to the camera
   Assert(Z >= 0.0f && Z <= 1.0f);
@@ -239,6 +239,35 @@ BufferQuadDirect(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z, v2 ScreenD
   v3 vertex_up_right   = V3( MinP.x+Dim.x , MinP.y      , Z);
   v3 vertex_down_right = V3( MinP.x+Dim.x , MinP.y+Dim.y, Z);
   v3 vertex_down_left  = V3( MinP.x       , MinP.y+Dim.y, Z);
+
+  if (LengthSq(MaxClip) > 0.0f)
+  {
+    Print(MaxClip);
+
+    if (vertex_up_right.x > MaxClip.x)
+    {
+      vertex_up_right.x = MaxClip.x;
+      // TODO(Jesse): Remap UVs somehow??
+    }
+
+    if (vertex_down_right.x > MaxClip.x)
+    {
+      vertex_down_right.x = MaxClip.x;
+      // TODO(Jesse): Remap UVs somehow??
+    }
+
+    if (vertex_down_right.y > MaxClip.y)
+    {
+      vertex_down_right.y = MaxClip.y;
+      // TODO(Jesse): Remap UVs somehow??
+    }
+
+    if (vertex_down_left.y > MaxClip.y)
+    {
+      vertex_down_left.y = MaxClip.y;
+      // TODO(Jesse): Remap UVs somehow??
+    }
+  }
 
   v3 ToNDC = 2.0f/V3(ScreenDim.x, ScreenDim.y, 1.0f);
 
@@ -257,49 +286,47 @@ BufferQuadDirect(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z, v2 ScreenD
 }
 
 inline v2
-BufferQuad(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, v2 MinP, v2 Dim, r32 Z = 0.5f)
+BufferQuad(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, v2 MinP, v2 Dim, r32 Z = 0.5f, v2 MaxClip = V2(0))
 {
   if (BufferIsFull(Geo, 6))
     FlushBuffer(Group->TextGroup, Geo, Group->ScreenDim);
 
-  v2 Result = BufferQuadDirect(Geo->Verts, Geo->At, MinP, Dim, Z, Group->ScreenDim);
+  v2 Result = BufferQuadDirect(Geo->Verts, Geo->At, MinP, Dim, Z, Group->ScreenDim, MaxClip);
   return Result;
 }
 
 inline v2
-BufferQuad(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo, v2 MinP, v2 Dim, r32 Z = 0.5f)
+BufferQuad(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo, v2 MinP, v2 Dim, r32 Z = 0.5f, v2 MaxClip = V2(0))
 {
   if (BufferIsFull(Geo, 6))
     FlushBuffer(Group->TextGroup, Geo, Group->ScreenDim);
 
-  v2 MaxP = BufferQuadDirect(Geo->Verts, Geo->At, MinP, Dim, Z, Group->ScreenDim);
+  v2 MaxP = BufferQuadDirect(Geo->Verts, Geo->At, MinP, Dim, Z, Group->ScreenDim, MaxClip);
   return MaxP;
 }
 
 inline r32
 BufferChar(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, u32 CharIndex, v2 MinP, font *Font, const char *Text, u32 Color, v2 MaxClip = V2(0))
 {
+  r32 DeltaX = 0;
 
   char Char = Text[CharIndex];
   v2 UV = GetUVForCharCode(Char);
 
   { // Black Drop-shadow
-    BufferQuad(Group, Geo, MinP + (0.1f*V2(Font->Size)), V2(Font->Size), 0.99f);
+    v2 ShadowOffset = 0.1f*V2(Font->Size);
+    BufferQuad(Group, Geo, MinP+ShadowOffset, V2(Font->Size), 0.99f, MaxClip);
     BufferTextUVs(Geo, UV, DebugTextureArraySlice_Font);
     BufferColors(Group, Geo, GetColorData(BLACK).xyz);
     Geo->At += 6;
   }
 
-  v2 MaxP = BufferQuad(Group, Geo, MinP, V2(Font->Size), 1.0f);
-  if (MinP > MaxClip || MaxP > MaxClip)
-  {
-  }
-
+  v2 MaxP = BufferQuad(Group, Geo, MinP, V2(Font->Size), 1.0f, MaxClip);
   BufferTextUVs(Geo, UV, DebugTextureArraySlice_Font);
   BufferColors(Group, Geo, GetColorData(Color).xyz);
   Geo->At += 6;
 
-  r32 DeltaX = (MaxP.x - MinP.x);
+  DeltaX = (MaxP.x - MinP.x);
 
   return DeltaX;
 }
@@ -312,6 +339,8 @@ BufferValue(const char* Text, debug_ui_render_group *Group, layout *Layout, u32 
   s32 QuadCount = (s32)strlen(Text);
 
   r32 DeltaX = 0;
+
+  if (LengthSq(MaxClip) > 0.0f) MaxClip+=Layout->Basis;
 
   for ( s32 CharIndex = 0;
       CharIndex < QuadCount;
@@ -542,9 +571,7 @@ BufferThousands(u64 Number, debug_ui_render_group *Group, layout *Layout, u32 Co
     u32 Pad = Max(Columns-Len, 0U);
     AdvanceSpaces(Pad, Layout, &Group->Font);
   }
-
   BufferValue( Buffer, Group, Layout, ColorIndex);
-
   return;
 }
 
@@ -910,6 +937,13 @@ Hover(debug_ui_render_group* Group, clickable_section *Clickable)
 }
 
 inline b32
+Pressed(debug_ui_render_group* Group, clickable_section *Clickable)
+{
+  b32 Result = Hover(Group, Clickable) && Group->Input->LMB.IsDown;
+  return Result;
+}
+
+inline b32
 Clicked(debug_ui_render_group* Group, clickable_section *Clickable)
 {
   b32 Result = Hover(Group, Clickable) && Group->Input->LMB.WasPressed;
@@ -951,11 +985,24 @@ DrawTexturedQuadAt(debug_ui_render_group* Group, textured_2d_geometry_buffer* Ge
 }
 
 function void
+BufferRectangleAt(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo,
+                v2 MinP, v2 Dim, v3 Color)
+{
+  BufferQuad(Group, Geo, MinP, Dim);
+  BufferColors(Group, Geo, Color);
+  Geo->At+=6;
+
+  return;
+}
+
+function void
 DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 {
   debug_state* DebugState = GetDebugState();
 
   local_persist window_layout PickerWindow;
+
+  TriggeredRuntimeBreak();
 
   table_layout *PickerTable = &PickerWindow.Table;
   PickerTable->Layout.At = V2(0,0);
@@ -1039,20 +1086,12 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
   EndClipRect(Group, &PickerTable->Layout, Geo);
 
   rect2 ClipForView = GetAbsoluteClip(&PickerTable->Layout);
-  v2 MouseDelta = {};
   if (IsInsideRect(ClipForView, Group->MouseP))
   {
     GetDebugState()->ActiveDebugInteraction = True;
-    local_persist v2 LastMouseP;
-    MouseDelta = 0.005f*(Group->MouseP - LastMouseP);
-    LastMouseP = Group->MouseP;
-  }
-  else
-  {
-    GetDebugState()->ActiveDebugInteraction = False;
   }
 
-  UpdateGameCamera( MouseDelta,
+  UpdateGameCamera( -0.005f*Group->MouseDP,
                     Group->Input,
                     Canonical_Position(0),
                     &DebugState->Camera);
@@ -1062,7 +1101,18 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
     PickerWindow.MaxClip = PickerTable->Layout.Clip.Max;
   }
 
+  v2 MinP = PickerTable->Layout.Basis + PickerWindow.MaxClip;
+  v2 Dim = V2(20);
+  BufferRectangleAt(Group, &Group->TextGroup->UIGeo, MinP, Dim, V3(1,0,0));
 
+  /* ui_interaction Interaction = Interaction(MinP, MinP+Dim, "PickerTableResizeWindowWidget"); */
+
+  clickable_section Clickable = {MinP, MinP + Dim};
+  if (Pressed(Group, &Clickable))
+  {
+    DebugState->ActiveDebugInteraction = True;
+    PickerWindow.MaxClip = Group->MouseP - PickerWindow.Table.Layout.Basis - Dim/2.0f;
+  }
 
   return;
 }
@@ -1101,22 +1151,6 @@ DrawScopeBarsRecursive(debug_ui_render_group *Group, untextured_2d_geometry_buff
 
     Scope = Scope->Sibling;
   }
-
-  return;
-}
-
-void
-BufferHorizontalBar(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo, layout *Layout,
-                    r32 TotalGraphWidth, v3 Color)
-{
-  v2 MinP = Layout->At + Layout->Basis;
-  v2 BarDim = V2(TotalGraphWidth, Group->Font.LineHeight);
-
-  BufferQuad(Group, Geo, MinP, BarDim);
-  BufferColors(Group, Geo, Color);
-  Geo->At+=6;
-
-  Layout->At.x += TotalGraphWidth;
 
   return;
 }
