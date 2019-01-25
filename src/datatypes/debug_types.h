@@ -24,23 +24,10 @@ struct min_max_avg_dt
   r64 Avg;
 };
 
-struct clip_rect
-{
-  v2 Min;
-  v2 Max;
-};
-
 struct font
 {
   r32 Size;
   r32 LineHeight;
-};
-
-struct layout
-{
-  v2 At;
-  v2 Basis;
-  clip_rect Clip;
 };
 
 struct debug_ui_render_group
@@ -48,6 +35,10 @@ struct debug_ui_render_group
   debug_text_render_group *TextGroup;
   gpu_mapped_element_buffer *GameGeo;
   shader *GameGeoShader;
+
+  interactable HoverInteraction;
+  interactable PressedInteraction;
+  interactable ClickedInteraction;
 
   font Font;
   v2 MouseP;
@@ -120,28 +111,6 @@ enum debug_ui_type
   DebugUIType_DrawCalls,
 
   DebugUIType_Count
-};
-
-// TODO(Jesse): Can this be consolidated with the layout struct?
-struct table_column
-{
-  u32 Max;
-};
-
-#define MAX_TABLE_COLUMNS 4
-struct table_layout
-{
-  layout Layout;
-
-  table_column Columns[MAX_TABLE_COLUMNS];
-  u32 ColumnIndex;
-};
-
-struct window_layout
-{
-  table_layout Table;
-
-  v2 MaxClip;
 };
 
 struct registered_memory_arena

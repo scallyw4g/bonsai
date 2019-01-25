@@ -645,13 +645,6 @@ BufferColumn( r32 Perc, u32 ColumnWidth, debug_ui_render_group *Group, layout *L
   return;
 }
 
-inline b32
-IsInsideRect(rect2 Rect, v2 P)
-{
-  b32 Result = (P > Rect.Min && P < Rect.Max);
-  return Result;
-}
-
 function v2
 GetTextBounds(u32 TextLength, font* Font)
 {
@@ -929,48 +922,6 @@ DrawWaitingBar(mutex_op_record *WaitRecord, mutex_op_record *AquiredRecord, mute
 /****************************                 ********************************/
 
 
-inline b32
-Hover(debug_ui_render_group* Group, clickable_section *Clickable)
-{
-  b32 Result = IsInsideRect(Rect2(Clickable), Group->MouseP);
-  return Result;
-}
-
-inline b32
-Pressed(debug_ui_render_group* Group, clickable_section *Clickable)
-{
-  b32 Result = Hover(Group, Clickable) && Group->Input->LMB.IsDown;
-  return Result;
-}
-
-inline b32
-Clicked(debug_ui_render_group* Group, clickable_section *Clickable)
-{
-  b32 Result = Hover(Group, Clickable) && Group->Input->LMB.WasPressed;
-  return Result;
-}
-
-inline void
-EndClickable(debug_ui_render_group* Group, table_layout* Table, clickable_section *Clickable)
-{
-  Clickable->Max = Table->Layout.Basis + Table->Layout.At;
-
-  if (Clickable->Min.y == Clickable->Max.y)
-  {
-    Clickable->Max.y += Group->Font.LineHeight;
-  }
-
-  return;
-}
-
-inline clickable_section
-StartClickable(table_layout* Table)
-{
-  v2 StartingAt = Table->Layout.At + Table->Layout.Basis;
-  clickable_section Result = {StartingAt, StartingAt};
-  return Result;
-}
-
 function v2
 DrawTexturedQuadAt(debug_ui_render_group* Group, textured_2d_geometry_buffer* Geo, v2 MinP, v2 Dim)
 {
@@ -1023,11 +974,11 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 
     u8 MainColor = Chunk == DebugState->HotChunk ? PINK : WHITE;
 
-    clickable_section Clickable = StartClickable(PickerTable);
+    interactable Clickable = StartInteractable(PickerTable, (umm)&PickerWindow);
       Column(ToString(Chunk->WorldP.x), Group, PickerTable, MainColor, MainColor);
       Column(ToString(Chunk->WorldP.y), Group, PickerTable, MainColor, MainColor);
       Column(ToString(Chunk->WorldP.z), Group, PickerTable, MainColor, MainColor);
-    EndClickable(Group, PickerTable, &Clickable);
+    EndInteractable(Group, PickerTable, &Clickable);
 
     if (Clicked(Group, &Clickable))
     {
@@ -1105,10 +1056,9 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
   v2 Dim = V2(20);
   BufferRectangleAt(Group, &Group->TextGroup->UIGeo, MinP, Dim, V3(1,0,0));
 
-  /* ui_interaction Interaction = Interaction(MinP, MinP+Dim, "PickerTableResizeWindowWidget"); */
+  interactable Interaction = Interactable(MinP, MinP+Dim, (umm)"PickerTableResizeWindowWidget");
 
-  clickable_section Clickable = {MinP, MinP + Dim};
-  if (Pressed(Group, &Clickable))
+  if (Pressed(Group, &Interaction))
   {
     DebugState->ActiveDebugInteraction = True;
     PickerWindow.MaxClip = Group->MouseP - PickerWindow.Table.Layout.Basis - Dim/2.0f;

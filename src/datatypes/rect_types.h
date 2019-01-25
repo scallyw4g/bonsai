@@ -5,23 +5,10 @@ struct rect2
   v2 Max;
 };
 
-struct clickable_section
-{
-  v2 Min;
-  v2 Max;
-};
-
 rect2
 RectMinMax(v2 Min, v2 Max)
 {
   rect2 Result = {Min, Max};
-  return Result;
-}
-
-rect2
-Rect2(clickable_section *Clickable)
-{
-  rect2 Result = RectMinMax(Clickable->Min, Clickable->Max);
   return Result;
 }
 
@@ -139,3 +126,11 @@ Intersect(aabb AABB, ray Ray)
 
   return true;
 }
+
+inline b32
+IsInsideRect(rect2 Rect, v2 P)
+{
+  b32 Result = (P > Rect.Min && P < Rect.Max);
+  return Result;
+}
+
