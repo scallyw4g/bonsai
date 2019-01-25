@@ -8,8 +8,11 @@ Hover(debug_ui_render_group* Group, interactable *Interaction)
 inline b32
 Pressed(debug_ui_render_group* Group, interactable *Interaction)
 {
-  b32 Result = Hover(Group, Interaction) && Group->Input->LMB.IsDown;
+  b32 Result = Group->PressedInteraction.ID == Interaction->ID ||
+               (Hover(Group, Interaction) && Group->Input->LMB.IsDown);
+
   if (Result) Group->PressedInteraction = *Interaction;
+
   return Result;
 }
 

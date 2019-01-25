@@ -36,9 +36,7 @@ struct debug_ui_render_group
   gpu_mapped_element_buffer *GameGeo;
   shader *GameGeoShader;
 
-  interactable HoverInteraction;
   interactable PressedInteraction;
-  interactable ClickedInteraction;
 
   font Font;
   v2 MouseP;
@@ -176,6 +174,7 @@ struct world_chunk;
 struct debug_state
 {
   debug_text_render_group TextRenderGroup;
+  debug_ui_render_group UiGroup;
   untextured_3d_geometry_buffer LineMesh;
   debug_ui_type UIType = DebugUIType_None;
 
@@ -187,8 +186,6 @@ struct debug_state
   m4 ViewProjection;
   gpu_mapped_element_buffer GameGeo;
   shader DebugGameGeoTextureShader;
-
-  b32 ActiveDebugInteraction;
 
   selected_arenas *SelectedArenas;
 

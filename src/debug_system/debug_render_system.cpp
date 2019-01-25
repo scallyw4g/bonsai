@@ -1036,12 +1036,6 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
   untextured_2d_geometry_buffer *Geo = &Group->TextGroup->UIGeo;
   EndClipRect(Group, &PickerTable->Layout, Geo);
 
-  rect2 ClipForView = GetAbsoluteClip(&PickerTable->Layout);
-  if (IsInsideRect(ClipForView, Group->MouseP))
-  {
-    GetDebugState()->ActiveDebugInteraction = True;
-  }
-
   UpdateGameCamera( -0.005f*Group->MouseDP,
                     Group->Input,
                     Canonical_Position(0),
@@ -1060,7 +1054,6 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 
   if (Pressed(Group, &Interaction))
   {
-    DebugState->ActiveDebugInteraction = True;
     PickerWindow.MaxClip = Group->MouseP - PickerWindow.Table.Layout.Basis - Dim/2.0f;
   }
 
