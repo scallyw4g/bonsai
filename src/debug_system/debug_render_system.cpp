@@ -681,12 +681,12 @@ Column(const char* ColumnText, debug_ui_render_group *Group, table_layout *Table
   return Bounds;
 }
 
-function rect2
-Column(const char* ColumnText, debug_ui_render_group *Group, window_layout *Window, u8 Color, u8 HoverColor = TEAL)
-{
-  rect2 Bounds = Column(ColumnText, Group, &Window->Table, Color, HoverColor, Window->MaxClip);
-  return Bounds;
-}
+/* function rect2 */
+/* Column(const char* ColumnText, debug_ui_render_group *Group, window_layout *Window, u8 Color, u8 HoverColor = TEAL) */
+/* { */
+/*   rect2 Bounds = Column(ColumnText, Group, &Window->Table, Color, HoverColor, Window->MaxClip); */
+/*   return Bounds; */
+/* } */
 
 function b32
 Button(const char* ColumnText, debug_ui_render_group *Group, table_layout *Table, u8 Color)
@@ -927,7 +927,7 @@ DrawTexturedQuadAt(debug_ui_render_group* Group, textured_2d_geometry_buffer* Ge
 {
   u8 Color = WHITE;
 
-  v2 MaxP = BufferQuad(Group, Geo, MinP, Dim, 1.0f);
+  v2 MaxP = BufferQuad(Group, Geo, MinP, Dim);
   BufferUVForQuad(Geo, DebugTextureArraySlice_Viewport);
   BufferColors(Group, Geo, GetColorData(Color).xyz);
   Geo->At += 6;
@@ -937,9 +937,9 @@ DrawTexturedQuadAt(debug_ui_render_group* Group, textured_2d_geometry_buffer* Ge
 
 function void
 BufferRectangleAt(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo,
-                v2 MinP, v2 Dim, v3 Color)
+                v2 MinP, v2 Dim, v3 Color, r32 Z = 0.5f)
 {
-  BufferQuad(Group, Geo, MinP, Dim);
+  BufferQuad(Group, Geo, MinP, Dim, Z);
   BufferColors(Group, Geo, Color);
   Geo->At+=6;
 
@@ -951,11 +951,9 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 {
   debug_state* DebugState = GetDebugState();
 
-  local_persist window_layout PickerWindow;
+  local_persist table_layout PickerTable_ = {};
+  table_layout *PickerTable = &PickerTable_;
 
-  TriggeredRuntimeBreak();
-
-  table_layout *PickerTable = &PickerWindow.Table;
   PickerTable->Layout.At = V2(0,0);
   PickerTable->Layout.Clip = NullClipRect;
   PickerTable->Layout.Basis = LayoutBasis;
@@ -974,13 +972,13 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 
     u8 MainColor = Chunk == DebugState->HotChunk ? PINK : WHITE;
 
-    interactable Clickable = StartInteractable(PickerTable, (umm)&PickerWindow);
+    interactable PickerListInteraction = StartInteractable(PickerTable, (umm)PickerTable);
       Column(ToString(Chunk->WorldP.x), Group, PickerTable, MainColor, MainColor);
       Column(ToString(Chunk->WorldP.y), Group, PickerTable, MainColor, MainColor);
       Column(ToString(Chunk->WorldP.z), Group, PickerTable, MainColor, MainColor);
-    EndInteractable(Group, PickerTable, &Clickable);
+    EndInteractable(Group, PickerTable, &PickerListInteraction);
 
-    if (Clicked(Group, &Clickable))
+    if (Clicked(Group, &PickerListInteraction))
     {
       DebugState->HotChunk = Chunk;
     }
@@ -1020,21 +1018,24 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
     DebugState->GameGeo.Buffer.At = 0;
   }
 
+  local_persist window_layout PickerWindow = WindowLayout(V2(430.0f, 137.0f), V2(400.0f, 350.0f));
+
+  Clear(&PickerWindow.Layout.At);
+  Clear(&PickerWindow.Layout.Clip);
+
   if (DebugState->HotChunk)
   {
-    NewRow(PickerTable, &Group->Font);
-
-    v2 QuadDim = V2(512);
+    v2 QuadDim = PickerWindow.MaxClip - PickerWindow.Layout.At;
     DrawTexturedQuadAt( Group, &Group->TextGroup->TextGeo,
-                        GetAbsoluteAt(&PickerTable->Layout),
+                        GetAbsoluteAt(&PickerWindow.Layout),
                         QuadDim);
 
-    PickerTable->Layout.At += QuadDim;
-    AdvanceClip(&PickerTable->Layout);
+    PickerWindow.Layout.At += QuadDim;
+    AdvanceClip(&PickerWindow.Layout);
   }
 
   untextured_2d_geometry_buffer *Geo = &Group->TextGroup->UIGeo;
-  EndClipRect(Group, &PickerTable->Layout, Geo);
+  EndClipRect(Group, &PickerWindow.Layout, Geo);
 
   UpdateGameCamera( -0.005f*Group->MouseDP,
                     Group->Input,
@@ -1043,18 +1044,49 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 
   if (Length(PickerWindow.MaxClip) == 0.0f)
   {
-    PickerWindow.MaxClip = PickerTable->Layout.Clip.Max;
+    PickerWindow.MaxClip = PickerWindow.Layout.Clip.Max;
   }
 
-  v2 MinP = PickerTable->Layout.Basis + PickerWindow.MaxClip;
-  v2 Dim = V2(20);
-  BufferRectangleAt(Group, &Group->TextGroup->UIGeo, MinP, Dim, V3(1,0,0));
-
-  interactable Interaction = Interactable(MinP, MinP+Dim, (umm)"PickerTableResizeWindowWidget");
-
-  if (Pressed(Group, &Interaction))
+  v2 Dim = V2(8);
+  r32 Z = 0.6f;
   {
-    PickerWindow.MaxClip = Group->MouseP - PickerWindow.Table.Layout.Basis - Dim/2.0f;
+    v2 MinP = PickerWindow.Layout.Basis + PickerWindow.MaxClip;
+    v3 Color = V3(0.5f, 0.5f, 0.0f);
+
+    interactable Interaction = Interactable(MinP, MinP+Dim, (umm)"PickerTableResizeWindowWidget");
+    if (Pressed(Group, &Interaction))
+    {
+      PickerWindow.MaxClip = Group->MouseP - PickerWindow.Layout.Basis;
+      PickerWindow.MaxClip = Max(PickerWindow.MaxClip, V2(0,0));
+
+      Color *= 2.0f;
+    }
+
+    if (Hover(Group, &Interaction))
+    {
+      Color *= 2.0f;
+    }
+
+    BufferRectangleAt(Group, &Group->TextGroup->UIGeo, MinP, Dim, Color, Z);
+  }
+
+  {
+    v2 MinP = PickerWindow.Layout.Basis - (Dim/2.0f);
+    v3 Color = V3(0.0f, 0.0f, 0.5f);
+
+    interactable Interaction = Interactable(MinP, MinP+Dim, (umm)"PickerTableChangeBasisWindowWidget");
+    if (Pressed(Group, &Interaction))
+    {
+      PickerWindow.Layout.Basis = Group->MouseP;
+      Color *= 2.0f;
+    }
+
+    if (Hover(Group, &Interaction))
+    {
+      Color *= 2.0f;
+    }
+
+    BufferRectangleAt(Group, &Group->TextGroup->UIGeo, MinP, Dim, Color, Z);
   }
 
   return;

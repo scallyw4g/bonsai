@@ -36,11 +36,20 @@ struct table_layout
 
 struct window_layout
 {
-  table_layout Table;
-
+  layout Layout;
   v2 MaxClip;
 };
 
+
+window_layout
+WindowLayout(v2 Basis, v2 MaxClip)
+{
+  window_layout Window = {};
+  Window.Layout.Basis = Basis;
+  Window.MaxClip = MaxClip;
+
+  return Window;
+}
 
 interactable
 Interactable(v2 MinP, v2 MaxP, umm ID)

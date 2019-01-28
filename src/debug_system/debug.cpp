@@ -46,13 +46,10 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   UiGroup->MouseDP               = Plat->MouseDP;
 
 
-
   if (!Plat->Input.LMB.IsDown)
   {
     UiGroup->PressedInteraction = NullInteraction;
   }
-
-  Print(UiGroup->PressedInteraction.ID);
 
   SetFontSize(&UiGroup->Font, DEBUG_FONT_SIZE);
 
