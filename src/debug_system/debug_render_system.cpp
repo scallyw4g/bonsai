@@ -1023,12 +1023,27 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
   Clear(&PickerWindow.Layout.At);
   Clear(&PickerWindow.Layout.Clip);
 
+
   if (DebugState->HotChunk)
   {
+
+    v2 MinP = GetAbsoluteAt(&PickerWindow.Layout);
     v2 QuadDim = PickerWindow.MaxClip - PickerWindow.Layout.At;
     DrawTexturedQuadAt( Group, &Group->TextGroup->TextGeo,
                         GetAbsoluteAt(&PickerWindow.Layout),
                         QuadDim);
+
+    interactable Interaction = Interactable(MinP, MinP+QuadDim, (umm)"PickerWindowDragInteraction");
+    input* WindowInput = Group->Input;
+    if (!Pressed(Group, &Interaction))
+    {
+      WindowInput = 0;
+    }
+
+    UpdateGameCamera( -0.005f*Group->MouseDP,
+                      WindowInput,
+                      Canonical_Position(0),
+                      &DebugState->Camera);
 
     PickerWindow.Layout.At += QuadDim;
     AdvanceClip(&PickerWindow.Layout);
@@ -1037,20 +1052,16 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
   untextured_2d_geometry_buffer *Geo = &Group->TextGroup->UIGeo;
   EndClipRect(Group, &PickerWindow.Layout, Geo);
 
-  UpdateGameCamera( -0.005f*Group->MouseDP,
-                    Group->Input,
-                    Canonical_Position(0),
-                    &DebugState->Camera);
 
   if (Length(PickerWindow.MaxClip) == 0.0f)
   {
     PickerWindow.MaxClip = PickerWindow.Layout.Clip.Max;
   }
 
-  v2 Dim = V2(8);
+  v2 Dim = V2(10);
   r32 Z = 0.6f;
   {
-    v2 MinP = PickerWindow.Layout.Basis + PickerWindow.MaxClip;
+    v2 MinP = PickerWindow.Layout.Basis + PickerWindow.MaxClip - (Dim/2.0f);
     v3 Color = V3(0.5f, 0.5f, 0.0f);
 
     interactable Interaction = Interactable(MinP, MinP+Dim, (umm)"PickerTableResizeWindowWidget");
