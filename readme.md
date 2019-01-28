@@ -67,9 +67,8 @@ Ensure you have [CMake](https://cmake.org/download) and gcc or clang
 ### Common
 
 ```
-git clone https://github.com/jjbandit/bonsai && cd bonsai/build
-cmake .
-make && make run
+git clone https://github.com/jjbandit/bonsai bonsai && cd bonsai
+./scripts/make.sh
 ```
 
 ## On Windows:

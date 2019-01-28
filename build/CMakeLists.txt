@@ -229,11 +229,3 @@ add_custom_command( TARGET WorldGen POST_BUILD
 #                     ../bin/${animationTestBinary} ../bin/${animationTestBinary}Loadable.so )
 
 
-
-
-
-
-
-
-
-
