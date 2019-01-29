@@ -156,10 +156,13 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   v2 MouseDelta = GetMouseDelta(Plat);
   input* GameInput = &Plat->Input;
+
+#if BONSAI_INTERNAL
   if (GetDebugState()->UiGroup.PressedInteraction.ID != StringHash("GameViewport"))
   {
     GameInput = 0;
   }
+#endif
 
   UpdateGameCamera(MouseDelta, GameInput, Player->P, Camera);
 
@@ -171,44 +174,19 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     ProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
     ViewMatrix(WorldChunkDim, Camera);
 
-  m4 InverseViewProjection = {};
-  b32 Inverted = Inverse((r32*)&gBuffer->ViewProjection, (r32*)&InverseViewProjection);
-  Assert(Inverted);
-
-  v3 MouseMinWorldP = Unproject( Plat->MouseP,
-                                 0.0f,
-                                 V2(Plat->WindowWidth, Plat->WindowHeight),
-                                 &InverseViewProjection);
-
-  v3 MouseMaxWorldP = Unproject( Plat->MouseP,
-                                 1.0f,
-                                 V2(Plat->WindowWidth, Plat->WindowHeight),
-                                 &InverseViewProjection);
-
-  v3 RayDirection = Normalize(MouseMaxWorldP - MouseMinWorldP);
-  ray PickRay = { MouseMinWorldP, RayDirection };
-
-  debug_global u32 PickedChunkCount = 0;
-  debug_global world_chunk* PickedChunks[MAX_PICKED_WORLD_CHUNKS];
-
-  if (Hotkeys->Debug_MousePick)
-  {
-    PickedChunkCount = 0;
-  }
+  DEBUG_COMPUTE_PICK_RAY(Plat, &gBuffer->ViewProjection, Hotkeys);
 
   TIMED_BLOCK("BufferMeshes");
-    BufferWorld(GameState, &GpuMap->Buffer, World, Graphics, VISIBLE_REGION_RADIUS, Hotkeys, PickRay, PickedChunks, &PickedChunkCount);
+    BufferWorld(GameState, &GpuMap->Buffer, World, Graphics, VISIBLE_REGION_RADIUS, Hotkeys);
     BufferEntities( GameState->EntityTable, &GpuMap->Buffer, Graphics, World, Plat->dt);
   END_BLOCK("BufferMeshes");
 
-  GetDebugState()->PickedChunkCount = &PickedChunkCount;
-  GetDebugState()->PickedChunks = PickedChunks;
-
+#if BONSAI_INTERNAL
   for (u32 ChunkIndex = 0;
-      ChunkIndex < PickedChunkCount;
+      ChunkIndex < GetDebugState()->PickedChunkCount;
       ++ChunkIndex)
   {
-    world_chunk *Chunk = PickedChunks[ChunkIndex];
+    world_chunk *Chunk = GetDebugState()->PickedChunks[ChunkIndex];
     untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
     u8 Color = GREEN;
 
@@ -219,23 +197,11 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
     DEBUG_DrawChunkAABB(&CopyDest, Graphics, Chunk, WORLD_CHUNK_DIM, Color, 0.35f);
   }
-
-#if 0
-  thread_local_state Thread = {};
-
-  Thread.PermMemory = GameState->Memory;
-  Thread.TempMemory = TranArena;
-
-  Thread.MeshFreelist = &GameState->MeshFreelist;
-  Thread.Noise = &GameState->Noise;
-
-  DrainQueue(&Plat->HighPriority, &Thread);
 #endif
 
   TIMED_BLOCK("Wait for worker threads");
     for (;;) { if (QueueIsEmpty(&Plat->HighPriority)) { break; } }
   END_BLOCK("Wait for worker threads");
-
 
   TIMED_BLOCK("RenderToScreen");
     RenderGBuffer(GpuMap, Graphics);

@@ -922,6 +922,35 @@ DrawWaitingBar(mutex_op_record *WaitRecord, mutex_op_record *AquiredRecord, mute
 /****************************                 ********************************/
 
 
+void
+ComputePickRay(platform *Plat, m4* ViewProjection, hotkeys* Hotkeys)
+{
+  m4 InverseViewProjection = {};
+  b32 Inverted = Inverse((r32*)ViewProjection, (r32*)&InverseViewProjection);
+  Assert(Inverted);
+
+  v3 MouseMinWorldP = Unproject( Plat->MouseP,
+                                 0.0f,
+                                 V2(Plat->WindowWidth, Plat->WindowHeight),
+                                 &InverseViewProjection);
+
+  v3 MouseMaxWorldP = Unproject( Plat->MouseP,
+                                 1.0f,
+                                 V2(Plat->WindowWidth, Plat->WindowHeight),
+                                 &InverseViewProjection);
+
+  v3 RayDirection = Normalize(MouseMaxWorldP - MouseMinWorldP);
+  GetDebugState()->PickRay = { MouseMinWorldP, RayDirection };
+
+  if (Hotkeys->Debug_MousePick)
+  {
+    GetDebugState()->PickedChunkCount = 0;
+    GetDebugState()->HotChunk = 0;
+  }
+
+  return;
+}
+
 function v2
 DrawTexturedQuadAt(debug_ui_render_group* Group, textured_2d_geometry_buffer* Geo, v2 MinP, v2 Dim)
 {
@@ -1006,13 +1035,12 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
   PickerTable->Layout.Basis = LayoutBasis;
 
   world_chunk** PickedChunks = DebugState->PickedChunks;
-  u32* PickedChunkCount = DebugState->PickedChunkCount;
 
   MapGpuElementBuffer(&DebugState->GameGeo);
 
   BeginClipRect(&PickerTable->Layout);
   for (u32 ChunkIndex = 0;
-      ChunkIndex < *PickedChunkCount;
+      ChunkIndex < DebugState->PickedChunkCount;
       ++ChunkIndex)
   {
     world_chunk *Chunk = PickedChunks[ChunkIndex];
@@ -1038,8 +1066,8 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
         DebugState->HotChunk = 0;
       }
 
-      *SwapChunk = PickedChunks[*PickedChunkCount-1];
-      *PickedChunkCount = *PickedChunkCount-1;
+      *SwapChunk = PickedChunks[DebugState->PickedChunkCount-1];
+      DebugState->PickedChunkCount = DebugState->PickedChunkCount-1;
     }
 
     NewRow(PickerTable, &Group->Font);

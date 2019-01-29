@@ -5,6 +5,29 @@ debug_global b32 DebugGlobal_RedrawEveryPush = 0;
 
 
 
+/****************************                 ********************************/
+/****************************  Picked Chunks  ********************************/
+/****************************                 ********************************/
+
+
+void
+PickChunk(hotkeys* Hotkeys, world_chunk* Chunk, aabb ChunkAABB)
+{
+  TIMED_FUNCTION();
+  debug_state* DebugState = GetDebugState();
+  if (Hotkeys->Debug_MousePick &&
+      DebugState->PickedChunkCount < MAX_PICKED_WORLD_CHUNKS &&
+      Intersect(ChunkAABB, GetDebugState()->PickRay) )
+  {
+    DebugState->PickedChunks[DebugState->PickedChunkCount] = Chunk;
+    DebugState->PickedChunkCount++;
+  }
+
+  return;
+}
+
+
+
 /*****************************                   *****************************/
 /*****************************  Thread Metadata  *****************************/
 /*****************************                   *****************************/

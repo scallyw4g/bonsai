@@ -232,6 +232,8 @@ InitDebugSystem(b32 DoInitDebugRenderSystem = True)
   Internal_DebugState.ClearMetaRecordsFor             = ClearMetaRecordsFor;
   Internal_DebugState.TrackDrawCall                   = TrackDrawCall;
   Internal_DebugState.GetThreadLocalState             = GetThreadLocalState;
+  Internal_DebugState.PickChunk                       = PickChunk;
+  Internal_DebugState.ComputePickRay                  = ComputePickRay;
 
   Internal_DebugState.Initialized = True;
 

@@ -989,7 +989,6 @@ BufferWorldChunk(
     world_chunk *Chunk,
     graphics *Graphics,
     work_queue* Queue
-    /* hotkeys* Hotkeys */
   )
 {
   if (!Chunk || !Chunk->Mesh)
@@ -998,49 +997,6 @@ BufferWorldChunk(
   chunk_data *ChunkData = Chunk->Data;
   if (ChunkData->Flags == Chunk_MeshComplete)
   {
-
-#if 0
-    {
-      untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(Dest, Chunk->Mesh->At);
-      v3 ModelBasisP = GetRenderP( WORLD_CHUNK_DIM, Canonical_Position(V3(0), Chunk->WorldP), Graphics->Camera);
-
-      work_queue_entry Entry = {};
-      Entry.Type = WorkEntryType_CopyBuffer;
-      Entry.GpuCopyParams.Src = Chunk->Mesh;
-      Entry.GpuCopyParams.Dest = CopyDest;
-      Entry.GpuCopyParams.Basis = ModelBasisP;
-
-      PushWorkQueueEntry(Queue, &Entry);
-    }
-#endif
-
-#if 0
-    current_triangles *CurrentTriangles = Chunk->CurrentTriangles;
-    if ( (Hotkeys->Debug_TriangulateIncrement || Hotkeys->Debug_TriangulateDecrement) &&
-         (CurrentTriangles->SurfacePoints->End > 0))
-    {
-
-      if (Hotkeys->Debug_TriangulateIncrement)
-      {
-        if (CurrentTriangles->CurrentPointIndex+1 < CurrentTriangles->SurfacePoints->End)
-        {
-          ++CurrentTriangles->CurrentPointIndex;
-        }
-        /* TriangulateUntilIndex(Chunk->LodMesh, Chunk->CurrentTriangles, TranArena, CurrentTriangles->CurrentPointIndex); */
-      }
-
-      if (Hotkeys->Debug_TriangulateDecrement)
-      {
-        if (CurrentTriangles->CurrentPointIndex > 0)
-        {
-          --CurrentTriangles->CurrentPointIndex;
-        }
-        /* TriangulateUntilIndex(Chunk->LodMesh, Chunk->CurrentTriangles, TranArena, CurrentTriangles->CurrentPointIndex); */
-      }
-    }
-#endif
-
-#if 1
     if (Chunk->LodMesh_Complete && Chunk->LodMesh->At)
     {
       untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(Dest, Chunk->LodMesh->At);
@@ -1057,7 +1013,6 @@ BufferWorldChunk(
 
       PushWorkQueueEntry(Queue, &Entry);
     }
-#endif
   }
   else if (IsSet(ChunkData, Chunk_Queued))
   {
@@ -1075,9 +1030,8 @@ BufferWorldChunk(
 inline void
 QueueChunkForInit(game_state *GameState, work_queue *Queue, world_chunk *Chunk);
 
-#define MAX_PICKED_WORLD_CHUNKS 32
 void
-BufferWorld(game_state* GameState, untextured_3d_geometry_buffer* Dest, world *World, graphics *Graphics, world_position VisibleRadius, hotkeys* Hotkeys, ray PickRay, world_chunk** PickedChunks, u32* PickedChunkCount)
+BufferWorld(game_state* GameState, untextured_3d_geometry_buffer* Dest, world *World, graphics *Graphics, world_position VisibleRadius, hotkeys* Hotkeys)
 {
   TIMED_FUNCTION();
 
@@ -1095,21 +1049,12 @@ BufferWorld(game_state* GameState, untextured_3d_geometry_buffer* Dest, world *W
 
         if (Chunk && Chunk->Mesh)
         {
-          TIMED_BLOCK("Mouse Ray Intersection");
-          v3 MinP = GetRenderP(WORLD_CHUNK_DIM, Canonical_Position(V3(0,0,0), Chunk->WorldP), Graphics->Camera);
-          v3 MaxP = GetRenderP(WORLD_CHUNK_DIM, Canonical_Position(WORLD_CHUNK_DIM, Chunk->WorldP), Graphics->Camera);
-          aabb ChunkAABB = MinMaxAABB(MinP, MaxP);
+          DEBUG_PICK_CHUNK(Hotkeys,
+                           Chunk,
+                           MinMaxAABB(GetRenderP(WORLD_CHUNK_DIM, Canonical_Position(V3(0,0,0), Chunk->WorldP), Graphics->Camera),
+                                      GetRenderP(WORLD_CHUNK_DIM, Canonical_Position(WORLD_CHUNK_DIM, Chunk->WorldP), Graphics->Camera)));
 
-          if (Hotkeys->Debug_MousePick &&
-              *PickedChunkCount < MAX_PICKED_WORLD_CHUNKS &&
-              Intersect(ChunkAABB, PickRay) )
-          {
-            PickedChunks[*PickedChunkCount] = Chunk;
-            *PickedChunkCount = *PickedChunkCount+1;
-          }
-
-          BufferWorldChunk(Dest, Chunk, Graphics, &GameState->Plat->HighPriority/*, Hotkeys*/);
-          END_BLOCK();
+          BufferWorldChunk(Dest, Chunk, Graphics, &GameState->Plat->HighPriority);
         }
         else if (!Chunk)
         {

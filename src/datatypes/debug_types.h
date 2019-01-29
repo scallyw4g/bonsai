@@ -145,6 +145,7 @@ struct frame_stats
 struct platform;
 struct server_state;
 struct hotkeys;
+struct world_chunk;
 typedef void (*debug_frame_end_proc)(platform*, server_state*);
 typedef void (*debug_frame_begin_proc)(hotkeys*);
 typedef void (*debug_register_arena_proc)(const char*, memory_arena*);
@@ -160,6 +161,8 @@ typedef void (*debug_clear_meta_records_proc)(memory_arena*);
 typedef void (*debug_init_debug_system_proc)(b32);
 typedef void (*debug_track_draw_call_proc)(const char*, u32);
 typedef debug_thread_state* (*debug_get_thread_local_state)(void);
+typedef void (*debug_pick_chunk)(hotkeys*, world_chunk*, aabb);
+typedef void (*debug_compute_pick_ray)(platform*, m4*, hotkeys*);
 
 
 
@@ -171,6 +174,7 @@ function get_debug_state_proc GetDebugState;
 struct world_chunk;
 #define REGISTERED_MEMORY_ARENA_COUNT 128
 #define META_TABLE_SIZE (16 * 1024)
+#define MAX_PICKED_WORLD_CHUNKS 32
 struct debug_state
 {
   debug_text_render_group TextRenderGroup;
@@ -190,8 +194,9 @@ struct debug_state
   selected_arenas *SelectedArenas;
 
   world_chunk *HotChunk;
-  world_chunk **PickedChunks;
-  u32* PickedChunkCount;
+  world_chunk *PickedChunks[MAX_PICKED_WORLD_CHUNKS];
+  u32 PickedChunkCount;
+  ray PickRay;
 
   u64 BytesBufferedToCard;
   b32 Initialized;
@@ -239,6 +244,8 @@ struct debug_state
   debug_init_debug_system_proc              InitDebugSystem;
   debug_track_draw_call_proc                TrackDrawCall;
   debug_get_thread_local_state              GetThreadLocalState;
+  debug_pick_chunk                          PickChunk;
+  debug_compute_pick_ray                    ComputePickRay;
 };
 
 struct debug_draw_call
@@ -376,6 +383,9 @@ void DebugTimedMutexReleased(mutex *Mut);
 
 #define DEBUG_REGISTER_VIEW_PROJECTION_MATRIX(ViewProjPtr) GetDebugState()->ViewProjection = ViewProjPtr;
 
+#define DEBUG_COMPUTE_PICK_RAY(Plat, ViewProjPtr, Hotkeys) GetDebugState()->ComputePickRay(Plat, ViewProjPtr, Hotkeys)
+#define DEBUG_PICK_CHUNK(Hotkeys, Chunk, ChunkAABB) GetDebugState()->PickChunk(Hotkeys, Chunk, ChunkAABB)
+
 #else
 
 #define TIMED_FUNCTION(...)
@@ -397,6 +407,9 @@ void DebugTimedMutexReleased(mutex *Mut);
 #define DEBUG_TRACK_DRAW_CALL(...)
 
 #define DEBUG_REGISTER_VIEW_PROJECTION_MATRIX(...)
+
+#define DEBUG_COMPUTE_PICK_RAY(...)
+#define DEBUG_PICK_CHUNK(...)
 
 #endif
 

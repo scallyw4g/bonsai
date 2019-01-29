@@ -373,7 +373,10 @@ PushSize(memory_arena *Arena, umm SizeIn, umm Alignment, b32 MemProtect)
   Arena->At += RequestedSize;
 
 #if MEMPROTECT
+
+#if BONSAI_INTERNAL
   ++Arena->Pushes;
+#endif
 
   if (MemProtect)
   {
