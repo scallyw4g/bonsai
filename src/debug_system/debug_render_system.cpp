@@ -947,6 +947,53 @@ BufferRectangleAt(debug_ui_render_group *Group, untextured_2d_geometry_buffer *G
 }
 
 function void
+WindowInteractions(debug_ui_render_group* Group, window_layout* Window, untextured_2d_geometry_buffer* Geo)
+{
+  v2 Dim = V2(10);
+  r32 Z = 0.6f;
+  {
+    v2 MinP = Window->Layout.Basis + Window->MaxClip - (Dim/2.0f);
+    v3 Color = V3(0.5f, 0.5f, 0.0f);
+
+    interactable Interaction = Interactable(MinP, MinP+Dim, (umm)"PickerTableResizeWindowWidget");
+    if (Pressed(Group, &Interaction))
+    {
+      Window->MaxClip = Group->MouseP - Window->Layout.Basis;
+      Window->MaxClip = Max(Window->MaxClip, V2(0,0));
+
+      Color *= 2.0f;
+    }
+
+    if (Hover(Group, &Interaction))
+    {
+      Color *= 2.0f;
+    }
+
+    BufferRectangleAt(Group, Geo, MinP, Dim, Color, Z);
+  }
+
+  {
+    v2 MinP = Window->Layout.Basis - (Dim/2.0f);
+    v3 Color = V3(0.0f, 0.0f, 0.5f);
+
+    interactable Interaction = Interactable(MinP, MinP+Dim, (umm)"PickerTableChangeBasisWindowWidget");
+    if (Pressed(Group, &Interaction))
+    {
+      Window->Layout.Basis = Group->MouseP;
+      Color *= 2.0f;
+    }
+
+    if (Hover(Group, &Interaction))
+    {
+      Color *= 2.0f;
+    }
+
+    BufferRectangleAt(Group, Geo, MinP, Dim, Color, Z);
+  }
+
+}
+
+function void
 DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 {
   debug_state* DebugState = GetDebugState();
@@ -985,12 +1032,20 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 
     if (Button("X", Group, PickerTable, RED))
     {
-      PickedChunks[ChunkIndex] = PickedChunks[*PickedChunkCount-1];
+      world_chunk** SwapChunk = PickedChunks+ChunkIndex;
+      if (*SwapChunk == DebugState->HotChunk)
+      {
+        DebugState->HotChunk = 0;
+      }
+
+      *SwapChunk = PickedChunks[*PickedChunkCount-1];
       *PickedChunkCount = *PickedChunkCount-1;
     }
 
     NewRow(PickerTable, &Group->Font);
   }
+  untextured_2d_geometry_buffer *Geo = &Group->TextGroup->UIGeo;
+  EndClipRect(Group, &PickerTable->Layout, Geo);
 
   if (DebugState->HotChunk)
   {
@@ -1023,9 +1078,9 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
   Clear(&PickerWindow.Layout.At);
   Clear(&PickerWindow.Layout.Clip);
 
-
   if (DebugState->HotChunk)
   {
+    WindowInteractions(Group, &PickerWindow, Geo);
 
     v2 MinP = GetAbsoluteAt(&PickerWindow.Layout);
     v2 QuadDim = PickerWindow.MaxClip - PickerWindow.Layout.At;
@@ -1044,60 +1099,6 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
                       WindowInput,
                       Canonical_Position(0),
                       &DebugState->Camera);
-
-    PickerWindow.Layout.At += QuadDim;
-    AdvanceClip(&PickerWindow.Layout);
-  }
-
-  untextured_2d_geometry_buffer *Geo = &Group->TextGroup->UIGeo;
-  EndClipRect(Group, &PickerWindow.Layout, Geo);
-
-
-  if (Length(PickerWindow.MaxClip) == 0.0f)
-  {
-    PickerWindow.MaxClip = PickerWindow.Layout.Clip.Max;
-  }
-
-  v2 Dim = V2(10);
-  r32 Z = 0.6f;
-  {
-    v2 MinP = PickerWindow.Layout.Basis + PickerWindow.MaxClip - (Dim/2.0f);
-    v3 Color = V3(0.5f, 0.5f, 0.0f);
-
-    interactable Interaction = Interactable(MinP, MinP+Dim, (umm)"PickerTableResizeWindowWidget");
-    if (Pressed(Group, &Interaction))
-    {
-      PickerWindow.MaxClip = Group->MouseP - PickerWindow.Layout.Basis;
-      PickerWindow.MaxClip = Max(PickerWindow.MaxClip, V2(0,0));
-
-      Color *= 2.0f;
-    }
-
-    if (Hover(Group, &Interaction))
-    {
-      Color *= 2.0f;
-    }
-
-    BufferRectangleAt(Group, &Group->TextGroup->UIGeo, MinP, Dim, Color, Z);
-  }
-
-  {
-    v2 MinP = PickerWindow.Layout.Basis - (Dim/2.0f);
-    v3 Color = V3(0.0f, 0.0f, 0.5f);
-
-    interactable Interaction = Interactable(MinP, MinP+Dim, (umm)"PickerTableChangeBasisWindowWidget");
-    if (Pressed(Group, &Interaction))
-    {
-      PickerWindow.Layout.Basis = Group->MouseP;
-      Color *= 2.0f;
-    }
-
-    if (Hover(Group, &Interaction))
-    {
-      Color *= 2.0f;
-    }
-
-    BufferRectangleAt(Group, &Group->TextGroup->UIGeo, MinP, Dim, Color, Z);
   }
 
   return;
