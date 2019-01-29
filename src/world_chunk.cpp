@@ -1109,7 +1109,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread,
 
     if (EdgeBoundaryVoxels->Count)
     {
-      DEBUG_DrawAABB(DestChunk->LodMesh, V3(0), V3(WORLD_CHUNK_DIM), PINK);
+      /* DEBUG_DrawAABB(DestChunk->LodMesh, V3(0), V3(WORLD_CHUNK_DIM), PINK); */
       DrawVoxel(DestChunk->LodMesh, V3(FoundCenterPoint), PINK, V3(0.35f));
 
 #if 1

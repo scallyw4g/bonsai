@@ -210,7 +210,14 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   {
     world_chunk *Chunk = PickedChunks[ChunkIndex];
     untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
-    DEBUG_DrawChunkAABB(&CopyDest, Graphics, Chunk, WORLD_CHUNK_DIM, GREEN, 0.35f);
+    u8 Color = GREEN;
+
+    if (Chunk == GetDebugState()->HotChunk)
+    {
+      Color = PINK;
+    }
+
+    DEBUG_DrawChunkAABB(&CopyDest, Graphics, Chunk, WORLD_CHUNK_DIM, Color, 0.35f);
   }
 
 #if 0

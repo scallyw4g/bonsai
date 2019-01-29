@@ -1100,7 +1100,9 @@ BufferWorld(game_state* GameState, untextured_3d_geometry_buffer* Dest, world *W
           v3 MaxP = GetRenderP(WORLD_CHUNK_DIM, Canonical_Position(WORLD_CHUNK_DIM, Chunk->WorldP), Graphics->Camera);
           aabb ChunkAABB = MinMaxAABB(MinP, MaxP);
 
-          if (Hotkeys->Debug_MousePick && *PickedChunkCount < MAX_PICKED_WORLD_CHUNKS && Intersect(ChunkAABB, PickRay) )
+          if (Hotkeys->Debug_MousePick &&
+              *PickedChunkCount < MAX_PICKED_WORLD_CHUNKS &&
+              Intersect(ChunkAABB, PickRay) )
           {
             PickedChunks[*PickedChunkCount] = Chunk;
             *PickedChunkCount = *PickedChunkCount+1;
