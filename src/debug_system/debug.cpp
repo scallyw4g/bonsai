@@ -28,7 +28,6 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
 {
   TIMED_FUNCTION();
 
-
   debug_state *DebugState            = GetDebugState();
   debug_text_render_group *TextGroup = &DebugState->TextRenderGroup;
 
@@ -46,7 +45,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   UiGroup->MouseDP               = Plat->MouseDP;
 
 
-  if (!Plat->Input.LMB.IsDown)
+  if ( ! (Plat->Input.LMB.IsDown || Plat->Input.RMB.IsDown))
   {
     UiGroup->PressedInteraction = NullInteraction;
   }
@@ -170,6 +169,12 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
       ++FunctionIndex)
   {
     ProgramFunctionCalls[FunctionIndex] = NullFunctionCall;
+  }
+
+  if (UiGroup->PressedInteraction.ID == 0 &&
+      (Plat->Input.LMB.IsDown || Plat->Input.RMB.IsDown))
+  {
+    UiGroup->PressedInteraction = Interactable(V2(FLT_MIN), V2(FLT_MAX), StringHash("GameViewport") );
   }
 
   return;

@@ -156,7 +156,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   v2 MouseDelta = GetMouseDelta(Plat);
   input* GameInput = &Plat->Input;
-  if (GetDebugState()->UiGroup.PressedInteraction.ID)
+  if (GetDebugState()->UiGroup.PressedInteraction.ID != StringHash("GameViewport"))
   {
     GameInput = 0;
   }
@@ -184,7 +184,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
                                  1.0f,
                                  V2(Plat->WindowWidth, Plat->WindowHeight),
                                  &InverseViewProjection);
-
 
   v3 RayDirection = Normalize(MouseMaxWorldP - MouseMinWorldP);
   ray PickRay = { MouseMinWorldP, RayDirection };

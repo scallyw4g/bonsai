@@ -8,10 +8,20 @@ Hover(debug_ui_render_group* Group, interactable *Interaction)
 inline b32
 Pressed(debug_ui_render_group* Group, interactable *Interaction)
 {
-  b32 Result = Group->PressedInteraction.ID == Interaction->ID ||
-               (Hover(Group, Interaction) && Group->Input->LMB.IsDown);
+  umm CurrentInteraction = Group->PressedInteraction.ID;
+  b32 CurrentInteractionMatches = CurrentInteraction == Interaction->ID;
+  b32 Clicked = Group->Input->LMB.IsDown || Group->Input->RMB.IsDown;
 
-  if (Result) Group->PressedInteraction = *Interaction;
+  b32 Result = False;
+  if (Clicked && CurrentInteractionMatches)
+  {
+    Result = True;
+  }
+  else if (Clicked && !CurrentInteraction && Hover(Group, Interaction))
+  {
+    Group->PressedInteraction = *Interaction;
+    Result = True;
+  }
 
   return Result;
 }
@@ -19,7 +29,9 @@ Pressed(debug_ui_render_group* Group, interactable *Interaction)
 inline b32
 Clicked(debug_ui_render_group* Group, interactable *Interaction)
 {
-  b32 Result = Hover(Group, Interaction) && Group->Input->LMB.WasPressed;
+  b32 Result = Hover(Group, Interaction) &&
+               (Group->Input->LMB.WasPressed || Group->Input->RMB.WasPressed);
+
   return Result;
 }
 
