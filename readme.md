@@ -54,15 +54,15 @@ editor mode!
 
 
 # Building
-Ensure you have [CMake](https://cmake.org/download) and gcc or clang
+Ensure you have an OpenGL driver, X11 and clang
 
 ## On Linux:
 
 ### Ubuntu
-`sudo apt install freeglut3-dev libx11-dev cmake`
+`sudo apt install freeglut3-dev libx11-dev`
 
 ### Archlinux
-`sudo pacman -S freeglut libx11 cmake`
+`sudo pacman -S freeglut libx11`
 
 ### Common
 

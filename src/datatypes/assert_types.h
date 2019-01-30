@@ -1,9 +1,3 @@
-#if NDEBUG // CMAKE defined
-#define RELEASE 1
-#else
-#define DEBUG 1
-#endif
-
 #define CAssert(condition) static_assert((condition), #condition )
 
 #if BONSAI_INTERNAL

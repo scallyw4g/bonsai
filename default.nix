@@ -6,7 +6,6 @@ stdenv.mkDerivation {
   name = "bonsai";
   buildInputs = [
     stdenv
-    cmake
     xorg.libX11
     mesa
   ];
