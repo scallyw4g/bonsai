@@ -95,24 +95,25 @@ add_custom_target(tests ${BIN}/test_m4
                         ${BIN}/test_heap_allocation
                         COMMENT "Running M4 Tests")
 
-target_compile_definitions(Bonsai         PUBLIC BONSAI_INTERNAL=1)
-target_compile_definitions(Server         PUBLIC BONSAI_INTERNAL=1)
-target_compile_definitions(DebugSystem    PUBLIC BONSAI_INTERNAL=1)
-# target_compile_definitions(SsaoTest       PUBLIC BONSAI_INTERNAL=1)
-# target_compile_definitions(AnimationTest  PUBLIC BONSAI_INTERNAL=1)
-target_compile_definitions(WorldGen  PUBLIC BONSAI_INTERNAL=1)
+target_compile_definitions(Bonsai               PRIVATE BONSAI_INTERNAL=1)
+target_compile_definitions(Server               PRIVATE BONSAI_INTERNAL=1)
+target_compile_definitions(DebugSystem          PRIVATE BONSAI_INTERNAL=1)
 
-target_compile_definitions(ttf PUBLIC BONSAI_INTERNAL=1)
+# target_compile_definitions(AnimationTest        PRIVATE BONSAI_INTERNAL=1)
+# target_compile_definitions(SsaoTest             PRIVATE BONSAI_INTERNAL=1)
+target_compile_definitions(WorldGen             PRIVATE BONSAI_INTERNAL=1)
 
-target_compile_definitions(test_m4 PUBLIC BONSAI_INTERNAL=1)
-target_compile_definitions(test_collada PUBLIC BONSAI_INTERNAL=1)
-target_compile_definitions(test_bitmap PUBLIC BONSAI_INTERNAL=1)
-target_compile_definitions(test_chunk PUBLIC BONSAI_INTERNAL=1)
-target_compile_definitions(test_string PUBLIC BONSAI_INTERNAL=1)
-target_compile_definitions(test_objloader PUBLIC BONSAI_INTERNAL=1)
-target_compile_definitions(test_allocation PUBLIC BONSAI_INTERNAL=1)
-target_compile_definitions(test_callgraph PUBLIC BONSAI_INTERNAL=1)
-target_compile_definitions(test_heap_allocation PUBLIC BONSAI_INTERNAL=1)
+target_compile_definitions(ttf                  PRIVATE BONSAI_INTERNAL=1)
+
+target_compile_definitions(test_m4              PRIVATE BONSAI_INTERNAL=1)
+target_compile_definitions(test_collada         PRIVATE BONSAI_INTERNAL=1)
+target_compile_definitions(test_bitmap          PRIVATE BONSAI_INTERNAL=1)
+target_compile_definitions(test_chunk           PRIVATE BONSAI_INTERNAL=1)
+target_compile_definitions(test_string          PRIVATE BONSAI_INTERNAL=1)
+target_compile_definitions(test_objloader       PRIVATE BONSAI_INTERNAL=1)
+target_compile_definitions(test_allocation      PRIVATE BONSAI_INTERNAL=1)
+target_compile_definitions(test_callgraph       PRIVATE BONSAI_INTERNAL=1)
+target_compile_definitions(test_heap_allocation PRIVATE BONSAI_INTERNAL=1)
 
 
 
@@ -202,6 +203,10 @@ elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL Clang)
   add_definitions( -Wno-cast-qual )
   add_definitions( -Wno-unused-function )
   add_definitions( -Wno-four-char-constants )
+
+
+  add_definitions( -Wno-unused-variable )
+  add_definitions( -Wno-unused-parameter )
 
 
   # TODO(Jesse): Should this be turned on again?

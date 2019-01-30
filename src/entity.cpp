@@ -512,11 +512,11 @@ EntityWorldCollision(world *World, entity *Entity, collision_event *Event )
     {
       if (Event->Chunk)
       {
+        NotImplemented;
         s32 i = GetIndex(Voxel_Position(Event->CP.Offset), WORLD_CHUNK_DIM);
         world_chunk *Chunk = Event->Chunk;
         Chunk->Data->Voxels[i] = {};
         /* ZeroMesh(&Chunk->Data->Mesh); */
-        NotImplemented;
         // TODO(Jesse): This path needs to call CanBuildWorldChunkMesh or something similar
         BuildWorldChunkMesh(World, Chunk, WORLD_CHUNK_DIM, Chunk->Mesh);
       }

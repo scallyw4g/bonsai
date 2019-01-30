@@ -1190,7 +1190,6 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread,
         Triangles[TriangleCount++] = TestTriangle;
       }
 
-
       u32 Color = 8;
       for (u32 TriIndex  = 0;
           TriIndex < TriangleCount;

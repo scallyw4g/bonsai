@@ -97,6 +97,8 @@ struct memory_arena
 
 #define DEBUG_REGISTER_ARENA(...)
 
+#define DEBUG_REGISTER_THREAD(...)
+
 #endif
 
 

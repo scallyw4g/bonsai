@@ -518,7 +518,6 @@ main()
   if (!DebugLib) { Error("Loading DebugLib :( "); return False; }
 
   GetDebugState = (get_debug_state_proc)GetProcFromLib(DebugLib, "GetDebugState_Internal");
-  if (!GetDebugState) { Error("Retreiving GetDebugState from Debug Lib :( "); return False; }
 
   b32 WindowSuccess = OpenAndInitializeWindow(&Os, &Plat, DebugFlags);
   if (!WindowSuccess) { Error("Initializing Window :( "); return False; }

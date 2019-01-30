@@ -1,3 +1,7 @@
+struct debug_state;
+typedef debug_state* (*get_debug_state_proc)();
+function get_debug_state_proc GetDebugState;
+
 #if BONSAI_INTERNAL
 
 #define DEBUG_FRAMES_TRACKED (64)
@@ -164,11 +168,6 @@ typedef debug_thread_state* (*debug_get_thread_local_state)(void);
 typedef void (*debug_pick_chunk)(hotkeys*, world_chunk*, aabb);
 typedef void (*debug_compute_pick_ray)(platform*, m4*, hotkeys*);
 
-
-
-struct debug_state;
-typedef debug_state* (*get_debug_state_proc)();
-function get_debug_state_proc GetDebugState;
 
 
 struct world_chunk;
@@ -402,6 +401,7 @@ void DebugTimedMutexReleased(mutex *Mut);
 
 #define WORKER_THREAD_WAIT_FOR_DEBUG_SYSTEM(...)
 #define MAIN_THREAD_ADVANCE_DEBUG_SYSTEM(...) RealDt
+#define WORKER_THREAD_ADVANCE_DEBUG_SYSTEM()
 
 #define DEBUG_CLEAR_META_RECORDS_FOR(...)
 #define DEBUG_TRACK_DRAW_CALL(...)
