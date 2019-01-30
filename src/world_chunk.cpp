@@ -984,6 +984,32 @@ GetAllCoplanarVerts(voxel_position* Query, point_buffer* Points, voxel_position*
   return Count;
 }
 
+function voxel_position*
+GetClosestAngularDistanceTo(voxel_position* Query, point_buffer* Points)
+{
+  voxel_position* Result = 0;
+  voxel_position* Current = Points->Points;
+  voxel_position* OnePastLast = Points->Points + Points->Count;
+
+  r32 ClosestTheta = FLT_MAX;
+  for ( ; Current < OnePastLast; ++Current)
+  {
+    if (Current == Query) { continue; }
+
+    r32 CosTheta = ArcCos(Dot(Normalize(*Query), Normalize(*Current)));
+
+    if (CosTheta < ClosestTheta)
+    {
+      ClosestTheta = CosTheta;
+      Result = Current;
+    }
+
+    continue;
+  }
+
+  return Result;
+}
+
 function b32
 TrianglesAreEqual(triangle* T1, triangle* T2)
 {
@@ -1102,7 +1128,10 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread,
           PointIndex < EdgeBoundaryVoxels->Count;
           ++PointIndex )
     {
-      DrawVoxel( DestChunk->LodMesh, V3(EdgeBoundaryVoxels->Points[PointIndex]), RandomU32(&Entropy) % (ArrayCount(DefaultPalette)-1), V3(0.6f));
+      DrawVoxel( DestChunk->LodMesh,
+                 V3(EdgeBoundaryVoxels->Points[PointIndex]),
+                 RandomU32(&Entropy) % (ArrayCount(DefaultPalette)-1),
+                 V3(0.6f));
     }
     ClipAndDisplaceToMinDim(DestChunk->LodMesh, V3(0), V3(WORLD_CHUNK_DIM) );
 #endif
@@ -1122,40 +1151,47 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread,
         voxel_position* CurrentVert = EdgeBoundaryVoxels->Points;
         voxel_position* OnePastLastVert = EdgeBoundaryVoxels->Points + EdgeBoundaryVoxels->Count;
 
-        while ( CurrentVert < OnePastLastVert )
+        voxel_position FirstVert = *CurrentVert;
+
+        while (EdgeBoundaryVoxels->Count > 1)
         {
-          voxel_position CoplanarVerts[MAX_COPLANAR_VERT_COUNT] = {};
-          u32 CoplanarCount = GetAllCoplanarVerts(CurrentVert, EdgeBoundaryVoxels, CoplanarVerts);
+          voxel_position* LowestAngleBetween = GetClosestAngularDistanceTo(CurrentVert, EdgeBoundaryVoxels);
 
-          while (CoplanarCount)
+          if (LowestAngleBetween)
           {
-            voxel_position* CoplanarVert = CoplanarVerts + CoplanarCount-1;
-            Assert(VertsAreCoplanar(CurrentVert, CoplanarVert));
+            triangle* TestTriangle = Triangle(&FoundCenterPoint, CurrentVert, LowestAngleBetween, Thread->TempMemory);
+
+            /* Assert( TriangleIsUniqueInSet(TestTriangle, Triangles, TriangleCount) ); */
             Assert(TriangleCount < MaxTriangles);
-            triangle* TestTriangle = Triangle(&FoundCenterPoint, CurrentVert, CoplanarVert, Thread->TempMemory);
 
-            if ( TriangleIsUniqueInSet(TestTriangle, Triangles, TriangleCount) )
-            {
-              Triangles[TriangleCount++] = TestTriangle;
-            }
+            Triangles[TriangleCount++] = TestTriangle;
 
-            --CoplanarCount;
+            OnePastLastVert--;
+            EdgeBoundaryVoxels->Count--;
+
+            *CurrentVert = *OnePastLastVert;
+
+            CurrentVert = LowestAngleBetween;
+
           }
-
-          /* voxel_position* PrevPlanarToCurrent = GetPrevCoplanarVertex(CurrentVert, EdgeBoundaryVoxels); */
-          /* if (PrevPlanarToCurrent) */
-          /* { */
-          /*   Assert(TriangleCount < MaxTriangles); */
-          /*   Triangles[TriangleCount++] = Triangle(&FoundCenterPoint, CurrentVert, PrevPlanarToCurrent, Thread->TempMemory); */
-          /* } */
-
-          ++CurrentVert;
+          else
+          {
+            break;
+          }
         }
 
+        voxel_position* LastVert = EdgeBoundaryVoxels->Points;
+
+        triangle* TestTriangle = Triangle(&FoundCenterPoint, &FirstVert, LastVert, Thread->TempMemory);
+
+        /* Assert( TriangleIsUniqueInSet(TestTriangle, Triangles, TriangleCount) ); */
+        Assert(TriangleCount < MaxTriangles);
+
+        Triangles[TriangleCount++] = TestTriangle;
       }
 
 
-      u32 Color = 0;
+      u32 Color = 8;
       for (u32 TriIndex  = 0;
           TriIndex < TriangleCount;
           ++TriIndex)

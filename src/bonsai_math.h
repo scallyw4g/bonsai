@@ -29,6 +29,13 @@ Sin(r32 Theta)
 }
 
 inline r32
+ArcCos(r32 CosTheta)
+{
+  r32 Theta = (r32)acos(CosTheta);
+  return Theta;
+}
+
+inline r32
 Cos(r32 Theta)
 {
   r32 Result = (r32)cos(Theta);
