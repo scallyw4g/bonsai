@@ -1,6 +1,5 @@
 #include <platform.h>
 
-#if 0
 inline void
 PrintSemValue( semaphore *Semaphore )
 {
@@ -13,7 +12,6 @@ PrintSemValue( semaphore *Semaphore )
 
   return;
 }
-#endif
 
 global_variable volatile b32 MainThreadBlocksWorkerThreads;
 global_variable volatile u32 WorkerThreadsWaiting;
@@ -776,6 +774,7 @@ PlatformSetWorkerThreadPriority()
 }
 #endif
 
+// TODO(Jesse): This actually has nothing to do with the platform
 inline void
 RewindArena(memory_arena *Arena, umm RestartBlockSize = Megabytes(1) )
 {

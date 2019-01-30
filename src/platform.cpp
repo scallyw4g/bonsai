@@ -1,6 +1,5 @@
 #define BONSAI_NO_PUSH_METADATA
-#define DEFAULT_GAME_LIB "./bin/WorldGenLoadable.so"
-#define DEFAULT_DEBUG_LIB "./bin/libDebugSystem.so"
+#define DEFAULT_GAME_LIB "./bin/world_gen_loadable.so"
 
 #include <bonsai_types.h>
 #include <heap_memory_types.cpp>

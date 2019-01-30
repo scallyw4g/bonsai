@@ -2,6 +2,8 @@ struct debug_state;
 typedef debug_state* (*get_debug_state_proc)();
 function get_debug_state_proc GetDebugState;
 
+#define DEFAULT_DEBUG_LIB "./bin/lib_debug_system.so"
+
 #if BONSAI_INTERNAL
 
 #define DEBUG_FRAMES_TRACKED (64)
@@ -170,10 +172,10 @@ typedef void (*debug_compute_pick_ray)(platform*, m4*, hotkeys*);
 
 
 
-struct world_chunk;
 #define REGISTERED_MEMORY_ARENA_COUNT 128
 #define META_TABLE_SIZE (16 * 1024)
 #define MAX_PICKED_WORLD_CHUNKS 32
+struct world_chunk;
 struct debug_state
 {
   debug_text_render_group TextRenderGroup;

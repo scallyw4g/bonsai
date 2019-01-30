@@ -32,7 +32,7 @@ main()
 {
   TestSuiteBegin("callgraph");
 
-  shared_lib DebugLib = OpenLibrary("./bin/libDebugSystem.so");
+  shared_lib DebugLib = OpenLibrary(DEFAULT_DEBUG_LIB);
   if (!DebugLib) { Error("Loading DebugLib :( "); return False; }
 
   GetDebugState = (get_debug_state_proc)GetProcFromLib(DebugLib, "GetDebugState_Internal");

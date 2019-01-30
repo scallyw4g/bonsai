@@ -2,7 +2,7 @@
 
 TESTS_PASSED=0
 
-for test_executable in $(find bin/test*); do
+for test_executable in $(find bin/tests/*); do
   if  $test_executable && [ "$TESTS_PASSED" == "0" ]; then
     TESTS_PASSED=0
   else

@@ -102,23 +102,12 @@ struct memory_arena
 #endif
 
 
-void
-PlatformUnprotectArena(memory_arena *Arena);
-
-void
-PlatformDeallocateArena(memory_arena *Arena);
-
-u8*
-PlatformAllocateSize(umm AllocationSize);
-
-memory_arena*
-PlatformAllocateArena(umm Bytes = Megabytes(1), b32 MemProtect = True);
-
-u8*
-PlatformProtectPage(u8* Mem);
-
-u64
-PlatformGetPageSize();
+void            PlatformUnprotectArena(memory_arena *Arena);
+void            PlatformDeallocateArena(memory_arena *Arena);
+u8*             PlatformAllocateSize(umm AllocationSize);
+memory_arena*   PlatformAllocateArena(umm Bytes = Megabytes(1), b32 MemProtect = True);
+u8*             PlatformProtectPage(u8* Mem);
+u64             PlatformGetPageSize();
 
 
 void
@@ -128,7 +117,8 @@ ReallocateArena(memory_arena *Arena, umm MinSize, b32 MemProtect)
   if (MinSize > AllocationSize)
     AllocationSize = MinSize;
 
-  memory_arena *NewArena = PlatformAllocateArena(AllocationSize, MemProtect);
+  memory_arena *NewArena =
+    PlatformAllocateArena(AllocationSize, MemProtect);
 
   memory_arena OldArena = *Arena;
   *Arena = *NewArena;
