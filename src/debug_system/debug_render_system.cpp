@@ -962,7 +962,7 @@ DrawTexturedQuadAt(debug_ui_render_group* Group, textured_2d_geometry_buffer* Ge
 
 function void
 BufferRectangleAt(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo,
-                v2 MinP, v2 Dim, v3 Color, r32 Z = 0.5f)
+                  v2 MinP, v2 Dim, v3 Color, r32 Z = 0.5f)
 {
   BufferQuad(Group, Geo, MinP, Dim, Z);
   BufferColors(Group, Geo, Color);
@@ -972,50 +972,80 @@ BufferRectangleAt(debug_ui_render_group *Group, untextured_2d_geometry_buffer *G
 }
 
 function void
+BufferRectangleAt(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo,
+                         rect2 Rect, v3 Color, r32 Z = 0.5f)
+{
+  v2 MinP = Rect.Min;
+  v2 Dim = Rect.Max - Rect.Min;
+  BufferRectangleAt(Group, Geo, MinP, Dim, Color, Z);
+
+  return;
+}
+
+function void
 WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
 {
   untextured_2d_geometry_buffer *Geo = &Group->TextGroup->UIGeo;
+  textured_2d_geometry_buffer *TitleBuffer = &Group->TextGroup->TextGeo;
 
-  v2 Dim = V2(10);
-  r32 Z = 0.6f;
+  if (Window->Title)
   {
-    v2 MinP = Window->Layout.Basis + Window->MaxClip - (Dim/2.0f);
-    v3 Color = V3(0.5f, 0.5f, 0.0f);
-
-    interactable Interaction = Interactable(MinP, MinP+Dim, (umm)&Window->Layout);
-    if (Pressed(Group, &Interaction))
-    {
-      Window->MaxClip = Group->MouseP - Window->Layout.Basis;
-      Window->MaxClip = Max(Window->MaxClip, V2(0,0));
-
-      Color *= 2.0f;
-    }
-
-    if (Hover(Group, &Interaction))
-    {
-      Color *= 2.0f;
-    }
-
-    BufferRectangleAt(Group, Geo, MinP, Dim, Color, Z);
+    BufferValue(Window->Title, Group, &Window->Layout, WHITE, Window->MaxClip);
+    NewRow(Window, &Group->Font);
   }
 
+  r32 Z = 0.6f;
+
+  v2 TopLeft = Window->Layout.Basis;
+  v2 TopRight = Window->Layout.Basis + V2(Window->MaxClip.x, 0);
+  v2 BottomLeft = Window->Layout.Basis + V2(0, Window->MaxClip.y);
+  v2 BottomRight = Window->Layout.Basis + Window->MaxClip;
+
+  v3 BorderColor = V3(1, 1, 1);
+  BufferRectangleAt(Group, Geo, RectMinMax(TopLeft, TopRight - V2(0, 1)), BorderColor, Z);
+  BufferRectangleAt(Group, Geo, RectMinMax(TopLeft, BottomLeft - V2(1, 0)), BorderColor, Z);
+  BufferRectangleAt(Group, Geo, RectMinMax(TopRight, BottomRight - V2(1, 0)), BorderColor, Z);
+  BufferRectangleAt(Group, Geo, RectMinMax(BottomLeft, BottomRight - V2(0, 1)), BorderColor, Z);
+
+
   {
-    v2 MinP = Window->Layout.Basis - (Dim/2.0f);
-    v3 Color = V3(0.0f, 0.0f, 0.5f);
-
-    interactable Interaction = Interactable(MinP, MinP+Dim, (umm)&Window->Table);
-    if (Pressed(Group, &Interaction))
+    v2 Dim = V2(10);
     {
-      Window->Layout.Basis = Group->MouseP;
-      Color *= 2.0f;
+      v2 MinP = BottomRight - (Dim/2);
+      v3 Color = V3(0.5f, 0.5f, 0.0f);
+
+      interactable Interaction = Interactable(MinP, MinP+Dim, (umm)&Window->Layout);
+      if (Pressed(Group, &Interaction))
+      {
+        Window->MaxClip = Max(V2(0), Group->MouseP-Window->Layout.Basis);
+        Color *= 2.0f;
+      }
+
+      if (Hover(Group, &Interaction))
+        Color *= 2.0f;
+
+      BufferRectangleAt(Group, Geo, MinP, Dim, Color, Z);
     }
 
-    if (Hover(Group, &Interaction))
     {
-      Color *= 2.0f;
+      v2 MinP = TopLeft - (Dim/2);
+      v3 Color = V3(0.0f, 0.0f, 0.5f);
+
+      interactable Interaction = Interactable(MinP, MinP+Dim, (umm)&Window->Table);
+      if (Pressed(Group, &Interaction))
+      {
+        Window->Layout.Basis = Group->MouseP;
+        Color *= 2.0f;
+      }
+
+      if (Hover(Group, &Interaction))
+        Color *= 2.0f;
+
+      BufferRectangleAt(Group, Geo, MinP, Dim, Color, Z);
     }
 
-    BufferRectangleAt(Group, Geo, MinP, Dim, Color, Z);
+    v3 BackgroundColor = V3(0.2f, 0.2f, 0.2f);
+    BufferRectangleAt(Group, Geo, RectMinMax(TopLeft, BottomRight), BackgroundColor, 0.0f);
   }
 
 }
@@ -1100,15 +1130,20 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
   }
 
   local_persist window_layout PickerWindow = WindowLayout(V2(430.0f, 137.0f), V2(400.0f, 350.0f));
+  PickerWindow.Title = "Picked Chunks";
 
   Clear(&PickerWindow.Layout.At);
   Clear(&PickerWindow.Layout.Clip);
 
-  /* if ( Button(">", PickerWindow) ) */
-
   if (DebugState->HotChunk)
   {
     WindowInteractions(Group, &PickerWindow);
+
+    if ( Button(">", Group, &PickerWindow, WHITE) )
+    {
+      Log("HI");
+    }
+    NewRow(&PickerWindow, &Group->Font);
 
     v2 MinP = GetAbsoluteAt(&PickerWindow.Layout);
     v2 QuadDim = PickerWindow.MaxClip - PickerWindow.Layout.At;
@@ -1432,6 +1467,7 @@ void
 DebugDrawCollatedFunctionCalls(debug_ui_render_group *Group, debug_state *DebugState, v2 BasisP)
 {
   local_persist window_layout FunctionCallWindow = WindowLayout(BasisP);
+  FunctionCallWindow.Title = "Functions";
 
   Clear(&FunctionCallWindow.Layout.At);
   Clear(&FunctionCallWindow.Layout.Clip);

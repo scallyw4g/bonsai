@@ -34,6 +34,7 @@ struct table
 
 struct window_layout
 {
+  const char* Title;
   layout Layout;
   table Table;
   v2 MaxClip;
