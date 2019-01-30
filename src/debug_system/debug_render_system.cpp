@@ -431,10 +431,10 @@ BufferLine(const char* Text, u32 Color, layout *Layout, font *Font, debug_ui_ren
 }
 
 inline rect2
-NewRow(table_layout *Table, font *Font)
+NewRow(window_layout *Window, font *Font)
 {
-  Table->ColumnIndex = 0;
-  rect2 Bounds = NewLine(&Table->Layout, Font);
+  Window->Table.ColumnIndex = 0;
+  rect2 Bounds = NewLine(&Window->Layout, Font);
   return Bounds;
 }
 
@@ -655,8 +655,11 @@ GetTextBounds(u32 TextLength, font* Font)
 }
 
 function rect2
-Column(const char* ColumnText, debug_ui_render_group *Group, table_layout *Table, u8 Color, u8 HoverColor = TEAL, v2 MaxClip = V2(0))
+Column(const char* ColumnText, debug_ui_render_group* Group, window_layout* Window, u8 Color, u8 HoverColor = TEAL, v2 MaxClip = V2(0))
 {
+  table *Table = &Window->Table;
+  layout *Layout = &Window->Layout;
+
   Table->ColumnIndex = (Table->ColumnIndex+1)%MAX_TABLE_COLUMNS;
   table_column *Column = Table->Columns + Table->ColumnIndex;
 
@@ -664,9 +667,9 @@ Column(const char* ColumnText, debug_ui_render_group *Group, table_layout *Table
   Column->Max = Max(Column->Max, TextLength + 1);
 
   u32 Pad = Column->Max - TextLength;
-  AdvanceSpaces(Pad, &Table->Layout, &Group->Font);
+  AdvanceSpaces(Pad, Layout, &Group->Font);
 
-  v2 Min = Table->Layout.Basis + Table->Layout.At;
+  v2 Min = Layout->Basis + Layout->At;
   v2 Max = Min + GetTextBounds(TextLength, &Group->Font);
 
   u8 UseColor = Color;
@@ -676,23 +679,16 @@ Column(const char* ColumnText, debug_ui_render_group *Group, table_layout *Table
     UseColor = HoverColor;
   }
 
-  BufferValue(ColumnText, Group, &Table->Layout, UseColor, MaxClip);
+  BufferValue(ColumnText, Group, Layout, UseColor, MaxClip);
 
   return Bounds;
 }
 
-/* function rect2 */
-/* Column(const char* ColumnText, debug_ui_render_group *Group, window_layout *Window, u8 Color, u8 HoverColor = TEAL) */
-/* { */
-/*   rect2 Bounds = Column(ColumnText, Group, &Window->Table, Color, HoverColor, Window->MaxClip); */
-/*   return Bounds; */
-/* } */
-
 function b32
-Button(const char* ColumnText, debug_ui_render_group *Group, table_layout *Table, u8 Color)
+Button(const char* ColumnText, debug_ui_render_group *Group, window_layout* Window, u8 Color)
 {
   b32 Result = False;
-  rect2 Bounds = Column(ColumnText, Group, Table, Color);
+  rect2 Bounds = Column(ColumnText, Group, Window, Color);
   if (IsInsideRect(Bounds, Group->MouseP) && Group->Input->LMB.WasPressed)
   {
     Result = True;
@@ -702,7 +698,7 @@ Button(const char* ColumnText, debug_ui_render_group *Group, table_layout *Table
 }
 
 inline void
-BufferScopeTreeEntry(debug_ui_render_group *Group, debug_profile_scope *Scope, table_layout *Layout,
+BufferScopeTreeEntry(debug_ui_render_group *Group, debug_profile_scope *Scope, window_layout* Window,
     u8 Color, u64 TotalCycles, u64 TotalFrameCycles, u64 CallCount, u32 Depth)
 {
   Assert(TotalFrameCycles);
@@ -710,27 +706,27 @@ BufferScopeTreeEntry(debug_ui_render_group *Group, debug_profile_scope *Scope, t
   r32 Percentage = 100.0f * (r32)SafeDivide0((r64)TotalCycles, (r64)TotalFrameCycles);
   u64 AvgCycles = (u64)SafeDivide0(TotalCycles, CallCount);
 
-  Column(ToString(Percentage), Group, Layout, Color);
-  Column(ToString(AvgCycles),  Group, Layout, Color);
-  Column(ToString(CallCount),  Group, Layout, Color);
+  Column(ToString(Percentage), Group, Window, Color);
+  Column(ToString(AvgCycles),  Group, Window, Color);
+  Column(ToString(CallCount),  Group, Window, Color);
 
-  AdvanceSpaces((Depth*2)+1, &Layout->Layout, &Group->Font);
+  AdvanceSpaces((Depth*2)+1, &Window->Layout, &Group->Font);
 
   if (Scope->Expanded && Scope->Child)
   {
-    BufferValue("-", Group, &Layout->Layout, Color);
+    BufferValue("-", Group, &Window->Layout, Color);
   }
   else if (Scope->Child)
   {
-    BufferValue("+", Group, &Layout->Layout, Color);
+    BufferValue("+", Group, &Window->Layout, Color);
   }
   else
   {
-    AdvanceSpaces(1, &Layout->Layout, &Group->Font);
+    AdvanceSpaces(1, &Window->Layout, &Group->Font);
   }
 
-  BufferValue(Scope->Name, Group, &Layout->Layout, Color);
-  NewRow(Layout, &Group->Font);
+  BufferValue(Scope->Name, Group, &Window->Layout, Color);
+  NewRow(Window, &Group->Font);
 
   return;
 }
@@ -976,15 +972,17 @@ BufferRectangleAt(debug_ui_render_group *Group, untextured_2d_geometry_buffer *G
 }
 
 function void
-WindowInteractions(debug_ui_render_group* Group, window_layout* Window, untextured_2d_geometry_buffer* Geo)
+WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
 {
+  untextured_2d_geometry_buffer *Geo = &Group->TextGroup->UIGeo;
+
   v2 Dim = V2(10);
   r32 Z = 0.6f;
   {
     v2 MinP = Window->Layout.Basis + Window->MaxClip - (Dim/2.0f);
     v3 Color = V3(0.5f, 0.5f, 0.0f);
 
-    interactable Interaction = Interactable(MinP, MinP+Dim, (umm)"PickerTableResizeWindowWidget");
+    interactable Interaction = Interactable(MinP, MinP+Dim, (umm)&Window->Layout);
     if (Pressed(Group, &Interaction))
     {
       Window->MaxClip = Group->MouseP - Window->Layout.Basis;
@@ -1005,7 +1003,7 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window, untextur
     v2 MinP = Window->Layout.Basis - (Dim/2.0f);
     v3 Color = V3(0.0f, 0.0f, 0.5f);
 
-    interactable Interaction = Interactable(MinP, MinP+Dim, (umm)"PickerTableChangeBasisWindowWidget");
+    interactable Interaction = Interactable(MinP, MinP+Dim, (umm)&Window->Table);
     if (Pressed(Group, &Interaction))
     {
       Window->Layout.Basis = Group->MouseP;
@@ -1027,18 +1025,18 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 {
   debug_state* DebugState = GetDebugState();
 
-  local_persist table_layout PickerTable_ = {};
-  table_layout *PickerTable = &PickerTable_;
+  local_persist window_layout PickerWindow_ = {};
+  window_layout *ListingWindow = &PickerWindow_;
 
-  PickerTable->Layout.At = V2(0,0);
-  PickerTable->Layout.Clip = NullClipRect;
-  PickerTable->Layout.Basis = LayoutBasis;
+  ListingWindow->Layout.At = V2(0,0);
+  ListingWindow->Layout.Clip = NullClipRect;
+  ListingWindow->Layout.Basis = LayoutBasis;
 
   world_chunk** PickedChunks = DebugState->PickedChunks;
 
   MapGpuElementBuffer(&DebugState->GameGeo);
 
-  BeginClipRect(&PickerTable->Layout);
+  BeginClipRect(&ListingWindow->Layout);
   for (u32 ChunkIndex = 0;
       ChunkIndex < DebugState->PickedChunkCount;
       ++ChunkIndex)
@@ -1047,18 +1045,18 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 
     u8 MainColor = Chunk == DebugState->HotChunk ? PINK : WHITE;
 
-    interactable PickerListInteraction = StartInteractable(PickerTable, (umm)PickerTable);
-      Column(ToString(Chunk->WorldP.x), Group, PickerTable, MainColor, MainColor);
-      Column(ToString(Chunk->WorldP.y), Group, PickerTable, MainColor, MainColor);
-      Column(ToString(Chunk->WorldP.z), Group, PickerTable, MainColor, MainColor);
-    EndInteractable(Group, PickerTable, &PickerListInteraction);
+    interactable PickerListInteraction = StartInteractable(&ListingWindow->Layout, (umm)ListingWindow);
+      Column(ToString(Chunk->WorldP.x), Group, ListingWindow, MainColor, MainColor);
+      Column(ToString(Chunk->WorldP.y), Group, ListingWindow, MainColor, MainColor);
+      Column(ToString(Chunk->WorldP.z), Group, ListingWindow, MainColor, MainColor);
+    EndInteractable(Group, ListingWindow, &PickerListInteraction);
 
     if (Clicked(Group, &PickerListInteraction))
     {
       DebugState->HotChunk = Chunk;
     }
 
-    if (Button("X", Group, PickerTable, RED))
+    if (Button("X", Group, ListingWindow, RED))
     {
       world_chunk** SwapChunk = PickedChunks+ChunkIndex;
       if (*SwapChunk == DebugState->HotChunk)
@@ -1070,10 +1068,10 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
       DebugState->PickedChunkCount = DebugState->PickedChunkCount-1;
     }
 
-    NewRow(PickerTable, &Group->Font);
+    NewRow(ListingWindow, &Group->Font);
   }
   untextured_2d_geometry_buffer *Geo = &Group->TextGroup->UIGeo;
-  EndClipRect(Group, &PickerTable->Layout, Geo);
+  EndClipRect(Group, &ListingWindow->Layout, Geo);
 
   if (DebugState->HotChunk)
   {
@@ -1106,9 +1104,11 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
   Clear(&PickerWindow.Layout.At);
   Clear(&PickerWindow.Layout.Clip);
 
+  /* if ( Button(">", PickerWindow) ) */
+
   if (DebugState->HotChunk)
   {
-    WindowInteractions(Group, &PickerWindow, Geo);
+    WindowInteractions(Group, &PickerWindow);
 
     v2 MinP = GetAbsoluteAt(&PickerWindow.Layout);
     v2 QuadDim = PickerWindow.MaxClip - PickerWindow.Layout.At;
@@ -1178,12 +1178,12 @@ DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState
   untextured_2d_geometry_buffer *Geo = &Group->TextGroup->UIGeo;
 
 
-  local_persist table_layout CycleGraphTable;
-  CycleGraphTable.Layout.At = V2(0,0);
-  CycleGraphTable.Layout.Clip = NullClipRect;
-  CycleGraphTable.Layout.Basis = BasisP;
+  local_persist window_layout CycleGraphWindow;
+  CycleGraphWindow.Layout.At = V2(0,0);
+  CycleGraphWindow.Layout.Clip = NullClipRect;
+  CycleGraphWindow.Layout.Basis = BasisP;
 
-  layout* Layout = &CycleGraphTable.Layout;
+  layout* Layout = &CycleGraphWindow.Layout;
 
   SetFontSize(&Group->Font, 30);
 
@@ -1203,8 +1203,8 @@ DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState
     BeginClipRect(Layout);
 
     char *ThreadName = FormatString(TranArena, "Thread %u", ThreadIndex);
-    Column(ThreadName, Group, &CycleGraphTable, WHITE);
-    NewRow(&CycleGraphTable, &Group->Font);
+    Column(ThreadName, Group, &CycleGraphWindow, WHITE);
+    NewRow(&CycleGraphWindow, &Group->Font);
 
     debug_thread_state *ThreadState = GetThreadLocalStateFor(ThreadIndex);
     debug_scope_tree *ReadTree = ThreadState->ScopeTrees + SharedState->ReadScopeIndex;
@@ -1216,7 +1216,7 @@ DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState
     Layout->At.y = Layout->Clip.Max.y + 25; // Advance vertical at for next thread
 
     EndClipRect(Group, Layout, Geo);
-    NewRow(&CycleGraphTable, &Group->Font);
+    NewRow(&CycleGraphWindow, &Group->Font);
   }
 
   NewLine(Layout, &Group->Font);
@@ -1389,7 +1389,7 @@ ListContainsScope(unique_debug_profile_scope* List, debug_profile_scope* Query)
 void
 BufferFirstCallToEach(debug_ui_render_group *Group,
     debug_profile_scope *Scope_in, debug_profile_scope *TreeRoot,
-    memory_arena *Memory, table_layout* CallgraphLayout, u64 TotalFrameCycles, u32 Depth)
+    memory_arena *Memory, window_layout* CallgraphLayout, u64 TotalFrameCycles, u32 Depth)
 {
   unique_debug_profile_scope* UniqueScopes = {};
 
@@ -1431,16 +1431,19 @@ BufferFirstCallToEach(debug_ui_render_group *Group,
 void
 DebugDrawCollatedFunctionCalls(debug_ui_render_group *Group, debug_state *DebugState, v2 BasisP)
 {
-  local_persist table_layout FunctionCallLayout;
+  local_persist window_layout FunctionCallWindow = WindowLayout(BasisP);
+
+  Clear(&FunctionCallWindow.Layout.At);
+  Clear(&FunctionCallWindow.Layout.Clip);
+
+  WindowInteractions(Group, &FunctionCallWindow);
+
   TIMED_BLOCK("Collated Function Calls");
   debug_thread_state *MainThreadState = GetThreadLocalStateFor(0);
   debug_scope_tree *MainThreadReadTree = MainThreadState->ScopeTrees + DebugState->ReadScopeIndex;
 
   CollateAllFunctionCalls(MainThreadReadTree->Root);
 
-  FunctionCallLayout.Layout.At = V2(0,0);
-  FunctionCallLayout.Layout.Clip = NullClipRect;
-  FunctionCallLayout.Layout.Basis = BasisP;
   for ( u32 FunctionIndex = 0;
       FunctionIndex < MAX_RECORDED_FUNCTION_CALLS;
       ++FunctionIndex)
@@ -1448,9 +1451,9 @@ DebugDrawCollatedFunctionCalls(debug_ui_render_group *Group, debug_state *DebugS
     called_function *Func = ProgramFunctionCalls + FunctionIndex;
     if (Func->Name)
     {
-      Column( Func->Name, Group, &FunctionCallLayout, WHITE);
-      Column( ToString(Func->CallCount), Group, &FunctionCallLayout, WHITE);
-      NewRow(&FunctionCallLayout, &Group->Font);
+      Column( Func->Name, Group, &FunctionCallWindow, WHITE);
+      Column( ToString(Func->CallCount), Group, &FunctionCallWindow, WHITE);
+      NewRow(&FunctionCallWindow, &Group->Font);
     }
   }
   END_BLOCK("Collated Function Calls");
@@ -1553,19 +1556,19 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout
   debug_thread_state *MainThreadState = GetThreadLocalStateFor(0);
   debug_scope_tree *MainThreadReadTree    = MainThreadState->ScopeTrees + DebugState->ReadScopeIndex;
 
-  local_persist table_layout CallgraphTableLayout;
+  local_persist window_layout CallgraphWindow;
   TIMED_BLOCK("Call Graph");
 
-  CallgraphTableLayout.Layout.At = V2(0,0);
-  CallgraphTableLayout.Layout.Clip = NullClipRect;
-  CallgraphTableLayout.Layout.Basis = V2(0, MainLayout->Clip.Max.y);
+  CallgraphWindow.Layout.At = V2(0,0);
+  CallgraphWindow.Layout.Clip = NullClipRect;
+  CallgraphWindow.Layout.Basis = V2(0, MainLayout->Clip.Max.y);
 
-  NewRow(&CallgraphTableLayout, &Group->Font);
-  Column("Frame %",  Group,  &CallgraphTableLayout,  WHITE);
-  Column("Cycles",   Group,  &CallgraphTableLayout,  WHITE);
-  Column("Calls",    Group,  &CallgraphTableLayout,  WHITE);
-  Column("Name",     Group,  &CallgraphTableLayout,  WHITE);
-  NewRow(&CallgraphTableLayout, &Group->Font);
+  NewRow(&CallgraphWindow, &Group->Font);
+  Column("Frame %",  Group,  &CallgraphWindow,  WHITE);
+  Column("Cycles",   Group,  &CallgraphWindow,  WHITE);
+  Column("Calls",    Group,  &CallgraphWindow,  WHITE);
+  Column("Name",     Group,  &CallgraphWindow,  WHITE);
+  NewRow(&CallgraphWindow, &Group->Font);
 
   for ( u32 ThreadIndex = 0;
       ThreadIndex < TotalThreadCount;
@@ -1577,14 +1580,14 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout
 
     if (MainThreadReadTree->FrameRecorded == ReadTree->FrameRecorded)
     {
-      BufferFirstCallToEach(Group, ReadTree->Root, ReadTree->Root, ThreadsafeDebugMemoryAllocator(), &CallgraphTableLayout, Frame->TotalCycles, 0);
-      NewRow(&CallgraphTableLayout, &Group->Font);
+      BufferFirstCallToEach(Group, ReadTree->Root, ReadTree->Root, ThreadsafeDebugMemoryAllocator(), &CallgraphWindow, Frame->TotalCycles, 0);
+      NewRow(&CallgraphWindow, &Group->Font);
     }
   }
 
   END_BLOCK("Call Graph");
 
-  clip_rect Result = CallgraphTableLayout.Layout.Clip;
+  clip_rect Result = CallgraphWindow.Layout.Clip;
   return Result;
 }
 
@@ -1709,55 +1712,55 @@ BufferBarGraph(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo,
 }
 
 inline b32
-BufferArenaBargraph(table_layout *BargraphTable, debug_ui_render_group *Group, umm TotalUsed, r32 TotalPerc, umm Remaining, v3 Color )
+BufferArenaBargraph(window_layout *BargraphWindow, debug_ui_render_group *Group, umm TotalUsed, r32 TotalPerc, umm Remaining, v3 Color )
 {
-  Column( FormatMemorySize(TotalUsed), Group, BargraphTable, WHITE);
-  b32 Hover = BufferBarGraph(Group, &Group->TextGroup->UIGeo, &BargraphTable->Layout, TotalPerc, Color);
-  Column( FormatMemorySize(Remaining), Group, BargraphTable, WHITE);
-  NewRow(BargraphTable, &Group->Font);
+  Column( FormatMemorySize(TotalUsed), Group, BargraphWindow, WHITE);
+  b32 Hover = BufferBarGraph(Group, &Group->TextGroup->UIGeo, &BargraphWindow->Layout, TotalPerc, Color);
+  Column( FormatMemorySize(Remaining), Group, BargraphWindow, WHITE);
+  NewRow(BargraphWindow, &Group->Font);
 
   b32 Click = (Hover && Group->Input->LMB.WasPressed);
   return Click;
 }
 
 v2
-BufferMemoryStatsTable(memory_arena_stats MemStats, debug_ui_render_group *Group, table_layout *StatsTable, v2 BasisP)
+BufferMemoryStatsTable(memory_arena_stats MemStats, debug_ui_render_group *Group, window_layout *StatsWindow, v2 BasisP)
 {
-  StatsTable->Layout = {};
-  StatsTable->Layout.Basis = BasisP;
+  StatsWindow->Layout = {};
+  StatsWindow->Layout.Basis = BasisP;
 
-  Column("Allocs", Group, StatsTable, WHITE);
-  Column(FormatMemorySize(MemStats.Allocations), Group, StatsTable, WHITE);
-  NewRow(StatsTable, &Group->Font);
+  Column("Allocs", Group, StatsWindow, WHITE);
+  Column(FormatMemorySize(MemStats.Allocations), Group, StatsWindow, WHITE);
+  NewRow(StatsWindow, &Group->Font);
 
-  Column("Pushes", Group, StatsTable, WHITE);
-  Column(FormatThousands(MemStats.Pushes), Group, StatsTable, WHITE);
-  NewRow(StatsTable, &Group->Font);
+  Column("Pushes", Group, StatsWindow, WHITE);
+  Column(FormatThousands(MemStats.Pushes), Group, StatsWindow, WHITE);
+  NewRow(StatsWindow, &Group->Font);
 
-  Column("Remaining", Group, StatsTable, WHITE);
-  Column(FormatMemorySize(MemStats.Remaining), Group, StatsTable, WHITE);
-  NewRow(StatsTable, &Group->Font);
+  Column("Remaining", Group, StatsWindow, WHITE);
+  Column(FormatMemorySize(MemStats.Remaining), Group, StatsWindow, WHITE);
+  NewRow(StatsWindow, &Group->Font);
 
-  Column("Total", Group, StatsTable, WHITE);
-  Column(FormatMemorySize(MemStats.TotalAllocated), Group, StatsTable, WHITE);
-  NewRow(StatsTable, &Group->Font);
+  Column("Total", Group, StatsWindow, WHITE);
+  Column(FormatMemorySize(MemStats.TotalAllocated), Group, StatsWindow, WHITE);
+  NewRow(StatsWindow, &Group->Font);
 
-  return StatsTable->Layout.Clip.Max;
+  return StatsWindow->Layout.Clip.Max;
 }
 
 void
-BufferMemoryBargraphTable(debug_ui_render_group *Group, selected_arenas *SelectedArenas, memory_arena_stats MemStats, umm TotalUsed, memory_arena *HeadArena, table_layout *BargraphTable, v2 BasisP)
+BufferMemoryBargraphTable(debug_ui_render_group *Group, selected_arenas *SelectedArenas, memory_arena_stats MemStats, umm TotalUsed, memory_arena *HeadArena, window_layout *BargraphWindow, v2 BasisP)
 {
-  BargraphTable->Layout = {};
-  BargraphTable->Layout.Basis = BasisP;
+  BargraphWindow->Layout = {};
+  BargraphWindow->Layout.Basis = BasisP;
   SetFontSize(&Group->Font, 22);
 
-  NewRow(BargraphTable, &Group->Font);
+  NewRow(BargraphWindow, &Group->Font);
   v3 DefaultColor = V3(0.5f, 0.5f, 0.0);
 
   r32 TotalPerc = (r32)SafeDivide0(TotalUsed, MemStats.TotalAllocated);
-  b32 TobbleAllArenas = BufferArenaBargraph(BargraphTable, Group, TotalUsed, TotalPerc, MemStats.Remaining, DefaultColor);
-  NewRow(BargraphTable, &Group->Font);
+  b32 TobbleAllArenas = BufferArenaBargraph(BargraphWindow, Group, TotalUsed, TotalPerc, MemStats.Remaining, DefaultColor);
+  NewRow(BargraphWindow, &Group->Font);
 
 
   memory_arena *CurrentArena = HeadArena;
@@ -1778,7 +1781,7 @@ BufferMemoryBargraphTable(debug_ui_render_group *Group, selected_arenas *Selecte
     u64 CurrentUsed = TotalSize(CurrentArena) - Remaining(CurrentArena);
     r32 CurrentPerc = (r32)SafeDivide0(CurrentUsed, TotalSize(CurrentArena));
 
-    b32 GotClicked = BufferArenaBargraph(BargraphTable, Group, CurrentUsed, CurrentPerc, Remaining(CurrentArena), Color);
+    b32 GotClicked = BufferArenaBargraph(BargraphWindow, Group, CurrentUsed, CurrentPerc, Remaining(CurrentArena), Color);
 
     if (TobbleAllArenas || GotClicked)
     {
@@ -1814,11 +1817,11 @@ BufferMemoryBargraphTable(debug_ui_render_group *Group, selected_arenas *Selecte
 }
 
 layout *
-BufferDebugPushMetaData(debug_ui_render_group *Group, selected_arenas *SelectedArenas, umm CurrentArenaHead, table_layout *Table, v2 Basis)
+BufferDebugPushMetaData(debug_ui_render_group *Group, selected_arenas *SelectedArenas, umm CurrentArenaHead, window_layout* Window, v2 Basis)
 {
   push_metadata CollatedMetaTable[META_TABLE_SIZE] = {};
 
-  layout *Layout = &Table->Layout;
+  layout *Layout = &Window->Layout;
   Clear(Layout);
   Layout->Basis = Basis;
   BeginClipRect(Layout);
@@ -1826,10 +1829,10 @@ BufferDebugPushMetaData(debug_ui_render_group *Group, selected_arenas *SelectedA
   SetFontSize(&Group->Font, 24);
 
 
-  Column("Size", Group, Table, WHITE);
-  Column("Structs", Group, Table, WHITE);
-  Column("Push Count", Group, Table, WHITE);
-  Column("Name", Group, Table, WHITE);
+  Column("Size", Group, Window, WHITE);
+  Column("Structs", Group, Window, WHITE);
+  Column("Push Count", Group, Window, WHITE);
+  Column("Name", Group, Window, WHITE);
   NewLine(Layout, &Group->Font);
 
 
@@ -1905,10 +1908,10 @@ BufferDebugPushMetaData(debug_ui_render_group *Group, selected_arenas *SelectedA
     if (Collated->Name)
     {
       umm AllocationSize = GetAllocationSize(Collated);
-      Column( FormatMemorySize(AllocationSize), Group, Table, WHITE);
-      Column( FormatThousands(Collated->StructCount), Group, Table, WHITE);
-      Column( FormatThousands(Collated->PushCount), Group, Table, WHITE);
-      Column(Collated->Name, Group, Table, WHITE);
+      Column( FormatMemorySize(AllocationSize), Group, Window, WHITE);
+      Column( FormatThousands(Collated->StructCount), Group, Window, WHITE);
+      Column( FormatThousands(Collated->PushCount), Group, Window, WHITE);
+      Column(Collated->Name, Group, Window, WHITE);
       NewLine(Layout, &Group->Font);
     }
 
@@ -1925,10 +1928,10 @@ BufferDebugPushMetaData(debug_ui_render_group *Group, selected_arenas *SelectedA
 void
 DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, v2 OriginalBasisP)
 {
-  local_persist table_layout MemoryHudArenaTable = {};
+  local_persist window_layout MemoryArenaWindow = {};
 
-  MemoryHudArenaTable.Layout.At = {};
-  MemoryHudArenaTable.Layout.Basis = OriginalBasisP;
+  MemoryArenaWindow.Layout.At = {};
+  MemoryArenaWindow.Layout.Basis = OriginalBasisP;
 
   for ( u32 Index = 0;
         Index < REGISTERED_MEMORY_ARENA_COUNT;
@@ -1942,13 +1945,13 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, v2 Ori
 
     {
       SetFontSize(&Group->Font, 36);
-      NewLine(&MemoryHudArenaTable.Layout, &Group->Font);
-      u8 Color = HoverAndClickExpand(Group, &MemoryHudArenaTable.Layout, Current, WHITE, TEAL);
+      NewLine(&MemoryArenaWindow.Layout, &Group->Font);
+      u8 Color = HoverAndClickExpand(Group, &MemoryArenaWindow.Layout, Current, WHITE, TEAL);
 
-      Column(Current->Name, Group, &MemoryHudArenaTable, Color);
-      Column(MemorySize(MemStats.TotalAllocated), Group, &MemoryHudArenaTable, Color);
-      Column(ToString(MemStats.Pushes), Group, &MemoryHudArenaTable, Color);
-      NewRow(&MemoryHudArenaTable, &Group->Font);
+      Column(Current->Name, Group, &MemoryArenaWindow, Color);
+      Column(MemorySize(MemStats.TotalAllocated), Group, &MemoryArenaWindow, Color);
+      Column(ToString(MemStats.Pushes), Group, &MemoryArenaWindow, Color);
+      NewRow(&MemoryArenaWindow, &Group->Font);
     }
 
 
@@ -1956,37 +1959,37 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, v2 Ori
     {
       SetFontSize(&Group->Font, 28);
 
-      table_layout *StatsTable    = &Current->StatsTable;
-      table_layout *BargraphTable = &Current->BargraphTable;
-      table_layout *MetaTable     = &Current->MetadataTable;
+      window_layout *StatsWindow    = &Current->StatsWindow;
+      window_layout *BargraphWindow = &Current->BargraphWindow;
+      window_layout *MetadataWindow = &Current->MetadataWindow;
 
       {
-        v2 BasisP = GetAbsoluteAt(&MemoryHudArenaTable.Layout);
-        BufferMemoryStatsTable(MemStats, Group, StatsTable, BasisP);
+        v2 BasisP = GetAbsoluteAt(&MemoryArenaWindow.Layout);
+        BufferMemoryStatsTable(MemStats, Group, StatsWindow, BasisP);
       }
 
       selected_arenas *SelectedArenas = DebugState->SelectedArenas;
       {
-        v2 BasisP = { GetAbsoluteMin(&StatsTable->Layout).x,
-                      GetAbsoluteMax(&StatsTable->Layout).y };
-        BufferMemoryBargraphTable(Group, SelectedArenas, MemStats, TotalUsed, Current->Arena, BargraphTable, BasisP);
+        v2 BasisP = { GetAbsoluteMin(&StatsWindow->Layout).x,
+                      GetAbsoluteMax(&StatsWindow->Layout).y };
+        BufferMemoryBargraphTable(Group, SelectedArenas, MemStats, TotalUsed, Current->Arena, BargraphWindow, BasisP);
       }
 
 
       {
-        v2 BasisP = { 100.0f + Max(StatsTable->Layout.Clip.Max.x,
-                                   BargraphTable->Layout.Clip.Max.x),
-                      GetAbsoluteAt(&MemoryHudArenaTable.Layout).y };
+        v2 BasisP = { 100.0f + Max(StatsWindow->Layout.Clip.Max.x,
+                                   BargraphWindow->Layout.Clip.Max.x),
+                      GetAbsoluteAt(&MemoryArenaWindow.Layout).y };
 
-        BufferDebugPushMetaData(Group, SelectedArenas, HashArenaHead(Current->Arena), MetaTable, BasisP);
+        BufferDebugPushMetaData(Group, SelectedArenas, HashArenaHead(Current->Arena), MetadataWindow, BasisP);
       }
 
-      MemoryHudArenaTable.Layout.At = {};
-      MemoryHudArenaTable.Layout.Basis = V2( MemoryHudArenaTable.Layout.Basis.x,
-                                             Max( GetAbsoluteMax(&BargraphTable->Layout).y,
-                                                  GetAbsoluteMax(&MetaTable->Layout).y ));
+      MemoryArenaWindow.Layout.At = {};
+      MemoryArenaWindow.Layout.Basis = V2( MemoryArenaWindow.Layout.Basis.x,
+                                             Max( GetAbsoluteMax(&BargraphWindow->Layout).y,
+                                                  GetAbsoluteMax(&MetadataWindow->Layout).y ));
 
-      AdvanceClip(&MemoryHudArenaTable.Layout);
+      AdvanceClip(&MemoryArenaWindow.Layout);
     }
 
     continue;

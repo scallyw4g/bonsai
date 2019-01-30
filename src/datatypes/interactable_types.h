@@ -26,10 +26,8 @@ struct layout
 };
 
 #define MAX_TABLE_COLUMNS 4
-struct table_layout
+struct table
 {
-  layout Layout;
-
   table_column Columns[MAX_TABLE_COLUMNS];
   u32 ColumnIndex;
 };
@@ -37,12 +35,13 @@ struct table_layout
 struct window_layout
 {
   layout Layout;
+  table Table;
   v2 MaxClip;
 };
 
 
 window_layout
-WindowLayout(v2 Basis, v2 MaxClip)
+WindowLayout(v2 Basis = V2(150, 150), v2 MaxClip = V2(150, 150))
 {
   window_layout Window = {};
   Window.Layout.Basis = Basis;
@@ -63,9 +62,9 @@ Interactable(v2 MinP, v2 MaxP, umm ID)
 }
 
 inline interactable
-StartInteractable(table_layout* Table, umm ID)
+StartInteractable(layout* Layout, umm ID)
 {
-  v2 StartingAt = Table->Layout.At + Table->Layout.Basis;
+  v2 StartingAt = Layout->At + Layout->Basis;
   interactable Result = Interactable(StartingAt, StartingAt, ID);
   return Result;
 }

@@ -36,9 +36,9 @@ Clicked(debug_ui_render_group* Group, interactable *Interaction)
 }
 
 inline void
-EndInteractable(debug_ui_render_group* Group, table_layout* Table, interactable *Interaction)
+EndInteractable(debug_ui_render_group* Group, window_layout* Window, interactable *Interaction)
 {
-  Interaction->MaxP = Table->Layout.Basis + Table->Layout.At;
+  Interaction->MaxP = Window->Layout.Basis + Window->Layout.At;
 
   if (Interaction->MinP.y == Interaction->MaxP.y)
   {

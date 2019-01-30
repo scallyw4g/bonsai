@@ -121,9 +121,9 @@ struct registered_memory_arena
   const char* Name;
   b32 Expanded;
 
-  table_layout StatsTable;
-  table_layout BargraphTable;
-  table_layout MetadataTable;
+  window_layout StatsWindow;
+  window_layout BargraphWindow;
+  window_layout MetadataWindow;
 };
 
 struct selected_memory_arena
