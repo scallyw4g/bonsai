@@ -229,44 +229,57 @@ BufferColors(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo, v
 
 #define TO_NDC(P) ((P * ToNDC) - 1.0f)
 
+// Note(Jesse): Z==0 is farthest back, Z==1 is closest to the camera
 v2
 BufferQuadDirect(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z, v2 ScreenDim, v2 MaxClip)
 {
-  // Note(Jesse): Z==0 is farthest back, Z==1 is closest to the camera
   Assert(Z >= 0.0f && Z <= 1.0f);
 
-  v3 vertex_up_left    = V3( MinP.x       , MinP.y      , Z);
-  v3 vertex_up_right   = V3( MinP.x+Dim.x , MinP.y      , Z);
-  v3 vertex_down_right = V3( MinP.x+Dim.x , MinP.y+Dim.y, Z);
-  v3 vertex_down_left  = V3( MinP.x       , MinP.y+Dim.y, Z);
+  v3 up_left    = V3( MinP.x       , MinP.y      , Z);
+  v3 up_right   = V3( MinP.x+Dim.x , MinP.y      , Z);
+  v3 down_right = V3( MinP.x+Dim.x , MinP.y+Dim.y, Z);
+  v3 down_left  = V3( MinP.x       , MinP.y+Dim.y, Z);
 
   if (LengthSq(MaxClip) > 0.0f)
   {
-    Print(MaxClip);
-
-    if (vertex_up_right.x > MaxClip.x)
+    // Partial clipping cases
     {
-      vertex_up_right.x = MaxClip.x;
-      // TODO(Jesse): Remap UVs somehow??
+      if (up_right.x > MaxClip.x)
+      {
+        up_right.x = MaxClip.x;
+        // TODO(Jesse): Remap UVs somehow??
+      }
+
+      if (down_right.x > MaxClip.x)
+      {
+        down_right.x = MaxClip.x;
+        // TODO(Jesse): Remap UVs somehow??
+      }
+
+      if (down_right.y > MaxClip.y)
+      {
+        down_right.y = MaxClip.y;
+        // TODO(Jesse): Remap UVs somehow??
+      }
+
+      if (down_left.y > MaxClip.y)
+      {
+        down_left.y = MaxClip.y;
+        // TODO(Jesse): Remap UVs somehow??
+      }
     }
 
-    if (vertex_down_right.x > MaxClip.x)
+    // Fully Clipped
     {
-      vertex_down_right.x = MaxClip.x;
-      // TODO(Jesse): Remap UVs somehow??
+      if (up_left.x >= MaxClip.x ||
+          down_left.x >= MaxClip.x ||
+          up_left.y >= MaxClip.y ||
+          up_right.y >= MaxClip.y )
+      {
+        return MaxClip;
+      }
     }
 
-    if (vertex_down_right.y > MaxClip.y)
-    {
-      vertex_down_right.y = MaxClip.y;
-      // TODO(Jesse): Remap UVs somehow??
-    }
-
-    if (vertex_down_left.y > MaxClip.y)
-    {
-      vertex_down_left.y = MaxClip.y;
-      // TODO(Jesse): Remap UVs somehow??
-    }
   }
 
   v3 ToNDC = 2.0f/V3(ScreenDim.x, ScreenDim.y, 1.0f);
@@ -275,14 +288,14 @@ BufferQuadDirect(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z, v2 ScreenD
   // maps the origin to the top-left of the screen.
   v3 InvertYZ = V3(1.0f, -1.0f, -1.0f);
 
-  Dest[StartingIndex++] = InvertYZ * TO_NDC(vertex_up_left);
-  Dest[StartingIndex++] = InvertYZ * TO_NDC(vertex_down_left);
-  Dest[StartingIndex++] = InvertYZ * TO_NDC(vertex_up_right);
-  Dest[StartingIndex++] = InvertYZ * TO_NDC(vertex_down_right);
-  Dest[StartingIndex++] = InvertYZ * TO_NDC(vertex_up_right);
-  Dest[StartingIndex++] = InvertYZ * TO_NDC(vertex_down_left);
+  Dest[StartingIndex++] = InvertYZ * TO_NDC(up_left);
+  Dest[StartingIndex++] = InvertYZ * TO_NDC(down_left);
+  Dest[StartingIndex++] = InvertYZ * TO_NDC(up_right);
+  Dest[StartingIndex++] = InvertYZ * TO_NDC(down_right);
+  Dest[StartingIndex++] = InvertYZ * TO_NDC(up_right);
+  Dest[StartingIndex++] = InvertYZ * TO_NDC(down_left);
 
-  return vertex_down_right.xy;
+  return down_right.xy;
 }
 
 inline v2
