@@ -156,45 +156,54 @@ FlushBuffer(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo, v2 Sc
 }
 
 void
-BufferUVForQuad(textured_2d_geometry_buffer* Geo, u32 Slice)
+BufferQuadUVs(textured_2d_geometry_buffer* Geo, rect2 UV, debug_texture_array_slice Slice)
 {
-  v3 uv_up_left    = V3(0, 1, Slice);
-  v3 uv_up_right   = V3(1, 1, Slice);
-  v3 uv_down_right = V3(1, 0, Slice);
-  v3 uv_down_left  = V3(0, 0, Slice);
+  v3 up_left    = V3(UV.Min.x, UV.Min.y, (r32)Slice);
+  v3 up_right   = V3(UV.Max.x, UV.Min.y, (r32)Slice);
+  v3 down_right = V3(UV.Max.x, UV.Max.y, (r32)Slice);
+  v3 down_left  = V3(UV.Min.x, UV.Max.y, (r32)Slice);
 
   u32 StartingIndex = Geo->At;
-  Geo->UVs[StartingIndex++] = uv_up_left;
-  Geo->UVs[StartingIndex++] = uv_down_left;
-  Geo->UVs[StartingIndex++] = uv_up_right;
+  Geo->UVs[StartingIndex++] = up_left;
+  Geo->UVs[StartingIndex++] = down_left;
+  Geo->UVs[StartingIndex++] = up_right;
 
-  Geo->UVs[StartingIndex++] = uv_down_right;
-  Geo->UVs[StartingIndex++] = uv_up_right;
-  Geo->UVs[StartingIndex++] = uv_down_left;
+  Geo->UVs[StartingIndex++] = down_right;
+  Geo->UVs[StartingIndex++] = up_right;
+  Geo->UVs[StartingIndex++] = down_left;
 
   return;
 }
 
-void
-BufferTextUVs(textured_2d_geometry_buffer *Geo, v2 UV, debug_texture_array_slice Slice)
+rect2
+UVsForFullyCoveredQuad()
+{
+  // Note(Jesse): These are weird compared to what you might expect because
+  // OpenGL screen coordinates originate at the bottom left, but are inverted
+  // in our app such that the origin is at the top-left
+  // @inverted_screen_y_coordinate
+  v2 up_left    = V2(0.0f, 1.0f);
+  v2 down_right = V2(1.0f, 0.0f);
+
+  rect2 Result = RectMinMax(up_left, down_right);
+  return Result;
+}
+
+rect2
+UVsForChar(char C)
 {
   r32 OneOverSixteen = 1.0f/16.0f;
 
-  v3 uv_up_left    = V3( UV.x                , UV.y+OneOverSixteen , (r32)Slice);
-  v3 uv_up_right   = V3( UV.x+OneOverSixteen , UV.y+OneOverSixteen , (r32)Slice);
-  v3 uv_down_right = V3( UV.x+OneOverSixteen , UV.y                , (r32)Slice);
-  v3 uv_down_left  = V3( UV.x                , UV.y                , (r32)Slice);
+  // Note(Jesse): These are weird compared to what you might expect because
+  // OpenGL screen coordinates originate at the bottom left, but are inverted
+  // in our app such that the origin is at the top-left
+  // @inverted_screen_y_coordinate
+  v2 down_left = GetUVForCharCode(C);
+  v2 up_left  = down_left + V2(0.0f, OneOverSixteen);
+  v2 down_right  = down_left + V2(OneOverSixteen, 0.0f);
 
-  u32 StartingIndex = Geo->At;
-  Geo->UVs[StartingIndex++] = uv_up_left;
-  Geo->UVs[StartingIndex++] = uv_down_left;
-  Geo->UVs[StartingIndex++] = uv_up_right;
-
-  Geo->UVs[StartingIndex++] = uv_down_right;
-  Geo->UVs[StartingIndex++] = uv_up_right;
-  Geo->UVs[StartingIndex++] = uv_down_left;
-
-  return;
+  rect2 Result = RectMinMax(up_left, down_right);
+  return Result;
 }
 
 void
@@ -229,7 +238,9 @@ BufferColors(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo, v
 
 #define TO_NDC(P) ((P * ToNDC) - 1.0f)
 
-// Note(Jesse): Z==0 is farthest back, Z==1 is closest to the camera
+
+// Note(Jesse): Z==0 | far-clip
+// Note(Jesse): Z==1 | near-clip
 v2
 BufferQuadDirect(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z, v2 ScreenDim, v2 MaxClip)
 {
@@ -286,11 +297,13 @@ BufferQuadDirect(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z, v2 ScreenD
 
   // Native OpenGL screen coordinates are {0,0} at the bottom-left corner. This
   // maps the origin to the top-left of the screen.
+  // @inverted_screen_y_coordinate
   v3 InvertYZ = V3(1.0f, -1.0f, -1.0f);
 
   Dest[StartingIndex++] = InvertYZ * TO_NDC(up_left);
   Dest[StartingIndex++] = InvertYZ * TO_NDC(down_left);
   Dest[StartingIndex++] = InvertYZ * TO_NDC(up_right);
+
   Dest[StartingIndex++] = InvertYZ * TO_NDC(down_right);
   Dest[StartingIndex++] = InvertYZ * TO_NDC(up_right);
   Dest[StartingIndex++] = InvertYZ * TO_NDC(down_left);
@@ -299,22 +312,38 @@ BufferQuadDirect(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z, v2 ScreenD
 }
 
 inline v2
-BufferQuad(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, v2 MinP, v2 Dim, r32 Z = 0.5f, v2 MaxClip = V2(0))
+BufferTexturedQuad(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo,
+                   v2 MinP, v2 Dim,
+                   debug_texture_array_slice TextureSlice, rect2 UV,
+                   v3 Color,
+                   r32 Z = 0.5f, v2 MaxClip = V2(0))
 {
   if (BufferIsFull(Geo, 6))
     FlushBuffer(Group->TextGroup, Geo, Group->ScreenDim);
 
+  // TODO(Jesse): Return information on whether or not the quad was clipped so
+  // we can remap the UVs if necessary
   v2 Result = BufferQuadDirect(Geo->Verts, Geo->At, MinP, Dim, Z, Group->ScreenDim, MaxClip);
+  BufferQuadUVs(Geo, UV, TextureSlice);
+  BufferColors(Group, Geo, Color);
+  Geo->At += 6;
+
   return Result;
 }
 
 inline v2
-BufferQuad(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo, v2 MinP, v2 Dim, r32 Z = 0.5f, v2 MaxClip = V2(0))
+BufferUntexturedQuad(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo,
+                     v2 MinP, v2 Dim, v3 Color,
+                     r32 Z = 0.5f, v2 MaxClip = V2(0))
 {
   if (BufferIsFull(Geo, 6))
     FlushBuffer(Group->TextGroup, Geo, Group->ScreenDim);
 
   v2 MaxP = BufferQuadDirect(Geo->Verts, Geo->At, MinP, Dim, Z, Group->ScreenDim, MaxClip);
+  BufferColors(Group, Geo, Color);
+
+  Geo->At+=6;
+
   return MaxP;
 }
 
@@ -324,20 +353,23 @@ BufferChar(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, u32 C
   r32 DeltaX = 0;
 
   char Char = Text[CharIndex];
-  v2 UV = GetUVForCharCode(Char);
+  rect2 UV = UVsForChar(Char);
 
   { // Black Drop-shadow
     v2 ShadowOffset = 0.1f*V2(Font->Size);
-    BufferQuad(Group, Geo, MinP+ShadowOffset, V2(Font->Size), 0.99f, MaxClip);
-    BufferTextUVs(Geo, UV, DebugTextureArraySlice_Font);
-    BufferColors(Group, Geo, GetColorData(BLACK).xyz);
-    Geo->At += 6;
+    BufferTexturedQuad( Group, Geo,
+                        MinP+ShadowOffset, V2(Font->Size),
+                        DebugTextureArraySlice_Font, UV,
+                        GetColorData(BLACK).xyz,
+                        0.9999f, MaxClip);
+
   }
 
-  v2 MaxP = BufferQuad(Group, Geo, MinP, V2(Font->Size), 1.0f, MaxClip);
-  BufferTextUVs(Geo, UV, DebugTextureArraySlice_Font);
-  BufferColors(Group, Geo, GetColorData(Color).xyz);
-  Geo->At += 6;
+  v2 MaxP = BufferTexturedQuad( Group, Geo,
+                                MinP, V2(Font->Size),
+                                DebugTextureArraySlice_Font, UV,
+                                GetColorData(Color).xyz,
+                                1.0f, MaxClip);
 
   DeltaX = (MaxP.x - MinP.x);
 
@@ -402,10 +434,7 @@ EndClipRect(debug_ui_render_group *Group, layout *Layout, untextured_2d_geometry
   v2 MinP = Layout->Clip.Min + Layout->Basis;
   v2 Dim = Layout->Clip.Max - Layout->Clip.Min;
 
-  BufferQuad(Group, Geo, MinP, Dim, 0.0f);
-  BufferColors(Group, Geo, V3(0.2f));
-  Geo->At+=6;
-
+  BufferUntexturedQuad(Group, Geo, MinP, Dim, V3(0.2f), 0.0f);
   return;
 }
 
@@ -882,21 +911,20 @@ DrawCycleBar( cycle_range *Range, cycle_range *Frame, r32 TotalGraphWidth, const
   r32 XOffset = GetXOffsetForHorizontalBar(StartCycleOffset, Frame->TotalCycles, TotalGraphWidth);
 
   v2 MinP = Layout->At + Layout->Basis + V2(XOffset, 0);
-  v2 QuadMaxP = BufferQuad(Group, Geo, MinP, BarDim);
-  b32 Hovering = IsInsideRect(RectMinDim(MinP, BarDim), Group->MouseP);
 
-  if (Hovering)
+  interactable Interaction = Interactable(MinP, MinP+BarDim, (umm)"CycleBarHoverInteraction" );
+  b32 Result = Hover(Group, &Interaction);
+  if (Result)
   {
     Color *= 0.5f;
     if (Tooltip) { DoTooltip(Group, Tooltip); }
   }
 
-  BufferColors(Group, Geo, Color);
-  Geo->At+=6;
+  v2 QuadMaxP = BufferUntexturedQuad(Group, Geo, MinP, BarDim, Color);
 
   AdvanceClip(Layout, QuadMaxP - Layout->Basis);
 
-  return Hovering;
+  return Result;
 }
 
 void
@@ -960,27 +988,11 @@ ComputePickRay(platform *Plat, m4* ViewProjection, hotkeys* Hotkeys)
   return;
 }
 
-function v2
-DrawTexturedQuadAt(debug_ui_render_group* Group, textured_2d_geometry_buffer* Geo, v2 MinP, v2 Dim)
-{
-  u8 Color = WHITE;
-
-  v2 MaxP = BufferQuad(Group, Geo, MinP, Dim);
-  BufferUVForQuad(Geo, DebugTextureArraySlice_Viewport);
-  BufferColors(Group, Geo, GetColorData(Color).xyz);
-  Geo->At += 6;
-
-  return MaxP;
-}
-
 function void
 BufferRectangleAt(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo,
                   v2 MinP, v2 Dim, v3 Color, r32 Z = 0.5f)
 {
-  BufferQuad(Group, Geo, MinP, Dim, Z);
-  BufferColors(Group, Geo, Color);
-  Geo->At+=6;
-
+  BufferUntexturedQuad(Group, Geo, MinP, Dim, Color, Z);
   return;
 }
 
@@ -1160,9 +1172,10 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 
     v2 MinP = GetAbsoluteAt(&PickerWindow.Layout);
     v2 QuadDim = PickerWindow.MaxClip - PickerWindow.Layout.At;
-    DrawTexturedQuadAt( Group, &Group->TextGroup->TextGeo,
-                        GetAbsoluteAt(&PickerWindow.Layout),
-                        QuadDim);
+
+    BufferTexturedQuad( Group, &Group->TextGroup->TextGeo, MinP, QuadDim,
+                        DebugTextureArraySlice_Viewport, UVsForFullyCoveredQuad(),
+                        V3(1) );
 
     interactable Interaction = Interactable(MinP, MinP+QuadDim, (umm)"PickerWindowDragInteraction");
     input* WindowInput = Group->Input;
@@ -1281,9 +1294,7 @@ DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState
       v2 MinP16ms = Layout->Basis + V2( xOffset, MinY );
       v2 MaxP16ms = Layout->Basis + V2( xOffset+MarkerWidth, Layout->At.y );
       v2 Dim = MaxP16ms - MinP16ms;
-      BufferQuad(Group, Geo, MinP16ms, Dim);
-      BufferColors(Group, Geo, V3(0,1,0));
-      Geo->At+=6;
+      BufferUntexturedQuad(Group, Geo, MinP16ms, Dim, V3(0,1,0));
     }
     {
       r32 FramePerc = 33.333333f/TotalMs;
@@ -1291,9 +1302,7 @@ DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState
       v2 MinP16ms = Layout->Basis + V2( xOffset, MinY );
       v2 MaxP16ms = Layout->Basis + V2( xOffset+MarkerWidth, Layout->At.y );
       v2 Dim = MaxP16ms - MinP16ms;
-      BufferQuad(Group, Geo, MinP16ms, Dim);
-      BufferColors(Group, Geo, V3(1,1,0));
-      Geo->At+=6;
+      BufferUntexturedQuad(Group, Geo, MinP16ms, Dim, V3(0,1,1));
     }
   }
 
@@ -1476,38 +1485,6 @@ BufferFirstCallToEach(debug_ui_render_group *Group,
   return;
 }
 
-void
-DebugDrawCollatedFunctionCalls(debug_ui_render_group *Group, debug_state *DebugState, v2 BasisP)
-{
-  local_persist window_layout FunctionCallWindow = WindowLayout(BasisP);
-  FunctionCallWindow.Title = "Functions";
-
-  Clear(&FunctionCallWindow.Layout.At);
-  Clear(&FunctionCallWindow.Layout.Clip);
-
-  WindowInteractions(Group, &FunctionCallWindow);
-
-  TIMED_BLOCK("Collated Function Calls");
-  debug_thread_state *MainThreadState = GetThreadLocalStateFor(0);
-  debug_scope_tree *MainThreadReadTree = MainThreadState->ScopeTrees + DebugState->ReadScopeIndex;
-
-  CollateAllFunctionCalls(MainThreadReadTree->Root);
-
-  for ( u32 FunctionIndex = 0;
-      FunctionIndex < MAX_RECORDED_FUNCTION_CALLS;
-      ++FunctionIndex)
-  {
-    called_function *Func = ProgramFunctionCalls + FunctionIndex;
-    if (Func->Name)
-    {
-      Column( Func->Name, Group, &FunctionCallWindow, WHITE);
-      Column( ToString(Func->CallCount), Group, &FunctionCallWindow, WHITE);
-      NewRow(&FunctionCallWindow, &Group->Font);
-    }
-  }
-  END_BLOCK("Collated Function Calls");
-
-}
 
 clip_rect
 DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout *MainLayout, r64 MaxMs)
@@ -1545,11 +1522,8 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout
       v2 QuadDim = V2(15.0, (Group->Font.Size) * Perc);
       v2 Offset = MaxDim - QuadDim;
 
-      v2 DrawDim = BufferQuad(Group, &Group->TextGroup->UIGeo, MinP + Offset, QuadDim);
-      MainLayout->At.x = DrawDim.x + 5.0f;
-      AdvanceClip(MainLayout, MainLayout->At + V2(0, Group->Font.Size));
-
-      if (MouseP > MinP && MouseP < DrawDim)
+      interactable Interaction = Interactable(MinP, MinP+Offset, (umm)"CallGraphBarInteract" );
+      if (Hover(Group, &Interaction))
       {
         debug_thread_state *MainThreadState = GetThreadLocalStateFor(0);
         if (FrameIndex != MainThreadState->WriteIndex % DEBUG_FRAMES_TRACKED)
@@ -1559,9 +1533,10 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout
         }
       }
 
-      BufferColors(Group->TextGroup->UIGeo.Colors, Group->TextGroup->UIGeo.At, Color);
+      v2 DrawDim = BufferUntexturedQuad(Group, &Group->TextGroup->UIGeo, MinP + Offset, QuadDim, Color);
 
-      Group->TextGroup->UIGeo.At+=6;
+      MainLayout->At.x = DrawDim.x + 5.0f;
+      AdvanceClip(MainLayout, MainLayout->At + V2(0, Group->Font.Size));
     }
 
 
@@ -1572,9 +1547,7 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout
       r32 MinPOffset = MaxBarHeight * MsPerc;
       v2 MinP = { StartingAt.x, StartingAt.y + Group->Font.Size - MinPOffset };
 
-      BufferQuad(Group, &Group->TextGroup->UIGeo, MinP, QuadDim);
-      BufferColors(Group->TextGroup->UIGeo.Colors, Group->TextGroup->UIGeo.At, V3(1,1,0));
-      Group->TextGroup->UIGeo.At+=6;
+      BufferUntexturedQuad(Group, &Group->TextGroup->UIGeo, MinP, QuadDim, V3(1,1,0));
     }
 
     {
@@ -1582,9 +1555,7 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout
       r32 MinPOffset = MaxBarHeight * MsPerc;
       v2 MinP = { StartingAt.x, StartingAt.y + Group->Font.Size - MinPOffset };
 
-      BufferQuad(Group, &Group->TextGroup->UIGeo, MinP, QuadDim);
-      BufferColors(Group->TextGroup->UIGeo.Colors, Group->TextGroup->UIGeo.At, V3(0,1,0));
-      Group->TextGroup->UIGeo.At+=6;
+      BufferUntexturedQuad(Group, &Group->TextGroup->UIGeo, MinP, QuadDim, V3(0,1,0));
     }
 
     { // Current ReadTree info
@@ -1659,6 +1630,46 @@ ColumnRight(s32 Width, const char *Text, debug_ui_render_group* Group, layout *L
   BufferValue(Text, Group, Layout, ColorIndex);
 }
 #endif
+
+
+/*************************                      ******************************/
+/*************************  Collated Fun Calls  ******************************/
+/*************************                      ******************************/
+
+
+void
+DebugDrawCollatedFunctionCalls(debug_ui_render_group *Group, debug_state *DebugState, v2 BasisP)
+{
+  local_persist window_layout FunctionCallWindow = WindowLayout(BasisP);
+  FunctionCallWindow.Title = "Functions";
+
+  Clear(&FunctionCallWindow.Layout.At);
+  Clear(&FunctionCallWindow.Layout.Clip);
+
+  WindowInteractions(Group, &FunctionCallWindow);
+
+  TIMED_BLOCK("Collated Function Calls");
+  debug_thread_state *MainThreadState = GetThreadLocalStateFor(0);
+  debug_scope_tree *MainThreadReadTree = MainThreadState->ScopeTrees + DebugState->ReadScopeIndex;
+
+  CollateAllFunctionCalls(MainThreadReadTree->Root);
+
+  for ( u32 FunctionIndex = 0;
+      FunctionIndex < MAX_RECORDED_FUNCTION_CALLS;
+      ++FunctionIndex)
+  {
+    called_function *Func = ProgramFunctionCalls + FunctionIndex;
+    if (Func->Name)
+    {
+      Column( Func->Name, Group, &FunctionCallWindow, WHITE, WHITE, FunctionCallWindow.MaxClip);
+      Column( ToString(Func->CallCount), Group, &FunctionCallWindow, WHITE, WHITE, FunctionCallWindow.MaxClip);
+      NewRow(&FunctionCallWindow, &Group->Font);
+    }
+  }
+  END_BLOCK("Collated Function Calls");
+
+}
+
 
 /******************************              *********************************/
 /******************************  Draw Calls  *********************************/
@@ -1741,9 +1752,7 @@ BufferBarGraph(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo,
   v2 BarDim = V2(BarWidth, BarHeight);
   v2 PercBarDim = V2(BarWidth, BarHeight) * V2(PercFilled, 1);
 
-  BufferQuad(Group, Geo, MinP, BarDim);
-  BufferColors(Group, Geo, V3(0.25f));
-  Geo->At+=6;
+  BufferUntexturedQuad(Group, Geo, MinP, BarDim, V3(0.25f));
 
   rect2 BarRect = { MinP, MinP + BarDim };
   b32 Hovering = IsInsideRect(BarRect, Group->MouseP);
@@ -1751,9 +1760,7 @@ BufferBarGraph(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo,
   if (Hovering)
     Color = {{ 1, 0, 1 }};
 
-  BufferQuad(Group, Geo, MinP, PercBarDim);
-  BufferColors(Group, Geo, Color);
-  Geo->At+=6;
+  BufferUntexturedQuad(Group, Geo, MinP, PercBarDim, Color);
 
   Layout->At.x += BarDim.x;
 
