@@ -1,5 +1,15 @@
 #! /bin/bash
 
+RED="\x1b[31m"
+BLUE="\x1b[34m"
+GREEN="\x1b[32m"
+YELLOW="\x1b[33m"
+WHITE="\x1b[37m"
+
+Delimeter="$RED""-----------------------------------------------------------""$WHITE"
+Done="$GREEN""Done""$WHITE"
+Building="$BLUE""Building""$WHITE"
+
 ROOT="."
 SRC="$ROOT/src"
 EXAMPLES="$ROOT/examples"
@@ -11,6 +21,11 @@ function SetOutputBinaryPathBasename()
 {
   base_file="${1##*/}"
   output_basename="$2/${base_file%%.*}"
+}
+
+function ColorizeTitle()
+{
+  echo -e "$YELLOW""$1""$WHITE"
 }
 
 INCLUDE_DIRECTORIES="$SRC"
@@ -54,7 +69,7 @@ fi
 if [ "$EMCC" == "1" ]; then
 
   which emcc > /dev/null
-  [ $? -ne 0 ] && echo "Please install emcc" && exit 1
+  [ $? -ne 0 ] && echo -e "Please install emcc" && exit 1
 
   emcc src/font/ttf.cpp              \
     -D BONSAI_INTERNAL=1             \
@@ -67,13 +82,16 @@ if [ "$EMCC" == "1" ]; then
 else
 
   which clang++ > /dev/null
-  [ $? -ne 0 ] && echo "Please install clang++" && exit 1
+  [ $? -ne 0 ] && echo -e "Please install clang++" && exit 1
 
-  echo ""
-  echo "Executables"
+  echo -e ""
+  echo -e "$Delimeter"
+  echo -e ""
+
+  ColorizeTitle "Executables"
   for executable in $EXECUTABLES_TO_BUILD; do
     SetOutputBinaryPathBasename "$executable" "$BIN"
-    echo "Building $executable"
+    echo -e "$Building $executable"
     clang++                    \
       $COMMON_COMPILER_OPTIONS \
       $COMMON_LINKER_OPTIONS   \
@@ -82,14 +100,14 @@ else
       -I"$SRC"                 \
       -I"$SRC/datatypes"       \
       -o "$output_basename"    \
-      $executable && echo "Done $executable" &
+      $executable && echo -e "$Done $executable" &
   done
 
   echo ""
-  echo "Tests"
+  ColorizeTitle "Tests"
   for executable in $TESTS_TO_BUILD; do
     SetOutputBinaryPathBasename "$executable" "$BIN_TEST"
-    echo "Building $executable to $output_basename"
+    echo -e "$Building $executable"
     clang++                      \
       $COMMON_COMPILER_OPTIONS   \
       $COMMON_LINKER_OPTIONS     \
@@ -99,13 +117,13 @@ else
       -I"$SRC/datatypes"         \
       -I"$TESTS"                 \
       -o "$output_basename" \
-      $executable && echo "Done $executable" &
+      $executable && echo -e "$Done $executable" &
   done
 
   echo ""
-  echo "DebugSystem"
+  ColorizeTitle "DebugSystem"
   DEBUG_SRC_FILE="$SRC/debug_system/debug.cpp"
-  echo "Building $DEBUG_SRC_FILE"
+  echo -e "$Building $DEBUG_SRC_FILE"
   clang++                         \
     $COMMON_COMPILER_OPTIONS      \
     $SHARED_LIBRARY_FLAGS         \
@@ -117,12 +135,12 @@ else
     -I"$SRC/datatypes"            \
     -I"$SRC/debug_system"         \
     -o "$BIN/lib_debug_system.so" \
-    "$DEBUG_SRC_FILE" && echo "Done $executable" &
+    "$DEBUG_SRC_FILE" && echo -e "$Done $executable" &
 
   echo ""
-  echo "Examples"
+  ColorizeTitle "Examples"
   for executable in $EXAMPLES_TO_BUILD; do
-    echo "Building $executable"
+    echo -e "$Building $executable"
     SetOutputBinaryPathBasename "$executable" "$BIN"
 
     clang++                                                     \
@@ -137,12 +155,16 @@ else
       -o "$output_basename"                                     \
       "$executable/game.cpp" &&                                 \
       mv "$output_basename" "$output_basename""_loadable.so" && \
-      echo "Done $executable" &
+      echo -e "$Done $executable" &
   done
+
+  echo -e ""
+  echo -e "$Delimeter"
+  echo -e ""
 
   wait
 
-  echo ""
+  echo -e ""
 
 fi
 
