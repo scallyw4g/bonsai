@@ -40,6 +40,23 @@ struct window_layout
   v2 MaxClip;
 };
 
+struct ui_style
+{
+  v3 Color;
+  v3 HoverColor;
+  v3 ClickColor;
+};
+
+function ui_style
+StandardStyling(v3 StartingColor, v3 HoverMultiplier = V3(1.1f), v3 ClickMultiplier = V3(1.2f))
+{
+  ui_style Result = {};
+  Result.Color = StartingColor;
+  Result.HoverColor = StartingColor*HoverMultiplier;
+  Result.ClickColor = StartingColor*ClickMultiplier;
+
+  return Result;
+}
 
 window_layout
 WindowLayout(v2 Basis = V2(150, 150), v2 MaxClip = V2(1500, 800))

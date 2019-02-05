@@ -1058,6 +1058,28 @@ BufferRectangleAt(debug_ui_render_group *Group, untextured_2d_geometry_buffer *G
   return;
 }
 
+function b32
+Button(debug_ui_render_group* Group, rect2 Rect, ui_style* Style, umm InteractionId, r32 Z = 0.5f)
+{
+  b32 Result = False;
+
+  v3 UseColor = Style->Color;
+
+  interactable Interaction = Interactable(Rect, InteractionId);
+  if (Hover(Group, &Interaction))
+    UseColor = Style->HoverColor;
+
+  if (Pressed(Group, &Interaction))
+  {
+    Result = True;
+    UseColor = Style->ClickColor;
+  }
+
+  BufferRectangleAt(Group, &Group->TextGroup->UIGeo, Rect, UseColor, Z);
+
+  return Result;
+}
+
 function void
 WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
 {
@@ -1078,22 +1100,12 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
   v2 BottomRight = Window->Layout.Basis + Window->MaxClip;
 
   {
-    v3 Color = V3(0.0f, 0.5f, 0.5f);
-    v3 UseColor = Color;
-
+    ui_style Style = StandardStyling(V3(0.0f, 0.5f, 0.5f));
     rect2 Rect = RectMinMax(TopLeft, TopRight + V2(0.0f, Group->Font.Size));
-
-    interactable Interaction = Interactable(Rect, (umm)&Window->Table);
-    if (Hover(Group, &Interaction))
-      UseColor = Color*1.2f;
-
-    if (Pressed(Group, &Interaction))
+    if (Button(Group, Rect, &Style, (umm)"WindowTitleBar"))
     {
       Window->Layout.Basis += -1.0f*Group->MouseDP;
-      UseColor = Color*1.4f;
     }
-
-    BufferRectangleAt(Group, Geo, Rect, UseColor, Z);
   }
 
   v3 BorderColor = V3(1, 1, 1);
@@ -1104,23 +1116,15 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
 
 
   {
-    v3 Color = V3(0.5f, 0.5f, 0.0f);
+    ui_style Style = StandardStyling(V3(0.8f, 0.8f, 0.0f));
     v2 Dim = V2(10);
     v2 MinP = BottomRight - (Dim/2);
-
-    interactable Interaction = Interactable(MinP, MinP+Dim, (umm)&Window->Layout);
-    if (Pressed(Group, &Interaction))
+    rect2 Rect = RectMinDim(MinP, Dim);
+    if (Button(Group, Rect, &Style, (umm)"WindowResizeWidget"))
     {
-      Window->MaxClip = Max(V2(0), Group->MouseP-Window->Layout.Basis);
-      Color *= 2.0f;
+      Window->MaxClip = Max(V2(0), Window->MaxClip-Group->MouseDP);
     }
-
-    if (Hover(Group, &Interaction))
-      Color *= 2.0f;
-
-    BufferRectangleAt(Group, Geo, MinP, Dim, Color, Z);
   }
-
 
   v3 BackgroundColor = V3(0.2f, 0.2f, 0.2f);
   BufferRectangleAt(Group, Geo, RectMinMax(TopLeft, BottomRight), BackgroundColor, 0.0f);
