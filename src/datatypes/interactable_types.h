@@ -52,6 +52,17 @@ WindowLayout(v2 Basis = V2(150, 150), v2 MaxClip = V2(1500, 800))
 }
 
 interactable
+Interactable(rect2 Rect, umm ID)
+{
+  interactable Result = {};
+  Result.MinP = Rect.Min;
+  Result.MaxP = Rect.Max;
+  Result.ID = ID;
+
+  return Result;
+}
+
+interactable
 Interactable(v2 MinP, v2 MaxP, umm ID)
 {
   interactable Result = {};

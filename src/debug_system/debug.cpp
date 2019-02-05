@@ -136,10 +136,8 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
 
     case DebugUIType_Memory:
     {
-      BufferValue("Memory Arenas", UiGroup, &Layout, WHITE);
-      NewLine(&Layout, &UiGroup->Font);
-      v2 BasisP = Layout.At;
-      DebugDrawMemoryHud(UiGroup, DebugState, BasisP);
+      local_persist window_layout MemoryArenaWindow = WindowLayout(Layout.At);
+      DebugDrawMemoryHud(UiGroup, DebugState, &MemoryArenaWindow);
     } break;
 
     case DebugUIType_DrawCalls:

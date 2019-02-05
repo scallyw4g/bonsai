@@ -748,7 +748,7 @@ GetTextBounds(u32 TextLength, font* Font)
 }
 
 function rect2
-Column(const char* ColumnText, debug_ui_render_group* Group, window_layout* Window, u8 Color, u8 HoverColor = TEAL, v2 MaxClip = V2(0))
+Column(const char* ColumnText, debug_ui_render_group* Group, window_layout* Window, u8 Color, u8 HoverColor = TEAL)
 {
   table *Table = &Window->Table;
   layout *Layout = &Window->Layout;
@@ -772,7 +772,7 @@ Column(const char* ColumnText, debug_ui_render_group* Group, window_layout* Wind
     UseColor = HoverColor;
   }
 
-  BufferValue(ColumnText, Group, Layout, UseColor, MaxClip);
+  BufferValue(ColumnText, Group, Layout, UseColor, Window->MaxClip);
 
   return Bounds;
 }
@@ -1077,6 +1077,25 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
   v2 BottomLeft = Window->Layout.Basis + V2(0, Window->MaxClip.y);
   v2 BottomRight = Window->Layout.Basis + Window->MaxClip;
 
+  {
+    v3 Color = V3(0.0f, 0.5f, 0.5f);
+    v3 UseColor = Color;
+
+    rect2 Rect = RectMinMax(TopLeft, TopRight + V2(0.0f, Group->Font.Size));
+
+    interactable Interaction = Interactable(Rect, (umm)&Window->Table);
+    if (Hover(Group, &Interaction))
+      UseColor = Color*1.2f;
+
+    if (Pressed(Group, &Interaction))
+    {
+      Window->Layout.Basis += -1.0f*Group->MouseDP;
+      UseColor = Color*1.4f;
+    }
+
+    BufferRectangleAt(Group, Geo, Rect, UseColor, Z);
+  }
+
   v3 BorderColor = V3(1, 1, 1);
   BufferRectangleAt(Group, Geo, RectMinMax(TopLeft, TopRight - V2(0, 1)), BorderColor, Z);
   BufferRectangleAt(Group, Geo, RectMinMax(TopLeft, BottomLeft - V2(1, 0)), BorderColor, Z);
@@ -1085,44 +1104,26 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
 
 
   {
+    v3 Color = V3(0.5f, 0.5f, 0.0f);
     v2 Dim = V2(10);
+    v2 MinP = BottomRight - (Dim/2);
+
+    interactable Interaction = Interactable(MinP, MinP+Dim, (umm)&Window->Layout);
+    if (Pressed(Group, &Interaction))
     {
-      v2 MinP = BottomRight - (Dim/2);
-      v3 Color = V3(0.5f, 0.5f, 0.0f);
-
-      interactable Interaction = Interactable(MinP, MinP+Dim, (umm)&Window->Layout);
-      if (Pressed(Group, &Interaction))
-      {
-        Window->MaxClip = Max(V2(0), Group->MouseP-Window->Layout.Basis);
-        Color *= 2.0f;
-      }
-
-      if (Hover(Group, &Interaction))
-        Color *= 2.0f;
-
-      BufferRectangleAt(Group, Geo, MinP, Dim, Color, Z);
+      Window->MaxClip = Max(V2(0), Group->MouseP-Window->Layout.Basis);
+      Color *= 2.0f;
     }
 
-    {
-      v2 MinP = TopLeft - (Dim/2);
-      v3 Color = V3(0.0f, 0.0f, 0.5f);
+    if (Hover(Group, &Interaction))
+      Color *= 2.0f;
 
-      interactable Interaction = Interactable(MinP, MinP+Dim, (umm)&Window->Table);
-      if (Pressed(Group, &Interaction))
-      {
-        Window->Layout.Basis = Group->MouseP;
-        Color *= 2.0f;
-      }
-
-      if (Hover(Group, &Interaction))
-        Color *= 2.0f;
-
-      BufferRectangleAt(Group, Geo, MinP, Dim, Color, Z);
-    }
-
-    v3 BackgroundColor = V3(0.2f, 0.2f, 0.2f);
-    BufferRectangleAt(Group, Geo, RectMinMax(TopLeft, BottomRight), BackgroundColor, 0.0f);
+    BufferRectangleAt(Group, Geo, MinP, Dim, Color, Z);
   }
+
+
+  v3 BackgroundColor = V3(0.2f, 0.2f, 0.2f);
+  BufferRectangleAt(Group, Geo, RectMinMax(TopLeft, BottomRight), BackgroundColor, 0.0f);
 
 }
 
@@ -1712,8 +1713,8 @@ DebugDrawCollatedFunctionCalls(debug_ui_render_group *Group, debug_state *DebugS
     called_function *Func = ProgramFunctionCalls + FunctionIndex;
     if (Func->Name)
     {
-      Column( Func->Name, Group, &FunctionCallWindow, WHITE, WHITE, FunctionCallWindow.MaxClip);
-      Column( ToString(Func->CallCount), Group, &FunctionCallWindow, WHITE, WHITE, FunctionCallWindow.MaxClip);
+      Column( Func->Name, Group, &FunctionCallWindow, WHITE);
+      Column( ToString(Func->CallCount), Group, &FunctionCallWindow, WHITE);
       NewRow(&FunctionCallWindow, &Group->Font);
     }
   }
@@ -2033,15 +2034,13 @@ BufferDebugPushMetaData(debug_ui_render_group *Group, selected_arenas *SelectedA
 }
 
 void
-DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, v2 OriginalBasisP)
+DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, window_layout* Window)
 {
-  local_persist window_layout MemoryArenaWindow = WindowLayout(OriginalBasisP);
 
-  MemoryArenaWindow.Layout.At = {};
-  MemoryArenaWindow.Layout.Basis = OriginalBasisP;
+  Window->Layout.At = V2(0);
+  Window->Title = "Memory Arenas";
 
-
-  WindowInteractions(Group, &MemoryArenaWindow);
+  WindowInteractions(Group, Window);
 
   for ( u32 Index = 0;
         Index < REGISTERED_MEMORY_ARENA_COUNT;
@@ -2055,13 +2054,13 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, v2 Ori
 
     {
       SetFontSize(&Group->Font, 36);
-      NewLine(&MemoryArenaWindow.Layout, &Group->Font);
-      u8 Color = HoverAndClickExpand(Group, &MemoryArenaWindow.Layout, Current, WHITE, TEAL);
+      NewLine(&Window->Layout, &Group->Font);
+      u8 Color = HoverAndClickExpand(Group, &Window->Layout, Current, WHITE, TEAL);
 
-      Column(Current->Name, Group, &MemoryArenaWindow, Color, Color, MemoryArenaWindow.MaxClip);
-      Column(MemorySize(MemStats.TotalAllocated), Group, &MemoryArenaWindow, Color, Color, MemoryArenaWindow.MaxClip);
-      Column(ToString(MemStats.Pushes), Group, &MemoryArenaWindow, Color, Color, MemoryArenaWindow.MaxClip);
-      NewRow(&MemoryArenaWindow, &Group->Font);
+      Column(Current->Name, Group, Window, Color);
+      Column(MemorySize(MemStats.TotalAllocated), Group, Window, Color);
+      Column(ToString(MemStats.Pushes), Group, Window, Color);
+      NewRow(Window, &Group->Font);
     }
 
 
@@ -2074,7 +2073,7 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, v2 Ori
       window_layout *MetadataWindow = &Current->MetadataWindow;
 
       {
-        v2 BasisP = GetAbsoluteAt(&MemoryArenaWindow.Layout);
+        v2 BasisP = GetAbsoluteAt(&Window->Layout);
         BufferMemoryStatsTable(MemStats, Group, StatsWindow, BasisP);
       }
 
@@ -2089,17 +2088,16 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, v2 Ori
       {
         v2 BasisP = { 100.0f + Max(StatsWindow->Layout.Clip.Max.x,
                                    BargraphWindow->Layout.Clip.Max.x),
-                      GetAbsoluteAt(&MemoryArenaWindow.Layout).y };
+                      GetAbsoluteAt(&Window->Layout).y };
 
         BufferDebugPushMetaData(Group, SelectedArenas, HashArenaHead(Current->Arena), MetadataWindow, BasisP);
       }
 
-      MemoryArenaWindow.Layout.At = {};
-      MemoryArenaWindow.Layout.Basis = V2( MemoryArenaWindow.Layout.Basis.x,
-                                             Max( GetAbsoluteMax(&BargraphWindow->Layout).y,
-                                                  GetAbsoluteMax(&MetadataWindow->Layout).y ));
+      Window->Layout.At = V2( Window->Layout.At.x,
+                                        Max( GetAbsoluteMax(&BargraphWindow->Layout).y,
+                                             GetAbsoluteMax(&MetadataWindow->Layout).y ));
 
-      AdvanceClip(&MemoryArenaWindow.Layout);
+      AdvanceClip(&Window->Layout);
     }
 
     continue;
