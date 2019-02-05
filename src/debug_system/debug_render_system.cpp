@@ -238,10 +238,23 @@ BufferColors(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo, v
 
 #define TO_NDC(P) ((P * ToNDC) - 1.0f)
 
+enum clip_status
+{
+  ClipStatus_NoClipping,
+  ClipStatus_PartialClipping,
+  ClipStatus_FullyClipped
+};
+
+struct clip_result
+{
+  clip_status ClipStatus;
+  v2 MaxClip;
+};
+
 
 // Note(Jesse): Z==0 | far-clip
 // Note(Jesse): Z==1 | near-clip
-v2
+clip_result
 BufferQuadDirect(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z, v2 ScreenDim, v2 MaxClip)
 {
   Assert(Z >= 0.0f && Z <= 1.0f);
@@ -251,32 +264,34 @@ BufferQuadDirect(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z, v2 ScreenD
   v3 down_right = V3( MinP.x+Dim.x , MinP.y+Dim.y, Z);
   v3 down_left  = V3( MinP.x       , MinP.y+Dim.y, Z);
 
+  clip_result Result = {};
+
   if (LengthSq(MaxClip) > 0.0f)
   {
     // Partial clipping cases
     {
-      if (up_right.x > MaxClip.x)
+      if (up_left.x < MaxClip.x && up_right.x > MaxClip.x)
       {
-        up_right.x = MaxClip.x;
-        // TODO(Jesse): Remap UVs somehow??
+        Result.MaxClip.x = up_right.x = MaxClip.x;
+        Result.ClipStatus = ClipStatus_PartialClipping;
       }
 
-      if (down_right.x > MaxClip.x)
+      if (down_left.x < MaxClip.x && down_right.x > MaxClip.x)
       {
-        down_right.x = MaxClip.x;
-        // TODO(Jesse): Remap UVs somehow??
+        Result.MaxClip.x = down_right.x = MaxClip.x;
+        Result.ClipStatus = ClipStatus_PartialClipping;
       }
 
-      if (down_right.y > MaxClip.y)
+      if (up_right.y < MaxClip.y && down_right.y > MaxClip.y)
       {
-        down_right.y = MaxClip.y;
-        // TODO(Jesse): Remap UVs somehow??
+        Result.MaxClip.y = down_right.y = MaxClip.y;
+        Result.ClipStatus = ClipStatus_PartialClipping;
       }
 
-      if (down_left.y > MaxClip.y)
+      if (up_right.y < MaxClip.y && down_left.y > MaxClip.y)
       {
-        down_left.y = MaxClip.y;
-        // TODO(Jesse): Remap UVs somehow??
+        Result.MaxClip.y = down_left.y = MaxClip.y;
+        Result.ClipStatus = ClipStatus_PartialClipping;
       }
     }
 
@@ -287,7 +302,8 @@ BufferQuadDirect(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z, v2 ScreenD
           up_left.y >= MaxClip.y ||
           up_right.y >= MaxClip.y )
       {
-        return MaxClip;
+        Result.ClipStatus = ClipStatus_FullyClipped;
+        return Result;
       }
     }
 
@@ -308,10 +324,12 @@ BufferQuadDirect(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z, v2 ScreenD
   Dest[StartingIndex++] = InvertYZ * TO_NDC(up_right);
   Dest[StartingIndex++] = InvertYZ * TO_NDC(down_left);
 
-  return down_right.xy;
+  Result.MaxClip = down_right.xy;
+
+  return Result;
 }
 
-inline v2
+inline clip_result
 BufferTexturedQuad(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo,
                    v2 MinP, v2 Dim,
                    debug_texture_array_slice TextureSlice, rect2 UV,
@@ -321,12 +339,31 @@ BufferTexturedQuad(debug_ui_render_group *Group, textured_2d_geometry_buffer *Ge
   if (BufferIsFull(Geo, 6))
     FlushBuffer(Group->TextGroup, Geo, Group->ScreenDim);
 
-  // TODO(Jesse): Return information on whether or not the quad was clipped so
-  // we can remap the UVs if necessary
-  v2 Result = BufferQuadDirect(Geo->Verts, Geo->At, MinP, Dim, Z, Group->ScreenDim, MaxClip);
-  BufferQuadUVs(Geo, UV, TextureSlice);
-  BufferColors(Group, Geo, Color);
-  Geo->At += 6;
+  clip_result Result = BufferQuadDirect(Geo->Verts, Geo->At, MinP, Dim, Z, Group->ScreenDim, MaxClip);
+  switch (Result.ClipStatus)
+  {
+    case ClipStatus_NoClipping:
+    {
+      BufferQuadUVs(Geo, UV, TextureSlice);
+      BufferColors(Group, Geo, Color);
+      Geo->At += 6;
+    } break;
+
+    case ClipStatus_PartialClipping:
+    {
+      // TODO(): Remap UVs
+      BufferQuadUVs(Geo, UV, TextureSlice);
+      BufferColors(Group, Geo, Color);
+      Geo->At += 6;
+    } break;
+
+    case ClipStatus_FullyClipped:
+    {
+    } break;
+
+    InvalidDefaultCase;
+  }
+
 
   return Result;
 }
@@ -339,19 +376,29 @@ BufferUntexturedQuad(debug_ui_render_group *Group, untextured_2d_geometry_buffer
   if (BufferIsFull(Geo, 6))
     FlushBuffer(Group->TextGroup, Geo, Group->ScreenDim);
 
-  v2 MaxP = BufferQuadDirect(Geo->Verts, Geo->At, MinP, Dim, Z, Group->ScreenDim, MaxClip);
-  BufferColors(Group, Geo, Color);
+  clip_result Result = BufferQuadDirect(Geo->Verts, Geo->At, MinP, Dim, Z, Group->ScreenDim, MaxClip);
+  switch (Result.ClipStatus)
+  {
+    case ClipStatus_NoClipping:
+    case ClipStatus_PartialClipping:
+    {
+      BufferColors(Group, Geo, Color);
+      Geo->At += 6;
+    } break;
 
-  Geo->At+=6;
+    case ClipStatus_FullyClipped:
+    {
+    } break;
 
-  return MaxP;
+    InvalidDefaultCase;
+  }
+
+  return Result.MaxClip;
 }
 
 inline r32
 BufferChar(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, u32 CharIndex, v2 MinP, font *Font, const char *Text, u32 Color, v2 MaxClip = V2(0))
 {
-  r32 DeltaX = 0;
-
   char Char = Text[CharIndex];
   rect2 UV = UVsForChar(Char);
 
@@ -365,13 +412,17 @@ BufferChar(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, u32 C
 
   }
 
-  v2 MaxP = BufferTexturedQuad( Group, Geo,
-                                MinP, V2(Font->Size),
-                                DebugTextureArraySlice_Font, UV,
-                                GetColorData(Color).xyz,
-                                1.0f, MaxClip);
+  clip_result ClipResult = BufferTexturedQuad( Group, Geo,
+                                         MinP, V2(Font->Size),
+                                         DebugTextureArraySlice_Font, UV,
+                                         GetColorData(Color).xyz,
+                                         1.0f, MaxClip);
 
-  DeltaX = (MaxP.x - MinP.x);
+  r32 DeltaX = 0;
+  if (ClipResult.ClipStatus != ClipStatus_FullyClipped)
+  {
+    DeltaX = (ClipResult.MaxClip.x - MinP.x);
+  }
 
   return DeltaX;
 }
@@ -1984,10 +2035,13 @@ BufferDebugPushMetaData(debug_ui_render_group *Group, selected_arenas *SelectedA
 void
 DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, v2 OriginalBasisP)
 {
-  local_persist window_layout MemoryArenaWindow = {};
+  local_persist window_layout MemoryArenaWindow = WindowLayout(OriginalBasisP);
 
   MemoryArenaWindow.Layout.At = {};
   MemoryArenaWindow.Layout.Basis = OriginalBasisP;
+
+
+  WindowInteractions(Group, &MemoryArenaWindow);
 
   for ( u32 Index = 0;
         Index < REGISTERED_MEMORY_ARENA_COUNT;
@@ -2004,9 +2058,9 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, v2 Ori
       NewLine(&MemoryArenaWindow.Layout, &Group->Font);
       u8 Color = HoverAndClickExpand(Group, &MemoryArenaWindow.Layout, Current, WHITE, TEAL);
 
-      Column(Current->Name, Group, &MemoryArenaWindow, Color);
-      Column(MemorySize(MemStats.TotalAllocated), Group, &MemoryArenaWindow, Color);
-      Column(ToString(MemStats.Pushes), Group, &MemoryArenaWindow, Color);
+      Column(Current->Name, Group, &MemoryArenaWindow, Color, Color, MemoryArenaWindow.MaxClip);
+      Column(MemorySize(MemStats.TotalAllocated), Group, &MemoryArenaWindow, Color, Color, MemoryArenaWindow.MaxClip);
+      Column(ToString(MemStats.Pushes), Group, &MemoryArenaWindow, Color, Color, MemoryArenaWindow.MaxClip);
       NewRow(&MemoryArenaWindow, &Group->Font);
     }
 

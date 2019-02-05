@@ -42,7 +42,7 @@ struct window_layout
 
 
 window_layout
-WindowLayout(v2 Basis = V2(150, 150), v2 MaxClip = V2(150, 150))
+WindowLayout(v2 Basis = V2(150, 150), v2 MaxClip = V2(1500, 800))
 {
   window_layout Window = {};
   Window.Layout.Basis = Basis;
