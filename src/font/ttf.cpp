@@ -212,6 +212,8 @@ struct font_table
 struct ttf
 {
   font_table* head; // Font Header
+  head_table* HeadTable;
+
   font_table* cmap; // Character Glyph mapping
   font_table* glyf; // Glyph data
   font_table* hhea; // Horizontal Header
@@ -385,10 +387,9 @@ ParseGlyph(u8_stream *Stream, memory_arena *Arena)
   simple_glyph Glyph = {};
 
   Glyph.ContourCount = ReadS16(Stream);
-  Glyph.Contours = Allocate(ttf_contour, Arena, Glyph.ContourCount);
-
   if (Glyph.ContourCount > 0) // We don't support compound glyphs, yet
   {
+    Glyph.Contours = Allocate(ttf_contour, Arena, Glyph.ContourCount);
     s16 xMin = ReadS16(Stream);
     s16 yMin = ReadS16(Stream);
     s16 xMax = ReadS16(Stream);
@@ -624,8 +625,7 @@ ParseHeadTable(u8_stream *Stream, memory_arena *Arena)
 inline u8_stream
 GetStreamForGlyphIndex(u32 GlyphIndex, ttf *Font, memory_arena *Arena)
 {
-  u8_stream HeadStream = U8_Stream(Font->head);
-  head_table *HeadTable = ParseHeadTable(&HeadStream, Arena);
+  head_table *HeadTable = Font->HeadTable;
 
   u8_stream Result = {};
   if (HeadTable->IndexToLocFormat == SHORT_INDEX_LOCATION_FORMAT)
@@ -973,9 +973,9 @@ main()
   ttf Font = InitTTF("fonts/hack.ttf", PermArena);
 
   u8_stream HeadStream = U8_Stream(Font.head);
-  head_table *HeadTable = ParseHeadTable(&HeadStream, PermArena);
-  v2i FontMaxEmDim = { HeadTable->xMax - HeadTable->xMin, HeadTable->yMax - HeadTable->yMin };
-  v2i FontMinGlyphP = V2i(HeadTable->xMin, HeadTable->yMin);
+  Font.HeadTable = ParseHeadTable(&HeadStream, PermArena);
+  v2i FontMaxEmDim = { Font.HeadTable->xMax - Font.HeadTable->xMin, Font.HeadTable->yMax - Font.HeadTable->yMin };
+  v2i FontMinGlyphP = V2i(Font.HeadTable->xMin, Font.HeadTable->yMin);
 
   v2i GlyphSize = V2i(32, 32);
 
