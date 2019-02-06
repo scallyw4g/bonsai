@@ -633,9 +633,9 @@ AdvanceClip(layout *Layout)
 }
 
 inline void
-BeginClipRect(layout *Layout)
+BeginClipRect(window_layout *Window)
 {
-  Clear(&Layout->Clip);
+  Window->Layout.Clip = InvertedInfinityRectangle();
   return;
 }
 

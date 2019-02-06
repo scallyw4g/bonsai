@@ -123,8 +123,6 @@ struct registered_memory_arena
   const char* Name;
   b32 Expanded;
 
-  window_layout StatsWindow;
-  window_layout BargraphWindow;
   window_layout MetadataWindow;
 };
 

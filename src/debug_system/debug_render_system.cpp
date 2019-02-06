@@ -8,7 +8,7 @@
 #include <bonsai_mesh.cpp>
 #include <gpu_mapped_buffer.cpp>
 
-debug_global clip_rect NullClipRect = {};
+debug_global rect2 NullClipRect = {};
 
 #if 0
 void
@@ -28,7 +28,7 @@ CleanupText2D(debug_text_render_group *RG)
 }
 #endif
 
-b32
+function b32
 InitDebugOverlayFramebuffer(debug_text_render_group *RG, memory_arena *DebugArena, const char *DebugFont)
 {
   RG->FontTexture = LoadBitmap(DebugFont, DebugArena, DebugTextureArraySlice_Count);
@@ -45,7 +45,7 @@ InitDebugOverlayFramebuffer(debug_text_render_group *RG, memory_arena *DebugAren
   return True;
 }
 
-void
+function void
 AllocateAndInitGeoBuffer(textured_2d_geometry_buffer *Geo, u32 VertCount, memory_arena *DebugArena)
 {
   Geo->Verts  = Allocate(v3, DebugArena, VertCount);
@@ -56,7 +56,7 @@ AllocateAndInitGeoBuffer(textured_2d_geometry_buffer *Geo, u32 VertCount, memory
   Geo->At = 0;
 }
 
-void
+function void
 AllocateAndInitGeoBuffer(untextured_2d_geometry_buffer *Geo, u32 VertCount, memory_arena *DebugArena)
 {
   Geo->Verts = Allocate(v3, DebugArena, VertCount);
@@ -67,7 +67,7 @@ AllocateAndInitGeoBuffer(untextured_2d_geometry_buffer *Geo, u32 VertCount, memo
   return;
 }
 
-shader
+function shader
 MakeSolidUIShader(memory_arena *Memory)
 {
   shader SimpleTextureShader = LoadShaders( "SimpleColor.vertexshader",
@@ -76,7 +76,7 @@ MakeSolidUIShader(memory_arena *Memory)
   return SimpleTextureShader;
 }
 
-shader
+function shader
 MakeRenderToTextureShader(memory_arena *Memory, m4 *ViewProjection)
 {
   shader Shader = LoadShaders( "RenderToTexture.vertexshader",
@@ -97,7 +97,7 @@ MakeRenderToTextureShader(memory_arena *Memory, m4 *ViewProjection)
 /******************************                *******************************/
 
 
-void
+function void
 FlushBuffer(debug_text_render_group *RG, untextured_2d_geometry_buffer *Buffer, v2 ScreenDim)
 {
   TIMED_FUNCTION();
@@ -121,7 +121,7 @@ FlushBuffer(debug_text_render_group *RG, untextured_2d_geometry_buffer *Buffer, 
   return;
 }
 
-void
+function void
 FlushBuffer(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo, v2 ScreenDim)
 {
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -155,7 +155,7 @@ FlushBuffer(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo, v2 Sc
   AssertNoGlErrors;
 }
 
-void
+function void
 BufferQuadUVs(textured_2d_geometry_buffer* Geo, rect2 UV, debug_texture_array_slice Slice)
 {
   v3 up_left    = V3(UV.Min.x, UV.Min.y, (r32)Slice);
@@ -175,7 +175,7 @@ BufferQuadUVs(textured_2d_geometry_buffer* Geo, rect2 UV, debug_texture_array_sl
   return;
 }
 
-rect2
+function rect2
 UVsForFullyCoveredQuad()
 {
   // Note(Jesse): These are weird compared to what you might expect because
@@ -189,7 +189,7 @@ UVsForFullyCoveredQuad()
   return Result;
 }
 
-rect2
+function rect2
 UVsForChar(char C)
 {
   r32 OneOverSixteen = 1.0f/16.0f;
@@ -206,7 +206,7 @@ UVsForChar(char C)
   return Result;
 }
 
-void
+function void
 BufferColors(v3 *Colors, u32 StartingIndex, v3 Color)
 {
   Colors[StartingIndex++] = Color;
@@ -218,7 +218,7 @@ BufferColors(v3 *Colors, u32 StartingIndex, v3 Color)
   return;
 }
 
-void
+function void
 BufferColors(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, v3 Color)
 {
   if (BufferIsFull(Geo, 6))
@@ -227,7 +227,7 @@ BufferColors(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, v3 
   BufferColors(Geo->Colors, Geo->At, Color);
 }
 
-void
+function void
 BufferColors(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo, v3 Color)
 {
   if (BufferIsFull(Geo, 6))
@@ -254,7 +254,7 @@ struct clip_result
 
 // Note(Jesse): Z==0 | far-clip
 // Note(Jesse): Z==1 | near-clip
-clip_result
+function clip_result
 BufferQuadDirect(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z, v2 ScreenDim, v2 MaxClip)
 {
   Assert(Z >= 0.0f && Z <= 1.0f);
@@ -329,7 +329,7 @@ BufferQuadDirect(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z, v2 ScreenD
   return Result;
 }
 
-inline clip_result
+function clip_result
 BufferTexturedQuad(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo,
                    v2 MinP, v2 Dim,
                    debug_texture_array_slice TextureSlice, rect2 UV,
@@ -368,7 +368,7 @@ BufferTexturedQuad(debug_ui_render_group *Group, textured_2d_geometry_buffer *Ge
   return Result;
 }
 
-inline v2
+function clip_result
 BufferUntexturedQuad(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo,
                      v2 MinP, v2 Dim, v3 Color,
                      r32 Z = 0.5f, v2 MaxClip = V2(0))
@@ -393,10 +393,10 @@ BufferUntexturedQuad(debug_ui_render_group *Group, untextured_2d_geometry_buffer
     InvalidDefaultCase;
   }
 
-  return Result.MaxClip;
+  return Result;
 }
 
-inline r32
+function r32
 BufferChar(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, u32 CharIndex, v2 MinP, font *Font, const char *Text, u32 Color, v2 MaxClip = V2(0))
 {
   char Char = Text[CharIndex];
@@ -427,7 +427,7 @@ BufferChar(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, u32 C
   return DeltaX;
 }
 
-r32
+function r32
 BufferValue(const char* Text, debug_ui_render_group *Group, layout *Layout, u32 Color, v2 MaxClip = V2(0))
 {
   textured_2d_geometry_buffer *Geo = &Group->TextGroup->TextGeo;
@@ -452,7 +452,7 @@ BufferValue(const char* Text, debug_ui_render_group *Group, layout *Layout, u32 
   return DeltaX;
 }
 
-inline void
+function void
 BufferValue(r32 Number, debug_ui_render_group *Group, layout *Layout, u32 ColorIndex)
 {
   char Buffer[32] = {};
@@ -461,7 +461,7 @@ BufferValue(r32 Number, debug_ui_render_group *Group, layout *Layout, u32 ColorI
   return;
 }
 
-inline void
+function void
 BufferValue(u64 Number, debug_ui_render_group *Group, layout *Layout, u32 ColorIndex)
 {
   char Buffer[32] = {};
@@ -470,7 +470,7 @@ BufferValue(u64 Number, debug_ui_render_group *Group, layout *Layout, u32 ColorI
   return;
 }
 
-inline void
+function void
 BufferValue(u32 Number, debug_ui_render_group *Group, layout *Layout, u32 ColorIndex)
 {
   char Buffer[32] = {};
@@ -480,12 +480,14 @@ BufferValue(u32 Number, debug_ui_render_group *Group, layout *Layout, u32 ColorI
 }
 
 void
-EndClipRect(debug_ui_render_group *Group, layout *Layout, untextured_2d_geometry_buffer *Geo)
+EndClipRect(debug_ui_render_group *Group, window_layout *Window, untextured_2d_geometry_buffer *Geo, v3 Color = V3(0.2f))
 {
-  v2 MinP = Layout->Clip.Min + Layout->Basis;
-  v2 Dim = Layout->Clip.Max - Layout->Clip.Min;
+  layout *Layout = &Window->Layout;
 
-  BufferUntexturedQuad(Group, Geo, MinP, Dim, V3(0.2f), 0.0f);
+  v2 MinP = Layout->Clip.Min + Layout->Basis;
+  v2 Dim = Min(Layout->Clip.Max, Window->MaxClip) - Layout->Clip.Min;
+
+  BufferUntexturedQuad(Group, Geo, MinP, Dim, Color, 0.0f);
   return;
 }
 
@@ -494,7 +496,7 @@ EndClipRect(debug_ui_render_group *Group, layout *Layout, untextured_2d_geometry
 /*****************************  Text Helpers  ********************************/
 /*****************************                ********************************/
 
-inline void
+function void
 AdvanceSpaces(u32 N, layout *Layout, font *Font)
 {
   Layout->At.x += (N*Font->Size);
@@ -502,7 +504,7 @@ AdvanceSpaces(u32 N, layout *Layout, font *Font)
   return;
 }
 
-inline rect2
+function rect2
 NewLine(layout *Layout, font *Font)
 {
   v2 Min = { Layout->Basis.x, Layout->Basis.y + Layout->At.y };
@@ -523,7 +525,7 @@ BufferLine(const char* Text, u32 Color, layout *Layout, font *Font, debug_ui_ren
   return xOffset;
 }
 
-inline rect2
+function rect2
 NewRow(window_layout *Window, font *Font)
 {
   Window->Table.ColumnIndex = 0;
@@ -531,7 +533,7 @@ NewRow(window_layout *Window, font *Font)
   return Bounds;
 }
 
-inline char*
+function char*
 MemorySize(u64 Number)
 {
   r64 KB = (r64)Kilobytes(1);
@@ -563,7 +565,7 @@ MemorySize(u64 Number)
   return Buffer;
 }
 
-inline char*
+function char*
 ToString(u64 Number)
 {
   char *Buffer = AllocateProtection(char, TranArena, 32, False);
@@ -571,7 +573,7 @@ ToString(u64 Number)
   return Buffer;
 }
 
-inline char*
+function char*
 ToString(s32 Number)
 {
   char *Buffer = AllocateProtection(char, TranArena, 32, False);
@@ -579,7 +581,7 @@ ToString(s32 Number)
   return Buffer;
 }
 
-inline char*
+function char*
 ToString(u32 Number)
 {
   char *Buffer = AllocateProtection(char, TranArena, 32, False);
@@ -587,7 +589,7 @@ ToString(u32 Number)
   return Buffer;
 }
 
-inline char*
+function char*
 ToString(r32 Number)
 {
   char *Buffer = AllocateProtection(char, TranArena, 32, False);
@@ -595,7 +597,7 @@ ToString(r32 Number)
   return Buffer;
 }
 
-inline char*
+function char*
 FormatMemorySize(u64 Number)
 {
   r64 KB = (r64)Kilobytes(1);
@@ -627,7 +629,7 @@ FormatMemorySize(u64 Number)
   return Buffer;
 }
 
-inline void
+function void
 BufferMemorySize(u64 Number, debug_ui_render_group *Group, layout *Layout, u32 ColorIndex)
 {
   char *Buffer = FormatMemorySize(Number);
@@ -635,7 +637,7 @@ BufferMemorySize(u64 Number, debug_ui_render_group *Group, layout *Layout, u32 C
   return;
 }
 
-inline char*
+function char*
 FormatThousands(u64 Number)
 {
   u64 OneThousand = 1000;
@@ -654,7 +656,7 @@ FormatThousands(u64 Number)
   return Buffer;
 }
 
-inline void
+function void
 BufferThousands(u64 Number, debug_ui_render_group *Group, layout *Layout, u32 ColorIndex, u32 Columns = 10)
 {
   char  *Buffer = FormatThousands(Number);
@@ -668,7 +670,7 @@ BufferThousands(u64 Number, debug_ui_render_group *Group, layout *Layout, u32 Co
   return;
 }
 
-inline void
+function void
 BufferColumn( s32 Value, u32 ColumnWidth, debug_ui_render_group *Group, layout *Layout, u32 ColorIndex)
 {
   char Buffer[32] = {};
@@ -682,7 +684,7 @@ BufferColumn( s32 Value, u32 ColumnWidth, debug_ui_render_group *Group, layout *
   return;
 }
 
-inline void
+function void
 BufferColumn( u32 Value, u32 ColumnWidth, debug_ui_render_group *Group, layout *Layout, u32 ColorIndex)
 {
   char Buffer[32] = {};
@@ -696,7 +698,7 @@ BufferColumn( u32 Value, u32 ColumnWidth, debug_ui_render_group *Group, layout *
   return;
 }
 
-inline void
+function void
 BufferColumn( u64 Value, u32 ColumnWidth, debug_ui_render_group *Group, layout *Layout, u32 ColorIndex)
 {
   char Buffer[32] = {};
@@ -710,7 +712,7 @@ BufferColumn( u64 Value, u32 ColumnWidth, debug_ui_render_group *Group, layout *
   return;
 }
 
-inline void
+function void
 BufferColumn( r64 Perc, u32 ColumnWidth, debug_ui_render_group *Group, layout *Layout, u32 ColorIndex)
 {
   char Buffer[32] = {};
@@ -724,7 +726,7 @@ BufferColumn( r64 Perc, u32 ColumnWidth, debug_ui_render_group *Group, layout *L
   return;
 }
 
-inline void
+function void
 BufferColumn( r32 Perc, u32 ColumnWidth, debug_ui_render_group *Group, layout *Layout, u32 ColorIndex)
 {
   char Buffer[32] = {};
@@ -790,7 +792,7 @@ Button(const char* ColumnText, debug_ui_render_group *Group, window_layout* Wind
   return Result;
 }
 
-inline void
+function void
 BufferScopeTreeEntry(debug_ui_render_group *Group, debug_profile_scope *Scope, window_layout* Window,
     u8 Color, u64 TotalCycles, u64 TotalFrameCycles, u64 CallCount, u32 Depth)
 {
@@ -824,7 +826,7 @@ BufferScopeTreeEntry(debug_ui_render_group *Group, debug_profile_scope *Scope, w
   return;
 }
 
-inline rect2
+function rect2
 GetNextLineBounds(layout *Layout, font *Font)
 {
   v2 StartingP = GetAbsoluteAt(Layout);
@@ -836,7 +838,7 @@ GetNextLineBounds(layout *Layout, font *Font)
 }
 
 #if 0
-scope_stats
+function scope_stats
 GetStatsFor( debug_profile_scope *Target, debug_profile_scope *Root)
 {
   scope_stats Result = {};
@@ -897,13 +899,13 @@ HoverAndClickExpand(debug_ui_render_group *Group, layout *Layout, T *Expandable,
   return DrawColor;
 }
 
-inline void
+function void
 PadBottom(layout *Layout, r32 Pad)
 {
   Layout->At.y += Pad;
 }
 
-void
+function void
 SetFontSize(font *Font, r32 FontSize)
 {
   Font->Size = FontSize;
@@ -911,7 +913,7 @@ SetFontSize(font *Font, r32 FontSize)
   return;
 }
 
-r32
+function r32
 BufferTextAt(debug_ui_render_group *Group, v2 BasisP, const char *Text, u32 Color)
 {
   textured_2d_geometry_buffer *Geo = &Group->TextGroup->TextGeo;
@@ -932,7 +934,7 @@ BufferTextAt(debug_ui_render_group *Group, v2 BasisP, const char *Text, u32 Colo
   return DeltaX;
 }
 
-void
+function void
 DoTooltip(debug_ui_render_group *Group, const char *Text)
 {
   BufferTextAt(Group, Group->MouseP+V2(12, -7), Text, WHITE);
@@ -945,7 +947,7 @@ DoTooltip(debug_ui_render_group *Group, const char *Text)
 /****************************                       **************************/
 
 
-b32
+function b32
 DrawCycleBar( cycle_range *Range, cycle_range *Frame, r32 TotalGraphWidth, const char *Tooltip, v3 Color,
               debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo, layout *Layout)
 {
@@ -971,14 +973,16 @@ DrawCycleBar( cycle_range *Range, cycle_range *Frame, r32 TotalGraphWidth, const
     if (Tooltip) { DoTooltip(Group, Tooltip); }
   }
 
-  v2 QuadMaxP = BufferUntexturedQuad(Group, Geo, MinP, BarDim, Color);
-
-  AdvanceClip(Layout, QuadMaxP - Layout->Basis);
+  clip_result Clip = BufferUntexturedQuad(Group, Geo, MinP, BarDim, Color);
+  if (Clip.ClipStatus != ClipStatus_FullyClipped)
+  {
+    AdvanceClip(Layout, Clip.MaxClip - Layout->Basis);
+  }
 
   return Result;
 }
 
-void
+function void
 DrawWaitingBar(mutex_op_record *WaitRecord, mutex_op_record *AquiredRecord, mutex_op_record *ReleasedRecord,
                debug_ui_render_group *Group, layout *Layout, u64 FrameStartingCycle, u64 FrameTotalCycles, r32 TotalGraphWidth)
 {
@@ -1010,7 +1014,7 @@ DrawWaitingBar(mutex_op_record *WaitRecord, mutex_op_record *AquiredRecord, mute
 /****************************                 ********************************/
 
 
-void
+function void
 ComputePickRay(platform *Plat, m4* ViewProjection, hotkeys* Hotkeys)
 {
   m4 InverseViewProjection = {};
@@ -1147,7 +1151,7 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 
   MapGpuElementBuffer(&DebugState->GameGeo);
 
-  BeginClipRect(&ListingWindow->Layout);
+  BeginClipRect(ListingWindow);
   for (u32 ChunkIndex = 0;
       ChunkIndex < DebugState->PickedChunkCount;
       ++ChunkIndex)
@@ -1182,7 +1186,7 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
     NewRow(ListingWindow, &Group->Font);
   }
   untextured_2d_geometry_buffer *Geo = &Group->TextGroup->UIGeo;
-  EndClipRect(Group, &ListingWindow->Layout, Geo);
+  EndClipRect(Group, ListingWindow, Geo);
 
   if (DebugState->HotChunk)
   {
@@ -1256,7 +1260,7 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 /************************                        *****************************/
 
 
-void
+function void
 DrawScopeBarsRecursive(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo, debug_profile_scope *Scope,
                        layout *Layout, cycle_range *Frame, r32 TotalGraphWidth, random_series *Entropy)
 {
@@ -1287,7 +1291,7 @@ DrawScopeBarsRecursive(debug_ui_render_group *Group, untextured_2d_geometry_buff
   return;
 }
 
-void
+function void
 DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState, v2 BasisP)
 {
   random_series Entropy = {};
@@ -1317,7 +1321,7 @@ DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState
         ThreadIndex < TotalThreadCount;
         ++ThreadIndex)
   {
-    BeginClipRect(Layout);
+    BeginClipRect(&CycleGraphWindow);
 
     char *ThreadName = FormatString(TranArena, "Thread %u", ThreadIndex);
     Column(ThreadName, Group, &CycleGraphWindow, WHITE);
@@ -1332,7 +1336,7 @@ DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState
 
     Layout->At.y = Layout->Clip.Max.y + 25; // Advance vertical at for next thread
 
-    EndClipRect(Group, Layout, Geo);
+    EndClipRect(Group, &CycleGraphWindow, Geo);
     NewRow(&CycleGraphWindow, &Group->Font);
   }
 
@@ -1419,7 +1423,7 @@ struct called_function
 static called_function ProgramFunctionCalls[MAX_RECORDED_FUNCTION_CALLS];
 static called_function NullFunctionCall = {};
 
-void
+function void
 CollateAllFunctionCalls(debug_profile_scope* Current)
 {
   if (!Current || !Current->Name)
@@ -1482,7 +1486,7 @@ CollateAllFunctionCalls(debug_profile_scope* Current)
   return;
 }
 
-unique_debug_profile_scope *
+function unique_debug_profile_scope *
 ListContainsScope(unique_debug_profile_scope* List, debug_profile_scope* Query)
 {
   unique_debug_profile_scope* Result = 0;
@@ -1499,7 +1503,7 @@ ListContainsScope(unique_debug_profile_scope* List, debug_profile_scope* Query)
   return Result;
 }
 
-void
+function void
 BufferFirstCallToEach(debug_ui_render_group *Group,
     debug_profile_scope *Scope_in, debug_profile_scope *TreeRoot,
     memory_arena *Memory, window_layout* CallgraphLayout, u64 TotalFrameCycles, u32 Depth)
@@ -1542,7 +1546,7 @@ BufferFirstCallToEach(debug_ui_render_group *Group,
 }
 
 
-clip_rect
+function rect2
 DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout *MainLayout, r64 MaxMs)
 {
   v2 MouseP = Group->MouseP;
@@ -1589,10 +1593,12 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout
         }
       }
 
-      v2 DrawDim = BufferUntexturedQuad(Group, &Group->TextGroup->UIGeo, MinP + Offset, QuadDim, Color);
-
-      MainLayout->At.x = DrawDim.x + 5.0f;
-      AdvanceClip(MainLayout, MainLayout->At + V2(0, Group->Font.Size));
+      clip_result Clip = BufferUntexturedQuad(Group, &Group->TextGroup->UIGeo, MinP + Offset, QuadDim, Color);
+      if (Clip.ClipStatus != ClipStatus_FullyClipped)
+      {
+        MainLayout->At.x = Clip.MaxClip.x + 5.0f;
+        AdvanceClip(MainLayout, MainLayout->At + V2(0, Group->Font.Size));
+      }
     }
 
 
@@ -1663,12 +1669,12 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout
 
   END_BLOCK("Call Graph");
 
-  clip_rect Result = CallgraphWindow.Layout.Clip;
+  rect2 Result = CallgraphWindow.Layout.Clip;
   return Result;
 }
 
 #if 0
-void
+function void
 ColumnLeft(u32 Width, const char *Text, debug_ui_render_group* Group, layout *Layout, u32 ColorIndex )
 {
   u32 Len = (u32)strlen(Text);
@@ -1677,7 +1683,7 @@ ColumnLeft(u32 Width, const char *Text, debug_ui_render_group* Group, layout *La
   AdvanceSpaces(Pad, Layout, &Group->Font);
 }
 
-void
+function void
 ColumnRight(s32 Width, const char *Text, debug_ui_render_group* Group, layout *Layout, u32 ColorIndex )
 {
   s32 Len = (s32)strlen(Text);
@@ -1693,7 +1699,7 @@ ColumnRight(s32 Width, const char *Text, debug_ui_render_group* Group, layout *L
 /*************************                      ******************************/
 
 
-void
+function void
 DebugDrawCollatedFunctionCalls(debug_ui_render_group *Group, debug_state *DebugState, v2 BasisP)
 {
   local_persist window_layout FunctionCallWindow = WindowLayout(BasisP);
@@ -1736,7 +1742,7 @@ debug_global const u32 Global_DrawCallArrayLength = 128;
 debug_global debug_draw_call Global_DrawCalls[Global_DrawCallArrayLength] = {};
 debug_global debug_draw_call NullDrawCall = {};
 
-void
+function void
 TrackDrawCall(const char* Caller, u32 VertexCount)
 {
   u64 Index = ((u64)Caller) % Global_DrawCallArrayLength;
@@ -1768,7 +1774,7 @@ TrackDrawCall(const char* Caller, u32 VertexCount)
   return;
 }
 
-void
+function void
 DebugDrawDrawCalls(debug_ui_render_group *Group, layout *Layout)
 {
   NewLine(Layout, &Group->Font);
@@ -1798,17 +1804,17 @@ DebugDrawDrawCalls(debug_ui_render_group *Group, layout *Layout)
 /*******************************            **********************************/
 
 
-inline b32
-BufferBarGraph(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo, layout *Layout, r32 PercFilled, v3 Color)
+function b32
+BufferBarGraph(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo, window_layout *Window, r32 PercFilled, v3 Color)
 {
   r32 BarHeight = Group->Font.Size;
   r32 BarWidth = 200.0f;
 
-  v2 MinP = Layout->At + Layout->Basis;
+  v2 MinP = Window->Layout.At + Window->Layout.Basis;
   v2 BarDim = V2(BarWidth, BarHeight);
   v2 PercBarDim = V2(BarWidth, BarHeight) * V2(PercFilled, 1);
 
-  BufferUntexturedQuad(Group, Geo, MinP, BarDim, V3(0.25f));
+  BufferUntexturedQuad(Group, Geo, MinP, BarDim, V3(0.25f), 0.5f, Window->Layout.Basis+Window->MaxClip);
 
   rect2 BarRect = { MinP, MinP + BarDim };
   b32 Hovering = IsInsideRect(BarRect, Group->MouseP);
@@ -1816,18 +1822,19 @@ BufferBarGraph(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo,
   if (Hovering)
     Color = {{ 1, 0, 1 }};
 
-  BufferUntexturedQuad(Group, Geo, MinP, PercBarDim, Color);
+  BufferUntexturedQuad(Group, Geo, MinP, PercBarDim, Color, 0.5f, Window->Layout.Basis+Window->MaxClip);
 
-  Layout->At.x += BarDim.x;
+  Window->Layout.At.x += BarDim.x;
+  AdvanceClip(&Window->Layout);
 
   return Hovering;
 }
 
-inline b32
+function b32
 BufferArenaBargraph(window_layout *BargraphWindow, debug_ui_render_group *Group, umm TotalUsed, r32 TotalPerc, umm Remaining, v3 Color )
 {
   Column( FormatMemorySize(TotalUsed), Group, BargraphWindow, WHITE);
-  b32 Hover = BufferBarGraph(Group, &Group->TextGroup->UIGeo, &BargraphWindow->Layout, TotalPerc, Color);
+  b32 Hover = BufferBarGraph(Group, &Group->TextGroup->UIGeo, BargraphWindow, TotalPerc, Color);
   Column( FormatMemorySize(Remaining), Group, BargraphWindow, WHITE);
   NewRow(BargraphWindow, &Group->Font);
 
@@ -1835,12 +1842,9 @@ BufferArenaBargraph(window_layout *BargraphWindow, debug_ui_render_group *Group,
   return Click;
 }
 
-v2
-BufferMemoryStatsTable(memory_arena_stats MemStats, debug_ui_render_group *Group, window_layout *StatsWindow, v2 BasisP)
+function v2
+BufferMemoryStatsTable(memory_arena_stats MemStats, debug_ui_render_group *Group, window_layout *StatsWindow)
 {
-  StatsWindow->Layout = {};
-  StatsWindow->Layout.Basis = BasisP;
-
   Column("Allocs", Group, StatsWindow, WHITE);
   Column(FormatMemorySize(MemStats.Allocations), Group, StatsWindow, WHITE);
   NewRow(StatsWindow, &Group->Font);
@@ -1860,20 +1864,17 @@ BufferMemoryStatsTable(memory_arena_stats MemStats, debug_ui_render_group *Group
   return StatsWindow->Layout.Clip.Max;
 }
 
-void
-BufferMemoryBargraphTable(debug_ui_render_group *Group, selected_arenas *SelectedArenas, memory_arena_stats MemStats, umm TotalUsed, memory_arena *HeadArena, window_layout *BargraphWindow, v2 BasisP)
+function void
+BufferMemoryBargraphTable(debug_ui_render_group *Group, selected_arenas *SelectedArenas, memory_arena_stats MemStats, umm TotalUsed, memory_arena *HeadArena, window_layout *BargraphWindow)
 {
-  BargraphWindow->Layout = {};
-  BargraphWindow->Layout.Basis = BasisP;
   SetFontSize(&Group->Font, 22);
 
   NewRow(BargraphWindow, &Group->Font);
   v3 DefaultColor = V3(0.5f, 0.5f, 0.0);
 
   r32 TotalPerc = (r32)SafeDivide0(TotalUsed, MemStats.TotalAllocated);
-  b32 TobbleAllArenas = BufferArenaBargraph(BargraphWindow, Group, TotalUsed, TotalPerc, MemStats.Remaining, DefaultColor);
+  b32 ToggleAllArenas = BufferArenaBargraph(BargraphWindow, Group, TotalUsed, TotalPerc, MemStats.Remaining, DefaultColor);
   NewRow(BargraphWindow, &Group->Font);
-
 
   memory_arena *CurrentArena = HeadArena;
   while (CurrentArena)
@@ -1895,7 +1896,7 @@ BufferMemoryBargraphTable(debug_ui_render_group *Group, selected_arenas *Selecte
 
     b32 GotClicked = BufferArenaBargraph(BargraphWindow, Group, CurrentUsed, CurrentPerc, Remaining(CurrentArena), Color);
 
-    if (TobbleAllArenas || GotClicked)
+    if (ToggleAllArenas || GotClicked)
     {
       selected_memory_arena *Found = 0;
       for (u32 ArenaIndex = 0;
@@ -1928,24 +1929,20 @@ BufferMemoryBargraphTable(debug_ui_render_group *Group, selected_arenas *Selecte
   return;
 }
 
-layout *
-BufferDebugPushMetaData(debug_ui_render_group *Group, selected_arenas *SelectedArenas, umm CurrentArenaHead, window_layout* Window, v2 Basis)
+function layout *
+BufferDebugPushMetaData(debug_ui_render_group *Group, selected_arenas *SelectedArenas, umm CurrentArenaHead, window_layout* Window)
 {
   push_metadata CollatedMetaTable[META_TABLE_SIZE] = {};
 
   layout *Layout = &Window->Layout;
-  Clear(Layout);
-  Layout->Basis = Basis;
-  BeginClipRect(Layout);
 
   SetFontSize(&Group->Font, 24);
-
 
   Column("Size", Group, Window, WHITE);
   Column("Structs", Group, Window, WHITE);
   Column("Push Count", Group, Window, WHITE);
   Column("Name", Group, Window, WHITE);
-  NewLine(Layout, &Group->Font);
+  NewRow(Window, &Group->Font);
 
 
   // Pick out relevant metadata and write to collation table
@@ -2024,7 +2021,7 @@ BufferDebugPushMetaData(debug_ui_render_group *Group, selected_arenas *SelectedA
       Column( FormatThousands(Collated->StructCount), Group, Window, WHITE);
       Column( FormatThousands(Collated->PushCount), Group, Window, WHITE);
       Column(Collated->Name, Group, Window, WHITE);
-      NewLine(Layout, &Group->Font);
+      NewRow(Window, &Group->Font);
     }
 
     continue;
@@ -2032,16 +2029,38 @@ BufferDebugPushMetaData(debug_ui_render_group *Group, selected_arenas *SelectedA
 
 
   NewLine(Layout, &Group->Font);
-  EndClipRect(Group, Layout, &Group->TextGroup->UIGeo);
 
   return Layout;
 }
 
-void
+function window_layout
+SubWindowAt(window_layout* Original, v2 NewBasis)
+{
+  window_layout Result = {};
+
+  Result.Layout.Basis = NewBasis;
+  Result.MaxClip = Original->Layout.Basis + Original->MaxClip - NewBasis;
+
+  return Result;
+}
+
+function window_layout*
+MergeWindowLayouts(window_layout* Src, window_layout* Dest)
+{
+  v2 SrcAtRelativeToDest = GetAbsoluteAt(&Src->Layout) - Dest->Layout.Basis;
+  Dest->Layout.At = Max(Dest->Layout.At, SrcAtRelativeToDest);
+
+  AdvanceClip(&Dest->Layout);
+
+  return Dest;
+}
+
+function void
 DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, window_layout* Window)
 {
 
   Window->Layout.At = V2(0);
+  Window->Layout.Clip = InvertedInfinityRectangle();
   Window->Title = "Memory Arenas";
 
   WindowInteractions(Group, Window);
@@ -2072,36 +2091,27 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, window
     {
       SetFontSize(&Group->Font, 28);
 
-      window_layout *StatsWindow    = &Current->StatsWindow;
-      window_layout *BargraphWindow = &Current->BargraphWindow;
-      window_layout *MetadataWindow = &Current->MetadataWindow;
+      r32 TopOfStatsTable = Window->Layout.Clip.Max.y;
 
-      {
-        v2 BasisP = GetAbsoluteAt(&Window->Layout);
-        BufferMemoryStatsTable(MemStats, Group, StatsWindow, BasisP);
-      }
+      BeginClipRect(Window);
+        BufferMemoryStatsTable(MemStats, Group, Window);
+        r32 RightOfStatsTable = Window->Layout.Clip.Max.x;
+      EndClipRect(Group, Window, &Group->TextGroup->UIGeo, V3(1,0,0));
 
-      selected_arenas *SelectedArenas = DebugState->SelectedArenas;
-      {
-        v2 BasisP = { GetAbsoluteMin(&StatsWindow->Layout).x,
-                      GetAbsoluteMax(&StatsWindow->Layout).y };
-        BufferMemoryBargraphTable(Group, SelectedArenas, MemStats, TotalUsed, Current->Arena, BargraphWindow, BasisP);
-      }
+      BeginClipRect(Window);
+        selected_arenas *SelectedArenas = DebugState->SelectedArenas;
+        BufferMemoryBargraphTable(Group, SelectedArenas, MemStats, TotalUsed, Current->Arena, Window);
+        r32 RightOfBargraphTable = Window->Layout.Clip.Max.x;
+      EndClipRect(Group, Window, &Group->TextGroup->UIGeo, V3(0,1,0));
+
+      v2 OriginalBasis = Window->Layout.Basis;
+      v2 OriginalAt = Window->Layout.At;
 
 
-      {
-        v2 BasisP = { 100.0f + Max(StatsWindow->Layout.Clip.Max.x,
-                                   BargraphWindow->Layout.Clip.Max.x),
-                      GetAbsoluteAt(&Window->Layout).y };
+      window_layout TmpWindow = SubWindowAt(Window, Window->Layout.Basis + V2( Max(RightOfStatsTable, RightOfBargraphTable), TopOfStatsTable));
+      BufferDebugPushMetaData(Group, SelectedArenas, HashArenaHead(Current->Arena), &TmpWindow);
 
-        BufferDebugPushMetaData(Group, SelectedArenas, HashArenaHead(Current->Arena), MetadataWindow, BasisP);
-      }
-
-      Window->Layout.At = V2( Window->Layout.At.x,
-                                        Max( GetAbsoluteMax(&BargraphWindow->Layout).y,
-                                             GetAbsoluteMax(&MetadataWindow->Layout).y ));
-
-      AdvanceClip(&Window->Layout);
+      MergeWindowLayouts(&TmpWindow, Window);
     }
 
     continue;
@@ -2117,7 +2127,7 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, window
 /*******************************              ********************************/
 
 
-void
+function void
 DebugDrawNetworkHud(debug_ui_render_group *Group,
     network_connection *Network,
     server_state *ServerState,
@@ -2179,7 +2189,7 @@ DebugDrawNetworkHud(debug_ui_render_group *Group,
 /******************************               ********************************/
 
 
-void
+function void
 DebugDrawGraphicsHud(debug_ui_render_group *Group, debug_state *DebugState, layout *Layout)
 {
   BufferValue("Graphics", Group, Layout, WHITE);
@@ -2198,7 +2208,7 @@ DebugDrawGraphicsHud(debug_ui_render_group *Group, debug_state *DebugState, layo
 /******************************              *********************************/
 
 
-b32
+function b32
 InitDebugRenderSystem(debug_state *DebugState, heap_allocator *Heap)
 {
   AllocateMesh(&DebugState->LineMesh, 1024, Heap);

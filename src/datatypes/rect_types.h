@@ -6,6 +6,16 @@ struct rect2
 };
 
 rect2
+InvertedInfinityRectangle()
+{
+  rect2 Result = {};
+  Result.Min = V2(FLT_MAX);
+  Result.Max = V2(-FLT_MAX);
+
+  return Result;
+}
+
+rect2
 RectMinMax(v2 Min, v2 Max)
 {
   rect2 Result = {Min, Max};

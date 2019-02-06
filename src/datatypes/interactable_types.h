@@ -12,17 +12,11 @@ struct table_column
   u32 Max;
 };
 
-struct clip_rect
-{
-  v2 Min;
-  v2 Max;
-};
-
 struct layout
 {
   v2 At;
   v2 Basis;
-  clip_rect Clip;
+  rect2 Clip;
 };
 
 #define MAX_TABLE_COLUMNS 4

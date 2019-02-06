@@ -130,7 +130,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     case DebugUIType_CallGraph:
     {
       BufferValue("Call Graphs", UiGroup, &Layout, WHITE);
-      clip_rect CycleGraphClip = DebugDrawCallGraph(UiGroup, DebugState, &Layout, Dt.Max);
+      rect2 CycleGraphClip = DebugDrawCallGraph(UiGroup, DebugState, &Layout, Dt.Max);
       DebugDrawCycleThreadGraph(UiGroup, DebugState, V2(CycleGraphClip.Max.x + 20, Layout.At.y));
     } break;
 
