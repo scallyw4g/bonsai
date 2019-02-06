@@ -346,7 +346,7 @@ InitChunkPlane(s32 zIndex, world_chunk *Chunk, chunk_dimension ChunkDim, u8 Colo
 }
 
 function u32
-InitChunkPerlinPlane(perlin_noise *Noise, world_chunk *WorldChunk, chunk_dimension Dim, u8 ColorIndex, u32 Amplitude, s64 zMin)
+InitChunkPerlinPlane(perlin_noise *Noise, world_chunk *WorldChunk, chunk_dimension Dim, u8 ColorIndex, s32 Amplitude, s64 zMin)
 {
   TIMED_FUNCTION();
 
@@ -1099,7 +1099,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread,
     FindEdgeIntersections(EdgeBoundaryVoxels, SyntheticChunk->Data, NewSynChunkDim);
 
     // Find closest bounding point to the midpoint of the bounding volume
-    u32 WorldChunkVolume = Volume(WORLD_CHUNK_DIM);
+    u32 WorldChunkVolume = (u32)Volume(WORLD_CHUNK_DIM);
     boundary_voxels* BoundingPoints = AllocateBoundaryVoxels(WorldChunkVolume, Thread->TempMemory);
     GetBoundingVoxels(DestChunk, BoundingPoints);
 

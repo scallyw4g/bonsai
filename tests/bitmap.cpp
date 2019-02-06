@@ -65,7 +65,7 @@ main()
       TestThat(Wrote);
     }
 
-    FirstBitmapPixelCount = Bitmap.Dim.x*Bitmap.Dim.y;
+    FirstBitmapPixelCount = (u32)(Bitmap.Dim.x*Bitmap.Dim.y);
 
     u32 *Pixels = Bitmap.Pixels.Start;
     u32 *PixelsEnd = Bitmap.Pixels.End;
@@ -87,7 +87,7 @@ main()
 
   {
     bitmap Bitmap = ReadBitmapFromDisk("test.bmp", &Arena);
-    SecondBitmapPixelCount = Bitmap.Dim.x*Bitmap.Dim.y;
+    SecondBitmapPixelCount = (u32)(Bitmap.Dim.x*Bitmap.Dim.y);
 
     Assert(SecondBitmapPixelCount == FirstBitmapPixelCount);
 

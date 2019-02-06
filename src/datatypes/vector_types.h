@@ -692,7 +692,7 @@ operator+=(v2& P1, v2 P2)
 }
 
 v2i
-operator*(v2i A, u32 B)
+operator*(v2i A, s32 B)
 {
   v2i Result;
   Result.x = A.x * B;
@@ -701,7 +701,7 @@ operator*(v2i A, u32 B)
 }
 
 v2i
-operator*(u32 A, v2i B)
+operator*(s32 A, v2i B)
 {
   v2i Result = B*A;
   return Result;

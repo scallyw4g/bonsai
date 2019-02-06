@@ -65,10 +65,10 @@ PlatformGetPageSize()
   return PageSize;
 }
 
-s32
+u32
 GetLogicalCoreCount()
 {
-  local_persist s32 CoreCount = (s32)sysconf(_SC_NPROCESSORS_ONLN);
+  local_persist u32 CoreCount = (u32)sysconf(_SC_NPROCESSORS_ONLN);
   return CoreCount;
 }
 
@@ -127,8 +127,8 @@ PlatformAllocateSize(umm AllocationSize)
 {
   Assert(AllocationSize % PlatformGetPageSize() == 0);
 
-  u32 Protection = PROT_READ|PROT_WRITE;
-  u32 Flags = MAP_SHARED|MAP_ANONYMOUS|MAP_NORESERVE;
+  s32 Protection = PROT_READ|PROT_WRITE;
+  s32 Flags = MAP_SHARED|MAP_ANONYMOUS|MAP_NORESERVE;
 
   u8 *Bytes = (u8*)mmap(0, AllocationSize, Protection, Flags,  -1, 0);
   if (Bytes == MAP_FAILED)
@@ -200,7 +200,7 @@ void
 PlatformUnprotectArena(memory_arena *Arena)
 {
   /* TIMED_FUNCTION(); */
-  umm Size = Arena->End - Arena->Start;
+  umm Size = (umm)Arena->End - (umm)Arena->Start;
   s32 Err = mprotect(Arena->Start, Size, PROT_READ|PROT_WRITE);
   if (Err == -1)
   {
@@ -361,7 +361,7 @@ OpenAndInitializeWindow( os *Os, platform *Plat, s32 DebugFlags)
 
   window xWindow = XCreateWindow( Os->Display, RootWindow,
                                   0, 0,
-                                  Plat->WindowWidth, Plat->WindowHeight,
+                                  (u32)Plat->WindowWidth, (u32)Plat->WindowHeight,
                                   0, VisualInfo->depth, InputOutput, VisualInfo->visual,
                                   CWColormap | CWEventMask, &WindowAttribs);
 
@@ -453,11 +453,7 @@ ProcessOsMessages(os *Os, platform *Plat)
   TIMED_FUNCTION();
 
   XEvent Event;
-  b32 EventFound =
-    XCheckWindowEvent(Os->Display,
-                      Os->Window,
-                      WindowEventMasks,
-                      &Event);
+  b32 EventFound = (b32)XCheckWindowEvent( Os->Display, Os->Window, WindowEventMasks, &Event);
 
   if (EventFound)
   {

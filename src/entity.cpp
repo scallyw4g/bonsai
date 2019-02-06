@@ -211,7 +211,7 @@ SpawnEntity(
 
     r32 Scale = 1.0f,
     r32 RateOfFire = 1.0f,
-    u32 Health = 1
+    s32 Health = 1
   )
 {
   TIMED_FUNCTION();
@@ -332,7 +332,7 @@ SpawnProjectile(game_state *GameState,
 
   r32 Scale = 1.0f;
   r32 RateOfFire = 1.0f;
-  u32 Health = 1;
+  s32 Health = 1;
 
   SpawnEntity(
     Projectile,
@@ -471,7 +471,7 @@ SpawnPlayer(game_state *GameState, entity *Player, canonical_position InitialP)
 
   r32 Scale = 0.40f;
   r32 RateOfFire = 0.8f;
-  u32 Health = PLAYER_MAX_HP;
+  s32 Health = PLAYER_MAX_HP;
 
 
   model *Model = &GameState->Models[ModelIndex_Player];

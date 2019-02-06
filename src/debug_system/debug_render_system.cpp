@@ -432,13 +432,13 @@ BufferValue(const char* Text, debug_ui_render_group *Group, layout *Layout, u32 
 {
   textured_2d_geometry_buffer *Geo = &Group->TextGroup->TextGeo;
 
-  s32 QuadCount = (s32)strlen(Text);
+  u32 QuadCount = (u32)strlen(Text);
 
   r32 DeltaX = 0;
 
   if (LengthSq(MaxClip) > 0.0f) MaxClip+=Layout->Basis;
 
-  for ( s32 CharIndex = 0;
+  for ( u32 CharIndex = 0;
       CharIndex < QuadCount;
       CharIndex++ )
   {
@@ -918,11 +918,11 @@ BufferTextAt(debug_ui_render_group *Group, v2 BasisP, const char *Text, u32 Colo
 {
   textured_2d_geometry_buffer *Geo = &Group->TextGroup->TextGeo;
 
-  s32 QuadCount = (s32)strlen(Text);
+  u32 QuadCount = (u32)strlen(Text);
 
   r32 DeltaX = 0;
 
-  for ( s32 CharIndex = 0;
+  for ( u32 CharIndex = 0;
       CharIndex < QuadCount;
       CharIndex++ )
   {
@@ -1440,7 +1440,7 @@ CollateAllFunctionCalls(debug_profile_scope* Current)
     {
       Func->Name = Current->Name;
       Func->CallCount++;
-      u32 SwapIndex = MAX_RECORDED_FUNCTION_CALLS;
+      s32 SwapIndex = MAX_RECORDED_FUNCTION_CALLS;
       for (s32 PrevIndex = (s32)FunctionIndex -1;
           PrevIndex >= 0;
           --PrevIndex)
@@ -2103,10 +2103,6 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, window
         BufferMemoryBargraphTable(Group, SelectedArenas, MemStats, TotalUsed, Current->Arena, Window);
         r32 RightOfBargraphTable = Window->Layout.Clip.Max.x;
       EndClipRect(Group, Window, &Group->TextGroup->UIGeo, V3(0,1,0));
-
-      v2 OriginalBasis = Window->Layout.Basis;
-      v2 OriginalAt = Window->Layout.At;
-
 
       window_layout TmpWindow = SubWindowAt(Window, Window->Layout.Basis + V2( Max(RightOfStatsTable, RightOfBargraphTable), TopOfStatsTable));
       BufferDebugPushMetaData(Group, SelectedArenas, HashArenaHead(Current->Arena), &TmpWindow);

@@ -6,7 +6,7 @@ AllocateChunk(memory_arena *Storage, chunk_dimension Dim)
   // because multiple threads go to town on these memory blocks
   chunk_data *Result = AllocateAlignedProtection(chunk_data, Storage, 1, 64, false);
 
-  umm Vol = Volume(Dim);
+  s32 Vol = Volume(Dim);
   if (Vol) { Result->Voxels = AllocateAlignedProtection(voxel, Storage , Vol, 64, false); }
 
   ZeroChunk(Result);
@@ -43,9 +43,13 @@ inline b32
 NotFilledInChunk(chunk_data *Chunk, s32 Index)
 {
   Assert(Chunk);
-  Assert(Index > -1);
+  b32 NotFilled = True;
 
-  b32 NotFilled = !IsSet(&Chunk->Voxels[Index], Voxel_Filled);
+  if (Index > 1)
+  {
+    NotFilled = !IsSet(&Chunk->Voxels[Index], Voxel_Filled);
+  }
+
   return NotFilled;
 }
 

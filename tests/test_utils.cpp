@@ -1,4 +1,4 @@
-global_variable u32 TestsFailed = 0;
+global_variable s32 TestsFailed = 0;
 
 global_variable u32 TestsPassed = 0;
 

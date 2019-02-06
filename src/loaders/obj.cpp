@@ -81,8 +81,8 @@ LoadObj(memory_arena *PermMem, heap_allocator *Heap, const char * FilePath)
 #endif
     else if ( StringsMatch(LineType, "f") )
     {
-      s32 vIndex[3] = {};
-      s32 nIndex[3] = {};
+      u32 vIndex[3] = {};
+      u32 nIndex[3] = {};
 
       // We don't currently support vertex-only meshes
       Assert(Stats.VertCount);

@@ -72,7 +72,7 @@ struct work_queue_entry
 
 struct thread
 {
-  int ThreadIndex;
+  u32 ThreadIndex;
   thread_id ID;
 };
 

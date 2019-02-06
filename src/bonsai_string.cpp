@@ -6,7 +6,7 @@ StringHash(const char* S1)
   umm Result = 0x4fa691fd6a2c2f69;
   while (*S1++)
   {
-    umm Char = *S1;
+    umm Char = (umm)*S1;
     umm Mix = Char | (Char<<8) | (Char<<16) | (Char<<24) | (Char<<32) | (Char<<40) | (Char<<48) | (Char<<56);
     Result ^= ((Result<<32) | (Result>>32)) & Mix;
   }

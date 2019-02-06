@@ -31,7 +31,7 @@ LibIsNew(const char *LibPath, s64 *LastLibTime)
   {
     if (StatStruct.st_mtime > *LastLibTime)
     {
-      *LastLibTime = (u64)StatStruct.st_mtime;
+      *LastLibTime = StatStruct.st_mtime;
       Result = True;
     }
   }
@@ -174,7 +174,7 @@ StrStr(char *Str1, char *Str2)
 #define DefGlProc(ProcType, ProcName) \
   ProcType ProcName = (ProcType)bonsaiGlGetProcAddress(#ProcName); Assert(ProcName)
 function void
-InitializeOpenGlExtensions(os *Os)
+InitializeOpenGlExtensions()
 {
   Info("Initializing OpenGL Extensions");
 
@@ -525,7 +525,7 @@ main()
 
   AssertNoGlErrors;
 
-  InitializeOpenGlExtensions(&Os);
+  InitializeOpenGlExtensions();
 
   b32 ShadingLanguageIsRecentEnough = CheckShadingLanguageVersion();
   if (!ShadingLanguageIsRecentEnough) {  return False; }

@@ -313,7 +313,7 @@ AllocateMesh(memory_arena* Arena, u32 NumVerts)
 
 inline void
 DrawVoxel( untextured_3d_geometry_buffer *Mesh,
-           v3 RenderP, int ColorIndex, v3 Diameter, r32 Emission = 1.0f)
+           v3 RenderP, u32 ColorIndex, v3 Diameter, r32 Emission = 1.0f)
 {
   /* TIMED_FUNCTION(); */
 

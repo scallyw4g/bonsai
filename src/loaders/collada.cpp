@@ -23,6 +23,13 @@ StringToInt(counted_string* String)
   return Result;
 }
 
+u32
+StringToUInt(counted_string *String)
+{
+  u32 Result = (u32)StringToInt(String);
+  return Result;
+}
+
 v3_stream
 ParseV3Array(u32 ElementCount, ansi_stream FloatStream, memory_arena* Memory)
 {
@@ -115,13 +122,13 @@ AllocateAnimation(v3i KeyframeCount, memory_arena* Memory)
 {
   animation Result = {};
 
-  Result.xKeyframeCount = KeyframeCount.x;
+  Result.xKeyframeCount = (u32)KeyframeCount.x;
   Result.xKeyframes = Allocate(keyframe, Memory, KeyframeCount.x);
 
-  Result.yKeyframeCount = KeyframeCount.y;
+  Result.yKeyframeCount = (u32)KeyframeCount.y;
   Result.yKeyframes = Allocate(keyframe, Memory, KeyframeCount.y);
 
-  Result.zKeyframeCount = KeyframeCount.z;
+  Result.zKeyframeCount = (u32)KeyframeCount.z;
   Result.zKeyframes = Allocate(keyframe, Memory, KeyframeCount.z);
 
   return Result;
@@ -140,14 +147,14 @@ LoadMeshData(xml_token_stream* XmlTokens, counted_string* GeometryId, memory_are
   ansi_stream VertIndices       = AnsiStream(GetFirstMatchingTag(XmlTokens, &VertIndicesSelector)->Value);
 
   xml_tag* Polylist             = GetFirstMatchingTag(XmlTokens, &PolylistSelector);
-  u32 TotalTriangleCount        = StringToInt(GetPropertyValue(Polylist, CS("count")));
+  u32 TotalTriangleCount        = StringToUInt(GetPropertyValue(Polylist, CS("count")));
 
   xml_tag* PositionTag          = GetFirstMatchingTag(XmlTokens, &PositionsSelector);
   xml_tag* NormalTag            = GetFirstMatchingTag(XmlTokens, &NormalsSelector);
   counted_string PositionString = PositionTag->Value;
   counted_string NormalString   = NormalTag->Value;
-  u32 PositionCount             = StringToInt(GetPropertyValue(PositionTag, CS("count")));
-  u32 NormalCount               = StringToInt(GetPropertyValue(NormalTag, CS("count")));
+  u32 PositionCount             = StringToUInt(GetPropertyValue(PositionTag, CS("count")));
+  u32 NormalCount               = StringToUInt(GetPropertyValue(NormalTag, CS("count")));
 
   v3_stream Positions           = ParseV3Array(PositionCount, AnsiStream(PositionString), TempMemory);
   v3_stream Normals             = ParseV3Array(NormalCount, AnsiStream(NormalString), TempMemory);
@@ -284,13 +291,13 @@ LoadCollada(memory_arena *Memory, heap_allocator *Heap, const char * FilePath)
     xml_tag* yKeyframePositionsTag = ParseKeyframesForAxis(&XmlTokens, 'Y', &yKeyframeTimeTag, GeometryName);
     xml_tag* zKeyframePositionsTag = ParseKeyframesForAxis(&XmlTokens, 'Z', &zKeyframeTimeTag, GeometryName);
 
-    s32 xKeyframeCount = StringToInt(GetPropertyValue(xKeyframeTimeTag, CS("count")));
-    s32 yKeyframeCount = StringToInt(GetPropertyValue(yKeyframeTimeTag, CS("count")));
-    s32 zKeyframeCount = StringToInt(GetPropertyValue(zKeyframeTimeTag, CS("count")));
+    u32 xKeyframeCount = StringToUInt(GetPropertyValue(xKeyframeTimeTag, CS("count")));
+    u32 yKeyframeCount = StringToUInt(GetPropertyValue(yKeyframeTimeTag, CS("count")));
+    u32 zKeyframeCount = StringToUInt(GetPropertyValue(zKeyframeTimeTag, CS("count")));
 
-    Assert( xKeyframeCount == StringToInt(GetPropertyValue(xKeyframePositionsTag, CS("count"))) );
-    Assert( yKeyframeCount == StringToInt(GetPropertyValue(yKeyframePositionsTag, CS("count"))) );
-    Assert( zKeyframeCount == StringToInt(GetPropertyValue(zKeyframePositionsTag, CS("count"))) );
+    Assert( xKeyframeCount == StringToUInt(GetPropertyValue(xKeyframePositionsTag, CS("count"))) );
+    Assert( yKeyframeCount == StringToUInt(GetPropertyValue(yKeyframePositionsTag, CS("count"))) );
+    Assert( zKeyframeCount == StringToUInt(GetPropertyValue(zKeyframePositionsTag, CS("count"))) );
 
     r32_stream xKeyframeTimes = ParseFloatArray(xKeyframeCount, AnsiStream(xKeyframeTimeTag->Value), Memory);
     r32_stream yKeyframeTimes = ParseFloatArray(yKeyframeCount, AnsiStream(yKeyframeTimeTag->Value), Memory);
@@ -300,7 +307,7 @@ LoadCollada(memory_arena *Memory, heap_allocator *Heap, const char * FilePath)
     r32_stream yKeyframePositions = ParseFloatArray(yKeyframeCount, AnsiStream(yKeyframePositionsTag->Value), Memory);
     r32_stream zKeyframePositions = ParseFloatArray(zKeyframeCount, AnsiStream(zKeyframePositionsTag->Value), Memory);
 
-    animation Animation = AllocateAnimation(V3i(xKeyframeCount, yKeyframeCount, zKeyframeCount), Memory);
+    animation Animation = AllocateAnimation(V3i((s32)xKeyframeCount, (s32)yKeyframeCount, (s32)zKeyframeCount), Memory);
 
 
     r32 xMaxKeyframeTime = CopyKeyframeData(Animation.xKeyframes, &xKeyframePositions, &xKeyframeTimes);

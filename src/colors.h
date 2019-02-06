@@ -281,7 +281,7 @@ static v4 DefaultPalette[] = {
 };
 
 inline v4
-GetColorData(int ColorIndex, r32 Emission = 0.0f)
+GetColorData(u32 ColorIndex, r32 Emission = 0.0f)
 {
   Assert(ColorIndex < PALETTE_SIZE);
   v4 Color = DefaultPalette[ColorIndex];
@@ -290,7 +290,7 @@ GetColorData(int ColorIndex, r32 Emission = 0.0f)
 }
 
 inline void
-FillColorArray(s32 ColorIndex, v4 *Array, s32 Count, r32 Emission = 1.0f)
+FillColorArray(u32 ColorIndex, v4 *Array, s32 Count, r32 Emission = 1.0f)
 {
   while (Count--)
   {

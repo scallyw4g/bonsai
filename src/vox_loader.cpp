@@ -185,7 +185,7 @@ LoadVoxModel(memory_arena *WorldStorage, heap_allocator *Heap, char const *filep
           s32 maxX = 0, maxY = 0, maxZ = 0;
           s32 minX = INT_MAX, minY = INT_MAX, minZ = INT_MAX;
 
-          boundary_voxel *LocalVoxelCache = (boundary_voxel *)calloc(ReportedVoxelCount, sizeof(boundary_voxel) );
+          boundary_voxel *LocalVoxelCache = (boundary_voxel *)calloc((umm)ReportedVoxelCount, sizeof(boundary_voxel) );
           for( s32 VoxelCacheIndex = 0;
                VoxelCacheIndex < ReportedVoxelCount;
                ++VoxelCacheIndex)
@@ -258,7 +258,7 @@ LoadVoxModel(memory_arena *WorldStorage, heap_allocator *Heap, char const *filep
 
 loaded:
 
-  AllocateMesh(&Result.Mesh, 6*VERTS_PER_FACE*Volume(Result.Dim), Heap);
+  AllocateMesh(&Result.Mesh, 6*VERTS_PER_FACE*(u32)Volume(Result.Dim), Heap);
   BuildEntityMesh(Chunk, &Result.Mesh, Result.Dim);
 
   return Result;

@@ -61,9 +61,9 @@ perlin_noise::perlin_noise(unsigned int seed) {
 
 double perlin_noise::noise(double x, double y, double z) {
   // Find the unit cube that contains the point
-  int X = (int) floor(x) & 255;
-  int Y = (int) floor(y) & 255;
-  int Z = (int) floor(z) & 255;
+  u32 X = (u32) floor(x) & 255;
+  u32 Y = (u32) floor(y) & 255;
+  u32 Z = (u32) floor(z) & 255;
 
   // Find relative x, y,z of point in cube
   x -= floor(x);
@@ -76,12 +76,12 @@ double perlin_noise::noise(double x, double y, double z) {
   double w = fade(z);
 
   // Hash coordinates of the 8 cube corners
-  int A = p[X] + Y;
-  int AA = p[A] + Z;
-  int AB = p[A + 1] + Z;
-  int B = p[X + 1] + Y;
-  int BA = p[B] + Z;
-  int BB = p[B + 1] + Z;
+  u32 A  = (u32)p[X]   + Y;
+  u32 AA = (u32)p[A]   + Z;
+  u32 AB = (u32)p[A+1] + Z;
+  u32 B  = (u32)p[X+1] + Y;
+  u32 BA = (u32)p[B]   + Z;
+  u32 BB = (u32)p[B+1] + Z;
 
   // Add blended results from 8 corners of cube
   double res = lerp(w, lerp(v, lerp(u, grad(p[AA], x, y, z), grad(p[BA], x-1, y, z)), lerp(u, grad(p[AB], x, y-1, z), grad(p[BB], x-1, y-1, z))),	lerp(v, lerp(u, grad(p[AA+1], x, y, z-1), grad(p[BA+1], x-1, y, z-1)), lerp(u, grad(p[AB+1], x, y-1, z-1),	grad(p[BB+1], x-1, y-1, z-1))));

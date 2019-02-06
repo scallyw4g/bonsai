@@ -141,8 +141,8 @@ MakeTexture_RGBA(v2i Dim, u32* Data, memory_arena *Mem, u32 MaxTextureSlices = 1
   u32 ElementType = GL_UNSIGNED_BYTE;
   if (MaxTextureSlices == 1)
   {
-    glTexImage2D(GL_TEXTURE_2D, 0, InternalFormat,
-        Texture->Dim.x, Texture->Dim.y, 0,  TextureFormat, ElementType, Data);
+    glTexImage2D(GL_TEXTURE_2D, 0, (s32)InternalFormat,
+        Texture->Dim.x, Texture->Dim.y, 0, TextureFormat, ElementType, Data);
   }
   else
   {
@@ -154,16 +154,16 @@ MakeTexture_RGBA(v2i Dim, u32* Data, memory_arena *Mem, u32 MaxTextureSlices = 1
         0, TextureFormat, ElementType,
         0);
 #else
-    u32 Mips = MaxTextureSlices;
+    s32 Mips = (s32)MaxTextureSlices;
     glTexStorage3D(GL_TEXTURE_3D, Mips, InternalFormat,
-                   DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM, MaxTextureSlices);
+                   DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM, (s32)MaxTextureSlices);
 #endif
 
-    u32 xOffset = 0;
-    u32 yOffset = 0;
-    u32 zOffset = 0;
+    s32 xOffset = 0;
+    s32 yOffset = 0;
+    s32 zOffset = 0;
 
-    u32 TextureDepth = 1;
+    s32 TextureDepth = 1;
     glTexSubImage3D(GL_TEXTURE_3D, 0,
         xOffset, yOffset, zOffset,
         Texture->Dim.x, Texture->Dim.y, TextureDepth,
@@ -181,7 +181,7 @@ MakeTexture_RGBA(v2i Dim, v4* Data, memory_arena *Mem)
   texture *Texture = GenTexture(Dim, Mem);
 
   u32 TextureFormat = GL_RGBA;
-  u32 InternalFormat = GL_RGBA32F;
+  s32 InternalFormat = GL_RGBA32F;
   u32 ElementType = GL_FLOAT;
   glTexImage2D(GL_TEXTURE_2D, 0, InternalFormat,
       Texture->Dim.x, Texture->Dim.y, 0,  TextureFormat, ElementType, Data);

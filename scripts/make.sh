@@ -31,7 +31,35 @@ function ColorizeTitle()
 INCLUDE_DIRECTORIES="$SRC"
 OUTPUT_DIRECTORY="$BIN"
 
-COMMON_COMPILER_OPTIONS="-ggdb"
+
+# NOTE(Jesse): -Wno-global-constructors can be turned off when the defaultPallette
+# in colors.h gets axed .. I think.
+
+# TODO(Jesse): Investigate -Wcast-align situation
+
+COMMON_COMPILER_OPTIONS="
+  -ggdb
+  -Weverything
+  -Wno-c++98-compat-pedantic
+  -Wno-gnu-anonymous-struct
+  -Wno-missing-prototypes
+  -Wno-zero-as-null-pointer-constant
+  -Wno-format-nonliteral
+  -Wno-cast-qual
+  -Wno-unused-function
+  -Wno-four-char-constants
+  -Wno-unused-variable
+  -Wno-old-style-cast
+  -Wno-float-equal
+  -Wno-double-promotion
+  -Wno-padded
+  -Wno-global-constructors
+  -Wno-cast-align
+  -Wno-switch-enum
+  -Wno-undef
+  -Wno-covered-switch-default
+"
+
 COMMON_LINKER_OPTIONS="-lpthread -lX11 -ldl -lGL"
 COMMON_GL_DEFINES="-D GL_GLEXT_PROTOTYPES=1"
 SHARED_LIBRARY_FLAGS="-shared -fPIC"

@@ -1,6 +1,6 @@
 inline void
 DEBUG_DrawLine( untextured_3d_geometry_buffer *Mesh,
-                v3 P1, v3 P2, int ColorIndex, r32 Thickness )
+                v3 P1, v3 P2, u32 ColorIndex, r32 Thickness )
 {
   // 2 verts per line, 3 r32s per vert
 
@@ -119,20 +119,20 @@ DEBUG_DrawLine( untextured_3d_geometry_buffer *Mesh,
 }
 
 inline void
-DEBUG_DrawVectorAt(untextured_3d_geometry_buffer *Mesh, v3 Offset, v3 Vector, int ColorIndex, r32 Thickness )
+DEBUG_DrawVectorAt(untextured_3d_geometry_buffer *Mesh, v3 Offset, v3 Vector, u32 ColorIndex, r32 Thickness )
 {
   DEBUG_DrawLine(Mesh, Offset, Vector + Offset, ColorIndex, Thickness );
 }
 
 inline void
-DEBUG_DrawLine(untextured_3d_geometry_buffer *Mesh, line Line, int ColorIndex, r32 Thickness )
+DEBUG_DrawLine(untextured_3d_geometry_buffer *Mesh, line Line, u32 ColorIndex, r32 Thickness )
 {
   DEBUG_DrawLine(Mesh, Line.MinP, Line.MaxP, ColorIndex, Thickness);
   return;
 }
 
 void
-DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, v3 MinP, v3 MaxP, int ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS )
+DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, v3 MinP, v3 MaxP, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS )
 {
   TIMED_FUNCTION();
 
@@ -210,7 +210,7 @@ DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, v3 MinP, v3 MaxP, int ColorI
 }
 
 inline void
-DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, aabb Rect, int ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS )
+DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, aabb Rect, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS )
 {
   v3 MinP = Rect.Center - Rect.Radius;
   v3 MaxP = Rect.Center + Rect.Radius;
@@ -221,7 +221,7 @@ DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, aabb Rect, int ColorIndex, r
 inline void
 DEBUG_DrawChunkAABB( untextured_3d_geometry_buffer *Mesh, graphics *Graphics,
                      world_position WorldP, chunk_dimension WorldChunkDim,
-                     s32 ColorIndex , r32 Thickness = DEFAULT_LINE_THICKNESS)
+                     u32 ColorIndex , r32 Thickness = DEFAULT_LINE_THICKNESS)
 {
   v3 MinP = GetRenderP(WorldChunkDim, Canonical_Position(V3(0,0,0), WorldP), Graphics->Camera);
   v3 MaxP = GetRenderP(WorldChunkDim, Canonical_Position(WorldChunkDim, WorldP), Graphics->Camera);
@@ -233,7 +233,7 @@ DEBUG_DrawChunkAABB( untextured_3d_geometry_buffer *Mesh, graphics *Graphics,
 inline void
 DEBUG_DrawChunkAABB(untextured_3d_geometry_buffer *Mesh, graphics *Graphics,
                     world_chunk *Chunk, chunk_dimension WorldChunkDim,
-                    s32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS)
+                    u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS)
 {
   v3 MinP = GetRenderP(WorldChunkDim, Canonical_Position(V3(0,0,0), Chunk->WorldP), Graphics->Camera);
   v3 MaxP = GetRenderP(WorldChunkDim, Canonical_Position(WorldChunkDim, Chunk->WorldP), Graphics->Camera);

@@ -47,9 +47,7 @@ ReadBitmapFromDisk(const char *Filename, memory_arena *Arena)
     SizeReadFromDisk += fread(&Header, 1, sizeof(Header), File);
 
     // For now, we only support reading bitmaps that are bottom-up ie. Origin in top-left corner
-    Header.Image.HeightInPixels = Header.Image.HeightInPixels;
-
-    PixelCount = Header.Image.WidthInPixels*Header.Image.HeightInPixels;
+    PixelCount = (u32)Header.Image.WidthInPixels * (u32)Header.Image.HeightInPixels;
     Pixels = Allocate(u32, Arena, PixelCount);
     SizeReadFromDisk += fread(Pixels, 1, Header.Image.SizeInBytes, File);
   }
@@ -109,7 +107,7 @@ WriteBitmapToDisk(bitmap *Bitmap, const char *Filename)
 bitmap
 AllocateBitmap(v2i Dim, memory_arena *Arena)
 {
-  u32 Size = Dim.x*Dim.y;
+  u32 Size = (u32)(Dim.x*Dim.y);
   u32* PixelPtr = Allocate(u32, Arena, Size);
 
   u32_stream Pixels = U32_Stream(PixelPtr, PixelPtr+Size);
@@ -146,7 +144,7 @@ PackRGBALinearTo255(v4 Color)
   u8 B = (u8)(Color.b*255);
   u8 A = (u8)(Color.a*255);
 
-  u32 C =   A<<24 | B<<16 | G<<8 | R;
+  u32 C =  (u32)( A<<24 | B<<16 | G<<8 | R);
   return C;
 }
 
@@ -165,12 +163,12 @@ FillBitmap(u32 C, bitmap *Bitmap)
 inline u32
 PixelCount(bitmap *Bitmap)
 {
-  u32 Result = Bitmap->Dim.x*Bitmap->Dim.y;
+  u32 Result = (u32)(Bitmap->Dim.x*Bitmap->Dim.y);
   return Result;
 }
 
 inline v2
-GetUVForCharCode(u32 Char)
+GetUVForCharCode(char Char)
 {
   v2 Result = V2( (Char%16)/16.0f, (Char/16)/16.0f );
   return Result;

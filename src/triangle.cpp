@@ -7,8 +7,8 @@ SeedTriangulation(current_triangles* CurrentTriangles, memory_arena* Memory)
 
   CurrentTriangles->Count = 0;
 
-  u32 xMax = WORLD_CHUNK_DIM.x;
-  u32 yMax = WORLD_CHUNK_DIM.y;
+  s32 xMax = WORLD_CHUNK_DIM.x;
+  s32 yMax = WORLD_CHUNK_DIM.y;
 
   // FIXME(Jesse): Memory leak
   voxel_position* TempPoints = AllocateProtection(voxel_position, Memory, 4, False);
@@ -27,7 +27,7 @@ SeedTriangulation(current_triangles* CurrentTriangles, memory_arena* Memory)
 }
 
 function b32
-HasUnfilledNeighbors(u32 Index, world_chunk* Chunk, chunk_dimension ChunkDim)
+HasUnfilledNeighbors(s32 Index, world_chunk* Chunk, chunk_dimension ChunkDim)
 {
   TIMED_FUNCTION();
 
@@ -35,7 +35,7 @@ HasUnfilledNeighbors(u32 Index, world_chunk* Chunk, chunk_dimension ChunkDim)
 
   Assert(IsSet(Chunk, Chunk_Initialized) || IsSet(Chunk, Chunk_MeshComplete));
 
-  u32 VolumeChunkDim = Volume(ChunkDim);
+  s32 VolumeChunkDim = Volume(ChunkDim);
   voxel_position CurrentP = GetPosition(Index, ChunkDim);
 
   voxel_position RightVoxel = CurrentP + Voxel_Position(1, 0, 0);
@@ -45,12 +45,12 @@ HasUnfilledNeighbors(u32 Index, world_chunk* Chunk, chunk_dimension ChunkDim)
   voxel_position FrontVoxel = CurrentP + Voxel_Position(0, 1, 0);
   voxel_position BackVoxel  = CurrentP - Voxel_Position(0, 1, 0);
 
-  u32 RightVoxelReadIndex = GetIndexUnsafe(RightVoxel, ChunkDim);
-  u32 LeftVoxelReadIndex  = GetIndexUnsafe(LeftVoxel, ChunkDim);
-  u32 TopVoxelReadIndex   = GetIndexUnsafe(TopVoxel, ChunkDim);
-  u32 BotVoxelReadIndex   = GetIndexUnsafe(BotVoxel, ChunkDim);
-  u32 FrontVoxelReadIndex = GetIndexUnsafe(FrontVoxel, ChunkDim);
-  u32 BackVoxelReadIndex  = GetIndexUnsafe(BackVoxel, ChunkDim);
+  s32 RightVoxelReadIndex = GetIndexUnsafe(RightVoxel, ChunkDim);
+  s32 LeftVoxelReadIndex  = GetIndexUnsafe(LeftVoxel, ChunkDim);
+  s32 TopVoxelReadIndex   = GetIndexUnsafe(TopVoxel, ChunkDim);
+  s32 BotVoxelReadIndex   = GetIndexUnsafe(BotVoxel, ChunkDim);
+  s32 FrontVoxelReadIndex = GetIndexUnsafe(FrontVoxel, ChunkDim);
+  s32 BackVoxelReadIndex  = GetIndexUnsafe(BackVoxel, ChunkDim);
 
   b32 Result = False;
 
@@ -92,7 +92,7 @@ GetBoundingVoxels(world_chunk* Chunk, boundary_voxels* Dest)
           ++x)
       {
         voxel_position P = Voxel_Position(x, y, z);
-        u32 vIndex = GetIndex(P, WORLD_CHUNK_DIM);
+        s32 vIndex = GetIndex(P, WORLD_CHUNK_DIM);
         voxel *V = Chunk->Data->Voxels + vIndex;
         if (IsSet(V, Voxel_Filled) &&
             HasUnfilledNeighbors(vIndex, Chunk, WORLD_CHUNK_DIM))
@@ -111,7 +111,7 @@ GetBoundingVoxels(world_chunk* Chunk, boundary_voxels* Dest)
 }
 
 inline void
-BufferTriangle(untextured_3d_geometry_buffer* Dest, triangle* Triangle, v3 Normal, s32 ColorIndex)
+BufferTriangle(untextured_3d_geometry_buffer* Dest, triangle* Triangle, v3 Normal, u32 ColorIndex)
 {
   v3 VertBuffer[3];
   v3 NormalBuffer[3] = {Normal, Normal, Normal};
@@ -133,7 +133,7 @@ BufferTriangle(untextured_3d_geometry_buffer* Dest, triangle* Triangle, v3 Norma
 }
 
 inline void
-BufferTriangle(untextured_3d_geometry_buffer *Mesh, v3 *Verts, v3 Normal, s32 ColorIndex)
+BufferTriangle(untextured_3d_geometry_buffer *Mesh, v3 *Verts, v3 Normal, u32 ColorIndex)
 {
   v3 VertBuffer[3];
   v3 NormalBuffer[3] = {Normal, Normal, Normal};

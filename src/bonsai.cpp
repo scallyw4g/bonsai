@@ -259,7 +259,7 @@ GetFreeFrameEvent(event_queue *Queue)
 }
 
 inline void
-PushFrameEvent(event_queue *EventQueue, frame_event *EventInit, s32 FramesToForward=1)
+PushFrameEvent(event_queue *EventQueue, frame_event *EventInit, u32 FramesToForward=1)
 {
   Assert(FramesToForward < TOTAL_FRAME_EVENT_COUNT);
 

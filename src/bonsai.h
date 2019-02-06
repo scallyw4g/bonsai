@@ -775,20 +775,6 @@ GetIndex(v3 Offset, chunk_dimension Dim)
   return Index;
 }
 
-#if DEBUG_OPTIMIZE_TRI_COUNT
-inline bool
-IsFacingPoint( v3 FaceToPoint, v3 FaceNormal )
-{
-  bool Result = false;
-
-  if ( Dot(FaceToPoint, FaceNormal) > 0 )
-  {
-    Result = true;
-  }
-  return Result;
-}
-#endif
-
 inline b32
 IsFilled( chunk_data *chunk, voxel_position VoxelP, chunk_dimension Dim)
 {

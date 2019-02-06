@@ -62,14 +62,14 @@ ReadU16(u8* Source)
 inline s64
 ReadS64(u8* Source)
 {
-  s64 Result = ((u64)Source[0]<<56) + ((u64)Source[1]<<48) + ((u64)Source[2]<<40) + ((u64)Source[3]<<32) + ((u64)Source[4]<<24) + ((u64)Source[5]<<16) + ((u64)Source[6]<<8) + ((u64)Source[7]);
+  s64 Result = (s64)( ((u64)Source[0]<<56) + ((u64)Source[1]<<48) + ((u64)Source[2]<<40) + ((u64)Source[3]<<32) + ((u64)Source[4]<<24) + ((u64)Source[5]<<16) + ((u64)Source[6]<<8) + ((u64)Source[7]) );
   return Result;
 }
 
 inline u32
 ReadU32(u8* Source)
 {
-  u32 Result = (Source[0]<<24) + (Source[1]<<16) + (Source[2]<<8) + Source[3];
+  u32 Result = (u32)( (Source[0]<<24) + (Source[1]<<16) + (Source[2]<<8) + Source[3] );
   return Result;
 }
 
@@ -400,7 +400,7 @@ ParseGlyph(u8_stream *Stream, memory_arena *Arena)
     Glyph.EmSpaceDim.x = xMax - xMin + 1; // Add one to put from 0-based to 1-based
     Glyph.EmSpaceDim.y = yMax - yMin + 1; // coordinate system
 
-    u16 *EndPointsOfContours = ReadU16Array(Stream, Glyph.ContourCount);
+    u16 *EndPointsOfContours = ReadU16Array(Stream, (u32)Glyph.ContourCount);
 
     u16 NextStart = 0;
     for (u16 ContourIndex = 0;
@@ -419,7 +419,7 @@ ParseGlyph(u8_stream *Stream, memory_arena *Arena)
     u8* Flags = Stream->At;
     u8* FlagsAt = Flags;
 
-    Glyph.VertCount = 1+ReadU16(EndPointsOfContours+Glyph.ContourCount-1);
+    Glyph.VertCount = (s16)(1 + ReadU16(EndPointsOfContours+Glyph.ContourCount-1));
     Glyph.Verts = Allocate(ttf_vert, Arena, Glyph.VertCount);
 
     s16 RepeatCount = 0;
@@ -623,7 +623,7 @@ ParseHeadTable(u8_stream *Stream, memory_arena *Arena)
 #define LONG_INDEX_LOCATION_FORMAT 1
 
 inline u8_stream
-GetStreamForGlyphIndex(u32 GlyphIndex, ttf *Font, memory_arena *Arena)
+GetStreamForGlyphIndex(u32 GlyphIndex, ttf *Font)
 {
   head_table *HeadTable = Font->HeadTable;
 
@@ -665,7 +665,7 @@ GetPixelIndex(v2i PixelP, bitmap* Bitmap)
 {
   Assert(PixelP.x < Bitmap->Dim.x);
   Assert(PixelP.y < Bitmap->Dim.y);
-  u32 Result = PixelP.x + (PixelP.y*Bitmap->Dim.x);
+  u32 Result = (u32)(PixelP.x + (PixelP.y*Bitmap->Dim.x));
   Assert(Result < PixelCount(Bitmap));
   return Result;
 }
@@ -995,7 +995,7 @@ main()
     {
       u32 GlyphIndex = GetGlyphIdForCharacterCode(CharCode, &Font);
       if (!GlyphIndex) continue;
-      u8_stream GlyphStream = GetStreamForGlyphIndex(GlyphIndex, &Font, TempArena);
+      u8_stream GlyphStream = GetStreamForGlyphIndex(GlyphIndex, &Font);
       bitmap GlyphBitmap = RasterizeGlyph(GlyphSize, FontMaxEmDim, FontMinGlyphP, &GlyphStream, TempArena);
 
       if ( PixelCount(&GlyphBitmap) )
@@ -1004,7 +1004,7 @@ main()
         ++GlyphsRasterized;
 
 #if 1
-        v2 UV = GetUVForCharCode(CharCode % 256);
+        v2 UV = GetUVForCharCode((char)(CharCode % 256));
         CopyBitmapOffset(&GlyphBitmap, &TextureAtlasBitmap, V2i(UV*V2(TextureAtlasBitmap.Dim)) );
 #else
         char Name[128] = {};

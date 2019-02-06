@@ -201,7 +201,7 @@ Hash(counted_string* String)
       ++CharIndex)
   {
     // TODO(Jesse): Better Hash Function!
-    Result = Result ^ 0x056A09B3220F6F2D + String->Start[CharIndex] + (String->Start[CharIndex] << 8);
+    Result = Result ^ 0x056A09B3220F6F2D + (umm)(String->Start[CharIndex] + (String->Start[CharIndex] << 8));
   }
 
   return Result;
