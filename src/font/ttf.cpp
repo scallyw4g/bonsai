@@ -665,8 +665,8 @@ GetPixelIndex(v2i PixelP, bitmap* Bitmap)
 {
   Assert(PixelP.x < Bitmap->Dim.x);
   Assert(PixelP.y < Bitmap->Dim.y);
-  u32 Result = (u32)(PixelP.x + (PixelP.y*Bitmap->Dim.x));
-  Assert(Result < PixelCount(Bitmap));
+  u32 Result = (u32)(PixelP.x + (s32)(PixelP.y*Bitmap->Dim.x));
+  Assert(Result < (u32)PixelCount(Bitmap));
   return Result;
 }
 
@@ -1004,7 +1004,7 @@ main()
         ++GlyphsRasterized;
 
 #if 1
-        v2 UV = GetUVForCharCode((char)(CharCode % 256));
+        v2 UV = GetUVForCharCode((u8)(CharCode % 256));
         CopyBitmapOffset(&GlyphBitmap, &TextureAtlasBitmap, V2i(UV*V2(TextureAtlasBitmap.Dim)) );
 #else
         char Name[128] = {};

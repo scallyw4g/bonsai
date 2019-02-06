@@ -160,15 +160,15 @@ FillBitmap(u32 C, bitmap *Bitmap)
   return;
 }
 
-inline u32
+inline s32
 PixelCount(bitmap *Bitmap)
 {
-  u32 Result = (u32)(Bitmap->Dim.x*Bitmap->Dim.y);
+  s32 Result = Bitmap->Dim.x * Bitmap->Dim.y;
   return Result;
 }
 
 inline v2
-GetUVForCharCode(char Char)
+GetUVForCharCode(u8 Char)
 {
   v2 Result = V2( (Char%16)/16.0f, (Char/16)/16.0f );
   return Result;

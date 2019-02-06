@@ -190,7 +190,7 @@ UVsForFullyCoveredQuad()
 }
 
 function rect2
-UVsForChar(char C)
+UVsForChar(u8 C)
 {
   r32 OneOverSixteen = 1.0f/16.0f;
 
@@ -399,7 +399,7 @@ BufferUntexturedQuad(debug_ui_render_group *Group, untextured_2d_geometry_buffer
 function r32
 BufferChar(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, u32 CharIndex, v2 MinP, font *Font, const char *Text, u32 Color, v2 MaxClip = V2(0))
 {
-  char Char = Text[CharIndex];
+  u8 Char = (u8)Text[CharIndex];
   rect2 UV = UVsForChar(Char);
 
   { // Black Drop-shadow
