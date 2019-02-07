@@ -144,7 +144,7 @@ else
       -I"$SRC"                   \
       -I"$SRC/datatypes"         \
       -I"$TESTS"                 \
-      -o "$output_basename" \
+      -o "$output_basename"      \
       $executable && echo -e "$Done $executable" &
   done
 

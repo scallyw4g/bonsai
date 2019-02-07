@@ -1,4 +1,5 @@
 struct debug_state;
+struct game_state;
 typedef debug_state* (*get_debug_state_proc)();
 function get_debug_state_proc GetDebugState;
 
@@ -176,6 +177,9 @@ typedef void (*debug_compute_pick_ray)(platform*, m4*, hotkeys*);
 struct world_chunk;
 struct debug_state
 {
+  platform* Plat;
+  game_state* GameState;
+
   debug_text_render_group TextRenderGroup;
   debug_ui_render_group UiGroup;
   untextured_3d_geometry_buffer LineMesh;

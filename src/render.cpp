@@ -1027,9 +1027,6 @@ BufferWorldChunk(
   return;
 }
 
-inline void
-QueueChunkForInit(game_state *GameState, work_queue *Queue, world_chunk *Chunk);
-
 void
 BufferWorld(game_state* GameState, untextured_3d_geometry_buffer* Dest, world *World, graphics *Graphics, world_position VisibleRadius, hotkeys* Hotkeys)
 {

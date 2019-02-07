@@ -8,6 +8,8 @@
 #include <bonsai_mesh.cpp>
 #include <gpu_mapped_buffer.cpp>
 
+#include <work_queue.cpp>
+
 debug_global rect2 NullClipRect = {};
 
 #if 0
@@ -1214,20 +1216,39 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
     DebugState->GameGeo.Buffer.At = 0;
   }
 
-  local_persist window_layout PickerWindow = WindowLayout(V2(430.0f, 137.0f), V2(400.0f, 350.0f));
-  PickerWindow.Title = "Picked Chunks";
-
-  Clear(&PickerWindow.Layout.At);
-  Clear(&PickerWindow.Layout.Clip);
-
   if (DebugState->HotChunk)
   {
+    local_persist window_layout PickerWindow = WindowLayout(V2(430.0f, 137.0f), V2(400.0f, 350.0f));
+    PickerWindow.Title = "Picked Chunks";
+
+    Clear(&PickerWindow.Layout.At);
+    Clear(&PickerWindow.Layout.Clip);
+
     WindowInteractions(Group, &PickerWindow);
+
+    b32 DebugButtonPressed = False;
+    if ( Button("<", Group, &PickerWindow, WHITE) )
+    {
+      DebugState->HotChunk->PointsToLeaveRemaining = Max(DebugState->HotChunk->PointsToLeaveRemaining+1, 1);
+      DebugButtonPressed = True;
+    }
 
     if ( Button(">", Group, &PickerWindow, WHITE) )
     {
-      Log("HI");
+      DebugState->HotChunk->PointsToLeaveRemaining = Max(DebugState->HotChunk->PointsToLeaveRemaining-1, 1);
+      DebugButtonPressed = True;
     }
+
+    if (DebugButtonPressed)
+    {
+      DebugState->HotChunk->LodMesh_Complete = False;
+      DebugState->HotChunk->LodMesh->At = 0;
+      DebugState->HotChunk->Mesh = 0;
+      DebugState->HotChunk->FilledCount = 0;
+      DebugState->HotChunk->Data->Flags = Chunk_Uninitialized;
+      QueueChunkForInit( DebugState->GameState, &DebugState->Plat->HighPriority, DebugState->HotChunk);
+    }
+
     NewRow(&PickerWindow, &Group->Font);
 
     v2 MinP = GetAbsoluteAt(&PickerWindow.Layout);
@@ -1252,7 +1273,6 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 
   return;
 }
-
 
 
 /************************                        *****************************/

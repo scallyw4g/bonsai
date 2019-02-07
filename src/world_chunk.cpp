@@ -1045,8 +1045,7 @@ TriangleIsUniqueInSet(triangle* Query, triangle** Set, u32 SetCount)
 }
 
 function void
-InitializeWorldChunkPerlinPlane(thread_local_state *Thread,
-                                world_chunk *DestChunk, s32 Amplititude, s32 zMin)
+InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChunk, s32 Amplititude, s32 zMin)
 {
   TIMED_FUNCTION();
 #if 0
@@ -1153,7 +1152,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread,
 
         voxel_position FirstVert = *CurrentVert;
 
-        while (EdgeBoundaryVoxels->Count > 1)
+        while (EdgeBoundaryVoxels->Count > DestChunk->PointsToLeaveRemaining)
         {
           voxel_position* LowestAngleBetween = GetClosestAngularDistanceTo(CurrentVert, EdgeBoundaryVoxels);
 

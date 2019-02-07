@@ -324,7 +324,9 @@ struct world_chunk
   b32 Picked;
   b32 LodMesh_Complete;
 
-  u8 Reserved[8];
+  s32 PointsToLeaveRemaining;
+
+  u8 Reserved[4];
 };
 CAssert(sizeof(world_chunk) == 64);
 #pragma pack(pop)

@@ -61,6 +61,8 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       world_chunk* DestChunk = (world_chunk*)Entry->Input;
       if (!ChunkIsGarbage(DestChunk))
       {
+        TriggeredRuntimeBreak();
+
         s32 Amplititude = 100;
         s32 StartingZDepth = -100;
         InitializeWorldChunkPerlinPlane(Thread,
@@ -94,6 +96,9 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 BONSAI_API_MAIN_THREAD_CALLBACK()
 {
   TIMED_FUNCTION();
+
+  GetDebugState()->Plat = GameState->Plat;
+  GetDebugState()->GameState = GameState;
 
   glDisable(GL_CULL_FACE);
 
