@@ -61,8 +61,6 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       world_chunk* DestChunk = (world_chunk*)Entry->Input;
       if (!ChunkIsGarbage(DestChunk))
       {
-        TriggeredRuntimeBreak();
-
         s32 Amplititude = 100;
         s32 StartingZDepth = -100;
         InitializeWorldChunkPerlinPlane(Thread,
@@ -143,9 +141,12 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
 
 #if DEBUG_DRAW_WORLD_AXIES
-  DEBUG_DrawLine(&World->Mesh, Graphics, V3(0,0,0), V3(10000, 0, 0), RED, 0.5f );
-  DEBUG_DrawLine(&World->Mesh, Graphics, V3(0,0,0), V3(0, 10000, 0), GREEN, 0.5f );
-  DEBUG_DrawLine(&World->Mesh, Graphics, V3(0,0,0), V3(0, 0, 10000), BLUE, 0.5f );
+  {
+    untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_LINE*3);
+    DEBUG_DrawLine(&CopyDest, V3(0,0,0), V3(10000, 0, 0), RED, 0.5f );
+    DEBUG_DrawLine(&CopyDest, V3(0,0,0), V3(0, 10000, 0), GREEN, 0.5f );
+    DEBUG_DrawLine(&CopyDest, V3(0,0,0), V3(0, 0, 10000), BLUE, 0.5f );
+  }
 #endif
 
   if (Hotkeys->Player_Spawn)

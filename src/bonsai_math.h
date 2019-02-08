@@ -402,6 +402,13 @@ Length( v3 Vec )
 }
 
 inline r32
+Distance( v3 P1, v3 P2 )
+{
+  r32 Result = Length(P1-P2);
+  return Result;
+}
+
+inline r32
 Square( r32 f )
 {
   r32 Result = f*f;

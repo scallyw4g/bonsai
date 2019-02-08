@@ -1108,7 +1108,7 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
   {
     ui_style Style = StandardStyling(V3(0.0f, 0.5f, 0.5f));
     rect2 Rect = RectMinMax(TopLeft, TopRight + V2(0.0f, Group->Font.Size));
-    if (Button(Group, Rect, &Style, (umm)"WindowTitleBar"))
+    if (Button(Group, Rect, &Style, (umm)"WindowTitleBar"^(umm)Window))
     {
       Window->Layout.Basis += -1.0f*Group->MouseDP;
     }
@@ -1126,7 +1126,7 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
     v2 Dim = V2(10);
     v2 MinP = BottomRight - (Dim/2);
     rect2 Rect = RectMinDim(MinP, Dim);
-    if (Button(Group, Rect, &Style, (umm)"WindowResizeWidget"))
+    if (Button(Group, Rect, &Style, (umm)"WindowResizeWidget"^(umm)Window))
     {
       Window->MaxClip = Max(V2(0), Window->MaxClip-Group->MouseDP);
     }
@@ -1135,6 +1135,30 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
   v3 BackgroundColor = V3(0.2f, 0.2f, 0.2f);
   BufferRectangleAt(Group, Geo, RectMinMax(TopLeft, BottomRight), BackgroundColor, 0.0f);
 
+}
+
+function void
+BufferChunkDetails(debug_ui_render_group* Group, world_chunk* Chunk, window_layout* Window)
+{
+  Column("WorldP", Group, Window, WHITE);
+  Column(ToString(Chunk->WorldP.x), Group, Window, WHITE);
+  Column(ToString(Chunk->WorldP.y), Group, Window, WHITE);
+  Column(ToString(Chunk->WorldP.z), Group, Window, WHITE);
+  NewRow(Window, &Group->Font);
+
+  Column("PointsToLeaveRemaining", Group, Window, WHITE);
+  Column(ToString(Chunk->PointsToLeaveRemaining), Group, Window, WHITE);
+  NewRow(Window, &Group->Font);
+
+  Column("BoundaryVoxels Count", Group, Window, WHITE);
+  Column(ToString(Chunk->EdgeBoundaryVoxelCount), Group, Window, WHITE);
+  NewRow(Window, &Group->Font);
+
+  Column("Triangles", Group, Window, WHITE);
+  Column(ToString(Chunk->TriCount), Group, Window, WHITE);
+  NewRow(Window, &Group->Font);
+
+  return;
 }
 
 function void
@@ -1216,11 +1240,20 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
     DebugState->GameGeo.Buffer.At = 0;
   }
 
-  if (DebugState->HotChunk)
+  world_chunk *HotChunk = DebugState->HotChunk;
+  if (HotChunk)
   {
-    local_persist window_layout PickerWindow = WindowLayout(V2(430.0f, 137.0f), V2(400.0f, 350.0f));
-    PickerWindow.Title = "Picked Chunks";
+    {
+      local_persist window_layout ChunkDetailWindow = WindowLayout(V2(1300.0f, 137.0f), V2(950.0f, 600.0f), "ChunkDetailWindow");
+      Clear(&ChunkDetailWindow.Layout.At);
+      Clear(&ChunkDetailWindow.Layout.Clip);
+      WindowInteractions(Group, &ChunkDetailWindow);
 
+      BufferChunkDetails(Group, HotChunk, &ChunkDetailWindow);
+    }
+
+
+    local_persist window_layout PickerWindow = WindowLayout(V2(430.0f, 137.0f), V2(800.0f), "PickedChunks");
     Clear(&PickerWindow.Layout.At);
     Clear(&PickerWindow.Layout.Clip);
 
@@ -1229,24 +1262,31 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
     b32 DebugButtonPressed = False;
     if ( Button("<", Group, &PickerWindow, WHITE) )
     {
-      DebugState->HotChunk->PointsToLeaveRemaining = Max(DebugState->HotChunk->PointsToLeaveRemaining+1, 1);
+      HotChunk->PointsToLeaveRemaining = Min(HotChunk->PointsToLeaveRemaining+1, HotChunk->EdgeBoundaryVoxelCount);
       DebugButtonPressed = True;
     }
 
     if ( Button(">", Group, &PickerWindow, WHITE) )
     {
-      DebugState->HotChunk->PointsToLeaveRemaining = Max(DebugState->HotChunk->PointsToLeaveRemaining-1, 1);
+      HotChunk->PointsToLeaveRemaining = Max(HotChunk->PointsToLeaveRemaining-1, 0);
+      DebugButtonPressed = True;
+    }
+
+    const char* ButtonText = HotChunk->DrawBoundingVoxels ? "|" : "O";
+    if ( Button(ButtonText, Group, &PickerWindow, WHITE) )
+    {
+      HotChunk->DrawBoundingVoxels = !HotChunk->DrawBoundingVoxels;
       DebugButtonPressed = True;
     }
 
     if (DebugButtonPressed)
     {
-      DebugState->HotChunk->LodMesh_Complete = False;
-      DebugState->HotChunk->LodMesh->At = 0;
-      DebugState->HotChunk->Mesh = 0;
-      DebugState->HotChunk->FilledCount = 0;
-      DebugState->HotChunk->Data->Flags = Chunk_Uninitialized;
-      QueueChunkForInit( DebugState->GameState, &DebugState->Plat->HighPriority, DebugState->HotChunk);
+      HotChunk->LodMesh_Complete = False;
+      HotChunk->LodMesh->At = 0;
+      HotChunk->Mesh = 0;
+      HotChunk->FilledCount = 0;
+      HotChunk->Data->Flags = Chunk_Uninitialized;
+      QueueChunkForInit( DebugState->GameState, &DebugState->Plat->HighPriority, HotChunk);
     }
 
     NewRow(&PickerWindow, &Group->Font);
@@ -2235,7 +2275,7 @@ InitDebugRenderSystem(debug_state *DebugState, heap_allocator *Heap)
   AllocateAndInitGeoBuffer(&DebugState->TextRenderGroup.TextGeo, 1024, ThreadsafeDebugMemoryAllocator());
   AllocateAndInitGeoBuffer(&DebugState->TextRenderGroup.UIGeo, 1024, ThreadsafeDebugMemoryAllocator());
 
-  AllocateGpuElementBuffer(&DebugState->GameGeo, (u32)Kilobytes(64));
+  AllocateGpuElementBuffer(&DebugState->GameGeo, (u32)Megabytes(4));
 
   DebugState->TextRenderGroup.SolidUIShader = MakeSolidUIShader(ThreadsafeDebugMemoryAllocator());
 

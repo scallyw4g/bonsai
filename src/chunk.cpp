@@ -43,9 +43,9 @@ inline b32
 NotFilledInChunk(chunk_data *Chunk, s32 Index)
 {
   Assert(Chunk);
-  b32 NotFilled = True;
+  b32 NotFilled = False;
 
-  if (Index > 1)
+  if (Index > -1)
   {
     NotFilled = !IsSet(&Chunk->Voxels[Index], Voxel_Filled);
   }

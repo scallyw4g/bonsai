@@ -53,11 +53,12 @@ StandardStyling(v3 StartingColor, v3 HoverMultiplier = V3(1.1f), v3 ClickMultipl
 }
 
 window_layout
-WindowLayout(v2 Basis = V2(150, 150), v2 MaxClip = V2(1500, 800))
+WindowLayout(v2 Basis = V2(150, 150), v2 MaxClip = V2(1500, 800), const char* Title = 0)
 {
   window_layout Window = {};
   Window.Layout.Basis = Basis;
   Window.MaxClip = MaxClip;
+  Window.Title = Title;
 
   return Window;
 }

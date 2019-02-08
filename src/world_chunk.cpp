@@ -24,13 +24,13 @@ AllocateWorldChunk(memory_arena *Storage, world_position WorldP, chunk_dimension
   Result->Data        = AllocateChunk(Storage, Dim);
   Result->WorldP      = WorldP;
 
-  Result->CurrentTriangles = AllocateCurrentTriangles(2*4096, Storage);
-  Result->CurrentTriangles->SurfacePoints = AllocateAlignedProtection(boundary_voxels, Storage, 1, 64, False);
+  /* Result->CurrentTriangles = AllocateCurrentTriangles(2*4096, Storage); */
+  /* Result->CurrentTriangles->SurfacePoints = AllocateAlignedProtection(boundary_voxels, Storage, 1, 64, False); */
 
   // TODO(Jesse): Allocate in a more sensible way?
-  Result->CurrentTriangles->SurfacePoints->Points = AllocateAlignedProtection(voxel_position, Storage, Volume(WORLD_CHUNK_DIM), 64, False);
+  /* Result->CurrentTriangles->SurfacePoints->Points = AllocateAlignedProtection(voxel_position, Storage, Volume(WORLD_CHUNK_DIM), 64, False); */
 
-  SeedTriangulation(Result->CurrentTriangles, Storage);
+  /* SeedTriangulation(Result->CurrentTriangles, Storage); */
 
   return Result;
 }
@@ -155,9 +155,9 @@ FreeWorldChunk(world *World, world_chunk *Chunk , mesh_freelist* MeshFreelist, m
 
 
     // FIXME(Jesse): Memoryleak
-    SeedTriangulation( Chunk->CurrentTriangles, Memory);
-    Chunk->CurrentTriangles->CurrentPointIndex = 0;
-    Chunk->CurrentTriangles->SurfacePoints->End = 0;
+    /* SeedTriangulation( Chunk->CurrentTriangles, Memory); */
+    /* Chunk->CurrentTriangles->CurrentPointIndex = 0; */
+    /* Chunk->CurrentTriangles->SurfacePoints->End = 0; */
 
     ZeroChunk(Chunk->Data);
   }
@@ -984,29 +984,28 @@ GetAllCoplanarVerts(voxel_position* Query, point_buffer* Points, voxel_position*
   return Count;
 }
 
-function voxel_position*
-GetClosestAngularDistanceTo(voxel_position* Query, point_buffer* Points)
+/* function voxel_position* */
+/* GetClosestAngularDistanceTo(voxel_position* Query, point_buffer* Points, v3 CenterPoint) */
+/* { */
+/*   voxel_position* Result = 0; */
+/*   voxel_position* Current = Points->Points; */
+/*   voxel_position* OnePastLast = Points->Points + Points->Count; */
+/*   return Result; */
+/* } */
+
+function b32
+VertsAreColnear(voxel_position* V1, voxel_position* V2, voxel_position* V3)
 {
-  voxel_position* Result = 0;
-  voxel_position* Current = Points->Points;
-  voxel_position* OnePastLast = Points->Points + Points->Count;
+  r32 a = V1->x;
+  r32 b = V1->y;
 
-  r32 ClosestTheta = FLT_MAX;
-  for ( ; Current < OnePastLast; ++Current)
-  {
-    if (Current == Query) { continue; }
+  r32 m = V2->x;
+  r32 n = V2->y;
 
-    r32 CosTheta = ArcCos(Dot(Normalize(*Query), Normalize(*Current)));
+  r32 x = V3->x;
+  r32 y = V3->y;
 
-    if (CosTheta < ClosestTheta)
-    {
-      ClosestTheta = CosTheta;
-      Result = Current;
-    }
-
-    continue;
-  }
-
+  b32 Result = (n-b)*(x-m) == (y-n)*(m-a);
   return Result;
 }
 
@@ -1043,6 +1042,8 @@ TriangleIsUniqueInSet(triangle* Query, triangle** Set, u32 SetCount)
 
   return Result;
 }
+
+untextured_3d_geometry_buffer ReserveBufferSpace(untextured_3d_geometry_buffer* Reservation, u32 ElementsToReserve);
 
 function void
 InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChunk, s32 Amplititude, s32 zMin)
@@ -1096,6 +1097,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
 
     /* FindEdgeIntersections(EdgeBoundaryVoxels, DestChunk->Data, WORLD_CHUNK_DIM); */
     FindEdgeIntersections(EdgeBoundaryVoxels, SyntheticChunk->Data, NewSynChunkDim);
+    DestChunk->EdgeBoundaryVoxelCount = EdgeBoundaryVoxels->Count;
 
     // Find closest bounding point to the midpoint of the bounding volume
     u32 WorldChunkVolume = (u32)Volume(WORLD_CHUNK_DIM);
@@ -1104,6 +1106,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
 
     voxel_position BoundingVoxelMidpoint = EdgeBoundaryVoxels->Min + ((EdgeBoundaryVoxels->Max - EdgeBoundaryVoxels->Min)/2.0f);
 
+    TriggeredRuntimeBreak();
     voxel_position FoundCenterPoint = BoundingVoxelMidpoint;
     r32 ShortestLength = FLT_MAX;
     for ( u32 PointIndex = 0;
@@ -1111,7 +1114,11 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
           ++PointIndex)
     {
       voxel_position* TestP = BoundingPoints->Points + PointIndex;
-      /* DrawVoxel(DestChunk->LodMesh, V3(*TestP), RED, V3(0.25f)); */
+
+      if (DestChunk->DrawBoundingVoxels)
+      {
+        DrawVoxel(DestChunk->LodMesh, V3(*TestP), RED, V3(0.25f));
+      }
 
       r32 TestLength = LengthSq(V3(*TestP) - BoundingVoxelMidpoint);
       if  (TestLength < ShortestLength)
@@ -1122,16 +1129,16 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
     }
 
 #if 1
-    random_series Entropy = {6543};
-    for ( s32 PointIndex = 0;
-          PointIndex < EdgeBoundaryVoxels->Count;
-          ++PointIndex )
     {
-      DrawVoxel( DestChunk->LodMesh,
-                 V3(EdgeBoundaryVoxels->Points[PointIndex]),
-                 RandomU32(&Entropy) % (ArrayCount(DefaultPalette)-1),
-                 V3(0.6f));
+      u32 Color = 0;
+      for ( s32 PointIndex = 0;
+            PointIndex < EdgeBoundaryVoxels->Count;
+            ++PointIndex )
+      {
+        DrawVoxel( DestChunk->LodMesh, V3(EdgeBoundaryVoxels->Points[PointIndex]), Color++, V3(0.6f));
+      }
     }
+
     ClipAndDisplaceToMinDim(DestChunk->LodMesh, V3(0), V3(WORLD_CHUNK_DIM) );
 #endif
 
@@ -1145,6 +1152,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
       u32 TriangleCount = 0;
       triangle* Triangles[MaxTriangles];
 
+
       if (EdgeBoundaryVoxels->Count)
       {
         voxel_position* CurrentVert = EdgeBoundaryVoxels->Points;
@@ -1152,51 +1160,96 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
 
         voxel_position FirstVert = *CurrentVert;
 
-        while (EdgeBoundaryVoxels->Count > DestChunk->PointsToLeaveRemaining)
+        s32 RemainingVerts = EdgeBoundaryVoxels->Count;
+        untextured_3d_geometry_buffer CurrentVoxelBuffer = ReserveBufferSpace(DestChunk->LodMesh, VERTS_PER_VOXEL);
+        untextured_3d_geometry_buffer ClosestVoxelBuffer = ReserveBufferSpace(DestChunk->LodMesh, VERTS_PER_VOXEL);
+
+        while (RemainingVerts > DestChunk->PointsToLeaveRemaining)
         {
-          voxel_position* LowestAngleBetween = GetClosestAngularDistanceTo(CurrentVert, EdgeBoundaryVoxels);
+          voxel_position* LowestAngleBetween = 0;
+
+          {
+            r32 ClosestDistance = FLT_MAX;
+            v3 CenterPoint = V3(FoundCenterPoint);
+            voxel_position* ClosestCandidate = EdgeBoundaryVoxels->Points;
+            voxel_position* Query = CurrentVert;
+            for ( ; ClosestCandidate < OnePastLastVert; ++ClosestCandidate)
+            {
+              if (ClosestCandidate == Query) { continue; }
+
+              r32 DistanceBetween = Distance(Normalize(CenterPoint - V3(*Query)), Normalize(CenterPoint - V3(*ClosestCandidate)));
+
+              if (DistanceBetween < ClosestDistance)
+              {
+                ClosestDistance = DistanceBetween;
+                LowestAngleBetween = ClosestCandidate;
+              }
+            }
+          }
+
+          Assert(LowestAngleBetween < OnePastLastVert);
+          Assert(CurrentVert < OnePastLastVert);
 
           if (LowestAngleBetween)
           {
-            triangle* TestTriangle = Triangle(&FoundCenterPoint, CurrentVert, LowestAngleBetween, Thread->TempMemory);
+            CurrentVoxelBuffer.At = 0;
+            ClosestVoxelBuffer.At = 0;
+            DrawVoxel( &ClosestVoxelBuffer, V3(*LowestAngleBetween)+V3(0.0f,0.0f,0.1f), GREEN, V3(0.7f));
+            DrawVoxel( &CurrentVoxelBuffer, V3(*CurrentVert), RED, V3(0.7f));
 
-            /* Assert( TriangleIsUniqueInSet(TestTriangle, Triangles, TriangleCount) ); */
-            Assert(TriangleCount < MaxTriangles);
+            if (!VertsAreColnear(&FoundCenterPoint, CurrentVert, LowestAngleBetween))
+            {
+              triangle* TestTriangle = Triangle(&FoundCenterPoint, CurrentVert, LowestAngleBetween, Thread->TempMemory);
 
-            Triangles[TriangleCount++] = TestTriangle;
+              if (!TriangleIsUniqueInSet(TestTriangle, Triangles, TriangleCount) )
+              {
+                  DEBUG_DrawAABB(DestChunk->LodMesh, V3(0), V3(WORLD_CHUNK_DIM), RED, 0.5f);
+              }
 
-            OnePastLastVert--;
-            EdgeBoundaryVoxels->Count--;
+              Assert(TriangleCount < MaxTriangles);
+              Triangles[TriangleCount++] = TestTriangle;
+            }
 
-            *CurrentVert = *OnePastLastVert;
+            voxel_position *LastVert = OnePastLastVert-1;
+            *CurrentVert = *LastVert;
 
-            CurrentVert = LowestAngleBetween;
+            if (LowestAngleBetween != LastVert)
+            {
+              CurrentVert = LowestAngleBetween;
+            }
 
+            Assert(LowestAngleBetween < OnePastLastVert);
+            Assert(CurrentVert < OnePastLastVert);
           }
           else
           {
-            break;
+            voxel_position *LastVert = OnePastLastVert-1;
+            if (*LastVert != FirstVert && !VertsAreColnear(&FoundCenterPoint, &FirstVert, LastVert))
+            {
+              triangle* TestTriangle = Triangle(&FoundCenterPoint, &FirstVert, LastVert, Thread->TempMemory);
+              /* Assert( TriangleIsUniqueInSet(TestTriangle, Triangles, TriangleCount) ); */
+              Assert(TriangleCount < MaxTriangles);
+              Triangles[TriangleCount++] = TestTriangle;
+            }
           }
+
+          OnePastLastVert--;
+          RemainingVerts--;
         }
 
-        voxel_position* LastVert = EdgeBoundaryVoxels->Points;
 
-        triangle* TestTriangle = Triangle(&FoundCenterPoint, &FirstVert, LastVert, Thread->TempMemory);
-
-        /* Assert( TriangleIsUniqueInSet(TestTriangle, Triangles, TriangleCount) ); */
-        Assert(TriangleCount < MaxTriangles);
-
-        Triangles[TriangleCount++] = TestTriangle;
       }
 
-      u32 Color = 8;
+      u32 Color = 0;
       for (u32 TriIndex  = 0;
           TriIndex < TriangleCount;
           ++TriIndex)
       {
-        BufferTriangle(DestChunk->LodMesh, Triangles[TriIndex], V3(0,0,1), Color);
-        ++Color;
+        BufferTriangle(DestChunk->LodMesh, Triangles[TriIndex], V3(0,0,1), Color++);
       }
+
+      DestChunk->TriCount = TriangleCount;
+
       /* Print(TriangleCount); */
 #endif
 
