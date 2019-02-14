@@ -3,7 +3,7 @@
 #if BONSAI_INTERNAL
 
 #define Assert(condition) \
-  if (!(condition)) { Debug(RED_TERMINAL " ! Assertion Failed" WHITE_TERMINAL " - '%s' during %s " Newline, #condition, __FUNCTION__ ); RuntimeBreak(); }
+  /* if (!(condition)) { Debug(RED_TERMINAL " ! Assertion Failed" WHITE_TERMINAL " - '%s' during %s " Newline, #condition, __FUNCTION__ ); RuntimeBreak(); } */
 
 #define InvalidCodePath() Error("Invalid Code Path"); Assert(False)
 

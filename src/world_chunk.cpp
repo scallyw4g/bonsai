@@ -1045,6 +1045,32 @@ TriangleIsUniqueInSet(triangle* Query, triangle** Set, u32 SetCount)
 
 untextured_3d_geometry_buffer ReserveBufferSpace(untextured_3d_geometry_buffer* Reservation, u32 ElementsToReserve);
 
+function voxel_position*
+GetClosestPointRelativeTo(voxel_position* Query, voxel_position* Start, voxel_position* OnePastLastVert, v3 RelativePoint, voxel_position* Skip = 0)
+{
+  voxel_position* Result = 0;
+  r32 ClosestDistance = FLT_MAX;
+
+   for ( voxel_position* ClosestCandidate = Start;
+         ClosestCandidate < OnePastLastVert;
+         ++ClosestCandidate)
+  {
+    if (ClosestCandidate == Query) { continue; }
+    if (ClosestCandidate == Skip) { continue; }
+
+    Assert(Result < OnePastLastVert);
+    r32 DistanceBetween = Distance(Normalize(RelativePoint - V3(*Query)), Normalize(RelativePoint - V3(*ClosestCandidate)));
+
+    if (DistanceBetween < ClosestDistance)
+    {
+      ClosestDistance = DistanceBetween;
+      Result = ClosestCandidate;
+    }
+  }
+
+  return Result;
+}
+
 function void
 InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChunk, s32 Amplititude, s32 zMin)
 {
@@ -1106,7 +1132,6 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
 
     voxel_position BoundingVoxelMidpoint = EdgeBoundaryVoxels->Min + ((EdgeBoundaryVoxels->Max - EdgeBoundaryVoxels->Min)/2.0f);
 
-    TriggeredRuntimeBreak();
     voxel_position FoundCenterPoint = BoundingVoxelMidpoint;
     r32 ShortestLength = FLT_MAX;
     for ( u32 PointIndex = 0;
@@ -1127,6 +1152,24 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
         FoundCenterPoint = *TestP;
       }
     }
+
+    v3 Normal = {};
+    for ( s32 VoxelIndex = 0;
+          VoxelIndex < Volume(WORLD_CHUNK_DIM);
+          ++VoxelIndex)
+    {
+      voxel *Voxel = &DestChunk->Data->Voxels[VoxelIndex];
+      if (Voxel->Flags != Voxel_Empty)
+      {
+        voxel_position TestP = GetPosition(VoxelIndex, WORLD_CHUNK_DIM);
+        v3 CenterRelativeTestP = V3(FoundCenterPoint) - V3(TestP);
+        Normal += Normalize(CenterRelativeTestP);
+      }
+    }
+
+    Normal = Normalize(Normal);
+
+    DEBUG_DrawLine( DestChunk->LodMesh, V3(FoundCenterPoint), V3(FoundCenterPoint)+(Normal*10.0f), RED, 0.2f);
 
 #if 1
     {
@@ -1163,26 +1206,50 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
         s32 RemainingVerts = EdgeBoundaryVoxels->Count;
         untextured_3d_geometry_buffer CurrentVoxelBuffer = ReserveBufferSpace(DestChunk->LodMesh, VERTS_PER_VOXEL);
         untextured_3d_geometry_buffer ClosestVoxelBuffer = ReserveBufferSpace(DestChunk->LodMesh, VERTS_PER_VOXEL);
+        untextured_3d_geometry_buffer SecondClosestVoxelBuffer = ReserveBufferSpace(DestChunk->LodMesh, VERTS_PER_VOXEL);
+
+        untextured_3d_geometry_buffer FirstNormalBuffer = ReserveBufferSpace(DestChunk->LodMesh, VERTS_PER_LINE);
 
         while (RemainingVerts > DestChunk->PointsToLeaveRemaining)
         {
-          voxel_position* LowestAngleBetween = 0;
 
+          Assert(CurrentVert < OnePastLastVert);
+          voxel_position* LowestAngleBetween = GetClosestPointRelativeTo(CurrentVert, EdgeBoundaryVoxels->Points, OnePastLastVert, V3(FoundCenterPoint));
+          Assert(CurrentVert < OnePastLastVert);
+
+          v3 FirstNormal = {};
+
+          if (LowestAngleBetween)
           {
-            r32 ClosestDistance = FLT_MAX;
-            v3 CenterPoint = V3(FoundCenterPoint);
-            voxel_position* ClosestCandidate = EdgeBoundaryVoxels->Points;
-            voxel_position* Query = CurrentVert;
-            for ( ; ClosestCandidate < OnePastLastVert; ++ClosestCandidate)
+            SecondClosestVoxelBuffer.At = 0;
+            DrawVoxel( &SecondClosestVoxelBuffer, V3(*LowestAngleBetween), WHITE, V3(0.0f));
+
+            FirstNormal = Normalize(Cross( V3(FoundCenterPoint)-V3(*CurrentVert), V3(FoundCenterPoint)-V3(*LowestAngleBetween) ));
+          }
+
+          FirstNormalBuffer.At = 0;
+          DEBUG_DrawLine( &FirstNormalBuffer, V3(FoundCenterPoint), V3(FoundCenterPoint)+(FirstNormal*10.0f), BLUE, 0.2f);
+
+
+          if ( LowestAngleBetween && Dot(FirstNormal, Normal) < 0.0f )
+          {
+            TriggeredRuntimeBreak();
+
+            SecondClosestVoxelBuffer.At = 0;
+            DrawVoxel( &SecondClosestVoxelBuffer, V3(*LowestAngleBetween)+V3(0.2f), BLUE, V3(0.7f));
+            voxel_position* SecondLowestAngleBetween = GetClosestPointRelativeTo(CurrentVert, EdgeBoundaryVoxels->Points, OnePastLastVert, V3(FoundCenterPoint), LowestAngleBetween);
+
+            if (SecondLowestAngleBetween)
             {
-              if (ClosestCandidate == Query) { continue; }
+              v3 SecondNormal = Cross( V3(FoundCenterPoint)-V3(*CurrentVert), V3(FoundCenterPoint)-V3(*SecondLowestAngleBetween) );
 
-              r32 DistanceBetween = Distance(Normalize(CenterPoint - V3(*Query)), Normalize(CenterPoint - V3(*ClosestCandidate)));
-
-              if (DistanceBetween < ClosestDistance)
+              if ( Dot(SecondNormal, Normal) < 0.0f )
               {
-                ClosestDistance = DistanceBetween;
-                LowestAngleBetween = ClosestCandidate;
+                Error("Found two negative normals, shit!");
+              }
+              else
+              {
+                LowestAngleBetween = SecondLowestAngleBetween;
               }
             }
           }
@@ -1194,8 +1261,8 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
           {
             CurrentVoxelBuffer.At = 0;
             ClosestVoxelBuffer.At = 0;
-            DrawVoxel( &ClosestVoxelBuffer, V3(*LowestAngleBetween)+V3(0.0f,0.0f,0.1f), GREEN, V3(0.7f));
-            DrawVoxel( &CurrentVoxelBuffer, V3(*CurrentVert), RED, V3(0.7f));
+            DrawVoxel( &ClosestVoxelBuffer, V3(*LowestAngleBetween)+V3(0.1f), GREEN, V3(0.7f));
+            DrawVoxel( &CurrentVoxelBuffer, V3(*CurrentVert)-V3(0.1f), RED, V3(0.7f));
 
             if (!VertsAreColnear(&FoundCenterPoint, CurrentVert, LowestAngleBetween))
             {
@@ -1233,6 +1300,8 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
             }
           }
 
+          Assert(LowestAngleBetween < OnePastLastVert);
+          Assert(CurrentVert < OnePastLastVert);
           OnePastLastVert--;
           RemainingVerts--;
         }
