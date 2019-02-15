@@ -5,7 +5,7 @@ struct rect2
   v2 Max;
 };
 
-rect2
+function rect2
 InvertedInfinityRectangle()
 {
   rect2 Result = {};
@@ -15,14 +15,14 @@ InvertedInfinityRectangle()
   return Result;
 }
 
-rect2
+function rect2
 RectMinMax(v2 Min, v2 Max)
 {
   rect2 Result = {Min, Max};
   return Result;
 }
 
-rect2
+function rect2
 RectMinDim(v2 Min, v2 Dim)
 {
   rect2 Result = {Min, Min+Dim};
@@ -49,7 +49,7 @@ struct aabb
   aabb() { Clear(this); }
 };
 
-inline aabb
+function aabb
 MinMaxAABB(v3 Min, v3 Max)
 {
   v3 Radius = (Max - Min)/2.0f;
@@ -66,7 +66,7 @@ operator+(aabb AABB, v3 V)
   return Result;
 }
 
-v3
+function v3
 HalfDim( v3 P1 )
 {
   v3 Result = P1 / 2;
@@ -80,7 +80,7 @@ struct ray
 };
 
 // TODO(Jesse): This could be optimized significantly
-b32
+function b32
 Intersect(aabb AABB, ray Ray)
 {
   v3 min = AABB.Center - AABB.Radius;;
@@ -137,10 +137,23 @@ Intersect(aabb AABB, ray Ray)
   return true;
 }
 
-inline b32
+function b32
 IsInsideRect(rect2 Rect, v2 P)
 {
   b32 Result = (P > Rect.Min && P < Rect.Max);
   return Result;
 }
 
+function v3
+GetMin(aabb Rect)
+{
+  v3 Result = Rect.Center - Rect.Radius;
+  return Result;
+}
+
+function v3
+GetMax(aabb Rect)
+{
+  v3 Result = Rect.Center + Rect.Radius;
+  return Result;
+}

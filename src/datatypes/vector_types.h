@@ -424,6 +424,30 @@ operator>(voxel_position P1, voxel_position P2)
 }
 
 inline b32
+operator>=(v3 P1, v3 P2)
+{
+  b32 Result = true;
+
+  Result &= P1.x >= P2.x;
+  Result &= P1.y >= P2.y;
+  Result &= P1.z >= P2.z;
+
+  return Result;
+}
+
+inline b32
+operator<=(v3 P1, v3 P2)
+{
+  b32 Result = true;
+
+  Result &= P1.x <= P2.x;
+  Result &= P1.y <= P2.y;
+  Result &= P1.z <= P2.z;
+
+  return Result;
+}
+
+inline b32
 operator<=(voxel_position P1, voxel_position P2)
 {
   b32 Result = true;

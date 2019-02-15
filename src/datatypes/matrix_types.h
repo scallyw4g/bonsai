@@ -37,7 +37,18 @@ struct m4
   }
 };
 
-inline v4
+struct m_nxn
+{
+  r32* Elements;
+
+  u32 Rows;
+  u32 Columns;
+
+  u32 At;
+  u32 End;
+};
+
+function  v4
 TransformColumnMajor(m4 A, v4 P)
 {
     v4 R;
@@ -48,7 +59,7 @@ TransformColumnMajor(m4 A, v4 P)
     return(R);
 }
 
-inline v4
+function  v4
 TransformRowMajor(m4 A, v4 P)
 {
     v4 R;
@@ -78,7 +89,7 @@ operator*(m4 A, m4 B)
   return Result;
 }
 
-inline m4
+function  m4
 Translate( v3 v )
 {
   m4 Result;
@@ -90,4 +101,3 @@ Translate( v3 v )
 
   return Result;
 }
-

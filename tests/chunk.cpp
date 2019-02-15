@@ -20,6 +20,7 @@ global_variable chunk_dimension WORLD_CHUNK_DIM = Chunk_Dimension(8,8,8);
 #include <debug_draw.cpp>
 #include <lod.cpp>
 #include <work_queue.cpp>
+#include <matrix.cpp>
 #include <world_chunk.cpp>
 
 #include <test_utils.cpp>

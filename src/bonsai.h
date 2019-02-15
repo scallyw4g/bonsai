@@ -315,7 +315,6 @@ struct world_chunk
   untextured_3d_geometry_buffer* Mesh;
   untextured_3d_geometry_buffer* LodMesh;
 
-
   world_position WorldP;
 
   u32 FilledCount;
@@ -755,11 +754,6 @@ GetIndexUnsafe(voxel_position P, chunk_dimension Dim)
     (P.x) +
     (P.y*Dim.x) +
     (P.z*Dim.x*Dim.y);
-
-  if(i >= Volume(Dim))
-  {
-    i = -1;
-  }
 
   return i;
 }

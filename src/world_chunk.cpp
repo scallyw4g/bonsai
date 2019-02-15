@@ -1071,6 +1071,119 @@ GetClosestPointRelativeTo(voxel_position* Query, voxel_position* Start, voxel_po
   return Result;
 }
 
+function b32
+HasUnfilledNeighbors(s32 Index, world_chunk* Chunk, chunk_dimension ChunkDim)
+{
+  TIMED_FUNCTION();
+
+  chunk_data *ChunkData = Chunk->Data;
+
+  Assert(IsSet(Chunk, Chunk_Initialized) || IsSet(Chunk, Chunk_MeshComplete));
+
+  s32 VolumeChunkDim = Volume(ChunkDim);
+  Assert(Index < VolumeChunkDim);
+
+  voxel_position CurrentP = GetPosition(Index, ChunkDim);
+
+  voxel_position RightVoxel = CurrentP + Voxel_Position(1, 0, 0);
+  voxel_position LeftVoxel  = CurrentP - Voxel_Position(1, 0, 0);
+  voxel_position TopVoxel   = CurrentP + Voxel_Position(0, 0, 1);
+  voxel_position BotVoxel   = CurrentP - Voxel_Position(0, 0, 1);
+  voxel_position FrontVoxel = CurrentP + Voxel_Position(0, 1, 0);
+  voxel_position BackVoxel  = CurrentP - Voxel_Position(0, 1, 0);
+
+  s32 RightVoxelReadIndex = GetIndexUnsafe(RightVoxel, ChunkDim);
+  s32 LeftVoxelReadIndex  = GetIndexUnsafe(LeftVoxel, ChunkDim);
+  s32 TopVoxelReadIndex   = GetIndexUnsafe(TopVoxel, ChunkDim);
+  s32 BotVoxelReadIndex   = GetIndexUnsafe(BotVoxel, ChunkDim);
+  s32 FrontVoxelReadIndex = GetIndexUnsafe(FrontVoxel, ChunkDim);
+  s32 BackVoxelReadIndex  = GetIndexUnsafe(BackVoxel, ChunkDim);
+
+  b32 Result = False;
+
+  if (RightVoxelReadIndex > -1 && RightVoxelReadIndex < VolumeChunkDim)
+    Result |= NotFilledInChunk( ChunkData, RightVoxelReadIndex);
+
+  if (LeftVoxelReadIndex > -1 && LeftVoxelReadIndex < VolumeChunkDim)
+    Result |= NotFilledInChunk( ChunkData, LeftVoxelReadIndex);
+
+  if (BotVoxelReadIndex > -1 && BotVoxelReadIndex < VolumeChunkDim)
+    Result |= NotFilledInChunk( ChunkData, BotVoxelReadIndex);
+
+  if (TopVoxelReadIndex > -1 && TopVoxelReadIndex < VolumeChunkDim)
+    Result |= NotFilledInChunk( ChunkData, TopVoxelReadIndex);
+
+  if (FrontVoxelReadIndex > -1 && FrontVoxelReadIndex < VolumeChunkDim)
+    Result |= NotFilledInChunk( ChunkData, FrontVoxelReadIndex);
+
+  if (BackVoxelReadIndex > -1 && BackVoxelReadIndex < VolumeChunkDim)
+    Result |= NotFilledInChunk( ChunkData, BackVoxelReadIndex);
+
+  return Result;
+}
+
+function void
+GetBoundingVoxelsClippedTo(world_chunk* Chunk, chunk_dimension ChunkDim, boundary_voxels* Dest, aabb Clip)
+{
+  /* TIMED_FUNCTION(); */
+
+  for (s32 z = 0;
+      z < ChunkDim.z;
+      ++z)
+  {
+    for (s32 y = 0;
+        y < ChunkDim.y;
+        ++y)
+    {
+      for (s32 x = 0;
+          x < ChunkDim.x;
+          ++x)
+      {
+        voxel_position P = Voxel_Position(x, y, z);
+
+        if ( V3(P) <= GetMin(Clip) || V3(P) >= GetMax(Clip) )
+        {
+          continue;
+        }
+
+        s32 vIndex = GetIndex(P, ChunkDim);
+        voxel *V = Chunk->Data->Voxels + vIndex;
+        if (IsSet(V, Voxel_Filled) &&
+            HasUnfilledNeighbors(vIndex, Chunk, ChunkDim))
+        {
+          Assert(Dest->At < Dest->End);
+          Dest->Points[Dest->At++] = P;
+
+          Dest->Min = Min(P, Dest->Min);
+          Dest->Max = Max(P, Dest->Max);
+        }
+      }
+    }
+  }
+
+  return;
+}
+
+function v3
+ComputeNormalSVD(boundary_voxels* BoundingPoints, memory_arena* TempMemory)
+{
+  m_nxn* X = Allocate_3xN_Matrix(BoundingPoints->At, TempMemory);
+
+  v3 Centroid = V3(BoundingPoints->Max - BoundingPoints->Min);
+  for ( u32 PointIndex = 0;
+        PointIndex < BoundingPoints->At;
+        ++PointIndex)
+  {
+    X->Elements[PointIndex] = V3(BoundingPoints->Points[PointIndex]).E[PointIndex%3] - Centroid.E[PointIndex%3];
+  }
+
+
+
+
+  v3 Result = {};
+  return Result;
+}
+
 function void
 InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChunk, s32 Amplititude, s32 zMin)
 {
@@ -1111,6 +1224,10 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
 
   { // Compute 0th LOD
 
+    u32 SynChunkVolume = (u32)Volume(SynChunkDim);
+    boundary_voxels* BoundingPoints = AllocateBoundaryVoxels(SynChunkVolume, Thread->TempMemory);
+    GetBoundingVoxelsClippedTo(SyntheticChunk, SynChunkDim, BoundingPoints, MinMaxAABB( V3(1), V3(WORLD_CHUNK_DIM+1) ) );
+
     chunk_dimension NewSynChunkDim = WORLD_CHUNK_DIM+Voxel_Position(1);
     CopyChunkOffset(SyntheticChunk, SynChunkDim, SyntheticChunk, NewSynChunkDim, Voxel_Position(1));
     SynChunkDim = NewSynChunkDim;
@@ -1125,13 +1242,9 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
     FindEdgeIntersections(EdgeBoundaryVoxels, SyntheticChunk->Data, NewSynChunkDim);
     DestChunk->EdgeBoundaryVoxelCount = EdgeBoundaryVoxels->Count;
 
-    // Find closest bounding point to the midpoint of the bounding volume
-    u32 WorldChunkVolume = (u32)Volume(WORLD_CHUNK_DIM);
-    boundary_voxels* BoundingPoints = AllocateBoundaryVoxels(WorldChunkVolume, Thread->TempMemory);
-    GetBoundingVoxels(DestChunk, BoundingPoints);
-
     voxel_position BoundingVoxelMidpoint = EdgeBoundaryVoxels->Min + ((EdgeBoundaryVoxels->Max - EdgeBoundaryVoxels->Min)/2.0f);
 
+    // Find closest bounding point to the midpoint of the bounding volume
     voxel_position FoundCenterPoint = BoundingVoxelMidpoint;
     r32 ShortestLength = FLT_MAX;
     for ( u32 PointIndex = 0;
@@ -1145,7 +1258,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
         DrawVoxel(DestChunk->LodMesh, V3(*TestP), RED, V3(0.25f));
       }
 
-      r32 TestLength = LengthSq(V3(*TestP) - BoundingVoxelMidpoint);
+      r32 TestLength = Length(V3(*TestP) - BoundingVoxelMidpoint);
       if  (TestLength < ShortestLength)
       {
         ShortestLength = TestLength;
@@ -1153,6 +1266,9 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
       }
     }
 
+#if 1
+    v3 Normal = ComputeNormalSVD(BoundingPoints, Thread->TempMemory);
+#else
     v3 Normal = {};
     for ( s32 VoxelIndex = 0;
           VoxelIndex < Volume(WORLD_CHUNK_DIM);
@@ -1162,12 +1278,13 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
       if (Voxel->Flags != Voxel_Empty)
       {
         voxel_position TestP = GetPosition(VoxelIndex, WORLD_CHUNK_DIM);
-        v3 CenterRelativeTestP = V3(FoundCenterPoint) - V3(TestP);
+        v3 CenterRelativeTestP = V3(BoundingVoxelMidpoint) - V3(TestP);
         Normal += Normalize(CenterRelativeTestP);
       }
     }
 
     Normal = Normalize(Normal);
+#endif
 
     DEBUG_DrawLine( DestChunk->LodMesh, V3(FoundCenterPoint), V3(FoundCenterPoint)+(Normal*10.0f), RED, 0.2f);
 
@@ -1212,7 +1329,6 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
 
         while (RemainingVerts > DestChunk->PointsToLeaveRemaining)
         {
-
           Assert(CurrentVert < OnePastLastVert);
           voxel_position* LowestAngleBetween = GetClosestPointRelativeTo(CurrentVert, EdgeBoundaryVoxels->Points, OnePastLastVert, V3(FoundCenterPoint));
           Assert(CurrentVert < OnePastLastVert);
@@ -1229,7 +1345,6 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
 
           FirstNormalBuffer.At = 0;
           DEBUG_DrawLine( &FirstNormalBuffer, V3(FoundCenterPoint), V3(FoundCenterPoint)+(FirstNormal*10.0f), BLUE, 0.2f);
-
 
           if ( LowestAngleBetween && Dot(FirstNormal, Normal) < 0.0f )
           {
