@@ -46,6 +46,14 @@ struct m_nxn
 
   u32 At;
   u32 End;
+
+  r32*
+  operator[](u32 Row)
+  {
+    u32 Index = Row*this->Columns;
+    Assert(Index < this->Columns*this->Rows);
+    return this->Elements+Index;
+  }
 };
 
 function  v4

@@ -938,27 +938,26 @@ GetNextCoplanarVertex(voxel_position* Query, point_buffer* Points)
 }
 
 function voxel_position*
-GetClosestCoplanarVertex(voxel_position* Query, point_buffer* Points)
+GetClosestCoplanarPointRelativeTo(voxel_position* Query, voxel_position* Start, voxel_position* OnePastLastVert, v3 RelativePoint, voxel_position* Skip = 0)
 {
-  r32 ShortestLength = FLT_MAX;
   voxel_position* Result = 0;
+  r32 ClosestDistance = FLT_MAX;
 
-  voxel_position* Current = Points->Points;
-  voxel_position* OnePastLast = Points->Points + Points->Count;
-
-  while (Current != Query)
+   for ( voxel_position* ClosestCandidate = Start;
+         ClosestCandidate < OnePastLastVert;
+         ++ClosestCandidate)
   {
-    if (Current == OnePastLast) { Current = Points->Points; }
+    if (ClosestCandidate == Query) { continue; }
+    if (ClosestCandidate == Skip) { continue; }
 
-    r32 CurrentLength = LengthSq(*Query - *Current);
-    if ( VertsAreCoplanar(Current, Query) &&
-         CurrentLength < ShortestLength )
+    Assert(Result < OnePastLastVert);
+    r32 DistanceBetween = Distance(Normalize(RelativePoint - V3(*Query)), Normalize(RelativePoint - V3(*ClosestCandidate)));
+
+    if (DistanceBetween < ClosestDistance && VertsAreCoplanar(Query, ClosestCandidate) )
     {
-      ShortestLength = CurrentLength;
-      Result = Current;
+      ClosestDistance = DistanceBetween;
+      Result = ClosestCandidate;
     }
-
-    ++Current;
   }
 
   return Result;
@@ -1330,7 +1329,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
         while (RemainingVerts > DestChunk->PointsToLeaveRemaining)
         {
           Assert(CurrentVert < OnePastLastVert);
-          voxel_position* LowestAngleBetween = GetClosestPointRelativeTo(CurrentVert, EdgeBoundaryVoxels->Points, OnePastLastVert, V3(FoundCenterPoint));
+          voxel_position* LowestAngleBetween = GetClosestCoplanarPointRelativeTo(CurrentVert, EdgeBoundaryVoxels->Points, OnePastLastVert, V3(FoundCenterPoint));
           Assert(CurrentVert < OnePastLastVert);
 
           v3 FirstNormal = {};
@@ -1352,7 +1351,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
 
             SecondClosestVoxelBuffer.At = 0;
             DrawVoxel( &SecondClosestVoxelBuffer, V3(*LowestAngleBetween)+V3(0.2f), BLUE, V3(0.7f));
-            voxel_position* SecondLowestAngleBetween = GetClosestPointRelativeTo(CurrentVert, EdgeBoundaryVoxels->Points, OnePastLastVert, V3(FoundCenterPoint), LowestAngleBetween);
+            voxel_position* SecondLowestAngleBetween = GetClosestCoplanarPointRelativeTo(CurrentVert, EdgeBoundaryVoxels->Points, OnePastLastVert, V3(FoundCenterPoint), LowestAngleBetween);
 
             if (SecondLowestAngleBetween)
             {
