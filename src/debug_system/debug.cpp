@@ -104,40 +104,48 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   ButtonStyling.Padding = V2(65.0f);
   ButtonStyling.Color = V3(1.0f);
   ButtonStyling.HoverColor = V3(0.65f);
+  ButtonStyling.ActiveColor = V3(0.65f);
   ButtonStyling.ClickColor = V3(1, 0, 0);
 
   if (DebugState->DisplayDebugMenu)
   {
+    ButtonStyling.IsActive = DebugState->UIType == DebugUIType_PickedChunks;
     if (Button("PickedChunks", UiGroup, &Layout, &ButtonStyling))
     {
       DebugState->UIType = DebugUIType_PickedChunks;
     }
 
+    ButtonStyling.IsActive = DebugState->UIType == DebugUIType_Graphics;
     if (Button("Graphics", UiGroup, &Layout, &ButtonStyling))
     {
       DebugState->UIType = DebugUIType_Graphics;
     }
 
+    ButtonStyling.IsActive = DebugState->UIType == DebugUIType_Network;
     if (Button("Network", UiGroup, &Layout, &ButtonStyling))
     {
       DebugState->UIType = DebugUIType_Network;
     }
 
+    ButtonStyling.IsActive = DebugState->UIType == DebugUIType_CollatedFunctionCalls;
     if (Button("Functions", UiGroup, &Layout, &ButtonStyling))
     {
       DebugState->UIType = DebugUIType_CollatedFunctionCalls;
     }
 
+    ButtonStyling.IsActive = DebugState->UIType == DebugUIType_CallGraph;
     if (Button("Call Graph", UiGroup, &Layout, &ButtonStyling))
     {
       DebugState->UIType = DebugUIType_CallGraph;
     }
 
+    ButtonStyling.IsActive = DebugState->UIType == DebugUIType_Memory;
     if (Button("Memory", UiGroup, &Layout, &ButtonStyling))
     {
       DebugState->UIType = DebugUIType_Memory;
     }
 
+    ButtonStyling.IsActive = DebugState->UIType == DebugUIType_DrawCalls;
     if (Button("Draw Calls", UiGroup, &Layout, &ButtonStyling))
     {
       DebugState->UIType = DebugUIType_DrawCalls;

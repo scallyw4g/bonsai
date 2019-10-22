@@ -836,6 +836,11 @@ Button(const char* ColumnText, debug_ui_render_group *Group, layout* Layout, ui_
     }
   }
 
+  if (Style && Style->IsActive && !Result)
+  {
+    UseColor = Style->ActiveColor;
+  }
+
   BufferValue(ColumnText, Group, Layout, UseColor, V2(0), Style);
 
   return Result;

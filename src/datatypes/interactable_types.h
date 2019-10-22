@@ -38,9 +38,12 @@ struct ui_style
 {
   v3 Color;
   v3 HoverColor;
+  v3 ActiveColor;
   v3 ClickColor;
 
   v2 Padding;
+
+  b32 IsActive;
 };
 
 function ui_style
