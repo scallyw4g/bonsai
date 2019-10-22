@@ -430,7 +430,7 @@ BufferChar(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, u32 C
 }
 
 function r32
-BufferValue(const char* Text, debug_ui_render_group *Group, layout *Layout, u32 Color, v2 MaxClip = V2(0))
+BufferValue(const char* Text, debug_ui_render_group *Group, layout *Layout, u32 Color, v2 MaxClip = V2(0), ui_style* Style = 0)
 {
   textured_2d_geometry_buffer *Geo = &Group->TextGroup->TextGeo;
 
@@ -438,18 +438,21 @@ BufferValue(const char* Text, debug_ui_render_group *Group, layout *Layout, u32 
 
   r32 DeltaX = 0;
 
+  v2 Padding = Style? Style->Padding : V2(0.0f);
+
   if (LengthSq(MaxClip) > 0.0f) MaxClip+=Layout->Basis;
 
   for ( u32 CharIndex = 0;
       CharIndex < QuadCount;
       CharIndex++ )
   {
-    v2 MinP = Layout->Basis + Layout->At + V2(Group->Font.Size*CharIndex, 0);
+    v2 MinP = Layout->Basis + Layout->At + Padding + V2(Group->Font.Size*CharIndex, 0);
     DeltaX += BufferChar(Group, Geo, CharIndex, MinP, &Group->Font, Text, Color, MaxClip);
     continue;
   }
 
-  Layout->At.x += DeltaX;
+  Layout->At.x += (DeltaX + (Padding.x*2.0f));
+
   AdvanceClip(Layout);
   return DeltaX;
 }
@@ -782,7 +785,7 @@ Column(const char* ColumnText, debug_ui_render_group* Group, window_layout* Wind
 }
 
 function b32
-Button(const char* ColumnText, debug_ui_render_group *Group, layout* Layout, u8 Color)
+Button(const char* ColumnText, debug_ui_render_group *Group, layout* Layout, u8 Color, ui_style* Style = 0)
 {
   b32 Result = False;
   u32 TextLength = (u32)strlen(ColumnText);
@@ -792,6 +795,12 @@ Button(const char* ColumnText, debug_ui_render_group *Group, layout* Layout, u8 
 
   u8 UseColor = Color;
   rect2 Bounds = RectMinMax(Min, Max);
+
+  if (Style)
+  {
+    Bounds.Max += (Style->Padding*2.0f);
+  }
+
   if (IsInsideRect(Bounds, Group->MouseP))
   {
     UseColor++;
@@ -802,7 +811,7 @@ Button(const char* ColumnText, debug_ui_render_group *Group, layout* Layout, u8 
     }
   }
 
-  BufferValue(ColumnText, Group, Layout, UseColor);
+  BufferValue(ColumnText, Group, Layout, UseColor, V2(0), Style);
 
   return Result;
 }

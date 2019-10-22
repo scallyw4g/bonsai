@@ -709,6 +709,13 @@ V2i(u32 x, u32 y)
 }
 
 void
+operator-=(v2& P1, v2 P2)
+{
+  P1.x -= P2.x;
+  P1.y -= P2.y;
+}
+
+void
 operator+=(v2& P1, v2 P2)
 {
   P1.x += P2.x;

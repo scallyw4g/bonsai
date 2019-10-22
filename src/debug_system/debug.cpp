@@ -100,46 +100,46 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   NewLine(&Layout, &UiGroup->Font);
 
 
+  ui_style ButtonStyling = {};
+  ButtonStyling.Padding = V2(65.0f);
 
-
-  if (Button("PickedChunks", UiGroup, &Layout, WHITE))
+  if (Button("PickedChunks", UiGroup, &Layout, WHITE, &ButtonStyling))
   {
     DebugState->UIType = DebugUIType_PickedChunks;
   }
 
-  if (Button("Graphics", UiGroup, &Layout, WHITE))
+  if (Button("Graphics", UiGroup, &Layout, WHITE, &ButtonStyling))
   {
     DebugState->UIType = DebugUIType_Graphics;
   }
 
-  if (Button("Network", UiGroup, &Layout, WHITE))
+  if (Button("Network", UiGroup, &Layout, WHITE, &ButtonStyling))
   {
     DebugState->UIType = DebugUIType_Network;
   }
 
-  if (Button("Functions", UiGroup, &Layout, WHITE))
+  if (Button("Functions", UiGroup, &Layout, WHITE, &ButtonStyling))
   {
     DebugState->UIType = DebugUIType_CollatedFunctionCalls;
   }
 
-  if (Button("Call Graph", UiGroup, &Layout, WHITE))
+  if (Button("Call Graph", UiGroup, &Layout, WHITE, &ButtonStyling))
   {
     DebugState->UIType = DebugUIType_CallGraph;
   }
 
-  if (Button("Memory", UiGroup, &Layout, WHITE))
+  if (Button("Memory", UiGroup, &Layout, WHITE, &ButtonStyling))
   {
     DebugState->UIType = DebugUIType_Memory;
   }
 
-  if (Button("Draw Calls", UiGroup, &Layout, WHITE))
+  if (Button("Draw Calls", UiGroup, &Layout, WHITE, &ButtonStyling))
   {
     DebugState->UIType = DebugUIType_DrawCalls;
   }
 
   NewLine(&Layout, &UiGroup->Font);
   NewLine(&Layout, &UiGroup->Font);
-
 
 
   switch (DebugState->UIType)

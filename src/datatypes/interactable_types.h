@@ -39,6 +39,8 @@ struct ui_style
   v3 Color;
   v3 HoverColor;
   v3 ClickColor;
+
+  v2 Padding;
 };
 
 function ui_style
