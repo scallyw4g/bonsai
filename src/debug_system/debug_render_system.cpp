@@ -399,7 +399,7 @@ BufferUntexturedQuad(debug_ui_render_group *Group, untextured_2d_geometry_buffer
 }
 
 function r32
-BufferChar(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, u32 CharIndex, v2 MinP, font *Font, const char *Text, u32 Color, v2 MaxClip = V2(0))
+BufferChar(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, u32 CharIndex, v2 MinP, font *Font, const char *Text, v3 Color, v2 MaxClip = V2(0))
 {
   u8 Char = (u8)Text[CharIndex];
   rect2 UV = UVsForChar(Char);
@@ -409,7 +409,7 @@ BufferChar(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, u32 C
     BufferTexturedQuad( Group, Geo,
                         MinP+ShadowOffset, V2(Font->Size),
                         DebugTextureArraySlice_Font, UV,
-                        GetColorData(BLACK).xyz,
+                        V3(0),
                         0.9999f, MaxClip);
 
   }
@@ -417,7 +417,7 @@ BufferChar(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, u32 C
   clip_result ClipResult = BufferTexturedQuad( Group, Geo,
                                          MinP, V2(Font->Size),
                                          DebugTextureArraySlice_Font, UV,
-                                         GetColorData(Color).xyz,
+                                         Color,
                                          1.0f, MaxClip);
 
   r32 DeltaX = 0;
@@ -430,7 +430,15 @@ BufferChar(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, u32 C
 }
 
 function r32
-BufferValue(const char* Text, debug_ui_render_group *Group, layout *Layout, u32 Color, v2 MaxClip = V2(0), ui_style* Style = 0)
+BufferChar(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, u32 CharIndex, v2 MinP, font *Font, const char *Text, u32 Color, v2 MaxClip = V2(0))
+{
+  v3 ColorVector = GetColorData(Color).xyz;
+  r32 Result = BufferChar(Group, Geo, CharIndex, MinP, Font, Text, ColorVector, MaxClip);
+  return Result;
+}
+
+function r32
+BufferValue(const char* Text, debug_ui_render_group *Group, layout *Layout, v3 Color, v2 MaxClip = V2(0), ui_style* Style = 0)
 {
   textured_2d_geometry_buffer *Geo = &Group->TextGroup->TextGeo;
 
@@ -455,6 +463,14 @@ BufferValue(const char* Text, debug_ui_render_group *Group, layout *Layout, u32 
 
   AdvanceClip(Layout);
   return DeltaX;
+}
+
+function r32
+BufferValue(const char* Text, debug_ui_render_group *Group, layout *Layout, u32 Color, v2 MaxClip = V2(0), ui_style* Style = 0)
+{
+  v3 ColorVector = GetColorData(Color).xyz;
+  r32 Result = BufferValue(Text, Group, Layout, ColorVector, MaxClip, Style);
+  return Result;
 }
 
 function void
@@ -785,7 +801,7 @@ Column(const char* ColumnText, debug_ui_render_group* Group, window_layout* Wind
 }
 
 function b32
-Button(const char* ColumnText, debug_ui_render_group *Group, layout* Layout, u8 Color, ui_style* Style = 0)
+Button(const char* ColumnText, debug_ui_render_group *Group, layout* Layout, ui_style* Style = 0)
 {
   b32 Result = False;
   u32 TextLength = (u32)strlen(ColumnText);
@@ -793,21 +809,29 @@ Button(const char* ColumnText, debug_ui_render_group *Group, layout* Layout, u8 
   v2 Min = Layout->Basis + Layout->At;
   v2 Max = Min + GetTextBounds(TextLength, &Group->Font);
 
-  u8 UseColor = Color;
+  v3 UseColor = V3(1.0f);
   rect2 Bounds = RectMinMax(Min, Max);
 
   if (Style)
   {
     Bounds.Max += (Style->Padding*2.0f);
+    UseColor = Style->Color;
   }
 
   if (IsInsideRect(Bounds, Group->MouseP))
   {
-    UseColor++;
+    if (Style)
+    {
+      UseColor = Style->HoverColor;
+    }
 
-    if (Group->Input->LMB.WasPressed)
+    if (Group->Input->LMB.IsDown)
     {
       Result = True;
+      if (Style)
+      {
+        UseColor = Style->ClickColor;
+      }
     }
   }
 
