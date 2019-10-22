@@ -452,7 +452,7 @@ BindHotkeysToInput(hotkeys *Hotkeys, input *Input)
 
   if (Input->F1.WasPressed)
   {
-    Hotkeys->Debug_NextUiState = True;
+    Hotkeys->Debug_ToggleMenu = True;
   }
 
   if (Input->F2.WasPressed)

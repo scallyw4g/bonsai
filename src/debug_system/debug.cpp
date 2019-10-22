@@ -106,42 +106,49 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   ButtonStyling.HoverColor = V3(0.65f);
   ButtonStyling.ClickColor = V3(1, 0, 0);
 
-  if (Button("PickedChunks", UiGroup, &Layout, &ButtonStyling))
+  if (DebugState->DisplayDebugMenu)
   {
-    DebugState->UIType = DebugUIType_PickedChunks;
-  }
+    if (Button("PickedChunks", UiGroup, &Layout, &ButtonStyling))
+    {
+      DebugState->UIType = DebugUIType_PickedChunks;
+    }
 
-  if (Button("Graphics", UiGroup, &Layout, &ButtonStyling))
+    if (Button("Graphics", UiGroup, &Layout, &ButtonStyling))
+    {
+      DebugState->UIType = DebugUIType_Graphics;
+    }
+
+    if (Button("Network", UiGroup, &Layout, &ButtonStyling))
+    {
+      DebugState->UIType = DebugUIType_Network;
+    }
+
+    if (Button("Functions", UiGroup, &Layout, &ButtonStyling))
+    {
+      DebugState->UIType = DebugUIType_CollatedFunctionCalls;
+    }
+
+    if (Button("Call Graph", UiGroup, &Layout, &ButtonStyling))
+    {
+      DebugState->UIType = DebugUIType_CallGraph;
+    }
+
+    if (Button("Memory", UiGroup, &Layout, &ButtonStyling))
+    {
+      DebugState->UIType = DebugUIType_Memory;
+    }
+
+    if (Button("Draw Calls", UiGroup, &Layout, &ButtonStyling))
+    {
+      DebugState->UIType = DebugUIType_DrawCalls;
+    }
+
+    NewLine(&Layout, &UiGroup->Font);
+  }
+  else
   {
-    DebugState->UIType = DebugUIType_Graphics;
+    DebugState->UIType = DebugUIType_None;
   }
-
-  if (Button("Network", UiGroup, &Layout, &ButtonStyling))
-  {
-    DebugState->UIType = DebugUIType_Network;
-  }
-
-  if (Button("Functions", UiGroup, &Layout, &ButtonStyling))
-  {
-    DebugState->UIType = DebugUIType_CollatedFunctionCalls;
-  }
-
-  if (Button("Call Graph", UiGroup, &Layout, &ButtonStyling))
-  {
-    DebugState->UIType = DebugUIType_CallGraph;
-  }
-
-  if (Button("Memory", UiGroup, &Layout, &ButtonStyling))
-  {
-    DebugState->UIType = DebugUIType_Memory;
-  }
-
-  if (Button("Draw Calls", UiGroup, &Layout, &ButtonStyling))
-  {
-    DebugState->UIType = DebugUIType_DrawCalls;
-  }
-
-  NewLine(&Layout, &UiGroup->Font);
 
 
   switch (DebugState->UIType)
@@ -240,10 +247,10 @@ DebugFrameBegin(hotkeys *Hotkeys)
     State->DebugDoScopeProfiling = !State->DebugDoScopeProfiling;
   }
 
-  if ( Hotkeys->Debug_NextUiState )
+  if ( Hotkeys->Debug_ToggleMenu )
   {
-    Hotkeys->Debug_NextUiState = False;
-    State->UIType = (debug_ui_type)(((s32)State->UIType + 1) % (s32)DebugUIType_Count);
+    Hotkeys->Debug_ToggleMenu = False;
+    State->DisplayDebugMenu = !State->DisplayDebugMenu;
   }
 
 
