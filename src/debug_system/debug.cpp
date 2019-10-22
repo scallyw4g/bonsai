@@ -142,7 +142,6 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   }
 
   NewLine(&Layout, &UiGroup->Font);
-  NewLine(&Layout, &UiGroup->Font);
 
 
   switch (DebugState->UIType)

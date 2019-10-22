@@ -1226,7 +1226,7 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 {
   debug_state* DebugState = GetDebugState();
 
-  local_persist window_layout PickerWindow_ = {};
+  local_persist window_layout PickerWindow_ = WindowLayout(LayoutBasis);
   window_layout *ListingWindow = &PickerWindow_;
 
   ListingWindow->Layout.At = V2(0,0);
@@ -1303,8 +1303,13 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
   world_chunk *HotChunk = DebugState->HotChunk;
   if (HotChunk)
   {
+    v2 ChunkDetailWindowMaxClip = V2(950.0f, 600.0f);
+    v2 WindowSpacing = V2(100, 0);
+
+    r32 ListingWindowDimX = Min(ListingWindow->Layout.Clip.Max.x, ListingWindow->MaxClip.x) - ListingWindow->Layout.Clip.Min.x;
+
     {
-      local_persist window_layout ChunkDetailWindow = WindowLayout(V2(1300.0f, 137.0f), V2(950.0f, 600.0f), "ChunkDetailWindow");
+      local_persist window_layout ChunkDetailWindow = WindowLayout(LayoutBasis + V2(ListingWindowDimX, 0.0f) + WindowSpacing, ChunkDetailWindowMaxClip, "ChunkDetailWindow");
       Clear(&ChunkDetailWindow.Layout.At);
       Clear(&ChunkDetailWindow.Layout.Clip);
       WindowInteractions(Group, &ChunkDetailWindow);
@@ -1313,7 +1318,7 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
     }
 
 
-    local_persist window_layout PickerWindow = WindowLayout(V2(430.0f, 137.0f), V2(800.0f), "PickedChunks");
+    local_persist window_layout PickerWindow = WindowLayout(LayoutBasis + V2(ChunkDetailWindowMaxClip.x, 0) + WindowSpacing*2 + V2(ListingWindowDimX, 0.0f), V2(800.0f), "PickedChunks");
     Clear(&PickerWindow.Layout.At);
     Clear(&PickerWindow.Layout.Clip);
 
