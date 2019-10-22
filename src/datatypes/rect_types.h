@@ -140,7 +140,7 @@ Intersect(aabb AABB, ray Ray)
 function b32
 IsInsideRect(rect2 Rect, v2 P)
 {
-  b32 Result = (P > Rect.Min && P < Rect.Max);
+  b32 Result = (P >= Rect.Min && P < Rect.Max);
   return Result;
 }
 
