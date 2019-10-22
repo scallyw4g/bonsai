@@ -438,7 +438,8 @@ BufferChar(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, u32 C
 }
 
 function r32
-BufferValue(const char* Text, debug_ui_render_group *Group, layout *Layout, v3 Color, v2 MaxClip = V2(0), ui_style* Style = 0)
+BufferValue(const char* Text, debug_ui_render_group *Group, layout *Layout,
+            v3 Color, v2 MaxClip = V2(0), ui_style* Style = 0)
 {
   textured_2d_geometry_buffer *Geo = &Group->TextGroup->TextGeo;
 
@@ -461,7 +462,7 @@ BufferValue(const char* Text, debug_ui_render_group *Group, layout *Layout, v3 C
 
   Layout->At.x += (DeltaX + (Padding.x*2.0f));
 
-  AdvanceClip(Layout);
+  AdvanceClip(Layout, &Group->Font, Style);
   return DeltaX;
 }
 
@@ -529,7 +530,7 @@ function rect2
 NewLine(layout *Layout, font *Font)
 {
   v2 Min = { Layout->Basis.x, Layout->Basis.y + Layout->At.y };
-  Layout->At.y += (Font->LineHeight);
+  Layout->At.y = Layout->Clip.Max.y;
   v2 Max = Layout->Basis + Layout->At;
 
   rect2 Bounds = RectMinMax(Min, Max);
