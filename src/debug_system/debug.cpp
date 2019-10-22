@@ -99,6 +99,49 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   NewLine(&Layout, &UiGroup->Font);
   NewLine(&Layout, &UiGroup->Font);
 
+
+
+
+  if (Button("PickedChunks", UiGroup, &Layout, WHITE))
+  {
+    DebugState->UIType = DebugUIType_PickedChunks;
+  }
+
+  if (Button("Graphics", UiGroup, &Layout, WHITE))
+  {
+    DebugState->UIType = DebugUIType_Graphics;
+  }
+
+  if (Button("Network", UiGroup, &Layout, WHITE))
+  {
+    DebugState->UIType = DebugUIType_Network;
+  }
+
+  if (Button("Functions", UiGroup, &Layout, WHITE))
+  {
+    DebugState->UIType = DebugUIType_CollatedFunctionCalls;
+  }
+
+  if (Button("Call Graph", UiGroup, &Layout, WHITE))
+  {
+    DebugState->UIType = DebugUIType_CallGraph;
+  }
+
+  if (Button("Memory", UiGroup, &Layout, WHITE))
+  {
+    DebugState->UIType = DebugUIType_Memory;
+  }
+
+  if (Button("Draw Calls", UiGroup, &Layout, WHITE))
+  {
+    DebugState->UIType = DebugUIType_DrawCalls;
+  }
+
+  NewLine(&Layout, &UiGroup->Font);
+  NewLine(&Layout, &UiGroup->Font);
+
+
+
   switch (DebugState->UIType)
   {
     case DebugUIType_None:
@@ -107,8 +150,6 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
 
     case DebugUIType_PickedChunks:
     {
-      BufferValue("PickedChunks", UiGroup, &Layout, WHITE);
-      NewLine(&Layout, &UiGroup->Font);
       DrawPickedChunks(UiGroup, Layout.At);
     } break;
 
@@ -129,7 +170,6 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
 
     case DebugUIType_CallGraph:
     {
-      BufferValue("Call Graphs", UiGroup, &Layout, WHITE);
       rect2 CycleGraphClip = DebugDrawCallGraph(UiGroup, DebugState, &Layout, Dt.Max);
       DebugDrawCycleThreadGraph(UiGroup, DebugState, V2(CycleGraphClip.Max.x + 20, Layout.At.y));
     } break;
@@ -142,7 +182,6 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
 
     case DebugUIType_DrawCalls:
     {
-      BufferValue("Draw  Calls", UiGroup, &Layout, WHITE);
       DebugDrawDrawCalls(UiGroup, &Layout);
     } break;
 

@@ -70,7 +70,7 @@
 #define DEBUG_DRAW_SHADOW_MAP_TEXTURE 1
 #define DEBUG_HIGHLIGHT_VOID_CHUNKS   0
 #define DEBUG_DRAW_WORLD_AXIES        1
-#define DEBUG_THREAD_COUNT_BIAS       ((u32)(-24))
+#define DEBUG_THREAD_COUNT_BIAS       ((u32)(-20))
 #define DEBUG_PARTICLE_EFFECTS        1
 
 #define DEBUG_FONT_SIZE               18

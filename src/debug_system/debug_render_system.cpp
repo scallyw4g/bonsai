@@ -782,6 +782,32 @@ Column(const char* ColumnText, debug_ui_render_group* Group, window_layout* Wind
 }
 
 function b32
+Button(const char* ColumnText, debug_ui_render_group *Group, layout* Layout, u8 Color)
+{
+  b32 Result = False;
+  u32 TextLength = (u32)strlen(ColumnText);
+
+  v2 Min = Layout->Basis + Layout->At;
+  v2 Max = Min + GetTextBounds(TextLength, &Group->Font);
+
+  u8 UseColor = Color;
+  rect2 Bounds = RectMinMax(Min, Max);
+  if (IsInsideRect(Bounds, Group->MouseP))
+  {
+    UseColor++;
+
+    if (Group->Input->LMB.WasPressed)
+    {
+      Result = True;
+    }
+  }
+
+  BufferValue(ColumnText, Group, Layout, UseColor);
+
+  return Result;
+}
+
+function b32
 Button(const char* ColumnText, debug_ui_render_group *Group, window_layout* Window, u8 Color)
 {
   b32 Result = False;
@@ -1095,8 +1121,9 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
   if (Window->Title)
   {
     BufferValue(Window->Title, Group, &Window->Layout, WHITE, Window->MaxClip);
-    NewRow(Window, &Group->Font);
   }
+
+  NewRow(Window, &Group->Font);
 
   r32 Z = 0.6f;
 
@@ -2190,9 +2217,6 @@ DebugDrawNetworkHud(debug_ui_render_group *Group,
     layout *Layout)
 {
 
-  BufferValue("Network", Group, Layout, WHITE);
-  AdvanceSpaces(2, Layout, &Group->Font);
-
   if (IsConnected(Network))
   {
     BufferValue("O", Group, Layout, GREEN);
@@ -2248,8 +2272,6 @@ DebugDrawNetworkHud(debug_ui_render_group *Group,
 function void
 DebugDrawGraphicsHud(debug_ui_render_group *Group, debug_state *DebugState, layout *Layout)
 {
-  BufferValue("Graphics", Group, Layout, WHITE);
-
   NewLine(Layout, &Group->Font);
   NewLine(Layout, &Group->Font);
 
