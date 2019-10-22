@@ -527,7 +527,7 @@ AdvanceSpaces(u32 N, layout *Layout, font *Font)
 }
 
 function rect2
-NewLine(layout *Layout, font *Font)
+NewLine(layout *Layout)
 {
   v2 Min = { Layout->Basis.x, Layout->Basis.y + Layout->At.y };
   Layout->At.y = Layout->Clip.Max.y;
@@ -540,18 +540,18 @@ NewLine(layout *Layout, font *Font)
 }
 
 r32
-BufferLine(const char* Text, u32 Color, layout *Layout, font *Font, debug_ui_render_group *Group)
+BufferLine(const char* Text, u32 Color, layout *Layout, debug_ui_render_group *Group)
 {
   r32 xOffset = BufferValue(Text, Group, Layout, Color);
-  NewLine(Layout, Font);
+  NewLine(Layout);
   return xOffset;
 }
 
 function rect2
-NewRow(window_layout *Window, font *Font)
+NewRow(window_layout *Window)
 {
   Window->Table.ColumnIndex = 0;
-  rect2 Bounds = NewLine(&Window->Layout, Font);
+  rect2 Bounds = NewLine(&Window->Layout);
   return Bounds;
 }
 
@@ -888,7 +888,7 @@ BufferScopeTreeEntry(debug_ui_render_group *Group, debug_profile_scope *Scope, w
   }
 
   BufferValue(Scope->Name, Group, &Window->Layout, Color);
-  NewRow(Window, &Group->Font);
+  NewRow(Window);
 
   return;
 }
@@ -1162,7 +1162,7 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
     BufferValue(Window->Title, Group, &Window->Layout, WHITE, Window->MaxClip);
   }
 
-  NewRow(Window, &Group->Font);
+  NewRow(Window);
 
   r32 Z = 0.6f;
 
@@ -1210,19 +1210,19 @@ BufferChunkDetails(debug_ui_render_group* Group, world_chunk* Chunk, window_layo
   Column(ToString(Chunk->WorldP.x), Group, Window, WHITE);
   Column(ToString(Chunk->WorldP.y), Group, Window, WHITE);
   Column(ToString(Chunk->WorldP.z), Group, Window, WHITE);
-  NewRow(Window, &Group->Font);
+  NewRow(Window);
 
   Column("PointsToLeaveRemaining", Group, Window, WHITE);
   Column(ToString(Chunk->PointsToLeaveRemaining), Group, Window, WHITE);
-  NewRow(Window, &Group->Font);
+  NewRow(Window);
 
   Column("BoundaryVoxels Count", Group, Window, WHITE);
   Column(ToString(Chunk->EdgeBoundaryVoxelCount), Group, Window, WHITE);
-  NewRow(Window, &Group->Font);
+  NewRow(Window);
 
   Column("Triangles", Group, Window, WHITE);
   Column(ToString(Chunk->TriCount), Group, Window, WHITE);
-  NewRow(Window, &Group->Font);
+  NewRow(Window);
 
   return;
 }
@@ -1275,7 +1275,7 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
       DebugState->PickedChunkCount = DebugState->PickedChunkCount-1;
     }
 
-    NewRow(ListingWindow, &Group->Font);
+    NewRow(ListingWindow);
   }
   untextured_2d_geometry_buffer *Geo = &Group->TextGroup->UIGeo;
   EndClipRect(Group, ListingWindow, Geo);
@@ -1360,7 +1360,7 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
       QueueChunkForInit( DebugState->GameState, &DebugState->Plat->HighPriority, HotChunk);
     }
 
-    NewRow(&PickerWindow, &Group->Font);
+    NewRow(&PickerWindow);
 
     v2 MinP = GetAbsoluteAt(&PickerWindow.Layout);
     v2 QuadDim = PickerWindow.MaxClip - PickerWindow.Layout.At;
@@ -1409,7 +1409,7 @@ DrawScopeBarsRecursive(debug_ui_render_group *Group, untextured_2d_geometry_buff
     if (Scope->Expanded)
     {
       layout ChildrensLayout = *Layout;
-      NewLine(&ChildrensLayout, &Group->Font);
+      NewLine(&ChildrensLayout);
       DrawScopeBarsRecursive(Group, Geo, Scope->Child, &ChildrensLayout, Frame, TotalGraphWidth, Entropy);
       AdvanceClip(&ChildrensLayout);
       Layout->Clip.Max = Max(ChildrensLayout.Clip.Max, Layout->Clip.Max);
@@ -1456,7 +1456,7 @@ DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState
 
     char *ThreadName = FormatString(TranArena, "Thread %u", ThreadIndex);
     Column(ThreadName, Group, &CycleGraphWindow, WHITE);
-    NewRow(&CycleGraphWindow, &Group->Font);
+    NewRow(&CycleGraphWindow);
 
     debug_thread_state *ThreadState = GetThreadLocalStateFor(ThreadIndex);
     debug_scope_tree *ReadTree = ThreadState->ScopeTrees + SharedState->ReadScopeIndex;
@@ -1468,10 +1468,10 @@ DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState
     Layout->At.y = Layout->Clip.Max.y + 25; // Advance vertical at for next thread
 
     EndClipRect(Group, &CycleGraphWindow, Geo);
-    NewRow(&CycleGraphWindow, &Group->Font);
+    NewRow(&CycleGraphWindow);
   }
 
-  NewLine(Layout, &Group->Font);
+  NewLine(Layout);
 
   r32 TotalMs = (r32)FrameStats->FrameMs;
 
@@ -1682,7 +1682,7 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout
 {
   v2 MouseP = Group->MouseP;
 
-  NewLine(MainLayout, &Group->Font);
+  NewLine(MainLayout);
   SetFontSize(&Group->Font, 80);
 
   TIMED_BLOCK("Frame Ticker");
@@ -1760,7 +1760,7 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout
       u32 TotalMutexOps = GetTotalMutexOpsForReadFrame();
       BufferThousands(TotalMutexOps, Group, MainLayout, WHITE);
     }
-    NewLine(MainLayout, &Group->Font);
+    NewLine(MainLayout);
 
   END_BLOCK("Frame Ticker");
 
@@ -1776,12 +1776,12 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout
   CallgraphWindow.Layout.Clip = NullClipRect;
   CallgraphWindow.Layout.Basis = V2(0, MainLayout->Clip.Max.y);
 
-  NewRow(&CallgraphWindow, &Group->Font);
+  NewRow(&CallgraphWindow);
   Column("Frame %",  Group,  &CallgraphWindow,  WHITE);
   Column("Cycles",   Group,  &CallgraphWindow,  WHITE);
   Column("Calls",    Group,  &CallgraphWindow,  WHITE);
   Column("Name",     Group,  &CallgraphWindow,  WHITE);
-  NewRow(&CallgraphWindow, &Group->Font);
+  NewRow(&CallgraphWindow);
 
   for ( u32 ThreadIndex = 0;
       ThreadIndex < TotalThreadCount;
@@ -1794,7 +1794,7 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout
     if (MainThreadReadTree->FrameRecorded == ReadTree->FrameRecorded)
     {
       BufferFirstCallToEach(Group, ReadTree->Root, ReadTree->Root, ThreadsafeDebugMemoryAllocator(), &CallgraphWindow, Frame->TotalCycles, 0);
-      NewRow(&CallgraphWindow, &Group->Font);
+      NewRow(&CallgraphWindow);
     }
   }
 
@@ -1856,7 +1856,7 @@ DebugDrawCollatedFunctionCalls(debug_ui_render_group *Group, debug_state *DebugS
     {
       Column( Func->Name, Group, &FunctionCallWindow, WHITE);
       Column( ToString(Func->CallCount), Group, &FunctionCallWindow, WHITE);
-      NewRow(&FunctionCallWindow, &Group->Font);
+      NewRow(&FunctionCallWindow);
     }
   }
   END_BLOCK("Collated Function Calls");
@@ -1908,8 +1908,8 @@ TrackDrawCall(const char* Caller, u32 VertexCount)
 function void
 DebugDrawDrawCalls(debug_ui_render_group *Group, layout *Layout)
 {
-  NewLine(Layout, &Group->Font);
-  NewLine(Layout, &Group->Font);
+  NewLine(Layout);
+  NewLine(Layout);
 
   for( u32 DrawCountIndex = 0;
        DrawCountIndex < Global_DrawCallArrayLength;
@@ -1922,7 +1922,7 @@ DebugDrawDrawCalls(debug_ui_render_group *Group, layout *Layout)
        BufferThousands(DrawCall->N, Group, Layout, WHITE);
        AdvanceSpaces(2, Layout, &Group->Font);
        BufferValue(DrawCall->Caller, Group, Layout, WHITE);
-       NewLine(Layout, &Group->Font);
+       NewLine(Layout);
      }
   }
 
@@ -1967,7 +1967,7 @@ BufferArenaBargraph(window_layout *BargraphWindow, debug_ui_render_group *Group,
   Column( FormatMemorySize(TotalUsed), Group, BargraphWindow, WHITE);
   b32 Hover = BufferBarGraph(Group, &Group->TextGroup->UIGeo, BargraphWindow, TotalPerc, Color);
   Column( FormatMemorySize(Remaining), Group, BargraphWindow, WHITE);
-  NewRow(BargraphWindow, &Group->Font);
+  NewRow(BargraphWindow);
 
   b32 Click = (Hover && Group->Input->LMB.WasPressed);
   return Click;
@@ -1978,19 +1978,19 @@ BufferMemoryStatsTable(memory_arena_stats MemStats, debug_ui_render_group *Group
 {
   Column("Allocs", Group, StatsWindow, WHITE);
   Column(FormatMemorySize(MemStats.Allocations), Group, StatsWindow, WHITE);
-  NewRow(StatsWindow, &Group->Font);
+  NewRow(StatsWindow);
 
   Column("Pushes", Group, StatsWindow, WHITE);
   Column(FormatThousands(MemStats.Pushes), Group, StatsWindow, WHITE);
-  NewRow(StatsWindow, &Group->Font);
+  NewRow(StatsWindow);
 
   Column("Remaining", Group, StatsWindow, WHITE);
   Column(FormatMemorySize(MemStats.Remaining), Group, StatsWindow, WHITE);
-  NewRow(StatsWindow, &Group->Font);
+  NewRow(StatsWindow);
 
   Column("Total", Group, StatsWindow, WHITE);
   Column(FormatMemorySize(MemStats.TotalAllocated), Group, StatsWindow, WHITE);
-  NewRow(StatsWindow, &Group->Font);
+  NewRow(StatsWindow);
 
   return StatsWindow->Layout.Clip.Max;
 }
@@ -2000,12 +2000,12 @@ BufferMemoryBargraphTable(debug_ui_render_group *Group, selected_arenas *Selecte
 {
   SetFontSize(&Group->Font, 22);
 
-  NewRow(BargraphWindow, &Group->Font);
+  NewRow(BargraphWindow);
   v3 DefaultColor = V3(0.5f, 0.5f, 0.0);
 
   r32 TotalPerc = (r32)SafeDivide0(TotalUsed, MemStats.TotalAllocated);
   b32 ToggleAllArenas = BufferArenaBargraph(BargraphWindow, Group, TotalUsed, TotalPerc, MemStats.Remaining, DefaultColor);
-  NewRow(BargraphWindow, &Group->Font);
+  NewRow(BargraphWindow);
 
   memory_arena *CurrentArena = HeadArena;
   while (CurrentArena)
@@ -2073,7 +2073,7 @@ BufferDebugPushMetaData(debug_ui_render_group *Group, selected_arenas *SelectedA
   Column("Structs", Group, Window, WHITE);
   Column("Push Count", Group, Window, WHITE);
   Column("Name", Group, Window, WHITE);
-  NewRow(Window, &Group->Font);
+  NewRow(Window);
 
 
   // Pick out relevant metadata and write to collation table
@@ -2152,14 +2152,14 @@ BufferDebugPushMetaData(debug_ui_render_group *Group, selected_arenas *SelectedA
       Column( FormatThousands(Collated->StructCount), Group, Window, WHITE);
       Column( FormatThousands(Collated->PushCount), Group, Window, WHITE);
       Column(Collated->Name, Group, Window, WHITE);
-      NewRow(Window, &Group->Font);
+      NewRow(Window);
     }
 
     continue;
   }
 
 
-  NewLine(Layout, &Group->Font);
+  NewLine(Layout);
 
   return Layout;
 }
@@ -2208,13 +2208,13 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, window
 
     {
       SetFontSize(&Group->Font, 36);
-      NewLine(&Window->Layout, &Group->Font);
+      NewLine(&Window->Layout);
       u8 Color = HoverAndClickExpand(Group, &Window->Layout, Current, WHITE, TEAL);
 
       Column(Current->Name, Group, Window, Color);
       Column(MemorySize(MemStats.TotalAllocated), Group, Window, Color);
       Column(ToString(MemStats.Pushes), Group, Window, Color);
-      NewRow(Window, &Group->Font);
+      NewRow(Window);
     }
 
 
@@ -2273,10 +2273,10 @@ DebugDrawNetworkHud(debug_ui_render_group *Group,
       BufferColumn( Network->Client->Id, 2, Group, Layout, WHITE);
     }
 
-    NewLine(Layout, &Group->Font);
-    NewLine(Layout, &Group->Font);
+    NewLine(Layout);
+    NewLine(Layout);
 
-    NewLine(Layout, &Group->Font);
+    NewLine(Layout);
 
     for (s32 ClientIndex = 0;
         ClientIndex < MAX_CLIENTS;
@@ -2294,14 +2294,14 @@ DebugDrawNetworkHud(debug_ui_render_group *Group,
       BufferColumn( Client->Id, 2, Group, Layout, WHITE);
       AdvanceSpaces(2, Layout, &Group->Font);
       BufferColumn(Client->Counter, 7, Group, Layout, Color);
-      NewLine(Layout, &Group->Font);
+      NewLine(Layout);
     }
 
   }
   else
   {
     BufferValue("X", Group, Layout, RED);
-    NewLine(Layout, &Group->Font);
+    NewLine(Layout);
   }
 
   return;
@@ -2316,8 +2316,8 @@ DebugDrawNetworkHud(debug_ui_render_group *Group,
 function void
 DebugDrawGraphicsHud(debug_ui_render_group *Group, debug_state *DebugState, layout *Layout)
 {
-  NewLine(Layout, &Group->Font);
-  NewLine(Layout, &Group->Font);
+  NewLine(Layout);
+  NewLine(Layout);
 
   BufferMemorySize(DebugState->BytesBufferedToCard, Group, Layout, WHITE);
 

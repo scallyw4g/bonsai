@@ -54,7 +54,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   TIMED_BLOCK("Draw Status Bar");
     Dt = ComputeMinMaxAvgDt();
     BufferColumn(Dt.Max, 6, UiGroup, &Layout, WHITE);
-    NewLine(&Layout, &UiGroup->Font);
+    NewLine(&Layout);
 
     BufferColumn(Dt.Avg, 6, UiGroup, &Layout, WHITE);
     BufferColumn(Plat->dt*1000.0f, 6, UiGroup, &Layout, WHITE);
@@ -89,15 +89,15 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
       AdvanceSpaces(1, &Layout, &UiGroup->Font);
       BufferValue("Draw Calls", UiGroup, &Layout, WHITE);
 
-      NewLine(&Layout, &UiGroup->Font);
+      NewLine(&Layout);
     }
 
     BufferColumn(Dt.Min, 6, UiGroup, &Layout, WHITE);
   END_BLOCK("Status Bar");
 
   SetFontSize(&UiGroup->Font, 32);
-  NewLine(&Layout, &UiGroup->Font);
-  NewLine(&Layout, &UiGroup->Font);
+  NewLine(&Layout);
+  NewLine(&Layout);
 
 
   ui_style ButtonStyling = {};
@@ -151,7 +151,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
       DebugState->UIType = DebugUIType_DrawCalls;
     }
 
-    NewLine(&Layout, &UiGroup->Font);
+    NewLine(&Layout);
   }
   else
   {
