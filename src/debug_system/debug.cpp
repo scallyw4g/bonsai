@@ -167,7 +167,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
 
     case DebugUIType_PickedChunks:
     {
-      DrawPickedChunks(UiGroup, Layout.At);
+      DrawPickedChunks(UiGroup, Layout.At + V2(100, 0));
     } break;
 
     case DebugUIType_Graphics:

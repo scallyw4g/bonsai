@@ -545,6 +545,21 @@ GetAbsoluteClip(layout *Layout)
   return Result;
 }
 
+v2
+GetAbsoluteMin(window_layout *Window)
+{
+  v2 Result = GetAbsoluteMin(&Window->Table.Layout);
+  return Result;
+}
+
+v2
+GetAbsoluteMax(window_layout *Window)
+{
+  v2 Result = Max(Window->Table.Layout.Clip.Max, Window->MaxClip) + Window->Table.Layout.Basis;
+  return Result;
+}
+
+
 /*************************                       *****************************/
 /*************************  Profile Scope Trees  *****************************/
 /*************************                       *****************************/

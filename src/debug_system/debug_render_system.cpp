@@ -1256,6 +1256,7 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
   v3 BackgroundColor = V3(0.2f, 0.2f, 0.2f);
   BufferRectangleAt(Group, Geo, RectMinMax(TopLeft, BottomRight), BackgroundColor, 0.0f);
 
+  return;
 }
 
 function void
@@ -1287,12 +1288,12 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 {
   debug_state* DebugState = GetDebugState();
 
-  local_persist window_layout PickerWindow_ = WindowLayout(LayoutBasis);
+  local_persist window_layout PickerWindow_ = WindowLayout(LayoutBasis, V2(400, 150), "PickedChunks");
   window_layout *ListingWindow = &PickerWindow_;
 
-  ListingWindow->Table.Layout.At = V2(0,0);
-  ListingWindow->Table.Layout.Clip = InvertedInfinityRectangle();
-  ListingWindow->Table.Layout.Basis = LayoutBasis;
+  Clear(&ListingWindow->Table.Layout.At);
+  Clear(&ListingWindow->Table.Layout.Clip);
+  WindowInteractions(Group, ListingWindow);
 
   world_chunk** PickedChunks = DebugState->PickedChunks;
 
@@ -1304,8 +1305,7 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
   {
     world_chunk *Chunk = PickedChunks[ChunkIndex];
 
-    u8 MainColor = Chunk == DebugState->HotChunk ? PINK : WHITE;
-
+    u8 MainColor = Chunk == DebugState->HotChunk ? TEAL : WHITE;
     interactable PickerListInteraction = StartInteractable(&ListingWindow->Table.Layout, (umm)ListingWindow);
       Column(ToString(Chunk->WorldP.x), Group, ListingWindow, MainColor, MainColor);
       Column(ToString(Chunk->WorldP.y), Group, ListingWindow, MainColor, MainColor);
@@ -1331,8 +1331,6 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 
     NewRow(ListingWindow);
   }
-  untextured_2d_geometry_buffer *Geo = &Group->TextGroup->UIGeo;
-  EndClipRect(Group, ListingWindow, Geo);
 
   if (DebugState->HotChunk)
   {
@@ -1363,25 +1361,23 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
   world_chunk *HotChunk = DebugState->HotChunk;
   if (HotChunk)
   {
-    v2 ChunkDetailWindowMaxClip = V2(950.0f, 600.0f);
-    v2 WindowSpacing = V2(100, 0);
+    v2 WindowSpacing = V2(140, 0);
 
-    r32 ListingWindowDimX = Min(ListingWindow->Table.Layout.Clip.Max.x, ListingWindow->MaxClip.x) - ListingWindow->Table.Layout.Clip.Min.x;
+    local_persist window_layout ChunkDetailWindow = WindowLayout( V2(GetAbsoluteMax(ListingWindow).x, GetAbsoluteMin(ListingWindow).y) + WindowSpacing,
+                                                                  V2(1100.0f, 400.0f),
+                                                                  "ChunkDetailWindow");
+    Clear(&ChunkDetailWindow.Table.Layout.At);
+    Clear(&ChunkDetailWindow.Table.Layout.Clip);
+    WindowInteractions(Group, &ChunkDetailWindow);
 
-    {
-      local_persist window_layout ChunkDetailWindow = WindowLayout(LayoutBasis + V2(ListingWindowDimX, 0.0f) + WindowSpacing, ChunkDetailWindowMaxClip, "ChunkDetailWindow");
-      Clear(&ChunkDetailWindow.Table.Layout.At);
-      Clear(&ChunkDetailWindow.Table.Layout.Clip);
-      WindowInteractions(Group, &ChunkDetailWindow);
-
-      BufferChunkDetails(Group, HotChunk, &ChunkDetailWindow);
-    }
+    BufferChunkDetails(Group, HotChunk, &ChunkDetailWindow);
 
 
-    local_persist window_layout PickerWindow = WindowLayout(LayoutBasis + V2(ChunkDetailWindowMaxClip.x, 0) + WindowSpacing*2 + V2(ListingWindowDimX, 0.0f), V2(800.0f), "PickedChunks");
+    local_persist window_layout PickerWindow = WindowLayout( V2(GetAbsoluteMax(&ChunkDetailWindow).x, GetAbsoluteMin(&ChunkDetailWindow).y) + WindowSpacing,
+                                                             V2(800.0f),
+                                                             "PickedChunks");
     Clear(&PickerWindow.Table.Layout.At);
     Clear(&PickerWindow.Table.Layout.Clip);
-
     WindowInteractions(Group, &PickerWindow);
 
     b32 DebugButtonPressed = False;
@@ -1892,7 +1888,6 @@ DebugDrawCollatedFunctionCalls(debug_ui_render_group *Group, debug_state *DebugS
 
   Clear(&FunctionCallWindow.Table.Layout.At);
   Clear(&FunctionCallWindow.Table.Layout.Clip);
-
   WindowInteractions(Group, &FunctionCallWindow);
 
   TIMED_BLOCK("Collated Function Calls");
@@ -2262,10 +2257,10 @@ TableLayoutFromSibling(table* Sibling)
 function void
 DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, window_layout* Window)
 {
-  Window->Table.Layout.At = V2(0);
-  Window->Table.Layout.Clip = InvertedInfinityRectangle();
   Window->Title = "Memory Arenas";
 
+  Clear(&Window->Table.Layout.At);
+  Clear(&Window->Table.Layout.Clip);
   WindowInteractions(Group, Window);
 
   for ( u32 Index = 0;
