@@ -808,9 +808,9 @@ Column(const char* ColumnText, debug_ui_render_group* Group, table* Table, u8 Co
 }
 
 function rect2
-Column(const char* ColumnText, debug_ui_render_group* Group, window_layout* Window, u8 Color = WHITE, u8 HoverColor = TEAL, v2 MaxClip = V2(0))
+Column(const char* ColumnText, debug_ui_render_group* Group, window_layout* Window, u8 Color = WHITE, u8 HoverColor = TEAL)
 {
-  rect2 Result = Column(ColumnText, Group, &Window->Table, Color, HoverColor, MaxClip);
+  rect2 Result = Column(ColumnText, Group, &Window->Table, Color, HoverColor, Window->MaxClip);
   return Result;
 }
 
@@ -1980,9 +1980,9 @@ BufferBarGraph(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo,
 function b32
 BufferArenaBargraph(table *Table, debug_ui_render_group *Group, umm TotalUsed, r32 TotalPerc, umm Remaining, v3 Color, v2 MaxClip)
 {
-  Column( FormatMemorySize(TotalUsed), Group, Table, WHITE);
+  Column( FormatMemorySize(TotalUsed), Group, Table, WHITE, WHITE, MaxClip);
   b32 Hover = BufferBarGraph(Group, &Group->TextGroup->UIGeo, Table, TotalPerc, Color, MaxClip);
-  Column( FormatMemorySize(Remaining), Group, Table, WHITE);
+  Column( FormatMemorySize(Remaining), Group, Table, WHITE, WHITE, MaxClip);
   NewRow(Table);
 
   b32 Click = (Hover && Group->Input->LMB.WasPressed);
@@ -2250,13 +2250,19 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, window
 
       local_persist table MemoryStatsTable = {};
       MemoryStatsTable.Layout = Window->Table.Layout;
+      MemoryStatsTable.Layout.Clip.Min = Window->Table.Layout.At;
+      MemoryStatsTable.Layout.Clip.Max = Window->Table.Layout.At;
+
       BufferMemoryStatsTable(MemStats, Group, &MemoryStatsTable, Window->MaxClip);
-      r32 RightOfStatsTable = Window->Table.Layout.Clip.Max.x;
+      r32 RightOfStatsTable = MemoryStatsTable.Layout.Clip.Max.x;
 
       local_persist table MemoryBargraphTable = {};
       MemoryBargraphTable.Layout = MemoryStatsTable.Layout;
+      MemoryBargraphTable.Layout.Clip.Min = MemoryStatsTable.Layout.At;
+      MemoryBargraphTable.Layout.Clip.Max = MemoryStatsTable.Layout.At;
+
       BufferMemoryBargraphTable(Group, DebugState->SelectedArenas, MemStats, TotalUsed, Current->Arena, &MemoryBargraphTable, Window->MaxClip);
-      r32 RightOfBargraphTable = Window->Table.Layout.Clip.Max.x;
+      r32 RightOfBargraphTable = MemoryBargraphTable.Layout.Clip.Max.x;
 
       window_layout TmpWindow = SubWindowAt(Window, Window->Table.Layout.Basis + V2( Max(RightOfStatsTable, RightOfBargraphTable), TopOfStatsTable));
       BufferDebugPushMetaData(Group, DebugState->SelectedArenas, HashArenaHead(Current->Arena), &TmpWindow);
