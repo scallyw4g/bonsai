@@ -1237,10 +1237,10 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
   }
 
   v3 BorderColor = V3(1, 1, 1);
-  BufferRectangleAt(Group, Geo, RectMinMax(TopLeft, TopRight - V2(0, 1)), BorderColor, Z);
-  BufferRectangleAt(Group, Geo, RectMinMax(TopLeft, BottomLeft - V2(1, 0)), BorderColor, Z);
-  BufferRectangleAt(Group, Geo, RectMinMax(TopRight, BottomRight - V2(1, 0)), BorderColor, Z);
-  BufferRectangleAt(Group, Geo, RectMinMax(BottomLeft, BottomRight - V2(0, 1)), BorderColor, Z);
+  BufferRectangleAt(Group, Geo, RectMinMax(TopLeft, TopRight + V2(0, 1)), BorderColor, Z);
+  BufferRectangleAt(Group, Geo, RectMinMax(TopLeft, BottomLeft + V2(1, 0)), BorderColor, Z);
+  BufferRectangleAt(Group, Geo, RectMinMax(TopRight, BottomRight + V2(1, 0)), BorderColor, Z);
+  BufferRectangleAt(Group, Geo, RectMinMax(BottomLeft, BottomRight + V2(0, 1)), BorderColor, Z);
 
 
   {
