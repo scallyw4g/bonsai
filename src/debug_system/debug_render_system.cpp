@@ -251,6 +251,8 @@ struct clip_result
 {
   clip_status ClipStatus;
   v2 MaxClip;
+
+  rect2 PartialClip;
 };
 
 
@@ -267,31 +269,46 @@ BufferQuadDirect(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z, v2 ScreenD
   v3 down_left  = V3( MinP.x       , MinP.y+Dim.y, Z);
 
   clip_result Result = {};
-
   if (LengthSq(MaxClip) > 0.0f)
   {
     // Partial clipping cases
     {
       if (up_left.x < MaxClip.x && up_right.x > MaxClip.x)
       {
+        /* r32 total = up_right.x - up_left.x; */
+        /* r32 total_clipped =  up_left.x - MaxClip.x; */
+        /* Result.PartialClip.Min.x = total_clipped / total; */
+
         Result.MaxClip.x = up_right.x = MaxClip.x;
         Result.ClipStatus = ClipStatus_PartialClipping;
       }
 
       if (down_left.x < MaxClip.x && down_right.x > MaxClip.x)
       {
+        r32 total = down_right.x - down_left.x;
+        r32 total_clipped = down_right.x - MaxClip.x;
+        Result.PartialClip.Max.x = total_clipped / total;
+
         Result.MaxClip.x = down_right.x = MaxClip.x;
         Result.ClipStatus = ClipStatus_PartialClipping;
       }
 
       if (up_right.y < MaxClip.y && down_right.y > MaxClip.y)
       {
+        r32 total = down_right.y - up_right.y;
+        r32 total_clipped = down_right.y - MaxClip.y;
+        Result.PartialClip.Max.y = total_clipped / total;
+
         Result.MaxClip.y = down_right.y = MaxClip.y;
         Result.ClipStatus = ClipStatus_PartialClipping;
       }
 
-      if (up_right.y < MaxClip.y && down_left.y > MaxClip.y)
+      if (up_left.y < MaxClip.y && down_left.y > MaxClip.y)
       {
+        /* r32 total = down_left.y - up_left.y; */
+        /* r32 total_clipped = down_left.y - MaxClip.y; */
+        /* Result.PartialClip.Min.y = total_clipped / total; */
+
         Result.MaxClip.y = down_left.y = MaxClip.y;
         Result.ClipStatus = ClipStatus_PartialClipping;
       }
@@ -353,7 +370,23 @@ BufferTexturedQuad(debug_ui_render_group *Group, textured_2d_geometry_buffer *Ge
 
     case ClipStatus_PartialClipping:
     {
-      // TODO(): Remap UVs
+      Assert(Result.PartialClip.Max.x >= 0.0f && Result.PartialClip.Max.x <= 0.5f);
+      Assert(Result.PartialClip.Max.y >= 0.0f && Result.PartialClip.Max.y <= 0.5f);
+      Assert(Result.PartialClip.Min.x >= 0.0f && Result.PartialClip.Min.x <= 0.5f);
+      Assert(Result.PartialClip.Min.y >= 0.0f && Result.PartialClip.Min.y <= 0.5f);
+
+      v2 ImaginaryMinClippingPercentage = Result.PartialClip.Min;
+      v2 ImaginaryMaxClippingPercentage = Result.PartialClip.Max;
+
+      v2 MinUvDiagonal = UV.Max - UV.Min;
+      v2 MaxUvDiagonal = UV.Min - UV.Max;
+
+      v2 MinUvModifier = MinUvDiagonal * ImaginaryMinClippingPercentage;
+      v2 MaxUvModifier = MaxUvDiagonal * ImaginaryMaxClippingPercentage;
+
+      UV.Min += MinUvModifier;
+      UV.Max += MaxUvModifier;
+
       BufferQuadUVs(Geo, UV, TextureSlice);
       BufferColors(Group, Geo, Color);
       Geo->At += 6;
