@@ -28,6 +28,14 @@ struct table
   u32 ColumnIndex;
 };
 
+// TODO(Jesse): This should probably be something more like:
+//
+// table *Tables;
+// u32 TableCount;
+//
+// Such that we don't have to pass clipping information around to routines that
+// need to do clipping.
+//
 struct window_layout
 {
   const char* Title;

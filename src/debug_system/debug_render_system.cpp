@@ -548,10 +548,17 @@ BufferLine(const char* Text, u32 Color, layout *Layout, debug_ui_render_group *G
 }
 
 function rect2
+NewRow(table *Table)
+{
+  Table->ColumnIndex = 0;
+  rect2 Bounds = NewLine(&Table->Layout);
+  return Bounds;
+}
+
+function rect2
 NewRow(window_layout *Window)
 {
-  Window->Table.ColumnIndex = 0;
-  rect2 Bounds = NewLine(&Window->Table.Layout);
+  rect2 Bounds = NewRow(&Window->Table);
   return Bounds;
 }
 
@@ -772,10 +779,9 @@ GetTextBounds(u32 TextLength, font* Font)
 }
 
 function rect2
-Column(const char* ColumnText, debug_ui_render_group* Group, window_layout* Window, u8 Color, u8 HoverColor = TEAL)
+Column(const char* ColumnText, debug_ui_render_group* Group, table* Table, u8 Color = WHITE, u8 HoverColor = TEAL, v2 MaxClip = V2(0))
 {
-  table *Table = &Window->Table;
-  layout *Layout = &Window->Table.Layout;
+  layout *Layout = &Table->Layout;
 
   table_column *Column = Table->Columns + Table->ColumnIndex;
   Table->ColumnIndex = (Table->ColumnIndex+1)%MAX_TABLE_COLUMNS;
@@ -796,9 +802,16 @@ Column(const char* ColumnText, debug_ui_render_group* Group, window_layout* Wind
     UseColor = HoverColor;
   }
 
-  BufferValue(ColumnText, Group, Layout, UseColor, Window->MaxClip);
+  BufferValue(ColumnText, Group, Layout, UseColor, MaxClip);
 
   return Bounds;
+}
+
+function rect2
+Column(const char* ColumnText, debug_ui_render_group* Group, window_layout* Window, u8 Color = WHITE, u8 HoverColor = TEAL, v2 MaxClip = V2(0))
+{
+  rect2 Result = Column(ColumnText, Group, &Window->Table, Color, HoverColor, MaxClip);
+  return Result;
 }
 
 function b32
@@ -1939,16 +1952,16 @@ DebugDrawDrawCalls(debug_ui_render_group *Group, layout *Layout)
 
 
 function b32
-BufferBarGraph(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo, window_layout *Window, r32 PercFilled, v3 Color)
+BufferBarGraph(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo, table *Table, r32 PercFilled, v3 Color, v2 MaxClip)
 {
   r32 BarHeight = Group->Font.Size;
   r32 BarWidth = 200.0f;
 
-  v2 MinP = Window->Table.Layout.At + Window->Table.Layout.Basis;
+  v2 MinP = Table->Layout.At + Table->Layout.Basis;
   v2 BarDim = V2(BarWidth, BarHeight);
   v2 PercBarDim = V2(BarWidth, BarHeight) * V2(PercFilled, 1);
 
-  BufferUntexturedQuad(Group, Geo, MinP, BarDim, V3(0.25f), 0.5f, Window->Table.Layout.Basis+Window->MaxClip);
+  BufferUntexturedQuad(Group, Geo, MinP, BarDim, V3(0.25f), 0.5f, Table->Layout.Basis+MaxClip);
 
   rect2 BarRect = { MinP, MinP + BarDim };
   b32 Hovering = IsInsideRect(BarRect, Group->MouseP);
@@ -1956,59 +1969,59 @@ BufferBarGraph(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo,
   if (Hovering)
     Color = {{ 1, 0, 1 }};
 
-  BufferUntexturedQuad(Group, Geo, MinP, PercBarDim, Color, 0.5f, Window->Table.Layout.Basis+Window->MaxClip);
+  BufferUntexturedQuad(Group, Geo, MinP, PercBarDim, Color, 0.5f, Table->Layout.Basis+MaxClip);
 
-  Window->Table.Layout.At.x += BarDim.x;
-  AdvanceClip(&Window->Table.Layout);
+  Table->Layout.At.x += BarDim.x;
+  AdvanceClip(&Table->Layout);
 
   return Hovering;
 }
 
 function b32
-BufferArenaBargraph(window_layout *BargraphWindow, debug_ui_render_group *Group, umm TotalUsed, r32 TotalPerc, umm Remaining, v3 Color )
+BufferArenaBargraph(table *Table, debug_ui_render_group *Group, umm TotalUsed, r32 TotalPerc, umm Remaining, v3 Color, v2 MaxClip)
 {
-  Column( FormatMemorySize(TotalUsed), Group, BargraphWindow, WHITE);
-  b32 Hover = BufferBarGraph(Group, &Group->TextGroup->UIGeo, BargraphWindow, TotalPerc, Color);
-  Column( FormatMemorySize(Remaining), Group, BargraphWindow, WHITE);
-  NewRow(BargraphWindow);
+  Column( FormatMemorySize(TotalUsed), Group, Table, WHITE);
+  b32 Hover = BufferBarGraph(Group, &Group->TextGroup->UIGeo, Table, TotalPerc, Color, MaxClip);
+  Column( FormatMemorySize(Remaining), Group, Table, WHITE);
+  NewRow(Table);
 
   b32 Click = (Hover && Group->Input->LMB.WasPressed);
   return Click;
 }
 
-function v2
-BufferMemoryStatsTable(memory_arena_stats MemStats, debug_ui_render_group *Group, window_layout *StatsWindow)
+function void
+BufferMemoryStatsTable(memory_arena_stats MemStats, debug_ui_render_group *Group, table *StatsTable, v2 MaxClip)
 {
-  Column("Allocs", Group, StatsWindow, WHITE);
-  Column(FormatMemorySize(MemStats.Allocations), Group, StatsWindow, WHITE);
-  NewRow(StatsWindow);
+  Column("Allocs", Group, StatsTable, WHITE, WHITE, MaxClip);
+  Column(FormatMemorySize(MemStats.Allocations), Group, StatsTable, WHITE, WHITE, MaxClip);
+  NewRow(StatsTable);
 
-  Column("Pushes", Group, StatsWindow, WHITE);
-  Column(FormatThousands(MemStats.Pushes), Group, StatsWindow, WHITE);
-  NewRow(StatsWindow);
+  Column("Pushes", Group, StatsTable, WHITE, WHITE, MaxClip);
+  Column(FormatThousands(MemStats.Pushes), Group, StatsTable, WHITE, WHITE, MaxClip);
+  NewRow(StatsTable);
 
-  Column("Remaining", Group, StatsWindow, WHITE);
-  Column(FormatMemorySize(MemStats.Remaining), Group, StatsWindow, WHITE);
-  NewRow(StatsWindow);
+  Column("Remaining", Group, StatsTable, WHITE, WHITE, MaxClip);
+  Column(FormatMemorySize(MemStats.Remaining), Group, StatsTable, WHITE, WHITE, MaxClip);
+  NewRow(StatsTable);
 
-  Column("Total", Group, StatsWindow, WHITE);
-  Column(FormatMemorySize(MemStats.TotalAllocated), Group, StatsWindow, WHITE);
-  NewRow(StatsWindow);
+  Column("Total", Group, StatsTable, WHITE, WHITE, MaxClip);
+  Column(FormatMemorySize(MemStats.TotalAllocated), Group, StatsTable, WHITE, WHITE, MaxClip);
+  NewRow(StatsTable);
 
-  return StatsWindow->Table.Layout.Clip.Max;
+  return;
 }
 
 function void
-BufferMemoryBargraphTable(debug_ui_render_group *Group, selected_arenas *SelectedArenas, memory_arena_stats MemStats, umm TotalUsed, memory_arena *HeadArena, window_layout *BargraphWindow)
+BufferMemoryBargraphTable(debug_ui_render_group *Group, selected_arenas *SelectedArenas, memory_arena_stats MemStats, umm TotalUsed, memory_arena *HeadArena, table *Table, v2 MaxClip)
 {
   SetFontSize(&Group->Font, 22);
 
-  NewRow(BargraphWindow);
+  NewRow(Table);
   v3 DefaultColor = V3(0.5f, 0.5f, 0.0);
 
   r32 TotalPerc = (r32)SafeDivide0(TotalUsed, MemStats.TotalAllocated);
-  b32 ToggleAllArenas = BufferArenaBargraph(BargraphWindow, Group, TotalUsed, TotalPerc, MemStats.Remaining, DefaultColor);
-  NewRow(BargraphWindow);
+  b32 ToggleAllArenas = BufferArenaBargraph(Table, Group, TotalUsed, TotalPerc, MemStats.Remaining, DefaultColor, MaxClip);
+  NewRow(Table);
 
   memory_arena *CurrentArena = HeadArena;
   while (CurrentArena)
@@ -2028,7 +2041,7 @@ BufferMemoryBargraphTable(debug_ui_render_group *Group, selected_arenas *Selecte
     u64 CurrentUsed = TotalSize(CurrentArena) - Remaining(CurrentArena);
     r32 CurrentPerc = (r32)SafeDivide0(CurrentUsed, TotalSize(CurrentArena));
 
-    b32 GotClicked = BufferArenaBargraph(BargraphWindow, Group, CurrentUsed, CurrentPerc, Remaining(CurrentArena), Color);
+    b32 GotClicked = BufferArenaBargraph(Table, Group, CurrentUsed, CurrentPerc, Remaining(CurrentArena), Color, MaxClip);
 
     if (ToggleAllArenas || GotClicked)
     {
@@ -2178,6 +2191,15 @@ SubWindowAt(window_layout* Original, v2 NewBasis)
   return Result;
 }
 
+function void
+MergeTables(table* Src, table* Dest)
+{
+  v2 SrcAtRelativeToDest = GetAbsoluteAt(&Src->Layout) - Dest->Layout.Basis;
+  Dest->Layout.At = Max(Dest->Layout.At, SrcAtRelativeToDest);
+  AdvanceClip(&Dest->Layout);
+  return;
+}
+
 function window_layout*
 MergeWindowLayouts(window_layout* Src, window_layout* Dest)
 {
@@ -2226,16 +2248,22 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, window
 
       r32 TopOfStatsTable = Window->Table.Layout.Clip.Max.y;
 
-      BufferMemoryStatsTable(MemStats, Group, Window);
+      local_persist table MemoryStatsTable = {};
+      MemoryStatsTable.Layout = Window->Table.Layout;
+      BufferMemoryStatsTable(MemStats, Group, &MemoryStatsTable, Window->MaxClip);
       r32 RightOfStatsTable = Window->Table.Layout.Clip.Max.x;
 
-      selected_arenas *SelectedArenas = DebugState->SelectedArenas;
-      BufferMemoryBargraphTable(Group, SelectedArenas, MemStats, TotalUsed, Current->Arena, Window);
+      local_persist table MemoryBargraphTable = {};
+      MemoryBargraphTable.Layout = MemoryStatsTable.Layout;
+      BufferMemoryBargraphTable(Group, DebugState->SelectedArenas, MemStats, TotalUsed, Current->Arena, &MemoryBargraphTable, Window->MaxClip);
       r32 RightOfBargraphTable = Window->Table.Layout.Clip.Max.x;
 
       window_layout TmpWindow = SubWindowAt(Window, Window->Table.Layout.Basis + V2( Max(RightOfStatsTable, RightOfBargraphTable), TopOfStatsTable));
-      BufferDebugPushMetaData(Group, SelectedArenas, HashArenaHead(Current->Arena), &TmpWindow);
+      BufferDebugPushMetaData(Group, DebugState->SelectedArenas, HashArenaHead(Current->Arena), &TmpWindow);
       MergeWindowLayouts(&TmpWindow, Window);
+
+      MergeTables(&MemoryStatsTable, &Window->Table);
+      MergeTables(&MemoryBargraphTable, &Window->Table);
     }
 
     continue;
