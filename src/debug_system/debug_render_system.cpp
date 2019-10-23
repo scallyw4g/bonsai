@@ -1082,8 +1082,10 @@ DrawWaitingBar(mutex_op_record *WaitRecord, mutex_op_record *AquiredRecord, mute
 
 
 function void
-ComputePickRay(platform *Plat, m4* ViewProjection, hotkeys* Hotkeys)
+ComputePickRay(platform *Plat, m4* ViewProjection)
 {
+  debug_state *DebugState = GetDebugState();
+
   m4 InverseViewProjection = {};
   b32 Inverted = Inverse((r32*)ViewProjection, (r32*)&InverseViewProjection);
   Assert(Inverted);
@@ -1099,12 +1101,13 @@ ComputePickRay(platform *Plat, m4* ViewProjection, hotkeys* Hotkeys)
                                  &InverseViewProjection);
 
   v3 RayDirection = Normalize(MouseMaxWorldP - MouseMinWorldP);
-  GetDebugState()->PickRay = { MouseMinWorldP, RayDirection };
 
-  if (Hotkeys->Debug_MousePick)
+  DebugState->PickRay = { MouseMinWorldP, RayDirection };
+
+  if (DebugState->DoChunkPicking)
   {
-    GetDebugState()->PickedChunkCount = 0;
-    GetDebugState()->HotChunk = 0;
+    DebugState->PickedChunkCount = 0;
+    DebugState->HotChunk = 0;
   }
 
   return;

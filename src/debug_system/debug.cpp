@@ -230,6 +230,11 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     UiGroup->PressedInteraction = Interactable(V2(FLT_MIN), V2(FLT_MAX), StringHash("GameViewport") );
   }
 
+  if (DebugState->DoChunkPicking && Plat->Input.LMB.WasPressed)
+  {
+    DebugState->DoChunkPicking = False;
+  }
+
   return;
 }
 
@@ -259,6 +264,11 @@ DebugFrameBegin(hotkeys *Hotkeys)
   {
     Hotkeys->Debug_ToggleMenu = False;
     State->DisplayDebugMenu = !State->DisplayDebugMenu;
+  }
+
+  if (Hotkeys->Debug_MousePick)
+  {
+    State->DoChunkPicking = True;
   }
 
 

@@ -181,10 +181,10 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     ProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
     ViewMatrix(WorldChunkDim, Camera);
 
-  DEBUG_COMPUTE_PICK_RAY(Plat, &gBuffer->ViewProjection, Hotkeys);
+  DEBUG_COMPUTE_PICK_RAY(Plat, &gBuffer->ViewProjection);
 
   TIMED_BLOCK("BufferMeshes");
-    BufferWorld(GameState, &GpuMap->Buffer, World, Graphics, VISIBLE_REGION_RADIUS, Hotkeys);
+    BufferWorld(GameState, &GpuMap->Buffer, World, Graphics, VISIBLE_REGION_RADIUS);
     BufferEntities( GameState->EntityTable, &GpuMap->Buffer, Graphics, World, Plat->dt);
   END_BLOCK("BufferMeshes");
 

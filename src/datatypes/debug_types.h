@@ -166,8 +166,8 @@ typedef void (*debug_clear_meta_records_proc)(memory_arena*);
 typedef void (*debug_init_debug_system_proc)(b32);
 typedef void (*debug_track_draw_call_proc)(const char*, u32);
 typedef debug_thread_state* (*debug_get_thread_local_state)(void);
-typedef void (*debug_pick_chunk)(hotkeys*, world_chunk*, aabb);
-typedef void (*debug_compute_pick_ray)(platform*, m4*, hotkeys*);
+typedef void (*debug_pick_chunk)(world_chunk*, aabb);
+typedef void (*debug_compute_pick_ray)(platform*, m4*);
 
 
 
@@ -196,10 +196,15 @@ struct debug_state
 
   selected_arenas *SelectedArenas;
 
+  // Chunk Picking
+  b32 DoChunkPicking;
+
   world_chunk *HotChunk;
   world_chunk *PickedChunks[MAX_PICKED_WORLD_CHUNKS];
   u32 PickedChunkCount;
+
   ray PickRay;
+  //
 
   u64 BytesBufferedToCard;
   b32 Initialized;
@@ -387,8 +392,8 @@ void DebugTimedMutexReleased(mutex *Mut);
 
 #define DEBUG_REGISTER_VIEW_PROJECTION_MATRIX(ViewProjPtr) GetDebugState()->ViewProjection = ViewProjPtr;
 
-#define DEBUG_COMPUTE_PICK_RAY(Plat, ViewProjPtr, Hotkeys) GetDebugState()->ComputePickRay(Plat, ViewProjPtr, Hotkeys)
-#define DEBUG_PICK_CHUNK(Hotkeys, Chunk, ChunkAABB) GetDebugState()->PickChunk(Hotkeys, Chunk, ChunkAABB)
+#define DEBUG_COMPUTE_PICK_RAY(Plat, ViewProjPtr) GetDebugState()->ComputePickRay(Plat, ViewProjPtr)
+#define DEBUG_PICK_CHUNK(Chunk, ChunkAABB) GetDebugState()->PickChunk(Chunk, ChunkAABB)
 
 #else
 

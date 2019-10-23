@@ -1028,7 +1028,7 @@ BufferWorldChunk(
 }
 
 void
-BufferWorld(game_state* GameState, untextured_3d_geometry_buffer* Dest, world *World, graphics *Graphics, world_position VisibleRadius, hotkeys* Hotkeys)
+BufferWorld(game_state* GameState, untextured_3d_geometry_buffer* Dest, world *World, graphics *Graphics, world_position VisibleRadius)
 {
   TIMED_FUNCTION();
 
@@ -1046,8 +1046,7 @@ BufferWorld(game_state* GameState, untextured_3d_geometry_buffer* Dest, world *W
 
         if (Chunk && Chunk->Mesh)
         {
-          DEBUG_PICK_CHUNK(Hotkeys,
-                           Chunk,
+          DEBUG_PICK_CHUNK(Chunk,
                            MinMaxAABB(GetRenderP(WORLD_CHUNK_DIM, Canonical_Position(V3(0,0,0), Chunk->WorldP), Graphics->Camera),
                                       GetRenderP(WORLD_CHUNK_DIM, Canonical_Position(WORLD_CHUNK_DIM, Chunk->WorldP), Graphics->Camera)));
 
