@@ -2211,6 +2211,16 @@ MergeWindowLayouts(window_layout* Src, window_layout* Dest)
   return Dest;
 }
 
+function layout
+TableLayoutFromSibling(table* Sibling)
+{
+  layout Result = Sibling->Layout;
+  Result.Clip.Min = Sibling->Layout.At;
+  Result.Clip.Max = Sibling->Layout.At;
+
+  return Result;
+}
+
 function void
 DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, window_layout* Window)
 {
@@ -2249,18 +2259,12 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, window
       r32 TopOfStatsTable = Window->Table.Layout.Clip.Max.y;
 
       local_persist table MemoryStatsTable = {};
-      MemoryStatsTable.Layout = Window->Table.Layout;
-      MemoryStatsTable.Layout.Clip.Min = Window->Table.Layout.At;
-      MemoryStatsTable.Layout.Clip.Max = Window->Table.Layout.At;
-
+      MemoryStatsTable.Layout = TableLayoutFromSibling(&Window->Table);
       BufferMemoryStatsTable(MemStats, Group, &MemoryStatsTable, Window->MaxClip);
       r32 RightOfStatsTable = MemoryStatsTable.Layout.Clip.Max.x;
 
       local_persist table MemoryBargraphTable = {};
-      MemoryBargraphTable.Layout = MemoryStatsTable.Layout;
-      MemoryBargraphTable.Layout.Clip.Min = MemoryStatsTable.Layout.At;
-      MemoryBargraphTable.Layout.Clip.Max = MemoryStatsTable.Layout.At;
-
+      MemoryBargraphTable.Layout = TableLayoutFromSibling(&MemoryStatsTable);
       BufferMemoryBargraphTable(Group, DebugState->SelectedArenas, MemStats, TotalUsed, Current->Arena, &MemoryBargraphTable, Window->MaxClip);
       r32 RightOfBargraphTable = MemoryBargraphTable.Layout.Clip.Max.x;
 
