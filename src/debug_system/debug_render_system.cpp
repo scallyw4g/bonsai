@@ -275,6 +275,9 @@ BufferQuadDirect(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z, v2 ScreenD
     {
       if (up_left.x < MaxClip.x && up_right.x > MaxClip.x)
       {
+        // NOTE(Jesse): These clipping cases require a MinClip value, which
+        // we don't have because there's no way of resizing a window from the
+        // min corner!
         /* r32 total = up_right.x - up_left.x; */
         /* r32 total_clipped =  up_left.x - MaxClip.x; */
         /* Result.PartialClip.Min.x = total_clipped / total; */
@@ -305,6 +308,9 @@ BufferQuadDirect(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z, v2 ScreenD
 
       if (up_left.y < MaxClip.y && down_left.y > MaxClip.y)
       {
+        // NOTE(Jesse): These clipping cases require a MinClip value, which
+        // we don't have because there's no way of resizing a window from the
+        // min corner!
         /* r32 total = down_left.y - up_left.y; */
         /* r32 total_clipped = down_left.y - MaxClip.y; */
         /* Result.PartialClip.Min.y = total_clipped / total; */
