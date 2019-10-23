@@ -640,7 +640,7 @@ AdvanceClip(layout *Layout, font *Font = 0, ui_style *Style = 0)
 inline void
 BeginClipRect(window_layout *Window)
 {
-  Window->Layout.Clip = InvertedInfinityRectangle();
+  Window->Table.Layout.Clip = InvertedInfinityRectangle();
   return;
 }
 

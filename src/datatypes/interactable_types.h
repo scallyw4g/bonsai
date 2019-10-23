@@ -22,6 +22,8 @@ struct layout
 #define MAX_TABLE_COLUMNS 4
 struct table
 {
+  layout Layout;
+
   table_column Columns[MAX_TABLE_COLUMNS];
   u32 ColumnIndex;
 };
@@ -29,7 +31,6 @@ struct table
 struct window_layout
 {
   const char* Title;
-  layout Layout;
   table Table;
   v2 MaxClip;
 };
@@ -61,7 +62,7 @@ window_layout
 WindowLayout(v2 Basis = V2(150, 150), v2 MaxClip = V2(1500, 800), const char* Title = 0)
 {
   window_layout Window = {};
-  Window.Layout.Basis = Basis;
+  Window.Table.Layout.Basis = Basis;
   Window.MaxClip = MaxClip;
   Window.Title = Title;
 

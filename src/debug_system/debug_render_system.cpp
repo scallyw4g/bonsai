@@ -504,7 +504,7 @@ BufferValue(u32 Number, debug_ui_render_group *Group, layout *Layout, u32 ColorI
 void
 EndClipRect(debug_ui_render_group *Group, window_layout *Window, untextured_2d_geometry_buffer *Geo, v3 Color = V3(0.2f))
 {
-  layout *Layout = &Window->Layout;
+  layout *Layout = &Window->Table.Layout;
 
   v2 MinP = Layout->Clip.Min + Layout->Basis;
   v2 Dim = Min(Layout->Clip.Max, Window->MaxClip) - Layout->Clip.Min;
@@ -551,7 +551,7 @@ function rect2
 NewRow(window_layout *Window)
 {
   Window->Table.ColumnIndex = 0;
-  rect2 Bounds = NewLine(&Window->Layout);
+  rect2 Bounds = NewLine(&Window->Table.Layout);
   return Bounds;
 }
 
@@ -775,10 +775,10 @@ function rect2
 Column(const char* ColumnText, debug_ui_render_group* Group, window_layout* Window, u8 Color, u8 HoverColor = TEAL)
 {
   table *Table = &Window->Table;
-  layout *Layout = &Window->Layout;
+  layout *Layout = &Window->Table.Layout;
 
-  Table->ColumnIndex = (Table->ColumnIndex+1)%MAX_TABLE_COLUMNS;
   table_column *Column = Table->Columns + Table->ColumnIndex;
+  Table->ColumnIndex = (Table->ColumnIndex+1)%MAX_TABLE_COLUMNS;
 
   u32 TextLength = (u32)strlen(ColumnText);
   Column->Max = Max(Column->Max, TextLength + 1);
@@ -872,22 +872,23 @@ BufferScopeTreeEntry(debug_ui_render_group *Group, debug_profile_scope *Scope, w
   Column(ToString(AvgCycles),  Group, Window, Color);
   Column(ToString(CallCount),  Group, Window, Color);
 
-  AdvanceSpaces((Depth*2)+1, &Window->Layout, &Group->Font);
+  layout *Layout = &Window->Table.Layout;
+  AdvanceSpaces((Depth*2)+1, Layout, &Group->Font);
 
   if (Scope->Expanded && Scope->Child)
   {
-    BufferValue("-", Group, &Window->Layout, Color);
+    BufferValue("-", Group, Layout, Color);
   }
   else if (Scope->Child)
   {
-    BufferValue("+", Group, &Window->Layout, Color);
+    BufferValue("+", Group, Layout, Color);
   }
   else
   {
-    AdvanceSpaces(1, &Window->Layout, &Group->Font);
+    AdvanceSpaces(1, Layout, &Group->Font);
   }
 
-  BufferValue(Scope->Name, Group, &Window->Layout, Color);
+  BufferValue(Scope->Name, Group, Layout, Color);
   NewRow(Window);
 
   return;
@@ -1162,24 +1163,24 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
 
   if (Window->Title)
   {
-    BufferValue(Window->Title, Group, &Window->Layout, WHITE, Window->MaxClip);
+    BufferValue(Window->Title, Group, &Window->Table.Layout, WHITE, Window->MaxClip);
   }
 
   NewRow(Window);
 
   r32 Z = 0.6f;
 
-  v2 TopLeft = Window->Layout.Basis;
-  v2 TopRight = Window->Layout.Basis + V2(Window->MaxClip.x, 0);
-  v2 BottomLeft = Window->Layout.Basis + V2(0, Window->MaxClip.y);
-  v2 BottomRight = Window->Layout.Basis + Window->MaxClip;
+  v2 TopLeft = Window->Table.Layout.Basis;
+  v2 TopRight = Window->Table.Layout.Basis + V2(Window->MaxClip.x, 0);
+  v2 BottomLeft = Window->Table.Layout.Basis + V2(0, Window->MaxClip.y);
+  v2 BottomRight = Window->Table.Layout.Basis + Window->MaxClip;
 
   {
     ui_style Style = StandardStyling(V3(0.0f, 0.5f, 0.5f));
     rect2 Rect = RectMinMax(TopLeft, TopRight + V2(0.0f, Group->Font.Size));
     if (Button(Group, Rect, &Style, (umm)"WindowTitleBar"^(umm)Window))
     {
-      Window->Layout.Basis += -1.0f*Group->MouseDP;
+      Window->Table.Layout.Basis += -1.0f*Group->MouseDP;
     }
   }
 
@@ -1238,15 +1239,14 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
   local_persist window_layout PickerWindow_ = WindowLayout(LayoutBasis);
   window_layout *ListingWindow = &PickerWindow_;
 
-  ListingWindow->Layout.At = V2(0,0);
-  ListingWindow->Layout.Clip = NullClipRect;
-  ListingWindow->Layout.Basis = LayoutBasis;
+  ListingWindow->Table.Layout.At = V2(0,0);
+  ListingWindow->Table.Layout.Clip = InvertedInfinityRectangle();
+  ListingWindow->Table.Layout.Basis = LayoutBasis;
 
   world_chunk** PickedChunks = DebugState->PickedChunks;
 
   MapGpuElementBuffer(&DebugState->GameGeo);
 
-  BeginClipRect(ListingWindow);
   for (u32 ChunkIndex = 0;
       ChunkIndex < DebugState->PickedChunkCount;
       ++ChunkIndex)
@@ -1255,7 +1255,7 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 
     u8 MainColor = Chunk == DebugState->HotChunk ? PINK : WHITE;
 
-    interactable PickerListInteraction = StartInteractable(&ListingWindow->Layout, (umm)ListingWindow);
+    interactable PickerListInteraction = StartInteractable(&ListingWindow->Table.Layout, (umm)ListingWindow);
       Column(ToString(Chunk->WorldP.x), Group, ListingWindow, MainColor, MainColor);
       Column(ToString(Chunk->WorldP.y), Group, ListingWindow, MainColor, MainColor);
       Column(ToString(Chunk->WorldP.z), Group, ListingWindow, MainColor, MainColor);
@@ -1315,12 +1315,12 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
     v2 ChunkDetailWindowMaxClip = V2(950.0f, 600.0f);
     v2 WindowSpacing = V2(100, 0);
 
-    r32 ListingWindowDimX = Min(ListingWindow->Layout.Clip.Max.x, ListingWindow->MaxClip.x) - ListingWindow->Layout.Clip.Min.x;
+    r32 ListingWindowDimX = Min(ListingWindow->Table.Layout.Clip.Max.x, ListingWindow->MaxClip.x) - ListingWindow->Table.Layout.Clip.Min.x;
 
     {
       local_persist window_layout ChunkDetailWindow = WindowLayout(LayoutBasis + V2(ListingWindowDimX, 0.0f) + WindowSpacing, ChunkDetailWindowMaxClip, "ChunkDetailWindow");
-      Clear(&ChunkDetailWindow.Layout.At);
-      Clear(&ChunkDetailWindow.Layout.Clip);
+      Clear(&ChunkDetailWindow.Table.Layout.At);
+      Clear(&ChunkDetailWindow.Table.Layout.Clip);
       WindowInteractions(Group, &ChunkDetailWindow);
 
       BufferChunkDetails(Group, HotChunk, &ChunkDetailWindow);
@@ -1328,8 +1328,8 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 
 
     local_persist window_layout PickerWindow = WindowLayout(LayoutBasis + V2(ChunkDetailWindowMaxClip.x, 0) + WindowSpacing*2 + V2(ListingWindowDimX, 0.0f), V2(800.0f), "PickedChunks");
-    Clear(&PickerWindow.Layout.At);
-    Clear(&PickerWindow.Layout.Clip);
+    Clear(&PickerWindow.Table.Layout.At);
+    Clear(&PickerWindow.Table.Layout.Clip);
 
     WindowInteractions(Group, &PickerWindow);
 
@@ -1365,8 +1365,8 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 
     NewRow(&PickerWindow);
 
-    v2 MinP = GetAbsoluteAt(&PickerWindow.Layout);
-    v2 QuadDim = PickerWindow.MaxClip - PickerWindow.Layout.At;
+    v2 MinP = GetAbsoluteAt(&PickerWindow.Table.Layout);
+    v2 QuadDim = PickerWindow.MaxClip - PickerWindow.Table.Layout.At;
 
     BufferTexturedQuad( Group, &Group->TextGroup->TextGeo, MinP, QuadDim,
                         DebugTextureArraySlice_Viewport, UVsForFullyCoveredQuad(),
@@ -1434,11 +1434,11 @@ DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState
 
 
   local_persist window_layout CycleGraphWindow;
-  CycleGraphWindow.Layout.At = V2(0,0);
-  CycleGraphWindow.Layout.Clip = NullClipRect;
-  CycleGraphWindow.Layout.Basis = BasisP;
+  CycleGraphWindow.Table.Layout.At = V2(0,0);
+  CycleGraphWindow.Table.Layout.Clip = NullClipRect;
+  CycleGraphWindow.Table.Layout.Basis = BasisP;
 
-  layout* Layout = &CycleGraphWindow.Layout;
+  layout* Layout = &CycleGraphWindow.Table.Layout;
 
   SetFontSize(&Group->Font, 30);
 
@@ -1667,7 +1667,7 @@ BufferFirstCallToEach(debug_ui_render_group *Group,
 
   while (UniqueScopes)
   {
-    u8 MainColor = (u8)HoverAndClickExpand(Group, &CallgraphLayout->Layout, UniqueScopes->Scope, WHITE, TEAL);
+    u8 MainColor = (u8)HoverAndClickExpand(Group, &CallgraphLayout->Table.Layout, UniqueScopes->Scope, WHITE, TEAL);
     BufferScopeTreeEntry(Group, UniqueScopes->Scope, CallgraphLayout, MainColor, UniqueScopes->TotalCycles, TotalFrameCycles, UniqueScopes->CallCount, Depth);
 
     if (UniqueScopes->Scope->Expanded)
@@ -1775,9 +1775,9 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout
   local_persist window_layout CallgraphWindow;
   TIMED_BLOCK("Call Graph");
 
-  CallgraphWindow.Layout.At = V2(0,0);
-  CallgraphWindow.Layout.Clip = NullClipRect;
-  CallgraphWindow.Layout.Basis = V2(0, MainLayout->Clip.Max.y);
+  CallgraphWindow.Table.Layout.At = V2(0,0);
+  CallgraphWindow.Table.Layout.Clip = NullClipRect;
+  CallgraphWindow.Table.Layout.Basis = V2(0, MainLayout->Clip.Max.y);
 
   NewRow(&CallgraphWindow);
   Column("Frame %",  Group,  &CallgraphWindow,  WHITE);
@@ -1803,7 +1803,7 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout
 
   END_BLOCK("Call Graph");
 
-  rect2 Result = CallgraphWindow.Layout.Clip;
+  rect2 Result = CallgraphWindow.Table.Layout.Clip;
   return Result;
 }
 
@@ -1839,8 +1839,8 @@ DebugDrawCollatedFunctionCalls(debug_ui_render_group *Group, debug_state *DebugS
   local_persist window_layout FunctionCallWindow = WindowLayout(BasisP);
   FunctionCallWindow.Title = "Functions";
 
-  Clear(&FunctionCallWindow.Layout.At);
-  Clear(&FunctionCallWindow.Layout.Clip);
+  Clear(&FunctionCallWindow.Table.Layout.At);
+  Clear(&FunctionCallWindow.Table.Layout.Clip);
 
   WindowInteractions(Group, &FunctionCallWindow);
 
@@ -1944,11 +1944,11 @@ BufferBarGraph(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo,
   r32 BarHeight = Group->Font.Size;
   r32 BarWidth = 200.0f;
 
-  v2 MinP = Window->Layout.At + Window->Layout.Basis;
+  v2 MinP = Window->Table.Layout.At + Window->Table.Layout.Basis;
   v2 BarDim = V2(BarWidth, BarHeight);
   v2 PercBarDim = V2(BarWidth, BarHeight) * V2(PercFilled, 1);
 
-  BufferUntexturedQuad(Group, Geo, MinP, BarDim, V3(0.25f), 0.5f, Window->Layout.Basis+Window->MaxClip);
+  BufferUntexturedQuad(Group, Geo, MinP, BarDim, V3(0.25f), 0.5f, Window->Table.Layout.Basis+Window->MaxClip);
 
   rect2 BarRect = { MinP, MinP + BarDim };
   b32 Hovering = IsInsideRect(BarRect, Group->MouseP);
@@ -1956,10 +1956,10 @@ BufferBarGraph(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo,
   if (Hovering)
     Color = {{ 1, 0, 1 }};
 
-  BufferUntexturedQuad(Group, Geo, MinP, PercBarDim, Color, 0.5f, Window->Layout.Basis+Window->MaxClip);
+  BufferUntexturedQuad(Group, Geo, MinP, PercBarDim, Color, 0.5f, Window->Table.Layout.Basis+Window->MaxClip);
 
-  Window->Layout.At.x += BarDim.x;
-  AdvanceClip(&Window->Layout);
+  Window->Table.Layout.At.x += BarDim.x;
+  AdvanceClip(&Window->Table.Layout);
 
   return Hovering;
 }
@@ -1995,7 +1995,7 @@ BufferMemoryStatsTable(memory_arena_stats MemStats, debug_ui_render_group *Group
   Column(FormatMemorySize(MemStats.TotalAllocated), Group, StatsWindow, WHITE);
   NewRow(StatsWindow);
 
-  return StatsWindow->Layout.Clip.Max;
+  return StatsWindow->Table.Layout.Clip.Max;
 }
 
 function void
@@ -2068,7 +2068,7 @@ BufferDebugPushMetaData(debug_ui_render_group *Group, selected_arenas *SelectedA
 {
   push_metadata CollatedMetaTable[META_TABLE_SIZE] = {};
 
-  layout *Layout = &Window->Layout;
+  layout *Layout = &Window->Table.Layout;
 
   SetFontSize(&Group->Font, 24);
 
@@ -2172,8 +2172,8 @@ SubWindowAt(window_layout* Original, v2 NewBasis)
 {
   window_layout Result = {};
 
-  Result.Layout.Basis = NewBasis;
-  Result.MaxClip = Original->Layout.Basis + Original->MaxClip - NewBasis;
+  Result.Table.Layout.Basis = NewBasis;
+  Result.MaxClip = Original->Table.Layout.Basis + Original->MaxClip - NewBasis;
 
   return Result;
 }
@@ -2181,10 +2181,10 @@ SubWindowAt(window_layout* Original, v2 NewBasis)
 function window_layout*
 MergeWindowLayouts(window_layout* Src, window_layout* Dest)
 {
-  v2 SrcAtRelativeToDest = GetAbsoluteAt(&Src->Layout) - Dest->Layout.Basis;
-  Dest->Layout.At = Max(Dest->Layout.At, SrcAtRelativeToDest);
+  v2 SrcAtRelativeToDest = GetAbsoluteAt(&Src->Table.Layout) - Dest->Table.Layout.Basis;
+  Dest->Table.Layout.At = Max(Dest->Table.Layout.At, SrcAtRelativeToDest);
 
-  AdvanceClip(&Dest->Layout);
+  AdvanceClip(&Dest->Table.Layout);
 
   return Dest;
 }
@@ -2192,9 +2192,8 @@ MergeWindowLayouts(window_layout* Src, window_layout* Dest)
 function void
 DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, window_layout* Window)
 {
-
-  Window->Layout.At = V2(0);
-  Window->Layout.Clip = InvertedInfinityRectangle();
+  Window->Table.Layout.At = V2(0);
+  Window->Table.Layout.Clip = InvertedInfinityRectangle();
   Window->Title = "Memory Arenas";
 
   WindowInteractions(Group, Window);
@@ -2211,8 +2210,8 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, window
 
     {
       SetFontSize(&Group->Font, 36);
-      NewLine(&Window->Layout);
-      u8 Color = HoverAndClickExpand(Group, &Window->Layout, Current, WHITE, TEAL);
+      NewLine(&Window->Table.Layout);
+      u8 Color = HoverAndClickExpand(Group, &Window->Table.Layout, Current, WHITE, TEAL);
 
       Column(Current->Name, Group, Window, Color);
       Column(MemorySize(MemStats.TotalAllocated), Group, Window, Color);
@@ -2225,22 +2224,17 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, window
     {
       SetFontSize(&Group->Font, 28);
 
-      r32 TopOfStatsTable = Window->Layout.Clip.Max.y;
+      r32 TopOfStatsTable = Window->Table.Layout.Clip.Max.y;
 
-      BeginClipRect(Window);
-        BufferMemoryStatsTable(MemStats, Group, Window);
-        r32 RightOfStatsTable = Window->Layout.Clip.Max.x;
-      EndClipRect(Group, Window, &Group->TextGroup->UIGeo, V3(1,0,0));
+      BufferMemoryStatsTable(MemStats, Group, Window);
+      r32 RightOfStatsTable = Window->Table.Layout.Clip.Max.x;
 
-      BeginClipRect(Window);
-        selected_arenas *SelectedArenas = DebugState->SelectedArenas;
-        BufferMemoryBargraphTable(Group, SelectedArenas, MemStats, TotalUsed, Current->Arena, Window);
-        r32 RightOfBargraphTable = Window->Layout.Clip.Max.x;
-      EndClipRect(Group, Window, &Group->TextGroup->UIGeo, V3(0,1,0));
+      selected_arenas *SelectedArenas = DebugState->SelectedArenas;
+      BufferMemoryBargraphTable(Group, SelectedArenas, MemStats, TotalUsed, Current->Arena, Window);
+      r32 RightOfBargraphTable = Window->Table.Layout.Clip.Max.x;
 
-      window_layout TmpWindow = SubWindowAt(Window, Window->Layout.Basis + V2( Max(RightOfStatsTable, RightOfBargraphTable), TopOfStatsTable));
+      window_layout TmpWindow = SubWindowAt(Window, Window->Table.Layout.Basis + V2( Max(RightOfStatsTable, RightOfBargraphTable), TopOfStatsTable));
       BufferDebugPushMetaData(Group, SelectedArenas, HashArenaHead(Current->Arena), &TmpWindow);
-
       MergeWindowLayouts(&TmpWindow, Window);
     }
 

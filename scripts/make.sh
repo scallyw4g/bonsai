@@ -37,9 +37,10 @@ OUTPUT_DIRECTORY="$BIN"
 
 # TODO(Jesse): Investigate -Wcast-align situation
 
-COMMON_OPTIMIZATION_OPTIONS="-O2"
+COMMON_OPTIMIZATION_OPTIONS=""
 
 COMMON_COMPILER_OPTIONS="
+  -ferror-limit=2000
   -ggdb
   -Weverything
   -Wno-c++98-compat-pedantic
