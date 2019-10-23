@@ -1310,7 +1310,7 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
       Column(ToString(Chunk->WorldP.x), Group, ListingWindow, MainColor, MainColor);
       Column(ToString(Chunk->WorldP.y), Group, ListingWindow, MainColor, MainColor);
       Column(ToString(Chunk->WorldP.z), Group, ListingWindow, MainColor, MainColor);
-    EndInteractable(Group, ListingWindow, &PickerListInteraction);
+    EndInteractable(ListingWindow, &PickerListInteraction);
 
     if (Clicked(Group, &PickerListInteraction))
     {
@@ -2281,14 +2281,19 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, window
     {
       SetFontSize(&Group->Font, 36);
       NewLine(&Window->Table.Layout);
-      u8 Color = HoverAndClickExpand(Group, &Window->Table.Layout, Current, WHITE, TEAL);
 
-      Column(Current->Name, Group, Window, Color);
-      Column(MemorySize(MemStats.TotalAllocated), Group, Window, Color);
-      Column(ToString(MemStats.Pushes), Group, Window, Color);
-      NewRow(Window);
+      interactable ExpandInteraction = StartInteractable(&Window->Table.Layout, (umm)"MemoryWindowExpandInteraction"^(umm)Current);
+        Column(Current->Name, Group, Window);
+        Column(MemorySize(MemStats.TotalAllocated), Group, Window);
+        Column(ToString(MemStats.Pushes), Group, Window);
+        NewRow(Window);
+      EndInteractable(Window, &ExpandInteraction);
+
+      if (Clicked(Group, &ExpandInteraction))
+      {
+        Current->Expanded = !Current->Expanded;
+      }
     }
-
 
     if (Current->Expanded)
     {

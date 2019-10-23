@@ -337,3 +337,19 @@ Print_P( camera *Camera, const char* name)
   Print(Camera->ViewingTarget);
   Log("");
 }
+
+inline void
+Print_P( interactable *Interactable, const char* name)
+{
+  Log("\n %s ", name );
+  Print(Interactable->ID);
+  Print(Interactable->MinP);
+  Print(Interactable->MaxP);
+  Log("");
+}
+
+inline void
+Print_P( interactable Interactable, const char* name)
+{
+  Print_P(&Interactable, name);
+}

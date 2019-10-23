@@ -36,14 +36,8 @@ Clicked(debug_ui_render_group* Group, interactable *Interaction)
 }
 
 inline void
-EndInteractable(debug_ui_render_group* Group, window_layout* Window, interactable *Interaction)
+EndInteractable(window_layout* Window, interactable *Interaction)
 {
-  Interaction->MaxP = Window->Table.Layout.Basis + Window->Table.Layout.At;
-
-  if (Interaction->MinP.y == Interaction->MaxP.y)
-  {
-    Interaction->MaxP.y += Group->Font.LineHeight;
-  }
-
+  Interaction->MaxP = Window->Table.Layout.Basis + Window->Table.Layout.Clip.Max;
   return;
 }
