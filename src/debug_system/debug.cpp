@@ -40,9 +40,14 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   UiGroup->GameGeoShader         = &DebugState->GameGeoShader;
   UiGroup->Input                 = &Plat->Input;
   UiGroup->ScreenDim             = V2(Plat->WindowWidth, Plat->WindowHeight);
-  UiGroup->MouseP                = Plat->MouseP;
-  UiGroup->MouseDP               = Plat->MouseDP;
+  UiGroup->MouseP                = &Plat->MouseP;
+  UiGroup->MouseDP               = &Plat->MouseDP;
 
+
+  /* v2 QuadRadius = V2(5); */
+  /* BufferUntexturedQuad(UiGroup, &UiGroup->TextGroup->UIGeo , */
+  /*                      Plat->MouseP - QuadRadius, QuadRadius*2, V3(1,0,0), */
+  /*                      1.0f); */
 
   if ( ! (Plat->Input.LMB.IsDown || Plat->Input.RMB.IsDown))
   {

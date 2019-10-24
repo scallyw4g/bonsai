@@ -138,9 +138,9 @@ FlushBuffer(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo, v2 Sc
   glUniform1i(RG->TextTextureUniform, 0); // Assign texture unit 0 to the TextTexureUniform
 
   u32 AttributeIndex = 0;
-  BufferVertsToCard(  RG->SolidUIVertexBuffer, Geo, &AttributeIndex);
-  BufferUVsToCard(    RG->SolidUIUVBuffer, Geo, &AttributeIndex);
-  BufferColorsToCard( RG->SolidUIColorBuffer, Geo, &AttributeIndex);
+  BufferVertsToCard( RG->SolidUIVertexBuffer, Geo, &AttributeIndex);
+  BufferUVsToCard(   RG->SolidUIUVBuffer,     Geo, &AttributeIndex);
+  BufferColorsToCard(RG->SolidUIColorBuffer,  Geo, &AttributeIndex);
 
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -836,7 +836,7 @@ Column(const char* ColumnText, debug_ui_render_group* Group, table* Table, u8 Co
 
   u8 UseColor = Color;
   rect2 Bounds = RectMinMax(Min, Max);
-  if (IsInsideRect(Bounds, Group->MouseP))
+  if (IsInsideRect(Bounds, *Group->MouseP))
   {
     UseColor = HoverColor;
   }
@@ -871,7 +871,7 @@ Button(const char* ColumnText, debug_ui_render_group *Group, layout* Layout, ui_
     UseColor = Style->Color;
   }
 
-  if (IsInsideRect(Bounds, Group->MouseP))
+  if (IsInsideRect(Bounds, *Group->MouseP))
   {
     if (Style)
     {
@@ -903,7 +903,7 @@ Button(const char* ColumnText, debug_ui_render_group *Group, window_layout* Wind
 {
   b32 Result = False;
   rect2 Bounds = Column(ColumnText, Group, Window, Color);
-  if (IsInsideRect(Bounds, Group->MouseP) && Group->Input->LMB.WasPressed)
+  if (IsInsideRect(Bounds, *Group->MouseP) && Group->Input->LMB.WasPressed)
   {
     Result = True;
   }
@@ -1008,7 +1008,7 @@ HoverAndClickExpand(debug_ui_render_group *Group, layout *Layout, T *Expandable,
 
   {
     rect2 EntryBounds = GetNextLineBounds(Layout, &Group->Font);
-    if ( IsInsideRect(EntryBounds, Group->MouseP) )
+    if ( IsInsideRect(EntryBounds, *Group->MouseP) )
     {
       DrawColor = HoverColor;
       if (Group->Input->LMB.WasPressed)
@@ -1057,7 +1057,7 @@ BufferTextAt(debug_ui_render_group *Group, v2 BasisP, const char *Text, u32 Colo
 function void
 DoTooltip(debug_ui_render_group *Group, const char *Text)
 {
-  BufferTextAt(Group, Group->MouseP+V2(12, -7), Text, WHITE);
+  BufferTextAt(Group, *Group->MouseP+V2(12, -7), Text, WHITE);
   return;
 }
 
@@ -1186,7 +1186,7 @@ BufferRectangleAt(debug_ui_render_group *Group, untextured_2d_geometry_buffer *G
 }
 
 function b32
-Button(debug_ui_render_group* Group, rect2 Rect, ui_style* Style, umm InteractionId, r32 Z = 0.5f)
+Button(debug_ui_render_group* Group, rect2 Rect, ui_style* Style, umm InteractionId, r32 Z = 0.5f, b32 DoDrawing = True)
 {
   b32 Result = False;
 
@@ -1202,7 +1202,10 @@ Button(debug_ui_render_group* Group, rect2 Rect, ui_style* Style, umm Interactio
     UseColor = Style->ClickColor;
   }
 
-  BufferRectangleAt(Group, &Group->TextGroup->UIGeo, Rect, UseColor, Z);
+  if (DoDrawing)
+  {
+    BufferRectangleAt(Group, &Group->TextGroup->UIGeo, Rect, UseColor, Z);
+  }
 
   return Result;
 }
@@ -1222,6 +1225,22 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
 
   r32 Z = 0.6f;
 
+  {
+    ui_style Style = StandardStyling(V3(0.8f, 0.8f, 0.0f));
+    v2 Dim = V2(10);
+    v2 MinP = Window->Table.Layout.Basis + Window->MaxClip - (Dim/2);
+    rect2 Rect = RectMinDim(MinP, Dim);
+
+    if (Button(Group, Rect, &Style, (umm)"WindowResizeWidget"^(umm)Window, 1.0f, False))
+    {
+      Window->MaxClip = Max(V2(0), Window->MaxClip-(*Group->MouseDP));
+    }
+
+    MinP = Window->Table.Layout.Basis + Window->MaxClip - (Dim/2);
+    Rect = RectMinDim(MinP, Dim);
+    Button(Group, Rect, &Style, (umm)"WindowResizeWidget"^(umm)Window);
+  }
+
   v2 TopLeft = Window->Table.Layout.Basis;
   v2 TopRight = Window->Table.Layout.Basis + V2(Window->MaxClip.x, 0);
   v2 BottomLeft = Window->Table.Layout.Basis + V2(0, Window->MaxClip.y);
@@ -1232,7 +1251,7 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
     rect2 Rect = RectMinMax(TopLeft, TopRight + V2(0.0f, Group->Font.Size));
     if (Button(Group, Rect, &Style, (umm)"WindowTitleBar"^(umm)Window))
     {
-      Window->Table.Layout.Basis += -1.0f*Group->MouseDP;
+      Window->Table.Layout.Basis += -1.0f*(*Group->MouseDP);
     }
   }
 
@@ -1241,17 +1260,6 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
   BufferRectangleAt(Group, Geo, RectMinMax(TopLeft, BottomLeft + V2(1, 0)), BorderColor, Z);
   BufferRectangleAt(Group, Geo, RectMinMax(TopRight, BottomRight + V2(1, 0)), BorderColor, Z);
   BufferRectangleAt(Group, Geo, RectMinMax(BottomLeft, BottomRight + V2(0, 1)), BorderColor, Z);
-
-  {
-    ui_style Style = StandardStyling(V3(0.8f, 0.8f, 0.0f));
-    v2 Dim = V2(10);
-    v2 MinP = BottomRight - (Dim/2);
-    rect2 Rect = RectMinDim(MinP, Dim);
-    if (Button(Group, Rect, &Style, (umm)"WindowResizeWidget"^(umm)Window))
-    {
-      Window->MaxClip = Max(V2(0), Window->MaxClip-Group->MouseDP);
-    }
-  }
 
   v3 BackgroundColor = V3(0.2f, 0.2f, 0.2f);
   BufferRectangleAt(Group, Geo, RectMinMax(TopLeft, BottomRight), BackgroundColor, 0.0f);
@@ -1426,7 +1434,7 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
       WindowInput = 0;
     }
 
-    UpdateGameCamera( -0.005f*Group->MouseDP,
+    UpdateGameCamera( -0.005f*(*Group->MouseDP),
                       WindowInput,
                       Canonical_Position(0),
                       &DebugState->Camera);
@@ -1730,7 +1738,7 @@ BufferFirstCallToEach(debug_ui_render_group *Group,
 function rect2
 DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout *MainLayout, r64 MaxMs)
 {
-  v2 MouseP = Group->MouseP;
+  v2 MouseP = *Group->MouseP;
 
   NewLine(MainLayout);
   SetFontSize(&Group->Font, 80);
@@ -1997,7 +2005,7 @@ BufferBarGraph(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo,
   BufferUntexturedQuad(Group, Geo, MinP, BarDim, V3(0.25f), 0.5f, Table->Layout.Basis+MaxClip);
 
   rect2 BarRect = { MinP, MinP + BarDim };
-  b32 Hovering = IsInsideRect(BarRect, Group->MouseP);
+  b32 Hovering = IsInsideRect(BarRect, *Group->MouseP);
 
   if (Hovering)
     Color = {{ 1, 0, 1 }};
@@ -2262,6 +2270,14 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, window
   Clear(&Window->Table.Layout.At);
   Clear(&Window->Table.Layout.Clip);
   WindowInteractions(Group, Window);
+
+
+
+  v2 QuadRadius = V2(5);
+  BufferUntexturedQuad(Group, &Group->TextGroup->UIGeo ,
+                       *Group->MouseP - QuadRadius, QuadRadius*2, V3(1,0,0),
+                       1.0f);
+
 
   for ( u32 Index = 0;
         Index < REGISTERED_MEMORY_ARENA_COUNT;

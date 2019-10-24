@@ -46,8 +46,8 @@ struct debug_ui_render_group
   interactable PressedInteraction;
 
   font Font;
-  v2 MouseP;
-  v2 MouseDP;
+  v2 *MouseP;
+  v2 *MouseDP;
   v2 ScreenDim;
   struct input *Input;
 };
