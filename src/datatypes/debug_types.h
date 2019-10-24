@@ -33,8 +33,7 @@ struct min_max_avg_dt
 
 struct font
 {
-  r32 Size;
-  r32 LineHeight;
+  v2 Size;
 };
 
 struct debug_ui_render_group

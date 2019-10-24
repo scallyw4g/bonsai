@@ -644,7 +644,7 @@ inline void
 AdvanceClip(layout *Layout, font *Font = 0, ui_style *Style = 0)
 {
   v2 StylePadding = Style? Style->Padding*2.0f: V2(0);
-  v2 FontSize = Font? V2(0.0f, Font->Size) : V2(0);
+  v2 FontSize = Font? V2(0.0f, Font->Size.y) : V2(0);
 
   Layout->Clip.Min = Min(Layout->At, Layout->Clip.Min);
   Layout->Clip.Max = Max(Layout->At + StylePadding + FontSize, Layout->Clip.Max);

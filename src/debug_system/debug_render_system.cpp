@@ -376,10 +376,11 @@ BufferTexturedQuad(debug_ui_render_group *Group, textured_2d_geometry_buffer *Ge
 
     case ClipStatus_PartialClipping:
     {
-      Assert(Result.PartialClip.Max.x >= 0.0f && Result.PartialClip.Max.x <= 0.5f);
-      Assert(Result.PartialClip.Max.y >= 0.0f && Result.PartialClip.Max.y <= 0.5f);
-      Assert(Result.PartialClip.Min.x >= 0.0f && Result.PartialClip.Min.x <= 0.5f);
-      Assert(Result.PartialClip.Min.y >= 0.0f && Result.PartialClip.Min.y <= 0.5f);
+
+      /* Assert(Result.PartialClip.Max.x >= 0.0f && Result.PartialClip.Max.x <= 0.5f); */
+      /* Assert(Result.PartialClip.Max.y >= 0.0f && Result.PartialClip.Max.y <= 0.5f); */
+      /* Assert(Result.PartialClip.Min.x >= 0.0f && Result.PartialClip.Min.x <= 0.5f); */
+      /* Assert(Result.PartialClip.Min.y >= 0.0f && Result.PartialClip.Min.y <= 0.5f); */
 
       v2 ImaginaryMinClippingPercentage = Result.PartialClip.Min;
       v2 ImaginaryMaxClippingPercentage = Result.PartialClip.Max;
@@ -404,7 +405,6 @@ BufferTexturedQuad(debug_ui_render_group *Group, textured_2d_geometry_buffer *Ge
 
     InvalidDefaultCase;
   }
-
 
   return Result;
 }
@@ -444,9 +444,9 @@ BufferChar(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, u32 C
   rect2 UV = UVsForChar(Char);
 
   { // Black Drop-shadow
-    v2 ShadowOffset = 0.1f*V2(Font->Size);
+    v2 ShadowOffset = 0.1f*Font->Size;
     BufferTexturedQuad( Group, Geo,
-                        MinP+ShadowOffset, V2(Font->Size),
+                        MinP+ShadowOffset, Font->Size,
                         DebugTextureArraySlice_Font, UV,
                         V3(0),
                         0.9999f, MaxClip);
@@ -454,7 +454,7 @@ BufferChar(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, u32 C
   }
 
   clip_result ClipResult = BufferTexturedQuad( Group, Geo,
-                                         MinP, V2(Font->Size),
+                                         MinP, Font->Size,
                                          DebugTextureArraySlice_Font, UV,
                                          Color,
                                          1.0f, MaxClip);
@@ -494,14 +494,17 @@ BufferValue(const char* Text, debug_ui_render_group *Group, layout *Layout,
       CharIndex < QuadCount;
       CharIndex++ )
   {
-    v2 MinP = Layout->Basis + Layout->At + Padding + V2(Group->Font.Size*CharIndex, 0);
+    v2 MinP = Layout->Basis + Layout->At + Padding + V2(Group->Font.Size.x*CharIndex, 0);
     DeltaX += BufferChar(Group, Geo, CharIndex, MinP, &Group->Font, Text, Color, MaxClip);
     continue;
   }
 
   Layout->At.x += (DeltaX + (Padding.x*2.0f));
 
+  layout CachedLayout = *Layout;
+
   AdvanceClip(Layout, &Group->Font, Style);
+
   return DeltaX;
 }
 
@@ -560,7 +563,7 @@ EndClipRect(debug_ui_render_group *Group, window_layout *Window, untextured_2d_g
 function void
 AdvanceSpaces(u32 N, layout *Layout, font *Font)
 {
-  Layout->At.x += (N*Font->Size);
+  Layout->At.x += (N*Font->Size.x);
   AdvanceClip(Layout);
   return;
 }
@@ -812,8 +815,8 @@ function v2
 GetTextBounds(u32 TextLength, font* Font)
 {
   v2 Result = {};
-  Result.x = TextLength * Font->Size;
-  Result.y = Font->LineHeight;
+  Result.x = TextLength * Font->Size.x;
+  Result.y = Font->Size.y;
   return Result;
 }
 
@@ -841,7 +844,7 @@ Column(const char* ColumnText, debug_ui_render_group* Group, table* Table, u8 Co
     UseColor = HoverColor;
   }
 
-  BufferValue(ColumnText, Group, Layout, UseColor, MaxClip);
+  BufferValue(ColumnText, Group, Layout, GetColorData(UseColor).xyz, MaxClip);
 
   return Bounds;
 }
@@ -946,17 +949,6 @@ BufferScopeTreeEntry(debug_ui_render_group *Group, debug_profile_scope *Scope, w
   return;
 }
 
-function rect2
-GetNextLineBounds(layout *Layout, font *Font)
-{
-  v2 StartingP = GetAbsoluteAt(Layout);
-
-  // FIXME(Jesse): Should line length be systemized somehow?
-  v2 EndingP = StartingP + V2(100000.0f, Font->LineHeight);
-  rect2 Result = { StartingP, EndingP };
-  return Result;
-}
-
 #if 0
 function scope_stats
 GetStatsFor( debug_profile_scope *Target, debug_profile_scope *Root)
@@ -1010,8 +1002,8 @@ PadBottom(layout *Layout, r32 Pad)
 function void
 SetFontSize(font *Font, r32 FontSize)
 {
-  Font->Size = FontSize;
-  Font->LineHeight = FontSize * 1.3f;
+  Font->Size.x = FontSize;
+  Font->Size.y = FontSize * 1.3f;
   return;
 }
 
@@ -1028,7 +1020,7 @@ BufferTextAt(debug_ui_render_group *Group, v2 BasisP, const char *Text, u32 Colo
       CharIndex < QuadCount;
       CharIndex++ )
   {
-    v2 MinP = BasisP + V2(Group->Font.Size*CharIndex, 0);
+    v2 MinP = BasisP + V2(Group->Font.Size.x*CharIndex, 0);
     DeltaX += BufferChar(Group, Geo, CharIndex, MinP, &Group->Font, Text, Color);
     continue;
   }
@@ -1057,7 +1049,7 @@ DrawCycleBar( cycle_range *Range, cycle_range *Frame, r32 TotalGraphWidth, const
 
   r32 FramePerc = (r32)Range->TotalCycles / (r32)Frame->TotalCycles;
 
-  r32 BarHeight = Group->Font.Size;
+  r32 BarHeight = Group->Font.Size.y;
   r32 BarWidth = FramePerc*TotalGraphWidth;
   v2 BarDim = V2(BarWidth, BarHeight);
 
@@ -1227,7 +1219,7 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
 
   {
     ui_style Style = StandardStyling(V3(0.0f, 0.5f, 0.5f));
-    rect2 Rect = RectMinMax(TopLeft, TopRight + V2(0.0f, Group->Font.Size));
+    rect2 Rect = RectMinMax(TopLeft, TopRight + V2(0.0f, Group->Font.Size.y));
     if (Button(Group, Rect, &Style, (umm)"WindowTitleBar"^(umm)Window))
     {
       Window->Table.Layout.Basis += -1.0f*(*Group->MouseDP);
@@ -1739,7 +1731,7 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout
       r32 Perc = (r32)SafeDivide0(Frame->FrameMs, MaxMs);
 
       v2 MinP = MainLayout->At;
-      v2 MaxDim = V2(15.0, Group->Font.Size);
+      v2 MaxDim = V2(15.0, Group->Font.Size.y);
 
       v3 Color = V3(0.5f, 0.5f, 0.5f);
 
@@ -1753,7 +1745,7 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout
       if ( Tree == DebugState->GetReadScopeTree(0) )
         Color = V3(0.8f, 0.8f, 0.0f);
 
-      v2 QuadDim = V2(15.0, (Group->Font.Size) * Perc);
+      v2 QuadDim = V2(15.0, (Group->Font.Size.y) * Perc);
       v2 Offset = MaxDim - QuadDim;
 
       interactable Interaction = Interactable(MinP, MinP+Offset, (umm)"CallGraphBarInteract" );
@@ -1771,17 +1763,17 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout
       if (Clip.ClipStatus != ClipStatus_FullyClipped)
       {
         MainLayout->At.x = Clip.MaxClip.x + 5.0f;
-        AdvanceClip(MainLayout, MainLayout->At + V2(0, Group->Font.Size));
+        AdvanceClip(MainLayout, MainLayout->At + V2(0, Group->Font.Size.y));
       }
     }
 
 
-    r32 MaxBarHeight = Group->Font.Size;
+    r32 MaxBarHeight = Group->Font.Size.y;
     v2 QuadDim = V2(MainLayout->At.x, 2.0f);
     {
       r32 MsPerc = (r32)SafeDivide0(33.333, MaxMs);
       r32 MinPOffset = MaxBarHeight * MsPerc;
-      v2 MinP = { StartingAt.x, StartingAt.y + Group->Font.Size - MinPOffset };
+      v2 MinP = { StartingAt.x, StartingAt.y + Group->Font.Size.y - MinPOffset };
 
       BufferUntexturedQuad(Group, &Group->TextGroup->UIGeo, MinP, QuadDim, V3(1,1,0));
     }
@@ -1789,7 +1781,7 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout
     {
       r32 MsPerc = (r32)SafeDivide0(16.666, MaxMs);
       r32 MinPOffset = MaxBarHeight * MsPerc;
-      v2 MinP = { StartingAt.x, StartingAt.y + Group->Font.Size - MinPOffset };
+      v2 MinP = { StartingAt.x, StartingAt.y + Group->Font.Size.y - MinPOffset };
 
       BufferUntexturedQuad(Group, &Group->TextGroup->UIGeo, MinP, QuadDim, V3(0,1,0));
     }
@@ -1979,7 +1971,7 @@ DebugDrawDrawCalls(debug_ui_render_group *Group, layout *Layout)
 function b32
 BufferBarGraph(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo, table *Table, r32 PercFilled, v3 Color, v2 MaxClip)
 {
-  r32 BarHeight = Group->Font.Size;
+  r32 BarHeight = Group->Font.Size.y;
   r32 BarWidth = 200.0f;
 
   v2 MinP = Table->Layout.At + Table->Layout.Basis;
