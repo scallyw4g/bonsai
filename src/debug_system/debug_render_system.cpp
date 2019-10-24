@@ -913,16 +913,16 @@ Button(const char* ColumnText, debug_ui_render_group *Group, window_layout* Wind
 
 function void
 BufferScopeTreeEntry(debug_ui_render_group *Group, debug_profile_scope *Scope, window_layout* Window,
-    u8 Color, u64 TotalCycles, u64 TotalFrameCycles, u64 CallCount, u32 Depth)
+                     u8 Color, u64 TotalCycles, u64 TotalFrameCycles, u64 CallCount, u32 Depth)
 {
   Assert(TotalFrameCycles);
 
   r32 Percentage = 100.0f * (r32)SafeDivide0((r64)TotalCycles, (r64)TotalFrameCycles);
   u64 AvgCycles = (u64)SafeDivide0(TotalCycles, CallCount);
 
-  Column(ToString(Percentage), Group, Window, Color);
-  Column(ToString(AvgCycles),  Group, Window, Color);
-  Column(ToString(CallCount),  Group, Window, Color);
+  Column(ToString(Percentage), Group, Window);
+  Column(ToString(AvgCycles),  Group, Window);
+  Column(ToString(CallCount),  Group, Window);
 
   layout *Layout = &Window->Table.Layout;
   AdvanceSpaces((Depth*2)+1, Layout, &Group->Font);
@@ -1000,24 +1000,6 @@ GetStatsFor( debug_profile_scope *Target, debug_profile_scope *Root)
   return Result;
 }
 #endif
-
-template <typename T> u8
-HoverAndClickExpand(debug_ui_render_group *Group, layout *Layout, T *Expandable, u8 Color, u8 HoverColor)
-{
-  u8 DrawColor = Color;
-
-  {
-    rect2 EntryBounds = GetNextLineBounds(Layout, &Group->Font);
-    if ( IsInsideRect(EntryBounds, *Group->MouseP) )
-    {
-      DrawColor = HoverColor;
-      if (Group->Input->LMB.WasPressed)
-        Expandable->Expanded = !Expandable->Expanded;
-    }
-  }
-
-  return DrawColor;
-}
 
 function void
 PadBottom(layout *Layout, r32 Pad)
@@ -1719,11 +1701,17 @@ BufferFirstCallToEach(debug_ui_render_group *Group,
 
   while (UniqueScopes)
   {
-    u8 MainColor = (u8)HoverAndClickExpand(Group, &CallgraphLayout->Table.Layout, UniqueScopes->Scope, WHITE, TEAL);
-    BufferScopeTreeEntry(Group, UniqueScopes->Scope, CallgraphLayout, MainColor, UniqueScopes->TotalCycles, TotalFrameCycles, UniqueScopes->CallCount, Depth);
+    interactable ScopeTextInteraction = StartInteractable(&CallgraphLayout->Table.Layout, (umm)UniqueScopes->Scope);
+      BufferScopeTreeEntry(Group, UniqueScopes->Scope, CallgraphLayout, WHITE, UniqueScopes->TotalCycles, TotalFrameCycles, UniqueScopes->CallCount, Depth);
+    EndInteractable(CallgraphLayout, &ScopeTextInteraction);
 
     if (UniqueScopes->Scope->Expanded)
       BufferFirstCallToEach(Group, UniqueScopes->Scope->Child, TreeRoot, Memory, CallgraphLayout, TotalFrameCycles, Depth+1);
+
+    if (Clicked(Group, &ScopeTextInteraction))
+    {
+      UniqueScopes->Scope->Expanded = !UniqueScopes->Scope->Expanded;
+    }
 
     UniqueScopes = UniqueScopes->NextUnique;
   }
@@ -1816,7 +1804,6 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout
       BufferThousands(TotalMutexOps, Group, MainLayout, WHITE);
     }
     NewLine(MainLayout);
-
   END_BLOCK("Frame Ticker");
 
   u32 TotalThreadCount = GetWorkerThreadCount() + 1;
