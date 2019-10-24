@@ -108,8 +108,15 @@ StartInteractable(layout* Layout, umm ID)
 }
 
 rect2
-Rect2(interactable *Interaction)
+Rect2(s32 Flood)
 {
-  rect2 Result = RectMinMax(Interaction->MinP, Interaction->MaxP);
+  rect2 Result = RectMinMax(V2(Flood), V2(Flood));
+  return Result;
+}
+
+rect2
+Rect2(interactable Interaction)
+{
+  rect2 Result = RectMinMax(Interaction.MinP, Interaction.MaxP);
   return Result;
 }

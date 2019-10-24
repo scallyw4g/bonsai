@@ -1186,7 +1186,7 @@ BufferRectangleAt(debug_ui_render_group *Group, untextured_2d_geometry_buffer *G
 }
 
 function b32
-Button(debug_ui_render_group* Group, rect2 Rect, ui_style* Style, umm InteractionId, r32 Z = 0.5f, b32 DoDrawing = True)
+Button(debug_ui_render_group* Group, rect2 Rect, ui_style* Style, umm InteractionId, r32 Z = 0.5f)
 {
   b32 Result = False;
 
@@ -1202,10 +1202,7 @@ Button(debug_ui_render_group* Group, rect2 Rect, ui_style* Style, umm Interactio
     UseColor = Style->ClickColor;
   }
 
-  if (DoDrawing)
-  {
-    BufferRectangleAt(Group, &Group->TextGroup->UIGeo, Rect, UseColor, Z);
-  }
+  BufferRectangleAt(Group, &Group->TextGroup->UIGeo, Rect, UseColor, Z);
 
   return Result;
 }
@@ -1226,19 +1223,19 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
   r32 Z = 0.6f;
 
   {
+    umm DragHandleId = (umm)"WindowResizeWidget"^(umm)Window;
+    interactable DragHandle = Interactable(Rect2(0), DragHandleId);
+    if (Pressed(Group, &DragHandle))
+    {
+      Window->MaxClip = Max(V2(0), Window->MaxClip-(*Group->MouseDP));
+    }
+
     ui_style Style = StandardStyling(V3(0.8f, 0.8f, 0.0f));
     v2 Dim = V2(10);
     v2 MinP = Window->Table.Layout.Basis + Window->MaxClip - (Dim/2);
     rect2 Rect = RectMinDim(MinP, Dim);
 
-    if (Button(Group, Rect, &Style, (umm)"WindowResizeWidget"^(umm)Window, 1.0f, False))
-    {
-      Window->MaxClip = Max(V2(0), Window->MaxClip-(*Group->MouseDP));
-    }
-
-    MinP = Window->Table.Layout.Basis + Window->MaxClip - (Dim/2);
-    Rect = RectMinDim(MinP, Dim);
-    Button(Group, Rect, &Style, (umm)"WindowResizeWidget"^(umm)Window);
+    Button(Group, Rect, &Style, DragHandleId);
   }
 
   v2 TopLeft = Window->Table.Layout.Basis;
@@ -2270,14 +2267,6 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, window
   Clear(&Window->Table.Layout.At);
   Clear(&Window->Table.Layout.Clip);
   WindowInteractions(Group, Window);
-
-
-
-  v2 QuadRadius = V2(5);
-  BufferUntexturedQuad(Group, &Group->TextGroup->UIGeo ,
-                       *Group->MouseP - QuadRadius, QuadRadius*2, V3(1,0,0),
-                       1.0f);
-
 
   for ( u32 Index = 0;
         Index < REGISTERED_MEMORY_ARENA_COUNT;

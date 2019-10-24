@@ -1,7 +1,7 @@
 inline b32
 Hover(debug_ui_render_group* Group, interactable *Interaction)
 {
-  b32 Result = IsInsideRect(Rect2(Interaction), *Group->MouseP);
+  b32 Result = IsInsideRect(Rect2(*Interaction), *Group->MouseP);
   return Result;
 }
 
