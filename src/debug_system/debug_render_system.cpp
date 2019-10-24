@@ -1707,8 +1707,6 @@ BufferFirstCallToEach(debug_ui_render_group *Group,
 function rect2
 DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout *MainLayout, r64 MaxMs)
 {
-  v2 MouseP = *Group->MouseP;
-
   NewLine(MainLayout);
   SetFontSize(&Group->Font, 80);
 
@@ -1724,6 +1722,7 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout
 
       v2 MinP = MainLayout->At;
       v2 MaxDim = V2(15.0, Group->Font.Size.y);
+      v2 MaxP = MinP + MaxDim;
 
       v3 Color = V3(0.5f, 0.5f, 0.5f);
 
@@ -1737,10 +1736,10 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout
       if ( Tree == DebugState->GetReadScopeTree(0) )
         Color = V3(0.8f, 0.8f, 0.0f);
 
-      v2 QuadDim = V2(15.0, (Group->Font.Size.y) * Perc);
-      v2 Offset = MaxDim - QuadDim;
+      v2 QuadDim = MaxDim * V2(1.0f, Perc);
+      v2 VerticalOffset = MaxDim - QuadDim;
 
-      interactable Interaction = Interactable(MinP, MinP+Offset, (umm)"CallGraphBarInteract" );
+      interactable Interaction = Interactable(MinP, MaxP, (umm)"CallGraphBarInteract" );
       if (Hover(Group, &Interaction))
       {
         debug_thread_state *MainThreadState = GetThreadLocalStateFor(0);
@@ -1751,7 +1750,7 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout
         }
       }
 
-      clip_result Clip = BufferUntexturedQuad(Group, &Group->TextGroup->UIGeo, MinP + Offset, QuadDim, Color);
+      clip_result Clip = BufferUntexturedQuad(Group, &Group->TextGroup->UIGeo, MinP + VerticalOffset, QuadDim, Color);
       if (Clip.ClipStatus != ClipStatus_FullyClipped)
       {
         MainLayout->At.x = Clip.MaxClip.x + 5.0f;
