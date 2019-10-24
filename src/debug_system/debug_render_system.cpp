@@ -294,6 +294,8 @@ BufferQuadDirect(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z, v2 ScreenD
 
         Result.MaxClip.x = down_right.x = MaxClip.x;
         Result.ClipStatus = ClipStatus_PartialClipping;
+
+        Assert(Result.PartialClip.Max.x >= 0.0f && Result.PartialClip.Max.x <= 1.0f);
       }
 
       if (up_right.y < MaxClip.y && down_right.y > MaxClip.y)
@@ -304,6 +306,8 @@ BufferQuadDirect(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z, v2 ScreenD
 
         Result.MaxClip.y = down_right.y = MaxClip.y;
         Result.ClipStatus = ClipStatus_PartialClipping;
+
+        Assert(Result.PartialClip.Max.y >= 0.0f && Result.PartialClip.Max.y <= 1.0f);
       }
 
       if (up_left.y < MaxClip.y && down_left.y > MaxClip.y)
@@ -376,20 +380,11 @@ BufferTexturedQuad(debug_ui_render_group *Group, textured_2d_geometry_buffer *Ge
 
     case ClipStatus_PartialClipping:
     {
-
-      /* Assert(Result.PartialClip.Max.x >= 0.0f && Result.PartialClip.Max.x <= 0.5f); */
-      /* Assert(Result.PartialClip.Max.y >= 0.0f && Result.PartialClip.Max.y <= 0.5f); */
-      /* Assert(Result.PartialClip.Min.x >= 0.0f && Result.PartialClip.Min.x <= 0.5f); */
-      /* Assert(Result.PartialClip.Min.y >= 0.0f && Result.PartialClip.Min.y <= 0.5f); */
-
-      v2 ImaginaryMinClippingPercentage = Result.PartialClip.Min;
-      v2 ImaginaryMaxClippingPercentage = Result.PartialClip.Max;
-
       v2 MinUvDiagonal = UV.Max - UV.Min;
       v2 MaxUvDiagonal = UV.Min - UV.Max;
 
-      v2 MinUvModifier = MinUvDiagonal * ImaginaryMinClippingPercentage;
-      v2 MaxUvModifier = MaxUvDiagonal * ImaginaryMaxClippingPercentage;
+      v2 MinUvModifier = MinUvDiagonal * Result.PartialClip.Min;
+      v2 MaxUvModifier = MaxUvDiagonal * Result.PartialClip.Max;
 
       UV.Min += MinUvModifier;
       UV.Max += MaxUvModifier;
@@ -500,9 +495,6 @@ BufferValue(const char* Text, debug_ui_render_group *Group, layout *Layout,
   }
 
   Layout->At.x += (DeltaX + (Padding.x*2.0f));
-
-  layout CachedLayout = *Layout;
-
   AdvanceClip(Layout, &Group->Font, Style);
 
   return DeltaX;
