@@ -1169,6 +1169,94 @@ GetBoundingVoxelsClippedTo(world_chunk* Chunk, chunk_dimension ChunkDim, boundar
   return;
 }
 
+struct plane_computation
+{
+  plane Plane;
+  b32 Complete;
+};
+
+// Note(Jesse): Ported from a rust implementation/post at:
+// https://www.ilikebigbits.com/2015_03_04_plane_from_points.html
+function plane_computation
+BestFittingPlaneFor(boundary_voxels* BoundingPoints)
+{
+  plane_computation Result = {};
+
+  if (BoundingPoints->At >= 3)
+  {
+    v3 Sum = V3(0);
+
+    for (u32 PointIndex = 0;
+        PointIndex < BoundingPoints->At;
+        ++PointIndex)
+    {
+      Sum += V3(BoundingPoints->Points[PointIndex]);
+    }
+
+    v3 Centroid = Sum * (1.0f / (r32)BoundingPoints->At);
+
+    // Calc full 3x3 covariance matrix, excluding symmetries:
+    r32 XX = 0.0;
+    r32 XY = 0.0;
+    r32 XZ = 0.0;
+    r32 YY = 0.0;
+    r32 YZ = 0.0;
+    r32 ZZ = 0.0;
+
+    for (u32 PointIndex = 0;
+        PointIndex < BoundingPoints->At;
+        ++PointIndex)
+    {
+
+      v3 P = V3(BoundingPoints->Points[PointIndex]);
+      v3 R = P - Centroid;
+
+      XX += R.x * R.x;
+      XY += R.x * R.y;
+      XZ += R.x * R.z;
+      YY += R.y * R.y;
+      YZ += R.y * R.z;
+      ZZ += R.z * R.z;
+    }
+
+    r32 D_X = YY*ZZ - YZ*YZ;
+    r32 D_Y = XX*ZZ - XZ*XZ;
+    r32 D_Z = XX*YY - XY*XY;
+
+    r32 D_max = Max( Max(D_X, D_Y), D_Z);
+
+    if (D_max <= 0.0f)
+    {
+      // Pick path with best conditioning:
+      v3 Normal = {};
+
+      if (D_max == D_X)
+      {
+        Normal = V3(D_X, XZ*YZ - XY*ZZ, XY*YZ - XZ*YY);
+      }
+      else if (D_max == D_Y)
+      {
+        Normal = V3(XZ*YZ - XY*ZZ, D_Y, XY*XZ - YZ*XX);
+      }
+      else if (D_max == D_Z)
+      {
+        Normal = V3(XY*YZ - XZ*YY, XY*XZ - YZ*XX, D_Z);
+      }
+      else
+      {
+        // TODO(Jesse): Why is this throwing a compiler error, pray tell?
+        // InvalidCodePath;
+        Error("Hit an invalid code path!");
+      }
+
+      Result.Plane = plane(Centroid, Normal);
+      Result.Complete = True;
+    }
+  }
+
+  return Result;
+}
+
 function v3
 ComputeNormalSVD(boundary_voxels* BoundingPoints, memory_arena* TempMemory)
 {
@@ -1181,9 +1269,6 @@ ComputeNormalSVD(boundary_voxels* BoundingPoints, memory_arena* TempMemory)
   {
     X->Elements[PointIndex] = V3(BoundingPoints->Points[PointIndex]).E[PointIndex%3] - Centroid.E[PointIndex%3];
   }
-
-
-
 
   v3 Result = {};
   return Result;
