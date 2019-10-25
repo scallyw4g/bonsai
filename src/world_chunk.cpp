@@ -1126,6 +1126,9 @@ GetBoundingVoxelsClippedTo(world_chunk* Chunk, chunk_dimension ChunkDim, boundar
 {
   /* TIMED_FUNCTION(); */
 
+  v3 MinClip = GetMin(Clip);
+  v3 MaxClip = GetMax(Clip);
+
   for (s32 z = 0;
       z < ChunkDim.z;
       ++z)
@@ -1140,7 +1143,10 @@ GetBoundingVoxelsClippedTo(world_chunk* Chunk, chunk_dimension ChunkDim, boundar
       {
         voxel_position P = Voxel_Position(x, y, z);
 
-        if ( V3(P) <= GetMin(Clip) || V3(P) >= GetMax(Clip) )
+        v3 v3P = V3(P);
+        if ( v3P.x < MinClip.x || v3P.x > MaxClip.x ||
+             v3P.y < MinClip.y || v3P.y > MaxClip.y ||
+             v3P.z < MinClip.z || v3P.z > MaxClip.z )
         {
           continue;
         }
@@ -1221,11 +1227,12 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
   }
 
 
-  { // Compute 0th LOD
-
+  if (DestChunk->Mesh && DestChunk->Mesh->At)  // Compute 0th LOD
+  {
     u32 SynChunkVolume = (u32)Volume(SynChunkDim);
     boundary_voxels* BoundingPoints = AllocateBoundaryVoxels(SynChunkVolume, Thread->TempMemory);
-    GetBoundingVoxelsClippedTo(SyntheticChunk, SynChunkDim, BoundingPoints, MinMaxAABB( V3(1), V3(WORLD_CHUNK_DIM+1) ) );
+
+    GetBoundingVoxelsClippedTo(SyntheticChunk, SynChunkDim, BoundingPoints, MinMaxAABB( V3(1), V3(SynChunkDim)-V3(2) ) );
 
     chunk_dimension NewSynChunkDim = WORLD_CHUNK_DIM+Voxel_Position(1);
     CopyChunkOffset(SyntheticChunk, SynChunkDim, SyntheticChunk, NewSynChunkDim, Voxel_Position(1));
@@ -1298,7 +1305,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
       }
     }
 
-    ClipAndDisplaceToMinDim(DestChunk->LodMesh, V3(0), V3(WORLD_CHUNK_DIM) );
+    /* ClipAndDisplaceToMinDim(DestChunk->LodMesh, V3(0), V3(WORLD_CHUNK_DIM) ); */
 #endif
 
     if (EdgeBoundaryVoxels->Count)
