@@ -1039,30 +1039,35 @@ DrawCycleBar( cycle_range *Range, cycle_range *Frame, r32 TotalGraphWidth, const
 {
   Assert(Frame->StartCycle < Range->StartCycle);
 
+  b32 Result = False;
+
   r32 FramePerc = (r32)Range->TotalCycles / (r32)Frame->TotalCycles;
 
   r32 BarHeight = Group->Font.Size.y;
   r32 BarWidth = FramePerc*TotalGraphWidth;
-  v2 BarDim = V2(BarWidth, BarHeight);
-
-  // Advance to the appropriate starting place along graph
-  u64 StartCycleOffset = Range->StartCycle - Frame->StartCycle;
-  r32 XOffset = GetXOffsetForHorizontalBar(StartCycleOffset, Frame->TotalCycles, TotalGraphWidth);
-
-  v2 MinP = Layout->At + Layout->Basis + V2(XOffset, 0);
-
-  interactable Interaction = Interactable(MinP, MinP+BarDim, (umm)"CycleBarHoverInteraction" );
-  b32 Result = Hover(Group, &Interaction);
-  if (Result)
+  if (BarWidth > 0.1f)
   {
-    Color *= 0.5f;
-    if (Tooltip) { DoTooltip(Group, Tooltip); }
-  }
+    v2 BarDim = V2(BarWidth, BarHeight);
 
-  clip_result Clip = BufferUntexturedQuad(Group, Geo, MinP, BarDim, Color);
-  if (Clip.ClipStatus != ClipStatus_FullyClipped)
-  {
-    AdvanceClip(Layout, Clip.MaxClip - Layout->Basis);
+    // Advance to the appropriate starting place along graph
+    u64 StartCycleOffset = Range->StartCycle - Frame->StartCycle;
+    r32 XOffset = GetXOffsetForHorizontalBar(StartCycleOffset, Frame->TotalCycles, TotalGraphWidth);
+
+    v2 MinP = Layout->At + Layout->Basis + V2(XOffset, 0);
+
+    interactable Interaction = Interactable(MinP, MinP+BarDim, (umm)"CycleBarHoverInteraction" );
+    Result = Hover(Group, &Interaction);
+    if (Result)
+    {
+      Color *= 0.5f;
+      if (Tooltip) { DoTooltip(Group, Tooltip); }
+    }
+
+    clip_result Clip = BufferUntexturedQuad(Group, Geo, MinP, BarDim, Color);
+    if (Clip.ClipStatus != ClipStatus_FullyClipped)
+    {
+      AdvanceClip(Layout, Clip.MaxClip - Layout->Basis);
+    }
   }
 
   return Result;
@@ -1424,17 +1429,16 @@ DrawScopeBarsRecursive(debug_ui_render_group *Group, untextured_2d_geometry_buff
     v3 Color = RandomV3(Entropy);
 
     b32 Hovering = DrawCycleBar( &Range, Frame, TotalGraphWidth, Scope->Name, Color, Group, Geo, Layout);
+
     if (Hovering && Group->Input->LMB.WasPressed)
       Scope->Expanded = !Scope->Expanded;
 
     if (Scope->Expanded)
     {
-      layout ChildrensLayout = *Layout;
-      NewLine(&ChildrensLayout);
-      DrawScopeBarsRecursive(Group, Geo, Scope->Child, &ChildrensLayout, Frame, TotalGraphWidth, Entropy);
-      AdvanceClip(&ChildrensLayout);
-      Layout->Clip.Max = Max(ChildrensLayout.Clip.Max, Layout->Clip.Max);
-      Layout->Clip.Min = Max(ChildrensLayout.Clip.Min, Layout->Clip.Min);
+      Layout->At.y += Group->Font.Size.y;
+      DrawScopeBarsRecursive(Group, Geo, Scope->Child, Layout, Frame, TotalGraphWidth, Entropy);
+      AdvanceClip(Layout);
+      Layout->At.y -= Group->Font.Size.y;
     }
 
     Scope = Scope->Sibling;
@@ -1473,8 +1477,6 @@ DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState
         ThreadIndex < TotalThreadCount;
         ++ThreadIndex)
   {
-    BeginClipRect(&CycleGraphWindow);
-
     char *ThreadName = FormatString(TranArena, "Thread %u", ThreadIndex);
     Column(ThreadName, Group, &CycleGraphWindow, WHITE);
     NewRow(&CycleGraphWindow);
@@ -1486,9 +1488,6 @@ DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState
       DrawScopeBarsRecursive(Group, Geo, ReadTree->Root, Layout, &FrameCycles, TotalGraphWidth, &Entropy);
     }
 
-    Layout->At.y = Layout->Clip.Max.y + 25; // Advance vertical at for next thread
-
-    EndClipRect(Group, &CycleGraphWindow, Geo);
     NewRow(&CycleGraphWindow);
   }
 

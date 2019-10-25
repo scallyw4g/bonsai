@@ -5,7 +5,7 @@
 #define Assert(condition) \
   if (!(condition)) { Debug(RED_TERMINAL " ! Assertion Failed" WHITE_TERMINAL " - '%s' during %s " Newline, #condition, __FUNCTION__ ); RuntimeBreak(); }
 
-#define InvalidCodePath() Error("Invalid Code Path"); Assert(False)
+#define InvalidCodePath() Error("Invalid Code Path - Panic!"); Assert(False)
 
 #else
 

@@ -28,7 +28,6 @@ SimulatePlayers(game_state *GameState, entity* LocalPlayer, hotkeys *Hotkeys, r3
     {
       SimulatePlayer(GameState, Entity, 0, dt );
     }
-
   }
 }
 
