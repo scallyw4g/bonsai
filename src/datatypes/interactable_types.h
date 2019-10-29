@@ -41,6 +41,8 @@ struct window_layout
   const char* Title;
   table Table;
   v2 MaxClip;
+
+  u32 InteractionStackIndex;
 };
 
 struct ui_style
@@ -67,7 +69,7 @@ StandardStyling(v3 StartingColor, v3 HoverMultiplier = V3(1.1f), v3 ClickMultipl
 }
 
 window_layout
-WindowLayout(v2 Basis = V2(150, 150), v2 MaxClip = V2(1500, 800), const char* Title = 0)
+WindowLayout(const char* Title, v2 Basis = V2(150, 150), v2 MaxClip = V2(1500, 800))
 {
   window_layout Window = {};
   Window.Table.Layout.Basis = Basis;

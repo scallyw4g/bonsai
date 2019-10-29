@@ -44,6 +44,8 @@ struct debug_ui_render_group
 
   interactable PressedInteraction;
 
+  u32 InteractionStackTop;
+
   font Font;
   v2 *MouseP;
   v2 *MouseDP;
