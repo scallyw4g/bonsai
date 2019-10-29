@@ -1261,6 +1261,22 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
 
   NewRow(Window);
 
+  v2 TopLeft = Window->Table.Layout.Basis;
+  v2 TopRight = Window->Table.Layout.Basis + V2(Window->MaxClip.x, 0);
+  v2 BottomLeft = Window->Table.Layout.Basis + V2(0, Window->MaxClip.y);
+  v2 BottomRight = Window->Table.Layout.Basis + Window->MaxClip;
+
+  // TODO(Jesse): Could this be phrased in a more concise way?
+  rect2 WindowBounds = RectMinMax(TopLeft, BottomRight);
+  if (IsInsideRect(WindowBounds, *Group->MouseP) &&
+               (Group->Input->LMB.WasPressed || Group->Input->RMB.WasPressed)
+     )
+  {
+    // NOTE(Jesse): In a perfect world, this is operation is performed before
+    // all buffering
+     Window->InteractionStackIndex = ++Group->InteractionStackTop;
+  }
+
   {
     umm DragHandleId = (umm)"WindowResizeWidget"^(umm)Window;
     interactable DragHandle = Interactable( Rect2(0), DragHandleId);
@@ -1272,40 +1288,30 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
     ui_style Style = StandardStyling(V3(0.8f, 0.8f, 0.0f));
     v2 Dim = V2(10);
     v2 MinP = Window->Table.Layout.Basis + Window->MaxClip - (Dim/2);
-    rect2 WindowBarRect = RectMinDim(MinP, Dim);
+    rect2 DragHandleRect = RectMinDim(MinP, Dim);
 
-    if (Clicked(Group, Interactable(WindowBarRect, DragHandleId)))
-    {
-      // NOTE(Jesse): This has to be incremented before we do any buffering!!
-      Window->InteractionStackIndex = Group->InteractionStackTop++;
-      /* Print(Window->InteractionStackIndex); */
-      /* Print(Group->InteractionStackTop); */
-    }
-
-    Button(Group, WindowBarRect, &Style, DragHandleId);
+    Button(Group, DragHandleRect, &Style, DragHandleId);
   }
 
   if (Window->Title)
   {
+    BufferValue(Window->InteractionStackIndex, Group, &Window->Table.Layout, WHITE, zIndexForText(Window, Group));
     BufferValue(Window->Title, Group, &Window->Table.Layout, WHITE, zIndexForText(Window, Group), Window->MaxClip);
   }
 
-  v2 TopLeft = Window->Table.Layout.Basis;
-  v2 TopRight = Window->Table.Layout.Basis + V2(Window->MaxClip.x, 0);
-  v2 BottomLeft = Window->Table.Layout.Basis + V2(0, Window->MaxClip.y);
-  v2 BottomRight = Window->Table.Layout.Basis + Window->MaxClip;
+  v3 BorderColor = V3(1, 1, 1);
 
   {
     ui_style Style = StandardStyling(V3(0.0f, 0.5f, 0.5f));
-    rect2 Rect = RectMinMax(TopLeft, TopRight + V2(0.0f, Group->Font.Size.y));
-    if (Button(Group, Rect, &Style, (umm)"WindowTitleBar"^(umm)Window))
+    rect2 TitleBarRect = RectMinMax(TopLeft, TopRight + V2(0.0f, Group->Font.Size.y));
+    umm TitleBarInteractionId = (umm)"WindowTitleBar"^(umm)Window;
+    if (Button(Group, TitleBarRect, &Style, TitleBarInteractionId))
     {
       Window->Table.Layout.Basis -= *Group->MouseDP;
     }
   }
 
   {
-    v3 BorderColor = V3(1, 1, 1);
     r32 Z = zIndexForBorders(Window, Group);
     BufferRectangleAt(Group, Geo, RectMinMax(TopLeft, TopRight - V2(0, 1)), BorderColor, Z);
     BufferRectangleAt(Group, Geo, RectMinMax(TopLeft, BottomLeft - V2(1, 0)), BorderColor, Z);
