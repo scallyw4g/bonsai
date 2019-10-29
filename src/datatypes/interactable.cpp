@@ -35,6 +35,13 @@ Clicked(debug_ui_render_group* Group, interactable *Interaction)
   return Result;
 }
 
+inline b32
+Clicked(debug_ui_render_group* Group, interactable Interaction)
+{
+  b32 Result = Clicked(Group, &Interaction);
+  return Result;
+}
+
 inline void
 EndInteractable(window_layout* Window, interactable *Interaction)
 {

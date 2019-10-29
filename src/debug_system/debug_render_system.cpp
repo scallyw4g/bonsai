@@ -30,6 +30,53 @@ CleanupText2D(debug_text_render_group *RG)
 }
 #endif
 
+#define DEBUG_MAX_UI_WINDOW_SLICES 1024.0f
+
+// NOTE(Jesse): This is the bottom-most value on this slice
+function r32
+zIndexForBackgrounds(window_layout *Window, debug_ui_render_group *Group)
+{
+  // NOTE(Jesse): We add one to the z-slice initially because a z-slice of 0 is
+  // invalid.  It is invalid because the slices are discrete chunks of z space
+  // as opposed to indices into an array, and slice 0 is just nonsensical in
+  // that context.
+  u32 zSlice = 1 + Group->InteractionStackTop - Window->InteractionStackIndex;
+  r32 Result = 1.0f - ( (r32)zSlice / DEBUG_MAX_UI_WINDOW_SLICES );
+  Assert(Result <= 1.0f && Result >= 0.0f);
+  return Result;
+}
+
+function r32
+zSliceInterval()
+{
+  r32 Result = (r32)1.0f / DEBUG_MAX_UI_WINDOW_SLICES;
+  Assert(Result <= 1.0f && Result >= 0.0f);
+  return Result;
+}
+
+function r32
+zOffsetForTextShadow(void)
+{
+  r32 Result = (zSliceInterval()*0.05f);
+  return Result;
+}
+
+function r32
+zIndexForBorders(window_layout *Window, debug_ui_render_group *Group)
+{
+  r32 Result = zIndexForBackgrounds(Window, Group) + (zSliceInterval()*0.9f);
+  Assert(Result <= 1.0f && Result >= 0.0f);
+  return Result;
+}
+
+function r32
+zIndexForText(window_layout *Window, debug_ui_render_group *Group)
+{
+  r32 Result = zIndexForBackgrounds(Window, Group) + (zSliceInterval()*0.45f);
+  Assert(Result <= 1.0f && Result >= 0.0f);
+  return Result;
+}
+
 function b32
 InitDebugOverlayFramebuffer(debug_text_render_group *RG, memory_arena *DebugArena, const char *DebugFont)
 {
@@ -445,7 +492,7 @@ BufferChar(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, u32 C
   rect2 UV = UVsForChar(Char);
 
   { // Black Drop-shadow
-    r32 e = 0.0001f; // TODO(Jesse): How do we compute this epsilon such that it doesn't interfere with other z-slices?
+    r32 e = zOffsetForTextShadow();
     v2 ShadowOffset = 0.1f*Font->Size;
     BufferTexturedQuad( Group, Geo,
                         MinP+ShadowOffset, Font->Size,
@@ -854,46 +901,6 @@ Column(const char* ColumnText, debug_ui_render_group* Group, table* Table, r32 Z
   return Bounds;
 }
 
-#define DEBUG_MAX_UI_WINDOW_SLICES 1024.0f
-
-// NOTE(Jesse): This is the bottom-most value on this slice
-function r32
-zIndexForBackgrounds(window_layout *Window, debug_ui_render_group *Group)
-{
-  // NOTE(Jesse): We add one to the z-slice initially because a z-slice of 0 is
-  // invalid.  It is invalid because the slices are discrete chunks of z space
-  // as opposed to indices into an array, and slice 0 is just nonsensical in
-  // that context.
-  u32 zSlice = 1 + Group->InteractionStackTop - Window->InteractionStackIndex;
-  r32 Result = 1.0f - ( (r32)zSlice / DEBUG_MAX_UI_WINDOW_SLICES );
-  Assert(Result <= 1.0f && Result >= 0.0f);
-  return Result;
-}
-
-function r32
-zSliceInterval()
-{
-  r32 Result = (r32)1.0f / DEBUG_MAX_UI_WINDOW_SLICES;
-  Assert(Result <= 1.0f && Result >= 0.0f);
-  return Result;
-}
-
-function r32
-zIndexForBorders(window_layout *Window, debug_ui_render_group *Group)
-{
-  r32 Result = zIndexForBackgrounds(Window, Group) + (zSliceInterval()*0.9f);
-  Assert(Result <= 1.0f && Result >= 0.0f);
-  return Result;
-}
-
-function r32
-zIndexForText(window_layout *Window, debug_ui_render_group *Group)
-{
-  r32 Result = zIndexForBackgrounds(Window, Group) + (zSliceInterval()*0.45f);
-  Assert(Result <= 1.0f && Result >= 0.0f);
-  return Result;
-}
-
 function rect2
 Column(const char* ColumnText, debug_ui_render_group* Group, window_layout* Window, u8 Color = WHITE, u8 HoverColor = TEAL)
 {
@@ -1256,23 +1263,26 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
 
   {
     umm DragHandleId = (umm)"WindowResizeWidget"^(umm)Window;
-    interactable DragHandle = Interactable(Rect2(0), DragHandleId);
+    interactable DragHandle = Interactable( Rect2(0), DragHandleId);
     if (Pressed(Group, &DragHandle))
     {
       Window->MaxClip = Max(V2(0), Window->MaxClip-(*Group->MouseDP));
     }
 
-    if (Clicked(Group, &DragHandle))
-    {
-      // NOTE(Jesse): This has to be incremented before we do any buffering!!
-      Window->InteractionStackIndex = Group->InteractionStackTop++;
-    }
     ui_style Style = StandardStyling(V3(0.8f, 0.8f, 0.0f));
     v2 Dim = V2(10);
     v2 MinP = Window->Table.Layout.Basis + Window->MaxClip - (Dim/2);
-    rect2 Rect = RectMinDim(MinP, Dim);
+    rect2 WindowBarRect = RectMinDim(MinP, Dim);
 
-    Button(Group, Rect, &Style, DragHandleId);
+    if (Clicked(Group, Interactable(WindowBarRect, DragHandleId)))
+    {
+      // NOTE(Jesse): This has to be incremented before we do any buffering!!
+      Window->InteractionStackIndex = Group->InteractionStackTop++;
+      /* Print(Window->InteractionStackIndex); */
+      /* Print(Group->InteractionStackTop); */
+    }
+
+    Button(Group, WindowBarRect, &Style, DragHandleId);
   }
 
   if (Window->Title)
@@ -2399,7 +2409,6 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, window
 /*******************************              ********************************/
 
 
-#if 1
 function void
 DebugDrawNetworkHud(debug_ui_render_group *Group,
     network_connection *Network,
@@ -2475,7 +2484,6 @@ DebugDrawGraphicsHud(debug_ui_render_group *Group, debug_state *DebugState, layo
 
   return;
 }
-#endif
 
 
 /******************************              *********************************/
