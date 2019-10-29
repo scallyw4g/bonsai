@@ -109,43 +109,57 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   if (DebugState->DisplayDebugMenu)
   {
     ButtonStyling.IsActive = DebugState->UIType == DebugUIType_PickedChunks;
-    if (Button("PickedChunks", UiGroup, &Layout, &ButtonStyling))
+    const char* ButtonName = "PickedChunks";
+    umm InteractionId = (umm)ButtonName;
+    if (Button(ButtonName, UiGroup, &Layout, InteractionId, &ButtonStyling))
     {
       DebugState->UIType = DebugUIType_PickedChunks;
     }
 
     ButtonStyling.IsActive = DebugState->UIType == DebugUIType_Graphics;
-    if (Button("Graphics", UiGroup, &Layout, &ButtonStyling))
+    ButtonName = "Graphics";
+    InteractionId = (umm)ButtonName;
+    if (Button(ButtonName, UiGroup, &Layout, InteractionId, &ButtonStyling))
     {
       DebugState->UIType = DebugUIType_Graphics;
     }
 
     ButtonStyling.IsActive = DebugState->UIType == DebugUIType_Network;
-    if (Button("Network", UiGroup, &Layout, &ButtonStyling))
+    ButtonName = "Network";
+    InteractionId = (umm)ButtonName;
+    if (Button(ButtonName, UiGroup, &Layout, InteractionId, &ButtonStyling))
     {
       DebugState->UIType = DebugUIType_Network;
     }
 
     ButtonStyling.IsActive = DebugState->UIType == DebugUIType_CollatedFunctionCalls;
-    if (Button("Functions", UiGroup, &Layout, &ButtonStyling))
+    ButtonName = "Functions";
+    InteractionId = (umm)ButtonName;
+    if (Button(ButtonName, UiGroup, &Layout, InteractionId, &ButtonStyling))
     {
       DebugState->UIType = DebugUIType_CollatedFunctionCalls;
     }
 
     ButtonStyling.IsActive = DebugState->UIType == DebugUIType_CallGraph;
-    if (Button("Call Graph", UiGroup, &Layout, &ButtonStyling))
+    ButtonName = "Call Graph";
+    InteractionId = (umm)ButtonName;
+    if (Button(ButtonName, UiGroup, &Layout, InteractionId, &ButtonStyling))
     {
       DebugState->UIType = DebugUIType_CallGraph;
     }
 
     ButtonStyling.IsActive = DebugState->UIType == DebugUIType_Memory;
-    if (Button("Memory", UiGroup, &Layout, &ButtonStyling))
+    ButtonName = "Memory";
+    InteractionId = (umm)ButtonName;
+    if (Button(ButtonName, UiGroup, &Layout, InteractionId, &ButtonStyling))
     {
       DebugState->UIType = DebugUIType_Memory;
     }
 
     ButtonStyling.IsActive = DebugState->UIType == DebugUIType_DrawCalls;
-    if (Button("Draw Calls", UiGroup, &Layout, &ButtonStyling))
+    ButtonName = "Draw Calls";
+    InteractionId = (umm)ButtonName;
+    if (Button(ButtonName, UiGroup, &Layout, InteractionId, &ButtonStyling))
     {
       DebugState->UIType = DebugUIType_DrawCalls;
     }

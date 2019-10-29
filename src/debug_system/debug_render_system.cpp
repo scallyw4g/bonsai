@@ -848,64 +848,6 @@ Column(const char* ColumnText, debug_ui_render_group* Group, window_layout* Wind
   return Result;
 }
 
-function b32
-Button(const char* ColumnText, debug_ui_render_group *Group, layout* Layout, ui_style* Style = 0)
-{
-  b32 Result = False;
-  u32 TextLength = (u32)strlen(ColumnText);
-
-  v2 Min = Layout->Basis + Layout->At;
-  v2 Max = Min + GetTextBounds(TextLength, &Group->Font);
-
-  v3 UseColor = V3(1.0f);
-  rect2 Bounds = RectMinMax(Min, Max);
-
-  if (Style)
-  {
-    Bounds.Max += (Style->Padding*2.0f);
-    UseColor = Style->Color;
-  }
-
-  if (IsInsideRect(Bounds, *Group->MouseP))
-  {
-    if (Style)
-    {
-      UseColor = Style->HoverColor;
-    }
-
-    if (Group->Input->LMB.IsDown)
-    {
-      Result = True;
-      if (Style)
-      {
-        UseColor = Style->ClickColor;
-      }
-    }
-  }
-
-  if (Style && Style->IsActive && !Result)
-  {
-    UseColor = Style->ActiveColor;
-  }
-
-  BufferValue(ColumnText, Group, Layout, UseColor, V2(0), Style);
-
-  return Result;
-}
-
-function b32
-Button(const char* ColumnText, debug_ui_render_group *Group, window_layout* Window, u8 Color)
-{
-  b32 Result = False;
-  rect2 Bounds = Column(ColumnText, Group, Window, Color);
-  if (IsInsideRect(Bounds, *Group->MouseP) && Group->Input->LMB.WasPressed)
-  {
-    Result = True;
-  }
-
-  return Result;
-}
-
 function void
 BufferScopeTreeEntry(debug_ui_render_group *Group, debug_profile_scope *Scope, window_layout* Window,
                      u8 Color, u64 TotalCycles, u64 TotalFrameCycles, u64 CallCount, u32 Depth)
@@ -1174,6 +1116,65 @@ Button(debug_ui_render_group* Group, rect2 Rect, ui_style* Style, umm Interactio
   }
 
   BufferRectangleAt(Group, &Group->TextGroup->UIGeo, Rect, UseColor, Z);
+
+  return Result;
+}
+
+function b32
+Button(const char* ColumnText, debug_ui_render_group *Group, layout* Layout, umm InteractionId, ui_style* Style = 0)
+{
+  b32 Result = False;
+  u32 TextLength = (u32)strlen(ColumnText);
+
+  v2 Min = Layout->Basis + Layout->At;
+  v2 Max = Min + GetTextBounds(TextLength, &Group->Font);
+
+  v3 UseColor = V3(1.0f);
+  rect2 Bounds = RectMinMax(Min, Max);
+
+  if (Style)
+  {
+    Bounds.Max += (Style->Padding*2.0f);
+    UseColor = Style->Color;
+  }
+
+  interactable Interaction = Interactable(Bounds, InteractionId);
+  if (Hover(Group, &Interaction))
+  {
+    if (Style)
+    {
+      UseColor = Style->HoverColor;
+    }
+
+    if (Pressed(Group, &Interaction))
+    {
+      Result = True;
+      if (Style)
+      {
+        UseColor = Style->ClickColor;
+      }
+    }
+  }
+
+  if (Style && Style->IsActive && !Result)
+  {
+    UseColor = Style->ActiveColor;
+  }
+
+  BufferValue(ColumnText, Group, Layout, UseColor, V2(0), Style);
+
+  return Result;
+}
+
+function b32
+Button(const char* ColumnText, debug_ui_render_group *Group, window_layout* Window, u8 Color)
+{
+  b32 Result = False;
+  rect2 Bounds = Column(ColumnText, Group, Window, Color);
+  if (IsInsideRect(Bounds, *Group->MouseP) && Group->Input->LMB.WasPressed)
+  {
+    Result = True;
+  }
 
   return Result;
 }
