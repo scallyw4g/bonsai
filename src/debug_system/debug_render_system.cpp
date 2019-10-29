@@ -1098,84 +1098,94 @@ BufferRectangleAt(debug_ui_render_group *Group, untextured_2d_geometry_buffer *G
   return;
 }
 
-function b32
-Button(debug_ui_render_group* Group, rect2 Rect, ui_style* Style, umm InteractionId, r32 Z = 0.5f)
+struct button_interaction_result
 {
-  b32 Result = False;
+  b32 Pressed;
+  b32 Clicked;
+  b32 Hover;
+  v3 Color;
+};
 
-  v3 UseColor = Style->Color;
-
-  interactable Interaction = Interactable(Rect, InteractionId);
-  if (Hover(Group, &Interaction))
-    UseColor = Style->HoverColor;
-
-  if (Pressed(Group, &Interaction))
-  {
-    Result = True;
-    UseColor = Style->ClickColor;
-  }
-
-  BufferRectangleAt(Group, &Group->TextGroup->UIGeo, Rect, UseColor, Z);
-
-  return Result;
-}
-
-function b32
-Button(const char* ColumnText, debug_ui_render_group *Group, layout* Layout, umm InteractionId, ui_style* Style = 0)
+function button_interaction_result
+ButtonInteraction(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId, ui_style *Style = 0)
 {
-  b32 Result = False;
-  u32 TextLength = (u32)strlen(ColumnText);
-
-  v2 Min = Layout->Basis + Layout->At;
-  v2 Max = Min + GetTextBounds(TextLength, &Group->Font);
-
-  v3 UseColor = V3(1.0f);
-  rect2 Bounds = RectMinMax(Min, Max);
+  button_interaction_result Result = {};
+  Result.Color = V3(1);
 
   if (Style)
   {
     Bounds.Max += (Style->Padding*2.0f);
-    UseColor = Style->Color;
+    Result.Color = Style->Color;
   }
 
   interactable Interaction = Interactable(Bounds, InteractionId);
   if (Hover(Group, &Interaction))
   {
+    Result.Hover = True;
     if (Style)
     {
-      UseColor = Style->HoverColor;
-    }
-
-    if (Pressed(Group, &Interaction))
-    {
-      Result = True;
-      if (Style)
-      {
-        UseColor = Style->ClickColor;
-      }
+      Result.Color = Style->HoverColor;
     }
   }
 
-  if (Style && Style->IsActive && !Result)
+  if (Pressed(Group, &Interaction))
   {
-    UseColor = Style->ActiveColor;
+    Result.Pressed = True;
+    if (Style)
+    {
+      Result.Color = Style->ClickColor;
+    }
   }
 
-  BufferValue(ColumnText, Group, Layout, UseColor, V2(0), Style);
+  if (Clicked(Group, &Interaction))
+  {
+    Result.Clicked = True;
+    if (Style)
+    {
+      Result.Color = Style->ClickColor;
+    }
+  }
+
+  if (Style && Style->IsActive && !Result.Pressed)
+  {
+    Result.Color = Style->ActiveColor;
+  }
 
   return Result;
 }
 
 function b32
-Button(const char* ColumnText, debug_ui_render_group *Group, window_layout* Window, u8 Color)
+Button(debug_ui_render_group* Group, rect2 Bounds, ui_style* Style, umm InteractionId, r32 Z = 0.5f)
 {
-  b32 Result = False;
-  rect2 Bounds = Column(ColumnText, Group, Window, Color);
-  if (IsInsideRect(Bounds, *Group->MouseP) && Group->Input->LMB.WasPressed)
-  {
-    Result = True;
-  }
+  button_interaction_result Result = ButtonInteraction(Group, Bounds, InteractionId, Style);
+  BufferRectangleAt(Group, &Group->TextGroup->UIGeo, Bounds, Result.Color, Z);
+  return Result.Pressed;
+}
 
+function b32
+Button(const char* ColumnText, debug_ui_render_group *Group, layout* Layout, umm InteractionId, v2 MaxClip, ui_style* Style = 0)
+{
+  u32 TextLength = (u32)strlen(ColumnText);
+
+  v2 Min = Layout->Basis + Layout->At;
+  v2 Max = Min + GetTextBounds(TextLength, &Group->Font);
+
+  rect2 Bounds = RectMinMax(Min, Max);
+
+  button_interaction_result Result = ButtonInteraction(Group, Bounds, InteractionId, Style);
+
+  BufferValue(ColumnText, Group, Layout, Result.Color, MaxClip, Style);
+
+  return Result.Pressed;
+}
+
+function b32
+Button(const char* ButtonText, debug_ui_render_group *Group, window_layout* Window, ui_style* Style = 0, umm InteractionIdModifier = 0)
+{
+  umm InteractionId = (umm)ButtonText^(umm)Window;
+  InteractionId = InteractionIdModifier? InteractionId^InteractionIdModifier : InteractionId;
+
+  b32 Result = Button(ButtonText, Group, &Window->Table.Layout, InteractionId, Window->MaxClip, Style);
   return Result;
 }
 
@@ -1220,7 +1230,7 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
     rect2 Rect = RectMinMax(TopLeft, TopRight + V2(0.0f, Group->Font.Size.y));
     if (Button(Group, Rect, &Style, (umm)"WindowTitleBar"^(umm)Window))
     {
-      Window->Table.Layout.Basis += -1.0f*(*Group->MouseDP);
+      Window->Table.Layout.Basis -= *Group->MouseDP;
     }
   }
 
@@ -1294,7 +1304,9 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
       DebugState->HotChunk = Chunk;
     }
 
-    if (Button("X", Group, ListingWindow, RED))
+    ui_style ButtonStyling = {};
+    ButtonStyling.Color = V3(1,0,0);
+    if (Button("X", Group, ListingWindow, &ButtonStyling, (umm)Chunk))
     {
       world_chunk** SwapChunk = PickedChunks+ChunkIndex;
       if (*SwapChunk == DebugState->HotChunk)
@@ -1358,20 +1370,22 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
     WindowInteractions(Group, &PickerWindow);
 
     b32 DebugButtonPressed = False;
-    if ( Button("<", Group, &PickerWindow, WHITE) )
+    // Note(Jesse): This is dependant on framerate and the button will be triggered on each frame!  Yikes.
+    if (Button("<", Group, &PickerWindow))
     {
       HotChunk->PointsToLeaveRemaining = Min(HotChunk->PointsToLeaveRemaining+1, HotChunk->EdgeBoundaryVoxelCount);
       DebugButtonPressed = True;
     }
 
-    if ( Button(">", Group, &PickerWindow, WHITE) )
+    // Note(Jesse): This is dependant on framerate and the button will be triggered on each frame!  Yikes.
+    if (Button(">", Group, &PickerWindow))
     {
       HotChunk->PointsToLeaveRemaining = Max(HotChunk->PointsToLeaveRemaining-1, 0);
       DebugButtonPressed = True;
     }
 
     const char* ButtonText = HotChunk->DrawBoundingVoxels ? "|" : "O";
-    if ( Button(ButtonText, Group, &PickerWindow, WHITE) )
+    if (Button(ButtonText, Group, &PickerWindow))
     {
       HotChunk->DrawBoundingVoxels = !HotChunk->DrawBoundingVoxels;
       DebugButtonPressed = True;
