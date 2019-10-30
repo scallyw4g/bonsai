@@ -77,6 +77,14 @@ zIndexForText(window_layout *Window, debug_ui_render_group *Group)
   return Result;
 }
 
+function r32
+zIndexForTitleBar(window_layout *Window, debug_ui_render_group *Group)
+{
+  r32 Result = zIndexForBackgrounds(Window, Group) + (zSliceInterval()*0.30f);
+  Assert(Result <= 1.0f && Result >= 0.0f);
+  return Result;
+}
+
 function b32
 InitDebugOverlayFramebuffer(debug_text_render_group *RG, memory_arena *DebugArena, const char *DebugFont)
 {
@@ -1218,7 +1226,7 @@ ButtonInteraction(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId,
 }
 
 function b32
-Button(debug_ui_render_group* Group, rect2 Bounds, ui_style* Style, umm InteractionId, r32 Z = 0.5f)
+Button(debug_ui_render_group* Group, rect2 Bounds, ui_style* Style, umm InteractionId, r32 Z)
 {
   button_interaction_result Result = ButtonInteraction(Group, Bounds, InteractionId, Style);
   BufferRectangleAt(Group, &Group->TextGroup->UIGeo, Bounds, Result.Color, Z);
@@ -1287,16 +1295,17 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
 
     ui_style Style = StandardStyling(V3(0.8f, 0.8f, 0.0f));
     v2 Dim = V2(10);
-    v2 MinP = Window->Table.Layout.Basis + Window->MaxClip - (Dim/2);
+    v2 MinP = Window->Table.Layout.Basis + Window->MaxClip - Dim;
     rect2 DragHandleRect = RectMinDim(MinP, Dim);
 
-    Button(Group, DragHandleRect, &Style, DragHandleId);
+    Button(Group, DragHandleRect, &Style, DragHandleId, zIndexForBorders(Window, Group));
   }
 
   if (Window->Title)
   {
     BufferValue(Window->InteractionStackIndex, Group, &Window->Table.Layout, WHITE, zIndexForText(Window, Group));
     BufferValue(Window->Title, Group, &Window->Table.Layout, WHITE, zIndexForText(Window, Group), Window->MaxClip);
+    NewRow(Window);
   }
 
   v3 BorderColor = V3(1, 1, 1);
@@ -1305,7 +1314,7 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
     ui_style Style = StandardStyling(V3(0.0f, 0.5f, 0.5f));
     rect2 TitleBarRect = RectMinMax(TopLeft, TopRight + V2(0.0f, Group->Font.Size.y));
     umm TitleBarInteractionId = (umm)"WindowTitleBar"^(umm)Window;
-    if (Button(Group, TitleBarRect, &Style, TitleBarInteractionId))
+    if (Button(Group, TitleBarRect, &Style, TitleBarInteractionId, zIndexForTitleBar(Window, Group)))
     {
       Window->Table.Layout.Basis -= *Group->MouseDP;
     }
@@ -1357,12 +1366,11 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 {
   debug_state* DebugState = GetDebugState();
 
-  local_persist window_layout PickerWindow_ = WindowLayout("PickedChunks", LayoutBasis, V2(400, 150));
-  window_layout *ListingWindow = &PickerWindow_;
+  local_persist window_layout ListingWindow = WindowLayout("PickedChunks", LayoutBasis, V2(400, 150));
 
-  Clear(&ListingWindow->Table.Layout.At);
-  Clear(&ListingWindow->Table.Layout.Clip);
-  WindowInteractions(Group, ListingWindow);
+  Clear(&ListingWindow.Table.Layout.At);
+  Clear(&ListingWindow.Table.Layout.Clip);
+  WindowInteractions(Group, &ListingWindow);
 
   world_chunk** PickedChunks = DebugState->PickedChunks;
 
@@ -1375,11 +1383,11 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
     world_chunk *Chunk = PickedChunks[ChunkIndex];
 
     u8 MainColor = Chunk == DebugState->HotChunk ? TEAL : WHITE;
-    interactable PickerListInteraction = StartInteractable(&ListingWindow->Table.Layout, (umm)ListingWindow);
-      Column(ToString(Chunk->WorldP.x), Group, ListingWindow, MainColor, MainColor);
-      Column(ToString(Chunk->WorldP.y), Group, ListingWindow, MainColor, MainColor);
-      Column(ToString(Chunk->WorldP.z), Group, ListingWindow, MainColor, MainColor);
-    EndInteractable(ListingWindow, &PickerListInteraction);
+    interactable PickerListInteraction = StartInteractable(&ListingWindow.Table.Layout, (umm)&ListingWindow);
+      Column(ToString(Chunk->WorldP.x), Group, &ListingWindow, MainColor, MainColor);
+      Column(ToString(Chunk->WorldP.y), Group, &ListingWindow, MainColor, MainColor);
+      Column(ToString(Chunk->WorldP.z), Group, &ListingWindow, MainColor, MainColor);
+    EndInteractable(&ListingWindow, &PickerListInteraction);
 
     if (Clicked(Group, &PickerListInteraction))
     {
@@ -1388,7 +1396,7 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 
     ui_style ButtonStyling = {};
     ButtonStyling.Color = V3(1,0,0);
-    if (Button("X", Group, ListingWindow, &ButtonStyling, (umm)Chunk))
+    if (Button("X", Group, &ListingWindow, &ButtonStyling, (umm)Chunk))
     {
       world_chunk** SwapChunk = PickedChunks+ChunkIndex;
       if (*SwapChunk == DebugState->HotChunk)
@@ -1400,10 +1408,11 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
       DebugState->PickedChunkCount = DebugState->PickedChunkCount-1;
     }
 
-    NewRow(ListingWindow);
+    NewRow(&ListingWindow);
   }
 
-  if (DebugState->HotChunk)
+  world_chunk *HotChunk = DebugState->HotChunk;
+  if (HotChunk)
   {
     v3 Basis = -0.5f*V3(WORLD_CHUNK_DIM);
     untextured_3d_geometry_buffer* Src = DebugState->HotChunk->LodMesh;
@@ -1429,13 +1438,12 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
     DebugState->GameGeo.Buffer.At = 0;
   }
 
-  world_chunk *HotChunk = DebugState->HotChunk;
   if (HotChunk)
   {
     v2 WindowSpacing = V2(140, 0);
 
     local_persist window_layout ChunkDetailWindow = WindowLayout("ChunkDetailWindow",
-                                                                  V2(GetAbsoluteMax(ListingWindow).x, GetAbsoluteMin(ListingWindow).y) + WindowSpacing,
+                                                                  V2(GetAbsoluteMax(&ListingWindow).x, GetAbsoluteMin(&ListingWindow).y) + WindowSpacing,
                                                                   V2(1100.0f, 400.0f));
     Clear(&ChunkDetailWindow.Table.Layout.At);
     Clear(&ChunkDetailWindow.Table.Layout.Clip);
@@ -1488,7 +1496,7 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
     v2 MinP = GetAbsoluteAt(&PickerWindow.Table.Layout);
     v2 QuadDim = PickerWindow.MaxClip - PickerWindow.Table.Layout.At;
 
-    r32 ChunkDetailZ = zIndexForText(&ChunkDetailWindow, Group);
+    r32 ChunkDetailZ = zIndexForText(&PickerWindow, Group);
     BufferTexturedQuad( Group, &Group->TextGroup->TextGeo, MinP, QuadDim,
                         DebugTextureArraySlice_Viewport, UVsForFullyCoveredQuad(),
                         V3(1), ChunkDetailZ);
