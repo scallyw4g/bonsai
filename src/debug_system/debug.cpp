@@ -224,6 +224,8 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   FlushBuffer(TextGroup, &TextGroup->UIGeo, UiGroup->ScreenDim);
   FlushBuffer(TextGroup, &TextGroup->TextGeo, UiGroup->ScreenDim);
 
+  FlushCommandBuffer(UiGroup, &UiGroup->RenderCommandBuffer);
+
   DebugState->BytesBufferedToCard = 0;
 
   for( u32 DrawCountIndex = 0;

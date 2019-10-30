@@ -121,6 +121,12 @@ Print_Binary( unsigned int input )
 
 
 inline void
+Print_P( void *P, const char* name)
+{
+  Log(" %s -- %u \n", name, P);
+}
+
+inline void
 Print_P( const char *C, const char* name)
 {
   Log(" %s -- %s \n", name, C);

@@ -1257,9 +1257,8 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
                (Group->Input->LMB.WasPressed || Group->Input->RMB.WasPressed)
      )
   {
-    // NOTE(Jesse): In a perfect world, this is operation is performed before
-    // all buffering
-     Window->InteractionStackIndex = ++Group->InteractionStackTop;
+    // NOTE(Jesse): In a perfect world, this is operation is performed before all buffering
+    Window->InteractionStackIndex = ++Group->InteractionStackTop;
   }
 
   {
@@ -1270,7 +1269,7 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
       Window->MaxClip = Max(V2(0), Window->MaxClip-(*Group->MouseDP));
     }
 
-    ui_style Style = StandardStyling(V3(0.8f, 0.8f, 0.0f));
+    ui_style Style = StandardStyling(V3(0.5f, 0.5f, 0.0f));
     v2 Dim = V2(10);
     v2 MinP = Window->Table.Layout.Basis + Window->MaxClip - Dim;
     rect2 DragHandleRect = RectMinDim(MinP, Dim);
@@ -1280,12 +1279,8 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
 
   if (Window->Title)
   {
-    /* BufferValue(Window->InteractionStackIndex, Group, &Window->Table.Layout, WHITE, zIndexForText(Window, Group), BottomRight); */
-    BufferValue(Window->Title, Group, &Window->Table.Layout, WHITE, zIndexForText(Window, Group), GetAbsoluteMaxClip(Window));
-    NewRow(Window);
+    BufferTextAt(Group, Window->Table.Layout.Basis, Window->Title, WHITE, zIndexForText(Window, Group));
   }
-
-  v3 BorderColor = V3(1, 1, 1);
 
   {
     ui_style Style = StandardStyling(V3(0.0f, 0.5f, 0.5f));
@@ -1299,10 +1294,11 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
 
   {
     r32 Z = zIndexForBorders(Window, Group);
-    BufferRectangleAt(Group, Geo, RectMinMax(TopLeft, TopRight - V2(0, 1)), BorderColor, Z, V2(FLT_MAX));
-    BufferRectangleAt(Group, Geo, RectMinMax(TopLeft, BottomLeft - V2(1, 0)), BorderColor, Z, V2(FLT_MAX));
-    BufferRectangleAt(Group, Geo, RectMinMax(TopRight, BottomRight + V2(1, 0)), BorderColor, Z, V2(FLT_MAX));
-    BufferRectangleAt(Group, Geo, RectMinMax(BottomLeft, BottomRight + V2(0, 1)), BorderColor, Z, V2(FLT_MAX));
+    v3 BorderColor = V3(1, 1, 1);
+    BufferRectangleAt(Group, Geo, RectMinMax(TopLeft   , TopRight    - V2(0 , 1)), BorderColor, Z, DISABLE_CLIPPING);
+    BufferRectangleAt(Group, Geo, RectMinMax(TopLeft   , BottomLeft  - V2(1 , 0)), BorderColor, Z, DISABLE_CLIPPING);
+    BufferRectangleAt(Group, Geo, RectMinMax(TopRight  , BottomRight + V2(1 , 0)), BorderColor, Z, DISABLE_CLIPPING);
+    BufferRectangleAt(Group, Geo, RectMinMax(BottomLeft, BottomRight + V2(0 , 1)), BorderColor, Z, DISABLE_CLIPPING);
   }
 
   {
@@ -1310,6 +1306,54 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
     r32 Z = zIndexForBackgrounds(Window, Group);
     BufferRectangleAt(Group, Geo, RectMinMax(TopLeft, BottomRight), BackgroundColor, Z, BottomRight);
   }
+
+  return;
+}
+
+function void
+PushWindowInteraction(debug_ui_render_group *Group, window_layout *Window)
+{
+  ui_render_command Command = {};
+  Command.Type = RenderCommand_WindowInteractions;
+  Command.WindowInteraction.Window = Window;
+
+  // Leave space on the layout for the title bar
+  // @hack
+  Window->Table.Layout.At.y += Group->Font.Size.y;
+
+  ui_render_command_buffer *CommandBuffer = &Group->RenderCommandBuffer;
+  if (CommandBuffer->CommandCount < MAX_UI_RENDER_COMMAND_COUNT)
+  {
+    CommandBuffer->Commands[CommandBuffer->CommandCount++] = Command;
+  }
+  else
+  {
+    Error("Exhausted RenderCommandBuffer Space!");
+  }
+
+  return;
+}
+
+function void
+FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *CommandBuffer)
+{
+  for (u32 CommandIndex = 0;
+      CommandIndex < CommandBuffer->CommandCount;
+      ++CommandIndex)
+  {
+    ui_render_command *Command = CommandBuffer->Commands+CommandIndex;
+    switch(Command->Type)
+    {
+      case RenderCommand_WindowInteractions:
+      {
+        WindowInteractions(Group, Command->WindowInteraction.Window);
+      } break;
+
+      InvalidDefaultCase;
+    }
+  }
+
+  CommandBuffer->CommandCount = 0;
 
   return;
 }
@@ -1347,7 +1391,7 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 
   Clear(&ListingWindow.Table.Layout.At);
   Clear(&ListingWindow.Table.Layout.DrawBounds);
-  WindowInteractions(Group, &ListingWindow);
+  PushWindowInteraction(Group, &ListingWindow);
 
   world_chunk** PickedChunks = DebugState->PickedChunks;
 
@@ -1424,7 +1468,7 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
                                                                   V2(1100.0f, 400.0f));
     Clear(&ChunkDetailWindow.Table.Layout.At);
     Clear(&ChunkDetailWindow.Table.Layout.DrawBounds);
-    WindowInteractions(Group, &ChunkDetailWindow);
+    PushWindowInteraction(Group, &ChunkDetailWindow);
 
     BufferChunkDetails(Group, HotChunk, &ChunkDetailWindow);
 
@@ -1434,7 +1478,7 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
                                                             V2(800.0f));
     Clear(&PickerWindow.Table.Layout.At);
     Clear(&PickerWindow.Table.Layout.DrawBounds);
-    WindowInteractions(Group, &PickerWindow);
+    PushWindowInteraction(Group, &PickerWindow);
 
     b32 DebugButtonPressed = False;
     // Note(Jesse): This is dependant on framerate and the button will be triggered on each frame!  Yikes.
@@ -1543,7 +1587,7 @@ DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState
   Clear(&CycleGraphWindow.Table.Layout.DrawBounds);
 
   // TODO(Jesse): Call this for CycleGraphWindow!!
-  // WindowInteractions()
+  // PushWindowInteraction()
 
   layout* Layout = &CycleGraphWindow.Table.Layout;
 
@@ -1953,7 +1997,7 @@ DebugDrawCollatedFunctionCalls(debug_ui_render_group *Group, debug_state *DebugS
 
   Clear(&FunctionCallWindow.Table.Layout.At);
   Clear(&FunctionCallWindow.Table.Layout.DrawBounds);
-  WindowInteractions(Group, &FunctionCallWindow);
+  PushWindowInteraction(Group, &FunctionCallWindow);
 
   TIMED_BLOCK("Collated Function Calls");
   debug_thread_state *MainThreadState = GetThreadLocalStateFor(0);
@@ -2025,7 +2069,7 @@ DebugDrawDrawCalls(debug_ui_render_group *Group, layout *WindowBasis)
   local_persist window_layout DrawCallWindow = WindowLayout("Draw Calls", GetAbsoluteAt(WindowBasis));
   Clear(&DrawCallWindow.Table.Layout.At);
   Clear(&DrawCallWindow.Table.Layout.DrawBounds);
-  WindowInteractions(Group, &DrawCallWindow);
+  PushWindowInteraction(Group, &DrawCallWindow);
 
   layout *Layout = &DrawCallWindow.Table.Layout;
   NewLine(Layout);
@@ -2335,7 +2379,7 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, window
 
   Clear(&Window->Table.Layout.At);
   Clear(&Window->Table.Layout.DrawBounds);
-  WindowInteractions(Group, Window);
+  PushWindowInteraction(Group, Window);
 
   r32 Z = zIndexForText(Window, Group);
 
@@ -2412,7 +2456,7 @@ DebugDrawNetworkHud(debug_ui_render_group *Group,
   local_persist window_layout NetworkWindow = WindowLayout("Network", WindowBasis->At);
   Clear(&NetworkWindow.Table.Layout.At);
   Clear(&NetworkWindow.Table.Layout.DrawBounds);
-  WindowInteractions(Group, &NetworkWindow);
+  PushWindowInteraction(Group, &NetworkWindow);
 
   layout* Layout = &NetworkWindow.Table.Layout;
   r32 Z = zIndexForText(&NetworkWindow, Group);

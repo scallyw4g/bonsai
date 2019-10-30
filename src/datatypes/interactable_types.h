@@ -58,7 +58,7 @@ struct ui_style
 };
 
 function ui_style
-StandardStyling(v3 StartingColor, v3 HoverMultiplier = V3(1.1f), v3 ClickMultiplier = V3(1.2f))
+StandardStyling(v3 StartingColor, v3 HoverMultiplier = V3(1.3f), v3 ClickMultiplier = V3(1.2f))
 {
   ui_style Result = {};
   Result.Color = StartingColor;
