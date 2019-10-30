@@ -51,7 +51,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   SetFontSize(&UiGroup->Font, DEBUG_FONT_SIZE);
 
   TIMED_BLOCK("Draw Status Bar");
-    v2 StatusBarClip = V2(FLT_MAX);
+    v2 StatusBarClip = DISABLE_CLIPPING;
     r32 StatusBarZ = 1.0f;
     Dt = ComputeMinMaxAvgDt();
     BufferColumn(Dt.Max, 6, UiGroup, &Layout, WHITE, StatusBarZ, StatusBarClip);
@@ -114,7 +114,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     ButtonStyling.IsActive = DebugState->UIType == DebugUIType_PickedChunks;
     const char* ButtonName = "PickedChunks";
     umm InteractionId = (umm)ButtonName;
-    if (Button(ButtonName, UiGroup, &Layout, InteractionId, V2(FLT_MAX), DebugMenuZ, &ButtonStyling))
+    if (Button(ButtonName, UiGroup, &Layout, InteractionId, DISABLE_CLIPPING, DebugMenuZ, &ButtonStyling))
     {
       DebugState->UIType = DebugUIType_PickedChunks;
     }
@@ -122,7 +122,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     ButtonStyling.IsActive = DebugState->UIType == DebugUIType_Graphics;
     ButtonName = "Graphics";
     InteractionId = (umm)ButtonName;
-    if (Button(ButtonName, UiGroup, &Layout, InteractionId, V2(FLT_MAX), DebugMenuZ, &ButtonStyling))
+    if (Button(ButtonName, UiGroup, &Layout, InteractionId, DISABLE_CLIPPING, DebugMenuZ, &ButtonStyling))
     {
       DebugState->UIType = DebugUIType_Graphics;
     }
@@ -130,7 +130,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     ButtonStyling.IsActive = DebugState->UIType == DebugUIType_Network;
     ButtonName = "Network";
     InteractionId = (umm)ButtonName;
-    if (Button(ButtonName, UiGroup, &Layout, InteractionId, V2(FLT_MAX), DebugMenuZ, &ButtonStyling))
+    if (Button(ButtonName, UiGroup, &Layout, InteractionId, DISABLE_CLIPPING, DebugMenuZ, &ButtonStyling))
     {
       DebugState->UIType = DebugUIType_Network;
     }
@@ -138,7 +138,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     ButtonStyling.IsActive = DebugState->UIType == DebugUIType_CollatedFunctionCalls;
     ButtonName = "Functions";
     InteractionId = (umm)ButtonName;
-    if (Button(ButtonName, UiGroup, &Layout, InteractionId, V2(FLT_MAX), DebugMenuZ, &ButtonStyling))
+    if (Button(ButtonName, UiGroup, &Layout, InteractionId, DISABLE_CLIPPING, DebugMenuZ, &ButtonStyling))
     {
       DebugState->UIType = DebugUIType_CollatedFunctionCalls;
     }
@@ -146,7 +146,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     ButtonStyling.IsActive = DebugState->UIType == DebugUIType_CallGraph;
     ButtonName = "Call Graph";
     InteractionId = (umm)ButtonName;
-    if (Button(ButtonName, UiGroup, &Layout, InteractionId, V2(FLT_MAX), DebugMenuZ, &ButtonStyling))
+    if (Button(ButtonName, UiGroup, &Layout, InteractionId, DISABLE_CLIPPING, DebugMenuZ, &ButtonStyling))
     {
       DebugState->UIType = DebugUIType_CallGraph;
     }
@@ -154,7 +154,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     ButtonStyling.IsActive = DebugState->UIType == DebugUIType_Memory;
     ButtonName = "Memory";
     InteractionId = (umm)ButtonName;
-    if (Button(ButtonName, UiGroup, &Layout, InteractionId, V2(FLT_MAX), DebugMenuZ, &ButtonStyling))
+    if (Button(ButtonName, UiGroup, &Layout, InteractionId, DISABLE_CLIPPING, DebugMenuZ, &ButtonStyling))
     {
       DebugState->UIType = DebugUIType_Memory;
     }
@@ -162,7 +162,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     ButtonStyling.IsActive = DebugState->UIType == DebugUIType_DrawCalls;
     ButtonName = "Draw Calls";
     InteractionId = (umm)ButtonName;
-    if (Button(ButtonName, UiGroup, &Layout, InteractionId, V2(FLT_MAX), DebugMenuZ, &ButtonStyling))
+    if (Button(ButtonName, UiGroup, &Layout, InteractionId, DISABLE_CLIPPING, DebugMenuZ, &ButtonStyling))
     {
       DebugState->UIType = DebugUIType_DrawCalls;
     }
@@ -188,7 +188,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
 
     case DebugUIType_Graphics:
     {
-      DebugDrawGraphicsHud(UiGroup, DebugState, &Layout, 1.0f, V2(FLT_MAX));
+      DebugDrawGraphicsHud(UiGroup, DebugState, &Layout, 1.0f, DISABLE_CLIPPING);
     } break;
 
     case DebugUIType_Network:

@@ -31,6 +31,7 @@ CleanupText2D(debug_text_render_group *RG)
 #endif
 
 #define DEBUG_MAX_UI_WINDOW_SLICES 1024.0f
+#define DISABLE_CLIPPING V2(FLT_MAX)
 
 // NOTE(Jesse): This is the bottom-most value on this slice
 function r32
@@ -902,29 +903,29 @@ BufferScopeTreeEntry(debug_ui_render_group *Group, debug_profile_scope *Scope, w
   r32 Percentage = 100.0f * (r32)SafeDivide0((r64)TotalCycles, (r64)TotalFrameCycles);
   u64 AvgCycles = (u64)SafeDivide0(TotalCycles, CallCount);
 
-  Column(ToString(Percentage), Group, Window);
-  Column(ToString(AvgCycles),  Group, Window);
-  Column(ToString(CallCount),  Group, Window);
+  r32 Z = zIndexForText(Window, Group);
+
+  Column(ToString(Percentage), Group, &Window->Table, Z, DISABLE_CLIPPING);
+  Column(ToString(AvgCycles),  Group, &Window->Table, Z, DISABLE_CLIPPING);
+  Column(ToString(CallCount),  Group, &Window->Table, Z, DISABLE_CLIPPING);
 
   layout *Layout = &Window->Table.Layout;
   AdvanceSpaces((Depth*2)+1, Layout, &Group->Font);
 
-
-  r32 Z = zIndexForText(Window, Group);
   if (Scope->Expanded && Scope->Child)
   {
-    BufferValue("-", Group, Layout, Color, Z, GetAbsoluteMaxClip(Window));
+    BufferValue("-", Group, Layout, Color, Z, DISABLE_CLIPPING);
   }
   else if (Scope->Child)
   {
-    BufferValue("+", Group, Layout, Color, Z, GetAbsoluteMaxClip(Window));
+    BufferValue("+", Group, Layout, Color, Z, DISABLE_CLIPPING);
   }
   else
   {
     AdvanceSpaces(1, Layout, &Group->Font);
   }
 
-  BufferValue(Scope->Name, Group, Layout, Color, Z, GetAbsoluteMaxClip(Window));
+  BufferValue(Scope->Name, Group, Layout, Color, Z, DISABLE_CLIPPING);
   NewRow(Window);
 
   return;
@@ -1537,10 +1538,9 @@ DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState
   untextured_2d_geometry_buffer *Geo = &Group->TextGroup->UIGeo;
 
 
-  local_persist window_layout CycleGraphWindow;
-  CycleGraphWindow.Table.Layout.At = V2(0,0);
-  CycleGraphWindow.Table.Layout.DrawBounds = NullClipRect;
-  CycleGraphWindow.Table.Layout.Basis = BasisP;
+  local_persist window_layout CycleGraphWindow = WindowLayout("Cycle Graph", BasisP);
+  Clear(&CycleGraphWindow.Table.Layout.At);
+  Clear(&CycleGraphWindow.Table.Layout.DrawBounds);
 
   // TODO(Jesse): Call this for CycleGraphWindow!!
   // WindowInteractions()
@@ -1564,14 +1564,14 @@ DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState
         ++ThreadIndex)
   {
     char *ThreadName = FormatString(TranArena, "Thread %u", ThreadIndex);
-    Column(ThreadName, Group, &CycleGraphWindow, WHITE);
+    Column(ThreadName, Group, &CycleGraphWindow.Table, Z, DISABLE_CLIPPING);
     NewRow(&CycleGraphWindow);
 
     debug_thread_state *ThreadState = GetThreadLocalStateFor(ThreadIndex);
     debug_scope_tree *ReadTree = ThreadState->ScopeTrees + SharedState->ReadScopeIndex;
     if (MainThreadReadTree->FrameRecorded == ReadTree->FrameRecorded)
     {
-      DrawScopeBarsRecursive(Group, Geo, ReadTree->Root, Layout, &FrameCycles, TotalGraphWidth, &Entropy, Z, GetAbsoluteMaxClip(&CycleGraphWindow));
+      DrawScopeBarsRecursive(Group, Geo, ReadTree->Root, Layout, &FrameCycles, TotalGraphWidth, &Entropy, Z, DISABLE_CLIPPING);
     }
 
     NewRow(&CycleGraphWindow);
@@ -1591,7 +1591,7 @@ DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState
       v2 MinP16ms = Layout->Basis + V2( xOffset, MinY );
       v2 MaxP16ms = Layout->Basis + V2( xOffset+MarkerWidth, Layout->At.y );
       v2 Dim = MaxP16ms - MinP16ms;
-      BufferUntexturedQuad(Group, Geo, MinP16ms, Dim, V3(0,1,0), Z, GetAbsoluteMaxClip(&CycleGraphWindow));
+      BufferUntexturedQuad(Group, Geo, MinP16ms, Dim, V3(0,1,0), Z, DISABLE_CLIPPING);
     }
     {
       r32 FramePerc = 33.333333f/TotalMs;
@@ -1599,7 +1599,7 @@ DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState
       v2 MinP16ms = Layout->Basis + V2( xOffset, MinY );
       v2 MaxP16ms = Layout->Basis + V2( xOffset+MarkerWidth, Layout->At.y );
       v2 Dim = MaxP16ms - MinP16ms;
-      BufferUntexturedQuad(Group, Geo, MinP16ms, Dim, V3(0,1,1), Z, GetAbsoluteMaxClip(&CycleGraphWindow));
+      BufferUntexturedQuad(Group, Geo, MinP16ms, Dim, V3(0,1,1), Z, DISABLE_CLIPPING);
     }
   }
 
@@ -1743,7 +1743,7 @@ ListContainsScope(unique_debug_profile_scope* List, debug_profile_scope* Query)
 function void
 BufferFirstCallToEach(debug_ui_render_group *Group,
     debug_profile_scope *Scope_in, debug_profile_scope *TreeRoot,
-    memory_arena *Memory, window_layout* CallgraphLayout, u64 TotalFrameCycles, u32 Depth)
+    memory_arena *Memory, window_layout* CallgraphWindow, u64 TotalFrameCycles, u32 Depth)
 {
   unique_debug_profile_scope* UniqueScopes = {};
 
@@ -1770,12 +1770,12 @@ BufferFirstCallToEach(debug_ui_render_group *Group,
 
   while (UniqueScopes)
   {
-    interactable ScopeTextInteraction = StartInteractable(&CallgraphLayout->Table.Layout, (umm)UniqueScopes->Scope);
-      BufferScopeTreeEntry(Group, UniqueScopes->Scope, CallgraphLayout, WHITE, UniqueScopes->TotalCycles, TotalFrameCycles, UniqueScopes->CallCount, Depth);
-    EndInteractable(CallgraphLayout, &ScopeTextInteraction);
+    interactable ScopeTextInteraction = StartInteractable(&CallgraphWindow->Table.Layout, (umm)UniqueScopes->Scope);
+      BufferScopeTreeEntry(Group, UniqueScopes->Scope, CallgraphWindow, WHITE, UniqueScopes->TotalCycles, TotalFrameCycles, UniqueScopes->CallCount, Depth);
+    EndInteractable(CallgraphWindow, &ScopeTextInteraction);
 
     if (UniqueScopes->Scope->Expanded)
-      BufferFirstCallToEach(Group, UniqueScopes->Scope->Child, TreeRoot, Memory, CallgraphLayout, TotalFrameCycles, Depth+1);
+      BufferFirstCallToEach(Group, UniqueScopes->Scope->Child, TreeRoot, Memory, CallgraphWindow, TotalFrameCycles, Depth+1);
 
     if (Clicked(Group, &ScopeTextInteraction))
     {
@@ -1885,34 +1885,34 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout
   debug_thread_state *MainThreadState = GetThreadLocalStateFor(0);
   debug_scope_tree *MainThreadReadTree    = MainThreadState->ScopeTrees + DebugState->ReadScopeIndex;
 
-  local_persist window_layout CallgraphWindow;
+  local_persist window_layout CallgraphWindow = WindowLayout("Callgraph", V2(0, MainLayout->DrawBounds.Max.y));
+
   TIMED_BLOCK("Call Graph");
 
-  CallgraphWindow.Table.Layout.At = V2(0,0);
-  CallgraphWindow.Table.Layout.DrawBounds = NullClipRect;
-  CallgraphWindow.Table.Layout.Basis = V2(0, MainLayout->DrawBounds.Max.y);
+    Clear(&CallgraphWindow.Table.Layout.At);
+    Clear(&CallgraphWindow.Table.Layout.DrawBounds);
 
-  NewRow(&CallgraphWindow);
-  Column("Frame %",  Group,  &CallgraphWindow,  WHITE);
-  Column("Cycles",   Group,  &CallgraphWindow,  WHITE);
-  Column("Calls",    Group,  &CallgraphWindow,  WHITE);
-  Column("Name",     Group,  &CallgraphWindow,  WHITE);
-  NewRow(&CallgraphWindow);
+    NewRow(&CallgraphWindow);
+    Column("Frame %",  Group,  &CallgraphWindow,  WHITE);
+    Column("Cycles",   Group,  &CallgraphWindow,  WHITE);
+    Column("Calls",    Group,  &CallgraphWindow,  WHITE);
+    Column("Name",     Group,  &CallgraphWindow,  WHITE);
+    NewRow(&CallgraphWindow);
 
-  for ( u32 ThreadIndex = 0;
-      ThreadIndex < TotalThreadCount;
-      ++ThreadIndex)
-  {
-    debug_thread_state *ThreadState = GetThreadLocalStateFor(ThreadIndex);
-    debug_scope_tree *ReadTree = ThreadState->ScopeTrees + DebugState->ReadScopeIndex;
-    frame_stats *Frame = DebugState->Frames + DebugState->ReadScopeIndex;
-
-    if (MainThreadReadTree->FrameRecorded == ReadTree->FrameRecorded)
+    for ( u32 ThreadIndex = 0;
+        ThreadIndex < TotalThreadCount;
+        ++ThreadIndex)
     {
-      BufferFirstCallToEach(Group, ReadTree->Root, ReadTree->Root, ThreadsafeDebugMemoryAllocator(), &CallgraphWindow, Frame->TotalCycles, 0);
-      NewRow(&CallgraphWindow);
+      debug_thread_state *ThreadState = GetThreadLocalStateFor(ThreadIndex);
+      debug_scope_tree *ReadTree = ThreadState->ScopeTrees + DebugState->ReadScopeIndex;
+      frame_stats *Frame = DebugState->Frames + DebugState->ReadScopeIndex;
+
+      if (MainThreadReadTree->FrameRecorded == ReadTree->FrameRecorded)
+      {
+        BufferFirstCallToEach(Group, ReadTree->Root, ReadTree->Root, ThreadsafeDebugMemoryAllocator(), &CallgraphWindow, Frame->TotalCycles, 0);
+        NewRow(&CallgraphWindow);
+      }
     }
-  }
 
   END_BLOCK("Call Graph");
 
@@ -2067,7 +2067,7 @@ BufferBarGraph(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo,
   v2 BarDim = V2(BarWidth, BarHeight);
   v2 PercBarDim = V2(BarWidth, BarHeight) * V2(PercFilled, 1);
 
-  BufferUntexturedQuad(Group, Geo, MinP, BarDim, V3(0.25f), Z, Table->Layout.Basis+MaxClip);
+  BufferUntexturedQuad(Group, Geo, MinP, BarDim, V3(0.25f), Z, MaxClip);
 
   rect2 BarRect = { MinP, MinP + BarDim };
   b32 Hovering = IsInsideRect(BarRect, *Group->MouseP);
@@ -2075,7 +2075,7 @@ BufferBarGraph(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo,
   if (Hovering)
     Color = {{ 1, 0, 1 }};
 
-  BufferUntexturedQuad(Group, Geo, MinP, PercBarDim, Color, Z, Table->Layout.Basis+MaxClip);
+  BufferUntexturedQuad(Group, Geo, MinP, PercBarDim, Color, Z, MaxClip);
 
   Table->Layout.At.x += BarDim.x;
   AdvanceClip(&Table->Layout);
@@ -2293,6 +2293,7 @@ SubWindowAt(window_layout* Original, v2 NewBasis)
 
   Result.Table.Layout.Basis = NewBasis;
   Result.MaxClip = Original->Table.Layout.Basis + Original->MaxClip - NewBasis;
+  Result.InteractionStackIndex = Original->InteractionStackIndex;
 
   return Result;
 }
