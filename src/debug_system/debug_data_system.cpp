@@ -520,14 +520,14 @@ ThreadsafeDebugMemoryAllocator()
 v2
 GetAbsoluteMin(layout *Layout)
 {
-  v2 Result = Layout->Clip.Min + Layout->Basis;
+  v2 Result = Layout->DrawBounds.Min + Layout->Basis;
   return Result;
 }
 
 v2
 GetAbsoluteMax(layout *Layout)
 {
-  v2 Result = Layout->Clip.Max + Layout->Basis;
+  v2 Result = Layout->DrawBounds.Max + Layout->Basis;
   return Result;
 }
 
@@ -541,7 +541,7 @@ GetAbsoluteAt(layout *Layout)
 rect2
 GetAbsoluteClip(layout *Layout)
 {
-  rect2 Result = { Layout->Basis+Layout->Clip.Min, Layout->Basis+Layout->Clip.Max };
+  rect2 Result = { Layout->Basis+Layout->DrawBounds.Min, Layout->Basis+Layout->DrawBounds.Max };
   return Result;
 }
 
@@ -553,12 +553,11 @@ GetAbsoluteMin(window_layout *Window)
 }
 
 v2
-GetAbsoluteMax(window_layout *Window)
+GetAbsoluteMaxClip(window_layout *Window)
 {
-  v2 Result = Max(Window->Table.Layout.Clip.Max, Window->MaxClip) + Window->Table.Layout.Basis;
+  v2 Result = Window->MaxClip + Window->Table.Layout.Basis;
   return Result;
 }
-
 
 /*************************                       *****************************/
 /*************************  Profile Scope Trees  *****************************/
@@ -627,16 +626,16 @@ PrintFreeScopes(debug_state *State)
 
 
 
-/*******************************             *********************************/
-/*******************************  Clip Rect  *********************************/
-/*******************************             *********************************/
+/*******************************              *********************************/
+/*******************************  DrawBounds  *********************************/
+/*******************************              *********************************/
 
 
 inline void
 AdvanceClip(layout *Layout, v2 TestP)
 {
-  Layout->Clip.Min = Min(TestP, Layout->Clip.Min);
-  Layout->Clip.Max = Max(TestP, Layout->Clip.Max);
+  Layout->DrawBounds.Min = Min(TestP, Layout->DrawBounds.Min);
+  Layout->DrawBounds.Max = Max(TestP, Layout->DrawBounds.Max);
   return;
 }
 
@@ -646,8 +645,8 @@ AdvanceClip(layout *Layout, font *Font = 0, ui_style *Style = 0)
   v2 StylePadding = Style? Style->Padding*2.0f: V2(0);
   v2 FontSize = Font? V2(0.0f, Font->Size.y) : V2(0);
 
-  Layout->Clip.Min = Min(Layout->At, Layout->Clip.Min);
-  Layout->Clip.Max = Max(Layout->At + StylePadding + FontSize, Layout->Clip.Max);
+  Layout->DrawBounds.Min = Min(Layout->At, Layout->DrawBounds.Min);
+  Layout->DrawBounds.Max = Max(Layout->At + StylePadding + FontSize, Layout->DrawBounds.Max);
 
   return;
 }
@@ -655,7 +654,7 @@ AdvanceClip(layout *Layout, font *Font = 0, ui_style *Style = 0)
 inline void
 BeginClipRect(window_layout *Window)
 {
-  Window->Table.Layout.Clip = InvertedInfinityRectangle();
+  Window->Table.Layout.DrawBounds = InvertedInfinityRectangle();
   return;
 }
 

@@ -51,26 +51,27 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   SetFontSize(&UiGroup->Font, DEBUG_FONT_SIZE);
 
   TIMED_BLOCK("Draw Status Bar");
+    v2 StatusBarClip = V2(FLT_MAX);
     r32 StatusBarZ = 1.0f;
     Dt = ComputeMinMaxAvgDt();
-    BufferColumn(Dt.Max, 6, UiGroup, &Layout, WHITE, StatusBarZ);
+    BufferColumn(Dt.Max, 6, UiGroup, &Layout, WHITE, StatusBarZ, StatusBarClip);
     NewLine(&Layout);
 
-    BufferColumn(Dt.Avg, 6, UiGroup, &Layout, WHITE, StatusBarZ);
-    BufferColumn(Plat->dt*1000.0f, 6, UiGroup, &Layout, WHITE, StatusBarZ);
-    BufferValue("ms", UiGroup, &Layout, WHITE, StatusBarZ);
+    BufferColumn(Dt.Avg, 6, UiGroup, &Layout, WHITE, StatusBarZ, StatusBarClip);
+    BufferColumn(Plat->dt*1000.0f, 6, UiGroup, &Layout, WHITE, StatusBarZ, StatusBarClip);
+    BufferValue("ms", UiGroup, &Layout, WHITE, StatusBarZ, StatusBarClip);
 
     {
       // Main line
       memory_arena_stats TotalStats = GetTotalMemoryArenaStats();
 
-      BufferThousands(TotalStats.Allocations, UiGroup, &Layout, WHITE, StatusBarZ);
+      BufferThousands(TotalStats.Allocations, UiGroup, &Layout, WHITE, StatusBarZ, StatusBarClip);
       AdvanceSpaces(1, &Layout, &UiGroup->Font);
-      BufferValue("Allocations", UiGroup, &Layout, WHITE, StatusBarZ);
+      BufferValue("Allocations", UiGroup, &Layout, WHITE, StatusBarZ, StatusBarClip);
 
-      BufferThousands(TotalStats.Pushes, UiGroup, &Layout, WHITE, StatusBarZ);
+      BufferThousands(TotalStats.Pushes, UiGroup, &Layout, WHITE, StatusBarZ, StatusBarClip);
       AdvanceSpaces(1, &Layout, &UiGroup->Font);
-      BufferValue("Pushes", UiGroup, &Layout, WHITE, StatusBarZ);
+      BufferValue("Pushes", UiGroup, &Layout, WHITE, StatusBarZ, StatusBarClip);
 
       u32 TotalDrawCalls = 0;
 
@@ -85,14 +86,14 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
         }
       }
 
-      BufferColumn(TotalDrawCalls, 6, UiGroup, &Layout, WHITE, StatusBarZ);
+      BufferColumn(TotalDrawCalls, 6, UiGroup, &Layout, WHITE, StatusBarZ, StatusBarClip);
       AdvanceSpaces(1, &Layout, &UiGroup->Font);
-      BufferValue("Draw Calls", UiGroup, &Layout, WHITE, StatusBarZ);
+      BufferValue("Draw Calls", UiGroup, &Layout, WHITE, StatusBarZ, StatusBarClip);
 
       NewLine(&Layout);
     }
 
-    BufferColumn(Dt.Min, 6, UiGroup, &Layout, WHITE, StatusBarZ);
+    BufferColumn(Dt.Min, 6, UiGroup, &Layout, WHITE, StatusBarZ, StatusBarClip);
   END_BLOCK("Status Bar");
 
   SetFontSize(&UiGroup->Font, 32);
@@ -113,7 +114,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     ButtonStyling.IsActive = DebugState->UIType == DebugUIType_PickedChunks;
     const char* ButtonName = "PickedChunks";
     umm InteractionId = (umm)ButtonName;
-    if (Button(ButtonName, UiGroup, &Layout, InteractionId, V2(0), DebugMenuZ, &ButtonStyling))
+    if (Button(ButtonName, UiGroup, &Layout, InteractionId, V2(FLT_MAX), DebugMenuZ, &ButtonStyling))
     {
       DebugState->UIType = DebugUIType_PickedChunks;
     }
@@ -121,7 +122,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     ButtonStyling.IsActive = DebugState->UIType == DebugUIType_Graphics;
     ButtonName = "Graphics";
     InteractionId = (umm)ButtonName;
-    if (Button(ButtonName, UiGroup, &Layout, InteractionId, V2(0), DebugMenuZ, &ButtonStyling))
+    if (Button(ButtonName, UiGroup, &Layout, InteractionId, V2(FLT_MAX), DebugMenuZ, &ButtonStyling))
     {
       DebugState->UIType = DebugUIType_Graphics;
     }
@@ -129,7 +130,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     ButtonStyling.IsActive = DebugState->UIType == DebugUIType_Network;
     ButtonName = "Network";
     InteractionId = (umm)ButtonName;
-    if (Button(ButtonName, UiGroup, &Layout, InteractionId, V2(0), DebugMenuZ, &ButtonStyling))
+    if (Button(ButtonName, UiGroup, &Layout, InteractionId, V2(FLT_MAX), DebugMenuZ, &ButtonStyling))
     {
       DebugState->UIType = DebugUIType_Network;
     }
@@ -137,7 +138,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     ButtonStyling.IsActive = DebugState->UIType == DebugUIType_CollatedFunctionCalls;
     ButtonName = "Functions";
     InteractionId = (umm)ButtonName;
-    if (Button(ButtonName, UiGroup, &Layout, InteractionId, V2(0), DebugMenuZ, &ButtonStyling))
+    if (Button(ButtonName, UiGroup, &Layout, InteractionId, V2(FLT_MAX), DebugMenuZ, &ButtonStyling))
     {
       DebugState->UIType = DebugUIType_CollatedFunctionCalls;
     }
@@ -145,7 +146,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     ButtonStyling.IsActive = DebugState->UIType == DebugUIType_CallGraph;
     ButtonName = "Call Graph";
     InteractionId = (umm)ButtonName;
-    if (Button(ButtonName, UiGroup, &Layout, InteractionId, V2(0), DebugMenuZ, &ButtonStyling))
+    if (Button(ButtonName, UiGroup, &Layout, InteractionId, V2(FLT_MAX), DebugMenuZ, &ButtonStyling))
     {
       DebugState->UIType = DebugUIType_CallGraph;
     }
@@ -153,7 +154,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     ButtonStyling.IsActive = DebugState->UIType == DebugUIType_Memory;
     ButtonName = "Memory";
     InteractionId = (umm)ButtonName;
-    if (Button(ButtonName, UiGroup, &Layout, InteractionId, V2(0), DebugMenuZ, &ButtonStyling))
+    if (Button(ButtonName, UiGroup, &Layout, InteractionId, V2(FLT_MAX), DebugMenuZ, &ButtonStyling))
     {
       DebugState->UIType = DebugUIType_Memory;
     }
@@ -161,7 +162,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     ButtonStyling.IsActive = DebugState->UIType == DebugUIType_DrawCalls;
     ButtonName = "Draw Calls";
     InteractionId = (umm)ButtonName;
-    if (Button(ButtonName, UiGroup, &Layout, InteractionId, V2(0), DebugMenuZ, &ButtonStyling))
+    if (Button(ButtonName, UiGroup, &Layout, InteractionId, V2(FLT_MAX), DebugMenuZ, &ButtonStyling))
     {
       DebugState->UIType = DebugUIType_DrawCalls;
     }
@@ -187,7 +188,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
 
     case DebugUIType_Graphics:
     {
-      DebugDrawGraphicsHud(UiGroup, DebugState, &Layout, 1.0f);
+      DebugDrawGraphicsHud(UiGroup, DebugState, &Layout, 1.0f, V2(FLT_MAX));
     } break;
 
     case DebugUIType_Network:

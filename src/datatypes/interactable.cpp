@@ -45,6 +45,6 @@ Clicked(debug_ui_render_group* Group, interactable Interaction)
 inline void
 EndInteractable(window_layout* Window, interactable *Interaction)
 {
-  Interaction->MaxP = Window->Table.Layout.Basis + Window->Table.Layout.Clip.Max;
+  Interaction->MaxP = Window->Table.Layout.Basis + Window->Table.Layout.DrawBounds.Max;
   return;
 }

@@ -16,7 +16,7 @@ struct layout
 {
   v2 At;
   v2 Basis;
-  rect2 Clip;
+  rect2 DrawBounds;
 };
 
 #define MAX_TABLE_COLUMNS 4
