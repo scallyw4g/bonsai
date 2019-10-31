@@ -57,6 +57,14 @@ struct ui_style
   b32 IsActive;
 };
 
+struct button_interaction_result
+{
+  b32 Pressed;
+  b32 Clicked;
+  b32 Hover;
+  v3 Color;
+};
+
 function ui_style
 StandardStyling(v3 StartingColor, v3 HoverMultiplier = V3(1.3f), v3 ClickMultiplier = V3(1.2f))
 {

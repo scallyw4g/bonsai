@@ -1,3 +1,5 @@
+#include <debug_ui.h>
+
 struct debug_state;
 struct game_state;
 typedef debug_state* (*get_debug_state_proc)();
@@ -294,6 +296,12 @@ struct debug_draw_call
   const char * Caller;
   u32 N;
   u32 Calls;
+};
+
+struct called_function
+{
+  const char* Name;
+  u32 CallCount;
 };
 
 typedef b32 (*meta_comparator)(push_metadata*, push_metadata*);

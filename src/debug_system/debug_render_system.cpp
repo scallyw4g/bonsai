@@ -10,33 +10,19 @@
 
 #include <work_queue.cpp>
 
-debug_global rect2 NullClipRect = {};
 
-#if 0
-void
-CleanupText2D(debug_text_render_group *RG)
-{
-  // Delete buffers
-  glDeleteBuffers(1, &RG->VertexBuffer);
-  glDeleteBuffers(1, &RG->UVBuffer);
 
-  // Delete texture
-  glDeleteTextures(1, &RG->FontTexture->ID);
+/*******************************             *********************************/
+/*******************************  Z helpers  *********************************/
+/*******************************             *********************************/
 
-  // Delete shader
-  glDeleteProgram(RG->Text2DShader.ID);
 
-  return;
-}
-#endif
 
-#define DEBUG_MAX_UI_WINDOW_SLICES 1024.0f
-#define DISABLE_CLIPPING V2(FLT_MAX)
-
-// NOTE(Jesse): This is the bottom-most value on this slice
 function r32
 zIndexForBackgrounds(window_layout *Window, debug_ui_render_group *Group)
 {
+  // NOTE(Jesse): This is the bottom-most value on this slice
+  //
   // NOTE(Jesse): We add one to the z-slice initially because a z-slice of 0 is
   // invalid.  It is invalid because the slices are discrete chunks of z space
   // as opposed to indices into an array, and slice 0 is just nonsensical in
@@ -48,7 +34,7 @@ zIndexForBackgrounds(window_layout *Window, debug_ui_render_group *Group)
 }
 
 function r32
-zSliceInterval()
+zSliceInterval(void)
 {
   r32 Result = (r32)1.0f / DEBUG_MAX_UI_WINDOW_SLICES;
   Assert(Result <= 1.0f && Result >= 0.0f);
@@ -86,73 +72,189 @@ zIndexForTitleBar(window_layout *Window, debug_ui_render_group *Group)
   return Result;
 }
 
-function b32
-InitDebugOverlayFramebuffer(debug_text_render_group *RG, memory_arena *DebugArena, const char *DebugFont)
-{
-  RG->FontTexture = LoadBitmap(DebugFont, DebugArena, DebugTextureArraySlice_Count);
 
-  glGenBuffers(1, &RG->SolidUIVertexBuffer);
-  glGenBuffers(1, &RG->SolidUIColorBuffer);
-  glGenBuffers(1, &RG->SolidUIUVBuffer);
 
-  RG->Text2DShader = LoadShaders("TextVertexShader.vertexshader",
-                                 "TextVertexShader.fragmentshader", DebugArena);
 
-  RG->TextTextureUniform = glGetUniformLocation(RG->Text2DShader.ID, "TextTextureSampler");
+/*****************************                ********************************/
+/*****************************  Text Helpers  ********************************/
+/*****************************                ********************************/
 
-  return True;
-}
+
 
 function void
-AllocateAndInitGeoBuffer(textured_2d_geometry_buffer *Geo, u32 VertCount, memory_arena *DebugArena)
+SetFontSize(font *Font, r32 FontSize)
 {
-  Geo->Verts  = Allocate(v3, DebugArena, VertCount);
-  Geo->Colors = Allocate(v3, DebugArena, VertCount);
-  Geo->UVs    = Allocate(v3, DebugArena, VertCount);
-
-  Geo->End = VertCount;
-  Geo->At = 0;
-}
-
-function void
-AllocateAndInitGeoBuffer(untextured_2d_geometry_buffer *Geo, u32 VertCount, memory_arena *DebugArena)
-{
-  Geo->Verts = Allocate(v3, DebugArena, VertCount);
-  Geo->Colors = Allocate(v3, DebugArena, VertCount);
-
-  Geo->End = VertCount;
-  Geo->At = 0;
+  Font->Size.x = FontSize;
+  Font->Size.y = FontSize * 1.3f;
   return;
 }
 
-function shader
-MakeSolidUIShader(memory_arena *Memory)
+function void
+AdvanceSpaces(u32 N, layout *Layout, font *Font)
 {
-  shader SimpleTextureShader = LoadShaders( "SimpleColor.vertexshader",
-                                            "SimpleColor.fragmentshader",
-                                             Memory);
-  return SimpleTextureShader;
+  Layout->At.x += (N*Font->Size.x);
+  AdvanceClip(Layout);
+  return;
 }
 
-function shader
-MakeRenderToTextureShader(memory_arena *Memory, m4 *ViewProjection)
+function rect2
+NewLine(layout *Layout)
 {
-  shader Shader = LoadShaders( "RenderToTexture.vertexshader",
-                               "RenderToTexture.fragmentshader",
-                                Memory);
+  v2 Min = { Layout->Basis.x, Layout->Basis.y + Layout->At.y };
+  Layout->At.y = Layout->DrawBounds.Max.y;
+  v2 Max = Layout->Basis + Layout->At;
 
-  shader_uniform **Current = &Shader.FirstUniform;
-
-  *Current = GetUniform(Memory, &Shader, ViewProjection, "ViewProjection");
-  Current = &(*Current)->Next;
-
-  return Shader;
+  rect2 Bounds = RectMinMax(Min, Max);
+  Layout->At.x = 0;
+  AdvanceClip(Layout);
+  return Bounds;
 }
+
+function rect2
+NewRow(table *Table)
+{
+  Table->ColumnIndex = 0;
+  rect2 Bounds = NewLine(&Table->Layout);
+  return Bounds;
+}
+
+function rect2
+NewRow(window_layout *Window)
+{
+  rect2 Bounds = NewRow(&Window->Table);
+  return Bounds;
+}
+
+function char*
+MemorySize(u64 Number)
+{
+  r64 KB = (r64)Kilobytes(1);
+  r64 MB = (r64)Megabytes(1);
+  r64 GB = (r64)Gigabytes(1);
+
+  r64 Display = (r64)Number;
+  char Units = ' ';
+
+  if (Number >= KB && Number < MB)
+  {
+    Display = Number / KB;
+    Units = 'K';
+  }
+  else if (Number >= MB && Number < GB)
+  {
+    Display = Number / MB;
+    Units = 'M';
+  }
+  else if (Number >= GB)
+  {
+    Display = Number / GB;
+    Units = 'G';
+  }
+
+
+  char *Buffer = AllocateProtection(char, TranArena, 32, False);
+  sprintf(Buffer, "%.1f%c", (r32)Display, Units);
+  return Buffer;
+}
+
+function char*
+ToString(u64 Number)
+{
+  char *Buffer = AllocateProtection(char, TranArena, 32, False);
+  sprintf(Buffer, "%lu", Number);
+  return Buffer;
+}
+
+function char*
+ToString(s32 Number)
+{
+  char *Buffer = AllocateProtection(char, TranArena, 32, False);
+  sprintf(Buffer, "%i", Number);
+  return Buffer;
+}
+
+function char*
+ToString(u32 Number)
+{
+  char *Buffer = AllocateProtection(char, TranArena, 32, False);
+  sprintf(Buffer, "%u", Number);
+  return Buffer;
+}
+
+function char*
+ToString(r32 Number)
+{
+  char *Buffer = AllocateProtection(char, TranArena, 32, False);
+  sprintf(Buffer, "%.2f", Number);
+  return Buffer;
+}
+
+function char*
+FormatMemorySize(u64 Number)
+{
+  r64 KB = (r64)Kilobytes(1);
+  r64 MB = (r64)Megabytes(1);
+  r64 GB = (r64)Gigabytes(1);
+
+  r64 Display = (r64)Number;
+  char Units = ' ';
+
+  if (Number >= KB && Number < MB)
+  {
+    Display = Number / KB;
+    Units = 'K';
+  }
+  else if (Number >= MB && Number < GB)
+  {
+    Display = Number / MB;
+    Units = 'M';
+  }
+  else if (Number >= GB)
+  {
+    Display = Number / GB;
+    Units = 'G';
+  }
+
+  char *Buffer = AllocateProtection(char, TranArena, 32, False);
+  sprintf(Buffer, "%.1f%c", (r32)Display, Units);
+
+  return Buffer;
+}
+
+function char*
+FormatThousands(u64 Number)
+{
+  u64 OneThousand = 1000;
+  r32 Display = (r32)Number;
+  char Units = ' ';
+
+  if (Number >= OneThousand)
+  {
+    Display = Number / (r32)OneThousand;
+    Units = 'K';
+  }
+
+  char *Buffer = AllocateProtection(char, TranArena, 32, False);
+  sprintf(Buffer, "%.1f%c", Display, Units);
+
+  return Buffer;
+}
+
+function v2
+GetTextBounds(u32 TextLength, font* Font)
+{
+  v2 Result = {};
+  Result.x = TextLength * Font->Size.x;
+  Result.y = Font->Size.y;
+  return Result;
+}
+
 
 
 /******************************                *******************************/
 /******************************  2D Buffering  *******************************/
 /******************************                *******************************/
+
 
 
 function void
@@ -234,7 +336,7 @@ BufferQuadUVs(textured_2d_geometry_buffer* Geo, rect2 UV, debug_texture_array_sl
 }
 
 function rect2
-UVsForFullyCoveredQuad()
+UVsForFullyCoveredQuad(void)
 {
   // Note(Jesse): These are weird compared to what you might expect because
   // OpenGL screen coordinates originate at the bottom left, but are inverted
@@ -294,29 +396,12 @@ BufferColors(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo, v
   BufferColors(Geo->Colors, Geo->At, Color);
 }
 
-#define TO_NDC(P) ((P * ToNDC) - 1.0f)
-
-enum clip_status
-{
-  ClipStatus_NoClipping,
-  ClipStatus_PartialClipping,
-  ClipStatus_FullyClipped
-};
-
-struct clip_result
-{
-  clip_status ClipStatus;
-  v2 MaxClip;
-
-  rect2 PartialClip;
-};
-
-
-// Note(Jesse): Z==0 | far-clip
-// Note(Jesse): Z==1 | near-clip
 function clip_result
 BufferQuadDirect(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z, v2 ScreenDim, v2 MaxClip)
 {
+  // Note(Jesse): Z==0 | far-clip
+  // Note(Jesse): Z==1 | near-clip
+
   Assert(Z >= 0.0f && Z <= 1.0f);
 
   v3 up_left    = V3( MinP.x       , MinP.y      , Z);
@@ -387,7 +472,7 @@ BufferQuadDirect(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z, v2 ScreenD
     return Result;
   }
 
-
+  #define TO_NDC(P) ((P * ToNDC) - 1.0f)
   v3 ToNDC = 2.0f/V3(ScreenDim.x, ScreenDim.y, 1.0f);
 
   // Native OpenGL screen coordinates are {0,0} at the bottom-left corner. This
@@ -402,6 +487,7 @@ BufferQuadDirect(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z, v2 ScreenD
   Dest[StartingIndex++] = InvertYZ * TO_NDC(down_right);
   Dest[StartingIndex++] = InvertYZ * TO_NDC(up_right);
   Dest[StartingIndex++] = InvertYZ * TO_NDC(down_left);
+  #undef TO_NDC
 
   Result.MaxClip = down_right.xy;
 
@@ -584,191 +670,6 @@ BufferValue(u32 Number, debug_ui_render_group *Group, layout *Layout, u32 ColorI
   return;
 }
 
-void
-EndClipRect(debug_ui_render_group *Group, window_layout *Window, untextured_2d_geometry_buffer *Geo, v3 Color = V3(0.2f))
-{
-  layout *Layout = &Window->Table.Layout;
-
-  v2 MinP = Layout->DrawBounds.Min + Layout->Basis;
-  v2 Dim = Min(Layout->DrawBounds.Max, Window->MaxClip) - Layout->DrawBounds.Min;
-
-  BufferUntexturedQuad(Group, Geo, MinP, Dim, Color, 0.0f, GetAbsoluteMaxClip(Window));
-  return;
-}
-
-
-/*****************************                ********************************/
-/*****************************  Text Helpers  ********************************/
-/*****************************                ********************************/
-
-
-function void
-AdvanceSpaces(u32 N, layout *Layout, font *Font)
-{
-  Layout->At.x += (N*Font->Size.x);
-  AdvanceClip(Layout);
-  return;
-}
-
-function rect2
-NewLine(layout *Layout)
-{
-  v2 Min = { Layout->Basis.x, Layout->Basis.y + Layout->At.y };
-  Layout->At.y = Layout->DrawBounds.Max.y;
-  v2 Max = Layout->Basis + Layout->At;
-
-  rect2 Bounds = RectMinMax(Min, Max);
-  Layout->At.x = 0;
-  AdvanceClip(Layout);
-  return Bounds;
-}
-
-r32
-BufferLine(const char* Text, u32 Color, layout *Layout, debug_ui_render_group *Group, r32 Z, v2 MaxClip)
-{
-  r32 xOffset = BufferValue(Text, Group, Layout, Color, Z, MaxClip);
-  NewLine(Layout);
-  return xOffset;
-}
-
-function rect2
-NewRow(table *Table)
-{
-  Table->ColumnIndex = 0;
-  rect2 Bounds = NewLine(&Table->Layout);
-  return Bounds;
-}
-
-function rect2
-NewRow(window_layout *Window)
-{
-  rect2 Bounds = NewRow(&Window->Table);
-  return Bounds;
-}
-
-function char*
-MemorySize(u64 Number)
-{
-  r64 KB = (r64)Kilobytes(1);
-  r64 MB = (r64)Megabytes(1);
-  r64 GB = (r64)Gigabytes(1);
-
-  r64 Display = (r64)Number;
-  char Units = ' ';
-
-  if (Number >= KB && Number < MB)
-  {
-    Display = Number / KB;
-    Units = 'K';
-  }
-  else if (Number >= MB && Number < GB)
-  {
-    Display = Number / MB;
-    Units = 'M';
-  }
-  else if (Number >= GB)
-  {
-    Display = Number / GB;
-    Units = 'G';
-  }
-
-
-  char *Buffer = AllocateProtection(char, TranArena, 32, False);
-  sprintf(Buffer, "%.1f%c", (r32)Display, Units);
-  return Buffer;
-}
-
-function char*
-ToString(u64 Number)
-{
-  char *Buffer = AllocateProtection(char, TranArena, 32, False);
-  sprintf(Buffer, "%lu", Number);
-  return Buffer;
-}
-
-function char*
-ToString(s32 Number)
-{
-  char *Buffer = AllocateProtection(char, TranArena, 32, False);
-  sprintf(Buffer, "%i", Number);
-  return Buffer;
-}
-
-function char*
-ToString(u32 Number)
-{
-  char *Buffer = AllocateProtection(char, TranArena, 32, False);
-  sprintf(Buffer, "%u", Number);
-  return Buffer;
-}
-
-function char*
-ToString(r32 Number)
-{
-  char *Buffer = AllocateProtection(char, TranArena, 32, False);
-  sprintf(Buffer, "%.2f", Number);
-  return Buffer;
-}
-
-function char*
-FormatMemorySize(u64 Number)
-{
-  r64 KB = (r64)Kilobytes(1);
-  r64 MB = (r64)Megabytes(1);
-  r64 GB = (r64)Gigabytes(1);
-
-  r64 Display = (r64)Number;
-  char Units = ' ';
-
-  if (Number >= KB && Number < MB)
-  {
-    Display = Number / KB;
-    Units = 'K';
-  }
-  else if (Number >= MB && Number < GB)
-  {
-    Display = Number / MB;
-    Units = 'M';
-  }
-  else if (Number >= GB)
-  {
-    Display = Number / GB;
-    Units = 'G';
-  }
-
-  char *Buffer = AllocateProtection(char, TranArena, 32, False);
-  sprintf(Buffer, "%.1f%c", (r32)Display, Units);
-
-  return Buffer;
-}
-
-function void
-BufferMemorySize(u64 Number, debug_ui_render_group *Group, layout *Layout, u32 ColorIndex, r32 Z, v2 MaxClip)
-{
-  char *Buffer = FormatMemorySize(Number);
-  BufferValue( Buffer, Group, Layout, ColorIndex, Z, MaxClip);
-  return;
-}
-
-function char*
-FormatThousands(u64 Number)
-{
-  u64 OneThousand = 1000;
-  r32 Display = (r32)Number;
-  char Units = ' ';
-
-  if (Number >= OneThousand)
-  {
-    Display = Number / (r32)OneThousand;
-    Units = 'K';
-  }
-
-  char *Buffer = AllocateProtection(char, TranArena, 32, False);
-  sprintf(Buffer, "%.1f%c", Display, Units);
-
-  return Buffer;
-}
-
 function void
 BufferThousands(u64 Number, debug_ui_render_group *Group, layout *Layout, u32 ColorIndex, r32 Z, v2 MaxClip, u32 Columns = 10)
 {
@@ -776,6 +677,14 @@ BufferThousands(u64 Number, debug_ui_render_group *Group, layout *Layout, u32 Co
   u32 Len = (u32)strlen(Buffer);
   u32 Pad = Max(Columns-Len, 0U);
   AdvanceSpaces(Pad, Layout, &Group->Font);
+  BufferValue( Buffer, Group, Layout, ColorIndex, Z, MaxClip);
+  return;
+}
+
+function void
+BufferMemorySize(u64 Number, debug_ui_render_group *Group, layout *Layout, u32 ColorIndex, r32 Z, v2 MaxClip)
+{
+  char *Buffer = FormatMemorySize(Number);
   BufferValue( Buffer, Group, Layout, ColorIndex, Z, MaxClip);
   return;
 }
@@ -848,15 +757,6 @@ BufferColumn( r32 Perc, u32 ColumnWidth, debug_ui_render_group *Group, layout *L
   return;
 }
 
-function v2
-GetTextBounds(u32 TextLength, font* Font)
-{
-  v2 Result = {};
-  Result.x = TextLength * Font->Size.x;
-  Result.y = Font->Size.y;
-  return Result;
-}
-
 function rect2
 Column(const char* ColumnText, debug_ui_render_group* Group, table* Table, r32 Z, v2 MaxClip, u8 Color = WHITE, u8 HoverColor = TEAL)
 {
@@ -894,101 +794,6 @@ Column(const char* ColumnText, debug_ui_render_group* Group, window_layout* Wind
   return Result;
 }
 
-function void
-BufferScopeTreeEntry(debug_ui_render_group *Group, debug_profile_scope *Scope, window_layout* Window,
-                     u8 Color, u64 TotalCycles, u64 TotalFrameCycles, u64 CallCount, u32 Depth)
-{
-  Assert(TotalFrameCycles);
-
-  r32 Percentage = 100.0f * (r32)SafeDivide0((r64)TotalCycles, (r64)TotalFrameCycles);
-  u64 AvgCycles = (u64)SafeDivide0(TotalCycles, CallCount);
-
-  r32 Z = zIndexForText(Window, Group);
-
-  Column(ToString(Percentage), Group, &Window->Table, Z, DISABLE_CLIPPING);
-  Column(ToString(AvgCycles),  Group, &Window->Table, Z, DISABLE_CLIPPING);
-  Column(ToString(CallCount),  Group, &Window->Table, Z, DISABLE_CLIPPING);
-
-  layout *Layout = &Window->Table.Layout;
-  AdvanceSpaces((Depth*2)+1, Layout, &Group->Font);
-
-  if (Scope->Expanded && Scope->Child)
-  {
-    BufferValue("-", Group, Layout, Color, Z, DISABLE_CLIPPING);
-  }
-  else if (Scope->Child)
-  {
-    BufferValue("+", Group, Layout, Color, Z, DISABLE_CLIPPING);
-  }
-  else
-  {
-    AdvanceSpaces(1, Layout, &Group->Font);
-  }
-
-  BufferValue(Scope->Name, Group, Layout, Color, Z, DISABLE_CLIPPING);
-  NewRow(Window);
-
-  return;
-}
-
-#if 0
-function scope_stats
-GetStatsFor( debug_profile_scope *Target, debug_profile_scope *Root)
-{
-  scope_stats Result = {};
-
-  debug_profile_scope *Current = Root;
-  if (Target->Parent) Current = Target->Parent->Child; // Selects first sibling
-
-  while (Current)
-  {
-    if (Current == Target) // Find Ourselves
-    {
-      if (Result.Calls == 0) // We're first
-      {
-        Result.IsFirst = True;
-      }
-      else
-      {
-        break;
-      }
-    }
-
-    // These are compile-time string constants, so we can compare pointers to
-    // find equality
-    if (Current->Name == Target->Name)
-    {
-      ++Result.Calls;
-      Result.CumulativeCycles += Current->CycleCount;
-
-      if (!Result.MinScope || Current->CycleCount < Result.MinScope->CycleCount)
-        Result.MinScope = Current;
-
-      if (!Result.MaxScope || Current->CycleCount > Result.MaxScope->CycleCount)
-        Result.MaxScope = Current;
-    }
-
-    Current = Current->Sibling;
-  }
-
-  return Result;
-}
-#endif
-
-function void
-PadBottom(layout *Layout, r32 Pad)
-{
-  Layout->At.y += Pad;
-}
-
-function void
-SetFontSize(font *Font, r32 FontSize)
-{
-  Font->Size.x = FontSize;
-  Font->Size.y = FontSize * 1.3f;
-  return;
-}
-
 function r32
 BufferTextAt(debug_ui_render_group *Group, v2 BasisP, const char *Text, u32 Color, r32 Z)
 {
@@ -1017,116 +822,6 @@ DoTooltip(debug_ui_render_group *Group, const char *Text, r32 Z = 1.0f)
   return;
 }
 
-
-/****************************                       **************************/
-/****************************  Mutex Introspection  **************************/
-/****************************                       **************************/
-
-
-function b32
-DrawCycleBar( cycle_range *Range, cycle_range *Frame, r32 TotalGraphWidth, const char *Tooltip, v3 Color,
-              debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo, layout *Layout, r32 Z, v2 MaxClip)
-{
-  Assert(Frame->StartCycle < Range->StartCycle);
-
-  b32 Result = False;
-
-  r32 FramePerc = (r32)Range->TotalCycles / (r32)Frame->TotalCycles;
-
-  r32 BarHeight = Group->Font.Size.y;
-  r32 BarWidth = FramePerc*TotalGraphWidth;
-  if (BarWidth > 0.1f)
-  {
-    v2 BarDim = V2(BarWidth, BarHeight);
-
-    // Advance to the appropriate starting place along graph
-    u64 StartCycleOffset = Range->StartCycle - Frame->StartCycle;
-    r32 XOffset = GetXOffsetForHorizontalBar(StartCycleOffset, Frame->TotalCycles, TotalGraphWidth);
-
-    v2 MinP = Layout->At + Layout->Basis + V2(XOffset, 0);
-
-    interactable Interaction = Interactable(MinP, MinP+BarDim, (umm)"CycleBarHoverInteraction" );
-    Result = Hover(Group, &Interaction);
-    if (Result)
-    {
-      Color *= 0.5f;
-      if (Tooltip) { DoTooltip(Group, Tooltip); }
-    }
-
-    clip_result Clip = BufferUntexturedQuad(Group, Geo, MinP, BarDim, Color, Z, MaxClip);
-    if (Clip.ClipStatus != ClipStatus_FullyClipped)
-    {
-      AdvanceClip(Layout, Clip.MaxClip - Layout->Basis);
-    }
-  }
-
-  return Result;
-}
-
-function void
-DrawWaitingBar(mutex_op_record *WaitRecord, mutex_op_record *AquiredRecord, mutex_op_record *ReleasedRecord,
-               debug_ui_render_group *Group, layout *Layout, u64 FrameStartingCycle, u64 FrameTotalCycles, r32 TotalGraphWidth, r32 Z, v2 MaxClip)
-{
-  Assert(WaitRecord->Op == MutexOp_Waiting);
-  Assert(AquiredRecord->Op == MutexOp_Aquired);
-  Assert(ReleasedRecord->Op == MutexOp_Released);
-
-  Assert(AquiredRecord->Mutex == WaitRecord->Mutex);
-  Assert(ReleasedRecord->Mutex == WaitRecord->Mutex);
-
-  u64 WaitCycleCount = AquiredRecord->Cycle - WaitRecord->Cycle;
-  u64 AquiredCycleCount = ReleasedRecord->Cycle - AquiredRecord->Cycle;
-
-  untextured_2d_geometry_buffer *Geo = &Group->TextGroup->UIGeo;
-  cycle_range FrameRange = {FrameStartingCycle, FrameTotalCycles};
-
-  cycle_range WaitRange = {WaitRecord->Cycle, WaitCycleCount};
-  DrawCycleBar( &WaitRange, &FrameRange, TotalGraphWidth, 0, V3(1, 0, 0), Group, Geo, Layout, Z, MaxClip);
-
-  cycle_range AquiredRange = {AquiredRecord->Cycle, AquiredCycleCount};
-  DrawCycleBar( &AquiredRange, &FrameRange, TotalGraphWidth, 0, V3(0, 1, 0), Group, Geo, Layout, Z, MaxClip);
-
-  return;
-}
-
-
-/****************************                 ********************************/
-/****************************  Picked Chunks  ********************************/
-/****************************                 ********************************/
-
-
-function void
-ComputePickRay(platform *Plat, m4* ViewProjection)
-{
-  debug_state *DebugState = GetDebugState();
-
-  m4 InverseViewProjection = {};
-  b32 Inverted = Inverse((r32*)ViewProjection, (r32*)&InverseViewProjection);
-  Assert(Inverted);
-
-  v3 MouseMinWorldP = Unproject( Plat->MouseP,
-                                 0.0f,
-                                 V2(Plat->WindowWidth, Plat->WindowHeight),
-                                 &InverseViewProjection);
-
-  v3 MouseMaxWorldP = Unproject( Plat->MouseP,
-                                 1.0f,
-                                 V2(Plat->WindowWidth, Plat->WindowHeight),
-                                 &InverseViewProjection);
-
-  v3 RayDirection = Normalize(MouseMaxWorldP - MouseMinWorldP);
-
-  DebugState->PickRay = { MouseMinWorldP, RayDirection };
-
-  if (DebugState->DoChunkPicking)
-  {
-    DebugState->PickedChunkCount = 0;
-    DebugState->HotChunk = 0;
-  }
-
-  return;
-}
-
 function void
 BufferRectangleAt(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo,
                   v2 MinP, v2 Dim, v3 Color, r32 Z, v2 MaxClip)
@@ -1146,13 +841,14 @@ BufferRectangleAt(debug_ui_render_group *Group, untextured_2d_geometry_buffer *G
   return;
 }
 
-struct button_interaction_result
-{
-  b32 Pressed;
-  b32 Clicked;
-  b32 Hover;
-  v3 Color;
-};
+
+
+
+/*********************************           *********************************/
+/*********************************  Buttons  *********************************/
+/*********************************           *********************************/
+
+
 
 function button_interaction_result
 ButtonInteraction(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId, ui_style *Style = 0)
@@ -1238,6 +934,13 @@ Button(const char* ButtonText, debug_ui_render_group *Group, window_layout* Wind
   return Result;
 }
 
+
+
+/*********************************           *********************************/
+/*********************************  Windows  *********************************/
+/*********************************           *********************************/
+
+
 function void
 WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
 {
@@ -1299,6 +1002,17 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
 
   return;
 }
+
+
+
+
+
+
+/****************************                     ****************************/
+/****************************  Command Buffering  ****************************/
+/****************************                     ****************************/
+
+
 
 function void
 PushWindowInteraction(debug_ui_render_group *Group, window_layout *Window)
@@ -1379,6 +1093,121 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
   }
 
   CommandBuffer->CommandCount = 0;
+
+  return;
+}
+
+
+
+
+/****************************                       **************************/
+/****************************  Mutex Introspection  **************************/
+/****************************                       **************************/
+
+
+
+function b32
+DrawCycleBar( cycle_range *Range, cycle_range *Frame, r32 TotalGraphWidth, const char *Tooltip, v3 Color,
+              debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo, layout *Layout, r32 Z, v2 MaxClip)
+{
+  Assert(Frame->StartCycle < Range->StartCycle);
+
+  b32 Result = False;
+
+  r32 FramePerc = (r32)Range->TotalCycles / (r32)Frame->TotalCycles;
+
+  r32 BarHeight = Group->Font.Size.y;
+  r32 BarWidth = FramePerc*TotalGraphWidth;
+  if (BarWidth > 0.1f)
+  {
+    v2 BarDim = V2(BarWidth, BarHeight);
+
+    // Advance to the appropriate starting place along graph
+    u64 StartCycleOffset = Range->StartCycle - Frame->StartCycle;
+    r32 XOffset = GetXOffsetForHorizontalBar(StartCycleOffset, Frame->TotalCycles, TotalGraphWidth);
+
+    v2 MinP = Layout->At + Layout->Basis + V2(XOffset, 0);
+
+    interactable Interaction = Interactable(MinP, MinP+BarDim, (umm)"CycleBarHoverInteraction" );
+    Result = Hover(Group, &Interaction);
+    if (Result)
+    {
+      Color *= 0.5f;
+      if (Tooltip) { DoTooltip(Group, Tooltip); }
+    }
+
+    clip_result Clip = BufferUntexturedQuad(Group, Geo, MinP, BarDim, Color, Z, MaxClip);
+    if (Clip.ClipStatus != ClipStatus_FullyClipped)
+    {
+      AdvanceClip(Layout, Clip.MaxClip - Layout->Basis);
+    }
+  }
+
+  return Result;
+}
+
+function void
+DrawWaitingBar(mutex_op_record *WaitRecord, mutex_op_record *AquiredRecord, mutex_op_record *ReleasedRecord,
+               debug_ui_render_group *Group, layout *Layout, u64 FrameStartingCycle, u64 FrameTotalCycles, r32 TotalGraphWidth, r32 Z, v2 MaxClip)
+{
+  Assert(WaitRecord->Op == MutexOp_Waiting);
+  Assert(AquiredRecord->Op == MutexOp_Aquired);
+  Assert(ReleasedRecord->Op == MutexOp_Released);
+
+  Assert(AquiredRecord->Mutex == WaitRecord->Mutex);
+  Assert(ReleasedRecord->Mutex == WaitRecord->Mutex);
+
+  u64 WaitCycleCount = AquiredRecord->Cycle - WaitRecord->Cycle;
+  u64 AquiredCycleCount = ReleasedRecord->Cycle - AquiredRecord->Cycle;
+
+  untextured_2d_geometry_buffer *Geo = &Group->TextGroup->UIGeo;
+  cycle_range FrameRange = {FrameStartingCycle, FrameTotalCycles};
+
+  cycle_range WaitRange = {WaitRecord->Cycle, WaitCycleCount};
+  DrawCycleBar( &WaitRange, &FrameRange, TotalGraphWidth, 0, V3(1, 0, 0), Group, Geo, Layout, Z, MaxClip);
+
+  cycle_range AquiredRange = {AquiredRecord->Cycle, AquiredCycleCount};
+  DrawCycleBar( &AquiredRange, &FrameRange, TotalGraphWidth, 0, V3(0, 1, 0), Group, Geo, Layout, Z, MaxClip);
+
+  return;
+}
+
+
+
+/****************************                 ********************************/
+/****************************  Picked Chunks  ********************************/
+/****************************                 ********************************/
+
+
+
+function void
+ComputePickRay(platform *Plat, m4* ViewProjection)
+{
+  debug_state *DebugState = GetDebugState();
+
+  m4 InverseViewProjection = {};
+  b32 Inverted = Inverse((r32*)ViewProjection, (r32*)&InverseViewProjection);
+  Assert(Inverted);
+
+  v3 MouseMinWorldP = Unproject( Plat->MouseP,
+                                 0.0f,
+                                 V2(Plat->WindowWidth, Plat->WindowHeight),
+                                 &InverseViewProjection);
+
+  v3 MouseMaxWorldP = Unproject( Plat->MouseP,
+                                 1.0f,
+                                 V2(Plat->WindowWidth, Plat->WindowHeight),
+                                 &InverseViewProjection);
+
+  v3 RayDirection = Normalize(MouseMaxWorldP - MouseMinWorldP);
+
+  DebugState->PickRay = { MouseMinWorldP, RayDirection };
+
+  if (DebugState->DoChunkPicking)
+  {
+    DebugState->PickedChunkCount = 0;
+    DebugState->HotChunk = 0;
+  }
 
   return;
 }
@@ -1564,10 +1393,93 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 }
 
 
+
 /************************                        *****************************/
 /************************  Thread Perf Bargraph  *****************************/
 /************************                        *****************************/
 
+
+
+function void
+BufferScopeTreeEntry(debug_ui_render_group *Group, debug_profile_scope *Scope, window_layout* Window,
+                     u8 Color, u64 TotalCycles, u64 TotalFrameCycles, u64 CallCount, u32 Depth)
+{
+  Assert(TotalFrameCycles);
+
+  r32 Percentage = 100.0f * (r32)SafeDivide0((r64)TotalCycles, (r64)TotalFrameCycles);
+  u64 AvgCycles = (u64)SafeDivide0(TotalCycles, CallCount);
+
+  r32 Z = zIndexForText(Window, Group);
+
+  Column(ToString(Percentage), Group, &Window->Table, Z, DISABLE_CLIPPING);
+  Column(ToString(AvgCycles),  Group, &Window->Table, Z, DISABLE_CLIPPING);
+  Column(ToString(CallCount),  Group, &Window->Table, Z, DISABLE_CLIPPING);
+
+  layout *Layout = &Window->Table.Layout;
+  AdvanceSpaces((Depth*2)+1, Layout, &Group->Font);
+
+  if (Scope->Expanded && Scope->Child)
+  {
+    BufferValue("-", Group, Layout, Color, Z, DISABLE_CLIPPING);
+  }
+  else if (Scope->Child)
+  {
+    BufferValue("+", Group, Layout, Color, Z, DISABLE_CLIPPING);
+  }
+  else
+  {
+    AdvanceSpaces(1, Layout, &Group->Font);
+  }
+
+  BufferValue(Scope->Name, Group, Layout, Color, Z, DISABLE_CLIPPING);
+  NewRow(Window);
+
+  return;
+}
+
+#if 0
+function scope_stats
+GetStatsFor( debug_profile_scope *Target, debug_profile_scope *Root)
+{
+  scope_stats Result = {};
+
+  debug_profile_scope *Current = Root;
+  if (Target->Parent) Current = Target->Parent->Child; // Selects first sibling
+
+  while (Current)
+  {
+    if (Current == Target) // Find Ourselves
+    {
+      if (Result.Calls == 0) // We're first
+      {
+        Result.IsFirst = True;
+      }
+      else
+      {
+        break;
+      }
+    }
+
+    // These are compile-time string constants, so we can compare pointers to
+    // find equality
+    if (Current->Name == Target->Name)
+    {
+      ++Result.Calls;
+      Result.CumulativeCycles += Current->CycleCount;
+
+      if (!Result.MinScope || Current->CycleCount < Result.MinScope->CycleCount)
+        Result.MinScope = Current;
+
+      if (!Result.MaxScope || Current->CycleCount > Result.MaxScope->CycleCount)
+        Result.MaxScope = Current;
+    }
+
+    Current = Current->Sibling;
+  }
+
+  return Result;
+}
+#endif
 
 function void
 DrawScopeBarsRecursive(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo, debug_profile_scope *Scope,
@@ -1714,18 +1626,14 @@ DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState
 }
 
 
+
 /******************************              *********************************/
 /******************************  Call Graph  *********************************/
 /******************************              *********************************/
 
 
-struct called_function
-{
-  const char* Name;
-  u32 CallCount;
-};
 
-#define MAX_RECORDED_FUNCTION_CALLS 128
+#define MAX_RECORDED_FUNCTION_CALLS 256
 static called_function ProgramFunctionCalls[MAX_RECORDED_FUNCTION_CALLS];
 static called_function NullFunctionCall = {};
 
@@ -2010,9 +1918,11 @@ ColumnRight(s32 Width, const char *Text, debug_ui_render_group* Group, layout *L
 #endif
 
 
+
 /*************************                      ******************************/
 /*************************  Collated Fun Calls  ******************************/
 /*************************                      ******************************/
+
 
 
 function void
@@ -2047,9 +1957,11 @@ DebugDrawCollatedFunctionCalls(debug_ui_render_group *Group, debug_state *DebugS
 }
 
 
+
 /******************************              *********************************/
 /******************************  Draw Calls  *********************************/
 /******************************              *********************************/
+
 
 
 debug_global const u32 Global_DrawCallArrayLength = 128;
@@ -2121,9 +2033,11 @@ DebugDrawDrawCalls(debug_ui_render_group *Group, layout *WindowBasis)
 }
 
 
+
 /*******************************            **********************************/
 /*******************************  Arena UI  **********************************/
 /*******************************            **********************************/
+
 
 
 function b32
@@ -2467,9 +2381,11 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, window
 }
 
 
+
 /*******************************              ********************************/
 /*******************************  Network UI  ********************************/
 /*******************************              ********************************/
+
 
 
 function void
@@ -2532,9 +2448,11 @@ DebugDrawNetworkHud(debug_ui_render_group *Group,
 }
 
 
+
 /******************************               ********************************/
 /******************************  Graphics UI  ********************************/
 /******************************               ********************************/
+
 
 
 function void
@@ -2549,10 +2467,75 @@ DebugDrawGraphicsHud(debug_ui_render_group *Group, debug_state *DebugState, layo
 }
 
 
+
 /******************************              *********************************/
 /******************************  Initialize  *********************************/
 /******************************              *********************************/
 
+
+
+function b32
+InitDebugOverlayFramebuffer(debug_text_render_group *RG, memory_arena *DebugArena, const char *DebugFont)
+{
+  RG->FontTexture = LoadBitmap(DebugFont, DebugArena, DebugTextureArraySlice_Count);
+
+  glGenBuffers(1, &RG->SolidUIVertexBuffer);
+  glGenBuffers(1, &RG->SolidUIColorBuffer);
+  glGenBuffers(1, &RG->SolidUIUVBuffer);
+
+  RG->Text2DShader = LoadShaders("TextVertexShader.vertexshader",
+                                 "TextVertexShader.fragmentshader", DebugArena);
+
+  RG->TextTextureUniform = glGetUniformLocation(RG->Text2DShader.ID, "TextTextureSampler");
+
+  return True;
+}
+
+function void
+AllocateAndInitGeoBuffer(textured_2d_geometry_buffer *Geo, u32 VertCount, memory_arena *DebugArena)
+{
+  Geo->Verts  = Allocate(v3, DebugArena, VertCount);
+  Geo->Colors = Allocate(v3, DebugArena, VertCount);
+  Geo->UVs    = Allocate(v3, DebugArena, VertCount);
+
+  Geo->End = VertCount;
+  Geo->At = 0;
+}
+
+function void
+AllocateAndInitGeoBuffer(untextured_2d_geometry_buffer *Geo, u32 VertCount, memory_arena *DebugArena)
+{
+  Geo->Verts = Allocate(v3, DebugArena, VertCount);
+  Geo->Colors = Allocate(v3, DebugArena, VertCount);
+
+  Geo->End = VertCount;
+  Geo->At = 0;
+  return;
+}
+
+function shader
+MakeSolidUIShader(memory_arena *Memory)
+{
+  shader SimpleTextureShader = LoadShaders( "SimpleColor.vertexshader",
+                                            "SimpleColor.fragmentshader",
+                                             Memory);
+  return SimpleTextureShader;
+}
+
+function shader
+MakeRenderToTextureShader(memory_arena *Memory, m4 *ViewProjection)
+{
+  shader Shader = LoadShaders( "RenderToTexture.vertexshader",
+                               "RenderToTexture.fragmentshader",
+                                Memory);
+
+  shader_uniform **Current = &Shader.FirstUniform;
+
+  *Current = GetUniform(Memory, &Shader, ViewProjection, "ViewProjection");
+  Current = &(*Current)->Next;
+
+  return Shader;
+}
 
 function b32
 InitDebugRenderSystem(debug_state *DebugState, heap_allocator *Heap)
