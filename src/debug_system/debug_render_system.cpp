@@ -758,7 +758,7 @@ BufferColumn( r32 Perc, u32 ColumnWidth, debug_ui_render_group *Group, layout *L
 }
 
 function rect2
-Column(const char* ColumnText, debug_ui_render_group* Group, table* Table, r32 Z, v2 MaxClip, u8 Color = WHITE, u8 HoverColor = TEAL)
+Column(const char* ColumnText, debug_ui_render_group* Group, table* Table, r32 Z, v2 MaxClip, u8 Color = WHITE)
 {
   layout *Layout = &Table->Layout;
 
@@ -773,24 +773,18 @@ Column(const char* ColumnText, debug_ui_render_group* Group, table* Table, r32 Z
 
   v2 Min = Layout->Basis + Layout->At;
   v2 Max = Min + GetTextBounds(TextLength, &Group->Font);
-
-  u8 UseColor = Color;
   rect2 Bounds = RectMinMax(Min, Max);
-  if (IsInsideRect(Bounds, *Group->MouseP))
-  {
-    UseColor = HoverColor;
-  }
 
-  BufferValue(ColumnText, Group, Layout, GetColorData(UseColor).xyz, Z, MaxClip);
+  BufferValue(ColumnText, Group, Layout, GetColorData(Color).xyz, Z, MaxClip);
 
   return Bounds;
 }
 
 function rect2
-Column(const char* ColumnText, debug_ui_render_group* Group, window_layout* Window, u8 Color = WHITE, u8 HoverColor = TEAL)
+Column(const char* ColumnText, debug_ui_render_group* Group, window_layout* Window, u8 Color = WHITE)
 {
   r32 Z = zIndexForText(Window, Group);
-  rect2 Result = Column(ColumnText, Group, &Window->Table, Z, GetAbsoluteMaxClip(Window), Color, HoverColor);
+  rect2 Result = Column(ColumnText, Group, &Window->Table, Z, GetAbsoluteMaxClip(Window), Color);
   return Result;
 }
 
@@ -1207,11 +1201,10 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
   {
     world_chunk *Chunk = PickedChunks[ChunkIndex];
 
-    u8 MainColor = Chunk == DebugState->HotChunk ? TEAL : WHITE;
     interactable PickerListInteraction = StartInteractable(&ListingWindow.Table.Layout, (umm)&ListingWindow, &ListingWindow);
-      Column(ToString(Chunk->WorldP.x), Group, &ListingWindow, MainColor, MainColor);
-      Column(ToString(Chunk->WorldP.y), Group, &ListingWindow, MainColor, MainColor);
-      Column(ToString(Chunk->WorldP.z), Group, &ListingWindow, MainColor, MainColor);
+      Column(ToString(Chunk->WorldP.x), Group, &ListingWindow);
+      Column(ToString(Chunk->WorldP.y), Group, &ListingWindow);
+      Column(ToString(Chunk->WorldP.z), Group, &ListingWindow);
     EndInteractable(&ListingWindow, &PickerListInteraction);
 
     if (Clicked(Group, &PickerListInteraction))
@@ -1267,7 +1260,7 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
   {
     v2 WindowSpacing = V2(140, 0);
 
-    local_persist window_layout ChunkDetailWindow = WindowLayout("ChunkDetailWindow",
+    local_persist window_layout ChunkDetailWindow = WindowLayout("Chunk Detail",
                                                                   V2(GetAbsoluteMaxClip(&ListingWindow).x, GetAbsoluteMin(&ListingWindow).y) + WindowSpacing,
                                                                   V2(1100.0f, 400.0f));
     Clear(&ChunkDetailWindow.Table.Layout.At);
@@ -2019,9 +2012,9 @@ BufferBarGraph(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo,
 function b32
 BufferArenaBargraph(table *Table, debug_ui_render_group *Group, umm TotalUsed, r32 TotalPerc, umm Remaining, v3 Color, r32 Z, v2 MaxClip)
 {
-  Column( FormatMemorySize(TotalUsed), Group, Table, Z, MaxClip, WHITE, WHITE);
+  Column( FormatMemorySize(TotalUsed), Group, Table, Z, MaxClip);
   b32 Hover = BufferBarGraph(Group, &Group->TextGroup->UIGeo, Table, TotalPerc, Color, Z, MaxClip);
-  Column( FormatMemorySize(Remaining), Group, Table, Z, MaxClip, WHITE, WHITE);
+  Column( FormatMemorySize(Remaining), Group, Table, Z, MaxClip);
   NewRow(Table);
 
   b32 Click = (Hover && Group->Input->LMB.WasPressed);
@@ -2031,20 +2024,20 @@ BufferArenaBargraph(table *Table, debug_ui_render_group *Group, umm TotalUsed, r
 function void
 BufferMemoryStatsTable(memory_arena_stats MemStats, debug_ui_render_group *Group, table *StatsTable, r32 Z, v2 MaxClip)
 {
-  Column("Allocs", Group, StatsTable, Z, MaxClip, WHITE, WHITE);
-  Column(FormatMemorySize(MemStats.Allocations), Group, StatsTable, Z, MaxClip, WHITE, WHITE);
+  Column("Allocs", Group, StatsTable, Z, MaxClip);
+  Column(FormatMemorySize(MemStats.Allocations), Group, StatsTable, Z, MaxClip);
   NewRow(StatsTable);
 
-  Column("Pushes", Group, StatsTable, Z, MaxClip, WHITE, WHITE);
-  Column(FormatThousands(MemStats.Pushes), Group, StatsTable, Z, MaxClip, WHITE, WHITE);
+  Column("Pushes", Group, StatsTable, Z, MaxClip);
+  Column(FormatThousands(MemStats.Pushes), Group, StatsTable, Z, MaxClip);
   NewRow(StatsTable);
 
-  Column("Remaining", Group, StatsTable, Z, MaxClip, WHITE, WHITE);
-  Column(FormatMemorySize(MemStats.Remaining), Group, StatsTable, Z, MaxClip, WHITE, WHITE);
+  Column("Remaining", Group, StatsTable, Z, MaxClip);
+  Column(FormatMemorySize(MemStats.Remaining), Group, StatsTable, Z, MaxClip);
   NewRow(StatsTable);
 
-  Column("Total", Group, StatsTable, Z, MaxClip, WHITE, WHITE);
-  Column(FormatMemorySize(MemStats.TotalAllocated), Group, StatsTable, Z, MaxClip, WHITE, WHITE);
+  Column("Total", Group, StatsTable, Z, MaxClip);
+  Column(FormatMemorySize(MemStats.TotalAllocated), Group, StatsTable, Z, MaxClip);
   NewRow(StatsTable);
 
   return;
