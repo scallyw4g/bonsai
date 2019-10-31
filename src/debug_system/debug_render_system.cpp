@@ -27,7 +27,7 @@ zIndexForBackgrounds(window_layout *Window, debug_ui_render_group *Group)
   // invalid.  It is invalid because the slices are discrete chunks of z space
   // as opposed to indices into an array, and slice 0 is just nonsensical in
   // that context.
-  u32 zSlice = 1 + Group->InteractionStackTop - Window->InteractionStackIndex;
+  u64 zSlice = 1 + Group->InteractionStackTop - Window->InteractionStackIndex;
   r32 Result = 1.0f - ( (r32)zSlice / DEBUG_MAX_UI_WINDOW_SLICES );
   Assert(Result <= 1.0f && Result >= 0.0f);
   return Result;
@@ -850,7 +850,7 @@ BufferRectangleAt(debug_ui_render_group *Group, untextured_2d_geometry_buffer *G
 
 
 function button_interaction_result
-ButtonInteraction(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId, ui_style *Style = 0)
+ButtonInteraction(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId, window_layout *Window, ui_style *Style = 0)
 {
   button_interaction_result Result = {};
   Result.Color = V3(1);
@@ -861,7 +861,7 @@ ButtonInteraction(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId,
     Result.Color = Style->Color;
   }
 
-  interactable Interaction = Interactable(Bounds, InteractionId);
+  interactable Interaction = Interactable(Bounds, InteractionId, Window);
   if (Hover(Group, &Interaction))
   {
     Result.Hover = True;
@@ -898,21 +898,21 @@ ButtonInteraction(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId,
 }
 
 function b32
-Button(debug_ui_render_group* Group, rect2 Bounds, ui_style* Style, umm InteractionId, r32 Z, v2 MaxClip)
+Button(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId, r32 Z, v2 MaxClip, window_layout* Window, ui_style* Style)
 {
-  button_interaction_result Result = ButtonInteraction(Group, Bounds, InteractionId, Style);
+  button_interaction_result Result = ButtonInteraction(Group, Bounds, InteractionId, Window, Style);
   BufferRectangleAt(Group, &Group->TextGroup->UIGeo, Bounds, Result.Color, Z, MaxClip);
   return Result.Pressed;
 }
 
 function b32
-Button(const char* ColumnText, debug_ui_render_group *Group, layout* Layout, umm InteractionId, v2 MaxClip, r32 Z, ui_style* Style = 0)
+Button(const char* ColumnText, debug_ui_render_group *Group, layout* Layout, umm InteractionId, r32 Z, v2 MaxClip, ui_style* Style = 0)
 {
   v2 Min = GetAbsoluteAt(Layout);
   v2 Max = Min + GetTextBounds( (u32)Length(ColumnText), &Group->Font);
   rect2 Bounds = RectMinMax(Min, Max);
 
-  button_interaction_result Result = ButtonInteraction(Group, Bounds, InteractionId, Style);
+  button_interaction_result Result = ButtonInteraction(Group, Bounds, InteractionId, 0, Style);
 
   BufferValue(ColumnText, Group, Layout, Result.Color, Z, MaxClip, Style);
 
@@ -926,7 +926,7 @@ Button(const char* ButtonText, debug_ui_render_group *Group, window_layout* Wind
   InteractionId = InteractionIdModifier? InteractionId^InteractionIdModifier : InteractionId;
 
   r32 Z = zIndexForText(Window, Group);
-  b32 Result = Button(ButtonText, Group, &Window->Table.Layout, InteractionId, GetAbsoluteMaxClip(Window), Z, Style);
+  b32 Result = Button(ButtonText, Group, &Window->Table.Layout, InteractionId, Z, GetAbsoluteMaxClip(Window), Style);
   return Result;
 }
 
@@ -980,25 +980,25 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
   v2 BottomLeft = Window->Table.Layout.Basis + V2(0, Window->MaxClip.y);
   v2 BottomRight = Window->Table.Layout.Basis + Window->MaxClip;
 
-  b32 Clicked = (Group->Input->LMB.WasPressed || Group->Input->RMB.WasPressed);
+  b32 MouseWasDown = (Group->Input->LMB.IsDown || Group->Input->RMB.IsDown);
+  b32 MouseWasClicked = (Group->Input->LMB.WasPressed || Group->Input->RMB.WasPressed);
   b32 InsideWindowBounds = IsInsideRect(GetWindowBounds(Window), *Group->MouseP);
 
-  if ( InsideWindowBounds && Clicked )
+  if ( InsideWindowBounds )
   {
     Assert(Window->NextHotWindow == 0);
-
     Window->NextHotWindow = Group->FirstHotWindow;
     Group->FirstHotWindow = Window;
   }
 
-  if (Window == Group->HighestInteractionStackIndex)
+  if (Window == Group->HighestWindow && MouseWasClicked )
   {
     Window->InteractionStackIndex = ++Group->InteractionStackTop;
   }
 
   {
     umm DragHandleId = (umm)"WindowResizeWidget"^(umm)Window;
-    interactable DragHandle = Interactable( Rect2(0), DragHandleId);
+    interactable DragHandle = Interactable( Rect2(0) , DragHandleId, Window);
     if (Pressed(Group, &DragHandle))
     {
       Window->MaxClip = Max(V2(0), Window->MaxClip-(*Group->MouseDP));
@@ -1009,7 +1009,7 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
     v2 MinP = Window->Table.Layout.Basis + Window->MaxClip - Dim;
     rect2 DragHandleRect = RectMinDim(MinP, Dim);
 
-    Button(Group, DragHandleRect, &Style, DragHandleId, zIndexForBorders(Window, Group), BottomRight);
+    Button(Group, DragHandleRect, DragHandleId, zIndexForBorders(Window, Group), BottomRight, Window, &Style);
   }
 
   if (Window->Title)
@@ -1024,7 +1024,7 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
     ui_style Style = StandardStyling(V3(0.0f, 0.5f, 0.5f));
     rect2 TitleBarRect = RectMinMax(TopLeft, TopRight + V2(0.0f, Group->Font.Size.y));
     umm TitleBarInteractionId = (umm)"WindowTitleBar"^(umm)Window;
-    if (Button(Group, TitleBarRect, &Style, TitleBarInteractionId, zIndexForTitleBar(Window, Group), BottomRight))
+    if (Button(Group, TitleBarRect, TitleBarInteractionId, zIndexForTitleBar(Window, Group), BottomRight, Window, &Style))
     {
       Window->Table.Layout.Basis -= *Group->MouseDP;
     }
@@ -1078,7 +1078,7 @@ DrawCycleBar( cycle_range *Range, cycle_range *Frame, r32 TotalGraphWidth, const
 
     v2 MinP = Layout->At + Layout->Basis + V2(XOffset, 0);
 
-    interactable Interaction = Interactable(MinP, MinP+BarDim, (umm)"CycleBarHoverInteraction" );
+    interactable Interaction = Interactable(MinP, MinP+BarDim, (umm)"CycleBarHoverInteraction", 0);
     Result = Hover(Group, &Interaction);
     if (Result)
     {
@@ -1208,7 +1208,7 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
     world_chunk *Chunk = PickedChunks[ChunkIndex];
 
     u8 MainColor = Chunk == DebugState->HotChunk ? TEAL : WHITE;
-    interactable PickerListInteraction = StartInteractable(&ListingWindow.Table.Layout, (umm)&ListingWindow);
+    interactable PickerListInteraction = StartInteractable(&ListingWindow.Table.Layout, (umm)&ListingWindow, &ListingWindow);
       Column(ToString(Chunk->WorldP.x), Group, &ListingWindow, MainColor, MainColor);
       Column(ToString(Chunk->WorldP.y), Group, &ListingWindow, MainColor, MainColor);
       Column(ToString(Chunk->WorldP.z), Group, &ListingWindow, MainColor, MainColor);
@@ -1326,7 +1326,7 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
                         DebugTextureArraySlice_Viewport, UVsForFullyCoveredQuad(),
                         V3(1), ChunkDetailZ, GetAbsoluteMaxClip(&PickerWindow));
 
-    interactable Interaction = Interactable(MinP, MinP+QuadDim, (umm)"PickerWindowDragInteraction");
+    interactable Interaction = Interactable(MinP, MinP+QuadDim, (umm)"PickerWindowDragInteraction", &PickerWindow);
     input* WindowInput = Group->Input;
     if (!Pressed(Group, &Interaction))
     {
@@ -1697,7 +1697,7 @@ BufferFirstCallToEach(debug_ui_render_group *Group,
 
   while (UniqueScopes)
   {
-    interactable ScopeTextInteraction = StartInteractable(&CallgraphWindow->Table.Layout, (umm)UniqueScopes->Scope);
+    interactable ScopeTextInteraction = StartInteractable(&CallgraphWindow->Table.Layout, (umm)UniqueScopes->Scope, 0);
       BufferScopeTreeEntry(Group, UniqueScopes->Scope, CallgraphWindow, WHITE, UniqueScopes->TotalCycles, TotalFrameCycles, UniqueScopes->CallCount, Depth);
     EndInteractable(CallgraphWindow, &ScopeTextInteraction);
 
@@ -1757,7 +1757,7 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout
       v2 QuadDim = MaxDim * V2(1.0f, Perc);
       v2 VerticalOffset = MaxDim - QuadDim;
 
-      interactable Interaction = Interactable(MinP, MaxP, (umm)"CallGraphBarInteract" );
+      interactable Interaction = Interactable(MinP, MaxP, (umm)"CallGraphBarInteract", 0);
       if (Hover(Group, &Interaction))
       {
         debug_thread_state *MainThreadState = GetThreadLocalStateFor(0);
@@ -2286,7 +2286,7 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, window
       SetFontSize(&Group->Font, 36);
       NewLine(&Window->Table.Layout);
 
-      interactable ExpandInteraction = StartInteractable(&Window->Table.Layout, (umm)"MemoryWindowExpandInteraction"^(umm)Current);
+      interactable ExpandInteraction = StartInteractable(&Window->Table.Layout, (umm)"MemoryWindowExpandInteraction"^(umm)Current, Window);
         Column(Current->Name, Group, Window);
         Column(MemorySize(MemStats.TotalAllocated), Group, Window);
         Column(ToString(MemStats.Pushes), Group, Window);

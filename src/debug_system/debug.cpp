@@ -114,7 +114,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     ButtonStyling.IsActive = DebugState->UIType == DebugUIType_PickedChunks;
     const char* ButtonName = "PickedChunks";
     umm InteractionId = (umm)ButtonName;
-    if (Button(ButtonName, UiGroup, &Layout, InteractionId, DISABLE_CLIPPING, DebugMenuZ, &ButtonStyling))
+    if (Button(ButtonName, UiGroup, &Layout, InteractionId, DebugMenuZ, DISABLE_CLIPPING, &ButtonStyling))
     {
       DebugState->UIType = DebugUIType_PickedChunks;
     }
@@ -122,7 +122,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     ButtonStyling.IsActive = DebugState->UIType == DebugUIType_Graphics;
     ButtonName = "Graphics";
     InteractionId = (umm)ButtonName;
-    if (Button(ButtonName, UiGroup, &Layout, InteractionId, DISABLE_CLIPPING, DebugMenuZ, &ButtonStyling))
+    if (Button(ButtonName, UiGroup, &Layout, InteractionId, DebugMenuZ, DISABLE_CLIPPING,  &ButtonStyling))
     {
       DebugState->UIType = DebugUIType_Graphics;
     }
@@ -130,7 +130,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     ButtonStyling.IsActive = DebugState->UIType == DebugUIType_Network;
     ButtonName = "Network";
     InteractionId = (umm)ButtonName;
-    if (Button(ButtonName, UiGroup, &Layout, InteractionId, DISABLE_CLIPPING, DebugMenuZ, &ButtonStyling))
+    if (Button(ButtonName, UiGroup, &Layout, InteractionId, DebugMenuZ, DISABLE_CLIPPING,  &ButtonStyling))
     {
       DebugState->UIType = DebugUIType_Network;
     }
@@ -138,7 +138,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     ButtonStyling.IsActive = DebugState->UIType == DebugUIType_CollatedFunctionCalls;
     ButtonName = "Functions";
     InteractionId = (umm)ButtonName;
-    if (Button(ButtonName, UiGroup, &Layout, InteractionId, DISABLE_CLIPPING, DebugMenuZ, &ButtonStyling))
+    if (Button(ButtonName, UiGroup, &Layout, InteractionId, DebugMenuZ, DISABLE_CLIPPING,  &ButtonStyling))
     {
       DebugState->UIType = DebugUIType_CollatedFunctionCalls;
     }
@@ -146,7 +146,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     ButtonStyling.IsActive = DebugState->UIType == DebugUIType_CallGraph;
     ButtonName = "Call Graph";
     InteractionId = (umm)ButtonName;
-    if (Button(ButtonName, UiGroup, &Layout, InteractionId, DISABLE_CLIPPING, DebugMenuZ, &ButtonStyling))
+    if (Button(ButtonName, UiGroup, &Layout, InteractionId, DebugMenuZ, DISABLE_CLIPPING,  &ButtonStyling))
     {
       DebugState->UIType = DebugUIType_CallGraph;
     }
@@ -154,7 +154,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     ButtonStyling.IsActive = DebugState->UIType == DebugUIType_Memory;
     ButtonName = "Memory";
     InteractionId = (umm)ButtonName;
-    if (Button(ButtonName, UiGroup, &Layout, InteractionId, DISABLE_CLIPPING, DebugMenuZ, &ButtonStyling))
+    if (Button(ButtonName, UiGroup, &Layout, InteractionId, DebugMenuZ, DISABLE_CLIPPING,  &ButtonStyling))
     {
       DebugState->UIType = DebugUIType_Memory;
     }
@@ -162,7 +162,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     ButtonStyling.IsActive = DebugState->UIType == DebugUIType_DrawCalls;
     ButtonName = "Draw Calls";
     InteractionId = (umm)ButtonName;
-    if (Button(ButtonName, UiGroup, &Layout, InteractionId, DISABLE_CLIPPING, DebugMenuZ, &ButtonStyling))
+    if (Button(ButtonName, UiGroup, &Layout, InteractionId, DebugMenuZ, DISABLE_CLIPPING,  &ButtonStyling))
     {
       DebugState->UIType = DebugUIType_DrawCalls;
     }
@@ -224,7 +224,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   FlushBuffer(TextGroup, &TextGroup->UIGeo, UiGroup->ScreenDim);
   FlushBuffer(TextGroup, &TextGroup->TextGeo, UiGroup->ScreenDim);
 
-  UiGroup->HighestInteractionStackIndex = GetTopHotWindow(UiGroup);
+  UiGroup->HighestWindow = GetTopHotWindow(UiGroup);
 
   DebugState->BytesBufferedToCard = 0;
 
@@ -245,7 +245,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   if (UiGroup->PressedInteraction.ID == 0 &&
       (Plat->Input.LMB.IsDown || Plat->Input.RMB.IsDown))
   {
-    UiGroup->PressedInteraction = Interactable(V2(FLT_MIN), V2(FLT_MAX), StringHash("GameViewport") );
+    UiGroup->PressedInteraction = Interactable(V2(FLT_MIN), V2(FLT_MAX), StringHash("GameViewport"), 0);
   }
 
   if (DebugState->DoChunkPicking && Plat->Input.LMB.WasPressed)

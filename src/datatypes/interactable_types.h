@@ -1,11 +1,4 @@
 
-struct interactable
-{
-  umm ID;
-  v2 MinP;
-  v2 MaxP;
-};
-
 // TODO(Jesse): Can this be consolidated with the layout struct?
 struct table_column
 {
@@ -42,9 +35,18 @@ struct window_layout
   table Table;
   v2 MaxClip;
 
-  u32 InteractionStackIndex;
+  u64 InteractionStackIndex;
 
   window_layout* NextHotWindow;
+};
+
+struct interactable
+{
+  umm ID;
+  v2 MinP;
+  v2 MaxP;
+
+  window_layout* Window;
 };
 
 struct ui_style
@@ -99,32 +101,29 @@ GetWindowBounds(window_layout *Window)
 }
 
 interactable
-Interactable(rect2 Rect, umm ID)
-{
-  interactable Result = {};
-  Result.MinP = Rect.Min;
-  Result.MaxP = Rect.Max;
-  Result.ID = ID;
-
-  return Result;
-}
-
-interactable
-Interactable(v2 MinP, v2 MaxP, umm ID)
+Interactable(v2 MinP, v2 MaxP, umm ID, window_layout *Window)
 {
   interactable Result = {};
   Result.MinP = MinP;
   Result.MaxP = MaxP;
   Result.ID = ID;
+  Result.Window = Window;
 
   return Result;
 }
 
+interactable
+Interactable(rect2 Rect, umm ID, window_layout *Window)
+{
+  interactable Result = Interactable(Rect.Min, Rect.Max, ID, Window);
+  return Result;
+}
+
 inline interactable
-StartInteractable(layout* Layout, umm ID)
+StartInteractable(layout* Layout, umm ID, window_layout *Window)
 {
   v2 StartingAt = Layout->At + Layout->Basis;
-  interactable Result = Interactable(StartingAt, StartingAt, ID);
+  interactable Result = Interactable(StartingAt, StartingAt, ID, Window);
   return Result;
 }
 
@@ -139,5 +138,12 @@ rect2
 Rect2(interactable Interaction)
 {
   rect2 Result = RectMinMax(Interaction.MinP, Interaction.MaxP);
+  return Result;
+}
+
+rect2
+Rect2(interactable *Interaction)
+{
+  rect2 Result = Rect2(*Interaction);
   return Result;
 }
