@@ -938,6 +938,28 @@ Button(const char* ButtonText, debug_ui_render_group *Group, window_layout* Wind
 
 
 
+function window_layout*
+GetTopHotWindow(debug_ui_render_group *Group)
+{
+  window_layout *HighestInteractionStackIndex = Group->FirstHotWindow;
+
+  for (window_layout *CurrentWindow = Group->FirstHotWindow;
+      CurrentWindow;
+      )
+  {
+    if (CurrentWindow->InteractionStackIndex > HighestInteractionStackIndex->InteractionStackIndex)
+    {
+      HighestInteractionStackIndex = CurrentWindow;
+    }
+
+    window_layout* Temp = CurrentWindow;
+    CurrentWindow = CurrentWindow->NextHotWindow;
+    Temp->NextHotWindow = 0;
+  }
+
+  return HighestInteractionStackIndex;
+}
+
 function r32
 WindowTitleBarHeight(font *Font)
 {
@@ -958,6 +980,22 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
   v2 BottomLeft = Window->Table.Layout.Basis + V2(0, Window->MaxClip.y);
   v2 BottomRight = Window->Table.Layout.Basis + Window->MaxClip;
 
+  b32 Clicked = (Group->Input->LMB.WasPressed || Group->Input->RMB.WasPressed);
+  b32 InsideWindowBounds = IsInsideRect(GetWindowBounds(Window), *Group->MouseP);
+
+  if ( InsideWindowBounds && Clicked )
+  {
+    Assert(Window->NextHotWindow == 0);
+
+    Window->NextHotWindow = Group->FirstHotWindow;
+    Group->FirstHotWindow = Window;
+  }
+
+  if (Window == Group->HighestInteractionStackIndex)
+  {
+    Window->InteractionStackIndex = ++Group->InteractionStackTop;
+  }
+
   {
     umm DragHandleId = (umm)"WindowResizeWidget"^(umm)Window;
     interactable DragHandle = Interactable( Rect2(0), DragHandleId);
@@ -976,7 +1014,10 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
 
   if (Window->Title)
   {
-    BufferTextAt(Group, Window->Table.Layout.Basis, Window->Title, WHITE, zIndexForText(Window, Group), BottomRight);
+    BufferValue(Window->InteractionStackIndex, Group, &Window->Table.Layout, WHITE, zIndexForText(Window, Group), BottomRight);
+    AdvanceSpaces(1, &Window->Table.Layout, &Group->Font);
+    BufferValue(Window->Title, Group, &Window->Table.Layout, V3(1), zIndexForText(Window, Group), BottomRight);
+    NewRow(Window);
   }
 
   {
@@ -1003,95 +1044,6 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
     r32 Z = zIndexForBackgrounds(Window, Group);
     BufferRectangleAt(Group, Geo, RectMinMax(TopLeft, BottomRight), BackgroundColor, Z, BottomRight);
   }
-
-  return;
-}
-
-
-
-/****************************                     ****************************/
-/****************************  Command Buffering  ****************************/
-/****************************                     ****************************/
-
-
-
-function void
-PushWindowInteraction(debug_ui_render_group *Group, window_layout *Window)
-{
-  ui_render_command Command = {};
-  Command.Type = RenderCommand_WindowInteractions;
-  Command.WindowInteraction.Window = Window;
-
-  Window->Table.Layout.At.y += WindowTitleBarHeight(&Group->Font);
-
-  ui_render_command_buffer *CommandBuffer = &Group->RenderCommandBuffer;
-  if (CommandBuffer->CommandCount < MAX_UI_RENDER_COMMAND_COUNT)
-  {
-    CommandBuffer->Commands[CommandBuffer->CommandCount++] = Command;
-  }
-  else
-  {
-    Error("Exhausted RenderCommandBuffer Space!");
-  }
-
-  return;
-}
-
-function void
-FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *CommandBuffer)
-{
-  window_layout *TopmostClickedWindow = 0;
-  u32 HighestInteractionStackIndex = 0;
-
-  b32 Clicked = (Group->Input->LMB.WasPressed || Group->Input->RMB.WasPressed);
-
-  for (u32 CommandIndex = 0;
-      CommandIndex < CommandBuffer->CommandCount;
-      ++CommandIndex)
-  {
-    ui_render_command *Command = CommandBuffer->Commands+CommandIndex;
-    switch(Command->Type)
-    {
-      case RenderCommand_WindowInteractions:
-      {
-        window_layout *TestWindow = Command->WindowInteraction.Window;
-        b32 InsideWindowBounds = IsInsideRect(GetWindowBounds(TestWindow), *Group->MouseP);
-        b32 FoundNewHighestStackIndex = HighestInteractionStackIndex <= TestWindow->InteractionStackIndex;
-
-        if ( InsideWindowBounds && Clicked && FoundNewHighestStackIndex )
-        {
-          TopmostClickedWindow = TestWindow;
-          HighestInteractionStackIndex = TestWindow->InteractionStackIndex;
-        }
-
-      } break;
-
-      InvalidDefaultCase;
-    }
-  }
-
-  if (TopmostClickedWindow)
-  {
-    TopmostClickedWindow->InteractionStackIndex = ++Group->InteractionStackTop;
-  }
-
-  for (u32 CommandIndex = 0;
-      CommandIndex < CommandBuffer->CommandCount;
-      ++CommandIndex)
-  {
-    ui_render_command *Command = CommandBuffer->Commands+CommandIndex;
-    switch(Command->Type)
-    {
-      case RenderCommand_WindowInteractions:
-      {
-        WindowInteractions(Group, Command->WindowInteraction.Window);
-      } break;
-
-      InvalidDefaultCase;
-    }
-  }
-
-  CommandBuffer->CommandCount = 0;
 
   return;
 }
@@ -1243,7 +1195,7 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 
   Clear(&ListingWindow.Table.Layout.At);
   Clear(&ListingWindow.Table.Layout.DrawBounds);
-  PushWindowInteraction(Group, &ListingWindow);
+  WindowInteractions(Group, &ListingWindow);
 
   world_chunk** PickedChunks = DebugState->PickedChunks;
 
@@ -1320,7 +1272,7 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
                                                                   V2(1100.0f, 400.0f));
     Clear(&ChunkDetailWindow.Table.Layout.At);
     Clear(&ChunkDetailWindow.Table.Layout.DrawBounds);
-    PushWindowInteraction(Group, &ChunkDetailWindow);
+    WindowInteractions(Group, &ChunkDetailWindow);
 
     BufferChunkDetails(Group, HotChunk, &ChunkDetailWindow);
 
@@ -1330,7 +1282,7 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
                                                             V2(800.0f));
     Clear(&PickerWindow.Table.Layout.At);
     Clear(&PickerWindow.Table.Layout.DrawBounds);
-    PushWindowInteraction(Group, &PickerWindow);
+    WindowInteractions(Group, &PickerWindow);
 
     b32 DebugButtonPressed = False;
     // FIXME(Jesse): This is dependant on framerate and the button will be triggered on each frame!  Yikes.
@@ -1522,7 +1474,7 @@ DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState
   Clear(&CycleGraphWindow.Table.Layout.DrawBounds);
 
   // TODO(Jesse): Call this for CycleGraphWindow!!
-  // PushWindowInteraction()
+  // WindowInteractions()
 
   layout* Layout = &CycleGraphWindow.Table.Layout;
 
@@ -1930,7 +1882,7 @@ DebugDrawCollatedFunctionCalls(debug_ui_render_group *Group, debug_state *DebugS
 
   Clear(&FunctionCallWindow.Table.Layout.At);
   Clear(&FunctionCallWindow.Table.Layout.DrawBounds);
-  PushWindowInteraction(Group, &FunctionCallWindow);
+  WindowInteractions(Group, &FunctionCallWindow);
 
   TIMED_BLOCK("Collated Function Calls");
   debug_thread_state *MainThreadState = GetThreadLocalStateFor(0);
@@ -2004,7 +1956,7 @@ DebugDrawDrawCalls(debug_ui_render_group *Group, layout *WindowBasis)
   local_persist window_layout DrawCallWindow = WindowLayout("Draw Calls", GetAbsoluteAt(WindowBasis));
   Clear(&DrawCallWindow.Table.Layout.At);
   Clear(&DrawCallWindow.Table.Layout.DrawBounds);
-  PushWindowInteraction(Group, &DrawCallWindow);
+  WindowInteractions(Group, &DrawCallWindow);
 
   layout *Layout = &DrawCallWindow.Table.Layout;
   NewLine(Layout);
@@ -2316,7 +2268,7 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, window
 
   Clear(&Window->Table.Layout.At);
   Clear(&Window->Table.Layout.DrawBounds);
-  PushWindowInteraction(Group, Window);
+  WindowInteractions(Group, Window);
 
   r32 Z = zIndexForText(Window, Group);
 
@@ -2395,7 +2347,7 @@ DebugDrawNetworkHud(debug_ui_render_group *Group,
   local_persist window_layout NetworkWindow = WindowLayout("Network", WindowBasis->At);
   Clear(&NetworkWindow.Table.Layout.At);
   Clear(&NetworkWindow.Table.Layout.DrawBounds);
-  PushWindowInteraction(Group, &NetworkWindow);
+  WindowInteractions(Group, &NetworkWindow);
 
   layout* Layout = &NetworkWindow.Table.Layout;
   r32 Z = zIndexForText(&NetworkWindow, Group);

@@ -43,6 +43,8 @@ struct window_layout
   v2 MaxClip;
 
   u32 InteractionStackIndex;
+
+  window_layout* NextHotWindow;
 };
 
 struct ui_style
