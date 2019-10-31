@@ -614,7 +614,7 @@ BufferValue(const char* Text, debug_ui_render_group *Group, layout *Layout, v3 C
 {
   textured_2d_geometry_buffer *Geo = &Group->TextGroup->TextGeo;
 
-  u32 QuadCount = (u32)strlen(Text);
+  u32 QuadCount = (u32)Length(Text);
 
   r32 DeltaX = 0;
 
@@ -674,7 +674,7 @@ function void
 BufferThousands(u64 Number, debug_ui_render_group *Group, layout *Layout, u32 ColorIndex, r32 Z, v2 MaxClip, u32 Columns = 10)
 {
   char  *Buffer = FormatThousands(Number);
-  u32 Len = (u32)strlen(Buffer);
+  u32 Len = (u32)Length(Buffer);
   u32 Pad = Max(Columns-Len, 0U);
   AdvanceSpaces(Pad, Layout, &Group->Font);
   BufferValue( Buffer, Group, Layout, ColorIndex, Z, MaxClip);
@@ -694,7 +694,7 @@ BufferColumn( s32 Value, u32 ColumnWidth, debug_ui_render_group *Group, layout *
 {
   char Buffer[32] = {};
   sprintf(Buffer, "%d", Value);
-  u32 Len = (u32)strlen(Buffer);
+  u32 Len = (u32)Length(Buffer);
   u32 Pad = Max(ColumnWidth-Len, 0U);
   AdvanceSpaces(Pad, Layout, &Group->Font);
   BufferValue( Buffer, Group, Layout, ColorIndex, Z, MaxClip);
@@ -707,7 +707,7 @@ BufferColumn( u32 Value, u32 ColumnWidth, debug_ui_render_group *Group, layout *
   char Buffer[32] = {};
   sprintf(Buffer, "%u", Value);
   {
-    u32 Len = (u32)strlen(Buffer);
+    u32 Len = (u32)Length(Buffer);
     u32 Pad = Max(ColumnWidth-Len, 0U);
     AdvanceSpaces(Pad, Layout, &Group->Font);
   }
@@ -721,7 +721,7 @@ BufferColumn( u64 Value, u32 ColumnWidth, debug_ui_render_group *Group, layout *
   char Buffer[32] = {};
   sprintf(Buffer, "%lu", Value);
   {
-    u32 Len = (u32)strlen(Buffer);
+    u32 Len = (u32)Length(Buffer);
     u32 Pad = Max(ColumnWidth-Len, 0U);
     AdvanceSpaces(Pad, Layout, &Group->Font);
   }
@@ -735,7 +735,7 @@ BufferColumn( r64 Perc, u32 ColumnWidth, debug_ui_render_group *Group, layout *L
   char Buffer[32] = {};
   sprintf(Buffer, "%4.1lf", Perc);
   {
-    u32 Len = (u32)strlen(Buffer);
+    u32 Len = (u32)Length(Buffer);
     u32 Pad = Max(ColumnWidth-Len, 0U);
     AdvanceSpaces(Pad, Layout, &Group->Font);
   }
@@ -749,7 +749,7 @@ BufferColumn( r32 Perc, u32 ColumnWidth, debug_ui_render_group *Group, layout *L
   char Buffer[32] = {};
   sprintf(Buffer, "%.1f", Perc);
   {
-    u32 Len = (u32)strlen(Buffer);
+    u32 Len = (u32)Length(Buffer);
     u32 Pad = Max(ColumnWidth-Len, 0U);
     AdvanceSpaces(Pad, Layout, &Group->Font);
   }
@@ -765,7 +765,7 @@ Column(const char* ColumnText, debug_ui_render_group* Group, table* Table, r32 Z
   table_column *Column = Table->Columns + Table->ColumnIndex;
   Table->ColumnIndex = (Table->ColumnIndex+1)%MAX_TABLE_COLUMNS;
 
-  u32 TextLength = (u32)strlen(ColumnText);
+  u32 TextLength = (u32)Length(ColumnText);
   Column->Max = Max(Column->Max, TextLength + 1);
 
   u32 Pad = Column->Max - TextLength;
@@ -795,11 +795,11 @@ Column(const char* ColumnText, debug_ui_render_group* Group, window_layout* Wind
 }
 
 function r32
-BufferTextAt(debug_ui_render_group *Group, v2 BasisP, const char *Text, u32 Color, r32 Z)
+BufferTextAt(debug_ui_render_group *Group, v2 BasisP, const char *Text, u32 Color, r32 Z, v2 ClipMax = DISABLE_CLIPPING)
 {
   textured_2d_geometry_buffer *Geo = &Group->TextGroup->TextGeo;
 
-  u32 QuadCount = (u32)strlen(Text);
+  u32 QuadCount = (u32)Length(Text);
 
   r32 DeltaX = 0;
 
@@ -808,7 +808,7 @@ BufferTextAt(debug_ui_render_group *Group, v2 BasisP, const char *Text, u32 Colo
       CharIndex++ )
   {
     v2 MinP = BasisP + V2(Group->Font.Size.x*CharIndex, 0);
-    DeltaX += BufferChar(Group, Geo, CharIndex, MinP, &Group->Font, Text, Color, Z, V2(FLT_MAX));
+    DeltaX += BufferChar(Group, Geo, CharIndex, MinP, &Group->Font, Text, Color, Z, ClipMax);
     continue;
   }
 
@@ -840,7 +840,6 @@ BufferRectangleAt(debug_ui_render_group *Group, untextured_2d_geometry_buffer *G
 
   return;
 }
-
 
 
 
@@ -909,11 +908,8 @@ Button(debug_ui_render_group* Group, rect2 Bounds, ui_style* Style, umm Interact
 function b32
 Button(const char* ColumnText, debug_ui_render_group *Group, layout* Layout, umm InteractionId, v2 MaxClip, r32 Z, ui_style* Style = 0)
 {
-  u32 TextLength = (u32)strlen(ColumnText);
-
-  v2 Min = Layout->Basis + Layout->At;
-  v2 Max = Min + GetTextBounds(TextLength, &Group->Font);
-
+  v2 Min = GetAbsoluteAt(Layout);
+  v2 Max = Min + GetTextBounds( (u32)Length(ColumnText), &Group->Font);
   rect2 Bounds = RectMinMax(Min, Max);
 
   button_interaction_result Result = ButtonInteraction(Group, Bounds, InteractionId, Style);
@@ -940,6 +936,14 @@ Button(const char* ButtonText, debug_ui_render_group *Group, window_layout* Wind
 /*********************************  Windows  *********************************/
 /*********************************           *********************************/
 
+
+
+function r32
+WindowTitleBarHeight(font *Font)
+{
+  r32 Result = Font->Size.y;
+  return Result;
+}
 
 function void
 WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
@@ -972,7 +976,7 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
 
   if (Window->Title)
   {
-    BufferTextAt(Group, Window->Table.Layout.Basis, Window->Title, WHITE, zIndexForText(Window, Group));
+    BufferTextAt(Group, Window->Table.Layout.Basis, Window->Title, WHITE, zIndexForText(Window, Group), BottomRight);
   }
 
   {
@@ -1005,9 +1009,6 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
 
 
 
-
-
-
 /****************************                     ****************************/
 /****************************  Command Buffering  ****************************/
 /****************************                     ****************************/
@@ -1021,9 +1022,7 @@ PushWindowInteraction(debug_ui_render_group *Group, window_layout *Window)
   Command.Type = RenderCommand_WindowInteractions;
   Command.WindowInteraction.Window = Window;
 
-  // Leave space on the layout for the title bar
-  // @hack
-  Window->Table.Layout.At.y += Group->Font.Size.y;
+  Window->Table.Layout.At.y += WindowTitleBarHeight(&Group->Font);
 
   ui_render_command_buffer *CommandBuffer = &Group->RenderCommandBuffer;
   if (CommandBuffer->CommandCount < MAX_UI_RENDER_COMMAND_COUNT)
@@ -1096,7 +1095,6 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
 
   return;
 }
-
 
 
 
@@ -1335,14 +1333,14 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
     PushWindowInteraction(Group, &PickerWindow);
 
     b32 DebugButtonPressed = False;
-    // Note(Jesse): This is dependant on framerate and the button will be triggered on each frame!  Yikes.
+    // FIXME(Jesse): This is dependant on framerate and the button will be triggered on each frame!  Yikes.
     if (Button("<", Group, &PickerWindow))
     {
       HotChunk->PointsToLeaveRemaining = Min(HotChunk->PointsToLeaveRemaining+1, HotChunk->EdgeBoundaryVoxelCount);
       DebugButtonPressed = True;
     }
 
-    // Note(Jesse): This is dependant on framerate and the button will be triggered on each frame!  Yikes.
+    // FIXME(Jesse): This is dependant on framerate and the button will be triggered on each frame!  Yikes.
     if (Button(">", Group, &PickerWindow))
     {
       HotChunk->PointsToLeaveRemaining = Max(HotChunk->PointsToLeaveRemaining-1, 0);
@@ -1901,7 +1899,7 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout
 function void
 ColumnLeft(u32 Width, const char *Text, debug_ui_render_group* Group, layout *Layout, u32 ColorIndex )
 {
-  u32 Len = (u32)strlen(Text);
+  u32 Len = (u32)Length(Text);
   u32 Pad = Max(Width-Len, 0U);
   BufferValue(Text, Group, Layout, ColorIndex);
   AdvanceSpaces(Pad, Layout, &Group->Font);
@@ -1910,7 +1908,7 @@ ColumnLeft(u32 Width, const char *Text, debug_ui_render_group* Group, layout *La
 function void
 ColumnRight(s32 Width, const char *Text, debug_ui_render_group* Group, layout *Layout, u32 ColorIndex )
 {
-  s32 Len = (s32)strlen(Text);
+  s32 Len = (s32)Length(Text);
   s32 Pad = Max(Width-Len, 0);
   AdvanceSpaces(Pad, Layout, &Group->Font);
   BufferValue(Text, Group, Layout, ColorIndex);
