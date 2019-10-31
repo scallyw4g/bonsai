@@ -1251,16 +1251,6 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
   v2 BottomLeft = Window->Table.Layout.Basis + V2(0, Window->MaxClip.y);
   v2 BottomRight = Window->Table.Layout.Basis + Window->MaxClip;
 
-  // TODO(Jesse): Could this be phrased in a more concise way?
-  rect2 WindowBounds = RectMinMax(TopLeft, BottomRight);
-  if (IsInsideRect(WindowBounds, *Group->MouseP) &&
-               (Group->Input->LMB.WasPressed || Group->Input->RMB.WasPressed)
-     )
-  {
-    // NOTE(Jesse): In a perfect world, this is operation is performed before all buffering
-    Window->InteractionStackIndex = ++Group->InteractionStackTop;
-  }
-
   {
     umm DragHandleId = (umm)"WindowResizeWidget"^(umm)Window;
     interactable DragHandle = Interactable( Rect2(0), DragHandleId);
@@ -1337,6 +1327,41 @@ PushWindowInteraction(debug_ui_render_group *Group, window_layout *Window)
 function void
 FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *CommandBuffer)
 {
+  window_layout *TopmostClickedWindow = 0;
+  u32 HighestInteractionStackIndex = 0;
+
+  b32 Clicked = (Group->Input->LMB.WasPressed || Group->Input->RMB.WasPressed);
+
+  for (u32 CommandIndex = 0;
+      CommandIndex < CommandBuffer->CommandCount;
+      ++CommandIndex)
+  {
+    ui_render_command *Command = CommandBuffer->Commands+CommandIndex;
+    switch(Command->Type)
+    {
+      case RenderCommand_WindowInteractions:
+      {
+        window_layout *TestWindow = Command->WindowInteraction.Window;
+        b32 InsideWindowBounds = IsInsideRect(GetWindowBounds(TestWindow), *Group->MouseP);
+        b32 FoundNewHighestStackIndex = HighestInteractionStackIndex <= TestWindow->InteractionStackIndex;
+
+        if ( InsideWindowBounds && Clicked && FoundNewHighestStackIndex )
+        {
+          TopmostClickedWindow = TestWindow;
+          HighestInteractionStackIndex = TestWindow->InteractionStackIndex;
+        }
+
+      } break;
+
+      InvalidDefaultCase;
+    }
+  }
+
+  if (TopmostClickedWindow)
+  {
+    TopmostClickedWindow->InteractionStackIndex = ++Group->InteractionStackTop;
+  }
+
   for (u32 CommandIndex = 0;
       CommandIndex < CommandBuffer->CommandCount;
       ++CommandIndex)
@@ -1387,7 +1412,7 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 {
   debug_state* DebugState = GetDebugState();
 
-  local_persist window_layout ListingWindow = WindowLayout("PickedChunks", LayoutBasis, V2(400, 150));
+  local_persist window_layout ListingWindow = WindowLayout("Picked Chunks", LayoutBasis, V2(400, 150));
 
   Clear(&ListingWindow.Table.Layout.At);
   Clear(&ListingWindow.Table.Layout.DrawBounds);
@@ -1473,7 +1498,7 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
     BufferChunkDetails(Group, HotChunk, &ChunkDetailWindow);
 
 
-    local_persist window_layout PickerWindow = WindowLayout("PickedChunks",
+    local_persist window_layout PickerWindow = WindowLayout("Chunk View",
                                                             V2(GetAbsoluteMaxClip(&ChunkDetailWindow).x, GetAbsoluteMin(&ChunkDetailWindow).y) + WindowSpacing,
                                                             V2(800.0f));
     Clear(&PickerWindow.Table.Layout.At);

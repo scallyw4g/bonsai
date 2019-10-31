@@ -79,6 +79,15 @@ WindowLayout(const char* Title, v2 Basis = V2(150, 150), v2 MaxClip = V2(1500, 8
   return Window;
 }
 
+rect2
+GetWindowBounds(window_layout *Window)
+{
+  v2 TopLeft = Window->Table.Layout.Basis;
+  v2 BottomRight = Window->Table.Layout.Basis + Window->MaxClip;
+  rect2 Result = RectMinMax(TopLeft, BottomRight);
+  return Result;
+}
+
 interactable
 Interactable(rect2 Rect, umm ID)
 {
