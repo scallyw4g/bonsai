@@ -209,8 +209,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
 
     case DebugUIType_Memory:
     {
-      local_persist window_layout MemoryArenaWindow = WindowLayout("Memory", Layout.At);
-      DebugDrawMemoryHud(UiGroup, DebugState, &MemoryArenaWindow);
+      DebugDrawMemoryHud(UiGroup, DebugState, Layout.At);
     } break;
 
     case DebugUIType_DrawCalls:

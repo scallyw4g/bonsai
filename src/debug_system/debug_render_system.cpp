@@ -836,6 +836,26 @@ BufferRectangleAt(debug_ui_render_group *Group, untextured_2d_geometry_buffer *G
 }
 
 
+function void
+Border(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo, rect2 Rect, v3 Color, r32 Z, v2 MaxClip)
+{
+  v2 TopLeft     = Rect.Min;
+  v2 BottomRight = Rect.Max;
+  v2 TopRight    = V2(Rect.Max.x, Rect.Min.y);
+  v2 BottomLeft  = V2(Rect.Min.x, Rect.Max.y);
+
+  rect2 TopRect    = RectMinMax(TopLeft ,    TopRight    - V2(0, 1));
+  rect2 BottomRect = RectMinMax(BottomLeft,  BottomRight + V2(0, 1));
+  rect2 LeftRect   = RectMinMax(TopLeft ,    BottomLeft  - V2(1, 0));
+  rect2 RightRect  = RectMinMax(TopRight,    BottomRight + V2(1, 0));
+
+  BufferRectangleAt(Group, Geo, TopRect,    Color, Z, MaxClip);
+  BufferRectangleAt(Group, Geo, LeftRect,   Color, Z, MaxClip);
+  BufferRectangleAt(Group, Geo, RightRect,  Color, Z, MaxClip);
+  BufferRectangleAt(Group, Geo, BottomRect, Color, Z, MaxClip);
+
+  return;
+}
 
 /*********************************           *********************************/
 /*********************************  Buttons  *********************************/
@@ -1036,10 +1056,8 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
   {
     r32 Z = zIndexForBorders(Window, Group);
     v3 BorderColor = V3(1, 1, 1);
-    BufferRectangleAt(Group, Geo, RectMinMax(TopLeft   , TopRight    - V2(0 , 1)), BorderColor, Z, DISABLE_CLIPPING);
-    BufferRectangleAt(Group, Geo, RectMinMax(TopLeft   , BottomLeft  - V2(1 , 0)), BorderColor, Z, DISABLE_CLIPPING);
-    BufferRectangleAt(Group, Geo, RectMinMax(TopRight  , BottomRight + V2(1 , 0)), BorderColor, Z, DISABLE_CLIPPING);
-    BufferRectangleAt(Group, Geo, RectMinMax(BottomLeft, BottomRight + V2(0 , 1)), BorderColor, Z, DISABLE_CLIPPING);
+    rect2 WindowBounds = RectMinMax(TopLeft, BottomRight);
+    Border(Group, Geo, WindowBounds, BorderColor, Z, DISABLE_CLIPPING);
   }
 
   {
@@ -2117,20 +2135,18 @@ BufferMemoryBargraphTable(debug_ui_render_group *Group, selected_arenas *Selecte
   return;
 }
 
-function layout *
-BufferDebugPushMetaData(debug_ui_render_group *Group, selected_arenas *SelectedArenas, umm CurrentArenaHead, window_layout* Window)
+function void
+BufferDebugPushMetaData(debug_ui_render_group *Group, selected_arenas *SelectedArenas, umm CurrentArenaHead, table* Table, r32 Z, v2 MaxClip)
 {
   push_metadata CollatedMetaTable[META_TABLE_SIZE] = {};
 
-  layout *Layout = &Window->Table.Layout;
-
   SetFontSize(&Group->Font, 24);
 
-  Column("Size", Group, Window, WHITE);
-  Column("Structs", Group, Window, WHITE);
-  Column("Push Count", Group, Window, WHITE);
-  Column("Name", Group, Window, WHITE);
-  NewRow(Window);
+  Column("Size", Group, Table, Z, MaxClip);
+  Column("Structs", Group, Table, Z, MaxClip);
+  Column("Push Count", Group, Table, Z, MaxClip);
+  Column("Name", Group, Table, Z, MaxClip);
+  NewRow(Table);
 
 
   // Pick out relevant metadata and write to collation table
@@ -2205,22 +2221,20 @@ BufferDebugPushMetaData(debug_ui_render_group *Group, selected_arenas *SelectedA
     if (Collated->Name)
     {
       umm AllocationSize = GetAllocationSize(Collated);
-      Column( FormatMemorySize(AllocationSize), Group, Window, WHITE);
-      Column( FormatThousands(Collated->StructCount), Group, Window, WHITE);
-      Column( FormatThousands(Collated->PushCount), Group, Window, WHITE);
-      Column(Collated->Name, Group, Window, WHITE);
-      NewRow(Window);
+      Column( FormatMemorySize(AllocationSize), Group, Table, Z, MaxClip);
+      Column( FormatThousands(Collated->StructCount), Group, Table, Z, MaxClip);
+      Column( FormatThousands(Collated->PushCount), Group, Table, Z, MaxClip);
+      Column(Collated->Name, Group, Table, Z, MaxClip);
+      NewRow(Table);
     }
 
     continue;
   }
 
-
-  NewLine(Layout);
-
-  return Layout;
+  return;
 }
 
+#if 0
 function window_layout
 SubWindowAt(window_layout* Original, v2 NewBasis)
 {
@@ -2228,15 +2242,17 @@ SubWindowAt(window_layout* Original, v2 NewBasis)
 
   Result.Table.Layout.Basis = NewBasis;
   Result.MaxClip = Original->Table.Layout.Basis + Original->MaxClip - NewBasis;
-  Result.InteractionStackIndex = Original->InteractionStackIndex;
 
   return Result;
 }
+#endif
+
+
 
 function void
 MergeTables(table* Src, table* Dest)
 {
-  v2 SrcAtRelativeToDest = GetAbsoluteAt(&Src->Layout) - Dest->Layout.Basis;
+  v2 SrcAtRelativeToDest = GetAbsoluteDrawBoundsMax(&Src->Layout) - Dest->Layout.Basis;
   Dest->Layout.At = Max(Dest->Layout.At, SrcAtRelativeToDest);
   AdvanceClip(&Dest->Layout);
   return;
@@ -2245,34 +2261,48 @@ MergeTables(table* Src, table* Dest)
 function window_layout*
 MergeWindowLayouts(window_layout* Src, window_layout* Dest)
 {
-  v2 SrcAtRelativeToDest = GetAbsoluteAt(&Src->Table.Layout) - Dest->Table.Layout.Basis;
-  Dest->Table.Layout.At = Max(Dest->Table.Layout.At, SrcAtRelativeToDest);
-
-  AdvanceClip(&Dest->Table.Layout);
-
+  MergeTables(&Src->Table, &Dest->Table);
   return Dest;
 }
 
-function layout
-TableLayoutFromSibling(table* Sibling)
+function table
+TableLayoutAt(table* Src)
 {
-  layout Result = Sibling->Layout;
-  Result.DrawBounds.Min = Sibling->Layout.At;
-  Result.DrawBounds.Max = Sibling->Layout.At;
-
+  table Result = {};
+  Result.Layout.Basis = GetAbsoluteAt(&Src->Layout);
   return Result;
 }
 
-function void
-DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, window_layout* Window)
+function layout
+LayoutBelow(table* Src)
 {
-  Window->Title = "Memory Arenas";
+  layout Result = {};
+  Result.Basis = Src->Layout.Basis + V2(Src->Layout.DrawBounds.Min.x, Src->Layout.At.y);
+  return Result;
+}
 
-  Clear(&Window->Table.Layout.At);
-  Clear(&Window->Table.Layout.DrawBounds);
-  WindowInteractions(Group, Window);
+function layout
+LayoutRightOf(table* Src)
+{
+  layout Result = {};
+  Result.Basis.x = Src->Layout.Basis.x + Src->Layout.DrawBounds.Max.x;
+  Result.Basis.y = Src->Layout.Basis.y;
+  return Result;
+}
 
-  r32 Z = zIndexForText(Window, Group);
+
+function void
+DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, v2 MemoryWindowBasis)
+{
+  local_persist window_layout MemoryArenaWindowInstance = WindowLayout("Memory Arenas", MemoryWindowBasis);
+  window_layout* MemoryArenaWindow = &MemoryArenaWindowInstance;
+
+
+  Clear(&MemoryArenaWindow->Table.Layout.At);
+  Clear(&MemoryArenaWindow->Table.Layout.DrawBounds);
+  WindowInteractions(Group, MemoryArenaWindow);
+
+  r32 Z = zIndexForText(MemoryArenaWindow, Group);
 
   for ( u32 Index = 0;
         Index < REGISTERED_MEMORY_ARENA_COUNT;
@@ -2286,14 +2316,14 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, window
 
     {
       SetFontSize(&Group->Font, 36);
-      NewLine(&Window->Table.Layout);
+      NewLine(&MemoryArenaWindow->Table.Layout);
 
-      interactable ExpandInteraction = StartInteractable(&Window->Table.Layout, (umm)"MemoryWindowExpandInteraction"^(umm)Current, Window);
-        Column(Current->Name, Group, Window);
-        Column(MemorySize(MemStats.TotalAllocated), Group, Window);
-        Column(ToString(MemStats.Pushes), Group, Window);
-        NewRow(Window);
-      EndInteractable(Window, &ExpandInteraction);
+      interactable ExpandInteraction = StartInteractable(&MemoryArenaWindow->Table.Layout, (umm)"MemoryWindowExpandInteraction"^(umm)Current, MemoryArenaWindow);
+        Column(Current->Name, Group, MemoryArenaWindow);
+        Column(MemorySize(MemStats.TotalAllocated), Group, MemoryArenaWindow);
+        Column(ToString(MemStats.Pushes), Group, MemoryArenaWindow);
+        NewRow(MemoryArenaWindow);
+      EndInteractable(MemoryArenaWindow, &ExpandInteraction);
 
       if (Clicked(Group, &ExpandInteraction))
       {
@@ -2305,24 +2335,36 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, window
     {
       SetFontSize(&Group->Font, 28);
 
-      r32 TopOfStatsTable = Window->Table.Layout.DrawBounds.Max.y;
-
       local_persist table MemoryStatsTable = {};
-      MemoryStatsTable.Layout = TableLayoutFromSibling(&Window->Table);
-      BufferMemoryStatsTable(MemStats, Group, &MemoryStatsTable, Z, GetAbsoluteMaxClip(Window));
-      r32 RightOfStatsTable = MemoryStatsTable.Layout.DrawBounds.Max.x;
+      MemoryStatsTable.Layout = LayoutBelow(&MemoryArenaWindow->Table);
+      BufferMemoryStatsTable(MemStats, Group, &MemoryStatsTable, Z, GetAbsoluteMaxClip(MemoryArenaWindow));
 
       local_persist table MemoryBargraphTable = {};
-      MemoryBargraphTable.Layout = TableLayoutFromSibling(&MemoryStatsTable);
-      BufferMemoryBargraphTable(Group, DebugState->SelectedArenas, MemStats, TotalUsed, Current->Arena, &MemoryBargraphTable, Z, GetAbsoluteMaxClip(Window));
-      r32 RightOfBargraphTable = MemoryBargraphTable.Layout.DrawBounds.Max.x;
+      MemoryBargraphTable.Layout = LayoutBelow(&MemoryStatsTable);
+      BufferMemoryBargraphTable(Group, DebugState->SelectedArenas, MemStats, TotalUsed, Current->Arena, &MemoryBargraphTable, Z, GetAbsoluteMaxClip(MemoryArenaWindow));
 
-      window_layout TmpWindow = SubWindowAt(Window, Window->Table.Layout.Basis + V2( Max(RightOfStatsTable, RightOfBargraphTable), TopOfStatsTable));
-      BufferDebugPushMetaData(Group, DebugState->SelectedArenas, HashArenaHead(Current->Arena), &TmpWindow);
-      MergeWindowLayouts(&TmpWindow, Window);
+      table TmpTable = TableLayoutAt(&MemoryArenaWindow->Table);
+      MergeTables(&MemoryStatsTable, &TmpTable);
+      MergeTables(&MemoryBargraphTable, &TmpTable);
 
-      MergeTables(&MemoryStatsTable, &Window->Table);
-      MergeTables(&MemoryBargraphTable, &Window->Table);
+      {
+        v3 BorderColor = V3(1, 1, 1);
+        rect2 TableBounds = GetBounds(&TmpTable);
+        Border(Group, &Group->TextGroup->UIGeo, TableBounds, BorderColor, 1.0f, DISABLE_CLIPPING);
+      }
+
+      local_persist table PushMetadataTable = {};
+      PushMetadataTable.Layout = LayoutRightOf(&TmpTable);
+      BufferDebugPushMetaData(Group, DebugState->SelectedArenas, HashArenaHead(Current->Arena), &PushMetadataTable, Z, GetAbsoluteMaxClip(MemoryArenaWindow));
+
+      {
+        v3 BorderColor = V3(1, 1, 1);
+        rect2 TableBounds = GetBounds(&PushMetadataTable);
+        Border(Group, &Group->TextGroup->UIGeo, TableBounds, BorderColor, 1.0f, DISABLE_CLIPPING);
+      }
+
+      MergeTables(&PushMetadataTable, &TmpTable);
+      MergeTables(&TmpTable, &MemoryArenaWindow->Table);
     }
 
     continue;
