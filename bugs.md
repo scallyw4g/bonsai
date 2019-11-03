@@ -1,5 +1,5 @@
 # Jan 10 2019 - 8:00 - closed - FlushBuffersToCard not calling glEnableVertexAttribArray
-* opnegl
+* opengl
 * gpu-mapped-element-buffer
 * nsight
 I had an incomplete understanding of what exactly glEnableVertexAttribArray did

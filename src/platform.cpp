@@ -417,7 +417,7 @@ CheckShadingLanguageVersion()
 }
 
 function void
-ClearWasPressedFlags(input_event *Input)
+ClearClickedFlags(input_event *Input)
 {
   TIMED_FUNCTION();
 
@@ -430,10 +430,10 @@ ClearWasPressedFlags(input_event *Input)
     input_event *Event = Input + EventIndex;
 
     // This is some super-janky insurance that we're overwriting boolean values
-    Assert(Event->IsDown == False || Event->IsDown == True);
-    Assert(Event->WasPressed == False || Event->WasPressed == True);
+    Assert(Event->Pressed == False || Event->Pressed == True);
+    Assert(Event->Clicked == False || Event->Clicked == True);
 
-    Event->WasPressed = False;
+    Event->Clicked = False;
   }
 }
 
@@ -442,41 +442,41 @@ BindHotkeysToInput(hotkeys *Hotkeys, input *Input)
 {
 
 #if BONSAI_INTERNAL
-  Hotkeys->Debug_Pause                    = Input->F12.IsDown;
-  Hotkeys->Debug_ToggleLoopedGamePlayback = Input->F11.WasPressed;
+  Hotkeys->Debug_Pause                    = Input->F12.Pressed;
+  Hotkeys->Debug_ToggleLoopedGamePlayback = Input->F11.Clicked;
 
-  if (Input->F10.WasPressed)
+  if (Input->F10.Clicked)
   {
     Hotkeys->Debug_ToggleProfile = True;
   }
 
-  if (Input->F1.WasPressed)
+  if (Input->F1.Clicked)
   {
     Hotkeys->Debug_ToggleMenu = True;
   }
 
-  if (Input->F2.WasPressed)
+  if (Input->F2.Clicked)
   {
     Hotkeys->Debug_ToggleTriggeredRuntimeBreak = True;
   }
 
-  Hotkeys->Debug_TriangulateDecrement = Input->F3.WasPressed;
-  Hotkeys->Debug_TriangulateIncrement = Input->F4.WasPressed;
+  Hotkeys->Debug_TriangulateDecrement = Input->F3.Clicked;
+  Hotkeys->Debug_TriangulateIncrement = Input->F4.Clicked;
 
-  Hotkeys->Debug_MousePick = Input->F12.IsDown;
+  Hotkeys->Debug_MousePick = Input->F12.Pressed;
 
-  /* Hotkeys->Debug_RedrawEveryPush = Input->F2.WasPressed; */
+  /* Hotkeys->Debug_RedrawEveryPush = Input->F2.Clicked; */
 #endif
 
-  Hotkeys->Left = Input->A.IsDown;
-  Hotkeys->Right = Input->D.IsDown;
-  Hotkeys->Forward = Input->W.IsDown;
-  Hotkeys->Backward = Input->S.IsDown;
+  Hotkeys->Left = Input->A.Pressed;
+  Hotkeys->Right = Input->D.Pressed;
+  Hotkeys->Forward = Input->W.Pressed;
+  Hotkeys->Backward = Input->S.Pressed;
 
-  Hotkeys->Player_Fire = Input->Space.WasPressed;
-  Hotkeys->Player_Proton = Input->Shift.WasPressed;
+  Hotkeys->Player_Fire = Input->Space.Clicked;
+  Hotkeys->Player_Proton = Input->Shift.Clicked;
 
-  Hotkeys->Player_Spawn = Input->Space.WasPressed;
+  Hotkeys->Player_Spawn = Input->Space.Clicked;
 
   return;
 }
@@ -579,7 +579,7 @@ main()
   r32 RealDt = 0;
   while ( Os.ContinueRunning )
   {
-    ClearWasPressedFlags((input_event*)&Plat.Input);
+    ClearClickedFlags((input_event*)&Plat.Input);
     DEBUG_FRAME_BEGIN(&Hotkeys);
 
     Plat.dt = RealDt;

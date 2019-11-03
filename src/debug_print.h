@@ -135,7 +135,7 @@ Print_P( const char *C, const char* name)
 inline void
 Print_P( input_event E, const char* name)
 {
-  Log(" -- %s == IsDown %d WasPressed %d \n", name, E.IsDown, E.WasPressed );
+  Log(" -- %s == Pressed %d Clicked %d \n", name, E.Pressed, E.Clicked );
 }
 
 inline void

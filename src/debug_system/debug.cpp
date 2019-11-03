@@ -43,7 +43,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   UiGroup->MouseP                = &Plat->MouseP;
   UiGroup->MouseDP               = &Plat->MouseDP;
 
-  if ( ! (Plat->Input.LMB.IsDown || Plat->Input.RMB.IsDown))
+  if ( ! (Plat->Input.LMB.Pressed || Plat->Input.RMB.Pressed))
   {
     UiGroup->PressedInteraction = NullInteraction;
   }
@@ -243,12 +243,12 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   }
 
   if (UiGroup->PressedInteraction.ID == 0 &&
-      (Plat->Input.LMB.IsDown || Plat->Input.RMB.IsDown))
+      (Plat->Input.LMB.Pressed || Plat->Input.RMB.Pressed))
   {
     UiGroup->PressedInteraction = Interactable(V2(FLT_MIN), V2(FLT_MAX), StringHash("GameViewport"), 0);
   }
 
-  if (DebugState->DoChunkPicking && Plat->Input.LMB.WasPressed)
+  if (DebugState->DoChunkPicking && Plat->Input.LMB.Clicked)
   {
     DebugState->DoChunkPicking = False;
   }

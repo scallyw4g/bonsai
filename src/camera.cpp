@@ -86,14 +86,14 @@ UpdateGameCamera(v2 MouseDelta, input *Input, canonical_position NewTarget, came
 {
   if (Input)
   {
-    if (Input->LMB.IsDown)
+    if (Input->LMB.Pressed)
     {
       Camera->Yaw += MouseDelta.x;
       Camera->Pitch += MouseDelta.y;
       Camera->Pitch = ClampBetween(0.0, Camera->Pitch, PIf);
     }
 
-    if (Input->RMB.IsDown)
+    if (Input->RMB.Pressed)
     {
       Camera->DistanceFromTarget += MouseDelta.y*200.0f;
     }

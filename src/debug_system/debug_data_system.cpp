@@ -538,10 +538,24 @@ GetAbsoluteAt(layout *Layout)
   return Result;
 }
 
-rect2
-GetAbsoluteClip(layout *Layout)
+v2
+GetAbsoluteDrawBoundsMin(layout *Layout)
 {
-  rect2 Result = { Layout->Basis+Layout->DrawBounds.Min, Layout->Basis+Layout->DrawBounds.Max };
+  v2 Result = Layout->Basis+Layout->DrawBounds.Min;
+  return Result;
+}
+
+v2
+GetAbsoluteDrawBoundsMax(layout *Layout)
+{
+  v2 Result = Layout->Basis+Layout->DrawBounds.Max;
+  return Result;
+}
+
+rect2
+GetAbsoluteDrawBounds(layout *Layout)
+{
+  rect2 Result = RectMinMax( GetAbsoluteDrawBoundsMin(Layout), GetAbsoluteDrawBoundsMax(Layout) );
   return Result;
 }
 
@@ -558,6 +572,14 @@ GetAbsoluteMaxClip(window_layout *Window)
   v2 Result = Window->MaxClip + Window->Table.Layout.Basis;
   return Result;
 }
+
+rect2
+GetBounds(table* Table)
+{
+  rect2 Bounds = RectMinMax(Table->Layout.Basis, GetAbsoluteDrawBoundsMax(&Table->Layout));
+  return Bounds;
+}
+
 
 /*************************                       *****************************/
 /*************************  Profile Scope Trees  *****************************/

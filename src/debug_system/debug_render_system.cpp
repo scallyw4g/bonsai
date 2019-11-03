@@ -974,8 +974,35 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
   v2 BottomLeft = Window->Table.Layout.Basis + V2(0, Window->MaxClip.y);
   v2 BottomRight = Window->Table.Layout.Basis + Window->MaxClip;
 
-  b32 MouseWasDown = (Group->Input->LMB.IsDown || Group->Input->RMB.IsDown);
-  b32 MouseWasClicked = (Group->Input->LMB.WasPressed || Group->Input->RMB.WasPressed);
+
+  umm TitleBarInteractionId = (umm)"WindowTitleBar"^(umm)Window;
+  interactable TitleBarInteraction = Interactable( Rect2(0) , TitleBarInteractionId, Window);
+  if (Pressed(Group, &TitleBarInteraction))
+  {
+    Window->Table.Layout.Basis -= *Group->MouseDP;
+
+    TopLeft = Window->Table.Layout.Basis;
+    TopRight = Window->Table.Layout.Basis + V2(Window->MaxClip.x, 0);
+    BottomLeft = Window->Table.Layout.Basis + V2(0, Window->MaxClip.y);
+    BottomRight = Window->Table.Layout.Basis + Window->MaxClip;
+  }
+
+  umm DragHandleId = (umm)"WindowResizeWidget"^(umm)Window;
+  interactable DragHandle = Interactable( Rect2(0) , DragHandleId, Window);
+  if (Pressed(Group, &DragHandle))
+  {
+    Window->MaxClip = Max(V2(0), Window->MaxClip-(*Group->MouseDP));
+    TopRight = Window->Table.Layout.Basis + V2(Window->MaxClip.x, 0);
+    BottomLeft = Window->Table.Layout.Basis + V2(0, Window->MaxClip.y);
+    BottomRight = Window->Table.Layout.Basis + Window->MaxClip;
+  }
+
+  ui_style BackgroundStyle = StandardStyling(V3(0.0f, 0.5f, 0.5f));
+  rect2 TitleBarRect = RectMinMax(TopLeft, TopRight + V2(0.0f, Group->Font.Size.y));
+  Button(Group, TitleBarRect, TitleBarInteractionId, zIndexForTitleBar(Window, Group), BottomRight, Window, &BackgroundStyle);
+
+  b32 MouseWasDown = (Group->Input->LMB.Pressed || Group->Input->RMB.Pressed);
+  b32 MouseWasClicked = (Group->Input->LMB.Clicked || Group->Input->RMB.Clicked);
   b32 InsideWindowBounds = IsInsideRect(GetWindowBounds(Window), *Group->MouseP);
 
   if ( InsideWindowBounds )
@@ -991,19 +1018,11 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
   }
 
   {
-    umm DragHandleId = (umm)"WindowResizeWidget"^(umm)Window;
-    interactable DragHandle = Interactable( Rect2(0) , DragHandleId, Window);
-    if (Pressed(Group, &DragHandle))
-    {
-      Window->MaxClip = Max(V2(0), Window->MaxClip-(*Group->MouseDP));
-    }
-
-    ui_style Style = StandardStyling(V3(0.5f, 0.5f, 0.0f));
+    ui_style DragHandleStyle = StandardStyling(V3(0.5f, 0.5f, 0.0f));
     v2 Dim = V2(10);
     v2 MinP = Window->Table.Layout.Basis + Window->MaxClip - Dim;
     rect2 DragHandleRect = RectMinDim(MinP, Dim);
-
-    Button(Group, DragHandleRect, DragHandleId, zIndexForBorders(Window, Group), BottomRight, Window, &Style);
+    Button(Group, DragHandleRect, DragHandleId, zIndexForBorders(Window, Group), BottomRight, Window, &DragHandleStyle);
   }
 
   if (Window->Title)
@@ -1012,16 +1031,6 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
     AdvanceSpaces(1, &Window->Table.Layout, &Group->Font);
     BufferValue(Window->Title, Group, &Window->Table.Layout, V3(1), zIndexForText(Window, Group), BottomRight);
     NewRow(Window);
-  }
-
-  {
-    ui_style Style = StandardStyling(V3(0.0f, 0.5f, 0.5f));
-    rect2 TitleBarRect = RectMinMax(TopLeft, TopRight + V2(0.0f, Group->Font.Size.y));
-    umm TitleBarInteractionId = (umm)"WindowTitleBar"^(umm)Window;
-    if (Button(Group, TitleBarRect, TitleBarInteractionId, zIndexForTitleBar(Window, Group), BottomRight, Window, &Style))
-    {
-      Window->Table.Layout.Basis -= *Group->MouseDP;
-    }
   }
 
   {
@@ -1437,7 +1446,7 @@ DrawScopeBarsRecursive(debug_ui_render_group *Group, untextured_2d_geometry_buff
 
     b32 Hovering = DrawCycleBar( &Range, Frame, TotalGraphWidth, Scope->Name, Color, Group, Geo, Layout, Z, MaxClip);
 
-    if (Hovering && Group->Input->LMB.WasPressed)
+    if (Hovering && Group->Input->LMB.Clicked)
       Scope->Expanded = !Scope->Expanded;
 
     if (Scope->Expanded)
@@ -2017,7 +2026,7 @@ BufferArenaBargraph(table *Table, debug_ui_render_group *Group, umm TotalUsed, r
   Column( FormatMemorySize(Remaining), Group, Table, Z, MaxClip);
   NewRow(Table);
 
-  b32 Click = (Hover && Group->Input->LMB.WasPressed);
+  b32 Click = (Hover && Group->Input->LMB.Clicked);
   return Click;
 }
 

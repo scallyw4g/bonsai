@@ -477,18 +477,18 @@ ProcessOsMessages(os *Os, platform *Plat)
       {
         if (Event.xbutton.button == Button1)
         {
-          Plat->Input.LMB.WasPressed = True;
-          Plat->Input.LMB.IsDown = True;
+          Plat->Input.LMB.Clicked = True;
+          Plat->Input.LMB.Pressed = True;
         }
         if (Event.xbutton.button == Button2)
         {
-          Plat->Input.MMB.WasPressed = True;
-          Plat->Input.MMB.IsDown = True;
+          Plat->Input.MMB.Clicked = True;
+          Plat->Input.MMB.Pressed = True;
         }
         if (Event.xbutton.button == Button3)
         {
-          Plat->Input.RMB.WasPressed = True;
-          Plat->Input.RMB.IsDown = True;
+          Plat->Input.RMB.Clicked = True;
+          Plat->Input.RMB.Pressed = True;
         }
       } break;
 
@@ -496,26 +496,26 @@ ProcessOsMessages(os *Os, platform *Plat)
       {
         if (Event.xbutton.button == Button1)
         {
-          Plat->Input.LMB.WasPressed = False;
-          Plat->Input.LMB.IsDown = False;
+          Plat->Input.LMB.Clicked = False;
+          Plat->Input.LMB.Pressed = False;
         }
         if (Event.xbutton.button == Button2)
         {
-          Plat->Input.MMB.WasPressed = False;
-          Plat->Input.MMB.IsDown = False;
+          Plat->Input.MMB.Clicked = False;
+          Plat->Input.MMB.Pressed = False;
         }
         if (Event.xbutton.button == Button3)
         {
-          Plat->Input.RMB.WasPressed = False;
-          Plat->Input.RMB.IsDown = False;
+          Plat->Input.RMB.Clicked = False;
+          Plat->Input.RMB.Pressed = False;
         }
       } break;
 
 
 #define BindToInput(Keysym, InputField, Boolean) \
   case Keysym: {                                 \
-    Plat->Input.InputField.WasPressed = Boolean; \
-    Plat->Input.InputField.IsDown = Boolean;     \
+    Plat->Input.InputField.Clicked = Boolean; \
+    Plat->Input.InputField.Pressed = Boolean;     \
   } break;
 
 #define BindKeydownToInput(Keysym, InputField) \

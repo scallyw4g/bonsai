@@ -1,8 +1,8 @@
 
 struct input_event
 {
-  b32 WasPressed;
-  b32 IsDown;
+  b32 Clicked;
+  b32 Pressed;
 };
 
 struct hotkeys
