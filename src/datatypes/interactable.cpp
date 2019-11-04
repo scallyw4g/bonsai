@@ -52,7 +52,7 @@ Clicked(debug_ui_render_group* Group, interactable *Interaction)
   b32 Result = False;
   if (Clicked &&
       CurrentInteraction == 0 &&
-      Hover(Group, Rect2(Interaction)))
+      Hover(Group, Interaction))
   {
     Group->PressedInteraction = *Interaction;
     Result = True;

@@ -29,6 +29,20 @@ RectMinDim(v2 Min, v2 Dim)
   return Result;
 }
 
+function v2
+BottomLeft(rect2 Rect)
+{
+  v2 Result = V2(Rect.Min.x, Rect.Max.y);
+  return Result;
+}
+
+function v2
+TopRight(rect2 Rect)
+{
+  v2 Result = V2(Rect.Max.x, Rect.Min.y);
+  return Result;
+}
+
 struct aabb
 {
   v3 Center;

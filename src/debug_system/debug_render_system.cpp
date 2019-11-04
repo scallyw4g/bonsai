@@ -1001,22 +1001,14 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
 
   NewRow(Window);
 
-  v2 TopLeft = Window->Table.Layout.Basis;
-  v2 TopRight = Window->Table.Layout.Basis + V2(Window->MaxClip.x, 0);
-  v2 BottomLeft = Window->Table.Layout.Basis + V2(0, Window->MaxClip.y);
-  v2 BottomRight = Window->Table.Layout.Basis + Window->MaxClip;
-
+  rect2 WindowBounds = GetWindowBounds(Window);
 
   umm TitleBarInteractionId = (umm)"WindowTitleBar"^(umm)Window;
   interactable TitleBarInteraction = Interactable( Rect2(0) , TitleBarInteractionId, Window);
   if (Pressed(Group, &TitleBarInteraction))
   {
     Window->Table.Layout.Basis -= *Group->MouseDP;
-
-    TopLeft = Window->Table.Layout.Basis;
-    TopRight = Window->Table.Layout.Basis + V2(Window->MaxClip.x, 0);
-    BottomLeft = Window->Table.Layout.Basis + V2(0, Window->MaxClip.y);
-    BottomRight = Window->Table.Layout.Basis + Window->MaxClip;
+    WindowBounds = GetWindowBounds(Window);
   }
 
   umm DragHandleId = (umm)"WindowResizeWidget"^(umm)Window;
@@ -1024,15 +1016,12 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
   if (Pressed(Group, &DragHandle))
   {
     Window->MaxClip = Max(V2(0), Window->MaxClip-(*Group->MouseDP));
-
-    TopRight = Window->Table.Layout.Basis + V2(Window->MaxClip.x, 0);
-    BottomLeft = Window->Table.Layout.Basis + V2(0, Window->MaxClip.y);
-    BottomRight = Window->Table.Layout.Basis + Window->MaxClip;
+    WindowBounds = GetWindowBounds(Window);
   }
 
   ui_style BackgroundStyle = StandardStyling(V3(0.0f, 0.5f, 0.5f));
-  rect2 TitleBarRect = RectMinMax(TopLeft, TopRight + V2(0.0f, Group->Font.Size.y));
-  Button(Group, TitleBarRect, TitleBarInteractionId, zIndexForTitleBar(Window, Group), BottomRight, Window, &BackgroundStyle);
+  rect2 TitleBarRect = RectMinMax(WindowBounds.Min, TopRight(WindowBounds) + V2(0.0f, Group->Font.Size.y));
+  Button(Group, TitleBarRect, TitleBarInteractionId, zIndexForTitleBar(Window, Group), WindowBounds.Max, Window, &BackgroundStyle);
 
   b32 MouseWasDown = (Group->Input->LMB.Pressed || Group->Input->RMB.Pressed);
   b32 InsideWindowBounds = IsInsideRect(GetWindowBounds(Window), *Group->MouseP);
@@ -1049,28 +1038,27 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
     v2 Dim = V2(10);
     v2 MinP = Window->Table.Layout.Basis + Window->MaxClip - Dim;
     rect2 DragHandleRect = RectMinDim(MinP, Dim);
-    Button(Group, DragHandleRect, DragHandleId, zIndexForBorders(Window, Group), BottomRight, Window, &DragHandleStyle);
+    Button(Group, DragHandleRect, DragHandleId, zIndexForBorders(Window, Group), WindowBounds.Max, Window, &DragHandleStyle);
   }
 
   if (Window->Title)
   {
-    BufferValue(Window->InteractionStackIndex, Group, &Window->Table.Layout, WHITE, zIndexForText(Window, Group), BottomRight);
+    BufferValue(Window->InteractionStackIndex, Group, &Window->Table.Layout, WHITE, zIndexForText(Window, Group), WindowBounds.Max);
     AdvanceSpaces(1, &Window->Table.Layout, &Group->Font);
-    BufferValue(Window->Title, Group, &Window->Table.Layout, V3(1), zIndexForText(Window, Group), BottomRight);
+    BufferValue(Window->Title, Group, &Window->Table.Layout, V3(1), zIndexForText(Window, Group), WindowBounds.Max);
     NewRow(Window);
   }
 
   {
     r32 Z = zIndexForBorders(Window, Group);
     v3 BorderColor = V3(1, 1, 1);
-    rect2 WindowBounds = RectMinMax(TopLeft, BottomRight);
     Border(Group, Geo, WindowBounds, BorderColor, Z, DISABLE_CLIPPING);
   }
 
   {
     v3 BackgroundColor = V3(0.2f, 0.2f, 0.2f);
     r32 Z = zIndexForBackgrounds(Window, Group);
-    BufferRectangleAt(Group, Geo, RectMinMax(TopLeft, BottomRight), BackgroundColor, Z, BottomRight);
+    BufferRectangleAt(Group, Geo, WindowBounds, BackgroundColor, Z, WindowBounds.Max);
   }
 
   return;
