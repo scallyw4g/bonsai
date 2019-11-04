@@ -1,5 +1,3 @@
-#define PALETTE_SIZE 256
-
 /* Note that the default MagicaVoxel format is AA GG BB RR, so something will
  * have to be done if we continue to load this format.  I manually rearranged
  * the columns in this lookup table to match what OpenGL expects: RR GG BB AA
@@ -277,13 +275,14 @@ static v4 DefaultPalette[] = {
   V4(0x55, 0x55, 0x55, 0xff),
   V4(0x44, 0x44, 0x44, 0xff),
   V4(0x22, 0x22, 0x22, 0xff),
-  V4(0x11, 0x11, 0x11, 0xff)
 };
+
+CAssert( ArrayCount( DefaultPalette ) <= 0xff );
 
 inline v4
 GetColorData(u32 ColorIndex, r32 Emission = 0.0f)
 {
-  Assert(ColorIndex < PALETTE_SIZE);
+  Assert(ColorIndex < ArrayCount(DefaultPalette));
   v4 Color = DefaultPalette[ColorIndex];
   v4 Result = V4(Color.rgb/255.0f, Emission);
   return Result;;
@@ -292,10 +291,13 @@ GetColorData(u32 ColorIndex, r32 Emission = 0.0f)
 inline void
 FillColorArray(u32 ColorIndex, v4 *Array, s32 Count, r32 Emission = 1.0f)
 {
-  while (Count--)
+  for (s32 Index = 0;
+      Index < Count;
+      ++Index)
   {
-    Array[Count] = GetColorData(ColorIndex, Emission);
+    Array[Index] = GetColorData(ColorIndex, Emission);
   }
 
   return;
 }
+
