@@ -996,11 +996,6 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
     Window->InteractionStackIndex = ++Group->InteractionStackTop;
   }
 
-  untextured_2d_geometry_buffer *Geo = &Group->TextGroup->UIGeo;
-  textured_2d_geometry_buffer *TitleBuffer = &Group->TextGroup->TextGeo;
-
-  NewRow(Window);
-
   rect2 WindowBounds = GetWindowBounds(Window);
 
   umm TitleBarInteractionId = (umm)"WindowTitleBar"^(umm)Window;
@@ -1049,16 +1044,19 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
     NewRow(Window);
   }
 
+
   {
     r32 Z = zIndexForBorders(Window, Group);
     v3 BorderColor = V3(1, 1, 1);
-    Border(Group, Geo, WindowBounds, BorderColor, Z, DISABLE_CLIPPING);
+    untextured_2d_geometry_buffer *UiGeo = &Group->TextGroup->UIGeo;
+    Border(Group, UiGeo, WindowBounds, BorderColor, Z, DISABLE_CLIPPING);
   }
 
   {
-    v3 BackgroundColor = V3(0.2f, 0.2f, 0.2f);
+    v3 BackgroundColor = V3(0.1f, 0.1f, 0.1f);
     r32 Z = zIndexForBackgrounds(Window, Group);
-    BufferRectangleAt(Group, Geo, WindowBounds, BackgroundColor, Z, WindowBounds.Max);
+    untextured_2d_geometry_buffer *UiGeo = &Group->TextGroup->UIGeo;
+    BufferRectangleAt(Group, UiGeo, WindowBounds, BackgroundColor, Z, WindowBounds.Max);
   }
 
   return;
