@@ -567,12 +567,7 @@ BufferChar(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, u32 C
                                                Color,
                                                Z, MaxClip);
 
-  r32 DeltaX = 0;
-  if (ClipResult.ClipStatus != ClipStatus_FullyClipped)
-  {
-    DeltaX = (ClipResult.MaxClip.x - MinP.x);
-  }
-
+  r32 DeltaX = Font->Size.x;
   return DeltaX;
 }
 
@@ -591,15 +586,15 @@ BufferValue(const char* Text, debug_ui_render_group *Group, layout *Layout, v3 C
 
   u32 QuadCount = (u32)Length(Text);
 
-  r32 DeltaX = 0;
-
   v2 Padding = Style? Style->Padding : V2(0.0f);
+  v2 StartingP = Layout->Basis + Layout->At + Padding;
 
+  r32 DeltaX = 0;
   for ( u32 CharIndex = 0;
       CharIndex < QuadCount;
       CharIndex++ )
   {
-    v2 MinP = Layout->Basis + Layout->At + Padding + V2(Group->Font.Size.x*CharIndex, 0);
+    v2 MinP = StartingP + V2(Group->Font.Size.x*CharIndex, 0);
     DeltaX += BufferChar(Group, Geo, CharIndex, MinP, &Group->Font, Text, Color, Z, MaxClip);
     continue;
   }
