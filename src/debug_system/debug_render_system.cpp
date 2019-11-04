@@ -835,7 +835,6 @@ BufferRectangleAt(debug_ui_render_group *Group, untextured_2d_geometry_buffer *G
   return;
 }
 
-
 function void
 Border(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo, rect2 Rect, v3 Color, r32 Z, v2 MaxClip)
 {
@@ -857,6 +856,17 @@ Border(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo, rect2 R
   return;
 }
 
+function void
+Border(debug_ui_render_group *Group, interactable* PickerListInteraction, v3 Color, r32 Z, v2 MaxClip)
+{
+  rect2 Bounds = RectMinMax(PickerListInteraction->MinP, PickerListInteraction->MaxP);
+  Border(Group, &Group->TextGroup->UIGeo, Bounds, Color, Z, MaxClip);
+
+  return;
+}
+
+
+
 /*********************************           *********************************/
 /*********************************  Buttons  *********************************/
 /*********************************           *********************************/
@@ -876,6 +886,9 @@ ButtonInteraction(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId,
   }
 
   interactable Interaction = Interactable(Bounds, InteractionId, Window);
+
+  Border(Group, &Interaction, V3(1,0,0), 1.0f, DISABLE_CLIPPING);
+
   if (Hover(Group, &Interaction))
   {
     Result.Hover = True;
@@ -920,13 +933,13 @@ Button(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId, r32 Z, v2 
 }
 
 function b32
-Button(const char* ColumnText, debug_ui_render_group *Group, layout* Layout, umm InteractionId, r32 Z, v2 MaxClip, ui_style* Style = 0)
+Button(const char* ColumnText, debug_ui_render_group *Group, layout* Layout, umm InteractionId, r32 Z, v2 MaxClip, window_layout* Window, ui_style* Style = 0)
 {
   v2 Min = GetAbsoluteAt(Layout);
   v2 Max = Min + GetTextBounds( (u32)Length(ColumnText), &Group->Font);
   rect2 Bounds = RectMinMax(Min, Max);
 
-  button_interaction_result Result = ButtonInteraction(Group, Bounds, InteractionId, 0, Style);
+  button_interaction_result Result = ButtonInteraction(Group, Bounds, InteractionId, Window, Style);
 
   BufferValue(ColumnText, Group, Layout, Result.Color, Z, MaxClip, Style);
 
@@ -940,7 +953,7 @@ Button(const char* ButtonText, debug_ui_render_group *Group, window_layout* Wind
   InteractionId = InteractionIdModifier? InteractionId^InteractionIdModifier : InteractionId;
 
   r32 Z = zIndexForText(Window, Group);
-  b32 Result = Button(ButtonText, Group, &Window->Table.Layout, InteractionId, Z, GetAbsoluteMaxClip(Window), Style);
+  b32 Result = Button(ButtonText, Group, &Window->Table.Layout, InteractionId, Z, GetAbsoluteMaxClip(Window), Window, Style);
   return Result;
 }
 
@@ -974,16 +987,15 @@ GetTopHotWindow(debug_ui_render_group *Group)
   return HighestInteractionStackIndex;
 }
 
-function r32
-WindowTitleBarHeight(font *Font)
-{
-  r32 Result = Font->Size.y;
-  return Result;
-}
-
 function void
 WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
 {
+  b32 MouseWasClicked = (Group->Input->LMB.Clicked || Group->Input->RMB.Clicked);
+  if (Window == Group->HighestWindow && MouseWasClicked )
+  {
+    Window->InteractionStackIndex = ++Group->InteractionStackTop;
+  }
+
   untextured_2d_geometry_buffer *Geo = &Group->TextGroup->UIGeo;
   textured_2d_geometry_buffer *TitleBuffer = &Group->TextGroup->TextGeo;
 
@@ -1012,6 +1024,7 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
   if (Pressed(Group, &DragHandle))
   {
     Window->MaxClip = Max(V2(0), Window->MaxClip-(*Group->MouseDP));
+
     TopRight = Window->Table.Layout.Basis + V2(Window->MaxClip.x, 0);
     BottomLeft = Window->Table.Layout.Basis + V2(0, Window->MaxClip.y);
     BottomRight = Window->Table.Layout.Basis + Window->MaxClip;
@@ -1022,7 +1035,6 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
   Button(Group, TitleBarRect, TitleBarInteractionId, zIndexForTitleBar(Window, Group), BottomRight, Window, &BackgroundStyle);
 
   b32 MouseWasDown = (Group->Input->LMB.Pressed || Group->Input->RMB.Pressed);
-  b32 MouseWasClicked = (Group->Input->LMB.Clicked || Group->Input->RMB.Clicked);
   b32 InsideWindowBounds = IsInsideRect(GetWindowBounds(Window), *Group->MouseP);
 
   if ( InsideWindowBounds )
@@ -1030,11 +1042,6 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
     Assert(Window->NextHotWindow == 0);
     Window->NextHotWindow = Group->FirstHotWindow;
     Group->FirstHotWindow = Window;
-  }
-
-  if (Window == Group->HighestWindow && MouseWasClicked )
-  {
-    Window->InteractionStackIndex = ++Group->InteractionStackTop;
   }
 
   {
@@ -1228,11 +1235,20 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
   {
     world_chunk *Chunk = PickedChunks[ChunkIndex];
 
-    interactable PickerListInteraction = StartInteractable(&ListingWindow.Table.Layout, (umm)&ListingWindow, &ListingWindow);
-      Column(ToString(Chunk->WorldP.x), Group, &ListingWindow);
-      Column(ToString(Chunk->WorldP.y), Group, &ListingWindow);
-      Column(ToString(Chunk->WorldP.z), Group, &ListingWindow);
-    EndInteractable(&ListingWindow, &PickerListInteraction);
+    table PickedChunkTable = TableLayoutBelow(&ListingWindow.Table);
+    r32 Z = zIndexForText(&ListingWindow, Group);
+    v2 Clip = GetAbsoluteMaxClip(&ListingWindow);
+    u8 Color = WHITE;
+
+    interactable PickerListInteraction = StartInteractable(&PickedChunkTable, (umm)&ListingWindow, &ListingWindow);
+      Column(ToString(Chunk->WorldP.x), Group, &PickedChunkTable, Z, Clip, Color);
+      Column(ToString(Chunk->WorldP.y), Group, &PickedChunkTable, Z, Clip, Color);
+      Column(ToString(Chunk->WorldP.z), Group, &PickedChunkTable, Z, Clip, Color);
+    EndInteractable(&PickedChunkTable, &PickerListInteraction);
+
+    MergeTables(&PickedChunkTable, &ListingWindow.Table);
+
+    Border(Group, &PickerListInteraction, V3(1,0,0), 1.0f, DISABLE_CLIPPING);
 
     if (Clicked(Group, &PickerListInteraction))
     {
@@ -2247,50 +2263,6 @@ SubWindowAt(window_layout* Original, v2 NewBasis)
 }
 #endif
 
-
-
-function void
-MergeTables(table* Src, table* Dest)
-{
-  v2 SrcAtRelativeToDest = GetAbsoluteDrawBoundsMax(&Src->Layout) - Dest->Layout.Basis;
-  Dest->Layout.At = Max(Dest->Layout.At, SrcAtRelativeToDest);
-  AdvanceClip(&Dest->Layout);
-  return;
-}
-
-function window_layout*
-MergeWindowLayouts(window_layout* Src, window_layout* Dest)
-{
-  MergeTables(&Src->Table, &Dest->Table);
-  return Dest;
-}
-
-function table
-TableLayoutAt(table* Src)
-{
-  table Result = {};
-  Result.Layout.Basis = GetAbsoluteAt(&Src->Layout);
-  return Result;
-}
-
-function layout
-LayoutBelow(table* Src)
-{
-  layout Result = {};
-  Result.Basis = Src->Layout.Basis + V2(Src->Layout.DrawBounds.Min.x, Src->Layout.At.y);
-  return Result;
-}
-
-function layout
-LayoutRightOf(table* Src)
-{
-  layout Result = {};
-  Result.Basis.x = Src->Layout.Basis.x + Src->Layout.DrawBounds.Max.x;
-  Result.Basis.y = Src->Layout.Basis.y;
-  return Result;
-}
-
-
 function void
 DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, v2 MemoryWindowBasis)
 {
@@ -2363,8 +2335,8 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, v2 Mem
         Border(Group, &Group->TextGroup->UIGeo, TableBounds, BorderColor, 1.0f, DISABLE_CLIPPING);
       }
 
-      MergeTables(&PushMetadataTable, &TmpTable);
       MergeTables(&TmpTable, &MemoryArenaWindow->Table);
+      MergeTables(&PushMetadataTable, &MemoryArenaWindow->Table);
     }
 
     continue;

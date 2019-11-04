@@ -119,11 +119,20 @@ Interactable(rect2 Rect, umm ID, window_layout *Window)
   return Result;
 }
 
+v2 GetAbsoluteAt(layout* Layout);
+
 inline interactable
 StartInteractable(layout* Layout, umm ID, window_layout *Window)
 {
-  v2 StartingAt = Layout->At + Layout->Basis;
+  v2 StartingAt = GetAbsoluteAt(Layout);
   interactable Result = Interactable(StartingAt, StartingAt, ID, Window);
+  return Result;
+}
+
+inline interactable
+StartInteractable(table* Table, umm ID, window_layout *Window)
+{
+  interactable Result = StartInteractable(&Table->Layout, ID, Window);
   return Result;
 }
 
@@ -147,3 +156,4 @@ Rect2(interactable *Interaction)
   rect2 Result = Rect2(*Interaction);
   return Result;
 }
+

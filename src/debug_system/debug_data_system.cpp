@@ -580,6 +580,39 @@ GetBounds(table* Table)
   return Bounds;
 }
 
+function table
+TableLayoutAt(table* Src)
+{
+  table Result = {};
+  Result.Layout.Basis = GetAbsoluteAt(&Src->Layout);
+  return Result;
+}
+
+function table
+TableLayoutBelow(table* Src)
+{
+  table Result = {};
+  Result.Layout.Basis = Src->Layout.Basis + V2(Src->Layout.DrawBounds.Min.x, Src->Layout.At.y);
+  return Result;
+}
+
+function layout
+LayoutBelow(table* Src)
+{
+  layout Result = {};
+  Result.Basis = Src->Layout.Basis + V2(Src->Layout.DrawBounds.Min.x, Src->Layout.At.y);
+  return Result;
+}
+
+function layout
+LayoutRightOf(table* Src)
+{
+  layout Result = {};
+  Result.Basis.x = Src->Layout.Basis.x + Src->Layout.DrawBounds.Max.x;
+  Result.Basis.y = Src->Layout.Basis.y;
+  return Result;
+}
+
 
 /*************************                       *****************************/
 /*************************  Profile Scope Trees  *****************************/
@@ -671,6 +704,26 @@ AdvanceClip(layout *Layout, font *Font = 0, ui_style *Style = 0)
   Layout->DrawBounds.Max = Max(Layout->At + StylePadding + FontSize, Layout->DrawBounds.Max);
 
   return;
+}
+
+function void
+MergeTables(table* Src, table* Dest)
+{
+  v2 SrcAtRelativeToDest = GetAbsoluteAt(&Src->Layout) - Dest->Layout.Basis;
+  Dest->Layout.At = Max(Dest->Layout.At, SrcAtRelativeToDest);
+
+  v2 SrcMaxDrawBoundsRelativeToDest = GetAbsoluteDrawBoundsMax(&Src->Layout) - Dest->Layout.Basis;
+  Dest->Layout.DrawBounds.Max = Max(Dest->Layout.DrawBounds.Max, SrcMaxDrawBoundsRelativeToDest);
+
+  AdvanceClip(&Dest->Layout);
+  return;
+}
+
+function window_layout*
+MergeWindowLayouts(window_layout* Src, window_layout* Dest)
+{
+  MergeTables(&Src->Table, &Dest->Table);
+  return Dest;
 }
 
 inline void
