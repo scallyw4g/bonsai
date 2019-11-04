@@ -24,7 +24,7 @@ main()
   memory_arena *Memory = PlatformAllocateArena(Megabytes(1));
 
   {
-    ansi_stream Stream = AnsiStreamFromFile("test.obj", Memory);
+    ansi_stream Stream = AnsiStreamFromFile("tests/fixtures/test.obj", Memory);
     mesh_metadata Stats = GetObjMetadata(Stream, Memory);
     TestThat(Stats.VertCount == 2);
     TestThat(Stats.NormalCount == 2);
@@ -33,7 +33,7 @@ main()
   }
 
   {
-    ansi_stream Stream = AnsiStreamFromFile("test.obj", Memory);
+    ansi_stream Stream = AnsiStreamFromFile("tests/fixtures/test.obj", Memory);
     mesh_metadata Stats = GetObjMetadata(Stream, Memory);
     TestThat(Stats.VertCount == 2);
     TestThat(Stats.NormalCount == 2);
