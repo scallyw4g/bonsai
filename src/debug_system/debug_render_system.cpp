@@ -318,19 +318,19 @@ FlushBuffer(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo, v2 Sc
 function void
 BufferQuadUVs(textured_2d_geometry_buffer* Geo, rect2 UV, debug_texture_array_slice Slice)
 {
-  v3 up_left    = V3(UV.Min.x, UV.Min.y, (r32)Slice);
-  v3 up_right   = V3(UV.Max.x, UV.Min.y, (r32)Slice);
-  v3 down_right = V3(UV.Max.x, UV.Max.y, (r32)Slice);
-  v3 down_left  = V3(UV.Min.x, UV.Max.y, (r32)Slice);
+  v3 LeftTop    = V3(UV.Min.x, UV.Min.y, (r32)Slice);
+  v3 RightTop   = V3(UV.Max.x, UV.Min.y, (r32)Slice);
+  v3 RightBottom = V3(UV.Max.x, UV.Max.y, (r32)Slice);
+  v3 LeftBottom  = V3(UV.Min.x, UV.Max.y, (r32)Slice);
 
   u32 StartingIndex = Geo->At;
-  Geo->UVs[StartingIndex++] = up_left;
-  Geo->UVs[StartingIndex++] = down_left;
-  Geo->UVs[StartingIndex++] = up_right;
+  Geo->UVs[StartingIndex++] = LeftTop;
+  Geo->UVs[StartingIndex++] = LeftBottom;
+  Geo->UVs[StartingIndex++] = RightTop;
 
-  Geo->UVs[StartingIndex++] = down_right;
-  Geo->UVs[StartingIndex++] = up_right;
-  Geo->UVs[StartingIndex++] = down_left;
+  Geo->UVs[StartingIndex++] = RightBottom;
+  Geo->UVs[StartingIndex++] = RightTop;
+  Geo->UVs[StartingIndex++] = LeftBottom;
 
   return;
 }
@@ -342,10 +342,10 @@ UVsForFullyCoveredQuad(void)
   // OpenGL screen coordinates originate at the bottom left, but are inverted
   // in our app such that the origin is at the top-left
   // @inverted_screen_y_coordinate
-  v2 up_left    = V2(0.0f, 1.0f);
-  v2 down_right = V2(1.0f, 0.0f);
+  v2 LeftTop    = V2(0.0f, 1.0f);
+  v2 RightBottom = V2(1.0f, 0.0f);
 
-  rect2 Result = RectMinMax(up_left, down_right);
+  rect2 Result = RectMinMax(LeftTop, RightBottom);
   return Result;
 }
 
@@ -358,11 +358,11 @@ UVsForChar(u8 C)
   // OpenGL screen coordinates originate at the bottom left, but are inverted
   // in our app such that the origin is at the top-left
   // @inverted_screen_y_coordinate
-  v2 down_left = GetUVForCharCode(C);
-  v2 up_left  = down_left + V2(0.0f, OneOverSixteen);
-  v2 down_right  = down_left + V2(OneOverSixteen, 0.0f);
+  v2 LeftBottom = GetUVForCharCode(C);
+  v2 LeftTop  = LeftBottom + V2(0.0f, OneOverSixteen);
+  v2 RightBottom  = LeftBottom + V2(OneOverSixteen, 0.0f);
 
-  rect2 Result = RectMinMax(up_left, down_right);
+  rect2 Result = RectMinMax(LeftTop, RightBottom);
   return Result;
 }
 
@@ -404,92 +404,67 @@ BufferQuadDirect(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z, v2 ScreenD
 
   Assert(Z >= 0.0f && Z <= 1.0f);
 
-  v3 up_left    = V3( MinP.x       , MinP.y      , Z);
-  v3 up_right   = V3( MinP.x+Dim.x , MinP.y      , Z);
-  v3 down_right = V3( MinP.x+Dim.x , MinP.y+Dim.y, Z);
-  v3 down_left  = V3( MinP.x       , MinP.y+Dim.y, Z);
-
   clip_result Result = {};
 
-  // Partial clipping cases
-  if (up_left.x < MaxClip.x && up_right.x > MaxClip.x)
-  {
-    // NOTE(Jesse): These clipping cases require a MinClip value, which
-    // we don't have because there's no way of resizing a window from the
-    // min corner!
-    /* r32 total = up_right.x - up_left.x; */
-    /* r32 total_clipped =  up_left.x - MaxClip.x; */
-    /* Result.PartialClip.Min.x = total_clipped / total; */
-
-    Result.MaxClip.x = up_right.x = MaxClip.x;
-    Result.ClipStatus = ClipStatus_PartialClipping;
-  }
-
-  if (down_left.x < MaxClip.x && down_right.x > MaxClip.x)
-  {
-    r32 total = down_right.x - down_left.x;
-    r32 total_clipped = down_right.x - MaxClip.x;
-    Result.PartialClip.Max.x = total_clipped / total;
-
-    Result.MaxClip.x = down_right.x = MaxClip.x;
-    Result.ClipStatus = ClipStatus_PartialClipping;
-
-    Assert(Result.PartialClip.Max.x >= 0.0f && Result.PartialClip.Max.x <= 1.0f);
-  }
-
-  if (up_right.y < MaxClip.y && down_right.y > MaxClip.y)
-  {
-    r32 total = down_right.y - up_right.y;
-    r32 total_clipped = down_right.y - MaxClip.y;
-    Result.PartialClip.Max.y = total_clipped / total;
-
-    Result.MaxClip.y = down_right.y = MaxClip.y;
-    Result.ClipStatus = ClipStatus_PartialClipping;
-
-    Assert(Result.PartialClip.Max.y >= 0.0f && Result.PartialClip.Max.y <= 1.0f);
-  }
-
-  if (up_left.y < MaxClip.y && down_left.y > MaxClip.y)
-  {
-    // NOTE(Jesse): These clipping cases require a MinClip value, which
-    // we don't have because there's no way of resizing a window from the
-    // min corner!
-    /* r32 total = down_left.y - up_left.y; */
-    /* r32 total_clipped = down_left.y - MaxClip.y; */
-    /* Result.PartialClip.Min.y = total_clipped / total; */
-
-    Result.MaxClip.y = down_left.y = MaxClip.y;
-    Result.ClipStatus = ClipStatus_PartialClipping;
-  }
-
-  // Fully Clipped
-  if (up_left.x >= MaxClip.x ||
-      down_left.x >= MaxClip.x ||
-      up_left.y >= MaxClip.y ||
-      up_right.y >= MaxClip.y )
+  if ( MaxClip.x <= MinP.x || MaxClip.y <= MinP.y )
   {
     Result.ClipStatus = ClipStatus_FullyClipped;
-    return Result;
   }
+  else
+  {
+    r32 Left   = MinP.x;
+    r32 Right  = Left+Dim.x;
+    r32 Top    = MinP.y;
+    r32 Bottom = Top+Dim.y;
 
-  #define TO_NDC(P) ((P * ToNDC) - 1.0f)
-  v3 ToNDC = 2.0f/V3(ScreenDim.x, ScreenDim.y, 1.0f);
+    v3 LeftTop    = V3(Left, Top, Z);
+    v3 RightTop   = V3(Right, Top, Z);
+    v3 RightBottom = V3(Right, Bottom, Z);
+    v3 LeftBottom  = V3(Left, Bottom, Z);
 
-  // Native OpenGL screen coordinates are {0,0} at the bottom-left corner. This
-  // maps the origin to the top-left of the screen.
-  // @inverted_screen_y_coordinate
-  v3 InvertYZ = V3(1.0f, -1.0f, -1.0f);
+    if (Left < MaxClip.x && Right > MaxClip.x)
+    {
+      r32 Total = RightBottom.x - LeftBottom.x;
+      r32 TotalClipped = RightBottom.x - MaxClip.x;
+      Result.PartialClip.Max.x = TotalClipped / Total;
 
-  Dest[StartingIndex++] = InvertYZ * TO_NDC(up_left);
-  Dest[StartingIndex++] = InvertYZ * TO_NDC(down_left);
-  Dest[StartingIndex++] = InvertYZ * TO_NDC(up_right);
+      Result.MaxClip.x = RightTop.x = RightBottom.x = MaxClip.x;
+      Result.ClipStatus = ClipStatus_PartialClipping;
 
-  Dest[StartingIndex++] = InvertYZ * TO_NDC(down_right);
-  Dest[StartingIndex++] = InvertYZ * TO_NDC(up_right);
-  Dest[StartingIndex++] = InvertYZ * TO_NDC(down_left);
-  #undef TO_NDC
+      Assert(Result.PartialClip.Max.x >= 0.0f && Result.PartialClip.Max.x <= 1.0f);
+    }
 
-  Result.MaxClip = down_right.xy;
+    if (Top < MaxClip.y && Bottom > MaxClip.y)
+    {
+      r32 Total = RightBottom.y - RightTop.y;
+      r32 TotalClipped = RightBottom.y - MaxClip.y;
+      Result.PartialClip.Max.y = TotalClipped / Total;
+
+      Result.MaxClip.y = LeftBottom.y = RightBottom.y = MaxClip.y;
+      Result.ClipStatus = ClipStatus_PartialClipping;
+
+      Assert(Result.PartialClip.Max.y >= 0.0f && Result.PartialClip.Max.y <= 1.0f);
+    }
+
+    #define TO_NDC(P) ((P * ToNDC) - 1.0f)
+    v3 ToNDC = 2.0f/V3(ScreenDim.x, ScreenDim.y, 1.0f);
+
+    // Native OpenGL screen coordinates are {0,0} at the bottom-left corner. This
+    // maps the origin to the top-left of the screen.
+    // @inverted_screen_y_coordinate
+    v3 InvertYZ = V3(1.0f, -1.0f, -1.0f);
+
+    Dest[StartingIndex++] = InvertYZ * TO_NDC(LeftTop);
+    Dest[StartingIndex++] = InvertYZ * TO_NDC(LeftBottom);
+    Dest[StartingIndex++] = InvertYZ * TO_NDC(RightTop);
+
+    Dest[StartingIndex++] = InvertYZ * TO_NDC(RightBottom);
+    Dest[StartingIndex++] = InvertYZ * TO_NDC(RightTop);
+    Dest[StartingIndex++] = InvertYZ * TO_NDC(LeftBottom);
+    #undef TO_NDC
+
+    Result.MaxClip = RightBottom.xy;
+  }
 
   return Result;
 }
@@ -580,17 +555,17 @@ BufferChar(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, u32 C
     BufferTexturedQuad( Group, Geo,
                         MinP+ShadowOffset, Font->Size,
                         DebugTextureArraySlice_Font, UV,
-                        V3(0),
+                        V3(0.1f),
                         Z-e,
                         MaxClip);
 
   }
 
   clip_result ClipResult = BufferTexturedQuad( Group, Geo,
-                                         MinP, Font->Size,
-                                         DebugTextureArraySlice_Font, UV,
-                                         Color,
-                                         Z, MaxClip);
+                                               MinP, Font->Size,
+                                               DebugTextureArraySlice_Font, UV,
+                                               Color,
+                                               Z, MaxClip);
 
   r32 DeltaX = 0;
   if (ClipResult.ClipStatus != ClipStatus_FullyClipped)
@@ -766,7 +741,7 @@ Column(const char* ColumnText, debug_ui_render_group* Group, table* Table, r32 Z
   Table->ColumnIndex = (Table->ColumnIndex+1)%MAX_TABLE_COLUMNS;
 
   u32 TextLength = (u32)Length(ColumnText);
-  Column->Max = Max(Column->Max, TextLength + 1);
+  Column->Max = Max(Column->Max, TextLength);
 
   u32 Pad = Column->Max - TextLength;
   AdvanceSpaces(Pad, Layout, &Group->Font);
@@ -775,7 +750,10 @@ Column(const char* ColumnText, debug_ui_render_group* Group, table* Table, r32 Z
   v2 Max = Min + GetTextBounds(TextLength, &Group->Font);
   rect2 Bounds = RectMinMax(Min, Max);
 
-  BufferValue(ColumnText, Group, Layout, GetColorData(Color).xyz, Z, MaxClip);
+  ui_style PadParams = {};
+  PadParams.Padding = V2(10, 0);
+
+  BufferValue(ColumnText, Group, Layout, GetColorData(Color).xyz, Z, MaxClip, &PadParams);
 
   return Bounds;
 }
@@ -1221,6 +1199,8 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
   {
     world_chunk *Chunk = PickedChunks[ChunkIndex];
 
+    TriggeredRuntimeBreak();
+
     table PickedChunkTable = TableLayoutBelow(&ListingWindow.Table);
     r32 Z = zIndexForText(&ListingWindow, Group);
     v2 Clip = GetAbsoluteMaxClip(&ListingWindow);
@@ -1233,8 +1213,6 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
     EndInteractable(&PickedChunkTable, &PickerListInteraction);
 
     MergeTables(&PickedChunkTable, &ListingWindow.Table);
-
-    Border(Group, &PickerListInteraction, V3(1,0,0), 1.0f, DISABLE_CLIPPING);
 
     if (Clicked(Group, &PickerListInteraction))
     {

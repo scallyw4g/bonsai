@@ -94,7 +94,7 @@ Log(const char* fmt...)
   Print_P( Var, #Var )
 
 void
-Print_Binary( unsigned int input )
+PrintBinary( unsigned int input )
 {
   Log("High bit --> ");
   for (int i = (sizeof(int)*8)-1; i >= 0; --i)
