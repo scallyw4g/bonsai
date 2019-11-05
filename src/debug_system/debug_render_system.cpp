@@ -586,7 +586,7 @@ BufferChar(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, u32 C
   return Result;
 }
 
-function r32
+function void
 BufferValue(const char* Text, debug_ui_render_group *Group, layout *Layout, v3 Color, r32 Z, v2 MaxClip, ui_style* Style = 0)
 {
   textured_2d_geometry_buffer *Geo = &Group->TextGroup->TextGeo;
@@ -594,30 +594,37 @@ BufferValue(const char* Text, debug_ui_render_group *Group, layout *Layout, v3 C
   u32 QuadCount = (u32)Length(Text);
 
   v2 Padding = Style? Style->Padding : V2(0.0f);
-  v2 StartingP = Layout->Basis + Layout->At + Padding;
 
-  r32 DeltaX = 0;
+  v2 FontHeight = V2(0, Group->Font.Size.y);
+  r32 PadX = Padding.x;
+  v2 PadY = V2(0, Padding.y);
+
+  Layout->At.x += PadX;
+
   for ( u32 CharIndex = 0;
       CharIndex < QuadCount;
       CharIndex++ )
   {
-    v2 MinP = StartingP + V2(Group->Font.Size.x*CharIndex, 0);
-    DeltaX += BufferChar(Group, Geo, CharIndex, MinP, &Group->Font, Text, Color, Z, MaxClip);
+    v2 MinP = GetAbsoluteAt(Layout) + PadY;
+    Layout->At.x += BufferChar(Group, Geo, CharIndex, MinP, &Group->Font, Text, Color, Z, MaxClip);
     continue;
   }
 
-  Layout->At.x += (DeltaX + (Padding.x*2.0f));
-  AdvanceClip(Layout, &Group->Font, Style);
+  Layout->At.x += PadX;
 
-  return DeltaX;
+  v2 MaxClipP = Layout->At + (2.0f*PadY) + FontHeight;
+
+  AdvanceClip(Layout, MaxClipP);
+
+  return;
 }
 
-function r32
+function void
 BufferValue(const char* Text, debug_ui_render_group *Group, layout *Layout, u32 Color, r32 Z, v2 MaxClip, ui_style* Style = 0)
 {
   v3 ColorVector = GetColorData(Color).xyz;
-  r32 Result = BufferValue(Text, Group, Layout, ColorVector, Z, MaxClip, Style);
-  return Result;
+  BufferValue(Text, Group, Layout, ColorVector, Z, MaxClip, Style);
+  return;
 }
 
 function void
@@ -753,7 +760,7 @@ Column(const char* ColumnText, debug_ui_render_group* Group, table* Table, r32 Z
   rect2 Bounds = RectMinMax(Min, Max);
 
   ui_style PadParams = {};
-  PadParams.Padding = V2(10, 0);
+  PadParams.Padding = V2(10, 10);
 
   BufferValue(ColumnText, Group, Layout, GetColorData(Color).xyz, Z, MaxClip, &PadParams);
 
@@ -841,7 +848,6 @@ Border(debug_ui_render_group *Group, interactable* PickerListInteraction, v3 Col
 {
   rect2 Bounds = RectMinMax(PickerListInteraction->MinP, PickerListInteraction->MaxP);
   Border(Group, &Group->TextGroup->UIGeo, Bounds, Color, Z, MaxClip);
-
   return;
 }
 
@@ -1264,14 +1270,11 @@ function void
 DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 {
   debug_state* DebugState = GetDebugState();
+  world_chunk** PickedChunks = DebugState->PickedChunks;
+  MapGpuElementBuffer(&DebugState->GameGeo);
 
   local_persist window_layout ListingWindow = WindowLayout("Picked Chunks", LayoutBasis, V2(400, 150));
-
   PushWindowInteraction(Group, &ListingWindow);
-
-  world_chunk** PickedChunks = DebugState->PickedChunks;
-
-  MapGpuElementBuffer(&DebugState->GameGeo);
 
   for (u32 ChunkIndex = 0;
       ChunkIndex < DebugState->PickedChunkCount;
@@ -1279,11 +1282,12 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
   {
     world_chunk *Chunk = PickedChunks[ChunkIndex];
 
-    table PickedChunkTable = TableLayoutBelow(&ListingWindow.Table);
     r32 Z = zIndexForText(&ListingWindow, Group);
     v2 Clip = GetAbsoluteMaxClip(&ListingWindow);
     u8 Color = WHITE;
 
+    // Create a new table so we get reset DrawBounds
+    table PickedChunkTable = TableLayoutBelow(&ListingWindow.Table);
     interactable PickerListInteraction = StartInteractable(&PickedChunkTable, (umm)&ListingWindow, &ListingWindow);
       Column(ToString(Chunk->WorldP.x), Group, &PickedChunkTable, Z, Clip, Color);
       Column(ToString(Chunk->WorldP.y), Group, &PickedChunkTable, Z, Clip, Color);
@@ -1291,11 +1295,6 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
     EndInteractable(&PickedChunkTable, &PickerListInteraction);
 
     MergeTables(&PickedChunkTable, &ListingWindow.Table);
-
-    /* if (Group->Input->LMB.Pressed) */
-    /* { */
-    /*   RuntimeBreak(); */
-    /* } */
 
     if (Clicked(Group, &PickerListInteraction))
     {

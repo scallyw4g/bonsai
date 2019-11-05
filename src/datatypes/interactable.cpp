@@ -68,10 +68,13 @@ Clicked(debug_ui_render_group* Group, interactable Interaction)
   return Result;
 }
 
+function void Border(debug_ui_render_group *Group, interactable* PickerListInteraction, v3 Color, r32 Z, v2 MaxClip);
+
 function void
 EndInteractable(layout* Layout, interactable *Interaction)
 {
   Interaction->MaxP = GetAbsoluteDrawBoundsMax(Layout);
+  Border(&GetDebugState()->UiGroup, Interaction, V3(0,1,0), 1.0f, DISABLE_CLIPPING);
   return;
 }
 

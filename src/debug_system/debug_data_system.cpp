@@ -593,6 +593,10 @@ TableLayoutBelow(table* Src)
 {
   table Result = {};
   Result.Layout.Basis = Src->Layout.Basis + V2(Src->Layout.DrawBounds.Min.x, Src->Layout.At.y);
+
+  Assert( GetAbsoluteAt(&Src->Layout) == GetAbsoluteAt(&Result.Layout) );
+  Assert( GetAbsoluteDrawBounds(&Result.Layout).Min == GetAbsoluteDrawBounds(&Result.Layout).Max);
+
   return Result;
 }
 
@@ -695,13 +699,12 @@ AdvanceClip(layout *Layout, v2 TestP)
 }
 
 inline void
-AdvanceClip(layout *Layout, font *Font = 0, ui_style *Style = 0)
+AdvanceClip(layout *Layout, font *Font = 0)
 {
-  v2 StylePadding = Style? Style->Padding*2.0f: V2(0);
-  v2 FontSize = Font? V2(0.0f, Font->Size.y) : V2(0);
+  v2 FontHeight = Font? V2(0.0f, Font->Size.y) : V2(0);
 
   Layout->DrawBounds.Min = Min(Layout->At, Layout->DrawBounds.Min);
-  Layout->DrawBounds.Max = Max(Layout->At + StylePadding + FontSize, Layout->DrawBounds.Max);
+  Layout->DrawBounds.Max = Max(Layout->At + FontHeight, Layout->DrawBounds.Max);
 
   return;
 }
@@ -709,13 +712,17 @@ AdvanceClip(layout *Layout, font *Font = 0, ui_style *Style = 0)
 function void
 MergeTables(table* Src, table* Dest)
 {
-  v2 SrcAtRelativeToDest = GetAbsoluteAt(&Src->Layout) - Dest->Layout.Basis;
-  Dest->Layout.At = Max(Dest->Layout.At, SrcAtRelativeToDest);
-
-  v2 SrcMaxDrawBoundsRelativeToDest = GetAbsoluteDrawBoundsMax(&Src->Layout) - Dest->Layout.Basis;
-  Dest->Layout.DrawBounds.Max = Max(Dest->Layout.DrawBounds.Max, SrcMaxDrawBoundsRelativeToDest);
+  Dest->Layout.At             = Max(Dest->Layout.At, GetAbsoluteAt(&Src->Layout)-Dest->Layout.Basis);
+  Dest->Layout.DrawBounds.Max = Max(Dest->Layout.DrawBounds.Max, GetAbsoluteDrawBoundsMax(&Src->Layout)-Dest->Layout.Basis);
 
   AdvanceClip(&Dest->Layout);
+
+  Assert( GetAbsoluteAt(&Dest->Layout).x >= GetAbsoluteAt(&Src->Layout).x );
+  Assert( GetAbsoluteAt(&Dest->Layout).y >= GetAbsoluteAt(&Src->Layout).y );
+
+  Assert( GetAbsoluteDrawBoundsMax(&Dest->Layout).x >= GetAbsoluteDrawBoundsMax(&Src->Layout).x );
+  Assert( GetAbsoluteDrawBoundsMax(&Dest->Layout).y >= GetAbsoluteDrawBoundsMax(&Src->Layout).y );
+
   return;
 }
 
