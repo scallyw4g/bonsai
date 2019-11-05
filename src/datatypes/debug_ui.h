@@ -5,6 +5,35 @@
 
 debug_global rect2 NullClipRect = {};
 
+enum ui_render_command_type
+{
+  RenderCommand_Noop,
+  RenderCommand_WindowInteractions,
+  RenderCommand_Count
+};
+
+struct ui_render_command_window_interaction
+{
+  window_layout *Window;
+};
+
+struct ui_render_command
+{
+  ui_render_command_type Type;
+  union
+  {
+    ui_render_command_window_interaction WindowInteraction;
+  };
+};
+
+#define MAX_UI_RENDER_COMMAND_COUNT (256*1024)
+
+struct ui_render_command_buffer
+{
+  u32 CommandCount;
+  ui_render_command Commands[MAX_UI_RENDER_COMMAND_COUNT];
+};
+
 
 enum clip_status
 {

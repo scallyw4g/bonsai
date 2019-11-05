@@ -54,8 +54,9 @@ struct debug_ui_render_group
   v2 ScreenDim;
   struct input *Input;
 
-  window_layout *FirstHotWindow; // NOTE(Jesse): Head of linked-list for finding the HighestWindow
   window_layout *HighestWindow; // NOTE(Jesse): Highest in terms of InteractionStackIndex
+
+  ui_render_command_buffer CommandBuffer;
 };
 
 struct debug_profile_scope

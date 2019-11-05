@@ -72,6 +72,13 @@ zIndexForTitleBar(window_layout *Window, debug_ui_render_group *Group)
   return Result;
 }
 
+function r32
+WindowTitleBarHeight(font* Font)
+{
+  r32 Result = Font->Size.y;
+  return Result;
+}
+
 
 
 
@@ -938,39 +945,11 @@ Button(const char* ButtonText, debug_ui_render_group *Group, window_layout* Wind
 
 
 
-function window_layout*
-GetTopHotWindow(debug_ui_render_group *Group)
-{
-  window_layout *HighestInteractionStackIndex = Group->FirstHotWindow;
-
-  for (window_layout *CurrentWindow = Group->FirstHotWindow;
-      CurrentWindow;
-      )
-  {
-    if (CurrentWindow->InteractionStackIndex > HighestInteractionStackIndex->InteractionStackIndex)
-    {
-      HighestInteractionStackIndex = CurrentWindow;
-    }
-
-    window_layout* Temp = CurrentWindow;
-    CurrentWindow = CurrentWindow->NextHotWindow;
-    Temp->NextHotWindow = 0;
-  }
-
-  return HighestInteractionStackIndex;
-}
-
 function void
 WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
 {
   Clear(&Window->Table.Layout.At);
   Clear(&Window->Table.Layout.DrawBounds);
-
-  b32 MouseWasClicked = (Group->Input->LMB.Clicked || Group->Input->RMB.Clicked);
-  if (Window == Group->HighestWindow && MouseWasClicked )
-  {
-    Window->InteractionStackIndex = ++Group->InteractionStackTop;
-  }
 
   v2 TitleBounds = GetTextBounds( (u32)Length(Window->Title), &Group->Font);
   Window->MaxClip = Max(TitleBounds, Window->MaxClip);
@@ -1013,14 +992,6 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
     WindowBounds = GetWindowBounds(Window);
   }
 
-
-  if ( IsInsideRect(GetWindowBounds(Window), *Group->MouseP) )
-  {
-    Assert(Window->NextHotWindow == 0);
-    Window->NextHotWindow = Group->FirstHotWindow;
-    Group->FirstHotWindow = Window;
-  }
-
   {
     ui_style DragHandleStyle = StandardStyling(V3(1));
     v2 Dim = V2(10);
@@ -1037,8 +1008,8 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
 
   if (Window->Title)
   {
-    /* BufferValue(Window->InteractionStackIndex, Group, &Window->Table.Layout, WHITE, zIndexForText(Window, Group), WindowBounds.Max); */
-    /* AdvanceSpaces(1, &Window->Table.Layout, &Group->Font); */
+    BufferValue(Window->InteractionStackIndex, Group, &Window->Table.Layout, WHITE, zIndexForText(Window, Group), WindowBounds.Max);
+    AdvanceSpaces(1, &Window->Table.Layout, &Group->Font);
     BufferValue(Window->Title, Group, &Window->Table.Layout, V3(1), zIndexForText(Window, Group), WindowBounds.Max);
     NewRow(Window);
   }
@@ -1057,6 +1028,96 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
     untextured_2d_geometry_buffer *UiGeo = &Group->TextGroup->UIGeo;
     BufferRectangleAt(Group, UiGeo, WindowBounds, BackgroundColor, Z, WindowBounds.Max);
   }
+
+  return;
+}
+
+
+
+/****************************                     ****************************/
+/****************************  Command Buffering  ****************************/
+/****************************                     ****************************/
+
+
+
+function void
+PushWindowInteraction(debug_ui_render_group *Group, window_layout *Window)
+{
+  ui_render_command Command = {};
+  Command.Type = RenderCommand_WindowInteractions;
+  Command.WindowInteraction.Window = Window;
+
+  ui_render_command_buffer *CommandBuffer = &Group->CommandBuffer;
+  if (CommandBuffer->CommandCount < MAX_UI_RENDER_COMMAND_COUNT)
+  {
+    CommandBuffer->Commands[CommandBuffer->CommandCount++] = Command;
+  }
+  else
+  {
+    Error("Exhausted RenderCommandBuffer Space!");
+  }
+
+  return;
+}
+
+function window_layout*
+GetHighestWindow(debug_ui_render_group* Group, ui_render_command_buffer* CommandBuffer)
+{
+  u64 HighestInteractionStackIndex = 0;
+
+  for (u32 CommandIndex = 0;
+      CommandIndex < CommandBuffer->CommandCount;
+      ++CommandIndex)
+  {
+    ui_render_command *Command = CommandBuffer->Commands+CommandIndex;
+    switch(Command->Type)
+    {
+      case RenderCommand_WindowInteractions:
+      {
+        window_layout *TestWindow = Command->WindowInteraction.Window;
+        b32 InsideWindowBounds = IsInsideRect(GetWindowBounds(TestWindow), *Group->MouseP);
+        b32 FoundNewHighestStackIndex = HighestInteractionStackIndex <= TestWindow->InteractionStackIndex;
+        if ( InsideWindowBounds && FoundNewHighestStackIndex )
+        {
+          Group->HighestWindow = TestWindow;
+          HighestInteractionStackIndex = TestWindow->InteractionStackIndex;
+        }
+
+      } break;
+
+      InvalidDefaultCase;
+    }
+  }
+
+  b32 Clicked = (Group->Input->LMB.Clicked || Group->Input->RMB.Clicked);
+  if (Clicked && Group->HighestWindow)
+  {
+    Group->HighestWindow->InteractionStackIndex = ++Group->InteractionStackTop;
+  }
+
+  return Group->HighestWindow;
+}
+
+function void
+FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *CommandBuffer)
+{
+  for (u32 CommandIndex = 0;
+      CommandIndex < CommandBuffer->CommandCount;
+      ++CommandIndex)
+  {
+    ui_render_command *Command = CommandBuffer->Commands+CommandIndex;
+    switch(Command->Type)
+    {
+      case RenderCommand_WindowInteractions:
+      {
+        WindowInteractions(Group, Command->WindowInteraction.Window);
+      } break;
+
+      InvalidDefaultCase;
+    }
+  }
+
+  CommandBuffer->CommandCount = 0;
 
   return;
 }
@@ -1206,7 +1267,7 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 
   local_persist window_layout ListingWindow = WindowLayout("Picked Chunks", LayoutBasis, V2(400, 150));
 
-  WindowInteractions(Group, &ListingWindow);
+  PushWindowInteraction(Group, &ListingWindow);
 
   world_chunk** PickedChunks = DebugState->PickedChunks;
 
@@ -1217,8 +1278,6 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
       ++ChunkIndex)
   {
     world_chunk *Chunk = PickedChunks[ChunkIndex];
-
-    TriggeredRuntimeBreak();
 
     table PickedChunkTable = TableLayoutBelow(&ListingWindow.Table);
     r32 Z = zIndexForText(&ListingWindow, Group);
@@ -1232,6 +1291,11 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
     EndInteractable(&PickedChunkTable, &PickerListInteraction);
 
     MergeTables(&PickedChunkTable, &ListingWindow.Table);
+
+    /* if (Group->Input->LMB.Pressed) */
+    /* { */
+    /*   RuntimeBreak(); */
+    /* } */
 
     if (Clicked(Group, &PickerListInteraction))
     {
@@ -1290,14 +1354,14 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
                                                                   V2(GetAbsoluteMaxClip(&ListingWindow).x, GetAbsoluteMin(&ListingWindow).y) + WindowSpacing,
                                                                   V2(1100.0f, 400.0f));
 
-    WindowInteractions(Group, &ChunkDetailWindow);
+    PushWindowInteraction(Group, &ChunkDetailWindow);
 
     BufferChunkDetails(Group, HotChunk, &ChunkDetailWindow);
 
     local_persist window_layout PickerWindow = WindowLayout("Chunk View",
                                                             V2(GetAbsoluteMaxClip(&ChunkDetailWindow).x, GetAbsoluteMin(&ChunkDetailWindow).y) + WindowSpacing,
                                                             V2(800.0f));
-    WindowInteractions(Group, &PickerWindow);
+    PushWindowInteraction(Group, &PickerWindow);
 
     b32 DebugButtonPressed = False;
     // FIXME(Jesse): This is dependant on framerate and the button will be triggered on each frame!  Yikes.
@@ -1487,7 +1551,7 @@ DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState
   local_persist window_layout CycleGraphWindow = WindowLayout("Cycle Graph", BasisP);
 
   // TODO(Jesse): Call this for CycleGraphWindow!!
-  // WindowInteractions()
+  // PushWindowInteraction()
 
   layout* Layout = &CycleGraphWindow.Table.Layout;
 
@@ -1893,7 +1957,7 @@ DebugDrawCollatedFunctionCalls(debug_ui_render_group *Group, debug_state *DebugS
 {
   local_persist window_layout FunctionCallWindow = WindowLayout("Functions", BasisP);
 
-  WindowInteractions(Group, &FunctionCallWindow);
+  PushWindowInteraction(Group, &FunctionCallWindow);
 
   TIMED_BLOCK("Collated Function Calls");
   debug_thread_state *MainThreadState = GetThreadLocalStateFor(0);
@@ -1965,7 +2029,7 @@ function void
 DebugDrawDrawCalls(debug_ui_render_group *Group, layout *WindowBasis)
 {
   local_persist window_layout DrawCallWindow = WindowLayout("Draw Calls", GetAbsoluteAt(WindowBasis));
-  WindowInteractions(Group, &DrawCallWindow);
+  PushWindowInteraction(Group, &DrawCallWindow);
 
   layout *Layout = &DrawCallWindow.Table.Layout;
   NewLine(Layout);
@@ -2241,7 +2305,7 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, v2 Mem
 {
   local_persist window_layout MemoryArenaWindowInstance = WindowLayout("Memory Arenas", MemoryWindowBasis);
   window_layout* MemoryArenaWindow = &MemoryArenaWindowInstance;
-  WindowInteractions(Group, MemoryArenaWindow);
+  PushWindowInteraction(Group, MemoryArenaWindow);
 
   r32 Z = zIndexForText(MemoryArenaWindow, Group);
 
@@ -2330,7 +2394,7 @@ DebugDrawNetworkHud(debug_ui_render_group *Group,
     layout *WindowBasis)
 {
   local_persist window_layout NetworkWindow = WindowLayout("Network", WindowBasis->At);
-  WindowInteractions(Group, &NetworkWindow);
+  PushWindowInteraction(Group, &NetworkWindow);
 
   layout* Layout = &NetworkWindow.Table.Layout;
   r32 Z = zIndexForText(&NetworkWindow, Group);

@@ -223,7 +223,8 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   FlushBuffer(TextGroup, &TextGroup->UIGeo, UiGroup->ScreenDim);
   FlushBuffer(TextGroup, &TextGroup->TextGeo, UiGroup->ScreenDim);
 
-  UiGroup->HighestWindow = GetTopHotWindow(UiGroup);
+  UiGroup->HighestWindow = GetHighestWindow(UiGroup, &UiGroup->CommandBuffer);
+  FlushCommandBuffer(UiGroup, &UiGroup->CommandBuffer);
 
   DebugState->BytesBufferedToCard = 0;
 
@@ -287,8 +288,6 @@ DebugFrameBegin(hotkeys *Hotkeys)
   {
     State->DoChunkPicking = True;
   }
-
-  State->UiGroup.FirstHotWindow = 0;
 
   return;
 }
