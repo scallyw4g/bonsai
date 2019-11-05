@@ -963,6 +963,9 @@ GetTopHotWindow(debug_ui_render_group *Group)
 function void
 WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
 {
+  Clear(&Window->Table.Layout.At);
+  Clear(&Window->Table.Layout.DrawBounds);
+
   b32 MouseWasClicked = (Group->Input->LMB.Clicked || Group->Input->RMB.Clicked);
   if (Window == Group->HighestWindow && MouseWasClicked )
   {
@@ -1203,8 +1206,6 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 
   local_persist window_layout ListingWindow = WindowLayout("Picked Chunks", LayoutBasis, V2(400, 150));
 
-  Clear(&ListingWindow.Table.Layout.At);
-  Clear(&ListingWindow.Table.Layout.DrawBounds);
   WindowInteractions(Group, &ListingWindow);
 
   world_chunk** PickedChunks = DebugState->PickedChunks;
@@ -1285,21 +1286,17 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
   {
     v2 WindowSpacing = V2(140, 0);
 
-    local_persist window_layout ChunkDetailWindow = WindowLayout("Chunk Detail",
+    local_persist window_layout ChunkDetailWindow = WindowLayout("Chunk Details",
                                                                   V2(GetAbsoluteMaxClip(&ListingWindow).x, GetAbsoluteMin(&ListingWindow).y) + WindowSpacing,
                                                                   V2(1100.0f, 400.0f));
-    Clear(&ChunkDetailWindow.Table.Layout.At);
-    Clear(&ChunkDetailWindow.Table.Layout.DrawBounds);
+
     WindowInteractions(Group, &ChunkDetailWindow);
 
     BufferChunkDetails(Group, HotChunk, &ChunkDetailWindow);
 
-
     local_persist window_layout PickerWindow = WindowLayout("Chunk View",
                                                             V2(GetAbsoluteMaxClip(&ChunkDetailWindow).x, GetAbsoluteMin(&ChunkDetailWindow).y) + WindowSpacing,
                                                             V2(800.0f));
-    Clear(&PickerWindow.Table.Layout.At);
-    Clear(&PickerWindow.Table.Layout.DrawBounds);
     WindowInteractions(Group, &PickerWindow);
 
     b32 DebugButtonPressed = False;
@@ -1488,8 +1485,6 @@ DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState
 
 
   local_persist window_layout CycleGraphWindow = WindowLayout("Cycle Graph", BasisP);
-  Clear(&CycleGraphWindow.Table.Layout.At);
-  Clear(&CycleGraphWindow.Table.Layout.DrawBounds);
 
   // TODO(Jesse): Call this for CycleGraphWindow!!
   // WindowInteractions()
@@ -1898,8 +1893,6 @@ DebugDrawCollatedFunctionCalls(debug_ui_render_group *Group, debug_state *DebugS
 {
   local_persist window_layout FunctionCallWindow = WindowLayout("Functions", BasisP);
 
-  Clear(&FunctionCallWindow.Table.Layout.At);
-  Clear(&FunctionCallWindow.Table.Layout.DrawBounds);
   WindowInteractions(Group, &FunctionCallWindow);
 
   TIMED_BLOCK("Collated Function Calls");
@@ -1972,8 +1965,6 @@ function void
 DebugDrawDrawCalls(debug_ui_render_group *Group, layout *WindowBasis)
 {
   local_persist window_layout DrawCallWindow = WindowLayout("Draw Calls", GetAbsoluteAt(WindowBasis));
-  Clear(&DrawCallWindow.Table.Layout.At);
-  Clear(&DrawCallWindow.Table.Layout.DrawBounds);
   WindowInteractions(Group, &DrawCallWindow);
 
   layout *Layout = &DrawCallWindow.Table.Layout;
@@ -2250,10 +2241,6 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, v2 Mem
 {
   local_persist window_layout MemoryArenaWindowInstance = WindowLayout("Memory Arenas", MemoryWindowBasis);
   window_layout* MemoryArenaWindow = &MemoryArenaWindowInstance;
-
-
-  Clear(&MemoryArenaWindow->Table.Layout.At);
-  Clear(&MemoryArenaWindow->Table.Layout.DrawBounds);
   WindowInteractions(Group, MemoryArenaWindow);
 
   r32 Z = zIndexForText(MemoryArenaWindow, Group);
@@ -2343,8 +2330,6 @@ DebugDrawNetworkHud(debug_ui_render_group *Group,
     layout *WindowBasis)
 {
   local_persist window_layout NetworkWindow = WindowLayout("Network", WindowBasis->At);
-  Clear(&NetworkWindow.Table.Layout.At);
-  Clear(&NetworkWindow.Table.Layout.DrawBounds);
   WindowInteractions(Group, &NetworkWindow);
 
   layout* Layout = &NetworkWindow.Table.Layout;
