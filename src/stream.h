@@ -78,6 +78,15 @@ Length(const char *Str)
 }
 
 counted_string
+CountedString(const char *S, umm Count)
+{
+  counted_string Result = {
+    .Start = S, .Count = Count
+  };
+  return Result;
+}
+
+counted_string
 CountedString(const char *S)
 {
   counted_string Result = {};

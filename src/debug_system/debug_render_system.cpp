@@ -809,23 +809,13 @@ Column(const char* ColumnText, debug_ui_render_group* Group, table* Table, r32 Z
 {
   layout *Layout = &Table->Layout;
 
-  table_column *Column = Table->Columns + Table->ColumnIndex;
+  table_column *Col = Table->Columns + Table->ColumnIndex;
   Table->ColumnIndex = (Table->ColumnIndex+1)%MAX_TABLE_COLUMNS;
 
   u32 TextLength = (u32)Length(ColumnText);
-  Column->Max = Max(Column->Max, TextLength);
+  Col->Max = Max(Col->Max, TextLength);
 
-  u32 Pad = Column->Max - TextLength;
-  AdvanceSpaces(Pad, Layout, &Group->Font);
-
-  v2 Min = Layout->Basis + Layout->At;
-  v2 Max = Min + GetTextBounds(TextLength, &Group->Font);
-  rect2 Bounds = RectMinMax(Min, Max);
-
-  ui_style PadParams = {};
-  PadParams.Padding = V2(10, 10);
-
-  BufferValue(ColumnText, Group, Layout, GetColorData(Color).xyz, Z, MaxClip, &PadParams);
+  rect2 Bounds = Column(CountedString(ColumnText, TextLength), Group, Layout, Col->Max, Z, MaxClip, Color);
 
   return Bounds;
 }
@@ -1015,7 +1005,7 @@ Button(const char* ButtonText, debug_ui_render_group *Group, window_layout* Wind
 
 
 function void
-WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
+RenderWindowInteractions(debug_ui_render_group* Group, window_layout* Window, layout* Layout)
 {
   Clear(&Window->Table.Layout.At);
   Clear(&Window->Table.Layout.DrawBounds);
@@ -1029,8 +1019,8 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
   interactable DragHandle = Interactable( Rect2(0), DragHandleId, Window);
   if (Pressed(Group, &DragHandle))
   {
-    v2 AbsoluteTitleBounds = Window->Table.Layout.Basis + TitleBounds;
-    v2 TestMaxClip = *Group->MouseP - Window->Table.Layout.Basis;
+    v2 AbsoluteTitleBounds = Layout->Basis + TitleBounds;
+    v2 TestMaxClip = *Group->MouseP - Layout->Basis;
 
     if (Group->MouseP->x > AbsoluteTitleBounds.x )
     {
@@ -1057,14 +1047,14 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
   interactable TitleBarInteraction = Interactable( Rect2(0), TitleBarInteractionId, Window);
   if (Pressed(Group, &TitleBarInteraction))
   {
-    Window->Table.Layout.Basis -= *Group->MouseDP;
+    Layout->Basis -= *Group->MouseDP; // TODO(Jesse): Can we compute this with MouseP to avoid a frame of input delay?
     WindowBounds = GetWindowBounds(Window);
   }
 
   {
     ui_style DragHandleStyle = StandardStyling(V3(1));
     v2 Dim = V2(10);
-    v2 MinP = Window->Table.Layout.Basis + Window->MaxClip - Dim;
+    v2 MinP = Layout->Basis + Window->MaxClip - Dim;
     rect2 DragHandleRect = RectMinDim(MinP, Dim);
     Button(Group, DragHandleRect, DragHandleId, zIndexForBorders(Window, Group), WindowBounds.Max, Window, &DragHandleStyle);
   }
@@ -1077,9 +1067,9 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
 
   if (Window->Title)
   {
-    BufferValue(Window->InteractionStackIndex, Group, &Window->Table.Layout, WHITE, zIndexForText(Window, Group), WindowBounds.Max);
-    AdvanceSpaces(1, &Window->Table.Layout, &Group->Font);
-    BufferValue(Window->Title, Group, &Window->Table.Layout, V3(1), zIndexForText(Window, Group), WindowBounds.Max);
+    BufferValue(Window->InteractionStackIndex, Group, Layout, WHITE, zIndexForText(Window, Group), WindowBounds.Max);
+    AdvanceSpaces(1, Layout, &Group->Font);
+    BufferValue(Window->Title, Group, Layout, V3(1), zIndexForText(Window, Group), WindowBounds.Max);
     NewRow(Window);
   }
 
@@ -1317,6 +1307,7 @@ RenderTable(debug_ui_render_group* Group, ui_render_command_buffer* CommandBuffe
             Result = CommandIndex;
           } break;
 
+          // TODO(Jesse): Nested tables!
           case RenderCommand_TableStart: {} break;
 
           InvalidDefaultCase;
@@ -1331,7 +1322,6 @@ RenderTable(debug_ui_render_group* Group, ui_render_command_buffer* CommandBuffe
     u32 ColumnIndex = 0;
 
     window_layout* Window = 0;
-    layout Layout = {};
 
     u32 CommandIndex = FirstCommandIndex;
     while (CommandIndex < Result)
@@ -1342,14 +1332,13 @@ RenderTable(debug_ui_render_group* Group, ui_render_command_buffer* CommandBuffe
           case RenderCommand_TableStart:
           {
             Window = Command->Table.Handle.Window;
-            Layout.Basis = Window->Table.Layout.Basis;
           } break;
 
           case RenderCommand_Column:
           {
             if(Window)
             {
-              Column(Command->Column.String, Group, &Layout, ColumnWidths[ColumnIndex], zIndexForText(Window, Group), GetAbsoluteMaxClip(Window));
+              Column(Command->Column.String, Group, &Window->Table.Layout, ColumnWidths[ColumnIndex], zIndexForText(Window, Group), GetAbsoluteMaxClip(Window));
             }
             else
             {
@@ -1362,7 +1351,7 @@ RenderTable(debug_ui_render_group* Group, ui_render_command_buffer* CommandBuffe
           case RenderCommand_NewRow:
           {
             ColumnIndex = 0;
-            NewLine(&Layout);
+            NewLine(&Window->Table.Layout);
           } break;
 
           case RenderCommand_ButtonStart:
@@ -1402,7 +1391,8 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
     {
       case RenderCommand_WindowInteractions:
       {
-        WindowInteractions(Group, Command->WindowInteraction.Window);
+        window_layout* Window = Command->WindowInteraction.Window;
+        RenderWindowInteractions(Group, Window, &Window->Table.Layout);
       } break;
 
       case RenderCommand_TableStart:
@@ -1561,7 +1551,7 @@ function table_handle
 StartTableBelow(debug_ui_render_group* Group, window_layout* Src)
 {
   v2 Basis = Src->Table.Layout.Basis + V2(Src->Table.Layout.DrawBounds.Min.x, Src->Table.Layout.At.y);
-  table_handle Result = {.Window = Src, .Basis = Basis};
+  table_handle Result = {.Window = Src};
 
   PushTableStart(Group, &Result);
 

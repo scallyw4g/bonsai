@@ -32,7 +32,7 @@ struct table
 struct window_layout
 {
   const char* Title;
-  table Table;
+  table Table; // TODO(Jesse): Remove this!
   v2 MaxClip;
 
   u64 InteractionStackIndex;
@@ -43,7 +43,6 @@ struct window_layout
 struct table_handle
 {
   window_layout* Window;
-  v2 Basis;
 };
 
 struct interactable_handle
