@@ -359,3 +359,14 @@ Print_P( interactable Interactable, const char* name)
 {
   Print_P(&Interactable, name);
 }
+
+inline void
+Print_P( window_layout *Window, const char* name)
+{
+  Log("%s", name);
+  Print(Window->Title);
+  Print(Window->MaxClip);
+  Print(Window->Table.Layout.At);
+  Print(Window->Table.Layout.Basis);
+}
+

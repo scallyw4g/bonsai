@@ -56,6 +56,10 @@ struct debug_ui_render_group
 
   window_layout *HighestWindow; // NOTE(Jesse): Highest in terms of InteractionStackIndex
 
+  umm HoverInteractionId;
+  umm ClickedInteractionId;
+  umm PressedInteractionId;
+
   ui_render_command_buffer CommandBuffer;
 };
 

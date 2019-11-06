@@ -937,18 +937,18 @@ ButtonInteraction(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId,
     }
   }
 
-  if (Pressed(Group, &Interaction))
+  if (Clicked(Group, &Interaction))
   {
-    Result.Pressed = True;
+    Result.Clicked = True;
     if (Style)
     {
       Result.Color = Style->ClickColor;
     }
   }
 
-  if (Clicked(Group, &Interaction))
+  if (Pressed(Group, &Interaction))
   {
-    Result.Clicked = True;
+    Result.Pressed = True;
     if (Style)
     {
       Result.Color = Style->ClickColor;
@@ -1168,7 +1168,8 @@ PushButtonStart(debug_ui_render_group *Group, umm InteractionId)
   u32 ButtonStartIndex = PushUiRenderCommand(Group, &Command);
 
   interactable_handle Handle = {
-    .StartIndex = ButtonStartIndex
+    .StartIndex = ButtonStartIndex,
+    .Id = InteractionId
   };
 
   return Handle;
@@ -1301,7 +1302,7 @@ static u32 ColumnWidths[MAX_COLUMN_WIDTHS] = {};
 function u32
 RenderTable(debug_ui_render_group* Group, ui_render_command_buffer* CommandBuffer, u32 FirstCommandIndex)
 {
-  u32 Result = 0;
+  u32 OnePastTableEnd = 0;
 
   u32 RowCount = 0;
   u32 ColumnCount = 0;
@@ -1312,7 +1313,7 @@ RenderTable(debug_ui_render_group* Group, ui_render_command_buffer* CommandBuffe
     ui_render_command* Command =  GetCommand(CommandBuffer, CommandIndex++);
     Assert(Command && Command->Type == RenderCommand_TableStart);
 
-    while (Command && !Result)
+    while (Command && !OnePastTableEnd)
     {
       switch(Command->Type)
       {
@@ -1342,7 +1343,7 @@ RenderTable(debug_ui_render_group* Group, ui_render_command_buffer* CommandBuffe
 
           case RenderCommand_TableEnd:
           {
-            Result = CommandIndex;
+            OnePastTableEnd = CommandIndex;
           } break;
 
           // TODO(Jesse): Nested tables!
@@ -1356,7 +1357,7 @@ RenderTable(debug_ui_render_group* Group, ui_render_command_buffer* CommandBuffe
     }
   }
 
-  if (Result)
+  if (OnePastTableEnd)
   {
     u32 ColumnIndex = 0;
 
@@ -1366,7 +1367,7 @@ RenderTable(debug_ui_render_group* Group, ui_render_command_buffer* CommandBuffe
     layout Layout = {};
 
     u32 CommandIndex = FirstCommandIndex;
-    while (CommandIndex < Result)
+    while (CommandIndex < OnePastTableEnd)
     {
       ui_render_command* Command = GetCommand(CommandBuffer, CommandIndex++);
       switch(Command->Type)
@@ -1380,7 +1381,7 @@ RenderTable(debug_ui_render_group* Group, ui_render_command_buffer* CommandBuffe
           case RenderCommand_Column:
           {
             Assert(Window);
-            Assert(ColumnIndex > MaxColumnCount);
+            Assert(ColumnIndex < MaxColumnCount);
             BufferColumn(Command->Column.String, Group, &Layout, ColumnWidths[ColumnIndex], zIndexForText(Window, Group), GetAbsoluteMaxClip(Window));
             ++ColumnIndex;
           } break;
@@ -1412,14 +1413,29 @@ RenderTable(debug_ui_render_group* Group, ui_render_command_buffer* CommandBuffe
             CurrentInteraction.MaxP = GetAbsoluteDrawBoundsMax(&Layout);
             MergeLayouts(&Layout, &Window->Table.Layout);
 
-            ButtonInteraction(Group, RectMinMax(CurrentInteraction.MinP, CurrentInteraction.MaxP ), CurrentInteraction.ID, Window);
+            button_interaction_result Button = ButtonInteraction(Group, RectMinMax(CurrentInteraction.MinP, CurrentInteraction.MaxP ), CurrentInteraction.ID, Window);
+
+            if (Button.Hover)
+            {
+              Group->HoverInteractionId = CurrentInteraction.ID;
+            }
+
+            if (Button.Clicked)
+            {
+              Group->ClickedInteractionId = CurrentInteraction.ID;
+            }
+
+            if (Button.Pressed)
+            {
+              Group->PressedInteractionId = CurrentInteraction.ID;
+            }
 
             CurrentInteraction.ID = 0;
           } break;
 
           case RenderCommand_TableEnd:
           {
-            Assert(CommandIndex == Result);
+            Assert(CommandIndex == OnePastTableEnd);
             Window = 0;
           } break;
 
@@ -1429,20 +1445,19 @@ RenderTable(debug_ui_render_group* Group, ui_render_command_buffer* CommandBuffe
   }
   else
   {
-    Error("Command tree parse error while rendering table");
+    Error("No RenderCommand_TableEnd detected.");
   }
 
-  return Result;
+  return OnePastTableEnd;
 }
 
 function void
 FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *CommandBuffer)
 {
-  for (u32 CommandIndex = 0;
-      CommandIndex < CommandBuffer->CommandCount;
-      ++CommandIndex)
+  u32 CommandIndex = 0;
+  ui_render_command *Command = GetCommand(CommandBuffer, CommandIndex++);
+  while (Command)
   {
-    ui_render_command *Command = CommandBuffer->Commands+CommandIndex;
     switch(Command->Type)
     {
       case RenderCommand_WindowInteractions:
@@ -1453,15 +1468,16 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
 
       case RenderCommand_TableStart:
       {
-        CommandIndex = RenderTable(Group, CommandBuffer, CommandIndex);
+        CommandIndex = RenderTable(Group, CommandBuffer, CommandIndex-1);
       } break;
 
       InvalidDefaultCase;
     }
+
+    Command = GetCommand(CommandBuffer, CommandIndex++);
   }
 
   CommandBuffer->CommandCount = 0;
-
   return;
 }
 
@@ -1726,7 +1742,6 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
                                                                   V2(1100.0f, 400.0f));
 
     PushWindowInteraction(Group, &ChunkDetailWindow);
-
     BufferChunkDetails(Group, HotChunk, &ChunkDetailWindow);
 
     local_persist window_layout PickerWindow = WindowLayout("Chunk View",
