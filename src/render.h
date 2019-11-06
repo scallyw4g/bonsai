@@ -71,7 +71,7 @@ Perspective(radians FOV, v2 WindowDim, r32 NearClip, r32 FarClip)
   m4 Inverse = {
     V4(1.0f/a , 0      , 0      , 0)        ,
     V4(0      , 1.0f/b , 0      , 0)        ,
-    V4(0      , 0      , c      , 1.0f/e)   ,
+    V4(0      , 0      , 0      , 1.0f/e)   ,
     V4(0      , 0      , 1.0f/d , -c/(d*e)) ,
   };
 #endif

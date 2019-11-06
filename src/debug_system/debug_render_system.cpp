@@ -1070,6 +1070,7 @@ function window_layout*
 GetHighestWindow(debug_ui_render_group* Group, ui_render_command_buffer* CommandBuffer)
 {
   u64 HighestInteractionStackIndex = 0;
+  window_layout* HighestWindow = 0;
 
   for (u32 CommandIndex = 0;
       CommandIndex < CommandBuffer->CommandCount;
@@ -1085,7 +1086,7 @@ GetHighestWindow(debug_ui_render_group* Group, ui_render_command_buffer* Command
         b32 FoundNewHighestStackIndex = HighestInteractionStackIndex <= TestWindow->InteractionStackIndex;
         if ( InsideWindowBounds && FoundNewHighestStackIndex )
         {
-          Group->HighestWindow = TestWindow;
+          HighestWindow = TestWindow;
           HighestInteractionStackIndex = TestWindow->InteractionStackIndex;
         }
 
@@ -1096,12 +1097,12 @@ GetHighestWindow(debug_ui_render_group* Group, ui_render_command_buffer* Command
   }
 
   b32 Clicked = (Group->Input->LMB.Clicked || Group->Input->RMB.Clicked);
-  if (Clicked && Group->HighestWindow)
+  if (Clicked && HighestWindow)
   {
-    Group->HighestWindow->InteractionStackIndex = ++Group->InteractionStackTop;
+    HighestWindow->InteractionStackIndex = ++Group->InteractionStackTop;
   }
 
-  return Group->HighestWindow;
+  return HighestWindow;
 }
 
 function void
