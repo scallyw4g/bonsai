@@ -1609,23 +1609,9 @@ ComputePickRay(platform *Plat, m4* ViewProjection)
 }
 
 function void
-StartTable(debug_ui_render_group* Group, window_layout* Src)
-{
-  PushTableStart(Group, Src);
-  return;
-}
-
-function void
-EndTable(debug_ui_render_group* Group)
-{
-  PushTableEnd(Group);
-  return;
-}
-
-function void
 PushChunkDetails(debug_ui_render_group* Group, world_chunk* Chunk, window_layout* Window)
 {
-  StartTable(Group, Window);
+  PushTableStart(Group, Window);
     PushColumn(Group, CS("WorldP"));
     PushColumn(Group, AsString(Chunk->WorldP.x));
     PushColumn(Group, AsString(Chunk->WorldP.y));
@@ -1643,7 +1629,7 @@ PushChunkDetails(debug_ui_render_group* Group, world_chunk* Chunk, window_layout
     PushColumn(Group, CS("Triangles"));
     PushColumn(Group, AsString(Chunk->TriCount));
     PushNewRow(Group);
-  EndTable(Group);
+  PushTableEnd(Group);
 }
 
 function interactable_handle
@@ -1654,9 +1640,9 @@ StartButton(debug_ui_render_group* Group, u64 InteractionId)
 }
 
 function void
-EndButton(debug_ui_render_group* Group, interactable_handle* Handle)
+EndButton(debug_ui_render_group* Group)
 {
-  Handle->OnePastEndIndex = PushButtonEnd(Group);
+  PushButtonEnd(Group);
   return;
 }
 
@@ -1664,6 +1650,13 @@ function void
 NewRow(debug_ui_render_group* Group)
 {
   PushNewRow(Group);
+}
+
+function v2
+BasisRightOf(window_layout* Window, v2 WindowSpacing = V2(150, 0))
+{
+  v2 Result = V2(GetAbsoluteMaxClip(Window).x, GetAbsoluteMin(Window).y) + WindowSpacing;
+  return Result;
 }
 
 function void
@@ -1676,7 +1669,7 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
   local_persist window_layout ListingWindow = WindowLayout("Picked Chunks", LayoutBasis, V2(400, 150));
   PushWindowInteraction(Group, &ListingWindow);
 
-  StartTable(Group, &ListingWindow);
+  PushTableStart(Group, &ListingWindow);
 
   for (u32 ChunkIndex = 0;
       ChunkIndex < DebugState->PickedChunkCount;
@@ -1692,7 +1685,7 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
       PushColumn(Group, AsString(Chunk->WorldP.x) );
       PushColumn(Group, AsString(Chunk->WorldP.y) );
       PushColumn(Group, AsString(Chunk->WorldP.z) );
-    EndButton(Group, &PositionButton);
+    EndButton(Group);
 
     if (Clicked(Group, &PositionButton)) { DebugState->HotChunk = Chunk; }
 
@@ -1701,7 +1694,7 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 
     interactable_handle CloseButton = StartButton(Group, (umm)"CloseButton"^(umm)Chunk);
       PushColumn(Group, CountedString("X"));
-    EndButton(Group, &CloseButton);
+    EndButton(Group);
 
     if ( Clicked(Group, &CloseButton) )
     {
@@ -1713,7 +1706,7 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
     NewRow(Group);
   }
 
-  EndTable(Group);
+  PushTableEnd(Group);
 
   world_chunk *HotChunk = DebugState->HotChunk;
   if (HotChunk)
@@ -1744,74 +1737,89 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 
   if (HotChunk)
   {
-    v2 WindowSpacing = V2(140, 0);
+    v2 NextWindowBasis = BasisRightOf(&ListingWindow);
 
-    local_persist window_layout ChunkDetailWindow = WindowLayout("Chunk Details",
-                                                                  V2(GetAbsoluteMaxClip(&ListingWindow).x, GetAbsoluteMin(&ListingWindow).y) + WindowSpacing,
-                                                                  V2(1100.0f, 400.0f));
-
-    PushWindowInteraction(Group, &ChunkDetailWindow);
-
-    PushChunkDetails(Group, HotChunk, &ChunkDetailWindow);
-
-    local_persist window_layout PickerWindow = WindowLayout("Chunk View",
-                                                            V2(GetAbsoluteMaxClip(&ChunkDetailWindow).x, GetAbsoluteMin(&ChunkDetailWindow).y) + WindowSpacing,
-                                                            V2(800.0f));
-    PushWindowInteraction(Group, &PickerWindow);
-
-    b32 DebugButtonPressed = False;
-    // FIXME(Jesse): This is dependant on framerate and the button will be triggered on each frame!  Yikes.
-    if (BufferButton("<", Group, &PickerWindow))
     {
-      HotChunk->PointsToLeaveRemaining = Min(HotChunk->PointsToLeaveRemaining+1, HotChunk->EdgeBoundaryVoxelCount);
-      DebugButtonPressed = True;
+      local_persist window_layout ChunkDetailWindow = WindowLayout("Chunk Details", NextWindowBasis, V2(1100.0f, 400.0f));
+      PushWindowInteraction(Group, &ChunkDetailWindow);
+      PushChunkDetails(Group, HotChunk, &ChunkDetailWindow);
+      NextWindowBasis = BasisRightOf(&ChunkDetailWindow);
     }
 
-    // FIXME(Jesse): This is dependant on framerate and the button will be triggered on each frame!  Yikes.
-    if (BufferButton(">", Group, &PickerWindow))
     {
-      HotChunk->PointsToLeaveRemaining = Max(HotChunk->PointsToLeaveRemaining-1, 0);
-      DebugButtonPressed = True;
+      local_persist window_layout PickerWindow = WindowLayout("Chunk View", NextWindowBasis, V2(800.0f));
+      PushWindowInteraction(Group, &PickerWindow);
+      PushTableStart(Group, &PickerWindow);
+      b32 DebugButtonPressed = False;
+
+      interactable_handle PrevButton = StartButton(Group, (umm)"PrevButton");
+        PushColumn(Group, CountedString("<"));
+      EndButton(Group);
+
+      if (Clicked(Group, &PrevButton))
+      {
+        HotChunk->PointsToLeaveRemaining = Min(HotChunk->PointsToLeaveRemaining+1, HotChunk->EdgeBoundaryVoxelCount);
+        DebugButtonPressed = True;
+      }
+
+
+      interactable_handle NextButton = StartButton(Group, (umm)"NextButton");
+        PushColumn(Group, CountedString(">"));
+      EndButton(Group);
+
+      if (Clicked(Group, &NextButton))
+      {
+        HotChunk->PointsToLeaveRemaining = Max(HotChunk->PointsToLeaveRemaining-1, 0);
+        DebugButtonPressed = True;
+      }
+
+      const char* ButtonText = HotChunk->DrawBoundingVoxels ? "|" : "O";
+
+      interactable_handle ToggleBoundingVoxelsButton = StartButton(Group, (umm)"ToggleBoundingVoxelsButton");
+        PushColumn(Group, CountedString(ButtonText));
+      EndButton(Group);
+
+      if (Clicked(Group, &ToggleBoundingVoxelsButton))
+      {
+        HotChunk->DrawBoundingVoxels = !HotChunk->DrawBoundingVoxels;
+        DebugButtonPressed = True;
+      }
+
+      if (DebugButtonPressed)
+      {
+        HotChunk->LodMesh_Complete = False;
+        HotChunk->LodMesh->At = 0;
+        HotChunk->Mesh = 0;
+        HotChunk->FilledCount = 0;
+        HotChunk->Data->Flags = Chunk_Uninitialized;
+        QueueChunkForInit( DebugState->GameState, &DebugState->Plat->HighPriority, HotChunk);
+      }
+
+      PushNewRow(Group);
+      PushTableEnd(Group);
+
+#if 1
+      /* PushTexturedQuad(Group, &PickerWindow, DebugTextureArraySlice_Viewport); */
+#else
+      v2 MinP = GetAbsoluteAt(&PickerWindow.Table.Layout);
+      v2 QuadDim = PickerWindow.MaxClip - PickerWindow.Table.Layout.At;
+
+      r32 ChunkDetailZ = zIndexForText(&PickerWindow, Group);
+      BufferTexturedQuad( Group, &Group->TextGroup->TextGeo, MinP, QuadDim,
+                          DebugTextureArraySlice_Viewport, UVsForFullyCoveredQuad(),
+                          V3(1), ChunkDetailZ, GetAbsoluteMaxClip(&PickerWindow));
+
+      interactable Interaction = Interactable(MinP, MinP+QuadDim, (umm)"PickerWindowDragInteraction", &PickerWindow);
+      input* WindowInput = Group->Input;
+      if (!Pressed(Group, &Interaction))
+      {
+        WindowInput = 0;
+      }
+      UpdateGameCamera( -0.005f*(*Group->MouseDP), WindowInput, Canonical_Position(0), &DebugState->Camera);
+#endif
+
     }
 
-    const char* ButtonText = HotChunk->DrawBoundingVoxels ? "|" : "O";
-    if (BufferButton(ButtonText, Group, &PickerWindow))
-    {
-      HotChunk->DrawBoundingVoxels = !HotChunk->DrawBoundingVoxels;
-      DebugButtonPressed = True;
-    }
-
-    if (DebugButtonPressed)
-    {
-      HotChunk->LodMesh_Complete = False;
-      HotChunk->LodMesh->At = 0;
-      HotChunk->Mesh = 0;
-      HotChunk->FilledCount = 0;
-      HotChunk->Data->Flags = Chunk_Uninitialized;
-      QueueChunkForInit( DebugState->GameState, &DebugState->Plat->HighPriority, HotChunk);
-    }
-
-    NewRow(&PickerWindow);
-
-    v2 MinP = GetAbsoluteAt(&PickerWindow.Table.Layout);
-    v2 QuadDim = PickerWindow.MaxClip - PickerWindow.Table.Layout.At;
-
-    r32 ChunkDetailZ = zIndexForText(&PickerWindow, Group);
-    BufferTexturedQuad( Group, &Group->TextGroup->TextGeo, MinP, QuadDim,
-                        DebugTextureArraySlice_Viewport, UVsForFullyCoveredQuad(),
-                        V3(1), ChunkDetailZ, GetAbsoluteMaxClip(&PickerWindow));
-
-    interactable Interaction = Interactable(MinP, MinP+QuadDim, (umm)"PickerWindowDragInteraction", &PickerWindow);
-    input* WindowInput = Group->Input;
-    if (!Pressed(Group, &Interaction))
-    {
-      WindowInput = 0;
-    }
-
-    UpdateGameCamera( -0.005f*(*Group->MouseDP),
-                      WindowInput,
-                      Canonical_Position(0),
-                      &DebugState->Camera);
   }
 
   return;

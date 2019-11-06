@@ -44,7 +44,6 @@ struct interactable_handle
 {
   umm Id;
   umm StartIndex;
-  umm OnePastEndIndex;
 };
 
 struct interactable
