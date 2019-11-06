@@ -786,7 +786,7 @@ BufferColumn( r32 Perc, u32 ColumnWidth, debug_ui_render_group *Group, layout *L
 }
 
 function rect2
-Column(counted_string Text, debug_ui_render_group* Group, layout* Layout, u32 ColumnWidth, r32 Z, v2 MaxClip, u8 Color = WHITE)
+BufferColumn(counted_string Text, debug_ui_render_group* Group, layout* Layout, u32 ColumnWidth, r32 Z, v2 MaxClip, u8 Color = WHITE)
 {
   u32 Pad = ColumnWidth - (u32)Text.Count;
 
@@ -805,7 +805,7 @@ Column(counted_string Text, debug_ui_render_group* Group, layout* Layout, u32 Co
 }
 
 function rect2
-Column(const char* ColumnText, debug_ui_render_group* Group, table* Table, r32 Z, v2 MaxClip, u8 Color = WHITE)
+BufferColumn(const char* ColumnText, debug_ui_render_group* Group, table* Table, r32 Z, v2 MaxClip, u8 Color = WHITE)
 {
   layout *Layout = &Table->Layout;
 
@@ -815,16 +815,16 @@ Column(const char* ColumnText, debug_ui_render_group* Group, table* Table, r32 Z
   u32 TextLength = (u32)Length(ColumnText);
   Col->Max = Max(Col->Max, TextLength);
 
-  rect2 Bounds = Column(CountedString(ColumnText, TextLength), Group, Layout, Col->Max, Z, MaxClip, Color);
+  rect2 Bounds = BufferColumn(CountedString(ColumnText, TextLength), Group, Layout, Col->Max, Z, MaxClip, Color);
 
   return Bounds;
 }
 
 function rect2
-Column(const char* ColumnText, debug_ui_render_group* Group, window_layout* Window, u8 Color = WHITE)
+BufferColumn(const char* ColumnText, debug_ui_render_group* Group, window_layout* Window, u8 Color = WHITE)
 {
   r32 Z = zIndexForText(Window, Group);
-  rect2 Result = Column(ColumnText, Group, &Window->Table, Z, GetAbsoluteMaxClip(Window), Color);
+  rect2 Result = BufferColumn(ColumnText, Group, &Window->Table, Z, GetAbsoluteMaxClip(Window), Color);
   return Result;
 }
 
@@ -850,7 +850,7 @@ BufferTextAt(debug_ui_render_group *Group, v2 BasisP, const char *Text, u32 Colo
 }
 
 function void
-DoTooltip(debug_ui_render_group *Group, const char *Text, r32 Z = 1.0f)
+BufferTooltip(debug_ui_render_group *Group, const char *Text, r32 Z = 1.0f)
 {
   BufferTextAt(Group, *Group->MouseP+V2(12, -7), Text, WHITE, Z);
   return;
@@ -876,7 +876,7 @@ BufferRectangleAt(debug_ui_render_group *Group, untextured_2d_geometry_buffer *G
 }
 
 function void
-Border(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo, rect2 Rect, v3 Color, r32 Z, v2 MaxClip)
+BufferBorder(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo, rect2 Rect, v3 Color, r32 Z, v2 MaxClip)
 {
   v2 TopLeft     = Rect.Min;
   v2 BottomRight = Rect.Max;
@@ -897,10 +897,10 @@ Border(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo, rect2 R
 }
 
 function void
-Border(debug_ui_render_group *Group, interactable* PickerListInteraction, v3 Color, r32 Z, v2 MaxClip)
+BufferBorder(debug_ui_render_group *Group, interactable* PickerListInteraction, v3 Color, r32 Z, v2 MaxClip)
 {
   rect2 Bounds = RectMinMax(PickerListInteraction->MinP, PickerListInteraction->MaxP);
-  Border(Group, &Group->TextGroup->UIGeo, Bounds, Color, Z, MaxClip);
+  BufferBorder(Group, &Group->TextGroup->UIGeo, Bounds, Color, Z, MaxClip);
   return;
 }
 
@@ -926,7 +926,7 @@ ButtonInteraction(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId,
 
   interactable Interaction = Interactable(Bounds, InteractionId, Window);
 
-  Border(Group, &Interaction, V3(1,0,0), 1.0f, DISABLE_CLIPPING);
+  BufferBorder(Group, &Interaction, V3(1,0,0), 1.0f, DISABLE_CLIPPING);
 
   if (Hover(Group, &Interaction))
   {
@@ -964,7 +964,7 @@ ButtonInteraction(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId,
 }
 
 function b32
-Button(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId, r32 Z, v2 MaxClip, window_layout* Window, ui_style* Style)
+BufferButton(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId, r32 Z, v2 MaxClip, window_layout* Window, ui_style* Style)
 {
   button_interaction_result Result = ButtonInteraction(Group, Bounds, InteractionId, Window, Style);
   BufferRectangleAt(Group, &Group->TextGroup->UIGeo, Bounds, Result.Color, Z, MaxClip);
@@ -972,7 +972,7 @@ Button(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId, r32 Z, v2 
 }
 
 function b32
-Button(const char* ColumnText, debug_ui_render_group *Group, layout* Layout, umm InteractionId, r32 Z, v2 MaxClip, window_layout* Window, ui_style* Style = 0)
+BufferButton(const char* ColumnText, debug_ui_render_group *Group, layout* Layout, umm InteractionId, r32 Z, v2 MaxClip, window_layout* Window, ui_style* Style = 0)
 {
   v2 Min = GetAbsoluteAt(Layout);
   v2 Max = Min + GetTextBounds( (u32)Length(ColumnText), &Group->Font);
@@ -986,13 +986,13 @@ Button(const char* ColumnText, debug_ui_render_group *Group, layout* Layout, umm
 }
 
 function b32
-Button(const char* ButtonText, debug_ui_render_group *Group, window_layout* Window, ui_style* Style = 0, umm InteractionIdModifier = 0)
+BufferButton(const char* ButtonText, debug_ui_render_group *Group, window_layout* Window, ui_style* Style = 0, umm InteractionIdModifier = 0)
 {
   umm InteractionId = (umm)ButtonText^(umm)Window;
   InteractionId = InteractionIdModifier? InteractionId^InteractionIdModifier : InteractionId;
 
   r32 Z = zIndexForText(Window, Group);
-  b32 Result = Button(ButtonText, Group, &Window->Table.Layout, InteractionId, Z, GetAbsoluteMaxClip(Window), Window, Style);
+  b32 Result = BufferButton(ButtonText, Group, &Window->Table.Layout, InteractionId, Z, GetAbsoluteMaxClip(Window), Window, Style);
   return Result;
 }
 
@@ -1056,13 +1056,13 @@ RenderWindowInteractions(debug_ui_render_group* Group, window_layout* Window, la
     v2 Dim = V2(10);
     v2 MinP = Layout->Basis + Window->MaxClip - Dim;
     rect2 DragHandleRect = RectMinDim(MinP, Dim);
-    Button(Group, DragHandleRect, DragHandleId, zIndexForBorders(Window, Group), WindowBounds.Max, Window, &DragHandleStyle);
+    BufferButton(Group, DragHandleRect, DragHandleId, zIndexForBorders(Window, Group), WindowBounds.Max, Window, &DragHandleStyle);
   }
 
   {
     ui_style BackgroundStyle = StandardStyling(V3(0.0f, 0.5f, 0.5f));
     rect2 TitleBarRect = RectMinMax(WindowBounds.Min, TopRight(WindowBounds) + V2(0.0f, Group->Font.Size.y));
-    Button(Group, TitleBarRect, TitleBarInteractionId, zIndexForTitleBar(Window, Group), WindowBounds.Max, Window, &BackgroundStyle);
+    BufferButton(Group, TitleBarRect, TitleBarInteractionId, zIndexForTitleBar(Window, Group), WindowBounds.Max, Window, &BackgroundStyle);
   }
 
   if (Window->Title)
@@ -1078,7 +1078,7 @@ RenderWindowInteractions(debug_ui_render_group* Group, window_layout* Window, la
     r32 Z = zIndexForBorders(Window, Group);
     v3 BorderColor = V3(1, 1, 1);
     untextured_2d_geometry_buffer *UiGeo = &Group->TextGroup->UIGeo;
-    Border(Group, UiGeo, WindowBounds, BorderColor, Z, DISABLE_CLIPPING);
+    BufferBorder(Group, UiGeo, WindowBounds, BorderColor, Z, DISABLE_CLIPPING);
   }
 
   {
@@ -1174,11 +1174,11 @@ PushButtonStart(debug_ui_render_group *Group)
 }
 
 function void
-PushTableEnd(debug_ui_render_group *Group)
+PushTableStart(debug_ui_render_group *Group, table_handle *Handle)
 {
-  ui_render_command Command = {
-    .Type = RenderCommand_TableEnd,
-  };
+  ui_render_command Command = {};
+  Command.Type = RenderCommand_TableStart;
+  Command.Table.Handle = *Handle;
 
   PushUiRenderCommand(Group, &Command);
 
@@ -1186,11 +1186,11 @@ PushTableEnd(debug_ui_render_group *Group)
 }
 
 function void
-PushTableStart(debug_ui_render_group *Group, table_handle *Handle)
+PushTableEnd(debug_ui_render_group *Group)
 {
-  ui_render_command Command = {};
-  Command.Type = RenderCommand_TableStart;
-  Command.Table.Handle = *Handle;
+  ui_render_command Command = {
+    .Type = RenderCommand_TableEnd,
+  };
 
   PushUiRenderCommand(Group, &Command);
 
@@ -1338,7 +1338,7 @@ RenderTable(debug_ui_render_group* Group, ui_render_command_buffer* CommandBuffe
           {
             if(Window)
             {
-              Column(Command->Column.String, Group, &Window->Table.Layout, ColumnWidths[ColumnIndex], zIndexForText(Window, Group), GetAbsoluteMaxClip(Window));
+              BufferColumn(Command->Column.String, Group, &Window->Table.Layout, ColumnWidths[ColumnIndex], zIndexForText(Window, Group), GetAbsoluteMaxClip(Window));
             }
             else
             {
@@ -1444,7 +1444,7 @@ DrawCycleBar( cycle_range *Range, cycle_range *Frame, r32 TotalGraphWidth, const
     if (Result)
     {
       Color *= 0.5f;
-      if (Tooltip) { DoTooltip(Group, Tooltip); }
+      if (Tooltip) { BufferTooltip(Group, Tooltip); }
     }
 
     clip_result Clip = BufferUntexturedQuad(Group, Geo, MinP, BarDim, Color, Z, MaxClip);
@@ -1526,22 +1526,22 @@ ComputePickRay(platform *Plat, m4* ViewProjection)
 function void
 BufferChunkDetails(debug_ui_render_group* Group, world_chunk* Chunk, window_layout* Window)
 {
-  Column("WorldP", Group, Window, WHITE);
-  Column(ToString(Chunk->WorldP.x), Group, Window, WHITE);
-  Column(ToString(Chunk->WorldP.y), Group, Window, WHITE);
-  Column(ToString(Chunk->WorldP.z), Group, Window, WHITE);
+  BufferColumn("WorldP", Group, Window, WHITE);
+  BufferColumn(ToString(Chunk->WorldP.x), Group, Window, WHITE);
+  BufferColumn(ToString(Chunk->WorldP.y), Group, Window, WHITE);
+  BufferColumn(ToString(Chunk->WorldP.z), Group, Window, WHITE);
   NewRow(Window);
 
-  Column("PointsToLeaveRemaining", Group, Window, WHITE);
-  Column(ToString(Chunk->PointsToLeaveRemaining), Group, Window, WHITE);
+  BufferColumn("PointsToLeaveRemaining", Group, Window, WHITE);
+  BufferColumn(ToString(Chunk->PointsToLeaveRemaining), Group, Window, WHITE);
   NewRow(Window);
 
-  Column("BoundaryVoxels Count", Group, Window, WHITE);
-  Column(ToString(Chunk->EdgeBoundaryVoxelCount), Group, Window, WHITE);
+  BufferColumn("BoundaryVoxels Count", Group, Window, WHITE);
+  BufferColumn(ToString(Chunk->EdgeBoundaryVoxelCount), Group, Window, WHITE);
   NewRow(Window);
 
-  Column("Triangles", Group, Window, WHITE);
-  Column(ToString(Chunk->TriCount), Group, Window, WHITE);
+  BufferColumn("Triangles", Group, Window, WHITE);
+  BufferColumn(ToString(Chunk->TriCount), Group, Window, WHITE);
   NewRow(Window);
 
   return;
@@ -1680,21 +1680,21 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 
     b32 DebugButtonPressed = False;
     // FIXME(Jesse): This is dependant on framerate and the button will be triggered on each frame!  Yikes.
-    if (Button("<", Group, &PickerWindow))
+    if (BufferButton("<", Group, &PickerWindow))
     {
       HotChunk->PointsToLeaveRemaining = Min(HotChunk->PointsToLeaveRemaining+1, HotChunk->EdgeBoundaryVoxelCount);
       DebugButtonPressed = True;
     }
 
     // FIXME(Jesse): This is dependant on framerate and the button will be triggered on each frame!  Yikes.
-    if (Button(">", Group, &PickerWindow))
+    if (BufferButton(">", Group, &PickerWindow))
     {
       HotChunk->PointsToLeaveRemaining = Max(HotChunk->PointsToLeaveRemaining-1, 0);
       DebugButtonPressed = True;
     }
 
     const char* ButtonText = HotChunk->DrawBoundingVoxels ? "|" : "O";
-    if (Button(ButtonText, Group, &PickerWindow))
+    if (BufferButton(ButtonText, Group, &PickerWindow))
     {
       HotChunk->DrawBoundingVoxels = !HotChunk->DrawBoundingVoxels;
       DebugButtonPressed = True;
@@ -1755,9 +1755,9 @@ BufferScopeTreeEntry(debug_ui_render_group *Group, debug_profile_scope *Scope, w
 
   r32 Z = zIndexForText(Window, Group);
 
-  Column(ToString(Percentage), Group, &Window->Table, Z, DISABLE_CLIPPING);
-  Column(ToString(AvgCycles),  Group, &Window->Table, Z, DISABLE_CLIPPING);
-  Column(ToString(CallCount),  Group, &Window->Table, Z, DISABLE_CLIPPING);
+  BufferColumn(ToString(Percentage), Group, &Window->Table, Z, DISABLE_CLIPPING);
+  BufferColumn(ToString(AvgCycles),  Group, &Window->Table, Z, DISABLE_CLIPPING);
+  BufferColumn(ToString(CallCount),  Group, &Window->Table, Z, DISABLE_CLIPPING);
 
   layout *Layout = &Window->Table.Layout;
   AdvanceSpaces((Depth*2)+1, Layout, &Group->Font);
@@ -1887,7 +1887,7 @@ DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState
         ++ThreadIndex)
   {
     char *ThreadName = FormatString(TranArena, "Thread %u", ThreadIndex);
-    Column(ThreadName, Group, &CycleGraphWindow.Table, Z, DISABLE_CLIPPING);
+    BufferColumn(ThreadName, Group, &CycleGraphWindow.Table, Z, DISABLE_CLIPPING);
     NewRow(&CycleGraphWindow);
 
     debug_thread_state *ThreadState = GetThreadLocalStateFor(ThreadIndex);
@@ -2212,10 +2212,10 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout
     Clear(&CallgraphWindow.Table.Layout.DrawBounds);
 
     NewRow(&CallgraphWindow);
-    Column("Frame %",  Group,  &CallgraphWindow,  WHITE);
-    Column("Cycles",   Group,  &CallgraphWindow,  WHITE);
-    Column("Calls",    Group,  &CallgraphWindow,  WHITE);
-    Column("Name",     Group,  &CallgraphWindow,  WHITE);
+    BufferColumn("Frame %",  Group,  &CallgraphWindow,  WHITE);
+    BufferColumn("Cycles",   Group,  &CallgraphWindow,  WHITE);
+    BufferColumn("Calls",    Group,  &CallgraphWindow,  WHITE);
+    BufferColumn("Name",     Group,  &CallgraphWindow,  WHITE);
     NewRow(&CallgraphWindow);
 
     for ( u32 ThreadIndex = 0;
@@ -2287,8 +2287,8 @@ DebugDrawCollatedFunctionCalls(debug_ui_render_group *Group, debug_state *DebugS
     called_function *Func = ProgramFunctionCalls + FunctionIndex;
     if (Func->Name)
     {
-      Column(Func->Name, Group, &FunctionCallWindow);
-      Column( ToString(Func->CallCount), Group, &FunctionCallWindow);
+      BufferColumn(Func->Name, Group, &FunctionCallWindow);
+      BufferColumn( ToString(Func->CallCount), Group, &FunctionCallWindow);
       NewRow(&FunctionCallWindow);
     }
   }
@@ -2407,9 +2407,9 @@ BufferBarGraph(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo,
 function b32
 BufferArenaBargraph(table *Table, debug_ui_render_group *Group, umm TotalUsed, r32 TotalPerc, umm Remaining, v3 Color, r32 Z, v2 MaxClip)
 {
-  Column( FormatMemorySize(TotalUsed), Group, Table, Z, MaxClip);
+  BufferColumn( FormatMemorySize(TotalUsed), Group, Table, Z, MaxClip);
   b32 Hover = BufferBarGraph(Group, &Group->TextGroup->UIGeo, Table, TotalPerc, Color, Z, MaxClip);
-  Column( FormatMemorySize(Remaining), Group, Table, Z, MaxClip);
+  BufferColumn( FormatMemorySize(Remaining), Group, Table, Z, MaxClip);
   NewRow(Table);
 
   b32 Click = (Hover && Group->Input->LMB.Clicked);
@@ -2419,20 +2419,20 @@ BufferArenaBargraph(table *Table, debug_ui_render_group *Group, umm TotalUsed, r
 function void
 BufferMemoryStatsTable(memory_arena_stats MemStats, debug_ui_render_group *Group, table *StatsTable, r32 Z, v2 MaxClip)
 {
-  Column("Allocs", Group, StatsTable, Z, MaxClip);
-  Column(FormatMemorySize(MemStats.Allocations), Group, StatsTable, Z, MaxClip);
+  BufferColumn("Allocs", Group, StatsTable, Z, MaxClip);
+  BufferColumn(FormatMemorySize(MemStats.Allocations), Group, StatsTable, Z, MaxClip);
   NewRow(StatsTable);
 
-  Column("Pushes", Group, StatsTable, Z, MaxClip);
-  Column(FormatThousands(MemStats.Pushes), Group, StatsTable, Z, MaxClip);
+  BufferColumn("Pushes", Group, StatsTable, Z, MaxClip);
+  BufferColumn(FormatThousands(MemStats.Pushes), Group, StatsTable, Z, MaxClip);
   NewRow(StatsTable);
 
-  Column("Remaining", Group, StatsTable, Z, MaxClip);
-  Column(FormatMemorySize(MemStats.Remaining), Group, StatsTable, Z, MaxClip);
+  BufferColumn("Remaining", Group, StatsTable, Z, MaxClip);
+  BufferColumn(FormatMemorySize(MemStats.Remaining), Group, StatsTable, Z, MaxClip);
   NewRow(StatsTable);
 
-  Column("Total", Group, StatsTable, Z, MaxClip);
-  Column(FormatMemorySize(MemStats.TotalAllocated), Group, StatsTable, Z, MaxClip);
+  BufferColumn("Total", Group, StatsTable, Z, MaxClip);
+  BufferColumn(FormatMemorySize(MemStats.TotalAllocated), Group, StatsTable, Z, MaxClip);
   NewRow(StatsTable);
 
   return;
@@ -2510,10 +2510,10 @@ BufferDebugPushMetaData(debug_ui_render_group *Group, selected_arenas *SelectedA
 
   SetFontSize(&Group->Font, 24);
 
-  Column("Size", Group, Table, Z, MaxClip);
-  Column("Structs", Group, Table, Z, MaxClip);
-  Column("Push Count", Group, Table, Z, MaxClip);
-  Column("Name", Group, Table, Z, MaxClip);
+  BufferColumn("Size", Group, Table, Z, MaxClip);
+  BufferColumn("Structs", Group, Table, Z, MaxClip);
+  BufferColumn("Push Count", Group, Table, Z, MaxClip);
+  BufferColumn("Name", Group, Table, Z, MaxClip);
   NewRow(Table);
 
 
@@ -2589,10 +2589,10 @@ BufferDebugPushMetaData(debug_ui_render_group *Group, selected_arenas *SelectedA
     if (Collated->Name)
     {
       umm AllocationSize = GetAllocationSize(Collated);
-      Column( FormatMemorySize(AllocationSize), Group, Table, Z, MaxClip);
-      Column( FormatThousands(Collated->StructCount), Group, Table, Z, MaxClip);
-      Column( FormatThousands(Collated->PushCount), Group, Table, Z, MaxClip);
-      Column(Collated->Name, Group, Table, Z, MaxClip);
+      BufferColumn( FormatMemorySize(AllocationSize), Group, Table, Z, MaxClip);
+      BufferColumn( FormatThousands(Collated->StructCount), Group, Table, Z, MaxClip);
+      BufferColumn( FormatThousands(Collated->PushCount), Group, Table, Z, MaxClip);
+      BufferColumn(Collated->Name, Group, Table, Z, MaxClip);
       NewRow(Table);
     }
 
@@ -2639,9 +2639,9 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, v2 Mem
       NewLine(&MemoryArenaWindow->Table.Layout);
 
       interactable ExpandInteraction = StartInteractable(&MemoryArenaWindow->Table.Layout, (umm)"MemoryWindowExpandInteraction"^(umm)Current, MemoryArenaWindow);
-        Column(Current->Name, Group, MemoryArenaWindow);
-        Column(MemorySize(MemStats.TotalAllocated), Group, MemoryArenaWindow);
-        Column(ToString(MemStats.Pushes), Group, MemoryArenaWindow);
+        BufferColumn(Current->Name, Group, MemoryArenaWindow);
+        BufferColumn(MemorySize(MemStats.TotalAllocated), Group, MemoryArenaWindow);
+        BufferColumn(ToString(MemStats.Pushes), Group, MemoryArenaWindow);
         NewRow(MemoryArenaWindow);
       EndInteractable(MemoryArenaWindow, &ExpandInteraction);
 
@@ -2670,7 +2670,7 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, v2 Mem
       {
         v3 BorderColor = V3(1, 1, 1);
         rect2 TableBounds = GetBounds(&TmpTable);
-        Border(Group, &Group->TextGroup->UIGeo, TableBounds, BorderColor, 1.0f, DISABLE_CLIPPING);
+        BufferBorder(Group, &Group->TextGroup->UIGeo, TableBounds, BorderColor, 1.0f, DISABLE_CLIPPING);
       }
 
       local_persist table PushMetadataTable = {};
@@ -2680,7 +2680,7 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, v2 Mem
       {
         v3 BorderColor = V3(1, 1, 1);
         rect2 TableBounds = GetBounds(&PushMetadataTable);
-        Border(Group, &Group->TextGroup->UIGeo, TableBounds, BorderColor, 1.0f, DISABLE_CLIPPING);
+        BufferBorder(Group, &Group->TextGroup->UIGeo, TableBounds, BorderColor, 1.0f, DISABLE_CLIPPING);
       }
 
       MergeTables(&TmpTable, &MemoryArenaWindow->Table);
