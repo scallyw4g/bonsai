@@ -44,7 +44,7 @@ struct ui_render_command_button_end
 
 struct ui_render_command_table
 {
-  table_handle Handle;
+  window_layout* Window;
 };
 
 struct ui_render_command

@@ -1176,11 +1176,12 @@ PushButtonStart(debug_ui_render_group *Group, umm InteractionId)
 }
 
 function void
-PushTableStart(debug_ui_render_group *Group, table_handle *Handle)
+PushTableStart(debug_ui_render_group* Group, window_layout* Window)
 {
-  ui_render_command Command = {};
-  Command.Type = RenderCommand_TableStart;
-  Command.Table.Handle = *Handle;
+  ui_render_command Command = {
+    .Type = RenderCommand_TableStart,
+    .Table.Window = Window,
+  };
 
   PushUiRenderCommand(Group, &Command);
 
@@ -1374,7 +1375,7 @@ RenderTable(debug_ui_render_group* Group, ui_render_command_buffer* CommandBuffe
       {
           case RenderCommand_TableStart:
           {
-            Window = Command->Table.Handle.Window;
+            Window = Command->Table.Window;
             Layout = Window->Table.Layout;
           } break;
 
@@ -1596,38 +1597,10 @@ ComputePickRay(platform *Plat, m4* ViewProjection)
 }
 
 function void
-BufferChunkDetails(debug_ui_render_group* Group, world_chunk* Chunk, window_layout* Window)
+StartTable(debug_ui_render_group* Group, window_layout* Src)
 {
-  BufferColumn("WorldP", Group, Window, WHITE);
-  BufferColumn(ToString(Chunk->WorldP.x), Group, Window, WHITE);
-  BufferColumn(ToString(Chunk->WorldP.y), Group, Window, WHITE);
-  BufferColumn(ToString(Chunk->WorldP.z), Group, Window, WHITE);
-  NewRow(Window);
-
-  BufferColumn("PointsToLeaveRemaining", Group, Window, WHITE);
-  BufferColumn(ToString(Chunk->PointsToLeaveRemaining), Group, Window, WHITE);
-  NewRow(Window);
-
-  BufferColumn("BoundaryVoxels Count", Group, Window, WHITE);
-  BufferColumn(ToString(Chunk->EdgeBoundaryVoxelCount), Group, Window, WHITE);
-  NewRow(Window);
-
-  BufferColumn("Triangles", Group, Window, WHITE);
-  BufferColumn(ToString(Chunk->TriCount), Group, Window, WHITE);
-  NewRow(Window);
-
+  PushTableStart(Group, Src);
   return;
-}
-
-function table_handle
-StartTableBelow(debug_ui_render_group* Group, window_layout* Src)
-{
-  v2 Basis = Src->Table.Layout.Basis + V2(Src->Table.Layout.DrawBounds.Min.x, Src->Table.Layout.At.y);
-  table_handle Result = {.Window = Src};
-
-  PushTableStart(Group, &Result);
-
-  return Result;
 }
 
 function void
@@ -1635,6 +1608,30 @@ EndTable(debug_ui_render_group* Group)
 {
   PushTableEnd(Group);
   return;
+}
+
+function void
+PushChunkDetails(debug_ui_render_group* Group, world_chunk* Chunk, window_layout* Window)
+{
+  StartTable(Group, Window);
+    PushColumn(Group, CS("WorldP"));
+    PushColumn(Group, AsString(Chunk->WorldP.x));
+    PushColumn(Group, AsString(Chunk->WorldP.y));
+    PushColumn(Group, AsString(Chunk->WorldP.z));
+    PushNewRow(Group);
+
+    PushColumn(Group, CS("PointsToLeaveRemaining"));
+    PushColumn(Group, AsString(Chunk->PointsToLeaveRemaining));
+    PushNewRow(Group);
+
+    PushColumn(Group, CS("BoundaryVoxels Count"));
+    PushColumn(Group, AsString(Chunk->EdgeBoundaryVoxelCount));
+    PushNewRow(Group);
+
+    PushColumn(Group, CS("Triangles"));
+    PushColumn(Group, AsString(Chunk->TriCount));
+    PushNewRow(Group);
+  EndTable(Group);
 }
 
 function interactable_handle
@@ -1667,7 +1664,7 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
   local_persist window_layout ListingWindow = WindowLayout("Picked Chunks", LayoutBasis, V2(400, 150));
   PushWindowInteraction(Group, &ListingWindow);
 
-  table_handle PickerTable = StartTableBelow(Group, &ListingWindow);
+  StartTable(Group, &ListingWindow);
 
   for (u32 ChunkIndex = 0;
       ChunkIndex < DebugState->PickedChunkCount;
@@ -1742,7 +1739,8 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
                                                                   V2(1100.0f, 400.0f));
 
     PushWindowInteraction(Group, &ChunkDetailWindow);
-    BufferChunkDetails(Group, HotChunk, &ChunkDetailWindow);
+
+    PushChunkDetails(Group, HotChunk, &ChunkDetailWindow);
 
     local_persist window_layout PickerWindow = WindowLayout("Chunk View",
                                                             V2(GetAbsoluteMaxClip(&ChunkDetailWindow).x, GetAbsoluteMin(&ChunkDetailWindow).y) + WindowSpacing,

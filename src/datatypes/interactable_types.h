@@ -40,11 +40,6 @@ struct window_layout
   window_layout* NextHotWindow;
 };
 
-struct table_handle
-{
-  window_layout* Window;
-};
-
 struct interactable_handle
 {
   umm Id;
