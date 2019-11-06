@@ -1,3 +1,40 @@
+
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-parameter"
+function b32
+Hover(debug_ui_render_group* Group, interactable_handle *Interaction)
+{
+  b32 Result = False;
+
+  NotImplemented;
+
+  return Result;
+}
+
+function b32
+Clicked(debug_ui_render_group* Group, interactable_handle *Interaction)
+{
+  b32 Result = False;
+
+  NotImplemented;
+
+  return Result;
+}
+
+function b32
+Pressed(debug_ui_render_group* Group, interactable_handle *Interaction)
+{
+  b32 Result = False;
+
+  NotImplemented;
+
+  return Result;
+}
+
+#pragma clang diagnostic pop
+
+
 #if 0
 function b32
 Hover(debug_ui_render_group* Group, rect2 Bounds)

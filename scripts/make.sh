@@ -62,6 +62,7 @@ COMMON_COMPILER_OPTIONS="
   -Wno-switch-enum
   -Wno-undef
   -Wno-covered-switch-default
+  -Wno-c99-extensions
 "
 
 COMMON_LINKER_OPTIONS="-lpthread -lX11 -ldl -lGL"

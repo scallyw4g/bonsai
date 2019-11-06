@@ -164,6 +164,44 @@ MemorySize(u64 Number)
   return Buffer;
 }
 
+template<typename number_type>counted_string
+NumericValueToString(number_type Number, const char* Format)
+{
+  u32 BufferLength = 32;
+  char *Buffer = AllocateProtection(char, TranArena, BufferLength, False);
+  snprintf(Buffer, BufferLength, Format, Number);
+
+  counted_string Result = CountedString(Buffer);
+  return Result;
+}
+
+function counted_string
+AsString(u64 Number)
+{
+  counted_string Result = NumericValueToString(Number, "%lu");
+  return Result;
+}
+
+function counted_string
+AsString(s32 Number)
+{
+  counted_string Result = NumericValueToString(Number, "%i");
+  return Result;
+}
+
+function counted_string
+AsString(u32 Number)
+{
+  counted_string Result = NumericValueToString(Number, "%u");
+  return Result;
+}
+
+function counted_string
+AsString(r32 Number)
+{
+  counted_string Result = NumericValueToString(Number, "%.2f");
+  return Result;
+}
 function char*
 ToString(u64 Number)
 {
@@ -1045,6 +1083,100 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
 /****************************                     ****************************/
 
 
+#define INVALID_RENDER_COMMAND_INDEX (UINT_MAX)
+
+function u32
+PushUiRenderCommand(debug_ui_render_group *Group, ui_render_command* Command)
+{
+  ui_render_command_buffer *CommandBuffer = &Group->CommandBuffer;
+
+  u32 Result = CommandBuffer->CommandCount;
+
+  if (CommandBuffer->CommandCount < MAX_UI_RENDER_COMMAND_COUNT)
+  {
+    CommandBuffer->Commands[CommandBuffer->CommandCount++] = *Command;
+  }
+  else
+  {
+    Result = INVALID_RENDER_COMMAND_INDEX;
+    Error("Exhausted RenderCommandBuffer Space!");
+  }
+
+  return Result;
+}
+
+function void
+PushNewRow(debug_ui_render_group *Group)
+{
+  ui_render_command Command = {
+    .Type = RenderCommand_NewRow
+  };
+
+  PushUiRenderCommand(Group, &Command);
+
+  return;
+}
+
+function void
+PushColumn(debug_ui_render_group *Group, counted_string String)
+{
+  ui_render_command Command = {
+    .Type = RenderCommand_Column,
+    .Column.String = String
+  };
+
+  PushUiRenderCommand(Group, &Command);
+
+  return;
+}
+
+function u32
+PushButtonEnd(debug_ui_render_group *Group)
+{
+  ui_render_command Command = { .Type = RenderCommand_ButtonEnd };
+  u32 OnePastEndIndex = PushUiRenderCommand(Group, &Command) + 1;
+  return OnePastEndIndex;
+}
+
+function interactable_handle
+PushButtonStart(debug_ui_render_group *Group)
+{
+  ui_render_command Command = {
+    .Type = RenderCommand_ButtonStart
+  };
+
+  u32 ButtonStartIndex = PushUiRenderCommand(Group, &Command);
+
+  interactable_handle Handle = {
+    .StartIndex = ButtonStartIndex
+  };
+
+  return Handle;
+}
+
+function void
+PushTableEnd(debug_ui_render_group *Group)
+{
+  ui_render_command Command = {
+    .Type = RenderCommand_TableEnd,
+  };
+
+  PushUiRenderCommand(Group, &Command);
+
+  return;
+}
+
+function void
+PushTableStart(debug_ui_render_group *Group, table_handle *Handle)
+{
+  ui_render_command Command = {};
+  Command.Type = RenderCommand_TableStart;
+  Command.Table.Handle = *Handle;
+
+  PushUiRenderCommand(Group, &Command);
+
+  return;
+}
 
 function void
 PushWindowInteraction(debug_ui_render_group *Group, window_layout *Window)
@@ -1053,16 +1185,7 @@ PushWindowInteraction(debug_ui_render_group *Group, window_layout *Window)
   Command.Type = RenderCommand_WindowInteractions;
   Command.WindowInteraction.Window = Window;
 
-  ui_render_command_buffer *CommandBuffer = &Group->CommandBuffer;
-  if (CommandBuffer->CommandCount < MAX_UI_RENDER_COMMAND_COUNT)
-  {
-    CommandBuffer->Commands[CommandBuffer->CommandCount++] = Command;
-  }
-  else
-  {
-    Error("Exhausted RenderCommandBuffer Space!");
-  }
-
+  PushUiRenderCommand(Group, &Command);
   return;
 }
 
@@ -1267,6 +1390,44 @@ BufferChunkDetails(debug_ui_render_group* Group, world_chunk* Chunk, window_layo
   return;
 }
 
+function table_handle
+StartTableBelow(debug_ui_render_group* Group, window_layout* Src)
+{
+  v2 Basis = Src->Table.Layout.Basis + V2(Src->Table.Layout.DrawBounds.Min.x, Src->Table.Layout.At.y);
+  table_handle Result = {.Window = Src, .Basis = Basis};
+
+  PushTableStart(Group, &Result);
+
+  return Result;
+}
+
+function void
+EndTable(debug_ui_render_group* Group)
+{
+  PushTableEnd(Group);
+  return;
+}
+
+function interactable_handle
+StartButton(debug_ui_render_group* Group)
+{
+  interactable_handle Result = PushButtonStart(Group);
+  return Result;
+}
+
+function void
+EndButton(debug_ui_render_group* Group, interactable_handle* Handle)
+{
+  Handle->OnePastEndIndex = PushButtonEnd(Group);
+  return;
+}
+
+function void
+NewRow(debug_ui_render_group* Group)
+{
+  PushNewRow(Group);
+}
+
 function void
 DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 {
@@ -1276,6 +1437,8 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 
   local_persist window_layout ListingWindow = WindowLayout("Picked Chunks", LayoutBasis, V2(400, 150));
   PushWindowInteraction(Group, &ListingWindow);
+
+  table_handle PickerTable = StartTableBelow(Group, &ListingWindow);
 
   for (u32 ChunkIndex = 0;
       ChunkIndex < DebugState->PickedChunkCount;
@@ -1287,37 +1450,32 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
     v2 Clip = GetAbsoluteMaxClip(&ListingWindow);
     u8 Color = WHITE;
 
-    // Create a new table so we get zeroed DrawBounds
-    table PickedChunkTable = TableLayoutBelow(&ListingWindow.Table);
-    interactable PickerListInteraction = StartInteractable(&PickedChunkTable, (umm)&ListingWindow, &ListingWindow);
-      Column(ToString(Chunk->WorldP.x), Group, &PickedChunkTable, Z, Clip, Color);
-      Column(ToString(Chunk->WorldP.y), Group, &PickedChunkTable, Z, Clip, Color);
-      Column(ToString(Chunk->WorldP.z), Group, &PickedChunkTable, Z, Clip, Color);
-    EndInteractable(&PickedChunkTable, &PickerListInteraction);
+    interactable_handle PositionButton = StartButton(Group);
+      PushColumn(Group, AsString(Chunk->WorldP.x) );
+      PushColumn(Group, AsString(Chunk->WorldP.y) );
+      PushColumn(Group, AsString(Chunk->WorldP.z) );
+    EndButton(Group, &PositionButton);
 
-    MergeTables(&PickedChunkTable, &ListingWindow.Table);
-
-    if (Clicked(Group, &PickerListInteraction))
-    {
-      DebugState->HotChunk = Chunk;
-    }
+    if (Clicked(Group, &PositionButton)) { DebugState->HotChunk = Chunk; }
 
     ui_style ButtonStyling = {};
     ButtonStyling.Color = V3(1,0,0);
-    if (Button("X", Group, &ListingWindow, &ButtonStyling, (umm)Chunk))
+
+    interactable_handle CloseButton = StartButton(Group);
+      PushColumn(Group, CountedString("X"));
+    EndButton(Group, &CloseButton);
+
+    if ( Clicked(Group, &CloseButton) )
     {
       world_chunk** SwapChunk = PickedChunks+ChunkIndex;
-      if (*SwapChunk == DebugState->HotChunk)
-      {
-        DebugState->HotChunk = 0;
-      }
-
-      *SwapChunk = PickedChunks[DebugState->PickedChunkCount-1];
-      DebugState->PickedChunkCount = DebugState->PickedChunkCount-1;
+      if (*SwapChunk == DebugState->HotChunk) { DebugState->HotChunk = 0; }
+      *SwapChunk = PickedChunks[--DebugState->PickedChunkCount];
     }
 
-    NewRow(&ListingWindow);
+    NewRow(Group);
   }
+
+  EndTable(Group);
 
   world_chunk *HotChunk = DebugState->HotChunk;
   if (HotChunk)

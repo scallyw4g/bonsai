@@ -40,6 +40,18 @@ struct window_layout
   window_layout* NextHotWindow;
 };
 
+struct table_handle
+{
+  window_layout* Window;
+  v2 Basis;
+};
+
+struct interactable_handle
+{
+  umm StartIndex;
+  umm OnePastEndIndex;
+};
+
 struct interactable
 {
   umm ID;
@@ -80,7 +92,7 @@ StandardStyling(v3 StartingColor, v3 HoverMultiplier = V3(1.3f), v3 ClickMultipl
   return Result;
 }
 
-window_layout
+function window_layout
 WindowLayout(const char* Title, v2 Basis = V2(150, 150), v2 MaxClip = V2(1500, 800))
 {
   window_layout Window = {};
@@ -91,7 +103,7 @@ WindowLayout(const char* Title, v2 Basis = V2(150, 150), v2 MaxClip = V2(1500, 8
   return Window;
 }
 
-rect2
+function rect2
 GetWindowBounds(window_layout *Window)
 {
   v2 TopLeft = Window->Table.Layout.Basis;
@@ -100,7 +112,7 @@ GetWindowBounds(window_layout *Window)
   return Result;
 }
 
-interactable
+function interactable
 Interactable(v2 MinP, v2 MaxP, umm ID, window_layout *Window)
 {
   interactable Result = {};
@@ -112,7 +124,7 @@ Interactable(v2 MinP, v2 MaxP, umm ID, window_layout *Window)
   return Result;
 }
 
-interactable
+function interactable
 Interactable(rect2 Rect, umm ID, window_layout *Window)
 {
   interactable Result = Interactable(Rect.Min, Rect.Max, ID, Window);
@@ -121,7 +133,7 @@ Interactable(rect2 Rect, umm ID, window_layout *Window)
 
 v2 GetAbsoluteAt(layout* Layout);
 
-inline interactable
+function interactable
 StartInteractable(layout* Layout, umm ID, window_layout *Window)
 {
   v2 StartingAt = GetAbsoluteAt(Layout);
@@ -129,28 +141,28 @@ StartInteractable(layout* Layout, umm ID, window_layout *Window)
   return Result;
 }
 
-inline interactable
+function interactable
 StartInteractable(table* Table, umm ID, window_layout *Window)
 {
   interactable Result = StartInteractable(&Table->Layout, ID, Window);
   return Result;
 }
 
-rect2
+function rect2
 Rect2(s32 Flood)
 {
   rect2 Result = RectMinMax(V2(Flood), V2(Flood));
   return Result;
 }
 
-rect2
+function rect2
 Rect2(interactable Interaction)
 {
   rect2 Result = RectMinMax(Interaction.MinP, Interaction.MaxP);
   return Result;
 }
 
-rect2
+function rect2
 Rect2(interactable *Interaction)
 {
   rect2 Result = Rect2(*Interaction);
