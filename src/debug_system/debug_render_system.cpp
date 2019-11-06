@@ -1369,6 +1369,70 @@ struct render_state
   interactable CurrentInteraction;
 };
 
+function void
+ButtonStart(debug_ui_render_group* Group, render_state* RenderState, umm ButtonId)
+{
+  Assert(!RenderState->CurrentInteraction.ID);
+  Assert(RenderState->Window);
+
+  RenderState->Layout.DrawBounds = {};
+
+  RenderState->CurrentInteraction.ID = ButtonId;
+  RenderState->CurrentInteraction.MinP = GetAbsoluteAt(&RenderState->Layout);
+  RenderState->CurrentInteraction.MaxP = V2(0);
+  RenderState->CurrentInteraction.Window = RenderState->Window;
+
+  if (RenderState->CurrentInteraction.ID == Group->HoverInteractionId)
+  {
+    RenderState->Color = V3(1,0,0);
+    Group->HoverInteractionId = 0;
+  }
+  if (RenderState->CurrentInteraction.ID == Group->PressedInteractionId)
+  {
+    RenderState->Color = V3(0,0,1);
+    Group->PressedInteractionId = 0;
+  }
+  if (RenderState->CurrentInteraction.ID == Group->ClickedInteractionId)
+  {
+    RenderState->Color = V3(0,1,0);
+    Group->ClickedInteractionId = 0;
+  }
+
+  return;
+}
+
+function void
+ButtonEnd(debug_ui_render_group *Group, render_state* RenderState)
+{
+  Assert(RenderState->CurrentInteraction.ID);
+  Assert(RenderState->Window);
+
+  RenderState->CurrentInteraction.MaxP = GetAbsoluteDrawBoundsMax(&RenderState->Layout);
+  MergeLayouts(&RenderState->Layout, &RenderState->Window->Table.Layout);
+
+  button_interaction_result Button = ButtonInteraction(Group, RectMinMax(RenderState->CurrentInteraction.MinP, RenderState->CurrentInteraction.MaxP ), RenderState->CurrentInteraction.ID, RenderState->Window);
+
+  if (Button.Hover)
+  {
+    Group->HoverInteractionId = RenderState->CurrentInteraction.ID;
+  }
+
+  if (Button.Clicked)
+  {
+    Group->ClickedInteractionId = RenderState->CurrentInteraction.ID;
+  }
+
+  if (Button.Pressed)
+  {
+    Group->PressedInteractionId = RenderState->CurrentInteraction.ID;
+  }
+
+  RenderState->CurrentInteraction.ID = 0;
+  RenderState->Color = V3(1);
+
+  return;
+}
+
 function u32
 RenderTable(debug_ui_render_group* Group, ui_render_command_buffer* CommandBuffer, u32 FirstCommandIndex)
 {
@@ -1409,61 +1473,12 @@ if (TableRenderParams.OnePastTableEnd)
 
         case RenderCommand_ButtonStart:
         {
-          Assert(!RenderState.CurrentInteraction.ID);
-          Assert(RenderState.Window);
-
-          RenderState.Layout.DrawBounds = {};
-
-          RenderState.CurrentInteraction.ID = Command->ButtonStart.ID;
-          RenderState.CurrentInteraction.MinP = GetAbsoluteAt(&RenderState.Layout);
-          RenderState.CurrentInteraction.MaxP = V2(0);
-          RenderState.CurrentInteraction.Window = RenderState.Window;
-
-          if (RenderState.CurrentInteraction.ID == Group->HoverInteractionId)
-          {
-            RenderState.Color = V3(1,0,0);
-            Group->HoverInteractionId = 0;
-          }
-          if (RenderState.CurrentInteraction.ID == Group->PressedInteractionId)
-          {
-            RenderState.Color = V3(0,0,1);
-            Group->PressedInteractionId = 0;
-          }
-          if (RenderState.CurrentInteraction.ID == Group->ClickedInteractionId)
-          {
-            RenderState.Color = V3(0,1,0);
-            Group->ClickedInteractionId = 0;
-          }
-
+          ButtonStart(Group, &RenderState, Command->ButtonStart.ID);
         } break;
 
         case RenderCommand_ButtonEnd:
         {
-          Assert(RenderState.CurrentInteraction.ID);
-          Assert(RenderState.Window);
-
-          RenderState.CurrentInteraction.MaxP = GetAbsoluteDrawBoundsMax(&RenderState.Layout);
-          MergeLayouts(&RenderState.Layout, &RenderState.Window->Table.Layout);
-
-          button_interaction_result Button = ButtonInteraction(Group, RectMinMax(RenderState.CurrentInteraction.MinP, RenderState.CurrentInteraction.MaxP ), RenderState.CurrentInteraction.ID, RenderState.Window);
-
-          if (Button.Hover)
-          {
-            Group->HoverInteractionId = RenderState.CurrentInteraction.ID;
-          }
-
-          if (Button.Clicked)
-          {
-            Group->ClickedInteractionId = RenderState.CurrentInteraction.ID;
-          }
-
-          if (Button.Pressed)
-          {
-            Group->PressedInteractionId = RenderState.CurrentInteraction.ID;
-          }
-
-          RenderState.CurrentInteraction.ID = 0;
-          RenderState.Color = V3(1);
+          ButtonEnd(Group, &RenderState);
         } break;
 
         case RenderCommand_TableEnd:
