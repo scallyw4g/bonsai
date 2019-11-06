@@ -104,6 +104,8 @@ AdvanceSpaces(u32 N, layout *Layout, font *Font)
   return;
 }
 
+// FIXME(Jesse): This doesn't do what the user might expect if they just dump
+// a bunch of NewLine() functions in a row
 function rect2
 NewLine(layout *Layout)
 {
@@ -589,9 +591,8 @@ BufferUntexturedQuad(debug_ui_render_group *Group, untextured_2d_geometry_buffer
 }
 
 function r32
-BufferChar(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, u32 CharIndex, v2 MinP, font *Font, const char *Text, v3 Color, r32 Z, v2 MaxClip)
+BufferChar(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, u8 Char, v2 MinP, font *Font, v3 Color, r32 Z, v2 MaxClip)
 {
-  u8 Char = (u8)Text[CharIndex];
   rect2 UV = UVsForChar(Char);
 
   { // Black Drop-shadow
@@ -617,19 +618,17 @@ BufferChar(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, u32 C
 }
 
 function r32
-BufferChar(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, u32 CharIndex, v2 MinP, font *Font, const char *Text, u32 Color, r32 Z, v2 MaxClip)
+BufferChar(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, u8 Char, v2 MinP, font *Font, u32 Color, r32 Z, v2 MaxClip)
 {
   v3 ColorVector = GetColorData(Color).xyz;
-  r32 Result = BufferChar(Group, Geo, CharIndex, MinP, Font, Text, ColorVector, Z, MaxClip);
+  r32 Result = BufferChar(Group, Geo, Char, MinP, Font, ColorVector, Z, MaxClip);
   return Result;
 }
 
 function void
-BufferValue(const char* Text, debug_ui_render_group *Group, layout *Layout, v3 Color, r32 Z, v2 MaxClip, ui_style* Style = 0)
+BufferValue(counted_string Text, debug_ui_render_group *Group, layout *Layout, v3 Color, r32 Z, v2 MaxClip, ui_style* Style = 0)
 {
   textured_2d_geometry_buffer *Geo = &Group->TextGroup->TextGeo;
-
-  u32 QuadCount = (u32)Length(Text);
 
   v2 Padding = Style? Style->Padding : V2(0.0f);
 
@@ -640,11 +639,11 @@ BufferValue(const char* Text, debug_ui_render_group *Group, layout *Layout, v3 C
   Layout->At.x += PadX;
 
   for ( u32 CharIndex = 0;
-      CharIndex < QuadCount;
+      CharIndex < Text.Count;
       CharIndex++ )
   {
     v2 MinP = GetAbsoluteAt(Layout) + PadY;
-    Layout->At.x += BufferChar(Group, Geo, CharIndex, MinP, &Group->Font, Text, Color, Z, MaxClip);
+    Layout->At.x += BufferChar(Group, Geo, (u8)Text.Start[CharIndex], MinP, &Group->Font, Color, Z, MaxClip);
     continue;
   }
 
@@ -654,6 +653,13 @@ BufferValue(const char* Text, debug_ui_render_group *Group, layout *Layout, v3 C
 
   AdvanceClip(Layout, MaxClipP);
 
+  return;
+}
+
+function void
+BufferValue(const char* Text, debug_ui_render_group *Group, layout *Layout, v3 Color, r32 Z, v2 MaxClip, ui_style* Style = 0)
+{
+  BufferValue(CountedString(Text), Group, Layout, Color, Z, MaxClip, Style);
   return;
 }
 
@@ -780,6 +786,25 @@ BufferColumn( r32 Perc, u32 ColumnWidth, debug_ui_render_group *Group, layout *L
 }
 
 function rect2
+Column(counted_string Text, debug_ui_render_group* Group, layout* Layout, u32 ColumnWidth, r32 Z, v2 MaxClip, u8 Color = WHITE)
+{
+  u32 Pad = ColumnWidth - (u32)Text.Count;
+
+  AdvanceSpaces(Pad, Layout, &Group->Font);
+
+  v2 Min = Layout->Basis + Layout->At;
+  v2 Max = Min + GetTextBounds((u32)Text.Count, &Group->Font);
+  rect2 Bounds = RectMinMax(Min, Max);
+
+  ui_style PadParams = {};
+  PadParams.Padding = V2(10, 10);
+
+  BufferValue(Text, Group, Layout, GetColorData(Color).xyz, Z, MaxClip, &PadParams);
+
+  return Bounds;
+}
+
+function rect2
 Column(const char* ColumnText, debug_ui_render_group* Group, table* Table, r32 Z, v2 MaxClip, u8 Color = WHITE)
 {
   layout *Layout = &Table->Layout;
@@ -827,7 +852,7 @@ BufferTextAt(debug_ui_render_group *Group, v2 BasisP, const char *Text, u32 Colo
       CharIndex++ )
   {
     v2 MinP = BasisP + V2(Group->Font.Size.x*CharIndex, 0);
-    DeltaX += BufferChar(Group, Geo, CharIndex, MinP, &Group->Font, Text, Color, Z, ClipMax);
+    DeltaX += BufferChar(Group, Geo, (u8)Text[CharIndex], MinP, &Group->Font, Color, Z, ClipMax);
     continue;
   }
 
@@ -1083,6 +1108,8 @@ WindowInteractions(debug_ui_render_group* Group, window_layout* Window)
 /****************************                     ****************************/
 
 
+// TODO(Jesse): Test this actually gets respected!!
+// @respect_invalid_render_command_index
 #define INVALID_RENDER_COMMAND_INDEX (UINT_MAX)
 
 function u32
@@ -1098,6 +1125,8 @@ PushUiRenderCommand(debug_ui_render_group *Group, ui_render_command* Command)
   }
   else
   {
+    // TODO(Jesse): Test this actually gets respected!!
+    // @respect_invalid_render_command_index
     Result = INVALID_RENDER_COMMAND_INDEX;
     Error("Exhausted RenderCommandBuffer Space!");
   }
@@ -1215,7 +1244,7 @@ GetHighestWindow(debug_ui_render_group* Group, ui_render_command_buffer* Command
 
       } break;
 
-      InvalidDefaultCase;
+      default: {} break;
     }
   }
 
@@ -1226,6 +1255,139 @@ GetHighestWindow(debug_ui_render_group* Group, ui_render_command_buffer* Command
   }
 
   return HighestWindow;
+}
+
+function ui_render_command*
+GetCommand(ui_render_command_buffer* CommandBuffer, u32 CommandIndex)
+{
+  ui_render_command* Command = 0;
+  if (CommandIndex < CommandBuffer->CommandCount)
+    { Command = CommandBuffer->Commands+CommandIndex; }
+  return Command;
+}
+
+// TODO(Jesse): Bulletproof this such that we can have any number of columns!
+// @max_column_widths
+#define MAX_COLUMN_WIDTHS (128)
+static u32 ColumnWidths[MAX_COLUMN_WIDTHS] = {};
+
+function u32
+RenderTable(debug_ui_render_group* Group, ui_render_command_buffer* CommandBuffer, u32 FirstCommandIndex)
+{
+  u32 Result = 0;
+
+  u32 RowCount = 0;
+  u32 ColumnCount = 0;
+  u32 MaxColumnCount = 0;
+
+  {
+    u32 CommandIndex = FirstCommandIndex;
+    ui_render_command* Command =  GetCommand(CommandBuffer, CommandIndex++);
+    Assert(Command && Command->Type == RenderCommand_TableStart);
+
+    while (Command && !Result)
+    {
+      switch(Command->Type)
+      {
+          case RenderCommand_Column:
+          {
+            // @max_column_widths
+            Assert(ColumnCount < MAX_COLUMN_WIDTHS);
+            ColumnWidths[ColumnCount] = Max((u32)Command->Column.String.Count, ColumnWidths[ColumnCount]);
+            ++ColumnCount;
+          } break;
+
+          case RenderCommand_NewRow:
+          {
+            MaxColumnCount = Max(MaxColumnCount, ColumnCount);
+            ColumnCount = 0;
+            RowCount++;
+          } break;
+
+          case RenderCommand_ButtonStart:
+          {
+          } break;
+
+          case RenderCommand_ButtonEnd:
+          {
+          } break;
+
+          case RenderCommand_TableEnd:
+          {
+            Result = CommandIndex;
+          } break;
+
+          case RenderCommand_TableStart: {} break;
+
+          InvalidDefaultCase;
+      }
+
+      Command =  GetCommand(CommandBuffer, CommandIndex++);
+    }
+  }
+
+  if (Result)
+  {
+    u32 ColumnIndex = 0;
+
+    window_layout* Window = 0;
+    layout Layout = {};
+
+    u32 CommandIndex = FirstCommandIndex;
+    while (CommandIndex < Result)
+    {
+      ui_render_command* Command = GetCommand(CommandBuffer, CommandIndex++);
+      switch(Command->Type)
+      {
+          case RenderCommand_TableStart:
+          {
+            Window = Command->Table.Handle.Window;
+            Layout.Basis = Window->Table.Layout.Basis;
+          } break;
+
+          case RenderCommand_Column:
+          {
+            if(Window)
+            {
+              Column(Command->Column.String, Group, &Layout, ColumnWidths[ColumnIndex], zIndexForText(Window, Group), GetAbsoluteMaxClip(Window));
+            }
+            else
+            {
+              Error("No Window found to render column text!");
+            }
+
+            ++ColumnIndex;
+          } break;
+
+          case RenderCommand_NewRow:
+          {
+            ColumnIndex = 0;
+            NewLine(&Layout);
+          } break;
+
+          case RenderCommand_ButtonStart:
+          {
+          } break;
+
+          case RenderCommand_ButtonEnd:
+          {
+          } break;
+
+          case RenderCommand_TableEnd:
+          {
+            Assert(CommandIndex == Result);
+          } break;
+
+          InvalidDefaultCase;
+        }
+    }
+  }
+  else
+  {
+    Error("Command tree parse error while rendering table");
+  }
+
+  return Result;
 }
 
 function void
@@ -1241,6 +1403,11 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
       case RenderCommand_WindowInteractions:
       {
         WindowInteractions(Group, Command->WindowInteraction.Window);
+      } break;
+
+      case RenderCommand_TableStart:
+      {
+        CommandIndex = RenderTable(Group, CommandBuffer, CommandIndex);
       } break;
 
       InvalidDefaultCase;

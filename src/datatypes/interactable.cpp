@@ -7,7 +7,7 @@ Hover(debug_ui_render_group* Group, interactable_handle *Interaction)
 {
   b32 Result = False;
 
-  NotImplemented;
+  /* NotImplemented; */
 
   return Result;
 }
@@ -17,7 +17,7 @@ Clicked(debug_ui_render_group* Group, interactable_handle *Interaction)
 {
   b32 Result = False;
 
-  NotImplemented;
+  /* NotImplemented; */
 
   return Result;
 }
@@ -27,7 +27,7 @@ Pressed(debug_ui_render_group* Group, interactable_handle *Interaction)
 {
   b32 Result = False;
 
-  NotImplemented;
+  /* NotImplemented; */
 
   return Result;
 }

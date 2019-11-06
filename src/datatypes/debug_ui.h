@@ -25,7 +25,7 @@ enum ui_render_command_type
 
 struct ui_render_command_window_interaction
 {
-  window_layout *Window;
+  window_layout* Window;
 };
 
 struct ui_render_command_column

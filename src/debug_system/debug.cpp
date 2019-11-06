@@ -220,11 +220,11 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     InvalidDefaultCase;
   }
 
-  FlushBuffer(TextGroup, &TextGroup->UIGeo, UiGroup->ScreenDim);
-  FlushBuffer(TextGroup, &TextGroup->TextGeo, UiGroup->ScreenDim);
-
   UiGroup->HighestWindow = GetHighestWindow(UiGroup, &UiGroup->CommandBuffer);
   FlushCommandBuffer(UiGroup, &UiGroup->CommandBuffer);
+
+  FlushBuffer(TextGroup, &TextGroup->UIGeo, UiGroup->ScreenDim);
+  FlushBuffer(TextGroup, &TextGroup->TextGeo, UiGroup->ScreenDim);
 
   DebugState->BytesBufferedToCard = 0;
 
