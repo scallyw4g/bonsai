@@ -1294,71 +1294,107 @@ RenderButton(debug_ui_render_group* Group, ui_render_command_buffer* CommandBuff
 }
 #endif
 
-// TODO(Jesse): Bulletproof this such that we can have any number of columns!
-// @max_column_widths
-// @nested_tables
-#define MAX_COLUMN_WIDTHS (128)
-static u32 ColumnWidths[MAX_COLUMN_WIDTHS] = {};
+function u32
+GetColumnCountForTable(ui_render_command_buffer* CommandBuffer, u32 CommandIndex)
+{
+  ui_render_command* Command =  GetCommand(CommandBuffer, CommandIndex++);
+  Assert(Command && Command->Type == RenderCommand_TableStart);
+
+  u32 ColumnIndex = 0;
+  u32 ColumnCount = 0;
+
+  b32 FoundEnd = False;
+  while (Command && !FoundEnd)
+  {
+    switch(Command->Type)
+    {
+        case RenderCommand_Column:
+        {
+          ++ColumnIndex;
+        } break;
+
+        case RenderCommand_NewRow:
+        {
+          ColumnCount = Max(ColumnCount, ColumnIndex);
+          ColumnIndex = 0;
+        } break;
+
+        case RenderCommand_TableEnd:
+        {
+          FoundEnd = True;
+        } break;
+
+        default: {} break;
+    }
+
+    Command = GetCommand(CommandBuffer, CommandIndex++);
+  }
+
+  return ColumnCount;
+}
+
+struct table_render_params
+{
+  u32 *ColumnWidths;
+  u32 ColumnCount;
+  u32 OnePastTableEnd;
+};
+
+function table_render_params
+GetTableRenderParams(ui_render_command_buffer* CommandBuffer, u32 CommandIndex)
+{
+  table_render_params Result = {};
+  Result.ColumnCount = GetColumnCountForTable(CommandBuffer, CommandIndex);
+  Result.ColumnWidths = Allocate(u32, TranArena, Result.ColumnCount);
+
+  ui_render_command* Command =  GetCommand(CommandBuffer, CommandIndex++);
+  Assert(Command && Command->Type == RenderCommand_TableStart);
+
+  u32 ColumnIndex = 0;
+  while (Command && !Result.OnePastTableEnd)
+  {
+    switch(Command->Type)
+    {
+        case RenderCommand_Column:
+        {
+          Assert(ColumnIndex < Result.ColumnCount);
+          Result.ColumnWidths[ColumnIndex] = Max((u32)Command->Column.String.Count, Result.ColumnWidths[ColumnIndex]);
+          ++ColumnIndex;
+        } break;
+
+        case RenderCommand_NewRow:
+        {
+          ColumnIndex = 0;
+        } break;
+        case RenderCommand_TableEnd:
+        {
+          Result.OnePastTableEnd = CommandIndex;
+        } break;
+
+        default: {} break;
+    }
+
+    Command = GetCommand(CommandBuffer, CommandIndex++);
+  }
+
+  return Result;
+
+};
+
+function u32
+GetColumnWidth(table_render_params* Params, u32 ColumnIndex)
+{
+  Assert(ColumnIndex < Params->ColumnCount);
+  u32 Result = Params->ColumnWidths[ColumnIndex];
+  return Result;
+}
 
 function u32
 RenderTable(debug_ui_render_group* Group, ui_render_command_buffer* CommandBuffer, u32 FirstCommandIndex)
 {
-  u32 OnePastTableEnd = 0;
+  table_render_params TableRenderParams = GetTableRenderParams(CommandBuffer, FirstCommandIndex);
 
-  u32 RowCount = 0;
-  u32 ColumnCount = 0;
-  u32 MaxColumnCount = 0;
-
-  {
-    u32 CommandIndex = FirstCommandIndex;
-    ui_render_command* Command =  GetCommand(CommandBuffer, CommandIndex++);
-    Assert(Command && Command->Type == RenderCommand_TableStart);
-
-    while (Command && !OnePastTableEnd)
-    {
-      switch(Command->Type)
-      {
-          case RenderCommand_Column:
-          {
-            // @max_column_widths
-            // @nested_tables
-            Assert(ColumnCount < MAX_COLUMN_WIDTHS);
-            ColumnWidths[ColumnCount] = Max((u32)Command->Column.String.Count, ColumnWidths[ColumnCount]);
-            ++ColumnCount;
-          } break;
-
-          case RenderCommand_NewRow:
-          {
-            MaxColumnCount = Max(MaxColumnCount, ColumnCount);
-            ColumnCount = 0;
-            RowCount++;
-          } break;
-
-          case RenderCommand_ButtonStart:
-          {
-          } break;
-
-          case RenderCommand_ButtonEnd:
-          {
-          } break;
-
-          case RenderCommand_TableEnd:
-          {
-            OnePastTableEnd = CommandIndex;
-          } break;
-
-          // TODO(Jesse): Nested tables!
-          // @nested_tables
-          case RenderCommand_TableStart: {} break;
-
-          InvalidDefaultCase;
-      }
-
-      Command =  GetCommand(CommandBuffer, CommandIndex++);
-    }
-  }
-
-  if (OnePastTableEnd)
+  if (TableRenderParams.OnePastTableEnd)
   {
     u32 ColumnIndex = 0;
 
@@ -1368,7 +1404,7 @@ RenderTable(debug_ui_render_group* Group, ui_render_command_buffer* CommandBuffe
     layout Layout = {};
 
     u32 CommandIndex = FirstCommandIndex;
-    while (CommandIndex < OnePastTableEnd)
+    while (CommandIndex < TableRenderParams.OnePastTableEnd)
     {
       ui_render_command* Command = GetCommand(CommandBuffer, CommandIndex++);
       switch(Command->Type)
@@ -1382,9 +1418,8 @@ RenderTable(debug_ui_render_group* Group, ui_render_command_buffer* CommandBuffe
           case RenderCommand_Column:
           {
             Assert(Window);
-            Assert(ColumnIndex < MaxColumnCount);
-            BufferColumn(Command->Column.String, Group, &Layout, ColumnWidths[ColumnIndex], zIndexForText(Window, Group), GetAbsoluteMaxClip(Window));
-            ++ColumnIndex;
+            u32 ColumnWidth = GetColumnWidth(&TableRenderParams, ColumnIndex++);
+            BufferColumn(Command->Column.String, Group, &Layout, ColumnWidth, zIndexForText(Window, Group), GetAbsoluteMaxClip(Window));
           } break;
 
           case RenderCommand_NewRow:
@@ -1436,7 +1471,7 @@ RenderTable(debug_ui_render_group* Group, ui_render_command_buffer* CommandBuffe
 
           case RenderCommand_TableEnd:
           {
-            Assert(CommandIndex == OnePastTableEnd);
+            Assert(CommandIndex == TableRenderParams.OnePastTableEnd);
             Window = 0;
           } break;
 
@@ -1449,7 +1484,7 @@ RenderTable(debug_ui_render_group* Group, ui_render_command_buffer* CommandBuffe
     Error("No RenderCommand_TableEnd detected.");
   }
 
-  return OnePastTableEnd;
+  return TableRenderParams.OnePastTableEnd;
 }
 
 function void
