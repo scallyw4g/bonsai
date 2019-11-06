@@ -1,15 +1,27 @@
+#if 0
 function b32
 Hover(debug_ui_render_group* Group, rect2 Bounds)
 {
   b32 Result = IsInsideRect(Bounds, *Group->MouseP);
   return Result;
 }
+#endif
+
+rect2 GetClippingBounds(window_layout* Window);
 
 function b32
 Hover(debug_ui_render_group* Group, interactable *Interaction)
 {
+  v2 MouseP = *Group->MouseP;
+
   b32 HotWindowMatchesInteractionWindow = (Group->HighestWindow == Interaction->Window);
-  b32 Result = HotWindowMatchesInteractionWindow && Hover( Group, Rect2(Interaction) );
+  b32 Result = HotWindowMatchesInteractionWindow && IsInsideRect(Rect2(Interaction), MouseP);
+
+  if (Interaction->Window)
+  {
+    Result = Result && IsInsideRect( GetClippingBounds(Interaction->Window), MouseP );
+  }
+
   return Result;
 }
 
@@ -50,9 +62,9 @@ Clicked(debug_ui_render_group* Group, interactable *Interaction)
   b32 Clicked = Group->Input->LMB.Clicked || Group->Input->RMB.Clicked;
 
   b32 Result = False;
-  if (Clicked &&
-      CurrentInteraction == 0 &&
-      Hover(Group, Interaction))
+  if ( Clicked &&
+       !CurrentInteraction &&
+       Hover(Group, Interaction))
   {
     Group->PressedInteraction = *Interaction;
     Result = True;

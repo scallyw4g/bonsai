@@ -1286,7 +1286,7 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
     v2 Clip = GetAbsoluteMaxClip(&ListingWindow);
     u8 Color = WHITE;
 
-    // Create a new table so we get reset DrawBounds
+    // Create a new table so we get zeroed DrawBounds
     table PickedChunkTable = TableLayoutBelow(&ListingWindow.Table);
     interactable PickerListInteraction = StartInteractable(&PickedChunkTable, (umm)&ListingWindow, &ListingWindow);
       Column(ToString(Chunk->WorldP.x), Group, &PickedChunkTable, Z, Clip, Color);

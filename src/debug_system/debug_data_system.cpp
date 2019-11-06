@@ -574,6 +574,14 @@ GetAbsoluteMaxClip(window_layout *Window)
 }
 
 rect2
+GetClippingBounds(window_layout* Window)
+{
+  rect2 Result = RectMinMax(Window->Table.Layout.Basis, Window->Table.Layout.Basis + Window->MaxClip);
+  return Result;
+}
+
+
+rect2
 GetBounds(table* Table)
 {
   rect2 Bounds = RectMinMax(Table->Layout.Basis, GetAbsoluteDrawBoundsMax(&Table->Layout));
