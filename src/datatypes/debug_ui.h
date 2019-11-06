@@ -35,6 +35,7 @@ struct ui_render_command_column
 
 struct ui_render_command_button_start
 {
+  umm ID;
 };
 
 struct ui_render_command_button_end
@@ -54,6 +55,7 @@ struct ui_render_command
     ui_render_command_window_interaction WindowInteraction;
     ui_render_command_table Table;
     ui_render_command_column Column;
+    ui_render_command_button_start ButtonStart;
   };
 };
 

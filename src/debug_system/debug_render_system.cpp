@@ -1158,10 +1158,11 @@ PushButtonEnd(debug_ui_render_group *Group)
 }
 
 function interactable_handle
-PushButtonStart(debug_ui_render_group *Group)
+PushButtonStart(debug_ui_render_group *Group, umm InteractionId)
 {
   ui_render_command Command = {
-    .Type = RenderCommand_ButtonStart
+    .Type = RenderCommand_ButtonStart,
+    .ButtonStart.ID = InteractionId
   };
 
   u32 ButtonStartIndex = PushUiRenderCommand(Group, &Command);
@@ -1208,6 +1209,15 @@ PushWindowInteraction(debug_ui_render_group *Group, window_layout *Window)
   return;
 }
 
+function ui_render_command*
+GetCommand(ui_render_command_buffer* CommandBuffer, u32 CommandIndex)
+{
+  ui_render_command* Command = 0;
+  if (CommandIndex < CommandBuffer->CommandCount)
+    { Command = CommandBuffer->Commands+CommandIndex; }
+  return Command;
+}
+
 function window_layout*
 GetHighestWindow(debug_ui_render_group* Group, ui_render_command_buffer* CommandBuffer)
 {
@@ -1247,17 +1257,44 @@ GetHighestWindow(debug_ui_render_group* Group, ui_render_command_buffer* Command
   return HighestWindow;
 }
 
-function ui_render_command*
-GetCommand(ui_render_command_buffer* CommandBuffer, u32 CommandIndex)
+#if 0
+function u32
+RenderButton(debug_ui_render_group* Group, ui_render_command_buffer* CommandBuffer, u32 CommandIndex, window_layout *Window, u32 ColumnWidth)
 {
-  ui_render_command* Command = 0;
-  if (CommandIndex < CommandBuffer->CommandCount)
-    { Command = CommandBuffer->Commands+CommandIndex; }
-  return Command;
+  ui_render_command* Command =  GetCommand(CommandBuffer, CommandIndex++);
+  Assert(Command && Command->Type == RenderCommand_ButtonStart);
+
+  u32 Result = 0;
+
+  while (Command && !Result)
+  {
+    switch(Command->Type)
+    {
+        case RenderCommand_Column:
+        {
+          BufferColumn(Command->Column.String, Group, &Window->Table.Layout, ColumnWidth, zIndexForText(Window, Group), GetAbsoluteMaxClip(Window));
+        } break;
+
+        case RenderCommand_ButtonEnd:
+        {
+          Result = CommandIndex;
+        } break;
+
+        case RenderCommand_ButtonStart: { } break;
+
+        InvalidDefaultCase;
+    }
+
+    Command =  GetCommand(CommandBuffer, CommandIndex++);
+  }
+
+  return Result;
 }
+#endif
 
 // TODO(Jesse): Bulletproof this such that we can have any number of columns!
 // @max_column_widths
+// @nested_tables
 #define MAX_COLUMN_WIDTHS (128)
 static u32 ColumnWidths[MAX_COLUMN_WIDTHS] = {};
 
@@ -1282,6 +1319,7 @@ RenderTable(debug_ui_render_group* Group, ui_render_command_buffer* CommandBuffe
           case RenderCommand_Column:
           {
             // @max_column_widths
+            // @nested_tables
             Assert(ColumnCount < MAX_COLUMN_WIDTHS);
             ColumnWidths[ColumnCount] = Max((u32)Command->Column.String.Count, ColumnWidths[ColumnCount]);
             ++ColumnCount;
@@ -1308,6 +1346,7 @@ RenderTable(debug_ui_render_group* Group, ui_render_command_buffer* CommandBuffe
           } break;
 
           // TODO(Jesse): Nested tables!
+          // @nested_tables
           case RenderCommand_TableStart: {} break;
 
           InvalidDefaultCase;
@@ -1323,6 +1362,9 @@ RenderTable(debug_ui_render_group* Group, ui_render_command_buffer* CommandBuffe
 
     window_layout* Window = 0;
 
+    interactable CurrentInteraction = {};
+    layout Layout = {};
+
     u32 CommandIndex = FirstCommandIndex;
     while (CommandIndex < Result)
     {
@@ -1332,39 +1374,53 @@ RenderTable(debug_ui_render_group* Group, ui_render_command_buffer* CommandBuffe
           case RenderCommand_TableStart:
           {
             Window = Command->Table.Handle.Window;
+            Layout = Window->Table.Layout;
           } break;
 
           case RenderCommand_Column:
           {
-            if(Window)
-            {
-              BufferColumn(Command->Column.String, Group, &Window->Table.Layout, ColumnWidths[ColumnIndex], zIndexForText(Window, Group), GetAbsoluteMaxClip(Window));
-            }
-            else
-            {
-              Error("No Window found to render column text!");
-            }
-
+            Assert(Window);
+            Assert(ColumnIndex > MaxColumnCount);
+            BufferColumn(Command->Column.String, Group, &Layout, ColumnWidths[ColumnIndex], zIndexForText(Window, Group), GetAbsoluteMaxClip(Window));
             ++ColumnIndex;
           } break;
 
           case RenderCommand_NewRow:
           {
             ColumnIndex = 0;
-            NewLine(&Window->Table.Layout);
+            NewLine(&Layout);
           } break;
 
           case RenderCommand_ButtonStart:
           {
+            Assert(!CurrentInteraction.ID);
+            Assert(Window);
+
+            Layout.DrawBounds = {};
+
+            CurrentInteraction.ID = Command->ButtonStart.ID;
+            CurrentInteraction.MinP = GetAbsoluteAt(&Layout);
+            CurrentInteraction.MaxP = V2(0);
+            CurrentInteraction.Window = Window;
           } break;
 
           case RenderCommand_ButtonEnd:
           {
+            Assert(CurrentInteraction.ID);
+            Assert(Window);
+
+            CurrentInteraction.MaxP = GetAbsoluteDrawBoundsMax(&Layout);
+            MergeLayouts(&Layout, &Window->Table.Layout);
+
+            ButtonInteraction(Group, RectMinMax(CurrentInteraction.MinP, CurrentInteraction.MaxP ), CurrentInteraction.ID, Window);
+
+            CurrentInteraction.ID = 0;
           } break;
 
           case RenderCommand_TableEnd:
           {
             Assert(CommandIndex == Result);
+            Window = 0;
           } break;
 
           InvalidDefaultCase;
@@ -1566,9 +1622,9 @@ EndTable(debug_ui_render_group* Group)
 }
 
 function interactable_handle
-StartButton(debug_ui_render_group* Group)
+StartButton(debug_ui_render_group* Group, u64 InteractionId)
 {
-  interactable_handle Result = PushButtonStart(Group);
+  interactable_handle Result = PushButtonStart(Group, InteractionId);
   return Result;
 }
 
@@ -1607,7 +1663,7 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
     v2 Clip = GetAbsoluteMaxClip(&ListingWindow);
     u8 Color = WHITE;
 
-    interactable_handle PositionButton = StartButton(Group);
+    interactable_handle PositionButton = StartButton(Group, (umm)"PositionButton"^(umm)Chunk);
       PushColumn(Group, AsString(Chunk->WorldP.x) );
       PushColumn(Group, AsString(Chunk->WorldP.y) );
       PushColumn(Group, AsString(Chunk->WorldP.z) );
@@ -1618,7 +1674,7 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
     ui_style ButtonStyling = {};
     ButtonStyling.Color = V3(1,0,0);
 
-    interactable_handle CloseButton = StartButton(Group);
+    interactable_handle CloseButton = StartButton(Group, (umm)"CloseButton"^(umm)Chunk);
       PushColumn(Group, CountedString("X"));
     EndButton(Group, &CloseButton);
 

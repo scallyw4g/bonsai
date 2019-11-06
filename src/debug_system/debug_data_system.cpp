@@ -532,6 +532,13 @@ GetAbsoluteMax(layout *Layout)
 }
 
 v2
+GetAbsoluteAt(window_layout *Window)
+{
+  v2 Result = Window->Table.Layout.At + Window->Table.Layout.Basis;
+  return Result;
+}
+
+v2
 GetAbsoluteAt(layout *Layout)
 {
   v2 Result = Layout->At + Layout->Basis;
@@ -542,6 +549,13 @@ v2
 GetAbsoluteDrawBoundsMin(layout *Layout)
 {
   v2 Result = Layout->Basis+Layout->DrawBounds.Min;
+  return Result;
+}
+
+v2
+GetAbsoluteDrawBoundsMax(window_layout *Window)
+{
+  v2 Result = Window->Table.Layout.Basis+Window->Table.Layout.DrawBounds.Max;
   return Result;
 }
 
@@ -718,19 +732,26 @@ AdvanceClip(layout *Layout, font *Font = 0)
 }
 
 function void
+MergeLayouts(layout* Src, layout* Dest)
+{
+  Dest->At             = Max(Dest->At, GetAbsoluteAt(Src)-Dest->Basis);
+  Dest->DrawBounds.Max = Max(Dest->DrawBounds.Max, GetAbsoluteDrawBoundsMax(Src)-Dest->Basis);
+
+  AdvanceClip(Dest);
+
+  Assert( GetAbsoluteAt(Dest).x >= GetAbsoluteAt(Src).x );
+  Assert( GetAbsoluteAt(Dest).y >= GetAbsoluteAt(Src).y );
+
+  Assert( GetAbsoluteDrawBoundsMax(Dest).x >= GetAbsoluteDrawBoundsMax(Src).x );
+  Assert( GetAbsoluteDrawBoundsMax(Dest).y >= GetAbsoluteDrawBoundsMax(Src).y );
+
+  return;
+}
+
+function void
 MergeTables(table* Src, table* Dest)
 {
-  Dest->Layout.At             = Max(Dest->Layout.At, GetAbsoluteAt(&Src->Layout)-Dest->Layout.Basis);
-  Dest->Layout.DrawBounds.Max = Max(Dest->Layout.DrawBounds.Max, GetAbsoluteDrawBoundsMax(&Src->Layout)-Dest->Layout.Basis);
-
-  AdvanceClip(&Dest->Layout);
-
-  Assert( GetAbsoluteAt(&Dest->Layout).x >= GetAbsoluteAt(&Src->Layout).x );
-  Assert( GetAbsoluteAt(&Dest->Layout).y >= GetAbsoluteAt(&Src->Layout).y );
-
-  Assert( GetAbsoluteDrawBoundsMax(&Dest->Layout).x >= GetAbsoluteDrawBoundsMax(&Src->Layout).x );
-  Assert( GetAbsoluteDrawBoundsMax(&Dest->Layout).y >= GetAbsoluteDrawBoundsMax(&Src->Layout).y );
-
+  MergeLayouts(&Src->Layout, &Dest->Layout);
   return;
 }
 
