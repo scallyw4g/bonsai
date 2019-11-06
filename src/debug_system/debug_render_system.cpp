@@ -786,7 +786,7 @@ BufferColumn( r32 Perc, u32 ColumnWidth, debug_ui_render_group *Group, layout *L
 }
 
 function rect2
-BufferColumn(counted_string Text, debug_ui_render_group* Group, layout* Layout, u32 ColumnWidth, r32 Z, v2 MaxClip, u8 Color = WHITE)
+BufferColumn(counted_string Text, debug_ui_render_group* Group, layout* Layout, u32 ColumnWidth, r32 Z, v2 MaxClip, v3 Color)
 {
   u32 Pad = ColumnWidth - (u32)Text.Count;
 
@@ -799,7 +799,7 @@ BufferColumn(counted_string Text, debug_ui_render_group* Group, layout* Layout, 
   ui_style PadParams = {};
   PadParams.Padding = V2(10, 10);
 
-  BufferValue(Text, Group, Layout, GetColorData(Color).xyz, Z, MaxClip, &PadParams);
+  BufferValue(Text, Group, Layout, Color, Z, MaxClip, &PadParams);
 
   return Bounds;
 }
@@ -815,7 +815,7 @@ BufferColumn(const char* ColumnText, debug_ui_render_group* Group, table* Table,
   u32 TextLength = (u32)Length(ColumnText);
   Col->Max = Max(Col->Max, TextLength);
 
-  rect2 Bounds = BufferColumn(CountedString(ColumnText, TextLength), Group, Layout, Col->Max, Z, MaxClip, Color);
+  rect2 Bounds = BufferColumn(CountedString(ColumnText, TextLength), Group, Layout, Col->Max, Z, MaxClip, GetColorData(Color).rgb);
 
   return Bounds;
 }
@@ -1259,41 +1259,6 @@ GetHighestWindow(debug_ui_render_group* Group, ui_render_command_buffer* Command
   return HighestWindow;
 }
 
-#if 0
-function u32
-RenderButton(debug_ui_render_group* Group, ui_render_command_buffer* CommandBuffer, u32 CommandIndex, window_layout *Window, u32 ColumnWidth)
-{
-  ui_render_command* Command =  GetCommand(CommandBuffer, CommandIndex++);
-  Assert(Command && Command->Type == RenderCommand_ButtonStart);
-
-  u32 Result = 0;
-
-  while (Command && !Result)
-  {
-    switch(Command->Type)
-    {
-        case RenderCommand_Column:
-        {
-          BufferColumn(Command->Column.String, Group, &Window->Table.Layout, ColumnWidth, zIndexForText(Window, Group), GetAbsoluteMaxClip(Window));
-        } break;
-
-        case RenderCommand_ButtonEnd:
-        {
-          Result = CommandIndex;
-        } break;
-
-        case RenderCommand_ButtonStart: { } break;
-
-        InvalidDefaultCase;
-    }
-
-    Command =  GetCommand(CommandBuffer, CommandIndex++);
-  }
-
-  return Result;
-}
-#endif
-
 function u32
 GetColumnCountForTable(ui_render_command_buffer* CommandBuffer, u32 CommandIndex)
 {
@@ -1332,13 +1297,6 @@ GetColumnCountForTable(ui_render_command_buffer* CommandBuffer, u32 CommandIndex
 
   return ColumnCount;
 }
-
-struct table_render_params
-{
-  u32 *ColumnWidths;
-  u32 ColumnCount;
-  u32 OnePastTableEnd;
-};
 
 function table_render_params
 GetTableRenderParams(ui_render_command_buffer* CommandBuffer, u32 CommandIndex)
@@ -1402,6 +1360,7 @@ RenderTable(debug_ui_render_group* Group, ui_render_command_buffer* CommandBuffe
 
     interactable CurrentInteraction = {};
     layout Layout = {};
+    v3 Color = V3(1);
 
     u32 CommandIndex = FirstCommandIndex;
     while (CommandIndex < TableRenderParams.OnePastTableEnd)
@@ -1419,7 +1378,7 @@ RenderTable(debug_ui_render_group* Group, ui_render_command_buffer* CommandBuffe
           {
             Assert(Window);
             u32 ColumnWidth = GetColumnWidth(&TableRenderParams, ColumnIndex++);
-            BufferColumn(Command->Column.String, Group, &Layout, ColumnWidth, zIndexForText(Window, Group), GetAbsoluteMaxClip(Window));
+            BufferColumn(Command->Column.String, Group, &Layout, ColumnWidth, zIndexForText(Window, Group), GetAbsoluteMaxClip(Window), Color);
           } break;
 
           case RenderCommand_NewRow:
@@ -1439,6 +1398,23 @@ RenderTable(debug_ui_render_group* Group, ui_render_command_buffer* CommandBuffe
             CurrentInteraction.MinP = GetAbsoluteAt(&Layout);
             CurrentInteraction.MaxP = V2(0);
             CurrentInteraction.Window = Window;
+
+            if (CurrentInteraction.ID == Group->HoverInteractionId)
+            {
+              Color = V3(1,0,0);
+              Group->HoverInteractionId = 0;
+            }
+            if (CurrentInteraction.ID == Group->PressedInteractionId)
+            {
+              Color = V3(0,0,1);
+              Group->PressedInteractionId = 0;
+            }
+            if (CurrentInteraction.ID == Group->ClickedInteractionId)
+            {
+              Color = V3(0,1,0);
+              Group->ClickedInteractionId = 0;
+            }
+
           } break;
 
           case RenderCommand_ButtonEnd:
@@ -1467,6 +1443,7 @@ RenderTable(debug_ui_render_group* Group, ui_render_command_buffer* CommandBuffe
             }
 
             CurrentInteraction.ID = 0;
+            Color = V3(1);
           } break;
 
           case RenderCommand_TableEnd:
