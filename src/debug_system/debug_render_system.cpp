@@ -178,28 +178,28 @@ NumericValueToString(number_type Number, const char* Format)
 }
 
 function counted_string
-AsString(u64 Number)
+CS(u64 Number)
 {
   counted_string Result = NumericValueToString(Number, "%lu");
   return Result;
 }
 
 function counted_string
-AsString(s32 Number)
+CS(s32 Number)
 {
   counted_string Result = NumericValueToString(Number, "%i");
   return Result;
 }
 
 function counted_string
-AsString(u32 Number)
+CS(u32 Number)
 {
   counted_string Result = NumericValueToString(Number, "%u");
   return Result;
 }
 
 function counted_string
-AsString(r32 Number)
+CS(r32 Number)
 {
   counted_string Result = NumericValueToString(Number, "%.2f");
   return Result;
@@ -1613,21 +1613,21 @@ PushChunkDetails(debug_ui_render_group* Group, world_chunk* Chunk, window_layout
 {
   PushTableStart(Group, Window);
     PushColumn(Group, CS("WorldP"));
-    PushColumn(Group, AsString(Chunk->WorldP.x));
-    PushColumn(Group, AsString(Chunk->WorldP.y));
-    PushColumn(Group, AsString(Chunk->WorldP.z));
+    PushColumn(Group, CS(Chunk->WorldP.x));
+    PushColumn(Group, CS(Chunk->WorldP.y));
+    PushColumn(Group, CS(Chunk->WorldP.z));
     PushNewRow(Group);
 
     PushColumn(Group, CS("PointsToLeaveRemaining"));
-    PushColumn(Group, AsString(Chunk->PointsToLeaveRemaining));
+    PushColumn(Group, CS(Chunk->PointsToLeaveRemaining));
     PushNewRow(Group);
 
     PushColumn(Group, CS("BoundaryVoxels Count"));
-    PushColumn(Group, AsString(Chunk->EdgeBoundaryVoxelCount));
+    PushColumn(Group, CS(Chunk->EdgeBoundaryVoxelCount));
     PushNewRow(Group);
 
     PushColumn(Group, CS("Triangles"));
-    PushColumn(Group, AsString(Chunk->TriCount));
+    PushColumn(Group, CS(Chunk->TriCount));
     PushNewRow(Group);
   PushTableEnd(Group);
 }
@@ -1682,9 +1682,9 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
     u8 Color = WHITE;
 
     interactable_handle PositionButton = StartButton(Group, (umm)"PositionButton"^(umm)Chunk);
-      PushColumn(Group, AsString(Chunk->WorldP.x) );
-      PushColumn(Group, AsString(Chunk->WorldP.y) );
-      PushColumn(Group, AsString(Chunk->WorldP.z) );
+      PushColumn(Group, CS(Chunk->WorldP.x) );
+      PushColumn(Group, CS(Chunk->WorldP.y) );
+      PushColumn(Group, CS(Chunk->WorldP.z) );
     EndButton(Group);
 
     if (Clicked(Group, &PositionButton)) { DebugState->HotChunk = Chunk; }
