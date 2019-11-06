@@ -1149,6 +1149,19 @@ PushColumn(debug_ui_render_group *Group, counted_string String)
   return;
 }
 
+function void
+PushTexturedQuad(debug_ui_render_group *Group, window_layout* Window, debug_texture_array_slice TextureSlice)
+{
+  ui_render_command Command = {
+    .Type = RenderCommand_TexturedQuad,
+    .TexQuad.TextureSlice = TextureSlice,
+    .TexQuad.Window = Window,
+  };
+
+  PushUiRenderCommand(Group, &Command);
+
+  return;
+}
 function u32
 PushButtonEnd(debug_ui_render_group *Group)
 {
@@ -1347,121 +1360,128 @@ GetColumnWidth(table_render_params* Params, u32 ColumnIndex)
   return Result;
 }
 
+struct render_state
+{
+  window_layout* Window;
+  layout Layout;
+
+  v3 Color;
+  interactable CurrentInteraction;
+};
+
 function u32
 RenderTable(debug_ui_render_group* Group, ui_render_command_buffer* CommandBuffer, u32 FirstCommandIndex)
 {
-  table_render_params TableRenderParams = GetTableRenderParams(CommandBuffer, FirstCommandIndex);
+table_render_params TableRenderParams = GetTableRenderParams(CommandBuffer, FirstCommandIndex);
 
-  if (TableRenderParams.OnePastTableEnd)
+if (TableRenderParams.OnePastTableEnd)
+{
+  u32 ColumnIndex = 0;
+
+  render_state RenderState = {
+    .Color = V3(1),
+  };
+
+  u32 CommandIndex = FirstCommandIndex;
+  while (CommandIndex < TableRenderParams.OnePastTableEnd)
   {
-    u32 ColumnIndex = 0;
-
-    window_layout* Window = 0;
-
-    interactable CurrentInteraction = {};
-    layout Layout = {};
-    v3 Color = V3(1);
-
-    u32 CommandIndex = FirstCommandIndex;
-    while (CommandIndex < TableRenderParams.OnePastTableEnd)
+    ui_render_command* Command = GetCommand(CommandBuffer, CommandIndex++);
+    switch(Command->Type)
     {
-      ui_render_command* Command = GetCommand(CommandBuffer, CommandIndex++);
-      switch(Command->Type)
-      {
-          case RenderCommand_TableStart:
+        case RenderCommand_TableStart:
+        {
+          RenderState.Window = Command->Table.Window;
+          RenderState.Layout = RenderState.Window->Table.Layout;
+        } break;
+
+        case RenderCommand_Column:
+        {
+          Assert(RenderState.Window);
+          u32 ColumnWidth = GetColumnWidth(&TableRenderParams, ColumnIndex++);
+          BufferColumn(Command->Column.String, Group, &RenderState.Layout, ColumnWidth, zIndexForText(RenderState.Window, Group), GetAbsoluteMaxClip(RenderState.Window), RenderState.Color);
+        } break;
+
+        case RenderCommand_NewRow:
+        {
+          ColumnIndex = 0;
+          NewLine(&RenderState.Layout);
+        } break;
+
+        case RenderCommand_ButtonStart:
+        {
+          Assert(!RenderState.CurrentInteraction.ID);
+          Assert(RenderState.Window);
+
+          RenderState.Layout.DrawBounds = {};
+
+          RenderState.CurrentInteraction.ID = Command->ButtonStart.ID;
+          RenderState.CurrentInteraction.MinP = GetAbsoluteAt(&RenderState.Layout);
+          RenderState.CurrentInteraction.MaxP = V2(0);
+          RenderState.CurrentInteraction.Window = RenderState.Window;
+
+          if (RenderState.CurrentInteraction.ID == Group->HoverInteractionId)
           {
-            Window = Command->Table.Window;
-            Layout = Window->Table.Layout;
-          } break;
-
-          case RenderCommand_Column:
+            RenderState.Color = V3(1,0,0);
+            Group->HoverInteractionId = 0;
+          }
+          if (RenderState.CurrentInteraction.ID == Group->PressedInteractionId)
           {
-            Assert(Window);
-            u32 ColumnWidth = GetColumnWidth(&TableRenderParams, ColumnIndex++);
-            BufferColumn(Command->Column.String, Group, &Layout, ColumnWidth, zIndexForText(Window, Group), GetAbsoluteMaxClip(Window), Color);
-          } break;
-
-          case RenderCommand_NewRow:
+            RenderState.Color = V3(0,0,1);
+            Group->PressedInteractionId = 0;
+          }
+          if (RenderState.CurrentInteraction.ID == Group->ClickedInteractionId)
           {
-            ColumnIndex = 0;
-            NewLine(&Layout);
-          } break;
+            RenderState.Color = V3(0,1,0);
+            Group->ClickedInteractionId = 0;
+          }
 
-          case RenderCommand_ButtonStart:
+        } break;
+
+        case RenderCommand_ButtonEnd:
+        {
+          Assert(RenderState.CurrentInteraction.ID);
+          Assert(RenderState.Window);
+
+          RenderState.CurrentInteraction.MaxP = GetAbsoluteDrawBoundsMax(&RenderState.Layout);
+          MergeLayouts(&RenderState.Layout, &RenderState.Window->Table.Layout);
+
+          button_interaction_result Button = ButtonInteraction(Group, RectMinMax(RenderState.CurrentInteraction.MinP, RenderState.CurrentInteraction.MaxP ), RenderState.CurrentInteraction.ID, RenderState.Window);
+
+          if (Button.Hover)
           {
-            Assert(!CurrentInteraction.ID);
-            Assert(Window);
+            Group->HoverInteractionId = RenderState.CurrentInteraction.ID;
+          }
 
-            Layout.DrawBounds = {};
-
-            CurrentInteraction.ID = Command->ButtonStart.ID;
-            CurrentInteraction.MinP = GetAbsoluteAt(&Layout);
-            CurrentInteraction.MaxP = V2(0);
-            CurrentInteraction.Window = Window;
-
-            if (CurrentInteraction.ID == Group->HoverInteractionId)
-            {
-              Color = V3(1,0,0);
-              Group->HoverInteractionId = 0;
-            }
-            if (CurrentInteraction.ID == Group->PressedInteractionId)
-            {
-              Color = V3(0,0,1);
-              Group->PressedInteractionId = 0;
-            }
-            if (CurrentInteraction.ID == Group->ClickedInteractionId)
-            {
-              Color = V3(0,1,0);
-              Group->ClickedInteractionId = 0;
-            }
-
-          } break;
-
-          case RenderCommand_ButtonEnd:
+          if (Button.Clicked)
           {
-            Assert(CurrentInteraction.ID);
-            Assert(Window);
+            Group->ClickedInteractionId = RenderState.CurrentInteraction.ID;
+          }
 
-            CurrentInteraction.MaxP = GetAbsoluteDrawBoundsMax(&Layout);
-            MergeLayouts(&Layout, &Window->Table.Layout);
-
-            button_interaction_result Button = ButtonInteraction(Group, RectMinMax(CurrentInteraction.MinP, CurrentInteraction.MaxP ), CurrentInteraction.ID, Window);
-
-            if (Button.Hover)
-            {
-              Group->HoverInteractionId = CurrentInteraction.ID;
-            }
-
-            if (Button.Clicked)
-            {
-              Group->ClickedInteractionId = CurrentInteraction.ID;
-            }
-
-            if (Button.Pressed)
-            {
-              Group->PressedInteractionId = CurrentInteraction.ID;
-            }
-
-            CurrentInteraction.ID = 0;
-            Color = V3(1);
-          } break;
-
-          case RenderCommand_TableEnd:
+          if (Button.Pressed)
           {
-            Assert(CommandIndex == TableRenderParams.OnePastTableEnd);
-            Window = 0;
-          } break;
+            Group->PressedInteractionId = RenderState.CurrentInteraction.ID;
+          }
 
-          InvalidDefaultCase;
-        }
-    }
+          RenderState.CurrentInteraction.ID = 0;
+          RenderState.Color = V3(1);
+        } break;
+
+        case RenderCommand_TableEnd:
+        {
+          Assert(CommandIndex == TableRenderParams.OnePastTableEnd);
+          RenderState.Window = 0;
+        } break;
+
+        InvalidDefaultCase;
+      }
   }
-  else
-  {
-    Error("No RenderCommand_TableEnd detected.");
-  }
+}
+else
+{
+  Error("No RenderCommand_TableEnd detected.");
+}
 
-  return TableRenderParams.OnePastTableEnd;
+return TableRenderParams.OnePastTableEnd;
 }
 
 function void
@@ -1469,19 +1489,45 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
 {
   u32 CommandIndex = 0;
   ui_render_command *Command = GetCommand(CommandBuffer, CommandIndex++);
+
+  window_layout* Window = 0;
+
+  interactable CurrentInteraction = {};
+  layout Layout = {};
+  v3 Color = V3(1);
+
   while (Command)
   {
     switch(Command->Type)
     {
       case RenderCommand_WindowInteractions:
       {
-        window_layout* Window = Command->WindowInteraction.Window;
+        Window = Command->WindowInteraction.Window;
         RenderWindowInteractions(Group, Window, &Window->Table.Layout);
       } break;
 
       case RenderCommand_TableStart:
       {
         CommandIndex = RenderTable(Group, CommandBuffer, CommandIndex-1);
+      } break;
+
+      case RenderCommand_TexturedQuad:
+      {
+        Window = Command->TexQuad.Window;
+        v2 MinP = V2( Window->Table.Layout.Basis.x, GetAbsoluteDrawBoundsMax(Window).y );
+        r32 Z = zIndexForText(Window, Group);
+        v2 MaxClip = GetAbsoluteMaxClip(Window);
+        BufferTexturedQuad( Group, &Group->TextGroup->TextGeo, MinP, Window->MaxClip,
+                            Command->TexQuad.TextureSlice, UVsForFullyCoveredQuad(),
+                            V3(1), Z, MaxClip);
+      } break;
+
+      case RenderCommand_ButtonStart:
+      {
+      } break;
+
+      case RenderCommand_ButtonEnd:
+      {
       } break;
 
       InvalidDefaultCase;
@@ -1646,12 +1692,6 @@ EndButton(debug_ui_render_group* Group)
   return;
 }
 
-function void
-NewRow(debug_ui_render_group* Group)
-{
-  PushNewRow(Group);
-}
-
 function v2
 BasisRightOf(window_layout* Window, v2 WindowSpacing = V2(150, 0))
 {
@@ -1703,7 +1743,7 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
       *SwapChunk = PickedChunks[--DebugState->PickedChunkCount];
     }
 
-    NewRow(Group);
+    PushNewRow(Group);
   }
 
   PushTableEnd(Group);
@@ -1750,74 +1790,62 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
       local_persist window_layout PickerWindow = WindowLayout("Chunk View", NextWindowBasis, V2(800.0f));
       PushWindowInteraction(Group, &PickerWindow);
       PushTableStart(Group, &PickerWindow);
-      b32 DebugButtonPressed = False;
+        b32 DebugButtonPressed = False;
 
-      interactable_handle PrevButton = StartButton(Group, (umm)"PrevButton");
-        PushColumn(Group, CountedString("<"));
-      EndButton(Group);
+        interactable_handle PrevButton = StartButton(Group, (umm)"PrevButton");
+          PushColumn(Group, CountedString("<"));
+        EndButton(Group);
 
-      if (Clicked(Group, &PrevButton))
-      {
-        HotChunk->PointsToLeaveRemaining = Min(HotChunk->PointsToLeaveRemaining+1, HotChunk->EdgeBoundaryVoxelCount);
-        DebugButtonPressed = True;
-      }
+        if (Clicked(Group, &PrevButton))
+        {
+          HotChunk->PointsToLeaveRemaining = Min(HotChunk->PointsToLeaveRemaining+1, HotChunk->EdgeBoundaryVoxelCount);
+          DebugButtonPressed = True;
+        }
 
 
-      interactable_handle NextButton = StartButton(Group, (umm)"NextButton");
-        PushColumn(Group, CountedString(">"));
-      EndButton(Group);
+        interactable_handle NextButton = StartButton(Group, (umm)"NextButton");
+          PushColumn(Group, CountedString(">"));
+        EndButton(Group);
 
-      if (Clicked(Group, &NextButton))
-      {
-        HotChunk->PointsToLeaveRemaining = Max(HotChunk->PointsToLeaveRemaining-1, 0);
-        DebugButtonPressed = True;
-      }
+        if (Clicked(Group, &NextButton))
+        {
+          HotChunk->PointsToLeaveRemaining = Max(HotChunk->PointsToLeaveRemaining-1, 0);
+          DebugButtonPressed = True;
+        }
 
-      const char* ButtonText = HotChunk->DrawBoundingVoxels ? "|" : "O";
+        const char* ButtonText = HotChunk->DrawBoundingVoxels ? "|" : "O";
 
-      interactable_handle ToggleBoundingVoxelsButton = StartButton(Group, (umm)"ToggleBoundingVoxelsButton");
-        PushColumn(Group, CountedString(ButtonText));
-      EndButton(Group);
+        interactable_handle ToggleBoundingVoxelsButton = StartButton(Group, (umm)"ToggleBoundingVoxelsButton");
+          PushColumn(Group, CountedString(ButtonText));
+        EndButton(Group);
 
-      if (Clicked(Group, &ToggleBoundingVoxelsButton))
-      {
-        HotChunk->DrawBoundingVoxels = !HotChunk->DrawBoundingVoxels;
-        DebugButtonPressed = True;
-      }
+        if (Clicked(Group, &ToggleBoundingVoxelsButton))
+        {
+          HotChunk->DrawBoundingVoxels = !HotChunk->DrawBoundingVoxels;
+          DebugButtonPressed = True;
+        }
 
-      if (DebugButtonPressed)
-      {
-        HotChunk->LodMesh_Complete = False;
-        HotChunk->LodMesh->At = 0;
-        HotChunk->Mesh = 0;
-        HotChunk->FilledCount = 0;
-        HotChunk->Data->Flags = Chunk_Uninitialized;
-        QueueChunkForInit( DebugState->GameState, &DebugState->Plat->HighPriority, HotChunk);
-      }
+        if (DebugButtonPressed)
+        {
+          HotChunk->LodMesh_Complete = False;
+          HotChunk->LodMesh->At = 0;
+          HotChunk->Mesh = 0;
+          HotChunk->FilledCount = 0;
+          HotChunk->Data->Flags = Chunk_Uninitialized;
+          QueueChunkForInit( DebugState->GameState, &DebugState->Plat->HighPriority, HotChunk);
+        }
 
-      PushNewRow(Group);
+        PushNewRow(Group);
       PushTableEnd(Group);
 
-#if 1
-      /* PushTexturedQuad(Group, &PickerWindow, DebugTextureArraySlice_Viewport); */
-#else
-      v2 MinP = GetAbsoluteAt(&PickerWindow.Table.Layout);
-      v2 QuadDim = PickerWindow.MaxClip - PickerWindow.Table.Layout.At;
+      interactable_handle ViewportButton = StartButton(Group, (umm)"ViewportButton");
+        PushTexturedQuad(Group, &PickerWindow, DebugTextureArraySlice_Viewport);
+      EndButton(Group);
 
-      r32 ChunkDetailZ = zIndexForText(&PickerWindow, Group);
-      BufferTexturedQuad( Group, &Group->TextGroup->TextGeo, MinP, QuadDim,
-                          DebugTextureArraySlice_Viewport, UVsForFullyCoveredQuad(),
-                          V3(1), ChunkDetailZ, GetAbsoluteMaxClip(&PickerWindow));
-
-      interactable Interaction = Interactable(MinP, MinP+QuadDim, (umm)"PickerWindowDragInteraction", &PickerWindow);
-      input* WindowInput = Group->Input;
-      if (!Pressed(Group, &Interaction))
-      {
-        WindowInput = 0;
-      }
+      input* WindowInput = 0;
+      if (Pressed(Group, &ViewportButton))
+        { WindowInput = Group->Input; }
       UpdateGameCamera( -0.005f*(*Group->MouseDP), WindowInput, Canonical_Position(0), &DebugState->Camera);
-#endif
-
     }
 
   }

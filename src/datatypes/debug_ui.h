@@ -18,6 +18,7 @@ enum ui_render_command_type
   RenderCommand_ButtonEnd,
 
   RenderCommand_Column,
+  RenderCommand_TexturedQuad,
   RenderCommand_NewRow,
 
   RenderCommand_Count
@@ -31,6 +32,12 @@ struct ui_render_command_window_interaction
 struct ui_render_command_column
 {
   counted_string String;
+};
+
+struct ui_render_command_textured_quad
+{
+  debug_texture_array_slice TextureSlice;
+  window_layout* Window;
 };
 
 struct ui_render_command_button_start
@@ -56,6 +63,7 @@ struct ui_render_command
     ui_render_command_table Table;
     ui_render_command_column Column;
     ui_render_command_button_start ButtonStart;
+    ui_render_command_textured_quad TexQuad;
   };
 };
 
