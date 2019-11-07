@@ -2414,6 +2414,8 @@ DebugDrawCollatedFunctionCalls(debug_ui_render_group *Group, debug_state *DebugS
 
   CollateAllFunctionCalls(MainThreadReadTree->Root);
 
+  PushTableStart(Group, &FunctionCallWindow);
+
   for ( u32 FunctionIndex = 0;
       FunctionIndex < MAX_RECORDED_FUNCTION_CALLS;
       ++FunctionIndex)
@@ -2421,11 +2423,14 @@ DebugDrawCollatedFunctionCalls(debug_ui_render_group *Group, debug_state *DebugS
     called_function *Func = ProgramFunctionCalls + FunctionIndex;
     if (Func->Name)
     {
-      BufferColumn(Func->Name, Group, &FunctionCallWindow);
-      BufferColumn( ToString(Func->CallCount), Group, &FunctionCallWindow);
-      NewRow(&FunctionCallWindow);
+      PushColumn(Group, CS(Func->Name));
+      PushColumn(Group, CS(Func->CallCount));
+      PushNewRow(Group);
     }
   }
+
+  PushTableEnd(Group);
+
   END_BLOCK("Collated Function Calls");
 
 }
@@ -2480,11 +2485,14 @@ DebugDrawDrawCalls(debug_ui_render_group *Group, layout *WindowBasis)
   local_persist window_layout DrawCallWindow = WindowLayout("Draw Calls", GetAbsoluteAt(WindowBasis));
   PushWindowInteraction(Group, &DrawCallWindow);
 
-  layout *Layout = &DrawCallWindow.Table.Layout;
-  NewLine(Layout);
-  NewLine(Layout);
-
   r32 Z = zIndexForText(&DrawCallWindow, Group);
+
+  PushTableStart(Group, &DrawCallWindow);
+
+     PushColumn(Group, CS("Caller"));
+     PushColumn(Group, CS("Calls"));
+     PushColumn(Group, CS("Bytes"));
+     PushNewRow(Group);
 
   for( u32 DrawCountIndex = 0;
        DrawCountIndex < Global_DrawCallArrayLength;
@@ -2493,13 +2501,14 @@ DebugDrawDrawCalls(debug_ui_render_group *Group, layout *WindowBasis)
      debug_draw_call *DrawCall = &Global_DrawCalls[DrawCountIndex];
      if (DrawCall->Caller)
      {
-       BufferThousands(DrawCall->Calls, Group, Layout, WHITE, Z, GetAbsoluteMaxClip(&DrawCallWindow));
-       BufferThousands(DrawCall->N, Group, Layout, WHITE, Z, GetAbsoluteMaxClip(&DrawCallWindow));
-       AdvanceSpaces(2, Layout, &Group->Font);
-       BufferValue(DrawCall->Caller, Group, Layout, WHITE, Z, GetAbsoluteMaxClip(&DrawCallWindow));
-       NewLine(Layout);
+       PushColumn(Group, CS(DrawCall->Caller));
+       PushColumn(Group, CS(DrawCall->Calls));
+       PushColumn(Group, CS(DrawCall->N));
+       PushNewRow(Group);
      }
   }
+
+  PushTableEnd(Group);
 
   return;
 }
