@@ -1365,6 +1365,8 @@ struct render_state
   window_layout* Window;
   layout Layout;
 
+  ui_style Styling;
+
   v3 Color;
   interactable CurrentInteraction;
 };
@@ -1505,11 +1507,9 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
   u32 CommandIndex = 0;
   ui_render_command *Command = GetCommand(CommandBuffer, CommandIndex++);
 
-  window_layout* Window = 0;
-
-  interactable CurrentInteraction = {};
-  layout Layout = {};
-  v3 Color = V3(1);
+  render_state RenderState = {
+    .Color = V3(1),
+  };
 
   while (Command)
   {
@@ -1517,8 +1517,8 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
     {
       case RenderCommand_WindowInteractions:
       {
-        Window = Command->WindowInteraction.Window;
-        RenderWindowInteractions(Group, Window, &Window->Table.Layout);
+        RenderState.Window = Command->WindowInteraction.Window;
+        RenderWindowInteractions(Group, RenderState.Window, &RenderState.Window->Table.Layout);
       } break;
 
       case RenderCommand_TableStart:
@@ -1528,21 +1528,23 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
 
       case RenderCommand_TexturedQuad:
       {
-        Window = Command->TexQuad.Window;
-        v2 MinP = V2( Window->Table.Layout.Basis.x, GetAbsoluteDrawBoundsMax(Window).y );
-        r32 Z = zIndexForText(Window, Group);
-        v2 MaxClip = GetAbsoluteMaxClip(Window);
-        BufferTexturedQuad( Group, &Group->TextGroup->TextGeo, MinP, Window->MaxClip,
+        RenderState.Window = Command->TexQuad.Window;
+        v2 MinP = V2( RenderState.Window->Table.Layout.Basis.x, GetAbsoluteDrawBoundsMax(RenderState.Window).y );
+        r32 Z = zIndexForText(RenderState.Window, Group);
+        v2 MaxClip = GetAbsoluteMaxClip(RenderState.Window);
+        BufferTexturedQuad( Group, &Group->TextGroup->TextGeo, MinP, RenderState.Window->MaxClip,
                             Command->TexQuad.TextureSlice, UVsForFullyCoveredQuad(),
                             V3(1), Z, MaxClip);
       } break;
 
       case RenderCommand_ButtonStart:
       {
+        ButtonStart(Group, &RenderState, Command->ButtonStart.ID);
       } break;
 
       case RenderCommand_ButtonEnd:
       {
+        ButtonEnd(Group, &RenderState);
       } break;
 
       InvalidDefaultCase;
