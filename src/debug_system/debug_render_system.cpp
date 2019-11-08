@@ -1570,7 +1570,7 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
 
 function b32
 DrawCycleBar( cycle_range *Range, cycle_range *Frame, r32 TotalGraphWidth, const char *Tooltip, v3 Color,
-              debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo, layout *Layout, r32 Z, v2 MaxClip)
+              debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo, layout *Layout, r32 Z, v2 MaxClip, u32 Depth)
 {
   Assert(Frame->StartCycle < Range->StartCycle);
 
@@ -1586,9 +1586,10 @@ DrawCycleBar( cycle_range *Range, cycle_range *Frame, r32 TotalGraphWidth, const
 
     // Advance to the appropriate starting place along graph
     u64 StartCycleOffset = Range->StartCycle - Frame->StartCycle;
-    r32 XOffset = GetXOffsetForHorizontalBar(StartCycleOffset, Frame->TotalCycles, TotalGraphWidth);
+    r32 xOffset = GetXOffsetForHorizontalBar(StartCycleOffset, Frame->TotalCycles, TotalGraphWidth);
+    r32 yOffset = Depth*Group->Font.Size.y;
 
-    v2 MinP = Layout->At + Layout->Basis + V2(XOffset, 0);
+    v2 MinP = Layout->At + Layout->Basis + V2(xOffset, yOffset);
 
     interactable Interaction = Interactable(MinP, MinP+BarDim, (umm)"CycleBarHoverInteraction", 0);
     Result = Hover(Group, &Interaction);
@@ -1626,10 +1627,10 @@ DrawWaitingBar(mutex_op_record *WaitRecord, mutex_op_record *AquiredRecord, mute
   cycle_range FrameRange = {FrameStartingCycle, FrameTotalCycles};
 
   cycle_range WaitRange = {WaitRecord->Cycle, WaitCycleCount};
-  DrawCycleBar( &WaitRange, &FrameRange, TotalGraphWidth, 0, V3(1, 0, 0), Group, Geo, Layout, Z, MaxClip);
+  DrawCycleBar( &WaitRange, &FrameRange, TotalGraphWidth, 0, V3(1, 0, 0), Group, Geo, Layout, Z, MaxClip, 0);
 
   cycle_range AquiredRange = {AquiredRecord->Cycle, AquiredCycleCount};
-  DrawCycleBar( &AquiredRange, &FrameRange, TotalGraphWidth, 0, V3(0, 1, 0), Group, Geo, Layout, Z, MaxClip);
+  DrawCycleBar( &AquiredRange, &FrameRange, TotalGraphWidth, 0, V3(0, 1, 0), Group, Geo, Layout, Z, MaxClip, 0);
 
   return;
 }
@@ -1972,7 +1973,7 @@ GetStatsFor( debug_profile_scope *Target, debug_profile_scope *Root)
 
 function void
 DrawScopeBarsRecursive(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo, debug_profile_scope *Scope,
-                       layout *Layout, cycle_range *Frame, r32 TotalGraphWidth, random_series *Entropy, r32 Z, v2 MaxClip)
+                       layout *Layout, cycle_range *Frame, r32 TotalGraphWidth, random_series *Entropy, r32 Z, v2 MaxClip, u32 Depth = 0)
 {
   while (Scope)
   {
@@ -1981,17 +1982,14 @@ DrawScopeBarsRecursive(debug_ui_render_group *Group, untextured_2d_geometry_buff
     cycle_range Range = {Scope->StartingCycle, Scope->CycleCount};
     v3 Color = RandomV3(Entropy);
 
-    b32 Hovering = DrawCycleBar( &Range, Frame, TotalGraphWidth, Scope->Name, Color, Group, Geo, Layout, Z, MaxClip);
+    b32 Hovering = DrawCycleBar( &Range, Frame, TotalGraphWidth, Scope->Name, Color, Group, Geo, Layout, Z, MaxClip, Depth);
 
     if (Hovering && Group->Input->LMB.Clicked)
       Scope->Expanded = !Scope->Expanded;
 
     if (Scope->Expanded)
     {
-      Layout->At.y += Group->Font.Size.y;
-      DrawScopeBarsRecursive(Group, Geo, Scope->Child, Layout, Frame, TotalGraphWidth, Entropy, Z, MaxClip);
-      AdvanceClip(Layout);
-      Layout->At.y -= Group->Font.Size.y;
+      DrawScopeBarsRecursive(Group, Geo, Scope->Child, Layout, Frame, TotalGraphWidth, Entropy, Z, MaxClip, Depth+1);
     }
 
     Scope = Scope->Sibling;
@@ -2012,7 +2010,7 @@ DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState
   Clear(&CycleGraphWindow.Table.Layout.At);
   Clear(&CycleGraphWindow.Table.Layout.DrawBounds);
 
-  // TODO(Jesse): Call this!!
+  // TODO(Jesse): Call this?
   /* PushWindowInteraction(&CycleGraphWindow) */
 
   layout* Layout = &CycleGraphWindow.Table.Layout;
@@ -2376,7 +2374,6 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout
 
       if (MainThreadReadTree->FrameRecorded == ReadTree->FrameRecorded)
       {
-
         BufferFirstCallToEach(Group, ReadTree->Root, ReadTree->Root, ThreadsafeDebugMemoryAllocator(), &CallgraphWindow, Frame->TotalCycles, 0);
       }
     }
