@@ -2008,10 +2008,12 @@ DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState
   untextured_2d_geometry_buffer *Geo = &Group->TextGroup->UIGeo;
 
 
-  local_persist window_layout CycleGraphWindow = WindowLayout("Cycle Graph", BasisP);
+  local_persist window_layout CycleGraphWindow = WindowLayout("Cycle Graph", BasisP, DISABLE_CLIPPING);
+  Clear(&CycleGraphWindow.Table.Layout.At);
+  Clear(&CycleGraphWindow.Table.Layout.DrawBounds);
 
-  // TODO(Jesse): Call this for CycleGraphWindow!!
-  // PushWindowInteraction()
+  // TODO(Jesse): Call this!!
+  /* PushWindowInteraction(&CycleGraphWindow) */
 
   layout* Layout = &CycleGraphWindow.Table.Layout;
 
