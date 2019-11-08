@@ -5,6 +5,15 @@
 
 debug_global rect2 NullClipRect = {};
 
+
+enum column_render_params
+{
+  ColumnRenderParam_Default    =  0,
+  ColumnRenderParam_RightAlign = (1 << 0),
+  ColumnRenderParam_LeftAlign  = (1 << 1),
+};
+
+
 enum ui_render_command_type
 {
   RenderCommand_Noop,
@@ -32,6 +41,7 @@ struct ui_render_command_window_interaction
 struct ui_render_command_column
 {
   counted_string String;
+  column_render_params Params;
 };
 
 struct ui_render_command_textured_quad

@@ -96,6 +96,13 @@ CountedString(const char *S)
 }
 
 counted_string
+CS(const char *S, umm Count)
+{
+  counted_string Result = CountedString(S, Count);
+  return Result;
+}
+
+counted_string
 CS(const char *S)
 {
   counted_string Result = CountedString(S);

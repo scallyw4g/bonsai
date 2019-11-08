@@ -404,6 +404,18 @@ struct push_metadata
 };
 
 inline void
+MemSet(u8 *Src, u8 Value, umm Size)
+{
+  // TODO(Jesse): Vectorize for speed boost!
+  for( umm ByteIndex = 0;
+       ByteIndex < Size;
+       ++ByteIndex )
+  {
+     Src[ByteIndex] = Value;
+  }
+}
+
+inline void
 MemCopy(u8 *Src, u8 *Dest, umm Size)
 {
   // TODO(Jesse): Vectorize for speed boost!
@@ -413,7 +425,6 @@ MemCopy(u8 *Src, u8 *Dest, umm Size)
   {
      Dest[BytesCopied] = Src[BytesCopied];
   }
-
 }
 
 inline umm

@@ -786,11 +786,13 @@ BufferColumn( r32 Perc, u32 ColumnWidth, debug_ui_render_group *Group, layout *L
 }
 
 function rect2
-BufferColumn(counted_string Text, debug_ui_render_group* Group, layout* Layout, u32 ColumnWidth, r32 Z, v2 MaxClip, v3 Color)
+BufferColumn(counted_string Text, debug_ui_render_group* Group, layout* Layout, u32 ColumnWidth, r32 Z, v2 MaxClip, v3 Color, column_render_params RenderParams)
 {
-  u32 Pad = ColumnWidth - (u32)Text.Count;
-
-  AdvanceSpaces(Pad, Layout, &Group->Font);
+  if (RenderParams & ColumnRenderParam_RightAlign)
+  {
+    u32 Pad = ColumnWidth - (u32)Text.Count;
+    AdvanceSpaces(Pad, Layout, &Group->Font);
+  }
 
   v2 Min = Layout->Basis + Layout->At;
   v2 Max = Min + GetTextBounds((u32)Text.Count, &Group->Font);
@@ -815,7 +817,7 @@ BufferColumn(const char* ColumnText, debug_ui_render_group* Group, table* Table,
   u32 TextLength = (u32)Length(ColumnText);
   Col->Max = Max(Col->Max, TextLength);
 
-  rect2 Bounds = BufferColumn(CountedString(ColumnText, TextLength), Group, Layout, Col->Max, Z, MaxClip, GetColorData(Color).rgb);
+  rect2 Bounds = BufferColumn(CountedString(ColumnText, TextLength), Group, Layout, Col->Max, Z, MaxClip, GetColorData(Color).rgb, ColumnRenderParam_RightAlign);
 
   return Bounds;
 }
@@ -1137,11 +1139,12 @@ PushNewRow(debug_ui_render_group *Group)
 }
 
 function void
-PushColumn(debug_ui_render_group *Group, counted_string String)
+PushColumn(debug_ui_render_group *Group, counted_string String, column_render_params Params = ColumnRenderParam_RightAlign)
 {
   ui_render_command Command = {
     .Type = RenderCommand_Column,
-    .Column.String = String
+    .Column.String = String,
+    .Column.Params = Params
   };
 
   PushUiRenderCommand(Group, &Command);
@@ -1464,7 +1467,7 @@ if (TableRenderParams.OnePastTableEnd)
         {
           Assert(RenderState.Window);
           u32 ColumnWidth = GetColumnWidth(&TableRenderParams, ColumnIndex++);
-          BufferColumn(Command->Column.String, Group, &RenderState.Layout, ColumnWidth, zIndexForText(RenderState.Window, Group), GetAbsoluteMaxClip(RenderState.Window), RenderState.Color);
+          BufferColumn(Command->Column.String, Group, &RenderState.Layout, ColumnWidth, zIndexForText(RenderState.Window, Group), GetAbsoluteMaxClip(RenderState.Window), RenderState.Color, Command->Column.Params);
         } break;
 
         case RenderCommand_NewRow:
@@ -1878,9 +1881,20 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 
 
 
+function counted_string
+BuildNameStringFor(char Prefix, const char* Name, u32 DepthAdvance)
+{
+  u32 NameLength = (u32)Length(Name);
+  u32 FinalBufferLength = DepthAdvance + 1 + NameLength;
+
+  char* Buffer = FormatString(TranArena, "%*s%c%s", DepthAdvance, "", Prefix, Name);
+  counted_string Result = CS(Buffer, FinalBufferLength);
+  return Result;
+}
+
 function void
 BufferScopeTreeEntry(debug_ui_render_group *Group, debug_profile_scope *Scope, window_layout* Window,
-                     u8 Color, u64 TotalCycles, u64 TotalFrameCycles, u64 CallCount, u32 Depth)
+                     u64 TotalCycles, u64 TotalFrameCycles, u64 CallCount, u32 Depth)
 {
   Assert(TotalFrameCycles);
 
@@ -1889,28 +1903,25 @@ BufferScopeTreeEntry(debug_ui_render_group *Group, debug_profile_scope *Scope, w
 
   r32 Z = zIndexForText(Window, Group);
 
-  BufferColumn(ToString(Percentage), Group, &Window->Table, Z, DISABLE_CLIPPING);
-  BufferColumn(ToString(AvgCycles),  Group, &Window->Table, Z, DISABLE_CLIPPING);
-  BufferColumn(ToString(CallCount),  Group, &Window->Table, Z, DISABLE_CLIPPING);
+  PushColumn(Group, CS(Percentage));
+  PushColumn(Group, CS(AvgCycles));
+  PushColumn(Group, CS(CallCount));
 
-  layout *Layout = &Window->Table.Layout;
-  AdvanceSpaces((Depth*2)+1, Layout, &Group->Font);
+  u32 DepthSpaces = (Depth*2)+1;
 
+  char Prefix = ' ';
   if (Scope->Expanded && Scope->Child)
   {
-    BufferValue("-", Group, Layout, Color, Z, DISABLE_CLIPPING);
+    Prefix = '-';
   }
   else if (Scope->Child)
   {
-    BufferValue("+", Group, Layout, Color, Z, DISABLE_CLIPPING);
-  }
-  else
-  {
-    AdvanceSpaces(1, Layout, &Group->Font);
+    Prefix = '+';
   }
 
-  BufferValue(Scope->Name, Group, Layout, Color, Z, DISABLE_CLIPPING);
-  NewRow(Window);
+  counted_string NameString = BuildNameStringFor(Prefix, Scope->Name, DepthSpaces);
+  PushColumn(Group, NameString, ColumnRenderParam_LeftAlign);
+  PushNewRow(Group);
 
   return;
 }
@@ -2223,9 +2234,9 @@ BufferFirstCallToEach(debug_ui_render_group *Group,
 
   while (UniqueScopes)
   {
-    interactable ScopeTextInteraction = StartInteractable(&CallgraphWindow->Table.Layout, (umm)UniqueScopes->Scope, 0);
-      BufferScopeTreeEntry(Group, UniqueScopes->Scope, CallgraphWindow, WHITE, UniqueScopes->TotalCycles, TotalFrameCycles, UniqueScopes->CallCount, Depth);
-    EndInteractable(CallgraphWindow, &ScopeTextInteraction);
+    interactable_handle ScopeTextInteraction = PushButtonStart(Group, (umm)UniqueScopes->Scope);
+      BufferScopeTreeEntry(Group, UniqueScopes->Scope, CallgraphWindow, UniqueScopes->TotalCycles, TotalFrameCycles, UniqueScopes->CallCount, Depth);
+    PushButtonEnd(Group);
 
     if (UniqueScopes->Scope->Expanded)
       BufferFirstCallToEach(Group, UniqueScopes->Scope->Child, TreeRoot, Memory, CallgraphWindow, TotalFrameCycles, Depth+1);
@@ -2238,6 +2249,7 @@ BufferFirstCallToEach(debug_ui_render_group *Group,
     UniqueScopes = UniqueScopes->NextUnique;
   }
 
+  PushNewRow(Group);
   return;
 }
 
@@ -2342,15 +2354,15 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout
 
   TIMED_BLOCK("Call Graph");
 
-    Clear(&CallgraphWindow.Table.Layout.At);
-    Clear(&CallgraphWindow.Table.Layout.DrawBounds);
+    PushWindowInteraction(Group, &CallgraphWindow);
 
-    NewRow(&CallgraphWindow);
-    BufferColumn("Frame %",  Group,  &CallgraphWindow,  WHITE);
-    BufferColumn("Cycles",   Group,  &CallgraphWindow,  WHITE);
-    BufferColumn("Calls",    Group,  &CallgraphWindow,  WHITE);
-    BufferColumn("Name",     Group,  &CallgraphWindow,  WHITE);
-    NewRow(&CallgraphWindow);
+    PushTableStart(Group, &CallgraphWindow);
+
+    PushColumn(Group, CS("Frame %"));
+    PushColumn(Group, CS("Cycles"));;
+    PushColumn(Group, CS("Calls"));
+    PushColumn(Group, CS("Name"));
+    PushNewRow(Group);
 
     for ( u32 ThreadIndex = 0;
         ThreadIndex < TotalThreadCount;
@@ -2362,10 +2374,11 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout
 
       if (MainThreadReadTree->FrameRecorded == ReadTree->FrameRecorded)
       {
+
         BufferFirstCallToEach(Group, ReadTree->Root, ReadTree->Root, ThreadsafeDebugMemoryAllocator(), &CallgraphWindow, Frame->TotalCycles, 0);
-        NewRow(&CallgraphWindow);
       }
     }
+    PushTableEnd(Group);
 
   END_BLOCK("Call Graph");
 
