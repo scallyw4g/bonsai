@@ -203,8 +203,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
 
     case DebugUIType_CallGraph:
     {
-      rect2 CycleGraphClip = DebugDrawCallGraph(UiGroup, DebugState, &Layout, Dt.Max);
-      DebugDrawCycleThreadGraph(UiGroup, DebugState, V2(CycleGraphClip.Max.x + 20, Layout.At.y));
+      DebugDrawCallGraph(UiGroup, DebugState, &Layout, Dt.Max);
     } break;
 
     case DebugUIType_Memory:

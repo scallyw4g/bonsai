@@ -27,8 +27,11 @@ enum ui_render_command_type
   RenderCommand_ButtonEnd,
 
   RenderCommand_Column,
-  RenderCommand_TexturedQuad,
   RenderCommand_NewRow,
+  RenderCommand_TextAt,
+
+  RenderCommand_TexturedQuad,
+  RenderCommand_UntexturedQuad,
 
   RenderCommand_Count
 };
@@ -42,6 +45,13 @@ struct ui_render_command_column
 {
   counted_string String;
   column_render_params Params;
+};
+
+struct ui_render_command_untextured_quad
+{
+  v2 OffsetFromLayout;
+  v2 QuadDim;
+  v3 Color;
 };
 
 struct ui_render_command_textured_quad
@@ -59,6 +69,12 @@ struct ui_render_command_button_end
 {
 };
 
+struct ui_render_command_text_at
+{
+  counted_string Text;
+  v2 At;
+};
+
 struct ui_render_command_table
 {
   window_layout* Window;
@@ -73,7 +89,9 @@ struct ui_render_command
     ui_render_command_table Table;
     ui_render_command_column Column;
     ui_render_command_button_start ButtonStart;
-    ui_render_command_textured_quad TexQuad;
+    ui_render_command_textured_quad TexturedQuad;
+    ui_render_command_untextured_quad UntexturedQuad;
+    ui_render_command_text_at TextAt;
   };
 };
 

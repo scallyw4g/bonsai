@@ -113,9 +113,10 @@ NewLine(layout *Layout)
   Layout->At.y = Layout->DrawBounds.Max.y;
   v2 Max = Layout->Basis + Layout->At;
 
-  rect2 Bounds = RectMinMax(Min, Max);
   Layout->At.x = 0;
   AdvanceClip(Layout);
+
+  rect2 Bounds = RectMinMax(Min, Max);
   return Bounds;
 }
 
@@ -625,6 +626,8 @@ BufferChar(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, u8 Ch
   return Result;
 }
 
+function void BufferBorder(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo, rect2 Rect, v3 Color, r32 Z, v2 MaxClip);
+
 function void
 BufferValue(counted_string Text, debug_ui_render_group *Group, layout *Layout, v3 Color, r32 Z, v2 MaxClip, ui_style* Style = 0)
 {
@@ -633,10 +636,12 @@ BufferValue(counted_string Text, debug_ui_render_group *Group, layout *Layout, v
   v2 Padding = Style? Style->Padding : V2(0.0f);
 
   v2 FontHeight = V2(0, Group->Font.Size.y);
-  r32 PadX = Padding.x;
+  v2 PadX = V2(Padding.x, 0);
   v2 PadY = V2(0, Padding.y);
 
-  Layout->At.x += PadX;
+  v2 StartingP = GetAbsoluteAt(Layout);
+
+  Layout->At += PadX;
 
   for ( u32 CharIndex = 0;
       CharIndex < Text.Count;
@@ -647,11 +652,13 @@ BufferValue(counted_string Text, debug_ui_render_group *Group, layout *Layout, v
     continue;
   }
 
-  Layout->At.x += PadX;
+  Layout->At += PadX;
 
   v2 MaxClipP = Layout->At + (2.0f*PadY) + FontHeight;
-
   AdvanceClip(Layout, MaxClipP);
+
+  v2 EndingP = Layout->Basis + MaxClipP;
+  BufferBorder(Group, &Group->TextGroup->UIGeo, RectMinMax(StartingP, EndingP), V3(0, 0, 1), Z, DISABLE_CLIPPING);
 
   return;
 }
@@ -785,7 +792,7 @@ BufferColumn( r32 Perc, u32 ColumnWidth, debug_ui_render_group *Group, layout *L
   return;
 }
 
-function rect2
+function void
 BufferColumn(counted_string Text, debug_ui_render_group* Group, layout* Layout, u32 ColumnWidth, r32 Z, v2 MaxClip, v3 Color, column_render_params RenderParams)
 {
   if (RenderParams & ColumnRenderParam_RightAlign)
@@ -794,19 +801,15 @@ BufferColumn(counted_string Text, debug_ui_render_group* Group, layout* Layout, 
     AdvanceSpaces(Pad, Layout, &Group->Font);
   }
 
-  v2 Min = Layout->Basis + Layout->At;
-  v2 Max = Min + GetTextBounds((u32)Text.Count, &Group->Font);
-  rect2 Bounds = RectMinMax(Min, Max);
-
   ui_style PadParams = {};
   PadParams.Padding = V2(10, 10);
 
   BufferValue(Text, Group, Layout, Color, Z, MaxClip, &PadParams);
 
-  return Bounds;
+  return;
 }
 
-function rect2
+function void
 BufferColumn(const char* ColumnText, debug_ui_render_group* Group, table* Table, r32 Z, v2 MaxClip, u8 Color = WHITE)
 {
   layout *Layout = &Table->Layout;
@@ -817,17 +820,17 @@ BufferColumn(const char* ColumnText, debug_ui_render_group* Group, table* Table,
   u32 TextLength = (u32)Length(ColumnText);
   Col->Max = Max(Col->Max, TextLength);
 
-  rect2 Bounds = BufferColumn(CountedString(ColumnText, TextLength), Group, Layout, Col->Max, Z, MaxClip, GetColorData(Color).rgb, ColumnRenderParam_RightAlign);
+  BufferColumn(CountedString(ColumnText, TextLength), Group, Layout, Col->Max, Z, MaxClip, GetColorData(Color).rgb, ColumnRenderParam_RightAlign);
 
-  return Bounds;
+  return;
 }
 
-function rect2
+function void
 BufferColumn(const char* ColumnText, debug_ui_render_group* Group, window_layout* Window, u8 Color = WHITE)
 {
   r32 Z = zIndexForText(Window, Group);
-  rect2 Result = BufferColumn(ColumnText, Group, &Window->Table, Z, GetAbsoluteMaxClip(Window), Color);
-  return Result;
+  BufferColumn(ColumnText, Group, &Window->Table, Z, GetAbsoluteMaxClip(Window), Color);
+  return;
 }
 
 function r32
@@ -1153,18 +1156,55 @@ PushColumn(debug_ui_render_group *Group, counted_string String, column_render_pa
 }
 
 function void
-PushTexturedQuad(debug_ui_render_group *Group, window_layout* Window, debug_texture_array_slice TextureSlice)
+PushTextAt(debug_ui_render_group *Group, counted_string Text, v2 At)
 {
   ui_render_command Command = {
-    .Type = RenderCommand_TexturedQuad,
-    .TexQuad.TextureSlice = TextureSlice,
-    .TexQuad.Window = Window,
+    .Type = RenderCommand_TextAt,
+    .TextAt.Text = Text,
+    .TextAt.At = At,
   };
 
   PushUiRenderCommand(Group, &Command);
 
   return;
 }
+
+function void
+PushTooltip(debug_ui_render_group *Group, counted_string Text)
+{
+  PushTextAt(Group, Text, *Group->MouseP+V2(12, -7));
+  return;
+}
+
+function void
+PushTexturedQuad(debug_ui_render_group *Group, window_layout* Window, debug_texture_array_slice TextureSlice)
+{
+  ui_render_command Command = {
+    .Type = RenderCommand_TexturedQuad,
+    .TexturedQuad.TextureSlice = TextureSlice,
+    .TexturedQuad.Window = Window,
+  };
+
+  PushUiRenderCommand(Group, &Command);
+
+  return;
+}
+
+function void
+PushUntexturedQuad(debug_ui_render_group* Group, v2 OffsetFromLayout, v2 QuadDim, v3 Color)
+{
+  ui_render_command Command = {
+    .Type = RenderCommand_UntexturedQuad,
+    .UntexturedQuad.OffsetFromLayout = OffsetFromLayout,
+    .UntexturedQuad.QuadDim = QuadDim,
+    .UntexturedQuad.Color = Color
+  };
+
+  PushUiRenderCommand(Group, &Command);
+
+  return;
+}
+
 function u32
 PushButtonEnd(debug_ui_render_group *Group)
 {
@@ -1380,11 +1420,11 @@ ButtonStart(debug_ui_render_group* Group, render_state* RenderState, umm ButtonI
   Assert(!RenderState->CurrentInteraction.ID);
   Assert(RenderState->Window);
 
-  RenderState->Layout.DrawBounds = {};
+  /* RenderState->Layout.DrawBounds = {}; */
 
   RenderState->CurrentInteraction.ID = ButtonId;
   RenderState->CurrentInteraction.MinP = GetAbsoluteAt(&RenderState->Layout);
-  RenderState->CurrentInteraction.MaxP = V2(0);
+  RenderState->CurrentInteraction.MaxP = GetAbsoluteAt(&RenderState->Layout);
   RenderState->CurrentInteraction.Window = RenderState->Window;
 
   if (RenderState->CurrentInteraction.ID == Group->HoverInteractionId)
@@ -1438,70 +1478,96 @@ ButtonEnd(debug_ui_render_group *Group, render_state* RenderState)
   return;
 }
 
+function void
+ProcessUntexturedQuadPush(debug_ui_render_group* Group, ui_render_command_untextured_quad *Command, render_state* RenderState)
+{
+  v2 MaxClip = GetAbsoluteMaxClip(RenderState->Window);
+  v2 MinP = Command->OffsetFromLayout + GetAbsoluteAt(&RenderState->Layout);
+  v2 Dim = Command->QuadDim;
+  v3 Color = Command->Color;
+  r32 Z = zIndexForText(RenderState->Window, Group);
+
+  BufferUntexturedQuad(Group, &Group->TextGroup->UIGeo, MinP, Dim, Color, Z, MaxClip);
+
+  v2 MaxP = Command->OffsetFromLayout + Dim;
+  AdvanceClip(&RenderState->Layout, MaxP);
+
+  return;
+}
+
 function u32
 RenderTable(debug_ui_render_group* Group, ui_render_command_buffer* CommandBuffer, u32 FirstCommandIndex)
 {
-table_render_params TableRenderParams = GetTableRenderParams(CommandBuffer, FirstCommandIndex);
+  table_render_params TableRenderParams = GetTableRenderParams(CommandBuffer, FirstCommandIndex);
 
-if (TableRenderParams.OnePastTableEnd)
-{
-  u32 ColumnIndex = 0;
-
-  render_state RenderState = {
-    .Color = V3(1),
-  };
-
-  u32 CommandIndex = FirstCommandIndex;
-  while (CommandIndex < TableRenderParams.OnePastTableEnd)
+  if (TableRenderParams.OnePastTableEnd)
   {
-    ui_render_command* Command = GetCommand(CommandBuffer, CommandIndex++);
-    switch(Command->Type)
+    u32 ColumnIndex = 0;
+
+    render_state RenderState = {
+      .Color = V3(1),
+    };
+
+    u32 CommandIndex = FirstCommandIndex;
+    while (CommandIndex < TableRenderParams.OnePastTableEnd)
     {
-        case RenderCommand_TableStart:
-        {
-          RenderState.Window = Command->Table.Window;
-          RenderState.Layout = RenderState.Window->Table.Layout;
-        } break;
+      ui_render_command* Command = GetCommand(CommandBuffer, CommandIndex++);
+      switch(Command->Type)
+      {
+          case RenderCommand_TableStart:
+          {
+            RenderState.Window = Command->Table.Window;
+            RenderState.Layout = RenderState.Window->Table.Layout;
+          } break;
 
-        case RenderCommand_Column:
-        {
-          Assert(RenderState.Window);
-          u32 ColumnWidth = GetColumnWidth(&TableRenderParams, ColumnIndex++);
-          BufferColumn(Command->Column.String, Group, &RenderState.Layout, ColumnWidth, zIndexForText(RenderState.Window, Group), GetAbsoluteMaxClip(RenderState.Window), RenderState.Color, Command->Column.Params);
-        } break;
+          case RenderCommand_Column:
+          {
+            Assert(RenderState.Window);
+            u32 ColumnWidth = GetColumnWidth(&TableRenderParams, ColumnIndex++);
+            BufferColumn(Command->Column.String, Group, &RenderState.Layout, ColumnWidth, zIndexForText(RenderState.Window, Group), GetAbsoluteMaxClip(RenderState.Window), RenderState.Color, Command->Column.Params);
+          } break;
 
-        case RenderCommand_NewRow:
-        {
-          ColumnIndex = 0;
-          NewLine(&RenderState.Layout);
-        } break;
+          case RenderCommand_NewRow:
+          {
+            ColumnIndex = 0;
+            NewLine(&RenderState.Layout);
+          } break;
 
-        case RenderCommand_ButtonStart:
-        {
-          ButtonStart(Group, &RenderState, Command->ButtonStart.ID);
-        } break;
+          case RenderCommand_UntexturedQuad:
+          {
+            ProcessUntexturedQuadPush(Group, (ui_render_command_untextured_quad*)&Command->UntexturedQuad, &RenderState);
+          } break;
 
-        case RenderCommand_ButtonEnd:
-        {
-          ButtonEnd(Group, &RenderState);
-        } break;
+          case RenderCommand_TextAt:
+          {
+          } break;
 
-        case RenderCommand_TableEnd:
-        {
-          Assert(CommandIndex == TableRenderParams.OnePastTableEnd);
-          RenderState.Window = 0;
-        } break;
+          case RenderCommand_ButtonStart:
+          {
+            ButtonStart(Group, &RenderState, Command->ButtonStart.ID);
+          } break;
 
-        InvalidDefaultCase;
-      }
+          case RenderCommand_ButtonEnd:
+          {
+            ButtonEnd(Group, &RenderState);
+          } break;
+
+          case RenderCommand_TableEnd:
+          {
+            Assert(CommandIndex == TableRenderParams.OnePastTableEnd);
+            RenderState.Window = 0;
+          } break;
+
+          InvalidDefaultCase;
+        }
+    }
   }
-}
-else
-{
-  Error("No RenderCommand_TableEnd detected.");
-}
+  else
+  {
+    Error("No RenderCommand_TableEnd detected.");
+  }
 
-return TableRenderParams.OnePastTableEnd;
+  return TableRenderParams.OnePastTableEnd;
 }
 
 function void
@@ -1531,13 +1597,22 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
 
       case RenderCommand_TexturedQuad:
       {
-        RenderState.Window = Command->TexQuad.Window;
+        RenderState.Window = Command->TexturedQuad.Window;
         v2 MinP = V2( RenderState.Window->Table.Layout.Basis.x, GetAbsoluteDrawBoundsMax(RenderState.Window).y );
         r32 Z = zIndexForText(RenderState.Window, Group);
         v2 MaxClip = GetAbsoluteMaxClip(RenderState.Window);
         BufferTexturedQuad( Group, &Group->TextGroup->TextGeo, MinP, RenderState.Window->MaxClip,
-                            Command->TexQuad.TextureSlice, UVsForFullyCoveredQuad(),
+                            Command->TexturedQuad.TextureSlice, UVsForFullyCoveredQuad(),
                             V3(1), Z, MaxClip);
+      } break;
+
+      case RenderCommand_UntexturedQuad:
+      {
+        ProcessUntexturedQuadPush(Group, (ui_render_command_untextured_quad*)&Command->UntexturedQuad, &RenderState);
+      } break;
+
+      case RenderCommand_TextAt:
+      {
       } break;
 
       case RenderCommand_ButtonStart:
@@ -1568,47 +1643,31 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
 
 
 
-function b32
-DrawCycleBar( cycle_range *Range, cycle_range *Frame, r32 TotalGraphWidth, const char *Tooltip, v3 Color,
-              debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo, layout *Layout, r32 Z, v2 MaxClip, u32 Depth)
+function interactable_handle
+PushCycleBar(debug_ui_render_group* Group, cycle_range* Range, cycle_range* Frame, r32 TotalGraphWidth, u32 Depth, random_series* Entropy)
 {
   Assert(Frame->StartCycle < Range->StartCycle);
-
-  b32 Result = False;
 
   r32 FramePerc = (r32)Range->TotalCycles / (r32)Frame->TotalCycles;
 
   r32 BarHeight = Group->Font.Size.y;
   r32 BarWidth = FramePerc*TotalGraphWidth;
-  if (BarWidth > 0.1f)
-  {
-    v2 BarDim = V2(BarWidth, BarHeight);
+  v2 BarDim = V2(BarWidth, BarHeight);
 
-    // Advance to the appropriate starting place along graph
-    u64 StartCycleOffset = Range->StartCycle - Frame->StartCycle;
-    r32 xOffset = GetXOffsetForHorizontalBar(StartCycleOffset, Frame->TotalCycles, TotalGraphWidth);
-    r32 yOffset = Depth*Group->Font.Size.y;
+  u64 StartCycleOffset = Range->StartCycle - Frame->StartCycle;
+  r32 xOffset = GetXOffsetForHorizontalBar(StartCycleOffset, Frame->TotalCycles, TotalGraphWidth);
+  r32 yOffset = Depth*Group->Font.Size.y;
 
-    v2 MinP = Layout->At + Layout->Basis + V2(xOffset, yOffset);
+  v2 OffsetFromLayout = V2(xOffset, yOffset);
 
-    interactable Interaction = Interactable(MinP, MinP+BarDim, (umm)"CycleBarHoverInteraction", 0);
-    Result = Hover(Group, &Interaction);
-    if (Result)
-    {
-      Color *= 0.5f;
-      if (Tooltip) { BufferTooltip(Group, Tooltip); }
-    }
-
-    clip_result Clip = BufferUntexturedQuad(Group, Geo, MinP, BarDim, Color, Z, MaxClip);
-    if (Clip.ClipStatus != ClipStatus_FullyClipped)
-    {
-      AdvanceClip(Layout, Clip.MaxClip - Layout->Basis);
-    }
-  }
+  interactable_handle Result = PushButtonStart(Group, (umm)"CycleBarHoverInteraction");
+    PushUntexturedQuad(Group, OffsetFromLayout, BarDim, RandomV3(Entropy));
+  PushButtonEnd(Group);
 
   return Result;
 }
 
+#if 0
 function void
 DrawWaitingBar(mutex_op_record *WaitRecord, mutex_op_record *AquiredRecord, mutex_op_record *ReleasedRecord,
                debug_ui_render_group *Group, layout *Layout, u64 FrameStartingCycle, u64 FrameTotalCycles, r32 TotalGraphWidth, r32 Z, v2 MaxClip)
@@ -1634,6 +1693,7 @@ DrawWaitingBar(mutex_op_record *WaitRecord, mutex_op_record *AquiredRecord, mute
 
   return;
 }
+#endif
 
 
 
@@ -1716,7 +1776,7 @@ EndButton(debug_ui_render_group* Group)
 function v2
 BasisRightOf(window_layout* Window, v2 WindowSpacing = V2(150, 0))
 {
-  v2 Result = V2(GetAbsoluteMaxClip(Window).x, GetAbsoluteMin(Window).y) + WindowSpacing;
+  v2 Result = V2(GetAbsoluteMaxClip(Window).x, GetAbsoluteDrawBoundsMin(&Window->Table.Layout).y) + WindowSpacing;
   return Result;
 }
 
@@ -1972,26 +2032,17 @@ GetStatsFor( debug_profile_scope *Target, debug_profile_scope *Root)
 #endif
 
 function void
-DrawScopeBarsRecursive(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo, debug_profile_scope *Scope,
-                       layout *Layout, cycle_range *Frame, r32 TotalGraphWidth, random_series *Entropy, r32 Z, v2 MaxClip, u32 Depth = 0)
+PushScopeBarsRecursive(debug_ui_render_group *Group, debug_profile_scope *Scope, cycle_range *Frame, r32 TotalGraphWidth, random_series *Entropy, u32 Depth = 0)
 {
   while (Scope)
   {
-    Assert(Scope->Name);
-
     cycle_range Range = {Scope->StartingCycle, Scope->CycleCount};
-    v3 Color = RandomV3(Entropy);
+    interactable_handle Bar = PushCycleBar(Group, &Range, Frame, TotalGraphWidth, Depth, Entropy);
 
-    b32 Hovering = DrawCycleBar( &Range, Frame, TotalGraphWidth, Scope->Name, Color, Group, Geo, Layout, Z, MaxClip, Depth);
+    if (Hover(Group, &Bar)) { PushTooltip(Group, CS(Scope->Name)); }
+    if (Clicked(Group, &Bar)) { Scope->Expanded = !Scope->Expanded; }
 
-    if (Hovering && Group->Input->LMB.Clicked)
-      Scope->Expanded = !Scope->Expanded;
-
-    if (Scope->Expanded)
-    {
-      DrawScopeBarsRecursive(Group, Geo, Scope->Child, Layout, Frame, TotalGraphWidth, Entropy, Z, MaxClip, Depth+1);
-    }
-
+    if (Scope->Expanded) { PushScopeBarsRecursive(Group, Scope->Child, Frame, TotalGraphWidth, Entropy, Depth+1); }
     Scope = Scope->Sibling;
   }
 
@@ -2013,11 +2064,7 @@ DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState
   // TODO(Jesse): Call this?
   /* PushWindowInteraction(&CycleGraphWindow) */
 
-  layout* Layout = &CycleGraphWindow.Table.Layout;
-
   SetFontSize(&Group->Font, 30);
-
-  r32 MinY = Layout->Basis.y + Layout->At.y;
 
   u32 TotalThreadCount                = GetTotalThreadCount();
   frame_stats *FrameStats             = SharedState->Frames + SharedState->ReadScopeIndex;
@@ -2026,27 +2073,28 @@ DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState
   debug_thread_state *MainThreadState = GetThreadLocalStateFor(0);
   debug_scope_tree *MainThreadReadTree    = MainThreadState->ScopeTrees + SharedState->ReadScopeIndex;
 
-  r32 Z = zIndexForText(&CycleGraphWindow, Group);
-  for ( u32 ThreadIndex = 0;
-        ThreadIndex < TotalThreadCount;
-        ++ThreadIndex)
-  {
-    char *ThreadName = FormatString(TranArena, "Thread %u", ThreadIndex);
-    BufferColumn(ThreadName, Group, &CycleGraphWindow.Table, Z, DISABLE_CLIPPING);
-    NewRow(&CycleGraphWindow);
-
-    debug_thread_state *ThreadState = GetThreadLocalStateFor(ThreadIndex);
-    debug_scope_tree *ReadTree = ThreadState->ScopeTrees + SharedState->ReadScopeIndex;
-    if (MainThreadReadTree->FrameRecorded == ReadTree->FrameRecorded)
+  PushTableStart(Group, &CycleGraphWindow);
+    for ( u32 ThreadIndex = 0;
+          ThreadIndex < TotalThreadCount;
+          ++ThreadIndex)
     {
-      DrawScopeBarsRecursive(Group, Geo, ReadTree->Root, Layout, &FrameCycles, TotalGraphWidth, &Entropy, Z, DISABLE_CLIPPING);
+      counted_string ThreadName = CS(FormatString(TranArena, "Thread %u", ThreadIndex));
+      PushColumn(Group, ThreadName);
+      PushNewRow(Group);
+
+      debug_thread_state *ThreadState = GetThreadLocalStateFor(ThreadIndex);
+      debug_scope_tree *ReadTree = ThreadState->ScopeTrees + SharedState->ReadScopeIndex;
+      if (MainThreadReadTree->FrameRecorded == ReadTree->FrameRecorded)
+      {
+        PushScopeBarsRecursive(Group, ReadTree->Root, &FrameCycles, TotalGraphWidth, &Entropy);
+        PushNewRow(Group);
+      }
+
     }
+  PushTableEnd(Group);
 
-    NewRow(&CycleGraphWindow);
-  }
 
-  NewLine(Layout);
-
+#if 0
   r32 TotalMs = (r32)FrameStats->FrameMs;
 
   if (TotalMs > 0.0f)
@@ -2059,7 +2107,7 @@ DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState
       v2 MinP16ms = Layout->Basis + V2( xOffset, MinY );
       v2 MaxP16ms = Layout->Basis + V2( xOffset+MarkerWidth, Layout->At.y );
       v2 Dim = MaxP16ms - MinP16ms;
-      BufferUntexturedQuad(Group, Geo, MinP16ms, Dim, V3(0,1,0), Z, DISABLE_CLIPPING);
+      PushUntexturedQuad(Group, MinP16ms, Dim, V3(0,1,0));
     }
     {
       r32 FramePerc = 33.333333f/TotalMs;
@@ -2067,9 +2115,10 @@ DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState
       v2 MinP16ms = Layout->Basis + V2( xOffset, MinY );
       v2 MaxP16ms = Layout->Basis + V2( xOffset+MarkerWidth, Layout->At.y );
       v2 Dim = MaxP16ms - MinP16ms;
-      BufferUntexturedQuad(Group, Geo, MinP16ms, Dim, V3(0,1,1), Z, DISABLE_CLIPPING);
+      PushUntexturedQuad(Group, MinP16ms, Dim, V3(0,1,1));
     }
   }
+#endif
 
 #if 0
   u32 UnclosedMutexRecords = 0;
@@ -2254,7 +2303,7 @@ BufferFirstCallToEach(debug_ui_render_group *Group,
 }
 
 
-function rect2
+function void
 DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout *MainLayout, r64 MaxMs)
 {
   NewLine(MainLayout);
@@ -2381,8 +2430,9 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout
 
   END_BLOCK("Call Graph");
 
-  rect2 Result = CallgraphWindow.Table.Layout.DrawBounds;
-  return Result;
+  DebugDrawCycleThreadGraph(Group, DebugState, V2(0, MainLayout->At.y));
+
+  return;
 }
 
 #if 0

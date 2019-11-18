@@ -518,20 +518,6 @@ ThreadsafeDebugMemoryAllocator()
 }
 
 v2
-GetAbsoluteMin(layout *Layout)
-{
-  v2 Result = Layout->DrawBounds.Min + Layout->Basis;
-  return Result;
-}
-
-v2
-GetAbsoluteMax(layout *Layout)
-{
-  v2 Result = Layout->DrawBounds.Max + Layout->Basis;
-  return Result;
-}
-
-v2
 GetAbsoluteAt(window_layout *Window)
 {
   v2 Result = Window->Table.Layout.At + Window->Table.Layout.Basis;
@@ -553,16 +539,16 @@ GetAbsoluteDrawBoundsMin(layout *Layout)
 }
 
 v2
-GetAbsoluteDrawBoundsMax(window_layout *Window)
+GetAbsoluteDrawBoundsMax(layout *Layout)
 {
-  v2 Result = Window->Table.Layout.Basis+Window->Table.Layout.DrawBounds.Max;
+  v2 Result = Layout->Basis+Layout->DrawBounds.Max;
   return Result;
 }
 
 v2
-GetAbsoluteDrawBoundsMax(layout *Layout)
+GetAbsoluteDrawBoundsMax(window_layout *Window)
 {
-  v2 Result = Layout->Basis+Layout->DrawBounds.Max;
+  v2 Result = GetAbsoluteDrawBoundsMax(&Window->Table.Layout);
   return Result;
 }
 
@@ -570,13 +556,6 @@ rect2
 GetAbsoluteDrawBounds(layout *Layout)
 {
   rect2 Result = RectMinMax( GetAbsoluteDrawBoundsMin(Layout), GetAbsoluteDrawBoundsMax(Layout) );
-  return Result;
-}
-
-v2
-GetAbsoluteMin(window_layout *Window)
-{
-  v2 Result = GetAbsoluteMin(&Window->Table.Layout);
   return Result;
 }
 
@@ -760,13 +739,6 @@ MergeWindowLayouts(window_layout* Src, window_layout* Dest)
 {
   MergeTables(&Src->Table, &Dest->Table);
   return Dest;
-}
-
-inline void
-BeginClipRect(window_layout *Window)
-{
-  Window->Table.Layout.DrawBounds = InvertedInfinityRectangle();
-  return;
 }
 
 r32
