@@ -1,23 +1,8 @@
 
-// TODO(Jesse): Can this be consolidated with the layout struct?
-struct table_column
-{
-  u32 Max;
-};
-
 struct layout
 {
   v2 At;
   rect2 DrawBounds;
-};
-
-#define MAX_TABLE_COLUMNS 4
-struct table
-{
-  layout Layout;
-
-  table_column Columns[MAX_TABLE_COLUMNS];
-  u32 ColumnIndex;
 };
 
 struct window_layout
@@ -125,13 +110,6 @@ StartInteractable(layout* Layout, umm ID, window_layout *Window)
 {
   v2 StartingAt = GetAbsoluteAt(Window, Layout);
   interactable Result = Interactable(StartingAt, StartingAt, ID, Window);
-  return Result;
-}
-
-function interactable
-StartInteractable(table* Table, umm ID, window_layout *Window)
-{
-  interactable Result = StartInteractable(&Table->Layout, ID, Window);
   return Result;
 }
 

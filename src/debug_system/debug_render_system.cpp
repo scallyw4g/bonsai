@@ -116,14 +116,6 @@ NewLine(layout *Layout)
   return;
 }
 
-function void
-NewRow(table *Table)
-{
-  Table->ColumnIndex = 0;
-  NewLine(&Table->Layout);
-  return;
-}
-
 function char*
 MemorySize(u64 Number)
 {

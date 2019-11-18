@@ -113,10 +113,3 @@ EndInteractable(layout* Layout, interactable *Interaction)
   BufferBorder(&GetDebugState()->UiGroup, Interaction, V3(0,1,0), 1.0f, DISABLE_CLIPPING);
   return;
 }
-
-function void
-EndInteractable(table* Table, interactable *Interaction)
-{
-  EndInteractable(&Table->Layout, Interaction);
-  return;
-}
