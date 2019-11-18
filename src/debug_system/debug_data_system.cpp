@@ -518,105 +518,63 @@ ThreadsafeDebugMemoryAllocator()
 }
 
 v2
-GetAbsoluteAt(window_layout *Window)
+GetAbsoluteAt(window_layout* Window, layout *Layout)
 {
-  v2 Result = Window->Table.Layout.At + Window->Table.Layout.Basis;
+  v2 Result = Window ? Window->Basis + Layout->At : Layout->At;
   return Result;
 }
 
 v2
-GetAbsoluteAt(layout *Layout)
+GetAbsoluteDrawBoundsMin(window_layout* Window, layout *Layout)
 {
-  v2 Result = Layout->At + Layout->Basis;
+  v2 Result = Window->Basis + Layout->DrawBounds.Min;
   return Result;
 }
 
 v2
-GetAbsoluteDrawBoundsMin(layout *Layout)
+GetAbsoluteDrawBoundsMax(window_layout* Window, layout *Layout)
 {
-  v2 Result = Layout->Basis+Layout->DrawBounds.Min;
-  return Result;
-}
-
-v2
-GetAbsoluteDrawBoundsMax(layout *Layout)
-{
-  v2 Result = Layout->Basis+Layout->DrawBounds.Max;
-  return Result;
-}
-
-v2
-GetAbsoluteDrawBoundsMax(window_layout *Window)
-{
-  v2 Result = GetAbsoluteDrawBoundsMax(&Window->Table.Layout);
+  v2 Result = Window->Basis + Layout->DrawBounds.Max;
   return Result;
 }
 
 rect2
-GetAbsoluteDrawBounds(layout *Layout)
+GetAbsoluteDrawBounds(window_layout* Window, layout *Layout)
 {
-  rect2 Result = RectMinMax( GetAbsoluteDrawBoundsMin(Layout), GetAbsoluteDrawBoundsMax(Layout) );
+  rect2 Result = RectMinMax( GetAbsoluteDrawBoundsMin(Window, Layout), GetAbsoluteDrawBoundsMax(Window, Layout) );
   return Result;
 }
 
 v2
 GetAbsoluteMaxClip(window_layout *Window)
 {
-  v2 Result = Window->MaxClip + Window->Table.Layout.Basis;
+  v2 Result = Window->MaxClip + Window->Basis;
   return Result;
 }
 
 rect2
 GetClippingBounds(window_layout* Window)
 {
-  rect2 Result = RectMinMax(Window->Table.Layout.Basis, Window->Table.Layout.Basis + Window->MaxClip);
+  rect2 Result = RectMinMax(Window->Basis, GetAbsoluteMaxClip(Window));
   return Result;
 }
 
+/* function layout */
+/* LayoutBelow(window_layout* Window, table* Table) */
+/* { */
+/*   layout Result = {}; */
+/*   Result.Basis = Window->Basis + V2(Table->Layout.DrawBounds.Min.x, Table->Layout.At.y); */
+/*   return Result; */
+/* } */
 
-rect2
-GetBounds(table* Table)
-{
-  rect2 Bounds = RectMinMax(Table->Layout.Basis, GetAbsoluteDrawBoundsMax(&Table->Layout));
-  return Bounds;
-}
-
-function table
-TableLayoutAt(table* Src)
-{
-  table Result = {};
-  Result.Layout.Basis = GetAbsoluteAt(&Src->Layout);
-  return Result;
-}
-
-function table
-TableLayoutBelow(table* Src)
-{
-  table Result = {};
-  Result.Layout.Basis = Src->Layout.Basis + V2(Src->Layout.DrawBounds.Min.x, Src->Layout.At.y);
-
-  Assert( GetAbsoluteAt(&Src->Layout) == GetAbsoluteAt(&Result.Layout) );
-  Assert( GetAbsoluteDrawBounds(&Result.Layout).Min == GetAbsoluteDrawBounds(&Result.Layout).Max);
-
-  return Result;
-}
-
-function layout
-LayoutBelow(table* Src)
-{
-  layout Result = {};
-  Result.Basis = Src->Layout.Basis + V2(Src->Layout.DrawBounds.Min.x, Src->Layout.At.y);
-  return Result;
-}
-
-function layout
-LayoutRightOf(table* Src)
-{
-  layout Result = {};
-  Result.Basis.x = Src->Layout.Basis.x + Src->Layout.DrawBounds.Max.x;
-  Result.Basis.y = Src->Layout.Basis.y;
-  return Result;
-}
+/* function layout */
+/* LayoutRightOf(window_layout* Window, table* Table) */
+/* { */
+/*   layout Result = {}; */
+/*   Result.Basis.x = Window->Basis.x + Table->Layout.DrawBounds.Max.x; */
+/*   Result.Basis.y = Windnow->Basis.y; */
+/*   return Result; */
+/* } */
 
 
 /*************************                       *****************************/
@@ -710,36 +668,29 @@ AdvanceClip(layout *Layout, font *Font = 0)
   return;
 }
 
-function void
-MergeLayouts(layout* Src, layout* Dest)
-{
-  Dest->At             = Max(Dest->At, GetAbsoluteAt(Src)-Dest->Basis);
-  Dest->DrawBounds.Max = Max(Dest->DrawBounds.Max, GetAbsoluteDrawBoundsMax(Src)-Dest->Basis);
+/* function void */
+/* MergeLayouts(layout* Src, layout* Dest) */
+/* { */
+/*   Dest->At             = Max(Dest->At, GetAbsoluteAt(Src) - Dest->Basis); */
+/*   Dest->DrawBounds.Max = Max(Dest->DrawBounds.Max, GetAbsoluteDrawBoundsMax(Src)-Dest->Basis); */
 
-  AdvanceClip(Dest);
+/*   AdvanceClip(Dest); */
 
-  Assert( GetAbsoluteAt(Dest).x >= GetAbsoluteAt(Src).x );
-  Assert( GetAbsoluteAt(Dest).y >= GetAbsoluteAt(Src).y );
+/*   Assert( GetAbsoluteAt(Dest).x >= GetAbsoluteAt(Src).x ); */
+/*   Assert( GetAbsoluteAt(Dest).y >= GetAbsoluteAt(Src).y ); */
 
-  Assert( GetAbsoluteDrawBoundsMax(Dest).x >= GetAbsoluteDrawBoundsMax(Src).x );
-  Assert( GetAbsoluteDrawBoundsMax(Dest).y >= GetAbsoluteDrawBoundsMax(Src).y );
+/*   Assert( GetAbsoluteDrawBoundsMax(Dest).x >= GetAbsoluteDrawBoundsMax(Src).x ); */
+/*   Assert( GetAbsoluteDrawBoundsMax(Dest).y >= GetAbsoluteDrawBoundsMax(Src).y ); */
 
-  return;
-}
+/*   return; */
+/* } */
 
-function void
-MergeTables(table* Src, table* Dest)
-{
-  MergeLayouts(&Src->Layout, &Dest->Layout);
-  return;
-}
-
-function window_layout*
-MergeWindowLayouts(window_layout* Src, window_layout* Dest)
-{
-  MergeTables(&Src->Table, &Dest->Table);
-  return Dest;
-}
+/* function void */
+/* MergeTables(table* Src, table* Dest) */
+/* { */
+/*   MergeLayouts(&Src->Layout, &Dest->Layout); */
+/*   return; */
+/* } */
 
 r32
 GetXOffsetForHorizontalBar(u64 StartCycleOffset, u64 FrameTotalCycles, r32 TotalGraphWidth)

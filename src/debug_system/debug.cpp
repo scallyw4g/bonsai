@@ -54,24 +54,27 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     v2 StatusBarClip = DISABLE_CLIPPING;
     r32 StatusBarZ = 1.0f;
     Dt = ComputeMinMaxAvgDt();
-    BufferColumn(Dt.Max, 6, UiGroup, &Layout, WHITE, StatusBarZ, StatusBarClip);
+
+    buffer_value_params StatusBarBufferParams = BufferValueParams(0, &Layout, V3(1), StatusBarZ, StatusBarClip);
+
+    BufferColumn(Dt.Max, 6, UiGroup, StatusBarBufferParams);
     NewLine(&Layout);
 
-    BufferColumn(Dt.Avg, 6, UiGroup, &Layout, WHITE, StatusBarZ, StatusBarClip);
-    BufferColumn(Plat->dt*1000.0f, 6, UiGroup, &Layout, WHITE, StatusBarZ, StatusBarClip);
-    BufferValue("ms", UiGroup, &Layout, WHITE, StatusBarZ, StatusBarClip);
+    BufferColumn(Dt.Avg, 6, UiGroup, StatusBarBufferParams);
+    BufferColumn(Plat->dt*1000.0f, 6, UiGroup, StatusBarBufferParams);
+    BufferValue("ms", UiGroup, StatusBarBufferParams);
 
     {
       // Main line
       memory_arena_stats TotalStats = GetTotalMemoryArenaStats();
 
-      BufferThousands(TotalStats.Allocations, UiGroup, &Layout, WHITE, StatusBarZ, StatusBarClip);
+      BufferThousands(TotalStats.Allocations, UiGroup, StatusBarBufferParams);
       AdvanceSpaces(1, &Layout, &UiGroup->Font);
-      BufferValue("Allocations", UiGroup, &Layout, WHITE, StatusBarZ, StatusBarClip);
+      BufferValue("Allocations", UiGroup, StatusBarBufferParams);
 
-      BufferThousands(TotalStats.Pushes, UiGroup, &Layout, WHITE, StatusBarZ, StatusBarClip);
+      BufferThousands(TotalStats.Pushes, UiGroup, StatusBarBufferParams);
       AdvanceSpaces(1, &Layout, &UiGroup->Font);
-      BufferValue("Pushes", UiGroup, &Layout, WHITE, StatusBarZ, StatusBarClip);
+      BufferValue("Pushes", UiGroup, StatusBarBufferParams);
 
       u32 TotalDrawCalls = 0;
 
@@ -86,14 +89,14 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
         }
       }
 
-      BufferColumn(TotalDrawCalls, 6, UiGroup, &Layout, WHITE, StatusBarZ, StatusBarClip);
+      BufferColumn(TotalDrawCalls, 6, UiGroup, StatusBarBufferParams);
       AdvanceSpaces(1, &Layout, &UiGroup->Font);
-      BufferValue("Draw Calls", UiGroup, &Layout, WHITE, StatusBarZ, StatusBarClip);
+      BufferValue("Draw Calls", UiGroup, StatusBarBufferParams);
 
       NewLine(&Layout);
     }
 
-    BufferColumn(Dt.Min, 6, UiGroup, &Layout, WHITE, StatusBarZ, StatusBarClip);
+    BufferColumn(Dt.Min, 6, UiGroup, StatusBarBufferParams);
   END_BLOCK("Status Bar");
 
   SetFontSize(&UiGroup->Font, 32);
@@ -108,13 +111,16 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   ButtonStyling.ActiveColor = V3(0.65f);
   ButtonStyling.ClickColor = V3(1, 0, 0);
 
+
   if (DebugState->DisplayDebugMenu)
   {
     r32 DebugMenuZ = 1.0f;
+    buffer_value_params DebugMenuParams = BufferValueParams(0, &Layout, V3(1), DebugMenuZ, DISABLE_CLIPPING, &ButtonStyling);
+
     ButtonStyling.IsActive = DebugState->UIType == DebugUIType_PickedChunks;
     const char* ButtonName = "PickedChunks";
     umm InteractionId = (umm)ButtonName;
-    if (BufferButton(ButtonName, UiGroup, &Layout, InteractionId, DebugMenuZ, DISABLE_CLIPPING, 0, &ButtonStyling))
+    if (BufferButton(ButtonName, UiGroup, InteractionId, DebugMenuParams))
     {
       DebugState->UIType = DebugUIType_PickedChunks;
     }
@@ -122,7 +128,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     ButtonStyling.IsActive = DebugState->UIType == DebugUIType_Graphics;
     ButtonName = "Graphics";
     InteractionId = (umm)ButtonName;
-    if (BufferButton(ButtonName, UiGroup, &Layout, InteractionId, DebugMenuZ, DISABLE_CLIPPING, 0, &ButtonStyling))
+    if (BufferButton(ButtonName, UiGroup, InteractionId, DebugMenuParams))
     {
       DebugState->UIType = DebugUIType_Graphics;
     }
@@ -130,7 +136,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     ButtonStyling.IsActive = DebugState->UIType == DebugUIType_Network;
     ButtonName = "Network";
     InteractionId = (umm)ButtonName;
-    if (BufferButton(ButtonName, UiGroup, &Layout, InteractionId, DebugMenuZ, DISABLE_CLIPPING, 0, &ButtonStyling))
+    if (BufferButton(ButtonName, UiGroup, InteractionId, DebugMenuParams))
     {
       DebugState->UIType = DebugUIType_Network;
     }
@@ -138,7 +144,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     ButtonStyling.IsActive = DebugState->UIType == DebugUIType_CollatedFunctionCalls;
     ButtonName = "Functions";
     InteractionId = (umm)ButtonName;
-    if (BufferButton(ButtonName, UiGroup, &Layout, InteractionId, DebugMenuZ, DISABLE_CLIPPING, 0, &ButtonStyling))
+    if (BufferButton(ButtonName, UiGroup, InteractionId, DebugMenuParams))
     {
       DebugState->UIType = DebugUIType_CollatedFunctionCalls;
     }
@@ -146,7 +152,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     ButtonStyling.IsActive = DebugState->UIType == DebugUIType_CallGraph;
     ButtonName = "Call Graph";
     InteractionId = (umm)ButtonName;
-    if (BufferButton(ButtonName, UiGroup, &Layout, InteractionId, DebugMenuZ, DISABLE_CLIPPING, 0, &ButtonStyling))
+    if (BufferButton(ButtonName, UiGroup, InteractionId, DebugMenuParams))
     {
       DebugState->UIType = DebugUIType_CallGraph;
     }
@@ -154,7 +160,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     ButtonStyling.IsActive = DebugState->UIType == DebugUIType_Memory;
     ButtonName = "Memory";
     InteractionId = (umm)ButtonName;
-    if (BufferButton(ButtonName, UiGroup, &Layout, InteractionId, DebugMenuZ, DISABLE_CLIPPING, 0, &ButtonStyling))
+    if (BufferButton(ButtonName, UiGroup, InteractionId, DebugMenuParams))
     {
       DebugState->UIType = DebugUIType_Memory;
     }
@@ -162,7 +168,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     ButtonStyling.IsActive = DebugState->UIType == DebugUIType_DrawCalls;
     ButtonName = "Draw Calls";
     InteractionId = (umm)ButtonName;
-    if (BufferButton(ButtonName, UiGroup, &Layout, InteractionId, DebugMenuZ, DISABLE_CLIPPING, 0, &ButtonStyling))
+    if (BufferButton(ButtonName, UiGroup, InteractionId, DebugMenuParams))
     {
       DebugState->UIType = DebugUIType_DrawCalls;
     }
@@ -183,7 +189,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
 
     case DebugUIType_PickedChunks:
     {
-      DrawPickedChunks(UiGroup, Layout.At + V2(100, 0));
+      DrawPickedChunks(UiGroup, Layout.At + V2(100, 100));
     } break;
 
     case DebugUIType_Graphics:
@@ -193,7 +199,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
 
     case DebugUIType_Network:
     {
-      DebugDrawNetworkHud(UiGroup, &Plat->Network, ServerState, &Layout);
+      DebugDrawNetworkHud(UiGroup, &Plat->Network, ServerState, Layout.At);
     } break;
 
     case DebugUIType_CollatedFunctionCalls:
@@ -213,7 +219,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
 
     case DebugUIType_DrawCalls:
     {
-      DebugDrawDrawCalls(UiGroup, &Layout);
+      DebugDrawDrawCalls(UiGroup, Layout.At);
     } break;
 
     InvalidDefaultCase;

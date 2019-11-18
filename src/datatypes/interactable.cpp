@@ -109,7 +109,7 @@ function void BufferBorder(debug_ui_render_group *Group, interactable* PickerLis
 function void
 EndInteractable(layout* Layout, interactable *Interaction)
 {
-  Interaction->MaxP = GetAbsoluteDrawBoundsMax(Layout);
+  Interaction->MaxP = GetAbsoluteDrawBoundsMax(Interaction->Window, Layout);
   BufferBorder(&GetDebugState()->UiGroup, Interaction, V3(0,1,0), 1.0f, DISABLE_CLIPPING);
   return;
 }
@@ -118,12 +118,5 @@ function void
 EndInteractable(table* Table, interactable *Interaction)
 {
   EndInteractable(&Table->Layout, Interaction);
-  return;
-}
-
-function void
-EndInteractable(window_layout* Window, interactable *Interaction)
-{
-  EndInteractable(&Window->Table.Layout, Interaction);
   return;
 }

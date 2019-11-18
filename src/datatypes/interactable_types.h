@@ -8,7 +8,6 @@ struct table_column
 struct layout
 {
   v2 At;
-  v2 Basis;
   rect2 DrawBounds;
 };
 
@@ -21,18 +20,11 @@ struct table
   u32 ColumnIndex;
 };
 
-// TODO(Jesse): This should probably be something more like:
-//
-// table *Tables;
-// u32 TableCount;
-//
-// Such that we don't have to pass clipping information around to routines that
-// need to do clipping.
-//
 struct window_layout
 {
   const char* Title;
-  table Table; // TODO(Jesse): Remove this!
+
+  v2 Basis;
   v2 MaxClip;
 
   u64 InteractionStackIndex;
@@ -90,7 +82,7 @@ function window_layout
 WindowLayout(const char* Title, v2 Basis = V2(150, 150), v2 MaxClip = V2(1500, 800))
 {
   window_layout Window = {};
-  Window.Table.Layout.Basis = Basis;
+  Window.Basis = Basis;
   Window.MaxClip = MaxClip;
   Window.Title = Title;
 
@@ -100,8 +92,8 @@ WindowLayout(const char* Title, v2 Basis = V2(150, 150), v2 MaxClip = V2(1500, 8
 function rect2
 GetWindowBounds(window_layout *Window)
 {
-  v2 TopLeft = Window->Table.Layout.Basis;
-  v2 BottomRight = Window->Table.Layout.Basis + Window->MaxClip;
+  v2 TopLeft = Window->Basis;
+  v2 BottomRight = Window->Basis + Window->MaxClip;
   rect2 Result = RectMinMax(TopLeft, BottomRight);
   return Result;
 }
@@ -125,12 +117,13 @@ Interactable(rect2 Rect, umm ID, window_layout *Window)
   return Result;
 }
 
-v2 GetAbsoluteAt(layout* Layout);
+v2
+GetAbsoluteAt(window_layout* Window, layout* Layout);
 
 function interactable
 StartInteractable(layout* Layout, umm ID, window_layout *Window)
 {
-  v2 StartingAt = GetAbsoluteAt(Layout);
+  v2 StartingAt = GetAbsoluteAt(Window, Layout);
   interactable Result = Interactable(StartingAt, StartingAt, ID, Window);
   return Result;
 }
