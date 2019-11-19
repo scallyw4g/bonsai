@@ -17,7 +17,7 @@ debug_global ui_style DefaultUiStyle = {
   .PressedColor = V3(1.0f, 0.8f, 0.8f),
   .ClickedColor = V3(0.8f, 1.0f, 0.8f),
   .ActiveColor = V3(0.8f, 0.0f, 1.8f),
-  .Padding = V2(10),
+  .Padding = V2(12, 3),
   .IsActive = False,
 };
 
@@ -815,9 +815,6 @@ BufferColumn(counted_string Text, debug_ui_render_group* Group, u32 ColumnWidth,
     AdvanceSpaces(Pad, Params.Layout, &Group->Font);
   }
 
-  ui_style PadParams = {};
-  PadParams.Padding = V2(10, 10);
-
   BufferValue(Text, Group, Params);
 
   return;
@@ -918,7 +915,7 @@ ButtonInteraction(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId,
   }
 
   interactable Interaction = Interactable(Bounds, InteractionId, Window);
-  BufferBorder(Group, &Interaction, V3(1,0,0), 1.0f, DISABLE_CLIPPING);
+  /* BufferBorder(Group, &Interaction, V3(1,0,0), 1.0f, DISABLE_CLIPPING); */
 
   if (Hover(Group, &Interaction))
   {
@@ -1049,8 +1046,8 @@ RenderWindowInteractions(debug_ui_render_group* Group, window_layout* Window, la
   if (Window->Title)
   {
     buffer_value_params Params = BufferValueParams(Window, Layout, V3(1), zIndexForText(Window, Group), WindowBounds.Max);
-    BufferValue(Window->InteractionStackIndex, Group, Params);
-    AdvanceSpaces(1, Layout, &Group->Font);
+    /* BufferValue(Window->InteractionStackIndex, Group, Params); */
+    /* AdvanceSpaces(1, Layout, &Group->Font); */
     BufferValue(Window->Title, Group, Params);
     NewLine(Layout);
   }
@@ -1546,7 +1543,7 @@ RenderTable(render_state* RenderState, debug_ui_render_group* Group, ui_render_c
           {
             Assert(RenderState->Window);
             u32 ColumnWidth = GetColumnWidth(&TableRenderParams, ColumnIndex++);
-            buffer_value_params Params = BufferValueParams(RenderState->Window, &RenderState->Layout, SelectColorState(RenderState, RenderState->Style), zIndexForText(RenderState->Window, Group), GetAbsoluteMaxClip(RenderState->Window));
+            buffer_value_params Params = BufferValueParams(RenderState->Window, &RenderState->Layout, SelectColorState(RenderState, RenderState->Style), zIndexForText(RenderState->Window, Group), GetAbsoluteMaxClip(RenderState->Window), &RenderState->Style);
             BufferColumn(Command->Column.String, Group, ColumnWidth, Params, Command->Column.Params);
           } break;
 
