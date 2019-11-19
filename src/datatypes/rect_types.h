@@ -171,3 +171,10 @@ GetMax(aabb Rect)
   v3 Result = Rect.Center + Rect.Radius;
   return Result;
 }
+
+v2
+GetDim(rect2 Rect)
+{
+  v2 Dim = Rect.Max - Rect.Min;
+  return Dim;
+}

@@ -49,11 +49,10 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   SetFontSize(&UiGroup->Font, DEBUG_FONT_SIZE);
 
   TIMED_BLOCK("Draw Status Bar");
-    v2 StatusBarClip = DISABLE_CLIPPING;
     r32 StatusBarZ = 1.0f;
     Dt = ComputeMinMaxAvgDt();
 
-    buffer_value_params StatusBarBufferParams = BufferValueParams(0, &Layout, V3(1), StatusBarZ, StatusBarClip);
+    buffer_value_params StatusBarBufferParams = BufferValueParams(0, &Layout, StatusBarZ);
 
     BufferColumn(Dt.Max, 6, UiGroup, StatusBarBufferParams);
     NewLine(&Layout);
@@ -102,20 +101,12 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   NewLine(&Layout);
 
 
-  ui_style ButtonStyling = {};
-  ButtonStyling.Padding = V2(65.0f);
-  ButtonStyling.Color = V3(1.0f);
-  ButtonStyling.HoverColor = V3(0.65f);
-  ButtonStyling.PressedColor = V3(0.65f);
-  ButtonStyling.ClickedColor = V3(1, 0, 0);
-
-  ButtonStyling.ActiveColor = V3(0.65f);
-
+  ui_style ButtonStyling = UiStyleFromLightestColor(V3(1), V3(0.3f), V2(30));
 
   if (DebugState->DisplayDebugMenu)
   {
     r32 DebugMenuZ = 1.0f;
-    buffer_value_params DebugMenuParams = BufferValueParams(0, &Layout, V3(1), DebugMenuZ, DISABLE_CLIPPING, &ButtonStyling);
+    buffer_value_params DebugMenuParams = BufferValueParams(0, &Layout, DebugMenuZ, ButtonStyling);
 
     ButtonStyling.IsActive = DebugState->UIType == DebugUIType_PickedChunks;
     const char* ButtonName = "PickedChunks";
@@ -194,7 +185,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
 
     case DebugUIType_Graphics:
     {
-      DebugDrawGraphicsHud(UiGroup, DebugState, &Layout, 1.0f, DISABLE_CLIPPING);
+      DebugDrawGraphicsHud(UiGroup, DebugState, &Layout, 1.0f);
     } break;
 
     case DebugUIType_Network:

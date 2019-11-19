@@ -12,15 +12,7 @@
 
 #define u32_COUNT_PER_QUAD 6
 
-debug_global ui_style DefaultUiStyle = {
-  .Color = V3(1),
-  .HoverColor = V3(0.8f),
-  .PressedColor = V3(1.0f, 0.8f, 0.8f),
-  .ClickedColor = V3(0.8f, 1.0f, 0.8f),
-  .ActiveColor = V3(0.8f, 0.0f, 1.8f),
-  .Padding = V2(12, 3),
-  .IsActive = False,
-};
+debug_global ui_style DefaultUiStyle = UiStyleFromLightestColor(V3(1), V3(0.2f));
 
 /*******************************             *********************************/
 /*******************************  Z helpers  *********************************/
@@ -484,7 +476,6 @@ BufferQuadDirect(T *Geo, v2 MinP, v2 Dim, r32 Z, v2 ScreenDim, v2 MaxClip)
 
     Assert(Z >= 0.0f && Z <= 1.0f);
 
-
     if ( MaxClip.x <= MinP.x || MaxClip.y <= MinP.y )
     {
       Result.ClipStatus = ClipStatus_FullyClipped;
@@ -635,6 +626,16 @@ BufferUntexturedQuad(debug_ui_render_group *Group, untextured_2d_geometry_buffer
   return Result;
 }
 
+function clip_result
+BufferUntexturedQuad(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo,
+                         rect2 Rect, v3 Color, r32 Z, v2 MaxClip)
+{
+  v2 MinP = Rect.Min;
+  v2 Dim = Rect.Max - Rect.Min;
+  clip_result Result = BufferUntexturedQuad(Group, Geo, MinP, Dim, Color, Z, MaxClip);
+  return Result;
+}
+
 function r32
 BufferChar(debug_ui_render_group *Group, u8 Char, v2 MinP, font *Font, v3 Color, r32 Z, v2 MaxClip)
 {
@@ -670,25 +671,13 @@ BufferChar(debug_ui_render_group *Group, u8 Char, v2 MinP, font *Font, u32 Color
   return Result;
 }
 
-struct buffer_value_params
-{
-  window_layout* Window;
-  layout* Layout;
-  v3 Color;
-  r32 Z;
-  v2 MaxClip;
-  ui_style* Style;
-};
-
 function buffer_value_params
-BufferValueParams( window_layout* Window, layout* Layout, v3 Color, r32 Z, v2 MaxClip, ui_style* Style = 0)
+BufferValueParams( window_layout* Window, layout* Layout, r32 Z, ui_style Style = DefaultUiStyle)
 {
   buffer_value_params Result = {
     .Window = Window,
     .Layout = Layout,
-    .Color = Color,
     .Z = Z,
-    .MaxClip = MaxClip,
     .Style = Style,
   };
 
@@ -700,12 +689,11 @@ BufferValue(counted_string Text, debug_ui_render_group *Group, buffer_value_para
 {
   window_layout* Window = Params.Window;
   layout* Layout        = Params.Layout;
-  v3 Color              = Params.Color;
   r32 Z                 = Params.Z;
-  v2 MaxClip            = Params.MaxClip;
-  ui_style* Style       = Params.Style;
+  ui_style Style        = Params.Style;
+  v2 MaxClip            = GetAbsoluteMaxClip(Params.Window);
 
-  v2 Padding = Style? Style->Padding : V2(0.0f);
+  v2 Padding = Style.Padding;
 
   v2 FontHeight = V2(0, Group->Font.Size.y);
   v2 PadX = V2(Padding.x, 0);
@@ -720,7 +708,7 @@ BufferValue(counted_string Text, debug_ui_render_group *Group, buffer_value_para
       CharIndex++ )
   {
     v2 MinP = GetAbsoluteAt(Window, Layout) + PadY;
-    Layout->At.x += BufferChar(Group, (u8)Text.Start[CharIndex], MinP, &Group->Font, Color, Z, MaxClip);
+    Layout->At.x += BufferChar(Group, (u8)Text.Start[CharIndex], MinP, &Group->Font, Style.Color, Z, MaxClip);
     continue;
   }
 
@@ -895,17 +883,6 @@ BufferTextAt(debug_ui_render_group *Group, v2 BasisP, const char *Text, v3 Color
 }
 
 function void
-BufferUntexturedQuad(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo,
-                         rect2 Rect, v3 Color, r32 Z, v2 MaxClip)
-{
-  v2 MinP = Rect.Min;
-  v2 Dim = Rect.Max - Rect.Min;
-  BufferUntexturedQuad(Group, Geo, MinP, Dim, Color, Z, MaxClip);
-
-  return;
-}
-
-function void
 BufferBorder(debug_ui_render_group *Group, rect2 Rect, v3 Color, r32 Z, v2 MaxClip)
 {
   v2 TopLeft     = Rect.Min;
@@ -943,50 +920,72 @@ BufferBorder(debug_ui_render_group *Group, interactable* PickerListInteraction, 
 
 
 function button_interaction_result
-ButtonInteraction(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId, window_layout *Window, ui_style *Style = 0)
+ButtonInteraction(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId, window_layout *Window, ui_style *Style)
 {
   button_interaction_result Result = {};
-  Result.Color = V3(1);
 
-  if (Style)
-  {
-    Bounds.Max += (Style->Padding*2.0f);
-    Result.Color = Style->Color;
-  }
+  Bounds.Max += (Style->Padding*2.0f);
 
   interactable Interaction = Interactable(Bounds, InteractionId, Window);
   /* BufferBorder(Group, &Interaction, V3(1,0,0), 1.0f, DISABLE_CLIPPING); */
 
+  Style->Color = Style->AmbientColor;
+
   if (Hover(Group, &Interaction))
   {
     Result.Hover = True;
-    if (Style)
-    {
-      Result.Color = Style->HoverColor;
-    }
+    Style->Color = Style->HoverColor;
   }
 
   if (Clicked(Group, &Interaction))
   {
     Result.Clicked = True;
-    if (Style)
-    {
-      Result.Color = Style->ClickedColor;
-    }
+    Style->Color = Style->ClickedColor;
   }
 
   if (Pressed(Group, &Interaction))
   {
     Result.Pressed = True;
-    if (Style)
-    {
-      Result.Color = Style->ClickedColor;
-    }
+    Style->Color = Style->ClickedColor;
   }
 
-  if (Style && Style->IsActive && !Result.Pressed)
+  if (Style->IsActive && !Result.Pressed)
   {
-    Result.Color = Style->ActiveColor;
+    Style->Color = Style->ActiveColor;
+  }
+
+  return Result;
+}
+
+function button_interaction_result
+BufferUntexturedButton(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId, buffer_value_params Params)
+{
+  window_layout* Window = Params.Window;
+  layout* Layout        = Params.Layout;
+  r32 Z                 = Params.Z;
+  ui_style Style        = Params.Style;
+  v2 MaxClip            = GetAbsoluteMaxClip(Params.Window);
+
+  v2 Padding = Style.Padding;
+
+  v2 FontHeight = V2(0, Group->Font.Size.y);
+  v2 PadX = V2(Padding.x, 0);
+  v2 PadY = V2(0, Padding.y);
+
+  if (Layout)
+  {
+    Layout->At += PadX;
+  }
+
+  button_interaction_result Result = ButtonInteraction(Group, Bounds, InteractionId, Window, &Style);
+  BufferUntexturedQuad(Group, &Group->Geo, Bounds, Style.Color, Z, MaxClip);
+
+  if (Layout)
+  {
+    Layout->At.x += GetDim(Bounds).x;
+    Layout->At   += PadX;
+    v2 MaxClipP = Layout->At + (2.0f*PadY) + FontHeight;
+    AdvanceClip(Layout, MaxClipP);
   }
 
   return Result;
@@ -995,8 +994,7 @@ ButtonInteraction(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId,
 function b32
 BufferButton(debug_ui_render_group *Group, rect2 Bounds, umm InteractionId, buffer_value_params Params)
 {
-  button_interaction_result Result = ButtonInteraction(Group, Bounds, InteractionId, Params.Window, Params.Style);
-  BufferUntexturedQuad(Group, &Group->Geo, Bounds, Result.Color, Params.Z, Params.MaxClip);
+  button_interaction_result Result = BufferUntexturedButton(Group, Bounds, InteractionId, Params);
   return Result.Pressed;
 }
 
@@ -1007,8 +1005,7 @@ BufferButton(const char* ColumnText, debug_ui_render_group *Group, umm Interacti
   v2 Max = Min + GetTextBounds( (u32)Length(ColumnText), &Group->Font);
   rect2 Bounds = RectMinMax(Min, Max);
 
-  button_interaction_result Result = ButtonInteraction(Group, Bounds, InteractionId, Params.Window, Params.Style);
-
+  button_interaction_result Result = ButtonInteraction(Group, Bounds, InteractionId, Params.Window, &Params.Style);
   BufferValue(ColumnText, Group, Params);
 
   return Result.Pressed;
@@ -1023,8 +1020,87 @@ BufferButton(const char* ColumnText, debug_ui_render_group *Group, umm Interacti
 
 
 function void
-ProcessWindowInteractions(debug_ui_render_group* Group, window_layout* Window, layout* Layout)
+ProcessWindowStart(debug_ui_render_group* Group, render_state* RenderState)
 {
+  layout* Layout        = &RenderState->Layout;
+  window_layout* Window = RenderState->Window;
+
+  if (!Window) { return; }
+
+  Clear(&Layout->At);
+  Clear(&Layout->DrawBounds);
+
+  v2 TitleBounds = GetTextBounds( (u32)Length(Window->Title), &Group->Font);
+  Window->MaxClip = Max(TitleBounds, Window->MaxClip);
+
+  rect2 WindowBounds = GetWindowBounds(Window);
+
+  umm DragHandleId = (umm)"WindowResizeWidget"^(umm)Window;
+  interactable DragHandle = Interactable( Rect2(0), DragHandleId, Window);
+  if (Pressed(Group, &DragHandle))
+  {
+    v2 AbsoluteTitleBounds = Window->Basis + TitleBounds;
+    v2 TestMaxClip = *Group->MouseP - Window->Basis;
+
+    if (Group->MouseP->x > AbsoluteTitleBounds.x )
+    {
+      Window->MaxClip.x = Max(TitleBounds.x, TestMaxClip.x);
+    }
+    else
+    {
+      Window->MaxClip.x = TitleBounds.x;
+    }
+
+    if (Group->MouseP->y > AbsoluteTitleBounds.y )
+    {
+      Window->MaxClip.y = Max(TitleBounds.y, TestMaxClip.y);
+    }
+    else
+    {
+      Window->MaxClip.y = TitleBounds.y;
+    }
+
+    WindowBounds = GetWindowBounds(Window);
+  }
+
+  umm TitleBarInteractionId = (umm)"WindowTitleBar"^(umm)Window;
+  interactable TitleBarInteraction = Interactable( Rect2(0), TitleBarInteractionId, Window);
+  if (Pressed(Group, &TitleBarInteraction))
+  {
+    Window->Basis -= *Group->MouseDP; // TODO(Jesse): Can we compute this with MouseP to avoid a frame of input delay?
+    WindowBounds = GetWindowBounds(Window);
+  }
+
+  if (Window->Title)
+  {
+    v2 Padding = ( V2(Window->MaxClip.x-TitleBounds.x, 0)) / 2.0f;
+    buffer_value_params Params = BufferValueParams(Window, Layout,
+                                                   zIndexForText(Window, Group),
+                                                   UiStyleFromLightestColor(V3(0.7f), V3(0.3f), Padding));
+    BufferButton(Window->Title, Group, TitleBarInteractionId, Params);
+    NewLine(Layout);
+  }
+
+  {
+    v2 Dim = V2(10);
+    rect2 DragHandleRect = RectMinDim(Window->Basis+Window->MaxClip-Dim, Dim);
+    buffer_value_params Params = BufferValueParams(Window, 0, zIndexForBorders(Window, Group), StandardStyling(V3(1)));
+    BufferButton(Group, DragHandleRect, DragHandleId, Params);
+  }
+
+  BufferBorder(Group, WindowBounds, V3(1, 1, 1), zIndexForBorders(Window, Group), DISABLE_CLIPPING);
+  BufferUntexturedQuad(Group, &Group->Geo, WindowBounds, V3(0.1f, 0.1f, 0.1f), zIndexForBackgrounds(Window, Group), WindowBounds.Max); 
+
+  return;
+}
+
+function void
+ProcessWindowEnd(/*debug_ui_render_group* Group, render_state* RenderState*/)
+{
+#if 0
+  layout* Layout        = &RenderState->Layout;
+  window_layout* Window = RenderState->Window;
+
   Clear(&Layout->At);
   Clear(&Layout->DrawBounds);
 
@@ -1076,13 +1152,13 @@ ProcessWindowInteractions(debug_ui_render_group* Group, window_layout* Window, l
     v2 Dim = V2(10);
     v2 MinP = Window->Basis + Window->MaxClip - Dim;
     rect2 DragHandleRect = RectMinDim(MinP, Dim);
-    BufferButton(Group, DragHandleRect, DragHandleId, BufferValueParams(Window, 0, V3(1), zIndexForBorders(Window, Group), WindowBounds.Max, &DragHandleStyle) );
+    BufferButton(Group, DragHandleRect, DragHandleId, BufferValueParams(Window, Layout, V3(1), zIndexForBorders(Window, Group), WindowBounds.Max, &DragHandleStyle) );
   }
 
   {
     ui_style BackgroundStyle = StandardStyling(V3(0.0f, 0.5f, 0.5f));
     rect2 TitleBarRect = RectMinMax(WindowBounds.Min, TopRight(WindowBounds) + V2(0.0f, Group->Font.Size.y));
-    BufferButton(Group, TitleBarRect, TitleBarInteractionId, BufferValueParams(Window, 0, V3(0.7f), zIndexForTitleBar(Window, Group), WindowBounds.Max, &BackgroundStyle));
+    BufferButton(Group, TitleBarRect, TitleBarInteractionId, BufferValueParams(Window, Layout, V3(0.7f), zIndexForTitleBar(Window, Group), WindowBounds.Max, &BackgroundStyle));
   }
 
   if (Window->Title)
@@ -1107,6 +1183,7 @@ ProcessWindowInteractions(debug_ui_render_group* Group, window_layout* Window, l
   }
 
   return;
+#endif
 }
 
 
@@ -1426,21 +1503,6 @@ GetColumnWidth(table_render_params* Params, u32 ColumnIndex)
   return Result;
 }
 
-struct render_state
-{
-  window_layout* Window;
-  layout Layout;
-  rect2 ButtonStartingDrawBounds;
-
-  ui_style Style;
-
-  b32 Hover;
-  b32 Pressed;
-  b32 Clicked;
-
-  interactable CurrentInteraction;
-};
-
 function void
 ButtonStart(debug_ui_render_group* Group, render_state* RenderState, umm ButtonId)
 {
@@ -1484,7 +1546,8 @@ ButtonEnd(debug_ui_render_group *Group, render_state* RenderState)
   button_interaction_result Button = ButtonInteraction( Group,
                                                         RectMinMax(RenderState->CurrentInteraction.MinP, RenderState->CurrentInteraction.MaxP ),
                                                         RenderState->CurrentInteraction.ID,
-                                                        RenderState->Window);
+                                                        RenderState->Window,
+                                                        &RenderState->Style);
 
   if (Button.Hover)
   {
@@ -1590,7 +1653,8 @@ RenderTable(render_state* RenderState, debug_ui_render_group* Group, ui_render_c
           case RenderCommand_Column:
           {
             u32 ColumnWidth = GetColumnWidth(&TableRenderParams, ColumnIndex++);
-            buffer_value_params Params = BufferValueParams(RenderState->Window, &RenderState->Layout, SelectColorState(RenderState, RenderState->Style), zIndexForText(RenderState->Window, Group), GetAbsoluteMaxClip(RenderState->Window), &RenderState->Style);
+            RenderState->Style.Color = SelectColorState(RenderState, RenderState->Style);
+            buffer_value_params Params = BufferValueParams(RenderState->Window, &RenderState->Layout, zIndexForText(RenderState->Window, Group), RenderState->Style);
             BufferColumn(Command->Column.String, Group, ColumnWidth, Params, Command->Column.Params);
           } break;
 
@@ -1664,12 +1728,13 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
       {
         Assert(!RenderState.Window);
         RenderState.Window = Command->WindowStart.Window;
-        ProcessWindowInteractions(Group, RenderState.Window, &RenderState.Layout);
+        ProcessWindowStart(Group, &RenderState);
       } break;
 
       case RenderCommand_WindowEnd:
       {
         Assert(RenderState.Window == Command->WindowEnd.Window);
+        ProcessWindowEnd();
         RenderState.Window = 0;
       } break;
 
@@ -2096,7 +2161,7 @@ PushScopeBarsRecursive(debug_ui_render_group *Group, debug_profile_scope *Scope,
   {
     cycle_range Range = {Scope->StartingCycle, Scope->CycleCount};
 
-    ui_style Style = UiStyleFromLightestColor(RandomV3(Entropy));
+    ui_style Style = UiStyleFromLightestColor(RandomV3(Entropy), V3(0.3f));
 
     interactable_handle Bar = PushButtonStart(Group, (umm)"CycleBarHoverInteraction"^(umm)Scope, &Style);
       PushCycleBar(Group, &Range, Frame, TotalGraphWidth, Depth, &Style);
@@ -2363,7 +2428,7 @@ BufferFirstCallToEach(debug_ui_render_group *Group,
 }
 
 function void
-DrawFrameTicker(debug_ui_render_group *Group, debug_state *DebugState, r64 MaxMs)
+DrawFrameTicker(debug_ui_render_group *Group, debug_state *DebugState, r64 MaxMs, v2 Basis)
 {
   TIMED_FUNCTION();
 
@@ -2373,10 +2438,6 @@ DrawFrameTicker(debug_ui_render_group *Group, debug_state *DebugState, r64 MaxMs
   {
     frame_stats *Frame = DebugState->Frames + FrameIndex;
     r32 Perc = (r32)SafeDivide0(Frame->FrameMs, MaxMs);
-
-    /* v2 MinP = MainLayout->At; */
-    v2 MaxDim = V2(15.0f, 80.0f);
-    /* v2 MaxP = MinP + MaxDim; */
 
     /* v3 Color = V3(0.5f, 0.5f, 0.5f); */
 
@@ -2390,9 +2451,12 @@ DrawFrameTicker(debug_ui_render_group *Group, debug_state *DebugState, r64 MaxMs
     /* if ( Tree == DebugState->GetReadScopeTree(0) ) */
     /*   Color = V3(0.8f, 0.8f, 0.0f); */
 
+    v2 MaxDim = V2(15.0f, 80.0f);
     v2 QuadDim = MaxDim * V2(1.0f, Perc);
     v2 VerticalOffset = MaxDim - QuadDim;
 
+    /* v2 MinP = MainLayout->At; */
+    /* v2 MaxP = MinP + MaxDim; */
     /* interactable Interaction = Interactable(MinP, MaxP, (umm)"CallGraphBarInteract", 0); */
     /* if (Hover(Group, &Interaction)) */
     /* { */
@@ -2404,7 +2468,8 @@ DrawFrameTicker(debug_ui_render_group *Group, debug_state *DebugState, r64 MaxMs
     /*   } */
     /* } */
 
-    PushUntexturedQuad(Group, VerticalOffset, QuadDim);
+    ui_style Style = UiStyleFromLightestColor(V3(1,1,0), V3(0.3f), V2(5,0));
+    PushUntexturedQuad(Group, Basis + VerticalOffset, QuadDim, &Style);
   }
 
 
@@ -2446,7 +2511,7 @@ DrawFrameTicker(debug_ui_render_group *Group, debug_state *DebugState, r64 MaxMs
 function void
 DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout *MainLayout, r64 MaxMs)
 {
-  DrawFrameTicker(Group, DebugState, MaxMs);
+  DrawFrameTicker(Group, DebugState, Max(33.3, MaxMs), MainLayout->At);
 
   NewLine(MainLayout);
 
@@ -2626,10 +2691,10 @@ PushBargraph(debug_ui_render_group *Group, r32 PercFilled)
   v2 BackgroundQuad = V2(BarWidth, BarHeight);
   v2 PercBarDim = BackgroundQuad * V2(PercFilled, 1);
 
-  ui_style Style = UiStyleFromLightestColor(V3(0.6f));
+  ui_style Style = UiStyleFromLightestColor(V3(0.6f), V3(0.3f));
   PushUntexturedQuad(Group, V2(0), BackgroundQuad, &Style);
 
-  Style = UiStyleFromLightestColor(V3(1,1,0));
+  Style = UiStyleFromLightestColor(V3(1,1,0), V3(0.3f));
   PushUntexturedQuad(Group, V2(-BackgroundQuad.x, 0), PercBarDim, &Style, QuadRenderParam_NoOp);
 
   return;
@@ -2976,12 +3041,12 @@ DebugDrawNetworkHud(debug_ui_render_group *Group,
 
 
 function void
-DebugDrawGraphicsHud(debug_ui_render_group *Group, debug_state *DebugState, layout *Layout, r32 Z, v2 MaxClip)
+DebugDrawGraphicsHud(debug_ui_render_group *Group, debug_state *DebugState, layout *Layout, r32 Z)
 {
   NewLine(Layout);
   NewLine(Layout);
 
-  buffer_value_params Params = BufferValueParams(0, Layout, V3(0), Z, MaxClip);
+  buffer_value_params Params = BufferValueParams(0, Layout, Z);
   BufferMemorySize(DebugState->BytesBufferedToCard, Group, Params);
 
   return;

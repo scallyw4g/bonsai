@@ -35,11 +35,16 @@ struct ui_style
 {
   v3 Color;
 
+  v3 AmbientColor;
   v3 HoverColor;
   v3 PressedColor;
   v3 ClickedColor;
-
   v3 ActiveColor;
+
+  v3 BackgroundColor;
+  v3 BackgroundHoverColor;
+  v3 BackgroundPressedColor;
+  v3 BackgroundClickedColor;
 
   v2 Padding;
 
@@ -51,7 +56,6 @@ struct button_interaction_result
   b32 Pressed;
   b32 Clicked;
   b32 Hover;
-  v3 Color;
 };
 
 function ui_style
@@ -76,11 +80,13 @@ WindowLayout(const char* Title, v2 Basis, v2 MaxClip = V2(1800, 800))
   return Window;
 }
 
+v2 GetAbsoluteMaxClip(window_layout* Window);
+
 function rect2
 GetWindowBounds(window_layout *Window)
 {
   v2 TopLeft = Window->Basis;
-  v2 BottomRight = Window->Basis + Window->MaxClip;
+  v2 BottomRight = GetAbsoluteMaxClip(Window);
   rect2 Result = RectMinMax(TopLeft, BottomRight);
   return Result;
 }
@@ -137,14 +143,21 @@ Rect2(interactable *Interaction)
 }
 
 function ui_style
-UiStyleFromLightestColor(v3 Color, v2 Padding = V2(10))
+UiStyleFromLightestColor(v3 Color, v3 BackgroundColor, v2 Padding = V2(10))
 {
   ui_style Style  = {
-    .Color        = Color*0.8f,
-    .HoverColor   = Color*0.65f,
-    .PressedColor = Color*0.8f,
+    .Color        = Color,
+    .AmbientColor = Color*0.8f,
+    .HoverColor   = Color*0.5f,
+    .PressedColor = Color,
     .ClickedColor = Color,
     .ActiveColor  = Color,
+
+    .BackgroundColor = BackgroundColor,
+    .BackgroundHoverColor = BackgroundColor*0.5f,
+    .BackgroundPressedColor = BackgroundColor*0.8f,
+    .BackgroundClickedColor = BackgroundColor,
+
     .Padding      = Padding,
     .IsActive     = False,
   };

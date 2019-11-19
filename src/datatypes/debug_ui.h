@@ -134,3 +134,27 @@ struct clip_result
 
   rect2 PartialClip;
 };
+
+struct buffer_value_params
+{
+  window_layout* Window;
+  layout* Layout;
+  r32 Z;
+  ui_style Style;
+};
+
+struct render_state
+{
+  window_layout* Window;
+  layout Layout;
+  rect2 ButtonStartingDrawBounds;
+
+  ui_style Style;
+
+  b32 Hover;
+  b32 Pressed;
+  b32 Clicked;
+
+  interactable CurrentInteraction;
+};
+
