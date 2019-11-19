@@ -527,14 +527,14 @@ GetAbsoluteAt(window_layout* Window, layout *Layout)
 v2
 GetAbsoluteDrawBoundsMin(window_layout* Window, layout *Layout)
 {
-  v2 Result = Window->Basis + Layout->DrawBounds.Min;
+  v2 Result = Window? Window->Basis + Layout->DrawBounds.Min : Layout->DrawBounds.Min;
   return Result;
 }
 
 v2
 GetAbsoluteDrawBoundsMax(window_layout* Window, layout *Layout)
 {
-  v2 Result = Window->Basis + Layout->DrawBounds.Max;
+  v2 Result = Window? Window->Basis + Layout->DrawBounds.Max : Layout->DrawBounds.Max;
   return Result;
 }
 
@@ -548,7 +548,7 @@ GetAbsoluteDrawBounds(window_layout* Window, layout *Layout)
 v2
 GetAbsoluteMaxClip(window_layout *Window)
 {
-  v2 Result = Window->MaxClip + Window->Basis;
+  v2 Result = Window? Window->MaxClip + Window->Basis : DISABLE_CLIPPING;
   return Result;
 }
 

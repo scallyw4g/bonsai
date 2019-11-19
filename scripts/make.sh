@@ -37,8 +37,8 @@ OUTPUT_DIRECTORY="$BIN"
 
 # TODO(Jesse): Investigate -Wcast-align situation
 
-COMMON_OPTIMIZATION_OPTIONS="-O2"
-# COMMON_OPTIMIZATION_OPTIONS=""
+# COMMON_OPTIMIZATION_OPTIONS="-O2"
+COMMON_OPTIMIZATION_OPTIONS=""
 
 COMMON_COMPILER_OPTIONS="
   -ferror-limit=2000
@@ -85,6 +85,7 @@ DEBUG_TESTS_TO_BUILD="
 "
 
 TESTS_TO_BUILD="
+  $TESTS/ui_command_buffer.cpp
   $TESTS/m4.cpp
   $TESTS/colladaloader.cpp
   $TESTS/bitmap.cpp
@@ -93,6 +94,7 @@ TESTS_TO_BUILD="
   $TESTS/objloader.cpp
   $TESTS/callgraph.cpp
   $TESTS/heap_allocation.cpp
+
 "
 
 if [ ! -d "$BIN" ]; then
@@ -172,6 +174,7 @@ else
       -I"$SRC"                     \
       -I"$SRC/datatypes"           \
       -I"$TESTS"                   \
+      -I"$SRC/debug_system"        \
       -o "$output_basename"        \
       $executable && echo -e "$Done $executable" &
   done
@@ -181,7 +184,7 @@ else
   DEBUG_SRC_FILE="$SRC/debug_system/debug.cpp"
   echo -e "$Building $DEBUG_SRC_FILE"
   clang++                          \
-      $COMMON_OPTIMIZATION_OPTIONS \
+    $COMMON_OPTIMIZATION_OPTIONS   \
     $COMMON_COMPILER_OPTIONS       \
     $SHARED_LIBRARY_FLAGS          \
     $COMMON_LINKER_OPTIONS         \
@@ -192,14 +195,13 @@ else
     -I"$SRC/datatypes"             \
     -I"$SRC/debug_system"          \
     -o "$BIN/lib_debug_system.so"  \
-    "$DEBUG_SRC_FILE" && echo -e "$Done $executable" &
+    "$DEBUG_SRC_FILE" && echo -e "$Done $DEBUG_SRC_FILE" &
 
   echo ""
   ColorizeTitle "Examples"
   for executable in $EXAMPLES_TO_BUILD; do
     echo -e "$Building $executable"
     SetOutputBinaryPathBasename "$executable" "$BIN"
-
     clang++                                                     \
       $SHARED_LIBRARY_FLAGS                                     \
       $COMMON_OPTIMIZATION_OPTIONS                              \

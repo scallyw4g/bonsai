@@ -40,9 +40,9 @@ struct font
 
 struct debug_ui_render_group
 {
-  debug_text_render_group *TextGroup;
-  gpu_mapped_element_buffer *GameGeo;
-  shader *GameGeoShader;
+  gpu_mapped_element_buffer*  GameGeo;
+  shader*                     GameGeoShader;
+  debug_text_render_group*    TextGroup;
 
   interactable PressedInteraction;
 
@@ -60,7 +60,9 @@ struct debug_ui_render_group
   umm ClickedInteractionId;
   umm PressedInteractionId;
 
-  ui_render_command_buffer CommandBuffer;
+  untextured_2d_geometry_buffer Geo;
+
+  ui_render_command_buffer *CommandBuffer;
 };
 
 struct debug_profile_scope
@@ -134,8 +136,6 @@ struct registered_memory_arena
   memory_arena *Arena;
   const char* Name;
   b32 Expanded;
-
-  window_layout MetadataWindow;
 };
 
 struct selected_memory_arena
@@ -185,14 +185,13 @@ typedef void (*debug_compute_pick_ray)(platform*, m4*);
 #define REGISTERED_MEMORY_ARENA_COUNT 128
 #define META_TABLE_SIZE (16 * 1024)
 #define MAX_PICKED_WORLD_CHUNKS 32
-struct world_chunk;
 struct debug_state
 {
   platform* Plat;
   game_state* GameState;
 
-  debug_text_render_group TextRenderGroup;
   debug_ui_render_group UiGroup;
+
   untextured_3d_geometry_buffer LineMesh;
   debug_ui_type UIType = DebugUIType_None;
 

@@ -7,7 +7,7 @@ BufferVertsDirect(
   )
 {
   TIMED_FUNCTION();
-  if (BufferIsFull(Dest, NumVerts))
+  if (!BufferHasRoomFor(Dest, NumVerts))
   {
     Assert(false);
     Error("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1);
@@ -29,7 +29,7 @@ BufferVertsDirect(
   )
 {
   TIMED_FUNCTION();
-  if (BufferIsFull(Dest, NumVerts))
+  if (!BufferHasRoomFor(Dest, NumVerts))
   {
     Assert(false);
     Error("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End -1);
@@ -110,7 +110,7 @@ BufferVertsDirect(
   )
 {
   TIMED_FUNCTION();
-  if (BufferIsFull(Dest, NumVerts))
+  if (!BufferHasRoomFor(Dest, NumVerts))
   {
     Assert(false);
     Error("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1);
@@ -169,7 +169,7 @@ BufferVertsChecked(
 {
   TIMED_FUNCTION();
 
-  if (BufferIsFull(Target, NumVerts))
+  if (!BufferHasRoomFor(Target, NumVerts))
   {
     Error("Ran ouf of space buffering verts");
 #if 0

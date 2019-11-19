@@ -56,6 +56,7 @@ struct ui_render_command_untextured_quad
   v2 QuadDim;
   ui_style Style;
   quad_render_params Params;
+  window_layout* Window;
 };
 
 struct ui_render_command_textured_quad

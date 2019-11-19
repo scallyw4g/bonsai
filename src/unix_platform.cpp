@@ -168,6 +168,7 @@ PlatformAllocateArena(umm RequestedBytes /* = Megabytes(1) */, b32 MemProtect /*
 #elif MEMPROTECT_UNDERFLOW
   NotImplemented;
 #else
+
   u8 *ArenaBytes = PlatformAllocateSize(PageSize);
 #endif
 

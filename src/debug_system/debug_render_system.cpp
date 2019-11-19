@@ -10,6 +10,7 @@
 
 #include <work_queue.cpp>
 
+#define u32_COUNT_PER_QUAD 6
 
 debug_global ui_style DefaultUiStyle = {
   .Color = V3(1),
@@ -30,13 +31,16 @@ debug_global ui_style DefaultUiStyle = {
 function r32
 zIndexForBackgrounds(window_layout *Window, debug_ui_render_group *Group)
 {
-  // NOTE(Jesse): This is the bottom-most value on this slice
-  //
+  // NOTE(Jesse): This value returned by this function is the bottom-most value on this slice
+
+  u64 StackIndex = Window? Window->InteractionStackIndex : Group->InteractionStackTop;
+
   // NOTE(Jesse): We add one to the z-slice initially because a z-slice of 0 is
   // invalid.  It is invalid because the slices are discrete chunks of z space
   // as opposed to indices into an array, and slice 0 is just nonsensical in
   // that context.
-  u64 zSlice = 1 + Group->InteractionStackTop - Window->InteractionStackIndex;
+  u64 zSlice = 1 + Group->InteractionStackTop - StackIndex;
+
   r32 Result = 1.0f - ( (r32)zSlice / DEBUG_MAX_UI_WINDOW_SLICES );
   Assert(Result <= 1.0f && Result >= 0.0f);
   return Result;
@@ -190,11 +194,19 @@ CS(u32 Number)
 }
 
 function counted_string
+CS(r64 Number)
+{
+  counted_string Result = NumericValueToString(Number, "%.2f");
+  return Result;
+}
+
+function counted_string
 CS(r32 Number)
 {
   counted_string Result = NumericValueToString(Number, "%.2f");
   return Result;
 }
+
 function char*
 ToString(u64 Number)
 {
@@ -296,61 +308,87 @@ GetTextBounds(u32 TextLength, font* Font)
 
 
 function void
-FlushBuffer(debug_text_render_group *RG, untextured_2d_geometry_buffer *Buffer, v2 ScreenDim)
+FlushBuffer(debug_text_render_group *TextGroup, untextured_2d_geometry_buffer *Buffer, v2 ScreenDim)
 {
   TIMED_FUNCTION();
 
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  SetViewport(ScreenDim);
-  UseShader(&RG->SolidUIShader);
+  if (TextGroup)
+  {
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    SetViewport(ScreenDim);
+    UseShader(&TextGroup->SolidUIShader);
 
-  u32 AttributeIndex = 0;
-  BufferVertsToCard(RG->SolidUIVertexBuffer, Buffer, &AttributeIndex);
-  BufferColorsToCard(RG->SolidUIColorBuffer, Buffer, &AttributeIndex);
+    u32 AttributeIndex = 0;
+    BufferVertsToCard(TextGroup->SolidUIVertexBuffer, Buffer, &AttributeIndex);
+    BufferColorsToCard(TextGroup->SolidUIColorBuffer, Buffer, &AttributeIndex);
 
-  Draw(Buffer->At);
-  Buffer->At = 0;
+    Draw(Buffer->At);
+    Buffer->At = 0;
 
-  glDisableVertexAttribArray(0);
-  glDisableVertexAttribArray(1);
+    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
 
-  AssertNoGlErrors;
+    AssertNoGlErrors;
+  }
+  else
+  {
+    Warn("FlushBuffer call issued without a RenderGroup!");
+  }
 
   return;
 }
 
 function void
-FlushBuffer(debug_text_render_group *RG, textured_2d_geometry_buffer *Geo, v2 ScreenDim)
+FlushBuffer(debug_text_render_group *TextGroup, textured_2d_geometry_buffer *Geo, v2 ScreenDim)
 {
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  SetViewport(ScreenDim);
-  glUseProgram(RG->Text2DShader.ID);
+  if (TextGroup)
+  {
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    SetViewport(ScreenDim);
+    glUseProgram(TextGroup->Text2DShader.ID);
 
-  // Bind Font texture
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_3D, RG->FontTexture->ID);
-  //
+    // Bind Font texture
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_3D, TextGroup->FontTexture->ID);
+    //
 
-  glUniform1i(RG->TextTextureUniform, 0); // Assign texture unit 0 to the TextTexureUniform
+    glUniform1i(TextGroup->TextTextureUniform, 0); // Assign texture unit 0 to the TextTexureUniform
 
-  u32 AttributeIndex = 0;
-  BufferVertsToCard( RG->SolidUIVertexBuffer, Geo, &AttributeIndex);
-  BufferUVsToCard(   RG->SolidUIUVBuffer,     Geo, &AttributeIndex);
-  BufferColorsToCard(RG->SolidUIColorBuffer,  Geo, &AttributeIndex);
+    u32 AttributeIndex = 0;
+    BufferVertsToCard( TextGroup->SolidUIVertexBuffer, Geo, &AttributeIndex);
+    BufferUVsToCard(   TextGroup->SolidUIUVBuffer,     Geo, &AttributeIndex);
+    BufferColorsToCard(TextGroup->SolidUIColorBuffer,  Geo, &AttributeIndex);
 
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  Draw(Geo->At);
-  Geo->At = 0;
+    Draw(Geo->At);
+    Geo->At = 0;
 
-  glDisable(GL_BLEND);
+    glDisable(GL_BLEND);
 
-  glDisableVertexAttribArray(0);
-  glDisableVertexAttribArray(1);
-  glDisableVertexAttribArray(2);
+    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
+    glDisableVertexAttribArray(2);
+    AssertNoGlErrors;
+  }
+  else
+  {
+    Warn("FlushBuffer call issued without a RenderGroup!");
+  }
 
-  AssertNoGlErrors;
+}
+
+function void
+FlushBuffers(debug_ui_render_group *UiGroup, v2 ScreenDim)
+{
+  if (UiGroup->TextGroup)
+  {
+    FlushBuffer(UiGroup->TextGroup, &UiGroup->Geo, ScreenDim);
+    FlushBuffer(UiGroup->TextGroup, &UiGroup->TextGroup->Geo, ScreenDim);
+  }
+
+  return;
 }
 
 function void
@@ -404,150 +442,166 @@ UVsForChar(u8 C)
   return Result;
 }
 
-function void
-BufferColors(v3 *Colors, u32 StartingIndex, v3 Color)
+template <typename T> function void
+BufferColorsDirect(T* Geo, v3 Color)
 {
-  Colors[StartingIndex++] = Color;
-  Colors[StartingIndex++] = Color;
-  Colors[StartingIndex++] = Color;
-  Colors[StartingIndex++] = Color;
-  Colors[StartingIndex++] = Color;
-  Colors[StartingIndex++] = Color;
+  v3* Colors = Geo->Colors;
+  u32 StartingIndex = Geo->At;
+  if (BufferHasRoomFor(Geo, u32_COUNT_PER_QUAD))
+  {
+    for ( u32 ColorIndex = StartingIndex;
+          ColorIndex < StartingIndex + u32_COUNT_PER_QUAD + 1;
+          ++ColorIndex)
+    {
+      Colors[ColorIndex] = Color;
+    }
+  }
+
   return;
 }
 
-function void
-BufferColors(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, v3 Color)
+
+template <typename T> function void
+BufferColors(debug_ui_render_group *Group, T *Geo, v3 Color)
 {
-  if (BufferIsFull(Geo, 6))
+  if (!BufferHasRoomFor(Geo, u32_COUNT_PER_QUAD))
     FlushBuffer(Group->TextGroup, Geo, Group->ScreenDim);
 
-  BufferColors(Geo->Colors, Geo->At, Color);
+  BufferColorsDirect(Geo, Color);
 }
 
-function void
-BufferColors(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo, v3 Color)
-{
-  if (BufferIsFull(Geo, 6))
-    FlushBuffer(Group->TextGroup, Geo, Group->ScreenDim);
-
-  BufferColors(Geo->Colors, Geo->At, Color);
-}
-
-function clip_result
-BufferQuadDirect(v3 *Dest, u32 StartingIndex, v2 MinP, v2 Dim, r32 Z, v2 ScreenDim, v2 MaxClip)
+template <typename T>function clip_result
+BufferQuadDirect(T *Geo, v2 MinP, v2 Dim, r32 Z, v2 ScreenDim, v2 MaxClip)
 {
   // Note(Jesse): Z==0 | far-clip
   // Note(Jesse): Z==1 | near-clip
-
-  Assert(Z >= 0.0f && Z <= 1.0f);
-
   clip_result Result = {};
 
-  if ( MaxClip.x <= MinP.x || MaxClip.y <= MinP.y )
+  if (BufferHasRoomFor(Geo, u32_COUNT_PER_QUAD))
   {
-    Result.ClipStatus = ClipStatus_FullyClipped;
+    v3 *Dest = Geo->Verts;
+    u32 StartingIndex = Geo->At;
+
+    Assert(Z >= 0.0f && Z <= 1.0f);
+
+
+    if ( MaxClip.x <= MinP.x || MaxClip.y <= MinP.y )
+    {
+      Result.ClipStatus = ClipStatus_FullyClipped;
+    }
+    else
+    {
+      r32 Left   = MinP.x;
+      r32 Right  = Left+Dim.x;
+      r32 Top    = MinP.y;
+      r32 Bottom = Top+Dim.y;
+
+      v3 LeftTop    = V3(Left, Top, Z);
+      v3 RightTop   = V3(Right, Top, Z);
+      v3 RightBottom = V3(Right, Bottom, Z);
+      v3 LeftBottom  = V3(Left, Bottom, Z);
+
+      if (Left < MaxClip.x && Right > MaxClip.x)
+      {
+        r32 Total = RightBottom.x - LeftBottom.x;
+        r32 TotalClipped = RightBottom.x - MaxClip.x;
+        Result.PartialClip.Max.x = TotalClipped / Total;
+
+        Result.MaxClip.x = RightTop.x = RightBottom.x = MaxClip.x;
+        Result.ClipStatus = ClipStatus_PartialClipping;
+
+        Assert(Result.PartialClip.Max.x >= 0.0f && Result.PartialClip.Max.x <= 1.0f);
+      }
+
+      if (Top < MaxClip.y && Bottom > MaxClip.y)
+      {
+        r32 Total = RightBottom.y - RightTop.y;
+        r32 TotalClipped = RightBottom.y - MaxClip.y;
+        Result.PartialClip.Max.y = TotalClipped / Total;
+
+        Result.MaxClip.y = LeftBottom.y = RightBottom.y = MaxClip.y;
+        Result.ClipStatus = ClipStatus_PartialClipping;
+
+        Assert(Result.PartialClip.Max.y >= 0.0f && Result.PartialClip.Max.y <= 1.0f);
+      }
+
+      #define TO_NDC(P) ((P * ToNDC) - 1.0f)
+      v3 ToNDC = 2.0f/V3(ScreenDim.x, ScreenDim.y, 1.0f);
+
+      // Native OpenGL screen coordinates are {0,0} at the bottom-left corner. This
+      // maps the origin to the top-left of the screen.
+      // @inverted_screen_y_coordinate
+      v3 InvertYZ = V3(1.0f, -1.0f, -1.0f);
+
+      Dest[StartingIndex++] = InvertYZ * TO_NDC(LeftTop);
+      Dest[StartingIndex++] = InvertYZ * TO_NDC(LeftBottom);
+      Dest[StartingIndex++] = InvertYZ * TO_NDC(RightTop);
+
+      Dest[StartingIndex++] = InvertYZ * TO_NDC(RightBottom);
+      Dest[StartingIndex++] = InvertYZ * TO_NDC(RightTop);
+      Dest[StartingIndex++] = InvertYZ * TO_NDC(LeftBottom);
+      #undef TO_NDC
+
+      Result.MaxClip = RightBottom.xy;
+    }
   }
   else
   {
-    r32 Left   = MinP.x;
-    r32 Right  = Left+Dim.x;
-    r32 Top    = MinP.y;
-    r32 Bottom = Top+Dim.y;
-
-    v3 LeftTop    = V3(Left, Top, Z);
-    v3 RightTop   = V3(Right, Top, Z);
-    v3 RightBottom = V3(Right, Bottom, Z);
-    v3 LeftBottom  = V3(Left, Bottom, Z);
-
-    if (Left < MaxClip.x && Right > MaxClip.x)
-    {
-      r32 Total = RightBottom.x - LeftBottom.x;
-      r32 TotalClipped = RightBottom.x - MaxClip.x;
-      Result.PartialClip.Max.x = TotalClipped / Total;
-
-      Result.MaxClip.x = RightTop.x = RightBottom.x = MaxClip.x;
-      Result.ClipStatus = ClipStatus_PartialClipping;
-
-      Assert(Result.PartialClip.Max.x >= 0.0f && Result.PartialClip.Max.x <= 1.0f);
-    }
-
-    if (Top < MaxClip.y && Bottom > MaxClip.y)
-    {
-      r32 Total = RightBottom.y - RightTop.y;
-      r32 TotalClipped = RightBottom.y - MaxClip.y;
-      Result.PartialClip.Max.y = TotalClipped / Total;
-
-      Result.MaxClip.y = LeftBottom.y = RightBottom.y = MaxClip.y;
-      Result.ClipStatus = ClipStatus_PartialClipping;
-
-      Assert(Result.PartialClip.Max.y >= 0.0f && Result.PartialClip.Max.y <= 1.0f);
-    }
-
-    #define TO_NDC(P) ((P * ToNDC) - 1.0f)
-    v3 ToNDC = 2.0f/V3(ScreenDim.x, ScreenDim.y, 1.0f);
-
-    // Native OpenGL screen coordinates are {0,0} at the bottom-left corner. This
-    // maps the origin to the top-left of the screen.
-    // @inverted_screen_y_coordinate
-    v3 InvertYZ = V3(1.0f, -1.0f, -1.0f);
-
-    Dest[StartingIndex++] = InvertYZ * TO_NDC(LeftTop);
-    Dest[StartingIndex++] = InvertYZ * TO_NDC(LeftBottom);
-    Dest[StartingIndex++] = InvertYZ * TO_NDC(RightTop);
-
-    Dest[StartingIndex++] = InvertYZ * TO_NDC(RightBottom);
-    Dest[StartingIndex++] = InvertYZ * TO_NDC(RightTop);
-    Dest[StartingIndex++] = InvertYZ * TO_NDC(LeftBottom);
-    #undef TO_NDC
-
-    Result.MaxClip = RightBottom.xy;
+    Error("Ran out of room on Geo in BufferQuadDirect");
   }
 
   return Result;
 }
 
 function clip_result
-BufferTexturedQuad(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo,
+BufferTexturedQuad(debug_ui_render_group *Group,
                    v2 MinP, v2 Dim,
                    debug_texture_array_slice TextureSlice, rect2 UV,
                    v3 Color,
                    r32 Z, v2 MaxClip)
 {
-  if (BufferIsFull(Geo, 6))
-    FlushBuffer(Group->TextGroup, Geo, Group->ScreenDim);
+  clip_result Result = {};
 
-  clip_result Result = BufferQuadDirect(Geo->Verts, Geo->At, MinP, Dim, Z, Group->ScreenDim, MaxClip);
-  switch (Result.ClipStatus)
+  if (Group->TextGroup)
   {
-    case ClipStatus_NoClipping:
+    textured_2d_geometry_buffer* Geo = &Group->TextGroup->Geo;
+
+    if (!BufferHasRoomFor(Geo, u32_COUNT_PER_QUAD))
+      FlushBuffer(Group->TextGroup, Geo, Group->ScreenDim);
+
+    Result = BufferQuadDirect(Geo, MinP, Dim, Z, Group->ScreenDim, MaxClip);
+    switch (Result.ClipStatus)
     {
-      BufferQuadUVs(Geo, UV, TextureSlice);
-      BufferColors(Group, Geo, Color);
-      Geo->At += 6;
-    } break;
+      case ClipStatus_NoClipping:
+      {
+        BufferQuadUVs(Geo, UV, TextureSlice);
+        BufferColors(Group, Geo, Color);
+        Geo->At += u32_COUNT_PER_QUAD;
+      } break;
 
-    case ClipStatus_PartialClipping:
-    {
-      v2 MinUvDiagonal = UV.Max - UV.Min;
-      v2 MaxUvDiagonal = UV.Min - UV.Max;
+      case ClipStatus_PartialClipping:
+      {
+        v2 MinUvDiagonal = UV.Max - UV.Min;
+        v2 MaxUvDiagonal = UV.Min - UV.Max;
 
-      v2 MinUvModifier = MinUvDiagonal * Result.PartialClip.Min;
-      v2 MaxUvModifier = MaxUvDiagonal * Result.PartialClip.Max;
+        v2 MinUvModifier = MinUvDiagonal * Result.PartialClip.Min;
+        v2 MaxUvModifier = MaxUvDiagonal * Result.PartialClip.Max;
 
-      UV.Min += MinUvModifier;
-      UV.Max += MaxUvModifier;
+        UV.Min += MinUvModifier;
+        UV.Max += MaxUvModifier;
 
-      BufferQuadUVs(Geo, UV, TextureSlice);
-      BufferColors(Group, Geo, Color);
-      Geo->At += 6;
-    } break;
+        BufferQuadUVs(Geo, UV, TextureSlice);
+        BufferColors(Group, Geo, Color);
+        Geo->At += u32_COUNT_PER_QUAD;
+      } break;
 
-    case ClipStatus_FullyClipped:
-    {
-    } break;
+      case ClipStatus_FullyClipped:
+      {
+      } break;
 
-    InvalidDefaultCase;
+      InvalidDefaultCase;
+    }
+
   }
 
   return Result;
@@ -558,17 +612,17 @@ BufferUntexturedQuad(debug_ui_render_group *Group, untextured_2d_geometry_buffer
                      v2 MinP, v2 Dim, v3 Color,
                      r32 Z, v2 MaxClip)
 {
-  if (BufferIsFull(Geo, 6))
+  if (!BufferHasRoomFor(Geo, u32_COUNT_PER_QUAD))
     FlushBuffer(Group->TextGroup, Geo, Group->ScreenDim);
 
-  clip_result Result = BufferQuadDirect(Geo->Verts, Geo->At, MinP, Dim, Z, Group->ScreenDim, MaxClip);
+  clip_result Result = BufferQuadDirect(Geo, MinP, Dim, Z, Group->ScreenDim, MaxClip);
   switch (Result.ClipStatus)
   {
     case ClipStatus_NoClipping:
     case ClipStatus_PartialClipping:
     {
       BufferColors(Group, Geo, Color);
-      Geo->At += 6;
+      Geo->At += u32_COUNT_PER_QUAD;
     } break;
 
     case ClipStatus_FullyClipped:
@@ -582,14 +636,14 @@ BufferUntexturedQuad(debug_ui_render_group *Group, untextured_2d_geometry_buffer
 }
 
 function r32
-BufferChar(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, u8 Char, v2 MinP, font *Font, v3 Color, r32 Z, v2 MaxClip)
+BufferChar(debug_ui_render_group *Group, u8 Char, v2 MinP, font *Font, v3 Color, r32 Z, v2 MaxClip)
 {
   rect2 UV = UVsForChar(Char);
 
   { // Black Drop-shadow
     r32 e = zOffsetForTextShadow();
     v2 ShadowOffset = 0.1f*Font->Size;
-    BufferTexturedQuad( Group, Geo,
+    BufferTexturedQuad( Group,
                         MinP+ShadowOffset, Font->Size,
                         DebugTextureArraySlice_Font, UV,
                         V3(0.1f),
@@ -598,7 +652,7 @@ BufferChar(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, u8 Ch
 
   }
 
-  BufferTexturedQuad( Group, Geo,
+  BufferTexturedQuad( Group,
                       MinP, Font->Size,
                       DebugTextureArraySlice_Font, UV,
                       Color,
@@ -609,14 +663,12 @@ BufferChar(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, u8 Ch
 }
 
 function r32
-BufferChar(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, u8 Char, v2 MinP, font *Font, u32 Color, r32 Z, v2 MaxClip)
+BufferChar(debug_ui_render_group *Group, u8 Char, v2 MinP, font *Font, u32 Color, r32 Z, v2 MaxClip)
 {
   v3 ColorVector = GetColorData(Color).xyz;
-  r32 Result = BufferChar(Group, Geo, Char, MinP, Font, ColorVector, Z, MaxClip);
+  r32 Result = BufferChar(Group, Char, MinP, Font, ColorVector, Z, MaxClip);
   return Result;
 }
-
-function void BufferBorder(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo, rect2 Rect, v3 Color, r32 Z, v2 MaxClip);
 
 struct buffer_value_params
 {
@@ -646,8 +698,6 @@ BufferValueParams( window_layout* Window, layout* Layout, v3 Color, r32 Z, v2 Ma
 function void
 BufferValue(counted_string Text, debug_ui_render_group *Group, buffer_value_params Params)
 {
-  textured_2d_geometry_buffer *Geo = &Group->TextGroup->TextGeo;
-
   window_layout* Window = Params.Window;
   layout* Layout        = Params.Layout;
   v3 Color              = Params.Color;
@@ -670,7 +720,7 @@ BufferValue(counted_string Text, debug_ui_render_group *Group, buffer_value_para
       CharIndex++ )
   {
     v2 MinP = GetAbsoluteAt(Window, Layout) + PadY;
-    Layout->At.x += BufferChar(Group, Geo, (u8)Text.Start[CharIndex], MinP, &Group->Font, Color, Z, MaxClip);
+    Layout->At.x += BufferChar(Group, (u8)Text.Start[CharIndex], MinP, &Group->Font, Color, Z, MaxClip);
     continue;
   }
 
@@ -680,7 +730,7 @@ BufferValue(counted_string Text, debug_ui_render_group *Group, buffer_value_para
   AdvanceClip(Layout, MaxClipP);
 
   /* v2 EndingP = Layout->Basis + MaxClipP; */
-  /* BufferBorder(Group, &Group->TextGroup->UIGeo, RectMinMax(StartingP, EndingP), V3(0, 0, 1), Z, DISABLE_CLIPPING); */
+  /* BufferBorder(Group, &Group->TextGroup->Geo, RectMinMax(StartingP, EndingP), V3(0, 0, 1), Z, DISABLE_CLIPPING); */
 
   return;
 }
@@ -823,8 +873,6 @@ BufferColumn(counted_string Text, debug_ui_render_group* Group, u32 ColumnWidth,
 function r32
 BufferTextAt(debug_ui_render_group *Group, v2 BasisP, counted_string Text, v3 Color, r32 Z, v2 ClipMax = DISABLE_CLIPPING)
 {
-  textured_2d_geometry_buffer *Geo = &Group->TextGroup->TextGeo;
-
   r32 DeltaX = 0;
 
   for ( u32 CharIndex = 0;
@@ -832,7 +880,7 @@ BufferTextAt(debug_ui_render_group *Group, v2 BasisP, counted_string Text, v3 Co
       CharIndex++ )
   {
     v2 MinP = BasisP + V2(Group->Font.Size.x*CharIndex, 0);
-    DeltaX += BufferChar(Group, Geo, (u8)Text.Start[CharIndex], MinP, &Group->Font, Color, Z, ClipMax);
+    DeltaX += BufferChar(Group, (u8)Text.Start[CharIndex], MinP, &Group->Font, Color, Z, ClipMax);
     continue;
   }
 
@@ -847,26 +895,18 @@ BufferTextAt(debug_ui_render_group *Group, v2 BasisP, const char *Text, v3 Color
 }
 
 function void
-BufferRectangleAt(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo,
-                  v2 MinP, v2 Dim, v3 Color, r32 Z, v2 MaxClip)
-{
-  BufferUntexturedQuad(Group, Geo, MinP, Dim, Color, Z, MaxClip);
-  return;
-}
-
-function void
-BufferRectangleAt(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo,
+BufferUntexturedQuad(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo,
                          rect2 Rect, v3 Color, r32 Z, v2 MaxClip)
 {
   v2 MinP = Rect.Min;
   v2 Dim = Rect.Max - Rect.Min;
-  BufferRectangleAt(Group, Geo, MinP, Dim, Color, Z, MaxClip);
+  BufferUntexturedQuad(Group, Geo, MinP, Dim, Color, Z, MaxClip);
 
   return;
 }
 
 function void
-BufferBorder(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo, rect2 Rect, v3 Color, r32 Z, v2 MaxClip)
+BufferBorder(debug_ui_render_group *Group, rect2 Rect, v3 Color, r32 Z, v2 MaxClip)
 {
   v2 TopLeft     = Rect.Min;
   v2 BottomRight = Rect.Max;
@@ -878,10 +918,10 @@ BufferBorder(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo, r
   rect2 LeftRect   = RectMinMax(TopLeft ,    BottomLeft  + V2(1, 0));
   rect2 RightRect  = RectMinMax(TopRight,    BottomRight + V2(1, 0));
 
-  BufferRectangleAt(Group, Geo, TopRect,    Color, Z, MaxClip);
-  BufferRectangleAt(Group, Geo, LeftRect,   Color, Z, MaxClip);
-  BufferRectangleAt(Group, Geo, RightRect,  Color, Z, MaxClip);
-  BufferRectangleAt(Group, Geo, BottomRect, Color, Z, MaxClip);
+  BufferUntexturedQuad(Group, &Group->Geo, TopRect,    Color, Z, MaxClip);
+  BufferUntexturedQuad(Group, &Group->Geo, LeftRect,   Color, Z, MaxClip);
+  BufferUntexturedQuad(Group, &Group->Geo, RightRect,  Color, Z, MaxClip);
+  BufferUntexturedQuad(Group, &Group->Geo, BottomRect, Color, Z, MaxClip);
 
   return;
 }
@@ -890,7 +930,7 @@ function void
 BufferBorder(debug_ui_render_group *Group, interactable* PickerListInteraction, v3 Color, r32 Z, v2 MaxClip)
 {
   rect2 Bounds = RectMinMax(PickerListInteraction->MinP, PickerListInteraction->MaxP);
-  BufferBorder(Group, &Group->TextGroup->UIGeo, Bounds, Color, Z, MaxClip);
+  BufferBorder(Group, Bounds, Color, Z, MaxClip);
   return;
 }
 
@@ -953,10 +993,10 @@ ButtonInteraction(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId,
 }
 
 function b32
-BufferButton(debug_ui_render_group *Group, rect2 Bounds,  umm InteractionId, buffer_value_params Params)
+BufferButton(debug_ui_render_group *Group, rect2 Bounds, umm InteractionId, buffer_value_params Params)
 {
   button_interaction_result Result = ButtonInteraction(Group, Bounds, InteractionId, Params.Window, Params.Style);
-  BufferRectangleAt(Group, &Group->TextGroup->UIGeo, Bounds, Result.Color, Params.Z, Params.MaxClip);
+  BufferUntexturedQuad(Group, &Group->Geo, Bounds, Result.Color, Params.Z, Params.MaxClip);
   return Result.Pressed;
 }
 
@@ -983,10 +1023,12 @@ BufferButton(const char* ColumnText, debug_ui_render_group *Group, umm Interacti
 
 
 function void
-RenderWindowInteractions(debug_ui_render_group* Group, window_layout* Window, layout* Layout)
+ProcessWindowInteractions(debug_ui_render_group* Group, window_layout* Window, layout* Layout)
 {
   Clear(&Layout->At);
   Clear(&Layout->DrawBounds);
+
+  if (!Window) { return; }
 
   v2 TitleBounds = GetTextBounds( (u32)Length(Window->Title), &Group->Font);
   Window->MaxClip = Max(TitleBounds, Window->MaxClip);
@@ -1055,15 +1097,13 @@ RenderWindowInteractions(debug_ui_render_group* Group, window_layout* Window, la
   {
     r32 Z = zIndexForBorders(Window, Group);
     v3 BorderColor = V3(1, 1, 1);
-    untextured_2d_geometry_buffer *UiGeo = &Group->TextGroup->UIGeo;
-    BufferBorder(Group, UiGeo, WindowBounds, BorderColor, Z, DISABLE_CLIPPING);
+    BufferBorder(Group, WindowBounds, BorderColor, Z, DISABLE_CLIPPING);
   }
 
   {
     v3 BackgroundColor = V3(0.1f, 0.1f, 0.1f);
     r32 Z = zIndexForBackgrounds(Window, Group);
-    untextured_2d_geometry_buffer *UiGeo = &Group->TextGroup->UIGeo;
-    BufferRectangleAt(Group, UiGeo, WindowBounds, BackgroundColor, Z, WindowBounds.Max);
+    BufferUntexturedQuad(Group, &Group->Geo, WindowBounds, BackgroundColor, Z, WindowBounds.Max);
   }
 
   return;
@@ -1083,7 +1123,7 @@ RenderWindowInteractions(debug_ui_render_group* Group, window_layout* Window, la
 function u32
 PushUiRenderCommand(debug_ui_render_group *Group, ui_render_command* Command)
 {
-  ui_render_command_buffer *CommandBuffer = &Group->CommandBuffer;
+  ui_render_command_buffer *CommandBuffer = Group->CommandBuffer;
 
   u32 Result = CommandBuffer->CommandCount;
 
@@ -1396,7 +1436,6 @@ function void
 ButtonStart(debug_ui_render_group* Group, render_state* RenderState, umm ButtonId)
 {
   Assert(!RenderState->CurrentInteraction.ID);
-  Assert(RenderState->Window);
 
   RenderState->CurrentInteraction.MinP = {};
   RenderState->CurrentInteraction.MaxP = {};
@@ -1429,7 +1468,6 @@ function void
 ButtonEnd(debug_ui_render_group *Group, render_state* RenderState)
 {
   Assert(RenderState->CurrentInteraction.ID);
-  Assert(RenderState->Window);
 
   RenderState->CurrentInteraction.MinP = GetAbsoluteDrawBoundsMin(RenderState->Window, &RenderState->Layout);
   RenderState->CurrentInteraction.MaxP = GetAbsoluteDrawBoundsMax(RenderState->Window, &RenderState->Layout);
@@ -1470,7 +1508,7 @@ ProcessTexturedQuadPush(debug_ui_render_group* Group, ui_render_command_textured
   v2 MinP = GetAbsoluteAt(RenderState->Window, &RenderState->Layout);
   r32 Z = zIndexForText(RenderState->Window, Group);
   v2 MaxClip = GetAbsoluteMaxClip(RenderState->Window);
-  BufferTexturedQuad( Group, &Group->TextGroup->TextGeo, MinP, RenderState->Window->MaxClip,
+  BufferTexturedQuad( Group, MinP, RenderState->Window->MaxClip,
                       Command->TextureSlice, UVsForFullyCoveredQuad(),
                       V3(1), Z, MaxClip);
 }
@@ -1505,7 +1543,7 @@ ProcessUntexturedQuadPush(debug_ui_render_group* Group, ui_render_command_untext
   v3 Color = SelectColorState(RenderState, Command->Style);
   r32 Z = zIndexForText(RenderState->Window, Group);
 
-  BufferUntexturedQuad(Group, &Group->TextGroup->UIGeo, MinP, Dim, Color, Z, MaxClip);
+  BufferUntexturedQuad(Group, &(Group->Geo), MinP, Dim, Color, Z, MaxClip);
 
   AdvanceClip(&RenderState->Layout, RenderState->Layout.At + Command->OffsetFromLayout);
   AdvanceClip(&RenderState->Layout, RenderState->Layout.At + Command->OffsetFromLayout + Dim);
@@ -1541,7 +1579,6 @@ RenderTable(render_state* RenderState, debug_ui_render_group* Group, ui_render_c
 
           case RenderCommand_Column:
           {
-            Assert(RenderState->Window);
             u32 ColumnWidth = GetColumnWidth(&TableRenderParams, ColumnIndex++);
             buffer_value_params Params = BufferValueParams(RenderState->Window, &RenderState->Layout, SelectColorState(RenderState, RenderState->Style), zIndexForText(RenderState->Window, Group), GetAbsoluteMaxClip(RenderState->Window), &RenderState->Style);
             BufferColumn(Command->Column.String, Group, ColumnWidth, Params, Command->Column.Params);
@@ -1617,7 +1654,7 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
       case RenderCommand_WindowInteractions:
       {
         RenderState.Window = Command->WindowInteraction.Window;
-        RenderWindowInteractions(Group, RenderState.Window, &RenderState.Layout);
+        ProcessWindowInteractions(Group, RenderState.Window, &RenderState.Layout);
       } break;
 
       case RenderCommand_TableStart:
@@ -1705,7 +1742,7 @@ DrawWaitingBar(mutex_op_record *WaitRecord, mutex_op_record *AquiredRecord, mute
   u64 WaitCycleCount = AquiredRecord->Cycle - WaitRecord->Cycle;
   u64 AquiredCycleCount = ReleasedRecord->Cycle - AquiredRecord->Cycle;
 
-  untextured_2d_geometry_buffer *Geo = &Group->TextGroup->UIGeo;
+  untextured_2d_geometry_buffer *Geo = &Group->Geo;
   cycle_range FrameRange = {FrameStartingCycle, FrameTotalCycles};
 
   cycle_range WaitRange = {WaitRecord->Cycle, WaitCycleCount};
@@ -1783,7 +1820,7 @@ PushChunkDetails(debug_ui_render_group* Group, world_chunk* Chunk, window_layout
 }
 
 function v2
-BasisRightOf(window_layout* Window, v2 WindowSpacing = V2(150, 0))
+BasisRightOf(window_layout* Window, v2 WindowSpacing = V2(50, 0))
 {
   v2 Result = V2(GetAbsoluteMaxClip(Window).x, Window->Basis.y) + WindowSpacing;
   return Result;
@@ -1796,7 +1833,7 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
   world_chunk** PickedChunks = DebugState->PickedChunks;
   MapGpuElementBuffer(&DebugState->GameGeo);
 
-  local_persist window_layout ListingWindow = WindowLayout("Picked Chunks", LayoutBasis, V2(400, 150));
+  local_persist window_layout ListingWindow = WindowLayout("Picked Chunks", LayoutBasis, V2(400, 400));
   PushWindowInteraction(Group, &ListingWindow);
 
   PushTableStart(Group, &ListingWindow);
@@ -1860,17 +1897,15 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
 
   if (HotChunk)
   {
-    v2 NextWindowBasis = BasisRightOf(&ListingWindow);
+    local_persist window_layout ChunkDetailWindow = WindowLayout("Chunk Details", BasisRightOf(&ListingWindow),     V2(1100.0f, 400.0f));
+    local_persist window_layout ChunkViewWindow   = WindowLayout("Chunk View",    BasisRightOf(&ChunkDetailWindow), V2(800.0f));
 
     {
-      local_persist window_layout ChunkDetailWindow = WindowLayout("Chunk Details", NextWindowBasis, V2(1100.0f, 400.0f));
       PushWindowInteraction(Group, &ChunkDetailWindow);
       PushChunkDetails(Group, HotChunk, &ChunkDetailWindow);
-      NextWindowBasis = BasisRightOf(&ChunkDetailWindow);
     }
 
     {
-      local_persist window_layout ChunkViewWindow = WindowLayout("Chunk View", NextWindowBasis, V2(800.0f));
       PushWindowInteraction(Group, &ChunkViewWindow);
       PushTableStart(Group, &ChunkViewWindow);
         b32 DebugButtonPressed = False;
@@ -2303,105 +2338,100 @@ BufferFirstCallToEach(debug_ui_render_group *Group,
   return;
 }
 
+function void
+DrawFrameTicker(debug_ui_render_group *Group, debug_state *DebugState, r64 MaxMs)
+{
+  TIMED_FUNCTION();
+
+  for (u32 FrameIndex = 0;
+      FrameIndex < DEBUG_FRAMES_TRACKED;
+      ++FrameIndex )
+  {
+    frame_stats *Frame = DebugState->Frames + FrameIndex;
+    r32 Perc = (r32)SafeDivide0(Frame->FrameMs, MaxMs);
+
+    /* v2 MinP = MainLayout->At; */
+    v2 MaxDim = V2(15.0f, 80.0f);
+    /* v2 MaxP = MinP + MaxDim; */
+
+    /* v3 Color = V3(0.5f, 0.5f, 0.5f); */
+
+    /* debug_scope_tree *Tree = GetThreadLocalStateFor(0)->ScopeTrees + FrameIndex; */
+    /* if ( Tree == DebugState->GetWriteScopeTree() ) */
+    /* { */
+    /*   Color = V3(0.8f, 0.0f, 0.0f); */
+    /*   Perc = 0.05f; */
+    /* } */
+
+    /* if ( Tree == DebugState->GetReadScopeTree(0) ) */
+    /*   Color = V3(0.8f, 0.8f, 0.0f); */
+
+    v2 QuadDim = MaxDim * V2(1.0f, Perc);
+    v2 VerticalOffset = MaxDim - QuadDim;
+
+    /* interactable Interaction = Interactable(MinP, MaxP, (umm)"CallGraphBarInteract", 0); */
+    /* if (Hover(Group, &Interaction)) */
+    /* { */
+    /*   debug_thread_state *MainThreadState = GetThreadLocalStateFor(0); */
+    /*   if (FrameIndex != MainThreadState->WriteIndex % DEBUG_FRAMES_TRACKED) */
+    /*   { */
+    /*     DebugState->ReadScopeIndex = FrameIndex; */
+    /*     Color = V3(0.8f, 0.8f, 0.0f); */
+    /*   } */
+    /* } */
+
+    PushUntexturedQuad(Group, VerticalOffset, QuadDim);
+  }
+
+
+#if 0
+  r32 MaxBarHeight = Group->Font.Size.y;
+  v2 QuadDim = V2(MainLayout->At.x, 2.0f);
+  {
+    r32 MsPerc = (r32)SafeDivide0(33.333, MaxMs);
+    r32 MinPOffset = MaxBarHeight * MsPerc;
+    v2 MinP = { StartingAt.x, StartingAt.y + Group->Font.Size.y - MinPOffset };
+
+    PushUntexturedQuadAt(Group, MinP, QuadDim, V3(1,1,0), Z, MaxClip);
+  }
+
+  {
+    r32 MsPerc = (r32)SafeDivide0(16.666, MaxMs);
+    r32 MinPOffset = MaxBarHeight * MsPerc;
+    v2 MinP = { StartingAt.x, StartingAt.y + Group->Font.Size.y - MinPOffset };
+
+    PushUntexturedQuadAt(Group, &Group->TextGroup->UIGeo, MinP, QuadDim, V3(0,1,0), Z, MaxClip);
+  }
+#endif
+
+  /* SetFontSize(&Group->Font, 30); */
+
+  frame_stats *Frame = DebugState->Frames + DebugState->ReadScopeIndex;
+
+  u32 TotalMutexOps = GetTotalMutexOpsForReadFrame();
+  PushTableStart(Group, 0);
+    PushColumn(Group, CS(Frame->FrameMs));
+    PushColumn(Group, CS(Frame->TotalCycles));
+    PushColumn(Group, CS(TotalMutexOps));
+    PushNewRow(Group);
+  PushTableEnd(Group);
+
+  return;
+}
 
 function void
 DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout *MainLayout, r64 MaxMs)
 {
+  DrawFrameTicker(Group, DebugState, MaxMs);
+
   NewLine(MainLayout);
-  SetFontSize(&Group->Font, 80);
-
-  // TODO(Jesse): Factor this such that we've got a window to do a real Z computation!
-  r32 Z = 1.0f;
-
-  // TODO(Jesse): Factor this such that we've got a window to do a real clipping computation!
-  v2 MaxClip = V2(FLT_MAX);
-
-  TIMED_BLOCK("Frame Ticker");
-    v2 StartingAt = MainLayout->At;
-
-    for (u32 FrameIndex = 0;
-        FrameIndex < DEBUG_FRAMES_TRACKED;
-        ++FrameIndex )
-    {
-      frame_stats *Frame = DebugState->Frames + FrameIndex;
-      r32 Perc = (r32)SafeDivide0(Frame->FrameMs, MaxMs);
-
-      v2 MinP = MainLayout->At;
-      v2 MaxDim = V2(15.0, Group->Font.Size.y);
-      v2 MaxP = MinP + MaxDim;
-
-      v3 Color = V3(0.5f, 0.5f, 0.5f);
-
-      debug_scope_tree *Tree = GetThreadLocalStateFor(0)->ScopeTrees + FrameIndex;
-      if ( Tree == DebugState->GetWriteScopeTree() )
-      {
-        Color = V3(0.8f, 0.0f, 0.0f);
-        Perc = 0.05f;
-      }
-
-      if ( Tree == DebugState->GetReadScopeTree(0) )
-        Color = V3(0.8f, 0.8f, 0.0f);
-
-      v2 QuadDim = MaxDim * V2(1.0f, Perc);
-      v2 VerticalOffset = MaxDim - QuadDim;
-
-      interactable Interaction = Interactable(MinP, MaxP, (umm)"CallGraphBarInteract", 0);
-      if (Hover(Group, &Interaction))
-      {
-        debug_thread_state *MainThreadState = GetThreadLocalStateFor(0);
-        if (FrameIndex != MainThreadState->WriteIndex % DEBUG_FRAMES_TRACKED)
-        {
-          DebugState->ReadScopeIndex = FrameIndex;
-          Color = V3(0.8f, 0.8f, 0.0f);
-        }
-      }
-
-      clip_result Clip = BufferUntexturedQuad(Group, &Group->TextGroup->UIGeo, MinP + VerticalOffset, QuadDim, Color, Z, MaxClip);
-      if (Clip.ClipStatus != ClipStatus_FullyClipped)
-      {
-        MainLayout->At.x = Clip.MaxClip.x + 5.0f;
-        AdvanceClip(MainLayout, MainLayout->At + V2(0, Group->Font.Size.y));
-      }
-    }
-
-
-    r32 MaxBarHeight = Group->Font.Size.y;
-    v2 QuadDim = V2(MainLayout->At.x, 2.0f);
-    {
-      r32 MsPerc = (r32)SafeDivide0(33.333, MaxMs);
-      r32 MinPOffset = MaxBarHeight * MsPerc;
-      v2 MinP = { StartingAt.x, StartingAt.y + Group->Font.Size.y - MinPOffset };
-
-      BufferUntexturedQuad(Group, &Group->TextGroup->UIGeo, MinP, QuadDim, V3(1,1,0), Z, MaxClip);
-    }
-
-    {
-      r32 MsPerc = (r32)SafeDivide0(16.666, MaxMs);
-      r32 MinPOffset = MaxBarHeight * MsPerc;
-      v2 MinP = { StartingAt.x, StartingAt.y + Group->Font.Size.y - MinPOffset };
-
-      BufferUntexturedQuad(Group, &Group->TextGroup->UIGeo, MinP, QuadDim, V3(0,1,0), Z, MaxClip);
-    }
-
-    { // Current ReadTree info
-      SetFontSize(&Group->Font, 30);
-      frame_stats *Frame = DebugState->Frames + DebugState->ReadScopeIndex;
-      buffer_value_params Params = BufferValueParams(0, MainLayout, V3(1), Z, MaxClip);
-
-      BufferColumn(Frame->FrameMs, 4, Group, Params);
-      BufferThousands(Frame->TotalCycles, Group, Params);
-      u32 TotalMutexOps = GetTotalMutexOpsForReadFrame();
-      BufferThousands(TotalMutexOps, Group, Params);
-    }
-    NewLine(MainLayout);
-  END_BLOCK("Frame Ticker");
 
   u32 TotalThreadCount = GetWorkerThreadCount() + 1;
 
   debug_thread_state *MainThreadState = GetThreadLocalStateFor(0);
   debug_scope_tree *MainThreadReadTree    = MainThreadState->ScopeTrees + DebugState->ReadScopeIndex;
 
-  local_persist window_layout CallgraphWindow = WindowLayout("Callgraph", V2(0, MainLayout->At.y));
+  local_persist window_layout CallgraphWindow = WindowLayout("Callgraph", V2(0, MainLayout->At.y) + V2(50));
 
   TIMED_BLOCK("Call Graph");
 
@@ -2796,6 +2826,7 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, v2 Mem
 {
   local_persist window_layout MemoryArenaWindowInstance = WindowLayout("Memory Arenas", MemoryWindowBasis);
   window_layout* MemoryArenaWindow = &MemoryArenaWindowInstance;
+
   PushWindowInteraction(Group, MemoryArenaWindow);
 
   for ( u32 Index = 0;
@@ -2936,21 +2967,21 @@ DebugDrawGraphicsHud(debug_ui_render_group *Group, debug_state *DebugState, layo
 
 
 
-function b32
-InitDebugOverlayFramebuffer(debug_text_render_group *RG, memory_arena *DebugArena, const char *DebugFont)
+function void
+InitDebugOverlayFramebuffer(debug_text_render_group *TextGroup, memory_arena *DebugArena, const char *DebugFont)
 {
-  RG->FontTexture = LoadBitmap(DebugFont, DebugArena, DebugTextureArraySlice_Count);
+  TextGroup->FontTexture = LoadBitmap(DebugFont, DebugArena, DebugTextureArraySlice_Count);
 
-  glGenBuffers(1, &RG->SolidUIVertexBuffer);
-  glGenBuffers(1, &RG->SolidUIColorBuffer);
-  glGenBuffers(1, &RG->SolidUIUVBuffer);
+  glGenBuffers(1, &TextGroup->SolidUIVertexBuffer);
+  glGenBuffers(1, &TextGroup->SolidUIColorBuffer);
+  glGenBuffers(1, &TextGroup->SolidUIUVBuffer);
 
-  RG->Text2DShader = LoadShaders("TextVertexShader.vertexshader",
-                                 "TextVertexShader.fragmentshader", DebugArena);
+  TextGroup->Text2DShader = LoadShaders("TextVertexShader.vertexshader",
+                                        "TextVertexShader.fragmentshader", DebugArena);
 
-  RG->TextTextureUniform = glGetUniformLocation(RG->Text2DShader.ID, "TextTextureSampler");
+  TextGroup->TextTextureUniform = glGetUniformLocation(TextGroup->Text2DShader.ID, "TextTextureSampler");
 
-  return True;
+  return;
 }
 
 function void
@@ -3004,22 +3035,23 @@ InitDebugRenderSystem(debug_state *DebugState, heap_allocator *Heap)
 {
   AllocateMesh(&DebugState->LineMesh, 1024, Heap);
 
-  if (!InitDebugOverlayFramebuffer(&DebugState->TextRenderGroup, ThreadsafeDebugMemoryAllocator(), "texture_atlas_0.bmp"))
-  { Error("Initializing Debug Overlay Framebuffer"); }
+  DebugState->UiGroup.TextGroup = Allocate(debug_text_render_group, ThreadsafeDebugMemoryAllocator(), 1);
+  DebugState->UiGroup.CommandBuffer = Allocate(ui_render_command_buffer, ThreadsafeDebugMemoryAllocator(), 1);
 
-  AllocateAndInitGeoBuffer(&DebugState->TextRenderGroup.TextGeo, 1024, ThreadsafeDebugMemoryAllocator());
-  AllocateAndInitGeoBuffer(&DebugState->TextRenderGroup.UIGeo, 1024, ThreadsafeDebugMemoryAllocator());
+  InitDebugOverlayFramebuffer(DebugState->UiGroup.TextGroup, ThreadsafeDebugMemoryAllocator(), "texture_atlas_0.bmp");
+  AllocateAndInitGeoBuffer(&DebugState->UiGroup.TextGroup->Geo, 1024, ThreadsafeDebugMemoryAllocator());
+  AllocateAndInitGeoBuffer(&DebugState->UiGroup.Geo, 1024, ThreadsafeDebugMemoryAllocator());
 
   AllocateGpuElementBuffer(&DebugState->GameGeo, (u32)Megabytes(4));
 
-  DebugState->TextRenderGroup.SolidUIShader = MakeSolidUIShader(ThreadsafeDebugMemoryAllocator());
+  DebugState->UiGroup.TextGroup->SolidUIShader = MakeSolidUIShader(ThreadsafeDebugMemoryAllocator());
 
   DebugState->SelectedArenas = Allocate(selected_arenas, ThreadsafeDebugMemoryAllocator(), 1);
 
   DebugState->GameGeoFBO = GenFramebuffer();
   glBindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID);
 
-  FramebufferTextureLayer(&DebugState->GameGeoFBO, DebugState->TextRenderGroup.FontTexture, DebugTextureArraySlice_Viewport);
+  FramebufferTextureLayer(&DebugState->GameGeoFBO, DebugState->UiGroup.TextGroup->FontTexture, DebugTextureArraySlice_Viewport);
   SetDrawBuffers(&DebugState->GameGeoFBO);
 
   v2i TextureDim = V2i(DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM);

@@ -1,5 +1,6 @@
-global_variable s32 TestsFailed = 0;
+#include <cstdio>
 
+global_variable s32 TestsFailed = 0;
 global_variable u32 TestsPassed = 0;
 
 #define TestThat(condition)                                                                                 \

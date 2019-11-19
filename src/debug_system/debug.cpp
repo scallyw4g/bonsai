@@ -28,14 +28,12 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   TIMED_FUNCTION();
 
   debug_state *DebugState            = GetDebugState();
-  debug_text_render_group *TextGroup = &DebugState->TextRenderGroup;
 
   min_max_avg_dt Dt           = {};
   layout Layout               = {};
 
   debug_ui_render_group *UiGroup = &DebugState->UiGroup;
 
-  UiGroup->TextGroup             = TextGroup;
   UiGroup->GameGeo               = &DebugState->GameGeo;
   UiGroup->GameGeoShader         = &DebugState->GameGeoShader;
   UiGroup->Input                 = &Plat->Input;
@@ -191,7 +189,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
 
     case DebugUIType_PickedChunks:
     {
-      DrawPickedChunks(UiGroup, Layout.At + V2(100, 100));
+      DrawPickedChunks(UiGroup, Layout.At + V2(100));
     } break;
 
     case DebugUIType_Graphics:
@@ -227,11 +225,10 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     InvalidDefaultCase;
   }
 
-  UiGroup->HighestWindow = GetHighestWindow(UiGroup, &UiGroup->CommandBuffer);
-  FlushCommandBuffer(UiGroup, &UiGroup->CommandBuffer);
+  UiGroup->HighestWindow = GetHighestWindow(UiGroup, UiGroup->CommandBuffer);
+  FlushCommandBuffer(UiGroup, UiGroup->CommandBuffer);
 
-  FlushBuffer(TextGroup, &TextGroup->UIGeo, UiGroup->ScreenDim);
-  FlushBuffer(TextGroup, &TextGroup->TextGeo, UiGroup->ScreenDim);
+  FlushBuffers(UiGroup, UiGroup->ScreenDim);
 
   DebugState->BytesBufferedToCard = 0;
 

@@ -36,56 +36,56 @@ CompileShader(ansi_stream Header, ansi_stream Code, u32 Type)
 shader
 LoadShaders(const char * VertShaderPath, const char * FragFilePath, memory_arena *Memory)
 {
-Info("Creating shader : %s | %s", VertShaderPath, FragFilePath);
+  Info("Creating shader : %s | %s", VertShaderPath, FragFilePath);
 
-// FIXME(Jesse): For gods sake don't use sprintf
-char ComputedVertPath[2048] = {};
-Snprintf(ComputedVertPath, 2048, "%s/%s", SHADER_PATH, VertShaderPath);
+  // FIXME(Jesse): For gods sake don't use sprintf
+  char ComputedVertPath[2048] = {};
+  Snprintf(ComputedVertPath, 2048, "%s/%s", SHADER_PATH, VertShaderPath);
 
-char ComputedFragPath[2048] = {};
-Snprintf(ComputedFragPath, 2048, "%s/%s", SHADER_PATH, FragFilePath);
+  char ComputedFragPath[2048] = {};
+  Snprintf(ComputedFragPath, 2048, "%s/%s", SHADER_PATH, FragFilePath);
 
-ansi_stream HeaderCode       = ReadEntireFileIntoString(SHADER_PATH SHADER_HEADER, Memory);
-ansi_stream VertexShaderCode = ReadEntireFileIntoString(ComputedVertPath, Memory);
-ansi_stream FragShaderCode   = ReadEntireFileIntoString(ComputedFragPath, Memory);
-
-
-s32 Result = GL_FALSE;
-int InfoLogLength;
+  ansi_stream HeaderCode       = ReadEntireFileIntoString(SHADER_PATH SHADER_HEADER, Memory);
+  ansi_stream VertexShaderCode = ReadEntireFileIntoString(ComputedVertPath, Memory);
+  ansi_stream FragShaderCode   = ReadEntireFileIntoString(ComputedFragPath, Memory);
 
 
-u32 VertexShaderID = CompileShader(HeaderCode, VertexShaderCode, GL_VERTEX_SHADER);
-u32 FragmentShaderID = CompileShader(HeaderCode, FragShaderCode, GL_FRAGMENT_SHADER);
-
-// Link the program
-u32 ProgramID = glCreateProgram();
-Assert(ProgramID);
-glAttachShader(ProgramID, VertexShaderID);
-glAttachShader(ProgramID, FragmentShaderID);
-glLinkProgram(ProgramID);
-
-// Check the program
-glGetProgramiv(ProgramID, GL_LINK_STATUS, &Result);
-glGetProgramiv(ProgramID, GL_INFO_LOG_LENGTH, &InfoLogLength);
-if ( InfoLogLength > 0 )
-{
-  // TODO(Jesse): Transient storage
-  char *ProgramErrorMessage = Allocate(char, Memory, InfoLogLength+1);
-  glGetProgramInfoLog(ProgramID, InfoLogLength, NULL, ProgramErrorMessage);
-  Error("%s", ProgramErrorMessage);
-}
+  s32 Result = GL_FALSE;
+  int InfoLogLength;
 
 
-glDetachShader(ProgramID, VertexShaderID);
-glDetachShader(ProgramID, FragmentShaderID);
+  u32 VertexShaderID = CompileShader(HeaderCode, VertexShaderCode, GL_VERTEX_SHADER);
+  u32 FragmentShaderID = CompileShader(HeaderCode, FragShaderCode, GL_FRAGMENT_SHADER);
 
-glDeleteShader(VertexShaderID);
-glDeleteShader(FragmentShaderID);
+  // Link the program
+  u32 ProgramID = glCreateProgram();
+  Assert(ProgramID);
+  glAttachShader(ProgramID, VertexShaderID);
+  glAttachShader(ProgramID, FragmentShaderID);
+  glLinkProgram(ProgramID);
 
-shader Shader = {};
-Shader.ID = ProgramID;
+  // Check the program
+  glGetProgramiv(ProgramID, GL_LINK_STATUS, &Result);
+  glGetProgramiv(ProgramID, GL_INFO_LOG_LENGTH, &InfoLogLength);
+  if ( InfoLogLength > 0 )
+  {
+    // TODO(Jesse): Transient storage
+    char *ProgramErrorMessage = Allocate(char, Memory, InfoLogLength+1);
+    glGetProgramInfoLog(ProgramID, InfoLogLength, NULL, ProgramErrorMessage);
+    Error("%s", ProgramErrorMessage);
+  }
 
-return Shader;
+
+  glDetachShader(ProgramID, VertexShaderID);
+  glDetachShader(ProgramID, FragmentShaderID);
+
+  glDeleteShader(VertexShaderID);
+  glDeleteShader(FragmentShaderID);
+
+  shader Shader = {};
+  Shader.ID = ProgramID;
+
+  return Shader;
 }
 
 
