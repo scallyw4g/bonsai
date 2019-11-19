@@ -815,31 +815,29 @@ BufferColumn(counted_string Text, debug_ui_render_group* Group, u32 ColumnWidth,
 }
 
 function r32
-BufferTextAt(debug_ui_render_group *Group, v2 BasisP, const char *Text, u32 Color, r32 Z, v2 ClipMax = DISABLE_CLIPPING)
+BufferTextAt(debug_ui_render_group *Group, v2 BasisP, counted_string Text, v3 Color, r32 Z, v2 ClipMax = DISABLE_CLIPPING)
 {
   textured_2d_geometry_buffer *Geo = &Group->TextGroup->TextGeo;
-
-  u32 QuadCount = (u32)Length(Text);
 
   r32 DeltaX = 0;
 
   for ( u32 CharIndex = 0;
-      CharIndex < QuadCount;
+      CharIndex < Text.Count;
       CharIndex++ )
   {
     v2 MinP = BasisP + V2(Group->Font.Size.x*CharIndex, 0);
-    DeltaX += BufferChar(Group, Geo, (u8)Text[CharIndex], MinP, &Group->Font, Color, Z, ClipMax);
+    DeltaX += BufferChar(Group, Geo, (u8)Text.Start[CharIndex], MinP, &Group->Font, Color, Z, ClipMax);
     continue;
   }
 
   return DeltaX;
 }
 
-function void
-BufferTooltip(debug_ui_render_group *Group, const char *Text, r32 Z = 1.0f)
+function r32
+BufferTextAt(debug_ui_render_group *Group, v2 BasisP, const char *Text, v3 Color, r32 Z, v2 ClipMax = DISABLE_CLIPPING)
 {
-  BufferTextAt(Group, *Group->MouseP+V2(12, -7), Text, WHITE, Z);
-  return;
+  r32 Result = BufferTextAt(Group, BasisP, CS(Text), Color, Z, ClipMax);
+  return Result;
 }
 
 function void
@@ -1437,11 +1435,13 @@ ButtonEnd(debug_ui_render_group *Group, render_state* RenderState)
 
   if (Button.Clicked)
   {
+    TriggeredRuntimeBreak();
     Group->ClickedInteractionId = RenderState->CurrentInteraction.ID;
   }
 
   if (Button.Pressed)
   {
+    TriggeredRuntimeBreak();
     Group->PressedInteractionId = RenderState->CurrentInteraction.ID;
   }
 
@@ -1535,6 +1535,8 @@ RenderTable(render_state* RenderState, debug_ui_render_group* Group, ui_render_c
 
           case RenderCommand_TextAt:
           {
+            ui_render_command_text_at TextCommand = Command->TextAt;
+            BufferTextAt(Group, TextCommand.At, TextCommand.Text, V3(1), 1.0f, DISABLE_CLIPPING);
           } break;
 
           case RenderCommand_ButtonStart:
@@ -1632,7 +1634,7 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
 
 
 
-function interactable_handle
+function void
 PushCycleBar(debug_ui_render_group* Group, cycle_range* Range, cycle_range* Frame, r32 TotalGraphWidth, u32 Depth, random_series* Entropy)
 {
   Assert(Frame->StartCycle < Range->StartCycle);
@@ -1649,11 +1651,9 @@ PushCycleBar(debug_ui_render_group* Group, cycle_range* Range, cycle_range* Fram
 
   v2 OffsetFromLayout = V2(xOffset, yOffset);
 
-  interactable_handle Result = PushButtonStart(Group, (umm)"CycleBarHoverInteraction");
-    PushUntexturedQuad(Group, OffsetFromLayout, BarDim, RandomV3(Entropy), QuadRenderParam_NoLayoutAdvance);
-  PushButtonEnd(Group);
+  PushUntexturedQuad(Group, OffsetFromLayout, BarDim, RandomV3(Entropy), QuadRenderParam_NoLayoutAdvance);
 
-  return Result;
+  return;
 }
 
 #if 0
@@ -2005,7 +2005,10 @@ PushScopeBarsRecursive(debug_ui_render_group *Group, debug_profile_scope *Scope,
   while (Scope)
   {
     cycle_range Range = {Scope->StartingCycle, Scope->CycleCount};
-    interactable_handle Bar = PushCycleBar(Group, &Range, Frame, TotalGraphWidth, Depth, Entropy);
+
+    interactable_handle Bar = PushButtonStart(Group, (umm)"CycleBarHoverInteraction"^(umm)Scope);
+      PushCycleBar(Group, &Range, Frame, TotalGraphWidth, Depth, Entropy);
+    PushButtonEnd(Group);
 
     if (Hover(Group, &Bar)) { PushTooltip(Group, CS(Scope->Name)); }
     if (Clicked(Group, &Bar)) { Scope->Expanded = !Scope->Expanded; }
