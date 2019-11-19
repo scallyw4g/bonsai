@@ -589,11 +589,11 @@ BufferChar(debug_ui_render_group *Group, textured_2d_geometry_buffer *Geo, u8 Ch
 
   }
 
-  clip_result ClipResult = BufferTexturedQuad( Group, Geo,
-                                               MinP, Font->Size,
-                                               DebugTextureArraySlice_Font, UV,
-                                               Color,
-                                               Z, MaxClip);
+  BufferTexturedQuad( Group, Geo,
+                      MinP, Font->Size,
+                      DebugTextureArraySlice_Font, UV,
+                      Color,
+                      Z, MaxClip);
 
   r32 DeltaX = Font->Size.x;
   return DeltaX;
@@ -1924,15 +1924,13 @@ BuildNameStringFor(char Prefix, const char* Name, u32 DepthAdvance)
 }
 
 function void
-BufferScopeTreeEntry(debug_ui_render_group *Group, debug_profile_scope *Scope, window_layout* Window,
+BufferScopeTreeEntry(debug_ui_render_group *Group, debug_profile_scope *Scope,
                      u64 TotalCycles, u64 TotalFrameCycles, u64 CallCount, u32 Depth)
 {
   Assert(TotalFrameCycles);
 
   r32 Percentage = 100.0f * (r32)SafeDivide0((r64)TotalCycles, (r64)TotalFrameCycles);
   u64 AvgCycles = (u64)SafeDivide0(TotalCycles, CallCount);
-
-  r32 Z = zIndexForText(Window, Group);
 
   PushColumn(Group, CS(Percentage));
   PushColumn(Group, CS(AvgCycles));
@@ -2024,8 +2022,6 @@ DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState
 {
   random_series Entropy = {};
   r32 TotalGraphWidth = 1500.0f;
-  untextured_2d_geometry_buffer *Geo = &Group->TextGroup->UIGeo;
-
   local_persist window_layout CycleGraphWindow = WindowLayout("Cycle Graph", BasisP);
 
   PushWindowInteraction(Group, &CycleGraphWindow);
@@ -2250,7 +2246,7 @@ BufferFirstCallToEach(debug_ui_render_group *Group,
   while (UniqueScopes)
   {
     interactable_handle ScopeTextInteraction = PushButtonStart(Group, (umm)UniqueScopes->Scope);
-      BufferScopeTreeEntry(Group, UniqueScopes->Scope, CallgraphWindow, UniqueScopes->TotalCycles, TotalFrameCycles, UniqueScopes->CallCount, Depth);
+      BufferScopeTreeEntry(Group, UniqueScopes->Scope, UniqueScopes->TotalCycles, TotalFrameCycles, UniqueScopes->CallCount, Depth);
     PushButtonEnd(Group);
 
     if (UniqueScopes->Scope->Expanded)
@@ -2361,8 +2357,6 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout
     NewLine(MainLayout);
   END_BLOCK("Frame Ticker");
 
-  v2 EndOfFrameTicker = V2(0, MainLayout->At.y);
-
   u32 TotalThreadCount = GetWorkerThreadCount() + 1;
 
   debug_thread_state *MainThreadState = GetThreadLocalStateFor(0);
@@ -2399,30 +2393,10 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout
 
   END_BLOCK("Call Graph");
 
-  DebugDrawCycleThreadGraph(Group, DebugState, EndOfFrameTicker);
+  DebugDrawCycleThreadGraph(Group, DebugState, BasisRightOf(&CallgraphWindow));
 
   return;
 }
-
-#if 0
-function void
-ColumnLeft(u32 Width, const char *Text, debug_ui_render_group* Group, layout *Layout, u32 ColorIndex )
-{
-  u32 Len = (u32)Length(Text);
-  u32 Pad = Max(Width-Len, 0U);
-  BufferValue(Text, Group, Layout, ColorIndex);
-  AdvanceSpaces(Pad, Layout, &Group->Font);
-}
-
-function void
-ColumnRight(s32 Width, const char *Text, debug_ui_render_group* Group, layout *Layout, u32 ColorIndex )
-{
-  s32 Len = (s32)Length(Text);
-  s32 Pad = Max(Width-Len, 0);
-  AdvanceSpaces(Pad, Layout, &Group->Font);
-  BufferValue(Text, Group, Layout, ColorIndex);
-}
-#endif
 
 
 
@@ -2513,8 +2487,6 @@ DebugDrawDrawCalls(debug_ui_render_group *Group, v2 WindowBasis)
 {
   local_persist window_layout DrawCallWindow = WindowLayout("Draw Calls", WindowBasis);
   PushWindowInteraction(Group, &DrawCallWindow);
-
-  r32 Z = zIndexForText(&DrawCallWindow, Group);
 
   PushTableStart(Group, &DrawCallWindow);
 

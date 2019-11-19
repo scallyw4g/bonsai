@@ -174,7 +174,7 @@ StrStr(char *Str1, char *Str2)
 #define DefGlProc(ProcType, ProcName) \
   ProcType ProcName = (ProcType)bonsaiGlGetProcAddress(#ProcName); Assert(ProcName)
 function void
-InitializeOpenGlExtensions()
+InitializeOpenGlExtensions(os* Os)
 {
   Info("Initializing OpenGL Extensions");
 
@@ -264,7 +264,7 @@ InitializeOpenGlExtensions()
   AssertNoGlErrors;
 
   // Platform specific (wgl / glX)
-  u32 VsyncFrames = 1;
+  s32 VsyncFrames = 1;
 #if LINUX
   // TODO(Jesse): Not getting vsync on my arch laptop...
   PFNSWAPINTERVALPROC glSwapInterval = (PFNSWAPINTERVALPROC)bonsaiGlGetProcAddress("glXSwapIntervalEXT");
@@ -525,7 +525,7 @@ main()
 
   AssertNoGlErrors;
 
-  InitializeOpenGlExtensions();
+  InitializeOpenGlExtensions(&Os);
 
   b32 ShadingLanguageIsRecentEnough = CheckShadingLanguageVersion();
   if (!ShadingLanguageIsRecentEnough) {  return False; }

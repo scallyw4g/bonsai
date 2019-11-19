@@ -1,3 +1,5 @@
+#define LINUX 1
+
 #include <pthread.h>
 
 // Assert

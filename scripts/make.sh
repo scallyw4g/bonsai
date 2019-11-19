@@ -52,7 +52,6 @@ COMMON_COMPILER_OPTIONS="
   -Wno-cast-qual
   -Wno-unused-function
   -Wno-four-char-constants
-  -Wno-unused-variable
   -Wno-old-style-cast
   -Wno-float-equal
   -Wno-double-promotion
