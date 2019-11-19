@@ -1190,12 +1190,11 @@ PushTooltip(debug_ui_render_group *Group, counted_string Text)
 }
 
 function void
-PushTexturedQuad(debug_ui_render_group *Group, window_layout* Window, debug_texture_array_slice TextureSlice)
+PushTexturedQuad(debug_ui_render_group *Group, debug_texture_array_slice TextureSlice)
 {
   ui_render_command Command = {
     .Type = RenderCommand_TexturedQuad,
     .TexturedQuad.TextureSlice = TextureSlice,
-    .TexturedQuad.Window = Window,
   };
 
   PushUiRenderCommand(Group, &Command);
@@ -1246,11 +1245,10 @@ PushButtonStart(debug_ui_render_group *Group, umm InteractionId, ui_style* Style
 }
 
 function void
-PushTableStart(debug_ui_render_group* Group, window_layout* Window)
+PushTableStart(debug_ui_render_group* Group)
 {
   ui_render_command Command = {
     .Type = RenderCommand_TableStart,
-    .Table.Window = Window,
   };
 
   PushUiRenderCommand(Group, &Command);
@@ -1271,11 +1269,22 @@ PushTableEnd(debug_ui_render_group *Group)
 }
 
 function void
-PushWindowInteraction(debug_ui_render_group *Group, window_layout *Window)
+PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
 {
   ui_render_command Command = {};
-  Command.Type = RenderCommand_WindowInteractions;
-  Command.WindowInteraction.Window = Window;
+  Command.Type = RenderCommand_WindowStart;
+  Command.WindowStart.Window = Window;
+
+  PushUiRenderCommand(Group, &Command);
+  return;
+}
+
+function void
+PushWindowEnd(debug_ui_render_group *Group, window_layout *Window)
+{
+  ui_render_command Command = {};
+  Command.Type = RenderCommand_WindowEnd;
+  Command.WindowEnd.Window = Window;
 
   PushUiRenderCommand(Group, &Command);
   return;
@@ -1303,9 +1312,9 @@ GetHighestWindow(debug_ui_render_group* Group, ui_render_command_buffer* Command
     ui_render_command *Command = CommandBuffer->Commands+CommandIndex;
     switch(Command->Type)
     {
-      case RenderCommand_WindowInteractions:
+      case RenderCommand_WindowStart:
       {
-        window_layout *TestWindow = Command->WindowInteraction.Window;
+        window_layout *TestWindow = Command->WindowStart.Window;
         b32 InsideWindowBounds = IsInsideRect(GetWindowBounds(TestWindow), *Group->MouseP);
         b32 FoundNewHighestStackIndex = HighestInteractionStackIndex <= TestWindow->InteractionStackIndex;
         if ( InsideWindowBounds && FoundNewHighestStackIndex )
@@ -1472,7 +1481,10 @@ ButtonEnd(debug_ui_render_group *Group, render_state* RenderState)
   RenderState->CurrentInteraction.MinP = GetAbsoluteDrawBoundsMin(RenderState->Window, &RenderState->Layout);
   RenderState->CurrentInteraction.MaxP = GetAbsoluteDrawBoundsMax(RenderState->Window, &RenderState->Layout);
 
-  button_interaction_result Button = ButtonInteraction(Group, RectMinMax(RenderState->CurrentInteraction.MinP, RenderState->CurrentInteraction.MaxP ), RenderState->CurrentInteraction.ID, RenderState->Window);
+  button_interaction_result Button = ButtonInteraction( Group,
+                                                        RectMinMax(RenderState->CurrentInteraction.MinP, RenderState->CurrentInteraction.MaxP ),
+                                                        RenderState->CurrentInteraction.ID,
+                                                        RenderState->Window);
 
   if (Button.Hover)
   {
@@ -1504,7 +1516,6 @@ ButtonEnd(debug_ui_render_group *Group, render_state* RenderState)
 function void
 ProcessTexturedQuadPush(debug_ui_render_group* Group, ui_render_command_textured_quad *Command, render_state* RenderState)
 {
-  RenderState->Window = Command->Window;
   v2 MinP = GetAbsoluteAt(RenderState->Window, &RenderState->Layout);
   r32 Z = zIndexForText(RenderState->Window, Group);
   v2 MaxClip = GetAbsoluteMaxClip(RenderState->Window);
@@ -1574,7 +1585,6 @@ RenderTable(render_state* RenderState, debug_ui_render_group* Group, ui_render_c
       {
           case RenderCommand_TableStart:
           {
-            RenderState->Window = Command->Table.Window;
           } break;
 
           case RenderCommand_Column:
@@ -1621,7 +1631,6 @@ RenderTable(render_state* RenderState, debug_ui_render_group* Group, ui_render_c
           case RenderCommand_TableEnd:
           {
             Assert(CommandIndex == TableRenderParams.OnePastTableEnd);
-            RenderState->Window = 0;
           } break;
 
           InvalidDefaultCase;
@@ -1651,10 +1660,17 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
   {
     switch(Command->Type)
     {
-      case RenderCommand_WindowInteractions:
+      case RenderCommand_WindowStart:
       {
-        RenderState.Window = Command->WindowInteraction.Window;
+        Assert(!RenderState.Window);
+        RenderState.Window = Command->WindowStart.Window;
         ProcessWindowInteractions(Group, RenderState.Window, &RenderState.Layout);
+      } break;
+
+      case RenderCommand_WindowEnd:
+      {
+        Assert(RenderState.Window == Command->WindowEnd.Window);
+        RenderState.Window = 0;
       } break;
 
       case RenderCommand_TableStart:
@@ -1796,9 +1812,78 @@ ComputePickRay(platform *Plat, m4* ViewProjection)
 }
 
 function void
+PushChunkView(debug_ui_render_group* Group, world_chunk* Chunk, window_layout* Window)
+{
+  debug_state* DebugState = GetDebugState();
+  PushWindowStart(Group, Window);
+    PushTableStart(Group);
+      b32 DebugButtonPressed = False;
+
+      interactable_handle PrevButton = PushButtonStart(Group, (umm)"PrevButton");
+        PushColumn(Group, CS("<"));
+      PushButtonEnd(Group);
+
+      if (Clicked(Group, &PrevButton))
+      {
+        Chunk->PointsToLeaveRemaining = Min(Chunk->PointsToLeaveRemaining+1, Chunk->EdgeBoundaryVoxelCount);
+        DebugButtonPressed = True;
+      }
+
+
+      interactable_handle NextButton = PushButtonStart(Group, (umm)"NextButton");
+        PushColumn(Group, CS(">"));
+      PushButtonEnd(Group);
+
+      if (Clicked(Group, &NextButton))
+      {
+        Chunk->PointsToLeaveRemaining = Max(Chunk->PointsToLeaveRemaining-1, 0);
+        DebugButtonPressed = True;
+      }
+
+      counted_string ButtonText = Chunk->DrawBoundingVoxels ? CS("|") : CS("O");
+
+      interactable_handle ToggleBoundingVoxelsButton = PushButtonStart(Group, (umm)"ToggleBoundingVoxelsButton");
+        PushColumn(Group, ButtonText);
+      PushButtonEnd(Group);
+
+      if (Clicked(Group, &ToggleBoundingVoxelsButton))
+      {
+        Chunk->DrawBoundingVoxels = !Chunk->DrawBoundingVoxels;
+        DebugButtonPressed = True;
+      }
+
+      if (DebugButtonPressed)
+      {
+        Chunk->LodMesh_Complete = False;
+        Chunk->LodMesh->At = 0;
+        Chunk->Mesh = 0;
+        Chunk->FilledCount = 0;
+        Chunk->Data->Flags = Chunk_Uninitialized;
+        QueueChunkForInit( DebugState->GameState, &DebugState->Plat->HighPriority, Chunk);
+      }
+
+      PushNewRow(Group);
+    PushTableEnd(Group);
+
+    PushTableStart(Group);
+      interactable_handle ViewportButton = PushButtonStart(Group, (umm)"ViewportButton");
+        PushTexturedQuad(Group, DebugTextureArraySlice_Viewport);
+      PushButtonEnd(Group);
+    PushTableEnd(Group);
+
+  PushWindowEnd(Group, Window);
+
+  input* WindowInput = 0;
+  if (Pressed(Group, &ViewportButton))
+    { WindowInput = Group->Input; }
+  UpdateGameCamera( -0.005f*(*Group->MouseDP), WindowInput, Canonical_Position(0), &DebugState->Camera);
+}
+
+function void
 PushChunkDetails(debug_ui_render_group* Group, world_chunk* Chunk, window_layout* Window)
 {
-  PushTableStart(Group, Window);
+  PushWindowStart(Group, Window);
+  PushTableStart(Group);
     PushColumn(Group, CS("WorldP"));
     PushColumn(Group, CS(Chunk->WorldP.x));
     PushColumn(Group, CS(Chunk->WorldP.y));
@@ -1817,6 +1902,7 @@ PushChunkDetails(debug_ui_render_group* Group, world_chunk* Chunk, window_layout
     PushColumn(Group, CS(Chunk->TriCount));
     PushNewRow(Group);
   PushTableEnd(Group);
+  PushWindowEnd(Group, Window);
 }
 
 function v2
@@ -1834,9 +1920,9 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
   MapGpuElementBuffer(&DebugState->GameGeo);
 
   local_persist window_layout ListingWindow = WindowLayout("Picked Chunks", LayoutBasis, V2(400, 400));
-  PushWindowInteraction(Group, &ListingWindow);
 
-  PushTableStart(Group, &ListingWindow);
+  PushWindowStart(Group, &ListingWindow);
+  PushTableStart(Group);
 
   for (u32 ChunkIndex = 0;
       ChunkIndex < DebugState->PickedChunkCount;
@@ -1867,6 +1953,7 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
   }
 
   PushTableEnd(Group);
+  PushWindowEnd(Group, &ListingWindow);
 
   world_chunk *HotChunk = DebugState->HotChunk;
   if (HotChunk)
@@ -1900,74 +1987,8 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
     local_persist window_layout ChunkDetailWindow = WindowLayout("Chunk Details", BasisRightOf(&ListingWindow),     V2(1100.0f, 400.0f));
     local_persist window_layout ChunkViewWindow   = WindowLayout("Chunk View",    BasisRightOf(&ChunkDetailWindow), V2(800.0f));
 
-    {
-      PushWindowInteraction(Group, &ChunkDetailWindow);
-      PushChunkDetails(Group, HotChunk, &ChunkDetailWindow);
-    }
-
-    {
-      PushWindowInteraction(Group, &ChunkViewWindow);
-      PushTableStart(Group, &ChunkViewWindow);
-        b32 DebugButtonPressed = False;
-
-        interactable_handle PrevButton = PushButtonStart(Group, (umm)"PrevButton");
-          PushColumn(Group, CS("<"));
-        PushButtonEnd(Group);
-
-        if (Clicked(Group, &PrevButton))
-        {
-          HotChunk->PointsToLeaveRemaining = Min(HotChunk->PointsToLeaveRemaining+1, HotChunk->EdgeBoundaryVoxelCount);
-          DebugButtonPressed = True;
-        }
-
-
-        interactable_handle NextButton = PushButtonStart(Group, (umm)"NextButton");
-          PushColumn(Group, CS(">"));
-        PushButtonEnd(Group);
-
-        if (Clicked(Group, &NextButton))
-        {
-          HotChunk->PointsToLeaveRemaining = Max(HotChunk->PointsToLeaveRemaining-1, 0);
-          DebugButtonPressed = True;
-        }
-
-        counted_string ButtonText = HotChunk->DrawBoundingVoxels ? CS("|") : CS("O");
-
-        interactable_handle ToggleBoundingVoxelsButton = PushButtonStart(Group, (umm)"ToggleBoundingVoxelsButton");
-          PushColumn(Group, ButtonText);
-        PushButtonEnd(Group);
-
-        if (Clicked(Group, &ToggleBoundingVoxelsButton))
-        {
-          HotChunk->DrawBoundingVoxels = !HotChunk->DrawBoundingVoxels;
-          DebugButtonPressed = True;
-        }
-
-        if (DebugButtonPressed)
-        {
-          HotChunk->LodMesh_Complete = False;
-          HotChunk->LodMesh->At = 0;
-          HotChunk->Mesh = 0;
-          HotChunk->FilledCount = 0;
-          HotChunk->Data->Flags = Chunk_Uninitialized;
-          QueueChunkForInit( DebugState->GameState, &DebugState->Plat->HighPriority, HotChunk);
-        }
-
-        PushNewRow(Group);
-      PushTableEnd(Group);
-
-      PushTableStart(Group, &ChunkViewWindow);
-        interactable_handle ViewportButton = PushButtonStart(Group, (umm)"ViewportButton");
-          PushTexturedQuad(Group, &ChunkViewWindow, DebugTextureArraySlice_Viewport);
-        PushButtonEnd(Group);
-      PushTableEnd(Group);
-
-      input* WindowInput = 0;
-      if (Pressed(Group, &ViewportButton))
-        { WindowInput = Group->Input; }
-      UpdateGameCamera( -0.005f*(*Group->MouseDP), WindowInput, Canonical_Position(0), &DebugState->Camera);
-    }
-
+    PushChunkDetails(Group, HotChunk, &ChunkDetailWindow);
+    PushChunkView(Group, HotChunk, &ChunkViewWindow);
   }
 
   return;
@@ -2098,7 +2119,7 @@ DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState
   r32 TotalGraphWidth = 1500.0f;
   local_persist window_layout CycleGraphWindow = WindowLayout("Cycle Graph", BasisP);
 
-  PushWindowInteraction(Group, &CycleGraphWindow);
+  PushWindowStart(Group, &CycleGraphWindow);
 
   SetFontSize(&Group->Font, 30);
 
@@ -2109,7 +2130,7 @@ DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState
   debug_thread_state *MainThreadState = GetThreadLocalStateFor(0);
   debug_scope_tree *MainThreadReadTree    = MainThreadState->ScopeTrees + SharedState->ReadScopeIndex;
 
-  PushTableStart(Group, &CycleGraphWindow);
+  PushTableStart(Group);
     for ( u32 ThreadIndex = 0;
           ThreadIndex < TotalThreadCount;
           ++ThreadIndex)
@@ -2128,6 +2149,7 @@ DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState
 
     }
   PushTableEnd(Group);
+
 
 
 #if 0
@@ -2193,6 +2215,8 @@ DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState
   }
   END_BLOCK("Mutex Record Collation");
 #endif
+
+  PushWindowEnd(Group, &CycleGraphWindow);
 
   return;
 }
@@ -2292,7 +2316,7 @@ ListContainsScope(unique_debug_profile_scope* List, debug_profile_scope* Query)
 function void
 BufferFirstCallToEach(debug_ui_render_group *Group,
     debug_profile_scope *Scope_in, debug_profile_scope *TreeRoot,
-    memory_arena *Memory, window_layout* CallgraphWindow, u64 TotalFrameCycles, u32 Depth)
+    memory_arena *Memory, window_layout* Window, u64 TotalFrameCycles, u32 Depth)
 {
   unique_debug_profile_scope* UniqueScopes = {};
 
@@ -2324,7 +2348,7 @@ BufferFirstCallToEach(debug_ui_render_group *Group,
     PushButtonEnd(Group);
 
     if (UniqueScopes->Scope->Expanded)
-      BufferFirstCallToEach(Group, UniqueScopes->Scope->Child, TreeRoot, Memory, CallgraphWindow, TotalFrameCycles, Depth+1);
+      BufferFirstCallToEach(Group, UniqueScopes->Scope->Child, TreeRoot, Memory, Window, TotalFrameCycles, Depth+1);
 
     if (Clicked(Group, &ScopeTextInteraction))
     {
@@ -2409,7 +2433,7 @@ DrawFrameTicker(debug_ui_render_group *Group, debug_state *DebugState, r64 MaxMs
   frame_stats *Frame = DebugState->Frames + DebugState->ReadScopeIndex;
 
   u32 TotalMutexOps = GetTotalMutexOpsForReadFrame();
-  PushTableStart(Group, 0);
+  PushTableStart(Group);
     PushColumn(Group, CS(Frame->FrameMs));
     PushColumn(Group, CS(Frame->TotalCycles));
     PushColumn(Group, CS(TotalMutexOps));
@@ -2435,9 +2459,8 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout
 
   TIMED_BLOCK("Call Graph");
 
-    PushWindowInteraction(Group, &CallgraphWindow);
-
-    PushTableStart(Group, &CallgraphWindow);
+    PushWindowStart(Group, &CallgraphWindow);
+    PushTableStart(Group);
 
     PushColumn(Group, CS("Frame %"));
     PushColumn(Group, CS("Cycles"));;
@@ -2459,6 +2482,7 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout
       }
     }
     PushTableEnd(Group);
+    PushWindowEnd(Group, &CallgraphWindow);
 
   END_BLOCK("Call Graph");
 
@@ -2486,9 +2510,9 @@ DebugDrawCollatedFunctionCalls(debug_ui_render_group *Group, debug_state *DebugS
 
   CollateAllFunctionCalls(MainThreadReadTree->Root);
 
-  PushWindowInteraction(Group, &FunctionCallWindow);
+  PushWindowStart(Group, &FunctionCallWindow);
 
-  PushTableStart(Group, &FunctionCallWindow);
+  PushTableStart(Group);
   for ( u32 FunctionIndex = 0;
       FunctionIndex < MAX_RECORDED_FUNCTION_CALLS;
       ++FunctionIndex)
@@ -2502,6 +2526,7 @@ DebugDrawCollatedFunctionCalls(debug_ui_render_group *Group, debug_state *DebugS
     }
   }
   PushTableEnd(Group);
+  PushWindowEnd(Group, &FunctionCallWindow);
 
   END_BLOCK("Collated Function Calls");
 
@@ -2555,9 +2580,9 @@ function void
 DebugDrawDrawCalls(debug_ui_render_group *Group, v2 WindowBasis)
 {
   local_persist window_layout DrawCallWindow = WindowLayout("Draw Calls", WindowBasis);
-  PushWindowInteraction(Group, &DrawCallWindow);
+  PushWindowStart(Group, &DrawCallWindow);
 
-  PushTableStart(Group, &DrawCallWindow);
+  PushTableStart(Group);
 
      PushColumn(Group, CS("Caller"));
      PushColumn(Group, CS("Calls"));
@@ -2580,6 +2605,7 @@ DebugDrawDrawCalls(debug_ui_render_group *Group, v2 WindowBasis)
 
   PushTableEnd(Group);
 
+  PushWindowEnd(Group, &DrawCallWindow);
   return;
 }
 
@@ -2827,7 +2853,7 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, v2 Mem
   local_persist window_layout MemoryArenaWindowInstance = WindowLayout("Memory Arenas", MemoryWindowBasis);
   window_layout* MemoryArenaWindow = &MemoryArenaWindowInstance;
 
-  PushWindowInteraction(Group, MemoryArenaWindow);
+  PushWindowStart(Group, MemoryArenaWindow);
 
   for ( u32 Index = 0;
         Index < REGISTERED_MEMORY_ARENA_COUNT;
@@ -2842,7 +2868,7 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, v2 Mem
     {
       SetFontSize(&Group->Font, 36);
 
-      PushTableStart(Group, MemoryArenaWindow);
+      PushTableStart(Group);
         interactable_handle ExpandInteraction = PushButtonStart(Group, (umm)"MemoryWindowExpandInteraction"^(umm)Current);
           PushColumn(Group, CS(Current->Name));
           PushColumn(Group, CS(MemorySize(MemStats.TotalAllocated)));
@@ -2861,15 +2887,15 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, v2 Mem
     {
       SetFontSize(&Group->Font, 28);
 
-      PushTableStart(Group, MemoryArenaWindow);
+      PushTableStart(Group);
         PushMemoryStatsTable(MemStats, Group);
       PushTableEnd(Group);
 
-      PushTableStart(Group, MemoryArenaWindow);
+      PushTableStart(Group);
         PushMemoryBargraphTable(Group, DebugState->SelectedArenas, MemStats, TotalUsed, Current->Arena);
       PushTableEnd(Group);
 
-      PushTableStart(Group, MemoryArenaWindow);
+      PushTableStart(Group);
         PushDebugPushMetaData(Group, DebugState->SelectedArenas, HashArenaHead(Current->Arena));
       PushTableEnd(Group);
     }
@@ -2877,6 +2903,7 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, v2 Mem
     continue;
   }
 
+  PushWindowEnd(Group, MemoryArenaWindow);
 
   return;
 }
@@ -2897,9 +2924,9 @@ DebugDrawNetworkHud(debug_ui_render_group *Group,
 {
   local_persist window_layout NetworkWindow = WindowLayout("Network", Basis);
 
-  PushWindowInteraction(Group, &NetworkWindow);
+  PushWindowStart(Group, &NetworkWindow);
 
-  PushTableStart(Group, &NetworkWindow);
+  PushTableStart(Group);
   if (IsConnected(Network))
   {
     PushColumn(Group, CS("O"));
@@ -2935,6 +2962,7 @@ DebugDrawNetworkHud(debug_ui_render_group *Group,
     PushNewRow(Group);
   }
   PushTableEnd(Group);
+  PushWindowEnd(Group, &NetworkWindow);
 
   return;
 }

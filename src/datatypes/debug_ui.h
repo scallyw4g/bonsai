@@ -21,7 +21,8 @@ enum ui_render_command_type
 {
   RenderCommand_Noop,
 
-  RenderCommand_WindowInteractions,
+  RenderCommand_WindowStart,
+  RenderCommand_WindowEnd,
 
   RenderCommand_TableStart,
   RenderCommand_TableEnd,
@@ -39,7 +40,12 @@ enum ui_render_command_type
   RenderCommand_Count
 };
 
-struct ui_render_command_window_interaction
+struct ui_render_command_window_start
+{
+  window_layout* Window;
+};
+
+struct ui_render_command_window_end
 {
   window_layout* Window;
 };
@@ -56,13 +62,11 @@ struct ui_render_command_untextured_quad
   v2 QuadDim;
   ui_style Style;
   quad_render_params Params;
-  window_layout* Window;
 };
 
 struct ui_render_command_textured_quad
 {
   debug_texture_array_slice TextureSlice;
-  window_layout* Window;
 };
 
 struct ui_render_command_button_start
@@ -83,7 +87,6 @@ struct ui_render_command_text_at
 
 struct ui_render_command_table
 {
-  window_layout* Window;
 };
 
 struct ui_render_command
@@ -91,8 +94,8 @@ struct ui_render_command
   ui_render_command_type Type;
   union
   {
-    ui_render_command_window_interaction WindowInteraction;
-    ui_render_command_table Table;
+    ui_render_command_window_start WindowStart;
+    ui_render_command_window_end WindowEnd;
     ui_render_command_column Column;
     ui_render_command_button_start ButtonStart;
     ui_render_command_textured_quad TexturedQuad;
