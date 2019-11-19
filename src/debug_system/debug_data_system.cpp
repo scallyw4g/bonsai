@@ -661,10 +661,8 @@ inline void
 AdvanceClip(layout *Layout, font *Font = 0)
 {
   v2 FontHeight = Font? V2(0.0f, Font->Size.y) : V2(0);
-
   Layout->DrawBounds.Min = Min(Layout->At, Layout->DrawBounds.Min);
   Layout->DrawBounds.Max = Max(Layout->At + FontHeight, Layout->DrawBounds.Max);
-
   return;
 }
 

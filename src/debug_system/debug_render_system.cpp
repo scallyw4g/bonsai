@@ -1160,13 +1160,14 @@ PushTexturedQuad(debug_ui_render_group *Group, window_layout* Window, debug_text
 }
 
 function void
-PushUntexturedQuad(debug_ui_render_group* Group, v2 OffsetFromLayout, v2 QuadDim, v3 Color)
+PushUntexturedQuad(debug_ui_render_group* Group, v2 OffsetFromLayout, v2 QuadDim, v3 Color, quad_render_params Params = QuadRenderParam_AdvanceLayout)
 {
   ui_render_command Command = {
     .Type = RenderCommand_UntexturedQuad,
     .UntexturedQuad.OffsetFromLayout = OffsetFromLayout,
     .UntexturedQuad.QuadDim = QuadDim,
-    .UntexturedQuad.Color = Color
+    .UntexturedQuad.Color = Color,
+    .UntexturedQuad.Params = Params,
   };
 
   PushUiRenderCommand(Group, &Command);
@@ -1376,7 +1377,7 @@ struct render_state
 {
   window_layout* Window;
   layout Layout;
-  /* rect2 ButtonStartingDrawBounds; */
+  rect2 ButtonStartingDrawBounds;
 
   ui_style Styling;
 
@@ -1391,13 +1392,13 @@ ButtonStart(debug_ui_render_group* Group, render_state* RenderState, umm ButtonI
   Assert(!RenderState->CurrentInteraction.ID);
   Assert(RenderState->Window);
 
+  RenderState->CurrentInteraction.MinP = {};
+  RenderState->CurrentInteraction.MaxP = {};
   RenderState->CurrentInteraction.ID = ButtonId;
-  RenderState->CurrentInteraction.MinP = GetAbsoluteAt(RenderState->Window, &RenderState->Layout);
-  RenderState->CurrentInteraction.MaxP = GetAbsoluteAt(RenderState->Window, &RenderState->Layout);
   RenderState->CurrentInteraction.Window = RenderState->Window;
 
-  /* RenderState->ButtonStartingDrawBounds = RenderState->Layout.DrawBounds; */
-  /* RenderState->Layout.DrawBounds = {}; */
+  RenderState->ButtonStartingDrawBounds = RenderState->Layout.DrawBounds;
+  RenderState->Layout.DrawBounds = InvertedInfinityRectangle();
 
   if (RenderState->CurrentInteraction.ID == Group->HoverInteractionId)
   {
@@ -1424,7 +1425,9 @@ ButtonEnd(debug_ui_render_group *Group, render_state* RenderState)
   Assert(RenderState->CurrentInteraction.ID);
   Assert(RenderState->Window);
 
+  RenderState->CurrentInteraction.MinP = GetAbsoluteDrawBoundsMin(RenderState->Window, &RenderState->Layout);
   RenderState->CurrentInteraction.MaxP = GetAbsoluteDrawBoundsMax(RenderState->Window, &RenderState->Layout);
+
   button_interaction_result Button = ButtonInteraction(Group, RectMinMax(RenderState->CurrentInteraction.MinP, RenderState->CurrentInteraction.MaxP ), RenderState->CurrentInteraction.ID, RenderState->Window);
 
   if (Button.Hover)
@@ -1445,8 +1448,8 @@ ButtonEnd(debug_ui_render_group *Group, render_state* RenderState)
   RenderState->CurrentInteraction.ID = 0;
   RenderState->Color = V3(1);
 
-  /* RenderState->ButtonStartingDrawBounds.Min = Min(RenderState->ButtonStartingDrawBounds.Min, RenderState->Layout.DrawBounds.Min); */
-  /* RenderState->ButtonStartingDrawBounds.Max = Max(RenderState->ButtonStartingDrawBounds.Max, RenderState->Layout.DrawBounds.Max); */
+  RenderState->Layout.DrawBounds.Min = Min(RenderState->ButtonStartingDrawBounds.Min, RenderState->Layout.DrawBounds.Min);
+  RenderState->Layout.DrawBounds.Max = Max(RenderState->ButtonStartingDrawBounds.Max, RenderState->Layout.DrawBounds.Max);
 
   return;
 }
@@ -1474,8 +1477,14 @@ ProcessUntexturedQuadPush(debug_ui_render_group* Group, ui_render_command_untext
 
   BufferUntexturedQuad(Group, &Group->TextGroup->UIGeo, MinP, Dim, Color, Z, MaxClip);
 
-  v2 MaxP = Command->OffsetFromLayout + Dim;
-  AdvanceClip(&RenderState->Layout, MaxP);
+  AdvanceClip(&RenderState->Layout, RenderState->Layout.At + Command->OffsetFromLayout);
+  AdvanceClip(&RenderState->Layout, RenderState->Layout.At + Command->OffsetFromLayout + Dim);
+
+  if (Command->Params & QuadRenderParam_AdvanceLayout)
+  {
+    RenderState->Layout.At.x += Dim.x;
+    AdvanceClip(&RenderState->Layout);
+  }
 
   return;
 }
@@ -1641,7 +1650,7 @@ PushCycleBar(debug_ui_render_group* Group, cycle_range* Range, cycle_range* Fram
   v2 OffsetFromLayout = V2(xOffset, yOffset);
 
   interactable_handle Result = PushButtonStart(Group, (umm)"CycleBarHoverInteraction");
-    PushUntexturedQuad(Group, OffsetFromLayout, BarDim, RandomV3(Entropy));
+    PushUntexturedQuad(Group, OffsetFromLayout, BarDim, RandomV3(Entropy), QuadRenderParam_NoLayoutAdvance);
   PushButtonEnd(Group);
 
   return Result;
@@ -2017,11 +2026,9 @@ DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState
   r32 TotalGraphWidth = 1500.0f;
   untextured_2d_geometry_buffer *Geo = &Group->TextGroup->UIGeo;
 
+  local_persist window_layout CycleGraphWindow = WindowLayout("Cycle Graph", BasisP);
 
-  local_persist window_layout CycleGraphWindow = WindowLayout("Cycle Graph", BasisP, DISABLE_CLIPPING);
-
-  // TODO(Jesse): Call this?
-  /* PushWindowInteraction(&CycleGraphWindow) */
+  PushWindowInteraction(Group, &CycleGraphWindow);
 
   SetFontSize(&Group->Font, 30);
 
@@ -2354,12 +2361,14 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout
     NewLine(MainLayout);
   END_BLOCK("Frame Ticker");
 
+  v2 EndOfFrameTicker = V2(0, MainLayout->At.y);
+
   u32 TotalThreadCount = GetWorkerThreadCount() + 1;
 
   debug_thread_state *MainThreadState = GetThreadLocalStateFor(0);
   debug_scope_tree *MainThreadReadTree    = MainThreadState->ScopeTrees + DebugState->ReadScopeIndex;
 
-  local_persist window_layout CallgraphWindow = WindowLayout("Callgraph", V2(0, MainLayout->DrawBounds.Max.y));
+  local_persist window_layout CallgraphWindow = WindowLayout("Callgraph", V2(0, MainLayout->At.y));
 
   TIMED_BLOCK("Call Graph");
 
@@ -2390,7 +2399,7 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout
 
   END_BLOCK("Call Graph");
 
-  DebugDrawCycleThreadGraph(Group, DebugState, V2(0, MainLayout->At.y));
+  DebugDrawCycleThreadGraph(Group, DebugState, EndOfFrameTicker);
 
   return;
 }
@@ -2546,25 +2555,27 @@ PushBargraph(debug_ui_render_group *Group, r32 PercFilled)
   r32 BarHeight = Group->Font.Size.y;
   r32 BarWidth = 200.0f;
 
-  v2 OffsetFromLayout = {};
-
   v2 BackgroundQuad = V2(BarWidth, BarHeight);
-  PushUntexturedQuad(Group, OffsetFromLayout, BackgroundQuad, V3(0.25f) );
+  PushUntexturedQuad(Group, V2(0), BackgroundQuad, V3(0.25f));
 
   v2 PercBarDim = BackgroundQuad * V2(PercFilled, 1);
-  PushUntexturedQuad(Group, OffsetFromLayout, PercBarDim, V3(0.0f, 1.0f, 0.25f) );
+  PushUntexturedQuad(Group, V2(-BackgroundQuad.x, 0), PercBarDim, V3(0.0f, 1.0f, 0.25f), QuadRenderParam_NoLayoutAdvance);
 
   return;
 }
 
-function void
-PushArenaBargraph(debug_ui_render_group *Group, umm TotalUsed, r32 TotalPerc, umm Remaining)
+function interactable_handle
+PushArenaBargraph(debug_ui_render_group *Group, umm TotalUsed, r32 TotalPerc, umm Remaining, umm InteractionId)
 {
   PushColumn(Group, CS(FormatMemorySize(TotalUsed)));
-  PushBargraph(Group, TotalPerc);
+
+  interactable_handle Handle = PushButtonStart(Group, InteractionId);
+    PushBargraph(Group, TotalPerc);
+  PushButtonEnd(Group);
+
   PushColumn(Group, CS(FormatMemorySize(Remaining)));
   PushNewRow(Group);
-  return;
+  return Handle;
 }
 
 function void
@@ -2598,7 +2609,7 @@ PushMemoryBargraphTable(debug_ui_render_group *Group, selected_arenas *SelectedA
   v3 DefaultColor = V3(0.5f, 0.5f, 0.0);
 
   r32 TotalPerc = (r32)SafeDivide0(TotalUsed, MemStats.TotalAllocated);
-  PushArenaBargraph(Group, TotalUsed, TotalPerc, MemStats.Remaining);
+  PushArenaBargraph(Group, TotalUsed, TotalPerc, MemStats.Remaining, (umm)"Ignored");
   PushNewRow(Group);
 
   memory_arena *CurrentArena = HeadArena;
@@ -2619,34 +2630,33 @@ PushMemoryBargraphTable(debug_ui_render_group *Group, selected_arenas *SelectedA
     u64 CurrentUsed = TotalSize(CurrentArena) - Remaining(CurrentArena);
     r32 CurrentPerc = (r32)SafeDivide0(CurrentUsed, TotalSize(CurrentArena));
 
-    PushArenaBargraph(Group, CurrentUsed, CurrentPerc, Remaining(CurrentArena));
+    interactable_handle Handle = PushArenaBargraph(Group, CurrentUsed, CurrentPerc, Remaining(CurrentArena), HashArena(CurrentArena));
+    if (Clicked(Group, &Handle))
+    {
+      selected_memory_arena *Found = 0;
+      for (u32 ArenaIndex = 0;
+          ArenaIndex < SelectedArenas->Count;
+          ++ArenaIndex)
+      {
+        selected_memory_arena *Selected = &SelectedArenas->Arenas[ArenaIndex];
+        if (Selected->ArenaHash == HashArena(CurrentArena))
+        {
+          Found = Selected;
+          break;
+        }
+      }
+      if (Found)
+      {
+        *Found = SelectedArenas->Arenas[--SelectedArenas->Count];
+      }
+      else
+      {
+        selected_memory_arena *Selected = &SelectedArenas->Arenas[SelectedArenas->Count++];
+        Selected->ArenaHash = HashArena(CurrentArena);
+        Selected->HeadArenaHash = HashArenaHead(CurrentArena);
+      }
 
-    /* if (ToggleAllArenas || GotClicked) */
-    /* { */
-    /*   selected_memory_arena *Found = 0; */
-    /*   for (u32 ArenaIndex = 0; */
-    /*       ArenaIndex < SelectedArenas->Count; */
-    /*       ++ArenaIndex) */
-    /*   { */
-    /*     selected_memory_arena *Selected = &SelectedArenas->Arenas[ArenaIndex]; */
-    /*     if (Selected->ArenaHash == HashArena(CurrentArena)) */
-    /*     { */
-    /*       Found = Selected; */
-    /*       break; */
-    /*     } */
-    /*   } */
-    /*   if (Found) */
-    /*   { */
-    /*     *Found = SelectedArenas->Arenas[--SelectedArenas->Count]; */
-    /*   } */
-    /*   else */
-    /*   { */
-    /*     selected_memory_arena *Selected = &SelectedArenas->Arenas[SelectedArenas->Count++]; */
-    /*     Selected->ArenaHash = HashArena(CurrentArena); */
-    /*     Selected->HeadArenaHash = HashArenaHead(CurrentArena); */
-    /*   } */
-
-    /* } */
+    }
 
     CurrentArena = CurrentArena->Prev;
   }

@@ -8,10 +8,10 @@ struct rect2
 function rect2
 InvertedInfinityRectangle()
 {
-  rect2 Result = {};
-  Result.Min = V2(FLT_MAX);
-  Result.Max = V2(-FLT_MAX);
-
+  rect2 Result = {
+    .Min = V2(FLT_MAX),
+    .Max = V2(-FLT_MAX),
+  };
   return Result;
 }
 

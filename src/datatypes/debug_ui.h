@@ -13,6 +13,11 @@ enum column_render_params
   ColumnRenderParam_LeftAlign  = (1 << 1),
 };
 
+enum quad_render_params
+{
+  QuadRenderParam_NoLayoutAdvance =  0,
+  QuadRenderParam_AdvanceLayout   = (1 << 0),
+};
 
 enum ui_render_command_type
 {
@@ -49,6 +54,7 @@ struct ui_render_command_column
 
 struct ui_render_command_untextured_quad
 {
+  quad_render_params Params;
   v2 OffsetFromLayout;
   v2 QuadDim;
   v3 Color;

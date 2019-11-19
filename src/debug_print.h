@@ -259,6 +259,14 @@ Print_P( v2 P, const char* name)
 }
 
 inline void
+Print_P( rect2 Rect, const char* name)
+{
+  Log(" %s.Min %f %f \n", name, Rect.Min.x, Rect.Min.y );
+  Log(" %s.Max %f %f \n", name, Rect.Max.x, Rect.Max.y );
+}
+
+
+inline void
 Print_P( m4 *Mat, const char* name)
 {
   Log("\n %s ", name );
