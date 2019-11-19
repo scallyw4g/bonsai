@@ -999,19 +999,7 @@ BufferWorldChunk(
   {
     if (Chunk->LodMesh_Complete && Chunk->LodMesh->At)
     {
-      untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(Dest, Chunk->LodMesh->At);
-      v3 ModelBasisP = GetRenderP(WORLD_CHUNK_DIM, Chunk->WorldP, Graphics->Camera);
-
-      work_queue_entry Entry = {};
-      Entry.Type = WorkEntryType_CopyBuffer;
-      Entry.GpuCopyParams.Src = Chunk->LodMesh;
-      Entry.GpuCopyParams.Dest = CopyDest;
-      Entry.GpuCopyParams.Basis = ModelBasisP;
-
-      Assert(CopyDest.At == 0);
-      Assert(CopyDest.End == Chunk->LodMesh->At);
-
-      PushWorkQueueEntry(Queue, &Entry);
+      QueueChunkMeshForCopy(Queue, Dest, Chunk, Graphics->Camera);
     }
   }
   else if (IsSet(ChunkData, Chunk_Queued))

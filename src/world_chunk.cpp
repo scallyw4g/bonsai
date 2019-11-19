@@ -1594,3 +1594,23 @@ InitializeWorldChunkEmpty(world_chunk *DestChunk)
 
   return;
 }
+
+inline void
+QueueChunkMeshForCopy(work_queue *Queue, untextured_3d_geometry_buffer* Dest, world_chunk *Chunk, camera* Camera)
+{
+  untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(Dest, Chunk->LodMesh->At);
+
+  work_queue_entry Entry = {
+    .Type = WorkEntryType_CopyBuffer,
+    .GpuCopyParams.Src = Chunk->LodMesh,
+    .GpuCopyParams.Dest = CopyDest,
+    .GpuCopyParams.Basis = GetRenderP(WORLD_CHUNK_DIM, Chunk->WorldP, Camera),
+  };
+
+  Assert(CopyDest.At == 0);
+  Assert(CopyDest.End == Chunk->LodMesh->At);
+
+  PushWorkQueueEntry(Queue, &Entry);
+
+  return;
+}
