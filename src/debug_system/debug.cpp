@@ -108,8 +108,10 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   ButtonStyling.Padding = V2(65.0f);
   ButtonStyling.Color = V3(1.0f);
   ButtonStyling.HoverColor = V3(0.65f);
+  ButtonStyling.PressedColor = V3(0.65f);
+  ButtonStyling.ClickedColor = V3(1, 0, 0);
+
   ButtonStyling.ActiveColor = V3(0.65f);
-  ButtonStyling.ClickColor = V3(1, 0, 0);
 
 
   if (DebugState->DisplayDebugMenu)

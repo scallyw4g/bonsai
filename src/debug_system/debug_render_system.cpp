@@ -11,6 +11,15 @@
 #include <work_queue.cpp>
 
 
+debug_global ui_style DefaultUiStyle = {
+  .Color = V3(1),
+  .HoverColor = V3(0.8f),
+  .PressedColor = V3(1.0f, 0.8f, 0.8f),
+  .ClickedColor = V3(0.8f, 1.0f, 0.8f),
+  .ActiveColor = V3(0.8f, 0.0f, 1.8f),
+  .Padding = V2(10),
+  .IsActive = False,
+};
 
 /*******************************             *********************************/
 /*******************************  Z helpers  *********************************/
@@ -925,7 +934,7 @@ ButtonInteraction(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId,
     Result.Clicked = True;
     if (Style)
     {
-      Result.Color = Style->ClickColor;
+      Result.Color = Style->ClickedColor;
     }
   }
 
@@ -934,7 +943,7 @@ ButtonInteraction(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId,
     Result.Pressed = True;
     if (Style)
     {
-      Result.Color = Style->ClickColor;
+      Result.Color = Style->ClickedColor;
     }
   }
 
@@ -1158,13 +1167,13 @@ PushTexturedQuad(debug_ui_render_group *Group, window_layout* Window, debug_text
 }
 
 function void
-PushUntexturedQuad(debug_ui_render_group* Group, v2 OffsetFromLayout, v2 QuadDim, v3 Color, quad_render_params Params = QuadRenderParam_AdvanceLayout)
+PushUntexturedQuad(debug_ui_render_group* Group, v2 OffsetFromLayout, v2 QuadDim, ui_style *Style = 0, quad_render_params Params = QuadRenderParam_AdvanceLayout)
 {
   ui_render_command Command = {
     .Type = RenderCommand_UntexturedQuad,
     .UntexturedQuad.OffsetFromLayout = OffsetFromLayout,
     .UntexturedQuad.QuadDim = QuadDim,
-    .UntexturedQuad.Color = Color,
+    .UntexturedQuad.Style = Style? *Style : DefaultUiStyle,
     .UntexturedQuad.Params = Params,
   };
 
@@ -1173,26 +1182,26 @@ PushUntexturedQuad(debug_ui_render_group* Group, v2 OffsetFromLayout, v2 QuadDim
   return;
 }
 
-function u32
+function void
 PushButtonEnd(debug_ui_render_group *Group)
 {
   ui_render_command Command = { .Type = RenderCommand_ButtonEnd };
-  u32 OnePastEndIndex = PushUiRenderCommand(Group, &Command) + 1;
-  return OnePastEndIndex;
+  PushUiRenderCommand(Group, &Command);
+  return;
 }
 
 function interactable_handle
-PushButtonStart(debug_ui_render_group *Group, umm InteractionId)
+PushButtonStart(debug_ui_render_group *Group, umm InteractionId, ui_style* Style = 0)
 {
   ui_render_command Command = {
     .Type = RenderCommand_ButtonStart,
-    .ButtonStart.ID = InteractionId
+    .ButtonStart.ID = InteractionId,
+    .ButtonStart.Style = Style ? *Style : DefaultUiStyle,
   };
 
-  u32 ButtonStartIndex = PushUiRenderCommand(Group, &Command);
+  PushUiRenderCommand(Group, &Command);
 
   interactable_handle Handle = {
-    .StartIndex = ButtonStartIndex,
     .Id = InteractionId
   };
 
@@ -1377,9 +1386,11 @@ struct render_state
   layout Layout;
   rect2 ButtonStartingDrawBounds;
 
-  ui_style Styling;
+  ui_style Style;
 
-  v3 Color;
+  b32 Hover;
+  b32 Pressed;
+  b32 Clicked;
 
   interactable CurrentInteraction;
 };
@@ -1400,18 +1411,18 @@ ButtonStart(debug_ui_render_group* Group, render_state* RenderState, umm ButtonI
 
   if (RenderState->CurrentInteraction.ID == Group->HoverInteractionId)
   {
-    RenderState->Color = V3(1,0,0);
     Group->HoverInteractionId = 0;
+    RenderState->Hover = True;
   }
   if (RenderState->CurrentInteraction.ID == Group->PressedInteractionId)
   {
-    RenderState->Color = V3(0,0,1);
     Group->PressedInteractionId = 0;
+    RenderState->Pressed = True;
   }
   if (RenderState->CurrentInteraction.ID == Group->ClickedInteractionId)
   {
-    RenderState->Color = V3(0,1,0);
     Group->ClickedInteractionId = 0;
+    RenderState->Clicked = True;
   }
 
   return;
@@ -1435,18 +1446,19 @@ ButtonEnd(debug_ui_render_group *Group, render_state* RenderState)
 
   if (Button.Clicked)
   {
-    TriggeredRuntimeBreak();
     Group->ClickedInteractionId = RenderState->CurrentInteraction.ID;
   }
 
   if (Button.Pressed)
   {
-    TriggeredRuntimeBreak();
     Group->PressedInteractionId = RenderState->CurrentInteraction.ID;
   }
 
+  RenderState->Hover = False;
+  RenderState->Pressed = False;
+  RenderState->Clicked = False;
+
   RenderState->CurrentInteraction.ID = 0;
-  RenderState->Color = V3(1);
 
   RenderState->Layout.DrawBounds.Min = Min(RenderState->ButtonStartingDrawBounds.Min, RenderState->Layout.DrawBounds.Min);
   RenderState->Layout.DrawBounds.Max = Max(RenderState->ButtonStartingDrawBounds.Max, RenderState->Layout.DrawBounds.Max);
@@ -1466,13 +1478,34 @@ ProcessTexturedQuadPush(debug_ui_render_group* Group, ui_render_command_textured
                       V3(1), Z, MaxClip);
 }
 
+function v3
+SelectColorState(render_state* RenderState, ui_style Style)
+{
+  v3 Result = Style.Color;
+
+  if (RenderState->Hover)
+  {
+    Result = Style.HoverColor;
+  }
+  if (RenderState->Pressed)
+  {
+    Result = Style.PressedColor;
+  }
+  if (RenderState->Clicked)
+  {
+    Result = Style.ClickedColor;
+  }
+
+  return Result;
+}
+
 function void
 ProcessUntexturedQuadPush(debug_ui_render_group* Group, ui_render_command_untextured_quad *Command, render_state* RenderState)
 {
   v2 MaxClip = GetAbsoluteMaxClip(RenderState->Window);
   v2 MinP = Command->OffsetFromLayout + GetAbsoluteAt(RenderState->Window, &RenderState->Layout);
   v2 Dim = Command->QuadDim;
-  v3 Color = Command->Color;
+  v3 Color = SelectColorState(RenderState, Command->Style);
   r32 Z = zIndexForText(RenderState->Window, Group);
 
   BufferUntexturedQuad(Group, &Group->TextGroup->UIGeo, MinP, Dim, Color, Z, MaxClip);
@@ -1513,7 +1546,7 @@ RenderTable(render_state* RenderState, debug_ui_render_group* Group, ui_render_c
           {
             Assert(RenderState->Window);
             u32 ColumnWidth = GetColumnWidth(&TableRenderParams, ColumnIndex++);
-            buffer_value_params Params = BufferValueParams(RenderState->Window, &RenderState->Layout, RenderState->Color, zIndexForText(RenderState->Window, Group), GetAbsoluteMaxClip(RenderState->Window));
+            buffer_value_params Params = BufferValueParams(RenderState->Window, &RenderState->Layout, SelectColorState(RenderState, RenderState->Style), zIndexForText(RenderState->Window, Group), GetAbsoluteMaxClip(RenderState->Window));
             BufferColumn(Command->Column.String, Group, ColumnWidth, Params, Command->Column.Params);
           } break;
 
@@ -1541,11 +1574,13 @@ RenderTable(render_state* RenderState, debug_ui_render_group* Group, ui_render_c
 
           case RenderCommand_ButtonStart:
           {
+            RenderState->Style = Command->ButtonStart.Style;
             ButtonStart(Group, RenderState, Command->ButtonStart.ID);
           } break;
 
           case RenderCommand_ButtonEnd:
           {
+            RenderState->Style = DefaultUiStyle;
             ButtonEnd(Group, RenderState);
           } break;
 
@@ -1575,7 +1610,7 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
   ui_render_command *Command = GetCommand(CommandBuffer, CommandIndex++);
 
   render_state RenderState = {
-    .Color = V3(1),
+    .Style = DefaultUiStyle,
   };
 
   while (Command)
@@ -1609,6 +1644,7 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
 
       case RenderCommand_ButtonStart:
       {
+        RenderState.Style = Command->ButtonStart.Style;
         ButtonStart(Group, &RenderState, Command->ButtonStart.ID);
       } break;
 
@@ -1636,7 +1672,7 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
 
 
 function void
-PushCycleBar(debug_ui_render_group* Group, cycle_range* Range, cycle_range* Frame, r32 TotalGraphWidth, u32 Depth, random_series* Entropy)
+PushCycleBar(debug_ui_render_group* Group, cycle_range* Range, cycle_range* Frame, r32 TotalGraphWidth, u32 Depth, ui_style *Style)
 {
   Assert(Frame->StartCycle < Range->StartCycle);
 
@@ -1652,7 +1688,7 @@ PushCycleBar(debug_ui_render_group* Group, cycle_range* Range, cycle_range* Fram
 
   v2 OffsetFromLayout = V2(xOffset, yOffset);
 
-  PushUntexturedQuad(Group, OffsetFromLayout, BarDim, RandomV3(Entropy), QuadRenderParam_NoLayoutAdvance);
+  PushUntexturedQuad(Group, OffsetFromLayout, BarDim, Style, QuadRenderParam_NoOp);
 
   return;
 }
@@ -2007,8 +2043,10 @@ PushScopeBarsRecursive(debug_ui_render_group *Group, debug_profile_scope *Scope,
   {
     cycle_range Range = {Scope->StartingCycle, Scope->CycleCount};
 
-    interactable_handle Bar = PushButtonStart(Group, (umm)"CycleBarHoverInteraction"^(umm)Scope);
-      PushCycleBar(Group, &Range, Frame, TotalGraphWidth, Depth, Entropy);
+    ui_style Style = UiStyleFromLightestColor(RandomV3(Entropy));
+
+    interactable_handle Bar = PushButtonStart(Group, (umm)"CycleBarHoverInteraction"^(umm)Scope, &Style);
+      PushCycleBar(Group, &Range, Frame, TotalGraphWidth, Depth, &Style);
     PushButtonEnd(Group);
 
     if (Hover(Group, &Bar)) { PushTooltip(Group, CS(Scope->Name)); }
@@ -2521,7 +2559,7 @@ DebugDrawDrawCalls(debug_ui_render_group *Group, v2 WindowBasis)
 
 
 /*******************************            **********************************/
-/*******************************  Arena UI  **********************************/
+/*******************************   Memory   **********************************/
 /*******************************            **********************************/
 
 
@@ -2531,11 +2569,15 @@ PushBargraph(debug_ui_render_group *Group, r32 PercFilled)
   r32 BarHeight = Group->Font.Size.y;
   r32 BarWidth = 200.0f;
 
-  v2 BackgroundQuad = V2(BarWidth, BarHeight);
-  PushUntexturedQuad(Group, V2(0), BackgroundQuad, V3(0.25f));
 
+  v2 BackgroundQuad = V2(BarWidth, BarHeight);
   v2 PercBarDim = BackgroundQuad * V2(PercFilled, 1);
-  PushUntexturedQuad(Group, V2(-BackgroundQuad.x, 0), PercBarDim, V3(0.0f, 1.0f, 0.25f), QuadRenderParam_NoLayoutAdvance);
+
+  ui_style Style = UiStyleFromLightestColor(V3(0.6f));
+  PushUntexturedQuad(Group, V2(0), BackgroundQuad, &Style);
+
+  Style = UiStyleFromLightestColor(V3(1,1,0));
+  PushUntexturedQuad(Group, V2(-BackgroundQuad.x, 0), PercBarDim, &Style, QuadRenderParam_NoOp);
 
   return;
 }

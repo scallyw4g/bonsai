@@ -3,8 +3,6 @@
 #define DISABLE_CLIPPING V2(FLT_MAX)
 
 
-debug_global rect2 NullClipRect = {};
-
 
 enum column_render_params
 {
@@ -15,8 +13,8 @@ enum column_render_params
 
 enum quad_render_params
 {
-  QuadRenderParam_NoLayoutAdvance =  0,
-  QuadRenderParam_AdvanceLayout   = (1 << 0),
+  QuadRenderParam_NoOp          =  0,
+  QuadRenderParam_AdvanceLayout = (1 << 0),
 };
 
 enum ui_render_command_type
@@ -54,10 +52,10 @@ struct ui_render_command_column
 
 struct ui_render_command_untextured_quad
 {
-  quad_render_params Params;
   v2 OffsetFromLayout;
   v2 QuadDim;
-  v3 Color;
+  ui_style Style;
+  quad_render_params Params;
 };
 
 struct ui_render_command_textured_quad
@@ -69,6 +67,7 @@ struct ui_render_command_textured_quad
 struct ui_render_command_button_start
 {
   umm ID;
+  ui_style Style;
 };
 
 struct ui_render_command_button_end

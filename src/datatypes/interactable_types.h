@@ -20,7 +20,6 @@ struct window_layout
 struct interactable_handle
 {
   umm Id;
-  umm StartIndex;
 };
 
 struct interactable
@@ -35,9 +34,12 @@ struct interactable
 struct ui_style
 {
   v3 Color;
+
   v3 HoverColor;
+  v3 PressedColor;
+  v3 ClickedColor;
+
   v3 ActiveColor;
-  v3 ClickColor;
 
   v2 Padding;
 
@@ -58,7 +60,7 @@ StandardStyling(v3 StartingColor, v3 HoverMultiplier = V3(1.3f), v3 ClickMultipl
   ui_style Result = {};
   Result.Color = StartingColor;
   Result.HoverColor = StartingColor*HoverMultiplier;
-  Result.ClickColor = StartingColor*ClickMultiplier;
+  Result.ClickedColor = StartingColor*ClickMultiplier;
 
   return Result;
 }
@@ -132,5 +134,21 @@ Rect2(interactable *Interaction)
 {
   rect2 Result = Rect2(*Interaction);
   return Result;
+}
+
+function ui_style
+UiStyleFromLightestColor(v3 Color, v2 Padding = V2(10))
+{
+  ui_style Style  = {
+    .Color        = Color*0.8f,
+    .HoverColor   = Color*0.65f,
+    .PressedColor = Color*0.8f,
+    .ClickedColor = Color,
+    .ActiveColor  = Color,
+    .Padding      = Padding,
+    .IsActive     = False,
+  };
+
+  return Style;
 }
 
