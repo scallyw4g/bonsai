@@ -1327,7 +1327,7 @@ GetTableRenderParams(ui_render_command_buffer* CommandBuffer, u32 CommandIndex)
 {
   table_render_params Result = {};
   Result.ColumnCount = GetColumnCountForTable(CommandBuffer, CommandIndex);
-  Result.ColumnWidths = Allocate(u32, TranArena, Result.ColumnCount);
+  Result.ColumnWidths = AllocateProtection(u32, TranArena, Result.ColumnCount, False);
 
   ui_render_command* Command =  GetCommand(CommandBuffer, CommandIndex++);
   Assert(Command && Command->Type == RenderCommand_TableStart);
@@ -1562,6 +1562,7 @@ RenderTable(render_state* RenderState, debug_ui_render_group* Group, ui_render_c
   else
   {
     Error("No RenderCommand_TableEnd detected.");
+    TableRenderParams.OnePastTableEnd = CommandBuffer->CommandCount;
   }
 
   return TableRenderParams.OnePastTableEnd;
