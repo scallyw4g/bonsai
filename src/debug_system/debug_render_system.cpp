@@ -155,7 +155,7 @@ NumericValueToString(number_type Number, const char* Format)
   char *Buffer = AllocateProtection(char, TranArena, BufferLength, False);
   snprintf(Buffer, BufferLength, Format, Number);
 
-  counted_string Result = CountedString(Buffer);
+  counted_string Result = CS(Buffer);
   return Result;
 }
 
@@ -679,7 +679,7 @@ BufferValue(counted_string Text, debug_ui_render_group *Group, buffer_value_para
 function void
 BufferValue(const char* Text, debug_ui_render_group *Group, buffer_value_params Params)
 {
-  BufferValue(CountedString(Text), Group, Params);
+  BufferValue(CS(Text), Group, Params);
   return;
 }
 
@@ -911,7 +911,6 @@ ButtonInteraction(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId,
   }
 
   interactable Interaction = Interactable(Bounds, InteractionId, Window);
-
   BufferBorder(Group, &Interaction, V3(1,0,0), 1.0f, DISABLE_CLIPPING);
 
   if (Hover(Group, &Interaction))
@@ -1377,10 +1376,12 @@ struct render_state
 {
   window_layout* Window;
   layout Layout;
+  /* rect2 ButtonStartingDrawBounds; */
 
   ui_style Styling;
 
   v3 Color;
+
   interactable CurrentInteraction;
 };
 
@@ -1388,13 +1389,15 @@ function void
 ButtonStart(debug_ui_render_group* Group, render_state* RenderState, umm ButtonId)
 {
   Assert(!RenderState->CurrentInteraction.ID);
-
-  /* RenderState->Layout.DrawBounds = {}; */
+  Assert(RenderState->Window);
 
   RenderState->CurrentInteraction.ID = ButtonId;
   RenderState->CurrentInteraction.MinP = GetAbsoluteAt(RenderState->Window, &RenderState->Layout);
   RenderState->CurrentInteraction.MaxP = GetAbsoluteAt(RenderState->Window, &RenderState->Layout);
   RenderState->CurrentInteraction.Window = RenderState->Window;
+
+  /* RenderState->ButtonStartingDrawBounds = RenderState->Layout.DrawBounds; */
+  /* RenderState->Layout.DrawBounds = {}; */
 
   if (RenderState->CurrentInteraction.ID == Group->HoverInteractionId)
   {
@@ -1422,7 +1425,6 @@ ButtonEnd(debug_ui_render_group *Group, render_state* RenderState)
   Assert(RenderState->Window);
 
   RenderState->CurrentInteraction.MaxP = GetAbsoluteDrawBoundsMax(RenderState->Window, &RenderState->Layout);
-
   button_interaction_result Button = ButtonInteraction(Group, RectMinMax(RenderState->CurrentInteraction.MinP, RenderState->CurrentInteraction.MaxP ), RenderState->CurrentInteraction.ID, RenderState->Window);
 
   if (Button.Hover)
@@ -1443,7 +1445,22 @@ ButtonEnd(debug_ui_render_group *Group, render_state* RenderState)
   RenderState->CurrentInteraction.ID = 0;
   RenderState->Color = V3(1);
 
+  /* RenderState->ButtonStartingDrawBounds.Min = Min(RenderState->ButtonStartingDrawBounds.Min, RenderState->Layout.DrawBounds.Min); */
+  /* RenderState->ButtonStartingDrawBounds.Max = Max(RenderState->ButtonStartingDrawBounds.Max, RenderState->Layout.DrawBounds.Max); */
+
   return;
+}
+
+function void
+ProcessTexturedQuadPush(debug_ui_render_group* Group, ui_render_command_textured_quad *Command, render_state* RenderState)
+{
+  RenderState->Window = Command->Window;
+  v2 MinP = GetAbsoluteAt(RenderState->Window, &RenderState->Layout);
+  r32 Z = zIndexForText(RenderState->Window, Group);
+  v2 MaxClip = GetAbsoluteMaxClip(RenderState->Window);
+  BufferTexturedQuad( Group, &Group->TextGroup->TextGeo, MinP, RenderState->Window->MaxClip,
+                      Command->TextureSlice, UVsForFullyCoveredQuad(),
+                      V3(1), Z, MaxClip);
 }
 
 function void
@@ -1497,9 +1514,14 @@ RenderTable(render_state* RenderState, debug_ui_render_group* Group, ui_render_c
             NewLine(&RenderState->Layout);
           } break;
 
+          case RenderCommand_TexturedQuad:
+          {
+            ProcessTexturedQuadPush(Group, &Command->TexturedQuad, RenderState);
+          } break;
+
           case RenderCommand_UntexturedQuad:
           {
-            ProcessUntexturedQuadPush(Group, (ui_render_command_untextured_quad*)&Command->UntexturedQuad, RenderState);
+            ProcessUntexturedQuadPush(Group, &Command->UntexturedQuad, RenderState);
           } break;
 
           case RenderCommand_TextAt:
@@ -1561,18 +1583,12 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
 
       case RenderCommand_TexturedQuad:
       {
-        RenderState.Window = Command->TexturedQuad.Window;
-        v2 MinP = V2( RenderState.Window->Basis.x, GetAbsoluteDrawBoundsMax(RenderState.Window, &RenderState.Layout).y );
-        r32 Z = zIndexForText(RenderState.Window, Group);
-        v2 MaxClip = GetAbsoluteMaxClip(RenderState.Window);
-        BufferTexturedQuad( Group, &Group->TextGroup->TextGeo, MinP, RenderState.Window->MaxClip,
-                            Command->TexturedQuad.TextureSlice, UVsForFullyCoveredQuad(),
-                            V3(1), Z, MaxClip);
+        ProcessTexturedQuadPush(Group, &Command->TexturedQuad, &RenderState);
       } break;
 
       case RenderCommand_UntexturedQuad:
       {
-        ProcessUntexturedQuadPush(Group, (ui_render_command_untextured_quad*)&Command->UntexturedQuad, &RenderState);
+        ProcessUntexturedQuadPush(Group, &Command->UntexturedQuad, &RenderState);
       } break;
 
       case RenderCommand_TextAt:
@@ -1723,20 +1739,6 @@ PushChunkDetails(debug_ui_render_group* Group, world_chunk* Chunk, window_layout
   PushTableEnd(Group);
 }
 
-function interactable_handle
-StartButton(debug_ui_render_group* Group, u64 InteractionId)
-{
-  interactable_handle Result = PushButtonStart(Group, InteractionId);
-  return Result;
-}
-
-function void
-EndButton(debug_ui_render_group* Group)
-{
-  PushButtonEnd(Group);
-  return;
-}
-
 function v2
 BasisRightOf(window_layout* Window, v2 WindowSpacing = V2(150, 0))
 {
@@ -1762,24 +1764,17 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
   {
     world_chunk *Chunk = PickedChunks[ChunkIndex];
 
-    r32 Z = zIndexForText(&ListingWindow, Group);
-    v2 Clip = GetAbsoluteMaxClip(&ListingWindow);
-    u8 Color = WHITE;
-
-    interactable_handle PositionButton = StartButton(Group, (umm)"PositionButton"^(umm)Chunk);
+    interactable_handle PositionButton = PushButtonStart(Group, (umm)"PositionButton"^(umm)Chunk);
       PushColumn(Group, CS(Chunk->WorldP.x) );
       PushColumn(Group, CS(Chunk->WorldP.y) );
       PushColumn(Group, CS(Chunk->WorldP.z) );
-    EndButton(Group);
+    PushButtonEnd(Group);
 
     if (Clicked(Group, &PositionButton)) { DebugState->HotChunk = Chunk; }
 
-    ui_style ButtonStyling = {};
-    ButtonStyling.Color = V3(1,0,0);
-
-    interactable_handle CloseButton = StartButton(Group, (umm)"CloseButton"^(umm)Chunk);
-      PushColumn(Group, CountedString("X"));
-    EndButton(Group);
+    interactable_handle CloseButton = PushButtonStart(Group, (umm)"CloseButton"^(umm)Chunk);
+      PushColumn(Group, CS("X"));
+    PushButtonEnd(Group);
 
     if ( Clicked(Group, &CloseButton) )
     {
@@ -1832,14 +1827,14 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
     }
 
     {
-      local_persist window_layout PickerWindow = WindowLayout("Chunk View", NextWindowBasis, V2(800.0f));
-      PushWindowInteraction(Group, &PickerWindow);
-      PushTableStart(Group, &PickerWindow);
+      local_persist window_layout ChunkViewWindow = WindowLayout("Chunk View", NextWindowBasis, V2(800.0f));
+      PushWindowInteraction(Group, &ChunkViewWindow);
+      PushTableStart(Group, &ChunkViewWindow);
         b32 DebugButtonPressed = False;
 
-        interactable_handle PrevButton = StartButton(Group, (umm)"PrevButton");
-          PushColumn(Group, CountedString("<"));
-        EndButton(Group);
+        interactable_handle PrevButton = PushButtonStart(Group, (umm)"PrevButton");
+          PushColumn(Group, CS("<"));
+        PushButtonEnd(Group);
 
         if (Clicked(Group, &PrevButton))
         {
@@ -1848,9 +1843,9 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
         }
 
 
-        interactable_handle NextButton = StartButton(Group, (umm)"NextButton");
-          PushColumn(Group, CountedString(">"));
-        EndButton(Group);
+        interactable_handle NextButton = PushButtonStart(Group, (umm)"NextButton");
+          PushColumn(Group, CS(">"));
+        PushButtonEnd(Group);
 
         if (Clicked(Group, &NextButton))
         {
@@ -1858,11 +1853,11 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
           DebugButtonPressed = True;
         }
 
-        const char* ButtonText = HotChunk->DrawBoundingVoxels ? "|" : "O";
+        counted_string ButtonText = HotChunk->DrawBoundingVoxels ? CS("|") : CS("O");
 
-        interactable_handle ToggleBoundingVoxelsButton = StartButton(Group, (umm)"ToggleBoundingVoxelsButton");
-          PushColumn(Group, CountedString(ButtonText));
-        EndButton(Group);
+        interactable_handle ToggleBoundingVoxelsButton = PushButtonStart(Group, (umm)"ToggleBoundingVoxelsButton");
+          PushColumn(Group, ButtonText);
+        PushButtonEnd(Group);
 
         if (Clicked(Group, &ToggleBoundingVoxelsButton))
         {
@@ -1883,9 +1878,11 @@ DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
         PushNewRow(Group);
       PushTableEnd(Group);
 
-      interactable_handle ViewportButton = StartButton(Group, (umm)"ViewportButton");
-        PushTexturedQuad(Group, &PickerWindow, DebugTextureArraySlice_Viewport);
-      EndButton(Group);
+      PushTableStart(Group, &ChunkViewWindow);
+        interactable_handle ViewportButton = PushButtonStart(Group, (umm)"ViewportButton");
+          PushTexturedQuad(Group, &ChunkViewWindow, DebugTextureArraySlice_Viewport);
+        PushButtonEnd(Group);
+      PushTableEnd(Group);
 
       input* WindowInput = 0;
       if (Pressed(Group, &ViewportButton))
