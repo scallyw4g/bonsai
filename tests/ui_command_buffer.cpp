@@ -8,10 +8,8 @@
 
 
 function void
-TestTable(debug_ui_render_group* Group, window_layout* Window)
+TestTable(debug_ui_render_group* Group)
 {
-  PushWindowStart(Group, Window);
-
   PushTableStart(Group);
   for (u32 Index = 0;
       Index < 32;
@@ -34,13 +32,6 @@ TestTable(debug_ui_render_group* Group, window_layout* Window)
     TestThat(!Pressed(Group, &Interaction));
   }
   PushTableEnd(Group);
-
-  PushWindowEnd(Group, Window);
-
-  //
-  //
-
-  FlushCommandBuffer(Group, Group->CommandBuffer);
 }
 
 s32 main()
@@ -55,8 +46,13 @@ s32 main()
 
   local_persist window_layout Window = WindowLayout("TestWindow", V2(0));
 
-  TestTable(Group, &Window);
-  TestTable(Group, 0);
+  PushWindowStart(Group, &Window);
+    TestTable(Group);
+  PushWindowEnd(Group, &Window);
+  FlushCommandBuffer(Group, Group->CommandBuffer);
+
+  TestTable(Group);
+  FlushCommandBuffer(Group, Group->CommandBuffer);
 
   TestSuiteEnd();
 }

@@ -935,80 +935,30 @@ ButtonInteraction(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId,
   {
     Result.Hover = True;
     Style->Color = Style->HoverColor;
+    Style->BackgroundColor = Style->BackgroundHoverColor;
   }
 
   if (Clicked(Group, &Interaction))
   {
     Result.Clicked = True;
     Style->Color = Style->ClickedColor;
+    Style->BackgroundColor = Style->BackgroundClickedColor;
   }
 
   if (Pressed(Group, &Interaction))
   {
     Result.Pressed = True;
     Style->Color = Style->ClickedColor;
+    Style->BackgroundColor = Style->BackgroundPressedColor;
   }
 
   if (Style->IsActive && !Result.Pressed)
   {
     Style->Color = Style->ActiveColor;
+    Style->BackgroundColor = Style->BackgroundActiveColor;
   }
 
   return Result;
-}
-
-function button_interaction_result
-BufferUntexturedButton(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId, buffer_value_params Params)
-{
-  window_layout* Window = Params.Window;
-  layout* Layout        = Params.Layout;
-  r32 Z                 = Params.Z;
-  ui_style Style        = Params.Style;
-  v2 MaxClip            = GetAbsoluteMaxClip(Params.Window);
-
-  v2 Padding = Style.Padding;
-
-  v2 FontHeight = V2(0, Group->Font.Size.y);
-  v2 PadX = V2(Padding.x, 0);
-  v2 PadY = V2(0, Padding.y);
-
-  if (Layout)
-  {
-    Layout->At += PadX;
-  }
-
-  button_interaction_result Result = ButtonInteraction(Group, Bounds, InteractionId, Window, &Style);
-  BufferUntexturedQuad(Group, &Group->Geo, Bounds, Style.Color, Z, MaxClip);
-
-  if (Layout)
-  {
-    Layout->At.x += GetDim(Bounds).x;
-    Layout->At   += PadX;
-    v2 MaxClipP = Layout->At + (2.0f*PadY) + FontHeight;
-    AdvanceClip(Layout, MaxClipP);
-  }
-
-  return Result;
-}
-
-function b32
-BufferButton(debug_ui_render_group *Group, rect2 Bounds, umm InteractionId, buffer_value_params Params)
-{
-  button_interaction_result Result = BufferUntexturedButton(Group, Bounds, InteractionId, Params);
-  return Result.Pressed;
-}
-
-function b32
-BufferButton(const char* ColumnText, debug_ui_render_group *Group, umm InteractionId, buffer_value_params Params)
-{
-  v2 Min = GetAbsoluteAt(Params.Window, Params.Layout);
-  v2 Max = Min + GetTextBounds( (u32)Length(ColumnText), &Group->Font);
-  rect2 Bounds = RectMinMax(Min, Max);
-
-  button_interaction_result Result = ButtonInteraction(Group, Bounds, InteractionId, Params.Window, &Params.Style);
-  BufferValue(ColumnText, Group, Params);
-
-  return Result.Pressed;
 }
 
 
@@ -1020,170 +970,11 @@ BufferButton(const char* ColumnText, debug_ui_render_group *Group, umm Interacti
 
 
 function void
-ProcessWindowStart(debug_ui_render_group* Group, render_state* RenderState)
+ProcessWindowStart(render_state* RenderState)
 {
-  layout* Layout        = &RenderState->Layout;
-  window_layout* Window = RenderState->Window;
-
-  if (!Window) { return; }
-
-  Clear(&Layout->At);
-  Clear(&Layout->DrawBounds);
-
-  v2 TitleBounds = GetTextBounds( (u32)Length(Window->Title), &Group->Font);
-  Window->MaxClip = Max(TitleBounds, Window->MaxClip);
-
-  rect2 WindowBounds = GetWindowBounds(Window);
-
-  umm DragHandleId = (umm)"WindowResizeWidget"^(umm)Window;
-  interactable DragHandle = Interactable( Rect2(0), DragHandleId, Window);
-  if (Pressed(Group, &DragHandle))
-  {
-    v2 AbsoluteTitleBounds = Window->Basis + TitleBounds;
-    v2 TestMaxClip = *Group->MouseP - Window->Basis;
-
-    if (Group->MouseP->x > AbsoluteTitleBounds.x )
-    {
-      Window->MaxClip.x = Max(TitleBounds.x, TestMaxClip.x);
-    }
-    else
-    {
-      Window->MaxClip.x = TitleBounds.x;
-    }
-
-    if (Group->MouseP->y > AbsoluteTitleBounds.y )
-    {
-      Window->MaxClip.y = Max(TitleBounds.y, TestMaxClip.y);
-    }
-    else
-    {
-      Window->MaxClip.y = TitleBounds.y;
-    }
-
-    WindowBounds = GetWindowBounds(Window);
-  }
-
-  umm TitleBarInteractionId = (umm)"WindowTitleBar"^(umm)Window;
-  interactable TitleBarInteraction = Interactable( Rect2(0), TitleBarInteractionId, Window);
-  if (Pressed(Group, &TitleBarInteraction))
-  {
-    Window->Basis -= *Group->MouseDP; // TODO(Jesse): Can we compute this with MouseP to avoid a frame of input delay?
-    WindowBounds = GetWindowBounds(Window);
-  }
-
-  if (Window->Title)
-  {
-    v2 Padding = ( V2(Window->MaxClip.x-TitleBounds.x, 0)) / 2.0f;
-    buffer_value_params Params = BufferValueParams(Window, Layout,
-                                                   zIndexForText(Window, Group),
-                                                   UiStyleFromLightestColor(V3(0.7f), V3(0.3f), Padding));
-    BufferButton(Window->Title, Group, TitleBarInteractionId, Params);
-    NewLine(Layout);
-  }
-
-  {
-    v2 Dim = V2(10);
-    rect2 DragHandleRect = RectMinDim(Window->Basis+Window->MaxClip-Dim, Dim);
-    buffer_value_params Params = BufferValueParams(Window, 0, zIndexForBorders(Window, Group), StandardStyling(V3(1)));
-    BufferButton(Group, DragHandleRect, DragHandleId, Params);
-  }
-
-  BufferBorder(Group, WindowBounds, V3(1, 1, 1), zIndexForBorders(Window, Group), DISABLE_CLIPPING);
-  BufferUntexturedQuad(Group, &Group->Geo, WindowBounds, V3(0.1f, 0.1f, 0.1f), zIndexForBackgrounds(Window, Group), WindowBounds.Max); 
-
+  Clear(&RenderState->Layout.At);
+  Clear(&RenderState->Layout.DrawBounds);
   return;
-}
-
-function void
-ProcessWindowEnd(/*debug_ui_render_group* Group, render_state* RenderState*/)
-{
-#if 0
-  layout* Layout        = &RenderState->Layout;
-  window_layout* Window = RenderState->Window;
-
-  Clear(&Layout->At);
-  Clear(&Layout->DrawBounds);
-
-  if (!Window) { return; }
-
-  v2 TitleBounds = GetTextBounds( (u32)Length(Window->Title), &Group->Font);
-  Window->MaxClip = Max(TitleBounds, Window->MaxClip);
-
-  rect2 WindowBounds = GetWindowBounds(Window);
-
-  umm DragHandleId = (umm)"WindowResizeWidget"^(umm)Window;
-  interactable DragHandle = Interactable( Rect2(0), DragHandleId, Window);
-  if (Pressed(Group, &DragHandle))
-  {
-    v2 AbsoluteTitleBounds = Window->Basis + TitleBounds;
-    v2 TestMaxClip = *Group->MouseP - Window->Basis;
-
-    if (Group->MouseP->x > AbsoluteTitleBounds.x )
-    {
-      Window->MaxClip.x = Max(TitleBounds.x, TestMaxClip.x);
-    }
-    else
-    {
-      Window->MaxClip.x = TitleBounds.x;
-    }
-
-    if (Group->MouseP->y > AbsoluteTitleBounds.y )
-    {
-      Window->MaxClip.y = Max(TitleBounds.y, TestMaxClip.y);
-    }
-    else
-    {
-      Window->MaxClip.y = TitleBounds.y;
-    }
-
-    WindowBounds = GetWindowBounds(Window);
-  }
-
-  umm TitleBarInteractionId = (umm)"WindowTitleBar"^(umm)Window;
-  interactable TitleBarInteraction = Interactable( Rect2(0), TitleBarInteractionId, Window);
-  if (Pressed(Group, &TitleBarInteraction))
-  {
-    Window->Basis -= *Group->MouseDP; // TODO(Jesse): Can we compute this with MouseP to avoid a frame of input delay?
-    WindowBounds = GetWindowBounds(Window);
-  }
-
-  {
-    ui_style DragHandleStyle = StandardStyling(V3(1));
-    v2 Dim = V2(10);
-    v2 MinP = Window->Basis + Window->MaxClip - Dim;
-    rect2 DragHandleRect = RectMinDim(MinP, Dim);
-    BufferButton(Group, DragHandleRect, DragHandleId, BufferValueParams(Window, Layout, V3(1), zIndexForBorders(Window, Group), WindowBounds.Max, &DragHandleStyle) );
-  }
-
-  {
-    ui_style BackgroundStyle = StandardStyling(V3(0.0f, 0.5f, 0.5f));
-    rect2 TitleBarRect = RectMinMax(WindowBounds.Min, TopRight(WindowBounds) + V2(0.0f, Group->Font.Size.y));
-    BufferButton(Group, TitleBarRect, TitleBarInteractionId, BufferValueParams(Window, Layout, V3(0.7f), zIndexForTitleBar(Window, Group), WindowBounds.Max, &BackgroundStyle));
-  }
-
-  if (Window->Title)
-  {
-    buffer_value_params Params = BufferValueParams(Window, Layout, V3(1), zIndexForText(Window, Group), WindowBounds.Max);
-    /* BufferValue(Window->InteractionStackIndex, Group, Params); */
-    /* AdvanceSpaces(1, Layout, &Group->Font); */
-    BufferValue(Window->Title, Group, Params);
-    NewLine(Layout);
-  }
-
-  {
-    r32 Z = zIndexForBorders(Window, Group);
-    v3 BorderColor = V3(1, 1, 1);
-    BufferBorder(Group, WindowBounds, BorderColor, Z, DISABLE_CLIPPING);
-  }
-
-  {
-    v3 BackgroundColor = V3(0.1f, 0.1f, 0.1f);
-    r32 Z = zIndexForBackgrounds(Window, Group);
-    BufferUntexturedQuad(Group, &Group->Geo, WindowBounds, BackgroundColor, Z, WindowBounds.Max);
-  }
-
-  return;
-#endif
 }
 
 
@@ -1280,7 +1071,21 @@ PushTexturedQuad(debug_ui_render_group *Group, debug_texture_array_slice Texture
 }
 
 function void
-PushUntexturedQuad(debug_ui_render_group* Group, v2 OffsetFromLayout, v2 QuadDim, ui_style *Style = 0, quad_render_params Params = QuadRenderParam_AdvanceLayout)
+PushUntexturedQuadAt(debug_ui_render_group* Group, v2 At, v2 QuadDim, r32 Z, ui_style *Style = 0)
+{
+  ui_render_command Command = {
+    .Type = RenderCommand_UntexturedQuadAt,
+    .UntexturedQuadAt.AtRelativeToWindowBasis = At,
+    .UntexturedQuadAt.QuadDim = QuadDim,
+    .UntexturedQuadAt.Style = Style? *Style : DefaultUiStyle,
+    .UntexturedQuadAt.Z = Z,
+  };
+
+  PushUiRenderCommand(Group, &Command);
+}
+
+function void
+PushUntexturedQuad(debug_ui_render_group* Group, v2 OffsetFromLayout, v2 QuadDim, r32 Z, ui_style *Style = 0, quad_render_params Params = QuadRenderParam_AdvanceLayout)
 {
   ui_render_command Command = {
     .Type = RenderCommand_UntexturedQuad,
@@ -1288,6 +1093,7 @@ PushUntexturedQuad(debug_ui_render_group* Group, v2 OffsetFromLayout, v2 QuadDim
     .UntexturedQuad.QuadDim = QuadDim,
     .UntexturedQuad.Style = Style? *Style : DefaultUiStyle,
     .UntexturedQuad.Params = Params,
+    .UntexturedQuad.Z = Z,
   };
 
   PushUiRenderCommand(Group, &Command);
@@ -1346,6 +1152,18 @@ PushTableEnd(debug_ui_render_group *Group)
 }
 
 function void
+PushBorder(debug_ui_render_group *Group, rect2 BoundsRelativeToCurrentWindow)
+{
+  ui_render_command Command = {
+    .Type = RenderCommand_Border,
+    .Border.Bounds = BoundsRelativeToCurrentWindow,
+  };
+
+  PushUiRenderCommand(Group, &Command);
+
+}
+
+function void
 PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
 {
   ui_render_command Command = {};
@@ -1353,17 +1171,68 @@ PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
   Command.WindowStart.Window = Window;
 
   PushUiRenderCommand(Group, &Command);
+
+  interactable_handle TitleBarHandle = PushButtonStart(Group, (umm)"WindowTitleBar"^(umm)Window);
+    PushTextAt(Group, CS(Window->Title), Window->Basis);
+    PushUntexturedQuad(Group, V2(0), V2(Window->MaxClip.x, Group->Font.Size.y), zIndexForTitleBar(Window, Group));
+  PushButtonEnd(Group);
+  PushNewRow(Group);
+
+  if (Pressed(Group, &TitleBarHandle))
+  {
+    Window->Basis -= *Group->MouseDP; // TODO(Jesse): Can we compute this with MouseP to avoid a frame of input delay?
+  }
+
   return;
 }
 
 function void
 PushWindowEnd(debug_ui_render_group *Group, window_layout *Window)
 {
-  ui_render_command Command = {};
-  Command.Type = RenderCommand_WindowEnd;
-  Command.WindowEnd.Window = Window;
+  v2 Dim = V2(10);
+  interactable_handle DragHandle = PushButtonStart(Group, (umm)"WindowResizeWidget"^(umm)Window);
+    PushUntexturedQuadAt(Group, Window->MaxClip-Dim, Dim, zIndexForBorders(Window, Group));
+  PushButtonEnd(Group);
 
-  PushUiRenderCommand(Group, &Command);
+  if (Pressed(Group, &DragHandle))
+  {
+    v2 TitleBounds = GetTextBounds( (u32)Length(Window->Title), &Group->Font);
+    Window->MaxClip = Max(TitleBounds, Window->MaxClip);
+
+    v2 AbsoluteTitleBounds = Window->Basis + TitleBounds;
+    v2 TestMaxClip = *Group->MouseP - Window->Basis;
+
+    if (Group->MouseP->x > AbsoluteTitleBounds.x )
+    {
+      Window->MaxClip.x = Max(TitleBounds.x, TestMaxClip.x);
+    }
+    else
+    {
+      Window->MaxClip.x = TitleBounds.x;
+    }
+
+    if (Group->MouseP->y > AbsoluteTitleBounds.y )
+    {
+      Window->MaxClip.y = Max(TitleBounds.y, TestMaxClip.y);
+    }
+    else
+    {
+      Window->MaxClip.y = TitleBounds.y;
+    }
+  }
+
+
+  PushBorder(Group, GetBounds(Window));
+
+  PushUntexturedQuadAt(Group, V2(0), Window->MaxClip, zIndexForBackgrounds(Window, Group));
+
+  {
+    ui_render_command EndCommand = {};
+    EndCommand.Type = RenderCommand_WindowEnd;
+    EndCommand.WindowEnd.Window = Window;
+    PushUiRenderCommand(Group, &EndCommand);
+  }
+
   return;
 }
 
@@ -1504,7 +1373,7 @@ GetColumnWidth(table_render_params* Params, u32 ColumnIndex)
 }
 
 function void
-ButtonStart(debug_ui_render_group* Group, render_state* RenderState, umm ButtonId)
+ProcessButtonStart(debug_ui_render_group* Group, render_state* RenderState, umm ButtonId)
 {
   Assert(!RenderState->CurrentInteraction.ID);
 
@@ -1536,7 +1405,7 @@ ButtonStart(debug_ui_render_group* Group, render_state* RenderState, umm ButtonI
 }
 
 function void
-ButtonEnd(debug_ui_render_group *Group, render_state* RenderState)
+ProcessButtonEnd(debug_ui_render_group *Group, render_state* RenderState)
 {
   Assert(RenderState->CurrentInteraction.ID);
 
@@ -1609,13 +1478,30 @@ SelectColorState(render_state* RenderState, ui_style Style)
 }
 
 function void
+ProcessUntexturedQuadAtPush(debug_ui_render_group* Group, ui_render_command_untextured_quad_at *Command, render_state* RenderState)
+{
+  v2 MaxClip = GetAbsoluteMaxClip(RenderState->Window);
+  v2 MinP = Command->AtRelativeToWindowBasis + (RenderState->Window ? RenderState->Window->Basis : V2(0));
+  v2 Dim = Command->QuadDim;
+  v3 Color = SelectColorState(RenderState, Command->Style);
+  r32 Z = Command->Z;
+
+  BufferUntexturedQuad(Group, &(Group->Geo), MinP, Dim, Color, Z, MaxClip);
+
+  AdvanceClip(&RenderState->Layout, Command->AtRelativeToWindowBasis);
+  AdvanceClip(&RenderState->Layout, Command->AtRelativeToWindowBasis + Dim);
+
+  return;
+}
+
+function void
 ProcessUntexturedQuadPush(debug_ui_render_group* Group, ui_render_command_untextured_quad *Command, render_state* RenderState)
 {
   v2 MaxClip = GetAbsoluteMaxClip(RenderState->Window);
   v2 MinP = Command->OffsetFromLayout + GetAbsoluteAt(RenderState->Window, &RenderState->Layout);
   v2 Dim = Command->QuadDim;
   v3 Color = SelectColorState(RenderState, Command->Style);
-  r32 Z = zIndexForText(RenderState->Window, Group);
+  r32 Z = Command->Z;
 
   BufferUntexturedQuad(Group, &(Group->Geo), MinP, Dim, Color, Z, MaxClip);
 
@@ -1669,6 +1555,11 @@ RenderTable(render_state* RenderState, debug_ui_render_group* Group, ui_render_c
             ProcessTexturedQuadPush(Group, &Command->TexturedQuad, RenderState);
           } break;
 
+          case RenderCommand_UntexturedQuadAt:
+          {
+            ProcessUntexturedQuadAtPush(Group, &Command->UntexturedQuadAt, RenderState);
+          } break;
+
           case RenderCommand_UntexturedQuad:
           {
             ProcessUntexturedQuadPush(Group, &Command->UntexturedQuad, RenderState);
@@ -1683,13 +1574,13 @@ RenderTable(render_state* RenderState, debug_ui_render_group* Group, ui_render_c
           case RenderCommand_ButtonStart:
           {
             RenderState->Style = Command->ButtonStart.Style;
-            ButtonStart(Group, RenderState, Command->ButtonStart.ID);
+            ProcessButtonStart(Group, RenderState, Command->ButtonStart.ID);
           } break;
 
           case RenderCommand_ButtonEnd:
           {
             RenderState->Style = DefaultUiStyle;
-            ButtonEnd(Group, RenderState);
+            ProcessButtonEnd(Group, RenderState);
           } break;
 
           case RenderCommand_TableEnd:
@@ -1728,13 +1619,12 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
       {
         Assert(!RenderState.Window);
         RenderState.Window = Command->WindowStart.Window;
-        ProcessWindowStart(Group, &RenderState);
+        ProcessWindowStart(&RenderState);
       } break;
 
       case RenderCommand_WindowEnd:
       {
         Assert(RenderState.Window == Command->WindowEnd.Window);
-        ProcessWindowEnd();
         RenderState.Window = 0;
       } break;
 
@@ -1748,9 +1638,19 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
         ProcessTexturedQuadPush(Group, &Command->TexturedQuad, &RenderState);
       } break;
 
+      case RenderCommand_UntexturedQuadAt:
+      {
+        ProcessUntexturedQuadAtPush(Group, &Command->UntexturedQuadAt, &RenderState);
+      } break;
+
       case RenderCommand_UntexturedQuad:
       {
         ProcessUntexturedQuadPush(Group, &Command->UntexturedQuad, &RenderState);
+      } break;
+
+      case RenderCommand_NewRow:
+      {
+        NewLine(&RenderState.Layout);
       } break;
 
       case RenderCommand_TextAt:
@@ -1760,12 +1660,17 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
       case RenderCommand_ButtonStart:
       {
         RenderState.Style = Command->ButtonStart.Style;
-        ButtonStart(Group, &RenderState, Command->ButtonStart.ID);
+        ProcessButtonStart(Group, &RenderState, Command->ButtonStart.ID);
       } break;
 
       case RenderCommand_ButtonEnd:
       {
-        ButtonEnd(Group, &RenderState);
+        ProcessButtonEnd(Group, &RenderState);
+      } break;
+
+      case RenderCommand_Border:
+      {
+        BufferBorder(Group, Command->Border.Bounds, RenderState.Style.Color, zIndexForBorders(RenderState.Window, Group), DISABLE_CLIPPING);
       } break;
 
       InvalidDefaultCase;
@@ -1787,7 +1692,7 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
 
 
 function void
-PushCycleBar(debug_ui_render_group* Group, cycle_range* Range, cycle_range* Frame, r32 TotalGraphWidth, u32 Depth, ui_style *Style)
+PushCycleBar(debug_ui_render_group* Group, window_layout* Window, cycle_range* Range, cycle_range* Frame, r32 TotalGraphWidth, u32 Depth, ui_style *Style)
 {
   Assert(Frame->StartCycle < Range->StartCycle);
 
@@ -1803,7 +1708,7 @@ PushCycleBar(debug_ui_render_group* Group, cycle_range* Range, cycle_range* Fram
 
   v2 OffsetFromLayout = V2(xOffset, yOffset);
 
-  PushUntexturedQuad(Group, OffsetFromLayout, BarDim, Style, QuadRenderParam_NoOp);
+  PushUntexturedQuad(Group, OffsetFromLayout, BarDim, zIndexForText(Window, Group), Style, QuadRenderParam_NoOp);
 
   return;
 }
@@ -2155,7 +2060,7 @@ GetStatsFor( debug_profile_scope *Target, debug_profile_scope *Root)
 #endif
 
 function void
-PushScopeBarsRecursive(debug_ui_render_group *Group, debug_profile_scope *Scope, cycle_range *Frame, r32 TotalGraphWidth, random_series *Entropy, u32 Depth = 0)
+PushScopeBarsRecursive(debug_ui_render_group *Group, window_layout* Window, debug_profile_scope *Scope, cycle_range *Frame, r32 TotalGraphWidth, random_series *Entropy, u32 Depth = 0)
 {
   while (Scope)
   {
@@ -2164,13 +2069,13 @@ PushScopeBarsRecursive(debug_ui_render_group *Group, debug_profile_scope *Scope,
     ui_style Style = UiStyleFromLightestColor(RandomV3(Entropy), V3(0.3f));
 
     interactable_handle Bar = PushButtonStart(Group, (umm)"CycleBarHoverInteraction"^(umm)Scope, &Style);
-      PushCycleBar(Group, &Range, Frame, TotalGraphWidth, Depth, &Style);
+      PushCycleBar(Group, Window, &Range, Frame, TotalGraphWidth, Depth, &Style);
     PushButtonEnd(Group);
 
     if (Hover(Group, &Bar)) { PushTooltip(Group, CS(Scope->Name)); }
     if (Clicked(Group, &Bar)) { Scope->Expanded = !Scope->Expanded; }
 
-    if (Scope->Expanded) { PushScopeBarsRecursive(Group, Scope->Child, Frame, TotalGraphWidth, Entropy, Depth+1); }
+    if (Scope->Expanded) { PushScopeBarsRecursive(Group, Window, Scope->Child, Frame, TotalGraphWidth, Entropy, Depth+1); }
     Scope = Scope->Sibling;
   }
 
@@ -2208,7 +2113,7 @@ DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState
       debug_scope_tree *ReadTree = ThreadState->ScopeTrees + SharedState->ReadScopeIndex;
       if (MainThreadReadTree->FrameRecorded == ReadTree->FrameRecorded)
       {
-        PushScopeBarsRecursive(Group, ReadTree->Root, &FrameCycles, TotalGraphWidth, &Entropy);
+        PushScopeBarsRecursive(Group, &CycleGraphWindow, ReadTree->Root, &FrameCycles, TotalGraphWidth, &Entropy);
         PushNewRow(Group);
       }
 
@@ -2469,7 +2374,7 @@ DrawFrameTicker(debug_ui_render_group *Group, debug_state *DebugState, r64 MaxMs
     /* } */
 
     ui_style Style = UiStyleFromLightestColor(V3(1,1,0), V3(0.3f), V2(5,0));
-    PushUntexturedQuad(Group, Basis + VerticalOffset, QuadDim, &Style);
+    PushUntexturedQuad(Group, Basis + VerticalOffset, QuadDim, 0.0f, &Style);
   }
 
 
@@ -2682,31 +2587,30 @@ DebugDrawDrawCalls(debug_ui_render_group *Group, v2 WindowBasis)
 
 
 function void
-PushBargraph(debug_ui_render_group *Group, r32 PercFilled)
+PushBargraph(debug_ui_render_group *Group, r32 PercFilled, r32 Z)
 {
   r32 BarHeight = Group->Font.Size.y;
   r32 BarWidth = 200.0f;
-
 
   v2 BackgroundQuad = V2(BarWidth, BarHeight);
   v2 PercBarDim = BackgroundQuad * V2(PercFilled, 1);
 
   ui_style Style = UiStyleFromLightestColor(V3(0.6f), V3(0.3f));
-  PushUntexturedQuad(Group, V2(0), BackgroundQuad, &Style);
+  PushUntexturedQuad(Group, V2(0), BackgroundQuad, Z, &Style);
 
   Style = UiStyleFromLightestColor(V3(1,1,0), V3(0.3f));
-  PushUntexturedQuad(Group, V2(-BackgroundQuad.x, 0), PercBarDim, &Style, QuadRenderParam_NoOp);
+  PushUntexturedQuad(Group, V2(-BackgroundQuad.x, 0), PercBarDim, Z, &Style, QuadRenderParam_NoOp);
 
   return;
 }
 
 function interactable_handle
-PushArenaBargraph(debug_ui_render_group *Group, umm TotalUsed, r32 TotalPerc, umm Remaining, umm InteractionId)
+PushArenaBargraph(debug_ui_render_group *Group, umm TotalUsed, r32 TotalPerc, umm Remaining, umm InteractionId, r32 Z)
 {
   PushColumn(Group, CS(FormatMemorySize(TotalUsed)));
 
   interactable_handle Handle = PushButtonStart(Group, InteractionId);
-    PushBargraph(Group, TotalPerc);
+    PushBargraph(Group, TotalPerc, Z);
   PushButtonEnd(Group);
 
   PushColumn(Group, CS(FormatMemorySize(Remaining)));
@@ -2737,7 +2641,7 @@ PushMemoryStatsTable(memory_arena_stats MemStats, debug_ui_render_group *Group)
 }
 
 function void
-PushMemoryBargraphTable(debug_ui_render_group *Group, selected_arenas *SelectedArenas, memory_arena_stats MemStats, umm TotalUsed, memory_arena *HeadArena)
+PushMemoryBargraphTable(debug_ui_render_group *Group, selected_arenas *SelectedArenas, memory_arena_stats MemStats, umm TotalUsed, memory_arena *HeadArena, r32 Z)
 {
   SetFontSize(&Group->Font, 22);
 
@@ -2745,7 +2649,8 @@ PushMemoryBargraphTable(debug_ui_render_group *Group, selected_arenas *SelectedA
   v3 DefaultColor = V3(0.5f, 0.5f, 0.0);
 
   r32 TotalPerc = (r32)SafeDivide0(TotalUsed, MemStats.TotalAllocated);
-  PushArenaBargraph(Group, TotalUsed, TotalPerc, MemStats.Remaining, (umm)"Ignored");
+  // TODO(Jesse): Should we do something special when interacting with this thing instead of Ignored-ing it?
+  PushArenaBargraph(Group, TotalUsed, TotalPerc, MemStats.Remaining, (umm)"Ignored", Z);
   PushNewRow(Group);
 
   memory_arena *CurrentArena = HeadArena;
@@ -2766,7 +2671,7 @@ PushMemoryBargraphTable(debug_ui_render_group *Group, selected_arenas *SelectedA
     u64 CurrentUsed = TotalSize(CurrentArena) - Remaining(CurrentArena);
     r32 CurrentPerc = (r32)SafeDivide0(CurrentUsed, TotalSize(CurrentArena));
 
-    interactable_handle Handle = PushArenaBargraph(Group, CurrentUsed, CurrentPerc, Remaining(CurrentArena), HashArena(CurrentArena));
+    interactable_handle Handle = PushArenaBargraph(Group, CurrentUsed, CurrentPerc, Remaining(CurrentArena), HashArena(CurrentArena), Z);
     if (Clicked(Group, &Handle))
     {
       selected_memory_arena *Found = 0;
@@ -2957,7 +2862,7 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, v2 Mem
       PushTableEnd(Group);
 
       PushTableStart(Group);
-        PushMemoryBargraphTable(Group, DebugState->SelectedArenas, MemStats, TotalUsed, Current->Arena);
+        PushMemoryBargraphTable(Group, DebugState->SelectedArenas, MemStats, TotalUsed, Current->Arena, zIndexForText(MemoryArenaWindow, Group));
       PushTableEnd(Group);
 
       PushTableStart(Group);

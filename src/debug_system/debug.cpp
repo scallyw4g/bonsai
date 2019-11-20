@@ -101,10 +101,12 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   NewLine(&Layout);
 
 
-  ui_style ButtonStyling = UiStyleFromLightestColor(V3(1), V3(0.3f), V2(30));
 
   if (DebugState->DisplayDebugMenu)
   {
+    DebugState->UIType = DebugUIType_PickedChunks;
+#if 0
+    ui_style ButtonStyling = UiStyleFromLightestColor(V3(1), V3(0.3f), V2(30));
     r32 DebugMenuZ = 1.0f;
     buffer_value_params DebugMenuParams = BufferValueParams(0, &Layout, DebugMenuZ, ButtonStyling);
 
@@ -163,6 +165,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     {
       DebugState->UIType = DebugUIType_DrawCalls;
     }
+#endif
 
     NewLine(&Layout);
   }

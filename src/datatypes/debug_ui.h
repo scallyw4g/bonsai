@@ -36,8 +36,16 @@ enum ui_render_command_type
 
   RenderCommand_TexturedQuad,
   RenderCommand_UntexturedQuad,
+  RenderCommand_UntexturedQuadAt,
+
+  RenderCommand_Border,
 
   RenderCommand_Count
+};
+
+struct ui_render_command_border
+{
+  rect2 Bounds;
 };
 
 struct ui_render_command_window_start
@@ -62,6 +70,15 @@ struct ui_render_command_untextured_quad
   v2 QuadDim;
   ui_style Style;
   quad_render_params Params;
+  r32 Z;
+};
+
+struct ui_render_command_untextured_quad_at
+{
+  v2 AtRelativeToWindowBasis;
+  v2 QuadDim;
+  ui_style Style;
+  r32 Z;
 };
 
 struct ui_render_command_textured_quad
@@ -75,18 +92,10 @@ struct ui_render_command_button_start
   ui_style Style;
 };
 
-struct ui_render_command_button_end
-{
-};
-
 struct ui_render_command_text_at
 {
   counted_string Text;
   v2 At;
-};
-
-struct ui_render_command_table
-{
 };
 
 struct ui_render_command
@@ -94,13 +103,15 @@ struct ui_render_command
   ui_render_command_type Type;
   union
   {
-    ui_render_command_window_start WindowStart;
-    ui_render_command_window_end WindowEnd;
-    ui_render_command_column Column;
-    ui_render_command_button_start ButtonStart;
-    ui_render_command_textured_quad TexturedQuad;
-    ui_render_command_untextured_quad UntexturedQuad;
-    ui_render_command_text_at TextAt;
+    ui_render_command_window_start       WindowStart;
+    ui_render_command_window_end         WindowEnd;
+    ui_render_command_column             Column;
+    ui_render_command_button_start       ButtonStart;
+    ui_render_command_textured_quad      TexturedQuad;
+    ui_render_command_untextured_quad    UntexturedQuad;
+    ui_render_command_untextured_quad_at UntexturedQuadAt;
+    ui_render_command_text_at            TextAt;
+    ui_render_command_border             Border;
   };
 };
 

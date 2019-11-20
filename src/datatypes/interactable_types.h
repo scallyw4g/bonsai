@@ -45,6 +45,7 @@ struct ui_style
   v3 BackgroundHoverColor;
   v3 BackgroundPressedColor;
   v3 BackgroundClickedColor;
+  v3 BackgroundActiveColor;
 
   v2 Padding;
 
@@ -153,10 +154,11 @@ UiStyleFromLightestColor(v3 Color, v3 BackgroundColor, v2 Padding = V2(10))
     .ClickedColor = Color,
     .ActiveColor  = Color,
 
-    .BackgroundColor = BackgroundColor,
-    .BackgroundHoverColor = BackgroundColor*0.5f,
+    .BackgroundColor        = BackgroundColor,
+    .BackgroundHoverColor   = BackgroundColor*0.5f,
     .BackgroundPressedColor = BackgroundColor*0.8f,
     .BackgroundClickedColor = BackgroundColor,
+    .BackgroundActiveColor  = BackgroundColor,
 
     .Padding      = Padding,
     .IsActive     = False,

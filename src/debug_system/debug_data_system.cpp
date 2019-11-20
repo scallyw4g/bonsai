@@ -10,6 +10,7 @@ debug_global b32 DebugGlobal_RedrawEveryPush = 0;
 /****************************                 ********************************/
 
 
+
 void
 PickChunk(world_chunk* Chunk, aabb ChunkAABB)
 {
@@ -32,6 +33,7 @@ PickChunk(world_chunk* Chunk, aabb ChunkAABB)
 /*****************************                   *****************************/
 /*****************************  Thread Metadata  *****************************/
 /*****************************                   *****************************/
+
 
 
 void
@@ -57,9 +59,11 @@ GetThreadLocalState()
 }
 
 
+
 /****************************                       **************************/
 /****************************  Arena Introspection  **************************/
 /****************************                       **************************/
+
 
 
 void
@@ -144,9 +148,11 @@ ClearMetaRecordsFor(memory_arena *Arena)
 }
 
 
+
 /*****************************                  ******************************/
 /*****************************  Arena Metadata  ******************************/
 /*****************************                  ******************************/
+
 
 
 registered_memory_arena *
@@ -221,9 +227,11 @@ WritePushMetadata(push_metadata *InputMeta, push_metadata *MetaTable)
 }
 
 
+
 /****************************                    *****************************/
 /****************************  Memory Allocator  *****************************/
 /****************************                    *****************************/
+
 
 
 void*
@@ -273,9 +281,11 @@ GetTotalMemoryArenaStats()
 }
 
 
+
 /**************************                     ******************************/
 /**************************  Utility Functions  ******************************/
 /**************************                     ******************************/
+
 
 
 void
@@ -432,9 +442,7 @@ ComputeMinMaxAvgDt()
 }
 
 inline void
-DoDebugFrameRecord(
-    debug_recording_state *State,
-    hotkeys *Hotkeys)
+DoDebugFrameRecord(debug_recording_state *State, hotkeys *Hotkeys)
 {
   {
     static b32 Toggled = False;
@@ -553,33 +561,18 @@ GetAbsoluteMaxClip(window_layout *Window)
 }
 
 rect2
-GetClippingBounds(window_layout* Window)
+GetBounds(window_layout* Window)
 {
   rect2 Result = RectMinMax(Window->Basis, GetAbsoluteMaxClip(Window));
   return Result;
 }
 
-/* function layout */
-/* LayoutBelow(window_layout* Window, table* Table) */
-/* { */
-/*   layout Result = {}; */
-/*   Result.Basis = Window->Basis + V2(Table->Layout.DrawBounds.Min.x, Table->Layout.At.y); */
-/*   return Result; */
-/* } */
-
-/* function layout */
-/* LayoutRightOf(window_layout* Window, table* Table) */
-/* { */
-/*   layout Result = {}; */
-/*   Result.Basis.x = Window->Basis.x + Table->Layout.DrawBounds.Max.x; */
-/*   Result.Basis.y = Windnow->Basis.y; */
-/*   return Result; */
-/* } */
 
 
 /*************************                       *****************************/
 /*************************  Profile Scope Trees  *****************************/
 /*************************                       *****************************/
+
 
 
 debug_profile_scope *
@@ -625,28 +618,12 @@ InitScopeTrees(u32 TotalThreadCount)
   return;
 }
 
-#if 0
-void
-PrintFreeScopes(debug_state *State)
-{
-  debug_profile_scope *Sentinel = &State->FreeScopeSentinel;
-  debug_profile_scope *Current = Sentinel->Child;
-
-  while(Current != Sentinel)
-  {
-    Log("%s", Current->Name);
-    Current = Current->Child;
-  }
-
-  return;
-}
-#endif
-
 
 
 /*******************************              *********************************/
 /*******************************  DrawBounds  *********************************/
 /*******************************              *********************************/
+
 
 
 inline void
@@ -665,30 +642,6 @@ AdvanceClip(layout *Layout, font *Font = 0)
   Layout->DrawBounds.Max = Max(Layout->At + FontHeight, Layout->DrawBounds.Max);
   return;
 }
-
-/* function void */
-/* MergeLayouts(layout* Src, layout* Dest) */
-/* { */
-/*   Dest->At             = Max(Dest->At, GetAbsoluteAt(Src) - Dest->Basis); */
-/*   Dest->DrawBounds.Max = Max(Dest->DrawBounds.Max, GetAbsoluteDrawBoundsMax(Src)-Dest->Basis); */
-
-/*   AdvanceClip(Dest); */
-
-/*   Assert( GetAbsoluteAt(Dest).x >= GetAbsoluteAt(Src).x ); */
-/*   Assert( GetAbsoluteAt(Dest).y >= GetAbsoluteAt(Src).y ); */
-
-/*   Assert( GetAbsoluteDrawBoundsMax(Dest).x >= GetAbsoluteDrawBoundsMax(Src).x ); */
-/*   Assert( GetAbsoluteDrawBoundsMax(Dest).y >= GetAbsoluteDrawBoundsMax(Src).y ); */
-
-/*   return; */
-/* } */
-
-/* function void */
-/* MergeTables(table* Src, table* Dest) */
-/* { */
-/*   MergeLayouts(&Src->Layout, &Dest->Layout); */
-/*   return; */
-/* } */
 
 r32
 GetXOffsetForHorizontalBar(u64 StartCycleOffset, u64 FrameTotalCycles, r32 TotalGraphWidth)
@@ -767,6 +720,7 @@ FindRecord(mutex_op_record *WaitRecord, mutex_op_record *FinalRecord, mutex_op S
 }
 
 
+
 /*****************************              **********************************/
 /*****************************  Call Graph  **********************************/
 /*****************************              **********************************/
@@ -797,9 +751,11 @@ GetAllocationSize(push_metadata *Meta)
 }
 
 
+
 /********************                               **************************/
 /********************  Debug System Initialization  **************************/
 /********************                               **************************/
+
 
 
 void
