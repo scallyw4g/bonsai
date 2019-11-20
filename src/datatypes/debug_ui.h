@@ -135,7 +135,8 @@ struct ui_render_command
 struct table_render_params
 {
   u32 *ColumnWidths;
-  u32 ColumnCount;
+  u16 ColumnCount;
+  u16 CurrentColumn;
   u32 OnePastTableEnd;
 };
 

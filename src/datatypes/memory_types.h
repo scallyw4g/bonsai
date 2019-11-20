@@ -43,7 +43,7 @@ Clear(T *Struct)
   Fill(Struct, 0);
 }
 
-#define INVALID_THREAD_HANDLE U64_MAX
+#define INVALID_THREAD_HANDLE (u64_MAX)
 
 struct memory_arena
 {

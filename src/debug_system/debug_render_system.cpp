@@ -1283,14 +1283,14 @@ GetHighestWindow(debug_ui_render_group* Group, ui_render_command_buffer* Command
   return HighestWindow;
 }
 
-function u32
+function u16
 GetColumnCountForTable(ui_render_command_buffer* CommandBuffer, u32 CommandIndex)
 {
   ui_render_command* Command =  GetCommand(CommandBuffer, CommandIndex++);
   Assert(Command && Command->Type == RenderCommand_TableStart);
 
-  u32 ColumnIndex = 0;
-  u32 ColumnCount = 0;
+  u16 ColumnIndex = 0;
+  u16 ColumnCount = 0;
 
   b32 FoundEnd = False;
   while (Command && !FoundEnd)
@@ -1300,11 +1300,12 @@ GetColumnCountForTable(ui_render_command_buffer* CommandBuffer, u32 CommandIndex
         case RenderCommand_Column:
         {
           ++ColumnIndex;
+          Assert(ColumnIndex <= u16_MAX);
         } break;
 
         case RenderCommand_NewRow:
         {
-          ColumnCount = Max(ColumnCount, ColumnIndex);
+          ColumnCount = (u16)Max(ColumnCount, ColumnIndex);
           ColumnIndex = 0;
         } break;
 
@@ -1364,10 +1365,10 @@ GetTableRenderParams(ui_render_command_buffer* CommandBuffer, u32 CommandIndex)
 };
 
 function u32
-GetColumnWidth(table_render_params* Params, u32 ColumnIndex)
+GetNextColumnWidth(table_render_params* Params)
 {
-  Assert(ColumnIndex < Params->ColumnCount);
-  u32 Result = Params->ColumnWidths[ColumnIndex];
+  Assert(Params->CurrentColumn < Params->ColumnCount);
+  u32 Result = Params->ColumnWidths[Params->CurrentColumn++];
   return Result;
 }
 
@@ -1535,12 +1536,9 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
   u32 CommandIndex = 0;
   ui_render_command *Command = GetCommand(CommandBuffer, CommandIndex++);
 
-  render_state RenderState = {
-    .Style = DefaultUiStyle,
-  };
+  render_state RenderState = { .Style = DefaultUiStyle };
 
   table_render_params TableRenderParams = {};
-  u32 ColumnIndex = 0;
 
   while (Command)
   {
@@ -1564,7 +1562,6 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
       {
         Assert( AreEqual(TableRenderParams, NullTableRenderParams));
 
-        ColumnIndex = 0;
         TableRenderParams = GetTableRenderParams(CommandBuffer, CommandIndex-1);
         if (!TableRenderParams.OnePastTableEnd)
         {
@@ -1581,7 +1578,7 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
 
       case RenderCommand_Column:
       {
-        u32 ColumnWidth = GetColumnWidth(&TableRenderParams, ColumnIndex++);
+        u32 ColumnWidth = GetNextColumnWidth(&TableRenderParams);
         RenderState.Style.Color = SelectColorState(&RenderState, RenderState.Style);
         buffer_value_params Params = BufferValueParams(RenderState.Window, &RenderState.Layout, zIndexForText(RenderState.Window, Group), RenderState.Style);
         BufferColumn(Command->Column.String, Group, ColumnWidth, Params, Command->Column.Params);
@@ -1604,7 +1601,7 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
 
       case RenderCommand_NewRow:
       {
-        ColumnIndex = 0;
+        TableRenderParams.CurrentColumn = 0;
         NewLine(&RenderState.Layout);
       } break;
 

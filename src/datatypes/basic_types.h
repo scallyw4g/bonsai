@@ -2,8 +2,6 @@
 #define TWOPI (2.0*PI)
 #define PIf (float(PI))
 
-#define U64_MAX ((u64)-1)
-
 #define local_persist static
 #define global_variable static
 #define debug_global static
@@ -35,3 +33,19 @@ typedef int64_t  s64;
 typedef uint64_t u64;
 typedef u64      umm;
 typedef double   r64;
+
+#define s8_MIN  (INT8MAX_MIN)
+#define s16_MIN (INT16MAX_MIN)
+#define s32_MIN (INT32MAX_MIN)
+#define s64_MIN (INT64MAX_MIN)
+
+#define s8_MAX  (INT8MAX_MAX)
+#define s16_MAX (INT16MAX_MAX)
+#define s32_MAX (INT32MAX_MAX)
+#define s64_MAX (INT64MAX_MAX)
+
+#define u8_MAX  (UINT8_MAX)
+#define u16_MAX (UINT16_MAX)
+#define u32_MAX (UINT32_MAX)
+#define u64_MAX (UINT64_MAX)
+
