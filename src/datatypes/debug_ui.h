@@ -3,7 +3,6 @@
 #define DISABLE_CLIPPING V2(FLT_MAX)
 
 
-
 enum column_render_params
 {
   ColumnRenderParam_LeftAlign  = 0,
@@ -57,6 +56,33 @@ enum ui_render_command_type
   RenderCommand_Border,
 
   RenderCommand_Count
+};
+
+struct font
+{
+  v2 Size;
+};
+
+// TODO(Jesse): Axe this!
+debug_global font Global_Font = {
+  .Size = V2(20, 24),
+};
+
+struct ui_style
+{
+  v3 Color;
+
+  v3 AmbientColor;
+  v3 HoverColor;
+  v3 PressedColor;
+  v3 ClickedColor;
+  v3 ActiveColor;
+
+  v2 Padding;
+
+  font Font;
+
+  b32 IsActive;
 };
 
 struct ui_render_command_border
@@ -173,13 +199,6 @@ struct clip_result
   rect2 PartialClip;
 };
 
-struct buffer_value_params
-{
-  window_layout* Window;
-  layout* Layout;
-  ui_style Style;
-};
-
 struct render_state
 {
   window_layout* Window;
@@ -242,5 +261,36 @@ GetZ(z_depth zDepth, window_layout* Window)
   }
 
   return Result;
+}
+
+function ui_style
+StandardStyling(v3 StartingColor, v3 HoverMultiplier = V3(1.3f), v3 ClickMultiplier = V3(1.2f))
+{
+  ui_style Result = {};
+  Result.Color = StartingColor;
+  Result.HoverColor = StartingColor*HoverMultiplier;
+  Result.ClickedColor = StartingColor*ClickMultiplier;
+
+  return Result;
+}
+
+function ui_style
+UiStyleFromLightestColor(v3 Color, v2 Padding = V2(10))
+{
+  ui_style Style  = {
+    .Color        = Color,
+    .AmbientColor = Color*0.8f,
+    .HoverColor   = Color*0.5f,
+    .PressedColor = Color,
+    .ClickedColor = Color,
+    .ActiveColor  = Color,
+
+    .Font         = Global_Font,
+
+    .Padding      = Padding,
+    .IsActive     = False,
+  };
+
+  return Style;
 }
 

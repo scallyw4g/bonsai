@@ -33,11 +33,6 @@ struct min_max_avg_dt
   r64 Avg;
 };
 
-struct font
-{
-  v2 Size;
-};
-
 struct debug_ui_render_group
 {
   gpu_mapped_element_buffer*  GameGeo;
@@ -48,7 +43,6 @@ struct debug_ui_render_group
 
   u64 InteractionStackTop;
 
-  font Font;
   v2 *MouseP;
   v2 *MouseDP;
   v2 ScreenDim;

@@ -73,7 +73,6 @@
 #define DEBUG_THREAD_COUNT_BIAS       ((u32)(-26))
 #define DEBUG_PARTICLE_EFFECTS        1
 
-#define DEBUG_FONT_SIZE               18
 #define DEFAULT_LINE_THICKNESS       0.15f
 
 #define DEBUG_FRAMES_TO_RUN           -1

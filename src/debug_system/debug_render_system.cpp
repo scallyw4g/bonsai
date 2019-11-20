@@ -25,17 +25,9 @@ debug_global ui_style DefaultUiStyle = UiStyleFromLightestColor(V3(1));
 
 
 function void
-SetFontSize(font *Font, r32 FontSize)
+AdvanceSpaces(u32 N, layout *Layout, v2 FontSize)
 {
-  Font->Size.x = FontSize;
-  Font->Size.y = FontSize * 1.3f;
-  return;
-}
-
-function void
-AdvanceSpaces(u32 N, layout *Layout, font *Font)
-{
-  Layout->At.x += (N*Font->Size.x);
+  Layout->At.x += (N*FontSize.x);
   AdvanceClip(Layout);
   return;
 }
@@ -568,15 +560,15 @@ BufferUntexturedQuad(debug_ui_render_group *Group, untextured_2d_geometry_buffer
 }
 
 function r32
-BufferChar(debug_ui_render_group *Group, u8 Char, v2 MinP, font *Font, v3 Color, r32 Z, v2 MaxClip)
+BufferChar(debug_ui_render_group *Group, u8 Char, v2 MinP, v2 FontSize, v3 Color, r32 Z, v2 MaxClip)
 {
   rect2 UV = UVsForChar(Char);
 
   { // Black Drop-shadow
     r32 e = DEBUG_FONT_SHADOW_EPSILON;
-    v2 ShadowOffset = 0.075f*Font->Size;
+    v2 ShadowOffset = 0.075f*FontSize;
     BufferTexturedQuad( Group,
-                        MinP+ShadowOffset, Font->Size,
+                        MinP+ShadowOffset, FontSize,
                         DebugTextureArraySlice_Font, UV,
                         V3(0.1f),
                         Z-e,
@@ -585,47 +577,35 @@ BufferChar(debug_ui_render_group *Group, u8 Char, v2 MinP, font *Font, v3 Color,
   }
 
   BufferTexturedQuad( Group,
-                      MinP, Font->Size,
+                      MinP, FontSize,
                       DebugTextureArraySlice_Font, UV,
                       Color,
                       Z, MaxClip);
 
-  r32 DeltaX = Font->Size.x;
+  r32 DeltaX = FontSize.x;
   return DeltaX;
 }
 
 function r32
-BufferChar(debug_ui_render_group *Group, u8 Char, v2 MinP, font *Font, u32 Color, r32 Z, v2 MaxClip)
+BufferChar(debug_ui_render_group *Group, u8 Char, v2 MinP, v2 FontSize, u32 Color, r32 Z, v2 MaxClip)
 {
   v3 ColorVector = GetColorData(Color).xyz;
-  r32 Result = BufferChar(Group, Char, MinP, Font, ColorVector, Z, MaxClip);
-  return Result;
-}
-
-function buffer_value_params
-BufferValueParams( window_layout* Window, layout* Layout, ui_style Style = DefaultUiStyle)
-{
-  buffer_value_params Result = {
-    .Window = Window,
-    .Layout = Layout,
-    .Style = Style,
-  };
-
+  r32 Result = BufferChar(Group, Char, MinP, FontSize, ColorVector, Z, MaxClip);
   return Result;
 }
 
 function void
-BufferValue(counted_string Text, debug_ui_render_group *Group, buffer_value_params Params)
+BufferValue(counted_string Text, debug_ui_render_group *Group, render_state* RendererState)
 {
-  window_layout* Window = Params.Window;
-  layout* Layout        = Params.Layout;
+  window_layout* Window = RendererState->Window;
+  layout* Layout        = &RendererState->Layout;
   r32 Z                 = GetZ(zDepth_Text, Window);
-  ui_style Style        = Params.Style;
-  v2 MaxClip            = GetAbsoluteMaxClip(Params.Window);
+  ui_style Style        = RendererState->Style;
+  v2 MaxClip            = GetAbsoluteMaxClip(RendererState->Window);
 
   v2 Padding = Style.Padding;
 
-  v2 FontHeight = V2(0, Group->Font.Size.y);
+  v2 FontHeight = V2(0, RendererState->Style.Font.Size.y);
   v2 PadX = V2(Padding.x, 0);
   v2 PadY = V2(0, Padding.y);
 
@@ -638,7 +618,7 @@ BufferValue(counted_string Text, debug_ui_render_group *Group, buffer_value_para
       CharIndex++ )
   {
     v2 MinP = GetAbsoluteAt(Window, Layout) + PadY;
-    Layout->At.x += BufferChar(Group, (u8)Text.Start[CharIndex], MinP, &Group->Font, Style.Color, Z, MaxClip);
+    Layout->At.x += BufferChar(Group, (u8)Text.Start[CharIndex], MinP, RendererState->Style.Font.Size, Style.Color, Z, MaxClip);
     continue;
   }
 
@@ -654,142 +634,21 @@ BufferValue(counted_string Text, debug_ui_render_group *Group, buffer_value_para
 }
 
 function void
-BufferValue(const char* Text, debug_ui_render_group *Group, buffer_value_params Params)
-{
-  BufferValue(CS(Text), Group, Params);
-  return;
-}
-
-function void
-BufferValue(r32 Number, debug_ui_render_group *Group, buffer_value_params Params)
-{
-  char Buffer[32] = {};
-  sprintf(Buffer, "%f", Number);
-  BufferValue(Buffer, Group, Params);
-  return;
-}
-
-function void
-BufferValue(u64 Number, debug_ui_render_group *Group, buffer_value_params Params)
-{
-  char Buffer[32] = {};
-  sprintf(Buffer, "%lu", Number);
-  BufferValue(Buffer, Group, Params);
-  return;
-}
-
-function void
-BufferValue(u32 Number, debug_ui_render_group *Group, buffer_value_params Params)
-{
-  char Buffer[32] = {};
-  sprintf(Buffer, "%u", Number);
-  BufferValue(Buffer, Group, Params);
-  return;
-}
-
-function void
-BufferThousands(u64 Number, debug_ui_render_group *Group, buffer_value_params Params, u32 Columns = 10)
-{
-  char  *Buffer = FormatThousands(Number);
-  u32 Len = (u32)Length(Buffer);
-  u32 Pad = Max(Columns-Len, 0U);
-  AdvanceSpaces(Pad, Params.Layout, &Group->Font);
-  BufferValue(Buffer, Group, Params);
-  return;
-}
-
-function void
-BufferMemorySize(u64 Number, debug_ui_render_group *Group, buffer_value_params Params)
-{
-  char *Buffer = FormatMemorySize(Number);
-  BufferValue(Buffer, Group, Params);
-  return;
-}
-
-function void
-BufferColumn( s32 Value, u32 ColumnWidth, debug_ui_render_group *Group, buffer_value_params Params)
-{
-  char Buffer[32] = {};
-  sprintf(Buffer, "%d", Value);
-  u32 Len = (u32)Length(Buffer);
-  u32 Pad = Max(ColumnWidth-Len, 0U);
-  AdvanceSpaces(Pad, Params.Layout, &Group->Font);
-  BufferValue( Buffer, Group, Params);
-  return;
-}
-
-function void
-BufferColumn( u32 Value, u32 ColumnWidth, debug_ui_render_group *Group, buffer_value_params Params)
-{
-  char Buffer[32] = {};
-  sprintf(Buffer, "%u", Value);
-  {
-    u32 Len = (u32)Length(Buffer);
-    u32 Pad = Max(ColumnWidth-Len, 0U);
-    AdvanceSpaces(Pad, Params.Layout, &Group->Font);
-  }
-  BufferValue( Buffer, Group, Params);
-  return;
-}
-
-function void
-BufferColumn( u64 Value, u32 ColumnWidth, debug_ui_render_group *Group, buffer_value_params Params)
-{
-  char Buffer[32] = {};
-  sprintf(Buffer, "%lu", Value);
-  {
-    u32 Len = (u32)Length(Buffer);
-    u32 Pad = Max(ColumnWidth-Len, 0U);
-    AdvanceSpaces(Pad, Params.Layout, &Group->Font);
-  }
-  BufferValue( Buffer, Group, Params);
-  return;
-}
-
-function void
-BufferColumn( r64 Perc, u32 ColumnWidth, debug_ui_render_group *Group, buffer_value_params Params)
-{
-  char Buffer[32] = {};
-  sprintf(Buffer, "%4.1lf", Perc);
-  {
-    u32 Len = (u32)Length(Buffer);
-    u32 Pad = Max(ColumnWidth-Len, 0U);
-    AdvanceSpaces(Pad, Params.Layout, &Group->Font);
-  }
-  BufferValue( Buffer, Group, Params);
-  return;
-}
-
-function void
-BufferColumn( r32 Perc, u32 ColumnWidth, debug_ui_render_group *Group, buffer_value_params Params)
-{
-  char Buffer[32] = {};
-  sprintf(Buffer, "%.1f", Perc);
-  {
-    u32 Len = (u32)Length(Buffer);
-    u32 Pad = Max(ColumnWidth-Len, 0U);
-    AdvanceSpaces(Pad, Params.Layout, &Group->Font);
-  }
-  BufferValue( Buffer, Group, Params);
-  return;
-}
-
-function void
-BufferColumn(counted_string Text, debug_ui_render_group* Group, u32 ColumnWidth, buffer_value_params Params, column_render_params RenderParams)
+BufferColumn(counted_string Text, debug_ui_render_group* Group, u32 ColumnWidth, render_state* RenderState, column_render_params RenderParams)
 {
   if (RenderParams & ColumnRenderParam_RightAlign)
   {
     u32 Pad = ColumnWidth - (u32)Text.Count;
-    AdvanceSpaces(Pad, Params.Layout, &Group->Font);
+    AdvanceSpaces(Pad, &RenderState->Layout, RenderState->Style.Font.Size);
   }
 
-  BufferValue(Text, Group, Params);
+  BufferValue(Text, Group, RenderState);
 
   return;
 }
 
 function r32
-BufferTextAt(debug_ui_render_group *Group, v2 BasisP, counted_string Text, v3 Color, r32 Z, v2 ClipMax = DISABLE_CLIPPING)
+BufferTextAt(debug_ui_render_group *Group, v2 BasisP, counted_string Text, v2 FontSize, v3 Color, r32 Z, v2 ClipMax = DISABLE_CLIPPING)
 {
   r32 DeltaX = 0;
 
@@ -797,19 +656,12 @@ BufferTextAt(debug_ui_render_group *Group, v2 BasisP, counted_string Text, v3 Co
       CharIndex < Text.Count;
       CharIndex++ )
   {
-    v2 MinP = BasisP + V2(Group->Font.Size.x*CharIndex, 0);
-    DeltaX += BufferChar(Group, (u8)Text.Start[CharIndex], MinP, &Group->Font, Color, Z, ClipMax);
+    v2 MinP = BasisP + V2(FontSize.x*CharIndex, 0);
+    DeltaX += BufferChar(Group, (u8)Text.Start[CharIndex], MinP, FontSize, Color, Z, ClipMax);
     continue;
   }
 
   return DeltaX;
-}
-
-function r32
-BufferTextAt(debug_ui_render_group *Group, v2 BasisP, const char *Text, v3 Color, r32 Z, v2 ClipMax = DISABLE_CLIPPING)
-{
-  r32 Result = BufferTextAt(Group, BasisP, CS(Text), Color, Z, ClipMax);
-  return Result;
 }
 
 function void
@@ -1052,11 +904,12 @@ PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
 
   umm DragHandleInteractionId = (umm)"WindowResizeWidget"^(umm)Window;
   interactable_handle DragHandle = { .Id = DragHandleInteractionId };
+
+  v2 TitleBounds = V2(Window->Title.Count*Global_Font.Size.x, Global_Font.Size.y);
+  Window->MaxClip = Max(TitleBounds, Window->MaxClip);
+
   if (Pressed(Group, &DragHandle))
   {
-    v2 TitleBounds = GetTextBounds( (u32)Length(Window->Title), &Group->Font);
-    Window->MaxClip = Max(TitleBounds, Window->MaxClip);
-
     v2 AbsoluteTitleBounds = Window->Basis + TitleBounds;
     v2 TestMaxClip = *Group->MouseP - Window->Basis;
 
@@ -1086,8 +939,8 @@ PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
       PushColumn(Group, CS(Window->zText));
       PushColumn(Group, CS(Window->zTitleBar));
       PushColumn(Group, CS(Window->zBorder));
-      PushColumn(Group, CS(Window->Title));
-      PushUntexturedQuadAt(Group, V2(0), V2(Window->MaxClip.x, Group->Font.Size.y), zDepth_TitleBar);
+      PushColumn(Group, Window->Title);
+      PushUntexturedQuadAt(Group, V2(0), V2(Window->MaxClip.x, Global_Font.Size.y), zDepth_TitleBar);
     PushButtonEnd(Group);
   PushTableEnd(Group);
 
@@ -1647,8 +1500,7 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
       {
         u32 ColumnWidth = GetNextColumnWidth(&TableRenderParams);
         RenderState.Style.Color = SelectColorState(&RenderState, RenderState.Style);
-        buffer_value_params Params = BufferValueParams(RenderState.Window, &RenderState.Layout, RenderState.Style);
-        BufferColumn(Command->Column.String, Group, ColumnWidth, Params, Command->Column.Params);
+        BufferColumn(Command->Column.String, Group, ColumnWidth, &RenderState, Command->Column.Params);
       } break;
 
       case RenderCommand_TexturedQuad:
@@ -1675,7 +1527,7 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
       case RenderCommand_TextAt:
       {
         ui_render_command_text_at TextCommand = Command->TextAt;
-        BufferTextAt(Group, TextCommand.At, TextCommand.Text, V3(1), 1.0f, TextCommand.MaxClip);
+        BufferTextAt(Group, TextCommand.At, TextCommand.Text, Global_Font.Size, V3(1), 1.0f, TextCommand.MaxClip);
       } break;
 
       case RenderCommand_ButtonStart:
@@ -1720,13 +1572,13 @@ PushCycleBar(debug_ui_render_group* Group, cycle_range* Range, cycle_range* Fram
 
   r32 FramePerc = (r32)Range->TotalCycles / (r32)Frame->TotalCycles;
 
-  r32 BarHeight = Group->Font.Size.y;
+  r32 BarHeight = Global_Font.Size.y;
   r32 BarWidth = FramePerc*TotalGraphWidth;
   v2 BarDim = V2(BarWidth, BarHeight);
 
   u64 StartCycleOffset = Range->StartCycle - Frame->StartCycle;
   r32 xOffset = GetXOffsetForHorizontalBar(StartCycleOffset, Frame->TotalCycles, TotalGraphWidth);
-  r32 yOffset = Depth*Group->Font.Size.y;
+  r32 yOffset = Depth*Global_Font.Size.y;
 
   v2 OffsetFromLayout = V2(xOffset, yOffset);
 
@@ -1905,13 +1757,13 @@ BasisRightOf(window_layout* Window, v2 WindowSpacing = V2(50, 0))
 }
 
 function void
-DrawPickedChunks(debug_ui_render_group* Group, v2 LayoutBasis)
+DrawPickedChunks(debug_ui_render_group* Group)
 {
   debug_state* DebugState = GetDebugState();
   world_chunk** PickedChunks = DebugState->PickedChunks;
   MapGpuElementBuffer(&DebugState->GameGeo);
 
-  local_persist window_layout ListingWindow = WindowLayout("Picked Chunks", LayoutBasis, V2(400, 400));
+  local_persist window_layout ListingWindow = WindowLayout("Picked Chunks", V2(0), V2(400, 400));
 
   PushWindowStart(Group, &ListingWindow);
   PushTableStart(Group);
@@ -2112,8 +1964,6 @@ DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState
   local_persist window_layout CycleGraphWindow = WindowLayout("Cycle Graph", BasisP);
 
   PushWindowStart(Group, &CycleGraphWindow);
-
-  SetFontSize(&Group->Font, 30);
 
   u32 TotalThreadCount                = GetTotalThreadCount();
   frame_stats *FrameStats             = SharedState->Frames + SharedState->ReadScopeIndex;
@@ -2353,7 +2203,7 @@ BufferFirstCallToEach(debug_ui_render_group *Group,
 }
 
 function void
-DrawFrameTicker(debug_ui_render_group *Group, debug_state *DebugState, r64 MaxMs, v2 Basis)
+DrawFrameTicker(debug_ui_render_group *Group, debug_state *DebugState, r64 MaxMs)
 {
   TIMED_FUNCTION();
 
@@ -2394,7 +2244,7 @@ DrawFrameTicker(debug_ui_render_group *Group, debug_state *DebugState, r64 MaxMs
     /* } */
 
     ui_style Style = UiStyleFromLightestColor(V3(1,1,0), V2(5,0));
-    PushUntexturedQuad(Group, Basis + VerticalOffset, QuadDim, zDepth_Background, &Style);
+    PushUntexturedQuad(Group, VerticalOffset, QuadDim, zDepth_Background, &Style);
   }
 
 
@@ -2434,18 +2284,16 @@ DrawFrameTicker(debug_ui_render_group *Group, debug_state *DebugState, r64 MaxMs
 }
 
 function void
-DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout *MainLayout, r64 MaxMs)
+DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, r64 MaxMs)
 {
-  DrawFrameTicker(Group, DebugState, Max(33.3, MaxMs), MainLayout->At);
-
-  NewLine(MainLayout);
+  DrawFrameTicker(Group, DebugState, Max(33.3, MaxMs));
 
   u32 TotalThreadCount = GetWorkerThreadCount() + 1;
 
   debug_thread_state *MainThreadState = GetThreadLocalStateFor(0);
   debug_scope_tree *MainThreadReadTree    = MainThreadState->ScopeTrees + DebugState->ReadScopeIndex;
 
-  local_persist window_layout CallgraphWindow = WindowLayout("Callgraph", V2(0, MainLayout->At.y) + V2(50));
+  local_persist window_layout CallgraphWindow = WindowLayout("Callgraph", V2(0));
 
   TIMED_BLOCK("Call Graph");
 
@@ -2490,9 +2338,9 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, layout
 
 
 function void
-DebugDrawCollatedFunctionCalls(debug_ui_render_group *Group, debug_state *DebugState, v2 BasisP)
+DebugDrawCollatedFunctionCalls(debug_ui_render_group *Group, debug_state *DebugState)
 {
-  local_persist window_layout FunctionCallWindow = WindowLayout("Functions", BasisP);
+  local_persist window_layout FunctionCallWindow = WindowLayout("Functions", V2(0));
 
   TIMED_BLOCK("Collated Function Calls");
   debug_thread_state *MainThreadState = GetThreadLocalStateFor(0);
@@ -2567,9 +2415,9 @@ TrackDrawCall(const char* Caller, u32 VertexCount)
 }
 
 function void
-DebugDrawDrawCalls(debug_ui_render_group *Group, v2 WindowBasis)
+DebugDrawDrawCalls(debug_ui_render_group *Group)
 {
-  local_persist window_layout DrawCallWindow = WindowLayout("Draw Calls", WindowBasis);
+  local_persist window_layout DrawCallWindow = WindowLayout("Draw Calls", V2(0));
   PushWindowStart(Group, &DrawCallWindow);
 
   PushTableStart(Group);
@@ -2609,7 +2457,7 @@ DebugDrawDrawCalls(debug_ui_render_group *Group, v2 WindowBasis)
 function void
 PushBargraph(debug_ui_render_group *Group, r32 PercFilled)
 {
-  r32 BarHeight = Group->Font.Size.y;
+  r32 BarHeight = Global_Font.Size.y;
   r32 BarWidth = 200.0f;
 
   v2 BackgroundQuad = V2(BarWidth, BarHeight);
@@ -2663,7 +2511,6 @@ PushMemoryStatsTable(memory_arena_stats MemStats, debug_ui_render_group *Group)
 function void
 PushMemoryBargraphTable(debug_ui_render_group *Group, selected_arenas *SelectedArenas, memory_arena_stats MemStats, umm TotalUsed, memory_arena *HeadArena)
 {
-  SetFontSize(&Group->Font, 22);
 
   PushNewRow(Group);
   v3 DefaultColor = V3(0.5f, 0.5f, 0.0);
@@ -2730,7 +2577,6 @@ PushDebugPushMetaData(debug_ui_render_group *Group, selected_arenas *SelectedAre
 {
   push_metadata CollatedMetaTable[META_TABLE_SIZE] = {};
 
-  SetFontSize(&Group->Font, 24);
 
   PushColumn(Group, CS("Size"));
   PushColumn(Group, CS("Structs"));
@@ -2838,9 +2684,9 @@ SubWindowAt(window_layout* Original, v2 NewBasis)
 #endif
 
 function void
-DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, v2 MemoryWindowBasis)
+DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState)
 {
-  local_persist window_layout MemoryArenaWindowInstance = WindowLayout("Memory Arenas", MemoryWindowBasis);
+  local_persist window_layout MemoryArenaWindowInstance = WindowLayout("Memory Arenas", V2(0));
   window_layout* MemoryArenaWindow = &MemoryArenaWindowInstance;
 
   PushWindowStart(Group, MemoryArenaWindow);
@@ -2856,7 +2702,6 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, v2 Mem
     u64 TotalUsed = MemStats.TotalAllocated - MemStats.Remaining;
 
     {
-      SetFontSize(&Group->Font, 36);
 
       PushTableStart(Group);
         interactable_handle ExpandInteraction = PushButtonStart(Group, (umm)"MemoryWindowExpandInteraction"^(umm)Current);
@@ -2875,7 +2720,6 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, v2 Mem
 
     if (Current->Expanded)
     {
-      SetFontSize(&Group->Font, 28);
 
       PushTableStart(Group);
         PushMemoryStatsTable(MemStats, Group);
@@ -2907,12 +2751,9 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState, v2 Mem
 
 
 function void
-DebugDrawNetworkHud(debug_ui_render_group *Group,
-    network_connection *Network,
-    server_state *ServerState,
-    v2 Basis)
+DebugDrawNetworkHud(debug_ui_render_group *Group, network_connection *Network, server_state *ServerState)
 {
-  local_persist window_layout NetworkWindow = WindowLayout("Network", Basis);
+  local_persist window_layout NetworkWindow = WindowLayout("Network", V2(0));
 
   PushWindowStart(Group, &NetworkWindow);
 
@@ -2966,14 +2807,9 @@ DebugDrawNetworkHud(debug_ui_render_group *Group,
 
 
 function void
-DebugDrawGraphicsHud(debug_ui_render_group *Group, debug_state *DebugState, layout *Layout)
+DebugDrawGraphicsHud(debug_ui_render_group *Group, debug_state *DebugState)
 {
-  NewLine(Layout);
-  NewLine(Layout);
-
-  buffer_value_params Params = BufferValueParams(0, Layout);
-  BufferMemorySize(DebugState->BytesBufferedToCard, Group, Params);
-
+  PushColumn(Group, CS(DebugState->BytesBufferedToCard));
   return;
 }
 

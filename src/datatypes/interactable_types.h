@@ -7,7 +7,7 @@ struct layout
 
 struct window_layout
 {
-  const char* Title;
+  counted_string Title;
 
   v2 Basis;
   v2 MaxClip;
@@ -36,21 +36,6 @@ struct interactable
   window_layout* Window;
 };
 
-struct ui_style
-{
-  v3 Color;
-
-  v3 AmbientColor;
-  v3 HoverColor;
-  v3 PressedColor;
-  v3 ClickedColor;
-  v3 ActiveColor;
-
-  v2 Padding;
-
-  b32 IsActive;
-};
-
 struct button_interaction_result
 {
   b32 Pressed;
@@ -58,24 +43,13 @@ struct button_interaction_result
   b32 Hover;
 };
 
-function ui_style
-StandardStyling(v3 StartingColor, v3 HoverMultiplier = V3(1.3f), v3 ClickMultiplier = V3(1.2f))
-{
-  ui_style Result = {};
-  Result.Color = StartingColor;
-  Result.HoverColor = StartingColor*HoverMultiplier;
-  Result.ClickedColor = StartingColor*ClickMultiplier;
-
-  return Result;
-}
-
 function window_layout
 WindowLayout(const char* Title, v2 Basis, v2 MaxClip = V2(1800, 800))
 {
   window_layout Window = {};
   Window.Basis = Basis;
   Window.MaxClip = MaxClip;
-  Window.Title = Title;
+  Window.Title = CS(Title);
 
   return Window;
 }
@@ -140,23 +114,5 @@ Rect2(interactable *Interaction)
 {
   rect2 Result = Rect2(*Interaction);
   return Result;
-}
-
-function ui_style
-UiStyleFromLightestColor(v3 Color, v2 Padding = V2(10))
-{
-  ui_style Style  = {
-    .Color        = Color,
-    .AmbientColor = Color*0.8f,
-    .HoverColor   = Color*0.5f,
-    .PressedColor = Color,
-    .ClickedColor = Color,
-    .ActiveColor  = Color,
-
-    .Padding      = Padding,
-    .IsActive     = False,
-  };
-
-  return Style;
 }
 

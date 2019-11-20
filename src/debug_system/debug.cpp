@@ -30,7 +30,6 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   debug_state *DebugState            = GetDebugState();
 
   min_max_avg_dt Dt           = {};
-  layout Layout               = {};
 
   debug_ui_render_group *UiGroup = &DebugState->UiGroup;
 
@@ -45,8 +44,6 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   {
     UiGroup->PressedInteraction = NullInteraction;
   }
-
-  SetFontSize(&UiGroup->Font, DEBUG_FONT_SIZE);
 
 #if 1
   TIMED_BLOCK("Draw Status Bar");
@@ -86,7 +83,6 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
       }
 
       PushColumn(UiGroup, CS(TotalDrawCalls));
-      AdvanceSpaces(1, &Layout, &UiGroup->Font);
       PushColumn(UiGroup, CS("Draw Calls"));
 
       PushNewRow(UiGroup);
@@ -97,7 +93,6 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     PushTableEnd(UiGroup);
   END_BLOCK("Status Bar");
 
-  SetFontSize(&UiGroup->Font, 32);
   PushNewRow(UiGroup);
 #endif
 
@@ -159,37 +154,37 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
 
     case DebugUIType_PickedChunks:
     {
-      DrawPickedChunks(UiGroup, Layout.At + V2(100));
+      DrawPickedChunks(UiGroup);
     } break;
 
     case DebugUIType_Graphics:
     {
-      DebugDrawGraphicsHud(UiGroup, DebugState, &Layout);
+      DebugDrawGraphicsHud(UiGroup, DebugState);
     } break;
 
     case DebugUIType_Network:
     {
-      DebugDrawNetworkHud(UiGroup, &Plat->Network, ServerState, Layout.At);
+      DebugDrawNetworkHud(UiGroup, &Plat->Network, ServerState);
     } break;
 
     case DebugUIType_CollatedFunctionCalls:
     {
-      DebugDrawCollatedFunctionCalls(UiGroup, DebugState, Layout.At);
+      DebugDrawCollatedFunctionCalls(UiGroup, DebugState);
     } break;
 
     case DebugUIType_CallGraph:
     {
-      DebugDrawCallGraph(UiGroup, DebugState, &Layout, Dt.Max);
+      DebugDrawCallGraph(UiGroup, DebugState, Dt.Max);
     } break;
 
     case DebugUIType_Memory:
     {
-      DebugDrawMemoryHud(UiGroup, DebugState, Layout.At);
+      DebugDrawMemoryHud(UiGroup, DebugState);
     } break;
 
     case DebugUIType_DrawCalls:
     {
-      DebugDrawDrawCalls(UiGroup, Layout.At);
+      DebugDrawDrawCalls(UiGroup);
     } break;
 
     InvalidDefaultCase;
