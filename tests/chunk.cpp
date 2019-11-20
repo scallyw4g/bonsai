@@ -31,7 +31,7 @@ main()
 {
   TestSuiteBegin("Chunk");
 
-  memory_arena *Memory = PlatformAllocateArena(Megabytes(32));
+  memory_arena *Memory = AllocateArena(Megabytes(32));
 
   chunk_dimension DestChunkDim = WORLD_CHUNK_DIM;
   world_position  DestChunkP = World_Position(0);

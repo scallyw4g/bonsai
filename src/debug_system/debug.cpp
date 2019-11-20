@@ -15,7 +15,7 @@ global_variable chunk_dimension WORLD_CHUNK_DIM = Chunk_Dimension(32,32,16);
 #include <render_position.cpp>
 #include <camera.cpp>
 
-global_variable memory_arena* TranArena = PlatformAllocateArena();
+global_variable memory_arena* TranArena = AllocateArena();
 #include <interactable.cpp>
 #include <debug_render_system.cpp>
 

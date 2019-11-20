@@ -11,14 +11,14 @@
 #include <chunk.cpp>
 #include <bonsai_mesh.cpp>
 
-global_variable memory_arena* TranArena = PlatformAllocateArena();
+global_variable memory_arena* TranArena = AllocateArena();
 #include <stream.cpp>
 #include <loaders/collada.cpp>
 
 void
 TokenizingTest()
 {
-  memory_arena *Memory = PlatformAllocateArena(Megabytes(1));
+  memory_arena *Memory = AllocateArena(Megabytes(1));
   ansi_stream XmlStream = AnsiStreamFromFile("tests/fixtures/test_parsing.dae", Memory);
 
   {
@@ -179,7 +179,7 @@ TokenizingTest()
 void
 HashingTest()
 {
-  memory_arena *Memory = PlatformAllocateArena(Megabytes(1));
+  memory_arena *Memory = AllocateArena(Megabytes(1));
   AnsiStreamFromFile("tests/fixtures/test_parsing.dae", Memory);
 
   return;
@@ -200,7 +200,7 @@ XmlTests()
 void
 ContrivedQueryingTest(const char* IdSelector)
 {
-  memory_arena *Memory = PlatformAllocateArena(Megabytes(1));
+  memory_arena *Memory = AllocateArena(Megabytes(1));
 
   ansi_stream XmlStream = AnsiStreamFromFile("tests/fixtures/test_querying.dae", Memory);
   xml_token_stream XmlTokens = TokenizeXmlStream(&XmlStream, Memory);
@@ -359,7 +359,7 @@ ContrivedQueryingTest(const char* IdSelector)
 void
 BlenderCubeQueryTest(const char* IdSelector)
 {
-  memory_arena *Memory = PlatformAllocateArena(Megabytes(1));
+  memory_arena *Memory = AllocateArena(Megabytes(1));
   ansi_stream XmlStream = AnsiStreamFromFile("tests/fixtures/blender_cube.dae", Memory);
   xml_token_stream XmlTokens = TokenizeXmlStream(&XmlStream, Memory);
 
@@ -453,7 +453,7 @@ main()
     BlenderCubeQueryTest(IdSelectorFormat[IdSelectorIndex]);
   }
 
-  memory_arena* Memory = PlatformAllocateArena();
+  memory_arena* Memory = AllocateArena();
   heap_allocator Heap = InitHeap(Gigabytes(1));
   LoadCollada(Memory, &Heap, "tests/fixtures/blender_cube.dae");
 

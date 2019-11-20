@@ -1,6 +1,3 @@
-#ifndef GAME_H
-#define GAME_H
-
 struct game_state
 {
   world         *World;
@@ -27,5 +24,3 @@ struct game_state
 
   entity *EntityTable[TOTAL_ENTITY_COUNT];
 };
-
-#endif

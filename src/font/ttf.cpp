@@ -968,8 +968,8 @@ CopyBitmapOffset(bitmap *Source, bitmap *Dest, v2i Offset)
 int
 main()
 {
-  memory_arena* PermArena = PlatformAllocateArena();
-  memory_arena *TempArena = PlatformAllocateArena();
+  memory_arena* PermArena = AllocateArena();
+  memory_arena *TempArena = AllocateArena();
   ttf Font = InitTTF("fonts/hack.ttf", PermArena);
 
   u8_stream HeadStream = U8_Stream(Font.head);

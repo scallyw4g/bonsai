@@ -72,6 +72,10 @@ EXAMPLES_TO_BUILD="
   $EXAMPLES/world_gen
 "
 
+  # $EXAMPLES/animation_test
+  # $EXAMPLES/ssao_test
+  # $EXAMPLES/space_invaders
+
 EXECUTABLES_TO_BUILD="
   $SRC/platform.cpp
   $SRC/font/ttf.cpp

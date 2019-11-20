@@ -2,15 +2,16 @@
 #define DEFAULT_GAME_LIB "./bin/world_gen_loadable.so"
 
 #include <bonsai_types.h>
-#include <heap_memory_types.cpp>
 
 #if BONSAI_WIN32
 #include <win32_platform.cpp>
-#else
+#elif BONSAI_LINUX
 #define PLATFORM_THREADING_IMPLEMENTATIONS 1
 #define PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS 1
 #define PLATFORM_GL_IMPLEMENTATIONS 1
 #include <unix_platform.cpp>
+#else
+#error "Unknown Platform"
 #endif
 
 
@@ -48,8 +49,8 @@ DefaultThreadLocalState()
 {
   thread_local_state Thread = {};
 
-  Thread.TempMemory = PlatformAllocateArena();
-  Thread.PermMemory = PlatformAllocateArena();
+  Thread.TempMemory = AllocateArena();
+  Thread.PermMemory = AllocateArena();
 
   // NOTE(Jesse): As it stands the debug system doesn't do any locking when
   // constructing the debug arena stats, so we can't ever free memory allocated
@@ -265,7 +266,7 @@ InitializeOpenGlExtensions(os* Os)
 
   // Platform specific (wgl / glX)
   s32 VsyncFrames = 1;
-#if LINUX
+#if BONSAI_LINUX
   // TODO(Jesse): Not getting vsync on my arch laptop...
   PFNSWAPINTERVALPROC glSwapInterval = (PFNSWAPINTERVALPROC)bonsaiGlGetProcAddress("glXSwapIntervalEXT");
   if ( glSwapInterval )
@@ -276,10 +277,12 @@ InitializeOpenGlExtensions(os* Os)
   {
     Info("No Vsync");
   }
-#elif WIN32
+#elif BONSAI_WIN32
   PFNSWAPINTERVALPROC glSwapInterval = (PFNSWAPINTERVALPROC)bonsaiGlGetProcAddress("wglSwapIntervalEXT");
   Assert( glSwapInterval );
   glSwapInterval(VsyncFrames);
+#else
+#error "Unknown Platform"
 #endif
 
   return;
@@ -532,8 +535,8 @@ main()
 
   AssertNoGlErrors;
 
-  memory_arena *PlatMemory = PlatformAllocateArena();
-  memory_arena *GameMemory = PlatformAllocateArena();
+  memory_arena *PlatMemory = AllocateArena();
+  memory_arena *GameMemory = AllocateArena();
 
   DEBUG_REGISTER_ARENA(GameMemory);
   DEBUG_REGISTER_ARENA(PlatMemory);

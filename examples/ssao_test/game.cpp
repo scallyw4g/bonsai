@@ -1,5 +1,5 @@
 #include <bonsai_engine.h>
-global_variable memory_arena *TranArena = PlatformAllocateArena();
+global_variable memory_arena *TranArena = AllocateArena();
 #include <bonsai_engine.cpp>
 #include <bonsai_asset_loaders.cpp>
 

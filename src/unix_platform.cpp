@@ -150,53 +150,6 @@ PlatformAllocateSize(umm AllocationSize)
   return Bytes;
 }
 
-memory_arena*
-PlatformAllocateArena(umm RequestedBytes /* = Megabytes(1) */, b32 MemProtect /* = True */)
-{
-  // FIXME(Jesse): We shouldn't really be able to ask for < 1MB worth of space
-  u64 PageSize = PlatformGetPageSize();
-  u64 ToNextPage = PageSize - (RequestedBytes % PageSize);
-  umm AllocationSize = RequestedBytes + ToNextPage;
-
-  Assert(AllocationSize % PageSize == 0);
-
-#if MEMPROTECT_OVERFLOW
-  Assert(sizeof(memory_arena) < PageSize);
-  u8 *ArenaBytes = PlatformAllocateSize(PageSize*2);
-  ArenaBytes += (PageSize - sizeof(memory_arena));
-
-#elif MEMPROTECT_UNDERFLOW
-  NotImplemented;
-#else
-
-  u8 *ArenaBytes = PlatformAllocateSize(PageSize);
-#endif
-
-  memory_arena *Result = (memory_arena*)ArenaBytes;
-
-  u8 *Bytes = PlatformAllocateSize(AllocationSize);
-  Result->Start = Bytes;
-  Result->At = Bytes;
-
-  Result->End = Bytes + AllocationSize;
-  Result->NextBlockSize = AllocationSize * 2;
-
-#if MEMPROTECT_OVERFLOW
-  if (MemProtect)
-  {
-    Assert(OnPageBoundary(Result, PageSize));
-    PlatformProtectPage(ArenaBytes + sizeof(memory_arena));
-  }
-
-  Assert((umm)Result->Start % PageSize == 0);
-  Assert(Remaining(Result) >= RequestedBytes);
-#else
-  NotImplemented
-#endif
-
-  return Result;
-}
-
 void
 PlatformUnprotectArena(memory_arena *Arena)
 {

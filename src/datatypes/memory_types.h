@@ -105,32 +105,8 @@ struct memory_arena
 void            PlatformUnprotectArena(memory_arena *Arena);
 void            PlatformDeallocateArena(memory_arena *Arena);
 u8*             PlatformAllocateSize(umm AllocationSize);
-memory_arena*   PlatformAllocateArena(umm Bytes = Megabytes(1), b32 MemProtect = True);
 u8*             PlatformProtectPage(u8* Mem);
 u64             PlatformGetPageSize();
-
-
-void
-ReallocateArena(memory_arena *Arena, umm MinSize, b32 MemProtect)
-{
-  u64 AllocationSize = Arena->NextBlockSize;
-  if (MinSize > AllocationSize)
-    AllocationSize = MinSize;
-
-  memory_arena *NewArena =
-    PlatformAllocateArena(AllocationSize, MemProtect);
-
-  memory_arena OldArena = *Arena;
-  *Arena = *NewArena;
-  *NewArena = OldArena;
-
-  Arena->Prev = NewArena;
-
-  Assert( (umm)(Arena->End - Arena->At) >= MinSize);
-  Assert(Arena->At <= Arena->End);
-
-  return;
-}
 
 b32
 OnPageBoundary(memory_arena *Arena, umm PageSize)
@@ -189,47 +165,6 @@ SetToPageBoundary(memory_arena *Arena)
   return;
 }
 
-void
-AdvanceToBytesBeforeNextPage(umm Bytes, memory_arena *Arena)
-{
-  umm PageSize = PlatformGetPageSize();
-
-  umm At = (umm)Arena->At;
-  umm AtInPage = (At % PageSize);
-  umm AtToPageBoundary = PageSize - AtInPage;
-
-  if (AtToPageBoundary < Bytes)
-  {
-    SetToPageBoundary(Arena);
-    AdvanceToBytesBeforeNextPage(Bytes, Arena);
-  }
-  else
-  {
-    umm EndOfBytes = (umm)Arena->At + Bytes;
-    umm EndToNextPage = PageSize - (EndOfBytes % PageSize);
-    Arena->At += EndToNextPage;
-
-    Assert( (EndOfBytes+EndToNextPage) % PageSize == 0);
-    Assert( ((umm)Arena->At + Bytes) % PageSize == 0);
-  }
-
-#if 0
-  Assert(Bytes < PageSize); // TODO(Jesse): Prove this is unnecessary
-
-  umm EndOfBytes = (umm)Arena->At + Bytes;
-  umm StartingPage = (umm)Arena->At - ((umm)Arena->At % PageSize);
-  umm StartingPageToEndOfBytes = EndOfBytes - StartingPage;
-
-  umm EndToNextPage = PageSize - StartingPageToEndOfBytes;
-  Assert( (EndOfBytes+EndToNextPage) % PageSize == 0);
-
-  Arena->At += EndToNextPage;
-  Assert(Arena->At <= Arena->End);
-#endif
-
-  return;
-}
-
 template <typename T> umm
 TotalSize(T *Sizable)
 {
@@ -279,6 +214,151 @@ AreEqual(T First, T Second)
   }
 
   return Result;
+}
+
+struct push_metadata
+{
+  const char* Name;
+  umm ArenaHash;
+  umm HeadArenaHash;
+  umm StructSize;
+  umm StructCount;
+
+  u32 PushCount;
+};
+
+inline void
+MemSet(u8 *Src, u8 Value, umm Size)
+{
+  // TODO(Jesse): Vectorize for speed boost!
+  for( umm ByteIndex = 0;
+       ByteIndex < Size;
+       ++ByteIndex )
+  {
+     Src[ByteIndex] = Value;
+  }
+}
+
+inline void
+MemCopy(u8 *Src, u8 *Dest, umm Size)
+{
+  // TODO(Jesse): Vectorize for speed boost!
+  for( umm BytesCopied = 0;
+       BytesCopied < Size;
+       ++BytesCopied )
+  {
+     Dest[BytesCopied] = Src[BytesCopied];
+  }
+}
+
+inline umm
+HashArenaHead(memory_arena *Arena)
+{
+  umm Result = (umm)Arena;
+  return Result;
+}
+
+inline umm
+HashArena(memory_arena *Arena)
+{
+  umm Result = (umm)Arena->Start;
+  return Result;
+}
+
+inline void
+VaporizeArena(memory_arena *Arena)
+{
+  if(Arena->Prev)
+  {
+    VaporizeArena(Arena->Prev);
+    Arena->Prev = 0;
+  }
+
+  PlatformDeallocateArena(Arena);
+}
+
+inline u32
+SafeTruncateToU32(umm Size)
+{
+  Assert(Size <= 0xFFFFFFFF);
+  u32 Result = (u32)Size;
+  return Result;
+}
+
+inline u16
+SafeTruncateToU16(umm Size)
+{
+  Assert(Size <= 0xFFFF);
+  u16 Result = (u16)Size;
+  return Result;
+}
+
+memory_arena*
+AllocateArena(umm RequestedBytes = Megabytes(1), b32 MemProtect = True)
+{
+  // FIXME(Jesse): We shouldn't really be able to ask for < 1MB worth of space
+  u64 PageSize = PlatformGetPageSize();
+  u64 ToNextPage = PageSize - (RequestedBytes % PageSize);
+  umm AllocationSize = RequestedBytes + ToNextPage;
+
+  Assert(AllocationSize % PageSize == 0);
+
+#if MEMPROTECT_OVERFLOW
+  Assert(sizeof(memory_arena) < PageSize);
+  u8 *ArenaBytes = PlatformAllocateSize(PageSize*2);
+  ArenaBytes += (PageSize - sizeof(memory_arena));
+
+#elif MEMPROTECT_UNDERFLOW
+  NotImplemented;
+#else
+
+  u8 *ArenaBytes = PlatformAllocateSize(PageSize);
+#endif
+
+  memory_arena *Result = (memory_arena*)ArenaBytes;
+
+  u8 *Bytes = PlatformAllocateSize(AllocationSize);
+  Result->Start = Bytes;
+  Result->At = Bytes;
+
+  Result->End = Bytes + AllocationSize;
+  Result->NextBlockSize = AllocationSize * 2;
+
+#if MEMPROTECT_OVERFLOW
+  if (MemProtect)
+  {
+    Assert(OnPageBoundary(Result, PageSize));
+    PlatformProtectPage(ArenaBytes + sizeof(memory_arena));
+  }
+
+  Assert((umm)Result->Start % PageSize == 0);
+  Assert(Remaining(Result) >= RequestedBytes);
+#else
+  NotImplemented
+#endif
+
+  return Result;
+}
+
+void
+ReallocateArena(memory_arena *Arena, umm MinSize, b32 MemProtect)
+{
+  u64 AllocationSize = Arena->NextBlockSize;
+  if (MinSize > AllocationSize)
+    AllocationSize = MinSize;
+
+  memory_arena *NewArena = AllocateArena(AllocationSize, MemProtect);
+
+  memory_arena OldArena = *Arena;
+  *Arena = *NewArena;
+  *NewArena = OldArena;
+
+  Arena->Prev = NewArena;
+
+  Assert( (umm)(Arena->End - Arena->At) >= MinSize);
+  Assert(Arena->At <= Arena->End);
+
+  return;
 }
 
 u8*
@@ -392,79 +472,4 @@ PushStruct(memory_arena *Memory, umm sizeofStruct, umm Alignment = 1, b32 MemPro
   return Result;
 }
 
-struct push_metadata
-{
-  const char* Name;
-  umm ArenaHash;
-  umm HeadArenaHash;
-  umm StructSize;
-  umm StructCount;
 
-  u32 PushCount;
-};
-
-inline void
-MemSet(u8 *Src, u8 Value, umm Size)
-{
-  // TODO(Jesse): Vectorize for speed boost!
-  for( umm ByteIndex = 0;
-       ByteIndex < Size;
-       ++ByteIndex )
-  {
-     Src[ByteIndex] = Value;
-  }
-}
-
-inline void
-MemCopy(u8 *Src, u8 *Dest, umm Size)
-{
-  // TODO(Jesse): Vectorize for speed boost!
-  for( umm BytesCopied = 0;
-       BytesCopied < Size;
-       ++BytesCopied )
-  {
-     Dest[BytesCopied] = Src[BytesCopied];
-  }
-}
-
-inline umm
-HashArenaHead(memory_arena *Arena)
-{
-  umm Result = (umm)Arena;
-  return Result;
-}
-
-inline umm
-HashArena(memory_arena *Arena)
-{
-  umm Result = (umm)Arena->Start;
-  return Result;
-}
-
-inline void
-VaporizeArena(memory_arena *Arena)
-{
-  if(Arena->Prev)
-  {
-    VaporizeArena(Arena->Prev);
-    Arena->Prev = 0;
-  }
-
-  PlatformDeallocateArena(Arena);
-}
-
-inline u32
-SafeTruncateToU32(umm Size)
-{
-  Assert(Size <= 0xFFFFFFFF);
-  u32 Result = (u32)Size;
-  return Result;
-}
-
-inline u16
-SafeTruncateToU16(umm Size)
-{
-  Assert(Size <= 0xFFFF);
-  u16 Result = (u16)Size;
-  return Result;
-}

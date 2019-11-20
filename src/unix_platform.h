@@ -1,4 +1,4 @@
-#define LINUX 1
+#define BONSAI_LINUX 1
 
 #include <pthread.h>
 

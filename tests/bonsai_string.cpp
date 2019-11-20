@@ -49,7 +49,7 @@ TestPopU32(ansi_stream *Stream, memory_arena *Memory)
 void
 TestStreamCursor()
 {
-  memory_arena *Memory = PlatformAllocateArena(Megabytes(1));
+  memory_arena *Memory = AllocateArena(Megabytes(1));
 
   {
     const char *TestData = "word1 word2 word3";

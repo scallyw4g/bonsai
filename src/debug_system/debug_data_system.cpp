@@ -769,7 +769,7 @@ InitDebugMemoryAllocationSystem(debug_state *State)
   // FIXME(Jesse): This should allocate roughly enough space (maybe more than necessary)
   // for the Size parameter, however it seems to be under-allocating, which causes
   // the PushStruct to allocate again.  Bad bad bad.
-  memory_arena *BoostrapArena = PlatformAllocateArena(Size);
+  memory_arena *BoostrapArena = AllocateArena(Size);
   DEBUG_REGISTER_ARENA(BoostrapArena);
   State->ThreadStates = (debug_thread_state*)PushStruct(BoostrapArena, Size, 64);
   //
@@ -782,7 +782,7 @@ InitDebugMemoryAllocationSystem(debug_state *State)
     debug_thread_state *ThreadState = GetThreadLocalStateFor(ThreadIndex);
     Assert((umm)ThreadState % 64 == 0);
 
-    memory_arena *DebugThreadArena = PlatformAllocateArena();
+    memory_arena *DebugThreadArena = AllocateArena();
     ThreadState->Memory = DebugThreadArena;
     DEBUG_REGISTER_ARENA(DebugThreadArena);
 

@@ -1,10 +1,7 @@
-#define BONSAI_NO_PUSH_METADATA
 #define BONSAI_NO_DEBUG_MEMORY_ALLOCATOR
 
 #include <bonsai_types.h>
 #include <unix_platform.cpp>
-
-
 #include <test_utils.cpp>
 
 
@@ -250,6 +247,45 @@ TestAlignment()
 }
 
 void
+AdvanceToBytesBeforeNextPage(umm Bytes, memory_arena *Arena)
+{
+  umm At = (umm)Arena->At;
+  umm AtInPage = (At % PageSize);
+  umm AtToPageBoundary = PageSize - AtInPage;
+
+  if (AtToPageBoundary < Bytes)
+  {
+    SetToPageBoundary(Arena);
+    AdvanceToBytesBeforeNextPage(Bytes, Arena);
+  }
+  else
+  {
+    umm EndOfBytes = (umm)Arena->At + Bytes;
+    umm EndToNextPage = PageSize - (EndOfBytes % PageSize);
+    Arena->At += EndToNextPage;
+
+    Assert( (EndOfBytes+EndToNextPage) % PageSize == 0);
+    Assert( ((umm)Arena->At + Bytes) % PageSize == 0);
+  }
+
+#if 0
+  Assert(Bytes < PageSize); // TODO(Jesse): Prove this is unnecessary
+
+  umm EndOfBytes = (umm)Arena->At + Bytes;
+  umm StartingPage = (umm)Arena->At - ((umm)Arena->At % PageSize);
+  umm StartingPageToEndOfBytes = EndOfBytes - StartingPage;
+
+  umm EndToNextPage = PageSize - StartingPageToEndOfBytes;
+  Assert( (EndOfBytes+EndToNextPage) % PageSize == 0);
+
+  Arena->At += EndToNextPage;
+  Assert(Arena->At <= Arena->End);
+#endif
+
+  return;
+}
+
+void
 TestSetToPageBoundary()
 {
   memory_arena Arena = {};
@@ -475,7 +511,7 @@ void
 ArenaAllocation()
 {
   {
-    memory_arena *Arena = PlatformAllocateArena(Megabytes(1));
+    memory_arena *Arena = AllocateArena(Megabytes(1));
     TestThat( Remaining(Arena) >= Megabytes(1) );
 
     Clear(Arena);
@@ -496,7 +532,7 @@ ArenaAllocation()
   }
 
   {
-    memory_arena *Arena = PlatformAllocateArena(32);
+    memory_arena *Arena = AllocateArena(32);
     TestThat(Remaining(Arena) >= 32);
     VaporizeArena(Arena);
   }
@@ -510,13 +546,13 @@ UnprotectedAllocations()
   NoExpectedSegfault();
 
   { // Tiny allocation works
-    memory_arena *Arena = PlatformAllocateArena(32);
+    memory_arena *Arena = AllocateArena(32);
     TestThat(Remaining(Arena) >= 32);
     VaporizeArena(Arena);
   }
 
   { // Most basic allocation works
-    memory_arena *Arena = PlatformAllocateArena(Megabytes(1));
+    memory_arena *Arena = AllocateArena(Megabytes(1));
     TestThat( Remaining(Arena) >= Megabytes(1) );
 
     TestAllocation<test_struct_1k>(Arena, False);
@@ -526,7 +562,7 @@ UnprotectedAllocations()
 
   { // Arena Reallocation works
     umm AllocationSize = 32;
-    memory_arena *Arena = PlatformAllocateArena(AllocationSize);
+    memory_arena *Arena = AllocateArena(AllocationSize);
     TestThat( Remaining(Arena) >= AllocationSize );
 
     while (!Arena->Prev)
@@ -544,7 +580,7 @@ UnprotectedAllocations()
     test_struct_1k *Structs[StructCount];
 
 
-    memory_arena *Arena = PlatformAllocateArena(Kilobytes(1));
+    memory_arena *Arena = AllocateArena(Kilobytes(1));
 
     for (u32 StructIndex = 0;
         StructIndex < StructCount;
@@ -564,7 +600,7 @@ UnprotectedAllocations()
   }
 
   { // Arena De-allocation works
-    memory_arena *TestArena = PlatformAllocateArena(32);
+    memory_arena *TestArena = AllocateArena(32);
 
     AllocateProtection(test_struct_32, TestArena, 1, False);
 

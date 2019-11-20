@@ -21,7 +21,7 @@ main()
 {
   TestSuiteBegin("Obj Loader");
 
-  memory_arena *Memory = PlatformAllocateArena(Megabytes(1));
+  memory_arena *Memory = AllocateArena(Megabytes(1));
 
   {
     ansi_stream Stream = AnsiStreamFromFile("tests/fixtures/test.obj", Memory);
