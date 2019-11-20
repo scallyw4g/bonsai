@@ -50,28 +50,27 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
 
 #if 1
   TIMED_BLOCK("Draw Status Bar");
+    PushTableStart(UiGroup);
+
+    /* buffer_value_params StatusBarBufferParams = BufferValueParams(0, &Layout); */
+
     Dt = ComputeMinMaxAvgDt();
+    PushColumn(UiGroup, CS(Dt.Max));
+    PushNewRow(UiGroup);
 
-    buffer_value_params StatusBarBufferParams = BufferValueParams(0, &Layout);
-
-    BufferColumn(Dt.Max, 6, UiGroup, StatusBarBufferParams);
-    NewLine(&Layout);
-
-    BufferColumn(Dt.Avg, 6, UiGroup, StatusBarBufferParams);
-    BufferColumn(Plat->dt*1000.0f, 6, UiGroup, StatusBarBufferParams);
-    BufferValue("ms", UiGroup, StatusBarBufferParams);
+    PushColumn(UiGroup, CS(Dt.Avg));
+    PushColumn(UiGroup, CS(Plat->dt*1000.0f));
+    PushColumn(UiGroup, CS("ms"));
 
     {
       // Main line
       memory_arena_stats TotalStats = GetTotalMemoryArenaStats();
 
-      BufferThousands(TotalStats.Allocations, UiGroup, StatusBarBufferParams);
-      AdvanceSpaces(1, &Layout, &UiGroup->Font);
-      BufferValue("Allocations", UiGroup, StatusBarBufferParams);
+      PushColumn(UiGroup, CS(TotalStats.Allocations));
+      PushColumn(UiGroup, CS("Allocations"));
 
-      BufferThousands(TotalStats.Pushes, UiGroup, StatusBarBufferParams);
-      AdvanceSpaces(1, &Layout, &UiGroup->Font);
-      BufferValue("Pushes", UiGroup, StatusBarBufferParams);
+      PushColumn(UiGroup, CS(TotalStats.Pushes));
+      PushColumn(UiGroup, CS("Pushes"));
 
       u32 TotalDrawCalls = 0;
 
@@ -86,87 +85,65 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
         }
       }
 
-      BufferColumn(TotalDrawCalls, 6, UiGroup, StatusBarBufferParams);
+      PushColumn(UiGroup, CS(TotalDrawCalls));
       AdvanceSpaces(1, &Layout, &UiGroup->Font);
-      BufferValue("Draw Calls", UiGroup, StatusBarBufferParams);
+      PushColumn(UiGroup, CS("Draw Calls"));
 
-      NewLine(&Layout);
+      PushNewRow(UiGroup);
     }
 
-    BufferColumn(Dt.Min, 6, UiGroup, StatusBarBufferParams);
+    PushColumn(UiGroup, CS(Dt.Min));
+
+    PushTableEnd(UiGroup);
   END_BLOCK("Status Bar");
 
   SetFontSize(&UiGroup->Font, 32);
-  NewLine(&Layout);
-  NewLine(&Layout);
+  PushNewRow(UiGroup);
 #endif
 
   if (DebugState->DisplayDebugMenu)
   {
-    DebugState->UIType = DebugUIType_PickedChunks;
-#if 0
-    ui_style ButtonStyling = UiStyleFromLightestColor(V3(1), V3(0.3f), V2(30));
-    r32 DebugMenuZ = 1.0f;
-    buffer_value_params DebugMenuParams = BufferValueParams(0, &Layout, DebugMenuZ, ButtonStyling);
+    /* buffer_value_params DebugMenuParams = BufferValueParams(0, &Layout, UiStyleFromLightestColor(V3(1), V3(0.3f), V2(30))); */
 
-    ButtonStyling.IsActive = DebugState->UIType == DebugUIType_PickedChunks;
-    const char* ButtonName = "PickedChunks";
-    umm InteractionId = (umm)ButtonName;
-    if (BufferButton(ButtonName, UiGroup, InteractionId, DebugMenuParams))
+    PushTableStart(UiGroup);
+
+    if (Button(UiGroup, CS("PickedChunks"), (umm)"PickedChunks"))
     {
       DebugState->UIType = DebugUIType_PickedChunks;
     }
 
-    ButtonStyling.IsActive = DebugState->UIType == DebugUIType_Graphics;
-    ButtonName = "Graphics";
-    InteractionId = (umm)ButtonName;
-    if (BufferButton(ButtonName, UiGroup, InteractionId, DebugMenuParams))
+    if (Button(UiGroup, CS("Graphics"), (umm)"Graphics"))
     {
       DebugState->UIType = DebugUIType_Graphics;
     }
 
-    ButtonStyling.IsActive = DebugState->UIType == DebugUIType_Network;
-    ButtonName = "Network";
-    InteractionId = (umm)ButtonName;
-    if (BufferButton(ButtonName, UiGroup, InteractionId, DebugMenuParams))
+    if (Button(UiGroup, CS("Network"), (umm)"Network"))
     {
       DebugState->UIType = DebugUIType_Network;
     }
 
-    ButtonStyling.IsActive = DebugState->UIType == DebugUIType_CollatedFunctionCalls;
-    ButtonName = "Functions";
-    InteractionId = (umm)ButtonName;
-    if (BufferButton(ButtonName, UiGroup, InteractionId, DebugMenuParams))
+    if (Button(UiGroup, CS("Functions"), (umm)"Functions"))
     {
       DebugState->UIType = DebugUIType_CollatedFunctionCalls;
     }
 
-    ButtonStyling.IsActive = DebugState->UIType == DebugUIType_CallGraph;
-    ButtonName = "Call Graph";
-    InteractionId = (umm)ButtonName;
-    if (BufferButton(ButtonName, UiGroup, InteractionId, DebugMenuParams))
+    if (Button(UiGroup, CS("Callgraph"), (umm)"Callgraph"))
     {
       DebugState->UIType = DebugUIType_CallGraph;
     }
 
-    ButtonStyling.IsActive = DebugState->UIType == DebugUIType_Memory;
-    ButtonName = "Memory";
-    InteractionId = (umm)ButtonName;
-    if (BufferButton(ButtonName, UiGroup, InteractionId, DebugMenuParams))
+    if (Button(UiGroup, CS("Memory"), (umm)"Memory"))
     {
       DebugState->UIType = DebugUIType_Memory;
     }
 
-    ButtonStyling.IsActive = DebugState->UIType == DebugUIType_DrawCalls;
-    ButtonName = "Draw Calls";
-    InteractionId = (umm)ButtonName;
-    if (BufferButton(ButtonName, UiGroup, InteractionId, DebugMenuParams))
+    if (Button(UiGroup, CS("DrawCalls"), (umm)"DrawCalls"))
     {
-      DebugState->UIType = DebugUIType_DrawCalls;
+      DebugState->UIType = DebugUIType_Memory;
     }
-#endif
 
-    NewLine(&Layout);
+    PushTableEnd(UiGroup);
+    PushNewRow(UiGroup);
   }
   else
   {

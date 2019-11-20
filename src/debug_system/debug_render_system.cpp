@@ -843,59 +843,10 @@ BufferBorder(debug_ui_render_group *Group, interactable* PickerListInteraction, 
 
 
 
-/*********************************           *********************************/
-/*********************************  Buttons  *********************************/
-/*********************************           *********************************/
-
-
-
-function button_interaction_result
-ButtonInteraction(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId, window_layout *Window, ui_style *Style)
-{
-  button_interaction_result Result = {};
-
-  Bounds.Max += (Style->Padding*2.0f);
-
-  interactable Interaction = Interactable(Bounds, InteractionId, Window);
-  /* BufferBorder(Group, &Interaction, V3(1,0,0), 1.0f, DISABLE_CLIPPING); */
-
-  Style->Color = Style->AmbientColor;
-
-  if (Hover(Group, &Interaction))
-  {
-    Result.Hover = True;
-    Style->Color = Style->HoverColor;
-    Style->BackgroundColor = Style->BackgroundHoverColor;
-  }
-
-  if (Clicked(Group, &Interaction))
-  {
-    Result.Clicked = True;
-    Style->Color = Style->ClickedColor;
-    Style->BackgroundColor = Style->BackgroundClickedColor;
-  }
-
-  if (Pressed(Group, &Interaction))
-  {
-    Result.Pressed = True;
-    Style->Color = Style->ClickedColor;
-    Style->BackgroundColor = Style->BackgroundPressedColor;
-  }
-
-  if (Style->IsActive && !Result.Pressed)
-  {
-    Style->Color = Style->ActiveColor;
-    Style->BackgroundColor = Style->BackgroundActiveColor;
-  }
-
-  return Result;
-}
-
-
-
 /****************************                     ****************************/
 /****************************  Command Buffering  ****************************/
 /****************************                     ****************************/
+
 
 
 // TODO(Jesse): Test this actually gets respected!!
@@ -1168,6 +1119,75 @@ PushWindowEnd(debug_ui_render_group *Group, window_layout *Window)
 
   return;
 }
+
+
+
+/*********************************           *********************************/
+/*********************************  Buttons  *********************************/
+/*********************************           *********************************/
+
+
+
+function button_interaction_result
+ButtonInteraction(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId, window_layout *Window, ui_style *Style)
+{
+  button_interaction_result Result = {};
+
+  Bounds.Max += (Style->Padding*2.0f);
+
+  interactable Interaction = Interactable(Bounds, InteractionId, Window);
+  /* BufferBorder(Group, &Interaction, V3(1,0,0), 1.0f, DISABLE_CLIPPING); */
+
+  Style->Color = Style->AmbientColor;
+
+  if (Hover(Group, &Interaction))
+  {
+    Result.Hover = True;
+    Style->Color = Style->HoverColor;
+    Style->BackgroundColor = Style->BackgroundHoverColor;
+  }
+
+  if (Clicked(Group, &Interaction))
+  {
+    Result.Clicked = True;
+    Style->Color = Style->ClickedColor;
+    Style->BackgroundColor = Style->BackgroundClickedColor;
+  }
+
+  if (Pressed(Group, &Interaction))
+  {
+    Result.Pressed = True;
+    Style->Color = Style->ClickedColor;
+    Style->BackgroundColor = Style->BackgroundPressedColor;
+  }
+
+  if (Style->IsActive && !Result.Pressed)
+  {
+    Style->Color = Style->ActiveColor;
+    Style->BackgroundColor = Style->BackgroundActiveColor;
+  }
+
+  return Result;
+}
+
+function b32
+Button(debug_ui_render_group* Group, counted_string ButtonName, umm ButtonId)
+{
+  interactable_handle Button = PushButtonStart(Group, ButtonId);
+    PushColumn(Group, ButtonName);
+  PushButtonEnd(Group);
+
+  b32 Result = Clicked(Group, &Button);
+  return Result;
+}
+
+
+
+/**************************                      *****************************/
+/**************************  Command Processing  *****************************/
+/**************************                      *****************************/
+
+
 
 function ui_render_command*
 GetCommand(ui_render_command_buffer* CommandBuffer, u32 CommandIndex)
