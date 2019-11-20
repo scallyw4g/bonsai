@@ -6,15 +6,23 @@
 
 enum column_render_params
 {
-  ColumnRenderParam_Default    =  0,
+  ColumnRenderParam_LeftAlign  = 0,
   ColumnRenderParam_RightAlign = (1 << 0),
-  ColumnRenderParam_LeftAlign  = (1 << 1),
 };
 
 enum quad_render_params
 {
   QuadRenderParam_NoOp          =  0,
   QuadRenderParam_AdvanceLayout = (1 << 0),
+  QuadRenderParam_AdvanceClip   = (1 << 1),
+
+  QuadRenderParam_Default = (QuadRenderParam_AdvanceLayout|QuadRenderParam_AdvanceClip),
+};
+
+enum button_end_params
+{
+  ButtonEndParam_NoOp                    = 0,
+  ButtonEndParam_DiscardButtonDrawBounds = (1 << 0),
 };
 
 enum ui_render_command_type
@@ -46,6 +54,7 @@ enum ui_render_command_type
 struct ui_render_command_border
 {
   rect2 Bounds;
+  v3 Color;
 };
 
 struct ui_render_command_window_start
@@ -69,8 +78,8 @@ struct ui_render_command_untextured_quad
   v2 OffsetFromLayout;
   v2 QuadDim;
   ui_style Style;
-  quad_render_params Params;
   r32 Z;
+  quad_render_params Params;
 };
 
 struct ui_render_command_untextured_quad_at
@@ -79,6 +88,7 @@ struct ui_render_command_untextured_quad_at
   v2 QuadDim;
   ui_style Style;
   r32 Z;
+  quad_render_params Params;
 };
 
 struct ui_render_command_textured_quad
@@ -92,10 +102,16 @@ struct ui_render_command_button_start
   ui_style Style;
 };
 
+struct ui_render_command_button_end
+{
+  button_end_params Params;
+};
+
 struct ui_render_command_text_at
 {
   counted_string Text;
   v2 At;
+  v2 MaxClip;
 };
 
 struct ui_render_command
@@ -107,6 +123,7 @@ struct ui_render_command
     ui_render_command_window_end         WindowEnd;
     ui_render_command_column             Column;
     ui_render_command_button_start       ButtonStart;
+    ui_render_command_button_end         ButtonEnd;
     ui_render_command_textured_quad      TexturedQuad;
     ui_render_command_untextured_quad    UntexturedQuad;
     ui_render_command_untextured_quad_at UntexturedQuadAt;
