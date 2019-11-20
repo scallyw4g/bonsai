@@ -14,7 +14,7 @@
 
 debug_global table_render_params NullTableRenderParams = {};
 
-debug_global ui_style DefaultUiStyle = UiStyleFromLightestColor(V3(1), V3(0.2f));
+debug_global ui_style DefaultUiStyle = UiStyleFromLightestColor(V3(1));
 
 
 
@@ -1100,7 +1100,7 @@ PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
 
   PushBorder(Group, GetBounds(Window), V3(1));
 
-  ui_style BackgroundStyle = UiStyleFromLightestColor(V3(0.25f), V3(0.25f));
+  ui_style BackgroundStyle = UiStyleFromLightestColor(V3(0.25f));
   PushUntexturedQuadAt(Group, V2(0), Window->MaxClip, zDepth_Background, &BackgroundStyle, QuadRenderParam_NoOp);
 
   return;
@@ -1144,27 +1144,23 @@ ButtonInteraction(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId,
   {
     Result.Hover = True;
     Style->Color = Style->HoverColor;
-    Style->BackgroundColor = Style->BackgroundHoverColor;
   }
 
   if (Clicked(Group, &Interaction))
   {
     Result.Clicked = True;
     Style->Color = Style->ClickedColor;
-    Style->BackgroundColor = Style->BackgroundClickedColor;
   }
 
   if (Pressed(Group, &Interaction))
   {
     Result.Pressed = True;
     Style->Color = Style->ClickedColor;
-    Style->BackgroundColor = Style->BackgroundPressedColor;
   }
 
   if (Style->IsActive && !Result.Pressed)
   {
     Style->Color = Style->ActiveColor;
-    Style->BackgroundColor = Style->BackgroundActiveColor;
   }
 
   return Result;
@@ -2092,7 +2088,7 @@ PushScopeBarsRecursive(debug_ui_render_group *Group, debug_profile_scope *Scope,
   {
     cycle_range Range = {Scope->StartingCycle, Scope->CycleCount};
 
-    ui_style Style = UiStyleFromLightestColor(RandomV3(Entropy), V3(0.3f));
+    ui_style Style = UiStyleFromLightestColor(RandomV3(Entropy));
 
     interactable_handle Bar = PushButtonStart(Group, (umm)"CycleBarHoverInteraction"^(umm)Scope, &Style);
       PushCycleBar(Group, &Range, Frame, TotalGraphWidth, Depth, &Style);
@@ -2397,7 +2393,7 @@ DrawFrameTicker(debug_ui_render_group *Group, debug_state *DebugState, r64 MaxMs
     /*   } */
     /* } */
 
-    ui_style Style = UiStyleFromLightestColor(V3(1,1,0), V3(0.3f), V2(5,0));
+    ui_style Style = UiStyleFromLightestColor(V3(1,1,0), V2(5,0));
     PushUntexturedQuad(Group, Basis + VerticalOffset, QuadDim, zDepth_Background, &Style);
   }
 
@@ -2619,10 +2615,10 @@ PushBargraph(debug_ui_render_group *Group, r32 PercFilled)
   v2 BackgroundQuad = V2(BarWidth, BarHeight);
   v2 PercBarDim = BackgroundQuad * V2(PercFilled, 1);
 
-  ui_style Style = UiStyleFromLightestColor(V3(0.6f), V3(0.3f));
+  ui_style Style = UiStyleFromLightestColor(V3(0.6f));
   PushUntexturedQuad(Group, V2(0), BackgroundQuad, zDepth_Text, &Style);
 
-  Style = UiStyleFromLightestColor(V3(1,1,0), V3(0.3f));
+  Style = UiStyleFromLightestColor(V3(1,1,0));
   PushUntexturedQuad(Group, V2(-BackgroundQuad.x, 0), PercBarDim, zDepth_Text, &Style, QuadRenderParam_NoOp);
 
   return;

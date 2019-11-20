@@ -46,12 +46,6 @@ struct ui_style
   v3 ClickedColor;
   v3 ActiveColor;
 
-  v3 BackgroundColor;
-  v3 BackgroundHoverColor;
-  v3 BackgroundPressedColor;
-  v3 BackgroundClickedColor;
-  v3 BackgroundActiveColor;
-
   v2 Padding;
 
   b32 IsActive;
@@ -149,7 +143,7 @@ Rect2(interactable *Interaction)
 }
 
 function ui_style
-UiStyleFromLightestColor(v3 Color, v3 BackgroundColor, v2 Padding = V2(10))
+UiStyleFromLightestColor(v3 Color, v2 Padding = V2(10))
 {
   ui_style Style  = {
     .Color        = Color,
@@ -158,12 +152,6 @@ UiStyleFromLightestColor(v3 Color, v3 BackgroundColor, v2 Padding = V2(10))
     .PressedColor = Color,
     .ClickedColor = Color,
     .ActiveColor  = Color,
-
-    .BackgroundColor        = BackgroundColor,
-    .BackgroundHoverColor   = BackgroundColor*0.5f,
-    .BackgroundPressedColor = BackgroundColor*0.8f,
-    .BackgroundClickedColor = BackgroundColor,
-    .BackgroundActiveColor  = BackgroundColor,
 
     .Padding      = Padding,
     .IsActive     = False,
