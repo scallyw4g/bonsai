@@ -25,6 +25,14 @@ enum button_end_params
   ButtonEndParam_DiscardButtonDrawBounds = (1 << 0),
 };
 
+enum z_depth
+{
+  zDepth_Background,
+  zDepth_Text,
+  zDepth_TitleBar,
+  zDepth_Border,
+};
+
 enum ui_render_command_type
 {
   RenderCommand_Noop,
@@ -78,7 +86,7 @@ struct ui_render_command_untextured_quad
   v2 OffsetFromLayout;
   v2 QuadDim;
   ui_style Style;
-  r32 Z;
+  z_depth zDepth;
   quad_render_params Params;
 };
 
@@ -87,13 +95,14 @@ struct ui_render_command_untextured_quad_at
   v2 AtRelativeToWindowBasis;
   v2 QuadDim;
   ui_style Style;
-  r32 Z;
+  z_depth zDepth;
   quad_render_params Params;
 };
 
 struct ui_render_command_textured_quad
 {
   debug_texture_array_slice TextureSlice;
+  z_depth zDepth;
 };
 
 struct ui_render_command_button_start
@@ -168,7 +177,6 @@ struct buffer_value_params
 {
   window_layout* Window;
   layout* Layout;
-  r32 Z;
   ui_style Style;
 };
 
@@ -186,4 +194,37 @@ struct render_state
 
   interactable CurrentInteraction;
 };
+
+function r32
+GetZ(z_depth zDepth, window_layout* Window)
+{
+  r32 Result = 0;
+
+  if (Window)
+  {
+    switch (zDepth)
+    {
+      case zDepth_Background:
+      {
+        Result = Window->zBackground;
+      } break;
+      case zDepth_Text:
+      {
+        Result = Window->zText;
+      } break;
+      case zDepth_TitleBar:
+      {
+        Result = Window->zTitleBar;
+      } break;
+      case zDepth_Border:
+      {
+        Result = Window->zBorder;
+      } break;
+
+      InvalidDefaultCase;
+    }
+  }
+
+  return Result;
+}
 

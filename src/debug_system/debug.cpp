@@ -48,11 +48,11 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
 
   SetFontSize(&UiGroup->Font, DEBUG_FONT_SIZE);
 
+#if 0
   TIMED_BLOCK("Draw Status Bar");
-    r32 StatusBarZ = 1.0f;
     Dt = ComputeMinMaxAvgDt();
 
-    buffer_value_params StatusBarBufferParams = BufferValueParams(0, &Layout, StatusBarZ);
+    buffer_value_params StatusBarBufferParams = BufferValueParams(0, &Layout);
 
     BufferColumn(Dt.Max, 6, UiGroup, StatusBarBufferParams);
     NewLine(&Layout);
@@ -99,8 +99,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   SetFontSize(&UiGroup->Font, 32);
   NewLine(&Layout);
   NewLine(&Layout);
-
-
+#endif
 
   if (DebugState->DisplayDebugMenu)
   {
@@ -188,7 +187,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
 
     case DebugUIType_Graphics:
     {
-      DebugDrawGraphicsHud(UiGroup, DebugState, &Layout, 1.0f);
+      DebugDrawGraphicsHud(UiGroup, DebugState, &Layout);
     } break;
 
     case DebugUIType_Network:

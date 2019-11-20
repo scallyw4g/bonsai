@@ -38,7 +38,7 @@ TestTable(debug_ui_render_group* Group)
       PushColumn(Group, CS("String1"));
       PushColumn(Group, CS("String2"));
       PushColumn(Group, CS("String3"));
-      PushUntexturedQuadAt(Group, V2(0), V2(100), 1.0f);
+      PushUntexturedQuadAt(Group, V2(0), V2(100), zDepth_Background);
     PushButtonEnd(Group);
   PushTableEnd(Group);
   PushNewRow(Group);
@@ -48,7 +48,7 @@ TestTable(debug_ui_render_group* Group)
       PushColumn(Group, CS("String1"));
       PushColumn(Group, CS("String2"));
       PushColumn(Group, CS("String3"));
-      PushUntexturedQuadAt(Group, V2(0), V2(100), 1.0f);
+      PushUntexturedQuadAt(Group, V2(0), V2(100), zDepth_Background);
       PushNewRow(Group);
     PushButtonEnd(Group);
   PushTableEnd(Group);
