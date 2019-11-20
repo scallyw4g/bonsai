@@ -1155,7 +1155,6 @@ PushBorder(debug_ui_render_group *Group, rect2 BoundsRelativeToCurrentWindow, v3
 
 }
 
-
 function void
 PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
 {
@@ -1201,10 +1200,14 @@ PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
     }
   }
 
-  PushButtonStart(Group, TitleBarInteractionId);
-    PushTextAt(Group, CS(Window->Title), Window->Basis, GetAbsoluteMaxClip(Window));
-    PushUntexturedQuad(Group, V2(0), V2(Window->MaxClip.x, Group->Font.Size.y), zIndexForTitleBar(Window, Group));
-  PushButtonEnd(Group);
+  PushTableStart(Group);
+    PushButtonStart(Group, TitleBarInteractionId);
+      PushColumn(Group, CS(Window->InteractionStackIndex));
+      PushColumn(Group, CS(Window->zMin));
+      PushColumn(Group, CS(Window->Title));
+      PushUntexturedQuadAt(Group, V2(0), V2(Window->MaxClip.x, Group->Font.Size.y), zIndexForTitleBar(Window, Group));
+    PushButtonEnd(Group);
+  PushTableEnd(Group);
 
   PushNewRow(Group);
 
@@ -1300,12 +1303,12 @@ GetColumnCountForTable(ui_render_command_buffer* CommandBuffer, u32 CommandIndex
         case RenderCommand_Column:
         {
           ++ColumnIndex;
+          ColumnCount = (u16)Max(ColumnCount, ColumnIndex);
           Assert(ColumnIndex <= u16_MAX);
         } break;
 
         case RenderCommand_NewRow:
         {
-          ColumnCount = (u16)Max(ColumnCount, ColumnIndex);
           ColumnIndex = 0;
         } break;
 
@@ -1530,16 +1533,131 @@ ProcessUntexturedQuadPush(debug_ui_render_group* Group, ui_render_command_untext
   return;
 }
 
+struct sort_key
+{
+  u64 Value;
+  u32 Index;
+};
+
+struct window_sort_params
+{
+  u32 Count;
+  u64 LowestInteractionStackIndex;
+
+  sort_key* SortKeys;
+};
+
+function window_sort_params
+GetWindowSortParams(ui_render_command_buffer *CommandBuffer)
+{
+  window_sort_params Result = {};
+
+  {
+    u32 CommandIndex = 0;
+    ui_render_command *Command = GetCommand(CommandBuffer, CommandIndex++);
+    while (Command)
+    {
+      switch(Command->Type)
+      {
+        case RenderCommand_WindowStart:
+        {
+          ++Result.Count;
+          Result.LowestInteractionStackIndex = Min(Result.LowestInteractionStackIndex, Command->WindowStart.Window->InteractionStackIndex);
+        } break;
+        default : {} break;
+      }
+
+      Command = GetCommand(CommandBuffer, CommandIndex++);
+    }
+  }
+
+
+  Result.SortKeys = Allocate(sort_key, TranArena, Result.Count);
+
+  {
+    u32 AtKey = 0;
+    u32 CommandIndex = 0;
+    ui_render_command *Command = GetCommand(CommandBuffer, CommandIndex++);
+    while (Command)
+    {
+      switch(Command->Type)
+      {
+        case RenderCommand_WindowStart:
+        {
+          Result.SortKeys[AtKey++] = { .Index = CommandIndex-1, .Value = Command->WindowStart.Window->InteractionStackIndex };
+        } break;
+        default : {} break;
+      }
+
+      Command = GetCommand(CommandBuffer, CommandIndex++);
+    }
+  }
+
+  return Result;
+}
+
+function void
+BubbleSort(sort_key* Keys, u32 Count)
+{
+  for (u32 Ignored = 0;
+      Ignored < Count;
+      ++Ignored)
+  {
+    b32 Sorted = True;
+
+    for (u32 Inner = 0;
+        Inner < (Count-1);
+        ++Inner)
+    {
+      sort_key* KeyA = Keys+Inner;
+      sort_key* KeyB = Keys+Inner+1;
+
+      if (KeyA->Value < KeyB->Value)
+      {
+        sort_key Temp = *KeyA;
+        *KeyA = *KeyB;
+        *KeyB = Temp;
+        Sorted = False;
+      }
+    }
+
+    if (Sorted) break;
+  }
+
+  return;
+}
+
+function void
+SetWindowZDepths(ui_render_command_buffer *CommandBuffer)
+{
+  window_sort_params WindowSortParams = GetWindowSortParams(CommandBuffer);
+
+  BubbleSort(WindowSortParams.SortKeys, WindowSortParams.Count);
+
+  r32 SliceInterval = 1.0f/(r32)WindowSortParams.Count;
+
+  for (u32 SortKeyIndex = 0;
+      SortKeyIndex < WindowSortParams.Count;
+      ++SortKeyIndex)
+  {
+    u32 CommandIndex = WindowSortParams.SortKeys[SortKeyIndex].Index;
+    window_layout* Window = CommandBuffer->Commands[CommandIndex].WindowStart.Window;
+    Window->zMin = 1.0f - (SliceInterval*(r32)SortKeyIndex) ;
+  }
+
+  return;
+}
+
 function void
 FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *CommandBuffer)
 {
-  u32 CommandIndex = 0;
-  ui_render_command *Command = GetCommand(CommandBuffer, CommandIndex++);
-
   render_state RenderState = { .Style = DefaultUiStyle };
-
   table_render_params TableRenderParams = {};
 
+  SetWindowZDepths(CommandBuffer);
+
+  u32 CommandIndex = 0;
+  ui_render_command *Command = GetCommand(CommandBuffer, CommandIndex++);
   while (Command)
   {
     switch(Command->Type)

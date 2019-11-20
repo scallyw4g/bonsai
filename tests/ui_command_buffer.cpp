@@ -32,6 +32,26 @@ TestTable(debug_ui_render_group* Group)
     TestThat(!Pressed(Group, &Interaction));
   }
   PushTableEnd(Group);
+
+  PushTableStart(Group);
+    PushButtonStart(Group, (umm)"Ignored");
+      PushColumn(Group, CS("String1"));
+      PushColumn(Group, CS("String2"));
+      PushColumn(Group, CS("String3"));
+      PushUntexturedQuadAt(Group, V2(0), V2(100), 1.0f);
+    PushButtonEnd(Group);
+  PushTableEnd(Group);
+  PushNewRow(Group);
+
+  PushTableStart(Group);
+    PushButtonStart(Group, (umm)"Ignored");
+      PushColumn(Group, CS("String1"));
+      PushColumn(Group, CS("String2"));
+      PushColumn(Group, CS("String3"));
+      PushUntexturedQuadAt(Group, V2(0), V2(100), 1.0f);
+      PushNewRow(Group);
+    PushButtonEnd(Group);
+  PushTableEnd(Group);
 }
 
 s32 main()

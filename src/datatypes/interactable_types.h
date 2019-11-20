@@ -13,6 +13,7 @@ struct window_layout
   v2 MaxClip;
 
   u64 InteractionStackIndex;
+  r32 zMin;
 
   window_layout* NextHotWindow;
 };
