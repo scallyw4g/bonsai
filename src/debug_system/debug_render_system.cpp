@@ -12,6 +12,8 @@
 
 #define u32_COUNT_PER_QUAD 6
 
+debug_global table_render_params NullTableRenderParams = {};
+
 debug_global ui_style DefaultUiStyle = UiStyleFromLightestColor(V3(1), V3(0.2f));
 
 /*******************************             *********************************/
@@ -1200,7 +1202,7 @@ PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
   }
 
   PushButtonStart(Group, TitleBarInteractionId);
-    PushTextAt(Group, CS(Window->Title), Window->Basis, Window->MaxClip);
+    PushTextAt(Group, CS(Window->Title), Window->Basis, GetAbsoluteMaxClip(Window));
     PushUntexturedQuad(Group, V2(0), V2(Window->MaxClip.x, Group->Font.Size.y), zIndexForTitleBar(Window, Group));
   PushButtonEnd(Group);
 
@@ -1527,90 +1529,6 @@ ProcessUntexturedQuadPush(debug_ui_render_group* Group, ui_render_command_untext
   return;
 }
 
-function u32
-RenderTable(render_state* RenderState, debug_ui_render_group* Group, ui_render_command_buffer* CommandBuffer, u32 FirstCommandIndex)
-{
-  table_render_params TableRenderParams = GetTableRenderParams(CommandBuffer, FirstCommandIndex);
-
-  if (TableRenderParams.OnePastTableEnd)
-  {
-    u32 ColumnIndex = 0;
-
-    u32 CommandIndex = FirstCommandIndex;
-    while (CommandIndex < TableRenderParams.OnePastTableEnd)
-    {
-      ui_render_command* Command = GetCommand(CommandBuffer, CommandIndex++);
-      switch(Command->Type)
-      {
-          case RenderCommand_TableStart:
-          {
-          } break;
-
-          case RenderCommand_Column:
-          {
-            u32 ColumnWidth = GetColumnWidth(&TableRenderParams, ColumnIndex++);
-            RenderState->Style.Color = SelectColorState(RenderState, RenderState->Style);
-            buffer_value_params Params = BufferValueParams(RenderState->Window, &RenderState->Layout, zIndexForText(RenderState->Window, Group), RenderState->Style);
-            BufferColumn(Command->Column.String, Group, ColumnWidth, Params, Command->Column.Params);
-          } break;
-
-          case RenderCommand_NewRow:
-          {
-            ColumnIndex = 0;
-            NewLine(&RenderState->Layout);
-          } break;
-
-          case RenderCommand_TexturedQuad:
-          {
-            ProcessTexturedQuadPush(Group, &Command->TexturedQuad, RenderState);
-          } break;
-
-          case RenderCommand_UntexturedQuadAt:
-          {
-            ProcessUntexturedQuadAtPush(Group, &Command->UntexturedQuadAt, RenderState);
-          } break;
-
-          case RenderCommand_UntexturedQuad:
-          {
-            ProcessUntexturedQuadPush(Group, &Command->UntexturedQuad, RenderState);
-          } break;
-
-          case RenderCommand_TextAt:
-          {
-            ui_render_command_text_at TextCommand = Command->TextAt;
-            BufferTextAt(Group, TextCommand.At, TextCommand.Text, V3(1), 1.0f, TextCommand.MaxClip);
-          } break;
-
-          case RenderCommand_ButtonStart:
-          {
-            RenderState->Style = Command->ButtonStart.Style;
-            ProcessButtonStart(Group, RenderState, Command->ButtonStart.ID);
-          } break;
-
-          case RenderCommand_ButtonEnd:
-          {
-            RenderState->Style = DefaultUiStyle;
-            ProcessButtonEnd(Group, RenderState, &Command->ButtonEnd);
-          } break;
-
-          case RenderCommand_TableEnd:
-          {
-            Assert(CommandIndex == TableRenderParams.OnePastTableEnd);
-          } break;
-
-          InvalidDefaultCase;
-        }
-    }
-  }
-  else
-  {
-    Error("No RenderCommand_TableEnd detected.");
-    TableRenderParams.OnePastTableEnd = CommandBuffer->CommandCount;
-  }
-
-  return TableRenderParams.OnePastTableEnd;
-}
-
 function void
 FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *CommandBuffer)
 {
@@ -1620,6 +1538,9 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
   render_state RenderState = {
     .Style = DefaultUiStyle,
   };
+
+  table_render_params TableRenderParams = {};
+  u32 ColumnIndex = 0;
 
   while (Command)
   {
@@ -1641,7 +1562,29 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
 
       case RenderCommand_TableStart:
       {
-        CommandIndex = RenderTable(&RenderState, Group, CommandBuffer, CommandIndex-1);
+        Assert( AreEqual(TableRenderParams, NullTableRenderParams));
+
+        ColumnIndex = 0;
+        TableRenderParams = GetTableRenderParams(CommandBuffer, CommandIndex-1);
+        if (!TableRenderParams.OnePastTableEnd)
+        {
+          Error("No RenderCommand_TableEnd detected.");
+          CommandIndex = CommandBuffer->CommandCount;
+        }
+      } break;
+
+      case RenderCommand_TableEnd:
+      {
+        Assert(CommandIndex == TableRenderParams.OnePastTableEnd);
+        TableRenderParams = NullTableRenderParams;
+      } break;
+
+      case RenderCommand_Column:
+      {
+        u32 ColumnWidth = GetColumnWidth(&TableRenderParams, ColumnIndex++);
+        RenderState.Style.Color = SelectColorState(&RenderState, RenderState.Style);
+        buffer_value_params Params = BufferValueParams(RenderState.Window, &RenderState.Layout, zIndexForText(RenderState.Window, Group), RenderState.Style);
+        BufferColumn(Command->Column.String, Group, ColumnWidth, Params, Command->Column.Params);
       } break;
 
       case RenderCommand_TexturedQuad:
@@ -1661,13 +1604,14 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
 
       case RenderCommand_NewRow:
       {
+        ColumnIndex = 0;
         NewLine(&RenderState.Layout);
       } break;
 
       case RenderCommand_TextAt:
       {
         ui_render_command_text_at TextCommand = Command->TextAt;
-        BufferTextAt(Group, TextCommand.At, TextCommand.Text, V3(1), 1.0f, DISABLE_CLIPPING);
+        BufferTextAt(Group, TextCommand.At, TextCommand.Text, V3(1), 1.0f, TextCommand.MaxClip);
       } break;
 
       case RenderCommand_ButtonStart:
@@ -1678,6 +1622,7 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
 
       case RenderCommand_ButtonEnd:
       {
+        RenderState.Style = DefaultUiStyle;
         ProcessButtonEnd(Group, &RenderState, &Command->ButtonEnd);
       } break;
 
