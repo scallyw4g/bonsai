@@ -1464,20 +1464,6 @@ ProcessUntexturedQuadPush(debug_ui_render_group* Group, ui_render_command_untext
   return;
 }
 
-struct sort_key
-{
-  u64 Value;
-  u32 Index;
-};
-
-struct window_sort_params
-{
-  u32 Count;
-  u64 LowestInteractionStackIndex;
-
-  sort_key* SortKeys;
-};
-
 function window_sort_params
 GetWindowSortParams(ui_render_command_buffer *CommandBuffer)
 {

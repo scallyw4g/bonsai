@@ -195,6 +195,20 @@ struct render_state
   interactable CurrentInteraction;
 };
 
+struct sort_key
+{
+  u64 Value;
+  u32 Index;
+};
+
+struct window_sort_params
+{
+  u32 Count;
+  u64 LowestInteractionStackIndex;
+
+  sort_key* SortKeys;
+};
+
 function r32
 GetZ(z_depth zDepth, window_layout* Window)
 {
