@@ -573,8 +573,8 @@ BufferChar(debug_ui_render_group *Group, u8 Char, v2 MinP, font *Font, v3 Color,
   rect2 UV = UVsForChar(Char);
 
   { // Black Drop-shadow
-    r32 e = 0.00000001f;
-    v2 ShadowOffset = 0.1f*Font->Size;
+    r32 e = DEBUG_FONT_SHADOW_EPSILON;
+    v2 ShadowOffset = 0.075f*Font->Size;
     BufferTexturedQuad( Group,
                         MinP+ShadowOffset, Font->Size,
                         DebugTextureArraySlice_Font, UV,

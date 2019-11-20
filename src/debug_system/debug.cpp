@@ -48,7 +48,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
 
   SetFontSize(&UiGroup->Font, DEBUG_FONT_SIZE);
 
-#if 0
+#if 1
   TIMED_BLOCK("Draw Status Bar");
     Dt = ComputeMinMaxAvgDt();
 

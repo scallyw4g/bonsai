@@ -209,10 +209,12 @@ struct window_sort_params
   sort_key* SortKeys;
 };
 
+#define DEBUG_FONT_SHADOW_EPSILON (0.00001f)
+
 function r32
 GetZ(z_depth zDepth, window_layout* Window)
 {
-  r32 Result = 0;
+  r32 Result = DEBUG_FONT_SHADOW_EPSILON;
 
   if (Window)
   {
