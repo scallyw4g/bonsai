@@ -65,7 +65,7 @@ struct font
 
 // TODO(Jesse): Axe this!
 debug_global font Global_Font = {
-  .Size = V2(20, 24),
+  .Size = V2(30, 34),
 };
 
 struct ui_style

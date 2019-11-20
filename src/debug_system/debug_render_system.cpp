@@ -71,7 +71,7 @@ MemorySize(u64 Number)
   }
 
 
-  char *Buffer = AllocateProtection(char, TranArena, 32, False);
+  char *Buffer = Allocate(char, TranArena, 32);
   sprintf(Buffer, "%.1f%c", (r32)Display, Units);
   return Buffer;
 }
@@ -80,7 +80,7 @@ template<typename number_type>counted_string
 NumericValueToString(number_type Number, const char* Format)
 {
   u32 BufferLength = 32;
-  char *Buffer = AllocateProtection(char, TranArena, BufferLength, False);
+  char *Buffer = Allocate(char, TranArena, BufferLength);
   snprintf(Buffer, BufferLength, Format, Number);
 
   counted_string Result = CS(Buffer);
@@ -125,7 +125,7 @@ CS(r32 Number)
 function char*
 ToString(u64 Number)
 {
-  char *Buffer = AllocateProtection(char, TranArena, 32, False);
+  char *Buffer = Allocate(char, TranArena, 32);
   sprintf(Buffer, "%lu", Number);
   return Buffer;
 }
@@ -133,7 +133,7 @@ ToString(u64 Number)
 function char*
 ToString(s32 Number)
 {
-  char *Buffer = AllocateProtection(char, TranArena, 32, False);
+  char *Buffer = Allocate(char, TranArena, 32);
   sprintf(Buffer, "%i", Number);
   return Buffer;
 }
@@ -141,7 +141,7 @@ ToString(s32 Number)
 function char*
 ToString(u32 Number)
 {
-  char *Buffer = AllocateProtection(char, TranArena, 32, False);
+  char *Buffer = Allocate(char, TranArena, 32);
   sprintf(Buffer, "%u", Number);
   return Buffer;
 }
@@ -149,7 +149,7 @@ ToString(u32 Number)
 function char*
 ToString(r32 Number)
 {
-  char *Buffer = AllocateProtection(char, TranArena, 32, False);
+  char *Buffer = Allocate(char, TranArena, 32);
   sprintf(Buffer, "%.2f", Number);
   return Buffer;
 }
@@ -180,7 +180,7 @@ FormatMemorySize(u64 Number)
     Units = 'G';
   }
 
-  char *Buffer = AllocateProtection(char, TranArena, 32, False);
+  char *Buffer = Allocate(char, TranArena, 32);
   sprintf(Buffer, "%.1f%c", (r32)Display, Units);
 
   return Buffer;
@@ -199,7 +199,7 @@ FormatThousands(u64 Number)
     Units = 'K';
   }
 
-  char *Buffer = AllocateProtection(char, TranArena, 32, False);
+  char *Buffer = Allocate(char, TranArena, 32);
   sprintf(Buffer, "%.1f%c", Display, Units);
 
   return Buffer;
@@ -1131,7 +1131,7 @@ GetTableRenderParams(ui_render_command_buffer* CommandBuffer, u32 CommandIndex)
 {
   table_render_params Result = {};
   Result.ColumnCount = GetColumnCountForTable(CommandBuffer, CommandIndex);
-  Result.ColumnWidths = AllocateProtection(u32, TranArena, Result.ColumnCount, False);
+  Result.ColumnWidths = Allocate(u32, TranArena, Result.ColumnCount);
 
   ui_render_command* Command =  GetCommand(CommandBuffer, CommandIndex++);
   Assert(Command && Command->Type == RenderCommand_TableStart);
@@ -2809,7 +2809,9 @@ DebugDrawNetworkHud(debug_ui_render_group *Group, network_connection *Network, s
 function void
 DebugDrawGraphicsHud(debug_ui_render_group *Group, debug_state *DebugState)
 {
+  PushTableStart(Group);
   PushColumn(Group, CS(DebugState->BytesBufferedToCard));
+  PushTableEnd(Group);
   return;
 }
 

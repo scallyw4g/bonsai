@@ -222,6 +222,8 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     DebugState->DoChunkPicking = False;
   }
 
+  RewindArena(TranArena);
+
   return;
 }
 
