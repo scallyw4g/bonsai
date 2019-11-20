@@ -1562,8 +1562,8 @@ SetWindowZDepths(ui_render_command_buffer *CommandBuffer)
     window_layout* Window = CommandBuffer->Commands[CommandIndex].WindowStart.Window;
 
     Window->zBackground = 1.0f - (SliceInterval*(r32)SortKeyIndex) - SliceInterval;
-    Window->zText       = Window->zBackground + (SliceInterval*0.1f);
-    Window->zTitleBar   = Window->zBackground + (SliceInterval*0.2f);
+    Window->zTitleBar   = Window->zBackground + (SliceInterval*0.1f);
+    Window->zText       = Window->zBackground + (SliceInterval*0.2f);
     Window->zBorder     = Window->zBackground + (SliceInterval*0.3f);
     Assert(Window->zBackground <= 1.0f);
     Assert(Window->zBackground >= 0.0f);
