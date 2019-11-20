@@ -1,12 +1,12 @@
 #include <texture.cpp>
 #include <stream.cpp>
 #include <shader.cpp>
+#include <gpu_mapped_buffer.cpp>
 #include <render_init.cpp>
 
 #include <render.h>
 #include <render_utils.cpp>
 #include <bonsai_mesh.cpp>
-#include <gpu_mapped_buffer.cpp>
 
 #include <work_queue.cpp>
 

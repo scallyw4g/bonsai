@@ -1,6 +1,5 @@
 #include <bonsai_engine.h>
-#include <bonsai_engine.cpp>
-#include <bonsai_asset_loaders.cpp>
+#include <bonsai_asset_loaders.h>
 
 
 void
@@ -73,20 +72,26 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 {
   TIMED_FUNCTION();
 
-  world                 *World         = GameState->World;
-  chunk_dimension        WorldChunkDim = World->ChunkDim;
-  graphics              *Graphics      = GameState->Graphics;
-  g_buffer_render_group *gBuffer       = Graphics->gBuffer;
-  ao_render_group       *AoGroup       = Graphics->AoGroup;
-  camera                *Camera        = Graphics->Camera;
+  world                     * World         = GameState->World;
+  graphics                  * Graphics      = GameState->Graphics;
+  g_buffer_render_group     * gBuffer       = Graphics->gBuffer;
+  ao_render_group           * AoGroup       = Graphics->AoGroup;
+  camera                    * Camera        = Graphics->Camera;
+
+  gpu_mapped_element_buffer * GpuMap        = Graphics->GpuBuffers + Graphics->GpuBufferWriteIndex;
+  Graphics->GpuBufferWriteIndex             = (Graphics->GpuBufferWriteIndex + 1) % 2;
+
+  chunk_dimension             WorldChunkDim = World->ChunkDim;
+
+  MapGpuElementBuffer(GpuMap);
 
   entity *Player = GameState->Player;
   ClearFramebuffers(Graphics);
 
 #if DEBUG_DRAW_WORLD_AXIES
-  DEBUG_DrawLine(&World->Mesh, Graphics, V3(0,0,0), V3(10000, 0, 0), RED, 0.5f );
-  DEBUG_DrawLine(&World->Mesh, Graphics, V3(0,0,0), V3(0, 10000, 0), GREEN, 0.5f );
-  DEBUG_DrawLine(&World->Mesh, Graphics, V3(0,0,0), V3(0, 0, 10000), BLUE, 0.5f );
+  /* DEBUG_DrawLine(&World->Mesh, Graphics, V3(0,0,0), V3(10000, 0, 0), RED, 0.5f ); */
+  /* DEBUG_DrawLine(&World->Mesh, Graphics, V3(0,0,0), V3(0, 10000, 0), GREEN, 0.5f ); */
+  /* DEBUG_DrawLine(&World->Mesh, Graphics, V3(0,0,0), V3(0, 0, 10000), BLUE, 0.5f ); */
 #endif
 
   if (Hotkeys->Player_Spawn)
@@ -99,15 +104,15 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   SimulatePlayers(GameState, Player, Hotkeys, Plat->dt);
 
-  UpdateCameraP(Plat, World, Player->P, Camera);
+  UpdateGameCamera(Plat->MouseDP, &Plat->Input, Player->P, Camera);
 
   SimulateEntities(GameState, Plat->dt);
 
   SimulateAndRenderParticleSystems(GameState->EntityTable, &GameState->Mesh, Graphics, Plat->dt);
 
   gBuffer->ViewProjection =
-    GetProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
-    GetViewMatrix(WorldChunkDim, Camera);
+    ProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
+    ViewMatrix(WorldChunkDim, Camera);
 
   TIMED_BLOCK("BufferMeshes");
     BufferWorld(GameState, &GameState->Mesh, World, Graphics, VISIBLE_REGION_RADIUS);
@@ -115,7 +120,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   END_BLOCK("BufferMeshes");
 
   TIMED_BLOCK("RenderToScreen");
-    RenderGBuffer(&GameState->Mesh, Graphics);
+    RenderGBuffer(GpuMap, Graphics);
     RenderAoTexture(AoGroup);
     DrawGBufferToFullscreenQuad(Plat, Graphics);
   END_BLOCK("RenderToScreen");

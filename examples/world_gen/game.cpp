@@ -110,8 +110,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   ao_render_group       *AoGroup       = Graphics->AoGroup;
   camera                *Camera        = Graphics->Camera;
 
-  GameState->GpuBufferWriteIndex = (GameState->GpuBufferWriteIndex + 1) % 2;
-  gpu_mapped_element_buffer* GpuMap = GameState->GpuBuffers + GameState->GpuBufferWriteIndex;
+  Graphics->GpuBufferWriteIndex = (Graphics->GpuBufferWriteIndex + 1) % 2;
+  gpu_mapped_element_buffer* GpuMap = Graphics->GpuBuffers + Graphics->GpuBufferWriteIndex;
 
   MapGpuElementBuffer(GpuMap);
 
@@ -256,9 +256,6 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   GameState->Player = GetFreeEntity(GameState);
   SpawnPlayer(GameState, GameState->Player, Canonical_Position(Voxel_Position(0), WorldCenter));
-
-  AllocateGpuElementBuffer(GameState->GpuBuffers + 0, (u32)Megabytes(4));
-  AllocateGpuElementBuffer(GameState->GpuBuffers + 1, (u32)Megabytes(4));
 
   return GameState;
 }

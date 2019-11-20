@@ -325,6 +325,11 @@ GraphicsInit(memory_arena *GraphicsMemory)
   Result->Camera = Allocate(camera, GraphicsMemory, 1);
   StandardCamera(Result->Camera, 1000.0f);
 
+
+  AllocateGpuElementBuffer(Result->GpuBuffers + 0, (u32)Megabytes(4));
+  AllocateGpuElementBuffer(Result->GpuBuffers + 1, (u32)Megabytes(4));
+
+
 #if 0
   shadow_render_group *SG = Allocate(shadow_render_group, GraphicsMemory, 1);
   if (!InitializeShadowBuffer(SG, GraphicsMemory, v2i()))

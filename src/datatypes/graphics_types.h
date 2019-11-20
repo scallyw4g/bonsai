@@ -17,5 +17,8 @@ struct graphics
   shadow_render_group   * SG;
   post_processing_group * PostGroup;
 
+  gpu_mapped_element_buffer GpuBuffers[2];
+  u32 GpuBufferWriteIndex;
+
   memory_arena *Memory;
 };

@@ -70,9 +70,9 @@ SHARED_LIBRARY_FLAGS="-shared -fPIC"
 
 EXAMPLES_TO_BUILD="
   $EXAMPLES/world_gen
+  $EXAMPLES/animation_test
 "
 
-  # $EXAMPLES/animation_test
   # $EXAMPLES/ssao_test
   # $EXAMPLES/space_invaders
 
