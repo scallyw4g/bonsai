@@ -1,5 +1,8 @@
 #! /bin/bash
 
+COMMON_OPTIMIZATION_OPTIONS="-O2"
+# COMMON_OPTIMIZATION_OPTIONS=""
+
 RED="\x1b[31m"
 BLUE="\x1b[34m"
 GREEN="\x1b[32m"
@@ -36,9 +39,6 @@ OUTPUT_DIRECTORY="$BIN"
 # in colors.h gets axed .. I think.
 
 # TODO(Jesse): Investigate -Wcast-align situation
-
-COMMON_OPTIMIZATION_OPTIONS="-O2"
-# COMMON_OPTIMIZATION_OPTIONS=""
 
 COMMON_COMPILER_OPTIONS="
   -ferror-limit=2000

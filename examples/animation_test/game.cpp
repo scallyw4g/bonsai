@@ -55,10 +55,18 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       world_chunk* Dest = (world_chunk*)Entry->Input;
       if (!ChunkIsGarbage(Dest))
       {
-        InitializeWorldChunkPerlinPlane(Thread,
-                                        Dest,
-                                        10, -10);
+        InitializeWorldChunkPerlinPlane(Thread, Dest, 10, -10);
       }
+    } break;
+
+    case WorkEntryType_CopyBuffer:
+    {
+      untextured_3d_geometry_buffer* Src = Entry->GpuCopyParams.Src;
+      untextured_3d_geometry_buffer* Dest = &Entry->GpuCopyParams.Dest;
+      Assert(Src->At <= Dest->End);
+
+      v3 Basis = Entry->GpuCopyParams.Basis;
+      BufferVertsChecked(Src, Dest, Basis, V3(1.0f));
     } break;
 
     InvalidDefaultCase;
@@ -108,15 +116,15 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   SimulateEntities(GameState, Plat->dt);
 
-  SimulateAndRenderParticleSystems(GameState->EntityTable, &GameState->Mesh, Graphics, Plat->dt);
+  SimulateAndRenderParticleSystems(GameState->EntityTable, &GpuMap->Buffer, Graphics, Plat->dt);
 
   gBuffer->ViewProjection =
     ProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
     ViewMatrix(WorldChunkDim, Camera);
 
   TIMED_BLOCK("BufferMeshes");
-    BufferWorld(GameState, &GameState->Mesh, World, Graphics, VISIBLE_REGION_RADIUS);
-    BufferEntities( GameState->EntityTable, &GameState->Mesh, Graphics, World, Plat->dt);
+    BufferWorld(GameState, &GpuMap->Buffer, World, Graphics, VISIBLE_REGION_RADIUS);
+    BufferEntities( GameState->EntityTable, &GpuMap->Buffer, Graphics, World, Plat->dt);
   END_BLOCK("BufferMeshes");
 
   TIMED_BLOCK("RenderToScreen");

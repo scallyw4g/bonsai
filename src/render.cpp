@@ -995,12 +995,14 @@ BufferWorldChunk(
     return;
 
   chunk_data *ChunkData = Chunk->Data;
-  if (ChunkData->Flags == Chunk_MeshComplete)
+  if (ChunkData->Flags == Chunk_MeshComplete && Chunk->Mesh->At)
   {
-    if (Chunk->LodMesh_Complete && Chunk->LodMesh->At)
-    {
-      QueueChunkMeshForCopy(Queue, Dest, Chunk, Graphics->Camera);
-    }
+      QueueChunkMeshForCopy(Queue, Chunk->Mesh, Dest, Chunk, Graphics->Camera);
+
+    /* if (Chunk->LodMesh_Complete && Chunk->LodMesh->At) */
+    /* { */
+    /*   QueueChunkMeshForCopy(Queue, Dest, Chunk, Graphics->Camera); */
+    /* } */
   }
   else if (IsSet(ChunkData, Chunk_Queued))
   {
