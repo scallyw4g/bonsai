@@ -68,6 +68,11 @@ debug_global font Global_Font = {
   .Size = V2(30, 34),
 };
 
+struct ui_element_reference
+{
+  u32 Index;
+};
+
 struct ui_style
 {
   v3 Color;
@@ -78,7 +83,7 @@ struct ui_style
   v3 ClickedColor;
   v3 ActiveColor;
 
-  v2 Padding;
+  v4 Padding;
 
   font Font;
 
@@ -105,6 +110,9 @@ struct ui_render_command_column
 {
   counted_string String;
   column_render_params Params;
+
+  b32 OverrideStyling;
+  ui_style Style;
 };
 
 struct ui_render_command_untextured_quad
@@ -275,7 +283,7 @@ StandardStyling(v3 StartingColor, v3 HoverMultiplier = V3(1.3f), v3 ClickMultipl
 }
 
 function ui_style
-UiStyleFromLightestColor(v3 Color, v2 Padding = V2(10))
+UiStyleFromLightestColor(v3 Color, v4 Padding = V4())
 {
   ui_style Style  = {
     .Color        = Color,
@@ -291,6 +299,13 @@ UiStyleFromLightestColor(v3 Color, v2 Padding = V2(10))
     .IsActive     = False,
   };
 
+  return Style;
+}
+
+function ui_style
+UiStyleFromLightestColor(v3 Color, v2 Padding)
+{
+  ui_style Style = UiStyleFromLightestColor(Color, V4(Padding.x, Padding.y, Padding.x, Padding.y));
   return Style;
 }
 

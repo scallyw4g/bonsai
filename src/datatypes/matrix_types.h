@@ -30,10 +30,10 @@ struct m4
 
   m4()
   {
-    this->E[0] = v4(0,0,0,0);
-    this->E[1] = v4(0,0,0,0);
-    this->E[2] = v4(0,0,0,0);
-    this->E[3] = v4(0,0,0,0);
+    this->E[0] = {};
+    this->E[1] = {};
+    this->E[2] = {};
+    this->E[3] = {};
   }
 };
 
@@ -102,10 +102,10 @@ Translate( v3 v )
 {
   m4 Result;
 
-  Result.E[0] = v4(1,0,0,v.x);
-  Result.E[1] = v4(0,1,0,v.y);
-  Result.E[2] = v4(0,0,1,v.z);
-  Result.E[3] = v4(0,0,0,1);
+  Result.E[0] = V4(1,0,0,v.x);
+  Result.E[1] = V4(0,1,0,v.y);
+  Result.E[2] = V4(0,0,1,v.z);
+  Result.E[3] = V4(0,0,0,1);
 
   return Result;
 }

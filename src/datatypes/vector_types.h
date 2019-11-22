@@ -55,6 +55,7 @@ union v4
 {
   struct { r32 x, y, z, w; };
   struct { r32 r, g, b, a; };
+  struct { r32 Left, Top, Right, Bottom; };
 
   struct {
     v2 xy;
@@ -75,32 +76,6 @@ union v4
   r32 E[4];
 
 
-  v4()
-  {
-    *this = v4(0,0,0,1);
-  }
-
-  v4(v3 v, float w)
-  {
-    this->x = v.x;
-    this->y = v.y;
-    this->z = v.z;
-    this->w = w;
-  }
-
-  v4(float w, v3 v)
-  {
-    *this = v4(v, w);
-  }
-
-  v4( float x, float y, float z, float w)
-  {
-    this->x = x;
-    this->y = y;
-    this->z = z;
-    this->w = w;
-  }
-
   r32&
   operator[](int index)
   {
@@ -109,6 +84,52 @@ union v4
   }
 
 };
+
+
+function v4
+V4(v3 v, float w)
+{
+  v4 Result = {
+    .x = v.x,
+    .y = v.y,
+    .z = v.z,
+    .w = w,
+  };
+  return Result;
+}
+
+/* function v4 */
+/* V4(float w, v3 v) */
+/* { */
+/*   v4 Result = V4(v, w); */
+/*   return Result; */
+/* } */
+
+function v4
+V4()
+{
+  v4 Result = {
+    .x = 0,
+    .y = 0,
+    .z = 0,
+    .w = 1,
+  };
+  return Result;
+}
+
+
+function v4
+V4( float x, float y, float z, float w)
+{
+  v4 Result = {
+    .x = x,
+    .y = y,
+    .z = z,
+    .w = w,
+  };
+  return Result;
+}
+
 
 union voxel_position
 {
@@ -122,25 +143,6 @@ union voxel_position
 };
 
 #pragma GCC diagnostic pop
-
-v4
-V4(v3 V, r32 w)
-{
-  v4 Result(V, w);
-  return Result;
-}
-
-v4 V4(float x, float y, float z, float w)
-{
-v4 Result;
-
-Result.x = x;
-Result.y = y;
-Result.z = z;
-Result.w = w;
-
-return Result;
-}
 
 inline voxel_position
 Voxel_Position(v3 Offset)
@@ -1154,12 +1156,12 @@ operator/=(v3& A, float f)
 v4
 operator*(v4 A, float B)
 {
-  v4 Result(0,0,0,0);
-
-  Result.x = A.x * B;
-  Result.y = A.y * B;
-  Result.z = A.z * B;
-  Result.w = A.w * B;
+  v4 Result = {
+    .x = A.x * B,
+    .y = A.y * B,
+    .z = A.z * B,
+    .w = A.w * B,
+  };
 
   return Result;
 }
@@ -1174,7 +1176,7 @@ operator*(float B, v4 A)
 v4
 operator*(v4 A, int B)
 {
-  v4 Result(0,0,0,0);
+  v4 Result = {};
 
   Result.x = A.x * (float)B;
   Result.y = A.y * (float)B;

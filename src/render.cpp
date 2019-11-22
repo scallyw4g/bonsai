@@ -924,14 +924,7 @@ DrawParticle(
 #endif
 
 void
-BufferEntity(
-    untextured_3d_geometry_buffer* Dest,
-    entity *Entity,
-    animation *Animation,
-    graphics *Graphics,
-    chunk_dimension WorldChunkDim,
-    r32 dt
-  )
+BufferEntity( untextured_3d_geometry_buffer* Dest, entity *Entity, animation *Animation, graphics *Graphics, chunk_dimension WorldChunkDim, r32 dt)
 {
   TIMED_FUNCTION();
   // Debug light code
@@ -984,12 +977,7 @@ ReserveBufferSpace(untextured_3d_geometry_buffer* Reservation, u32 ElementsToRes
 }
 
 void
-BufferWorldChunk(
-    untextured_3d_geometry_buffer *Dest,
-    world_chunk *Chunk,
-    graphics *Graphics,
-    work_queue* Queue
-  )
+BufferWorldChunk(untextured_3d_geometry_buffer *Dest, world_chunk *Chunk, graphics *Graphics, work_queue* Queue)
 {
   if (!Chunk || !Chunk->Mesh)
     return;
@@ -997,12 +985,12 @@ BufferWorldChunk(
   chunk_data *ChunkData = Chunk->Data;
   if (ChunkData->Flags == Chunk_MeshComplete && Chunk->Mesh->At)
   {
-      QueueChunkMeshForCopy(Queue, Chunk->Mesh, Dest, Chunk, Graphics->Camera);
+    /* QueueChunkMeshForCopy(Queue, Chunk->Mesh, Dest, Chunk, Graphics->Camera); */
 
-    /* if (Chunk->LodMesh_Complete && Chunk->LodMesh->At) */
-    /* { */
-    /*   QueueChunkMeshForCopy(Queue, Dest, Chunk, Graphics->Camera); */
-    /* } */
+    if (Chunk->LodMesh_Complete && Chunk->LodMesh->At)
+    {
+      QueueChunkMeshForCopy(Queue, Chunk->LodMesh, Dest, Chunk, Graphics->Camera);
+    }
   }
   else if (IsSet(ChunkData, Chunk_Queued))
   {

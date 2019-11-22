@@ -47,92 +47,89 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
 
 #if 1
   TIMED_BLOCK("Draw Status Bar");
-    PushTableStart(UiGroup);
 
-    /* buffer_value_params StatusBarBufferParams = BufferValueParams(0, &Layout); */
+    memory_arena_stats TotalStats = GetTotalMemoryArenaStats();
 
-    Dt = ComputeMinMaxAvgDt();
-    PushColumn(UiGroup, CS(Dt.Max));
-    PushNewRow(UiGroup);
+    u32 TotalDrawCalls = 0;
 
-    PushColumn(UiGroup, CS(Dt.Avg));
-    PushColumn(UiGroup, CS(Plat->dt*1000.0f));
-    PushColumn(UiGroup, CS("ms"));
-
+    for( u32 DrawCountIndex = 0;
+         DrawCountIndex < Global_DrawCallArrayLength;
+         ++ DrawCountIndex)
     {
-      // Main line
-      memory_arena_stats TotalStats = GetTotalMemoryArenaStats();
-
-      PushColumn(UiGroup, CS(TotalStats.Allocations));
-      PushColumn(UiGroup, CS("Allocations"));
-
-      PushColumn(UiGroup, CS(TotalStats.Pushes));
-      PushColumn(UiGroup, CS("Pushes"));
-
-      u32 TotalDrawCalls = 0;
-
-      for( u32 DrawCountIndex = 0;
-           DrawCountIndex < Global_DrawCallArrayLength;
-           ++ DrawCountIndex)
+      debug_draw_call *Call = &Global_DrawCalls[DrawCountIndex];
+      if (Call->Caller)
       {
-        debug_draw_call *Call = &Global_DrawCalls[DrawCountIndex];
-        if (Call->Caller)
-        {
-          TotalDrawCalls += Call->Calls;
-        }
+        TotalDrawCalls += Call->Calls;
       }
-
-      PushColumn(UiGroup, CS(TotalDrawCalls));
-      PushColumn(UiGroup, CS("Draw Calls"));
-
-      PushNewRow(UiGroup);
     }
 
-    PushColumn(UiGroup, CS(Dt.Min));
+    Dt = ComputeMinMaxAvgDt();
 
+    /* ui_style Style =  UiStyleFromLightestColor(V3(1), V4(0,0,35,0)); */
+    ui_element_reference DtTable = PushTableStart(UiGroup);
+      PushColumn(UiGroup, CS(Dt.Max));
+      PushNewRow(UiGroup);
+
+      PushColumn(UiGroup, CS(Dt.Avg));
+      PushColumn(UiGroup, CS(Plat->dt*1000.0f));
+      PushNewRow(UiGroup);
+
+      PushColumn(UiGroup, CS(Dt.Min));
     PushTableEnd(UiGroup);
+
+    PushTableStart(UiGroup);
+      PushColumn(UiGroup, CS("Allocations"));
+      PushColumn(UiGroup, CS("Pushes"));
+      PushColumn(UiGroup, CS("Draw Calls"));
+      PushNewRow(UiGroup);
+
+      PushColumn(UiGroup, CS(TotalStats.Allocations));
+      PushColumn(UiGroup, CS(TotalStats.Pushes));
+      PushColumn(UiGroup, CS(TotalDrawCalls));
+
+      PushNewRow(UiGroup);
+    PushTableEnd(UiGroup);
+
   END_BLOCK("Status Bar");
 
-  PushNewRow(UiGroup);
 #endif
 
   if (DebugState->DisplayDebugMenu)
   {
-    /* buffer_value_params DebugMenuParams = BufferValueParams(0, &Layout, UiStyleFromLightestColor(V3(1), V3(0.3f), V2(30))); */
-
+    ui_style Style =  UiStyleFromLightestColor(V3(1), V2(50));
     PushTableStart(UiGroup);
 
-    if (Button(UiGroup, CS("PickedChunks"), (umm)"PickedChunks"))
+    if (Button(UiGroup, CS("PickedChunks"), (umm)"PickedChunks", &Style))
     {
       DebugState->UIType = DebugUIType_PickedChunks;
     }
 
-    if (Button(UiGroup, CS("Graphics"), (umm)"Graphics"))
+    if (Button(UiGroup, CS("Graphics"), (umm)"Graphics", &Style))
     {
       DebugState->UIType = DebugUIType_Graphics;
     }
 
-    if (Button(UiGroup, CS("Network"), (umm)"Network"))
+    if (Button(UiGroup, CS("Network"), (umm)"Network", &Style))
     {
       DebugState->UIType = DebugUIType_Network;
     }
 
-    if (Button(UiGroup, CS("Functions"), (umm)"Functions"))
+    if (Button(UiGroup, CS("Functions"), (umm)"Functions", &Style))
     {
       DebugState->UIType = DebugUIType_CollatedFunctionCalls;
     }
 
-    if (Button(UiGroup, CS("Callgraph"), (umm)"Callgraph"))
+    if (Button(UiGroup, CS("Callgraph"), (umm)"Callgraph", &Style))
     {
       DebugState->UIType = DebugUIType_CallGraph;
     }
 
-    if (Button(UiGroup, CS("Memory"), (umm)"Memory"))
+    if (Button(UiGroup, CS("Memory"), (umm)"Memory", &Style))
     {
       DebugState->UIType = DebugUIType_Memory;
     }
 
-    if (Button(UiGroup, CS("DrawCalls"), (umm)"DrawCalls"))
+    if (Button(UiGroup, CS("DrawCalls"), (umm)"DrawCalls", &Style))
     {
       DebugState->UIType = DebugUIType_Memory;
     }
