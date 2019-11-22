@@ -46,8 +46,9 @@ LoadMeshData(xml_token_stream* XmlTokens, counted_string* GeometryId, memory_are
   untextured_3d_geometry_buffer Mesh = {};
   AllocateMesh(&Mesh, TotalTriangleCount*3, Heap);
 
+  // TODO(Jesse) Should the MaxP be initialized to f32_MIN?
   v3 MaxP = V3(0);
-  v3 MinP = V3(FLT_MAX);
+  v3 MinP = V3(f32_MAX);
 
   for (u32 TriangleIndex = 0;
       TriangleIndex < TotalTriangleCount;

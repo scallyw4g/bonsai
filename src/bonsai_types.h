@@ -1,16 +1,12 @@
-void BreakHere() { return; }
+#include <cstdint>
 
-
-// TODO(Jesse): Get rid of these!!
-#include <stdio.h>
-#include <cstdarg>
+//
+// TODO(Jesse): Get rid of these!
+//
 #include <iostream>
 #include <cmath>
-#include <string.h>
-
-#include <inttypes.h>
-#include <climits>
-#include <float.h>
+//
+//
 //
 
 
@@ -71,7 +67,11 @@ void BreakHere() { return; }
 #include <bonsai_string.cpp>
 #include <types/heap_memory_types.h>
 
-// TODO(Jesse): This includes some stdlib shit. Rewrite it.
+// TODO(Jesse): perlin.h requires these .. rewrite it!
+#include <random>
+#include <algorithm>
+//
+
 #include <perlin.h>
 
 struct free_mesh

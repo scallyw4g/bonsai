@@ -242,7 +242,7 @@ GetCountMatchingTags(xml_token_stream* Tokens, xml_token_stream* Selectors, u32 
 xml_tag_stream
 GetAllMatchingTags(xml_token_stream* Tokens, xml_token_stream* Selectors, memory_arena* Memory)
 {
-  xml_tag_stream Result = GetCountMatchingTags(Tokens, Selectors, UINT_MAX, Memory);
+  xml_tag_stream Result = GetCountMatchingTags(Tokens, Selectors, u32_MAX, Memory);
   return Result;
 }
 

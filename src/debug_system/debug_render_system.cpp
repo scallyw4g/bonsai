@@ -3,8 +3,8 @@
 #include <stream.cpp>
 #include <shader.cpp>
 #include <gpu_mapped_buffer.cpp>
-#include <render_init.cpp>
 
+#include <render_init.cpp>
 #include <render.h>
 #include <render_utils.cpp>
 #include <bonsai_mesh.cpp>
@@ -702,7 +702,7 @@ BufferBorder(debug_ui_render_group *Group, interactable* PickerListInteraction, 
 
 // TODO(Jesse): Test this actually gets respected!!
 // @respect_invalid_render_command_index
-#define INVALID_RENDER_COMMAND_INDEX (UINT_MAX)
+#define INVALID_RENDER_COMMAND_INDEX (u32_MAX)
 
 function u32
 PushUiRenderCommand(debug_ui_render_group *Group, ui_render_command* Command)

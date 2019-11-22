@@ -14,8 +14,8 @@ BufferVertsDirect(
     return;
   }
 
-  memcpy( &Dest->Verts[Dest->At] , Positions, sizeof(*Positions)*NumVerts );
-  memcpy( &Dest->Colors[Dest->At], Colors   , sizeof(*Colors)*NumVerts );
+  MemCopy((u8*)&Dest->Verts[Dest->At],  (u8*)Positions,                sizeof(*Positions)*NumVerts );
+  MemCopy((u8*)Colors,                  (u8*)&Dest->Colors[Dest->At],  sizeof(*Colors)*NumVerts );
   Dest->At += NumVerts;
 
   return;
@@ -36,9 +36,9 @@ BufferVertsDirect(
     return;
   }
 
-  memcpy( &Dest->Verts[Dest->At]  , Positions, sizeof(*Positions)*NumVerts );
-  memcpy( &Dest->Normals[Dest->At], Normals,   sizeof(*Normals)*NumVerts );
-  memcpy( &Dest->Colors[Dest->At] , Colors   , sizeof(*Colors)*NumVerts );
+  MemCopy((u8*)Positions,  (u8*)&Dest->Verts[Dest->At]  ,  sizeof(*Positions)*NumVerts );
+  MemCopy((u8*)Normals,    (u8*)&Dest->Normals[Dest->At],  sizeof(*Normals)*NumVerts );
+  MemCopy((u8*)Colors,     (u8*)&Dest->Colors[Dest->At] ,  sizeof(*Colors)*NumVerts );
 
   Dest->At += NumVerts;
 }
@@ -59,8 +59,8 @@ BufferVertsDirect(
 
   Assert(NumVerts % 3 == 0);
 
-  memcpy( DestNormals,  SrcNormals,    sizeof(*SrcNormals)*NumVerts );
-  memcpy( DestColors,   SrcVertColors, sizeof(*SrcVertColors)*NumVerts );
+  MemCopy((u8*)SrcNormals,     (u8*)DestNormals,  sizeof(*SrcNormals)*NumVerts );
+  MemCopy((u8*)SrcVertColors,  (u8*)DestColors,   sizeof(*SrcVertColors)*NumVerts );
 
   for ( u32 VertIndex = 0;
         VertIndex < NumVerts;

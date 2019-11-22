@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <bonsai_types.h>
 #include <unix_platform.cpp>
 
@@ -88,7 +89,7 @@ main(int ArgCount, char **Arguments)
         sizeof(IncomingConnections.Address));
 
   if( BindResult < 0)
-    { Error("Bind Failed"); perror(strerror(errno)); return 1; }
+    { Error("Bind Failed"); Log("Error Code: %d", errno); return 1; }
 
 
   Debug("Bind Successful");

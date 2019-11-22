@@ -24,7 +24,7 @@ LoadDDS(const char * FilePath, memory_arena *Arena)
   char filecode[FileCodeLength];
 
   ReadBytes((u8*)filecode, FileCodeLength, TextureFile);
-  if (strncmp(filecode, "DDS ", FileCodeLength) != 0)
+  if (!StringsMatch(CS(filecode), CS("DDS ")) )
   {
     Error("Invalid File format opening DDS file");
     Assert(False);

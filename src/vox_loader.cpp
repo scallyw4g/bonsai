@@ -56,7 +56,7 @@ GetHeaderType(FILE* File, int* byteCounter)
 inline void
 ReadVoxChunk(FILE *File)
 {
-  int ID, Version = INT_MAX;
+  int ID, Version = s32_MAX;
 
   ID = ReadInt(File);
   Assert( ID == ID_VOX );
@@ -182,8 +182,9 @@ LoadVoxModel(memory_arena *WorldStorage, heap_allocator *Heap, char const *filep
           s32 ReportedVoxelCount = ReadXYZIChunk(ModelFile, &bytesRemaining);
           s32 ActualVoxelCount = 0;
 
+          // TODO(Jesse): Should these 0s be set to s32_MIN??
           s32 maxX = 0, maxY = 0, maxZ = 0;
-          s32 minX = INT_MAX, minY = INT_MAX, minZ = INT_MAX;
+          s32 minX = s32_MAX, minY = s32_MAX, minZ = s32_MAX;
 
           boundary_voxel *LocalVoxelCache = (boundary_voxel *)calloc((umm)ReportedVoxelCount, sizeof(boundary_voxel) );
           for( s32 VoxelCacheIndex = 0;

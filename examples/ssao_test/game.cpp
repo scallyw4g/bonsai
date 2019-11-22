@@ -1,7 +1,4 @@
 #include <bonsai_engine.h>
-global_variable memory_arena *TranArena = AllocateArena();
-#include <bonsai_engine.cpp>
-#include <bonsai_asset_loaders.cpp>
 
 void
 SimulatePlayers(game_state *GameState, entity* LocalPlayer, hotkeys *Hotkeys, r32 dt)

@@ -590,7 +590,7 @@ inline r32
 RandomUnilateral(random_series *Entropy)
 {
   u32 Random = RandomU32(Entropy);
-  r32 Result = (r32)Random/(r32)UINT_MAX;
+  r32 Result = (r32)Random/(r32)u32_MAX;
   return Result;
 }
 

@@ -424,7 +424,7 @@ ComputeMinMaxAvgDt()
   debug_state *SharedState = GetDebugState();
 
   min_max_avg_dt Dt = {};
-  Dt.Min = FLT_MAX;
+  Dt.Min = f32_MAX;
 
     for (u32 FrameIndex = 0;
         FrameIndex < DEBUG_FRAMES_TRACKED;

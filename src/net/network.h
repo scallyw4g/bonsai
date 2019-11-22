@@ -208,7 +208,7 @@ NetworkOp(network_connection *Connection, void *Message, u32 MessageSize, socket
 
           default:
           {
-            Error("SocketOp failed : %s", strerror(errno));
+            Error("SocketOp failed : %d", errno);
           } break;
         }
       } break;

@@ -35,7 +35,7 @@ RightFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
   v3 P3 = {{ MaxP.x, MaxP.y, MinP.z }};
 
   v3 Temp[] = { P2, P1, P0, P2, P3, P1 };
-  memcpy(Result, Temp, sizeof(Temp));
+  MemCopy((u8*)Temp, (u8*)Result, sizeof(Temp));
 
   return;
 }
@@ -65,7 +65,7 @@ LeftFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
   v3 P3 = {{ MinP.x, MinP.y, MinP.z }};
 
   v3 Temp[] = { P2, P1, P0, P2, P3, P1 };
-  memcpy(Result, Temp, sizeof(Temp));
+  MemCopy((u8*)Temp, (u8*)Result, sizeof(Temp));
 
   return;
 }
@@ -95,7 +95,7 @@ BackFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
   v3 P3 = {{ MaxP.x, MinP.y, MinP.z }};
 
   v3 Temp[] = { P0, P2, P1, P1, P2, P3 };
-  memcpy(Result, Temp, sizeof(Temp));
+  MemCopy((u8*)Temp, (u8*)Result, sizeof(Temp));
 
   return;
 }
@@ -125,7 +125,7 @@ FrontFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
   v3 P5 = {{ MinP.x, MaxP.y, MinP.z }};
 
   v3 Temp[] = { P7, P6, P4, P4, P6, P5 };
-  memcpy(Result, Temp, sizeof(Temp));
+  MemCopy((u8*)Temp, (u8*)Result, sizeof(Temp));
 
 
   return;
@@ -156,7 +156,7 @@ TopFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
   v3 P3 = {{ MaxP.x, MinP.y, MaxP.z }};
 
   v3 Temp[] = { P4, P0, P7, P7, P0, P3 };
-  memcpy(Result, Temp, sizeof(Temp));
+  MemCopy((u8*)Temp, (u8*)Result, sizeof(Temp));
 
   return;
 }
@@ -185,7 +185,7 @@ BottomFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
     MinP.x              , MinP.y + Diameter.y , MinP.z ,
   };
 
-  memcpy(Result, Temp, sizeof(Temp));
+  MemCopy((u8*)Temp, (u8*)Result, sizeof(Temp));
 
   return;
 }

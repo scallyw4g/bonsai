@@ -117,7 +117,6 @@ if [ "$EMCC" == "1" ]; then
   emcc src/font/ttf.cpp              \
     -D BONSAI_INTERNAL=1             \
     -I src                           \
-    -I src/datatypes                 \
     -I /usr/include                  \
     -I /usr/include/x86_64-linux-gnu \
     -o bin/emscripten/ttf.html
@@ -157,7 +156,6 @@ else
       $COMMON_GL_DEFINES         \
       -D BONSAI_INTERNAL=1       \
       -I"$SRC"                   \
-      -I"$SRC/datatypes"         \
       -I"$TESTS"                 \
       -o "$output_basename"      \
       $executable && echo -e "$Done $executable" &
@@ -175,7 +173,6 @@ else
       $COMMON_GL_DEFINES           \
       -D BONSAI_INTERNAL=1         \
       -I"$SRC"                     \
-      -I"$SRC/datatypes"           \
       -I"$TESTS"                   \
       -I"$SRC/debug_system"        \
       -o "$output_basename"        \
@@ -195,7 +192,6 @@ else
     -D BONSAI_INTERNAL=1           \
     -I"$SRC"                       \
     -I"$SRC/GL"                    \
-    -I"$SRC/datatypes"             \
     -I"$SRC/debug_system"          \
     -o "$BIN/lib_debug_system.so"  \
     "$DEBUG_SRC_FILE" && echo -e "$Done $DEBUG_SRC_FILE" &
@@ -213,7 +209,6 @@ else
       $COMMON_GL_DEFINES                                        \
       -D BONSAI_INTERNAL=1                                      \
       -I"$SRC"                                                  \
-      -I"$SRC/datatypes"                                        \
       -I"$executable"                                           \
       -o "$output_basename"                                     \
       "$executable/game.cpp" &&                                 \

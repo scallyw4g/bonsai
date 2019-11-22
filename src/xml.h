@@ -73,6 +73,7 @@ AllocateXmlTagStream(umm TagCount, memory_arena* Memory)
 
   return Result;
 }
+
 xml_token_stream
 AllocateXmlTokenStream(umm TokenCount, memory_arena* Memory)
 {

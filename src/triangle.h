@@ -48,8 +48,8 @@ AllocateBoundaryVoxels(u32 Count, memory_arena* Memory)
   Result->End = Count;
   Assert(Result->At == 0);
 
-  Result->Min = Voxel_Position(INT_MAX);
-  Result->Max = Voxel_Position(INT_MIN);
+  Result->Min = Voxel_Position(s32_MAX);
+  Result->Max = Voxel_Position(s32_MIN);
 
   return Result;
 }
@@ -140,7 +140,7 @@ function triangle*
 FindClosestFace(current_triangles* CurrentTriangles, voxel_position* Point)
 {
   triangle* BestMatch = CurrentTriangles->Tris[0];
-  r32 BestMatchSum = FLT_MAX;
+  r32 BestMatchSum = f32_MAX;
 
   for (u32 FaceIndex = 0;
       FaceIndex < CurrentTriangles->Count;

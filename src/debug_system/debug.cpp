@@ -5,6 +5,7 @@
 #include <heap_memory_types.cpp>
 
 #include <debug_data_system.cpp>
+#include <interactable.cpp>
 
 // FIXME(Jesse): we now have camera code in here that needs to know this value
 // for realz!
@@ -16,7 +17,6 @@ global_variable chunk_dimension WORLD_CHUNK_DIM = Chunk_Dimension(32,32,16);
 #include <camera.cpp>
 
 global_variable memory_arena* TranArena = AllocateArena();
-#include <interactable.cpp>
 #include <debug_render_system.cpp>
 
 global_variable debug_state Internal_DebugState = {};
@@ -211,7 +211,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   if (UiGroup->PressedInteraction.ID == 0 &&
       (Plat->Input.LMB.Pressed || Plat->Input.RMB.Pressed))
   {
-    UiGroup->PressedInteraction = Interactable(V2(FLT_MIN), V2(FLT_MAX), StringHash("GameViewport"), 0);
+    UiGroup->PressedInteraction = Interactable(InvertedInfinityRectangle(), StringHash("GameViewport"), 0);
   }
 
   if (DebugState->DoChunkPicking && Plat->Input.LMB.Clicked)

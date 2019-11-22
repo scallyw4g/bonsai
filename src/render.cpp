@@ -652,9 +652,9 @@ Triangulate(untextured_3d_geometry_buffer* Dest, world_chunk* Chunk, chunk_dimen
 
     while (LastBoundaryVoxelIndex)
     {
-      r32 ShortestDistance = FLT_MAX;
+      r32 ShortestDistance = f32_MAX;
       u32 ShortestDistanceIndex = UINT_MAX;
-      v3 ShortestP = V3(FLT_MAX);
+      v3 ShortestP = V3(f32_MAX);
       for (u32 BoundaryVoxelIndex = 0;
           BoundaryVoxelIndex < LastBoundaryVoxelIndex;
           ++BoundaryVoxelIndex)
@@ -669,7 +669,7 @@ Triangulate(untextured_3d_geometry_buffer* Dest, world_chunk* Chunk, chunk_dimen
         }
       }
 
-      r32 LeastEdgeSum = FLT_MAX;
+      r32 LeastEdgeSum = f32_MAX;
       edge* FoundEdge = 0;
       for (u32 EdgeIndex = 0;
           EdgeIndex < EdgesAddedCount;

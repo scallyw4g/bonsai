@@ -209,7 +209,7 @@ Compute0thLod(untextured_3d_geometry_buffer* Dest, world_chunk *WorldChunk, chun
   // Find closest bounding point to the midpoint of the bounding volume
 
   u32 FoundPointIndex = 0;
-  r32 ShortestLength = FLT_MAX;
+  r32 ShortestLength = f32_MAX;
 
   for ( u32 PointIndex = 0;
         PointIndex < BoundingPoints->At;

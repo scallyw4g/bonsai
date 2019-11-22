@@ -55,7 +55,7 @@ BufferTriangle(untextured_3d_geometry_buffer *Mesh, v3 *Verts, v3 Normal, u32 Co
   v3 NormalBuffer[3] = {Normal, Normal, Normal};
 
   // TODO(Jesse): Is this necessary to avoid some pointer aliasing bug?
-  memcpy( VertBuffer, Verts, 9 * sizeof(r32) );
+  MemCopy((u8*)Verts, (u8*)VertBuffer, 9 * sizeof(r32) );
 
   v4 FaceColors[FACE_VERT_COUNT];
   FillColorArray(ColorIndex, FaceColors, FACE_VERT_COUNT);;

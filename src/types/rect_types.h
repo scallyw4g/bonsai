@@ -9,8 +9,8 @@ function rect2
 InvertedInfinityRectangle()
 {
   rect2 Result = {
-    .Min = V2(FLT_MAX),
-    .Max = V2(-FLT_MAX),
+    .Min = V2(f32_MAX),
+    .Max = V2(f32_MIN),
   };
   return Result;
 }

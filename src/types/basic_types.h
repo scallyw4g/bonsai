@@ -14,6 +14,7 @@
 
 // 8 Bit types
 typedef uint8_t  u8;
+typedef int8_t   s8;
 
 // 16 Bit types
 typedef uint16_t u16;
@@ -34,18 +35,57 @@ typedef uint64_t u64;
 typedef u64      umm;
 typedef double   r64;
 
-#define s8_MIN  (INT8MAX_MIN)
-#define s16_MIN (INT16MAX_MIN)
-#define s32_MIN (INT32MAX_MIN)
-#define s64_MIN (INT64MAX_MIN)
+#if 1
 
-#define s8_MAX  (INT8MAX_MAX)
-#define s16_MAX (INT16MAX_MAX)
-#define s32_MAX (INT32MAX_MAX)
-#define s64_MAX (INT64MAX_MAX)
+#define s8_MAX  ((s8) 0x7f)
+#define s16_MAX ((s16)0x7fff)
+#define s32_MAX ((s32)0x7fffffff)
+#define s64_MAX ((s64)0x7fffffffffffffff)
+
+#define s8_MIN  ((s8) 0x80)
+#define s16_MIN ((s16)0x8000)
+#define s32_MIN ((s32)0x80000000)
+#define s64_MIN ((s64)0x8000000000000000)
+
+#define u8_MAX  (0xff)
+#define u16_MAX (0xffff)
+#define u32_MAX (0xffffffff)
+#define u64_MAX (0xffffffffffffffff)
+
+#define f32_MAX (1E+37f)
+#define f32_MIN (1E-37f)
+
+#else
+
+#define s8_MAX  (INT8_MAX)
+#define s16_MAX (INT16_MAX)
+#define s32_MAX (INT32_MAX)
+#define s64_MAX (INT64_MAX)
+
+#define s8_MIN  (INT8_MIN)
+#define s16_MIN (INT16_MIN)
+#define s32_MIN (INT32_MIN)
+#define s64_MIN (INT64_MIN)
 
 #define u8_MAX  (UINT8_MAX)
 #define u16_MAX (UINT16_MAX)
 #define u32_MAX (UINT32_MAX)
 #define u64_MAX (UINT64_MAX)
+
+#endif
+
+CAssert(s8_MAX  == INT8_MAX);
+CAssert(s16_MAX == INT16_MAX);
+CAssert(s32_MAX == INT32_MAX);
+CAssert(s64_MAX == INT64_MAX);
+
+CAssert(s8_MIN  == INT8_MIN);
+CAssert(s16_MIN == INT16_MIN);
+CAssert(s32_MIN == INT32_MIN);
+CAssert(s64_MIN == INT64_MIN);
+
+CAssert(u8_MAX  == UINT8_MAX);
+CAssert(u16_MAX == UINT16_MAX);
+CAssert(u32_MAX == UINT32_MAX);
+CAssert(u64_MAX == UINT64_MAX);
 

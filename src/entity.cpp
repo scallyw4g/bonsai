@@ -421,7 +421,7 @@ SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset)
   return;
 }
 
-// FIXME(Jesse): Remove the FLT_MAX EmissionLifespan below
+// FIXME(Jesse): Remove the f32_MAX EmissionLifespan below
 
 void
 SpawnFire(entity *Entity, random_series *Entropy, v3 Offset)
@@ -440,7 +440,7 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset)
   Params.SpawnRegion = aabb(Offset, V3(0.2f));
 
   // FIXME(Jesse): Make a mode for infinite emission
-  Params.EmissionLifespan = FLT_MAX;
+  Params.EmissionLifespan = f32_MAX;
   Params.ParticleLifespan = 0.35f;
   Params.EmissionChance = 4.0f;
 

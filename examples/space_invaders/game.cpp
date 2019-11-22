@@ -1,6 +1,4 @@
 #include <bonsai_engine.h>
-#include <bonsai_engine.cpp>
-#include <bonsai_asset_loaders.cpp>
 
 r32
 GetLevel(r64 Time)

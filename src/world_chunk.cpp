@@ -941,7 +941,7 @@ function voxel_position*
 GetClosestCoplanarPointRelativeTo(voxel_position* Query, voxel_position* Start, voxel_position* OnePastLastVert, v3 RelativePoint, voxel_position* Skip = 0)
 {
   voxel_position* Result = 0;
-  r32 ClosestDistance = FLT_MAX;
+  r32 ClosestDistance = f32_MAX;
 
    for ( voxel_position* ClosestCandidate = Start;
          ClosestCandidate < OnePastLastVert;
@@ -1048,7 +1048,7 @@ function voxel_position*
 GetClosestPointRelativeTo(voxel_position* Query, voxel_position* Start, voxel_position* OnePastLastVert, v3 RelativePoint, voxel_position* Skip = 0)
 {
   voxel_position* Result = 0;
-  r32 ClosestDistance = FLT_MAX;
+  r32 ClosestDistance = f32_MAX;
 
    for ( voxel_position* ClosestCandidate = Start;
          ClosestCandidate < OnePastLastVert;
@@ -1326,8 +1326,8 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
     point_buffer TempBuffer = {};
     point_buffer *EdgeBoundaryVoxels = &TempBuffer;
 
-    TempBuffer.Min = Voxel_Position(INT_MAX);
-    TempBuffer.Max = Voxel_Position(INT_MIN);
+    TempBuffer.Min = Voxel_Position(s32_MAX);
+    TempBuffer.Max = Voxel_Position(s32_MIN);
 
     /* FindEdgeIntersections(EdgeBoundaryVoxels, DestChunk->Data, WORLD_CHUNK_DIM); */
     FindEdgeIntersections(EdgeBoundaryVoxels, SyntheticChunk->Data, NewSynChunkDim);
@@ -1337,7 +1337,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
 
     // Find closest bounding point to the midpoint of the bounding volume
     voxel_position FoundCenterPoint = BoundingVoxelMidpoint;
-    r32 ShortestLength = FLT_MAX;
+    r32 ShortestLength = f32_MAX;
     for ( u32 PointIndex = 0;
           PointIndex < BoundingPoints->At;
           ++PointIndex)

@@ -645,7 +645,7 @@ ConnectToServer(network_connection *Connection)
 
       default :
       {
-        Error("Connecting to remote host encountered an unexpected error : %s", strerror(errno));
+        Error("Connecting to remote host encountered an unexpected error : %d", errno);
         Assert(False);
       } break;
 

@@ -42,9 +42,9 @@
 #define WriteBarrier asm volatile("" ::: "memory"); _mm_sfence()
 #define FullBarrier  asm volatile("" ::: "memory"); _mm_sfence(); _mm_lfence()
 
-/*
- * glX Business
- */
+//
+// glX Business
+//
 #define bonsaiGlGetProcAddress(procName) glXGetProcAddress((GLubyte*)procName)
 typedef PFNGLXSWAPINTERVALEXTPROC PFNSWAPINTERVALPROC;
 
