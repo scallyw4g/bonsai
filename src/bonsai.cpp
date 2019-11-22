@@ -1,3 +1,4 @@
+#include <counted_string.cpp>
 #include <stream.cpp>
 #include <canonical_position.cpp>
 #include <chunk.cpp>

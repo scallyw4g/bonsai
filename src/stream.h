@@ -1,46 +1,3 @@
-#include <string>
-
-struct counted_string
-{
-  const char* Start;
-  umm Count;
-};
-
-struct u32_stream
-{
-  u32* Start;
-  u32* At;
-  u32* End;
-};
-
-struct u8_stream
-{
-  u8* Start;
-  u8* At;
-  u8* End;
-};
-
-struct ansi_stream
-{
-  const char* Start;
-  const char* At;
-  const char* End;
-};
-
-struct r32_stream
-{
-  r32* Start;
-  r32* At;
-  r32* End;
-};
-
-struct v3_stream
-{
-  v3* Start;
-  v3* At;
-  v3* End;
-};
-
 template <typename element_t, typename stream_t>inline void
 Push(element_t Element, stream_t *Array)
 {
@@ -64,50 +21,6 @@ struct mesh_metadata
   u32 UVCount;
   u32 FaceCount;
 };
-
-umm
-Length(const char *Str)
-{
-  const char *Start = Str;
-  const char *End = Str;
-
-  while (*End++);
-
-  umm Result = (umm)(End - Start) - 1;
-  return Result;
-}
-
-counted_string
-CountedString(const char *S, umm Count)
-{
-  counted_string Result = {
-    .Start = S, .Count = Count
-  };
-  return Result;
-}
-
-counted_string
-CountedString(const char *S)
-{
-  counted_string Result = {};
-  Result.Start = S;
-  Result.Count = Length(S);
-  return Result;
-}
-
-counted_string
-CS(const char *S, umm Count)
-{
-  counted_string Result = CountedString(S, Count);
-  return Result;
-}
-
-counted_string
-CS(const char *S)
-{
-  counted_string Result = CountedString(S);
-  return Result;
-}
 
 ansi_stream
 AnsiStream(counted_string String)
@@ -176,30 +89,6 @@ U32_Stream(u32* Start, u32* End)
     Start,
     End
   };
-  return Result;
-}
-
-b32
-Contains(counted_string Haystack, char Needle)
-{
-  b32 Result = False;
-  for (u32 Index = 0;
-      Index < Haystack.Count;
-      ++Index)
-  {
-    Result |= (Needle == Haystack.Start[Index]);
-  }
-  return Result;
-}
-
-b32
-Contains(const char* Haystack, char Needle)
-{
-  b32 Result = False;
-  while (*Haystack)
-  {
-    Result |= (Needle == *Haystack++);
-  }
   return Result;
 }
 
@@ -272,3 +161,4 @@ PopWordCounted(ansi_stream *Cursor, const char *Delimeters = 0)
   counted_string Result = ReadUntilTerminatorList(Cursor, Delimeters);
   return Result;
 }
+

@@ -1,5 +1,4 @@
 #include <bonsai_engine.h>
-#include <bonsai_asset_loaders.h>
 
 #define RANDOM_HOTKEY_MASHING 0
 #if RANDOM_HOTKEY_MASHING

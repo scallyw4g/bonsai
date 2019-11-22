@@ -1,5 +1,4 @@
 #include <bonsai_engine.h>
-#include <bonsai_asset_loaders.h>
 
 
 void

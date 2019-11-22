@@ -142,7 +142,6 @@ else
       $COMMON_GL_DEFINES           \
       -D BONSAI_INTERNAL=1         \
       -I"$SRC"                     \
-      -I"$SRC/datatypes"           \
       -o "$output_basename"        \
       $executable && echo -e "$Done $executable" &
   done

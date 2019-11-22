@@ -9,3 +9,4 @@ global_variable memory_arena *TranArena = AllocateArena();
 #include <bonsai.cpp>
 #include <physics.cpp>
 #include <entity.cpp>
+#include <bonsai_asset_loaders.h>

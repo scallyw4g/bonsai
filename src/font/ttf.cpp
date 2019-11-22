@@ -6,6 +6,8 @@
 #include <unix_platform.cpp>
 
 #include <bitmap.cpp>
+global_variable memory_arena* TranArena = {};
+#include <counted_string.cpp>
 #include <stream.cpp>
 
 

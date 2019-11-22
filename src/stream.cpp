@@ -1,3 +1,42 @@
+r32_stream
+R32_Stream(u32 Count, memory_arena *Memory)
+{
+  r32 *Elements = Allocate(r32, Memory, Count);
+  r32_stream Result = {};
+
+  Result.Start = Elements;
+  Result.At = Elements;
+  Result.End = Elements + Count;
+
+  return Result;
+}
+
+u32_stream
+U32_Stream(u32 Count, memory_arena *Memory)
+{
+  u32 *Elements = Allocate(u32, Memory, Count);
+  u32_stream Result = {};
+
+  Result.Start = Elements;
+  Result.At = Elements;
+  Result.End = Elements + Count;
+
+  return Result;
+}
+
+v3_stream
+V3_Stream(u32 Count, memory_arena *Memory)
+{
+  v3 *Elements = Allocate(v3, Memory, Count);
+  v3_stream Result = {};
+
+  Result.Start = Elements;
+  Result.At = Elements;
+  Result.End = Elements + Count;
+
+  return Result;
+}
+
 u8_stream
 U8_StreamFromFile(const char* SourceFile, memory_arena *Memory)
 {
@@ -40,45 +79,6 @@ ReadEntireFileIntoString(const char *SourceFile, memory_arena *Memory)
 {
   ansi_stream Stream = AnsiStreamFromFile(SourceFile, Memory);
   return Stream;
-}
-
-r32_stream
-R32_Stream(u32 Count, memory_arena *Memory)
-{
-  r32 *Elements = Allocate(r32, Memory, Count);
-  r32_stream Result = {};
-
-  Result.Start = Elements;
-  Result.At = Elements;
-  Result.End = Elements + Count;
-
-  return Result;
-}
-
-u32_stream
-U32_Stream(u32 Count, memory_arena *Memory)
-{
-  u32 *Elements = Allocate(u32, Memory, Count);
-  u32_stream Result = {};
-
-  Result.Start = Elements;
-  Result.At = Elements;
-  Result.End = Elements + Count;
-
-  return Result;
-}
-
-v3_stream
-V3_Stream(u32 Count, memory_arena *Memory)
-{
-  v3 *Elements = Allocate(v3, Memory, Count);
-  v3_stream Result = {};
-
-  Result.Start = Elements;
-  Result.At = Elements;
-  Result.End = Elements + Count;
-
-  return Result;
 }
 
 char *
@@ -149,3 +149,91 @@ PopLine(ansi_stream *Cursor, memory_arena *Arena)
   EatWhitespace(Cursor);
   return Result;
 }
+
+v3_stream
+ParseV3Array(u32 ElementCount, ansi_stream FloatStream, memory_arena* Memory)
+{
+  v3_stream Result = V3_Stream(ElementCount, Memory);
+
+  for (umm DestIndex = 0;
+      DestIndex < ElementCount;
+      ++DestIndex)
+  {
+    for (u32 Inner = 0;
+         Inner < 3;
+        ++Inner)
+    {
+      counted_string Float = PopWordCounted(&FloatStream);
+      Result.Start[DestIndex].E[Inner] = StringToFloat(&Float);
+    }
+    ++Result.At;
+  }
+
+  return Result;
+}
+
+r32_stream
+ParseFloatArray(u32 TotalFloatCount, ansi_stream FloatStream, memory_arena* Memory)
+{
+  r32_stream Result = R32_Stream(TotalFloatCount, Memory);
+
+  for (umm DestIndex = 0;
+      DestIndex < TotalFloatCount;
+      ++DestIndex)
+  {
+    counted_string Float = PopWordCounted(&FloatStream);
+    Result.Start[DestIndex] = StringToFloat(&Float);
+  }
+
+  return Result;
+}
+
+void
+Dump(v3_stream* Array)
+{
+  umm ElementCount = AtElements(Array);
+
+  for (umm ElementIndex = 0;
+      ElementIndex < ElementCount;
+      ++ElementIndex)
+  {
+    Print(Array->Start[ElementIndex]);
+  }
+
+  return;
+}
+
+void
+Dump(hashtable<xml_tag*> * Hash)
+{
+  for (u32 ElementIndex = 0;
+      ElementIndex < Hash->Size;
+      ++ElementIndex)
+  {
+    xml_tag* Element = Hash->Table[ElementIndex];
+    if (Element)
+    {
+      Log("");
+      Print(ElementIndex);
+      Print(Element);
+      while ( (Element = Element->NextInHash) )
+      {
+        Print(Element);
+      }
+    }
+  }
+
+  return;
+}
+
+void
+Dump(xml_token_stream *Stream, umm TokenCount)
+{
+  for (u32 TokenIndex = 0;
+      TokenIndex < TokenCount;
+      ++TokenIndex)
+  {
+    Print(Stream->Start + TokenIndex);
+  }
+}
+

@@ -375,15 +375,8 @@ ClearFramebuffers(graphics *Graphics)
 }
 
 void
-BufferChunkMesh(
-    untextured_3d_geometry_buffer *Dest,
-    untextured_3d_geometry_buffer *Src,
-    chunk_dimension WorldChunkDim,
-    world_position WorldP,
-    graphics *Graphics,
-    r32 Scale = 1.0f,
-    v3 Offset = V3(0)
-  )
+BufferChunkMesh(graphics *Graphics, untextured_3d_geometry_buffer *Dest, untextured_3d_geometry_buffer *Src,
+                chunk_dimension WorldChunkDim, world_position WorldP, r32 Scale = 1.0f, v3 Offset = V3(0))
 {
   /* TIMED_FUNCTION(); */
 
@@ -736,14 +729,7 @@ IsBoundaryVoxel(chunk_data *Chunk, voxel_position Offset, chunk_dimension Dim)
 }
 
 inline void
-CheckAndIncrementCurrentP(
-    chunk_data *Chunk,
-    chunk_dimension Dim,
-    voxel_position *CurrentP,
-    s32 *CurrentClosestDistanceSq,
-    voxel_position TargetP,
-    voxel_position TestP
-  )
+CheckAndIncrementCurrentP( chunk_data *Chunk, chunk_dimension Dim, voxel_position *CurrentP, s32 *CurrentClosestDistanceSq, voxel_position TargetP, voxel_position TestP)
 {
   if ( IsInsideDim(Dim, TestP) )
   {
@@ -760,12 +746,7 @@ CheckAndIncrementCurrentP(
 }
 
 voxel_position
-TraverseSurfaceToBoundary(
-    world *World,
-    chunk_data *Chunk,
-    voxel_position StartingP,
-    voxel_position IterDir
-  )
+TraverseSurfaceToBoundary( world *World, chunk_data *Chunk, voxel_position StartingP, voxel_position IterDir)
 {
   s32 CurrentClosestDistanceSq = 0;
   voxel_position TargetP = (IterDir * World->ChunkDim) - IterDir;
@@ -839,7 +820,6 @@ TraverseSurfaceToBoundary(
   return CurrentP;
 }
 
-
 b32
 CanBuildWorldChunkBoundary(world *World, world_chunk *Chunk)
 {
@@ -887,41 +867,14 @@ DrawFolie(untextured_3d_geometry_buffer *Mesh, aabb *AABB)
   return;
 }
 
-#if 1
 void
-DrawParticle(
-    untextured_3d_geometry_buffer *Source,
-    untextured_3d_geometry_buffer *Dest,
-    u8 ColorIndex
-  )
+DrawParticle(untextured_3d_geometry_buffer *Source, untextured_3d_geometry_buffer *Dest, u8 ColorIndex)
 {
   v4 FaceColors[FACE_VERT_COUNT];
   FillColorArray(ColorIndex, FaceColors, FACE_VERT_COUNT);;
-#if 1
   BufferVertsChecked( Source, Dest );
-#else
-  RightFaceVertexData( MinP, V3(Diameter), VertexData);
-  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, RightFaceNormalData, FaceColors);
-
-  LeftFaceVertexData( MinP, V3(Diameter), VertexData);
-  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, LeftFaceNormalData, FaceColors);
-
-  BottomFaceVertexData( MinP, V3(Diameter), VertexData);
-  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, BottomFaceNormalData, FaceColors);
-
-  TopFaceVertexData( MinP, V3(Diameter), VertexData);
-  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, TopFaceNormalData, FaceColors);
-
-  FrontFaceVertexData( MinP, V3(Diameter), VertexData);
-  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, FrontFaceNormalData, FaceColors);
-
-  BackFaceVertexData( MinP, V3(Diameter), VertexData);
-  BufferVerts(Mesh, gBuffer, SG, Camera, 6, VertexData, BackFaceNormalData, FaceColors);
-#endif
-
   return;
 }
-#endif
 
 void
 BufferEntity( untextured_3d_geometry_buffer* Dest, entity *Entity, animation *Animation, graphics *Graphics, chunk_dimension WorldChunkDim, r32 dt)
@@ -946,7 +899,7 @@ BufferEntity( untextured_3d_geometry_buffer* Dest, entity *Entity, animation *An
       AnimationOffset = GetInterpolatedPosition(Animation);
     }
 
-    BufferChunkMesh(Dest, &Entity->Model.Mesh, WorldChunkDim, Entity->P.WorldP, Graphics, Entity->Scale, Entity->P.Offset + AnimationOffset);
+    BufferChunkMesh(Graphics, Dest, &Entity->Model.Mesh, WorldChunkDim, Entity->P.WorldP, Entity->Scale, Entity->P.Offset + AnimationOffset);
   }
 
   return;

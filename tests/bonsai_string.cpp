@@ -6,6 +6,8 @@
 
 #include <test_utils.cpp>
 
+debug_global memory_arena* TranArena = AllocateArena();
+#include <counted_string.cpp>
 #include <stream.cpp>
 
 void

@@ -12,7 +12,8 @@
 #include <bonsai_mesh.cpp>
 
 
-global_variable memory_arena* TranArena = {};
+debug_global memory_arena* TranArena = AllocateArena();
+#include <counted_string.cpp>
 #include <stream.cpp>
 #include <loaders/obj.cpp>
 
