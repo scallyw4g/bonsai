@@ -1,14 +1,10 @@
 #include <cstdint>
 
 //
-// TODO(Jesse): Get rid of these!
+// TODO(Jesse): Get rid of these?
 //
 #include <iostream>
 #include <cmath>
-//
-//
-//
-
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
@@ -25,18 +21,17 @@
 #include <unix_platform.h>
 #endif
 
+#include <types/heap_memory_types.h>
 #include <types/memory_types.h>
 #include <types/vector_types.h>
-#include <types/stream.h>
+#include <types/colors.h>
 #include <types/counted_string.h>
-#include <stream.h>
-#include <bonsai_math.h>
-#include <animation.h>
-
-#include <colors.h>
-
+#include <types/stream.h>
 #include <types/line_types.h>
 #include <types/matrix_types.h>
+
+#include <bonsai_math.h>
+
 #include <types/quaternion_types.h>
 #include <types/canonical_position_types.h>
 #include <types/rect_types.h>
@@ -46,33 +41,30 @@
 #include <types/debug_render.h>
 #include <types/graphics_types.h>
 #include <types/platform_types.h>
-
-#include <mutex.h>
-
+#include <types/mutex.h>
 #include <types/camera.h>
-
 #include <types/debug_types.h>
+#include <types/xml.h>
+#include <types/triangle.h>
+#include <types/mesh_types.h>
 
-#include <xml.h>
+#include <animation.h>
 #include <debug_print.h>
-
-
 #include <bonsai_vertex.h>
 #include <net/network.h>
-
 #include <bonsai.h>
 
-#include <triangle.h>
-#include <types/mesh_types.h>
-#include <bonsai_string.cpp>
-#include <types/heap_memory_types.h>
 
+#include <bonsai_string.cpp>
+
+//
 // TODO(Jesse): perlin.h requires these .. rewrite it!
 #include <random>
 #include <algorithm>
+#include <perlin.h>
+//
 //
 
-#include <perlin.h>
 
 struct free_mesh
 {
