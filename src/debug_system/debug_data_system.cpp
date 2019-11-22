@@ -526,30 +526,30 @@ ThreadsafeDebugMemoryAllocator()
 }
 
 v2
-GetAbsoluteAt(window_layout* Window, layout *Layout)
+GetAbsoluteAt(layout *Layout)
 {
-  v2 Result = Window ? Window->Basis + Layout->At : Layout->At;
+  v2 Result = Layout->Basis + Layout->At;
   return Result;
 }
 
 v2
-GetAbsoluteDrawBoundsMin(window_layout* Window, layout *Layout)
+GetAbsoluteDrawBoundsMin(layout *Layout)
 {
-  v2 Result = Window? Window->Basis + Layout->DrawBounds.Min : Layout->DrawBounds.Min;
+  v2 Result = Layout->Basis + Layout->DrawBounds.Min;
   return Result;
 }
 
 v2
-GetAbsoluteDrawBoundsMax(window_layout* Window, layout *Layout)
+GetAbsoluteDrawBoundsMax(layout *Layout)
 {
-  v2 Result = Window? Window->Basis + Layout->DrawBounds.Max : Layout->DrawBounds.Max;
+  v2 Result = Layout->Basis + Layout->DrawBounds.Max;
   return Result;
 }
 
 rect2
-GetAbsoluteDrawBounds(window_layout* Window, layout *Layout)
+GetAbsoluteDrawBounds(layout *Layout)
 {
-  rect2 Result = RectMinMax( GetAbsoluteDrawBoundsMin(Window, Layout), GetAbsoluteDrawBoundsMax(Window, Layout) );
+  rect2 Result = RectMinMax( GetAbsoluteDrawBoundsMin(Layout), GetAbsoluteDrawBoundsMax(Layout) );
   return Result;
 }
 
@@ -635,11 +635,10 @@ AdvanceClip(layout *Layout, v2 TestP)
 }
 
 inline void
-AdvanceClip(layout *Layout, font *Font = 0)
+AdvanceClip(layout *Layout)
 {
-  v2 FontHeight = Font? V2(0.0f, Font->Size.y) : V2(0);
   Layout->DrawBounds.Min = Min(Layout->At, Layout->DrawBounds.Min);
-  Layout->DrawBounds.Max = Max(Layout->At + FontHeight, Layout->DrawBounds.Max);
+  Layout->DrawBounds.Max = Max(Layout->At + V2(0.0f, Global_Font.Size.y), Layout->DrawBounds.Max);
   return;
 }
 

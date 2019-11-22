@@ -45,54 +45,53 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     UiGroup->PressedInteraction = NullInteraction;
   }
 
-#if 1
   TIMED_BLOCK("Draw Status Bar");
 
-    memory_arena_stats TotalStats = GetTotalMemoryArenaStats();
+  memory_arena_stats TotalStats = GetTotalMemoryArenaStats();
 
-    u32 TotalDrawCalls = 0;
+  u32 TotalDrawCalls = 0;
 
-    for( u32 DrawCountIndex = 0;
-         DrawCountIndex < Global_DrawCallArrayLength;
-         ++ DrawCountIndex)
+  for( u32 DrawCountIndex = 0;
+       DrawCountIndex < Global_DrawCallArrayLength;
+       ++ DrawCountIndex)
+  {
+    debug_draw_call *Call = &Global_DrawCalls[DrawCountIndex];
+    if (Call->Caller)
     {
-      debug_draw_call *Call = &Global_DrawCalls[DrawCountIndex];
-      if (Call->Caller)
-      {
-        TotalDrawCalls += Call->Calls;
-      }
+      TotalDrawCalls += Call->Calls;
     }
+  }
 
-    Dt = ComputeMinMaxAvgDt();
+  Dt = ComputeMinMaxAvgDt();
 
-    /* ui_style Style =  UiStyleFromLightestColor(V3(1), V4(0,0,35,0)); */
-    ui_element_reference DtTable = PushTableStart(UiGroup);
-      PushColumn(UiGroup, CS(Dt.Max));
-      PushNewRow(UiGroup);
+  /* ui_style Style =  UiStyleFromLightestColor(V3(1), V4(0,0,35,0)); */
 
-      PushColumn(UiGroup, CS(Dt.Avg));
-      PushColumn(UiGroup, CS(Plat->dt*1000.0f));
-      PushNewRow(UiGroup);
+  ui_element_reference DtTable = PushTableStart(UiGroup);
+    PushColumn(UiGroup, CS(Dt.Max));
+    PushNewRow(UiGroup);
 
-      PushColumn(UiGroup, CS(Dt.Min));
-    PushTableEnd(UiGroup);
+    PushColumn(UiGroup, CS(Dt.Avg));
+    PushColumn(UiGroup, CS(Plat->dt*1000.0f));
+    PushNewRow(UiGroup);
 
-    PushTableStart(UiGroup, Position_RightOf, DtTable);
-      PushColumn(UiGroup, CS("Allocations"));
-      PushColumn(UiGroup, CS("Pushes"));
-      PushColumn(UiGroup, CS("Draw Calls"));
-      PushNewRow(UiGroup);
+    PushColumn(UiGroup, CS(Dt.Min));
+  PushTableEnd(UiGroup);
 
-      PushColumn(UiGroup, CS(TotalStats.Allocations));
-      PushColumn(UiGroup, CS(TotalStats.Pushes));
-      PushColumn(UiGroup, CS(TotalDrawCalls));
+  PushTableStart(UiGroup, Position_RightOf, DtTable);
+    PushColumn(UiGroup, CS("Allocations"));
+    PushColumn(UiGroup, CS("Pushes"));
+    PushColumn(UiGroup, CS("Draw Calls"));
+    PushNewRow(UiGroup);
 
-      PushNewRow(UiGroup);
-    PushTableEnd(UiGroup);
+    PushColumn(UiGroup, CS(TotalStats.Allocations));
+    PushColumn(UiGroup, CS(TotalStats.Pushes));
+    PushColumn(UiGroup, CS(TotalDrawCalls));
+
+    PushNewRow(UiGroup);
+  PushTableEnd(UiGroup);
 
   END_BLOCK("Status Bar");
 
-#endif
 
   if (DebugState->DisplayDebugMenu)
   {

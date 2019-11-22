@@ -598,9 +598,8 @@ BufferChar(debug_ui_render_group *Group, u8 Char, v2 MinP, v2 FontSize, u32 Colo
 function void
 BufferValue(counted_string Text, debug_ui_render_group *Group, render_state* RendererState)
 {
-  window_layout* Window = RendererState->Window;
   layout* Layout        = &RendererState->Layout;
-  r32 Z                 = GetZ(zDepth_Text, Window);
+  r32 Z                 = GetZ(zDepth_Text, RendererState->Window);
   ui_style Style        = RendererState->Style;
   v2 MaxClip            = GetAbsoluteMaxClip(RendererState->Window);
 
@@ -616,7 +615,7 @@ BufferValue(counted_string Text, debug_ui_render_group *Group, render_state* Ren
       CharIndex < Text.Count;
       CharIndex++ )
   {
-    v2 MinP = GetAbsoluteAt(Window, Layout) + V2(0, Padding.Top);
+    v2 MinP = GetAbsoluteAt(Layout) + V2(0, Padding.Top);
     Layout->At.x += BufferChar(Group, (u8)Text.Start[CharIndex], MinP, RendererState->Style.Font.Size, Style.Color, Z, MaxClip);
     continue;
   }
@@ -1136,7 +1135,10 @@ GetColumnCountForTable(ui_render_command_buffer* CommandBuffer, u32 CommandIndex
 function table_render_params
 GetTableRenderParams(ui_render_command_buffer* CommandBuffer, u32 CommandIndex)
 {
-  table_render_params Result = {};
+  table_render_params Result = {
+    .TableStart = CommandIndex
+  };
+
   Result.ColumnCount = GetColumnCountForTable(CommandBuffer, CommandIndex);
   Result.ColumnWidths = Allocate(u32, TranArena, Result.ColumnCount);
 
@@ -1219,8 +1221,8 @@ ProcessButtonEnd(debug_ui_render_group *Group, render_state* RenderState, ui_ren
 {
   Assert(RenderState->CurrentInteraction.ID);
 
-  RenderState->CurrentInteraction.MinP = GetAbsoluteDrawBoundsMin(RenderState->Window, &RenderState->Layout);
-  RenderState->CurrentInteraction.MaxP = GetAbsoluteDrawBoundsMax(RenderState->Window, &RenderState->Layout);
+  RenderState->CurrentInteraction.MinP = GetAbsoluteDrawBoundsMin(&RenderState->Layout);
+  RenderState->CurrentInteraction.MaxP = GetAbsoluteDrawBoundsMax(&RenderState->Layout);
 
   button_interaction_result Button = ButtonInteraction( Group,
                                                         RectMinMax(RenderState->CurrentInteraction.MinP, RenderState->CurrentInteraction.MaxP ),
@@ -1265,7 +1267,7 @@ ProcessButtonEnd(debug_ui_render_group *Group, render_state* RenderState, ui_ren
 function void
 ProcessTexturedQuadPush(debug_ui_render_group* Group, ui_render_command_textured_quad *Command, render_state* RenderState)
 {
-  v2 MinP = GetAbsoluteAt(RenderState->Window, &RenderState->Layout);
+  v2 MinP = GetAbsoluteAt(&RenderState->Layout);
   r32 Z = GetZ(Command->zDepth, RenderState->Window);
   v2 MaxClip = GetAbsoluteMaxClip(RenderState->Window);
   BufferTexturedQuad( Group, MinP, RenderState->Window->MaxClip,
@@ -1318,7 +1320,7 @@ function void
 ProcessUntexturedQuadPush(debug_ui_render_group* Group, ui_render_command_untextured_quad *Command, render_state* RenderState)
 {
   v2 MaxClip = GetAbsoluteMaxClip(RenderState->Window);
-  v2 MinP = Command->OffsetFromLayout + GetAbsoluteAt(RenderState->Window, &RenderState->Layout);
+  v2 MinP = Command->OffsetFromLayout + GetAbsoluteAt(&RenderState->Layout);
   v2 Dim = Command->QuadDim;
   v3 Color = SelectColorState(RenderState, Command->Style);
   r32 Z = GetZ(Command->zDepth, RenderState->Window);
@@ -1475,8 +1477,15 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
       {
         Assert(!RenderState.Window);
         RenderState.Window = Command->WindowStart.Window;
+
         Clear(&RenderState.Layout.At);
         Clear(&RenderState.Layout.DrawBounds);
+
+        if (RenderState.Window)
+        {
+          RenderState.Layout.Basis = RenderState.Window->Basis;
+        }
+
       } break;
 
       case RenderCommand_WindowEnd:
@@ -1492,9 +1501,10 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
         TableRenderParams = GetTableRenderParams(CommandBuffer, CommandIndex-1);
         if (!TableRenderParams.OnePastTableEnd)
         {
-          Error("No RenderCommand_TableEnd detected.");
+          Error("No RenderCommand_TableEnd detected, aborting render.");
           CommandIndex = CommandBuffer->CommandCount;
         }
+
       } break;
 
       case RenderCommand_TableEnd:
@@ -1573,6 +1583,7 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
   }
 
   CommandBuffer->CommandCount = 0;
+
   return;
 }
 

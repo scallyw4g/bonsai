@@ -38,13 +38,12 @@ Interactable(rect2 Rect, umm ID, window_layout *Window)
   return Result;
 }
 
-v2
-GetAbsoluteAt(window_layout* Window, layout* Layout);
+v2 GetAbsoluteAt(layout* Layout);
 
 function interactable
 StartInteractable(layout* Layout, umm ID, window_layout *Window)
 {
-  v2 StartingAt = GetAbsoluteAt(Window, Layout);
+  v2 StartingAt = GetAbsoluteAt(Layout);
   interactable Result = Interactable(StartingAt, StartingAt, ID, Window);
   return Result;
 }

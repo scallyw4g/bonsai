@@ -13,6 +13,7 @@
 
 struct layout
 {
+  v2 Basis;
   v2 At;
   rect2 DrawBounds;
 };
@@ -250,6 +251,8 @@ struct table_render_params
   u32 *ColumnWidths;
   u16 ColumnCount;
   u16 CurrentColumn;
+
+  u32 TableStart;
   u32 OnePastTableEnd;
 };
 
