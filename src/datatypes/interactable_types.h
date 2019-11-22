@@ -1,27 +1,3 @@
-
-struct layout
-{
-  v2 At;
-  rect2 DrawBounds;
-};
-
-struct window_layout
-{
-  counted_string Title;
-
-  v2 Basis;
-  v2 MaxClip;
-
-  u64 InteractionStackIndex;
-
-  r32 zBackground;
-  r32 zText;
-  r32 zBorder;
-  r32 zTitleBar;
-
-  window_layout* NextHotWindow;
-};
-
 struct interactable_handle
 {
   umm Id;
@@ -42,28 +18,6 @@ struct button_interaction_result
   b32 Clicked;
   b32 Hover;
 };
-
-function window_layout
-WindowLayout(const char* Title, v2 Basis, v2 MaxClip = V2(1800, 800))
-{
-  window_layout Window = {};
-  Window.Basis = Basis;
-  Window.MaxClip = MaxClip;
-  Window.Title = CS(Title);
-
-  return Window;
-}
-
-v2 GetAbsoluteMaxClip(window_layout* Window);
-
-function rect2
-GetWindowBounds(window_layout *Window)
-{
-  v2 TopLeft = Window->Basis;
-  v2 BottomRight = GetAbsoluteMaxClip(Window);
-  rect2 Result = RectMinMax(TopLeft, BottomRight);
-  return Result;
-}
 
 function interactable
 Interactable(v2 MinP, v2 MaxP, umm ID, window_layout *Window)

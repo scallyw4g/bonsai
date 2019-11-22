@@ -180,30 +180,6 @@ struct untextured_2d_geometry_buffer
   u32 At;
 };
 
-enum debug_texture_array_slice
-{
-  DebugTextureArraySlice_Font,
-  DebugTextureArraySlice_Viewport,
-
-  DebugTextureArraySlice_Count,
-};
-
-struct debug_text_render_group
-{
-  u32 SolidUIVertexBuffer;
-  u32 SolidUIColorBuffer;
-  u32 SolidUIUVBuffer;
-
-  texture *FontTexture;
-  shader Text2DShader;
-  s32 TextTextureUniform;
-  textured_2d_geometry_buffer Geo;
-
-  shader DebugFontTextureShader;
-
-  shader SolidUIShader;
-};
-
 global_variable m4 IdentityMatrix = {V4(1, 0, 0 ,0),
                                      V4(0, 1, 0 ,0),
                                      V4(0, 0, 1 ,0),

@@ -253,15 +253,6 @@ FramebufferDepthTexture(texture *Tex)
 }
 
 void
-FramebufferTextureLayer(framebuffer *FBO, texture *Tex, debug_texture_array_slice Layer)
-{
-  u32 Attachment = FBO->Attachments++;
-  glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + Attachment,
-                            Tex->ID, 0, Layer);
-  return;
-}
-
-void
 FramebufferTexture(framebuffer *FBO, texture *Tex)
 {
   u32 Attachment = FBO->Attachments++;

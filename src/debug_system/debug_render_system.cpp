@@ -2812,6 +2812,15 @@ DebugDrawGraphicsHud(debug_ui_render_group *Group, debug_state *DebugState)
 
 
 function void
+FramebufferTextureLayer(framebuffer *FBO, texture *Tex, debug_texture_array_slice Layer)
+{
+  u32 Attachment = FBO->Attachments++;
+  glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + Attachment,
+                            Tex->ID, 0, Layer);
+  return;
+}
+
+function void
 InitDebugOverlayFramebuffer(debug_text_render_group *TextGroup, memory_arena *DebugArena, const char *DebugFont)
 {
   TextGroup->FontTexture = LoadBitmap(DebugFont, DebugArena, DebugTextureArraySlice_Count);

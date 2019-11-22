@@ -3,6 +3,53 @@
 #define DISABLE_CLIPPING V2(FLT_MAX)
 
 
+
+/******************************               ********************************/
+/******************************   Rendering   ********************************/
+/******************************               ********************************/
+
+
+
+
+struct layout
+{
+  v2 At;
+  rect2 DrawBounds;
+};
+
+struct window_layout
+{
+  counted_string Title;
+
+  v2 Basis;
+  v2 MaxClip;
+
+  u64 InteractionStackIndex;
+
+  r32 zBackground;
+  r32 zText;
+  r32 zBorder;
+  r32 zTitleBar;
+
+  window_layout* NextHotWindow;
+};
+
+
+
+/***************************                **********************************/
+/*************************** Command Buffer **********************************/
+/***************************                **********************************/
+
+
+
+enum debug_texture_array_slice
+{
+  DebugTextureArraySlice_Font,
+  DebugTextureArraySlice_Viewport,
+
+  DebugTextureArraySlice_Count,
+};
+
 enum column_render_params
 {
   ColumnRenderParam_LeftAlign  = 0,
@@ -215,6 +262,8 @@ struct ui_render_command_buffer
 };
 
 
+
+
 enum clip_status
 {
   ClipStatus_NoClipping,
@@ -230,20 +279,15 @@ struct clip_result
   rect2 PartialClip;
 };
 
-struct render_state
-{
-  window_layout* Window;
-  layout Layout;
-  rect2 ButtonStartingDrawBounds;
 
-  ui_style Style;
 
-  b32 Hover;
-  b32 Pressed;
-  b32 Clicked;
 
-  interactable CurrentInteraction;
-};
+
+/******************************               ********************************/
+/******************************      Misc     ********************************/
+/******************************               ********************************/
+
+
 
 struct sort_key
 {
@@ -258,6 +302,12 @@ struct window_sort_params
 
   sort_key* SortKeys;
 };
+
+
+
+
+
+
 
 #define DEBUG_FONT_SHADOW_EPSILON (0.00001f)
 
@@ -330,5 +380,28 @@ UiStyleFromLightestColor(v3 Color, v2 Padding)
 {
   ui_style Style = UiStyleFromLightestColor(Color, V4(Padding.x, Padding.y, Padding.x, Padding.y));
   return Style;
+}
+
+
+function window_layout
+WindowLayout(const char* Title, v2 Basis, v2 MaxClip = V2(1800, 800))
+{
+  window_layout Window = {};
+  Window.Basis = Basis;
+  Window.MaxClip = MaxClip;
+  Window.Title = CS(Title);
+
+  return Window;
+}
+
+v2 GetAbsoluteMaxClip(window_layout* Window);
+
+function rect2
+GetWindowBounds(window_layout *Window)
+{
+  v2 TopLeft = Window->Basis;
+  v2 BottomRight = GetAbsoluteMaxClip(Window);
+  rect2 Result = RectMinMax(TopLeft, BottomRight);
+  return Result;
 }
 

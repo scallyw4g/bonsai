@@ -1,4 +1,3 @@
-#include <debug_ui.h>
 
 struct debug_state;
 struct game_state;

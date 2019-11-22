@@ -41,8 +41,10 @@ void BreakHere() { return; }
 #include <quaternion_types.h>
 #include <canonical_position_types.h>
 #include <rect_types.h>
+#include <debug_ui.h>
 #include <interactable_types.h>
 #include <render_types.h>
+#include <debug_render.h>
 #include <graphics_types.h>
 #include <platform_types.h>
 
