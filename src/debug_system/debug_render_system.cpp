@@ -1505,13 +1505,49 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
           CommandIndex = CommandBuffer->CommandCount;
         }
 
+        if (Command->TableStart.Position)
+        {
+          ui_render_command* RelativeElement = GetCommand(CommandBuffer, Command->TableStart.RelativeTo.Index);
+          Assert(RelativeElement->Type == RenderCommand_TableStart);
+          switch(Command->TableStart.Position)
+          {
+            case Position_RightOf:
+            {
+              v2 Basis = V2(RelativeElement->TableStart.MaxDrawBounds.x, RelativeElement->TableStart.Basis.y);
+              RenderState.Layout.Basis = Basis;
+              Command->TableStart.Basis = Basis;
+
+              Clear(&RenderState.Layout.At);
+              Clear(&RenderState.Layout.DrawBounds);
+
+            } break;
+
+            InvalidDefaultCase;
+          }
+        }
+
       } break;
 
       case RenderCommand_TableEnd:
       {
         Assert(CommandIndex == TableRenderParams.OnePastTableEnd);
-        TableRenderParams = NullTableRenderParams;
+
+        ui_render_command* TableStartCommand = GetCommand(CommandBuffer, TableRenderParams.TableStart);
+        Assert(TableStartCommand->Type == RenderCommand_TableStart);
+        TableStartCommand->TableStart.MaxDrawBounds = RenderState.Layout.DrawBounds.Max;
+
         NewLine(&RenderState.Layout);
+
+        if (RenderState.Window)
+        {
+          RenderState.Layout.Basis = RenderState.Window->Basis;
+        }
+        else
+        {
+          RenderState.Layout.Basis = V2(0);
+        }
+
+        TableRenderParams = NullTableRenderParams;
       } break;
 
       case RenderCommand_Column:
