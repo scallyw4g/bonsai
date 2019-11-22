@@ -851,10 +851,12 @@ PushButtonStart(debug_ui_render_group *Group, umm InteractionId, ui_style* Style
 }
 
 function ui_element_reference
-PushTableStart(debug_ui_render_group* Group)
+PushTableStart(debug_ui_render_group* Group, relative_position Position = Position_None,  ui_element_reference RelativeTo = {})
 {
   ui_render_command Command = {
     .Type = RenderCommand_TableStart,
+    .TableStart.RelativeTo = RelativeTo,
+    .TableStart.Position = Position,
   };
 
   u32 ElementIndex = PushUiRenderCommand(Group, &Command);

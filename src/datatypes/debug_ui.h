@@ -24,6 +24,16 @@ enum button_end_params
   ButtonEndParam_DiscardButtonDrawBounds = (1 << 0),
 };
 
+enum relative_position
+{
+  Position_None,
+
+  Position_LeftOf,
+  Position_RightOf,
+  Position_Above,
+  Position_Below,
+};
+
 enum z_depth
 {
   zDepth_Background,
@@ -157,6 +167,14 @@ struct ui_render_command_text_at
   v2 MaxClip;
 };
 
+struct ui_render_command_table_start
+{
+  relative_position Position;
+  ui_element_reference RelativeTo;
+  v2 Basis;
+  v2 MaxDrawBounds;
+};
+
 struct ui_render_command
 {
   ui_render_command_type Type;
@@ -164,14 +182,19 @@ struct ui_render_command
   {
     ui_render_command_window_start       WindowStart;
     ui_render_command_window_end         WindowEnd;
-    ui_render_command_column             Column;
+
     ui_render_command_button_start       ButtonStart;
     ui_render_command_button_end         ButtonEnd;
+
+    ui_render_command_table_start        TableStart;
+
     ui_render_command_textured_quad      TexturedQuad;
     ui_render_command_untextured_quad    UntexturedQuad;
     ui_render_command_untextured_quad_at UntexturedQuadAt;
+
     ui_render_command_text_at            TextAt;
     ui_render_command_border             Border;
+    ui_render_command_column             Column;
   };
 };
 

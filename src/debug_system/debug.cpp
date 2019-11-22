@@ -77,7 +77,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
       PushColumn(UiGroup, CS(Dt.Min));
     PushTableEnd(UiGroup);
 
-    PushTableStart(UiGroup);
+    PushTableStart(UiGroup, Position_RightOf, DtTable);
       PushColumn(UiGroup, CS("Allocations"));
       PushColumn(UiGroup, CS("Pushes"));
       PushColumn(UiGroup, CS("Draw Calls"));
