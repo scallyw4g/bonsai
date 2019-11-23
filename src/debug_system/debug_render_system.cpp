@@ -1589,11 +1589,10 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
 
       case render_command_type_column:
       {
-        ui_render_command_column* ColumnCommand = RenderCommandAs(column, Command);
         u32 ColumnWidth = GetNextColumnWidth(&TableRenderParams);
-
         ui_style StartingStyle = RenderState.Style;
 
+        ui_render_command_column* ColumnCommand = RenderCommandAs(column, Command);
         if (ColumnCommand->OverrideStyling)
         {
           RenderState.Style = ColumnCommand->Style;
