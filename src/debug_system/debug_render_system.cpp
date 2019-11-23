@@ -33,13 +33,18 @@ AdvanceSpaces(u32 N, layout *Layout, v2 FontSize)
   return;
 }
 
-// FIXME(Jesse): This doesn't do what the user might expect if they just dump
-// a bunch of NewLine() functions in a row
 function void
 NewLine(layout *Layout)
 {
-  Layout->At.y = Layout->DrawBounds.Max.y;
-  Layout->At.x = 0;
+  r32 VerticalAdvance = 0;
+  if (Layout->At.x == 0.0f)
+  {
+    VerticalAdvance = Global_Font.Size.y;
+  }
+
+  Layout->At.y = Layout->DrawBounds.Max.y + VerticalAdvance;
+  Layout->At.x = 0.0f;
+
   AdvanceClip(Layout);
 
   return;
@@ -896,10 +901,12 @@ PushBorder(debug_ui_render_group *Group, rect2 BoundsRelativeToCurrentWindow, v3
 function void
 PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
 {
-  ui_render_command Command = {};
-  Command.Type = RenderCommand_WindowStart;
-  Command.WindowStart.Window = Window;
-  PushUiRenderCommand(Group, &Command);
+  {
+    ui_render_command Command = {};
+    Command.Type = RenderCommand_WindowStart;
+    Command.WindowStart.Window = Window;
+    PushUiRenderCommand(Group, &Command);
+  }
 
   umm TitleBarInteractionId = (umm)"WindowTitleBar"^(umm)Window;
   interactable_handle TitleBarHandle = { .Id = TitleBarInteractionId };
@@ -947,6 +954,8 @@ PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
   PushTableEnd(Group);
 
   PushNewRow(Group);
+  PushNewRow(Group);
+  PushNewRow(Group);
 
   v2 Dim = V2(12);
   PushButtonStart(Group, DragHandleInteractionId);
@@ -993,8 +1002,6 @@ ButtonInteraction(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId,
   interactable Interaction = Interactable(Bounds, InteractionId, Window);
   /* BufferBorder(Group, &Interaction, V3(1,0,0), 1.0f, DISABLE_CLIPPING); */
 
-  Style->Color = Style->AmbientColor;
-
   if (Hover(Group, &Interaction))
   {
     Result.Hover = True;
@@ -1040,6 +1047,7 @@ Button(debug_ui_render_group* Group, counted_string ButtonName, umm ButtonId, ui
 
 
 
+// TODO(Jesse): Make a version of this that plucks out the type
 function ui_render_command*
 GetCommand(ui_render_command_buffer* CommandBuffer, u32 CommandIndex)
 {
@@ -1506,50 +1514,49 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
         Assert( AreEqual(TableRenderParams, NullTableRenderParams));
 
         TableRenderParams = GetTableRenderParams(CommandBuffer, CommandIndex-1);
-        if (!TableRenderParams.OnePastTableEnd)
+        if (TableRenderParams.OnePastTableEnd)
+        {
+          v2 NewBasis = GetResetBasis(&RenderState);
+          if (Command->TableStart.Position)
+          {
+            ui_render_command* RelativeElement = GetCommand(CommandBuffer, Command->TableStart.RelativeTo.Index);
+            Assert(RelativeElement->Type == RenderCommand_TableStart);
+            switch(Command->TableStart.Position)
+            {
+              case Position_RightOf:
+              {
+                NewBasis = RelativeElement->TableStart.Basis + V2(RelativeElement->TableStart.MaxDrawBounds.x, 0);
+              } break;
+
+              InvalidDefaultCase;
+            }
+          }
+
+          RenderState.Layout.Basis = NewBasis;
+          Command->TableStart.Basis = NewBasis;
+
+          Clear(&RenderState.Layout.At);
+          RenderState.Layout.DrawBounds = InvertedInfinityRectangle();
+        }
+        else
         {
           Error("No RenderCommand_TableEnd detected, aborting render.");
           CommandIndex = CommandBuffer->CommandCount;
         }
-
-        v2 NewBasis = GetResetBasis(&RenderState);
-        if (Command->TableStart.Position)
-        {
-          ui_render_command* RelativeElement = GetCommand(CommandBuffer, Command->TableStart.RelativeTo.Index);
-          Assert(RelativeElement->Type == RenderCommand_TableStart);
-          switch(Command->TableStart.Position)
-          {
-            case Position_RightOf:
-            {
-              NewBasis = RelativeElement->TableStart.Basis + V2(RelativeElement->TableStart.MaxDrawBounds.x, 0);
-
-              Clear(&RenderState.Layout.At);
-              RenderState.Layout.DrawBounds = InvertedInfinityRectangle();
-            } break;
-
-            InvalidDefaultCase;
-          }
-        }
-
-        RenderState.Layout.Basis = NewBasis;
-        Command->TableStart.Basis = NewBasis;
-
       } break;
 
       case RenderCommand_TableEnd:
       {
         Assert(CommandIndex == TableRenderParams.OnePastTableEnd);
-        if (RenderState.Layout.At.x > 0.0f)
-        {
-          NewLine(&RenderState.Layout);
-        }
 
-        ui_render_command* TableStartCommand = GetCommand(CommandBuffer, TableRenderParams.TableStart);
-        Assert(TableStartCommand->Type == RenderCommand_TableStart);
+        ui_render_command_table_start* TableStartCommand = &GetCommand(CommandBuffer, TableRenderParams.TableStart)->TableStart;
 
-        TableStartCommand->TableStart.MaxDrawBounds = RenderState.Layout.DrawBounds.Max;
+        AdvanceClip(&RenderState.Layout);
+        TableStartCommand->MaxDrawBounds = RenderState.Layout.DrawBounds.Max;
 
         RenderState.Layout.Basis = GetResetBasis(&RenderState);
+
+        BufferBorder(Group, RectMinDim(TableStartCommand->Basis, TableStartCommand->MaxDrawBounds), V3(0,0,1), 1.0f, DISABLE_CLIPPING);
 
         Clear(&RenderState.Layout.At);
         Clear(&TableRenderParams);
@@ -2711,19 +2718,6 @@ PushDebugPushMetaData(debug_ui_render_group *Group, selected_arenas *SelectedAre
 
   return;
 }
-
-#if 0
-function window_layout
-SubWindowAt(window_layout* Original, v2 NewBasis)
-{
-  window_layout Result = {};
-
-  Result.Table.Layout.Basis = NewBasis;
-  Result.MaxClip = Original->Table.Layout.Basis + Original->MaxClip - NewBasis;
-
-  return Result;
-}
-#endif
 
 function void
 DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState)

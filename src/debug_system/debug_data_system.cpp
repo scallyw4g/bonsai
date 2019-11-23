@@ -641,7 +641,7 @@ inline void
 AdvanceClip(layout *Layout)
 {
   Layout->DrawBounds.Min = Min(Layout->At, Layout->DrawBounds.Min);
-  Layout->DrawBounds.Max = Max(Layout->At + V2(0.0f, Global_Font.Size.y), Layout->DrawBounds.Max);
+  Layout->DrawBounds.Max = Max(Layout->At, Layout->DrawBounds.Max);
 
   Layout->MaxAbsoluteDrawBounds.Min = Min(Layout->MaxAbsoluteDrawBounds.Min, GetAbsoluteDrawBoundsMin(Layout));
   Layout->MaxAbsoluteDrawBounds.Max = Max(Layout->MaxAbsoluteDrawBounds.Max, GetAbsoluteDrawBoundsMax(Layout));

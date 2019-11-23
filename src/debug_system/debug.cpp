@@ -130,7 +130,6 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     }
 
     PushTableEnd(UiGroup);
-    PushNewRow(UiGroup);
   }
   else
   {

@@ -137,7 +137,6 @@ struct ui_style
 {
   v3 Color;
 
-  v3 AmbientColor;
   v3 HoverColor;
   v3 PressedColor;
   v3 ClickedColor;
@@ -366,8 +365,7 @@ UiStyleFromLightestColor(v3 Color, v4 Padding = V4())
 {
   ui_style Style  = {
     .Color        = Color,
-    .AmbientColor = Color*0.8f,
-    .HoverColor   = Color*0.5f,
+    .HoverColor   = Color*0.7f,
     .PressedColor = Color,
     .ClickedColor = Color,
     .ActiveColor  = Color,
