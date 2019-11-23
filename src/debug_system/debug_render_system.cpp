@@ -940,27 +940,23 @@ PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
 
   PushTableStart(Group);
     PushButtonStart(Group, TitleBarInteractionId);
-      PushColumn(Group, CS(Window->InteractionStackIndex));
-      PushColumn(Group, CS(Window->zBackground));
-      PushColumn(Group, CS(Window->zText));
-      PushColumn(Group, CS(Window->zTitleBar));
-      PushColumn(Group, CS(Window->zBorder));
       PushColumn(Group, Window->Title);
+      PushColumn(Group, CS(Window->InteractionStackIndex));
       PushUntexturedQuadAt(Group, V2(0), V2(Window->MaxClip.x, Global_Font.Size.y), zDepth_TitleBar);
     PushButtonEnd(Group);
   PushTableEnd(Group);
 
   PushNewRow(Group);
 
-  v2 Dim = V2(10);
+  v2 Dim = V2(12);
   PushButtonStart(Group, DragHandleInteractionId);
-    PushUntexturedQuadAt(Group, Window->MaxClip-Dim, Dim, zDepth_Border);
+    PushUntexturedQuadAt(Group, Window->MaxClip-Dim, Dim, zDepth_Border, &DefaultUiStyle, QuadRenderParam_NoAdvance);
   PushButtonEnd(Group, ButtonEndParam_DiscardButtonDrawBounds);
 
   PushBorder(Group, GetBounds(Window), V3(1));
 
   ui_style BackgroundStyle = UiStyleFromLightestColor(V3(0.25f));
-  PushUntexturedQuadAt(Group, V2(0), Window->MaxClip, zDepth_Background, &BackgroundStyle, QuadRenderParam_NoOp);
+  PushUntexturedQuadAt(Group, V2(0), Window->MaxClip, zDepth_Background, &BackgroundStyle, QuadRenderParam_NoAdvance);
 
   return;
 }
@@ -1459,6 +1455,14 @@ SetWindowZDepths(ui_render_command_buffer *CommandBuffer)
   return;
 }
 
+function v2
+GetResetBasis(render_state* RenderState)
+{
+  r32 X = RenderState->Window? RenderState->Window->Basis.x : 0;
+  v2 Result = V2(X, RenderState->Layout.MaxAbsoluteDrawBounds.Max.y);
+  return Result;
+}
+
 function void
 FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *CommandBuffer)
 {
@@ -1479,11 +1483,14 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
         RenderState.Window = Command->WindowStart.Window;
 
         Clear(&RenderState.Layout.At);
-        Clear(&RenderState.Layout.DrawBounds);
+        RenderState.Layout.DrawBounds = InvertedInfinityRectangle();
+        RenderState.Layout.MaxAbsoluteDrawBounds = InvertedInfinityRectangle();
 
         if (RenderState.Window)
         {
           RenderState.Layout.Basis = RenderState.Window->Basis;
+          RenderState.Layout.MaxAbsoluteDrawBounds.Min = RenderState.Window->Basis;;
+          RenderState.Layout.MaxAbsoluteDrawBounds.Max = RenderState.Window->Basis;;
         }
 
       } break;
@@ -1505,6 +1512,7 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
           CommandIndex = CommandBuffer->CommandCount;
         }
 
+        v2 NewBasis = GetResetBasis(&RenderState);
         if (Command->TableStart.Position)
         {
           ui_render_command* RelativeElement = GetCommand(CommandBuffer, Command->TableStart.RelativeTo.Index);
@@ -1513,41 +1521,39 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
           {
             case Position_RightOf:
             {
-              v2 Basis = V2(RelativeElement->TableStart.MaxDrawBounds.x, RelativeElement->TableStart.Basis.y);
-              RenderState.Layout.Basis = Basis;
-              Command->TableStart.Basis = Basis;
+              NewBasis = RelativeElement->TableStart.Basis + V2(RelativeElement->TableStart.MaxDrawBounds.x, 0);
 
               Clear(&RenderState.Layout.At);
-              Clear(&RenderState.Layout.DrawBounds);
-
+              RenderState.Layout.DrawBounds = InvertedInfinityRectangle();
             } break;
 
             InvalidDefaultCase;
           }
         }
 
+        RenderState.Layout.Basis = NewBasis;
+        Command->TableStart.Basis = NewBasis;
+
       } break;
 
       case RenderCommand_TableEnd:
       {
         Assert(CommandIndex == TableRenderParams.OnePastTableEnd);
+        if (RenderState.Layout.At.x > 0.0f)
+        {
+          NewLine(&RenderState.Layout);
+        }
 
         ui_render_command* TableStartCommand = GetCommand(CommandBuffer, TableRenderParams.TableStart);
         Assert(TableStartCommand->Type == RenderCommand_TableStart);
+
         TableStartCommand->TableStart.MaxDrawBounds = RenderState.Layout.DrawBounds.Max;
 
-        NewLine(&RenderState.Layout);
+        RenderState.Layout.Basis = GetResetBasis(&RenderState);
 
-        if (RenderState.Window)
-        {
-          RenderState.Layout.Basis = RenderState.Window->Basis;
-        }
-        else
-        {
-          RenderState.Layout.Basis = V2(0);
-        }
-
-        TableRenderParams = NullTableRenderParams;
+        Clear(&RenderState.Layout.At);
+        Clear(&TableRenderParams);
+        RenderState.Layout.DrawBounds = InvertedInfinityRectangle();
       } break;
 
       case RenderCommand_Column:
@@ -1648,7 +1654,7 @@ PushCycleBar(debug_ui_render_group* Group, cycle_range* Range, cycle_range* Fram
 
   v2 OffsetFromLayout = V2(xOffset, yOffset);
 
-  PushUntexturedQuad(Group, OffsetFromLayout, BarDim, zDepth_Text, Style, QuadRenderParam_NoOp);
+  PushUntexturedQuad(Group, OffsetFromLayout, BarDim, zDepth_Text, Style, QuadRenderParam_NoAdvance);
 
   return;
 }
@@ -2503,7 +2509,7 @@ PushBargraph(debug_ui_render_group *Group, r32 PercFilled)
   PushUntexturedQuad(Group, V2(0), BackgroundQuad, zDepth_Text, &Style);
 
   Style = UiStyleFromLightestColor(V3(1,1,0));
-  PushUntexturedQuad(Group, V2(-BackgroundQuad.x, 0), PercBarDim, zDepth_Text, &Style, QuadRenderParam_NoOp);
+  PushUntexturedQuad(Group, V2(-BackgroundQuad.x, 0), PercBarDim, zDepth_Text, &Style, QuadRenderParam_NoAdvance);
 
   return;
 }
@@ -2737,35 +2743,32 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState)
     memory_arena_stats MemStats = GetMemoryArenaStats(Current->Arena);
     u64 TotalUsed = MemStats.TotalAllocated - MemStats.Remaining;
 
+    PushTableStart(Group);
+      interactable_handle ExpandInteraction = PushButtonStart(Group, (umm)"MemoryWindowExpandInteraction"^(umm)Current);
+        PushColumn(Group, CS(Current->Name));
+        PushColumn(Group, CS(MemorySize(MemStats.TotalAllocated)));
+        PushColumn(Group, CS(ToString(MemStats.Pushes)));
+      PushButtonEnd(Group);
+    PushTableEnd(Group);
+
+    if (Clicked(Group, &ExpandInteraction))
     {
-
-      PushTableStart(Group);
-        interactable_handle ExpandInteraction = PushButtonStart(Group, (umm)"MemoryWindowExpandInteraction"^(umm)Current);
-          PushColumn(Group, CS(Current->Name));
-          PushColumn(Group, CS(MemorySize(MemStats.TotalAllocated)));
-          PushColumn(Group, CS(ToString(MemStats.Pushes)));
-          PushNewRow(Group);
-        PushButtonEnd(Group);
-      PushTableEnd(Group);
-
-      if (Clicked(Group, &ExpandInteraction))
-      {
-        Current->Expanded = !Current->Expanded;
-      }
+      Current->Expanded = !Current->Expanded;
     }
 
     if (Current->Expanded)
     {
-
+      ui_element_reference StatsTable =
       PushTableStart(Group);
         PushMemoryStatsTable(MemStats, Group);
       PushTableEnd(Group);
 
-      PushTableStart(Group);
+      ui_element_reference BargraphTable =
+      PushTableStart(Group, Position_RightOf, StatsTable);
         PushMemoryBargraphTable(Group, DebugState->SelectedArenas, MemStats, TotalUsed, Current->Arena);
       PushTableEnd(Group);
 
-      PushTableStart(Group);
+      PushTableStart(Group, Position_RightOf, BargraphTable);
         PushDebugPushMetaData(Group, DebugState->SelectedArenas, HashArenaHead(Current->Arena));
       PushTableEnd(Group);
     }

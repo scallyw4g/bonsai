@@ -631,6 +631,9 @@ AdvanceClip(layout *Layout, v2 TestP)
 {
   Layout->DrawBounds.Min = Min(TestP, Layout->DrawBounds.Min);
   Layout->DrawBounds.Max = Max(TestP, Layout->DrawBounds.Max);
+
+  Layout->MaxAbsoluteDrawBounds.Min = Min(Layout->MaxAbsoluteDrawBounds.Min, GetAbsoluteDrawBoundsMin(Layout));
+  Layout->MaxAbsoluteDrawBounds.Max = Max(Layout->MaxAbsoluteDrawBounds.Max, GetAbsoluteDrawBoundsMax(Layout));
   return;
 }
 
@@ -639,6 +642,9 @@ AdvanceClip(layout *Layout)
 {
   Layout->DrawBounds.Min = Min(Layout->At, Layout->DrawBounds.Min);
   Layout->DrawBounds.Max = Max(Layout->At + V2(0.0f, Global_Font.Size.y), Layout->DrawBounds.Max);
+
+  Layout->MaxAbsoluteDrawBounds.Min = Min(Layout->MaxAbsoluteDrawBounds.Min, GetAbsoluteDrawBoundsMin(Layout));
+  Layout->MaxAbsoluteDrawBounds.Max = Max(Layout->MaxAbsoluteDrawBounds.Max, GetAbsoluteDrawBoundsMax(Layout));
   return;
 }
 

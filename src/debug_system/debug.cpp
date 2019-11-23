@@ -69,11 +69,9 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   ui_element_reference DtTable = PushTableStart(UiGroup);
     PushColumn(UiGroup, CS(Dt.Max));
     PushNewRow(UiGroup);
-
     PushColumn(UiGroup, CS(Dt.Avg));
     PushColumn(UiGroup, CS(Plat->dt*1000.0f));
     PushNewRow(UiGroup);
-
     PushColumn(UiGroup, CS(Dt.Min));
   PushTableEnd(UiGroup);
 
@@ -82,11 +80,9 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     PushColumn(UiGroup, CS("Pushes"));
     PushColumn(UiGroup, CS("Draw Calls"));
     PushNewRow(UiGroup);
-
     PushColumn(UiGroup, CS(TotalStats.Allocations));
     PushColumn(UiGroup, CS(TotalStats.Pushes));
     PushColumn(UiGroup, CS(TotalDrawCalls));
-
     PushNewRow(UiGroup);
   PushTableEnd(UiGroup);
 

@@ -16,6 +16,8 @@ struct layout
   v2 Basis;
   v2 At;
   rect2 DrawBounds;
+
+  rect2 MaxAbsoluteDrawBounds; // This is the highest AbsoluteDrawBounds that we've ever hit
 };
 
 struct window_layout
@@ -59,7 +61,7 @@ enum column_render_params
 
 enum quad_render_params
 {
-  QuadRenderParam_NoOp          =  0,
+  QuadRenderParam_NoAdvance     =  0,
   QuadRenderParam_AdvanceLayout = (1 << 0),
   QuadRenderParam_AdvanceClip   = (1 << 1),
 
@@ -219,6 +221,7 @@ struct ui_render_command_table_start
 {
   relative_position Position;
   ui_element_reference RelativeTo;
+
   v2 Basis;
   v2 MaxDrawBounds;
 };
