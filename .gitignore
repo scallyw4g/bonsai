@@ -1,8 +1,10 @@
 Session.vim
 .exrc
 tags
-cscope.out
 core
+
+cscope.out
+cscope.files
 
 build/*
 
