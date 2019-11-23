@@ -94,28 +94,27 @@ enum z_depth
 
 enum ui_render_command_type
 {
-  RenderCommand_Noop,
+  render_command_type_noop,
 
-  RenderCommand_WindowStart,
-  RenderCommand_WindowEnd,
+  render_command_type_window_start,
+  render_command_type_window_end,
 
-  RenderCommand_TableStart,
-  RenderCommand_TableEnd,
+  render_command_type_table_start,
+  render_command_type_table_end,
 
-  RenderCommand_ButtonStart,
-  RenderCommand_ButtonEnd,
+  render_command_type_button_start,
+  render_command_type_button_end,
 
-  RenderCommand_Column,
-  RenderCommand_NewRow,
-  RenderCommand_TextAt,
+  render_command_type_column,
+  render_command_type_new_row,
+  render_command_type_text_at,
+  render_command_type_border,
 
-  RenderCommand_TexturedQuad,
-  RenderCommand_UntexturedQuad,
-  RenderCommand_UntexturedQuadAt,
+  render_command_type_textured_quad,
+  render_command_type_untextured_quad,
+  render_command_type_untextured_quad_at,
 
-  RenderCommand_Border,
-
-  RenderCommand_Count
+  RenderCommand_Count,
 };
 
 struct font
@@ -230,21 +229,21 @@ struct ui_render_command
   ui_render_command_type Type;
   union
   {
-    ui_render_command_window_start       WindowStart;
-    ui_render_command_window_end         WindowEnd;
+    ui_render_command_window_start       ui_render_command_window_start;
+    ui_render_command_window_end         ui_render_command_window_end;
 
-    ui_render_command_button_start       ButtonStart;
-    ui_render_command_button_end         ButtonEnd;
+    ui_render_command_button_start       ui_render_command_button_start;
+    ui_render_command_button_end         ui_render_command_button_end;
 
-    ui_render_command_table_start        TableStart;
+    ui_render_command_table_start        ui_render_command_table_start;
 
-    ui_render_command_textured_quad      TexturedQuad;
-    ui_render_command_untextured_quad    UntexturedQuad;
-    ui_render_command_untextured_quad_at UntexturedQuadAt;
+    ui_render_command_textured_quad      ui_render_command_textured_quad;
+    ui_render_command_untextured_quad    ui_render_command_untextured_quad;
+    ui_render_command_untextured_quad_at ui_render_command_untextured_quad_at;
 
-    ui_render_command_text_at            TextAt;
-    ui_render_command_border             Border;
-    ui_render_command_column             Column;
+    ui_render_command_text_at            ui_render_command_text_at;
+    ui_render_command_border             ui_render_command_border;
+    ui_render_command_column             ui_render_command_column;
   };
 };
 
