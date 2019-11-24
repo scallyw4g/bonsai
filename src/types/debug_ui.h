@@ -2,6 +2,9 @@
 #define DEBUG_MAX_UI_WINDOW_SLICES 1024.0f
 #define DISABLE_CLIPPING V2(f32_MAX)
 
+#define DEBUG_UI_OUTLINE_VALUES  0
+#define DEBUG_UI_OUTLINE_BUTTONS 1
+#define DEBUG_UI_OUTLINE_TABLES  0
 
 
 /******************************               ********************************/

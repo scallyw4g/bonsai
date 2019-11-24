@@ -601,6 +601,35 @@ BufferChar(debug_ui_render_group *Group, u8 Char, v2 MinP, v2 FontSize, u32 Colo
 }
 
 function void
+BufferBorder(debug_ui_render_group *Group, rect2 Rect, v3 Color, r32 Z, v2 MaxClip)
+{
+  v2 TopLeft     = Rect.Min;
+  v2 BottomRight = Rect.Max;
+  v2 TopRight    = V2(Rect.Max.x, Rect.Min.y);
+  v2 BottomLeft  = V2(Rect.Min.x, Rect.Max.y);
+
+  rect2 TopRect    = RectMinMax(TopLeft ,    TopRight    + V2(0, 1));
+  rect2 BottomRect = RectMinMax(BottomLeft,  BottomRight - V2(0, 1));
+  rect2 LeftRect   = RectMinMax(TopLeft ,    BottomLeft  + V2(1, 0));
+  rect2 RightRect  = RectMinMax(TopRight,    BottomRight + V2(1, 0));
+
+  BufferUntexturedQuad(Group, &Group->Geo, TopRect,    Color, Z, MaxClip);
+  BufferUntexturedQuad(Group, &Group->Geo, LeftRect,   Color, Z, MaxClip);
+  BufferUntexturedQuad(Group, &Group->Geo, RightRect,  Color, Z, MaxClip);
+  BufferUntexturedQuad(Group, &Group->Geo, BottomRect, Color, Z, MaxClip);
+
+  return;
+}
+
+function void
+BufferBorder(debug_ui_render_group *Group, interactable* PickerListInteraction, v3 Color, r32 Z, v2 MaxClip)
+{
+  rect2 Bounds = RectMinMax(PickerListInteraction->MinP, PickerListInteraction->MaxP);
+  BufferBorder(Group, Bounds, Color, Z, MaxClip);
+  return;
+}
+
+function void
 BufferValue(counted_string Text, debug_ui_render_group *Group, render_state* RendererState)
 {
   layout* Layout        = &RendererState->Layout;
@@ -612,7 +641,9 @@ BufferValue(counted_string Text, debug_ui_render_group *Group, render_state* Ren
 
   v2 FontHeight = V2(0, RendererState->Style.Font.Size.y);
 
-  /* v2 StartingP = GetAbsoluteAt(Layout); */
+#if DEBUG_UI_OUTLINE_VALUES
+  v2 StartingP = GetAbsoluteAt(Layout);
+#endif
 
   Layout->At.x += Padding.Left;
 
@@ -630,8 +661,10 @@ BufferValue(counted_string Text, debug_ui_render_group *Group, render_state* Ren
   v2 MaxClipP = Layout->At + V2(0, Padding.Top+Padding.Bottom) + FontHeight;
   AdvanceClip(Layout, MaxClipP);
 
-  /* v2 EndingP = Layout->Basis + MaxClipP; */
-  /* BufferBorder(Group, &Group->TextGroup->Geo, RectMinMax(StartingP, EndingP), V3(0, 0, 1), Z, DISABLE_CLIPPING); */
+#if DEBUG_UI_OUTLINE_VALUES
+  v2 EndingP = Layout->Basis + MaxClipP;
+  BufferBorder(Group, RectMinMax(StartingP, EndingP), V3(0, 0, 1), Z, DISABLE_CLIPPING);
+#endif
 
   return;
 }
@@ -665,35 +698,6 @@ BufferTextAt(debug_ui_render_group *Group, v2 BasisP, counted_string Text, v2 Fo
   }
 
   return DeltaX;
-}
-
-function void
-BufferBorder(debug_ui_render_group *Group, rect2 Rect, v3 Color, r32 Z, v2 MaxClip)
-{
-  v2 TopLeft     = Rect.Min;
-  v2 BottomRight = Rect.Max;
-  v2 TopRight    = V2(Rect.Max.x, Rect.Min.y);
-  v2 BottomLeft  = V2(Rect.Min.x, Rect.Max.y);
-
-  rect2 TopRect    = RectMinMax(TopLeft ,    TopRight    + V2(0, 1));
-  rect2 BottomRect = RectMinMax(BottomLeft,  BottomRight - V2(0, 1));
-  rect2 LeftRect   = RectMinMax(TopLeft ,    BottomLeft  + V2(1, 0));
-  rect2 RightRect  = RectMinMax(TopRight,    BottomRight + V2(1, 0));
-
-  BufferUntexturedQuad(Group, &Group->Geo, TopRect,    Color, Z, MaxClip);
-  BufferUntexturedQuad(Group, &Group->Geo, LeftRect,   Color, Z, MaxClip);
-  BufferUntexturedQuad(Group, &Group->Geo, RightRect,  Color, Z, MaxClip);
-  BufferUntexturedQuad(Group, &Group->Geo, BottomRect, Color, Z, MaxClip);
-
-  return;
-}
-
-function void
-BufferBorder(debug_ui_render_group *Group, interactable* PickerListInteraction, v3 Color, r32 Z, v2 MaxClip)
-{
-  rect2 Bounds = RectMinMax(PickerListInteraction->MinP, PickerListInteraction->MaxP);
-  BufferBorder(Group, Bounds, Color, Z, MaxClip);
-  return;
 }
 
 
@@ -959,10 +963,6 @@ PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
     PushButtonEnd(Group);
   PushTableEnd(Group);
 
-  PushNewRow(Group);
-  PushNewRow(Group);
-  PushNewRow(Group);
-
   v2 Dim = V2(12);
   PushButtonStart(Group, DragHandleInteractionId);
     PushUntexturedQuadAt(Group, Window->MaxClip-Dim, Dim, zDepth_Border, &DefaultUiStyle, QuadRenderParam_NoAdvance);
@@ -979,14 +979,10 @@ PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
 function void
 PushWindowEnd(debug_ui_render_group *Group, window_layout *Window)
 {
-
-  {
-    ui_render_command EndCommand = {};
-    EndCommand.Type = render_command_type_window_end;
-    EndCommand.ui_render_command_window_end.Window = Window;
-    PushUiRenderCommand(Group, &EndCommand);
-  }
-
+  ui_render_command EndCommand = {};
+  EndCommand.Type = render_command_type_window_end;
+  EndCommand.ui_render_command_window_end.Window = Window;
+  PushUiRenderCommand(Group, &EndCommand);
   return;
 }
 
@@ -1006,7 +1002,10 @@ ButtonInteraction(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId,
   Bounds.Max += V2(Style->Padding.Left+Style->Padding.Right, Style->Padding.Top+Style->Padding.Bottom);
 
   interactable Interaction = Interactable(Bounds, InteractionId, Window);
-  /* BufferBorder(Group, &Interaction, V3(1,0,0), 1.0f, DISABLE_CLIPPING); */
+
+#if DEBUG_UI_OUTLINE_BUTTONS
+  BufferBorder(Group, &Interaction, V3(1,0,0), 1.0f, DISABLE_CLIPPING);
+#endif
 
   if (Hover(Group, &Interaction))
   {
@@ -1580,7 +1579,9 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
 
         RenderState.Layout.Basis = GetResetBasis(&RenderState);
 
+#if DEBUG_UI_OUTLINE_TABLES
         BufferBorder(Group, RectMinDim(TableStartCommand->Basis, TableStartCommand->MaxDrawBounds), V3(0,0,1), 1.0f, DISABLE_CLIPPING);
+#endif
 
         Clear(&RenderState.Layout.At);
         Clear(&TableRenderParams);
