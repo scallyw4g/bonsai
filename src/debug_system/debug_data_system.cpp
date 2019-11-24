@@ -398,6 +398,8 @@ MainThreadAdvanceDebugSystem()
     u32 ThisFrameWriteIndex = MainThreadState->WriteIndex % DEBUG_FRAMES_TRACKED;
     u32 NextFrameWriteIndex = GetNextDebugFrameIndex(ThisFrameWriteIndex);
 
+    DEBUG_VALUE(MainThreadState->WriteIndex);
+
     AtomicIncrement(&MainThreadState->WriteIndex);
     AdvanceThreadState(MainThreadState, MainThreadState->WriteIndex);
 

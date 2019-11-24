@@ -172,6 +172,7 @@ typedef void (*debug_track_draw_call_proc)(const char*, u32);
 typedef debug_thread_state* (*debug_get_thread_local_state)(void);
 typedef void (*debug_pick_chunk)(world_chunk*, aabb);
 typedef void (*debug_compute_pick_ray)(platform*, m4*);
+typedef void (*debug_value)(u32,const char*);
 
 
 
@@ -258,6 +259,7 @@ struct debug_state
   debug_get_thread_local_state              GetThreadLocalState;
   debug_pick_chunk                          PickChunk;
   debug_compute_pick_ray                    ComputePickRay;
+  debug_value                               DebugValue;
 };
 
 struct debug_draw_call
@@ -374,6 +376,8 @@ GetMemoryArenaStats(memory_arena *ArenaIn)
 #define TIMED_FUNCTION() debug_timed_function FunctionTimer(BONSAI_FUNCTION_NAME)
 #define TIMED_BLOCK(BlockName) { debug_timed_function BlockTimer(BlockName)
 #define END_BLOCK(BlockName) }
+
+#define DEBUG_VALUE(Pointer) GetDebugState()->DebugValue(Pointer, #Pointer)
 
 #define DEBUG_FRAME_RECORD(...) DoDebugFrameRecord(__VA_ARGS__)
 #define DEBUG_FRAME_END(Plat, ServerState) GetDebugState()->FrameEnd(Plat, ServerState)

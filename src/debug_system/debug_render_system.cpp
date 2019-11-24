@@ -2883,6 +2883,18 @@ DebugDrawGraphicsHud(debug_ui_render_group *Group, debug_state *DebugState)
 
 
 function void
+DebugValue(u32 Value, const char* Name)
+{
+  debug_state* DebugState = GetDebugState();
+  debug_ui_render_group* Group = &DebugState->UiGroup;
+
+  PushTableStart(Group);
+    PushColumn(Group, CS(Name));
+    PushColumn(Group, CS(Value));
+  PushTableEnd(Group);
+}
+
+function void
 FramebufferTextureLayer(framebuffer *FBO, texture *Tex, debug_texture_array_slice Layer)
 {
   u32 Attachment = FBO->Attachments++;

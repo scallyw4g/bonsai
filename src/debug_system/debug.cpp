@@ -276,6 +276,7 @@ InitDebugSystem(b32 DoInitDebugRenderSystem = True)
   Internal_DebugState.GetThreadLocalState             = GetThreadLocalState;
   Internal_DebugState.PickChunk                       = PickChunk;
   Internal_DebugState.ComputePickRay                  = ComputePickRay;
+  Internal_DebugState.DebugValue                      = DebugValue;
 
   Internal_DebugState.Initialized = True;
 
