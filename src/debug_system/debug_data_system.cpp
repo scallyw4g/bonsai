@@ -389,16 +389,27 @@ MainThreadAdvanceDebugSystem()
   r64 Dt = (CurrentMS - LastMs)/1000.0;
   LastMs = CurrentMS;
 
+  Assert(ThreadLocal_ThreadIndex == 0);
+  debug_thread_state *MainThreadState = GetThreadLocalStateFor(ThreadLocal_ThreadIndex);
   debug_state *SharedState = GetDebugState();
+
+  DEBUG_VALUE(SharedState->ReadScopeIndex);
+  DEBUG_VALUE(MainThreadState->WriteIndex);
+
+  for (u32 ThreadIndex = 1;
+      ThreadIndex < GetTotalThreadCount();
+      ++ThreadIndex)
+  {
+    debug_thread_state *ThreadState = GetThreadLocalStateFor(ThreadIndex);
+    DEBUG_VALUE(ThreadState->WriteIndex);
+  }
+
   if (SharedState->DebugDoScopeProfiling)
   {
     u64 CurrentCycles = GetCycleCount();
 
-    debug_thread_state *MainThreadState = GetThreadLocalStateFor(ThreadLocal_ThreadIndex);
     u32 ThisFrameWriteIndex = MainThreadState->WriteIndex % DEBUG_FRAMES_TRACKED;
     u32 NextFrameWriteIndex = GetNextDebugFrameIndex(ThisFrameWriteIndex);
-
-    DEBUG_VALUE(MainThreadState->WriteIndex);
 
     AtomicIncrement(&MainThreadState->WriteIndex);
     AdvanceThreadState(MainThreadState, MainThreadState->WriteIndex);
@@ -428,17 +439,23 @@ ComputeMinMaxAvgDt()
   min_max_avg_dt Dt = {};
   Dt.Min = f32_MAX;
 
-    for (u32 FrameIndex = 0;
-        FrameIndex < DEBUG_FRAMES_TRACKED;
-        ++FrameIndex )
-    {
-      frame_stats *Frame = SharedState->Frames + FrameIndex;
+  u32 FrameCount = 0;
+  for (u32 FrameIndex = 0;
+      FrameIndex < DEBUG_FRAMES_TRACKED;
+      ++FrameIndex )
+  {
+    frame_stats *Frame = SharedState->Frames + FrameIndex;
 
+    if (Frame->FrameMs > 0.0f)
+    {
       Dt.Min = Min(Dt.Min, Frame->FrameMs);
       Dt.Max = Max(Dt.Max, Frame->FrameMs);
       Dt.Avg += Frame->FrameMs;
+      ++FrameCount;
     }
-    Dt.Avg /= (r32)DEBUG_FRAMES_TRACKED;
+  }
+
+  Dt.Avg /= (r32)FrameCount;
 
   return Dt;
 }

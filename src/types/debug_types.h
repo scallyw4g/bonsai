@@ -8,7 +8,7 @@ function get_debug_state_proc GetDebugState;
 
 #if BONSAI_INTERNAL
 
-#define DEBUG_FRAMES_TRACKED (64)
+#define DEBUG_FRAMES_TRACKED (128)
 
 struct cycle_range
 {
