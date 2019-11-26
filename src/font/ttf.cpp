@@ -225,6 +225,8 @@ struct ttf
   font_table* maxp; // Maximum Profile
   font_table* name; // Naming
   font_table* post; // PostScript
+
+  b32 Loaded;
 };
 
 struct offset_subtable
@@ -234,6 +236,8 @@ struct offset_subtable
   u16 SearchRange;
   u16 EntrySelector;
   u16 RangeShift;
+
+  b32 Valid;
 };
 
 enum ttf_flag
@@ -311,7 +315,7 @@ ParseFontTable(u8_stream *Source, memory_arena *Arena)
 }
 
 offset_subtable
-ParseOffsetSubtable(u8_stream *Source)
+ParseOffsetSubtable(u8_stream *Source, memory_arena* Arena)
 {
   Assert(Source->At == Source->Start);
 
@@ -323,16 +327,18 @@ ParseOffsetSubtable(u8_stream *Source)
   {
     case 0x00010000:
     {
+      Result.Valid = True;
     } break;
 
     // TODO(Jesse): Can we support these?
     case 'true': // Apple encoding
     case 'typ1': // Apple encoding
     case 'OTTO': // OTF 1/2 - Has a CFF Table .. whatever that means
-    default:
     {
-      Error("Unsupported ScalerType encountered in FontTable");
+      Error("Unsupported ScalerType encountered in FontTable : %s", HumanTag(Result.ScalerType, Arena) );
     } break;
+
+    InvalidDefaultCase;
   }
 
   Result.NumTables     = ReadU16(Source);
@@ -363,23 +369,30 @@ CalculateTableChecksum(font_table *Table)
 ttf
 InitTTF(const char* SourceFile, memory_arena *Arena)
 {
+  ttf Result = {};
   u8_stream Source = U8_StreamFromFile(SourceFile, Arena);
 
-  offset_subtable TableOffsets = ParseOffsetSubtable(&Source);
-
-  ttf Result = {};
-  for (u32 TableIndex = 0;
-      TableIndex < TableOffsets.NumTables;
-      ++TableIndex)
+  if (Source.Start)
   {
-    font_table *CurrentTable = ParseFontTable(&Source, Arena);
+    offset_subtable TableOffsets = ParseOffsetSubtable(&Source, Arena);
 
-    u32 Checksum = CalculateTableChecksum(CurrentTable);
-    if (Checksum != CurrentTable->Checksum) { Error("Invalid checksum encountered when reading table %s", CurrentTable->HumanTag); }
+    if (TableOffsets.Valid)
+    {
+      for (u32 TableIndex = 0;
+          TableIndex < TableOffsets.NumTables;
+          ++TableIndex)
+      {
+        font_table *CurrentTable = ParseFontTable(&Source, Arena);
 
-    AssignTable(CurrentTable, &Result);
+        u32 Checksum = CalculateTableChecksum(CurrentTable);
+        if (Checksum != CurrentTable->Checksum) { Error("Invalid checksum encountered when reading table %s", CurrentTable->HumanTag); }
+
+        AssignTable(CurrentTable, &Result);
+      }
+
+      Result.Loaded = True;
+    }
   }
-
 
   return Result;
 }
@@ -971,61 +984,72 @@ CopyBitmapOffset(bitmap *Source, bitmap *Dest, v2i Offset)
 int
 main()
 {
+  const char* FontName = "fonts/Anonymice/Anonymice Nerd Font Complete Mono Windows Compatible.ttf";
+
   memory_arena* PermArena = AllocateArena();
-  memory_arena *TempArena = AllocateArena();
-  ttf Font = InitTTF("fonts/hack.ttf", PermArena);
+  memory_arena* TempArena = AllocateArena();
 
-  u8_stream HeadStream = U8_Stream(Font.head);
-  Font.HeadTable = ParseHeadTable(&HeadStream, PermArena);
-  v2i FontMaxEmDim = { Font.HeadTable->xMax - Font.HeadTable->xMin, Font.HeadTable->yMax - Font.HeadTable->yMin };
-  v2i FontMinGlyphP = V2i(Font.HeadTable->xMin, Font.HeadTable->yMin);
+  ttf Font = InitTTF(FontName, PermArena);
 
-  v2i GlyphSize = V2i(32, 32);
-
-  bitmap TextureAtlasBitmap = AllocateBitmap(16*GlyphSize, PermArena);
-
-  u32 AtlasCount = 65536/256;
-  for (u32 AtlasIndex = 0;
-  AtlasIndex < AtlasCount;
-  ++AtlasIndex)
+  if (Font.Loaded)
   {
-    FillBitmap(PackedPink, &TextureAtlasBitmap);
+    u8_stream HeadStream = U8_Stream(Font.head);
+    Font.HeadTable = ParseHeadTable(&HeadStream, PermArena);
+    v2i FontMaxEmDim = { Font.HeadTable->xMax - Font.HeadTable->xMin, Font.HeadTable->yMax - Font.HeadTable->yMin };
+    v2i FontMinGlyphP = V2i(Font.HeadTable->xMin, Font.HeadTable->yMin);
 
-    u32 GlyphsRasterized = 0;
-    for (u32 CharCode = AtlasIndex*256;
-        CharCode < (AtlasIndex*256)+256;
-        ++CharCode)
+    v2i GlyphSize = V2i(32, 32);
+
+    bitmap TextureAtlasBitmap = AllocateBitmap(16*GlyphSize, PermArena);
+
+    u32 AtlasCount = 65536/256;
+    for (u32 AtlasIndex = 0;
+    AtlasIndex < AtlasCount;
+    ++AtlasIndex)
     {
-      u32 GlyphIndex = GetGlyphIdForCharacterCode(CharCode, &Font);
-      if (!GlyphIndex) continue;
-      u8_stream GlyphStream = GetStreamForGlyphIndex(GlyphIndex, &Font);
-      bitmap GlyphBitmap = RasterizeGlyph(GlyphSize, FontMaxEmDim, FontMinGlyphP, &GlyphStream, TempArena);
+      FillBitmap(PackedPink, &TextureAtlasBitmap);
 
-      if ( PixelCount(&GlyphBitmap) )
+      u32 GlyphsRasterized = 0;
+      for (u32 CharCode = AtlasIndex*256;
+          CharCode < (AtlasIndex*256)+256;
+          ++CharCode)
       {
-        Debug("Rasterized Glyph %d (%d)", CharCode, GlyphsRasterized);
-        ++GlyphsRasterized;
+        u32 GlyphIndex = GetGlyphIdForCharacterCode(CharCode, &Font);
+        if (!GlyphIndex) continue;
+        u8_stream GlyphStream = GetStreamForGlyphIndex(GlyphIndex, &Font);
+        bitmap GlyphBitmap = RasterizeGlyph(GlyphSize, FontMaxEmDim, FontMinGlyphP, &GlyphStream, TempArena);
+
+        if ( PixelCount(&GlyphBitmap) )
+        {
+          Debug("Rasterized Glyph %d (%d)", CharCode, GlyphsRasterized);
+          ++GlyphsRasterized;
 
 #if 1
-        v2 UV = GetUVForCharCode((u8)(CharCode % 256));
-        CopyBitmapOffset(&GlyphBitmap, &TextureAtlasBitmap, V2i(UV*V2(TextureAtlasBitmap.Dim)) );
+          v2 UV = GetUVForCharCode((u8)(CharCode % 256));
+          CopyBitmapOffset(&GlyphBitmap, &TextureAtlasBitmap, V2i(UV*V2(TextureAtlasBitmap.Dim)) );
 #else
-        char Name[128] = {};
-        sprintf(Name, "Glyph_%d.bmp", CharCode);
-        WriteBitmapToDisk(&GlyphBitmap, Name);
+          char Name[128] = {};
+          sprintf(Name, "Glyph_%d.bmp", CharCode);
+          WriteBitmapToDisk(&GlyphBitmap, Name);
 #endif
+        }
+
+        RewindArena(TempArena);
       }
 
-      RewindArena(TempArena);
+      if (GlyphsRasterized)
+      {
+        char* AtlasName = FormatString(TempArena, "texture_atlas_%d.bmp", AtlasIndex);
+        WriteBitmapToDisk(&TextureAtlasBitmap, AtlasName);
+      }
+
+      GlyphsRasterized = 0;
     }
 
-    if (GlyphsRasterized)
-    {
-      char* AtlasName = FormatString(TempArena, "texture_atlas_%d.bmp", AtlasIndex);
-      WriteBitmapToDisk(&TextureAtlasBitmap, AtlasName);
-    }
-
-    GlyphsRasterized = 0;
+  }
+  else
+  {
+    Error("Loading Font %s", FontName);
   }
 
   return 0;
