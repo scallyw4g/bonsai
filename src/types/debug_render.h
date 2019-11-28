@@ -1,9 +1,10 @@
 
 struct render_state
 {
-  window_layout* Window;
-  layout Layout;
-  rect2 ButtonStartingDrawBounds;
+  window_layout*  Window;
+  u32 WindowStartCommandIndex;
+
+  layout* Layout;
 
   ui_style Style;
 

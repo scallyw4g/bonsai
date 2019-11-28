@@ -19,8 +19,6 @@ struct layout
   v2 Basis;
   v2 At;
   rect2 DrawBounds;
-
-  rect2 MaxAbsoluteDrawBounds; // This is the highest AbsoluteDrawBounds that we've ever hit
 };
 
 struct window_layout
@@ -97,28 +95,35 @@ enum z_depth
 
 enum ui_render_command_type
 {
-  render_command_type_noop,
+  type_ui_render_command_noop,
 
-  render_command_type_window_start,
-  render_command_type_window_end,
+  type_ui_render_command_window_start,
+  type_ui_render_command_window_end,
 
-  render_command_type_table_start,
-  render_command_type_table_end,
+  type_ui_render_command_table_start,
+  type_ui_render_command_table_end,
 
-  render_command_type_button_start,
-  render_command_type_button_end,
+  type_ui_render_command_button_start,
+  type_ui_render_command_button_end,
 
-  render_command_type_column,
-  render_command_type_new_row,
-  render_command_type_text_at,
-  render_command_type_border,
+  type_ui_render_command_text,
+  type_ui_render_command_text_at,
 
-  render_command_type_textured_quad,
-  render_command_type_untextured_quad,
-  render_command_type_untextured_quad_at,
+  type_ui_render_command_column,
+  type_ui_render_command_new_row,
+  type_ui_render_command_border,
 
-  RenderCommand_Count,
+  type_ui_render_command_textured_quad,
+  type_ui_render_command_untextured_quad,
+  type_ui_render_command_untextured_quad_at,
 };
+
+
+
+
+
+
+
 
 struct font
 {
@@ -151,14 +156,23 @@ struct ui_style
   b32 IsActive;
 };
 
+
+
+
+
+
+
+
 struct ui_render_command_border
 {
+  window_layout* Window;
   rect2 Bounds;
   v3 Color;
 };
 
 struct ui_render_command_window_start
 {
+  layout Layout;
   window_layout* Window;
 };
 
@@ -169,11 +183,24 @@ struct ui_render_command_window_end
 
 struct ui_render_command_column
 {
-  counted_string String;
-  column_render_params Params;
+  layout Layout;
 
   b32 OverrideStyling;
   ui_style Style;
+
+  column_render_params Params;
+};
+
+struct ui_render_command_text
+{
+  counted_string String;
+};
+
+struct ui_render_command_text_at
+{
+  counted_string Text;
+  v2 At;
+  v2 MaxClip;
 };
 
 struct ui_render_command_untextured_quad
@@ -202,6 +229,8 @@ struct ui_render_command_textured_quad
 
 struct ui_render_command_button_start
 {
+  layout Layout;
+
   umm ID;
   ui_style Style;
 };
@@ -211,21 +240,19 @@ struct ui_render_command_button_end
   button_end_params Params;
 };
 
-struct ui_render_command_text_at
-{
-  counted_string Text;
-  v2 At;
-  v2 MaxClip;
-};
-
 struct ui_render_command_table_start
 {
+  layout Layout;
+
   relative_position Position;
   ui_element_reference RelativeTo;
-
-  v2 Basis;
-  v2 MaxDrawBounds;
 };
+
+
+
+
+
+
 
 struct ui_render_command
 {
@@ -240,15 +267,23 @@ struct ui_render_command
 
     ui_render_command_table_start        ui_render_command_table_start;
 
+    ui_render_command_text               ui_render_command_text;
+    ui_render_command_text_at            ui_render_command_text_at;
+
     ui_render_command_textured_quad      ui_render_command_textured_quad;
     ui_render_command_untextured_quad    ui_render_command_untextured_quad;
     ui_render_command_untextured_quad_at ui_render_command_untextured_quad_at;
 
-    ui_render_command_text_at            ui_render_command_text_at;
     ui_render_command_border             ui_render_command_border;
     ui_render_command_column             ui_render_command_column;
   };
 };
+
+
+
+
+
+
 
 struct table_render_params
 {
@@ -260,14 +295,28 @@ struct table_render_params
   u32 OnePastTableEnd;
 };
 
-#define MAX_UI_RENDER_COMMAND_COUNT (1024*1024)
 
+
+
+
+
+
+#define MAX_UI_RENDER_COMMAND_COUNT (1024*1024)
 struct ui_render_command_buffer
 {
   u32 CommandCount;
   ui_render_command Commands[MAX_UI_RENDER_COMMAND_COUNT];
 };
 
+
+
+
+
+
+
+/******************************               ********************************/
+/******************************      Misc     ********************************/
+/******************************               ********************************/
 
 
 
@@ -285,16 +334,6 @@ struct clip_result
 
   rect2 PartialClip;
 };
-
-
-
-
-
-/******************************               ********************************/
-/******************************      Misc     ********************************/
-/******************************               ********************************/
-
-
 
 struct sort_key
 {
@@ -367,7 +406,7 @@ UiStyleFromLightestColor(v3 Color, v4 Padding = V4())
 {
   ui_style Style  = {
     .Color        = Color,
-    .HoverColor   = Color*0.7f,
+    .HoverColor   = Color*0.75f,
     .PressedColor = Color,
     .ClickedColor = Color,
     .ActiveColor  = Color,

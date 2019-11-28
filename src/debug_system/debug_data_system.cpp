@@ -393,16 +393,15 @@ MainThreadAdvanceDebugSystem()
   debug_thread_state *MainThreadState = GetThreadLocalStateFor(ThreadLocal_ThreadIndex);
   debug_state *SharedState = GetDebugState();
 
-  DEBUG_VALUE(SharedState->ReadScopeIndex);
-  DEBUG_VALUE(MainThreadState->WriteIndex);
-
-  for (u32 ThreadIndex = 1;
-      ThreadIndex < GetTotalThreadCount();
-      ++ThreadIndex)
-  {
-    debug_thread_state *ThreadState = GetThreadLocalStateFor(ThreadIndex);
-    DEBUG_VALUE(ThreadState->WriteIndex);
-  }
+  /* DEBUG_VALUE(SharedState->ReadScopeIndex); */
+  /* DEBUG_VALUE(MainThreadState->WriteIndex); */
+  /* for (u32 ThreadIndex = 1; */
+  /*     ThreadIndex < GetTotalThreadCount(); */
+  /*     ++ThreadIndex) */
+  /* { */
+  /*   debug_thread_state *ThreadState = GetThreadLocalStateFor(ThreadIndex); */
+  /*   DEBUG_VALUE(ThreadState->WriteIndex); */
+  /* } */
 
   if (SharedState->DebugDoScopeProfiling)
   {
@@ -446,16 +445,20 @@ ComputeMinMaxAvgDt()
   {
     frame_stats *Frame = SharedState->Frames + FrameIndex;
 
+    Dt.Min = Min(Dt.Min, Frame->FrameMs);
+    Dt.Max = Max(Dt.Max, Frame->FrameMs);
+    Dt.Avg += Frame->FrameMs;
+
     if (Frame->FrameMs > 0.0f)
     {
-      Dt.Min = Min(Dt.Min, Frame->FrameMs);
-      Dt.Max = Max(Dt.Max, Frame->FrameMs);
-      Dt.Avg += Frame->FrameMs;
       ++FrameCount;
     }
   }
 
-  Dt.Avg /= (r32)FrameCount;
+  if (FrameCount > 0)
+  {
+    Dt.Avg /= (r32)FrameCount;
+  }
 
   return Dt;
 }
@@ -547,7 +550,7 @@ ThreadsafeDebugMemoryAllocator()
 v2
 GetAbsoluteAt(layout *Layout)
 {
-  v2 Result = Layout->Basis + Layout->At;
+  v2 Result = Layout ? Layout->Basis + Layout->At : V2(0);
   return Result;
 }
 
@@ -650,9 +653,6 @@ AdvanceClip(layout *Layout, v2 TestP)
 {
   Layout->DrawBounds.Min = Min(TestP, Layout->DrawBounds.Min);
   Layout->DrawBounds.Max = Max(TestP, Layout->DrawBounds.Max);
-
-  Layout->MaxAbsoluteDrawBounds.Min = Min(Layout->MaxAbsoluteDrawBounds.Min, GetAbsoluteDrawBoundsMin(Layout));
-  Layout->MaxAbsoluteDrawBounds.Max = Max(Layout->MaxAbsoluteDrawBounds.Max, GetAbsoluteDrawBoundsMax(Layout));
   return;
 }
 
@@ -661,9 +661,6 @@ AdvanceClip(layout *Layout)
 {
   Layout->DrawBounds.Min = Min(Layout->At, Layout->DrawBounds.Min);
   Layout->DrawBounds.Max = Max(Layout->At, Layout->DrawBounds.Max);
-
-  Layout->MaxAbsoluteDrawBounds.Min = Min(Layout->MaxAbsoluteDrawBounds.Min, GetAbsoluteDrawBoundsMin(Layout));
-  Layout->MaxAbsoluteDrawBounds.Max = Max(Layout->MaxAbsoluteDrawBounds.Max, GetAbsoluteDrawBoundsMax(Layout));
   return;
 }
 

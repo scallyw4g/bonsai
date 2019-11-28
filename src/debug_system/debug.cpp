@@ -67,12 +67,21 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   /* ui_style Style =  UiStyleFromLightestColor(V3(1), V4(0,0,35,0)); */
 
   ui_element_reference DtTable = PushTableStart(UiGroup);
-    PushColumn(UiGroup, CS(Dt.Max));
+    StartColumn(UiGroup);
+      Text(UiGroup,  CS("+"));
+      Text(UiGroup, CS(Dt.Max - Dt.Avg));
     PushNewRow(UiGroup);
-    PushColumn(UiGroup, CS(Dt.Avg));
+
+    StartColumn(UiGroup);
+      Text(UiGroup, CS(" "));
+      Text(UiGroup, CS(Dt.Avg));
+
     PushColumn(UiGroup, CS(Plat->dt*1000.0f));
     PushNewRow(UiGroup);
-    PushColumn(UiGroup, CS(Dt.Min));
+
+    StartColumn(UiGroup);
+      Text(UiGroup, CS("-"));
+      Text(UiGroup, CS(Dt.Avg - Dt.Min));
   PushTableEnd(UiGroup);
 
   PushTableStart(UiGroup, Position_RightOf, DtTable);
@@ -94,91 +103,94 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     ui_style Style =  UiStyleFromLightestColor(V3(1), V2(50));
     PushTableStart(UiGroup);
 
+    StartColumn(UiGroup);
     if (Button(UiGroup, CS("PickedChunks"), (umm)"PickedChunks", &Style))
     {
       DebugState->UIType = DebugUIType_PickedChunks;
     }
 
+    StartColumn(UiGroup);
     if (Button(UiGroup, CS("Graphics"), (umm)"Graphics", &Style))
     {
       DebugState->UIType = DebugUIType_Graphics;
     }
 
+    StartColumn(UiGroup);
     if (Button(UiGroup, CS("Network"), (umm)"Network", &Style))
     {
       DebugState->UIType = DebugUIType_Network;
     }
 
+    StartColumn(UiGroup);
     if (Button(UiGroup, CS("Functions"), (umm)"Functions", &Style))
     {
       DebugState->UIType = DebugUIType_CollatedFunctionCalls;
     }
 
+    StartColumn(UiGroup);
     if (Button(UiGroup, CS("Callgraph"), (umm)"Callgraph", &Style))
     {
       DebugState->UIType = DebugUIType_CallGraph;
     }
 
+    StartColumn(UiGroup);
     if (Button(UiGroup, CS("Memory"), (umm)"Memory", &Style))
     {
       DebugState->UIType = DebugUIType_Memory;
     }
 
+    StartColumn(UiGroup);
     if (Button(UiGroup, CS("DrawCalls"), (umm)"DrawCalls", &Style))
     {
       DebugState->UIType = DebugUIType_Memory;
     }
 
     PushTableEnd(UiGroup);
-  }
-  else
-  {
-    DebugState->UIType = DebugUIType_None;
-  }
 
-
-  switch (DebugState->UIType)
-  {
-    case DebugUIType_None:
+    switch (DebugState->UIType)
     {
-    } break;
+      case DebugUIType_None:
+      {
+      } break;
 
-    case DebugUIType_PickedChunks:
-    {
-      DrawPickedChunks(UiGroup);
-    } break;
+      case DebugUIType_PickedChunks:
+      {
+        DrawPickedChunks(UiGroup);
+      } break;
 
-    case DebugUIType_Graphics:
-    {
-      DebugDrawGraphicsHud(UiGroup, DebugState);
-    } break;
+      case DebugUIType_Graphics:
+      {
+        DebugDrawGraphicsHud(UiGroup, DebugState);
+      } break;
 
-    case DebugUIType_Network:
-    {
-      DebugDrawNetworkHud(UiGroup, &Plat->Network, ServerState);
-    } break;
+      case DebugUIType_Network:
+      {
+        DebugDrawNetworkHud(UiGroup, &Plat->Network, ServerState);
+      } break;
 
-    case DebugUIType_CollatedFunctionCalls:
-    {
-      DebugDrawCollatedFunctionCalls(UiGroup, DebugState);
-    } break;
+      case DebugUIType_CollatedFunctionCalls:
+      {
+        DebugDrawCollatedFunctionCalls(UiGroup, DebugState);
+      } break;
 
-    case DebugUIType_CallGraph:
-    {
-      DebugDrawCallGraph(UiGroup, DebugState, Dt.Max);
-    } break;
+      case DebugUIType_CallGraph:
+      {
+        DebugDrawCallGraph(UiGroup, DebugState, Dt.Max);
+      } break;
 
-    case DebugUIType_Memory:
-    {
-      DebugDrawMemoryHud(UiGroup, DebugState);
-    } break;
+      case DebugUIType_Memory:
+      {
+        DebugDrawMemoryHud(UiGroup, DebugState);
+      } break;
 
-    case DebugUIType_DrawCalls:
-    {
-      DebugDrawDrawCalls(UiGroup);
-    } break;
+      case DebugUIType_DrawCalls:
+      {
+        DebugDrawDrawCalls(UiGroup);
+      } break;
 
-    InvalidDefaultCase;
+      InvalidDefaultCase;
+    }
+
   }
 
   UiGroup->HighestWindow = GetHighestWindow(UiGroup, UiGroup->CommandBuffer);

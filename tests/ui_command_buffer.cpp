@@ -12,7 +12,7 @@ TestTable(debug_ui_render_group* Group)
 {
   PushTableStart(Group);
   for (u32 Index = 0;
-      Index < 32;
+      Index < 2;
       ++Index)
   {
     interactable_handle Interaction = PushButtonStart(Group, (umm)"TestButtonInteraction"^(umm)Index);
@@ -40,8 +40,8 @@ TestTable(debug_ui_render_group* Group)
       PushColumn(Group, CS("String3"));
       PushUntexturedQuadAt(Group, V2(0), V2(100), zDepth_Background);
     PushButtonEnd(Group);
+    PushNewRow(Group);
   PushTableEnd(Group);
-  PushNewRow(Group);
 
   PushTableStart(Group);
     PushButtonStart(Group, (umm)"Ignored");

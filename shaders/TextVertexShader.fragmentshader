@@ -12,7 +12,9 @@ void main()
                                  ivec3(UV*vec3(DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM, 1)),
                                  0);
 
-  if (BitmapTexel.a == 0.0f)
+  //
+  // FIXME(Jesse): Do some proper alpha-handling!
+  if (BitmapTexel.a <= 0.7f)
     discard;
 
   color = vec4(VertColor * BitmapTexel.rgb * BitmapTexel.a, BitmapTexel.a);
