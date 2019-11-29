@@ -214,7 +214,8 @@ struct ui_render_command_untextured_quad
 
 struct ui_render_command_untextured_quad_at
 {
-  v2 AtRelativeToWindowBasis;
+  layout Layout;
+  v2 StartingAt;
   v2 QuadDim;
   ui_style Style;
   z_depth zDepth;
@@ -229,8 +230,6 @@ struct ui_render_command_textured_quad
 
 struct ui_render_command_button_start
 {
-  layout Layout;
-
   umm ID;
   ui_style Style;
 };

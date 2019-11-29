@@ -821,11 +821,16 @@ PushUntexturedQuadAt(debug_ui_render_group* Group, v2 At, v2 QuadDim, z_depth zD
   ui_render_command Command = {
     .Type = type_ui_render_command_untextured_quad_at,
 
-    .ui_render_command_untextured_quad_at.AtRelativeToWindowBasis = At,
     .ui_render_command_untextured_quad_at.QuadDim = QuadDim,
     .ui_render_command_untextured_quad_at.Style = Style? *Style : DefaultUiStyle,
     .ui_render_command_untextured_quad_at.Params = Params,
     .ui_render_command_untextured_quad_at.zDepth = zDepth,
+
+    .ui_render_command_untextured_quad_at.Layout =
+    {
+      .DrawBounds = InvertedInfinityRectangle(),
+      .At = At,
+    }
   };
 
   PushUiRenderCommand(Group, &Command);
@@ -975,18 +980,18 @@ PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
   PushButtonStart(Group, TitleBarInteractionId);
     Text(Group, Window->Title);
     Text(Group, CS(Window->InteractionStackIndex));
-    PushUntexturedQuadAt(Group, V2(0), V2(Window->MaxClip.x, Global_Font.Size.y), zDepth_TitleBar);
+    PushUntexturedQuadAt(Group, Window->Basis, V2(Window->MaxClip.x, Global_Font.Size.y), zDepth_TitleBar);
   PushButtonEnd(Group);
 
   v2 Dim = V2(12);
   PushButtonStart(Group, DragHandleInteractionId);
-    PushUntexturedQuadAt(Group, Window->MaxClip-Dim, Dim, zDepth_Border, &DefaultUiStyle, QuadRenderParam_NoAdvance);
+    PushUntexturedQuadAt(Group, GetAbsoluteMaxClip(Window)-Dim, Dim, zDepth_Border, &DefaultUiStyle, QuadRenderParam_NoAdvance);
   PushButtonEnd(Group);
 
   PushBorder(Group, GetBounds(Window), V3(1));
 
   ui_style BackgroundStyle = UiStyleFromLightestColor(V3(0.25f));
-  PushUntexturedQuadAt(Group, V2(0), Window->MaxClip, zDepth_Background, &BackgroundStyle, QuadRenderParam_NoAdvance);
+  PushUntexturedQuadAt(Group, Window->Basis, Window->MaxClip, zDepth_Background, &BackgroundStyle, QuadRenderParam_NoAdvance);
 
   return;
 }
@@ -1052,6 +1057,7 @@ function b32
 Button(debug_ui_render_group* Group, counted_string ButtonName, umm ButtonId, ui_style* Style = 0)
 {
   interactable_handle Button = PushButtonStart(Group, ButtonId, Style);
+    StartColumn(Group);
     Text(Group, ButtonName);
   PushButtonEnd(Group);
 
@@ -1330,18 +1336,15 @@ function void
 ProcessUntexturedQuadAtPush(debug_ui_render_group* Group, ui_render_command_untextured_quad_at *Command, render_state* RenderState)
 {
   v2 MaxClip = GetAbsoluteMaxClip(RenderState->Window);
-  v2 MinP = Command->AtRelativeToWindowBasis + (RenderState->Window ? RenderState->Window->Basis : V2(0));
+  v2 MinP = GetAbsoluteAt(&Command->Layout);
   v2 Dim = Command->QuadDim;
   v3 Color = SelectColorState(RenderState, Command->Style);
   r32 Z = GetZ(Command->zDepth, RenderState->Window);
 
   BufferUntexturedQuad(Group, &(Group->Geo), MinP, Dim, Color, Z, MaxClip);
 
-  if (Command->Params & QuadRenderParam_AdvanceClip)
-  {
-    AdvanceClip(RenderState->Layout, Command->AtRelativeToWindowBasis);
-    AdvanceClip(RenderState->Layout, Command->AtRelativeToWindowBasis + Dim);
-  }
+  AdvanceClip(&Command->Layout, MinP);
+  AdvanceClip(&Command->Layout, MinP + Dim);
 
   return;
 }
@@ -1491,6 +1494,7 @@ SetWindowZDepths(ui_render_command_buffer *CommandBuffer)
   return;
 }
 
+#if 0
 function v2
 FindPreviousAbsoluteDrawBoundsMaxBeforeNewRow(ui_render_command_buffer* CommandBuffer, u32 StartingIndex)
 {
@@ -1719,6 +1723,7 @@ DoTheThing(ui_render_command_buffer* CommandBuffer, u32 StartingIndex, v2 Defaul
 
   return Result;
 }
+#endif
 
 ui_render_command_table_start*
 FindPreviousTableStart(ui_render_command_buffer* CommandBuffer, u32 StartingIndex)
@@ -1930,14 +1935,21 @@ FindAbsoluteDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, u32 First
 
       case type_ui_render_command_button_start:
       {
-        ui_render_command_button_start* TypedCommand = RenderCommandAs(button_start, Command);
-        Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&TypedCommand->Layout));
-        Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&TypedCommand->Layout));
+        /* ui_render_command_button_start* TypedCommand = RenderCommandAs(button_start, Command); */
+        /* Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&TypedCommand->Layout)); */
+        /* Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&TypedCommand->Layout)); */
       } break;
 
       case type_ui_render_command_column:
       {
         ui_render_command_column* TypedCommand = RenderCommandAs(column, Command);
+        Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&TypedCommand->Layout));
+        Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&TypedCommand->Layout));
+      } break;
+
+      case type_ui_render_command_untextured_quad_at:
+      {
+        ui_render_command_untextured_quad_at* TypedCommand = RenderCommandAs(untextured_quad_at, Command);
         Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&TypedCommand->Layout));
         Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&TypedCommand->Layout));
       } break;
@@ -1952,7 +1964,6 @@ FindAbsoluteDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, u32 First
       case type_ui_render_command_border:
       case type_ui_render_command_textured_quad:
       case type_ui_render_command_untextured_quad:
-      case type_ui_render_command_untextured_quad_at:
       {
       } break;
     }
@@ -2016,17 +2027,15 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
       case type_ui_render_command_table_start:
       {
         Assert( AreEqual(TableRenderParams, NullTableRenderParams));
-
-        ui_render_command_table_start* ThisTable = RenderCommandAs(table_start, Command);
-
-        RenderState.Layout = &ThisTable->Layout;
+        TableRenderParams = GetTableRenderParams(CommandBuffer, NextCommandIndex-1);
 
         r32 BasisX = RenderState.Window ? RenderState.Window->Basis.x : 0;
         r32 BasisY = FindAbsoluteDrawBoundsBetween(CommandBuffer, RenderState.WindowStartCommandIndex, NextCommandIndex).Max.y;
 
-        RenderState.Layout->Basis = V2(BasisX, BasisY);
+        ui_render_command_table_start* ThisTable = RenderCommandAs(table_start, Command);
+        ThisTable->Layout.Basis = V2(BasisX, BasisY);
+        RenderState.Layout = &ThisTable->Layout;
 
-        TableRenderParams = GetTableRenderParams(CommandBuffer, NextCommandIndex-1);
         if (TableRenderParams.OnePastTableEnd)
         {
           if (ThisTable->Position)
@@ -2071,8 +2080,8 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
 
             case type_ui_render_command_button_start:
             {
-              ui_render_command_button_start* TypedCommand = RenderCommandAs(button_start, InteriorCommand);
-              TableStartCommand->Layout.DrawBounds.Max = Max(GetAbsoluteDrawBoundsMax(&TypedCommand->Layout) - TableStartCommand->Layout.Basis, TableStartCommand->Layout.DrawBounds.Max);
+            /*   ui_render_command_button_start* TypedCommand = RenderCommandAs(button_start, InteriorCommand); */
+            /*   TableStartCommand->Layout.DrawBounds.Max = Max(GetAbsoluteDrawBoundsMax(&TypedCommand->Layout) - TableStartCommand->Layout.Basis, TableStartCommand->Layout.DrawBounds.Max); */
             } break;
 
             case type_ui_render_command_column:
@@ -2138,15 +2147,21 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
       {
         ui_render_command_untextured_quad_at* UntexturedQuadAt = RenderCommandAs(untextured_quad_at, Command);
         ui_style StartingStyle = RenderState.Style;
+
+        layout* ResetLayout = RenderState.Layout;
+        RenderState.Layout = &UntexturedQuadAt->Layout;
+
         ProcessUntexturedQuadAtPush(Group, UntexturedQuadAt, &RenderState);
+
+        RenderState.Layout = ResetLayout;
         RenderState.Style = StartingStyle;
       } break;
 
       case type_ui_render_command_untextured_quad:
       {
         ui_render_command_untextured_quad* UntexturedQuad = RenderCommandAs(untextured_quad, Command);
-        ui_style StartingStyle = RenderState.Style;
         ProcessUntexturedQuadPush(Group, UntexturedQuad, &RenderState);
+        ui_style StartingStyle = RenderState.Style;
         RenderState.Style = StartingStyle;
       } break;
 
@@ -2170,9 +2185,9 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
         ui_render_command_button_start* ButtonStart = RenderCommandAs(button_start, Command);
         RenderState.Style = ButtonStart->Style;
 
-        ButtonStart->Layout.Basis = GetAbsoluteAt(RenderState.Layout);//DoTheThing(CommandBuffer, NextCommandIndex-1, GetAbsoluteAt(RenderState.Layout));
+        /* ButtonStart->Layout.Basis = GetAbsoluteAt(RenderState.Layout);//DoTheThing(CommandBuffer, NextCommandIndex-1, GetAbsoluteAt(RenderState.Layout)); */
+        /* RenderState.Layout = &ButtonStart->Layout; */
 
-        RenderState.Layout = &ButtonStart->Layout;
         ProcessButtonStart(Group, &RenderState, ButtonStart->ID);
       } break;
 

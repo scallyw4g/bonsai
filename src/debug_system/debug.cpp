@@ -103,43 +103,36 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     ui_style Style =  UiStyleFromLightestColor(V3(1), V2(50));
     PushTableStart(UiGroup);
 
-    StartColumn(UiGroup);
     if (Button(UiGroup, CS("PickedChunks"), (umm)"PickedChunks", &Style))
     {
       DebugState->UIType = DebugUIType_PickedChunks;
     }
 
-    StartColumn(UiGroup);
     if (Button(UiGroup, CS("Graphics"), (umm)"Graphics", &Style))
     {
       DebugState->UIType = DebugUIType_Graphics;
     }
 
-    StartColumn(UiGroup);
     if (Button(UiGroup, CS("Network"), (umm)"Network", &Style))
     {
       DebugState->UIType = DebugUIType_Network;
     }
 
-    StartColumn(UiGroup);
     if (Button(UiGroup, CS("Functions"), (umm)"Functions", &Style))
     {
       DebugState->UIType = DebugUIType_CollatedFunctionCalls;
     }
 
-    StartColumn(UiGroup);
     if (Button(UiGroup, CS("Callgraph"), (umm)"Callgraph", &Style))
     {
       DebugState->UIType = DebugUIType_CallGraph;
     }
 
-    StartColumn(UiGroup);
     if (Button(UiGroup, CS("Memory"), (umm)"Memory", &Style))
     {
       DebugState->UIType = DebugUIType_Memory;
     }
 
-    StartColumn(UiGroup);
     if (Button(UiGroup, CS("DrawCalls"), (umm)"DrawCalls", &Style))
     {
       DebugState->UIType = DebugUIType_Memory;
