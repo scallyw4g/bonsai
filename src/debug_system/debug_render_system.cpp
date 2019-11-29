@@ -2149,6 +2149,7 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
 
         ui_render_command_table_start* TableStart = GetCommandAs(table_start, CommandBuffer, TableStartIndex);
         TableStart->Layout.DrawBounds = FindRelativeDrawBoundsBetween(CommandBuffer, TableStart->Layout.Basis, TableStartIndex, NextCommandIndex);
+        TableStart->Layout.At = TableStart->Layout.DrawBounds.Max;
 
         RenderState.Layout = &TableStart->Layout;
 
