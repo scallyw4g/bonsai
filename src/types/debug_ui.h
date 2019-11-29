@@ -211,10 +211,11 @@ struct ui_render_command_text_at
 
 struct ui_render_command_untextured_quad
 {
-  v2 OffsetFromLayout;
+  v2 Offset;
   v2 QuadDim;
   ui_style Style;
   z_depth zDepth;
+  layout Layout;
   quad_render_params Params;
 };
 

@@ -10,7 +10,7 @@ InvertedInfinityRectangle()
 {
   rect2 Result = {
     .Min = V2(f32_MAX),
-    .Max = V2(f32_MIN),
+    .Max = V2(-f32_MAX),
   };
   return Result;
 }

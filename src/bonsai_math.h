@@ -137,7 +137,6 @@ Max(r32 A, r32 B)
   return Result;
 }
 
-
 inline u32
 Max(u32 A, u32 B)
 {

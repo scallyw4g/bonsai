@@ -78,7 +78,7 @@ MemorySize(u64 Number)
 
 
   char *Buffer = Allocate(char, TranArena, 32);
-  sprintf(Buffer, "%.1f%c", (r32)Display, Units);
+  snprintf(Buffer, 32, "%.1f%c", (r32)Display, Units);
   return Buffer;
 }
 
@@ -128,11 +128,20 @@ CS(r32 Number)
   return Result;
 }
 
+function counted_string
+CS(v2 V)
+{
+  char *Buffer = Allocate(char, TranArena, 32);
+  snprintf(Buffer, 32, "(%.2f,%.2f)", V.x, V.y);
+  counted_string Result = CS(Buffer);
+  return Result;
+}
+
 function char*
 ToString(u64 Number)
 {
   char *Buffer = Allocate(char, TranArena, 32);
-  sprintf(Buffer, "%lu", Number);
+  snprintf(Buffer, 32, "%lu", Number);
   return Buffer;
 }
 
@@ -140,7 +149,7 @@ function char*
 ToString(s32 Number)
 {
   char *Buffer = Allocate(char, TranArena, 32);
-  sprintf(Buffer, "%i", Number);
+  snprintf(Buffer, 32, "%i", Number);
   return Buffer;
 }
 
@@ -148,7 +157,7 @@ function char*
 ToString(u32 Number)
 {
   char *Buffer = Allocate(char, TranArena, 32);
-  sprintf(Buffer, "%u", Number);
+  snprintf(Buffer, 32, "%u", Number);
   return Buffer;
 }
 
@@ -156,7 +165,7 @@ function char*
 ToString(r32 Number)
 {
   char *Buffer = Allocate(char, TranArena, 32);
-  sprintf(Buffer, "%.2f", Number);
+  snprintf(Buffer, 32, "%.2f", Number);
   return Buffer;
 }
 
@@ -187,7 +196,7 @@ FormatMemorySize(u64 Number)
   }
 
   char *Buffer = Allocate(char, TranArena, 32);
-  sprintf(Buffer, "%.1f%c", (r32)Display, Units);
+  snprintf(Buffer, 32, "%.1f%c", (r32)Display, Units);
 
   return Buffer;
 }
@@ -206,7 +215,7 @@ FormatThousands(u64 Number)
   }
 
   char *Buffer = Allocate(char, TranArena, 32);
-  sprintf(Buffer, "%.1f%c", Display, Units);
+  snprintf(Buffer, 32, "%.1f%c", Display, Units);
 
   return Buffer;
 }
@@ -630,16 +639,11 @@ BufferBorder(debug_ui_render_group *Group, interactable* PickerListInteraction, 
 }
 
 function void
-BufferValue(counted_string Text, debug_ui_render_group *Group, render_state* RendererState)
+BufferValue(counted_string Text, debug_ui_render_group *Group, layout* Layout, ui_style& Style = DefaultUiStyle, r32 Z = 1.0f, v2 MaxClip = DISABLE_CLIPPING)
 {
-  layout* Layout        = RendererState->Layout;
-  r32 Z                 = GetZ(zDepth_Text, RendererState->Window);
-  ui_style Style        = RendererState->Style;
-  v2 MaxClip            = GetAbsoluteMaxClip(RendererState->Window);
-
   v4 Padding = Style.Padding;
 
-  v2 FontHeight = V2(0, RendererState->Style.Font.Size.y);
+  v2 FontHeight = V2(0, Style.Font.Size.y);
 
 #if DEBUG_UI_OUTLINE_VALUES
   v2 StartingP = GetAbsoluteAt(Layout);
@@ -652,7 +656,7 @@ BufferValue(counted_string Text, debug_ui_render_group *Group, render_state* Ren
       CharIndex++ )
   {
     v2 MinP = GetAbsoluteAt(Layout) + V2(0, Padding.Top);
-    Layout->At.x += BufferChar(Group, (u8)Text.Start[CharIndex], MinP, RendererState->Style.Font.Size, Style.Color, Z, MaxClip);
+    Layout->At.x += BufferChar(Group, (u8)Text.Start[CharIndex], MinP, Style.Font.Size, Style.Color, Z, MaxClip);
     continue;
   }
 
@@ -666,6 +670,18 @@ BufferValue(counted_string Text, debug_ui_render_group *Group, render_state* Ren
   BufferBorder(Group, RectMinMax(StartingP, EndingP), V3(0, 0, 1), Z, DISABLE_CLIPPING);
 #endif
 
+  return;
+}
+
+function void
+BufferValue(counted_string Text, debug_ui_render_group *Group, render_state* RendererState)
+{
+  layout* Layout        = RendererState->Layout;
+  r32 Z                 = GetZ(zDepth_Text, RendererState->Window);
+  ui_style Style        = RendererState->Style;
+  v2 MaxClip            = GetAbsoluteMaxClip(RendererState->Window);
+
+  BufferValue(Text, Group, Layout, Style, Z, MaxClip);
   return;
 }
 
@@ -818,18 +834,21 @@ PushTexturedQuad(debug_ui_render_group *Group, debug_texture_array_slice Texture
 function void
 PushUntexturedQuadAt(debug_ui_render_group* Group, v2 At, v2 QuadDim, z_depth zDepth, ui_style *Style = 0, quad_render_params Params = QuadRenderParam_Default )
 {
-  ui_render_command Command = {
+  ui_render_command Command =
+  {
     .Type = type_ui_render_command_untextured_quad_at,
     .Flags = UiElement_Floating,
-    .ui_render_command_untextured_quad_at.QuadDim = QuadDim,
-    .ui_render_command_untextured_quad_at.Style = Style? *Style : DefaultUiStyle,
-    .ui_render_command_untextured_quad_at.Params = Params,
-    .ui_render_command_untextured_quad_at.zDepth = zDepth,
-
-    .ui_render_command_untextured_quad_at.Layout =
+    .ui_render_command_untextured_quad_at =
     {
-      .DrawBounds = InvertedInfinityRectangle(),
-      .At = At,
+      .QuadDim = QuadDim,
+      .Style   = Style? *Style : DefaultUiStyle,
+      .Params  = Params,
+      .zDepth  = zDepth,
+      .Layout  =
+      {
+        .DrawBounds = InvertedInfinityRectangle(),
+        .At = At,
+      }
     }
   };
 
@@ -837,16 +856,23 @@ PushUntexturedQuadAt(debug_ui_render_group* Group, v2 At, v2 QuadDim, z_depth zD
 }
 
 function void
-PushUntexturedQuad(debug_ui_render_group* Group, v2 OffsetFromLayout, v2 QuadDim, z_depth zDepth, ui_style *Style = 0, quad_render_params Params = QuadRenderParam_Default )
+PushUntexturedQuad(debug_ui_render_group* Group, v2 Offset, v2 QuadDim, z_depth zDepth, ui_style *Style = 0, quad_render_params Params = QuadRenderParam_Default )
 {
   ui_render_command Command = {
     .Type = type_ui_render_command_untextured_quad,
 
-    .ui_render_command_untextured_quad.OffsetFromLayout = OffsetFromLayout,
-    .ui_render_command_untextured_quad.QuadDim = QuadDim,
-    .ui_render_command_untextured_quad.Style = Style? *Style : DefaultUiStyle,
-    .ui_render_command_untextured_quad.Params = Params,
-    .ui_render_command_untextured_quad.zDepth = zDepth,
+    .ui_render_command_untextured_quad =
+    {
+      .Offset  = Offset,
+      .QuadDim = QuadDim,
+      .Style   = Style? *Style : DefaultUiStyle,
+      .Params  = Params,
+      .zDepth  = zDepth,
+      .Layout  =
+      {
+        .DrawBounds = InvertedInfinityRectangle(),
+      },
+    }
   };
 
   PushUiRenderCommand(Group, &Command);
@@ -1024,7 +1050,7 @@ ButtonInteraction(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId,
   interactable Interaction = Interactable(Bounds, InteractionId, Window);
 
 #if DEBUG_UI_OUTLINE_BUTTONS
-  BufferBorder(Group, Rect2(Interaction) - RectMinMax(V2(-1), V2(1)), V3(1,0,0), 1.0f, DISABLE_CLIPPING);
+  BufferBorder(Group, Rect2(Interaction), V3(1,0,0), 1.0f, DISABLE_CLIPPING);
 #endif
 
   if (Hover(Group, &Interaction))
@@ -1353,7 +1379,7 @@ function void
 ProcessUntexturedQuadPush(debug_ui_render_group* Group, ui_render_command_untextured_quad *Command, render_state* RenderState)
 {
   v2 MaxClip = GetAbsoluteMaxClip(RenderState->Window);
-  v2 MinP = Command->OffsetFromLayout + GetAbsoluteAt(RenderState->Layout);
+  v2 MinP = Command->Offset + GetAbsoluteAt(RenderState->Layout);
   v2 Dim = Command->QuadDim;
   v3 Color = SelectColorState(RenderState, Command->Style);
   r32 Z = GetZ(Command->zDepth, RenderState->Window);
@@ -1362,8 +1388,8 @@ ProcessUntexturedQuadPush(debug_ui_render_group* Group, ui_render_command_untext
 
   if (Command->Params & QuadRenderParam_AdvanceClip)
   {
-    AdvanceClip(RenderState->Layout, RenderState->Layout->At + Command->OffsetFromLayout);
-    AdvanceClip(RenderState->Layout, RenderState->Layout->At + Command->OffsetFromLayout + Dim);
+    AdvanceClip(RenderState->Layout, RenderState->Layout->At + Command->Offset);
+    AdvanceClip(RenderState->Layout, RenderState->Layout->At + Command->Offset + Dim);
   }
 
   if (Command->Params & QuadRenderParam_AdvanceLayout)
@@ -1953,13 +1979,19 @@ FindAbsoluteDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, u32 First
         Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&TypedCommand->Layout));
       } break;
 
+      case type_ui_render_command_untextured_quad:
+      {
+        ui_render_command_untextured_quad* TypedCommand = RenderCommandAs(untextured_quad, Command);
+        Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&TypedCommand->Layout));
+        Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&TypedCommand->Layout));
+      } break;
+
       case type_ui_render_command_noop:
       case type_ui_render_command_window_end:
       case type_ui_render_command_table_end:
       case type_ui_render_command_button_start:
       case type_ui_render_command_button_end:
       case type_ui_render_command_textured_quad:
-      case type_ui_render_command_untextured_quad:
       case type_ui_render_command_column:
       case type_ui_render_command_text_at:
       case type_ui_render_command_new_row:
@@ -1974,12 +2006,12 @@ FindAbsoluteDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, u32 First
 }
 
 function rect2
-FindRelativeDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, v2 Basis, u32 FirstCommand, u32 OnePastLastCommand)
+FindRelativeDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, v2 RelativeTo, u32 FirstCommand, u32 OnePastLastCommand)
 {
   rect2 Result = FindAbsoluteDrawBoundsBetween(CommandBuffer, FirstCommand, OnePastLastCommand);
 
-  Result.Min -= Basis;
-  Result.Max -= Basis;
+  Result.Min -= RelativeTo;
+  Result.Max -= RelativeTo;
 
   return Result;
 }
@@ -2029,6 +2061,8 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
         Assert( AreEqual(TableRenderParams, NullTableRenderParams));
         TableRenderParams = GetTableRenderParams(CommandBuffer, NextCommandIndex-1);
 
+        TriggeredRuntimeBreak();
+
         r32 BasisX = RenderState.Window ? RenderState.Window->Basis.x : 0;
         r32 BasisY = FindAbsoluteDrawBoundsBetween(CommandBuffer, RenderState.WindowStartCommandIndex, NextCommandIndex).Max.y;
 
@@ -2069,10 +2103,22 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
         }
 
         ui_render_command_table_start* TableStartCommand = GetCommandAs(table_start, CommandBuffer, TableRenderParams.TableStart);
-        TableStartCommand->Layout.DrawBounds = FindAbsoluteDrawBoundsBetween(CommandBuffer, TableRenderParams.TableStart, NextCommandIndex);
+        TableStartCommand->Layout.DrawBounds = FindRelativeDrawBoundsBetween(CommandBuffer, TableStartCommand->Layout.Basis, TableRenderParams.TableStart, NextCommandIndex);
+
+#if 0
+        if (IsInsideRect(TableStartCommand->Layout.DrawBounds, *Group->MouseP))
+        {
+          layout Layout = { .Basis = TableStartCommand->Layout.DrawBounds.Max };
+          ui_style Style = DefaultUiStyle;
+          Style.Font.Size = V2(15,18);
+          BufferValue(CS(TableStartCommand->Layout.DrawBounds.Min), Group, &Layout, Style);
+          NewLine(&Layout);
+          BufferValue(CS(TableStartCommand->Layout.DrawBounds.Max), Group, &Layout, Style);
+        }
+#endif
 
 #if DEBUG_UI_OUTLINE_TABLES
-        BufferBorder(Group, TableStartCommand->Layout.DrawBounds, V3(0,0,1), 1.0f, DISABLE_CLIPPING);
+        BufferBorder(Group, RectMinMax(TableStartCommand->Layout.Basis, GetAbsoluteDrawBoundsMax(&TableStartCommand->Layout)), V3(0,0,1), 0.9f, DISABLE_CLIPPING);
 #endif
 
         Clear(&TableRenderParams);
@@ -2121,8 +2167,10 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
 
       case type_ui_render_command_untextured_quad:
       {
-        ui_render_command_untextured_quad* UntexturedQuad = RenderCommandAs(untextured_quad, Command);
-        ProcessUntexturedQuadPush(Group, UntexturedQuad, &RenderState);
+        ui_render_command_untextured_quad* TypedCommand = RenderCommandAs(untextured_quad, Command);
+        TypedCommand->Layout.Basis = GetAbsoluteAt(RenderState.Layout);
+        RenderState.Layout = &TypedCommand->Layout;
+        ProcessUntexturedQuadPush(Group, TypedCommand, &RenderState);
         ui_style StartingStyle = RenderState.Style;
         RenderState.Style = StartingStyle;
       } break;
@@ -2197,9 +2245,9 @@ PushCycleBar(debug_ui_render_group* Group, cycle_range* Range, cycle_range* Fram
   r32 xOffset = GetXOffsetForHorizontalBar(StartCycleOffset, Frame->TotalCycles, TotalGraphWidth);
   r32 yOffset = Depth*Global_Font.Size.y;
 
-  v2 OffsetFromLayout = V2(xOffset, yOffset);
+  v2 Offset = V2(xOffset, yOffset);
 
-  PushUntexturedQuad(Group, OffsetFromLayout, BarDim, zDepth_Text, Style, QuadRenderParam_NoAdvance);
+  PushUntexturedQuad(Group, Offset, BarDim, zDepth_Text, Style, QuadRenderParam_NoAdvance);
 
   return;
 }
@@ -2823,20 +2871,25 @@ DrawFrameTicker(debug_ui_render_group *Group, debug_state *DebugState, r64 MaxMs
 {
   TIMED_FUNCTION();
 
-  v2 MaxBarDim = V2(15.0f, 80.0f);
-  for (u32 FrameIndex = 0;
-      FrameIndex < DEBUG_FRAMES_TRACKED;
-      ++FrameIndex )
-  {
-    frame_stats *Frame = DebugState->Frames + FrameIndex;
-    r32 Perc = (r32)SafeDivide0(Frame->FrameMs, MaxMs);
+  PushTableStart(Group);
+    v2 MaxBarDim = V2(15.0f, 80.0f);
+    for (u32 FrameIndex = 0;
+        FrameIndex < DEBUG_FRAMES_TRACKED;
+        ++FrameIndex )
+    {
+      frame_stats *Frame = DebugState->Frames + FrameIndex;
+      r32 Perc = (r32)SafeDivide0(Frame->FrameMs, MaxMs);
 
-    v2 QuadDim = MaxBarDim * V2(1.0f, Perc);
-    v2 VerticalOffset = MaxBarDim - QuadDim;
+      v2 QuadDim = MaxBarDim * V2(1.0f, Perc);
+      v2 VerticalOffset = MaxBarDim - QuadDim;
 
-    ui_style Style = UiStyleFromLightestColor(V3(1,1,0), V2(5,0));
-    PushUntexturedQuad(Group, VerticalOffset, QuadDim, zDepth_Background, &Style);
-  }
+      ui_style Style = UiStyleFromLightestColor(V3(1,1,0), V2(5,0));
+      PushButtonStart(Group, (umm)"FrameTickerHoverInteraction"+(umm)FrameIndex);
+        PushUntexturedQuad(Group, VerticalOffset, QuadDim, zDepth_Background, &Style);
+      PushButtonEnd(Group);
+
+    }
+  PushTableEnd(Group);
 
 
 #if 0
