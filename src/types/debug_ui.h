@@ -183,8 +183,6 @@ struct ui_render_command_window_end
 
 struct ui_render_command_column
 {
-  layout Layout;
-
   b32 OverrideStyling;
   ui_style Style;
 
@@ -193,6 +191,7 @@ struct ui_render_command_column
 
 struct ui_render_command_text
 {
+  layout Layout;
   counted_string String;
 };
 

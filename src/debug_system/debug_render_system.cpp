@@ -1940,9 +1940,9 @@ FindAbsoluteDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, u32 First
         /* Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&TypedCommand->Layout)); */
       } break;
 
-      case type_ui_render_command_column:
+      case type_ui_render_command_text:
       {
-        ui_render_command_column* TypedCommand = RenderCommandAs(column, Command);
+        ui_render_command_text* TypedCommand = RenderCommandAs(text, Command);
         Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&TypedCommand->Layout));
         Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&TypedCommand->Layout));
       } break;
@@ -1958,7 +1958,7 @@ FindAbsoluteDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, u32 First
       case type_ui_render_command_window_end:
       case type_ui_render_command_table_end:
       case type_ui_render_command_button_end:
-      case type_ui_render_command_text:
+      case type_ui_render_command_column:
       case type_ui_render_command_text_at:
       case type_ui_render_command_new_row:
       case type_ui_render_command_border:
@@ -2069,44 +2069,7 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
         }
 
         ui_render_command_table_start* TableStartCommand = GetCommandAs(table_start, CommandBuffer, TableRenderParams.TableStart);
-
-        for (u32 TableCommandIndex = TableRenderParams.TableStart;
-            TableCommandIndex < NextCommandIndex;
-            ++TableCommandIndex)
-        {
-          ui_render_command* InteriorCommand = GetCommand(CommandBuffer, TableCommandIndex);
-          switch (InteriorCommand->Type)
-          {
-
-            case type_ui_render_command_button_start:
-            {
-            /*   ui_render_command_button_start* TypedCommand = RenderCommandAs(button_start, InteriorCommand); */
-            /*   TableStartCommand->Layout.DrawBounds.Max = Max(GetAbsoluteDrawBoundsMax(&TypedCommand->Layout) - TableStartCommand->Layout.Basis, TableStartCommand->Layout.DrawBounds.Max); */
-            } break;
-
-            case type_ui_render_command_column:
-            {
-              ui_render_command_column* TypedCommand = RenderCommandAs(column, InteriorCommand);
-              TableStartCommand->Layout.DrawBounds.Max = Max(GetAbsoluteDrawBoundsMax(&TypedCommand->Layout) - TableStartCommand->Layout.Basis, TableStartCommand->Layout.DrawBounds.Max);
-            } break;
-
-            case type_ui_render_command_window_start:
-            case type_ui_render_command_table_start:
-            case type_ui_render_command_noop:
-            case type_ui_render_command_window_end:
-            case type_ui_render_command_table_end:
-            case type_ui_render_command_button_end:
-            case type_ui_render_command_text:
-            case type_ui_render_command_text_at:
-            case type_ui_render_command_new_row:
-            case type_ui_render_command_border:
-            case type_ui_render_command_textured_quad:
-            case type_ui_render_command_untextured_quad:
-            case type_ui_render_command_untextured_quad_at:
-            {
-            } break;
-          }
-        }
+        TableStartCommand->Layout.DrawBounds = FindAbsoluteDrawBoundsBetween(CommandBuffer, TableRenderParams.TableStart, NextCommandIndex);
 
 #if DEBUG_UI_OUTLINE_TABLES
         BufferBorder(Group, RectMinDim(TableStartCommand->Layout.Basis, TableStartCommand->Layout.DrawBounds.Max), V3(0,0,1), 1.0f, DISABLE_CLIPPING);
@@ -2118,15 +2081,14 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
       case type_ui_render_command_text:
       {
         ui_render_command_text* TypedCommand = RenderCommandAs(text, Command);
+        TypedCommand->Layout.Basis = GetAbsoluteAt(RenderState.Layout);
+        RenderState.Layout = &TypedCommand->Layout;
         BufferValue(TypedCommand->String, Group, &RenderState);
       } break;
 
       case type_ui_render_command_column:
       {
         ui_render_command_column* TypedCommand = RenderCommandAs(column, Command);
-
-        TypedCommand->Layout.Basis = GetAbsoluteAt(RenderState.Layout);
-        RenderState.Layout = &TypedCommand->Layout;
         if (TypedCommand->Params & ColumnRenderParam_RightAlign)
         {
           /* u32 ColumnWidth = GetNextColumnWidth(&TableRenderParams); */
