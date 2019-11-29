@@ -363,11 +363,14 @@ struct window_sort_params
 
 
 
-#define DEBUG_FONT_SHADOW_EPSILON (0.00001f)
+// FIXME(Jesse): Pretty sure this is unnecessary if we just draw the shadow first
+// @shadow_epsilon
+#define DEBUG_FONT_SHADOW_EPSILON (0.0000001f)
 
 function r32
 GetZ(z_depth zDepth, window_layout* Window)
 {
+  // @shadow_epsilon
   r32 Result = DEBUG_FONT_SHADOW_EPSILON;
 
   if (Window)

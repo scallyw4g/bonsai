@@ -484,10 +484,8 @@ BufferQuadDirect(T *Geo, v2 MinP, v2 Dim, r32 Z, v2 ScreenDim, v2 MaxClip)
 
 function clip_result
 BufferTexturedQuad(debug_ui_render_group *Group,
-                   v2 MinP, v2 Dim,
-                   debug_texture_array_slice TextureSlice, rect2 UV,
-                   v3 Color,
-                   r32 Z, v2 MaxClip)
+                   debug_texture_array_slice TextureSlice,
+                   v2 MinP, v2 Dim, rect2 UV, v3 Color, r32 Z, v2 MaxClip)
 {
   clip_result Result = {};
 
@@ -538,8 +536,7 @@ BufferTexturedQuad(debug_ui_render_group *Group,
 
 function clip_result
 BufferUntexturedQuad(debug_ui_render_group *Group, untextured_2d_geometry_buffer *Geo,
-                     v2 MinP, v2 Dim, v3 Color,
-                     r32 Z, v2 MaxClip)
+                     v2 MinP, v2 Dim, v3 Color, r32 Z, v2 MaxClip)
 {
   if (!BufferHasRoomFor(Geo, u32_COUNT_PER_QUAD))
     FlushBuffer(Group->TextGroup, Geo, Group->ScreenDim);
@@ -579,23 +576,14 @@ BufferChar(debug_ui_render_group *Group, u8 Char, v2 MinP, v2 FontSize, v3 Color
 {
   rect2 UV = UVsForChar(Char);
 
-  { // Black Drop-shadow
-    r32 e = DEBUG_FONT_SHADOW_EPSILON;
-    v2 ShadowOffset = 0.075f*FontSize;
-    BufferTexturedQuad( Group,
-                        MinP+ShadowOffset, FontSize,
-                        DebugTextureArraySlice_Font, UV,
-                        V3(0.1f),
-                        Z-e,
-                        MaxClip);
+  // @shadow_epsilon
+  r32 e = DEBUG_FONT_SHADOW_EPSILON;
+  v2 ShadowOffset = 0.075f*FontSize;
+  BufferTexturedQuad( Group, DebugTextureArraySlice_Font,
+                      MinP+ShadowOffset, FontSize, UV, V3(0.1f), Z-e, MaxClip);
 
-  }
-
-  BufferTexturedQuad( Group,
-                      MinP, FontSize,
-                      DebugTextureArraySlice_Font, UV,
-                      Color,
-                      Z, MaxClip);
+  BufferTexturedQuad( Group, DebugTextureArraySlice_Font,
+                      MinP, FontSize, UV, Color, Z, MaxClip); 
 
   r32 DeltaX = FontSize.x;
   return DeltaX;
@@ -788,6 +776,7 @@ PushColumn(debug_ui_render_group *Group, counted_string String, ui_style* Style 
   };
 
   PushUiRenderCommand(Group, &Command);
+
   Text(Group, String);
 
   return;
@@ -1332,9 +1321,7 @@ ProcessTexturedQuadPush(debug_ui_render_group* Group, ui_render_command_textured
   v2 MinP = GetAbsoluteAt(RenderState->Layout);
   r32 Z = GetZ(Command->zDepth, RenderState->Window);
   v2 MaxClip = GetAbsoluteMaxClip(RenderState->Window);
-  BufferTexturedQuad( Group, MinP, RenderState->Window->MaxClip,
-                      Command->TextureSlice, UVsForFullyCoveredQuad(),
-                      V3(1), Z, MaxClip);
+  BufferTexturedQuad( Group, Command->TextureSlice, MinP, RenderState->Window->MaxClip, UVsForFullyCoveredQuad(), V3(1), Z, MaxClip);
 }
 
 function v3
@@ -1751,12 +1738,12 @@ DoTheThing(ui_render_command_buffer* CommandBuffer, u32 StartingIndex, v2 Defaul
 }
 #endif
 
-ui_render_command_table_start*
+function u32
 FindPreviousTableStart(ui_render_command_buffer* CommandBuffer, u32 StartingIndex)
 {
   Assert(StartingIndex < CommandBuffer->CommandCount);
 
-  ui_render_command_table_start* Result = 0;
+  u32 Result = 0;
 
   ui_render_command* Command = GetCommand(CommandBuffer, StartingIndex);
   Assert(Command->Type == type_ui_render_command_new_row);
@@ -1771,7 +1758,7 @@ FindPreviousTableStart(ui_render_command_buffer* CommandBuffer, u32 StartingInde
     {
       case type_ui_render_command_table_start:
       {
-        Result = GetCommandAs(table_start, CommandBuffer, CommandIndex);
+        Result = CommandIndex;
         Done = True;
       } break;
 
@@ -2091,26 +2078,10 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
       case type_ui_render_command_table_end:
       {
         Assert(NextCommandIndex == TableRenderParams.OnePastTableEnd);
-
-        if (RenderState.Layout->At.x > 0.0f)
-        {
-          NewLine(RenderState.Layout);
-        }
+        if (RenderState.Layout->At.x > 0.0f) { NewLine(RenderState.Layout); }
 
         ui_render_command_table_start* TableStartCommand = GetCommandAs(table_start, CommandBuffer, TableRenderParams.TableStart);
         TableStartCommand->Layout.DrawBounds = FindRelativeDrawBoundsBetween(CommandBuffer, TableStartCommand->Layout.Basis, TableRenderParams.TableStart, NextCommandIndex);
-
-#if 0
-        if (IsInsideRect(TableStartCommand->Layout.DrawBounds, *Group->MouseP))
-        {
-          layout Layout = { .Basis = TableStartCommand->Layout.DrawBounds.Max };
-          ui_style Style = DefaultUiStyle;
-          Style.Font.Size = V2(15,18);
-          BufferValue(CS(TableStartCommand->Layout.DrawBounds.Min), Group, &Layout, Style);
-          NewLine(&Layout);
-          BufferValue(CS(TableStartCommand->Layout.DrawBounds.Max), Group, &Layout, Style);
-        }
-#endif
 
 #if DEBUG_UI_OUTLINE_TABLES
         BufferBorder(Group, RectMinMax(TableStartCommand->Layout.Basis, GetAbsoluteDrawBoundsMax(&TableStartCommand->Layout)), V3(0,0,1), 0.9f, DISABLE_CLIPPING);
@@ -2174,9 +2145,15 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
       {
         TableRenderParams.CurrentColumn = 0;
 
-        ui_render_command_table_start* TableStart = FindPreviousTableStart(CommandBuffer, NextCommandIndex-1);
+        u32 TableStartIndex = FindPreviousTableStart(CommandBuffer, NextCommandIndex-1);
+
+        ui_render_command_table_start* TableStart = GetCommandAs(table_start, CommandBuffer, TableStartIndex);
+        TableStart->Layout.DrawBounds = FindRelativeDrawBoundsBetween(CommandBuffer, TableStart->Layout.Basis, TableStartIndex, NextCommandIndex);
+
         RenderState.Layout = &TableStart->Layout;
+
         NewLine(RenderState.Layout);
+
       } break;
 
       case type_ui_render_command_text_at:
@@ -2624,30 +2601,30 @@ DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState
 
   PushWindowStart(Group, &CycleGraphWindow);
 
-  u32 TotalThreadCount                = GetTotalThreadCount();
-  frame_stats *FrameStats             = SharedState->Frames + SharedState->ReadScopeIndex;
-  cycle_range FrameCycles             = {FrameStats->StartingCycle, FrameStats->TotalCycles};
+  u32 TotalThreadCount                 = GetTotalThreadCount();
+  frame_stats *FrameStats              = SharedState->Frames + SharedState->ReadScopeIndex;
+  cycle_range FrameCycles              = {FrameStats->StartingCycle, FrameStats->TotalCycles};
 
-  debug_thread_state *MainThreadState = GetThreadLocalStateFor(0);
-  debug_scope_tree *MainThreadReadTree    = MainThreadState->ScopeTrees + SharedState->ReadScopeIndex;
+  debug_thread_state *MainThreadState  = GetThreadLocalStateFor(0);
+  debug_scope_tree *MainThreadReadTree = MainThreadState->ScopeTrees + SharedState->ReadScopeIndex;
 
-    for ( u32 ThreadIndex = 0;
-          ThreadIndex < TotalThreadCount;
-          ++ThreadIndex)
-    {
-      PushTableStart(Group);
-        PushColumn(Group, CS(FormatString(TranArena, "Thread %u", ThreadIndex)));
-        PushNewRow(Group);
+  PushTableStart(Group);
+  for ( u32 ThreadIndex = 0;
+        ThreadIndex < TotalThreadCount;
+        ++ThreadIndex)
+  {
+      PushColumn(Group, CS(FormatString(TranArena, "Thread %u", ThreadIndex)));
+      PushNewRow(Group);
 
-        debug_thread_state *ThreadState = GetThreadLocalStateFor(ThreadIndex);
-        debug_scope_tree *ReadTree = ThreadState->ScopeTrees + SharedState->ReadScopeIndex;
-        if (MainThreadReadTree->FrameRecorded == ReadTree->FrameRecorded)
-        {
-          PushScopeBarsRecursive(Group, ReadTree->Root, &FrameCycles, TotalGraphWidth, &Entropy);
-          PushNewRow(Group);
-        }
-      PushTableEnd(Group);
-    }
+      debug_thread_state *ThreadState = GetThreadLocalStateFor(ThreadIndex);
+      debug_scope_tree *ReadTree = ThreadState->ScopeTrees + SharedState->ReadScopeIndex;
+      if (MainThreadReadTree->FrameRecorded == ReadTree->FrameRecorded)
+      {
+        PushScopeBarsRecursive(Group, ReadTree->Root, &FrameCycles, TotalGraphWidth, &Entropy);
+      }
+      PushNewRow(Group);
+  }
+  PushTableEnd(Group);
 
 #if 0
   r32 TotalMs = (r32)FrameStats->FrameMs;
