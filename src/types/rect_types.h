@@ -72,7 +72,17 @@ MinMaxAABB(v3 Min, v3 Max)
   return Result;
 }
 
-inline aabb
+function rect2
+operator-(rect2 R1, rect2 R2)
+{
+  rect2 Result = {
+    .Min = R1.Min - R2.Min,
+    .Max = R1.Max - R2.Max,
+  };
+  return Result;
+}
+
+function aabb
 operator+(aabb AABB, v3 V)
 {
   aabb Result = AABB;

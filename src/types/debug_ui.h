@@ -4,7 +4,7 @@
 
 #define DEBUG_UI_OUTLINE_VALUES  0
 #define DEBUG_UI_OUTLINE_BUTTONS 1
-#define DEBUG_UI_OUTLINE_TABLES  0
+#define DEBUG_UI_OUTLINE_TABLES  1
 
 
 /******************************               ********************************/
@@ -117,6 +117,13 @@ enum ui_render_command_type
   type_ui_render_command_untextured_quad,
   type_ui_render_command_untextured_quad_at,
 };
+
+enum ui_render_command_flags
+{
+  UiElement_Default,
+  UiElement_Floating,
+};
+
 
 
 
@@ -255,6 +262,8 @@ struct ui_render_command_table_start
 struct ui_render_command
 {
   ui_render_command_type Type;
+  ui_render_command_flags Flags;
+
   union
   {
     ui_render_command_window_start       ui_render_command_window_start;

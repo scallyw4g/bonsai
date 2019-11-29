@@ -820,7 +820,7 @@ PushUntexturedQuadAt(debug_ui_render_group* Group, v2 At, v2 QuadDim, z_depth zD
 {
   ui_render_command Command = {
     .Type = type_ui_render_command_untextured_quad_at,
-
+    .Flags = UiElement_Floating,
     .ui_render_command_untextured_quad_at.QuadDim = QuadDim,
     .ui_render_command_untextured_quad_at.Style = Style? *Style : DefaultUiStyle,
     .ui_render_command_untextured_quad_at.Params = Params,
@@ -1024,7 +1024,7 @@ ButtonInteraction(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId,
   interactable Interaction = Interactable(Bounds, InteractionId, Window);
 
 #if DEBUG_UI_OUTLINE_BUTTONS
-  BufferBorder(Group, &Interaction, V3(1,0,0), 1.0f, DISABLE_CLIPPING);
+  BufferBorder(Group, Rect2(Interaction) - RectMinMax(V2(-1), V2(1)), V3(1,0,0), 1.0f, DISABLE_CLIPPING);
 #endif
 
   if (Hover(Group, &Interaction))
@@ -1905,7 +1905,7 @@ GetFollowingTextElementLengths(ui_render_command_buffer* CommandBuffer, u32 Star
 }
 
 function rect2
-FindAbsoluteDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, u32 FirstCommand, u32 OnePastLastCommand)
+FindAbsoluteDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, u32 FirstCommand, u32 OnePastLastCommand, b32 SkipFloating = True)
 {
   Assert(FirstCommand < CommandBuffer->CommandCount);
   Assert(OnePastLastCommand <= CommandBuffer->CommandCount);
@@ -1917,6 +1917,12 @@ FindAbsoluteDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, u32 First
       ++CommandIndex)
   {
     ui_render_command* Command = GetCommand(CommandBuffer, CommandIndex);
+
+    if (SkipFloating && Command->Flags & UiElement_Floating)
+    {
+      continue;
+    }
+
     switch(Command->Type)
     {
       case type_ui_render_command_window_start:
@@ -2146,20 +2152,14 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
       {
         ui_render_command_button_start* ButtonStart = RenderCommandAs(button_start, Command);
         RenderState.Style = ButtonStart->Style;
-
-        /* ButtonStart->Layout.Basis = GetAbsoluteAt(RenderState.Layout);//DoTheThing(CommandBuffer, NextCommandIndex-1, GetAbsoluteAt(RenderState.Layout)); */
-        /* RenderState.Layout = &ButtonStart->Layout; */
-
         ProcessButtonStart(Group, &RenderState, ButtonStart->ID);
       } break;
 
       case type_ui_render_command_button_end:
       {
         RenderState.Style = DefaultUiStyle;
-
         find_button_start_result StartButton = FindPreviousButtonStart(CommandBuffer, NextCommandIndex-1);
-        rect2 AbsDrawBounds = FindAbsoluteDrawBoundsBetween(CommandBuffer, StartButton.Index, NextCommandIndex);
-
+        rect2 AbsDrawBounds = FindAbsoluteDrawBoundsBetween(CommandBuffer, StartButton.Index, NextCommandIndex, False);
         ProcessButtonEnd(Group, &RenderState, AbsDrawBounds);
       } break;
 
