@@ -1939,13 +1939,6 @@ FindAbsoluteDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, u32 First
         Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&TypedCommand->Layout));
       } break;
 
-      case type_ui_render_command_button_start:
-      {
-        /* ui_render_command_button_start* TypedCommand = RenderCommandAs(button_start, Command); */
-        /* Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&TypedCommand->Layout)); */
-        /* Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&TypedCommand->Layout)); */
-      } break;
-
       case type_ui_render_command_text:
       {
         ui_render_command_text* TypedCommand = RenderCommandAs(text, Command);
@@ -1963,13 +1956,14 @@ FindAbsoluteDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, u32 First
       case type_ui_render_command_noop:
       case type_ui_render_command_window_end:
       case type_ui_render_command_table_end:
+      case type_ui_render_command_button_start:
       case type_ui_render_command_button_end:
+      case type_ui_render_command_textured_quad:
+      case type_ui_render_command_untextured_quad:
       case type_ui_render_command_column:
       case type_ui_render_command_text_at:
       case type_ui_render_command_new_row:
       case type_ui_render_command_border:
-      case type_ui_render_command_textured_quad:
-      case type_ui_render_command_untextured_quad:
       {
       } break;
     }
@@ -2078,7 +2072,7 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
         TableStartCommand->Layout.DrawBounds = FindAbsoluteDrawBoundsBetween(CommandBuffer, TableRenderParams.TableStart, NextCommandIndex);
 
 #if DEBUG_UI_OUTLINE_TABLES
-        BufferBorder(Group, RectMinDim(TableStartCommand->Layout.Basis, TableStartCommand->Layout.DrawBounds.Max), V3(0,0,1), 1.0f, DISABLE_CLIPPING);
+        BufferBorder(Group, TableStartCommand->Layout.DrawBounds, V3(0,0,1), 1.0f, DISABLE_CLIPPING);
 #endif
 
         Clear(&TableRenderParams);
