@@ -2025,9 +2025,6 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
 
   SetWindowZDepths(CommandBuffer);
 
-  /* GetDebugState()->TriggerRuntimeBreak = True; */
-  /* TriggeredRuntimeBreak(); */
-
   u32 NextCommandIndex = 0;
   ui_render_command *Command = GetCommand(CommandBuffer, NextCommandIndex++);
   while (Command)
@@ -2060,8 +2057,6 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
       {
         Assert( AreEqual(TableRenderParams, NullTableRenderParams));
         TableRenderParams = GetTableRenderParams(CommandBuffer, NextCommandIndex-1);
-
-        TriggeredRuntimeBreak();
 
         r32 BasisX = RenderState.Window ? RenderState.Window->Basis.x : 0;
         r32 BasisY = FindAbsoluteDrawBoundsBetween(CommandBuffer, RenderState.WindowStartCommandIndex, NextCommandIndex).Max.y;
@@ -2229,28 +2224,6 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
 /****************************                       **************************/
 
 
-
-function void
-PushCycleBar(debug_ui_render_group* Group, cycle_range* Range, cycle_range* Frame, r32 TotalGraphWidth, u32 Depth, ui_style *Style)
-{
-  Assert(Frame->StartCycle < Range->StartCycle);
-
-  r32 FramePerc = (r32)Range->TotalCycles / (r32)Frame->TotalCycles;
-
-  r32 BarHeight = Global_Font.Size.y;
-  r32 BarWidth = FramePerc*TotalGraphWidth;
-  v2 BarDim = V2(BarWidth, BarHeight);
-
-  u64 StartCycleOffset = Range->StartCycle - Frame->StartCycle;
-  r32 xOffset = GetXOffsetForHorizontalBar(StartCycleOffset, Frame->TotalCycles, TotalGraphWidth);
-  r32 yOffset = Depth*Global_Font.Size.y;
-
-  v2 Offset = V2(xOffset, yOffset);
-
-  PushUntexturedQuad(Group, Offset, BarDim, zDepth_Text, Style, QuadRenderParam_NoAdvance);
-
-  return;
-}
 
 #if 0
 function void
@@ -2598,6 +2571,28 @@ GetStatsFor( debug_profile_scope *Target, debug_profile_scope *Root)
 #endif
 
 function void
+PushCycleBar(debug_ui_render_group* Group, cycle_range* Range, cycle_range* Frame, r32 TotalGraphWidth, u32 Depth, ui_style *Style)
+{
+  Assert(Frame->StartCycle < Range->StartCycle);
+
+  r32 FramePerc = (r32)Range->TotalCycles / (r32)Frame->TotalCycles;
+
+  r32 BarHeight = Global_Font.Size.y;
+  r32 BarWidth = FramePerc*TotalGraphWidth;
+  v2 BarDim = V2(BarWidth, BarHeight);
+
+  u64 StartCycleOffset = Range->StartCycle - Frame->StartCycle;
+  r32 xOffset = GetXOffsetForHorizontalBar(StartCycleOffset, Frame->TotalCycles, TotalGraphWidth);
+  r32 yOffset = Depth*Global_Font.Size.y;
+
+  v2 Offset = V2(xOffset, yOffset);
+
+  PushUntexturedQuad(Group, Offset, BarDim, zDepth_Text, Style, QuadRenderParam_AdvanceClip);
+
+  return;
+}
+
+function void
 PushScopeBarsRecursive(debug_ui_render_group *Group, debug_profile_scope *Scope, cycle_range *Frame, r32 TotalGraphWidth, random_series *Entropy, u32 Depth = 0)
 {
   while (Scope)
@@ -2636,25 +2631,23 @@ DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState
   debug_thread_state *MainThreadState = GetThreadLocalStateFor(0);
   debug_scope_tree *MainThreadReadTree    = MainThreadState->ScopeTrees + SharedState->ReadScopeIndex;
 
-  PushTableStart(Group);
     for ( u32 ThreadIndex = 0;
           ThreadIndex < TotalThreadCount;
           ++ThreadIndex)
     {
-      counted_string ThreadName = CS(FormatString(TranArena, "Thread %u", ThreadIndex));
-      PushColumn(Group, ThreadName);
-      PushNewRow(Group);
-
-      debug_thread_state *ThreadState = GetThreadLocalStateFor(ThreadIndex);
-      debug_scope_tree *ReadTree = ThreadState->ScopeTrees + SharedState->ReadScopeIndex;
-      if (MainThreadReadTree->FrameRecorded == ReadTree->FrameRecorded)
-      {
-        PushScopeBarsRecursive(Group, ReadTree->Root, &FrameCycles, TotalGraphWidth, &Entropy);
+      PushTableStart(Group);
+        PushColumn(Group, CS(FormatString(TranArena, "Thread %u", ThreadIndex)));
         PushNewRow(Group);
-      }
 
+        debug_thread_state *ThreadState = GetThreadLocalStateFor(ThreadIndex);
+        debug_scope_tree *ReadTree = ThreadState->ScopeTrees + SharedState->ReadScopeIndex;
+        if (MainThreadReadTree->FrameRecorded == ReadTree->FrameRecorded)
+        {
+          PushScopeBarsRecursive(Group, ReadTree->Root, &FrameCycles, TotalGraphWidth, &Entropy);
+          PushNewRow(Group);
+        }
+      PushTableEnd(Group);
     }
-  PushTableEnd(Group);
 
 #if 0
   r32 TotalMs = (r32)FrameStats->FrameMs;
