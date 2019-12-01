@@ -355,6 +355,12 @@ struct window_sort_params
   sort_key* SortKeys;
 };
 
+struct find_button_start_result
+{
+  u32 Index;
+  ui_render_command_button_start* Command;
+};
+
 
 
 

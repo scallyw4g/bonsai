@@ -1597,12 +1597,6 @@ FindPreviousTableStart(ui_render_command_buffer* CommandBuffer, u32 StartingInde
   return Result;
 }
 
-struct find_button_start_result
-{
-  u32 Index;
-  ui_render_command_button_start* Command;
-};
-
 function find_button_start_result
 FindPreviousButtonStart(ui_render_command_buffer* CommandBuffer, u32 StartingIndex)
 {
