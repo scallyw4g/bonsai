@@ -1377,7 +1377,10 @@ ProcessTexturedQuadPush(debug_ui_render_group* Group, ui_render_command_textured
   v2 MinP = GetAbsoluteAt(RenderState->Layout);
   r32 Z = GetZ(Command->zDepth, RenderState->Window);
   v2 MaxClip = GetAbsoluteMaxClip(RenderState->Window);
+
+  ui_style ResetStyle = RenderState->Style;
   BufferTexturedQuad( Group, Command->TextureSlice, MinP, RenderState->Window->MaxClip, UVsForFullyCoveredQuad(), V3(1), Z, MaxClip);
+  RenderState->Style = ResetStyle;
 }
 
 function void
@@ -1406,7 +1409,16 @@ ProcessUntexturedQuadPush(debug_ui_render_group* Group, ui_render_command_untext
   v3 Color = SelectColorState(RenderState, Command->Style);
   r32 Z = GetZ(Command->zDepth, RenderState->Window);
 
+  ui_style ResetStyle = RenderState->Style;
+  layout* ResetLayout = RenderState->Layout;
+
+  RenderState->Style = Command->Style;
+  RenderState->Layout = &Command->Layout;
+
   BufferUntexturedQuad(Group, &(Group->Geo), MinP, Dim, Color, Z, MaxClip);
+
+  RenderState->Style = ResetStyle;
+  RenderState->Layout = ResetLayout;
 
   if (Command->Params & QuadRenderParam_AdvanceClip)
   {
@@ -1804,14 +1816,11 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
       {
         Assert(NextCommandIndex == TableRenderParams.OnePastTableEnd);
         if (RenderState.Layout->At.x > 0.0f) { NewLine(RenderState.Layout); }
-
         ui_render_command_table_start* TableStartCommand = GetCommandAs(table_start, CommandBuffer, TableRenderParams.TableStart);
         TableStartCommand->Layout.DrawBounds = FindRelativeDrawBoundsBetween(CommandBuffer, TableStartCommand->Layout.Basis, TableRenderParams.TableStart, NextCommandIndex);
-
 #if DEBUG_UI_OUTLINE_TABLES
         BufferBorder(Group, RectMinMax(TableStartCommand->Layout.Basis, GetAbsoluteDrawBoundsMax(&TableStartCommand->Layout)), V3(0,0,1), 0.9f, DISABLE_CLIPPING);
 #endif
-
         Clear(&TableRenderParams);
       } break;
 
@@ -1832,25 +1841,13 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
       case type_ui_render_command_textured_quad:
       {
         ui_render_command_textured_quad* TexturedQuad = RenderCommandAs(textured_quad, Command);
-        ui_style ResetStyle = RenderState.Style;
         ProcessTexturedQuadPush(Group, TexturedQuad, &RenderState);
-        RenderState.Style = ResetStyle;
       } break;
 
       case type_ui_render_command_untextured_quad_at:
       {
         ui_render_command_untextured_quad_at* UntexturedQuadAt = RenderCommandAs(untextured_quad_at, Command);
-
-        ui_style ResetStyle = RenderState.Style;
-        layout* ResetLayout = RenderState.Layout;
-
-        RenderState.Style = UntexturedQuadAt->Style;
-        RenderState.Layout = &UntexturedQuadAt->Layout;
-
         ProcessUntexturedQuadAtPush(Group, UntexturedQuadAt, &RenderState);
-
-        RenderState.Style = ResetStyle;
-        RenderState.Layout = ResetLayout;
       } break;
 
       case type_ui_render_command_untextured_quad:
