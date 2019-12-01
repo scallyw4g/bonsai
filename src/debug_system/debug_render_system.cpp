@@ -1769,9 +1769,7 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
         Assert(!RenderState.Window);
         ui_render_command_window_start* WindowStart = RenderCommandAs(window_start, Command);
         WindowStart->Layout = { .Basis = WindowStart->Window->Basis };
-
         RenderState.WindowStartCommandIndex = NextCommandIndex-1;
-
         RenderState.Layout = &WindowStart->Layout;
         RenderState.Window = WindowStart->Window;
 
@@ -1855,27 +1853,20 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
         ui_render_command_untextured_quad* TypedCommand = RenderCommandAs(untextured_quad, Command);
         TypedCommand->Layout.Basis = GetAbsoluteAt(RenderState.Layout);
         RenderState.Layout = &TypedCommand->Layout;
-
         ui_style ResetStyle = RenderState.Style;
         RenderState.Style = TypedCommand->Style;
-
         ProcessUntexturedQuadPush(Group, TypedCommand, &RenderState);
-
         RenderState.Style = ResetStyle;
       } break;
 
       case type_ui_render_command_new_row:
       {
         u32 TableStartIndex = FindPreviousTableStart(CommandBuffer, NextCommandIndex-1);
-
         ui_render_command_table_start* TableStart = GetCommandAs(table_start, CommandBuffer, TableStartIndex);
         TableStart->Layout.DrawBounds = FindRelativeDrawBoundsBetween(CommandBuffer, TableStart->Layout.Basis, TableStartIndex, NextCommandIndex);
         TableStart->Layout.At = TableStart->Layout.DrawBounds.Max;
-
         RenderState.Layout = &TableStart->Layout;
-
         NewLine(RenderState.Layout);
-
       } break;
 
       case type_ui_render_command_text_at:
