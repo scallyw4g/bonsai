@@ -229,6 +229,27 @@ GetTextBounds(u32 TextLength, font* Font)
   return Result;
 }
 
+function v3
+SelectColorState(render_state* RenderState, ui_style Style)
+{
+  v3 Result = Style.Color;
+
+  if (RenderState->Hover)
+  {
+    Result = Style.HoverColor;
+  }
+  if (RenderState->Pressed)
+  {
+    Result = Style.PressedColor;
+  }
+  if (RenderState->Clicked)
+  {
+    Result = Style.ClickedColor;
+  }
+
+  return Result;
+}
+
 
 
 /******************************                *******************************/
@@ -627,7 +648,7 @@ BufferBorder(debug_ui_render_group *Group, interactable* PickerListInteraction, 
 }
 
 function void
-BufferValue(counted_string Text, debug_ui_render_group *Group, layout* Layout, ui_style& Style = DefaultUiStyle, r32 Z = 1.0f, v2 MaxClip = DISABLE_CLIPPING)
+BufferValue(counted_string Text, debug_ui_render_group *Group, layout* Layout, v3 Color,  ui_style& Style = DefaultUiStyle, r32 Z = 1.0f, v2 MaxClip = DISABLE_CLIPPING)
 {
   v4 Padding = Style.Padding;
 
@@ -644,7 +665,7 @@ BufferValue(counted_string Text, debug_ui_render_group *Group, layout* Layout, u
       CharIndex++ )
   {
     v2 MinP = GetAbsoluteAt(Layout) + V2(0, Padding.Top);
-    Layout->At.x += BufferChar(Group, (u8)Text.Start[CharIndex], MinP, Style.Font.Size, Style.Color, Z, MaxClip);
+    Layout->At.x += BufferChar(Group, (u8)Text.Start[CharIndex], MinP, Style.Font.Size, Color, Z, MaxClip);
     continue;
   }
 
@@ -662,14 +683,15 @@ BufferValue(counted_string Text, debug_ui_render_group *Group, layout* Layout, u
 }
 
 function void
-BufferValue(counted_string Text, debug_ui_render_group *Group, render_state* RendererState)
+BufferValue(counted_string Text, debug_ui_render_group *Group, render_state* RenderState)
 {
-  layout* Layout        = RendererState->Layout;
-  r32 Z                 = GetZ(zDepth_Text, RendererState->Window);
-  ui_style Style        = RendererState->Style;
-  v2 MaxClip            = GetAbsoluteMaxClip(RendererState->Window);
+  layout* Layout = RenderState->Layout;
+  r32 Z          = GetZ(zDepth_Text, RenderState->Window);
+  ui_style Style = RenderState->Style;
+  v2 MaxClip     = GetAbsoluteMaxClip(RenderState->Window);
+  v3 Color       = SelectColorState(RenderState, Style);
 
-  BufferValue(Text, Group, Layout, Style, Z, MaxClip);
+  BufferValue(Text, Group, Layout, Color, Style, Z, MaxClip);
   return;
 }
 
@@ -1072,7 +1094,7 @@ function b32
 Button(debug_ui_render_group* Group, counted_string ButtonName, umm ButtonId, ui_style* Style = 0)
 {
   interactable_handle Button = PushButtonStart(Group, ButtonId, Style);
-    StartColumn(Group);
+    StartColumn(Group, Style);
     Text(Group, ButtonName);
   PushButtonEnd(Group);
 
@@ -1356,27 +1378,6 @@ ProcessTexturedQuadPush(debug_ui_render_group* Group, ui_render_command_textured
   r32 Z = GetZ(Command->zDepth, RenderState->Window);
   v2 MaxClip = GetAbsoluteMaxClip(RenderState->Window);
   BufferTexturedQuad( Group, Command->TextureSlice, MinP, RenderState->Window->MaxClip, UVsForFullyCoveredQuad(), V3(1), Z, MaxClip);
-}
-
-function v3
-SelectColorState(render_state* RenderState, ui_style Style)
-{
-  v3 Result = Style.Color;
-
-  if (RenderState->Hover)
-  {
-    Result = Style.HoverColor;
-  }
-  if (RenderState->Pressed)
-  {
-    Result = Style.PressedColor;
-  }
-  if (RenderState->Clicked)
-  {
-    Result = Style.ClickedColor;
-  }
-
-  return Result;
 }
 
 function void
@@ -1777,28 +1778,19 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
       {
         Assert( AreEqual(TableRenderParams, NullTableRenderParams));
         TableRenderParams = GetTableRenderParams(CommandBuffer, NextCommandIndex-1);
-
-        r32 BasisX = RenderState.Window ? RenderState.Window->Basis.x : 0;
-        r32 BasisY = FindAbsoluteDrawBoundsBetween(CommandBuffer, RenderState.WindowStartCommandIndex, NextCommandIndex).Max.y;
-
-        ui_render_command_table_start* ThisTable = RenderCommandAs(table_start, Command);
-        ThisTable->Layout.Basis = V2(BasisX, BasisY);
-        RenderState.Layout = &ThisTable->Layout;
-
         if (TableRenderParams.OnePastTableEnd)
         {
-          if (ThisTable->Position)
+          r32 BasisX = RenderState.Window ? RenderState.Window->Basis.x : 0;
+          r32 BasisY = FindAbsoluteDrawBoundsBetween(CommandBuffer, RenderState.WindowStartCommandIndex, NextCommandIndex).Max.y;
+
+          ui_render_command_table_start* ThisTable = RenderCommandAs(table_start, Command);
+          ThisTable->Layout.Basis = V2(BasisX, BasisY);
+          RenderState.Layout = &ThisTable->Layout;
+
+          if (ThisTable->Position == Position_RightOf)
           {
             ui_render_command_table_start* RelativeTable = GetCommandAs(table_start, CommandBuffer, ThisTable->RelativeTo.Index);
-            switch(ThisTable->Position)
-            {
-              case Position_RightOf:
-              {
-                ThisTable->Layout.Basis = V2(GetAbsoluteDrawBoundsMax(&RelativeTable->Layout).x, RelativeTable->Layout.Basis.y);
-              } break;
-
-              InvalidDefaultCase;
-            }
+            ThisTable->Layout.Basis = V2(GetAbsoluteDrawBoundsMax(&RelativeTable->Layout).x, RelativeTable->Layout.Basis.y);
           }
         }
         else
@@ -1823,6 +1815,12 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
         Clear(&TableRenderParams);
       } break;
 
+      case type_ui_render_command_column:
+      {
+        ui_render_command_column* TypedCommand = RenderCommandAs(column, Command);
+        RenderState.Style = TypedCommand->Style;
+      } break;
+
       case type_ui_render_command_text:
       {
         ui_render_command_text* TypedCommand = RenderCommandAs(text, Command);
@@ -1834,23 +1832,25 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
       case type_ui_render_command_textured_quad:
       {
         ui_render_command_textured_quad* TexturedQuad = RenderCommandAs(textured_quad, Command);
-        ui_style StartingStyle = RenderState.Style;
+        ui_style ResetStyle = RenderState.Style;
         ProcessTexturedQuadPush(Group, TexturedQuad, &RenderState);
-        RenderState.Style = StartingStyle;
+        RenderState.Style = ResetStyle;
       } break;
 
       case type_ui_render_command_untextured_quad_at:
       {
         ui_render_command_untextured_quad_at* UntexturedQuadAt = RenderCommandAs(untextured_quad_at, Command);
-        ui_style StartingStyle = RenderState.Style;
 
+        ui_style ResetStyle = RenderState.Style;
         layout* ResetLayout = RenderState.Layout;
+
+        RenderState.Style = UntexturedQuadAt->Style;
         RenderState.Layout = &UntexturedQuadAt->Layout;
 
         ProcessUntexturedQuadAtPush(Group, UntexturedQuadAt, &RenderState);
 
+        RenderState.Style = ResetStyle;
         RenderState.Layout = ResetLayout;
-        RenderState.Style = StartingStyle;
       } break;
 
       case type_ui_render_command_untextured_quad:
@@ -1858,9 +1858,13 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
         ui_render_command_untextured_quad* TypedCommand = RenderCommandAs(untextured_quad, Command);
         TypedCommand->Layout.Basis = GetAbsoluteAt(RenderState.Layout);
         RenderState.Layout = &TypedCommand->Layout;
+
+        ui_style ResetStyle = RenderState.Style;
+        RenderState.Style = TypedCommand->Style;
+
         ProcessUntexturedQuadPush(Group, TypedCommand, &RenderState);
-        ui_style StartingStyle = RenderState.Style;
-        RenderState.Style = StartingStyle;
+
+        RenderState.Style = ResetStyle;
       } break;
 
       case type_ui_render_command_new_row:
@@ -1902,10 +1906,6 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
       {
         ui_render_command_border* Border = RenderCommandAs(border, Command);
         BufferBorder(Group, Border->Bounds, Border->Color, GetZ(zDepth_Border, RenderState.Window), DISABLE_CLIPPING);
-      } break;
-
-      case type_ui_render_command_column:
-      {
       } break;
 
       InvalidDefaultCase;
