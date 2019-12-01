@@ -193,6 +193,8 @@ struct ui_render_command_column
   b32 OverrideStyling;
   ui_style Style;
 
+  u32 Width;
+
   column_render_params Params;
 };
 
@@ -295,10 +297,6 @@ struct ui_render_command
 
 struct table_render_params
 {
-  u32 *ColumnWidths;
-  u16 ColumnCount;
-  u16 CurrentColumn;
-
   u32 TableStart;
   u32 OnePastTableEnd;
 };

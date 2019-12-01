@@ -1,5 +1,6 @@
 #! /bin/bash
 
+
 # COMMON_OPTIMIZATION_OPTIONS="-O2"
 COMMON_OPTIMIZATION_OPTIONS=""
 
@@ -101,28 +102,7 @@ TESTS_TO_BUILD="
 
 "
 
-if [ ! -d "$BIN" ]; then
-  mkdir "$BIN"
-fi
-
-if [ ! -d "$BIN_TEST" ]; then
-  mkdir "$BIN_TEST"
-fi
-
-if [ "$EMCC" == "1" ]; then
-
-  which emcc > /dev/null
-  [ $? -ne 0 ] && echo -e "Please install emcc" && exit 1
-
-  emcc src/font/ttf.cpp              \
-    -D BONSAI_INTERNAL=1             \
-    -I src                           \
-    -I /usr/include                  \
-    -I /usr/include/x86_64-linux-gnu \
-    -o bin/emscripten/ttf.html
-
-else
-
+function BuildWithClang {
   which clang++ > /dev/null
   [ $? -ne 0 ] && echo -e "Please install clang++" && exit 1
 
@@ -223,7 +203,30 @@ else
   wait
 
   echo -e ""
+}
 
+if [ ! -d "$BIN" ]; then
+  mkdir "$BIN"
+fi
+
+if [ ! -d "$BIN_TEST" ]; then
+  mkdir "$BIN_TEST"
+fi
+
+if [ "$EMCC" == "1" ]; then
+
+  which emcc > /dev/null
+  [ $? -ne 0 ] && echo -e "Please install emcc" && exit 1
+
+  emcc src/font/ttf.cpp              \
+    -D BONSAI_INTERNAL=1             \
+    -I src                           \
+    -I /usr/include                  \
+    -I /usr/include/x86_64-linux-gnu \
+    -o bin/emscripten/ttf.html
+
+else
+  time BuildWithClang
 fi
 
 

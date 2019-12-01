@@ -1089,14 +1089,14 @@ Button(debug_ui_render_group* Group, counted_string ButtonName, umm ButtonId, ui
 
 
 #define GetCommandAs(TypeName, CommandBuffer, CommandIndex)                 \
-  &(GetCommand(CommandBuffer, CommandIndex)->ui_render_command_##TypeName); \
-  ui_render_command* TempCommand = GetCommand(CommandBuffer, CommandIndex); \
+  &(GetCommand((CommandBuffer), (CommandIndex))->ui_render_command_##TypeName); \
+  ui_render_command* TempCommand = GetCommand((CommandBuffer), (CommandIndex)); \
   Assert(TempCommand->Type == type_ui_render_command_##TypeName)
 
 
 #define RenderCommandAs(TypeName, Command)                                \
-  (ui_render_command_##TypeName *)&Command->ui_render_command_##TypeName; \
-  Assert(Command->Type == type_ui_render_command_##TypeName)
+  (ui_render_command_##TypeName *)&(Command)->ui_render_command_##TypeName; \
+  Assert((Command)->Type == type_ui_render_command_##TypeName)
 
 
 function ui_render_command*
@@ -1149,107 +1149,141 @@ GetHighestWindow(debug_ui_render_group* Group, ui_render_command_buffer* Command
   return HighestWindow;
 }
 
-function u16
-GetColumnCountForTable(ui_render_command_buffer* CommandBuffer, u32 CommandIndex)
-{
-  ui_render_command* Command =  GetCommand(CommandBuffer, CommandIndex++);
-  Assert(Command && Command->Type == type_ui_render_command_table_start);
-
-  u16 ColumnIndex = 0;
-  u16 ColumnCount = 0;
-
-  b32 FoundEnd = False;
-  while (Command && !FoundEnd)
-  {
-    switch(Command->Type)
-    {
-        case type_ui_render_command_column:
-        {
-          ++ColumnIndex;
-          ColumnCount = (u16)Max(ColumnCount, ColumnIndex);
-          Assert(ColumnIndex <= u16_MAX);
-        } break;
-
-        case type_ui_render_command_new_row:
-        {
-          ColumnIndex = 0;
-        } break;
-
-        case type_ui_render_command_table_end:
-        {
-          FoundEnd = True;
-        } break;
-
-        default: {} break;
-    }
-
-    Command = GetCommand(CommandBuffer, CommandIndex++);
-  }
-
-  return ColumnCount;
-}
-
 function table_render_params
-GetTableRenderParams(ui_render_command_buffer* CommandBuffer, u32 CommandIndex)
+GetTableRenderParams(ui_render_command_buffer* CommandBuffer, u32 StartingIndex)
 {
   table_render_params Result = {
-    .TableStart = CommandIndex
+    .TableStart = StartingIndex
   };
 
-  Result.ColumnCount = GetColumnCountForTable(CommandBuffer, CommandIndex);
-  Result.ColumnWidths = Allocate(u32, TranArena, Result.ColumnCount);
+  u16 ColumnCount = 0;
 
-  ui_render_command* Command =  GetCommand(CommandBuffer, CommandIndex++);
-  Assert(Command && Command->Type == type_ui_render_command_table_start);
-
-  u32 ColumnCount = 0;
-  while (Command && !Result.OnePastTableEnd)
   {
-    switch(Command->Type)
+    u32 NextCommandIndex = StartingIndex;
+    u16 NextColumnIndex = 0;
+
+    b32 FoundEnd = False;
+    ui_render_command* Command = GetCommand(CommandBuffer, NextCommandIndex++);
+
+    u32 *CurrentWidth = 0;
+    while (Command && !FoundEnd)
     {
-        case type_ui_render_command_text:
-        {
-          u32 ColumnIndex = ColumnCount-1;
-          Assert(ColumnIndex < Result.ColumnCount);
+      switch(Command->Type)
+      {
+          case type_ui_render_command_column:
+          {
+            ++NextColumnIndex;
+            ColumnCount = (u16)Max(ColumnCount, NextColumnIndex);
+            Assert(NextColumnIndex <= u16_MAX);
 
-          ui_render_command_text* TypedCommand = RenderCommandAs(text, Command);
-          u32 CurrentWidth = Result.ColumnWidths[ColumnIndex];
-          Result.ColumnWidths[ColumnIndex] = Max(CurrentWidth + (u32)TypedCommand->String.Count, CurrentWidth);
-        } break;
+            ui_render_command_column* TypedCommand = RenderCommandAs(column, Command);
+            CurrentWidth = &TypedCommand->Width;
+          } break;
 
-        case type_ui_render_command_column:
-        {
-          Assert(ColumnCount < Result.ColumnCount);
-          ++ColumnCount;
-        } break;
+          case type_ui_render_command_text:
+          {
+            ui_render_command_text* TypedCommand = RenderCommandAs(text, Command);
+            Assert(CurrentWidth);
+            *CurrentWidth += TypedCommand->String.Count;
+          } break;
 
-        case type_ui_render_command_new_row:
-        {
-          ColumnCount = 0;
-        } break;
+          case type_ui_render_command_new_row:
+          {
+            CurrentWidth = 0;
+            NextColumnIndex = 0;
+          } break;
 
-        case type_ui_render_command_table_end:
-        {
-          Result.OnePastTableEnd = CommandIndex;
-        } break;
+          case type_ui_render_command_table_end:
+          {
+            FoundEnd = True;
+            Result.OnePastTableEnd = NextCommandIndex;
+          } break;
 
-        default: {} break;
+          default: {} break;
+      }
+
+      Command = GetCommand(CommandBuffer, NextCommandIndex++);
     }
+  }
 
-    Command = GetCommand(CommandBuffer, CommandIndex++);
+  u32* MaxColumnWidths = Allocate(u32, TranArena, ColumnCount);
+
+  {
+    u32 NextColumnIndex = 0;
+    for (u32 CommandIndex = StartingIndex;
+        CommandIndex < Result.OnePastTableEnd;
+        ++CommandIndex)
+    {
+      ui_render_command* Command =  GetCommand(CommandBuffer, CommandIndex);
+      switch(Command->Type)
+      {
+          case type_ui_render_command_column:
+          {
+            Assert(NextColumnIndex < ColumnCount);
+            ui_render_command_column* TypedCommand = RenderCommandAs(column, Command);
+            MaxColumnWidths[NextColumnIndex] = Max(MaxColumnWidths[NextColumnIndex], TypedCommand->Width);
+            ++NextColumnIndex;
+          } break;
+
+          case type_ui_render_command_new_row:
+          {
+            NextColumnIndex = 0;
+          } break;
+
+          case type_ui_render_command_table_end:
+          {
+            Assert(CommandIndex == Result.OnePastTableEnd-1);
+          } break;
+
+          default: {} break;
+      }
+
+      continue;
+    }
+  }
+
+  {
+    u32 NextColumnIndex = 0;
+
+    for (u32 CommandIndex = StartingIndex;
+        CommandIndex < Result.OnePastTableEnd;
+        ++CommandIndex)
+    {
+      ui_render_command* Command =  GetCommand(CommandBuffer, CommandIndex);
+      switch(Command->Type)
+      {
+          case type_ui_render_command_column:
+          {
+            Assert(NextColumnIndex < ColumnCount);
+
+            ui_render_command_column* Column = RenderCommandAs(column, Command);
+            if (Column->Params & ColumnRenderParam_RightAlign)
+            {
+              ui_render_command_text* Text = RenderCommandAs(text, Command+1);
+              Text->Layout.At.x += (MaxColumnWidths[NextColumnIndex] - Column->Width) * Global_Font.Size.x;
+            }
+            ++NextColumnIndex;
+          } break;
+
+          case type_ui_render_command_new_row:
+          {
+            NextColumnIndex = 0;
+          } break;
+
+          case type_ui_render_command_table_end:
+          {
+            Assert(CommandIndex == Result.OnePastTableEnd-1);
+          } break;
+
+          default: {} break;
+      }
+
+      continue;
+    }
   }
 
   return Result;
-
 };
-
-function u32
-GetNextColumnWidth(table_render_params* Params)
-{
-  Assert(Params->CurrentColumn < Params->ColumnCount);
-  u32 Result = Params->ColumnWidths[Params->CurrentColumn++];
-  return Result;
-}
 
 function void
 ProcessButtonStart(debug_ui_render_group* Group, render_state* RenderState, umm ButtonId)
@@ -2098,17 +2132,6 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
         BufferValue(TypedCommand->String, Group, &RenderState);
       } break;
 
-      case type_ui_render_command_column:
-      {
-        ui_render_command_column* TypedCommand = RenderCommandAs(column, Command);
-        if (TypedCommand->Params & ColumnRenderParam_RightAlign)
-        {
-          /* u32 ColumnWidth = GetNextColumnWidth(&TableRenderParams); */
-          /* u32 Pad = ColumnWidth - GetFollowingTextElementLengths(CommandBuffer, NextCommandIndex); */
-          /* AdvanceSpaces(Pad, RenderState.Layout, RenderState.Style.Font.Size); */
-        }
-      } break;
-
       case type_ui_render_command_textured_quad:
       {
         ui_render_command_textured_quad* TexturedQuad = RenderCommandAs(textured_quad, Command);
@@ -2143,8 +2166,6 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
 
       case type_ui_render_command_new_row:
       {
-        TableRenderParams.CurrentColumn = 0;
-
         u32 TableStartIndex = FindPreviousTableStart(CommandBuffer, NextCommandIndex-1);
 
         ui_render_command_table_start* TableStart = GetCommandAs(table_start, CommandBuffer, TableStartIndex);
@@ -2182,6 +2203,10 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
       {
         ui_render_command_border* Border = RenderCommandAs(border, Command);
         BufferBorder(Group, Border->Bounds, Border->Color, GetZ(zDepth_Border, RenderState.Window), DISABLE_CLIPPING);
+      } break;
+
+      case type_ui_render_command_column:
+      {
       } break;
 
       InvalidDefaultCase;
