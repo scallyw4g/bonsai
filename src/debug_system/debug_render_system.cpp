@@ -1421,115 +1421,6 @@ SetWindowZDepths(ui_render_command_buffer *CommandBuffer)
   return;
 }
 
-function u32
-FindPreviousTableStart(ui_render_command_buffer* CommandBuffer, u32 StartingIndex)
-{
-  Assert(StartingIndex < CommandBuffer->CommandCount);
-
-  u32 Result = 0;
-
-  ui_render_command* Command = GetCommand(CommandBuffer, StartingIndex);
-  Assert(Command->Type == type_ui_render_command_new_row);
-
-  b32 Done = False;
-  for (u32 CommandIndex = StartingIndex-1;
-      ;
-      --CommandIndex)
-  {
-    Command = GetCommand(CommandBuffer, CommandIndex);
-    switch(Command->Type)
-    {
-      case type_ui_render_command_table_start:
-      {
-        Result = CommandIndex;
-        Done = True;
-      } break;
-
-      case type_ui_render_command_button_start:
-      case type_ui_render_command_button_end:
-      case type_ui_render_command_text_at:
-      case type_ui_render_command_new_row:
-      case type_ui_render_command_textured_quad:
-      case type_ui_render_command_untextured_quad:
-      case type_ui_render_command_untextured_quad_at:
-      case type_ui_render_command_column:
-      case type_ui_render_command_text:
-      case type_ui_render_command_border:
-      {
-      } break;
-
-      case type_ui_render_command_window_start:
-      case type_ui_render_command_window_end:
-      {
-        Done = True;
-      } break;
-
-      case type_ui_render_command_table_end:
-      case type_ui_render_command_noop:
-      {
-        InvalidCodePath();
-      } break;
-    }
-
-    if (Done || CommandIndex == 0) {break;}
-  }
-
-  return Result;
-}
-
-function find_button_start_result
-FindPreviousButtonStart(ui_render_command_buffer* CommandBuffer, u32 StartingIndex)
-{
-  Assert(StartingIndex < CommandBuffer->CommandCount);
-
-  find_button_start_result Result = {};
-
-  ui_render_command* Command = GetCommand(CommandBuffer, StartingIndex);
-  Assert(Command->Type == type_ui_render_command_button_end);
-
-  b32 Done = False;
-  for (u32 CommandIndex = StartingIndex-1;
-      ;
-      --CommandIndex)
-  {
-    Command = GetCommand(CommandBuffer, CommandIndex);
-    switch(Command->Type)
-    {
-      case type_ui_render_command_button_start:
-      {
-        Result.Command = GetCommandAs(button_start, CommandBuffer, CommandIndex);
-        Result.Index = CommandIndex;
-        Done = True;
-      } break;
-
-      case type_ui_render_command_text:
-      case type_ui_render_command_column:
-      case type_ui_render_command_button_end:
-      case type_ui_render_command_text_at:
-      case type_ui_render_command_new_row:
-      case type_ui_render_command_textured_quad:
-      case type_ui_render_command_untextured_quad:
-      case type_ui_render_command_untextured_quad_at:
-      {
-      } break;
-
-      case type_ui_render_command_table_start:
-      case type_ui_render_command_window_start:
-      case type_ui_render_command_window_end:
-      case type_ui_render_command_table_end:
-      case type_ui_render_command_border:
-      case type_ui_render_command_noop:
-      {
-        InvalidCodePath();
-      } break;
-    }
-
-    if (Done || CommandIndex == 0) {break;}
-  }
-
-  return Result;
-}
-
 struct find_command_result
 {
   ui_render_command* Command;
@@ -1557,6 +1448,20 @@ FindPreviousCommand(ui_render_command_buffer* CommandBuffer, ui_render_command_t
     if (CommandIndex == 0) { break; }
   }
 
+  return Result;
+}
+
+function u32
+FindPreviousTableStart(ui_render_command_buffer* CommandBuffer, u32 StartingIndex)
+{
+  u32 Result = FindPreviousCommand(CommandBuffer, type_ui_render_command_table_start, StartingIndex).Index;
+  return Result;
+}
+
+function u32
+FindPreviousButtonStart(ui_render_command_buffer* CommandBuffer, u32 StartingIndex)
+{
+  u32 Result = FindPreviousCommand(CommandBuffer, type_ui_render_command_button_start, StartingIndex).Index;
   return Result;
 }
 
@@ -1919,8 +1824,8 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
       case type_ui_render_command_button_end:
       {
         RenderState.Style = DefaultUiStyle;
-        find_button_start_result StartButton = FindPreviousButtonStart(CommandBuffer, NextCommandIndex-1);
-        rect2 AbsDrawBounds = FindAbsoluteDrawBoundsBetween(CommandBuffer, StartButton.Index, NextCommandIndex, False);
+        u32 StartButtonIndex = FindPreviousButtonStart(CommandBuffer, NextCommandIndex-1);
+        rect2 AbsDrawBounds = FindAbsoluteDrawBoundsBetween(CommandBuffer, StartButtonIndex, NextCommandIndex, False);
         ProcessButtonEnd(Group, &RenderState, AbsDrawBounds);
       } break;
 
