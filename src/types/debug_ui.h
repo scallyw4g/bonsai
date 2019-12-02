@@ -233,6 +233,7 @@ struct ui_render_command_untextured_quad_at
 
 struct ui_render_command_textured_quad
 {
+  layout Layout;
   debug_texture_array_slice TextureSlice;
   z_depth zDepth;
 };

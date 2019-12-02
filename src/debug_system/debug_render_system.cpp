@@ -1375,11 +1375,16 @@ function void
 ProcessTexturedQuadPush(debug_ui_render_group* Group, ui_render_command_textured_quad *Command, render_state* RenderState)
 {
   v2 MinP = GetAbsoluteAt(RenderState->Layout);
+  v2 Dim = RenderState->Window->MaxClip;
   r32 Z = GetZ(Command->zDepth, RenderState->Window);
   v2 MaxClip = GetAbsoluteMaxClip(RenderState->Window);
 
   ui_style ResetStyle = RenderState->Style;
-  BufferTexturedQuad( Group, Command->TextureSlice, MinP, RenderState->Window->MaxClip, UVsForFullyCoveredQuad(), V3(1), Z, MaxClip);
+  clip_result Clip = BufferTexturedQuad( Group, Command->TextureSlice, MinP, Dim, UVsForFullyCoveredQuad(), V3(1), Z, MaxClip);
+
+  Command->Layout.Basis = MinP;
+  Command->Layout.DrawBounds.Max = Clip.MaxClip - MinP;
+
   RenderState->Style = ResetStyle;
 }
 
@@ -1705,6 +1710,13 @@ FindAbsoluteDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, u32 First
         Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&TypedCommand->Layout));
       } break;
 
+      case type_ui_render_command_textured_quad:
+      {
+        ui_render_command_textured_quad* TypedCommand = RenderCommandAs(textured_quad, Command);
+        Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&TypedCommand->Layout));
+        Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&TypedCommand->Layout));
+      } break;
+
       case type_ui_render_command_untextured_quad_at:
       {
         ui_render_command_untextured_quad_at* TypedCommand = RenderCommandAs(untextured_quad_at, Command);
@@ -1724,7 +1736,6 @@ FindAbsoluteDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, u32 First
       case type_ui_render_command_table_end:
       case type_ui_render_command_button_start:
       case type_ui_render_command_button_end:
-      case type_ui_render_command_textured_quad:
       case type_ui_render_command_column:
       case type_ui_render_command_text_at:
       case type_ui_render_command_new_row:
