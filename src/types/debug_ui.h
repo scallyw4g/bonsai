@@ -296,18 +296,6 @@ struct ui_render_command
 
 
 
-struct table_render_params
-{
-  u32 TableStart;
-  u32 OnePastTableEnd;
-};
-
-
-
-
-
-
-
 #define MAX_UI_RENDER_COMMAND_COUNT (1024*1024)
 struct ui_render_command_buffer
 {
