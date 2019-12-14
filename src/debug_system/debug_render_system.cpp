@@ -776,8 +776,19 @@ StartColumn(debug_ui_render_group *Group, ui_style* Style = 0, column_render_par
   ui_render_command Command = {
     .Type = type_ui_render_command_column,
     .ui_render_command_column.Style           = Style? *Style : DefaultUiStyle,
-    .ui_render_command_column.OverrideStyling = Style? true : false,
     .ui_render_command_column.Params          = Params,
+  };
+
+  PushUiRenderCommand(Group, &Command);
+
+  return;
+}
+
+function void
+EndColumn(debug_ui_render_group* Group)
+{
+  ui_render_command Command = {
+    .Type = type_ui_render_command_column_end,
   };
 
   PushUiRenderCommand(Group, &Command);
@@ -791,13 +802,14 @@ PushColumn(debug_ui_render_group *Group, counted_string String, ui_style* Style 
   ui_render_command Command = {
     .Type = type_ui_render_command_column,
     .ui_render_command_column.Style           = Style? *Style : DefaultUiStyle,
-    .ui_render_command_column.OverrideStyling = Style? true : false,
     .ui_render_command_column.Params          = Params,
   };
 
   PushUiRenderCommand(Group, &Command);
 
   Text(Group, String);
+
+  EndColumn(Group);
 
   return;
 }
@@ -1092,8 +1104,7 @@ function b32
 Button(debug_ui_render_group* Group, counted_string ButtonName, umm ButtonId, ui_style* Style = 0)
 {
   interactable_handle Button = PushButtonStart(Group, ButtonId, Style);
-    StartColumn(Group, Style);
-    Text(Group, ButtonName);
+    PushColumn(Group, ButtonName, Style);
   PushButtonEnd(Group);
 
   b32 Result = Clicked(Group, &Button);
@@ -1529,12 +1540,20 @@ FindAbsoluteDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, u32 First
         Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&TypedCommand->Layout));
       } break;
 
+      case type_ui_render_command_column:
+      {
+        ui_render_command_column* TypedCommand = RenderCommandAs(column, Command);
+        Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&TypedCommand->Layout));
+        Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&TypedCommand->Layout));
+      } break;
+
+
+      case type_ui_render_command_column_end:
       case type_ui_render_command_noop:
       case type_ui_render_command_window_end:
       case type_ui_render_command_table_end:
       case type_ui_render_command_button_start:
       case type_ui_render_command_button_end:
-      case type_ui_render_command_column:
       case type_ui_render_command_text_at:
       case type_ui_render_command_new_row:
       case type_ui_render_command_border:
@@ -1572,7 +1591,7 @@ PreprocessTable(ui_render_command_buffer* CommandBuffer, u32 StartingIndex)
     b32 FoundEnd = False;
     ui_render_command* Command = GetCommand(CommandBuffer, NextCommandIndex++);
 
-    u32 *CurrentWidth = 0;
+    r32 *CurrentWidth = 0;
     while (Command && !FoundEnd)
     {
       switch(Command->Type)
@@ -1585,13 +1604,14 @@ PreprocessTable(ui_render_command_buffer* CommandBuffer, u32 StartingIndex)
 
             ui_render_command_column* TypedCommand = RenderCommandAs(column, Command);
             CurrentWidth = &TypedCommand->Width;
+            *CurrentWidth += TypedCommand->Style.Padding.Left + TypedCommand->Style.Padding.Right;
           } break;
 
           case type_ui_render_command_text:
           {
             ui_render_command_text* TypedCommand = RenderCommandAs(text, Command);
             Assert(CurrentWidth);
-            *CurrentWidth += TypedCommand->String.Count;
+            *CurrentWidth += (TypedCommand->String.Count * Global_Font.Size.x);
           } break;
 
           case type_ui_render_command_new_row:
@@ -1613,7 +1633,7 @@ PreprocessTable(ui_render_command_buffer* CommandBuffer, u32 StartingIndex)
     }
   }
 
-  u32* MaxColumnWidths = Allocate(u32, TranArena, ColumnCount);
+  r32* MaxColumnWidths = Allocate(r32, TranArena, ColumnCount);
 
   {
     u32 NextColumnIndex = 0;
@@ -1667,7 +1687,7 @@ PreprocessTable(ui_render_command_buffer* CommandBuffer, u32 StartingIndex)
             if (Column->Params & ColumnRenderParam_RightAlign)
             {
               ui_render_command_text* Text = RenderCommandAs(text, Command+1);
-              Text->Layout.At.x += (MaxColumnWidths[NextColumnIndex] - Column->Width) * Global_Font.Size.x;
+              Text->Layout.At.x += (MaxColumnWidths[NextColumnIndex] - Column->Width);
             }
             ++NextColumnIndex;
           } break;
@@ -1764,13 +1784,30 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
       case type_ui_render_command_column:
       {
         ui_render_command_column* TypedCommand = RenderCommandAs(column, Command);
-        RenderState.Style = TypedCommand->Style;
+        TypedCommand->Layout.Basis = V2(GetAbsoluteAt(RenderState.Layout).x, RenderState.Layout->Basis.y);
+        TypedCommand->Layout.At.x += TypedCommand->Style.Padding.Left;
+        TypedCommand->Layout.At.y += TypedCommand->Style.Padding.Top;
+        RenderState.Layout = &TypedCommand->Layout;
+      } break;
+
+      case type_ui_render_command_column_end:
+      {
+        find_command_result Find = FindPreviousCommand(CommandBuffer, type_ui_render_command_column, NextCommandIndex-1);
+        ui_render_command_column* TypedCommand = RenderCommandAs(column, Find.Command);
+        RenderState.Layout = &TypedCommand->Layout;
+
+        RenderState.Layout->At = FindRelativeDrawBoundsBetween(CommandBuffer, TypedCommand->Layout.Basis, Find.Index, NextCommandIndex).Max;
+
+        RenderState.Layout->At.x += TypedCommand->Style.Padding.Right;
+        RenderState.Layout->At.y += TypedCommand->Style.Padding.Bottom;
+
+        AdvanceClip(RenderState.Layout);
       } break;
 
       case type_ui_render_command_text:
       {
         ui_render_command_text* TypedCommand = RenderCommandAs(text, Command);
-        TypedCommand->Layout.Basis = GetAbsoluteAt(RenderState.Layout);
+        TypedCommand->Layout.Basis = V2(GetAbsoluteAt(RenderState.Layout).x, RenderState.Layout->Basis.y);
         RenderState.Layout = &TypedCommand->Layout;
         BufferValue(TypedCommand->String, Group, &RenderState);
       } break;

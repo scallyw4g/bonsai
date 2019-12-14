@@ -106,10 +106,12 @@ enum ui_render_command_type
   type_ui_render_command_button_start,
   type_ui_render_command_button_end,
 
+  type_ui_render_command_column,
+  type_ui_render_command_column_end,
+
   type_ui_render_command_text,
   type_ui_render_command_text_at,
 
-  type_ui_render_command_column,
   type_ui_render_command_new_row,
   type_ui_render_command_border,
 
@@ -139,7 +141,7 @@ struct font
 
 // TODO(Jesse): Axe this!
 debug_global font Global_Font = {
-  .Size = V2(30, 34),
+  .Size = V2(26, 34),
 };
 
 struct ui_element_reference
@@ -188,13 +190,15 @@ struct ui_render_command_window_end
   window_layout* Window;
 };
 
+struct ui_render_command_column_end
+{
+};
+
 struct ui_render_command_column
 {
-  b32 OverrideStyling;
+  layout Layout;
   ui_style Style;
-
-  u32 Width;
-
+  r32 Width;
   column_render_params Params;
 };
 
@@ -213,11 +217,11 @@ struct ui_render_command_text_at
 
 struct ui_render_command_untextured_quad
 {
+  layout Layout;
   v2 Offset;
   v2 QuadDim;
   ui_style Style;
   z_depth zDepth;
-  layout Layout;
   quad_render_params Params;
 };
 
@@ -278,6 +282,9 @@ struct ui_render_command
 
     ui_render_command_table_start        ui_render_command_table_start;
 
+    ui_render_command_column             ui_render_command_column;
+    ui_render_command_column_end         ui_render_command_column_end;
+
     ui_render_command_text               ui_render_command_text;
     ui_render_command_text_at            ui_render_command_text_at;
 
@@ -286,7 +293,6 @@ struct ui_render_command
     ui_render_command_untextured_quad_at ui_render_command_untextured_quad_at;
 
     ui_render_command_border             ui_render_command_border;
-    ui_render_command_column             ui_render_command_column;
   };
 };
 
