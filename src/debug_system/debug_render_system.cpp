@@ -860,7 +860,7 @@ PushTexturedQuad(debug_ui_render_group *Group, debug_texture_array_slice Texture
 }
 
 function void
-PushUntexturedQuadAt(debug_ui_render_group* Group, v2 At, v2 QuadDim, z_depth zDepth, ui_style *Style = 0, quad_render_params Params = QuadRenderParam_Default )
+PushUntexturedQuadAt(debug_ui_render_group* Group, v2 At, v2 QuadDim, z_depth zDepth, ui_style *Style = 0 )
 {
   ui_render_command Command =
   {
@@ -870,7 +870,6 @@ PushUntexturedQuadAt(debug_ui_render_group* Group, v2 At, v2 QuadDim, z_depth zD
     {
       .QuadDim = QuadDim,
       .Style   = Style? *Style : DefaultUiStyle,
-      .Params  = Params,
       .zDepth  = zDepth,
       .Layout  =
       {
@@ -1043,13 +1042,13 @@ PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
 
   v2 Dim = V2(12);
   PushButtonStart(Group, DragHandleInteractionId);
-    PushUntexturedQuadAt(Group, GetAbsoluteMaxClip(Window)-Dim, Dim, zDepth_Border, &DefaultUiStyle, QuadRenderParam_NoAdvance);
+    PushUntexturedQuadAt(Group, GetAbsoluteMaxClip(Window)-Dim, Dim, zDepth_Border, &DefaultUiStyle);
   PushButtonEnd(Group);
 
   PushBorder(Group, GetBounds(Window), V3(1));
 
   ui_style BackgroundStyle = UiStyleFromLightestColor(V3(0.25f));
-  PushUntexturedQuadAt(Group, Window->Basis, Window->MaxClip, zDepth_Background, &BackgroundStyle, QuadRenderParam_NoAdvance);
+  PushUntexturedQuadAt(Group, Window->Basis, Window->MaxClip, zDepth_Background, &BackgroundStyle);
 
   return;
 }
@@ -1847,9 +1846,7 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
       case type_ui_render_command_untextured_quad_at:
       {
         ui_render_command_untextured_quad_at* TypedCommand = RenderCommandAs(untextured_quad_at, Command);
-        /* PushLayout(&RenderState.Layout, &TypedCommand->Layout); */
         ProcessUntexturedQuadAtPush(Group, TypedCommand, &RenderState);
-        /* PopLayout(&RenderState.Layout); */
       } break;
 
       case type_ui_render_command_untextured_quad:
@@ -1882,17 +1879,14 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
         ui_render_command_button_start* TypedCommand = RenderCommandAs(button_start, Command);
         /* RenderState.Style = TypedCommand->Style; */
         ProcessButtonStart(Group, &RenderState, TypedCommand->ID);
-
-        TypedCommand->Layout.Basis = GetNextInlineElementBasis(&RenderState);
-        PushLayout(&RenderState.Layout, &TypedCommand->Layout);
       } break;
 
       case type_ui_render_command_button_end:
       {
         RenderState.Style = DefaultUiStyle;
-        rect2 AbsDrawBounds = GetAbsoluteDrawBounds(RenderState.Layout);
+        u32 StartButtonIndex = FindPreviousButtonStart(CommandBuffer, NextCommandIndex-1);
+        rect2 AbsDrawBounds = FindAbsoluteDrawBoundsBetween(CommandBuffer, StartButtonIndex, NextCommandIndex, False);
         ProcessButtonEnd(Group, &RenderState, AbsDrawBounds);
-        PopLayout(&RenderState.Layout);
       } break;
 
       case type_ui_render_command_border:
