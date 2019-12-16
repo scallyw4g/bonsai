@@ -557,14 +557,14 @@ GetAbsoluteAt(layout *Layout)
 v2
 GetAbsoluteDrawBoundsMin(layout *Layout)
 {
-  v2 Result = Layout->Basis + Layout->DrawBounds.Min;
+  v2 Result = Layout ? Layout->Basis + Layout->DrawBounds.Min : V2(0);
   return Result;
 }
 
 v2
 GetAbsoluteDrawBoundsMax(layout *Layout)
 {
-  v2 Result = Layout->Basis + Layout->DrawBounds.Max;
+  v2 Result = Layout ? Layout->Basis + Layout->DrawBounds.Max : V2(0);
   return Result;
 }
 
@@ -651,17 +651,21 @@ InitScopeTrees(u32 TotalThreadCount)
 inline void
 AdvanceClip(layout *Layout, v2 TestP)
 {
-  Layout->DrawBounds.Min = Min(TestP, Layout->DrawBounds.Min);
-  Layout->DrawBounds.Max = Max(TestP, Layout->DrawBounds.Max);
-  return;
+  v2 AbsP = TestP + Layout->Basis;
+  while (Layout)
+  {
+    v2 RelP = AbsP - Layout->Basis;
+    Layout->DrawBounds.Min = Min(RelP, Layout->DrawBounds.Min);
+    Layout->DrawBounds.Max = Max(RelP, Layout->DrawBounds.Max);
+
+    Layout = Layout->Prev;
+  }
 }
 
 inline void
 AdvanceClip(layout *Layout)
 {
-  Layout->DrawBounds.Min = Min(Layout->At, Layout->DrawBounds.Min);
-  Layout->DrawBounds.Max = Max(Layout->At, Layout->DrawBounds.Max);
-  return;
+  AdvanceClip(Layout, Layout->At);
 }
 
 r32

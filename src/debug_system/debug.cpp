@@ -76,7 +76,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     /*   PushTableEnd(UiGroup); */
     /* EndColumn(UiGroup); */
 
-    StartColumn(UiGroup, &Style1);
+    StartColumn(UiGroup);
       Text(UiGroup, CS("+"));
       Text(UiGroup, CS("+"));
       Text(UiGroup, CS("+"));

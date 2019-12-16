@@ -19,6 +19,8 @@ struct layout
   v2 Basis;
   v2 At;
   rect2 DrawBounds;
+
+  layout* Prev;
 };
 
 struct window_layout
@@ -244,6 +246,7 @@ struct ui_render_command_textured_quad
 
 struct ui_render_command_button_start
 {
+  layout Layout;
   umm ID;
   ui_style Style;
 };
