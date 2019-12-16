@@ -602,7 +602,7 @@ BufferChar(debug_ui_render_group *Group, u8 Char, v2 MinP, v2 FontSize, v3 Color
                       MinP+ShadowOffset, FontSize, UV, V3(0.1f), Z-e, MaxClip);
 
   BufferTexturedQuad( Group, DebugTextureArraySlice_Font,
-                      MinP, FontSize, UV, Color, Z, MaxClip); 
+                      MinP, FontSize, UV, Color, Z, MaxClip);
 
   r32 DeltaX = FontSize.x;
   return DeltaX;
@@ -646,35 +646,35 @@ BufferBorder(debug_ui_render_group *Group, interactable* PickerListInteraction, 
 }
 
 function void
+AdvanceLayoutStackBy(v2 Delta, layout* Layout)
+{
+  while (Layout) {
+    Layout->At += Delta;
+    AdvanceClip(Layout);
+    Layout = Layout->Prev;
+  }
+}
+
+function void
 BufferValue(counted_string Text, debug_ui_render_group *Group, layout* Layout, v3 Color,  ui_style& Style = DefaultUiStyle, r32 Z = 1.0f, v2 MaxClip = DISABLE_CLIPPING)
 {
   v4 Padding = Style.Padding;
 
   v2 FontHeight = V2(0, Style.Font.Size.y);
 
-  v2 StartingP = GetAbsoluteAt(Layout);
-
-  Layout->At.x += Padding.Left;
+  r32 xDelta = Padding.Left;
 
   for ( u32 CharIndex = 0;
       CharIndex < Text.Count;
       CharIndex++ )
   {
-    v2 MinP = GetAbsoluteAt(Layout) + V2(0, Padding.Top);
-    Layout->At.x += BufferChar(Group, (u8)Text.Start[CharIndex], MinP, Style.Font.Size, Color, Z, MaxClip);
+    v2 MinP = GetAbsoluteAt(Layout) + V2(xDelta, Padding.Top);
+    xDelta += BufferChar(Group, (u8)Text.Start[CharIndex], MinP, Style.Font.Size, Color, Z, MaxClip);
   }
 
-  Layout->At.x += Padding.Right;
+  xDelta += Padding.Right;
 
-  v2 EndingP = GetAbsoluteAt(Layout);
-  v2 Diff = EndingP - StartingP;
-
-  layout* TempLayout = Layout->Prev;
-  while (TempLayout) {
-    TempLayout->At += Diff;
-    AdvanceClip(TempLayout);
-    TempLayout = TempLayout->Prev;
-  }
+  AdvanceLayoutStackBy(V2(xDelta, 0), Layout);
 
   v2 MaxClipP = Layout->At + V2(0, Padding.Top+Padding.Bottom) + FontHeight;
   AdvanceClip(Layout, MaxClipP);
@@ -1594,6 +1594,8 @@ PreprocessTable(ui_render_command_buffer* CommandBuffer, u32 StartingIndex)
   u32 OnePastTableEnd = StartingIndex;
   u16 ColumnCount = 0;
 
+  TriggeredRuntimeBreak();
+
   {
     u32 NextCommandIndex = StartingIndex;
     u16 NextColumnIndex = 0;
@@ -1694,11 +1696,7 @@ PreprocessTable(ui_render_command_buffer* CommandBuffer, u32 StartingIndex)
             Assert(NextColumnIndex < ColumnCount);
 
             ui_render_command_column* Column = RenderCommandAs(column, Command);
-            if (Column->Params & ColumnRenderParam_RightAlign)
-            {
-              /* ui_render_command_text* Text = RenderCommandAs(text, Command+1); */
-              /* Text->Layout.At.x += (MaxColumnWidths[NextColumnIndex] - Column->Width); */
-            }
+            Column->MaxWidth = MaxColumnWidths[NextColumnIndex];
             ++NextColumnIndex;
           } break;
 
@@ -1815,9 +1813,15 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
       {
         ui_render_command_column* TypedCommand = RenderCommandAs(column, Command);
         TypedCommand->Layout.Basis = GetNextInlineElementBasis(&RenderState);
+
+        PushLayout(&RenderState.Layout, &TypedCommand->Layout);
+
+        r32 xAdvance = TypedCommand->MaxWidth - TypedCommand->Width;
+
         /* TypedCommand->Layout.At.x += TypedCommand->Style.Padding.Left; */
         /* TypedCommand->Layout.At.y += TypedCommand->Style.Padding.Top; */
-        PushLayout(&RenderState.Layout, &TypedCommand->Layout);
+
+        AdvanceLayoutStackBy(V2(xAdvance, 0), RenderState.Layout);
       } break;
 
       case type_ui_render_command_column_end:

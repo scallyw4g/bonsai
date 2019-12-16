@@ -201,6 +201,7 @@ struct ui_render_command_column
   layout Layout;
   ui_style Style;
   r32 Width;
+  r32 MaxWidth;
   column_render_params Params;
 };
 
