@@ -13,8 +13,6 @@
 
 #define u32_COUNT_PER_QUAD 6
 
-debug_global ui_style DefaultUiStyle = UiStyleFromLightestColor(V3(1));
-
 
 
 /*****************************                ********************************/
@@ -656,28 +654,22 @@ AdvanceLayoutStackBy(v2 Delta, layout* Layout)
 }
 
 function void
-BufferValue(counted_string Text, debug_ui_render_group *Group, layout* Layout, v3 Color,  ui_style& Style = DefaultUiStyle, r32 Z = 1.0f, v2 MaxClip = DISABLE_CLIPPING)
+BufferValue(counted_string Text, debug_ui_render_group *Group, layout* Layout, v3 Color, ui_style& Style = DefaultUiStyle, r32 Z = 1.0f, v2 MaxClip = DISABLE_CLIPPING)
 {
-  v4 Padding = Style.Padding;
-
-  v2 FontHeight = V2(0, Style.Font.Size.y);
-
-  r32 xDelta = Padding.Left;
+  r32 xDelta = 0;
 
   for ( u32 CharIndex = 0;
       CharIndex < Text.Count;
       CharIndex++ )
   {
-    v2 MinP = GetAbsoluteAt(Layout) + V2(xDelta, Padding.Top);
+    v2 MinP = GetAbsoluteAt(Layout) + V2(xDelta, 0);
     xDelta += BufferChar(Group, (u8)Text.Start[CharIndex], MinP, Style.Font.Size, Color, Z, MaxClip);
   }
 
-  xDelta += Padding.Right;
-
   AdvanceLayoutStackBy(V2(xDelta, 0), Layout);
 
-  v2 MaxClipP = Layout->At + V2(0, Padding.Top+Padding.Bottom) + FontHeight;
-  AdvanceClip(Layout, MaxClipP);
+  v2 MaxP = Layout->At + V2(0, Style.Font.Size.y);
+  AdvanceClip(Layout, MaxP);
 
 #if DEBUG_UI_OUTLINE_VALUES
   v2 EndingP = Layout->Basis + MaxClipP;
@@ -692,7 +684,7 @@ BufferValue(counted_string Text, debug_ui_render_group *Group, render_state* Ren
 {
   layout* Layout = RenderState->Layout;
   r32 Z          = GetZ(zDepth_Text, RenderState->Window);
-  ui_style Style = RenderState->Style;
+  ui_style Style = RenderState->Layout->Style;
   v2 MaxClip     = GetAbsoluteMaxClip(RenderState->Window);
   v3 Color       = SelectColorState(RenderState, Style);
 
@@ -924,7 +916,7 @@ PushButtonStart(debug_ui_render_group *Group, umm InteractionId, ui_style* Style
   ui_render_command Command = {
     .Type = type_ui_render_command_button_start,
     .ui_render_command_button_start.ID = InteractionId,
-    .ui_render_command_button_start.Style = Style ? *Style : DefaultUiStyle,
+    .ui_render_command_button_start.Layout.Style = Style ? *Style : DefaultUiStyle,
   };
 
   PushUiRenderCommand(Group, &Command);
@@ -1076,8 +1068,6 @@ ButtonInteraction(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId,
 {
   button_interaction_result Result = {};
 
-  Bounds.Max += V2(Style->Padding.Left+Style->Padding.Right, Style->Padding.Top+Style->Padding.Bottom);
-
   interactable Interaction = Interactable(Bounds, InteractionId, Window);
 
 #if DEBUG_UI_OUTLINE_BUTTONS
@@ -1139,6 +1129,36 @@ Button(debug_ui_render_group* Group, counted_string ButtonName, umm ButtonId, ui
   (ui_render_command_##TypeName *)&(Command)->ui_render_command_##TypeName; \
   Assert((Command)->Type == type_ui_render_command_##TypeName)
 
+
+function void
+PushLayout(layout** Dest, layout* Layout)
+{
+  Assert(!Layout->Prev);
+  Layout->Prev = *Dest;
+  *Dest = Layout;
+
+  v2 Pad = V2(Layout->Style.Padding.Left, Layout->Style.Padding.Top);
+  AdvanceLayoutStackBy(Pad, Layout);
+}
+
+function layout*
+PopLayout(layout** Layout)
+{
+  layout* PoppedLayout = *Layout;
+
+  v4 Padding = PoppedLayout->Style.Padding;
+  v2 ClipTest = PoppedLayout->DrawBounds.Max + V2(0, Padding.Bottom);
+  AdvanceClip(PoppedLayout, ClipTest);
+
+  v2 Advance = V2(Padding.Right, -Padding.Top);
+  AdvanceLayoutStackBy(Advance, PoppedLayout);
+
+  layout* PrevLayout = PoppedLayout->Prev;
+  PoppedLayout->Prev = 0;
+  *Layout = PrevLayout;
+
+  return PoppedLayout;
+}
 
 function ui_render_command*
 GetCommand(ui_render_command_buffer* CommandBuffer, u32 CommandIndex)
@@ -1228,7 +1248,7 @@ ProcessButtonEnd(debug_ui_render_group *Group, render_state* RenderState, rect2 
                                                         AbsButtonBounds,
                                                         RenderState->CurrentInteraction.ID,
                                                         RenderState->Window,
-                                                        &RenderState->Style);
+                                                        &RenderState->Layout->Style);
 
   if (Button.Hover)
   {
@@ -1262,13 +1282,10 @@ ProcessTexturedQuadPush(debug_ui_render_group* Group, ui_render_command_textured
   r32 Z = GetZ(Command->zDepth, RenderState->Window);
   v2 MaxClip = GetAbsoluteMaxClip(RenderState->Window);
 
-  ui_style ResetStyle = RenderState->Style;
   clip_result Clip = BufferTexturedQuad( Group, Command->TextureSlice, MinP, Dim, UVsForFullyCoveredQuad(), V3(1), Z, MaxClip);
 
   Command->Layout.Basis = MinP;
   Command->Layout.DrawBounds.Max = Clip.MaxClip - MinP;
-
-  RenderState->Style = ResetStyle;
 }
 
 function void
@@ -1297,16 +1314,7 @@ ProcessUntexturedQuadPush(debug_ui_render_group* Group, ui_render_command_untext
   v3 Color = SelectColorState(RenderState, Command->Style);
   r32 Z = GetZ(Command->zDepth, RenderState->Window);
 
-  ui_style ResetStyle = RenderState->Style;
-  layout* ResetLayout = RenderState->Layout;
-
-  RenderState->Style = Command->Style;
-  RenderState->Layout = &Command->Layout;
-
   BufferUntexturedQuad(Group, &(Group->Geo), MinP, Dim, Color, Z, MaxClip);
-
-  RenderState->Style = ResetStyle;
-  RenderState->Layout = ResetLayout;
 
   if (Command->Params & QuadRenderParam_AdvanceClip)
   {
@@ -1486,6 +1494,7 @@ FindPreviousButtonStart(ui_render_command_buffer* CommandBuffer, u32 StartingInd
   return Result;
 }
 
+#if 0
 function rect2
 FindAbsoluteDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, u32 FirstCommand, u32 OnePastLastCommand, b32 SkipFloating = True)
 {
@@ -1587,14 +1596,13 @@ FindRelativeDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, v2 Relati
 
   return Result;
 }
+#endif
 
 function u32
 PreprocessTable(ui_render_command_buffer* CommandBuffer, u32 StartingIndex)
 {
   u32 OnePastTableEnd = StartingIndex;
   u16 ColumnCount = 0;
-
-  TriggeredRuntimeBreak();
 
   {
     u32 NextCommandIndex = StartingIndex;
@@ -1720,22 +1728,6 @@ PreprocessTable(ui_render_command_buffer* CommandBuffer, u32 StartingIndex)
   return OnePastTableEnd;
 };
 
-function void
-PushLayout(layout** Dest, layout* Next)
-{
-  Assert(!Next->Prev);
-  Next->Prev = *Dest;
-  *Dest = Next;
-}
-
-function void
-PopLayout(layout** Layout)
-{
-  layout* PrevLayout = (*Layout)->Prev;
-  (*Layout)->Prev = 0;
-  *Layout = PrevLayout;
-}
-
 function v2
 GetNextInlineElementBasis(render_state* RenderState)
 {
@@ -1747,7 +1739,7 @@ function void
 FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *CommandBuffer)
 {
   layout DefaultLayout = {};
-  render_state RenderState = { .Style = DefaultUiStyle, .Layout = &DefaultLayout };
+  render_state RenderState = { .Layout = &DefaultLayout };
 
   SetWindowZDepths(CommandBuffer);
 
@@ -1816,15 +1808,12 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
 
         PushLayout(&RenderState.Layout, &TypedCommand->Layout);
 
-        /* RenderState.Style = TypedCommand->Style; */
         v2 Advance = V2(TypedCommand->MaxWidth - TypedCommand->Width, 0);
-
         AdvanceLayoutStackBy(Advance, RenderState.Layout);
       } break;
 
       case type_ui_render_command_column_end:
       {
-        /* RenderState.Style = DefaultUiStyle; */
         PopLayout(&RenderState.Layout);
       } break;
 
@@ -1857,12 +1846,7 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
         ui_render_command_untextured_quad* TypedCommand = RenderCommandAs(untextured_quad, Command);
         TypedCommand->Layout.Basis = GetAbsoluteAt(RenderState.Layout);
         PushLayout(&RenderState.Layout, &TypedCommand->Layout);
-
-        ui_style ResetStyle = RenderState.Style;
-        RenderState.Style = TypedCommand->Style;
         ProcessUntexturedQuadPush(Group, TypedCommand, &RenderState);
-        RenderState.Style = ResetStyle;
-
         PopLayout(&RenderState.Layout);
       } break;
 
@@ -1880,15 +1864,16 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
       case type_ui_render_command_button_start:
       {
         ui_render_command_button_start* TypedCommand = RenderCommandAs(button_start, Command);
-        RenderState.Style = TypedCommand->Style;
+        TypedCommand->Layout.Basis = GetNextInlineElementBasis(&RenderState);
+        PushLayout(&RenderState.Layout, &TypedCommand->Layout);
         ProcessButtonStart(Group, &RenderState, TypedCommand->ID);
       } break;
 
       case type_ui_render_command_button_end:
       {
-        RenderState.Style = DefaultUiStyle;
-        u32 StartButtonIndex = FindPreviousButtonStart(CommandBuffer, NextCommandIndex-1);
-        rect2 AbsDrawBounds = FindAbsoluteDrawBoundsBetween(CommandBuffer, StartButtonIndex, NextCommandIndex, False);
+        layout* ButtonLayout = PopLayout(&RenderState.Layout);
+
+        rect2 AbsDrawBounds = GetAbsoluteDrawBounds(ButtonLayout);
         ProcessButtonEnd(Group, &RenderState, AbsDrawBounds);
       } break;
 

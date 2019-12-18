@@ -6,8 +6,6 @@ struct render_state
 
   layout* Layout;
 
-  ui_style Style;
-
   b32 Hover;
   b32 Pressed;
   b32 Clicked;

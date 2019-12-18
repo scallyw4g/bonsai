@@ -6,7 +6,6 @@
 #define DEBUG_UI_OUTLINE_BUTTONS 1
 #define DEBUG_UI_OUTLINE_TABLES  1
 
-
 /******************************               ********************************/
 /******************************   Rendering   ********************************/
 /******************************               ********************************/
@@ -158,13 +157,18 @@ struct ui_style
   b32 IsActive;
 };
 
+
+function ui_style UiStyleFromLightestColor(v3 Color, v4 Padding = V4());
+
+debug_global ui_style DefaultUiStyle = UiStyleFromLightestColor(V3(1));
+
 struct layout
 {
   v2 Basis;
   v2 At;
   rect2 DrawBounds;
 
-  ui_style Style;
+  ui_style Style = DefaultUiStyle;
   layout* Prev;
 };
 
@@ -249,7 +253,7 @@ struct ui_render_command_textured_quad
 struct ui_render_command_button_start
 {
   umm ID;
-  ui_style Style;
+  layout Layout;
 };
 
 struct ui_render_command_button_end
@@ -416,7 +420,7 @@ StandardStyling(v3 StartingColor, v3 HoverMultiplier = V3(1.3f), v3 ClickMultipl
 }
 
 function ui_style
-UiStyleFromLightestColor(v3 Color, v4 Padding = V4())
+UiStyleFromLightestColor(v3 Color, v4 Padding /* = V4() */)
 {
   ui_style Style  = {
     .Color        = Color,
@@ -463,4 +467,5 @@ GetWindowBounds(window_layout *Window)
   rect2 Result = RectMinMax(TopLeft, BottomRight);
   return Result;
 }
+
 
