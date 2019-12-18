@@ -1119,13 +1119,13 @@ Button(debug_ui_render_group* Group, counted_string ButtonName, umm ButtonId, ui
 
 
 
-#define GetCommandAs(TypeName, CommandBuffer, CommandIndex)                 \
+#define GetCommandAs(TypeName, CommandBuffer, CommandIndex)                     \
   &(GetCommand((CommandBuffer), (CommandIndex))->ui_render_command_##TypeName); \
   ui_render_command* TempCommand = GetCommand((CommandBuffer), (CommandIndex)); \
   Assert(TempCommand->Type == type_ui_render_command_##TypeName)
 
 
-#define RenderCommandAs(TypeName, Command)                                \
+#define RenderCommandAs(TypeName, Command)                                  \
   (ui_render_command_##TypeName *)&(Command)->ui_render_command_##TypeName; \
   Assert((Command)->Type == type_ui_render_command_##TypeName)
 
