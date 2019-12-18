@@ -1816,16 +1816,15 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
 
         PushLayout(&RenderState.Layout, &TypedCommand->Layout);
 
-        r32 xAdvance = TypedCommand->MaxWidth - TypedCommand->Width;
+        /* RenderState.Style = TypedCommand->Style; */
+        v2 Advance = V2(TypedCommand->MaxWidth - TypedCommand->Width, 0);
 
-        /* TypedCommand->Layout.At.x += TypedCommand->Style.Padding.Left; */
-        /* TypedCommand->Layout.At.y += TypedCommand->Style.Padding.Top; */
-
-        AdvanceLayoutStackBy(V2(xAdvance, 0), RenderState.Layout);
+        AdvanceLayoutStackBy(Advance, RenderState.Layout);
       } break;
 
       case type_ui_render_command_column_end:
       {
+        /* RenderState.Style = DefaultUiStyle; */
         PopLayout(&RenderState.Layout);
       } break;
 
@@ -1881,7 +1880,7 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
       case type_ui_render_command_button_start:
       {
         ui_render_command_button_start* TypedCommand = RenderCommandAs(button_start, Command);
-        /* RenderState.Style = TypedCommand->Style; */
+        RenderState.Style = TypedCommand->Style;
         ProcessButtonStart(Group, &RenderState, TypedCommand->ID);
       } break;
 

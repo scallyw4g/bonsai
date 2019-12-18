@@ -14,15 +14,6 @@
 
 
 
-struct layout
-{
-  v2 Basis;
-  v2 At;
-  rect2 DrawBounds;
-
-  layout* Prev;
-};
-
 struct window_layout
 {
   counted_string Title;
@@ -166,6 +157,17 @@ struct ui_style
 
   b32 IsActive;
 };
+
+struct layout
+{
+  v2 Basis;
+  v2 At;
+  rect2 DrawBounds;
+
+  ui_style Style;
+  layout* Prev;
+};
+
 
 
 

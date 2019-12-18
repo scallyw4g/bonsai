@@ -64,7 +64,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
 
   Dt = ComputeMinMaxAvgDt();
 
-  /* ui_style Style = UiStyleFromLightestColor(V3(1), V4(0,0,50,0)); */
+  ui_style Style = UiStyleFromLightestColor(V3(1), V4(0,0,50,0));
   /* ui_style Style1 = UiStyleFromLightestColor(V3(1), V4(100,0,100,0)); */
 
   ui_element_reference DtTable = PushTableStart(UiGroup);
@@ -76,7 +76,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     /*   PushTableEnd(UiGroup); */
     /* EndColumn(UiGroup); */
 
-    StartColumn(UiGroup);
+    StartColumn(UiGroup, &Style);
       Text(UiGroup, CS("+"));
       Text(UiGroup, CS("+"));
       Text(UiGroup, CS("+"));
@@ -85,12 +85,12 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
 
     PushNewRow(UiGroup);
 
-    PushColumn(UiGroup, CS(Dt.Avg));
+    PushColumn(UiGroup, CS(Dt.Avg), &Style);
     PushColumn(UiGroup, CS(Plat->dt*1000.0f));
 
     PushNewRow(UiGroup);
 
-    StartColumn(UiGroup);
+    StartColumn(UiGroup, &Style);
       Text(UiGroup, CS("-"));
       Text(UiGroup, CS(Dt.Avg - Dt.Min));
     EndColumn(UiGroup);
