@@ -774,7 +774,7 @@ StartColumn(debug_ui_render_group *Group, ui_style* Style = 0, column_render_par
 {
   ui_render_command Command = {
     .Type = type_ui_render_command_column_start,
-    .ui_render_command_column_start.Style           = Style? *Style : DefaultUiStyle,
+    .ui_render_command_column_start.Layout.Style           = Style? *Style : DefaultUiStyle,
     .ui_render_command_column_start.Params          = Params,
   };
 
@@ -800,8 +800,8 @@ PushColumn(debug_ui_render_group *Group, counted_string String, ui_style* Style 
 {
   ui_render_command Command = {
     .Type = type_ui_render_command_column_start,
-    .ui_render_command_column_start.Style           = Style? *Style : DefaultUiStyle,
-    .ui_render_command_column_start.Params          = Params,
+    .ui_render_command_column_start.Layout.Style = Style? *Style : DefaultUiStyle,
+    .ui_render_command_column_start.Params       = Params,
   };
 
   PushUiRenderCommand(Group, &Command);
@@ -861,12 +861,12 @@ PushUntexturedQuadAt(debug_ui_render_group* Group, v2 At, v2 QuadDim, z_depth zD
     .ui_render_command_untextured_quad_at =
     {
       .QuadDim = QuadDim,
-      .Style   = Style? *Style : DefaultUiStyle,
       .zDepth  = zDepth,
       .Layout  =
       {
         .DrawBounds = InvertedInfinityRectangle(),
         .At = At,
+        .Style   = Style? *Style : DefaultUiStyle,
       }
     }
   };
@@ -884,12 +884,12 @@ PushUntexturedQuad(debug_ui_render_group* Group, v2 Offset, v2 QuadDim, z_depth 
     {
       .Offset  = Offset,
       .QuadDim = QuadDim,
-      .Style   = Style? *Style : DefaultUiStyle,
       .Params  = Params,
       .zDepth  = zDepth,
       .Layout  =
       {
         .DrawBounds = InvertedInfinityRectangle(),
+        .Style   = Style? *Style : DefaultUiStyle,
       },
     }
   };
@@ -1294,7 +1294,7 @@ ProcessUntexturedQuadAtPush(debug_ui_render_group* Group, ui_render_command_unte
   v2 MaxClip = GetAbsoluteMaxClip(RenderState->Window);
   v2 MinP = GetAbsoluteAt(&Command->Layout);
   v2 Dim = Command->QuadDim;
-  v3 Color = SelectColorState(RenderState, Command->Style);
+  v3 Color = SelectColorState(RenderState, Command->Layout.Style);
   r32 Z = GetZ(Command->zDepth, RenderState->Window);
 
   BufferUntexturedQuad(Group, &(Group->Geo), MinP, Dim, Color, Z, MaxClip);
@@ -1311,7 +1311,7 @@ ProcessUntexturedQuadPush(debug_ui_render_group* Group, ui_render_command_untext
   v2 MaxClip = GetAbsoluteMaxClip(RenderState->Window);
   v2 MinP = Command->Offset + GetAbsoluteAt(RenderState->Layout);
   v2 Dim = Command->QuadDim;
-  v3 Color = SelectColorState(RenderState, Command->Style);
+  v3 Color = SelectColorState(RenderState, Command->Layout.Style);
   r32 Z = GetZ(Command->zDepth, RenderState->Window);
 
   BufferUntexturedQuad(Group, &(Group->Geo), MinP, Dim, Color, Z, MaxClip);
@@ -1476,7 +1476,7 @@ PreprocessTable(ui_render_command_buffer* CommandBuffer, u32 StartingIndex)
 
             ui_render_command_column_start* TypedCommand = RenderCommandAs(column_start, Command);
             CurrentWidth = &TypedCommand->Width;
-            *CurrentWidth += TypedCommand->Style.Padding.Left + TypedCommand->Style.Padding.Right;
+            *CurrentWidth += TypedCommand->Layout.Style.Padding.Left + TypedCommand->Layout.Style.Padding.Right;
           } break;
 
           case type_ui_render_command_text:

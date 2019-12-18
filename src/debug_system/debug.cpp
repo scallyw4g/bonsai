@@ -64,21 +64,11 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
 
   Dt = ComputeMinMaxAvgDt();
 
-  ui_style Style = UiStyleFromLightestColor(V3(1), V4(400));
-  /* ui_style Style1 = UiStyleFromLightestColor(V3(1), V4(100,0,100,0)); */
+  ui_style Style = UiStyleFromLightestColor(V3(1), V4(0,0,50,0));
 
   ui_element_reference DtTable = PushTableStart(UiGroup);
 
-    /* StartColumn(UiGroup, &Style1); */
-    /*   PushTableStart(UiGroup); */
-    /*     PushColumn(UiGroup, CS(Dt.Avg)); */
-    /*     PushColumn(UiGroup, CS(Plat->dt*1000.0f)); */
-    /*   PushTableEnd(UiGroup); */
-    /* EndColumn(UiGroup); */
-
     StartColumn(UiGroup, &Style);
-      Text(UiGroup, CS("+"));
-      Text(UiGroup, CS("+"));
       Text(UiGroup, CS("+"));
       Text(UiGroup, CS(Dt.Max - Dt.Avg));
     EndColumn(UiGroup);
@@ -98,17 +88,15 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   PushTableEnd(UiGroup);
 
   PushTableStart(UiGroup, Position_RightOf, DtTable);
-    StartColumn(UiGroup);
+    StartColumn(UiGroup, &Style);
       Text(UiGroup, CS("Allocations"));
-      /* Text(UiGroup, CS("Allo")); */
-      /* Text(UiGroup, CS("cations")); */
     EndColumn(UiGroup);
 
     PushColumn(UiGroup, CS("Pushes"));
     PushColumn(UiGroup, CS("Draw Calls"));
     PushNewRow(UiGroup);
 
-    PushColumn(UiGroup, CS(TotalStats.Allocations));
+    PushColumn(UiGroup, CS(TotalStats.Allocations), &Style);
     PushColumn(UiGroup, CS(TotalStats.Pushes));
     PushColumn(UiGroup, CS(TotalDrawCalls));
     PushNewRow(UiGroup);

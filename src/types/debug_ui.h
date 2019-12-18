@@ -159,7 +159,6 @@ struct ui_style
 
 
 function ui_style UiStyleFromLightestColor(v3 Color, v4 Padding = V4(0));
-
 debug_global ui_style DefaultUiStyle = UiStyleFromLightestColor(V3(1));
 
 struct layout
@@ -205,7 +204,6 @@ struct ui_render_command_column_end
 struct ui_render_command_column_start
 {
   layout Layout;
-  ui_style Style;
   r32 Width;
   r32 MaxWidth;
   column_render_params Params;
@@ -229,7 +227,6 @@ struct ui_render_command_untextured_quad
   layout Layout;
   v2 Offset;
   v2 QuadDim;
-  ui_style Style;
   z_depth zDepth;
   quad_render_params Params;
 };
@@ -239,7 +236,6 @@ struct ui_render_command_untextured_quad_at
   layout Layout;
   v2 StartingAt;
   v2 QuadDim;
-  ui_style Style;
   z_depth zDepth;
 };
 
