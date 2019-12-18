@@ -64,7 +64,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
 
   Dt = ComputeMinMaxAvgDt();
 
-  ui_style Style = UiStyleFromLightestColor(V3(1), V4(0,0,50,0));
+  ui_style Style = UiStyleFromLightestColor(V3(1), V4(400));
   /* ui_style Style1 = UiStyleFromLightestColor(V3(1), V4(100,0,100,0)); */
 
   ui_element_reference DtTable = PushTableStart(UiGroup);

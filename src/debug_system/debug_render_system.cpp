@@ -773,9 +773,9 @@ function void
 StartColumn(debug_ui_render_group *Group, ui_style* Style = 0, column_render_params Params = ColumnRenderParam_RightAlign)
 {
   ui_render_command Command = {
-    .Type = type_ui_render_command_column,
-    .ui_render_command_column.Style           = Style? *Style : DefaultUiStyle,
-    .ui_render_command_column.Params          = Params,
+    .Type = type_ui_render_command_column_start,
+    .ui_render_command_column_start.Style           = Style? *Style : DefaultUiStyle,
+    .ui_render_command_column_start.Params          = Params,
   };
 
   PushUiRenderCommand(Group, &Command);
@@ -799,9 +799,9 @@ function void
 PushColumn(debug_ui_render_group *Group, counted_string String, ui_style* Style = 0, column_render_params Params = ColumnRenderParam_RightAlign)
 {
   ui_render_command Command = {
-    .Type = type_ui_render_command_column,
-    .ui_render_command_column.Style           = Style? *Style : DefaultUiStyle,
-    .ui_render_command_column.Params          = Params,
+    .Type = type_ui_render_command_column_start,
+    .ui_render_command_column_start.Style           = Style? *Style : DefaultUiStyle,
+    .ui_render_command_column_start.Params          = Params,
   };
 
   PushUiRenderCommand(Group, &Command);
@@ -1468,13 +1468,13 @@ PreprocessTable(ui_render_command_buffer* CommandBuffer, u32 StartingIndex)
     {
       switch(Command->Type)
       {
-          case type_ui_render_command_column:
+          case type_ui_render_command_column_start:
           {
             ++NextColumnIndex;
             ColumnCount = (u16)Max(ColumnCount, NextColumnIndex);
             Assert(NextColumnIndex <= u16_MAX);
 
-            ui_render_command_column* TypedCommand = RenderCommandAs(column, Command);
+            ui_render_command_column_start* TypedCommand = RenderCommandAs(column_start, Command);
             CurrentWidth = &TypedCommand->Width;
             *CurrentWidth += TypedCommand->Style.Padding.Left + TypedCommand->Style.Padding.Right;
           } break;
@@ -1516,10 +1516,10 @@ PreprocessTable(ui_render_command_buffer* CommandBuffer, u32 StartingIndex)
       ui_render_command* Command =  GetCommand(CommandBuffer, CommandIndex);
       switch(Command->Type)
       {
-          case type_ui_render_command_column:
+          case type_ui_render_command_column_start:
           {
             Assert(NextColumnIndex < ColumnCount);
-            ui_render_command_column* TypedCommand = RenderCommandAs(column, Command);
+            ui_render_command_column_start* TypedCommand = RenderCommandAs(column_start, Command);
             MaxColumnWidths[NextColumnIndex] = Max(MaxColumnWidths[NextColumnIndex], TypedCommand->Width);
             ++NextColumnIndex;
           } break;
@@ -1551,12 +1551,12 @@ PreprocessTable(ui_render_command_buffer* CommandBuffer, u32 StartingIndex)
       ui_render_command* Command =  GetCommand(CommandBuffer, CommandIndex);
       switch(Command->Type)
       {
-          case type_ui_render_command_column:
+          case type_ui_render_command_column_start:
           {
             Assert(NextColumnIndex < ColumnCount);
 
-            ui_render_command_column* Column = RenderCommandAs(column, Command);
-            Column->MaxWidth = MaxColumnWidths[NextColumnIndex];
+            ui_render_command_column_start* TypedCommand = RenderCommandAs(column_start, Command);
+            TypedCommand->MaxWidth = MaxColumnWidths[NextColumnIndex];
             ++NextColumnIndex;
           } break;
 
@@ -1653,9 +1653,9 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
         PopLayout(&RenderState.Layout);
       } break;
 
-      case type_ui_render_command_column:
+      case type_ui_render_command_column_start:
       {
-        ui_render_command_column* TypedCommand = RenderCommandAs(column, Command);
+        ui_render_command_column_start* TypedCommand = RenderCommandAs(column_start, Command);
         TypedCommand->Layout.Basis = GetNextInlineElementBasis(&RenderState);
 
         PushLayout(&RenderState.Layout, &TypedCommand->Layout);

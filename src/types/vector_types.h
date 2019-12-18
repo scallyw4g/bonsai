@@ -98,25 +98,17 @@ V4(v3 v, float w)
   return Result;
 }
 
-/* function v4 */
-/* V4(float w, v3 v) */
-/* { */
-/*   v4 Result = V4(v, w); */
-/*   return Result; */
-/* } */
-
 function v4
-V4()
+V4(r32 Fill)
 {
   v4 Result = {
-    .x = 0,
-    .y = 0,
-    .z = 0,
-    .w = 1,
+    .x = Fill,
+    .y = Fill,
+    .z = Fill,
+    .w = Fill,
   };
   return Result;
 }
-
 
 function v4
 V4( float x, float y, float z, float w)
