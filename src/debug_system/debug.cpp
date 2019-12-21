@@ -67,7 +67,6 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   ui_style Style = UiStyleFromLightestColor(V3(1), V4(0,0,50,0));
 
   ui_element_reference DtTable = PushTableStart(UiGroup);
-
     StartColumn(UiGroup, &Style);
       Text(UiGroup, CS("+"));
       Text(UiGroup, CS(Dt.Max - Dt.Avg));

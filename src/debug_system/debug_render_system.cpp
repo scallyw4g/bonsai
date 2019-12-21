@@ -857,7 +857,6 @@ PushUntexturedQuadAt(debug_ui_render_group* Group, v2 At, v2 QuadDim, z_depth zD
   ui_render_command Command =
   {
     .Type = type_ui_render_command_untextured_quad_at,
-    .Flags = UiElement_Floating,
     .ui_render_command_untextured_quad_at =
     {
       .QuadDim = QuadDim,
@@ -865,8 +864,8 @@ PushUntexturedQuadAt(debug_ui_render_group* Group, v2 At, v2 QuadDim, z_depth zD
       .Layout  =
       {
         .DrawBounds = InvertedInfinityRectangle(),
-        .At = At,
-        .Style   = Style? *Style : DefaultUiStyle,
+        .At    = At,
+        .Style = Style? *Style : DefaultUiStyle,
       }
     }
   };
@@ -1724,7 +1723,6 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
       case type_ui_render_command_button_end:
       {
         layout* ButtonLayout = PopLayout(&RenderState.Layout);
-
         rect2 AbsDrawBounds = GetAbsoluteDrawBounds(ButtonLayout);
         ProcessButtonEnd(Group, &RenderState, AbsDrawBounds);
       } break;
