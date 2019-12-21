@@ -107,7 +107,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
 
   if (DebugState->DisplayDebugMenu)
   {
-    ui_style Style =  UiStyleFromLightestColor(V3(1), V2(50));
+    ui_style Style =  UiStyleFromLightestColor(V3(1), V2(25));
     PushTableStart(UiGroup);
 
     if (Button(UiGroup, CS("PickedChunks"), (umm)"PickedChunks", &Style))

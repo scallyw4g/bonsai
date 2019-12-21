@@ -1104,7 +1104,7 @@ function b32
 Button(debug_ui_render_group* Group, counted_string ButtonName, umm ButtonId, ui_style* Style = 0)
 {
   interactable_handle Button = PushButtonStart(Group, ButtonId, Style);
-    PushColumn(Group, ButtonName, Style);
+    PushColumn(Group, ButtonName);
   PushButtonEnd(Group);
 
   b32 Result = Clicked(Group, &Button);
