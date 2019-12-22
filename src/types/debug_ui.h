@@ -228,7 +228,6 @@ struct ui_render_command_untextured_quad
 struct ui_render_command_untextured_quad_at
 {
   layout Layout;
-  v2 StartingAt;
   v2 QuadDim;
   z_depth zDepth;
 };
@@ -258,7 +257,6 @@ struct ui_render_command_table_start
   relative_position Position;
   ui_element_reference RelativeTo;
 };
-
 
 
 

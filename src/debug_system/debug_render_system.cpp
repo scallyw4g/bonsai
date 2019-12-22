@@ -1480,22 +1480,14 @@ FindPreviousCommand(ui_render_command_buffer* CommandBuffer, ui_render_command_t
 }
 
 function u32
-FindPreviousTableStart(ui_render_command_buffer* CommandBuffer, u32 StartingIndex)
-{
-  u32 Result = FindPreviousCommand(CommandBuffer, type_ui_render_command_table_start, StartingIndex).Index;
-  return Result;
-}
-
-function u32
 FindPreviousButtonStart(ui_render_command_buffer* CommandBuffer, u32 StartingIndex)
 {
   u32 Result = FindPreviousCommand(CommandBuffer, type_ui_render_command_button_start, StartingIndex).Index;
   return Result;
 }
 
-#if 0
 function rect2
-FindAbsoluteDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, u32 FirstCommand, u32 OnePastLastCommand, b32 SkipFloating = True)
+FindAbsoluteDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, u32 FirstCommand, u32 OnePastLastCommand)
 {
   Assert(FirstCommand < CommandBuffer->CommandCount);
   Assert(OnePastLastCommand <= CommandBuffer->CommandCount);
@@ -1507,11 +1499,6 @@ FindAbsoluteDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, u32 First
       ++CommandIndex)
   {
     ui_render_command* Command = GetCommand(CommandBuffer, CommandIndex);
-
-    if (SkipFloating && Command->Flags & UiElement_Floating)
-    {
-      continue;
-    }
 
     switch(Command->Type)
     {
@@ -1558,19 +1545,24 @@ FindAbsoluteDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, u32 First
         Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&TypedCommand->Layout));
       } break;
 
-      case type_ui_render_command_column:
+      case type_ui_render_command_column_start:
       {
-        ui_render_command_column* TypedCommand = RenderCommandAs(column, Command);
+        ui_render_command_column_start* TypedCommand = RenderCommandAs(column_start, Command);
         Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&TypedCommand->Layout));
         Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&TypedCommand->Layout));
       } break;
 
+      case type_ui_render_command_button_start:
+      {
+        ui_render_command_button_start* TypedCommand = RenderCommandAs(button_start, Command);
+        Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&TypedCommand->Layout));
+        Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&TypedCommand->Layout));
+      } break;
 
       case type_ui_render_command_column_end:
       case type_ui_render_command_noop:
       case type_ui_render_command_window_end:
       case type_ui_render_command_table_end:
-      case type_ui_render_command_button_start:
       case type_ui_render_command_button_end:
       case type_ui_render_command_text_at:
       case type_ui_render_command_new_row:
@@ -1595,7 +1587,6 @@ FindRelativeDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, v2 Relati
 
   return Result;
 }
-#endif
 
 function u32
 PreprocessTable(ui_render_command_buffer* CommandBuffer, u32 StartingIndex)
@@ -1734,6 +1725,29 @@ GetNextInlineElementBasis(render_state* RenderState)
   return Result;
 }
 
+function v2
+GetButtonBasisFor(render_state* RenderState, ui_render_command_buffer* CommandBuffer, u32 BasisCommand)
+{
+  v2 Result = {};
+
+  ui_render_command *Command = GetCommand(CommandBuffer, BasisCommand);
+  switch(Command->Type)
+  {
+    case type_ui_render_command_untextured_quad_at:
+    {
+      ui_render_command_untextured_quad_at* TypedCommand = RenderCommandAs(untextured_quad_at, Command);
+      Result = GetAbsoluteAt(&TypedCommand->Layout);
+    } break;
+
+    default:
+    {
+      Result = GetAbsoluteAt(RenderState->Layout);
+    } break;
+  }
+
+  return Result;
+}
+
 function void
 FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *CommandBuffer)
 {
@@ -1772,16 +1786,16 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
         u32 OnePastTableEnd = PreprocessTable(CommandBuffer, NextCommandIndex-1);
         if (OnePastTableEnd)
         {
-          ui_render_command_table_start* ThisTable = RenderCommandAs(table_start, Command);
-          r32 BasisX = RenderState.Window ? RenderState.Window->Basis.x : 0;
+          ui_render_command_table_start* TypedCommand = RenderCommandAs(table_start, Command);
+          r32 BasisX = RenderState.Layout->Basis.x;
           r32 BasisY = GetAbsoluteDrawBoundsMax(RenderState.Layout).y;
-          ThisTable->Layout.Basis = V2(BasisX, BasisY);
-          PushLayout(&RenderState.Layout, &ThisTable->Layout);
+          TypedCommand->Layout.Basis = V2(BasisX, BasisY);
+          PushLayout(&RenderState.Layout, &TypedCommand->Layout);
 
-          if (ThisTable->Position == Position_RightOf)
+          if (TypedCommand->Position == Position_RightOf)
           {
-            ui_render_command_table_start* RelativeTable = GetCommandAs(table_start, CommandBuffer, ThisTable->RelativeTo.Index);
-            ThisTable->Layout.Basis = V2(GetAbsoluteDrawBoundsMax(&RelativeTable->Layout).x, RelativeTable->Layout.Basis.y);
+            ui_render_command_table_start* RelativeTable = GetCommandAs(table_start, CommandBuffer, TypedCommand->RelativeTo.Index);
+            TypedCommand->Layout.Basis = V2(GetAbsoluteDrawBoundsMax(&RelativeTable->Layout).x, RelativeTable->Layout.Basis.y);
           }
         }
         else
@@ -1863,15 +1877,17 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
       case type_ui_render_command_button_start:
       {
         ui_render_command_button_start* TypedCommand = RenderCommandAs(button_start, Command);
-        TypedCommand->Layout.Basis = GetNextInlineElementBasis(&RenderState);
+        TypedCommand->Layout.Basis = GetButtonBasisFor(&RenderState, CommandBuffer, NextCommandIndex);
         PushLayout(&RenderState.Layout, &TypedCommand->Layout);
         ProcessButtonStart(Group, &RenderState, TypedCommand->ID);
       } break;
 
       case type_ui_render_command_button_end:
       {
-        layout* ButtonLayout = PopLayout(&RenderState.Layout);
-        rect2 AbsDrawBounds = GetAbsoluteDrawBounds(ButtonLayout);
+        PopLayout(&RenderState.Layout);
+
+        u32 ButtonStartIndex = FindPreviousButtonStart(CommandBuffer, NextCommandIndex-1);
+        rect2 AbsDrawBounds = FindAbsoluteDrawBoundsBetween(CommandBuffer, ButtonStartIndex, NextCommandIndex);
         ProcessButtonEnd(Group, &RenderState, AbsDrawBounds);
       } break;
 
