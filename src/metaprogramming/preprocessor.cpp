@@ -13,35 +13,35 @@ enum c_token_type
 {
   CTokenType_Unknown,
 
-  CTokenType_OpenBrace   = '(',
-  CTokenType_CloseBrace  = ')',
-  CTokenType_OpenParen   = '{',
-  CTokenType_CloseParen  = '}',
-  CTokenType_Dot         = '.',
-  CTokenType_Comma       = ',',
-  CTokenType_Semicolon   = ';',
-  CTokenType_Colon       = ':',
-  CTokenType_Hash        = '#',
-  CTokenType_Space       = ' ',
-  CTokenType_Star        = '*',
-  CTokenType_Ampersand   = '&',
-  CTokenType_SingleQuote = '\'',
-  CTokenType_DoubleQuote = '"',
-  CTokenType_Equals      = '=',
-  CTokenType_LT          = '<',
-  CTokenType_GT          = '>',
-  CTokenType_Plus        = '+',
-  CTokenType_Minus       = '-',
-  CTokenType_Percent     = '%',
-  CTokenType_Bang        = '!',
-  CTokenType_Hat         = '^',
-  CTokenType_Question    = '?',
-  CTokenType_FSlash      = '/',
-  CTokenType_BSlash      = '\\',
-  CTokenType_Tilde       = '~',
-  CTokenType_Backtick    = '`',
-
-  CTokenType_DUnion,
+  CTokenType_OpenBrace     = '(',
+  CTokenType_CloseBrace    = ')',
+  CTokenType_OpenParen     = '{',
+  CTokenType_CloseParen    = '}',
+  CTokenType_Dot           = '.',
+  CTokenType_Comma         = ',',
+  CTokenType_Semicolon     = ';',
+  CTokenType_Colon         = ':',
+  CTokenType_Hash          = '#',
+  CTokenType_Space         = ' ',
+  CTokenType_Star          = '*',
+  CTokenType_Ampersand     = '&',
+  CTokenType_SingleQuote   = '\'',
+  CTokenType_DoubleQuote   = '"',
+  CTokenType_Equals        = '     = ',
+  CTokenType_LT            = '<',
+  CTokenType_GT            = '>',
+  CTokenType_Plus          = '+',
+  CTokenType_Minus         = '-',
+  CTokenType_Percent       = '%',
+  CTokenType_Bang          = '!',
+  CTokenType_Hat           = '^',
+  CTokenType_Question      = '?',
+  CTokenType_FSlash        = '/',
+  CTokenType_BSlash        = '\\',
+  CTokenType_Tilde         = '~',
+  CTokenType_Backtick      = '`',
+  CTokenType_Newline       = '\n'
+  CTokenType_CarrigeReturn = '\r'
 };
 
 
@@ -60,18 +60,7 @@ struct c_token_buffer
 inline void
 PrintToken(c_token Token)
 {
-  switch (Token.Type)
-  {
-    case CTokenType_DUnion:
-    {
-      Log("-- CTokenType_DUnion");
-    } break;
-
-    default:
-    {
-      Log("%c", Token.Type);
-    } break;
-  }
+  Log("%c", Token.Type);
 }
 
 c_token_buffer
@@ -263,30 +252,14 @@ main(s32 ArgCount, const char** Args)
             c_token PushToken = { .Type= CTokenType_Backtick };
             Push(Tokens, PushToken);
           } break;
-          case CTokenType_Unknown:
+          default:
           {
             c_token PushToken = { .Type= CTokenType_Unknown };
             Push(Tokens, PushToken);
           } break;
-
-          default:
-          {
-            Warn("Hit Default");
-          } break;
         }
 
-        /* counted_string Token = PopWordCounted(&SourceFileStream, Delimeters); */
-        /* if (StringsMatch(Token, CS("d_union"))) */
-        /* { */
-        /*   c_token PushToken = {.Type=CTokenType_DUnion}; */
-        /*   Push(Tokens, PushToken); */
-        /* } */
-        /* else */
-        /* { */
-        /*   c_token PushToken = {}; */
-        /*   Push(Tokens, PushToken); */
-        /* } */
-
+        continue;
       }
 
       Tokens->End = Tokens->At;
