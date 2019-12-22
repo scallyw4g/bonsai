@@ -36,6 +36,10 @@ Log(const char* fmt...)
       {
         std::cout << va_arg(args, u32);
       }
+      else if (*fmt == 'c')
+      {
+        std::cout << (char)va_arg(args, s32);
+      }
       else if (*fmt == 's')
       {
         std::cout << va_arg(args, char*);

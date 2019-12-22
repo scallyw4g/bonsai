@@ -12,8 +12,36 @@ global_variable memory_arena* TranArena = {};
 enum c_token_type
 {
   CTokenType_Unknown,
+
+  CTokenType_OpenBrace   = '(',
+  CTokenType_CloseBrace  = ')',
+  CTokenType_OpenParen   = '{',
+  CTokenType_CloseParen  = '}',
+  CTokenType_Dot         = '.',
+  CTokenType_Comma       = ',',
+  CTokenType_Semicolon   = ';',
+  CTokenType_Colon       = ':',
+  CTokenType_Hash        = '#',
+  CTokenType_Space       = ' ',
+  CTokenType_Star        = '*',
+  CTokenType_Ampersand   = '&',
+  CTokenType_SingleQuote = '\'',
+  CTokenType_DoubleQuote = '"',
+  CTokenType_Equals      = '=',
+  CTokenType_LT          = '<',
+  CTokenType_GT          = '>',
+  CTokenType_Plus        = '+',
+  CTokenType_Minus       = '-',
+  CTokenType_Percent     = '%',
+  CTokenType_Bang        = '!',
+  CTokenType_Hat         = '^',
+  CTokenType_Question    = '?',
+  CTokenType_FSlash      = '/',
+  CTokenType_BSlash      = '\\',
+  CTokenType_Tilde       = '~',
+  CTokenType_Backtick    = '`',
+
   CTokenType_DUnion,
-  CTokenType_Count,
 };
 
 
@@ -34,15 +62,15 @@ PrintToken(c_token Token)
 {
   switch (Token.Type)
   {
-    case CTokenType_Unknown:
-    {
-      Log("-- CTokenType_Unknown");
-    } break;
     case CTokenType_DUnion:
     {
       Log("-- CTokenType_DUnion");
     } break;
-    InvalidDefaultCase;
+
+    default:
+    {
+      Log("%c", Token.Type);
+    } break;
   }
 }
 
@@ -96,27 +124,176 @@ main(s32 ArgCount, const char** Args)
 
       while(Remaining(&SourceFileStream))
       {
-        const char* Delimeters = " #(){},:;";
-        counted_string Token = PopWordCounted(&SourceFileStream, Delimeters);
-        if (StringsMatch(Token, CS("d_union")))
+        char At = *SourceFileStream.At++;
+
+        switch (At)
         {
-          c_token PushToken = {.Type=CTokenType_DUnion};
-          Push(Tokens, PushToken);
+          case CTokenType_OpenBrace:
+          {
+            c_token PushToken = { .Type = CTokenType_OpenBrace, };
+            Push(Tokens, PushToken);
+          } break;
+          case CTokenType_CloseBrace:
+          {
+            c_token PushToken = { .Type= CTokenType_CloseBrace };
+            Push(Tokens, PushToken);
+          } break;
+          case CTokenType_OpenParen:
+          {
+            c_token PushToken = { .Type= CTokenType_OpenParen };
+            Push(Tokens, PushToken);
+          } break;
+          case CTokenType_CloseParen:
+          {
+            c_token PushToken = { .Type= CTokenType_CloseParen };
+            Push(Tokens, PushToken);
+          } break;
+          case CTokenType_Dot:
+          {
+            c_token PushToken = { .Type= CTokenType_Dot };
+            Push(Tokens, PushToken);
+          } break;
+          case CTokenType_Comma:
+          {
+            c_token PushToken = { .Type= CTokenType_Comma };
+            Push(Tokens, PushToken);
+          } break;
+          case CTokenType_Semicolon:
+          {
+            c_token PushToken = { .Type= CTokenType_Semicolon };
+            Push(Tokens, PushToken);
+          } break;
+          case CTokenType_Colon:
+          {
+            c_token PushToken = { .Type= CTokenType_Colon };
+            Push(Tokens, PushToken);
+          } break;
+          case CTokenType_Hash:
+          {
+            c_token PushToken = { .Type= CTokenType_Hash };
+            Push(Tokens, PushToken);
+          } break;
+          case CTokenType_Space:
+          {
+            c_token PushToken = { .Type= CTokenType_Space };
+            Push(Tokens, PushToken);
+          } break;
+          case CTokenType_Star:
+          {
+            c_token PushToken = { .Type= CTokenType_Star };
+            Push(Tokens, PushToken);
+          } break;
+          case CTokenType_Ampersand:
+          {
+            c_token PushToken = { .Type= CTokenType_Ampersand };
+            Push(Tokens, PushToken);
+          } break;
+          case CTokenType_SingleQuote:
+          {
+            c_token PushToken = { .Type= CTokenType_SingleQuote };
+            Push(Tokens, PushToken);
+          } break;
+          case CTokenType_DoubleQuote:
+          {
+            c_token PushToken = { .Type= CTokenType_DoubleQuote };
+            Push(Tokens, PushToken);
+          } break;
+          case CTokenType_Equals:
+          {
+            c_token PushToken = { .Type= CTokenType_Equals };
+            Push(Tokens, PushToken);
+          } break;
+          case CTokenType_LT:
+          {
+            c_token PushToken = { .Type= CTokenType_LT };
+            Push(Tokens, PushToken);
+          } break;
+          case CTokenType_GT:
+          {
+            c_token PushToken = { .Type= CTokenType_GT };
+            Push(Tokens, PushToken);
+          } break;
+          case CTokenType_Plus:
+          {
+            c_token PushToken = { .Type= CTokenType_Plus };
+            Push(Tokens, PushToken);
+          } break;
+          case CTokenType_Minus:
+          {
+            c_token PushToken = { .Type= CTokenType_Minus };
+            Push(Tokens, PushToken);
+          } break;
+          case CTokenType_Percent:
+          {
+            c_token PushToken = { .Type= CTokenType_Percent };
+            Push(Tokens, PushToken);
+          } break;
+          case CTokenType_Bang:
+          {
+            c_token PushToken = { .Type= CTokenType_Bang };
+            Push(Tokens, PushToken);
+          } break;
+          case CTokenType_Hat:
+          {
+            c_token PushToken = { .Type= CTokenType_Hat };
+            Push(Tokens, PushToken);
+          } break;
+          case CTokenType_Question:
+          {
+            c_token PushToken = { .Type= CTokenType_Question };
+            Push(Tokens, PushToken);
+          } break;
+          case CTokenType_FSlash:
+          {
+            c_token PushToken = { .Type= CTokenType_FSlash };
+            Push(Tokens, PushToken);
+          } break;
+          case CTokenType_BSlash:
+          {
+            c_token PushToken = { .Type= CTokenType_BSlash };
+            Push(Tokens, PushToken);
+          } break;
+          case CTokenType_Tilde:
+          {
+            c_token PushToken = { .Type= CTokenType_Tilde };
+            Push(Tokens, PushToken);
+          } break;
+          case CTokenType_Backtick:
+          {
+            c_token PushToken = { .Type= CTokenType_Backtick };
+            Push(Tokens, PushToken);
+          } break;
+          case CTokenType_Unknown:
+          {
+            c_token PushToken = { .Type= CTokenType_Unknown };
+            Push(Tokens, PushToken);
+          } break;
+
+          default:
+          {
+            Warn("Hit Default");
+          } break;
         }
-        else
-        {
-          c_token PushToken = {};
-          Push(Tokens, PushToken);
-        }
+
+        /* counted_string Token = PopWordCounted(&SourceFileStream, Delimeters); */
+        /* if (StringsMatch(Token, CS("d_union"))) */
+        /* { */
+        /*   c_token PushToken = {.Type=CTokenType_DUnion}; */
+        /*   Push(Tokens, PushToken); */
+        /* } */
+        /* else */
+        /* { */
+        /*   c_token PushToken = {}; */
+        /*   Push(Tokens, PushToken); */
+        /* } */
+
       }
 
+      Tokens->End = Tokens->At;
       Tokens->At = Tokens->Start;
       while (Remaining(Tokens))
       {
-        if (Tokens->At->Type == CTokenType_DUnion)
-        {
-          PrintToken(*Tokens->At);
-        }
+        PrintToken(*Tokens->At);
         Tokens->At++;
       }
     }
