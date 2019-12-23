@@ -13,6 +13,8 @@ enum c_token_type
 {
   CTokenType_Unknown,
 
+  CTokenType_Identifier,
+
   CTokenType_OpenBrace     = '(',
   CTokenType_CloseBrace    = ')',
   CTokenType_OpenParen     = '{',
@@ -27,7 +29,7 @@ enum c_token_type
   CTokenType_Ampersand     = '&',
   CTokenType_SingleQuote   = '\'',
   CTokenType_DoubleQuote   = '"',
-  CTokenType_Equals        = '     = ',
+  CTokenType_Equals        = '=',
   CTokenType_LT            = '<',
   CTokenType_GT            = '>',
   CTokenType_Plus          = '+',
@@ -40,14 +42,16 @@ enum c_token_type
   CTokenType_BSlash        = '\\',
   CTokenType_Tilde         = '~',
   CTokenType_Backtick      = '`',
-  CTokenType_Newline       = '\n'
-  CTokenType_CarrigeReturn = '\r'
+  CTokenType_Newline       = '\n',
+  CTokenType_CarrigeReturn = '\r',
+  CTokenType_EOF           = EOF,
 };
 
 
 struct c_token
 {
   c_token_type Type;
+  counted_string Value;
 };
 
 struct c_token_buffer
@@ -57,10 +61,19 @@ struct c_token_buffer
   c_token* End;
 };
 
+
+
 inline void
 PrintToken(c_token Token)
 {
-  Log("%c", Token.Type);
+  if (Token.Type == CTokenType_Identifier)
+  {
+    Log("%.*s", Token.Value.Count, Token.Value.Start);
+  }
+  else
+  {
+    Log("%c", Token.Type);
+  }
 }
 
 c_token_buffer
@@ -88,6 +101,52 @@ Push(BufferType *Buffer, PushType Token)
   }
 }
 
+c_token
+GetToken(ansi_stream* Stream)
+{
+  c_token Result = {};
+
+  char At = *Stream->At;
+  switch (At)
+  {
+    case CTokenType_OpenBrace:
+    case CTokenType_CloseBrace:
+    case CTokenType_OpenParen:
+    case CTokenType_CloseParen:
+    case CTokenType_Dot:
+    case CTokenType_Comma:
+    case CTokenType_Semicolon:
+    case CTokenType_Colon:
+    case CTokenType_Hash:
+    case CTokenType_Space:
+    case CTokenType_Star:
+    case CTokenType_Ampersand:
+    case CTokenType_SingleQuote:
+    case CTokenType_DoubleQuote:
+    case CTokenType_Equals:
+    case CTokenType_LT:
+    case CTokenType_GT:
+    case CTokenType_Plus:
+    case CTokenType_Minus:
+    case CTokenType_Percent:
+    case CTokenType_Bang:
+    case CTokenType_Hat:
+    case CTokenType_Question:
+    case CTokenType_FSlash:
+    case CTokenType_BSlash:
+    case CTokenType_Tilde:
+    case CTokenType_Backtick:
+    case CTokenType_Newline:
+    case CTokenType_CarrigeReturn:
+    case CTokenType_EOF:
+    {
+      Result = { .Type = (c_token_type)At };
+    } break;
+  }
+
+  return Result;
+}
+
 s32
 main(s32 ArgCount, const char** Args)
 {
@@ -113,151 +172,38 @@ main(s32 ArgCount, const char** Args)
 
       while(Remaining(&SourceFileStream))
       {
-        char At = *SourceFileStream.At++;
+        c_token T = GetToken(&SourceFileStream);
 
-        switch (At)
+        if (T.Type == CTokenType_Unknown)
         {
-          case CTokenType_OpenBrace:
+          counted_string Value = {
+            .Start = SourceFileStream.At,
+          };
+
+          while (1)
           {
-            c_token PushToken = { .Type = CTokenType_OpenBrace, };
-            Push(Tokens, PushToken);
-          } break;
-          case CTokenType_CloseBrace:
-          {
-            c_token PushToken = { .Type= CTokenType_CloseBrace };
-            Push(Tokens, PushToken);
-          } break;
-          case CTokenType_OpenParen:
-          {
-            c_token PushToken = { .Type= CTokenType_OpenParen };
-            Push(Tokens, PushToken);
-          } break;
-          case CTokenType_CloseParen:
-          {
-            c_token PushToken = { .Type= CTokenType_CloseParen };
-            Push(Tokens, PushToken);
-          } break;
-          case CTokenType_Dot:
-          {
-            c_token PushToken = { .Type= CTokenType_Dot };
-            Push(Tokens, PushToken);
-          } break;
-          case CTokenType_Comma:
-          {
-            c_token PushToken = { .Type= CTokenType_Comma };
-            Push(Tokens, PushToken);
-          } break;
-          case CTokenType_Semicolon:
-          {
-            c_token PushToken = { .Type= CTokenType_Semicolon };
-            Push(Tokens, PushToken);
-          } break;
-          case CTokenType_Colon:
-          {
-            c_token PushToken = { .Type= CTokenType_Colon };
-            Push(Tokens, PushToken);
-          } break;
-          case CTokenType_Hash:
-          {
-            c_token PushToken = { .Type= CTokenType_Hash };
-            Push(Tokens, PushToken);
-          } break;
-          case CTokenType_Space:
-          {
-            c_token PushToken = { .Type= CTokenType_Space };
-            Push(Tokens, PushToken);
-          } break;
-          case CTokenType_Star:
-          {
-            c_token PushToken = { .Type= CTokenType_Star };
-            Push(Tokens, PushToken);
-          } break;
-          case CTokenType_Ampersand:
-          {
-            c_token PushToken = { .Type= CTokenType_Ampersand };
-            Push(Tokens, PushToken);
-          } break;
-          case CTokenType_SingleQuote:
-          {
-            c_token PushToken = { .Type= CTokenType_SingleQuote };
-            Push(Tokens, PushToken);
-          } break;
-          case CTokenType_DoubleQuote:
-          {
-            c_token PushToken = { .Type= CTokenType_DoubleQuote };
-            Push(Tokens, PushToken);
-          } break;
-          case CTokenType_Equals:
-          {
-            c_token PushToken = { .Type= CTokenType_Equals };
-            Push(Tokens, PushToken);
-          } break;
-          case CTokenType_LT:
-          {
-            c_token PushToken = { .Type= CTokenType_LT };
-            Push(Tokens, PushToken);
-          } break;
-          case CTokenType_GT:
-          {
-            c_token PushToken = { .Type= CTokenType_GT };
-            Push(Tokens, PushToken);
-          } break;
-          case CTokenType_Plus:
-          {
-            c_token PushToken = { .Type= CTokenType_Plus };
-            Push(Tokens, PushToken);
-          } break;
-          case CTokenType_Minus:
-          {
-            c_token PushToken = { .Type= CTokenType_Minus };
-            Push(Tokens, PushToken);
-          } break;
-          case CTokenType_Percent:
-          {
-            c_token PushToken = { .Type= CTokenType_Percent };
-            Push(Tokens, PushToken);
-          } break;
-          case CTokenType_Bang:
-          {
-            c_token PushToken = { .Type= CTokenType_Bang };
-            Push(Tokens, PushToken);
-          } break;
-          case CTokenType_Hat:
-          {
-            c_token PushToken = { .Type= CTokenType_Hat };
-            Push(Tokens, PushToken);
-          } break;
-          case CTokenType_Question:
-          {
-            c_token PushToken = { .Type= CTokenType_Question };
-            Push(Tokens, PushToken);
-          } break;
-          case CTokenType_FSlash:
-          {
-            c_token PushToken = { .Type= CTokenType_FSlash };
-            Push(Tokens, PushToken);
-          } break;
-          case CTokenType_BSlash:
-          {
-            c_token PushToken = { .Type= CTokenType_BSlash };
-            Push(Tokens, PushToken);
-          } break;
-          case CTokenType_Tilde:
-          {
-            c_token PushToken = { .Type= CTokenType_Tilde };
-            Push(Tokens, PushToken);
-          } break;
-          case CTokenType_Backtick:
-          {
-            c_token PushToken = { .Type= CTokenType_Backtick };
-            Push(Tokens, PushToken);
-          } break;
-          default:
-          {
-            c_token PushToken = { .Type= CTokenType_Unknown };
-            Push(Tokens, PushToken);
-          } break;
+            T = GetToken(&SourceFileStream);
+            if (T.Type == CTokenType_Unknown && Remaining(&SourceFileStream))
+            {
+              SourceFileStream.At++;
+            }
+            else
+            {
+              break;
+            }
+          }
+
+          Value.Count = (umm)SourceFileStream.At - (umm)Value.Start;
+
+          T.Type = CTokenType_Identifier;
+          T.Value = Value;
         }
+        else
+        {
+          SourceFileStream.At++;
+        }
+
+        Push(Tokens, T);
 
         continue;
       }

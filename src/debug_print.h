@@ -89,7 +89,7 @@ Log(const char* fmt...)
     ++fmt;
   }
 
-  std::cout << std::endl;
+  /* std::cout << std::endl; */
 
   va_end(args);
 }
