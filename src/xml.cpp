@@ -308,7 +308,7 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
 
     if (StreamValueIsOpenTag)
     {
-      StreamValue = CS(ReadUntilTerminatorList(Xml, NameDelimeters, Memory));
+      StreamValue = ReadUntilTerminatorList(Xml, NameDelimeters);
       Assert(!StreamValueIsCloseTag);
       umm HashValue = Hash(&StreamValue) % Result.Hashes.Size;
 
@@ -334,24 +334,24 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
     }
     else if (StreamValueIsCloseTag)
     {
-      StreamValue = CS(ReadUntilTerminatorList(Xml, NameDelimeters, Memory));
+      StreamValue = ReadUntilTerminatorList(Xml, NameDelimeters);
       Assert(!StreamValueIsOpenTag);
       PushToken(&Result, XmlCloseToken(StreamValue, &TagsAt));
     }
     else
     {
-      StreamValue = CS(ReadUntilTerminatorList(Xml, "<", Memory));
+      StreamValue = ReadUntilTerminatorList(Xml, "<");
       Trim(&StreamValue);
       TagsAt.CurrentlyOpenTag->Value = StreamValue;
       EatWhitespace(Xml);
       continue;
     }
 
-    const char* PropertyDelimeters = "\n> =";
     while ( *(Xml->At-1) != '>' )
     {
       EatWhitespace(Xml);
-      counted_string PropertyName = CountedString(ReadUntilTerminatorList(Xml, PropertyDelimeters, Memory));
+      const char* PropertyDelimeters = "\n> =";
+      counted_string PropertyName = ReadUntilTerminatorList(Xml, PropertyDelimeters);
 
       if (PropertyName.Count)
       {
@@ -381,7 +381,7 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
               case '"':
               case '\'':
               {
-                counted_string PropValue = PopQuotedString(Xml, Memory);
+                counted_string PropValue = PopQuotedString(Xml);
                 PushToken(&Result, XmlPropertyToken(PropertyName, PropValue));
                 PushProperty(TagsAt.CurrentlyOpenTag, XmlProperty(PropertyName, PropValue, Memory));
               } break;

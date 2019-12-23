@@ -124,7 +124,7 @@ PopU32(ansi_stream *Cursor, memory_arena *Arena, const char* Delim = 0)
 }
 
 counted_string
-PopQuotedString(ansi_stream* Cursor, memory_arena* Arena)
+PopQuotedString(ansi_stream* Cursor)
 {
   if (*Cursor->At == '"' || *Cursor->At == '\'' )
   {
@@ -138,7 +138,7 @@ PopQuotedString(ansi_stream* Cursor, memory_arena* Arena)
   char Terminator[2] = {};
   Terminator[0] = *(Cursor->At-1);
 
-  counted_string Result = CountedString(ReadUntilTerminatorList(Cursor, Terminator, Arena));
+  counted_string Result = ReadUntilTerminatorList(Cursor, Terminator, true);
   return Result;
 }
 

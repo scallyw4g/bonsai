@@ -137,7 +137,7 @@ EatAllCharacters(ansi_stream *Cursor, const char *Characters)
 }
 
 counted_string
-ReadUntilTerminatorList(ansi_stream *Cursor, const char *TerminatorList)
+ReadUntilTerminatorList(ansi_stream *Cursor, const char *TerminatorList, b32 SkipEscapedChars = False)
 {
   const char *Start = Cursor->At;
 
@@ -154,6 +154,15 @@ ReadUntilTerminatorList(ansi_stream *Cursor, const char *TerminatorList)
     }
 
     ++Cursor->At;
+
+    if (*Cursor->At == '\\' && SkipEscapedChars && Remaining(Cursor) )
+    {
+      ++Cursor->At;
+      if (Remaining(Cursor))
+      {
+        ++Cursor->At;
+      }
+    }
   }
 
 finished:

@@ -26,15 +26,6 @@ TokenizingTest()
     xml_token_stream XmlTokens = TokenizeXmlStream(&XmlStream, Memory);
     umm TokenCount = AtElements(&XmlTokens);
 
-#if 0
-    for (u32 TokenIndex = 0;
-        TokenIndex < Count(&XmlTokens);
-        ++TokenIndex)
-    {
-      Print(XmlTokens.Start + TokenIndex);
-    }
-#endif
-
     xml_token XmlOpen   = XmlOpenToken(CS("xml"));
     xml_token XmlClose  = XmlCloseToken(CS("xml"), 0);
     xml_token OuterOpen = XmlOpenToken(CS("outer"));
@@ -166,6 +157,14 @@ TokenizingTest()
 
       TestThat(TokensAreEqual(XmlTokens.At++, &OuterClose));
       TestThat(TokensAreEqual(XmlTokens.At++, &XmlClose));
+    }
+
+    {
+      xml_token StringProp = XmlPropertyToken(CS("prop-name"), CS("prop-value\\\""));
+
+      TestThat(TokensAreEqual(XmlTokens.At++, &OuterOpen));
+      TestThat(TokensAreEqual(XmlTokens.At++, &StringProp));
+      TestThat(TokensAreEqual(XmlTokens.At++, &OuterClose));
     }
 
     TestThat(AtElements(&XmlTokens) == TokenCount);

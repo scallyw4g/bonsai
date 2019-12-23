@@ -77,12 +77,12 @@ EXAMPLES_TO_BUILD="
   # $EXAMPLES/ssao_test
   # $EXAMPLES/space_invaders
 
-  # $SRC/platform.cpp
-  # $SRC/font/ttf.cpp
-  # $SRC/net/server.cpp
-
 EXECUTABLES_TO_BUILD="
   $SRC/metaprogramming/preprocessor.cpp
+  $SRC/platform.cpp
+  $SRC/font/ttf.cpp
+  $SRC/net/server.cpp
+
 "
 
 # TODO(Jesse): The allocation tests crash in release mode because of some
@@ -127,76 +127,76 @@ function BuildWithClang {
       $executable && echo -e "$Done $executable" &
   done
 
-  # echo ""
-  # ColorizeTitle "Debug Tests"
-  # for executable in $DEBUG_TESTS_TO_BUILD; do
-  #   SetOutputBinaryPathBasename "$executable" "$BIN_TEST"
-  #   echo -e "$Building $executable"
-  #   clang++                      \
-  #     $COMMON_COMPILER_OPTIONS   \
-  #     $COMMON_LINKER_OPTIONS     \
-  #     $COMMON_GL_DEFINES         \
-  #     -D BONSAI_INTERNAL=1       \
-  #     -I"$SRC"                   \
-  #     -I"$TESTS"                 \
-  #     -o "$output_basename"      \
-  #     $executable && echo -e "$Done $executable" &
-  # done
+  echo ""
+  ColorizeTitle "Debug Tests"
+  for executable in $DEBUG_TESTS_TO_BUILD; do
+    SetOutputBinaryPathBasename "$executable" "$BIN_TEST"
+    echo -e "$Building $executable"
+    clang++                      \
+      $COMMON_COMPILER_OPTIONS   \
+      $COMMON_LINKER_OPTIONS     \
+      $COMMON_GL_DEFINES         \
+      -D BONSAI_INTERNAL=1       \
+      -I"$SRC"                   \
+      -I"$TESTS"                 \
+      -o "$output_basename"      \
+      $executable && echo -e "$Done $executable" &
+  done
 
-  # echo ""
-  # ColorizeTitle "Tests"
-  # for executable in $TESTS_TO_BUILD; do
-  #   SetOutputBinaryPathBasename "$executable" "$BIN_TEST"
-  #   echo -e "$Building $executable"
-  #   clang++                        \
-  #     $COMMON_OPTIMIZATION_OPTIONS \
-  #     $COMMON_COMPILER_OPTIONS     \
-  #     $COMMON_LINKER_OPTIONS       \
-  #     $COMMON_GL_DEFINES           \
-  #     -D BONSAI_INTERNAL=1         \
-  #     -I"$SRC"                     \
-  #     -I"$TESTS"                   \
-  #     -I"$SRC/debug_system"        \
-  #     -o "$output_basename"        \
-  #     $executable && echo -e "$Done $executable" &
-  # done
+  echo ""
+  ColorizeTitle "Tests"
+  for executable in $TESTS_TO_BUILD; do
+    SetOutputBinaryPathBasename "$executable" "$BIN_TEST"
+    echo -e "$Building $executable"
+    clang++                        \
+      $COMMON_OPTIMIZATION_OPTIONS \
+      $COMMON_COMPILER_OPTIONS     \
+      $COMMON_LINKER_OPTIONS       \
+      $COMMON_GL_DEFINES           \
+      -D BONSAI_INTERNAL=1         \
+      -I"$SRC"                     \
+      -I"$TESTS"                   \
+      -I"$SRC/debug_system"        \
+      -o "$output_basename"        \
+      $executable && echo -e "$Done $executable" &
+  done
 
-  # echo ""
-  # ColorizeTitle "DebugSystem"
-  # DEBUG_SRC_FILE="$SRC/debug_system/debug.cpp"
-  # echo -e "$Building $DEBUG_SRC_FILE"
-  # clang++                          \
-  #   $COMMON_OPTIMIZATION_OPTIONS   \
-  #   $COMMON_COMPILER_OPTIONS       \
-  #   $SHARED_LIBRARY_FLAGS          \
-  #   $COMMON_LINKER_OPTIONS         \
-  #   $COMMON_GL_DEFINES             \
-  #   -D BONSAI_INTERNAL=1           \
-  #   -I"$SRC"                       \
-  #   -I"$SRC/GL"                    \
-  #   -I"$SRC/debug_system"          \
-  #   -o "$BIN/lib_debug_system.so"  \
-  #   "$DEBUG_SRC_FILE" && echo -e "$Done $DEBUG_SRC_FILE" &
+  echo ""
+  ColorizeTitle "DebugSystem"
+  DEBUG_SRC_FILE="$SRC/debug_system/debug.cpp"
+  echo -e "$Building $DEBUG_SRC_FILE"
+  clang++                          \
+    $COMMON_OPTIMIZATION_OPTIONS   \
+    $COMMON_COMPILER_OPTIONS       \
+    $SHARED_LIBRARY_FLAGS          \
+    $COMMON_LINKER_OPTIONS         \
+    $COMMON_GL_DEFINES             \
+    -D BONSAI_INTERNAL=1           \
+    -I"$SRC"                       \
+    -I"$SRC/GL"                    \
+    -I"$SRC/debug_system"          \
+    -o "$BIN/lib_debug_system.so"  \
+    "$DEBUG_SRC_FILE" && echo -e "$Done $DEBUG_SRC_FILE" &
 
-  # echo ""
-  # ColorizeTitle "Examples"
-  # for executable in $EXAMPLES_TO_BUILD; do
-  #   echo -e "$Building $executable"
-  #   SetOutputBinaryPathBasename "$executable" "$BIN"
-  #   clang++                                                     \
-  #     $SHARED_LIBRARY_FLAGS                                     \
-  #     $COMMON_OPTIMIZATION_OPTIONS                              \
-  #     $COMMON_COMPILER_OPTIONS                                  \
-  #     $COMMON_LINKER_OPTIONS                                    \
-  #     $COMMON_GL_DEFINES                                        \
-  #     -D BONSAI_INTERNAL=1                                      \
-  #     -I"$SRC"                                                  \
-  #     -I"$executable"                                           \
-  #     -o "$output_basename"                                     \
-  #     "$executable/game.cpp" &&                                 \
-  #     mv "$output_basename" "$output_basename""_loadable.so" && \
-  #     echo -e "$Done $executable" &
-  # done
+  echo ""
+  ColorizeTitle "Examples"
+  for executable in $EXAMPLES_TO_BUILD; do
+    echo -e "$Building $executable"
+    SetOutputBinaryPathBasename "$executable" "$BIN"
+    clang++                                                     \
+      $SHARED_LIBRARY_FLAGS                                     \
+      $COMMON_OPTIMIZATION_OPTIONS                              \
+      $COMMON_COMPILER_OPTIONS                                  \
+      $COMMON_LINKER_OPTIONS                                    \
+      $COMMON_GL_DEFINES                                        \
+      -D BONSAI_INTERNAL=1                                      \
+      -I"$SRC"                                                  \
+      -I"$executable"                                           \
+      -o "$output_basename"                                     \
+      "$executable/game.cpp" &&                                 \
+      mv "$output_basename" "$output_basename""_loadable.so" && \
+      echo -e "$Done $executable" &
+  done
 
   echo -e ""
   echo -e "$Delimeter"
