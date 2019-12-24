@@ -165,6 +165,7 @@ main(s32 ArgCount, const char** Args)
       if (!SourceFileStream.Start)
       {
         Error("Allocating stream for %s", FileName);
+        return 1;
       }
 
       c_token_buffer Tokens_ = AllocateTokenBuffer(Memory, (u32)Kilobytes(100));
@@ -174,33 +175,37 @@ main(s32 ArgCount, const char** Args)
       {
         c_token T = GetToken(&SourceFileStream);
 
-        if (T.Type == CTokenType_Unknown)
+        switch (T.Type)
         {
-          counted_string Value = {
-            .Start = SourceFileStream.At,
-          };
-
-          while (1)
+          case CTokenType_Unknown:
           {
-            T = GetToken(&SourceFileStream);
-            if (T.Type == CTokenType_Unknown && Remaining(&SourceFileStream))
-            {
-              SourceFileStream.At++;
-            }
-            else
-            {
-              break;
-            }
-          }
+            counted_string Value = {
+              .Start = SourceFileStream.At,
+            };
 
-          Value.Count = (umm)SourceFileStream.At - (umm)Value.Start;
+            while (1)
+            {
+              T = GetToken(&SourceFileStream);
+              if (T.Type == CTokenType_Unknown && Remaining(&SourceFileStream))
+              {
+                SourceFileStream.At++;
+              }
+              else
+              {
+                break;
+              }
+            }
 
-          T.Type = CTokenType_Identifier;
-          T.Value = Value;
-        }
-        else
-        {
-          SourceFileStream.At++;
+            Value.Count = (umm)SourceFileStream.At - (umm)Value.Start;
+
+            T.Type = CTokenType_Identifier;
+            T.Value = Value;
+          } break;
+
+          default:
+          {
+            SourceFileStream.At++;
+          } break;
         }
 
         Push(Tokens, T);
