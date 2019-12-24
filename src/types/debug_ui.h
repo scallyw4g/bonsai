@@ -479,4 +479,3 @@ GetWindowBounds(window_layout *Window)
   return Result;
 }
 
-

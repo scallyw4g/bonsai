@@ -14,6 +14,7 @@ enum c_token_type
   CTokenType_Unknown,
 
   CTokenType_Identifier,
+  CTokenType_String,
 
   CTokenType_OpenBrace     = '(',
   CTokenType_CloseBrace    = ')',
@@ -66,13 +67,22 @@ struct c_token_buffer
 inline void
 PrintToken(c_token Token)
 {
-  if (Token.Type == CTokenType_Identifier)
+  switch (Token.Type)
   {
-    Log("%.*s", Token.Value.Count, Token.Value.Start);
-  }
-  else
-  {
-    Log("%c", Token.Type);
+    case CTokenType_Identifier:
+    {
+      Log("%.*s", Token.Value.Count, Token.Value.Start);
+    } break;
+
+    case CTokenType_String:
+    {
+      Log("\"%.*s\"", Token.Value.Count, Token.Value.Start);
+    } break;
+
+    default:
+    {
+      Log("%c", Token.Type);
+    }
   }
 }
 
@@ -177,6 +187,12 @@ main(s32 ArgCount, const char** Args)
 
         switch (T.Type)
         {
+          case CTokenType_DoubleQuote:
+          {
+            T.Type = CTokenType_String;
+            T.Value = PopQuotedString(&SourceFileStream);
+          } break;
+
           case CTokenType_Unknown:
           {
             counted_string Value = {
