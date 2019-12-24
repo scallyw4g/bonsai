@@ -157,6 +157,87 @@ GetToken(ansi_stream* Stream)
   return Result;
 }
 
+struct c_tokenize_result
+{
+  b32 Success;
+  c_token_buffer Tokens;
+};
+
+function c_tokenize_result
+TokenizeFile(const char* FileName, memory_arena* Memory)
+{
+  c_tokenize_result Result = {};
+
+  // TODO(Jesse): Since we store pointers directly into this buffer, we need to
+  // keep the memory around.  Should we tokenize such that we allocate new
+  // memory for things that need it?  (only Strings/Identifiers at the moment)
+  ansi_stream SourceFileStream = AnsiStreamFromFile(FileName, Memory);
+  if (!SourceFileStream.Start)
+  {
+    Error("Allocating stream for %s", FileName);
+    return Result;
+  }
+
+  Result.Tokens = AllocateTokenBuffer(Memory, (u32)Kilobytes(100));
+  if (!Result.Tokens.Start)
+  {
+    Error("Allocating Token Buffer");
+    return Result;
+  }
+
+  while(Remaining(&SourceFileStream))
+  {
+    c_token T = GetToken(&SourceFileStream);
+
+    switch (T.Type)
+    {
+      case CTokenType_DoubleQuote:
+      {
+        T.Type = CTokenType_String;
+        T.Value = PopQuotedString(&SourceFileStream);
+      } break;
+
+      case CTokenType_Unknown:
+      {
+        counted_string Value = {
+          .Start = SourceFileStream.At,
+        };
+
+        while (1)
+        {
+          T = GetToken(&SourceFileStream);
+          if (T.Type == CTokenType_Unknown && Remaining(&SourceFileStream))
+          {
+            SourceFileStream.At++;
+          }
+          else
+          {
+            break;
+          }
+        }
+
+        Value.Count = (umm)SourceFileStream.At - (umm)Value.Start;
+
+        T.Type = CTokenType_Identifier;
+        T.Value = Value;
+      } break;
+
+      default:
+      {
+        SourceFileStream.At++;
+      } break;
+    }
+
+    Push(&Result.Tokens, T);
+
+    continue;
+  }
+
+  Result.Success = True;
+  return Result;
+}
+
+
 s32
 main(s32 ArgCount, const char** Args)
 {
@@ -171,70 +252,22 @@ main(s32 ArgCount, const char** Args)
         ++FileIndex)
     {
       const char* FileName = Args[FileIndex];
-      ansi_stream SourceFileStream = AnsiStreamFromFile(FileName, Memory);
-      if (!SourceFileStream.Start)
+
+      c_tokenize_result Tokenization = TokenizeFile(FileName, Memory);
+      if (Tokenization.Success)
       {
-        Error("Allocating stream for %s", FileName);
-        return 1;
-      }
-
-      c_token_buffer Tokens_ = AllocateTokenBuffer(Memory, (u32)Kilobytes(100));
-      c_token_buffer* Tokens = &Tokens_;
-
-      while(Remaining(&SourceFileStream))
-      {
-        c_token T = GetToken(&SourceFileStream);
-
-        switch (T.Type)
+        c_token_buffer* Tokens = &Tokenization.Tokens;
+        Tokens->End = Tokens->At;
+        Tokens->At = Tokens->Start;
+        while (Remaining(Tokens))
         {
-          case CTokenType_DoubleQuote:
-          {
-            T.Type = CTokenType_String;
-            T.Value = PopQuotedString(&SourceFileStream);
-          } break;
-
-          case CTokenType_Unknown:
-          {
-            counted_string Value = {
-              .Start = SourceFileStream.At,
-            };
-
-            while (1)
-            {
-              T = GetToken(&SourceFileStream);
-              if (T.Type == CTokenType_Unknown && Remaining(&SourceFileStream))
-              {
-                SourceFileStream.At++;
-              }
-              else
-              {
-                break;
-              }
-            }
-
-            Value.Count = (umm)SourceFileStream.At - (umm)Value.Start;
-
-            T.Type = CTokenType_Identifier;
-            T.Value = Value;
-          } break;
-
-          default:
-          {
-            SourceFileStream.At++;
-          } break;
+          PrintToken(*Tokens->At);
+          Tokens->At++;
         }
-
-        Push(Tokens, T);
-
-        continue;
       }
-
-      Tokens->End = Tokens->At;
-      Tokens->At = Tokens->Start;
-      while (Remaining(Tokens))
+      else
       {
-        PrintToken(*Tokens->At);
-        Tokens->At++;
+        Error("Tokenizing File: %s", FileName);
       }
     }
   }

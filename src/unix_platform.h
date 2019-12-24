@@ -15,6 +15,11 @@
 #include <X11/Xlib.h>
 #include <X11/keysymdef.h>
 
+// X11 defines this to 0, which is really annoying
+#ifdef Success
+#undef Success
+#endif
+
 #include <GL/gl.h>
 #include <GL/glext.h>
 #include <GL/glx.h>
