@@ -48,7 +48,6 @@ enum c_token_type
   CTokenType_EOF           = EOF,
 };
 
-
 struct c_token
 {
   c_token_type Type;
@@ -341,7 +340,7 @@ ParseDiscriminatedUnion(c_parse_result* Parser, memory_arena* Memory)
   c_token UnionName = RequireToken(Parser, CTokenType_Identifier);
 
   PushString(&StructStream,
-             FormatCountedString(Memory, "struct %.*s\n{\n  %.*s_type Type;\n\n  union\n  {\n", UnionName.Value.Count, UnionName.Value.Start, UnionName.Value.Count, UnionName.Value.Start),
+             FormatCountedString(Memory, "struct %.*s\n{\n  %.*s_type Type;\n\n  union\n  {", UnionName.Value.Count, UnionName.Value.Start, UnionName.Value.Count, UnionName.Value.Start),
              Memory);
 
   PushString(&EnumStream,

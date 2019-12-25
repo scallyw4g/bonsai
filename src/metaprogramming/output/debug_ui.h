@@ -27,7 +27,6 @@ struct ui_render_command
 
   union
   {
-
     ui_render_command_window_start ui_render_command_window_start;
     ui_render_command_window_end ui_render_command_window_end;
 
