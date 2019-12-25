@@ -216,6 +216,15 @@ if [ ! -d "$BIN_TEST" ]; then
   mkdir "$BIN_TEST"
 fi
 
+echo -e ""
+echo -e "$Delimeter"
+echo -e ""
+
+ColorizeTitle "Preprocessing"
+
+scripts/preprocess.sh
+[ $? -ne 0 ] && echo "Error Preprocessing, exiting." && exit 1
+
 if [ "$EMCC" == "1" ]; then
 
   which emcc > /dev/null

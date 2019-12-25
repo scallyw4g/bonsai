@@ -16,10 +16,10 @@ enum c_token_type
   CTokenType_Identifier,
   CTokenType_String,
 
-  CTokenType_OpenBrace     = '(',
-  CTokenType_CloseBrace    = ')',
-  CTokenType_OpenParen     = '{',
-  CTokenType_CloseParen    = '}',
+  CTokenType_OpenBrace     = '{',
+  CTokenType_CloseBrace    = '}',
+  CTokenType_OpenParen     = '(',
+  CTokenType_CloseParen    = ')',
   CTokenType_Dot           = '.',
   CTokenType_Comma         = ',',
   CTokenType_Semicolon     = ';',
@@ -61,8 +61,6 @@ struct c_token_buffer
   c_token* At;
   c_token* End;
 };
-
-
 
 inline void
 PrintToken(c_token Token)
@@ -157,16 +155,16 @@ GetToken(ansi_stream* Stream)
   return Result;
 }
 
-struct c_tokenize_result
+struct c_parse_result
 {
-  b32 Success;
+  b32 Valid;
   c_token_buffer Tokens;
 };
 
-function c_tokenize_result
+function c_parse_result
 TokenizeFile(const char* FileName, memory_arena* Memory)
 {
-  c_tokenize_result Result = {};
+  c_parse_result Result = {};
 
   // TODO(Jesse): Since we store pointers directly into this buffer, we need to
   // keep the memory around.  Should we tokenize such that we allocate new
@@ -178,7 +176,7 @@ TokenizeFile(const char* FileName, memory_arena* Memory)
     return Result;
   }
 
-  Result.Tokens = AllocateTokenBuffer(Memory, (u32)Kilobytes(100));
+  Result.Tokens = AllocateTokenBuffer(Memory, (u32)Megabytes(100));
   if (!Result.Tokens.Start)
   {
     Error("Allocating Token Buffer");
@@ -233,14 +231,111 @@ TokenizeFile(const char* FileName, memory_arena* Memory)
     continue;
   }
 
-  Result.Success = True;
+
+  Result.Tokens.End = Result.Tokens.At;
+  Result.Tokens.At = Result.Tokens.Start;
+  Result.Valid = True;
+
+  return Result;
+}
+
+function c_token
+PopToken(c_parse_result* Parser)
+{
+  c_token Result = {};
+  if (Remaining(&Parser->Tokens))
+  {
+    Result = *Parser->Tokens.At++;
+  }
+  else
+  {
+    Warn("Tried to pop a token on an empty stream");
+  }
   return Result;
 }
 
 
+function c_token
+RequireToken(c_parse_result* Parser, c_token_type Type)
+{
+  c_token Result = PopToken(Parser);
+
+  if (Result.Type != Type)
+  {
+    Error("Encountered Unexpected token type");
+    PrintToken(Result);
+    Parser->Valid = False;
+  }
+
+  return Result;
+}
+
+void
+ParseDiscriminatedUnion(c_parse_result* Parser)
+{
+  RequireToken(Parser, CTokenType_OpenParen);
+  c_token UnionName = RequireToken(Parser, CTokenType_Identifier);
+
+  Log("struct %.*s\n{\n  %.*s_type Type;\n\n  union\n  {\n", UnionName.Value.Count, UnionName.Value.Start, UnionName.Value.Count, UnionName.Value.Start);
+
+  RequireToken(Parser, CTokenType_Comma);
+  RequireToken(Parser, CTokenType_Newline);
+  RequireToken(Parser, CTokenType_OpenBrace);
+
+  b32 Complete = False;
+  while (!Complete)
+  {
+    c_token Interior = PopToken(Parser);
+
+    switch (Interior.Type)
+    {
+      case CTokenType_Identifier:
+      {
+        RequireToken(Parser, CTokenType_Semicolon);
+        Log("    %.*s %.*s;", Interior.Value.Count, Interior.Value.Start, Interior.Value.Count, Interior.Value.Start);
+      } break;
+
+      case CTokenType_CloseBrace:
+      {
+        Log("  };\n};\n");
+        RequireToken(Parser, CTokenType_CloseParen);
+        Complete = True;
+      } break;
+
+      case CTokenType_Newline:
+      {
+        PrintToken(Interior);
+      } break;
+      case CTokenType_Space:
+      {
+      } break;
+
+      default:
+      {
+        Parser->Valid = False;
+      } break;
+    }
+  }
+
+  if (!Parser->Valid)
+  {
+    Error("Parsing d_union declaration");
+  }
+
+  return;
+}
+
+struct stream_chunk
+{
+  counted_string String;
+  stream_chunk* Next;
+};
+
 s32
 main(s32 ArgCount, const char** Args)
 {
+  b32 Result = True;
+
   if (ArgCount > 1)
   {
     memory_arena Memory_ = {};
@@ -253,22 +348,35 @@ main(s32 ArgCount, const char** Args)
     {
       const char* FileName = Args[FileIndex];
 
-      c_tokenize_result Tokenization = TokenizeFile(FileName, Memory);
-      if (Tokenization.Success)
+      c_parse_result Parser = TokenizeFile(FileName, Memory);
+      if (Parser.Valid)
       {
-        c_token_buffer* Tokens = &Tokenization.Tokens;
-        Tokens->End = Tokens->At;
-        Tokens->At = Tokens->Start;
-        while (Remaining(Tokens))
+        c_token_buffer* Tokens = &Parser.Tokens;
+        while (Parser.Valid && Remaining(Tokens))
         {
-          PrintToken(*Tokens->At);
-          Tokens->At++;
+          c_token Token = PopToken(&Parser);
+          switch( Token.Type )
+          {
+            case CTokenType_Identifier:
+            {
+              if (StringsMatch(Token.Value, CS("d_union")))
+              {
+                ParseDiscriminatedUnion(&Parser);
+              }
+            } break;
+
+            default: { } break;
+          }
+
+          continue;
         }
       }
       else
       {
         Error("Tokenizing File: %s", FileName);
       }
+
+      Result = Result && Parser.Valid;
     }
   }
   else
@@ -276,5 +384,5 @@ main(s32 ArgCount, const char** Args)
     Warn("No files passed in, exiting.");
   }
 
-  return 0;
+  return (s32)Result;
 }

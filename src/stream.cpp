@@ -48,9 +48,16 @@ U8_StreamFromFile(const char* SourceFile, memory_arena *Memory)
   {
     fseek(File, 0L, SEEK_END);
     FileSize = (umm)ftell(File);
-    rewind(File);
-    FileContents = Allocate(u8, Memory, FileSize);
-    ReadBytes((u8*)FileContents, FileSize, File);
+    if (FileSize)
+    {
+      rewind(File);
+      FileContents = Allocate(u8, Memory, FileSize);
+      ReadBytes((u8*)FileContents, FileSize, File);
+    }
+    else
+    {
+      Warn("File %s was empty!", SourceFile);
+    }
   }
   else
   {
