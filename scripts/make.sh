@@ -223,7 +223,7 @@ echo -e ""
 ColorizeTitle "Preprocessing"
 
 scripts/preprocess.sh
-[ $? -ne 0 ] && echo "Error Preprocessing, exiting." && exit 1
+[ $? -ne 0 ] && echo "" && echo -e "$RED""Failed""$WHITE"" Preprocessing, exiting." && exit 1
 
 if [ "$EMCC" == "1" ]; then
 

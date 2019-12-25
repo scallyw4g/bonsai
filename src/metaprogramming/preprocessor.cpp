@@ -155,6 +155,18 @@ GetToken(ansi_stream* Stream)
   return Result;
 }
 
+struct string_chunk
+{
+  counted_string String;
+  string_chunk* Next;
+  string_chunk* Prev;
+};
+
+struct string_stream
+{
+  string_chunk Sentinel;
+};
+
 struct c_parse_result
 {
   b32 Valid;
@@ -271,12 +283,53 @@ RequireToken(c_parse_result* Parser, c_token_type Type)
 }
 
 void
-ParseDiscriminatedUnion(c_parse_result* Parser)
+PushString(string_stream* Stream, counted_string String, memory_arena* Memory)
 {
+  string_chunk* Push = Allocate(string_chunk, Memory, 1);
+  Push->String = String;
+
+  Push->Prev = &Stream->Sentinel;
+  Push->Next = Stream->Sentinel.Next;
+  Stream->Sentinel.Next->Prev = Push;
+  Stream->Sentinel.Next = Push;
+
+  return;
+}
+
+counted_string
+PopString(string_stream* Stream)
+{
+  counted_string Result = Stream->Sentinel.Next->String;
+
+  // FIXME(Jesse): We're leaking string_chunks here.. freelist anyone?
+  // @memory-leak
+  Stream->Sentinel.Next->Next->Prev = &Stream->Sentinel;
+  Stream->Sentinel.Next = Stream->Sentinel.Next->Next;
+
+  return Result;
+}
+
+
+string_stream
+StringStream()
+{
+  string_stream Stream = {};
+  Stream.Sentinel.Next = &Stream.Sentinel;
+  Stream.Sentinel.Prev = &Stream.Sentinel;
+  return Stream;
+}
+
+void
+ParseDiscriminatedUnion(c_parse_result* Parser, memory_arena* Memory)
+{
+  string_stream Stream = StringStream();
+
   RequireToken(Parser, CTokenType_OpenParen);
   c_token UnionName = RequireToken(Parser, CTokenType_Identifier);
 
-  Log("struct %.*s\n{\n  %.*s_type Type;\n\n  union\n  {\n", UnionName.Value.Count, UnionName.Value.Start, UnionName.Value.Count, UnionName.Value.Start);
+  PushString(&Stream,
+             FormatCountedString(Memory, "struct %.*s\n{\n  %.*s_type Type;\n\n  union\n  {\n", UnionName.Value.Count, UnionName.Value.Start, UnionName.Value.Count, UnionName.Value.Start),
+             Memory);
 
   RequireToken(Parser, CTokenType_Comma);
   RequireToken(Parser, CTokenType_Newline);
@@ -292,19 +345,25 @@ ParseDiscriminatedUnion(c_parse_result* Parser)
       case CTokenType_Identifier:
       {
         RequireToken(Parser, CTokenType_Semicolon);
-        Log("    %.*s %.*s;", Interior.Value.Count, Interior.Value.Start, Interior.Value.Count, Interior.Value.Start);
+        PushString(&Stream,
+                   FormatCountedString(Memory, "    %.*s %.*s;", Interior.Value.Count, Interior.Value.Start, Interior.Value.Count, Interior.Value.Start),
+                   Memory);
       } break;
 
       case CTokenType_CloseBrace:
       {
-        Log("  };\n};\n");
+        PushString(&Stream,
+                   FormatCountedString(Memory, "  };\n};\n"),
+                   Memory);
         RequireToken(Parser, CTokenType_CloseParen);
         Complete = True;
       } break;
 
       case CTokenType_Newline:
       {
-        PrintToken(Interior);
+        PushString(&Stream,
+                   FormatCountedString(Memory, "\n"),
+                   Memory);
       } break;
       case CTokenType_Space:
       {
@@ -317,7 +376,16 @@ ParseDiscriminatedUnion(c_parse_result* Parser)
     }
   }
 
-  if (!Parser->Valid)
+  if (Parser->Valid)
+  {
+    string_chunk* At = Stream.Sentinel.Prev;
+    while (At != &Stream.Sentinel)
+    {
+      Log("%.*s", At->String.Count, At->String.Start);
+      At = At->Prev;
+    }
+  }
+  else
   {
     Error("Parsing d_union declaration");
   }
@@ -325,14 +393,49 @@ ParseDiscriminatedUnion(c_parse_result* Parser)
   return;
 }
 
-struct stream_chunk
+struct arguments
 {
-  counted_string String;
-  stream_chunk* Next;
+  counted_string OutPath;
+  string_stream Files;
 };
 
+arguments
+ParseArgs(const char** ArgStrings, s32 ArgCount, memory_arena* Memory)
+{
+  arguments Result = {
+    .Files = StringStream(),
+  };
+
+
+  for (s32 ArgIndex = 1;
+      ArgIndex < ArgCount;
+      ++ArgIndex)
+  {
+    counted_string Arg = CS(ArgStrings[ArgIndex]);
+    if (StringsMatch(CS("-o"), Arg) ||
+        StringsMatch(CS("--output-path"), Arg) )
+    {
+      if (++ArgIndex < ArgCount)
+      {
+        Result.OutPath = CS(ArgStrings[ArgIndex]);
+      }
+      else
+      {
+        Error("Please pass an argument to -o | --output-path");
+      }
+
+    }
+    else
+    {
+      PushString(&Result.Files, Arg, Memory);
+    }
+  }
+
+  return Result;
+}
+
 s32
-main(s32 ArgCount, const char** Args)
+main(s32 ArgCount, const char** ArgStrings)
 {
   b32 Result = True;
 
@@ -341,13 +444,13 @@ main(s32 ArgCount, const char** Args)
     memory_arena Memory_ = {};
     memory_arena* Memory = &Memory_;
 
+    arguments Args = ParseArgs(ArgStrings, ArgCount, Memory);
 
-    for (s32 FileIndex = 1;
-        FileIndex < ArgCount;
-        ++FileIndex)
+    counted_string NextFile = PopString(&Args.Files);
+    while (NextFile.Count)
     {
-      const char* FileName = Args[FileIndex];
-
+      // FIXME(Jesse): This is poor form - I know this is null-terminated but the functions consuming this should operate on counted_strings
+      const char* FileName = NextFile.Start;
       c_parse_result Parser = TokenizeFile(FileName, Memory);
       if (Parser.Valid)
       {
@@ -361,7 +464,7 @@ main(s32 ArgCount, const char** Args)
             {
               if (StringsMatch(Token.Value, CS("d_union")))
               {
-                ParseDiscriminatedUnion(&Parser);
+                ParseDiscriminatedUnion(&Parser, Memory);
               }
             } break;
 
@@ -377,11 +480,13 @@ main(s32 ArgCount, const char** Args)
       }
 
       Result = Result && Parser.Valid;
+
+      NextFile = PopString(&Args.Files);
     }
   }
   else
   {
-    Warn("No files passed in, exiting.");
+    Warn("No files passed, exiting.");
   }
 
   return (s32)Result;
