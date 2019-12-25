@@ -1,8 +1,8 @@
 
 struct counted_string
 {
-  const char* Start;
   umm Count;
+  const char* Start;
 };
 
 umm

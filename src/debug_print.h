@@ -7,7 +7,6 @@ Log(const char* fmt...)
 
   while (*fmt != '\0')
   {
-
     if ( *fmt == '%' )
     {
       ++fmt;
@@ -60,6 +59,17 @@ Log(const char* fmt...)
 
         std::cout << Output;
       }
+      else if (*fmt == 'S')
+      {
+        u32 Count = va_arg(args, u32);
+        char* String = va_arg(args, char*);
+        for (u32 CharIndex = 0;
+            CharIndex < Count;
+            ++CharIndex)
+        {
+          std::cout << String[CharIndex];
+        }
+      }
       else if (*fmt == '.')
       {
         Assert(*(++fmt) == '*')
@@ -72,7 +82,6 @@ Log(const char* fmt...)
         {
           std::cout << String[CharIndex];
         }
-
       }
       else
       {
@@ -88,8 +97,6 @@ Log(const char* fmt...)
 
     ++fmt;
   }
-
-  /* std::cout << std::endl; */
 
   va_end(args);
 }

@@ -320,15 +320,32 @@ StringStream()
 }
 
 void
+LogStringStream(string_stream* Stream)
+{
+  string_chunk* At = Stream->Sentinel.Prev;
+  while (At != &Stream->Sentinel)
+  {
+    Log("%.*s", At->String.Count, At->String.Start);
+    At = At->Prev;
+  }
+  Log("\n\n");
+}
+
+void
 ParseDiscriminatedUnion(c_parse_result* Parser, memory_arena* Memory)
 {
-  string_stream Stream = StringStream();
+  string_stream StructStream = StringStream();
+  string_stream EnumStream = StringStream();
 
   RequireToken(Parser, CTokenType_OpenParen);
   c_token UnionName = RequireToken(Parser, CTokenType_Identifier);
 
-  PushString(&Stream,
+  PushString(&StructStream,
              FormatCountedString(Memory, "struct %.*s\n{\n  %.*s_type Type;\n\n  union\n  {\n", UnionName.Value.Count, UnionName.Value.Start, UnionName.Value.Count, UnionName.Value.Start),
+             Memory);
+
+  PushString(&EnumStream,
+             FormatCountedString(Memory, "enum %.*s_type\n{\n  type_%.*s_noop,\n", UnionName.Value.Count, UnionName.Value.Start, UnionName.Value.Count, UnionName.Value.Start),
              Memory);
 
   RequireToken(Parser, CTokenType_Comma);
@@ -345,15 +362,21 @@ ParseDiscriminatedUnion(c_parse_result* Parser, memory_arena* Memory)
       case CTokenType_Identifier:
       {
         RequireToken(Parser, CTokenType_Semicolon);
-        PushString(&Stream,
+        PushString(&StructStream,
                    FormatCountedString(Memory, "    %.*s %.*s;", Interior.Value.Count, Interior.Value.Start, Interior.Value.Count, Interior.Value.Start),
+                   Memory);
+        PushString(&EnumStream,
+                   FormatCountedString(Memory, "  type_%.*s,", Interior.Value.Count, Interior.Value.Start),
                    Memory);
       } break;
 
       case CTokenType_CloseBrace:
       {
-        PushString(&Stream,
+        PushString(&StructStream,
                    FormatCountedString(Memory, "  };\n};\n"),
+                   Memory);
+        PushString(&EnumStream,
+                   FormatCountedString(Memory, "};"),
                    Memory);
         RequireToken(Parser, CTokenType_CloseParen);
         Complete = True;
@@ -361,7 +384,10 @@ ParseDiscriminatedUnion(c_parse_result* Parser, memory_arena* Memory)
 
       case CTokenType_Newline:
       {
-        PushString(&Stream,
+        PushString(&StructStream,
+                   FormatCountedString(Memory, "\n"),
+                   Memory);
+        PushString(&EnumStream,
                    FormatCountedString(Memory, "\n"),
                    Memory);
       } break;
@@ -378,12 +404,8 @@ ParseDiscriminatedUnion(c_parse_result* Parser, memory_arena* Memory)
 
   if (Parser->Valid)
   {
-    string_chunk* At = Stream.Sentinel.Prev;
-    while (At != &Stream.Sentinel)
-    {
-      Log("%.*s", At->String.Count, At->String.Start);
-      At = At->Prev;
-    }
+    LogStringStream(&EnumStream);
+    LogStringStream(&StructStream);
   }
   else
   {

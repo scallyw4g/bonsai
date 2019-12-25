@@ -242,7 +242,7 @@ HandleGlDebugMessage(GLenum Source, GLenum Type, GLuint Id, GLenum Severity,
   if (Severity != GL_DEBUG_SEVERITY_NOTIFICATION)
   {
 
-    Log("%s", Message);
+    Debug("%s", Message);
     RuntimeBreak();
     const char* MessageTypeName = 0;
     switch(Type) {
