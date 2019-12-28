@@ -78,9 +78,40 @@ PrintToken(c_token Token)
 
     default:
     {
-      Log("%c", Token.Type);
+      Log("'%c'", Token.Type);
     }
   }
+}
+
+b32
+operator==(c_token T1, c_token T2)
+{
+  b32 Result = (T1.Type == T2.Type);
+  if (Result && T1.Value.Count > 0)
+  {
+    Result &= StringsMatch(T1.Value, T2.Value);
+  }
+  return Result;
+}
+
+inline c_token
+CToken(counted_string Value)
+{
+  c_token Result = {
+    .Type = CTokenType_Identifier,
+    .Value = Value
+  };
+  return Result;
+}
+
+inline c_token
+CToken(c_token_type Type, counted_string Value = CountedString(""))
+{
+  c_token Result = {
+    .Type = Type,
+    .Value = Value
+  };
+  return Result;
 }
 
 c_token_buffer
@@ -172,6 +203,96 @@ struct c_parse_result
   c_token_buffer Tokens;
 };
 
+function b32
+IsWhitespace(c_token_type Type)
+{
+  b32 Result = Type == CTokenType_Newline       ||
+               Type == CTokenType_CarrigeReturn ||
+               Type == CTokenType_Space;
+  return Result;
+}
+
+function c_token
+PeekTokenRaw(c_parse_result* Parser)
+{
+  c_token Result = {};
+  if (Remaining(&Parser->Tokens))
+  {
+    Result = *Parser->Tokens.At;
+  }
+  else
+  {
+    Warn("Tried to peek a token on an empty stream");
+  }
+
+  return Result;
+}
+
+function c_token
+PeekToken(c_parse_result* Parser)
+{
+  c_token Result = {};
+  while (Remaining(&Parser->Tokens))
+  {
+    Result = *Parser->Tokens.At;
+    if (IsWhitespace(Result.Type))
+    {
+      Parser->Tokens.At++;
+    }
+    else
+    {
+      break;
+    }
+  }
+
+  return Result;
+}
+
+function c_token
+PopTokenRaw(c_parse_result* Parser)
+{
+  c_token Result = {};
+  if (Remaining(&Parser->Tokens))
+  {
+    Result = *Parser->Tokens.At++;
+  }
+  else
+  {
+    Warn("Tried to pop a token on an empty stream");
+  }
+
+  return Result;
+}
+
+function c_token
+PopToken(c_parse_result* Parser)
+{
+  c_token Result = PopTokenRaw(Parser);
+  while ( IsWhitespace(Result.Type) && Remaining(&Parser->Tokens) )
+  {
+    Result = *Parser->Tokens.At++;
+  }
+
+  return Result;
+}
+
+function c_token
+OptionalToken(c_parse_result* Parser, c_token_type Type)
+{
+  c_token Result = PeekToken(Parser);
+
+  if (Result.Type == Type)
+  {
+    PopToken(Parser);
+  }
+  else
+  {
+    Result = CToken(CTokenType_Unknown);
+  }
+
+  return Result;
+}
+
 function c_parse_result
 TokenizeFile(const char* FileName, memory_arena* Memory)
 {
@@ -247,24 +368,16 @@ TokenizeFile(const char* FileName, memory_arena* Memory)
   Result.Tokens.At = Result.Tokens.Start;
   Result.Valid = True;
 
+#if 0
+  while (Remaining(&Result.Tokens))
+  {
+    PrintToken(PopTokenRaw(&Result));
+  }
+  Result.Valid = False;
+#endif
+
   return Result;
 }
-
-function c_token
-PopToken(c_parse_result* Parser)
-{
-  c_token Result = {};
-  if (Remaining(&Parser->Tokens))
-  {
-    Result = *Parser->Tokens.At++;
-  }
-  else
-  {
-    Warn("Tried to pop a token on an empty stream");
-  }
-  return Result;
-}
-
 
 function c_token
 RequireToken(c_parse_result* Parser, c_token_type Type)
@@ -275,6 +388,11 @@ RequireToken(c_parse_result* Parser, c_token_type Type)
   {
     Error("Encountered Unexpected token type");
     PrintToken(Result);
+
+    Log("\nExpected: ");
+    PrintToken(CToken(Type));
+    Log("\n");
+
     Parser->Valid = False;
   }
 
@@ -307,7 +425,6 @@ PopString(string_stream* Stream)
 
   return Result;
 }
-
 
 string_stream
 StringStream()
@@ -348,51 +465,46 @@ ParseDiscriminatedUnion(c_parse_result* Parser, memory_arena* Memory)
              Memory);
 
   RequireToken(Parser, CTokenType_Comma);
-  RequireToken(Parser, CTokenType_Newline);
   RequireToken(Parser, CTokenType_OpenBrace);
 
   b32 Complete = False;
   while (!Complete)
   {
-    c_token Interior = PopToken(Parser);
+    c_token Interior = PopTokenRaw(Parser);
 
     switch (Interior.Type)
     {
       case CTokenType_Identifier:
       {
-        RequireToken(Parser, CTokenType_Semicolon);
-        PushString(&StructStream,
-                   FormatCountedString(Memory, "    %.*s %.*s;", Interior.Value.Count, Interior.Value.Start, Interior.Value.Count, Interior.Value.Start),
-                   Memory);
+        if ( ! (OptionalToken(Parser, CTokenType_Identifier) == CToken(CS("enum_only"))) )
+        {
+          PushString(&StructStream,
+                     FormatCountedString(Memory, "    %.*s %.*s;", Interior.Value.Count, Interior.Value.Start, Interior.Value.Count, Interior.Value.Start),
+                     Memory);
+        }
+
         PushString(&EnumStream,
                    FormatCountedString(Memory, "  type_%.*s,", Interior.Value.Count, Interior.Value.Start),
                    Memory);
+
+        RequireToken(Parser, CTokenType_Semicolon);
       } break;
 
       case CTokenType_CloseBrace:
       {
-        PushString(&StructStream,
-                   FormatCountedString(Memory, "  };\n};\n"),
-                   Memory);
-        PushString(&EnumStream,
-                   FormatCountedString(Memory, "};"),
-                   Memory);
+        PushString(&StructStream, FormatCountedString(Memory, "  };\n};\n"), Memory);
+        PushString(&EnumStream, FormatCountedString(Memory, "};"), Memory);
         RequireToken(Parser, CTokenType_CloseParen);
         Complete = True;
       } break;
 
       case CTokenType_Newline:
       {
-        PushString(&StructStream,
-                   FormatCountedString(Memory, "\n"),
-                   Memory);
-        PushString(&EnumStream,
-                   FormatCountedString(Memory, "\n"),
-                   Memory);
+        PushString(&StructStream, FormatCountedString(Memory, "\n"), Memory);
+        PushString(&EnumStream, FormatCountedString(Memory, "\n"), Memory);
       } break;
-      case CTokenType_Space:
-      {
-      } break;
+
+      case CTokenType_Space: { } break;
 
       default:
       {

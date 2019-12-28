@@ -247,6 +247,11 @@ d_union(ui_render_command,
   ui_render_command_textured_quad;
   ui_render_command_untextured_quad;
   ui_render_command_untextured_quad_at;
+
+  ui_render_command_border;
+
+  ui_render_command_new_row   enum_only;
+  ui_render_command_table_end enum_only;
 })
 
 #include <metaprogramming/output/debug_ui.h>

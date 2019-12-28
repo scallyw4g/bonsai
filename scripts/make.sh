@@ -10,10 +10,10 @@ GREEN="\x1b[32m"
 YELLOW="\x1b[33m"
 WHITE="\x1b[37m"
 
-Delimeter="$RED""-----------------------------------------------------------""$WHITE"
-Success="$GREEN"" ✔ """"$WHITE"
-Building="$BLUE""Building""$WHITE"
-Failed="$RED"" ✗""$WHTIE"
+Delimeter="$RED-----------------------------------------------------------$WHITE"
+Success="$GREEN ✔ $WHITE"
+Building="$BLUE Building $WHITE"
+Failed="$RED ✗ $WHITE"
 
 ROOT="."
 SRC="$ROOT/src"
@@ -30,7 +30,7 @@ function SetOutputBinaryPathBasename()
 
 function ColorizeTitle()
 {
-  echo -e "$YELLOW""$1""$WHITE"
+  echo -e "$YELLOW$1$WHITE"
 }
 
 INCLUDE_DIRECTORIES="$SRC"
@@ -147,76 +147,76 @@ function BuildWithClang {
       $executable && echo -e "$Success $executable" &
   done
 
-  # echo ""
-  # ColorizeTitle "Debug Tests"
-  # for executable in $DEBUG_TESTS_TO_BUILD; do
-  #   SetOutputBinaryPathBasename "$executable" "$BIN_TEST"
-  #   echo -e "$Building $executable"
-  #   clang++                      \
-  #     $COMMON_COMPILER_OPTIONS   \
-  #     $COMMON_LINKER_OPTIONS     \
-  #     $COMMON_GL_DEFINES         \
-  #     -D BONSAI_INTERNAL=1       \
-  #     -I"$SRC"                   \
-  #     -I"$TESTS"                 \
-  #     -o "$output_basename"      \
-  #     $executable && echo -e "$Success $executable" &
-  # done
+  echo ""
+  ColorizeTitle "Debug Tests"
+  for executable in $DEBUG_TESTS_TO_BUILD; do
+    SetOutputBinaryPathBasename "$executable" "$BIN_TEST"
+    echo -e "$Building $executable"
+    clang++                      \
+      $COMMON_COMPILER_OPTIONS   \
+      $COMMON_LINKER_OPTIONS     \
+      $COMMON_GL_DEFINES         \
+      -D BONSAI_INTERNAL=1       \
+      -I"$SRC"                   \
+      -I"$TESTS"                 \
+      -o "$output_basename"      \
+      $executable && echo -e "$Success $executable" &
+  done
 
-  # echo ""
-  # ColorizeTitle "Tests"
-  # for executable in $TESTS_TO_BUILD; do
-  #   SetOutputBinaryPathBasename "$executable" "$BIN_TEST"
-  #   echo -e "$Building $executable"
-  #   clang++                        \
-  #     $COMMON_OPTIMIZATION_OPTIONS \
-  #     $COMMON_COMPILER_OPTIONS     \
-  #     $COMMON_LINKER_OPTIONS       \
-  #     $COMMON_GL_DEFINES           \
-  #     -D BONSAI_INTERNAL=1         \
-  #     -I"$SRC"                     \
-  #     -I"$TESTS"                   \
-  #     -I"$SRC/debug_system"        \
-  #     -o "$output_basename"        \
-  #     $executable && echo -e "$Success $executable" &
-  # done
+  echo ""
+  ColorizeTitle "Tests"
+  for executable in $TESTS_TO_BUILD; do
+    SetOutputBinaryPathBasename "$executable" "$BIN_TEST"
+    echo -e "$Building $executable"
+    clang++                        \
+      $COMMON_OPTIMIZATION_OPTIONS \
+      $COMMON_COMPILER_OPTIONS     \
+      $COMMON_LINKER_OPTIONS       \
+      $COMMON_GL_DEFINES           \
+      -D BONSAI_INTERNAL=1         \
+      -I"$SRC"                     \
+      -I"$TESTS"                   \
+      -I"$SRC/debug_system"        \
+      -o "$output_basename"        \
+      $executable && echo -e "$Success $executable" &
+  done
 
-  # echo ""
-  # ColorizeTitle "DebugSystem"
-  # DEBUG_SRC_FILE="$SRC/debug_system/debug.cpp"
-  # echo -e "$Building $DEBUG_SRC_FILE"
-  # clang++                          \
-  #   $COMMON_OPTIMIZATION_OPTIONS   \
-  #   $COMMON_COMPILER_OPTIONS       \
-  #   $SHARED_LIBRARY_FLAGS          \
-  #   $COMMON_LINKER_OPTIONS         \
-  #   $COMMON_GL_DEFINES             \
-  #   -D BONSAI_INTERNAL=1           \
-  #   -I"$SRC"                       \
-  #   -I"$SRC/GL"                    \
-  #   -I"$SRC/debug_system"          \
-  #   -o "$BIN/lib_debug_system.so"  \
-  #   "$DEBUG_SRC_FILE" && echo -e "$Success $DEBUG_SRC_FILE" &
+  echo ""
+  ColorizeTitle "DebugSystem"
+  DEBUG_SRC_FILE="$SRC/debug_system/debug.cpp"
+  echo -e "$Building $DEBUG_SRC_FILE"
+  clang++                          \
+    $COMMON_OPTIMIZATION_OPTIONS   \
+    $COMMON_COMPILER_OPTIONS       \
+    $SHARED_LIBRARY_FLAGS          \
+    $COMMON_LINKER_OPTIONS         \
+    $COMMON_GL_DEFINES             \
+    -D BONSAI_INTERNAL=1           \
+    -I"$SRC"                       \
+    -I"$SRC/GL"                    \
+    -I"$SRC/debug_system"          \
+    -o "$BIN/lib_debug_system.so"  \
+    "$DEBUG_SRC_FILE" && echo -e "$Success $DEBUG_SRC_FILE" &
 
-  # echo ""
-  # ColorizeTitle "Examples"
-  # for executable in $EXAMPLES_TO_BUILD; do
-  #   echo -e "$Building $executable"
-  #   SetOutputBinaryPathBasename "$executable" "$BIN"
-  #   clang++                                                     \
-  #     $SHARED_LIBRARY_FLAGS                                     \
-  #     $COMMON_OPTIMIZATION_OPTIONS                              \
-  #     $COMMON_COMPILER_OPTIONS                                  \
-  #     $COMMON_LINKER_OPTIONS                                    \
-  #     $COMMON_GL_DEFINES                                        \
-  #     -D BONSAI_INTERNAL=1                                      \
-  #     -I"$SRC"                                                  \
-  #     -I"$executable"                                           \
-  #     -o "$output_basename"                                     \
-  #     "$executable/game.cpp" &&                                 \
-  #     mv "$output_basename" "$output_basename""_loadable.so" && \
-  #     echo -e "$Success $executable" &
-  # done
+  echo ""
+  ColorizeTitle "Examples"
+  for executable in $EXAMPLES_TO_BUILD; do
+    echo -e "$Building $executable"
+    SetOutputBinaryPathBasename "$executable" "$BIN"
+    clang++                                                     \
+      $SHARED_LIBRARY_FLAGS                                     \
+      $COMMON_OPTIMIZATION_OPTIONS                              \
+      $COMMON_COMPILER_OPTIONS                                  \
+      $COMMON_LINKER_OPTIONS                                    \
+      $COMMON_GL_DEFINES                                        \
+      -D BONSAI_INTERNAL=1                                      \
+      -I"$SRC"                                                  \
+      -I"$executable"                                           \
+      -o "$output_basename"                                     \
+      "$executable/game.cpp" &&                                 \
+      mv "$output_basename" "$output_basename""_loadable.so" && \
+      echo -e "$Success $executable" &
+  done
 
   echo -e ""
   echo -e "$Delimeter"
@@ -250,11 +250,9 @@ echo -e ""
 echo -e "$Delimeter"
 echo -e ""
 
-ColorizeTitle "Preprocessing"
 SOURCE_FILES=$(find src -type f -not -wholename "src/metaprogramming/defines.h")
-
 PreprocessSuccess=0
-
+ColorizeTitle "Preprocessing"
 for file in $SOURCE_FILES; do
   output=$(bin/preprocessor "$file")
   if [ "$?" -eq "1" ]; then
@@ -264,13 +262,14 @@ for file in $SOURCE_FILES; do
     fi
 
   else
-    echo -e "$RED"" ✗""$WHITE"" $file"
+    echo "$output"
+    echo -e "$Failed $file"
     PreprocessSuccess=1
   fi
 
 done
 
-[ $PreprocessSuccess -ne 0 ] && echo "" && echo -e "$Failed Preprocessing, exiting." && exit 1
+[ $PreprocessSuccess -ne 0 ] && echo "" && echo -e "$Failed Preprocessing failed, exiting." && exit 1
 
 if [ "$EMCC" == "1" ]; then
 
