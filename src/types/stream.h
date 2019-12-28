@@ -137,6 +137,43 @@ EatAllCharacters(ansi_stream *Cursor, const char *Characters)
 }
 
 counted_string
+ReadUntilTerminatorString(ansi_stream *Cursor, counted_string Terminator)
+{
+  const char *Start = Cursor->At;
+
+  b32 Found = False;
+  while ( (Remaining(Cursor) >= Terminator.Count) &&
+          !Found &&
+          *Cursor->At)
+  {
+    if (StringsMatch(CS(Cursor->At, Terminator.Count), Terminator ))
+    {
+      Found = True;
+    }
+
+    Cursor->At += Terminator.Count;
+  }
+
+  counted_string Result = {};
+  if (Found)
+  {
+    Cursor->At -= Terminator.Count;
+    Result.Start = Start;
+    Result.Count = (umm)(Cursor->At - Start);
+  }
+
+  if (Remaining(Cursor) >= Terminator.Count)
+  {
+    Cursor->At += Terminator.Count;
+  }
+  else
+  {
+    Cursor->At = Cursor->End;
+  }
+
+  return Result;
+}
+counted_string
 ReadUntilTerminatorList(ansi_stream *Cursor, const char *TerminatorList, b32 SkipEscapedChars = False)
 {
   const char *Start = Cursor->At;

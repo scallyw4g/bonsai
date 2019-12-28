@@ -335,10 +335,21 @@ TokenizeFile(const char* FileName, memory_arena* Memory)
         if (Remaining(&SourceFileStream))
         {
           T = GetToken(&SourceFileStream);
-          if (T.Type == CTokenType_FSlash)
+          switch (T.Type)
           {
-            T.Type = CTokenType_Comment;
-            T.Value = CS(PopLine(&SourceFileStream, Memory));
+            case CTokenType_FSlash:
+            {
+              T.Type = CTokenType_Comment;
+              T.Value = CS(PopLine(&SourceFileStream, Memory));
+            } break;
+
+            case CTokenType_Star:
+            {
+              T.Type = CTokenType_Comment;
+              T.Value = ReadUntilTerminatorString(&SourceFileStream, CS("*/"));
+            } break;
+
+            default: {} break;
           }
         }
       } break;

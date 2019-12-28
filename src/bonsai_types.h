@@ -28,6 +28,7 @@
 #include <types/vector_types.h>
 #include <types/colors.h>
 #include <types/counted_string.h>
+#include <bonsai_string.h>
 #include <types/stream.h>
 #include <types/line_types.h>
 #include <types/matrix_types.h>

@@ -110,7 +110,7 @@ function BuildPreprocessor {
   executable="$SRC/metaprogramming/preprocessor.cpp"
   SetOutputBinaryPathBasename "$executable" "$BIN"
   echo -e "$Building $executable"
-  clang++                        \
+  clang++                \
     $COMMON_OPTIMIZATION_OPTIONS \
     $COMMON_COMPILER_OPTIONS     \
     $COMMON_LINKER_OPTIONS       \
@@ -118,9 +118,15 @@ function BuildPreprocessor {
     -D BONSAI_INTERNAL=1         \
     -I"$SRC"                     \
     -o "$output_basename"        \
-    $executable && echo -e "$Success $executable"
+    $executable
 
-  [ ! -x bin/preprocessor ] && echo "" && echo -e "$Failed Building preprocessor, exiting." && exit 1
+  if [ $? -eq 0 ]; then
+   echo -e "$Success $executable"
+  else
+   echo ""
+   echo -e "$Failed Error building preprocessor, exiting."
+   exit 1
+  fi
 
 }
 
