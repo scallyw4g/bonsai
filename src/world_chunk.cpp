@@ -1601,10 +1601,10 @@ QueueChunkMeshForCopy(work_queue *Queue, untextured_3d_geometry_buffer* Src, unt
   untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(Dest, Src->At);
 
   work_queue_entry Entry = {
-    .Type = WorkEntryType_CopyBuffer,
-    .GpuCopyParams.Src = Src,
-    .GpuCopyParams.Dest = CopyDest,
-    .GpuCopyParams.Basis = GetRenderP(WORLD_CHUNK_DIM, Chunk->WorldP, Camera),
+    .Type = type_work_queue_entry_copy_buffer,
+    .work_queue_entry_copy_buffer.Src = Src,
+    .work_queue_entry_copy_buffer.Dest = CopyDest,
+    .work_queue_entry_copy_buffer.Basis = GetRenderP(WORLD_CHUNK_DIM, Chunk->WorldP, Camera),
   };
 
   Assert(CopyDest.At == 0);

@@ -51,9 +51,9 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 {
   switch (Entry->Type)
   {
-    case WorkEntryType_InitWorldChunk:
+    case type_work_queue_entry_init_world_chunk:
     {
-      world_chunk* DestChunk = (world_chunk*)Entry->Input;
+      world_chunk* DestChunk = (world_chunk*)Entry->work_queue_entry_init_world_chunk.Input;
       if (!ChunkIsGarbage(DestChunk))
       {
         s32 Amplititude = 100;
@@ -70,13 +70,13 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       }
     } break;
 
-    case WorkEntryType_CopyBuffer:
+    case type_work_queue_entry_copy_buffer:
     {
-      untextured_3d_geometry_buffer* Src = Entry->GpuCopyParams.Src;
-      untextured_3d_geometry_buffer* Dest = &Entry->GpuCopyParams.Dest;
+      untextured_3d_geometry_buffer* Src = Entry->work_queue_entry_copy_buffer.Src;
+      untextured_3d_geometry_buffer* Dest = &Entry->work_queue_entry_copy_buffer.Dest;
       Assert(Src->At <= Dest->End);
 
-      v3 Basis = Entry->GpuCopyParams.Basis;
+      v3 Basis = Entry->work_queue_entry_copy_buffer.Basis;
       BufferVertsChecked(Src, Dest, Basis, V3(1.0f));
     } break;
 

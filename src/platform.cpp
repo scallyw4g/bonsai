@@ -82,7 +82,7 @@ DrainQueue(work_queue* Queue, thread_local_state* Thread)
       {
         work_queue_entry* Entry = Queue->Entries + DequeueIndex;
         BONSAI_API_WORKER_THREAD_CALLBACK_NAME(Entry, Thread);
-        Entry->Type = WorkEntryType_None;
+        Entry->Type = type_work_queue_entry_noop;
       }
     }
   }
@@ -133,7 +133,7 @@ ThreadMain(void *Input)
         {
           work_queue_entry* Entry = LowPriority->Entries + DequeueIndex;
           BONSAI_API_WORKER_THREAD_CALLBACK_NAME(Entry, &Thread);
-          Entry->Type = WorkEntryType_None;
+          Entry->Type = type_work_queue_entry_noop;
         }
       }
     }

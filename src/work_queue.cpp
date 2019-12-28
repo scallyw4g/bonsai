@@ -10,7 +10,7 @@ PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
 {
   TIMED_FUNCTION();
   work_queue_entry* Dest = Queue->Entries + Queue->EnqueueIndex;
-  Assert(Dest->Type == WorkEntryType_None);
+  Assert(Dest->Type == type_work_queue_entry_noop);
 
   *Dest = *Entry;
 
@@ -31,8 +31,8 @@ QueueChunkForInit(game_state *GameState, work_queue *Queue, world_chunk *Chunk)
 
   work_queue_entry Entry = {};
 
-  Entry.Input = (void*)Chunk;
-  Entry.Type = WorkEntryType_InitWorldChunk;
+  Entry.work_queue_entry_init_world_chunk.Input = (void*)Chunk;
+  Entry.Type = type_work_queue_entry_init_world_chunk;
   Entry.GameState = GameState;
 
   Chunk->Data->Flags = Chunk_Queued;
