@@ -112,6 +112,8 @@ PushShaderUniform( memory_arena *Mem, const char *Name)
 /*
  * Unfortunately the c pre-processor makes us pass in the type and the name
  * we're going to access it with.
+ *
+ * TODO(Jesse): Metaprogram this!!
  */
 #define BasicTypeUniformAllocators(type, TypeName)                             \
   shader_uniform *                                                             \

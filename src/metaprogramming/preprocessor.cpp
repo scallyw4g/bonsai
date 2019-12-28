@@ -13,6 +13,7 @@ enum c_token_type
 {
   CTokenType_Unknown,
 
+  CTokenType_Comment,
   CTokenType_Identifier,
   CTokenType_String,
 
@@ -328,6 +329,20 @@ TokenizeFile(const char* FileName, memory_arena* Memory)
 
     switch (T.Type)
     {
+      case CTokenType_FSlash:
+      {
+        ++SourceFileStream.At;
+        if (Remaining(&SourceFileStream))
+        {
+          T = GetToken(&SourceFileStream);
+          if (T.Type == CTokenType_FSlash)
+          {
+            T.Type = CTokenType_Comment;
+            T.Value = CS(PopLine(&SourceFileStream, Memory));
+          }
+        }
+      } break;
+
       case CTokenType_DoubleQuote:
       {
         T.Type = CTokenType_String;
@@ -601,6 +616,10 @@ main(s32 ArgCount, const char** ArgStrings)
           c_token Token = PopToken(&Parser);
           switch( Token.Type )
           {
+            case CTokenType_Comment:
+            {
+            } break;
+
             case CTokenType_Identifier:
             {
               if (StringsMatch(Token.Value, CS("d_union")))

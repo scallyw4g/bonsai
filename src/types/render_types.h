@@ -14,6 +14,8 @@ enum shader_uniform_type
 struct texture;
 struct light;
 struct camera;
+
+// TODO(Jesse): d_union-ify this
 struct shader_uniform
 {
   shader_uniform_type Type;
