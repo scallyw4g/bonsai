@@ -538,6 +538,7 @@ ParseDiscriminatedUnion(c_parse_result* Parser, memory_arena* Memory)
         PushString(&EnumStream, FormatCountedString(Memory, "\n"), Memory);
       } break;
 
+      case CTokenType_Comment:
       case CTokenType_Space: { } break;
 
       default:

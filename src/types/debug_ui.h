@@ -239,6 +239,14 @@ d_union(ui_render_command,
   ui_render_command_window_start;
   ui_render_command_window_end;
 
+  // This should be legal d_union
+  // d_union
+
+  /*
+   * This should also be legal d_union
+   * d_union
+   d_union */
+
   ui_render_command_button_start;
   ui_render_command_button_end;
 
