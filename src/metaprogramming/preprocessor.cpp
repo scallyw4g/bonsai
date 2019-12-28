@@ -94,6 +94,13 @@ operator==(c_token T1, c_token T2)
   return Result;
 }
 
+b32
+operator!=(c_token T1, c_token T2)
+{
+  b32 Result = !(T1==T2);
+  return Result;
+}
+
 inline c_token
 CToken(counted_string Value)
 {
@@ -476,7 +483,8 @@ ParseDiscriminatedUnion(c_parse_result* Parser, memory_arena* Memory)
     {
       case CTokenType_Identifier:
       {
-        if ( ! (OptionalToken(Parser, CTokenType_Identifier) == CToken(CS("enum_only"))) )
+        // TODO(Jesse): How should we talk about string constants that refer to identifiers in the code?
+        if ( OptionalToken(Parser, CTokenType_Identifier) != CToken(CS("enum_only")) )
         {
           PushString(&StructStream,
                      FormatCountedString(Memory, "    %.*s %.*s;", Interior.Value.Count, Interior.Value.Start, Interior.Value.Count, Interior.Value.Start),

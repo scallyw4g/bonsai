@@ -11,9 +11,9 @@ YELLOW="\x1b[33m"
 WHITE="\x1b[37m"
 
 Delimeter="$RED-----------------------------------------------------------$WHITE"
-Success="$GREEN ✔ $WHITE"
-Building="$BLUE Building $WHITE"
-Failed="$RED ✗ $WHITE"
+Success="$GREEN  ✔ $WHITE"
+Building="$BLUE  Building $WHITE"
+Failed="$RED  ✗ $WHITE"
 
 ROOT="."
 SRC="$ROOT/src"
