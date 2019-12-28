@@ -47,13 +47,6 @@ typedef void (*bonsai_worker_thread_init_callback) (BONSAI_API_WORKER_THREAD_INI
 typedef void        (*bonsai_worker_thread_callback)    (BONSAI_API_WORKER_THREAD_CALLBACK_PARAMS);
 typedef game_state* (*bonsai_main_thread_init_callback) (BONSAI_API_MAIN_THREAD_INIT_CALLBACK_PARAMS);
 
-enum work_queue_entry_type
-{
-  type_work_queue_entry_noop,
-  type_work_queue_entry_init_world_chunk,
-  type_work_queue_entry_copy_buffer,
-};
-
 struct work_queue_entry_copy_buffer
 {
   untextured_3d_geometry_buffer* Src;
@@ -68,16 +61,13 @@ struct work_queue_entry_init_world_chunk
 
 
 
-struct work_queue_entry
+d_union(work_queue_entry,
 {
-  work_queue_entry_type Type;
-  game_state *GameState;
+  work_queue_entry_init_world_chunk;
+  work_queue_entry_copy_buffer;
+})
 
-  union {
-    work_queue_entry_init_world_chunk work_queue_entry_init_world_chunk;
-    work_queue_entry_copy_buffer work_queue_entry_copy_buffer;
-  };
-};
+#include <metaprogramming/output/platform.h>
 
 struct thread
 {

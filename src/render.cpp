@@ -986,7 +986,7 @@ BufferWorld(game_state* GameState, untextured_3d_geometry_buffer* Dest, world *W
         else if (!Chunk)
         {
           Chunk = GetWorldChunkFor(GameState->Memory, World, P);
-          QueueChunkForInit(GameState, &GameState->Plat->LowPriority, Chunk);
+          QueueChunkForInit(&GameState->Plat->LowPriority, Chunk);
         }
       }
     }

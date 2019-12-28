@@ -2032,7 +2032,7 @@ PushChunkView(debug_ui_render_group* Group, world_chunk* Chunk, window_layout* W
         Chunk->Mesh = 0;
         Chunk->FilledCount = 0;
         Chunk->Data->Flags = Chunk_Uninitialized;
-        QueueChunkForInit( DebugState->GameState, &DebugState->Plat->HighPriority, Chunk);
+        QueueChunkForInit( &DebugState->Plat->HighPriority, Chunk);
       }
 
       PushNewRow(Group);

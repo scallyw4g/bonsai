@@ -24,7 +24,7 @@ PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
 }
 
 inline void
-QueueChunkForInit(game_state *GameState, work_queue *Queue, world_chunk *Chunk)
+QueueChunkForInit(work_queue *Queue, world_chunk *Chunk)
 {
   TIMED_FUNCTION();
   Assert( Chunk->Data->Flags == Chunk_Uninitialized);
@@ -33,7 +33,6 @@ QueueChunkForInit(game_state *GameState, work_queue *Queue, world_chunk *Chunk)
 
   Entry.work_queue_entry_init_world_chunk.Input = (void*)Chunk;
   Entry.Type = type_work_queue_entry_init_world_chunk;
-  Entry.GameState = GameState;
 
   Chunk->Data->Flags = Chunk_Queued;
 
