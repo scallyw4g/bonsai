@@ -11,8 +11,9 @@ YELLOW="\x1b[33m"
 WHITE="\x1b[37m"
 
 Delimeter="$RED""-----------------------------------------------------------""$WHITE"
-Done="$GREEN""Done""$WHITE"
+Success="$GREEN"" ✔ """"$WHITE"
 Building="$BLUE""Building""$WHITE"
+Failed="$RED"" ✗""$WHTIE"
 
 ROOT="."
 SRC="$ROOT/src"
@@ -78,13 +79,10 @@ EXAMPLES_TO_BUILD="
   # $EXAMPLES/space_invaders
 
 EXECUTABLES_TO_BUILD="
-  $SRC/metaprogramming/preprocessor.cpp
+  $SRC/platform.cpp
+  $SRC/font/ttf.cpp
+  $SRC/net/server.cpp
 "
-
-  # $SRC/platform.cpp
-  # $SRC/font/ttf.cpp
-  # $SRC/net/server.cpp
-
 
 # TODO(Jesse): The allocation tests crash in release mode because of some
 # ultra-jank-tastic segfault recovery code.  Find another less janky way?
@@ -102,8 +100,29 @@ TESTS_TO_BUILD="
   $TESTS/objloader.cpp
   $TESTS/callgraph.cpp
   $TESTS/heap_allocation.cpp
-
 "
+
+function BuildPreprocessor {
+  which clang++ > /dev/null
+  [ $? -ne 0 ] && echo -e "Please install clang++" && exit 1
+
+  ColorizeTitle "Preprocessor"
+  executable="$SRC/metaprogramming/preprocessor.cpp"
+  SetOutputBinaryPathBasename "$executable" "$BIN"
+  echo -e "$Building $executable"
+  clang++                        \
+    $COMMON_OPTIMIZATION_OPTIONS \
+    $COMMON_COMPILER_OPTIONS     \
+    $COMMON_LINKER_OPTIONS       \
+    $COMMON_GL_DEFINES           \
+    -D BONSAI_INTERNAL=1         \
+    -I"$SRC"                     \
+    -o "$output_basename"        \
+    $executable && echo -e "$Success $executable"
+
+  [ ! -x bin/preprocessor ] && echo "" && echo -e "$Failed Building preprocessor, exiting." && exit 1
+
+}
 
 function BuildWithClang {
   which clang++ > /dev/null
@@ -125,7 +144,7 @@ function BuildWithClang {
       -D BONSAI_INTERNAL=1         \
       -I"$SRC"                     \
       -o "$output_basename"        \
-      $executable && echo -e "$Done $executable" &
+      $executable && echo -e "$Success $executable" &
   done
 
   # echo ""
@@ -141,7 +160,7 @@ function BuildWithClang {
   #     -I"$SRC"                   \
   #     -I"$TESTS"                 \
   #     -o "$output_basename"      \
-  #     $executable && echo -e "$Done $executable" &
+  #     $executable && echo -e "$Success $executable" &
   # done
 
   # echo ""
@@ -159,7 +178,7 @@ function BuildWithClang {
   #     -I"$TESTS"                   \
   #     -I"$SRC/debug_system"        \
   #     -o "$output_basename"        \
-  #     $executable && echo -e "$Done $executable" &
+  #     $executable && echo -e "$Success $executable" &
   # done
 
   # echo ""
@@ -177,7 +196,7 @@ function BuildWithClang {
   #   -I"$SRC/GL"                    \
   #   -I"$SRC/debug_system"          \
   #   -o "$BIN/lib_debug_system.so"  \
-  #   "$DEBUG_SRC_FILE" && echo -e "$Done $DEBUG_SRC_FILE" &
+  #   "$DEBUG_SRC_FILE" && echo -e "$Success $DEBUG_SRC_FILE" &
 
   # echo ""
   # ColorizeTitle "Examples"
@@ -196,7 +215,7 @@ function BuildWithClang {
   #     -o "$output_basename"                                     \
   #     "$executable/game.cpp" &&                                 \
   #     mv "$output_basename" "$output_basename""_loadable.so" && \
-  #     echo -e "$Done $executable" &
+  #     echo -e "$Success $executable" &
   # done
 
   echo -e ""
@@ -204,6 +223,10 @@ function BuildWithClang {
   echo -e ""
 
   wait
+
+  echo -e ""
+  echo -e "$Delimeter"
+  echo -e ""
 
   echo -e ""
 }
@@ -220,10 +243,34 @@ echo -e ""
 echo -e "$Delimeter"
 echo -e ""
 
-ColorizeTitle "Preprocessing"
+BuildPreprocessor
+[ ! -x bin/preprocessor ] && echo -e "$Failed Couldn't find preprocessor, exiting." && exit 1
 
-scripts/preprocess.sh
-[ $? -ne 0 ] && echo "" && echo -e "$RED""Failed""$WHITE"" Preprocessing, exiting." && exit 1
+echo -e ""
+echo -e "$Delimeter"
+echo -e ""
+
+ColorizeTitle "Preprocessing"
+SOURCE_FILES=$(find src -type f -not -wholename "src/metaprogramming/defines.h")
+
+PreprocessSuccess=0
+
+for file in $SOURCE_FILES; do
+  output=$(bin/preprocessor "$file")
+  if [ "$?" -eq "1" ]; then
+    if [ ! -z "$output" ]; then
+      echo -e "$Success $file"
+      echo "$output" > "src/metaprogramming/output/$(basename $file)"
+    fi
+
+  else
+    echo -e "$RED"" ✗""$WHITE"" $file"
+    PreprocessSuccess=1
+  fi
+
+done
+
+[ $PreprocessSuccess -ne 0 ] && echo "" && echo -e "$Failed Preprocessing, exiting." && exit 1
 
 if [ "$EMCC" == "1" ]; then
 
