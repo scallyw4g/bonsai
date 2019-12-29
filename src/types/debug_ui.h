@@ -220,6 +220,7 @@ struct ui_render_command_button_end
   button_end_params Params;
 };
 
+
 struct ui_render_command_table_start
 {
   layout Layout;
@@ -228,24 +229,14 @@ struct ui_render_command_table_start
   ui_element_reference RelativeTo;
 };
 
-/*
- * d_union
- * this is test comment code
- * things d_union
- */
+// Thing
+// d_union
+/*  */
 
 d_union(ui_render_command,
 {
   ui_render_command_window_start;
   ui_render_command_window_end;
-
-  // This should be legal d_union
-  // d_union
-
-  /*
-   * This should also be legal d_union
-   * d_union
-   d_union */
 
   ui_render_command_button_start;
   ui_render_command_button_end;

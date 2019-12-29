@@ -345,6 +345,7 @@ TokenizeFile(const char* FileName, memory_arena* Memory)
 
             case CTokenType_Star:
             {
+              RuntimeBreak();
               T.Type = CTokenType_Comment;
               T.Value = ReadUntilTerminatorString(&SourceFileStream, CS("*/"));
             } break;
@@ -432,18 +433,12 @@ RequireToken(c_parse_result* Parser, c_token_type Type)
   return Result;
 }
 
-void
-PushString(string_stream* Stream, counted_string String, memory_arena* Memory)
-{
-  string_chunk* Push = Allocate(string_chunk, Memory, 1);
-  Push->String = String;
-
-  Push->Prev = &Stream->Sentinel;
-  Push->Next = Stream->Sentinel.Next;
-  Stream->Sentinel.Next->Prev = Push;
-  Stream->Sentinel.Next = Push;
-
-  return;
+#define DList_Push(Stream, Push)      \
+{                                     \
+  Push->Prev = &Stream->Sentinel;     \
+  Push->Next = Stream->Sentinel.Next; \
+  Stream->Sentinel.Next->Prev = Push; \
+  Stream->Sentinel.Next = Push;       \
 }
 
 counted_string
@@ -459,13 +454,10 @@ PopString(string_stream* Stream)
   return Result;
 }
 
-string_stream
-StringStream()
-{
-  string_stream Stream = {};
-  Stream.Sentinel.Next = &Stream.Sentinel;
-  Stream.Sentinel.Prev = &Stream.Sentinel;
-  return Stream;
+#define InitSentinel(Sentinel) \
+{ \
+  Sentinel.Next = &Sentinel; \
+  Sentinel.Prev = &Sentinel; \
 }
 
 void
@@ -480,22 +472,88 @@ LogStringStream(string_stream* Stream)
   Log("\n\n");
 }
 
+enum d_union_flags
+{
+  d_union_flag_none,
+  d_union_flag_enum_only
+};
+
+struct d_union_member
+{
+  counted_string Name;
+  u32 Flags;
+  d_union_member* Next;
+  d_union_member* Prev;
+};
+
+struct d_union_decl
+{
+  counted_string Name;
+  d_union_member Sentinel;
+};
+
+d_union_member*
+DUnionMember(counted_string Name, d_union_flags Flags, memory_arena* Memory)
+{
+  d_union_member* Result = Allocate(d_union_member, Memory, 1);
+  Result->Name = Name;
+  Result->Flags = Flags;
+  return Result;
+}
+
+void
+PushMember(d_union_decl* dUnion, c_token MemberIdentifierToken, d_union_flags Flags, memory_arena* Memory)
+{
+  Assert(MemberIdentifierToken.Type == CTokenType_Identifier);
+  d_union_member* Member = DUnionMember(MemberIdentifierToken.Value, Flags, Memory);
+  DList_Push(dUnion, Member);
+}
+
+void
+PrintTypeEnumFor(d_union_decl* dUnion)
+{
+  Log("enum %.*s_type\n{\n  type_%.*s_noop,\n", dUnion->Name.Count, dUnion->Name.Start, dUnion->Name.Count, dUnion->Name.Start);
+
+  d_union_member* Member = dUnion->Sentinel.Next;
+  while (Member != &dUnion->Sentinel)
+  {
+    Log("  type_%.*s,\n", Member->Name.Count, Member->Name.Start);
+    Member = Member->Next;
+  }
+
+  Log("};\n\n");
+  return;
+}
+
+void
+PrintStructFor(d_union_decl* dUnion)
+{
+  counted_string UnionName = dUnion->Name;
+  Log("struct %.*s\n{\n  %.*s_type Type;\n\n  union\n  {\n", UnionName.Count, UnionName.Start, UnionName.Count, UnionName.Start);
+
+  d_union_member* Member = dUnion->Sentinel.Next;
+  while (Member != &dUnion->Sentinel)
+  {
+    if (Member->Flags != d_union_flag_enum_only)
+    {
+      Log("    %.*s %.*s;\n", Member->Name.Count, Member->Name.Start, Member->Name.Count, Member->Name.Start);
+    }
+    Member = Member->Next;
+  }
+
+  Log("  };\n};\n");
+  return;
+}
+
 void
 ParseDiscriminatedUnion(c_parse_result* Parser, memory_arena* Memory)
 {
-  string_stream StructStream = StringStream();
-  string_stream EnumStream = StringStream();
+  d_union_decl dUnion = {};
+
+  InitSentinel(dUnion.Sentinel);
 
   RequireToken(Parser, CTokenType_OpenParen);
-  c_token UnionName = RequireToken(Parser, CTokenType_Identifier);
-
-  PushString(&StructStream,
-             FormatCountedString(Memory, "struct %.*s\n{\n  %.*s_type Type;\n\n  union\n  {", UnionName.Value.Count, UnionName.Value.Start, UnionName.Value.Count, UnionName.Value.Start),
-             Memory);
-
-  PushString(&EnumStream,
-             FormatCountedString(Memory, "enum %.*s_type\n{\n  type_%.*s_noop,\n", UnionName.Value.Count, UnionName.Value.Start, UnionName.Value.Count, UnionName.Value.Start),
-             Memory);
+  dUnion.Name = RequireToken(Parser, CTokenType_Identifier).Value;
 
   RequireToken(Parser, CTokenType_Comma);
   RequireToken(Parser, CTokenType_OpenBrace);
@@ -509,35 +567,25 @@ ParseDiscriminatedUnion(c_parse_result* Parser, memory_arena* Memory)
     {
       case CTokenType_Identifier:
       {
+        d_union_flags Flags = {};
         // TODO(Jesse): How should we talk about string constants that refer to identifiers in the code?
-        if ( OptionalToken(Parser, CTokenType_Identifier) != CToken(CS("enum_only")) )
+        if ( OptionalToken(Parser, CTokenType_Identifier) == CToken(CS("enum_only")) )
         {
-          PushString(&StructStream,
-                     FormatCountedString(Memory, "    %.*s %.*s;", Interior.Value.Count, Interior.Value.Start, Interior.Value.Count, Interior.Value.Start),
-                     Memory);
+          Flags = d_union_flag_enum_only;
         }
 
-        PushString(&EnumStream,
-                   FormatCountedString(Memory, "  type_%.*s,", Interior.Value.Count, Interior.Value.Start),
-                   Memory);
+        PushMember(&dUnion, Interior, Flags, Memory);
 
         RequireToken(Parser, CTokenType_Semicolon);
       } break;
 
       case CTokenType_CloseBrace:
       {
-        PushString(&StructStream, FormatCountedString(Memory, "  };\n};\n"), Memory);
-        PushString(&EnumStream, FormatCountedString(Memory, "};"), Memory);
         RequireToken(Parser, CTokenType_CloseParen);
         Complete = True;
       } break;
 
       case CTokenType_Newline:
-      {
-        PushString(&StructStream, FormatCountedString(Memory, "\n"), Memory);
-        PushString(&EnumStream, FormatCountedString(Memory, "\n"), Memory);
-      } break;
-
       case CTokenType_Comment:
       case CTokenType_Space: { } break;
 
@@ -550,8 +598,10 @@ ParseDiscriminatedUnion(c_parse_result* Parser, memory_arena* Memory)
 
   if (Parser->Valid)
   {
-    LogStringStream(&EnumStream);
-    LogStringStream(&StructStream);
+    PrintTypeEnumFor(&dUnion);
+    PrintStructFor(&dUnion);
+    /* LogStringStream(&EnumStream); */
+    /* LogStringStream(&StructStream); */
   }
   else
   {
@@ -567,12 +617,25 @@ struct arguments
   string_stream Files;
 };
 
+void
+PushString(string_stream* Stream, counted_string String, memory_arena* Memory)
+{
+  string_chunk* Push = Allocate(string_chunk, Memory, 1);
+  Push->String = String;
+
+  Push->Prev = &Stream->Sentinel;
+  Push->Next = Stream->Sentinel.Next;
+  Stream->Sentinel.Next->Prev = Push;
+  Stream->Sentinel.Next = Push;
+
+  return;
+}
+
 arguments
 ParseArgs(const char** ArgStrings, s32 ArgCount, memory_arena* Memory)
 {
-  arguments Result = {
-    .Files = StringStream(),
-  };
+  arguments Result = {};
+  InitSentinel(Result.Files.Sentinel);
 
 
   for (s32 ArgIndex = 1;
@@ -638,6 +701,11 @@ main(s32 ArgCount, const char** ArgStrings)
               {
                 ParseDiscriminatedUnion(&Parser, Memory);
               }
+
+              if (StringsMatch(Token.Value, CS("for_members")))
+              {
+              }
+
             } break;
 
             default: { } break;

@@ -290,7 +290,7 @@ if [ "$EMCC" == "1" ]; then
     -o bin/emscripten/ttf.html
 
 else
-  time BuildWithClang
+  time # BuildWithClang
 fi
 
 

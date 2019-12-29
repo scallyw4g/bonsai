@@ -1,9 +1,8 @@
 enum work_queue_entry_type
 {
   type_work_queue_entry_noop,
-
-  type_work_queue_entry_init_world_chunk,
   type_work_queue_entry_copy_buffer,
+  type_work_queue_entry_init_world_chunk,
 };
 
 struct work_queue_entry
@@ -12,7 +11,7 @@ struct work_queue_entry
 
   union
   {
-    work_queue_entry_init_world_chunk work_queue_entry_init_world_chunk;
     work_queue_entry_copy_buffer work_queue_entry_copy_buffer;
+    work_queue_entry_init_world_chunk work_queue_entry_init_world_chunk;
   };
 };

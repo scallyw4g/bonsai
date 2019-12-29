@@ -1502,73 +1502,14 @@ FindAbsoluteDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, u32 First
 
     switch(Command->Type)
     {
-
-      case type_ui_render_command_window_start:
+      for_members(Command)
       {
-        ui_render_command_window_start* TypedCommand = RenderCommandAs(window_start, Command);
-        Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&TypedCommand->Layout));
-        Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&TypedCommand->Layout));
-      } break;
-
-      case type_ui_render_command_table_start:
-      {
-        ui_render_command_table_start* TypedCommand = RenderCommandAs(table_start, Command);
-        Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&TypedCommand->Layout));
-        Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&TypedCommand->Layout));
-      } break;
-
-      case type_ui_render_command_text:
-      {
-        ui_render_command_text* TypedCommand = RenderCommandAs(text, Command);
-        Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&TypedCommand->Layout));
-        Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&TypedCommand->Layout));
-      } break;
-
-      case type_ui_render_command_textured_quad:
-      {
-        ui_render_command_textured_quad* TypedCommand = RenderCommandAs(textured_quad, Command);
-        Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&TypedCommand->Layout));
-        Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&TypedCommand->Layout));
-      } break;
-
-      case type_ui_render_command_untextured_quad_at:
-      {
-        ui_render_command_untextured_quad_at* TypedCommand = RenderCommandAs(untextured_quad_at, Command);
-        Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&TypedCommand->Layout));
-        Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&TypedCommand->Layout));
-      } break;
-
-      case type_ui_render_command_untextured_quad:
-      {
-        ui_render_command_untextured_quad* TypedCommand = RenderCommandAs(untextured_quad, Command);
-        Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&TypedCommand->Layout));
-        Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&TypedCommand->Layout));
-      } break;
-
-      case type_ui_render_command_column_start:
-      {
-        ui_render_command_column_start* TypedCommand = RenderCommandAs(column_start, Command);
-        Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&TypedCommand->Layout));
-        Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&TypedCommand->Layout));
-      } break;
-
-      case type_ui_render_command_button_start:
-      {
-        ui_render_command_button_start* TypedCommand = RenderCommandAs(button_start, Command);
-        Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&TypedCommand->Layout));
-        Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&TypedCommand->Layout));
-      } break;
-
-      case type_ui_render_command_column_end:
-      case type_ui_render_command_noop:
-      case type_ui_render_command_window_end:
-      case type_ui_render_command_table_end:
-      case type_ui_render_command_button_end:
-      case type_ui_render_command_text_at:
-      case type_ui_render_command_new_row:
-      case type_ui_render_command_border:
-      {
-      } break;
+        case Type:
+        {
+          Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&Member->Layout));
+          Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&Member->Layout));
+        } break
+      }
     }
 
     continue;
