@@ -231,12 +231,16 @@ struct ui_render_command_table_start
 
 // Thing
 // d_union
-/*  */
+/* this should be valid d_union */
 
 d_union(ui_render_command,
 {
   ui_render_command_window_start;
   ui_render_command_window_end;
+
+ // Thing
+ // d_union
+ /* this should be valid d_union */
 
   ui_render_command_button_start;
   ui_render_command_button_end;

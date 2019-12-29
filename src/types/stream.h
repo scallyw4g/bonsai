@@ -151,7 +151,7 @@ ReadUntilTerminatorString(ansi_stream *Cursor, counted_string Terminator)
       Found = True;
     }
 
-    Cursor->At += Terminator.Count;
+    ++Cursor->At;
   }
 
   counted_string Result = {};

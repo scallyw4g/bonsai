@@ -345,7 +345,6 @@ TokenizeFile(const char* FileName, memory_arena* Memory)
 
             case CTokenType_Star:
             {
-              RuntimeBreak();
               T.Type = CTokenType_Comment;
               T.Value = ReadUntilTerminatorString(&SourceFileStream, CS("*/"));
             } break;
