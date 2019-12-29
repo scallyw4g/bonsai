@@ -544,7 +544,7 @@ PrintStructFor(d_union_decl* dUnion)
   return;
 }
 
-void
+d_union_decl
 ParseDiscriminatedUnion(c_parse_result* Parser, memory_arena* Memory)
 {
   d_union_decl dUnion = {};
@@ -595,19 +595,7 @@ ParseDiscriminatedUnion(c_parse_result* Parser, memory_arena* Memory)
     }
   }
 
-  if (Parser->Valid)
-  {
-    PrintTypeEnumFor(&dUnion);
-    PrintStructFor(&dUnion);
-    /* LogStringStream(&EnumStream); */
-    /* LogStringStream(&StructStream); */
-  }
-  else
-  {
-    Error("Parsing d_union declaration");
-  }
-
-  return;
+  return dUnion;
 }
 
 struct arguments
@@ -698,7 +686,17 @@ main(s32 ArgCount, const char** ArgStrings)
             {
               if (StringsMatch(Token.Value, CS("d_union")))
               {
-                ParseDiscriminatedUnion(&Parser, Memory);
+                d_union_decl dUnion = ParseDiscriminatedUnion(&Parser, Memory);
+
+                if (Parser.Valid)
+                {
+                  PrintTypeEnumFor(&dUnion);
+                  PrintStructFor(&dUnion);
+                }
+                else
+                {
+                  Error("Parsing d_union declaration");
+                }
               }
 
               if (StringsMatch(Token.Value, CS("for_members")))
