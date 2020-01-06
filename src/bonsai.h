@@ -601,6 +601,18 @@ RandomBilateral(random_series *Entropy)
   return Result;
 }
 
+inline u32
+RandomBetween(u32 LowestPossibleValue, random_series* Entropy, u32 HighestPossibleValue)
+{
+  Assert(LowestPossibleValue <= HighestPossibleValue);
+
+  r32 Value = RandomUnilateral(Entropy);
+  u32 Range = (HighestPossibleValue+1) - LowestPossibleValue;
+
+  u32 Result = (u32)(Value*Range) + LowestPossibleValue;
+  return Result;
+}
+
 inline b32
 RandomChoice(random_series* Entropy)
 {

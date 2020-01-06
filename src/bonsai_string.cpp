@@ -39,3 +39,11 @@ Concat(counted_string S1, counted_string S2, memory_arena* Memory)
 
   return Result;
 }
+
+function const char*
+GetNullTerminated(counted_string Str)
+{
+  const char* Result = Allocate(const char, TranArena, Str.Count+1);
+  MemCopy((u8*)Str.Start, (u8*)Result, Str.Count);
+  return Result;
+}

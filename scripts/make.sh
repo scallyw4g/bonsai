@@ -261,7 +261,9 @@ PreprocessSuccess=0
 ColorizeTitle "Preprocessing"
 for file in $SOURCE_FILES; do
   output=$(bin/preprocessor "$file")
-  if [ "$?" -ne "0" ]; then
+  if [ "$?" -eq "0" ]; then
+    echo -e "$Success $file"
+  else
     echo "$output"
     echo -e "$Failed $file"
     PreprocessSuccess=1

@@ -494,30 +494,30 @@ PushMember(d_union_decl* dUnion, c_token MemberIdentifierToken, d_union_flags Fl
   DList_Push(dUnion, Member);
 }
 
-void
+function b32
 WriteEnumTo(d_union_decl* dUnion, native_file* OutFile, memory_arena* Memory)
 {
   counted_string Decl = FormatCountedString(Memory, "enum %.*s_type\n{\n  type_%.*s_noop,\n", dUnion->Name.Count, dUnion->Name.Start, dUnion->Name.Count, dUnion->Name.Start);
-  WriteToFile(OutFile, Decl);
+  b32 Result = WriteToFile(OutFile, Decl);
 
   d_union_member* Member = dUnion->Sentinel.Next;
   while (Member != &dUnion->Sentinel)
   {
     counted_string MemberDef = FormatCountedString(Memory, "  type_%.*s,\n", Member->Type.Count, Member->Type.Start);
-    WriteToFile(OutFile, MemberDef);
+    Result &= WriteToFile(OutFile, MemberDef);
     Member = Member->Next;
   }
 
-  WriteToFile(OutFile, CS("};\n\n"));
-  return;
+  Result &= WriteToFile(OutFile, CS("};\n\n"));
+  return Result;
 }
 
-void
+function b32
 WriteStructTo(d_union_decl* dUnion, native_file* OutFile, memory_arena* Memory)
 {
   counted_string UnionName = dUnion->Name;
   counted_string Decl = FormatCountedString(Memory, "struct %.*s\n{\n  %.*s_type Type;\n\n  union\n  {\n", UnionName.Count, UnionName.Start, UnionName.Count, UnionName.Start);
-  WriteToFile(OutFile, Decl);
+  b32 Result = WriteToFile(OutFile, Decl);
 
   d_union_member* Member = dUnion->Sentinel.Next;
   while (Member != &dUnion->Sentinel)
@@ -525,13 +525,13 @@ WriteStructTo(d_union_decl* dUnion, native_file* OutFile, memory_arena* Memory)
     if (Member->Flags != d_union_flag_enum_only)
     {
       counted_string MemberDef = FormatCountedString(Memory, "    %.*s %.*s;\n", Member->Type.Count, Member->Type.Start, Member->Name.Count, Member->Name.Start);
-      WriteToFile(OutFile, MemberDef);
+      Result &= WriteToFile(OutFile, MemberDef);
     }
     Member = Member->Next;
   }
 
-  WriteToFile(OutFile, CS("  };\n};\n"));
-  return;
+  Result &= WriteToFile(OutFile, CS("  };\n};\n"));
+  return Result;
 }
 
 d_union_decl
@@ -668,6 +668,7 @@ main(s32 ArgCount, const char** ArgStrings)
   {
     memory_arena Memory_ = {};
     memory_arena* Memory = &Memory_;
+    random_series FileNameEntropy = {3215432};
 
     arguments Args = ParseArgs(ArgStrings, ArgCount, Memory);
 
@@ -697,18 +698,38 @@ main(s32 ArgCount, const char** ArgStrings)
 
                 if (Parser.Valid)
                 {
-                  counted_string OutFilePath = Concat(CS("src/metaprogramming/output"), Basename(NextFile), Memory);
-                  native_file OutFile = OpenFile(OutFilePath);
-                  if (OutFile.Handle)
+                  native_file TempFile = GetTempFile(&FileNameEntropy, Memory);
+                  if (TempFile.Handle)
                   {
-                    WriteEnumTo(&dUnion, &OutFile, Memory);
-                    WriteStructTo(&dUnion, &OutFile, Memory);
-                    Ensure(CloseFile(&OutFile));
+                    b32 FileWritesSucceeded = WriteEnumTo(&dUnion, &TempFile, Memory);
+                    FileWritesSucceeded &= WriteStructTo(&dUnion, &TempFile, Memory);
+                    FileWritesSucceeded &= CloseFile(&TempFile);
+
+                    if (FileWritesSucceeded)
+                    {
+                      counted_string FinalFilePath = Concat(CS("src/metaprogramming/output"), Basename(NextFile), Memory);
+                      if (!Rename(TempFile, FinalFilePath))
+                      {
+                        Error("Renaming tempfile: %.*s", (s32)TempFile.Path.Count, TempFile.Path.Start);
+                        Success = False;
+                      }
+                    }
+                    else
+                    {
+                      Error("Writing to tempfile: %.*s", (s32)TempFile.Path.Count, TempFile.Path.Start);
+                      Success = False;
+                    }
+                  }
+                  else
+                  {
+                    Error("Opening tempfile: %.*s", (s32)TempFile.Path.Count, TempFile.Path.Start);
+                    Success = False;
                   }
                 }
                 else
                 {
                   Error("Parsing d_union declaration");
+                  Success = False;
                 }
               }
 
@@ -740,6 +761,6 @@ main(s32 ArgCount, const char** ArgStrings)
     Warn("No files passed, exiting.");
   }
 
-  s32 Result = Success? SUCCESS_EXIT_CODE : FAILURE_EXIT_CODE ;
+  s32 Result = Success ? SUCCESS_EXIT_CODE : FAILURE_EXIT_CODE ;
   return Result;
 }

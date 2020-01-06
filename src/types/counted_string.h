@@ -1,4 +1,5 @@
 
+// TODO(Jesse): Make this non-const?
 struct counted_string
 {
   umm Count;

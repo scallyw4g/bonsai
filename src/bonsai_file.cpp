@@ -1,7 +1,7 @@
 struct native_file
 {
   FILE* Handle;
-  counted_string FilePath;
+  counted_string Path;
 };
 
 function b32
@@ -14,7 +14,7 @@ CloseFile(native_file* File)
   }
   else
   {
-    Error("Attempted to close %.*s, which was not open.", (s32)File->FilePath.Count, File->FilePath.Start);
+    Error("Attempted to close %.*s, which was not open.", (s32)File->Path.Count, File->Path.Start);
   }
 
   return Result;
@@ -22,11 +22,20 @@ CloseFile(native_file* File)
 
 static const char* DefaultPermissions = "rw+b";
 
+function b32
+Rename(native_file CurrentFile, counted_string NewFilePath)
+{
+  const char* Old = GetNullTerminated(CurrentFile.Path);
+  const char* New = GetNullTerminated(NewFilePath);
+  b32 Result = (rename(Old, New) == 0) ? True : False;
+  return Result;
+}
+
 function native_file
 OpenFile(const char* FilePath, const char* Permissions = DefaultPermissions)
 {
   native_file Result = {
-    .FilePath = CS(FilePath)
+    .Path = CS(FilePath)
   };
 
   FILE* Handle = fopen(FilePath, Permissions);
@@ -36,7 +45,7 @@ OpenFile(const char* FilePath, const char* Permissions = DefaultPermissions)
   }
   else
   {
-    Error("Opening File %s", FilePath);
+    Error("Opening File %s, errno: %d", FilePath, errno);
   }
 
   return Result;
@@ -45,9 +54,31 @@ OpenFile(const char* FilePath, const char* Permissions = DefaultPermissions)
 function native_file
 OpenFile(counted_string FilePath, const char* Permissions = DefaultPermissions)
 {
-  const char* NullTerminatedFilePath = Allocate(const char, TranArena, FilePath.Count+1);
-  MemCopy((u8*)FilePath.Start, (u8*)NullTerminatedFilePath, FilePath.Count);
+  const char* NullTerminatedFilePath = GetNullTerminated(FilePath);
   native_file Result = OpenFile(NullTerminatedFilePath, Permissions);
+  return Result;
+}
+
+function native_file
+GetTempFile(random_series* Entropy, memory_arena* Memory)
+{
+  u32 FilenameLength = 32;
+
+  counted_string Filename = {
+    .Start = Allocate(char, Memory, FilenameLength),
+    .Count = FilenameLength
+  };
+
+  for (u32 CharIndex = 0;
+      CharIndex < FilenameLength;
+      ++CharIndex)
+  {
+    ((char*)Filename.Start)[CharIndex] = (s8)RandomBetween(97, Entropy, 122);
+  }
+
+  Filename = Concat(CS("tmp/"), Filename, Memory);
+
+  native_file Result = OpenFile(Filename, "wb");
   return Result;
 }
 
@@ -62,7 +93,7 @@ WriteToFile(native_file* File, counted_string Str)
   }
   else
   {
-    Error("Writing to file %.*s", (s32)File->FilePath.Count, File->FilePath.Start);
+    Error("Writing to file %.*s", (s32)File->Path.Count, File->Path.Start);
   }
   return Result;
 }
