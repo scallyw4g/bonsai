@@ -24,3 +24,18 @@ FormatCountedString(memory_arena *Memory, const char* FormatString, ...)
   counted_string Result = CountedString(Buffer);
   return Result;
 }
+
+function counted_string
+Concat(counted_string S1, counted_string S2, memory_arena* Memory)
+{
+  umm TotalLength = S1.Count + S2.Count;
+  counted_string Result = {
+    .Start = Allocate(char, Memory, TotalLength),
+    .Count = TotalLength
+  };
+
+  MemCopy((u8*)S1.Start, (u8*)Result.Start, S1.Count);
+  MemCopy((u8*)S2.Start, (u8*)Result.Start+S1.Count, S2.Count);
+
+  return Result;
+}

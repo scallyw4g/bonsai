@@ -16,7 +16,6 @@ global_variable chunk_dimension WORLD_CHUNK_DIM = Chunk_Dimension(32,32,16);
 #include <render_position.cpp>
 #include <camera.cpp>
 
-global_variable memory_arena* TranArena = AllocateArena();
 #include <debug_render_system.cpp>
 
 global_variable debug_state Internal_DebugState = {};
@@ -223,8 +222,6 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   {
     DebugState->DoChunkPicking = False;
   }
-
-  RewindArena(TranArena);
 
   return;
 }

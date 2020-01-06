@@ -6,10 +6,6 @@
 
 #include <test_utils.cpp>
 
-debug_global memory_arena* TranArena = AllocateArena();
-#include <counted_string.cpp>
-#include <stream.cpp>
-
 void
 TestPopWord(ansi_stream *Stream, memory_arena *Memory)
 {
@@ -242,6 +238,20 @@ main()
   TestReadUntilTerminatorList();
 
   TestSplit();
+
+  {
+    counted_string Path = CS("thing/ding/dong");
+    counted_string Dong = Basename(Path);
+    TestThat(StringsMatch(Dong, CS("/dong")));
+  }
+
+  counted_string Thing = CS("thing");
+  counted_string Thang = CS("thang");
+
+  counted_string ThingThang = Concat(Thing, Thang, TranArena);
+  TestThat(StringsMatch(ThingThang, CS("thingthang")));
+
+
 
   TestSuiteEnd();
   exit(TestsFailed);

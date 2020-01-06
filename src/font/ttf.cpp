@@ -7,10 +7,6 @@
 
 #include <bitmap.cpp>
 
-global_variable memory_arena* TranArena = {};
-#include <counted_string.cpp>
-#include <stream.cpp>
-
 
 global_variable v4 White = V4(1,1,1,0);
 global_variable v4 Black = {};

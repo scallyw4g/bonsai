@@ -366,10 +366,15 @@ FileExists(const char *Path)
 {
   b32 Result = False;
 
-  if (FILE *file = fopen(Path, "r"))
+  native_file File = OpenFile(Path);
+  if (File.Handle)
   {
-    fclose(file);
     Result = True;
+    if (!CloseFile(&File))
+    {
+      Error("Opened %s, but could not close it.", Path);
+      Result = False;
+    }
   }
 
   return Result;
@@ -657,6 +662,8 @@ main()
 
     BonsaiSwapBuffers(&Os);
     RealDt = MAIN_THREAD_ADVANCE_DEBUG_SYSTEM();
+
+    RewindArena(TranArena);
   }
 
   Info("Shutting Down");

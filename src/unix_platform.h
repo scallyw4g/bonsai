@@ -75,7 +75,6 @@ typedef GLXContext gl_context;
 typedef pthread_mutex_t native_mutex;
 typedef Window window;
 
-
 inline void
 WakeThread( semaphore *Semaphore )
 {

@@ -11,10 +11,6 @@
 #include <chunk.cpp>
 #include <bonsai_mesh.cpp>
 
-
-debug_global memory_arena* TranArena = AllocateArena();
-#include <counted_string.cpp>
-#include <stream.cpp>
 #include <loaders/obj.cpp>
 
 s32

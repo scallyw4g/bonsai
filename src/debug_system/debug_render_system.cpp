@@ -1,6 +1,4 @@
 #include <texture.cpp>
-#include <counted_string.cpp>
-#include <stream.cpp>
 #include <shader.cpp>
 #include <gpu_mapped_buffer.cpp>
 

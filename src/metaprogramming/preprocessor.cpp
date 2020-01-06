@@ -5,10 +5,6 @@
 #include <bonsai_types.h>
 #include <unix_platform.cpp>
 
-global_variable memory_arena* TranArena = {};
-#include <counted_string.cpp>
-#include <stream.cpp>
-
 enum c_token_type
 {
   CTokenType_Unknown,
@@ -459,18 +455,6 @@ PopString(string_stream* Stream)
   Sentinel.Prev = &Sentinel; \
 }
 
-void
-LogStringStream(string_stream* Stream)
-{
-  string_chunk* At = Stream->Sentinel.Prev;
-  while (At != &Stream->Sentinel)
-  {
-    Log("%.*s", At->String.Count, At->String.Start);
-    At = At->Prev;
-  }
-  Log("\n\n");
-}
-
 enum d_union_flags
 {
   d_union_flag_none,
@@ -511,38 +495,42 @@ PushMember(d_union_decl* dUnion, c_token MemberIdentifierToken, d_union_flags Fl
 }
 
 void
-PrintTypeEnumFor(d_union_decl* dUnion)
+WriteEnumTo(d_union_decl* dUnion, native_file* OutFile, memory_arena* Memory)
 {
-  Log("enum %.*s_type\n{\n  type_%.*s_noop,\n", dUnion->Name.Count, dUnion->Name.Start, dUnion->Name.Count, dUnion->Name.Start);
+  counted_string Decl = FormatCountedString(Memory, "enum %.*s_type\n{\n  type_%.*s_noop,\n", dUnion->Name.Count, dUnion->Name.Start, dUnion->Name.Count, dUnion->Name.Start);
+  WriteToFile(OutFile, Decl);
 
   d_union_member* Member = dUnion->Sentinel.Next;
   while (Member != &dUnion->Sentinel)
   {
-    Log("  type_%.*s,\n", Member->Type.Count, Member->Type.Start);
+    counted_string MemberDef = FormatCountedString(Memory, "  type_%.*s,\n", Member->Type.Count, Member->Type.Start);
+    WriteToFile(OutFile, MemberDef);
     Member = Member->Next;
   }
 
-  Log("};\n\n");
+  WriteToFile(OutFile, CS("};\n\n"));
   return;
 }
 
 void
-PrintStructFor(d_union_decl* dUnion)
+WriteStructTo(d_union_decl* dUnion, native_file* OutFile, memory_arena* Memory)
 {
   counted_string UnionName = dUnion->Name;
-  Log("struct %.*s\n{\n  %.*s_type Type;\n\n  union\n  {\n", UnionName.Count, UnionName.Start, UnionName.Count, UnionName.Start);
+  counted_string Decl = FormatCountedString(Memory, "struct %.*s\n{\n  %.*s_type Type;\n\n  union\n  {\n", UnionName.Count, UnionName.Start, UnionName.Count, UnionName.Start);
+  WriteToFile(OutFile, Decl);
 
   d_union_member* Member = dUnion->Sentinel.Next;
   while (Member != &dUnion->Sentinel)
   {
     if (Member->Flags != d_union_flag_enum_only)
     {
-      Log("    %.*s %.*s;\n", Member->Type.Count, Member->Type.Start, Member->Name.Count, Member->Name.Start);
+      counted_string MemberDef = FormatCountedString(Memory, "    %.*s %.*s;\n", Member->Type.Count, Member->Type.Start, Member->Name.Count, Member->Name.Start);
+      WriteToFile(OutFile, MemberDef);
     }
     Member = Member->Next;
   }
 
-  Log("  };\n};\n");
+  WriteToFile(OutFile, CS("  };\n};\n"));
   return;
 }
 
@@ -600,17 +588,19 @@ ParseDiscriminatedUnion(c_parse_result* Parser, memory_arena* Memory)
   return dUnion;
 }
 
-function void
-ParseForMembers(c_parse_result* Parser, memory_arena* Memory)
-{
-  RequireToken(Parser, CTokenType_OpenParen);
-  counted_string Type = RequireToken(Parser, CTokenType_Identifier).Value;
+/* function void */
+/* ParseForMembers(c_parse_result* Parser, memory_arena* Memory) */
+/* { */
+/*   NotImplemented; */
 
-  RequireToken(Parser, CTokenType_Comma);
-  RequireToken(Parser, CTokenType_OpenBrace);
+/*   RequireToken(Parser, CTokenType_OpenParen); */
+/*   counted_string Type = RequireToken(Parser, CTokenType_Identifier).Value; */
 
-  return;
-}
+/*   RequireToken(Parser, CTokenType_Comma); */
+/*   RequireToken(Parser, CTokenType_OpenBrace); */
+
+/*   return; */
+/* } */
 
 struct arguments
 {
@@ -666,10 +656,13 @@ ParseArgs(const char** ArgStrings, s32 ArgCount, memory_arena* Memory)
   return Result;
 }
 
+#define SUCCESS_EXIT_CODE 0
+#define FAILURE_EXIT_CODE 1
+
 s32
 main(s32 ArgCount, const char** ArgStrings)
 {
-  b32 Result = True;
+  b32 Success = True;
 
   if (ArgCount > 1)
   {
@@ -704,8 +697,14 @@ main(s32 ArgCount, const char** ArgStrings)
 
                 if (Parser.Valid)
                 {
-                  PrintTypeEnumFor(&dUnion);
-                  PrintStructFor(&dUnion);
+                  counted_string OutFilePath = Concat(CS("src/metaprogramming/output"), Basename(NextFile), Memory);
+                  native_file OutFile = OpenFile(OutFilePath);
+                  if (OutFile.Handle)
+                  {
+                    WriteEnumTo(&dUnion, &OutFile, Memory);
+                    WriteStructTo(&dUnion, &OutFile, Memory);
+                    Ensure(CloseFile(&OutFile));
+                  }
                 }
                 else
                 {
@@ -715,7 +714,7 @@ main(s32 ArgCount, const char** ArgStrings)
 
               if (StringsMatch(Token.Value, CS("for_members_in")))
               {
-                ParseForMembers(&Parser, Memory);
+                /* ParseForMembers(&Parser, Memory); */
               }
 
             } break;
@@ -731,7 +730,7 @@ main(s32 ArgCount, const char** ArgStrings)
         Error("Tokenizing File: %s", FileName);
       }
 
-      Result = Result && Parser.Valid;
+      Success = Success && Parser.Valid;
 
       NextFile = PopString(&Args.Files);
     }
@@ -741,5 +740,6 @@ main(s32 ArgCount, const char** ArgStrings)
     Warn("No files passed, exiting.");
   }
 
-  return (s32)Result;
+  s32 Result = Success? SUCCESS_EXIT_CODE : FAILURE_EXIT_CODE ;
+  return Result;
 }

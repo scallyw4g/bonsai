@@ -57,8 +57,13 @@
 #include <net/network.h>
 #include <bonsai.h>
 
+global_variable memory_arena _TranArena;
+global_variable memory_arena* TranArena = &_TranArena;
 
 #include <bonsai_string.cpp>
+#include <counted_string.cpp>
+#include <stream.cpp>
+#include <bonsai_file.cpp>
 
 //
 // TODO(Jesse): perlin.h requires these .. rewrite it!

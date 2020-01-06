@@ -2,6 +2,8 @@
 
 #if BONSAI_INTERNAL
 
+#define Ensure(condition) Assert((condition))
+
 #define Assert(condition) \
   if (!(condition)) { Debug(RED_TERMINAL " ! Assertion Failed" WHITE_TERMINAL " - '%s' during %s " Newline, #condition, __FUNCTION__ ); RuntimeBreak(); }
 
@@ -9,6 +11,7 @@
 
 #else
 
+#define Ensure(condition) condition
 #define Assert(...)
 #define InvalidCodePath(...)
 

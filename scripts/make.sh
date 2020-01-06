@@ -261,13 +261,7 @@ PreprocessSuccess=0
 ColorizeTitle "Preprocessing"
 for file in $SOURCE_FILES; do
   output=$(bin/preprocessor "$file")
-  if [ "$?" -eq "1" ]; then
-    if [ ! -z "$output" ]; then
-      echo -e "$Success $file"
-      echo "$output" > "src/metaprogramming/output/$(basename $file)"
-    fi
-
-  else
+  if [ "$?" -ne "0" ]; then
     echo "$output"
     echo -e "$Failed $file"
     PreprocessSuccess=1
@@ -290,7 +284,7 @@ if [ "$EMCC" == "1" ]; then
     -o bin/emscripten/ttf.html
 
 else
-  time # BuildWithClang
+  time BuildWithClang
 fi
 
 

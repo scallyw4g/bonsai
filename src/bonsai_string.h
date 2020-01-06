@@ -14,6 +14,35 @@ StringHash(const char* S1)
   return Result;
 }
 
+function b32
+IsPathSeparator(char C)
+{
+  b32 Result = C == '/';
+  return Result;
+}
+
+function counted_string
+Basename(counted_string FilePath)
+{
+  umm LastPathSeparator = 0;
+  for (umm CharIndex = 0;
+      CharIndex < FilePath.Count;
+      ++CharIndex)
+  {
+    if (IsPathSeparator(FilePath.Start[CharIndex]))
+    {
+      LastPathSeparator = CharIndex;
+    }
+  }
+  counted_string Result = {
+    .Start = FilePath.Start + LastPathSeparator,
+    .Count = FilePath.Count - LastPathSeparator
+  };
+
+  return Result;
+}
+
+
 inline b32
 StringsMatch(const char *S1, const char *S2)
 {
