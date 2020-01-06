@@ -479,8 +479,9 @@ enum d_union_flags
 
 struct d_union_member
 {
+  counted_string Type;
   counted_string Name;
-  u32 Flags;
+  d_union_flags Flags;
   d_union_member* Next;
   d_union_member* Prev;
 };
@@ -492,10 +493,11 @@ struct d_union_decl
 };
 
 d_union_member*
-DUnionMember(counted_string Name, d_union_flags Flags, memory_arena* Memory)
+DUnionMember(counted_string Name, counted_string Type, d_union_flags Flags, memory_arena* Memory)
 {
   d_union_member* Result = Allocate(d_union_member, Memory, 1);
   Result->Name = Name;
+  Result->Type = Type;
   Result->Flags = Flags;
   return Result;
 }
@@ -504,7 +506,7 @@ void
 PushMember(d_union_decl* dUnion, c_token MemberIdentifierToken, d_union_flags Flags, memory_arena* Memory)
 {
   Assert(MemberIdentifierToken.Type == CTokenType_Identifier);
-  d_union_member* Member = DUnionMember(MemberIdentifierToken.Value, Flags, Memory);
+  d_union_member* Member = DUnionMember(MemberIdentifierToken.Value, MemberIdentifierToken.Value, Flags, Memory);
   DList_Push(dUnion, Member);
 }
 
@@ -516,7 +518,7 @@ PrintTypeEnumFor(d_union_decl* dUnion)
   d_union_member* Member = dUnion->Sentinel.Next;
   while (Member != &dUnion->Sentinel)
   {
-    Log("  type_%.*s,\n", Member->Name.Count, Member->Name.Start);
+    Log("  type_%.*s,\n", Member->Type.Count, Member->Type.Start);
     Member = Member->Next;
   }
 
@@ -535,7 +537,7 @@ PrintStructFor(d_union_decl* dUnion)
   {
     if (Member->Flags != d_union_flag_enum_only)
     {
-      Log("    %.*s %.*s;\n", Member->Name.Count, Member->Name.Start, Member->Name.Count, Member->Name.Start);
+      Log("    %.*s %.*s;\n", Member->Type.Count, Member->Type.Start, Member->Name.Count, Member->Name.Start);
     }
     Member = Member->Next;
   }
@@ -596,6 +598,18 @@ ParseDiscriminatedUnion(c_parse_result* Parser, memory_arena* Memory)
   }
 
   return dUnion;
+}
+
+function void
+ParseForMembers(c_parse_result* Parser, memory_arena* Memory)
+{
+  RequireToken(Parser, CTokenType_OpenParen);
+  counted_string Type = RequireToken(Parser, CTokenType_Identifier).Value;
+
+  RequireToken(Parser, CTokenType_Comma);
+  RequireToken(Parser, CTokenType_OpenBrace);
+
+  return;
 }
 
 struct arguments
@@ -699,8 +713,9 @@ main(s32 ArgCount, const char** ArgStrings)
                 }
               }
 
-              if (StringsMatch(Token.Value, CS("for_members")))
+              if (StringsMatch(Token.Value, CS("for_members_in")))
               {
+                ParseForMembers(&Parser, Memory);
               }
 
             } break;

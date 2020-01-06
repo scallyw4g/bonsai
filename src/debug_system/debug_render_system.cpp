@@ -1486,6 +1486,8 @@ FindPreviousButtonStart(ui_render_command_buffer* CommandBuffer, u32 StartingInd
   return Result;
 }
 
+#define for_members_in(...)
+
 function rect2
 FindAbsoluteDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, u32 FirstCommand, u32 OnePastLastCommand)
 {
@@ -1502,14 +1504,14 @@ FindAbsoluteDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, u32 First
 
     switch(Command->Type)
     {
-      for_members(Command)
+      for_members_in(ui_render_command,
       {
         case Type:
         {
-          Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&Member->Layout));
-          Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&Member->Layout));
+          Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&Member.Layout));
+          Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&Member.Layout));
         } break
-      }
+      })
     }
 
     continue;
