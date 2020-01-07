@@ -298,7 +298,7 @@ OptionalToken(c_parse_result* Parser, c_token_type Type)
 }
 
 function c_parse_result
-TokenizeFile(const char* FileName, memory_arena* Memory)
+TokenizeFile(counted_string FileName, memory_arena* Memory)
 {
   c_parse_result Result = {};
 
@@ -308,7 +308,7 @@ TokenizeFile(const char* FileName, memory_arena* Memory)
   ansi_stream SourceFileStream = AnsiStreamFromFile(FileName, Memory);
   if (!SourceFileStream.Start)
   {
-    Error("Allocating stream for %s", FileName);
+    Error("Allocating stream for %.*s", (s32)FileName.Count, FileName.Start);
     return Result;
   }
 
@@ -625,7 +625,10 @@ PushString(string_stream* Stream, counted_string String, memory_arena* Memory)
 arguments
 ParseArgs(const char** ArgStrings, s32 ArgCount, memory_arena* Memory)
 {
-  arguments Result = {};
+  arguments Result = {
+    .OutPath = CS("src/metaprogramming/output"),
+  };
+
   InitSentinel(Result.Files.Sentinel);
 
 
@@ -656,8 +659,43 @@ ParseArgs(const char** ArgStrings, s32 ArgCount, memory_arena* Memory)
   return Result;
 }
 
-#define SUCCESS_EXIT_CODE 0
-#define FAILURE_EXIT_CODE 1
+global_variable random_series TempFileEntropy = {3215432};
+
+function b32
+Output(d_union_decl* dUnion, counted_string FileName, memory_arena* Memory)
+{
+  b32 Result = False;
+
+  native_file TempFile = GetTempFile(&TempFileEntropy, Memory);
+  if (TempFile.Handle)
+  {
+    b32 FileWritesSucceeded = WriteEnumTo(dUnion, &TempFile, Memory);
+    FileWritesSucceeded &= WriteStructTo(dUnion, &TempFile, Memory);
+    FileWritesSucceeded &= CloseFile(&TempFile);
+
+    if (FileWritesSucceeded)
+    {
+      if (Rename(TempFile, FileName))
+      {
+        Result = True;
+      }
+      else
+      {
+        Error("Renaming tempfile: %.*s", (s32)TempFile.Path.Count, TempFile.Path.Start);
+      }
+    }
+    else
+    {
+      Error("Writing to tempfile: %.*s", (s32)TempFile.Path.Count, TempFile.Path.Start);
+    }
+  }
+  else
+  {
+    Error("Opening tempfile: %.*s", (s32)TempFile.Path.Count, TempFile.Path.Start);
+  }
+
+  return Result;
+}
 
 s32
 main(s32 ArgCount, const char** ArgStrings)
@@ -668,16 +706,13 @@ main(s32 ArgCount, const char** ArgStrings)
   {
     memory_arena Memory_ = {};
     memory_arena* Memory = &Memory_;
-    random_series FileNameEntropy = {3215432};
 
     arguments Args = ParseArgs(ArgStrings, ArgCount, Memory);
 
-    counted_string NextFile = PopString(&Args.Files);
-    while (NextFile.Count)
+    counted_string CurrentFile = PopString(&Args.Files);
+    while (CurrentFile.Count)
     {
-      // FIXME(Jesse): This is poor form - I know this is null-terminated but the functions consuming this should operate on counted_strings
-      const char* FileName = NextFile.Start;
-      c_parse_result Parser = TokenizeFile(FileName, Memory);
+      c_parse_result Parser = TokenizeFile(CurrentFile, Memory);
       if (Parser.Valid)
       {
         c_token_buffer* Tokens = &Parser.Tokens;
@@ -698,33 +733,7 @@ main(s32 ArgCount, const char** ArgStrings)
 
                 if (Parser.Valid)
                 {
-                  native_file TempFile = GetTempFile(&FileNameEntropy, Memory);
-                  if (TempFile.Handle)
-                  {
-                    b32 FileWritesSucceeded = WriteEnumTo(&dUnion, &TempFile, Memory);
-                    FileWritesSucceeded &= WriteStructTo(&dUnion, &TempFile, Memory);
-                    FileWritesSucceeded &= CloseFile(&TempFile);
-
-                    if (FileWritesSucceeded)
-                    {
-                      counted_string FinalFilePath = Concat(CS("src/metaprogramming/output"), Basename(NextFile), Memory);
-                      if (!Rename(TempFile, FinalFilePath))
-                      {
-                        Error("Renaming tempfile: %.*s", (s32)TempFile.Path.Count, TempFile.Path.Start);
-                        Success = False;
-                      }
-                    }
-                    else
-                    {
-                      Error("Writing to tempfile: %.*s", (s32)TempFile.Path.Count, TempFile.Path.Start);
-                      Success = False;
-                    }
-                  }
-                  else
-                  {
-                    Error("Opening tempfile: %.*s", (s32)TempFile.Path.Count, TempFile.Path.Start);
-                    Success = False;
-                  }
+                  Success = Output(&dUnion, Concat(Args.OutPath, Basename(CurrentFile), Memory), Memory);
                 }
                 else
                 {
@@ -748,12 +757,12 @@ main(s32 ArgCount, const char** ArgStrings)
       }
       else
       {
-        Error("Tokenizing File: %s", FileName);
+        Error("Tokenizing File: %.*s", (s32)CurrentFile.Count, CurrentFile.Start);
       }
 
       Success = Success && Parser.Valid;
 
-      NextFile = PopString(&Args.Files);
+      CurrentFile = PopString(&Args.Files);
     }
   }
   else
@@ -761,6 +770,8 @@ main(s32 ArgCount, const char** ArgStrings)
     Warn("No files passed, exiting.");
   }
 
+#define SUCCESS_EXIT_CODE 0
+#define FAILURE_EXIT_CODE 1
   s32 Result = Success ? SUCCESS_EXIT_CODE : FAILURE_EXIT_CODE ;
   return Result;
 }

@@ -256,22 +256,11 @@ echo -e ""
 echo -e "$Delimeter"
 echo -e ""
 
-SOURCE_FILES=$(find src -type f -not -wholename "src/metaprogramming/defines.h" -not -wholename "src/metaprogramming/output/*")
-PreprocessSuccess=0
 ColorizeTitle "Preprocessing"
-for file in $SOURCE_FILES; do
-  output=$(bin/preprocessor "$file")
-  if [ "$?" -eq "0" ]; then
-    echo -e "$Success $file"
-  else
-    echo "$output"
-    echo -e "$Failed $file"
-    PreprocessSuccess=1
-  fi
+SOURCE_FILES=$(find src -type f -not -wholename "src/metaprogramming/defines.h" -not -wholename "src/metaprogramming/output/*")
+echo "$SOURCE_FILES" | xargs bin/preprocessor
 
-done
-
-[ $PreprocessSuccess -ne 0 ] && echo "" && echo -e "$Failed Preprocessing failed, exiting." && exit 1
+[ $? -ne 0 ] && echo "" && echo -e "$Failed Preprocessing failed, exiting." && exit 1
 
 if [ "$EMCC" == "1" ]; then
 

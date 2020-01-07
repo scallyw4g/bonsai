@@ -1484,8 +1484,6 @@ FindPreviousButtonStart(ui_render_command_buffer* CommandBuffer, u32 StartingInd
   return Result;
 }
 
-#define for_members_in(...)
-
 function rect2
 FindAbsoluteDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, u32 FirstCommand, u32 OnePastLastCommand)
 {

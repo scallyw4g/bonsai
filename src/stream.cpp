@@ -82,6 +82,15 @@ AnsiStreamFromFile(const char* SourceFile, memory_arena *Memory)
 }
 
 ansi_stream
+AnsiStreamFromFile(counted_string SourceFile, memory_arena *Memory)
+{
+  const char* NullTerminated = GetNullTerminated(SourceFile);
+  u8_stream Binary = U8_StreamFromFile(NullTerminated, Memory);
+  ansi_stream Result = AnsiStream(&Binary);
+  return Result;
+}
+
+ansi_stream
 ReadEntireFileIntoString(const char *SourceFile, memory_arena *Memory)
 {
   ansi_stream Stream = AnsiStreamFromFile(SourceFile, Memory);
