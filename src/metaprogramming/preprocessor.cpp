@@ -5,6 +5,12 @@
 #include <bonsai_types.h>
 #include <unix_platform.cpp>
 
+#define InitSentinel(Sentinel) \
+{ \
+  Sentinel.Next = &Sentinel; \
+  Sentinel.Prev = &Sentinel; \
+}
+
 enum c_token_type
 {
   CTokenType_Unknown,
@@ -200,6 +206,14 @@ struct string_stream
 {
   string_chunk Sentinel;
 };
+
+function string_stream
+StringStream()
+{
+  string_stream Result = {};
+  InitSentinel(Result.Sentinel);
+  return Result;
+}
 
 struct c_parse_result
 {
@@ -449,12 +463,6 @@ PopString(string_stream* Stream)
   return Result;
 }
 
-#define InitSentinel(Sentinel) \
-{ \
-  Sentinel.Next = &Sentinel; \
-  Sentinel.Prev = &Sentinel; \
-}
-
 enum d_union_flags
 {
   d_union_flag_none,
@@ -605,7 +613,7 @@ ParseDiscriminatedUnion(c_parse_result* Parser, memory_arena* Memory)
 struct arguments
 {
   counted_string OutPath;
-  string_stream Files;
+  string_stream Files = StringStream();
 };
 
 void
@@ -697,6 +705,17 @@ Output(d_union_decl* dUnion, counted_string FileName, memory_arena* Memory)
   return Result;
 }
 
+function void
+DumpStringStreamToConsole(string_stream* Stream)
+{
+  counted_string Message = PopString(Stream);
+  while (Message.Count)
+  {
+    Log("%.*s\n", Message.Count, Message.Start);
+    Message = PopString(Stream);
+  }
+}
+
 s32
 main(s32 ArgCount, const char** ArgStrings)
 {
@@ -707,11 +726,15 @@ main(s32 ArgCount, const char** ArgStrings)
     memory_arena Memory_ = {};
     memory_arena* Memory = &Memory_;
 
+    string_stream SuccessFiles = StringStream();
+    string_stream FailFiles = StringStream();
+
     arguments Args = ParseArgs(ArgStrings, ArgCount, Memory);
 
     counted_string CurrentFile = PopString(&Args.Files);
     while (CurrentFile.Count)
     {
+      b32 SuccessfullyOutput = True;
       c_parse_result Parser = TokenizeFile(CurrentFile, Memory);
       if (Parser.Valid)
       {
@@ -733,12 +756,20 @@ main(s32 ArgCount, const char** ArgStrings)
 
                 if (Parser.Valid)
                 {
-                  Success = Output(&dUnion, Concat(Args.OutPath, Basename(CurrentFile), Memory), Memory);
+                  counted_string OutFilePath = Concat(Args.OutPath, Basename(CurrentFile), Memory);
+                  if (Output(&dUnion, OutFilePath, Memory))
+                  {
+                    counted_string Message = Concat(CS(GREEN_TERMINAL "  ✔  " WHITE_TERMINAL), CurrentFile, Memory);
+                    PushString(&SuccessFiles, Message, Memory);
+                  }
+                  else
+                  {
+                    SuccessfullyOutput = False;
+                  }
                 }
                 else
                 {
                   Error("Parsing d_union declaration");
-                  Success = False;
                 }
               }
 
@@ -762,8 +793,20 @@ main(s32 ArgCount, const char** ArgStrings)
 
       Success = Success && Parser.Valid;
 
+      if (!Parser.Valid || !SuccessfullyOutput)
+      {
+        counted_string Message = Concat(CS(RED_TERMINAL "  ✗  " WHITE_TERMINAL), CurrentFile, Memory);
+        PushString(&FailFiles, Message, Memory);
+      }
+
       CurrentFile = PopString(&Args.Files);
     }
+
+    Log("\n");
+
+    DumpStringStreamToConsole(&SuccessFiles);
+    DumpStringStreamToConsole(&FailFiles);
+
   }
   else
   {
