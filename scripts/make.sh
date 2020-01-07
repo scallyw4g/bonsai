@@ -256,7 +256,7 @@ echo -e ""
 echo -e "$Delimeter"
 echo -e ""
 
-SOURCE_FILES=$(find src -type f -not -wholename "src/metaprogramming/defines.h")
+SOURCE_FILES=$(find src -type f -not -wholename "src/metaprogramming/defines.h" -not -wholename "src/metaprogramming/output/*")
 PreprocessSuccess=0
 ColorizeTitle "Preprocessing"
 for file in $SOURCE_FILES; do
