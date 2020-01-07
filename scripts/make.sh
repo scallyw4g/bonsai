@@ -257,8 +257,8 @@ echo -e "$Delimeter"
 echo -e ""
 
 ColorizeTitle "Preprocessing"
-SOURCE_FILES=$(find src -type f -not -wholename "src/metaprogramming/defines.h" -not -wholename "src/metaprogramming/output/*")
-echo "$SOURCE_FILES" | xargs bin/preprocessor
+SOURCE_FILES=$(find src -type f -not -wholename "src/metaprogramming/defines.h" -not -wholename "src/metaprogramming/output/*" | tr '\n' ' ')
+bin/preprocessor $SOURCE_FILES
 
 [ $? -ne 0 ] && echo "" && echo -e "$Failed Preprocessing failed, exiting." && exit 1
 

@@ -11,9 +11,13 @@
 // dlopen
 #include <dlfcn.h>
 
+// X11 typedefs Cursor to some internal type.. and I want it, so we're hijacking it here.
+// https://stackoverflow.com/questions/25867905/how-could-i-temporarily-un-typedef-something
+#define Cursor X11PleaseStop
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <X11/keysymdef.h>
+#undef Cursor
 
 // X11 defines this to 0, which is really annoying
 #ifdef Success

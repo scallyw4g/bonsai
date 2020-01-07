@@ -528,6 +528,47 @@ PushMember(d_union_decl* dUnion, c_token MemberIdentifierToken, d_union_flags Fl
   DList_Push(dUnion, Member);
 }
 
+struct struct_def
+{
+  counted_string Name;
+};
+
+template <typename buffer_t, typename cursor_t, typename element_t> inline cursor_t
+Cursor(buffer_t* Buffer, memory_arena* Memory)
+{
+  element_t* Start = Allocate(element_t, Memory, Buffer->Count);
+  cursor_t Cursor = {
+    .Start = Start,
+    .At = Start,
+    .End = Start + Buffer->Count
+  };
+  return Cursor;
+}
+
+struct struct_cursor
+{
+  struct_def* Start;
+  struct_def* End;
+  struct_def* At;
+};
+
+struct struct_defs
+{
+  u32 Count;
+  struct_def* Defs;
+};
+
+function struct_defs
+AllocateStructDefs(u32 Count, memory_arena* Memory)
+{
+  struct_defs Result = {
+    .Count = Count,
+    .Defs = Allocate(struct_def, Memory, Count),
+  };
+
+  return Result;
+};
+
 function b32
 WriteEnumTo(d_union_decl* dUnion, native_file* OutFile, memory_arena* Memory)
 {
@@ -622,19 +663,29 @@ ParseDiscriminatedUnion(c_parse_result* Parser, memory_arena* Memory)
   return dUnion;
 }
 
-/* function void */
-/* ParseForMembers(c_parse_result* Parser, memory_arena* Memory) */
-/* { */
-/*   NotImplemented; */
+function void
+ParseForMembers(c_parse_result* Parser, struct_defs* ProgramStructs, memory_arena* Memory)
+{
+  RequireToken(Parser, CTokenType_OpenParen);
 
-/*   RequireToken(Parser, CTokenType_OpenParen); */
-/*   counted_string Type = RequireToken(Parser, CTokenType_Identifier).Value; */
+  counted_string StructType = RequireToken(Parser, CTokenType_Identifier).Value;
 
-/*   RequireToken(Parser, CTokenType_Comma); */
-/*   RequireToken(Parser, CTokenType_OpenBrace); */
+  for (u32 StructIndex = 0;
+      StructIndex < ProgramStructs->Count;
+      ++StructIndex)
+  {
+    struct_def* Struct = ProgramStructs->Defs + StructIndex;
+    if (StringsMatch(Struct->Name, StructType))
+    {
+      Log("Found match %.*s", StructType.Count, StructType.Start);
+    }
+  }
 
-/*   return; */
-/* } */
+  RequireToken(Parser, CTokenType_Comma);
+  RequireToken(Parser, CTokenType_OpenBrace);
+
+  return;
+}
 
 struct static_string_buffer
 {
@@ -751,28 +802,6 @@ DumpStringStreamToConsole(string_stream* Stream)
   }
 }
 
-struct struct_def
-{
-  u32 Thing;
-};
-
-struct struct_defs
-{
-  u32 Count;
-  struct_def* Defs;
-};
-
-function struct_defs
-AllocateStructDefs(u32 Count, memory_arena* Memory)
-{
-  struct_defs Result = {
-    .Count = Count,
-    .Defs = Allocate(struct_def, Memory, Count),
-  };
-
-  return Result;
-};
-
 struct parsed_files
 {
   u32 StructCount;
@@ -782,10 +811,45 @@ struct parsed_files
   c_parse_result* At;
 };
 
+function struct_def
+StructDef(counted_string Name)
+{
+  struct_def Result = {
+    .Name = Name
+  };
+  return Result;
+}
+
+function void
+EatNextScope(c_parse_result* Parser)
+{
+  u32 Depth = 0;
+  RequireToken(Parser, CTokenType_OpenBrace);
+
+  while (Parser->Valid && Remaining(&Parser->Tokens))
+  {
+    c_token T = PopToken(Parser);
+
+    if (T.Type == CTokenType_OpenBrace)
+    {
+      ++Depth;
+    }
+
+    if (T.Type == CTokenType_CloseBrace)
+    {
+      if (Depth == 0) break;
+      --Depth;
+    }
+  }
+
+  return;
+}
+
 function struct_defs
 ParseAllStructDefs(parsed_files* Files, u32 StructCount, memory_arena* Memory)
 {
   struct_defs Result = AllocateStructDefs(StructCount, Memory);
+  struct_cursor StructCursor = Cursor<struct_defs, struct_cursor, struct_def>(&Result, Memory);
 
   for (u32 ParserIndex = 0;
       ParserIndex < (u32)Count(Files);
@@ -799,9 +863,45 @@ ParseAllStructDefs(parsed_files* Files, u32 StructCount, memory_arena* Memory)
       {
         case CTokenType_Identifier:
         {
-          if (StringsMatch(Token.Value, CS("struct")))
+          if (StringsMatch(Token.Value, CS("union")))
           {
-            Log("Found a struct!");
+            c_token T = PeekToken(Parser);
+            switch (T.Type)
+            {
+              case CTokenType_Identifier:
+              {
+                Warn("unions are unsupported at the moment: %.*s", (s32)T.Value.Count, T.Value.Start);
+                PopToken(Parser);
+                EatNextScope(Parser);
+              } break;
+
+              case CTokenType_OpenBrace:
+              {
+                Warn("anonymous unions are unsupported at the moment");
+                EatNextScope(Parser);
+              } break;
+
+              InvalidDefaultCase;
+            }
+
+          }
+          else if (StringsMatch(Token.Value, CS("struct")))
+          {
+            c_token T = PopToken(Parser);
+            switch (T.Type)
+            {
+              case CTokenType_Identifier:
+              {
+                struct_def S = StructDef(T.Value);
+                if ( PeekToken(Parser) == CToken(CTokenType_OpenBrace) )
+                {
+                  EatNextScope(Parser);
+                  Push(S, &StructCursor);
+                }
+              } break;
+
+              default: {} break;
+            }
           }
         } break;
 
@@ -880,7 +980,7 @@ main(s32 ArgCount, const char** ArgStrings)
     parsed_files ParsedFiles = ParseAllFiles(&Args.Files, Memory);
     Assert(ParsedFiles.Start == ParsedFiles.At);
 
-    ParseAllStructDefs(&ParsedFiles, ParsedFiles.StructCount, Memory);
+    struct_defs Structs = ParseAllStructDefs(&ParsedFiles, ParsedFiles.StructCount, Memory);
     Assert(ParsedFiles.Start == ParsedFiles.At);
 
     for (u32 ParserIndex = 0;
@@ -926,7 +1026,7 @@ main(s32 ArgCount, const char** ArgStrings)
 
             if (StringsMatch(Token.Value, CS("for_members_in")))
             {
-              /* ParseForMembers(Parser, Memory); */
+              ParseForMembers(Parser, &Structs, Memory);
             }
 
           } break;
