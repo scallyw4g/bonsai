@@ -1,3 +1,16 @@
+template <typename stream_t, typename element_t>inline stream_t
+AllocateBuffer(u32 Count, memory_arena* Memory)
+{
+  element_t* Start = Allocate(element_t, Memory, Count);
+  stream_t Result = {
+    .Start = Start,
+    .At = Start,
+    .End = Start + Count,
+  };
+
+  return Result;
+}
+
 r32_stream
 R32_Stream(u32 Count, memory_arena *Memory)
 {

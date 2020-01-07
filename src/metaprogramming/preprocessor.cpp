@@ -135,20 +135,6 @@ AllocateTokenBuffer(memory_arena* Memory, u32 Count)
   return Result;
 }
 
-template <typename BufferType, typename PushType> void
-Push(BufferType *Buffer, PushType Token)
-{
-  if (Buffer->At < Buffer->End)
-  {
-    *Buffer->At = Token;
-    Buffer->At++;
-  }
-  else
-  {
-    Error("Ran out of space pushing onto buffer.");
-  }
-}
-
 c_token
 GetToken(ansi_stream* Stream)
 {
@@ -215,10 +201,42 @@ StringStream()
   return Result;
 }
 
+struct string_iterator
+{
+  string_stream* Stream;
+  string_chunk* At;
+};
+
+function string_iterator
+Iterator(string_stream* Stream)
+{
+  string_iterator Iterator = {
+    .Stream = Stream,
+    .At = Stream->Sentinel.Next
+  };
+  return Iterator;
+}
+
+function b32
+IsValid(string_iterator* Iter)
+{
+  b32 Result = (Iter->At != &Iter->Stream->Sentinel);
+  return Result;
+}
+
+function void
+Advance(string_iterator* Iter)
+{
+  Iter->At = Iter->At->Next;
+}
+
 struct c_parse_result
 {
   b32 Valid;
   c_token_buffer Tokens;
+
+  u32 StructCount;
+  counted_string FileName;
 };
 
 function b32
@@ -314,7 +332,9 @@ OptionalToken(c_parse_result* Parser, c_token_type Type)
 function c_parse_result
 TokenizeFile(counted_string FileName, memory_arena* Memory)
 {
-  c_parse_result Result = {};
+  c_parse_result Result = {
+    .FileName = FileName
+  };
 
   // TODO(Jesse): Since we store pointers directly into this buffer, we need to
   // keep the memory around.  Should we tokenize such that we allocate new
@@ -393,6 +413,12 @@ TokenizeFile(counted_string FileName, memory_arena* Memory)
 
         T.Type = CTokenType_Identifier;
         T.Value = Value;
+
+        if (StringsMatch(Value, CS("struct")))
+        {
+          ++Result.StructCount;
+        }
+
       } break;
 
       default:
@@ -401,14 +427,14 @@ TokenizeFile(counted_string FileName, memory_arena* Memory)
       } break;
     }
 
-    Push(&Result.Tokens, T);
+    Push(T, &Result.Tokens);
 
     continue;
   }
 
 
-  Result.Tokens.End = Result.Tokens.At;
-  Result.Tokens.At = Result.Tokens.Start;
+  TruncateToCurrentSize(&Result.Tokens);
+  Rewind(&Result.Tokens);
   Result.Valid = True;
 
 #if 0
@@ -610,10 +636,17 @@ ParseDiscriminatedUnion(c_parse_result* Parser, memory_arena* Memory)
 /*   return; */
 /* } */
 
+struct static_string_buffer
+{
+  counted_string* Start;
+  counted_string* End;
+  counted_string* At;
+};
+
 struct arguments
 {
   counted_string OutPath;
-  string_stream Files = StringStream();
+  static_string_buffer Files;
 };
 
 void
@@ -635,10 +668,8 @@ ParseArgs(const char** ArgStrings, s32 ArgCount, memory_arena* Memory)
 {
   arguments Result = {
     .OutPath = CS("src/metaprogramming/output"),
+    .Files = AllocateBuffer<static_string_buffer, counted_string>((u32)ArgCount, Memory),
   };
-
-  InitSentinel(Result.Files.Sentinel);
-
 
   for (s32 ArgIndex = 1;
       ArgIndex < ArgCount;
@@ -660,9 +691,12 @@ ParseArgs(const char** ArgStrings, s32 ArgCount, memory_arena* Memory)
     }
     else
     {
-      PushString(&Result.Files, Arg, Memory);
+      Push(Arg, &Result.Files);
     }
   }
+
+  TruncateToCurrentSize(&Result.Files);
+  Rewind(&Result.Files);
 
   return Result;
 }
@@ -708,12 +742,123 @@ Output(d_union_decl* dUnion, counted_string FileName, memory_arena* Memory)
 function void
 DumpStringStreamToConsole(string_stream* Stream)
 {
-  counted_string Message = PopString(Stream);
-  while (Message.Count)
+  for (string_iterator Iter = Iterator(Stream);
+      IsValid(&Iter);
+      Advance(&Iter))
   {
+    counted_string Message = Iter.At->String;
     Log("%.*s\n", Message.Count, Message.Start);
-    Message = PopString(Stream);
   }
+}
+
+struct struct_def
+{
+  u32 Thing;
+};
+
+struct struct_defs
+{
+  u32 Count;
+  struct_def* Defs;
+};
+
+function struct_defs
+AllocateStructDefs(u32 Count, memory_arena* Memory)
+{
+  struct_defs Result = {
+    .Count = Count,
+    .Defs = Allocate(struct_def, Memory, Count),
+  };
+
+  return Result;
+};
+
+struct parsed_files
+{
+  u32 StructCount;
+
+  c_parse_result* Start;
+  c_parse_result* End;
+  c_parse_result* At;
+};
+
+function struct_defs
+ParseAllStructDefs(parsed_files* Files, u32 StructCount, memory_arena* Memory)
+{
+  struct_defs Result = AllocateStructDefs(StructCount, Memory);
+
+  for (u32 ParserIndex = 0;
+      ParserIndex < (u32)Count(Files);
+      ++ParserIndex)
+  {
+    c_parse_result* Parser = Files->Start+ParserIndex;
+    while (Parser->Valid && Remaining(&Parser->Tokens))
+    {
+      c_token Token = PopToken(Parser);
+      switch( Token.Type )
+      {
+        case CTokenType_Identifier:
+        {
+          if (StringsMatch(Token.Value, CS("struct")))
+          {
+            Log("Found a struct!");
+          }
+        } break;
+
+        default: {} break;
+      }
+
+    }
+
+    Rewind(&Parser->Tokens);
+  }
+
+  Rewind(Files);
+  return Result;
+}
+
+function parsed_files
+AllocateParsedFiles(u32 Count, memory_arena* Memory)
+{
+  c_parse_result* Start = Allocate(c_parse_result, Memory, Count);
+  parsed_files Result = {
+    .Start = Start,
+    .At = Start,
+    .End = Start + Count,
+  };
+
+  return Result;
+}
+
+function parsed_files
+ParseAllFiles(static_string_buffer* FileNames, memory_arena* Memory)
+{
+  Assert(FileNames->At == FileNames->Start);
+
+  parsed_files Result = AllocateParsedFiles((u32)Count(FileNames), Memory);
+  while ( FileNames->At < FileNames->End )
+  {
+    counted_string CurrentFile = *FileNames->At;
+
+    c_parse_result Parser = TokenizeFile(CurrentFile, Memory);
+    if (Parser.Valid)
+    {
+      Rewind(&Parser.Tokens);
+      Push(Parser, &Result);
+      Result.StructCount += Parser.StructCount;
+    }
+    else
+    {
+      Error("Tokenizing File: %.*s", (s32)CurrentFile.Count, CurrentFile.Start);
+    }
+
+    ++FileNames->At;
+  }
+
+  TruncateToCurrentSize(&Result);
+  Rewind(&Result);
+
+  return Result;
 }
 
 s32
@@ -730,76 +875,77 @@ main(s32 ArgCount, const char** ArgStrings)
     string_stream FailFiles = StringStream();
 
     arguments Args = ParseArgs(ArgStrings, ArgCount, Memory);
+    Assert(Args.Files.Start == Args.Files.At);
 
-    counted_string CurrentFile = PopString(&Args.Files);
-    while (CurrentFile.Count)
+    parsed_files ParsedFiles = ParseAllFiles(&Args.Files, Memory);
+    Assert(ParsedFiles.Start == ParsedFiles.At);
+
+    ParseAllStructDefs(&ParsedFiles, ParsedFiles.StructCount, Memory);
+    Assert(ParsedFiles.Start == ParsedFiles.At);
+
+    for (u32 ParserIndex = 0;
+        ParserIndex < Count(&ParsedFiles);
+        ++ParserIndex)
     {
       b32 SuccessfullyOutput = True;
-      c_parse_result Parser = TokenizeFile(CurrentFile, Memory);
-      if (Parser.Valid)
+      c_parse_result* Parser = ParsedFiles.Start+ParserIndex;
+      Assert(Remaining(&Parser->Tokens));
+      while (Parser->Valid && Remaining(&Parser->Tokens))
       {
-        c_token_buffer* Tokens = &Parser.Tokens;
-        while (Parser.Valid && Remaining(Tokens))
+        c_token Token = PopToken(Parser);
+        switch( Token.Type )
         {
-          c_token Token = PopToken(&Parser);
-          switch( Token.Type )
+          case CTokenType_Comment:
           {
-            case CTokenType_Comment:
-            {
-            } break;
+          } break;
 
-            case CTokenType_Identifier:
+          case CTokenType_Identifier:
+          {
+            if (StringsMatch(Token.Value, CS("d_union")))
             {
-              if (StringsMatch(Token.Value, CS("d_union")))
+              d_union_decl dUnion = ParseDiscriminatedUnion(Parser, Memory);
+
+              if (Parser->Valid)
               {
-                d_union_decl dUnion = ParseDiscriminatedUnion(&Parser, Memory);
-
-                if (Parser.Valid)
+                counted_string OutFilePath = Concat(Args.OutPath, Basename(Parser->FileName), Memory);
+                if (Output(&dUnion, OutFilePath, Memory))
                 {
-                  counted_string OutFilePath = Concat(Args.OutPath, Basename(CurrentFile), Memory);
-                  if (Output(&dUnion, OutFilePath, Memory))
-                  {
-                    counted_string Message = Concat(CS(GREEN_TERMINAL "  ✔  " WHITE_TERMINAL), CurrentFile, Memory);
-                    PushString(&SuccessFiles, Message, Memory);
-                  }
-                  else
-                  {
-                    SuccessfullyOutput = False;
-                  }
+                  counted_string Message = Concat(CS(GREEN_TERMINAL "  ✔  " WHITE_TERMINAL), Parser->FileName, Memory);
+                  PushString(&SuccessFiles, Message, Memory);
                 }
                 else
                 {
-                  Error("Parsing d_union declaration");
+                  SuccessfullyOutput = False;
                 }
               }
-
-              if (StringsMatch(Token.Value, CS("for_members_in")))
+              else
               {
-                /* ParseForMembers(&Parser, Memory); */
+                Error("Parsing d_union declaration");
               }
+            }
 
-            } break;
+            if (StringsMatch(Token.Value, CS("for_members_in")))
+            {
+              /* ParseForMembers(Parser, Memory); */
+            }
 
-            default: { } break;
-          }
+          } break;
 
-          continue;
+          default: { } break;
         }
-      }
-      else
-      {
-        Error("Tokenizing File: %.*s", (s32)CurrentFile.Count, CurrentFile.Start);
+
+        continue;
       }
 
-      Success = Success && Parser.Valid;
-
-      if (!Parser.Valid || !SuccessfullyOutput)
+      if (!Parser->Valid || !SuccessfullyOutput)
       {
-        counted_string Message = Concat(CS(RED_TERMINAL "  ✗  " WHITE_TERMINAL), CurrentFile, Memory);
+        counted_string Message = Concat(CS(RED_TERMINAL "  ✗  " WHITE_TERMINAL), Parser->FileName, Memory);
         PushString(&FailFiles, Message, Memory);
       }
 
-      CurrentFile = PopString(&Args.Files);
+      Rewind(&Parser->Tokens);
+
+      continue;
     }
 
     Log("\n");

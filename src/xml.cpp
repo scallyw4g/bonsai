@@ -223,7 +223,6 @@ GetCountMatchingTags(xml_token_stream* Tokens, xml_token_stream* Selectors, u32 
     if (Valid)
     {
       Push(RootTag, &Result);
-      Result.At++;
       Assert(Result.At <= Result.End);
 
       --Count;

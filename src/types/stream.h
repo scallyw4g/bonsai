@@ -37,7 +37,7 @@ template <typename element_t, typename stream_t>inline void
 Push(element_t Element, stream_t *Array)
 {
   Assert( Array->At < Array->End );
-  *Array->At = Element;
+  *Array->At++ = Element;
   return;
 }
 
@@ -47,6 +47,25 @@ Pop(stream_t *Stream)
   Assert(Remaining(Stream));
   element_t Element = *Stream->At++;
   return Element;
+}
+
+template <typename stream_t> inline umm
+Count(stream_t* Stream)
+{
+  umm Result = (umm)(Stream->End - Stream->Start);
+  return Result;
+}
+
+template <typename stream_t> inline void
+TruncateToCurrentSize(stream_t* Stream)
+{
+  Stream->End = Stream->At;
+}
+
+template <typename stream_t> inline void
+Rewind(stream_t* Stream)
+{
+  Stream->At = Stream->Start;
 }
 
 struct mesh_metadata
