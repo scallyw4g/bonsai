@@ -19,6 +19,8 @@ enum c_token_type
   CTokenType_Identifier,
   CTokenType_String,
 
+  CTokenType_OpenBracket   = '[',
+  CTokenType_CloseBracket  = ']',
   CTokenType_OpenBrace     = '{',
   CTokenType_CloseBrace    = '}',
   CTokenType_OpenParen     = '(',
@@ -81,7 +83,7 @@ PrintToken(c_token Token)
 
     default:
     {
-      Log("'%c'", Token.Type);
+      Log("%c", Token.Type);
     }
   }
 }
@@ -181,6 +183,8 @@ GetToken(ansi_stream* Stream)
   return Result;
 }
 
+
+// TODO(Jesse): Generate these using a directive
 struct string_chunk
 {
   counted_string String;
@@ -188,6 +192,7 @@ struct string_chunk
   string_chunk* Prev;
 };
 
+// TODO(Jesse): Generate these using a directive
 struct string_stream
 {
   string_chunk Sentinel;
@@ -312,20 +317,19 @@ PopToken(c_parse_result* Parser)
   return Result;
 }
 
-function c_token
+function b32
+OptionalToken(c_parse_result* Parser, c_token T)
+{
+  b32 Result = (PeekToken(Parser) == T);
+  if (Result) { PopToken(Parser); }
+  return Result;
+}
+
+function b32
 OptionalToken(c_parse_result* Parser, c_token_type Type)
 {
-  c_token Result = PeekToken(Parser);
-
-  if (Result.Type == Type)
-  {
-    PopToken(Parser);
-  }
-  else
-  {
-    Result = CToken(CTokenType_Unknown);
-  }
-
+  b32 Result = (PeekToken(Parser).Type == Type);
+  if (Result) { PopToken(Parser); }
   return Result;
 }
 
@@ -448,18 +452,153 @@ TokenizeFile(counted_string FileName, memory_arena* Memory)
   return Result;
 }
 
+function void
+TruncateAtNextLineEnd(c_parse_result* Parser, u32 Count)
+{
+  while (Remaining(&Parser->Tokens))
+  {
+    if(PopTokenRaw(Parser).Type == CTokenType_Newline)
+    {
+      if (Count == 0)
+      {
+        break;
+      }
+      --Count;
+    }
+  }
+  Parser->Tokens.End = Parser->Tokens.At;
+}
+
+function void
+RewindUntil(c_parse_result* Parser, c_token_type Type)
+{
+  while (Parser->Tokens.At > Parser->Tokens.Start)
+  {
+    if (Parser->Tokens.At->Type == Type)
+    {
+      ++Parser->Tokens.At;
+      break;
+    }
+    --Parser->Tokens.At;
+  }
+}
+
+function void
+TruncateAtPreviousLineStart(c_parse_result* Parser, u32 Count )
+{
+  while (Parser->Tokens.At >= Parser->Tokens.Start)
+  {
+    if (Parser->Tokens.At->Type == CTokenType_Newline)
+    {
+      if (Count == 0)
+      {
+        ++Parser->Tokens.At;
+        break;
+      }
+      --Count;
+    }
+    --Parser->Tokens.At;
+  }
+
+  Parser->Tokens.Start = Parser->Tokens.At;
+}
+
+function void
+Dump(c_parse_result* Parser)
+{
+  Rewind(&Parser->Tokens);
+  while(Remaining(&Parser->Tokens))
+  {
+    PrintToken(PopTokenRaw(Parser));
+  }
+}
+
+function void
+EatUntil(c_parse_result* Parser, c_token_type Close)
+{
+  while (Remaining(&Parser->Tokens))
+  {
+    if(PopTokenRaw(Parser).Type == Close)
+    {
+      break;
+    }
+  }
+}
+
+function void
+OutputErrorHelperLine(c_parse_result* Parser, c_token* ErrorToken, c_token Expected)
+{
+  /* RuntimeBreak(); */
+  Rewind(&Parser->Tokens);
+
+  while (Remaining(&Parser->Tokens))
+  {
+    if (Parser->Tokens.At == ErrorToken)
+    {
+      Log(" " RED_TERMINAL "^" WHITE_TERMINAL "---------- Unexpected token. Expected: ");
+      PrintToken(Expected);
+      Log("\n");
+      break;
+    }
+
+    if (Parser->Tokens.At->Type == CTokenType_Newline)
+    {
+    }
+    else if (Parser->Tokens.At->Value.Count)
+    {
+      for (u32 ValueIndex = 0;
+          ValueIndex < Parser->Tokens.At->Value.Count;
+          ++ValueIndex)
+      {
+        Log(" ");
+      }
+    }
+    else
+    {
+      Log(" ");
+    }
+
+    ++Parser->Tokens.At;
+  }
+}
+
 function c_token
 RequireToken(c_parse_result* Parser, c_token_type Type)
 {
+  c_token* ErrorToken = Parser->Tokens.At;
   c_token Result = PopToken(Parser);
 
   if (Result.Type != Type)
   {
-    Error("Encountered Unexpected token type");
-    PrintToken(Result);
+    u32 LinesOfContext = 4;
 
-    Log("\nExpected: ");
-    PrintToken(CToken(Type));
+    Log("----\n");
+
+    {
+      c_parse_result LeadingLines = *Parser;
+      RewindUntil(&LeadingLines, CTokenType_Newline);
+      LeadingLines.Tokens.End = LeadingLines.Tokens.At;
+      TruncateAtPreviousLineStart(&LeadingLines, LinesOfContext);
+      Dump(&LeadingLines);
+    }
+
+    {
+      c_parse_result ErrorLine = *Parser;
+      TruncateAtPreviousLineStart(&ErrorLine, 0);
+      TruncateAtNextLineEnd(&ErrorLine, 0);
+      Dump(&ErrorLine);
+      OutputErrorHelperLine(&ErrorLine, ErrorToken, CToken(Type));
+    }
+
+    {
+      c_parse_result TrailingLines = *Parser;
+      EatUntil(&TrailingLines, CTokenType_Newline);
+      TrailingLines.Tokens.Start = TrailingLines.Tokens.At;
+      TruncateAtNextLineEnd(&TrailingLines, LinesOfContext);
+      Dump(&TrailingLines);
+    }
+
+    Log("----\n");
     Log("\n");
 
     Parser->Valid = False;
@@ -528,11 +667,6 @@ PushMember(d_union_decl* dUnion, c_token MemberIdentifierToken, d_union_flags Fl
   DList_Push(dUnion, Member);
 }
 
-struct struct_def
-{
-  counted_string Name;
-};
-
 template <typename buffer_t, typename cursor_t, typename element_t> inline cursor_t
 Cursor(buffer_t* Buffer, memory_arena* Memory)
 {
@@ -544,30 +678,6 @@ Cursor(buffer_t* Buffer, memory_arena* Memory)
   };
   return Cursor;
 }
-
-struct struct_cursor
-{
-  struct_def* Start;
-  struct_def* End;
-  struct_def* At;
-};
-
-struct struct_defs
-{
-  u32 Count;
-  struct_def* Defs;
-};
-
-function struct_defs
-AllocateStructDefs(u32 Count, memory_arena* Memory)
-{
-  struct_defs Result = {
-    .Count = Count,
-    .Defs = Allocate(struct_def, Memory, Count),
-  };
-
-  return Result;
-};
 
 function b32
 WriteEnumTo(d_union_decl* dUnion, native_file* OutFile, memory_arena* Memory)
@@ -633,7 +743,7 @@ ParseDiscriminatedUnion(c_parse_result* Parser, memory_arena* Memory)
       {
         d_union_flags Flags = {};
         // TODO(Jesse): How should we talk about string constants that refer to identifiers in the code?
-        if ( OptionalToken(Parser, CTokenType_Identifier) == CToken(CS("enum_only")) )
+        if ( OptionalToken(Parser, CToken(CS("enum_only"))) )
         {
           Flags = d_union_flag_enum_only;
         }
@@ -663,6 +773,7 @@ ParseDiscriminatedUnion(c_parse_result* Parser, memory_arena* Memory)
   return dUnion;
 }
 
+#if 0
 function void
 ParseForMembers(c_parse_result* Parser, struct_defs* ProgramStructs, memory_arena* Memory)
 {
@@ -686,6 +797,7 @@ ParseForMembers(c_parse_result* Parser, struct_defs* ProgramStructs, memory_aren
 
   return;
 }
+#endif
 
 struct static_string_buffer
 {
@@ -802,7 +914,7 @@ DumpStringStreamToConsole(string_stream* Stream)
   }
 }
 
-struct parsed_files
+struct tokenized_files
 {
   u32 StructCount;
 
@@ -811,31 +923,22 @@ struct parsed_files
   c_parse_result* At;
 };
 
-function struct_def
-StructDef(counted_string Name)
-{
-  struct_def Result = {
-    .Name = Name
-  };
-  return Result;
-}
-
 function void
-EatNextScope(c_parse_result* Parser)
+EatBetween(c_parse_result* Parser, c_token_type Open, c_token_type Close)
 {
   u32 Depth = 0;
-  RequireToken(Parser, CTokenType_OpenBrace);
+  RequireToken(Parser, Open);
 
   while (Parser->Valid && Remaining(&Parser->Tokens))
   {
     c_token T = PopToken(Parser);
 
-    if (T.Type == CTokenType_OpenBrace)
+    if (T.Type == Open)
     {
       ++Depth;
     }
 
-    if (T.Type == CTokenType_CloseBrace)
+    if (T.Type == Close)
     {
       if (Depth == 0) break;
       --Depth;
@@ -845,8 +948,243 @@ EatNextScope(c_parse_result* Parser)
   return;
 }
 
+function void
+EatNextScope(c_parse_result* Parser)
+{
+  EatBetween(Parser, CTokenType_OpenBrace, CTokenType_CloseBrace);
+  return;
+}
+
+function void
+EatUnionDef(c_parse_result* Parser)
+{
+  c_token T = PeekToken(Parser);
+  switch (T.Type)
+  {
+    case CTokenType_Identifier:
+    {
+      Warn("unions are unsupported at the moment: %.*s", (s32)T.Value.Count, T.Value.Start);
+      PopToken(Parser);
+      EatNextScope(Parser);
+    } break;
+
+    case CTokenType_OpenBrace:
+    {
+      Warn("anonymous unions are unsupported at the moment");
+      EatNextScope(Parser);
+    } break;
+
+    InvalidDefaultCase;
+  }
+
+  return;
+}
+
+enum c_decl_function_type
+{
+  Normal,
+  Constructor,
+  Destructor,
+};
+
+struct c_decl_function
+{
+  c_decl_function_type Type;
+  u32 CurrentlyUnused;
+};
+
+struct c_decl_variable
+{
+  counted_string Type;
+  counted_string Name;
+};
+
+#include <metaprogramming/output/preprocessor.cpp>
+
+d_union(c_decl,
+{
+  c_decl_variable;
+  c_decl_function;
+})
+
+// TODO(Jesse): Generate these using a directive
+struct c_decl_stream_chunk
+{
+  c_decl Element;
+  c_decl_stream_chunk* Next;
+  c_decl_stream_chunk* Prev;
+};
+
+// TODO(Jesse): Generate these using a directive
+struct c_decl_stream
+{
+  c_decl_stream_chunk Sentinel;
+};
+
+void
+Push(c_decl_stream* Stream, c_decl Element, memory_arena* Memory)
+{
+  c_decl_stream_chunk* Push = Allocate(c_decl_stream_chunk, Memory, 1);
+  Push->Element = Element;
+
+  Push->Prev = &Stream->Sentinel;
+  Push->Next = Stream->Sentinel.Next;
+  Stream->Sentinel.Next->Prev = Push;
+  Stream->Sentinel.Next = Push;
+
+  return;
+}
+
+struct struct_def
+{
+  counted_string Name;
+  c_decl_stream Fields;
+};
+
+struct struct_cursor
+{
+  struct_def* Start;
+  struct_def* End;
+  struct_def* At;
+};
+
+struct struct_defs
+{
+  u32 Count;
+  struct_def* Defs;
+};
+
 function struct_defs
-ParseAllStructDefs(parsed_files* Files, u32 StructCount, memory_arena* Memory)
+AllocateStructDefs(u32 Count, memory_arena* Memory)
+{
+  struct_defs Result = {
+    .Count = Count,
+    .Defs = Allocate(struct_def, Memory, Count),
+  };
+
+  return Result;
+};
+
+function struct_def
+StructDef(counted_string Name)
+{
+  struct_def Result = {
+    .Name = Name
+  };
+  InitSentinel(Result.Fields.Sentinel);
+  return Result;
+}
+
+function b32
+EatStar(c_parse_result* Parser)
+{
+  b32 Result = OptionalToken(Parser, CTokenType_Star);
+  return Result;
+}
+
+function c_decl
+ParseFunction(c_parse_result* Parser, c_decl_function_type Type)
+{
+  c_decl Result = {
+    .Type = type_c_decl_function,
+    .c_decl_function = {
+      .Type = Type,
+    }
+  };
+
+  EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
+  EatNextScope(Parser);
+
+  return Result;
+}
+
+function c_decl
+ParseDeclaration(c_parse_result* Parser, memory_arena* Memory)
+{
+  c_decl Result = {};
+
+  c_token FirstToken = RequireToken(Parser, CTokenType_Identifier);
+
+  switch(FirstToken.Type)
+  {
+    case CTokenType_Tilde:
+    {
+      // Name .. could assert it matches struct name..
+      RequireToken(Parser, CTokenType_Identifier);
+      Result = ParseFunction(Parser, Destructor);
+    } break;
+
+    case CTokenType_Identifier:
+    {
+      switch (PeekToken(Parser).Type)
+      {
+        case CTokenType_OpenParen:
+        {
+          Result = ParseFunction(Parser, Constructor);
+        } break;
+
+        case CTokenType_Star:
+        {
+          Result.c_decl_variable.Type = FirstToken.Value;
+          while (EatStar(Parser))
+          {
+            Result.c_decl_variable.Type = Concat(Result.c_decl_variable.Type, CS("*"), Memory);
+          }
+          Result.c_decl_variable.Name = RequireToken(Parser, CTokenType_Identifier).Value;
+
+          switch (PeekToken(Parser).Type)
+          {
+            case CTokenType_Semicolon:
+            {
+              RequireToken(Parser, CTokenType_Semicolon);
+            } break;
+
+            case CTokenType_OpenBracket:
+            case CTokenType_Equals:
+            {
+              EatUntil(Parser, CTokenType_Semicolon);
+            } break;
+
+            InvalidDefaultCase;
+          }
+
+        } break;
+
+        case CTokenType_Identifier:
+        {
+          Result.c_decl_variable.Type = FirstToken.Value;
+          Result.c_decl_variable.Name = PopToken(Parser).Value;
+          RequireToken(Parser, CTokenType_Semicolon);
+        } break;
+
+        InvalidDefaultCase;
+      }
+
+    } break;
+
+    InvalidDefaultCase;
+  }
+
+  return Result;
+}
+
+function void
+ParseStructBody(c_parse_result* Parser, struct_def* Struct, memory_arena* Memory)
+{
+  c_token NextToken = PeekToken(Parser);
+
+  while (NextToken.Type != CTokenType_CloseBrace)
+  {
+    c_decl Declaration = ParseDeclaration(Parser, Memory);
+    Push(&Struct->Fields, Declaration, Memory);
+    NextToken = PeekToken(Parser);
+  }
+
+  return;
+}
+
+function struct_defs
+ParseAllStructDefs(tokenized_files* Files, u32 StructCount, memory_arena* Memory)
 {
   struct_defs Result = AllocateStructDefs(StructCount, Memory);
   struct_cursor StructCursor = Cursor<struct_defs, struct_cursor, struct_def>(&Result, Memory);
@@ -859,31 +1197,13 @@ ParseAllStructDefs(parsed_files* Files, u32 StructCount, memory_arena* Memory)
     while (Parser->Valid && Remaining(&Parser->Tokens))
     {
       c_token Token = PopToken(Parser);
-      switch( Token.Type )
+      switch (Token.Type)
       {
         case CTokenType_Identifier:
         {
           if (StringsMatch(Token.Value, CS("union")))
           {
-            c_token T = PeekToken(Parser);
-            switch (T.Type)
-            {
-              case CTokenType_Identifier:
-              {
-                Warn("unions are unsupported at the moment: %.*s", (s32)T.Value.Count, T.Value.Start);
-                PopToken(Parser);
-                EatNextScope(Parser);
-              } break;
-
-              case CTokenType_OpenBrace:
-              {
-                Warn("anonymous unions are unsupported at the moment");
-                EatNextScope(Parser);
-              } break;
-
-              InvalidDefaultCase;
-            }
-
+            EatUnionDef(Parser);
           }
           else if (StringsMatch(Token.Value, CS("struct")))
           {
@@ -892,11 +1212,13 @@ ParseAllStructDefs(parsed_files* Files, u32 StructCount, memory_arena* Memory)
             {
               case CTokenType_Identifier:
               {
-                struct_def S = StructDef(T.Value);
                 if ( PeekToken(Parser) == CToken(CTokenType_OpenBrace) )
                 {
-                  EatNextScope(Parser);
+                  PopToken(Parser);
+
+                  struct_def S = StructDef(T.Value);
                   Push(S, &StructCursor);
+                  ParseStructBody(Parser, &S, Memory);
                 }
               } break;
 
@@ -917,11 +1239,11 @@ ParseAllStructDefs(parsed_files* Files, u32 StructCount, memory_arena* Memory)
   return Result;
 }
 
-function parsed_files
-AllocateParsedFiles(u32 Count, memory_arena* Memory)
+function tokenized_files
+AllocateTokenizedFiles(u32 Count, memory_arena* Memory)
 {
   c_parse_result* Start = Allocate(c_parse_result, Memory, Count);
-  parsed_files Result = {
+  tokenized_files Result = {
     .Start = Start,
     .At = Start,
     .End = Start + Count,
@@ -930,12 +1252,12 @@ AllocateParsedFiles(u32 Count, memory_arena* Memory)
   return Result;
 }
 
-function parsed_files
-ParseAllFiles(static_string_buffer* FileNames, memory_arena* Memory)
+function tokenized_files
+TokenizeAllFiles(static_string_buffer* FileNames, memory_arena* Memory)
 {
   Assert(FileNames->At == FileNames->Start);
 
-  parsed_files Result = AllocateParsedFiles((u32)Count(FileNames), Memory);
+  tokenized_files Result = AllocateTokenizedFiles((u32)Count(FileNames), Memory);
   while ( FileNames->At < FileNames->End )
   {
     counted_string CurrentFile = *FileNames->At;
@@ -977,10 +1299,10 @@ main(s32 ArgCount, const char** ArgStrings)
     arguments Args = ParseArgs(ArgStrings, ArgCount, Memory);
     Assert(Args.Files.Start == Args.Files.At);
 
-    parsed_files ParsedFiles = ParseAllFiles(&Args.Files, Memory);
+    tokenized_files ParsedFiles = TokenizeAllFiles(&Args.Files, Memory);
     Assert(ParsedFiles.Start == ParsedFiles.At);
 
-    struct_defs Structs = ParseAllStructDefs(&ParsedFiles, ParsedFiles.StructCount, Memory);
+    /* /1* struct_defs Structs = *1/ ParseAllStructDefs(&ParsedFiles, ParsedFiles.StructCount, Memory); */
     Assert(ParsedFiles.Start == ParsedFiles.At);
 
     for (u32 ParserIndex = 0;
@@ -1026,7 +1348,7 @@ main(s32 ArgCount, const char** ArgStrings)
 
             if (StringsMatch(Token.Value, CS("for_members_in")))
             {
-              ParseForMembers(Parser, &Structs, Memory);
+              /* ParseForMembers(Parser, &Structs, Memory); */
             }
 
           } break;

@@ -1496,19 +1496,18 @@ FindAbsoluteDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, u32 First
       CommandIndex < OnePastLastCommand;
       ++CommandIndex)
   {
-    ui_render_command* Command = GetCommand(CommandBuffer, CommandIndex);
-
-    switch(Command->Type)
-    {
-      for_members_in(ui_render_command,
-      {
-        case Type:
-        {
-          Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&Member.Layout));
-          Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&Member.Layout));
-        } break
-      })
-    }
+    /* ui_render_command* Command = GetCommand(CommandBuffer, CommandIndex); */
+    /* switch(Command->Type) */
+    /* { */
+    /*   for_members_in(ui_render_command, */
+    /*   { */
+    /*     case Type: */
+    /*     { */
+    /*       Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&Member.Layout)); */
+    /*       Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&Member.Layout)); */
+    /*     } break */
+    /*   }) */
+    /* } */
 
     continue;
   }
