@@ -50,6 +50,13 @@ Pop(stream_t *Stream)
 }
 
 template <typename stream_t> inline umm
+CurrentCount(stream_t* Stream)
+{
+  umm Result = (umm)(Stream->At - Stream->Start);
+  return Result;
+}
+
+template <typename stream_t> inline umm
 Count(stream_t* Stream)
 {
   umm Result = (umm)(Stream->End - Stream->Start);

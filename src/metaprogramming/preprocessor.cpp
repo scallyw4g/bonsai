@@ -852,14 +852,14 @@ PushMember(d_union_decl* dUnion, c_token MemberIdentifierToken, d_union_flags Fl
   DList_Push(dUnion, Member);
 }
 
-template <typename buffer_t, typename cursor_t, typename element_t> inline cursor_t
-Cursor(buffer_t* Buffer, memory_arena* Memory)
+template <typename cursor_t, typename element_t> inline cursor_t
+Cursor(u32 Count, memory_arena* Memory)
 {
-  element_t* Start = Allocate(element_t, Memory, Buffer->Count);
+  element_t* Start = Allocate(element_t, Memory, Count);
   cursor_t Cursor = {
     .Start = Start,
     .At = Start,
-    .End = Start + Buffer->Count
+    .End = Start + Count
   };
   return Cursor;
 }
@@ -1430,10 +1430,12 @@ ParseStructBody(c_parse_result* Parser, struct_def* Struct, memory_arena* Memory
 }
 
 function struct_defs
-ParseAllStructDefs(tokenized_files* Files, u32 StructCount, memory_arena* Memory)
+ParseAllStructDefs(tokenized_files Files_, u32 MaxStructCount, memory_arena* Memory)
 {
-  struct_defs Result = AllocateStructDefs(StructCount, Memory);
-  struct_cursor StructCursor = Cursor<struct_defs, struct_cursor, struct_def>(&Result, Memory);
+  tokenized_files* Files = &Files_;
+
+  // TODO(Jesse): Can we allocate this with temp memory and blow it away afterwards?
+  struct_cursor StructCursor = Cursor<struct_cursor, struct_def>(MaxStructCount, Memory);
 
   for (u32 ParserIndex = 0;
       ParserIndex < (u32)Count(Files);
@@ -1480,7 +1482,10 @@ ParseAllStructDefs(tokenized_files* Files, u32 StructCount, memory_arena* Memory
     Rewind(&Parser->Tokens);
   }
 
-  Rewind(Files);
+  u32 Count = (u32)CurrentCount(&StructCursor);
+
+  struct_defs Result = AllocateStructDefs(Count, Memory);
+  Result.Defs = StructCursor.Start;
   return Result;
 }
 
@@ -1528,6 +1533,12 @@ TokenizeAllFiles(static_string_buffer* FileNames, memory_arena* Memory)
   return Result;
 }
 
+function void
+DumpStruct(struct_def* Struct)
+{
+  Log("%.*s\n", Struct->Name.Count, Struct->Name.Start);
+}
+
 s32
 main(s32 ArgCount, const char** ArgStrings)
 {
@@ -1547,8 +1558,16 @@ main(s32 ArgCount, const char** ArgStrings)
     tokenized_files ParsedFiles = TokenizeAllFiles(&Args.Files, Memory);
     Assert(ParsedFiles.Start == ParsedFiles.At);
 
-    /* struct_defs Structs = */ ParseAllStructDefs(&ParsedFiles, ParsedFiles.StructCount, Memory);
+    struct_defs Structs = ParseAllStructDefs(ParsedFiles, ParsedFiles.StructCount, Memory);
     Assert(ParsedFiles.Start == ParsedFiles.At);
+
+    for (u32 StructDefIndex = 0;
+        StructDefIndex < Structs.Count;
+        ++StructDefIndex)
+    {
+      struct_def* Struct = Structs.Defs+StructDefIndex;
+      DumpStruct(Struct);
+    }
 
     for (u32 ParserIndex = 0;
         ParserIndex < Count(&ParsedFiles);
