@@ -1,3 +1,13 @@
+# Jan 14 2020 - 1:00 - closed - Returning a sentinel by value caused linked list corruption
+* allocation
+* memory
+* sentinel
+* linked-list
+* d-list
+I had a constructor returning a sentinel by value, and initializaing the
+sentinel to point to itself ends up initializing it to point to some random
+place on the stack.  Should probably not use sentinels.. ?  Maybe?
+
 # Jan 10 2019 - 8:00 - closed - FlushBuffersToCard not calling glEnableVertexAttribArray
 * opengl
 * gpu-mapped-element-buffer

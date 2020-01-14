@@ -380,7 +380,7 @@ struct string_iterator
 };
 
 function string_iterator
-Iterator(string_stream* Stream)
+SSIterator(string_stream* Stream)
 {
   string_iterator Iterator = {
     .Stream = Stream,
@@ -792,12 +792,12 @@ RequireToken(c_parse_result* Parser, c_token_type ExpectedType)
   return Result;
 }
 
-#define DList_Push(Stream, Push)      \
-{                                     \
-  Push->Prev = &Stream->Sentinel;     \
-  Push->Next = Stream->Sentinel.Next; \
-  Stream->Sentinel.Next->Prev = Push; \
-  Stream->Sentinel.Next = Push;       \
+#define DList_Push(Stream, Container)      \
+{                                          \
+  Container->Prev = &Stream->Sentinel;     \
+  Container->Next = Stream->Sentinel.Next; \
+  Stream->Sentinel.Next->Prev = Container; \
+  Stream->Sentinel.Next = Container;       \
 }
 
 counted_string
@@ -1086,7 +1086,7 @@ Output(d_union_decl* dUnion, counted_string FileName, memory_arena* Memory)
 function void
 DumpStringStreamToConsole(string_stream* Stream)
 {
-  for (string_iterator Iter = Iterator(Stream);
+  for (string_iterator Iter = SSIterator(Stream);
       IsValid(&Iter);
       Advance(&Iter))
   {
@@ -1198,19 +1198,16 @@ struct c_decl_stream
   c_decl_stream_chunk Sentinel;
 };
 
+#if 1
 void
 Push(c_decl_stream* Stream, c_decl Element, memory_arena* Memory)
 {
-  c_decl_stream_chunk* Push = Allocate(c_decl_stream_chunk, Memory, 1);
-  Push->Element = Element;
-
-  Push->Prev = &Stream->Sentinel;
-  Push->Next = Stream->Sentinel.Next;
-  Stream->Sentinel.Next->Prev = Push;
-  Stream->Sentinel.Next = Push;
-
+  c_decl_stream_chunk* Container = Allocate(c_decl_stream_chunk, Memory, 1);
+  Container->Element = Element;
+  DList_Push(Stream, Container);
   return;
 }
+#endif
 
 struct struct_def
 {
@@ -1220,35 +1217,89 @@ struct struct_def
 
 struct struct_cursor
 {
-  struct_def* Start;
-  struct_def* End;
-  struct_def* At;
+  struct_def** Start;
+  struct_def** End;
+  struct_def** At;
 };
 
 struct struct_defs
 {
   u32 Count;
-  struct_def* Defs;
+  struct_def** Defs;
 };
+
+struct c_decl_iterator
+{
+  c_decl_stream* Stream;
+  c_decl_stream_chunk* At;
+};
+
+function c_decl_iterator
+CDIterator(c_decl_stream* Stream)
+{
+  c_decl_iterator Iterator = {
+    .Stream = Stream,
+    .At = Stream->Sentinel.Next
+  };
+  return Iterator;
+}
+
+function b32
+IsValid(c_decl_iterator* Iter)
+{
+  b32 Result = (Iter->At != &Iter->Stream->Sentinel);
+  return Result;
+}
+
+function void
+Advance(c_decl_iterator* Iter)
+{
+  Iter->At = Iter->At->Next;
+}
+
+function void
+DumpCDeclStreamToConsole(c_decl_stream* Stream)
+{
+  for (c_decl_iterator Iter = CDIterator(Stream);
+      IsValid(&Iter);
+      Advance(&Iter))
+  {
+    switch(Iter.At->Element.Type)
+    {
+      case type_c_decl_function:
+      {
+        Log("  Function\n");
+      } break;
+
+      case type_c_decl_variable:
+      {
+        counted_string Type = Iter.At->Element.c_decl_variable.Type;
+        counted_string Name = Iter.At->Element.c_decl_variable.Name;
+        Log("  %.*s %.*s\n", Type.Count, Type.Start, Name.Count, Name.Start);
+      } break;
+
+      InvalidDefaultCase;
+    }
+  }
+}
 
 function struct_defs
 AllocateStructDefs(u32 Count, memory_arena* Memory)
 {
   struct_defs Result = {
     .Count = Count,
-    .Defs = Allocate(struct_def, Memory, Count),
+    .Defs = Allocate(struct_def*, Memory, Count),
   };
 
   return Result;
 };
 
-function struct_def
-StructDef(counted_string Name)
+function struct_def*
+StructDef(counted_string Name, memory_arena* Memory)
 {
-  struct_def Result = {
-    .Name = Name
-  };
-  InitSentinel(Result.Fields.Sentinel);
+  struct_def* Result = Allocate(struct_def, Memory, 1);
+  Result->Name = Name;
+  InitSentinel(Result->Fields.Sentinel);
   return Result;
 }
 
@@ -1409,6 +1460,13 @@ ParseDeclaration(c_parse_result* Parser, memory_arena* Memory)
 }
 
 function void
+DumpStruct(struct_def* Struct)
+{
+  Log("%.*s\n", Struct->Name.Count, Struct->Name.Start);
+  DumpCDeclStreamToConsole(&Struct->Fields);
+}
+
+function void
 ParseStructBody(c_parse_result* Parser, struct_def* Struct, memory_arena* Memory)
 {
   c_token NextToken = PeekToken(Parser);
@@ -1426,7 +1484,22 @@ ParseStructBody(c_parse_result* Parser, struct_def* Struct, memory_arena* Memory
     NextToken = PeekToken(Parser);
   }
 
+  /* DumpStruct(Struct); */
+
   return;
+}
+
+function void
+Dump(struct_cursor* Cursor)
+{
+  u32 MaxCount = (u32)CurrentCount(Cursor);
+  for (u32 ElementIndex = 0;
+      ElementIndex < MaxCount;
+      ++ElementIndex)
+  {
+    struct_def* Def = Cursor->Start[ElementIndex];
+    DumpStruct(Def);
+  }
 }
 
 function struct_defs
@@ -1435,7 +1508,7 @@ ParseAllStructDefs(tokenized_files Files_, u32 MaxStructCount, memory_arena* Mem
   tokenized_files* Files = &Files_;
 
   // TODO(Jesse): Can we allocate this with temp memory and blow it away afterwards?
-  struct_cursor StructCursor = Cursor<struct_cursor, struct_def>(MaxStructCount, Memory);
+  struct_cursor StructCursor = Cursor<struct_cursor, struct_def*>(MaxStructCount, Memory);
 
   for (u32 ParserIndex = 0;
       ParserIndex < (u32)Count(Files);
@@ -1463,9 +1536,9 @@ ParseAllStructDefs(tokenized_files Files_, u32 MaxStructCount, memory_arena* Mem
                 if ( PeekToken(Parser) == CToken(CTokenType_OpenBrace) )
                 {
                   PopToken(Parser);
-                  struct_def S = StructDef(T.Value);
+                  struct_def* S = StructDef(T.Value, Memory);
+                  ParseStructBody(Parser, S, Memory);
                   Push(S, &StructCursor);
-                  ParseStructBody(Parser, &S, Memory);
                 }
               } break;
 
@@ -1483,9 +1556,9 @@ ParseAllStructDefs(tokenized_files Files_, u32 MaxStructCount, memory_arena* Mem
   }
 
   u32 Count = (u32)CurrentCount(&StructCursor);
-
   struct_defs Result = AllocateStructDefs(Count, Memory);
   Result.Defs = StructCursor.Start;
+
   return Result;
 }
 
@@ -1533,12 +1606,6 @@ TokenizeAllFiles(static_string_buffer* FileNames, memory_arena* Memory)
   return Result;
 }
 
-function void
-DumpStruct(struct_def* Struct)
-{
-  Log("%.*s\n", Struct->Name.Count, Struct->Name.Start);
-}
-
 s32
 main(s32 ArgCount, const char** ArgStrings)
 {
@@ -1565,7 +1632,7 @@ main(s32 ArgCount, const char** ArgStrings)
         StructDefIndex < Structs.Count;
         ++StructDefIndex)
     {
-      struct_def* Struct = Structs.Defs+StructDefIndex;
+      struct_def* Struct = Structs.Defs[StructDefIndex];
       DumpStruct(Struct);
     }
 
