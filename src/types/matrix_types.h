@@ -54,6 +54,7 @@ struct m_nxn
     Assert(Index < this->Columns*this->Rows);
     return this->Elements+Index;
   }
+
 };
 
 function  v4

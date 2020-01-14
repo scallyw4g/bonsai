@@ -176,8 +176,11 @@ TotalSize(T *Sizable)
 template <typename T> umm
 Remaining(T *Sizable)
 {
-  Assert(Sizable->At <= Sizable->End);
-  umm Result = (umm)(Sizable->End - Sizable->At);
+  umm Result = 0;
+  if (Sizable->At < Sizable->End)
+  {
+    Result = (umm)(Sizable->End - Sizable->At);
+  }
   return Result;
 }
 

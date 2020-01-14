@@ -192,6 +192,7 @@ ReadUntilTerminatorString(ansi_stream *Cursor, counted_string Terminator)
 
   return Result;
 }
+
 counted_string
 ReadUntilTerminatorList(ansi_stream *Cursor, const char *TerminatorList, b32 SkipEscapedChars = False)
 {

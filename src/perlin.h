@@ -5,12 +5,15 @@
 // I ADDED AN EXTRA METHOD THAT GENERATES A NEW PERMUTATION VECTOR (THIS IS NOT PRESENT IN THE ORIGINAL IMPLEMENTATION)
 
 // Generate a new permutation vector based on the value of seed
+
+using std::vector;
+
 struct perlin_noise
 {
-  std::vector<int> p;
-  perlin_noise() = delete;
+  vector<int> p;
   perlin_noise(unsigned int seed = DEBUG_NOISE_SEED);
 
+  /* thing */
   // Get a noise value, for 2D images z can have any value
   double noise(double x, double y, double z);
   double fade(double t);

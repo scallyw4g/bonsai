@@ -53,6 +53,163 @@ enum c_token_type
   CTokenType_EOF           = EOF,
 };
 
+function const char*
+ToString(c_token_type T)
+{
+  const char* Result = "CTokenType_Unknown";
+  switch (T)
+  {
+    case CTokenType_Unknown:
+    {
+      Result = "CTokenType_Unknown";
+    } break;
+    case CTokenType_Comment:
+    {
+      Result = "CTokenType_Comment";
+    } break;
+    case CTokenType_Identifier:
+    {
+      Result = "CTokenType_Identifier";
+    } break;
+    case CTokenType_String:
+    {
+      Result = "CTokenType_String";
+    } break;
+    case CTokenType_OpenBracket:
+    {
+      Result = "CTokenType_OpenBracket";
+    } break;
+    case CTokenType_CloseBracket:
+    {
+      Result = "CTokenType_CloseBracket";
+    } break;
+    case CTokenType_OpenBrace:
+    {
+      Result = "CTokenType_OpenBrace";
+    } break;
+    case CTokenType_CloseBrace:
+    {
+      Result = "CTokenType_CloseBrace";
+    } break;
+    case CTokenType_OpenParen:
+    {
+      Result = "CTokenType_OpenParen";
+    } break;
+    case CTokenType_CloseParen:
+    {
+      Result = "CTokenType_CloseParen";
+    } break;
+    case CTokenType_Dot:
+    {
+      Result = "CTokenType_Dot";
+    } break;
+    case CTokenType_Comma:
+    {
+      Result = "CTokenType_Comma";
+    } break;
+    case CTokenType_Semicolon:
+    {
+      Result = "CTokenType_Semicolon";
+    } break;
+    case CTokenType_Colon:
+    {
+      Result = "CTokenType_Colon";
+    } break;
+    case CTokenType_Hash:
+    {
+      Result = "CTokenType_Hash";
+    } break;
+    case CTokenType_Space:
+    {
+      Result = "CTokenType_Space";
+    } break;
+    case CTokenType_Star:
+    {
+      Result = "CTokenType_Star";
+    } break;
+    case CTokenType_Ampersand:
+    {
+      Result = "CTokenType_Ampersand";
+    } break;
+    case CTokenType_SingleQuote:
+    {
+      Result = "CTokenType_SingleQuote";
+    } break;
+    case CTokenType_DoubleQuote:
+    {
+      Result = "CTokenType_DoubleQuote";
+    } break;
+    case CTokenType_Equals:
+    {
+      Result = "CTokenType_Equals";
+    } break;
+    case CTokenType_LT:
+    {
+      Result = "CTokenType_LT";
+    } break;
+    case CTokenType_GT:
+    {
+      Result = "CTokenType_GT";
+    } break;
+    case CTokenType_Plus:
+    {
+      Result = "CTokenType_Plus";
+    } break;
+    case CTokenType_Minus:
+    {
+      Result = "CTokenType_Minus";
+    } break;
+    case CTokenType_Percent:
+    {
+      Result = "CTokenType_Percent";
+    } break;
+    case CTokenType_Bang:
+    {
+      Result = "CTokenType_Bang";
+    } break;
+    case CTokenType_Hat:
+    {
+      Result = "CTokenType_Hat";
+    } break;
+    case CTokenType_Question:
+    {
+      Result = "CTokenType_Question";
+    } break;
+    case CTokenType_FSlash:
+    {
+      Result = "CTokenType_FSlash";
+    } break;
+    case CTokenType_BSlash:
+    {
+      Result = "CTokenType_BSlash";
+    } break;
+    case CTokenType_Tilde:
+    {
+      Result = "CTokenType_Tilde";
+    } break;
+    case CTokenType_Backtick:
+    {
+      Result = "CTokenType_Backtick";
+    } break;
+    case CTokenType_Newline:
+    {
+      Result = "CTokenType_Newline";
+    } break;
+    case CTokenType_CarrigeReturn:
+    {
+      Result = "CTokenType_CarrigeReturn";
+    } break;
+    case CTokenType_EOF:
+    {
+      Result = "CTokenType_EOF";
+    } break;
+
+    InvalidDefaultCase;
+  }
+
+  return Result;
+};
+
 struct c_token
 {
   c_token_type Type;
@@ -71,6 +228,7 @@ PrintToken(c_token Token)
 {
   switch (Token.Type)
   {
+    case CTokenType_Comment:
     case CTokenType_Identifier:
     {
       Log("%.*s", Token.Value.Count, Token.Value.Start);
@@ -138,46 +296,55 @@ AllocateTokenBuffer(memory_arena* Memory, u32 Count)
 }
 
 c_token
-GetToken(ansi_stream* Stream)
+GetToken(ansi_stream* Stream, u32 Lookahead = 0)
 {
   c_token Result = {};
 
-  char At = *Stream->At;
-  switch (At)
+  if (Stream->At+Lookahead < Stream->End)
   {
-    case CTokenType_OpenBrace:
-    case CTokenType_CloseBrace:
-    case CTokenType_OpenParen:
-    case CTokenType_CloseParen:
-    case CTokenType_Dot:
-    case CTokenType_Comma:
-    case CTokenType_Semicolon:
-    case CTokenType_Colon:
-    case CTokenType_Hash:
-    case CTokenType_Space:
-    case CTokenType_Star:
-    case CTokenType_Ampersand:
-    case CTokenType_SingleQuote:
-    case CTokenType_DoubleQuote:
-    case CTokenType_Equals:
-    case CTokenType_LT:
-    case CTokenType_GT:
-    case CTokenType_Plus:
-    case CTokenType_Minus:
-    case CTokenType_Percent:
-    case CTokenType_Bang:
-    case CTokenType_Hat:
-    case CTokenType_Question:
-    case CTokenType_FSlash:
-    case CTokenType_BSlash:
-    case CTokenType_Tilde:
-    case CTokenType_Backtick:
-    case CTokenType_Newline:
-    case CTokenType_CarrigeReturn:
-    case CTokenType_EOF:
+    char At = *(Stream->At+Lookahead);
+    switch (At)
     {
-      Result = { .Type = (c_token_type)At };
-    } break;
+      case CTokenType_OpenBracket:
+      case CTokenType_CloseBracket:
+      case CTokenType_OpenBrace:
+      case CTokenType_CloseBrace:
+      case CTokenType_OpenParen:
+      case CTokenType_CloseParen:
+      case CTokenType_Dot:
+      case CTokenType_Comma:
+      case CTokenType_Semicolon:
+      case CTokenType_Colon:
+      case CTokenType_Hash:
+      case CTokenType_Space:
+      case CTokenType_Star:
+      case CTokenType_Ampersand:
+      case CTokenType_SingleQuote:
+      case CTokenType_DoubleQuote:
+      case CTokenType_Equals:
+      case CTokenType_LT:
+      case CTokenType_GT:
+      case CTokenType_Plus:
+      case CTokenType_Minus:
+      case CTokenType_Percent:
+      case CTokenType_Bang:
+      case CTokenType_Hat:
+      case CTokenType_Question:
+      case CTokenType_FSlash:
+      case CTokenType_BSlash:
+      case CTokenType_Tilde:
+      case CTokenType_Backtick:
+      case CTokenType_Newline:
+      case CTokenType_CarrigeReturn:
+      case CTokenType_EOF:
+      {
+        Result = { .Type = (c_token_type)At };
+      } break;
+    }
+  }
+  else
+  {
+    Warn("Attempted to get token past end of stream");
   }
 
   return Result;
@@ -276,7 +443,7 @@ PeekToken(c_parse_result* Parser)
   while (Remaining(&Parser->Tokens))
   {
     Result = *Parser->Tokens.At;
-    if (IsWhitespace(Result.Type))
+    if ( (Result.Type == CTokenType_Comment || IsWhitespace(Result.Type)) && Remaining(&Parser->Tokens) )
     {
       Parser->Tokens.At++;
     }
@@ -309,7 +476,7 @@ function c_token
 PopToken(c_parse_result* Parser)
 {
   c_token Result = PopTokenRaw(Parser);
-  while ( IsWhitespace(Result.Type) && Remaining(&Parser->Tokens) )
+  while ( (Result.Type == CTokenType_Comment || IsWhitespace(Result.Type)) && Remaining(&Parser->Tokens) )
   {
     Result = *Parser->Tokens.At++;
   }
@@ -365,26 +532,26 @@ TokenizeFile(counted_string FileName, memory_arena* Memory)
     {
       case CTokenType_FSlash:
       {
-        ++SourceFileStream.At;
-        if (Remaining(&SourceFileStream))
+        T = GetToken(&SourceFileStream, 1);
+        switch (T.Type)
         {
-          T = GetToken(&SourceFileStream);
-          switch (T.Type)
+          case CTokenType_FSlash:
           {
-            case CTokenType_FSlash:
-            {
-              T.Type = CTokenType_Comment;
-              T.Value = CS(PopLine(&SourceFileStream, Memory));
-            } break;
+            T.Type = CTokenType_Comment;
+            T.Value = CS(ReadUntilTerminatorList(&SourceFileStream, "\n", Memory));
+            --SourceFileStream.At;
+          } break;
 
-            case CTokenType_Star:
-            {
-              T.Type = CTokenType_Comment;
-              T.Value = ReadUntilTerminatorString(&SourceFileStream, CS("*/"));
-            } break;
+          case CTokenType_Star:
+          {
+            T.Type = CTokenType_Comment;
+            T.Value = ReadUntilTerminatorString(&SourceFileStream, CS("*/"));
+          } break;
 
-            default: {} break;
-          }
+          default:
+          {
+            ++SourceFileStream.At;
+          } break;
         }
       } break;
 
@@ -486,7 +653,7 @@ RewindUntil(c_parse_result* Parser, c_token_type Type)
 function void
 TruncateAtPreviousLineStart(c_parse_result* Parser, u32 Count )
 {
-  while (Parser->Tokens.At >= Parser->Tokens.Start)
+  while (Parser->Tokens.At > Parser->Tokens.Start)
   {
     if (Parser->Tokens.At->Type == CTokenType_Newline)
     {
@@ -526,17 +693,20 @@ EatUntil(c_parse_result* Parser, c_token_type Close)
 }
 
 function void
-OutputErrorHelperLine(c_parse_result* Parser, c_token* ErrorToken, c_token Expected)
+OutputErrorHelperLine(c_parse_result* Parser, c_token* ErrorToken, c_token Expected, counted_string ErrorString)
 {
   /* RuntimeBreak(); */
+
   Rewind(&Parser->Tokens);
 
   while (Remaining(&Parser->Tokens))
   {
     if (Parser->Tokens.At == ErrorToken)
     {
-      Log(" " RED_TERMINAL "^" WHITE_TERMINAL "---------- Unexpected token. Expected: ");
-      PrintToken(Expected);
+      Log(RED_TERMINAL "^" WHITE_TERMINAL "---------- Unexpected token %s. Expected: ", ToString(ErrorToken->Type));
+      Log("%s", ToString(Expected.Type));
+      if (ErrorString.Count)
+      { Log(" %.*s", ErrorString.Count, ErrorString.Start); }
       Log("\n");
       break;
     }
@@ -562,45 +732,60 @@ OutputErrorHelperLine(c_parse_result* Parser, c_token* ErrorToken, c_token Expec
   }
 }
 
+function void
+OutputParsingError(c_parse_result* Parser, c_token* ErrorToken, c_token_type ExpectedType, counted_string ErrorString)
+{
+  u32 LinesOfContext = 4;
+
+  Log("----\n");
+  Log("Error parsing %.*s:\n", Parser->FileName.Count, Parser->FileName.Start );
+
+  {
+    c_parse_result LeadingLines = *Parser;
+    RewindUntil(&LeadingLines, CTokenType_Newline);
+    LeadingLines.Tokens.End = LeadingLines.Tokens.At;
+    TruncateAtPreviousLineStart(&LeadingLines, LinesOfContext);
+    Dump(&LeadingLines);
+  }
+
+  {
+    c_parse_result ErrorLine = *Parser;
+    TruncateAtPreviousLineStart(&ErrorLine, 0);
+    TruncateAtNextLineEnd(&ErrorLine, 0);
+    Dump(&ErrorLine);
+    OutputErrorHelperLine(&ErrorLine, ErrorToken, CToken(ExpectedType), ErrorString);
+  }
+
+  {
+    c_parse_result TrailingLines = *Parser;
+    EatUntil(&TrailingLines, CTokenType_Newline);
+    TrailingLines.Tokens.Start = TrailingLines.Tokens.At;
+    TruncateAtNextLineEnd(&TrailingLines, LinesOfContext);
+    Dump(&TrailingLines);
+  }
+
+  Log("----\n");
+  Log("\n");
+
+  return;
+}
+
+function void
+OutputParsingError(c_parse_result* Parser, c_token* ErrorToken, counted_string ErrorString)
+{
+  OutputParsingError(Parser, ErrorToken, CTokenType_Unknown, ErrorString);
+  return;
+}
+
 function c_token
-RequireToken(c_parse_result* Parser, c_token_type Type)
+RequireToken(c_parse_result* Parser, c_token_type ExpectedType)
 {
   c_token* ErrorToken = Parser->Tokens.At;
   c_token Result = PopToken(Parser);
 
-  if (Result.Type != Type)
+  if (Result.Type != ExpectedType)
   {
-    u32 LinesOfContext = 4;
-
-    Log("----\n");
-
-    {
-      c_parse_result LeadingLines = *Parser;
-      RewindUntil(&LeadingLines, CTokenType_Newline);
-      LeadingLines.Tokens.End = LeadingLines.Tokens.At;
-      TruncateAtPreviousLineStart(&LeadingLines, LinesOfContext);
-      Dump(&LeadingLines);
-    }
-
-    {
-      c_parse_result ErrorLine = *Parser;
-      TruncateAtPreviousLineStart(&ErrorLine, 0);
-      TruncateAtNextLineEnd(&ErrorLine, 0);
-      Dump(&ErrorLine);
-      OutputErrorHelperLine(&ErrorLine, ErrorToken, CToken(Type));
-    }
-
-    {
-      c_parse_result TrailingLines = *Parser;
-      EatUntil(&TrailingLines, CTokenType_Newline);
-      TrailingLines.Tokens.Start = TrailingLines.Tokens.At;
-      TruncateAtNextLineEnd(&TrailingLines, LinesOfContext);
-      Dump(&TrailingLines);
-    }
-
-    Log("----\n");
-    Log("\n");
-
+    OutputParsingError(Parser, ErrorToken, ExpectedType, CS(""));
     Parser->Valid = False;
   }
 
@@ -735,7 +920,7 @@ ParseDiscriminatedUnion(c_parse_result* Parser, memory_arena* Memory)
   b32 Complete = False;
   while (!Complete)
   {
-    c_token Interior = PopTokenRaw(Parser);
+    c_token Interior = PopToken(Parser);
 
     switch (Interior.Type)
     {
@@ -758,10 +943,6 @@ ParseDiscriminatedUnion(c_parse_result* Parser, memory_arena* Memory)
         RequireToken(Parser, CTokenType_CloseParen);
         Complete = True;
       } break;
-
-      case CTokenType_Newline:
-      case CTokenType_Comment:
-      case CTokenType_Space: { } break;
 
       default:
       {
@@ -966,13 +1147,9 @@ EatUnionDef(c_parse_result* Parser)
       Warn("unions are unsupported at the moment: %.*s", (s32)T.Value.Count, T.Value.Start);
       PopToken(Parser);
       EatNextScope(Parser);
+      OptionalToken(Parser, CTokenType_Semicolon);
     } break;
 
-    case CTokenType_OpenBrace:
-    {
-      Warn("anonymous unions are unsupported at the moment");
-      EatNextScope(Parser);
-    } break;
 
     InvalidDefaultCase;
   }
@@ -982,9 +1159,9 @@ EatUnionDef(c_parse_result* Parser)
 
 enum c_decl_function_type
 {
-  Normal,
-  Constructor,
-  Destructor,
+  CFunctionType_Normal,
+  CFunctionType_Constructor,
+  CFunctionType_Destructor,
 };
 
 struct c_decl_function
@@ -1082,87 +1259,150 @@ EatStar(c_parse_result* Parser)
   return Result;
 }
 
-function c_decl
-ParseFunction(c_parse_result* Parser, c_decl_function_type Type)
+function void
+EatFunctionDecl(c_parse_result* Parser)
 {
-  c_decl Result = {
-    .Type = type_c_decl_function,
-    .c_decl_function = {
-      .Type = Type,
-    }
-  };
-
   EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
-  EatNextScope(Parser);
 
+  if (PeekToken(Parser).Type == CTokenType_Semicolon)
+  {
+    RequireToken(Parser, CTokenType_Semicolon);
+  }
+  else
+  {
+    EatNextScope(Parser);
+  }
+
+  return;
+}
+
+#define InvalidDefaultWhileParsing(Parser, ErrorMessage) \
+    default: { OutputParsingError(Parser, Parser->Tokens.At, ErrorMessage); Assert(False); } break;
+
+
+function b32
+IsCxxDefinitionKeyword(counted_string Value)
+{
+  b32 Result = StringsMatch(Value, CS("volatile")) ||
+               StringsMatch(Value, CS("struct")) ||
+               StringsMatch(Value, CS("const"));
   return Result;
 }
 
 function c_decl
 ParseDeclaration(c_parse_result* Parser, memory_arena* Memory)
 {
-  c_decl Result = {};
+  c_decl Result = {
+    .Type = type_c_decl_variable
+  };
 
-  c_token FirstToken = RequireToken(Parser, CTokenType_Identifier);
-
+  c_token FirstToken = PeekToken(Parser);
+  b32 Unnamed = False;
   switch(FirstToken.Type)
   {
     case CTokenType_Tilde:
     {
-      // Name .. could assert it matches struct name..
+      RequireToken(Parser, CTokenType_Tilde);
       RequireToken(Parser, CTokenType_Identifier);
-      Result = ParseFunction(Parser, Destructor);
+      EatFunctionDecl(Parser);
+      Result.Type = type_c_decl_function;
+      Result.c_decl_function.Type = CFunctionType_Destructor;
     } break;
 
     case CTokenType_Identifier:
     {
-      switch (PeekToken(Parser).Type)
+      b32 Done = False;
+      u32 Encountered = 0;
+      while (!Done)
       {
-        case CTokenType_OpenParen:
+        c_token NextToken = PeekToken(Parser);
+        switch (NextToken.Type)
         {
-          Result = ParseFunction(Parser, Constructor);
-        } break;
-
-        case CTokenType_Star:
-        {
-          Result.c_decl_variable.Type = FirstToken.Value;
-          while (EatStar(Parser))
+          case CTokenType_LT:
           {
+            EatUntil(Parser, CTokenType_GT);
+          } break;
+
+          case CTokenType_OpenParen:
+          {
+            EatFunctionDecl(Parser);
+            Result.Type = type_c_decl_function;
+            Result.c_decl_function.Type = CFunctionType_Constructor;
+            Done = True;
+          } break;
+
+          case CTokenType_Ampersand:
+          {
+            RequireToken(Parser, CTokenType_Ampersand);
+            Result.c_decl_variable.Type = Concat(Result.c_decl_variable.Type, CS("&"), Memory);
+          } break;
+
+          case CTokenType_Star:
+          {
+            RequireToken(Parser, CTokenType_Star);
             Result.c_decl_variable.Type = Concat(Result.c_decl_variable.Type, CS("*"), Memory);
-          }
-          Result.c_decl_variable.Name = RequireToken(Parser, CTokenType_Identifier).Value;
+          } break;
 
-          switch (PeekToken(Parser).Type)
+          case CTokenType_Identifier:
           {
-            case CTokenType_Semicolon:
+            if (StringsMatch(NextToken.Value, CS("union")))
             {
-              RequireToken(Parser, CTokenType_Semicolon);
-            } break;
+              EatUnionDef(Parser);
+              Done = True;
+              Unnamed = True;
+            }
 
-            case CTokenType_OpenBracket:
-            case CTokenType_Equals:
+            if (StringsMatch(NextToken.Value, CS("operator")))
             {
-              EatUntil(Parser, CTokenType_Semicolon);
-            } break;
+              EatUntil(Parser, CTokenType_CloseBrace);
+              Done = True;
+              Unnamed = True;
+            }
 
-            InvalidDefaultCase;
-          }
+            if (!IsCxxDefinitionKeyword(NextToken.Value))
+            {
+              if (Encountered++ == 1)
+              {
+                Done = True;
+              }
+            }
 
-        } break;
+            if (!Done)
+            {
+              Result.c_decl_variable.Type = Concat( Result.c_decl_variable.Type, RequireToken(Parser, CTokenType_Identifier).Value, Memory);
+            }
+          } break;
 
-        case CTokenType_Identifier:
-        {
-          Result.c_decl_variable.Type = FirstToken.Value;
-          Result.c_decl_variable.Name = PopToken(Parser).Value;
-          RequireToken(Parser, CTokenType_Semicolon);
-        } break;
+          InvalidDefaultWhileParsing(Parser, CS("While parsing decl type."));
+        }
 
-        InvalidDefaultCase;
+        continue;
       }
 
     } break;
 
-    InvalidDefaultCase;
+    InvalidDefaultWhileParsing(Parser, CS("While parsing decl type."));
+  }
+
+  if (!Unnamed && Result.Type == type_c_decl_variable)
+  {
+    Result.c_decl_variable.Name = RequireToken(Parser, CTokenType_Identifier).Value;
+    switch (PeekToken(Parser).Type)
+    {
+      case CTokenType_OpenParen:
+      case CTokenType_OpenBracket:
+      case CTokenType_Equals:
+      {
+        EatUntil(Parser, CTokenType_Semicolon);
+      } break;
+
+      case CTokenType_Semicolon:
+      {
+        RequireToken(Parser, CTokenType_Semicolon);
+      } break;
+
+      InvalidDefaultWhileParsing(Parser, CS("While parsing decl name."));
+    }
   }
 
   return Result;
@@ -1173,8 +1413,14 @@ ParseStructBody(c_parse_result* Parser, struct_def* Struct, memory_arena* Memory
 {
   c_token NextToken = PeekToken(Parser);
 
-  while (NextToken.Type != CTokenType_CloseBrace)
+  while (Remaining(&Parser->Tokens) && NextToken.Type != CTokenType_CloseBrace)
   {
+    if (NextToken.Type == CTokenType_Hash)
+    {
+      EatUntil(Parser, CTokenType_Newline);
+      continue;
+    }
+
     c_decl Declaration = ParseDeclaration(Parser, Memory);
     Push(&Struct->Fields, Declaration, Memory);
     NextToken = PeekToken(Parser);
@@ -1215,7 +1461,6 @@ ParseAllStructDefs(tokenized_files* Files, u32 StructCount, memory_arena* Memory
                 if ( PeekToken(Parser) == CToken(CTokenType_OpenBrace) )
                 {
                   PopToken(Parser);
-
                   struct_def S = StructDef(T.Value);
                   Push(S, &StructCursor);
                   ParseStructBody(Parser, &S, Memory);
@@ -1302,7 +1547,7 @@ main(s32 ArgCount, const char** ArgStrings)
     tokenized_files ParsedFiles = TokenizeAllFiles(&Args.Files, Memory);
     Assert(ParsedFiles.Start == ParsedFiles.At);
 
-    /* /1* struct_defs Structs = *1/ ParseAllStructDefs(&ParsedFiles, ParsedFiles.StructCount, Memory); */
+    /* struct_defs Structs = */ ParseAllStructDefs(&ParsedFiles, ParsedFiles.StructCount, Memory);
     Assert(ParsedFiles.Start == ParsedFiles.At);
 
     for (u32 ParserIndex = 0;
@@ -1311,16 +1556,13 @@ main(s32 ArgCount, const char** ArgStrings)
     {
       b32 SuccessfullyOutput = True;
       c_parse_result* Parser = ParsedFiles.Start+ParserIndex;
+      Assert(Parser->Valid);
       Assert(Remaining(&Parser->Tokens));
       while (Parser->Valid && Remaining(&Parser->Tokens))
       {
         c_token Token = PopToken(Parser);
         switch( Token.Type )
         {
-          case CTokenType_Comment:
-          {
-          } break;
-
           case CTokenType_Identifier:
           {
             if (StringsMatch(Token.Value, CS("d_union")))

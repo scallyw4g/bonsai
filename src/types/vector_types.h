@@ -3,12 +3,14 @@
 
 struct v2i
 {
-  s32 x, y;
+  s32 x;
+  s32 y;
 };
 
 struct v2
 {
-  r32 x, y;
+  r32 x;
+  r32 y;
 };
 
 #pragma GCC diagnostic push
