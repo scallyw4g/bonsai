@@ -65,16 +65,16 @@ IsWhitespace(c_token_type Type)
 }
 
 function void
-Advance(c_parse_result* Parser)
+Advance(c_parse_result* Parser, u32 Lookahead = 0)
 {
   if (Parser->Tokens.At->Type == CTokenType_Newline)
   {
     ++Parser->LineNumber;
   }
 
-  if (Remaining(&Parser->Tokens))
+  if (Remaining(&Parser->Tokens, Lookahead))
   {
-    ++Parser->Tokens.At;
+    Parser->Tokens.At += Lookahead+1;
   }
   else
   {
@@ -97,13 +97,6 @@ PeekTokenRaw(c_parse_result* Parser, u32 Lookahead = 0)
     Warn("Tried to peek a token on an empty stream");
   }
 
-  if (Result.Type == CTokenType_Identifier && StringsMatch(CS("break_here"), Result.Value))
-  {
-    RuntimeBreak();
-    Advance(Parser);
-    Result = *(Parser->Tokens.At+Lookahead);
-  }
-
   return Result;
 }
 
@@ -111,19 +104,25 @@ function c_token
 PeekToken(c_parse_result* Parser, u32 Lookahead = 0)
 {
   c_token Result = {};
-  while (Remaining(&Parser->Tokens, Lookahead))
+  u32 TokenHits = 0;
+  u32 LocalLookahead = 0;
+  while (Remaining(&Parser->Tokens, LocalLookahead))
   {
-    Result = PeekTokenRaw(Parser, Lookahead);
+    Result = PeekTokenRaw(Parser, LocalLookahead);
     if ( Result.Type == CTokenType_Comment || IsWhitespace(Result.Type) )
     {
       // TODO(Jesse): Does this make any sense at all?
       Result.Type = CTokenType_Unknown;
-      ++Lookahead;
     }
     else
     {
-      break;
+      if (TokenHits++ == Lookahead)
+      {
+        break;
+      }
     }
+
+    ++LocalLookahead;
   }
 
   return Result;
@@ -136,6 +135,13 @@ PopTokenRaw(c_parse_result* Parser)
   if (Remaining(&Parser->Tokens))
   {
     Advance(Parser);
+  }
+
+  if (Result.Type == CTokenType_Identifier && StringsMatch(CS("break_here"), Result.Value))
+  {
+    RuntimeBreak();
+    if (Remaining(&Parser->Tokens)) { Advance(Parser); }
+    Result = PeekTokenRaw(Parser);
   }
 
   return Result;
@@ -156,6 +162,7 @@ PopToken(c_parse_result* Parser)
       break;
     }
   }
+
   return Result;
 }
 

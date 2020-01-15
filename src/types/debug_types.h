@@ -229,9 +229,6 @@ struct debug_state
 
   registered_memory_arena RegisteredMemoryArenas[REGISTERED_MEMORY_ARENA_COUNT];
 
-  // FIXME(Jesse): GetReadScopeTree doesn't get parsed correctly as a function def
-  /* break_here */
-
   debug_scope_tree* GetReadScopeTree(u32 ThreadIndex)
   {
     debug_scope_tree *RootScope = &this->ThreadStates[ThreadIndex].ScopeTrees[this->ReadScopeIndex];

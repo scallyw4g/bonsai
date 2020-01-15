@@ -262,7 +262,7 @@ BuildPreprocessor
 ColorizeTitle "Preprocessing"
 
 rm src/metaprogramming/output/*
-git checkout src/metaprogramming/output
+# git checkout src/metaprogramming/output
 
 SOURCE_FILES=$(find src -type f -not -wholename "src/metaprogramming/defines.h" -not -wholename "src/metaprogramming/output/*" | tr '\n' ' ')
 bin/preprocessor $SOURCE_FILES
@@ -284,6 +284,4 @@ if [ "$EMCC" == "1" ]; then
 else
   time BuildWithClang
 fi
-
-# ./scripts/run_tests.sh
 

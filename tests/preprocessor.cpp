@@ -78,11 +78,11 @@ TestPeekAndPopTokens(memory_arena* Memory)
   c_parse_result Parser_ = TokenizeFile(CS("tests/fixtures/preprocessor_peek_pop.cpp"), Memory);
   c_parse_result* Parser = &Parser_;
 
-  /* TestThat(PeekToken(Parser, 0) == CToken(CS("function"))); */
-  /* TestThat(PeekToken(Parser, 1) == CToken(CS("void"))); */
-  /* TestThat(PeekToken(Parser, 2) == CToken(CS("FunctionName"))); */
-  /* TestThat(PeekToken(Parser, 3) == CToken(CTokenType_OpenParen)); */
-  /* TestThat(PeekToken(Parser, 4) == CToken(CTokenType_CloseParen)); */
+  TestThat(PeekToken(Parser, 0) == CToken(CS("function")));
+  TestThat(PeekToken(Parser, 1) == CToken(CS("void")));
+  TestThat(PeekToken(Parser, 2) == CToken(CS("FunctionName")));
+  TestThat(PeekToken(Parser, 3) == CToken(CTokenType_OpenParen));
+  TestThat(PeekToken(Parser, 4) == CToken(CTokenType_CloseParen));
 
   TestThat(PopToken(Parser) == CToken(CS("function")));
   TestThat(PopToken(Parser) == CToken(CS("void")));
@@ -90,14 +90,13 @@ TestPeekAndPopTokens(memory_arena* Memory)
   TestThat(PopToken(Parser) == CToken(CTokenType_OpenParen));
   TestThat(PopToken(Parser) == CToken(CTokenType_CloseParen));
 
-
-  /* TestThat(PeekToken(Parser, 0) == CToken(CS("debug_scope_tree"))); */
-  /* TestThat(PeekToken(Parser, 1) == CToken(CTokenType_Star)); */
-  /* TestThat(PeekToken(Parser, 2) == CToken(CS("GetReadScopeTree"))); */
-  /* TestThat(PeekToken(Parser, 3) == CToken(CTokenType_OpenParen)); */
-  /* TestThat(PeekToken(Parser, 4) == CToken(CS("u32"))); */
-  /* TestThat(PeekToken(Parser, 5) == CToken(CS("ThreadIndex"))); */
-  /* TestThat(PeekToken(Parser, 6) == CToken(CTokenType_CloseParen)); */
+  TestThat(PeekToken(Parser, 0) == CToken(CS("debug_scope_tree")));
+  TestThat(PeekToken(Parser, 1) == CToken(CTokenType_Star));
+  TestThat(PeekToken(Parser, 2) == CToken(CS("GetReadScopeTree")));
+  TestThat(PeekToken(Parser, 3) == CToken(CTokenType_OpenParen));
+  TestThat(PeekToken(Parser, 4) == CToken(CS("u32")));
+  TestThat(PeekToken(Parser, 5) == CToken(CS("ThreadIndex")));
+  TestThat(PeekToken(Parser, 6) == CToken(CTokenType_CloseParen));
 
 }
 
