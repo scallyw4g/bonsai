@@ -17,6 +17,8 @@ struct ansi_stream
   const char* Start;
   const char* At;
   const char* End;
+
+  counted_string Filename;
 };
 
 struct r32_stream

@@ -49,7 +49,7 @@ GetToken(ansi_stream* Stream, u32 Lookahead = 0)
   }
   else
   {
-    Warn("Attempted to get token past end of stream");
+    Warn("Attempted to get token past end of stream on file : %.*s", (u32)Stream->Filename.Count, Stream->Filename.Start);
   }
 
   return Result;
@@ -211,10 +211,10 @@ TokenizeFile(counted_string FileName, memory_arena* Memory)
           .Start = SourceFileStream.At,
         };
 
-        while (1)
+        while (Remaining(&SourceFileStream))
         {
           T = GetToken(&SourceFileStream);
-          if (T.Type == CTokenType_Unknown && Remaining(&SourceFileStream))
+          if (T.Type == CTokenType_Unknown)
           {
             SourceFileStream.At++;
           }
@@ -737,7 +737,7 @@ EatUnionDef(c_parse_result* Parser)
   {
     case CTokenType_Identifier:
     {
-      Warn("unions are unsupported at the moment: %.*s", (s32)T.Value.Count, T.Value.Start);
+      Info("unions are unsupported at the moment: %.*s", (s32)T.Value.Count, T.Value.Start);
       PopToken(Parser);
       EatNextScope(Parser);
       OptionalToken(Parser, CTokenType_Semicolon);
@@ -1025,9 +1025,9 @@ ParseStructBody(c_parse_result* Parser, struct_def* Struct, memory_arena* Memory
 }
 
 function struct_defs
-ParseAllStructDefs(tokenized_files Files_, u32 MaxStructCount, memory_arena* Memory)
+ParseAllStructDefs(tokenized_files Files_in, u32 MaxStructCount, memory_arena* Memory)
 {
-  tokenized_files* Files = &Files_;
+  tokenized_files* Files = &Files_in;
 
   // TODO(Jesse): This leaks a bit of memory because MaxStructCount is over-eager
   // @memory-leak
@@ -1155,8 +1155,8 @@ main(s32 ArgCount, const char** ArgStrings)
         StructDefIndex < Structs.Count;
         ++StructDefIndex)
     {
-      struct_def* Struct = Structs.Defs[StructDefIndex];
-      DumpStruct(Struct);
+      /* struct_def* Struct = Structs.Defs[StructDefIndex]; */
+      /* DumpStruct(Struct); */
     }
 
     for (u32 ParserIndex = 0;

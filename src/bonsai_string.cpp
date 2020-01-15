@@ -41,9 +41,9 @@ Concat(counted_string S1, counted_string S2, memory_arena* Memory)
 }
 
 function const char*
-GetNullTerminated(counted_string Str)
+GetNullTerminated(counted_string Str, memory_arena* Memory = TranArena)
 {
-  const char* Result = Allocate(const char, TranArena, Str.Count+1);
+  const char* Result = Allocate(const char, Memory, Str.Count+1);
   MemCopy((u8*)Str.Start, (u8*)Result, Str.Count);
   return Result;
 }

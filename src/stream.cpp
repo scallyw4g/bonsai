@@ -91,15 +91,15 @@ AnsiStreamFromFile(const char* SourceFile, memory_arena *Memory)
 {
   u8_stream Binary = U8_StreamFromFile(SourceFile, Memory);
   ansi_stream Result = AnsiStream(&Binary);
+  Result.Filename = CS(SourceFile);
   return Result;
 }
 
 ansi_stream
 AnsiStreamFromFile(counted_string SourceFile, memory_arena *Memory)
 {
-  const char* NullTerminated = GetNullTerminated(SourceFile);
-  u8_stream Binary = U8_StreamFromFile(NullTerminated, Memory);
-  ansi_stream Result = AnsiStream(&Binary);
+  const char* NullTerminated = GetNullTerminated(SourceFile, Memory);
+  ansi_stream Result = AnsiStreamFromFile(NullTerminated, Memory);
   return Result;
 }
 
