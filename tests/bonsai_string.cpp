@@ -217,6 +217,15 @@ TestReadUntilTerminatorList()
     TestThat(Stream.At[0] == 0);
   }
 
+  {
+    const char* Text = "\\xx";
+    ansi_stream Stream = AnsiStream(Text);
+    counted_string Result = ReadUntilTerminatorList(&Stream, "x", true);
+    TestThat(StringsMatch(Result, CS("\\x")));
+    TestThat(Stream.At[0] == 0);
+  }
+
+
 
 
 
