@@ -19,6 +19,12 @@
   Stream->Sentinel.Next = Container;       \
 }
 
+d_union(c_decl,
+{
+  c_decl_variable;
+  c_decl_function;
+})
+
 enum c_token_type
 {
   CTokenType_Unknown,
@@ -165,13 +171,7 @@ struct c_decl_variable
   counted_string Name;
 };
 
-#include <metaprogramming/output/preprocessor.cpp>
-
-d_union(c_decl,
-{
-  c_decl_variable;
-  c_decl_function;
-})
+#include <metaprogramming/output/preprocessor.h>
 
 struct c_decl_stream_chunk
 {

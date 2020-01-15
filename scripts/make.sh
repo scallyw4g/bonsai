@@ -257,6 +257,7 @@ echo -e "$Delimeter"
 echo -e ""
 
 ColorizeTitle "Preprocessing"
+rm src/metaprogramming/output/*
 SOURCE_FILES=$(find src -type f -not -wholename "src/metaprogramming/defines.h" -not -wholename "src/metaprogramming/output/*" | tr '\n' ' ')
 bin/preprocessor $SOURCE_FILES
 
