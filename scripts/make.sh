@@ -1,6 +1,5 @@
 #! /bin/bash
 
-
 # COMMON_OPTIMIZATION_OPTIONS="-O2"
 COMMON_OPTIMIZATION_OPTIONS=""
 
@@ -35,7 +34,6 @@ function ColorizeTitle()
 
 INCLUDE_DIRECTORIES="$SRC"
 OUTPUT_DIRECTORY="$BIN"
-
 
 # NOTE(Jesse): -Wno-global-constructors can be turned off when the defaultPallette
 # in colors.h gets axed .. I think.
@@ -247,6 +245,7 @@ function BuildWithClang {
   echo -e ""
 }
 
+
 if [ ! -d "$BIN" ]; then
   mkdir "$BIN"
 fi
@@ -255,13 +254,15 @@ if [ ! -d "$BIN_TEST" ]; then
   mkdir "$BIN_TEST"
 fi
 
+git checkout src/metaprogramming/output
+
 BuildPreprocessor
 [ ! -x bin/preprocessor ] && echo -e "$Failed Couldn't find preprocessor, exiting." && exit 1
 
 ColorizeTitle "Preprocessing"
 
 rm src/metaprogramming/output/*
-# git checkout src/metaprogramming/output
+git checkout src/metaprogramming/output
 
 SOURCE_FILES=$(find src -type f -not -wholename "src/metaprogramming/defines.h" -not -wholename "src/metaprogramming/output/*" | tr '\n' ' ')
 bin/preprocessor $SOURCE_FILES
@@ -284,4 +285,5 @@ else
   time BuildWithClang
 fi
 
+# ./scripts/run_tests.sh
 

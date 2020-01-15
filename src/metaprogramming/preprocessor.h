@@ -137,6 +137,8 @@ struct c_parse_result
 
   u32 StructCount;
   counted_string FileName;
+
+  u32 LineNumber;
 };
 
 struct static_string_buffer
@@ -395,7 +397,7 @@ b32
 operator==(c_token T1, c_token T2)
 {
   b32 Result = (T1.Type == T2.Type);
-  if (Result && T1.Value.Count > 0)
+  if (Result && (T1.Value.Count > 0 || T2.Value.Count) )
   {
     Result &= StringsMatch(T1.Value, T2.Value);
   }

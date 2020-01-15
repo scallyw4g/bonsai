@@ -174,12 +174,12 @@ TotalSize(T *Sizable)
 }
 
 template <typename T> umm
-Remaining(T *Sizable)
+Remaining(T *Sizable, u32 Modifier = 0)
 {
   umm Result = 0;
-  if (Sizable->At < Sizable->End)
+  if (Sizable->At+Modifier < Sizable->End)
   {
-    Result = (umm)(Sizable->End - Sizable->At);
+    Result = (umm)(Sizable->End - Sizable->At+Modifier);
   }
   return Result;
 }

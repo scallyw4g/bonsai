@@ -67,6 +67,11 @@ IsWhitespace(c_token_type Type)
 function void
 Advance(c_parse_result* Parser)
 {
+  if (Parser->Tokens.At->Type == CTokenType_Newline)
+  {
+    ++Parser->LineNumber;
+  }
+
   if (Remaining(&Parser->Tokens))
   {
     ++Parser->Tokens.At;
@@ -75,16 +80,17 @@ Advance(c_parse_result* Parser)
   {
     Warn("Attempted to advance parser past end of stream on file : %.*s", (u32)Parser->FileName.Count, Parser->FileName.Start);
   }
+
   return;
 }
 
 function c_token
-PeekTokenRaw(c_parse_result* Parser)
+PeekTokenRaw(c_parse_result* Parser, u32 Lookahead = 0)
 {
   c_token Result = {};
-  if (Remaining(&Parser->Tokens))
+  if (Remaining(&Parser->Tokens, Lookahead))
   {
-    Result = *Parser->Tokens.At;
+    Result = *(Parser->Tokens.At+Lookahead);
   }
   else
   {
@@ -95,23 +101,24 @@ PeekTokenRaw(c_parse_result* Parser)
   {
     RuntimeBreak();
     Advance(Parser);
-    Result = *Parser->Tokens.At;
+    Result = *(Parser->Tokens.At+Lookahead);
   }
 
   return Result;
 }
 
 function c_token
-PeekToken(c_parse_result* Parser)
+PeekToken(c_parse_result* Parser, u32 Lookahead = 0)
 {
   c_token Result = {};
-  while (Remaining(&Parser->Tokens))
+  while (Remaining(&Parser->Tokens, Lookahead))
   {
-    Result = PeekTokenRaw(Parser);
-    if ( (Result.Type == CTokenType_Comment || IsWhitespace(Result.Type)) && Remaining(&Parser->Tokens) )
+    Result = PeekTokenRaw(Parser, Lookahead);
+    if ( Result.Type == CTokenType_Comment || IsWhitespace(Result.Type) )
     {
+      // TODO(Jesse): Does this make any sense at all?
       Result.Type = CTokenType_Unknown;
-      Advance(Parser);
+      ++Lookahead;
     }
     else
     {
@@ -126,17 +133,28 @@ function c_token
 PopTokenRaw(c_parse_result* Parser)
 {
   c_token Result = PeekTokenRaw(Parser);
-  Advance(Parser);
+  if (Remaining(&Parser->Tokens))
+  {
+    Advance(Parser);
+  }
+
   return Result;
 }
 
 function c_token
 PopToken(c_parse_result* Parser)
 {
-  c_token Result = PeekToken(Parser);
-  if (Remaining(&Parser->Tokens))
+  c_token Result = PopTokenRaw(Parser);
+  while (Remaining(&Parser->Tokens))
   {
-    Advance(Parser);
+    if ( Result.Type == CTokenType_Comment || IsWhitespace(Result.Type) )
+    {
+      Result = PopTokenRaw(Parser);
+    }
+    else
+    {
+      break;
+    }
   }
   return Result;
 }
@@ -356,21 +374,42 @@ EatUntil(c_parse_result* Parser, c_token_type Close)
 }
 
 function void
-OutputErrorHelperLine(c_parse_result* Parser, c_token* ErrorToken, c_token Expected, counted_string ErrorString)
+OutputErrorHelperLine(c_parse_result* Parser, c_token* ErrorToken, c_token Expected, counted_string ErrorString, u32 LineNumber)
 {
   /* RuntimeBreak(); */
 
   Rewind(&Parser->Tokens);
 
+  u32 ColumnCount = 1;
   while (Remaining(&Parser->Tokens))
   {
+
     if (Parser->Tokens.At == ErrorToken)
     {
-      Log(RED_TERMINAL "^" WHITE_TERMINAL "---------- Unexpected token %s. Expected: ", ToString(ErrorToken->Type));
-      Log("%s", ToString(Expected.Type));
+      Log("^---------- Unexpected token %s", ToString(ErrorToken->Type));
+
+      if (ErrorToken->Value.Count)
+      {
+        Log("(%.*s)" , ErrorToken->Value.Count, ErrorToken->Value.Start);
+      }
+
+      Log(". Expected: %s", ToString(Expected.Type));
+
       if (ErrorString.Count)
-      { Log(" %.*s", ErrorString.Count, ErrorString.Start); }
+      {
+        Log(" %.*s", ErrorString.Count, ErrorString.Start);
+      }
+
       Log("\n");
+
+      for (u32 ColumnIndex = 0;
+          ColumnIndex < ColumnCount;
+          ++ColumnIndex)
+      {
+        Log(" ");
+      }
+      Log("%.*s:%u:%u: Err.. \n", Parser->FileName.Count, Parser->FileName.Start, LineNumber, ColumnCount);
+
       break;
     }
 
@@ -384,11 +423,13 @@ OutputErrorHelperLine(c_parse_result* Parser, c_token* ErrorToken, c_token Expec
           ++ValueIndex)
       {
         Log(" ");
+        ++ColumnCount;
       }
     }
     else
     {
       Log(" ");
+      ++ColumnCount;
     }
 
     ++Parser->Tokens.At;
@@ -401,7 +442,7 @@ OutputParsingError(c_parse_result* Parser, c_token* ErrorToken, c_token_type Exp
   u32 LinesOfContext = 4;
 
   Log("----\n");
-  Log("Error parsing %.*s:\n", Parser->FileName.Count, Parser->FileName.Start );
+  /* Log("%.*s:%u:u: Error\n", Parser->FileName.Count, Parser->FileName.Start, Parser->LineNumber); */
 
   {
     c_parse_result LeadingLines = *Parser;
@@ -416,7 +457,7 @@ OutputParsingError(c_parse_result* Parser, c_token* ErrorToken, c_token_type Exp
     TruncateAtPreviousLineStart(&ErrorLine, 0);
     TruncateAtNextLineEnd(&ErrorLine, 0);
     Dump(&ErrorLine);
-    OutputErrorHelperLine(&ErrorLine, ErrorToken, CToken(ExpectedType), ErrorString);
+    OutputErrorHelperLine(&ErrorLine, ErrorToken, CToken(ExpectedType), ErrorString, Parser->LineNumber);
   }
 
   {
@@ -428,7 +469,6 @@ OutputParsingError(c_parse_result* Parser, c_token* ErrorToken, c_token_type Exp
   }
 
   Log("----\n");
-  Log("\n");
 
   return;
 }
@@ -441,17 +481,25 @@ OutputParsingError(c_parse_result* Parser, c_token* ErrorToken, counted_string E
 }
 
 function c_token
-RequireToken(c_parse_result* Parser, c_token_type ExpectedType)
+RequireToken(c_parse_result* Parser, c_token ExpectedToken)
 {
-  c_token* ErrorToken = Parser->Tokens.At;
   c_token Result = PopToken(Parser);
+  c_token* ErrorToken = Parser->Tokens.At-1;
 
-  if (Result.Type != ExpectedType)
+  if (Result.Type != ExpectedToken.Type || (ExpectedToken.Value.Count > 0 && !StringsMatch(ExpectedToken.Value, Result.Value) ))
   {
-    OutputParsingError(Parser, ErrorToken, ExpectedType, CS(""));
+    OutputParsingError(Parser, ErrorToken, ExpectedToken.Type, CS(""));
     Parser->Valid = False;
+    RuntimeBreak();
   }
 
+  return Result;
+}
+
+function c_token
+RequireToken(c_parse_result* Parser, c_token_type ExpectedType)
+{
+  c_token Result = RequireToken(Parser, CToken(ExpectedType));
   return Result;
 }
 
@@ -752,21 +800,10 @@ EatNextScope(c_parse_result* Parser)
 function void
 EatUnionDef(c_parse_result* Parser)
 {
-  c_token T = PeekToken(Parser);
-  switch (T.Type)
-  {
-    case CTokenType_Identifier:
-    {
-      Info("unions are unsupported at the moment: %.*s", (s32)T.Value.Count, T.Value.Start);
-      PopToken(Parser);
-      EatNextScope(Parser);
-      OptionalToken(Parser, CTokenType_Semicolon);
-    } break;
-
-
-    InvalidDefaultCase;
-  }
-
+  c_token UnionName = RequireToken(Parser, CTokenType_Identifier);
+  Info("unions are unsupported at the moment: %.*s", (s32)UnionName.Value.Count, UnionName.Value.Start);
+  EatNextScope(Parser);
+  OptionalToken(Parser, CTokenType_Semicolon);
   return;
 }
 
@@ -826,7 +863,21 @@ DumpCDeclStreamToConsole(c_decl_stream* Stream)
     {
       case type_c_decl_function:
       {
-        Log("  Function\n");
+        switch(Iter.At->Element.c_decl_function.Type)
+        {
+          case CFunctionType_Normal:
+          {
+            Log("  Function\n");
+          } break;
+          case CFunctionType_Constructor:
+          {
+            Log("  Constructor\n");
+          } break;
+          case CFunctionType_Destructor:
+          {
+            Log("  Destructor\n");
+          } break;
+        }
       } break;
 
       case type_c_decl_variable:
@@ -898,7 +949,7 @@ IsCxxDefinitionKeyword(counted_string Value)
 }
 
 function c_decl
-ParseDeclaration(c_parse_result* Parser, memory_arena* Memory)
+ParseDeclaration(c_parse_result* Parser, counted_string StructName, memory_arena* Memory)
 {
   c_decl Result = {
     .Type = type_c_decl_variable
@@ -911,7 +962,8 @@ ParseDeclaration(c_parse_result* Parser, memory_arena* Memory)
     case CTokenType_Tilde:
     {
       RequireToken(Parser, CTokenType_Tilde);
-      RequireToken(Parser, CTokenType_Identifier);
+      counted_string Name = RequireToken(Parser, CTokenType_Identifier).Value;
+      Assert(StringsMatch(StructName, Name));
       EatFunctionDecl(Parser);
       Result.Type = type_c_decl_function;
       Result.c_decl_function.Type = CFunctionType_Destructor;
@@ -933,6 +985,7 @@ ParseDeclaration(c_parse_result* Parser, memory_arena* Memory)
 
           case CTokenType_OpenParen:
           {
+            Assert(StringsMatch(StructName, FirstToken.Value));
             EatFunctionDecl(Parser);
             Result.Type = type_c_decl_function;
             Result.c_decl_function.Type = CFunctionType_Constructor;
@@ -969,6 +1022,14 @@ ParseDeclaration(c_parse_result* Parser, memory_arena* Memory)
 
             if (!IsCxxDefinitionKeyword(NextToken.Value))
             {
+              if (Encountered == 1 && PeekToken(Parser, 1).Type == CTokenType_OpenParen)
+              {
+                /* counted_string FunctionName = */ RequireToken(Parser, CTokenType_Identifier);
+                EatFunctionDecl(Parser);
+                Result.Type = type_c_decl_function;
+                Result.c_decl_function.Type = CFunctionType_Normal;
+              }
+
               if (Encountered++ == 1)
               {
                 Done = True;
@@ -1036,7 +1097,7 @@ ParseStructBody(c_parse_result* Parser, struct_def* Struct, memory_arena* Memory
       continue;
     }
 
-    c_decl Declaration = ParseDeclaration(Parser, Memory);
+    c_decl Declaration = ParseDeclaration(Parser, Struct->Name, Memory);
     Push(&Struct->Fields, Declaration, Memory);
     NextToken = PeekToken(Parser);
   }
@@ -1069,6 +1130,25 @@ ParseAllStructDefs(tokenized_files Files_in, u32 MaxStructCount, memory_arena* M
           {
             EatUnionDef(Parser);
           }
+          else if (StringsMatch(Token.Value, CS("typedef")))
+          {
+            Info("typedef's not supported: %.*s", (u32)Parser->FileName.Count, Parser->FileName.Start);
+            EatUntil(Parser, CTokenType_Semicolon);
+#if 0
+            if (StringsMatch(PeekToken(Parser).Value, CS("struct")))
+            {
+              RequireToken(Parser, CToken((CS("struct"))));
+              RequireToken(Parser, CTokenType_OpenBrace);
+
+              struct_def* S = StructDef(CS(""), Memory);
+              ParseStructBody(Parser, S, Memory);
+              Push(S, &StructCursor);
+
+              S->Name = RequireToken(Parser, CTokenType_Identifier).Value;
+              RequireToken(Parser, CTokenType_Semicolon);
+            }
+#endif
+          }
           else if (StringsMatch(Token.Value, CS("struct")))
           {
             c_token T = PopToken(Parser);
@@ -1078,7 +1158,7 @@ ParseAllStructDefs(tokenized_files Files_in, u32 MaxStructCount, memory_arena* M
               {
                 if ( PeekToken(Parser) == CToken(CTokenType_OpenBrace) )
                 {
-                  PopToken(Parser);
+                  RequireToken(Parser, CTokenType_OpenBrace);
                   struct_def* S = StructDef(T.Value, Memory);
                   ParseStructBody(Parser, S, Memory);
                   Push(S, &StructCursor);
@@ -1154,6 +1234,9 @@ TokenizeAllFiles(static_string_buffer* FileNames, memory_arena* Memory)
 s32
 main(s32 ArgCount, const char** ArgStrings)
 {
+  setbuf(stdout, NULL);
+  setbuf(stderr, NULL);
+
   b32 Success = True;
 
   if (ArgCount > 1)
