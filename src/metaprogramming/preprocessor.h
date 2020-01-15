@@ -19,6 +19,19 @@
   Stream->Sentinel.Next = Container;       \
 }
 
+enum d_union_flags
+{
+  d_union_flag_none,
+  d_union_flag_enum_only
+};
+
+enum c_decl_function_type
+{
+  CFunctionType_Normal = '\n',
+  CFunctionType_Constructor,
+  CFunctionType_Destructor,
+};
+
 d_union(c_decl,
 {
   c_decl_variable;
@@ -78,12 +91,6 @@ struct c_token_buffer
   c_token* Start;
   c_token* At;
   c_token* End;
-};
-
-enum d_union_flags
-{
-  d_union_flag_none,
-  d_union_flag_enum_only
 };
 
 struct d_union_member
@@ -150,13 +157,6 @@ struct tokenized_files
   c_parse_result* Start;
   c_parse_result* End;
   c_parse_result* At;
-};
-
-enum c_decl_function_type
-{
-  CFunctionType_Normal,
-  CFunctionType_Constructor,
-  CFunctionType_Destructor,
 };
 
 struct c_decl_function

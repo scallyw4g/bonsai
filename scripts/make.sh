@@ -103,8 +103,13 @@ TESTS_TO_BUILD="
 "
 
 function BuildPreprocessor {
+
   which clang++ > /dev/null
   [ $? -ne 0 ] && echo -e "Please install clang++" && exit 1
+
+  echo -e ""
+  echo -e "$Delimeter"
+  echo -e ""
 
   ColorizeTitle "Preprocessor"
   executable="$SRC/metaprogramming/preprocessor.cpp"
@@ -128,6 +133,9 @@ function BuildPreprocessor {
    exit 1
   fi
 
+  echo -e ""
+  echo -e "$Delimeter"
+  echo -e ""
 }
 
 function BuildWithClang {
@@ -227,6 +235,7 @@ function BuildWithClang {
   echo -e ""
   echo -e "$Delimeter"
   echo -e ""
+  ColorizeTitle "Complete"
 
   wait
 
@@ -245,16 +254,8 @@ if [ ! -d "$BIN_TEST" ]; then
   mkdir "$BIN_TEST"
 fi
 
-echo -e ""
-echo -e "$Delimeter"
-echo -e ""
-
 BuildPreprocessor
 [ ! -x bin/preprocessor ] && echo -e "$Failed Couldn't find preprocessor, exiting." && exit 1
-
-echo -e ""
-echo -e "$Delimeter"
-echo -e ""
 
 ColorizeTitle "Preprocessing"
 rm src/metaprogramming/output/*
