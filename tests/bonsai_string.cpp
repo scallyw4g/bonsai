@@ -151,33 +151,74 @@ TestContains()
 void
 TestReadUntilTerminatorList()
 {
-  const char *Text = "property='> some thing >'";
-
-
   {
-    ansi_stream Stream = AnsiStream(Text);
+    const char *Text = "property='> some thing >'";
 
-    counted_string Result = ReadUntilTerminatorList(&Stream, "'");
-    TestThat(Result.Start[Result.Count] == '\'');
-    TestThat(Stream.At[0] == '>');
+    {
+      ansi_stream Stream = AnsiStream(Text);
+      counted_string Result = ReadUntilTerminatorList(&Stream, "'");
+      TestThat(Result.Start[Result.Count] == '\'');
+      TestThat(Stream.At[0] == '>');
+    }
+
+    {
+      ansi_stream Stream = AnsiStream(Text);
+      counted_string Result = ReadUntilTerminatorList(&Stream, "=> \"'");
+      TestThat(Result.Start[Result.Count] == '=');
+      TestThat(Stream.At[0] == '\'');
+    }
+
+    {
+      ansi_stream Stream = AnsiStream(Text);
+      counted_string Result = ReadUntilTerminatorList(&Stream, "pr");
+      TestThat(Result.Count == 0);
+      TestThat(Result.Start[Result.Count] == 'p');
+      TestThat(Stream.At[0] == 'r');
+    }
   }
 
   {
+    const char* Text = "\\'thing'";
     ansi_stream Stream = AnsiStream(Text);
-
-    counted_string Result = ReadUntilTerminatorList(&Stream, "=> \"'");
-    TestThat(Result.Start[Result.Count] == '=');
-    TestThat(Stream.At[0] == '\'');
+    counted_string Result = ReadUntilTerminatorList(&Stream, "'", true);
+    TestThat(StringsMatch(Result, CS("\\'thing")));
+    TestThat(Stream.At[0] == 0);
   }
 
   {
+    const char* Text = "\"thing\"x";
     ansi_stream Stream = AnsiStream(Text);
-
-    counted_string Result = ReadUntilTerminatorList(&Stream, "pr");
-    TestThat(Result.Count == 0);
-    TestThat(Result.Start[Result.Count] == 'p');
-    TestThat(Stream.At[0] == 'r');
+    counted_string Result = ReadUntilTerminatorList(&Stream, "x", true);
+    TestThat(StringsMatch(Result, CS("\"thing\"")));
+    TestThat(Stream.At[0] == 0);
   }
+
+  {
+    const char* Text = "struct %.*s {  \\x%.*s_type Type;  union  { x";
+    ansi_stream Stream = AnsiStream(Text);
+    counted_string Result = ReadUntilTerminatorList(&Stream, "x", true);
+    TestThat(StringsMatch(Result, CS("struct %.*s {  \\x%.*s_type Type;  union  { ")));
+    TestThat(Stream.At[0] == 0);
+  }
+
+  {
+    const char* Text = "thing \n thang\nx";
+    ansi_stream Stream = AnsiStream(Text);
+    counted_string Result = ReadUntilTerminatorList(&Stream, "x", true);
+    TestThat(StringsMatch(Result, CS("thing \n thang\n")));
+    TestThat(Stream.At[0] == 0);
+  }
+
+  {
+    const char* Text = "\\nx";
+    ansi_stream Stream = AnsiStream(Text);
+    counted_string Result = ReadUntilTerminatorList(&Stream, "x", true);
+    TestThat(StringsMatch(Result, CS("\\n")));
+    TestThat(Stream.At[0] == 0);
+  }
+
+
+
 
   return;
 }

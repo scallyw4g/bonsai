@@ -97,6 +97,11 @@ PeekToken(c_parse_result* Parser)
     }
   }
 
+  if (Result.Type == CTokenType_Identifier && StringsMatch(CS("break_here"), Result.Value))
+  {
+    RuntimeBreak();
+  }
+
   return Result;
 }
 
@@ -113,6 +118,11 @@ PopTokenRaw(c_parse_result* Parser)
     Warn("Tried to pop a token on an empty stream");
   }
 
+  if (Result.Type == CTokenType_Identifier && StringsMatch(CS("break_here"), Result.Value))
+  {
+    RuntimeBreak();
+  }
+
   return Result;
 }
 
@@ -122,7 +132,7 @@ PopToken(c_parse_result* Parser)
   c_token Result = PopTokenRaw(Parser);
   while ( (Result.Type == CTokenType_Comment || IsWhitespace(Result.Type)) && Remaining(&Parser->Tokens) )
   {
-    Result = *Parser->Tokens.At++;
+    Result = PopTokenRaw(Parser);
   }
 
   return Result;
@@ -197,6 +207,12 @@ TokenizeFile(counted_string FileName, memory_arena* Memory)
             ++SourceFileStream.At;
           } break;
         }
+      } break;
+
+      case CTokenType_SingleQuote:
+      {
+        T.Type = CTokenType_Char;
+        T.Value = PopQuotedCharLiteral(&SourceFileStream);
       } break;
 
       case CTokenType_DoubleQuote:
@@ -501,6 +517,7 @@ function b32
 WriteStructTo(d_union_decl* dUnion, native_file* OutFile, memory_arena* Memory)
 {
   counted_string UnionName = dUnion->Name;
+
   counted_string Decl = FormatCountedString(Memory, "struct %.*s\n{\n  %.*s_type Type;\n\n  union\n  {\n", UnionName.Count, UnionName.Start, UnionName.Count, UnionName.Start);
   b32 Result = WriteToFile(OutFile, Decl);
 
@@ -533,7 +550,7 @@ ParseDiscriminatedUnion(c_parse_result* Parser, memory_arena* Memory)
   RequireToken(Parser, CTokenType_OpenBrace);
 
   b32 Complete = False;
-  while (!Complete)
+  while (!Complete && Remaining(&Parser->Tokens))
   {
     c_token Interior = PopToken(Parser);
 
@@ -1040,7 +1057,8 @@ ParseAllStructDefs(tokenized_files Files_in, u32 MaxStructCount, memory_arena* M
     c_parse_result* Parser = Files->Start+ParserIndex;
     while (Parser->Valid && Remaining(&Parser->Tokens))
     {
-      c_token Token = PopToken(Parser); switch (Token.Type)
+      c_token Token = PopToken(Parser);
+      switch (Token.Type)
       {
         case CTokenType_Identifier:
         {
@@ -1129,6 +1147,7 @@ TokenizeAllFiles(static_string_buffer* FileNames, memory_arena* Memory)
   return Result;
 }
 
+#ifndef EXCLUDE_PREPROCESSOR_MAIN
 s32
 main(s32 ArgCount, const char** ArgStrings)
 {
@@ -1237,3 +1256,4 @@ main(s32 ArgCount, const char** ArgStrings)
   s32 Result = Success ? SUCCESS_EXIT_CODE : FAILURE_EXIT_CODE ;
   return Result;
 }
+#endif

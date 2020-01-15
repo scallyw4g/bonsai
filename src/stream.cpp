@@ -153,15 +153,48 @@ PopU32(ansi_stream *Cursor, memory_arena *Arena, const char* Delim = 0)
 }
 
 counted_string
+PopQuotedCharLiteral(ansi_stream* Cursor)
+{
+  if (*Cursor->At == '\'')
+  {
+    Advance(Cursor);
+  }
+  else
+  {
+    if (Cursor->At-1 >= Cursor->Start)
+    {
+      Assert(*(Cursor->At-1) == '\'' );
+    }
+    else
+    {
+      Warn("Tried to pop a singularly quoted string off a stream that doesn't start with one!");
+    }
+  }
+
+  char Terminator[2] = {};
+  Terminator[0] = '\'';
+
+  counted_string Result = ReadUntilTerminatorList(Cursor, Terminator, true);
+  return Result;
+}
+
+counted_string
 PopQuotedString(ansi_stream* Cursor)
 {
   if (*Cursor->At == '"' || *Cursor->At == '\'' )
   {
-    ++Cursor->At;
+    Advance(Cursor);
   }
   else
   {
-    Assert( *(Cursor->At-1) == '"' || *(Cursor->At-1) == '\'' );
+    if (Cursor->At-1 >= Cursor->Start)
+    {
+      Assert( *(Cursor->At-1) == '"' || *(Cursor->At-1) == '\'' );
+    }
+    else
+    {
+      Warn("Tried to pop a quoted string off a stream that doesn't start with one!");
+    }
   }
 
   char Terminator[2] = {};

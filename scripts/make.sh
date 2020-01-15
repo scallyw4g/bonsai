@@ -100,6 +100,7 @@ TESTS_TO_BUILD="
   $TESTS/objloader.cpp
   $TESTS/callgraph.cpp
   $TESTS/heap_allocation.cpp
+  $TESTS/preprocessor.cpp
 "
 
 function BuildPreprocessor {
@@ -258,7 +259,10 @@ BuildPreprocessor
 [ ! -x bin/preprocessor ] && echo -e "$Failed Couldn't find preprocessor, exiting." && exit 1
 
 ColorizeTitle "Preprocessing"
+
 rm src/metaprogramming/output/*
+# git checkout src/metaprogramming/output
+
 SOURCE_FILES=$(find src -type f -not -wholename "src/metaprogramming/defines.h" -not -wholename "src/metaprogramming/output/*" | tr '\n' ' ')
 bin/preprocessor $SOURCE_FILES
 

@@ -202,36 +202,48 @@ ReadUntilTerminatorString(ansi_stream *Cursor, counted_string Terminator)
   return Result;
 }
 
+function void
+Advance(ansi_stream* Cursor)
+{
+  if (Remaining(Cursor))
+  {
+    ++Cursor->At;
+  }
+  else
+  {
+    Error("Tried advancing a cursor past its end!");
+  }
+}
+
 counted_string
 ReadUntilTerminatorList(ansi_stream *Cursor, const char *TerminatorList, b32 SkipEscapedChars = False)
 {
   const char *Start = Cursor->At;
 
-  while (Remaining(Cursor) && *Cursor->At)
+  b32 Done = False;
+  while (!Done && Remaining(Cursor) && *Cursor->At)
   {
     const char *TerminatorAt = TerminatorList;
-    while (*TerminatorAt)
+    while (!Done && *TerminatorAt)
     {
       if(*Cursor->At == *TerminatorAt)
       {
-        goto finished;
+        Done = True;
       }
       ++TerminatorAt;
     }
 
-    ++Cursor->At;
-
-    if (*Cursor->At == '\\' && SkipEscapedChars && Remaining(Cursor) )
+    if (SkipEscapedChars && *Cursor->At == '\\' && Remaining(Cursor) )
     {
-      ++Cursor->At;
-      if (Remaining(Cursor))
-      {
-        ++Cursor->At;
-      }
+      Done = False;
+      Advance(Cursor);
+    }
+
+    if (!Done)
+    {
+      Advance(Cursor);
     }
   }
-
-finished:
 
   counted_string Result = {};
   Result.Start = Start;

@@ -27,17 +27,12 @@ enum d_union_flags
 
 enum c_decl_function_type
 {
-  CFunctionType_Normal = '\n',
+  CFunctionType_Normal,
   CFunctionType_Constructor,
   CFunctionType_Destructor,
 };
 
-d_union(c_decl,
-{
-  c_decl_variable;
-  c_decl_function;
-})
-
+// TODO(Jesse): Add vertical pipe |
 enum c_token_type
 {
   CTokenType_Unknown,
@@ -45,6 +40,7 @@ enum c_token_type
   CTokenType_Comment,
   CTokenType_Identifier,
   CTokenType_String,
+  CTokenType_Char,
 
   CTokenType_OpenBracket   = '[',
   CTokenType_CloseBracket  = ']',
@@ -79,6 +75,12 @@ enum c_token_type
   CTokenType_CarrigeReturn = '\r',
   CTokenType_EOF           = EOF,
 };
+
+d_union(c_decl,
+{
+  c_decl_variable;
+  c_decl_function;
+})
 
 struct c_token
 {
