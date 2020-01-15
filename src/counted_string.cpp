@@ -1,7 +1,7 @@
 r32
 StringToFloat(counted_string* String)
 {
-  const char* Temp = FormatString(TranArena, "%s", String->Start);
+  const char* Temp = FormatString(TranArena, "%.*s", String->Count, String->Start);
   r32 Result = (r32)atof(Temp);
   return Result;
 }
@@ -9,7 +9,7 @@ StringToFloat(counted_string* String)
 s32
 StringToInt(counted_string String)
 {
-  const char* Temp = FormatString(TranArena, "%s", String.Start);
+  const char* Temp = FormatString(TranArena, "%.*s", String.Count,  String.Start);
   s32 Result = atoi(Temp);
   return Result;
 }
