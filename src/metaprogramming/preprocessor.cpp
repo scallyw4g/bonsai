@@ -64,6 +64,20 @@ IsWhitespace(c_token_type Type)
   return Result;
 }
 
+function void
+Advance(c_parse_result* Parser)
+{
+  if (Remaining(&Parser->Tokens))
+  {
+    ++Parser->Tokens.At;
+  }
+  else
+  {
+    Warn("Attempted to advance parser past end of stream on file : %.*s", (u32)Parser->FileName.Count, Parser->FileName.Start);
+  }
+  return;
+}
+
 function c_token
 PeekTokenRaw(c_parse_result* Parser)
 {
@@ -77,6 +91,13 @@ PeekTokenRaw(c_parse_result* Parser)
     Warn("Tried to peek a token on an empty stream");
   }
 
+  if (Result.Type == CTokenType_Identifier && StringsMatch(CS("break_here"), Result.Value))
+  {
+    RuntimeBreak();
+    Advance(Parser);
+    Result = *Parser->Tokens.At;
+  }
+
   return Result;
 }
 
@@ -86,20 +107,16 @@ PeekToken(c_parse_result* Parser)
   c_token Result = {};
   while (Remaining(&Parser->Tokens))
   {
-    Result = *Parser->Tokens.At;
+    Result = PeekTokenRaw(Parser);
     if ( (Result.Type == CTokenType_Comment || IsWhitespace(Result.Type)) && Remaining(&Parser->Tokens) )
     {
-      Parser->Tokens.At++;
+      Result.Type = CTokenType_Unknown;
+      Advance(Parser);
     }
     else
     {
       break;
     }
-  }
-
-  if (Result.Type == CTokenType_Identifier && StringsMatch(CS("break_here"), Result.Value))
-  {
-    RuntimeBreak();
   }
 
   return Result;
@@ -108,33 +125,19 @@ PeekToken(c_parse_result* Parser)
 function c_token
 PopTokenRaw(c_parse_result* Parser)
 {
-  c_token Result = {};
-  if (Remaining(&Parser->Tokens))
-  {
-    Result = *Parser->Tokens.At++;
-  }
-  else
-  {
-    Warn("Tried to pop a token on an empty stream");
-  }
-
-  if (Result.Type == CTokenType_Identifier && StringsMatch(CS("break_here"), Result.Value))
-  {
-    RuntimeBreak();
-  }
-
+  c_token Result = PeekTokenRaw(Parser);
+  Advance(Parser);
   return Result;
 }
 
 function c_token
 PopToken(c_parse_result* Parser)
 {
-  c_token Result = PopTokenRaw(Parser);
-  while ( (Result.Type == CTokenType_Comment || IsWhitespace(Result.Type)) && Remaining(&Parser->Tokens) )
+  c_token Result = PeekToken(Parser);
+  if (Remaining(&Parser->Tokens))
   {
-    Result = PopTokenRaw(Parser);
+    Advance(Parser);
   }
-
   return Result;
 }
 
@@ -1174,8 +1177,8 @@ main(s32 ArgCount, const char** ArgStrings)
         StructDefIndex < Structs.Count;
         ++StructDefIndex)
     {
-      /* struct_def* Struct = Structs.Defs[StructDefIndex]; */
-      /* DumpStruct(Struct); */
+      struct_def* Struct = Structs.Defs[StructDefIndex];
+      DumpStruct(Struct);
     }
 
     for (u32 ParserIndex = 0;
