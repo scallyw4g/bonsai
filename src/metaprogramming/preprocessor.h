@@ -173,18 +173,16 @@ d_union(c_decl,
   c_decl_function;
 })
 
-// TODO(Jesse): Generate these using a directive
 struct c_decl_stream_chunk
 {
   c_decl Element;
   c_decl_stream_chunk* Next;
-  c_decl_stream_chunk* Prev;
 };
 
-// TODO(Jesse): Generate these using a directive
 struct c_decl_stream
 {
-  c_decl_stream_chunk Sentinel;
+  c_decl_stream_chunk* FirstChunk;
+  c_decl_stream_chunk* LastChunk;
 };
 
 struct struct_def
@@ -208,7 +206,6 @@ struct struct_defs
 
 struct c_decl_iterator
 {
-  c_decl_stream* Stream;
   c_decl_stream_chunk* At;
 };
 

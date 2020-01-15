@@ -753,9 +753,23 @@ EatUnionDef(c_parse_result* Parser)
 void
 Push(c_decl_stream* Stream, c_decl Element, memory_arena* Memory)
 {
-  c_decl_stream_chunk* Container = Allocate(c_decl_stream_chunk, Memory, 1);
-  Container->Element = Element;
-  DList_Push(Stream, Container);
+  c_decl_stream_chunk* NextChunk = Allocate(c_decl_stream_chunk, Memory, 1);
+  NextChunk->Element = Element;
+
+  if (!Stream->FirstChunk)
+  {
+    Stream->FirstChunk = NextChunk;
+    Stream->LastChunk = NextChunk;
+  }
+  else
+  {
+    Stream->LastChunk->Next = NextChunk;
+    Stream->LastChunk = NextChunk;
+  }
+
+  Assert(NextChunk->Next == 0);
+  Assert(Stream->LastChunk->Next == 0);
+
   return;
 }
 
@@ -763,8 +777,7 @@ function c_decl_iterator
 CDIterator(c_decl_stream* Stream)
 {
   c_decl_iterator Iterator = {
-    .Stream = Stream,
-    .At = Stream->Sentinel.Next
+    .At = Stream->FirstChunk
   };
   return Iterator;
 }
@@ -772,7 +785,7 @@ CDIterator(c_decl_stream* Stream)
 function b32
 IsValid(c_decl_iterator* Iter)
 {
-  b32 Result = (Iter->At != &Iter->Stream->Sentinel);
+  b32 Result = (Iter->At != 0);
   return Result;
 }
 
@@ -824,7 +837,6 @@ StructDef(counted_string Name, memory_arena* Memory)
 {
   struct_def* Result = Allocate(struct_def, Memory, 1);
   Result->Name = Name;
-  InitSentinel(Result->Fields.Sentinel);
   return Result;
 }
 
@@ -1012,25 +1024,13 @@ ParseStructBody(c_parse_result* Parser, struct_def* Struct, memory_arena* Memory
   return;
 }
 
-function void
-Dump(struct_cursor* Cursor)
-{
-  u32 MaxCount = (u32)CurrentCount(Cursor);
-  for (u32 ElementIndex = 0;
-      ElementIndex < MaxCount;
-      ++ElementIndex)
-  {
-    struct_def* Def = Cursor->Start[ElementIndex];
-    DumpStruct(Def);
-  }
-}
-
 function struct_defs
 ParseAllStructDefs(tokenized_files Files_, u32 MaxStructCount, memory_arena* Memory)
 {
   tokenized_files* Files = &Files_;
 
-  // TODO(Jesse): Can we allocate this with temp memory and blow it away afterwards?
+  // TODO(Jesse): This leaks a bit of memory because MaxStructCount is over-eager
+  // @memory-leak
   struct_cursor StructCursor = Cursor<struct_cursor, struct_def*>(MaxStructCount, Memory);
 
   for (u32 ParserIndex = 0;
@@ -1040,8 +1040,7 @@ ParseAllStructDefs(tokenized_files Files_, u32 MaxStructCount, memory_arena* Mem
     c_parse_result* Parser = Files->Start+ParserIndex;
     while (Parser->Valid && Remaining(&Parser->Tokens))
     {
-      c_token Token = PopToken(Parser);
-      switch (Token.Type)
+      c_token Token = PopToken(Parser); switch (Token.Type)
       {
         case CTokenType_Identifier:
         {
@@ -1077,6 +1076,7 @@ ParseAllStructDefs(tokenized_files Files_, u32 MaxStructCount, memory_arena* Mem
 
     Rewind(&Parser->Tokens);
   }
+
 
   u32 Count = (u32)CurrentCount(&StructCursor);
   struct_defs Result = AllocateStructDefs(Count, Memory);
