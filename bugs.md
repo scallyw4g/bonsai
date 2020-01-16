@@ -1,3 +1,12 @@
+# Jan 15 2020 - 2:00 - closed - Changed Peek/PeekRaw token function to support lookahead
+* iteration
+* confusing
+I had a difficult time digesting how exactly to best support looking ahead in
+the token stream.  It was complicated because Peek is slightly different
+semantically from PeekRaw.  PeekRaw uses the lookahead verbatem, but Peek needs
+scan and count how many tokens it hits, excluding whitespace and comments.
+
+
 # Jan 14 2020 - 1:00 - closed - Returning a sentinel by value caused linked list corruption
 * allocation
 * memory
