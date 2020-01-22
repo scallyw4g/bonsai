@@ -92,50 +92,50 @@ struct thread_startup_params
   thread Self;
 };
 
-struct gl_extensions
-{
-  PFNGLCREATESHADERPROC glCreateShader;
-  PFNGLSHADERSOURCEPROC glShaderSource;
-  PFNGLCOMPILESHADERPROC glCompileShader;
-  PFNGLGETSHADERIVPROC glGetShaderiv;
-  PFNGLGETSHADERINFOLOGPROC glGetShaderInfoLog;
-  PFNGLATTACHSHADERPROC glAttachShader;
-  PFNGLDETACHSHADERPROC glDetachShader;
-  PFNGLDELETESHADERPROC glDeleteShader;
-  PFNGLCREATEPROGRAMPROC glCreateProgram;
-  PFNGLLINKPROGRAMPROC glLinkProgram;
-  PFNGLGETPROGRAMIVPROC glGetProgramiv;
-  PFNGLGETPROGRAMINFOLOGPROC glGetProgramInfoLog;
-  PFNGLUSEPROGRAMPROC glUseProgram;
-  PFNGLDELETEPROGRAMPROC glDeleteProgram;
-  PFNGLGETUNIFORMLOCATIONPROC glGetUniformLocation;
-  PFNGLGENFRAMEBUFFERSPROC glGenFramebuffers;
-  PFNGLBINDFRAMEBUFFERPROC glBindFramebuffer;
-  /* PFNGLFRAMEBUFFERTEXTUREPROC glFramebufferTexture; */
-  PFNGLFRAMEBUFFERTEXTURE2DPROC glFramebufferTexture2D;
-  PFNGLCHECKFRAMEBUFFERSTATUSPROC glCheckFramebufferStatus;
-  PFNGLCOMPRESSEDTEXIMAGE2DPROC glCompressedTexImage2D;
-  PFNGLGENBUFFERSPROC glGenBuffers;
-  PFNGLBINDBUFFERPROC glBindBuffer;
-  PFNGLBUFFERDATAPROC glBufferData;
-  PFNGLDRAWBUFFERSPROC glDrawBuffers;
-  PFNGLDELETEBUFFERSPROC glDeleteBuffers;
-  PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer;
-  PFNGLENABLEVERTEXATTRIBARRAYPROC glEnableVertexAttribArray;
-  PFNGLDISABLEVERTEXATTRIBARRAYPROC glDisableVertexAttribArray;
-  PFNGLGENVERTEXARRAYSPROC glGenVertexArrays;
-  PFNGLBINDVERTEXARRAYPROC glBindVertexArray;
-  PFNGLUNIFORM3FVPROC glUniform3fv;
-  PFNGLUNIFORM2FVPROC glUniform2fv;
-  PFNGLUNIFORMMATRIX4FVPROC glUniformMatrix4fv;
-  PFNGLUNIFORM1IPROC glUniform1i;
-  PFNGLACTIVETEXTUREPROC glActiveTexture;
-  PFNGLUNIFORM1FPROC glUniform1f;
-  PFNGLUNIFORM1UIPROC glUniform1ui;
+/* struct gl_extensions */
+/* { */
+/*   PFNGLCREATESHADERPROC glCreateShader; */
+/*   PFNGLSHADERSOURCEPROC glShaderSource; */
+/*   PFNGLCOMPILESHADERPROC glCompileShader; */
+/*   PFNGLGETSHADERIVPROC glGetShaderiv; */
+/*   PFNGLGETSHADERINFOLOGPROC glGetShaderInfoLog; */
+/*   PFNGLATTACHSHADERPROC glAttachShader; */
+/*   PFNGLDETACHSHADERPROC glDetachShader; */
+/*   PFNGLDELETESHADERPROC glDeleteShader; */
+/*   PFNGLCREATEPROGRAMPROC glCreateProgram; */
+/*   PFNGLLINKPROGRAMPROC glLinkProgram; */
+/*   PFNGLGETPROGRAMIVPROC glGetProgramiv; */
+/*   PFNGLGETPROGRAMINFOLOGPROC glGetProgramInfoLog; */
+/*   PFNGLUSEPROGRAMPROC glUseProgram; */
+/*   PFNGLDELETEPROGRAMPROC glDeleteProgram; */
+/*   PFNGLGETUNIFORMLOCATIONPROC glGetUniformLocation; */
+/*   PFNGLGENFRAMEBUFFERSPROC glGenFramebuffers; */
+/*   PFNGLBINDFRAMEBUFFERPROC glBindFramebuffer; */
+/*   /1* PFNGLFRAMEBUFFERTEXTUREPROC glFramebufferTexture; *1/ */
+/*   PFNGLFRAMEBUFFERTEXTURE2DPROC glFramebufferTexture2D; */
+/*   PFNGLCHECKFRAMEBUFFERSTATUSPROC glCheckFramebufferStatus; */
+/*   PFNGLCOMPRESSEDTEXIMAGE2DPROC glCompressedTexImage2D; */
+/*   PFNGLGENBUFFERSPROC glGenBuffers; */
+/*   PFNGLBINDBUFFERPROC glBindBuffer; */
+/*   PFNGLBUFFERDATAPROC glBufferData; */
+/*   PFNGLDRAWBUFFERSPROC glDrawBuffers; */
+/*   PFNGLDELETEBUFFERSPROC glDeleteBuffers; */
+/*   PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer; */
+/*   PFNGLENABLEVERTEXATTRIBARRAYPROC glEnableVertexAttribArray; */
+/*   PFNGLDISABLEVERTEXATTRIBARRAYPROC glDisableVertexAttribArray; */
+/*   PFNGLGENVERTEXARRAYSPROC glGenVertexArrays; */
+/*   PFNGLBINDVERTEXARRAYPROC glBindVertexArray; */
+/*   PFNGLUNIFORM3FVPROC glUniform3fv; */
+/*   PFNGLUNIFORM2FVPROC glUniform2fv; */
+/*   PFNGLUNIFORMMATRIX4FVPROC glUniformMatrix4fv; */
+/*   PFNGLUNIFORM1IPROC glUniform1i; */
+/*   PFNGLACTIVETEXTUREPROC glActiveTexture; */
+/*   PFNGLUNIFORM1FPROC glUniform1f; */
+/*   PFNGLUNIFORM1UIPROC glUniform1ui; */
 
   // Platform specific (wgl / glX)
-  PFNSWAPINTERVALPROC glSwapInterval;
-};
+  /* PFNSWAPINTERVALPROC glSwapInterval; */
+/* }; */
 
 // XXX Make sure this ONLY contains input_event structs - they are cleared in a
 // loop and the struct size is used to determine the ending index
@@ -186,7 +186,7 @@ struct platform
 
   memory_arena *Memory;
 
-  gl_extensions GL;
+  /* gl_extensions GL; */
 
   r32 dt;
   s32 WindowWidth = SCR_WIDTH;

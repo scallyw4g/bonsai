@@ -62,10 +62,10 @@ COMMON_COMPILER_OPTIONS="
   -Wno-undef
   -Wno-covered-switch-default
   -Wno-c99-extensions
+  -Wno-reserved-id-macro
 "
 
 COMMON_LINKER_OPTIONS="-lpthread -lX11 -ldl -lGL"
-COMMON_GL_DEFINES="-D GL_GLEXT_PROTOTYPES=1"
 SHARED_LIBRARY_FLAGS="-shared -fPIC"
 
 EXAMPLES_TO_BUILD="
@@ -118,7 +118,6 @@ function BuildPreprocessor {
     $COMMON_OPTIMIZATION_OPTIONS \
     $COMMON_COMPILER_OPTIONS     \
     $COMMON_LINKER_OPTIONS       \
-    $COMMON_GL_DEFINES           \
     -D BONSAI_INTERNAL=1         \
     -I"$SRC"                     \
     -o "$output_basename"        \
@@ -153,7 +152,6 @@ function BuildWithClang {
       $COMMON_OPTIMIZATION_OPTIONS \
       $COMMON_COMPILER_OPTIONS     \
       $COMMON_LINKER_OPTIONS       \
-      $COMMON_GL_DEFINES           \
       -D BONSAI_INTERNAL=1         \
       -I"$SRC"                     \
       -o "$output_basename"        \
@@ -168,7 +166,6 @@ function BuildWithClang {
     clang++                      \
       $COMMON_COMPILER_OPTIONS   \
       $COMMON_LINKER_OPTIONS     \
-      $COMMON_GL_DEFINES         \
       -D BONSAI_INTERNAL=1       \
       -I"$SRC"                   \
       -I"$TESTS"                 \
@@ -185,7 +182,6 @@ function BuildWithClang {
       $COMMON_OPTIMIZATION_OPTIONS \
       $COMMON_COMPILER_OPTIONS     \
       $COMMON_LINKER_OPTIONS       \
-      $COMMON_GL_DEFINES           \
       -D BONSAI_INTERNAL=1         \
       -I"$SRC"                     \
       -I"$TESTS"                   \
@@ -203,7 +199,6 @@ function BuildWithClang {
     $COMMON_COMPILER_OPTIONS       \
     $SHARED_LIBRARY_FLAGS          \
     $COMMON_LINKER_OPTIONS         \
-    $COMMON_GL_DEFINES             \
     -D BONSAI_INTERNAL=1           \
     -I"$SRC"                       \
     -I"$SRC/GL"                    \
@@ -221,7 +216,6 @@ function BuildWithClang {
       $COMMON_OPTIMIZATION_OPTIONS                              \
       $COMMON_COMPILER_OPTIONS                                  \
       $COMMON_LINKER_OPTIONS                                    \
-      $COMMON_GL_DEFINES                                        \
       -D BONSAI_INTERNAL=1                                      \
       -I"$SRC"                                                  \
       -I"$executable"                                           \
@@ -264,7 +258,7 @@ ColorizeTitle "Preprocessing"
 rm src/metaprogramming/output/*
 # git checkout src/metaprogramming/output
 
-SOURCE_FILES=$(find src -type f -not -wholename "src/metaprogramming/defines.h" -not -wholename "src/metaprogramming/output/*" | tr '\n' ' ')
+SOURCE_FILES=$(find src -type f -not -wholename "src/metaprogramming/defines.h" -not -wholename "src/metaprogramming/output/*" -not -wholename "src/GL/*" | tr '\n' ' ')
 bin/preprocessor $SOURCE_FILES
 
 [ $? -ne 0 ] && echo "" && echo -e "$Failed Preprocessing failed, exiting." && exit 1

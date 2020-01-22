@@ -110,9 +110,9 @@ GenTexture(v2i Dim, memory_arena *Mem, u32 TextureDimensionality = GL_TEXTURE_2D
 
   glBindTexture(TextureDimensionality, Texture->ID);
 
-  // Note(Jesse): This is required to be set if mipmapping is off.  The default behavior
-  // is to lerp between the two closest mipmap levels, and when there is only one level
-  // that fails, at least on my GL implementation.
+  // Note(Jesse): This is required to be set if mipmapping is off.  The default
+  // behavior is to lerp between the two closest mipmap levels, and when there
+  // is only one level that fails, at least on my GL implementation.
   glTexParameteri(TextureDimensionality, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   //
 

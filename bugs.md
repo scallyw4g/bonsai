@@ -1,4 +1,4 @@
-# Jan 15 2020 - 2:00 - closed - Changed Peek/PeekRaw token function to support lookahead
+# Jan 15 2020 - 3:00 - closed - Changed Peek/PeekRaw token function to support lookahead
 * iteration
 * confusing
 I had a difficult time digesting how exactly to best support looking ahead in

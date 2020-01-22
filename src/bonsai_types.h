@@ -1,3 +1,6 @@
+#include <cstddef>
+#include <bonsai_gl.h>
+
 #include <metaprogramming/defines.h>
 #include <cstdint>
 

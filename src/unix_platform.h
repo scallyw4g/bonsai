@@ -16,17 +16,16 @@
 #define Cursor X11PleaseStop
 #include <X11/X.h>
 #include <X11/Xlib.h>
-#include <X11/keysymdef.h>
 #undef Cursor
+
+#define XK_LATIN1 1
+#define XK_MISCELLANY 1
+#include <X11/keysymdef.h>
 
 // X11 defines this to 0, which is really annoying
 #ifdef Success
 #undef Success
 #endif
-
-#include <GL/gl.h>
-#include <GL/glext.h>
-#include <GL/glx.h>
 
 #include <semaphore.h>
 
@@ -55,7 +54,6 @@
 // glX Business
 //
 #define bonsaiGlGetProcAddress(procName) glXGetProcAddress((GLubyte*)procName)
-typedef PFNGLXSWAPINTERVALEXTPROC PFNSWAPINTERVALPROC;
 
 #define GlobalCwdBufferLength 2048
 
@@ -67,6 +65,68 @@ typedef PFNGLXSWAPINTERVALEXTPROC PFNSWAPINTERVALPROC;
 // In Cygwin printing to the console with printf doesn't work, so we have a
 // wrapper that does some additional crazyness on Win32
 #define PrintConsole(Message) printf(Message)
+
+
+//
+// GLX
+//
+extern "C" {
+
+#define GLX_RGBA           4
+#define GLX_DOUBLEBUFFER   5
+#define GLX_DEPTH_SIZE     12
+
+#define GLX_CONTEXT_MAJOR_VERSION_ARB     0x2091
+#define GLX_CONTEXT_MINOR_VERSION_ARB     0x2092
+#define GLX_CONTEXT_FLAGS_ARB             0x2094
+#define GLX_CONTEXT_PROFILE_MASK_ARB      0x9126
+#define GLX_CONTEXT_CORE_PROFILE_BIT_ARB  0x00000001
+#define GLX_CONTEXT_DEBUG_BIT_ARB         0x00000001
+
+  typedef struct {
+    Visual *visual;
+    VisualID visualid;
+    int screen;
+    int depth;
+#if defined(__cplusplus) || defined(c_plusplus)
+    int c_class;
+#else
+    int class;
+#endif
+    unsigned long red_mask;
+    unsigned long green_mask;
+    unsigned long blue_mask;
+    int colormap_size;
+    int bits_per_rgb;
+  } XVisualInfo;
+
+
+  typedef struct __GLXcontextRec *GLXContext;
+  typedef XID GLXPixmap;
+  typedef XID GLXDrawable;
+  /* GLX 1.3 and later */
+  typedef struct __GLXFBConfigRec *GLXFBConfig;
+  typedef XID GLXFBConfigID;
+  typedef XID GLXContextID;
+  typedef XID GLXWindow;
+  typedef XID GLXPbuffer;
+
+  extern XVisualInfo* glXChooseVisual( Display *dpy, int screen, int *attribList );
+  extern GLXFBConfig *glXChooseFBConfig( Display *dpy, int screen, const int *attribList, int *nitems );
+  typedef GLXContext ( *PFNGLXCREATECONTEXTATTRIBSARBPROC) (Display *dpy, GLXFBConfig config, GLXContext share_context, Bool direct, const int *attrib_list);
+  extern void (*glXGetProcAddress(const GLubyte *procname))( void );
+  extern Bool glXMakeCurrent( Display *dpy, GLXDrawable drawable, GLXContext ctx);
+  extern void glXSwapBuffers( Display *dpy, GLXDrawable drawable );
+
+}
+
+typedef void ( *PFNGLXSWAPINTERVALEXTPROC) (Display *dpy, GLXDrawable drawable, int interval);
+typedef PFNGLXSWAPINTERVALEXTPROC PFNSWAPINTERVALPROC;
+
+//
+// GLX
+//
+
 
 typedef int thread_id;
 typedef sem_t semaphore;

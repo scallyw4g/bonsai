@@ -6,10 +6,6 @@
 #include <WinBase.h>
 #include <Wingdi.h>
 
-#include <GL/gl.h>
-#include <GL/glext.h>
-#include <GL/wglext.h>
-
 #include <sys/stat.h>
 
 #include <stdint.h>

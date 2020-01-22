@@ -172,8 +172,6 @@ StrStr(char *Str1, char *Str2)
   return Result;
 }
 
-#define DefGlProc(ProcType, ProcName) \
-  ProcType ProcName = (ProcType)bonsaiGlGetProcAddress(#ProcName); Assert(ProcName)
 function void
 InitializeOpenGlExtensions(os* Os)
 {
@@ -188,6 +186,11 @@ InitializeOpenGlExtensions(os* Os)
 
   // Somehow on linux this is irrelevant..
 #if 1
+
+#if 0
+
+#define DefGlProc(ProcType, ProcName) \
+  ProcType ProcName = (ProcType)bonsaiGlGetProcAddress(#ProcName); Assert(ProcName)
 
   /*
    * 1.3
@@ -255,6 +258,7 @@ InitializeOpenGlExtensions(os* Os)
    */
   DefGlProc(PFNGLXCREATECONTEXTATTRIBSARBPROC, glXCreateContextAttribsARB);
 
+#endif
 
 
 #endif
