@@ -77,7 +77,7 @@ InsertChunkIntoWorld(world *World, world_chunk *Chunk)
   }
 
 #if BONSAI_INTERNAL
-  if (BucketsSkipped > 5)
+  if (BucketsSkipped > 10)
   {
     Warn("%u Collisions encountered while inserting chunk into world", BucketsSkipped);
   }

@@ -201,7 +201,6 @@ function BuildWithClang {
     $COMMON_LINKER_OPTIONS         \
     -D BONSAI_INTERNAL=1           \
     -I"$SRC"                       \
-    -I"$SRC/GL"                    \
     -I"$SRC/debug_system"          \
     -o "$BIN/lib_debug_system.so"  \
     "$DEBUG_SRC_FILE" && echo -e "$Success $DEBUG_SRC_FILE" &
@@ -258,7 +257,7 @@ ColorizeTitle "Preprocessing"
 rm src/metaprogramming/output/*
 # git checkout src/metaprogramming/output
 
-SOURCE_FILES=$(find src -type f -not -wholename "src/metaprogramming/defines.h" -not -wholename "src/metaprogramming/output/*" -not -wholename "src/GL/*" | tr '\n' ' ')
+SOURCE_FILES=$(find src -type f -not -wholename "src/metaprogramming/defines.h" -not -wholename "src/metaprogramming/output/*" | tr '\n' ' ')
 bin/preprocessor $SOURCE_FILES
 
 [ $? -ne 0 ] && echo "" && echo -e "$Failed Preprocessing failed, exiting." && exit 1
