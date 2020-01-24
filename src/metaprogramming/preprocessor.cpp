@@ -945,7 +945,6 @@ EatFunctionDecl(c_parse_result* Parser)
 #define InvalidDefaultWhileParsing(Parser, ErrorMessage) \
     default: { OutputParsingError(Parser, Parser->Tokens.At, ErrorMessage); Assert(False); } break;
 
-
 function b32
 IsCxxDefinitionKeyword(counted_string Value)
 {
@@ -1139,7 +1138,11 @@ ParseAllStructDefs(tokenized_files Files_in, u32 MaxStructCount, memory_arena* M
           }
           else if (StringsMatch(Token.Value, CS("typedef")))
           {
-            Info("typedef's not supported: %.*s", (u32)Parser->FileName.Count, Parser->FileName.Start);
+            if (PeekToken(Parser) == CToken(CS("struct")))
+            {
+              Info("typedef'd structs not supported: %.*s", (u32)Parser->FileName.Count, Parser->FileName.Start);
+            }
+
             EatUntil(Parser, CTokenType_Semicolon);
 #if 0
             if (StringsMatch(PeekToken(Parser).Value, CS("struct")))
