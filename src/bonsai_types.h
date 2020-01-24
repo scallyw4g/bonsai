@@ -1,6 +1,3 @@
-#include <cstddef>
-#include <bonsai_gl.h>
-
 #include <metaprogramming/defines.h>
 #include <cstdint>
 
@@ -25,6 +22,8 @@
 #else
 #include <unix_platform.h>
 #endif
+
+#include <bonsai_gl.h>
 
 #include <types/heap_memory_types.h>
 #include <types/memory_types.h>

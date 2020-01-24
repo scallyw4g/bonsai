@@ -70,7 +70,6 @@
 //
 // GLX
 //
-extern "C" {
 
 #define GLX_RGBA           4
 #define GLX_DOUBLEBUFFER   5
@@ -83,44 +82,43 @@ extern "C" {
 #define GLX_CONTEXT_CORE_PROFILE_BIT_ARB  0x00000001
 #define GLX_CONTEXT_DEBUG_BIT_ARB         0x00000001
 
-  typedef struct {
-    Visual *visual;
-    VisualID visualid;
-    int screen;
-    int depth;
+typedef struct {
+  Visual *visual;
+  VisualID visualid;
+  s32 screen;
+  s32 depth;
 #if defined(__cplusplus) || defined(c_plusplus)
-    int c_class;
+  s32 c_class;
 #else
-    int class;
+  s32 class;
 #endif
-    unsigned long red_mask;
-    unsigned long green_mask;
-    unsigned long blue_mask;
-    int colormap_size;
-    int bits_per_rgb;
-  } XVisualInfo;
+  unsigned long red_mask;
+  unsigned long green_mask;
+  unsigned long blue_mask;
+  s32 colormap_size;
+  s32 bits_per_rgb;
+} XVisualInfo;
 
 
-  typedef struct __GLXcontextRec *GLXContext;
-  typedef XID GLXPixmap;
-  typedef XID GLXDrawable;
-  /* GLX 1.3 and later */
-  typedef struct __GLXFBConfigRec *GLXFBConfig;
-  typedef XID GLXFBConfigID;
-  typedef XID GLXContextID;
-  typedef XID GLXWindow;
-  typedef XID GLXPbuffer;
+typedef struct __GLXcontextRec *GLXContext;
+typedef XID GLXPixmap;
+typedef XID GLXDrawable;
+/* GLX 1.3 and later */
+typedef struct __GLXFBConfigRec *GLXFBConfig;
+typedef XID GLXFBConfigID;
+typedef XID GLXContextID;
+typedef XID GLXWindow;
+typedef XID GLXPbuffer;
 
-  extern XVisualInfo* glXChooseVisual( Display *dpy, int screen, int *attribList );
-  extern GLXFBConfig *glXChooseFBConfig( Display *dpy, int screen, const int *attribList, int *nitems );
-  typedef GLXContext ( *PFNGLXCREATECONTEXTATTRIBSARBPROC) (Display *dpy, GLXFBConfig config, GLXContext share_context, Bool direct, const int *attrib_list);
-  extern void (*glXGetProcAddress(const GLubyte *procname))( void );
-  extern Bool glXMakeCurrent( Display *dpy, GLXDrawable drawable, GLXContext ctx);
-  extern void glXSwapBuffers( Display *dpy, GLXDrawable drawable );
+exported_function XVisualInfo* glXChooseVisual( Display *dpy, s32 screen, s32 *attribList );
+exported_function GLXFBConfig *glXChooseFBConfig( Display *dpy, s32 screen, const s32 *attribList, s32 *nitems );
+exported_function void (*glXGetProcAddress(const u8 *procname))( void );
+exported_function Bool glXMakeCurrent( Display *dpy, GLXDrawable drawable, GLXContext ctx);
+exported_function void glXSwapBuffers( Display *dpy, GLXDrawable drawable );
 
-}
+typedef GLXContext ( *PFNGLXCREATECONTEXTATTRIBSARBPROC) (Display *dpy, GLXFBConfig config, GLXContext share_context, Bool direct, const s32 *attrib_list);
 
-typedef void ( *PFNGLXSWAPINTERVALEXTPROC) (Display *dpy, GLXDrawable drawable, int interval);
+typedef void ( *PFNGLXSWAPINTERVALEXTPROC) (Display *dpy, GLXDrawable drawable, s32 s32);
 typedef PFNGLXSWAPINTERVALEXTPROC PFNSWAPINTERVALPROC;
 
 //
@@ -128,7 +126,7 @@ typedef PFNGLXSWAPINTERVALEXTPROC PFNSWAPINTERVALPROC;
 //
 
 
-typedef int thread_id;
+typedef s32 thread_id;
 typedef sem_t semaphore;
 
 typedef void* shared_lib;

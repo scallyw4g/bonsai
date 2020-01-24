@@ -1,4 +1,3 @@
-extern "C" {
 #define GL_NO_ERROR                       0
 
 #define GL_VERSION                        0x1F02
@@ -141,122 +140,121 @@ typedef unsigned short GLushort;
 
 typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const void *userParam);
 
-extern const GLubyte* glGetString (GLenum name);
-extern void glEnable (GLenum cap);
-extern void glDisable (GLenum cap);
-extern void glCullFace (GLenum mode);
-extern void glViewport (GLint x, GLint y, GLsizei width, GLsizei height);
-extern void glDepthFunc (GLenum func);
-extern void glBlendFunc (GLenum sfactor, GLenum dfactor);
+exported_function const GLubyte* glGetString (GLenum name);
+exported_function void glEnable (GLenum cap);
+exported_function void glDisable (GLenum cap);
+exported_function void glCullFace (GLenum mode);
+exported_function void glViewport (GLint x, GLint y, GLsizei width, GLsizei height);
+exported_function void glDepthFunc (GLenum func);
+exported_function void glBlendFunc (GLenum sfactor, GLenum dfactor);
 
-extern void glDrawArrays (GLenum mode, GLint first, GLsizei count);
+exported_function void glDrawArrays (GLenum mode, GLint first, GLsizei count);
 
-extern GLenum glGetError (void);
-extern void glDebugMessageCallback (GLDEBUGPROC callback, const void *userParam);
+exported_function GLenum glGetError (void);
+exported_function void glDebugMessageCallback (GLDEBUGPROC callback, const void *userParam);
 
-extern void glClear (GLbitfield mask);
-extern void glClearColor (GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
-extern void glClearDepth (GLdouble depth);
+exported_function void glClear (GLbitfield mask);
+exported_function void glClearColor (GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
+exported_function void glClearDepth (GLdouble depth);
 
-extern void glGenTextures(GLsizei n, GLuint *textures);
-extern void glBindTextures (GLuint first, GLsizei count, const GLuint *textures);
-extern void glBindTexture (GLenum target, GLuint texture);
-extern void glDeleteTextures (GLsizei n, const GLuint *textures);
-extern void glActiveTexture (GLenum texture);
+exported_function void glGenTextures(GLsizei n, GLuint *textures);
+exported_function void glBindTextures (GLuint first, GLsizei count, const GLuint *textures);
+exported_function void glBindTexture (GLenum target, GLuint texture);
+exported_function void glDeleteTextures (GLsizei n, const GLuint *textures);
+exported_function void glActiveTexture (GLenum texture);
 
-extern void glTexStorage1D (GLenum target, GLsizei levels, GLenum internalformat, GLsizei width);
-extern void glTexStorage2D (GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height);
-extern void glTexStorage3D (GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth);
+exported_function void glTexStorage1D (GLenum target, GLsizei levels, GLenum internalformat, GLsizei width);
+exported_function void glTexStorage2D (GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height);
+exported_function void glTexStorage3D (GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth);
 
-extern void glTexImage1D (GLenum target, GLint level, GLint internalformat, GLsizei width, GLint border, GLenum format, GLenum type, const void *pixels);
-extern void glTexImage2D (GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const void *pixels);
-extern void glTexImage3D (GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const void *pixels);
+exported_function void glTexImage1D (GLenum target, GLint level, GLint internalformat, GLsizei width, GLint border, GLenum format, GLenum type, const void *pixels);
+exported_function void glTexImage2D (GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const void *pixels);
+exported_function void glTexImage3D (GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const void *pixels);
 
-extern void glTexSubImage1D (GLenum target, GLint level, GLint xoffset, GLsizei width, GLenum format, GLenum type, const void *pixels);
-extern void glTexSubImage2D (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const void *pixels);
-extern void glTexSubImage3D (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const void *pixels);
+exported_function void glTexSubImage1D (GLenum target, GLint level, GLint xoffset, GLsizei width, GLenum format, GLenum type, const void *pixels);
+exported_function void glTexSubImage2D (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const void *pixels);
+exported_function void glTexSubImage3D (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const void *pixels);
 
-extern void glTexParameterf (GLenum target, GLenum pname, GLfloat param);
-extern void glTexParameterfv (GLenum target, GLenum pname, const GLfloat *params);
-extern void glTexParameteri (GLenum target, GLenum pname, GLint param);
-extern void glTexParameteriv (GLenum target, GLenum pname, const GLint *params);
+exported_function void glTexParameterf (GLenum target, GLenum pname, GLfloat param);
+exported_function void glTexParameterfv (GLenum target, GLenum pname, const GLfloat *params);
+exported_function void glTexParameteri (GLenum target, GLenum pname, GLint param);
+exported_function void glTexParameteriv (GLenum target, GLenum pname, const GLint *params);
 
-extern void glCompressedTexImage3D (GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLsizei imageSize, const void *data);
-extern void glCompressedTexImage2D (GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const void *data);
-extern void glCompressedTexImage1D (GLenum target, GLint level, GLenum internalformat, GLsizei width, GLint border, GLsizei imageSize, const void *data);
+exported_function void glCompressedTexImage3D (GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLsizei imageSize, const void *data);
+exported_function void glCompressedTexImage2D (GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const void *data);
+exported_function void glCompressedTexImage1D (GLenum target, GLint level, GLenum internalformat, GLsizei width, GLint border, GLsizei imageSize, const void *data);
 
-extern void glPixelStoref (GLenum pname, GLfloat param);
-extern void glPixelStorei (GLenum pname, GLint param);
+exported_function void glPixelStoref (GLenum pname, GLfloat param);
+exported_function void glPixelStorei (GLenum pname, GLint param);
 
-extern void glEnableVertexAttribArray(GLuint index);
-extern void glDisableVertexAttribArray(GLuint index);
+exported_function void glEnableVertexAttribArray(GLuint index);
+exported_function void glDisableVertexAttribArray(GLuint index);
 
-extern void glVertexAttribPointer (GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void *pointer);
+exported_function void glVertexAttribPointer (GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void *pointer);
 
-extern void glBindFramebuffer (GLenum target, GLuint framebuffer);
-extern void glDeleteFramebuffers (GLsizei n, const GLuint *framebuffers);
-extern void glGenFramebuffers (GLsizei n, GLuint *framebuffers);
-extern GLenum glCheckFramebufferStatus (GLenum target);
-extern void glFramebufferTexture1D (GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
-extern void glFramebufferTexture2D (GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
-extern void glFramebufferTexture3D (GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level, GLint zoffset);
-extern void glFramebufferTextureLayer (GLenum target, GLenum attachment, GLuint texture, GLint level, GLint layer);
-extern void glFramebufferRenderbuffer (GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer);
+exported_function void glBindFramebuffer (GLenum target, GLuint framebuffer);
+exported_function void glDeleteFramebuffers (GLsizei n, const GLuint *framebuffers);
+exported_function void glGenFramebuffers (GLsizei n, GLuint *framebuffers);
+exported_function GLenum glCheckFramebufferStatus (GLenum target);
+exported_function void glFramebufferTexture1D (GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
+exported_function void glFramebufferTexture2D (GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
+exported_function void glFramebufferTexture3D (GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level, GLint zoffset);
+exported_function void glFramebufferTextureLayer (GLenum target, GLenum attachment, GLuint texture, GLint level, GLint layer);
+exported_function void glFramebufferRenderbuffer (GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer);
 
-extern void glCompileShader (GLuint shader);
-extern GLuint glCreateProgram (void);
-extern GLuint glCreateShader (GLenum type);
-extern void glLinkProgram (GLuint program);
-extern void glShaderSource (GLuint shader, GLsizei count, const GLchar *const*string, const GLint *length);
-extern void glUseProgram (GLuint program);
+exported_function void glCompileShader (GLuint shader);
+exported_function GLuint glCreateProgram (void);
+exported_function GLuint glCreateShader (GLenum type);
+exported_function void glLinkProgram (GLuint program);
+exported_function void glShaderSource (GLuint shader, GLsizei count, const GLchar *const*string, const GLint *length);
+exported_function void glUseProgram (GLuint program);
 
-extern void glGetProgramInfoLog (GLuint program, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
-extern void glGetShaderInfoLog (GLuint shader, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
+exported_function void glGetProgramInfoLog (GLuint program, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
+exported_function void glGetShaderInfoLog (GLuint shader, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
 
-extern void glDeleteProgram (GLuint program);
-extern void glDeleteShader (GLuint shader);
-extern void glDetachShader (GLuint program, GLuint shader);
+exported_function void glDeleteProgram (GLuint program);
+exported_function void glDeleteShader (GLuint shader);
+exported_function void glDetachShader (GLuint program, GLuint shader);
 
-extern void glUniform1f (GLint location, GLfloat v0);
-extern void glUniform2f (GLint location, GLfloat v0, GLfloat v1);
-extern void glUniform3f (GLint location, GLfloat v0, GLfloat v1, GLfloat v2);
-extern void glUniform4f (GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
-extern void glUniform1i (GLint location, GLint v0);
-extern void glUniform2i (GLint location, GLint v0, GLint v1);
-extern void glUniform3i (GLint location, GLint v0, GLint v1, GLint v2);
-extern void glUniform4i (GLint location, GLint v0, GLint v1, GLint v2, GLint v3);
-extern void glUniform1fv (GLint location, GLsizei count, const GLfloat *value);
-extern void glUniform2fv (GLint location, GLsizei count, const GLfloat *value);
-extern void glUniform3fv (GLint location, GLsizei count, const GLfloat *value);
-extern void glUniform4fv (GLint location, GLsizei count, const GLfloat *value);
-extern void glUniform1iv (GLint location, GLsizei count, const GLint *value);
-extern void glUniform2iv (GLint location, GLsizei count, const GLint *value);
-extern void glUniform3iv (GLint location, GLsizei count, const GLint *value);
-extern void glUniform4iv (GLint location, GLsizei count, const GLint *value);
-extern void glUniformMatrix2fv (GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
-extern void glUniformMatrix3fv (GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
-extern void glUniformMatrix4fv (GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
-extern void glUniform1ui (GLint location, GLuint v0);
-extern void glUniform2ui (GLint location, GLuint v0, GLuint v1);
-extern void glUniform3ui (GLint location, GLuint v0, GLuint v1, GLuint v2);
-extern void glUniform4ui (GLint location, GLuint v0, GLuint v1, GLuint v2, GLuint v3);
-extern void glUniform1uiv (GLint location, GLsizei count, const GLuint *value);
-extern void glUniform2uiv (GLint location, GLsizei count, const GLuint *value);
-extern void glUniform3uiv (GLint location, GLsizei count, const GLuint *value);
-extern void glUniform4uiv (GLint location, GLsizei count, const GLuint *value);
+exported_function void glUniform1f (GLint location, GLfloat v0);
+exported_function void glUniform2f (GLint location, GLfloat v0, GLfloat v1);
+exported_function void glUniform3f (GLint location, GLfloat v0, GLfloat v1, GLfloat v2);
+exported_function void glUniform4f (GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
+exported_function void glUniform1i (GLint location, GLint v0);
+exported_function void glUniform2i (GLint location, GLint v0, GLint v1);
+exported_function void glUniform3i (GLint location, GLint v0, GLint v1, GLint v2);
+exported_function void glUniform4i (GLint location, GLint v0, GLint v1, GLint v2, GLint v3);
+exported_function void glUniform1fv (GLint location, GLsizei count, const GLfloat *value);
+exported_function void glUniform2fv (GLint location, GLsizei count, const GLfloat *value);
+exported_function void glUniform3fv (GLint location, GLsizei count, const GLfloat *value);
+exported_function void glUniform4fv (GLint location, GLsizei count, const GLfloat *value);
+exported_function void glUniform1iv (GLint location, GLsizei count, const GLint *value);
+exported_function void glUniform2iv (GLint location, GLsizei count, const GLint *value);
+exported_function void glUniform3iv (GLint location, GLsizei count, const GLint *value);
+exported_function void glUniform4iv (GLint location, GLsizei count, const GLint *value);
+exported_function void glUniformMatrix2fv (GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
+exported_function void glUniformMatrix3fv (GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
+exported_function void glUniformMatrix4fv (GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
+exported_function void glUniform1ui (GLint location, GLuint v0);
+exported_function void glUniform2ui (GLint location, GLuint v0, GLuint v1);
+exported_function void glUniform3ui (GLint location, GLuint v0, GLuint v1, GLuint v2);
+exported_function void glUniform4ui (GLint location, GLuint v0, GLuint v1, GLuint v2, GLuint v3);
+exported_function void glUniform1uiv (GLint location, GLsizei count, const GLuint *value);
+exported_function void glUniform2uiv (GLint location, GLsizei count, const GLuint *value);
+exported_function void glUniform3uiv (GLint location, GLsizei count, const GLuint *value);
+exported_function void glUniform4uiv (GLint location, GLsizei count, const GLuint *value);
 
-extern GLint glGetUniformLocation (GLuint program, const GLchar *name);
+exported_function GLint glGetUniformLocation (GLuint program, const GLchar *name);
 
-extern void glGetShaderiv (GLuint shader, GLenum pname, GLint *params);
-extern void glGetProgramiv (GLuint program, GLenum pname, GLint *params);
-extern void glAttachShader (GLuint program, GLuint shader);
+exported_function void glGetShaderiv (GLuint shader, GLenum pname, GLint *params);
+exported_function void glGetProgramiv (GLuint program, GLenum pname, GLint *params);
+exported_function void glAttachShader (GLuint program, GLuint shader);
 
-extern void glBindBuffer (GLenum target, GLuint buffer);
-extern void glDeleteBuffers (GLsizei n, const GLuint *buffers);
-extern void glGenBuffers (GLsizei n, GLuint *buffers);
-extern void glBufferData (GLenum target, GLsizeiptr size, const void *data, GLenum usage);
-extern void* glMapBuffer (GLenum target, GLenum access);
-extern GLboolean glUnmapBuffer (GLenum target);
+exported_function void glBindBuffer (GLenum target, GLuint buffer);
+exported_function void glDeleteBuffers (GLsizei n, const GLuint *buffers);
+exported_function void glGenBuffers (GLsizei n, GLuint *buffers);
+exported_function void glBufferData (GLenum target, GLsizeiptr size, const void *data, GLenum usage);
+exported_function void* glMapBuffer (GLenum target, GLenum access);
+exported_function GLboolean glUnmapBuffer (GLenum target);
 
-extern void glDrawBuffers (GLsizei n, const GLenum *bufs);
-}
+exported_function void glDrawBuffers (GLsizei n, const GLenum *bufs);
