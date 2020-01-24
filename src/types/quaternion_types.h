@@ -55,7 +55,7 @@ GetTheta(v3 P1, v3 P2)
 
   r32 cosTheta = DotP1P2 / (LP1*LP2);
   cosTheta = ClampBilateral(cosTheta);
-  r32 Theta = (r32)acos( cosTheta );
+  r32 Theta = (r32)ArcCos( cosTheta );
 
   Assert(Theta >= -1 || Theta <= 1);
   return Theta;
@@ -70,7 +70,7 @@ RotatePoint(v3 P1, v3 P2)
 
   r32 Theta = GetTheta(P1, P2);
 
-  Quaternion Result = Quaternion((Axis*(r32)sin(Theta/2.0f)), (r32)cos(Theta/2.0f));
+  Quaternion Result = Quaternion((Axis*(r32)Sin(Theta/2.0f)), (r32)Cos(Theta/2.0f));
 
   if (Length(Result.xyz) == 0)  // The resulting rotation was inconsequential
     Result = Quaternion();
