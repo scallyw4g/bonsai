@@ -65,14 +65,11 @@ global_variable memory_arena* TranArena = &_TranArena;
 #include <stream.cpp>
 #include <bonsai_file.cpp>
 
-//
 // TODO(Jesse): perlin.h requires these .. rewrite it!
 #include <random>
 #include <algorithm>
 #include <perlin.h>
 //
-//
-
 
 struct free_mesh
 {

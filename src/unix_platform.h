@@ -87,11 +87,7 @@ typedef struct {
   VisualID visualid;
   s32 screen;
   s32 depth;
-#if defined(__cplusplus) || defined(c_plusplus)
   s32 c_class;
-#else
-  s32 class;
-#endif
   unsigned long red_mask;
   unsigned long green_mask;
   unsigned long blue_mask;

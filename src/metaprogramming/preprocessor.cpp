@@ -978,7 +978,7 @@ ParseDeclaration(c_parse_result* Parser, counted_string StructName, memory_arena
     case CTokenType_Identifier:
     {
       b32 Done = False;
-      u32 Encountered = 0;
+      u32 DefKeywordsEncountered = 0;
       while (!Done)
       {
         c_token NextToken = PeekToken(Parser);
@@ -1012,14 +1012,17 @@ ParseDeclaration(c_parse_result* Parser, counted_string StructName, memory_arena
 
           case CTokenType_Identifier:
           {
-            if (StringsMatch(NextToken.Value, CS("union")))
+            if (StringsMatch(NextToken.Value, CS("unsigned")))
+            {
+              Result.c_decl_variable.Type = Concat( Result.c_decl_variable.Type, RequireToken(Parser, CTokenType_Identifier).Value, Memory);
+            }
+            else if (StringsMatch(NextToken.Value, CS("union")))
             {
               EatUnionDef(Parser);
               Done = True;
               Unnamed = True;
             }
-
-            if (StringsMatch(NextToken.Value, CS("operator")))
+            else if (StringsMatch(NextToken.Value, CS("operator")))
             {
               EatUntil(Parser, CTokenType_CloseBrace);
               Done = True;
@@ -1028,7 +1031,7 @@ ParseDeclaration(c_parse_result* Parser, counted_string StructName, memory_arena
 
             if (!IsCxxDefinitionKeyword(NextToken.Value))
             {
-              if (Encountered == 1 && PeekToken(Parser, 1).Type == CTokenType_OpenParen)
+              if (DefKeywordsEncountered == 1 && PeekToken(Parser, 1).Type == CTokenType_OpenParen)
               {
                 /* counted_string FunctionName = */ RequireToken(Parser, CTokenType_Identifier);
                 EatFunctionDecl(Parser);
@@ -1036,7 +1039,7 @@ ParseDeclaration(c_parse_result* Parser, counted_string StructName, memory_arena
                 Result.c_decl_function.Type = CFunctionType_Normal;
               }
 
-              if (Encountered++ == 1)
+              if (DefKeywordsEncountered++ == 1)
               {
                 Done = True;
               }
@@ -1140,24 +1143,25 @@ ParseAllStructDefs(tokenized_files Files_in, u32 MaxStructCount, memory_arena* M
           {
             if (PeekToken(Parser) == CToken(CS("struct")))
             {
-              Info("typedef'd structs not supported: %.*s", (u32)Parser->FileName.Count, Parser->FileName.Start);
-            }
-
-            EatUntil(Parser, CTokenType_Semicolon);
-#if 0
-            if (StringsMatch(PeekToken(Parser).Value, CS("struct")))
-            {
               RequireToken(Parser, CToken((CS("struct"))));
-              RequireToken(Parser, CTokenType_OpenBrace);
+              if (PeekToken(Parser) == CToken(CTokenType_OpenBrace))
+              {
+                RequireToken(Parser, CTokenType_OpenBrace);
 
-              struct_def* S = StructDef(CS(""), Memory);
-              ParseStructBody(Parser, S, Memory);
-              Push(S, &StructCursor);
+                struct_def* S = StructDef(CS(""), Memory);
+                ParseStructBody(Parser, S, Memory);
+                Push(S, &StructCursor);
 
-              S->Name = RequireToken(Parser, CTokenType_Identifier).Value;
-              RequireToken(Parser, CTokenType_Semicolon);
+                RequireToken(Parser, CTokenType_CloseBrace);
+                S->Name = RequireToken(Parser, CTokenType_Identifier).Value;
+                RequireToken(Parser, CTokenType_Semicolon);
+              }
+              else
+              {
+                // C-style typedef struct THING OTHERTHING;
+                EatUntil(Parser, CTokenType_Semicolon);
+              }
             }
-#endif
           }
           else if (StringsMatch(Token.Value, CS("struct")))
           {
