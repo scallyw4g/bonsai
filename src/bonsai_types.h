@@ -1,5 +1,4 @@
 #include <metaprogramming/defines.h>
-#include <cstdint>
 
 //
 // TODO(Jesse): Get rid of these?
