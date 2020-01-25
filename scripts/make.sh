@@ -254,10 +254,10 @@ BuildPreprocessor
 
 ColorizeTitle "Preprocessing"
 
-rm src/metaprogramming/output/*
+# rm src/metaprogramming/output/*
 # git checkout src/metaprogramming/output
 
-SOURCE_FILES=$(find src -type f -not -wholename "src/metaprogramming/defines.h" -not -wholename "src/metaprogramming/output/*" | tr '\n' ' ')
+SOURCE_FILES=$(find src -type f -not -wholename "src/metaprogramming/defines.h" | tr '\n' ' ')
 bin/preprocessor $SOURCE_FILES
 
 [ $? -ne 0 ] && echo "" && echo -e "$Failed Preprocessing failed, exiting." && exit 1

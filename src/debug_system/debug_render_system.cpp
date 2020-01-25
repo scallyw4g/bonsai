@@ -1496,20 +1496,26 @@ FindAbsoluteDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, u32 First
       CommandIndex < OnePastLastCommand;
       ++CommandIndex)
   {
-    /* ui_render_command* Command = GetCommand(CommandBuffer, CommandIndex); */
-    /* switch(Command->Type) */
-    /* { */
-    /*   for_members_in(ui_render_command, */
-    /*   { */
-    /*     case Type: */
-    /*     { */
-    /*       Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&Member.Layout)); */
-    /*       Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&Member.Layout)); */
-    /*     } break */
-    /*   }) */
-    /* } */
+
+#if 0
+    ui_render_command* Command = GetCommand(CommandBuffer, CommandIndex);
+    switch(Command->Type)
+    {
+      // TODO(Jesse): Have the preprocessor add this (or more likely a generated..) include tag
+      #include <metaprogramming/output/debug_render_system_for_members_in_ui_render_command.h>
+      for_members_in(ui_render_command,
+      {
+        case typeof(Member) which contains layout:
+        {
+          Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&Member.Layout));
+          Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&Member.Layout));
+        } break
+      })
+    }
 
     continue;
+#endif
+
   }
 
   return Result;

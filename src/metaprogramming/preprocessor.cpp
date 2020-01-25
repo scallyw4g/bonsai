@@ -644,31 +644,65 @@ ParseDiscriminatedUnion(c_parse_result* Parser, memory_arena* Memory)
   return dUnion;
 }
 
-#if 0
-function void
-ParseForMembers(c_parse_result* Parser, struct_defs* ProgramStructs, memory_arena* Memory)
+function struct_def*
+GetStructByType(struct_defs* ProgramStructs, counted_string StructType)
 {
-  RequireToken(Parser, CTokenType_OpenParen);
-
-  counted_string StructType = RequireToken(Parser, CTokenType_Identifier).Value;
-
+  struct_def* Result = 0;
   for (u32 StructIndex = 0;
       StructIndex < ProgramStructs->Count;
       ++StructIndex)
   {
-    struct_def* Struct = ProgramStructs->Defs + StructIndex;
+    struct_def* Struct = ProgramStructs->Defs[StructIndex];
+    /* Print(Struct->Name); */
+    /* Log("\n"); */
     if (StringsMatch(Struct->Name, StructType))
     {
-      Log("Found match %.*s", StructType.Count, StructType.Start);
+      Result = Struct;
+      break;
     }
   }
 
-  RequireToken(Parser, CTokenType_Comma);
-  RequireToken(Parser, CTokenType_OpenBrace);
+  return Result;
+}
+
+function void
+ParseForMembers(c_parse_result* Parser, struct_defs* ProgramStructs)
+{
+  RequireToken(Parser, CTokenType_OpenParen);
+
+  counted_string StructType = RequireToken(Parser, CTokenType_Identifier).Value;
+  struct_def* Struct = GetStructByType(ProgramStructs, StructType);
+  if (Struct)
+  {
+    Log("Found match %.*s\n", (s32)StructType.Count, StructType.Start);
+    RequireToken(Parser, CTokenType_Comma);
+    RequireToken(Parser, CTokenType_OpenBrace);
+
+    c_decl_stream_chunk* AtChunk = Struct->Fields.FirstChunk;
+    while (AtChunk)
+    {
+      switch (AtChunk->Element.Type)
+      {
+        case type_c_decl_variable:
+        {
+          Print(AtChunk->Element.c_decl_variable.Type);
+          Log("\n");
+          Print(AtChunk->Element.c_decl_variable.Name);
+          Log("\n");
+        } break;;
+
+        InvalidDefaultCase;
+      }
+      AtChunk = AtChunk->Next;
+    }
+  }
+  else
+  {
+    Error("Couldn't find matching struct %.*s", (s32)StructType.Count, StructType.Start);
+  }
 
   return;
 }
-#endif
 
 void
 PushString(string_stream* Stream, counted_string String, memory_arena* Memory)
@@ -1270,6 +1304,7 @@ main(s32 ArgCount, const char** ArgStrings)
     struct_defs Structs = ParseAllStructDefs(ParsedFiles, ParsedFiles.StructCount, Memory);
     Assert(ParsedFiles.Start == ParsedFiles.At);
 
+#if 0
     for (u32 StructDefIndex = 0;
         StructDefIndex < Structs.Count;
         ++StructDefIndex)
@@ -1277,6 +1312,7 @@ main(s32 ArgCount, const char** ArgStrings)
       struct_def* Struct = Structs.Defs[StructDefIndex];
       DumpStruct(Struct);
     }
+#endif
 
     for (u32 ParserIndex = 0;
         ParserIndex < Count(&ParsedFiles);
@@ -1318,7 +1354,7 @@ main(s32 ArgCount, const char** ArgStrings)
 
             if (StringsMatch(Token.Value, CS("for_members_in")))
             {
-              /* ParseForMembers(Parser, &Structs, Memory); */
+              ParseForMembers(Parser, &Structs);
             }
 
           } break;
