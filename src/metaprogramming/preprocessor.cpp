@@ -1096,6 +1096,51 @@ DumpStruct(struct_def* Struct)
 }
 
 function void
+PrintCDecl(c_decl* Decl, struct_defs* ProgramStructs)
+{
+  switch (Decl->Type)
+  {
+    case type_c_decl_variable:
+    {
+      Log("%.*s %.*s",
+          Decl->c_decl_variable.Type.Count, Decl->c_decl_variable.Type.Start,
+          Decl->c_decl_variable.Name.Count, Decl->c_decl_variable.Name.Start);
+
+      Log("\n");
+    } break;
+
+    case type_c_decl_union:
+    {
+      for (c_decl_iterator Iter = CDIterator(&Decl->c_decl_union.Body->Fields);
+          IsValid(&Iter);
+          Advance(&Iter))
+      {
+        if (Iter.At->Element.Type == type_c_decl_variable)
+        {
+          struct_def* Struct = GetStructByType(ProgramStructs, Iter.At->Element.c_decl_variable.Type);
+          if (Struct)
+          {
+            PrintCDecl(&Iter.At->Element, ProgramStructs);
+            DumpStruct(Struct);
+          }
+          else
+          {
+            Error("Couldn't find struct type %*.s", (u32)Iter.At->Element.c_decl_variable.Name.Count, Iter.At->Element.c_decl_variable.Name.Start);
+          }
+        }
+        else
+        {
+          Error("Nested structs/unions and function pointers unsupported.");
+        }
+      }
+    } break;
+
+    InvalidDefaultCase;
+  }
+
+}
+
+function void
 ParseForMembers(c_parse_result* Parser, struct_defs* ProgramStructs)
 {
   RequireToken(Parser, CTokenType_OpenParen);
@@ -1111,23 +1156,7 @@ ParseForMembers(c_parse_result* Parser, struct_defs* ProgramStructs)
     c_decl_stream_chunk* AtChunk = Struct->Fields.FirstChunk;
     while (AtChunk)
     {
-      switch (AtChunk->Element.Type)
-      {
-        case type_c_decl_variable:
-        {
-          Print(AtChunk->Element.c_decl_variable.Type);
-          Log("\n");
-          Print(AtChunk->Element.c_decl_variable.Name);
-          Log("\n");
-        } break;
-
-        case type_c_decl_union:
-        {
-          DumpStruct(AtChunk->Element.c_decl_union.Body);
-        } break;
-
-        InvalidDefaultCase;
-      }
+      PrintCDecl(&AtChunk->Element, ProgramStructs);
       AtChunk = AtChunk->Next;
     }
   }
