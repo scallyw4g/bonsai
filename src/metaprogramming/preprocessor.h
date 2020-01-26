@@ -80,7 +80,28 @@ d_union(c_decl,
 {
   c_decl_variable;
   c_decl_function;
+  c_decl_union;
 })
+
+struct c_decl_function
+{
+  c_decl_function_type Type;
+  u32 CurrentlyUnused;
+};
+
+struct c_decl_variable
+{
+  counted_string Type;
+  counted_string Name;
+};
+
+struct struct_def;
+struct c_decl_union
+{
+  struct_def* Body;
+};
+
+#include <metaprogramming/output/preprocessor.h>
 
 struct c_token
 {
@@ -162,20 +183,6 @@ struct tokenized_files
   c_parse_result* End;
   c_parse_result* At;
 };
-
-struct c_decl_function
-{
-  c_decl_function_type Type;
-  u32 CurrentlyUnused;
-};
-
-struct c_decl_variable
-{
-  counted_string Type;
-  counted_string Name;
-};
-
-#include <metaprogramming/output/preprocessor.h>
 
 struct c_decl_stream_chunk
 {
