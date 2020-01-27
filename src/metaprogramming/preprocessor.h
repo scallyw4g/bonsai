@@ -377,6 +377,31 @@ ToString(c_token_type T)
   return Result;
 };
 
+inline counted_string
+ToString(c_token Token, memory_arena* Memory)
+{
+  counted_string Result = {};
+  switch (Token.Type)
+  {
+    case CTokenType_Comment:
+    case CTokenType_Identifier:
+    {
+      Result = CS(FormatString(Memory, "%.*s", Token.Value.Count, Token.Value.Start));
+    } break;
+
+    case CTokenType_String:
+    {
+      Result = CS(FormatString(Memory, "\"%.*s\"", Token.Value.Count, Token.Value.Start));
+    } break;
+
+    default:
+    {
+      Result = CS(FormatString(Memory, "%c", Token.Type));
+    }
+  }
+  return Result;
+}
+
 inline void
 PrintToken(c_token Token)
 {

@@ -736,10 +736,49 @@ ParseArgs(const char** ArgStrings, s32 ArgCount, memory_arena* Memory)
 global_variable random_series TempFileEntropy = {3215432};
 
 function b32
+Output(counted_string Code, counted_string FileName, memory_arena* Memory)
+{
+  b32 Result = False;
+
+  // TODO(Jesse): Duplicated tempfile logic
+  // @duplicated-tempfile-logic
+  native_file TempFile = GetTempFile(&TempFileEntropy, Memory);
+  if (TempFile.Handle)
+  {
+    b32 FileWritesSucceeded = WriteToFile(&TempFile, Code);
+    FileWritesSucceeded &= WriteToFile(&TempFile, CS("\n"));
+    FileWritesSucceeded &= CloseFile(&TempFile);
+
+    if (FileWritesSucceeded)
+    {
+      if (Rename(TempFile, FileName))
+      {
+        Result = True;
+      }
+      else
+      {
+        Error("Renaming tempfile: %.*s", (s32)TempFile.Path.Count, TempFile.Path.Start);
+      }
+    }
+    else
+    {
+      Error("Writing to tempfile: %.*s", (s32)TempFile.Path.Count, TempFile.Path.Start);
+    }
+  }
+  else
+  {
+    Error("Opening tempfile: %.*s", (s32)TempFile.Path.Count, TempFile.Path.Start);
+  }
+
+  return Result;
+}
+
+function b32
 Output(d_union_decl* dUnion, counted_string FileName, memory_arena* Memory)
 {
   b32 Result = False;
 
+  // @duplicated-tempfile-logic
   native_file TempFile = GetTempFile(&TempFileEntropy, Memory);
   if (TempFile.Handle)
   {
@@ -1214,9 +1253,11 @@ HasMemberOfType(struct_def* Struct, counted_string MemberType)
   return Result;
 }
 
-function void
-ParseForMembers(c_parse_result* Parser, for_member_constraints* Constraints, struct_defs* ProgramStructs)
+function counted_string
+ParseForMembers(c_parse_result* Parser, for_member_constraints* Constraints, struct_defs* ProgramStructs, memory_arena* Memory)
 {
+  counted_string Result = {};
+
   RequireToken(Parser, CTokenType_OpenParen);
 
   counted_string StructType = RequireToken(Parser, CTokenType_Identifier).Value;
@@ -1283,15 +1324,15 @@ ParseForMembers(c_parse_result* Parser, for_member_constraints* Constraints, str
                     c_token T = PopTokenRaw(&BodyText);
                     if (StringsMatch(T.Value, Constraints->TypeName))
                     {
-                      Log("%.*s", Iter.At->Element.c_decl_variable.Type.Count, Iter.At->Element.c_decl_variable.Type.Start);
+                      Result = Concat(Result, CS(FormatString(Memory, "type_%.*s", Iter.At->Element.c_decl_variable.Type.Count, Iter.At->Element.c_decl_variable.Type.Start)), Memory);
                     }
                     else if (StringsMatch(T.Value, Constraints->ValueName))
                     {
-                      Log("%.*s", Iter.At->Element.c_decl_variable.Name.Count, Iter.At->Element.c_decl_variable.Name.Start);
+                      Result = Concat(Result, CS(FormatString(Memory, "%.*s", Iter.At->Element.c_decl_variable.Name.Count, Iter.At->Element.c_decl_variable.Name.Start)), Memory);
                     }
                     else
                     {
-                      PrintToken(T);
+                      Result = Concat(Result, ToString(T, Memory), Memory);
                     }
                   }
                 }
@@ -1321,7 +1362,7 @@ ParseForMembers(c_parse_result* Parser, for_member_constraints* Constraints, str
     Error("Couldn't find matching struct %.*s", (s32)StructType.Count, StructType.Start);
   }
 
-  return;
+  return Result;
 }
 
 function struct_def*
@@ -1553,7 +1594,9 @@ main(s32 ArgCount, const char** ArgStrings)
             if (StringsMatch(Token.Value, CS("for_members_in")))
             {
               for_member_constraints Constraints = {};
-              ParseForMembers(Parser, &Constraints, &Structs);
+              counted_string ForMembersCode = ParseForMembers(Parser, &Constraints, &Structs, Memory);
+              counted_string ForMembersCodeFilename = CS("src/metaprogramming/output/debug_render_system_for_members_in_ui_render_command.h");
+              Output(ForMembersCode, ForMembersCodeFilename, Memory);
             }
 
           } break;
