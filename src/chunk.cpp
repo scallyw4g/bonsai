@@ -4,10 +4,10 @@ AllocateChunk(memory_arena *Storage, chunk_dimension Dim)
 {
   // Note(Jesse): Not sure the alignment is completely necessary, but it may be
   // because multiple threads go to town on these memory blocks
-  chunk_data *Result = AllocateAlignedProtection(chunk_data, Storage, 1, 64, false);
+  chunk_data *Result = AllocateAlignedProtection(chunk_data, Storage, 1, CACHE_LINE_SIZE, false);
 
   s32 Vol = Volume(Dim);
-  if (Vol) { Result->Voxels = AllocateAlignedProtection(voxel, Storage , Vol, 64, false); }
+  if (Vol) { Result->Voxels = AllocateAlignedProtection(voxel, Storage , Vol, CACHE_LINE_SIZE, false); }
 
   ZeroChunk(Result);
 

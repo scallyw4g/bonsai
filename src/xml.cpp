@@ -136,7 +136,7 @@ xml_token_stream
 TokenizeSelector(ansi_stream* Selector, memory_arena* Memory)
 {
   // TODO(Jesse): Better or more accurate way of allocating this size?
-  xml_token_stream Result = AllocateXmlTokenStream(100, Memory);
+  xml_token_stream Result = AllocateXmlTokenStream(1000, Memory);
 
   while (Remaining(Selector))
   {

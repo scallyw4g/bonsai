@@ -57,8 +57,8 @@ AllocateBoundaryVoxels(u32 Count, memory_arena* Memory)
 function current_triangles*
 AllocateCurrentTriangles(u32 Count, memory_arena* Memory)
 {
-  current_triangles* Result = AllocateAlignedProtection(current_triangles, Memory, 1, 64, False);
-  Result->Tris = AllocateAlignedProtection(triangle*, Memory, Count, 64, False);
+  current_triangles* Result = AllocateAlignedProtection(current_triangles, Memory, 1, CACHE_LINE_SIZE, False);
+  Result->Tris = AllocateAlignedProtection(triangle*, Memory, Count, CACHE_LINE_SIZE, False);
   Result->Max = Count;
 
   return Result;

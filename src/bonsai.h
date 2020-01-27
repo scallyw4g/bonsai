@@ -150,7 +150,7 @@ struct chunk_data
 
   u8 Pad[52];
 };
-CAssert(sizeof(chunk_data) == 64);
+CAssert(sizeof(chunk_data) == CACHE_LINE_SIZE);
 #pragma pack(pop)
 
 struct model
@@ -329,7 +329,7 @@ struct world_chunk
 
   /* u8 Reserved[4]; */
 };
-CAssert(sizeof(world_chunk) == 64);
+CAssert(sizeof(world_chunk) == CACHE_LINE_SIZE);
 #pragma pack(pop)
 
 struct collision_event

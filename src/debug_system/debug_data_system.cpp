@@ -369,7 +369,7 @@ WorkerThreadAdvanceDebugSystem()
   debug_thread_state *MainThreadState = GetThreadLocalStateFor(0);
   Assert(ThreadState != MainThreadState);
 
-  u32 NextFrameId = MainThreadState->WriteIndex;  // TODO(Jesse): Should maybe be an atomic read?
+  u32 NextFrameId = MainThreadState->WriteIndex;  // TODO(Jesse): Ensure when this gets allocated it _does not_ straddle a cache line
   if (NextFrameId != ThreadState->WriteIndex)
   {
     AdvanceThreadState(ThreadState, NextFrameId);
@@ -796,7 +796,22 @@ InitDebugMemoryAllocationSystem(debug_state *State)
   // the PushStruct to allocate again.  Bad bad bad.
   memory_arena *BoostrapArena = AllocateArena(Size);
   DEBUG_REGISTER_ARENA(BoostrapArena);
-  State->ThreadStates = (debug_thread_state*)PushStruct(BoostrapArena, Size, 64);
+  State->ThreadStates = (debug_thread_state*)PushStruct(BoostrapArena, Size, CACHE_LINE_SIZE);
+#if BONSAI_INTERNAL
+  /*
+   * The WriteIndex member gets read from multiple threads, and on x86_64 reads
+   * are atomic that don't span a cache-line boundary.  This ensures we never
+   * hit that case.
+   */
+  CAssert(sizeof(debug_thread_state) == CACHE_LINE_SIZE);
+  for (u32 ThreadIndex = 0;
+      ThreadIndex < TotalThreadCount;
+      ++ThreadIndex)
+  {
+    debug_thread_state* ThreadState = GetThreadLocalStateFor(ThreadIndex);
+    Assert( (umm)(&ThreadState->WriteIndex) % CACHE_LINE_SIZE < (CACHE_LINE_SIZE)-sizeof(ThreadState->WriteIndex) );
+  }
+#endif
   //
 
   umm MetaTableSize = META_TABLE_SIZE * sizeof(push_metadata);
@@ -805,15 +820,15 @@ InitDebugMemoryAllocationSystem(debug_state *State)
       ++ThreadIndex)
   {
     debug_thread_state *ThreadState = GetThreadLocalStateFor(ThreadIndex);
-    Assert((umm)ThreadState % 64 == 0);
+    Assert((umm)ThreadState % CACHE_LINE_SIZE == 0);
 
     memory_arena *DebugThreadArena = AllocateArena();
     ThreadState->Memory = DebugThreadArena;
     DEBUG_REGISTER_ARENA(DebugThreadArena);
 
-    ThreadState->MetaTable = (push_metadata*)PushStruct(ThreadsafeDebugMemoryAllocator(), MetaTableSize, 64);
-    ThreadState->MutexOps = AllocateAligned(mutex_op_array, DebugThreadArena, DEBUG_FRAMES_TRACKED, 64);
-    ThreadState->ScopeTrees = AllocateAligned(debug_scope_tree, DebugThreadArena, DEBUG_FRAMES_TRACKED, 64);
+    ThreadState->MetaTable = (push_metadata*)PushStruct(ThreadsafeDebugMemoryAllocator(), MetaTableSize, CACHE_LINE_SIZE);
+    ThreadState->MutexOps = AllocateAligned(mutex_op_array, DebugThreadArena, DEBUG_FRAMES_TRACKED, CACHE_LINE_SIZE);
+    ThreadState->ScopeTrees = AllocateAligned(debug_scope_tree, DebugThreadArena, DEBUG_FRAMES_TRACKED, CACHE_LINE_SIZE);
   }
 
   return;

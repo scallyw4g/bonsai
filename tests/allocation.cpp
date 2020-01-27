@@ -640,10 +640,10 @@ UnprotectedAlignment()
   Arena.At = (u8*)1;
   Arena.End = (u8*)0xffffffffffff;
 
-  test_struct_64* SecondThing = AllocateAlignedProtection(test_struct_64, &Arena, 1, 64, False);
+  test_struct_64* SecondThing = AllocateAlignedProtection(test_struct_64, &Arena, 1, CACHE_LINE_SIZE, False);
 
 
-  TestThat((umm)SecondThing % 64 == 0);
+  TestThat((umm)SecondThing % CACHE_LINE_SIZE == 0);
 }
 
 s32

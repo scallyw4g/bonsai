@@ -18,7 +18,8 @@ AllocateWorldChunk(memory_arena *Storage, world_position WorldP, chunk_dimension
 {
   u32 MaxLodMeshVerts = POINT_BUFFER_SIZE*3;
 
-  world_chunk *Result = AllocateAlignedProtection(world_chunk, Storage, 1, 64, false);
+  CAssert(sizeof(world_chunk) == CACHE_LINE_SIZE);
+  world_chunk *Result = AllocateAlignedProtection(world_chunk, Storage, 1, CACHE_LINE_SIZE, false);
   // FIXME(Jesse): The *2048 is an unnecessary debugging crutch .. take it out
   Result->LodMesh     = AllocateMesh(Storage, MaxLodMeshVerts*2048);
   Result->Data        = AllocateChunk(Storage, Dim);

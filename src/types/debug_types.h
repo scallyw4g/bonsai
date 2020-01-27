@@ -103,11 +103,11 @@ struct debug_thread_state
 
   mutex_op_array *MutexOps;
 
-  u32 WriteIndex;
+  volatile u32 WriteIndex; // Note(Jesse): This must not straddle a cache line on x86 because multiple threads read from the main threads copy of this
 
   u8 Pad[20];
 };
-CAssert(sizeof(debug_thread_state) == 64); // Make sure we stay at a cache friendly size
+CAssert(sizeof(debug_thread_state) == CACHE_LINE_SIZE);
 
 enum debug_ui_type
 {
