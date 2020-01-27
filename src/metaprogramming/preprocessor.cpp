@@ -67,13 +67,18 @@ IsWhitespace(c_token_type Type)
 function void
 Advance(c_parse_result* Parser, u32 Lookahead = 0)
 {
-  if (Parser->Tokens.At->Type == CTokenType_Newline)
-  {
-    ++Parser->LineNumber;
-  }
-
   if (Remaining(&Parser->Tokens, Lookahead))
   {
+    for (u32 LookaheadIndex = 0;
+        LookaheadIndex < Lookahead+1;
+        ++LookaheadIndex)
+    {
+      if (Parser->Tokens.At[LookaheadIndex].Type == CTokenType_Newline)
+      {
+        ++Parser->LineNumber;
+      }
+    }
+
     Parser->Tokens.At += Lookahead+1;
   }
   else
@@ -359,12 +364,18 @@ TruncateAtPreviousLineStart(c_parse_result* Parser, u32 Count )
 }
 
 function void
-Dump(c_parse_result* Parser)
+Dump(c_parse_result* Parser, u32 LinesToDump = u32_MAX)
 {
   Rewind(&Parser->Tokens);
-  while(Remaining(&Parser->Tokens))
+  while(Remaining(&Parser->Tokens) && LinesToDump > 0)
   {
-    PrintToken(PopTokenRaw(Parser));
+    c_token T = PopTokenRaw(Parser);
+    PrintToken(T);
+
+    if (T.Type == CTokenType_Newline)
+    {
+      --LinesToDump;
+    }
   }
 }
 
@@ -383,8 +394,6 @@ EatUntil(c_parse_result* Parser, c_token_type Close)
 function void
 OutputErrorHelperLine(c_parse_result* Parser, c_token* ErrorToken, c_token Expected, counted_string ErrorString, u32 LineNumber)
 {
-  /* RuntimeBreak(); */
-
   Rewind(&Parser->Tokens);
 
   u32 ColumnCount = 1;
@@ -393,7 +402,7 @@ OutputErrorHelperLine(c_parse_result* Parser, c_token* ErrorToken, c_token Expec
 
     if (Parser->Tokens.At == ErrorToken)
     {
-      Log("^---------- Unexpected token %s", ToString(ErrorToken->Type));
+      Log("^----> Unexpected token type: %s", ToString(ErrorToken->Type));
 
       if (ErrorToken->Value.Count)
       {
@@ -401,11 +410,6 @@ OutputErrorHelperLine(c_parse_result* Parser, c_token* ErrorToken, c_token Expec
       }
 
       Log(". Expected: %s", ToString(Expected.Type));
-
-      if (ErrorString.Count)
-      {
-        Log(" %.*s", ErrorString.Count, ErrorString.Start);
-      }
 
       Log("\n");
 
@@ -415,7 +419,8 @@ OutputErrorHelperLine(c_parse_result* Parser, c_token* ErrorToken, c_token Expec
       {
         Log(" ");
       }
-      Log("%.*s:%u:%u: Err.. \n", Parser->FileName.Count, Parser->FileName.Start, LineNumber, ColumnCount);
+
+      Log("      %.*s:%u:%u: %.*s\n", Parser->FileName.Count, Parser->FileName.Start, LineNumber, ColumnCount, ErrorString.Count, ErrorString.Start);
 
       break;
     }
@@ -441,21 +446,22 @@ OutputErrorHelperLine(c_parse_result* Parser, c_token* ErrorToken, c_token Expec
 
     ++Parser->Tokens.At;
   }
+
+  return;
 }
 
 function void
 OutputParsingError(c_parse_result* Parser, c_token* ErrorToken, c_token_type ExpectedType, counted_string ErrorString)
 {
-  u32 ColumnNumber = 0;
   u32 LinesOfContext = 4;
 
   Log("----\n");
-  Log("%.*s:%u:%u: Error\n", Parser->FileName.Count, Parser->FileName.Start, Parser->LineNumber, ColumnNumber);
 
-  RuntimeBreak();
+  /* u32 ColumnNumber = 0; */
+  /* Log("%.*s:%u:%u: Error\n", Parser->FileName.Count, Parser->FileName.Start, Parser->LineNumber, ColumnNumber); */
 
-  c_parse_result LeadingLines = *Parser;
-  c_parse_result ErrorLine = *Parser;
+  c_parse_result LeadingLines  = *Parser;
+  c_parse_result ErrorLine     = *Parser;
   c_parse_result TrailingLines = *Parser;
 
   {
@@ -469,6 +475,8 @@ OutputParsingError(c_parse_result* Parser, c_token* ErrorToken, c_token_type Exp
     TruncateAtPreviousLineStart(&ErrorLine, 0);
     TruncateAtNextLineEnd(&ErrorLine, 0);
     Dump(&ErrorLine);
+    Assert(ErrorToken >= ErrorLine.Tokens.Start);
+    Assert(ErrorToken < ErrorLine.Tokens.End);
     OutputErrorHelperLine(&ErrorLine, ErrorToken, CToken(ExpectedType), ErrorString, Parser->LineNumber);
   }
 
@@ -494,14 +502,18 @@ OutputParsingError(c_parse_result* Parser, c_token* ErrorToken, counted_string E
 function c_token
 RequireToken(c_parse_result* Parser, c_token ExpectedToken)
 {
-  c_token Result = PopToken(Parser);
-  c_token* ErrorToken = Parser->Tokens.At-1;
+  c_token Result = PeekToken(Parser);
+  c_token* ErrorToken = Parser->Tokens.At;
 
   if (Result.Type != ExpectedToken.Type || (ExpectedToken.Value.Count > 0 && !StringsMatch(ExpectedToken.Value, Result.Value) ))
   {
-    OutputParsingError(Parser, ErrorToken, ExpectedToken.Type, CS(""));
+    OutputParsingError(Parser, ErrorToken, ExpectedToken.Type, CS("Require Token Failed"));
     Parser->Valid = False;
     RuntimeBreak();
+  }
+  else
+  {
+    PopToken(Parser);
   }
 
   return Result;
@@ -1140,8 +1152,13 @@ PrintCDecl(c_decl* Decl, struct_defs* ProgramStructs)
 
 }
 
+struct for_member_constraints
+{
+  counted_string MemberContains;
+};
+
 function void
-ParseForMembers(c_parse_result* Parser, struct_defs* ProgramStructs)
+ParseForMembers(c_parse_result* Parser, for_member_constraints* Constraints, struct_defs* ProgramStructs)
 {
   RequireToken(Parser, CTokenType_OpenParen);
 
@@ -1151,6 +1168,12 @@ ParseForMembers(c_parse_result* Parser, struct_defs* ProgramStructs)
   {
     Log("Found match %.*s\n", (s32)StructType.Count, StructType.Start);
     RequireToken(Parser, CTokenType_Comma);
+
+    if (OptionalToken(Parser, CToken(CS("where_member_contains"))))
+    {
+      Constraints->MemberContains = RequireToken(Parser, CTokenType_Identifier).Value;
+    }
+
     RequireToken(Parser, CTokenType_OpenBrace);
 
     c_decl_stream_chunk* AtChunk = Struct->Fields.FirstChunk;
@@ -1396,7 +1419,8 @@ main(s32 ArgCount, const char** ArgStrings)
 
             if (StringsMatch(Token.Value, CS("for_members_in")))
             {
-              ParseForMembers(Parser, &Structs);
+              for_member_constraints Constraints = {};
+              ParseForMembers(Parser, &Constraints, &Structs);
             }
 
           } break;
