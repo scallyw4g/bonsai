@@ -770,18 +770,11 @@ Output(counted_string Code, counted_string FileName, memory_arena* Memory)
 function b32
 Output(d_union_decl* dUnion, counted_string FileName, memory_arena* Memory)
 {
-  b32 Result = False;
+  counted_string EnumString = GenerateEnumDef(dUnion, Memory);
+  counted_string StructString = GenerateStructDef(dUnion, Memory);
 
-  native_file TempFile = GetTempFile(&TempFileEntropy, Memory);
-  if (TempFile.Handle)
-  {
-    counted_string EnumString = GenerateEnumDef(dUnion, Memory);
-    counted_string StructString = GenerateStructDef(dUnion, Memory);
-
-    counted_string OutputString = Concat(EnumString, StructString, Memory);
-    Result = Output(OutputString, FileName, Memory);
-  }
-
+  counted_string OutputString = Concat(EnumString, StructString, Memory);
+  b32 Result = Output(OutputString, FileName, Memory);
   return Result;
 }
 
