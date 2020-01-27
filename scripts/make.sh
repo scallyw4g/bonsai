@@ -110,7 +110,7 @@ function BuildPreprocessor {
   echo -e "$Delimeter"
   echo -e ""
 
-  ColorizeTitle "Preprocessor"
+  ColorizeTitle "Building Preprocessor"
   executable="$SRC/metaprogramming/preprocessor.cpp"
   SetOutputBinaryPathBasename "$executable" "$BIN"
   echo -e "$Building $executable"

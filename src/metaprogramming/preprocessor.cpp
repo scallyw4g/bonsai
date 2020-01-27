@@ -1155,7 +1155,36 @@ PrintCDecl(c_decl* Decl, struct_defs* ProgramStructs)
 struct for_member_constraints
 {
   counted_string MemberContains;
+
+  counted_string TypeName;
+  counted_string ValueName;
 };
+
+function void
+TrimFirstToken(c_parse_result* Parser, c_token_type TokenType)
+{
+  Assert(Parser->Tokens.At == Parser->Tokens.Start);
+  RequireToken(Parser, TokenType);
+  Parser->Tokens.Start = Parser->Tokens.At;
+}
+
+function void
+TrimLastToken(c_parse_result* Parser, c_token_type TokenType)
+{
+  c_token* CurrentToken = Parser->Tokens.End-1;
+
+  while (CurrentToken > Parser->Tokens.Start)
+  {
+    if (CurrentToken->Type == TokenType)
+    {
+      Parser->Tokens.End = CurrentToken-1;
+      Parser->Tokens.At = Parser->Tokens.End;
+      break;
+    }
+
+    --CurrentToken;
+  }
+}
 
 function void
 ParseForMembers(c_parse_result* Parser, for_member_constraints* Constraints, struct_defs* ProgramStructs)
@@ -1163,8 +1192,8 @@ ParseForMembers(c_parse_result* Parser, for_member_constraints* Constraints, str
   RequireToken(Parser, CTokenType_OpenParen);
 
   counted_string StructType = RequireToken(Parser, CTokenType_Identifier).Value;
-  struct_def* Struct = GetStructByType(ProgramStructs, StructType);
-  if (Struct)
+  struct_def* TargetStruct = GetStructByType(ProgramStructs, StructType);
+  if (TargetStruct)
   {
     Log("Found match %.*s\n", (s32)StructType.Count, StructType.Start);
     RequireToken(Parser, CTokenType_Comma);
@@ -1174,14 +1203,87 @@ ParseForMembers(c_parse_result* Parser, for_member_constraints* Constraints, str
       Constraints->MemberContains = RequireToken(Parser, CTokenType_Identifier).Value;
     }
 
-    RequireToken(Parser, CTokenType_OpenBrace);
+    if (OptionalToken(Parser, CToken(CTokenType_Comma)))
+    {
+      RequireToken(Parser, CTokenType_OpenParen);
+      Constraints->TypeName = RequireToken(Parser, CTokenType_Identifier).Value;
+      if (OptionalToken(Parser, CToken(CTokenType_Comma)))
+      {
+        Constraints->ValueName = RequireToken(Parser, CTokenType_Identifier).Value;
+      }
 
-    c_decl_stream_chunk* AtChunk = Struct->Fields.FirstChunk;
+      RequireToken(Parser, CTokenType_CloseParen);
+    }
+
+    Assert(Constraints->TypeName.Count);
+    Assert(Constraints->ValueName.Count);
+
+    c_parse_result BodyText = *Parser;
+    BodyText.Tokens.Start = BodyText.Tokens.At;
+    EatNextScope(Parser);
+    BodyText.Tokens.End = Parser->Tokens.At;
+
+    TrimFirstToken(&BodyText, CTokenType_OpenBrace);
+    TrimLastToken(&BodyText, CTokenType_CloseBrace);
+
+    c_decl_stream_chunk* AtChunk = TargetStruct->Fields.FirstChunk;
     while (AtChunk)
     {
-      PrintCDecl(&AtChunk->Element, ProgramStructs);
+      switch (AtChunk->Element.Type)
+      {
+        case type_c_decl_variable:
+        {
+          // TODO(Jesse): Do we actually do anything here?
+        } break;
+
+        case type_c_decl_union:
+        {
+          for (c_decl_iterator Iter = CDIterator(&AtChunk->Element.c_decl_union.Body->Fields);
+              IsValid(&Iter);
+              Advance(&Iter))
+          {
+            if (Iter.At->Element.Type == type_c_decl_variable)
+            {
+              struct_def* Struct = GetStructByType(ProgramStructs, Iter.At->Element.c_decl_variable.Type);
+              if (Struct)
+              {
+                Rewind(&BodyText.Tokens);
+                while (Remaining(&BodyText.Tokens))
+                {
+                  c_token T = PopTokenRaw(&BodyText);
+                  if (StringsMatch(T.Value, Constraints->TypeName))
+                  {
+                    Log("%.*s", Iter.At->Element.c_decl_variable.Type.Count, Iter.At->Element.c_decl_variable.Type.Start);
+                  }
+                  else if (StringsMatch(T.Value, Constraints->ValueName))
+                  {
+                    Log("%.*s", Iter.At->Element.c_decl_variable.Name.Count, Iter.At->Element.c_decl_variable.Name.Start);
+                  }
+                  else
+                  {
+                    PrintToken(T);
+                  }
+                }
+              }
+              else
+              {
+                Error("Couldn't find struct type %*.s", (u32)Iter.At->Element.c_decl_variable.Name.Count, Iter.At->Element.c_decl_variable.Name.Start);
+              }
+
+            }
+            else
+            {
+              Error("Nested structs/unions and function pointers unsupported.");
+            }
+          }
+        } break;
+
+        InvalidDefaultCase;
+      }
+
       AtChunk = AtChunk->Next;
     }
+
   }
   else
   {
