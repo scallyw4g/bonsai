@@ -17,3 +17,4 @@ struct c_decl
     c_decl_variable c_decl_variable;
   };
 };
+

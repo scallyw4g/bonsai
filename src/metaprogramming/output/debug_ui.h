@@ -39,3 +39,4 @@ struct ui_render_command
     ui_render_command_window_start ui_render_command_window_start;
   };
 };
+

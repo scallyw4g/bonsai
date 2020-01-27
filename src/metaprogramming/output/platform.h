@@ -15,3 +15,4 @@ struct work_queue_entry
     work_queue_entry_init_world_chunk work_queue_entry_init_world_chunk;
   };
 };
+

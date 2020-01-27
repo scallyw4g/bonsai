@@ -196,7 +196,7 @@ TokenizeFile(counted_string FileName, memory_arena* Memory)
 
   // TODO(Jesse): Since we store pointers directly into this buffer, we need to
   // keep the memory around.  Should we tokenize such that we allocate new
-  // memory for things that need it?  (only Strings/Identifiers at the moment)
+  // memory for things that need it?  (Strings/Identifiers/Comments atm..)
   ansi_stream SourceFileStream = AnsiStreamFromFile(FileName, Memory);
   if (!SourceFileStream.Start)
   {
@@ -569,44 +569,40 @@ Cursor(u32 Count, memory_arena* Memory)
   return Cursor;
 }
 
-function b32
-WriteEnumTo(d_union_decl* dUnion, native_file* OutFile, memory_arena* Memory)
+function counted_string
+GenerateEnumDef(d_union_decl* dUnion, memory_arena* Memory)
 {
-  counted_string Decl = FormatCountedString(Memory, "enum %.*s_type\n{\n  type_%.*s_noop,\n", dUnion->Name.Count, dUnion->Name.Start, dUnion->Name.Count, dUnion->Name.Start);
-  b32 Result = WriteToFile(OutFile, Decl);
+  counted_string Result = FormatCountedString(Memory, "enum %.*s_type\n{\n  type_%.*s_noop,\n", dUnion->Name.Count, dUnion->Name.Start, dUnion->Name.Count, dUnion->Name.Start);
 
   d_union_member* Member = dUnion->Sentinel.Next;
   while (Member != &dUnion->Sentinel)
   {
-    counted_string MemberDef = FormatCountedString(Memory, "  type_%.*s,\n", Member->Type.Count, Member->Type.Start);
-    Result &= WriteToFile(OutFile, MemberDef);
+    Result = Concat(Result, FormatCountedString(Memory, "  type_%.*s,\n", Member->Type.Count, Member->Type.Start), Memory);
     Member = Member->Next;
   }
 
-  Result &= WriteToFile(OutFile, CS("};\n\n"));
+  Result = Concat(Result, CS("};\n\n"), Memory);
   return Result;
 }
 
-function b32
-WriteStructTo(d_union_decl* dUnion, native_file* OutFile, memory_arena* Memory)
+function counted_string
+GenerateStructDef(d_union_decl* dUnion, memory_arena* Memory)
 {
   counted_string UnionName = dUnion->Name;
-
-  counted_string Decl = FormatCountedString(Memory, "struct %.*s\n{\n  %.*s_type Type;\n\n  union\n  {\n", UnionName.Count, UnionName.Start, UnionName.Count, UnionName.Start);
-  b32 Result = WriteToFile(OutFile, Decl);
+  counted_string Result = FormatCountedString(Memory, "struct %.*s\n{\n  %.*s_type Type;\n\n  union\n  {\n", UnionName.Count, UnionName.Start, UnionName.Count, UnionName.Start);
 
   d_union_member* Member = dUnion->Sentinel.Next;
   while (Member != &dUnion->Sentinel)
   {
     if (Member->Flags != d_union_flag_enum_only)
     {
-      counted_string MemberDef = FormatCountedString(Memory, "    %.*s %.*s;\n", Member->Type.Count, Member->Type.Start, Member->Name.Count, Member->Name.Start);
-      Result &= WriteToFile(OutFile, MemberDef);
+      Result = Concat(Result, FormatCountedString(Memory, "    %.*s %.*s;\n", Member->Type.Count, Member->Type.Start, Member->Name.Count, Member->Name.Start), Memory);
     }
     Member = Member->Next;
   }
 
-  Result &= WriteToFile(OutFile, CS("  };\n};\n"));
+  Result = Concat(Result, CS("  };\n};\n"), Memory);
+
   return Result;
 }
 
@@ -740,8 +736,6 @@ Output(counted_string Code, counted_string FileName, memory_arena* Memory)
 {
   b32 Result = False;
 
-  // TODO(Jesse): Duplicated tempfile logic
-  // @duplicated-tempfile-logic
   native_file TempFile = GetTempFile(&TempFileEntropy, Memory);
   if (TempFile.Handle)
   {
@@ -778,33 +772,14 @@ Output(d_union_decl* dUnion, counted_string FileName, memory_arena* Memory)
 {
   b32 Result = False;
 
-  // @duplicated-tempfile-logic
   native_file TempFile = GetTempFile(&TempFileEntropy, Memory);
   if (TempFile.Handle)
   {
-    b32 FileWritesSucceeded = WriteEnumTo(dUnion, &TempFile, Memory);
-    FileWritesSucceeded &= WriteStructTo(dUnion, &TempFile, Memory);
-    FileWritesSucceeded &= CloseFile(&TempFile);
+    counted_string EnumString = GenerateEnumDef(dUnion, Memory);
+    counted_string StructString = GenerateStructDef(dUnion, Memory);
 
-    if (FileWritesSucceeded)
-    {
-      if (Rename(TempFile, FileName))
-      {
-        Result = True;
-      }
-      else
-      {
-        Error("Renaming tempfile: %.*s", (s32)TempFile.Path.Count, TempFile.Path.Start);
-      }
-    }
-    else
-    {
-      Error("Writing to tempfile: %.*s", (s32)TempFile.Path.Count, TempFile.Path.Start);
-    }
-  }
-  else
-  {
-    Error("Opening tempfile: %.*s", (s32)TempFile.Path.Count, TempFile.Path.Start);
+    counted_string OutputString = Concat(EnumString, StructString, Memory);
+    Result = Output(OutputString, FileName, Memory);
   }
 
   return Result;
