@@ -751,7 +751,7 @@ Output(counted_string Code, counted_string FileName, memory_arena* Memory)
       }
       else
       {
-        Error("Renaming tempfile: %.*s", (s32)TempFile.Path.Count, TempFile.Path.Start);
+        Error("Renaming tempfile: %.*s -> %.*s", (s32)TempFile.Path.Count, TempFile.Path.Start, (s32)FileName.Count, FileName.Start);
       }
     }
     else
@@ -1161,6 +1161,7 @@ PrintCDecl(c_decl* Decl, struct_defs* ProgramStructs)
 
 struct for_member_constraints
 {
+  counted_string ForMemberName;
   counted_string MemberContains;
 
   counted_string TypeName;
@@ -1232,7 +1233,7 @@ ParseForMembers(c_parse_result* Parser, for_member_constraints* Constraints, str
   struct_def* TargetStruct = GetStructByType(ProgramStructs, StructType);
   if (TargetStruct)
   {
-    Log("Found match %.*s\n", (s32)StructType.Count, StructType.Start);
+    Constraints->ForMemberName = StructType;
     RequireToken(Parser, CTokenType_Comma);
 
     if (OptionalToken(Parser, CToken(CS("where_member_contains"))))
@@ -1563,7 +1564,10 @@ main(s32 ArgCount, const char** ArgStrings)
             {
               for_member_constraints Constraints = {};
               counted_string ForMembersCode = ParseForMembers(Parser, &Constraints, &Structs, Memory);
-              counted_string ForMembersCodeFilename = CS("src/metaprogramming/output/debug_render_system_for_members_in_ui_render_command.h");
+              counted_string FileBasename = StripExtension(Basename(Parser->FileName));
+              counted_string ForMembersCodeFilename = CS(FormatString(Memory, "src/metaprogramming/output/%.*s_for_members_in_%.*s.h",
+                    FileBasename.Count, FileBasename.Start,
+                    Constraints.ForMemberName.Count, Constraints.ForMemberName.Start ));
               Output(ForMembersCode, ForMembersCodeFilename, Memory);
             }
 

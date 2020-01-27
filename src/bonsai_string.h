@@ -22,6 +22,25 @@ IsPathSeparator(char C)
 }
 
 function counted_string
+StripExtension(counted_string FilePath)
+{
+  counted_string Result = FilePath;
+
+  for (umm CharIndex = 0;
+      CharIndex < Result.Count;
+      ++CharIndex)
+  {
+    if (Result.Start[CharIndex] == '.')
+    {
+      Result.Count = CharIndex;
+      break;
+    }
+  }
+
+  return Result;
+}
+
+function counted_string
 Basename(counted_string FilePath)
 {
   umm LastPathSeparator = 0;
