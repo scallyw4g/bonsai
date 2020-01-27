@@ -1164,6 +1164,8 @@ struct for_member_constraints
   counted_string ForMemberName;
   counted_string MemberContains;
 
+  // Replacement Patterns
+  counted_string TypeTag;
   counted_string TypeName;
   counted_string ValueName;
 };
@@ -1244,15 +1246,18 @@ ParseForMembers(c_parse_result* Parser, for_member_constraints* Constraints, str
     if (OptionalToken(Parser, CToken(CTokenType_Comma)))
     {
       RequireToken(Parser, CTokenType_OpenParen);
+      Constraints->TypeTag = RequireToken(Parser, CTokenType_Identifier).Value;
+
+      RequireToken(Parser, CTokenType_Comma);
       Constraints->TypeName = RequireToken(Parser, CTokenType_Identifier).Value;
-      if (OptionalToken(Parser, CToken(CTokenType_Comma)))
-      {
-        Constraints->ValueName = RequireToken(Parser, CTokenType_Identifier).Value;
-      }
+
+      RequireToken(Parser, CTokenType_Comma);
+      Constraints->ValueName = RequireToken(Parser, CTokenType_Identifier).Value;
 
       RequireToken(Parser, CTokenType_CloseParen);
     }
 
+    Assert(Constraints->TypeTag.Count);
     Assert(Constraints->TypeName.Count);
     Assert(Constraints->ValueName.Count);
 
@@ -1291,9 +1296,13 @@ ParseForMembers(c_parse_result* Parser, for_member_constraints* Constraints, str
                   while (Remaining(&BodyText.Tokens))
                   {
                     c_token T = PopTokenRaw(&BodyText);
-                    if (StringsMatch(T.Value, Constraints->TypeName))
+                    if (StringsMatch(T.Value, Constraints->TypeTag))
                     {
                       Result = Concat(Result, CS(FormatString(Memory, "type_%.*s", Iter.At->Element.c_decl_variable.Type.Count, Iter.At->Element.c_decl_variable.Type.Start)), Memory);
+                    }
+                    else if (StringsMatch(T.Value, Constraints->TypeName))
+                    {
+                      Result = Concat(Result, CS(FormatString(Memory, "%.*s", Iter.At->Element.c_decl_variable.Type.Count, Iter.At->Element.c_decl_variable.Type.Start)), Memory);
                     }
                     else if (StringsMatch(T.Value, Constraints->ValueName))
                     {

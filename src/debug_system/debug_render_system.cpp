@@ -1506,8 +1506,8 @@ FindAbsoluteDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, u32 First
 
       for_members_in( ui_render_command,
         where_member_contains layout,
-        (MemberType, MemberValue) {
-          case MemberType:
+        (MemberTypeEnumTag, MemberType, MemberValue) {
+          case MemberTypeEnumTag:
           {
             Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&Command->MemberValue.Layout));
             Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&Command->MemberValue.Layout));
