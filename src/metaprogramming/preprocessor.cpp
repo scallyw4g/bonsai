@@ -1196,6 +1196,26 @@ TrimLastToken(c_parse_result* Parser, c_token_type TokenType)
   }
 }
 
+function void
+TrimTrailingWhitespace(c_parse_result* Parser)
+{
+  c_token* CurrentToken = Parser->Tokens.End-1;
+
+  while (CurrentToken > Parser->Tokens.Start)
+  {
+    if (CurrentToken->Type == CTokenType_Space)
+    {
+      Parser->Tokens.End = CurrentToken;
+    }
+    else
+    {
+      break;
+    }
+
+    --CurrentToken;
+  }
+}
+
 function b32
 HasMemberOfType(struct_def* Struct, counted_string MemberType)
 {
@@ -1268,6 +1288,7 @@ ParseForMembers(c_parse_result* Parser, for_member_constraints* Constraints, str
 
     TrimFirstToken(&BodyText, CTokenType_OpenBrace);
     TrimLastToken(&BodyText, CTokenType_CloseBrace);
+    TrimTrailingWhitespace(&BodyText);
 
     c_decl_stream_chunk* AtChunk = TargetStruct->Fields.FirstChunk;
     while (AtChunk)
