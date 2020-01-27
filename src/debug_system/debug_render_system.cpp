@@ -1496,8 +1496,6 @@ FindAbsoluteDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, u32 First
       CommandIndex < OnePastLastCommand;
       ++CommandIndex)
   {
-
-#if 1
     ui_render_command* Command = GetCommand(CommandBuffer, CommandIndex);
     switch(Command->Type)
     {
@@ -1519,8 +1517,6 @@ FindAbsoluteDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, u32 First
     }
 
     continue;
-#endif
-
   }
 
   return Result;
