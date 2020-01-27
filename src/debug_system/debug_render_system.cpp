@@ -1505,14 +1505,15 @@ FindAbsoluteDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, u32 First
       #include <metaprogramming/output/debug_render_system_for_members_in_ui_render_command.h>
 
       for_members_in( ui_render_command,
-      where_member_contains layout,
-      (MemberType, MemberValue) {
-        case MemberType:
-        {
-          Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&Command->MemberValue.Layout));
-          Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&Command->MemberValue.Layout));
-        } break;
-      })
+        where_member_contains layout,
+        (MemberType, MemberValue) {
+          case MemberType:
+          {
+            Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&Command->MemberValue.Layout));
+            Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&Command->MemberValue.Layout));
+          } break;
+        }
+      )
 
       default: {} break;
     }
