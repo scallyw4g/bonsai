@@ -1186,6 +1186,31 @@ TrimLastToken(c_parse_result* Parser, c_token_type TokenType)
   }
 }
 
+function b32
+HasMemberOfType(struct_def* Struct, counted_string MemberType)
+{
+  b32 Result = False;
+  for (c_decl_iterator Iter = CDIterator(&Struct->Fields);
+      IsValid(&Iter) && !Result;
+      Advance(&Iter))
+  {
+    switch (Iter.At->Element.Type)
+    {
+      case type_c_decl_variable:
+      {
+        if (StringsMatch(Iter.At->Element.c_decl_variable.Type, MemberType))
+        {
+          Result = True;
+        }
+      } break;
+
+      InvalidDefaultCase;
+    }
+  }
+
+  return Result;
+}
+
 function void
 ParseForMembers(c_parse_result* Parser, for_member_constraints* Constraints, struct_defs* ProgramStructs)
 {
@@ -1247,21 +1272,24 @@ ParseForMembers(c_parse_result* Parser, for_member_constraints* Constraints, str
               struct_def* Struct = GetStructByType(ProgramStructs, Iter.At->Element.c_decl_variable.Type);
               if (Struct)
               {
-                Rewind(&BodyText.Tokens);
-                while (Remaining(&BodyText.Tokens))
+                if (Constraints->MemberContains.Start && HasMemberOfType(Struct, Constraints->MemberContains))
                 {
-                  c_token T = PopTokenRaw(&BodyText);
-                  if (StringsMatch(T.Value, Constraints->TypeName))
+                  Rewind(&BodyText.Tokens);
+                  while (Remaining(&BodyText.Tokens))
                   {
-                    Log("%.*s", Iter.At->Element.c_decl_variable.Type.Count, Iter.At->Element.c_decl_variable.Type.Start);
-                  }
-                  else if (StringsMatch(T.Value, Constraints->ValueName))
-                  {
-                    Log("%.*s", Iter.At->Element.c_decl_variable.Name.Count, Iter.At->Element.c_decl_variable.Name.Start);
-                  }
-                  else
-                  {
-                    PrintToken(T);
+                    c_token T = PopTokenRaw(&BodyText);
+                    if (StringsMatch(T.Value, Constraints->TypeName))
+                    {
+                      Log("%.*s", Iter.At->Element.c_decl_variable.Type.Count, Iter.At->Element.c_decl_variable.Type.Start);
+                    }
+                    else if (StringsMatch(T.Value, Constraints->ValueName))
+                    {
+                      Log("%.*s", Iter.At->Element.c_decl_variable.Name.Count, Iter.At->Element.c_decl_variable.Name.Start);
+                    }
+                    else
+                    {
+                      PrintToken(T);
+                    }
                   }
                 }
               }
