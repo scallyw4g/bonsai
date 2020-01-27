@@ -1190,21 +1190,24 @@ function b32
 HasMemberOfType(struct_def* Struct, counted_string MemberType)
 {
   b32 Result = False;
-  for (c_decl_iterator Iter = CDIterator(&Struct->Fields);
-      IsValid(&Iter) && !Result;
-      Advance(&Iter))
+  if (MemberType.Start)
   {
-    switch (Iter.At->Element.Type)
+    for (c_decl_iterator Iter = CDIterator(&Struct->Fields);
+        IsValid(&Iter) && !Result;
+        Advance(&Iter))
     {
-      case type_c_decl_variable:
+      switch (Iter.At->Element.Type)
       {
-        if (StringsMatch(Iter.At->Element.c_decl_variable.Type, MemberType))
+        case type_c_decl_variable:
         {
-          Result = True;
-        }
-      } break;
+          if (StringsMatch(Iter.At->Element.c_decl_variable.Type, MemberType))
+          {
+            Result = True;
+          }
+        } break;
 
-      InvalidDefaultCase;
+        InvalidDefaultCase;
+      }
     }
   }
 
@@ -1272,7 +1275,7 @@ ParseForMembers(c_parse_result* Parser, for_member_constraints* Constraints, str
               struct_def* Struct = GetStructByType(ProgramStructs, Iter.At->Element.c_decl_variable.Type);
               if (Struct)
               {
-                if (Constraints->MemberContains.Start && HasMemberOfType(Struct, Constraints->MemberContains))
+                if (HasMemberOfType(Struct, Constraints->MemberContains))
                 {
                   Rewind(&BodyText.Tokens);
                   while (Remaining(&BodyText.Tokens))
