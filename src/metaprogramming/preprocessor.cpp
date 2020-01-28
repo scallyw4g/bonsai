@@ -1,3 +1,11 @@
+
+// TODO(Jesse): Remove sentinels
+#define InitSentinel(Sentinel) \
+{ \
+  Sentinel.Next = &Sentinel; \
+  Sentinel.Prev = &Sentinel; \
+}
+
 #include <metaprogramming/preprocessor.h>
 
 c_token
@@ -537,19 +545,6 @@ RequireToken(c_parse_result* Parser, c_token_type ExpectedType)
   return Result;
 }
 
-counted_string
-PopString(counted_string_stream* Stream)
-{
-  counted_string Result = Stream->Sentinel.Next->Element;
-
-  // FIXME(Jesse): We're leaking counted_string_stream_chunks here.. freelist anyone?
-  // @memory-leak
-  Stream->Sentinel.Next->Next->Prev = &Stream->Sentinel;
-  Stream->Sentinel.Next = Stream->Sentinel.Next->Next;
-
-  return Result;
-}
-
 d_union_member*
 DUnionMember(counted_string Name, counted_string Type, d_union_flags Flags, memory_arena* Memory)
 {
@@ -621,7 +616,6 @@ d_union_decl
 ParseDiscriminatedUnion(c_parse_result* Parser, memory_arena* Memory)
 {
   d_union_decl dUnion = {};
-
   InitSentinel(dUnion.Sentinel);
 
   RequireToken(Parser, CTokenType_OpenParen);
@@ -686,20 +680,6 @@ GetStructByType(struct_defs* ProgramStructs, counted_string StructType)
   }
 
   return Result;
-}
-
-void
-PushString(counted_string_stream* Stream, counted_string String, memory_arena* Memory)
-{
-  counted_string_stream_chunk* Push = Allocate(counted_string_stream_chunk, Memory, 1);
-  Push->Element = String;
-
-  Push->Prev = &Stream->Sentinel;
-  Push->Next = Stream->Sentinel.Next;
-  Stream->Sentinel.Next->Prev = Push;
-  Stream->Sentinel.Next = Push;
-
-  return;
 }
 
 arguments
@@ -1530,8 +1510,8 @@ main(s32 ArgCount, const char** ArgStrings)
     memory_arena Memory_ = {};
     memory_arena* Memory = &Memory_;
 
-    counted_string_stream SuccessFiles = StringStream();
-    counted_string_stream FailFiles = StringStream();
+    counted_string_stream SuccessFiles = {};
+    counted_string_stream FailFiles = {};
 
     arguments Args = ParseArgs(ArgStrings, ArgCount, Memory);
     Assert(Args.Files.Start == Args.Files.At);
@@ -1572,9 +1552,6 @@ main(s32 ArgCount, const char** ArgStrings)
             if (StringsMatch(Token.Value, CS("generate_string_table")))
             {
               enum_def Enum = {};
-              // TODO(Jesse): Use a stream scheme that doesn't require this. I
-              // think first/last pointers on a linked-list are better ..??
-              InitSentinel(Enum.Fields.Sentinel);
 
               RequireToken(Parser, CToken(CS("enum")));
               Enum.Name = RequireToken(Parser, CTokenType_Identifier).Value;
@@ -1600,8 +1577,14 @@ main(s32 ArgCount, const char** ArgStrings)
               }
 
               counted_string NameTable = FormatCountedString(Memory,
-                  "function counted_string\nToString(%.*s Type)\n{\n  counted_string Result = {};\n  switch (Type)\n  {\n",
-                  Enum.Name.Count, Enum.Name.Start);
+R"INLINE_CODE(
+function counted_string
+ToString(%.*s Type)
+{
+  counted_string Result = {};
+  switch (Type)
+  {
+)INLINE_CODE", Enum.Name.Count, Enum.Name.Start);
 
               for (enum_field_iterator Iter = Iterator(&Enum.Fields);
                   IsValid(&Iter);
@@ -1625,26 +1608,56 @@ main(s32 ArgCount, const char** ArgStrings)
               RequireToken(Parser, CToken(CS("struct")));
               counted_string StructName = RequireToken(Parser, CTokenType_Identifier).Value;
 
-              counted_string StreamChunkCode = FormatCountedString(Memory,
-                  "struct %.*s_stream_chunk\n{\n  %.*s Element;\n  %.*s_stream_chunk* Next;\n  %.*s_stream_chunk* Prev;\n};\n\n",
-                  StructName.Count, StructName.Start,
-                  StructName.Count, StructName.Start,
-                  StructName.Count, StructName.Start,
-                  StructName.Count, StructName.Start);
-
               counted_string StreamCode = FormatCountedString(Memory,
-                  "struct %.*s_stream\n{\n  %.*s_stream_chunk Sentinel;\n};\n\n",
-                  StructName.Count, StructName.Start,
-                  StructName.Count, StructName.Start);
+R"INLINE_CODE(
+struct %.*s_stream_chunk
+{
+  %.*s Element;
+  %.*s_stream_chunk* Next;
+};
 
-              counted_string IteratorStructCode = FormatCountedString(Memory,
-                  "struct %.*s_iterator\n{\n  %.*s_stream* Stream;\n  %.*s_stream_chunk* At;\n};\n\n",
-                  StructName.Count, StructName.Start,
-                  StructName.Count, StructName.Start,
-                  StructName.Count, StructName.Start);
+struct %.*s_stream
+{
+  %.*s_stream_chunk* FirstChunk;
+  %.*s_stream_chunk* LastChunk;
+};
+
+)INLINE_CODE", StructName.Count, StructName.Start,
+               StructName.Count, StructName.Start,
+               StructName.Count, StructName.Start,
+               StructName.Count, StructName.Start,
+               StructName.Count, StructName.Start,
+               StructName.Count, StructName.Start,
+               StructName.Count, StructName.Start);
 
               counted_string PushCode = FormatCountedString(Memory,
-                  "function void\nPush(%.*s_stream* Stream, %.*s Element, memory_arena* Memory)\n{\n  // TODO(Jesse): Can we use Allocate() here instead?\n  %.*s_stream_chunk* Push = (%.*s_stream_chunk*)PushStruct(Memory, sizeof(%.*s_stream_chunk), 1, 1);\n  Push->Element = Element;\n\n  Push->Prev = &Stream->Sentinel;\n  Push->Next = Stream->Sentinel.Next;\n  Stream->Sentinel.Next->Prev = Push;\n  Stream->Sentinel.Next = Push;\n}\n\n",
+R"INLINE_CODE(
+function void
+Push(%.*s_stream* Stream, %.*s Element, memory_arena* Memory)
+{
+// TODO(Jesse): Can we use Allocate() here instead?
+  %.*s_stream_chunk* NextChunk = (%.*s_stream_chunk*)PushStruct(Memory, sizeof(%.*s_stream_chunk), 1, 1);
+  NextChunk->Element = Element;
+
+  if (!Stream->FirstChunk)
+  {
+    Assert(!Stream->LastChunk);
+    Stream->FirstChunk = NextChunk;
+    Stream->LastChunk = NextChunk;
+  }
+  else
+  {
+    Stream->LastChunk->Next = NextChunk;
+    Stream->LastChunk = NextChunk;
+  }
+
+  Assert(NextChunk->Next == 0);
+  Assert(Stream->LastChunk->Next == 0);
+
+  return;
+}
+
+)INLINE_CODE",
                   StructName.Count, StructName.Start,
                   StructName.Count, StructName.Start,
                   StructName.Count, StructName.Start,
@@ -1652,26 +1665,49 @@ main(s32 ArgCount, const char** ArgStrings)
                   StructName.Count, StructName.Start);
 
               counted_string IteratorCode = FormatCountedString(Memory,
-                  "function %.*s_iterator\nIterator(%.*s_stream* Stream)\n{\n  %.*s_iterator Iterator = {\n    .Stream = Stream,\n    .At = Stream->Sentinel.Next\n  };\n  return Iterator;\n}\n\n",
+R"INLINE_CODE(
+struct %.*s_iterator
+{
+  %.*s_stream* Stream;
+  %.*s_stream_chunk* At;
+};
+
+function %.*s_iterator
+Iterator(%.*s_stream* Stream)
+{
+  %.*s_iterator Iterator = {
+    .Stream = Stream,
+    .At = Stream->FirstChunk
+  };
+  return Iterator;
+}
+
+function b32
+IsValid(%.*s_iterator* Iter)
+{
+  b32 Result = Iter->At != 0;
+  return Result;
+}
+
+function void
+Advance(%.*s_iterator* Iter)
+{
+  Iter->At = Iter->At->Next;
+}
+
+)INLINE_CODE",
                   StructName.Count, StructName.Start,
                   StructName.Count, StructName.Start,
+                  StructName.Count, StructName.Start,
+                  StructName.Count, StructName.Start,
+                  StructName.Count, StructName.Start,
+                  StructName.Count, StructName.Start,
+                  StructName.Count, StructName.Start,
                   StructName.Count, StructName.Start);
 
-              counted_string IteratorIsValidCode = FormatCountedString(Memory,
-                  "function b32\nIsValid(%.*s_iterator* Iter)\n{\n  b32 Result = (Iter->At != &Iter->Stream->Sentinel);\n  return Result;\n}\n\n",
-                  StructName.Count, StructName.Start);
-
-              counted_string IteratorAdvanceCode = FormatCountedString(Memory,
-                  "function void\nAdvance(%.*s_iterator* Iter)\n{\n  Iter->At = Iter->At->Next;\n}\n\n",
-                  StructName.Count, StructName.Start);
-
-              OutputForThisParser = Concat(OutputForThisParser, StreamChunkCode, Memory);
               OutputForThisParser = Concat(OutputForThisParser, StreamCode, Memory);
-              OutputForThisParser = Concat(OutputForThisParser, IteratorStructCode, Memory);
               OutputForThisParser = Concat(OutputForThisParser, PushCode, Memory);
               OutputForThisParser = Concat(OutputForThisParser, IteratorCode, Memory);
-              OutputForThisParser = Concat(OutputForThisParser, IteratorIsValidCode, Memory);
-              OutputForThisParser = Concat(OutputForThisParser, IteratorAdvanceCode, Memory);
             }
 
             if (StringsMatch(Token.Value, CS("d_union")))
@@ -1720,12 +1756,12 @@ main(s32 ArgCount, const char** ArgStrings)
         if (Output(OutputForThisParser, OutFilePath, Memory))
         {
           counted_string Message = Concat(CS(GREEN_TERMINAL "  ✔  " WHITE_TERMINAL), Parser->FileName, Memory);
-          PushString(&SuccessFiles, Message, Memory);
+          Push(&SuccessFiles, Message, Memory);
         }
         else
         {
           counted_string Message = Concat(CS(RED_TERMINAL "  ✗  " WHITE_TERMINAL), Parser->FileName, Memory);
-          PushString(&FailFiles, Message, Memory);
+          Push(&FailFiles, Message, Memory);
         }
       }
 

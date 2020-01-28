@@ -5,13 +5,6 @@
 #include <bonsai_types.h>
 #include <unix_platform.cpp>
 
-// TODO(Jesse): Remove sentinels
-#define InitSentinel(Sentinel) \
-{ \
-  Sentinel.Next = &Sentinel; \
-  Sentinel.Prev = &Sentinel; \
-}
-
 #define DList_Push(Stream, Container)      \
 {                                          \
   Container->Prev = &Stream->Sentinel;     \
@@ -316,13 +309,5 @@ AllocateTokenBuffer(memory_arena* Memory, u32 Count)
   Result.At = Result.Start;
   Result.End = Result.Start + Count;
 
-  return Result;
-}
-
-function counted_string_stream
-StringStream()
-{
-  counted_string_stream Result = {};
-  InitSentinel(Result.Sentinel);
   return Result;
 }

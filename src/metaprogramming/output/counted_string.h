@@ -1,14 +1,42 @@
+
 struct counted_string_stream_chunk
 {
   counted_string Element;
   counted_string_stream_chunk* Next;
-  counted_string_stream_chunk* Prev;
 };
 
 struct counted_string_stream
 {
-  counted_string_stream_chunk Sentinel;
+  counted_string_stream_chunk* FirstChunk;
+  counted_string_stream_chunk* LastChunk;
 };
+
+
+function void
+Push(counted_string_stream* Stream, counted_string Element, memory_arena* Memory)
+{
+// TODO(Jesse): Can we use Allocate() here instead?
+  counted_string_stream_chunk* NextChunk = (counted_string_stream_chunk*)PushStruct(Memory, sizeof(counted_string_stream_chunk), 1, 1);
+  NextChunk->Element = Element;
+
+  if (!Stream->FirstChunk)
+  {
+    Assert(!Stream->LastChunk);
+    Stream->FirstChunk = NextChunk;
+    Stream->LastChunk = NextChunk;
+  }
+  else
+  {
+    Stream->LastChunk->Next = NextChunk;
+    Stream->LastChunk = NextChunk;
+  }
+
+  Assert(NextChunk->Next == 0);
+  Assert(Stream->LastChunk->Next == 0);
+
+  return;
+}
+
 
 struct counted_string_iterator
 {
@@ -16,25 +44,12 @@ struct counted_string_iterator
   counted_string_stream_chunk* At;
 };
 
-function void
-Push(counted_string_stream* Stream, counted_string Element, memory_arena* Memory)
-{
-  // TODO(Jesse): Can we use Allocate() here instead?
-  counted_string_stream_chunk* Push = (counted_string_stream_chunk*)PushStruct(Memory, sizeof(counted_string_stream_chunk), 1, 1);
-  Push->Element = Element;
-
-  Push->Prev = &Stream->Sentinel;
-  Push->Next = Stream->Sentinel.Next;
-  Stream->Sentinel.Next->Prev = Push;
-  Stream->Sentinel.Next = Push;
-}
-
 function counted_string_iterator
 Iterator(counted_string_stream* Stream)
 {
   counted_string_iterator Iterator = {
     .Stream = Stream,
-    .At = Stream->Sentinel.Next
+    .At = Stream->FirstChunk
   };
   return Iterator;
 }
@@ -42,7 +57,7 @@ Iterator(counted_string_stream* Stream)
 function b32
 IsValid(counted_string_iterator* Iter)
 {
-  b32 Result = (Iter->At != &Iter->Stream->Sentinel);
+  b32 Result = Iter->At != 0;
   return Result;
 }
 
