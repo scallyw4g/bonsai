@@ -97,14 +97,14 @@ struct c_decl_union
   struct_def* Body;
 };
 
-generate_stream_for
+generate_stream
 struct enum_field
 {
   counted_string Name;
   counted_string Value;
 };
 
-generate_stream_for
+generate_stream
 struct d_union_member
 {
   counted_string Type;

@@ -1,4 +1,3 @@
-
 #include <metaprogramming/preprocessor.h>
 
 c_token
@@ -1597,7 +1596,7 @@ ToString(%.*s Type)
               OutputForThisParser = Concat(OutputForThisParser, NameTable, Memory);
             }
 
-            if (StringsMatch(Token.Value, CS("generate_stream_for")))
+            if (StringsMatch(Token.Value, CS("generate_stream")))
             {
               RequireToken(Parser, CToken(CS("struct")));
               counted_string StructName = RequireToken(Parser, CTokenType_Identifier).Value;
