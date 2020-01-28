@@ -402,14 +402,16 @@ OutputErrorHelperLine(c_parse_result* Parser, c_token* ErrorToken, c_token Expec
 
     if (Parser->Tokens.At == ErrorToken)
     {
-      Log("^----> Unexpected token type: %s", ToString(ErrorToken->Type));
+      counted_string TokenTypeName = ToString(ErrorToken->Type);
+      Log("^----> Unexpected token type: %.*s", TokenTypeName.Count, TokenTypeName.Start );
 
       if (ErrorToken->Value.Count)
       {
         Log("(%.*s)" , ErrorToken->Value.Count, ErrorToken->Value.Start);
       }
 
-      Log(". Expected: %s", ToString(Expected.Type));
+      counted_string ExpectedTypeName = ToString(Expected.Type);
+      Log(". Expected: %.*s", ExpectedTypeName.Count, ExpectedTypeName.Start);
 
       Log("\n");
 
@@ -475,9 +477,18 @@ OutputParsingError(c_parse_result* Parser, c_token* ErrorToken, c_token_type Exp
     TruncateAtPreviousLineStart(&ErrorLine, 0);
     TruncateAtNextLineEnd(&ErrorLine, 0);
     Dump(&ErrorLine);
-    Assert(ErrorToken >= ErrorLine.Tokens.Start);
-    Assert(ErrorToken < ErrorLine.Tokens.End);
-    OutputErrorHelperLine(&ErrorLine, ErrorToken, CToken(ExpectedType), ErrorString, Parser->LineNumber);
+
+    if (ErrorToken >= ErrorLine.Tokens.Start ||
+        ErrorToken < ErrorLine.Tokens.End)
+    {
+      Error("Determining where the error occured");
+      Log("%s:%u:0\n", __FILE__, __LINE__);
+    }
+    else
+    {
+      OutputErrorHelperLine(&ErrorLine, ErrorToken, CToken(ExpectedType), ErrorString, Parser->LineNumber);
+    }
+
   }
 
   {
@@ -601,7 +612,7 @@ GenerateStructDef(d_union_decl* dUnion, memory_arena* Memory)
     Member = Member->Next;
   }
 
-  Result = Concat(Result, CS("  };\n};\n"), Memory);
+  Result = Concat(Result, CS("  };\n};\n\n"), Memory);
 
   return Result;
 }
@@ -770,7 +781,7 @@ Output(counted_string Code, counted_string FileName, memory_arena* Memory)
 function void
 DumpStringStreamToConsole(counted_string_stream* Stream)
 {
-  for (counted_string_iterator Iter = SSIterator(Stream);
+  for (counted_string_iterator Iter = Iterator(Stream);
       IsValid(&Iter);
       Advance(&Iter))
   {
@@ -1558,29 +1569,109 @@ main(s32 ArgCount, const char** ArgStrings)
         {
           case CTokenType_Identifier:
           {
+            if (StringsMatch(Token.Value, CS("generate_string_table")))
+            {
+              enum_def Enum = {};
+              // TODO(Jesse): Use a stream scheme that doesn't require this. I
+              // think first/last pointers on a linked-list are better ..??
+              InitSentinel(Enum.Fields.Sentinel);
+
+              RequireToken(Parser, CToken(CS("enum")));
+              Enum.Name = RequireToken(Parser, CTokenType_Identifier).Value;
+              RequireToken(Parser, CTokenType_OpenBrace);
+
+              c_token NextToken = {};
+              while (Remaining(&Parser->Tokens) && NextToken.Type != CTokenType_CloseBrace)
+              {
+                enum_field Field = {};
+                Field.Name = RequireToken(Parser, CTokenType_Identifier).Value;
+
+                if (OptionalToken(Parser, CTokenType_Equals))
+                {
+                  // Can be an int literal, or a char literal : (42 or '4' or '42' or even up to '4242')
+                  Field.Value = PopToken(Parser).Value;
+                }
+
+                RequireToken(Parser, CTokenType_Comma);
+
+                Push(&Enum.Fields, Field, Memory);
+
+                NextToken = PeekToken(Parser);
+              }
+
+              counted_string NameTable = FormatCountedString(Memory,
+                  "function counted_string\nToString(%.*s Type)\n{\n  counted_string Result = {};\n  switch (Type)\n  {\n",
+                  Enum.Name.Count, Enum.Name.Start);
+
+              for (enum_field_iterator Iter = Iterator(&Enum.Fields);
+                  IsValid(&Iter);
+                  Advance(&Iter))
+              {
+                NameTable = Concat(NameTable,
+                    CS(FormatString(Memory,
+                        "    case %.*s: { Result = CS(\"%.*s\"); } break;\n",
+                        Iter.At->Element.Name.Count, Iter.At->Element.Name.Start,
+                        Iter.At->Element.Name.Count, Iter.At->Element.Name.Start
+                        )), Memory);
+              }
+
+              NameTable = Concat(NameTable, CS("  }\n  return Result;\n}\n\n"), Memory);
+
+              OutputForThisParser = Concat(OutputForThisParser, NameTable, Memory);
+            }
+
             if (StringsMatch(Token.Value, CS("generate_stream_for")))
             {
               RequireToken(Parser, CToken(CS("struct")));
               counted_string StructName = RequireToken(Parser, CTokenType_Identifier).Value;
 
-              counted_string StreamChunkCode = CS(FormatString(Memory, "struct %.*s_stream_chunk\n{\n  %.*s Element;\n  %.*s_stream_chunk* Next;\n  %.*s_stream_chunk* Prev;\n};\n\n",
+              counted_string StreamChunkCode = FormatCountedString(Memory,
+                  "struct %.*s_stream_chunk\n{\n  %.*s Element;\n  %.*s_stream_chunk* Next;\n  %.*s_stream_chunk* Prev;\n};\n\n",
                   StructName.Count, StructName.Start,
                   StructName.Count, StructName.Start,
                   StructName.Count, StructName.Start,
-                  StructName.Count, StructName.Start));
+                  StructName.Count, StructName.Start);
 
-              counted_string StreamCode = CS(FormatString(Memory, "struct %.*s_stream\n{\n  %.*s_stream_chunk Sentinel;\n};\n\n",
+              counted_string StreamCode = FormatCountedString(Memory,
+                  "struct %.*s_stream\n{\n  %.*s_stream_chunk Sentinel;\n};\n\n",
                   StructName.Count, StructName.Start,
-                  StructName.Count, StructName.Start));
+                  StructName.Count, StructName.Start);
 
-              counted_string IteratorCode = CS(FormatString(Memory, "struct %.*s_iterator\n{\n  %.*s_stream* Stream;\n  %.*s_stream_chunk* At;\n};\n\n",
+              counted_string IteratorStructCode = FormatCountedString(Memory,
+                  "struct %.*s_iterator\n{\n  %.*s_stream* Stream;\n  %.*s_stream_chunk* At;\n};\n\n",
                   StructName.Count, StructName.Start,
                   StructName.Count, StructName.Start,
-                  StructName.Count, StructName.Start));
+                  StructName.Count, StructName.Start);
+
+              counted_string PushCode = FormatCountedString(Memory,
+                  "function void\nPush(%.*s_stream* Stream, %.*s Element, memory_arena* Memory)\n{\n  // TODO(Jesse): Can we use Allocate() here instead?\n  %.*s_stream_chunk* Push = (%.*s_stream_chunk*)PushStruct(Memory, sizeof(%.*s_stream_chunk), 1, 1);\n  Push->Element = Element;\n\n  Push->Prev = &Stream->Sentinel;\n  Push->Next = Stream->Sentinel.Next;\n  Stream->Sentinel.Next->Prev = Push;\n  Stream->Sentinel.Next = Push;\n}\n\n",
+                  StructName.Count, StructName.Start,
+                  StructName.Count, StructName.Start,
+                  StructName.Count, StructName.Start,
+                  StructName.Count, StructName.Start,
+                  StructName.Count, StructName.Start);
+
+              counted_string IteratorCode = FormatCountedString(Memory,
+                  "function %.*s_iterator\nIterator(%.*s_stream* Stream)\n{\n  %.*s_iterator Iterator = {\n    .Stream = Stream,\n    .At = Stream->Sentinel.Next\n  };\n  return Iterator;\n}\n\n",
+                  StructName.Count, StructName.Start,
+                  StructName.Count, StructName.Start,
+                  StructName.Count, StructName.Start);
+
+              counted_string IteratorIsValidCode = FormatCountedString(Memory,
+                  "function b32\nIsValid(%.*s_iterator* Iter)\n{\n  b32 Result = (Iter->At != &Iter->Stream->Sentinel);\n  return Result;\n}\n\n",
+                  StructName.Count, StructName.Start);
+
+              counted_string IteratorAdvanceCode = FormatCountedString(Memory,
+                  "function void\nAdvance(%.*s_iterator* Iter)\n{\n  Iter->At = Iter->At->Next;\n}\n\n",
+                  StructName.Count, StructName.Start);
 
               OutputForThisParser = Concat(OutputForThisParser, StreamChunkCode, Memory);
               OutputForThisParser = Concat(OutputForThisParser, StreamCode, Memory);
+              OutputForThisParser = Concat(OutputForThisParser, IteratorStructCode, Memory);
+              OutputForThisParser = Concat(OutputForThisParser, PushCode, Memory);
               OutputForThisParser = Concat(OutputForThisParser, IteratorCode, Memory);
+              OutputForThisParser = Concat(OutputForThisParser, IteratorIsValidCode, Memory);
+              OutputForThisParser = Concat(OutputForThisParser, IteratorAdvanceCode, Memory);
             }
 
             if (StringsMatch(Token.Value, CS("d_union")))
