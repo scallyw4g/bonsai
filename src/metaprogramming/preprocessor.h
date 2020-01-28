@@ -104,6 +104,14 @@ struct enum_field
   counted_string Value;
 };
 
+generate_stream_for
+struct d_union_member
+{
+  counted_string Type;
+  counted_string Name;
+  d_union_flags Flags;
+};
+
 #include <metaprogramming/output/preprocessor.h>
 
 struct enum_def
@@ -125,19 +133,10 @@ struct c_token_buffer
   c_token* End;
 };
 
-struct d_union_member
-{
-  counted_string Type;
-  counted_string Name;
-  d_union_flags Flags;
-  d_union_member* Next;
-  d_union_member* Prev;
-};
-
 struct d_union_decl
 {
   counted_string Name;
-  d_union_member Sentinel;
+  d_union_member_stream Members;
 };
 
 struct c_parse_result

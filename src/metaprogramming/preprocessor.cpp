@@ -1,11 +1,4 @@
 
-// TODO(Jesse): Remove sentinels
-#define InitSentinel(Sentinel) \
-{ \
-  Sentinel.Next = &Sentinel; \
-  Sentinel.Prev = &Sentinel; \
-}
-
 #include <metaprogramming/preprocessor.h>
 
 c_token
@@ -545,13 +538,13 @@ RequireToken(c_parse_result* Parser, c_token_type ExpectedType)
   return Result;
 }
 
-d_union_member*
-DUnionMember(counted_string Name, counted_string Type, d_union_flags Flags, memory_arena* Memory)
+d_union_member
+DUnionMember(counted_string Name, counted_string Type, d_union_flags Flags)
 {
-  d_union_member* Result = Allocate(d_union_member, Memory, 1);
-  Result->Name = Name;
-  Result->Type = Type;
-  Result->Flags = Flags;
+  d_union_member Result = {};
+  Result.Name = Name;
+  Result.Type = Type;
+  Result.Flags = Flags;
   return Result;
 }
 
@@ -559,8 +552,8 @@ void
 PushMember(d_union_decl* dUnion, c_token MemberIdentifierToken, d_union_flags Flags, memory_arena* Memory)
 {
   Assert(MemberIdentifierToken.Type == CTokenType_Identifier);
-  d_union_member* Member = DUnionMember(MemberIdentifierToken.Value, MemberIdentifierToken.Value, Flags, Memory);
-  DList_Push(dUnion, Member);
+  d_union_member Member = DUnionMember(MemberIdentifierToken.Value, MemberIdentifierToken.Value, Flags);
+  Push(&dUnion->Members, Member, Memory);
 }
 
 template <typename cursor_t, typename element_t> inline cursor_t
@@ -580,11 +573,12 @@ GenerateEnumDef(d_union_decl* dUnion, memory_arena* Memory)
 {
   counted_string Result = FormatCountedString(Memory, "enum %.*s_type\n{\n  type_%.*s_noop,\n", dUnion->Name.Count, dUnion->Name.Start, dUnion->Name.Count, dUnion->Name.Start);
 
-  d_union_member* Member = dUnion->Sentinel.Next;
-  while (Member != &dUnion->Sentinel)
+  for (d_union_member_iterator Iter = Iterator(&dUnion->Members);
+      IsValid(&Iter);
+      Advance(&Iter))
   {
+    d_union_member* Member = &Iter.At->Element;
     Result = Concat(Result, FormatCountedString(Memory, "  type_%.*s,\n", Member->Type.Count, Member->Type.Start), Memory);
-    Member = Member->Next;
   }
 
   Result = Concat(Result, CS("};\n\n"), Memory);
@@ -597,14 +591,15 @@ GenerateStructDef(d_union_decl* dUnion, memory_arena* Memory)
   counted_string UnionName = dUnion->Name;
   counted_string Result = FormatCountedString(Memory, "struct %.*s\n{\n  %.*s_type Type;\n\n  union\n  {\n", UnionName.Count, UnionName.Start, UnionName.Count, UnionName.Start);
 
-  d_union_member* Member = dUnion->Sentinel.Next;
-  while (Member != &dUnion->Sentinel)
+  for (d_union_member_iterator Iter = Iterator(&dUnion->Members);
+      IsValid(&Iter);
+      Advance(&Iter))
   {
+    d_union_member* Member = &Iter.At->Element;
     if (Member->Flags != d_union_flag_enum_only)
     {
       Result = Concat(Result, FormatCountedString(Memory, "    %.*s %.*s;\n", Member->Type.Count, Member->Type.Start, Member->Name.Count, Member->Name.Start), Memory);
     }
-    Member = Member->Next;
   }
 
   Result = Concat(Result, CS("  };\n};\n\n"), Memory);
@@ -616,7 +611,6 @@ d_union_decl
 ParseDiscriminatedUnion(c_parse_result* Parser, memory_arena* Memory)
 {
   d_union_decl dUnion = {};
-  InitSentinel(dUnion.Sentinel);
 
   RequireToken(Parser, CTokenType_OpenParen);
   dUnion.Name = RequireToken(Parser, CTokenType_Identifier).Value;
@@ -1635,7 +1629,7 @@ R"INLINE_CODE(
 function void
 Push(%.*s_stream* Stream, %.*s Element, memory_arena* Memory)
 {
-// TODO(Jesse): Can we use Allocate() here instead?
+  // TODO(Jesse): Can we use Allocate() here instead?
   %.*s_stream_chunk* NextChunk = (%.*s_stream_chunk*)PushStruct(Memory, sizeof(%.*s_stream_chunk), 1, 1);
   NextChunk->Element = Element;
 
