@@ -1,10 +1,12 @@
 
-// TODO(Jesse): Make this non-const?
+generate_stream_for
 struct counted_string
 {
   umm Count;
-  const char* Start;
+  const char* Start; // TODO(Jesse): Make this non-const?
 };
+
+#include <metaprogramming/output/counted_string.h>
 
 umm
 Length(const char *Str)

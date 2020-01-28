@@ -527,11 +527,11 @@ RequireToken(c_parse_result* Parser, c_token_type ExpectedType)
 }
 
 counted_string
-PopString(string_stream* Stream)
+PopString(counted_string_stream* Stream)
 {
-  counted_string Result = Stream->Sentinel.Next->String;
+  counted_string Result = Stream->Sentinel.Next->Element;
 
-  // FIXME(Jesse): We're leaking string_chunks here.. freelist anyone?
+  // FIXME(Jesse): We're leaking counted_string_stream_chunks here.. freelist anyone?
   // @memory-leak
   Stream->Sentinel.Next->Next->Prev = &Stream->Sentinel;
   Stream->Sentinel.Next = Stream->Sentinel.Next->Next;
@@ -678,10 +678,10 @@ GetStructByType(struct_defs* ProgramStructs, counted_string StructType)
 }
 
 void
-PushString(string_stream* Stream, counted_string String, memory_arena* Memory)
+PushString(counted_string_stream* Stream, counted_string String, memory_arena* Memory)
 {
-  string_chunk* Push = Allocate(string_chunk, Memory, 1);
-  Push->String = String;
+  counted_string_stream_chunk* Push = Allocate(counted_string_stream_chunk, Memory, 1);
+  Push->Element = String;
 
   Push->Prev = &Stream->Sentinel;
   Push->Next = Stream->Sentinel.Next;
@@ -767,25 +767,14 @@ Output(counted_string Code, counted_string FileName, memory_arena* Memory)
   return Result;
 }
 
-function b32
-Output(d_union_decl* dUnion, counted_string FileName, memory_arena* Memory)
-{
-  counted_string EnumString = GenerateEnumDef(dUnion, Memory);
-  counted_string StructString = GenerateStructDef(dUnion, Memory);
-
-  counted_string OutputString = Concat(EnumString, StructString, Memory);
-  b32 Result = Output(OutputString, FileName, Memory);
-  return Result;
-}
-
 function void
-DumpStringStreamToConsole(string_stream* Stream)
+DumpStringStreamToConsole(counted_string_stream* Stream)
 {
-  for (string_iterator Iter = SSIterator(Stream);
+  for (counted_string_iterator Iter = SSIterator(Stream);
       IsValid(&Iter);
       Advance(&Iter))
   {
-    counted_string Message = Iter.At->String;
+    counted_string Message = Iter.At->Element;
     Log("%.*s\n", Message.Count, Message.Start);
   }
 }
@@ -1530,8 +1519,8 @@ main(s32 ArgCount, const char** ArgStrings)
     memory_arena Memory_ = {};
     memory_arena* Memory = &Memory_;
 
-    string_stream SuccessFiles = StringStream();
-    string_stream FailFiles = StringStream();
+    counted_string_stream SuccessFiles = StringStream();
+    counted_string_stream FailFiles = StringStream();
 
     arguments Args = ParseArgs(ArgStrings, ArgCount, Memory);
     Assert(Args.Files.Start == Args.Files.At);
@@ -1556,10 +1545,12 @@ main(s32 ArgCount, const char** ArgStrings)
         ParserIndex < Count(&ParsedFiles);
         ++ParserIndex)
     {
-      b32 SuccessfullyOutput = True;
       c_parse_result* Parser = ParsedFiles.Start+ParserIndex;
       Assert(Parser->Valid);
       Assert(Remaining(&Parser->Tokens));
+
+      counted_string OutputForThisParser = {};
+
       while (Parser->Valid && Remaining(&Parser->Tokens))
       {
         c_token Token = PopToken(Parser);
@@ -1567,22 +1558,42 @@ main(s32 ArgCount, const char** ArgStrings)
         {
           case CTokenType_Identifier:
           {
+            if (StringsMatch(Token.Value, CS("generate_stream_for")))
+            {
+              RequireToken(Parser, CToken(CS("struct")));
+              counted_string StructName = RequireToken(Parser, CTokenType_Identifier).Value;
+
+              counted_string StreamChunkCode = CS(FormatString(Memory, "struct %.*s_stream_chunk\n{\n  %.*s Element;\n  %.*s_stream_chunk* Next;\n  %.*s_stream_chunk* Prev;\n};\n\n",
+                  StructName.Count, StructName.Start,
+                  StructName.Count, StructName.Start,
+                  StructName.Count, StructName.Start,
+                  StructName.Count, StructName.Start));
+
+              counted_string StreamCode = CS(FormatString(Memory, "struct %.*s_stream\n{\n  %.*s_stream_chunk Sentinel;\n};\n\n",
+                  StructName.Count, StructName.Start,
+                  StructName.Count, StructName.Start));
+
+              counted_string IteratorCode = CS(FormatString(Memory, "struct %.*s_iterator\n{\n  %.*s_stream* Stream;\n  %.*s_stream_chunk* At;\n};\n\n",
+                  StructName.Count, StructName.Start,
+                  StructName.Count, StructName.Start,
+                  StructName.Count, StructName.Start));
+
+              OutputForThisParser = Concat(OutputForThisParser, StreamChunkCode, Memory);
+              OutputForThisParser = Concat(OutputForThisParser, StreamCode, Memory);
+              OutputForThisParser = Concat(OutputForThisParser, IteratorCode, Memory);
+            }
+
             if (StringsMatch(Token.Value, CS("d_union")))
             {
               d_union_decl dUnion = ParseDiscriminatedUnion(Parser, Memory);
 
               if (Parser->Valid)
               {
-                counted_string OutFilePath = Concat(Args.OutPath, Basename(Parser->FileName), Memory);
-                if (Output(&dUnion, OutFilePath, Memory))
-                {
-                  counted_string Message = Concat(CS(GREEN_TERMINAL "  ✔  " WHITE_TERMINAL), Parser->FileName, Memory);
-                  PushString(&SuccessFiles, Message, Memory);
-                }
-                else
-                {
-                  SuccessfullyOutput = False;
-                }
+                counted_string EnumString = GenerateEnumDef(&dUnion, Memory);
+                counted_string StructString = GenerateStructDef(&dUnion, Memory);
+
+                OutputForThisParser = Concat(OutputForThisParser, EnumString, Memory);
+                OutputForThisParser = Concat(OutputForThisParser, StructString, Memory);
               }
               else
               {
@@ -1593,8 +1604,7 @@ main(s32 ArgCount, const char** ArgStrings)
             if (StringsMatch(Token.Value, CS("for_members_in")))
             {
               for_member_constraints Constraints = {};
-              counted_string ForMembersCode = ParseForMembers(Parser, &Constraints, &Structs, Memory);
-              counted_string FileBasename = StripExtension(Basename(Parser->FileName));
+              counted_string ForMembersCode = ParseForMembers(Parser, &Constraints, &Structs, Memory);              counted_string FileBasename = StripExtension(Basename(Parser->FileName));
               counted_string ForMembersCodeFilename = CS(FormatString(Memory, "src/metaprogramming/output/%.*s_for_members_in_%.*s.h",
                     FileBasename.Count, FileBasename.Start,
                     Constraints.ForMemberName.Count, Constraints.ForMemberName.Start ));
@@ -1609,10 +1619,23 @@ main(s32 ArgCount, const char** ArgStrings)
         continue;
       }
 
-      if (!Parser->Valid || !SuccessfullyOutput)
+      if (!Parser->Valid)
       {
-        counted_string Message = Concat(CS(RED_TERMINAL "  ✗  " WHITE_TERMINAL), Parser->FileName, Memory);
-        PushString(&FailFiles, Message, Memory);
+      }
+
+      counted_string OutFilePath = Concat(Args.OutPath, Basename(Parser->FileName), Memory);
+      if (OutputForThisParser.Count)
+      {
+        if (Output(OutputForThisParser, OutFilePath, Memory))
+        {
+          counted_string Message = Concat(CS(GREEN_TERMINAL "  ✔  " WHITE_TERMINAL), Parser->FileName, Memory);
+          PushString(&SuccessFiles, Message, Memory);
+        }
+        else
+        {
+          counted_string Message = Concat(CS(RED_TERMINAL "  ✗  " WHITE_TERMINAL), Parser->FileName, Memory);
+          PushString(&FailFiles, Message, Memory);
+        }
       }
 
       Rewind(&Parser->Tokens);

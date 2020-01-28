@@ -131,26 +131,6 @@ struct d_union_decl
   d_union_member Sentinel;
 };
 
-// TODO(Jesse): Generate these using a directive
-struct string_chunk
-{
-  counted_string String;
-  string_chunk* Next;
-  string_chunk* Prev;
-};
-
-// TODO(Jesse): Generate these using a directive
-struct string_stream
-{
-  string_chunk Sentinel;
-};
-
-struct string_iterator
-{
-  string_stream* Stream;
-  string_chunk* At;
-};
-
 struct c_parse_result
 {
   b32 Valid;
@@ -474,18 +454,18 @@ AllocateTokenBuffer(memory_arena* Memory, u32 Count)
   return Result;
 }
 
-function string_stream
+function counted_string_stream
 StringStream()
 {
-  string_stream Result = {};
+  counted_string_stream Result = {};
   InitSentinel(Result.Sentinel);
   return Result;
 }
 
-function string_iterator
-SSIterator(string_stream* Stream)
+function counted_string_iterator
+SSIterator(counted_string_stream* Stream)
 {
-  string_iterator Iterator = {
+  counted_string_iterator Iterator = {
     .Stream = Stream,
     .At = Stream->Sentinel.Next
   };
@@ -493,14 +473,14 @@ SSIterator(string_stream* Stream)
 }
 
 function b32
-IsValid(string_iterator* Iter)
+IsValid(counted_string_iterator* Iter)
 {
   b32 Result = (Iter->At != &Iter->Stream->Sentinel);
   return Result;
 }
 
 function void
-Advance(string_iterator* Iter)
+Advance(counted_string_iterator* Iter)
 {
   Iter->At = Iter->At->Next;
 }
