@@ -1489,6 +1489,178 @@ TokenizeAllFiles(static_string_buffer* FileNames, memory_arena* Memory)
   return Result;
 }
 
+function b32
+IsMetaprogrammingDirective(counted_string Identifier)
+{
+  b32 Result = StringsMatch(CS("generate_stream"),         Identifier) ||
+               StringsMatch(CS("generate_static_buffer"),  Identifier) ||
+               StringsMatch(CS("generate_string_table"),   Identifier);
+
+  return Result;
+}
+
+function counted_string
+GenerateNameTableFor(c_parse_result* Parser, counted_string EnumName, memory_arena* Memory)
+{
+  enum_def Enum = {
+    .Name = EnumName
+  };
+
+  RequireToken(Parser, CTokenType_OpenBrace);
+
+  c_token NextToken = {};
+  while (Remaining(&Parser->Tokens) && NextToken.Type != CTokenType_CloseBrace)
+  {
+    enum_field Field = {};
+    Field.Name = RequireToken(Parser, CTokenType_Identifier).Value;
+
+    if (OptionalToken(Parser, CTokenType_Equals))
+    {
+      // Can be an int literal, or a char literal : (42 or '4' or '42' or even up to '4242')
+      Field.Value = PopToken(Parser).Value;
+    }
+
+    RequireToken(Parser, CTokenType_Comma);
+
+    Push(&Enum.Fields, Field, Memory);
+
+    NextToken = PeekToken(Parser);
+  }
+
+  counted_string Result = FormatCountedString(Memory,
+R"INLINE_CODE(
+function counted_string
+ToString(%.*s Type)
+{
+  counted_string Result = {};
+  switch (Type)
+  {
+)INLINE_CODE", Enum.Name.Count, Enum.Name.Start);
+
+  for (enum_field_iterator Iter = Iterator(&Enum.Fields);
+      IsValid(&Iter);
+      Advance(&Iter))
+  {
+    Result = Concat(Result,
+        CS(FormatString(Memory,
+            "    case %.*s: { Result = CS(\"%.*s\"); } break;\n",
+            Iter.At->Element.Name.Count, Iter.At->Element.Name.Start,
+            Iter.At->Element.Name.Count, Iter.At->Element.Name.Start
+            )), Memory);
+  }
+
+  Result = Concat(Result, CS("  }\n  return Result;\n}\n\n"), Memory);
+
+  return Result;
+}
+
+function counted_string
+GenerateStreamFor(counted_string StructName, memory_arena* Memory)
+{
+  counted_string StreamCode = FormatCountedString(Memory,
+R"INLINE_CODE(
+struct %.*s_stream_chunk
+{
+  %.*s Element;
+  %.*s_stream_chunk* Next;
+};
+
+struct %.*s_stream
+{
+  %.*s_stream_chunk* FirstChunk;
+  %.*s_stream_chunk* LastChunk;
+};
+
+)INLINE_CODE", StructName.Count, StructName.Start,
+   StructName.Count, StructName.Start,
+   StructName.Count, StructName.Start,
+   StructName.Count, StructName.Start,
+   StructName.Count, StructName.Start,
+   StructName.Count, StructName.Start,
+   StructName.Count, StructName.Start);
+
+  counted_string PushCode = FormatCountedString(Memory,
+R"INLINE_CODE(
+function void
+Push(%.*s_stream* Stream, %.*s Element, memory_arena* Memory)
+{
+  // TODO(Jesse): Can we use Allocate() here instead?
+  %.*s_stream_chunk* NextChunk = (%.*s_stream_chunk*)PushStruct(Memory, sizeof(%.*s_stream_chunk), 1, 1);
+  NextChunk->Element = Element;
+
+  if (!Stream->FirstChunk)
+  {
+    Assert(!Stream->LastChunk);
+    Stream->FirstChunk = NextChunk;
+    Stream->LastChunk = NextChunk;
+  }
+  else
+  {
+    Stream->LastChunk->Next = NextChunk;
+    Stream->LastChunk = NextChunk;
+  }
+
+  Assert(NextChunk->Next == 0);
+  Assert(Stream->LastChunk->Next == 0);
+
+  return;
+}
+
+)INLINE_CODE",
+      StructName.Count, StructName.Start,
+      StructName.Count, StructName.Start,
+      StructName.Count, StructName.Start,
+      StructName.Count, StructName.Start,
+      StructName.Count, StructName.Start);
+
+  counted_string IteratorCode = FormatCountedString(Memory,
+R"INLINE_CODE(
+struct %.*s_iterator
+{
+  %.*s_stream* Stream;
+  %.*s_stream_chunk* At;
+};
+
+function %.*s_iterator
+Iterator(%.*s_stream* Stream)
+{
+  %.*s_iterator Iterator = {
+    .Stream = Stream,
+    .At = Stream->FirstChunk
+  };
+  return Iterator;
+}
+
+function b32
+IsValid(%.*s_iterator* Iter)
+{
+  b32 Result = Iter->At != 0;
+  return Result;
+}
+
+function void
+Advance(%.*s_iterator* Iter)
+{
+  Iter->At = Iter->At->Next;
+}
+
+)INLINE_CODE",
+      StructName.Count, StructName.Start,
+      StructName.Count, StructName.Start,
+      StructName.Count, StructName.Start,
+      StructName.Count, StructName.Start,
+      StructName.Count, StructName.Start,
+      StructName.Count, StructName.Start,
+      StructName.Count, StructName.Start,
+      StructName.Count, StructName.Start);
+
+  counted_string Result = StreamCode;
+  Result = Concat(Result, PushCode, Memory);
+  Result = Concat(Result, IteratorCode, Memory);
+
+  return Result;
+}
+
 #ifndef EXCLUDE_PREPROCESSOR_MAIN
 s32
 main(s32 ArgCount, const char** ArgStrings)
@@ -1542,198 +1714,56 @@ main(s32 ArgCount, const char** ArgStrings)
         {
           case CTokenType_Identifier:
           {
-            if (StringsMatch(Token.Value, CS("generate_string_table")))
+            /* if (IsMetaprogrammingDirective(Token.Value)) */
             {
-              enum_def Enum = {};
-
-              RequireToken(Parser, CToken(CS("enum")));
-              Enum.Name = RequireToken(Parser, CTokenType_Identifier).Value;
-              RequireToken(Parser, CTokenType_OpenBrace);
-
-              c_token NextToken = {};
-              while (Remaining(&Parser->Tokens) && NextToken.Type != CTokenType_CloseBrace)
+              if (StringsMatch(Token.Value, CS("generate_string_table")))
               {
-                enum_field Field = {};
-                Field.Name = RequireToken(Parser, CTokenType_Identifier).Value;
+                RequireToken(Parser, CToken(CS("enum")));
+                counted_string EnumName = RequireToken(Parser, CTokenType_Identifier).Value;
+                counted_string NameTable = GenerateNameTableFor(Parser, EnumName, Memory);
+                OutputForThisParser = Concat(OutputForThisParser, NameTable, Memory);
+              }
 
-                if (OptionalToken(Parser, CTokenType_Equals))
+              if (StringsMatch(Token.Value, CS("generate_stream")))
+              {
+                RequireToken(Parser, CToken(CS("struct")));
+                counted_string StructName = RequireToken(Parser, CTokenType_Identifier).Value;
+                counted_string StreamCode = GenerateStreamFor(StructName, Memory);
+                OutputForThisParser = Concat(OutputForThisParser, StreamCode, Memory);
+              }
+
+              if (StringsMatch(Token.Value, CS("d_union")))
+              {
+                d_union_decl dUnion = ParseDiscriminatedUnion(Parser, Memory);
+
+                if (Parser->Valid)
                 {
-                  // Can be an int literal, or a char literal : (42 or '4' or '42' or even up to '4242')
-                  Field.Value = PopToken(Parser).Value;
+                  counted_string EnumString = GenerateEnumDef(&dUnion, Memory);
+                  counted_string StructString = GenerateStructDef(&dUnion, Memory);
+
+                  OutputForThisParser = Concat(OutputForThisParser, EnumString, Memory);
+                  OutputForThisParser = Concat(OutputForThisParser, StructString, Memory);
                 }
-
-                RequireToken(Parser, CTokenType_Comma);
-
-                Push(&Enum.Fields, Field, Memory);
-
-                NextToken = PeekToken(Parser);
+                else
+                {
+                  Error("Parsing d_union declaration");
+                }
               }
 
-              counted_string NameTable = FormatCountedString(Memory,
-R"INLINE_CODE(
-function counted_string
-ToString(%.*s Type)
-{
-  counted_string Result = {};
-  switch (Type)
-  {
-)INLINE_CODE", Enum.Name.Count, Enum.Name.Start);
-
-              for (enum_field_iterator Iter = Iterator(&Enum.Fields);
-                  IsValid(&Iter);
-                  Advance(&Iter))
+              if (StringsMatch(Token.Value, CS("for_members_in")))
               {
-                NameTable = Concat(NameTable,
-                    CS(FormatString(Memory,
-                        "    case %.*s: { Result = CS(\"%.*s\"); } break;\n",
-                        Iter.At->Element.Name.Count, Iter.At->Element.Name.Start,
-                        Iter.At->Element.Name.Count, Iter.At->Element.Name.Start
-                        )), Memory);
-              }
-
-              NameTable = Concat(NameTable, CS("  }\n  return Result;\n}\n\n"), Memory);
-
-              OutputForThisParser = Concat(OutputForThisParser, NameTable, Memory);
-            }
-
-            if (StringsMatch(Token.Value, CS("generate_stream")))
-            {
-              RequireToken(Parser, CToken(CS("struct")));
-              counted_string StructName = RequireToken(Parser, CTokenType_Identifier).Value;
-
-              counted_string StreamCode = FormatCountedString(Memory,
-R"INLINE_CODE(
-struct %.*s_stream_chunk
-{
-  %.*s Element;
-  %.*s_stream_chunk* Next;
-};
-
-struct %.*s_stream
-{
-  %.*s_stream_chunk* FirstChunk;
-  %.*s_stream_chunk* LastChunk;
-};
-
-)INLINE_CODE", StructName.Count, StructName.Start,
-               StructName.Count, StructName.Start,
-               StructName.Count, StructName.Start,
-               StructName.Count, StructName.Start,
-               StructName.Count, StructName.Start,
-               StructName.Count, StructName.Start,
-               StructName.Count, StructName.Start);
-
-              counted_string PushCode = FormatCountedString(Memory,
-R"INLINE_CODE(
-function void
-Push(%.*s_stream* Stream, %.*s Element, memory_arena* Memory)
-{
-  // TODO(Jesse): Can we use Allocate() here instead?
-  %.*s_stream_chunk* NextChunk = (%.*s_stream_chunk*)PushStruct(Memory, sizeof(%.*s_stream_chunk), 1, 1);
-  NextChunk->Element = Element;
-
-  if (!Stream->FirstChunk)
-  {
-    Assert(!Stream->LastChunk);
-    Stream->FirstChunk = NextChunk;
-    Stream->LastChunk = NextChunk;
-  }
-  else
-  {
-    Stream->LastChunk->Next = NextChunk;
-    Stream->LastChunk = NextChunk;
-  }
-
-  Assert(NextChunk->Next == 0);
-  Assert(Stream->LastChunk->Next == 0);
-
-  return;
-}
-
-)INLINE_CODE",
-                  StructName.Count, StructName.Start,
-                  StructName.Count, StructName.Start,
-                  StructName.Count, StructName.Start,
-                  StructName.Count, StructName.Start,
-                  StructName.Count, StructName.Start);
-
-              counted_string IteratorCode = FormatCountedString(Memory,
-R"INLINE_CODE(
-struct %.*s_iterator
-{
-  %.*s_stream* Stream;
-  %.*s_stream_chunk* At;
-};
-
-function %.*s_iterator
-Iterator(%.*s_stream* Stream)
-{
-  %.*s_iterator Iterator = {
-    .Stream = Stream,
-    .At = Stream->FirstChunk
-  };
-  return Iterator;
-}
-
-function b32
-IsValid(%.*s_iterator* Iter)
-{
-  b32 Result = Iter->At != 0;
-  return Result;
-}
-
-function void
-Advance(%.*s_iterator* Iter)
-{
-  Iter->At = Iter->At->Next;
-}
-
-)INLINE_CODE",
-                  StructName.Count, StructName.Start,
-                  StructName.Count, StructName.Start,
-                  StructName.Count, StructName.Start,
-                  StructName.Count, StructName.Start,
-                  StructName.Count, StructName.Start,
-                  StructName.Count, StructName.Start,
-                  StructName.Count, StructName.Start,
-                  StructName.Count, StructName.Start);
-
-              OutputForThisParser = Concat(OutputForThisParser, StreamCode, Memory);
-              OutputForThisParser = Concat(OutputForThisParser, PushCode, Memory);
-              OutputForThisParser = Concat(OutputForThisParser, IteratorCode, Memory);
-            }
-
-            if (StringsMatch(Token.Value, CS("d_union")))
-            {
-              d_union_decl dUnion = ParseDiscriminatedUnion(Parser, Memory);
-
-              if (Parser->Valid)
-              {
-                counted_string EnumString = GenerateEnumDef(&dUnion, Memory);
-                counted_string StructString = GenerateStructDef(&dUnion, Memory);
-
-                OutputForThisParser = Concat(OutputForThisParser, EnumString, Memory);
-                OutputForThisParser = Concat(OutputForThisParser, StructString, Memory);
-              }
-              else
-              {
-                Error("Parsing d_union declaration");
+                for_member_constraints Constraints = {};
+                counted_string ForMembersCode = ParseForMembers(Parser, &Constraints, &Structs, Memory);              counted_string FileBasename = StripExtension(Basename(Parser->FileName));
+                counted_string ForMembersCodeFilename = CS(FormatString(Memory, "src/metaprogramming/output/%.*s_for_members_in_%.*s.h",
+                      FileBasename.Count, FileBasename.Start,
+                      Constraints.ForMemberName.Count, Constraints.ForMemberName.Start ));
+                Output(ForMembersCode, ForMembersCodeFilename, Memory);
               }
             }
 
-            if (StringsMatch(Token.Value, CS("for_members_in")))
-            {
-              for_member_constraints Constraints = {};
-              counted_string ForMembersCode = ParseForMembers(Parser, &Constraints, &Structs, Memory);              counted_string FileBasename = StripExtension(Basename(Parser->FileName));
-              counted_string ForMembersCodeFilename = CS(FormatString(Memory, "src/metaprogramming/output/%.*s_for_members_in_%.*s.h",
-                    FileBasename.Count, FileBasename.Start,
-                    Constraints.ForMemberName.Count, Constraints.ForMemberName.Start ));
-              Output(ForMembersCode, ForMembersCodeFilename, Memory);
-            }
+            } break;
 
-          } break;
-
-          default: { } break;
+            default: { } break;
         }
 
         continue;
