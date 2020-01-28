@@ -1490,11 +1490,10 @@ TokenizeAllFiles(static_string_buffer* FileNames, memory_arena* Memory)
 }
 
 function b32
-IsMetaprogrammingDirective(counted_string Identifier)
+IsStructMetaprogrammingDirective(counted_string Identifier)
 {
   b32 Result = StringsMatch(CS("generate_stream"),         Identifier) ||
-               StringsMatch(CS("generate_static_buffer"),  Identifier) ||
-               StringsMatch(CS("generate_string_table"),   Identifier);
+               StringsMatch(CS("generate_static_buffer"),  Identifier);
 
   return Result;
 }
@@ -1710,67 +1709,85 @@ main(s32 ArgCount, const char** ArgStrings)
       while (Parser->Valid && Remaining(&Parser->Tokens))
       {
         c_token Token = PopToken(Parser);
+
         switch( Token.Type )
         {
           case CTokenType_Identifier:
           {
-            /* if (IsMetaprogrammingDirective(Token.Value)) */
+
+            if (IsStructMetaprogrammingDirective(Token.Value))
             {
-              if (StringsMatch(Token.Value, CS("generate_string_table")))
+              u32 Directives = 0;
+              while (IsStructMetaprogrammingDirective(Token.Value))
               {
-                RequireToken(Parser, CToken(CS("enum")));
-                counted_string EnumName = RequireToken(Parser, CTokenType_Identifier).Value;
-                counted_string NameTable = GenerateNameTableFor(Parser, EnumName, Memory);
-                OutputForThisParser = Concat(OutputForThisParser, NameTable, Memory);
+                if (StringsMatch(Token.Value, CS("generate_stream")))
+                {
+                  Directives |= do_generate_stream;
+                }
+                else if (StringsMatch(Token.Value, CS("generate_static_buffer")))
+                {
+                  Directives |= do_generate_static_buffer;
+                }
+
+                Token = PopToken(Parser);
               }
 
-              if (StringsMatch(Token.Value, CS("generate_stream")))
+              Assert(Token == CToken(CS("struct")));
+              counted_string StructName = RequireToken(Parser, CTokenType_Identifier).Value;
+
+              if (Directives & do_generate_stream)
               {
-                RequireToken(Parser, CToken(CS("struct")));
-                counted_string StructName = RequireToken(Parser, CTokenType_Identifier).Value;
                 counted_string StreamCode = GenerateStreamFor(StructName, Memory);
                 OutputForThisParser = Concat(OutputForThisParser, StreamCode, Memory);
               }
 
-              if (StringsMatch(Token.Value, CS("d_union")))
+              if (Directives & do_generate_static_buffer)
               {
-                d_union_decl dUnion = ParseDiscriminatedUnion(Parser, Memory);
-
-                if (Parser->Valid)
-                {
-                  counted_string EnumString = GenerateEnumDef(&dUnion, Memory);
-                  counted_string StructString = GenerateStructDef(&dUnion, Memory);
-
-                  OutputForThisParser = Concat(OutputForThisParser, EnumString, Memory);
-                  OutputForThisParser = Concat(OutputForThisParser, StructString, Memory);
-                }
-                else
-                {
-                  Error("Parsing d_union declaration");
-                }
-              }
-
-              if (StringsMatch(Token.Value, CS("for_members_in")))
-              {
-                for_member_constraints Constraints = {};
-                counted_string ForMembersCode = ParseForMembers(Parser, &Constraints, &Structs, Memory);              counted_string FileBasename = StripExtension(Basename(Parser->FileName));
-                counted_string ForMembersCodeFilename = CS(FormatString(Memory, "src/metaprogramming/output/%.*s_for_members_in_%.*s.h",
-                      FileBasename.Count, FileBasename.Start,
-                      Constraints.ForMemberName.Count, Constraints.ForMemberName.Start ));
-                Output(ForMembersCode, ForMembersCodeFilename, Memory);
               }
             }
 
-            } break;
+            if (StringsMatch(Token.Value, CS("generate_string_table")))
+            {
+              RequireToken(Parser, CToken(CS("enum")));
+              counted_string EnumName = RequireToken(Parser, CTokenType_Identifier).Value;
+              counted_string NameTable = GenerateNameTableFor(Parser, EnumName, Memory);
+              OutputForThisParser = Concat(OutputForThisParser, NameTable, Memory);
+            }
 
-            default: { } break;
+            if (StringsMatch(Token.Value, CS("d_union")))
+            {
+              d_union_decl dUnion = ParseDiscriminatedUnion(Parser, Memory);
+
+              if (Parser->Valid)
+              {
+                counted_string EnumString = GenerateEnumDef(&dUnion, Memory);
+                counted_string StructString = GenerateStructDef(&dUnion, Memory);
+
+                OutputForThisParser = Concat(OutputForThisParser, EnumString, Memory);
+                OutputForThisParser = Concat(OutputForThisParser, StructString, Memory);
+              }
+              else
+              {
+                Error("Parsing d_union declaration");
+              }
+            }
+
+            if (StringsMatch(Token.Value, CS("for_members_in")))
+            {
+              for_member_constraints Constraints = {};
+              counted_string ForMembersCode = ParseForMembers(Parser, &Constraints, &Structs, Memory);              counted_string FileBasename = StripExtension(Basename(Parser->FileName));
+              counted_string ForMembersCodeFilename = CS(FormatString(Memory, "src/metaprogramming/output/%.*s_for_members_in_%.*s.h",
+                    FileBasename.Count, FileBasename.Start,
+                    Constraints.ForMemberName.Count, Constraints.ForMemberName.Start ));
+              Output(ForMembersCode, ForMembersCodeFilename, Memory);
+            }
+
+          } break;
+
+          default: { } break;
         }
 
         continue;
-      }
-
-      if (!Parser->Valid)
-      {
       }
 
       counted_string OutFilePath = Concat(Args.OutPath, Basename(Parser->FileName), Memory);

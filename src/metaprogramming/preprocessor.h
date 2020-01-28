@@ -26,6 +26,12 @@ enum c_decl_function_type
   CFunctionType_Destructor,
 };
 
+enum struct_metaprogramming_directives
+{
+  do_generate_stream        = 0x1,
+  do_generate_static_buffer = 0x2,
+};
+
 // TODO(Jesse): Add vertical pipe |
 generate_string_table
 enum c_token_type
