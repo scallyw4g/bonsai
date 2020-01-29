@@ -144,14 +144,15 @@ Contains(const char *S1, const char *S2)
   return False;
 }
 
-void
-Trim(counted_string* String)
+function counted_string
+Trim(counted_string InputString)
 {
-  umm Count = String->Count;
-  const char* Start = String->Start;
+  counted_string Result = InputString;
+  umm Count = Result.Count;
+  const char* Start = Result.Start;
 
   for (umm CharIndex = 0;
-      CharIndex < String->Count;
+      CharIndex < Result.Count;
       ++CharIndex)
   {
     if (Start[CharIndex] == ' ' || Start[CharIndex] == '\n')
@@ -167,11 +168,11 @@ Trim(counted_string* String)
 
   Assert(Count >= 0);
 
-  for (s64 CharIndex = (s64)String->Count-1;
+  for (s64 CharIndex = (s64)Result.Count-1;
       CharIndex >= 0;
       --CharIndex)
   {
-    if (String->Start[CharIndex] == ' ' || String->Start[CharIndex] == '\n')
+    if (Result.Start[CharIndex] == ' ' || Result.Start[CharIndex] == '\n')
     {
       --Count;
     }
@@ -182,10 +183,10 @@ Trim(counted_string* String)
   }
 
   Assert(Count >= 0);
-  String->Count = Count;
-  String->Start = Start;
+  Result.Count = Count;
+  Result.Start = Start;
 
-  return;
+  return Result;
 }
 
 counted_string

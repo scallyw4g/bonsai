@@ -26,14 +26,38 @@ enum c_decl_function_type
   CFunctionType_Destructor,
 };
 
-enum struct_metaprogramming_directives
+// generate_string_table
+enum metaprogramming_directives
 {
-  do_generate_stream        = 0x1,
-  do_generate_static_buffer = 0x2,
+  generate_noop          = 0x0,
+  generate_stream        = 0x1,
+  generate_static_buffer = 0x2,
+  generate_string_table  = 0x4,
 };
 
+function metaprogramming_directives
+ToValue(counted_string S)
+{
+  if (StringsMatch(CS("generate_stream"), S))
+  {
+    return generate_stream;
+  }
+  if (StringsMatch(CS("generate_static_buffer"), S))
+  {
+    return generate_static_buffer;
+  }
+  if (StringsMatch(CS("generate_string_table"), S))
+  {
+    return generate_string_table;
+  }
+
+  Assert(False);
+  return generate_noop;
+};
+
+
 // TODO(Jesse): Add vertical pipe |
-generate_string_table
+// generate_string_table
 enum c_token_type
 {
   CTokenType_Unknown,
@@ -42,6 +66,8 @@ enum c_token_type
   CTokenType_Identifier,
   CTokenType_String,
   CTokenType_Char,
+
+  CTokenType_MetaprogrammingDirective,
 
   CTokenType_OpenBracket   = '[',
   CTokenType_CloseBracket  = ']',
@@ -54,6 +80,7 @@ enum c_token_type
   CTokenType_Semicolon     = ';',
   CTokenType_Colon         = ':',
   CTokenType_Hash          = '#',
+  CTokenType_At            = '@',
   CTokenType_Space         = ' ',
   CTokenType_Star          = '*',
   CTokenType_Ampersand     = '&',
@@ -103,14 +130,14 @@ struct c_decl_union
   struct_def* Body;
 };
 
-generate_stream
+// generate_stream
 struct enum_field
 {
   counted_string Name;
   counted_string Value;
 };
 
-generate_stream
+// generate_stream
 struct d_union_member
 {
   counted_string Type;
@@ -129,7 +156,12 @@ struct enum_def
 struct c_token
 {
   c_token_type Type;
-  counted_string Value;
+
+  // TODO(Jesse): Is this d_union-able? .. Or worth it?
+  union {
+    counted_string Value;
+    metaprogramming_directives Directive;
+  };
 };
 
 struct c_token_buffer

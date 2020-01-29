@@ -26,3 +26,4 @@ StringToUInt(counted_string *String)
   u32 Result = (u32)StringToInt(String);
   return Result;
 }
+

@@ -21,6 +21,7 @@ GetToken(ansi_stream* Stream, u32 Lookahead = 0)
       case CTokenType_Semicolon:
       case CTokenType_Colon:
       case CTokenType_Hash:
+      case CTokenType_At:
       case CTokenType_Space:
       case CTokenType_Star:
       case CTokenType_Ampersand:
@@ -187,6 +188,40 @@ OptionalToken(c_parse_result* Parser, c_token_type Type)
   return Result;
 }
 
+function b32
+IsMetaprogrammingDirective(counted_string Identifier)
+{
+  b32 Result = StringsMatch(CS("generate_stream"),         Identifier) ||
+               StringsMatch(CS("generate_static_buffer"),  Identifier) ||
+               StringsMatch(CS("generate_string_table"),   Identifier);
+
+  return Result;
+}
+
+function counted_string
+PopIdentifier(ansi_stream* SourceFileStream)
+{
+  counted_string Result = {
+    .Start = SourceFileStream->At
+  };
+
+  while (Remaining(SourceFileStream))
+  {
+    c_token T = GetToken(SourceFileStream);
+    if (T.Type == CTokenType_Unknown)
+    {
+      ++SourceFileStream->At;
+    }
+    else
+    {
+      break;
+    }
+  }
+
+  Result.Count = (umm)SourceFileStream->At - (umm)Result.Start;
+  return Result;
+}
+
 function c_parse_result
 TokenizeFile(counted_string FileName, memory_arena* Memory)
 {
@@ -224,9 +259,23 @@ TokenizeFile(counted_string FileName, memory_arena* Memory)
         {
           case CTokenType_FSlash:
           {
-            T.Type = CTokenType_Comment;
-            T.Value = CS(ReadUntilTerminatorList(&SourceFileStream, "\n", Memory));
-            --SourceFileStream.At;
+            T = GetToken(&SourceFileStream, 2);
+
+            SourceFileStream.At += 2;
+
+            counted_string Value = Trim(CS(ReadUntilTerminatorList(&SourceFileStream, "\n", Memory)));
+            if (IsMetaprogrammingDirective(Value))
+            {
+              T.Type = CTokenType_MetaprogrammingDirective;
+              T.Directive = ToValue(Value);
+            }
+            else
+            {
+              T.Type = CTokenType_Comment;
+              T.Value = Value;
+              --SourceFileStream.At;
+            }
+
           } break;
 
           case CTokenType_Star:
@@ -256,29 +305,10 @@ TokenizeFile(counted_string FileName, memory_arena* Memory)
 
       case CTokenType_Unknown:
       {
-        counted_string Value = {
-          .Start = SourceFileStream.At,
-        };
-
-        while (Remaining(&SourceFileStream))
-        {
-          T = GetToken(&SourceFileStream);
-          if (T.Type == CTokenType_Unknown)
-          {
-            SourceFileStream.At++;
-          }
-          else
-          {
-            break;
-          }
-        }
-
-        Value.Count = (umm)SourceFileStream.At - (umm)Value.Start;
-
         T.Type = CTokenType_Identifier;
-        T.Value = Value;
+        T.Value = PopIdentifier(&SourceFileStream);
 
-        if (StringsMatch(Value, CS("struct")))
+        if (StringsMatch(T.Value, CS("struct")))
         {
           ++Result.StructCount;
         }
@@ -287,7 +317,7 @@ TokenizeFile(counted_string FileName, memory_arena* Memory)
 
       default:
       {
-        SourceFileStream.At++;
+        ++SourceFileStream.At;
       } break;
     }
 
@@ -1489,15 +1519,6 @@ TokenizeAllFiles(static_string_buffer* FileNames, memory_arena* Memory)
   return Result;
 }
 
-function b32
-IsStructMetaprogrammingDirective(counted_string Identifier)
-{
-  b32 Result = StringsMatch(CS("generate_stream"),         Identifier) ||
-               StringsMatch(CS("generate_static_buffer"),  Identifier);
-
-  return Result;
-}
-
 function counted_string
 GenerateNameTableFor(c_parse_result* Parser, counted_string EnumName, memory_arena* Memory)
 {
@@ -1712,48 +1733,41 @@ main(s32 ArgCount, const char** ArgStrings)
 
         switch( Token.Type )
         {
-          case CTokenType_Identifier:
+          case CTokenType_MetaprogrammingDirective:
           {
-
-            if (IsStructMetaprogrammingDirective(Token.Value))
+            u32 Directives = 0;
+            while (Token.Type == CTokenType_MetaprogrammingDirective)
             {
-              u32 Directives = 0;
-              while (IsStructMetaprogrammingDirective(Token.Value))
-              {
-                if (StringsMatch(Token.Value, CS("generate_stream")))
-                {
-                  Directives |= do_generate_stream;
-                }
-                else if (StringsMatch(Token.Value, CS("generate_static_buffer")))
-                {
-                  Directives |= do_generate_static_buffer;
-                }
-
-                Token = PopToken(Parser);
-              }
-
-              Assert(Token == CToken(CS("struct")));
-              counted_string StructName = RequireToken(Parser, CTokenType_Identifier).Value;
-
-              if (Directives & do_generate_stream)
-              {
-                counted_string StreamCode = GenerateStreamFor(StructName, Memory);
-                OutputForThisParser = Concat(OutputForThisParser, StreamCode, Memory);
-              }
-
-              if (Directives & do_generate_static_buffer)
-              {
-              }
+              Directives |= Token.Directive;
+              Token = PopToken(Parser);
             }
 
-            if (StringsMatch(Token.Value, CS("generate_string_table")))
+            if (Directives & generate_stream)
             {
-              RequireToken(Parser, CToken(CS("enum")));
+              Assert(Token == CToken(CS("struct")));
+              counted_string StructName = RequireToken(Parser, CTokenType_Identifier).Value;
+              counted_string StreamCode = GenerateStreamFor(StructName, Memory);
+              OutputForThisParser = Concat(OutputForThisParser, StreamCode, Memory);
+            }
+
+            if (Directives & generate_static_buffer)
+            {
+              Assert(Token == CToken(CS("struct")));
+              /* counted_string StructName = RequireToken(Parser, CTokenType_Identifier).Value; */
+            }
+
+            if (Directives & generate_string_table)
+            {
+              Assert(Token == CToken(CS("enum")));
               counted_string EnumName = RequireToken(Parser, CTokenType_Identifier).Value;
               counted_string NameTable = GenerateNameTableFor(Parser, EnumName, Memory);
               OutputForThisParser = Concat(OutputForThisParser, NameTable, Memory);
             }
 
+          } break;
+
+          case CTokenType_Identifier:
+          {
             if (StringsMatch(Token.Value, CS("d_union")))
             {
               d_union_decl dUnion = ParseDiscriminatedUnion(Parser, Memory);

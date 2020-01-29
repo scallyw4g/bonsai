@@ -1,5 +1,20 @@
 
 function counted_string
+ToString(metaprogramming_directives Type)
+{
+  counted_string Result = {};
+  switch (Type)
+  {
+    case generate_noop: { Result = CS("generate_noop"); } break;
+    case generate_stream: { Result = CS("generate_stream"); } break;
+    case generate_static_buffer: { Result = CS("generate_static_buffer"); } break;
+    case generate_string_table: { Result = CS("generate_string_table"); } break;
+  }
+  return Result;
+}
+
+
+function counted_string
 ToString(c_token_type Type)
 {
   counted_string Result = {};
@@ -10,6 +25,7 @@ ToString(c_token_type Type)
     case CTokenType_Identifier: { Result = CS("CTokenType_Identifier"); } break;
     case CTokenType_String: { Result = CS("CTokenType_String"); } break;
     case CTokenType_Char: { Result = CS("CTokenType_Char"); } break;
+    case CTokenType_MetaprogrammingDirective: { Result = CS("CTokenType_MetaprogrammingDirective"); } break;
     case CTokenType_OpenBracket: { Result = CS("CTokenType_OpenBracket"); } break;
     case CTokenType_CloseBracket: { Result = CS("CTokenType_CloseBracket"); } break;
     case CTokenType_OpenBrace: { Result = CS("CTokenType_OpenBrace"); } break;
@@ -21,6 +37,7 @@ ToString(c_token_type Type)
     case CTokenType_Semicolon: { Result = CS("CTokenType_Semicolon"); } break;
     case CTokenType_Colon: { Result = CS("CTokenType_Colon"); } break;
     case CTokenType_Hash: { Result = CS("CTokenType_Hash"); } break;
+    case CTokenType_At: { Result = CS("CTokenType_At"); } break;
     case CTokenType_Space: { Result = CS("CTokenType_Space"); } break;
     case CTokenType_Star: { Result = CS("CTokenType_Star"); } break;
     case CTokenType_Ampersand: { Result = CS("CTokenType_Ampersand"); } break;

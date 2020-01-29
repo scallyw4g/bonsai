@@ -339,8 +339,7 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
     }
     else
     {
-      StreamValue = ReadUntilTerminatorList(Xml, "<");
-      Trim(&StreamValue);
+      StreamValue = Trim(ReadUntilTerminatorList(Xml, "<"));
       TagsAt.CurrentlyOpenTag->Value = StreamValue;
       EatWhitespace(Xml);
       continue;
