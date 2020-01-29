@@ -191,9 +191,9 @@ OptionalToken(c_parse_result* Parser, c_token_type Type)
 function b32
 IsMetaprogrammingDirective(counted_string Identifier)
 {
-  b32 Result = StringsMatch(CS("generate_stream"),         Identifier) ||
-               StringsMatch(CS("generate_static_buffer"),  Identifier) ||
-               StringsMatch(CS("generate_string_table"),   Identifier);
+  b32 Result = StringsMatch(ToString(generate_stream),         Identifier) ||
+               StringsMatch(ToString(generate_static_buffer),  Identifier) ||
+               StringsMatch(ToString(generate_string_table),   Identifier);
 
   return Result;
 }
@@ -267,7 +267,7 @@ TokenizeFile(counted_string FileName, memory_arena* Memory)
             if (IsMetaprogrammingDirective(Value))
             {
               T.Type = CTokenType_MetaprogrammingDirective;
-              T.Directive = ToValue(Value);
+              ToValue(Value, &T.Directive);
             }
             else
             {
@@ -1519,9 +1519,11 @@ TokenizeAllFiles(static_string_buffer* FileNames, memory_arena* Memory)
   return Result;
 }
 
-function counted_string
-GenerateNameTableFor(c_parse_result* Parser, counted_string EnumName, memory_arena* Memory)
+function enum_def
+ParseEnum(c_parse_result* Parser, memory_arena* Memory)
 {
+  counted_string EnumName = RequireToken(Parser, CTokenType_Identifier).Value;
+
   enum_def Enum = {
     .Name = EnumName
   };
@@ -1547,6 +1549,43 @@ GenerateNameTableFor(c_parse_result* Parser, counted_string EnumName, memory_are
     NextToken = PeekToken(Parser);
   }
 
+  return Enum;
+}
+
+
+function counted_string
+GenerateValueTableFor(enum_def* Enum, memory_arena* Memory)
+{
+  counted_string Result = FormatCountedString(Memory,
+R"INLINE_CODE(
+function void
+ToValue(counted_string S, %.*s* Result)
+{
+  *Result = (%.*s)0;
+)INLINE_CODE",
+              Enum->Name.Count, Enum->Name.Start,
+              Enum->Name.Count, Enum->Name.Start);
+
+  for (enum_field_iterator Iter = Iterator(&Enum->Fields);
+      IsValid(&Iter);
+      Advance(&Iter))
+  {
+    Result = Concat(Result,
+        CS(FormatString(Memory,
+            "  if (StringsMatch(CS(\"%.*s\"), S)) { *Result = %.*s; }\n",
+            Iter.At->Element.Name.Count, Iter.At->Element.Name.Start,
+            Iter.At->Element.Name.Count, Iter.At->Element.Name.Start
+            )), Memory);
+  }
+
+  Result = Concat(Result, CS("\n}\n\n"), Memory);
+
+  return Result;
+}
+
+function counted_string
+GenerateNameTableFor(enum_def* Enum, memory_arena* Memory)
+{
   counted_string Result = FormatCountedString(Memory,
 R"INLINE_CODE(
 function counted_string
@@ -1555,9 +1594,9 @@ ToString(%.*s Type)
   counted_string Result = {};
   switch (Type)
   {
-)INLINE_CODE", Enum.Name.Count, Enum.Name.Start);
+)INLINE_CODE", Enum->Name.Count, Enum->Name.Start);
 
-  for (enum_field_iterator Iter = Iterator(&Enum.Fields);
+  for (enum_field_iterator Iter = Iterator(&Enum->Fields);
       IsValid(&Iter);
       Advance(&Iter))
   {
@@ -1759,9 +1798,14 @@ main(s32 ArgCount, const char** ArgStrings)
             if (Directives & generate_string_table)
             {
               Assert(Token == CToken(CS("enum")));
-              counted_string EnumName = RequireToken(Parser, CTokenType_Identifier).Value;
-              counted_string NameTable = GenerateNameTableFor(Parser, EnumName, Memory);
+
+              enum_def Enum =  ParseEnum(Parser, Memory);
+
+              counted_string NameTable = GenerateNameTableFor(&Enum, Memory);
+              counted_string ToValueTable= GenerateValueTableFor(&Enum, Memory);
+
               OutputForThisParser = Concat(OutputForThisParser, NameTable, Memory);
+              OutputForThisParser = Concat(OutputForThisParser, ToValueTable, Memory);
             }
 
           } break;

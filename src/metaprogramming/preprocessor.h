@@ -35,27 +35,6 @@ enum metaprogramming_directives
   generate_string_table  = 0x4,
 };
 
-function metaprogramming_directives
-ToValue(counted_string S)
-{
-  if (StringsMatch(CS("generate_stream"), S))
-  {
-    return generate_stream;
-  }
-  if (StringsMatch(CS("generate_static_buffer"), S))
-  {
-    return generate_static_buffer;
-  }
-  if (StringsMatch(CS("generate_string_table"), S))
-  {
-    return generate_string_table;
-  }
-
-  Assert(False);
-  return generate_noop;
-};
-
-
 // TODO(Jesse): Add vertical pipe |
 // generate_string_table
 enum c_token_type
