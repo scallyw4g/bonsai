@@ -1,17 +1,15 @@
-
-#define MV_ID( a, b, c, d ) \
-  (( a ) | ( b << 8 ) | ( c << 16 ) | ( d << 24 ))
-
+// NOTE(Jesse): These chunk identifiers are actually present in the file in the
+// reverse byte order.. ie. ID_VOX == "VOX " in the file.
 enum Chunk_ID
 {
   ID_NONE = 0,
 
-  ID_VOX  = MV_ID( 'V', 'O', 'X', ' ' ),
-  ID_MAIN = MV_ID( 'M', 'A', 'I', 'N' ),
-  ID_PACK = MV_ID( 'P', 'A', 'C', 'K' ),
-  ID_SIZE = MV_ID( 'S', 'I', 'Z', 'E' ),
-  ID_XYZI = MV_ID( 'X', 'Y', 'Z', 'I' ),
-  ID_RGBA = MV_ID( 'R', 'G', 'B', 'A' )
+  ID_VOX  = ' XOV',
+  ID_MAIN = 'NIAM',
+  ID_PACK = 'KCAP',
+  ID_SIZE = 'EZIS',
+  ID_XYZI = 'IZYX',
+  ID_RGBA = 'ABGR'
 };
 
 inline unsigned char

@@ -105,10 +105,43 @@ struct c_decl_variable
   counted_string Name;
 };
 
-struct struct_def;
+struct c_decl_stream_chunk;
+struct c_decl_stream
+{
+  c_decl_stream_chunk* FirstChunk;
+  c_decl_stream_chunk* LastChunk;
+};
+
+struct struct_def
+{
+  counted_string Name;
+  c_decl_stream Fields;
+};
+
+struct enum_def;
+struct enum_cursor
+{
+  enum_def* Start;
+  enum_def* End;
+  enum_def* At;
+};
+
+struct struct_cursor
+{
+  struct_def* Start;
+  struct_def* End;
+  struct_def* At;
+};
+
+struct struct_defs
+{
+  u32 Count;
+  struct_def* Defs;
+};
+
 struct c_decl_union
 {
-  struct_def* Body;
+  struct_def Body;
 };
 
 // generate_stream
@@ -127,6 +160,13 @@ struct d_union_member
 };
 
 #include <metaprogramming/output/preprocessor.h>
+
+struct c_decl_stream_chunk
+{
+  c_decl Element;
+  c_decl_stream_chunk* Next;
+};
+
 
 struct enum_def
 {
@@ -164,6 +204,8 @@ struct c_parse_result
   c_token_buffer Tokens;
 
   u32 StructCount;
+  u32 EnumCount;
+
   counted_string FileName;
 
   u32 LineNumber;
@@ -185,43 +227,24 @@ struct arguments
 struct tokenized_files
 {
   u32 StructCount;
+  u32 EnumCount;
 
   c_parse_result* Start;
   c_parse_result* End;
   c_parse_result* At;
 };
 
-struct c_decl_stream_chunk
-{
-  c_decl Element;
-  c_decl_stream_chunk* Next;
-};
-
-struct c_decl_stream
-{
-  c_decl_stream_chunk* FirstChunk;
-  c_decl_stream_chunk* LastChunk;
-};
-
-struct struct_def
-{
-  counted_string Name;
-  c_decl_stream Fields;
-};
-
-struct struct_cursor
-{
-  struct_def** Start;
-  struct_def** End;
-  struct_def** At;
-};
-
-struct struct_defs
+struct enum_defs
 {
   u32 Count;
-  struct_def** Defs;
+  enum_def* Defs;
 };
 
+struct program_datatypes
+{
+  struct_defs Structs;
+  enum_defs Enums;
+};
 
 struct c_decl_iterator
 {

@@ -90,13 +90,13 @@ Advance(c_parse_result* Parser, u32 Lookahead = 0)
   return;
 }
 
-function c_token
-PeekTokenRaw(c_parse_result* Parser, u32 Lookahead = 0)
+function c_token*
+PeekTokenRawPointer(c_parse_result* Parser, u32 Lookahead = 0)
 {
-  c_token Result = {};
+  c_token* Result = {};
   if (Remaining(&Parser->Tokens, Lookahead))
   {
-    Result = *(Parser->Tokens.At+Lookahead);
+    Result = Parser->Tokens.At+Lookahead;
   }
   else
   {
@@ -107,18 +107,25 @@ PeekTokenRaw(c_parse_result* Parser, u32 Lookahead = 0)
 }
 
 function c_token
-PeekToken(c_parse_result* Parser, u32 Lookahead = 0)
+PeekTokenRaw(c_parse_result* Parser, u32 Lookahead = 0)
 {
+  c_token* Pointer = PeekTokenRawPointer(Parser, Lookahead);
   c_token Result = {};
+  if (Pointer) Result = *Pointer;
+  return Result;
+}
+
+function c_token*
+PeekTokenPointer(c_parse_result* Parser, u32 Lookahead = 0)
+{
+  c_token* Result = {};
   u32 TokenHits = 0;
   u32 LocalLookahead = 0;
   while (Remaining(&Parser->Tokens, LocalLookahead))
   {
-    Result = PeekTokenRaw(Parser, LocalLookahead);
-    if ( Result.Type == CTokenType_Comment || IsWhitespace(Result.Type) )
+    Result = PeekTokenRawPointer(Parser, LocalLookahead);
+    if ( Result->Type == CTokenType_Comment || IsWhitespace(Result->Type) )
     {
-      // TODO(Jesse): Does this make any sense at all?
-      Result.Type = CTokenType_Unknown;
     }
     else
     {
@@ -131,6 +138,15 @@ PeekToken(c_parse_result* Parser, u32 Lookahead = 0)
     ++LocalLookahead;
   }
 
+  return Result;
+}
+
+function c_token
+PeekToken(c_parse_result* Parser, u32 Lookahead = 0)
+{
+  c_token* Pointer = PeekTokenPointer(Parser, Lookahead);
+  c_token Result = {};
+  if (Pointer) Result = *Pointer;
   return Result;
 }
 
@@ -311,6 +327,11 @@ TokenizeFile(counted_string FileName, memory_arena* Memory)
         T.Type = CTokenType_Identifier;
         T.Value = PopIdentifier(&SourceFileStream);
 
+        if (StringsMatch(T.Value, CS("enum")))
+        {
+          ++Result.EnumCount;
+        }
+
         if (StringsMatch(T.Value, CS("struct")))
         {
           ++Result.StructCount;
@@ -399,10 +420,12 @@ TruncateAtPreviousLineStart(c_parse_result* Parser, u32 Count )
 function void
 Dump(c_parse_result* Parser, u32 LinesToDump = u32_MAX)
 {
-  Rewind(&Parser->Tokens);
-  while(Remaining(&Parser->Tokens) && LinesToDump > 0)
+  c_parse_result LocalParser = *Parser;
+
+  Rewind(&LocalParser.Tokens);
+  while(Remaining(&LocalParser.Tokens) && LinesToDump > 0)
   {
-    c_token T = PopTokenRaw(Parser);
+    c_token T = PopTokenRaw(&LocalParser);
     PrintToken(T);
 
     if (T.Type == CTokenType_Newline)
@@ -495,9 +518,12 @@ OutputParsingError(c_parse_result* Parser, c_token* ErrorToken, c_token_type Exp
   /* u32 ColumnNumber = 0; */
   /* Log("%.*s:%u:%u: Error\n", Parser->FileName.Count, Parser->FileName.Start, Parser->LineNumber, ColumnNumber); */
 
-  c_parse_result LeadingLines  = *Parser;
-  c_parse_result ErrorLine     = *Parser;
-  c_parse_result TrailingLines = *Parser;
+  c_parse_result LocalParser = *Parser;
+  LocalParser.Tokens.At = ErrorToken;
+
+  c_parse_result LeadingLines  = LocalParser;
+  c_parse_result ErrorLine     = LocalParser;
+  c_parse_result TrailingLines = LocalParser;
 
   {
     RewindUntil(&LeadingLines, CTokenType_Newline);
@@ -511,15 +537,15 @@ OutputParsingError(c_parse_result* Parser, c_token* ErrorToken, c_token_type Exp
     TruncateAtNextLineEnd(&ErrorLine, 0);
     Dump(&ErrorLine);
 
-    if (ErrorToken >= ErrorLine.Tokens.Start ||
+    if (ErrorToken >= ErrorLine.Tokens.Start &&
         ErrorToken < ErrorLine.Tokens.End)
     {
-      Error("Determining where the error occured");
-      Log("%s:%u:0\n", __FILE__, __LINE__);
+      OutputErrorHelperLine(&ErrorLine, ErrorToken, CToken(ExpectedType), ErrorString, LocalParser.LineNumber);
     }
     else
     {
-      OutputErrorHelperLine(&ErrorLine, ErrorToken, CToken(ExpectedType), ErrorString, Parser->LineNumber);
+      Error("Determining where the error occured");
+      Log("%s:%u:0\n", __FILE__, __LINE__);
     }
 
   }
@@ -546,8 +572,8 @@ OutputParsingError(c_parse_result* Parser, c_token* ErrorToken, counted_string E
 function c_token
 RequireToken(c_parse_result* Parser, c_token ExpectedToken)
 {
-  c_token Result = PeekToken(Parser);
-  c_token* ErrorToken = Parser->Tokens.At;
+  c_token* ErrorToken = PeekTokenPointer(Parser);
+  c_token Result = *ErrorToken;
 
   if (Result.Type != ExpectedToken.Type || (ExpectedToken.Value.Count > 0 && !StringsMatch(ExpectedToken.Value, Result.Value) ))
   {
@@ -695,7 +721,7 @@ GetStructByType(struct_defs* ProgramStructs, counted_string StructType)
       StructIndex < ProgramStructs->Count;
       ++StructIndex)
   {
-    struct_def* Struct = ProgramStructs->Defs[StructIndex];
+    struct_def* Struct = ProgramStructs->Defs + StructIndex;
     /* Print(Struct->Name); */
     /* Log("\n"); */
     if (StringsMatch(Struct->Name, StructType))
@@ -921,22 +947,33 @@ DumpCDeclStreamToConsole(c_decl_stream* Stream)
   }
 }
 
-function struct_defs
-AllocateStructDefs(u32 Count, memory_arena* Memory)
+function enum_defs
+AllocateEnumDefs(u32 Count, memory_arena* Memory)
 {
-  struct_defs Result = {
+  enum_defs Result = {
     .Count = Count,
-    .Defs = Allocate(struct_def*, Memory, Count),
+    .Defs = Allocate(enum_def, Memory, Count),
   };
 
   return Result;
 };
 
-function struct_def*
-StructDef(counted_string Name, memory_arena* Memory)
+function struct_defs
+AllocateStructDefs(u32 Count, memory_arena* Memory)
 {
-  struct_def* Result = Allocate(struct_def, Memory, 1);
-  Result->Name = Name;
+  struct_defs Result = {
+    .Count = Count,
+    .Defs = Allocate(struct_def, Memory, Count),
+  };
+
+  return Result;
+};
+
+function struct_def
+StructDef(counted_string Name)
+{
+  struct_def Result = {};
+  Result.Name = Name;
   return Result;
 }
 
@@ -976,7 +1013,7 @@ IsCxxDefinitionKeyword(counted_string Value)
   return Result;
 }
 
-function struct_def* ParseStructBody(c_parse_result* Parser, counted_string StructName, memory_arena* Memory);
+function struct_def ParseStructBody(c_parse_result* Parser, counted_string StructName, memory_arena* Memory);
 
 function c_decl
 ParseDeclaration(c_parse_result* Parser, counted_string StructName, memory_arena* Memory)
@@ -1136,7 +1173,7 @@ PrintCDecl(c_decl* Decl, struct_defs* ProgramStructs)
 
     case type_c_decl_union:
     {
-      for (c_decl_iterator Iter = CDIterator(&Decl->c_decl_union.Body->Fields);
+      for (c_decl_iterator Iter = CDIterator(&Decl->c_decl_union.Body.Fields);
           IsValid(&Iter);
           Advance(&Iter))
       {
@@ -1308,7 +1345,7 @@ ParseForMembers(c_parse_result* Parser, for_member_constraints* Constraints, str
 
         case type_c_decl_union:
         {
-          for (c_decl_iterator Iter = CDIterator(&AtChunk->Element.c_decl_union.Body->Fields);
+          for (c_decl_iterator Iter = CDIterator(&AtChunk->Element.c_decl_union.Body.Fields);
               IsValid(&Iter);
               Advance(&Iter))
           {
@@ -1370,10 +1407,10 @@ ParseForMembers(c_parse_result* Parser, for_member_constraints* Constraints, str
   return Result;
 }
 
-function struct_def*
+function struct_def
 ParseStructBody(c_parse_result* Parser, counted_string StructName, memory_arena* Memory)
 {
-  struct_def* Result = StructDef(StructName, Memory);
+  struct_def Result = StructDef(StructName);
 
   RequireToken(Parser, CTokenType_OpenBrace);
 
@@ -1387,22 +1424,61 @@ ParseStructBody(c_parse_result* Parser, counted_string StructName, memory_arena*
       continue;
     }
 
-    c_decl Declaration = ParseDeclaration(Parser, Result->Name, Memory);
-    Push(&Result->Fields, Declaration, Memory);
+    c_decl Declaration = ParseDeclaration(Parser, Result.Name, Memory);
+    Push(&Result.Fields, Declaration, Memory);
     NextToken = PeekToken(Parser);
   }
 
   return Result;
 }
 
-function struct_defs
-ParseAllStructDefs(tokenized_files Files_in, u32 MaxStructCount, memory_arena* Memory)
+function enum_def
+ParseEnum(c_parse_result* Parser, memory_arena* Memory)
+{
+  counted_string EnumName = RequireToken(Parser, CTokenType_Identifier).Value;
+
+  enum_def Enum = {
+    .Name = EnumName
+  };
+
+  RequireToken(Parser, CTokenType_OpenBrace);
+
+  c_token NextToken = {};
+  while (Remaining(&Parser->Tokens) && NextToken.Type != CTokenType_CloseBrace)
+  {
+    enum_field Field = {};
+    Field.Name = RequireToken(Parser, CTokenType_Identifier).Value;
+
+    if (OptionalToken(Parser, CTokenType_Equals))
+    {
+      // Can be an int literal, or a char literal : (42 or '4' or '42' or even up to '4242')
+      Field.Value = PopToken(Parser).Value;
+    }
+
+    if(OptionalToken(Parser, CTokenType_Comma))
+    {
+      NextToken = PeekToken(Parser);
+    }
+    else
+    {
+      break;
+    }
+
+    Push(&Enum.Fields, Field, Memory);
+  }
+
+  return Enum;
+}
+
+function program_datatypes
+ParseAllDatatypes(tokenized_files Files_in, u32 MaxStructCount, u32 MaxEnumCount, memory_arena* Memory)
 {
   tokenized_files* Files = &Files_in;
 
   // TODO(Jesse): This leaks a bit of memory because MaxStructCount is over-eager
   // @memory-leak
-  struct_cursor StructCursor = Cursor<struct_cursor, struct_def*>(MaxStructCount, Memory);
+  struct_cursor StructCursor = Cursor<struct_cursor, struct_def>(MaxStructCount, Memory);
+  enum_cursor EnumCursor = Cursor<enum_cursor, enum_def>(MaxEnumCount, Memory);
 
   for (u32 ParserIndex = 0;
       ParserIndex < (u32)Count(Files);
@@ -1429,11 +1505,11 @@ ParseAllStructDefs(tokenized_files Files_in, u32 MaxStructCount, memory_arena* M
               RequireToken(Parser, CToken((CS("struct"))));
               if (PeekToken(Parser) == CToken(CTokenType_OpenBrace))
               {
-                struct_def* S = ParseStructBody(Parser, CS(""), Memory);
+                struct_def S = ParseStructBody(Parser, CS(""), Memory);
                 Push(S, &StructCursor);
 
                 RequireToken(Parser, CTokenType_CloseBrace);
-                S->Name = RequireToken(Parser, CTokenType_Identifier).Value;
+                S.Name = RequireToken(Parser, CTokenType_Identifier).Value;
                 RequireToken(Parser, CTokenType_Semicolon);
               }
               else
@@ -1442,6 +1518,11 @@ ParseAllStructDefs(tokenized_files Files_in, u32 MaxStructCount, memory_arena* M
                 EatUntil(Parser, CTokenType_Semicolon);
               }
             }
+          }
+          else if (StringsMatch(Token.Value, CS("enum")))
+          {
+            enum_def Enum = ParseEnum(Parser, Memory);
+            Push(Enum, &EnumCursor);
           }
           else if (StringsMatch(Token.Value, CS("struct")))
           {
@@ -1452,7 +1533,7 @@ ParseAllStructDefs(tokenized_files Files_in, u32 MaxStructCount, memory_arena* M
               {
                 if ( PeekToken(Parser) == CToken(CTokenType_OpenBrace) )
                 {
-                  struct_def* S = ParseStructBody(Parser, T.Value, Memory);
+                  struct_def S = ParseStructBody(Parser, T.Value, Memory);
                   Push(S, &StructCursor);
                 }
               } break;
@@ -1471,9 +1552,18 @@ ParseAllStructDefs(tokenized_files Files_in, u32 MaxStructCount, memory_arena* M
   }
 
 
-  u32 Count = (u32)CurrentCount(&StructCursor);
-  struct_defs Result = AllocateStructDefs(Count, Memory);
-  Result.Defs = StructCursor.Start;
+  u32 StructCount = (u32)CurrentCount(&StructCursor);
+  struct_defs Structs = AllocateStructDefs(StructCount, Memory);
+  Structs.Defs = StructCursor.Start;
+
+  u32 EnumCount = (u32)CurrentCount(&EnumCursor);
+  enum_defs Enums = AllocateEnumDefs(EnumCount, Memory);
+  Enums.Defs = EnumCursor.Start;
+
+  program_datatypes Result = {
+    .Enums = Enums,
+    .Structs = Structs,
+  };
 
   return Result;
 }
@@ -1507,6 +1597,7 @@ TokenizeAllFiles(static_string_buffer* FileNames, memory_arena* Memory)
       Rewind(&Parser.Tokens);
       Push(Parser, &Result);
       Result.StructCount += Parser.StructCount;
+      Result.EnumCount += Parser.EnumCount;
     }
     else
     {
@@ -1521,40 +1612,6 @@ TokenizeAllFiles(static_string_buffer* FileNames, memory_arena* Memory)
 
   return Result;
 }
-
-function enum_def
-ParseEnum(c_parse_result* Parser, memory_arena* Memory)
-{
-  counted_string EnumName = RequireToken(Parser, CTokenType_Identifier).Value;
-
-  enum_def Enum = {
-    .Name = EnumName
-  };
-
-  RequireToken(Parser, CTokenType_OpenBrace);
-
-  c_token NextToken = {};
-  while (Remaining(&Parser->Tokens) && NextToken.Type != CTokenType_CloseBrace)
-  {
-    enum_field Field = {};
-    Field.Name = RequireToken(Parser, CTokenType_Identifier).Value;
-
-    if (OptionalToken(Parser, CTokenType_Equals))
-    {
-      // Can be an int literal, or a char literal : (42 or '4' or '42' or even up to '4242')
-      Field.Value = PopToken(Parser).Value;
-    }
-
-    RequireToken(Parser, CTokenType_Comma);
-
-    Push(&Enum.Fields, Field, Memory);
-
-    NextToken = PeekToken(Parser);
-  }
-
-  return Enum;
-}
-
 
 function counted_string
 GenerateValueTableFor(enum_def* Enum, memory_arena* Memory)
@@ -1746,7 +1803,7 @@ main(s32 ArgCount, const char** ArgStrings)
     tokenized_files ParsedFiles = TokenizeAllFiles(&Args.Files, Memory);
     Assert(ParsedFiles.Start == ParsedFiles.At);
 
-    struct_defs Structs = ParseAllStructDefs(ParsedFiles, ParsedFiles.StructCount, Memory);
+    program_datatypes Datatypes = ParseAllDatatypes(ParsedFiles, ParsedFiles.StructCount, ParsedFiles.EnumCount, Memory);
     Assert(ParsedFiles.Start == ParsedFiles.At);
 
 #if 0
@@ -1842,12 +1899,14 @@ main(s32 ArgCount, const char** ArgStrings)
 
             if (StringsMatch(Token.Value, CS("for_enum_values")))
             {
+              /* counted_string ForMembersCode = ParseForEnumValues(Parser, &Constraints, &Datatypes.Enums, Memory); */
             }
 
             if (StringsMatch(Token.Value, CS("for_members_in")))
             {
               for_member_constraints Constraints = {};
-              counted_string ForMembersCode = ParseForMembers(Parser, &Constraints, &Structs, Memory);              counted_string FileBasename = StripExtension(Basename(Parser->FileName));
+              counted_string ForMembersCode = ParseForMembers(Parser, &Constraints, &Datatypes.Structs, Memory);
+              counted_string FileBasename = StripExtension(Basename(Parser->FileName));
               counted_string ForMembersCodeFilename = CS(FormatString(Memory,
                     "src/metaprogramming/output/%.*s_for_members_in_%.*s.h",
                     FileBasename.Count, FileBasename.Start,
