@@ -9,6 +9,7 @@ ToString(metaprogramming_directives Type)
     case generate_stream: { Result = CS("generate_stream"); } break;
     case generate_static_buffer: { Result = CS("generate_static_buffer"); } break;
     case generate_string_table: { Result = CS("generate_string_table"); } break;
+    case generate_value_table: { Result = CS("generate_value_table"); } break;
   }
   return Result;
 }
@@ -22,6 +23,7 @@ ToValue(counted_string S, metaprogramming_directives* Result)
   if (StringsMatch(CS("generate_stream"), S)) { *Result = generate_stream; }
   if (StringsMatch(CS("generate_static_buffer"), S)) { *Result = generate_static_buffer; }
   if (StringsMatch(CS("generate_string_table"), S)) { *Result = generate_string_table; }
+  if (StringsMatch(CS("generate_value_table"), S)) { *Result = generate_value_table; }
 
 }
 
@@ -73,53 +75,6 @@ ToString(c_token_type Type)
     case CTokenType_EOF: { Result = CS("CTokenType_EOF"); } break;
   }
   return Result;
-}
-
-
-function void
-ToValue(counted_string S, c_token_type* Result)
-{
-  *Result = (c_token_type)0;
-  if (StringsMatch(CS("CTokenType_Unknown"), S)) { *Result = CTokenType_Unknown; }
-  if (StringsMatch(CS("CTokenType_Comment"), S)) { *Result = CTokenType_Comment; }
-  if (StringsMatch(CS("CTokenType_Identifier"), S)) { *Result = CTokenType_Identifier; }
-  if (StringsMatch(CS("CTokenType_String"), S)) { *Result = CTokenType_String; }
-  if (StringsMatch(CS("CTokenType_Char"), S)) { *Result = CTokenType_Char; }
-  if (StringsMatch(CS("CTokenType_MetaprogrammingDirective"), S)) { *Result = CTokenType_MetaprogrammingDirective; }
-  if (StringsMatch(CS("CTokenType_OpenBracket"), S)) { *Result = CTokenType_OpenBracket; }
-  if (StringsMatch(CS("CTokenType_CloseBracket"), S)) { *Result = CTokenType_CloseBracket; }
-  if (StringsMatch(CS("CTokenType_OpenBrace"), S)) { *Result = CTokenType_OpenBrace; }
-  if (StringsMatch(CS("CTokenType_CloseBrace"), S)) { *Result = CTokenType_CloseBrace; }
-  if (StringsMatch(CS("CTokenType_OpenParen"), S)) { *Result = CTokenType_OpenParen; }
-  if (StringsMatch(CS("CTokenType_CloseParen"), S)) { *Result = CTokenType_CloseParen; }
-  if (StringsMatch(CS("CTokenType_Dot"), S)) { *Result = CTokenType_Dot; }
-  if (StringsMatch(CS("CTokenType_Comma"), S)) { *Result = CTokenType_Comma; }
-  if (StringsMatch(CS("CTokenType_Semicolon"), S)) { *Result = CTokenType_Semicolon; }
-  if (StringsMatch(CS("CTokenType_Colon"), S)) { *Result = CTokenType_Colon; }
-  if (StringsMatch(CS("CTokenType_Hash"), S)) { *Result = CTokenType_Hash; }
-  if (StringsMatch(CS("CTokenType_At"), S)) { *Result = CTokenType_At; }
-  if (StringsMatch(CS("CTokenType_Space"), S)) { *Result = CTokenType_Space; }
-  if (StringsMatch(CS("CTokenType_Star"), S)) { *Result = CTokenType_Star; }
-  if (StringsMatch(CS("CTokenType_Ampersand"), S)) { *Result = CTokenType_Ampersand; }
-  if (StringsMatch(CS("CTokenType_SingleQuote"), S)) { *Result = CTokenType_SingleQuote; }
-  if (StringsMatch(CS("CTokenType_DoubleQuote"), S)) { *Result = CTokenType_DoubleQuote; }
-  if (StringsMatch(CS("CTokenType_Equals"), S)) { *Result = CTokenType_Equals; }
-  if (StringsMatch(CS("CTokenType_LT"), S)) { *Result = CTokenType_LT; }
-  if (StringsMatch(CS("CTokenType_GT"), S)) { *Result = CTokenType_GT; }
-  if (StringsMatch(CS("CTokenType_Plus"), S)) { *Result = CTokenType_Plus; }
-  if (StringsMatch(CS("CTokenType_Minus"), S)) { *Result = CTokenType_Minus; }
-  if (StringsMatch(CS("CTokenType_Percent"), S)) { *Result = CTokenType_Percent; }
-  if (StringsMatch(CS("CTokenType_Bang"), S)) { *Result = CTokenType_Bang; }
-  if (StringsMatch(CS("CTokenType_Hat"), S)) { *Result = CTokenType_Hat; }
-  if (StringsMatch(CS("CTokenType_Question"), S)) { *Result = CTokenType_Question; }
-  if (StringsMatch(CS("CTokenType_FSlash"), S)) { *Result = CTokenType_FSlash; }
-  if (StringsMatch(CS("CTokenType_BSlash"), S)) { *Result = CTokenType_BSlash; }
-  if (StringsMatch(CS("CTokenType_Tilde"), S)) { *Result = CTokenType_Tilde; }
-  if (StringsMatch(CS("CTokenType_Backtick"), S)) { *Result = CTokenType_Backtick; }
-  if (StringsMatch(CS("CTokenType_Newline"), S)) { *Result = CTokenType_Newline; }
-  if (StringsMatch(CS("CTokenType_CarrigeReturn"), S)) { *Result = CTokenType_CarrigeReturn; }
-  if (StringsMatch(CS("CTokenType_EOF"), S)) { *Result = CTokenType_EOF; }
-
 }
 
 enum c_decl_type

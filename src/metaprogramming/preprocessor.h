@@ -27,12 +27,14 @@ enum c_decl_function_type
 };
 
 // generate_string_table
+// generate_value_table
 enum metaprogramming_directives
 {
   generate_noop          = 0x0,
   generate_stream        = 0x1,
   generate_static_buffer = 0x2,
   generate_string_table  = 0x4,
+  generate_value_table   = 0x8,
 };
 
 // TODO(Jesse): Add vertical pipe |

@@ -191,9 +191,12 @@ OptionalToken(c_parse_result* Parser, c_token_type Type)
 function b32
 IsMetaprogrammingDirective(counted_string Identifier)
 {
-  b32 Result = StringsMatch(ToString(generate_stream),         Identifier) ||
-               StringsMatch(ToString(generate_static_buffer),  Identifier) ||
-               StringsMatch(ToString(generate_string_table),   Identifier);
+  b32 Result = False;
+
+  Result |= StringsMatch(ToString(generate_stream),         Identifier);
+  Result |= StringsMatch(ToString(generate_static_buffer),  Identifier);
+  Result |= StringsMatch(ToString(generate_value_table),    Identifier);
+  Result |= StringsMatch(ToString(generate_string_table),   Identifier);
 
   return Result;
 }
@@ -1795,17 +1798,24 @@ main(s32 ArgCount, const char** ArgStrings)
               /* counted_string StructName = RequireToken(Parser, CTokenType_Identifier).Value; */
             }
 
-            if (Directives & generate_string_table)
+            if (Directives & generate_value_table ||
+                Directives & generate_string_table)
             {
               Assert(Token == CToken(CS("enum")));
+              enum_def Enum = ParseEnum(Parser, Memory);
 
-              enum_def Enum =  ParseEnum(Parser, Memory);
+              if (Directives & generate_string_table)
+              {
+                counted_string NameTable = GenerateNameTableFor(&Enum, Memory);
+                OutputForThisParser = Concat(OutputForThisParser, NameTable, Memory);
+              }
 
-              counted_string NameTable = GenerateNameTableFor(&Enum, Memory);
-              counted_string ToValueTable= GenerateValueTableFor(&Enum, Memory);
+              if (Directives & generate_value_table)
+              {
+                counted_string ToValueTable = GenerateValueTableFor(&Enum, Memory);
+                OutputForThisParser = Concat(OutputForThisParser, ToValueTable, Memory);
+              }
 
-              OutputForThisParser = Concat(OutputForThisParser, NameTable, Memory);
-              OutputForThisParser = Concat(OutputForThisParser, ToValueTable, Memory);
             }
 
           } break;
