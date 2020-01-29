@@ -1840,13 +1840,20 @@ main(s32 ArgCount, const char** ArgStrings)
               }
             }
 
+            if (StringsMatch(Token.Value, CS("for_enum_values")))
+            {
+            }
+
             if (StringsMatch(Token.Value, CS("for_members_in")))
             {
               for_member_constraints Constraints = {};
               counted_string ForMembersCode = ParseForMembers(Parser, &Constraints, &Structs, Memory);              counted_string FileBasename = StripExtension(Basename(Parser->FileName));
-              counted_string ForMembersCodeFilename = CS(FormatString(Memory, "src/metaprogramming/output/%.*s_for_members_in_%.*s.h",
+              counted_string ForMembersCodeFilename = CS(FormatString(Memory,
+                    "src/metaprogramming/output/%.*s_for_members_in_%.*s.h",
                     FileBasename.Count, FileBasename.Start,
-                    Constraints.ForMemberName.Count, Constraints.ForMemberName.Start ));
+                    Constraints.ForMemberName.Count, Constraints.ForMemberName.Start
+                  ));
+
               Output(ForMembersCode, ForMembersCodeFilename, Memory);
             }
 
