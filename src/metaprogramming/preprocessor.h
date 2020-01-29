@@ -167,7 +167,6 @@ struct c_decl_stream_chunk
   c_decl_stream_chunk* Next;
 };
 
-
 struct enum_def
 {
   counted_string Name;

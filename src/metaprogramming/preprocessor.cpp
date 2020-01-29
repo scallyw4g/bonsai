@@ -209,10 +209,13 @@ IsMetaprogrammingDirective(counted_string Identifier)
 {
   b32 Result = False;
 
-  Result |= StringsMatch(ToString(generate_stream),         Identifier);
-  Result |= StringsMatch(ToString(generate_static_buffer),  Identifier);
-  Result |= StringsMatch(ToString(generate_value_table),    Identifier);
-  Result |= StringsMatch(ToString(generate_string_table),   Identifier);
+  for_enum_values( metaprogramming_directives,
+    (EnumName, EnumValue) {
+      Result |= StringsMatch(ToString(EnumName), Identifier);
+    }
+  )
+
+  #include <metaprogramming/output/preprocessor_for_enum_values_metaprogramming_directives.h>
 
   return Result;
 }
@@ -713,6 +716,24 @@ ParseDiscriminatedUnion(c_parse_result* Parser, memory_arena* Memory)
   return dUnion;
 }
 
+function enum_def*
+GetEnumByType(enum_defs* Enums, counted_string Type)
+{
+  enum_def* Result = 0;
+  for (u32 EnumIndex = 0;
+      EnumIndex < Enums->Count;
+      ++EnumIndex)
+  {
+    enum_def* Enum = Enums->Defs + EnumIndex;
+    if (StringsMatch(Enum->Name, Type)) {
+      Result = Enum;
+      break;
+    }
+  }
+
+  return Result;
+}
+
 function struct_def*
 GetStructByType(struct_defs* ProgramStructs, counted_string StructType)
 {
@@ -722,8 +743,6 @@ GetStructByType(struct_defs* ProgramStructs, counted_string StructType)
       ++StructIndex)
   {
     struct_def* Struct = ProgramStructs->Defs + StructIndex;
-    /* Print(Struct->Name); */
-    /* Log("\n"); */
     if (StringsMatch(Struct->Name, StructType))
     {
       Result = Struct;
@@ -1202,6 +1221,13 @@ PrintCDecl(c_decl* Decl, struct_defs* ProgramStructs)
 
 }
 
+struct for_enum_constraints
+{
+  // Replacement Patterns
+  counted_string TypeName;
+  counted_string ValueName;
+};
+
 struct for_member_constraints
 {
   counted_string ForMemberName;
@@ -1288,17 +1314,82 @@ HasMemberOfType(struct_def* Struct, counted_string MemberType)
 }
 
 function counted_string
+ParseForEnumValues(c_parse_result* Parser, counted_string TypeName, enum_defs* ProgramEnums, memory_arena* Memory)
+{
+  counted_string Result = {};
+
+  for_enum_constraints Constraints = {};
+
+  enum_def* Target = GetEnumByType(ProgramEnums, TypeName);
+
+  if (Target)
+  {
+    RequireToken(Parser, CTokenType_Comma);
+
+    if (OptionalToken(Parser, CToken(CTokenType_OpenParen)))
+    {
+      Constraints.TypeName = RequireToken(Parser, CTokenType_Identifier).Value;
+
+      RequireToken(Parser, CTokenType_Comma);
+      Constraints.ValueName = RequireToken(Parser, CTokenType_Identifier).Value;
+
+      RequireToken(Parser, CTokenType_CloseParen);
+    }
+
+    Assert(Constraints.TypeName.Count);
+    Assert(Constraints.ValueName.Count);
+
+    c_parse_result BodyText = *Parser;
+    BodyText.Tokens.Start = BodyText.Tokens.At;
+    EatNextScope(Parser);
+    BodyText.Tokens.End = Parser->Tokens.At;
+
+    TrimFirstToken(&BodyText, CTokenType_OpenBrace);
+    TrimLastToken(&BodyText, CTokenType_CloseBrace);
+    TrimTrailingWhitespace(&BodyText);
+
+    for (enum_field_iterator Iter = Iterator(&Target->Fields);
+        IsValid(&Iter);
+        Advance(&Iter))
+    {
+      enum_field Enum = Iter.At->Element;
+      Rewind(&BodyText.Tokens);
+      while (Remaining(&BodyText.Tokens))
+      {
+        c_token T = PopTokenRaw(&BodyText);
+        if (StringsMatch(T.Value, Constraints.TypeName))
+        {
+          Result = Concat(Result, CS(FormatString(Memory, "%.*s", Enum.Name.Count, Enum.Name.Start)), Memory);
+        }
+        else if (StringsMatch(T.Value, Constraints.ValueName))
+        {
+          Result = Concat(Result, CS(FormatString(Memory, "%.*s", Enum.Value.Count, Enum.Value.Start)), Memory);
+        }
+        else
+        {
+          Result = Concat(Result, ToString(T, Memory), Memory);
+        }
+      }
+    }
+
+  }
+
+  return Result;
+}
+
+function counted_string
 ParseForMembers(c_parse_result* Parser, for_member_constraints* Constraints, struct_defs* ProgramStructs, memory_arena* Memory)
 {
   counted_string Result = {};
 
   RequireToken(Parser, CTokenType_OpenParen);
 
-  counted_string StructType = RequireToken(Parser, CTokenType_Identifier).Value;
-  struct_def* TargetStruct = GetStructByType(ProgramStructs, StructType);
-  if (TargetStruct)
+  counted_string TypeName = RequireToken(Parser, CTokenType_Identifier).Value;
+  struct_def* Target = GetStructByType(ProgramStructs, TypeName);
+
+  if (Target)
   {
-    Constraints->ForMemberName = StructType;
+    Constraints->ForMemberName = TypeName;
     RequireToken(Parser, CTokenType_Comma);
 
     if (OptionalToken(Parser, CToken(CS("where_member_contains"))))
@@ -1333,7 +1424,7 @@ ParseForMembers(c_parse_result* Parser, for_member_constraints* Constraints, str
     TrimLastToken(&BodyText, CTokenType_CloseBrace);
     TrimTrailingWhitespace(&BodyText);
 
-    c_decl_stream_chunk* AtChunk = TargetStruct->Fields.FirstChunk;
+    c_decl_stream_chunk* AtChunk = Target->Fields.FirstChunk;
     while (AtChunk)
     {
       switch (AtChunk->Element.Type)
@@ -1401,7 +1492,7 @@ ParseForMembers(c_parse_result* Parser, for_member_constraints* Constraints, str
   }
   else
   {
-    Error("Couldn't find matching struct %.*s", (s32)StructType.Count, StructType.Start);
+    Error("Couldn't find matching struct %.*s", (s32)TypeName.Count, TypeName.Start);
   }
 
   return Result;
@@ -1859,6 +1950,7 @@ main(s32 ArgCount, const char** ArgStrings)
                 Directives & generate_string_table)
             {
               Assert(Token == CToken(CS("enum")));
+              // TODO(Jesse): Get this out of the ProgramDatatypes.Enums struct
               enum_def Enum = ParseEnum(Parser, Memory);
 
               if (Directives & generate_string_table)
@@ -1899,7 +1991,18 @@ main(s32 ArgCount, const char** ArgStrings)
 
             if (StringsMatch(Token.Value, CS("for_enum_values")))
             {
-              /* counted_string ForMembersCode = ParseForEnumValues(Parser, &Constraints, &Datatypes.Enums, Memory); */
+              RequireToken(Parser, CTokenType_OpenParen);
+              counted_string TypeName = RequireToken(Parser, CTokenType_Identifier).Value;
+
+              counted_string ForEnumValuesCode = ParseForEnumValues(Parser, TypeName, &Datatypes.Enums, Memory);
+              counted_string FileBasename = StripExtension(Basename(Parser->FileName));
+              counted_string ForMembersCodeFilename = CS(FormatString(Memory,
+                    "src/metaprogramming/output/%.*s_for_enum_values_%.*s.h",
+                    FileBasename.Count, FileBasename.Start,
+                    TypeName.Count, TypeName.Start
+                  ));
+
+              Output(ForEnumValuesCode, ForMembersCodeFilename, Memory);
             }
 
             if (StringsMatch(Token.Value, CS("for_members_in")))
