@@ -1,6 +1,3 @@
 
-#define d_union(...)
-#define for_enum_values(...)
-#define for_members_in(...)
-
+#define metaprogramming_block(...)
 #define break_here

@@ -209,10 +209,13 @@ IsMetaprogrammingDirective(counted_string Identifier)
 {
   b32 Result = False;
 
-  for_enum_values( metaprogramming_directives,
-    (EnumName, EnumValue) {
-      Result |= StringsMatch(ToString(EnumName), Identifier);
-    }
+  metaprogramming_block(
+    // for_enum_values
+    ( metaprogramming_directives,
+      (EnumName, EnumValue) {
+        Result |= StringsMatch(ToString(EnumName), Identifier);
+      }
+    )
   )
 
   #include <metaprogramming/output/preprocessor_for_enum_values_metaprogramming_directives.h>
@@ -673,7 +676,6 @@ ParseDiscriminatedUnion(c_parse_result* Parser, memory_arena* Memory)
 {
   d_union_decl dUnion = {};
 
-  RequireToken(Parser, CTokenType_OpenParen);
   dUnion.Name = RequireToken(Parser, CTokenType_Identifier).Value;
 
   RequireToken(Parser, CTokenType_Comma);
@@ -1390,8 +1392,6 @@ ParseForMembers(c_parse_result* Parser, for_member_constraints* Constraints, str
 {
   counted_string Result = {};
 
-  RequireToken(Parser, CTokenType_OpenParen);
-
   counted_string TypeName = RequireToken(Parser, CTokenType_Identifier).Value;
   struct_def* Target = GetStructByType(ProgramStructs, TypeName);
 
@@ -1898,16 +1898,6 @@ main(s32 ArgCount, const char** ArgStrings)
     program_datatypes Datatypes = ParseAllDatatypes(ParsedFiles, ParsedFiles.StructCount, ParsedFiles.EnumCount, Memory);
     Assert(ParsedFiles.Start == ParsedFiles.At);
 
-#if 0
-    for (u32 StructDefIndex = 0;
-        StructDefIndex < Structs.Count;
-        ++StructDefIndex)
-    {
-      struct_def* Struct = Structs.Defs[StructDefIndex];
-      DumpStruct(Struct);
-    }
-#endif
-
     for (u32 ParserIndex = 0;
         ParserIndex < Count(&ParsedFiles);
         ++ParserIndex)
@@ -1933,6 +1923,11 @@ main(s32 ArgCount, const char** ArgStrings)
               Token = PopToken(Parser);
             }
 
+            if (Directives == noop)
+            {
+              RuntimeBreak();
+            }
+
             if (Directives & generate_stream)
             {
               Assert(Token == CToken(CS("struct")));
@@ -1945,6 +1940,57 @@ main(s32 ArgCount, const char** ArgStrings)
             {
               Assert(Token == CToken(CS("struct")));
               /* counted_string StructName = RequireToken(Parser, CTokenType_Identifier).Value; */
+            }
+
+            if (Directives & d_union)
+            {
+              Assert(Token.Type == CTokenType_OpenParen);
+              d_union_decl dUnion = ParseDiscriminatedUnion(Parser, Memory);
+
+              if (Parser->Valid)
+              {
+                counted_string EnumString = GenerateEnumDef(&dUnion, Memory);
+                counted_string StructString = GenerateStructDef(&dUnion, Memory);
+
+                OutputForThisParser = Concat(OutputForThisParser, EnumString, Memory);
+                OutputForThisParser = Concat(OutputForThisParser, StructString, Memory);
+              }
+              else
+              {
+                Error("Parsing d_union declaration");
+              }
+            }
+
+            if (Directives & for_enum_values)
+            {
+              Assert(Token.Type == CTokenType_OpenParen);
+              counted_string TypeName = RequireToken(Parser, CTokenType_Identifier).Value;
+
+              counted_string ForEnumValuesCode = ParseForEnumValues(Parser, TypeName, &Datatypes.Enums, Memory);
+              counted_string FileBasename = StripExtension(Basename(Parser->FileName));
+              counted_string ForMembersCodeFilename = CS(FormatString(Memory,
+                    "src/metaprogramming/output/%.*s_for_enum_values_%.*s.h",
+                    FileBasename.Count, FileBasename.Start,
+                    TypeName.Count, TypeName.Start
+                  ));
+
+              Output(ForEnumValuesCode, ForMembersCodeFilename, Memory);
+            }
+
+            if (Directives & for_members_in)
+            {
+              Assert(Token.Type == CTokenType_OpenParen);
+
+              for_member_constraints Constraints = {};
+              counted_string ForMembersCode = ParseForMembers(Parser, &Constraints, &Datatypes.Structs, Memory);
+              counted_string FileBasename = StripExtension(Basename(Parser->FileName));
+              counted_string ForMembersCodeFilename = CS(FormatString(Memory,
+                    "src/metaprogramming/output/%.*s_for_members_in_%.*s.h",
+                    FileBasename.Count, FileBasename.Start,
+                    Constraints.ForMemberName.Count, Constraints.ForMemberName.Start
+                  ));
+
+              Output(ForMembersCode, ForMembersCodeFilename, Memory);
             }
 
             if (Directives & generate_value_table ||
@@ -1972,54 +2018,6 @@ main(s32 ArgCount, const char** ArgStrings)
 
           case CTokenType_Identifier:
           {
-            if (StringsMatch(Token.Value, CS("d_union")))
-            {
-              d_union_decl dUnion = ParseDiscriminatedUnion(Parser, Memory);
-
-              if (Parser->Valid)
-              {
-                counted_string EnumString = GenerateEnumDef(&dUnion, Memory);
-                counted_string StructString = GenerateStructDef(&dUnion, Memory);
-
-                OutputForThisParser = Concat(OutputForThisParser, EnumString, Memory);
-                OutputForThisParser = Concat(OutputForThisParser, StructString, Memory);
-              }
-              else
-              {
-                Error("Parsing d_union declaration");
-              }
-            }
-
-            if (StringsMatch(Token.Value, CS("for_enum_values")))
-            {
-              RequireToken(Parser, CTokenType_OpenParen);
-              counted_string TypeName = RequireToken(Parser, CTokenType_Identifier).Value;
-
-              counted_string ForEnumValuesCode = ParseForEnumValues(Parser, TypeName, &Datatypes.Enums, Memory);
-              counted_string FileBasename = StripExtension(Basename(Parser->FileName));
-              counted_string ForMembersCodeFilename = CS(FormatString(Memory,
-                    "src/metaprogramming/output/%.*s_for_enum_values_%.*s.h",
-                    FileBasename.Count, FileBasename.Start,
-                    TypeName.Count, TypeName.Start
-                  ));
-
-              Output(ForEnumValuesCode, ForMembersCodeFilename, Memory);
-            }
-
-            if (StringsMatch(Token.Value, CS("for_members_in")))
-            {
-              for_member_constraints Constraints = {};
-              counted_string ForMembersCode = ParseForMembers(Parser, &Constraints, &Datatypes.Structs, Memory);
-              counted_string FileBasename = StripExtension(Basename(Parser->FileName));
-              counted_string ForMembersCodeFilename = CS(FormatString(Memory,
-                    "src/metaprogramming/output/%.*s_for_members_in_%.*s.h",
-                    FileBasename.Count, FileBasename.Start,
-                    Constraints.ForMemberName.Count, Constraints.ForMemberName.Start
-                  ));
-
-              Output(ForMembersCode, ForMembersCodeFilename, Memory);
-            }
-
           } break;
 
           default: { } break;

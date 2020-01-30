@@ -229,39 +229,34 @@ struct ui_render_command_table_start
   ui_element_reference RelativeTo;
 };
 
-// Thing
-// d_union
-/* this should be valid d_union */
+metaprogramming_block(
+  // d_union
+  (ui_render_command,
+  {
+    ui_render_command_window_start;
+    ui_render_command_window_end;
 
-d_union(ui_render_command,
-{
-  ui_render_command_window_start;
-  ui_render_command_window_end;
+    ui_render_command_button_start;
+    ui_render_command_button_end;
 
- // Thing
- // d_union
- /* this should be valid d_union */
+    ui_render_command_table_start;
 
-  ui_render_command_button_start;
-  ui_render_command_button_end;
+    ui_render_command_column_start;
+    ui_render_command_column_end;
 
-  ui_render_command_table_start;
+    ui_render_command_text;
+    ui_render_command_text_at;
 
-  ui_render_command_column_start;
-  ui_render_command_column_end;
+    ui_render_command_textured_quad;
+    ui_render_command_untextured_quad;
+    ui_render_command_untextured_quad_at;
 
-  ui_render_command_text;
-  ui_render_command_text_at;
+    ui_render_command_border;
 
-  ui_render_command_textured_quad;
-  ui_render_command_untextured_quad;
-  ui_render_command_untextured_quad_at;
-
-  ui_render_command_border;
-
-  ui_render_command_new_row   enum_only;
-  ui_render_command_table_end enum_only;
-})
+    ui_render_command_new_row   enum_only;
+    ui_render_command_table_end enum_only;
+  })
+)
 
 #include <metaprogramming/output/debug_ui.h>
 

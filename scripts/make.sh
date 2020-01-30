@@ -238,6 +238,18 @@ function BuildWithClang {
   echo -e ""
 }
 
+function BuildWithEmcc {
+  which emcc > /dev/null
+  [ $? -ne 0 ] && echo -e "Please install emcc" && exit 1
+
+  emcc src/font/ttf.cpp              \
+    -D BONSAI_INTERNAL=1             \
+    -I src                           \
+    -I /usr/include                  \
+    -I /usr/include/x86_64-linux-gnu \
+    -o bin/emscripten/ttf.html
+}
+
 
 if [ ! -d "$BIN" ]; then
   mkdir "$BIN"
@@ -247,8 +259,8 @@ if [ ! -d "$BIN_TEST" ]; then
   mkdir "$BIN_TEST"
 fi
 
-# rm src/metaprogramming/output/*
-# git checkout src/metaprogramming/output
+rm src/metaprogramming/output/*
+git checkout src/metaprogramming/output
 
 BuildPreprocessor
 [ ! -x bin/preprocessor ] && echo -e "$Failed Couldn't find preprocessor, exiting." && exit 1
@@ -264,17 +276,7 @@ bin/preprocessor $SOURCE_FILES
 [ $? -ne 0 ] && echo "" && echo -e "$Failed Preprocessing failed, exiting." && exit 1
 
 if [ "$EMCC" == "1" ]; then
-
-  which emcc > /dev/null
-  [ $? -ne 0 ] && echo -e "Please install emcc" && exit 1
-
-  emcc src/font/ttf.cpp              \
-    -D BONSAI_INTERNAL=1             \
-    -I src                           \
-    -I /usr/include                  \
-    -I /usr/include/x86_64-linux-gnu \
-    -o bin/emscripten/ttf.html
-
+  time BuildWithEmcc
 else
   time BuildWithClang
 fi

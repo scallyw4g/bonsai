@@ -30,11 +30,15 @@ enum c_decl_function_type
 // generate_value_table
 enum metaprogramming_directives
 {
-  generate_noop          = 0x0,
-  generate_stream        = 0x1,
-  generate_static_buffer = 0x2,
-  generate_string_table  = 0x4,
-  generate_value_table   = 0x8,
+  noop                   = 0x00,
+  generate_stream        = 0x01,
+  generate_static_buffer = 0x02,
+  generate_string_table  = 0x04,
+  generate_value_table   = 0x08,
+
+  for_enum_values        = 0x10,
+  for_members_in         = 0x20,
+  d_union                = 0x40,
 };
 
 // TODO(Jesse): Add vertical pipe |
@@ -85,12 +89,15 @@ enum c_token_type
   CTokenType_EOF           = EOF,
 };
 
-d_union(c_decl,
-{
-  c_decl_variable;
-  c_decl_function;
-  c_decl_union;
-})
+metaprogramming_block(
+  // d_union
+  (c_decl,
+  {
+    c_decl_variable;
+    c_decl_function;
+    c_decl_union;
+  })
+)
 
 // TODO(Jesse): Nested d-unions??! @mind-blown
 struct c_decl_function

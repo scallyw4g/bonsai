@@ -61,11 +61,14 @@ struct work_queue_entry_init_world_chunk
 
 
 
-d_union(work_queue_entry,
-{
-  work_queue_entry_init_world_chunk;
-  work_queue_entry_copy_buffer;
-})
+metaprogramming_block(
+  // d_union
+  (work_queue_entry,
+  {
+    work_queue_entry_init_world_chunk;
+    work_queue_entry_copy_buffer;
+  })
+)
 
 #include <metaprogramming/output/platform.h>
 
