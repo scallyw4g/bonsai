@@ -1,3 +1,3 @@
 
-#define metaprogramming_block(...)
+#define meta(...)
 #define break_here

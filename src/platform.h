@@ -61,12 +61,11 @@ struct work_queue_entry_init_world_chunk
 
 
 
-metaprogramming_block(
-  // d_union
-  (work_queue_entry,
+meta(
+  d_union( work_queue_entry,
   {
-    work_queue_entry_init_world_chunk;
-    work_queue_entry_copy_buffer;
+    work_queue_entry_init_world_chunk,
+    work_queue_entry_copy_buffer,
   })
 )
 

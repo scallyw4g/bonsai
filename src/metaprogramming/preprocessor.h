@@ -26,8 +26,8 @@ enum c_decl_function_type
   CFunctionType_Destructor,
 };
 
-// generate_string_table
-// generate_value_table
+meta( generate_string_table
+      generate_value_table  )
 enum metaprogramming_directives
 {
   noop                   = 0x00,
@@ -42,7 +42,7 @@ enum metaprogramming_directives
 };
 
 // TODO(Jesse): Add vertical pipe |
-// generate_string_table
+meta(generate_string_table)
 enum c_token_type
 {
   CTokenType_Unknown,
@@ -51,8 +51,6 @@ enum c_token_type
   CTokenType_Identifier,
   CTokenType_String,
   CTokenType_Char,
-
-  CTokenType_MetaprogrammingDirective,
 
   CTokenType_OpenBracket   = '[',
   CTokenType_CloseBracket  = ']',
@@ -89,13 +87,12 @@ enum c_token_type
   CTokenType_EOF           = EOF,
 };
 
-metaprogramming_block(
-  // d_union
-  (c_decl,
+meta(
+  d_union(c_decl,
   {
-    c_decl_variable;
-    c_decl_function;
-    c_decl_union;
+    c_decl_variable,
+    c_decl_function,
+    c_decl_union,
   })
 )
 
@@ -151,14 +148,14 @@ struct c_decl_union
   struct_def Body;
 };
 
-// generate_stream
+meta(generate_stream)
 struct enum_field
 {
   counted_string Name;
   counted_string Value;
 };
 
-// generate_stream
+meta(generate_stream)
 struct d_union_member
 {
   counted_string Type;

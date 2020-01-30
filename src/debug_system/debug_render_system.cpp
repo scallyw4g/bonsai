@@ -1499,9 +1499,8 @@ FindAbsoluteDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, u32 First
     ui_render_command* Command = GetCommand(CommandBuffer, CommandIndex);
     switch(Command->Type)
     {
-      metaprogramming_block(
-        // for_members_in
-        (ui_render_command,
+      meta(
+        for_members_in( ui_render_command,
           where_member_contains layout,
           (MemberTypeEnumTag, MemberType, MemberValue) {
             case MemberTypeEnumTag:
