@@ -1313,6 +1313,21 @@ HasMemberOfType(struct_def* Struct, counted_string MemberType)
   return Result;
 }
 
+function c_parse_result
+GetBodyTextForNextScope(c_parse_result* Parser)
+{
+  c_parse_result BodyText = *Parser;
+  BodyText.Tokens.Start = BodyText.Tokens.At;
+  EatNextScope(Parser);
+  BodyText.Tokens.End = Parser->Tokens.At;
+
+  TrimFirstToken(&BodyText, CTokenType_OpenBrace);
+  TrimLastToken(&BodyText, CTokenType_CloseBrace);
+  TrimTrailingWhitespace(&BodyText);
+
+  return BodyText;
+}
+
 function counted_string
 ParseForEnumValues(c_parse_result* Parser, counted_string TypeName, enum_defs* ProgramEnums, memory_arena* Memory)
 {
@@ -1339,14 +1354,7 @@ ParseForEnumValues(c_parse_result* Parser, counted_string TypeName, enum_defs* P
     Assert(Constraints.TypeName.Count);
     Assert(Constraints.ValueName.Count);
 
-    c_parse_result BodyText = *Parser;
-    BodyText.Tokens.Start = BodyText.Tokens.At;
-    EatNextScope(Parser);
-    BodyText.Tokens.End = Parser->Tokens.At;
-
-    TrimFirstToken(&BodyText, CTokenType_OpenBrace);
-    TrimLastToken(&BodyText, CTokenType_CloseBrace);
-    TrimTrailingWhitespace(&BodyText);
+    c_parse_result BodyText = GetBodyTextForNextScope(Parser);
 
     for (enum_field_iterator Iter = Iterator(&Target->Fields);
         IsValid(&Iter);
@@ -1415,14 +1423,7 @@ ParseForMembers(c_parse_result* Parser, for_member_constraints* Constraints, str
     Assert(Constraints->TypeName.Count);
     Assert(Constraints->ValueName.Count);
 
-    c_parse_result BodyText = *Parser;
-    BodyText.Tokens.Start = BodyText.Tokens.At;
-    EatNextScope(Parser);
-    BodyText.Tokens.End = Parser->Tokens.At;
-
-    TrimFirstToken(&BodyText, CTokenType_OpenBrace);
-    TrimLastToken(&BodyText, CTokenType_CloseBrace);
-    TrimTrailingWhitespace(&BodyText);
+    c_parse_result BodyText = GetBodyTextForNextScope(Parser);
 
     c_decl_stream_chunk* AtChunk = Target->Fields.FirstChunk;
     while (AtChunk)
