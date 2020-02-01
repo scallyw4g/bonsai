@@ -20,6 +20,7 @@ EXAMPLES="$ROOT/examples"
 TESTS="$ROOT/tests"
 BIN="$ROOT/bin"
 BIN_TEST="$BIN/tests"
+META_OUT="$SRC/metaprogramming/output"
 
 function SetOutputBinaryPathBasename()
 {
@@ -259,16 +260,20 @@ if [ ! -d "$BIN_TEST" ]; then
   mkdir "$BIN_TEST"
 fi
 
-# rm src/metaprogramming/output/*
-# git checkout src/metaprogramming/output
+if [ ! -d "$BIN_TEST" ]; then
+  mkdir "$BIN_TEST"
+fi
+
+
+SOURCE_FILES=$(find src -type f -not -wholename "src/metaprogramming/defines.h" | tr '\n' ' ')
+
+rm "$META_OUT/*"
+git checkout "$META_OUT"
+
+bin/preprocessor $SOURCE_FILES
 
 BuildPreprocessor
 [ ! -x bin/preprocessor ] && echo -e "$Failed Couldn't find preprocessor, exiting." && exit 1
-
-rm src/metaprogramming/output/*
-git checkout src/metaprogramming/output
-
-SOURCE_FILES=$(find src -type f -not -wholename "src/metaprogramming/defines.h" | tr '\n' ' ')
 
 ColorizeTitle "Preprocessing"
 bin/preprocessor $SOURCE_FILES

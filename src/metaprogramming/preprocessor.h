@@ -52,8 +52,6 @@ enum c_token_type
   CTokenType_String,
   CTokenType_Char,
 
-  CTokenType_PreprocessorInclude,
-
   CTokenType_OpenBracket   = '[',
   CTokenType_CloseBracket  = ']',
   CTokenType_OpenBrace     = '{',

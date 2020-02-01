@@ -258,27 +258,10 @@ TokenizeFile(counted_string FileName, memory_arena* Memory)
         T.Value = PopQuotedString(&SourceFileStream);
       } break;
 
-#if 0
-      case CTokenType_Hash:
-      {
-        NextT = GetToken(&SourceFileStream, 1);
-        if (NextT.Type == CTokenType_LT)
-        {
-
-        }
-      } break;
-#endif
-
       case CTokenType_Unknown:
       {
         T.Type = CTokenType_Identifier;
         T.Value = PopIdentifier(&SourceFileStream);
-
-        /* if (StringsMatch(T.Value, CS("meta"))) */
-        /* { */
-        /*   c_token EmptyIncludeTag = CToken(CS("")); */
-        /*   Push(EmptyIncludeTag, &Result.Tokens); */
-        /* } */
 
         if (StringsMatch(T.Value, CS("enum")))
         {
