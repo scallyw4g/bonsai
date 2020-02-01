@@ -265,8 +265,8 @@ fi
 BuildPreprocessor
 [ ! -x bin/preprocessor ] && echo -e "$Failed Couldn't find preprocessor, exiting." && exit 1
 
-# rm src/metaprogramming/output/*
-# git checkout src/metaprogramming/output
+rm src/metaprogramming/output/*
+git checkout src/metaprogramming/output
 
 SOURCE_FILES=$(find src -type f -not -wholename "src/metaprogramming/defines.h" | tr '\n' ' ')
 

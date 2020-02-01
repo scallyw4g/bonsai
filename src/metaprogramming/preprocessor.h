@@ -52,6 +52,8 @@ enum c_token_type
   CTokenType_String,
   CTokenType_Char,
 
+  CTokenType_PreprocessorInclude,
+
   CTokenType_OpenBracket   = '[',
   CTokenType_CloseBracket  = ']',
   CTokenType_OpenBrace     = '{',
@@ -355,3 +357,60 @@ AllocateTokenBuffer(memory_arena* Memory, u32 Count)
 
   return Result;
 }
+
+c_token
+GetToken(ansi_stream* Stream, u32 Lookahead = 0)
+{
+  c_token Result = {};
+
+  if (Stream->At+Lookahead < Stream->End)
+  {
+    char At = *(Stream->At+Lookahead);
+    switch (At)
+    {
+      case CTokenType_OpenBracket:
+      case CTokenType_CloseBracket:
+      case CTokenType_OpenBrace:
+      case CTokenType_CloseBrace:
+      case CTokenType_OpenParen:
+      case CTokenType_CloseParen:
+      case CTokenType_Dot:
+      case CTokenType_Comma:
+      case CTokenType_Semicolon:
+      case CTokenType_Colon:
+      case CTokenType_Hash:
+      case CTokenType_At:
+      case CTokenType_Space:
+      case CTokenType_Star:
+      case CTokenType_Ampersand:
+      case CTokenType_SingleQuote:
+      case CTokenType_DoubleQuote:
+      case CTokenType_Equals:
+      case CTokenType_LT:
+      case CTokenType_GT:
+      case CTokenType_Plus:
+      case CTokenType_Minus:
+      case CTokenType_Percent:
+      case CTokenType_Bang:
+      case CTokenType_Hat:
+      case CTokenType_Question:
+      case CTokenType_FSlash:
+      case CTokenType_BSlash:
+      case CTokenType_Tilde:
+      case CTokenType_Backtick:
+      case CTokenType_Newline:
+      case CTokenType_CarrigeReturn:
+      case CTokenType_EOF:
+      {
+        Result = { .Type = (c_token_type)At };
+      } break;
+    }
+  }
+  else
+  {
+    Warn("Attempted to get token past end of stream on file : %.*s", (u32)Stream->Filename.Count, Stream->Filename.Start);
+  }
+
+  return Result;
+}
+

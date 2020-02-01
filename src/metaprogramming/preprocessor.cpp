@@ -1,61 +1,5 @@
 #include <metaprogramming/preprocessor.h>
 
-c_token
-GetToken(ansi_stream* Stream, u32 Lookahead = 0)
-{
-  c_token Result = {};
-
-  if (Stream->At+Lookahead < Stream->End)
-  {
-    char At = *(Stream->At+Lookahead);
-    switch (At)
-    {
-      case CTokenType_OpenBracket:
-      case CTokenType_CloseBracket:
-      case CTokenType_OpenBrace:
-      case CTokenType_CloseBrace:
-      case CTokenType_OpenParen:
-      case CTokenType_CloseParen:
-      case CTokenType_Dot:
-      case CTokenType_Comma:
-      case CTokenType_Semicolon:
-      case CTokenType_Colon:
-      case CTokenType_Hash:
-      case CTokenType_At:
-      case CTokenType_Space:
-      case CTokenType_Star:
-      case CTokenType_Ampersand:
-      case CTokenType_SingleQuote:
-      case CTokenType_DoubleQuote:
-      case CTokenType_Equals:
-      case CTokenType_LT:
-      case CTokenType_GT:
-      case CTokenType_Plus:
-      case CTokenType_Minus:
-      case CTokenType_Percent:
-      case CTokenType_Bang:
-      case CTokenType_Hat:
-      case CTokenType_Question:
-      case CTokenType_FSlash:
-      case CTokenType_BSlash:
-      case CTokenType_Tilde:
-      case CTokenType_Backtick:
-      case CTokenType_Newline:
-      case CTokenType_CarrigeReturn:
-      case CTokenType_EOF:
-      {
-        Result = { .Type = (c_token_type)At };
-      } break;
-    }
-  }
-  else
-  {
-    Warn("Attempted to get token past end of stream on file : %.*s", (u32)Stream->Filename.Count, Stream->Filename.Start);
-  }
-
-  return Result;
-}
-
 function b32
 IsWhitespace(c_token_type Type)
 {
@@ -314,10 +258,27 @@ TokenizeFile(counted_string FileName, memory_arena* Memory)
         T.Value = PopQuotedString(&SourceFileStream);
       } break;
 
+#if 0
+      case CTokenType_Hash:
+      {
+        NextT = GetToken(&SourceFileStream, 1);
+        if (NextT.Type == CTokenType_LT)
+        {
+
+        }
+      } break;
+#endif
+
       case CTokenType_Unknown:
       {
         T.Type = CTokenType_Identifier;
         T.Value = PopIdentifier(&SourceFileStream);
+
+        /* if (StringsMatch(T.Value, CS("meta"))) */
+        /* { */
+        /*   c_token EmptyIncludeTag = CToken(CS("")); */
+        /*   Push(EmptyIncludeTag, &Result.Tokens); */
+        /* } */
 
         if (StringsMatch(T.Value, CS("enum")))
         {

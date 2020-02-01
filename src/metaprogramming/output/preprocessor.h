@@ -45,6 +45,7 @@ ToString(c_token_type Type)
     case CTokenType_Identifier: { Result = CS("CTokenType_Identifier"); } break;
     case CTokenType_String: { Result = CS("CTokenType_String"); } break;
     case CTokenType_Char: { Result = CS("CTokenType_Char"); } break;
+    case CTokenType_PreprocessorInclude: { Result = CS("CTokenType_PreprocessorInclude"); } break;
     case CTokenType_OpenBracket: { Result = CS("CTokenType_OpenBracket"); } break;
     case CTokenType_CloseBracket: { Result = CS("CTokenType_CloseBracket"); } break;
     case CTokenType_OpenBrace: { Result = CS("CTokenType_OpenBrace"); } break;
