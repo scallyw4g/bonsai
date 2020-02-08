@@ -160,7 +160,6 @@ IsMetaprogrammingDirective(counted_string Identifier)
       }
     )
   )
-
   #include <metaprogramming/output/preprocessor_for_enum_values_metaprogramming_directives.h>
 
   return Result;
@@ -1162,7 +1161,6 @@ struct for_enum_constraints
 
 struct for_member_constraints
 {
-  counted_string ForMemberName;
   counted_string MemberContains;
 
   // Replacement Patterns
@@ -1318,113 +1316,105 @@ ParseForEnumValues(c_parse_result* Parser, counted_string TypeName, enum_defs* P
 }
 
 function counted_string
-ParseForMembers(c_parse_result* Parser, for_member_constraints* Constraints, struct_defs* ProgramStructs, memory_arena* Memory)
+ParseForMembers(c_parse_result* Parser, for_member_constraints* Constraints, struct_def* Target, struct_defs* ProgramStructs, memory_arena* Memory)
 {
   counted_string Result = {};
 
-  counted_string TypeName = RequireToken(Parser, CTokenType_Identifier).Value;
-  struct_def* Target = GetStructByType(ProgramStructs, TypeName);
+  RequireToken(Parser, CTokenType_Comma);
 
-  if (Target)
+  if (OptionalToken(Parser, CToken(CS("where_member_contains"))))
   {
-    Constraints->ForMemberName = TypeName;
+    Constraints->MemberContains = RequireToken(Parser, CTokenType_Identifier).Value;
+  }
+
+  if (OptionalToken(Parser, CToken(CTokenType_Comma)))
+  {
+    RequireToken(Parser, CTokenType_OpenParen);
+    Constraints->TypeTag = RequireToken(Parser, CTokenType_Identifier).Value;
+
     RequireToken(Parser, CTokenType_Comma);
+    Constraints->TypeName = RequireToken(Parser, CTokenType_Identifier).Value;
 
-    if (OptionalToken(Parser, CToken(CS("where_member_contains"))))
+    RequireToken(Parser, CTokenType_Comma);
+    Constraints->ValueName = RequireToken(Parser, CTokenType_Identifier).Value;
+
+    RequireToken(Parser, CTokenType_CloseParen);
+  }
+
+  Assert(Constraints->TypeTag.Count);
+  Assert(Constraints->TypeName.Count);
+  Assert(Constraints->ValueName.Count);
+
+  c_parse_result BodyText = GetBodyTextForNextScope(Parser);
+
+  RequireToken(Parser, CTokenType_CloseParen);
+  RequireToken(Parser, CTokenType_CloseParen);
+
+  c_decl_stream_chunk* AtChunk = Target->Fields.FirstChunk;
+  while (AtChunk)
+  {
+    switch (AtChunk->Element.Type)
     {
-      Constraints->MemberContains = RequireToken(Parser, CTokenType_Identifier).Value;
-    }
-
-    if (OptionalToken(Parser, CToken(CTokenType_Comma)))
-    {
-      RequireToken(Parser, CTokenType_OpenParen);
-      Constraints->TypeTag = RequireToken(Parser, CTokenType_Identifier).Value;
-
-      RequireToken(Parser, CTokenType_Comma);
-      Constraints->TypeName = RequireToken(Parser, CTokenType_Identifier).Value;
-
-      RequireToken(Parser, CTokenType_Comma);
-      Constraints->ValueName = RequireToken(Parser, CTokenType_Identifier).Value;
-
-      RequireToken(Parser, CTokenType_CloseParen);
-    }
-
-    Assert(Constraints->TypeTag.Count);
-    Assert(Constraints->TypeName.Count);
-    Assert(Constraints->ValueName.Count);
-
-    c_parse_result BodyText = GetBodyTextForNextScope(Parser);
-
-    c_decl_stream_chunk* AtChunk = Target->Fields.FirstChunk;
-    while (AtChunk)
-    {
-      switch (AtChunk->Element.Type)
+      case type_c_decl_variable:
       {
-        case type_c_decl_variable:
-        {
-          // TODO(Jesse): Do we actually do anything here?
-        } break;
+        // TODO(Jesse): Do we actually do anything here?
+      } break;
 
-        case type_c_decl_union:
+      case type_c_decl_union:
+      {
+        for (c_decl_iterator Iter = CDIterator(&AtChunk->Element.c_decl_union.Body.Fields);
+            IsValid(&Iter);
+            Advance(&Iter))
         {
-          for (c_decl_iterator Iter = CDIterator(&AtChunk->Element.c_decl_union.Body.Fields);
-              IsValid(&Iter);
-              Advance(&Iter))
+          if (Iter.At->Element.Type == type_c_decl_variable)
           {
-            if (Iter.At->Element.Type == type_c_decl_variable)
+            struct_def* Struct = GetStructByType(ProgramStructs, Iter.At->Element.c_decl_variable.Type);
+            if (Struct)
             {
-              struct_def* Struct = GetStructByType(ProgramStructs, Iter.At->Element.c_decl_variable.Type);
-              if (Struct)
+              if (HasMemberOfType(Struct, Constraints->MemberContains))
               {
-                if (HasMemberOfType(Struct, Constraints->MemberContains))
+                Rewind(&BodyText.Tokens);
+                while (Remaining(&BodyText.Tokens))
                 {
-                  Rewind(&BodyText.Tokens);
-                  while (Remaining(&BodyText.Tokens))
+                  c_token T = PopTokenRaw(&BodyText);
+                  if (StringsMatch(T.Value, Constraints->TypeTag))
                   {
-                    c_token T = PopTokenRaw(&BodyText);
-                    if (StringsMatch(T.Value, Constraints->TypeTag))
-                    {
-                      Result = Concat(Result, CS(FormatString(Memory, "type_%.*s", Iter.At->Element.c_decl_variable.Type.Count, Iter.At->Element.c_decl_variable.Type.Start)), Memory);
-                    }
-                    else if (StringsMatch(T.Value, Constraints->TypeName))
-                    {
-                      Result = Concat(Result, CS(FormatString(Memory, "%.*s", Iter.At->Element.c_decl_variable.Type.Count, Iter.At->Element.c_decl_variable.Type.Start)), Memory);
-                    }
-                    else if (StringsMatch(T.Value, Constraints->ValueName))
-                    {
-                      Result = Concat(Result, CS(FormatString(Memory, "%.*s", Iter.At->Element.c_decl_variable.Name.Count, Iter.At->Element.c_decl_variable.Name.Start)), Memory);
-                    }
-                    else
-                    {
-                      Result = Concat(Result, ToString(T, Memory), Memory);
-                    }
+                    Result = Concat(Result, CS(FormatString(Memory, "type_%.*s", Iter.At->Element.c_decl_variable.Type.Count, Iter.At->Element.c_decl_variable.Type.Start)), Memory);
+                  }
+                  else if (StringsMatch(T.Value, Constraints->TypeName))
+                  {
+                    Result = Concat(Result, CS(FormatString(Memory, "%.*s", Iter.At->Element.c_decl_variable.Type.Count, Iter.At->Element.c_decl_variable.Type.Start)), Memory);
+                  }
+                  else if (StringsMatch(T.Value, Constraints->ValueName))
+                  {
+                    Result = Concat(Result, CS(FormatString(Memory, "%.*s", Iter.At->Element.c_decl_variable.Name.Count, Iter.At->Element.c_decl_variable.Name.Start)), Memory);
+                  }
+                  else
+                  {
+                    Result = Concat(Result, ToString(T, Memory), Memory);
                   }
                 }
               }
-              else
-              {
-                Error("Couldn't find struct type %*.s", (u32)Iter.At->Element.c_decl_variable.Name.Count, Iter.At->Element.c_decl_variable.Name.Start);
-              }
-
             }
             else
             {
-              Error("Nested structs/unions and function pointers unsupported.");
+              Error("Couldn't find struct type %*.s", (u32)Iter.At->Element.c_decl_variable.Name.Count, Iter.At->Element.c_decl_variable.Name.Start);
             }
+
           }
-        } break;
+          else
+          {
+            Error("Nested structs/unions and function pointers unsupported.");
+          }
+        }
+      } break;
 
-        InvalidDefaultCase;
-      }
-
-      AtChunk = AtChunk->Next;
+      InvalidDefaultCase;
     }
 
+    AtChunk = AtChunk->Next;
   }
-  else
-  {
-    Error("Couldn't find matching struct %.*s", (s32)TypeName.Count, TypeName.Start);
-  }
+
 
   return Result;
 }
@@ -1889,15 +1879,26 @@ main(s32 ArgCount, const char** ArgStrings)
               {
                 RequireToken(Parser, CTokenType_OpenParen);
                 for_member_constraints Constraints = {};
-                counted_string ForMembersCode = ParseForMembers(Parser, &Constraints, &Datatypes.Structs, Memory);
-                counted_string FileBasename = StripExtension(Basename(Parser->FileName));
-                counted_string ForMembersCodeFilename = CS(FormatString(Memory,
-                      "src/metaprogramming/output/%.*s_for_members_in_%.*s.h",
-                      FileBasename.Count, FileBasename.Start,
-                      Constraints.ForMemberName.Count, Constraints.ForMemberName.Start
-                    ));
 
-                Output(ForMembersCode, ForMembersCodeFilename, Memory);
+                counted_string TypeName = RequireToken(Parser, CTokenType_Identifier).Value;
+                struct_def* Target = GetStructByType(&Datatypes.Structs, TypeName);
+
+                if (Target)
+                {
+                  counted_string ForMembersCode = ParseForMembers(Parser, &Constraints, Target, &Datatypes.Structs, Memory);
+                  counted_string FileBasename = StripExtension(Basename(Parser->FileName));
+                  counted_string ForMembersCodeFilename = CS(FormatString(Memory,
+                        "src/metaprogramming/output/%.*s_for_members_in_%.*s.h",
+                        FileBasename.Count, FileBasename.Start,
+                        TypeName.Count, TypeName.Start
+                      ));
+
+                  Output(ForMembersCode, ForMembersCodeFilename, Memory);
+                }
+                else
+                {
+                  Error("Couldn't find matching struct %.*s", (s32)TypeName.Count, TypeName.Start);
+                }
               }
               else
               {
@@ -1915,11 +1916,8 @@ main(s32 ArgCount, const char** ArgStrings)
                 Assert(Token.Type == CTokenType_CloseParen);
 
                 Token = RequireToken(Parser, CTokenType_Identifier);
-                if (Directives == noop)
-                {
-                  RuntimeBreak();
-                }
 
+                Assert(Directives);
                 if (Directives & generate_stream)
                 {
                   Assert(Token == CToken(CS("struct")));
@@ -1938,21 +1936,32 @@ main(s32 ArgCount, const char** ArgStrings)
                     Directives & generate_string_table)
                 {
                   Assert(Token == CToken(CS("enum")));
-                  // TODO(Jesse): Get this out of the ProgramDatatypes.Enums struct
-                  enum_def Enum = ParseEnum(Parser, Memory);
+                  counted_string EnumName = RequireToken(Parser, CTokenType_Identifier).Value;
+                  enum_def* Enum = GetEnumByType(&Datatypes.Enums, EnumName);
 
                   if (Directives & generate_string_table)
                   {
-                    counted_string NameTable = GenerateNameTableFor(&Enum, Memory);
+                    counted_string NameTable = GenerateNameTableFor(Enum, Memory);
                     OutputForThisParser = Concat(OutputForThisParser, NameTable, Memory);
                   }
 
                   if (Directives & generate_value_table)
                   {
-                    counted_string ToValueTable = GenerateValueTableFor(&Enum, Memory);
+                    counted_string ToValueTable = GenerateValueTableFor(Enum, Memory);
                     OutputForThisParser = Concat(OutputForThisParser, ToValueTable, Memory);
                   }
                 }
+
+                EatNextScope(Parser);
+              }
+
+              if (OptionalToken(Parser, CTokenType_Hash))
+              {
+                while (PeekToken(Parser).Type != CTokenType_GT)
+                {
+                  PopToken(Parser);
+                }
+                RequireToken(Parser, CTokenType_GT);
               }
 
             }

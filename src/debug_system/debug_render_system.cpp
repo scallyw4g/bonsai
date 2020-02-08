@@ -1511,7 +1511,6 @@ FindAbsoluteDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, u32 First
           }
         )
       )
-      // TODO(Jesse): Have the preprocessor add this (or more likely a generated..) include tag
       #include <metaprogramming/output/debug_render_system_for_members_in_ui_render_command.h>
 
       default: {} break;

@@ -40,6 +40,7 @@ enum metaprogramming_directives
   for_members_in         = 0x20,
   d_union                = 0x40,
 };
+/* #include <> */
 
 // TODO(Jesse): Add vertical pipe |
 meta(generate_string_table)
@@ -86,6 +87,7 @@ enum c_token_type
   CTokenType_CarrigeReturn = '\r',
   CTokenType_EOF           = EOF,
 };
+/* #include <> */
 
 meta(
   d_union(c_decl,
@@ -95,6 +97,7 @@ meta(
     c_decl_union,
   })
 )
+/* #include <> */
 
 // TODO(Jesse): Nested d-unions??! @mind-blown
 struct c_decl_function
@@ -154,6 +157,7 @@ struct enum_field
   counted_string Name;
   counted_string Value;
 };
+/* #include <> */
 
 meta(generate_stream)
 struct d_union_member
@@ -162,7 +166,6 @@ struct d_union_member
   counted_string Name;
   d_union_flags Flags;
 };
-
 #include <metaprogramming/output/preprocessor.h>
 
 struct c_decl_stream_chunk
