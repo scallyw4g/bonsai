@@ -265,11 +265,13 @@ if [ ! -d "$BIN_TEST" ]; then
 fi
 
 
+
+rm -Rf "$META_OUT/*"
+# git checkout "$META_OUT"
+
 SOURCE_FILES=$(find src -type f -not -wholename "src/metaprogramming/defines.h" | tr '\n' ' ')
 
-rm "$META_OUT/*"
-git checkout "$META_OUT"
-
+ColorizeTitle "Preprocessing"
 bin/preprocessor $SOURCE_FILES
 
 BuildPreprocessor

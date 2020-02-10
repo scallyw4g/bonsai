@@ -287,12 +287,6 @@ PrintToken(c_token Token)
 {
   switch (Token.Type)
   {
-    case CTokenType_Comment:
-    case CTokenType_Identifier:
-    {
-      Log("%.*s", Token.Value.Count, Token.Value.Start);
-    } break;
-
     case CTokenType_String:
     {
       Log("\"%.*s\"", Token.Value.Count, Token.Value.Start);
@@ -305,7 +299,14 @@ PrintToken(c_token Token)
 
     default:
     {
-      Log("%c", Token.Type);
+      if (Token.Value.Count)
+      {
+        Log("%.*s", Token.Value.Count, Token.Value.Start);
+      }
+      else
+      {
+        Log("%c", Token.Type);
+      }
     }
   }
 }

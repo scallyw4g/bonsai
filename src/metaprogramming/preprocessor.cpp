@@ -236,11 +236,14 @@ TokenizeFile(counted_string FileName, memory_arena* Memory)
           {
             T.Type = CTokenType_Comment;
             T.Value = ReadUntilTerminatorString(&SourceFileStream, CS("*/"));
+            Advance(&SourceFileStream);
+            Advance(&SourceFileStream);
           } break;
 
           default:
           {
-            ++SourceFileStream.At;
+            T.Type = CTokenType_FSlash;
+            Advance(&SourceFileStream);
           } break;
         }
       } break;
@@ -276,7 +279,7 @@ TokenizeFile(counted_string FileName, memory_arena* Memory)
 
       default:
       {
-        ++SourceFileStream.At;
+        Advance(&SourceFileStream);
       } break;
     }
 
@@ -481,6 +484,7 @@ OutputParsingError(c_parse_result* Parser, c_token* ErrorToken, c_token_type Exp
     {
       Error("Determining where the error occured");
       Log("%s:%u:0\n", __FILE__, __LINE__);
+      Log("Error was : %.*s", ErrorString.Count, ErrorString.Start);
     }
 
   }
@@ -633,6 +637,7 @@ ParseDiscriminatedUnion(c_parse_result* Parser, memory_arena* Memory)
 
       case CTokenType_CloseBrace:
       {
+        RequireToken(Parser, CTokenType_CloseParen);
         RequireToken(Parser, CTokenType_CloseParen);
         Complete = True;
       } break;
@@ -1065,7 +1070,7 @@ ParseDeclaration(c_parse_result* Parser, counted_string StructName, memory_arena
             }
           } break;
 
-          InvalidDefaultWhileParsing(Parser, CS("While parsing decl type."));
+          InvalidDefaultWhileParsing(Parser, CS("While parsing decl type 0."));
         }
 
         continue;
@@ -1073,7 +1078,7 @@ ParseDeclaration(c_parse_result* Parser, counted_string StructName, memory_arena
 
     } break;
 
-    InvalidDefaultWhileParsing(Parser, CS("While parsing decl type."));
+    InvalidDefaultWhileParsing(Parser, CS("While parsing decl type 1."));
   }
 
   if (!Unnamed && Result.Type == type_c_decl_variable)
@@ -1312,6 +1317,8 @@ ParseForEnumValues(c_parse_result* Parser, counted_string TypeName, enum_defs* P
 
   }
 
+  RequireToken(Parser, CTokenType_CloseParen);
+  RequireToken(Parser, CTokenType_CloseParen);
   return Result;
 }
 
@@ -1848,6 +1855,7 @@ main(s32 ArgCount, const char** ArgStrings)
 
                 if (Parser->Valid)
                 {
+                  // TODO(Jesse): Add dUnion to the ProgramStructs list
                   counted_string EnumString = GenerateEnumDef(&dUnion, Memory);
                   counted_string StructString = GenerateStructDef(&dUnion, Memory);
 
@@ -1955,14 +1963,21 @@ main(s32 ArgCount, const char** ArgStrings)
                 EatNextScope(Parser);
               }
 
+#if 0
               if (OptionalToken(Parser, CTokenType_Hash))
               {
-                while (PeekToken(Parser).Type != CTokenType_GT)
+                RequireToken(Parser, CToken(CS("include")));
+                counted_string IncludePath = RequireToken(Parser, CTokenType_String).Value;
+                if (IncludePath.Count)
                 {
-                  PopToken(Parser);
+                  // Use this filename for the output path
                 }
-                RequireToken(Parser, CTokenType_GT);
+                else
+                {
+                  // Generate a new file and insert the name here.
+                }
               }
+#endif
 
             }
           } break;
