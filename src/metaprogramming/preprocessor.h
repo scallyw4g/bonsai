@@ -264,6 +264,11 @@ ToString(c_token Token, memory_arena* Memory)
   counted_string Result = {};
   switch (Token.Type)
   {
+    case CTokenType_Comment:
+    {
+      Result = FormatCountedString(Memory, "\\* %.*s */", Token.Value.Count, Token.Value.Start);
+    } break;
+
     case CTokenType_String:
     {
       Result = FormatCountedString(Memory, "\"%.*s\"", Token.Value.Count, Token.Value.Start);
