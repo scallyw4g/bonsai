@@ -59,8 +59,8 @@ OpenFile(counted_string FilePath, const char* Permissions = DefaultPermissions)
   return Result;
 }
 
-function native_file
-GetTempFile(random_series* Entropy, memory_arena* Memory)
+function counted_string
+GetRandomFilename(random_series* Entropy, memory_arena* Memory)
 {
   u32 FilenameLength = 32;
 
@@ -76,8 +76,14 @@ GetTempFile(random_series* Entropy, memory_arena* Memory)
     ((char*)Filename.Start)[CharIndex] = (s8)RandomBetween(97, Entropy, 122);
   }
 
-  Filename = Concat(CS("tmp/"), Filename, Memory);
+  return Filename;
+}
 
+function native_file
+GetTempFile(random_series* Entropy, memory_arena* Memory)
+{
+  counted_string Filename = GetRandomFilename(Entropy, Memory);
+  Filename = Concat(CS("tmp/"), Filename, Memory);
   native_file Result = OpenFile(Filename, "wb");
   return Result;
 }

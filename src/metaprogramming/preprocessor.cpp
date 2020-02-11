@@ -181,7 +181,7 @@ IsMetaprogrammingDirective(counted_string Identifier)
       }
     )
   )
-  #include <metaprogramming/output/preprocessor_for_enum_values_metaprogramming_directives.h>
+  #include "metaprogramming/output/preprocessor_for_enum_values_metaprogramming_directives.h"
 
   return Result;
 }
@@ -1928,7 +1928,6 @@ main(s32 ArgCount, const char** ArgStrings)
       Assert(Parser->Valid);
       Assert(Remaining(&Parser->Tokens));
 
-      counted_string OutputForThisParser = {};
 
       Rewind(&Parser->OutputTokens);
       while (Parser->Valid && Remaining(&Parser->Tokens))
@@ -1941,6 +1940,7 @@ main(s32 ArgCount, const char** ArgStrings)
           {
             if (StringsMatch(Token.Value, CS("meta")))
             {
+              counted_string OutputForThisParser = {};
               RequireToken(Parser, CTokenType_OpenParen);
 
               Token = RequireToken(Parser, CTokenType_Identifier);
@@ -1968,16 +1968,7 @@ main(s32 ArgCount, const char** ArgStrings)
                 RequireToken(Parser, CTokenType_OpenParen);
 
                 counted_string TypeName = RequireToken(Parser, CTokenType_Identifier).Value;
-
-                counted_string ForEnumValuesCode = ParseForEnumValues(Parser, TypeName, &Datatypes.Enums, Memory);
-                counted_string FileBasename = StripExtension(Basename(Parser->FileName));
-                counted_string ForMembersCodeFilename = CS(FormatString(Memory,
-                      "src/metaprogramming/output/%.*s_for_enum_values_%.*s.h",
-                      FileBasename.Count, FileBasename.Start,
-                      TypeName.Count, TypeName.Start
-                    ));
-
-                Output(ForEnumValuesCode, ForMembersCodeFilename, Memory);
+                OutputForThisParser = ParseForEnumValues(Parser, TypeName, &Datatypes.Enums, Memory);
               }
               else if (StringsMatch(Token.Value, ToString(for_members_in)))
               {
@@ -1989,15 +1980,7 @@ main(s32 ArgCount, const char** ArgStrings)
 
                 if (Target)
                 {
-                  counted_string ForMembersCode = ParseForMembers(Parser, &Constraints, Target, &Datatypes.Structs, Memory);
-                  counted_string FileBasename = StripExtension(Basename(Parser->FileName));
-                  counted_string ForMembersCodeFilename = CS(FormatString(Memory,
-                        "src/metaprogramming/output/%.*s_for_members_in_%.*s.h",
-                        FileBasename.Count, FileBasename.Start,
-                        TypeName.Count, TypeName.Start
-                      ));
-
-                  Output(ForMembersCode, ForMembersCodeFilename, Memory);
+                  OutputForThisParser = ParseForMembers(Parser, &Constraints, Target, &Datatypes.Structs, Memory);
                 }
                 else
                 {
@@ -2057,23 +2040,23 @@ main(s32 ArgCount, const char** ArgStrings)
                 }
 
                 EatNextScope(Parser);
+                RequireToken(Parser, CTokenType_Semicolon);
               }
 
-#if 0
               if (OptionalToken(Parser, CTokenType_Hash))
               {
                 RequireToken(Parser, CToken(CS("include")));
                 counted_string IncludePath = RequireToken(Parser, CTokenType_String).Value;
-                if (IncludePath.Count)
-                {
-                  // Use this filename for the output path
-                }
-                else
-                {
-                  // Generate a new file and insert the name here.
-                }
+                Output(OutputForThisParser, IncludePath, Memory);
               }
-#endif
+              else
+              {
+                Push(CToken(CTokenType_Hash), &Parser->OutputTokens);
+                Push(CToken(CS("include")), &Parser->OutputTokens);
+                Push(CToken(CTokenType_Space), &Parser->OutputTokens);
+                Push(CToken(CTokenType_String, GetRandomFilename(&TempFileEntropy, Memory)), &Parser->OutputTokens);
+                Push(CToken(CTokenType_Newline), &Parser->OutputTokens);
+              }
 
             }
           } break;
@@ -2086,23 +2069,6 @@ main(s32 ArgCount, const char** ArgStrings)
 
       TruncateToCurrentSize(&Parser->OutputTokens);
       Output(Parser->OutputTokens, Parser->FileName, Memory);
-
-      if (OutputForThisParser.Count)
-      {
-        counted_string OutFilePath = Concat(Args.OutPath, Basename(Parser->FileName), Memory);
-        if (Output(OutputForThisParser, OutFilePath, Memory))
-        {
-          counted_string Message = Concat(CS(GREEN_TERMINAL "  ✔  " WHITE_TERMINAL), Parser->FileName, Memory);
-          Push(&SuccessFiles, Message, Memory);
-        }
-        else
-        {
-          counted_string Message = Concat(CS(RED_TERMINAL "  ✗  " WHITE_TERMINAL), Parser->FileName, Memory);
-          Push(&FailFiles, Message, Memory);
-        }
-      }
-
-      Rewind(&Parser->Tokens);
 
       continue;
     }

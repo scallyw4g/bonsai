@@ -272,8 +272,8 @@ rm -Rf "$META_OUT/*"
 
 SOURCE_FILES=$(find src -type f -not -wholename "src/metaprogramming/defines.h" | tr '\n' ' ')
 
-ColorizeTitle "Preprocessing"
-bin/preprocessor $SOURCE_FILES
+# ColorizeTitle "Preprocessing"
+# bin/preprocessor $SOURCE_FILES
 
 BuildPreprocessor
 [ ! -x bin/preprocessor ] && echo -e "$Failed Couldn't find preprocessor, exiting." && exit 1
