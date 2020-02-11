@@ -431,6 +431,11 @@ OutputErrorHelperLine(c_parse_result* Parser, c_token* ErrorToken, c_token Expec
       counted_string ExpectedTypeName = ToString(Expected.Type);
       Log(". Expected: %.*s", ExpectedTypeName.Count, ExpectedTypeName.Start);
 
+      if (Expected.Value.Count)
+      {
+        Log("(%.*s)" , Expected.Value.Count, Expected.Value.Start);
+      }
+
       Log("\n");
 
       for (u32 ColumnIndex = 0;
@@ -471,7 +476,7 @@ OutputErrorHelperLine(c_parse_result* Parser, c_token* ErrorToken, c_token Expec
 }
 
 function void
-OutputParsingError(c_parse_result* Parser, c_token* ErrorToken, c_token_type ExpectedType, counted_string ErrorString)
+OutputParsingError(c_parse_result* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_string ErrorString)
 {
   u32 LinesOfContext = 4;
 
@@ -503,7 +508,7 @@ OutputParsingError(c_parse_result* Parser, c_token* ErrorToken, c_token_type Exp
     if (ErrorToken >= ErrorLine.Tokens.Start &&
         ErrorToken < ErrorLine.Tokens.End)
     {
-      OutputErrorHelperLine(&ErrorLine, ErrorToken, CToken(ExpectedType), ErrorString, LocalParser.LineNumber);
+      OutputErrorHelperLine(&ErrorLine, ErrorToken, ExpectedToken, ErrorString, LocalParser.LineNumber);
     }
     else
     {
@@ -529,7 +534,7 @@ OutputParsingError(c_parse_result* Parser, c_token* ErrorToken, c_token_type Exp
 function void
 OutputParsingError(c_parse_result* Parser, c_token* ErrorToken, counted_string ErrorString)
 {
-  OutputParsingError(Parser, ErrorToken, CTokenType_Unknown, ErrorString);
+  OutputParsingError(Parser, ErrorToken, CToken(CTokenType_Unknown), ErrorString);
   return;
 }
 
@@ -541,7 +546,7 @@ RequireToken(c_parse_result* Parser, c_token ExpectedToken)
 
   if (Result.Type != ExpectedToken.Type || (ExpectedToken.Value.Count > 0 && !StringsMatch(ExpectedToken.Value, Result.Value) ))
   {
-    OutputParsingError(Parser, ErrorToken, ExpectedToken.Type, CS("Require Token Failed"));
+    OutputParsingError(Parser, ErrorToken, ExpectedToken, CS("Require Token Failed"));
     Parser->Valid = False;
     RuntimeBreak();
   }
@@ -1985,12 +1990,12 @@ main(s32 ArgCount, const char** ArgStrings)
                 }
                 else
                 {
+                  Parser->Valid = False;
                   Error("Couldn't find matching struct %.*s", (s32)TypeName.Count, TypeName.Start);
                 }
               }
               else
               {
-
                 u32 Directives = 0;
                 while (IsMetaprogrammingDirective(Token.Value))
                 {
@@ -2044,50 +2049,55 @@ main(s32 ArgCount, const char** ArgStrings)
                 RequireToken(Parser, CTokenType_Semicolon);
               }
 
-              if (OptionalToken(Parser, CTokenType_Hash))
+              if (Parser->Valid)
               {
-                RequireToken(Parser, CToken(CS("include")));
-                RequireToken(Parser, CTokenType_LT);
-                RequireToken(Parser, CToken(CS("metaprogramming")));
-                RequireToken(Parser, CTokenType_FSlash);
-                RequireToken(Parser, CToken(CS("output")));
-                RequireToken(Parser, CTokenType_FSlash);
-                counted_string IncludePath = RequireToken(Parser, CTokenType_Identifier).Value;
-
-                if (OptionalToken(Parser, CTokenType_Dot))
+                if (PeekToken(Parser).Type == CTokenType_Hash &&
+                    PeekToken(Parser, 1) == CToken(CS("include")))
                 {
-                  IncludePath = Concat(IncludePath, CS("."), Memory);
-                  counted_string Extension = RequireToken(Parser, CTokenType_Identifier).Value;
-                  IncludePath = Concat(IncludePath, Extension,  Memory);
+                  RequireToken(Parser, CToken(CTokenType_Hash));
+                  RequireToken(Parser, CToken(CS("include")));
+                  RequireToken(Parser, CTokenType_LT);
+                  RequireToken(Parser, CToken(CS("metaprogramming")));
+                  RequireToken(Parser, CTokenType_FSlash);
+                  RequireToken(Parser, CToken(CS("output")));
+                  RequireToken(Parser, CTokenType_FSlash);
+                  counted_string IncludePath = RequireToken(Parser, CTokenType_Identifier).Value;
+
+                  if (OptionalToken(Parser, CTokenType_Dot))
+                  {
+                    IncludePath = Concat(IncludePath, CS("."), Memory);
+                    counted_string Extension = RequireToken(Parser, CTokenType_Identifier).Value;
+                    IncludePath = Concat(IncludePath, Extension,  Memory);
+                  }
+
+                  RequireToken(Parser, CTokenType_GT);
+
+                  IncludePath = Concat(CS("src/metaprogramming/output/"), IncludePath, Memory);
+                  Output(OutputForThisParser, IncludePath, Memory);
                 }
+                else
+                {
+                  TempFileEntropy.Seed = Hash(&OutputForThisParser);
 
-                RequireToken(Parser, CTokenType_GT);
+                  counted_string OutFile = GetRandomFilename(&TempFileEntropy, Memory);
+                  counted_string IncludePath = Concat(CS("src/metaprogramming/output/"), OutFile, Memory);
 
-                IncludePath = Concat(CS("src/metaprogramming/output/"), IncludePath, Memory);
-                Output(OutputForThisParser, IncludePath, Memory);
-              }
-              else
-              {
-                TempFileEntropy.Seed = Hash(&OutputForThisParser);
+                  Output(OutputForThisParser, IncludePath, Memory);
 
-                counted_string OutFile = GetRandomFilename(&TempFileEntropy, Memory);
-                counted_string IncludePath = Concat(CS("src/metaprogramming/output/"), OutFile, Memory);
+                  Push(CToken(CTokenType_Newline), &Parser->OutputTokens);
+                  Push(CToken(CTokenType_Hash), &Parser->OutputTokens);
+                  Push(CToken(CS("include")), &Parser->OutputTokens);
+                  Push(CToken(CTokenType_Space), &Parser->OutputTokens);
 
-                Output(OutputForThisParser, IncludePath, Memory);
-
-                Push(CToken(CTokenType_Newline), &Parser->OutputTokens);
-                Push(CToken(CTokenType_Hash), &Parser->OutputTokens);
-                Push(CToken(CS("include")), &Parser->OutputTokens);
-                Push(CToken(CTokenType_Space), &Parser->OutputTokens);
-
-                Push(CToken(CTokenType_LT), &Parser->OutputTokens);
-                Push(CToken(CS("metaprogramming")), &Parser->OutputTokens);
-                Push(CToken(CTokenType_FSlash), &Parser->OutputTokens);
-                Push(CToken(CS("output")), &Parser->OutputTokens);
-                Push(CToken(CTokenType_FSlash), &Parser->OutputTokens);
-                Push(CToken(OutFile), &Parser->OutputTokens);
-                Push(CToken(CTokenType_GT), &Parser->OutputTokens);
-                Push(CToken(CTokenType_Newline), &Parser->OutputTokens);
+                  Push(CToken(CTokenType_LT), &Parser->OutputTokens);
+                  Push(CToken(CS("metaprogramming")), &Parser->OutputTokens);
+                  Push(CToken(CTokenType_FSlash), &Parser->OutputTokens);
+                  Push(CToken(CS("output")), &Parser->OutputTokens);
+                  Push(CToken(CTokenType_FSlash), &Parser->OutputTokens);
+                  Push(CToken(OutFile), &Parser->OutputTokens);
+                  Push(CToken(CTokenType_GT), &Parser->OutputTokens);
+                  Push(CToken(CTokenType_Newline), &Parser->OutputTokens);
+                }
               }
 
             }
@@ -2099,8 +2109,11 @@ main(s32 ArgCount, const char** ArgStrings)
         continue;
       }
 
-      TruncateToCurrentSize(&Parser->OutputTokens);
-      Output(Parser->OutputTokens, Parser->FileName, Memory);
+      if (Parser->Valid)
+      {
+        TruncateToCurrentSize(&Parser->OutputTokens);
+        Output(Parser->OutputTokens, Parser->FileName, Memory);
+      }
 
       continue;
     }
