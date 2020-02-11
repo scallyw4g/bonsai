@@ -274,8 +274,8 @@ SOURCE_FILES=$(find src -type f -not -wholename "src/metaprogramming/defines.h" 
 # ColorizeTitle "Preprocessing"
 # bin/preprocessor $SOURCE_FILES
 
-BuildPreprocessor
-[ ! -x bin/preprocessor ] && echo -e "$Failed Couldn't find preprocessor, exiting." && exit 1
+# BuildPreprocessor
+# [ ! -x bin/preprocessor ] && echo -e "$Failed Couldn't find preprocessor, exiting." && exit 1
 
 # ColorizeTitle "Preprocessing"
 # bin/preprocessor $SOURCE_FILES

@@ -41,7 +41,6 @@ ToString(c_token_type Type)
   switch (Type)
   {
     case CTokenType_Unknown: { Result = CS("CTokenType_Unknown"); } break;
-    case CTokenType_Comment: { Result = CS("CTokenType_Comment"); } break;
     case CTokenType_Identifier: { Result = CS("CTokenType_Identifier"); } break;
     case CTokenType_String: { Result = CS("CTokenType_String"); } break;
     case CTokenType_Char: { Result = CS("CTokenType_Char"); } break;

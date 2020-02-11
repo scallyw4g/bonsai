@@ -82,7 +82,9 @@ PeekTokenPointer(c_parse_result* Parser, u32 Lookahead = 0)
   while (Remaining(&Parser->Tokens, LocalLookahead))
   {
     Result = PeekTokenRawPointer(Parser, LocalLookahead);
-    if ( Result->Type == CTokenType_Comment || IsWhitespace(Result->Type) )
+    if (Result->Type == CTokenType_CommentSingleLine ||
+        Result->Type == CTokenType_CommentMultiLine ||
+        IsWhitespace(Result->Type) )
     {
     }
     else
@@ -135,7 +137,9 @@ PopToken(c_parse_result* Parser)
   c_token Result = PopTokenRaw(Parser);
   while (Remaining(&Parser->Tokens))
   {
-    if ( Result.Type == CTokenType_Comment || IsWhitespace(Result.Type) )
+    if (Result.Type == CTokenType_CommentSingleLine ||
+        Result.Type == CTokenType_CommentMultiLine ||
+        IsWhitespace(Result.Type) )
     {
       Result = PopTokenRaw(Parser);
     }
@@ -244,14 +248,14 @@ TokenizeFile(counted_string FileName, memory_arena* Memory)
           case CTokenType_FSlash:
           {
             SourceFileStream.At += 2;
-            T.Type = CTokenType_Comment;
+            T.Type = CTokenType_CommentSingleLine;
             T.Value = Trim(CS(ReadUntilTerminatorList(&SourceFileStream, "\n", Memory)));
             --SourceFileStream.At;
           } break;
 
           case CTokenType_Star:
           {
-            T.Type = CTokenType_Comment;
+            T.Type = CTokenType_CommentMultiLine;
             T.Value = ReadUntilTerminatorString(&SourceFileStream, CS("*/"));
             Advance(&SourceFileStream);
             Advance(&SourceFileStream);
@@ -2049,13 +2053,13 @@ main(s32 ArgCount, const char** ArgStrings)
         continue;
       }
 
-      counted_string OutFilePath = Concat(Args.OutPath, Basename(Parser->FileName), Memory);
-      Log("Started Output for %.*s", Parser->FileName.Count, Parser->FileName.Start);
-      Output(Parser->OutputTokens, Parser->FileName, Memory);
-      Log(" - Done\n");
+      /* Log("Started Output for %.*s", Parser->FileName.Count, Parser->FileName.Start); */
+      /* Output(Parser->OutputTokens, Parser->FileName, Memory); */
+      /* Log(" - Done\n"); */
 
       if (OutputForThisParser.Count)
       {
+        counted_string OutFilePath = Concat(Args.OutPath, Basename(Parser->FileName), Memory);
         if (Output(OutputForThisParser, OutFilePath, Memory))
         {
           counted_string Message = Concat(CS(GREEN_TERMINAL "  ✔  " WHITE_TERMINAL), Parser->FileName, Memory);
