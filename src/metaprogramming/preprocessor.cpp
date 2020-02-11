@@ -2050,7 +2050,9 @@ main(s32 ArgCount, const char** ArgStrings)
       }
 
       counted_string OutFilePath = Concat(Args.OutPath, Basename(Parser->FileName), Memory);
-      /* Output(Parser->OutputTokens, Parser->FileName, Memory); */
+      Log("Started Output for %.*s", Parser->FileName.Count, Parser->FileName.Start);
+      Output(Parser->OutputTokens, Parser->FileName, Memory);
+      Log(" - Done\n");
 
       if (OutputForThisParser.Count)
       {
