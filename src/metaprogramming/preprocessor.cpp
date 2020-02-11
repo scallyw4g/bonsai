@@ -113,7 +113,10 @@ function c_token
 PopTokenRaw(c_parse_result* Parser)
 {
   c_token Result = PeekTokenRaw(Parser);
-  Push(Result, &Parser->OutputTokens);
+  if (Remaining(&Parser->OutputTokens))
+  {
+    Push(Result, &Parser->OutputTokens);
+  }
 
   if (Remaining(&Parser->Tokens))
   {
@@ -254,8 +257,8 @@ TokenizeFile(counted_string FileName, memory_arena* Memory)
           {
             T.Type = CTokenType_Comment;
             T.Value = ReadUntilTerminatorString(&SourceFileStream, CS("*/"));
-            if (Remaining(&SourceFileStream) > 2) { T.Value.Count += 2; }
-            Advance(&SourceFileStream);
+            ++T.Value.Count;
+            T.Value = Concat(T.Value, CS("*/"), Memory);
             Advance(&SourceFileStream);
           } break;
 
@@ -378,6 +381,7 @@ function void
 Dump(c_parse_result* Parser, u32 LinesToDump = u32_MAX)
 {
   c_parse_result LocalParser = *Parser;
+  LocalParser.OutputTokens = {};
 
   Rewind(&LocalParser.Tokens);
   while(Remaining(&LocalParser.Tokens) && LinesToDump > 0)
@@ -476,6 +480,7 @@ OutputParsingError(c_parse_result* Parser, c_token* ErrorToken, c_token_type Exp
   /* Log("%.*s:%u:%u: Error\n", Parser->FileName.Count, Parser->FileName.Start, Parser->LineNumber, ColumnNumber); */
 
   c_parse_result LocalParser = *Parser;
+  LocalParser.OutputTokens = {};
   LocalParser.Tokens.At = ErrorToken;
 
   c_parse_result LeadingLines  = LocalParser;
@@ -756,16 +761,42 @@ Output(c_token_buffer Code, counted_string FileName, memory_arena* Memory)
   native_file TempFile = GetTempFile(&TempFileEntropy, Memory);
   if (TempFile.Handle)
   {
+
     Rewind(&Code);
-    b32 FileWritesSucceeded = True;
+    // @needed-size-inflated-because-of-stupidity
+    u32 NeededSize = 1000; // TODO(Jesse): This has to be inflated for " and ' characters added during the ToString() routine..  FeelsBadMan.
     while(Remaining(&Code))
     {
       c_token T = Code.At[0];
-      FileWritesSucceeded &= WriteToFile(&TempFile, ToString(T, Memory) );
+      NeededSize += T.Value.Count ? T.Value.Count : 1;
+      Advance(&Code);
+    }
+
+    counted_string Output = {
+      .Start = Allocate(const char, Memory, NeededSize),
+      .Count = NeededSize
+    };
+
+    Rewind(&Code);
+
+    u8* At = (u8*)Output.Start;
+    while(Remaining(&Code))
+    {
+      c_token T = Code.At[0];
+
+      counted_string TS = ToString(T, Memory);
+      MemCopy((u8*)TS.Start, At, TS.Count);
+      At += TS.Count;
 
       Advance(&Code);
     }
 
+    Output.Count = (umm)((const char*)At - (const char*)Output.Start);
+
+    // @needed-size-inflated-because-of-stupidity
+    /* Assert((umm)At == (umm)Output.Start+Output.Count); */
+
+    b32 FileWritesSucceeded = WriteToFile(&TempFile, Output );
     FileWritesSucceeded &= CloseFile(&TempFile);
 
     if (FileWritesSucceeded)
@@ -1315,6 +1346,8 @@ function c_parse_result
 GetBodyTextForNextScope(c_parse_result* Parser)
 {
   c_parse_result BodyText = *Parser;
+  BodyText.OutputTokens = {};
+
   BodyText.Tokens.Start = BodyText.Tokens.At;
   EatNextScope(Parser);
   BodyText.Tokens.End = Parser->Tokens.At;
@@ -1898,6 +1931,7 @@ main(s32 ArgCount, const char** ArgStrings)
 
       counted_string OutputForThisParser = {};
 
+      Rewind(&Parser->OutputTokens);
       while (Parser->Valid && Remaining(&Parser->Tokens))
       {
         c_token Token = PopToken(Parser);
@@ -2051,9 +2085,10 @@ main(s32 ArgCount, const char** ArgStrings)
         continue;
       }
 
-      /* Log("Started Output for %.*s", Parser->FileName.Count, Parser->FileName.Start); */
-      /* Output(Parser->OutputTokens, Parser->FileName, Memory); */
-      /* Log(" - Done\n"); */
+      Log("Started Output for %.*s", Parser->FileName.Count, Parser->FileName.Start);
+      TruncateToCurrentSize(&Parser->OutputTokens);
+      Output(Parser->OutputTokens, Parser->FileName, Memory);
+      Log(" - Done\n");
 
       if (OutputForThisParser.Count)
       {

@@ -208,6 +208,9 @@ struct c_parse_result
 {
   b32 Valid;
   c_token_buffer Tokens;
+
+  // NOTE(Jesse): This is pretty shitty because whenever we copy one of these
+  // structs this field has to be manually zeroed out ..
   c_token_buffer OutputTokens;
 
   u32 StructCount;
