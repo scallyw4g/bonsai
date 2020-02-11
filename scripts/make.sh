@@ -31,6 +31,7 @@ function SetOutputBinaryPathBasename()
 function ColorizeTitle()
 {
   echo -e "$YELLOW$1$WHITE"
+  echo -e ""
 }
 
 INCLUDE_DIRECTORIES="$SRC"
@@ -271,16 +272,16 @@ rm -Rf "$META_OUT/*"
 
 SOURCE_FILES=$(find src -type f -not -wholename "src/metaprogramming/defines.h" | tr '\n' ' ')
 
-# ColorizeTitle "Preprocessing"
-# bin/preprocessor $SOURCE_FILES
+ColorizeTitle "Preprocessing"
+bin/preprocessor $SOURCE_FILES
 
-# BuildPreprocessor
-# [ ! -x bin/preprocessor ] && echo -e "$Failed Couldn't find preprocessor, exiting." && exit 1
+BuildPreprocessor
+[ ! -x bin/preprocessor ] && echo -e "$Failed Couldn't find preprocessor, exiting." && exit 1
 
-# ColorizeTitle "Preprocessing"
-# bin/preprocessor $SOURCE_FILES
+ColorizeTitle "Preprocessing"
+bin/preprocessor $SOURCE_FILES
 
-# [ $? -ne 0 ] && echo "" && echo -e "$Failed Preprocessing failed, exiting." && exit 1
+[ $? -ne 0 ] && echo "" && echo -e "$Failed Preprocessing failed, exiting." && exit 1
 
 if [ "$EMCC" == "1" ]; then
   time BuildWithEmcc

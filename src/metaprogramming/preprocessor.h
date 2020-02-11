@@ -267,12 +267,12 @@ ToString(c_token Token, memory_arena* Memory)
   {
     case CTokenType_CommentSingleLine:
     {
-      Result = FormatCountedString(Memory, "//%.*s", Token.Value.Count, Token.Value.Start);
+      Result = FormatCountedString(Memory, "// %.*s", Token.Value.Count, Token.Value.Start);
     } break;
 
     case CTokenType_CommentMultiLine:
     {
-      Result = FormatCountedString(Memory, "\\*%.*s*\\", Token.Value.Count, Token.Value.Start);
+      Result = FormatCountedString(Memory, "%.*s*\\", Token.Value.Count, Token.Value.Start);
     } break;
 
     case CTokenType_String:
