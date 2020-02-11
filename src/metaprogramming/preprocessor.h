@@ -40,7 +40,10 @@ enum metaprogramming_directives
   for_members_in         = 0x20,
   d_union                = 0x40,
 };
-/* #include <> */
+#include <metaprogramming/output/efevjwfhtllwnvtejzdarxucuntkrynn>
+
+
+
 
 // TODO(Jesse): Add vertical pipe |
 meta(generate_string_table)
@@ -87,17 +90,9 @@ enum c_token_type
   CTokenType_CarrigeReturn = '\r',
   CTokenType_EOF           = EOF,
 };
-/* #include <> */
+#include <metaprogramming/output/jmrbqqavdxbdsmmzkujjayzadjzxzuht>
 
-meta(
-  d_union(c_decl,
-  {
-    c_decl_variable,
-    c_decl_function,
-    c_decl_union,
-  })
-)
-/* #include <> */
+
 
 // TODO(Jesse): Nested d-unions??! @mind-blown
 struct c_decl_function
@@ -151,13 +146,24 @@ struct c_decl_union
   struct_def Body;
 };
 
+meta(
+  d_union(c_decl,
+  {
+    c_decl_variable,
+    c_decl_function,
+    c_decl_union,
+  })
+)
+#include <metaprogramming/output/ljqmohmdyblcqcxkpytdpfugnkcnzxdj>
+
 meta(generate_stream)
 struct enum_field
 {
   counted_string Name;
   counted_string Value;
 };
-/* #include <> */
+#include <metaprogramming/output/nlqmlligcgaydihnetjnyvzrwxonncxr>
+
 
 meta(generate_stream)
 struct d_union_member
@@ -166,7 +172,8 @@ struct d_union_member
   counted_string Name;
   d_union_flags Flags;
 };
-#include <metaprogramming/output/preprocessor.h>
+#include <metaprogramming/output/epnuayxhxtlkckkezdxkjgyvdzmsykwg>
+
 
 struct c_decl_stream_chunk
 {

@@ -181,7 +181,8 @@ IsMetaprogrammingDirective(counted_string Identifier)
       }
     )
   )
-  #include "metaprogramming/output/preprocessor_for_enum_values_metaprogramming_directives.h"
+#include <metaprogramming/output/hzmdqsazyidbihexliaechhrlkofiixw>
+
 
   return Result;
 }
@@ -1928,8 +1929,8 @@ main(s32 ArgCount, const char** ArgStrings)
       Assert(Parser->Valid);
       Assert(Remaining(&Parser->Tokens));
 
-
       Rewind(&Parser->OutputTokens);
+      Parser->LineNumber = 1;
       while (Parser->Valid && Remaining(&Parser->Tokens))
       {
         c_token Token = PopToken(Parser);
@@ -2046,15 +2047,46 @@ main(s32 ArgCount, const char** ArgStrings)
               if (OptionalToken(Parser, CTokenType_Hash))
               {
                 RequireToken(Parser, CToken(CS("include")));
-                counted_string IncludePath = RequireToken(Parser, CTokenType_String).Value;
+                RequireToken(Parser, CTokenType_LT);
+                RequireToken(Parser, CToken(CS("metaprogramming")));
+                RequireToken(Parser, CTokenType_FSlash);
+                RequireToken(Parser, CToken(CS("output")));
+                RequireToken(Parser, CTokenType_FSlash);
+                counted_string IncludePath = RequireToken(Parser, CTokenType_Identifier).Value;
+
+                if (OptionalToken(Parser, CTokenType_Dot))
+                {
+                  IncludePath = Concat(IncludePath, CS("."), Memory);
+                  counted_string Extension = RequireToken(Parser, CTokenType_Identifier).Value;
+                  IncludePath = Concat(IncludePath, Extension,  Memory);
+                }
+
+                RequireToken(Parser, CTokenType_GT);
+
+                IncludePath = Concat(CS("src/metaprogramming/output/"), IncludePath, Memory);
                 Output(OutputForThisParser, IncludePath, Memory);
               }
               else
               {
+                TempFileEntropy.Seed = Hash(&OutputForThisParser);
+
+                counted_string OutFile = GetRandomFilename(&TempFileEntropy, Memory);
+                counted_string IncludePath = Concat(CS("src/metaprogramming/output/"), OutFile, Memory);
+
+                Output(OutputForThisParser, IncludePath, Memory);
+
+                Push(CToken(CTokenType_Newline), &Parser->OutputTokens);
                 Push(CToken(CTokenType_Hash), &Parser->OutputTokens);
                 Push(CToken(CS("include")), &Parser->OutputTokens);
                 Push(CToken(CTokenType_Space), &Parser->OutputTokens);
-                Push(CToken(CTokenType_String, GetRandomFilename(&TempFileEntropy, Memory)), &Parser->OutputTokens);
+
+                Push(CToken(CTokenType_LT), &Parser->OutputTokens);
+                Push(CToken(CS("metaprogramming")), &Parser->OutputTokens);
+                Push(CToken(CTokenType_FSlash), &Parser->OutputTokens);
+                Push(CToken(CS("output")), &Parser->OutputTokens);
+                Push(CToken(CTokenType_FSlash), &Parser->OutputTokens);
+                Push(CToken(OutFile), &Parser->OutputTokens);
+                Push(CToken(CTokenType_GT), &Parser->OutputTokens);
                 Push(CToken(CTokenType_Newline), &Parser->OutputTokens);
               }
 

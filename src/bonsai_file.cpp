@@ -78,12 +78,18 @@ GetRandomFilename(random_series* Entropy, memory_arena* Memory)
 
   return Filename;
 }
+function counted_string
+GetTmpFilename(random_series* Entropy, memory_arena* Memory)
+{
+  counted_string Filename = GetRandomFilename(Entropy, Memory);
+  Filename = Concat(CS("tmp/"), Filename, Memory);
+  return Filename;
+}
 
 function native_file
 GetTempFile(random_series* Entropy, memory_arena* Memory)
 {
-  counted_string Filename = GetRandomFilename(Entropy, Memory);
-  Filename = Concat(CS("tmp/"), Filename, Memory);
+  counted_string Filename = GetTmpFilename(Entropy, Memory);
   native_file Result = OpenFile(Filename, "wb");
   return Result;
 }

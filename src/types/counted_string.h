@@ -5,8 +5,8 @@ struct counted_string
   umm Count;
   const char* Start; // TODO(Jesse): Make this non-const?
 };
+#include <metaprogramming/output/wslqtuvvbbispxohzmpcfwnwbogkreph>
 
-#include <metaprogramming/output/counted_string.h>
 
 umm
 Length(const char *Str)
