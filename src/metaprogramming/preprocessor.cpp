@@ -787,14 +787,13 @@ Output(c_token_buffer Code, counted_string FileName, memory_arena* Memory)
       counted_string TS = ToString(T, Memory);
       MemCopy((u8*)TS.Start, At, TS.Count);
       At += TS.Count;
+      // @needed-size-inflated-because-of-stupidity
+      Assert((umm)At <= (umm)Output.Start+Output.Count);
 
       Advance(&Code);
     }
 
     Output.Count = (umm)((const char*)At - (const char*)Output.Start);
-
-    // @needed-size-inflated-because-of-stupidity
-    /* Assert((umm)At == (umm)Output.Start+Output.Count); */
 
     b32 FileWritesSucceeded = WriteToFile(&TempFile, Output );
     FileWritesSucceeded &= CloseFile(&TempFile);
@@ -2085,10 +2084,8 @@ main(s32 ArgCount, const char** ArgStrings)
         continue;
       }
 
-      Log("Started Output for %.*s", Parser->FileName.Count, Parser->FileName.Start);
       TruncateToCurrentSize(&Parser->OutputTokens);
       Output(Parser->OutputTokens, Parser->FileName, Memory);
-      Log(" - Done\n");
 
       if (OutputForThisParser.Count)
       {
