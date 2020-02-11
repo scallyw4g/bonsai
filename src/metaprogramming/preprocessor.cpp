@@ -654,7 +654,7 @@ ParseDiscriminatedUnion(c_parse_result* Parser, memory_arena* Memory)
       case CTokenType_Identifier:
       {
         d_union_flags Flags = {};
-        // TODO(Jesse): How should we talk about string constants that refer to identifiers in the code?
+        // TODO(Jesse): How should we talk about this type of identifier?
         if ( OptionalToken(Parser, CToken(CS("enum_only"))) )
         {
           Flags = d_union_flag_enum_only;
@@ -798,6 +798,8 @@ Output(c_token_buffer Code, counted_string FileName, memory_arena* Memory)
 
       Advance(&Code);
     }
+    // @needed-size-inflated-because-of-stupidity
+    // Assert((umm)At == (umm)Output.Start+Output.Count);
 
     Output.Count = (umm)((const char*)At - (const char*)Output.Start);
 
