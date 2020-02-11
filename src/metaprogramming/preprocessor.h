@@ -48,8 +48,7 @@ enum c_token_type
 {
   CTokenType_Unknown,
 
-  CTokenType_CommentSingleLine,
-  CTokenType_CommentMultiLine,
+  CTokenType_Comment,
   CTokenType_Identifier,
   CTokenType_String,
   CTokenType_Char,
@@ -265,14 +264,9 @@ ToString(c_token Token, memory_arena* Memory)
   counted_string Result = {};
   switch (Token.Type)
   {
-    case CTokenType_CommentSingleLine:
+    case CTokenType_Comment:
     {
-      Result = FormatCountedString(Memory, "// %.*s", Token.Value.Count, Token.Value.Start);
-    } break;
-
-    case CTokenType_CommentMultiLine:
-    {
-      Result = FormatCountedString(Memory, "%.*s */", Token.Value.Count, Token.Value.Start);
+      Result = FormatCountedString(Memory, "%.*s", Token.Value.Count, Token.Value.Start);
     } break;
 
     case CTokenType_String:
