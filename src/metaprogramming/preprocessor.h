@@ -42,9 +42,6 @@ enum metaprogramming_directives
 };
 #include <metaprogramming/output/efevjwfhtllwnvtejzdarxucuntkrynn>
 
-
-
-
 // TODO(Jesse): Add vertical pipe |
 meta(generate_string_table)
 enum c_token_type
@@ -91,8 +88,6 @@ enum c_token_type
   CTokenType_EOF           = EOF,
 };
 #include <metaprogramming/output/jmrbqqavdxbdsmmzkujjayzadjzxzuht>
-
-
 
 // TODO(Jesse): Nested d-unions??! @mind-blown
 struct c_decl_function
@@ -164,7 +159,6 @@ struct enum_field
 };
 #include <metaprogramming/output/nlqmlligcgaydihnetjnyvzrwxonncxr>
 
-
 meta(generate_stream)
 struct d_union_member
 {
@@ -173,7 +167,6 @@ struct d_union_member
   d_union_flags Flags;
 };
 #include <metaprogramming/output/epnuayxhxtlkckkezdxkjgyvdzmsykwg>
-
 
 struct c_decl_stream_chunk
 {
