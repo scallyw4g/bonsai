@@ -208,6 +208,7 @@ struct c_parse_result
 {
   b32 Valid;
   c_token_buffer Tokens;
+  c_token_buffer OutputTokens;
 
   u32 StructCount;
   u32 EnumCount;
@@ -263,25 +264,31 @@ ToString(c_token Token, memory_arena* Memory)
   counted_string Result = {};
   switch (Token.Type)
   {
-    case CTokenType_Comment:
-    case CTokenType_Identifier:
-    {
-      Result = CS(FormatString(Memory, "%.*s", Token.Value.Count, Token.Value.Start));
-    } break;
-
     case CTokenType_String:
     {
-      Result = CS(FormatString(Memory, "\"%.*s\"", Token.Value.Count, Token.Value.Start));
+      Result = FormatCountedString(Memory, "\"%.*s\"", Token.Value.Count, Token.Value.Start);
+    } break;
+
+    case CTokenType_Char:
+    {
+      Result = FormatCountedString(Memory, "'%.*s'", Token.Value.Count, Token.Value.Start);
     } break;
 
     default:
     {
-      Result = CS(FormatString(Memory, "%c", Token.Type));
+      if (Token.Value.Count)
+      {
+        Result = FormatCountedString(Memory, "%.*s", Token.Value.Count, Token.Value.Start);
+      }
+      else
+      {
+        Result = FormatCountedString(Memory, "%c", Token.Type);
+      }
     }
   }
+
   return Result;
 }
-
 inline void
 PrintToken(c_token Token)
 {

@@ -10,6 +10,20 @@ IsWhitespace(c_token_type Type)
 }
 
 function void
+Advance(c_token_buffer* Tokens, u32 Lookahead = 0)
+{
+  if (Remaining(Tokens, Lookahead))
+  {
+    Tokens->At += Lookahead+1;
+  }
+  else
+  {
+    Warn("Attempted to advance token stream past its end.");
+  }
+
+  return;
+}
+function void
 Advance(c_parse_result* Parser, u32 Lookahead = 0)
 {
   if (Remaining(&Parser->Tokens, Lookahead))
@@ -98,6 +112,8 @@ function c_token
 PopTokenRaw(c_parse_result* Parser)
 {
   c_token Result = PeekTokenRaw(Parser);
+  Push(Result, &Parser->OutputTokens);
+
   if (Remaining(&Parser->Tokens))
   {
     Advance(Parser);
@@ -193,7 +209,8 @@ function c_parse_result
 TokenizeFile(counted_string FileName, memory_arena* Memory)
 {
   c_parse_result Result = {
-    .FileName = FileName
+    .FileName = FileName,
+    .OutputTokens = AllocateTokenBuffer(Memory, (u32)Megabytes(1))
   };
 
   // TODO(Jesse): Since we store pointers directly into this buffer, we need to
@@ -206,7 +223,7 @@ TokenizeFile(counted_string FileName, memory_arena* Memory)
     return Result;
   }
 
-  Result.Tokens = AllocateTokenBuffer(Memory, (u32)Megabytes(100));
+  Result.Tokens = AllocateTokenBuffer(Memory, (u32)Megabytes(1));
   if (!Result.Tokens.Start)
   {
     Error("Allocating Token Buffer");
@@ -728,6 +745,50 @@ ParseArgs(const char** ArgStrings, s32 ArgCount, memory_arena* Memory)
 }
 
 global_variable random_series TempFileEntropy = {3215432};
+
+function b32
+Output(c_token_buffer Code, counted_string FileName, memory_arena* Memory)
+{
+  b32 Result = False;
+
+  native_file TempFile = GetTempFile(&TempFileEntropy, Memory);
+  if (TempFile.Handle)
+  {
+    Rewind(&Code);
+    b32 FileWritesSucceeded = True;
+    while(Remaining(&Code))
+    {
+      c_token T = Code.At[0];
+      FileWritesSucceeded &= WriteToFile(&TempFile, ToString(T, Memory) );
+
+      Advance(&Code);
+    }
+
+    FileWritesSucceeded &= CloseFile(&TempFile);
+
+    if (FileWritesSucceeded)
+    {
+      if (Rename(TempFile, FileName))
+      {
+        Result = True;
+      }
+      else
+      {
+        Error("Renaming tempfile: %.*s -> %.*s", (s32)TempFile.Path.Count, TempFile.Path.Start, (s32)FileName.Count, FileName.Start);
+      }
+    }
+    else
+    {
+      Error("Writing to tempfile: %.*s", (s32)TempFile.Path.Count, TempFile.Path.Start);
+    }
+  }
+  else
+  {
+    Error("Opening tempfile: %.*s", (s32)TempFile.Path.Count, TempFile.Path.Start);
+  }
+
+  return Result;
+}
 
 function b32
 Output(counted_string Code, counted_string FileName, memory_arena* Memory)
@@ -1989,6 +2050,8 @@ main(s32 ArgCount, const char** ArgStrings)
       }
 
       counted_string OutFilePath = Concat(Args.OutPath, Basename(Parser->FileName), Memory);
+      /* Output(Parser->OutputTokens, Parser->FileName, Memory); */
+
       if (OutputForThisParser.Count)
       {
         if (Output(OutputForThisParser, OutFilePath, Memory))
