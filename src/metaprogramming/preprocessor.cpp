@@ -183,7 +183,6 @@ IsMetaprogrammingDirective(counted_string Identifier)
   )
 #include <metaprogramming/output/hzmdqsazyidbihexliaechhrlkofiixw>
 
-
   return Result;
 }
 
@@ -291,11 +290,6 @@ TokenizeFile(counted_string FileName, memory_arena* Memory)
         if (StringsMatch(T.Value, CS("enum")))
         {
           ++Result.EnumCount;
-        }
-
-        if (StringsMatch(T.Value, CS("struct")))
-        {
-          ++Result.StructCount;
         }
 
       } break;
@@ -701,14 +695,14 @@ GetEnumByType(enum_defs* Enums, counted_string Type)
 }
 
 function struct_def*
-GetStructByType(struct_defs* ProgramStructs, counted_string StructType)
+GetStructByType(struct_def_stream* ProgramStructs, counted_string StructType)
 {
   struct_def* Result = 0;
-  for (u32 StructIndex = 0;
-      StructIndex < ProgramStructs->Count;
-      ++StructIndex)
+  for (struct_def_iterator Iter = Iterator(ProgramStructs);
+      IsValid(&Iter);
+      Advance(&Iter))
   {
-    struct_def* Struct = ProgramStructs->Defs + StructIndex;
+    struct_def* Struct = &Iter.At->Element;
     if (StringsMatch(Struct->Name, StructType))
     {
       Result = Struct;
@@ -1014,17 +1008,6 @@ AllocateEnumDefs(u32 Count, memory_arena* Memory)
   return Result;
 };
 
-function struct_defs
-AllocateStructDefs(u32 Count, memory_arena* Memory)
-{
-  struct_defs Result = {
-    .Count = Count,
-    .Defs = Allocate(struct_def, Memory, Count),
-  };
-
-  return Result;
-};
-
 function struct_def
 StructDef(counted_string Name)
 {
@@ -1214,7 +1197,7 @@ DumpStruct(struct_def* Struct)
 }
 
 function void
-PrintCDecl(c_decl* Decl, struct_defs* ProgramStructs)
+PrintCDecl(c_decl* Decl, struct_def_stream* ProgramStructs)
 {
   switch (Decl->Type)
   {
@@ -1426,7 +1409,7 @@ ParseForEnumValues(c_parse_result* Parser, counted_string TypeName, enum_defs* P
 }
 
 function counted_string
-ParseForMembers(c_parse_result* Parser, for_member_constraints* Constraints, struct_def* Target, struct_defs* ProgramStructs, memory_arena* Memory)
+ParseForMembers(c_parse_result* Parser, for_member_constraints* Constraints, struct_def* Target, struct_def_stream* ProgramStructs, memory_arena* Memory)
 {
   counted_string Result = {};
 
@@ -1593,14 +1576,13 @@ ParseEnum(c_parse_result* Parser, memory_arena* Memory)
 }
 
 function program_datatypes
-ParseAllDatatypes(tokenized_files Files_in, u32 MaxStructCount, u32 MaxEnumCount, memory_arena* Memory)
+ParseAllDatatypes(tokenized_files Files_in, u32 MaxEnumCount, memory_arena* Memory)
 {
   tokenized_files* Files = &Files_in;
 
-  // TODO(Jesse): This leaks a bit of memory because MaxStructCount is over-eager
-  // @memory-leak
-  struct_cursor StructCursor = Cursor<struct_cursor, struct_def>(MaxStructCount, Memory);
   enum_cursor EnumCursor = Cursor<enum_cursor, enum_def>(MaxEnumCount, Memory);
+
+  struct_def_stream StructStream = {};
 
   for (u32 ParserIndex = 0;
       ParserIndex < (u32)Count(Files);
@@ -1628,7 +1610,7 @@ ParseAllDatatypes(tokenized_files Files_in, u32 MaxStructCount, u32 MaxEnumCount
               if (PeekToken(Parser) == CToken(CTokenType_OpenBrace))
               {
                 struct_def S = ParseStructBody(Parser, CS(""), Memory);
-                Push(S, &StructCursor);
+                Push(&StructStream, S, Memory);
 
                 RequireToken(Parser, CTokenType_CloseBrace);
                 S.Name = RequireToken(Parser, CTokenType_Identifier).Value;
@@ -1656,7 +1638,7 @@ ParseAllDatatypes(tokenized_files Files_in, u32 MaxStructCount, u32 MaxEnumCount
                 if ( PeekToken(Parser) == CToken(CTokenType_OpenBrace) )
                 {
                   struct_def S = ParseStructBody(Parser, T.Value, Memory);
-                  Push(S, &StructCursor);
+                  Push(&StructStream, S, Memory);
                 }
               } break;
 
@@ -1673,18 +1655,13 @@ ParseAllDatatypes(tokenized_files Files_in, u32 MaxStructCount, u32 MaxEnumCount
     Rewind(&Parser->Tokens);
   }
 
-
-  u32 StructCount = (u32)CurrentCount(&StructCursor);
-  struct_defs Structs = AllocateStructDefs(StructCount, Memory);
-  Structs.Defs = StructCursor.Start;
-
   u32 EnumCount = (u32)CurrentCount(&EnumCursor);
   enum_defs Enums = AllocateEnumDefs(EnumCount, Memory);
   Enums.Defs = EnumCursor.Start;
 
   program_datatypes Result = {
     .Enums = Enums,
-    .Structs = Structs,
+    .Structs = StructStream
   };
 
   return Result;
@@ -1718,7 +1695,6 @@ TokenizeAllFiles(static_string_buffer* FileNames, memory_arena* Memory)
     {
       Rewind(&Parser.Tokens);
       Push(Parser, &Result);
-      Result.StructCount += Parser.StructCount;
       Result.EnumCount += Parser.EnumCount;
     }
     else
@@ -1925,7 +1901,7 @@ main(s32 ArgCount, const char** ArgStrings)
     tokenized_files ParsedFiles = TokenizeAllFiles(&Args.Files, Memory);
     Assert(ParsedFiles.Start == ParsedFiles.At);
 
-    program_datatypes Datatypes = ParseAllDatatypes(ParsedFiles, ParsedFiles.StructCount, ParsedFiles.EnumCount, Memory);
+    program_datatypes Datatypes = ParseAllDatatypes(ParsedFiles, ParsedFiles.EnumCount, Memory);
     Assert(ParsedFiles.Start == ParsedFiles.At);
 
     for (u32 ParserIndex = 0;
@@ -1959,9 +1935,13 @@ main(s32 ArgCount, const char** ArgStrings)
 
                 if (Parser->Valid)
                 {
-                  // TODO(Jesse): Add dUnion to the ProgramStructs list
                   counted_string EnumString = GenerateEnumDef(&dUnion, Memory);
                   counted_string StructString = GenerateStructDef(&dUnion, Memory);
+
+#if 0
+                  c_parse_result StructParse = ParseString(StructString);
+                  struct_def StructParse = ParseStruct(&StructParse);
+#endif
 
                   OutputForThisParser = Concat(OutputForThisParser, EnumString, Memory);
                   OutputForThisParser = Concat(OutputForThisParser, StructString, Memory);
