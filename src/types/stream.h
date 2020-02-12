@@ -86,13 +86,15 @@ struct mesh_metadata
 };
 
 ansi_stream
-AnsiStream(counted_string String)
+AnsiStream(counted_string String, counted_string Filename = {})
 {
   ansi_stream Result = {};
 
   Result.Start = String.Start;
   Result.At    = String.Start;
   Result.End   = String.Start + String.Count;
+
+  Result.Filename = Filename;
 
   return Result;
 }

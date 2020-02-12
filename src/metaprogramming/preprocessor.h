@@ -214,7 +214,7 @@ struct c_parse_result
   // structs this field has to be manually zeroed out ..
   c_token_buffer OutputTokens;
 
-  counted_string FileName;
+  counted_string Filename;
 
   u32 LineNumber;
 };

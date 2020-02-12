@@ -42,7 +42,7 @@ Advance(c_parse_result* Parser, u32 Lookahead = 0)
   }
   else
   {
-    Warn("Attempted to advance parser past end of stream on file : %.*s", (u32)Parser->FileName.Count, Parser->FileName.Start);
+    Warn("Attempted to advance parser past end of stream on file : %.*s", (u32)Parser->Filename.Count, Parser->Filename.Start);
   }
 
   return;
@@ -211,20 +211,15 @@ PopIdentifier(ansi_stream* SourceFileStream)
 }
 
 function c_parse_result
-TokenizeFile(counted_string FileName, memory_arena* Memory)
+TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory)
 {
   c_parse_result Result = {
-    .FileName = FileName,
-    .OutputTokens = AllocateTokenBuffer(Memory, (u32)Megabytes(1))
+    .Filename = Code.Filename
   };
 
-  // TODO(Jesse): Since we store pointers directly into this buffer, we need to
-  // keep the memory around.  Should we tokenize such that we allocate new
-  // memory for things that need it?  (Strings/Identifiers/Comments atm..)
-  ansi_stream SourceFileStream = AnsiStreamFromFile(FileName, Memory);
-  if (!SourceFileStream.Start)
+  if (!Code.Start)
   {
-    Error("Allocating stream for %.*s", (s32)FileName.Count, FileName.Start);
+    Error("Allocating stream for %.*s", (s32)Code.Filename.Count, Code.Filename.Start);
     return Result;
   }
 
@@ -235,37 +230,45 @@ TokenizeFile(counted_string FileName, memory_arena* Memory)
     return Result;
   }
 
-  while(Remaining(&SourceFileStream))
+
+  Result.OutputTokens = AllocateTokenBuffer(Memory, (u32)Megabytes(1));
+  if (!Result.OutputTokens.Start)
   {
-    c_token T = GetToken(&SourceFileStream);
+    Error("Allocating OutputTokens Buffer");
+    return Result;
+  }
+
+  while(Remaining(&Code))
+  {
+    c_token T = GetToken(&Code);
 
     switch (T.Type)
     {
       case CTokenType_FSlash:
       {
-        T = GetToken(&SourceFileStream, 1);
+        T = GetToken(&Code, 1);
         switch (T.Type)
         {
           case CTokenType_FSlash:
           {
             T.Type = CTokenType_Comment;
-            T.Value = CS(ReadUntilTerminatorList(&SourceFileStream, "\n", Memory));
-            --SourceFileStream.At;
+            T.Value = CS(ReadUntilTerminatorList(&Code, "\n", Memory));
+            --Code.At;
           } break;
 
           case CTokenType_Star:
           {
             T.Type = CTokenType_Comment;
-            T.Value = ReadUntilTerminatorString(&SourceFileStream, CS("*/"));
+            T.Value = ReadUntilTerminatorString(&Code, CS("*/"));
             ++T.Value.Count;
             T.Value = Concat(T.Value, CS("*/"), Memory);
-            Advance(&SourceFileStream);
+            Advance(&Code);
           } break;
 
           default:
           {
             T.Type = CTokenType_FSlash;
-            Advance(&SourceFileStream);
+            Advance(&Code);
           } break;
         }
       } break;
@@ -273,24 +276,24 @@ TokenizeFile(counted_string FileName, memory_arena* Memory)
       case CTokenType_SingleQuote:
       {
         T.Type = CTokenType_Char;
-        T.Value = PopQuotedCharLiteral(&SourceFileStream);
+        T.Value = PopQuotedCharLiteral(&Code);
       } break;
 
       case CTokenType_DoubleQuote:
       {
         T.Type = CTokenType_String;
-        T.Value = PopQuotedString(&SourceFileStream);
+        T.Value = PopQuotedString(&Code);
       } break;
 
       case CTokenType_Unknown:
       {
         T.Type = CTokenType_Identifier;
-        T.Value = PopIdentifier(&SourceFileStream);
+        T.Value = PopIdentifier(&Code);
       } break;
 
       default:
       {
-        Advance(&SourceFileStream);
+        Advance(&Code);
       } break;
     }
 
@@ -312,6 +315,24 @@ TokenizeFile(counted_string FileName, memory_arena* Memory)
   Result.Valid = False;
 #endif
 
+  return Result;
+}
+
+function c_parse_result
+TokenizeString(counted_string Code, counted_string Filename, memory_arena* Memory)
+{
+  c_parse_result Result = TokenizeAnsiStream(AnsiStream(Code, Filename), Memory);
+  return Result;
+}
+
+function c_parse_result
+TokenizeFile(counted_string Filename, memory_arena* Memory)
+{
+  // TODO(Jesse): Since we store pointers directly into this buffer, we need to
+  // keep the memory around.  Should we tokenize such that we allocate new
+  // memory for things that need it?  (Strings/Identifiers/Comments atm..)
+  ansi_stream SourceFileStream = AnsiStreamFromFile(Filename, Memory);
+  c_parse_result Result = TokenizeAnsiStream(SourceFileStream, Memory);
   return Result;
 }
 
@@ -433,7 +454,7 @@ OutputErrorHelperLine(c_parse_result* Parser, c_token* ErrorToken, c_token Expec
         Log(" ");
       }
 
-      Log("      %.*s:%u:%u: %.*s\n", Parser->FileName.Count, Parser->FileName.Start, LineNumber, ColumnCount, ErrorString.Count, ErrorString.Start);
+      Log("      %.*s:%u:%u: %.*s\n", Parser->Filename.Count, Parser->Filename.Start, LineNumber, ColumnCount, ErrorString.Count, ErrorString.Start);
 
       break;
     }
@@ -471,7 +492,7 @@ OutputParsingError(c_parse_result* Parser, c_token* ErrorToken, c_token Expected
   Log("----\n");
 
   /* u32 ColumnNumber = 0; */
-  /* Log("%.*s:%u:%u: Error\n", Parser->FileName.Count, Parser->FileName.Start, Parser->LineNumber, ColumnNumber); */
+  /* Log("%.*s:%u:%u: Error\n", Parser->Filename.Count, Parser->Filename.Start, Parser->LineNumber, ColumnNumber); */
 
   c_parse_result LocalParser = *Parser;
   LocalParser.OutputTokens = {};
@@ -737,7 +758,7 @@ ParseArgs(const char** ArgStrings, s32 ArgCount, memory_arena* Memory)
 global_variable random_series TempFileEntropy = {3215432};
 
 function b32
-Output(c_token_buffer Code, counted_string FileName, memory_arena* Memory)
+Output(c_token_buffer Code, counted_string Filename, memory_arena* Memory)
 {
   b32 Result = False;
 
@@ -785,13 +806,13 @@ Output(c_token_buffer Code, counted_string FileName, memory_arena* Memory)
 
     if (FileWritesSucceeded)
     {
-      if (Rename(TempFile, FileName))
+      if (Rename(TempFile, Filename))
       {
         Result = True;
       }
       else
       {
-        Error("Renaming tempfile: %.*s -> %.*s", (s32)TempFile.Path.Count, TempFile.Path.Start, (s32)FileName.Count, FileName.Start);
+        Error("Renaming tempfile: %.*s -> %.*s", (s32)TempFile.Path.Count, TempFile.Path.Start, (s32)Filename.Count, Filename.Start);
       }
     }
     else
@@ -808,7 +829,7 @@ Output(c_token_buffer Code, counted_string FileName, memory_arena* Memory)
 }
 
 function b32
-Output(counted_string Code, counted_string FileName, memory_arena* Memory)
+Output(counted_string Code, counted_string Filename, memory_arena* Memory)
 {
   b32 Result = False;
 
@@ -821,13 +842,13 @@ Output(counted_string Code, counted_string FileName, memory_arena* Memory)
 
     if (FileWritesSucceeded)
     {
-      if (Rename(TempFile, FileName))
+      if (Rename(TempFile, Filename))
       {
         Result = True;
       }
       else
       {
-        Error("Renaming tempfile: %.*s -> %.*s", (s32)TempFile.Path.Count, TempFile.Path.Start, (s32)FileName.Count, FileName.Start);
+        Error("Renaming tempfile: %.*s -> %.*s", (s32)TempFile.Path.Count, TempFile.Path.Start, (s32)Filename.Count, Filename.Start);
       }
     }
     else
@@ -1648,14 +1669,14 @@ AllocateTokenizedFiles(u32 Count, memory_arena* Memory)
 }
 
 function tokenized_files
-TokenizeAllFiles(static_string_buffer* FileNames, memory_arena* Memory)
+TokenizeAllFiles(static_string_buffer* Filenames, memory_arena* Memory)
 {
-  Assert(FileNames->At == FileNames->Start);
+  Assert(Filenames->At == Filenames->Start);
 
-  tokenized_files Result = AllocateTokenizedFiles((u32)Count(FileNames), Memory);
-  while ( FileNames->At < FileNames->End )
+  tokenized_files Result = AllocateTokenizedFiles((u32)Count(Filenames), Memory);
+  while ( Filenames->At < Filenames->End )
   {
-    counted_string CurrentFile = *FileNames->At;
+    counted_string CurrentFile = *Filenames->At;
 
     c_parse_result Parser = TokenizeFile(CurrentFile, Memory);
     if (Parser.Valid)
@@ -1668,7 +1689,7 @@ TokenizeAllFiles(static_string_buffer* FileNames, memory_arena* Memory)
       Error("Tokenizing File: %.*s", (s32)CurrentFile.Count, CurrentFile.Start);
     }
 
-    ++FileNames->At;
+    ++Filenames->At;
   }
 
   TruncateToCurrentSize(&Result);
@@ -1904,10 +1925,15 @@ main(s32 ArgCount, const char** ArgStrings)
                   counted_string EnumString = GenerateEnumDef(&dUnion, Memory);
                   counted_string StructString = GenerateStructDef(&dUnion, Memory);
 
-#if 0
-                  c_parse_result StructParse = ParseString(StructString);
-                  struct_def StructParse = ParseStruct(&StructParse);
-#endif
+                  // TODO(Jesse): This should ideally have the filename!!
+                  c_parse_result StructParse = TokenizeString(StructString, CS(""), Memory);
+                  RequireToken(&StructParse, CToken(CS("struct")));
+                  counted_string StructName = RequireToken(&StructParse, CTokenType_Identifier).Value;
+                  struct_def S = ParseStructBody(&StructParse, StructName, Memory);
+                  Push(&Datatypes.Structs, S, Memory);
+
+                  Assert( GetStructByType(&Datatypes.Structs, StructName) );
+
 
                   OutputForThisParser = Concat(OutputForThisParser, EnumString, Memory);
                   OutputForThisParser = Concat(OutputForThisParser, StructString, Memory);
@@ -2060,7 +2086,7 @@ main(s32 ArgCount, const char** ArgStrings)
       if (Parser->Valid)
       {
         TruncateToCurrentSize(&Parser->OutputTokens);
-        Output(Parser->OutputTokens, Parser->FileName, Memory);
+        Output(Parser->OutputTokens, Parser->Filename, Memory);
       }
 
       continue;
