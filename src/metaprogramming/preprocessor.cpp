@@ -1995,7 +1995,7 @@ main(s32 ArgCount, const char** ArgStrings)
               }
               else
               {
-                u32 Directives = 0;
+                u32 Directives = 0; // ParseMetaprogrammingDirectives();
                 while (IsMetaprogrammingDirective(Token.Value))
                 {
                   metaprogramming_directives D = {};

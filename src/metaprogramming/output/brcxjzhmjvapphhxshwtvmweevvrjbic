@@ -1,0 +1,8 @@
+
+struct c_token_cursor
+{
+  c_token* Start;
+  c_token* End;
+  c_token* At;
+};
+

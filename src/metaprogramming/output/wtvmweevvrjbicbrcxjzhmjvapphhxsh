@@ -1,0 +1,8 @@
+
+struct c_parse_result_cursor
+{
+  c_parse_result* Start;
+  c_parse_result* End;
+  c_parse_result* At;
+};
+
