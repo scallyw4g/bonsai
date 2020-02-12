@@ -1887,6 +1887,26 @@ Advance(%.*s_iterator* Iter)
   return Result;
 }
 
+function metaprogramming_directives
+ParseMetaprogrammingDirectives(c_parse_result* Parser)
+{
+  u32 Result = {};
+  c_token NextToken = PeekToken(Parser);
+
+  while (IsMetaprogrammingDirective(NextToken.Value))
+  {
+    NextToken = PopToken(Parser);
+
+    metaprogramming_directives D = noop;
+    ToValue(NextToken.Value, &D);
+    Result |= D;
+
+    NextToken = PeekToken(Parser);
+  }
+
+  return (metaprogramming_directives)Result;
+}
+
 #ifndef EXCLUDE_PREPROCESSOR_MAIN
 s32
 main(s32 ArgCount, const char** ArgStrings)
@@ -1925,92 +1945,24 @@ main(s32 ArgCount, const char** ArgStrings)
       Parser->LineNumber = 1;
       while (Parser->Valid && Remaining(&Parser->Tokens))
       {
-        c_token Token = PopToken(Parser);
+        c_token NextToken = PeekToken(Parser);
 
-        switch( Token.Type )
+        switch( NextToken.Type )
         {
           case CTokenType_Identifier:
           {
-            if (StringsMatch(Token.Value, CS("meta")))
+            if (OptionalToken(Parser, CToken(CS("meta"))))
             {
               counted_string OutputForThisParser = {};
               RequireToken(Parser, CTokenType_OpenParen);
 
-              Token = RequireToken(Parser, CTokenType_Identifier);
-              if (StringsMatch(Token.Value, ToString(d_union)))
+              metaprogramming_directives Directives = ParseMetaprogrammingDirectives(Parser);
+              if (OptionalToken(Parser, CTokenType_CloseParen))  // We've only got directives
               {
-                RequireToken(Parser, CTokenType_OpenParen);
-                d_union_decl dUnion = ParseDiscriminatedUnion(Parser, Memory);
-
-                if (Parser->Valid)
-                {
-                  counted_string EnumString = GenerateEnumDef(&dUnion, Memory);
-                  counted_string StructString = GenerateStructDef(&dUnion, Memory);
-
-                  c_parse_result StructParse = TokenizeString(StructString, CS("TODO(Jesse): Filename goes here!"), Memory);
-                  RequireToken(&StructParse, CToken(CS("struct")));
-                  counted_string StructName = RequireToken(&StructParse, CTokenType_Identifier).Value;
-                  struct_def S = ParseStructBody(&StructParse, StructName, Memory);
-                  Push(&Datatypes.Structs, S, Memory);
-
-                  c_parse_result EnumParse = TokenizeString(EnumString, CS("TODO(Jesse): Filename goes here!"), Memory);
-                  RequireToken(&EnumParse, CToken(CS("enum")));
-                  enum_def E = ParseEnum(&EnumParse, Memory);
-                  Push(&Datatypes.Enums, E, Memory);
-
-                  Assert( GetStructByType(&Datatypes.Structs, StructName) );
-
-                  OutputForThisParser = Concat(OutputForThisParser, EnumString, Memory);
-                  OutputForThisParser = Concat(OutputForThisParser, StructString, Memory);
-                }
-                else
-                {
-                  Error("Parsing d_union declaration");
-                }
-              }
-              else if (StringsMatch(Token.Value, ToString(for_enum_values)))
-              {
-                RequireToken(Parser, CTokenType_OpenParen);
-
-                counted_string TypeName = RequireToken(Parser, CTokenType_Identifier).Value;
-                OutputForThisParser = ParseForEnumValues(Parser, TypeName, &Datatypes.Enums, Memory);
-              }
-              else if (StringsMatch(Token.Value, ToString(for_members_in)))
-              {
-                RequireToken(Parser, CTokenType_OpenParen);
-                for_member_constraints Constraints = {};
-
-                counted_string TypeName = RequireToken(Parser, CTokenType_Identifier).Value;
-                struct_def* Target = GetStructByType(&Datatypes.Structs, TypeName);
-
-                if (Target)
-                {
-                  OutputForThisParser = ParseForMembers(Parser, &Constraints, Target, &Datatypes.Structs, Memory);
-                }
-                else
-                {
-                  Parser->Valid = False;
-                  Error("Couldn't find matching struct %.*s", (s32)TypeName.Count, TypeName.Start);
-                }
-              }
-              else
-              {
-                u32 Directives = 0; // ParseMetaprogrammingDirectives();
-                while (IsMetaprogrammingDirective(Token.Value))
-                {
-                  metaprogramming_directives D = {};
-                  ToValue(Token.Value, &D);
-                  Directives |= D;
-
-                  Token = PopToken(Parser);
-                }
-
-                Assert(Token.Type == CTokenType_CloseParen);
-
+                Assert(Directives);
                 counted_string DatatypeKeyword = RequireToken(Parser, CTokenType_Identifier).Value;
                 counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
 
-                Assert(Directives);
                 if (Directives & generate_stream)
                 {
                   Assert(StringsMatch(DatatypeKeyword, CS("struct")));
@@ -2047,6 +1999,63 @@ main(s32 ArgCount, const char** ArgStrings)
                 EatNextScope(Parser);
                 RequireToken(Parser, CTokenType_Semicolon);
               }
+              else
+              {
+                RequireToken(Parser, CTokenType_OpenParen);
+                if (Directives & d_union)
+                {
+                  d_union_decl dUnion = ParseDiscriminatedUnion(Parser, Memory);
+                  if (Parser->Valid)
+                  {
+                    counted_string EnumString = GenerateEnumDef(&dUnion, Memory);
+                    counted_string StructString = GenerateStructDef(&dUnion, Memory);
+
+                    c_parse_result StructParse = TokenizeString(StructString, CS("TODO(Jesse): Filename goes here!"), Memory);
+                    RequireToken(&StructParse, CToken(CS("struct")));
+                    counted_string StructName = RequireToken(&StructParse, CTokenType_Identifier).Value;
+                    struct_def S = ParseStructBody(&StructParse, StructName, Memory);
+                    Push(&Datatypes.Structs, S, Memory);
+
+                    c_parse_result EnumParse = TokenizeString(EnumString, CS("TODO(Jesse): Filename goes here!"), Memory);
+                    RequireToken(&EnumParse, CToken(CS("enum")));
+                    enum_def E = ParseEnum(&EnumParse, Memory);
+                    Push(&Datatypes.Enums, E, Memory);
+
+                    Assert( GetStructByType(&Datatypes.Structs, StructName) );
+
+                    OutputForThisParser = Concat(OutputForThisParser, EnumString, Memory);
+                    OutputForThisParser = Concat(OutputForThisParser, StructString, Memory);
+                  }
+                  else
+                  {
+                    Error("Parsing d_union declaration");
+                  }
+                }
+
+                if (Directives & for_enum_values)
+                {
+                  counted_string TypeName = RequireToken(Parser, CTokenType_Identifier).Value;
+                  OutputForThisParser = ParseForEnumValues(Parser, TypeName, &Datatypes.Enums, Memory);
+                }
+
+                if (Directives & for_members_in)
+                {
+                  for_member_constraints Constraints = {};
+                  counted_string TypeName = RequireToken(Parser, CTokenType_Identifier).Value;
+                  struct_def* Target = GetStructByType(&Datatypes.Structs, TypeName);
+
+                  if (Target)
+                  {
+                    OutputForThisParser = ParseForMembers(Parser, &Constraints, Target, &Datatypes.Structs, Memory);
+                  }
+                  else
+                  {
+                    Parser->Valid = False;
+                    Error("Couldn't find matching struct %.*s", (s32)TypeName.Count, TypeName.Start);
+                  }
+                }
+
+              }
 
               if (Parser->Valid)
               {
@@ -2072,6 +2081,7 @@ main(s32 ArgCount, const char** ArgStrings)
                   RequireToken(Parser, CTokenType_GT);
 
                   IncludePath = Concat(CS("src/metaprogramming/output/"), IncludePath, Memory);
+                  Info("Generated and output %.*s", (u32)IncludePath.Count, IncludePath.Start);
                   Output(OutputForThisParser, IncludePath, Memory);
                 }
                 else
@@ -2103,9 +2113,16 @@ main(s32 ArgCount, const char** ArgStrings)
               }
 
             }
+            else
+            {
+              PopToken(Parser);
+            }
           } break;
 
-          default: { } break;
+          default:
+          {
+            PopToken(Parser);
+          } break;
         }
 
         continue;

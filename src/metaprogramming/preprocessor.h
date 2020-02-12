@@ -165,7 +165,6 @@ struct enum_def
 };
 #include <metaprogramming/output/pfsmgwzwarcnhagctndziuznbcblehsi>
 
-
 meta(generate_cursor)
 struct c_token
 {
