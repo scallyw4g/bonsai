@@ -3,7 +3,7 @@
 
         Result |= StringsMatch(ToString(generate_stream), Identifier);
 
-        Result |= StringsMatch(ToString(generate_static_buffer), Identifier);
+        Result |= StringsMatch(ToString(generate_cursor), Identifier);
 
         Result |= StringsMatch(ToString(generate_string_table), Identifier);
 

@@ -32,7 +32,7 @@ enum metaprogramming_directives
 {
   noop                   = 0x00,
   generate_stream        = 0x01,
-  generate_static_buffer = 0x02,
+  generate_cursor        = 0x02,
   generate_string_table  = 0x04,
   generate_value_table   = 0x08,
 
@@ -197,7 +197,6 @@ struct c_token_buffer
   c_token* At;
   c_token* End;
 };
-
 
 struct d_union_decl
 {

@@ -1730,6 +1730,27 @@ ToValue(counted_string S, %.*s* Result)
 }
 
 function counted_string
+GenerateCursorFor(counted_string StructName, memory_arena* Memory)
+{
+  counted_string Result = FormatCountedString(Memory,
+R"INLINE_CODE(
+struct %.*s_cursor
+{
+  %.*s* Start;
+  %.*s* End;
+  %.*s* At;
+};
+)INLINE_CODE",
+    StructName.Count, StructName.Start,
+    StructName.Count, StructName.Start,
+    StructName.Count, StructName.Start,
+    StructName.Count, StructName.Start
+    );
+
+  return Result;
+}
+
+function counted_string
 GenerateNameTableFor(enum_def* Enum, memory_arena* Memory)
 {
   counted_string Result = FormatCountedString(Memory,
@@ -2000,7 +2021,9 @@ main(s32 ArgCount, const char** ArgStrings)
                 if (Directives & generate_cursor)
                 {
                   Assert(Token == CToken(CS("struct")));
-                  /* counted_string StructName = RequireToken(Parser, CTokenType_Identifier).Value; */
+                  counted_string StructName = RequireToken(Parser, CTokenType_Identifier).Value;
+                  counted_string CursorDef = GenerateCursorFor(StructName, Memory);
+                  OutputForThisParser = Concat(OutputForThisParser, CursorDef, Memory);
                 }
 
                 if (Directives & generate_value_table ||
