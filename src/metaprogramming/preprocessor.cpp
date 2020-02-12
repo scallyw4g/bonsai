@@ -2007,31 +2007,29 @@ main(s32 ArgCount, const char** ArgStrings)
 
                 Assert(Token.Type == CTokenType_CloseParen);
 
-                Token = RequireToken(Parser, CTokenType_Identifier);
+                counted_string DatatypeKeyword = RequireToken(Parser, CTokenType_Identifier).Value;
+                counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
 
                 Assert(Directives);
                 if (Directives & generate_stream)
                 {
-                  Assert(Token == CToken(CS("struct")));
-                  counted_string StructName = RequireToken(Parser, CTokenType_Identifier).Value;
-                  counted_string StreamCode = GenerateStreamFor(StructName, Memory);
+                  Assert(StringsMatch(DatatypeKeyword, CS("struct")));
+                  counted_string StreamCode = GenerateStreamFor(DatatypeName, Memory);
                   OutputForThisParser = Concat(OutputForThisParser, StreamCode, Memory);
                 }
 
                 if (Directives & generate_cursor)
                 {
-                  Assert(Token == CToken(CS("struct")));
-                  counted_string StructName = RequireToken(Parser, CTokenType_Identifier).Value;
-                  counted_string CursorDef = GenerateCursorFor(StructName, Memory);
+                  Assert(StringsMatch(DatatypeKeyword, CS("struct")));
+                  counted_string CursorDef = GenerateCursorFor(DatatypeName, Memory);
                   OutputForThisParser = Concat(OutputForThisParser, CursorDef, Memory);
                 }
 
                 if (Directives & generate_value_table ||
                     Directives & generate_string_table)
                 {
-                  Assert(Token == CToken(CS("enum")));
-                  counted_string EnumName = RequireToken(Parser, CTokenType_Identifier).Value;
-                  enum_def* Enum = GetEnumByType(&Datatypes.Enums, EnumName);
+                  Assert(StringsMatch(DatatypeKeyword, CS("enum")));
+                  enum_def* Enum = GetEnumByType(&Datatypes.Enums, DatatypeName);
 
                   if (Directives & generate_string_table)
                   {
