@@ -1934,7 +1934,6 @@ main(s32 ArgCount, const char** ArgStrings)
 
                   Assert( GetStructByType(&Datatypes.Structs, StructName) );
 
-
                   OutputForThisParser = Concat(OutputForThisParser, EnumString, Memory);
                   OutputForThisParser = Concat(OutputForThisParser, StructString, Memory);
                 }
