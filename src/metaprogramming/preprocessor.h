@@ -171,11 +171,14 @@ struct c_decl_stream_chunk
   c_decl_stream_chunk* Next;
 };
 
+meta(generate_stream)
 struct enum_def
 {
   counted_string Name;
   enum_field_stream Fields;
 };
+#include <metaprogramming/output/pfsmgwzwarcnhagctndziuznbcblehsi>
+
 
 struct c_token
 {
@@ -211,8 +214,6 @@ struct c_parse_result
   // structs this field has to be manually zeroed out ..
   c_token_buffer OutputTokens;
 
-  u32 EnumCount;
-
   counted_string FileName;
 
   u32 LineNumber;
@@ -233,23 +234,15 @@ struct arguments
 
 struct tokenized_files
 {
-  u32 EnumCount;
-
   c_parse_result* Start;
   c_parse_result* End;
   c_parse_result* At;
 };
 
-struct enum_defs
-{
-  u32 Count;
-  enum_def* Defs;
-};
-
 struct program_datatypes
 {
   struct_def_stream Structs;
-  enum_defs Enums;
+  enum_def_stream Enums;
 };
 
 struct c_decl_iterator

@@ -286,12 +286,6 @@ TokenizeFile(counted_string FileName, memory_arena* Memory)
       {
         T.Type = CTokenType_Identifier;
         T.Value = PopIdentifier(&SourceFileStream);
-
-        if (StringsMatch(T.Value, CS("enum")))
-        {
-          ++Result.EnumCount;
-        }
-
       } break;
 
       default:
@@ -577,18 +571,6 @@ PushMember(d_union_decl* dUnion, c_token MemberIdentifierToken, d_union_flags Fl
   Push(&dUnion->Members, Member, Memory);
 }
 
-template <typename cursor_t, typename element_t> inline cursor_t
-Cursor(u32 Count, memory_arena* Memory)
-{
-  element_t* Start = Allocate(element_t, Memory, Count);
-  cursor_t Cursor = {
-    .Start = Start,
-    .At = Start,
-    .End = Start + Count
-  };
-  return Cursor;
-}
-
 function counted_string
 GenerateEnumDef(d_union_decl* dUnion, memory_arena* Memory)
 {
@@ -677,15 +659,16 @@ ParseDiscriminatedUnion(c_parse_result* Parser, memory_arena* Memory)
 }
 
 function enum_def*
-GetEnumByType(enum_defs* Enums, counted_string Type)
+GetEnumByType(enum_def_stream* ProgramEnums, counted_string EnumType)
 {
   enum_def* Result = 0;
-  for (u32 EnumIndex = 0;
-      EnumIndex < Enums->Count;
-      ++EnumIndex)
+  for (enum_def_iterator Iter = Iterator(ProgramEnums);
+      IsValid(&Iter);
+      Advance(&Iter))
   {
-    enum_def* Enum = Enums->Defs + EnumIndex;
-    if (StringsMatch(Enum->Name, Type)) {
+    enum_def* Enum = &Iter.At->Element;
+    if (StringsMatch(Enum->Name, EnumType))
+    {
       Result = Enum;
       break;
     }
@@ -996,17 +979,6 @@ DumpCDeclStreamToConsole(c_decl_stream* Stream)
     }
   }
 }
-
-function enum_defs
-AllocateEnumDefs(u32 Count, memory_arena* Memory)
-{
-  enum_defs Result = {
-    .Count = Count,
-    .Defs = Allocate(enum_def, Memory, Count),
-  };
-
-  return Result;
-};
 
 function struct_def
 StructDef(counted_string Name)
@@ -1350,7 +1322,7 @@ GetBodyTextForNextScope(c_parse_result* Parser)
 }
 
 function counted_string
-ParseForEnumValues(c_parse_result* Parser, counted_string TypeName, enum_defs* ProgramEnums, memory_arena* Memory)
+ParseForEnumValues(c_parse_result* Parser, counted_string TypeName, enum_def_stream* ProgramEnums, memory_arena* Memory)
 {
   counted_string Result = {};
 
@@ -1576,12 +1548,11 @@ ParseEnum(c_parse_result* Parser, memory_arena* Memory)
 }
 
 function program_datatypes
-ParseAllDatatypes(tokenized_files Files_in, u32 MaxEnumCount, memory_arena* Memory)
+ParseAllDatatypes(tokenized_files Files_in, memory_arena* Memory)
 {
   tokenized_files* Files = &Files_in;
 
-  enum_cursor EnumCursor = Cursor<enum_cursor, enum_def>(MaxEnumCount, Memory);
-
+  enum_def_stream EnumStream = {};
   struct_def_stream StructStream = {};
 
   for (u32 ParserIndex = 0;
@@ -1626,7 +1597,7 @@ ParseAllDatatypes(tokenized_files Files_in, u32 MaxEnumCount, memory_arena* Memo
           else if (StringsMatch(Token.Value, CS("enum")))
           {
             enum_def Enum = ParseEnum(Parser, Memory);
-            Push(Enum, &EnumCursor);
+            Push(&EnumStream, Enum, Memory);
           }
           else if (StringsMatch(Token.Value, CS("struct")))
           {
@@ -1655,12 +1626,8 @@ ParseAllDatatypes(tokenized_files Files_in, u32 MaxEnumCount, memory_arena* Memo
     Rewind(&Parser->Tokens);
   }
 
-  u32 EnumCount = (u32)CurrentCount(&EnumCursor);
-  enum_defs Enums = AllocateEnumDefs(EnumCount, Memory);
-  Enums.Defs = EnumCursor.Start;
-
   program_datatypes Result = {
-    .Enums = Enums,
+    .Enums = EnumStream,
     .Structs = StructStream
   };
 
@@ -1695,7 +1662,6 @@ TokenizeAllFiles(static_string_buffer* FileNames, memory_arena* Memory)
     {
       Rewind(&Parser.Tokens);
       Push(Parser, &Result);
-      Result.EnumCount += Parser.EnumCount;
     }
     else
     {
@@ -1901,7 +1867,7 @@ main(s32 ArgCount, const char** ArgStrings)
     tokenized_files ParsedFiles = TokenizeAllFiles(&Args.Files, Memory);
     Assert(ParsedFiles.Start == ParsedFiles.At);
 
-    program_datatypes Datatypes = ParseAllDatatypes(ParsedFiles, ParsedFiles.EnumCount, Memory);
+    program_datatypes Datatypes = ParseAllDatatypes(ParsedFiles, Memory);
     Assert(ParsedFiles.Start == ParsedFiles.At);
 
     for (u32 ParserIndex = 0;
