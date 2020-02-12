@@ -68,3 +68,10 @@ Advance(counted_string_iterator* Iter)
 }
 
 
+struct counted_string_cursor
+{
+  counted_string* Start;
+  counted_string* End;
+  counted_string* At;
+};
+

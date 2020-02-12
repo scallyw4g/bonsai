@@ -68,3 +68,10 @@ Advance(struct_def_iterator* Iter)
 }
 
 
+struct struct_def_cursor
+{
+  struct_def* Start;
+  struct_def* End;
+  struct_def* At;
+};
+

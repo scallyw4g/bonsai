@@ -10,7 +10,7 @@ IsWhitespace(c_token_type Type)
 }
 
 function void
-Advance(c_token_buffer* Tokens, u32 Lookahead = 0)
+Advance(c_token_cursor* Tokens, u32 Lookahead = 0)
 {
   if (Remaining(Tokens, Lookahead))
   {
@@ -722,7 +722,7 @@ ParseArgs(const char** ArgStrings, s32 ArgCount, memory_arena* Memory)
 {
   arguments Result = {
     .OutPath = CS("src/metaprogramming/output"),
-    .Files = AllocateBuffer<static_string_buffer, counted_string>((u32)ArgCount, Memory),
+    .Files = AllocateBuffer<counted_string_cursor, counted_string>((u32)ArgCount, Memory),
   };
 
   for (s32 ArgIndex = 1;
@@ -758,7 +758,7 @@ ParseArgs(const char** ArgStrings, s32 ArgCount, memory_arena* Memory)
 global_variable random_series TempFileEntropy = {3215432};
 
 function b32
-Output(c_token_buffer Code, counted_string Filename, memory_arena* Memory)
+Output(c_token_cursor Code, counted_string Filename, memory_arena* Memory)
 {
   b32 Result = False;
 
@@ -1569,9 +1569,9 @@ ParseEnum(c_parse_result* Parser, memory_arena* Memory)
 }
 
 function program_datatypes
-ParseAllDatatypes(tokenized_files Files_in, memory_arena* Memory)
+ParseAllDatatypes(c_parse_result_cursor Files_in, memory_arena* Memory)
 {
-  tokenized_files* Files = &Files_in;
+  c_parse_result_cursor* Files = &Files_in;
 
   enum_def_stream EnumStream = {};
   struct_def_stream StructStream = {};
@@ -1656,11 +1656,11 @@ ParseAllDatatypes(tokenized_files Files_in, memory_arena* Memory)
   return Result;
 }
 
-function tokenized_files
+function c_parse_result_cursor
 AllocateTokenizedFiles(u32 Count, memory_arena* Memory)
 {
   c_parse_result* Start = Allocate(c_parse_result, Memory, Count);
-  tokenized_files Result = {
+  c_parse_result_cursor Result = {
     .Start = Start,
     .At = Start,
     .End = Start + Count,
@@ -1669,12 +1669,12 @@ AllocateTokenizedFiles(u32 Count, memory_arena* Memory)
   return Result;
 }
 
-function tokenized_files
-TokenizeAllFiles(static_string_buffer* Filenames, memory_arena* Memory)
+function c_parse_result_cursor
+TokenizeAllFiles(counted_string_cursor* Filenames, memory_arena* Memory)
 {
   Assert(Filenames->At == Filenames->Start);
 
-  tokenized_files Result = AllocateTokenizedFiles((u32)Count(Filenames), Memory);
+  c_parse_result_cursor Result = AllocateTokenizedFiles((u32)Count(Filenames), Memory);
   while ( Filenames->At < Filenames->End )
   {
     counted_string CurrentFile = *Filenames->At;
@@ -1907,7 +1907,7 @@ main(s32 ArgCount, const char** ArgStrings)
     arguments Args = ParseArgs(ArgStrings, ArgCount, Memory);
     Assert(Args.Files.Start == Args.Files.At);
 
-    tokenized_files ParsedFiles = TokenizeAllFiles(&Args.Files, Memory);
+    c_parse_result_cursor ParsedFiles = TokenizeAllFiles(&Args.Files, Memory);
     Assert(ParsedFiles.Start == ParsedFiles.At);
 
     program_datatypes Datatypes = ParseAllDatatypes(ParsedFiles, Memory);
@@ -2076,6 +2076,9 @@ main(s32 ArgCount, const char** ArgStrings)
                 }
                 else
                 {
+                  // TODO(Jesse): I've observed a collision using this hashing
+                  // function and output strategy .. we should probably change
+                  // to something better.
                   TempFileEntropy.Seed = Hash(&OutputForThisParser);
 
                   counted_string OutFile = GetRandomFilename(&TempFileEntropy, Memory);

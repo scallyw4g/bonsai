@@ -109,29 +109,14 @@ struct c_decl_stream
   c_decl_stream_chunk* LastChunk;
 };
 
-meta(generate_stream)
+meta(generate_stream
+     generate_cursor)
 struct struct_def
 {
   counted_string Name;
   c_decl_stream Fields;
 };
 #include <metaprogramming/output/gyffnythevxvbfqtbesajxttogkghbgj>
-
-
-struct enum_def;
-struct enum_cursor
-{
-  enum_def* Start;
-  enum_def* End;
-  enum_def* At;
-};
-
-struct struct_cursor
-{
-  struct_def* Start;
-  struct_def* End;
-  struct_def* At;
-};
 
 struct c_decl_union
 {
@@ -171,7 +156,8 @@ struct c_decl_stream_chunk
   c_decl_stream_chunk* Next;
 };
 
-meta(generate_stream)
+meta(generate_stream
+     generate_cursor)
 struct enum_def
 {
   counted_string Name;
@@ -180,6 +166,7 @@ struct enum_def
 #include <metaprogramming/output/pfsmgwzwarcnhagctndziuznbcblehsi>
 
 
+meta(generate_cursor)
 struct c_token
 {
   c_token_type Type;
@@ -190,13 +177,7 @@ struct c_token
     metaprogramming_directives Directive;
   };
 };
-
-struct c_token_buffer
-{
-  c_token* Start;
-  c_token* At;
-  c_token* End;
-};
+#include <metaprogramming/output/brcxjzhmjvapphhxshwtvmweevvrjbic>
 
 struct d_union_decl
 {
@@ -204,38 +185,27 @@ struct d_union_decl
   d_union_member_stream Members;
 };
 
+meta(generate_cursor)
 struct c_parse_result
 {
   b32 Valid;
-  c_token_buffer Tokens;
+  c_token_cursor Tokens;
 
   // NOTE(Jesse): This is pretty shitty because whenever we copy one of these
   // structs this field has to be manually zeroed out ..
-  c_token_buffer OutputTokens;
+  c_token_cursor OutputTokens;
 
   counted_string Filename;
-
   u32 LineNumber;
 };
+#include <metaprogramming/output/wtvmweevvrjbicbrcxjzhmjvapphhxsh>
 
-struct static_string_buffer
-{
-  counted_string* Start;
-  counted_string* End;
-  counted_string* At;
-};
+
 
 struct arguments
 {
   counted_string OutPath;
-  static_string_buffer Files;
-};
-
-struct tokenized_files
-{
-  c_parse_result* Start;
-  c_parse_result* End;
-  c_parse_result* At;
+  counted_string_cursor Files;
 };
 
 struct program_datatypes
@@ -352,10 +322,10 @@ CToken(c_token_type Type, counted_string Value = CountedString(""))
   return Result;
 }
 
-c_token_buffer
+c_token_cursor
 AllocateTokenBuffer(memory_arena* Memory, u32 Count)
 {
-  c_token_buffer Result = {};
+  c_token_cursor Result = {};
   Result.Start = Allocate(c_token, Memory, Count);
   Result.At = Result.Start;
   Result.End = Result.Start + Count;

@@ -1,5 +1,6 @@
 
-meta(generate_stream)
+meta(generate_stream
+     generate_cursor)
 struct counted_string
 {
   umm Count;
