@@ -1596,6 +1596,7 @@ ParseAllDatatypes(tokenized_files Files_in, memory_arena* Memory)
           }
           else if (StringsMatch(Token.Value, CS("typedef")))
           {
+            // typedef struct { .... } the_struct_name;
             if (PeekToken(Parser) == CToken(CS("struct")))
             {
               RequireToken(Parser, CToken((CS("struct"))));
@@ -1925,12 +1926,16 @@ main(s32 ArgCount, const char** ArgStrings)
                   counted_string EnumString = GenerateEnumDef(&dUnion, Memory);
                   counted_string StructString = GenerateStructDef(&dUnion, Memory);
 
-                  // TODO(Jesse): This should ideally have the filename!!
-                  c_parse_result StructParse = TokenizeString(StructString, CS(""), Memory);
+                  c_parse_result StructParse = TokenizeString(StructString, CS("TODO(Jesse): Filename goes here!"), Memory);
                   RequireToken(&StructParse, CToken(CS("struct")));
                   counted_string StructName = RequireToken(&StructParse, CTokenType_Identifier).Value;
                   struct_def S = ParseStructBody(&StructParse, StructName, Memory);
                   Push(&Datatypes.Structs, S, Memory);
+
+                  c_parse_result EnumParse = TokenizeString(EnumString, CS("TODO(Jesse): Filename goes here!"), Memory);
+                  RequireToken(&EnumParse, CToken(CS("enum")));
+                  enum_def E = ParseEnum(&EnumParse, Memory);
+                  Push(&Datatypes.Enums, E, Memory);
 
                   Assert( GetStructByType(&Datatypes.Structs, StructName) );
 
@@ -1992,7 +1997,7 @@ main(s32 ArgCount, const char** ArgStrings)
                   OutputForThisParser = Concat(OutputForThisParser, StreamCode, Memory);
                 }
 
-                if (Directives & generate_static_buffer)
+                if (Directives & generate_cursor)
                 {
                   Assert(Token == CToken(CS("struct")));
                   /* counted_string StructName = RequireToken(Parser, CTokenType_Identifier).Value; */
