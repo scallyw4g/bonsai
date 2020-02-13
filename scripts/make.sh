@@ -71,10 +71,9 @@ COMMON_LINKER_OPTIONS="-lpthread -lX11 -ldl -lGL"
 SHARED_LIBRARY_FLAGS="-shared -fPIC"
 
 EXAMPLES_TO_BUILD="
-  $EXAMPLES/rng_test
-  $EXAMPLES/world_gen
 "
 
+  # $EXAMPLES/world_gen
   # $EXAMPLES/animation_test
   # $EXAMPLES/ssao_test
   # $EXAMPLES/space_invaders
@@ -102,6 +101,7 @@ TESTS_TO_BUILD="
   $TESTS/callgraph.cpp
   $TESTS/heap_allocation.cpp
   $TESTS/preprocessor.cpp
+  $TESTS/rng_test.cpp
 "
 
 function BuildPreprocessor {
@@ -269,12 +269,12 @@ fi
 rm -Rf $META_OUT
 mkdir $META_OUT
 
-SOURCE_FILES="$(find src -type f -name "*.h" -and -not -wholename "src/metaprogramming/defines.h" | tr '\n' ' ') $(find src -type f -name "*.cpp" | tr '\n' ' ')"
-ColorizeTitle "Preprocessing"
-bin/preprocessor $SOURCE_FILES
+# SOURCE_FILES="$(find src -type f -name "*.h" -and -not -wholename "src/metaprogramming/defines.h" | tr '\n' ' ') $(find src -type f -name "*.cpp" | tr '\n' ' ')"
+# ColorizeTitle "Preprocessing"
+# bin/preprocessor $SOURCE_FILES
 
-BuildPreprocessor
-[ ! -x bin/preprocessor ] && echo -e "$Failed Couldn't find preprocessor, exiting." && exit 1
+# BuildPreprocessor
+# [ ! -x bin/preprocessor ] && echo -e "$Failed Couldn't find preprocessor, exiting." && exit 1
 
 SOURCE_FILES="$(find src -type f -name "*.h" -and -not -wholename "src/metaprogramming/defines.h" | tr '\n' ' ') $(find src -type f -name "*.cpp" | tr '\n' ' ')"
 ColorizeTitle "Preprocessing"
