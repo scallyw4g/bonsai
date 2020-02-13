@@ -71,6 +71,7 @@ COMMON_LINKER_OPTIONS="-lpthread -lX11 -ldl -lGL"
 SHARED_LIBRARY_FLAGS="-shared -fPIC"
 
 EXAMPLES_TO_BUILD="
+  $EXAMPLES/rng_test
   $EXAMPLES/world_gen
 "
 
