@@ -1,0 +1,8 @@
+
+struct enum_def_cursor
+{
+  enum_def* Start;
+  enum_def* End;
+  enum_def* At;
+};
+

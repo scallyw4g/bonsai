@@ -1,0 +1,8 @@
+
+struct c_decl_cursor
+{
+  c_decl* Start;
+  c_decl* End;
+  c_decl* At;
+};
+
