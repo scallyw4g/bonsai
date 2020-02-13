@@ -601,15 +601,24 @@ RandomBilateral(random_series *Entropy)
   return Result;
 }
 
+function u32
+MapValueToRange(u32 LowestPossibleValue, r32 Value, u32 HighestPossibleValue)
+{
+  u32 Range = HighestPossibleValue - LowestPossibleValue;
+  u32 Result = (u32)(Value*Range) + LowestPossibleValue;
+  Assert(Result >= LowestPossibleValue);
+  Assert(Result <= HighestPossibleValue);
+  return Result;
+}
+
 inline u32
 RandomBetween(u32 LowestPossibleValue, random_series* Entropy, u32 HighestPossibleValue)
 {
   Assert(LowestPossibleValue <= HighestPossibleValue);
-
   r32 Value = RandomUnilateral(Entropy);
-  u32 Range = (HighestPossibleValue+1) - LowestPossibleValue;
-
-  u32 Result = (u32)(Value*Range) + LowestPossibleValue;
+  u32 Result = MapValueToRange(LowestPossibleValue, Value, HighestPossibleValue);
+  Assert(Result >= LowestPossibleValue);
+  Assert(Result <= HighestPossibleValue);
   return Result;
 }
 

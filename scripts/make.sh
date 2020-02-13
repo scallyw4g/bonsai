@@ -101,7 +101,7 @@ TESTS_TO_BUILD="
   $TESTS/callgraph.cpp
   $TESTS/heap_allocation.cpp
   $TESTS/preprocessor.cpp
-  $TESTS/rng_test.cpp
+  $TESTS/rng.cpp
 "
 
 function BuildPreprocessor {
