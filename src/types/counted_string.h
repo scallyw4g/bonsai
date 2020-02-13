@@ -1,12 +1,16 @@
 
-meta(generate_stream
-     generate_cursor)
 struct counted_string
 {
   umm Count;
   const char* Start; // TODO(Jesse): Make this non-const?
 };
-#include <metaprogramming/output/wslqtuvvbbispxohzmpcfwnwbogkreph>
+meta(generate_stream(counted_string))
+#include <metaprogramming/output/brfjwottefqtldnbxoraidaprudowedu>
+
+meta(generate_cursor(counted_string))
+#include <metaprogramming/output/exbwmrretbjlcbkyjumkulrrqialhqka>
+
+
 
 
 umm
