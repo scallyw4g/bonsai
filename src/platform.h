@@ -68,10 +68,7 @@ meta(
     work_queue_entry_copy_buffer,
   })
 )
-#include <metaprogramming/output/bxucinjhpppifhjmsijrljxbbpypxxfa>
-
-
-
+#include <metaprogramming/output/d_union_work_queue_entry>
 
 struct thread
 {

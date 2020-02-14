@@ -1,3 +1,11 @@
+# Feb 13 2020 - 0:40 - closed - Issue with calling RequireToken in too many places
+* stream-state
+* parsing
+I had a function that assumed we were at the end of the stream of a metaprogramming
+directive that's responsible for closing the meta directive stream and doing the
+required output.  Calling it twice resulted in calling RequireToken(CloseParen)
+twice, which confused me for a bit.
+
 # Jan 15 2020 - 3:00 - closed - Changed Peek/PeekRaw token function to support lookahead
 * iteration
 * confusing

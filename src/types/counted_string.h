@@ -5,15 +5,9 @@ struct counted_string
   const char* Start; // TODO(Jesse): Make this non-const?
 };
 meta(generate_stream(counted_string))
-#include <metaprogramming/output/issyfahnbsawxmswjclcyklbpyogdtxi>
-
-
+#include <metaprogramming/output/generate_stream_counted_string>
 meta(generate_cursor(counted_string))
-#include <metaprogramming/output/wkxecnegxdckmfnlfsvhqttdtghkuoie>
-
-
-
-
+#include <metaprogramming/output/generate_cursor_counted_string>
 
 umm
 Length(const char *Str)

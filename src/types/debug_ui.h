@@ -256,14 +256,7 @@ meta(
     ui_render_command_table_end enum_only,
   })
 )
-#include <metaprogramming/output/plvmjcwxnfuxvdmimbyysbduvircaksp>
-
-
-
-
-
-
-
+#include <metaprogramming/output/d_union_ui_render_command>
 
 
 

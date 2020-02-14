@@ -181,8 +181,7 @@ IsMetaprogrammingDirective(counted_string Identifier)
       }
     )
   )
-#include <metaprogramming/output/lyepdcnuwyfsudddvtmogdesomenxjdw>
-
+#include <metaprogramming/output/for_enum_values_metaprogramming_directives>
 
   return Result;
 }
@@ -1902,7 +1901,7 @@ GetMetaprogrammingDirective(c_parse_result* Parser)
 
 
 function void
-DoWorkToOutputThisStuff(c_parse_result* Parser, counted_string OutputForThisParser, memory_arena* Memory)
+DoWorkToOutputThisStuff(c_parse_result* Parser, counted_string OutputForThisParser, counted_string NewFilename, memory_arena* Memory)
 {
   RequireToken(Parser, CTokenType_CloseParen);
   RequireToken(Parser, CTokenType_CloseParen);
@@ -1940,9 +1939,7 @@ DoWorkToOutputThisStuff(c_parse_result* Parser, counted_string OutputForThisPars
   }
   else
   {
-    random_series FilenameEntropy = RandomSeries(Hash(&OutputForThisParser));
-    counted_string OutFile = GetRandomFilename(&FilenameEntropy, Memory);
-    counted_string IncludePath = Concat(CS("src/metaprogramming/output/"), OutFile, Memory);
+    counted_string IncludePath = Concat(CS("src/metaprogramming/output/"), NewFilename, Memory);
 
     Output(OutputForThisParser, IncludePath, Memory);
 
@@ -1956,9 +1953,8 @@ DoWorkToOutputThisStuff(c_parse_result* Parser, counted_string OutputForThisPars
     Push(CToken(CTokenType_FSlash), &Parser->OutputTokens);
     Push(CToken(CS("output")), &Parser->OutputTokens);
     Push(CToken(CTokenType_FSlash), &Parser->OutputTokens);
-    Push(CToken(OutFile), &Parser->OutputTokens);
+    Push(CToken(NewFilename), &Parser->OutputTokens);
     Push(CToken(CTokenType_GT), &Parser->OutputTokens);
-    Push(CToken(CTokenType_Newline), &Parser->OutputTokens);
   }
 }
 
@@ -2013,29 +2009,30 @@ main(s32 ArgCount, const char** ArgStrings)
               RequireToken(Parser, CTokenType_OpenParen);
               counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
 
+              counted_string OutfileName = Concat( Concat(ToString(Directive), CS("_"), Memory), DatatypeName, Memory);
               if (Directive & generate_stream)
               {
                 counted_string Code = GenerateStreamFor(DatatypeName, Memory);
-                DoWorkToOutputThisStuff(Parser, Code, Memory);
+                DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
               }
 
               if (Directive & generate_cursor)
               {
                 counted_string Code = GenerateCursorFor(DatatypeName, Memory);
-                DoWorkToOutputThisStuff(Parser, Code, Memory);
+                DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
               }
 
               enum_def* Enum = GetEnumByType(&Datatypes.Enums, DatatypeName);
               if (Directive & generate_string_table)
               {
                 counted_string Code = GenerateNameTableFor(Enum, Memory);
-                DoWorkToOutputThisStuff(Parser, Code, Memory);
+                DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
               }
 
               if (Directive & generate_value_table)
               {
                 counted_string Code = GenerateValueTableFor(Enum, Memory);
-                DoWorkToOutputThisStuff(Parser, Code, Memory);
+                DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
               }
 
               if (Directive & d_union)
@@ -2045,8 +2042,8 @@ main(s32 ArgCount, const char** ArgStrings)
                 {
                   counted_string EnumString = GenerateEnumDef(&dUnion, Memory);
                   counted_string StructString = GenerateStructDef(&dUnion, Memory);
-
-                  DoWorkToOutputThisStuff(Parser, Concat(EnumString, StructString, Memory), Memory);
+                  counted_string Code = Concat(EnumString, StructString, Memory);
+                  DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
 
                   c_parse_result StructParse = TokenizeString(StructString, CS("TODO(Jesse): Filename goes here!"), Memory);
                   RequireToken(&StructParse, CToken(CS("struct")));
@@ -2070,7 +2067,7 @@ main(s32 ArgCount, const char** ArgStrings)
               if (Directive & for_enum_values)
               {
                 counted_string Code = ParseForEnumValues(Parser, DatatypeName, &Datatypes.Enums, Memory);
-                DoWorkToOutputThisStuff(Parser, Code, Memory);
+                DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
               }
 
               if (Directive & for_members_in)
@@ -2081,7 +2078,7 @@ main(s32 ArgCount, const char** ArgStrings)
                 if (Target)
                 {
                   counted_string Code = ParseForMembers(Parser, &Constraints, Target, &Datatypes.Structs, Memory);
-                  DoWorkToOutputThisStuff(Parser, Code, Memory);
+                  DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
                 }
                 else
                 {
