@@ -102,6 +102,7 @@ TESTS_TO_BUILD="
   $TESTS/heap_allocation.cpp
   $TESTS/preprocessor.cpp
   $TESTS/rng.cpp
+  $TESTS/file.cpp
 "
 
 function BuildPreprocessor {

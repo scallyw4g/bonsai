@@ -852,8 +852,8 @@ Output(counted_string Code, counted_string OutputFilename, memory_arena* Memory,
       {
         if (FileExists(OutputFilename))
         {
-          counted_string FileContents = ReadEntireFileIntoString(OutputFilename, Memory);
-          if (StringsMatch(Code, FileContents))
+          counted_string FileContents = Trim(ReadEntireFileIntoString(OutputFilename, Memory));
+          if (StringsMatch(Trim(Code), FileContents))
           {
             Info("File contents matched output for %.*s", (u32)OutputFilename.Count, OutputFilename.Start);
           }
