@@ -828,8 +828,14 @@ Output(c_token_cursor Code, counted_string Filename, memory_arena* Memory)
   return Result;
 }
 
+enum output_mode
+{
+  Output_NoOverwrite,
+  Output_Unsafe,
+};
+
 function b32
-Output(counted_string Code, counted_string Filename, memory_arena* Memory)
+Output(counted_string Code, counted_string OutputFilename, memory_arena* Memory, output_mode Mode = Output_NoOverwrite)
 {
   b32 Result = False;
 
@@ -842,13 +848,38 @@ Output(counted_string Code, counted_string Filename, memory_arena* Memory)
 
     if (FileWritesSucceeded)
     {
-      if (Rename(TempFile, Filename))
+      if (Mode == Output_NoOverwrite)
       {
-        Result = True;
+        if (FileExists(OutputFilename))
+        {
+          counted_string FileContents = ReadEntireFileIntoString(OutputFilename, Memory);
+          if (StringsMatch(Code, FileContents))
+          {
+            Info("File contents matched output for %.*s", (u32)OutputFilename.Count, OutputFilename.Start);
+          }
+          else
+          {
+            if (Rename(TempFile, OutputFilename))
+            {
+              Result = True;
+            }
+            else
+            {
+              Error("Renaming tempfile: %.*s -> %.*s", (s32)TempFile.Path.Count, TempFile.Path.Start, (s32)OutputFilename.Count, OutputFilename.Start);
+            }
+          }
+        }
       }
       else
       {
-        Error("Renaming tempfile: %.*s -> %.*s", (s32)TempFile.Path.Count, TempFile.Path.Start, (s32)Filename.Count, Filename.Start);
+        if (Rename(TempFile, OutputFilename))
+        {
+          Result = True;
+        }
+        else
+        {
+          Error("Renaming tempfile: %.*s -> %.*s", (s32)TempFile.Path.Count, TempFile.Path.Start, (s32)OutputFilename.Count, OutputFilename.Start);
+        }
       }
     }
     else
@@ -2057,6 +2088,7 @@ main(s32 ArgCount, const char** ArgStrings)
                   Push(&Datatypes.Enums, E, Memory);
 
                   Assert( GetStructByType(&Datatypes.Structs, StructName) );
+                  Assert( GetEnumByType(&Datatypes.Enums, E.Name) );
                 }
                 else
                 {

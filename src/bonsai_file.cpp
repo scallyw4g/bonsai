@@ -109,3 +109,30 @@ WriteToFile(native_file* File, counted_string Str)
   }
   return Result;
 }
+
+function b32
+FileExists(counted_string Path)
+{
+  b32 Result = False;
+
+  native_file File = OpenFile(Path);
+  if (File.Handle)
+  {
+    Result = True;
+    if (!CloseFile(&File))
+    {
+      Error("Opened %.*s, but could not close it.", (u32)Path.Count, Path.Start);
+      Result = False;
+    }
+  }
+
+  return Result;
+}
+
+function b32
+FileExists(const char *Path)
+{
+  b32 Result = FileExists(CS(Path));
+  return Result;
+}
+

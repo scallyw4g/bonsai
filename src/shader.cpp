@@ -45,9 +45,9 @@ LoadShaders(const char * VertShaderPath, const char * FragFilePath, memory_arena
   char ComputedFragPath[2048] = {};
   Snprintf(ComputedFragPath, 2048, "%s/%s", SHADER_PATH, FragFilePath);
 
-  ansi_stream HeaderCode       = ReadEntireFileIntoString(SHADER_PATH SHADER_HEADER, Memory);
-  ansi_stream VertexShaderCode = ReadEntireFileIntoString(ComputedVertPath, Memory);
-  ansi_stream FragShaderCode   = ReadEntireFileIntoString(ComputedFragPath, Memory);
+  ansi_stream HeaderCode       = ReadEntireFileIntoAnsiStream(CS(SHADER_PATH SHADER_HEADER), Memory);
+  ansi_stream VertexShaderCode = ReadEntireFileIntoAnsiStream(CS(ComputedVertPath), Memory);
+  ansi_stream FragShaderCode   = ReadEntireFileIntoAnsiStream(CS(ComputedFragPath), Memory);
 
 
   s32 Result = GL_FALSE;

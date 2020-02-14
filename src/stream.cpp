@@ -86,6 +86,13 @@ U8_StreamFromFile(const char* SourceFile, memory_arena *Memory)
   return Result;
 }
 
+u8_stream
+U8_StreamFromFile(counted_string SourceFile, memory_arena *Memory)
+{
+  u8_stream Result = U8_StreamFromFile( GetNullTerminated(SourceFile), Memory );
+  return Result;
+}
+
 ansi_stream
 AnsiStreamFromFile(const char* SourceFile, memory_arena *Memory)
 {
@@ -104,9 +111,26 @@ AnsiStreamFromFile(counted_string SourceFile, memory_arena *Memory)
 }
 
 ansi_stream
-ReadEntireFileIntoString(const char *SourceFile, memory_arena *Memory)
+ReadEntireFileIntoAnsiStream(counted_string SourceFile, memory_arena *Memory)
 {
   ansi_stream Stream = AnsiStreamFromFile(SourceFile, Memory);
+  return Stream;
+}
+
+counted_string
+CS(u8_stream Stream)
+{
+  counted_string Result = {
+    .Start = (const char*)Stream.Start,
+    .Count = TotalSize(&Stream),
+  };
+  return Result;
+}
+
+counted_string
+ReadEntireFileIntoString(counted_string SourceFile, memory_arena *Memory)
+{
+  counted_string Stream = CS(U8_StreamFromFile(SourceFile, Memory));
   return Stream;
 }
 

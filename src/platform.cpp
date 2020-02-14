@@ -365,25 +365,6 @@ WaitForFrameTime(r64 FrameStartMs, float FPS)
 }
 #endif
 
-function inline b32
-FileExists(const char *Path)
-{
-  b32 Result = False;
-
-  native_file File = OpenFile(Path);
-  if (File.Handle)
-  {
-    Result = True;
-    if (!CloseFile(&File))
-    {
-      Error("Opened %s, but could not close it.", Path);
-      Result = False;
-    }
-  }
-
-  return Result;
-}
-
 function b32
 SearchForProjectRoot(void)
 {
