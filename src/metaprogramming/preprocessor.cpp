@@ -859,21 +859,24 @@ Output(counted_string Code, counted_string OutputFilename, memory_arena* Memory,
           }
           else
           {
-            if (Rename(TempFile, OutputFilename))
-            {
-              Result = True;
-            }
-            else
-            {
-              Error("Renaming tempfile: %.*s -> %.*s", (s32)TempFile.Path.Count, TempFile.Path.Start, (s32)OutputFilename.Count, OutputFilename.Start);
-            }
+            Error("File contents didn't match for %.*s", (u32)OutputFilename.Count, OutputFilename.Start);
           }
+        }
+        else if (Rename(TempFile, OutputFilename))
+        {
+          Info("Generated and output %.*s", (u32)OutputFilename.Count, OutputFilename.Start);
+          Result = True;
+        }
+        else
+        {
+          Error("Renaming tempfile: %.*s -> %.*s", (s32)TempFile.Path.Count, TempFile.Path.Start, (s32)OutputFilename.Count, OutputFilename.Start);
         }
       }
       else
       {
         if (Rename(TempFile, OutputFilename))
         {
+          Info("Generated and output %.*s", (u32)OutputFilename.Count, OutputFilename.Start);
           Result = True;
         }
         else
@@ -1965,7 +1968,6 @@ DoWorkToOutputThisStuff(c_parse_result* Parser, counted_string OutputForThisPars
     RequireToken(Parser, CTokenType_GT);
 
     IncludePath = Concat(CS("src/metaprogramming/output/"), IncludePath, Memory);
-    Info("Generated and output %.*s", (u32)IncludePath.Count, IncludePath.Start);
     Output(OutputForThisParser, IncludePath, Memory);
   }
   else

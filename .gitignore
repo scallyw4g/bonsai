@@ -9,3 +9,4 @@ cscope.files
 build/*
 
 bin/
+tmp/

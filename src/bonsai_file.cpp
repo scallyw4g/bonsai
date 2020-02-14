@@ -43,10 +43,6 @@ OpenFile(const char* FilePath, const char* Permissions = DefaultPermissions)
   {
     Result.Handle = Handle;
   }
-  else
-  {
-    Error("Opening File %s, errno: %d", FilePath, errno);
-  }
 
   return Result;
 }
@@ -91,6 +87,8 @@ GetTempFile(random_series* Entropy, memory_arena* Memory)
 {
   counted_string Filename = GetTmpFilename(Entropy, Memory);
   native_file Result = OpenFile(Filename, "wb");
+  if (!Result.Handle)
+    { Error("Opening File %.*s, errno: %d", (u32)Filename.Count, Filename.Start, errno); }
   return Result;
 }
 
