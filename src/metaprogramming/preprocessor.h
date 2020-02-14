@@ -39,10 +39,12 @@ enum metaprogramming_directives
   d_union                = 0x40,
 };
 meta(generate_string_table(metaprogramming_directives))
-#include <metaprogramming/output/exbwmrretbjlcbkyjumkulrrqialhqkafdsafdsa2>
+#include <metaprogramming/output/vienabhhfsxtnacutcixpjrligdeabgq>
+
 
 meta(generate_value_table(metaprogramming_directives))
-#include <metaprogramming/output/exbwmrretbjlcbkyjumkulrrqialhqkfdafdsaa>
+#include <metaprogramming/output/papaoiweytnvxtpuanbfjxgdgnpnfcai>
+
 
 
 // TODO(Jesse): Add vertical pipe |
@@ -90,7 +92,8 @@ enum c_token_type
   CTokenType_EOF           = EOF,
 };
 meta(generate_string_table(c_token_type))
-#include <metaprogramming/output/xwqcpiuywuzbbeboocxghwtgvntjudes>
+#include <metaprogramming/output/upxmiivmkjdnwgyahkbpfklleppaxxci>
+
 
 
 // TODO(Jesse): Nested d-unions??! @mind-blown
@@ -119,10 +122,12 @@ struct struct_def
   c_decl_stream Fields;
 };
 meta(generate_stream(struct_def))
-#include <metaprogramming/output/cmdhduqhcyisycagkpuynxsdjupbohzo>
+#include <metaprogramming/output/kcovlnnnxbqlpqinrwtmjtxjbdecjfdw>
+
 
 meta(generate_cursor(struct_def))
-#include <metaprogramming/output/zkepltefshyrdmkvcyprgfopsqojeqoa>
+#include <metaprogramming/output/gusomncsphqikdfpsmbjyvlckmbiwwss>
+
 
 
 struct c_decl_union
@@ -138,10 +143,12 @@ meta(
     c_decl_union,
   })
 )
-#include <metaprogramming/output/brfjwottefqtlagfdsagfdsnbxoraidaprudowedu>
+#include <metaprogramming/output/mdmawyxdmljdlpqolbsoopyvfyswaajd>
+
 
 meta(generate_cursor(c_decl))
-#include <metaprogramming/output/odlarfihjqenwuythfhubziwxtozsvga>
+#include <metaprogramming/output/obpxwqtisfywodtccvydpovhubulixih>
+
 
 
 struct enum_field
@@ -150,7 +157,8 @@ struct enum_field
   counted_string Value;
 };
 meta(generate_stream(enum_field))
-#include <metaprogramming/output/whsoacnhfnvedqvfuzxrsyshlchchgmb>
+#include <metaprogramming/output/dlldbnyahrsgxxviyienpcuojktdjlod>
+
 
 
 struct d_union_member
@@ -160,7 +168,8 @@ struct d_union_member
   d_union_flags Flags;
 };
 meta(generate_stream(d_union_member))
-#include <metaprogramming/output/tjnnomcaamsfdlkknzmouehxyeyrcqhh>
+#include <metaprogramming/output/iqtsltcbaaltthaxwdxcwbowiqkxgqtw>
+
 
 
 struct c_decl_stream_chunk
@@ -175,10 +184,11 @@ struct enum_def
   enum_field_stream Fields;
 };
 meta(generate_stream(enum_def))
-#include <metaprogramming/output/oxgktdeuzdyamzvzthkfzxmqhfmxhdgi>
+#include <metaprogramming/output/kieamecaiqceolsoegywplfeedijcqen>
+
 
 meta(generate_cursor(enum_def))
-#include <metaprogramming/output/ueigluccphsejofgxcrkagbpeulufhkl>
+#include <metaprogramming/output/ehcvglvvmuyqbbyctsmuphwtxdrntkao>
 
 
 struct c_token
@@ -192,7 +202,8 @@ struct c_token
   };
 };
 meta(generate_cursor(c_token))
-#include <metaprogramming/output/brcxjzhmjvapphhxshwtvmweevvrjbic>
+#include <metaprogramming/output/pwhidipyvigdioeptqefltqdldukaclg>
+
 
 struct d_union_decl
 {
@@ -213,7 +224,8 @@ struct c_parse_result
   u32 LineNumber;
 };
 meta(generate_cursor(c_parse_result))
-#include <metaprogramming/output/fusbmlwwcfifrqoialgpvfbynqxnhffp>
+#include <metaprogramming/output/rdqfpsvyjuloypymxnsqmuwitynnafuu>
+
 
 
 

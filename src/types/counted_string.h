@@ -5,10 +5,12 @@ struct counted_string
   const char* Start; // TODO(Jesse): Make this non-const?
 };
 meta(generate_stream(counted_string))
-#include <metaprogramming/output/brfjwottefqtldnbxoraidaprudowedu>
+#include <metaprogramming/output/issyfahnbsawxmswjclcyklbpyogdtxi>
+
 
 meta(generate_cursor(counted_string))
-#include <metaprogramming/output/exbwmrretbjlcbkyjumkulrrqialhqka>
+#include <metaprogramming/output/wkxecnegxdckmfnlfsvhqttdtghkuoie>
+
 
 
 

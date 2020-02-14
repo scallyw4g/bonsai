@@ -181,7 +181,8 @@ IsMetaprogrammingDirective(counted_string Identifier)
       }
     )
   )
-#include <metaprogramming/output/hzmdqsazyidbihexliaechhrlkofiixw>
+#include <metaprogramming/output/lyepdcnuwyfsudddvtmogdesomenxjdw>
+
 
   return Result;
 }
@@ -2085,10 +2086,7 @@ main(s32 ArgCount, const char** ArgStrings)
                   // function and output strategy .. we should probably change
                   // to something better.
                   static random_series RandomSeries;
-                  if (!RandomSeries.Seed)
-                  {
-                    RandomSeries.Seed = 123145436;
-                  }
+                  RandomSeries.Seed = Hash(&OutputForThisParser);
 
                   counted_string OutFile = GetRandomFilename(&RandomSeries, Memory);
                   counted_string IncludePath = Concat(CS("src/metaprogramming/output/"), OutFile, Memory);
