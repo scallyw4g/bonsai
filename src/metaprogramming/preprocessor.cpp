@@ -670,6 +670,8 @@ ParseDiscriminatedUnion(c_parse_result* Parser, counted_string Name, memory_aren
 
       default:
       {
+        // TODO(Jesse): This sucks..
+        --Parser->Tokens.At;
         Parser->Valid = False;
       } break;
     }
@@ -1902,6 +1904,9 @@ GetMetaprogrammingDirective(c_parse_result* Parser)
 function void
 DoWorkToOutputThisStuff(c_parse_result* Parser, counted_string OutputForThisParser, memory_arena* Memory)
 {
+  RequireToken(Parser, CTokenType_CloseParen);
+  RequireToken(Parser, CTokenType_CloseParen);
+
   if (!Parser->Valid)
   {
     Error("Bad parser state");
@@ -2003,7 +2008,6 @@ main(s32 ArgCount, const char** ArgStrings)
           {
             if (OptionalToken(Parser, CToken(CS("meta"))))
             {
-              counted_string OutputForThisParser = {};
               RequireToken(Parser, CTokenType_OpenParen);
               metaprogramming_directives Directive = GetMetaprogrammingDirective(Parser);
               RequireToken(Parser, CTokenType_OpenParen);
@@ -2012,26 +2016,26 @@ main(s32 ArgCount, const char** ArgStrings)
               if (Directive & generate_stream)
               {
                 counted_string Code = GenerateStreamFor(DatatypeName, Memory);
-                OutputForThisParser = Concat(OutputForThisParser, Code, Memory);
+                DoWorkToOutputThisStuff(Parser, Code, Memory);
               }
 
               if (Directive & generate_cursor)
               {
                 counted_string Code = GenerateCursorFor(DatatypeName, Memory);
-                OutputForThisParser = Concat(OutputForThisParser, Code, Memory);
+                DoWorkToOutputThisStuff(Parser, Code, Memory);
               }
 
               enum_def* Enum = GetEnumByType(&Datatypes.Enums, DatatypeName);
               if (Directive & generate_string_table)
               {
-                counted_string NameTable = GenerateNameTableFor(Enum, Memory);
-                OutputForThisParser = Concat(OutputForThisParser, NameTable, Memory);
+                counted_string Code = GenerateNameTableFor(Enum, Memory);
+                DoWorkToOutputThisStuff(Parser, Code, Memory);
               }
 
               if (Directive & generate_value_table)
               {
-                counted_string ToValueTable = GenerateValueTableFor(Enum, Memory);
-                OutputForThisParser = Concat(OutputForThisParser, ToValueTable, Memory);
+                counted_string Code = GenerateValueTableFor(Enum, Memory);
+                DoWorkToOutputThisStuff(Parser, Code, Memory);
               }
 
               if (Directive & d_union)
@@ -2041,6 +2045,8 @@ main(s32 ArgCount, const char** ArgStrings)
                 {
                   counted_string EnumString = GenerateEnumDef(&dUnion, Memory);
                   counted_string StructString = GenerateStructDef(&dUnion, Memory);
+
+                  DoWorkToOutputThisStuff(Parser, Concat(EnumString, StructString, Memory), Memory);
 
                   c_parse_result StructParse = TokenizeString(StructString, CS("TODO(Jesse): Filename goes here!"), Memory);
                   RequireToken(&StructParse, CToken(CS("struct")));
@@ -2054,9 +2060,6 @@ main(s32 ArgCount, const char** ArgStrings)
                   Push(&Datatypes.Enums, E, Memory);
 
                   Assert( GetStructByType(&Datatypes.Structs, StructName) );
-
-                  OutputForThisParser = Concat(OutputForThisParser, EnumString, Memory);
-                  OutputForThisParser = Concat(OutputForThisParser, StructString, Memory);
                 }
                 else
                 {
@@ -2066,7 +2069,8 @@ main(s32 ArgCount, const char** ArgStrings)
 
               if (Directive & for_enum_values)
               {
-                OutputForThisParser = ParseForEnumValues(Parser, DatatypeName, &Datatypes.Enums, Memory);
+                counted_string Code = ParseForEnumValues(Parser, DatatypeName, &Datatypes.Enums, Memory);
+                DoWorkToOutputThisStuff(Parser, Code, Memory);
               }
 
               if (Directive & for_members_in)
@@ -2076,7 +2080,8 @@ main(s32 ArgCount, const char** ArgStrings)
 
                 if (Target)
                 {
-                  OutputForThisParser = ParseForMembers(Parser, &Constraints, Target, &Datatypes.Structs, Memory);
+                  counted_string Code = ParseForMembers(Parser, &Constraints, Target, &Datatypes.Structs, Memory);
+                  DoWorkToOutputThisStuff(Parser, Code, Memory);
                 }
                 else
                 {
@@ -2084,12 +2089,6 @@ main(s32 ArgCount, const char** ArgStrings)
                   Error("Couldn't find matching struct %.*s", (s32)DatatypeName.Count, DatatypeName.Start);
                 }
               }
-
-
-              RequireToken(Parser, CTokenType_CloseParen);
-              RequireToken(Parser, CTokenType_CloseParen);
-
-              DoWorkToOutputThisStuff(Parser, OutputForThisParser, Memory);
             }
             else
             {

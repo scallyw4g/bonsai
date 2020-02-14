@@ -146,6 +146,7 @@ meta(
 #include <metaprogramming/output/mdmawyxdmljdlpqolbsoopyvfyswaajd>
 
 
+
 meta(generate_cursor(c_decl))
 #include <metaprogramming/output/obpxwqtisfywodtccvydpovhubulixih>
 
