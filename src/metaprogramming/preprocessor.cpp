@@ -855,14 +855,13 @@ Output(counted_string Code, counted_string OutputFilename, memory_arena* Memory,
           counted_string FileContents = ReadEntireFileIntoString(OutputFilename, Memory);
           if (StringsMatch(Trim(Code), Trim(FileContents)))
           {
-            Info("File contents matched output for %.*s\n", (u32)OutputFilename.Count, OutputFilename.Start);
+            Info("File contents matched output for %.*s", (u32)OutputFilename.Count, OutputFilename.Start);
 
           }
           else
           {
-            RuntimeBreak();
             Error("File contents didn't match for %.*s", (u32)OutputFilename.Count, OutputFilename.Start);
-            Info("Emitting to %.*s instead.", (u32)TempFile.Path.Count, TempFile.Path.Start);
+            Error("TODO(Jesse): Should probably emit to a similar filname with an incremented extension or something..");
           }
         }
         else if (Rename(TempFile, OutputFilename))
