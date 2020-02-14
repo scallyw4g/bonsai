@@ -247,6 +247,31 @@ TestSplit()
   return;
 }
 
+function void
+TestTrim()
+{
+
+  {
+    counted_string S1 = CS("  \n                  \n        \n  \ncode\n                    \n ");
+    counted_string S2 = CS("\n    \n  \ncode\n   \n\n  \n ");
+    S1 = Trim(S1);
+    S2 = Trim(S2);
+    TestThat(StringsMatch(S1, S2));
+    TestThat(StringsMatch(S1, CS("code")));
+    TestThat(StringsMatch(S2, CS("code")));
+  }
+
+  {
+    counted_string S1 = CS("  \n                  \n        \n  \n \n                    \n ");
+    counted_string S2 = CS("\n    \n  \n \n   \n\n  \n ");
+    S1 = Trim(S1);
+    S2 = Trim(S2);
+    TestThat(StringsMatch(S1, S2));
+    TestThat(StringsMatch(S1, CS("")));
+    TestThat(StringsMatch(S2, CS("")));
+  }
+}
+
 s32
 main()
 {
@@ -288,6 +313,8 @@ main()
   TestReadUntilTerminatorList();
 
   TestSplit();
+
+  TestTrim();
 
   {
     counted_string Path = CS("thing/ding/dong");
