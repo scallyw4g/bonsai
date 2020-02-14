@@ -470,7 +470,7 @@ BuildWorldChunkMesh(world_chunk *ReadChunk, chunk_dimension ReadChunkDim,
   s32 frontVoxelReadIndex;
   s32 backVoxelReadIndex;
 
-  random_series ColorEntropy = {33453};
+  /* random_series ColorEntropy = {33453}; */
 
   for ( s32 z = 0; z < WriteChunkDim.z ; ++z )
   {

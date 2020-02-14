@@ -163,12 +163,16 @@ struct model
 struct random_series
 {
   u64 Seed;
-
-  random_series(u64 Seed_in = DEFAULT_ENTROPY_SEED)
-  {
-    this->Seed = Seed_in;
-  }
 };
+
+function random_series
+RandomSeries(u64 Seed = DEFAULT_ENTROPY_SEED)
+{
+  random_series Result = {
+    .Seed = Seed
+  };
+  return Result;
+}
 
 struct physics
 {

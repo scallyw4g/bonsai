@@ -2082,13 +2082,8 @@ main(s32 ArgCount, const char** ArgStrings)
                 }
                 else
                 {
-                  // TODO(Jesse): I've observed a collision using this hashing
-                  // function and output strategy .. we should probably change
-                  // to something better.
-                  static random_series RandomSeries;
-                  RandomSeries.Seed = Hash(&OutputForThisParser);
-
-                  counted_string OutFile = GetRandomFilename(&RandomSeries, Memory);
+                  random_series FilenameEntropy = RandomSeries(Hash(&OutputForThisParser));
+                  counted_string OutFile = GetRandomFilename(&FilenameEntropy, Memory);
                   counted_string IncludePath = Concat(CS("src/metaprogramming/output/"), OutFile, Memory);
 
                   Output(OutputForThisParser, IncludePath, Memory);
