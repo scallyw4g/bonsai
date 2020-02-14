@@ -633,11 +633,11 @@ GenerateStructDef(d_union_decl* dUnion, memory_arena* Memory)
 }
 
 d_union_decl
-ParseDiscriminatedUnion(c_parse_result* Parser, memory_arena* Memory)
+ParseDiscriminatedUnion(c_parse_result* Parser, counted_string Name, memory_arena* Memory)
 {
   d_union_decl dUnion = {};
 
-  dUnion.Name = RequireToken(Parser, CTokenType_Identifier).Value;
+  dUnion.Name = Name;
 
   RequireToken(Parser, CTokenType_Comma);
   RequireToken(Parser, CTokenType_OpenBrace);
@@ -665,8 +665,6 @@ ParseDiscriminatedUnion(c_parse_result* Parser, memory_arena* Memory)
 
       case CTokenType_CloseBrace:
       {
-        RequireToken(Parser, CTokenType_CloseParen);
-        RequireToken(Parser, CTokenType_CloseParen);
         Complete = True;
       } break;
 
@@ -1397,8 +1395,6 @@ ParseForEnumValues(c_parse_result* Parser, counted_string TypeName, enum_def_str
 
   }
 
-  RequireToken(Parser, CTokenType_CloseParen);
-  RequireToken(Parser, CTokenType_CloseParen);
   return Result;
 }
 
@@ -1433,9 +1429,6 @@ ParseForMembers(c_parse_result* Parser, for_member_constraints* Constraints, str
   Assert(Constraints->ValueName.Count);
 
   c_parse_result BodyText = GetBodyTextForNextScope(Parser);
-
-  RequireToken(Parser, CTokenType_CloseParen);
-  RequireToken(Parser, CTokenType_CloseParen);
 
   c_decl_stream_chunk* AtChunk = Target->Fields.FirstChunk;
   while (AtChunk)
@@ -1898,6 +1891,7 @@ GetMetaprogrammingDirective(c_parse_result* Parser)
     OutputParsingError(Parser, Parser->Tokens.At, CS("Expected metaprogramming directive."));
   }
 
+  // TODO(Jesse): Fix this API!
   metaprogramming_directives Result = {};
   ToValue(NextToken.Value, &Result);
   Assert(Result);
@@ -1952,56 +1946,38 @@ main(s32 ArgCount, const char** ArgStrings)
             {
               counted_string OutputForThisParser = {};
               RequireToken(Parser, CTokenType_OpenParen);
-
-              metaprogramming_directives Directives = GetMetaprogrammingDirective(Parser);
-              Assert(Directives);
-
+              metaprogramming_directives Directive = GetMetaprogrammingDirective(Parser);
               RequireToken(Parser, CTokenType_OpenParen);
-              if (Directives & generate_stream ||
-                  Directives & generate_cursor )
+              counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
+
+              if (Directive & generate_stream)
               {
-                counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
-                RequireToken(Parser, CTokenType_CloseParen);
-                RequireToken(Parser, CTokenType_CloseParen);
-
-                if (Directives & generate_stream)
-                {
-                  counted_string Code = GenerateStreamFor(DatatypeName, Memory);
-                  OutputForThisParser = Concat(OutputForThisParser, Code, Memory);
-                }
-
-                if (Directives & generate_cursor)
-                {
-                  counted_string Code = GenerateCursorFor(DatatypeName, Memory);
-                  OutputForThisParser = Concat(OutputForThisParser, Code, Memory);
-                }
+                counted_string Code = GenerateStreamFor(DatatypeName, Memory);
+                OutputForThisParser = Concat(OutputForThisParser, Code, Memory);
               }
 
-              if (Directives & generate_value_table ||
-                  Directives & generate_string_table )
+              if (Directive & generate_cursor)
               {
-                counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
-                enum_def* Enum = GetEnumByType(&Datatypes.Enums, DatatypeName);
-
-                if (Directives & generate_string_table)
-                {
-                  counted_string NameTable = GenerateNameTableFor(Enum, Memory);
-                  OutputForThisParser = Concat(OutputForThisParser, NameTable, Memory);
-                }
-
-                if (Directives & generate_value_table)
-                {
-                  counted_string ToValueTable = GenerateValueTableFor(Enum, Memory);
-                  OutputForThisParser = Concat(OutputForThisParser, ToValueTable, Memory);
-                }
-
-                RequireToken(Parser, CTokenType_CloseParen);
-                RequireToken(Parser, CTokenType_CloseParen);
+                counted_string Code = GenerateCursorFor(DatatypeName, Memory);
+                OutputForThisParser = Concat(OutputForThisParser, Code, Memory);
               }
 
-              if (Directives & d_union)
+              enum_def* Enum = GetEnumByType(&Datatypes.Enums, DatatypeName);
+              if (Directive & generate_string_table)
               {
-                d_union_decl dUnion = ParseDiscriminatedUnion(Parser, Memory);
+                counted_string NameTable = GenerateNameTableFor(Enum, Memory);
+                OutputForThisParser = Concat(OutputForThisParser, NameTable, Memory);
+              }
+
+              if (Directive & generate_value_table)
+              {
+                counted_string ToValueTable = GenerateValueTableFor(Enum, Memory);
+                OutputForThisParser = Concat(OutputForThisParser, ToValueTable, Memory);
+              }
+
+              if (Directive & d_union)
+              {
+                d_union_decl dUnion = ParseDiscriminatedUnion(Parser, DatatypeName, Memory);
                 if (Parser->Valid)
                 {
                   counted_string EnumString = GenerateEnumDef(&dUnion, Memory);
@@ -2029,17 +2005,15 @@ main(s32 ArgCount, const char** ArgStrings)
                 }
               }
 
-              if (Directives & for_enum_values)
+              if (Directive & for_enum_values)
               {
-                counted_string TypeName = RequireToken(Parser, CTokenType_Identifier).Value;
-                OutputForThisParser = ParseForEnumValues(Parser, TypeName, &Datatypes.Enums, Memory);
+                OutputForThisParser = ParseForEnumValues(Parser, DatatypeName, &Datatypes.Enums, Memory);
               }
 
-              if (Directives & for_members_in)
+              if (Directive & for_members_in)
               {
                 for_member_constraints Constraints = {};
-                counted_string TypeName = RequireToken(Parser, CTokenType_Identifier).Value;
-                struct_def* Target = GetStructByType(&Datatypes.Structs, TypeName);
+                struct_def* Target = GetStructByType(&Datatypes.Structs, DatatypeName);
 
                 if (Target)
                 {
@@ -2048,9 +2022,13 @@ main(s32 ArgCount, const char** ArgStrings)
                 else
                 {
                   Parser->Valid = False;
-                  Error("Couldn't find matching struct %.*s", (s32)TypeName.Count, TypeName.Start);
+                  Error("Couldn't find matching struct %.*s", (s32)DatatypeName.Count, DatatypeName.Start);
                 }
               }
+
+
+              RequireToken(Parser, CTokenType_CloseParen);
+              RequireToken(Parser, CTokenType_CloseParen);
 
 
               if (Parser->Valid)
