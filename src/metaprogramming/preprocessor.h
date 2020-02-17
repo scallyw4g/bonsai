@@ -26,7 +26,7 @@ enum c_decl_function_type
   CFunctionType_Destructor,
 };
 
-enum metaprogramming_directives
+enum metaprogramming_directive
 {
   noop                   = 0x00,
   generate_stream        = 0x01,
@@ -38,11 +38,11 @@ enum metaprogramming_directives
   for_members_in         = 0x20,
   d_union                = 0x40,
 };
-meta(generate_string_table(metaprogramming_directives))
-#include <metaprogramming/output/generate_string_table_metaprogramming_directives>
+meta(generate_string_table(metaprogramming_directive))
+#include <metaprogramming/output/generate_string_table_metaprogramming_directive>
 
-meta(generate_value_table(metaprogramming_directives))
-#include <metaprogramming/output/generate_value_table_metaprogramming_directives>
+meta(generate_value_table(metaprogramming_directive))
+#include <metaprogramming/output/generate_value_table_metaprogramming_directive>
 
 enum c_token_type
 {
@@ -181,7 +181,7 @@ struct c_token
   // TODO(Jesse): Is this d_union-able? .. Or worth it?
   union {
     counted_string Value;
-    metaprogramming_directives Directive;
+    metaprogramming_directive Directive;
   };
 };
 meta(generate_cursor(c_token))

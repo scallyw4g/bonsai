@@ -175,13 +175,13 @@ IsMetaprogrammingDirective(counted_string Identifier)
   b32 Result = False;
 
   meta(
-    for_enum_values( metaprogramming_directives,
+    for_enum_values( metaprogramming_directive,
       (EnumName, EnumValue) {
         Result |= StringsMatch(ToString(EnumName), Identifier);
       }
     )
   )
-#include <metaprogramming/output/for_enum_values_metaprogramming_directives>
+#include <metaprogramming/output/for_enum_values_metaprogramming_directive>
 
   return Result;
 }
@@ -1921,10 +1921,10 @@ Advance(%.*s_iterator* Iter)
   return Result;
 }
 
-function metaprogramming_directives
+function metaprogramming_directive
 GetMetaprogrammingDirective(c_parse_result* Parser)
 {
-  metaprogramming_directives Result = MetaprogrammingDirectives(RequireToken(Parser, CTokenType_Identifier).Value);
+  metaprogramming_directive Result = MetaprogrammingDirective(RequireToken(Parser, CTokenType_Identifier).Value);
   if (!Result)
     { OutputParsingError(Parser, Parser->Tokens.At, CS("Expected metaprogramming directive.")); }
   return Result;
@@ -2034,7 +2034,7 @@ main(s32 ArgCount, const char** ArgStrings)
             if (OptionalToken(Parser, CToken(CS("meta"))))
             {
               RequireToken(Parser, CTokenType_OpenParen);
-              metaprogramming_directives Directive = GetMetaprogrammingDirective(Parser);
+              metaprogramming_directive Directive = GetMetaprogrammingDirective(Parser);
               RequireToken(Parser, CTokenType_OpenParen);
               counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
 
