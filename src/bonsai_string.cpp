@@ -1,3 +1,13 @@
+counted_string
+CountedString(umm Count, memory_arena* Memory)
+{
+  counted_string Result = {
+    .Start = Allocate(const char, Memory, Count),
+    .Count = Count
+  };
+  return Result;
+}
+
 char *
 FormatString(memory_arena *Memory, const char* FormatString, ...)
 {
@@ -47,3 +57,61 @@ GetNullTerminated(counted_string Str, memory_arena* Memory = TranArena)
   MemCopy((u8*)Str.Start, (u8*)Result, Str.Count);
   return Result;
 }
+
+function char
+ToUpper(char C)
+{
+  u32 MapToUpper = 'a' - 'A';
+  if (C >= 'a' && C <= 'z')
+  {
+    C -= MapToUpper;
+  }
+  return C;
+}
+
+function counted_string
+ToCapitalCase(counted_string Source, memory_arena* Memory)
+{
+  u32 ResultLength = 0;
+  for (u32 CharIndex = 0;
+      CharIndex < Source.Count;
+      ++CharIndex)
+  {
+    if (Source.Start[CharIndex] != '_')
+    {
+      ++ResultLength;
+    }
+  }
+
+  counted_string Result = CountedString(ResultLength, Memory);
+
+  b32 NextCharToUpper = True;
+  u32 SourceIndex = 0;
+  for (u32 ResultIndex = 0;
+      ResultIndex < Result.Count;
+      )
+  {
+    char At = Source.Start[SourceIndex];
+
+    if (At == '_')
+    {
+      NextCharToUpper = True;
+      ++SourceIndex;
+      continue;
+    }
+
+    if (NextCharToUpper)
+    {
+      At = ToUpper(At);
+      NextCharToUpper = False;
+    }
+
+    // TODO(Jesse): Gross..
+    *(char*)(Result.Start + ResultIndex) = At;
+    ++SourceIndex;
+    ++ResultIndex;
+  }
+
+  return Result;
+}
+

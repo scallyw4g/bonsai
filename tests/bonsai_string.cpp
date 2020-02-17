@@ -272,6 +272,41 @@ TestTrim()
   }
 }
 
+function void
+TestToCapitalCase(memory_arena* Memory)
+{
+  {
+    counted_string S = CS("this_is_a_string");
+    counted_string Result = ToCapitalCase(S, Memory);
+    TestThat(StringsMatch(CS("ThisIsAString"), Result));
+  }
+  {
+    counted_string S = CS("this_is_");
+    counted_string Result = ToCapitalCase(S, Memory);
+    TestThat(StringsMatch(CS("ThisIs"), Result));
+  }
+  {
+    counted_string S = CS("__this__is____");
+    counted_string Result = ToCapitalCase(S, Memory);
+    TestThat(StringsMatch(CS("ThisIs"), Result));
+  }
+  {
+    counted_string S = CS("__This__is____");
+    counted_string Result = ToCapitalCase(S, Memory);
+    TestThat(StringsMatch(CS("ThisIs"), Result));
+  }
+  {
+    counted_string S = CS("__THis__is____");
+    counted_string Result = ToCapitalCase(S, Memory);
+    TestThat(StringsMatch(CS("THisIs"), Result));
+  }
+  {
+    counted_string S = CS("__THis__iS____");
+    counted_string Result = ToCapitalCase(S, Memory);
+    TestThat(StringsMatch(CS("THisIS"), Result));
+  }
+}
+
 s32
 main()
 {
@@ -316,6 +351,8 @@ main()
 
   TestTrim();
 
+  TestToCapitalCase(TranArena);
+
   {
     counted_string Path = CS("thing/ding/dong");
     counted_string Dong = Basename(Path);
@@ -333,5 +370,3 @@ main()
   TestSuiteEnd();
   exit(TestsFailed);
 }
-
-

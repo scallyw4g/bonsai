@@ -1782,17 +1782,20 @@ struct %.*s_cursor
 }
 
 function counted_string
-GenerateNameTableFor(enum_def* Enum, memory_arena* Memory)
+GenerateStringTableFor(enum_def* Enum, memory_arena* Memory)
 {
+  counted_string FunctionName = ToCapitalCase(Enum->Name, Memory);
   counted_string Result = FormatCountedString(Memory,
 R"INLINE_CODE(
 function counted_string
-ToString(%.*s Type)
+%.*s(%.*s Type)
 {
   counted_string Result = {};
   switch (Type)
   {
-)INLINE_CODE", Enum->Name.Count, Enum->Name.Start);
+)INLINE_CODE",
+                FunctionName.Count, FunctionName.Start,
+                Enum->Name.Count, Enum->Name.Start);
 
   for (enum_field_iterator Iter = Iterator(&Enum->Fields);
       IsValid(&Iter);
@@ -2064,7 +2067,7 @@ main(s32 ArgCount, const char** ArgStrings)
                 case generate_string_table:
                 {
                   enum_def* Enum = GetEnumByType(&Datatypes.Enums, DatatypeName);
-                  counted_string Code = GenerateNameTableFor(Enum, Memory);
+                  counted_string Code = GenerateStringTableFor(Enum, Memory);
                   DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
                 } break;
 
