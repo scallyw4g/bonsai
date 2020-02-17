@@ -177,7 +177,7 @@ IsMetaprogrammingDirective(counted_string Identifier)
   meta(
     for_enum_values( metaprogramming_directives,
       (EnumName, EnumValue) {
-        Result |= StringsMatch(MetaprogrammingDirectives(EnumName), Identifier);
+        Result |= StringsMatch(ToString(EnumName), Identifier);
       }
     )
   )
@@ -429,7 +429,7 @@ OutputErrorHelperLine(c_parse_result* Parser, c_token* ErrorToken, c_token Expec
 
     if (Parser->Tokens.At == ErrorToken)
     {
-      counted_string TokenTypeName = CTokenType(ErrorToken->Type);
+      counted_string TokenTypeName = ToString(ErrorToken->Type);
       Log("^----> Unexpected token type: %.*s", TokenTypeName.Count, TokenTypeName.Start );
 
       if (ErrorToken->Value.Count)
@@ -437,7 +437,7 @@ OutputErrorHelperLine(c_parse_result* Parser, c_token* ErrorToken, c_token Expec
         Log("(%.*s)" , ErrorToken->Value.Count, ErrorToken->Value.Start);
       }
 
-      counted_string ExpectedTypeName = CTokenType(Expected.Type);
+      counted_string ExpectedTypeName = ToString(Expected.Type);
       Log(". Expected: %.*s", ExpectedTypeName.Count, ExpectedTypeName.Start);
 
       if (Expected.Value.Count)
@@ -1733,6 +1733,7 @@ TokenizeAllFiles(counted_string_cursor* Filenames, memory_arena* Memory)
 function counted_string
 GenerateValueTableFor(enum_def* Enum, memory_arena* Memory)
 {
+  // counted_string FunctionName = ToCapitalCase(Enum->Name, Memory);
   counted_string Result = FormatCountedString(Memory,
 R"INLINE_CODE(
 function void
@@ -1784,18 +1785,15 @@ struct %.*s_cursor
 function counted_string
 GenerateStringTableFor(enum_def* Enum, memory_arena* Memory)
 {
-  counted_string FunctionName = ToCapitalCase(Enum->Name, Memory);
   counted_string Result = FormatCountedString(Memory,
 R"INLINE_CODE(
 function counted_string
-%.*s(%.*s Type)
+ToString(%.*s Type)
 {
   counted_string Result = {};
   switch (Type)
   {
-)INLINE_CODE",
-                FunctionName.Count, FunctionName.Start,
-                Enum->Name.Count, Enum->Name.Start);
+)INLINE_CODE", Enum->Name.Count, Enum->Name.Start);
 
   for (enum_field_iterator Iter = Iterator(&Enum->Fields);
       IsValid(&Iter);
@@ -1931,7 +1929,6 @@ GetMetaprogrammingDirective(c_parse_result* Parser)
     OutputParsingError(Parser, Parser->Tokens.At, CS("Expected metaprogramming directive."));
   }
 
-  // TODO(Jesse): Fix this API!
   metaprogramming_directives Result = {};
   ToValue(NextToken.Value, &Result);
   Assert(Result);
@@ -2047,7 +2044,7 @@ main(s32 ArgCount, const char** ArgStrings)
               counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
 
               counted_string OutfileName = Concat(
-                  Concat( MetaprogrammingDirectives(Directive),
+                  Concat( ToString(Directive),
                           CS("_"), Memory),
                           DatatypeName, Memory);
               switch (Directive)

@@ -270,11 +270,11 @@ fi
 rm -Rf $META_OUT
 mkdir $META_OUT
 
+# git checkout src/metaprogramming/output
+
 SOURCE_FILES="$(find src -type f -name "*.h" -and -not -wholename "src/metaprogramming/defines.h" | tr '\n' ' ') $(find src -type f -name "*.cpp" | tr '\n' ' ')"
 ColorizeTitle "Preprocessing"
 bin/preprocessor $SOURCE_FILES
-
-# git checkout src/metaprogramming/output
 
 BuildPreprocessor
 [ ! -x bin/preprocessor ] && echo -e "$Failed Couldn't find preprocessor, exiting." && exit 1
