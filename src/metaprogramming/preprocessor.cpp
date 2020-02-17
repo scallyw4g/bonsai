@@ -1924,15 +1924,9 @@ Advance(%.*s_iterator* Iter)
 function metaprogramming_directives
 GetMetaprogrammingDirective(c_parse_result* Parser)
 {
-  c_token NextToken = RequireToken(Parser, CTokenType_Identifier);
-
-  if (!IsMetaprogrammingDirective(NextToken.Value))
-  {
-    OutputParsingError(Parser, Parser->Tokens.At, CS("Expected metaprogramming directive."));
-  }
-
-  metaprogramming_directives Result = MetaprogrammingDirectives(NextToken.Value);
-  Assert(Result);
+  metaprogramming_directives Result = MetaprogrammingDirectives(RequireToken(Parser, CTokenType_Identifier).Value);
+  if (!Result)
+    { OutputParsingError(Parser, Parser->Tokens.At, CS("Expected metaprogramming directive.")); }
   return Result;
 }
 
