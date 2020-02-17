@@ -1733,15 +1733,16 @@ TokenizeAllFiles(counted_string_cursor* Filenames, memory_arena* Memory)
 function counted_string
 GenerateValueTableFor(enum_def* Enum, memory_arena* Memory)
 {
-  // counted_string FunctionName = ToCapitalCase(Enum->Name, Memory);
+  counted_string FunctionName = ToCapitalCase(Enum->Name, Memory);
   counted_string Result = FormatCountedString(Memory,
 R"INLINE_CODE(
-function void
-ToValue(counted_string S, %.*s* Result)
+function %.*s
+%.*s(counted_string S)
 {
-  *Result = (%.*s)0;
+  %.*s Result = {};
 )INLINE_CODE",
               Enum->Name.Count, Enum->Name.Start,
+              FunctionName.Count, FunctionName.Start,
               Enum->Name.Count, Enum->Name.Start);
 
   for (enum_field_iterator Iter = Iterator(&Enum->Fields);
@@ -1750,12 +1751,13 @@ ToValue(counted_string S, %.*s* Result)
   {
     Result = Concat(Result,
         CS(FormatString(Memory,
-            "  if (StringsMatch(CS(\"%.*s\"), S)) { *Result = %.*s; }\n",
+            "  if (StringsMatch(CS(\"%.*s\"), S)) { Result = %.*s; }\n",
             Iter.At->Element.Name.Count, Iter.At->Element.Name.Start,
             Iter.At->Element.Name.Count, Iter.At->Element.Name.Start
             )), Memory);
   }
 
+  Result = Concat(Result, CS("  return Result;"), Memory);
   Result = Concat(Result, CS("\n}\n\n"), Memory);
 
   return Result;
@@ -1929,8 +1931,7 @@ GetMetaprogrammingDirective(c_parse_result* Parser)
     OutputParsingError(Parser, Parser->Tokens.At, CS("Expected metaprogramming directive."));
   }
 
-  metaprogramming_directives Result = {};
-  ToValue(NextToken.Value, &Result);
+  metaprogramming_directives Result = MetaprogrammingDirectives(NextToken.Value);
   Assert(Result);
   return Result;
 }

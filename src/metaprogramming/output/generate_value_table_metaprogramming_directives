@@ -1,17 +1,17 @@
 
-function void
-ToValue(counted_string S, metaprogramming_directives* Result)
+function metaprogramming_directives
+MetaprogrammingDirectives(counted_string S)
 {
-  *Result = (metaprogramming_directives)0;
-  if (StringsMatch(CS("noop"), S)) { *Result = noop; }
-  if (StringsMatch(CS("generate_stream"), S)) { *Result = generate_stream; }
-  if (StringsMatch(CS("generate_cursor"), S)) { *Result = generate_cursor; }
-  if (StringsMatch(CS("generate_string_table"), S)) { *Result = generate_string_table; }
-  if (StringsMatch(CS("generate_value_table"), S)) { *Result = generate_value_table; }
-  if (StringsMatch(CS("for_enum_values"), S)) { *Result = for_enum_values; }
-  if (StringsMatch(CS("for_members_in"), S)) { *Result = for_members_in; }
-  if (StringsMatch(CS("d_union"), S)) { *Result = d_union; }
-
+  metaprogramming_directives Result = {};
+  if (StringsMatch(CS("noop"), S)) { Result = noop; }
+  if (StringsMatch(CS("generate_stream"), S)) { Result = generate_stream; }
+  if (StringsMatch(CS("generate_cursor"), S)) { Result = generate_cursor; }
+  if (StringsMatch(CS("generate_string_table"), S)) { Result = generate_string_table; }
+  if (StringsMatch(CS("generate_value_table"), S)) { Result = generate_value_table; }
+  if (StringsMatch(CS("for_enum_values"), S)) { Result = for_enum_values; }
+  if (StringsMatch(CS("for_members_in"), S)) { Result = for_members_in; }
+  if (StringsMatch(CS("d_union"), S)) { Result = d_union; }
+  return Result;
 }
 
 
