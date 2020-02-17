@@ -1935,7 +1935,6 @@ GetMetaprogrammingDirective(c_parse_result* Parser)
   return Result;
 }
 
-
 function void
 DoWorkToOutputThisStuff(c_parse_result* Parser, counted_string OutputForThisParser, counted_string NewFilename, memory_arena* Memory)
 {
@@ -2044,83 +2043,93 @@ main(s32 ArgCount, const char** ArgStrings)
               RequireToken(Parser, CTokenType_OpenParen);
               counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
 
-              counted_string OutfileName = Concat( Concat(ToString(Directive), CS("_"), Memory), DatatypeName, Memory);
-              if (Directive & generate_stream)
+              counted_string OutfileName = Concat(
+                  Concat( ToString(Directive),
+                          CS("_"), Memory),
+                          DatatypeName, Memory);
+              switch (Directive)
               {
-                counted_string Code = GenerateStreamFor(DatatypeName, Memory);
-                DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
-              }
-
-              if (Directive & generate_cursor)
-              {
-                counted_string Code = GenerateCursorFor(DatatypeName, Memory);
-                DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
-              }
-
-              enum_def* Enum = GetEnumByType(&Datatypes.Enums, DatatypeName);
-              if (Directive & generate_string_table)
-              {
-                counted_string Code = GenerateNameTableFor(Enum, Memory);
-                DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
-              }
-
-              if (Directive & generate_value_table)
-              {
-                counted_string Code = GenerateValueTableFor(Enum, Memory);
-                DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
-              }
-
-              if (Directive & d_union)
-              {
-                d_union_decl dUnion = ParseDiscriminatedUnion(Parser, DatatypeName, Memory);
-                if (Parser->Valid)
+                case generate_stream:
                 {
-                  counted_string EnumString = GenerateEnumDef(&dUnion, Memory);
-                  counted_string StructString = GenerateStructDef(&dUnion, Memory);
-                  counted_string Code = Concat(EnumString, StructString, Memory);
+                  counted_string Code = GenerateStreamFor(DatatypeName, Memory);
                   DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
+                } break;
 
-                  c_parse_result StructParse = TokenizeString(StructString, CS("TODO(Jesse): Filename goes here!"), Memory);
-                  RequireToken(&StructParse, CToken(CS("struct")));
-                  counted_string StructName = RequireToken(&StructParse, CTokenType_Identifier).Value;
-                  struct_def S = ParseStructBody(&StructParse, StructName, Memory);
-                  Push(&Datatypes.Structs, S, Memory);
-
-                  c_parse_result EnumParse = TokenizeString(EnumString, CS("TODO(Jesse): Filename goes here!"), Memory);
-                  RequireToken(&EnumParse, CToken(CS("enum")));
-                  enum_def E = ParseEnum(&EnumParse, Memory);
-                  Push(&Datatypes.Enums, E, Memory);
-
-                  Assert( GetStructByType(&Datatypes.Structs, StructName) );
-                  Assert( GetEnumByType(&Datatypes.Enums, E.Name) );
-                }
-                else
+                case generate_cursor:
                 {
-                  Error("Parsing d_union declaration");
-                }
-              }
-
-              if (Directive & for_enum_values)
-              {
-                counted_string Code = ParseForEnumValues(Parser, DatatypeName, &Datatypes.Enums, Memory);
-                DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
-              }
-
-              if (Directive & for_members_in)
-              {
-                for_member_constraints Constraints = {};
-                struct_def* Target = GetStructByType(&Datatypes.Structs, DatatypeName);
-
-                if (Target)
-                {
-                  counted_string Code = ParseForMembers(Parser, &Constraints, Target, &Datatypes.Structs, Memory);
+                  counted_string Code = GenerateCursorFor(DatatypeName, Memory);
                   DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
-                }
-                else
+                } break;
+
+                case generate_string_table:
                 {
-                  Parser->Valid = False;
-                  Error("Couldn't find matching struct %.*s", (s32)DatatypeName.Count, DatatypeName.Start);
-                }
+                  enum_def* Enum = GetEnumByType(&Datatypes.Enums, DatatypeName);
+                  counted_string Code = GenerateNameTableFor(Enum, Memory);
+                  DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
+                } break;
+
+                case generate_value_table:
+                {
+                  enum_def* Enum = GetEnumByType(&Datatypes.Enums, DatatypeName);
+                  counted_string Code = GenerateValueTableFor(Enum, Memory);
+                  DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
+                } break;
+
+
+                case for_enum_values:
+                {
+                  counted_string Code = ParseForEnumValues(Parser, DatatypeName, &Datatypes.Enums, Memory);
+                  DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
+                } break;
+
+                case for_members_in:
+                {
+                  for_member_constraints Constraints = {};
+                  struct_def* Target = GetStructByType(&Datatypes.Structs, DatatypeName);
+
+                  if (Target)
+                  {
+                    counted_string Code = ParseForMembers(Parser, &Constraints, Target, &Datatypes.Structs, Memory);
+                    DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
+                  }
+                  else
+                  {
+                    Parser->Valid = False;
+                    Error("Couldn't find matching struct %.*s", (s32)DatatypeName.Count, DatatypeName.Start);
+                  }
+                } break;
+
+                case d_union:
+                {
+                  d_union_decl dUnion = ParseDiscriminatedUnion(Parser, DatatypeName, Memory);
+                  if (Parser->Valid)
+                  {
+                    counted_string EnumString = GenerateEnumDef(&dUnion, Memory);
+                    counted_string StructString = GenerateStructDef(&dUnion, Memory);
+                    counted_string Code = Concat(EnumString, StructString, Memory);
+                    DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
+
+                    c_parse_result StructParse = TokenizeString(StructString, CS("TODO(Jesse): Filename goes here!"), Memory);
+                    RequireToken(&StructParse, CToken(CS("struct")));
+                    counted_string StructName = RequireToken(&StructParse, CTokenType_Identifier).Value;
+                    struct_def S = ParseStructBody(&StructParse, StructName, Memory);
+                    Push(&Datatypes.Structs, S, Memory);
+
+                    c_parse_result EnumParse = TokenizeString(EnumString, CS("TODO(Jesse): Filename goes here!"), Memory);
+                    RequireToken(&EnumParse, CToken(CS("enum")));
+                    enum_def E = ParseEnum(&EnumParse, Memory);
+                    Push(&Datatypes.Enums, E, Memory);
+
+                    Assert( GetStructByType(&Datatypes.Structs, StructName) );
+                    Assert( GetEnumByType(&Datatypes.Enums, E.Name) );
+                  }
+                  else
+                  {
+                    Error("Parsing d_union declaration");
+                  }
+                } break;
+
+                InvalidDefaultWhileParsing(Parser, CS("Invalid directive."));
               }
             }
             else
