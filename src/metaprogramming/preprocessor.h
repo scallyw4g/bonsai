@@ -44,7 +44,6 @@ meta(generate_string_table(metaprogramming_directives))
 meta(generate_value_table(metaprogramming_directives))
 #include <metaprogramming/output/generate_value_table_metaprogramming_directives>
 
-// TODO(Jesse): Add vertical pipe |
 enum c_token_type
 {
   CTokenType_Unknown,
@@ -84,6 +83,7 @@ enum c_token_type
   CTokenType_BSlash        = '\\',
   CTokenType_Tilde         = '~',
   CTokenType_Backtick      = '`',
+  CTokenType_Pipe          = '|',
   CTokenType_Newline       = '\n',
   CTokenType_CarrigeReturn = '\r',
   CTokenType_EOF           = EOF,

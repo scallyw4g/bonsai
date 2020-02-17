@@ -40,6 +40,7 @@ ToString(c_token_type Type)
     case CTokenType_BSlash: { Result = CS("CTokenType_BSlash"); } break;
     case CTokenType_Tilde: { Result = CS("CTokenType_Tilde"); } break;
     case CTokenType_Backtick: { Result = CS("CTokenType_Backtick"); } break;
+    case CTokenType_Pipe: { Result = CS("CTokenType_Pipe"); } break;
     case CTokenType_Newline: { Result = CS("CTokenType_Newline"); } break;
     case CTokenType_CarrigeReturn: { Result = CS("CTokenType_CarrigeReturn"); } break;
     case CTokenType_EOF: { Result = CS("CTokenType_EOF"); } break;
