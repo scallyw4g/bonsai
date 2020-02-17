@@ -1,17 +1,17 @@
 
-        Result |= StringsMatch(ToString(noop), Identifier);
+        Result |= StringsMatch(MetaprogrammingDirectives(noop), Identifier);
 
-        Result |= StringsMatch(ToString(generate_stream), Identifier);
+        Result |= StringsMatch(MetaprogrammingDirectives(generate_stream), Identifier);
 
-        Result |= StringsMatch(ToString(generate_cursor), Identifier);
+        Result |= StringsMatch(MetaprogrammingDirectives(generate_cursor), Identifier);
 
-        Result |= StringsMatch(ToString(generate_string_table), Identifier);
+        Result |= StringsMatch(MetaprogrammingDirectives(generate_string_table), Identifier);
 
-        Result |= StringsMatch(ToString(generate_value_table), Identifier);
+        Result |= StringsMatch(MetaprogrammingDirectives(generate_value_table), Identifier);
 
-        Result |= StringsMatch(ToString(for_enum_values), Identifier);
+        Result |= StringsMatch(MetaprogrammingDirectives(for_enum_values), Identifier);
 
-        Result |= StringsMatch(ToString(for_members_in), Identifier);
+        Result |= StringsMatch(MetaprogrammingDirectives(for_members_in), Identifier);
 
-        Result |= StringsMatch(ToString(d_union), Identifier);
+        Result |= StringsMatch(MetaprogrammingDirectives(d_union), Identifier);
 

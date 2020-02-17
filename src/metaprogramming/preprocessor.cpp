@@ -177,7 +177,7 @@ IsMetaprogrammingDirective(counted_string Identifier)
   meta(
     for_enum_values( metaprogramming_directives,
       (EnumName, EnumValue) {
-        Result |= StringsMatch(ToString(EnumName), Identifier);
+        Result |= StringsMatch(MetaprogrammingDirectives(EnumName), Identifier);
       }
     )
   )
@@ -429,7 +429,7 @@ OutputErrorHelperLine(c_parse_result* Parser, c_token* ErrorToken, c_token Expec
 
     if (Parser->Tokens.At == ErrorToken)
     {
-      counted_string TokenTypeName = ToString(ErrorToken->Type);
+      counted_string TokenTypeName = CTokenType(ErrorToken->Type);
       Log("^----> Unexpected token type: %.*s", TokenTypeName.Count, TokenTypeName.Start );
 
       if (ErrorToken->Value.Count)
@@ -437,7 +437,7 @@ OutputErrorHelperLine(c_parse_result* Parser, c_token* ErrorToken, c_token Expec
         Log("(%.*s)" , ErrorToken->Value.Count, ErrorToken->Value.Start);
       }
 
-      counted_string ExpectedTypeName = ToString(Expected.Type);
+      counted_string ExpectedTypeName = CTokenType(Expected.Type);
       Log(". Expected: %.*s", ExpectedTypeName.Count, ExpectedTypeName.Start);
 
       if (Expected.Value.Count)
@@ -2047,7 +2047,7 @@ main(s32 ArgCount, const char** ArgStrings)
               counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
 
               counted_string OutfileName = Concat(
-                  Concat( ToString(Directive),
+                  Concat( MetaprogrammingDirectives(Directive),
                           CS("_"), Memory),
                           DatatypeName, Memory);
               switch (Directive)

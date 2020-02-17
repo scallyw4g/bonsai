@@ -1,6 +1,6 @@
 
 function counted_string
-ToString(c_token_type Type)
+CTokenType(c_token_type Type)
 {
   counted_string Result = {};
   switch (Type)

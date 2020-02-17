@@ -1,6 +1,6 @@
 
 function counted_string
-ToString(metaprogramming_directives Type)
+MetaprogrammingDirectives(metaprogramming_directives Type)
 {
   counted_string Result = {};
   switch (Type)
