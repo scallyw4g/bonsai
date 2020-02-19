@@ -104,6 +104,8 @@ struct c_decl_variable
   counted_string Name;
 };
 
+// TODO(Jesse): Generate this!  I tried, but the compiler is going to be fiddly
+// to pacify.
 struct c_decl_stream_chunk;
 struct c_decl_stream
 {

@@ -37,11 +37,11 @@ U32_Stream(u32 Count, memory_arena *Memory)
   return Result;
 }
 
-v3_stream
-V3_Stream(u32 Count, memory_arena *Memory)
+v3_cursor
+V3Cursor(u32 Count, memory_arena *Memory)
 {
   v3 *Elements = Allocate(v3, Memory, Count);
-  v3_stream Result = {};
+  v3_cursor Result = {};
 
   Result.Start = Elements;
   Result.At = Elements;
@@ -236,10 +236,10 @@ PopLine(ansi_stream *Cursor, memory_arena *Arena)
   return Result;
 }
 
-v3_stream
+v3_cursor
 ParseV3Array(u32 ElementCount, ansi_stream FloatStream, memory_arena* Memory)
 {
-  v3_stream Result = V3_Stream(ElementCount, Memory);
+  v3_cursor Result = V3Cursor(ElementCount, Memory);
 
   for (umm DestIndex = 0;
       DestIndex < ElementCount;
@@ -275,7 +275,7 @@ ParseFloatArray(u32 TotalFloatCount, ansi_stream FloatStream, memory_arena* Memo
 }
 
 void
-Dump(v3_stream* Array)
+Dump(v3_cursor* Array)
 {
   umm ElementCount = AtElements(Array);
 

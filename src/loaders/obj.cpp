@@ -51,8 +51,8 @@ LoadObj(memory_arena *PermMem, heap_allocator *Heap, const char * FilePath)
   ansi_stream Stream = AnsiStream(&BinaryStream);
   mesh_metadata Stats = GetObjMetadata(Stream, TranArena);
 
-  v3_stream TempVerts       = V3_Stream(Stats.VertCount, TranArena);
-  v3_stream TempNormals     = V3_Stream(Stats.NormalCount, TranArena);
+  v3_cursor TempVerts       = V3Cursor(Stats.VertCount, TranArena);
+  v3_cursor TempNormals     = V3Cursor(Stats.NormalCount, TranArena);
 
   u32_stream VertIndicies   = U32_Stream(Stats.FaceCount*3, TranArena);
   u32_stream NormalIndicies = U32_Stream(Stats.FaceCount*3, TranArena);

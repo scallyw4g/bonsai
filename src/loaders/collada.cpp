@@ -39,8 +39,8 @@ LoadMeshData(xml_token_stream* XmlTokens, counted_string* GeometryId, memory_are
   u32 PositionCount             = StringToUInt(GetPropertyValue(PositionTag, CS("count")));
   u32 NormalCount               = StringToUInt(GetPropertyValue(NormalTag, CS("count")));
 
-  v3_stream Positions           = ParseV3Array(PositionCount, AnsiStream(PositionString), TempMemory);
-  v3_stream Normals             = ParseV3Array(NormalCount, AnsiStream(NormalString), TempMemory);
+  v3_cursor Positions           = ParseV3Array(PositionCount, AnsiStream(PositionString), TempMemory);
+  v3_cursor Normals             = ParseV3Array(NormalCount, AnsiStream(NormalString), TempMemory);
 
 
   untextured_3d_geometry_buffer Mesh = {};

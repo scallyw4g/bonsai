@@ -28,12 +28,8 @@ struct r32_stream
   r32* End;
 };
 
-struct v3_stream
-{
-  v3* Start;
-  v3* At;
-  v3* End;
-};
+meta(generate_cursor(v3))
+#include <metaprogramming/output/generate_cursor_v3>
 
 template <typename element_t, typename stream_t>inline void
 Push(element_t Element, stream_t *Array)
