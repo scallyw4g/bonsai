@@ -108,6 +108,13 @@ WriteToFile(native_file* File, counted_string Str)
   return Result;
 }
 
+function inline b32
+WriteToFile(native_file* File, ansi_stream Str)
+{
+  b32 Result = WriteToFile(File, CountedString(Str));
+  return Result;
+}
+
 function b32
 FileExists(counted_string Path)
 {

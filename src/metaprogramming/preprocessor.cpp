@@ -23,6 +23,7 @@ Advance(c_token_cursor* Tokens, u32 Lookahead = 0)
 
   return;
 }
+
 function void
 Advance(c_parse_result* Parser, u32 Lookahead = 0)
 {
@@ -328,9 +329,6 @@ TokenizeString(counted_string Code, counted_string Filename, memory_arena* Memor
 function c_parse_result
 TokenizeFile(counted_string Filename, memory_arena* Memory)
 {
-  // TODO(Jesse): Since we store pointers directly into this buffer, we need to
-  // keep the memory around.  Should we tokenize such that we allocate new
-  // memory for things that need it?  (Strings/Identifiers/Comments atm..)
   ansi_stream SourceFileStream = AnsiStreamFromFile(Filename, Memory);
   c_parse_result Result = TokenizeAnsiStream(SourceFileStream, Memory);
   return Result;
@@ -765,43 +763,42 @@ Output(c_token_cursor Code, counted_string Filename, memory_arena* Memory)
   native_file TempFile = GetTempFile(&TempFileEntropy, Memory);
   if (TempFile.Handle)
   {
-
     Rewind(&Code);
-    // @needed-size-inflated-because-of-stupidity
-    u32 NeededSize = 1000; // TODO(Jesse): This has to be inflated for " and ' characters added during the ToString() routine..  FeelsBadMan.
+    u32 NeededSize = 0;
     while(Remaining(&Code))
     {
-      c_token T = Code.At[0];
-      NeededSize += T.Value.Count ? T.Value.Count : 1;
+      counted_string TS = ToString(Code.At[0], Memory);
+      NeededSize += TS.Count;
       Advance(&Code);
     }
 
-    counted_string Output = {
-      .Start = Allocate(const char, Memory, NeededSize),
-      .Count = NeededSize
-    };
+    ansi_stream Output = AllocateBuffer<ansi_stream, const char>(NeededSize, Memory);
 
     Rewind(&Code);
-
-    u8* At = (u8*)Output.Start;
     while(Remaining(&Code))
     {
       c_token T = Code.At[0];
-
       counted_string TS = ToString(T, Memory);
-      MemCopy((u8*)TS.Start, At, TS.Count);
-      At += TS.Count;
-      // @needed-size-inflated-because-of-stupidity
-      Assert((umm)At <= (umm)Output.Start+Output.Count);
 
+      u8* OutputAt = (u8*)Output.At;
+      // TODO(Jesse): Gross.
+      Assert(TS.Count);
+      if (Advance(&Output, (u32)TS.Count-1))
+      {
+        MemCopy((u8*)TS.Start, OutputAt, TS.Count);
+      }
+      else
+      {
+        Error("Ran out of memory copying token (%.*s) onto output stream for file (%.*s).", (u32)TS.Count, TS.Start, (u32)Filename.Count, Filename.Start);
+        return Result;
+      }
+
+      Assert((umm)Output.At <= (umm)Output.End);
       Advance(&Code);
     }
-    // @needed-size-inflated-because-of-stupidity
-    // Assert((umm)At == (umm)Output.Start+Output.Count);
+    Assert((umm)Output.At == (umm)Output.End);
 
-    Output.Count = (umm)((const char*)At - (const char*)Output.Start);
-
-    b32 FileWritesSucceeded = WriteToFile(&TempFile, Output );
+    b32 FileWritesSucceeded = WriteToFile(&TempFile, Output);
     FileWritesSucceeded &= CloseFile(&TempFile);
 
     if (FileWritesSucceeded)
@@ -1969,7 +1966,6 @@ DoWorkToOutputThisStuff(c_parse_result* Parser, counted_string OutputForThisPars
   else
   {
     counted_string IncludePath = Concat(CS("src/metaprogramming/output/"), NewFilename, Memory);
-
     Output(OutputForThisParser, IncludePath, Memory);
 
     Push(CToken(CTokenType_Newline), &Parser->OutputTokens);
@@ -2104,13 +2100,13 @@ main(s32 ArgCount, const char** ArgStrings)
                     counted_string Code = Concat(EnumString, StructString, Memory);
                     DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
 
-                    c_parse_result StructParse = TokenizeString(StructString, CS("TODO(Jesse): Filename goes here!"), Memory);
+                    c_parse_result StructParse = TokenizeString(StructString, OutfileName, Memory);
                     RequireToken(&StructParse, CToken(CS("struct")));
                     counted_string StructName = RequireToken(&StructParse, CTokenType_Identifier).Value;
                     struct_def S = ParseStructBody(&StructParse, StructName, Memory);
                     Push(&Datatypes.Structs, S, Memory);
 
-                    c_parse_result EnumParse = TokenizeString(EnumString, CS("TODO(Jesse): Filename goes here!"), Memory);
+                    c_parse_result EnumParse = TokenizeString(EnumString, OutfileName, Memory);
                     RequireToken(&EnumParse, CToken(CS("enum")));
                     enum_def E = ParseEnum(&EnumParse, Memory);
                     Push(&Datatypes.Enums, E, Memory);

@@ -1,3 +1,13 @@
+function counted_string
+CountedString(ansi_stream Stream)
+{
+  counted_string Result = {
+    .Start = Stream.Start,
+    .Count = (umm)(Stream.End-Stream.Start)
+  };
+  return Result;
+}
+
 r32
 StringToFloat(counted_string* String)
 {

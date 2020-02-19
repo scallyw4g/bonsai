@@ -204,17 +204,21 @@ ReadUntilTerminatorString(ansi_stream *Cursor, counted_string Terminator)
   return Result;
 }
 
-function void
-Advance(ansi_stream* Cursor)
+function b32
+Advance(ansi_stream* Cursor, u32 Lookahead = 0)
 {
-  if (Remaining(Cursor))
+  b32 Result = False;
+  if (Remaining(Cursor, Lookahead))
   {
-    ++Cursor->At;
+    Cursor->At += Lookahead+1;
+    Result = True;
   }
   else
   {
     Error("Tried advancing a cursor past its end!");
   }
+
+  return Result;
 }
 
 counted_string
