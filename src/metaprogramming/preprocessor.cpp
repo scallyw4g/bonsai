@@ -1761,9 +1761,10 @@ function %.*s
 }
 
 function counted_string
-GenerateCursorFor(counted_string StructName, memory_arena* Memory)
+GenerateCursorFor(counted_string DatatypeName, memory_arena* Memory)
 {
-  counted_string Result = FormatCountedString(Memory,
+
+  counted_string DatatypeDef = FormatCountedString(Memory,
 R"INLINE_CODE(
 struct %.*s_cursor
 {
@@ -1772,12 +1773,38 @@ struct %.*s_cursor
   %.*s* At;
 };
 )INLINE_CODE",
-    StructName.Count, StructName.Start,
-    StructName.Count, StructName.Start,
-    StructName.Count, StructName.Start,
-    StructName.Count, StructName.Start
+    DatatypeName.Count, DatatypeName.Start,
+    DatatypeName.Count, DatatypeName.Start,
+    DatatypeName.Count, DatatypeName.Start,
+    DatatypeName.Count, DatatypeName.Start
     );
 
+  counted_string ConstructorName = ToCapitalCase(DatatypeName, Memory);
+  counted_string ConstructorDef = FormatCountedString(Memory,
+R"INLINE_CODE(
+function %.*s_cursor
+%.*sCursor(umm ElementCount, memory_arena* Memory)
+{
+  // TODO(Jesse): Can we use Allocate() here instead?
+  %.*s* Start = (%.*s*)PushStruct(Memory, sizeof(%.*s), 1, 1);
+  %.*s_cursor Result = {
+    .Start = Start,
+    .End = Start+ElementCount,
+    .At = Start,
+  };
+  return Result;
+};
+)INLINE_CODE",
+    DatatypeName.Count, DatatypeName.Start,
+    ConstructorName.Count, ConstructorName.Start,
+    DatatypeName.Count, DatatypeName.Start,
+    DatatypeName.Count, DatatypeName.Start,
+    DatatypeName.Count, DatatypeName.Start,
+    DatatypeName.Count, DatatypeName.Start
+    );
+
+
+  counted_string Result = Concat(DatatypeDef, ConstructorDef, Memory);
   return Result;
 }
 

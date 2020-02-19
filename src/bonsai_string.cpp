@@ -8,14 +8,16 @@ CountedString(umm Count, memory_arena* Memory)
   return Result;
 }
 
+#define STRING_BUFFER_LENGTH 2048
+
 char *
 FormatString(memory_arena *Memory, const char* FormatString, ...)
 {
-  char *Buffer = AllocateProtection(char, Memory, 1024, False);
+  char *Buffer = AllocateProtection(char, Memory, STRING_BUFFER_LENGTH, False);
 
   va_list Arguments;
   va_start(Arguments, FormatString);
-  vsnprintf(Buffer, 1023, FormatString, Arguments);
+  vsnprintf(Buffer, STRING_BUFFER_LENGTH-1, FormatString, Arguments);
   va_end(Arguments);
 
   return Buffer;
@@ -24,11 +26,11 @@ FormatString(memory_arena *Memory, const char* FormatString, ...)
 counted_string
 FormatCountedString(memory_arena *Memory, const char* FormatString, ...)
 {
-  char *Buffer = AllocateProtection(char, Memory, 1024, False);
+  char *Buffer = AllocateProtection(char, Memory, STRING_BUFFER_LENGTH, False);
 
   va_list Arguments;
   va_start(Arguments, FormatString);
-  vsnprintf(Buffer, 1023, FormatString, Arguments);
+  vsnprintf(Buffer, STRING_BUFFER_LENGTH-1, FormatString, Arguments);
   va_end(Arguments);
 
   counted_string Result = CountedString(Buffer);
