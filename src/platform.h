@@ -138,8 +138,6 @@ struct thread_startup_params
   /* PFNSWAPINTERVALPROC glSwapInterval; */
 /* }; */
 
-// XXX Make sure this ONLY contains input_event structs - they are cleared in a
-// loop and the struct size is used to determine the ending index
 struct input
 {
   input_event Space;

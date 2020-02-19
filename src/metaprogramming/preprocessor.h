@@ -179,12 +179,7 @@ meta(generate_cursor(enum_def))
 struct c_token
 {
   c_token_type Type;
-
-  // TODO(Jesse): Is this d_union-able? .. Or worth it?
-  union {
-    counted_string Value;
-    metaprogramming_directive Directive;
-  };
+  counted_string Value;
 };
 meta(generate_cursor(c_token))
 #include <metaprogramming/output/generate_cursor_c_token>

@@ -1442,21 +1442,19 @@ ParseForMembers(c_parse_result* Parser, for_member_constraints* Constraints, str
   if (OptionalToken(Parser, CToken(CS("where_member_contains"))))
   {
     Constraints->MemberContains = RequireToken(Parser, CTokenType_Identifier).Value;
+    RequireToken(Parser, CToken(CTokenType_Comma));
   }
 
-  if (OptionalToken(Parser, CToken(CTokenType_Comma)))
-  {
-    RequireToken(Parser, CTokenType_OpenParen);
-    Constraints->TypeTag = RequireToken(Parser, CTokenType_Identifier).Value;
+  RequireToken(Parser, CTokenType_OpenParen);
+  Constraints->TypeTag = RequireToken(Parser, CTokenType_Identifier).Value;
 
-    RequireToken(Parser, CTokenType_Comma);
-    Constraints->TypeName = RequireToken(Parser, CTokenType_Identifier).Value;
+  RequireToken(Parser, CTokenType_Comma);
+  Constraints->TypeName = RequireToken(Parser, CTokenType_Identifier).Value;
 
-    RequireToken(Parser, CTokenType_Comma);
-    Constraints->ValueName = RequireToken(Parser, CTokenType_Identifier).Value;
+  RequireToken(Parser, CTokenType_Comma);
+  Constraints->ValueName = RequireToken(Parser, CTokenType_Identifier).Value;
 
-    RequireToken(Parser, CTokenType_CloseParen);
-  }
+  RequireToken(Parser, CTokenType_CloseParen);
 
   Assert(Constraints->TypeTag.Count);
   Assert(Constraints->TypeName.Count);
@@ -1471,7 +1469,27 @@ ParseForMembers(c_parse_result* Parser, for_member_constraints* Constraints, str
     {
       case type_c_decl_variable:
       {
-        // TODO(Jesse): Do we actually do anything here?
+        Rewind(&BodyText.Tokens);
+        while (Remaining(&BodyText.Tokens))
+        {
+          c_token T = PopTokenRaw(&BodyText);
+          if (StringsMatch(T.Value, Constraints->TypeTag))
+          {
+            Result = Concat(Result, CS(FormatString(Memory, "type_%.*s", AtChunk->Element.c_decl_variable.Type.Count, AtChunk->Element.c_decl_variable.Type.Start)), Memory);
+          }
+          else if (StringsMatch(T.Value, Constraints->TypeName))
+          {
+            Result = Concat(Result, CS(FormatString(Memory, "%.*s", AtChunk->Element.c_decl_variable.Type.Count, AtChunk->Element.c_decl_variable.Type.Start)), Memory);
+          }
+          else if (StringsMatch(T.Value, Constraints->ValueName))
+          {
+            Result = Concat(Result, CS(FormatString(Memory, "%.*s", AtChunk->Element.c_decl_variable.Name.Count, AtChunk->Element.c_decl_variable.Name.Start)), Memory);
+          }
+          else
+          {
+            Result = Concat(Result, ToString(T, Memory), Memory);
+          }
+        }
       } break;
 
       case type_c_decl_union:

@@ -410,24 +410,18 @@ CheckShadingLanguageVersion()
 }
 
 function void
-ClearClickedFlags(input_event *Input)
+ClearClickedFlags(input *Input)
 {
   TIMED_FUNCTION();
 
-  u32 TotalEvents = sizeof(input)/sizeof(input_event);
-
-  for ( u32 EventIndex = 0;
-        EventIndex < TotalEvents;
-        ++EventIndex)
-  {
-    input_event *Event = Input + EventIndex;
-
-    // This is some super-janky insurance that we're overwriting boolean values
-    Assert(Event->Pressed == False || Event->Pressed == True);
-    Assert(Event->Clicked == False || Event->Clicked == True);
-
-    Event->Clicked = False;
-  }
+  meta(
+    for_members_in( input,
+      (EnumTag, MemberType, MemberName) {
+        Input->MemberName.Clicked = False;
+      }
+    )
+  )
+#include <metaprogramming/output/for_members_in_input>
 }
 
 function void
@@ -572,7 +566,7 @@ main()
   r32 RealDt = 0;
   while ( Os.ContinueRunning )
   {
-    ClearClickedFlags((input_event*)&Plat.Input);
+    ClearClickedFlags(&Plat.Input);
     DEBUG_FRAME_BEGIN(&Hotkeys);
 
     Plat.dt = RealDt;
