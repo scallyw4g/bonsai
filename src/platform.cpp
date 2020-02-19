@@ -416,7 +416,7 @@ ClearClickedFlags(input *Input)
 
   meta(
     for_members_in( input,
-      (EnumTag, MemberType, MemberName) {
+      (_, _, MemberName) {
         Input->MemberName.Clicked = False;
       }
     )

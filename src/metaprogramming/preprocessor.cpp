@@ -1469,6 +1469,12 @@ ParseForMembers(c_parse_result* Parser, for_member_constraints* Constraints, str
     {
       case type_c_decl_variable:
       {
+        if (Constraints->MemberContains.Count &&
+            !StringsMatch(AtChunk->Element.c_decl_variable.Type, Constraints->MemberContains) )
+        {
+          break;
+        }
+
         Rewind(&BodyText.Tokens);
         while (Remaining(&BodyText.Tokens))
         {
