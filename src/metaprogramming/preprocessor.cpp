@@ -1462,32 +1462,33 @@ DoTokenSubstitution(c_parse_result* BodyText, for_member_constraints* Constraint
 }
 
 function counted_string
-ParseForMembers(c_parse_result* Parser, for_member_constraints* Constraints, struct_def* Target, struct_def_stream* ProgramStructs, memory_arena* Memory)
+ParseForMembers(c_parse_result* Parser, struct_def* Target, struct_def_stream* ProgramStructs, memory_arena* Memory)
 {
   counted_string Result = {};
+  for_member_constraints Constraints = {};
 
   RequireToken(Parser, CTokenType_Comma);
 
-  if (OptionalToken(Parser, CToken(CS("where_member_contains"))))
+  if (OptionalToken(Parser, CToken(CS("member_is_or_contains"))))
   {
-    Constraints->MemberContains = RequireToken(Parser, CTokenType_Identifier).Value;
+    Constraints.MemberContains = RequireToken(Parser, CTokenType_Identifier).Value;
     RequireToken(Parser, CToken(CTokenType_Comma));
   }
 
   RequireToken(Parser, CTokenType_OpenParen);
-  Constraints->TypeTag = RequireToken(Parser, CTokenType_Identifier).Value;
+  Constraints.TypeTag = RequireToken(Parser, CTokenType_Identifier).Value;
 
   RequireToken(Parser, CTokenType_Comma);
-  Constraints->TypeName = RequireToken(Parser, CTokenType_Identifier).Value;
+  Constraints.TypeName = RequireToken(Parser, CTokenType_Identifier).Value;
 
   RequireToken(Parser, CTokenType_Comma);
-  Constraints->ValueName = RequireToken(Parser, CTokenType_Identifier).Value;
+  Constraints.ValueName = RequireToken(Parser, CTokenType_Identifier).Value;
 
   RequireToken(Parser, CTokenType_CloseParen);
 
-  Assert(Constraints->TypeTag.Count);
-  Assert(Constraints->TypeName.Count);
-  Assert(Constraints->ValueName.Count);
+  Assert(Constraints.TypeTag.Count);
+  Assert(Constraints.TypeName.Count);
+  Assert(Constraints.ValueName.Count);
 
   c_parse_result BodyText = GetBodyTextForNextScope(Parser);
 
@@ -1498,13 +1499,13 @@ ParseForMembers(c_parse_result* Parser, for_member_constraints* Constraints, str
     {
       case type_c_decl_variable:
       {
-        if (Constraints->MemberContains.Count &&
-            !StringsMatch(AtChunk->Element.c_decl_variable.Type, Constraints->MemberContains) )
+        if (Constraints.MemberContains.Count &&
+            !StringsMatch(AtChunk->Element.c_decl_variable.Type, Constraints.MemberContains) )
         {
           break;
         }
 
-        Result = Concat(Result, DoTokenSubstitution(&BodyText, Constraints, AtChunk->Element, Memory), Memory);
+        Result = Concat(Result, DoTokenSubstitution(&BodyText, &Constraints, AtChunk->Element, Memory), Memory);
       } break;
 
       case type_c_decl_union:
@@ -1518,9 +1519,9 @@ ParseForMembers(c_parse_result* Parser, for_member_constraints* Constraints, str
             struct_def* Struct = GetStructByType(ProgramStructs, Iter.At->Element.c_decl_variable.Type);
             if (Struct)
             {
-              if (HasMemberOfType(Struct, Constraints->MemberContains))
+              if (HasMemberOfType(Struct, Constraints.MemberContains))
               {
-                Result = Concat(Result, DoTokenSubstitution(&BodyText, Constraints, Iter.At->Element, Memory), Memory);
+                Result = Concat(Result, DoTokenSubstitution(&BodyText, &Constraints, Iter.At->Element, Memory), Memory);
               }
             }
             else
@@ -2115,12 +2116,10 @@ main(s32 ArgCount, const char** ArgStrings)
 
                 case for_members_in:
                 {
-                  for_member_constraints Constraints = {};
                   struct_def* Target = GetStructByType(&Datatypes.Structs, DatatypeName);
-
                   if (Target)
                   {
-                    counted_string Code = ParseForMembers(Parser, &Constraints, Target, &Datatypes.Structs, Memory);
+                    counted_string Code = ParseForMembers(Parser, Target, &Datatypes.Structs, Memory);
                     DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
                   }
                   else
