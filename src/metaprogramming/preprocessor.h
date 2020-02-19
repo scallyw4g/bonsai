@@ -19,13 +19,6 @@ enum d_union_flags
   d_union_flag_enum_only
 };
 
-enum c_decl_function_type
-{
-  CFunctionType_Normal,
-  CFunctionType_Constructor,
-  CFunctionType_Destructor,
-};
-
 enum metaprogramming_directive
 {
   noop                   = 0x00,
@@ -91,12 +84,15 @@ enum c_token_type
 meta(generate_string_table(c_token_type))
 #include <metaprogramming/output/generate_string_table_c_token_type>
 
-// TODO(Jesse): Nested d-unions??! @mind-blown
-struct c_decl_function
-{
-  c_decl_function_type Type;
-  u32 CurrentlyUnused;
-};
+meta(
+  d_union(c_decl_function,
+  {
+    c_decl_function_normal      enum_only,
+    c_decl_function_constructor enum_only,
+    c_decl_function_destructor  enum_only,
+  })
+)
+#include <metaprogramming/output/d_union_c_decl_function>
 
 struct c_decl_variable
 {

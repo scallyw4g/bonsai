@@ -1007,18 +1007,19 @@ DumpCDeclStreamToConsole(c_decl_stream* Stream)
       {
         switch(Iter.At->Element.c_decl_function.Type)
         {
-          case CFunctionType_Normal:
+          case type_c_decl_function_normal:
           {
             Log("  Function\n");
           } break;
-          case CFunctionType_Constructor:
+          case type_c_decl_function_constructor:
           {
             Log("  Constructor\n");
           } break;
-          case CFunctionType_Destructor:
+          case type_c_decl_function_destructor:
           {
             Log("  Destructor\n");
           } break;
+          InvalidDefaultCase;
         }
       } break;
 
@@ -1098,7 +1099,7 @@ ParseDeclaration(c_parse_result* Parser, counted_string StructName, memory_arena
       Assert(StringsMatch(StructName, Name));
       EatFunctionDecl(Parser);
       Result.Type = type_c_decl_function;
-      Result.c_decl_function.Type = CFunctionType_Destructor;
+      Result.c_decl_function.Type = type_c_decl_function_destructor;
     } break;
 
     case CTokenType_Identifier:
@@ -1120,7 +1121,7 @@ ParseDeclaration(c_parse_result* Parser, counted_string StructName, memory_arena
             Assert(StringsMatch(StructName, FirstToken.Value));
             EatFunctionDecl(Parser);
             Result.Type = type_c_decl_function;
-            Result.c_decl_function.Type = CFunctionType_Constructor;
+            Result.c_decl_function.Type = type_c_decl_function_constructor;
             Done = True;
           } break;
 
@@ -1165,7 +1166,7 @@ ParseDeclaration(c_parse_result* Parser, counted_string StructName, memory_arena
                 /* counted_string FunctionName = */ RequireToken(Parser, CTokenType_Identifier);
                 EatFunctionDecl(Parser);
                 Result.Type = type_c_decl_function;
-                Result.c_decl_function.Type = CFunctionType_Normal;
+                Result.c_decl_function.Type = type_c_decl_function_normal;
               }
 
               if (DefKeywordsEncountered++ == 1)
@@ -1433,6 +1434,34 @@ ParseForEnumValues(c_parse_result* Parser, counted_string TypeName, enum_def_str
 }
 
 function counted_string
+DoTokenSubstitution(c_parse_result* BodyText, for_member_constraints* Constraints, c_decl Element, memory_arena* Memory)
+{
+  counted_string Result = {};
+  Rewind(&BodyText->Tokens);
+  while (Remaining(&BodyText->Tokens))
+  {
+    c_token T = PopTokenRaw(BodyText);
+    if (StringsMatch(T.Value, Constraints->TypeTag))
+    {
+      Result = Concat(Result, CS(FormatString(Memory, "type_%.*s", Element.c_decl_variable.Type.Count, Element.c_decl_variable.Type.Start)), Memory);
+    }
+    else if (StringsMatch(T.Value, Constraints->TypeName))
+    {
+      Result = Concat(Result, CS(FormatString(Memory, "%.*s", Element.c_decl_variable.Type.Count, Element.c_decl_variable.Type.Start)), Memory);
+    }
+    else if (StringsMatch(T.Value, Constraints->ValueName))
+    {
+      Result = Concat(Result, CS(FormatString(Memory, "%.*s", Element.c_decl_variable.Name.Count, Element.c_decl_variable.Name.Start)), Memory);
+    }
+    else
+    {
+      Result = Concat(Result, ToString(T, Memory), Memory);
+    }
+  }
+  return Result;
+}
+
+function counted_string
 ParseForMembers(c_parse_result* Parser, for_member_constraints* Constraints, struct_def* Target, struct_def_stream* ProgramStructs, memory_arena* Memory)
 {
   counted_string Result = {};
@@ -1475,27 +1504,7 @@ ParseForMembers(c_parse_result* Parser, for_member_constraints* Constraints, str
           break;
         }
 
-        Rewind(&BodyText.Tokens);
-        while (Remaining(&BodyText.Tokens))
-        {
-          c_token T = PopTokenRaw(&BodyText);
-          if (StringsMatch(T.Value, Constraints->TypeTag))
-          {
-            Result = Concat(Result, CS(FormatString(Memory, "type_%.*s", AtChunk->Element.c_decl_variable.Type.Count, AtChunk->Element.c_decl_variable.Type.Start)), Memory);
-          }
-          else if (StringsMatch(T.Value, Constraints->TypeName))
-          {
-            Result = Concat(Result, CS(FormatString(Memory, "%.*s", AtChunk->Element.c_decl_variable.Type.Count, AtChunk->Element.c_decl_variable.Type.Start)), Memory);
-          }
-          else if (StringsMatch(T.Value, Constraints->ValueName))
-          {
-            Result = Concat(Result, CS(FormatString(Memory, "%.*s", AtChunk->Element.c_decl_variable.Name.Count, AtChunk->Element.c_decl_variable.Name.Start)), Memory);
-          }
-          else
-          {
-            Result = Concat(Result, ToString(T, Memory), Memory);
-          }
-        }
+        Result = Concat(Result, DoTokenSubstitution(&BodyText, Constraints, AtChunk->Element, Memory), Memory);
       } break;
 
       case type_c_decl_union:
@@ -1511,27 +1520,7 @@ ParseForMembers(c_parse_result* Parser, for_member_constraints* Constraints, str
             {
               if (HasMemberOfType(Struct, Constraints->MemberContains))
               {
-                Rewind(&BodyText.Tokens);
-                while (Remaining(&BodyText.Tokens))
-                {
-                  c_token T = PopTokenRaw(&BodyText);
-                  if (StringsMatch(T.Value, Constraints->TypeTag))
-                  {
-                    Result = Concat(Result, CS(FormatString(Memory, "type_%.*s", Iter.At->Element.c_decl_variable.Type.Count, Iter.At->Element.c_decl_variable.Type.Start)), Memory);
-                  }
-                  else if (StringsMatch(T.Value, Constraints->TypeName))
-                  {
-                    Result = Concat(Result, CS(FormatString(Memory, "%.*s", Iter.At->Element.c_decl_variable.Type.Count, Iter.At->Element.c_decl_variable.Type.Start)), Memory);
-                  }
-                  else if (StringsMatch(T.Value, Constraints->ValueName))
-                  {
-                    Result = Concat(Result, CS(FormatString(Memory, "%.*s", Iter.At->Element.c_decl_variable.Name.Count, Iter.At->Element.c_decl_variable.Name.Start)), Memory);
-                  }
-                  else
-                  {
-                    Result = Concat(Result, ToString(T, Memory), Memory);
-                  }
-                }
+                Result = Concat(Result, DoTokenSubstitution(&BodyText, Constraints, Iter.At->Element, Memory), Memory);
               }
             }
             else

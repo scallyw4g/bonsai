@@ -369,7 +369,12 @@ WorkerThreadAdvanceDebugSystem()
   debug_thread_state *MainThreadState = GetThreadLocalStateFor(0);
   Assert(ThreadState != MainThreadState);
 
-  u32 NextFrameId = MainThreadState->WriteIndex;  // TODO(Jesse): Ensure when this gets allocated it _does not_ straddle a cache line
+  u32 NextFrameId = MainThreadState->WriteIndex;
+
+  // Note(Jesse): WriteIndex must not straddle a cache line!
+  Assert(sizeof(MainThreadState->WriteIndex) == 4);
+  Assert((umm)(&MainThreadState->WriteIndex)%64 <= 60 );
+
   if (NextFrameId != ThreadState->WriteIndex)
   {
     AdvanceThreadState(ThreadState, NextFrameId);
