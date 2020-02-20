@@ -11,6 +11,8 @@ MetaprogrammingDirective(counted_string S)
   if (StringsMatch(CS("for_enum_values"), S)) { Result = for_enum_values; }
   if (StringsMatch(CS("for_members_in"), S)) { Result = for_members_in; }
   if (StringsMatch(CS("d_union"), S)) { Result = d_union; }
+  if (StringsMatch(CS("enum_only"), S)) { Result = enum_only; }
+  if (StringsMatch(CS("member_is_or_contains"), S)) { Result = member_is_or_contains; }
   return Result;
 }
 

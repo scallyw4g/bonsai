@@ -642,14 +642,17 @@ ParseDiscriminatedUnion(c_parse_result* Parser, counted_string Name, memory_aren
   b32 Complete = False;
   while (!Complete && Remaining(&Parser->Tokens))
   {
-    c_token Interior = PopToken(Parser);
+    c_token Interior = PeekToken(Parser);
 
     switch (Interior.Type)
     {
       case CTokenType_Identifier:
       {
+        RequireToken(Parser, Interior);
+
         d_union_flags Flags = {};
         // TODO(Jesse): How should we talk about this type of identifier?
+        // @flag-or-option-identifiers
         if ( OptionalToken(Parser, CToken(CS("enum_only"))) )
         {
           Flags = d_union_flag_enum_only;
@@ -662,13 +665,12 @@ ParseDiscriminatedUnion(c_parse_result* Parser, counted_string Name, memory_aren
 
       case CTokenType_CloseBrace:
       {
+        RequireToken(Parser, CTokenType_CloseBrace);
         Complete = True;
       } break;
 
       default:
       {
-        // TODO(Jesse): This sucks..
-        --Parser->Tokens.At;
         Parser->Valid = False;
       } break;
     }
@@ -1469,6 +1471,8 @@ ParseForMembers(c_parse_result* Parser, struct_def* Target, struct_def_stream* P
 
   RequireToken(Parser, CTokenType_Comma);
 
+  // TODO(Jesse): How should we talk about this type of identifier?
+  // @flag-or-option-identifiers
   if (OptionalToken(Parser, CToken(CS("member_is_or_contains"))))
   {
     Constraints.MemberContains = RequireToken(Parser, CTokenType_Identifier).Value;
@@ -1592,8 +1596,11 @@ ParseEnum(c_parse_result* Parser, memory_arena* Memory)
     if (OptionalToken(Parser, CTokenType_Equals))
     {
       // Can be an int literal, or a char literal : (42 or '4' or '42' or even up to '4242')
+      // TODO(Jesse): Proper expression parsing.  ie: enum_value_name = (1 << 4) or enum_value_name = SOME_MACRO(thing, ding)
       Field.Value = PopToken(Parser).Value;
     }
+
+    Push(&Enum.Fields, Field, Memory);
 
     if(OptionalToken(Parser, CTokenType_Comma))
     {
@@ -1603,8 +1610,6 @@ ParseEnum(c_parse_result* Parser, memory_arena* Memory)
     {
       break;
     }
-
-    Push(&Enum.Fields, Field, Memory);
   }
 
   return Enum;
@@ -2072,6 +2077,7 @@ main(s32 ArgCount, const char** ArgStrings)
             {
               RequireToken(Parser, CTokenType_OpenParen);
               metaprogramming_directive Directive = GetMetaprogrammingDirective(Parser);
+
               RequireToken(Parser, CTokenType_OpenParen);
               counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
 

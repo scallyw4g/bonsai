@@ -230,7 +230,8 @@ struct ui_render_command_table_start
 };
 
 meta(
-  d_union( ui_render_command,
+  d_union(
+  ui_render_command,
   {
     ui_render_command_window_start,
     ui_render_command_window_end,

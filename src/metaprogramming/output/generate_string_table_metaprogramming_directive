@@ -13,6 +13,8 @@ ToString(metaprogramming_directive Type)
     case for_enum_values: { Result = CS("for_enum_values"); } break;
     case for_members_in: { Result = CS("for_members_in"); } break;
     case d_union: { Result = CS("d_union"); } break;
+    case enum_only: { Result = CS("enum_only"); } break;
+    case member_is_or_contains: { Result = CS("member_is_or_contains"); } break;
   }
   return Result;
 }

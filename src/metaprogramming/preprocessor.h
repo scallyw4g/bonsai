@@ -21,15 +21,19 @@ enum d_union_flags
 
 enum metaprogramming_directive
 {
-  noop                   = 0x00,
-  generate_stream        = 0x01,
-  generate_cursor        = 0x02,
-  generate_string_table  = 0x04,
-  generate_value_table   = 0x08,
+  noop                   = 0x0000,
 
-  for_enum_values        = 0x10,
-  for_members_in         = 0x20,
-  d_union                = 0x40,
+  generate_stream        = 0x0001,
+  generate_cursor        = 0x0002,
+  generate_string_table  = 0x0004,
+  generate_value_table   = 0x0008,
+
+  for_enum_values        = 0x0010,
+  for_members_in         = 0x0020,
+  d_union                = 0x0040,
+
+  enum_only              = 0x0080,
+  member_is_or_contains  = 0x0100
 };
 meta(generate_string_table(metaprogramming_directive))
 #include <metaprogramming/output/generate_string_table_metaprogramming_directive>
@@ -100,8 +104,10 @@ struct c_decl_variable
   counted_string Name;
 };
 
-// TODO(Jesse): Generate this!  I tried, but the compiler is going to be fiddly
-// to pacify.
+// TODO(Jesse): Do we care about generating these?  We'd need to add a compiler
+// feature to support outputting the datatypes to different files .. either
+// that or tell it to not generate the datatypes, just the functions and only
+// write these by hand.
 struct c_decl_stream_chunk;
 struct c_decl_stream
 {

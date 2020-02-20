@@ -15,3 +15,7 @@
 
         Result |= StringsMatch(ToString(d_union), Identifier);
 
+        Result |= StringsMatch(ToString(enum_only), Identifier);
+
+        Result |= StringsMatch(ToString(member_is_or_contains), Identifier);
+
