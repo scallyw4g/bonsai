@@ -651,9 +651,7 @@ ParseDiscriminatedUnion(c_parse_result* Parser, counted_string Name, memory_aren
         RequireToken(Parser, Interior);
 
         d_union_flags Flags = {};
-        // TODO(Jesse): How should we talk about this type of identifier?
-        // @flag-or-option-identifiers
-        if ( OptionalToken(Parser, CToken(CS("enum_only"))) )
+        if ( OptionalToken(Parser, CToken(ToString(enum_only))) )
         {
           Flags = d_union_flag_enum_only;
         }
@@ -1471,9 +1469,7 @@ ParseForMembers(c_parse_result* Parser, struct_def* Target, struct_def_stream* P
 
   RequireToken(Parser, CTokenType_Comma);
 
-  // TODO(Jesse): How should we talk about this type of identifier?
-  // @flag-or-option-identifiers
-  if (OptionalToken(Parser, CToken(CS("member_is_or_contains"))))
+  if (OptionalToken(Parser, CToken(ToString(member_is_or_contains))))
   {
     Constraints.MemberContains = RequireToken(Parser, CTokenType_Identifier).Value;
     RequireToken(Parser, CToken(CTokenType_Comma));
