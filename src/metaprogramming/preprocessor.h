@@ -2,6 +2,13 @@
 #define BONSAI_NO_PUSH_METADATA
 #define BONSAI_NO_DEBUG_MEMORY_ALLOCATOR
 
+#define ITERATE_OVER(type, value_ptr)              \
+  for (type##_iterator Iter = Iterator(value_ptr); \
+      IsValid(&Iter);                              \
+      Advance(&Iter))
+
+#define GET_ELEMENT(I) (&I.At->Element)
+
 #include <bonsai_types.h>
 #include <unix_platform.cpp>
 
@@ -190,6 +197,8 @@ struct d_union_decl
 {
   counted_string Name;
   d_union_member_stream Members;
+
+  c_decl_stream CommonMembers;
 };
 
 struct c_parse_result
@@ -392,5 +401,27 @@ GetToken(ansi_stream* Stream, u32 Lookahead = 0)
   }
 
   return Result;
+}
+
+function c_decl_iterator
+Iterator(c_decl_stream* Stream)
+{
+  c_decl_iterator Iterator = {
+    .At = Stream->FirstChunk
+  };
+  return Iterator;
+}
+
+function b32
+IsValid(c_decl_iterator* Iter)
+{
+  b32 Result = (Iter->At != 0);
+  return Result;
+}
+
+function void
+Advance(c_decl_iterator* Iter)
+{
+  Iter->At = Iter->At->Next;
 }
 

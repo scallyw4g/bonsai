@@ -611,7 +611,13 @@ function counted_string
 GenerateStructDef(d_union_decl* dUnion, memory_arena* Memory)
 {
   counted_string UnionName = dUnion->Name;
-  counted_string Result = FormatCountedString(Memory, "struct %.*s\n{\n  %.*s_type Type;\n\n  union\n  {\n", UnionName.Count, UnionName.Start, UnionName.Count, UnionName.Start);
+  counted_string Result = FormatCountedString(Memory, "struct %.*s\n{\n  %.*s_type Type;\n\n", UnionName.Count, UnionName.Start, UnionName.Count, UnionName.Start);
+
+  ITERATE_OVER(c_decl, &dUnion->CommonMembers)
+  {
+    c_decl* Member = GET_ELEMENT(Iter);
+  }
+  Result = Concat(Result, CS("  union\n  {\n"), Memory);
 
   for (d_union_member_iterator Iter = Iterator(&dUnion->Members);
       IsValid(&Iter);
@@ -972,32 +978,10 @@ Push(c_decl_stream* Stream, c_decl Element, memory_arena* Memory)
   return;
 }
 
-function c_decl_iterator
-CDIterator(c_decl_stream* Stream)
-{
-  c_decl_iterator Iterator = {
-    .At = Stream->FirstChunk
-  };
-  return Iterator;
-}
-
-function b32
-IsValid(c_decl_iterator* Iter)
-{
-  b32 Result = (Iter->At != 0);
-  return Result;
-}
-
-function void
-Advance(c_decl_iterator* Iter)
-{
-  Iter->At = Iter->At->Next;
-}
-
 function void
 DumpCDeclStreamToConsole(c_decl_stream* Stream)
 {
-  for (c_decl_iterator Iter = CDIterator(Stream);
+  for (c_decl_iterator Iter = Iterator(Stream);
       IsValid(&Iter);
       Advance(&Iter))
   {
@@ -1239,7 +1223,7 @@ PrintCDecl(c_decl* Decl, struct_def_stream* ProgramStructs)
 
     case type_c_decl_union:
     {
-      for (c_decl_iterator Iter = CDIterator(&Decl->c_decl_union.Body.Fields);
+      for (c_decl_iterator Iter = Iterator(&Decl->c_decl_union.Body.Fields);
           IsValid(&Iter);
           Advance(&Iter))
       {
@@ -1337,7 +1321,7 @@ HasMemberOfType(struct_def* Struct, counted_string MemberType)
   b32 Result = False;
   if (MemberType.Start)
   {
-    for (c_decl_iterator Iter = CDIterator(&Struct->Fields);
+    for (c_decl_iterator Iter = Iterator(&Struct->Fields);
         IsValid(&Iter) && !Result;
         Advance(&Iter))
     {
@@ -1510,7 +1494,7 @@ ParseForMembers(c_parse_result* Parser, struct_def* Target, struct_def_stream* P
 
       case type_c_decl_union:
       {
-        for (c_decl_iterator Iter = CDIterator(&AtChunk->Element.c_decl_union.Body.Fields);
+        for (c_decl_iterator Iter = Iterator(&AtChunk->Element.c_decl_union.Body.Fields);
             IsValid(&Iter);
             Advance(&Iter))
         {
