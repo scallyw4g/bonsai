@@ -28,19 +28,19 @@ enum d_union_flags
 
 enum metaprogramming_directive
 {
-  noop                   = 0x0000,
+  noop                       = 0x0000,
 
-  generate_stream        = 0x0001,
-  generate_cursor        = 0x0002,
-  generate_string_table  = 0x0004,
-  generate_value_table   = 0x0008,
+  generate_stream            = 0x0001,
+  generate_cursor            = 0x0002,
+  generate_string_table      = 0x0004,
+  generate_value_table       = 0x0008,
 
-  for_enum_values        = 0x0010,
-  for_members_in         = 0x0020,
-  d_union                = 0x0040,
+  for_enum_values            = 0x0010,
+  for_members_in             = 0x0020,
+  d_union                    = 0x0040,
 
-  enum_only              = 0x0080,
-  member_is_or_contains  = 0x0100
+  enum_only                  = 0x0080,
+  member_is_or_contains_type = 0x0100,
 };
 meta(generate_string_table(metaprogramming_directive))
 #include <metaprogramming/output/generate_string_table_metaprogramming_directive>
@@ -423,5 +423,28 @@ function void
 Advance(c_decl_iterator* Iter)
 {
   Iter->At = Iter->At->Next;
+}
+
+void
+Push(c_decl_stream* Stream, c_decl Element, memory_arena* Memory)
+{
+  c_decl_stream_chunk* NextChunk = Allocate(c_decl_stream_chunk, Memory, 1);
+  NextChunk->Element = Element;
+
+  if (!Stream->FirstChunk)
+  {
+    Stream->FirstChunk = NextChunk;
+    Stream->LastChunk = NextChunk;
+  }
+  else
+  {
+    Stream->LastChunk->Next = NextChunk;
+    Stream->LastChunk = NextChunk;
+  }
+
+  Assert(NextChunk->Next == 0);
+  Assert(Stream->LastChunk->Next == 0);
+
+  return;
 }
 

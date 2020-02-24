@@ -611,13 +611,18 @@ function counted_string
 GenerateStructDef(d_union_decl* dUnion, memory_arena* Memory)
 {
   counted_string UnionName = dUnion->Name;
-  counted_string Result = FormatCountedString(Memory, "struct %.*s\n{\n  %.*s_type Type;\n\n", UnionName.Count, UnionName.Start, UnionName.Count, UnionName.Start);
+  counted_string Result = FormatCountedString(Memory, "struct %.*s\n{\n  %.*s_type Type;\n", UnionName.Count, UnionName.Start, UnionName.Count, UnionName.Start);
 
   ITERATE_OVER(c_decl, &dUnion->CommonMembers)
   {
     c_decl* Member = GET_ELEMENT(Iter);
+    Assert(Member->Type == type_c_decl_variable);
+    Result = Concat(Result, FormatCountedString(Memory, "  %.*s %.*s;\n",
+        Member->c_decl_variable.Type.Count, Member->c_decl_variable.Type.Start,
+        Member->c_decl_variable.Name.Count, Member->c_decl_variable.Name.Start),
+        Memory);
   }
-  Result = Concat(Result, CS("  union\n  {\n"), Memory);
+  Result = Concat(Result, CS("\n  union\n  {\n"), Memory);
 
   for (d_union_member_iterator Iter = Iterator(&dUnion->Members);
       IsValid(&Iter);
@@ -663,13 +668,28 @@ ParseDiscriminatedUnion(c_parse_result* Parser, counted_string Name, memory_aren
         }
 
         PushMember(&dUnion, Interior, Flags, Memory);
-
         RequireToken(Parser, CTokenType_Comma);
       } break;
 
       case CTokenType_CloseBrace:
       {
         RequireToken(Parser, CTokenType_CloseBrace);
+        if (OptionalToken(Parser, CTokenType_Comma))
+        {
+          RequireToken(Parser, CTokenType_OpenBrace);
+          while (!OptionalToken(Parser, CTokenType_CloseBrace))
+          {
+            c_decl Decl = {
+              .Type = type_c_decl_variable,
+              .c_decl_variable = {
+                .Type = RequireToken(Parser, CTokenType_Identifier).Value,
+                .Name = RequireToken(Parser, CTokenType_Identifier).Value
+              }
+            };
+            Push(&dUnion.CommonMembers, Decl, Memory);
+          }
+        }
+
         Complete = True;
       } break;
 
@@ -952,29 +972,6 @@ EatUnionDef(c_parse_result* Parser)
 {
   EatNextScope(Parser);
   OptionalToken(Parser, CTokenType_Semicolon);
-  return;
-}
-
-void
-Push(c_decl_stream* Stream, c_decl Element, memory_arena* Memory)
-{
-  c_decl_stream_chunk* NextChunk = Allocate(c_decl_stream_chunk, Memory, 1);
-  NextChunk->Element = Element;
-
-  if (!Stream->FirstChunk)
-  {
-    Stream->FirstChunk = NextChunk;
-    Stream->LastChunk = NextChunk;
-  }
-  else
-  {
-    Stream->LastChunk->Next = NextChunk;
-    Stream->LastChunk = NextChunk;
-  }
-
-  Assert(NextChunk->Next == 0);
-  Assert(Stream->LastChunk->Next == 0);
-
   return;
 }
 
@@ -1453,7 +1450,7 @@ ParseForMembers(c_parse_result* Parser, struct_def* Target, struct_def_stream* P
 
   RequireToken(Parser, CTokenType_Comma);
 
-  if (OptionalToken(Parser, CToken(ToString(member_is_or_contains))))
+  if (OptionalToken(Parser, CToken(ToString(member_is_or_contains_type))))
   {
     Constraints.MemberContains = RequireToken(Parser, CTokenType_Identifier).Value;
     RequireToken(Parser, CToken(CTokenType_Comma));

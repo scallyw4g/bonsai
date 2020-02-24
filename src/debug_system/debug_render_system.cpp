@@ -1501,7 +1501,7 @@ FindAbsoluteDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, u32 First
     {
       meta(
         for_members_in( ui_render_command,
-          member_is_or_contains layout,
+          member_is_or_contains_type layout,
           (MemberTypeEnumTag, MemberType, MemberValue) {
             case MemberTypeEnumTag:
             {

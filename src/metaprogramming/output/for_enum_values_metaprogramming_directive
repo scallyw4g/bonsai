@@ -17,5 +17,5 @@
 
         Result |= StringsMatch(ToString(enum_only), Identifier);
 
-        Result |= StringsMatch(ToString(member_is_or_contains), Identifier);
+        Result |= StringsMatch(ToString(member_is_or_contains_type), Identifier);
 
