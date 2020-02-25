@@ -366,6 +366,36 @@ ReallocateArena(memory_arena *Arena, umm MinSize, b32 MemProtect)
   return;
 }
 
+function void
+Memprotect(void* LastPage, umm PageSize, s32 Protection)
+{
+  s32 ProtectSuccess = (mprotect(LastPage, PageSize, Protection) == 0);
+
+  if (!ProtectSuccess)
+  {
+    if (errno == EACCES)
+    {
+      Error("EACCES");
+    }
+
+    if (errno == EINVAL)
+    {
+      Error("EINVAL");
+    }
+
+    if (errno == ENOMEM)
+    {
+      Error("ENOMEM");
+    }
+
+    Error("mprotect failed");
+    PlatformDebugStacktrace();
+    Assert(False);
+  }
+
+  return;
+}
+
 u8*
 PushSize(memory_arena *Arena, umm SizeIn, umm Alignment, b32 MemProtect)
 {
@@ -421,14 +451,7 @@ PushSize(memory_arena *Arena, umm SizeIn, umm Alignment, b32 MemProtect)
     u8* LastPage = Result + AlignCorrectedSizeIn;
     Assert( (u64)LastPage % PageSize == 0)
 
-    s32 ProtectSuccess = (mprotect(LastPage, PageSize, PROT_NONE) == 0);
-
-    if (!ProtectSuccess)
-    {
-      Error("mprotect failed");
-      PlatformDebugStacktrace();
-      Assert(False);
-    }
+    Memprotect((void*)LastPage, PageSize, PROT_NONE);
   }
 #endif
 
@@ -441,7 +464,7 @@ PushSize(memory_arena *Arena, umm SizeIn, umm Alignment, b32 MemProtect)
 
     u8* NextPage = Arena->At + NextPageOffset;
     Assert( (umm)NextPage % PageSize == 0);
-    mprotect(NextPage, PageSize, PROT_NONE);
+    Memprotect((void*)NextPage, PageSize, PROT_NONE);
 
     Result = NextPage + PageSize;
   }

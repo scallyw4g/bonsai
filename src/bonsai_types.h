@@ -69,9 +69,8 @@
 global_variable memory_arena _TranArena;
 global_variable memory_arena* TranArena = &_TranArena;
 
-#include <bonsai_string.cpp>
-#include <counted_string.cpp>
 #include <string_builder.cpp>
+#include <counted_string.cpp>
 #include <stream.cpp>
 #include <bonsai_file.cpp>
 

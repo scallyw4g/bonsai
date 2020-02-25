@@ -311,6 +311,7 @@ s32
 main()
 {
   TestSuiteBegin("String");
+
   {
     const char *Test1 = "v";
     const char *Test2 = "v";
@@ -375,9 +376,56 @@ main()
   memory_arena* Memory = &_Memory;
 
   {
-    counted_string TestDigit = FormatCountedString(Memory, "%d", 42);
-    Assert(StringsMatch(TestDigit, CS("42")));
+    counted_string TestValue = FormatCountedString(Memory, "%d", 42);
+    TestThat(StringsMatch(TestValue, CS("42")));
   }
+
+  {
+    counted_string TestValue = FormatCountedString(Memory, "%u", 42);
+    TestThat(StringsMatch(TestValue, CS("42")));
+  }
+
+  {
+    counted_string TestValue = FormatCountedString(Memory, "%lu", 42l);
+    TestThat(StringsMatch(TestValue, CS("42")));
+  }
+
+  {
+    counted_string TestValue = FormatCountedString(Memory, "%ld", 42lu);
+    TestThat(StringsMatch(TestValue, CS("42")));
+  }
+
+  {
+    counted_string TestValue = FormatCountedString(Memory, "%S", CS("thing"));
+    TestThat(StringsMatch(TestValue, CS("thing")));
+  }
+
+  {
+    counted_string TestValue = FormatCountedString(Memory, "%S", CS("thing"));
+    TestThat(StringsMatch(TestValue, CS("thing")));
+  }
+
+  {
+    counted_string TestValue = FormatCountedString(Memory, "this %S this", CS("thing"));
+    TestThat(StringsMatch(TestValue, CS("this thing this")));
+  }
+
+  {
+    counted_string TestValue = FormatCountedString(Memory, "this %d this", 42);
+    TestThat(StringsMatch(TestValue, CS("this 42 this")));
+  }
+
+  {
+    counted_string TestString = CS("thing");
+    counted_string TestValue = FormatCountedString(Memory, "this %.*s this", TestString.Count, TestString.Start);
+    TestThat(StringsMatch(TestValue, CS("this thing this")));
+  }
+
+
+
+
+
+
 
 
 

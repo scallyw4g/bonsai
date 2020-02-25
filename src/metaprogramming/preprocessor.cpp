@@ -1443,28 +1443,31 @@ ParseForEnumValues(c_parse_result* Parser, counted_string TypeName, enum_def_str
 function counted_string
 DoTokenSubstitution(c_parse_result* BodyText, for_member_constraints* Constraints, c_decl Element, memory_arena* Memory)
 {
-  counted_string Result = {};
+  string_builder Builder = {};
+
   Rewind(&BodyText->Tokens);
   while (Remaining(&BodyText->Tokens))
   {
     c_token T = PopTokenRaw(BodyText);
     if (StringsMatch(T.Value, Constraints->TypeTag))
     {
-      Result = Concat(Result, CS(FormatString(Memory, "type_%.*s", Element.c_decl_variable.Type.Count, Element.c_decl_variable.Type.Start)), Memory);
+      Append(&Builder, FormatCountedString(Memory, "type_%S", Element.c_decl_variable.Type));
     }
     else if (StringsMatch(T.Value, Constraints->TypeName))
     {
-      Result = Concat(Result, CS(FormatString(Memory, "%.*s", Element.c_decl_variable.Type.Count, Element.c_decl_variable.Type.Start)), Memory);
+      Append(&Builder, FormatCountedString(Memory, "%S", Element.c_decl_variable.Type));
     }
     else if (StringsMatch(T.Value, Constraints->ValueName))
     {
-      Result = Concat(Result, CS(FormatString(Memory, "%.*s", Element.c_decl_variable.Name.Count, Element.c_decl_variable.Name.Start)), Memory);
+      Append(&Builder, FormatCountedString(Memory, "%S", Element.c_decl_variable.Name));
     }
     else
     {
-      Result = Concat(Result, ToString(T, Memory), Memory);
+      Append(&Builder, ToString(T, Memory));
     }
   }
+
+  counted_string Result = Finalize(&Builder, Memory);
   return Result;
 }
 
