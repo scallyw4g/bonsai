@@ -1513,8 +1513,6 @@ FindAbsoluteDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, u32 First
       )
 #include <metaprogramming/output/for_members_in_ui_render_command>
 
-
-
       default: {} break;
     }
 

@@ -367,6 +367,24 @@ main()
 
 
 
+
+
+
+
+  memory_arena _Memory = {};
+  memory_arena* Memory = &_Memory;
+
+  {
+    counted_string TestDigit = FormatCountedString(Memory, "%d", 42);
+    Assert(StringsMatch(TestDigit, CS("42")));
+  }
+
+
+
+
+
+
+
   TestSuiteEnd();
   exit(TestsFailed);
 }

@@ -1961,9 +1961,9 @@ Advance(%.*s_iterator* Iter)
       StructName.Count, StructName.Start);
 
   string_builder Builder = {};
-  Concat(&Builder, StreamCode);
-  Concat(&Builder, PushCode);
-  Concat(&Builder, IteratorCode);
+  Append(&Builder, StreamCode);
+  Append(&Builder, PushCode);
+  Append(&Builder, IteratorCode);
   counted_string Result = Finalize(&Builder, Memory);
 
   return Result;
@@ -2003,14 +2003,14 @@ DoWorkToOutputThisStuff(c_parse_result* Parser, counted_string OutputForThisPars
     counted_string IncludeFilename = RequireToken(Parser, CTokenType_Identifier).Value;
 
     string_builder IncludePathBuilder = {};
-    Concat(&IncludePathBuilder, CS("src/metaprogramming/output/"));
-    Concat(&IncludePathBuilder, IncludeFilename);
+    Append(&IncludePathBuilder, CS("src/metaprogramming/output/"));
+    Append(&IncludePathBuilder, IncludeFilename);
 
     if (OptionalToken(Parser, CTokenType_Dot))
     {
-      Concat(&IncludePathBuilder, CS("."));
+      Append(&IncludePathBuilder, CS("."));
       counted_string Extension = RequireToken(Parser, CTokenType_Identifier).Value;
-      Concat(&IncludePathBuilder, Extension);
+      Append(&IncludePathBuilder, Extension);
     }
 
     RequireToken(Parser, CTokenType_GT);
@@ -2090,10 +2090,11 @@ main(s32 ArgCount, const char** ArgStrings)
               RequireToken(Parser, CTokenType_OpenParen);
               counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
 
-              counted_string OutfileName = Concat(
-                  Concat( ToString(Directive),
-                          CS("_"), Memory),
-                          DatatypeName, Memory);
+              string_builder OutfileBuilder = {};
+              Append(&OutfileBuilder, ToString(Directive));
+              Append(&OutfileBuilder, CS("_"));
+              Append(&OutfileBuilder, DatatypeName);
+              counted_string OutfileName = Finalize(&OutfileBuilder, Memory);
               switch (Directive)
               {
                 case generate_stream:
@@ -2149,12 +2150,12 @@ main(s32 ArgCount, const char** ArgStrings)
                   d_union_decl dUnion = ParseDiscriminatedUnion(Parser, &Datatypes, DatatypeName, Memory);
                   if (Parser->Valid)
                   {
-                    counted_string Code = {};
 
+                    string_builder CodeBuilder = {};
                     if (!dUnion.CustomEnumType.Count)
                     {
                       counted_string EnumString = GenerateEnumDef(&dUnion, Memory);
-                      Code = Concat(Code, EnumString, Memory);
+                      Append(&CodeBuilder, EnumString);
                       c_parse_result EnumParse = TokenizeString(EnumString, OutfileName, Memory);
                       RequireToken(&EnumParse, CToken(CS("enum")));
                       enum_def E = ParseEnum(&EnumParse, Memory);
@@ -2164,7 +2165,7 @@ main(s32 ArgCount, const char** ArgStrings)
 
                     {
                       counted_string StructString = GenerateStructDef(&dUnion, Memory);
-                      Code = Concat(Code, StructString, Memory);
+                      Append(&CodeBuilder, StructString);
                       c_parse_result StructParse = TokenizeString(StructString, OutfileName, Memory);
                       RequireToken(&StructParse, CToken(CS("struct")));
                       counted_string StructName = RequireToken(&StructParse, CTokenType_Identifier).Value;
@@ -2173,6 +2174,7 @@ main(s32 ArgCount, const char** ArgStrings)
                       Assert( GetStructByType(&Datatypes.Structs, StructName) );
                     }
 
+                    counted_string Code = Finalize(&CodeBuilder, Memory);
                     DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
 
                   }

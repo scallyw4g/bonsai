@@ -1,4 +1,3 @@
-
 void
 Log(const char* fmt...)
 {
