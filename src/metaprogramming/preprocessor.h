@@ -2,23 +2,8 @@
 #define BONSAI_NO_PUSH_METADATA
 #define BONSAI_NO_DEBUG_MEMORY_ALLOCATOR
 
-#define ITERATE_OVER(type, value_ptr)              \
-  for (type##_iterator Iter = Iterator(value_ptr); \
-      IsValid(&Iter);                              \
-      Advance(&Iter))
-
-#define GET_ELEMENT(I) (&I.At->Element)
-
 #include <bonsai_types.h>
 #include <unix_platform.cpp>
-
-#define DList_Push(Stream, Container)      \
-{                                          \
-  Container->Prev = &Stream->Sentinel;     \
-  Container->Next = Stream->Sentinel.Next; \
-  Stream->Sentinel.Next->Prev = Container; \
-  Stream->Sentinel.Next = Container;       \
-}
 
 enum d_union_flags
 {

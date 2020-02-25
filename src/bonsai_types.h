@@ -2,6 +2,13 @@
 
 #define CACHE_LINE_SIZE (64)
 
+#define ITERATE_OVER(type, value_ptr)                \
+  for (type##_iterator Iter = Iterator((value_ptr)); \
+      IsValid(&Iter);                                \
+      Advance(&Iter))
+
+#define GET_ELEMENT(I) (&(I).At->Element)
+
 //
 // TODO(Jesse): Get rid of these?
 //
@@ -30,7 +37,7 @@
 #include <types/vector_types.h>
 #include <types/colors.h>
 #include <types/counted_string.h>
-#include <bonsai_string.h>
+#include <types/string_builder.h>
 #include <types/stream.h>
 #include <types/line_types.h>
 #include <types/matrix_types.h>
@@ -64,6 +71,7 @@ global_variable memory_arena* TranArena = &_TranArena;
 
 #include <bonsai_string.cpp>
 #include <counted_string.cpp>
+#include <string_builder.cpp>
 #include <stream.cpp>
 #include <bonsai_file.cpp>
 

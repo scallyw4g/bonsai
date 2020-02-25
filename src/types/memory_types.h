@@ -296,6 +296,8 @@ SafeTruncateToU16(umm Size)
   return Result;
 }
 
+// @temp-string-builder-memory
+// TODO(Jesse): Make allocating these on the stack work!
 memory_arena*
 AllocateArena(umm RequestedBytes = Megabytes(1), b32 MemProtect = True)
 {

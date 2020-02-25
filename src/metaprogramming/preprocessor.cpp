@@ -731,7 +731,7 @@ ParseDiscriminatedUnion(c_parse_result* Parser, program_datatypes* Datatypes, co
   else
   {
     dUnion.CustomEnumType = RequireToken(Parser, CTokenType_Identifier).Value;;
-    
+
     enum_def* EnumDef = GetEnumByType(&Datatypes->Enums, dUnion.CustomEnumType);
     if (EnumDef)
     {
@@ -1960,9 +1960,11 @@ Advance(%.*s_iterator* Iter)
       StructName.Count, StructName.Start,
       StructName.Count, StructName.Start);
 
-  counted_string Result = StreamCode;
-  Result = Concat(Result, PushCode, Memory);
-  Result = Concat(Result, IteratorCode, Memory);
+  string_builder Builder = {};
+  Concat(&Builder, StreamCode);
+  Concat(&Builder, PushCode);
+  Concat(&Builder, IteratorCode);
+  counted_string Result = Finalize(&Builder, Memory);
 
   return Result;
 }
@@ -1998,18 +2000,22 @@ DoWorkToOutputThisStuff(c_parse_result* Parser, counted_string OutputForThisPars
     RequireToken(Parser, CTokenType_FSlash);
     RequireToken(Parser, CToken(CS("output")));
     RequireToken(Parser, CTokenType_FSlash);
-    counted_string IncludePath = RequireToken(Parser, CTokenType_Identifier).Value;
+    counted_string IncludeFilename = RequireToken(Parser, CTokenType_Identifier).Value;
+
+    string_builder IncludePathBuilder = {};
+    Concat(&IncludePathBuilder, CS("src/metaprogramming/output/"));
+    Concat(&IncludePathBuilder, IncludeFilename);
 
     if (OptionalToken(Parser, CTokenType_Dot))
     {
-      IncludePath = Concat(IncludePath, CS("."), Memory);
+      Concat(&IncludePathBuilder, CS("."));
       counted_string Extension = RequireToken(Parser, CTokenType_Identifier).Value;
-      IncludePath = Concat(IncludePath, Extension,  Memory);
+      Concat(&IncludePathBuilder, Extension);
     }
 
     RequireToken(Parser, CTokenType_GT);
 
-    IncludePath = Concat(CS("src/metaprogramming/output/"), IncludePath, Memory);
+    counted_string IncludePath = Finalize(&IncludePathBuilder, Memory);
     Output(OutputForThisParser, IncludePath, Memory);
   }
   else
