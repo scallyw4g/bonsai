@@ -142,7 +142,7 @@ PlatformAllocateSize(umm AllocationSize)
     }
     else
     {
-      Error("Unknown error allocating pages.");
+      Error("Unknown error allocating pages: %d", Error);
       Assert(False);
     }
   }

@@ -2143,23 +2143,12 @@ main(s32 ArgCount, const char** ArgStrings)
                   d_union_decl dUnion = ParseDiscriminatedUnion(Parser, &Datatypes, DatatypeName, Memory);
                   if (Parser->Valid)
                   {
-                    counted_string EnumString = {};
-                    if (!dUnion.CustomEnumType.Count)
-                    {
-                      EnumString = GenerateEnumDef(&dUnion, Memory);
-                    }
-                    counted_string StructString = GenerateStructDef(&dUnion, Memory);
-                    counted_string Code = Concat(EnumString, StructString, Memory);
-                    DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
-
-                    c_parse_result StructParse = TokenizeString(StructString, OutfileName, Memory);
-                    RequireToken(&StructParse, CToken(CS("struct")));
-                    counted_string StructName = RequireToken(&StructParse, CTokenType_Identifier).Value;
-                    struct_def S = ParseStructBody(&StructParse, StructName, Memory);
-                    Push(&Datatypes.Structs, S, Memory);
+                    counted_string Code = {};
 
                     if (!dUnion.CustomEnumType.Count)
                     {
+                      counted_string EnumString = GenerateEnumDef(&dUnion, Memory);
+                      Code = Concat(Code, EnumString, Memory);
                       c_parse_result EnumParse = TokenizeString(EnumString, OutfileName, Memory);
                       RequireToken(&EnumParse, CToken(CS("enum")));
                       enum_def E = ParseEnum(&EnumParse, Memory);
@@ -2167,7 +2156,19 @@ main(s32 ArgCount, const char** ArgStrings)
                       Assert( GetEnumByType(&Datatypes.Enums, E.Name) );
                     }
 
-                    Assert( GetStructByType(&Datatypes.Structs, StructName) );
+                    {
+                      counted_string StructString = GenerateStructDef(&dUnion, Memory);
+                      Code = Concat(Code, StructString, Memory);
+                      c_parse_result StructParse = TokenizeString(StructString, OutfileName, Memory);
+                      RequireToken(&StructParse, CToken(CS("struct")));
+                      counted_string StructName = RequireToken(&StructParse, CTokenType_Identifier).Value;
+                      struct_def S = ParseStructBody(&StructParse, StructName, Memory);
+                      Push(&Datatypes.Structs, S, Memory);
+                      Assert( GetStructByType(&Datatypes.Structs, StructName) );
+                    }
+
+                    DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
+
                   }
                   else
                   {
