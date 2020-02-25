@@ -220,7 +220,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory)
 
   if (!Code.Start)
   {
-    Error("Allocating stream for %.*s", (s32)Code.Filename.Count, Code.Filename.Start);
+    Error("Input AnsiStream for %.*s is null.", (s32)Code.Filename.Count, Code.Filename.Start);
     return Result;
   }
 
@@ -611,7 +611,13 @@ function counted_string
 GenerateStructDef(d_union_decl* dUnion, memory_arena* Memory)
 {
   counted_string UnionName = dUnion->Name;
-  counted_string Result = FormatCountedString(Memory, "struct %.*s\n{\n  %.*s_type Type;\n", UnionName.Count, UnionName.Start, UnionName.Count, UnionName.Start);
+  counted_string TagType = dUnion->CustomEnumType.Count ?
+    dUnion->CustomEnumType :
+    FormatCountedString(Memory, "%.*s_type", UnionName.Count, UnionName.Start);
+
+  counted_string Result = FormatCountedString(Memory, "struct %.*s\n{\n  %.*s Type;\n",
+      UnionName.Count, UnionName.Start,
+      TagType.Count, TagType.Start);
 
   ITERATE_OVER(c_decl, &dUnion->CommonMembers)
   {
@@ -638,69 +644,6 @@ GenerateStructDef(d_union_decl* dUnion, memory_arena* Memory)
   Result = Concat(Result, CS("  };\n};\n\n"), Memory);
 
   return Result;
-}
-
-d_union_decl
-ParseDiscriminatedUnion(c_parse_result* Parser, counted_string Name, memory_arena* Memory)
-{
-  d_union_decl dUnion = {};
-
-  dUnion.Name = Name;
-
-  RequireToken(Parser, CTokenType_Comma);
-  RequireToken(Parser, CTokenType_OpenBrace);
-
-  b32 Complete = False;
-  while (!Complete && Remaining(&Parser->Tokens))
-  {
-    c_token Interior = PeekToken(Parser);
-
-    switch (Interior.Type)
-    {
-      case CTokenType_Identifier:
-      {
-        RequireToken(Parser, Interior);
-
-        d_union_flags Flags = {};
-        if ( OptionalToken(Parser, CToken(ToString(enum_only))) )
-        {
-          Flags = d_union_flag_enum_only;
-        }
-
-        PushMember(&dUnion, Interior, Flags, Memory);
-        RequireToken(Parser, CTokenType_Comma);
-      } break;
-
-      case CTokenType_CloseBrace:
-      {
-        RequireToken(Parser, CTokenType_CloseBrace);
-        if (OptionalToken(Parser, CTokenType_Comma))
-        {
-          RequireToken(Parser, CTokenType_OpenBrace);
-          while (!OptionalToken(Parser, CTokenType_CloseBrace))
-          {
-            c_decl Decl = {
-              .Type = type_c_decl_variable,
-              .c_decl_variable = {
-                .Type = RequireToken(Parser, CTokenType_Identifier).Value,
-                .Name = RequireToken(Parser, CTokenType_Identifier).Value
-              }
-            };
-            Push(&dUnion.CommonMembers, Decl, Memory);
-          }
-        }
-
-        Complete = True;
-      } break;
-
-      default:
-      {
-        Parser->Valid = False;
-      } break;
-    }
-  }
-
-  return dUnion;
 }
 
 function enum_def*
@@ -739,6 +682,89 @@ GetStructByType(struct_def_stream* ProgramStructs, counted_string StructType)
   }
 
   return Result;
+}
+
+d_union_decl
+ParseDiscriminatedUnion(c_parse_result* Parser, program_datatypes* Datatypes, counted_string Name, memory_arena* Memory)
+{
+  d_union_decl dUnion = {};
+
+  dUnion.Name = Name;
+
+  RequireToken(Parser, CTokenType_Comma);
+  if (OptionalToken(Parser, CTokenType_OpenBrace))
+  {
+    b32 Complete = False;
+    while (!Complete && Remaining(&Parser->Tokens))
+    {
+      c_token Interior = PeekToken(Parser);
+
+      switch (Interior.Type)
+      {
+        case CTokenType_Identifier:
+        {
+          RequireToken(Parser, Interior);
+
+          d_union_flags Flags = {};
+          if ( OptionalToken(Parser, CToken(ToString(enum_only))) )
+          {
+            Flags = d_union_flag_enum_only;
+          }
+
+          PushMember(&dUnion, Interior, Flags, Memory);
+          RequireToken(Parser, CTokenType_Comma);
+        } break;
+
+        case CTokenType_CloseBrace:
+        {
+          RequireToken(Parser, CTokenType_CloseBrace);
+          Complete = True;
+        } break;
+
+        default:
+        {
+          Parser->Valid = False;
+        } break;
+      }
+    }
+  }
+  else
+  {
+    dUnion.CustomEnumType = RequireToken(Parser, CTokenType_Identifier).Value;;
+    
+    enum_def* EnumDef = GetEnumByType(&Datatypes->Enums, dUnion.CustomEnumType);
+    if (EnumDef)
+    {
+      ITERATE_OVER(enum_field, &EnumDef->Fields)
+      {
+        enum_field* Field = GET_ELEMENT(Iter);
+        counted_string MemberName = Concat(Concat(dUnion.Name, CS("_"), Memory), Field->Name, Memory);
+        PushMember(&dUnion, CToken(MemberName), d_union_flag_none, Memory);
+      }
+    }
+    else
+    {
+      Error("Couldn't find enum %.*s", (s32)dUnion.CustomEnumType.Count, dUnion.CustomEnumType.Start);
+    }
+  }
+
+  if (OptionalToken(Parser, CTokenType_Comma))
+  {
+    RequireToken(Parser, CTokenType_OpenBrace);
+    while (!OptionalToken(Parser, CTokenType_CloseBrace))
+    {
+      c_decl Decl = {
+        .Type = type_c_decl_variable,
+        .c_decl_variable = {
+          .Type = RequireToken(Parser, CTokenType_Identifier).Value,
+          .Name = RequireToken(Parser, CTokenType_Identifier).Value
+        }
+      };
+      Push(&dUnion.CommonMembers, Decl, Memory);
+    }
+  }
+
+  return dUnion;
 }
 
 arguments
@@ -2114,10 +2140,14 @@ main(s32 ArgCount, const char** ArgStrings)
 
                 case d_union:
                 {
-                  d_union_decl dUnion = ParseDiscriminatedUnion(Parser, DatatypeName, Memory);
+                  d_union_decl dUnion = ParseDiscriminatedUnion(Parser, &Datatypes, DatatypeName, Memory);
                   if (Parser->Valid)
                   {
-                    counted_string EnumString = GenerateEnumDef(&dUnion, Memory);
+                    counted_string EnumString = {};
+                    if (!dUnion.CustomEnumType.Count)
+                    {
+                      EnumString = GenerateEnumDef(&dUnion, Memory);
+                    }
                     counted_string StructString = GenerateStructDef(&dUnion, Memory);
                     counted_string Code = Concat(EnumString, StructString, Memory);
                     DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
@@ -2128,13 +2158,16 @@ main(s32 ArgCount, const char** ArgStrings)
                     struct_def S = ParseStructBody(&StructParse, StructName, Memory);
                     Push(&Datatypes.Structs, S, Memory);
 
-                    c_parse_result EnumParse = TokenizeString(EnumString, OutfileName, Memory);
-                    RequireToken(&EnumParse, CToken(CS("enum")));
-                    enum_def E = ParseEnum(&EnumParse, Memory);
-                    Push(&Datatypes.Enums, E, Memory);
+                    if (!dUnion.CustomEnumType.Count)
+                    {
+                      c_parse_result EnumParse = TokenizeString(EnumString, OutfileName, Memory);
+                      RequireToken(&EnumParse, CToken(CS("enum")));
+                      enum_def E = ParseEnum(&EnumParse, Memory);
+                      Push(&Datatypes.Enums, E, Memory);
+                      Assert( GetEnumByType(&Datatypes.Enums, E.Name) );
+                    }
 
                     Assert( GetStructByType(&Datatypes.Structs, StructName) );
-                    Assert( GetEnumByType(&Datatypes.Enums, E.Name) );
                   }
                   else
                   {

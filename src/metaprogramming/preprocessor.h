@@ -181,7 +181,6 @@ struct enum_def
 };
 meta(generate_stream(enum_def))
 #include <metaprogramming/output/generate_stream_enum_def>
-
 meta(generate_cursor(enum_def))
 #include <metaprogramming/output/generate_cursor_enum_def>
 
@@ -196,9 +195,11 @@ meta(generate_cursor(c_token))
 struct d_union_decl
 {
   counted_string Name;
-  d_union_member_stream Members;
 
+  d_union_member_stream Members;
   c_decl_stream CommonMembers;
+
+  counted_string CustomEnumType;
 };
 
 struct c_parse_result
