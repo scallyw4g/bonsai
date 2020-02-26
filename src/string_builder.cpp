@@ -1,6 +1,7 @@
 counted_string
 CountedString(umm Count, memory_arena* Memory)
 {
+  TIMED_FUNCTION();
   counted_string Result = {
     .Start = Allocate(const char, Memory, Count),
     .Count = Count
@@ -11,6 +12,7 @@ CountedString(umm Count, memory_arena* Memory)
 counted_string
 CountedString(const char* Start, memory_arena* Memory)
 {
+  TIMED_FUNCTION();
   umm StringLength = Length(Start);
 
   counted_string Result = CountedString(StringLength, Memory);
@@ -22,6 +24,7 @@ CountedString(const char* Start, memory_arena* Memory)
 counted_string
 CountedString(const char* Start, umm Count, memory_arena* Memory)
 {
+  TIMED_FUNCTION();
   counted_string Result = {
     .Start = Allocate(const char, Memory, Count),
     .Count = Count
@@ -35,12 +38,14 @@ CountedString(const char* Start, umm Count, memory_arena* Memory)
 function void
 Append(string_builder* Builder, counted_string String)
 {
+  TIMED_FUNCTION();
   Push(&Builder->Chunks, String, Builder->Memory);
 }
 
 function counted_string
 Finalize(string_builder* Builder, memory_arena* PermMemory)
 {
+  TIMED_FUNCTION();
   u32 TotalMemRequired = 0;
 
   ITERATE_OVER(counted_string, &Builder->Chunks)
@@ -65,37 +70,6 @@ Finalize(string_builder* Builder, memory_arena* PermMemory)
   VaporizeArena(Builder->Memory);
   return Result;
 }
-
-#define STRING_BUFFER_LENGTH 2048
-
-char *
-FormatString(memory_arena *Memory, const char* FormatString, ...)
-{
-  char *Buffer = AllocateProtection(char, Memory, STRING_BUFFER_LENGTH, False);
-
-  va_list Arguments;
-  va_start(Arguments, FormatString);
-  vsnprintf(Buffer, STRING_BUFFER_LENGTH-1, FormatString, Arguments);
-  va_end(Arguments);
-
-  return Buffer;
-}
-
-#if 0
-counted_string
-FormatCountedString(memory_arena *Memory, const char* FormatString, ...)
-{
-  char *Buffer = AllocateProtection(char, Memory, STRING_BUFFER_LENGTH, False);
-
-  va_list Arguments;
-  va_start(Arguments, FormatString);
-  vsnprintf(Buffer, STRING_BUFFER_LENGTH-1, FormatString, Arguments);
-  va_end(Arguments);
-
-  counted_string Result = CountedString(Buffer);
-  return Result;
-}
-#endif
 
 function counted_string
 Concat(counted_string S1, counted_string S2, memory_arena* Memory)
@@ -409,6 +383,7 @@ U64ToCountedString(memory_arena* Memory, u64 Value, u32 Base = 10, char *Digits 
 function counted_string
 S64ToCountedString(memory_arena* Memory, s64 Value, u32 Base = 10, char *Digits = DecChars)
 {
+  TIMED_FUNCTION();
   counted_string Result = {};
   if (Value < 0)
   {
@@ -429,6 +404,7 @@ S64ToCountedString(memory_arena* Memory, s64 Value, u32 Base = 10, char *Digits 
 function counted_string
 F64ToCountedString(memory_arena* Memory, r64 Value, u32 Precision = 16)
 {
+  TIMED_FUNCTION();
   // TODO(Jesse): This is over-allocating, and we should consider not doing this
   // in the future!
   char* StartAlloc = Allocate(char, Memory, MaxResultLength);
@@ -464,6 +440,41 @@ F64ToCountedString(memory_arena* Memory, r64 Value, u32 Precision = 16)
   return Result;
 }
 
+#define STRING_BUFFER_LENGTH 2048
+
+char *
+FormatString(memory_arena *Memory, const char* FormatString, ...)
+{
+  char *Buffer = Allocate(char, Memory, STRING_BUFFER_LENGTH);
+
+  va_list Arguments;
+  va_start(Arguments, FormatString);
+  vsnprintf(Buffer, STRING_BUFFER_LENGTH-1, FormatString, Arguments);
+  va_end(Arguments);
+
+  return Buffer;
+}
+
+#if 0
+
+counted_string
+FormatCountedString(memory_arena *Memory, const char* FormatString, ...)
+{
+  TIMED_FUNCTION();
+
+  char *Buffer = Allocate(char, Memory, STRING_BUFFER_LENGTH);
+
+  va_list Arguments;
+  va_start(Arguments, FormatString);
+  vsnprintf(Buffer, STRING_BUFFER_LENGTH-1, FormatString, Arguments);
+  va_end(Arguments);
+
+  counted_string Result = CountedString(Buffer);
+  return Result;
+}
+
+#else
+
 // This is to silence the warnings when passing counted_strings to this function
 #define FormatCountedString(Memory, Fmt, ...)             \
   _Pragma("clang diagnostic push")                        \
@@ -475,6 +486,8 @@ F64ToCountedString(memory_arena* Memory, r64 Value, u32 Precision = 16)
 function counted_string
 FormatCountedString_(memory_arena* Memory, const char* fmt...)
 {
+  TIMED_FUNCTION();
+
   string_builder Builder = {};
 
   va_list args;
@@ -495,6 +508,7 @@ FormatCountedString_(memory_arena* Memory, const char* fmt...)
       {
         case 'd':
         {
+          TIMED_NAMED_BLOCK("d");
           s32 Value = va_arg(args, s32);
           counted_string S = S64ToCountedString(Memory, (s64)Value);
           Append(&Builder, S);
@@ -502,6 +516,7 @@ FormatCountedString_(memory_arena* Memory, const char* fmt...)
 
         case 'l':
         {
+          TIMED_NAMED_BLOCK("l");
           ++fmt;
           if (*fmt == 'u')
           {
@@ -519,6 +534,7 @@ FormatCountedString_(memory_arena* Memory, const char* fmt...)
 
         case 'x':
         {
+          TIMED_NAMED_BLOCK("x");
           u64 Value = va_arg(args, u64);
           counted_string S = U64ToCountedString(Memory, Value);
           Append(&Builder, S);
@@ -526,6 +542,7 @@ FormatCountedString_(memory_arena* Memory, const char* fmt...)
 
         case 'u':
         {
+          TIMED_NAMED_BLOCK("u");
           u32 Value = va_arg(args, u32);
           counted_string S = U64ToCountedString(Memory, (u64)Value);
           Append(&Builder, S);
@@ -533,12 +550,14 @@ FormatCountedString_(memory_arena* Memory, const char* fmt...)
 
         case 'c':
         {
+          TIMED_NAMED_BLOCK("c");
           char Value = (char)va_arg(args, s32);
           Append(&Builder, CS(&Value, 1));
         } break;
 
         case 's':
         {
+          TIMED_NAMED_BLOCK("s");
           char* Value = va_arg(args, char*);
           counted_string CSValue = CountedString(Value, Memory);
           Append(&Builder, CSValue);
@@ -546,6 +565,7 @@ FormatCountedString_(memory_arena* Memory, const char* fmt...)
 
         case 'f':
         {
+          TIMED_NAMED_BLOCK("f");
           r64 Value = va_arg(args, r64);
           counted_string S = F64ToCountedString(Memory, Value);
           Append(&Builder, S);
@@ -553,6 +573,7 @@ FormatCountedString_(memory_arena* Memory, const char* fmt...)
 
         case 'b':
         {
+          TIMED_NAMED_BLOCK("b");
           b32 BoolVal = (b32)va_arg(args, u32);
           counted_string Output = {};
           Output = BoolVal ? CS("True") : CS("False");
@@ -561,6 +582,7 @@ FormatCountedString_(memory_arena* Memory, const char* fmt...)
 
         case 'S':
         {
+          TIMED_NAMED_BLOCK("S");
           u32 Count = va_arg(args, u32);
           char* Start = va_arg(args, char*);
           counted_string Output = { .Start = Start, .Count = Count };
@@ -569,6 +591,7 @@ FormatCountedString_(memory_arena* Memory, const char* fmt...)
 
         case '.':
         {
+          TIMED_NAMED_BLOCK(".");
           Assert(*(++fmt) == '*')
           Assert(*(++fmt) == 's')
           u32 Count = va_arg(args, u32);
@@ -579,6 +602,7 @@ FormatCountedString_(memory_arena* Memory, const char* fmt...)
 
         default:
         {
+          TIMED_NAMED_BLOCK("default");
           va_arg(args, void*);
           Error("Invalid Format String");
         } break;
@@ -606,3 +630,5 @@ FormatCountedString_(memory_arena* Memory, const char* fmt...)
 
   return Result;
 }
+
+#endif

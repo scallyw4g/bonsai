@@ -84,7 +84,7 @@ struct memory_arena
 #else
 
 #define AllocateProtection(Type, Arena, Number, Protection) \
-  (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, 1, False);
+  (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, 1, False)
 
 #define AllocateAlignedProtection(Type, Arena, Number, Alignment, Protection) \
   (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, Alignment, Protection)

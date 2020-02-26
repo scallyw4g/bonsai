@@ -1,6 +1,4 @@
-/* #include <bonsai_types.h> */
-/* #include <unix_platform.cpp> */
-
+#define BONSAI_NO_DEBUG_MEMORY_ALLOCATOR
 #define EXCLUDE_PREPROCESSOR_MAIN 1
 #include <metaprogramming/preprocessor.cpp>
 

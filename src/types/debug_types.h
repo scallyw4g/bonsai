@@ -76,7 +76,7 @@ struct unique_debug_profile_scope
   const char* Name;
   u32 CallCount;
   u64 TotalCycles;
-  u64 MinCycles;
+  u64 MinCycles = u64_MAX;
   u64 MaxCycles;
 
   debug_profile_scope* Scope;
@@ -173,7 +173,8 @@ typedef debug_thread_state* (*debug_get_thread_local_state)(void);
 typedef void (*debug_pick_chunk)(world_chunk*, aabb);
 typedef void (*debug_compute_pick_ray)(platform*, m4*);
 typedef void (*debug_value)(u32,const char*);
-
+typedef void (*debug_dump_scope_tree_data_to_console)();
+typedef void (*debug_open_window_and_let_us_do_stuff)();
 
 
 #define REGISTERED_MEMORY_ARENA_COUNT 128
@@ -260,6 +261,8 @@ struct debug_state
   debug_pick_chunk                          PickChunk;
   debug_compute_pick_ray                    ComputePickRay;
   debug_value                               DebugValue;
+  debug_dump_scope_tree_data_to_console     DumpScopeTreeDataToConsole;
+  debug_open_window_and_let_us_do_stuff     OpenDebugWindowAndLetUsDoStuff;
 };
 
 struct debug_draw_call
@@ -374,6 +377,8 @@ GetMemoryArenaStats(memory_arena *ArenaIn)
 }
 
 #define TIMED_FUNCTION() debug_timed_function FunctionTimer(BONSAI_FUNCTION_NAME)
+#define TIMED_NAMED_BLOCK(BlockName) debug_timed_function BlockTimer(BlockName)
+
 #define TIMED_BLOCK(BlockName) { debug_timed_function BlockTimer(BlockName)
 #define END_BLOCK(BlockName) }
 

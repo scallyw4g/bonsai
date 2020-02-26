@@ -2277,6 +2277,52 @@ ListContainsScope(unique_debug_profile_scope* List, debug_profile_scope* Query)
 }
 
 function void
+DumpScopeTreeDataToConsole_Internal(debug_profile_scope *Scope_in, debug_profile_scope *TreeRoot, memory_arena *Memory)
+{
+  unique_debug_profile_scope* UniqueScopes = {};
+
+  debug_profile_scope* CurrentUniqueScopeQuery = Scope_in;
+  while (CurrentUniqueScopeQuery)
+  {
+    unique_debug_profile_scope* GotUniqueScope = ListContainsScope(UniqueScopes, CurrentUniqueScopeQuery);
+    if (!GotUniqueScope )
+    {
+      GotUniqueScope = AllocateProtection(unique_debug_profile_scope, TranArena, 1, False);
+      GotUniqueScope->NextUnique = UniqueScopes;
+      UniqueScopes = GotUniqueScope;
+    }
+
+    GotUniqueScope->Name = CurrentUniqueScopeQuery->Name;
+    GotUniqueScope->CallCount++;
+    GotUniqueScope->TotalCycles += CurrentUniqueScopeQuery->CycleCount;
+    GotUniqueScope->MinCycles = Min(CurrentUniqueScopeQuery->CycleCount, GotUniqueScope->MinCycles);
+    GotUniqueScope->MaxCycles = Max(CurrentUniqueScopeQuery->CycleCount, GotUniqueScope->MaxCycles);
+    GotUniqueScope->Scope = CurrentUniqueScopeQuery;
+
+    CurrentUniqueScopeQuery = CurrentUniqueScopeQuery->Sibling;
+  }
+
+  while (UniqueScopes)
+  {
+
+    Log("\n------------------------\n");
+    Log("%s\n", UniqueScopes->Name);
+    Log("%u\n", UniqueScopes->CallCount);
+    Assert(UniqueScopes->CallCount);
+
+    Log("Total: %lu\n", UniqueScopes->TotalCycles);
+    Log("Min: %lu\n", UniqueScopes->MinCycles);
+    Log("Max: %lu\n", UniqueScopes->MaxCycles);
+    Log("Avg: %f\n", (r32)UniqueScopes->TotalCycles / (r32)UniqueScopes->CallCount);
+
+    DumpScopeTreeDataToConsole_Internal(UniqueScopes->Scope->Child, TreeRoot, Memory);
+    UniqueScopes = UniqueScopes->NextUnique;
+  }
+
+  return;
+}
+
+function void
 BufferFirstCallToEach(debug_ui_render_group *Group,
     debug_profile_scope *Scope_in, debug_profile_scope *TreeRoot,
     memory_arena *Memory, window_layout* Window, u64 TotalFrameCycles, u32 Depth)
@@ -2424,6 +2470,32 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, r64 Ma
   END_BLOCK("Call Graph");
 
   DebugDrawCycleThreadGraph(Group, DebugState, BasisRightOf(&CallgraphWindow));
+
+  return;
+}
+
+function void
+OpenDebugWindowAndLetUsDoStuff()
+{
+  /* debug_state* DebugState = GetDebugState(); */
+  /* debug_ui_render_group *UiGroup = &DebugState->UiGroup; */
+
+  /* DebugDrawCallGraph(UiGroup, DebugState, 33.3); */
+}
+
+exported_function void
+DumpScopeTreeDataToConsole()
+{
+  memory_arena* Temp = AllocateArena();
+  debug_state* DebugState = GetDebugState();
+
+  Print("Starting debug data dump");
+
+  /* debug_thread_state *ThreadState = GetThreadLocalStateFor(0); */
+  debug_scope_tree *ReadTree = DebugState->GetWriteScopeTree();
+  DumpScopeTreeDataToConsole_Internal(ReadTree->Root, ReadTree->Root, Temp);
+
+  Print("Ending debug data dump");
 
   return;
 }

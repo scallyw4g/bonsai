@@ -1,7 +1,3 @@
-#define BONSAI_NO_MUTEX_TRACKING
-#define BONSAI_NO_PUSH_METADATA
-#define BONSAI_NO_DEBUG_MEMORY_ALLOCATOR
-
 #define PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS 1
 
 #include <metaprogramming/preprocessor.h>
@@ -1990,6 +1986,8 @@ GetMetaprogrammingDirective(c_parse_result* Parser)
 function void
 DoWorkToOutputThisStuff(c_parse_result* Parser, counted_string OutputForThisParser, counted_string NewFilename, memory_arena* Memory)
 {
+  TIMED_FUNCTION();
+
   RequireToken(Parser, CTokenType_CloseParen);
   RequireToken(Parser, CTokenType_CloseParen);
 
@@ -2262,6 +2260,9 @@ main(s32 ArgCount, const char** ArgStrings)
   {
     Warn("No files passed, exiting.");
   }
+
+  /* GetDebugState()->DumpScopeTreeDataToConsole(); */
+  /* GetDebugState()->OpenDebugWindowAndLetUsDoStuff(); */
 
   s32 Result = Success ? SUCCESS_EXIT_CODE : FAILURE_EXIT_CODE ;
   return Result;

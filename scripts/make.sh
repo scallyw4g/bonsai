@@ -267,10 +267,13 @@ if [ ! -d "$BIN_TEST" ]; then
   mkdir "$BIN_TEST"
 fi
 
+SOURCE_FILES="src/metaprogramming/preprocessor.h"
+
 # rm -Rf $META_OUT
 # mkdir $META_OUT
 
 # SOURCE_FILES="$(find src -type f -name "*.h" -and -not -wholename "src/metaprogramming/defines.h" | tr '\n' ' ') $(find src -type f -name "*.cpp" | tr '\n' ' ')"
+
 # ColorizeTitle "Preprocessing"
 # bin/preprocessor $SOURCE_FILES
 # if [ $? -ne 0 ]; then
@@ -280,20 +283,12 @@ fi
 #   exit 1
 # fi
 
-git checkout "src/metaprogramming/output"
+# git checkout "src/metaprogramming/output"
 
 BuildPreprocessor
 [ ! -x bin/preprocessor ] && echo -e "$Failed Couldn't find preprocessor, exiting." && exit 1
 
 # SOURCE_FILES="$(find src -type f -name "*.h" -and -not -wholename "src/metaprogramming/defines.h" | tr '\n' ' ') $(find src -type f -name "*.cpp" | tr '\n' ' ')"
-# ColorizeTitle "Preprocessing"
-# bin/preprocessor $SOURCE_FILES
-# if [ $? -ne 0 ]; then
-#   echo ""
-#   echo -e "$Failed Preprocessing failed, exiting." 
-#   git checkout "src/metaprogramming/output"
-#   exit 1
-# fi
 
 if [ "$EMCC" == "1" ]; then
   time BuildWithEmcc
@@ -301,5 +296,14 @@ else
   time BuildWithClang
 fi
 
-./scripts/run_tests.sh
+# ./scripts/run_tests.sh
+
+ColorizeTitle "Preprocessing"
+bin/preprocessor $SOURCE_FILES
+if [ $? -ne 0 ]; then
+  echo ""
+  echo -e "$Failed Preprocessing failed, exiting." 
+  git checkout "src/metaprogramming/output"
+  exit 1
+fi
 

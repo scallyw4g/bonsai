@@ -285,6 +285,8 @@ InitDebugSystem(b32 DoInitDebugRenderSystem = True)
   Internal_DebugState.PickChunk                       = PickChunk;
   Internal_DebugState.ComputePickRay                  = ComputePickRay;
   Internal_DebugState.DebugValue                      = DebugValue;
+  Internal_DebugState.DumpScopeTreeDataToConsole      = DumpScopeTreeDataToConsole;
+  Internal_DebugState.OpenDebugWindowAndLetUsDoStuff  = OpenDebugWindowAndLetUsDoStuff;
 
   Internal_DebugState.Initialized = True;
 
