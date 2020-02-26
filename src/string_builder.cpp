@@ -177,12 +177,191 @@ ToCapitalCase(counted_string Source, memory_arena* Memory)
   return Result;
 }
 
+function char*
+MemorySize(u64 Number)
+{
+  r64 KB = (r64)Kilobytes(1);
+  r64 MB = (r64)Megabytes(1);
+  r64 GB = (r64)Gigabytes(1);
+
+  r64 Display = (r64)Number;
+  char Units = ' ';
+
+  if (Number >= KB && Number < MB)
+  {
+    Display = Number / KB;
+    Units = 'K';
+  }
+  else if (Number >= MB && Number < GB)
+  {
+    Display = Number / MB;
+    Units = 'M';
+  }
+  else if (Number >= GB)
+  {
+    Display = Number / GB;
+    Units = 'G';
+  }
+
+
+  char *Buffer = Allocate(char, TranArena, 32);
+  snprintf(Buffer, 32, "%.1f%c", (r32)Display, Units);
+  return Buffer;
+}
+
+template<typename number_type>counted_string
+NumericValueToString(number_type Number, const char* Format)
+{
+  u32 BufferLength = 32;
+  char *Buffer = Allocate(char, TranArena, BufferLength);
+  snprintf(Buffer, BufferLength, Format, Number);
+
+  counted_string Result = CS(Buffer);
+  return Result;
+}
+
+function counted_string
+CS(s64 Number)
+{
+  counted_string Result = NumericValueToString(Number, "%ld");
+  return Result;
+}
+
+function counted_string
+CS(u64 Number)
+{
+  counted_string Result = NumericValueToString(Number, "%lu");
+  return Result;
+}
+
+function counted_string
+CS(s32 Number)
+{
+  counted_string Result = NumericValueToString(Number, "%i");
+  return Result;
+}
+
+function counted_string
+CS(u32 Number)
+{
+  counted_string Result = NumericValueToString(Number, "%u");
+  return Result;
+}
+
+function counted_string
+CS(r64 Number)
+{
+  counted_string Result = NumericValueToString(Number, "%.2f");
+  return Result;
+}
+
+function counted_string
+CS(r32 Number)
+{
+  counted_string Result = NumericValueToString(Number, "%.2f");
+  return Result;
+}
+
+function counted_string
+CS(v2 V)
+{
+  char *Buffer = Allocate(char, TranArena, 32);
+  snprintf(Buffer, 32, "(%.2f,%.2f)", V.x, V.y);
+  counted_string Result = CS(Buffer);
+  return Result;
+}
+
+function char*
+ToString(u64 Number)
+{
+  char *Buffer = Allocate(char, TranArena, 32);
+  snprintf(Buffer, 32, "%lu", Number);
+  return Buffer;
+}
+
+function char*
+ToString(s32 Number)
+{
+  char *Buffer = Allocate(char, TranArena, 32);
+  snprintf(Buffer, 32, "%i", Number);
+  return Buffer;
+}
+
+function char*
+ToString(u32 Number)
+{
+  char *Buffer = Allocate(char, TranArena, 32);
+  snprintf(Buffer, 32, "%u", Number);
+  return Buffer;
+}
+
+function char*
+ToString(r32 Number)
+{
+  char *Buffer = Allocate(char, TranArena, 32);
+  snprintf(Buffer, 32, "%.2f", Number);
+  return Buffer;
+}
+
+function char*
+FormatMemorySize(u64 Number)
+{
+  r64 KB = (r64)Kilobytes(1);
+  r64 MB = (r64)Megabytes(1);
+  r64 GB = (r64)Gigabytes(1);
+
+  r64 Display = (r64)Number;
+  char Units = ' ';
+
+  if (Number >= KB && Number < MB)
+  {
+    Display = Number / KB;
+    Units = 'K';
+  }
+  else if (Number >= MB && Number < GB)
+  {
+    Display = Number / MB;
+    Units = 'M';
+  }
+  else if (Number >= GB)
+  {
+    Display = Number / GB;
+    Units = 'G';
+  }
+
+  char *Buffer = Allocate(char, TranArena, 32);
+  snprintf(Buffer, 32, "%.1f%c", (r32)Display, Units);
+
+  return Buffer;
+}
+
+function char*
+FormatThousands(u64 Number)
+{
+  u64 OneThousand = 1000;
+  r32 Display = (r32)Number;
+  char Units = ' ';
+
+  if (Number >= OneThousand)
+  {
+    Display = Number / (r32)OneThousand;
+    Units = 'K';
+  }
+
+  char *Buffer = Allocate(char, TranArena, 32);
+  snprintf(Buffer, 32, "%.1f%c", Display, Units);
+
+  return Buffer;
+}
+
+
 // This is to silence the warnings when passing counted_strings to this function
 #define FormatCountedString(Memory, Fmt, ...)             \
   _Pragma("clang diagnostic push")                        \
   _Pragma("clang diagnostic ignored \"-Wclass-varargs\"") \
   FormatCountedString_(Memory, Fmt, __VA_ARGS__)          \
   _Pragma("clang diagnostic pop")
+
 
 function counted_string
 FormatCountedString_(memory_arena* Memory, const char* fmt...)
@@ -191,9 +370,6 @@ FormatCountedString_(memory_arena* Memory, const char* fmt...)
 
   va_list args;
   va_start(args, fmt);
-
-#define TMP_BUFFER_SIZE (1024)
-  char Temp[TMP_BUFFER_SIZE];
 
   const char* StartPreceedingChars = fmt;
   const char* OnePastLast = fmt;
@@ -209,10 +385,7 @@ FormatCountedString_(memory_arena* Memory, const char* fmt...)
       if (*fmt == 'd')
       {
         s32 Value = va_arg(args, s32);
-        s32 BytesWritten = snprintf(Temp, TMP_BUFFER_SIZE-1, "%d", Value);
-        Assert(BytesWritten < TMP_BUFFER_SIZE);
-        counted_string CSValue = CountedString(Temp, Memory);
-        Append(&Builder, CSValue);
+        Append(&Builder, CS(Value));
       }
       else if (*fmt == 'l')
       {
@@ -220,63 +393,43 @@ FormatCountedString_(memory_arena* Memory, const char* fmt...)
         if (*fmt == 'u')
         {
           u64 Value = va_arg(args, u64);
-          s32 BytesWritten = snprintf(Temp, TMP_BUFFER_SIZE-1, "%lu", Value);
-          Assert(BytesWritten < TMP_BUFFER_SIZE);
-          counted_string CSValue = CountedString(Temp, Memory);
-          Append(&Builder, CSValue);
+          Append(&Builder, CS(Value));
         }
         else if (*fmt == 'd')
         {
           s64 Value = va_arg(args, s64);
-          s32 BytesWritten = snprintf(Temp, TMP_BUFFER_SIZE-1, "%ld", Value);
-          Assert(BytesWritten < TMP_BUFFER_SIZE);
-          counted_string CSValue = CountedString(Temp, Memory);
-          Append(&Builder, CSValue);
+          Append(&Builder, CS(Value));
         }
       }
       else if (*fmt == 'x')
       {
         u64 Value = va_arg(args, u64);
-        s32 BytesWritten = snprintf(Temp, TMP_BUFFER_SIZE-1, "%lu", Value);
-        Assert(BytesWritten < TMP_BUFFER_SIZE);
-        counted_string CSValue = CountedString(Temp, Memory);
-        Append(&Builder, CSValue);
+        Append(&Builder, CS(Value));
       }
       else if (*fmt == 'u')
       {
         u32 Value = va_arg(args, u32);
-        s32 BytesWritten = snprintf(Temp, TMP_BUFFER_SIZE-1, "%u", Value);
-        Assert(BytesWritten < TMP_BUFFER_SIZE);
-        counted_string CSValue = CountedString(Temp, Memory);
-        Append(&Builder, CSValue);
+        Append(&Builder, CS(Value));
       }
       else if (*fmt == 'c')
       {
-        s32 Value = va_arg(args, s32);
-        s32 BytesWritten = snprintf(Temp, TMP_BUFFER_SIZE-1, "%c", Value);
-        Assert(BytesWritten < TMP_BUFFER_SIZE);
-        counted_string CSValue = CountedString(Temp, Memory);
-        Append(&Builder, CSValue);
+        char Value = (char)va_arg(args, s32);
+        Append(&Builder, CS(&Value, 1));
       }
       else if (*fmt == 's')
       {
         char* Value = va_arg(args, char*);
-        s32 BytesWritten = snprintf(Temp, TMP_BUFFER_SIZE-1, "%s", Value);
-        Assert(BytesWritten < TMP_BUFFER_SIZE);
-        counted_string CSValue = CountedString(Temp, Memory);
+        counted_string CSValue = CountedString(Value, Memory);
         Append(&Builder, CSValue);
       }
       else if (*fmt == 'f')
       {
         r64 Value = va_arg(args, r64);
-        s32 BytesWritten = snprintf(Temp, TMP_BUFFER_SIZE-1, "%f", Value);
-        Assert(BytesWritten < TMP_BUFFER_SIZE);
-        counted_string CSValue = CountedString(Temp, Memory);
-        Append(&Builder, CSValue);
+        Append(&Builder, CS(Value));
       }
       else if (*fmt == 'b')
       {
-        b32 BoolVal = (b32)va_arg(args, int);
+        b32 BoolVal = (b32)va_arg(args, u32);
         counted_string Output = {};
 
         if (BoolVal)
