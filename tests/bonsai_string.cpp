@@ -425,9 +425,33 @@ main()
 
 
 
+  {
+    counted_string TestString = U64ToCountedString(Memory, 42);
+    TestThat(StringsMatch(TestString, CS("42")));
+  }
+
+
+  {
+    counted_string TestString = U64ToCountedString(Memory, 18446744073709551615ULL);
+    TestThat(StringsMatch(TestString, CS("18446744073709551615")));
+  }
+
+  {
+    counted_string TestString = U64ToCountedString(Memory, 18446744073709551615ULL);
+    TestThat(StringsMatch(TestString, CS("18446744073709551615")));
+  }
 
 
 
+  {
+    counted_string TestString = F64ToCountedString(Memory, 3.14, 2);
+    TestThat(StringsMatch(TestString, CS("3.14")));
+  }
+
+  {
+    counted_string TestString = F64ToCountedString(Memory, 3.14, 10);
+    TestThat(StringsMatch(TestString, CS("3.1400000000")));
+  }
 
 
 

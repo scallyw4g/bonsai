@@ -354,6 +354,115 @@ FormatThousands(u64 Number)
   return Buffer;
 }
 
+// Note(Jesse): Shamelessly copied, then modified, from the Handmade Hero codebase
+global_variable char DecChars[] = "0123456789";
+global_variable char LowerHexChars[] = "0123456789abcdef";
+global_variable char UpperHexChars[] = "0123456789ABCDEF";
+
+// TODO(Jesse): Figure out how to not require a statically allocated buffer size
+global_variable u32 MaxResultLength = 32;
+function void
+CopyToDest(char* Dest, u32* Count, char C)
+{
+  Dest[*Count] = C;
+  *Count = *Count+1;
+  Assert(*Count < MaxResultLength);
+}
+
+function counted_string
+U64ToCountedString(memory_arena* Memory, u64 Value, u32 Base = 10, char *Digits = DecChars)
+{
+  Assert(Base != 0);
+
+  // TODO(Jesse): This is over-allocating, and we should consider not doing this
+  // in the future!
+  char* StartAlloc = Allocate(char, Memory, MaxResultLength);
+  u32 Count = 0;
+
+  do
+  {
+      u64 DigitIndex = (Value % Base);
+      char Digit = Digits[DigitIndex];
+
+      CopyToDest(StartAlloc, &Count, Digit);
+
+      Value /= Base;
+
+  } while(Value != 0);
+
+  char *Start = (char*)StartAlloc;
+  char *End = (char*)StartAlloc+Count;
+
+  while(Start < End)
+  {
+      --End;
+      char Temp = *End;
+      *End = *Start;
+      *Start = Temp;
+      ++Start;
+  }
+
+  counted_string Result = { .Start = StartAlloc, .Count = Count };
+  return Result;
+}
+
+function counted_string
+S64ToCountedString(memory_arena* Memory, s64 Value, u32 Base = 10, char *Digits = DecChars)
+{
+  counted_string Result = {};
+  if (Value < 0)
+  {
+    Result = CS("-");
+    // TODO(Jesse): This concat should not be here!
+    Result = Concat(Result, U64ToCountedString(Memory, (u64)-Value, Base, Digits), Memory);
+
+  }
+  else
+  {
+    Result = U64ToCountedString(Memory, (u64)Value, Base, Digits);
+  }
+
+  return Result;
+}
+
+// Note(Jesse): Shamelessly copied, then modified, from the Handmade Hero codebase
+function counted_string
+F64ToCountedString(memory_arena* Memory, r64 Value, u32 Precision)
+{
+  // TODO(Jesse): This is over-allocating, and we should consider not doing this
+  // in the future!
+  char* StartAlloc = Allocate(char, Memory, MaxResultLength);
+  u32 Count = 0;
+
+  if(Value < 0)
+  {
+      CopyToDest(StartAlloc, &Count, '-');
+      Value = -Value;
+  }
+
+  u64 IntegerPart = (u64)Value;
+  Value -= (r64)IntegerPart;
+  counted_string IntString = U64ToCountedString(Memory, IntegerPart);
+
+  MemCopy((u8*)IntString.Start+Count, (u8*)StartAlloc, IntString.Count);
+  Count += IntString.Count;
+
+  CopyToDest(StartAlloc, &Count, '.');
+
+  // TODO(casey): Note that this is NOT an accurate way to do this!
+  for(u32 PrecisionIndex = 0;
+      PrecisionIndex < Precision;
+      ++PrecisionIndex)
+  {
+      Value *= 10.0f;
+      u32 Int = (u32)Value;
+      Value -= (r32)Int;
+      CopyToDest(StartAlloc, &Count, DecChars[Int]);
+  }
+
+  counted_string Result = { .Start = StartAlloc, .Count = Count };
+  return Result;
+}
 
 // This is to silence the warnings when passing counted_strings to this function
 #define FormatCountedString(Memory, Fmt, ...)             \
@@ -375,100 +484,105 @@ FormatCountedString_(memory_arena* Memory, const char* fmt...)
   const char* OnePastLast = fmt;
   while (*fmt != '\0')
   {
-    if ( *fmt == '%' )
+    if (*fmt == '%')
     {
       umm NumPreceedingChars = (umm)(OnePastLast - StartPreceedingChars);
       counted_string PreceedingNonFormatSpecifiers = CS(StartPreceedingChars, NumPreceedingChars);
       Append(&Builder, PreceedingNonFormatSpecifiers);
       ++fmt;
 
-      if (*fmt == 'd')
+      switch (*fmt)
       {
-        s32 Value = va_arg(args, s32);
-        Append(&Builder, CS(Value));
-      }
-      else if (*fmt == 'l')
-      {
-        ++fmt;
-        if (*fmt == 'u')
+        case 'd':
+        {
+          s32 Value = va_arg(args, s32);
+          counted_string S = S64ToCountedString(Memory, (s64)Value);
+          Append(&Builder, S);
+        } break;
+
+        case 'l':
+        {
+          ++fmt;
+          if (*fmt == 'u')
+          {
+            u64 Value = va_arg(args, u64);
+            counted_string S = U64ToCountedString(Memory, Value);
+            Append(&Builder, S);
+          }
+          else if (*fmt == 'd')
+          {
+            s64 Value = va_arg(args, s64);
+            counted_string S = S64ToCountedString(Memory, Value);
+            Append(&Builder, S);
+          }
+        } break;
+
+        case 'x':
         {
           u64 Value = va_arg(args, u64);
-          Append(&Builder, CS(Value));
-        }
-        else if (*fmt == 'd')
+          counted_string S = U64ToCountedString(Memory, Value);
+          Append(&Builder, S);
+        } break;
+
+        case 'u':
         {
-          s64 Value = va_arg(args, s64);
-          Append(&Builder, CS(Value));
-        }
-      }
-      else if (*fmt == 'x')
-      {
-        u64 Value = va_arg(args, u64);
-        Append(&Builder, CS(Value));
-      }
-      else if (*fmt == 'u')
-      {
-        u32 Value = va_arg(args, u32);
-        Append(&Builder, CS(Value));
-      }
-      else if (*fmt == 'c')
-      {
-        char Value = (char)va_arg(args, s32);
-        Append(&Builder, CS(&Value, 1));
-      }
-      else if (*fmt == 's')
-      {
-        char* Value = va_arg(args, char*);
-        counted_string CSValue = CountedString(Value, Memory);
-        Append(&Builder, CSValue);
-      }
-      else if (*fmt == 'f')
-      {
-        r64 Value = va_arg(args, r64);
-        Append(&Builder, CS(Value));
-      }
-      else if (*fmt == 'b')
-      {
-        b32 BoolVal = (b32)va_arg(args, u32);
-        counted_string Output = {};
+          u32 Value = va_arg(args, u32);
+          counted_string S = U64ToCountedString(Memory, (u64)Value);
+          Append(&Builder, S);
+        } break;
 
-        if (BoolVal)
-          Output = CS("True");
-        else
-          Output = CS("False");
+        case 'c':
+        {
+          char Value = (char)va_arg(args, s32);
+          Append(&Builder, CS(&Value, 1));
+        } break;
 
-        Append(&Builder, Output);
-      }
-      else if (*fmt == 'S')
-      {
-        u32 Count = va_arg(args, u32);
-        char* Start = va_arg(args, char*);
+        case 's':
+        {
+          char* Value = va_arg(args, char*);
+          counted_string CSValue = CountedString(Value, Memory);
+          Append(&Builder, CSValue);
+        } break;
 
-        counted_string Output = {
-          .Start = Start,
-          .Count = Count
-        };
+        case 'f':
+        {
+          r64 Value = va_arg(args, r64);
+          counted_string S = F64ToCountedString(Memory, Value);
+          Append(&Builder, S);
+        } break;
 
-        Append(&Builder, Output);
-      }
-      else if (*fmt == '.')
-      {
-        Assert(*(++fmt) == '*')
-        Assert(*(++fmt) == 's')
-        u32 Count = va_arg(args, u32);
-        char* Start = va_arg(args, char*);
+        case 'b':
+        {
+          b32 BoolVal = (b32)va_arg(args, u32);
+          counted_string Output = {};
+          Output = BoolVal ? CS("True") : CS("False");
+          Append(&Builder, Output);
+        } break;
 
-        counted_string Output = {
-          .Start = Start,
-          .Count = Count
-        };
+        case 'S':
+        {
+          u32 Count = va_arg(args, u32);
+          char* Start = va_arg(args, char*);
+          counted_string Output = { .Start = Start, .Count = Count };
+          Append(&Builder, Output);
+        } break;
 
-        Append(&Builder, Output);
-      }
-      else
-      {
-        va_arg(args, void*);
-        Error("Invalid Format String");
+        case '.':
+        {
+          Assert(*(++fmt) == '*')
+          Assert(*(++fmt) == 's')
+          u32 Count = va_arg(args, u32);
+          char* Start = va_arg(args, char*);
+          counted_string Output = { .Start = Start, .Count = Count };
+          Append(&Builder, Output);
+        } break;
+
+        default:
+        {
+          va_arg(args, void*);
+          Error("Invalid Format String");
+        } break;
+
       }
 
       ++fmt;
