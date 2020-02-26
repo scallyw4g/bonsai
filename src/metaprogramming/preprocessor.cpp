@@ -1,3 +1,9 @@
+#define BONSAI_NO_MUTEX_TRACKING
+#define BONSAI_NO_PUSH_METADATA
+#define BONSAI_NO_DEBUG_MEMORY_ALLOCATOR
+
+#define PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS 1
+
 #include <metaprogramming/preprocessor.h>
 
 function b32
@@ -2041,12 +2047,44 @@ DoWorkToOutputThisStuff(c_parse_result* Parser, counted_string OutputForThisPars
   }
 }
 
+// TODO(Jesse): This is copy-pasted from teh callgraph tests .. should we be
+// able to call this from anywhere?  It's also in the platform layer
+// @bootstrap-debug-system
+function b32
+BootstrapDebugSystem()
+{
+  shared_lib DebugLib = OpenLibrary(DEFAULT_DEBUG_LIB);
+  if (!DebugLib) { Error("Loading DebugLib :( "); return False; }
+
+  GetDebugState = (get_debug_state_proc)GetProcFromLib(DebugLib, "GetDebugState_Internal");
+  if (!GetDebugState) { Error("Retreiving GetDebugState from Debug Lib :( "); return False; }
+
+  debug_init_debug_system_proc InitDebugSystem = (debug_init_debug_system_proc)GetProcFromLib(DebugLib, "InitDebugSystem");
+  if (!InitDebugSystem) { Error("Retreiving InitDebugSystem from Debug Lib :( "); return False; }
+
+  InitDebugSystem(False);
+
+  debug_state* DebugState = GetDebugState();
+  DebugState->DebugDoScopeProfiling = True;
+
+  return True;
+}
+
 #ifndef EXCLUDE_PREPROCESSOR_MAIN
+
+#define SUCCESS_EXIT_CODE 0
+#define FAILURE_EXIT_CODE 1
 s32
 main(s32 ArgCount, const char** ArgStrings)
 {
   setbuf(stdout, NULL);
   setbuf(stderr, NULL);
+
+  if (!BootstrapDebugSystem())
+  {
+    Error("Booting debug system");
+    return FAILURE_EXIT_CODE;
+  }
 
   b32 Success = True;
 
@@ -2225,8 +2263,6 @@ main(s32 ArgCount, const char** ArgStrings)
     Warn("No files passed, exiting.");
   }
 
-#define SUCCESS_EXIT_CODE 0
-#define FAILURE_EXIT_CODE 1
   s32 Result = Success ? SUCCESS_EXIT_CODE : FAILURE_EXIT_CODE ;
   return Result;
 }

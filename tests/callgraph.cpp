@@ -32,6 +32,7 @@ main()
 {
   TestSuiteBegin("callgraph");
 
+  // @bootstrap-debug-system
   shared_lib DebugLib = OpenLibrary(DEFAULT_DEBUG_LIB);
   if (!DebugLib) { Error("Loading DebugLib :( "); return False; }
 

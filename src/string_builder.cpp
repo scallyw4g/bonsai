@@ -427,7 +427,7 @@ S64ToCountedString(memory_arena* Memory, s64 Value, u32 Base = 10, char *Digits 
 
 // Note(Jesse): Shamelessly copied, then modified, from the Handmade Hero codebase
 function counted_string
-F64ToCountedString(memory_arena* Memory, r64 Value, u32 Precision)
+F64ToCountedString(memory_arena* Memory, r64 Value, u32 Precision = 16)
 {
   // TODO(Jesse): This is over-allocating, and we should consider not doing this
   // in the future!
