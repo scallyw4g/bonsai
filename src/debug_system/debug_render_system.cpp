@@ -235,7 +235,6 @@ BufferColorsDirect(T* Geo, v3 Color)
   return;
 }
 
-
 template <typename T> function void
 BufferColors(debug_ui_render_group *Group, T *Geo, v3 Color)
 {
@@ -2474,13 +2473,18 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, r64 Ma
   return;
 }
 
+debug_global hotkeys HotkeyThing;
+
 function void
 OpenDebugWindowAndLetUsDoStuff()
 {
-  /* debug_state* DebugState = GetDebugState(); */
-  /* debug_ui_render_group *UiGroup = &DebugState->UiGroup; */
+  debug_state* DebugState = GetDebugState();
 
-  /* DebugDrawCallGraph(UiGroup, DebugState, 33.3); */
+  DEBUG_FRAME_BEGIN(&HotkeyThing);
+  DEBUG_FRAME_END(DebugState->Plat, 0);
+  RewindArena(TranArena);
+
+  Log("----- Frame End\n");
 }
 
 exported_function void
@@ -2909,6 +2913,8 @@ function void
 DebugDrawNetworkHud(debug_ui_render_group *Group, network_connection *Network, server_state *ServerState)
 {
   local_persist window_layout NetworkWindow = WindowLayout("Network", V2(0));
+
+  if (!ServerState) return;
 
   PushWindowStart(Group, &NetworkWindow);
 

@@ -3,7 +3,7 @@ CountedString(umm Count, memory_arena* Memory)
 {
   TIMED_FUNCTION();
   counted_string Result = {
-    .Start = Allocate(const char, Memory, Count),
+    .Start = AllocateProtection(const char, Memory, Count, False),
     .Count = Count
   };
   return Result;
@@ -26,7 +26,7 @@ CountedString(const char* Start, umm Count, memory_arena* Memory)
 {
   TIMED_FUNCTION();
   counted_string Result = {
-    .Start = Allocate(const char, Memory, Count),
+    .Start = AllocateProtection(const char, Memory, Count, False),
     .Count = Count
   };
 
@@ -76,7 +76,7 @@ Concat(counted_string S1, counted_string S2, memory_arena* Memory)
 {
   umm TotalLength = S1.Count + S2.Count;
   counted_string Result = {
-    .Start = Allocate(char, Memory, TotalLength),
+    .Start = AllocateProtection(char, Memory, TotalLength, False),
     .Count = TotalLength
   };
 
@@ -89,7 +89,7 @@ Concat(counted_string S1, counted_string S2, memory_arena* Memory)
 function const char*
 GetNullTerminated(counted_string Str, memory_arena* Memory = TranArena)
 {
-  const char* Result = Allocate(const char, Memory, Str.Count+1);
+  const char* Result = AllocateProtection(const char, Memory, Str.Count+1, False);
   MemCopy((u8*)Str.Start, (u8*)Result, Str.Count);
   return Result;
 }
@@ -178,7 +178,7 @@ MemorySize(u64 Number)
   }
 
 
-  char *Buffer = Allocate(char, TranArena, 32);
+  char *Buffer = AllocateProtection(char, TranArena, 32, False);
   snprintf(Buffer, 32, "%.1f%c", (r32)Display, Units);
   return Buffer;
 }
@@ -187,7 +187,7 @@ template<typename number_type>counted_string
 NumericValueToString(number_type Number, const char* Format)
 {
   u32 BufferLength = 32;
-  char *Buffer = Allocate(char, TranArena, BufferLength);
+  char *Buffer = AllocateProtection(char, TranArena, BufferLength, False);
   snprintf(Buffer, BufferLength, Format, Number);
 
   counted_string Result = CS(Buffer);
@@ -239,7 +239,7 @@ CS(r32 Number)
 function counted_string
 CS(v2 V)
 {
-  char *Buffer = Allocate(char, TranArena, 32);
+  char *Buffer = AllocateProtection(char, TranArena, 32, False);
   snprintf(Buffer, 32, "(%.2f,%.2f)", V.x, V.y);
   counted_string Result = CS(Buffer);
   return Result;
@@ -248,7 +248,7 @@ CS(v2 V)
 function char*
 ToString(u64 Number)
 {
-  char *Buffer = Allocate(char, TranArena, 32);
+  char *Buffer = AllocateProtection(char, TranArena, 32, False);
   snprintf(Buffer, 32, "%lu", Number);
   return Buffer;
 }
@@ -256,7 +256,7 @@ ToString(u64 Number)
 function char*
 ToString(s32 Number)
 {
-  char *Buffer = Allocate(char, TranArena, 32);
+  char *Buffer = AllocateProtection(char, TranArena, 32, False);
   snprintf(Buffer, 32, "%i", Number);
   return Buffer;
 }
@@ -264,7 +264,7 @@ ToString(s32 Number)
 function char*
 ToString(u32 Number)
 {
-  char *Buffer = Allocate(char, TranArena, 32);
+  char *Buffer = AllocateProtection(char, TranArena, 32, False);
   snprintf(Buffer, 32, "%u", Number);
   return Buffer;
 }
@@ -272,7 +272,7 @@ ToString(u32 Number)
 function char*
 ToString(r32 Number)
 {
-  char *Buffer = Allocate(char, TranArena, 32);
+  char *Buffer = AllocateProtection(char, TranArena, 32, False);
   snprintf(Buffer, 32, "%.2f", Number);
   return Buffer;
 }
@@ -303,7 +303,7 @@ FormatMemorySize(u64 Number)
     Units = 'G';
   }
 
-  char *Buffer = Allocate(char, TranArena, 32);
+  char *Buffer = AllocateProtection(char, TranArena, 32, False);
   snprintf(Buffer, 32, "%.1f%c", (r32)Display, Units);
 
   return Buffer;
@@ -322,7 +322,7 @@ FormatThousands(u64 Number)
     Units = 'K';
   }
 
-  char *Buffer = Allocate(char, TranArena, 32);
+  char *Buffer = AllocateProtection(char, TranArena, 32, False);
   snprintf(Buffer, 32, "%.1f%c", Display, Units);
 
   return Buffer;
@@ -350,7 +350,7 @@ U64ToCountedString(memory_arena* Memory, u64 Value, u32 Base = 10, char *Digits 
 
   // TODO(Jesse): This is over-allocating, and we should consider not doing this
   // in the future!
-  char* StartAlloc = Allocate(char, Memory, MaxResultLength);
+  char* StartAlloc = AllocateProtection(char, Memory, MaxResultLength, False);
   u32 Count = 0;
 
   do
@@ -407,7 +407,7 @@ F64ToCountedString(memory_arena* Memory, r64 Value, u32 Precision = 16)
   TIMED_FUNCTION();
   // TODO(Jesse): This is over-allocating, and we should consider not doing this
   // in the future!
-  char* StartAlloc = Allocate(char, Memory, MaxResultLength);
+  char* StartAlloc = AllocateProtection(char, Memory, MaxResultLength, False);
   u32 Count = 0;
 
   if(Value < 0)
@@ -445,7 +445,7 @@ F64ToCountedString(memory_arena* Memory, r64 Value, u32 Precision = 16)
 char *
 FormatString(memory_arena *Memory, const char* FormatString, ...)
 {
-  char *Buffer = Allocate(char, Memory, STRING_BUFFER_LENGTH);
+  char *Buffer = AllocateProtection(char, Memory, STRING_BUFFER_LENGTH, False);
 
   va_list Arguments;
   va_start(Arguments, FormatString);
@@ -462,7 +462,7 @@ FormatCountedString(memory_arena *Memory, const char* FormatString, ...)
 {
   TIMED_FUNCTION();
 
-  char *Buffer = Allocate(char, Memory, STRING_BUFFER_LENGTH);
+  char *Buffer = AllocateProtection(char, Memory, STRING_BUFFER_LENGTH, False);
 
   va_list Arguments;
   va_start(Arguments, FormatString);

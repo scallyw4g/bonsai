@@ -1,6 +1,8 @@
 #define PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS 1
+#define PLATFORM_GL_IMPLEMENTATIONS 1
 
 #include <metaprogramming/preprocessor.h>
+
 
 function b32
 IsWhitespace(c_token_type Type)
@@ -2048,6 +2050,10 @@ DoWorkToOutputThisStuff(c_parse_result* Parser, counted_string OutputForThisPars
 // TODO(Jesse): This is copy-pasted from teh callgraph tests .. should we be
 // able to call this from anywhere?  It's also in the platform layer
 // @bootstrap-debug-system
+
+debug_global platform Plat = {};
+debug_global os Os = {};
+
 function b32
 BootstrapDebugSystem()
 {
@@ -2057,13 +2063,34 @@ BootstrapDebugSystem()
   GetDebugState = (get_debug_state_proc)GetProcFromLib(DebugLib, "GetDebugState_Internal");
   if (!GetDebugState) { Error("Retreiving GetDebugState from Debug Lib :( "); return False; }
 
+  s32 DebugFlags = GLX_CONTEXT_DEBUG_BIT_ARB;
+  b32 WindowSuccess = OpenAndInitializeWindow(&Os, &Plat, DebugFlags);
+  if (!WindowSuccess) { Error("Initializing Window :( "); return False; }
+  Assert(Os.Window);
+  AssertNoGlErrors;
+
+  InitializeOpenGlExtensions(&Os);
+
+  b32 ShadingLanguageIsRecentEnough = CheckShadingLanguageVersion();
+  if (!ShadingLanguageIsRecentEnough) {  return False; }
+
   debug_init_debug_system_proc InitDebugSystem = (debug_init_debug_system_proc)GetProcFromLib(DebugLib, "InitDebugSystem");
   if (!InitDebugSystem) { Error("Retreiving InitDebugSystem from Debug Lib :( "); return False; }
 
-  InitDebugSystem(False);
+  InitDebugSystem(True);
 
   debug_state* DebugState = GetDebugState();
   DebugState->DebugDoScopeProfiling = True;
+  DebugState->Plat = &Plat;
+
+  glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+  glClearDepth(1.0f);
+
+  glBindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   return True;
 }
@@ -2261,8 +2288,29 @@ main(s32 ArgCount, const char** ArgStrings)
     Warn("No files passed, exiting.");
   }
 
-  /* GetDebugState()->DumpScopeTreeDataToConsole(); */
-  /* GetDebugState()->OpenDebugWindowAndLetUsDoStuff(); */
+
+  debug_state* DebugState = GetDebugState();
+
+  DebugState->UIType = DebugUIType_CallGraph;
+  DebugState->DisplayDebugMenu = True;
+
+  DebugState->MainThreadAdvanceDebugSystem();
+
+  while (Os.ContinueRunning)
+  {
+    v2 LastMouseP = Plat.MouseP;
+    while ( ProcessOsMessages(&Os, &Plat) );
+    Plat.MouseDP = LastMouseP - Plat.MouseP;
+
+    DebugState->OpenDebugWindowAndLetUsDoStuff();
+    BonsaiSwapBuffers(&Os);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  }
 
   s32 Result = Success ? SUCCESS_EXIT_CODE : FAILURE_EXIT_CODE ;
   return Result;

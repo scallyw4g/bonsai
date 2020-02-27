@@ -116,7 +116,7 @@ WriteToFile(native_file* File, ansi_stream Str)
 }
 
 function b32
-FileExists(counted_string Path)
+FileExists(const char* Path)
 {
   b32 Result = False;
 
@@ -126,7 +126,7 @@ FileExists(counted_string Path)
     Result = True;
     if (!CloseFile(&File))
     {
-      Error("Opened %.*s, but could not close it.", (u32)Path.Count, Path.Start);
+      Error("Opened %s, but could not close it.", Path);
       Result = False;
     }
   }
@@ -135,9 +135,10 @@ FileExists(counted_string Path)
 }
 
 function b32
-FileExists(const char *Path)
+FileExists(counted_string Path)
 {
-  b32 Result = FileExists(CS(Path));
+  const char* NullTerminatedFilePath = GetNullTerminated(Path);
+  b32 Result = FileExists(NullTerminatedFilePath);
   return Result;
 }
 

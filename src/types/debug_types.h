@@ -151,6 +151,7 @@ struct frame_stats
   r64 FrameMs;
 };
 
+struct os;
 struct platform;
 struct server_state;
 struct hotkeys;
