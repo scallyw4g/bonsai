@@ -2305,8 +2305,8 @@ main(s32 ArgCount, const char** ArgStrings)
     DebugState->OpenDebugWindowAndLetUsDoStuff();
     BonsaiSwapBuffers(&Os);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    /* glBindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID); */
+    /* glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); */
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

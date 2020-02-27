@@ -111,17 +111,15 @@ CAssert(sizeof(debug_thread_state) == CACHE_LINE_SIZE);
 
 enum debug_ui_type
 {
-  DebugUIType_None,
+  DebugUIType_None = 0,
 
-  DebugUIType_PickedChunks,
-  DebugUIType_CallGraph,
-  DebugUIType_CollatedFunctionCalls,
-  DebugUIType_Memory,
-  DebugUIType_Graphics,
-  DebugUIType_Network,
-  DebugUIType_DrawCalls,
-
-  DebugUIType_Count
+  DebugUIType_PickedChunks          = (1 << 0),
+  DebugUIType_CallGraph             = (1 << 1),
+  DebugUIType_CollatedFunctionCalls = (1 << 2),
+  DebugUIType_Memory                = (1 << 3),
+  DebugUIType_Graphics              = (1 << 4),
+  DebugUIType_Network               = (1 << 5),
+  DebugUIType_DrawCalls             = (1 << 6)
 };
 
 struct registered_memory_arena
@@ -189,7 +187,7 @@ struct debug_state
   debug_ui_render_group UiGroup;
 
   untextured_3d_geometry_buffer LineMesh;
-  debug_ui_type UIType = DebugUIType_None;
+  u32 UIType = DebugUIType_None;
 
   // For the GameGeo
   camera Camera;

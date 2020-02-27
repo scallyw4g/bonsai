@@ -26,9 +26,9 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
 {
   TIMED_FUNCTION();
 
-  debug_state *DebugState            = GetDebugState();
+  debug_state *DebugState = GetDebugState();
 
-  min_max_avg_dt Dt           = {};
+  min_max_avg_dt Dt = {};
 
   debug_ui_render_group *UiGroup = &DebugState->UiGroup;
 
@@ -108,85 +108,82 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     ui_style Style =  UiStyleFromLightestColor(V3(1), V2(25));
     PushTableStart(UiGroup);
 
+#define ToggleBitfieldValue(Dest, Value) \
+      (Dest) = (Dest) & (Value) ?  ((u32)(Dest) & ~(u32)(Value)) : ((u32)(Dest) | (u32)(Value));
+
     if (Button(UiGroup, CS("PickedChunks"), (umm)"PickedChunks", &Style))
     {
-      DebugState->UIType = DebugUIType_PickedChunks;
+      ToggleBitfieldValue(DebugState->UIType, DebugUIType_PickedChunks);
     }
 
     if (Button(UiGroup, CS("Graphics"), (umm)"Graphics", &Style))
     {
-      DebugState->UIType = DebugUIType_Graphics;
+      ToggleBitfieldValue(DebugState->UIType, DebugUIType_Graphics);
     }
 
     if (Button(UiGroup, CS("Network"), (umm)"Network", &Style))
     {
-      DebugState->UIType = DebugUIType_Network;
+      ToggleBitfieldValue(DebugState->UIType, DebugUIType_Network);
     }
 
     if (Button(UiGroup, CS("Functions"), (umm)"Functions", &Style))
     {
-      DebugState->UIType = DebugUIType_CollatedFunctionCalls;
+      ToggleBitfieldValue(DebugState->UIType, DebugUIType_CollatedFunctionCalls);
     }
 
     if (Button(UiGroup, CS("Callgraph"), (umm)"Callgraph", &Style))
     {
-      DebugState->UIType = DebugUIType_CallGraph;
+      ToggleBitfieldValue(DebugState->UIType, DebugUIType_CallGraph);
     }
 
     if (Button(UiGroup, CS("Memory"), (umm)"Memory", &Style))
     {
-      DebugState->UIType = DebugUIType_Memory;
+      ToggleBitfieldValue(DebugState->UIType, DebugUIType_Memory);
     }
 
     if (Button(UiGroup, CS("DrawCalls"), (umm)"DrawCalls", &Style))
     {
-      DebugState->UIType = DebugUIType_Memory;
+      ToggleBitfieldValue(DebugState->UIType, DebugUIType_DrawCalls);
     }
 
     PushTableEnd(UiGroup);
 
-    switch (DebugState->UIType)
+
+
+
+    if (DebugState->UIType & DebugUIType_PickedChunks)
     {
-      case DebugUIType_None:
-      {
-      } break;
+      DrawPickedChunks(UiGroup);
+    }
 
-      case DebugUIType_PickedChunks:
-      {
-        DrawPickedChunks(UiGroup);
-      } break;
+    if (DebugState->UIType & DebugUIType_Graphics)
+    {
+      DebugDrawGraphicsHud(UiGroup, DebugState);
+    }
 
-      case DebugUIType_Graphics:
-      {
-        DebugDrawGraphicsHud(UiGroup, DebugState);
-      } break;
+    if (DebugState->UIType & DebugUIType_Network)
+    {
+      DebugDrawNetworkHud(UiGroup, &Plat->Network, ServerState);
+    }
 
-      case DebugUIType_Network:
-      {
-        DebugDrawNetworkHud(UiGroup, &Plat->Network, ServerState);
-      } break;
+    if (DebugState->UIType & DebugUIType_CollatedFunctionCalls)
+    {
+      DebugDrawCollatedFunctionCalls(UiGroup, DebugState);
+    }
 
-      case DebugUIType_CollatedFunctionCalls:
-      {
-        DebugDrawCollatedFunctionCalls(UiGroup, DebugState);
-      } break;
+    if (DebugState->UIType & DebugUIType_CallGraph)
+    {
+      DebugDrawCallGraph(UiGroup, DebugState, Dt.Max);
+    }
 
-      case DebugUIType_CallGraph:
-      {
-        DebugDrawCallGraph(UiGroup, DebugState, Dt.Max);
-      } break;
+    if (DebugState->UIType & DebugUIType_Memory)
+    {
+      DebugDrawMemoryHud(UiGroup, DebugState);
+    }
 
-      case DebugUIType_Memory:
-      {
-        DebugDrawMemoryHud(UiGroup, DebugState);
-      } break;
-
-      case DebugUIType_DrawCalls:
-      {
-        DebugDrawDrawCalls(UiGroup);
-      } break;
-
-      InvalidDefaultCase;
+    if (DebugState->UIType & DebugUIType_DrawCalls)
+    {
+      DebugDrawDrawCalls(UiGroup);
     }
 
   }

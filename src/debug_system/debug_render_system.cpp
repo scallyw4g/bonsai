@@ -858,10 +858,10 @@ PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
     PushUntexturedQuadAt(Group, Window->Basis, V2(Window->MaxClip.x, Global_Font.Size.y), zDepth_TitleBar);
   PushButtonEnd(Group);
 
-  v2 Dim = V2(12);
-  PushButtonStart(Group, DragHandleInteractionId);
-    PushUntexturedQuadAt(Group, GetAbsoluteMaxClip(Window)-Dim, Dim, zDepth_Border, &DefaultUiStyle);
-  PushButtonEnd(Group);
+  /* v2 Dim = V2(12); */
+  /* PushButtonStart(Group, DragHandleInteractionId); */
+  /*   PushUntexturedQuadAt(Group, GetAbsoluteMaxClip(Window)-Dim, Dim, zDepth_Border, &DefaultUiStyle); */
+  /* PushButtonEnd(Group); */
 
   PushBorder(Group, GetBounds(Window), V3(1));
 
