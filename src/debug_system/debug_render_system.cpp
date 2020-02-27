@@ -2323,8 +2323,8 @@ DumpScopeTreeDataToConsole_Internal(debug_profile_scope *Scope_in, debug_profile
 
 function void
 BufferFirstCallToEach(debug_ui_render_group *Group,
-    debug_profile_scope *Scope_in, debug_profile_scope *TreeRoot,
-    memory_arena *Memory, window_layout* Window, u64 TotalFrameCycles, u32 Depth)
+                      debug_profile_scope *Scope_in, debug_profile_scope *TreeRoot,
+                      memory_arena *Memory, window_layout* Window, u64 TotalFrameCycles, u32 Depth)
 {
   unique_debug_profile_scope* UniqueScopes = {};
 
@@ -2337,14 +2337,14 @@ BufferFirstCallToEach(debug_ui_render_group *Group,
       GotUniqueScope = AllocateProtection(unique_debug_profile_scope, TranArena, 1, False);
       GotUniqueScope->NextUnique = UniqueScopes;
       UniqueScopes = GotUniqueScope;
+      GotUniqueScope->Name = CurrentUniqueScopeQuery->Name;
+      GotUniqueScope->Scope = CurrentUniqueScopeQuery;
     }
 
-    GotUniqueScope->Name = CurrentUniqueScopeQuery->Name;
     GotUniqueScope->CallCount++;
     GotUniqueScope->TotalCycles += CurrentUniqueScopeQuery->CycleCount;
     GotUniqueScope->MinCycles = Min(CurrentUniqueScopeQuery->CycleCount, GotUniqueScope->MinCycles);
     GotUniqueScope->MaxCycles = Max(CurrentUniqueScopeQuery->CycleCount, GotUniqueScope->MaxCycles);
-    GotUniqueScope->Scope = CurrentUniqueScopeQuery;
 
     CurrentUniqueScopeQuery = CurrentUniqueScopeQuery->Sibling;
   }
@@ -2361,6 +2361,7 @@ BufferFirstCallToEach(debug_ui_render_group *Group,
 
     if (Clicked(Group, &ScopeTextInteraction))
     {
+      GetDebugState()->HotFunction = UniqueScopes->Scope;
       UniqueScopes->Scope->Expanded = !UniqueScopes->Scope->Expanded;
     }
 
@@ -2515,33 +2516,70 @@ DumpScopeTreeDataToConsole()
 function void
 DebugDrawCollatedFunctionCalls(debug_ui_render_group *Group, debug_state *DebugState)
 {
-  local_persist window_layout FunctionCallWindow = WindowLayout("Functions", V2(0));
-
-  TIMED_BLOCK("Collated Function Calls");
+#if 0
   debug_thread_state *MainThreadState = GetThreadLocalStateFor(0);
   debug_scope_tree *MainThreadReadTree = MainThreadState->ScopeTrees + DebugState->ReadScopeIndex;
-
-  CollateAllFunctionCalls(MainThreadReadTree->Root);
-
-  PushWindowStart(Group, &FunctionCallWindow);
-
-  PushTableStart(Group);
-  for ( u32 FunctionIndex = 0;
-      FunctionIndex < MAX_RECORDED_FUNCTION_CALLS;
-      ++FunctionIndex)
-  {
-    called_function *Func = ProgramFunctionCalls + FunctionIndex;
-    if (Func->Name)
+  TIMED_BLOCK("Collated Function Calls");
+    local_persist window_layout FunctionCallWindow = WindowLayout("Functions", V2(0, 200));
+    CollateAllFunctionCalls(MainThreadReadTree->Root);
+    PushWindowStart(Group, &FunctionCallWindow);
+    PushTableStart(Group);
+    for ( u32 FunctionIndex = 0;
+        FunctionIndex < MAX_RECORDED_FUNCTION_CALLS;
+        ++FunctionIndex)
     {
-      PushColumn(Group, CS(Func->Name));
-      PushColumn(Group, CS(Func->CallCount));
-      PushNewRow(Group);
+      called_function *Func = ProgramFunctionCalls + FunctionIndex;
+      if (Func->Name)
+      {
+        PushColumn(Group, CS(Func->Name));
+        PushColumn(Group, CS(Func->CallCount));
+        PushNewRow(Group);
+      }
     }
-  }
-  PushTableEnd(Group);
-  PushWindowEnd(Group, &FunctionCallWindow);
-
+    PushTableEnd(Group);
+    PushWindowEnd(Group, &FunctionCallWindow);
   END_BLOCK("Collated Function Calls");
+#endif
+
+  TIMED_BLOCK("Hot Function Stuff");
+    local_persist window_layout HotFunctionWindow = WindowLayout("Hot Function Window?", V2(400, 200));
+    PushWindowStart(Group, &HotFunctionWindow);
+    PushTableStart(Group);
+
+
+    if (DebugState->HotFunction)
+    {
+      const char* NameOfHotFunction = DebugState->HotFunction->Name;
+
+      debug_profile_scope* CurrentScope = DebugState->HotFunction;
+      while (CurrentScope)
+      {
+        if (StringsMatch(CurrentScope->Name, NameOfHotFunction))
+        {
+          PushColumn(Group, CS(CurrentScope->Name));
+          PushColumn(Group, CS(CurrentScope->CycleCount));
+          PushNewRow(Group);
+
+          debug_profile_scope* ChildScope = CurrentScope->Child;
+          while (ChildScope)
+          {
+            PushColumn(Group, CS(ChildScope->Name));
+            PushColumn(Group, CS(ChildScope->CycleCount));
+            PushNewRow(Group);
+            ChildScope = ChildScope->Sibling;
+          }
+
+          PushNewRow(Group);
+        }
+        CurrentScope = CurrentScope->Sibling;
+      }
+
+    }
+
+    PushTableEnd(Group);
+    PushWindowEnd(Group, &HotFunctionWindow);
+  END_BLOCK();
+
 
 }
 

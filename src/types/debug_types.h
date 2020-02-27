@@ -176,6 +176,12 @@ typedef void (*debug_dump_scope_tree_data_to_console)();
 typedef void (*debug_open_window_and_let_us_do_stuff)();
 
 
+struct called_function
+{
+  const char* Name;
+  u32 CallCount;
+};
+
 #define REGISTERED_MEMORY_ARENA_COUNT 128
 #define META_TABLE_SIZE (16 * 1024)
 #define MAX_PICKED_WORLD_CHUNKS 32
@@ -216,6 +222,8 @@ struct debug_state
   b32 DebugDoScopeProfiling = True;
   b32 TriggerRuntimeBreak;
   b32 DisplayDebugMenu;
+
+  debug_profile_scope* HotFunction;
 
   debug_profile_scope FreeScopeSentinel;
   mutex FreeScopeMutex;
@@ -269,12 +277,6 @@ struct debug_draw_call
   const char * Caller;
   u32 N;
   u32 Calls;
-};
-
-struct called_function
-{
-  const char* Name;
-  u32 CallCount;
 };
 
 typedef b32 (*meta_comparator)(push_metadata*, push_metadata*);
