@@ -1253,7 +1253,7 @@ SetWindowZDepths(ui_render_command_buffer *CommandBuffer)
       SortKeyIndex < WindowSortParams.Count;
       ++SortKeyIndex)
   {
-    u32 CommandIndex = WindowSortParams.SortKeys[SortKeyIndex].Index;
+    u32 CommandIndex = (u32)WindowSortParams.SortKeys[SortKeyIndex].Index;
     window_layout* Window = CommandBuffer->Commands[CommandIndex].ui_render_command_window_start.Window;
 
     Window->zBackground = 1.0f - (SliceInterval*(r32)SortKeyIndex) - SliceInterval;
@@ -2551,15 +2551,52 @@ DebugDrawCollatedFunctionCalls(debug_ui_render_group *Group, debug_state *DebugS
     {
       const char* NameOfHotFunction = DebugState->HotFunction->Name;
 
-      debug_profile_scope* CurrentScope = DebugState->HotFunction;
-      while (CurrentScope)
+      u32 SortKeyCount = 0;
       {
-        if (StringsMatch(CurrentScope->Name, NameOfHotFunction))
+        debug_profile_scope* CurrentScope = DebugState->HotFunction;
+        while (CurrentScope)
         {
+          if (StringsMatch(CurrentScope->Name, NameOfHotFunction))
+          {
+            ++SortKeyCount;
+          }
+          CurrentScope = CurrentScope->Sibling;
+        }
+      }
+
+      sort_key* SortBuffer = Allocate(sort_key, TranArena, SortKeyCount);
+
+      {
+        u32 CurrentSortKeyIndex = 0;
+        debug_profile_scope* CurrentScope = DebugState->HotFunction;
+        while (CurrentScope)
+        {
+          if (StringsMatch(CurrentScope->Name, NameOfHotFunction))
+          {
+            Assert(CurrentSortKeyIndex < SortKeyCount);
+            SortBuffer[CurrentSortKeyIndex].Index = (u64)CurrentScope;
+            SortBuffer[CurrentSortKeyIndex].Value = CurrentScope->CycleCount;
+            ++CurrentSortKeyIndex;
+          }
+          CurrentScope = CurrentScope->Sibling;
+        }
+        Assert(CurrentSortKeyIndex == SortKeyCount);
+      }
+
+
+      BubbleSort(SortBuffer, SortKeyCount);
+
+
+      {
+        for (u32 SortIndex = 0;
+             SortIndex < SortKeyCount;
+             ++SortIndex)
+        {
+          debug_profile_scope* CurrentScope = (debug_profile_scope*)SortBuffer[SortIndex].Index;
+
           PushColumn(Group, CS(CurrentScope->Name));
           PushColumn(Group, CS(CurrentScope->CycleCount));
           PushNewRow(Group);
-
           debug_profile_scope* ChildScope = CurrentScope->Child;
           while (ChildScope)
           {
@@ -2568,10 +2605,8 @@ DebugDrawCollatedFunctionCalls(debug_ui_render_group *Group, debug_state *DebugS
             PushNewRow(Group);
             ChildScope = ChildScope->Sibling;
           }
-
           PushNewRow(Group);
         }
-        CurrentScope = CurrentScope->Sibling;
       }
 
     }

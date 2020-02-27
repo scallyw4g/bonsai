@@ -299,7 +299,7 @@ struct clip_result
 struct sort_key
 {
   u64 Value;
-  u32 Index;
+  u64 Index;
 };
 
 struct window_sort_params
