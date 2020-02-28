@@ -116,6 +116,13 @@ Min(u64 A, u64 B)
   return Result;
 }
 
+inline u32
+Min(u32 A, u32 B)
+{
+  u32 Result = A < B ? A : B;
+  return Result;
+}
+
 inline s32
 Min(s32 A, s32 B)
 {

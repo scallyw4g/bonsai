@@ -2459,6 +2459,11 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, r64 Ma
       debug_scope_tree *ReadTree = ThreadState->ScopeTrees + DebugState->ReadScopeIndex;
       frame_stats *Frame = DebugState->Frames + DebugState->ReadScopeIndex;
 
+      if (Group->Input->F2.Clicked)
+      {
+        RuntimeBreak();
+      }
+
       if (MainThreadReadTree->FrameRecorded == ReadTree->FrameRecorded)
       {
         BufferFirstCallToEach(Group, ReadTree->Root, ReadTree->Root, ThreadsafeDebugMemoryAllocator(), &CallgraphWindow, Frame->TotalCycles, 0);
@@ -2512,6 +2517,54 @@ DumpScopeTreeDataToConsole()
 /*************************                      ******************************/
 
 
+
+function void
+PushCallgraphRecursive(debug_ui_render_group *Group, debug_profile_scope* At)
+{
+  if (At)
+  {
+    PushColumn(Group, CS(At->Name));
+    PushColumn(Group, CS(At->CycleCount));
+    PushNewRow(Group);
+
+    if (At->Child)
+    {
+      PushCallgraphRecursive(Group, At->Child);
+    }
+
+    if (At->Sibling)
+    {
+      PushCallgraphRecursive(Group, At->Sibling);
+    }
+  }
+
+  return;
+}
+
+function void
+DumpCallgraphRecursive(debug_ui_render_group *Group, debug_profile_scope* At, u32 Depth = 0)
+{
+  for (u32 DepthIndex = 0;
+      DepthIndex < Depth;
+      ++DepthIndex)
+  {
+    Log("  ");
+  }
+
+  Log("%s (%lu) \n", At->Name, At->CycleCount);
+
+  if (At->Child)
+  {
+    DumpCallgraphRecursive(Group, At->Child, Depth+1);
+  }
+
+  if (At->Sibling)
+  {
+    DumpCallgraphRecursive(Group, At->Sibling, Depth);
+  }
+
+  return;
+}
 
 function void
 DebugDrawCollatedFunctionCalls(debug_ui_render_group *Group, debug_state *DebugState)
@@ -2594,20 +2647,22 @@ DebugDrawCollatedFunctionCalls(debug_ui_render_group *Group, debug_state *DebugS
         {
           debug_profile_scope* CurrentScope = (debug_profile_scope*)SortBuffer[SortIndex].Index;
 
+          /* Print(CS(CurrentScope->Name)); */
+          /* Log("\n"); */
+          /* Print(CS(CurrentScope->CycleCount)); */
+          /* Log("\n"); */
+          /* DumpCallgraphRecursive(Group, ChildScope->Child); */
+          /* Log("\n"); */
+
           PushColumn(Group, CS(CurrentScope->Name));
+          PushNewRow(Group);
           PushColumn(Group, CS(CurrentScope->CycleCount));
           PushNewRow(Group);
-          debug_profile_scope* ChildScope = CurrentScope->Child;
-          while (ChildScope)
-          {
-            PushColumn(Group, CS(ChildScope->Name));
-            PushColumn(Group, CS(ChildScope->CycleCount));
-            PushNewRow(Group);
-            ChildScope = ChildScope->Sibling;
-          }
-          PushNewRow(Group);
+          PushCallgraphRecursive(Group, CurrentScope->Child);
+
         }
       }
+
 
     }
 

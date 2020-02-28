@@ -389,7 +389,6 @@ MainThreadAdvanceDebugSystem()
   TIMED_FUNCTION();
   Assert(ThreadLocal_ThreadIndex == 0);
 
-  local_persist r64 LastMs = GetHighPrecisionClock();
   r64 CurrentMS = GetHighPrecisionClock();
   r64 Dt = (CurrentMS - LastMs)/1000.0;
   LastMs = CurrentMS;
@@ -839,6 +838,7 @@ InitDebugMemoryAllocationSystem(debug_state *State)
   return;
 }
 
+
 void
 InitDebugDataSystem(debug_state *DebugState)
 {
@@ -846,6 +846,7 @@ InitDebugDataSystem(debug_state *DebugState)
 
   u32 TotalThreadCount = GetTotalThreadCount();
   InitScopeTrees(TotalThreadCount);
+
   return;
 }
 

@@ -49,10 +49,8 @@ LoadShaders(const char * VertShaderPath, const char * FragFilePath, memory_arena
   ansi_stream VertexShaderCode = ReadEntireFileIntoAnsiStream(CS(ComputedVertPath), Memory);
   ansi_stream FragShaderCode   = ReadEntireFileIntoAnsiStream(CS(ComputedFragPath), Memory);
 
-
   s32 Result = GL_FALSE;
   int InfoLogLength;
-
 
   u32 VertexShaderID = CompileShader(HeaderCode, VertexShaderCode, GL_VERTEX_SHADER);
   u32 FragmentShaderID = CompileShader(HeaderCode, FragShaderCode, GL_FRAGMENT_SHADER);

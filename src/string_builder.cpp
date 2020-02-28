@@ -346,6 +346,7 @@ CopyToDest(char* Dest, u32* Count, char C)
 function counted_string
 U64ToCountedString(memory_arena* Memory, u64 Value, u32 Base = 10, char *Digits = DecChars)
 {
+  TIMED_FUNCTION();
   Assert(Base != 0);
 
   // TODO(Jesse): This is over-allocating, and we should consider not doing this
@@ -455,7 +456,7 @@ FormatString(memory_arena *Memory, const char* FormatString, ...)
   return Buffer;
 }
 
-#if 0
+#if 1
 
 counted_string
 FormatCountedString(memory_arena *Memory, const char* FormatString, ...)
@@ -488,20 +489,27 @@ FormatCountedString_(memory_arena* Memory, const char* fmt...)
 {
   TIMED_FUNCTION();
 
-  string_builder Builder = {};
+  string_builder Builder_ = {};
+  string_builder* Builder = &Builder_;
 
   va_list args;
+  TIMED_BLOCK("va_start");
   va_start(args, fmt);
+  END_BLOCK();
 
   const char* StartPreceedingChars = fmt;
   const char* OnePastLast = fmt;
   while (*fmt != '\0')
   {
+    debug_timed_function OuterLoopTimer("OuterLoop");
+
     if (*fmt == '%')
     {
+      debug_timed_function FmtSpecifierTimer("Format Specifier Block");
+
       umm NumPreceedingChars = (umm)(OnePastLast - StartPreceedingChars);
       counted_string PreceedingNonFormatSpecifiers = CS(StartPreceedingChars, NumPreceedingChars);
-      Append(&Builder, PreceedingNonFormatSpecifiers);
+      Append(Builder, PreceedingNonFormatSpecifiers);
       ++fmt;
 
       switch (*fmt)
@@ -511,7 +519,7 @@ FormatCountedString_(memory_arena* Memory, const char* fmt...)
           TIMED_NAMED_BLOCK("d");
           s32 Value = va_arg(args, s32);
           counted_string S = S64ToCountedString(Memory, (s64)Value);
-          Append(&Builder, S);
+          Append(Builder, S);
         } break;
 
         case 'l':
@@ -522,13 +530,13 @@ FormatCountedString_(memory_arena* Memory, const char* fmt...)
           {
             u64 Value = va_arg(args, u64);
             counted_string S = U64ToCountedString(Memory, Value);
-            Append(&Builder, S);
+            Append(Builder, S);
           }
           else if (*fmt == 'd')
           {
             s64 Value = va_arg(args, s64);
             counted_string S = S64ToCountedString(Memory, Value);
-            Append(&Builder, S);
+            Append(Builder, S);
           }
         } break;
 
@@ -537,7 +545,7 @@ FormatCountedString_(memory_arena* Memory, const char* fmt...)
           TIMED_NAMED_BLOCK("x");
           u64 Value = va_arg(args, u64);
           counted_string S = U64ToCountedString(Memory, Value);
-          Append(&Builder, S);
+          Append(Builder, S);
         } break;
 
         case 'u':
@@ -545,14 +553,14 @@ FormatCountedString_(memory_arena* Memory, const char* fmt...)
           TIMED_NAMED_BLOCK("u");
           u32 Value = va_arg(args, u32);
           counted_string S = U64ToCountedString(Memory, (u64)Value);
-          Append(&Builder, S);
+          Append(Builder, S);
         } break;
 
         case 'c':
         {
           TIMED_NAMED_BLOCK("c");
           char Value = (char)va_arg(args, s32);
-          Append(&Builder, CS(&Value, 1));
+          Append(Builder, CS(&Value, 1));
         } break;
 
         case 's':
@@ -560,7 +568,7 @@ FormatCountedString_(memory_arena* Memory, const char* fmt...)
           TIMED_NAMED_BLOCK("s");
           char* Value = va_arg(args, char*);
           counted_string CSValue = CountedString(Value, Memory);
-          Append(&Builder, CSValue);
+          Append(Builder, CSValue);
         } break;
 
         case 'f':
@@ -568,7 +576,7 @@ FormatCountedString_(memory_arena* Memory, const char* fmt...)
           TIMED_NAMED_BLOCK("f");
           r64 Value = va_arg(args, r64);
           counted_string S = F64ToCountedString(Memory, Value);
-          Append(&Builder, S);
+          Append(Builder, S);
         } break;
 
         case 'b':
@@ -577,7 +585,7 @@ FormatCountedString_(memory_arena* Memory, const char* fmt...)
           b32 BoolVal = (b32)va_arg(args, u32);
           counted_string Output = {};
           Output = BoolVal ? CS("True") : CS("False");
-          Append(&Builder, Output);
+          Append(Builder, Output);
         } break;
 
         case 'S':
@@ -586,7 +594,7 @@ FormatCountedString_(memory_arena* Memory, const char* fmt...)
           u32 Count = va_arg(args, u32);
           char* Start = va_arg(args, char*);
           counted_string Output = { .Start = Start, .Count = Count };
-          Append(&Builder, Output);
+          Append(Builder, Output);
         } break;
 
         case '.':
@@ -597,7 +605,7 @@ FormatCountedString_(memory_arena* Memory, const char* fmt...)
           u32 Count = va_arg(args, u32);
           char* Start = va_arg(args, char*);
           counted_string Output = { .Start = Start, .Count = Count };
-          Append(&Builder, Output);
+          Append(Builder, Output);
         } break;
 
         default:
@@ -620,13 +628,17 @@ FormatCountedString_(memory_arena* Memory, const char* fmt...)
     OnePastLast = fmt;
   }
 
-  umm NumPreceedingChars = (umm)(OnePastLast - StartPreceedingChars);
-  counted_string PreceedingNonFormatSpecifiers = CS(StartPreceedingChars, NumPreceedingChars);
-  Append(&Builder, PreceedingNonFormatSpecifiers);
+  TIMED_BLOCK("Final String Stuff");
+    umm NumPreceedingChars = (umm)(OnePastLast - StartPreceedingChars);
+    counted_string PreceedingNonFormatSpecifiers = CS(StartPreceedingChars, NumPreceedingChars);
+    Append(Builder, PreceedingNonFormatSpecifiers);
+  END_BLOCK();
 
-  counted_string Result = Finalize(&Builder, Memory);
+  counted_string Result = Finalize(Builder, Memory);
 
+  TIMED_BLOCK("va_end");
   va_end(args);
+  END_BLOCK();
 
   return Result;
 }

@@ -1455,15 +1455,15 @@ DoTokenSubstitution(c_parse_result* BodyText, for_member_constraints* Constraint
     c_token T = PopTokenRaw(BodyText);
     if (StringsMatch(T.Value, Constraints->TypeTag))
     {
-      Append(&Builder, FormatCountedString(Memory, "type_%S", Element.c_decl_variable.Type));
+      Append(&Builder, FormatCountedString(Memory, "type_%.*s", Element.c_decl_variable.Type));
     }
     else if (StringsMatch(T.Value, Constraints->TypeName))
     {
-      Append(&Builder, FormatCountedString(Memory, "%S", Element.c_decl_variable.Type));
+      Append(&Builder, FormatCountedString(Memory, "%.*s", Element.c_decl_variable.Type));
     }
     else if (StringsMatch(T.Value, Constraints->ValueName))
     {
-      Append(&Builder, FormatCountedString(Memory, "%S", Element.c_decl_variable.Name));
+      Append(&Builder, FormatCountedString(Memory, "%.*s", Element.c_decl_variable.Name));
     }
     else
     {
@@ -1628,6 +1628,7 @@ ParseEnum(c_parse_result* Parser, memory_arena* Memory)
 function program_datatypes
 ParseAllDatatypes(c_parse_result_cursor Files_in, memory_arena* Memory)
 {
+  TIMED_FUNCTION();
   c_parse_result_cursor* Files = &Files_in;
 
   enum_def_stream EnumStream = {};
@@ -1729,6 +1730,7 @@ AllocateTokenizedFiles(u32 Count, memory_arena* Memory)
 function c_parse_result_cursor
 TokenizeAllFiles(counted_string_cursor* Filenames, memory_arena* Memory)
 {
+  TIMED_FUNCTION();
   Assert(Filenames->At == Filenames->Start);
 
   c_parse_result_cursor Result = AllocateTokenizedFiles((u32)Count(Filenames), Memory);
@@ -2133,7 +2135,7 @@ main(s32 ArgCount, const char** ArgStrings)
     for (u32 ParserIndex = 0;
         ParserIndex < Count(&ParsedFiles);
         ++ParserIndex)
-    {
+    TIMED_BLOCK("Do Preprocesssing stuff");
       c_parse_result* Parser = ParsedFiles.Start+ParserIndex;
       Assert(Parser->Valid);
       Assert(Remaining(&Parser->Tokens));

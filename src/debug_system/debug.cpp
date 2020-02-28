@@ -4,6 +4,8 @@
 #include <unix_platform.cpp>
 #include <heap_memory_types.cpp>
 
+global_variable r64 LastMs;
+
 #include <debug_data_system.cpp>
 #include <interactable.cpp>
 
@@ -265,6 +267,9 @@ GetDebugState_Internal();
 exported_function void
 InitDebugSystem(b32 DoInitDebugRenderSystem = True)
 {
+  LastMs = GetHighPrecisionClock();
+  Internal_DebugState.Frames[1].StartingCycle = GetCycleCount();
+
   Internal_DebugState.FrameEnd                        = DebugFrameEnd;
   Internal_DebugState.FrameBegin                      = DebugFrameBegin;
   Internal_DebugState.RegisterArena                   = RegisterArena;
