@@ -396,17 +396,17 @@ main()
   }
 
   {
-    counted_string TestValue = FormatCountedString(Memory, "%S", CS("thing"));
+    counted_string TestValue = FormatCountedString(Memory, "%.*s", CS("thing"));
     TestThat(StringsMatch(TestValue, CS("thing")));
   }
 
   {
-    counted_string TestValue = FormatCountedString(Memory, "%S", CS("thing"));
+    counted_string TestValue = FormatCountedString(Memory, "%.*s", CS("thing"));
     TestThat(StringsMatch(TestValue, CS("thing")));
   }
 
   {
-    counted_string TestValue = FormatCountedString(Memory, "this %S this", CS("thing"));
+    counted_string TestValue = FormatCountedString(Memory, "this %.*s this", CS("thing"));
     TestThat(StringsMatch(TestValue, CS("this thing this")));
   }
 
@@ -425,6 +425,7 @@ main()
 
 
 
+#if 0
   {
     counted_string TestString = U64ToCountedString(Memory, 42);
     TestThat(StringsMatch(TestString, CS("42")));
@@ -452,6 +453,7 @@ main()
     counted_string TestString = F64ToCountedString(Memory, 3.14, 10);
     TestThat(StringsMatch(TestString, CS("3.1400000000")));
   }
+#endif
 
 
 

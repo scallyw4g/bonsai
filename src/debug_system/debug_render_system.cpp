@@ -2642,27 +2642,28 @@ DebugDrawCollatedFunctionCalls(debug_ui_render_group *Group, debug_state *DebugS
 
       {
         for (u32 SortIndex = 0;
-             SortIndex < SortKeyCount;
+             SortIndex < Max(100u, SortKeyCount);
              ++SortIndex)
         {
           debug_profile_scope* CurrentScope = (debug_profile_scope*)SortBuffer[SortIndex].Index;
 
-          /* Print(CS(CurrentScope->Name)); */
-          /* Log("\n"); */
-          /* Print(CS(CurrentScope->CycleCount)); */
-          /* Log("\n"); */
-          /* DumpCallgraphRecursive(Group, ChildScope->Child); */
-          /* Log("\n"); */
+          Print(CS(CurrentScope->Name));
+          Log("\n");
+          Print(CS(CurrentScope->CycleCount));
+          Log("\n");
+          DumpCallgraphRecursive(Group, CurrentScope->Child);
+          Log("\n");
 
-          PushColumn(Group, CS(CurrentScope->Name));
-          PushNewRow(Group);
-          PushColumn(Group, CS(CurrentScope->CycleCount));
-          PushNewRow(Group);
-          PushCallgraphRecursive(Group, CurrentScope->Child);
+          /* PushColumn(Group, CS(CurrentScope->Name)); */
+          /* PushNewRow(Group); */
+          /* PushColumn(Group, CS(CurrentScope->CycleCount)); */
+          /* PushNewRow(Group); */
+          /* PushCallgraphRecursive(Group, CurrentScope->Child); */
 
         }
       }
 
+      exit(0);
 
     }
 

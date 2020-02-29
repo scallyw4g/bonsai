@@ -1,4 +1,6 @@
 
+        Input->Escape.Clicked = False;
+
         Input->Space.Clicked = False;
 
         Input->Shift.Clicked = False;

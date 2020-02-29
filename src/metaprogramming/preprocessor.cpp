@@ -2054,7 +2054,12 @@ DoWorkToOutputThisStuff(c_parse_result* Parser, counted_string OutputForThisPars
 // @bootstrap-debug-system
 
 debug_global platform Plat = {};
+
+// TODO(Jesse): Remove this
+#define OPEN_DEBUG_WINDOW 0
+#if OPEN_DEBUG_WINDOW
 debug_global os Os = {};
+#endif
 
 function b32
 BootstrapDebugSystem()
@@ -2065,6 +2070,7 @@ BootstrapDebugSystem()
   GetDebugState = (get_debug_state_proc)GetProcFromLib(DebugLib, "GetDebugState_Internal");
   if (!GetDebugState) { Error("Retreiving GetDebugState from Debug Lib :( "); return False; }
 
+#if OPEN_DEBUG_WINDOW
   s32 DebugFlags = GLX_CONTEXT_DEBUG_BIT_ARB;
   b32 WindowSuccess = OpenAndInitializeWindow(&Os, &Plat, DebugFlags);
   if (!WindowSuccess) { Error("Initializing Window :( "); return False; }
@@ -2075,11 +2081,12 @@ BootstrapDebugSystem()
 
   b32 ShadingLanguageIsRecentEnough = CheckShadingLanguageVersion();
   if (!ShadingLanguageIsRecentEnough) {  return False; }
+#endif
 
   debug_init_debug_system_proc InitDebugSystem = (debug_init_debug_system_proc)GetProcFromLib(DebugLib, "InitDebugSystem");
   if (!InitDebugSystem) { Error("Retreiving InitDebugSystem from Debug Lib :( "); return False; }
 
-  InitDebugSystem(True);
+  InitDebugSystem(OPEN_DEBUG_WINDOW);
 
   debug_state* DebugState = GetDebugState();
   DebugState->DebugDoScopeProfiling = True;
@@ -2290,7 +2297,7 @@ main(s32 ArgCount, const char** ArgStrings)
     Warn("No files passed, exiting.");
   }
 
-
+#if OPEN_DEBUG_WINDOW
   debug_state* DebugState = GetDebugState();
 
   DebugState->UIType = DebugUIType_CallGraph;
@@ -2313,6 +2320,7 @@ main(s32 ArgCount, const char** ArgStrings)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   }
+#endif
 
   s32 Result = Success ? SUCCESS_EXIT_CODE : FAILURE_EXIT_CODE ;
   return Result;
