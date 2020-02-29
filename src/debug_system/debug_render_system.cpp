@@ -1595,8 +1595,12 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
 
         PushLayout(&RenderState.Layout, &TypedCommand->Layout);
 
-        v2 Advance = V2(TypedCommand->MaxWidth - TypedCommand->Width, 0);
-        AdvanceLayoutStackBy(Advance, RenderState.Layout);
+        if (TypedCommand->Params & ColumnRenderParam_RightAlign)
+        {
+          v2 Advance = V2(TypedCommand->MaxWidth - TypedCommand->Width, 0);
+          AdvanceLayoutStackBy(Advance, RenderState.Layout);
+        }
+
       } break;
 
       case type_ui_render_command_column_end:
@@ -1973,8 +1977,6 @@ BufferScopeTreeEntry(debug_ui_render_group *Group, debug_profile_scope *Scope,
   PushColumn(Group, CS(AvgCycles));
   PushColumn(Group, CS(CallCount));
 
-  u32 DepthSpaces = (Depth*2)+1;
-
   char Prefix = ' ';
   if (Scope->Expanded && Scope->Child)
   {
@@ -1985,6 +1987,7 @@ BufferScopeTreeEntry(debug_ui_render_group *Group, debug_profile_scope *Scope,
     Prefix = '+';
   }
 
+  u32 DepthSpaces = (Depth*2)+1;
   counted_string NameString = BuildNameStringFor(Prefix, Scope->Name, DepthSpaces);
   PushColumn(Group, NameString, 0, ColumnRenderParam_LeftAlign);
 
@@ -2434,8 +2437,8 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, r64 Ma
 
   u32 TotalThreadCount = GetWorkerThreadCount() + 1;
 
-  debug_thread_state *MainThreadState = GetThreadLocalStateFor(0);
-  debug_scope_tree *MainThreadReadTree    = MainThreadState->ScopeTrees + DebugState->ReadScopeIndex;
+  debug_thread_state *MainThreadState  = GetThreadLocalStateFor(0);
+  debug_scope_tree *MainThreadReadTree = MainThreadState->ScopeTrees + DebugState->ReadScopeIndex;
 
   local_persist window_layout CallgraphWindow = WindowLayout("Callgraph", V2(0));
 

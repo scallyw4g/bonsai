@@ -2055,8 +2055,8 @@ DoWorkToOutputThisStuff(c_parse_result* Parser, counted_string OutputForThisPars
 
 debug_global platform Plat = {};
 
-// TODO(Jesse): Remove this
-#define OPEN_DEBUG_WINDOW 0
+// TODO(Jesse): Remove this?
+#define OPEN_DEBUG_WINDOW 1
 #if OPEN_DEBUG_WINDOW
 debug_global os Os = {};
 #endif
@@ -2326,3 +2326,5 @@ main(s32 ArgCount, const char** ArgStrings)
   return Result;
 }
 #endif
+
+
