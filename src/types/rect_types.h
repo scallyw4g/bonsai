@@ -18,7 +18,7 @@ InvertedInfinityRectangle()
 function rect2
 RectMinMax(v2 Min, v2 Max)
 {
-  rect2 Result = {Min, Max};
+  rect2 Result = { .Min = Min, .Max = Max };
   return Result;
 }
 

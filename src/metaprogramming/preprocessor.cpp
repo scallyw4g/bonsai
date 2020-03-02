@@ -2056,7 +2056,7 @@ DoWorkToOutputThisStuff(c_parse_result* Parser, counted_string OutputForThisPars
 debug_global platform Plat = {};
 
 // TODO(Jesse): Remove this?
-#define OPEN_DEBUG_WINDOW 1
+#define OPEN_DEBUG_WINDOW 0
 #if OPEN_DEBUG_WINDOW
 debug_global os Os = {};
 #endif

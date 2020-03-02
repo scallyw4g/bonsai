@@ -5,12 +5,6 @@
               Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&Command->ui_render_command_window_start.Layout));
             } break;
 
-            case type_ui_render_command_button_start:
-            {
-              Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&Command->ui_render_command_button_start.Layout));
-              Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&Command->ui_render_command_button_start.Layout));
-            } break;
-
             case type_ui_render_command_table_start:
             {
               Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&Command->ui_render_command_table_start.Layout));

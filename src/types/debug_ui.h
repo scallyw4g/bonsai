@@ -3,7 +3,7 @@
 #define DISABLE_CLIPPING V2(f32_MAX)
 
 #define DEBUG_UI_OUTLINE_VALUES  0
-#define DEBUG_UI_OUTLINE_BUTTONS 0
+#define DEBUG_UI_OUTLINE_BUTTONS 1
 #define DEBUG_UI_OUTLINE_TABLES  0
 
 /******************************               ********************************/
@@ -114,15 +114,13 @@ struct ui_style
   v3 ClickedColor;
   v3 ActiveColor;
 
-  v4 Padding;
-
   font Font;
 
   b32 IsActive;
 };
 
 
-function ui_style UiStyleFromLightestColor(v3 Color, v4 Padding = V4(0));
+function ui_style UiStyleFromLightestColor(v3 Color);
 debug_global ui_style DefaultUiStyle = UiStyleFromLightestColor(V3(1));
 
 struct layout
@@ -131,7 +129,8 @@ struct layout
   v2 At;
   rect2 DrawBounds;
 
-  ui_style Style = DefaultUiStyle;
+  v4 Padding;
+
   layout* Prev;
 };
 
@@ -168,6 +167,7 @@ struct ui_render_command_column_end
 struct ui_render_command_column_start
 {
   layout Layout;
+  ui_style Style;
   r32 Width;
   r32 MaxWidth;
   column_render_params Params;
@@ -176,6 +176,7 @@ struct ui_render_command_column_start
 struct ui_render_command_text
 {
   layout Layout;
+  ui_style Style;
   counted_string String;
 };
 
@@ -189,7 +190,7 @@ struct ui_render_command_text_at
 struct ui_render_command_untextured_quad
 {
   layout Layout;
-  v2 Offset;
+  ui_style Style;
   v2 QuadDim;
   z_depth zDepth;
   quad_render_params Params;
@@ -198,6 +199,7 @@ struct ui_render_command_untextured_quad
 struct ui_render_command_untextured_quad_at
 {
   layout Layout;
+  ui_style Style;
   v2 QuadDim;
   z_depth zDepth;
 };
@@ -212,7 +214,7 @@ struct ui_render_command_textured_quad
 struct ui_render_command_button_start
 {
   umm ID;
-  layout Layout;
+  ui_style Style;
 };
 
 struct ui_render_command_button_end
@@ -220,10 +222,10 @@ struct ui_render_command_button_end
   button_end_params Params;
 };
 
-
 struct ui_render_command_table_start
 {
   layout Layout;
+  ui_style Style;
 
   relative_position Position;
   ui_element_reference RelativeTo;
@@ -372,7 +374,7 @@ StandardStyling(v3 StartingColor, v3 HoverMultiplier = V3(1.3f), v3 ClickMultipl
 }
 
 function ui_style
-UiStyleFromLightestColor(v3 Color, v4 Padding /* = V4() */)
+UiStyleFromLightestColor(v3 Color)
 {
   ui_style Style  = {
     .Color        = Color,
@@ -383,20 +385,11 @@ UiStyleFromLightestColor(v3 Color, v4 Padding /* = V4() */)
 
     .Font         = Global_Font,
 
-    .Padding      = Padding,
     .IsActive     = False,
   };
 
   return Style;
 }
-
-function ui_style
-UiStyleFromLightestColor(v3 Color, v2 Padding)
-{
-  ui_style Style = UiStyleFromLightestColor(Color, V4(Padding.x, Padding.y, Padding.x, Padding.y));
-  return Style;
-}
-
 
 function window_layout
 WindowLayout(const char* Title, v2 Basis, v2 MaxClip = V2(1800, 800))

@@ -64,22 +64,23 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
 
   Dt = ComputeMinMaxAvgDt();
 
-  ui_style Style = UiStyleFromLightestColor(V3(1), V4(0,0,50,0));
+  v4 Padding = V4(0,0,50,0);
+  ui_style Style = UiStyleFromLightestColor(V3(1));
 
   ui_element_reference DtTable = PushTableStart(UiGroup);
-    StartColumn(UiGroup, &Style);
+    StartColumn(UiGroup, &Style, Padding);
       Text(UiGroup, CS("+"));
       Text(UiGroup, CS(Dt.Max - Dt.Avg));
     EndColumn(UiGroup);
 
     PushNewRow(UiGroup);
 
-    PushColumn(UiGroup, CS(Dt.Avg), &Style);
+    PushColumn(UiGroup, CS(Dt.Avg), &Style, Padding);
     PushColumn(UiGroup, CS(Plat->dt*1000.0f));
 
     PushNewRow(UiGroup);
 
-    StartColumn(UiGroup, &Style);
+    StartColumn(UiGroup, &Style, Padding);
       Text(UiGroup, CS("-"));
       Text(UiGroup, CS(Dt.Avg - Dt.Min));
     EndColumn(UiGroup);
@@ -87,7 +88,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
   PushTableEnd(UiGroup);
 
   PushTableStart(UiGroup, Position_RightOf, DtTable);
-    StartColumn(UiGroup, &Style);
+    StartColumn(UiGroup, &Style, Padding);
       Text(UiGroup, CS("Allocations"));
     EndColumn(UiGroup);
 
@@ -95,7 +96,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     PushColumn(UiGroup, CS("Draw Calls"));
     PushNewRow(UiGroup);
 
-    PushColumn(UiGroup, CS(TotalStats.Allocations), &Style);
+    PushColumn(UiGroup, CS(TotalStats.Allocations), &Style, Padding);
     PushColumn(UiGroup, CS(TotalStats.Pushes));
     PushColumn(UiGroup, CS(TotalDrawCalls));
     PushNewRow(UiGroup);
@@ -106,43 +107,44 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
 
   if (DebugState->DisplayDebugMenu)
   {
-    ui_style Style =  UiStyleFromLightestColor(V3(1), V2(25));
+    v4 Padding = V4(25);
+    ui_style Style =  UiStyleFromLightestColor(V3(1));
     PushTableStart(UiGroup);
 
 #define ToggleBitfieldValue(Dest, Value) \
       (Dest) = (Dest) & (Value) ?  ((u32)(Dest) & ~(u32)(Value)) : ((u32)(Dest) | (u32)(Value));
 
-    if (Button(UiGroup, CS("PickedChunks"), (umm)"PickedChunks", &Style))
+    if (Button(UiGroup, CS("PickedChunks"), (umm)"PickedChunks", &Style, Padding))
     {
       ToggleBitfieldValue(DebugState->UIType, DebugUIType_PickedChunks);
     }
 
-    if (Button(UiGroup, CS("Graphics"), (umm)"Graphics", &Style))
+    if (Button(UiGroup, CS("Graphics"), (umm)"Graphics", &Style, Padding))
     {
       ToggleBitfieldValue(DebugState->UIType, DebugUIType_Graphics);
     }
 
-    if (Button(UiGroup, CS("Network"), (umm)"Network", &Style))
+    if (Button(UiGroup, CS("Network"), (umm)"Network", &Style, Padding))
     {
       ToggleBitfieldValue(DebugState->UIType, DebugUIType_Network);
     }
 
-    if (Button(UiGroup, CS("Functions"), (umm)"Functions", &Style))
+    if (Button(UiGroup, CS("Functions"), (umm)"Functions", &Style, Padding))
     {
       ToggleBitfieldValue(DebugState->UIType, DebugUIType_CollatedFunctionCalls);
     }
 
-    if (Button(UiGroup, CS("Callgraph"), (umm)"Callgraph", &Style))
+    if (Button(UiGroup, CS("Callgraph"), (umm)"Callgraph", &Style, Padding))
     {
       ToggleBitfieldValue(DebugState->UIType, DebugUIType_CallGraph);
     }
 
-    if (Button(UiGroup, CS("Memory"), (umm)"Memory", &Style))
+    if (Button(UiGroup, CS("Memory"), (umm)"Memory", &Style, Padding))
     {
       ToggleBitfieldValue(DebugState->UIType, DebugUIType_Memory);
     }
 
-    if (Button(UiGroup, CS("DrawCalls"), (umm)"DrawCalls", &Style))
+    if (Button(UiGroup, CS("DrawCalls"), (umm)"DrawCalls", &Style, Padding))
     {
       ToggleBitfieldValue(DebugState->UIType, DebugUIType_DrawCalls);
     }
