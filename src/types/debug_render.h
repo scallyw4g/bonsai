@@ -9,8 +9,6 @@ struct render_state
   b32 Hover;
   b32 Pressed;
   b32 Clicked;
-
-  interactable CurrentInteraction;
 };
 
 struct debug_text_render_group

@@ -21,7 +21,6 @@ global_variable chunk_dimension WORLD_CHUNK_DIM = Chunk_Dimension(32,32,16);
 #include <debug_render_system.cpp>
 
 global_variable debug_state Internal_DebugState = {};
-global_variable interactable NullInteraction = {};
 
 function void
 DebugFrameEnd(platform *Plat, server_state* ServerState)
@@ -43,7 +42,7 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
 
   if ( ! (Plat->Input.LMB.Pressed || Plat->Input.RMB.Pressed))
   {
-    UiGroup->PressedInteraction = NullInteraction;
+    UiGroup->PressedInteractionId = 0;
   }
 
   TIMED_BLOCK("Draw Status Bar");
@@ -211,10 +210,10 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     ProgramFunctionCalls[FunctionIndex] = NullFunctionCall;
   }
 
-  if (UiGroup->PressedInteraction.ID == 0 &&
+  if (UiGroup->PressedInteractionId == 0 &&
       (Plat->Input.LMB.Pressed || Plat->Input.RMB.Pressed))
   {
-    UiGroup->PressedInteraction = Interactable(InvertedInfinityRectangle(), StringHash("GameViewport"), 0);
+    UiGroup->PressedInteractionId = StringHash("GameViewport");
   }
 
   if (DebugState->DoChunkPicking && Plat->Input.LMB.Clicked)

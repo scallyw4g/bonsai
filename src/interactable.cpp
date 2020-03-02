@@ -40,7 +40,7 @@ Hover(debug_ui_render_group* Group, interactable *Interaction)
 function b32
 IsCurrentInteraction(debug_ui_render_group* Group, interactable *Interaction)
 {
-  umm CurrentInteraction = Group->PressedInteraction.ID;
+  umm CurrentInteraction = Group->PressedInteractionId;
   b32 CurrentInteractionMatches = CurrentInteraction == Interaction->ID;
 
   return CurrentInteractionMatches;
@@ -49,7 +49,7 @@ IsCurrentInteraction(debug_ui_render_group* Group, interactable *Interaction)
 function b32
 Pressed(debug_ui_render_group* Group, interactable *Interaction)
 {
-  umm CurrentInteraction = Group->PressedInteraction.ID;
+  umm CurrentInteraction = Group->PressedInteractionId;
   b32 CurrentInteractionMatches = IsCurrentInteraction(Group, Interaction);
   b32 MouseDepressed = Group->Input->LMB.Pressed || Group->Input->RMB.Pressed;
 
@@ -60,7 +60,7 @@ Pressed(debug_ui_render_group* Group, interactable *Interaction)
   }
   else if (MouseDepressed && !CurrentInteraction && Hover(Group, Interaction))
   {
-    Group->PressedInteraction = *Interaction;
+    Group->PressedInteractionId = Interaction->ID;
     Result = True;
   }
 
@@ -70,7 +70,7 @@ Pressed(debug_ui_render_group* Group, interactable *Interaction)
 function b32
 Clicked(debug_ui_render_group* Group, interactable *Interaction)
 {
-  umm CurrentInteraction = Group->PressedInteraction.ID;
+  umm CurrentInteraction = Group->PressedInteractionId;
   b32 Clicked = Group->Input->LMB.Clicked || Group->Input->RMB.Clicked;
 
   b32 Result = False;
@@ -78,7 +78,7 @@ Clicked(debug_ui_render_group* Group, interactable *Interaction)
        !CurrentInteraction &&
        Hover(Group, Interaction))
   {
-    Group->PressedInteraction = *Interaction;
+    Group->PressedInteractionId = Interaction->ID;
     Result = True;
   }
 

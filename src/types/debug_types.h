@@ -38,8 +38,6 @@ struct debug_ui_render_group
   shader*                     GameGeoShader;
   debug_text_render_group*    TextGroup;
 
-  interactable PressedInteraction;
-
   u64 InteractionStackTop;
 
   v2 *MouseP;

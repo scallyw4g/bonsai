@@ -160,7 +160,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   input* GameInput = &Plat->Input;
 
 #if BONSAI_INTERNAL
-  if (GetDebugState()->UiGroup.PressedInteraction.ID != StringHash("GameViewport"))
+  if (GetDebugState()->UiGroup.PressedInteractionId != StringHash("GameViewport"))
   {
     GameInput = 0;
   }

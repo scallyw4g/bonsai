@@ -1039,24 +1039,19 @@ GetHighestWindow(debug_ui_render_group* Group, ui_render_command_buffer* Command
 function void
 ProcessButtonStart(debug_ui_render_group* Group, render_state* RenderState, umm ButtonId)
 {
-  Assert(!RenderState->CurrentInteraction.ID);
-
-  RenderState->CurrentInteraction.MinP = {};
-  RenderState->CurrentInteraction.MaxP = {};
-  RenderState->CurrentInteraction.ID = ButtonId;
-  RenderState->CurrentInteraction.Window = RenderState->Window;
-
-  if (RenderState->CurrentInteraction.ID == Group->HoverInteractionId)
+  if (ButtonId == Group->HoverInteractionId)
   {
     Group->HoverInteractionId = 0;
     RenderState->Hover = True;
   }
-  if (RenderState->CurrentInteraction.ID == Group->PressedInteractionId)
+  if (ButtonId == Group->PressedInteractionId)
   {
-    Group->PressedInteractionId = 0;
+    // Intentionally reset to 0 outside of this function, because it's
+    // dependant on the mouse buttons being released.
+    // TODO(Jesse): Reset this in here?
     RenderState->Pressed = True;
   }
-  if (RenderState->CurrentInteraction.ID == Group->ClickedInteractionId)
+  if (ButtonId == Group->ClickedInteractionId)
   {
     Group->ClickedInteractionId = 0;
     RenderState->Clicked = True;
@@ -1066,36 +1061,34 @@ ProcessButtonStart(debug_ui_render_group* Group, render_state* RenderState, umm 
 }
 
 function void
-ProcessButtonEnd(debug_ui_render_group *Group, render_state* RenderState, rect2 AbsButtonBounds)
+ProcessButtonEnd(debug_ui_render_group *Group, umm InteractionId, render_state* RenderState, rect2 AbsButtonBounds)
 {
-  Assert(RenderState->CurrentInteraction.ID);
+  Assert(InteractionId);
 
   button_interaction_result Button = ButtonInteraction( Group,
                                                         AbsButtonBounds,
-                                                        RenderState->CurrentInteraction.ID,
+                                                        InteractionId,
                                                         RenderState->Window,
                                                         &RenderState->Layout->Style);
 
   if (Button.Hover)
   {
-    Group->HoverInteractionId = RenderState->CurrentInteraction.ID;
+    Group->HoverInteractionId = InteractionId;
   }
 
   if (Button.Clicked)
   {
-    Group->ClickedInteractionId = RenderState->CurrentInteraction.ID;
+    Group->ClickedInteractionId = InteractionId;
   }
 
   if (Button.Pressed)
   {
-    Group->PressedInteractionId = RenderState->CurrentInteraction.ID;
+    Group->PressedInteractionId = InteractionId;
   }
 
   RenderState->Hover = False;
   RenderState->Pressed = False;
   RenderState->Clicked = False;
-
-  RenderState->CurrentInteraction.ID = 0;
 
   return;
 }
@@ -1666,7 +1659,8 @@ FlushCommandBuffer(debug_ui_render_group *Group, ui_render_command_buffer *Comma
 
         u32 ButtonStartIndex = FindPreviousButtonStart(CommandBuffer, NextCommandIndex-1);
         rect2 AbsDrawBounds = FindAbsoluteDrawBoundsBetween(CommandBuffer, ButtonStartIndex, NextCommandIndex);
-        ProcessButtonEnd(Group, &RenderState, AbsDrawBounds);
+        ui_render_command_button_start* ButtonStart = RenderCommandAs(button_start, CommandBuffer->Commands+ButtonStartIndex);
+        ProcessButtonEnd(Group, ButtonStart->ID, &RenderState, AbsDrawBounds);
       } break;
 
       case type_ui_render_command_border:
@@ -2084,7 +2078,7 @@ PushScopeBarsRecursive(debug_ui_render_group *Group, debug_profile_scope *Scope,
 }
 
 function void
-DebugDrawCycleThreadGraph(debug_ui_render_group *Group, debug_state *SharedState, v2 BasisP)
+DebugDrawFlamegraph(debug_ui_render_group *Group, debug_state *SharedState, v2 BasisP)
 {
   random_series Entropy = {};
   r32 TotalGraphWidth = 1500.0f;
@@ -2477,7 +2471,7 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, r64 Ma
 
   END_BLOCK("Call Graph");
 
-  DebugDrawCycleThreadGraph(Group, DebugState, BasisRightOf(&CallgraphWindow));
+  DebugDrawFlamegraph(Group, DebugState, BasisRightOf(&CallgraphWindow));
 
   return;
 }
@@ -2492,8 +2486,6 @@ OpenDebugWindowAndLetUsDoStuff()
   DEBUG_FRAME_BEGIN(&HotkeyThing);
   DEBUG_FRAME_END(DebugState->Plat, 0);
   RewindArena(TranArena);
-
-  Log("----- Frame End\n");
 }
 
 exported_function void
