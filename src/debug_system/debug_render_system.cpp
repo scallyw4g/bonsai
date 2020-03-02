@@ -698,7 +698,7 @@ PushUntexturedQuadAt(debug_ui_render_group* Group, v2 At, v2 QuadDim, z_depth zD
 }
 
 function void
-PushUntexturedQuad(debug_ui_render_group* Group, v2 Offset, v2 QuadDim, z_depth zDepth, ui_style *Style = 0, quad_render_params Params = QuadRenderParam_Default )
+PushUntexturedQuad(debug_ui_render_group* Group, v2 Offset, v2 QuadDim, z_depth zDepth, ui_style *Style = 0, v4 Padding = V4(0), quad_render_params Params = QuadRenderParam_Default )
 {
   ui_render_command Command = {
     .Type = type_ui_render_command_untextured_quad,
@@ -712,6 +712,7 @@ PushUntexturedQuad(debug_ui_render_group* Group, v2 Offset, v2 QuadDim, z_depth 
       .Layout  =
       {
         .At = Offset,
+        .Padding = Padding,
         .DrawBounds = InvertedInfinityRectangle(),
       },
     }
@@ -855,10 +856,10 @@ PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
     PushUntexturedQuadAt(Group, Window->Basis, V2(Window->MaxClip.x, Global_Font.Size.y), zDepth_TitleBar);
   PushButtonEnd(Group);
 
-  /* v2 Dim = V2(12); */
-  /* PushButtonStart(Group, DragHandleInteractionId); */
-  /*   PushUntexturedQuadAt(Group, GetAbsoluteMaxClip(Window)-Dim, Dim, zDepth_Border, &DefaultUiStyle); */
-  /* PushButtonEnd(Group); */
+  v2 Dim = V2(12);
+  PushButtonStart(Group, DragHandleInteractionId);
+    PushUntexturedQuadAt(Group, GetAbsoluteMaxClip(Window)-Dim, Dim, zDepth_Border, &DefaultUiStyle);
+  PushButtonEnd(Group);
 
   PushBorder(Group, GetBounds(Window), V3(1));
 
@@ -2021,7 +2022,7 @@ PushCycleBar(debug_ui_render_group* Group, cycle_range* Range, cycle_range* Fram
 
   v2 Offset = V2(xOffset, yOffset);
 
-  PushUntexturedQuad(Group, Offset, BarDim, zDepth_Text, Style, QuadRenderParam_AdvanceClip);
+  PushUntexturedQuad(Group, Offset, BarDim, zDepth_Text, Style, V4(0), QuadRenderParam_AdvanceClip);
 
   return;
 }
@@ -2347,6 +2348,8 @@ DrawFrameTicker(debug_ui_render_group *Group, debug_state *DebugState, r64 MaxMs
 
   PushTableStart(Group);
     v2 MaxBarDim = V2(15.0f, 80.0f);
+    v4 Pad = V4(1, 0, 1, 0);
+
     for (u32 FrameIndex = 0;
         FrameIndex < DEBUG_FRAMES_TRACKED;
         ++FrameIndex )
@@ -2356,13 +2359,19 @@ DrawFrameTicker(debug_ui_render_group *Group, debug_state *DebugState, r64 MaxMs
 
       v2 QuadDim = MaxBarDim * V2(1.0f, Perc);
       v2 VerticalOffset = MaxBarDim - QuadDim;
+      v2 HorizontalOffset = V2(MaxBarDim.x*FrameIndex, 0);
+      v2 Offset = VerticalOffset + HorizontalOffset;
 
       ui_style Style = UiStyleFromLightestColor(V3(1,1,0));
 
-      PushButtonStart(Group, (umm)"FrameTickerHoverInteraction"+(umm)FrameIndex);
-        PushUntexturedQuad(Group, VerticalOffset, QuadDim, zDepth_Background, &Style);
+      interactable_handle B = PushButtonStart(Group, (umm)"FrameTickerHoverInteraction"+(umm)FrameIndex);
+        PushUntexturedQuad(Group, Offset, QuadDim, zDepth_Background, &Style, Pad);
       PushButtonEnd(Group);
 
+      if (Clicked(Group, &B))
+      {
+        DebugState->ReadScopeIndex = FrameIndex;
+      }
     }
   PushTableEnd(Group);
 
@@ -2744,7 +2753,7 @@ PushBargraph(debug_ui_render_group *Group, r32 PercFilled)
   PushUntexturedQuad(Group, V2(0), BackgroundQuad, zDepth_Text, &Style);
 
   Style = UiStyleFromLightestColor(V3(1,1,0));
-  PushUntexturedQuad(Group, V2(-BackgroundQuad.x, 0), PercBarDim, zDepth_Text, &Style, QuadRenderParam_NoAdvance);
+  PushUntexturedQuad(Group, V2(0), PercBarDim, zDepth_Text, &Style, V4(0), QuadRenderParam_NoAdvance);
 
   return;
 }
