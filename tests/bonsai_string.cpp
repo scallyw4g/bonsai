@@ -129,18 +129,57 @@ TestStreamCursor()
   }
 
   {
-    {
-      const char *TestData = "word1 \"word2\" word3";
-      ansi_stream Stream = AnsiStream(TestData);
-      char *W1 = PopWord(&Stream, Memory);
-      TestThat(StringsMatch(W1, "word1"));
+    const char *TestData = "word1 \"word2\" word3";
+    ansi_stream Stream = AnsiStream(TestData);
+    char *W1 = PopWord(&Stream, Memory);
+    TestThat(StringsMatch(W1, "word1"));
 
-      counted_string W2 = PopQuotedString(&Stream);
-      TestThat(StringsMatch(W2, CS("word2")));
+    counted_string W2 = PopQuotedString(&Stream);
+    TestThat(StringsMatch(W2, CS("word2")));
 
-      char *W3 = PopWord(&Stream, Memory);
-      TestThat(StringsMatch(W3, "word3"));
-    }
+    char *W3 = PopWord(&Stream, Memory);
+    TestThat(StringsMatch(W3, "word3"));
+  }
+
+  {
+    const char *TestData = "word1 \"word2\" word3";
+    ansi_stream Stream = AnsiStream(TestData);
+    char *W1 = PopWord(&Stream, Memory);
+    TestThat(StringsMatch(W1, "word1"));
+
+    counted_string W2 = PopQuotedString(&Stream, True);
+    TestThat(StringsMatch(W2, CS("\"word2\"")));
+
+    char *W3 = PopWord(&Stream, Memory);
+    TestThat(StringsMatch(W3, "word3"));
+  }
+
+
+
+  {
+    const char *TestData = "word1 'w' word3";
+    ansi_stream Stream = AnsiStream(TestData);
+    char *W1 = PopWord(&Stream, Memory);
+    TestThat(StringsMatch(W1, "word1"));
+
+    counted_string W2 = PopQuotedCharLiteral(&Stream);
+    TestThat(StringsMatch(W2, CS("w")));
+
+    char *W3 = PopWord(&Stream, Memory);
+    TestThat(StringsMatch(W3, "word3"));
+  }
+
+  {
+    const char *TestData = "word1 'w' word3";
+    ansi_stream Stream = AnsiStream(TestData);
+    char *W1 = PopWord(&Stream, Memory);
+    TestThat(StringsMatch(W1, "word1"));
+
+    counted_string W2 = PopQuotedCharLiteral(&Stream, True);
+    TestThat(StringsMatch(W2, CS("'w'")));
+
+    char *W3 = PopWord(&Stream, Memory);
+    TestThat(StringsMatch(W3, "word3"));
   }
 
 
@@ -439,37 +478,30 @@ main()
 
 
 
-
-#if 0
+  char TempBuffer[64];
   {
-    counted_string TestString = U64ToCountedString(Memory, 42);
-    TestThat(StringsMatch(TestString, CS("42")));
+    u32 Count = u64ToChar(TempBuffer, 42);
+    TestThat(StringsMatch(CS(TempBuffer, Count), CS("42")));
   }
-
-
   {
-    counted_string TestString = U64ToCountedString(Memory, 18446744073709551615ULL);
-    TestThat(StringsMatch(TestString, CS("18446744073709551615")));
+    u32 Count = u64ToChar(TempBuffer, 18446744073709551615ULL);
+    TestThat(StringsMatch(CS(TempBuffer, Count), CS("18446744073709551615")));
   }
-
   {
-    counted_string TestString = U64ToCountedString(Memory, 18446744073709551615ULL);
-    TestThat(StringsMatch(TestString, CS("18446744073709551615")));
+    u32 Count = u64ToChar(TempBuffer, 18446744073709551615ULL);
+    TestThat(StringsMatch(CS(TempBuffer, Count), CS("18446744073709551615")));
   }
 
 
 
   {
-    counted_string TestString = F64ToCountedString(Memory, 3.14, 2);
-    TestThat(StringsMatch(TestString, CS("3.14")));
+    u32 Count = f64ToChar(TempBuffer, 3.14, 2);
+    TestThat(StringsMatch(CS(TempBuffer, Count), CS("3.14")));
   }
-
   {
-    counted_string TestString = F64ToCountedString(Memory, 3.14, 10);
-    TestThat(StringsMatch(TestString, CS("3.1400000000")));
+    u32 Count = f64ToChar(TempBuffer, 3.14, 10);
+    TestThat(StringsMatch(CS(TempBuffer, Count), CS("3.1400000000")));
   }
-#endif
-
 
 
 

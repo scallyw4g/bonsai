@@ -226,60 +226,22 @@ inline counted_string
 ToString(c_token Token, memory_arena* Memory)
 {
   counted_string Result = {};
-  switch (Token.Type)
+  if (Token.Value.Count)
   {
-    case CTokenType_String:
-    {
-      Result = FormatCountedString(Memory, "\"%.*s\"", Token.Value.Count, Token.Value.Start);
-    } break;
-
-    case CTokenType_Char:
-    {
-      Result = FormatCountedString(Memory, "'%.*s'", Token.Value.Count, Token.Value.Start);
-    } break;
-
-    default:
-    {
-      if (Token.Value.Count)
-      {
-        Result = FormatCountedString(Memory, "%.*s", Token.Value.Count, Token.Value.Start);
-      }
-      else
-      {
-        Result = FormatCountedString(Memory, "%c", Token.Type);
-      }
-    }
+    Result = FormatCountedString(Memory, "%.*s", Token.Value.Count, Token.Value.Start);
+  }
+  else
+  {
+    Result = FormatCountedString(Memory, "%c", Token.Type);
   }
 
   return Result;
 }
+
 inline void
 PrintToken(c_token Token)
 {
-  switch (Token.Type)
-  {
-    case CTokenType_String:
-    {
-      Log("\"%.*s\"", Token.Value.Count, Token.Value.Start);
-    } break;
-
-    case CTokenType_Char:
-    {
-      Log("'%.*s'", Token.Value.Count, Token.Value.Start);
-    } break;
-
-    default:
-    {
-      if (Token.Value.Count)
-      {
-        Log("%.*s", Token.Value.Count, Token.Value.Start);
-      }
-      else
-      {
-        Log("%c", Token.Type);
-      }
-    }
-  }
+  Log("%.*s", Token.Value.Count, Token.Value.Start);
 }
 
 b32

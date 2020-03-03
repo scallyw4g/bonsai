@@ -202,7 +202,7 @@ PopQuotedCharLiteral(ansi_stream* Cursor, b32 IncludeQuotes = False)
   if (IncludeQuotes)
   {
     --Result.Start;
-    ++Result.Count;
+    Result.Count += 2;
     Assert(Cursor->Start <= Result.Start);
     Assert(Result.Start+Result.Count <= Cursor->End);
   }
@@ -210,7 +210,7 @@ PopQuotedCharLiteral(ansi_stream* Cursor, b32 IncludeQuotes = False)
 }
 
 counted_string
-PopQuotedString(ansi_stream* Cursor)
+PopQuotedString(ansi_stream* Cursor, b32 IncludeQuotes = False)
 {
   if (*Cursor->At == '"' || *Cursor->At == '\'' )
   {
@@ -232,6 +232,13 @@ PopQuotedString(ansi_stream* Cursor)
   Terminator[0] = *(Cursor->At-1);
 
   counted_string Result = ReadUntilTerminatorList(Cursor, Terminator, true);
+  if (IncludeQuotes)
+  {
+    --Result.Start;
+    Result.Count += 2;
+    Assert(Cursor->Start <= Result.Start);
+    Assert(Result.Start+Result.Count <= Cursor->End);
+  }
   return Result;
 }
 

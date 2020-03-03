@@ -281,13 +281,13 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory)
       case CTokenType_SingleQuote:
       {
         T.Type = CTokenType_Char;
-        T.Value = PopQuotedCharLiteral(&Code);
+        T.Value = PopQuotedCharLiteral(&Code, True);
       } break;
 
       case CTokenType_DoubleQuote:
       {
         T.Type = CTokenType_String;
-        T.Value = PopQuotedString(&Code);
+        T.Value = PopQuotedString(&Code, True);
       } break;
 
       case CTokenType_Unknown:
@@ -298,6 +298,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory)
 
       default:
       {
+        /* T.Value = CountedString(Code.At); */
         Advance(&Code);
       } break;
     }

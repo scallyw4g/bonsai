@@ -494,7 +494,7 @@ FormatCountedString_(memory_arena* Memory, const char* fmt...)
         case 'd':
         {
           s32 Value = va_arg(args, s32);
-          At += s64ToChar(FinalBuffer, (s64)Value);
+          At += s64ToChar(FinalBuffer+At, (s64)Value);
         } break;
 
         case 'l':
@@ -503,26 +503,26 @@ FormatCountedString_(memory_arena* Memory, const char* fmt...)
           if (*fmt == 'u')
           {
             u64 Value = va_arg(args, u64);
-            At += u64ToChar(FinalBuffer, Value);
+            At += u64ToChar(FinalBuffer+At, Value);
 
           }
           else if (*fmt == 'd')
           {
             s64 Value = va_arg(args, s64);
-            At += s64ToChar(FinalBuffer, Value);
+            At += s64ToChar(FinalBuffer+At, Value);
           }
         } break;
 
         case 'x':
         {
           u64 Value = va_arg(args, u64);
-          At += u64ToChar(FinalBuffer, Value);
+          At += u64ToChar(FinalBuffer+At, Value);
         } break;
 
         case 'u':
         {
           u32 Value = va_arg(args, u32);
-          At += u64ToChar(FinalBuffer, (u64)Value);
+          At += u64ToChar(FinalBuffer+At, (u64)Value);
         } break;
 
         case 'c':
@@ -543,7 +543,7 @@ FormatCountedString_(memory_arena* Memory, const char* fmt...)
         case 'f':
         {
           r64 Value = va_arg(args, r64);
-          At += f64ToChar(FinalBuffer, Value);
+          At += f64ToChar(FinalBuffer+At, Value);
         } break;
 
         case 'b':
