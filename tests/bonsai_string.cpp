@@ -502,53 +502,48 @@ main()
     counted_string TestValue = FormatCountedString(TranArena, CSz("%4S"), CSz("HI"));
     TestThat(StringsMatch(TestValue, CS("  HI")));
   }
-
   {
     counted_string TestValue = FormatCountedString(TranArena, CSz("%*S"), 4, CSz("HI"));
     TestThat(StringsMatch(TestValue, CS("  HI")));
   }
-
   {
     counted_string TestValue = FormatCountedString(TranArena, CSz("%*s"), 4, "HI");
     TestThat(StringsMatch(TestValue, CS("  HI")));
   }
-
   {
     counted_string TestValue = FormatCountedString(TranArena, CSz("%4s"), "HI");
     TestThat(StringsMatch(TestValue, CS("  HI")));
   }
-
   {
     counted_string TestValue = FormatCountedString(TranArena, CSz("%14S"), CSz("HI"));
     TestThat(StringsMatch(TestValue, CS("            HI")));
   }
-
   {
     counted_string TestValue = FormatCountedString(TranArena, CSz("%*S"), 14, CSz("HI"));
     TestThat(StringsMatch(TestValue, CS("            HI")));
   }
-
   {
     counted_string TestValue = FormatCountedString(TranArena, CSz("%*s"), 14, "HI");
     TestThat(StringsMatch(TestValue, CS("            HI")));
   }
-
   {
     counted_string TestValue = FormatCountedString(TranArena, CSz("%14s"), "HI");
     TestThat(StringsMatch(TestValue, CS("            HI")));
   }
-
-
-
+  {
+    counted_string TestValue = FormatCountedString(TranArena, CSz("%14c"), '4');
+    TestThat(StringsMatch(TestValue, CS("             4")));
+  }
+  {
+    counted_string TestValue = FormatCountedString(TranArena, CSz("%*c"), 14, '4');
+    TestThat(StringsMatch(TestValue, CS("             4")));
+  }
 
   {
     counted_string TestString = CS("thing");
     counted_string TestValue = FormatCountedString(Memory, CSz("this %S %S this"), TestString, TestString);
     TestThat(StringsMatch(TestValue, CS("this thing thing this")));
   }
-
-
-
 
 
 

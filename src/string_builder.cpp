@@ -286,6 +286,13 @@ Exp(u32 Base, u32 Exponent)
   return Result;
 }
 
+#if 0
+function u8*
+Reallocate()
+{
+}
+#endif
+
 function u32
 ToU32(counted_string S)
 {
@@ -311,9 +318,8 @@ FormatCountedString_(memory_arena* Memory, counted_string FS, ...)
 
   u32 At = 0;
 
-  // TODO(Jesse):  Allocate based on FS.Size, then have a way of growing the
+  // TODO(Jesse): Allocate based on FS.Size, then have a way of growing the
   // allocation with the arena
-  //
 #define FINAL_BUFFER_SIZE (1024)
   char* FinalBuffer = AllocateProtection(char, Memory, FINAL_BUFFER_SIZE, False);
 
