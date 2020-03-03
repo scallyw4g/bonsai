@@ -426,7 +426,7 @@ f64ToChar(char* Dest, r64 Value, u32 Precision = 16)
   return Count;
 }
 
-#define STRING_BUFFER_LENGTH 2048
+#define STRING_BUFFER_LENGTH 1024
 
 char *
 FormatString(memory_arena *Memory, const char* FormatString, ...)
@@ -459,17 +459,15 @@ FormatCountedString_(memory_arena *Memory, const char* FormatString, ...)
 
   va_list Arguments;
   va_start(Arguments, FormatString);
-  vsnprintf(Buffer, STRING_BUFFER_LENGTH-1, FormatString, Arguments);
+  s32 Count = vsnprintf(Buffer, STRING_BUFFER_LENGTH-1, FormatString, Arguments);
   va_end(Arguments);
 
-  counted_string Result = CountedString(Buffer);
+  Assert(Count >= 0);
+  counted_string Result = CountedString(Buffer, (u32)Count);
   return Result;
 }
 
 #else
-
-// TODO(Jesse): Remove this?
-static char TempFormatStringBuffer[1024*1024];
 
 function counted_string
 FormatCountedString_(memory_arena* Memory, const char* fmt...)
@@ -477,97 +475,87 @@ FormatCountedString_(memory_arena* Memory, const char* fmt...)
   TIMED_FUNCTION();
 
   va_list args;
-  TIMED_BLOCK("va_start");
   va_start(args, fmt);
-  END_BLOCK();
 
   u32 At = 0;
 
+#define FINAL_BUFFER_SIZE (1024)
+  char* FinalBuffer = AllocateProtection(char, Memory, FINAL_BUFFER_SIZE, False);
+
   while (*fmt != '\0')
   {
-    debug_timed_function OuterLoopTimer("Outer Loop");
 
     if (*fmt == '%')
     {
-      debug_timed_function FmtSpecifierTimer("Format Specifier Block");
 
       fmt++;
       switch (*fmt)
       {
         case 'd':
         {
-          TIMED_NAMED_BLOCK("d");
           s32 Value = va_arg(args, s32);
-          At += s64ToChar(TempFormatStringBuffer, (s64)Value);
+          At += s64ToChar(FinalBuffer, (s64)Value);
         } break;
 
         case 'l':
         {
-          TIMED_NAMED_BLOCK("l");
           fmt++;
           if (*fmt == 'u')
           {
             u64 Value = va_arg(args, u64);
-            At += u64ToChar(TempFormatStringBuffer, Value);
+            At += u64ToChar(FinalBuffer, Value);
 
           }
           else if (*fmt == 'd')
           {
             s64 Value = va_arg(args, s64);
-            At += s64ToChar(TempFormatStringBuffer, Value);
+            At += s64ToChar(FinalBuffer, Value);
           }
         } break;
 
         case 'x':
         {
-          TIMED_NAMED_BLOCK("x");
           u64 Value = va_arg(args, u64);
-          At += u64ToChar(TempFormatStringBuffer, Value);
+          At += u64ToChar(FinalBuffer, Value);
         } break;
 
         case 'u':
         {
-          TIMED_NAMED_BLOCK("u");
           u32 Value = va_arg(args, u32);
-          At += u64ToChar(TempFormatStringBuffer, (u64)Value);
+          At += u64ToChar(FinalBuffer, (u64)Value);
         } break;
 
         case 'c':
         {
-          TIMED_NAMED_BLOCK("c");
           char Value = (char)va_arg(args, s32);
-          TempFormatStringBuffer[At++] = Value;
+          FinalBuffer[At++] = Value;
         } break;
 
         case 's':
         {
-          TIMED_NAMED_BLOCK("s");
           char* Value = va_arg(args, char*);
           while (*Value)
           {
-            TempFormatStringBuffer[At++] = *Value;
+            FinalBuffer[At++] = *Value;
           }
         } break;
 
         case 'f':
         {
-          TIMED_NAMED_BLOCK("f");
           r64 Value = va_arg(args, r64);
-          At += f64ToChar(TempFormatStringBuffer, Value);
+          At += f64ToChar(FinalBuffer, Value);
         } break;
 
         case 'b':
         {
-          TIMED_NAMED_BLOCK("b");
           b32 BoolVal = (b32)va_arg(args, u32);
           BoolVal ?
-            TempFormatStringBuffer[At++] = 'T' :
-            TempFormatStringBuffer[At++] = 'F';
+            FinalBuffer[At++] = 'T' :
+            FinalBuffer[At++] = 'F';
         } break;
 
         case 'S':
         {
-          TIMED_NAMED_BLOCK("S");
           u32 Count = va_arg(args, u32);
           char* Start = va_arg(args, char*);
 
@@ -575,14 +563,13 @@ FormatCountedString_(memory_arena* Memory, const char* fmt...)
               CharIndex < Count;
               ++CharIndex)
           {
-            TempFormatStringBuffer[At++] = Start[CharIndex];
+            FinalBuffer[At++] = Start[CharIndex];
           }
 
         } break;
 
         case '.':
         {
-          TIMED_NAMED_BLOCK(".");
           Assert(fmt[1] == '*');
           Assert(fmt[2] == 's');
           fmt++;
@@ -594,14 +581,13 @@ FormatCountedString_(memory_arena* Memory, const char* fmt...)
               CharIndex < Count;
               ++CharIndex)
           {
-            TempFormatStringBuffer[At++] = Start[CharIndex];
+            FinalBuffer[At++] = Start[CharIndex];
           }
 
         } break;
 
         default:
         {
-          TIMED_NAMED_BLOCK("default");
           va_arg(args, void*);
           Error("Invalid Format String");
         } break;
@@ -612,30 +598,15 @@ FormatCountedString_(memory_arena* Memory, const char* fmt...)
     }
     else
     {
-      TempFormatStringBuffer[At++] = *fmt++;
+      FinalBuffer[At++] = *fmt++;
     }
 
+    Assert(At < FINAL_BUFFER_SIZE);
   }
 
-  char* FinalBuffer = AllocateProtection(char, Memory, At, False);
-
-  TIMED_BLOCK("Final String Stuff");
-
-    for (u32 CharIndex = 0;
-        CharIndex < At;
-        ++CharIndex)
-    {
-      FinalBuffer[CharIndex] = TempFormatStringBuffer[CharIndex];
-    }
-
-  END_BLOCK();
+  va_end(args);
 
   counted_string Result = CountedString((const char*)FinalBuffer, At);
-
-  TIMED_BLOCK("va_end");
-  va_end(args);
-  END_BLOCK();
-
   return Result;
 }
 

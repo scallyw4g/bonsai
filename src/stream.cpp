@@ -177,7 +177,7 @@ PopU32(ansi_stream *Cursor, memory_arena *Arena, const char* Delim = 0)
 }
 
 counted_string
-PopQuotedCharLiteral(ansi_stream* Cursor)
+PopQuotedCharLiteral(ansi_stream* Cursor, b32 IncludeQuotes = False)
 {
   if (*Cursor->At == '\'')
   {
@@ -198,7 +198,14 @@ PopQuotedCharLiteral(ansi_stream* Cursor)
   char Terminator[2] = {};
   Terminator[0] = '\'';
 
-  counted_string Result = ReadUntilTerminatorList(Cursor, Terminator, true);
+  counted_string Result = ReadUntilTerminatorList(Cursor, Terminator, True);
+  if (IncludeQuotes)
+  {
+    --Result.Start;
+    ++Result.Count;
+    Assert(Cursor->Start <= Result.Start);
+    Assert(Result.Start+Result.Count <= Cursor->End);
+  }
   return Result;
 }
 

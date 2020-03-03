@@ -207,6 +207,8 @@ struct arguments
 {
   counted_string OutPath;
   counted_string_cursor Files;
+
+  b32 DoDebugWindow;
 };
 
 struct program_datatypes

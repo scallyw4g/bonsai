@@ -597,6 +597,8 @@ PushMember(d_union_decl* dUnion, c_token MemberIdentifierToken, d_union_flags Fl
 function counted_string
 GenerateEnumDef(d_union_decl* dUnion, memory_arena* Memory)
 {
+  TIMED_FUNCTION();
+
   counted_string Result = FormatCountedString(Memory, "enum %.*s_type\n{\n  type_%.*s_noop,\n", dUnion->Name.Count, dUnion->Name.Start, dUnion->Name.Count, dUnion->Name.Start);
 
   for (d_union_member_iterator Iter = Iterator(&dUnion->Members);
@@ -614,6 +616,8 @@ GenerateEnumDef(d_union_decl* dUnion, memory_arena* Memory)
 function counted_string
 GenerateStructDef(d_union_decl* dUnion, memory_arena* Memory)
 {
+  TIMED_FUNCTION();
+
   counted_string UnionName = dUnion->Name;
   counted_string TagType = dUnion->CustomEnumType.Count ?
     dUnion->CustomEnumType :
@@ -653,6 +657,8 @@ GenerateStructDef(d_union_decl* dUnion, memory_arena* Memory)
 function enum_def*
 GetEnumByType(enum_def_stream* ProgramEnums, counted_string EnumType)
 {
+  TIMED_FUNCTION();
+
   enum_def* Result = 0;
   for (enum_def_iterator Iter = Iterator(ProgramEnums);
       IsValid(&Iter);
@@ -672,6 +678,8 @@ GetEnumByType(enum_def_stream* ProgramEnums, counted_string EnumType)
 function struct_def*
 GetStructByType(struct_def_stream* ProgramStructs, counted_string StructType)
 {
+  TIMED_FUNCTION();
+
   struct_def* Result = 0;
   for (struct_def_iterator Iter = Iterator(ProgramStructs);
       IsValid(&Iter);
@@ -691,6 +699,8 @@ GetStructByType(struct_def_stream* ProgramStructs, counted_string StructType)
 d_union_decl
 ParseDiscriminatedUnion(c_parse_result* Parser, program_datatypes* Datatypes, counted_string Name, memory_arena* Memory)
 {
+  TIMED_FUNCTION();
+
   d_union_decl dUnion = {};
 
   dUnion.Name = Name;
@@ -771,7 +781,27 @@ ParseDiscriminatedUnion(c_parse_result* Parser, program_datatypes* Datatypes, co
   return dUnion;
 }
 
-arguments
+function b32
+DoDebugWindow(const char** ArgStrings, s32 ArgCount)
+{
+  b32 Result = False;
+  for (s32 ArgIndex = 1;
+      ArgIndex < ArgCount;
+      ++ArgIndex)
+  {
+    counted_string Arg = CS(ArgStrings[ArgIndex]);
+    if (StringsMatch(CS("-d"), Arg) ||
+        StringsMatch(CS("--do-debug-window"), Arg) )
+    {
+      Result = True;
+    }
+  }
+
+  return Result;
+}
+
+
+function arguments
 ParseArgs(const char** ArgStrings, s32 ArgCount, memory_arena* Memory)
 {
   arguments Result = {
@@ -784,7 +814,12 @@ ParseArgs(const char** ArgStrings, s32 ArgCount, memory_arena* Memory)
       ++ArgIndex)
   {
     counted_string Arg = CS(ArgStrings[ArgIndex]);
-    if (StringsMatch(CS("-o"), Arg) ||
+    if (StringsMatch(CS("-d"), Arg) ||
+        StringsMatch(CS("--do-debug-window"), Arg) )
+    {
+      Result.DoDebugWindow = True;
+    }
+    else if (StringsMatch(CS("-o"), Arg) ||
         StringsMatch(CS("--output-path"), Arg) )
     {
       if (++ArgIndex < ArgCount)
@@ -814,47 +849,19 @@ global_variable random_series TempFileEntropy = {3215432};
 function b32
 Output(c_token_cursor Code, counted_string Filename, memory_arena* Memory)
 {
+  TIMED_FUNCTION();
   b32 Result = False;
 
   native_file TempFile = GetTempFile(&TempFileEntropy, Memory);
   if (TempFile.Handle)
   {
     Rewind(&Code);
-    u32 NeededSize = 0;
+    b32 FileWritesSucceeded = True;
     while(Remaining(&Code))
     {
-      counted_string TS = ToString(Code.At[0], Memory);
-      NeededSize += TS.Count;
+      FileWritesSucceeded &= WriteToFile(&TempFile, ToString(Code.At[0], Memory));
       Advance(&Code);
     }
-
-    ansi_stream Output = AllocateBuffer<ansi_stream, const char>(NeededSize, Memory);
-
-    Rewind(&Code);
-    while(Remaining(&Code))
-    {
-      c_token T = Code.At[0];
-      counted_string TS = ToString(T, Memory);
-
-      u8* OutputAt = (u8*)Output.At;
-      // TODO(Jesse): Gross.
-      Assert(TS.Count);
-      if (Advance(&Output, (u32)TS.Count-1))
-      {
-        MemCopy((u8*)TS.Start, OutputAt, TS.Count);
-      }
-      else
-      {
-        Error("Ran out of memory copying token (%.*s) onto output stream for file (%.*s).", (u32)TS.Count, TS.Start, (u32)Filename.Count, Filename.Start);
-        return Result;
-      }
-
-      Assert((umm)Output.At <= (umm)Output.End);
-      Advance(&Code);
-    }
-    Assert((umm)Output.At == (umm)Output.End);
-
-    b32 FileWritesSucceeded = WriteToFile(&TempFile, Output);
     FileWritesSucceeded &= CloseFile(&TempFile);
 
     if (FileWritesSucceeded)
@@ -890,6 +897,7 @@ enum output_mode
 function b32
 Output(counted_string Code, counted_string OutputFilename, memory_arena* Memory, output_mode Mode = Output_NoOverwrite)
 {
+  TIMED_FUNCTION();
   b32 Result = False;
 
   native_file TempFile = GetTempFile(&TempFileEntropy, Memory);
@@ -1095,6 +1103,7 @@ function struct_def ParseStructBody(c_parse_result* Parser, counted_string Struc
 function c_decl
 ParseDeclaration(c_parse_result* Parser, counted_string StructName, memory_arena* Memory)
 {
+  TIMED_FUNCTION();
   c_decl Result = {
     .Type = type_c_decl_variable
   };
@@ -1390,6 +1399,7 @@ GetBodyTextForNextScope(c_parse_result* Parser)
 function counted_string
 ParseForEnumValues(c_parse_result* Parser, counted_string TypeName, enum_def_stream* ProgramEnums, memory_arena* Memory)
 {
+  TIMED_FUNCTION();
   counted_string Result = {};
 
   for_enum_constraints Constraints = {};
@@ -1447,6 +1457,7 @@ ParseForEnumValues(c_parse_result* Parser, counted_string TypeName, enum_def_str
 function counted_string
 DoTokenSubstitution(c_parse_result* BodyText, for_member_constraints* Constraints, c_decl Element, memory_arena* Memory)
 {
+  TIMED_FUNCTION();
   string_builder Builder = {};
 
   Rewind(&BodyText->Tokens);
@@ -1478,6 +1489,7 @@ DoTokenSubstitution(c_parse_result* BodyText, for_member_constraints* Constraint
 function counted_string
 ParseForMembers(c_parse_result* Parser, struct_def* Target, struct_def_stream* ProgramStructs, memory_arena* Memory)
 {
+  TIMED_FUNCTION();
   counted_string Result = {};
   for_member_constraints Constraints = {};
 
@@ -1564,6 +1576,7 @@ ParseForMembers(c_parse_result* Parser, struct_def* Target, struct_def_stream* P
 function struct_def
 ParseStructBody(c_parse_result* Parser, counted_string StructName, memory_arena* Memory)
 {
+  TIMED_FUNCTION();
   struct_def Result = StructDef(StructName);
 
   RequireToken(Parser, CTokenType_OpenBrace);
@@ -1589,6 +1602,7 @@ ParseStructBody(c_parse_result* Parser, counted_string StructName, memory_arena*
 function enum_def
 ParseEnum(c_parse_result* Parser, memory_arena* Memory)
 {
+  TIMED_FUNCTION();
   counted_string EnumName = RequireToken(Parser, CTokenType_Identifier).Value;
 
   enum_def Enum = {
@@ -1761,6 +1775,7 @@ TokenizeAllFiles(counted_string_cursor* Filenames, memory_arena* Memory)
 function counted_string
 GenerateValueTableFor(enum_def* Enum, memory_arena* Memory)
 {
+  TIMED_FUNCTION();
   counted_string FunctionName = ToCapitalCase(Enum->Name, Memory);
   counted_string Result = FormatCountedString(Memory,
 R"INLINE_CODE(
@@ -1794,6 +1809,7 @@ function %.*s
 function counted_string
 GenerateCursorFor(counted_string DatatypeName, memory_arena* Memory)
 {
+  TIMED_FUNCTION();
 
   counted_string DatatypeDef = FormatCountedString(Memory,
 R"INLINE_CODE(
@@ -1842,6 +1858,7 @@ function %.*s_cursor
 function counted_string
 GenerateStringTableFor(enum_def* Enum, memory_arena* Memory)
 {
+  TIMED_FUNCTION();
   counted_string Result = FormatCountedString(Memory,
 R"INLINE_CODE(
 function counted_string
@@ -1872,6 +1889,8 @@ ToString(%.*s Type)
 function counted_string
 GenerateStreamFor(counted_string StructName, memory_arena* Memory)
 {
+  TIMED_FUNCTION();
+
   counted_string StreamCode = FormatCountedString(Memory,
 R"INLINE_CODE(
 struct %.*s_stream_chunk
@@ -2056,13 +2075,10 @@ DoWorkToOutputThisStuff(c_parse_result* Parser, counted_string OutputForThisPars
 debug_global platform Plat = {};
 
 // TODO(Jesse): Remove this?
-#define OPEN_DEBUG_WINDOW 0
-#if OPEN_DEBUG_WINDOW
 debug_global os Os = {};
-#endif
 
 function b32
-BootstrapDebugSystem()
+BootstrapDebugSystem(b32 OpenDebugWindow)
 {
   shared_lib DebugLib = OpenLibrary(DEFAULT_DEBUG_LIB);
   if (!DebugLib) { Error("Loading DebugLib :( "); return False; }
@@ -2070,23 +2086,23 @@ BootstrapDebugSystem()
   GetDebugState = (get_debug_state_proc)GetProcFromLib(DebugLib, "GetDebugState_Internal");
   if (!GetDebugState) { Error("Retreiving GetDebugState from Debug Lib :( "); return False; }
 
-#if OPEN_DEBUG_WINDOW
-  s32 DebugFlags = GLX_CONTEXT_DEBUG_BIT_ARB;
-  b32 WindowSuccess = OpenAndInitializeWindow(&Os, &Plat, DebugFlags);
-  if (!WindowSuccess) { Error("Initializing Window :( "); return False; }
-  Assert(Os.Window);
-  AssertNoGlErrors;
+  if (OpenDebugWindow)
+  {
+    s32 DebugFlags = GLX_CONTEXT_DEBUG_BIT_ARB;
+    b32 WindowSuccess = OpenAndInitializeWindow(&Os, &Plat, DebugFlags);
+    if (!WindowSuccess) { Error("Initializing Window :( "); return False; }
+    Assert(Os.Window);
+    AssertNoGlErrors;
 
-  InitializeOpenGlExtensions(&Os);
+    InitializeOpenGlExtensions(&Os);
 
-  b32 ShadingLanguageIsRecentEnough = CheckShadingLanguageVersion();
-  if (!ShadingLanguageIsRecentEnough) {  return False; }
-#endif
+    b32 ShadingLanguageIsRecentEnough = CheckShadingLanguageVersion();
+    if (!ShadingLanguageIsRecentEnough) {  return False; }
+  }
 
   debug_init_debug_system_proc InitDebugSystem = (debug_init_debug_system_proc)GetProcFromLib(DebugLib, "InitDebugSystem");
   if (!InitDebugSystem) { Error("Retreiving InitDebugSystem from Debug Lib :( "); return False; }
-
-  InitDebugSystem(OPEN_DEBUG_WINDOW);
+  InitDebugSystem(OpenDebugWindow);
 
   debug_state* DebugState = GetDebugState();
   DebugState->DebugDoScopeProfiling = True;
@@ -2114,7 +2130,8 @@ main(s32 ArgCount, const char** ArgStrings)
   setbuf(stdout, NULL);
   setbuf(stderr, NULL);
 
-  if (!BootstrapDebugSystem())
+  b32 ShouldOpenDebugWindow = DoDebugWindow(ArgStrings, ArgCount);
+  if (!BootstrapDebugSystem(ShouldOpenDebugWindow))
   {
     Error("Booting debug system");
     return FAILURE_EXIT_CODE;
@@ -2132,6 +2149,7 @@ main(s32 ArgCount, const char** ArgStrings)
 
     arguments Args = ParseArgs(ArgStrings, ArgCount, Memory);
     Assert(Args.Files.Start == Args.Files.At);
+    Assert(Args.DoDebugWindow == ShouldOpenDebugWindow);
 
     c_parse_result_cursor ParsedFiles = TokenizeAllFiles(&Args.Files, Memory);
     Assert(ParsedFiles.Start == ParsedFiles.At);
@@ -2297,30 +2315,31 @@ main(s32 ArgCount, const char** ArgStrings)
     Warn("No files passed, exiting.");
   }
 
-#if OPEN_DEBUG_WINDOW
-  debug_state* DebugState = GetDebugState();
-
-  DebugState->UIType = DebugUIType_CallGraph;
-  DebugState->DisplayDebugMenu = True;
-
-  DebugState->MainThreadAdvanceDebugSystem();
-
-  while (Os.ContinueRunning)
+  if (ShouldOpenDebugWindow)
   {
-    v2 LastMouseP = Plat.MouseP;
-    while ( ProcessOsMessages(&Os, &Plat) );
-    Plat.MouseDP = LastMouseP - Plat.MouseP;
+    debug_state* DebugState = GetDebugState();
 
-    DebugState->OpenDebugWindowAndLetUsDoStuff();
-    BonsaiSwapBuffers(&Os);
+    DebugState->UIType = DebugUIType_CallGraph;
+    DebugState->DisplayDebugMenu = True;
 
-    /* glBindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID); */
-    /* glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); */
+    DebugState->MainThreadAdvanceDebugSystem();
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    while (Os.ContinueRunning)
+    {
+      v2 LastMouseP = Plat.MouseP;
+      while ( ProcessOsMessages(&Os, &Plat) );
+      Plat.MouseDP = LastMouseP - Plat.MouseP;
+
+      DebugState->OpenDebugWindowAndLetUsDoStuff();
+      BonsaiSwapBuffers(&Os);
+
+      /* glBindFramebuffer(GL_FRAMEBUFFER, DebugState->GameGeoFBO.ID); */
+      /* glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); */
+
+      glBindFramebuffer(GL_FRAMEBUFFER, 0);
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    }
   }
-#endif
 
   s32 Result = Success ? SUCCESS_EXIT_CODE : FAILURE_EXIT_CODE ;
   return Result;

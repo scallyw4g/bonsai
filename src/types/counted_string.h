@@ -135,7 +135,6 @@ Basename(counted_string FilePath)
   return Result;
 }
 
-
 inline b32
 StringsMatch(const char *S1, const char *S2)
 {

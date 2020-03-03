@@ -128,6 +128,21 @@ TestStreamCursor()
     }
   }
 
+  {
+    {
+      const char *TestData = "word1 \"word2\" word3";
+      ansi_stream Stream = AnsiStream(TestData);
+      char *W1 = PopWord(&Stream, Memory);
+      TestThat(StringsMatch(W1, "word1"));
+
+      counted_string W2 = PopQuotedString(&Stream);
+      TestThat(StringsMatch(W2, CS("word2")));
+
+      char *W3 = PopWord(&Stream, Memory);
+      TestThat(StringsMatch(W3, "word3"));
+    }
+  }
+
 
   return;
 }
