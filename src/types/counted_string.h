@@ -8,6 +8,8 @@ meta(generate_stream(counted_string))
 meta(generate_cursor(counted_string))
 #include <metaprogramming/output/generate_cursor_counted_string>
 
+CAssert(sizeof(counted_string) == 16);
+
 umm
 Length(const char *Str)
 {

@@ -475,6 +475,26 @@ main()
     TestThat(StringsMatch(TestValue, CS("this thing this")));
   }
 
+  {
+    counted_string TestString = CS("thing");
+    counted_string TestValue = FormatCountedString(Memory, CSz("this %S this"), TestString);
+    TestThat(StringsMatch(TestValue, CS("this thing this")));
+  }
+
+  {
+    counted_string TestString = CS("thing");
+    counted_string TestValue = FormatCountedString(Memory, CSz("this %.*s %.*s this"), TestString.Count, TestString.Start, TestString.Count, TestString.Start);
+    TestThat(StringsMatch(TestValue, CS("this thing thing this")));
+  }
+
+  {
+    counted_string TestString = CS("thing");
+    counted_string TestValue = FormatCountedString(Memory, CSz("this %S %S this"), TestString, TestString);
+    TestThat(StringsMatch(TestValue, CS("this thing thing this")));
+  }
+
+
+
 
 
 

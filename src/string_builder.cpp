@@ -452,12 +452,12 @@ FormatString(memory_arena *Memory, const char* FormatString, ...)
   CS(NullTerminatedCString, sizeof(NullTerminatedCString)-1)
 
 function counted_string
-FormatCountedString_(memory_arena* Memory, counted_string FS...)
+FormatCountedString_(memory_arena* Memory, counted_string FS, ...)
 {
   TIMED_FUNCTION();
 
-  va_list args;
-  va_start(args, FS);
+  va_list Args;
+  va_start(Args, FS);
 
   u32 At = 0;
 
@@ -477,7 +477,7 @@ FormatCountedString_(memory_arena* Memory, counted_string FS...)
       {
         case 'd':
         {
-          s32 Value = va_arg(args, s32);
+          s32 Value = va_arg(Args, s32);
           At += s64ToChar(FinalBuffer+At, (s64)Value);
         } break;
 
@@ -487,38 +487,38 @@ FormatCountedString_(memory_arena* Memory, counted_string FS...)
           Assert(FormatIndex < FS.Count);
           if (FS.Start[FormatIndex] == 'u')
           {
-            u64 Value = va_arg(args, u64);
+            u64 Value = va_arg(Args, u64);
             At += u64ToChar(FinalBuffer+At, Value);
 
           }
           else if (FS.Start[FormatIndex] == 'd')
           {
-            s64 Value = va_arg(args, s64);
+            s64 Value = va_arg(Args, s64);
             At += s64ToChar(FinalBuffer+At, Value);
           }
         } break;
 
         case 'x':
         {
-          u64 Value = va_arg(args, u64);
+          u64 Value = va_arg(Args, u64);
           At += u64ToChar(FinalBuffer+At, Value);
         } break;
 
         case 'u':
         {
-          u32 Value = va_arg(args, u32);
+          u32 Value = va_arg(Args, u32);
           At += u64ToChar(FinalBuffer+At, (u64)Value);
         } break;
 
         case 'c':
         {
-          char Value = (char)va_arg(args, s32);
+          char Value = (char)va_arg(Args, s32);
           FinalBuffer[At++] = Value;
         } break;
 
         case 's':
         {
-          char* Value = va_arg(args, char*);
+          char* Value = va_arg(Args, char*);
           while (*Value)
           {
             FinalBuffer[At++] = *Value;
@@ -527,13 +527,13 @@ FormatCountedString_(memory_arena* Memory, counted_string FS...)
 
         case 'f':
         {
-          r64 Value = va_arg(args, r64);
+          r64 Value = va_arg(Args, r64);
           At += f64ToChar(FinalBuffer+At, Value);
         } break;
 
         case 'b':
         {
-          b32 BoolVal = (b32)va_arg(args, u32);
+          b32 BoolVal = (b32)va_arg(Args, u32);
           BoolVal ?
             FinalBuffer[At++] = 'T' :
             FinalBuffer[At++] = 'F';
@@ -541,14 +541,12 @@ FormatCountedString_(memory_arena* Memory, counted_string FS...)
 
         case 'S':
         {
-          u32 Count = va_arg(args, u32);
-          char* Start = va_arg(args, char*);
-
+          counted_string String = va_arg(Args, counted_string);
           for (u32 CharIndex = 0;
-              CharIndex < Count;
+              CharIndex < String.Count;
               ++CharIndex)
           {
-            FinalBuffer[At++] = Start[CharIndex];
+            FinalBuffer[At++] = String.Start[CharIndex];
           }
 
         } break;
@@ -560,8 +558,8 @@ FormatCountedString_(memory_arena* Memory, counted_string FS...)
           FormatIndex += 2;
           Assert(FormatIndex < FS.Count);
 
-          u32 Count = va_arg(args, u32);
-          char* Start = va_arg(args, char*);
+          umm Count = va_arg(Args, umm);
+          char* Start = va_arg(Args, char*);
           for (u32 CharIndex = 0;
               CharIndex < Count;
               ++CharIndex)
@@ -573,7 +571,7 @@ FormatCountedString_(memory_arena* Memory, counted_string FS...)
 
         default:
         {
-          va_arg(args, void*);
+          va_arg(Args, void*);
           Error("Invalid Format String");
         } break;
 
@@ -589,7 +587,7 @@ FormatCountedString_(memory_arena* Memory, counted_string FS...)
     Assert(At < FINAL_BUFFER_SIZE);
   }
 
-  va_end(args);
+  va_end(Args);
 
   counted_string Result = CountedString((const char*)FinalBuffer, At);
   return Result;
