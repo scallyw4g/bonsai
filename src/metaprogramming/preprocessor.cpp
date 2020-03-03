@@ -601,14 +601,14 @@ GenerateEnumDef(d_union_decl* dUnion, memory_arena* Memory)
 {
   TIMED_FUNCTION();
 
-  counted_string Result = FormatCountedString(Memory, "enum %.*s_type\n{\n  type_%.*s_noop,\n", dUnion->Name.Count, dUnion->Name.Start, dUnion->Name.Count, dUnion->Name.Start);
+  counted_string Result = FormatCountedString(Memory, CSz("enum %.*s_type\n{\n  type_%.*s_noop,\n"), dUnion->Name.Count, dUnion->Name.Start, dUnion->Name.Count, dUnion->Name.Start);
 
   for (d_union_member_iterator Iter = Iterator(&dUnion->Members);
       IsValid(&Iter);
       Advance(&Iter))
   {
     d_union_member* Member = &Iter.At->Element;
-    Result = Concat(Result, FormatCountedString(Memory, "  type_%.*s,\n", Member->Type.Count, Member->Type.Start), Memory);
+    Result = Concat(Result, FormatCountedString(Memory, CSz("  type_%S,\n"), Member->Type), Memory);
   }
 
   Result = Concat(Result, CS("};\n\n"), Memory);
@@ -623,20 +623,21 @@ GenerateStructDef(d_union_decl* dUnion, memory_arena* Memory)
   counted_string UnionName = dUnion->Name;
   counted_string TagType = dUnion->CustomEnumType.Count ?
     dUnion->CustomEnumType :
-    FormatCountedString(Memory, "%.*s_type", UnionName.Count, UnionName.Start);
+    FormatCountedString(Memory, CSz("%S_type"), UnionName);
 
-  counted_string Result = FormatCountedString(Memory, "struct %.*s\n{\n  %.*s Type;\n",
-      UnionName.Count, UnionName.Start,
-      TagType.Count, TagType.Start);
+  counted_string Result = FormatCountedString(Memory, CSz("struct %S\n{\n  %S Type;\n"),
+      UnionName, TagType);
 
   ITERATE_OVER(c_decl, &dUnion->CommonMembers)
   {
     c_decl* Member = GET_ELEMENT(Iter);
     Assert(Member->Type == type_c_decl_variable);
-    Result = Concat(Result, FormatCountedString(Memory, "  %.*s %.*s;\n",
-        Member->c_decl_variable.Type.Count, Member->c_decl_variable.Type.Start,
-        Member->c_decl_variable.Name.Count, Member->c_decl_variable.Name.Start),
-        Memory);
+    Result =
+      Concat(Result,
+        FormatCountedString(Memory, CSz("  %S %S;\n"),
+          Member->c_decl_variable.Type,
+          Member->c_decl_variable.Name),
+      Memory);
   }
   Result = Concat(Result, CS("\n  union\n  {\n"), Memory);
 
@@ -647,7 +648,7 @@ GenerateStructDef(d_union_decl* dUnion, memory_arena* Memory)
     d_union_member* Member = &Iter.At->Element;
     if (Member->Flags != d_union_flag_enum_only)
     {
-      Result = Concat(Result, FormatCountedString(Memory, "    %.*s %.*s;\n", Member->Type.Count, Member->Type.Start, Member->Name.Count, Member->Name.Start), Memory);
+      Result = Concat(Result, FormatCountedString(Memory, CSz("    %.*s %.*s;\n"), Member->Type.Count, Member->Type.Start, Member->Name.Count, Member->Name.Start), Memory);
     }
   }
 
@@ -1468,15 +1469,15 @@ DoTokenSubstitution(c_parse_result* BodyText, for_member_constraints* Constraint
     c_token T = PopTokenRaw(BodyText);
     if (StringsMatch(T.Value, Constraints->TypeTag))
     {
-      Append(&Builder, FormatCountedString(Memory, "type_%.*s", Element.c_decl_variable.Type));
+      Append(&Builder, FormatCountedString(Memory, CSz("type_%.*s"), Element.c_decl_variable.Type));
     }
     else if (StringsMatch(T.Value, Constraints->TypeName))
     {
-      Append(&Builder, FormatCountedString(Memory, "%.*s", Element.c_decl_variable.Type));
+      Append(&Builder, FormatCountedString(Memory, CSz("%.*s"), Element.c_decl_variable.Type));
     }
     else if (StringsMatch(T.Value, Constraints->ValueName))
     {
-      Append(&Builder, FormatCountedString(Memory, "%.*s", Element.c_decl_variable.Name));
+      Append(&Builder, FormatCountedString(Memory, CSz("%.*s"), Element.c_decl_variable.Name));
     }
     else
     {
@@ -1780,12 +1781,12 @@ GenerateValueTableFor(enum_def* Enum, memory_arena* Memory)
   TIMED_FUNCTION();
   counted_string FunctionName = ToCapitalCase(Enum->Name, Memory);
   counted_string Result = FormatCountedString(Memory,
-R"INLINE_CODE(
+CSz(R"INLINE_CODE(
 function %.*s
 %.*s(counted_string S)
 {
   %.*s Result = {};
-)INLINE_CODE",
+)INLINE_CODE"),
               Enum->Name.Count, Enum->Name.Start,
               FunctionName.Count, FunctionName.Start,
               Enum->Name.Count, Enum->Name.Start);
@@ -1814,14 +1815,14 @@ GenerateCursorFor(counted_string DatatypeName, memory_arena* Memory)
   TIMED_FUNCTION();
 
   counted_string DatatypeDef = FormatCountedString(Memory,
-R"INLINE_CODE(
+CSz(R"INLINE_CODE(
 struct %.*s_cursor
 {
   %.*s* Start;
   %.*s* End;
   %.*s* At;
 };
-)INLINE_CODE",
+)INLINE_CODE"),
     DatatypeName.Count, DatatypeName.Start,
     DatatypeName.Count, DatatypeName.Start,
     DatatypeName.Count, DatatypeName.Start,
@@ -1830,7 +1831,7 @@ struct %.*s_cursor
 
   counted_string ConstructorName = ToCapitalCase(DatatypeName, Memory);
   counted_string ConstructorDef = FormatCountedString(Memory,
-R"INLINE_CODE(
+CSz(R"INLINE_CODE(
 function %.*s_cursor
 %.*sCursor(umm ElementCount, memory_arena* Memory)
 {
@@ -1843,7 +1844,7 @@ function %.*s_cursor
   };
   return Result;
 };
-)INLINE_CODE",
+)INLINE_CODE"),
     DatatypeName.Count, DatatypeName.Start,
     ConstructorName.Count, ConstructorName.Start,
     DatatypeName.Count, DatatypeName.Start,
@@ -1862,14 +1863,14 @@ GenerateStringTableFor(enum_def* Enum, memory_arena* Memory)
 {
   TIMED_FUNCTION();
   counted_string Result = FormatCountedString(Memory,
-R"INLINE_CODE(
+CSz(R"INLINE_CODE(
 function counted_string
 ToString(%.*s Type)
 {
   counted_string Result = {};
   switch (Type)
   {
-)INLINE_CODE", Enum->Name.Count, Enum->Name.Start);
+)INLINE_CODE"), Enum->Name.Count, Enum->Name.Start);
 
   for (enum_field_iterator Iter = Iterator(&Enum->Fields);
       IsValid(&Iter);
@@ -1894,7 +1895,7 @@ GenerateStreamFor(counted_string StructName, memory_arena* Memory)
   TIMED_FUNCTION();
 
   counted_string StreamCode = FormatCountedString(Memory,
-R"INLINE_CODE(
+CSz(R"INLINE_CODE(
 struct %.*s_stream_chunk
 {
   %.*s Element;
@@ -1907,7 +1908,7 @@ struct %.*s_stream
   %.*s_stream_chunk* LastChunk;
 };
 
-)INLINE_CODE", StructName.Count, StructName.Start,
+)INLINE_CODE"), StructName.Count, StructName.Start,
    StructName.Count, StructName.Start,
    StructName.Count, StructName.Start,
    StructName.Count, StructName.Start,
@@ -1916,7 +1917,7 @@ struct %.*s_stream
    StructName.Count, StructName.Start);
 
   counted_string PushCode = FormatCountedString(Memory,
-R"INLINE_CODE(
+CSz(R"INLINE_CODE(
 function void
 Push(%.*s_stream* Stream, %.*s Element, memory_arena* Memory)
 {
@@ -1942,7 +1943,7 @@ Push(%.*s_stream* Stream, %.*s Element, memory_arena* Memory)
   return;
 }
 
-)INLINE_CODE",
+)INLINE_CODE"),
       StructName.Count, StructName.Start,
       StructName.Count, StructName.Start,
       StructName.Count, StructName.Start,
@@ -1950,7 +1951,7 @@ Push(%.*s_stream* Stream, %.*s Element, memory_arena* Memory)
       StructName.Count, StructName.Start);
 
   counted_string IteratorCode = FormatCountedString(Memory,
-R"INLINE_CODE(
+CSz(R"INLINE_CODE(
 struct %.*s_iterator
 {
   %.*s_stream* Stream;
@@ -1980,7 +1981,7 @@ Advance(%.*s_iterator* Iter)
   Iter->At = Iter->At->Next;
 }
 
-)INLINE_CODE",
+)INLINE_CODE"),
       StructName.Count, StructName.Start,
       StructName.Count, StructName.Start,
       StructName.Count, StructName.Start,

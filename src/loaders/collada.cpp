@@ -20,11 +20,11 @@ AllocateAnimation(v3i KeyframeCount, memory_arena* Memory)
 loaded_collada_mesh
 LoadMeshData(xml_token_stream* XmlTokens, counted_string* GeometryId, memory_arena* TempMemory, heap_allocator* Heap)
 {
-  counted_string PositionsSelector   = FormatCountedString(TempMemory, "geometry%.*s float_array%.*s-positions-array", GeometryId->Count, GeometryId->Start, GeometryId->Count, GeometryId->Start);
-  counted_string NormalsSelector     = FormatCountedString(TempMemory, "geometry%.*s float_array%.*s-normals-array", GeometryId->Count, GeometryId->Start, GeometryId->Count, GeometryId->Start);
-  counted_string VertexCountSelector = FormatCountedString(TempMemory, "geometry%.*s polylist vcount", GeometryId->Count, GeometryId->Start);
-  counted_string VertIndicesSelector = FormatCountedString(TempMemory, "geometry%.*s polylist p", GeometryId->Count, GeometryId->Start);
-  counted_string PolylistSelector    = FormatCountedString(TempMemory, "geometry%.*s polylist", GeometryId->Count, GeometryId->Start);
+  counted_string PositionsSelector   = FormatCountedString(TempMemory, CSz("geometry%.*s float_array%.*s-positions-array"), GeometryId->Count, GeometryId->Start, GeometryId->Count, GeometryId->Start);
+  counted_string NormalsSelector     = FormatCountedString(TempMemory, CSz("geometry%.*s float_array%.*s-normals-array"), GeometryId->Count, GeometryId->Start, GeometryId->Count, GeometryId->Start);
+  counted_string VertexCountSelector = FormatCountedString(TempMemory, CSz("geometry%.*s polylist vcount"), GeometryId->Count, GeometryId->Start);
+  counted_string VertIndicesSelector = FormatCountedString(TempMemory, CSz("geometry%.*s polylist p"), GeometryId->Count, GeometryId->Start);
+  counted_string PolylistSelector    = FormatCountedString(TempMemory, CSz("geometry%.*s polylist"), GeometryId->Count, GeometryId->Start);
 
   ansi_stream Triangles         = AnsiStream(GetFirstMatchingTag(XmlTokens, &VertexCountSelector)->Value);
   ansi_stream VertIndices       = AnsiStream(GetFirstMatchingTag(XmlTokens, &VertIndicesSelector)->Value);
@@ -89,24 +89,24 @@ LoadMeshData(xml_token_stream* XmlTokens, counted_string* GeometryId, memory_are
 xml_tag*
 ParseKeyframesForAxis(xml_token_stream* XmlTokens, char Axis, xml_tag** TimeTag, counted_string* GeometryName)
 {
-  counted_string xChannelSelector = FormatCountedString(TranArena, "library_animations channel:target=%.*s/location.%c", GeometryName->Count, GeometryName->Start, Axis);
+  counted_string xChannelSelector = FormatCountedString(TranArena, CSz("library_animations channel:target=%.*s/location.%c"), GeometryName->Count, GeometryName->Start, Axis);
   xml_tag* xChannel = GetFirstMatchingTag(XmlTokens, &xChannelSelector);
   counted_string* xChannelId = GetPropertyValue(xChannel, CS("source"));
 
-  counted_string xInputSelector = FormatCountedString(TranArena, "library_animations sampler%.*s input:semantic=INPUT", xChannelId->Count, xChannelId->Start);
+  counted_string xInputSelector = FormatCountedString(TranArena, CSz("library_animations sampler%.*s input:semantic=INPUT"), xChannelId->Count, xChannelId->Start);
   xml_tag* xInputSourceTag = GetFirstMatchingTag(XmlTokens, &xInputSelector);
   counted_string* xInputLocationSourceId = GetPropertyValue(xInputSourceTag, CS("source"));
 
-  counted_string xInputLocationSelector = FormatCountedString(TranArena, "library_animations animation source%.*s float_array", xInputLocationSourceId->Count, xInputLocationSourceId->Start);
+  counted_string xInputLocationSelector = FormatCountedString(TranArena, CSz("library_animations animation source%.*s float_array"), xInputLocationSourceId->Count, xInputLocationSourceId->Start);
   xml_tag* xKeyframeTimeTag = GetFirstMatchingTag(XmlTokens, &xInputLocationSelector);
 
 
 
-  counted_string xOutputSelector = FormatCountedString(TranArena, "library_animations sampler%.*s input:semantic=OUTPUT", xChannelId->Count, xChannelId->Start);
+  counted_string xOutputSelector = FormatCountedString(TranArena, CSz("library_animations sampler%.*s input:semantic=OUTPUT"), xChannelId->Count, xChannelId->Start);
   xml_tag* xOutputSourceTag = GetFirstMatchingTag(XmlTokens, &xOutputSelector);
   counted_string* xOutputLocationSourceId = GetPropertyValue(xOutputSourceTag, CS("source"));
 
-  counted_string xOutputLocationSelector = FormatCountedString(TranArena, "library_animations animation source%.*s float_array", xOutputLocationSourceId->Count, xOutputLocationSourceId->Start);
+  counted_string xOutputLocationSelector = FormatCountedString(TranArena, CSz("library_animations animation source%.*s float_array"), xOutputLocationSourceId->Count, xOutputLocationSourceId->Start);
   xml_tag* xKeyframePositionsTag = GetFirstMatchingTag(XmlTokens, &xOutputLocationSelector);
 
 

@@ -448,48 +448,32 @@ FormatString(memory_arena *Memory, const char* FormatString, ...)
   FormatCountedString_(Memory, Fmt, __VA_ARGS__)          \
   _Pragma("clang diagnostic pop")
 
-#if 0
-
-counted_string
-FormatCountedString_(memory_arena *Memory, const char* FormatString, ...)
-{
-  TIMED_FUNCTION();
-
-  char *Buffer = AllocateProtection(char, Memory, STRING_BUFFER_LENGTH, False);
-
-  va_list Arguments;
-  va_start(Arguments, FormatString);
-  s32 Count = vsnprintf(Buffer, STRING_BUFFER_LENGTH-1, FormatString, Arguments);
-  va_end(Arguments);
-
-  Assert(Count >= 0);
-  counted_string Result = CountedString(Buffer, (u32)Count);
-  return Result;
-}
-
-#else
+#define CSz(NullTerminatedCString) \
+  CS(NullTerminatedCString, sizeof(NullTerminatedCString)-1)
 
 function counted_string
-FormatCountedString_(memory_arena* Memory, const char* fmt...)
+FormatCountedString_(memory_arena* Memory, counted_string FS...)
 {
   TIMED_FUNCTION();
 
   va_list args;
-  va_start(args, fmt);
+  va_start(args, FS);
 
   u32 At = 0;
 
 #define FINAL_BUFFER_SIZE (1024)
   char* FinalBuffer = AllocateProtection(char, Memory, FINAL_BUFFER_SIZE, False);
 
-  while (*fmt != '\0')
+  for (u32 FormatIndex = 0;
+      FormatIndex < FS.Count;
+      ++FormatIndex)
   {
-
-    if (*fmt == '%')
+    if (FS.Start[FormatIndex] == '%')
     {
+      ++FormatIndex;
+      Assert(FormatIndex < FS.Count);
 
-      fmt++;
-      switch (*fmt)
+      switch (FS.Start[FormatIndex])
       {
         case 'd':
         {
@@ -499,14 +483,15 @@ FormatCountedString_(memory_arena* Memory, const char* fmt...)
 
         case 'l':
         {
-          fmt++;
-          if (*fmt == 'u')
+          ++FormatIndex;
+          Assert(FormatIndex < FS.Count);
+          if (FS.Start[FormatIndex] == 'u')
           {
             u64 Value = va_arg(args, u64);
             At += u64ToChar(FinalBuffer+At, Value);
 
           }
-          else if (*fmt == 'd')
+          else if (FS.Start[FormatIndex] == 'd')
           {
             s64 Value = va_arg(args, s64);
             At += s64ToChar(FinalBuffer+At, Value);
@@ -570,10 +555,10 @@ FormatCountedString_(memory_arena* Memory, const char* fmt...)
 
         case '.':
         {
-          Assert(fmt[1] == '*');
-          Assert(fmt[2] == 's');
-          fmt++;
-          fmt++;
+          Assert(FS.Start[FormatIndex+1] == '*');
+          Assert(FS.Start[FormatIndex+2] == 's');
+          FormatIndex += 2;
+          Assert(FormatIndex < FS.Count);
 
           u32 Count = va_arg(args, u32);
           char* Start = va_arg(args, char*);
@@ -594,11 +579,11 @@ FormatCountedString_(memory_arena* Memory, const char* fmt...)
 
       }
 
-      fmt++;
+      Assert(FormatIndex < FS.Count);
     }
     else
     {
-      FinalBuffer[At++] = *fmt++;
+      FinalBuffer[At++] = FS.Start[FormatIndex];
     }
 
     Assert(At < FINAL_BUFFER_SIZE);
@@ -609,5 +594,3 @@ FormatCountedString_(memory_arena* Memory, const char* fmt...)
   counted_string Result = CountedString((const char*)FinalBuffer, At);
   return Result;
 }
-
-#endif

@@ -430,48 +430,48 @@ main()
   memory_arena* Memory = &_Memory;
 
   {
-    counted_string TestValue = FormatCountedString(Memory, "%d", 42);
+    counted_string TestValue = FormatCountedString(Memory, CSz("%d"), 42);
     TestThat(StringsMatch(TestValue, CS("42")));
   }
 
   {
-    counted_string TestValue = FormatCountedString(Memory, "%u", 42);
+    counted_string TestValue = FormatCountedString(Memory, CSz("%u"), 42);
     TestThat(StringsMatch(TestValue, CS("42")));
   }
 
   {
-    counted_string TestValue = FormatCountedString(Memory, "%lu", 42l);
+    counted_string TestValue = FormatCountedString(Memory, CSz("%lu"), 42l);
     TestThat(StringsMatch(TestValue, CS("42")));
   }
 
   {
-    counted_string TestValue = FormatCountedString(Memory, "%ld", 42lu);
+    counted_string TestValue = FormatCountedString(Memory, CSz("%ld"), 42lu);
     TestThat(StringsMatch(TestValue, CS("42")));
   }
 
   {
-    counted_string TestValue = FormatCountedString(Memory, "%.*s", CS("thing"));
+    counted_string TestValue = FormatCountedString(Memory, CSz("%.*s"), CS("thing"));
     TestThat(StringsMatch(TestValue, CS("thing")));
   }
 
   {
-    counted_string TestValue = FormatCountedString(Memory, "%.*s", CS("thing"));
+    counted_string TestValue = FormatCountedString(Memory, CSz("%.*s"), CS("thing"));
     TestThat(StringsMatch(TestValue, CS("thing")));
   }
 
   {
-    counted_string TestValue = FormatCountedString(Memory, "this %.*s this", CS("thing"));
+    counted_string TestValue = FormatCountedString(Memory, CSz("this %.*s this"), CS("thing"));
     TestThat(StringsMatch(TestValue, CS("this thing this")));
   }
 
   {
-    counted_string TestValue = FormatCountedString(Memory, "this %d this", 42);
+    counted_string TestValue = FormatCountedString(Memory, CSz("this %d this"), 42);
     TestThat(StringsMatch(TestValue, CS("this 42 this")));
   }
 
   {
     counted_string TestString = CS("thing");
-    counted_string TestValue = FormatCountedString(Memory, "this %.*s this", TestString.Count, TestString.Start);
+    counted_string TestValue = FormatCountedString(Memory, CSz("this %.*s this"), TestString.Count, TestString.Start);
     TestThat(StringsMatch(TestValue, CS("this thing this")));
   }
 
