@@ -500,7 +500,7 @@ FormatCountedString_(memory_arena* Memory, counted_string FS, ...)
 
   va_end(Args);
 
-  counted_string Result = CountedString((const char*)FinalBuffer, At);
+  counted_string Result = CS((const char*)FinalBuffer, At);
   return Result;
 }
 
@@ -580,9 +580,7 @@ CS(r32 Number)
 function counted_string
 CS(v2 V)
 {
-  char *Buffer = AllocateProtection(char, TranArena, 32, False);
-  snprintf(Buffer, 32, "(%.2f,%.2f)", V.x, V.y);
-  counted_string Result = CS(Buffer);
+  counted_string Result = FormatCountedString(TranArena, CSz("(%.2f,%.2f)"), V.x, V.y);
   return Result;
 }
 

@@ -450,6 +450,11 @@ main()
   }
 
   {
+    counted_string TestValue = FormatCountedString(Memory, CSz("%.2f %.2f"), 42.42424242424242f, 42.42424242424242f);
+    TestThat(StringsMatch(TestValue, CS("42.42 42.42")));
+  }
+
+  {
     counted_string TestValue = FormatCountedString(Memory, CSz("%.2f"), 42.42424242424242f);
     TestThat(StringsMatch(TestValue, CS("42.42")));
   }

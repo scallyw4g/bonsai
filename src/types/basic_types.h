@@ -89,3 +89,36 @@ CAssert(u16_MAX == UINT16_MAX);
 CAssert(u32_MAX == UINT32_MAX);
 CAssert(u64_MAX == UINT64_MAX);
 
+#define CSz(NullTerminatedCString) \
+  CS(NullTerminatedCString, sizeof(NullTerminatedCString)-1)
+
+struct counted_string
+{
+  umm Count;
+  const char* Start; // TODO(Jesse): Make this non-const?
+};
+CAssert(sizeof(counted_string) == 16);
+
+counted_string
+CS(const char *S, umm Count)
+{
+  counted_string Result = {
+    .Start = S, .Count = Count
+  };
+  return Result;
+}
+
+struct native_file
+{
+  FILE* Handle;
+  counted_string Path;
+};
+
+global_variable native_file Stdout =
+{
+  .Handle = stdout,
+  .Path = CSz("stdout")
+};
+
+static void LogToConsole(counted_string Output);
+

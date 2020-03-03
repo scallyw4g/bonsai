@@ -87,11 +87,29 @@
 #define BONSAI_FUNCTION_NAME __func__
 
 
-#define Info(...)  printf(BLUE_TERMINAL "   Info" WHITE_TERMINAL " - ");  printf(__VA_ARGS__); printf("\n")
-#define Debug(...) printf(__VA_ARGS__);   printf("\n")
-#define Error(...) printf(RED_TERMINAL " ! Error" WHITE_TERMINAL " - "); printf(__VA_ARGS__); printf("\n")
-#define Warn(...)  printf(YELLOW_TERMINAL " * Warn" WHITE_TERMINAL " - "); printf(__VA_ARGS__); printf("\n")
-#define OpenGlDebugMessage(...)  printf(YELLOW_TERMINAL " * OpenGl Debug Message" WHITE_TERMINAL " - "); printf(__VA_ARGS__); printf("\n")
+#define Info(...)                                                  \
+  LogToConsole(CSz(BLUE_TERMINAL "   Info" WHITE_TERMINAL " - ")); \
+  printf(__VA_ARGS__);                                             \
+  LogToConsole(CSz("\n"))
+
+#define Debug(...)     \
+  printf(__VA_ARGS__); \
+  LogToConsole(CSz("\n"))
+
+#define Error(...)                                                 \
+  LogToConsole(CSz(RED_TERMINAL " ! Error" WHITE_TERMINAL " - ")); \
+  printf(__VA_ARGS__);                                             \
+  LogToConsole(CSz("\n"))
+
+#define Warn(...)                                                    \
+  LogToConsole(CSz(YELLOW_TERMINAL " * Warn" WHITE_TERMINAL " - ")); \
+  printf(__VA_ARGS__);                                               \
+  LogToConsole(CSz("\n"))
+
+#define OpenGlDebugMessage(...)                                                      \
+  LogToConsole(CSz(YELLOW_TERMINAL " * OpenGl Debug Message" WHITE_TERMINAL " - ")); \
+  printf(__VA_ARGS__);                                                               \
+  LogToConsole(CSz("\n"))
 
 #define RuntimeBreak() raise(SIGTRAP)
 #define TriggeredRuntimeBreak() if (GetDebugState) { GetDebugState()->TriggerRuntimeBreak ? RuntimeBreak() : 0 ; }

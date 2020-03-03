@@ -1,17 +1,8 @@
-#define CSz(NullTerminatedCString) \
-  CS(NullTerminatedCString, sizeof(NullTerminatedCString)-1)
 
-struct counted_string
-{
-  umm Count;
-  const char* Start; // TODO(Jesse): Make this non-const?
-};
 meta(generate_stream(counted_string))
 #include <metaprogramming/output/generate_stream_counted_string>
 meta(generate_cursor(counted_string))
 #include <metaprogramming/output/generate_cursor_counted_string>
-
-CAssert(sizeof(counted_string) == 16);
 
 umm
 Length(const char *Str)
@@ -26,27 +17,11 @@ Length(const char *Str)
 }
 
 counted_string
-CountedString(const char *S, umm Count)
-{
-  counted_string Result = {
-    .Start = S, .Count = Count
-  };
-  return Result;
-}
-
-counted_string
 CountedString(const char *S)
 {
   counted_string Result = {};
   Result.Start = S;
   Result.Count = Length(S);
-  return Result;
-}
-
-counted_string
-CS(const char *S, umm Count)
-{
-  counted_string Result = CountedString(S, Count);
   return Result;
 }
 

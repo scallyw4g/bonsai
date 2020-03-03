@@ -3,13 +3,10 @@
 inline void
 PrintSemValue( semaphore *Semaphore )
 {
-  s32 Value;
-
-  s32 E = sem_getvalue(Semaphore, &Value);
+  s32 SemValue;
+  s32 E = sem_getvalue(Semaphore, &SemValue);
   Assert(E==0);
-
-  printf("Value: %d \n", Value);
-
+  Print(SemValue);
   return;
 }
 

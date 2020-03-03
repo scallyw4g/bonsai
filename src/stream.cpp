@@ -313,7 +313,6 @@ Dump(hashtable<xml_tag*> * Hash)
     xml_tag* Element = Hash->Table[ElementIndex];
     if (Element)
     {
-      Log("");
       Print(ElementIndex);
       Print(Element);
       while ( (Element = Element->NextInHash) )

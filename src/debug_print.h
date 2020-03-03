@@ -1,4 +1,5 @@
-void
+
+function void
 Log(const char* fmt...)
 {
   va_list args;
@@ -120,15 +121,14 @@ PrintBinary( unsigned int input )
   Log("<-- Low bit \n");
 }
 
-/* inline void */
-/* Print_P( debug_profile_scope *E, const char* name) */
-/* { */
-/*   Log(" -- %s -> %s \n", name, E->Name); */
-/*   Log(" -- Parent %x \n", name, E->Parent); */
-/*   Log(" -- Sibling %x \n", name, E->Sibling); */
-/*   Log(" -- Child %x \n", name, E->Child); */
-/* } */
-
+inline void
+Print_P( debug_profile_scope *E, const char* name)
+{
+  Log(" -- %s -> %s \n", name, E->Name);
+  Log(" -- Parent %x \n", name, E->Parent);
+  Log(" -- Sibling %x \n", name, E->Sibling);
+  Log(" -- Child %x \n", name, E->Child);
+}
 
 inline void
 Print_P( void *P, const char* name)
@@ -274,7 +274,6 @@ Print_P( rect2 Rect, const char* name)
   Log(" %s.Min %f %f \n", name, Rect.Min.x, Rect.Min.y );
   Log(" %s.Max %f %f \n", name, Rect.Max.x, Rect.Max.y );
 }
-
 
 inline void
 Print_P( m4 *Mat, const char* name)

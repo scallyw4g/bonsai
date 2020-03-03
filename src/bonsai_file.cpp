@@ -1,9 +1,3 @@
-struct native_file
-{
-  FILE* Handle;
-  counted_string Path;
-};
-
 function b32
 CloseFile(native_file* File)
 {
@@ -140,5 +134,14 @@ FileExists(counted_string Path)
   const char* NullTerminatedFilePath = GetNullTerminated(Path);
   b32 Result = FileExists(NullTerminatedFilePath);
   return Result;
+}
+
+function void
+LogToConsole(counted_string Output)
+{
+  if (!WriteToFile(&Stdout, Output))
+  {
+    Error("Writing to Stdout");
+  }
 }
 
