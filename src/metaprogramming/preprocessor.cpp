@@ -273,6 +273,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory)
           default:
           {
             T.Type = CTokenType_FSlash;
+            T.Value = CS(Code.At, 1);
             Advance(&Code);
           } break;
         }
@@ -298,7 +299,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory)
 
       default:
       {
-        /* T.Value = CountedString(Code.At); */
+        T.Value = CS(Code.At, 1);
         Advance(&Code);
       } break;
     }
@@ -860,7 +861,7 @@ Output(c_token_cursor Code, counted_string Filename, memory_arena* Memory)
     b32 FileWritesSucceeded = True;
     while(Remaining(&Code))
     {
-      FileWritesSucceeded &= WriteToFile(&TempFile, ToString(Code.At[0], Memory));
+      FileWritesSucceeded &= WriteToFile(&TempFile, Code.At->Value);
       Advance(&Code);
     }
     FileWritesSucceeded &= CloseFile(&TempFile);
@@ -1445,7 +1446,7 @@ ParseForEnumValues(c_parse_result* Parser, counted_string TypeName, enum_def_str
         }
         else
         {
-          Result = Concat(Result, ToString(T, Memory), Memory);
+          Result = Concat(Result, T.Value, Memory);
         }
       }
     }
@@ -1479,7 +1480,7 @@ DoTokenSubstitution(c_parse_result* BodyText, for_member_constraints* Constraint
     }
     else
     {
-      Append(&Builder, ToString(T, Memory));
+      Append(&Builder, T.Value);
     }
   }
 

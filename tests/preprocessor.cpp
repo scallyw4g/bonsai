@@ -68,6 +68,34 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
   }
   {
     c_token T = PopToken(Parser);
+    TestThat(T == CToken(CS("int")));
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T == CToken(CS("foo")));
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T == CToken(CTokenType_Equals));
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T == CToken(CS("3")));
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T == CToken(CTokenType_FSlash));
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T == CToken(CS("3")));
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T == CToken(CTokenType_Semicolon));
+  }
+  {
+    c_token T = PopToken(Parser);
     TestThat(T == CToken(CS("return")));
   }
   {

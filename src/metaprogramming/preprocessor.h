@@ -222,22 +222,6 @@ struct c_decl_iterator
   c_decl_stream_chunk* At;
 };
 
-inline counted_string
-ToString(c_token Token, memory_arena* Memory)
-{
-  counted_string Result = {};
-  if (Token.Value.Count)
-  {
-    Result = FormatCountedString(Memory, "%.*s", Token.Value.Count, Token.Value.Start);
-  }
-  else
-  {
-    Result = FormatCountedString(Memory, "%c", Token.Type);
-  }
-
-  return Result;
-}
-
 inline void
 PrintToken(c_token Token)
 {
@@ -248,7 +232,7 @@ b32
 operator==(c_token T1, c_token T2)
 {
   b32 Result = (T1.Type == T2.Type);
-  if (Result && (T1.Value.Count > 0 || T2.Value.Count) )
+  if (Result && (T1.Value.Count > 1 || T2.Value.Count > 1) )
   {
     Result &= StringsMatch(T1.Value, T2.Value);
   }
@@ -273,7 +257,7 @@ CToken(counted_string Value)
 }
 
 inline c_token
-CToken(c_token_type Type, counted_string Value = CountedString(""))
+CToken(c_token_type Type, counted_string Value = CS(""))
 {
   c_token Result = {
     .Type = Type,

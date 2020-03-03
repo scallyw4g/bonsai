@@ -2,6 +2,7 @@ function void
 FunctionName()
 {
   counted_string S = CS("thing\n");
+  int foo = 3/3;
   return;
 }
 
