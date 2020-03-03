@@ -82,21 +82,7 @@ struct mesh_metadata
 };
 
 ansi_stream
-AnsiStream(counted_string String, counted_string Filename = {})
-{
-  ansi_stream Result = {};
-
-  Result.Start = String.Start;
-  Result.At    = String.Start;
-  Result.End   = String.Start + String.Count;
-
-  Result.Filename = Filename;
-
-  return Result;
-}
-
-ansi_stream
-AnsiStream(counted_string* String)
+AnsiStream(counted_string* String, counted_string Filename = {})
 {
   ansi_stream Result = {};
 
@@ -104,6 +90,15 @@ AnsiStream(counted_string* String)
   Result.At    = String->Start;
   Result.End   = String->Start + String->Count;
 
+  Result.Filename = Filename;
+
+  return Result;
+}
+
+ansi_stream
+AnsiStream(counted_string String, counted_string Filename = {})
+{
+  ansi_stream Result = AnsiStream(&String, Filename);
   return Result;
 }
 
@@ -286,3 +281,12 @@ PopWordCounted(ansi_stream *Cursor, const char *Delimeters = 0)
   return Result;
 }
 
+function counted_string
+CountedString(ansi_stream Stream)
+{
+  counted_string Result = {
+    .Start = Stream.Start,
+    .Count = (umm)(Stream.End-Stream.Start)
+  };
+  return Result;
+}

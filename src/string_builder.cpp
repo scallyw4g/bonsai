@@ -151,179 +151,6 @@ ToCapitalCase(counted_string Source, memory_arena* Memory)
   return Result;
 }
 
-function char*
-MemorySize(u64 Number)
-{
-  r64 KB = (r64)Kilobytes(1);
-  r64 MB = (r64)Megabytes(1);
-  r64 GB = (r64)Gigabytes(1);
-
-  r64 Display = (r64)Number;
-  char Units = ' ';
-
-  if (Number >= KB && Number < MB)
-  {
-    Display = Number / KB;
-    Units = 'K';
-  }
-  else if (Number >= MB && Number < GB)
-  {
-    Display = Number / MB;
-    Units = 'M';
-  }
-  else if (Number >= GB)
-  {
-    Display = Number / GB;
-    Units = 'G';
-  }
-
-
-  char *Buffer = AllocateProtection(char, TranArena, 32, False);
-  snprintf(Buffer, 32, "%.1f%c", (r32)Display, Units);
-  return Buffer;
-}
-
-template<typename number_type>counted_string
-NumericValueToString(number_type Number, counted_string Format)
-{
-  counted_string Result = FormatCountedString_(TranArena, Format, Number);
-  return Result;
-}
-
-function counted_string
-CS(s64 Number)
-{
-  counted_string Result = NumericValueToString(Number, CSz("%ld"));
-  return Result;
-}
-
-function counted_string
-CS(u64 Number)
-{
-  counted_string Result = NumericValueToString(Number, CSz("%lu"));
-  return Result;
-}
-
-function counted_string
-CS(s32 Number)
-{
-  counted_string Result = NumericValueToString(Number, CSz("%d"));
-  return Result;
-}
-
-function counted_string
-CS(u32 Number)
-{
-  counted_string Result = NumericValueToString(Number, CSz("%u"));
-  return Result;
-}
-
-function counted_string
-CS(r64 Number)
-{
-  counted_string Result = NumericValueToString(Number, CSz("%.2f"));
-  return Result;
-}
-
-function counted_string
-CS(r32 Number)
-{
-  counted_string Result = NumericValueToString(Number, CSz("%.2f"));
-  return Result;
-}
-
-function counted_string
-CS(v2 V)
-{
-  char *Buffer = AllocateProtection(char, TranArena, 32, False);
-  snprintf(Buffer, 32, "(%.2f,%.2f)", V.x, V.y);
-  counted_string Result = CS(Buffer);
-  return Result;
-}
-
-function char*
-ToString(u64 Number)
-{
-  char *Buffer = AllocateProtection(char, TranArena, 32, False);
-  snprintf(Buffer, 32, "%lu", Number);
-  return Buffer;
-}
-
-function char*
-ToString(s32 Number)
-{
-  char *Buffer = AllocateProtection(char, TranArena, 32, False);
-  snprintf(Buffer, 32, "%i", Number);
-  return Buffer;
-}
-
-function char*
-ToString(u32 Number)
-{
-  char *Buffer = AllocateProtection(char, TranArena, 32, False);
-  snprintf(Buffer, 32, "%u", Number);
-  return Buffer;
-}
-
-function char*
-ToString(r32 Number)
-{
-  char *Buffer = AllocateProtection(char, TranArena, 32, False);
-  snprintf(Buffer, 32, "%.2f", Number);
-  return Buffer;
-}
-
-function char*
-FormatMemorySize(u64 Number)
-{
-  r64 KB = (r64)Kilobytes(1);
-  r64 MB = (r64)Megabytes(1);
-  r64 GB = (r64)Gigabytes(1);
-
-  r64 Display = (r64)Number;
-  char Units = ' ';
-
-  if (Number >= KB && Number < MB)
-  {
-    Display = Number / KB;
-    Units = 'K';
-  }
-  else if (Number >= MB && Number < GB)
-  {
-    Display = Number / MB;
-    Units = 'M';
-  }
-  else if (Number >= GB)
-  {
-    Display = Number / GB;
-    Units = 'G';
-  }
-
-  char *Buffer = AllocateProtection(char, TranArena, 32, False);
-  snprintf(Buffer, 32, "%.1f%c", (r32)Display, Units);
-
-  return Buffer;
-}
-
-function char*
-FormatThousands(u64 Number)
-{
-  u64 OneThousand = 1000;
-  r32 Display = (r32)Number;
-  char Units = ' ';
-
-  if (Number >= OneThousand)
-  {
-    Display = Number / (r32)OneThousand;
-    Units = 'K';
-  }
-
-  char *Buffer = AllocateProtection(char, TranArena, 32, False);
-  snprintf(Buffer, 32, "%.1f%c", Display, Units);
-
-  return Buffer;
-}
-
 // Note(Jesse): Shamelessly copied, then modified, from the Handmade Hero codebase
 global_variable char DecChars[] = "0123456789";
 global_variable char LowerHexChars[] = "0123456789abcdef";
@@ -389,10 +216,8 @@ s64ToChar(char* Dest, s64 Value, u32 Base = 10, char *Digits = DecChars)
   return Count;
 }
 
-
-#define DEFAULT_FORMAT_PRECISION (16)
-
 // Note(Jesse): Shamelessly copied, then modified, from the Handmade Hero codebase
+#define DEFAULT_FORMAT_PRECISION (16)
 function u32
 f64ToChar(char* Dest, r64 Value, u32 Precision = DEFAULT_FORMAT_PRECISION)
 {
@@ -423,21 +248,6 @@ f64ToChar(char* Dest, r64 Value, u32 Precision = DEFAULT_FORMAT_PRECISION)
   }
 
   return Count;
-}
-
-#define STRING_BUFFER_LENGTH 1024
-
-char *
-FormatString(memory_arena *Memory, const char* FormatString, ...)
-{
-  char *Buffer = AllocateProtection(char, Memory, STRING_BUFFER_LENGTH, False);
-
-  va_list Arguments;
-  va_start(Arguments, FormatString);
-  vsnprintf(Buffer, STRING_BUFFER_LENGTH-1, FormatString, Arguments);
-  va_end(Arguments);
-
-  return Buffer;
 }
 
 // This is to silence the warnings when passing counted_strings to this function
@@ -491,7 +301,6 @@ ToU32(counted_string S)
   return Result;
 }
 
-
 function counted_string
 FormatCountedString_(memory_arena* Memory, counted_string FS, ...)
 {
@@ -515,9 +324,26 @@ FormatCountedString_(memory_arena* Memory, counted_string FS, ...)
 
     if (FS.Start[FormatIndex] == '%')
     {
-
       ++FormatIndex;
       Assert(FormatIndex < FS.Count);
+
+      u32 FormatWidth = 0;
+      if (FS.Start[FormatIndex] == '*')
+      {
+        ++FormatIndex;
+        Assert(FormatIndex < FS.Count);
+        FormatWidth = va_arg(Args, u32);
+      }
+      else if (IsNumeric(FS.Start[FormatIndex]))
+      {
+        u32 CharCount = 0;
+        while(IsNumeric(FS.Start[FormatIndex + CharCount])) { ++CharCount; }
+        counted_string NumberString = CS((const char*)FS.Start+FormatIndex, CharCount);
+        FormatWidth = ToU32(NumberString);
+        FormatIndex += CharCount;
+        Assert(FormatIndex < FS.Count);
+      }
+
 
       u32 FormatPrecision = 0;
       if (FS.Start[FormatIndex] == '.')
@@ -583,13 +409,27 @@ FormatCountedString_(memory_arena* Memory, counted_string FS, ...)
         case 'c':
         {
           char Value = (char)va_arg(Args, s32);
+
+          if (FormatWidth)
+          {
+            u32 PadCount = FormatWidth - 1;
+            while (PadCount) { FinalBuffer[At++] = ' '; --PadCount; }
+          }
+
           FinalBuffer[At++] = Value;
         } break;
 
         case 's':
         {
-          // TODO(Jesse): Respect the %.*s or %.3s specifiers
           char* Value = va_arg(Args, char*);
+          u32 ValueLen = FormatPrecision ? FormatPrecision : (u32)Length(Value);
+
+          if (FormatWidth)
+          {
+            u32 PadCount = FormatWidth - ValueLen;
+            while (PadCount) { FinalBuffer[At++] = ' '; --PadCount; }
+          }
+
           u32 Count = 0;
           while (*Value)
           {
@@ -618,6 +458,13 @@ FormatCountedString_(memory_arena* Memory, counted_string FS, ...)
         case 'S':
         {
           counted_string String = va_arg(Args, counted_string);
+
+          if (FormatWidth)
+          {
+            u32 PadCount = FormatWidth - (u32)String.Count;
+            while (PadCount) { FinalBuffer[At++] = ' '; --PadCount; }
+          }
+
           for (u32 CharIndex = 0;
               CharIndex < String.Count;
               ++CharIndex)
@@ -650,3 +497,133 @@ FormatCountedString_(memory_arena* Memory, counted_string FS, ...)
   counted_string Result = CountedString((const char*)FinalBuffer, At);
   return Result;
 }
+
+function counted_string
+MemorySize(u64 Number)
+{
+  r64 KB = (r64)Kilobytes(1);
+  r64 MB = (r64)Megabytes(1);
+  r64 GB = (r64)Gigabytes(1);
+
+  r64 Display = (r64)Number;
+  char Units = ' ';
+
+  if (Number >= KB && Number < MB)
+  {
+    Display = Number / KB;
+    Units = 'K';
+  }
+  else if (Number >= MB && Number < GB)
+  {
+    Display = Number / MB;
+    Units = 'M';
+  }
+  else if (Number >= GB)
+  {
+    Display = Number / GB;
+    Units = 'G';
+  }
+
+
+  counted_string Result = FormatCountedString(TranArena, CSz("%.1f%c"), (r32)Display, Units);
+  return Result;
+}
+
+function counted_string
+CS(s64 Number)
+{
+  counted_string Result = FormatCountedString(TranArena, CSz("%ld"), Number);
+  return Result;
+}
+
+function counted_string
+CS(u64 Number)
+{
+  counted_string Result = FormatCountedString(TranArena, CSz("%lu"), Number);
+  return Result;
+}
+
+function counted_string
+CS(s32 Number)
+{
+  counted_string Result = FormatCountedString(TranArena, CSz("%d"), Number);
+  return Result;
+}
+
+function counted_string
+CS(u32 Number)
+{
+  counted_string Result = FormatCountedString(TranArena, CSz("%u"), Number);
+  return Result;
+}
+
+function counted_string
+CS(r64 Number)
+{
+  counted_string Result = FormatCountedString(TranArena, CSz("%.2f"), Number);
+  return Result;
+}
+
+function counted_string
+CS(r32 Number)
+{
+  counted_string Result = FormatCountedString(TranArena, CSz("%.2f"), Number);
+  return Result;
+}
+
+function counted_string
+CS(v2 V)
+{
+  char *Buffer = AllocateProtection(char, TranArena, 32, False);
+  snprintf(Buffer, 32, "(%.2f,%.2f)", V.x, V.y);
+  counted_string Result = CS(Buffer);
+  return Result;
+}
+
+function counted_string
+FormatThousands(u64 Number)
+{
+  u64 OneThousand = 1000;
+  r32 Display = (r32)Number;
+  char Units = ' ';
+
+  if (Number >= OneThousand)
+  {
+    Display = Number / (r32)OneThousand;
+    Units = 'K';
+  }
+
+  counted_string Result = FormatCountedString(TranArena, CSz("%.1f%c"), Display, Units);
+  return Result;
+}
+
+function r32
+StringToFloat(counted_string* String)
+{
+  const char* Temp = GetNullTerminated(*String, TranArena);
+  r32 Result = (r32)atof(Temp);
+  return Result;
+}
+
+function s32
+StringToInt(counted_string String)
+{
+  const char* Temp = GetNullTerminated(String, TranArena);
+  s32 Result = atoi(Temp);
+  return Result;
+}
+
+function s32
+StringToInt(counted_string* String)
+{
+  s32 Result = StringToInt(*String);
+  return Result;
+}
+
+function u32
+StringToUInt(counted_string *String)
+{
+  u32 Result = (u32)StringToInt(String);
+  return Result;
+}
+

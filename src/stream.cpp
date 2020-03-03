@@ -336,4 +336,3 @@ Dump(xml_token_stream *Stream, umm TokenCount)
     Print(Stream->Start + TokenIndex);
   }
 }
-

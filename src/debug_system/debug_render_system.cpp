@@ -1738,7 +1738,7 @@ PushChunkView(debug_ui_render_group* Group, world_chunk* Chunk, window_layout* W
       b32 DebugButtonPressed = False;
 
       interactable_handle PrevButton = PushButtonStart(Group, (umm)"PrevButton");
-        PushColumn(Group, CS("<"));
+        PushColumn(Group, CSz("<"));
       PushButtonEnd(Group);
 
       if (Clicked(Group, &PrevButton))
@@ -1749,7 +1749,7 @@ PushChunkView(debug_ui_render_group* Group, world_chunk* Chunk, window_layout* W
 
 
       interactable_handle NextButton = PushButtonStart(Group, (umm)"NextButton");
-        PushColumn(Group, CS(">"));
+        PushColumn(Group, CSz(">"));
       PushButtonEnd(Group);
 
       if (Clicked(Group, &NextButton))
@@ -1758,7 +1758,7 @@ PushChunkView(debug_ui_render_group* Group, world_chunk* Chunk, window_layout* W
         DebugButtonPressed = True;
       }
 
-      counted_string ButtonText = Chunk->DrawBoundingVoxels ? CS("|") : CS("O");
+      counted_string ButtonText = Chunk->DrawBoundingVoxels ? CSz("|") : CSz("O");
 
       interactable_handle ToggleBoundingVoxelsButton = PushButtonStart(Group, (umm)"ToggleBoundingVoxelsButton");
         PushColumn(Group, ButtonText);
@@ -1802,21 +1802,21 @@ PushChunkDetails(debug_ui_render_group* Group, world_chunk* Chunk, window_layout
 {
   PushWindowStart(Group, Window);
   PushTableStart(Group);
-    PushColumn(Group, CS("WorldP"));
+    PushColumn(Group, CSz("WorldP"));
     PushColumn(Group, CS(Chunk->WorldP.x));
     PushColumn(Group, CS(Chunk->WorldP.y));
     PushColumn(Group, CS(Chunk->WorldP.z));
     PushNewRow(Group);
 
-    PushColumn(Group, CS("PointsToLeaveRemaining"));
+    PushColumn(Group, CSz("PointsToLeaveRemaining"));
     PushColumn(Group, CS(Chunk->PointsToLeaveRemaining));
     PushNewRow(Group);
 
-    PushColumn(Group, CS("BoundaryVoxels Count"));
+    PushColumn(Group, CSz("BoundaryVoxels Count"));
     PushColumn(Group, CS(Chunk->EdgeBoundaryVoxelCount));
     PushNewRow(Group);
 
-    PushColumn(Group, CS("Triangles"));
+    PushColumn(Group, CSz("Triangles"));
     PushColumn(Group, CS(Chunk->TriCount));
     PushNewRow(Group);
   PushTableEnd(Group);
@@ -1857,7 +1857,7 @@ DrawPickedChunks(debug_ui_render_group* Group)
     if (Clicked(Group, &PositionButton)) { DebugState->HotChunk = Chunk; }
 
     interactable_handle CloseButton = PushButtonStart(Group, (umm)"CloseButton"^(umm)Chunk);
-      PushColumn(Group, CS("X"));
+      PushColumn(Group, CSz("X"));
     PushButtonEnd(Group);
 
     if ( Clicked(Group, &CloseButton) )
@@ -1921,13 +1921,9 @@ DrawPickedChunks(debug_ui_render_group* Group)
 
 
 function counted_string
-BuildNameStringFor(char Prefix, const char* Name, u32 DepthAdvance)
+BuildNameStringFor(char Prefix, counted_string Name, u32 DepthAdvance)
 {
-  u32 NameLength = (u32)Length(Name);
-  u32 FinalBufferLength = DepthAdvance + 1 + NameLength;
-
-  char* Buffer = FormatString(TranArena, "%*s%c%s", DepthAdvance, "", Prefix, Name);
-  counted_string Result = CS(Buffer, FinalBufferLength);
+  counted_string Result = FormatCountedString(TranArena, CSz("%*c%S"), DepthAdvance, Prefix, Name);
   return Result;
 }
 
@@ -1955,7 +1951,7 @@ BufferScopeTreeEntry(debug_ui_render_group *Group, debug_profile_scope *Scope,
   }
 
   u32 DepthSpaces = (Depth*2)+1;
-  counted_string NameString = BuildNameStringFor(Prefix, Scope->Name, DepthSpaces);
+  counted_string NameString = BuildNameStringFor(Prefix, CS(Scope->Name), DepthSpaces);
   PushColumn(Group, NameString, 0, V4(0), ColumnRenderParam_LeftAlign);
 
   return;
@@ -2071,7 +2067,7 @@ DebugDrawFlamegraph(debug_ui_render_group *Group, debug_state *SharedState, v2 B
         ThreadIndex < TotalThreadCount;
         ++ThreadIndex)
   {
-      PushColumn(Group, CS(FormatString(TranArena, "Thread %u", ThreadIndex)));
+      PushColumn(Group, FormatCountedString(TranArena, CSz("Thread %u"), ThreadIndex));
       PushNewRow(Group);
 
       debug_thread_state *ThreadState = GetThreadLocalStateFor(ThreadIndex);
@@ -2424,10 +2420,10 @@ DebugDrawCallGraph(debug_ui_render_group *Group, debug_state *DebugState, r64 Ma
 
     PushTableStart(Group);
 
-    PushColumn(Group, CS("Frame %"));
-    PushColumn(Group, CS("Cycles"));;
-    PushColumn(Group, CS("Calls"));
-    PushColumn(Group, CS("Name"));
+    PushColumn(Group, CSz("Frame %"));
+    PushColumn(Group, CSz("Cycles"));;
+    PushColumn(Group, CSz("Calls"));
+    PushColumn(Group, CSz("Name"));
     PushNewRow(Group);
 
     for ( u32 ThreadIndex = 0;
@@ -2708,10 +2704,10 @@ DebugDrawDrawCalls(debug_ui_render_group *Group)
 
   PushTableStart(Group);
 
-     PushColumn(Group, CS("Caller"));
-     PushColumn(Group, CS("Calls"));
-     PushColumn(Group, CS("Bytes"));
-     PushNewRow(Group);
+  PushColumn(Group, CSz("Caller"));
+  PushColumn(Group, CSz("Calls"));
+  PushColumn(Group, CSz("Bytes"));
+  PushNewRow(Group);
 
   for( u32 DrawCountIndex = 0;
        DrawCountIndex < Global_DrawCallArrayLength;
@@ -2761,13 +2757,13 @@ PushBargraph(debug_ui_render_group *Group, r32 PercFilled)
 function interactable_handle
 PushArenaBargraph(debug_ui_render_group *Group, umm TotalUsed, r32 TotalPerc, umm Remaining, umm InteractionId)
 {
-  PushColumn(Group, CS(FormatMemorySize(TotalUsed)));
+  PushColumn(Group, MemorySize(TotalUsed));
 
   interactable_handle Handle = PushButtonStart(Group, InteractionId);
     PushBargraph(Group, TotalPerc);
   PushButtonEnd(Group);
 
-  PushColumn(Group, CS(FormatMemorySize(Remaining)));
+  PushColumn(Group, MemorySize(Remaining));
   PushNewRow(Group);
   return Handle;
 }
@@ -2775,20 +2771,20 @@ PushArenaBargraph(debug_ui_render_group *Group, umm TotalUsed, r32 TotalPerc, um
 function void
 PushMemoryStatsTable(memory_arena_stats MemStats, debug_ui_render_group *Group)
 {
-  PushColumn(Group, CS("Allocs"));
-  PushColumn(Group, CS(FormatMemorySize(MemStats.Allocations)));
+  PushColumn(Group, CSz("Allocs"));
+  PushColumn(Group, MemorySize(MemStats.Allocations));
   PushNewRow(Group);
 
-  PushColumn(Group, CS("Pushes"));
-  PushColumn(Group, CS(FormatThousands(MemStats.Pushes)));
+  PushColumn(Group, CSz("Pushes"));
+  PushColumn(Group, FormatThousands(MemStats.Pushes));
   PushNewRow(Group);
 
-  PushColumn(Group, CS("Remaining"));
-  PushColumn(Group, CS(FormatMemorySize(MemStats.Remaining)));
+  PushColumn(Group, CSz("Remaining"));
+  PushColumn(Group, MemorySize(MemStats.Remaining));
   PushNewRow(Group);
 
-  PushColumn(Group, CS("Total"));
-  PushColumn(Group, CS(FormatMemorySize(MemStats.TotalAllocated)));
+  PushColumn(Group, CSz("Total"));
+  PushColumn(Group, MemorySize(MemStats.TotalAllocated));
   PushNewRow(Group);
 
   return;
@@ -2864,10 +2860,10 @@ PushDebugPushMetaData(debug_ui_render_group *Group, selected_arenas *SelectedAre
   push_metadata CollatedMetaTable[META_TABLE_SIZE] = {};
 
 
-  PushColumn(Group, CS("Size"));
-  PushColumn(Group, CS("Structs"));
-  PushColumn(Group, CS("Push Count"));
-  PushColumn(Group, CS("Name"));
+  PushColumn(Group, CSz("Size"));
+  PushColumn(Group, CSz("Structs"));
+  PushColumn(Group, CSz("Push Count"));
+  PushColumn(Group, CSz("Name"));
   PushNewRow(Group);
 
 
@@ -2943,9 +2939,9 @@ PushDebugPushMetaData(debug_ui_render_group *Group, selected_arenas *SelectedAre
     if (Collated->Name)
     {
       umm AllocationSize = GetAllocationSize(Collated);
-      PushColumn(Group,  CS(FormatMemorySize(AllocationSize)));
-      PushColumn(Group,  CS(FormatThousands(Collated->StructCount)));
-      PushColumn(Group,  CS(FormatThousands(Collated->PushCount)));
+      PushColumn(Group,  MemorySize(AllocationSize));
+      PushColumn(Group,  FormatThousands(Collated->StructCount));
+      PushColumn(Group,  FormatThousands(Collated->PushCount));
       PushColumn(Group, CS(Collated->Name));
       PushNewRow(Group);
     }
@@ -2977,8 +2973,8 @@ DebugDrawMemoryHud(debug_ui_render_group *Group, debug_state *DebugState)
     PushTableStart(Group);
       interactable_handle ExpandInteraction = PushButtonStart(Group, (umm)"MemoryWindowExpandInteraction"^(umm)Current);
         PushColumn(Group, CS(Current->Name));
-        PushColumn(Group, CS(MemorySize(MemStats.TotalAllocated)));
-        PushColumn(Group, CS(ToString(MemStats.Pushes)));
+        PushColumn(Group, MemorySize(MemStats.TotalAllocated));
+        PushColumn(Group, CS(MemStats.Pushes));
       PushButtonEnd(Group);
     PushTableEnd(Group);
 
@@ -3032,11 +3028,11 @@ DebugDrawNetworkHud(debug_ui_render_group *Group, network_connection *Network, s
   PushTableStart(Group);
   if (IsConnected(Network))
   {
-    PushColumn(Group, CS("O"));
+    PushColumn(Group, CSz("O"));
 
     if (Network->Client)
     {
-      PushColumn(Group, CS("ClientId"));
+      PushColumn(Group, CSz("ClientId"));
       PushColumn(Group, CS(Network->Client->Id));
       PushNewRow(Group);
     }
@@ -3052,7 +3048,7 @@ DebugDrawNetworkHud(debug_ui_render_group *Group, network_connection *Network, s
       if (Network->Client->Id == ClientIndex)
         Color = GREEN;
 
-      PushColumn(Group, CS("Id:"));
+      PushColumn(Group, CSz("Id:"));
       PushColumn(Group, CS( Client->Id));
       PushColumn(Group, CS(Client->Counter));
       PushNewRow(Group);
@@ -3061,7 +3057,7 @@ DebugDrawNetworkHud(debug_ui_render_group *Group, network_connection *Network, s
   }
   else
   {
-    PushColumn(Group, CS("X"));
+    PushColumn(Group, CSz("X"));
     PushNewRow(Group);
   }
   PushTableEnd(Group);

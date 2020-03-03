@@ -1439,11 +1439,11 @@ ParseForEnumValues(c_parse_result* Parser, counted_string TypeName, enum_def_str
         c_token T = PopTokenRaw(&BodyText);
         if (StringsMatch(T.Value, Constraints.TypeName))
         {
-          Result = Concat(Result, CS(FormatString(Memory, "%.*s", Enum.Name.Count, Enum.Name.Start)), Memory);
+          Result = Concat(Result, FormatCountedString(Memory, CSz("%S"), Enum.Name), Memory);
         }
         else if (StringsMatch(T.Value, Constraints.ValueName))
         {
-          Result = Concat(Result, CS(FormatString(Memory, "%.*s", Enum.Value.Count, Enum.Value.Start)), Memory);
+          Result = Concat(Result, FormatCountedString(Memory, CSz("%S"), Enum.Value), Memory);
         }
         else
         {
@@ -1796,11 +1796,10 @@ function %.*s
       Advance(&Iter))
   {
     Result = Concat(Result,
-        CS(FormatString(Memory,
-            "  if (StringsMatch(CS(\"%.*s\"), S)) { Result = %.*s; }\n",
-            Iter.At->Element.Name.Count, Iter.At->Element.Name.Start,
-            Iter.At->Element.Name.Count, Iter.At->Element.Name.Start
-            )), Memory);
+        FormatCountedString(Memory,
+            CSz("  if (StringsMatch(CS(\"%S\"), S)) { Result = %S; }\n"),
+            Iter.At->Element.Name,
+            Iter.At->Element.Name), Memory);
   }
 
   Result = Concat(Result, CS("  return Result;"), Memory);
@@ -1877,11 +1876,7 @@ ToString(%.*s Type)
       Advance(&Iter))
   {
     Result = Concat(Result,
-        CS(FormatString(Memory,
-            "    case %.*s: { Result = CS(\"%.*s\"); } break;\n",
-            Iter.At->Element.Name.Count, Iter.At->Element.Name.Start,
-            Iter.At->Element.Name.Count, Iter.At->Element.Name.Start
-            )), Memory);
+        FormatCountedString(Memory, CSz("    case %S: { Result = CS(\"%S\"); } break;\n"), Iter.At->Element.Name, Iter.At->Element.Name), Memory);
   }
 
   Result = Concat(Result, CS("  }\n  return Result;\n}\n\n"), Memory);

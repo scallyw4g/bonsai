@@ -1035,8 +1035,9 @@ main()
 
       if (GlyphsRasterized)
       {
-        char* AtlasName = FormatString(TempArena, "texture_atlas_%d.bmp", AtlasIndex);
-        WriteBitmapToDisk(&TextureAtlasBitmap, AtlasName);
+        // TODO(Jesse): This could probably be made better
+        counted_string AtlasName = FormatCountedString(TempArena, CSz("texture_atlas_%d.bmp"), AtlasIndex);
+        WriteBitmapToDisk(&TextureAtlasBitmap, GetNullTerminated(AtlasName));
       }
 
       GlyphsRasterized = 0;
