@@ -17,10 +17,6 @@
 
 #define GAME_LIB_PATH "bin/Debug/GameLoadable"
 
-// FIXME(Jesse): Just write our own snprintf
-#define Snprintf(...) _snprintf(__VA_ARGS__)
-
-
 
 
 // In Cygwin printing to the console with printf doesn't work, so we wrap some

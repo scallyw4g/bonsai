@@ -2,7 +2,6 @@
 #define BONSAI_NO_DEBUG_MEMORY_ALLOCATOR
 #define PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS 1
 
-
 #include <debug.cpp>
 #include <test_utils.cpp>
 

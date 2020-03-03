@@ -1,3 +1,6 @@
+#define CSz(NullTerminatedCString) \
+  CS(NullTerminatedCString, sizeof(NullTerminatedCString)-1)
+
 struct counted_string
 {
   umm Count;

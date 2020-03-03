@@ -450,6 +450,11 @@ main()
   }
 
   {
+    counted_string TestValue = FormatCountedString(Memory, CSz("%.2f"), 42.42424242424242f);
+    TestThat(StringsMatch(TestValue, CS("42.42")));
+  }
+
+  {
     counted_string TestValue = FormatCountedString(Memory, CSz("%.*s"), CS("thing"));
     TestThat(StringsMatch(TestValue, CS("thing")));
   }
@@ -489,6 +494,13 @@ main()
 
   {
     counted_string TestString = CS("thing");
+    counted_string TestValue = FormatCountedString(Memory, CSz("this %.*s this"), 3, TestString.Start);
+    TestThat(StringsMatch(TestValue, CS("this thi this")));
+  }
+
+
+  {
+    counted_string TestString = CS("thing");
     counted_string TestValue = FormatCountedString(Memory, CSz("this %S %S this"), TestString, TestString);
     TestThat(StringsMatch(TestValue, CS("this thing thing this")));
   }
@@ -522,6 +534,56 @@ main()
     u32 Count = f64ToChar(TempBuffer, 3.14, 10);
     TestThat(StringsMatch(CS(TempBuffer, Count), CS("3.1400000000")));
   }
+
+  {
+    TestThat(IsNumeric('0'));
+    TestThat(IsNumeric('1'));
+    TestThat(IsNumeric('2'));
+    TestThat(IsNumeric('3'));
+    TestThat(IsNumeric('4'));
+    TestThat(IsNumeric('5'));
+    TestThat(IsNumeric('6'));
+    TestThat(IsNumeric('7'));
+    TestThat(IsNumeric('8'));
+    TestThat(IsNumeric('9'));
+
+    TestThat(!IsNumeric('/'));
+    TestThat(!IsNumeric(':'));
+    TestThat(!IsNumeric((char)0));
+  }
+
+  {
+    TestThat(ToU32('0') == 0);
+    TestThat(ToU32('1') == 1);
+    TestThat(ToU32('2') == 2);
+    TestThat(ToU32('3') == 3);
+    TestThat(ToU32('4') == 4);
+    TestThat(ToU32('5') == 5);
+    TestThat(ToU32('6') == 6);
+    TestThat(ToU32('7') == 7);
+    TestThat(ToU32('8') == 8);
+    TestThat(ToU32('9') == 9);
+  }
+
+  {
+    TestThat(Exp(10, 0) == 1);
+    TestThat(Exp(10, 1) == 10);
+    TestThat(Exp(10, 2) == 100);
+
+    TestThat(Exp(2, 2) == 4);
+    TestThat(Exp(2, 3) == 8);
+  }
+
+  {
+    TestThat(ToU32(CSz("42")) == 42);
+    TestThat(ToU32(CSz("420")) == 420);
+    TestThat(ToU32(CSz("4200")) == 4200);
+    TestThat(ToU32(CSz("0200")) == 200);
+
+    TestThat(ToU32(CSz("0")) == 0);
+    TestThat(ToU32(CSz("0")) == 0);
+  }
+
 
 
 

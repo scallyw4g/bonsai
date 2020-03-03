@@ -59,9 +59,6 @@
 
 #define WindowEventMasks StructureNotifyMask | PointerMotionMask | KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask
 
-// FIXME(Jesse): Write own snprintf
-#define Snprintf(...) snprintf(__VA_ARGS__)
-
 // In Cygwin printing to the console with printf doesn't work, so we have a
 // wrapper that does some additional crazyness on Win32
 #define PrintConsole(Message) printf(Message)

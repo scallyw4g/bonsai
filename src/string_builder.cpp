@@ -184,55 +184,51 @@ MemorySize(u64 Number)
 }
 
 template<typename number_type>counted_string
-NumericValueToString(number_type Number, const char* Format)
+NumericValueToString(number_type Number, counted_string Format)
 {
-  u32 BufferLength = 32;
-  char *Buffer = AllocateProtection(char, TranArena, BufferLength, False);
-  snprintf(Buffer, BufferLength, Format, Number);
-
-  counted_string Result = CS(Buffer);
+  counted_string Result = FormatCountedString_(TranArena, Format, Number);
   return Result;
 }
 
 function counted_string
 CS(s64 Number)
 {
-  counted_string Result = NumericValueToString(Number, "%ld");
+  counted_string Result = NumericValueToString(Number, CSz("%ld"));
   return Result;
 }
 
 function counted_string
 CS(u64 Number)
 {
-  counted_string Result = NumericValueToString(Number, "%lu");
+  counted_string Result = NumericValueToString(Number, CSz("%lu"));
   return Result;
 }
 
 function counted_string
 CS(s32 Number)
 {
-  counted_string Result = NumericValueToString(Number, "%i");
+  counted_string Result = NumericValueToString(Number, CSz("%d"));
   return Result;
 }
 
 function counted_string
 CS(u32 Number)
 {
-  counted_string Result = NumericValueToString(Number, "%u");
+  counted_string Result = NumericValueToString(Number, CSz("%u"));
   return Result;
 }
 
 function counted_string
 CS(r64 Number)
 {
-  counted_string Result = NumericValueToString(Number, "%.2f");
+  counted_string Result = NumericValueToString(Number, CSz("%.2f"));
   return Result;
 }
 
 function counted_string
 CS(r32 Number)
 {
-  counted_string Result = NumericValueToString(Number, "%.2f");
+  counted_string Result = NumericValueToString(Number, CSz("%.2f"));
   return Result;
 }
 
@@ -393,9 +389,12 @@ s64ToChar(char* Dest, s64 Value, u32 Base = 10, char *Digits = DecChars)
   return Count;
 }
 
+
+#define DEFAULT_FORMAT_PRECISION (16)
+
 // Note(Jesse): Shamelessly copied, then modified, from the Handmade Hero codebase
 function u32
-f64ToChar(char* Dest, r64 Value, u32 Precision = 16)
+f64ToChar(char* Dest, r64 Value, u32 Precision = DEFAULT_FORMAT_PRECISION)
 {
   TIMED_FUNCTION();
 
@@ -448,8 +447,50 @@ FormatString(memory_arena *Memory, const char* FormatString, ...)
   FormatCountedString_(Memory, Fmt, __VA_ARGS__)          \
   _Pragma("clang diagnostic pop")
 
-#define CSz(NullTerminatedCString) \
-  CS(NullTerminatedCString, sizeof(NullTerminatedCString)-1)
+function b32
+IsNumeric(char C)
+{
+  b32 Result = (C >= '0' && C <= '9');
+  return Result;
+}
+
+function u32
+ToU32(char C)
+{
+  Assert(IsNumeric(C));
+  u32 Result = (u32)C - (u32)'0';
+  return Result;
+}
+
+function u32
+Exp(u32 Base, u32 Exponent)
+{
+  u32 Result = 1;
+  for (u32 Ignored = 0;
+      Ignored < Exponent;
+      ++Ignored)
+  {
+    Result *= Base;
+  }
+
+  return Result;
+}
+
+function u32
+ToU32(counted_string S)
+{
+  u32 Result = 0;
+  for (u32 CharIndex = 0;
+      CharIndex < S.Count;
+      ++CharIndex)
+  {
+    u32 Digit = ToU32(S.Start[CharIndex]);
+    Result += (Digit * Exp(10, ((u32)S.Count - CharIndex - 1)));
+  }
+
+  return Result;
+}
+
 
 function counted_string
 FormatCountedString_(memory_arena* Memory, counted_string FS, ...)
@@ -461,6 +502,9 @@ FormatCountedString_(memory_arena* Memory, counted_string FS, ...)
 
   u32 At = 0;
 
+  // TODO(Jesse):  Allocate based on FS.Size, then have a way of growing the
+  // allocation with the arena
+  //
 #define FINAL_BUFFER_SIZE (1024)
   char* FinalBuffer = AllocateProtection(char, Memory, FINAL_BUFFER_SIZE, False);
 
@@ -468,10 +512,36 @@ FormatCountedString_(memory_arena* Memory, counted_string FS, ...)
       FormatIndex < FS.Count;
       ++FormatIndex)
   {
+
     if (FS.Start[FormatIndex] == '%')
     {
+
       ++FormatIndex;
       Assert(FormatIndex < FS.Count);
+
+      u32 FormatPrecision = 0;
+      if (FS.Start[FormatIndex] == '.')
+      {
+        ++FormatIndex;
+        Assert(FormatIndex < FS.Count);
+
+        if (FS.Start[FormatIndex] == '*')
+        {
+          ++FormatIndex;
+          Assert(FormatIndex < FS.Count);
+          FormatPrecision = va_arg(Args, u32);
+        }
+        else
+        {
+          u32 CharCount = 0;
+          Assert(IsNumeric(FS.Start[FormatIndex]));
+          while(IsNumeric(FS.Start[FormatIndex + CharCount])) { ++CharCount; }
+          counted_string NumberString = CS((const char*)FS.Start+FormatIndex, CharCount);
+          FormatPrecision = ToU32(NumberString);
+          FormatIndex += CharCount;
+          Assert(FormatIndex < FS.Count);
+        }
+      }
 
       switch (FS.Start[FormatIndex])
       {
@@ -518,17 +588,23 @@ FormatCountedString_(memory_arena* Memory, counted_string FS, ...)
 
         case 's':
         {
+          // TODO(Jesse): Respect the %.*s or %.3s specifiers
           char* Value = va_arg(Args, char*);
+          u32 Count = 0;
           while (*Value)
           {
-            FinalBuffer[At++] = *Value;
+            FinalBuffer[At++] = *Value++;
+            if (FormatPrecision && ++Count == FormatPrecision)
+            {
+              break;
+            }
           }
         } break;
 
         case 'f':
         {
           r64 Value = va_arg(Args, r64);
-          At += f64ToChar(FinalBuffer+At, Value);
+          At += f64ToChar(FinalBuffer+At, Value, FormatPrecision ? FormatPrecision : DEFAULT_FORMAT_PRECISION);
         } break;
 
         case 'b':
@@ -547,24 +623,6 @@ FormatCountedString_(memory_arena* Memory, counted_string FS, ...)
               ++CharIndex)
           {
             FinalBuffer[At++] = String.Start[CharIndex];
-          }
-
-        } break;
-
-        case '.':
-        {
-          Assert(FS.Start[FormatIndex+1] == '*');
-          Assert(FS.Start[FormatIndex+2] == 's');
-          FormatIndex += 2;
-          Assert(FormatIndex < FS.Count);
-
-          umm Count = va_arg(Args, umm);
-          char* Start = va_arg(Args, char*);
-          for (u32 CharIndex = 0;
-              CharIndex < Count;
-              ++CharIndex)
-          {
-            FinalBuffer[At++] = Start[CharIndex];
           }
 
         } break;

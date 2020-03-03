@@ -54,12 +54,6 @@
 
 #define BONSAI_FUNCTION_NAME __FUNCTION__
 
-#define VariadicOutputDebugString(FormatString, ...) {    \
-    char Buffer[1024] = {};                               \
-    _snprintf_s(Buffer, 1023, FormatString, __VA_ARGS__); \
-    PrintConsole(Buffer); }
-
-
 #define GlDebugMessage(...)  PrintConsole(" * Gl Debug Message - ");             \
                              VariadicOutputDebugString(__VA_ARGS__); \
                              PrintConsole("\n")
@@ -86,7 +80,7 @@
 
 
 /*
- *  GCC
+ *  Clang
  */
 #else
 

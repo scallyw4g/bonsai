@@ -34,20 +34,16 @@ CompileShader(ansi_stream Header, ansi_stream Code, u32 Type)
 }
 
 shader
-LoadShaders(const char * VertShaderPath, const char * FragFilePath, memory_arena *Memory)
+LoadShaders(counted_string VertShaderPath, counted_string FragFilePath, memory_arena *Memory)
 {
-  Info("Creating shader : %s | %s", VertShaderPath, FragFilePath);
+  Info("Creating shader : %.*s | %.*s", (u32)VertShaderPath.Count, VertShaderPath.Start,(u32)FragFilePath.Count, FragFilePath.Start);
 
-  // FIXME(Jesse): For gods sake don't use sprintf
-  char ComputedVertPath[2048] = {};
-  Snprintf(ComputedVertPath, 2048, "%s/%s", SHADER_PATH, VertShaderPath);
+  counted_string ComputedVertPath = FormatCountedString( Memory, CSz("%S/%S"), CSz(SHADER_PATH), VertShaderPath);
+  counted_string ComputedFragPath = FormatCountedString( Memory, CSz("%S/%S"), CSz(SHADER_PATH), FragFilePath);
 
-  char ComputedFragPath[2048] = {};
-  Snprintf(ComputedFragPath, 2048, "%s/%s", SHADER_PATH, FragFilePath);
-
-  ansi_stream HeaderCode       = ReadEntireFileIntoAnsiStream(CS(SHADER_PATH SHADER_HEADER), Memory);
-  ansi_stream VertexShaderCode = ReadEntireFileIntoAnsiStream(CS(ComputedVertPath), Memory);
-  ansi_stream FragShaderCode   = ReadEntireFileIntoAnsiStream(CS(ComputedFragPath), Memory);
+  ansi_stream HeaderCode       = ReadEntireFileIntoAnsiStream(CSz(SHADER_PATH SHADER_HEADER), Memory);
+  ansi_stream VertexShaderCode = ReadEntireFileIntoAnsiStream(ComputedVertPath, Memory);
+  ansi_stream FragShaderCode   = ReadEntireFileIntoAnsiStream(ComputedFragPath, Memory);
 
   s32 Result = GL_FALSE;
   int InfoLogLength;
@@ -143,8 +139,8 @@ BasicTypeUniformAllocators(r32, R32)
 shader
 MakeSimpleTextureShader(texture *Texture, memory_arena *GraphicsMemory)
 {
-  shader SimpleTextureShader = LoadShaders( "Passthrough.vertexshader",
-                                            "SimpleTexture.fragmentshader",
+  shader SimpleTextureShader = LoadShaders( CSz("Passthrough.vertexshader"),
+                                            CSz("SimpleTexture.fragmentshader"),
                                             GraphicsMemory );
 
   SimpleTextureShader.FirstUniform = GetUniform(GraphicsMemory, &SimpleTextureShader, Texture, "Texture");

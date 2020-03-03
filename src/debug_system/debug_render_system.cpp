@@ -3126,8 +3126,8 @@ InitDebugOverlayFramebuffer(debug_text_render_group *TextGroup, memory_arena *De
   glGenBuffers(1, &TextGroup->SolidUIColorBuffer);
   glGenBuffers(1, &TextGroup->SolidUIUVBuffer);
 
-  TextGroup->Text2DShader = LoadShaders("TextVertexShader.vertexshader",
-                                        "TextVertexShader.fragmentshader", DebugArena);
+  TextGroup->Text2DShader = LoadShaders(CSz("TextVertexShader.vertexshader"),
+                                        CSz("TextVertexShader.fragmentshader"), DebugArena);
 
   TextGroup->TextTextureUniform = glGetUniformLocation(TextGroup->Text2DShader.ID, "TextTextureSampler");
 
@@ -3159,8 +3159,8 @@ AllocateAndInitGeoBuffer(untextured_2d_geometry_buffer *Geo, u32 VertCount, memo
 function shader
 MakeSolidUIShader(memory_arena *Memory)
 {
-  shader SimpleTextureShader = LoadShaders( "SimpleColor.vertexshader",
-                                            "SimpleColor.fragmentshader",
+  shader SimpleTextureShader = LoadShaders( CSz("SimpleColor.vertexshader"),
+                                            CSz("SimpleColor.fragmentshader"),
                                              Memory);
   return SimpleTextureShader;
 }
@@ -3168,8 +3168,8 @@ MakeSolidUIShader(memory_arena *Memory)
 function shader
 MakeRenderToTextureShader(memory_arena *Memory, m4 *ViewProjection)
 {
-  shader Shader = LoadShaders( "RenderToTexture.vertexshader",
-                               "RenderToTexture.fragmentshader",
+  shader Shader = LoadShaders( CSz("RenderToTexture.vertexshader"),
+                               CSz("RenderToTexture.fragmentshader"),
                                 Memory);
 
   shader_uniform **Current = &Shader.FirstUniform;
