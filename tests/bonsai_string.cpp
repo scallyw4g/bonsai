@@ -552,29 +552,48 @@ main()
 
 
 
-  char TempBuffer[64];
+#define TEMP_BUFFER_SIZE (64)
+  char TempBuffer[TEMP_BUFFER_SIZE];
+  char_cursor TempCursor_ = {
+    .Start = TempBuffer,
+    .At = TempBuffer,
+    .End = TempBuffer + TEMP_BUFFER_SIZE
+  };
+
+  char_cursor* TempCursor = &TempCursor_;
+
   {
-    u32 Count = u64ToChar(TempBuffer, 42);
-    TestThat(StringsMatch(CS(TempBuffer, Count), CS("42")));
+    MemSet((u8*)TempBuffer, 0, TEMP_BUFFER_SIZE);
+    Rewind(TempCursor);
+    u64ToChar(TempCursor, 42);
+    TestThat(StringsMatch(CS(TempBuffer), CS("42")));
   }
   {
-    u32 Count = u64ToChar(TempBuffer, 18446744073709551615ULL);
-    TestThat(StringsMatch(CS(TempBuffer, Count), CS("18446744073709551615")));
+    MemSet((u8*)TempBuffer, 0, TEMP_BUFFER_SIZE);
+    Rewind(TempCursor);
+    u64ToChar(TempCursor, 18446744073709551615ULL);
+    TestThat(StringsMatch(CS(TempBuffer), CS("18446744073709551615")));
   }
   {
-    u32 Count = u64ToChar(TempBuffer, 18446744073709551615ULL);
-    TestThat(StringsMatch(CS(TempBuffer, Count), CS("18446744073709551615")));
+    MemSet((u8*)TempBuffer, 0, TEMP_BUFFER_SIZE);
+    Rewind(TempCursor);
+    u64ToChar(TempCursor, 18446744073709551615ULL);
+    TestThat(StringsMatch(CS(TempBuffer), CS("18446744073709551615")));
   }
 
 
 
   {
-    u32 Count = f64ToChar(TempBuffer, 3.14, 2);
-    TestThat(StringsMatch(CS(TempBuffer, Count), CS("3.14")));
+    MemSet((u8*)TempBuffer, 0, TEMP_BUFFER_SIZE);
+    Rewind(TempCursor);
+    f64ToChar(TempCursor, 3.14, 2);
+    TestThat(StringsMatch(CS(TempBuffer), CS("3.14")));
   }
   {
-    u32 Count = f64ToChar(TempBuffer, 3.14, 10);
-    TestThat(StringsMatch(CS(TempBuffer, Count), CS("3.1400000000")));
+    MemSet((u8*)TempBuffer, 0, TEMP_BUFFER_SIZE);
+    Rewind(TempCursor);
+    f64ToChar(TempCursor, 3.14, 10);
+    TestThat(StringsMatch(CS(TempBuffer), CS("3.1400000000")));
   }
 
   {

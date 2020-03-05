@@ -278,7 +278,6 @@ function RunEntireBuild {
   # git checkout "src/metaprogramming/output"
 
   SOURCE_FILES="$(find src -type f -name "*.h" -and -not -wholename "src/metaprogramming/defines.h" | tr '\n' ' ') $(find src -type f -name "*.cpp" | tr '\n' ' ')"
-
   ColorizeTitle "Preprocessing"
   bin/preprocessor $SOURCE_FILES
   if [ $? -ne 0 ]; then
@@ -292,7 +291,6 @@ function RunEntireBuild {
   [ ! -x bin/preprocessor ] && echo -e "$Failed Couldn't find preprocessor, exiting." && exit 1
 
   SOURCE_FILES="$(find src -type f -name "*.h" -and -not -wholename "src/metaprogramming/defines.h" | tr '\n' ' ') $(find src -type f -name "*.cpp" | tr '\n' ' ')"
-
   ColorizeTitle "Preprocessing"
   bin/preprocessor $SOURCE_FILES
   if [ $? -ne 0 ]; then
@@ -310,14 +308,14 @@ function RunEntireBuild {
 
   ./scripts/run_tests.sh
 
-  # ColorizeTitle "Preprocessing"
-  # bin/preprocessor $SOURCE_FILES
-  # if [ $? -ne 0 ]; then
-  #   echo ""
-  #   echo -e "$Failed Preprocessing failed, exiting." 
-  #   git checkout "src/metaprogramming/output"
-  #   exit 1
-  # fi
+  ColorizeTitle "Preprocessing"
+  bin/preprocessor $SOURCE_FILES
+  if [ $? -ne 0 ]; then
+    echo ""
+    echo -e "$Failed Preprocessing failed, exiting." 
+    git checkout "src/metaprogramming/output"
+    exit 1
+  fi
 
 }
 

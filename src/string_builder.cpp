@@ -151,6 +151,38 @@ ToCapitalCase(counted_string Source, memory_arena* Memory)
   return Result;
 }
 
+// TODO(Jesse): Generate this!  Need a compiler feature to generate stuff from
+// primitive types.
+// @compiler-feature
+struct char_cursor
+{
+  char* Start;
+  char* End;
+  char* At;
+};
+
+function char
+Peek(char_cursor* BufferCursor)
+{
+  char Result = *BufferCursor->At;
+  return Result;
+}
+
+function char
+Advance(char_cursor* BufferCursor)
+{
+  char Result = 0;
+  if (Remaining(BufferCursor))
+  {
+    Result = *BufferCursor->At++;
+  }
+  else
+  {
+    Error("Attempted to advance an empty char_cursor!");
+  }
+  return Result;
+}
+
 // Note(Jesse): Shamelessly copied, then modified, from the Handmade Hero codebase
 global_variable char DecChars[] = "0123456789";
 global_variable char LowerHexChars[] = "0123456789abcdef";
@@ -159,33 +191,34 @@ global_variable char UpperHexChars[] = "0123456789ABCDEF";
 // TODO(Jesse): Figure out how to not require a statically allocated buffer size
 global_variable u32 MaxResultLength = 32;
 function void
-CopyToDest(char* Dest, u32* Count, char C)
+CopyToDest(char_cursor* Dest, char C)
 {
-  Dest[*Count] = C;
-  *Count = *Count+1;
-  Assert(*Count < MaxResultLength);
+  if (Remaining(Dest))
+  {
+    *Dest->At++ = C;
+  }
+  else
+  {
+    Error("TODO(Jesse): Call reallocate here!");
+  }
 }
 
-function u32
-u64ToChar(char* Dest, u64 Value, u32 Base = 10, char *Digits = DecChars)
+function void
+u64ToChar(char_cursor* Dest, u64 Value, u32 Base = 10, char *Digits = DecChars)
 {
   TIMED_FUNCTION();
   Assert(Base != 0);
 
-  u32 Count = 0;
+  char *Start = Dest->At;
   do
   {
       u64 DigitIndex = (Value % Base);
       char Digit = Digits[DigitIndex];
-
-      CopyToDest(Dest, &Count, Digit);
-
+      CopyToDest(Dest, Digit);
       Value /= Base;
-
   } while(Value != 0);
 
-  char *Start = (char*)Dest;
-  char *End = (char*)Dest+Count;
+  char *End = Dest->At;
 
   while(Start < End)
   {
@@ -196,45 +229,40 @@ u64ToChar(char* Dest, u64 Value, u32 Base = 10, char *Digits = DecChars)
       ++Start;
   }
 
-  return Count;
+  return;
 }
 
-function u32
-s64ToChar(char* Dest, s64 Value, u32 Base = 10, char *Digits = DecChars)
+function void
+s64ToChar(char_cursor* Dest, s64 Value, u32 Base = 10, char *Digits = DecChars)
 {
   TIMED_FUNCTION();
-  u32 Count = 0;
-
   if (Value < 0)
   {
-    *Dest++ = '-';
-    Count++;
+    CopyToDest(Dest, '-');
     Value = -Value;
   }
 
-  Count += u64ToChar(Dest, (u64)Value, Base, Digits);
-  return Count;
+  u64ToChar(Dest, (u64)Value, Base, Digits);
+  return;
 }
 
 // Note(Jesse): Shamelessly copied, then modified, from the Handmade Hero codebase
 #define DEFAULT_FORMAT_PRECISION (16)
-function u32
-f64ToChar(char* Dest, r64 Value, u32 Precision = DEFAULT_FORMAT_PRECISION)
+function void
+f64ToChar(char_cursor* Dest, r64 Value, u32 Precision = DEFAULT_FORMAT_PRECISION)
 {
   TIMED_FUNCTION();
-
-  u32 Count = 0;
   if(Value < 0)
   {
-      CopyToDest(Dest, &Count, '-');
+      CopyToDest(Dest, '-');
       Value = -Value;
   }
 
   u64 IntegerPart = (u64)Value;
   Value -= (r64)IntegerPart;
-  Count += u64ToChar(Dest+Count, IntegerPart);
+  u64ToChar(Dest, IntegerPart);
 
-  CopyToDest(Dest, &Count, '.');
+  CopyToDest(Dest, '.');
 
   // TODO(casey): Note that this is NOT an accurate way to do this!
   for(u32 PrecisionIndex = 0;
@@ -244,10 +272,10 @@ f64ToChar(char* Dest, r64 Value, u32 Precision = DEFAULT_FORMAT_PRECISION)
       Value *= 10.0f;
       u32 Int = (u32)Value;
       Value -= (r32)Int;
-      CopyToDest(Dest, &Count, DecChars[Int]);
+      CopyToDest(Dest, DecChars[Int]);
   }
 
-  return Count;
+  return;
 }
 
 // This is to silence the warnings when passing counted_strings to this function
@@ -286,13 +314,6 @@ Exp(u32 Base, u32 Exponent)
   return Result;
 }
 
-#if 0
-function u8*
-Reallocate()
-{
-}
-#endif
-
 function u32
 ToU32(counted_string S)
 {
@@ -308,6 +329,51 @@ ToU32(counted_string S)
   return Result;
 }
 
+function u8*
+Reallocate(u8* Allocation, memory_arena* Arena, umm CurrentSize, umm RequestedSize)
+{
+  u8* Result = 0;
+  if (Allocation + CurrentSize == Arena->At)
+  {
+    if (RequestedSize > CurrentSize)
+    {
+      umm Diff = RequestedSize - CurrentSize;
+      if (Remaining(Arena) >= Diff)
+      {
+        Arena->At += Diff;
+        Result = Allocation;
+      }
+      else
+      {
+        Error("Unable to reallocate : Arena didn't have enough space left to accommodate %lu bytes.", Diff);
+      }
+    }
+    else
+    {
+      Error("Unable to reallocate : RequestedSize < CurrentSize");
+    }
+  }
+  else
+  {
+    Error("Unable to reallocate : Allocation is not the final one on the arena, or the allocation was memprotected.");
+  }
+
+  return Result;
+}
+
+function u32
+EmbeddedU32(char_cursor* FormatCursor)
+{
+  char* NumStart = FormatCursor->At;
+  Assert(IsNumeric(*NumStart));
+  while(IsNumeric(Peek(FormatCursor))) { Advance(FormatCursor); }
+
+  u32 CharCount = (u32)(FormatCursor->At - NumStart);
+  counted_string NumberString = CS((const char*)NumStart, CharCount);
+  u32 Result = ToU32(NumberString);
+  return Result;
+}
+
 function counted_string
 FormatCountedString_(memory_arena* Memory, counted_string FS, ...)
 {
@@ -316,100 +382,107 @@ FormatCountedString_(memory_arena* Memory, counted_string FS, ...)
   va_list Args;
   va_start(Args, FS);
 
-  u32 At = 0;
+  // TODO(Jesse): Call reallocate when necessary..
+#define FINAL_BUFFER_LENGTH (2048)
+  char* FinalBuffer = AllocateProtection(char, Memory, FINAL_BUFFER_LENGTH, False);
 
-  // TODO(Jesse): Allocate based on FS.Size, then have a way of growing the
-  // allocation with the arena
-#define FINAL_BUFFER_SIZE (1024)
-  char* FinalBuffer = AllocateProtection(char, Memory, FINAL_BUFFER_SIZE, False);
+  char_cursor DestCursor_ = {
+    .Start = FinalBuffer,
+    .At    = FinalBuffer,
+    .End   = FinalBuffer + FINAL_BUFFER_LENGTH
+  };
 
-  for (u32 FormatIndex = 0;
-      FormatIndex < FS.Count;
-      ++FormatIndex)
+  char_cursor FormatCursor_ = {
+    .Start = (char*)FS.Start,
+    .At    = (char*)FS.Start,
+    .End   = (char*)FS.Start + FS.Count
+  };
+
+
+  char_cursor* FormatCursor = &FormatCursor_;
+  char_cursor* DestCursor = &DestCursor_;
+
+  while (Remaining(FormatCursor))
   {
+    char CursorAt = Advance(FormatCursor);
 
-    if (FS.Start[FormatIndex] == '%')
+    if (CursorAt == '%')
     {
-      ++FormatIndex;
-      Assert(FormatIndex < FS.Count);
-
       u32 FormatWidth = 0;
-      if (FS.Start[FormatIndex] == '*')
+      char FormatWidthPeek = Peek(FormatCursor);
+      if (FormatWidthPeek == '*')
       {
-        ++FormatIndex;
-        Assert(FormatIndex < FS.Count);
+        CursorAt = Advance(FormatCursor); // *
+        CursorAt = Advance(FormatCursor); // Next
         FormatWidth = va_arg(Args, u32);
       }
-      else if (IsNumeric(FS.Start[FormatIndex]))
+      else if (IsNumeric(FormatWidthPeek))
       {
-        u32 CharCount = 0;
-        while(IsNumeric(FS.Start[FormatIndex + CharCount])) { ++CharCount; }
-        counted_string NumberString = CS((const char*)FS.Start+FormatIndex, CharCount);
-        FormatWidth = ToU32(NumberString);
-        FormatIndex += CharCount;
-        Assert(FormatIndex < FS.Count);
+        FormatWidth = EmbeddedU32(FormatCursor);
+        CursorAt = Advance(FormatCursor);
+      }
+      else
+      {
+        CursorAt = Advance(FormatCursor);
       }
 
 
       u32 FormatPrecision = 0;
-      if (FS.Start[FormatIndex] == '.')
+      if (CursorAt == '.')
       {
-        ++FormatIndex;
-        Assert(FormatIndex < FS.Count);
+        char FormatPrecisionPeek = Peek(FormatCursor);
 
-        if (FS.Start[FormatIndex] == '*')
+        if (FormatPrecisionPeek == '*')
         {
-          ++FormatIndex;
-          Assert(FormatIndex < FS.Count);
+          CursorAt = Advance(FormatCursor); // *
+          CursorAt = Advance(FormatCursor); // Next
           FormatPrecision = va_arg(Args, u32);
+        }
+        else if (IsNumeric(FormatPrecisionPeek))
+        {
+          FormatPrecision = EmbeddedU32(FormatCursor);
+          CursorAt = Advance(FormatCursor);
         }
         else
         {
-          u32 CharCount = 0;
-          Assert(IsNumeric(FS.Start[FormatIndex]));
-          while(IsNumeric(FS.Start[FormatIndex + CharCount])) { ++CharCount; }
-          counted_string NumberString = CS((const char*)FS.Start+FormatIndex, CharCount);
-          FormatPrecision = ToU32(NumberString);
-          FormatIndex += CharCount;
-          Assert(FormatIndex < FS.Count);
+          Error("Invalid dot specifier in format string");
         }
       }
 
-      switch (FS.Start[FormatIndex])
+      switch (CursorAt)
       {
         case 'd':
         {
           s32 Value = va_arg(Args, s32);
-          At += s64ToChar(FinalBuffer+At, (s64)Value);
+          s64ToChar(DestCursor, (s64)Value);
         } break;
 
         case 'l':
         {
-          ++FormatIndex;
-          Assert(FormatIndex < FS.Count);
-          if (FS.Start[FormatIndex] == 'u')
+          CursorAt = Advance(FormatCursor);
+          if (CursorAt == 'u')
           {
             u64 Value = va_arg(Args, u64);
-            At += u64ToChar(FinalBuffer+At, Value);
+            u64ToChar(DestCursor, Value);
 
           }
-          else if (FS.Start[FormatIndex] == 'd')
+          else if (CursorAt == 'd')
           {
             s64 Value = va_arg(Args, s64);
-            At += s64ToChar(FinalBuffer+At, Value);
+            s64ToChar(DestCursor, Value);
           }
         } break;
 
         case 'x':
         {
           u64 Value = va_arg(Args, u64);
-          At += u64ToChar(FinalBuffer+At, Value);
+          u64ToChar(DestCursor, Value);
         } break;
 
         case 'u':
         {
           u32 Value = va_arg(Args, u32);
-          At += u64ToChar(FinalBuffer+At, (u64)Value);
+          u64ToChar(DestCursor, (u64)Value);
         } break;
 
         case 'c':
@@ -419,10 +492,10 @@ FormatCountedString_(memory_arena* Memory, counted_string FS, ...)
           if (FormatWidth)
           {
             u32 PadCount = FormatWidth - 1;
-            while (PadCount) { FinalBuffer[At++] = ' '; --PadCount; }
+            while (PadCount) { CopyToDest(DestCursor, ' '); --PadCount; }
           }
 
-          FinalBuffer[At++] = Value;
+          CopyToDest(DestCursor, Value);
         } break;
 
         case 's':
@@ -433,13 +506,13 @@ FormatCountedString_(memory_arena* Memory, counted_string FS, ...)
           if (FormatWidth)
           {
             u32 PadCount = FormatWidth - ValueLen;
-            while (PadCount) { FinalBuffer[At++] = ' '; --PadCount; }
+            while (PadCount) { CopyToDest(DestCursor, ' '); --PadCount; }
           }
 
           u32 Count = 0;
           while (*Value)
           {
-            FinalBuffer[At++] = *Value++;
+            CopyToDest(DestCursor, *Value++);
             if (FormatPrecision && ++Count == FormatPrecision)
             {
               break;
@@ -450,15 +523,15 @@ FormatCountedString_(memory_arena* Memory, counted_string FS, ...)
         case 'f':
         {
           r64 Value = va_arg(Args, r64);
-          At += f64ToChar(FinalBuffer+At, Value, FormatPrecision ? FormatPrecision : DEFAULT_FORMAT_PRECISION);
+          f64ToChar(DestCursor, Value, FormatPrecision ? FormatPrecision : DEFAULT_FORMAT_PRECISION);
         } break;
 
         case 'b':
         {
           b32 BoolVal = (b32)va_arg(Args, u32);
           BoolVal ?
-            FinalBuffer[At++] = 'T' :
-            FinalBuffer[At++] = 'F';
+            CopyToDest(DestCursor, 'T') :
+            CopyToDest(DestCursor, 'F');
         } break;
 
         case 'S':
@@ -468,14 +541,14 @@ FormatCountedString_(memory_arena* Memory, counted_string FS, ...)
           if (FormatWidth)
           {
             u32 PadCount = FormatWidth - (u32)String.Count;
-            while (PadCount) { FinalBuffer[At++] = ' '; --PadCount; }
+            while (PadCount) { CopyToDest(DestCursor, ' '); --PadCount; }
           }
 
           for (u32 CharIndex = 0;
               CharIndex < String.Count;
               ++CharIndex)
           {
-            FinalBuffer[At++] = String.Start[CharIndex];
+            CopyToDest(DestCursor, String.Start[CharIndex]);
           }
 
         } break;
@@ -487,20 +560,17 @@ FormatCountedString_(memory_arena* Memory, counted_string FS, ...)
         } break;
 
       }
-
-      Assert(FormatIndex < FS.Count);
     }
     else
     {
-      FinalBuffer[At++] = FS.Start[FormatIndex];
+      CopyToDest(DestCursor, CursorAt);
     }
-
-    Assert(At < FINAL_BUFFER_SIZE);
   }
 
   va_end(Args);
 
-  counted_string Result = CS((const char*)FinalBuffer, At);
+  umm DestElementsWritten = AtElements(DestCursor);
+  counted_string Result = CS((const char*)DestCursor->Start, DestElementsWritten);
   return Result;
 }
 
