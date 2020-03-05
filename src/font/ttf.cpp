@@ -1,6 +1,5 @@
 #define BONSAI_NO_MUTEX_TRACKING
 #define BONSAI_NO_PUSH_METADATA
-#define BONSAI_NO_DEBUG_MEMORY_ALLOCATOR
 
 #include <bonsai_types.h>
 #include <unix_platform.cpp>
@@ -1025,7 +1024,7 @@ main()
           CopyBitmapOffset(&GlyphBitmap, &TextureAtlasBitmap, V2i(UV*V2(TextureAtlasBitmap.Dim)) );
 #else
           char Name[128] = {};
-          sprintf(Name, "Glyph_%d.bmp", CharCode);
+          snprintf(Name, 128, "Glyph_%d.bmp", CharCode);
           WriteBitmapToDisk(&GlyphBitmap, Name);
 #endif
         }

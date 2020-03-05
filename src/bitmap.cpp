@@ -87,7 +87,6 @@ WriteBitmapToDisk(bitmap *Bitmap, const char *Filename)
   Header.Image.GreenMask            = 0x0000FF00;
   Header.Image.BlueMask             = 0x00FF0000;
 
-
   u32 SizeWritten = 0;
   FILE *File = fopen(Filename, "wb");
   if (File)

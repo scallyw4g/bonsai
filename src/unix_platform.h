@@ -60,11 +60,6 @@
 #define WindowEventMasks StructureNotifyMask | PointerMotionMask | KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask
 
 
-// In Cygwin printing to the console with printf doesn't work, so we have a
-// wrapper that does some additional crazyness on Win32
-#define PrintConsole(Message) printf(Message)
-
-
 //
 // GLX
 //

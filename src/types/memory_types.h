@@ -60,45 +60,33 @@ struct memory_arena
 #endif
 };
 
-#ifndef BONSAI_NO_DEBUG_MEMORY_ALLOCATOR
+#define AllocateProtection(Type, Arena, Number, Protection)                                                                 \
+  ( GetDebugState ?                                                                                                         \
+      (Type*)GetDebugState()->Debug_Allocate(Arena, sizeof(Type), (umm)Number, #Type, __LINE__, __FILE__, 1, Protection ) : \
+      (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, 1, Protection)                                                      \
+  )
 
-#define AllocateProtection(Type, Arena, Number, Protection) \
-  (Type*)GetDebugState()->Debug_Allocate( Arena, sizeof(Type), (umm)Number, #Type, __LINE__, __FILE__, 1, Protection )
+#define AllocateAlignedProtection(Type, Arena, Number, Alignment, Protection)                                                      \
+  ( GetDebugState ?                                                                                                                \
+    (Type*)GetDebugState()->Debug_Allocate( Arena, sizeof(Type), (umm)Number, #Type, __LINE__, __FILE__, Alignment, Protection ) : \
+    (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, Alignment, Protection)                                                       \
+  )
 
-#define AllocateAlignedProtection(Type, Arena, Number, Alignment, Protection) \
-  (Type*)GetDebugState()->Debug_Allocate( Arena, sizeof(Type), (umm)Number, #Type, __LINE__, __FILE__, Alignment, Protection )
+#define AllocateAligned(Type, Arena, Number, Alignment)                                                                     \
+  ( GetDebugState ?                                                                                                         \
+    (Type*)GetDebugState()->Debug_Allocate( Arena, sizeof(Type), (umm)Number, #Type, __LINE__, __FILE__, Alignment, True) : \
+    (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, Alignment, True)                                                      \
+  )
 
-#define AllocateAligned(Type, Arena, Number, Alignment) \
-  (Type*)GetDebugState()->Debug_Allocate( Arena, sizeof(Type), (umm)Number, #Type, __LINE__, __FILE__, Alignment, True)
+#define Allocate(Type, Arena, Number)                                                                               \
+  ( GetDebugState ?                                                                                                 \
+    (Type*)GetDebugState()->Debug_Allocate( Arena, sizeof(Type), (umm)Number, #Type, __LINE__, __FILE__, 1, True) : \
+    (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, 1, True)                                                      \
+  )
 
-#define Allocate(Type, Arena, Number) \
-  (Type*)GetDebugState()->Debug_Allocate( Arena, sizeof(Type), (umm)Number, #Type, __LINE__, __FILE__, 1, True)
+#define DEBUG_REGISTER_ARENA(Arena) do { if (GetDebugState) { GetDebugState()->RegisterArena(#Arena, Arena); } } while (false)
 
-#define DEBUG_REGISTER_ARENA(Arena) \
-  GetDebugState()->RegisterArena(#Arena, Arena)
-
-#define DEBUG_REGISTER_THREAD(ThreadIndex) \
-  GetDebugState()->RegisterThread(ThreadIndex)
-
-#else
-
-#define AllocateProtection(Type, Arena, Number, Protection) \
-  (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, 1, Protection)
-
-#define AllocateAlignedProtection(Type, Arena, Number, Alignment, Protection) \
-  (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, Alignment, Protection)
-
-#define AllocateAligned(Type, Arena, Number, Alignment) \
-  (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, Alignment, True)
-
-#define Allocate(Type, Arena, Number) \
-  (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, 1, True)
-
-#define DEBUG_REGISTER_ARENA(...)
-
-#define DEBUG_REGISTER_THREAD(...)
-
-#endif
+#define DEBUG_REGISTER_THREAD(ThreadIndex) do { if (GetDebugState) { GetDebugState()->RegisterThread(ThreadIndex); } } while (false)
 
 
 void            PlatformUnprotectArena(memory_arena *Arena);

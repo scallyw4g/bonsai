@@ -1,5 +1,4 @@
 #define BONSAI_NO_PUSH_METADATA
-#define BONSAI_NO_DEBUG_MEMORY_ALLOCATOR
 
 #define VR_X 8
 #define VR_Y 8
