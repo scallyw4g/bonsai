@@ -151,15 +151,14 @@ ToCapitalCase(counted_string Source, memory_arena* Memory)
   return Result;
 }
 
-// TODO(Jesse): Generate this!  Need a compiler feature to generate stuff from
-// primitive types.
+// TODO(Jesse): Generate this?  Need a compiler feature to generate stuff from primitive types.
 // @compiler-feature
 struct char_cursor
 {
   char* Start;
   char* End;
   char* At;
-  memory_arena* Memory; // TODO(Jesse): ???
+  memory_arena* Memory; // TODO(Jesse): Do we actually want this in here?
 };
 
 function char

@@ -48,11 +48,10 @@ Clear(T *Struct)
 struct memory_arena
 {
   u8* Start;
-
   u8* At;
   u8* End;
-  umm NextBlockSize;
 
+  umm NextBlockSize;
   memory_arena *Prev;
 
 #if BONSAI_INTERNAL
@@ -84,7 +83,7 @@ struct memory_arena
 #else
 
 #define AllocateProtection(Type, Arena, Number, Protection) \
-  (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, 1, False)
+  (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, 1, Protection)
 
 #define AllocateAlignedProtection(Type, Arena, Number, Alignment, Protection) \
   (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, Alignment, Protection)
@@ -93,7 +92,7 @@ struct memory_arena
   (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, Alignment, True)
 
 #define Allocate(Type, Arena, Number) \
-  (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, 1, False)
+  (Type*)PushSize( Arena, sizeof(Type)*(umm)Number, 1, True)
 
 #define DEBUG_REGISTER_ARENA(...)
 

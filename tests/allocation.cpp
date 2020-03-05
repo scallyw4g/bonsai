@@ -667,6 +667,26 @@ main()
     UnprotectedAlignment();
 #endif
 
+  {
+    memory_arena* TestArena = AllocateArena();
+    u8* Thing = AllocateAlignedProtection(u8, TestArena, 32, 1, False);
+    TestThat(Thing);
+    u8* Thing2 = Reallocate(Thing, TestArena, 32, 64);
+    TestThat(Thing2);
+    u8* Thing3 = Reallocate(Thing, TestArena, 64, 128);
+    TestThat(Thing3);
+    VaporizeArena(TestArena);
+  }
+
+  {
+    memory_arena* TestArena = AllocateArena();
+    u8* Thing = Allocate(u8, TestArena, 32);
+    TestThat(Thing);
+    u8* Thing2 = Reallocate(Thing, TestArena, 32, 64);
+    TestThat(!Thing2);
+    VaporizeArena(TestArena);
+  }
+
   TestSuiteEnd();
   exit(TestsFailed);
 }
