@@ -56,7 +56,6 @@ struct memory_arena
 
 #if BONSAI_INTERNAL
   umm Pushes;
-  u64 OwnedByThread = INVALID_THREAD_HANDLE;
 #endif
 };
 
