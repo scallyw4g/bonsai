@@ -159,6 +159,7 @@ struct char_cursor
   char* Start;
   char* End;
   char* At;
+  memory_arena* Memory; // TODO(Jesse): ???
 };
 
 function char
@@ -183,23 +184,73 @@ Advance(char_cursor* BufferCursor)
   return Result;
 }
 
+function u8*
+Reallocate(u8* Allocation, memory_arena* Arena, umm CurrentSize, umm RequestedSize)
+{
+  u8* Result = 0;
+  if (Allocation + CurrentSize == Arena->At)
+  {
+    if (RequestedSize > CurrentSize)
+    {
+      umm Diff = RequestedSize - CurrentSize;
+      if (Remaining(Arena) >= Diff)
+      {
+        Arena->At += Diff;
+        Result = Allocation;
+      }
+      else
+      {
+        Error("Unable to reallocate : Arena didn't have enough space left to accommodate %lu bytes.", Diff);
+      }
+    }
+    else
+    {
+      Error("Unable to reallocate : RequestedSize < CurrentSize");
+    }
+  }
+  else
+  {
+    Error("Unable to reallocate : Allocation is not the final one on the arena, or the allocation was memprotected.");
+  }
+
+  return Result;
+}
+
 // Note(Jesse): Shamelessly copied, then modified, from the Handmade Hero codebase
 global_variable char DecChars[] = "0123456789";
 global_variable char LowerHexChars[] = "0123456789abcdef";
 global_variable char UpperHexChars[] = "0123456789ABCDEF";
 
-// TODO(Jesse): Figure out how to not require a statically allocated buffer size
-global_variable u32 MaxResultLength = 32;
 function void
 CopyToDest(char_cursor* Dest, char C)
 {
-  if (Remaining(Dest))
+  b32 DoCopy = True;
+  if (!Remaining(Dest))
+  {
+    if (Dest->Memory)
+    {
+      umm CurrentSize = TotalSize(Dest);
+      umm Increment = 32;
+      if (Reallocate((u8*)Dest->Start, Dest->Memory, CurrentSize, CurrentSize+Increment))
+      {
+        Dest->End += Increment;
+      }
+      else
+      {
+        Error("Reallocation Failed");
+        DoCopy = False;
+      }
+    }
+    else
+    {
+      Error("No memory pointer!");
+      DoCopy = False;
+    }
+  }
+
+  if (DoCopy)
   {
     *Dest->At++ = C;
-  }
-  else
-  {
-    Error("TODO(Jesse): Call reallocate here!");
   }
 }
 
@@ -329,38 +380,6 @@ ToU32(counted_string S)
   return Result;
 }
 
-function u8*
-Reallocate(u8* Allocation, memory_arena* Arena, umm CurrentSize, umm RequestedSize)
-{
-  u8* Result = 0;
-  if (Allocation + CurrentSize == Arena->At)
-  {
-    if (RequestedSize > CurrentSize)
-    {
-      umm Diff = RequestedSize - CurrentSize;
-      if (Remaining(Arena) >= Diff)
-      {
-        Arena->At += Diff;
-        Result = Allocation;
-      }
-      else
-      {
-        Error("Unable to reallocate : Arena didn't have enough space left to accommodate %lu bytes.", Diff);
-      }
-    }
-    else
-    {
-      Error("Unable to reallocate : RequestedSize < CurrentSize");
-    }
-  }
-  else
-  {
-    Error("Unable to reallocate : Allocation is not the final one on the arena, or the allocation was memprotected.");
-  }
-
-  return Result;
-}
-
 function u32
 EmbeddedU32(char_cursor* FormatCursor)
 {
@@ -382,14 +401,14 @@ FormatCountedString_(memory_arena* Memory, counted_string FS, ...)
   va_list Args;
   va_start(Args, FS);
 
-  // TODO(Jesse): Call reallocate when necessary..
-#define FINAL_BUFFER_LENGTH (2048)
-  char* FinalBuffer = AllocateProtection(char, Memory, FINAL_BUFFER_LENGTH, False);
+  umm FinalBufferStartingSize = FS.Count;
+  char* FinalBuffer = AllocateProtection(char, Memory, FinalBufferStartingSize, False);
 
   char_cursor DestCursor_ = {
     .Start = FinalBuffer,
     .At    = FinalBuffer,
-    .End   = FinalBuffer + FINAL_BUFFER_LENGTH
+    .End   = FinalBuffer + FinalBufferStartingSize,
+    .Memory = Memory
   };
 
   char_cursor FormatCursor_ = {
