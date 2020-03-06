@@ -391,13 +391,17 @@ UiStyleFromLightestColor(v3 Color)
   return Style;
 }
 
+
 function window_layout
 WindowLayout(const char* Title, v2 Basis, v2 MaxClip = V2(1800, 800))
 {
+  local_persist u32 NextWindowStackIndex = 0;
+
   window_layout Window = {};
   Window.Basis = Basis;
   Window.MaxClip = MaxClip;
   Window.Title = CS(Title);
+  Window.InteractionStackIndex = NextWindowStackIndex++;
 
   return Window;
 }

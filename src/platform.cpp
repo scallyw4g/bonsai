@@ -1,4 +1,3 @@
-#define BONSAI_NO_PUSH_METADATA
 #define DEFAULT_GAME_LIB "./bin/world_gen_loadable.so"
 
 #include <bonsai_types.h>

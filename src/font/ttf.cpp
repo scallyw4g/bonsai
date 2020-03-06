@@ -1,5 +1,3 @@
-#define BONSAI_NO_MUTEX_TRACKING
-#define BONSAI_NO_PUSH_METADATA
 
 #include <bonsai_types.h>
 #include <unix_platform.cpp>

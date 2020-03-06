@@ -387,19 +387,12 @@ GetMemoryArenaStats(memory_arena *ArenaIn)
 #define DEBUG_FRAME_END(Plat, ServerState) GetDebugState()->FrameEnd(Plat, ServerState)
 #define DEBUG_FRAME_BEGIN(Hotkeys) GetDebugState()->FrameBegin(Hotkeys)
 
-#ifndef BONSAI_NO_MUTEX_TRACKING
 void DebugTimedMutexWaiting(mutex *Mut);
 void DebugTimedMutexAquired(mutex *Mut);
 void DebugTimedMutexReleased(mutex *Mut);
 #define TIMED_MUTEX_WAITING(Mut)  GetDebugState()->MutexWait(Mut)
 #define TIMED_MUTEX_AQUIRED(Mut)  GetDebugState()->MutexAquired(Mut)
 #define TIMED_MUTEX_RELEASED(Mut) GetDebugState()->MutexReleased(Mut)
-#else
-#define TIMED_MUTEX_WAITING(...)
-#define TIMED_MUTEX_AQUIRED(...)
-#define TIMED_MUTEX_RELEASED(...)
-
-#endif
 
 #define WORKER_THREAD_ADVANCE_DEBUG_SYSTEM() GetDebugState()->WorkerThreadAdvanceDebugSystem()
 #define MAIN_THREAD_ADVANCE_DEBUG_SYSTEM() GetDebugState()->MainThreadAdvanceDebugSystem()

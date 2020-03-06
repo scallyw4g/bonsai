@@ -806,13 +806,13 @@ PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
     Window->Basis -= *Group->MouseDP; // TODO(Jesse): Can we compute this with MouseP to avoid a frame of input delay?
   }
 
-  umm DragHandleInteractionId = (umm)"WindowResizeWidget"^(umm)Window;
-  interactable_handle DragHandle = { .Id = DragHandleInteractionId };
+  umm ResizeHandleInteractionId = (umm)"WindowResizeWidget"^(umm)Window;
+  interactable_handle ResizeHandle = { .Id = ResizeHandleInteractionId };
 
   v2 TitleBounds = V2(Window->Title.Count*Global_Font.Size.x, Global_Font.Size.y);
   Window->MaxClip = Max(TitleBounds, Window->MaxClip);
 
-  if (Pressed(Group, &DragHandle))
+  if (Pressed(Group, &ResizeHandle))
   {
     v2 AbsoluteTitleBounds = Window->Basis + TitleBounds;
     v2 TestMaxClip = *Group->MouseP - Window->Basis;
@@ -857,7 +857,7 @@ PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
   PushButtonEnd(Group);
 
   v2 Dim = V2(12);
-  PushButtonStart(Group, DragHandleInteractionId);
+  PushButtonStart(Group, ResizeHandleInteractionId);
     PushUntexturedQuadAt(Group, GetAbsoluteMaxClip(Window)-Dim, Dim, zDepth_Border, &DefaultUiStyle);
   PushButtonEnd(Group);
 

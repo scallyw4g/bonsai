@@ -222,7 +222,6 @@ void
 WritePushMetadata(push_metadata *InputMeta, push_metadata *MetaTable)
 {
   WriteToMetaTable(InputMeta, MetaTable, PushesMatchExactly);
-
   return;
 }
 
@@ -240,10 +239,8 @@ DEBUG_Allocate(memory_arena* Arena, umm StructSize, umm StructCount, const char*
   umm PushSize = StructCount * StructSize;
   void* Result = PushStruct( Arena, PushSize, Alignment, MemProtect);
 
-#ifndef BONSAI_NO_PUSH_METADATA
   push_metadata ArenaMetadata = {Name, HashArena(Arena), HashArenaHead(Arena), StructSize, StructCount, 1};
   WritePushMetadata(&ArenaMetadata, GetThreadLocalStateFor(ThreadLocal_ThreadIndex)->MetaTable);
-#endif
 
   if (!Result)
   {

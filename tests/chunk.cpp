@@ -1,4 +1,3 @@
-#define BONSAI_NO_PUSH_METADATA
 
 #define VR_X 8
 #define VR_Y 8

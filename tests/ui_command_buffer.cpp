@@ -1,4 +1,3 @@
-#define BONSAI_NO_PUSH_METADATA
 #define PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS 1
 
 #include <debug.cpp>
