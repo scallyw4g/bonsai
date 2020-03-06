@@ -2129,14 +2129,16 @@ main(s32 ArgCount, const char** ArgStrings)
   setbuf(stderr, NULL);
 
   b32 ShouldOpenDebugWindow = DoDebugWindow(ArgStrings, ArgCount);
-  if (!BootstrapDebugSystem(ShouldOpenDebugWindow))
+  if (ShouldOpenDebugWindow)
   {
-    Error("Booting debug system");
-    return FAILURE_EXIT_CODE;
+    if (!BootstrapDebugSystem(ShouldOpenDebugWindow))
+    {
+      Error("Booting debug system");
+      return FAILURE_EXIT_CODE;
+    }
   }
 
   b32 Success = True;
-
   if (ArgCount > 1)
   {
     memory_arena Memory_ = {};
