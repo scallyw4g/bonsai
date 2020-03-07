@@ -2,7 +2,6 @@
 
 #include <bonsai_types.h>
 #include <unix_platform.cpp>
-#include <heap_memory_types.cpp>
 
 global_variable r64 LastMs;
 

@@ -352,6 +352,38 @@ ReallocateArena(memory_arena *Arena, umm MinSize, b32 MemProtect)
   return;
 }
 
+function u8*
+Reallocate(u8* Allocation, memory_arena* Arena, umm CurrentSize, umm RequestedSize)
+{
+  u8* Result = 0;
+  if (Allocation + CurrentSize == Arena->At)
+  {
+    if (RequestedSize > CurrentSize)
+    {
+      umm Diff = RequestedSize - CurrentSize;
+      if (Remaining(Arena) >= Diff)
+      {
+        Arena->At += Diff;
+        Result = Allocation;
+      }
+      else
+      {
+        Error("Unable to reallocate : Arena didn't have enough space left to accommodate %lu bytes.", Diff);
+      }
+    }
+    else
+    {
+      Error("Unable to reallocate : RequestedSize < CurrentSize");
+    }
+  }
+  else
+  {
+    Error("Unable to reallocate : Allocation is not the final one on the arena, or the allocation was memprotected.");
+  }
+
+  return Result;
+}
+
 function void
 Memprotect(void* LastPage, umm PageSize, s32 Protection)
 {

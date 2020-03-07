@@ -1,6 +1,5 @@
 #include <bonsai_types.h>
 #include <unix_platform.cpp>
-#include <heap_memory_types.cpp>
 
 #include <test_utils.cpp>
 

@@ -1,5 +1,3 @@
-#include <xml.cpp>
-
 animation
 AllocateAnimation(v3i KeyframeCount, memory_arena* Memory)
 {

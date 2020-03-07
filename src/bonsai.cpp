@@ -1,24 +1,3 @@
-#include <canonical_position.cpp>
-#include <chunk.cpp>
-#include <heap_memory_types.cpp>
-#include <bonsai_mesh.cpp>
-#include <threadsafe.cpp>
-#include <triangle.cpp>
-#include <render_position.cpp>
-#include <camera.cpp>
-#include <debug_draw.cpp>
-#include <lod.cpp>
-#include <work_queue.cpp>
-#include <world_chunk.cpp>
-#include <vox_loader.cpp>
-#include <render.h>
-
-#include <shader.cpp>
-
-#include <texture.cpp>
-#include <gpu_mapped_buffer.cpp>
-#include <render.cpp>
-
 inline v3
 GetOrthographicInputs(hotkeys *Hotkeys)
 {

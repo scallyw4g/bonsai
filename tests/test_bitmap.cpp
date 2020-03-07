@@ -4,8 +4,6 @@
 
 #include <test_utils.cpp>
 
-#include <bitmap.cpp>
-
 inline void
 TestPacking()
 {

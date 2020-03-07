@@ -505,6 +505,20 @@ typedef voxel_position chunk_dimension;
 typedef voxel_position world_position;
 
 inline v3i
+V3i(v3 V)
+{
+  v3i Result = {{ (s32)V.x, (s32)V.y, (s32)V.z }};
+  return Result;
+}
+
+inline v3i
+V3i(s32 Flood)
+{
+  v3i Result = {{ Flood, Flood, Flood }};
+  return Result;
+}
+
+inline v3i
 V3i(s32 X, s32 Y, s32 Z)
 {
   v3i Result = {{ X, Y, Z }};
@@ -531,6 +545,18 @@ V3(s32 I)
   Result.x = (r32)I;
   Result.y = (r32)I;
   Result.z = (r32)I;
+
+  return Result;
+}
+
+inline v3
+V3(v3i wp)
+{
+  v3 Result;
+
+  Result.x = (float)wp.x;
+  Result.y = (float)wp.y;
+  Result.z = (float)wp.z;
 
   return Result;
 }
@@ -1274,3 +1300,261 @@ operator^(voxel_position P1, voxel_position P2)
   return Result;
 }
 
+v3
+Ceil(v3 Vec)
+{
+  v3 Result = {{ Ceilf(Vec.x), Ceilf(Vec.y), Ceilf(Vec.z) }};
+  return Result;
+}
+
+v4
+Lerp(r32 t, v4 p1, v4 p2)
+{
+  Assert(t<=1);
+  Assert(t>=0);
+  v4 Result = (1.0f-t)*p1 + t*p2;
+  return Result;
+}
+
+v3
+Lerp(r32 t, v3 p1, v3 p2)
+{
+  Assert(t<=1);
+  Assert(t>=0);
+  v3 Result = (1.0f-t)*p1 + t*p2;
+  return Result;
+}
+
+v2
+Lerp(r32 t, v2 p1, v2 p2)
+{
+  Assert(t<=1);
+  Assert(t>=0);
+  v2 Result = (1.0f-t)*p1 + t*p2;
+  return Result;
+}
+
+r32
+Lerp(r32 t, r32 p1, r32 p2)
+{
+  Assert(t<=1.0f);
+  Assert(t>=0.0f);
+  r32 Result = (1.0f-t)*p1 + t*p2;
+  return Result;
+}
+
+inline s32
+Area(v2i A)
+{
+  Assert(A.x > 0);
+  Assert(A.y > 0);
+  s32 Result = A.x * A.y;
+  return Result;
+}
+
+inline s32
+Area(v2 A)
+{
+  Assert(A.x > 0);
+  Assert(A.y > 0);
+  s32 Result = (s32)(A.x * A.y);
+  Assert(Result >= 0);
+  return Result;
+}
+
+inline s32
+LengthSq( voxel_position P )
+{
+  s32 Result = P.x*P.x + P.y*P.y + P.z*P.z;
+  return Result;
+}
+
+inline r32
+LengthSq( v2 Vec )
+{
+  r32 Result = Vec.x*Vec.x + Vec.y*Vec.y;
+  return Result;
+}
+
+inline r32
+LengthSq( v3 Vec )
+{
+  r32 Result = Vec.x*Vec.x + Vec.y*Vec.y + Vec.z*Vec.z;
+  return Result;
+}
+
+inline r32
+Length( v2 Vec )
+{
+  r32 Result = (r32)sqrt(LengthSq(Vec));
+  return Result;
+}
+
+inline r32
+Length( voxel_position Vec )
+{
+  r32 Result = (r32)sqrt(LengthSq(Vec));
+  return Result;
+}
+
+inline r32
+Length( v3 Vec )
+{
+  r32 Result = (r32)sqrt(LengthSq(Vec));
+  return Result;
+}
+
+inline r32
+Distance( v3 P1, v3 P2 )
+{
+  r32 Result = Length(P1-P2);
+  return Result;
+}
+
+inline v2
+Normalize(v2 Vec, r32 length)
+{
+  if (length == 0) return V2(0,0);
+
+  v2 Result = Vec;
+  Result.x = Result.x/length;
+  Result.y = Result.y/length;
+  return Result;
+}
+
+inline v2
+Normalize(v2 A)
+{
+  v2 Result = Normalize(A, Length(A));
+  return Result;
+}
+
+inline v3
+Normalize( v3 Vec, r32 length)
+{
+  if (length == 0) return V3(0,0,0);
+
+  v3 Result = Vec;
+
+  Result.x = Result.x/length;
+  Result.y = Result.y/length;
+  Result.z = Result.z/length;
+
+  return Result;
+}
+
+inline v3
+Normalize(v3 A)
+{
+  v3 Result = Normalize(A, Length(A));
+  return Result;
+}
+
+inline v3
+Normalize(voxel_position A)
+{
+  v3 Result = Normalize( V3(A), Length(V3(A)));
+  return Result;
+}
+
+inline r32
+Dot( v3 A, v3 B)
+{
+  r32 Result;
+  Result = (A.x*B.x) + (A.y*B.y) + (A.z*B.z);
+  return Result;
+}
+
+inline v3
+Cross( voxel_position A, voxel_position B )
+{
+  v3 Result = {{
+    (r32)(A.y*B.z)-(r32)(A.z*B.y),
+    (r32)(A.z*B.x)-(r32)(A.x*B.z),
+    (r32)(A.x*B.y)-(r32)(A.y*B.x)
+  }};
+
+  return Result;
+}
+
+inline v3
+Cross( v3 A, v3 B )
+{
+  v3 Result = {{
+    (A.y*B.z)-(A.z*B.y),
+    (A.z*B.x)-(A.x*B.z),
+    (A.x*B.y)-(A.y*B.x)
+  }};
+
+  return Result;
+}
+
+inline v3
+SafeDivide(v3 Dividend, r32 Divisor)
+{
+  v3 Result = Dividend;
+
+  if (Divisor != 0.0f)
+    Result = Dividend/Divisor;
+
+  return Result;
+}
+
+inline v3
+Max(v3 A, v3 B)
+{
+  v3 Result;
+  Result.x = Max(A.x, B.x);
+  Result.y = Max(A.y, B.y);
+  Result.z = Max(A.z, B.z);
+
+  return Result;
+}
+
+inline v2
+Max(v2 A, v2 B)
+{
+  v2 Result;
+  Result.x = Max(A.x, B.x);
+  Result.y = Max(A.y, B.y);
+  return Result;
+}
+
+inline voxel_position
+Min(voxel_position A, voxel_position B)
+{
+  voxel_position Result;
+  Result.x = Min(A.x, B.x);
+  Result.y = Min(A.y, B.y);
+  Result.z = Min(A.z, B.z);
+  return Result;
+}
+
+inline v3
+Min(v3 A, v3 B)
+{
+  v3 Result;
+  Result.x = Min(A.x, B.x);
+  Result.y = Min(A.y, B.y);
+  Result.z = Min(A.z, B.z);
+  return Result;
+}
+
+inline v2
+Min(v2 A, v2 B)
+{
+  v2 Result;
+  Result.x = Min(A.x, B.x);
+  Result.y = Min(A.y, B.y);
+  return Result;
+}
+
+inline voxel_position
+Max(voxel_position A, voxel_position B)
+{
+  voxel_position Result;
+  Result.x = Max(A.x, B.x);
+  Result.y = Max(A.y, B.y);
+  Result.z = Max(A.z, B.z);
+  return Result;
+}

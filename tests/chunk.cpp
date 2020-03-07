@@ -6,19 +6,17 @@
 #include <bonsai_types.h>
 #include <unix_platform.cpp>
 
-#include <heap_memory_types.cpp>
-
 #include <chunk.cpp>
 #include <bonsai_mesh.cpp>
 
 global_variable chunk_dimension WORLD_CHUNK_DIM = Chunk_Dimension(8,8,8);
+
 #include <threadsafe.cpp>
 #include <triangle.cpp>
 #include <render_position.cpp>
 #include <debug_draw.cpp>
 #include <lod.cpp>
 #include <work_queue.cpp>
-#include <matrix.cpp>
 #include <world_chunk.cpp>
 
 #include <test_utils.cpp>

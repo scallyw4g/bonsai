@@ -1,5 +1,3 @@
-#include <bonsai_hashtable.h>
-
 enum xml_token_type
 {
   XmlTokenType_Unknown,

@@ -4,8 +4,6 @@
 
 #include <test_utils.cpp>
 
-#include <heap_memory_types.cpp>
-
 #include <chunk.cpp>
 #include <bonsai_mesh.cpp>
 

@@ -1,6 +1,5 @@
-#define PI 3.1415926535897932384626433832795028841971693993751058209749445923078164062
-#define TWOPI (2.0*PI)
-#define PIf (float(PI))
+#define PI64 (3.1415926535897932384626433832795028841971693993)
+#define PI32 (float(PI64))
 
 #define local_persist static
 #define global_variable static

@@ -90,7 +90,7 @@ UpdateGameCamera(v2 MouseDelta, input *Input, canonical_position NewTarget, came
     {
       Camera->Yaw += MouseDelta.x;
       Camera->Pitch += MouseDelta.y;
-      Camera->Pitch = ClampBetween(0.0, Camera->Pitch, PIf);
+      Camera->Pitch = ClampBetween(0.0, Camera->Pitch, PI32);
     }
 
     if (Input->RMB.Pressed)

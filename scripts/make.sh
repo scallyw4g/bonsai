@@ -1,7 +1,6 @@
 #! /bin/bash
 
 # COMMON_OPTIMIZATION_OPTIONS="-O2"
-COMMON_OPTIMIZATION_OPTIONS=""
 
 RED="\x1b[31m"
 BLUE="\x1b[34m"
@@ -94,7 +93,7 @@ TESTS_TO_BUILD="
   $TESTS/ui_command_buffer.cpp
   $TESTS/m4.cpp
   $TESTS/colladaloader.cpp
-  $TESTS/bitmap.cpp
+  $TESTS/test_bitmap.cpp
   $TESTS/chunk.cpp
   $TESTS/bonsai_string.cpp
   $TESTS/objloader.cpp
@@ -277,15 +276,15 @@ function RunEntireBuild {
 
   # git checkout "src/metaprogramming/output"
 
-  SOURCE_FILES="$(find src -type f -name "*.h" -and -not -wholename "src/metaprogramming/defines.h" | tr '\n' ' ') $(find src -type f -name "*.cpp" | tr '\n' ' ')"
-  ColorizeTitle "Preprocessing"
-  bin/preprocessor $SOURCE_FILES
-  if [ $? -ne 0 ]; then
-    echo ""
-    echo -e "$Failed Preprocessing failed, exiting." 
-    git checkout "src/metaprogramming/output"
-    exit 1
-  fi
+  # SOURCE_FILES="$(find src -type f -name "*.h" -and -not -wholename "src/metaprogramming/defines.h" | tr '\n' ' ') $(find src -type f -name "*.cpp" | tr '\n' ' ')"
+  # ColorizeTitle "Preprocessing"
+  # bin/preprocessor $SOURCE_FILES
+  # if [ $? -ne 0 ]; then
+  #   echo ""
+  #   echo -e "$Failed Preprocessing failed, exiting." 
+  #   git checkout "src/metaprogramming/output"
+  #   exit 1
+  # fi
 
   BuildPreprocessor
   [ ! -x bin/preprocessor ] && echo -e "$Failed Couldn't find preprocessor, exiting." && exit 1
@@ -308,14 +307,14 @@ function RunEntireBuild {
 
   ./scripts/run_tests.sh
 
-  ColorizeTitle "Preprocessing"
-  bin/preprocessor $SOURCE_FILES
-  if [ $? -ne 0 ]; then
-    echo ""
-    echo -e "$Failed Preprocessing failed, exiting." 
-    git checkout "src/metaprogramming/output"
-    exit 1
-  fi
+  # ColorizeTitle "Preprocessing"
+  # bin/preprocessor $SOURCE_FILES
+  # if [ $? -ne 0 ]; then
+  #   echo ""
+  #   echo -e "$Failed Preprocessing failed, exiting." 
+  #   git checkout "src/metaprogramming/output"
+  #   exit 1
+  # fi
 
 }
 
