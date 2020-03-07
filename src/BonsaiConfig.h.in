@@ -1,3 +1,0 @@
-// the configured options and settings for Tutorial
-#define Bonsai_VERSION_MAJOR @Tutorial_VERSION_MAJOR@
-#define Bonsai_VERSION_MINOR @Tutorial_VERSION_MINOR@
