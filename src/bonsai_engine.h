@@ -8,8 +8,7 @@
 #include <engine/cpp/chunk.cpp>
 #include <engine/cpp/mesh.cpp>
 #include <engine/cpp/threadsafe.cpp>
-#include <triangle.cpp>
-#include <render_position.cpp>
+#include <engine/cpp/triangle.cpp>
 #include <camera.cpp>
 #include <debug_draw.cpp>
 #include <lod.cpp>

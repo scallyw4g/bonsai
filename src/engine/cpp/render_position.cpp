@@ -2,7 +2,7 @@ inline v3
 GetRenderP(canonical_position P, camera *Camera, world_position WorldChunkDim)
 {
   v3 CameraOffset = Camera->ViewingTarget.Offset + (Camera->ViewingTarget.WorldP * WorldChunkDim);
-  v3 Result = P.Offset + (P.WorldP * WORLD_CHUNK_DIM) - CameraOffset;
+  v3 Result = P.Offset + (P.WorldP * WorldChunkDim) - CameraOffset;
   return Result;
 }
 

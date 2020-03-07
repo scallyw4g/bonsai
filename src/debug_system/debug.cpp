@@ -13,7 +13,6 @@ global_variable chunk_dimension WORLD_CHUNK_DIM = Chunk_Dimension(32,32,16);
 //
 
 #include <engine/cpp/canonical_position.cpp>
-#include <render_position.cpp>
 #include <camera.cpp>
 
 #include <debug_render_system.cpp>

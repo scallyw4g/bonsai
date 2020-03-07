@@ -125,3 +125,4 @@ global_variable memory_arena* TranArena = &_TranArena;
 #include <bonsai_stdlib/cpp/work_queue.cpp>
 #include <bonsai_stdlib/cpp/gl.cpp>
 
+#include <engine/cpp/render_position.cpp>
