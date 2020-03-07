@@ -20,7 +20,6 @@ struct game_state
 
   game_mode Mode;
   model   *Models;
-  noise_3d *Turb;
   event_queue EventQueue;
   mesh_freelist MeshFreelist;
 

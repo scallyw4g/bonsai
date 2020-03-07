@@ -1,9 +1,3 @@
-#ifndef WIN32_PLATFORM
-#define WIN32_PLATFORM
-
-#include <win32_platform.h>
-#include <platform.h>
-
 #include <chrono> // Timer
 
 #define BONSAI_MAIN(void) int CALLBACK WinMain( HINSTANCE AppHandle, HINSTANCE Ignored, LPSTR CmdLine, int CmdShow )
@@ -543,5 +537,3 @@ BonsaiSwapBuffers(os *Os)
 {
   SwapBuffers(Os->Display);
 }
-
-#endif

@@ -7,8 +7,6 @@
 #include <render_utils.cpp>
 #include <bonsai_mesh.cpp>
 
-#include <work_queue.cpp>
-
 #define u32_COUNT_PER_QUAD 6
 
 

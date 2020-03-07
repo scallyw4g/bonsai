@@ -1,23 +1,13 @@
 #define DEFAULT_GAME_LIB "./bin/world_gen_loadable.so"
 
-#include <bonsai_types.h>
-
-#if BONSAI_WIN32
-#include <win32_platform.cpp>
-#elif BONSAI_LINUX
 #define PLATFORM_THREADING_IMPLEMENTATIONS 1
 #define PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS 1
 #define PLATFORM_GL_IMPLEMENTATIONS 1
-#include <unix_platform.cpp>
-#else
-#error "Unknown Platform"
-#endif
 
+#include <bonsai_types.h>
 
 global_variable s64 LastGameLibTime;
 global_variable bonsai_worker_thread_callback BONSAI_API_WORKER_THREAD_CALLBACK_NAME;
-
-#include <work_queue.cpp>
 
 
 #include <sys/stat.h>
@@ -491,9 +481,9 @@ main()
 
     END_BLOCK("Frame Preamble");
 
-    TIMED_BLOCK("Network Ops");
-      if (IsDisconnected(&Plat.Network)) { ConnectToServer(&Plat.Network); }
-    END_BLOCK("Network Ops");
+    /* TIMED_BLOCK("Network Ops"); */
+    /*   if (IsDisconnected(&Plat.Network)) { ConnectToServer(&Plat.Network); } */
+    /* END_BLOCK("Network Ops"); */
 
     BONSAI_API_MAIN_THREAD_CALLBACK_NAME(&Plat, GameState, &Hotkeys);
 

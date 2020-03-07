@@ -1558,3 +1558,21 @@ Max(voxel_position A, voxel_position B)
   Result.z = Max(A.z, B.z);
   return Result;
 }
+
+inline voxel_position
+ClampMinus1toInfinity( voxel_position V )
+{
+  voxel_position Result = V;
+
+  if ( V.x < 0 )
+    Result.x = -1;
+
+  if ( V.y < 0 )
+    Result.y = -1;
+
+  if ( V.z < 0 )
+    Result.z = -1;
+
+  return Result;
+}
+

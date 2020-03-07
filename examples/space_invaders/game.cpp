@@ -466,7 +466,6 @@ BONSAI_API_GAME_INIT_CALLBACK()
 
 
 
-  GameState->Turb = Allocate(noise_3d, GameState->Memory, 1);
   AllocateAndInitNoise3d(GameState, GameState->Turb, Chunk_Dimension(8,8,8) );
 
   // This needs to be off for shadow maps to work correctly

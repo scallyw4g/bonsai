@@ -177,6 +177,19 @@ Pow2(int p)
   return Result;
 }
 
+inline float
+ClampMinus1toInfinity( float f )
+{
+  float Result = f;
+
+  if (Result < -1 )
+  {
+    Result = -1;
+  }
+
+  return Result;
+}
+
 inline r32
 ClampBetween(r32 Min, r32 Value, r32 Max)
 {

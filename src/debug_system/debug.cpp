@@ -1,7 +1,6 @@
 #if BONSAI_INTERNAL
 
 #include <bonsai_types.h>
-#include <unix_platform.cpp>
 
 global_variable r64 LastMs;
 
@@ -25,6 +24,8 @@ function void
 DebugFrameEnd(platform *Plat, server_state* ServerState)
 {
   TIMED_FUNCTION();
+
+  ServerState = 0;
 
   debug_state *DebugState = GetDebugState();
 
@@ -163,10 +164,10 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
       DebugDrawGraphicsHud(UiGroup, DebugState);
     }
 
-    if (DebugState->UIType & DebugUIType_Network)
-    {
-      DebugDrawNetworkHud(UiGroup, &Plat->Network, ServerState);
-    }
+    /* if (DebugState->UIType & DebugUIType_Network) */
+    /* { */
+    /*   DebugDrawNetworkHud(UiGroup, &Plat->Network, ServerState); */
+    /* } */
 
     if (DebugState->UIType & DebugUIType_CollatedFunctionCalls)
     {

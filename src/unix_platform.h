@@ -41,10 +41,47 @@
 
 
 
+
+#define BONSAI_FUNCTION_NAME __func__
+
+#define RED_TERMINAL "\x1b[31m"
+#define BLUE_TERMINAL "\x1b[34m"
+#define GREEN_TERMINAL "\x1b[32m"
+#define YELLOW_TERMINAL "\x1b[33m"
+#define WHITE_TERMINAL "\x1b[37m"
+
+#define Info(...)                                                  \
+  LogToConsole(CSz(BLUE_TERMINAL "   Info" WHITE_TERMINAL " - ")); \
+  printf(__VA_ARGS__);                                             \
+  LogToConsole(CSz("\n"))
+
+#define Debug(...)     \
+  printf(__VA_ARGS__); \
+  LogToConsole(CSz("\n"))
+
+#define Error(...)                                                 \
+  LogToConsole(CSz(RED_TERMINAL " ! Error" WHITE_TERMINAL " - ")); \
+  printf(__VA_ARGS__);                                             \
+  LogToConsole(CSz("\n"))
+
+#define Warn(...)                                                    \
+  LogToConsole(CSz(YELLOW_TERMINAL " * Warn" WHITE_TERMINAL " - ")); \
+  printf(__VA_ARGS__);                                               \
+  LogToConsole(CSz("\n"))
+
+#define OpenGlDebugMessage(...)                                                      \
+  LogToConsole(CSz(YELLOW_TERMINAL " * OpenGl Debug Message" WHITE_TERMINAL " - ")); \
+  printf(__VA_ARGS__);                                                               \
+  LogToConsole(CSz("\n"))
+
+#define RuntimeBreak() raise(SIGTRAP)
+#define TriggeredRuntimeBreak() if (GetDebugState) { GetDebugState()->TriggerRuntimeBreak ? RuntimeBreak() : 0 ; }
+
+#define Newline "\n"
+
 #define THREAD_MAIN_RETURN void*
 
 #define exported_function extern "C" __attribute__((visibility("default")))
-#define function static
 
 #define ReadBarrier  asm volatile("" ::: "memory"); _mm_lfence()
 #define WriteBarrier asm volatile("" ::: "memory"); _mm_sfence()
@@ -109,6 +146,8 @@ typedef GLXContext ( *PFNGLXCREATECONTEXTATTRIBSARBPROC) (Display *dpy, GLXFBCon
 
 typedef void ( *PFNGLXSWAPINTERVALEXTPROC) (Display *dpy, GLXDrawable drawable, s32 s32);
 typedef PFNGLXSWAPINTERVALEXTPROC PFNSWAPINTERVALPROC;
+
+
 
 //
 // GLX
@@ -231,3 +270,11 @@ ReadBytes(u8* Dest, u64 BytesToRead, FILE *Src)
 }
 
 
+struct os
+{
+  window Window;
+  display Display;
+  gl_context GlContext;
+
+  b32 ContinueRunning = True;
+};

@@ -1,5 +1,3 @@
-#include <platform.h>
-
 inline void
 PrintSemValue( semaphore *Semaphore )
 {
@@ -307,6 +305,9 @@ OpenAndInitializeWindow( os *Os, platform *Plat, s32 DebugFlags)
   XSetWindowAttributes WindowAttribs;
   WindowAttribs.colormap = ColorInfo;
   WindowAttribs.event_mask = WindowEventMasks;
+
+  Plat->WindowWidth = SCR_WIDTH;
+  Plat->WindowHeight = SCR_HEIGHT;
 
   Assert(Plat->WindowWidth && Plat->WindowHeight);
 

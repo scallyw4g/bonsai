@@ -1,3 +1,10 @@
+
+// Wrapper so assertions give us file/line numbers
+#define AssertNoGlErrors {            \
+  u32 glErrorNo = glGetError();       \
+  DumpGlErrorEnum(glErrorNo);         \
+  Assert(glErrorNo == GL_NO_ERROR); }
+
 #define GL_NO_ERROR                       0
 
 #define GL_VERSION                        0x1F02
@@ -258,3 +265,128 @@ exported_function void* glMapBuffer (GLenum target, GLenum access);
 exported_function GLboolean glUnmapBuffer (GLenum target);
 
 exported_function void glDrawBuffers (GLsizei n, const GLenum *bufs);
+
+function void
+DumpGlErrorEnum(u32 Error)
+{
+  if ( Error != 0 )
+  {
+    Error("%d", Error);
+  }
+
+  switch (Error)
+  {
+    case GL_INVALID_ENUM:
+    {
+      Error(" GL_INVALID_ENUM: An unacceptable value is specified for an enumerated argument. The offending command is ignored and has no other side effect than to set the error flag.\n");
+    } break;
+
+    case GL_INVALID_VALUE:
+    {
+      Error(" GL_INVALID_VALUE: A numeric argument is out of range. The offending command is ignored and has no other side effect than to set the error flag.\n");
+    } break;
+
+    case GL_INVALID_OPERATION:
+    {
+      Error(" GL_INVALID_OPERATION: The specified operation is not allowed in the current state. The offending command is ignored and has no other side effect than to set the error flag.\n");
+    } break;
+
+    case GL_INVALID_FRAMEBUFFER_OPERATION:
+    {
+      Error(" GL_INVALID_FRAMEBUFFER_OPERATION: The framebuffer object is not complete. The offending command is ignored and has no other side effect than to set the error flag.\n");
+    } break;
+
+    case GL_OUT_OF_MEMORY:
+    {
+      Error(" GL_OUT_OF_MEMORY: There is not enough memory left to execute the command. The state of the GL is undefined, except for the state of the error flags, after this error is recorded.\n");
+    } break;
+
+    case GL_STACK_UNDERFLOW:
+    {
+      Error(" GL_STACK_UNDERFLOW: An attempt has been made to perform an operation that would cause an internal stack to underflow.\n");
+    } break;
+
+    case GL_STACK_OVERFLOW:
+    {
+      Error(" GL_STACK_OVERFLOW: An attempt has been made to perform an operation that would cause an internal stack to overflow.\n");
+    } break;
+
+    case GL_NO_ERROR:
+    {
+      // Happy days :D
+    } break;
+
+    default :
+    {
+      Error("Some weird OpenGL shit happened\n");
+    } break;
+  }
+
+  return;
+}
+
+function b32
+CheckShadingLanguageVersion()
+{
+  char *OpenGlVersion = (char*)glGetString ( GL_VERSION );
+  r32 ShadingLanguageVersion = (r32)atof((char*)glGetString ( GL_SHADING_LANGUAGE_VERSION ));
+
+  Info("OpenGl Verison : %s", OpenGlVersion );
+  Info("Shading Language Verison : %f", ShadingLanguageVersion );
+
+  r32 RequiredShadingLanguageVersion = 3.3f;
+  if (ShadingLanguageVersion < RequiredShadingLanguageVersion)
+  {
+    Error("Unsupported Version of GLSL :: Got %f, Needed: %f", ShadingLanguageVersion, RequiredShadingLanguageVersion);
+  }
+
+  b32 Result = (ShadingLanguageVersion > RequiredShadingLanguageVersion);
+  return Result;
+}
+
+#if 0
+struct gl_extensions
+{
+  PFNGLCREATESHADERPROC glCreateShader;
+  PFNGLSHADERSOURCEPROC glShaderSource;
+  PFNGLCOMPILESHADERPROC glCompileShader;
+  PFNGLGETSHADERIVPROC glGetShaderiv;
+  PFNGLGETSHADERINFOLOGPROC glGetShaderInfoLog;
+  PFNGLATTACHSHADERPROC glAttachShader;
+  PFNGLDETACHSHADERPROC glDetachShader;
+  PFNGLDELETESHADERPROC glDeleteShader;
+  PFNGLCREATEPROGRAMPROC glCreateProgram;
+  PFNGLLINKPROGRAMPROC glLinkProgram;
+  PFNGLGETPROGRAMIVPROC glGetProgramiv;
+  PFNGLGETPROGRAMINFOLOGPROC glGetProgramInfoLog;
+  PFNGLUSEPROGRAMPROC glUseProgram;
+  PFNGLDELETEPROGRAMPROC glDeleteProgram;
+  PFNGLGETUNIFORMLOCATIONPROC glGetUniformLocation;
+  PFNGLGENFRAMEBUFFERSPROC glGenFramebuffers;
+  PFNGLBINDFRAMEBUFFERPROC glBindFramebuffer;
+  /* PFNGLFRAMEBUFFERTEXTUREPROC glFramebufferTexture; */
+  PFNGLFRAMEBUFFERTEXTURE2DPROC glFramebufferTexture2D;
+  PFNGLCHECKFRAMEBUFFERSTATUSPROC glCheckFramebufferStatus;
+  PFNGLCOMPRESSEDTEXIMAGE2DPROC glCompressedTexImage2D;
+  PFNGLGENBUFFERSPROC glGenBuffers;
+  PFNGLBINDBUFFERPROC glBindBuffer;
+  PFNGLBUFFERDATAPROC glBufferData;
+  PFNGLDRAWBUFFERSPROC glDrawBuffers;
+  PFNGLDELETEBUFFERSPROC glDeleteBuffers;
+  PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer;
+  PFNGLENABLEVERTEXATTRIBARRAYPROC glEnableVertexAttribArray;
+  PFNGLDISABLEVERTEXATTRIBARRAYPROC glDisableVertexAttribArray;
+  PFNGLGENVERTEXARRAYSPROC glGenVertexArrays;
+  PFNGLBINDVERTEXARRAYPROC glBindVertexArray;
+  PFNGLUNIFORM3FVPROC glUniform3fv;
+  PFNGLUNIFORM2FVPROC glUniform2fv;
+  PFNGLUNIFORMMATRIX4FVPROC glUniformMatrix4fv;
+  PFNGLUNIFORM1IPROC glUniform1i;
+  PFNGLACTIVETEXTUREPROC glActiveTexture;
+  PFNGLUNIFORM1FPROC glUniform1f;
+  PFNGLUNIFORM1UIPROC glUniform1ui;
+
+  // Platform specific (wgl / glX)
+  PFNSWAPINTERVALPROC glSwapInterval;
+};
+#endif

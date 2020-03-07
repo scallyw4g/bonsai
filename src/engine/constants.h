@@ -23,6 +23,14 @@
 #define PLAYER_MAX_HP            1000
 #define PLAYER_DRAG              V3(0.9f, 0.9f, 0.0f)
 
+#define MODELS_PATH "models"
+#define SHADER_PATH "shaders"
+#define SHADER_HEADER "/header.glsl"
+
+#define SCREEN_RATIO 1
+#define SCR_WIDTH (3840/SCREEN_RATIO)
+#define SCR_HEIGHT (2160/SCREEN_RATIO)
+
 /* #define PLAYER_MODEL MODELS_PATH"/chr_knight.vox" */
 /* #define PLAYER_MODEL MODELS_PATH"/ephtracy.vox" */
 /* #define PLAYER_MODEL MODELS_PATH"/chr_sword.vox" */
@@ -87,8 +95,6 @@ global_variable r32 DEBUG_CAMERA_FOCAL_LENGTH = 50.0f;
 
 #define FINAL_POSITION_BIT (POSITION_BIT_WIDTH*3)
 #define FINAL_COLOR_BIT ((FINAL_POSITION_BIT+COLOR_BIT_WIDTH))
-
-debug_global u32 DEBUG_NOISE_SEED = 64324;
 
 debug_global s32 numFrames = 0;
 debug_global r64 accumulatedTime = 0;

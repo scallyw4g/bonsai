@@ -11,3 +11,15 @@ BufferHasRoomFor(T *Buffer, u32 VertsToPush)
   return Result;
 }
 
+struct free_mesh
+{
+  untextured_3d_geometry_buffer* Mesh;
+  volatile free_mesh* Next;
+};
+
+struct mesh_freelist
+{
+  volatile free_mesh* FirstFree;
+  volatile free_mesh* Containers;
+};
+

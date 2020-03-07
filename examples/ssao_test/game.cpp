@@ -214,7 +214,6 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   GameState->Graphics = GraphicsInit(GameMemory);
   if (!GameState->Graphics) { Error("Initializing Graphics"); return False; }
 
-  GameState->Turb = Allocate(noise_3d, GameState->Memory, 1);
   AllocateAndInitNoise3d(GameState, GameState->Turb, Chunk_Dimension(8,8,8) );
 
   GameState->Plat = Plat;

@@ -43,6 +43,62 @@ IsPlayer(entity *Entity)
   return Result;
 }
 
+collision_event
+GetCollision( world *World, canonical_position TestP, v3 CollisionDim)
+{
+  collision_event Collision;
+  Collision.didCollide = false;
+
+  chunk_dimension WorldChunkDim = World->ChunkDim;
+
+  TestP = Canonicalize(WorldChunkDim, TestP);
+
+  voxel_position MinP = Voxel_Position(TestP.Offset);
+  voxel_position MaxP = Voxel_Position(Ceil(TestP.Offset + CollisionDim));
+
+  for ( int z = MinP.z; z < MaxP.z; z++ )
+  {
+    for ( int y = MinP.y; y < MaxP.y; y++ )
+    {
+      for ( int x = MinP.x; x < MaxP.x; x++ )
+      {
+        canonical_position LoopTestP = Canonicalize( WorldChunkDim, V3(x,y,z), TestP.WorldP );
+        world_chunk *chunk = GetWorldChunk( World, LoopTestP.WorldP );
+
+#if 0
+        // TODO(Jesse): Can we somehow atomically pull this one off the queue
+        // and initialize it on demand?
+        if (chunk && NotSet(chunk->Data->flags, Chunk_Initialized) )
+        {
+          chunk->Data->flags = (chunk->Data->flags, Chunk_Queued);
+          InitializeVoxels(chunk);
+        }
+#endif
+
+        if (!chunk)
+        {
+          Collision.CP = LoopTestP;
+          Collision.didCollide = true;
+          Collision.Chunk = 0;
+          goto end;
+        }
+
+        if ( IsFilledInChunk(chunk->Data, Voxel_Position(LoopTestP.Offset), World->ChunkDim) )
+        {
+          Collision.CP = LoopTestP;
+          Collision.didCollide = true;
+          Collision.Chunk = chunk;
+          goto end;
+        }
+
+      }
+    }
+  }
+  end:
+
+  return Collision;
+}
+
 inline b32
 GetCollision(entity *First, entity *Second, chunk_dimension WorldChunkDim)
 {
@@ -552,6 +608,27 @@ EntitiesCanCollide(entity *First, entity *Second)
   return Result;
 }
 
+inline void
+PushFrameEvent(event_queue *EventQueue, frame_event *EventInit, u32 FramesToForward=1)
+{
+  Assert(FramesToForward < TOTAL_FRAME_EVENT_COUNT);
+
+  frame_event *FreeEvent = GetFreeFrameEvent(EventQueue);
+  *FreeEvent = *EventInit;
+
+  s32 EventIndex = (EventQueue->CurrentFrameIndex+FramesToForward) % TOTAL_FRAME_EVENT_COUNT;
+  frame_event **Event = &EventQueue->Queue[EventIndex];
+
+  while (*Event)
+    Event = &(*Event)->Next;
+
+  Assert(*Event == 0);
+
+  *Event = FreeEvent;
+
+  return;
+}
+
 void
 ProcessCollisionRule(
     entity        *First,
@@ -658,6 +735,43 @@ DoEntityCollisions(game_state *GameState, entity *Entity, chunk_dimension WorldC
   }
 
   return;
+}
+
+v3
+GetAtomicUpdateVector( v3 Gross )
+{
+  v3 Result = Gross;
+
+  if ( Gross.x > 1.0f )
+  {
+    Result.x = 1.0f;
+  }
+  if ( Gross.x < -1.0f )
+  {
+    Result.x = -1.0f;
+  }
+
+
+  if ( Gross.y > 1.0f )
+  {
+    Result.y = 1.0f;
+  }
+  if ( Gross.y < -1.0f )
+  {
+    Result.y = -1.0f;
+  }
+
+
+  if ( Gross.z > 1.0f )
+  {
+    Result.z = 1.0f;
+  }
+  if ( Gross.z < -1.0f )
+  {
+    Result.z = -1.0f;
+  }
+
+  return Result;
 }
 
 void
@@ -815,7 +929,6 @@ SimulateAndRenderParticleSystem(
   /* world *World                  = GameState->World; */
   /* chunk_dimension WorldChunkDim = World->ChunkDim; */
   particle_system *System       = SystemEntity->Emitter;
-  // noise_3d *Turb             = GameState->Turb;
 
   if (Inactive(System))
     return;

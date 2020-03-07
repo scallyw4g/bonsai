@@ -1,6 +1,5 @@
 #include <stdint.h>
 #include <bonsai_types.h>
-#include <unix_platform.cpp>
 
 inline void
 RejectIncomingConnnections(socket_t *ListeningSocket)

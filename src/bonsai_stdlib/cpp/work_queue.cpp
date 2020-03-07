@@ -1,10 +1,3 @@
-b32
-QueueIsEmpty(work_queue* Queue)
-{
-  b32 Result = Queue->DequeueIndex == Queue->EnqueueIndex;
-  return Result;
-}
-
 void
 PushWorkQueueEntry(work_queue *Queue, work_queue_entry *Entry)
 {

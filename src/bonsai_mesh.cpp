@@ -1,4 +1,3 @@
-
 inline void
 BufferVertsDirect(
     untextured_2d_geometry_buffer *Dest,

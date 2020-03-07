@@ -1,6 +1,5 @@
 
 #include <bonsai_types.h>
-#include <unix_platform.cpp>
 
 
 global_variable v4 White = V4(1,1,1,0);

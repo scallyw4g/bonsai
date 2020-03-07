@@ -1,5 +1,4 @@
 #include <bonsai_types.h>
-#include <unix_platform.cpp>
 
 enum d_union_flags
 {

@@ -6,6 +6,8 @@
 
 // Generate a new permutation vector based on the value of seed
 
+debug_global u32 DEBUG_NOISE_SEED = 64324;
+
 using std::vector;
 
 struct perlin_noise

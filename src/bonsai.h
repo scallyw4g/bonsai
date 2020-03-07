@@ -1,5 +1,3 @@
-#include <constants.h>
-
 enum frame_event_type
 {
   FrameEvent_Undefined,
@@ -134,12 +132,6 @@ struct boundary_voxel
     this->V = *V_in;
     this->Offset = Offset_in;
   }
-};
-
-struct noise_3d
-{
-  voxel *Voxels;
-  chunk_dimension Dim;
 };
 
 #pragma pack(push, 1)
@@ -280,6 +272,20 @@ struct event_queue
 
   frame_event *FirstFreeEvent;
 };
+
+inline frame_event*
+GetFreeFrameEvent(event_queue *Queue)
+{
+  frame_event *FreeEvent = Queue->FirstFreeEvent;
+
+  if (FreeEvent)
+  {
+    Queue->FirstFreeEvent = FreeEvent->Next;
+    FreeEvent->Next = 0;
+  }
+
+  return FreeEvent;
+}
 
 struct entity_list
 {

@@ -63,6 +63,18 @@ struct aabb
   aabb() { Clear(this); }
 };
 
+inline b32
+Intersect(aabb *First, aabb *Second)
+{
+  b32 Result = True;
+
+  Result &= (Abs(First->Center.x - Second->Center.x) < (First->Radius.x + Second->Radius.x));
+  Result &= (Abs(First->Center.y - Second->Center.y) < (First->Radius.y + Second->Radius.y));
+  Result &= (Abs(First->Center.z - Second->Center.z) < (First->Radius.z + Second->Radius.z));
+
+  return Result;
+}
+
 function aabb
 MinMaxAABB(v3 Min, v3 Max)
 {
