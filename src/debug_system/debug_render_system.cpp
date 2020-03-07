@@ -5,7 +5,7 @@
 #include <render_init.cpp>
 #include <render.h>
 #include <render_utils.cpp>
-#include <bonsai_mesh.cpp>
+#include <engine/cpp/mesh.cpp>
 
 #define u32_COUNT_PER_QUAD 6
 

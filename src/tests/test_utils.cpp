@@ -3,6 +3,8 @@
 global_variable s32 TestsFailed = 0;
 global_variable u32 TestsPassed = 0;
 
+#define TEST_FIXTURES_PATH "src/tests/fixtures"
+
 #define TestThat(condition)                                                                                 \
   if (!(condition)) {                                                                                       \
     ++TestsFailed;                                                                                          \
@@ -18,6 +20,9 @@ global_variable u32 TestsPassed = 0;
 void
 TestSuiteBegin(const char *TestSuite)
 {
+  setbuf(stdout, NULL);
+  setbuf(stderr, NULL);
+
   Debug(Newline BLUE_TERMINAL "---" WHITE_TERMINAL " Starting %s Tests " BLUE_TERMINAL "---" WHITE_TERMINAL, TestSuite);
   return;
 }

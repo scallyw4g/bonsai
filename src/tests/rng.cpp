@@ -1,6 +1,6 @@
 
 #include <bonsai_types.h>
-#include <test_utils.cpp>
+#include <tests/test_utils.cpp>
 
 s32
 main()
@@ -16,7 +16,7 @@ main()
 
   memory_arena* Memory = AllocateArena(Megabytes(8));
 
-  ansi_stream WordStream = AnsiStreamFromFile(CS("tests/fixtures/words.txt"), Memory);
+  ansi_stream WordStream = AnsiStreamFromFile(CS(TEST_FIXTURES_PATH "/words.txt"), Memory);
 
   while (Remaining(&WordStream))
   {

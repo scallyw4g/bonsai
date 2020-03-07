@@ -1,12 +1,12 @@
 #define EXCLUDE_PREPROCESSOR_MAIN 1
 #include <metaprogramming/preprocessor.cpp>
 
-#include <test_utils.cpp>
+#include <tests/test_utils.cpp>
 
 function void
 TestBasicTokenizationAndParsing(memory_arena* Memory)
 {
-  c_parse_result Parser_ = TokenizeFile(CS("tests/fixtures/preprocessor_basic.cpp"), Memory);
+  c_parse_result Parser_ = TokenizeFile(CS(TEST_FIXTURES_PATH "/preprocessor_basic.cpp"), Memory);
   c_parse_result* Parser = &Parser_;
 
   {
@@ -262,7 +262,7 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
 function void
 TestPeekAndPopTokens(memory_arena* Memory)
 {
-  c_parse_result Parser_ = TokenizeFile(CS("tests/fixtures/preprocessor_peek_pop.cpp"), Memory);
+  c_parse_result Parser_ = TokenizeFile(CS(TEST_FIXTURES_PATH "/preprocessor_peek_pop.cpp"), Memory);
   c_parse_result* Parser = &Parser_;
 
   {

@@ -133,6 +133,31 @@ XmlTagFromReverseStream(xml_token_stream** Stream)
 }
 
 xml_token_stream
+AllocateXmlTokenStream(umm TokenCount, memory_arena* Memory)
+{
+  xml_token_stream Result = {};
+  Result.Start = Allocate(xml_token, Memory, TokenCount);
+  Result.At = Result.Start;
+  Result.End = Result.Start + TokenCount;
+
+  // TODO(Jesse): Profile this and see if it's reasonable
+  Result.Hashes = AllocateHashtable<xml_tag*>(TokenCount/10, Memory);
+
+  return Result;
+}
+
+xml_tag_stream
+AllocateXmlTagStream(umm TagCount, memory_arena* Memory)
+{
+  xml_tag_stream Result = {};
+  Result.Start = Allocate(xml_tag*, Memory, TagCount);
+  Result.At = Result.Start;
+  Result.End = Result.Start + TagCount;
+
+  return Result;
+}
+
+xml_token_stream
 TokenizeSelector(ansi_stream* Selector, memory_arena* Memory)
 {
   // TODO(Jesse): Better or more accurate way of allocating this size?
@@ -268,6 +293,25 @@ GetAllMatchingTags(xml_token_stream* Tokens, counted_string* SelectorString, mem
   ansi_stream SelectorStream = AnsiStream(SelectorString);
   xml_token_stream Selectors = TokenizeSelector(&SelectorStream, Memory);
   xml_tag_stream Result = GetAllMatchingTags(Tokens, &Selectors, Memory);
+  return Result;
+}
+
+xml_property*
+XmlProperty(counted_string Name, counted_string Value, memory_arena* Memory)
+{
+  xml_property* Prop = Allocate(xml_property, Memory, 1);
+  Prop->Name = Name;
+  Prop->Value = Value;
+  return Prop;
+}
+
+xml_tag*
+XmlTag(xml_token* Open, xml_tag *Parent, umm HashValue, memory_arena* Memory)
+{
+  xml_tag* Result = Allocate(xml_tag, Memory, 1);
+  Result->Open = Open;
+  Result->Parent = Parent;
+  Result->HashValue = HashValue;
   return Result;
 }
 

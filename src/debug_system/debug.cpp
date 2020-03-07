@@ -12,7 +12,7 @@ global_variable r64 LastMs;
 global_variable chunk_dimension WORLD_CHUNK_DIM = Chunk_Dimension(32,32,16);
 //
 
-#include <canonical_position.cpp>
+#include <engine/cpp/canonical_position.cpp>
 #include <render_position.cpp>
 #include <camera.cpp>
 

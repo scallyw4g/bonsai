@@ -60,32 +60,6 @@ struct xml_tag_stream
   xml_tag** End;
 };
 
-
-xml_tag_stream
-AllocateXmlTagStream(umm TagCount, memory_arena* Memory)
-{
-  xml_tag_stream Result = {};
-  Result.Start = Allocate(xml_tag*, Memory, TagCount);
-  Result.At = Result.Start;
-  Result.End = Result.Start + TagCount;
-
-  return Result;
-}
-
-xml_token_stream
-AllocateXmlTokenStream(umm TokenCount, memory_arena* Memory)
-{
-  xml_token_stream Result = {};
-  Result.Start = Allocate(xml_token, Memory, TokenCount);
-  Result.At = Result.Start;
-  Result.End = Result.Start + TokenCount;
-
-  // TODO(Jesse): Profile this and see if it's reasonable
-  Result.Hashes = AllocateHashtable<xml_tag*>(TokenCount/10, Memory);
-
-  return Result;
-}
-
 inline xml_token*
 PushToken(xml_token_stream* Stream, xml_token Token)
 {
@@ -124,15 +98,6 @@ XmlOpenToken(counted_string Name)
   Result.Type = XmlTokenType_Open;
   Result.Property.Name = Name;
   return Result;
-}
-
-xml_property*
-XmlProperty(counted_string Name, counted_string Value, memory_arena* Memory)
-{
-  xml_property* Prop = Allocate(xml_property, Memory, 1);
-  Prop->Name = Name;
-  Prop->Value = Value;
-  return Prop;
 }
 
 xml_property
@@ -177,16 +142,6 @@ XmlIntToken(counted_string Name, counted_string Value)
   xml_token Result = {};
   Result.Type = XmlTokenType_Int;
   Result.Property = XmlProperty(Name, Value);
-  return Result;
-}
-
-xml_tag*
-XmlTag(xml_token* Open, xml_tag *Parent, umm HashValue, memory_arena* Memory)
-{
-  xml_tag* Result = Allocate(xml_tag, Memory, 1);
-  Result->Open = Open;
-  Result->Parent = Parent;
-  Result->HashValue = HashValue;
   return Result;
 }
 

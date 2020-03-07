@@ -1,7 +1,7 @@
 #define PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS 1
 
 #include <debug.cpp>
-#include <test_utils.cpp>
+#include <tests/test_utils.cpp>
 
 
 function void

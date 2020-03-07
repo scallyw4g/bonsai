@@ -1,10 +1,10 @@
 
 #include <bonsai_types.h>
 
-#include <test_utils.cpp>
+#include <tests/test_utils.cpp>
 
-#include <chunk.cpp>
-#include <bonsai_mesh.cpp>
+#include <engine/cpp/chunk.cpp>
+#include <engine/cpp/mesh.cpp>
 
 #include <loaders/obj.cpp>
 
@@ -16,7 +16,7 @@ main()
   memory_arena *Memory = AllocateArena(Megabytes(1));
 
   {
-    ansi_stream Stream = AnsiStreamFromFile("tests/fixtures/test.obj", Memory);
+    ansi_stream Stream = AnsiStreamFromFile(TEST_FIXTURES_PATH "/test.obj", Memory);
     mesh_metadata Stats = GetObjMetadata(Stream, Memory);
     TestThat(Stats.VertCount == 2);
     TestThat(Stats.NormalCount == 2);
@@ -25,7 +25,7 @@ main()
   }
 
   {
-    ansi_stream Stream = AnsiStreamFromFile("tests/fixtures/test.obj", Memory);
+    ansi_stream Stream = AnsiStreamFromFile(TEST_FIXTURES_PATH "/test.obj", Memory);
     mesh_metadata Stats = GetObjMetadata(Stream, Memory);
     TestThat(Stats.VertCount == 2);
     TestThat(Stats.NormalCount == 2);

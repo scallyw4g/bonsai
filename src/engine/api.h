@@ -1,6 +1,5 @@
 struct thread_local_state;
 struct game_state;
-struct platform;
 
 #define EXPAND(E) #E
 #define TO_STRING(Text) EXPAND(Text)

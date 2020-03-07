@@ -4,10 +4,10 @@
 #include <game_constants.h>
 #include <render.h>
 
-#include <canonical_position.cpp>
-#include <chunk.cpp>
-#include <bonsai_mesh.cpp>
-#include <threadsafe.cpp>
+#include <engine/cpp/canonical_position.cpp>
+#include <engine/cpp/chunk.cpp>
+#include <engine/cpp/mesh.cpp>
+#include <engine/cpp/threadsafe.cpp>
 #include <triangle.cpp>
 #include <render_position.cpp>
 #include <camera.cpp>

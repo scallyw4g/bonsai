@@ -1,3 +1,47 @@
+
+function boundary_voxels*
+AllocateBoundaryVoxels(u32 Count, memory_arena* Memory)
+{
+  boundary_voxels* Result =  Allocate(boundary_voxels, Memory, 1);
+  Assert(Result->At == 0);
+
+  Result->Points = Allocate(voxel_position, Memory, Count);
+  Result->End = Count;
+  Assert(Result->At == 0);
+
+  Result->Min = Voxel_Position(s32_MAX);
+  Result->Max = Voxel_Position(s32_MIN);
+
+  return Result;
+}
+
+function current_triangles*
+AllocateCurrentTriangles(u32 Count, memory_arena* Memory)
+{
+  current_triangles* Result = AllocateAlignedProtection(current_triangles, Memory, 1, CACHE_LINE_SIZE, False);
+  Result->Tris = AllocateAlignedProtection(triangle*, Memory, Count, CACHE_LINE_SIZE, False);
+  Result->Max = Count;
+
+  return Result;
+}
+
+function triangle*
+Triangle(voxel_position* P0, voxel_position* P1, voxel_position* P2, memory_arena* Memory)
+{
+  triangle* Result = AllocateProtection(triangle, Memory, 1, False);
+
+  /* edge* E0 = Edge(P0, P1, Memory); */
+  /* edge* E1 = Edge(P0, P2, Memory); */
+  /* edge* E2 = Edge(P1, P2, Memory); */
+
+  Result->Points[0] = *P0;
+  Result->Points[1] = *P1;
+  Result->Points[2] = *P2;
+
+  return Result;
+}
+
+
 function void
 SeedTriangulation(current_triangles* CurrentTriangles, memory_arena* Memory)
 {

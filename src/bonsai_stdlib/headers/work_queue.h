@@ -1,6 +1,7 @@
 // TODO(Jesse): This seems like _way_ overkill..
 #define WORK_QUEUE_SIZE (65536*8)
 
+// Note(Jesse): The userland code must define work_queue_entry
 struct work_queue_entry;
 struct work_queue
 {

@@ -1,10 +1,10 @@
 
 #include <bonsai_types.h>
 
-#include <test_utils.cpp>
+#include <tests/test_utils.cpp>
 
-#include <chunk.cpp>
-#include <bonsai_mesh.cpp>
+#include <engine/cpp/chunk.cpp>
+#include <engine/cpp/mesh.cpp>
 
 #include <loaders/collada.cpp>
 
@@ -12,7 +12,7 @@ void
 TokenizingTest()
 {
   memory_arena *Memory = AllocateArena(Megabytes(1));
-  ansi_stream XmlStream = AnsiStreamFromFile("tests/fixtures/test_parsing.dae", Memory);
+  ansi_stream XmlStream = AnsiStreamFromFile(TEST_FIXTURES_PATH "/test_parsing.dae", Memory);
 
   {
     xml_token_stream XmlTokens = TokenizeXmlStream(&XmlStream, Memory);
@@ -172,7 +172,7 @@ void
 HashingTest()
 {
   memory_arena *Memory = AllocateArena(Megabytes(1));
-  AnsiStreamFromFile("tests/fixtures/test_parsing.dae", Memory);
+  AnsiStreamFromFile(TEST_FIXTURES_PATH "/test_parsing.dae", Memory);
 
   return;
 }
@@ -194,7 +194,7 @@ ContrivedQueryingTest(const char* IdSelector)
 {
   memory_arena *Memory = AllocateArena(Megabytes(1));
 
-  ansi_stream XmlStream = AnsiStreamFromFile("tests/fixtures/test_querying.dae", Memory);
+  ansi_stream XmlStream = AnsiStreamFromFile(TEST_FIXTURES_PATH "/test_querying.dae", Memory);
   xml_token_stream XmlTokens = TokenizeXmlStream(&XmlStream, Memory);
   counted_string TheMeaningOfLifeTheUniverseAndEverything = CS("42");
   counted_string FourtyTwoTwice = CS("42 42");
@@ -352,7 +352,7 @@ void
 BlenderCubeQueryTest(const char* IdSelector)
 {
   memory_arena *Memory = AllocateArena(Megabytes(1));
-  ansi_stream XmlStream = AnsiStreamFromFile("tests/fixtures/blender_cube.dae", Memory);
+  ansi_stream XmlStream = AnsiStreamFromFile(TEST_FIXTURES_PATH "/blender_cube.dae", Memory);
   xml_token_stream XmlTokens = TokenizeXmlStream(&XmlStream, Memory);
 
   {
@@ -447,7 +447,7 @@ main()
 
   memory_arena* Memory = AllocateArena();
   heap_allocator Heap = InitHeap(Gigabytes(1));
-  LoadCollada(Memory, &Heap, "tests/fixtures/blender_cube.dae");
+  LoadCollada(Memory, &Heap, TEST_FIXTURES_PATH "/blender_cube.dae");
 
   TestSuiteEnd();
   exit(TestsFailed);

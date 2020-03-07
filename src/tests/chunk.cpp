@@ -5,19 +5,18 @@
 
 #include <bonsai_types.h>
 
-#include <chunk.cpp>
-#include <bonsai_mesh.cpp>
-
 global_variable chunk_dimension WORLD_CHUNK_DIM = Chunk_Dimension(8,8,8);
 
-#include <threadsafe.cpp>
+#include <engine/cpp/chunk.cpp>
+#include <engine/cpp/mesh.cpp>
+#include <engine/cpp/threadsafe.cpp>
 #include <triangle.cpp>
 #include <render_position.cpp>
 #include <debug_draw.cpp>
 #include <lod.cpp>
 #include <world_chunk.cpp>
 
-#include <test_utils.cpp>
+#include <tests/test_utils.cpp>
 
 
 s32

@@ -1,5 +1,5 @@
 #include <bonsai_types.h>
-#include <test_utils.cpp>
+#include <tests/test_utils.cpp>
 
 
 struct test_struct_1k

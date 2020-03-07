@@ -1,7 +1,3 @@
-#ifndef BONSAI_VERTEX_H
-#define BONSAI_VERTEX_H
-
-
 
 
 //                 Not sure why I drew this, but it was kinda fun..
@@ -201,5 +197,3 @@ global_variable v3 BottomFaceNormalData[] =
   {{0, 0, -1}},
 };
 
-
-#endif

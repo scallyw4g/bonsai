@@ -16,7 +16,7 @@ Failed="$RED  ✗ $WHITE"
 ROOT="."
 SRC="$ROOT/src"
 EXAMPLES="$ROOT/examples"
-TESTS="$ROOT/tests"
+TESTS="$SRC/tests"
 BIN="$ROOT/bin"
 BIN_TEST="$BIN/tests"
 META_OUT="$SRC/metaprogramming/output"
@@ -171,7 +171,6 @@ function BuildWithClang {
       $COMMON_LINKER_OPTIONS     \
       -D BONSAI_INTERNAL=1       \
       -I"$SRC"                   \
-      -I"$TESTS"                 \
       -o "$output_basename"      \
       $executable && echo -e "$Success $executable" &
   done
@@ -187,7 +186,6 @@ function BuildWithClang {
       $COMMON_LINKER_OPTIONS       \
       -D BONSAI_INTERNAL=1         \
       -I"$SRC"                     \
-      -I"$TESTS"                   \
       -I"$SRC/debug_system"        \
       -o "$output_basename"        \
       $executable && echo -e "$Success $executable" &
