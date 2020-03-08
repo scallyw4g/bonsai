@@ -1,6 +1,5 @@
 #define EXCLUDE_PREPROCESSOR_MAIN 1
 #include <metaprogramming/preprocessor.cpp>
-
 #include <tests/test_utils.cpp>
 
 function void

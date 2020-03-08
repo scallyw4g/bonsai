@@ -6,16 +6,6 @@ global_variable r64 LastMs;
 
 #include <debug_data_system.cpp>
 #include <interactable.cpp>
-
-// FIXME(Jesse): we now have camera code in here that needs to know this value
-// for realz!
-global_variable chunk_dimension WORLD_CHUNK_DIM = Chunk_Dimension(32,32,16);
-//
-
-#include <engine/cpp/render_position.cpp>
-#include <engine/cpp/canonical_position.cpp>
-#include <engine/cpp/camera.cpp>
-
 #include <debug_render_system.cpp>
 
 global_variable debug_state Internal_DebugState = {};

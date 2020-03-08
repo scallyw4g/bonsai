@@ -1,11 +1,3 @@
-#include <engine/cpp/texture.cpp>
-#include <engine/cpp/shader.cpp>
-#include <engine/cpp/gpu_mapped_buffer.cpp>
-
-#include <render_init.cpp>
-#include <render_utils.cpp>
-#include <engine/cpp/mesh.cpp>
-
 #define u32_COUNT_PER_QUAD (6)
 
 
@@ -1873,7 +1865,7 @@ DrawPickedChunks(debug_ui_render_group* Group)
   world_chunk *HotChunk = DebugState->HotChunk;
   if (HotChunk)
   {
-    v3 Basis = -0.5f*V3(WORLD_CHUNK_DIM);
+    v3 Basis = -0.5f*V3(ChunkDimension(DebugState->HotChunk));
     untextured_3d_geometry_buffer* Src = DebugState->HotChunk->LodMesh;
     untextured_3d_geometry_buffer* Dest = &Group->GameGeo->Buffer;
     BufferVertsChecked(Src, Dest, Basis, V3(1.0f));
@@ -1885,7 +1877,7 @@ DrawPickedChunks(debug_ui_render_group* Group)
 
     DebugState->ViewProjection =
       ProjectionMatrix(&DebugState->Camera, DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM) *
-      ViewMatrix(WORLD_CHUNK_DIM, &DebugState->Camera);
+      ViewMatrix(ChunkDimension(HotChunk), &DebugState->Camera);
 
     glUseProgram(Group->GameGeoShader->ID);
 

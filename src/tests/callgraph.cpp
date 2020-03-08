@@ -1,7 +1,6 @@
 #define PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS 1
 
 #include <bonsai_types.h>
-
 #include <tests/test_utils.cpp>
 
 void

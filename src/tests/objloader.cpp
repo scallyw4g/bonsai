@@ -1,11 +1,6 @@
 
 #include <bonsai_types.h>
-
 #include <tests/test_utils.cpp>
-
-#include <engine/cpp/chunk.cpp>
-#include <engine/cpp/mesh.cpp>
-#include <engine/cpp/loaders/obj.cpp>
 
 s32
 main()

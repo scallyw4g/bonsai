@@ -1576,11 +1576,13 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
 function chunk_dimension
 ChunkDimension(world_chunk* Chunk)
 {
-  chunk_dimension Result = {
-    .x = Chunk->DimX,
-    .y = Chunk->DimY,
-    .z = Chunk->DimZ,
-  };
+  chunk_dimension Result = {};
+  if (Chunk)
+  {
+    Result.x = Chunk->DimX;
+    Result.y = Chunk->DimY;
+    Result.z = Chunk->DimZ;
+  }
   return Result;
 }
 

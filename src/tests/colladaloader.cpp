@@ -1,12 +1,6 @@
 
 #include <bonsai_types.h>
-
 #include <tests/test_utils.cpp>
-
-#include <engine/cpp/chunk.cpp>
-#include <engine/cpp/mesh.cpp>
-
-#include <engine/cpp/loaders/collada.cpp>
 
 void
 TokenizingTest()
