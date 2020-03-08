@@ -823,7 +823,7 @@ TraverseSurfaceToBoundary( world *World, chunk_data *Chunk, voxel_position Start
 }
 
 b32
-CanBuildWorldChunkBoundary(world *World, world_chunk *Chunk)
+CanBuildWorldChunkBoundary(world *World, world_chunk *Chunk, chunk_dimension VisibleRegion)
 {
   // FIXME(Jesse): This is _real_ bad for the cache!
   b32 Result = True;
@@ -839,22 +839,22 @@ CanBuildWorldChunkBoundary(world *World, world_chunk *Chunk)
   world_position Back  = ChunkP - Voxel_Position(0, 0, 1);
 
   // We could try bailing early to save the cache sometimes
-  world_chunk *TestChunk = GetWorldChunk( World, Left );
+  world_chunk *TestChunk = GetWorldChunk( World, Left , VisibleRegion);
   Result &= TestChunk && IsSet(TestChunk, Chunk_Initialized);
 
-  TestChunk = GetWorldChunk( World, Right );
+  TestChunk = GetWorldChunk( World, Right, VisibleRegion );
   Result &= TestChunk && IsSet(TestChunk, Chunk_Initialized);
 
-  TestChunk = GetWorldChunk( World, Top );
+  TestChunk = GetWorldChunk( World, Top, VisibleRegion );
   Result &= TestChunk && IsSet(TestChunk, Chunk_Initialized);
 
-  TestChunk = GetWorldChunk( World, Bot );
+  TestChunk = GetWorldChunk( World, Bot, VisibleRegion );
   Result &= TestChunk && IsSet(TestChunk, Chunk_Initialized);
 
-  TestChunk = GetWorldChunk( World, Front );
+  TestChunk = GetWorldChunk( World, Front, VisibleRegion );
   Result &= TestChunk && IsSet(TestChunk, Chunk_Initialized);
 
-  TestChunk = GetWorldChunk( World, Back );
+  TestChunk = GetWorldChunk( World, Back, VisibleRegion );
   Result &= TestChunk && IsSet(TestChunk, Chunk_Initialized);
 
   return Result;
@@ -961,12 +961,13 @@ BufferWorldChunk(untextured_3d_geometry_buffer *Dest, world_chunk *Chunk, graphi
 }
 
 void
-BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, graphics *Graphics, world_position VisibleRadius)
+BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, graphics *Graphics, world_position VisibleRegion)
 {
   TIMED_FUNCTION();
 
-  world_position Min = World->Center - VisibleRadius;
-  world_position Max = World->Center + VisibleRadius + 1;
+  chunk_dimension Radius = VisibleRegion/2;
+  world_position Min = World->Center - Radius;
+  world_position Max = World->Center + Radius + 1;
 
   for (s32 z = Min.z; z < Max.z; ++ z)
   {
@@ -975,7 +976,7 @@ BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, g
       for (s32 x = Min.x; x < Max.x; ++ x)
       {
         world_position P = World_Position(x,y,z);
-        world_chunk *Chunk = GetWorldChunk( World, P );
+        world_chunk *Chunk = GetWorldChunk( World, P, VisibleRegion);
 
         if (Chunk && Chunk->Mesh)
         {
@@ -987,7 +988,7 @@ BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, g
         }
         else if (!Chunk)
         {
-          Chunk = GetWorldChunkFor(World->Memory, World, P);
+          Chunk = GetWorldChunkFor(World->Memory, World, P, VisibleRegion);
           QueueChunkForInit(&Plat->LowPriority, Chunk);
         }
       }

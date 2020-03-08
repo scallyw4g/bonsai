@@ -1,7 +1,7 @@
 
-#define VR_X 8
-#define VR_Y 8
-#define VR_Z 8
+/* #define VR_X 8 */
+/* #define VR_Y 8 */
+/* #define VR_Z 8 */
 
 #include <bonsai_types.h>
 

@@ -41,23 +41,23 @@ AllocateWorldChunk(memory_arena *Storage, world_position WorldP, chunk_dimension
 }
 
 inline u32
-GetWorldChunkHash(world_position P)
+GetWorldChunkHash(world_position P, chunk_dimension VisibleRegion)
 {
   /* TIMED_FUNCTION(); */
 
   u32 I =
     (u32)((P.x) +
-         (P.y*VR_X) +
-         (P.z*VR_X*VR_Y)) * WORLD_HASH_SIZE_MULTIPLIER;
+         (P.y*VisibleRegion.x) +
+         (P.z*VisibleRegion.x*VisibleRegion.y)) * WORLD_HASH_SIZE_MULTIPLIER;
 
   u32 HashIndex = I % WORLD_HASH_SIZE;
   return HashIndex;
 }
 
 function void
-InsertChunkIntoWorld(world *World, world_chunk *Chunk)
+InsertChunkIntoWorld(world *World, world_chunk *Chunk, chunk_dimension VisibleRegion)
 {
-  u32 HashIndex = GetWorldChunkHash(Chunk->WorldP);
+  u32 HashIndex = GetWorldChunkHash(Chunk->WorldP, VisibleRegion);
   u32 StartingHashIndex = HashIndex;
 #if BONSAI_INTERNAL
   u32 BucketsSkipped = 0;
@@ -94,7 +94,7 @@ InsertChunkIntoWorld(world *World, world_chunk *Chunk)
 }
 
 function world_chunk*
-GetWorldChunkFor(memory_arena *Storage, world *World, world_position P)
+GetWorldChunkFor(memory_arena *Storage, world *World, world_position P, chunk_dimension VisibleRegion)
 {
   /* TIMED_FUNCTION(); */
   world_chunk *Result = 0;
@@ -111,7 +111,7 @@ GetWorldChunkFor(memory_arena *Storage, world *World, world_position P)
   Assert(Result->Data->Flags == Chunk_Uninitialized);
 
   Result->WorldP = P;
-  InsertChunkIntoWorld(World, Result);
+  InsertChunkIntoWorld(World, Result, VisibleRegion);
 
   return Result;
 }
@@ -175,10 +175,10 @@ FreeWorldChunk(world *World, world_chunk *Chunk , mesh_freelist* MeshFreelist, m
 }
 
 function world_chunk*
-GetWorldChunk( world *World, world_position P )
+GetWorldChunk( world *World, world_position P, chunk_dimension VisibleRegion)
 {
   /* TIMED_FUNCTION(); */
-  u32 HashIndex = GetWorldChunkHash(P);
+  u32 HashIndex = GetWorldChunkHash(P, VisibleRegion);
 
   world_chunk *Result = World->ChunkHash[HashIndex];
 
@@ -197,14 +197,15 @@ GetWorldChunk( world *World, world_position P )
 }
 
 function void
-CollectUnusedChunks(world *World, mesh_freelist* MeshFreelist, memory_arena* Memory)
+CollectUnusedChunks(world *World, mesh_freelist* MeshFreelist, memory_arena* Memory, chunk_dimension VisibleRegion)
 {
   TIMED_FUNCTION();
   world_chunk ** WorldHash = World->ChunkHash;
 
   world_position CenterP = World->Center;
-  world_position Min = CenterP - VISIBLE_REGION_RADIUS;
-  world_position Max = CenterP + VISIBLE_REGION_RADIUS;
+  chunk_dimension Radius = (VisibleRegion/2);
+  world_position Min = CenterP - Radius;
+  world_position Max = CenterP + Radius;
 
   for (u32 ChunkIndex = 0;
       ChunkIndex < WORLD_HASH_SIZE;
@@ -222,14 +223,14 @@ CollectUnusedChunks(world *World, mesh_freelist* MeshFreelist, memory_arena* Mem
         if ( (*Chunk)->Data->Flags == Chunk_MeshComplete || (*Chunk)->Data->Flags == Chunk_Collected  )
         {
           /* ++ChunksCollected; */
-          u32 ChunkHash = GetWorldChunkHash(ChunkP);
+          u32 ChunkHash = GetWorldChunkHash(ChunkP, VisibleRegion);
 
           world_chunk** Current = WorldHash + ChunkHash;
-          u32 CurrentHash = GetWorldChunkHash((*Current)->WorldP);
+          u32 CurrentHash = GetWorldChunkHash((*Current)->WorldP, VisibleRegion);
 
           world_chunk** LastChunkOfSameHashValue = WorldHash + ChunkHash;
 
-          while (*Current && GetWorldChunkHash((*Current)->WorldP) == ChunkHash)
+          while (*Current && GetWorldChunkHash((*Current)->WorldP, VisibleRegion) == ChunkHash)
           {
             LastChunkOfSameHashValue = Current;
             CurrentHash = GetNextWorldChunkHash(CurrentHash);
@@ -269,7 +270,7 @@ CollectUnusedChunks(world *World, mesh_freelist* MeshFreelist, memory_arena* Mem
 }
 
 function inline b32
-IsFilledInWorld( world *World, world_chunk *chunk, canonical_position VoxelP )
+IsFilledInWorld( world *World, world_chunk *chunk, canonical_position VoxelP, chunk_dimension VisibleRegion)
 {
   /* TIMED_FUNCTION(); */
   b32 isFilled = true;
@@ -280,7 +281,7 @@ IsFilledInWorld( world *World, world_chunk *chunk, canonical_position VoxelP )
 
     if ( chunk->WorldP != VoxelP.WorldP )
     {
-      localChunk = GetWorldChunk(World, VoxelP.WorldP);
+      localChunk = GetWorldChunk(World, VoxelP.WorldP, VisibleRegion);
     }
 
     isFilled = localChunk && IsFilledInChunk(localChunk->Data, Voxel_Position(VoxelP.Offset), World->ChunkDim );
@@ -290,10 +291,10 @@ IsFilledInWorld( world *World, world_chunk *chunk, canonical_position VoxelP )
 }
 
 inline b32
-NotFilledInWorld( world *World, world_chunk *chunk, canonical_position VoxelP )
+NotFilledInWorld( world *World, world_chunk *chunk, canonical_position VoxelP, chunk_dimension VisibleRegion)
 {
   /* TIMED_FUNCTION(); */
-  b32 Result = !(IsFilledInWorld(World, chunk, VoxelP));
+  b32 Result = !(IsFilledInWorld(World, chunk, VoxelP, VisibleRegion));
   return Result;
 }
 
@@ -563,7 +564,7 @@ BuildWorldChunkMesh(world_chunk *ReadChunk, chunk_dimension ReadChunkDim,
 }
 
 function void
-BuildWorldChunkMesh(world *World, world_chunk *WorldChunk, chunk_dimension WorldChunkDim, untextured_3d_geometry_buffer* DestMesh)
+BuildWorldChunkMesh(world *World, world_chunk *WorldChunk, chunk_dimension WorldChunkDim, untextured_3d_geometry_buffer* DestMesh, chunk_dimension VisibleRegion)
 {
   TIMED_FUNCTION();
 
@@ -595,7 +596,7 @@ BuildWorldChunkMesh(world *World, world_chunk *WorldChunk, chunk_dimension World
                               RandomBilateral(&ColorEntropy),
                               1.0f);
 
-        if ( !IsFilledInWorld( World, WorldChunk, CurrentP ) )
+        if ( !IsFilledInWorld( World, WorldChunk, CurrentP, VisibleRegion) )
           continue;
 
         voxel *Voxel = &Chunk->Voxels[GetIndex(CurrentP.Offset, WorldChunkDim)];
@@ -623,32 +624,32 @@ BuildWorldChunkMesh(world *World, world_chunk *WorldChunk, chunk_dimension World
         END_BLOCK("Canonicalize");
 
         // FIXME(Jesse): This should use a BufferVertsChecked path
-        if ( !IsFilledInWorld( World, WorldChunk, rightVoxel ) )
+        if ( !IsFilledInWorld( World, WorldChunk, rightVoxel, VisibleRegion) )
         {
           RightFaceVertexData( CurrentP.Offset, Diameter, VertexData);
           BufferVertsDirect(DestMesh, 6, VertexData, RightFaceNormalData, FaceColors);
         }
-        if ( !IsFilledInWorld( World, WorldChunk, leftVoxel ) )
+        if ( !IsFilledInWorld( World, WorldChunk, leftVoxel, VisibleRegion ) )
         {
           LeftFaceVertexData( CurrentP.Offset, Diameter, VertexData);
           BufferVertsDirect(DestMesh, 6, VertexData, LeftFaceNormalData, FaceColors);
         }
-        if ( !IsFilledInWorld( World, WorldChunk, botVoxel   ) )
+        if ( !IsFilledInWorld( World, WorldChunk, botVoxel, VisibleRegion   ) )
         {
           BottomFaceVertexData( CurrentP.Offset, Diameter, VertexData);
           BufferVertsDirect(DestMesh, 6, VertexData, BottomFaceNormalData, FaceColors);
         }
-        if ( !IsFilledInWorld( World, WorldChunk, topVoxel   ) )
+        if ( !IsFilledInWorld( World, WorldChunk, topVoxel, VisibleRegion   ) )
         {
           TopFaceVertexData( CurrentP.Offset, Diameter, VertexData);
           BufferVertsDirect(DestMesh, 6, VertexData, TopFaceNormalData, FaceColors);
         }
-        if ( !IsFilledInWorld( World, WorldChunk, frontVoxel ) )
+        if ( !IsFilledInWorld( World, WorldChunk, frontVoxel, VisibleRegion ) )
         {
           FrontFaceVertexData( CurrentP.Offset, Diameter, VertexData);
           BufferVertsDirect(DestMesh, 6, VertexData, FrontFaceNormalData, FaceColors);
         }
-        if ( !IsFilledInWorld( World, WorldChunk, backVoxel  ) )
+        if ( !IsFilledInWorld( World, WorldChunk, backVoxel, VisibleRegion  ) )
         {
           BackFaceVertexData( CurrentP.Offset, Diameter, VertexData);
           BufferVertsDirect(DestMesh, 6, VertexData, BackFaceNormalData, FaceColors);

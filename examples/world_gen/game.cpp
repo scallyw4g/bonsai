@@ -1,11 +1,8 @@
 #include <bonsai_types.h>
-#include <game_constants.h>
-
 #include <bonsai_engine.h>
+
+#include <game_constants.h>
 #include <game_types.h>
-
-
-global_variable chunk_dimension WORLD_CHUNK_DIM = Chunk_Dimension(32, 32, 16);
 
 
 #define RANDOM_HOTKEY_MASHING 0
@@ -142,9 +139,9 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     World->Center = PlayerChunkP;
   }
 
-  SimulatePlayer(World, Player, Camera, Hotkeys, Plat->dt );
+  SimulatePlayer(World, Player, Camera, Hotkeys, Plat->dt, g_VisibleRegion);
 
-  CollectUnusedChunks(World, &GameState->MeshFreelist, GameState->Memory);
+  CollectUnusedChunks(World, &GameState->MeshFreelist, GameState->Memory, g_VisibleRegion);
 
   v2 MouseDelta = GetMouseDelta(Plat);
   input* GameInput = &Plat->Input;
@@ -158,7 +155,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   UpdateGameCamera(MouseDelta, GameInput, Player->P, Camera, World->ChunkDim);
 
-  SimulateEntities(World, GameState->EntityTable, Plat->dt);
+  SimulateEntities(World, GameState->EntityTable, Plat->dt, g_VisibleRegion);
 
   SimulateAndRenderParticleSystems(GameState->EntityTable, World->ChunkDim, &GpuMap->Buffer, Graphics, Plat->dt);
 
@@ -169,7 +166,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   DEBUG_COMPUTE_PICK_RAY(Plat, &gBuffer->ViewProjection);
 
   TIMED_BLOCK("BufferMeshes");
-    BufferWorld(Plat, &GpuMap->Buffer, World, Graphics, VISIBLE_REGION_RADIUS);
+    BufferWorld(Plat, &GpuMap->Buffer, World, Graphics, g_VisibleRegion);
     BufferEntities( GameState->EntityTable, &GpuMap->Buffer, Graphics, World, Plat->dt);
   END_BLOCK("BufferMeshes");
 
@@ -237,7 +234,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   world_position WorldCenter = World_Position(0, 0, 0);
 
   GameState->Heap = InitHeap(Gigabytes(4));
-  GameState->World = AllocateAndInitWorld(WorldCenter, WORLD_CHUNK_DIM, VISIBLE_REGION);
+  GameState->World = AllocateAndInitWorld(WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
 
   GameState->EntityTable = AllocateEntityTable(GameMemory, TOTAL_ENTITY_COUNT);
 

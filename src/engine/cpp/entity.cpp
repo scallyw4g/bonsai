@@ -44,7 +44,7 @@ IsPlayer(entity *Entity)
 }
 
 collision_event
-GetCollision( world *World, canonical_position TestP, v3 CollisionDim)
+GetCollision( world *World, canonical_position TestP, v3 CollisionDim, chunk_dimension VisibleRegion)
 {
   collision_event Collision;
   Collision.didCollide = false;
@@ -63,7 +63,7 @@ GetCollision( world *World, canonical_position TestP, v3 CollisionDim)
       for ( int x = MinP.x; x < MaxP.x; x++ )
       {
         canonical_position LoopTestP = Canonicalize( WorldChunkDim, V3(x,y,z), TestP.WorldP );
-        world_chunk *chunk = GetWorldChunk( World, LoopTestP.WorldP );
+        world_chunk *chunk = GetWorldChunk( World, LoopTestP.WorldP, VisibleRegion);
 
 #if 0
         // TODO(Jesse): Can we somehow atomically pull this one off the queue
@@ -139,14 +139,14 @@ GetCollision(entity **Entities, entity *Entity, chunk_dimension WorldChunkDim)
 // TODO(Jesse): This offset is only used to check if entities are grounded.
 // Can we do that in a more intelligent way?
 collision_event
-GetCollision(world *World, entity *Entity, v3 Offset = V3(0,0,0) )
+GetCollision(world *World, entity *Entity, chunk_dimension VisibleRegion, v3 Offset = V3(0,0,0) )
 {
   collision_event C = {};
 
   if ( !Spawned(Entity) )
     return C;
 
-  C = GetCollision( World, Canonicalize(World->ChunkDim, Entity->P + Offset), Entity->CollisionVolumeRadius*2.0f);
+  C = GetCollision( World, Canonicalize(World->ChunkDim, Entity->P + Offset), Entity->CollisionVolumeRadius*2.0f, VisibleRegion);
 
   return C;
 }
@@ -556,7 +556,7 @@ SpawnPlayer(model* Models, entity *Player, canonical_position InitialP, random_s
 }
 
 void
-EntityWorldCollision(world *World, entity *Entity, collision_event *Event)
+EntityWorldCollision(world *World, entity *Entity, collision_event *Event, chunk_dimension VisibleRegion)
 {
   Assert(Entity->Type != EntityType_None);
 
@@ -574,7 +574,7 @@ EntityWorldCollision(world *World, entity *Entity, collision_event *Event)
         Chunk->Data->Voxels[i] = {};
         /* ZeroMesh(&Chunk->Data->Mesh); */
         // TODO(Jesse): This path needs to call CanBuildWorldChunkMesh or something similar
-        BuildWorldChunkMesh(World, Chunk, World->ChunkDim, Chunk->Mesh);
+        BuildWorldChunkMesh(World, Chunk, World->ChunkDim, Chunk->Mesh, VisibleRegion);
       }
       Unspawn(Entity);
     } break;
@@ -775,7 +775,7 @@ GetAtomicUpdateVector( v3 Gross )
 }
 
 void
-UpdateEntityP(world* World, entity *Entity, v3 GrossDelta)
+UpdateEntityP(world* World, entity *Entity, v3 GrossDelta, chunk_dimension VisibleRegion)
 {
   TIMED_FUNCTION();
   chunk_dimension WorldChunkDim = World->ChunkDim;
@@ -795,7 +795,7 @@ UpdateEntityP(world* World, entity *Entity, v3 GrossDelta)
     {
       Entity->P.Offset.E[AxisIndex] += StepDelta.E[AxisIndex];
       Entity->P = Canonicalize(WorldChunkDim, Entity->P);
-      C = GetCollision(World, Entity);
+      C = GetCollision(World, Entity, VisibleRegion);
       if (C.didCollide)
       {
         Entity->Physics.Velocity.E[AxisIndex] = 0;
@@ -808,7 +808,7 @@ UpdateEntityP(world* World, entity *Entity, v3 GrossDelta)
           Entity->P.Offset.E[AxisIndex]++;
 
         Entity->P = Canonicalize(WorldChunkDim, Entity->P);
-        EntityWorldCollision(World, Entity, &C);
+        EntityWorldCollision(World, Entity, &C, VisibleRegion);
       }
     }
 
@@ -820,12 +820,12 @@ UpdateEntityP(world* World, entity *Entity, v3 GrossDelta)
 
   Entity->P = Canonicalize(WorldChunkDim, Entity->P);
 
-  collision_event AssertCollision = GetCollision(World, Entity );
+  collision_event AssertCollision = GetCollision(World, Entity, VisibleRegion);
 
   // Entites that aren't moving can still be positioned outside the world if
   // the player moves the world to do so
   if (AssertCollision.didCollide )
-    EntityWorldCollision(World, Entity, &C);
+    EntityWorldCollision(World, Entity, &C, VisibleRegion);
 
   return;
 }
@@ -989,7 +989,7 @@ SimulateAndRenderParticleSystem(
 }
 
 void
-SimulatePlayer(world* World, entity *Player, camera* Camera, hotkeys *Hotkeys, r32 dt )
+SimulatePlayer(world* World, entity *Player, camera* Camera, hotkeys *Hotkeys, r32 dt, chunk_dimension VisibleRegion)
 {
   TIMED_FUNCTION();
   if (Spawned(Player))
@@ -1003,7 +1003,7 @@ SimulatePlayer(world* World, entity *Player, camera* Camera, hotkeys *Hotkeys, r
     PhysicsUpdate(&Player->Physics, dt, False);
 
     world_position OriginalPlayerP = Player->P.WorldP;
-    UpdateEntityP( World, Player, Player->Physics.Delta );
+    UpdateEntityP( World, Player, Player->Physics.Delta, VisibleRegion);
 
     world_position WorldDisp = ( Player->P.WorldP - OriginalPlayerP );
     UpdateVisibleRegion(World, WorldDisp);
@@ -1035,7 +1035,7 @@ SimulatePlayer(world* World, entity *Player, camera* Camera, hotkeys *Hotkeys, r
 }
 
 void
-SimulateEntities(world* World, entity** EntityTable, r32 dt)
+SimulateEntities(world* World, entity** EntityTable, r32 dt, chunk_dimension VisibleRegion)
 {
   TIMED_FUNCTION();
 
@@ -1062,13 +1062,13 @@ SimulateEntities(world* World, entity** EntityTable, r32 dt)
       case EntityType_EnemyProjectile:
       {
         PhysicsUpdate(&Entity->Physics, dt);
-        UpdateEntityP(World, Entity, Entity->Physics.Delta);
+        UpdateEntityP(World, Entity, Entity->Physics.Delta, VisibleRegion);
       } break;
 
       case EntityType_ParticleSystem:
       {
         PhysicsUpdate(&Entity->Physics, dt);
-        UpdateEntityP(World, Entity, Entity->Physics.Delta);
+        UpdateEntityP(World, Entity, Entity->Physics.Delta, VisibleRegion);
       } break;
 
       case EntityType_Player:
@@ -1112,9 +1112,9 @@ SimulateAndRenderParticleSystems(entity** EntityTable, chunk_dimension WorldChun
 }
 
 inline b32
-IsGrounded( world *World, entity *entity)
+IsGrounded( world *World, entity *entity, chunk_dimension VisibleRegion)
 {
-  collision_event c = GetCollision(World, entity, V3(0.0f,-0.001f, 0.0f));
+  collision_event c = GetCollision(World, entity, VisibleRegion, V3(0.0f,-0.001f, 0.0f));
   return c.didCollide;
 }
 
