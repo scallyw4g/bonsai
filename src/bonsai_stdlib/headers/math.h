@@ -42,6 +42,13 @@ Cos(r32 Theta)
   return Result;
 }
 
+function u8
+SafeTruncateU8(s32 N)
+{
+  Assert(N < 256);
+  return (u8)N;
+}
+
 inline r64
 SafeDivide0(u64 Dividend, u64 Divisor)
 {

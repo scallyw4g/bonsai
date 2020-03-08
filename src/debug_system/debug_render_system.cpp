@@ -1791,7 +1791,7 @@ PushChunkView(debug_ui_render_group* Group, world_chunk* Chunk, window_layout* W
   input* WindowInput = 0;
   if (Pressed(Group, &ViewportButton))
     { WindowInput = Group->Input; }
-  UpdateGameCamera( -0.005f*(*Group->MouseDP), WindowInput, Canonical_Position(0), &DebugState->Camera);
+  UpdateGameCamera( -0.005f*(*Group->MouseDP), WindowInput, Canonical_Position(0), &DebugState->Camera, Chunk_Dimension(0,0,0));
 }
 
 function void

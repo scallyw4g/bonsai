@@ -1,6 +1,6 @@
 
 function void
-UpdateCameraP(canonical_position NewTarget, camera *Camera)
+UpdateCameraP(canonical_position NewTarget, camera *Camera, chunk_dimension WorldChunkDim)
 {
   TIMED_FUNCTION();
   if (Camera->DistanceFromTarget <= 0.1f)
@@ -19,8 +19,10 @@ UpdateCameraP(canonical_position NewTarget, camera *Camera)
 
   Camera->ViewingTarget = NewTarget;
 
-  Camera->TargetP = Canonicalize(WORLD_CHUNK_DIM, NewTarget - (Camera->Front*Camera->DistanceFromTarget));
-  Camera->CurrentP = Lerp(0.20f, Camera->CurrentP, Camera->TargetP);
+  Camera->TargetP = Canonicalize(WorldChunkDim, NewTarget - (Camera->Front*Camera->DistanceFromTarget));
+  Camera->CurrentP = Lerp(0.20f, Camera->CurrentP, Camera->TargetP, WorldChunkDim);
+
+  Camera->RenderSpacePosition = GetRenderP(WorldChunkDim, Camera->CurrentP, Camera);
 
 #if 1
 
@@ -53,7 +55,7 @@ UpdateCameraP(canonical_position NewTarget, camera *Camera)
   MinMin = Rotate(MinMin, FinalRotation);
   MinMax = Rotate(MinMax, FinalRotation);
 
-  v3 CameraRenderP = GetRenderP(WORLD_CHUNK_DIM, Camera->CurrentP, Camera);
+  v3 CameraRenderP = GetRenderP(WorldChunkDim, Camera->CurrentP, Camera);
 
   plane Top(CameraRenderP,   Normalize(Cross(MaxMax, MaxMin)));
   plane Bot(CameraRenderP,   Normalize(Cross(MinMin, MinMax)));
@@ -82,7 +84,7 @@ GetMouseDelta(platform *Plat)
 }
 
 function void
-UpdateGameCamera(v2 MouseDelta, input *Input, canonical_position NewTarget, camera* Camera)
+UpdateGameCamera(v2 MouseDelta, input *Input, canonical_position NewTarget, camera* Camera, chunk_dimension WorldChunkDim)
 {
   if (Input)
   {
@@ -99,7 +101,7 @@ UpdateGameCamera(v2 MouseDelta, input *Input, canonical_position NewTarget, came
     }
   }
 
-  UpdateCameraP(NewTarget, Camera);
+  UpdateCameraP(NewTarget, Camera, WorldChunkDim);
   return;
 }
 

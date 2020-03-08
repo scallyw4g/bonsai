@@ -217,8 +217,7 @@ BindShaderUniforms(shader *Shader)
 
       case ShaderUniform_Camera:
       {
-        v3 ViewPosition = GetRenderP(WORLD_CHUNK_DIM, Uniform->Camera->CurrentP, Uniform->Camera);
-        glUniform3fv(Uniform->ID, 1, &ViewPosition.E[0]);
+        glUniform3fv(Uniform->ID, 1, &Uniform->Camera->RenderSpacePosition.E[0]);
       } break;
 
       InvalidDefaultCase;

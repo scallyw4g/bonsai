@@ -932,7 +932,7 @@ ReserveBufferSpace(untextured_3d_geometry_buffer* Reservation, u32 ElementsToRes
 }
 
 void
-BufferWorldChunk(untextured_3d_geometry_buffer *Dest, world_chunk *Chunk, graphics *Graphics, work_queue* Queue)
+BufferWorldChunk(untextured_3d_geometry_buffer *Dest, world_chunk *Chunk, graphics *Graphics, work_queue* Queue, chunk_dimension WorldChunkDim)
 {
   if (!Chunk || !Chunk->Mesh)
     return;
@@ -944,7 +944,7 @@ BufferWorldChunk(untextured_3d_geometry_buffer *Dest, world_chunk *Chunk, graphi
 
     if (Chunk->LodMesh_Complete && Chunk->LodMesh->At)
     {
-      QueueChunkMeshForCopy(Queue, Chunk->LodMesh, Dest, Chunk, Graphics->Camera);
+      QueueChunkMeshForCopy(Queue, Chunk->LodMesh, Dest, Chunk, Graphics->Camera, WorldChunkDim);
     }
   }
   else if (IsSet(ChunkData, Chunk_Queued))
@@ -980,10 +980,10 @@ BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, g
         if (Chunk && Chunk->Mesh)
         {
           DEBUG_PICK_CHUNK(Chunk,
-                           MinMaxAABB(GetRenderP(WORLD_CHUNK_DIM, Canonical_Position(V3(0,0,0), Chunk->WorldP), Graphics->Camera),
-                                      GetRenderP(WORLD_CHUNK_DIM, Canonical_Position(WORLD_CHUNK_DIM, Chunk->WorldP), Graphics->Camera)));
+                           MinMaxAABB(GetRenderP(World->ChunkDim, Canonical_Position(V3(0,0,0), Chunk->WorldP), Graphics->Camera),
+                                      GetRenderP(World->ChunkDim, Canonical_Position(World->ChunkDim, Chunk->WorldP), Graphics->Camera)));
 
-          BufferWorldChunk(Dest, Chunk, Graphics, &Plat->HighPriority);
+          BufferWorldChunk(Dest, Chunk, Graphics, &Plat->HighPriority, World->ChunkDim);
         }
         else if (!Chunk)
         {

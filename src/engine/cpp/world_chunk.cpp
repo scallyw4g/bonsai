@@ -14,22 +14,26 @@ ChunkIsGarbage(world_chunk* Chunk)
 }
 
 function world_chunk*
-AllocateWorldChunk(memory_arena *Storage, world_position WorldP, chunk_dimension Dim = WORLD_CHUNK_DIM)
+AllocateWorldChunk(memory_arena *Storage, world_position WorldP, chunk_dimension Dim)
 {
   u32 MaxLodMeshVerts = POINT_BUFFER_SIZE*3;
 
-  CAssert(sizeof(world_chunk) == CACHE_LINE_SIZE);
+  /* CAssert(sizeof(world_chunk) == CACHE_LINE_SIZE); */
   world_chunk *Result = AllocateAlignedProtection(world_chunk, Storage, 1, CACHE_LINE_SIZE, false);
   // FIXME(Jesse): The *2048 is an unnecessary debugging crutch .. take it out
   Result->LodMesh     = AllocateMesh(Storage, MaxLodMeshVerts*2048);
   Result->Data        = AllocateChunk(Storage, Dim);
   Result->WorldP      = WorldP;
 
+  Result->DimX = SafeTruncateU8(Dim.x);
+  Result->DimY = SafeTruncateU8(Dim.y);
+  Result->DimZ = SafeTruncateU8(Dim.z);
+
   /* Result->CurrentTriangles = AllocateCurrentTriangles(2*4096, Storage); */
   /* Result->CurrentTriangles->SurfacePoints = AllocateAlignedProtection(boundary_voxels, Storage, 1, 64, False); */
 
   // TODO(Jesse): Allocate in a more sensible way?
-  /* Result->CurrentTriangles->SurfacePoints->Points = AllocateAlignedProtection(voxel_position, Storage, Volume(WORLD_CHUNK_DIM), 64, False); */
+  /* Result->CurrentTriangles->SurfacePoints->Points = AllocateAlignedProtection(voxel_position, Storage, Volume(WorldChunkDim), 64, False); */
 
   /* SeedTriangulation(Result->CurrentTriangles, Storage); */
 
@@ -97,7 +101,7 @@ GetWorldChunkFor(memory_arena *Storage, world *World, world_position P)
 
   if (World->FreeChunkCount == 0)
   {
-    Result = AllocateWorldChunk(Storage, P);
+    Result = AllocateWorldChunk(Storage, P, World->ChunkDim);
   }
   else
   {
@@ -347,7 +351,7 @@ InitChunkPlane(s32 zIndex, world_chunk *Chunk, chunk_dimension ChunkDim, u8 Colo
 }
 
 function u32
-InitChunkPerlinPlane(perlin_noise *Noise, world_chunk *WorldChunk, chunk_dimension Dim, u8 ColorIndex, s32 Amplitude, s64 zMin)
+InitChunkPerlinPlane(perlin_noise *Noise, world_chunk *WorldChunk, chunk_dimension Dim, u8 ColorIndex, s32 Amplitude, s64 zMin, chunk_dimension WorldChunkDim)
 {
   TIMED_FUNCTION();
 
@@ -366,11 +370,11 @@ InitChunkPerlinPlane(perlin_noise *Noise, world_chunk *WorldChunk, chunk_dimensi
         ChunkData->Voxels[VoxIndex].Flags = Voxel_Empty;
         Assert( NotSet(&ChunkData->Voxels[VoxIndex], Voxel_Filled) );
 
-        double InX = ((double)x + ( (double)WORLD_CHUNK_DIM.x*(double)WorldChunk->WorldP.x))/NOISE_FREQUENCY;
-        double InY = ((double)y + ( (double)WORLD_CHUNK_DIM.y*(double)WorldChunk->WorldP.y))/NOISE_FREQUENCY;
+        double InX = ((double)x + ( (double)WorldChunkDim.x*(double)WorldChunk->WorldP.x))/NOISE_FREQUENCY;
+        double InY = ((double)y + ( (double)WorldChunkDim.y*(double)WorldChunk->WorldP.y))/NOISE_FREQUENCY;
         double InZ = 1.0;
 
-        s64 zAbsolute = z - (zMin-Amplitude) + (WORLD_CHUNK_DIM.z*WorldChunk->WorldP.z);
+        s64 zAbsolute = z - (zMin-Amplitude) + (WorldChunkDim.z*WorldChunk->WorldP.z);
         r64 zSlicesAt = (1.0/(r64)Amplitude) * (r64)zAbsolute;
 
         r64 NoiseValue = Noise->noise(InX, InY, InZ);
@@ -396,7 +400,7 @@ InitChunkPerlinPlane(perlin_noise *Noise, world_chunk *WorldChunk, chunk_dimensi
 }
 
 function void
-InitChunkPerlin(perlin_noise *Noise, world_chunk *WorldChunk, chunk_dimension Dim, u8 ColorIndex)
+InitChunkPerlin(perlin_noise *Noise, world_chunk *WorldChunk, chunk_dimension Dim, u8 ColorIndex, chunk_dimension WorldChunkDim)
 {
   TIMED_FUNCTION();
 
@@ -414,9 +418,9 @@ InitChunkPerlin(perlin_noise *Noise, world_chunk *WorldChunk, chunk_dimension Di
 
         Assert( NotSet(&ChunkData->Voxels[i], Voxel_Filled) );
 
-        double InX = ((double)x + ( (double)WORLD_CHUNK_DIM.x*(double)WorldChunk->WorldP.x))/NOISE_FREQUENCY;
-        double InY = ((double)y + ( (double)WORLD_CHUNK_DIM.y*(double)WorldChunk->WorldP.y))/NOISE_FREQUENCY;
-        double InZ = ((double)z + ( (double)WORLD_CHUNK_DIM.z*(double)WorldChunk->WorldP.z))/NOISE_FREQUENCY;
+        double InX = ((double)x + ( (double)WorldChunkDim.x*(double)WorldChunk->WorldP.x))/NOISE_FREQUENCY;
+        double InY = ((double)y + ( (double)WorldChunkDim.y*(double)WorldChunk->WorldP.y))/NOISE_FREQUENCY;
+        double InZ = ((double)z + ( (double)WorldChunkDim.z*(double)WorldChunk->WorldP.z))/NOISE_FREQUENCY;
 
         r32 noiseValue = (r32)Noise->noise(InX, InY, InZ);
 
@@ -656,7 +660,9 @@ BuildWorldChunkMesh(world *World, world_chunk *WorldChunk, chunk_dimension World
 
 function void
 InitializeWorldChunkPerlin(perlin_noise *Noise,
-                           world_chunk *DestChunk, untextured_3d_geometry_buffer* DestGeometry,
+                           chunk_dimension WorldChunkDim,
+                           world_chunk *DestChunk,
+                           untextured_3d_geometry_buffer* DestGeometry,
                            memory_arena *TempMemory)
 {
   TIMED_FUNCTION();
@@ -671,10 +677,10 @@ InitializeWorldChunkPerlin(perlin_noise *Noise,
 #if 0
   // Don't blow out the Flags for this chunk or risk assertions on other
   // threads that rely on that flag being set for every item on the queue
-  ZeroChunk(DestChunk->Data, Volume(WORLD_CHUNK_DIM));
+  ZeroChunk(DestChunk->Data, Volume(WorldChunkDim));
 #else
   for ( s32 VoxelIndex = 0;
-        VoxelIndex < Volume(WORLD_CHUNK_DIM);
+        VoxelIndex < Volume(WorldChunkDim);
         ++VoxelIndex)
   {
     voxel *Voxel = &DestChunk->Data->Voxels[VoxelIndex];
@@ -683,18 +689,18 @@ InitializeWorldChunkPerlin(perlin_noise *Noise,
   }
 #endif
 
-  chunk_dimension SynChunkDim = WORLD_CHUNK_DIM + 2;
+  chunk_dimension SynChunkDim = WorldChunkDim + 2;
   chunk_dimension SynChunkP = DestChunk->WorldP - 1;
 
   world_chunk *SyntheticChunk = AllocateWorldChunk(TempMemory, SynChunkP, SynChunkDim );
 
-  InitChunkPerlin(Noise, SyntheticChunk, SynChunkDim, GRASS_GREEN);
-  CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WORLD_CHUNK_DIM, Voxel_Position(1));
+  InitChunkPerlin(Noise, SyntheticChunk, SynChunkDim, GRASS_GREEN, WorldChunkDim);
+  CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WorldChunkDim, Voxel_Position(1));
 
   SetFlag(DestChunk, Chunk_Initialized);
   SetFlag(SyntheticChunk, Chunk_Initialized);
 
-  BuildWorldChunkMesh(SyntheticChunk, SynChunkDim, DestChunk,  WORLD_CHUNK_DIM, DestGeometry);
+  BuildWorldChunkMesh(SyntheticChunk, SynChunkDim, DestChunk,  WorldChunkDim, DestGeometry);
   DestChunk->Mesh = DestGeometry;
 
   DestChunk->Data->Flags = Chunk_MeshComplete;
@@ -703,7 +709,7 @@ InitializeWorldChunkPerlin(perlin_noise *Noise,
 }
 
 function void
-InitializeWorldChunkPlane(world_chunk *DestChunk, untextured_3d_geometry_buffer* DestGeometry, memory_arena* TempMemory)
+InitializeWorldChunkPlane(world_chunk *DestChunk, chunk_dimension WorldChunkDim, untextured_3d_geometry_buffer* DestGeometry, memory_arena* TempMemory)
 {
   TIMED_FUNCTION();
   Assert( IsSet(DestChunk, Chunk_Queued) );
@@ -717,10 +723,10 @@ InitializeWorldChunkPlane(world_chunk *DestChunk, untextured_3d_geometry_buffer*
 #if 0
   // Don't blow out the Flags for this chunk or risk assertions on other
   // threads that rely on that flag being set for every item on the queue
-  ZeroChunk(DestChunk->Data, Volume(WORLD_CHUNK_DIM));
+  ZeroChunk(DestChunk->Data, Volume(WorldChunkDim));
 #else
   for ( s32 VoxelIndex = 0;
-        VoxelIndex < Volume(WORLD_CHUNK_DIM);
+        VoxelIndex < Volume(WorldChunkDim);
         ++VoxelIndex)
   {
     voxel *Voxel = &DestChunk->Data->Voxels[VoxelIndex];
@@ -729,18 +735,18 @@ InitializeWorldChunkPlane(world_chunk *DestChunk, untextured_3d_geometry_buffer*
   }
 #endif
 
-  chunk_dimension SynChunkDim = WORLD_CHUNK_DIM + 2;
+  chunk_dimension SynChunkDim = WorldChunkDim + 2;
   chunk_dimension SynChunkP = DestChunk->WorldP - 1;
 
   world_chunk *SyntheticChunk = AllocateWorldChunk(TempMemory, SynChunkP, SynChunkDim );
 
   InitChunkPlane(1, SyntheticChunk, SynChunkDim, GREEN);
-  CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WORLD_CHUNK_DIM, Voxel_Position(1));
+  CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WorldChunkDim, Voxel_Position(1));
 
   SetFlag(DestChunk, Chunk_Initialized);
   SetFlag(SyntheticChunk, Chunk_Initialized);
 
-  BuildWorldChunkMesh(SyntheticChunk, SynChunkDim, DestChunk, WORLD_CHUNK_DIM, DestGeometry);
+  BuildWorldChunkMesh(SyntheticChunk, SynChunkDim, DestChunk, WorldChunkDim, DestGeometry);
 
   DestChunk->Data->Flags = Chunk_MeshComplete;
 
@@ -874,24 +880,25 @@ FindEdgeIntersections(point_buffer* Dest, chunk_data* ChunkData, chunk_dimension
   return;
 }
 
+#if 1
 function b32
-VertsAreCoplanar(voxel_position* V1, voxel_position* V2)
+VertsAreCoplanar(voxel_position* V1, voxel_position* V2, chunk_dimension WorldChunkDim)
 {
-  b32 Result = ( V1->x == V2->x && (V1->x == 0 || V1->x == WORLD_CHUNK_DIM.x) ) ||
-               ( V1->y == V2->y && (V1->y == 0 || V1->y == WORLD_CHUNK_DIM.y) ) ||
-               ( V1->z == V2->z && (V1->z == 0 || V1->z == WORLD_CHUNK_DIM.z) )  ;
+  b32 Result = ( V1->x == V2->x && (V1->x == 0 || V1->x == WorldChunkDim.x) ) ||
+               ( V1->y == V2->y && (V1->y == 0 || V1->y == WorldChunkDim.y) ) ||
+               ( V1->z == V2->z && (V1->z == 0 || V1->z == WorldChunkDim.z) )  ;
   return Result;
 }
 
 function b32
-VertsAreNotCoplanar(voxel_position* V1, voxel_position* V2)
+VertsAreNotCoplanar(voxel_position* V1, voxel_position* V2, chunk_dimension WorldChunkDim)
 {
-  b32 Result = !VertsAreCoplanar(V1, V2);
+  b32 Result = !VertsAreCoplanar(V1, V2, WorldChunkDim);
   return Result;
 }
 
 function voxel_position*
-GetPrevCoplanarVertex(voxel_position* Query, point_buffer* Points)
+GetPrevCoplanarVertex(voxel_position* Query, point_buffer* Points, chunk_dimension WorldChunkDim)
 {
   voxel_position* Result = 0;
 
@@ -902,7 +909,7 @@ GetPrevCoplanarVertex(voxel_position* Query, point_buffer* Points)
   {
     if (Current < Points->Points) { Current = Last; }
 
-    if ( VertsAreCoplanar(Current, Query) )
+    if ( VertsAreCoplanar(Current, Query, WorldChunkDim) )
     {
       Result = Current;
       break;
@@ -915,7 +922,7 @@ GetPrevCoplanarVertex(voxel_position* Query, point_buffer* Points)
 }
 
 function voxel_position*
-GetNextCoplanarVertex(voxel_position* Query, point_buffer* Points)
+GetNextCoplanarVertex(voxel_position* Query, point_buffer* Points, chunk_dimension WorldChunkDim)
 {
   voxel_position* Result = 0;
 
@@ -926,7 +933,7 @@ GetNextCoplanarVertex(voxel_position* Query, point_buffer* Points)
   {
     if (Current == OnePastLast) { Current = Points->Points; }
 
-    if ( VertsAreCoplanar(Current, Query) )
+    if ( VertsAreCoplanar(Current, Query, WorldChunkDim) )
     {
       Result = Current;
       break;
@@ -939,7 +946,7 @@ GetNextCoplanarVertex(voxel_position* Query, point_buffer* Points)
 }
 
 function voxel_position*
-GetClosestCoplanarPointRelativeTo(voxel_position* Query, voxel_position* Start, voxel_position* OnePastLastVert, v3 RelativePoint, voxel_position* Skip = 0)
+GetClosestCoplanarPointRelativeTo(voxel_position* Query, voxel_position* Start, voxel_position* OnePastLastVert, v3 RelativePoint, chunk_dimension WorldChunkDim, voxel_position* Skip = 0)
 {
   voxel_position* Result = 0;
   r32 ClosestDistance = f32_MAX;
@@ -954,7 +961,7 @@ GetClosestCoplanarPointRelativeTo(voxel_position* Query, voxel_position* Start, 
     Assert(Result < OnePastLastVert);
     r32 DistanceBetween = Distance(Normalize(RelativePoint - V3(*Query)), Normalize(RelativePoint - V3(*ClosestCandidate)));
 
-    if (DistanceBetween < ClosestDistance && VertsAreCoplanar(Query, ClosestCandidate) )
+    if (DistanceBetween < ClosestDistance && VertsAreCoplanar(Query, ClosestCandidate, WorldChunkDim) )
     {
       ClosestDistance = DistanceBetween;
       Result = ClosestCandidate;
@@ -966,7 +973,7 @@ GetClosestCoplanarPointRelativeTo(voxel_position* Query, voxel_position* Start, 
 
 #define MAX_COPLANAR_VERT_COUNT 32
 function u32
-GetAllCoplanarVerts(voxel_position* Query, point_buffer* Points, voxel_position* Results)
+GetAllCoplanarVerts(voxel_position* Query, point_buffer* Points, voxel_position* Results, chunk_dimension WorldChunkDim)
 {
   u32 Count = 0;
   voxel_position* Current = Points->Points;
@@ -976,13 +983,14 @@ GetAllCoplanarVerts(voxel_position* Query, point_buffer* Points, voxel_position*
   {
     Assert(Count < MAX_COPLANAR_VERT_COUNT);
     if (Current == Query) { ++Current; continue; }
-    if ( VertsAreCoplanar(Current, Query) ) { Results[Count++] = *Current; }
+    if ( VertsAreCoplanar(Current, Query, WorldChunkDim) ) { Results[Count++] = *Current; }
 
     ++Current;
   }
 
   return Count;
 }
+#endif
 
 /* function voxel_position* */
 /* GetClosestAngularDistanceTo(voxel_position* Query, point_buffer* Points, v3 CenterPoint) */
@@ -1276,16 +1284,16 @@ ComputeNormalSVD(boundary_voxels* BoundingPoints, memory_arena* TempMemory)
 }
 
 function void
-InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChunk, s32 Amplititude, s32 zMin)
+InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChunk, chunk_dimension WorldChunkDim, s32 Amplititude, s32 zMin)
 {
   TIMED_FUNCTION();
 #if 0
   // Don't blow out the Flags for this chunk or risk assertions on other
   // threads that rely on that flag being set for every item on the queue
-  ZeroChunk(DestChunk->Data, Volume(WORLD_CHUNK_DIM));
+  ZeroChunk(DestChunk->Data, Volume(WorldChunkDim));
 #else
   for ( s32 VoxelIndex = 0;
-        VoxelIndex < Volume(WORLD_CHUNK_DIM);
+        VoxelIndex < Volume(WorldChunkDim);
         ++VoxelIndex)
   {
     voxel *Voxel = &DestChunk->Data->Voxels[VoxelIndex];
@@ -1294,13 +1302,13 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
   }
 #endif
 
-  chunk_dimension SynChunkDim = WORLD_CHUNK_DIM + 2;
+  chunk_dimension SynChunkDim = WorldChunkDim + 2;
   chunk_dimension SynChunkP = DestChunk->WorldP - 1;
 
   world_chunk *SyntheticChunk = AllocateWorldChunk(Thread->TempMemory, SynChunkP, SynChunkDim );
 
-  u32 SyntheticChunkSum = InitChunkPerlinPlane(Thread->Noise, SyntheticChunk, SynChunkDim, GRASS_GREEN, Amplititude, zMin);
-  CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WORLD_CHUNK_DIM, Voxel_Position(1));
+  u32 SyntheticChunkSum = InitChunkPerlinPlane(Thread->Noise, SyntheticChunk, SynChunkDim, GRASS_GREEN, Amplititude, zMin, WorldChunkDim);
+  CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, WorldChunkDim, Voxel_Position(1));
 
   SetFlag(DestChunk, Chunk_Initialized);
   SetFlag(SyntheticChunk, Chunk_Initialized);
@@ -1309,7 +1317,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
   {
     Assert(!DestChunk->Mesh);
     DestChunk->Mesh = GetMeshForChunk(Thread->MeshFreelist, Thread->PermMemory);
-    BuildWorldChunkMesh(SyntheticChunk, SynChunkDim, DestChunk, WORLD_CHUNK_DIM, DestChunk->Mesh);
+    BuildWorldChunkMesh(SyntheticChunk, SynChunkDim, DestChunk, WorldChunkDim, DestChunk->Mesh);
   }
 
 
@@ -1320,7 +1328,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
 
     GetBoundingVoxelsClippedTo(SyntheticChunk, SynChunkDim, BoundingPoints, MinMaxAABB( V3(1), V3(SynChunkDim)-V3(2) ) );
 
-    chunk_dimension NewSynChunkDim = WORLD_CHUNK_DIM+Voxel_Position(1);
+    chunk_dimension NewSynChunkDim = WorldChunkDim+Voxel_Position(1);
     CopyChunkOffset(SyntheticChunk, SynChunkDim, SyntheticChunk, NewSynChunkDim, Voxel_Position(1));
     SynChunkDim = NewSynChunkDim;
 
@@ -1330,7 +1338,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
     TempBuffer.Min = Voxel_Position(s32_MAX);
     TempBuffer.Max = Voxel_Position(s32_MIN);
 
-    /* FindEdgeIntersections(EdgeBoundaryVoxels, DestChunk->Data, WORLD_CHUNK_DIM); */
+    /* FindEdgeIntersections(EdgeBoundaryVoxels, DestChunk->Data, WorldChunkDim); */
     FindEdgeIntersections(EdgeBoundaryVoxels, SyntheticChunk->Data, NewSynChunkDim);
     DestChunk->EdgeBoundaryVoxelCount = EdgeBoundaryVoxels->Count;
 
@@ -1363,13 +1371,13 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
 #else
     v3 Normal = {};
     for ( s32 VoxelIndex = 0;
-          VoxelIndex < Volume(WORLD_CHUNK_DIM);
+          VoxelIndex < Volume(WorldChunkDim);
           ++VoxelIndex)
     {
       voxel *Voxel = &DestChunk->Data->Voxels[VoxelIndex];
       if (Voxel->Flags != Voxel_Empty)
       {
-        voxel_position TestP = GetPosition(VoxelIndex, WORLD_CHUNK_DIM);
+        voxel_position TestP = GetPosition(VoxelIndex, WorldChunkDim);
         v3 CenterRelativeTestP = V3(BoundingVoxelMidpoint) - V3(TestP);
         Normal += Normalize(CenterRelativeTestP);
       }
@@ -1391,12 +1399,12 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
       }
     }
 
-    /* ClipAndDisplaceToMinDim(DestChunk->LodMesh, V3(0), V3(WORLD_CHUNK_DIM) ); */
+    /* ClipAndDisplaceToMinDim(DestChunk->LodMesh, V3(0), V3(WorldChunkDim) ); */
 #endif
 
     if (EdgeBoundaryVoxels->Count)
     {
-      /* DEBUG_DrawAABB(DestChunk->LodMesh, V3(0), V3(WORLD_CHUNK_DIM), PINK); */
+      /* DEBUG_DrawAABB(DestChunk->LodMesh, V3(0), V3(WorldChunkDim), PINK); */
       DrawVoxel(DestChunk->LodMesh, V3(FoundCenterPoint), PINK, V3(0.35f));
 
 #if 1
@@ -1422,7 +1430,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
         while (RemainingVerts > DestChunk->PointsToLeaveRemaining)
         {
           Assert(CurrentVert < OnePastLastVert);
-          voxel_position* LowestAngleBetween = GetClosestCoplanarPointRelativeTo(CurrentVert, EdgeBoundaryVoxels->Points, OnePastLastVert, V3(FoundCenterPoint));
+          voxel_position* LowestAngleBetween = GetClosestCoplanarPointRelativeTo(CurrentVert, EdgeBoundaryVoxels->Points, OnePastLastVert, V3(FoundCenterPoint), WorldChunkDim);
           Assert(CurrentVert < OnePastLastVert);
 
           v3 FirstNormal = {};
@@ -1444,7 +1452,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
 
             SecondClosestVoxelBuffer.At = 0;
             DrawVoxel( &SecondClosestVoxelBuffer, V3(*LowestAngleBetween)+V3(0.2f), BLUE, V3(0.7f));
-            voxel_position* SecondLowestAngleBetween = GetClosestCoplanarPointRelativeTo(CurrentVert, EdgeBoundaryVoxels->Points, OnePastLastVert, V3(FoundCenterPoint), LowestAngleBetween);
+            voxel_position* SecondLowestAngleBetween = GetClosestCoplanarPointRelativeTo(CurrentVert, EdgeBoundaryVoxels->Points, OnePastLastVert, V3(FoundCenterPoint), WorldChunkDim, LowestAngleBetween);
 
             if (SecondLowestAngleBetween)
             {
@@ -1477,7 +1485,7 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
 
               if (!TriangleIsUniqueInSet(TestTriangle, Triangles, TriangleCount) )
               {
-                  DEBUG_DrawAABB(DestChunk->LodMesh, V3(0), V3(WORLD_CHUNK_DIM), RED, 0.5f);
+                  DEBUG_DrawAABB(DestChunk->LodMesh, V3(0), V3(WorldChunkDim), RED, 0.5f);
               }
 
               Assert(TriangleCount < MaxTriangles);
@@ -1564,6 +1572,17 @@ InitializeWorldChunkPerlinPlane(thread_local_state *Thread, world_chunk *DestChu
   return;
 }
 
+function chunk_dimension
+ChunkDimension(world_chunk* Chunk)
+{
+  chunk_dimension Result = {
+    .x = Chunk->DimX,
+    .y = Chunk->DimY,
+    .z = Chunk->DimZ,
+  };
+  return Result;
+}
+
 function void
 InitializeWorldChunkEmpty(world_chunk *DestChunk)
 {
@@ -1579,10 +1598,10 @@ InitializeWorldChunkEmpty(world_chunk *DestChunk)
 #if 0
   // Don't blow out the Flags for this chunk or risk assertions on other
   // threads that rely on that flag being set for every item on the queue
-  ZeroChunk(DestChunk->Data, Volume(WORLD_CHUNK_DIM));
+  ZeroChunk(DestChunk->Data, Volume(WorldChunkDim));
 #else
   for ( s32 VoxelIndex = 0;
-        VoxelIndex < Volume(WORLD_CHUNK_DIM);
+        VoxelIndex < Volume(ChunkDimension(DestChunk));
         ++VoxelIndex)
   {
     voxel *Voxel = &DestChunk->Data->Voxels[VoxelIndex];
@@ -1597,7 +1616,7 @@ InitializeWorldChunkEmpty(world_chunk *DestChunk)
 }
 
 inline void
-QueueChunkMeshForCopy(work_queue *Queue, untextured_3d_geometry_buffer* Src, untextured_3d_geometry_buffer* Dest, world_chunk *Chunk, camera* Camera)
+QueueChunkMeshForCopy(work_queue *Queue, untextured_3d_geometry_buffer* Src, untextured_3d_geometry_buffer* Dest, world_chunk *Chunk, camera* Camera, chunk_dimension WorldChunkDim)
 {
   untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(Dest, Src->At);
 
@@ -1605,7 +1624,7 @@ QueueChunkMeshForCopy(work_queue *Queue, untextured_3d_geometry_buffer* Src, unt
     .Type = type_work_queue_entry_copy_buffer,
     .work_queue_entry_copy_buffer.Src = Src,
     .work_queue_entry_copy_buffer.Dest = CopyDest,
-    .work_queue_entry_copy_buffer.Basis = GetRenderP(WORLD_CHUNK_DIM, Chunk->WorldP, Camera),
+    .work_queue_entry_copy_buffer.Basis = GetRenderP(WorldChunkDim, Chunk->WorldP, Camera),
   };
 
   Assert(CopyDest.At == 0);

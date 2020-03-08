@@ -1,37 +1,27 @@
-// NOTE(Jesse): These have to be here because they rely on WORLD_CHUNK_DIM.
-// FeelsBadMan.
-
-inline canonical_position
-Canonicalize(canonical_position P)
-{
-  canonical_position Result = Canonicalize(WORLD_CHUNK_DIM, P);
-  return Result;
-}
-
 inline r32
-Length( canonical_position P )
+Length( canonical_position P, chunk_dimension WorldChunkDim)
 {
-  v3 Offset = P.Offset + (P.WorldP * WORLD_CHUNK_DIM);
+  v3 Offset = P.Offset + (P.WorldP * WorldChunkDim);
   r32 Result = (r32)sqrt(LengthSq(Offset));
   return Result;
 }
 
 inline v3
-ToV3(canonical_position P)
+ToV3(canonical_position P, chunk_dimension WorldChunkDim)
 {
-  v3 Result = P.Offset + (P.WorldP*WORLD_CHUNK_DIM);
+  v3 Result = P.Offset + (P.WorldP*WorldChunkDim);
   return Result;
 }
 
 canonical_position
-Lerp(r32 t, canonical_position p1, canonical_position p2)
+Lerp(r32 t, canonical_position p1, canonical_position p2, chunk_dimension WorldChunkDim)
 {
   Assert(t<=1);
   Assert(t>=0);
 
-  v3 ToP2 = ToV3(p2 - p1);
+  v3 ToP2 = ToV3(p2 - p1, WorldChunkDim);
 
-  canonical_position Result = Canonicalize(p1 + (t*ToP2));
+  canonical_position Result = Canonicalize(WorldChunkDim, p1 + (t*ToP2));
   return Result;
 }
 

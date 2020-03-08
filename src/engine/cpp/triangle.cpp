@@ -43,7 +43,7 @@ Triangle(voxel_position* P0, voxel_position* P1, voxel_position* P2, memory_aren
 
 
 function void
-SeedTriangulation(current_triangles* CurrentTriangles, memory_arena* Memory)
+SeedTriangulation(current_triangles* CurrentTriangles, memory_arena* Memory, chunk_dimension WorldChunkDim)
 {
   //  1    2
   //
@@ -51,8 +51,8 @@ SeedTriangulation(current_triangles* CurrentTriangles, memory_arena* Memory)
 
   CurrentTriangles->Count = 0;
 
-  s32 xMax = WORLD_CHUNK_DIM.x;
-  s32 yMax = WORLD_CHUNK_DIM.y;
+  s32 xMax = WorldChunkDim.x;
+  s32 yMax = WorldChunkDim.y;
 
   // FIXME(Jesse): Memory leak
   voxel_position* TempPoints = AllocateProtection(voxel_position, Memory, 4, False);

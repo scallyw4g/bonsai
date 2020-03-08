@@ -1,10 +1,12 @@
 #include <bonsai_types.h>
-
 #include <game_constants.h>
 
 #include <bonsai_engine.h>
-
 #include <game_types.h>
+
+
+global_variable chunk_dimension WORLD_CHUNK_DIM = Chunk_Dimension(32, 32, 16);
+
 
 #define RANDOM_HOTKEY_MASHING 0
 #if RANDOM_HOTKEY_MASHING
@@ -47,7 +49,9 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
         s32 StartingZDepth = -100;
         InitializeWorldChunkPerlinPlane(Thread,
                                         DestChunk,
-                                        Amplititude, StartingZDepth);
+                                        WORLD_CHUNK_DIM,
+                                        Amplititude,
+                                        StartingZDepth);
 
         /* Assert(DestChunk->CurrentTriangles->SurfacePoints->Count == 0); */
         /* GetBoundingVoxels(DestChunk, DestChunk->CurrentTriangles->SurfacePoints); */
@@ -90,7 +94,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 #endif
 
   world                 *World         = GameState->World;
-  chunk_dimension        WorldChunkDim = World->ChunkDim;
   graphics              *Graphics      = GameState->Graphics;
   g_buffer_render_group *gBuffer       = Graphics->gBuffer;
   ao_render_group       *AoGroup       = Graphics->AoGroup;
@@ -153,15 +156,15 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   }
 #endif
 
-  UpdateGameCamera(MouseDelta, GameInput, Player->P, Camera);
+  UpdateGameCamera(MouseDelta, GameInput, Player->P, Camera, World->ChunkDim);
 
   SimulateEntities(World, GameState->EntityTable, Plat->dt);
 
-  SimulateAndRenderParticleSystems(GameState->EntityTable, &GpuMap->Buffer, Graphics, Plat->dt);
+  SimulateAndRenderParticleSystems(GameState->EntityTable, World->ChunkDim, &GpuMap->Buffer, Graphics, Plat->dt);
 
   gBuffer->ViewProjection =
     ProjectionMatrix(Camera, Plat->WindowWidth, Plat->WindowHeight) *
-    ViewMatrix(WorldChunkDim, Camera);
+    ViewMatrix(World->ChunkDim, Camera);
 
   DEBUG_COMPUTE_PICK_RAY(Plat, &gBuffer->ViewProjection);
 
@@ -184,7 +187,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
       Color = PINK;
     }
 
-    DEBUG_DrawChunkAABB(&CopyDest, Graphics, Chunk, WORLD_CHUNK_DIM, Color, 0.35f);
+    DEBUG_DrawChunkAABB(&CopyDest, Graphics, Chunk, World->ChunkDim, Color, 0.35f);
   }
 #endif
 

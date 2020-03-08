@@ -36,8 +36,9 @@ struct camera
 
   canonical_position TargetP;
   canonical_position CurrentP;
-
   canonical_position ViewingTarget; // TODO : Can this just be a v3?
+
+  v3 RenderSpacePosition;
 
   r32 Pitch;
   r32 Roll;

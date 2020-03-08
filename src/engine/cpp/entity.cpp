@@ -334,7 +334,7 @@ SpawnEnemy(world *World, entity **WorldEntities, entity *Enemy, random_series *E
   s32 OffsetX = (RandomPositiveS32(EnemyEntropy) % CD_X);
 
   canonical_position InitialP =
-    Canonicalize(WORLD_CHUNK_DIM, Canonical_Position( V3(OffsetX,0,0), InitialCenter));
+    Canonicalize(World->ChunkDim, Canonical_Position( V3(OffsetX,0,0), InitialCenter));
 
   physics Physics = {};
   Physics.Force = V3(0, 0, 0);
@@ -556,7 +556,7 @@ SpawnPlayer(model* Models, entity *Player, canonical_position InitialP, random_s
 }
 
 void
-EntityWorldCollision(world *World, entity *Entity, collision_event *Event )
+EntityWorldCollision(world *World, entity *Entity, collision_event *Event)
 {
   Assert(Entity->Type != EntityType_None);
 
@@ -569,12 +569,12 @@ EntityWorldCollision(world *World, entity *Entity, collision_event *Event )
       if (Event->Chunk)
       {
         NotImplemented;
-        s32 i = GetIndex(Voxel_Position(Event->CP.Offset), WORLD_CHUNK_DIM);
+        s32 i = GetIndex(Voxel_Position(Event->CP.Offset), World->ChunkDim);
         world_chunk *Chunk = Event->Chunk;
         Chunk->Data->Voxels[i] = {};
         /* ZeroMesh(&Chunk->Data->Mesh); */
         // TODO(Jesse): This path needs to call CanBuildWorldChunkMesh or something similar
-        BuildWorldChunkMesh(World, Chunk, WORLD_CHUNK_DIM, Chunk->Mesh);
+        BuildWorldChunkMesh(World, Chunk, World->ChunkDim, Chunk->Mesh);
       }
       Unspawn(Entity);
     } break;
@@ -919,14 +919,13 @@ DoLight(game_lights *Lights, v3 Position, v3 Color)
 void
 SimulateAndRenderParticleSystem(
     graphics *Graphics,
+    chunk_dimension WorldChunkDim,
     untextured_3d_geometry_buffer *Dest,
     entity *SystemEntity,
     v3 EntityDelta,
     r32 dt
   )
 {
-  /* world *World                  = GameState->World; */
-  /* chunk_dimension WorldChunkDim = World->ChunkDim; */
   particle_system *System       = SystemEntity->Emitter;
 
   if (Inactive(System))
@@ -969,7 +968,7 @@ SimulateAndRenderParticleSystem(
     u8 ColorIndex = (u8)((Particle->RemainingLifespan / System->ParticleLifespan) * (PARTICLE_SYSTEM_COLOR_COUNT-0.0001f));
     Assert(ColorIndex >= 0 && ColorIndex <= PARTICLE_SYSTEM_COLOR_COUNT);
 
-    v3 RenderSpaceP = GetRenderP(SystemEntity->P, Graphics->Camera, WORLD_CHUNK_DIM);
+    v3 RenderSpaceP = GetRenderP(SystemEntity->P, Graphics->Camera, WorldChunkDim);
     DrawVoxel( Dest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, 3.0f );
 
 #if 0
@@ -982,7 +981,7 @@ SimulateAndRenderParticleSystem(
 
 
 #if 1
-  v3 RenderSpaceP = GetRenderP(SystemEntity->P, Graphics->Camera, WORLD_CHUNK_DIM) + System->SpawnRegion.Center;
+  v3 RenderSpaceP = GetRenderP(SystemEntity->P, Graphics->Camera, WorldChunkDim) + System->SpawnRegion.Center;
   DoLight(Graphics->Lights, RenderSpaceP, 10.0f*EmissionColor);
 #endif
 
@@ -1097,7 +1096,7 @@ GetPlayer(entity **Players, client_state *OurClient)
 }
 
 inline void
-SimulateAndRenderParticleSystems(entity** EntityTable, untextured_3d_geometry_buffer* GeoDest, graphics *Graphics, r32 Dt)
+SimulateAndRenderParticleSystems(entity** EntityTable, chunk_dimension WorldChunkDim, untextured_3d_geometry_buffer* GeoDest, graphics *Graphics, r32 Dt)
 {
   TIMED_FUNCTION();
 
@@ -1106,7 +1105,7 @@ SimulateAndRenderParticleSystems(entity** EntityTable, untextured_3d_geometry_bu
         ++EntityIndex )
   {
     entity *Entity = EntityTable[EntityIndex];
-    SimulateAndRenderParticleSystem(Graphics, GeoDest, Entity, Entity->Physics.Delta, Dt);
+    SimulateAndRenderParticleSystem(Graphics, WorldChunkDim, GeoDest, Entity, Entity->Physics.Delta, Dt);
   }
 
   return;

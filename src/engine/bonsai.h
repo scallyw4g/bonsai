@@ -323,9 +323,14 @@ struct world_chunk
   u32 TriCount;
   s32 EdgeBoundaryVoxelCount;
 
-  /* u8 Reserved[4]; */
+  u8 DimX;
+  u8 DimY;
+  u8 DimZ;
+  u8 Pad;
 };
-CAssert(sizeof(world_chunk) == CACHE_LINE_SIZE);
+// TODO(Jesse): Re-enable this
+// @world-chunk-cache-line-size
+/* CAssert(sizeof(world_chunk) == CACHE_LINE_SIZE); */
 #pragma pack(pop)
 
 struct collision_event
@@ -349,6 +354,7 @@ struct world
 
   // This is the number of chunks in xyz we're going to update and render
   chunk_dimension VisibleRegion;
+
   chunk_dimension ChunkDim;
 
   world_position Center;

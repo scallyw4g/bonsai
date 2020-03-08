@@ -668,6 +668,13 @@ World_Position(int x, int y, int z)
 
 
 inline chunk_dimension
+Chunk_Dimension(int flood)
+{
+  chunk_dimension Result = Voxel_Position(flood,flood,flood);
+  return Result;
+}
+
+inline chunk_dimension
 Chunk_Dimension(int x, int y, int z)
 {
   chunk_dimension Result = Voxel_Position(x,y,z);
