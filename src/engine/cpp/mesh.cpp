@@ -216,8 +216,8 @@ BuildEntityMesh(chunk_data *Chunk, untextured_3d_geometry_buffer* Mesh, chunk_di
         v3 Diameter = V3(1.0f);
         v3 VertexData[6];
 
-        v4 FaceColors[FACE_VERT_COUNT];
-        FillColorArray(Voxel->Color, FaceColors, FACE_VERT_COUNT);
+        v4 FaceColors[VERTS_PER_FACE];
+        FillColorArray(Voxel->Color, FaceColors, VERTS_PER_FACE);
 
 
         voxel_position rightVoxel = LocalVoxelP + Voxel_Position(1, 0, 0);
@@ -316,8 +316,8 @@ DrawVoxel( untextured_3d_geometry_buffer *Mesh,
 {
   /* TIMED_FUNCTION(); */
 
-  v4 FaceColors[FACE_VERT_COUNT];
-  FillColorArray(ColorIndex, FaceColors, FACE_VERT_COUNT, Emission);
+  v4 FaceColors[VERTS_PER_FACE];
+  FillColorArray(ColorIndex, FaceColors, VERTS_PER_FACE, Emission);
 
   v3 VertexData[6];
 

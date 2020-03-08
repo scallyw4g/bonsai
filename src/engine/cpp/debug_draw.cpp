@@ -22,8 +22,8 @@ DEBUG_DrawLine( untextured_3d_geometry_buffer *Mesh,
   P1.x = P1.x - (Thickness/2.0f);
   P2.x = P2.x - (Thickness/2.0f);
 
-  v4 FaceColors[FACE_VERT_COUNT];
-  FillColorArray(ColorIndex, FaceColors, FACE_VERT_COUNT);;
+  v4 FaceColors[VERTS_PER_FACE];
+  FillColorArray(ColorIndex, FaceColors, VERTS_PER_FACE);;
 
   {
     v3 localVertexData[] =
@@ -131,6 +131,7 @@ DEBUG_DrawLine(untextured_3d_geometry_buffer *Mesh, line Line, u32 ColorIndex, r
   return;
 }
 
+#define DEFAULT_LINE_THICKNESS (0.15f)
 void
 DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, v3 MinP, v3 MaxP, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS )
 {

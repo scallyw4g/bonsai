@@ -872,8 +872,8 @@ DrawFolie(untextured_3d_geometry_buffer *Mesh, aabb *AABB)
 void
 DrawParticle(untextured_3d_geometry_buffer *Source, untextured_3d_geometry_buffer *Dest, u8 ColorIndex)
 {
-  v4 FaceColors[FACE_VERT_COUNT];
-  FillColorArray(ColorIndex, FaceColors, FACE_VERT_COUNT);;
+  v4 FaceColors[VERTS_PER_FACE];
+  FillColorArray(ColorIndex, FaceColors, VERTS_PER_FACE);;
   BufferVertsChecked( Source, Dest );
   return;
 }
@@ -891,7 +891,7 @@ BufferEntity( untextured_3d_geometry_buffer* Dest, entity *Entity, animation *An
   {
 #if DEBUG_DRAW_COLLISION_VOLUMES
     aabb AABB = GetRenderSpaceAABB(WorldChunkDim, Entity, Graphics->Camera);
-    DEBUG_DrawAABB(Dest, Graphics, AABB, PINK);
+    DEBUG_DrawAABB(Dest, AABB, PINK);
 #endif
 
     v3 AnimationOffset = {};

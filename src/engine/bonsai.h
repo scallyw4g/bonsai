@@ -215,6 +215,7 @@ struct particle_system
 
   u8 Colors[PARTICLE_SYSTEM_COLOR_COUNT];
 
+#define PARTICLES_PER_SYSTEM   (1024)
   particle Particles[PARTICLES_PER_SYSTEM];
 };
 

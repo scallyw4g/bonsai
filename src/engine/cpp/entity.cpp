@@ -154,6 +154,7 @@ GetCollision(world *World, entity *Entity, chunk_dimension VisibleRegion, v3 Off
 inline void
 SpawnLoot(entity *Entity, random_series *Entropy, model *GameModels)
 {
+#define LOOT_CHANCE (1)
   b32 ShouldSpawnLoot = (RandomU32(Entropy) % LOOT_CHANCE) == 0;
 
   if (ShouldSpawnLoot)
@@ -384,7 +385,7 @@ SpawnProjectile(entity** EntityTable,
 
   physics Physics = {};
   Physics.Velocity = Velocity;
-  Physics.Speed = PROJECTILE_SPEED;
+  Physics.Speed = 60;
 
   r32 Scale = 1.0f;
   r32 RateOfFire = 1.0f;
@@ -523,12 +524,11 @@ SpawnPlayer(model* Models, entity *Player, canonical_position InitialP, random_s
   physics Physics = {};
   Physics.Drag = 6.0f;
   Physics.Mass = 7.0f;
-  Physics.Speed = PLAYER_SPEED;
+  Physics.Speed = 20000;
 
   r32 Scale = 0.40f;
   r32 RateOfFire = 0.8f;
-  s32 Health = PLAYER_MAX_HP;
-
+  s32 Health = 10;
 
   model *Model = Models + ModelIndex_Player;
   v3 CollisionVolumeRadius = Model->Dim * Scale * 0.5f;
@@ -608,6 +608,7 @@ EntitiesCanCollide(entity *First, entity *Second)
   return Result;
 }
 
+#define TOTAL_FRAME_EVENT_COUNT (960)
 inline void
 PushFrameEvent(event_queue *EventQueue, frame_event *EventInit, u32 FramesToForward=1)
 {
