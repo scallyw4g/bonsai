@@ -46,7 +46,7 @@
 #define LOOT_MODEL MODELS_PATH"/3x3x3.vox"
 #define PROJECTILE_MODEL MODELS_PATH"/3x3x3.vox"
 
-#define TOTAL_ENTITY_COUNT     1024
+#define TOTAL_ENTITY_COUNT     (1024)
 
 #define TOTAL_FOLIE_COUNT      64
 #define TOTAL_MODEL_COUNT      8

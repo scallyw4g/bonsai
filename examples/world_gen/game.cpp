@@ -14,25 +14,6 @@ static hotkeys StashedHotkeys = {};
 #endif
 
 
-void
-SimulatePlayers(game_state *GameState, entity* LocalPlayer, hotkeys *Hotkeys, r32 dt)
-{
-  for (u32 PlayerIndex = 0;
-      PlayerIndex < MAX_CLIENTS;
-      ++PlayerIndex)
-  {
-    entity *Entity = GameState->Player;
-    if (LocalPlayer == Entity)
-    {
-      SimulatePlayer(GameState, Entity, Hotkeys, dt );
-    }
-    else
-    {
-      SimulatePlayer(GameState, Entity, 0, dt );
-    }
-  }
-}
-
 model *
 AllocateGameModels(game_state *GameState, memory_arena *Memory)
 {
@@ -154,11 +135,11 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   {
     Unspawn(Player);
     world_position PlayerChunkP = World_Position(0, 0, -2);
-    SpawnPlayer(GameState, Player,  Canonical_Position(V3(0,0,2), World_Position(0,0,0))  );
+    SpawnPlayer(GameState->Models, Player,  Canonical_Position(V3(0,0,2), World_Position(0,0,0)), &GameState->Entropy);
     World->Center = PlayerChunkP;
   }
 
-  SimulatePlayers(GameState, Player, Hotkeys, Plat->dt);
+  SimulatePlayer(World, Player, Camera, Hotkeys, Plat->dt );
 
   CollectUnusedChunks(World, &GameState->MeshFreelist, GameState->Memory);
 
@@ -174,7 +155,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   UpdateGameCamera(MouseDelta, GameInput, Player->P, Camera);
 
-  SimulateEntities(GameState, Plat->dt);
+  SimulateEntities(World, GameState->EntityTable, Plat->dt);
 
   SimulateAndRenderParticleSystems(GameState->EntityTable, &GpuMap->Buffer, Graphics, Plat->dt);
 
@@ -185,7 +166,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   DEBUG_COMPUTE_PICK_RAY(Plat, &gBuffer->ViewProjection);
 
   TIMED_BLOCK("BufferMeshes");
-    BufferWorld(GameState, &GpuMap->Buffer, World, Graphics, VISIBLE_REGION_RADIUS);
+    BufferWorld(Plat, &GpuMap->Buffer, World, Graphics, VISIBLE_REGION_RADIUS);
     BufferEntities( GameState->EntityTable, &GpuMap->Buffer, Graphics, World, Plat->dt);
   END_BLOCK("BufferMeshes");
 
@@ -253,14 +234,14 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   world_position WorldCenter = World_Position(0, 0, 0);
 
   GameState->Heap = InitHeap(Gigabytes(4));
-  GameState->World = AllocateAndInitWorld(GameState, WorldCenter, WORLD_CHUNK_DIM, VISIBLE_REGION);
+  GameState->World = AllocateAndInitWorld(WorldCenter, WORLD_CHUNK_DIM, VISIBLE_REGION);
 
-  AllocateEntityTable(GameState);
+  GameState->EntityTable = AllocateEntityTable(GameMemory, TOTAL_ENTITY_COUNT);
 
   GameState->Models = AllocateGameModels(GameState, GameState->Memory);
 
-  GameState->Player = GetFreeEntity(GameState);
-  SpawnPlayer(GameState, GameState->Player, Canonical_Position(Voxel_Position(0), WorldCenter));
+  GameState->Player = GetFreeEntity(GameState->EntityTable);
+  SpawnPlayer(GameState->Models, GameState->Player, Canonical_Position(Voxel_Position(0), WorldCenter), &GameState->Entropy);
 
   return GameState;
 }

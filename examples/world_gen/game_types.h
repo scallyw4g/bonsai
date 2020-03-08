@@ -23,7 +23,7 @@ struct game_state
 
   mesh_freelist MeshFreelist;
 
-  entity *EntityTable[TOTAL_ENTITY_COUNT];
+  entity** EntityTable;
   entity *Player;
 
 #if BONSAI_INTERNAL
