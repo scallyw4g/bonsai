@@ -1,6 +1,8 @@
 #include <render_init.cpp>
 #include <render_utils.cpp>
 
+
+#if 0
 inline m4
 GetShadowMapMVP(light *GlobalLight)
 {
@@ -20,6 +22,7 @@ GetShadowMapMVP(light *GlobalLight)
 
   return depthProjectionMatrix * depthViewMatrix;
 }
+#endif
 
 void
 RenderAoTexture(ao_render_group *AoGroup)
@@ -81,7 +84,7 @@ DrawGBufferToFullscreenQuad( platform *Plat, graphics *Graphics)
   glUseProgram(Graphics->gBuffer->LightingShader.ID);
 
   UpdateLightingTextures(Graphics->Lights);
-  Graphics->gBuffer->ShadowMVP = NdcToScreenSpace * GetShadowMapMVP(&Graphics->Lights->Lights[0]);
+  /* Graphics->gBuffer->ShadowMVP = NdcToScreenSpace * GetShadowMapMVP(&Graphics->Lights->Lights[0]); */
 
   BindShaderUniforms(&Graphics->gBuffer->LightingShader);
 
@@ -958,7 +961,7 @@ BufferWorldChunk(untextured_3d_geometry_buffer *Dest, world_chunk *Chunk, graphi
 }
 
 void
-BufferWorld(game_state* GameState, untextured_3d_geometry_buffer* Dest, world *World, graphics *Graphics, world_position VisibleRadius)
+BufferWorld(platform* Plat, untextured_3d_geometry_buffer* Dest, world* World, graphics *Graphics, world_position VisibleRadius)
 {
   TIMED_FUNCTION();
 
@@ -980,12 +983,12 @@ BufferWorld(game_state* GameState, untextured_3d_geometry_buffer* Dest, world *W
                            MinMaxAABB(GetRenderP(WORLD_CHUNK_DIM, Canonical_Position(V3(0,0,0), Chunk->WorldP), Graphics->Camera),
                                       GetRenderP(WORLD_CHUNK_DIM, Canonical_Position(WORLD_CHUNK_DIM, Chunk->WorldP), Graphics->Camera)));
 
-          BufferWorldChunk(Dest, Chunk, Graphics, &GameState->Plat->HighPriority);
+          BufferWorldChunk(Dest, Chunk, Graphics, &Plat->HighPriority);
         }
         else if (!Chunk)
         {
-          Chunk = GetWorldChunkFor(GameState->Memory, World, P);
-          QueueChunkForInit(&GameState->Plat->LowPriority, Chunk);
+          Chunk = GetWorldChunkFor(World->Memory, World, P);
+          QueueChunkForInit(&Plat->LowPriority, Chunk);
         }
       }
     }

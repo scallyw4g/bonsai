@@ -5,8 +5,7 @@
 
 #include <engine/cpp/chunk.cpp>
 #include <engine/cpp/mesh.cpp>
-
-#include <loaders/obj.cpp>
+#include <engine/cpp/loaders/obj.cpp>
 
 s32
 main()

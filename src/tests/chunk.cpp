@@ -7,13 +7,14 @@
 
 global_variable chunk_dimension WORLD_CHUNK_DIM = Chunk_Dimension(8,8,8);
 
+#include <engine/cpp/render_position.cpp>
 #include <engine/cpp/chunk.cpp>
 #include <engine/cpp/mesh.cpp>
 #include <engine/cpp/threadsafe.cpp>
 #include <engine/cpp/triangle.cpp>
-#include <debug_draw.cpp>
-#include <lod.cpp>
-#include <world_chunk.cpp>
+#include <engine/cpp/debug_draw.cpp>
+#include <engine/cpp/lod.cpp>
+#include <engine/cpp/world_chunk.cpp>
 
 #include <tests/test_utils.cpp>
 

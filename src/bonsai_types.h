@@ -8,10 +8,8 @@
 
 #define GET_ELEMENT(I) (&(I).At->Element)
 
-//
-// TODO(Jesse): Get rid of these?
-//
-#include <iostream>
+
+#include <stdint.h>
 #include <cmath>
 
 #ifdef __EMSCRIPTEN__
@@ -21,7 +19,7 @@
 #include <metaprogramming/defines.h>
 
 //
-// Stdlib headers
+// Stdlib Headers
 //
 
 #include <bonsai_stdlib/headers/assert.h>
@@ -35,44 +33,8 @@
 #include <bonsai_stdlib/headers/input.h>
 #include <bonsai_stdlib/headers/work_queue.h>
 #include <bonsai_stdlib/headers/memory_arena.h>
+#include <bonsai_stdlib/headers/platform_struct.h>
 #include <bonsai_stdlib/headers/heap_allocator.h>
-
-struct thread_startup_params;
-struct platform
-{
-  work_queue LowPriority;
-  work_queue HighPriority;
-  semaphore QueueSemaphore;
-
-  thread_startup_params *Threads;
-
-  /* network_connection Network = { Socket_NonBlocking, SERVER_IP }; */
-
-  v2 MouseP;
-  v2 MouseDP;
-
-  memory_arena *Memory;
-
-  /* gl_extensions GL; */
-
-  r32 dt;
-  s32 WindowWidth;
-  s32 WindowHeight;
-
-  input Input;
-};
-
-struct mesh_freelist;
-struct thread_local_state
-{
-  memory_arena*  PermMemory;
-  memory_arena*  TempMemory;
-
-  mesh_freelist* MeshFreelist;
-  perlin_noise*  Noise;
-};
-
-
 #include <bonsai_stdlib/headers/hashtable.h>
 #include <bonsai_stdlib/headers/gl.h>
 #include <bonsai_stdlib/headers/counted_string.h>
@@ -85,13 +47,16 @@ struct thread_local_state
 #include <bonsai_stdlib/headers/mutex.h>
 #include <bonsai_stdlib/headers/rect.h>
 
+//
+// Engine Headers
+//
 
 #include <engine/constants.h>
 #include <engine/headers/colors.h>
 #include <engine/headers/canonical_position.h>
+#include <engine/headers/camera.h>
 #include <engine/headers/render.h>
 #include <engine/headers/work_queue.h>
-#include <engine/headers/camera.h>
 #include <engine/headers/xml.h>
 #include <engine/headers/graphics.h>
 #include <engine/headers/triangle.h>
@@ -100,16 +65,28 @@ struct thread_local_state
 #include <engine/headers/voxel_face.h>
 #include <engine/bonsai.h> // TODO(Jesse): Redistribute this
 
+
+//
+// Debug System
+//
+
 #include <debug_system/headers/debug_ui.h>
 #include <debug_system/headers/interactable.h>
 #include <debug_system/headers/debug_render.h>
 #include <debug_system/headers/debug.h>
+
+
 
 #include <engine/api.h>
 #include <net/network.h>
 
 global_variable memory_arena _TranArena;
 global_variable memory_arena* TranArena = &_TranArena;
+
+//
+// Stdlib Implementation
+//
+
 
 #include <bonsai_stdlib/cpp/debug_print.cpp>  // TODO(Jesse): Jettison this!
 #include <bonsai_stdlib/cpp/hashtable.cpp>
@@ -125,4 +102,4 @@ global_variable memory_arena* TranArena = &_TranArena;
 #include <bonsai_stdlib/cpp/work_queue.cpp>
 #include <bonsai_stdlib/cpp/gl.cpp>
 
-#include <engine/cpp/render_position.cpp>
+

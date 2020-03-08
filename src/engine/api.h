@@ -1,4 +1,18 @@
-struct thread_local_state;
+struct thread
+{
+  u32 ThreadIndex;
+  thread_id ID;
+};
+
+struct mesh_freelist;
+struct thread_local_state
+{
+  memory_arena*  PermMemory;
+  memory_arena*  TempMemory;
+  mesh_freelist* MeshFreelist;
+  perlin_noise*  Noise;
+};
+
 struct game_state;
 
 #define EXPAND(E) #E
@@ -35,12 +49,6 @@ typedef void (*bonsai_worker_thread_init_callback) (BONSAI_API_WORKER_THREAD_INI
 typedef void        (*bonsai_worker_thread_callback)    (BONSAI_API_WORKER_THREAD_CALLBACK_PARAMS);
 typedef game_state* (*bonsai_main_thread_init_callback) (BONSAI_API_MAIN_THREAD_INIT_CALLBACK_PARAMS);
 
-struct thread
-{
-  u32 ThreadIndex;
-  thread_id ID;
-};
-
 struct thread_startup_params
 {
   bonsai_worker_thread_init_callback InitProc;
@@ -49,3 +57,5 @@ struct thread_startup_params
   work_queue* HighPriority;
   thread Self;
 };
+
+

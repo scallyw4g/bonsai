@@ -1,4 +1,10 @@
+#include <bonsai_types.h>
+
+#include <game_constants.h>
+
 #include <bonsai_engine.h>
+
+#include <game_types.h>
 
 #define RANDOM_HOTKEY_MASHING 0
 #if RANDOM_HOTKEY_MASHING

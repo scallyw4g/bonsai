@@ -38,6 +38,7 @@
 
 #include <sys/mman.h>   // mmap
 
+#include <stdio.h>
 
 
 
@@ -154,6 +155,7 @@ typedef PFNGLXSWAPINTERVALEXTPROC PFNSWAPINTERVALPROC;
 //
 
 
+
 typedef s32 thread_id;
 typedef sem_t semaphore;
 
@@ -164,6 +166,9 @@ typedef GLXContext gl_context;
 
 typedef pthread_mutex_t native_mutex;
 typedef Window window;
+
+function void
+LogToConsole(counted_string Output);
 
 inline void
 WakeThread( semaphore *Semaphore )
@@ -269,7 +274,6 @@ ReadBytes(u8* Dest, u64 BytesToRead, FILE *Src)
   return;
 }
 
-
 struct os
 {
   window Window;
@@ -277,4 +281,16 @@ struct os
   gl_context GlContext;
 
   b32 ContinueRunning = True;
+};
+
+struct native_file
+{
+  FILE* Handle;
+  counted_string Path;
+};
+
+global_variable native_file Stdout =
+{
+  .Handle = stdout,
+  .Path = CSz("stdout")
 };

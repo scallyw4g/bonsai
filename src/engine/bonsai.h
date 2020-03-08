@@ -223,7 +223,7 @@ struct entity
   model Model;
   v3 CollisionVolumeRadius;
 
-  particle_system *Emitter;
+  particle_system* Emitter;
 
   physics Physics;
 
@@ -352,6 +352,8 @@ struct world
   chunk_dimension ChunkDim;
 
   world_position Center;
+
+  memory_arena* Memory;
 };
 
 inline void

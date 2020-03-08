@@ -169,7 +169,7 @@ SpawnLoot(entity *Entity, random_series *Entropy, model *GameModels)
 }
 
 entity *
-GetFreeEntity(game_state *GameState)
+GetFreeEntity(entity* EntityTable)
 {
   entity *Result = 0;
 
@@ -177,7 +177,7 @@ GetFreeEntity(game_state *GameState)
         EntityIndex < TOTAL_ENTITY_COUNT;
         ++EntityIndex )
   {
-    entity *TestEntity = GameState->EntityTable[EntityIndex];
+    entity *TestEntity = EntityTable + EntityIndex;
     if (Unspawned(TestEntity) && !Destroyed(TestEntity) && !Reserved(TestEntity) )
     {
       Result = TestEntity;
@@ -205,18 +205,18 @@ AllocateEntity(memory_arena *Memory, chunk_dimension ModelDim)
   return Entity;
 }
 
-void
-AllocateEntityTable(game_state *GameState)
+function entity**
+AllocateEntityTable(memory_arena* Memory, u32 Count)
 {
-  for (s32 EntityIndex = 0;
-      EntityIndex < TOTAL_ENTITY_COUNT;
+  entity** Result = Allocate(entity*, Memory, Count);
+  for (u32 EntityIndex = 0;
+      EntityIndex < Count;
       ++ EntityIndex)
   {
-    GameState->EntityTable[EntityIndex] =
-      AllocateEntity(GameState->Memory, Chunk_Dimension(0,0,0));
+    Result[EntityIndex] = AllocateEntity(Memory, Chunk_Dimension(0, 0, 0));
   }
 
-  return;
+  return Result;
 }
 
 void

@@ -6,7 +6,7 @@
 #include <engine/cpp/chunk.cpp>
 #include <engine/cpp/mesh.cpp>
 
-#include <loaders/collada.cpp>
+#include <engine/cpp/loaders/collada.cpp>
 
 void
 TokenizingTest()

@@ -107,17 +107,3 @@ CS(const char *S, umm Count)
   return Result;
 }
 
-struct native_file
-{
-  FILE* Handle;
-  counted_string Path;
-};
-
-global_variable native_file Stdout =
-{
-  .Handle = stdout,
-  .Path = CSz("stdout")
-};
-
-static void LogToConsole(counted_string Output);
-

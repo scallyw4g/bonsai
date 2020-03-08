@@ -1,24 +1,19 @@
-#include <bonsai_types.h>
-
-#include <game_types.h>
-#include <game_constants.h>
-#include <render.h>
-
+#include <engine/cpp/render_position.cpp>
 #include <engine/cpp/canonical_position.cpp>
 #include <engine/cpp/chunk.cpp>
 #include <engine/cpp/mesh.cpp>
 #include <engine/cpp/threadsafe.cpp>
 #include <engine/cpp/triangle.cpp>
-#include <camera.cpp>
-#include <debug_draw.cpp>
-#include <lod.cpp>
-#include <world_chunk.cpp>
-#include <vox_loader.cpp>
-#include <shader.cpp>
-#include <texture.cpp>
-#include <gpu_mapped_buffer.cpp>
-#include <render.cpp>
-#include <world.cpp>
-#include <physics.cpp>
-#include <entity.cpp>
+#include <engine/cpp/camera.cpp>
+#include <engine/cpp/debug_draw.cpp>
+#include <engine/cpp/lod.cpp>
+#include <engine/cpp/world_chunk.cpp>
+#include <engine/cpp/shader.cpp>
+#include <engine/cpp/texture.cpp>
+#include <engine/cpp/gpu_mapped_buffer.cpp>
+#include <engine/cpp/render.cpp>
+#include <engine/cpp/world.cpp>
+#include <engine/cpp/physics.cpp>
+#include <engine/cpp/entity.cpp>
+
 #include <bonsai_asset_loaders.cpp>

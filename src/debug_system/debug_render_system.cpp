@@ -1,13 +1,12 @@
-#include <texture.cpp>
-#include <shader.cpp>
-#include <gpu_mapped_buffer.cpp>
+#include <engine/cpp/texture.cpp>
+#include <engine/cpp/shader.cpp>
+#include <engine/cpp/gpu_mapped_buffer.cpp>
 
 #include <render_init.cpp>
-#include <render.h>
 #include <render_utils.cpp>
 #include <engine/cpp/mesh.cpp>
 
-#define u32_COUNT_PER_QUAD 6
+#define u32_COUNT_PER_QUAD (6)
 
 
 

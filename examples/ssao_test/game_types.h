@@ -25,7 +25,7 @@ struct game_state
 
   untextured_3d_geometry_buffer Mesh;
 
-  entity *EntityTable[TOTAL_ENTITY_COUNT];
+  entity** EntityTable;
 
   entity *Players[MAX_CLIENTS];
 };
