@@ -18,17 +18,19 @@
 
 #include <metaprogramming/defines.h>
 
+
 //
 // Stdlib Headers
 //
+
 
 #include <bonsai_stdlib/headers/assert.h>
 #include <bonsai_stdlib/headers/primitives.h>
 #include <bonsai_stdlib/headers/platform.h>
 #include <bonsai_stdlib/headers/math.h>
 #include <bonsai_stdlib/headers/vector.h>
-#include <random>     // TODO(Jesse): Perlin.h depends on this .. rewrite it.
-#include <algorithm>  // TODO(Jesse): Perlin.h depends on this .. rewrite it.
+#include <random>                                   // TODO(Jesse): Perlin.h depends on this .. rewrite it.
+#include <algorithm>                                // TODO(Jesse): Perlin.h depends on this .. rewrite it.
 #include <bonsai_stdlib/headers/perlin.h>
 #include <bonsai_stdlib/headers/input.h>
 #include <bonsai_stdlib/headers/work_queue.h>
@@ -70,6 +72,7 @@
 // Debug System
 //
 
+
 #include <debug_system/headers/debug_ui.h>
 #include <debug_system/headers/interactable.h>
 #include <debug_system/headers/debug_render.h>
@@ -83,12 +86,13 @@
 global_variable memory_arena _TranArena;
 global_variable memory_arena* TranArena = &_TranArena;
 
+
 //
 // Stdlib Implementation
 //
 
 
-#include <bonsai_stdlib/cpp/debug_print.cpp>  // TODO(Jesse): Jettison this!
+#include <bonsai_stdlib/cpp/debug_print.cpp>  // TODO(Jesse): Jettison this .. Can it be metaprogrammed?
 #include <bonsai_stdlib/cpp/hashtable.cpp>
 #include <bonsai_stdlib/cpp/platform.cpp>
 #include <bonsai_stdlib/cpp/counted_string.cpp>
@@ -101,6 +105,11 @@ global_variable memory_arena* TranArena = &_TranArena;
 #include <bonsai_stdlib/cpp/file.cpp>
 #include <bonsai_stdlib/cpp/work_queue.cpp>
 #include <bonsai_stdlib/cpp/gl.cpp>
+
+
+//
+// Engine Implementation
+//
 
 
 #include <engine/cpp/render_position.cpp>
@@ -120,5 +129,4 @@ global_variable memory_arena* TranArena = &_TranArena;
 #include <engine/cpp/world.cpp>
 #include <engine/cpp/physics.cpp>
 #include <engine/cpp/entity.cpp>
-
 #include <bonsai_asset_loaders.cpp>

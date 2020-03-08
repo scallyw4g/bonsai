@@ -1,8 +1,4 @@
-#if BONSAI_INTERNAL
-
 #include <bonsai_types.h>
-
-global_variable r64 LastMs;
 
 #include <debug_data_system.cpp>
 #include <interactable.cpp>
@@ -302,5 +298,3 @@ GetDebugState_Internal()
 
   return &Internal_DebugState;
 }
-
-#endif

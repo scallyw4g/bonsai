@@ -380,6 +380,8 @@ WorkerThreadAdvanceDebugSystem()
   return;
 }
 
+global_variable r64 LastMs;
+
 r32
 MainThreadAdvanceDebugSystem()
 {
@@ -798,6 +800,7 @@ InitDebugMemoryAllocationSystem(debug_state *State)
   memory_arena *BoostrapArena = AllocateArena(Size);
   DEBUG_REGISTER_ARENA(BoostrapArena);
   State->ThreadStates = (debug_thread_state*)PushStruct(BoostrapArena, Size, CACHE_LINE_SIZE);
+
 #if BONSAI_INTERNAL
   /*
    * The WriteIndex member gets read from multiple threads, and on x86_64 reads
@@ -813,7 +816,6 @@ InitDebugMemoryAllocationSystem(debug_state *State)
     Assert( (umm)(&ThreadState->WriteIndex) % CACHE_LINE_SIZE < (CACHE_LINE_SIZE)-sizeof(ThreadState->WriteIndex) );
   }
 #endif
-  //
 
   umm MetaTableSize = META_TABLE_SIZE * sizeof(push_metadata);
   for (u32 ThreadIndex = 0;
