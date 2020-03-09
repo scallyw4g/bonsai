@@ -19,9 +19,6 @@ struct camera;
 struct shader_uniform
 {
   shader_uniform_type Type;
-
-  s32 ID;
-
   union {
     texture *Texture;
     light *Light;
@@ -34,6 +31,7 @@ struct shader_uniform
     void *Data;
   };
 
+  s32 ID;
   const char *Name;
   shader_uniform *Next;
 };

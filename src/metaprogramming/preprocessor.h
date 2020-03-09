@@ -32,7 +32,10 @@ enum c_token_type
 {
   CTokenType_Unknown,
 
-  CTokenType_Comment,
+  CTokenType_CommentSingleLine,
+  CTokenType_CommentMultiLineStart,
+  CTokenType_CommentMultiLineEnd,
+
   CTokenType_Identifier,
   CTokenType_String,
   CTokenType_Char,

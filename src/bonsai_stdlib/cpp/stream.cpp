@@ -208,6 +208,7 @@ PopQuotedCharLiteral(ansi_stream* Cursor, b32 IncludeQuotes = False)
     Assert(Cursor->Start <= Result.Start);
     Assert(Result.Start+Result.Count <= Cursor->End);
   }
+
   return Result;
 }
 

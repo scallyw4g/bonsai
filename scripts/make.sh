@@ -305,14 +305,14 @@ function RunEntireBuild {
 
   ./scripts/run_tests.sh
 
-  # ColorizeTitle "Preprocessing"
-  # bin/preprocessor $SOURCE_FILES
-  # if [ $? -ne 0 ]; then
-  #   echo ""
-  #   echo -e "$Failed Preprocessing failed, exiting." 
-  #   git checkout "src/metaprogramming/output"
-  #   exit 1
-  # fi
+  ColorizeTitle "Preprocessing"
+  bin/preprocessor $SOURCE_FILES
+  if [ $? -ne 0 ]; then
+    echo ""
+    echo -e "$Failed Preprocessing failed, exiting." 
+    git checkout "src/metaprogramming/output"
+    exit 1
+  fi
 
 }
 

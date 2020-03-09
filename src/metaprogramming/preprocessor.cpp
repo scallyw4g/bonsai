@@ -78,6 +78,20 @@ PeekTokenRaw(c_parse_result* Parser, u32 Lookahead = 0)
   return Result;
 }
 
+function u32
+OffsetOfNext(c_parse_result* Parser, u32 Offset,  c_token_type Close)
+{
+  c_token* Next = PeekTokenRawPointer(Parser, Offset);
+
+  while (Next && Next->Type != Close)
+  {
+    ++Offset;
+    Next = PeekTokenRawPointer(Parser, Offset);
+  }
+
+  return Offset;
+}
+
 function c_token*
 PeekTokenPointer(c_parse_result* Parser, u32 Lookahead = 0)
 {
@@ -87,8 +101,15 @@ PeekTokenPointer(c_parse_result* Parser, u32 Lookahead = 0)
   while (Remaining(&Parser->Tokens, LocalLookahead))
   {
     Result = PeekTokenRawPointer(Parser, LocalLookahead);
-    if ( Result->Type == CTokenType_Comment ||
-         IsWhitespace(Result->Type) )
+    if ( Result->Type == CTokenType_CommentSingleLine)
+    {
+      LocalLookahead = OffsetOfNext(Parser, LocalLookahead, CTokenType_Newline);
+    }
+    else if ( Result->Type == CTokenType_CommentMultiLineStart)
+    {
+      LocalLookahead = OffsetOfNext(Parser, LocalLookahead, CTokenType_CommentMultiLineEnd);
+    }
+    else if (IsWhitespace(Result->Type))
     {
     }
     else
@@ -138,16 +159,35 @@ PopTokenRaw(c_parse_result* Parser)
   return Result;
 }
 
+function void
+EatUntil(c_parse_result* Parser, c_token_type Close)
+{
+  while (Remaining(&Parser->Tokens))
+  {
+    if(PopTokenRaw(Parser).Type == Close)
+    {
+      break;
+    }
+  }
+}
+
 function c_token
 PopToken(c_parse_result* Parser)
 {
-  c_token Result = PopTokenRaw(Parser);
+  c_token Result = {};
   while (Remaining(&Parser->Tokens))
   {
-    if ( Result.Type == CTokenType_Comment ||
-        IsWhitespace(Result.Type) )
+    Result = PopTokenRaw(Parser);
+    if ( Result.Type == CTokenType_CommentSingleLine)
     {
-      Result = PopTokenRaw(Parser);
+      EatUntil(Parser, CTokenType_Newline);
+    }
+    else if ( Result.Type == CTokenType_CommentMultiLineStart)
+    {
+      EatUntil(Parser, CTokenType_CommentMultiLineEnd);
+    }
+    else if ( IsWhitespace(Result.Type) )
+    {
     }
     else
     {
@@ -243,68 +283,109 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory)
     return Result;
   }
 
+  b32 ParsingSingleLineComment = False;
+  b32 ParsingMultiLineComment = False;
   while(Remaining(&Code))
   {
-    c_token T = GetToken(&Code);
+    const c_token FirstT = GetToken(&Code);
+    c_token PushT = { .Type = FirstT.Type, .Value = CS(Code.At, 1) };
 
-    switch (T.Type)
+    switch (FirstT.Type)
     {
       case CTokenType_FSlash:
       {
-        T = GetToken(&Code, 1);
-        switch (T.Type)
+        const c_token SecondT = GetToken(&Code, 1);
+        switch (SecondT.Type)
         {
           case CTokenType_FSlash:
           {
-            T.Type = CTokenType_Comment;
-            T.Value = CS(ReadUntilTerminatorList(&Code, "\n", Memory));
-            --Code.At;
+            ParsingSingleLineComment = True;
+            PushT.Type = CTokenType_CommentSingleLine;
+            PushT.Value = CS(Code.At, 2);
+            Advance(&Code);
+            Advance(&Code);
           } break;
 
           case CTokenType_Star:
           {
-            T.Type = CTokenType_Comment;
-            T.Value = ReadUntilTerminatorString(&Code, CS("*/"));
-            ++T.Value.Count;
-            T.Value = Concat(T.Value, CS("*/"), Memory);
+            ParsingMultiLineComment = True;
+            PushT.Type = CTokenType_CommentMultiLineStart;
+            PushT.Value = CS(Code.At, 2);
+            Advance(&Code);
             Advance(&Code);
           } break;
 
           default:
           {
-            T.Type = CTokenType_FSlash;
-            T.Value = CS(Code.At, 1);
             Advance(&Code);
           } break;
         }
       } break;
 
+      case CTokenType_Star:
+      {
+        if (GetToken(&Code, 1).Type == CTokenType_FSlash)
+        {
+            ParsingMultiLineComment = False;
+            PushT.Type = CTokenType_CommentMultiLineEnd;
+            PushT.Value = CS(Code.At, 2);
+            Advance(&Code);
+            Advance(&Code);
+        }
+        else
+        {
+          PushT.Type = CTokenType_Star;
+          PushT.Value = CS(Code.At, 1);
+          Advance(&Code);
+        }
+      } break;
+
       case CTokenType_SingleQuote:
       {
-        T.Type = CTokenType_Char;
-        T.Value = PopQuotedCharLiteral(&Code, True);
+        if (ParsingSingleLineComment || ParsingMultiLineComment)
+        {
+          Advance(&Code);
+        }
+        else
+        {
+          PushT.Type = CTokenType_Char;
+          PushT.Value = PopQuotedCharLiteral(&Code, True);
+        }
       } break;
 
       case CTokenType_DoubleQuote:
       {
-        T.Type = CTokenType_String;
-        T.Value = PopQuotedString(&Code, True);
+        if (ParsingSingleLineComment || ParsingMultiLineComment)
+        {
+          Advance(&Code);
+        }
+        else
+        {
+          PushT.Type = CTokenType_String;
+          PushT.Value = PopQuotedString(&Code, True);
+        }
+      } break;
+
+      case CTokenType_Newline:
+      {
+        ParsingSingleLineComment = False;
+        Advance(&Code);
       } break;
 
       case CTokenType_Unknown:
       {
-        T.Type = CTokenType_Identifier;
-        T.Value = PopIdentifier(&Code);
+        PushT.Type = CTokenType_Identifier;
+        PushT.Value = PopIdentifier(&Code);
       } break;
 
       default:
       {
-        T.Value = CS(Code.At, 1);
         Advance(&Code);
       } break;
     }
 
-    Push(T, &Result.Tokens);
+    Assert(PushT.Type);
+    Push(PushT, &Result.Tokens);
 
     continue;
   }
@@ -406,18 +487,6 @@ Dump(c_parse_result* Parser, u32 LinesToDump = u32_MAX)
     if (T.Type == CTokenType_Newline)
     {
       --LinesToDump;
-    }
-  }
-}
-
-function void
-EatUntil(c_parse_result* Parser, c_token_type Close)
-{
-  while (Remaining(&Parser->Tokens))
-  {
-    if(PopTokenRaw(Parser).Type == Close)
-    {
-      break;
     }
   }
 }
@@ -1642,91 +1711,93 @@ ParseEnum(c_parse_result* Parser, memory_arena* Memory)
   return Enum;
 }
 
+function void
+ParseDatatypesFor(c_parse_result* Parser, program_datatypes* Datatypes, memory_arena* Memory)
+{
+  while (Parser->Valid && Remaining(&Parser->Tokens))
+  {
+    c_token Token = PopToken(Parser);
+    switch (Token.Type)
+    {
+      case CTokenType_Identifier:
+      {
+        if (StringsMatch(Token.Value, CS("union")))
+        {
+          c_token UnionName = RequireToken(Parser, CTokenType_Identifier);
+          Info("unions are unsupported at the moment: %.*s", (s32)UnionName.Value.Count, UnionName.Value.Start);
+          EatUnionDef(Parser);
+        }
+        else if (StringsMatch(Token.Value, CS("typedef")))
+        {
+          // typedef struct { .... } the_struct_name;
+          if (PeekToken(Parser) == CToken(CS("struct")))
+          {
+            RequireToken(Parser, CToken((CS("struct"))));
+            if (PeekToken(Parser) == CToken(CTokenType_OpenBrace))
+            {
+              struct_def S = ParseStructBody(Parser, CS(""), Memory);
+              Push(&Datatypes->Structs, S, Memory);
+
+              RequireToken(Parser, CTokenType_CloseBrace);
+              S.Name = RequireToken(Parser, CTokenType_Identifier).Value;
+              RequireToken(Parser, CTokenType_Semicolon);
+            }
+            else
+            {
+              // C-style typedef struct THING OTHERTHING;
+              EatUntil(Parser, CTokenType_Semicolon);
+            }
+          }
+        }
+        else if (StringsMatch(Token.Value, CS("enum")))
+        {
+          enum_def Enum = ParseEnum(Parser, Memory);
+          Push(&Datatypes->Enums, Enum, Memory);
+        }
+        else if (StringsMatch(Token.Value, CS("struct")))
+        {
+          c_token T = PopToken(Parser);
+          switch (T.Type)
+          {
+            case CTokenType_Identifier:
+            {
+              if ( PeekToken(Parser) == CToken(CTokenType_OpenBrace) )
+              {
+                struct_def S = ParseStructBody(Parser, T.Value, Memory);
+                Push(&Datatypes->Structs, S, Memory);
+              }
+            } break;
+
+            default: {} break;
+          }
+        }
+      } break;
+
+      default: {} break;
+    }
+  }
+
+  return;
+}
+
 function program_datatypes
 ParseAllDatatypes(c_parse_result_cursor Files_in, memory_arena* Memory)
 {
   TIMED_FUNCTION();
   c_parse_result_cursor* Files = &Files_in;
 
-  enum_def_stream EnumStream = {};
-  struct_def_stream StructStream = {};
+  program_datatypes Result = {};
+
 
   for (u32 ParserIndex = 0;
       ParserIndex < (u32)Count(Files);
       ++ParserIndex)
   {
     c_parse_result* Parser = Files->Start+ParserIndex;
-    while (Parser->Valid && Remaining(&Parser->Tokens))
-    {
-      c_token Token = PopToken(Parser);
-      switch (Token.Type)
-      {
-        case CTokenType_Identifier:
-        {
-          if (StringsMatch(Token.Value, CS("union")))
-          {
-            c_token UnionName = RequireToken(Parser, CTokenType_Identifier);
-            Info("unions are unsupported at the moment: %.*s", (s32)UnionName.Value.Count, UnionName.Value.Start);
-            EatUnionDef(Parser);
-          }
-          else if (StringsMatch(Token.Value, CS("typedef")))
-          {
-            // typedef struct { .... } the_struct_name;
-            if (PeekToken(Parser) == CToken(CS("struct")))
-            {
-              RequireToken(Parser, CToken((CS("struct"))));
-              if (PeekToken(Parser) == CToken(CTokenType_OpenBrace))
-              {
-                struct_def S = ParseStructBody(Parser, CS(""), Memory);
-                Push(&StructStream, S, Memory);
-
-                RequireToken(Parser, CTokenType_CloseBrace);
-                S.Name = RequireToken(Parser, CTokenType_Identifier).Value;
-                RequireToken(Parser, CTokenType_Semicolon);
-              }
-              else
-              {
-                // C-style typedef struct THING OTHERTHING;
-                EatUntil(Parser, CTokenType_Semicolon);
-              }
-            }
-          }
-          else if (StringsMatch(Token.Value, CS("enum")))
-          {
-            enum_def Enum = ParseEnum(Parser, Memory);
-            Push(&EnumStream, Enum, Memory);
-          }
-          else if (StringsMatch(Token.Value, CS("struct")))
-          {
-            c_token T = PopToken(Parser);
-            switch (T.Type)
-            {
-              case CTokenType_Identifier:
-              {
-                if ( PeekToken(Parser) == CToken(CTokenType_OpenBrace) )
-                {
-                  struct_def S = ParseStructBody(Parser, T.Value, Memory);
-                  Push(&StructStream, S, Memory);
-                }
-              } break;
-
-              default: {} break;
-            }
-          }
-        } break;
-
-        default: {} break;
-      }
-
-    }
+    ParseDatatypesFor(Parser, &Result, Memory);
 
     Rewind(&Parser->Tokens);
   }
-
-  program_datatypes Result = {
-    .Enums = EnumStream,
-    .Structs = StructStream
-  };
 
   return Result;
 }

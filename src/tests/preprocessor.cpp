@@ -9,6 +9,97 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
   c_parse_result* Parser = &Parser_;
 
   {
+    c_token T = PopTokenRaw(Parser);
+    TestThat(T.Type == CTokenType_CommentSingleLine);
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T == CToken(CS("single")));
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T == CToken(CS("line")));
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T == CToken(CS("comment")));
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_SingleQuote);
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T == CToken(CS("s")));
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_DoubleQuote);
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T == CToken(CS("work")));
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_DoubleQuote);
+  }
+
+
+  {
+    c_token T = PopTokenRaw(Parser);
+    TestThat(T.Type == CTokenType_Newline);
+  }
+  {
+    c_token T = PopTokenRaw(Parser);
+    TestThat(T.Type == CTokenType_CommentMultiLineStart);
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T == CToken(CS("multi")));
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T == CToken(CS("line")));
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T == CToken(CS("comment")));
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_SingleQuote);
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T == CToken(CS("s")));
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_DoubleQuote);
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T == CToken(CS("work")));
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_DoubleQuote);
+  }
+  {
+    c_token T = PopTokenRaw(Parser);
+    TestThat(T.Type == CTokenType_Space);
+  }
+
+  {
+    c_token T = PopTokenRaw(Parser);
+    TestThat(T.Type == CTokenType_CommentMultiLineEnd);
+  }
+
+
+
+
+  {
     c_token T = PopToken(Parser);
     TestThat(T == CToken(CS("function")));
   }
@@ -22,15 +113,15 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CTokenType_OpenParen));
+    TestThat(T.Type == CTokenType_OpenParen);
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CTokenType_CloseParen));
+    TestThat(T.Type == CTokenType_CloseParen);
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CTokenType_OpenBrace));
+    TestThat(T.Type == CTokenType_OpenBrace);
   }
   {
     c_token T = PopToken(Parser);
@@ -42,7 +133,7 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CTokenType_Equals));
+    TestThat(T.Type == CTokenType_Equals);
   }
   {
     c_token T = PopToken(Parser);
@@ -50,7 +141,7 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CTokenType_OpenParen));
+    TestThat(T.Type == CTokenType_OpenParen);
   }
   {
     c_token T = PopToken(Parser);
@@ -58,11 +149,11 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CTokenType_CloseParen));
+    TestThat(T.Type == CTokenType_CloseParen);
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CTokenType_Semicolon));
+    TestThat(T.Type == CTokenType_Semicolon);
   }
   {
     c_token T = PopToken(Parser);
@@ -74,7 +165,7 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CTokenType_Equals));
+    TestThat(T.Type == CTokenType_Equals);
   }
   {
     c_token T = PopToken(Parser);
@@ -82,7 +173,7 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CTokenType_FSlash));
+    TestThat(T.Type == CTokenType_FSlash);
   }
   {
     c_token T = PopToken(Parser);
@@ -90,7 +181,7 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CTokenType_Semicolon));
+    TestThat(T.Type == CTokenType_Semicolon);
   }
   {
     c_token T = PopToken(Parser);
@@ -98,11 +189,11 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CTokenType_Semicolon));
+    TestThat(T.Type == CTokenType_Semicolon);
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CTokenType_CloseBrace));
+    TestThat(T.Type == CTokenType_CloseBrace);
   }
 
   {
@@ -119,7 +210,7 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CTokenType_OpenParen));
+    TestThat(T.Type == CTokenType_OpenParen);
   }
   {
     c_token T = PopToken(Parser);
@@ -127,7 +218,7 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CTokenType_Star));
+    TestThat(T.Type == CTokenType_Star);
   }
   {
     c_token T = PopToken(Parser);
@@ -135,7 +226,7 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CTokenType_Comma));
+    TestThat(T.Type == CTokenType_Comma);
   }
   {
     c_token T = PopToken(Parser);
@@ -143,7 +234,7 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CTokenType_Star));
+    TestThat(T.Type == CTokenType_Star);
   }
   {
     c_token T = PopToken(Parser);
@@ -151,7 +242,7 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CTokenType_Comma));
+    TestThat(T.Type == CTokenType_Comma);
   }
   {
     c_token T = PopToken(Parser);
@@ -159,7 +250,7 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CTokenType_Star));
+    TestThat(T.Type == CTokenType_Star);
   }
   {
     c_token T = PopToken(Parser);
@@ -167,11 +258,11 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CTokenType_CloseParen));
+    TestThat(T.Type == CTokenType_CloseParen);
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CTokenType_OpenBrace));
+    TestThat(T.Type == CTokenType_OpenBrace);
   }
   {
     c_token T = PopToken(Parser);
@@ -183,7 +274,7 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CTokenType_Equals));
+    TestThat(T.Type == CTokenType_Equals);
   }
   {
     c_token T = PopToken(Parser);
@@ -191,11 +282,11 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CTokenType_Minus));
+    TestThat(T.Type == CTokenType_Minus);
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CTokenType_GT));
+    TestThat(T.Type == CTokenType_GT);
   }
   {
     c_token T = PopToken(Parser);
@@ -203,7 +294,7 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CTokenType_Semicolon));
+    TestThat(T.Type == CTokenType_Semicolon);
   }
   {
     c_token T = PopToken(Parser);
@@ -215,7 +306,7 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CTokenType_Equals));
+    TestThat(T.Type == CTokenType_Equals);
   }
   {
     c_token T = PopToken(Parser);
@@ -223,7 +314,7 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CTokenType_OpenParen));
+    TestThat(T.Type == CTokenType_OpenParen);
   }
   {
     c_token T = PopToken(Parser);
@@ -231,7 +322,7 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CTokenType_Comma));
+    TestThat(T.Type == CTokenType_Comma);
   }
   {
     c_token T = PopToken(Parser);
@@ -239,20 +330,20 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CTokenType_CloseParen));
+    TestThat(T.Type == CTokenType_CloseParen);
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CTokenType_Semicolon));
+    TestThat(T.Type == CTokenType_Semicolon);
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CTokenType_CloseBrace));
+    TestThat(T.Type == CTokenType_CloseBrace);
   }
 
   {
     c_token T = PopTokenRaw(Parser);
-    TestThat(T == CToken(CTokenType_Newline));
+    TestThat(T.Type == CTokenType_Newline);
   }
 
   TestThat(Remaining(&Parser->Tokens) == 0);
@@ -268,6 +359,7 @@ TestPeekAndPopTokens(memory_arena* Memory)
     c_token T = PeekToken(Parser, 0);
     TestThat(T == CToken(CS("function")));
   }
+
   {
     c_token T = PeekToken(Parser, 1);
     TestThat(T == CToken(CS("void")));
@@ -278,16 +370,32 @@ TestPeekAndPopTokens(memory_arena* Memory)
   }
   {
     c_token T = PeekToken(Parser, 3);
-    TestThat(T == CToken(CTokenType_OpenParen));
+    TestThat(T.Type == CTokenType_OpenParen);
   }
   {
     c_token T = PeekToken(Parser, 4);
-    TestThat(T == CToken(CTokenType_CloseParen));
+    TestThat(T.Type == CTokenType_CloseParen);
   }
 
   {
     c_token T = PopToken(Parser);
     TestThat(T == CToken(CS("function")));
+  }
+  {
+    c_token T = PeekToken(Parser, 0);
+    TestThat(T == CToken(CS("void")));
+  }
+  {
+    c_token T = PeekToken(Parser, 1);
+    TestThat(T == CToken(CS("FunctionName")));
+  }
+  {
+    c_token T = PeekToken(Parser, 2);
+    TestThat(T.Type == CTokenType_OpenParen);
+  }
+  {
+    c_token T = PeekToken(Parser, 3);
+    TestThat(T.Type == CTokenType_CloseParen);
   }
   {
     c_token T = PopToken(Parser);
@@ -299,11 +407,11 @@ TestPeekAndPopTokens(memory_arena* Memory)
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CTokenType_OpenParen));
+    TestThat(T.Type == CTokenType_OpenParen);
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CTokenType_CloseParen));
+    TestThat(T.Type == CTokenType_CloseParen);
   }
 
   {
@@ -312,7 +420,7 @@ TestPeekAndPopTokens(memory_arena* Memory)
   }
   {
     c_token T = PeekToken(Parser, 1);
-    TestThat(T == CToken(CTokenType_Star));
+    TestThat(T.Type == CTokenType_Star);
   }
   {
     c_token T = PeekToken(Parser, 2);
@@ -320,7 +428,7 @@ TestPeekAndPopTokens(memory_arena* Memory)
   }
   {
     c_token T = PeekToken(Parser, 3);
-    TestThat(T == CToken(CTokenType_OpenParen));
+    TestThat(T.Type == CTokenType_OpenParen);
   }
   {
     c_token T = PeekToken(Parser, 4);
@@ -332,8 +440,74 @@ TestPeekAndPopTokens(memory_arena* Memory)
   }
   {
     c_token T = PeekToken(Parser, 6);
-    TestThat(T == CToken(CTokenType_CloseParen));
+    TestThat(T.Type == CTokenType_CloseParen);
   }
+
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T == CToken(CS("debug_scope_tree")));
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_Star);
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T == CToken(CS("GetReadScopeTree")));
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_OpenParen);
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T == CToken(CS("u32")));
+  }
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T == CToken(CS("ThreadIndex")));
+  }
+
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_CloseParen);
+  }
+
+
+
+  {
+    c_token T = PeekToken(Parser);
+    TestThat(T == CToken(CSz("counted_string")));
+  }
+
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T == CToken(CSz("counted_string")));
+  }
+
+  {
+    c_token T = PeekToken(Parser);
+    TestThat(T == CToken(CSz("counted_string")));
+  }
+
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T == CToken(CSz("counted_string")));
+  }
+
+  return;
+}
+
+function void
+TestStructParsing(memory_arena* Memory)
+{
+  c_parse_result Parser_ = TokenizeFile(CS(TEST_FIXTURES_PATH "/preprocessor_datatypes.cpp"), Memory);
+  c_parse_result* Parser = &Parser_;
+
+  program_datatypes Datatypes = {};
+  ParseDatatypesFor(Parser, &Datatypes, Memory);
+
+  return;
 }
 
 s32
@@ -347,8 +521,8 @@ main()
 
   TestPeekAndPopTokens(Memory);
 
+  TestStructParsing(Memory);
+
   TestSuiteEnd();
   exit(TestsFailed);
 }
-
-

@@ -1,3 +1,6 @@
+// single line comment's "work"
+/* multi line comment's "work" */
+
 function void
 FunctionName()
 {
