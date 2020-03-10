@@ -931,7 +931,15 @@ Output(c_token_cursor Code, counted_string Filename, memory_arena* Memory)
     b32 FileWritesSucceeded = True;
     while(Remaining(&Code))
     {
-      FileWritesSucceeded &= WriteToFile(&TempFile, Code.At->Value);
+      if (Code.At->Value.Count)
+      {
+        FileWritesSucceeded &= WriteToFile(&TempFile, Code.At->Value);
+      }
+      else
+      {
+        FileWritesSucceeded &= WriteToFile(&TempFile, CS((const char*)&Code.At->Type, 1));
+      }
+
       Advance(&Code);
     }
     FileWritesSucceeded &= CloseFile(&TempFile);
@@ -1692,7 +1700,7 @@ ParseEnum(c_parse_result* Parser, memory_arena* Memory)
     if (OptionalToken(Parser, CTokenType_Equals))
     {
       // Can be an int literal, or a char literal : (42 or '4' or '42' or even up to '4242')
-      // TODO(Jesse): Proper expression parsing.  ie: enum_value_name = (1 << 4) or enum_value_name = SOME_MACRO(thing, ding)
+      // TODO(Jesse, back_burner, metaprogramming): Proper expression parsing.  ie: enum_value_name = (1 << 4) or enum_value_name = SOME_MACRO(thing, ding)
       Field.Value = PopToken(Parser).Value;
     }
 
@@ -1905,7 +1913,7 @@ CSz(R"INLINE_CODE(
 function %.*s_cursor
 %.*sCursor(umm ElementCount, memory_arena* Memory)
 {
-  // TODO(Jesse): Can we use Allocate() here instead?
+  // TODO(Jesse, metaprogramming): Can we use Allocate() here instead?
   %.*s* Start = (%.*s*)PushStruct(Memory, sizeof(%.*s), 1, 1);
   %.*s_cursor Result = {
     .Start = Start,
@@ -1987,7 +1995,7 @@ CSz(R"INLINE_CODE(
 function void
 Push(%.*s_stream* Stream, %.*s Element, memory_arena* Memory)
 {
-  // TODO(Jesse): Can we use Allocate() here instead?
+  // TODO(Jesse, metaprogramming): Can we use Allocate() here instead?
   %.*s_stream_chunk* NextChunk = (%.*s_stream_chunk*)PushStruct(Memory, sizeof(%.*s_stream_chunk), 1, 1);
   NextChunk->Element = Element;
 
@@ -2137,13 +2145,13 @@ DoWorkToOutputThisStuff(c_parse_result* Parser, counted_string OutputForThisPars
   }
 }
 
-// TODO(Jesse): This is copy-pasted from teh callgraph tests .. should we be
+// TODO(Jesse, bootstrap_debug_system, copy_paste): This is copy-pasted from teh callgraph tests .. should we be
 // able to call this from anywhere?  It's also in the platform layer
 // @bootstrap-debug-system
 
 debug_global platform Plat = {};
 
-// TODO(Jesse): Remove this?
+// TODO(Jesse, cleanup): Remove this?
 debug_global os Os = {};
 
 function b32
@@ -2189,6 +2197,24 @@ BootstrapDebugSystem(b32 OpenDebugWindow)
   return True;
 }
 
+function todo_list*
+StreamContains(todo_list_stream* Lists, todo_list* Target)
+{
+  todo_list* Result = {};
+  ITERATE_OVER(todo_list, Lists)
+  {
+    todo_list* Current = GET_ELEMENT(Iter);
+    if (StringsMatch(Current->Assignee, Target->Assignee) &&
+        StringsMatch(Current->Tag, Target->Tag))
+    {
+      Result = Current;
+      break;
+    }
+  }
+
+  return Result;
+}
+
 #ifndef EXCLUDE_PREPROCESSOR_MAIN
 
 #define SUCCESS_EXIT_CODE 0
@@ -2228,6 +2254,8 @@ main(s32 ArgCount, const char** ArgStrings)
     program_datatypes Datatypes = ParseAllDatatypes(ParsedFiles, Memory);
     Assert(ParsedFiles.Start == ParsedFiles.At);
 
+    todo_list_stream TodoListStream = {};
+
     for (u32 ParserIndex = 0;
         ParserIndex < Count(&ParsedFiles);
         ++ParserIndex)
@@ -2237,6 +2265,87 @@ main(s32 ArgCount, const char** ArgStrings)
       Assert(Remaining(&Parser->Tokens));
 
       Rewind(&Parser->OutputTokens);
+      Rewind(&Parser->Tokens);
+      Parser->LineNumber = 1;
+      while (Remaining(&Parser->Tokens))
+      {
+        c_token NextToken = PopTokenRaw(Parser);
+
+        if (NextToken.Type == CTokenType_CommentSingleLine)
+        {
+          if (OptionalToken(Parser, CToken(CSz("TODO"))))
+          {
+            if (OptionalToken(Parser, CTokenType_OpenParen))
+            {
+              counted_string PersonName = RequireToken(Parser, CTokenType_Identifier).Value;
+              counted_string_stream Tags = {};
+              b32 GotAnyTags = False;
+              while (OptionalToken(Parser, CTokenType_Comma))
+              {
+                GotAnyTags = True;
+                Push(&Tags, RequireToken(Parser, CTokenType_Identifier).Value, Memory);
+              }
+
+              RequireToken(Parser, CTokenType_CloseParen);
+              OptionalToken(Parser, CTokenType_Colon);
+
+              string_builder CommentValueBuilder = {};
+              while (PeekTokenRaw(Parser).Type != CTokenType_Newline)
+              {
+                Append(&CommentValueBuilder, PopTokenRaw(Parser).Value);
+              }
+              counted_string TodoValue = Finalize(&CommentValueBuilder, Memory);
+
+              if (GotAnyTags)
+              {
+                ITERATE_OVER(counted_string, &Tags)
+                {
+                  counted_string* Tag = GET_ELEMENT(Iter);
+
+                  todo_list CheckList = {
+                    .Assignee = PersonName,
+                    .Tag = *Tag
+                  };
+
+                  todo_list* Got = StreamContains(&TodoListStream, &CheckList);
+                  if (Got)
+                  {
+                    Push(&Got->List, TodoValue, Memory);
+                  }
+                  else
+                  {
+                    Push(&CheckList.List, TodoValue, Memory);
+                    Push(&TodoListStream, CheckList, Memory);
+                  }
+                }
+              }
+              else
+              {
+                todo_list CheckList = {
+                  .Assignee = PersonName,
+                  .Tag = CSz("untagged")
+                };
+
+                todo_list* Got = StreamContains(&TodoListStream, &CheckList);
+                if (Got)
+                {
+                  Push(&Got->List, TodoValue, Memory);
+                }
+                else
+                {
+                  Push(&CheckList.List, TodoValue, Memory);
+                  Push(&TodoListStream, CheckList, Memory);
+                }
+              }
+
+            }
+          }
+        }
+
+      }
+
+      Rewind(&Parser->OutputTokens);
+      Rewind(&Parser->Tokens);
       Parser->LineNumber = 1;
       while (Parser->Valid && Remaining(&Parser->Tokens))
       {
@@ -2375,11 +2484,28 @@ main(s32 ArgCount, const char** ArgStrings)
       continue;
     }
 
+
+    ITERATE_OVER(todo_list, &TodoListStream)
+    {
+      todo_list* Todos = GET_ELEMENT(Iter);
+      LogToConsole(Todos->Assignee);
+      LogToConsole(CSz("  "));
+      LogToConsole(Todos->Tag);
+      LogToConsole(CSz("\n"));
+
+      ITERATE_OVER(counted_string, &Todos->List)
+      {
+        counted_string* Todo = GET_ELEMENT(Iter);
+        LogToConsole(CSz("    "));
+        LogToConsole(*Todo);
+        LogToConsole(CSz("\n"));
+      }
+    }
+
     Log("\n");
 
     DumpStringStreamToConsole(&SuccessFiles);
     DumpStringStreamToConsole(&FailFiles);
-
   }
   else
   {

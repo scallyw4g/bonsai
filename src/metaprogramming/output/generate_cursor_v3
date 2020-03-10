@@ -9,7 +9,7 @@ struct v3_cursor
 function v3_cursor
 V3Cursor(umm ElementCount, memory_arena* Memory)
 {
-  // TODO(Jesse): Can we use Allocate() here instead?
+  // TODO(Jesse, metaprogramming): Can we use Allocate() here instead?
   v3* Start = (v3*)PushStruct(Memory, sizeof(v3), 1, 1);
   v3_cursor Result = {
     .Start = Start,

@@ -446,7 +446,7 @@ f64ToChar(char_cursor* Dest, r64 Value, u32 Precision = DEFAULT_FORMAT_PRECISION
 
   CopyToDest(Dest, '.');
 
-  // TODO(casey): Note that this is NOT an accurate way to do this!
+  // Note(casey): Note that this is NOT an accurate way to do this!
   for(u32 PrecisionIndex = 0;
       PrecisionIndex < Precision;
       ++PrecisionIndex)

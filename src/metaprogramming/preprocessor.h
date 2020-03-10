@@ -200,8 +200,14 @@ struct c_parse_result
 meta(generate_cursor(c_parse_result))
 #include <metaprogramming/output/generate_cursor_c_parse_result>
 
-
-
+struct todo_list
+{
+  counted_string Assignee;
+  counted_string Tag;
+  counted_string_stream List;
+};
+meta(generate_stream(todo_list))
+#include <metaprogramming/output/generate_stream_todo_list>
 
 
 
@@ -265,6 +271,7 @@ CToken(c_token_type Type, counted_string Value = CS(""))
     .Type = Type,
     .Value = Value
   };
+
   return Result;
 }
 

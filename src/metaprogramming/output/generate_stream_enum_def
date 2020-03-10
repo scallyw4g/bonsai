@@ -15,7 +15,7 @@ struct enum_def_stream
 function void
 Push(enum_def_stream* Stream, enum_def Element, memory_arena* Memory)
 {
-  // TODO(Jesse): Can we use Allocate() here instead?
+  // TODO(Jesse, metaprogramming): Can we use Allocate() here instead?
   enum_def_stream_chunk* NextChunk = (enum_def_stream_chunk*)PushStruct(Memory, sizeof(enum_def_stream_chunk), 1, 1);
   NextChunk->Element = Element;
 
