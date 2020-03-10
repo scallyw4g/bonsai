@@ -98,7 +98,7 @@ BufferTriangle(untextured_3d_geometry_buffer *Mesh, v3 *Verts, v3 Normal, u32 Co
   v3 VertBuffer[3];
   v3 NormalBuffer[3] = {Normal, Normal, Normal};
 
-  // TODO(Jesse, robustness, speed): Is this necessary to avoid some pointer aliasing bug?
+  // TODO(Jesse, tags: robustness, speed): Is this necessary to avoid some pointer aliasing bug?
   MemCopy((u8*)Verts, (u8*)VertBuffer, 9 * sizeof(r32) );
 
   v4 FaceColors[VERTS_PER_FACE];

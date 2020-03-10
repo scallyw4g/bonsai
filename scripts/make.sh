@@ -39,7 +39,7 @@ OUTPUT_DIRECTORY="$BIN"
 # NOTE(Jesse): -Wno-global-constructors can be turned off when the defaultPallette
 # in colors.h gets axed .. I think.
 
-# TODO(Jesse, build_pipeline): Investigate -Wcast-align situation
+# TODO(Jesse, tags: build_pipeline): Investigate -Wcast-align situation
 
 COMMON_COMPILER_OPTIONS="
   -ferror-limit=2000
@@ -83,7 +83,7 @@ EXECUTABLES_TO_BUILD="
   $SRC/net/server.cpp
 "
 
-# TODO(Jesse, tests, release): The allocation tests crash in release mode because of some
+# TODO(Jesse, tags: tests, release): The allocation tests crash in release mode because of some
 # ultra-jank-tastic segfault recovery code.  Find another less janky way?
 DEBUG_TESTS_TO_BUILD="
   $TESTS/allocation.cpp
@@ -272,7 +272,7 @@ function RunEntireBuild {
   # rm -Rf $META_OUT
   # mkdir $META_OUT
 
-  git checkout "src/metaprogramming/output"
+  # git checkout "src/metaprogramming/output"
 
   # SOURCE_FILES="$(find src -type f -name "*.h" -and -not -wholename "src/metaprogramming/defines.h" | tr '\n' ' ') $(find src -type f -name "*.cpp" | tr '\n' ' ')"
   # ColorizeTitle "Preprocessing"
@@ -287,15 +287,15 @@ function RunEntireBuild {
   BuildPreprocessor
   [ ! -x bin/preprocessor ] && echo -e "$Failed Couldn't find preprocessor, exiting." && exit 1
 
-  SOURCE_FILES="$(find src -type f -name "*.h" -and -not -wholename "src/metaprogramming/defines.h" | tr '\n' ' ') $(find src -type f -name "*.cpp" | tr '\n' ' ')"
-  ColorizeTitle "Preprocessing"
-  bin/preprocessor $SOURCE_FILES
-  if [ $? -ne 0 ]; then
-    echo ""
-    echo -e "$Failed Preprocessing failed, exiting." 
-    git checkout "src/metaprogramming/output"
-    exit 1
-  fi
+  # SOURCE_FILES="$(find src -type f -name "*.h" -and -not -wholename "src/metaprogramming/defines.h" | tr '\n' ' ') $(find src -type f -name "*.cpp" | tr '\n' ' ')"
+  # ColorizeTitle "Preprocessing"
+  # bin/preprocessor $SOURCE_FILES
+  # if [ $? -ne 0 ]; then
+  #   echo ""
+  #   echo -e "$Failed Preprocessing failed, exiting." 
+  #   git checkout "src/metaprogramming/output"
+  #   exit 1
+  # fi
 
   if [ "$EMCC" == "1" ]; then
     BuildWithEmcc
@@ -305,6 +305,7 @@ function RunEntireBuild {
 
   ./scripts/run_tests.sh
 
+  SOURCE_FILES="$(find src -type f -name "*.h" -and -not -wholename "src/metaprogramming/defines.h" | tr '\n' ' ') $(find src -type f -name "*.cpp" | tr '\n' ' ')"
   ColorizeTitle "Preprocessing"
   bin/preprocessor $SOURCE_FILES
   if [ $? -ne 0 ]; then

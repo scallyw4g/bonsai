@@ -63,7 +63,7 @@ LoadShaders(counted_string VertShaderPath, counted_string FragFilePath, memory_a
   glGetProgramiv(ProgramID, GL_INFO_LOG_LENGTH, &InfoLogLength);
   if ( InfoLogLength > 0 )
   {
-    // TODO(Jesse, transient_memory): Transient storage
+    // TODO(Jesse, tags: transient_memory): Transient storage
     char *ProgramErrorMessage = Allocate(char, Memory, InfoLogLength+1);
     glGetProgramInfoLog(ProgramID, InfoLogLength, NULL, ProgramErrorMessage);
     Error("%s", ProgramErrorMessage);
@@ -107,7 +107,7 @@ PushShaderUniform( memory_arena *Mem, const char *Name)
  * Unfortunately the c pre-processor makes us pass in the type and the name
  * we're going to access it with.
  *
- * TODO(Jesse, metaprogramming): Metaprogram this!!
+ * TODO(Jesse, tags: metaprogramming): Metaprogram this!!
  */
 #define BasicTypeUniformAllocators(type, TypeName)                             \
   shader_uniform *                                                             \
@@ -176,7 +176,7 @@ BindShaderUniforms(shader *Shader)
     {
       case ShaderUniform_Texture:
       {
-        Assert(TextureUnit < 8); // TODO(Jesse, robustness, opengl, texture): Query max gpu textures?
+        Assert(TextureUnit < 8); // TODO(Jesse, tags: robustness, opengl, texture): Query max gpu textures?
 
         glActiveTexture(GL_TEXTURE0 + TextureUnit);
         glUniform1i(Uniform->ID, (s32)TextureUnit);

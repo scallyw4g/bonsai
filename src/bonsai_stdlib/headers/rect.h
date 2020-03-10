@@ -115,7 +115,7 @@ struct ray
   v3 Dir;
 };
 
-// TODO(Jesse, speed, aabb): This could be optimized significantly
+// TODO(Jesse, tags: speed, aabb): This could be optimized significantly
 function b32
 Intersect(aabb AABB, ray Ray)
 {

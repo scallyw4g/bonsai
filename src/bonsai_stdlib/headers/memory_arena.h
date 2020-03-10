@@ -227,7 +227,7 @@ struct push_metadata
 inline void
 MemSet(u8 *Src, u8 Value, umm Size)
 {
-  // TODO(Jesse, speed): Vectorize for speed boost!
+  // TODO(Jesse, tags: speed): Vectorize for speed boost!
   for( umm ByteIndex = 0;
        ByteIndex < Size;
        ++ByteIndex )
@@ -239,7 +239,7 @@ MemSet(u8 *Src, u8 Value, umm Size)
 inline void
 MemCopy(u8 *Src, u8 *Dest, umm Size)
 {
-  // TODO(Jesse, speed): Vectorize for speed boost!
+  // TODO(Jesse, tags: speed): Vectorize for speed boost!
   for( umm BytesCopied = 0;
        BytesCopied < Size;
        ++BytesCopied )
@@ -291,7 +291,7 @@ SafeTruncateToU16(umm Size)
 }
 
 // @temp-string-builder-memory
-// TODO(Jesse, robustness, api_improvement): Make allocating these on the stack work!
+// TODO(Jesse, tags: robustness, api_improvement): Make allocating these on the stack work!
 function memory_arena*
 AllocateArena(umm RequestedBytes = Megabytes(1), b32 MemProtect = True)
 {

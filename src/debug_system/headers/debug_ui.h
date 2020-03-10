@@ -95,7 +95,7 @@ struct font
   v2 Size;
 };
 
-// TODO(Jesse, font, cleanup): Axe this!
+// TODO(Jesse, tags: font, cleanup): Axe this!
 debug_global font Global_Font = {
   .Size = V2(26, 34),
 };

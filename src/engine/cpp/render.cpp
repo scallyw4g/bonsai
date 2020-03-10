@@ -46,7 +46,7 @@ RenderAoTexture(ao_render_group *AoGroup)
 void
 UpdateLightingTextures(game_lights *Lights)
 {
-  // TODO(Jesse, allocation, speed): Allocate lights such that this swizzle is unneeded
+  // TODO(Jesse, tags: allocation, speed): Allocate lights such that this swizzle is unneeded
   v3 *PosData = AllocateProtection(v3, TranArena, MAX_LIGHTS, False);
   v3 *ColorData = AllocateProtection(v3, TranArena, MAX_LIGHTS, False);
 

@@ -533,7 +533,7 @@ BufferTextAt(debug_ui_render_group *Group, v2 BasisP, counted_string Text, v2 Fo
 
 
 
-// TODO(Jesse, cleanup, robustness): Test this actually gets respected!!
+// TODO(Jesse, tags: cleanup, robustness): Test this actually gets respected!!
 // @respect_invalid_render_command_index
 #define INVALID_RENDER_COMMAND_INDEX (u32_MAX)
 
@@ -550,7 +550,7 @@ PushUiRenderCommand(debug_ui_render_group *Group, ui_render_command* Command)
   }
   else
   {
-    // TODO(Jesse, cleanup, robustness): Test this actually gets respected!!
+    // TODO(Jesse, tags: cleanup, robustness): Test this actually gets respected!!
     // @respect_invalid_render_command_index
     Result = INVALID_RENDER_COMMAND_INDEX;
     Error("Exhausted RenderCommandBuffer Space!");
@@ -578,7 +578,7 @@ Text(debug_ui_render_group* Group, counted_string String)
     .Type = type_ui_render_command_text,
     .ui_render_command_text = {
       .String = String,
-      .Style = DefaultUiStyle // TODO(Jesse, cleanup, speed): Pass this in!
+      .Style = DefaultUiStyle // TODO(Jesse, tags: cleanup, speed): Pass this in!
     }
   };
 
@@ -792,7 +792,7 @@ PushWindowStart(debug_ui_render_group *Group, window_layout *Window)
   interactable_handle TitleBarHandle = { .Id = TitleBarInteractionId };
   if (Pressed(Group, &TitleBarHandle))
   {
-    Window->Basis -= *Group->MouseDP; // TODO(Jesse, cleanup, speed): Can we compute this with MouseP to avoid a frame of input delay?
+    Window->Basis -= *Group->MouseDP; // TODO(Jesse, tags: cleanup, speed): Can we compute this with MouseP to avoid a frame of input delay?
   }
 
   umm ResizeHandleInteractionId = (umm)"WindowResizeWidget"^(umm)Window;
@@ -916,7 +916,7 @@ ButtonInteraction(debug_ui_render_group* Group, rect2 Bounds, umm InteractionId,
 function b32
 Button(debug_ui_render_group* Group, counted_string ButtonName, umm ButtonId, ui_style* Style = 0, v4 Padding = V4(0))
 {
-  // TODO(Jesse, cleanup, potential_bug): Do we have to pass the style to both of these functions, and is that a good idea?
+  // TODO(Jesse, tags: cleanup, potential_bug): Do we have to pass the style to both of these functions, and is that a good idea?
   interactable_handle Button = PushButtonStart(Group, ButtonId, Style);
     PushColumn(Group, ButtonName, Style, Padding);
   PushButtonEnd(Group);
@@ -1041,7 +1041,7 @@ ProcessButtonStart(debug_ui_render_group* Group, render_state* RenderState, umm 
   {
     // Intentionally reset to 0 outside of this function, because it's
     // dependant on the mouse buttons being released.
-    // TODO(Jesse, cleanup, robustness): Reset this in here?
+    // TODO(Jesse, tags: cleanup, robustness): Reset this in here?
     RenderState->Pressed = True;
   }
 
@@ -2785,7 +2785,7 @@ PushMemoryBargraphTable(debug_ui_render_group *Group, selected_arenas *SelectedA
   v3 DefaultColor = V3(0.5f, 0.5f, 0.0);
 
   r32 TotalPerc = (r32)SafeDivide0(TotalUsed, MemStats.TotalAllocated);
-  // TODO(Jesse, ui, semantic): Should we do something special when interacting with this thing instead of Ignored-ing it?
+  // TODO(Jesse, tags: ui, semantic): Should we do something special when interacting with this thing instead of Ignored-ing it?
   PushArenaBargraph(Group, TotalUsed, TotalPerc, MemStats.Remaining, (umm)"Ignored");
   PushNewRow(Group);
 

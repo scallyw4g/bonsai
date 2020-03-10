@@ -17,7 +17,7 @@ struct xml_property
   counted_string Name;
   counted_string Value;
 
-  // TODO(Jesse, xml, back_burner): This could be factored out of here if xml_tag::Properties
+  // TODO(Jesse, tags: xml, back_burner): This could be factored out of here if xml_tag::Properties
   // thing was a xml_token_stream* - which would require a two-pass parser most
   // likely.  ie. Tokenizer and AST builder
   xml_property* Next;
@@ -152,7 +152,7 @@ Hash(counted_string* String)
   umm Result = 0;
 
 #if 1
-  // TODO(Jesse, robustness, rng, hashing): 257 seemed to produce slightly
+  // TODO(Jesse, tags: robustness, rng, hashing): 257 seemed to produce slightly
   // worse results, but the source literature seemed to indicate using a
   // constant close to the total number of discrete characters you'll encounter
   // is advisable.  I believe this to be somewhat higher than 53, but it would

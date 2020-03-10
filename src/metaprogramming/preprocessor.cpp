@@ -1700,7 +1700,7 @@ ParseEnum(c_parse_result* Parser, memory_arena* Memory)
     if (OptionalToken(Parser, CTokenType_Equals))
     {
       // Can be an int literal, or a char literal : (42 or '4' or '42' or even up to '4242')
-      // TODO(Jesse, back_burner, metaprogramming): Proper expression parsing.  ie: enum_value_name = (1 << 4) or enum_value_name = SOME_MACRO(thing, ding)
+      // TODO(Jesse, tags: back_burner, metaprogramming): Proper expression parsing.  ie: enum_value_name = (1 << 4) or enum_value_name = SOME_MACRO(thing, ding)
       Field.Value = PopToken(Parser).Value;
     }
 
@@ -1913,7 +1913,7 @@ CSz(R"INLINE_CODE(
 function %.*s_cursor
 %.*sCursor(umm ElementCount, memory_arena* Memory)
 {
-  // TODO(Jesse, metaprogramming): Can we use Allocate() here instead?
+  // TODO(Jesse, tags: metaprogramming): Can we use Allocate() here instead?
   %.*s* Start = (%.*s*)PushStruct(Memory, sizeof(%.*s), 1, 1);
   %.*s_cursor Result = {
     .Start = Start,
@@ -1995,7 +1995,7 @@ CSz(R"INLINE_CODE(
 function void
 Push(%.*s_stream* Stream, %.*s Element, memory_arena* Memory)
 {
-  // TODO(Jesse, metaprogramming): Can we use Allocate() here instead?
+  // TODO(Jesse, tags: metaprogramming): Can we use Allocate() here instead?
   %.*s_stream_chunk* NextChunk = (%.*s_stream_chunk*)PushStruct(Memory, sizeof(%.*s_stream_chunk), 1, 1);
   NextChunk->Element = Element;
 
@@ -2145,13 +2145,13 @@ DoWorkToOutputThisStuff(c_parse_result* Parser, counted_string OutputForThisPars
   }
 }
 
-// TODO(Jesse, bootstrap_debug_system, copy_paste): This is copy-pasted from teh callgraph tests .. should we be
+// TODO(Jesse, tags: bootstrap_debug_system, copy_paste): This is copy-pasted from teh callgraph tests .. should we be
 // able to call this from anywhere?  It's also in the platform layer
 // @bootstrap-debug-system
 
 debug_global platform Plat = {};
 
-// TODO(Jesse, cleanup): Remove this?
+// TODO(Jesse, tags: cleanup): Remove this?
 debug_global os Os = {};
 
 function b32
@@ -2304,8 +2304,11 @@ ParseAllTodosFromFile(counted_string Filename, memory_arena* Memory)
       tag* Tag = GetExistingOrCreate(&Person->Tags, TagName, Memory);
       while (OptionalToken(Parser, CTokenType_Minus))
       {
+        RequireToken(Parser, CTokenType_Hash);
+        counted_string TodoId = RequireToken(Parser, CTokenType_Identifier).Value;
+
         counted_string TodoValue = Trim(ConcatTokensUntilNewline(Parser, Memory));
-        /* Push(&Tag->Todos, TodoValue, Memory); */
+        Push(&Tag->Todos, TodoValue, Memory);
         EatWhitespace(Parser);
       }
 
@@ -2381,10 +2384,27 @@ main(s32 ArgCount, const char** ArgStrings)
               counted_string PersonName = RequireToken(Parser, CTokenType_Identifier).Value;
               counted_string_stream TodoTags = {};
               b32 GotAnyTags = False;
-              while (OptionalToken(Parser, CTokenType_Comma))
+
+              OptionalToken(Parser, CTokenType_Comma);
+
+              if (OptionalToken(Parser, CToken(CSz("id"))))
+              {
+                RequireToken(Parser, CTokenType_Colon);
+                counted_string IdValue = RequireToken(Parser, CTokenType_Identifier).Value;
+              }
+
+              OptionalToken(Parser, CTokenType_Comma);
+
+              if (OptionalToken(Parser, CToken(CSz("tags"))))
               {
                 GotAnyTags = True;
+                RequireToken(Parser, CTokenType_Colon);
                 Push(&TodoTags, RequireToken(Parser, CTokenType_Identifier).Value, Memory);
+
+                while (OptionalToken(Parser, CTokenType_Comma))
+                {
+                  Push(&TodoTags, RequireToken(Parser, CTokenType_Identifier).Value, Memory);
+                }
               }
 
               if (!GotAnyTags)

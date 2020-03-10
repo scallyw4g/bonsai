@@ -52,7 +52,7 @@ SegfaultHandler(int sig, siginfo_t *si, void *data)
   HitSegfault = True;
 
   ucontext_t *uc = (ucontext_t *)data;
-  u32 instruction_length = 3; // TODO(Jesse, tests, robustness): Does this work all the time on x64?
+  u32 instruction_length = 3; // TODO(Jesse, tags: tests, robustness): Does this work all the time on x64?
   uc->uc_mcontext.gregs[REG_RIP] += instruction_length;
 }
 
@@ -266,7 +266,7 @@ AdvanceToBytesBeforeNextPage(umm Bytes, memory_arena *Arena)
   }
 
 #if 0
-  Assert(Bytes < PageSize); // TODO(Jesse, memory, robustness): Prove this is unnecessary
+  Assert(Bytes < PageSize); // TODO(Jesse, tags: memory, robustness): Prove this is unnecessary
 
   umm EndOfBytes = (umm)Arena->At + Bytes;
   umm StartingPage = (umm)Arena->At - ((umm)Arena->At % PageSize);

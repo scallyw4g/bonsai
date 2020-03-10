@@ -32,7 +32,7 @@ AllocateWorldChunk(memory_arena *Storage, world_position WorldP, chunk_dimension
   /* Result->CurrentTriangles = AllocateCurrentTriangles(2*4096, Storage); */
   /* Result->CurrentTriangles->SurfacePoints = AllocateAlignedProtection(boundary_voxels, Storage, 1, 64, False); */
 
-  // TODO(Jesse, allocation, not_implemented): Allocate in a more sensible way?
+  // TODO(Jesse, tags: allocation, not_implemented): Allocate in a more sensible way?
   /* Result->CurrentTriangles->SurfacePoints->Points = AllocateAlignedProtection(voxel_position, Storage, Volume(WorldChunkDim), 64, False); */
 
   /* SeedTriangulation(Result->CurrentTriangles, Storage); */

@@ -140,7 +140,7 @@ AllocateXmlTokenStream(umm TokenCount, memory_arena* Memory)
   Result.At = Result.Start;
   Result.End = Result.Start + TokenCount;
 
-  // TODO(Jesse, hashing): Profile this and see if it's reasonable
+  // TODO(Jesse, tags: hashing): Profile this and see if it's reasonable
   Result.Hashes = AllocateHashtable<xml_tag*>(TokenCount/10, Memory);
 
   return Result;
@@ -160,7 +160,7 @@ AllocateXmlTagStream(umm TagCount, memory_arena* Memory)
 xml_token_stream
 TokenizeSelector(ansi_stream* Selector, memory_arena* Memory)
 {
-  // TODO(Jesse, over_allocation): Better or more accurate way of allocating this size?
+  // TODO(Jesse, tags: over_allocation): Better or more accurate way of allocating this size?
   xml_token_stream Result = AllocateXmlTokenStream(1000, Memory);
 
   while (Remaining(Selector))
@@ -323,7 +323,7 @@ TokenizeXmlStream(ansi_stream* Xml, memory_arena* Memory)
   EatWhitespace(Xml);
   if (*Xml->At != '<') { Error("Invalid XML Stream"); return Result; }
 
-  // TODO(Jesse, over_allocation): Better way of allocating this?
+  // TODO(Jesse, tags: over_allocation): Better way of allocating this?
   Result = AllocateXmlTokenStream(10000, Memory);
 
   xml_parsing_at_indicators TagsAt = {};

@@ -94,7 +94,7 @@ struct c_decl_variable
   counted_string Name;
 };
 
-// TODO(Jesse, compiler_feature, metaprogramming): Do we care about generating these?
+// TODO(Jesse, id: 42, tags: compiler_feature, metaprogramming): Do we care about generating these?
 // We'd need to add a compiler feature to support outputting the datatypes to
 // different files .. either that or tell it to not generate the datatypes,
 // just the functions and only write these by hand.

@@ -15,7 +15,7 @@ struct texture;
 struct light;
 struct camera;
 
-// TODO(Jesse, metaprogramming, immediate): d_union-ify this
+// TODO(Jesse, tags: metaprogramming, immediate): d_union-ify this
 struct shader_uniform
 {
   shader_uniform_type Type;
@@ -204,7 +204,7 @@ SetViewport(v2 Dim)
   return;
 }
 
-// TODO(Jesse, opengl, completeness, engine): This only gets used when computing the shadow map, so I'm not even sure if it works ATM
+// TODO(Jesse, tags: opengl, completeness, engine): This only gets used when computing the shadow map, so I'm not even sure if it works ATM
 inline m4
 Orthographic( r32 X, r32 Y, r32 Zmin, r32 Zmax)
 {

@@ -166,7 +166,7 @@ struct physics
 
 struct particle
 {
-  // TODO(Jesse, robustness, memory_consumption): Compress to 16 bit float?
+  // TODO(Jesse, tags: robustness, memory_consumption): Compress to 16 bit float?
   v3 Offset;
 
   physics Physics;
@@ -237,7 +237,7 @@ struct entity
 
   r32 Scale;
 
-   // TODO(Jesse, memory_consumption, entity): Unneeded for projectiles. factor out of here?
+   // TODO(Jesse, tags: memory_consumption, entity): Unneeded for projectiles. factor out of here?
   r32 RateOfFire;
   r32 FireCooldown;
 
@@ -329,7 +329,7 @@ struct world_chunk
   u8 DimZ;
   u8 Pad;
 };
-// TODO(Jesse, speed, cache_friendly): Re-enable this
+// TODO(Jesse, tags: speed, cache_friendly): Re-enable this
 // @world-chunk-cache-line-size
 /* CAssert(sizeof(world_chunk) == CACHE_LINE_SIZE); */
 #pragma pack(pop)
