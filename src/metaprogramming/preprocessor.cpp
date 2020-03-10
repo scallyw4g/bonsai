@@ -1700,7 +1700,7 @@ ParseEnum(c_parse_result* Parser, memory_arena* Memory)
     if (OptionalToken(Parser, CTokenType_Equals))
     {
       // Can be an int literal, or a char literal : (42 or '4' or '42' or even up to '4242')
-      // TODO(Jesse, tags: back_burner, metaprogramming): Proper expression parsing.  ie: enum_value_name = (1 << 4) or enum_value_name = SOME_MACRO(thing, ding)
+      // TODO(Jesse, id: 111, tags: back_burner, metaprogramming): Proper expression parsing.  ie: enum_value_name = (1 << 4) or enum_value_name = SOME_MACRO(thing, ding)
       Field.Value = PopToken(Parser).Value;
     }
 
@@ -2145,13 +2145,13 @@ DoWorkToOutputThisStuff(c_parse_result* Parser, counted_string OutputForThisPars
   }
 }
 
-// TODO(Jesse, tags: bootstrap_debug_system, copy_paste): This is copy-pasted from teh callgraph tests .. should we be
+// TODO(Jesse, id: 112, tags: bootstrap_debug_system, copy_paste): This is copy-pasted from teh callgraph tests .. should we be
 // able to call this from anywhere?  It's also in the platform layer
 // @bootstrap-debug-system
 
 debug_global platform Plat = {};
 
-// TODO(Jesse, tags: cleanup): Remove this?
+// TODO(Jesse, id: 113, tags: cleanup): Remove this?
 debug_global os Os = {};
 
 function b32
@@ -2431,16 +2431,34 @@ main(s32 ArgCount, const char** ArgStrings)
                 counted_string IdValue = {};
                 OptionalToken(Parser, CTokenType_Comma);
 
+                b32 GeneratedNewId = False;
                 if (OptionalToken(Parser, CToken(CSz("id"))))
                 {
                   RequireToken(Parser, CTokenType_Colon);
                   IdValue = RequireToken(Parser, CTokenType_Identifier).Value;
                 }
+                else
+                {
+                  if (!IdValue.Count)
+                  {
+                    GeneratedNewId = True;
+                    IdValue = CS(++LargestIdFoundInFile);
+                    Push(CToken(CS(" id: ")), &Parser->OutputTokens);
+                    Push(CToken(IdValue), &Parser->OutputTokens);
+                  }
+
+                }
 
                 OptionalToken(Parser, CTokenType_Comma);
 
-                if (OptionalToken(Parser, CToken(CSz("tags"))))
+                // TODO(Jesse, id: 114, tags: immediate): Impement NextTokenIs()
+                if (StringsMatch(PeekToken(Parser).Value, CSz("tags")))
                 {
+                  if (GeneratedNewId)
+                  {
+                    Push(CToken(CTokenType_Comma), &Parser->OutputTokens);
+                  }
+                  RequireToken(Parser, CToken(CSz("tags")));
                   GotAnyTags = True;
                   RequireToken(Parser, CTokenType_Colon);
                   Push(&TodoTags, RequireToken(Parser, CTokenType_Identifier).Value, Memory);
@@ -2467,11 +2485,6 @@ main(s32 ArgCount, const char** ArgStrings)
                 {
                   counted_string* TodoTag = GET_ELEMENT(Iter);
                   tag* Tag = GetExistingOrCreate(&Person->Tags, *TodoTag, Memory);
-                  if (!IdValue.Count)
-                  {
-                    IdValue = CS(++LargestIdFoundInFile);
-                  }
-
                   GetExistingOrCreate(&Tag->Todos, Todo(IdValue, TodoValue), Memory);
                 }
 

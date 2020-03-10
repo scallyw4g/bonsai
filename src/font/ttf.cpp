@@ -320,7 +320,7 @@ ParseOffsetSubtable(u8_stream *Source, memory_arena* Arena)
       Result.Valid = True;
     } break;
 
-    // TODO(Jesse, tags: font, ttf_rasterizer, completeness): Can we support these?
+    // TODO(Jesse, id: 140, tags: font, ttf_rasterizer, completeness): Can we support these?
     case 'true': // Apple encoding
     case 'typ1': // Apple encoding
     case 'OTTO': // OTF 1/2 - Has a CFF Table .. whatever that means
@@ -737,14 +737,14 @@ RasterizeGlyph(v2i OutputSize, v2i FontMaxEmDim, v2i FontMinGlyphP, u8_stream *G
 
 
 
-          v2* TempVerts = Allocate(v2, Arena, VertCount); // TODO(Jesse, tags: transient_memory, ttf_rasterizer): Temp-memory?
+          v2* TempVerts = Allocate(v2, Arena, VertCount); // TODO(Jesse, id: 141, tags: transient_memory, ttf_rasterizer): Temp-memory?
 
           v2i BaselineOffset = Glyph.MinP - FontMinGlyphP;
 
           // Here we have to subtract one from everything because we're going
           // from a dimension [1, Dim] to an indexable range [0, Dim-1]
           //
-          // TODO(Jesse, tags: open_question): Is there a better way of making that adjustment?
+          // TODO(Jesse, id: 142, tags: open_question): Is there a better way of making that adjustment?
           v2i One = V2i(1,1);
           v2 EmScale = V2(Glyph.EmSpaceDim-One) / V2(FontMaxEmDim-One);
           v2 EmSpaceToPixelSpace = EmScale*( (SamplingBitmapDim-One) / (Glyph.EmSpaceDim-One) );
@@ -1030,7 +1030,7 @@ main()
       if (GlyphsRasterized)
       {
         counted_string AtlasName = FormatCountedString(TempArena, CSz("texture_atlas_%d.bmp"), AtlasIndex);
-        // TODO(Jesse, tags: robustness, open_question, format_counted_string_api): This could probably be made better by writing to a statically allocated buffer ..?
+        // TODO(Jesse, id: 143, tags: robustness, open_question, format_counted_string_api): This could probably be made better by writing to a statically allocated buffer ..?
         WriteBitmapToDisk(&TextureAtlasBitmap, GetNullTerminated(AtlasName));
       }
 

@@ -63,7 +63,7 @@ LoadShaders(counted_string VertShaderPath, counted_string FragFilePath, memory_a
   glGetProgramiv(ProgramID, GL_INFO_LOG_LENGTH, &InfoLogLength);
   if ( InfoLogLength > 0 )
   {
-    // TODO(Jesse, tags: transient_memory): Transient storage
+    // TODO(Jesse, id: 134, tags: transient_memory): Transient storage
     char *ProgramErrorMessage = Allocate(char, Memory, InfoLogLength+1);
     glGetProgramInfoLog(ProgramID, InfoLogLength, NULL, ProgramErrorMessage);
     Error("%s", ProgramErrorMessage);
@@ -176,7 +176,7 @@ BindShaderUniforms(shader *Shader)
     {
       case ShaderUniform_Texture:
       {
-        Assert(TextureUnit < 8); // TODO(Jesse, tags: robustness, opengl, texture): Query max gpu textures?
+        Assert(TextureUnit < 8); // TODO(Jesse, id: 135, tags: robustness, opengl, texture): Query max gpu textures?
 
         glActiveTexture(GL_TEXTURE0 + TextureUnit);
         glUniform1i(Uniform->ID, (s32)TextureUnit);

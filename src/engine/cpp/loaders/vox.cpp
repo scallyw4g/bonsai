@@ -149,7 +149,7 @@ LoadVoxModel(memory_arena *WorldStorage, heap_allocator *Heap, char const *filep
     totalChunkBytes = ReadMainChunk(ModelFile);
     int bytesRemaining = totalChunkBytes;
 
-    // TODO(Jesse, tags: robustness, vox_loader) : Actually read all the data!
+    // TODO(Jesse, id: 122, tags: robustness, vox_loader) : Actually read all the data!
     while (bytesRemaining > 0)
     {
       /* Log("%d\n", bytesRemaining); */
@@ -180,7 +180,7 @@ LoadVoxModel(memory_arena *WorldStorage, heap_allocator *Heap, char const *filep
           s32 ReportedVoxelCount = ReadXYZIChunk(ModelFile, &bytesRemaining);
           s32 ActualVoxelCount = 0;
 
-          // TODO(Jesse, tags: potential_bug, vox_loader, set_to_f32_min): Should these 0s be set to s32_MIN??
+          // TODO(Jesse, id: 123, tags: potential_bug, vox_loader, set_to_f32_min): Should these 0s be set to s32_MIN??
           s32 maxX = 0, maxY = 0, maxZ = 0;
           s32 minX = s32_MAX, minY = s32_MAX, minZ = s32_MAX;
 
@@ -217,7 +217,7 @@ LoadVoxModel(memory_arena *WorldStorage, heap_allocator *Heap, char const *filep
 
           chunk_dimension ModelDim = Max - Min;
 
-          // TODO(Jesse, tags: robustness, vox_loader): Load models in multiple chunks instead of one
+          // TODO(Jesse, id: 124, tags: robustness, vox_loader): Load models in multiple chunks instead of one
           // monolithic one. The storage for chunks must be as large as the
           // largest chunk we will EVER load, which should definately not be
           // decided at compile time.
@@ -240,7 +240,7 @@ LoadVoxModel(memory_arena *WorldStorage, heap_allocator *Heap, char const *filep
 
           SetFlag(Chunk, Chunk_Initialized);
 
-          // TODO(Jesse, tags: open_question, robustness, vox_loader): Are we really done?
+          // TODO(Jesse, id: 125, tags: open_question, robustness, vox_loader): Are we really done?
           goto loaded;
         } break;
 
