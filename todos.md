@@ -1,5 +1,10 @@
-
 # Jesse
+  ## immediate
+    - #7 d_union-ify this
+
+  ## high_priority
+    - #25 Profile and check collision rate of this!
+
   ## font
     - #1 Axe this!
     - #63 Can we support these?
@@ -87,9 +92,6 @@
     - #6 257 seemed to produce slightly
     - #70 Profile this and see if it's reasonable
 
-  ## immediate
-    - #7 d_union-ify this
-
   ## opengl
     - #8 This only gets used when computing the shadow map, so I'm not even sure if it works ATM
     - #58 Query max gpu textures?
@@ -163,9 +165,6 @@
     - #25 Profile and check collision rate of this!
 
   ## already_done_elsewhere
-    - #25 Profile and check collision rate of this!
-
-  ## high_priority
     - #25 Profile and check collision rate of this!
 
   ## math

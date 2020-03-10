@@ -2407,87 +2407,78 @@ main(s32 ArgCount, const char** ArgStrings)
     {
       c_parse_result* Parser = ParsedFiles.Start+ParserIndex;
       Assert(Parser->Valid);
-      Assert(Remaining(&Parser->Tokens));
-
-      Rewind(&Parser->OutputTokens);
-      Rewind(&Parser->Tokens);
-      Parser->LineNumber = 1;
-      while (Remaining(&Parser->Tokens))
-      {
-        c_token NextToken = PopTokenRaw(Parser);
-
-        if (NextToken.Type == CTokenType_CommentSingleLine)
-        {
-          if (OptionalToken(Parser, CToken(CSz("TODO"))))
-          {
-            if (OptionalToken(Parser, CTokenType_OpenParen))
-            {
-              counted_string PersonName = RequireToken(Parser, CTokenType_Identifier).Value;
-              counted_string_stream TodoTags = {};
-              b32 GotAnyTags = False;
-
-              counted_string IdValue = {};
-              OptionalToken(Parser, CTokenType_Comma);
-
-              if (OptionalToken(Parser, CToken(CSz("id"))))
-              {
-                RequireToken(Parser, CTokenType_Colon);
-                IdValue = RequireToken(Parser, CTokenType_Identifier).Value;
-              }
-
-              OptionalToken(Parser, CTokenType_Comma);
-
-              if (OptionalToken(Parser, CToken(CSz("tags"))))
-              {
-                GotAnyTags = True;
-                RequireToken(Parser, CTokenType_Colon);
-                Push(&TodoTags, RequireToken(Parser, CTokenType_Identifier).Value, Memory);
-
-                while (OptionalToken(Parser, CTokenType_Comma))
-                {
-                  Push(&TodoTags, RequireToken(Parser, CTokenType_Identifier).Value, Memory);
-                }
-              }
-
-              if (!GotAnyTags)
-              {
-                counted_string Tag = CSz("untagged");
-                Push(&TodoTags, Tag, Memory);
-              }
-
-              RequireToken(Parser, CTokenType_CloseParen);
-              OptionalToken(Parser, CTokenType_Colon);
-
-              counted_string TodoValue = Trim(ConcatTokensUntilNewline(Parser, Memory));
-              person* Person = GetExistingOrCreate(&People, PersonName, Memory);
-
-              ITERATE_OVER(counted_string, &TodoTags)
-              {
-                counted_string* TodoTag = GET_ELEMENT(Iter);
-                tag* Tag = GetExistingOrCreate(&Person->Tags, *TodoTag, Memory);
-                if (!IdValue.Count)
-                {
-                  IdValue = CS(++LargestIdFoundInFile);
-                }
-
-                GetExistingOrCreate(&Tag->Todos, Todo(IdValue, TodoValue), Memory);
-              }
-
-            }
-          }
-        }
-
-      }
 
       Rewind(&Parser->OutputTokens);
       Rewind(&Parser->Tokens);
       Parser->LineNumber = 1;
       while (Parser->Valid && Remaining(&Parser->Tokens))
       {
-        c_token NextToken = PeekToken(Parser);
+        c_token NextToken = PeekTokenRaw(Parser);
 
         switch( NextToken.Type )
         {
+          case CTokenType_CommentSingleLine:
+          {
+            Ensure( PopTokenRaw(Parser).Type == CTokenType_CommentSingleLine);
+            if (OptionalToken(Parser, CToken(CSz("TODO"))))
+            {
+              if (OptionalToken(Parser, CTokenType_OpenParen))
+              {
+                counted_string PersonName = RequireToken(Parser, CTokenType_Identifier).Value;
+                counted_string_stream TodoTags = {};
+                b32 GotAnyTags = False;
+
+                counted_string IdValue = {};
+                OptionalToken(Parser, CTokenType_Comma);
+
+                if (OptionalToken(Parser, CToken(CSz("id"))))
+                {
+                  RequireToken(Parser, CTokenType_Colon);
+                  IdValue = RequireToken(Parser, CTokenType_Identifier).Value;
+                }
+
+                OptionalToken(Parser, CTokenType_Comma);
+
+                if (OptionalToken(Parser, CToken(CSz("tags"))))
+                {
+                  GotAnyTags = True;
+                  RequireToken(Parser, CTokenType_Colon);
+                  Push(&TodoTags, RequireToken(Parser, CTokenType_Identifier).Value, Memory);
+
+                  while (OptionalToken(Parser, CTokenType_Comma))
+                  {
+                    Push(&TodoTags, RequireToken(Parser, CTokenType_Identifier).Value, Memory);
+                  }
+                }
+
+                if (!GotAnyTags)
+                {
+                  counted_string Tag = CSz("untagged");
+                  Push(&TodoTags, Tag, Memory);
+                }
+
+                RequireToken(Parser, CTokenType_CloseParen);
+                OptionalToken(Parser, CTokenType_Colon);
+
+                counted_string TodoValue = Trim(ConcatTokensUntilNewline(Parser, Memory));
+                person* Person = GetExistingOrCreate(&People, PersonName, Memory);
+
+                ITERATE_OVER(counted_string, &TodoTags)
+                {
+                  counted_string* TodoTag = GET_ELEMENT(Iter);
+                  tag* Tag = GetExistingOrCreate(&Person->Tags, *TodoTag, Memory);
+                  if (!IdValue.Count)
+                  {
+                    IdValue = CS(++LargestIdFoundInFile);
+                  }
+
+                  GetExistingOrCreate(&Tag->Todos, Todo(IdValue, TodoValue), Memory);
+                }
+
+              }
+            }
+          } break;
+
           case CTokenType_Identifier:
           {
             if (OptionalToken(Parser, CToken(CS("meta"))))
@@ -2603,7 +2594,7 @@ main(s32 ArgCount, const char** ArgStrings)
 
           default:
           {
-            PopToken(Parser);
+            PopTokenRaw(Parser);
           } break;
         }
 
