@@ -212,7 +212,7 @@ meta(generate_stream(todo))
 struct tag
 {
   counted_string Tag;
-  counted_string_stream Todos;
+  todo_stream Todos;
 };
 meta(generate_stream(tag))
 #include <metaprogramming/output/generate_stream_tagged_todo>

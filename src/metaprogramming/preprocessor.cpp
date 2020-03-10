@@ -256,7 +256,7 @@ PopIdentifier(ansi_stream* SourceFileStream)
 }
 
 function c_parse_result
-TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory)
+TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes = False)
 {
   c_parse_result Result = {
     .Filename = Code.Filename
@@ -342,7 +342,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory)
 
       case CTokenType_SingleQuote:
       {
-        if (ParsingSingleLineComment || ParsingMultiLineComment)
+        if (IgnoreQuotes || ParsingSingleLineComment || ParsingMultiLineComment)
         {
           Advance(&Code);
         }
@@ -355,7 +355,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory)
 
       case CTokenType_DoubleQuote:
       {
-        if (ParsingSingleLineComment || ParsingMultiLineComment)
+        if (IgnoreQuotes || ParsingSingleLineComment || ParsingMultiLineComment)
         {
           Advance(&Code);
         }
@@ -414,10 +414,10 @@ TokenizeString(counted_string Code, counted_string Filename, memory_arena* Memor
 }
 
 function c_parse_result
-TokenizeFile(counted_string Filename, memory_arena* Memory)
+TokenizeFile(counted_string Filename, memory_arena* Memory, b32 IgnoreQuotes = False)
 {
   ansi_stream SourceFileStream = AnsiStreamFromFile(Filename, Memory);
-  c_parse_result Result = TokenizeAnsiStream(SourceFileStream, Memory);
+  c_parse_result Result = TokenizeAnsiStream(SourceFileStream, Memory, IgnoreQuotes);
   return Result;
 }
 
@@ -2214,6 +2214,21 @@ StreamContains(person_stream* People, counted_string Name)
   return Result;
 }
 
+function todo*
+StreamContains(todo_stream* Todos, counted_string TodoId)
+{
+  todo* Result = {};
+  ITERATE_OVER(todo, Todos)
+  {
+    todo* Current = GET_ELEMENT(Iter);
+    if (StringsMatch(Current->Id, TodoId))
+    {
+      Result = Current;
+      break;
+    }
+  }
+  return Result;
+}
 
 function tag*
 StreamContains(tag_stream* TodoLists, counted_string Tag)
@@ -2228,7 +2243,6 @@ StreamContains(tag_stream* TodoLists, counted_string Tag)
       break;
     }
   }
-
   return Result;
 }
 
@@ -2241,6 +2255,18 @@ ConcatTokensUntilNewline(c_parse_result* Parser, memory_arena* Memory)
     Append(&CommentValueBuilder, PopTokenRaw(Parser).Value);
   }
   counted_string Result = Finalize(&CommentValueBuilder, Memory);
+  return Result;
+}
+
+function todo*
+GetExistingOrCreate(todo_stream* Stream, todo Todo, memory_arena* Memory)
+{
+  todo* Result = StreamContains(Stream, Todo.Id);
+  if (!Result)
+  {
+    Push(Stream, Todo, Memory);
+    Result = StreamContains(Stream, Todo.Id);
+  }
   return Result;
 }
 
@@ -2282,12 +2308,14 @@ EatWhitespace(c_parse_result* Parser)
   return;
 }
 
+static u32 LargestIdFoundInFile = 0;
+
 function person_stream
 ParseAllTodosFromFile(counted_string Filename, memory_arena* Memory)
 {
   person_stream People = {};
 
-  c_parse_result Parser_ = TokenizeFile(Filename, Memory);
+  c_parse_result Parser_ = TokenizeFile(Filename, Memory, True);
   c_parse_result* Parser = &Parser_;
 
   while (Remaining(&Parser->Tokens))
@@ -2307,8 +2335,14 @@ ParseAllTodosFromFile(counted_string Filename, memory_arena* Memory)
         RequireToken(Parser, CTokenType_Hash);
         counted_string TodoId = RequireToken(Parser, CTokenType_Identifier).Value;
 
+        LargestIdFoundInFile = Max(LargestIdFoundInFile, ToU32(TodoId));
+
         counted_string TodoValue = Trim(ConcatTokensUntilNewline(Parser, Memory));
-        Push(&Tag->Todos, TodoValue, Memory);
+        todo Todo = {
+          .Id = TodoId,
+          .Value = TodoValue
+        };
+        Push(&Tag->Todos, Todo, Memory);
         EatWhitespace(Parser);
       }
 
@@ -2317,6 +2351,13 @@ ParseAllTodosFromFile(counted_string Filename, memory_arena* Memory)
   }
 
   return People;
+}
+
+function todo
+Todo(counted_string Id, counted_string Value )
+{
+  todo Result = { .Id = Id, .Value = Value };
+  return Result;
 }
 
 #ifndef EXCLUDE_PREPROCESSOR_MAIN
@@ -2385,12 +2426,13 @@ main(s32 ArgCount, const char** ArgStrings)
               counted_string_stream TodoTags = {};
               b32 GotAnyTags = False;
 
+              counted_string IdValue = {};
               OptionalToken(Parser, CTokenType_Comma);
 
               if (OptionalToken(Parser, CToken(CSz("id"))))
               {
                 RequireToken(Parser, CTokenType_Colon);
-                counted_string IdValue = RequireToken(Parser, CTokenType_Identifier).Value;
+                IdValue = RequireToken(Parser, CTokenType_Identifier).Value;
               }
 
               OptionalToken(Parser, CTokenType_Comma);
@@ -2422,8 +2464,13 @@ main(s32 ArgCount, const char** ArgStrings)
               ITERATE_OVER(counted_string, &TodoTags)
               {
                 counted_string* TodoTag = GET_ELEMENT(Iter);
-                tag* TagList = GetExistingOrCreate(&Person->Tags, *TodoTag, Memory);
-                Push(&TagList->Todos, TodoValue, Memory);
+                tag* Tag = GetExistingOrCreate(&Person->Tags, *TodoTag, Memory);
+                if (!IdValue.Count)
+                {
+                  IdValue = CS(++LargestIdFoundInFile);
+                }
+
+                GetExistingOrCreate(&Tag->Todos, Todo(IdValue, TodoValue), Memory);
               }
 
             }
@@ -2586,13 +2633,15 @@ main(s32 ArgCount, const char** ArgStrings)
         LogToConsole(Tag->Tag);
         LogToConsole(CSz("\n"));
 
-        for (counted_string_iterator InnerIter = Iterator(&Tag->Todos);
+        for (todo_iterator InnerIter = Iterator(&Tag->Todos);
             IsValid(&InnerIter);
             Advance(&InnerIter))
         {
-          counted_string* Todo = GET_ELEMENT(InnerIter);
-          LogToConsole(CSz("    - "));
-          LogToConsole(*Todo);
+          todo* Todo = GET_ELEMENT(InnerIter);
+          LogToConsole(CSz("    - #"));
+          LogToConsole(Todo->Id);
+          LogToConsole(CSz(" "));
+          LogToConsole(Todo->Value);
           LogToConsole(CSz("\n"));
         }
 
