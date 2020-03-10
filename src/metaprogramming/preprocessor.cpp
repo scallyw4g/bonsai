@@ -2197,15 +2197,32 @@ BootstrapDebugSystem(b32 OpenDebugWindow)
   return True;
 }
 
-function todo_list*
-StreamContains(todo_list_stream* Lists, todo_list* Target)
+function person*
+StreamContains(person_stream* People, counted_string Name)
 {
-  todo_list* Result = {};
-  ITERATE_OVER(todo_list, Lists)
+  person* Result = {};
+  ITERATE_OVER(person, People)
   {
-    todo_list* Current = GET_ELEMENT(Iter);
-    if (StringsMatch(Current->Assignee, Target->Assignee) &&
-        StringsMatch(Current->Tag, Target->Tag))
+    person* Current = GET_ELEMENT(Iter);
+    if (StringsMatch(Current->Name, Name))
+    {
+      Result = Current;
+      break;
+    }
+  }
+
+  return Result;
+}
+
+
+function tagged_todo*
+StreamContains(tagged_todo_stream* TodoLists, counted_string Tag)
+{
+  tagged_todo* Result = {};
+  ITERATE_OVER(tagged_todo, TodoLists)
+  {
+    tagged_todo* Current = GET_ELEMENT(Iter);
+    if (StringsMatch(Current->Tag, Tag))
     {
       Result = Current;
       break;
@@ -2254,12 +2271,12 @@ main(s32 ArgCount, const char** ArgStrings)
     program_datatypes Datatypes = ParseAllDatatypes(ParsedFiles, Memory);
     Assert(ParsedFiles.Start == ParsedFiles.At);
 
-    todo_list_stream TodoListStream = {};
+    tagged_todo_stream TodoListStream = {};
 
     for (u32 ParserIndex = 0;
         ParserIndex < Count(&ParsedFiles);
         ++ParserIndex)
-    TIMED_BLOCK("Do Preprocesssing stuff");
+    {
       c_parse_result* Parser = ParsedFiles.Start+ParserIndex;
       Assert(Parser->Valid);
       Assert(Remaining(&Parser->Tokens));
@@ -2286,6 +2303,13 @@ main(s32 ArgCount, const char** ArgStrings)
                 Push(&Tags, RequireToken(Parser, CTokenType_Identifier).Value, Memory);
               }
 
+              if (!GotAnyTags)
+              {
+                counted_string Tag = CSz("untagged");
+                Push(&Tags, Tag, Memory);
+              }
+
+
               RequireToken(Parser, CTokenType_CloseParen);
               OptionalToken(Parser, CTokenType_Colon);
 
@@ -2295,46 +2319,22 @@ main(s32 ArgCount, const char** ArgStrings)
                 Append(&CommentValueBuilder, PopTokenRaw(Parser).Value);
               }
               counted_string TodoValue = Finalize(&CommentValueBuilder, Memory);
+              TodoValue = Trim(TodoValue);
 
-              if (GotAnyTags)
+              ITERATE_OVER(counted_string, &Tags)
               {
-                ITERATE_OVER(counted_string, &Tags)
-                {
-                  counted_string* Tag = GET_ELEMENT(Iter);
-
-                  todo_list CheckList = {
-                    .Assignee = PersonName,
-                    .Tag = *Tag
-                  };
-
-                  todo_list* Got = StreamContains(&TodoListStream, &CheckList);
-                  if (Got)
-                  {
-                    Push(&Got->List, TodoValue, Memory);
-                  }
-                  else
-                  {
-                    Push(&CheckList.List, TodoValue, Memory);
-                    Push(&TodoListStream, CheckList, Memory);
-                  }
-                }
-              }
-              else
-              {
-                todo_list CheckList = {
-                  .Assignee = PersonName,
-                  .Tag = CSz("untagged")
-                };
-
-                todo_list* Got = StreamContains(&TodoListStream, &CheckList);
+                counted_string* Tag = GET_ELEMENT(Iter);
+                tagged_todo* Got = StreamContains(&TodoListStream, *Tag);
                 if (Got)
                 {
-                  Push(&Got->List, TodoValue, Memory);
+                  Push(&Got->Todos, TodoValue, Memory);
                 }
                 else
                 {
-                  Push(&CheckList.List, TodoValue, Memory);
-                  Push(&TodoListStream, CheckList, Memory);
+                  tagged_todo NewList = { .Tag = *Tag };
+
+                  Push(&NewList.Todos, TodoValue, Memory);
+                  Push(&TodoListStream, NewList, Memory);
                 }
               }
 
@@ -2485,16 +2485,14 @@ main(s32 ArgCount, const char** ArgStrings)
     }
 
 
-    ITERATE_OVER(todo_list, &TodoListStream)
+    ITERATE_OVER(tagged_todo, &TodoListStream)
     {
-      todo_list* Todos = GET_ELEMENT(Iter);
-      LogToConsole(Todos->Assignee);
-      LogToConsole(CSz("\n"));
+      tagged_todo* Todos = GET_ELEMENT(Iter);
       LogToConsole(CSz("  "));
       LogToConsole(Todos->Tag);
       LogToConsole(CSz("\n"));
 
-      for (counted_string_iterator InnerIter = Iterator(&Todos->List);
+      for (counted_string_iterator InnerIter = Iterator(&Todos->Todos);
           IsValid(&InnerIter);
           Advance(&InnerIter))
       {

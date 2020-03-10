@@ -200,14 +200,23 @@ struct c_parse_result
 meta(generate_cursor(c_parse_result))
 #include <metaprogramming/output/generate_cursor_c_parse_result>
 
-struct todo_list
+
+
+struct tagged_todo
 {
-  counted_string Assignee;
   counted_string Tag;
-  counted_string_stream List;
+  counted_string_stream Todos;
 };
-meta(generate_stream(todo_list))
-#include <metaprogramming/output/generate_stream_todo_list>
+meta(generate_stream(tagged_todo))
+#include <metaprogramming/output/generate_stream_tagged_todo>
+
+struct person
+{
+  counted_string Name;
+  tagged_todo_stream TodoLists;
+};
+meta(generate_stream(person))
+#include <metaprogramming/output/generate_stream_person>
 
 
 
