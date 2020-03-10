@@ -202,18 +202,18 @@ meta(generate_cursor(c_parse_result))
 
 
 
-struct tagged_todo
+struct tag
 {
   counted_string Tag;
   counted_string_stream Todos;
 };
-meta(generate_stream(tagged_todo))
+meta(generate_stream(tag))
 #include <metaprogramming/output/generate_stream_tagged_todo>
 
 struct person
 {
   counted_string Name;
-  tagged_todo_stream TodoLists;
+  tag_stream Tags;
 };
 meta(generate_stream(person))
 #include <metaprogramming/output/generate_stream_person>

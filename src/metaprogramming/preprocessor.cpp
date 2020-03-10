@@ -2215,13 +2215,13 @@ StreamContains(person_stream* People, counted_string Name)
 }
 
 
-function tagged_todo*
-StreamContains(tagged_todo_stream* TodoLists, counted_string Tag)
+function tag*
+StreamContains(tag_stream* TodoLists, counted_string Tag)
 {
-  tagged_todo* Result = {};
-  ITERATE_OVER(tagged_todo, TodoLists)
+  tag* Result = {};
+  ITERATE_OVER(tag, TodoLists)
   {
-    tagged_todo* Current = GET_ELEMENT(Iter);
+    tag* Current = GET_ELEMENT(Iter);
     if (StringsMatch(Current->Tag, Tag))
     {
       Result = Current;
@@ -2271,7 +2271,7 @@ main(s32 ArgCount, const char** ArgStrings)
     program_datatypes Datatypes = ParseAllDatatypes(ParsedFiles, Memory);
     Assert(ParsedFiles.Start == ParsedFiles.At);
 
-    tagged_todo_stream TodoListStream = {};
+    person_stream People = {};
 
     for (u32 ParserIndex = 0;
         ParserIndex < Count(&ParsedFiles);
@@ -2295,18 +2295,18 @@ main(s32 ArgCount, const char** ArgStrings)
             if (OptionalToken(Parser, CTokenType_OpenParen))
             {
               counted_string PersonName = RequireToken(Parser, CTokenType_Identifier).Value;
-              counted_string_stream Tags = {};
+              counted_string_stream TodoTags = {};
               b32 GotAnyTags = False;
               while (OptionalToken(Parser, CTokenType_Comma))
               {
                 GotAnyTags = True;
-                Push(&Tags, RequireToken(Parser, CTokenType_Identifier).Value, Memory);
+                Push(&TodoTags, RequireToken(Parser, CTokenType_Identifier).Value, Memory);
               }
 
               if (!GotAnyTags)
               {
                 counted_string Tag = CSz("untagged");
-                Push(&Tags, Tag, Memory);
+                Push(&TodoTags, Tag, Memory);
               }
 
 
@@ -2321,20 +2321,28 @@ main(s32 ArgCount, const char** ArgStrings)
               counted_string TodoValue = Finalize(&CommentValueBuilder, Memory);
               TodoValue = Trim(TodoValue);
 
-              ITERATE_OVER(counted_string, &Tags)
+              person* Person = StreamContains(&People, PersonName);
+              if (!Person)
+              {
+                person NewPerson = { .Name = PersonName };
+                Push(&People, NewPerson, Memory);
+                Person = StreamContains(&People, PersonName);
+              }
+
+              ITERATE_OVER(counted_string, &TodoTags)
               {
                 counted_string* Tag = GET_ELEMENT(Iter);
-                tagged_todo* Got = StreamContains(&TodoListStream, *Tag);
+                tag* Got = StreamContains(&Person->Tags, *Tag);
                 if (Got)
                 {
                   Push(&Got->Todos, TodoValue, Memory);
                 }
                 else
                 {
-                  tagged_todo NewList = { .Tag = *Tag };
+                  tag NewList = { .Tag = *Tag };
 
                   Push(&NewList.Todos, TodoValue, Memory);
-                  Push(&TodoListStream, NewList, Memory);
+                  Push(&Person->Tags, NewList, Memory);
                 }
               }
 
@@ -2485,24 +2493,30 @@ main(s32 ArgCount, const char** ArgStrings)
     }
 
 
-    ITERATE_OVER(tagged_todo, &TodoListStream)
+    ITERATE_OVER_AS(person, &People)
     {
-      tagged_todo* Todos = GET_ELEMENT(Iter);
-      LogToConsole(CSz("  "));
-      LogToConsole(Todos->Tag);
+      person* Person = GET_ELEMENT(personIter);
+      LogToConsole(Person->Name);
       LogToConsole(CSz("\n"));
-
-      for (counted_string_iterator InnerIter = Iterator(&Todos->Todos);
-          IsValid(&InnerIter);
-          Advance(&InnerIter))
+      ITERATE_OVER(tag, &Person->Tags)
       {
-        counted_string* Todo = GET_ELEMENT(InnerIter);
-        LogToConsole(CSz("    "));
-        LogToConsole(*Todo);
+        tag* Tag = GET_ELEMENT(Iter);
+        LogToConsole(CSz("  "));
+        LogToConsole(Tag->Tag);
+        LogToConsole(CSz("\n"));
+
+        for (counted_string_iterator InnerIter = Iterator(&Tag->Todos);
+            IsValid(&InnerIter);
+            Advance(&InnerIter))
+        {
+          counted_string* Todo = GET_ELEMENT(InnerIter);
+          LogToConsole(CSz("    "));
+          LogToConsole(*Todo);
+          LogToConsole(CSz("\n"));
+        }
+
         LogToConsole(CSz("\n"));
       }
-
-      LogToConsole(CSz("\n"));
     }
 
     Log("\n");

@@ -1,6 +1,11 @@
 #define CACHE_LINE_SIZE (64)
 #define function static
 
+#define ITERATE_OVER_AS(type, value_ptr)                \
+  for (type##_iterator type##Iter = Iterator((value_ptr)); \
+      IsValid(&type##Iter);                                \
+      Advance(&type##Iter))
+
 #define ITERATE_OVER(type, value_ptr)                \
   for (type##_iterator Iter = Iterator((value_ptr)); \
       IsValid(&Iter);                                \
