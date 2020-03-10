@@ -2301,9 +2301,11 @@ ParseAllTodosFromFile(counted_string Filename, memory_arena* Memory)
       RequireToken(Parser, CTokenType_Hash);
       counted_string TagName = RequireToken(Parser, CTokenType_Identifier).Value;
 
+      tag* Tag = GetExistingOrCreate(&Person->Tags, TagName, Memory);
       while (OptionalToken(Parser, CTokenType_Minus))
       {
-        counted_string TodoValue = ConcatTokensUntilNewline(Parser, Memory);
+        counted_string TodoValue = Trim(ConcatTokensUntilNewline(Parser, Memory));
+        /* Push(&Tag->Todos, TodoValue, Memory); */
         EatWhitespace(Parser);
       }
 

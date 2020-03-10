@@ -201,6 +201,13 @@ meta(generate_cursor(c_parse_result))
 #include <metaprogramming/output/generate_cursor_c_parse_result>
 
 
+struct todo
+{
+  counted_string Id;
+  counted_string Value;
+};
+meta(generate_stream(todo))
+#include <metaprogramming/output/generate_stream_todo>
 
 struct tag
 {
