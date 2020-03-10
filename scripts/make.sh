@@ -39,7 +39,7 @@ OUTPUT_DIRECTORY="$BIN"
 # NOTE(Jesse): -Wno-global-constructors can be turned off when the defaultPallette
 # in colors.h gets axed .. I think.
 
-# TODO(Jesse): Investigate -Wcast-align situation
+# TODO(Jesse, build_pipeline): Investigate -Wcast-align situation
 
 COMMON_COMPILER_OPTIONS="
   -ferror-limit=2000
@@ -83,7 +83,7 @@ EXECUTABLES_TO_BUILD="
   $SRC/net/server.cpp
 "
 
-# TODO(Jesse): The allocation tests crash in release mode because of some
+# TODO(Jesse, tests, release): The allocation tests crash in release mode because of some
 # ultra-jank-tastic segfault recovery code.  Find another less janky way?
 DEBUG_TESTS_TO_BUILD="
   $TESTS/allocation.cpp

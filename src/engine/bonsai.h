@@ -166,7 +166,7 @@ struct physics
 
 struct particle
 {
-  // TODO(Jesse): Compress to 16 bit float?
+  // TODO(Jesse, robustness, memory_consumption): Compress to 16 bit float?
   v3 Offset;
 
   physics Physics;
@@ -237,11 +237,11 @@ struct entity
 
   r32 Scale;
 
-   // TODO(Jesse): Unneeded for projectiles. factor out of here?
+   // TODO(Jesse, memory_consumption, entity): Unneeded for projectiles. factor out of here?
   r32 RateOfFire;
   r32 FireCooldown;
 
-  s32 Health; // Only needed for Player
+  s32 Health;
 };
 
 struct frame_event
@@ -329,7 +329,7 @@ struct world_chunk
   u8 DimZ;
   u8 Pad;
 };
-// TODO(Jesse): Re-enable this
+// TODO(Jesse, speed, cache_friendly): Re-enable this
 // @world-chunk-cache-line-size
 /* CAssert(sizeof(world_chunk) == CACHE_LINE_SIZE); */
 #pragma pack(pop)

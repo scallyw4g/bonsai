@@ -29,8 +29,8 @@
 #include <bonsai_stdlib/headers/platform.h>
 #include <bonsai_stdlib/headers/math.h>
 #include <bonsai_stdlib/headers/vector.h>
-#include <random>                                   // TODO(Jesse): Perlin.h depends on this .. rewrite it.
-#include <algorithm>                                // TODO(Jesse): Perlin.h depends on this .. rewrite it.
+#include <random>                                   // TODO(Jesse, perlin, cleanup): Perlin.h depends on this .. rewrite it.
+#include <algorithm>                                // TODO(Jesse, perlin, cleanup): Perlin.h depends on this .. rewrite it.
 #include <bonsai_stdlib/headers/perlin.h>
 #include <bonsai_stdlib/headers/input.h>
 #include <bonsai_stdlib/headers/work_queue.h>
@@ -65,7 +65,7 @@
 #include <engine/headers/mesh.h>
 #include <engine/headers/animation.h>
 #include <engine/headers/voxel_face.h>
-#include <engine/bonsai.h> // TODO(Jesse): Redistribute this
+#include <engine/bonsai.h> // TODO(Jesse, cleanup): Redistribute this
 
 
 //
@@ -92,7 +92,7 @@ global_variable memory_arena* TranArena = &_TranArena;
 //
 
 
-#include <bonsai_stdlib/cpp/debug_print.cpp>  // TODO(Jesse): Jettison this .. Can it be metaprogrammed?
+#include <bonsai_stdlib/cpp/debug_print.cpp>  // TODO(Jesse, cleanup, metaprogramming, format_counted_string): Jettison this .. Can it be metaprogrammed?
 #include <bonsai_stdlib/cpp/hashtable.cpp>
 #include <bonsai_stdlib/cpp/platform.cpp>
 #include <bonsai_stdlib/cpp/counted_string.cpp>

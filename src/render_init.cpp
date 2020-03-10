@@ -35,7 +35,7 @@ AllocateAndInitSsaoNoise(ao_render_group *AoGroup, memory_arena *GraphicsMemory)
 
   InitSsaoKernel(AoGroup->SsaoKernel, ArrayCount(AoGroup->SsaoKernel), &SsaoEntropy);
 
-  // TODO(Jesse): Transient arena for this instead of stack allocation ?
+  // TODO(Jesse, transient_memory, allocation, back_burner): Transient arena for this instead of stack allocation ?
   v3 *SsaoNoise = Allocate(v3, GraphicsMemory, 16);
   InitSsaoNoise(SsaoNoise, 16, &SsaoEntropy);
 
@@ -133,7 +133,7 @@ CreateGbuffer(memory_arena *Memory)
 void
 SetDrawBuffers(framebuffer *FBO)
 {
-  // TODO(Jesse): Transient storage?
+  // TODO(Jesse, transient_memory): Transient storage?
   u32 Attachments[32] = {};
   for (u32 AttIndex = 0;
       AttIndex < FBO->Attachments;
@@ -262,7 +262,7 @@ InitializeShadowBuffer(shadow_render_group *SG, memory_arena *GraphicsMemory, v2
   SG->ShadowMap = MakeDepthTexture(ShadowMapResolution, GraphicsMemory);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, SG->ShadowMap->ID, 0);
 
-  // TODO(Jesse): Not present on ES2 .. should we use them?
+  // TODO(Jesse, open_gl, es2): Not present on ES2 .. should we use them?
   // No color output in the bound framebuffer, only depth.
   /* glDrawBuffer(GL_NONE); */
   /* glReadBuffer(GL_NONE); */

@@ -94,10 +94,10 @@ struct c_decl_variable
   counted_string Name;
 };
 
-// TODO(Jesse): Do we care about generating these?  We'd need to add a compiler
-// feature to support outputting the datatypes to different files .. either
-// that or tell it to not generate the datatypes, just the functions and only
-// write these by hand.
+// TODO(Jesse, compiler_feature, metaprogramming): Do we care about generating these?
+// We'd need to add a compiler feature to support outputting the datatypes to
+// different files .. either that or tell it to not generate the datatypes,
+// just the functions and only write these by hand.
 struct c_decl_stream_chunk;
 struct c_decl_stream
 {

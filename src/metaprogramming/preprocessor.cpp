@@ -2489,17 +2489,22 @@ main(s32 ArgCount, const char** ArgStrings)
     {
       todo_list* Todos = GET_ELEMENT(Iter);
       LogToConsole(Todos->Assignee);
+      LogToConsole(CSz("\n"));
       LogToConsole(CSz("  "));
       LogToConsole(Todos->Tag);
       LogToConsole(CSz("\n"));
 
-      ITERATE_OVER(counted_string, &Todos->List)
+      for (counted_string_iterator InnerIter = Iterator(&Todos->List);
+          IsValid(&InnerIter);
+          Advance(&InnerIter))
       {
-        counted_string* Todo = GET_ELEMENT(Iter);
+        counted_string* Todo = GET_ELEMENT(InnerIter);
         LogToConsole(CSz("    "));
         LogToConsole(*Todo);
         LogToConsole(CSz("\n"));
       }
+
+      LogToConsole(CSz("\n"));
     }
 
     Log("\n");

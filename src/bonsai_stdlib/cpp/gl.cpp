@@ -96,9 +96,9 @@ InitializeOpenGlExtensions(os* Os)
 
   // Platform specific (wgl / glX)
   s32 VsyncFrames = 1;
-  // TODO(Jesse): Should this be done elsewhere?
+  // TODO(Jesse, platform, opengl): Should this be done elsewhere?
 #if BONSAI_LINUX
-  // TODO(Jesse): Not getting vsync on my arch laptop...
+  // TODO(Jesse, open_question, platform_linux): Not getting vsync on my arch laptop...
   PFNSWAPINTERVALPROC glSwapInterval = (PFNSWAPINTERVALPROC)bonsaiGlGetProcAddress("glXSwapIntervalEXT");
   if ( glSwapInterval )
   {

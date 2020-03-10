@@ -94,7 +94,7 @@ CAssert(u64_MAX == UINT64_MAX);
 struct counted_string
 {
   umm Count;
-  const char* Start; // TODO(Jesse): Make this non-const?
+  const char* Start; // TODO(Jesse, cleanup, open_question): Make this non-const?
 };
 CAssert(sizeof(counted_string) == 16);
 

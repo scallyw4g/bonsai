@@ -73,8 +73,9 @@ Link_TS(mesh_freelist* Freelist, untextured_3d_geometry_buffer* Mesh)
   FullBarrier;
   volatile free_mesh* FirstFree = Freelist->FirstFree;
 
-  // TODO(Jesse): Need a way of dynamically allocating more of these on demand
+  // TODO(Jesse, robustness, metaprogramming): Need a way of dynamically allocating more of these on demand
   // if this unlink fails!
+  // Can generate a free_mesh_stream!
   free_mesh* ToPush = Unlink_TS(&Freelist->Containers);
   Assert(ToPush);
   Assert(!ToPush->Mesh);

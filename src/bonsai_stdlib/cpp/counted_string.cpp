@@ -95,7 +95,7 @@ ToCapitalCase(counted_string Source, memory_arena* Memory)
       NextCharToUpper = False;
     }
 
-    // TODO(Jesse): Gross..
+    // TODO(Jesse, gross): Gross..
     *(char*)(Result.Start + ResultIndex) = At;
     ++SourceIndex;
     ++ResultIndex;

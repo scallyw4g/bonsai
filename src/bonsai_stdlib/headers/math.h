@@ -1,6 +1,6 @@
 
 #if 0
-// TODO(Jesse): Write actual/working fModf!
+// TODO(Jesse, math, improvement): Write actual/working fModf!
 r32
 myFmodf( r32 F, r32 mod )
 {

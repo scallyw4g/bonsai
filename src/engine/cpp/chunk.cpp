@@ -60,7 +60,7 @@ FillChunk(chunk_data *chunk, chunk_dimension Dim, u8 ColorIndex = BLACK)
 
   for (int i = 0; i < Vol; ++i)
   {
-    // TODO(Jesse): Pretty sure we don't have to set the faces anymore??
+    // TODO(Jesse, dead_code, speed): Pretty sure we don't have to set the faces anymore??
     SetFlag(&chunk->Voxels[i], (voxel_flag)(Voxel_Filled     |
                                             Voxel_TopFace    |
                                             Voxel_BottomFace |

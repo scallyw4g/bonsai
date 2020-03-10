@@ -17,7 +17,7 @@ RandomSeries(u64 Seed = DEFAULT_ENTROPY_SEED)
 inline u32
 RandomU32(random_series *Entropy)
 {
-  // TODO(Jesse): This is LCG RNG - do we want a better one?
+  // TODO(Jesse, rng, improvement): This is LCG RNG - do we want a better one?
 
   // Values from Knuth
   u64 A = 6364136223846793005;

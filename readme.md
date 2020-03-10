@@ -73,5 +73,5 @@ git clone https://github.com/jjbandit/bonsai bonsai && cd bonsai
 
 ## On Windows:
 ```
-TODO(Jesse): Fix the build.
+TODO(Jesse, platform_windows): Fix the build.
 ```

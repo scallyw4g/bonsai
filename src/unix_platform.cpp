@@ -722,7 +722,7 @@ PlatformSetWorkerThreadPriority()
 }
 #endif
 
-// TODO(Jesse): This actually has nothing to do with the platform
+// TODO(Jesse, cleanup, platform): This actually has nothing to do with the platform
 inline void
 RewindArena(memory_arena *Arena, umm RestartBlockSize = Megabytes(1) )
 {

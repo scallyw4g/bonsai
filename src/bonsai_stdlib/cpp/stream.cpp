@@ -51,7 +51,7 @@ V3Cursor(u32 Count, memory_arena *Memory)
 }
 
 //
-// TODO(Jesse): Make this use platform agnostic functions!
+// TODO(Jesse, platform): Make this use platform agnostic functions!
 u8_stream
 U8_StreamFromFile(const char* SourceFile, memory_arena *Memory)
 {
@@ -139,7 +139,7 @@ ReadEntireFileIntoString(counted_string SourceFile, memory_arena *Memory)
 char *
 ReadUntilTerminatorList(ansi_stream *Cursor, const char *TerminatorList, memory_arena *Arena)
 {
-  // TODO(Jesse): Make this return a counted string and everything that depends on
+  // TODO(Jesse, robustness, cleanup): Make this return a counted string and everything that depends on
   // it _NOT_ rely on the fact it's currently null terminated
 
   counted_string String = ReadUntilTerminatorList(Cursor, TerminatorList);

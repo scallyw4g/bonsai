@@ -4,14 +4,13 @@ meta(generate_stream(counted_string))
 meta(generate_cursor(counted_string))
 #include <metaprogramming/output/generate_cursor_counted_string>
 
-// TODO(Jesse): Generate this?  Need a compiler feature to generate stuff from primitive types.
-// @compiler-feature
+// TODO(Jesse, compiler_feature, metaprogramming): Generate this?  Need a compiler feature to generate stuff from primitive types.
 struct char_cursor
 {
   char* Start;
   char* End;
   char* At;
-  memory_arena* Memory; // TODO(Jesse): Do we actually want this in here?
+  memory_arena* Memory; // TODO(Jesse, open_question, metaprogramming): Do we actually want this in here?
 };
 
 // Note(Jesse): Shamelessly copied from the Handmade Hero codebase
@@ -67,8 +66,7 @@ Contains(const char* Haystack, char Needle)
   return Result;
 }
 
-// TODO(Jesse): Profile and check collision rate of this!
-// @optimize
+// TODO(Jesse, profile, speed, hash, already_done_elsewhere, high_priority): Profile and check collision rate of this!
 inline umm
 StringHash(const char* S1)
 {
