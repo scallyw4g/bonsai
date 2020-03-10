@@ -2232,6 +2232,88 @@ StreamContains(tag_stream* TodoLists, counted_string Tag)
   return Result;
 }
 
+function counted_string
+ConcatTokensUntilNewline(c_parse_result* Parser, memory_arena* Memory)
+{
+  string_builder CommentValueBuilder = {};
+  while (PeekTokenRaw(Parser).Type != CTokenType_Newline)
+  {
+    Append(&CommentValueBuilder, PopTokenRaw(Parser).Value);
+  }
+  counted_string Result = Finalize(&CommentValueBuilder, Memory);
+  return Result;
+}
+
+function tag*
+GetExistingOrCreate(tag_stream* Stream, counted_string Tag, memory_arena* Memory)
+{
+  tag* Result = StreamContains(Stream, Tag);
+  if (!Result)
+  {
+    tag NewTag = { .Tag = Tag };
+    Push(Stream, NewTag, Memory);
+    Result = StreamContains(Stream, Tag);
+  }
+  return Result;
+}
+
+function person*
+GetExistingOrCreate(person_stream* People, counted_string PersonName, memory_arena* Memory)
+{
+  person* Person = StreamContains(People, PersonName);
+  if (!Person)
+  {
+    person NewPerson = { .Name = PersonName };
+    Push(People, NewPerson, Memory);
+    Person = StreamContains(People, PersonName);
+  }
+  return Person;
+}
+
+
+function void
+EatWhitespace(c_parse_result* Parser)
+{
+  while (IsWhitespace(PeekTokenRaw(Parser).Type))
+  {
+    PopTokenRaw(Parser);
+  }
+
+  return;
+}
+
+function person_stream
+ParseAllTodosFromFile(counted_string Filename, memory_arena* Memory)
+{
+  person_stream People = {};
+
+  c_parse_result Parser_ = TokenizeFile(Filename, Memory);
+  c_parse_result* Parser = &Parser_;
+
+  while (Remaining(&Parser->Tokens))
+  {
+    RequireToken(Parser, CTokenType_Hash);
+    counted_string PersonName = RequireToken(Parser, CTokenType_Identifier).Value;
+
+    person* Person = GetExistingOrCreate(&People, PersonName, Memory);
+    while (OptionalToken(Parser, CTokenType_Hash))
+    {
+      RequireToken(Parser, CTokenType_Hash);
+      counted_string TagName = RequireToken(Parser, CTokenType_Identifier).Value;
+
+      while (OptionalToken(Parser, CTokenType_Minus))
+      {
+        counted_string TodoValue = ConcatTokensUntilNewline(Parser, Memory);
+        EatWhitespace(Parser);
+      }
+
+      EatWhitespace(Parser);
+    }
+  }
+
+  return People;
+}
+
 #ifndef EXCLUDE_PREPROCESSOR_MAIN
 
 #define SUCCESS_EXIT_CODE 0
@@ -2271,7 +2353,7 @@ main(s32 ArgCount, const char** ArgStrings)
     program_datatypes Datatypes = ParseAllDatatypes(ParsedFiles, Memory);
     Assert(ParsedFiles.Start == ParsedFiles.At);
 
-    person_stream People = {};
+    person_stream People = ParseAllTodosFromFile(CSz("todos.md"), Memory);
 
     for (u32 ParserIndex = 0;
         ParserIndex < Count(&ParsedFiles);
@@ -2309,41 +2391,17 @@ main(s32 ArgCount, const char** ArgStrings)
                 Push(&TodoTags, Tag, Memory);
               }
 
-
               RequireToken(Parser, CTokenType_CloseParen);
               OptionalToken(Parser, CTokenType_Colon);
 
-              string_builder CommentValueBuilder = {};
-              while (PeekTokenRaw(Parser).Type != CTokenType_Newline)
-              {
-                Append(&CommentValueBuilder, PopTokenRaw(Parser).Value);
-              }
-              counted_string TodoValue = Finalize(&CommentValueBuilder, Memory);
-              TodoValue = Trim(TodoValue);
-
-              person* Person = StreamContains(&People, PersonName);
-              if (!Person)
-              {
-                person NewPerson = { .Name = PersonName };
-                Push(&People, NewPerson, Memory);
-                Person = StreamContains(&People, PersonName);
-              }
+              counted_string TodoValue = Trim(ConcatTokensUntilNewline(Parser, Memory));
+              person* Person = GetExistingOrCreate(&People, PersonName, Memory);
 
               ITERATE_OVER(counted_string, &TodoTags)
               {
-                counted_string* Tag = GET_ELEMENT(Iter);
-                tag* Got = StreamContains(&Person->Tags, *Tag);
-                if (Got)
-                {
-                  Push(&Got->Todos, TodoValue, Memory);
-                }
-                else
-                {
-                  tag NewList = { .Tag = *Tag };
-
-                  Push(&NewList.Todos, TodoValue, Memory);
-                  Push(&Person->Tags, NewList, Memory);
-                }
+                counted_string* TodoTag = GET_ELEMENT(Iter);
+                tag* TagList = GetExistingOrCreate(&Person->Tags, *TodoTag, Memory);
+                Push(&TagList->Todos, TodoValue, Memory);
               }
 
             }
@@ -2496,12 +2554,13 @@ main(s32 ArgCount, const char** ArgStrings)
     ITERATE_OVER_AS(person, &People)
     {
       person* Person = GET_ELEMENT(personIter);
+      LogToConsole(CSz("# "));
       LogToConsole(Person->Name);
       LogToConsole(CSz("\n"));
       ITERATE_OVER(tag, &Person->Tags)
       {
         tag* Tag = GET_ELEMENT(Iter);
-        LogToConsole(CSz("  "));
+        LogToConsole(CSz("  ## "));
         LogToConsole(Tag->Tag);
         LogToConsole(CSz("\n"));
 
@@ -2510,7 +2569,7 @@ main(s32 ArgCount, const char** ArgStrings)
             Advance(&InnerIter))
         {
           counted_string* Todo = GET_ELEMENT(InnerIter);
-          LogToConsole(CSz("    "));
+          LogToConsole(CSz("    - "));
           LogToConsole(*Todo);
           LogToConsole(CSz("\n"));
         }
