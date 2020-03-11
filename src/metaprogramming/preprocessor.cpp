@@ -2640,26 +2640,31 @@ main(s32 ArgCount, const char** ArgStrings)
         ITERATE_OVER(tag, &Person->Tags)
         {
           tag* Tag = GET_ELEMENT(Iter);
-          AllWritesSucceeded &= WriteToFile(&TempFile, CSz("  ## "));
-          AllWritesSucceeded &= WriteToFile(&TempFile, Tag->Tag);
-          AllWritesSucceeded &= WriteToFile(&TempFile, CSz("\n"));
 
-          for (todo_iterator InnerIter = Iterator(&Tag->Todos);
-              IsValid(&InnerIter);
-              Advance(&InnerIter))
+          todo_iterator InnerIter = Iterator(&Tag->Todos);
+          if (IsValid(&InnerIter))
           {
-            todo* Todo = GET_ELEMENT(InnerIter);
-            if (Todo->FoundInCodebase)
-            {
-              AllWritesSucceeded &= WriteToFile(&TempFile, CSz("    - #"));
-              AllWritesSucceeded &= WriteToFile(&TempFile, Todo->Id);
-              AllWritesSucceeded &= WriteToFile(&TempFile, CSz(" "));
-              AllWritesSucceeded &= WriteToFile(&TempFile, Todo->Value);
-              AllWritesSucceeded &= WriteToFile(&TempFile, CSz("\n"));
-            }
-          }
+            AllWritesSucceeded &= WriteToFile(&TempFile, CSz("  ## "));
+            AllWritesSucceeded &= WriteToFile(&TempFile, Tag->Tag);
+            AllWritesSucceeded &= WriteToFile(&TempFile, CSz("\n"));
 
-          AllWritesSucceeded &= WriteToFile(&TempFile, CSz("\n"));
+            for (;
+                IsValid(&InnerIter);
+                Advance(&InnerIter))
+            {
+              todo* Todo = GET_ELEMENT(InnerIter);
+              if (Todo->FoundInCodebase)
+              {
+                AllWritesSucceeded &= WriteToFile(&TempFile, CSz("    - #"));
+                AllWritesSucceeded &= WriteToFile(&TempFile, Todo->Id);
+                AllWritesSucceeded &= WriteToFile(&TempFile, CSz(" "));
+                AllWritesSucceeded &= WriteToFile(&TempFile, Todo->Value);
+                AllWritesSucceeded &= WriteToFile(&TempFile, CSz("\n"));
+              }
+            }
+
+            AllWritesSucceeded &= WriteToFile(&TempFile, CSz("\n"));
+          }
         }
       }
     }

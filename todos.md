@@ -2,8 +2,6 @@
   ## immediate
     - #83 d_union-ify this
 
-  ## untagged
-
   ## font
     - #77 Axe this!
     - #140 Can we support these?
