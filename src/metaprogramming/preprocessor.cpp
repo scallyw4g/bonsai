@@ -2259,12 +2259,13 @@ ConcatTokensUntilNewline(c_parse_result* Parser, memory_arena* Memory)
 }
 
 function todo*
-GetExistingOrCreate(todo_stream* Stream, todo Todo, memory_arena* Memory)
+UpdateTodo(todo_stream* Stream, todo Todo, memory_arena* Memory)
 {
   todo* Result = StreamContains(Stream, Todo.Id);
   if (Result)
   {
     Result->Value = Todo.Value;
+    Result->FoundInCodebase = Todo.FoundInCodebase;
   }
   else
   {
@@ -2314,6 +2315,13 @@ EatWhitespace(c_parse_result* Parser)
 
 static u32 LargestIdFoundInFile = 0;
 
+function todo
+Todo(counted_string Id, counted_string Value, b32 FoundInCodebase)
+{
+  todo Result = { .Id = Id, .Value = Value, .FoundInCodebase = FoundInCodebase };
+  return Result;
+}
+
 function person_stream
 ParseAllTodosFromFile(counted_string Filename, memory_arena* Memory)
 {
@@ -2342,11 +2350,8 @@ ParseAllTodosFromFile(counted_string Filename, memory_arena* Memory)
         LargestIdFoundInFile = Max(LargestIdFoundInFile, ToU32(TodoId));
 
         counted_string TodoValue = Trim(ConcatTokensUntilNewline(Parser, Memory));
-        todo Todo = {
-          .Id = TodoId,
-          .Value = TodoValue
-        };
-        Push(&Tag->Todos, Todo, Memory);
+        todo NewTodo = Todo(TodoId, TodoValue, False);
+        Push(&Tag->Todos, NewTodo, Memory);
         EatWhitespace(Parser);
       }
 
@@ -2355,13 +2360,6 @@ ParseAllTodosFromFile(counted_string Filename, memory_arena* Memory)
   }
 
   return People;
-}
-
-function todo
-Todo(counted_string Id, counted_string Value )
-{
-  todo Result = { .Id = Id, .Value = Value };
-  return Result;
 }
 
 #ifndef EXCLUDE_PREPROCESSOR_MAIN
@@ -2455,7 +2453,6 @@ main(s32 ArgCount, const char** ArgStrings)
 
                 OptionalToken(Parser, CTokenType_Comma);
 
-                // TODO(Jesse, id: 114, tags: immediate): Impement NextTokenIs() !!
                 if (StringsMatch(PeekToken(Parser).Value, CSz("tags")))
                 {
                   if (GeneratedNewId)
@@ -2490,7 +2487,7 @@ main(s32 ArgCount, const char** ArgStrings)
                 {
                   counted_string* TodoTag = GET_ELEMENT(Iter);
                   tag* Tag = GetExistingOrCreate(&Person->Tags, *TodoTag, Memory);
-                  GetExistingOrCreate(&Tag->Todos, Todo(IdValue, TodoValue), Memory);
+                  UpdateTodo(&Tag->Todos, Todo(IdValue, TodoValue, True), Memory);
                 }
 
               }
@@ -2629,36 +2626,53 @@ main(s32 ArgCount, const char** ArgStrings)
     }
 
 
-    native_file TodoFile = OpenFile("todos.md");
-    ITERATE_OVER_AS(person, &People)
+    random_series Rng = {.Seed = 123125};
+    native_file TempFile = GetTempFile(&Rng, Memory);
+    b32 AllWritesSucceeded = TempFile.Handle ? True : False;
+    if (AllWritesSucceeded)
     {
-      person* Person = GET_ELEMENT(personIter);
-      WriteToFile(&TodoFile, CSz("# "));
-      WriteToFile(&TodoFile, Person->Name);
-      WriteToFile(&TodoFile, CSz("\n"));
-      ITERATE_OVER(tag, &Person->Tags)
+      ITERATE_OVER_AS(person, &People)
       {
-        tag* Tag = GET_ELEMENT(Iter);
-        WriteToFile(&TodoFile, CSz("  ## "));
-        WriteToFile(&TodoFile, Tag->Tag);
-        WriteToFile(&TodoFile, CSz("\n"));
-
-        for (todo_iterator InnerIter = Iterator(&Tag->Todos);
-            IsValid(&InnerIter);
-            Advance(&InnerIter))
+        person* Person = GET_ELEMENT(personIter);
+        AllWritesSucceeded &= WriteToFile(&TempFile, CSz("# "));
+        AllWritesSucceeded &= WriteToFile(&TempFile, Person->Name);
+        AllWritesSucceeded &= WriteToFile(&TempFile, CSz("\n"));
+        ITERATE_OVER(tag, &Person->Tags)
         {
-          todo* Todo = GET_ELEMENT(InnerIter);
-          WriteToFile(&TodoFile, CSz("    - #"));
-          WriteToFile(&TodoFile, Todo->Id);
-          WriteToFile(&TodoFile, CSz(" "));
-          WriteToFile(&TodoFile, Todo->Value);
-          WriteToFile(&TodoFile, CSz("\n"));
-        }
+          tag* Tag = GET_ELEMENT(Iter);
+          AllWritesSucceeded &= WriteToFile(&TempFile, CSz("  ## "));
+          AllWritesSucceeded &= WriteToFile(&TempFile, Tag->Tag);
+          AllWritesSucceeded &= WriteToFile(&TempFile, CSz("\n"));
 
-        WriteToFile(&TodoFile, CSz("\n"));
+          for (todo_iterator InnerIter = Iterator(&Tag->Todos);
+              IsValid(&InnerIter);
+              Advance(&InnerIter))
+          {
+            todo* Todo = GET_ELEMENT(InnerIter);
+            if (Todo->FoundInCodebase)
+            {
+              AllWritesSucceeded &= WriteToFile(&TempFile, CSz("    - #"));
+              AllWritesSucceeded &= WriteToFile(&TempFile, Todo->Id);
+              AllWritesSucceeded &= WriteToFile(&TempFile, CSz(" "));
+              AllWritesSucceeded &= WriteToFile(&TempFile, Todo->Value);
+              AllWritesSucceeded &= WriteToFile(&TempFile, CSz("\n"));
+            }
+          }
+
+          AllWritesSucceeded &= WriteToFile(&TempFile, CSz("\n"));
+        }
       }
     }
-    CloseFile(&TodoFile);
+    else
+    {
+      Error("Opening Tempfile");
+    }
+
+    if (AllWritesSucceeded)
+    {
+      Rename(TempFile, CSz("todos.md"));
+      CloseFile(&TempFile);
+    }
 
     Log("\n");
 

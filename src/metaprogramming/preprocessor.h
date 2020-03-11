@@ -205,6 +205,7 @@ struct todo
 {
   counted_string Id;
   counted_string Value;
+  b32 FoundInCodebase;
 };
 meta(generate_stream(todo))
 #include <metaprogramming/output/generate_stream_todo>
