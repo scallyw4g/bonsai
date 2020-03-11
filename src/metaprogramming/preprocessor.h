@@ -190,7 +190,7 @@ struct c_parse_result
   b32 Valid;
   c_token_cursor Tokens;
 
-  // NOTE(Jesse id: 154) This is pretty shitty because whenever we copy one of these
+  // TODO(Jesse id: 154) This is pretty shitty because whenever we copy one of these
   // structs this field has to be manually zeroed out ..
   c_token_cursor OutputTokens;
 
