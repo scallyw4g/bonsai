@@ -1,3 +1,3 @@
 #! /bin/bash
 
-find src -type f -print | xargs cat | wc -l
+find src -name \*.cpp -print -o -name \*.h -print | xargs cat | wc -l
