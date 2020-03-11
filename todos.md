@@ -1,7 +1,7 @@
 # Jesse
   ## immediate
     - #83 d_union-ify this
-    - #114 Impement NextTokenIs()
+    - #114 Impement NextTokenIs() !!
 
   ## font
     - #77 Axe this!

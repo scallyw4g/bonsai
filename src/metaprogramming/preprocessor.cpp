@@ -2629,34 +2629,36 @@ main(s32 ArgCount, const char** ArgStrings)
     }
 
 
+    native_file TodoFile = OpenFile("todos.md");
     ITERATE_OVER_AS(person, &People)
     {
       person* Person = GET_ELEMENT(personIter);
-      LogToConsole(CSz("# "));
-      LogToConsole(Person->Name);
-      LogToConsole(CSz("\n"));
+      WriteToFile(&TodoFile, CSz("# "));
+      WriteToFile(&TodoFile, Person->Name);
+      WriteToFile(&TodoFile, CSz("\n"));
       ITERATE_OVER(tag, &Person->Tags)
       {
         tag* Tag = GET_ELEMENT(Iter);
-        LogToConsole(CSz("  ## "));
-        LogToConsole(Tag->Tag);
-        LogToConsole(CSz("\n"));
+        WriteToFile(&TodoFile, CSz("  ## "));
+        WriteToFile(&TodoFile, Tag->Tag);
+        WriteToFile(&TodoFile, CSz("\n"));
 
         for (todo_iterator InnerIter = Iterator(&Tag->Todos);
             IsValid(&InnerIter);
             Advance(&InnerIter))
         {
           todo* Todo = GET_ELEMENT(InnerIter);
-          LogToConsole(CSz("    - #"));
-          LogToConsole(Todo->Id);
-          LogToConsole(CSz(" "));
-          LogToConsole(Todo->Value);
-          LogToConsole(CSz("\n"));
+          WriteToFile(&TodoFile, CSz("    - #"));
+          WriteToFile(&TodoFile, Todo->Id);
+          WriteToFile(&TodoFile, CSz(" "));
+          WriteToFile(&TodoFile, Todo->Value);
+          WriteToFile(&TodoFile, CSz("\n"));
         }
 
-        LogToConsole(CSz("\n"));
+        WriteToFile(&TodoFile, CSz("\n"));
       }
     }
+    CloseFile(&TodoFile);
 
     Log("\n");
 
