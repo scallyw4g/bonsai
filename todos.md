@@ -1,4 +1,8 @@
 # Jesse
+  ## immediate
+    - #83 d_union-ify this
+    - #114 Impement NextTokenIs()
+
   ## font
     - #77 Axe this!
     - #140 Can we support these?
@@ -85,10 +89,6 @@
   ## hashing
     - #82 257 seemed to produce slightly
     - #147 Profile this and see if it's reasonable
-
-  ## immediate
-    - #83 d_union-ify this
-    - #114 Impement NextTokenIs()
 
   ## opengl
     - #84 This only gets used when computing the shadow map, so I'm not even sure if it works ATM

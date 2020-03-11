@@ -2262,7 +2262,11 @@ function todo*
 GetExistingOrCreate(todo_stream* Stream, todo Todo, memory_arena* Memory)
 {
   todo* Result = StreamContains(Stream, Todo.Id);
-  if (!Result)
+  if (Result)
+  {
+    Result->Value = Todo.Value;
+  }
+  else
   {
     Push(Stream, Todo, Memory);
     Result = StreamContains(Stream, Todo.Id);
@@ -2451,13 +2455,14 @@ main(s32 ArgCount, const char** ArgStrings)
 
                 OptionalToken(Parser, CTokenType_Comma);
 
-                // TODO(Jesse, id: 114, tags: immediate): Impement NextTokenIs()
+                // TODO(Jesse, id: 114, tags: immediate): Impement NextTokenIs() !!
                 if (StringsMatch(PeekToken(Parser).Value, CSz("tags")))
                 {
                   if (GeneratedNewId)
                   {
                     Push(CToken(CTokenType_Comma), &Parser->OutputTokens);
                   }
+
                   RequireToken(Parser, CToken(CSz("tags")));
                   GotAnyTags = True;
                   RequireToken(Parser, CTokenType_Colon);
