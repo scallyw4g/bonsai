@@ -262,7 +262,7 @@ InitializeShadowBuffer(shadow_render_group *SG, memory_arena *GraphicsMemory, v2
   SG->ShadowMap = MakeDepthTexture(ShadowMapResolution, GraphicsMemory);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, SG->ShadowMap->ID, 0);
 
-  // TODO(Jesse, id: 119, tags: open_gl, es2): Not present on ES2 .. should we use them?
+  // TODO(Jesse, id: 119, tags: opengl, es2): Not present on ES2 .. should we use them?
   // No color output in the bound framebuffer, only depth.
   /* glDrawBuffer(GL_NONE); */
   /* glReadBuffer(GL_NONE); */

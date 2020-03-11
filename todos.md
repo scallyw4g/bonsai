@@ -2,9 +2,39 @@
   ## immediate
     - #83 d_union-ify this
 
-  ## font
-    - #77 Axe this!
-    - #140 Can we support these?
+  ## untagged
+    - #154 This is pretty shitty because whenever we copy one of these
+
+  ## high_priority
+    - #101 Profile and check collision rate of this!
+
+  ## format_counted_string
+    - #91 Jettison this .. Can it be metaprogrammed?
+
+  ## compiler_feature
+    - #42 Do we care about generating these?
+    - #99 Generate this?  Need a compiler feature to generate stuff from primitive types.
+
+  ## memory_consumption
+    - #85 Compress to 16 bit float?
+    - #86 Unneeded for projectiles. factor out of here?
+    - #138 32F is only necessary for reprojection of Position for
+
+  ## speed
+    - #87 Re-enable this
+    - #92 This could be optimized significantly
+    - #96 Vectorize for speed boost!
+    - #97 Vectorize for speed boost!
+    - #101 Profile and check collision rate of this!
+    - #106 Pass this in!
+    - #107 Can we compute this with MouseP to avoid a frame of input delay?
+    - #120 Allocate lights such that this swizzle is unneeded
+    - #127 Pretty sure we don't have to set the faces anymore??
+    - #128 Do culling on these as well?
+    - #129 Can we somehow atomically pull this one off the queue
+    - #132 Pretty sure we can do some XOR trickery or something
+    - #136 Why are these allocated on the heap?  Seems unnecessary..
+    - #139 Is this necessary to avoid some pointer aliasing bug?
 
   ## cleanup
     - #77 Axe this!
@@ -24,9 +54,9 @@
     - #144 This actually has nothing to do with the platform
     - #146 Make this return a counted string and everything that depends on
 
-  ## compiler_feature
-    - #42 Do we care about generating these?
-    - #99 Generate this?  Need a compiler feature to generate stuff from primitive types.
+  ## rng
+    - #82 257 seemed to produce slightly
+    - #95 This is LCG RNG - do we want a better one?
 
   ## metaprogramming
     - #42 Do we care about generating these?
@@ -59,6 +89,10 @@
     - #143 This could probably be made better by writing to a statically allocated buffer ..?
     - #146 Make this return a counted string and everything that depends on
 
+  ## font
+    - #77 Axe this!
+    - #140 Can we support these?
+
   ## over_allocation
     - #78 How should we actually set this?
     - #79 Can this just be a v3?
@@ -81,10 +115,6 @@
     - #81 Theres' a null terminated string-hash
     - #101 Profile and check collision rate of this!
 
-  ## rng
-    - #82 257 seemed to produce slightly
-    - #95 This is LCG RNG - do we want a better one?
-
   ## hashing
     - #82 257 seemed to produce slightly
     - #147 Profile this and see if it's reasonable
@@ -94,6 +124,7 @@
     - #135 Query max gpu textures?
     - #138 32F is only necessary for reprojection of Position for
     - #150 Should this be done elsewhere?
+    - #119 Not present on ES2 .. should we use them?
 
   ## completeness
     - #84 This only gets used when computing the shadow map, so I'm not even sure if it works ATM
@@ -102,29 +133,8 @@
   ## engine
     - #84 This only gets used when computing the shadow map, so I'm not even sure if it works ATM
 
-  ## memory_consumption
-    - #85 Compress to 16 bit float?
-    - #86 Unneeded for projectiles. factor out of here?
-    - #138 32F is only necessary for reprojection of Position for
-
   ## entity
     - #86 Unneeded for projectiles. factor out of here?
-
-  ## speed
-    - #87 Re-enable this
-    - #92 This could be optimized significantly
-    - #96 Vectorize for speed boost!
-    - #97 Vectorize for speed boost!
-    - #101 Profile and check collision rate of this!
-    - #106 Pass this in!
-    - #107 Can we compute this with MouseP to avoid a frame of input delay?
-    - #120 Allocate lights such that this swizzle is unneeded
-    - #127 Pretty sure we don't have to set the faces anymore??
-    - #128 Do culling on these as well?
-    - #129 Can we somehow atomically pull this one off the queue
-    - #132 Pretty sure we can do some XOR trickery or something
-    - #136 Why are these allocated on the heap?  Seems unnecessary..
-    - #139 Is this necessary to avoid some pointer aliasing bug?
 
   ## cache_friendly
     - #87 Re-enable this
@@ -132,9 +142,6 @@
   ## perlin
     - #88 Perlin.h depends on this .. rewrite it.
     - #89 Perlin.h depends on this .. rewrite it.
-
-  ## format_counted_string
-    - #91 Jettison this .. Can it be metaprogrammed?
 
   ## aabb
     - #92 This could be optimized significantly
@@ -162,9 +169,6 @@
     - #101 Profile and check collision rate of this!
 
   ## already_done_elsewhere
-    - #101 Profile and check collision rate of this!
-
-  ## high_priority
     - #101 Profile and check collision rate of this!
 
   ## math
@@ -203,9 +207,6 @@
     - #120 Allocate lights such that this swizzle is unneeded
     - #133 Allocate in a more sensible way?
     - #136 Why are these allocated on the heap?  Seems unnecessary..
-
-  ## open_gl
-    - #119 Not present on ES2 .. should we use them?
 
   ## es2
     - #119 Not present on ES2 .. should we use them?
@@ -269,7 +270,4 @@
 
   ## debug_lib
     - #153 Doing this properly requires some extra-credit work first.
-
-  ## untagged
-    - #154 This is pretty shitty because whenever we copy one of these
 
