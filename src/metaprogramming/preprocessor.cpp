@@ -2305,7 +2305,7 @@ GetExistingOrCreate(person_stream* People, counted_string PersonName, memory_are
 function void
 EatWhitespace(c_parse_result* Parser)
 {
-  while (IsWhitespace(PeekTokenRaw(Parser).Type))
+  while (Remaining(&Parser->Tokens) && IsWhitespace(PeekTokenRaw(Parser).Type))
   {
     PopTokenRaw(Parser);
   }
