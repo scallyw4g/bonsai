@@ -21,6 +21,8 @@ enum metaprogramming_directive
 
   enum_only                  = 0x0080,
   member_is_or_contains_type = 0x0100,
+
+  for_all_datatypes          = 0x0200,
 };
 meta(generate_string_table(metaprogramming_directive))
 #include <metaprogramming/output/generate_string_table_metaprogramming_directive>

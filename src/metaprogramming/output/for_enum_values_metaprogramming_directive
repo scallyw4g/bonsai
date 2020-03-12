@@ -19,3 +19,5 @@
 
         Result |= StringsMatch(ToString(member_is_or_contains_type), Identifier);
 
+        Result |= StringsMatch(ToString(for_all_datatypes), Identifier);
+
