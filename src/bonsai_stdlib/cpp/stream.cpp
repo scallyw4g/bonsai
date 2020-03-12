@@ -307,7 +307,7 @@ Dump(v3_cursor* Array)
 }
 
 void
-Dump(hashtable<xml_tag*> * Hash)
+Dump(xml_hashtable * Hash)
 {
   for (u32 ElementIndex = 0;
       ElementIndex < Hash->Size;

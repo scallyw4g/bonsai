@@ -407,9 +407,9 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes = Fa
 }
 
 function c_parse_result
-TokenizeString(counted_string Code, counted_string Filename, memory_arena* Memory)
+TokenizeString(counted_string Code, counted_string Filename, memory_arena* Memory, b32 IgnoreQuotes = False)
 {
-  c_parse_result Result = TokenizeAnsiStream(AnsiStream(Code, Filename), Memory);
+  c_parse_result Result = TokenizeAnsiStream(AnsiStream(Code, Filename), Memory, IgnoreQuotes);
   return Result;
 }
 
@@ -2137,8 +2137,9 @@ DoWorkToOutputThisStuff(c_parse_result* Parser, counted_string OutputForThisPars
     return;
   }
 
-  if (PeekToken(Parser).Type == CTokenType_Hash &&
-      PeekToken(Parser, 1) == CToken(CS("include")))
+  if (PeekTokenRaw(Parser).Type == CTokenType_Newline &&
+      PeekTokenRaw(Parser, 1).Type == CTokenType_Hash &&
+      PeekTokenRaw(Parser, 2) == CToken(CS("include")))
   {
     RequireToken(Parser, CToken(CTokenType_Hash));
     RequireToken(Parser, CToken(CS("include")));
@@ -2415,6 +2416,41 @@ GenerateOutfileNameFor(metaprogramming_directive Directive, counted_string Datat
 
 #ifndef EXCLUDE_PREPROCESSOR_MAIN
 
+struct replacement_pattern
+{
+  counted_string Match;
+  counted_string Replace;
+};
+
+function void
+DoReplacementPatternsOn(c_parse_result* BodyText, replacement_pattern* TypePattern, replacement_pattern* NamePattern, string_builder* Builder, memory_arena* Memory)
+{
+  Rewind(&BodyText->Tokens);
+  while (Remaining(&BodyText->Tokens))
+  {
+    c_token MemberBodyToken = PopTokenRaw(BodyText);
+
+    if (MemberBodyToken.Type == CTokenType_String)
+    {
+      c_parse_result StringParse = TokenizeString(MemberBodyToken.Value, BodyText->Filename, Memory, True);
+      DoReplacementPatternsOn(&StringParse, TypePattern, NamePattern, Builder, Memory);
+    }
+    else if (StringsMatch(MemberBodyToken.Value, TypePattern->Match))
+    {
+      Append(Builder, TypePattern->Replace);
+    }
+    else if (StringsMatch(MemberBodyToken.Value, NamePattern->Match))
+    {
+      Append(Builder, NamePattern->Replace);
+    }
+    else
+    {
+      Append(Builder, MemberBodyToken.Value);
+    }
+  }
+}
+
+
 #define SUCCESS_EXIT_CODE 0
 #define FAILURE_EXIT_CODE 1
 s32
@@ -2653,10 +2689,18 @@ main(s32 ArgCount, const char** ArgStrings)
                       else if (StringsMatch(BodyToken.Value, CSz("__")) &&
                                OptionalToken(BodyText, CTokenType_OpenParen))
                       {
-                        counted_string TypeReplacementPattern = RequireToken(BodyText, CTokenType_Identifier).Value;
+                        counted_string TypePattern = RequireToken(BodyText, CTokenType_Identifier).Value;
                         RequireToken(BodyText, CTokenType_Comma);
-                        counted_string NameReplacementPattern = RequireToken(BodyText, CTokenType_Identifier).Value;
+                        counted_string NamePattern = RequireToken(BodyText, CTokenType_Identifier).Value;
                         RequireToken(BodyText, CTokenType_CloseParen);
+
+                        replacement_pattern TypeReplacementPattern = {
+                          .Match = TypePattern,
+                        };
+
+                        replacement_pattern NameReplacementPattern = {
+                          .Match = NamePattern,
+                        };
 
                         c_parse_result MemberBodyText_ = GetBodyTextForNextScope(BodyText);
                         c_parse_result* MemberBodyText = &MemberBodyText_;
@@ -2666,25 +2710,9 @@ main(s32 ArgCount, const char** ArgStrings)
                           c_decl* Member = GET_ELEMENT(c_declIter);
                           if (Member->Type == type_c_decl_variable)
                           {
-                            counted_string MemberType = Member->c_decl_variable.Type;
-                            counted_string MemberName = Member->c_decl_variable.Name;
-                            Rewind(&MemberBodyText->Tokens);
-                            while (Remaining(&MemberBodyText->Tokens))
-                            {
-                              c_token MemberBodyToken = PopTokenRaw(MemberBodyText);
-                              if (StringsMatch(MemberBodyToken.Value, TypeReplacementPattern))
-                              {
-                                Append(&Builder, MemberType);
-                              }
-                              else if (StringsMatch(MemberBodyToken.Value, NameReplacementPattern))
-                              {
-                                Append(&Builder, MemberName);
-                              }
-                              else
-                              {
-                                Append(&Builder, MemberBodyToken.Value);
-                              }
-                            }
+                            TypeReplacementPattern.Replace = Member->c_decl_variable.Type;
+                            NameReplacementPattern.Replace = Member->c_decl_variable.Name;
+                            DoReplacementPatternsOn(MemberBodyText, &TypeReplacementPattern, &NameReplacementPattern, &Builder, Memory);
                           }
                         }
                       }
@@ -2696,19 +2724,9 @@ main(s32 ArgCount, const char** ArgStrings)
                     }
                   }
 
-                  counted_string Output_ = Finalize(&Builder, Memory);
-                  Print(Output_);
-
-
-                    /* ITERATE_OVER_AS(c_decl, &Struct->Fields) */
-                    /* { */
-                    /*   c_decl* Element = GET_ELEMENT(c_declIter); */
-                    /*   if (Element->Type == type_c_decl_variable) */
-                    /*   { */
-                    /*     counted_string Output = DoTokenSubstitutionForVariable(&BodyText, &Constraints, *Element, Memory); */
-                    /*     Print(Output); */
-                    /*   } */
-                    /* } */
+                  counted_string Code = Finalize(&Builder, Memory);
+                  counted_string OutfileName = GenerateOutfileNameFor(Directive, CSz("debug_print"), Memory);
+                  DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
 
                 } break;
 

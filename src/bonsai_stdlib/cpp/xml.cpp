@@ -1,3 +1,13 @@
+// TODO(Jesse tags: metaprogramming, hashtable): Generate this!
+function xml_hashtable
+AllocateHashtable(umm Count, memory_arena* Memory)
+{
+  xml_hashtable Result = {};
+  Result.Table = Allocate(xml_tag*, Memory, Count);
+  Result.Size = Count;
+  return Result;
+}
+
 inline counted_string*
 GetPropertyValue(xml_tag* Tag, counted_string PropertyName)
 {
@@ -141,7 +151,7 @@ AllocateXmlTokenStream(umm TokenCount, memory_arena* Memory)
   Result.End = Result.Start + TokenCount;
 
   // TODO(Jesse, id: 147, tags: hashing): Profile this and see if it's reasonable
-  Result.Hashes = AllocateHashtable<xml_tag*>(TokenCount/10, Memory);
+  Result.Hashes = AllocateHashtable(TokenCount/10, Memory);
 
   return Result;
 }

@@ -42,7 +42,6 @@
 #include <bonsai_stdlib/headers/memory_arena.h>
 #include <bonsai_stdlib/headers/platform_struct.h>
 #include <bonsai_stdlib/headers/heap_allocator.h>
-#include <bonsai_stdlib/headers/hashtable.h>
 #include <bonsai_stdlib/headers/gl.h>
 #include <bonsai_stdlib/headers/counted_string.h>
 #include <bonsai_stdlib/headers/random.h>
@@ -84,28 +83,21 @@
 #include <debug_system/headers/debug.h>
 
 
-meta( for_all_datatypes(
-  (StructName)
-  {
-    function void Print(StructName S)
+meta(
+  for_all_datatypes(
+    (StructName)
     {
-      __(MemberType, MemberName)
+      function void DebugPrint(StructName S)
       {
-        Print(MemberType);
-        Print(MemberName);
+        __(MemberType, MemberName)
+        {
+          DebugPrint("MemberName");
+          DebugPrint(S.MemberName);
+        }
       }
-
-      // do other random shit related to printing?
-
-      __(MemberType, MemberName)
-      {
-        Print(MemberType);
-        Print(MemberName);
-      }
-
     }
-  }
-))
+  )
+)
 
 
 #include <engine/api.h>
@@ -121,7 +113,6 @@ global_variable memory_arena* TranArena = &_TranArena;
 
 
 #include <bonsai_stdlib/cpp/debug_print.cpp>  // TODO(Jesse, id: 91, tags: cleanup, metaprogramming, format_counted_string): Jettison this .. Can it be metaprogrammed?
-#include <bonsai_stdlib/cpp/hashtable.cpp>
 #include <bonsai_stdlib/cpp/platform.cpp>
 #include <bonsai_stdlib/cpp/counted_string.cpp>
 #include <bonsai_stdlib/cpp/string_builder.cpp>

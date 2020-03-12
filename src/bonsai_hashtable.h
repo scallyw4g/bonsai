@@ -1,6 +1,5 @@
-template <typename T>
-struct hashtable
+struct xml_hashtable
 {
   umm Size;
-  T* Table;
+  xml_tag* Table;
 };

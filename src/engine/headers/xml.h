@@ -44,13 +44,19 @@ struct xml_tag
   xml_property** NextPropertySlot;
 };
 
+struct xml_hashtable
+{
+  umm Size;
+  xml_tag** Table;
+};
+
 struct xml_token_stream
 {
   xml_token* Start;
   xml_token* At;
   xml_token* End;
 
-  hashtable<xml_tag*> Hashes;
+  xml_hashtable Hashes;
 };
 
 struct xml_tag_stream
