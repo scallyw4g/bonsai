@@ -425,6 +425,7 @@ Memprotect(void* LastPage, umm PageSize, s32 Protection)
 function u8*
 PushSize(memory_arena *Arena, umm SizeIn, umm Alignment, b32 MemProtect)
 {
+  MemProtect = False;
   umm ToAlignment = Alignment - (SizeIn % Alignment);
   umm AlignCorrectedSizeIn = SizeIn;
 

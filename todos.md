@@ -1,12 +1,17 @@
 # Jesse
   ## immediate
     - #83 d_union-ify this
+    - #155 This should eat the comment if
+    - #156 This should actually concat all comments such that
+    - #157 Should support multi-line comments as well
+    - #159 Rename to Members
 
   ## untagged
     - #154 This is pretty shitty because whenever we copy one of these
 
   ## high_priority
     - #101 Profile and check collision rate of this!
+    - #158 Change to a string_builder
 
   ## format_counted_string
     - #91 Jettison this .. Can it be metaprogrammed?
@@ -53,6 +58,8 @@
     - #113 Remove this?
     - #144 This actually has nothing to do with the platform
     - #146 Make this return a counted string and everything that depends on
+    - #158 Change to a string_builder
+    - #159 Rename to Members
 
   ## rng
     - #82 257 seemed to produce slightly

@@ -84,6 +84,29 @@
 #include <debug_system/headers/debug.h>
 
 
+meta( for_all_datatypes(
+  (StructName)
+  {
+    function void Print(StructName S)
+    {
+      __(MemberType, MemberName)
+      {
+        Print(MemberType);
+        Print(MemberName);
+      }
+
+      // do other random shit related to printing?
+
+      __(MemberType, MemberName)
+      {
+        Print(MemberType);
+        Print(MemberName);
+      }
+
+    }
+  }
+))
+
 
 #include <engine/api.h>
 #include <net/network.h>

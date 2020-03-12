@@ -84,6 +84,7 @@ meta(
   d_union(c_decl_function,
   {
     c_decl_function_normal      enum_only,
+    c_decl_function_operator    enum_only,
     c_decl_function_constructor enum_only,
     c_decl_function_destructor  enum_only,
   })
@@ -110,7 +111,7 @@ struct c_decl_stream
 struct struct_def
 {
   counted_string Name;
-  c_decl_stream Fields;
+  c_decl_stream Fields; // TODO(Jesse id: 159, tags: immediate, cleanup) Rename to Members
 };
 meta(generate_stream(struct_def))
 #include <metaprogramming/output/generate_stream_struct_def>
