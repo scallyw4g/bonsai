@@ -271,7 +271,7 @@ ClearClickedFlags(input *Input)
       }
     )
   )
-#include <metaprogramming/output/for_members_in_input>
+#include <metaprogramming/output/for_members_in_input.h>
 }
 
 function void

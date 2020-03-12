@@ -279,26 +279,31 @@ struct debug_draw_call
 
 typedef b32 (*meta_comparator)(push_metadata*, push_metadata*);
 
-enum debug_recording_mode
-{
-  RecordingMode_Clear,
-  RecordingMode_Record,
-  RecordingMode_Playback,
+#if 0
 
-  RecordingMode_Count,
-};
+/* // TODO(Jesse, id: 161, tags: back_burner, debug_recording): Reinstate this! */
+/* enum debug_recording_mode */
+/* { */
+/*   RecordingMode_Clear, */
+/*   RecordingMode_Record, */
+/*   RecordingMode_Playback, */
 
-#define DEBUG_RECORD_INPUT_SIZE 3600
-struct debug_recording_state
-{
-  s32 FramesRecorded;
-  s32 FramesPlayedBack;
-  debug_recording_mode Mode;
+/*   RecordingMode_Count, */
+/* }; */
 
-  memory_arena RecordedMainMemory;
+/* #define DEBUG_RECORD_INPUT_SIZE 3600 */
+/* struct debug_recording_state */
+/* { */
+/*   s32 FramesRecorded; */
+/*   s32 FramesPlayedBack; */
+/*   debug_recording_mode Mode; */
 
-  hotkeys Inputs[DEBUG_RECORD_INPUT_SIZE];
-};
+/*   memory_arena RecordedMainMemory; */
+
+/*   hotkeys Inputs[DEBUG_RECORD_INPUT_SIZE]; */
+/* }; */
+
+#endif
 
 global_variable debug_profile_scope NullDebugProfileScope = {};
 

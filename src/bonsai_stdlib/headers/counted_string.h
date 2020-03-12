@@ -1,8 +1,8 @@
 
 meta(generate_stream(counted_string))
-#include <metaprogramming/output/generate_stream_counted_string>
+#include <metaprogramming/output/generate_stream_counted_string.h>
 meta(generate_cursor(counted_string))
-#include <metaprogramming/output/generate_cursor_counted_string>
+#include <metaprogramming/output/generate_cursor_counted_string.h>
 
 // TODO(Jesse, id: 99, tags: compiler_feature, metaprogramming): Generate this?  Need a compiler feature to generate stuff from primitive types.
 struct char_cursor

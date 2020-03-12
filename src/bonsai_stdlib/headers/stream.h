@@ -29,7 +29,7 @@ struct r32_stream
 };
 
 meta(generate_cursor(v3))
-#include <metaprogramming/output/generate_cursor_v3>
+#include <metaprogramming/output/generate_cursor_v3.h>
 
 template <typename element_t, typename stream_t>inline void
 Push(element_t Element, stream_t *Array)

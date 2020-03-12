@@ -344,7 +344,7 @@ CheckShadingLanguageVersion()
   return Result;
 }
 
-#if 0
+/*
 struct gl_extensions
 {
   PFNGLCREATESHADERPROC glCreateShader;
@@ -364,7 +364,7 @@ struct gl_extensions
   PFNGLGETUNIFORMLOCATIONPROC glGetUniformLocation;
   PFNGLGENFRAMEBUFFERSPROC glGenFramebuffers;
   PFNGLBINDFRAMEBUFFERPROC glBindFramebuffer;
-  /* PFNGLFRAMEBUFFERTEXTUREPROC glFramebufferTexture; */
+  PFNGLFRAMEBUFFERTEXTUREPROC glFramebufferTexture;
   PFNGLFRAMEBUFFERTEXTURE2DPROC glFramebufferTexture2D;
   PFNGLCHECKFRAMEBUFFERSTATUSPROC glCheckFramebufferStatus;
   PFNGLCOMPRESSEDTEXIMAGE2DPROC glCompressedTexImage2D;
@@ -389,4 +389,4 @@ struct gl_extensions
   // Platform specific (wgl / glX)
   PFNSWAPINTERVALPROC glSwapInterval;
 };
-#endif
+*/ 

@@ -1257,12 +1257,6 @@ SetWindowZDepths(ui_render_command_buffer *CommandBuffer)
   return;
 }
 
-struct find_command_result
-{
-  ui_render_command* Command;
-  u32 Index;
-};
-
 function find_command_result
 FindPreviousCommand(ui_render_command_buffer* CommandBuffer, ui_render_command_type CommandType, u32 StartingIndex)
 {
@@ -1321,7 +1315,7 @@ FindAbsoluteDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, u32 First
           }
         )
       )
-#include <metaprogramming/output/for_members_in_ui_render_command>
+#include <metaprogramming/output/for_members_in_ui_render_command.h>
 
       default: {} break;
     }

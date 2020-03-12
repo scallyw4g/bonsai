@@ -226,7 +226,7 @@ IsMetaprogrammingDirective(counted_string Identifier)
       }
     )
   )
-#include <metaprogramming/output/for_enum_values_metaprogramming_directive>
+#include <metaprogramming/output/for_enum_values_metaprogramming_directive.h>
 
   return Result;
 }
@@ -978,6 +978,7 @@ function b32
 Output(counted_string Code, counted_string OutputFilename, memory_arena* Memory, output_mode Mode = Output_NoOverwrite)
 {
   TIMED_FUNCTION();
+  Mode = Output_Unsafe;
   b32 Result = False;
 
   native_file TempFile = GetTempFile(&TempFileEntropy, Memory);
@@ -997,7 +998,6 @@ Output(counted_string Code, counted_string OutputFilename, memory_arena* Memory,
           if (StringsMatch(Trim(Code), Trim(FileContents)))
           {
             Info("File contents matched output for %.*s", (u32)OutputFilename.Count, OutputFilename.Start);
-
           }
           else
           {
@@ -1135,10 +1135,13 @@ DumpCDeclStreamToConsole(c_decl_stream* Stream)
 }
 
 function struct_def
-StructDef(counted_string Name)
+StructDef(counted_string Name, counted_string Sourcefile)
 {
-  struct_def Result = {};
-  Result.Name = Name;
+  struct_def Result = {
+    .Name = Name,
+    .DefinedInFile = Sourcefile
+  };
+ 
   return Result;
 }
 
@@ -1698,7 +1701,7 @@ function struct_def
 ParseStructBody(c_parse_result* Parser, counted_string StructName, memory_arena* Memory)
 {
   TIMED_FUNCTION();
-  struct_def Result = StructDef(StructName);
+  struct_def Result = StructDef(StructName, Parser->Filename);
 
   RequireToken(Parser, CTokenType_OpenBrace);
 
@@ -1779,17 +1782,17 @@ ParseDatatypesFor(c_parse_result* Parser, program_datatypes* Datatypes, memory_a
         else if (StringsMatch(Token.Value, CS("typedef")))
         {
           // typedef struct { .... } the_struct_name;
-          if (PeekToken(Parser) == CToken(CS("struct")))
+          if (OptionalToken(Parser, CToken(CS("struct"))))
           {
-            RequireToken(Parser, CToken((CS("struct"))));
             if (PeekToken(Parser) == CToken(CTokenType_OpenBrace))
             {
               struct_def S = ParseStructBody(Parser, CS(""), Memory);
-              Push(&Datatypes->Structs, S, Memory);
 
               RequireToken(Parser, CTokenType_CloseBrace);
               S.Name = RequireToken(Parser, CTokenType_Identifier).Value;
               RequireToken(Parser, CTokenType_Semicolon);
+
+              Push(&Datatypes->Structs, S, Memory);
             }
             else
             {
@@ -2342,7 +2345,6 @@ GetExistingOrCreate(person_stream* People, counted_string PersonName, memory_are
   return Person;
 }
 
-
 function void
 EatWhitespace(c_parse_result* Parser)
 {
@@ -2409,12 +2411,11 @@ GenerateOutfileNameFor(metaprogramming_directive Directive, counted_string Datat
   Append(&OutfileBuilder, ToString(Directive));
   Append(&OutfileBuilder, CS("_"));
   Append(&OutfileBuilder, DatatypeName);
-
+  Append(&OutfileBuilder, CS(".h"));
   counted_string Result = Finalize(&OutfileBuilder, Memory);
+
   return Result;
 }
-
-#ifndef EXCLUDE_PREPROCESSOR_MAIN
 
 struct replacement_pattern
 {
@@ -2426,6 +2427,19 @@ function void
 DoReplacementPatternsOn(c_parse_result* BodyText, replacement_pattern* TypePattern, replacement_pattern* NamePattern, string_builder* Builder, memory_arena* Memory)
 {
   Rewind(&BodyText->Tokens);
+
+  Assert(TypePattern->Replace.Start);
+  Assert(NamePattern->Replace.Start);
+
+  Assert(TypePattern->Match.Start);
+  Assert(NamePattern->Match.Start);
+
+  Assert(TypePattern->Replace.Count);
+  Assert(NamePattern->Replace.Count);
+
+  Assert(TypePattern->Match.Count);
+  Assert(NamePattern->Match.Count);
+
   while (Remaining(&BodyText->Tokens))
   {
     c_token MemberBodyToken = PopTokenRaw(BodyText);
@@ -2451,6 +2465,9 @@ DoReplacementPatternsOn(c_parse_result* BodyText, replacement_pattern* TypePatte
 }
 
 
+#include <bonsai_stdlib/headers/debug_print.h>
+
+#ifndef EXCLUDE_PREPROCESSOR_MAIN
 #define SUCCESS_EXIT_CODE 0
 #define FAILURE_EXIT_CODE 1
 s32
@@ -2667,8 +2684,8 @@ main(s32 ArgCount, const char** ArgStrings)
                   counted_string StructNameReplacementPattern = RequireToken(Parser, CTokenType_Identifier).Value;
                   RequireToken(Parser, CTokenType_CloseParen);
 
-                  c_parse_result BodyText_ = GetBodyTextForNextScope(Parser);
-                  c_parse_result* BodyText = &BodyText_;
+                  c_parse_result StructBodyText_ = GetBodyTextForNextScope(Parser);
+                  c_parse_result* StructBodyText = &StructBodyText_;
 
                   string_builder Builder = {};
 
@@ -2678,21 +2695,24 @@ main(s32 ArgCount, const char** ArgStrings)
                   {
                     struct_def* Struct = &Iter.At->Element;
 
-                    Rewind(&BodyText->Tokens);
-                    while (Remaining(&BodyText->Tokens))
+                    Rewind(&StructBodyText->Tokens);
+                    Append(&Builder, CSz("\n      // Source File : "));
+                    Append(&Builder, Struct->DefinedInFile);
+                    while (Remaining(&StructBodyText->Tokens))
                     {
-                      c_token BodyToken = PopTokenRaw(BodyText);
+                      c_token BodyToken = PopTokenRaw(StructBodyText);
                       if (StringsMatch(BodyToken.Value, StructNameReplacementPattern))
                       {
+                        Assert(Struct->Name.Count);
                         Append(&Builder, Struct->Name);
                       }
                       else if (StringsMatch(BodyToken.Value, CSz("__")) &&
-                               OptionalToken(BodyText, CTokenType_OpenParen))
+                               OptionalToken(StructBodyText, CTokenType_OpenParen))
                       {
-                        counted_string TypePattern = RequireToken(BodyText, CTokenType_Identifier).Value;
-                        RequireToken(BodyText, CTokenType_Comma);
-                        counted_string NamePattern = RequireToken(BodyText, CTokenType_Identifier).Value;
-                        RequireToken(BodyText, CTokenType_CloseParen);
+                        counted_string TypePattern = RequireToken(StructBodyText, CTokenType_Identifier).Value;
+                        RequireToken(StructBodyText, CTokenType_Comma);
+                        counted_string NamePattern = RequireToken(StructBodyText, CTokenType_Identifier).Value;
+                        RequireToken(StructBodyText, CTokenType_CloseParen);
 
                         replacement_pattern TypeReplacementPattern = {
                           .Match = TypePattern,
@@ -2702,7 +2722,7 @@ main(s32 ArgCount, const char** ArgStrings)
                           .Match = NamePattern,
                         };
 
-                        c_parse_result MemberBodyText_ = GetBodyTextForNextScope(BodyText);
+                        c_parse_result MemberBodyText_ = GetBodyTextForNextScope(StructBodyText);
                         c_parse_result* MemberBodyText = &MemberBodyText_;
 
                         ITERATE_OVER_AS(c_decl, &Struct->Fields)
@@ -2743,22 +2763,11 @@ main(s32 ArgCount, const char** ArgStrings)
                     {
                       counted_string EnumString = GenerateEnumDef(&dUnion, Memory);
                       Append(&CodeBuilder, EnumString);
-                      c_parse_result EnumParse = TokenizeString(EnumString, OutfileName, Memory);
-                      RequireToken(&EnumParse, CToken(CS("enum")));
-                      enum_def E = ParseEnum(&EnumParse, Memory);
-                      Push(&Datatypes.Enums, E, Memory);
-                      Assert( GetEnumByType(&Datatypes.Enums, E.Name) );
                     }
 
                     {
                       counted_string StructString = GenerateStructDef(&dUnion, Memory);
                       Append(&CodeBuilder, StructString);
-                      c_parse_result StructParse = TokenizeString(StructString, OutfileName, Memory);
-                      RequireToken(&StructParse, CToken(CS("struct")));
-                      counted_string StructName = RequireToken(&StructParse, CTokenType_Identifier).Value;
-                      struct_def S = ParseStructBody(&StructParse, StructName, Memory);
-                      Push(&Datatypes.Structs, S, Memory);
-                      Assert( GetStructByType(&Datatypes.Structs, StructName) );
                     }
 
                     counted_string Code = Finalize(&CodeBuilder, Memory);
@@ -2856,6 +2865,9 @@ main(s32 ArgCount, const char** ArgStrings)
 
     DumpStringStreamToConsole(&SuccessFiles);
     DumpStringStreamToConsole(&FailFiles);
+
+    /* quaternion Thing = {}; */
+    /* Print(Thing); */
   }
   else
   {
@@ -2892,5 +2904,4 @@ main(s32 ArgCount, const char** ArgStrings)
   return Result;
 }
 #endif
-
 

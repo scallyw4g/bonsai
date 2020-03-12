@@ -160,10 +160,6 @@ struct ui_render_command_window_end
   window_layout* Window;
 };
 
-struct ui_render_command_column_end
-{
-};
-
 struct ui_render_command_column_start
 {
   layout Layout;
@@ -244,7 +240,7 @@ meta(
     ui_render_command_table_start,
 
     ui_render_command_column_start,
-    ui_render_command_column_end,
+    ui_render_command_column_end enum_only,
 
     ui_render_command_text,
     ui_render_command_text_at,
@@ -259,7 +255,7 @@ meta(
     ui_render_command_table_end enum_only,
   })
 )
-#include <metaprogramming/output/d_union_ui_render_command>
+#include <metaprogramming/output/d_union_ui_render_command.h>
 
 
 
@@ -316,6 +312,12 @@ struct find_button_start_result
 {
   u32 Index;
   ui_render_command_button_start* Command;
+};
+
+struct find_command_result
+{
+  ui_render_command* Command;
+  u32 Index;
 };
 
 

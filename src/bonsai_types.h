@@ -83,22 +83,6 @@
 #include <debug_system/headers/debug.h>
 
 
-meta(
-  for_all_datatypes(
-    (StructName)
-    {
-      function void DebugPrint(StructName S)
-      {
-        __(MemberType, MemberName)
-        {
-          DebugPrint("MemberName");
-          DebugPrint(S.MemberName);
-        }
-      }
-    }
-  )
-)
-
 
 #include <engine/api.h>
 #include <net/network.h>
@@ -149,3 +133,4 @@ global_variable memory_arena* TranArena = &_TranArena;
 #include <engine/cpp/physics.cpp>
 #include <engine/cpp/entity.cpp>
 #include <bonsai_asset_loaders.cpp>
+

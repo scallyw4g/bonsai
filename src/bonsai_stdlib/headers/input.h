@@ -61,6 +61,7 @@ struct hotkeys
   b32 Player_Fire;
   b32 Player_Proton;
   b32 Player_Spawn;
+
 };
 
 inline v3

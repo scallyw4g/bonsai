@@ -269,11 +269,10 @@ fi
 
 function RunEntireBuild {
 
+  # git checkout "src/metaprogramming/output"
+
   # rm -Rf $META_OUT
   # mkdir $META_OUT
-
-  git checkout "src/metaprogramming/output"
-
   # SOURCE_FILES="$(find src -type f -name "*.h" -and -not -wholename "src/metaprogramming/defines.h" | tr '\n' ' ') $(find src -type f -name "*.cpp" | tr '\n' ' ')"
   # ColorizeTitle "Preprocessing"
   # bin/preprocessor $SOURCE_FILES
@@ -297,13 +296,13 @@ function RunEntireBuild {
   #   exit 1
   # fi
 
-  if [ "$EMCC" == "1" ]; then
-    BuildWithEmcc
-  else
-    BuildWithClang
-  fi
+  # if [ "$EMCC" == "1" ]; then
+  #   BuildWithEmcc
+  # else
+  #   BuildWithClang
+  # fi
 
-  ./scripts/run_tests.sh
+  # ./scripts/run_tests.sh
 
   # SOURCE_FILES="$(find src -type f -name "*.h" -and -not -wholename "src/metaprogramming/defines.h" | tr '\n' ' ') $(find src -type f -name "*.cpp" | tr '\n' ' ')"
   # ColorizeTitle "Preprocessing"

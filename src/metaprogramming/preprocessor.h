@@ -25,10 +25,10 @@ enum metaprogramming_directive
   for_all_datatypes          = 0x0200,
 };
 meta(generate_string_table(metaprogramming_directive))
-#include <metaprogramming/output/generate_string_table_metaprogramming_directive>
+#include <metaprogramming/output/generate_string_table_metaprogramming_directive.h>
 
 meta(generate_value_table(metaprogramming_directive))
-#include <metaprogramming/output/generate_value_table_metaprogramming_directive>
+#include <metaprogramming/output/generate_value_table_metaprogramming_directive.h>
 
 enum c_token_type
 {
@@ -78,7 +78,7 @@ enum c_token_type
   CTokenType_EOF           = EOF,
 };
 meta(generate_string_table(c_token_type))
-#include <metaprogramming/output/generate_string_table_c_token_type>
+#include <metaprogramming/output/generate_string_table_c_token_type.h>
 
 meta(
   d_union(c_decl_function,
@@ -89,7 +89,7 @@ meta(
     c_decl_function_destructor  enum_only,
   })
 )
-#include <metaprogramming/output/d_union_c_decl_function>
+#include <metaprogramming/output/d_union_c_decl_function.h>
 
 struct c_decl_variable
 {
@@ -111,13 +111,14 @@ struct c_decl_stream
 struct struct_def
 {
   counted_string Name;
+  counted_string DefinedInFile;
   c_decl_stream Fields; // TODO(Jesse id: 159, tags: immediate, cleanup) Rename to Members
 };
 meta(generate_stream(struct_def))
-#include <metaprogramming/output/generate_stream_struct_def>
+#include <metaprogramming/output/generate_stream_struct_def.h>
 
 meta(generate_cursor(struct_def))
-#include <metaprogramming/output/generate_cursor_struct_def>
+#include <metaprogramming/output/generate_cursor_struct_def.h>
 
 struct c_decl_union
 {
@@ -132,10 +133,10 @@ meta(
     c_decl_union,
   })
 )
-#include <metaprogramming/output/d_union_c_decl>
+#include <metaprogramming/output/d_union_c_decl.h>
 
 meta(generate_cursor(c_decl))
-#include <metaprogramming/output/generate_cursor_c_decl>
+#include <metaprogramming/output/generate_cursor_c_decl.h>
 
 struct enum_field
 {
@@ -143,7 +144,7 @@ struct enum_field
   counted_string Value;
 };
 meta(generate_stream(enum_field))
-#include <metaprogramming/output/generate_stream_enum_field>
+#include <metaprogramming/output/generate_stream_enum_field.h>
 
 struct d_union_member
 {
@@ -152,7 +153,7 @@ struct d_union_member
   d_union_flags Flags;
 };
 meta(generate_stream(d_union_member))
-#include <metaprogramming/output/generate_stream_d_union_member>
+#include <metaprogramming/output/generate_stream_d_union_member.h>
 
 struct c_decl_stream_chunk
 {
@@ -166,9 +167,9 @@ struct enum_def
   enum_field_stream Fields;
 };
 meta(generate_stream(enum_def))
-#include <metaprogramming/output/generate_stream_enum_def>
+#include <metaprogramming/output/generate_stream_enum_def.h>
 meta(generate_cursor(enum_def))
-#include <metaprogramming/output/generate_cursor_enum_def>
+#include <metaprogramming/output/generate_cursor_enum_def.h>
 
 struct c_token
 {
@@ -176,7 +177,7 @@ struct c_token
   counted_string Value;
 };
 meta(generate_cursor(c_token))
-#include <metaprogramming/output/generate_cursor_c_token>
+#include <metaprogramming/output/generate_cursor_c_token.h>
 
 struct d_union_decl
 {
@@ -201,7 +202,7 @@ struct c_parse_result
   u32 LineNumber;
 };
 meta(generate_cursor(c_parse_result))
-#include <metaprogramming/output/generate_cursor_c_parse_result>
+#include <metaprogramming/output/generate_cursor_c_parse_result.h>
 
 
 struct todo
@@ -211,7 +212,7 @@ struct todo
   b32 FoundInCodebase;
 };
 meta(generate_stream(todo))
-#include <metaprogramming/output/generate_stream_todo>
+#include <metaprogramming/output/generate_stream_todo.h>
 
 struct tag
 {
@@ -219,7 +220,7 @@ struct tag
   todo_stream Todos;
 };
 meta(generate_stream(tag))
-#include <metaprogramming/output/generate_stream_tagged_todo>
+#include <metaprogramming/output/generate_stream_tag.h>
 
 struct person
 {
@@ -227,7 +228,7 @@ struct person
   tag_stream Tags;
 };
 meta(generate_stream(person))
-#include <metaprogramming/output/generate_stream_person>
+#include <metaprogramming/output/generate_stream_person.h>
 
 
 

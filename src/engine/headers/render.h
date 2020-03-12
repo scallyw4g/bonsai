@@ -123,12 +123,6 @@ struct g_buffer_render_group
   // Cached here because this one gets pre-multiplied by the NdcToScreenSpace bias matrix
   m4 ShadowMVP;
   m4 ViewProjection;
-
-#if BONSAI_INTERNAL
-  shader DebugColorTextureShader;
-  shader DebugNormalTextureShader;
-  shader DebugPositionTextureShader;
-#endif
 };
 
 struct shadow_render_group
