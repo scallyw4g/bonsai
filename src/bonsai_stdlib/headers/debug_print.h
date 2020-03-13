@@ -99,7 +99,8 @@ DebugPrint(semaphore E, u32 Depth = 0)
   printf("(semaphore) : (%u) ? %u", *(u32*)&E, Depth);
 }
 
-meta(
+#if 0
+_meta(
   for_all_datatypes(
     exclude
 
@@ -122,7 +123,7 @@ meta(
 )
 #include <metaprogramming/output/for_all_datatypes_debug_print_prototypes.h>
 
-meta(
+_meta(
   for_all_datatypes(
     exclude
 
@@ -158,37 +159,41 @@ meta(
   )
 )
 #include <metaprogramming/output/for_all_datatypes_debug_print_pointer.h>
+#endif
 
 meta(
   for_all_datatypes(
-    exclude
+    exclude(
+      hotkeys xml_hashtable xml_token_stream
 
-    hotkeys xml_hashtable xml_token_stream
+      thread_startup_params
+      mutex address network_connection
+      debug_state
+      perlin_noise
 
-    thread_startup_params
-    mutex address network_connection
-    debug_state
-    perlin_noise
+      counted_string
+      thing1 thing2 thing3 thing4
+      test_struct_8 test_struct_16 test_struct_32 test_struct_64 test_struct_128 test_struct_1k
+      head_table ttf_vert ttf_contour simple_glyph font_table ttf offset_subtable
+    ),
 
-    counted_string
-    thing1 thing2 thing3 thing4
-    test_struct_8 test_struct_16 test_struct_32 test_struct_64 test_struct_128 test_struct_1k
-    head_table ttf_vert ttf_contour simple_glyph font_table ttf offset_subtable
-
-    (StructName)
     {
-      function void DebugPrint(StructName S, u32 Depth)
+      __(StructName)
       {
-        DebugPrint("struct StructName\n");
-
-        __(MemberType, MemberName)
+        function void DebugPrint(StructName S, u32 Depth)
         {
-          DebugPrint("MemberName = ", Depth);
-          DebugPrint(S.MemberName, Depth+1);
-          DebugPrint("\n");
+          DebugPrint("struct StructName\n");
+
+          __(MemberType, MemberName)
+          {
+            DebugPrint("MemberName = ", Depth);
+            DebugPrint(S.MemberName, Depth+1);
+            DebugPrint("\n");
+          }
         }
       }
     }
+
   )
 )
 #include <metaprogramming/output/for_all_datatypes_debug_print_by_value.h>

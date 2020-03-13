@@ -2416,21 +2416,25 @@ GenerateOutfileNameFor(metaprogramming_directive Directive, counted_string Datat
 }
 
 function void
-DoReplacementPatternsOn(c_parse_result* BodyText, replacement_pattern* TypePattern, replacement_pattern* NamePattern, string_builder* Builder, memory_arena* Memory)
+DoMemberRelacementPatterns(string_builder* Builder, memory_arena* Memory, c_parse_result* BodyText, replacement_pattern* TypePattern = 0, replacement_pattern* NamePattern = 0)
 {
   Rewind(&BodyText->Tokens);
 
-  Assert(TypePattern->Replace.Start);
-  Assert(NamePattern->Replace.Start);
+  if (TypePattern)
+  {
+    Assert(TypePattern->Replace.Start);
+    Assert(TypePattern->Match.Start);
+    Assert(TypePattern->Replace.Count);
+    Assert(TypePattern->Match.Count);
+  }
 
-  Assert(TypePattern->Match.Start);
-  Assert(NamePattern->Match.Start);
-
-  Assert(TypePattern->Replace.Count);
-  Assert(NamePattern->Replace.Count);
-
-  Assert(TypePattern->Match.Count);
-  Assert(NamePattern->Match.Count);
+  if (NamePattern)
+  {
+    Assert(NamePattern->Replace.Start);
+    Assert(NamePattern->Match.Start);
+    Assert(NamePattern->Replace.Count);
+    Assert(NamePattern->Match.Count);
+  }
 
   while (Remaining(&BodyText->Tokens))
   {
@@ -2439,13 +2443,13 @@ DoReplacementPatternsOn(c_parse_result* BodyText, replacement_pattern* TypePatte
     if (MemberBodyToken.Type == CTokenType_String)
     {
       c_parse_result StringParse = TokenizeString(MemberBodyToken.Value, BodyText->Filename, Memory, True);
-      DoReplacementPatternsOn(&StringParse, TypePattern, NamePattern, Builder, Memory);
+      DoMemberRelacementPatterns(Builder, Memory, &StringParse, TypePattern, NamePattern);
     }
-    else if (StringsMatch(MemberBodyToken.Value, TypePattern->Match))
+    else if (TypePattern && StringsMatch(MemberBodyToken.Value, TypePattern->Match))
     {
       Append(Builder, TypePattern->Replace);
     }
-    else if (StringsMatch(MemberBodyToken.Value, NamePattern->Match))
+    else if (NamePattern && StringsMatch(MemberBodyToken.Value, NamePattern->Match))
     {
       Append(Builder, NamePattern->Replace);
     }
@@ -2457,7 +2461,59 @@ DoReplacementPatternsOn(c_parse_result* BodyText, replacement_pattern* TypePatte
 }
 
 
-#include <bonsai_stdlib/headers/debug_print.h>
+function void
+DoStructReplacementPatterns(string_builder* OutputBuilder, c_parse_result* BodyText, replacement_pattern StructNamePattern, struct_def* Struct, memory_arena* Memory)
+{
+  Rewind(&BodyText->Tokens);
+  while (Remaining(&BodyText->Tokens))
+  {
+    c_token BodyToken = PopTokenRaw(BodyText);
+
+    if (StringsMatch(BodyToken.Value, StructNamePattern.Match))
+    {
+      Append(OutputBuilder, StructNamePattern.Replace);
+    }
+    else if (StringsMatch(BodyToken.Value, CSz("__")) &&
+             OptionalToken(BodyText, CTokenType_OpenParen))
+    {
+      counted_string TypePattern = RequireToken(BodyText, CTokenType_Identifier).Value;
+      RequireToken(BodyText, CTokenType_Comma);
+      counted_string NamePattern = RequireToken(BodyText, CTokenType_Identifier).Value;
+      RequireToken(BodyText, CTokenType_CloseParen);
+
+      replacement_pattern TypeReplacementPattern = {
+        .Match = TypePattern,
+      };
+
+      replacement_pattern NameReplacementPattern = {
+        .Match = NamePattern,
+      };
+
+      c_parse_result MemberBodyText_ = GetBodyTextForNextScope(BodyText);
+      c_parse_result* MemberBodyText = &MemberBodyText_;
+
+      ITERATE_OVER_AS(c_decl, &Struct->Fields)
+      {
+        c_decl* Member = GET_ELEMENT(c_declIter);
+        if (Member->Type == type_c_decl_variable)
+        {
+          counted_string MemberType = Member->c_decl_variable.Type;
+          counted_string MemberName = Member->c_decl_variable.Name;
+
+          TypeReplacementPattern.Replace = MemberType;
+          NameReplacementPattern.Replace = MemberName;
+          DoMemberRelacementPatterns(OutputBuilder, Memory, MemberBodyText, &TypeReplacementPattern, &NameReplacementPattern);
+        }
+      }
+    }
+    else
+    {
+      Append(OutputBuilder, BodyToken.Value);
+    }
+  }
+}
+
+/* #include <bonsai_stdlib/headers/debug_print.h> */
 
 #ifndef EXCLUDE_PREPROCESSOR_MAIN
 #define SUCCESS_EXIT_CODE 0
@@ -2675,6 +2731,7 @@ main(s32 ArgCount, const char** ArgStrings)
                   counted_string_stream Excludes = {};
                   if (OptionalToken(Parser, CToken(CSz("exclude"))))
                   {
+                    RequireToken(Parser, CTokenType_OpenParen);
                     while (PeekToken(Parser).Type == CTokenType_Identifier)
                     {
                       counted_string Exclude = RequireToken(Parser, CTokenType_Identifier).Value;
@@ -2682,15 +2739,13 @@ main(s32 ArgCount, const char** ArgStrings)
                       OptionalToken(Parser, CTokenType_Comma);
                     }
                   }
-
-                  RequireToken(Parser, CTokenType_OpenParen);
-                  counted_string StructNameReplacementPattern = RequireToken(Parser, CTokenType_Identifier).Value;
                   RequireToken(Parser, CTokenType_CloseParen);
+                  RequireToken(Parser, CTokenType_Comma);
 
-                  c_parse_result StructBodyText_ = GetBodyTextForNextScope(Parser);
-                  c_parse_result* StructBodyText = &StructBodyText_;
+                  c_parse_result TopLevelScope_ = GetBodyTextForNextScope(Parser);
+                  c_parse_result* TopLevelScope = &TopLevelScope_;
 
-                  string_builder Builder = {};
+                  string_builder OutputBuilder = {};
 
                   for (struct_def_iterator Iter = Iterator(&Datatypes.Structs);
                       IsValid(&Iter);
@@ -2699,60 +2754,37 @@ main(s32 ArgCount, const char** ArgStrings)
                     struct_def* Struct = &Iter.At->Element;
                     if (!StreamContains(&Excludes, Struct->Name))
                     {
-                      Rewind(&StructBodyText->Tokens);
-                      Append(&Builder, CSz("\n      // Source File : "));
-                      Append(&Builder, Struct->DefinedInFile);
-                      while (Remaining(&StructBodyText->Tokens))
+                      Rewind(&TopLevelScope->Tokens);
+                      while (Remaining(&TopLevelScope->Tokens))
                       {
-                        c_token BodyToken = PopTokenRaw(StructBodyText);
-                        if (StringsMatch(BodyToken.Value, StructNameReplacementPattern))
-                        {
-                          Assert(Struct->Name.Count);
-                          Append(&Builder, Struct->Name);
-                        }
-                        else if (StringsMatch(BodyToken.Value, CSz("__")) &&
-                                 OptionalToken(StructBodyText, CTokenType_OpenParen))
-                        {
-                          counted_string TypePattern = RequireToken(StructBodyText, CTokenType_Identifier).Value;
-                          RequireToken(StructBodyText, CTokenType_Comma);
-                          counted_string NamePattern = RequireToken(StructBodyText, CTokenType_Identifier).Value;
-                          RequireToken(StructBodyText, CTokenType_CloseParen);
+                        c_token BodyToken = PopTokenRaw(TopLevelScope);
 
-                          replacement_pattern TypeReplacementPattern = {
-                            .Match = TypePattern,
+                        if (StringsMatch(BodyToken.Value, CSz("__")))
+                        {
+                          RequireToken(TopLevelScope, CTokenType_OpenParen);
+                          counted_string StructNameReplacementPattern = RequireToken(TopLevelScope, CTokenType_Identifier).Value;
+                          RequireToken(TopLevelScope, CTokenType_CloseParen);
+
+                          c_parse_result StructScope_ = GetBodyTextForNextScope(TopLevelScope);
+                          c_parse_result* StructScope = &StructScope_;
+
+                          replacement_pattern StructPattern = {
+                            .Match = StructNameReplacementPattern,
+                            .Replace = Struct->Name,
                           };
 
-                          replacement_pattern NameReplacementPattern = {
-                            .Match = NamePattern,
-                          };
-
-                          c_parse_result MemberBodyText_ = GetBodyTextForNextScope(StructBodyText);
-                          c_parse_result* MemberBodyText = &MemberBodyText_;
-
-                          ITERATE_OVER_AS(c_decl, &Struct->Fields)
-                          {
-                            c_decl* Member = GET_ELEMENT(c_declIter);
-                            if (Member->Type == type_c_decl_variable)
-                            {
-                              counted_string MemberType = Member->c_decl_variable.Type;
-                              counted_string MemberName = Member->c_decl_variable.Name;
-
-                              TypeReplacementPattern.Replace = MemberType;
-                              NameReplacementPattern.Replace = MemberName;
-                              DoReplacementPatternsOn(MemberBodyText, &TypeReplacementPattern, &NameReplacementPattern, &Builder, Memory);
-                            }
-                          }
+                          DoStructReplacementPatterns(&OutputBuilder, StructScope, StructPattern, Struct, Memory);
                         }
                         else
                         {
-                          Append(&Builder, BodyToken.Value);
+                          Append(&OutputBuilder, BodyToken.Value);
                         }
 
                       }
                     }
                   }
 
-                  counted_string Code = Finalize(&Builder, Memory);
+                  counted_string Code = Finalize(&OutputBuilder, Memory);
                   counted_string OutfileName = GenerateOutfileNameFor(Directive, CSz("debug_print"), Memory);
                   DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
 
