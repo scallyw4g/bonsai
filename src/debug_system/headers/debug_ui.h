@@ -393,7 +393,6 @@ UiStyleFromLightestColor(v3 Color)
   return Style;
 }
 
-
 function window_layout
 WindowLayout(const char* Title, v2 Basis, v2 MaxClip = V2(1800, 800))
 {
@@ -408,7 +407,47 @@ WindowLayout(const char* Title, v2 Basis, v2 MaxClip = V2(1800, 800))
   return Window;
 }
 
-v2 GetAbsoluteMaxClip(window_layout* Window);
+v2
+GetAbsoluteAt(layout *Layout)
+{
+  v2 Result = Layout ? Layout->Basis + Layout->At : V2(0);
+  return Result;
+}
+
+v2
+GetAbsoluteDrawBoundsMin(layout *Layout)
+{
+  v2 Result = Layout ? Layout->Basis + Layout->DrawBounds.Min : V2(0);
+  return Result;
+}
+
+v2
+GetAbsoluteDrawBoundsMax(layout *Layout)
+{
+  v2 Result = Layout ? Layout->Basis + Layout->DrawBounds.Max : V2(0);
+  return Result;
+}
+
+rect2
+GetAbsoluteDrawBounds(layout *Layout)
+{
+  rect2 Result = RectMinMax( GetAbsoluteDrawBoundsMin(Layout), GetAbsoluteDrawBoundsMax(Layout) );
+  return Result;
+}
+
+v2
+GetAbsoluteMaxClip(window_layout *Window)
+{
+  v2 Result = Window? Window->MaxClip + Window->Basis : DISABLE_CLIPPING;
+  return Result;
+}
+
+rect2
+GetBounds(window_layout* Window)
+{
+  rect2 Result = RectMinMax(Window->Basis, GetAbsoluteMaxClip(Window));
+  return Result;
+}
 
 function rect2
 GetWindowBounds(window_layout *Window)

@@ -99,26 +99,29 @@ DebugPrint(semaphore E, u32 Depth = 0)
   printf("(semaphore) : (%u) ? %u", *(u32*)&E, Depth);
 }
 
-_meta(
+meta(
   for_all_datatypes(
-    exclude
+    exclude(
+      hotkeys xml_hashtable xml_token_stream
 
-    hotkeys xml_hashtable xml_token_stream
+      thread_startup_params
+      mutex address network_connection
+      debug_state
+      perlin_noise
 
-    thread_startup_params
-    mutex address network_connection
-    debug_state
-    perlin_noise
-
-    counted_string
-    thing1 thing2 thing3 thing4
-    test_struct_8 test_struct_16 test_struct_32 test_struct_64 test_struct_128 test_struct_1k
-    head_table ttf_vert ttf_contour simple_glyph font_table ttf offset_subtable
-
-    __(StructName) {
-      function void DebugPrint(StructName* S, u32 Depth = 0);
-      function void DebugPrint(StructName S, u32 Depth = 0);
-    })
+      counted_string
+      thing1 thing2 thing3 thing4
+      test_struct_8 test_struct_16 test_struct_32 test_struct_64 test_struct_128 test_struct_1k
+      head_table ttf_vert ttf_contour simple_glyph font_table ttf offset_subtable
+    ),
+    {
+      __(StructName)
+      {
+        function void DebugPrint(StructName* S, u32 Depth = 0);
+        function void DebugPrint(StructName S, u32 Depth = 0);
+      }
+    }
+  )
 )
 #include <metaprogramming/output/for_all_datatypes_debug_print_prototypes.h>
 
@@ -137,13 +140,12 @@ meta(
       test_struct_8 test_struct_16 test_struct_32 test_struct_64 test_struct_128 test_struct_1k
       head_table ttf_vert ttf_contour simple_glyph font_table ttf offset_subtable
     ),
-
     {
       __(StructName)
       {
         function void DebugPrint(StructName S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("StructName\n", Depth);
           __(MemberType, MemberName)
           {
             DebugPrint("MemberName = ", Depth);
@@ -174,5 +176,5 @@ meta(
 
   )
 )
-#include <metaprogramming/output/for_all_datatypes_debug_print_by_value.h>
+#include <metaprogramming/output/for_all_datatypes_debug_print_functions.h>
 
