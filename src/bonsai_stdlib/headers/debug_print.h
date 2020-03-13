@@ -99,6 +99,9 @@ meta( for_all_datatypes( (StructName) {
 
 meta(
   for_all_datatypes(
+    exclude
+    counted_string,
+    test_struct_1k
     (StructName)
     {
       function void DebugPrint(StructName S)
