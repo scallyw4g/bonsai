@@ -15,7 +15,6 @@ struct tag_stream
 function void
 Push(tag_stream* Stream, tag Element, memory_arena* Memory)
 {
-  // TODO(Jesse, id: 170, tags: metaprogramming): Can we use Allocate() here instead?
   tag_stream_chunk* NextChunk = (tag_stream_chunk*)PushStruct(Memory, sizeof(tag_stream_chunk), 1, 1);
   NextChunk->Element = Element;
 

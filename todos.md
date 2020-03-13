@@ -74,21 +74,8 @@
     - #111 Proper expression parsing.  ie: enum_value_name = (1 << 4) or enum_value_name = SOME_MACRO(thing, ding)
     - #121 Need a way of dynamically allocating more of these on demand
     - #160 Generate this!
-    - #162 Can we use Allocate() here instead?
-    - #163 Can we use Allocate() here instead?
-    - #164 Can we use Allocate() here instead?
-    - #165 Can we use Allocate() here instead?
-    - #166 Can we use Allocate() here instead?
-    - #167 Can we use Allocate() here instead?
-    - #168 Can we use Allocate() here instead?
-    - #169 Can we use Allocate() here instead?
-    - #170 Can we use Allocate() here instead?
-    - #171 Can we use Allocate() here instead?
-    - #172 Can we use Allocate() here instead?
-    - #173 Can we use Allocate() here instead?
-    - #174 Can we use Allocate() here instead?
-    - #175 Can we use Allocate() here instead?
-    - #176 Can we use Allocate() here instead?
+    - #180 Can we use Allocate() here instead?
+    - #181 Can we use Allocate() here instead?
 
   ## robustness
     - #78 How should we actually set this?
@@ -133,7 +120,7 @@
     - #80 This could be factored out of here if xml_tag::Properties
     - #111 Proper expression parsing.  ie: enum_value_name = (1 << 4) or enum_value_name = SOME_MACRO(thing, ding)
     - #117 Transient arena for this instead of stack allocation ?
-    - #161 Reinstate this!
+    - #161 Reinstate this! */
 
   ## string_hash
     - #81 Theres' a null terminated string-hash
@@ -299,5 +286,5 @@
     - #160 Generate this!
 
   ## debug_recording
-    - #161 Reinstate this!
+    - #161 Reinstate this! */
 

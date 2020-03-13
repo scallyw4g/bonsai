@@ -15,7 +15,6 @@ struct d_union_member_stream
 function void
 Push(d_union_member_stream* Stream, d_union_member Element, memory_arena* Memory)
 {
-  // TODO(Jesse, id: 167, tags: metaprogramming): Can we use Allocate() here instead?
   d_union_member_stream_chunk* NextChunk = (d_union_member_stream_chunk*)PushStruct(Memory, sizeof(d_union_member_stream_chunk), 1, 1);
   NextChunk->Element = Element;
 

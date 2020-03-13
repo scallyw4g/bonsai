@@ -15,7 +15,6 @@ struct todo_stream
 function void
 Push(todo_stream* Stream, todo Element, memory_arena* Memory)
 {
-  // TODO(Jesse, id: 176, tags: metaprogramming): Can we use Allocate() here instead?
   todo_stream_chunk* NextChunk = (todo_stream_chunk*)PushStruct(Memory, sizeof(todo_stream_chunk), 1, 1);
   NextChunk->Element = Element;
 

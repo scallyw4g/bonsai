@@ -9,7 +9,6 @@ struct struct_def_cursor
 function struct_def_cursor
 StructDefCursor(umm ElementCount, memory_arena* Memory)
 {
-  // TODO(Jesse, id: 173, tags: metaprogramming): Can we use Allocate() here instead?
   struct_def* Start = (struct_def*)PushStruct(Memory, sizeof(struct_def), 1, 1);
   struct_def_cursor Result = {
     .Start = Start,

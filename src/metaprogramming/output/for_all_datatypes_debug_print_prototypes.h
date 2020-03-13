@@ -1,7 +1,4 @@
 
-      // Source File : src/bonsai_hashtable.h
-      function void DebugPrint(xml_hashtable S);
-
       // Source File : src/debug_system/headers/debug.h
       function void DebugPrint(cycle_range S);
 
@@ -40,9 +37,6 @@
 
       // Source File : src/debug_system/headers/debug.h
       function void DebugPrint(called_function S);
-
-      // Source File : src/debug_system/headers/debug.h
-      function void DebugPrint(debug_state S);
 
       // Source File : src/debug_system/headers/debug.h
       function void DebugPrint(debug_draw_call S);
@@ -305,9 +299,6 @@
       // Source File : src/net/network.h
       function void DebugPrint(socket_t S);
 
-      // Source File : src/net/network.h
-      function void DebugPrint(network_connection S);
-
       // Source File : src/engine/headers/camera.h
       function void DebugPrint(plane S);
 
@@ -355,12 +346,6 @@
 
       // Source File : src/engine/headers/xml.h
       function void DebugPrint(xml_tag S);
-
-      // Source File : src/engine/headers/xml.h
-      function void DebugPrint(xml_hashtable S);
-
-      // Source File : src/engine/headers/xml.h
-      function void DebugPrint(xml_token_stream S);
 
       // Source File : src/engine/headers/xml.h
       function void DebugPrint(xml_tag_stream S);
@@ -458,9 +443,6 @@
       // Source File : src/engine/api.h
       function void DebugPrint(thread_local_state S);
 
-      // Source File : src/engine/api.h
-      function void DebugPrint(thread_startup_params S);
-
       // Source File : src/bonsai_stdlib/headers/stream.h
       function void DebugPrint(u32_stream S);
 
@@ -491,23 +473,11 @@
       // Source File : src/bonsai_stdlib/headers/input.h
       function void DebugPrint(input S);
 
-      // Source File : src/bonsai_stdlib/headers/input.h
-      function void DebugPrint(hotkeys S);
-
       // Source File : src/bonsai_stdlib/headers/work_queue.h
       function void DebugPrint(work_queue S);
 
       // Source File : src/bonsai_stdlib/headers/string_builder.h
       function void DebugPrint(string_builder S);
-
-      // Source File : src/bonsai_stdlib/headers/primitives.h
-      function void DebugPrint(counted_string S);
-
-      // Source File : src/bonsai_stdlib/headers/platform_struct.h
-      function void DebugPrint(platform S);
-
-      // Source File : src/bonsai_stdlib/headers/perlin.h
-      function void DebugPrint(perlin_noise S);
 
       // Source File : src/bonsai_stdlib/headers/matrix.h
       function void DebugPrint(m4 S);
@@ -563,61 +533,6 @@
       // Source File : src/engine/cpp/world_chunk.cpp
       function void DebugPrint(plane_computation S);
 
-#if 0
-      // Source File : src/tests/allocation.cpp
-      function void DebugPrint(test_struct_1k S);
-
-      // Source File : src/tests/allocation.cpp
-      function void DebugPrint(test_struct_128 S);
-
-      // Source File : src/tests/allocation.cpp
-      function void DebugPrint(test_struct_32 S);
-
-      // Source File : src/tests/allocation.cpp
-      function void DebugPrint(test_struct_64 S);
-
-      // Source File : src/tests/allocation.cpp
-      function void DebugPrint(test_struct_8 S);
-
-      // Source File : src/tests/allocation.cpp
-      function void DebugPrint(test_struct_16 S);
-
-      // Source File : src/tests/fixtures/preprocessor_datatypes.cpp
-      function void DebugPrint(thing1 S);
-
-      // Source File : src/tests/fixtures/preprocessor_datatypes.cpp
-      function void DebugPrint(thing2 S);
-
-      // Source File : src/tests/fixtures/preprocessor_datatypes.cpp
-      function void DebugPrint(thing3 S);
-
-      // Source File : src/tests/fixtures/preprocessor_datatypes.cpp
-      function void DebugPrint(thing4 S);
-#endif
-
-#if 0
-      // Source File : src/font/ttf.cpp
-      function void DebugPrint(head_table S);
-
-      // Source File : src/font/ttf.cpp
-      function void DebugPrint(ttf_vert S);
-
-      // Source File : src/font/ttf.cpp
-      function void DebugPrint(ttf_contour S);
-
-      // Source File : src/font/ttf.cpp
-      function void DebugPrint(simple_glyph S);
-
-      // Source File : src/font/ttf.cpp
-      function void DebugPrint(font_table S);
-
-      // Source File : src/font/ttf.cpp
-      function void DebugPrint(ttf S);
-
-      // Source File : src/font/ttf.cpp
-      function void DebugPrint(offset_subtable S);
-#endif
-
       // Source File : src/bonsai_stdlib/cpp/bitmap.cpp
       function void DebugPrint(bitmap_image_header S);
 
@@ -626,16 +541,4 @@
 
       // Source File : src/bonsai_stdlib/cpp/bitmap.cpp
       function void DebugPrint(bitmap S);
-
-      // Source File : d_union_ui_render_command.h
-      function void DebugPrint(ui_render_command S);
-
-      // Source File : d_union_c_decl_function.h
-      function void DebugPrint(c_decl_function S);
-
-      // Source File : d_union_c_decl.h
-      function void DebugPrint(c_decl S);
-
-      // Source File : d_union_work_queue_entry.h
-      function void DebugPrint(work_queue_entry S);
 

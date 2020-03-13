@@ -91,17 +91,40 @@ DebugPrint(const char* E)
   printf("%s", E);
 }
 
-meta( for_all_datatypes( (StructName) {
+meta(
+  for_all_datatypes(
+    exclude
+
+    platform hotkeys xml_hashtable xml_token_stream
+
+    thing1 thing2 thing3 thing4
+    test_struct_8 test_struct_16 test_struct_32 test_struct_64 test_struct_128 test_struct_1k
+    head_table ttf_vert ttf_contour simple_glyph font_table ttf offset_subtable
+
+    counted_string
+    mutex address network_connection
+    debug_state
+    perlin_noise platform thread_startup_params
+    (StructName) {
       function void DebugPrint(StructName S);
-  })
+    })
 )
 #include <metaprogramming/output/for_all_datatypes_debug_print_prototypes.h>
 
 meta(
   for_all_datatypes(
     exclude
-    counted_string,
-    test_struct_1k
+
+    platform hotkeys xml_hashtable xml_token_stream
+
+    thing1 thing2 thing3 thing4
+    test_struct_8 test_struct_16 test_struct_32 test_struct_64 test_struct_128 test_struct_1k
+    head_table ttf_vert ttf_contour simple_glyph font_table ttf offset_subtable
+
+    counted_string
+    mutex address network_connection
+    debug_state
+    perlin_noise platform thread_startup_params
     (StructName)
     {
       function void DebugPrint(StructName S)

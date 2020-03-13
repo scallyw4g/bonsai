@@ -1950,11 +1950,11 @@ struct %.*s_cursor
 
   counted_string ConstructorName = ToCapitalCase(DatatypeName, Memory);
   counted_string ConstructorDef = FormatCountedString(Memory,
+  // TODO(Jesse, id: 180, tags: metaprogramming): Can we use Allocate() here instead?
 CSz(R"INLINE_CODE(
 function %.*s_cursor
 %.*sCursor(umm ElementCount, memory_arena* Memory)
 {
-  // TODO(Jesse, tags: metaprogramming): Can we use Allocate() here instead?
   %.*s* Start = (%.*s*)PushStruct(Memory, sizeof(%.*s), 1, 1);
   %.*s_cursor Result = {
     .Start = Start,
@@ -2032,11 +2032,11 @@ struct %.*s_stream
    StructName.Count, StructName.Start);
 
   counted_string PushCode = FormatCountedString(Memory,
+  // TODO(Jesse, id: 181, tags: metaprogramming): Can we use Allocate() here instead?
 CSz(R"INLINE_CODE(
 function void
 Push(%.*s_stream* Stream, %.*s Element, memory_arena* Memory)
 {
-  // TODO(Jesse, tags: metaprogramming): Can we use Allocate() here instead?
   %.*s_stream_chunk* NextChunk = (%.*s_stream_chunk*)PushStruct(Memory, sizeof(%.*s_stream_chunk), 1, 1);
   NextChunk->Element = Element;
 
@@ -2698,12 +2698,11 @@ main(s32 ArgCount, const char** ArgStrings)
                   counted_string_stream Excludes = {};
                   if (OptionalToken(Parser, CToken(CSz("exclude"))))
                   {
-                    counted_string FirstExclude = RequireToken(Parser, CTokenType_Identifier).Value;
-                    Push(&Excludes, FirstExclude, Memory);
-                    while (OptionalToken(Parser, CTokenType_Comma))
+                    while (PeekToken(Parser).Type == CTokenType_Identifier)
                     {
                       counted_string Exclude = RequireToken(Parser, CTokenType_Identifier).Value;
                       Push(&Excludes, Exclude, Memory);
+                      OptionalToken(Parser, CTokenType_Comma);
                     }
                   }
 
