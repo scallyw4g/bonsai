@@ -2460,7 +2460,6 @@ DoMemberRelacementPatterns(string_builder* Builder, memory_arena* Memory, c_pars
   }
 }
 
-
 function void
 DoStructReplacementPatterns(string_builder* OutputBuilder, c_parse_result* BodyText, replacement_pattern StructNamePattern, struct_def* Struct, memory_arena* Memory)
 {
@@ -2469,7 +2468,12 @@ DoStructReplacementPatterns(string_builder* OutputBuilder, c_parse_result* BodyT
   {
     c_token BodyToken = PopTokenRaw(BodyText);
 
-    if (StringsMatch(BodyToken.Value, StructNamePattern.Match))
+    if (BodyToken.Type == CTokenType_String)
+    {
+      c_parse_result StringParse = TokenizeString(BodyToken.Value, BodyText->Filename, Memory, True);
+      DoStructReplacementPatterns(OutputBuilder, &StringParse, StructNamePattern, Struct, Memory);
+    }
+    else if (StringsMatch(BodyToken.Value, StructNamePattern.Match))
     {
       Append(OutputBuilder, StructNamePattern.Replace);
     }

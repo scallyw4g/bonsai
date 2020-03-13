@@ -2,7 +2,7 @@
       
         function void DebugPrint(cycle_range S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct cycle_range\n");
           
             DebugPrint("StartCycle = ", Depth);
             DebugPrint(S.StartCycle, Depth+1);
@@ -20,7 +20,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("cycle_range\n", Depth);
             
               DebugPrint("StartCycle = ", Depth);
               DebugPrint(S->StartCycle, Depth+1);
@@ -38,7 +38,7 @@
       
         function void DebugPrint(memory_arena_stats S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct memory_arena_stats\n");
           
             DebugPrint("Allocations = ", Depth);
             DebugPrint(S.Allocations, Depth+1);
@@ -64,7 +64,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("memory_arena_stats\n", Depth);
             
               DebugPrint("Allocations = ", Depth);
               DebugPrint(S->Allocations, Depth+1);
@@ -90,7 +90,7 @@
       
         function void DebugPrint(min_max_avg_dt S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct min_max_avg_dt\n");
           
             DebugPrint("Min = ", Depth);
             DebugPrint(S.Min, Depth+1);
@@ -112,7 +112,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("min_max_avg_dt\n", Depth);
             
               DebugPrint("Min = ", Depth);
               DebugPrint(S->Min, Depth+1);
@@ -134,7 +134,7 @@
       
         function void DebugPrint(debug_ui_render_group S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct debug_ui_render_group\n");
           
             DebugPrint("GameGeo = ", Depth);
             DebugPrint(S.GameGeo, Depth+1);
@@ -200,7 +200,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("debug_ui_render_group\n", Depth);
             
               DebugPrint("GameGeo = ", Depth);
               DebugPrint(S->GameGeo, Depth+1);
@@ -266,7 +266,7 @@
       
         function void DebugPrint(debug_profile_scope S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct debug_profile_scope\n");
           
             DebugPrint("CycleCount = ", Depth);
             DebugPrint(S.CycleCount, Depth+1);
@@ -304,7 +304,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("debug_profile_scope\n", Depth);
             
               DebugPrint("CycleCount = ", Depth);
               DebugPrint(S->CycleCount, Depth+1);
@@ -342,7 +342,7 @@
       
         function void DebugPrint(unique_debug_profile_scope S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct unique_debug_profile_scope\n");
           
             DebugPrint("Name = ", Depth);
             DebugPrint(S.Name, Depth+1);
@@ -380,7 +380,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("unique_debug_profile_scope\n", Depth);
             
               DebugPrint("Name = ", Depth);
               DebugPrint(S->Name, Depth+1);
@@ -418,7 +418,7 @@
       
         function void DebugPrint(debug_scope_tree S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct debug_scope_tree\n");
           
             DebugPrint("Root = ", Depth);
             DebugPrint(S.Root, Depth+1);
@@ -444,7 +444,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("debug_scope_tree\n", Depth);
             
               DebugPrint("Root = ", Depth);
               DebugPrint(S->Root, Depth+1);
@@ -470,7 +470,7 @@
       
         function void DebugPrint(debug_thread_state S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct debug_thread_state\n");
           
             DebugPrint("Memory = ", Depth);
             DebugPrint(S.Memory, Depth+1);
@@ -508,7 +508,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("debug_thread_state\n", Depth);
             
               DebugPrint("Memory = ", Depth);
               DebugPrint(S->Memory, Depth+1);
@@ -546,7 +546,7 @@
       
         function void DebugPrint(registered_memory_arena S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct registered_memory_arena\n");
           
             DebugPrint("Arena = ", Depth);
             DebugPrint(S.Arena, Depth+1);
@@ -568,7 +568,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("registered_memory_arena\n", Depth);
             
               DebugPrint("Arena = ", Depth);
               DebugPrint(S->Arena, Depth+1);
@@ -590,7 +590,7 @@
       
         function void DebugPrint(selected_memory_arena S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct selected_memory_arena\n");
           
             DebugPrint("ArenaHash = ", Depth);
             DebugPrint(S.ArenaHash, Depth+1);
@@ -608,7 +608,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("selected_memory_arena\n", Depth);
             
               DebugPrint("ArenaHash = ", Depth);
               DebugPrint(S->ArenaHash, Depth+1);
@@ -626,7 +626,7 @@
       
         function void DebugPrint(selected_arenas S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct selected_arenas\n");
           
             DebugPrint("Count = ", Depth);
             DebugPrint(S.Count, Depth+1);
@@ -644,7 +644,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("selected_arenas\n", Depth);
             
               DebugPrint("Count = ", Depth);
               DebugPrint(S->Count, Depth+1);
@@ -662,7 +662,7 @@
       
         function void DebugPrint(frame_stats S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct frame_stats\n");
           
             DebugPrint("TotalCycles = ", Depth);
             DebugPrint(S.TotalCycles, Depth+1);
@@ -684,7 +684,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("frame_stats\n", Depth);
             
               DebugPrint("TotalCycles = ", Depth);
               DebugPrint(S->TotalCycles, Depth+1);
@@ -706,7 +706,7 @@
       
         function void DebugPrint(called_function S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct called_function\n");
           
             DebugPrint("Name = ", Depth);
             DebugPrint(S.Name, Depth+1);
@@ -724,7 +724,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("called_function\n", Depth);
             
               DebugPrint("Name = ", Depth);
               DebugPrint(S->Name, Depth+1);
@@ -742,7 +742,7 @@
       
         function void DebugPrint(debug_draw_call S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct debug_draw_call\n");
           
             DebugPrint("Caller = ", Depth);
             DebugPrint(S.Caller, Depth+1);
@@ -764,7 +764,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("debug_draw_call\n", Depth);
             
               DebugPrint("Caller = ", Depth);
               DebugPrint(S->Caller, Depth+1);
@@ -786,7 +786,7 @@
       
         function void DebugPrint(debug_timed_function S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct debug_timed_function\n");
           
             DebugPrint("Scope = ", Depth);
             DebugPrint(S.Scope, Depth+1);
@@ -804,7 +804,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("debug_timed_function\n", Depth);
             
               DebugPrint("Scope = ", Depth);
               DebugPrint(S->Scope, Depth+1);
@@ -822,7 +822,7 @@
       
         function void DebugPrint(window_layout S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct window_layout\n");
           
             DebugPrint("Title = ", Depth);
             DebugPrint(S.Title, Depth+1);
@@ -868,7 +868,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("window_layout\n", Depth);
             
               DebugPrint("Title = ", Depth);
               DebugPrint(S->Title, Depth+1);
@@ -914,7 +914,7 @@
       
         function void DebugPrint(font S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct font\n");
           
             DebugPrint("Size = ", Depth);
             DebugPrint(S.Size, Depth+1);
@@ -928,7 +928,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("font\n", Depth);
             
               DebugPrint("Size = ", Depth);
               DebugPrint(S->Size, Depth+1);
@@ -942,7 +942,7 @@
       
         function void DebugPrint(ui_element_reference S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct ui_element_reference\n");
           
             DebugPrint("Index = ", Depth);
             DebugPrint(S.Index, Depth+1);
@@ -956,7 +956,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("ui_element_reference\n", Depth);
             
               DebugPrint("Index = ", Depth);
               DebugPrint(S->Index, Depth+1);
@@ -970,7 +970,7 @@
       
         function void DebugPrint(ui_style S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct ui_style\n");
           
             DebugPrint("Color = ", Depth);
             DebugPrint(S.Color, Depth+1);
@@ -1008,7 +1008,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("ui_style\n", Depth);
             
               DebugPrint("Color = ", Depth);
               DebugPrint(S->Color, Depth+1);
@@ -1046,7 +1046,7 @@
       
         function void DebugPrint(layout S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct layout\n");
           
             DebugPrint("Basis = ", Depth);
             DebugPrint(S.Basis, Depth+1);
@@ -1076,7 +1076,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("layout\n", Depth);
             
               DebugPrint("Basis = ", Depth);
               DebugPrint(S->Basis, Depth+1);
@@ -1106,7 +1106,7 @@
       
         function void DebugPrint(ui_render_command_border S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct ui_render_command_border\n");
           
             DebugPrint("Window = ", Depth);
             DebugPrint(S.Window, Depth+1);
@@ -1128,7 +1128,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("ui_render_command_border\n", Depth);
             
               DebugPrint("Window = ", Depth);
               DebugPrint(S->Window, Depth+1);
@@ -1150,7 +1150,7 @@
       
         function void DebugPrint(ui_render_command_window_start S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct ui_render_command_window_start\n");
           
             DebugPrint("Layout = ", Depth);
             DebugPrint(S.Layout, Depth+1);
@@ -1168,7 +1168,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("ui_render_command_window_start\n", Depth);
             
               DebugPrint("Layout = ", Depth);
               DebugPrint(S->Layout, Depth+1);
@@ -1186,7 +1186,7 @@
       
         function void DebugPrint(ui_render_command_window_end S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct ui_render_command_window_end\n");
           
             DebugPrint("Window = ", Depth);
             DebugPrint(S.Window, Depth+1);
@@ -1200,7 +1200,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("ui_render_command_window_end\n", Depth);
             
               DebugPrint("Window = ", Depth);
               DebugPrint(S->Window, Depth+1);
@@ -1214,7 +1214,7 @@
       
         function void DebugPrint(ui_render_command_column_start S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct ui_render_command_column_start\n");
           
             DebugPrint("Layout = ", Depth);
             DebugPrint(S.Layout, Depth+1);
@@ -1244,7 +1244,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("ui_render_command_column_start\n", Depth);
             
               DebugPrint("Layout = ", Depth);
               DebugPrint(S->Layout, Depth+1);
@@ -1274,7 +1274,7 @@
       
         function void DebugPrint(ui_render_command_text S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct ui_render_command_text\n");
           
             DebugPrint("Layout = ", Depth);
             DebugPrint(S.Layout, Depth+1);
@@ -1296,7 +1296,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("ui_render_command_text\n", Depth);
             
               DebugPrint("Layout = ", Depth);
               DebugPrint(S->Layout, Depth+1);
@@ -1318,7 +1318,7 @@
       
         function void DebugPrint(ui_render_command_text_at S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct ui_render_command_text_at\n");
           
             DebugPrint("Text = ", Depth);
             DebugPrint(S.Text, Depth+1);
@@ -1340,7 +1340,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("ui_render_command_text_at\n", Depth);
             
               DebugPrint("Text = ", Depth);
               DebugPrint(S->Text, Depth+1);
@@ -1362,7 +1362,7 @@
       
         function void DebugPrint(ui_render_command_untextured_quad S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct ui_render_command_untextured_quad\n");
           
             DebugPrint("Layout = ", Depth);
             DebugPrint(S.Layout, Depth+1);
@@ -1392,7 +1392,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("ui_render_command_untextured_quad\n", Depth);
             
               DebugPrint("Layout = ", Depth);
               DebugPrint(S->Layout, Depth+1);
@@ -1422,7 +1422,7 @@
       
         function void DebugPrint(ui_render_command_untextured_quad_at S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct ui_render_command_untextured_quad_at\n");
           
             DebugPrint("Layout = ", Depth);
             DebugPrint(S.Layout, Depth+1);
@@ -1448,7 +1448,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("ui_render_command_untextured_quad_at\n", Depth);
             
               DebugPrint("Layout = ", Depth);
               DebugPrint(S->Layout, Depth+1);
@@ -1474,7 +1474,7 @@
       
         function void DebugPrint(ui_render_command_textured_quad S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct ui_render_command_textured_quad\n");
           
             DebugPrint("Layout = ", Depth);
             DebugPrint(S.Layout, Depth+1);
@@ -1496,7 +1496,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("ui_render_command_textured_quad\n", Depth);
             
               DebugPrint("Layout = ", Depth);
               DebugPrint(S->Layout, Depth+1);
@@ -1518,7 +1518,7 @@
       
         function void DebugPrint(ui_render_command_button_start S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct ui_render_command_button_start\n");
           
             DebugPrint("ID = ", Depth);
             DebugPrint(S.ID, Depth+1);
@@ -1536,7 +1536,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("ui_render_command_button_start\n", Depth);
             
               DebugPrint("ID = ", Depth);
               DebugPrint(S->ID, Depth+1);
@@ -1554,7 +1554,7 @@
       
         function void DebugPrint(ui_render_command_button_end S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct ui_render_command_button_end\n");
           
             DebugPrint("Params = ", Depth);
             DebugPrint(S.Params, Depth+1);
@@ -1568,7 +1568,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("ui_render_command_button_end\n", Depth);
             
               DebugPrint("Params = ", Depth);
               DebugPrint(S->Params, Depth+1);
@@ -1582,7 +1582,7 @@
       
         function void DebugPrint(ui_render_command_table_start S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct ui_render_command_table_start\n");
           
             DebugPrint("Layout = ", Depth);
             DebugPrint(S.Layout, Depth+1);
@@ -1608,7 +1608,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("ui_render_command_table_start\n", Depth);
             
               DebugPrint("Layout = ", Depth);
               DebugPrint(S->Layout, Depth+1);
@@ -1634,7 +1634,7 @@
       
         function void DebugPrint(ui_render_command_buffer S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct ui_render_command_buffer\n");
           
             DebugPrint("CommandCount = ", Depth);
             DebugPrint(S.CommandCount, Depth+1);
@@ -1652,7 +1652,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("ui_render_command_buffer\n", Depth);
             
               DebugPrint("CommandCount = ", Depth);
               DebugPrint(S->CommandCount, Depth+1);
@@ -1670,7 +1670,7 @@
       
         function void DebugPrint(clip_result S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct clip_result\n");
           
             DebugPrint("ClipStatus = ", Depth);
             DebugPrint(S.ClipStatus, Depth+1);
@@ -1692,7 +1692,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("clip_result\n", Depth);
             
               DebugPrint("ClipStatus = ", Depth);
               DebugPrint(S->ClipStatus, Depth+1);
@@ -1714,7 +1714,7 @@
       
         function void DebugPrint(sort_key S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct sort_key\n");
           
             DebugPrint("Value = ", Depth);
             DebugPrint(S.Value, Depth+1);
@@ -1732,7 +1732,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("sort_key\n", Depth);
             
               DebugPrint("Value = ", Depth);
               DebugPrint(S->Value, Depth+1);
@@ -1750,7 +1750,7 @@
       
         function void DebugPrint(window_sort_params S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct window_sort_params\n");
           
             DebugPrint("Count = ", Depth);
             DebugPrint(S.Count, Depth+1);
@@ -1772,7 +1772,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("window_sort_params\n", Depth);
             
               DebugPrint("Count = ", Depth);
               DebugPrint(S->Count, Depth+1);
@@ -1794,7 +1794,7 @@
       
         function void DebugPrint(find_button_start_result S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct find_button_start_result\n");
           
             DebugPrint("Index = ", Depth);
             DebugPrint(S.Index, Depth+1);
@@ -1812,7 +1812,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("find_button_start_result\n", Depth);
             
               DebugPrint("Index = ", Depth);
               DebugPrint(S->Index, Depth+1);
@@ -1830,7 +1830,7 @@
       
         function void DebugPrint(find_command_result S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct find_command_result\n");
           
             DebugPrint("Command = ", Depth);
             DebugPrint(S.Command, Depth+1);
@@ -1848,7 +1848,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("find_command_result\n", Depth);
             
               DebugPrint("Command = ", Depth);
               DebugPrint(S->Command, Depth+1);
@@ -1866,7 +1866,7 @@
       
         function void DebugPrint(interactable_handle S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct interactable_handle\n");
           
             DebugPrint("Id = ", Depth);
             DebugPrint(S.Id, Depth+1);
@@ -1880,7 +1880,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("interactable_handle\n", Depth);
             
               DebugPrint("Id = ", Depth);
               DebugPrint(S->Id, Depth+1);
@@ -1894,7 +1894,7 @@
       
         function void DebugPrint(interactable S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct interactable\n");
           
             DebugPrint("ID = ", Depth);
             DebugPrint(S.ID, Depth+1);
@@ -1920,7 +1920,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("interactable\n", Depth);
             
               DebugPrint("ID = ", Depth);
               DebugPrint(S->ID, Depth+1);
@@ -1946,7 +1946,7 @@
       
         function void DebugPrint(button_interaction_result S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct button_interaction_result\n");
           
             DebugPrint("Pressed = ", Depth);
             DebugPrint(S.Pressed, Depth+1);
@@ -1968,7 +1968,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("button_interaction_result\n", Depth);
             
               DebugPrint("Pressed = ", Depth);
               DebugPrint(S->Pressed, Depth+1);
@@ -1990,7 +1990,7 @@
       
         function void DebugPrint(render_state S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct render_state\n");
           
             DebugPrint("Window = ", Depth);
             DebugPrint(S.Window, Depth+1);
@@ -2024,7 +2024,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("render_state\n", Depth);
             
               DebugPrint("Window = ", Depth);
               DebugPrint(S->Window, Depth+1);
@@ -2058,7 +2058,7 @@
       
         function void DebugPrint(debug_text_render_group S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct debug_text_render_group\n");
           
             DebugPrint("SolidUIVertexBuffer = ", Depth);
             DebugPrint(S.SolidUIVertexBuffer, Depth+1);
@@ -2104,7 +2104,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("debug_text_render_group\n", Depth);
             
               DebugPrint("SolidUIVertexBuffer = ", Depth);
               DebugPrint(S->SolidUIVertexBuffer, Depth+1);
@@ -2150,7 +2150,7 @@
       
         function void DebugPrint(c_decl_variable S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct c_decl_variable\n");
           
             DebugPrint("Type = ", Depth);
             DebugPrint(S.Type, Depth+1);
@@ -2168,7 +2168,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("c_decl_variable\n", Depth);
             
               DebugPrint("Type = ", Depth);
               DebugPrint(S->Type, Depth+1);
@@ -2186,7 +2186,7 @@
       
         function void DebugPrint(c_decl_stream S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct c_decl_stream\n");
           
             DebugPrint("FirstChunk = ", Depth);
             DebugPrint(S.FirstChunk, Depth+1);
@@ -2204,7 +2204,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("c_decl_stream\n", Depth);
             
               DebugPrint("FirstChunk = ", Depth);
               DebugPrint(S->FirstChunk, Depth+1);
@@ -2222,7 +2222,7 @@
       
         function void DebugPrint(struct_def S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct struct_def\n");
           
             DebugPrint("Name = ", Depth);
             DebugPrint(S.Name, Depth+1);
@@ -2244,7 +2244,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("struct_def\n", Depth);
             
               DebugPrint("Name = ", Depth);
               DebugPrint(S->Name, Depth+1);
@@ -2266,7 +2266,7 @@
       
         function void DebugPrint(c_decl_union S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct c_decl_union\n");
           
             DebugPrint("Body = ", Depth);
             DebugPrint(S.Body, Depth+1);
@@ -2280,7 +2280,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("c_decl_union\n", Depth);
             
               DebugPrint("Body = ", Depth);
               DebugPrint(S->Body, Depth+1);
@@ -2294,7 +2294,7 @@
       
         function void DebugPrint(enum_field S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct enum_field\n");
           
             DebugPrint("Name = ", Depth);
             DebugPrint(S.Name, Depth+1);
@@ -2312,7 +2312,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("enum_field\n", Depth);
             
               DebugPrint("Name = ", Depth);
               DebugPrint(S->Name, Depth+1);
@@ -2330,7 +2330,7 @@
       
         function void DebugPrint(d_union_member S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct d_union_member\n");
           
             DebugPrint("Type = ", Depth);
             DebugPrint(S.Type, Depth+1);
@@ -2352,7 +2352,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("d_union_member\n", Depth);
             
               DebugPrint("Type = ", Depth);
               DebugPrint(S->Type, Depth+1);
@@ -2374,7 +2374,7 @@
       
         function void DebugPrint(c_decl_stream_chunk S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct c_decl_stream_chunk\n");
           
             DebugPrint("Element = ", Depth);
             DebugPrint(S.Element, Depth+1);
@@ -2392,7 +2392,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("c_decl_stream_chunk\n", Depth);
             
               DebugPrint("Element = ", Depth);
               DebugPrint(S->Element, Depth+1);
@@ -2410,7 +2410,7 @@
       
         function void DebugPrint(enum_def S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct enum_def\n");
           
             DebugPrint("Name = ", Depth);
             DebugPrint(S.Name, Depth+1);
@@ -2428,7 +2428,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("enum_def\n", Depth);
             
               DebugPrint("Name = ", Depth);
               DebugPrint(S->Name, Depth+1);
@@ -2446,7 +2446,7 @@
       
         function void DebugPrint(c_token S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct c_token\n");
           
             DebugPrint("Type = ", Depth);
             DebugPrint(S.Type, Depth+1);
@@ -2464,7 +2464,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("c_token\n", Depth);
             
               DebugPrint("Type = ", Depth);
               DebugPrint(S->Type, Depth+1);
@@ -2482,7 +2482,7 @@
       
         function void DebugPrint(d_union_decl S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct d_union_decl\n");
           
             DebugPrint("Name = ", Depth);
             DebugPrint(S.Name, Depth+1);
@@ -2508,7 +2508,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("d_union_decl\n", Depth);
             
               DebugPrint("Name = ", Depth);
               DebugPrint(S->Name, Depth+1);
@@ -2534,7 +2534,7 @@
       
         function void DebugPrint(c_parse_result S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct c_parse_result\n");
           
             DebugPrint("Valid = ", Depth);
             DebugPrint(S.Valid, Depth+1);
@@ -2564,7 +2564,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("c_parse_result\n", Depth);
             
               DebugPrint("Valid = ", Depth);
               DebugPrint(S->Valid, Depth+1);
@@ -2594,7 +2594,7 @@
       
         function void DebugPrint(todo S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct todo\n");
           
             DebugPrint("Id = ", Depth);
             DebugPrint(S.Id, Depth+1);
@@ -2616,7 +2616,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("todo\n", Depth);
             
               DebugPrint("Id = ", Depth);
               DebugPrint(S->Id, Depth+1);
@@ -2638,7 +2638,7 @@
       
         function void DebugPrint(tag S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct tag\n");
           
             DebugPrint("Tag = ", Depth);
             DebugPrint(S.Tag, Depth+1);
@@ -2656,7 +2656,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("tag\n", Depth);
             
               DebugPrint("Tag = ", Depth);
               DebugPrint(S->Tag, Depth+1);
@@ -2674,7 +2674,7 @@
       
         function void DebugPrint(person S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct person\n");
           
             DebugPrint("Name = ", Depth);
             DebugPrint(S.Name, Depth+1);
@@ -2692,7 +2692,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("person\n", Depth);
             
               DebugPrint("Name = ", Depth);
               DebugPrint(S->Name, Depth+1);
@@ -2710,7 +2710,7 @@
       
         function void DebugPrint(arguments S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct arguments\n");
           
             DebugPrint("OutPath = ", Depth);
             DebugPrint(S.OutPath, Depth+1);
@@ -2732,7 +2732,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("arguments\n", Depth);
             
               DebugPrint("OutPath = ", Depth);
               DebugPrint(S->OutPath, Depth+1);
@@ -2754,7 +2754,7 @@
       
         function void DebugPrint(program_datatypes S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct program_datatypes\n");
           
             DebugPrint("Structs = ", Depth);
             DebugPrint(S.Structs, Depth+1);
@@ -2772,7 +2772,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("program_datatypes\n", Depth);
             
               DebugPrint("Structs = ", Depth);
               DebugPrint(S->Structs, Depth+1);
@@ -2790,7 +2790,7 @@
       
         function void DebugPrint(c_decl_iterator S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct c_decl_iterator\n");
           
             DebugPrint("At = ", Depth);
             DebugPrint(S.At, Depth+1);
@@ -2804,7 +2804,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("c_decl_iterator\n", Depth);
             
               DebugPrint("At = ", Depth);
               DebugPrint(S->At, Depth+1);
@@ -2818,7 +2818,7 @@
       
         function void DebugPrint(for_enum_constraints S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct for_enum_constraints\n");
           
             DebugPrint("TypeName = ", Depth);
             DebugPrint(S.TypeName, Depth+1);
@@ -2836,7 +2836,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("for_enum_constraints\n", Depth);
             
               DebugPrint("TypeName = ", Depth);
               DebugPrint(S->TypeName, Depth+1);
@@ -2854,7 +2854,7 @@
       
         function void DebugPrint(body_text_constraints S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct body_text_constraints\n");
           
             DebugPrint("MemberContains = ", Depth);
             DebugPrint(S.MemberContains, Depth+1);
@@ -2880,7 +2880,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("body_text_constraints\n", Depth);
             
               DebugPrint("MemberContains = ", Depth);
               DebugPrint(S->MemberContains, Depth+1);
@@ -2906,7 +2906,7 @@
       
         function void DebugPrint(replacement_pattern S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct replacement_pattern\n");
           
             DebugPrint("Match = ", Depth);
             DebugPrint(S.Match, Depth+1);
@@ -2924,7 +2924,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("replacement_pattern\n", Depth);
             
               DebugPrint("Match = ", Depth);
               DebugPrint(S->Match, Depth+1);
@@ -2942,7 +2942,7 @@
       
         function void DebugPrint(c_token_cursor S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct c_token_cursor\n");
           
             DebugPrint("Start = ", Depth);
             DebugPrint(S.Start, Depth+1);
@@ -2964,7 +2964,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("c_token_cursor\n", Depth);
             
               DebugPrint("Start = ", Depth);
               DebugPrint(S->Start, Depth+1);
@@ -2986,7 +2986,7 @@
       
         function void DebugPrint(enum_field_stream_chunk S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct enum_field_stream_chunk\n");
           
             DebugPrint("Element = ", Depth);
             DebugPrint(S.Element, Depth+1);
@@ -3004,7 +3004,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("enum_field_stream_chunk\n", Depth);
             
               DebugPrint("Element = ", Depth);
               DebugPrint(S->Element, Depth+1);
@@ -3022,7 +3022,7 @@
       
         function void DebugPrint(enum_field_stream S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct enum_field_stream\n");
           
             DebugPrint("FirstChunk = ", Depth);
             DebugPrint(S.FirstChunk, Depth+1);
@@ -3040,7 +3040,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("enum_field_stream\n", Depth);
             
               DebugPrint("FirstChunk = ", Depth);
               DebugPrint(S->FirstChunk, Depth+1);
@@ -3058,7 +3058,7 @@
       
         function void DebugPrint(enum_field_iterator S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct enum_field_iterator\n");
           
             DebugPrint("Stream = ", Depth);
             DebugPrint(S.Stream, Depth+1);
@@ -3076,7 +3076,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("enum_field_iterator\n", Depth);
             
               DebugPrint("Stream = ", Depth);
               DebugPrint(S->Stream, Depth+1);
@@ -3094,7 +3094,7 @@
       
         function void DebugPrint(enum_def_cursor S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct enum_def_cursor\n");
           
             DebugPrint("Start = ", Depth);
             DebugPrint(S.Start, Depth+1);
@@ -3116,7 +3116,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("enum_def_cursor\n", Depth);
             
               DebugPrint("Start = ", Depth);
               DebugPrint(S->Start, Depth+1);
@@ -3138,7 +3138,7 @@
       
         function void DebugPrint(enum_def_stream_chunk S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct enum_def_stream_chunk\n");
           
             DebugPrint("Element = ", Depth);
             DebugPrint(S.Element, Depth+1);
@@ -3156,7 +3156,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("enum_def_stream_chunk\n", Depth);
             
               DebugPrint("Element = ", Depth);
               DebugPrint(S->Element, Depth+1);
@@ -3174,7 +3174,7 @@
       
         function void DebugPrint(enum_def_stream S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct enum_def_stream\n");
           
             DebugPrint("FirstChunk = ", Depth);
             DebugPrint(S.FirstChunk, Depth+1);
@@ -3192,7 +3192,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("enum_def_stream\n", Depth);
             
               DebugPrint("FirstChunk = ", Depth);
               DebugPrint(S->FirstChunk, Depth+1);
@@ -3210,7 +3210,7 @@
       
         function void DebugPrint(enum_def_iterator S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct enum_def_iterator\n");
           
             DebugPrint("Stream = ", Depth);
             DebugPrint(S.Stream, Depth+1);
@@ -3228,7 +3228,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("enum_def_iterator\n", Depth);
             
               DebugPrint("Stream = ", Depth);
               DebugPrint(S->Stream, Depth+1);
@@ -3246,7 +3246,7 @@
       
         function void DebugPrint(v3_cursor S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct v3_cursor\n");
           
             DebugPrint("Start = ", Depth);
             DebugPrint(S.Start, Depth+1);
@@ -3268,7 +3268,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("v3_cursor\n", Depth);
             
               DebugPrint("Start = ", Depth);
               DebugPrint(S->Start, Depth+1);
@@ -3290,7 +3290,7 @@
       
         function void DebugPrint(c_decl S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct c_decl\n");
           
             DebugPrint("Type = ", Depth);
             DebugPrint(S.Type, Depth+1);
@@ -3304,7 +3304,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("c_decl\n", Depth);
             
               DebugPrint("Type = ", Depth);
               DebugPrint(S->Type, Depth+1);
@@ -3318,7 +3318,7 @@
       
         function void DebugPrint(d_union_member_stream_chunk S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct d_union_member_stream_chunk\n");
           
             DebugPrint("Element = ", Depth);
             DebugPrint(S.Element, Depth+1);
@@ -3336,7 +3336,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("d_union_member_stream_chunk\n", Depth);
             
               DebugPrint("Element = ", Depth);
               DebugPrint(S->Element, Depth+1);
@@ -3354,7 +3354,7 @@
       
         function void DebugPrint(d_union_member_stream S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct d_union_member_stream\n");
           
             DebugPrint("FirstChunk = ", Depth);
             DebugPrint(S.FirstChunk, Depth+1);
@@ -3372,7 +3372,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("d_union_member_stream\n", Depth);
             
               DebugPrint("FirstChunk = ", Depth);
               DebugPrint(S->FirstChunk, Depth+1);
@@ -3390,7 +3390,7 @@
       
         function void DebugPrint(d_union_member_iterator S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct d_union_member_iterator\n");
           
             DebugPrint("Stream = ", Depth);
             DebugPrint(S.Stream, Depth+1);
@@ -3408,7 +3408,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("d_union_member_iterator\n", Depth);
             
               DebugPrint("Stream = ", Depth);
               DebugPrint(S->Stream, Depth+1);
@@ -3426,7 +3426,7 @@
       
         function void DebugPrint(ui_render_command S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct ui_render_command\n");
           
             DebugPrint("Type = ", Depth);
             DebugPrint(S.Type, Depth+1);
@@ -3440,7 +3440,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("ui_render_command\n", Depth);
             
               DebugPrint("Type = ", Depth);
               DebugPrint(S->Type, Depth+1);
@@ -3454,7 +3454,7 @@
       
         function void DebugPrint(struct_def_stream_chunk S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct struct_def_stream_chunk\n");
           
             DebugPrint("Element = ", Depth);
             DebugPrint(S.Element, Depth+1);
@@ -3472,7 +3472,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("struct_def_stream_chunk\n", Depth);
             
               DebugPrint("Element = ", Depth);
               DebugPrint(S->Element, Depth+1);
@@ -3490,7 +3490,7 @@
       
         function void DebugPrint(struct_def_stream S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct struct_def_stream\n");
           
             DebugPrint("FirstChunk = ", Depth);
             DebugPrint(S.FirstChunk, Depth+1);
@@ -3508,7 +3508,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("struct_def_stream\n", Depth);
             
               DebugPrint("FirstChunk = ", Depth);
               DebugPrint(S->FirstChunk, Depth+1);
@@ -3526,7 +3526,7 @@
       
         function void DebugPrint(struct_def_iterator S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct struct_def_iterator\n");
           
             DebugPrint("Stream = ", Depth);
             DebugPrint(S.Stream, Depth+1);
@@ -3544,7 +3544,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("struct_def_iterator\n", Depth);
             
               DebugPrint("Stream = ", Depth);
               DebugPrint(S->Stream, Depth+1);
@@ -3562,7 +3562,7 @@
       
         function void DebugPrint(counted_string_cursor S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct counted_string_cursor\n");
           
             DebugPrint("Start = ", Depth);
             DebugPrint(S.Start, Depth+1);
@@ -3584,7 +3584,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("counted_string_cursor\n", Depth);
             
               DebugPrint("Start = ", Depth);
               DebugPrint(S->Start, Depth+1);
@@ -3606,7 +3606,7 @@
       
         function void DebugPrint(tag_stream_chunk S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct tag_stream_chunk\n");
           
             DebugPrint("Element = ", Depth);
             DebugPrint(S.Element, Depth+1);
@@ -3624,7 +3624,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("tag_stream_chunk\n", Depth);
             
               DebugPrint("Element = ", Depth);
               DebugPrint(S->Element, Depth+1);
@@ -3642,7 +3642,7 @@
       
         function void DebugPrint(tag_stream S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct tag_stream\n");
           
             DebugPrint("FirstChunk = ", Depth);
             DebugPrint(S.FirstChunk, Depth+1);
@@ -3660,7 +3660,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("tag_stream\n", Depth);
             
               DebugPrint("FirstChunk = ", Depth);
               DebugPrint(S->FirstChunk, Depth+1);
@@ -3678,7 +3678,7 @@
       
         function void DebugPrint(tag_iterator S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct tag_iterator\n");
           
             DebugPrint("Stream = ", Depth);
             DebugPrint(S.Stream, Depth+1);
@@ -3696,7 +3696,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("tag_iterator\n", Depth);
             
               DebugPrint("Stream = ", Depth);
               DebugPrint(S->Stream, Depth+1);
@@ -3714,7 +3714,7 @@
       
         function void DebugPrint(c_parse_result_cursor S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct c_parse_result_cursor\n");
           
             DebugPrint("Start = ", Depth);
             DebugPrint(S.Start, Depth+1);
@@ -3736,7 +3736,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("c_parse_result_cursor\n", Depth);
             
               DebugPrint("Start = ", Depth);
               DebugPrint(S->Start, Depth+1);
@@ -3758,7 +3758,7 @@
       
         function void DebugPrint(c_decl_function S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct c_decl_function\n");
           
             DebugPrint("Type = ", Depth);
             DebugPrint(S.Type, Depth+1);
@@ -3772,7 +3772,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("c_decl_function\n", Depth);
             
               DebugPrint("Type = ", Depth);
               DebugPrint(S->Type, Depth+1);
@@ -3786,7 +3786,7 @@
       
         function void DebugPrint(c_decl_cursor S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct c_decl_cursor\n");
           
             DebugPrint("Start = ", Depth);
             DebugPrint(S.Start, Depth+1);
@@ -3808,7 +3808,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("c_decl_cursor\n", Depth);
             
               DebugPrint("Start = ", Depth);
               DebugPrint(S->Start, Depth+1);
@@ -3830,7 +3830,7 @@
       
         function void DebugPrint(struct_def_cursor S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct struct_def_cursor\n");
           
             DebugPrint("Start = ", Depth);
             DebugPrint(S.Start, Depth+1);
@@ -3852,7 +3852,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("struct_def_cursor\n", Depth);
             
               DebugPrint("Start = ", Depth);
               DebugPrint(S->Start, Depth+1);
@@ -3874,7 +3874,7 @@
       
         function void DebugPrint(person_stream_chunk S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct person_stream_chunk\n");
           
             DebugPrint("Element = ", Depth);
             DebugPrint(S.Element, Depth+1);
@@ -3892,7 +3892,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("person_stream_chunk\n", Depth);
             
               DebugPrint("Element = ", Depth);
               DebugPrint(S->Element, Depth+1);
@@ -3910,7 +3910,7 @@
       
         function void DebugPrint(person_stream S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct person_stream\n");
           
             DebugPrint("FirstChunk = ", Depth);
             DebugPrint(S.FirstChunk, Depth+1);
@@ -3928,7 +3928,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("person_stream\n", Depth);
             
               DebugPrint("FirstChunk = ", Depth);
               DebugPrint(S->FirstChunk, Depth+1);
@@ -3946,7 +3946,7 @@
       
         function void DebugPrint(person_iterator S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct person_iterator\n");
           
             DebugPrint("Stream = ", Depth);
             DebugPrint(S.Stream, Depth+1);
@@ -3964,7 +3964,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("person_iterator\n", Depth);
             
               DebugPrint("Stream = ", Depth);
               DebugPrint(S->Stream, Depth+1);
@@ -3982,7 +3982,7 @@
       
         function void DebugPrint(counted_string_stream_chunk S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct counted_string_stream_chunk\n");
           
             DebugPrint("Element = ", Depth);
             DebugPrint(S.Element, Depth+1);
@@ -4000,7 +4000,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("counted_string_stream_chunk\n", Depth);
             
               DebugPrint("Element = ", Depth);
               DebugPrint(S->Element, Depth+1);
@@ -4018,7 +4018,7 @@
       
         function void DebugPrint(counted_string_stream S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct counted_string_stream\n");
           
             DebugPrint("FirstChunk = ", Depth);
             DebugPrint(S.FirstChunk, Depth+1);
@@ -4036,7 +4036,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("counted_string_stream\n", Depth);
             
               DebugPrint("FirstChunk = ", Depth);
               DebugPrint(S->FirstChunk, Depth+1);
@@ -4054,7 +4054,7 @@
       
         function void DebugPrint(counted_string_iterator S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct counted_string_iterator\n");
           
             DebugPrint("Stream = ", Depth);
             DebugPrint(S.Stream, Depth+1);
@@ -4072,7 +4072,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("counted_string_iterator\n", Depth);
             
               DebugPrint("Stream = ", Depth);
               DebugPrint(S->Stream, Depth+1);
@@ -4090,7 +4090,7 @@
       
         function void DebugPrint(todo_stream_chunk S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct todo_stream_chunk\n");
           
             DebugPrint("Element = ", Depth);
             DebugPrint(S.Element, Depth+1);
@@ -4108,7 +4108,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("todo_stream_chunk\n", Depth);
             
               DebugPrint("Element = ", Depth);
               DebugPrint(S->Element, Depth+1);
@@ -4126,7 +4126,7 @@
       
         function void DebugPrint(todo_stream S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct todo_stream\n");
           
             DebugPrint("FirstChunk = ", Depth);
             DebugPrint(S.FirstChunk, Depth+1);
@@ -4144,7 +4144,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("todo_stream\n", Depth);
             
               DebugPrint("FirstChunk = ", Depth);
               DebugPrint(S->FirstChunk, Depth+1);
@@ -4162,7 +4162,7 @@
       
         function void DebugPrint(todo_iterator S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct todo_iterator\n");
           
             DebugPrint("Stream = ", Depth);
             DebugPrint(S.Stream, Depth+1);
@@ -4180,7 +4180,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("todo_iterator\n", Depth);
             
               DebugPrint("Stream = ", Depth);
               DebugPrint(S->Stream, Depth+1);
@@ -4198,7 +4198,7 @@
       
         function void DebugPrint(work_queue_entry S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct work_queue_entry\n");
           
             DebugPrint("Type = ", Depth);
             DebugPrint(S.Type, Depth+1);
@@ -4212,7 +4212,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("work_queue_entry\n", Depth);
             
               DebugPrint("Type = ", Depth);
               DebugPrint(S->Type, Depth+1);
@@ -4226,7 +4226,7 @@
       
         function void DebugPrint(client_state S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct client_state\n");
           
             DebugPrint("Id = ", Depth);
             DebugPrint(S.Id, Depth+1);
@@ -4248,7 +4248,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("client_state\n", Depth);
             
               DebugPrint("Id = ", Depth);
               DebugPrint(S->Id, Depth+1);
@@ -4270,7 +4270,7 @@
       
         function void DebugPrint(server_state S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct server_state\n");
           
             DebugPrint("Clients = ", Depth);
             DebugPrint(S.Clients, Depth+1);
@@ -4284,7 +4284,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("server_state\n", Depth);
             
               DebugPrint("Clients = ", Depth);
               DebugPrint(S->Clients, Depth+1);
@@ -4298,7 +4298,7 @@
       
         function void DebugPrint(client_to_server_message S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct client_to_server_message\n");
           
             DebugPrint("Client = ", Depth);
             DebugPrint(S.Client, Depth+1);
@@ -4312,7 +4312,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("client_to_server_message\n", Depth);
             
               DebugPrint("Client = ", Depth);
               DebugPrint(S->Client, Depth+1);
@@ -4326,7 +4326,7 @@
       
         function void DebugPrint(handshake_message S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct handshake_message\n");
           
             DebugPrint("ClientId = ", Depth);
             DebugPrint(S.ClientId, Depth+1);
@@ -4340,7 +4340,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("handshake_message\n", Depth);
             
               DebugPrint("ClientId = ", Depth);
               DebugPrint(S->ClientId, Depth+1);
@@ -4354,7 +4354,7 @@
       
         function void DebugPrint(socket_t S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct socket_t\n");
           
             DebugPrint("Id = ", Depth);
             DebugPrint(S.Id, Depth+1);
@@ -4372,7 +4372,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("socket_t\n", Depth);
             
               DebugPrint("Id = ", Depth);
               DebugPrint(S->Id, Depth+1);
@@ -4390,7 +4390,7 @@
       
         function void DebugPrint(plane S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct plane\n");
           
             DebugPrint("P = ", Depth);
             DebugPrint(S.P, Depth+1);
@@ -4412,7 +4412,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("plane\n", Depth);
             
               DebugPrint("P = ", Depth);
               DebugPrint(S->P, Depth+1);
@@ -4434,7 +4434,7 @@
       
         function void DebugPrint(frustum S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct frustum\n");
           
             DebugPrint("farClip = ", Depth);
             DebugPrint(S.farClip, Depth+1);
@@ -4476,7 +4476,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("frustum\n", Depth);
             
               DebugPrint("farClip = ", Depth);
               DebugPrint(S->farClip, Depth+1);
@@ -4518,7 +4518,7 @@
       
         function void DebugPrint(camera S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct camera\n");
           
             DebugPrint("Frust = ", Depth);
             DebugPrint(S.Frust, Depth+1);
@@ -4576,7 +4576,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("camera\n", Depth);
             
               DebugPrint("Frust = ", Depth);
               DebugPrint(S->Frust, Depth+1);
@@ -4634,7 +4634,7 @@
       
         function void DebugPrint(work_queue_entry_copy_buffer S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct work_queue_entry_copy_buffer\n");
           
             DebugPrint("Src = ", Depth);
             DebugPrint(S.Src, Depth+1);
@@ -4656,7 +4656,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("work_queue_entry_copy_buffer\n", Depth);
             
               DebugPrint("Src = ", Depth);
               DebugPrint(S->Src, Depth+1);
@@ -4678,7 +4678,7 @@
       
         function void DebugPrint(work_queue_entry_init_world_chunk S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct work_queue_entry_init_world_chunk\n");
           
             DebugPrint("Input = ", Depth);
             DebugPrint(S.Input, Depth+1);
@@ -4692,7 +4692,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("work_queue_entry_init_world_chunk\n", Depth);
             
               DebugPrint("Input = ", Depth);
               DebugPrint(S->Input, Depth+1);
@@ -4706,7 +4706,7 @@
       
         function void DebugPrint(edge S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct edge\n");
           
             DebugPrint("P0 = ", Depth);
             DebugPrint(S.P0, Depth+1);
@@ -4728,7 +4728,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("edge\n", Depth);
             
               DebugPrint("P0 = ", Depth);
               DebugPrint(S->P0, Depth+1);
@@ -4750,7 +4750,7 @@
       
         function void DebugPrint(triangle S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct triangle\n");
           
             DebugPrint("Points = ", Depth);
             DebugPrint(S.Points, Depth+1);
@@ -4768,7 +4768,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("triangle\n", Depth);
             
               DebugPrint("Points = ", Depth);
               DebugPrint(S->Points, Depth+1);
@@ -4786,7 +4786,7 @@
       
         function void DebugPrint(boundary_voxels S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct boundary_voxels\n");
           
             DebugPrint("Points = ", Depth);
             DebugPrint(S.Points, Depth+1);
@@ -4816,7 +4816,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("boundary_voxels\n", Depth);
             
               DebugPrint("Points = ", Depth);
               DebugPrint(S->Points, Depth+1);
@@ -4846,7 +4846,7 @@
       
         function void DebugPrint(current_triangles S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct current_triangles\n");
           
             DebugPrint("Tris = ", Depth);
             DebugPrint(S.Tris, Depth+1);
@@ -4876,7 +4876,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("current_triangles\n", Depth);
             
               DebugPrint("Tris = ", Depth);
               DebugPrint(S->Tris, Depth+1);
@@ -4906,7 +4906,7 @@
       
         function void DebugPrint(canonical_position S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct canonical_position\n");
           
             DebugPrint("Offset = ", Depth);
             DebugPrint(S.Offset, Depth+1);
@@ -4924,7 +4924,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("canonical_position\n", Depth);
             
               DebugPrint("Offset = ", Depth);
               DebugPrint(S->Offset, Depth+1);
@@ -4942,7 +4942,7 @@
       
         function void DebugPrint(loaded_collada_mesh S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct loaded_collada_mesh\n");
           
             DebugPrint("Mesh = ", Depth);
             DebugPrint(S.Mesh, Depth+1);
@@ -4960,7 +4960,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("loaded_collada_mesh\n", Depth);
             
               DebugPrint("Mesh = ", Depth);
               DebugPrint(S->Mesh, Depth+1);
@@ -4978,7 +4978,7 @@
       
         function void DebugPrint(free_mesh S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct free_mesh\n");
           
             DebugPrint("Mesh = ", Depth);
             DebugPrint(S.Mesh, Depth+1);
@@ -4996,7 +4996,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("free_mesh\n", Depth);
             
               DebugPrint("Mesh = ", Depth);
               DebugPrint(S->Mesh, Depth+1);
@@ -5014,7 +5014,7 @@
       
         function void DebugPrint(mesh_freelist S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct mesh_freelist\n");
           
             DebugPrint("FirstFree = ", Depth);
             DebugPrint(S.FirstFree, Depth+1);
@@ -5032,7 +5032,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("mesh_freelist\n", Depth);
             
               DebugPrint("FirstFree = ", Depth);
               DebugPrint(S->FirstFree, Depth+1);
@@ -5050,7 +5050,7 @@
       
         function void DebugPrint(xml_property S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct xml_property\n");
           
             DebugPrint("Name = ", Depth);
             DebugPrint(S.Name, Depth+1);
@@ -5072,7 +5072,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("xml_property\n", Depth);
             
               DebugPrint("Name = ", Depth);
               DebugPrint(S->Name, Depth+1);
@@ -5094,7 +5094,7 @@
       
         function void DebugPrint(xml_token S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct xml_token\n");
           
             DebugPrint("Type = ", Depth);
             DebugPrint(S.Type, Depth+1);
@@ -5112,7 +5112,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("xml_token\n", Depth);
             
               DebugPrint("Type = ", Depth);
               DebugPrint(S->Type, Depth+1);
@@ -5130,7 +5130,7 @@
       
         function void DebugPrint(xml_tag S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct xml_tag\n");
           
             DebugPrint("Open = ", Depth);
             DebugPrint(S.Open, Depth+1);
@@ -5172,7 +5172,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("xml_tag\n", Depth);
             
               DebugPrint("Open = ", Depth);
               DebugPrint(S->Open, Depth+1);
@@ -5214,7 +5214,7 @@
       
         function void DebugPrint(xml_tag_stream S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct xml_tag_stream\n");
           
             DebugPrint("Start = ", Depth);
             DebugPrint(S.Start, Depth+1);
@@ -5236,7 +5236,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("xml_tag_stream\n", Depth);
             
               DebugPrint("Start = ", Depth);
               DebugPrint(S->Start, Depth+1);
@@ -5258,7 +5258,7 @@
       
         function void DebugPrint(xml_parsing_at_indicators S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct xml_parsing_at_indicators\n");
           
             DebugPrint("LastClosedTag = ", Depth);
             DebugPrint(S.LastClosedTag, Depth+1);
@@ -5276,7 +5276,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("xml_parsing_at_indicators\n", Depth);
             
               DebugPrint("LastClosedTag = ", Depth);
               DebugPrint(S->LastClosedTag, Depth+1);
@@ -5294,7 +5294,7 @@
       
         function void DebugPrint(post_processing_group S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct post_processing_group\n");
           
             DebugPrint("FBO = ", Depth);
             DebugPrint(S.FBO, Depth+1);
@@ -5320,7 +5320,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("post_processing_group\n", Depth);
             
               DebugPrint("FBO = ", Depth);
               DebugPrint(S->FBO, Depth+1);
@@ -5346,7 +5346,7 @@
       
         function void DebugPrint(graphics S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct graphics\n");
           
             DebugPrint("Camera = ", Depth);
             DebugPrint(S.Camera, Depth+1);
@@ -5392,7 +5392,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("graphics\n", Depth);
             
               DebugPrint("Camera = ", Depth);
               DebugPrint(S->Camera, Depth+1);
@@ -5438,7 +5438,7 @@
       
         function void DebugPrint(shader_uniform S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct shader_uniform\n");
           
             DebugPrint("Type = ", Depth);
             DebugPrint(S.Type, Depth+1);
@@ -5452,7 +5452,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("shader_uniform\n", Depth);
             
               DebugPrint("Type = ", Depth);
               DebugPrint(S->Type, Depth+1);
@@ -5466,7 +5466,7 @@
       
         function void DebugPrint(shader S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct shader\n");
           
             DebugPrint("ID = ", Depth);
             DebugPrint(S.ID, Depth+1);
@@ -5484,7 +5484,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("shader\n", Depth);
             
               DebugPrint("ID = ", Depth);
               DebugPrint(S->ID, Depth+1);
@@ -5502,7 +5502,7 @@
       
         function void DebugPrint(texture S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct texture\n");
           
             DebugPrint("ID = ", Depth);
             DebugPrint(S.ID, Depth+1);
@@ -5520,7 +5520,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("texture\n", Depth);
             
               DebugPrint("ID = ", Depth);
               DebugPrint(S->ID, Depth+1);
@@ -5538,7 +5538,7 @@
       
         function void DebugPrint(light S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct light\n");
           
             DebugPrint("Position = ", Depth);
             DebugPrint(S.Position, Depth+1);
@@ -5556,7 +5556,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("light\n", Depth);
             
               DebugPrint("Position = ", Depth);
               DebugPrint(S->Position, Depth+1);
@@ -5574,7 +5574,7 @@
       
         function void DebugPrint(game_lights S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct game_lights\n");
           
             DebugPrint("ColorTex = ", Depth);
             DebugPrint(S.ColorTex, Depth+1);
@@ -5604,7 +5604,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("game_lights\n", Depth);
             
               DebugPrint("ColorTex = ", Depth);
               DebugPrint(S->ColorTex, Depth+1);
@@ -5634,7 +5634,7 @@
       
         function void DebugPrint(RenderBasis S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct RenderBasis\n");
           
             DebugPrint("ModelMatrix = ", Depth);
             DebugPrint(S.ModelMatrix, Depth+1);
@@ -5656,7 +5656,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("RenderBasis\n", Depth);
             
               DebugPrint("ModelMatrix = ", Depth);
               DebugPrint(S->ModelMatrix, Depth+1);
@@ -5678,7 +5678,7 @@
       
         function void DebugPrint(framebuffer S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct framebuffer\n");
           
             DebugPrint("ID = ", Depth);
             DebugPrint(S.ID, Depth+1);
@@ -5696,7 +5696,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("framebuffer\n", Depth);
             
               DebugPrint("ID = ", Depth);
               DebugPrint(S->ID, Depth+1);
@@ -5714,7 +5714,7 @@
       
         function void DebugPrint(ao_render_group S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct ao_render_group\n");
           
             DebugPrint("FBO = ", Depth);
             DebugPrint(S.FBO, Depth+1);
@@ -5752,7 +5752,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("ao_render_group\n", Depth);
             
               DebugPrint("FBO = ", Depth);
               DebugPrint(S->FBO, Depth+1);
@@ -5790,7 +5790,7 @@
       
         function void DebugPrint(g_buffer_textures S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct g_buffer_textures\n");
           
             DebugPrint("Color = ", Depth);
             DebugPrint(S.Color, Depth+1);
@@ -5812,7 +5812,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("g_buffer_textures\n", Depth);
             
               DebugPrint("Color = ", Depth);
               DebugPrint(S->Color, Depth+1);
@@ -5834,7 +5834,7 @@
       
         function void DebugPrint(g_buffer_render_group S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct g_buffer_render_group\n");
           
             DebugPrint("FBO = ", Depth);
             DebugPrint(S.FBO, Depth+1);
@@ -5868,7 +5868,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("g_buffer_render_group\n", Depth);
             
               DebugPrint("FBO = ", Depth);
               DebugPrint(S->FBO, Depth+1);
@@ -5902,7 +5902,7 @@
       
         function void DebugPrint(shadow_render_group S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct shadow_render_group\n");
           
             DebugPrint("FramebufferName = ", Depth);
             DebugPrint(S.FramebufferName, Depth+1);
@@ -5932,7 +5932,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("shadow_render_group\n", Depth);
             
               DebugPrint("FramebufferName = ", Depth);
               DebugPrint(S->FramebufferName, Depth+1);
@@ -5962,7 +5962,7 @@
       
         function void DebugPrint(untextured_3d_geometry_buffer S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct untextured_3d_geometry_buffer\n");
           
             DebugPrint("Verts = ", Depth);
             DebugPrint(S.Verts, Depth+1);
@@ -5992,7 +5992,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("untextured_3d_geometry_buffer\n", Depth);
             
               DebugPrint("Verts = ", Depth);
               DebugPrint(S->Verts, Depth+1);
@@ -6022,7 +6022,7 @@
       
         function void DebugPrint(gpu_mapped_element_buffer S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct gpu_mapped_element_buffer\n");
           
             DebugPrint("VertexHandle = ", Depth);
             DebugPrint(S.VertexHandle, Depth+1);
@@ -6048,7 +6048,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("gpu_mapped_element_buffer\n", Depth);
             
               DebugPrint("VertexHandle = ", Depth);
               DebugPrint(S->VertexHandle, Depth+1);
@@ -6074,7 +6074,7 @@
       
         function void DebugPrint(textured_2d_geometry_buffer S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct textured_2d_geometry_buffer\n");
           
             DebugPrint("Verts = ", Depth);
             DebugPrint(S.Verts, Depth+1);
@@ -6104,7 +6104,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("textured_2d_geometry_buffer\n", Depth);
             
               DebugPrint("Verts = ", Depth);
               DebugPrint(S->Verts, Depth+1);
@@ -6134,7 +6134,7 @@
       
         function void DebugPrint(untextured_2d_geometry_buffer S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct untextured_2d_geometry_buffer\n");
           
             DebugPrint("Verts = ", Depth);
             DebugPrint(S.Verts, Depth+1);
@@ -6160,7 +6160,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("untextured_2d_geometry_buffer\n", Depth);
             
               DebugPrint("Verts = ", Depth);
               DebugPrint(S->Verts, Depth+1);
@@ -6186,7 +6186,7 @@
       
         function void DebugPrint(keyframe S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct keyframe\n");
           
             DebugPrint("tEnd = ", Depth);
             DebugPrint(S.tEnd, Depth+1);
@@ -6204,7 +6204,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("keyframe\n", Depth);
             
               DebugPrint("tEnd = ", Depth);
               DebugPrint(S->tEnd, Depth+1);
@@ -6222,7 +6222,7 @@
       
         function void DebugPrint(animation S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct animation\n");
           
             DebugPrint("t = ", Depth);
             DebugPrint(S.t, Depth+1);
@@ -6264,7 +6264,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("animation\n", Depth);
             
               DebugPrint("t = ", Depth);
               DebugPrint(S->t, Depth+1);
@@ -6306,7 +6306,7 @@
       
         function void DebugPrint(game_mode S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct game_mode\n");
           
             DebugPrint("ActiveMode = ", Depth);
             DebugPrint(S.ActiveMode, Depth+1);
@@ -6324,7 +6324,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("game_mode\n", Depth);
             
               DebugPrint("ActiveMode = ", Depth);
               DebugPrint(S->ActiveMode, Depth+1);
@@ -6342,7 +6342,7 @@
       
         function void DebugPrint(voxel S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct voxel\n");
           
             DebugPrint("Flags = ", Depth);
             DebugPrint(S.Flags, Depth+1);
@@ -6360,7 +6360,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("voxel\n", Depth);
             
               DebugPrint("Flags = ", Depth);
               DebugPrint(S->Flags, Depth+1);
@@ -6378,7 +6378,7 @@
       
         function void DebugPrint(boundary_voxel S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct boundary_voxel\n");
           
             DebugPrint("V = ", Depth);
             DebugPrint(S.V, Depth+1);
@@ -6396,7 +6396,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("boundary_voxel\n", Depth);
             
               DebugPrint("V = ", Depth);
               DebugPrint(S->V, Depth+1);
@@ -6414,7 +6414,7 @@
       
         function void DebugPrint(chunk_data S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct chunk_data\n");
           
             DebugPrint("Flags = ", Depth);
             DebugPrint(S.Flags, Depth+1);
@@ -6436,7 +6436,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("chunk_data\n", Depth);
             
               DebugPrint("Flags = ", Depth);
               DebugPrint(S->Flags, Depth+1);
@@ -6458,7 +6458,7 @@
       
         function void DebugPrint(model S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct model\n");
           
             DebugPrint("Mesh = ", Depth);
             DebugPrint(S.Mesh, Depth+1);
@@ -6480,7 +6480,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("model\n", Depth);
             
               DebugPrint("Mesh = ", Depth);
               DebugPrint(S->Mesh, Depth+1);
@@ -6502,7 +6502,7 @@
       
         function void DebugPrint(physics S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct physics\n");
           
             DebugPrint("Velocity = ", Depth);
             DebugPrint(S.Velocity, Depth+1);
@@ -6536,7 +6536,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("physics\n", Depth);
             
               DebugPrint("Velocity = ", Depth);
               DebugPrint(S->Velocity, Depth+1);
@@ -6570,7 +6570,7 @@
       
         function void DebugPrint(particle S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct particle\n");
           
             DebugPrint("Offset = ", Depth);
             DebugPrint(S.Offset, Depth+1);
@@ -6596,7 +6596,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("particle\n", Depth);
             
               DebugPrint("Offset = ", Depth);
               DebugPrint(S->Offset, Depth+1);
@@ -6622,7 +6622,7 @@
       
         function void DebugPrint(particle_system_init_params S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct particle_system_init_params\n");
           
             DebugPrint("SpawnRegion = ", Depth);
             DebugPrint(S.SpawnRegion, Depth+1);
@@ -6668,7 +6668,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("particle_system_init_params\n", Depth);
             
               DebugPrint("SpawnRegion = ", Depth);
               DebugPrint(S->SpawnRegion, Depth+1);
@@ -6714,7 +6714,7 @@
       
         function void DebugPrint(particle_system S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct particle_system\n");
           
             DebugPrint("Entropy = ", Depth);
             DebugPrint(S.Entropy, Depth+1);
@@ -6768,7 +6768,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("particle_system\n", Depth);
             
               DebugPrint("Entropy = ", Depth);
               DebugPrint(S->Entropy, Depth+1);
@@ -6822,7 +6822,7 @@
       
         function void DebugPrint(thread S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct thread\n");
           
             DebugPrint("ThreadIndex = ", Depth);
             DebugPrint(S.ThreadIndex, Depth+1);
@@ -6840,7 +6840,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("thread\n", Depth);
             
               DebugPrint("ThreadIndex = ", Depth);
               DebugPrint(S->ThreadIndex, Depth+1);
@@ -6858,7 +6858,7 @@
       
         function void DebugPrint(thread_local_state S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct thread_local_state\n");
           
             DebugPrint("PermMemory = ", Depth);
             DebugPrint(S.PermMemory, Depth+1);
@@ -6884,7 +6884,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("thread_local_state\n", Depth);
             
               DebugPrint("PermMemory = ", Depth);
               DebugPrint(S->PermMemory, Depth+1);
@@ -6910,7 +6910,7 @@
       
         function void DebugPrint(u32_stream S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct u32_stream\n");
           
             DebugPrint("Start = ", Depth);
             DebugPrint(S.Start, Depth+1);
@@ -6932,7 +6932,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("u32_stream\n", Depth);
             
               DebugPrint("Start = ", Depth);
               DebugPrint(S->Start, Depth+1);
@@ -6954,7 +6954,7 @@
       
         function void DebugPrint(u8_stream S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct u8_stream\n");
           
             DebugPrint("Start = ", Depth);
             DebugPrint(S.Start, Depth+1);
@@ -6976,7 +6976,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("u8_stream\n", Depth);
             
               DebugPrint("Start = ", Depth);
               DebugPrint(S->Start, Depth+1);
@@ -6998,7 +6998,7 @@
       
         function void DebugPrint(ansi_stream S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct ansi_stream\n");
           
             DebugPrint("Start = ", Depth);
             DebugPrint(S.Start, Depth+1);
@@ -7024,7 +7024,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("ansi_stream\n", Depth);
             
               DebugPrint("Start = ", Depth);
               DebugPrint(S->Start, Depth+1);
@@ -7050,7 +7050,7 @@
       
         function void DebugPrint(r32_stream S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct r32_stream\n");
           
             DebugPrint("Start = ", Depth);
             DebugPrint(S.Start, Depth+1);
@@ -7072,7 +7072,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("r32_stream\n", Depth);
             
               DebugPrint("Start = ", Depth);
               DebugPrint(S->Start, Depth+1);
@@ -7094,7 +7094,7 @@
       
         function void DebugPrint(mesh_metadata S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct mesh_metadata\n");
           
             DebugPrint("VertCount = ", Depth);
             DebugPrint(S.VertCount, Depth+1);
@@ -7120,7 +7120,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("mesh_metadata\n", Depth);
             
               DebugPrint("VertCount = ", Depth);
               DebugPrint(S->VertCount, Depth+1);
@@ -7146,7 +7146,7 @@
       
         function void DebugPrint(rect2 S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct rect2\n");
           
             DebugPrint("Min = ", Depth);
             DebugPrint(S.Min, Depth+1);
@@ -7164,7 +7164,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("rect2\n", Depth);
             
               DebugPrint("Min = ", Depth);
               DebugPrint(S->Min, Depth+1);
@@ -7182,7 +7182,7 @@
       
         function void DebugPrint(aabb S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct aabb\n");
           
             DebugPrint("Center = ", Depth);
             DebugPrint(S.Center, Depth+1);
@@ -7200,7 +7200,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("aabb\n", Depth);
             
               DebugPrint("Center = ", Depth);
               DebugPrint(S->Center, Depth+1);
@@ -7218,7 +7218,7 @@
       
         function void DebugPrint(ray S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct ray\n");
           
             DebugPrint("Origin = ", Depth);
             DebugPrint(S.Origin, Depth+1);
@@ -7236,7 +7236,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("ray\n", Depth);
             
               DebugPrint("Origin = ", Depth);
               DebugPrint(S->Origin, Depth+1);
@@ -7254,7 +7254,7 @@
       
         function void DebugPrint(input_event S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct input_event\n");
           
             DebugPrint("Clicked = ", Depth);
             DebugPrint(S.Clicked, Depth+1);
@@ -7272,7 +7272,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("input_event\n", Depth);
             
               DebugPrint("Clicked = ", Depth);
               DebugPrint(S->Clicked, Depth+1);
@@ -7290,7 +7290,7 @@
       
         function void DebugPrint(input S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct input\n");
           
             DebugPrint("Escape = ", Depth);
             DebugPrint(S.Escape, Depth+1);
@@ -7404,7 +7404,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("input\n", Depth);
             
               DebugPrint("Escape = ", Depth);
               DebugPrint(S->Escape, Depth+1);
@@ -7518,7 +7518,7 @@
       
         function void DebugPrint(work_queue S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct work_queue\n");
           
             DebugPrint("EnqueueIndex = ", Depth);
             DebugPrint(S.EnqueueIndex, Depth+1);
@@ -7544,7 +7544,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("work_queue\n", Depth);
             
               DebugPrint("EnqueueIndex = ", Depth);
               DebugPrint(S->EnqueueIndex, Depth+1);
@@ -7570,7 +7570,7 @@
       
         function void DebugPrint(string_builder S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct string_builder\n");
           
             DebugPrint("Memory = ", Depth);
             DebugPrint(S.Memory, Depth+1);
@@ -7588,7 +7588,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("string_builder\n", Depth);
             
               DebugPrint("Memory = ", Depth);
               DebugPrint(S->Memory, Depth+1);
@@ -7606,7 +7606,7 @@
       
         function void DebugPrint(platform S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct platform\n");
           
             DebugPrint("LowPriority = ", Depth);
             DebugPrint(S.LowPriority, Depth+1);
@@ -7660,7 +7660,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("platform\n", Depth);
             
               DebugPrint("LowPriority = ", Depth);
               DebugPrint(S->LowPriority, Depth+1);
@@ -7714,7 +7714,7 @@
       
         function void DebugPrint(m4 S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct m4\n");
           
             DebugPrint("E = ", Depth);
             DebugPrint(S.E, Depth+1);
@@ -7728,7 +7728,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("m4\n", Depth);
             
               DebugPrint("E = ", Depth);
               DebugPrint(S->E, Depth+1);
@@ -7742,7 +7742,7 @@
       
         function void DebugPrint(m_nxn S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct m_nxn\n");
           
             DebugPrint("Elements = ", Depth);
             DebugPrint(S.Elements, Depth+1);
@@ -7772,7 +7772,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("m_nxn\n", Depth);
             
               DebugPrint("Elements = ", Depth);
               DebugPrint(S->Elements, Depth+1);
@@ -7802,7 +7802,7 @@
       
         function void DebugPrint(random_series S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct random_series\n");
           
             DebugPrint("Seed = ", Depth);
             DebugPrint(S.Seed, Depth+1);
@@ -7816,7 +7816,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("random_series\n", Depth);
             
               DebugPrint("Seed = ", Depth);
               DebugPrint(S->Seed, Depth+1);
@@ -7830,7 +7830,7 @@
       
         function void DebugPrint(memory_arena S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct memory_arena\n");
           
             DebugPrint("Start = ", Depth);
             DebugPrint(S.Start, Depth+1);
@@ -7860,7 +7860,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("memory_arena\n", Depth);
             
               DebugPrint("Start = ", Depth);
               DebugPrint(S->Start, Depth+1);
@@ -7890,7 +7890,7 @@
       
         function void DebugPrint(v2i S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct v2i\n");
           
             DebugPrint("x = ", Depth);
             DebugPrint(S.x, Depth+1);
@@ -7908,7 +7908,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("v2i\n", Depth);
             
               DebugPrint("x = ", Depth);
               DebugPrint(S->x, Depth+1);
@@ -7926,7 +7926,7 @@
       
         function void DebugPrint(v2 S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct v2\n");
           
             DebugPrint("x = ", Depth);
             DebugPrint(S.x, Depth+1);
@@ -7944,7 +7944,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("v2\n", Depth);
             
               DebugPrint("x = ", Depth);
               DebugPrint(S->x, Depth+1);
@@ -7962,7 +7962,7 @@
       
         function void DebugPrint(heap_allocation_block S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct heap_allocation_block\n");
           
             DebugPrint("Type = ", Depth);
             DebugPrint(S.Type, Depth+1);
@@ -7984,7 +7984,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("heap_allocation_block\n", Depth);
             
               DebugPrint("Type = ", Depth);
               DebugPrint(S->Type, Depth+1);
@@ -8006,7 +8006,7 @@
       
         function void DebugPrint(heap_allocator S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct heap_allocator\n");
           
             DebugPrint("Heap = ", Depth);
             DebugPrint(S.Heap, Depth+1);
@@ -8024,7 +8024,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("heap_allocator\n", Depth);
             
               DebugPrint("Heap = ", Depth);
               DebugPrint(S->Heap, Depth+1);
@@ -8042,7 +8042,7 @@
       
         function void DebugPrint(char_cursor S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct char_cursor\n");
           
             DebugPrint("Start = ", Depth);
             DebugPrint(S.Start, Depth+1);
@@ -8068,7 +8068,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("char_cursor\n", Depth);
             
               DebugPrint("Start = ", Depth);
               DebugPrint(S->Start, Depth+1);
@@ -8094,7 +8094,7 @@
       
         function void DebugPrint(linei S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct linei\n");
           
             DebugPrint("MinP = ", Depth);
             DebugPrint(S.MinP, Depth+1);
@@ -8112,7 +8112,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("linei\n", Depth);
             
               DebugPrint("MinP = ", Depth);
               DebugPrint(S->MinP, Depth+1);
@@ -8130,7 +8130,7 @@
       
         function void DebugPrint(line S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct line\n");
           
             DebugPrint("MinP = ", Depth);
             DebugPrint(S.MinP, Depth+1);
@@ -8148,7 +8148,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("line\n", Depth);
             
               DebugPrint("MinP = ", Depth);
               DebugPrint(S->MinP, Depth+1);
@@ -8166,7 +8166,7 @@
       
         function void DebugPrint(XVisualInfo S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct XVisualInfo\n");
           
             DebugPrint("visual = ", Depth);
             DebugPrint(S.visual, Depth+1);
@@ -8216,7 +8216,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("XVisualInfo\n", Depth);
             
               DebugPrint("visual = ", Depth);
               DebugPrint(S->visual, Depth+1);
@@ -8266,7 +8266,7 @@
       
         function void DebugPrint(os S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct os\n");
           
             DebugPrint("Window = ", Depth);
             DebugPrint(S.Window, Depth+1);
@@ -8292,7 +8292,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("os\n", Depth);
             
               DebugPrint("Window = ", Depth);
               DebugPrint(S->Window, Depth+1);
@@ -8318,7 +8318,7 @@
       
         function void DebugPrint(native_file S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct native_file\n");
           
             DebugPrint("Handle = ", Depth);
             DebugPrint(S.Handle, Depth+1);
@@ -8336,7 +8336,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("native_file\n", Depth);
             
               DebugPrint("Handle = ", Depth);
               DebugPrint(S->Handle, Depth+1);
@@ -8354,7 +8354,7 @@
       
         function void DebugPrint(plane_computation S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct plane_computation\n");
           
             DebugPrint("Plane = ", Depth);
             DebugPrint(S.Plane, Depth+1);
@@ -8372,7 +8372,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("plane_computation\n", Depth);
             
               DebugPrint("Plane = ", Depth);
               DebugPrint(S->Plane, Depth+1);
@@ -8390,7 +8390,7 @@
       
         function void DebugPrint(bitmap_image_header S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct bitmap_image_header\n");
           
             DebugPrint("SizeOfImageHeader = ", Depth);
             DebugPrint(S.SizeOfImageHeader, Depth+1);
@@ -8460,7 +8460,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("bitmap_image_header\n", Depth);
             
               DebugPrint("SizeOfImageHeader = ", Depth);
               DebugPrint(S->SizeOfImageHeader, Depth+1);
@@ -8530,7 +8530,7 @@
       
         function void DebugPrint(bitmap_header S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct bitmap_header\n");
           
             DebugPrint("Type = ", Depth);
             DebugPrint(S.Type, Depth+1);
@@ -8560,7 +8560,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("bitmap_header\n", Depth);
             
               DebugPrint("Type = ", Depth);
               DebugPrint(S->Type, Depth+1);
@@ -8590,7 +8590,7 @@
       
         function void DebugPrint(bitmap S, u32 Depth)
         {
-          DebugPrint("struct StructName\n");
+          DebugPrint("struct bitmap\n");
           
             DebugPrint("Dim = ", Depth);
             DebugPrint(S.Dim, Depth+1);
@@ -8608,7 +8608,7 @@
         {
           if (S)
           {
-            DebugPrint("StructName\n", Depth);
+            DebugPrint("bitmap\n", Depth);
             
               DebugPrint("Dim = ", Depth);
               DebugPrint(S->Dim, Depth+1);
