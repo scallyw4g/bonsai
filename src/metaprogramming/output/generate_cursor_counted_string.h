@@ -9,7 +9,6 @@ struct counted_string_cursor
 function counted_string_cursor
 CountedStringCursor(umm ElementCount, memory_arena* Memory)
 {
-  // TODO(Jesse, tags: metaprogramming): Can we use Allocate() here instead?
   counted_string* Start = (counted_string*)PushStruct(Memory, sizeof(counted_string), 1, 1);
   counted_string_cursor Result = {
     .Start = Start,
