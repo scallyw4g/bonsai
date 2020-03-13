@@ -2513,7 +2513,7 @@ DoStructReplacementPatterns(string_builder* OutputBuilder, c_parse_result* BodyT
   }
 }
 
-/* #include <bonsai_stdlib/headers/debug_print.h> */
+#include <bonsai_stdlib/headers/debug_print.h>
 
 #ifndef EXCLUDE_PREPROCESSOR_MAIN
 #define SUCCESS_EXIT_CODE 0
