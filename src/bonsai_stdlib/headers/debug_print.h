@@ -1,112 +1,123 @@
 function void
-DebugPrint(voxel_position E)
+DebugPrint(voxel_position E, u32 Depth = 0)
 {
-  printf("%d", E.x);
-  printf("%d", E.y);
-  printf("%d", E.z);
+  printf("%*d", Depth, E.x);
+  printf("%*d", Depth, E.y);
+  printf("%*d", Depth, E.z);
 }
 
 function void
-DebugPrint(v4 E)
+DebugPrint(v4 E, u32 Depth = 0)
 {
-  printf("%f", E.x);
-  printf("%f", E.y);
-  printf("%f", E.z);
-  printf("%f", E.w);
+  printf("%*f", Depth, E.x);
+  printf("%*f", Depth, E.y);
+  printf("%*f", Depth, E.z);
+  printf("%*f", Depth, E.w);
 }
 
 function void
-DebugPrint(v3i E)
+DebugPrint(v3i E, u32 Depth = 0)
 {
-  printf("%u", E.x);
-  printf("%u", E.y);
-  printf("%u", E.z);
+  printf("%*u", Depth, E.x);
+  printf("%*u", Depth, E.y);
+  printf("%*u", Depth, E.z);
 }
 
 function void
-DebugPrint(v3 E)
+DebugPrint(v3 E, u32 Depth = 0)
 {
-  printf("%f", E.x);
-  printf("%f", E.y);
-  printf("%f", E.z);
+  printf("%*f", Depth, E.x);
+  printf("%*f", Depth, E.y);
+  printf("%*f", Depth, E.z);
 }
 
 function void
-DebugPrint(r64 E)
+DebugPrint(r64 E, u32 Depth = 0)
 {
-  printf("%f", E);
+  printf("%*f", Depth, E);
 }
 
 function void
-DebugPrint(s64 E)
+DebugPrint(s64 E, u32 Depth = 0)
 {
-  printf("%ld", E);
+  printf("%*ld", Depth, E);
 }
 
 function void
-DebugPrint(u64 E)
+DebugPrint(u64 E, u32 Depth = 0)
 {
-  printf("%lu", E);
+  printf("%*lu", Depth, E);
 }
 
 function void
-DebugPrint(r32 E)
+DebugPrint(r32 E, u32 Depth = 0)
 {
-  printf("%f", E);
+  printf("%*.2f", Depth, E);
 }
 
 function void
-DebugPrint(s32 E)
+DebugPrint(s32 E, u32 Depth = 0)
 {
-  printf("%d", E);
+  printf("%*d", Depth, E);
 }
 
 function void
-DebugPrint(u32 E)
+DebugPrint(u32 E, u32 Depth = 0)
 {
-  printf("%u", E);
+  printf("%*u", Depth, E);
 }
 
 function void
-DebugPrint(volatile void* E)
+DebugPrint(volatile void* E, u32 Depth = 0)
 {
-  printf("%p", E);
+  printf("%*p", Depth, E);
 }
 
 function void
-DebugPrint(void* E)
+DebugPrint(void* E, u32 Depth = 0)
 {
-  printf("%p", E);
+  printf("%*p", Depth, E);
 }
 
 function void
-DebugPrint(counted_string E)
+DebugPrint(counted_string E, u32 Depth = 0)
 {
-  printf("%.*s", (u32)E.Count, E.Start);
+  printf("%*.*s", Depth, (u32)E.Count, E.Start);
 }
 
 function void
-DebugPrint(const char* E)
+DebugPrint(const char* E, u32 Depth = 0)
 {
-  printf("%s", E);
+  u32 SLen = (u32)Length(E);
+  u32 Pad = SLen + Depth;
+  printf("%*s", Pad, E);
+}
+
+function void
+DebugPrint(semaphore E, u32 Depth = 0)
+{
+  printf("(semaphore) : (%u) ? %u", *(u32*)&E, Depth);
 }
 
 meta(
   for_all_datatypes(
     exclude
 
-    platform hotkeys xml_hashtable xml_token_stream
+    hotkeys xml_hashtable xml_token_stream
 
+    thread_startup_params
+    mutex address network_connection
+    debug_state
+    perlin_noise
+
+    counted_string
     thing1 thing2 thing3 thing4
     test_struct_8 test_struct_16 test_struct_32 test_struct_64 test_struct_128 test_struct_1k
     head_table ttf_vert ttf_contour simple_glyph font_table ttf offset_subtable
 
-    counted_string
-    mutex address network_connection
-    debug_state
-    perlin_noise platform thread_startup_params
     (StructName) {
-      function void DebugPrint(StructName S);
+      function void DebugPrint(StructName* S, u32 Depth = 0);
+      function void DebugPrint(StructName S, u32 Depth = 0);
     })
 )
 #include <metaprogramming/output/for_all_datatypes_debug_print_prototypes.h>
@@ -115,28 +126,70 @@ meta(
   for_all_datatypes(
     exclude
 
-    platform hotkeys xml_hashtable xml_token_stream
+    hotkeys xml_hashtable xml_token_stream
 
+    thread_startup_params
+    mutex address network_connection
+    debug_state
+    perlin_noise
+
+    counted_string
     thing1 thing2 thing3 thing4
     test_struct_8 test_struct_16 test_struct_32 test_struct_64 test_struct_128 test_struct_1k
     head_table ttf_vert ttf_contour simple_glyph font_table ttf offset_subtable
 
-    counted_string
-    mutex address network_connection
-    debug_state
-    perlin_noise platform thread_startup_params
     (StructName)
     {
-      function void DebugPrint(StructName S)
+      function void DebugPrint(StructName* S, u32 Depth)
       {
-        __(MemberType, MemberName)
+        if (S)
         {
-          DebugPrint("MemberName");
-          DebugPrint(S.MemberName);
+          DebugPrint("StructName\n", Depth);
+
+          __(MemberType, MemberName)
+          {
+            DebugPrint("MemberName = ", Depth);
+            DebugPrint(S->MemberName, Depth+1);
+            DebugPrint("\n");
+          }
         }
       }
     }
   )
 )
-#include <metaprogramming/output/for_all_datatypes_debug_print.h>
+#include <metaprogramming/output/for_all_datatypes_debug_print_pointer.h>
+
+meta(
+  for_all_datatypes(
+    exclude
+
+    hotkeys xml_hashtable xml_token_stream
+
+    thread_startup_params
+    mutex address network_connection
+    debug_state
+    perlin_noise
+
+    counted_string
+    thing1 thing2 thing3 thing4
+    test_struct_8 test_struct_16 test_struct_32 test_struct_64 test_struct_128 test_struct_1k
+    head_table ttf_vert ttf_contour simple_glyph font_table ttf offset_subtable
+
+    (StructName)
+    {
+      function void DebugPrint(StructName S, u32 Depth)
+      {
+        DebugPrint("struct StructName\n");
+
+        __(MemberType, MemberName)
+        {
+          DebugPrint("MemberName = ", Depth);
+          DebugPrint(S.MemberName, Depth+1);
+          DebugPrint("\n");
+        }
+      }
+    }
+  )
+)
+#include <metaprogramming/output/for_all_datatypes_debug_print_by_value.h>
 

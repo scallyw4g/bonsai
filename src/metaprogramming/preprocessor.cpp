@@ -1,7 +1,7 @@
 #define PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS 1
 #define PLATFORM_GL_IMPLEMENTATIONS 1
 
-#include <metaprogramming/preprocessor.h>
+#include <bonsai_types.h>
 
 function b32
 IsWhitespace(c_token_type Type)
@@ -1371,23 +1371,6 @@ PrintCDecl(c_decl* Decl, struct_def_stream* ProgramStructs)
 
 }
 
-struct for_enum_constraints
-{
-  // Replacement Patterns
-  counted_string TypeName;
-  counted_string ValueName;
-};
-
-struct body_text_constraints
-{
-  counted_string MemberContains;
-
-  // Replacement Patterns
-  counted_string TypeTag;
-  counted_string TypeName;
-  counted_string ValueName;
-};
-
 function void
 TrimFirstToken(c_parse_result* Parser, c_token_type TokenType)
 {
@@ -2432,12 +2415,6 @@ GenerateOutfileNameFor(metaprogramming_directive Directive, counted_string Datat
   return Result;
 }
 
-struct replacement_pattern
-{
-  counted_string Match;
-  counted_string Replace;
-};
-
 function void
 DoReplacementPatternsOn(c_parse_result* BodyText, replacement_pattern* TypePattern, replacement_pattern* NamePattern, string_builder* Builder, memory_arena* Memory)
 {
@@ -2757,8 +2734,11 @@ main(s32 ArgCount, const char** ArgStrings)
                             c_decl* Member = GET_ELEMENT(c_declIter);
                             if (Member->Type == type_c_decl_variable)
                             {
-                              TypeReplacementPattern.Replace = Member->c_decl_variable.Type;
-                              NameReplacementPattern.Replace = Member->c_decl_variable.Name;
+                              counted_string MemberType = Member->c_decl_variable.Type;
+                              counted_string MemberName = Member->c_decl_variable.Name;
+
+                              TypeReplacementPattern.Replace = MemberType;
+                              NameReplacementPattern.Replace = MemberName;
                               DoReplacementPatternsOn(MemberBodyText, &TypeReplacementPattern, &NameReplacementPattern, &Builder, Memory);
                             }
                           }

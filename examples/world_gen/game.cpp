@@ -73,12 +73,16 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
   return;
 }
 
+#include <bonsai_stdlib/headers/debug_print.h>
+
 BONSAI_API_MAIN_THREAD_CALLBACK()
 {
   TIMED_FUNCTION();
 
   GetDebugState()->Plat = GameState->Plat;
   GetDebugState()->GameState = GameState;
+
+  DebugPrint(*GameState->Plat);
 
   glDisable(GL_CULL_FACE);
 

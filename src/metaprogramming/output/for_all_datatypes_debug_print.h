@@ -1,2923 +1,4495 @@
 
       // Source File : src/debug_system/headers/debug.h
-      function void DebugPrint(cycle_range S)
+      function void DebugPrint(cycle_range* S)
       {
-        
-          DebugPrint("StartCycle");
-          DebugPrint(S.StartCycle);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("TotalCycles");
-          DebugPrint(S.TotalCycles);
+          
+            DebugPrint("  StartCycle = ");
+            DebugPrint(S->StartCycle);
+            DebugPrint("\n");
 
+            DebugPrint("  TotalCycles = ");
+            DebugPrint(S->TotalCycles);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/debug.h
-      function void DebugPrint(memory_arena_stats S)
+      function void DebugPrint(memory_arena_stats* S)
       {
-        
-          DebugPrint("Allocations");
-          DebugPrint(S.Allocations);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Pushes");
-          DebugPrint(S.Pushes);
+          
+            DebugPrint("  Allocations = ");
+            DebugPrint(S->Allocations);
+            DebugPrint("\n");
 
-          DebugPrint("TotalAllocated");
-          DebugPrint(S.TotalAllocated);
+            DebugPrint("  Pushes = ");
+            DebugPrint(S->Pushes);
+            DebugPrint("\n");
 
-          DebugPrint("Remaining");
-          DebugPrint(S.Remaining);
+            DebugPrint("  TotalAllocated = ");
+            DebugPrint(S->TotalAllocated);
+            DebugPrint("\n");
 
+            DebugPrint("  Remaining = ");
+            DebugPrint(S->Remaining);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/debug.h
-      function void DebugPrint(min_max_avg_dt S)
+      function void DebugPrint(min_max_avg_dt* S)
       {
-        
-          DebugPrint("Min");
-          DebugPrint(S.Min);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Max");
-          DebugPrint(S.Max);
+          
+            DebugPrint("  Min = ");
+            DebugPrint(S->Min);
+            DebugPrint("\n");
 
-          DebugPrint("Avg");
-          DebugPrint(S.Avg);
+            DebugPrint("  Max = ");
+            DebugPrint(S->Max);
+            DebugPrint("\n");
 
+            DebugPrint("  Avg = ");
+            DebugPrint(S->Avg);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/debug.h
-      function void DebugPrint(debug_ui_render_group S)
+      function void DebugPrint(debug_ui_render_group* S)
       {
-        
-          DebugPrint("GameGeo");
-          DebugPrint(S.GameGeo);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("GameGeoShader");
-          DebugPrint(S.GameGeoShader);
+          
+            DebugPrint("  GameGeo = ");
+            DebugPrint(S->GameGeo);
+            DebugPrint("\n");
 
-          DebugPrint("TextGroup");
-          DebugPrint(S.TextGroup);
+            DebugPrint("  GameGeoShader = ");
+            DebugPrint(S->GameGeoShader);
+            DebugPrint("\n");
 
-          DebugPrint("InteractionStackTop");
-          DebugPrint(S.InteractionStackTop);
+            DebugPrint("  TextGroup = ");
+            DebugPrint(S->TextGroup);
+            DebugPrint("\n");
 
-          DebugPrint("MouseP");
-          DebugPrint(S.MouseP);
+            DebugPrint("  InteractionStackTop = ");
+            DebugPrint(S->InteractionStackTop);
+            DebugPrint("\n");
 
-          DebugPrint("MouseDP");
-          DebugPrint(S.MouseDP);
+            DebugPrint("  MouseP = ");
+            DebugPrint(S->MouseP);
+            DebugPrint("\n");
 
-          DebugPrint("ScreenDim");
-          DebugPrint(S.ScreenDim);
+            DebugPrint("  MouseDP = ");
+            DebugPrint(S->MouseDP);
+            DebugPrint("\n");
 
-          DebugPrint("Input");
-          DebugPrint(S.Input);
+            DebugPrint("  ScreenDim = ");
+            DebugPrint(S->ScreenDim);
+            DebugPrint("\n");
 
-          DebugPrint("HighestWindow");
-          DebugPrint(S.HighestWindow);
+            DebugPrint("  Input = ");
+            DebugPrint(S->Input);
+            DebugPrint("\n");
 
-          DebugPrint("HoverInteractionId");
-          DebugPrint(S.HoverInteractionId);
+            DebugPrint("  HighestWindow = ");
+            DebugPrint(S->HighestWindow);
+            DebugPrint("\n");
 
-          DebugPrint("ClickedInteractionId");
-          DebugPrint(S.ClickedInteractionId);
+            DebugPrint("  HoverInteractionId = ");
+            DebugPrint(S->HoverInteractionId);
+            DebugPrint("\n");
 
-          DebugPrint("PressedInteractionId");
-          DebugPrint(S.PressedInteractionId);
+            DebugPrint("  ClickedInteractionId = ");
+            DebugPrint(S->ClickedInteractionId);
+            DebugPrint("\n");
 
-          DebugPrint("Geo");
-          DebugPrint(S.Geo);
+            DebugPrint("  PressedInteractionId = ");
+            DebugPrint(S->PressedInteractionId);
+            DebugPrint("\n");
 
-          DebugPrint("CommandBuffer");
-          DebugPrint(S.CommandBuffer);
+            DebugPrint("  Geo = ");
+            DebugPrint(S->Geo);
+            DebugPrint("\n");
 
+            DebugPrint("  CommandBuffer = ");
+            DebugPrint(S->CommandBuffer);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/debug.h
-      function void DebugPrint(debug_profile_scope S)
+      function void DebugPrint(debug_profile_scope* S)
       {
-        
-          DebugPrint("CycleCount");
-          DebugPrint(S.CycleCount);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("StartingCycle");
-          DebugPrint(S.StartingCycle);
+          
+            DebugPrint("  CycleCount = ");
+            DebugPrint(S->CycleCount);
+            DebugPrint("\n");
 
-          DebugPrint("Name");
-          DebugPrint(S.Name);
+            DebugPrint("  StartingCycle = ");
+            DebugPrint(S->StartingCycle);
+            DebugPrint("\n");
 
-          DebugPrint("Expanded");
-          DebugPrint(S.Expanded);
+            DebugPrint("  Name = ");
+            DebugPrint(S->Name);
+            DebugPrint("\n");
 
-          DebugPrint("Sibling");
-          DebugPrint(S.Sibling);
+            DebugPrint("  Expanded = ");
+            DebugPrint(S->Expanded);
+            DebugPrint("\n");
 
-          DebugPrint("Child");
-          DebugPrint(S.Child);
+            DebugPrint("  Sibling = ");
+            DebugPrint(S->Sibling);
+            DebugPrint("\n");
 
-          DebugPrint("Parent");
-          DebugPrint(S.Parent);
+            DebugPrint("  Child = ");
+            DebugPrint(S->Child);
+            DebugPrint("\n");
 
+            DebugPrint("  Parent = ");
+            DebugPrint(S->Parent);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/debug.h
-      function void DebugPrint(unique_debug_profile_scope S)
+      function void DebugPrint(unique_debug_profile_scope* S)
       {
-        
-          DebugPrint("Name");
-          DebugPrint(S.Name);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("CallCount");
-          DebugPrint(S.CallCount);
+          
+            DebugPrint("  Name = ");
+            DebugPrint(S->Name);
+            DebugPrint("\n");
 
-          DebugPrint("TotalCycles");
-          DebugPrint(S.TotalCycles);
+            DebugPrint("  CallCount = ");
+            DebugPrint(S->CallCount);
+            DebugPrint("\n");
 
-          DebugPrint("MinCycles");
-          DebugPrint(S.MinCycles);
+            DebugPrint("  TotalCycles = ");
+            DebugPrint(S->TotalCycles);
+            DebugPrint("\n");
 
-          DebugPrint("MaxCycles");
-          DebugPrint(S.MaxCycles);
+            DebugPrint("  MinCycles = ");
+            DebugPrint(S->MinCycles);
+            DebugPrint("\n");
 
-          DebugPrint("Scope");
-          DebugPrint(S.Scope);
+            DebugPrint("  MaxCycles = ");
+            DebugPrint(S->MaxCycles);
+            DebugPrint("\n");
 
-          DebugPrint("NextUnique");
-          DebugPrint(S.NextUnique);
+            DebugPrint("  Scope = ");
+            DebugPrint(S->Scope);
+            DebugPrint("\n");
 
+            DebugPrint("  NextUnique = ");
+            DebugPrint(S->NextUnique);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/debug.h
-      function void DebugPrint(debug_scope_tree S)
+      function void DebugPrint(debug_scope_tree* S)
       {
-        
-          DebugPrint("Root");
-          DebugPrint(S.Root);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("WriteScope");
-          DebugPrint(S.WriteScope);
+          
+            DebugPrint("  Root = ");
+            DebugPrint(S->Root);
+            DebugPrint("\n");
 
-          DebugPrint("ParentOfNextScope");
-          DebugPrint(S.ParentOfNextScope);
+            DebugPrint("  WriteScope = ");
+            DebugPrint(S->WriteScope);
+            DebugPrint("\n");
 
-          DebugPrint("FrameRecorded");
-          DebugPrint(S.FrameRecorded);
+            DebugPrint("  ParentOfNextScope = ");
+            DebugPrint(S->ParentOfNextScope);
+            DebugPrint("\n");
 
+            DebugPrint("  FrameRecorded = ");
+            DebugPrint(S->FrameRecorded);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/debug.h
-      function void DebugPrint(debug_thread_state S)
+      function void DebugPrint(debug_thread_state* S)
       {
-        
-          DebugPrint("Memory");
-          DebugPrint(S.Memory);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("MetaTable");
-          DebugPrint(S.MetaTable);
+          
+            DebugPrint("  Memory = ");
+            DebugPrint(S->Memory);
+            DebugPrint("\n");
 
-          DebugPrint("ScopeTrees");
-          DebugPrint(S.ScopeTrees);
+            DebugPrint("  MetaTable = ");
+            DebugPrint(S->MetaTable);
+            DebugPrint("\n");
 
-          DebugPrint("FirstFreeScope");
-          DebugPrint(S.FirstFreeScope);
+            DebugPrint("  ScopeTrees = ");
+            DebugPrint(S->ScopeTrees);
+            DebugPrint("\n");
 
-          DebugPrint("MutexOps");
-          DebugPrint(S.MutexOps);
+            DebugPrint("  FirstFreeScope = ");
+            DebugPrint(S->FirstFreeScope);
+            DebugPrint("\n");
 
-          DebugPrint("WriteIndex");
-          DebugPrint(S.WriteIndex);
+            DebugPrint("  MutexOps = ");
+            DebugPrint(S->MutexOps);
+            DebugPrint("\n");
 
-          DebugPrint("Pad");
-          DebugPrint(S.Pad);
+            DebugPrint("  WriteIndex = ");
+            DebugPrint(S->WriteIndex);
+            DebugPrint("\n");
 
+            DebugPrint("  Pad = ");
+            DebugPrint(S->Pad);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/debug.h
-      function void DebugPrint(registered_memory_arena S)
+      function void DebugPrint(registered_memory_arena* S)
       {
-        
-          DebugPrint("Arena");
-          DebugPrint(S.Arena);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Name");
-          DebugPrint(S.Name);
+          
+            DebugPrint("  Arena = ");
+            DebugPrint(S->Arena);
+            DebugPrint("\n");
 
-          DebugPrint("Expanded");
-          DebugPrint(S.Expanded);
+            DebugPrint("  Name = ");
+            DebugPrint(S->Name);
+            DebugPrint("\n");
 
+            DebugPrint("  Expanded = ");
+            DebugPrint(S->Expanded);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/debug.h
-      function void DebugPrint(selected_memory_arena S)
+      function void DebugPrint(selected_memory_arena* S)
       {
-        
-          DebugPrint("ArenaHash");
-          DebugPrint(S.ArenaHash);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("HeadArenaHash");
-          DebugPrint(S.HeadArenaHash);
+          
+            DebugPrint("  ArenaHash = ");
+            DebugPrint(S->ArenaHash);
+            DebugPrint("\n");
 
+            DebugPrint("  HeadArenaHash = ");
+            DebugPrint(S->HeadArenaHash);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/debug.h
-      function void DebugPrint(selected_arenas S)
+      function void DebugPrint(selected_arenas* S)
       {
-        
-          DebugPrint("Count");
-          DebugPrint(S.Count);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Arenas");
-          DebugPrint(S.Arenas);
+          
+            DebugPrint("  Count = ");
+            DebugPrint(S->Count);
+            DebugPrint("\n");
 
+            DebugPrint("  Arenas = ");
+            DebugPrint(S->Arenas);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/debug.h
-      function void DebugPrint(frame_stats S)
+      function void DebugPrint(frame_stats* S)
       {
-        
-          DebugPrint("TotalCycles");
-          DebugPrint(S.TotalCycles);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("StartingCycle");
-          DebugPrint(S.StartingCycle);
+          
+            DebugPrint("  TotalCycles = ");
+            DebugPrint(S->TotalCycles);
+            DebugPrint("\n");
 
-          DebugPrint("FrameMs");
-          DebugPrint(S.FrameMs);
+            DebugPrint("  StartingCycle = ");
+            DebugPrint(S->StartingCycle);
+            DebugPrint("\n");
 
+            DebugPrint("  FrameMs = ");
+            DebugPrint(S->FrameMs);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/debug.h
-      function void DebugPrint(called_function S)
+      function void DebugPrint(called_function* S)
       {
-        
-          DebugPrint("Name");
-          DebugPrint(S.Name);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("CallCount");
-          DebugPrint(S.CallCount);
+          
+            DebugPrint("  Name = ");
+            DebugPrint(S->Name);
+            DebugPrint("\n");
 
+            DebugPrint("  CallCount = ");
+            DebugPrint(S->CallCount);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/debug.h
-      function void DebugPrint(debug_draw_call S)
+      function void DebugPrint(debug_draw_call* S)
       {
-        
-          DebugPrint("Caller");
-          DebugPrint(S.Caller);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("N");
-          DebugPrint(S.N);
+          
+            DebugPrint("  Caller = ");
+            DebugPrint(S->Caller);
+            DebugPrint("\n");
 
-          DebugPrint("Calls");
-          DebugPrint(S.Calls);
+            DebugPrint("  N = ");
+            DebugPrint(S->N);
+            DebugPrint("\n");
 
+            DebugPrint("  Calls = ");
+            DebugPrint(S->Calls);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/debug.h
-      function void DebugPrint(debug_timed_function S)
+      function void DebugPrint(debug_timed_function* S)
       {
-        
-          DebugPrint("Scope");
-          DebugPrint(S.Scope);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Tree");
-          DebugPrint(S.Tree);
+          
+            DebugPrint("  Scope = ");
+            DebugPrint(S->Scope);
+            DebugPrint("\n");
 
+            DebugPrint("  Tree = ");
+            DebugPrint(S->Tree);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/debug_ui.h
-      function void DebugPrint(window_layout S)
+      function void DebugPrint(window_layout* S)
       {
-        
-          DebugPrint("Title");
-          DebugPrint(S.Title);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Basis");
-          DebugPrint(S.Basis);
+          
+            DebugPrint("  Title = ");
+            DebugPrint(S->Title);
+            DebugPrint("\n");
 
-          DebugPrint("MaxClip");
-          DebugPrint(S.MaxClip);
+            DebugPrint("  Basis = ");
+            DebugPrint(S->Basis);
+            DebugPrint("\n");
 
-          DebugPrint("InteractionStackIndex");
-          DebugPrint(S.InteractionStackIndex);
+            DebugPrint("  MaxClip = ");
+            DebugPrint(S->MaxClip);
+            DebugPrint("\n");
 
-          DebugPrint("zBackground");
-          DebugPrint(S.zBackground);
+            DebugPrint("  InteractionStackIndex = ");
+            DebugPrint(S->InteractionStackIndex);
+            DebugPrint("\n");
 
-          DebugPrint("zText");
-          DebugPrint(S.zText);
+            DebugPrint("  zBackground = ");
+            DebugPrint(S->zBackground);
+            DebugPrint("\n");
 
-          DebugPrint("zBorder");
-          DebugPrint(S.zBorder);
+            DebugPrint("  zText = ");
+            DebugPrint(S->zText);
+            DebugPrint("\n");
 
-          DebugPrint("zTitleBar");
-          DebugPrint(S.zTitleBar);
+            DebugPrint("  zBorder = ");
+            DebugPrint(S->zBorder);
+            DebugPrint("\n");
 
-          DebugPrint("NextHotWindow");
-          DebugPrint(S.NextHotWindow);
+            DebugPrint("  zTitleBar = ");
+            DebugPrint(S->zTitleBar);
+            DebugPrint("\n");
 
+            DebugPrint("  NextHotWindow = ");
+            DebugPrint(S->NextHotWindow);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/debug_ui.h
-      function void DebugPrint(font S)
+      function void DebugPrint(font* S)
       {
-        
-          DebugPrint("Size");
-          DebugPrint(S.Size);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
+          
+            DebugPrint("  Size = ");
+            DebugPrint(S->Size);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/debug_ui.h
-      function void DebugPrint(ui_element_reference S)
+      function void DebugPrint(ui_element_reference* S)
       {
-        
-          DebugPrint("Index");
-          DebugPrint(S.Index);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
+          
+            DebugPrint("  Index = ");
+            DebugPrint(S->Index);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/debug_ui.h
-      function void DebugPrint(ui_style S)
+      function void DebugPrint(ui_style* S)
       {
-        
-          DebugPrint("Color");
-          DebugPrint(S.Color);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("HoverColor");
-          DebugPrint(S.HoverColor);
+          
+            DebugPrint("  Color = ");
+            DebugPrint(S->Color);
+            DebugPrint("\n");
 
-          DebugPrint("PressedColor");
-          DebugPrint(S.PressedColor);
+            DebugPrint("  HoverColor = ");
+            DebugPrint(S->HoverColor);
+            DebugPrint("\n");
 
-          DebugPrint("ClickedColor");
-          DebugPrint(S.ClickedColor);
+            DebugPrint("  PressedColor = ");
+            DebugPrint(S->PressedColor);
+            DebugPrint("\n");
 
-          DebugPrint("ActiveColor");
-          DebugPrint(S.ActiveColor);
+            DebugPrint("  ClickedColor = ");
+            DebugPrint(S->ClickedColor);
+            DebugPrint("\n");
 
-          DebugPrint("Font");
-          DebugPrint(S.Font);
+            DebugPrint("  ActiveColor = ");
+            DebugPrint(S->ActiveColor);
+            DebugPrint("\n");
 
-          DebugPrint("IsActive");
-          DebugPrint(S.IsActive);
+            DebugPrint("  Font = ");
+            DebugPrint(S->Font);
+            DebugPrint("\n");
 
+            DebugPrint("  IsActive = ");
+            DebugPrint(S->IsActive);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/debug_ui.h
-      function void DebugPrint(layout S)
+      function void DebugPrint(layout* S)
       {
-        
-          DebugPrint("Basis");
-          DebugPrint(S.Basis);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("At");
-          DebugPrint(S.At);
+          
+            DebugPrint("  Basis = ");
+            DebugPrint(S->Basis);
+            DebugPrint("\n");
 
-          DebugPrint("DrawBounds");
-          DebugPrint(S.DrawBounds);
+            DebugPrint("  At = ");
+            DebugPrint(S->At);
+            DebugPrint("\n");
 
-          DebugPrint("Padding");
-          DebugPrint(S.Padding);
+            DebugPrint("  DrawBounds = ");
+            DebugPrint(S->DrawBounds);
+            DebugPrint("\n");
 
-          DebugPrint("Prev");
-          DebugPrint(S.Prev);
+            DebugPrint("  Padding = ");
+            DebugPrint(S->Padding);
+            DebugPrint("\n");
 
+            DebugPrint("  Prev = ");
+            DebugPrint(S->Prev);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/debug_ui.h
-      function void DebugPrint(ui_render_command_border S)
+      function void DebugPrint(ui_render_command_border* S)
       {
-        
-          DebugPrint("Window");
-          DebugPrint(S.Window);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Bounds");
-          DebugPrint(S.Bounds);
+          
+            DebugPrint("  Window = ");
+            DebugPrint(S->Window);
+            DebugPrint("\n");
 
-          DebugPrint("Color");
-          DebugPrint(S.Color);
+            DebugPrint("  Bounds = ");
+            DebugPrint(S->Bounds);
+            DebugPrint("\n");
 
+            DebugPrint("  Color = ");
+            DebugPrint(S->Color);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/debug_ui.h
-      function void DebugPrint(ui_render_command_window_start S)
+      function void DebugPrint(ui_render_command_window_start* S)
       {
-        
-          DebugPrint("Layout");
-          DebugPrint(S.Layout);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Window");
-          DebugPrint(S.Window);
+          
+            DebugPrint("  Layout = ");
+            DebugPrint(S->Layout);
+            DebugPrint("\n");
 
+            DebugPrint("  Window = ");
+            DebugPrint(S->Window);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/debug_ui.h
-      function void DebugPrint(ui_render_command_window_end S)
+      function void DebugPrint(ui_render_command_window_end* S)
       {
-        
-          DebugPrint("Window");
-          DebugPrint(S.Window);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
+          
+            DebugPrint("  Window = ");
+            DebugPrint(S->Window);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/debug_ui.h
-      function void DebugPrint(ui_render_command_column_start S)
+      function void DebugPrint(ui_render_command_column_start* S)
       {
-        
-          DebugPrint("Layout");
-          DebugPrint(S.Layout);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Style");
-          DebugPrint(S.Style);
+          
+            DebugPrint("  Layout = ");
+            DebugPrint(S->Layout);
+            DebugPrint("\n");
 
-          DebugPrint("Width");
-          DebugPrint(S.Width);
+            DebugPrint("  Style = ");
+            DebugPrint(S->Style);
+            DebugPrint("\n");
 
-          DebugPrint("MaxWidth");
-          DebugPrint(S.MaxWidth);
+            DebugPrint("  Width = ");
+            DebugPrint(S->Width);
+            DebugPrint("\n");
 
-          DebugPrint("Params");
-          DebugPrint(S.Params);
+            DebugPrint("  MaxWidth = ");
+            DebugPrint(S->MaxWidth);
+            DebugPrint("\n");
 
+            DebugPrint("  Params = ");
+            DebugPrint(S->Params);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/debug_ui.h
-      function void DebugPrint(ui_render_command_text S)
+      function void DebugPrint(ui_render_command_text* S)
       {
-        
-          DebugPrint("Layout");
-          DebugPrint(S.Layout);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Style");
-          DebugPrint(S.Style);
+          
+            DebugPrint("  Layout = ");
+            DebugPrint(S->Layout);
+            DebugPrint("\n");
 
-          DebugPrint("String");
-          DebugPrint(S.String);
+            DebugPrint("  Style = ");
+            DebugPrint(S->Style);
+            DebugPrint("\n");
 
+            DebugPrint("  String = ");
+            DebugPrint(S->String);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/debug_ui.h
-      function void DebugPrint(ui_render_command_text_at S)
+      function void DebugPrint(ui_render_command_text_at* S)
       {
-        
-          DebugPrint("Text");
-          DebugPrint(S.Text);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("At");
-          DebugPrint(S.At);
+          
+            DebugPrint("  Text = ");
+            DebugPrint(S->Text);
+            DebugPrint("\n");
 
-          DebugPrint("MaxClip");
-          DebugPrint(S.MaxClip);
+            DebugPrint("  At = ");
+            DebugPrint(S->At);
+            DebugPrint("\n");
 
+            DebugPrint("  MaxClip = ");
+            DebugPrint(S->MaxClip);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/debug_ui.h
-      function void DebugPrint(ui_render_command_untextured_quad S)
+      function void DebugPrint(ui_render_command_untextured_quad* S)
       {
-        
-          DebugPrint("Layout");
-          DebugPrint(S.Layout);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Style");
-          DebugPrint(S.Style);
+          
+            DebugPrint("  Layout = ");
+            DebugPrint(S->Layout);
+            DebugPrint("\n");
 
-          DebugPrint("QuadDim");
-          DebugPrint(S.QuadDim);
+            DebugPrint("  Style = ");
+            DebugPrint(S->Style);
+            DebugPrint("\n");
 
-          DebugPrint("zDepth");
-          DebugPrint(S.zDepth);
+            DebugPrint("  QuadDim = ");
+            DebugPrint(S->QuadDim);
+            DebugPrint("\n");
 
-          DebugPrint("Params");
-          DebugPrint(S.Params);
+            DebugPrint("  zDepth = ");
+            DebugPrint(S->zDepth);
+            DebugPrint("\n");
 
+            DebugPrint("  Params = ");
+            DebugPrint(S->Params);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/debug_ui.h
-      function void DebugPrint(ui_render_command_untextured_quad_at S)
+      function void DebugPrint(ui_render_command_untextured_quad_at* S)
       {
-        
-          DebugPrint("Layout");
-          DebugPrint(S.Layout);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Style");
-          DebugPrint(S.Style);
+          
+            DebugPrint("  Layout = ");
+            DebugPrint(S->Layout);
+            DebugPrint("\n");
 
-          DebugPrint("QuadDim");
-          DebugPrint(S.QuadDim);
+            DebugPrint("  Style = ");
+            DebugPrint(S->Style);
+            DebugPrint("\n");
 
-          DebugPrint("zDepth");
-          DebugPrint(S.zDepth);
+            DebugPrint("  QuadDim = ");
+            DebugPrint(S->QuadDim);
+            DebugPrint("\n");
 
+            DebugPrint("  zDepth = ");
+            DebugPrint(S->zDepth);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/debug_ui.h
-      function void DebugPrint(ui_render_command_textured_quad S)
+      function void DebugPrint(ui_render_command_textured_quad* S)
       {
-        
-          DebugPrint("Layout");
-          DebugPrint(S.Layout);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("TextureSlice");
-          DebugPrint(S.TextureSlice);
+          
+            DebugPrint("  Layout = ");
+            DebugPrint(S->Layout);
+            DebugPrint("\n");
 
-          DebugPrint("zDepth");
-          DebugPrint(S.zDepth);
+            DebugPrint("  TextureSlice = ");
+            DebugPrint(S->TextureSlice);
+            DebugPrint("\n");
 
+            DebugPrint("  zDepth = ");
+            DebugPrint(S->zDepth);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/debug_ui.h
-      function void DebugPrint(ui_render_command_button_start S)
+      function void DebugPrint(ui_render_command_button_start* S)
       {
-        
-          DebugPrint("ID");
-          DebugPrint(S.ID);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Style");
-          DebugPrint(S.Style);
+          
+            DebugPrint("  ID = ");
+            DebugPrint(S->ID);
+            DebugPrint("\n");
 
+            DebugPrint("  Style = ");
+            DebugPrint(S->Style);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/debug_ui.h
-      function void DebugPrint(ui_render_command_button_end S)
+      function void DebugPrint(ui_render_command_button_end* S)
       {
-        
-          DebugPrint("Params");
-          DebugPrint(S.Params);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
+          
+            DebugPrint("  Params = ");
+            DebugPrint(S->Params);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/debug_ui.h
-      function void DebugPrint(ui_render_command_table_start S)
+      function void DebugPrint(ui_render_command_table_start* S)
       {
-        
-          DebugPrint("Layout");
-          DebugPrint(S.Layout);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Style");
-          DebugPrint(S.Style);
+          
+            DebugPrint("  Layout = ");
+            DebugPrint(S->Layout);
+            DebugPrint("\n");
 
-          DebugPrint("Position");
-          DebugPrint(S.Position);
+            DebugPrint("  Style = ");
+            DebugPrint(S->Style);
+            DebugPrint("\n");
 
-          DebugPrint("RelativeTo");
-          DebugPrint(S.RelativeTo);
+            DebugPrint("  Position = ");
+            DebugPrint(S->Position);
+            DebugPrint("\n");
 
+            DebugPrint("  RelativeTo = ");
+            DebugPrint(S->RelativeTo);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/debug_ui.h
-      function void DebugPrint(ui_render_command_buffer S)
+      function void DebugPrint(ui_render_command_buffer* S)
       {
-        
-          DebugPrint("CommandCount");
-          DebugPrint(S.CommandCount);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Commands");
-          DebugPrint(S.Commands);
+          
+            DebugPrint("  CommandCount = ");
+            DebugPrint(S->CommandCount);
+            DebugPrint("\n");
 
+            DebugPrint("  Commands = ");
+            DebugPrint(S->Commands);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/debug_ui.h
-      function void DebugPrint(clip_result S)
+      function void DebugPrint(clip_result* S)
       {
-        
-          DebugPrint("ClipStatus");
-          DebugPrint(S.ClipStatus);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("MaxClip");
-          DebugPrint(S.MaxClip);
+          
+            DebugPrint("  ClipStatus = ");
+            DebugPrint(S->ClipStatus);
+            DebugPrint("\n");
 
-          DebugPrint("PartialClip");
-          DebugPrint(S.PartialClip);
+            DebugPrint("  MaxClip = ");
+            DebugPrint(S->MaxClip);
+            DebugPrint("\n");
 
+            DebugPrint("  PartialClip = ");
+            DebugPrint(S->PartialClip);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/debug_ui.h
-      function void DebugPrint(sort_key S)
+      function void DebugPrint(sort_key* S)
       {
-        
-          DebugPrint("Value");
-          DebugPrint(S.Value);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Index");
-          DebugPrint(S.Index);
+          
+            DebugPrint("  Value = ");
+            DebugPrint(S->Value);
+            DebugPrint("\n");
 
+            DebugPrint("  Index = ");
+            DebugPrint(S->Index);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/debug_ui.h
-      function void DebugPrint(window_sort_params S)
+      function void DebugPrint(window_sort_params* S)
       {
-        
-          DebugPrint("Count");
-          DebugPrint(S.Count);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("LowestInteractionStackIndex");
-          DebugPrint(S.LowestInteractionStackIndex);
+          
+            DebugPrint("  Count = ");
+            DebugPrint(S->Count);
+            DebugPrint("\n");
 
-          DebugPrint("SortKeys");
-          DebugPrint(S.SortKeys);
+            DebugPrint("  LowestInteractionStackIndex = ");
+            DebugPrint(S->LowestInteractionStackIndex);
+            DebugPrint("\n");
 
+            DebugPrint("  SortKeys = ");
+            DebugPrint(S->SortKeys);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/debug_ui.h
-      function void DebugPrint(find_button_start_result S)
+      function void DebugPrint(find_button_start_result* S)
       {
-        
-          DebugPrint("Index");
-          DebugPrint(S.Index);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Command");
-          DebugPrint(S.Command);
+          
+            DebugPrint("  Index = ");
+            DebugPrint(S->Index);
+            DebugPrint("\n");
 
+            DebugPrint("  Command = ");
+            DebugPrint(S->Command);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/debug_ui.h
-      function void DebugPrint(find_command_result S)
+      function void DebugPrint(find_command_result* S)
       {
-        
-          DebugPrint("Command");
-          DebugPrint(S.Command);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Index");
-          DebugPrint(S.Index);
+          
+            DebugPrint("  Command = ");
+            DebugPrint(S->Command);
+            DebugPrint("\n");
 
+            DebugPrint("  Index = ");
+            DebugPrint(S->Index);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/interactable.h
-      function void DebugPrint(interactable_handle S)
+      function void DebugPrint(interactable_handle* S)
       {
-        
-          DebugPrint("Id");
-          DebugPrint(S.Id);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
+          
+            DebugPrint("  Id = ");
+            DebugPrint(S->Id);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/interactable.h
-      function void DebugPrint(interactable S)
+      function void DebugPrint(interactable* S)
       {
-        
-          DebugPrint("ID");
-          DebugPrint(S.ID);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("MinP");
-          DebugPrint(S.MinP);
+          
+            DebugPrint("  ID = ");
+            DebugPrint(S->ID);
+            DebugPrint("\n");
 
-          DebugPrint("MaxP");
-          DebugPrint(S.MaxP);
+            DebugPrint("  MinP = ");
+            DebugPrint(S->MinP);
+            DebugPrint("\n");
 
-          DebugPrint("Window");
-          DebugPrint(S.Window);
+            DebugPrint("  MaxP = ");
+            DebugPrint(S->MaxP);
+            DebugPrint("\n");
 
+            DebugPrint("  Window = ");
+            DebugPrint(S->Window);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/interactable.h
-      function void DebugPrint(button_interaction_result S)
+      function void DebugPrint(button_interaction_result* S)
       {
-        
-          DebugPrint("Pressed");
-          DebugPrint(S.Pressed);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Clicked");
-          DebugPrint(S.Clicked);
+          
+            DebugPrint("  Pressed = ");
+            DebugPrint(S->Pressed);
+            DebugPrint("\n");
 
-          DebugPrint("Hover");
-          DebugPrint(S.Hover);
+            DebugPrint("  Clicked = ");
+            DebugPrint(S->Clicked);
+            DebugPrint("\n");
 
+            DebugPrint("  Hover = ");
+            DebugPrint(S->Hover);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/debug_render.h
-      function void DebugPrint(render_state S)
+      function void DebugPrint(render_state* S)
       {
-        
-          DebugPrint("Window");
-          DebugPrint(S.Window);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("WindowStartCommandIndex");
-          DebugPrint(S.WindowStartCommandIndex);
+          
+            DebugPrint("  Window = ");
+            DebugPrint(S->Window);
+            DebugPrint("\n");
 
-          DebugPrint("Layout");
-          DebugPrint(S.Layout);
+            DebugPrint("  WindowStartCommandIndex = ");
+            DebugPrint(S->WindowStartCommandIndex);
+            DebugPrint("\n");
 
-          DebugPrint("Hover");
-          DebugPrint(S.Hover);
+            DebugPrint("  Layout = ");
+            DebugPrint(S->Layout);
+            DebugPrint("\n");
 
-          DebugPrint("Pressed");
-          DebugPrint(S.Pressed);
+            DebugPrint("  Hover = ");
+            DebugPrint(S->Hover);
+            DebugPrint("\n");
 
-          DebugPrint("Clicked");
-          DebugPrint(S.Clicked);
+            DebugPrint("  Pressed = ");
+            DebugPrint(S->Pressed);
+            DebugPrint("\n");
 
+            DebugPrint("  Clicked = ");
+            DebugPrint(S->Clicked);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/debug_system/headers/debug_render.h
-      function void DebugPrint(debug_text_render_group S)
+      function void DebugPrint(debug_text_render_group* S)
       {
-        
-          DebugPrint("SolidUIVertexBuffer");
-          DebugPrint(S.SolidUIVertexBuffer);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("SolidUIColorBuffer");
-          DebugPrint(S.SolidUIColorBuffer);
+          
+            DebugPrint("  SolidUIVertexBuffer = ");
+            DebugPrint(S->SolidUIVertexBuffer);
+            DebugPrint("\n");
 
-          DebugPrint("SolidUIUVBuffer");
-          DebugPrint(S.SolidUIUVBuffer);
+            DebugPrint("  SolidUIColorBuffer = ");
+            DebugPrint(S->SolidUIColorBuffer);
+            DebugPrint("\n");
 
-          DebugPrint("FontTexture");
-          DebugPrint(S.FontTexture);
+            DebugPrint("  SolidUIUVBuffer = ");
+            DebugPrint(S->SolidUIUVBuffer);
+            DebugPrint("\n");
 
-          DebugPrint("Text2DShader");
-          DebugPrint(S.Text2DShader);
+            DebugPrint("  FontTexture = ");
+            DebugPrint(S->FontTexture);
+            DebugPrint("\n");
 
-          DebugPrint("TextTextureUniform");
-          DebugPrint(S.TextTextureUniform);
+            DebugPrint("  Text2DShader = ");
+            DebugPrint(S->Text2DShader);
+            DebugPrint("\n");
 
-          DebugPrint("Geo");
-          DebugPrint(S.Geo);
+            DebugPrint("  TextTextureUniform = ");
+            DebugPrint(S->TextTextureUniform);
+            DebugPrint("\n");
 
-          DebugPrint("DebugFontTextureShader");
-          DebugPrint(S.DebugFontTextureShader);
+            DebugPrint("  Geo = ");
+            DebugPrint(S->Geo);
+            DebugPrint("\n");
 
-          DebugPrint("SolidUIShader");
-          DebugPrint(S.SolidUIShader);
+            DebugPrint("  DebugFontTextureShader = ");
+            DebugPrint(S->DebugFontTextureShader);
+            DebugPrint("\n");
 
+            DebugPrint("  SolidUIShader = ");
+            DebugPrint(S->SolidUIShader);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/preprocessor.h
-      function void DebugPrint(c_decl_variable S)
+      function void DebugPrint(c_decl_variable* S)
       {
-        
-          DebugPrint("Type");
-          DebugPrint(S.Type);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Name");
-          DebugPrint(S.Name);
+          
+            DebugPrint("  Type = ");
+            DebugPrint(S->Type);
+            DebugPrint("\n");
 
+            DebugPrint("  Name = ");
+            DebugPrint(S->Name);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/preprocessor.h
-      function void DebugPrint(c_decl_stream S)
+      function void DebugPrint(c_decl_stream* S)
       {
-        
-          DebugPrint("FirstChunk");
-          DebugPrint(S.FirstChunk);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("LastChunk");
-          DebugPrint(S.LastChunk);
+          
+            DebugPrint("  FirstChunk = ");
+            DebugPrint(S->FirstChunk);
+            DebugPrint("\n");
 
+            DebugPrint("  LastChunk = ");
+            DebugPrint(S->LastChunk);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/preprocessor.h
-      function void DebugPrint(struct_def S)
+      function void DebugPrint(struct_def* S)
       {
-        
-          DebugPrint("Name");
-          DebugPrint(S.Name);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("DefinedInFile");
-          DebugPrint(S.DefinedInFile);
+          
+            DebugPrint("  Name = ");
+            DebugPrint(S->Name);
+            DebugPrint("\n");
 
-          DebugPrint("Fields");
-          DebugPrint(S.Fields);
+            DebugPrint("  DefinedInFile = ");
+            DebugPrint(S->DefinedInFile);
+            DebugPrint("\n");
 
+            DebugPrint("  Fields = ");
+            DebugPrint(S->Fields);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/preprocessor.h
-      function void DebugPrint(c_decl_union S)
+      function void DebugPrint(c_decl_union* S)
       {
-        
-          DebugPrint("Body");
-          DebugPrint(S.Body);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
+          
+            DebugPrint("  Body = ");
+            DebugPrint(S->Body);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/preprocessor.h
-      function void DebugPrint(enum_field S)
+      function void DebugPrint(enum_field* S)
       {
-        
-          DebugPrint("Name");
-          DebugPrint(S.Name);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Value");
-          DebugPrint(S.Value);
+          
+            DebugPrint("  Name = ");
+            DebugPrint(S->Name);
+            DebugPrint("\n");
 
+            DebugPrint("  Value = ");
+            DebugPrint(S->Value);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/preprocessor.h
-      function void DebugPrint(d_union_member S)
+      function void DebugPrint(d_union_member* S)
       {
-        
-          DebugPrint("Type");
-          DebugPrint(S.Type);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Name");
-          DebugPrint(S.Name);
+          
+            DebugPrint("  Type = ");
+            DebugPrint(S->Type);
+            DebugPrint("\n");
 
-          DebugPrint("Flags");
-          DebugPrint(S.Flags);
+            DebugPrint("  Name = ");
+            DebugPrint(S->Name);
+            DebugPrint("\n");
 
+            DebugPrint("  Flags = ");
+            DebugPrint(S->Flags);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/preprocessor.h
-      function void DebugPrint(c_decl_stream_chunk S)
+      function void DebugPrint(c_decl_stream_chunk* S)
       {
-        
-          DebugPrint("Element");
-          DebugPrint(S.Element);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Next");
-          DebugPrint(S.Next);
+          
+            DebugPrint("  Element = ");
+            DebugPrint(S->Element);
+            DebugPrint("\n");
 
+            DebugPrint("  Next = ");
+            DebugPrint(S->Next);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/preprocessor.h
-      function void DebugPrint(enum_def S)
+      function void DebugPrint(enum_def* S)
       {
-        
-          DebugPrint("Name");
-          DebugPrint(S.Name);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Fields");
-          DebugPrint(S.Fields);
+          
+            DebugPrint("  Name = ");
+            DebugPrint(S->Name);
+            DebugPrint("\n");
 
+            DebugPrint("  Fields = ");
+            DebugPrint(S->Fields);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/preprocessor.h
-      function void DebugPrint(c_token S)
+      function void DebugPrint(c_token* S)
       {
-        
-          DebugPrint("Type");
-          DebugPrint(S.Type);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Value");
-          DebugPrint(S.Value);
+          
+            DebugPrint("  Type = ");
+            DebugPrint(S->Type);
+            DebugPrint("\n");
 
+            DebugPrint("  Value = ");
+            DebugPrint(S->Value);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/preprocessor.h
-      function void DebugPrint(d_union_decl S)
+      function void DebugPrint(d_union_decl* S)
       {
-        
-          DebugPrint("Name");
-          DebugPrint(S.Name);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Members");
-          DebugPrint(S.Members);
+          
+            DebugPrint("  Name = ");
+            DebugPrint(S->Name);
+            DebugPrint("\n");
 
-          DebugPrint("CommonMembers");
-          DebugPrint(S.CommonMembers);
+            DebugPrint("  Members = ");
+            DebugPrint(S->Members);
+            DebugPrint("\n");
 
-          DebugPrint("CustomEnumType");
-          DebugPrint(S.CustomEnumType);
+            DebugPrint("  CommonMembers = ");
+            DebugPrint(S->CommonMembers);
+            DebugPrint("\n");
 
+            DebugPrint("  CustomEnumType = ");
+            DebugPrint(S->CustomEnumType);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/preprocessor.h
-      function void DebugPrint(c_parse_result S)
+      function void DebugPrint(c_parse_result* S)
       {
-        
-          DebugPrint("Valid");
-          DebugPrint(S.Valid);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Tokens");
-          DebugPrint(S.Tokens);
+          
+            DebugPrint("  Valid = ");
+            DebugPrint(S->Valid);
+            DebugPrint("\n");
 
-          DebugPrint("OutputTokens");
-          DebugPrint(S.OutputTokens);
+            DebugPrint("  Tokens = ");
+            DebugPrint(S->Tokens);
+            DebugPrint("\n");
 
-          DebugPrint("Filename");
-          DebugPrint(S.Filename);
+            DebugPrint("  OutputTokens = ");
+            DebugPrint(S->OutputTokens);
+            DebugPrint("\n");
 
-          DebugPrint("LineNumber");
-          DebugPrint(S.LineNumber);
+            DebugPrint("  Filename = ");
+            DebugPrint(S->Filename);
+            DebugPrint("\n");
 
+            DebugPrint("  LineNumber = ");
+            DebugPrint(S->LineNumber);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/preprocessor.h
-      function void DebugPrint(todo S)
+      function void DebugPrint(todo* S)
       {
-        
-          DebugPrint("Id");
-          DebugPrint(S.Id);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Value");
-          DebugPrint(S.Value);
+          
+            DebugPrint("  Id = ");
+            DebugPrint(S->Id);
+            DebugPrint("\n");
 
-          DebugPrint("FoundInCodebase");
-          DebugPrint(S.FoundInCodebase);
+            DebugPrint("  Value = ");
+            DebugPrint(S->Value);
+            DebugPrint("\n");
 
+            DebugPrint("  FoundInCodebase = ");
+            DebugPrint(S->FoundInCodebase);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/preprocessor.h
-      function void DebugPrint(tag S)
+      function void DebugPrint(tag* S)
       {
-        
-          DebugPrint("Tag");
-          DebugPrint(S.Tag);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Todos");
-          DebugPrint(S.Todos);
+          
+            DebugPrint("  Tag = ");
+            DebugPrint(S->Tag);
+            DebugPrint("\n");
 
+            DebugPrint("  Todos = ");
+            DebugPrint(S->Todos);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/preprocessor.h
-      function void DebugPrint(person S)
+      function void DebugPrint(person* S)
       {
-        
-          DebugPrint("Name");
-          DebugPrint(S.Name);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Tags");
-          DebugPrint(S.Tags);
+          
+            DebugPrint("  Name = ");
+            DebugPrint(S->Name);
+            DebugPrint("\n");
 
+            DebugPrint("  Tags = ");
+            DebugPrint(S->Tags);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/preprocessor.h
-      function void DebugPrint(arguments S)
+      function void DebugPrint(arguments* S)
       {
-        
-          DebugPrint("OutPath");
-          DebugPrint(S.OutPath);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Files");
-          DebugPrint(S.Files);
+          
+            DebugPrint("  OutPath = ");
+            DebugPrint(S->OutPath);
+            DebugPrint("\n");
 
-          DebugPrint("DoDebugWindow");
-          DebugPrint(S.DoDebugWindow);
+            DebugPrint("  Files = ");
+            DebugPrint(S->Files);
+            DebugPrint("\n");
 
+            DebugPrint("  DoDebugWindow = ");
+            DebugPrint(S->DoDebugWindow);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/preprocessor.h
-      function void DebugPrint(program_datatypes S)
+      function void DebugPrint(program_datatypes* S)
       {
-        
-          DebugPrint("Structs");
-          DebugPrint(S.Structs);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Enums");
-          DebugPrint(S.Enums);
+          
+            DebugPrint("  Structs = ");
+            DebugPrint(S->Structs);
+            DebugPrint("\n");
 
+            DebugPrint("  Enums = ");
+            DebugPrint(S->Enums);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/preprocessor.h
-      function void DebugPrint(c_decl_iterator S)
+      function void DebugPrint(c_decl_iterator* S)
       {
-        
-          DebugPrint("At");
-          DebugPrint(S.At);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
+          
+            DebugPrint("  At = ");
+            DebugPrint(S->At);
+            DebugPrint("\n");
+
+        }
+      }
+
+      // Source File : src/metaprogramming/preprocessor.h
+      function void DebugPrint(for_enum_constraints* S)
+      {
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
+
+          
+            DebugPrint("  TypeName = ");
+            DebugPrint(S->TypeName);
+            DebugPrint("\n");
+
+            DebugPrint("  ValueName = ");
+            DebugPrint(S->ValueName);
+            DebugPrint("\n");
+
+        }
+      }
+
+      // Source File : src/metaprogramming/preprocessor.h
+      function void DebugPrint(body_text_constraints* S)
+      {
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
+
+          
+            DebugPrint("  MemberContains = ");
+            DebugPrint(S->MemberContains);
+            DebugPrint("\n");
+
+            DebugPrint("  TypeTag = ");
+            DebugPrint(S->TypeTag);
+            DebugPrint("\n");
+
+            DebugPrint("  TypeName = ");
+            DebugPrint(S->TypeName);
+            DebugPrint("\n");
+
+            DebugPrint("  ValueName = ");
+            DebugPrint(S->ValueName);
+            DebugPrint("\n");
+
+        }
+      }
+
+      // Source File : src/metaprogramming/preprocessor.h
+      function void DebugPrint(replacement_pattern* S)
+      {
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
+
+          
+            DebugPrint("  Match = ");
+            DebugPrint(S->Match);
+            DebugPrint("\n");
+
+            DebugPrint("  Replace = ");
+            DebugPrint(S->Replace);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/output/generate_cursor_c_token.h
-      function void DebugPrint(c_token_cursor S)
+      function void DebugPrint(c_token_cursor* S)
       {
-        
-          DebugPrint("Start");
-          DebugPrint(S.Start);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("End");
-          DebugPrint(S.End);
+          
+            DebugPrint("  Start = ");
+            DebugPrint(S->Start);
+            DebugPrint("\n");
 
-          DebugPrint("At");
-          DebugPrint(S.At);
+            DebugPrint("  End = ");
+            DebugPrint(S->End);
+            DebugPrint("\n");
 
+            DebugPrint("  At = ");
+            DebugPrint(S->At);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/output/generate_stream_enum_field.h
-      function void DebugPrint(enum_field_stream_chunk S)
+      function void DebugPrint(enum_field_stream_chunk* S)
       {
-        
-          DebugPrint("Element");
-          DebugPrint(S.Element);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Next");
-          DebugPrint(S.Next);
+          
+            DebugPrint("  Element = ");
+            DebugPrint(S->Element);
+            DebugPrint("\n");
 
+            DebugPrint("  Next = ");
+            DebugPrint(S->Next);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/output/generate_stream_enum_field.h
-      function void DebugPrint(enum_field_stream S)
+      function void DebugPrint(enum_field_stream* S)
       {
-        
-          DebugPrint("FirstChunk");
-          DebugPrint(S.FirstChunk);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("LastChunk");
-          DebugPrint(S.LastChunk);
+          
+            DebugPrint("  FirstChunk = ");
+            DebugPrint(S->FirstChunk);
+            DebugPrint("\n");
 
+            DebugPrint("  LastChunk = ");
+            DebugPrint(S->LastChunk);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/output/generate_stream_enum_field.h
-      function void DebugPrint(enum_field_iterator S)
+      function void DebugPrint(enum_field_iterator* S)
       {
-        
-          DebugPrint("Stream");
-          DebugPrint(S.Stream);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("At");
-          DebugPrint(S.At);
+          
+            DebugPrint("  Stream = ");
+            DebugPrint(S->Stream);
+            DebugPrint("\n");
 
+            DebugPrint("  At = ");
+            DebugPrint(S->At);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/output/generate_cursor_enum_def.h
-      function void DebugPrint(enum_def_cursor S)
+      function void DebugPrint(enum_def_cursor* S)
       {
-        
-          DebugPrint("Start");
-          DebugPrint(S.Start);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("End");
-          DebugPrint(S.End);
+          
+            DebugPrint("  Start = ");
+            DebugPrint(S->Start);
+            DebugPrint("\n");
 
-          DebugPrint("At");
-          DebugPrint(S.At);
+            DebugPrint("  End = ");
+            DebugPrint(S->End);
+            DebugPrint("\n");
 
+            DebugPrint("  At = ");
+            DebugPrint(S->At);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/output/generate_stream_enum_def.h
-      function void DebugPrint(enum_def_stream_chunk S)
+      function void DebugPrint(enum_def_stream_chunk* S)
       {
-        
-          DebugPrint("Element");
-          DebugPrint(S.Element);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Next");
-          DebugPrint(S.Next);
+          
+            DebugPrint("  Element = ");
+            DebugPrint(S->Element);
+            DebugPrint("\n");
 
+            DebugPrint("  Next = ");
+            DebugPrint(S->Next);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/output/generate_stream_enum_def.h
-      function void DebugPrint(enum_def_stream S)
+      function void DebugPrint(enum_def_stream* S)
       {
-        
-          DebugPrint("FirstChunk");
-          DebugPrint(S.FirstChunk);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("LastChunk");
-          DebugPrint(S.LastChunk);
+          
+            DebugPrint("  FirstChunk = ");
+            DebugPrint(S->FirstChunk);
+            DebugPrint("\n");
 
+            DebugPrint("  LastChunk = ");
+            DebugPrint(S->LastChunk);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/output/generate_stream_enum_def.h
-      function void DebugPrint(enum_def_iterator S)
+      function void DebugPrint(enum_def_iterator* S)
       {
-        
-          DebugPrint("Stream");
-          DebugPrint(S.Stream);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("At");
-          DebugPrint(S.At);
+          
+            DebugPrint("  Stream = ");
+            DebugPrint(S->Stream);
+            DebugPrint("\n");
 
+            DebugPrint("  At = ");
+            DebugPrint(S->At);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/output/generate_cursor_v3.h
-      function void DebugPrint(v3_cursor S)
+      function void DebugPrint(v3_cursor* S)
       {
-        
-          DebugPrint("Start");
-          DebugPrint(S.Start);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("End");
-          DebugPrint(S.End);
+          
+            DebugPrint("  Start = ");
+            DebugPrint(S->Start);
+            DebugPrint("\n");
 
-          DebugPrint("At");
-          DebugPrint(S.At);
+            DebugPrint("  End = ");
+            DebugPrint(S->End);
+            DebugPrint("\n");
 
+            DebugPrint("  At = ");
+            DebugPrint(S->At);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/output/d_union_c_decl.h
-      function void DebugPrint(c_decl S)
+      function void DebugPrint(c_decl* S)
       {
-        
-          DebugPrint("Type");
-          DebugPrint(S.Type);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
+          
+            DebugPrint("  Type = ");
+            DebugPrint(S->Type);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/output/generate_stream_d_union_member.h
-      function void DebugPrint(d_union_member_stream_chunk S)
+      function void DebugPrint(d_union_member_stream_chunk* S)
       {
-        
-          DebugPrint("Element");
-          DebugPrint(S.Element);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Next");
-          DebugPrint(S.Next);
+          
+            DebugPrint("  Element = ");
+            DebugPrint(S->Element);
+            DebugPrint("\n");
 
+            DebugPrint("  Next = ");
+            DebugPrint(S->Next);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/output/generate_stream_d_union_member.h
-      function void DebugPrint(d_union_member_stream S)
+      function void DebugPrint(d_union_member_stream* S)
       {
-        
-          DebugPrint("FirstChunk");
-          DebugPrint(S.FirstChunk);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("LastChunk");
-          DebugPrint(S.LastChunk);
+          
+            DebugPrint("  FirstChunk = ");
+            DebugPrint(S->FirstChunk);
+            DebugPrint("\n");
 
+            DebugPrint("  LastChunk = ");
+            DebugPrint(S->LastChunk);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/output/generate_stream_d_union_member.h
-      function void DebugPrint(d_union_member_iterator S)
+      function void DebugPrint(d_union_member_iterator* S)
       {
-        
-          DebugPrint("Stream");
-          DebugPrint(S.Stream);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("At");
-          DebugPrint(S.At);
+          
+            DebugPrint("  Stream = ");
+            DebugPrint(S->Stream);
+            DebugPrint("\n");
 
+            DebugPrint("  At = ");
+            DebugPrint(S->At);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/output/d_union_ui_render_command.h
-      function void DebugPrint(ui_render_command S)
+      function void DebugPrint(ui_render_command* S)
       {
-        
-          DebugPrint("Type");
-          DebugPrint(S.Type);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
+          
+            DebugPrint("  Type = ");
+            DebugPrint(S->Type);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/output/generate_stream_struct_def.h
-      function void DebugPrint(struct_def_stream_chunk S)
+      function void DebugPrint(struct_def_stream_chunk* S)
       {
-        
-          DebugPrint("Element");
-          DebugPrint(S.Element);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Next");
-          DebugPrint(S.Next);
+          
+            DebugPrint("  Element = ");
+            DebugPrint(S->Element);
+            DebugPrint("\n");
 
+            DebugPrint("  Next = ");
+            DebugPrint(S->Next);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/output/generate_stream_struct_def.h
-      function void DebugPrint(struct_def_stream S)
+      function void DebugPrint(struct_def_stream* S)
       {
-        
-          DebugPrint("FirstChunk");
-          DebugPrint(S.FirstChunk);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("LastChunk");
-          DebugPrint(S.LastChunk);
+          
+            DebugPrint("  FirstChunk = ");
+            DebugPrint(S->FirstChunk);
+            DebugPrint("\n");
 
+            DebugPrint("  LastChunk = ");
+            DebugPrint(S->LastChunk);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/output/generate_stream_struct_def.h
-      function void DebugPrint(struct_def_iterator S)
+      function void DebugPrint(struct_def_iterator* S)
       {
-        
-          DebugPrint("Stream");
-          DebugPrint(S.Stream);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("At");
-          DebugPrint(S.At);
+          
+            DebugPrint("  Stream = ");
+            DebugPrint(S->Stream);
+            DebugPrint("\n");
 
+            DebugPrint("  At = ");
+            DebugPrint(S->At);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/output/generate_cursor_counted_string.h
-      function void DebugPrint(counted_string_cursor S)
+      function void DebugPrint(counted_string_cursor* S)
       {
-        
-          DebugPrint("Start");
-          DebugPrint(S.Start);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("End");
-          DebugPrint(S.End);
+          
+            DebugPrint("  Start = ");
+            DebugPrint(S->Start);
+            DebugPrint("\n");
 
-          DebugPrint("At");
-          DebugPrint(S.At);
+            DebugPrint("  End = ");
+            DebugPrint(S->End);
+            DebugPrint("\n");
 
+            DebugPrint("  At = ");
+            DebugPrint(S->At);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/output/generate_stream_tag.h
-      function void DebugPrint(tag_stream_chunk S)
+      function void DebugPrint(tag_stream_chunk* S)
       {
-        
-          DebugPrint("Element");
-          DebugPrint(S.Element);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Next");
-          DebugPrint(S.Next);
+          
+            DebugPrint("  Element = ");
+            DebugPrint(S->Element);
+            DebugPrint("\n");
 
+            DebugPrint("  Next = ");
+            DebugPrint(S->Next);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/output/generate_stream_tag.h
-      function void DebugPrint(tag_stream S)
+      function void DebugPrint(tag_stream* S)
       {
-        
-          DebugPrint("FirstChunk");
-          DebugPrint(S.FirstChunk);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("LastChunk");
-          DebugPrint(S.LastChunk);
+          
+            DebugPrint("  FirstChunk = ");
+            DebugPrint(S->FirstChunk);
+            DebugPrint("\n");
 
+            DebugPrint("  LastChunk = ");
+            DebugPrint(S->LastChunk);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/output/generate_stream_tag.h
-      function void DebugPrint(tag_iterator S)
+      function void DebugPrint(tag_iterator* S)
       {
-        
-          DebugPrint("Stream");
-          DebugPrint(S.Stream);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("At");
-          DebugPrint(S.At);
+          
+            DebugPrint("  Stream = ");
+            DebugPrint(S->Stream);
+            DebugPrint("\n");
 
+            DebugPrint("  At = ");
+            DebugPrint(S->At);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/output/generate_cursor_c_parse_result.h
-      function void DebugPrint(c_parse_result_cursor S)
+      function void DebugPrint(c_parse_result_cursor* S)
       {
-        
-          DebugPrint("Start");
-          DebugPrint(S.Start);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("End");
-          DebugPrint(S.End);
+          
+            DebugPrint("  Start = ");
+            DebugPrint(S->Start);
+            DebugPrint("\n");
 
-          DebugPrint("At");
-          DebugPrint(S.At);
+            DebugPrint("  End = ");
+            DebugPrint(S->End);
+            DebugPrint("\n");
 
+            DebugPrint("  At = ");
+            DebugPrint(S->At);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/output/d_union_c_decl_function.h
-      function void DebugPrint(c_decl_function S)
+      function void DebugPrint(c_decl_function* S)
       {
-        
-          DebugPrint("Type");
-          DebugPrint(S.Type);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
+          
+            DebugPrint("  Type = ");
+            DebugPrint(S->Type);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/output/generate_cursor_c_decl.h
-      function void DebugPrint(c_decl_cursor S)
+      function void DebugPrint(c_decl_cursor* S)
       {
-        
-          DebugPrint("Start");
-          DebugPrint(S.Start);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("End");
-          DebugPrint(S.End);
+          
+            DebugPrint("  Start = ");
+            DebugPrint(S->Start);
+            DebugPrint("\n");
 
-          DebugPrint("At");
-          DebugPrint(S.At);
+            DebugPrint("  End = ");
+            DebugPrint(S->End);
+            DebugPrint("\n");
 
+            DebugPrint("  At = ");
+            DebugPrint(S->At);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/output/generate_cursor_struct_def.h
-      function void DebugPrint(struct_def_cursor S)
+      function void DebugPrint(struct_def_cursor* S)
       {
-        
-          DebugPrint("Start");
-          DebugPrint(S.Start);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("End");
-          DebugPrint(S.End);
+          
+            DebugPrint("  Start = ");
+            DebugPrint(S->Start);
+            DebugPrint("\n");
 
-          DebugPrint("At");
-          DebugPrint(S.At);
+            DebugPrint("  End = ");
+            DebugPrint(S->End);
+            DebugPrint("\n");
 
+            DebugPrint("  At = ");
+            DebugPrint(S->At);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/output/generate_stream_person.h
-      function void DebugPrint(person_stream_chunk S)
+      function void DebugPrint(person_stream_chunk* S)
       {
-        
-          DebugPrint("Element");
-          DebugPrint(S.Element);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Next");
-          DebugPrint(S.Next);
+          
+            DebugPrint("  Element = ");
+            DebugPrint(S->Element);
+            DebugPrint("\n");
 
+            DebugPrint("  Next = ");
+            DebugPrint(S->Next);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/output/generate_stream_person.h
-      function void DebugPrint(person_stream S)
+      function void DebugPrint(person_stream* S)
       {
-        
-          DebugPrint("FirstChunk");
-          DebugPrint(S.FirstChunk);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("LastChunk");
-          DebugPrint(S.LastChunk);
+          
+            DebugPrint("  FirstChunk = ");
+            DebugPrint(S->FirstChunk);
+            DebugPrint("\n");
 
+            DebugPrint("  LastChunk = ");
+            DebugPrint(S->LastChunk);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/output/generate_stream_person.h
-      function void DebugPrint(person_iterator S)
+      function void DebugPrint(person_iterator* S)
       {
-        
-          DebugPrint("Stream");
-          DebugPrint(S.Stream);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("At");
-          DebugPrint(S.At);
+          
+            DebugPrint("  Stream = ");
+            DebugPrint(S->Stream);
+            DebugPrint("\n");
 
+            DebugPrint("  At = ");
+            DebugPrint(S->At);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/output/generate_stream_counted_string.h
-      function void DebugPrint(counted_string_stream_chunk S)
+      function void DebugPrint(counted_string_stream_chunk* S)
       {
-        
-          DebugPrint("Element");
-          DebugPrint(S.Element);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Next");
-          DebugPrint(S.Next);
+          
+            DebugPrint("  Element = ");
+            DebugPrint(S->Element);
+            DebugPrint("\n");
 
+            DebugPrint("  Next = ");
+            DebugPrint(S->Next);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/output/generate_stream_counted_string.h
-      function void DebugPrint(counted_string_stream S)
+      function void DebugPrint(counted_string_stream* S)
       {
-        
-          DebugPrint("FirstChunk");
-          DebugPrint(S.FirstChunk);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("LastChunk");
-          DebugPrint(S.LastChunk);
+          
+            DebugPrint("  FirstChunk = ");
+            DebugPrint(S->FirstChunk);
+            DebugPrint("\n");
 
+            DebugPrint("  LastChunk = ");
+            DebugPrint(S->LastChunk);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/output/generate_stream_counted_string.h
-      function void DebugPrint(counted_string_iterator S)
+      function void DebugPrint(counted_string_iterator* S)
       {
-        
-          DebugPrint("Stream");
-          DebugPrint(S.Stream);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("At");
-          DebugPrint(S.At);
+          
+            DebugPrint("  Stream = ");
+            DebugPrint(S->Stream);
+            DebugPrint("\n");
 
+            DebugPrint("  At = ");
+            DebugPrint(S->At);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/output/generate_stream_todo.h
-      function void DebugPrint(todo_stream_chunk S)
+      function void DebugPrint(todo_stream_chunk* S)
       {
-        
-          DebugPrint("Element");
-          DebugPrint(S.Element);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Next");
-          DebugPrint(S.Next);
+          
+            DebugPrint("  Element = ");
+            DebugPrint(S->Element);
+            DebugPrint("\n");
 
+            DebugPrint("  Next = ");
+            DebugPrint(S->Next);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/output/generate_stream_todo.h
-      function void DebugPrint(todo_stream S)
+      function void DebugPrint(todo_stream* S)
       {
-        
-          DebugPrint("FirstChunk");
-          DebugPrint(S.FirstChunk);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("LastChunk");
-          DebugPrint(S.LastChunk);
+          
+            DebugPrint("  FirstChunk = ");
+            DebugPrint(S->FirstChunk);
+            DebugPrint("\n");
 
+            DebugPrint("  LastChunk = ");
+            DebugPrint(S->LastChunk);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/output/generate_stream_todo.h
-      function void DebugPrint(todo_iterator S)
+      function void DebugPrint(todo_iterator* S)
       {
-        
-          DebugPrint("Stream");
-          DebugPrint(S.Stream);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("At");
-          DebugPrint(S.At);
+          
+            DebugPrint("  Stream = ");
+            DebugPrint(S->Stream);
+            DebugPrint("\n");
 
+            DebugPrint("  At = ");
+            DebugPrint(S->At);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/metaprogramming/output/d_union_work_queue_entry.h
-      function void DebugPrint(work_queue_entry S)
+      function void DebugPrint(work_queue_entry* S)
       {
-        
-          DebugPrint("Type");
-          DebugPrint(S.Type);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
+          
+            DebugPrint("  Type = ");
+            DebugPrint(S->Type);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/net/network.h
-      function void DebugPrint(client_state S)
+      function void DebugPrint(client_state* S)
       {
-        
-          DebugPrint("Id");
-          DebugPrint(S.Id);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Counter");
-          DebugPrint(S.Counter);
+          
+            DebugPrint("  Id = ");
+            DebugPrint(S->Id);
+            DebugPrint("\n");
 
-          DebugPrint("P");
-          DebugPrint(S.P);
+            DebugPrint("  Counter = ");
+            DebugPrint(S->Counter);
+            DebugPrint("\n");
 
+            DebugPrint("  P = ");
+            DebugPrint(S->P);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/net/network.h
-      function void DebugPrint(server_state S)
+      function void DebugPrint(server_state* S)
       {
-        
-          DebugPrint("Clients");
-          DebugPrint(S.Clients);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
+          
+            DebugPrint("  Clients = ");
+            DebugPrint(S->Clients);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/net/network.h
-      function void DebugPrint(client_to_server_message S)
+      function void DebugPrint(client_to_server_message* S)
       {
-        
-          DebugPrint("Client");
-          DebugPrint(S.Client);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
+          
+            DebugPrint("  Client = ");
+            DebugPrint(S->Client);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/net/network.h
-      function void DebugPrint(handshake_message S)
+      function void DebugPrint(handshake_message* S)
       {
-        
-          DebugPrint("ClientId");
-          DebugPrint(S.ClientId);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
+          
+            DebugPrint("  ClientId = ");
+            DebugPrint(S->ClientId);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/net/network.h
-      function void DebugPrint(socket_t S)
+      function void DebugPrint(socket_t* S)
       {
-        
-          DebugPrint("Id");
-          DebugPrint(S.Id);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Type");
-          DebugPrint(S.Type);
+          
+            DebugPrint("  Id = ");
+            DebugPrint(S->Id);
+            DebugPrint("\n");
 
+            DebugPrint("  Type = ");
+            DebugPrint(S->Type);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/headers/camera.h
-      function void DebugPrint(plane S)
+      function void DebugPrint(plane* S)
       {
-        
-          DebugPrint("P");
-          DebugPrint(S.P);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Normal");
-          DebugPrint(S.Normal);
+          
+            DebugPrint("  P = ");
+            DebugPrint(S->P);
+            DebugPrint("\n");
 
-          DebugPrint("d");
-          DebugPrint(S.d);
+            DebugPrint("  Normal = ");
+            DebugPrint(S->Normal);
+            DebugPrint("\n");
 
+            DebugPrint("  d = ");
+            DebugPrint(S->d);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/headers/camera.h
-      function void DebugPrint(frustum S)
+      function void DebugPrint(frustum* S)
       {
-        
-          DebugPrint("farClip");
-          DebugPrint(S.farClip);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("nearClip");
-          DebugPrint(S.nearClip);
+          
+            DebugPrint("  farClip = ");
+            DebugPrint(S->farClip);
+            DebugPrint("\n");
 
-          DebugPrint("width");
-          DebugPrint(S.width);
+            DebugPrint("  nearClip = ");
+            DebugPrint(S->nearClip);
+            DebugPrint("\n");
 
-          DebugPrint("FOV");
-          DebugPrint(S.FOV);
+            DebugPrint("  width = ");
+            DebugPrint(S->width);
+            DebugPrint("\n");
 
-          DebugPrint("Top");
-          DebugPrint(S.Top);
+            DebugPrint("  FOV = ");
+            DebugPrint(S->FOV);
+            DebugPrint("\n");
 
-          DebugPrint("Bot");
-          DebugPrint(S.Bot);
+            DebugPrint("  Top = ");
+            DebugPrint(S->Top);
+            DebugPrint("\n");
 
-          DebugPrint("Left");
-          DebugPrint(S.Left);
+            DebugPrint("  Bot = ");
+            DebugPrint(S->Bot);
+            DebugPrint("\n");
 
-          DebugPrint("Right");
-          DebugPrint(S.Right);
+            DebugPrint("  Left = ");
+            DebugPrint(S->Left);
+            DebugPrint("\n");
 
+            DebugPrint("  Right = ");
+            DebugPrint(S->Right);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/headers/camera.h
-      function void DebugPrint(camera S)
+      function void DebugPrint(camera* S)
       {
-        
-          DebugPrint("Frust");
-          DebugPrint(S.Frust);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("TargetP");
-          DebugPrint(S.TargetP);
+          
+            DebugPrint("  Frust = ");
+            DebugPrint(S->Frust);
+            DebugPrint("\n");
 
-          DebugPrint("CurrentP");
-          DebugPrint(S.CurrentP);
+            DebugPrint("  TargetP = ");
+            DebugPrint(S->TargetP);
+            DebugPrint("\n");
 
-          DebugPrint("ViewingTarget");
-          DebugPrint(S.ViewingTarget);
+            DebugPrint("  CurrentP = ");
+            DebugPrint(S->CurrentP);
+            DebugPrint("\n");
 
-          DebugPrint("RenderSpacePosition");
-          DebugPrint(S.RenderSpacePosition);
+            DebugPrint("  ViewingTarget = ");
+            DebugPrint(S->ViewingTarget);
+            DebugPrint("\n");
 
-          DebugPrint("Pitch");
-          DebugPrint(S.Pitch);
+            DebugPrint("  RenderSpacePosition = ");
+            DebugPrint(S->RenderSpacePosition);
+            DebugPrint("\n");
 
-          DebugPrint("Roll");
-          DebugPrint(S.Roll);
+            DebugPrint("  Pitch = ");
+            DebugPrint(S->Pitch);
+            DebugPrint("\n");
 
-          DebugPrint("Yaw");
-          DebugPrint(S.Yaw);
+            DebugPrint("  Roll = ");
+            DebugPrint(S->Roll);
+            DebugPrint("\n");
 
-          DebugPrint("DistanceFromTarget");
-          DebugPrint(S.DistanceFromTarget);
+            DebugPrint("  Yaw = ");
+            DebugPrint(S->Yaw);
+            DebugPrint("\n");
 
-          DebugPrint("Front");
-          DebugPrint(S.Front);
+            DebugPrint("  DistanceFromTarget = ");
+            DebugPrint(S->DistanceFromTarget);
+            DebugPrint("\n");
 
-          DebugPrint("Right");
-          DebugPrint(S.Right);
+            DebugPrint("  Front = ");
+            DebugPrint(S->Front);
+            DebugPrint("\n");
 
-          DebugPrint("Up");
-          DebugPrint(S.Up);
+            DebugPrint("  Right = ");
+            DebugPrint(S->Right);
+            DebugPrint("\n");
 
+            DebugPrint("  Up = ");
+            DebugPrint(S->Up);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/headers/work_queue.h
-      function void DebugPrint(work_queue_entry_copy_buffer S)
+      function void DebugPrint(work_queue_entry_copy_buffer* S)
       {
-        
-          DebugPrint("Src");
-          DebugPrint(S.Src);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Dest");
-          DebugPrint(S.Dest);
+          
+            DebugPrint("  Src = ");
+            DebugPrint(S->Src);
+            DebugPrint("\n");
 
-          DebugPrint("Basis");
-          DebugPrint(S.Basis);
+            DebugPrint("  Dest = ");
+            DebugPrint(S->Dest);
+            DebugPrint("\n");
 
+            DebugPrint("  Basis = ");
+            DebugPrint(S->Basis);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/headers/work_queue.h
-      function void DebugPrint(work_queue_entry_init_world_chunk S)
+      function void DebugPrint(work_queue_entry_init_world_chunk* S)
       {
-        
-          DebugPrint("Input");
-          DebugPrint(S.Input);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
+          
+            DebugPrint("  Input = ");
+            DebugPrint(S->Input);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/headers/triangle.h
-      function void DebugPrint(edge S)
+      function void DebugPrint(edge* S)
       {
-        
-          DebugPrint("P0");
-          DebugPrint(S.P0);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("P1");
-          DebugPrint(S.P1);
+          
+            DebugPrint("  P0 = ");
+            DebugPrint(S->P0);
+            DebugPrint("\n");
 
-          DebugPrint("LengthSq");
-          DebugPrint(S.LengthSq);
+            DebugPrint("  P1 = ");
+            DebugPrint(S->P1);
+            DebugPrint("\n");
 
+            DebugPrint("  LengthSq = ");
+            DebugPrint(S->LengthSq);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/headers/triangle.h
-      function void DebugPrint(triangle S)
+      function void DebugPrint(triangle* S)
       {
-        
-          DebugPrint("Points");
-          DebugPrint(S.Points);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Index");
-          DebugPrint(S.Index);
+          
+            DebugPrint("  Points = ");
+            DebugPrint(S->Points);
+            DebugPrint("\n");
 
+            DebugPrint("  Index = ");
+            DebugPrint(S->Index);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/headers/triangle.h
-      function void DebugPrint(boundary_voxels S)
+      function void DebugPrint(boundary_voxels* S)
       {
-        
-          DebugPrint("Points");
-          DebugPrint(S.Points);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("At");
-          DebugPrint(S.At);
+          
+            DebugPrint("  Points = ");
+            DebugPrint(S->Points);
+            DebugPrint("\n");
 
-          DebugPrint("End");
-          DebugPrint(S.End);
+            DebugPrint("  At = ");
+            DebugPrint(S->At);
+            DebugPrint("\n");
 
-          DebugPrint("Min");
-          DebugPrint(S.Min);
+            DebugPrint("  End = ");
+            DebugPrint(S->End);
+            DebugPrint("\n");
 
-          DebugPrint("Max");
-          DebugPrint(S.Max);
+            DebugPrint("  Min = ");
+            DebugPrint(S->Min);
+            DebugPrint("\n");
 
+            DebugPrint("  Max = ");
+            DebugPrint(S->Max);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/headers/triangle.h
-      function void DebugPrint(current_triangles S)
+      function void DebugPrint(current_triangles* S)
       {
-        
-          DebugPrint("Tris");
-          DebugPrint(S.Tris);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Max");
-          DebugPrint(S.Max);
+          
+            DebugPrint("  Tris = ");
+            DebugPrint(S->Tris);
+            DebugPrint("\n");
 
-          DebugPrint("Count");
-          DebugPrint(S.Count);
+            DebugPrint("  Max = ");
+            DebugPrint(S->Max);
+            DebugPrint("\n");
 
-          DebugPrint("CurrentPointIndex");
-          DebugPrint(S.CurrentPointIndex);
+            DebugPrint("  Count = ");
+            DebugPrint(S->Count);
+            DebugPrint("\n");
 
-          DebugPrint("SurfacePoints");
-          DebugPrint(S.SurfacePoints);
+            DebugPrint("  CurrentPointIndex = ");
+            DebugPrint(S->CurrentPointIndex);
+            DebugPrint("\n");
 
+            DebugPrint("  SurfacePoints = ");
+            DebugPrint(S->SurfacePoints);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/headers/canonical_position.h
-      function void DebugPrint(canonical_position S)
+      function void DebugPrint(canonical_position* S)
       {
-        
-          DebugPrint("Offset");
-          DebugPrint(S.Offset);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("WorldP");
-          DebugPrint(S.WorldP);
+          
+            DebugPrint("  Offset = ");
+            DebugPrint(S->Offset);
+            DebugPrint("\n");
 
+            DebugPrint("  WorldP = ");
+            DebugPrint(S->WorldP);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/headers/mesh.h
-      function void DebugPrint(loaded_collada_mesh S)
+      function void DebugPrint(loaded_collada_mesh* S)
       {
-        
-          DebugPrint("Mesh");
-          DebugPrint(S.Mesh);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Dim");
-          DebugPrint(S.Dim);
+          
+            DebugPrint("  Mesh = ");
+            DebugPrint(S->Mesh);
+            DebugPrint("\n");
 
+            DebugPrint("  Dim = ");
+            DebugPrint(S->Dim);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/headers/mesh.h
-      function void DebugPrint(free_mesh S)
+      function void DebugPrint(free_mesh* S)
       {
-        
-          DebugPrint("Mesh");
-          DebugPrint(S.Mesh);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Next");
-          DebugPrint(S.Next);
+          
+            DebugPrint("  Mesh = ");
+            DebugPrint(S->Mesh);
+            DebugPrint("\n");
 
+            DebugPrint("  Next = ");
+            DebugPrint(S->Next);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/headers/mesh.h
-      function void DebugPrint(mesh_freelist S)
+      function void DebugPrint(mesh_freelist* S)
       {
-        
-          DebugPrint("FirstFree");
-          DebugPrint(S.FirstFree);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Containers");
-          DebugPrint(S.Containers);
+          
+            DebugPrint("  FirstFree = ");
+            DebugPrint(S->FirstFree);
+            DebugPrint("\n");
 
+            DebugPrint("  Containers = ");
+            DebugPrint(S->Containers);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/headers/xml.h
-      function void DebugPrint(xml_property S)
+      function void DebugPrint(xml_property* S)
       {
-        
-          DebugPrint("Name");
-          DebugPrint(S.Name);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Value");
-          DebugPrint(S.Value);
+          
+            DebugPrint("  Name = ");
+            DebugPrint(S->Name);
+            DebugPrint("\n");
 
-          DebugPrint("Next");
-          DebugPrint(S.Next);
+            DebugPrint("  Value = ");
+            DebugPrint(S->Value);
+            DebugPrint("\n");
 
+            DebugPrint("  Next = ");
+            DebugPrint(S->Next);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/headers/xml.h
-      function void DebugPrint(xml_token S)
+      function void DebugPrint(xml_token* S)
       {
-        
-          DebugPrint("Type");
-          DebugPrint(S.Type);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Property");
-          DebugPrint(S.Property);
+          
+            DebugPrint("  Type = ");
+            DebugPrint(S->Type);
+            DebugPrint("\n");
 
+            DebugPrint("  Property = ");
+            DebugPrint(S->Property);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/headers/xml.h
-      function void DebugPrint(xml_tag S)
+      function void DebugPrint(xml_tag* S)
       {
-        
-          DebugPrint("Open");
-          DebugPrint(S.Open);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Parent");
-          DebugPrint(S.Parent);
+          
+            DebugPrint("  Open = ");
+            DebugPrint(S->Open);
+            DebugPrint("\n");
 
-          DebugPrint("Sibling");
-          DebugPrint(S.Sibling);
+            DebugPrint("  Parent = ");
+            DebugPrint(S->Parent);
+            DebugPrint("\n");
 
-          DebugPrint("NextInHash");
-          DebugPrint(S.NextInHash);
+            DebugPrint("  Sibling = ");
+            DebugPrint(S->Sibling);
+            DebugPrint("\n");
 
-          DebugPrint("HashValue");
-          DebugPrint(S.HashValue);
+            DebugPrint("  NextInHash = ");
+            DebugPrint(S->NextInHash);
+            DebugPrint("\n");
 
-          DebugPrint("Value");
-          DebugPrint(S.Value);
+            DebugPrint("  HashValue = ");
+            DebugPrint(S->HashValue);
+            DebugPrint("\n");
 
-          DebugPrint("Properties");
-          DebugPrint(S.Properties);
+            DebugPrint("  Value = ");
+            DebugPrint(S->Value);
+            DebugPrint("\n");
 
-          DebugPrint("NextPropertySlot");
-          DebugPrint(S.NextPropertySlot);
+            DebugPrint("  Properties = ");
+            DebugPrint(S->Properties);
+            DebugPrint("\n");
 
+            DebugPrint("  NextPropertySlot = ");
+            DebugPrint(S->NextPropertySlot);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/headers/xml.h
-      function void DebugPrint(xml_tag_stream S)
+      function void DebugPrint(xml_tag_stream* S)
       {
-        
-          DebugPrint("Start");
-          DebugPrint(S.Start);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("At");
-          DebugPrint(S.At);
+          
+            DebugPrint("  Start = ");
+            DebugPrint(S->Start);
+            DebugPrint("\n");
 
-          DebugPrint("End");
-          DebugPrint(S.End);
+            DebugPrint("  At = ");
+            DebugPrint(S->At);
+            DebugPrint("\n");
 
+            DebugPrint("  End = ");
+            DebugPrint(S->End);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/headers/xml.h
-      function void DebugPrint(xml_parsing_at_indicators S)
+      function void DebugPrint(xml_parsing_at_indicators* S)
       {
-        
-          DebugPrint("LastClosedTag");
-          DebugPrint(S.LastClosedTag);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("CurrentlyOpenTag");
-          DebugPrint(S.CurrentlyOpenTag);
+          
+            DebugPrint("  LastClosedTag = ");
+            DebugPrint(S->LastClosedTag);
+            DebugPrint("\n");
 
+            DebugPrint("  CurrentlyOpenTag = ");
+            DebugPrint(S->CurrentlyOpenTag);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/headers/graphics.h
-      function void DebugPrint(post_processing_group S)
+      function void DebugPrint(post_processing_group* S)
       {
-        
-          DebugPrint("FBO");
-          DebugPrint(S.FBO);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Shader");
-          DebugPrint(S.Shader);
+          
+            DebugPrint("  FBO = ");
+            DebugPrint(S->FBO);
+            DebugPrint("\n");
 
-          DebugPrint("VertexBuffer");
-          DebugPrint(S.VertexBuffer);
+            DebugPrint("  Shader = ");
+            DebugPrint(S->Shader);
+            DebugPrint("\n");
 
-          DebugPrint("ColorBuffer");
-          DebugPrint(S.ColorBuffer);
+            DebugPrint("  VertexBuffer = ");
+            DebugPrint(S->VertexBuffer);
+            DebugPrint("\n");
 
+            DebugPrint("  ColorBuffer = ");
+            DebugPrint(S->ColorBuffer);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/headers/graphics.h
-      function void DebugPrint(graphics S)
+      function void DebugPrint(graphics* S)
       {
-        
-          DebugPrint("Camera");
-          DebugPrint(S.Camera);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Lights");
-          DebugPrint(S.Lights);
+          
+            DebugPrint("  Camera = ");
+            DebugPrint(S->Camera);
+            DebugPrint("\n");
 
-          DebugPrint("gBuffer");
-          DebugPrint(S.gBuffer);
+            DebugPrint("  Lights = ");
+            DebugPrint(S->Lights);
+            DebugPrint("\n");
 
-          DebugPrint("AoGroup");
-          DebugPrint(S.AoGroup);
+            DebugPrint("  gBuffer = ");
+            DebugPrint(S->gBuffer);
+            DebugPrint("\n");
 
-          DebugPrint("SG");
-          DebugPrint(S.SG);
+            DebugPrint("  AoGroup = ");
+            DebugPrint(S->AoGroup);
+            DebugPrint("\n");
 
-          DebugPrint("PostGroup");
-          DebugPrint(S.PostGroup);
+            DebugPrint("  SG = ");
+            DebugPrint(S->SG);
+            DebugPrint("\n");
 
-          DebugPrint("GpuBuffers");
-          DebugPrint(S.GpuBuffers);
+            DebugPrint("  PostGroup = ");
+            DebugPrint(S->PostGroup);
+            DebugPrint("\n");
 
-          DebugPrint("GpuBufferWriteIndex");
-          DebugPrint(S.GpuBufferWriteIndex);
+            DebugPrint("  GpuBuffers = ");
+            DebugPrint(S->GpuBuffers);
+            DebugPrint("\n");
 
-          DebugPrint("Memory");
-          DebugPrint(S.Memory);
+            DebugPrint("  GpuBufferWriteIndex = ");
+            DebugPrint(S->GpuBufferWriteIndex);
+            DebugPrint("\n");
 
+            DebugPrint("  Memory = ");
+            DebugPrint(S->Memory);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/headers/render.h
-      function void DebugPrint(shader_uniform S)
+      function void DebugPrint(shader_uniform* S)
       {
-        
-          DebugPrint("Type");
-          DebugPrint(S.Type);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
+          
+            DebugPrint("  Type = ");
+            DebugPrint(S->Type);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/headers/render.h
-      function void DebugPrint(shader S)
+      function void DebugPrint(shader* S)
       {
-        
-          DebugPrint("ID");
-          DebugPrint(S.ID);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("FirstUniform");
-          DebugPrint(S.FirstUniform);
+          
+            DebugPrint("  ID = ");
+            DebugPrint(S->ID);
+            DebugPrint("\n");
 
+            DebugPrint("  FirstUniform = ");
+            DebugPrint(S->FirstUniform);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/headers/render.h
-      function void DebugPrint(texture S)
+      function void DebugPrint(texture* S)
       {
-        
-          DebugPrint("ID");
-          DebugPrint(S.ID);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Dim");
-          DebugPrint(S.Dim);
+          
+            DebugPrint("  ID = ");
+            DebugPrint(S->ID);
+            DebugPrint("\n");
 
+            DebugPrint("  Dim = ");
+            DebugPrint(S->Dim);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/headers/render.h
-      function void DebugPrint(light S)
+      function void DebugPrint(light* S)
       {
-        
-          DebugPrint("Position");
-          DebugPrint(S.Position);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Color");
-          DebugPrint(S.Color);
+          
+            DebugPrint("  Position = ");
+            DebugPrint(S->Position);
+            DebugPrint("\n");
 
+            DebugPrint("  Color = ");
+            DebugPrint(S->Color);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/headers/render.h
-      function void DebugPrint(game_lights S)
+      function void DebugPrint(game_lights* S)
       {
-        
-          DebugPrint("ColorTex");
-          DebugPrint(S.ColorTex);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("PositionTex");
-          DebugPrint(S.PositionTex);
+          
+            DebugPrint("  ColorTex = ");
+            DebugPrint(S->ColorTex);
+            DebugPrint("\n");
 
-          DebugPrint("IndexToUV");
-          DebugPrint(S.IndexToUV);
+            DebugPrint("  PositionTex = ");
+            DebugPrint(S->PositionTex);
+            DebugPrint("\n");
 
-          DebugPrint("Count");
-          DebugPrint(S.Count);
+            DebugPrint("  IndexToUV = ");
+            DebugPrint(S->IndexToUV);
+            DebugPrint("\n");
 
-          DebugPrint("Lights");
-          DebugPrint(S.Lights);
+            DebugPrint("  Count = ");
+            DebugPrint(S->Count);
+            DebugPrint("\n");
 
+            DebugPrint("  Lights = ");
+            DebugPrint(S->Lights);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/headers/render.h
-      function void DebugPrint(RenderBasis S)
+      function void DebugPrint(RenderBasis* S)
       {
-        
-          DebugPrint("ModelMatrix");
-          DebugPrint(S.ModelMatrix);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("ViewMatrix");
-          DebugPrint(S.ViewMatrix);
+          
+            DebugPrint("  ModelMatrix = ");
+            DebugPrint(S->ModelMatrix);
+            DebugPrint("\n");
 
-          DebugPrint("ProjectionMatrix");
-          DebugPrint(S.ProjectionMatrix);
+            DebugPrint("  ViewMatrix = ");
+            DebugPrint(S->ViewMatrix);
+            DebugPrint("\n");
 
+            DebugPrint("  ProjectionMatrix = ");
+            DebugPrint(S->ProjectionMatrix);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/headers/render.h
-      function void DebugPrint(framebuffer S)
+      function void DebugPrint(framebuffer* S)
       {
-        
-          DebugPrint("ID");
-          DebugPrint(S.ID);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Attachments");
-          DebugPrint(S.Attachments);
+          
+            DebugPrint("  ID = ");
+            DebugPrint(S->ID);
+            DebugPrint("\n");
 
+            DebugPrint("  Attachments = ");
+            DebugPrint(S->Attachments);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/headers/render.h
-      function void DebugPrint(ao_render_group S)
+      function void DebugPrint(ao_render_group* S)
       {
-        
-          DebugPrint("FBO");
-          DebugPrint(S.FBO);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Shader");
-          DebugPrint(S.Shader);
+          
+            DebugPrint("  FBO = ");
+            DebugPrint(S->FBO);
+            DebugPrint("\n");
 
-          DebugPrint("DebugSsaoShader");
-          DebugPrint(S.DebugSsaoShader);
+            DebugPrint("  Shader = ");
+            DebugPrint(S->Shader);
+            DebugPrint("\n");
 
-          DebugPrint("SsaoKernel");
-          DebugPrint(S.SsaoKernel);
+            DebugPrint("  DebugSsaoShader = ");
+            DebugPrint(S->DebugSsaoShader);
+            DebugPrint("\n");
 
-          DebugPrint("SsaoKernelUniform");
-          DebugPrint(S.SsaoKernelUniform);
+            DebugPrint("  SsaoKernel = ");
+            DebugPrint(S->SsaoKernel);
+            DebugPrint("\n");
 
-          DebugPrint("Texture");
-          DebugPrint(S.Texture);
+            DebugPrint("  SsaoKernelUniform = ");
+            DebugPrint(S->SsaoKernelUniform);
+            DebugPrint("\n");
 
-          DebugPrint("NoiseTile");
-          DebugPrint(S.NoiseTile);
+            DebugPrint("  Texture = ");
+            DebugPrint(S->Texture);
+            DebugPrint("\n");
 
+            DebugPrint("  NoiseTile = ");
+            DebugPrint(S->NoiseTile);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/headers/render.h
-      function void DebugPrint(g_buffer_textures S)
+      function void DebugPrint(g_buffer_textures* S)
       {
-        
-          DebugPrint("Color");
-          DebugPrint(S.Color);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Normal");
-          DebugPrint(S.Normal);
+          
+            DebugPrint("  Color = ");
+            DebugPrint(S->Color);
+            DebugPrint("\n");
 
-          DebugPrint("Position");
-          DebugPrint(S.Position);
+            DebugPrint("  Normal = ");
+            DebugPrint(S->Normal);
+            DebugPrint("\n");
 
+            DebugPrint("  Position = ");
+            DebugPrint(S->Position);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/headers/render.h
-      function void DebugPrint(g_buffer_render_group S)
+      function void DebugPrint(g_buffer_render_group* S)
       {
-        
-          DebugPrint("FBO");
-          DebugPrint(S.FBO);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Textures");
-          DebugPrint(S.Textures);
+          
+            DebugPrint("  FBO = ");
+            DebugPrint(S->FBO);
+            DebugPrint("\n");
 
-          DebugPrint("LightingShader");
-          DebugPrint(S.LightingShader);
+            DebugPrint("  Textures = ");
+            DebugPrint(S->Textures);
+            DebugPrint("\n");
 
-          DebugPrint("gBufferShader");
-          DebugPrint(S.gBufferShader);
+            DebugPrint("  LightingShader = ");
+            DebugPrint(S->LightingShader);
+            DebugPrint("\n");
 
-          DebugPrint("ShadowMVP");
-          DebugPrint(S.ShadowMVP);
+            DebugPrint("  gBufferShader = ");
+            DebugPrint(S->gBufferShader);
+            DebugPrint("\n");
 
-          DebugPrint("ViewProjection");
-          DebugPrint(S.ViewProjection);
+            DebugPrint("  ShadowMVP = ");
+            DebugPrint(S->ShadowMVP);
+            DebugPrint("\n");
 
+            DebugPrint("  ViewProjection = ");
+            DebugPrint(S->ViewProjection);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/headers/render.h
-      function void DebugPrint(shadow_render_group S)
+      function void DebugPrint(shadow_render_group* S)
       {
-        
-          DebugPrint("FramebufferName");
-          DebugPrint(S.FramebufferName);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("MVP_ID");
-          DebugPrint(S.MVP_ID);
+          
+            DebugPrint("  FramebufferName = ");
+            DebugPrint(S->FramebufferName);
+            DebugPrint("\n");
 
-          DebugPrint("DebugTextureShader");
-          DebugPrint(S.DebugTextureShader);
+            DebugPrint("  MVP_ID = ");
+            DebugPrint(S->MVP_ID);
+            DebugPrint("\n");
 
-          DebugPrint("DepthShader");
-          DebugPrint(S.DepthShader);
+            DebugPrint("  DebugTextureShader = ");
+            DebugPrint(S->DebugTextureShader);
+            DebugPrint("\n");
 
-          DebugPrint("ShadowMap");
-          DebugPrint(S.ShadowMap);
+            DebugPrint("  DepthShader = ");
+            DebugPrint(S->DepthShader);
+            DebugPrint("\n");
 
+            DebugPrint("  ShadowMap = ");
+            DebugPrint(S->ShadowMap);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/headers/render.h
-      function void DebugPrint(untextured_3d_geometry_buffer S)
+      function void DebugPrint(untextured_3d_geometry_buffer* S)
       {
-        
-          DebugPrint("Verts");
-          DebugPrint(S.Verts);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Colors");
-          DebugPrint(S.Colors);
+          
+            DebugPrint("  Verts = ");
+            DebugPrint(S->Verts);
+            DebugPrint("\n");
 
-          DebugPrint("Normals");
-          DebugPrint(S.Normals);
+            DebugPrint("  Colors = ");
+            DebugPrint(S->Colors);
+            DebugPrint("\n");
 
-          DebugPrint("End");
-          DebugPrint(S.End);
+            DebugPrint("  Normals = ");
+            DebugPrint(S->Normals);
+            DebugPrint("\n");
 
-          DebugPrint("At");
-          DebugPrint(S.At);
+            DebugPrint("  End = ");
+            DebugPrint(S->End);
+            DebugPrint("\n");
 
+            DebugPrint("  At = ");
+            DebugPrint(S->At);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/headers/render.h
-      function void DebugPrint(gpu_mapped_element_buffer S)
+      function void DebugPrint(gpu_mapped_element_buffer* S)
       {
-        
-          DebugPrint("VertexHandle");
-          DebugPrint(S.VertexHandle);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("NormalHandle");
-          DebugPrint(S.NormalHandle);
+          
+            DebugPrint("  VertexHandle = ");
+            DebugPrint(S->VertexHandle);
+            DebugPrint("\n");
 
-          DebugPrint("ColorHandle");
-          DebugPrint(S.ColorHandle);
+            DebugPrint("  NormalHandle = ");
+            DebugPrint(S->NormalHandle);
+            DebugPrint("\n");
 
-          DebugPrint("Buffer");
-          DebugPrint(S.Buffer);
+            DebugPrint("  ColorHandle = ");
+            DebugPrint(S->ColorHandle);
+            DebugPrint("\n");
 
+            DebugPrint("  Buffer = ");
+            DebugPrint(S->Buffer);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/headers/render.h
-      function void DebugPrint(textured_2d_geometry_buffer S)
+      function void DebugPrint(textured_2d_geometry_buffer* S)
       {
-        
-          DebugPrint("Verts");
-          DebugPrint(S.Verts);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Colors");
-          DebugPrint(S.Colors);
+          
+            DebugPrint("  Verts = ");
+            DebugPrint(S->Verts);
+            DebugPrint("\n");
 
-          DebugPrint("UVs");
-          DebugPrint(S.UVs);
+            DebugPrint("  Colors = ");
+            DebugPrint(S->Colors);
+            DebugPrint("\n");
 
-          DebugPrint("End");
-          DebugPrint(S.End);
+            DebugPrint("  UVs = ");
+            DebugPrint(S->UVs);
+            DebugPrint("\n");
 
-          DebugPrint("At");
-          DebugPrint(S.At);
+            DebugPrint("  End = ");
+            DebugPrint(S->End);
+            DebugPrint("\n");
 
+            DebugPrint("  At = ");
+            DebugPrint(S->At);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/headers/render.h
-      function void DebugPrint(untextured_2d_geometry_buffer S)
+      function void DebugPrint(untextured_2d_geometry_buffer* S)
       {
-        
-          DebugPrint("Verts");
-          DebugPrint(S.Verts);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Colors");
-          DebugPrint(S.Colors);
+          
+            DebugPrint("  Verts = ");
+            DebugPrint(S->Verts);
+            DebugPrint("\n");
 
-          DebugPrint("End");
-          DebugPrint(S.End);
+            DebugPrint("  Colors = ");
+            DebugPrint(S->Colors);
+            DebugPrint("\n");
 
-          DebugPrint("At");
-          DebugPrint(S.At);
+            DebugPrint("  End = ");
+            DebugPrint(S->End);
+            DebugPrint("\n");
 
+            DebugPrint("  At = ");
+            DebugPrint(S->At);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/headers/animation.h
-      function void DebugPrint(keyframe S)
+      function void DebugPrint(keyframe* S)
       {
-        
-          DebugPrint("tEnd");
-          DebugPrint(S.tEnd);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Value");
-          DebugPrint(S.Value);
+          
+            DebugPrint("  tEnd = ");
+            DebugPrint(S->tEnd);
+            DebugPrint("\n");
 
+            DebugPrint("  Value = ");
+            DebugPrint(S->Value);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/headers/animation.h
-      function void DebugPrint(animation S)
+      function void DebugPrint(animation* S)
       {
-        
-          DebugPrint("t");
-          DebugPrint(S.t);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("tEnd");
-          DebugPrint(S.tEnd);
+          
+            DebugPrint("  t = ");
+            DebugPrint(S->t);
+            DebugPrint("\n");
 
-          DebugPrint("xKeyframeCount");
-          DebugPrint(S.xKeyframeCount);
+            DebugPrint("  tEnd = ");
+            DebugPrint(S->tEnd);
+            DebugPrint("\n");
 
-          DebugPrint("xKeyframes");
-          DebugPrint(S.xKeyframes);
+            DebugPrint("  xKeyframeCount = ");
+            DebugPrint(S->xKeyframeCount);
+            DebugPrint("\n");
 
-          DebugPrint("yKeyframeCount");
-          DebugPrint(S.yKeyframeCount);
+            DebugPrint("  xKeyframes = ");
+            DebugPrint(S->xKeyframes);
+            DebugPrint("\n");
 
-          DebugPrint("yKeyframes");
-          DebugPrint(S.yKeyframes);
+            DebugPrint("  yKeyframeCount = ");
+            DebugPrint(S->yKeyframeCount);
+            DebugPrint("\n");
 
-          DebugPrint("zKeyframeCount");
-          DebugPrint(S.zKeyframeCount);
+            DebugPrint("  yKeyframes = ");
+            DebugPrint(S->yKeyframes);
+            DebugPrint("\n");
 
-          DebugPrint("zKeyframes");
-          DebugPrint(S.zKeyframes);
+            DebugPrint("  zKeyframeCount = ");
+            DebugPrint(S->zKeyframeCount);
+            DebugPrint("\n");
 
+            DebugPrint("  zKeyframes = ");
+            DebugPrint(S->zKeyframes);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/bonsai.h
-      function void DebugPrint(game_mode S)
+      function void DebugPrint(game_mode* S)
       {
-        
-          DebugPrint("ActiveMode");
-          DebugPrint(S.ActiveMode);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("TimeRunning");
-          DebugPrint(S.TimeRunning);
+          
+            DebugPrint("  ActiveMode = ");
+            DebugPrint(S->ActiveMode);
+            DebugPrint("\n");
 
+            DebugPrint("  TimeRunning = ");
+            DebugPrint(S->TimeRunning);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/bonsai.h
-      function void DebugPrint(voxel S)
+      function void DebugPrint(voxel* S)
       {
-        
-          DebugPrint("Flags");
-          DebugPrint(S.Flags);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Color");
-          DebugPrint(S.Color);
+          
+            DebugPrint("  Flags = ");
+            DebugPrint(S->Flags);
+            DebugPrint("\n");
 
+            DebugPrint("  Color = ");
+            DebugPrint(S->Color);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/bonsai.h
-      function void DebugPrint(boundary_voxel S)
+      function void DebugPrint(boundary_voxel* S)
       {
-        
-          DebugPrint("V");
-          DebugPrint(S.V);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Offset");
-          DebugPrint(S.Offset);
+          
+            DebugPrint("  V = ");
+            DebugPrint(S->V);
+            DebugPrint("\n");
 
+            DebugPrint("  Offset = ");
+            DebugPrint(S->Offset);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/bonsai.h
-      function void DebugPrint(chunk_data S)
+      function void DebugPrint(chunk_data* S)
       {
-        
-          DebugPrint("Flags");
-          DebugPrint(S.Flags);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Voxels");
-          DebugPrint(S.Voxels);
+          
+            DebugPrint("  Flags = ");
+            DebugPrint(S->Flags);
+            DebugPrint("\n");
 
-          DebugPrint("Pad");
-          DebugPrint(S.Pad);
+            DebugPrint("  Voxels = ");
+            DebugPrint(S->Voxels);
+            DebugPrint("\n");
 
+            DebugPrint("  Pad = ");
+            DebugPrint(S->Pad);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/bonsai.h
-      function void DebugPrint(model S)
+      function void DebugPrint(model* S)
       {
-        
-          DebugPrint("Mesh");
-          DebugPrint(S.Mesh);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Dim");
-          DebugPrint(S.Dim);
+          
+            DebugPrint("  Mesh = ");
+            DebugPrint(S->Mesh);
+            DebugPrint("\n");
 
-          DebugPrint("Animation");
-          DebugPrint(S.Animation);
+            DebugPrint("  Dim = ");
+            DebugPrint(S->Dim);
+            DebugPrint("\n");
 
+            DebugPrint("  Animation = ");
+            DebugPrint(S->Animation);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/bonsai.h
-      function void DebugPrint(physics S)
+      function void DebugPrint(physics* S)
       {
-        
-          DebugPrint("Velocity");
-          DebugPrint(S.Velocity);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Force");
-          DebugPrint(S.Force);
+          
+            DebugPrint("  Velocity = ");
+            DebugPrint(S->Velocity);
+            DebugPrint("\n");
 
-          DebugPrint("Delta");
-          DebugPrint(S.Delta);
+            DebugPrint("  Force = ");
+            DebugPrint(S->Force);
+            DebugPrint("\n");
 
-          DebugPrint("Drag");
-          DebugPrint(S.Drag);
+            DebugPrint("  Delta = ");
+            DebugPrint(S->Delta);
+            DebugPrint("\n");
 
-          DebugPrint("Mass");
-          DebugPrint(S.Mass);
+            DebugPrint("  Drag = ");
+            DebugPrint(S->Drag);
+            DebugPrint("\n");
 
-          DebugPrint("Speed");
-          DebugPrint(S.Speed);
+            DebugPrint("  Mass = ");
+            DebugPrint(S->Mass);
+            DebugPrint("\n");
 
+            DebugPrint("  Speed = ");
+            DebugPrint(S->Speed);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/bonsai.h
-      function void DebugPrint(particle S)
+      function void DebugPrint(particle* S)
       {
-        
-          DebugPrint("Offset");
-          DebugPrint(S.Offset);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Physics");
-          DebugPrint(S.Physics);
+          
+            DebugPrint("  Offset = ");
+            DebugPrint(S->Offset);
+            DebugPrint("\n");
 
-          DebugPrint("Color");
-          DebugPrint(S.Color);
+            DebugPrint("  Physics = ");
+            DebugPrint(S->Physics);
+            DebugPrint("\n");
 
-          DebugPrint("RemainingLifespan");
-          DebugPrint(S.RemainingLifespan);
+            DebugPrint("  Color = ");
+            DebugPrint(S->Color);
+            DebugPrint("\n");
 
+            DebugPrint("  RemainingLifespan = ");
+            DebugPrint(S->RemainingLifespan);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/bonsai.h
-      function void DebugPrint(particle_system_init_params S)
+      function void DebugPrint(particle_system_init_params* S)
       {
-        
-          DebugPrint("SpawnRegion");
-          DebugPrint(S.SpawnRegion);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Physics");
-          DebugPrint(S.Physics);
+          
+            DebugPrint("  SpawnRegion = ");
+            DebugPrint(S->SpawnRegion);
+            DebugPrint("\n");
 
-          DebugPrint("SystemMovementCoefficient");
-          DebugPrint(S.SystemMovementCoefficient);
+            DebugPrint("  Physics = ");
+            DebugPrint(S->Physics);
+            DebugPrint("\n");
 
-          DebugPrint("EmissionLifespan");
-          DebugPrint(S.EmissionLifespan);
+            DebugPrint("  SystemMovementCoefficient = ");
+            DebugPrint(S->SystemMovementCoefficient);
+            DebugPrint("\n");
 
-          DebugPrint("EmissionChance");
-          DebugPrint(S.EmissionChance);
+            DebugPrint("  EmissionLifespan = ");
+            DebugPrint(S->EmissionLifespan);
+            DebugPrint("\n");
 
-          DebugPrint("ParticleLifespan");
-          DebugPrint(S.ParticleLifespan);
+            DebugPrint("  EmissionChance = ");
+            DebugPrint(S->EmissionChance);
+            DebugPrint("\n");
 
-          DebugPrint("StartingDiameter");
-          DebugPrint(S.StartingDiameter);
+            DebugPrint("  ParticleLifespan = ");
+            DebugPrint(S->ParticleLifespan);
+            DebugPrint("\n");
 
-          DebugPrint("Entropy");
-          DebugPrint(S.Entropy);
+            DebugPrint("  StartingDiameter = ");
+            DebugPrint(S->StartingDiameter);
+            DebugPrint("\n");
 
-          DebugPrint("Colors");
-          DebugPrint(S.Colors);
+            DebugPrint("  Entropy = ");
+            DebugPrint(S->Entropy);
+            DebugPrint("\n");
 
+            DebugPrint("  Colors = ");
+            DebugPrint(S->Colors);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/bonsai.h
-      function void DebugPrint(particle_system S)
+      function void DebugPrint(particle_system* S)
       {
-        
-          DebugPrint("Entropy");
-          DebugPrint(S.Entropy);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("ActiveParticles");
-          DebugPrint(S.ActiveParticles);
+          
+            DebugPrint("  Entropy = ");
+            DebugPrint(S->Entropy);
+            DebugPrint("\n");
 
-          DebugPrint("ParticleDuration");
-          DebugPrint(S.ParticleDuration);
+            DebugPrint("  ActiveParticles = ");
+            DebugPrint(S->ActiveParticles);
+            DebugPrint("\n");
 
-          DebugPrint("SpawnRegion");
-          DebugPrint(S.SpawnRegion);
+            DebugPrint("  ParticleDuration = ");
+            DebugPrint(S->ParticleDuration);
+            DebugPrint("\n");
 
-          DebugPrint("StartingDiameter");
-          DebugPrint(S.StartingDiameter);
+            DebugPrint("  SpawnRegion = ");
+            DebugPrint(S->SpawnRegion);
+            DebugPrint("\n");
 
-          DebugPrint("EmissionLifespan");
-          DebugPrint(S.EmissionLifespan);
+            DebugPrint("  StartingDiameter = ");
+            DebugPrint(S->StartingDiameter);
+            DebugPrint("\n");
 
-          DebugPrint("ParticleLifespan");
-          DebugPrint(S.ParticleLifespan);
+            DebugPrint("  EmissionLifespan = ");
+            DebugPrint(S->EmissionLifespan);
+            DebugPrint("\n");
 
-          DebugPrint("EmissionChance");
-          DebugPrint(S.EmissionChance);
+            DebugPrint("  ParticleLifespan = ");
+            DebugPrint(S->ParticleLifespan);
+            DebugPrint("\n");
 
-          DebugPrint("ParticlePhysics");
-          DebugPrint(S.ParticlePhysics);
+            DebugPrint("  EmissionChance = ");
+            DebugPrint(S->EmissionChance);
+            DebugPrint("\n");
 
-          DebugPrint("SystemMovementCoefficient");
-          DebugPrint(S.SystemMovementCoefficient);
+            DebugPrint("  ParticlePhysics = ");
+            DebugPrint(S->ParticlePhysics);
+            DebugPrint("\n");
 
-          DebugPrint("Colors");
-          DebugPrint(S.Colors);
+            DebugPrint("  SystemMovementCoefficient = ");
+            DebugPrint(S->SystemMovementCoefficient);
+            DebugPrint("\n");
 
+            DebugPrint("  Colors = ");
+            DebugPrint(S->Colors);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/api.h
-      function void DebugPrint(thread S)
+      function void DebugPrint(thread* S)
       {
-        
-          DebugPrint("ThreadIndex");
-          DebugPrint(S.ThreadIndex);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("ID");
-          DebugPrint(S.ID);
+          
+            DebugPrint("  ThreadIndex = ");
+            DebugPrint(S->ThreadIndex);
+            DebugPrint("\n");
 
+            DebugPrint("  ID = ");
+            DebugPrint(S->ID);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/engine/api.h
-      function void DebugPrint(thread_local_state S)
+      function void DebugPrint(thread_local_state* S)
       {
-        
-          DebugPrint("PermMemory");
-          DebugPrint(S.PermMemory);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("TempMemory");
-          DebugPrint(S.TempMemory);
+          
+            DebugPrint("  PermMemory = ");
+            DebugPrint(S->PermMemory);
+            DebugPrint("\n");
 
-          DebugPrint("MeshFreelist");
-          DebugPrint(S.MeshFreelist);
+            DebugPrint("  TempMemory = ");
+            DebugPrint(S->TempMemory);
+            DebugPrint("\n");
 
-          DebugPrint("Noise");
-          DebugPrint(S.Noise);
+            DebugPrint("  MeshFreelist = ");
+            DebugPrint(S->MeshFreelist);
+            DebugPrint("\n");
 
+            DebugPrint("  Noise = ");
+            DebugPrint(S->Noise);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/bonsai_stdlib/headers/stream.h
-      function void DebugPrint(u32_stream S)
+      function void DebugPrint(u32_stream* S)
       {
-        
-          DebugPrint("Start");
-          DebugPrint(S.Start);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("At");
-          DebugPrint(S.At);
+          
+            DebugPrint("  Start = ");
+            DebugPrint(S->Start);
+            DebugPrint("\n");
 
-          DebugPrint("End");
-          DebugPrint(S.End);
+            DebugPrint("  At = ");
+            DebugPrint(S->At);
+            DebugPrint("\n");
 
+            DebugPrint("  End = ");
+            DebugPrint(S->End);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/bonsai_stdlib/headers/stream.h
-      function void DebugPrint(u8_stream S)
+      function void DebugPrint(u8_stream* S)
       {
-        
-          DebugPrint("Start");
-          DebugPrint(S.Start);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("At");
-          DebugPrint(S.At);
+          
+            DebugPrint("  Start = ");
+            DebugPrint(S->Start);
+            DebugPrint("\n");
 
-          DebugPrint("End");
-          DebugPrint(S.End);
+            DebugPrint("  At = ");
+            DebugPrint(S->At);
+            DebugPrint("\n");
 
+            DebugPrint("  End = ");
+            DebugPrint(S->End);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/bonsai_stdlib/headers/stream.h
-      function void DebugPrint(ansi_stream S)
+      function void DebugPrint(ansi_stream* S)
       {
-        
-          DebugPrint("Start");
-          DebugPrint(S.Start);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("At");
-          DebugPrint(S.At);
+          
+            DebugPrint("  Start = ");
+            DebugPrint(S->Start);
+            DebugPrint("\n");
 
-          DebugPrint("End");
-          DebugPrint(S.End);
+            DebugPrint("  At = ");
+            DebugPrint(S->At);
+            DebugPrint("\n");
 
-          DebugPrint("Filename");
-          DebugPrint(S.Filename);
+            DebugPrint("  End = ");
+            DebugPrint(S->End);
+            DebugPrint("\n");
 
+            DebugPrint("  Filename = ");
+            DebugPrint(S->Filename);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/bonsai_stdlib/headers/stream.h
-      function void DebugPrint(r32_stream S)
+      function void DebugPrint(r32_stream* S)
       {
-        
-          DebugPrint("Start");
-          DebugPrint(S.Start);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("At");
-          DebugPrint(S.At);
+          
+            DebugPrint("  Start = ");
+            DebugPrint(S->Start);
+            DebugPrint("\n");
 
-          DebugPrint("End");
-          DebugPrint(S.End);
+            DebugPrint("  At = ");
+            DebugPrint(S->At);
+            DebugPrint("\n");
 
+            DebugPrint("  End = ");
+            DebugPrint(S->End);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/bonsai_stdlib/headers/stream.h
-      function void DebugPrint(mesh_metadata S)
+      function void DebugPrint(mesh_metadata* S)
       {
-        
-          DebugPrint("VertCount");
-          DebugPrint(S.VertCount);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("NormalCount");
-          DebugPrint(S.NormalCount);
+          
+            DebugPrint("  VertCount = ");
+            DebugPrint(S->VertCount);
+            DebugPrint("\n");
 
-          DebugPrint("UVCount");
-          DebugPrint(S.UVCount);
+            DebugPrint("  NormalCount = ");
+            DebugPrint(S->NormalCount);
+            DebugPrint("\n");
 
-          DebugPrint("FaceCount");
-          DebugPrint(S.FaceCount);
+            DebugPrint("  UVCount = ");
+            DebugPrint(S->UVCount);
+            DebugPrint("\n");
 
+            DebugPrint("  FaceCount = ");
+            DebugPrint(S->FaceCount);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/bonsai_stdlib/headers/rect.h
-      function void DebugPrint(rect2 S)
+      function void DebugPrint(rect2* S)
       {
-        
-          DebugPrint("Min");
-          DebugPrint(S.Min);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Max");
-          DebugPrint(S.Max);
+          
+            DebugPrint("  Min = ");
+            DebugPrint(S->Min);
+            DebugPrint("\n");
 
+            DebugPrint("  Max = ");
+            DebugPrint(S->Max);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/bonsai_stdlib/headers/rect.h
-      function void DebugPrint(aabb S)
+      function void DebugPrint(aabb* S)
       {
-        
-          DebugPrint("Center");
-          DebugPrint(S.Center);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Radius");
-          DebugPrint(S.Radius);
+          
+            DebugPrint("  Center = ");
+            DebugPrint(S->Center);
+            DebugPrint("\n");
 
+            DebugPrint("  Radius = ");
+            DebugPrint(S->Radius);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/bonsai_stdlib/headers/rect.h
-      function void DebugPrint(ray S)
+      function void DebugPrint(ray* S)
       {
-        
-          DebugPrint("Origin");
-          DebugPrint(S.Origin);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Dir");
-          DebugPrint(S.Dir);
+          
+            DebugPrint("  Origin = ");
+            DebugPrint(S->Origin);
+            DebugPrint("\n");
 
+            DebugPrint("  Dir = ");
+            DebugPrint(S->Dir);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/bonsai_stdlib/headers/input.h
-      function void DebugPrint(input_event S)
+      function void DebugPrint(input_event* S)
       {
-        
-          DebugPrint("Clicked");
-          DebugPrint(S.Clicked);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Pressed");
-          DebugPrint(S.Pressed);
+          
+            DebugPrint("  Clicked = ");
+            DebugPrint(S->Clicked);
+            DebugPrint("\n");
 
+            DebugPrint("  Pressed = ");
+            DebugPrint(S->Pressed);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/bonsai_stdlib/headers/input.h
-      function void DebugPrint(input S)
+      function void DebugPrint(input* S)
       {
-        
-          DebugPrint("Escape");
-          DebugPrint(S.Escape);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Space");
-          DebugPrint(S.Space);
+          
+            DebugPrint("  Escape = ");
+            DebugPrint(S->Escape);
+            DebugPrint("\n");
 
-          DebugPrint("Shift");
-          DebugPrint(S.Shift);
+            DebugPrint("  Space = ");
+            DebugPrint(S->Space);
+            DebugPrint("\n");
 
-          DebugPrint("Ctrl");
-          DebugPrint(S.Ctrl);
+            DebugPrint("  Shift = ");
+            DebugPrint(S->Shift);
+            DebugPrint("\n");
 
-          DebugPrint("Alt");
-          DebugPrint(S.Alt);
+            DebugPrint("  Ctrl = ");
+            DebugPrint(S->Ctrl);
+            DebugPrint("\n");
 
-          DebugPrint("F12");
-          DebugPrint(S.F12);
+            DebugPrint("  Alt = ");
+            DebugPrint(S->Alt);
+            DebugPrint("\n");
 
-          DebugPrint("F11");
-          DebugPrint(S.F11);
+            DebugPrint("  F12 = ");
+            DebugPrint(S->F12);
+            DebugPrint("\n");
 
-          DebugPrint("F10");
-          DebugPrint(S.F10);
+            DebugPrint("  F11 = ");
+            DebugPrint(S->F11);
+            DebugPrint("\n");
 
-          DebugPrint("F9");
-          DebugPrint(S.F9);
+            DebugPrint("  F10 = ");
+            DebugPrint(S->F10);
+            DebugPrint("\n");
 
-          DebugPrint("F8");
-          DebugPrint(S.F8);
+            DebugPrint("  F9 = ");
+            DebugPrint(S->F9);
+            DebugPrint("\n");
 
-          DebugPrint("F7");
-          DebugPrint(S.F7);
+            DebugPrint("  F8 = ");
+            DebugPrint(S->F8);
+            DebugPrint("\n");
 
-          DebugPrint("F6");
-          DebugPrint(S.F6);
+            DebugPrint("  F7 = ");
+            DebugPrint(S->F7);
+            DebugPrint("\n");
 
-          DebugPrint("F5");
-          DebugPrint(S.F5);
+            DebugPrint("  F6 = ");
+            DebugPrint(S->F6);
+            DebugPrint("\n");
 
-          DebugPrint("F4");
-          DebugPrint(S.F4);
+            DebugPrint("  F5 = ");
+            DebugPrint(S->F5);
+            DebugPrint("\n");
 
-          DebugPrint("F3");
-          DebugPrint(S.F3);
+            DebugPrint("  F4 = ");
+            DebugPrint(S->F4);
+            DebugPrint("\n");
 
-          DebugPrint("F2");
-          DebugPrint(S.F2);
+            DebugPrint("  F3 = ");
+            DebugPrint(S->F3);
+            DebugPrint("\n");
 
-          DebugPrint("F1");
-          DebugPrint(S.F1);
+            DebugPrint("  F2 = ");
+            DebugPrint(S->F2);
+            DebugPrint("\n");
 
-          DebugPrint("RMB");
-          DebugPrint(S.RMB);
+            DebugPrint("  F1 = ");
+            DebugPrint(S->F1);
+            DebugPrint("\n");
 
-          DebugPrint("LMB");
-          DebugPrint(S.LMB);
+            DebugPrint("  RMB = ");
+            DebugPrint(S->RMB);
+            DebugPrint("\n");
 
-          DebugPrint("MMB");
-          DebugPrint(S.MMB);
+            DebugPrint("  LMB = ");
+            DebugPrint(S->LMB);
+            DebugPrint("\n");
 
-          DebugPrint("W");
-          DebugPrint(S.W);
+            DebugPrint("  MMB = ");
+            DebugPrint(S->MMB);
+            DebugPrint("\n");
 
-          DebugPrint("A");
-          DebugPrint(S.A);
+            DebugPrint("  W = ");
+            DebugPrint(S->W);
+            DebugPrint("\n");
 
-          DebugPrint("S");
-          DebugPrint(S.S);
+            DebugPrint("  A = ");
+            DebugPrint(S->A);
+            DebugPrint("\n");
 
-          DebugPrint("D");
-          DebugPrint(S.D);
+            DebugPrint("  S = ");
+            DebugPrint(S->S);
+            DebugPrint("\n");
 
-          DebugPrint("Q");
-          DebugPrint(S.Q);
+            DebugPrint("  D = ");
+            DebugPrint(S->D);
+            DebugPrint("\n");
 
-          DebugPrint("E");
-          DebugPrint(S.E);
+            DebugPrint("  Q = ");
+            DebugPrint(S->Q);
+            DebugPrint("\n");
 
+            DebugPrint("  E = ");
+            DebugPrint(S->E);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/bonsai_stdlib/headers/work_queue.h
-      function void DebugPrint(work_queue S)
+      function void DebugPrint(work_queue* S)
       {
-        
-          DebugPrint("EnqueueIndex");
-          DebugPrint(S.EnqueueIndex);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("DequeueIndex");
-          DebugPrint(S.DequeueIndex);
+          
+            DebugPrint("  EnqueueIndex = ");
+            DebugPrint(S->EnqueueIndex);
+            DebugPrint("\n");
 
-          DebugPrint("Entries");
-          DebugPrint(S.Entries);
+            DebugPrint("  DequeueIndex = ");
+            DebugPrint(S->DequeueIndex);
+            DebugPrint("\n");
 
-          DebugPrint("GlobalQueueSemaphore");
-          DebugPrint(S.GlobalQueueSemaphore);
+            DebugPrint("  Entries = ");
+            DebugPrint(S->Entries);
+            DebugPrint("\n");
 
+            DebugPrint("  GlobalQueueSemaphore = ");
+            DebugPrint(S->GlobalQueueSemaphore);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/bonsai_stdlib/headers/string_builder.h
-      function void DebugPrint(string_builder S)
+      function void DebugPrint(string_builder* S)
       {
-        
-          DebugPrint("Memory");
-          DebugPrint(S.Memory);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Chunks");
-          DebugPrint(S.Chunks);
+          
+            DebugPrint("  Memory = ");
+            DebugPrint(S->Memory);
+            DebugPrint("\n");
 
+            DebugPrint("  Chunks = ");
+            DebugPrint(S->Chunks);
+            DebugPrint("\n");
+
+        }
+      }
+
+      // Source File : src/bonsai_stdlib/headers/platform_struct.h
+      function void DebugPrint(platform* S)
+      {
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
+
+          
+            DebugPrint("  LowPriority = ");
+            DebugPrint(S->LowPriority);
+            DebugPrint("\n");
+
+            DebugPrint("  HighPriority = ");
+            DebugPrint(S->HighPriority);
+            DebugPrint("\n");
+
+            DebugPrint("  QueueSemaphore = ");
+            DebugPrint(S->QueueSemaphore);
+            DebugPrint("\n");
+
+            DebugPrint("  Threads = ");
+            DebugPrint(S->Threads);
+            DebugPrint("\n");
+
+            DebugPrint("  MouseP = ");
+            DebugPrint(S->MouseP);
+            DebugPrint("\n");
+
+            DebugPrint("  MouseDP = ");
+            DebugPrint(S->MouseDP);
+            DebugPrint("\n");
+
+            DebugPrint("  Memory = ");
+            DebugPrint(S->Memory);
+            DebugPrint("\n");
+
+            DebugPrint("  dt = ");
+            DebugPrint(S->dt);
+            DebugPrint("\n");
+
+            DebugPrint("  WindowWidth = ");
+            DebugPrint(S->WindowWidth);
+            DebugPrint("\n");
+
+            DebugPrint("  WindowHeight = ");
+            DebugPrint(S->WindowHeight);
+            DebugPrint("\n");
+
+            DebugPrint("  Input = ");
+            DebugPrint(S->Input);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/bonsai_stdlib/headers/matrix.h
-      function void DebugPrint(m4 S)
+      function void DebugPrint(m4* S)
       {
-        
-          DebugPrint("E");
-          DebugPrint(S.E);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
+          
+            DebugPrint("  E = ");
+            DebugPrint(S->E);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/bonsai_stdlib/headers/matrix.h
-      function void DebugPrint(m_nxn S)
+      function void DebugPrint(m_nxn* S)
       {
-        
-          DebugPrint("Elements");
-          DebugPrint(S.Elements);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Rows");
-          DebugPrint(S.Rows);
+          
+            DebugPrint("  Elements = ");
+            DebugPrint(S->Elements);
+            DebugPrint("\n");
 
-          DebugPrint("Columns");
-          DebugPrint(S.Columns);
+            DebugPrint("  Rows = ");
+            DebugPrint(S->Rows);
+            DebugPrint("\n");
 
-          DebugPrint("At");
-          DebugPrint(S.At);
+            DebugPrint("  Columns = ");
+            DebugPrint(S->Columns);
+            DebugPrint("\n");
 
-          DebugPrint("End");
-          DebugPrint(S.End);
+            DebugPrint("  At = ");
+            DebugPrint(S->At);
+            DebugPrint("\n");
 
+            DebugPrint("  End = ");
+            DebugPrint(S->End);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/bonsai_stdlib/headers/random.h
-      function void DebugPrint(random_series S)
+      function void DebugPrint(random_series* S)
       {
-        
-          DebugPrint("Seed");
-          DebugPrint(S.Seed);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
+          
+            DebugPrint("  Seed = ");
+            DebugPrint(S->Seed);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/bonsai_stdlib/headers/memory_arena.h
-      function void DebugPrint(memory_arena S)
+      function void DebugPrint(memory_arena* S)
       {
-        
-          DebugPrint("Start");
-          DebugPrint(S.Start);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("At");
-          DebugPrint(S.At);
+          
+            DebugPrint("  Start = ");
+            DebugPrint(S->Start);
+            DebugPrint("\n");
 
-          DebugPrint("End");
-          DebugPrint(S.End);
+            DebugPrint("  At = ");
+            DebugPrint(S->At);
+            DebugPrint("\n");
 
-          DebugPrint("NextBlockSize");
-          DebugPrint(S.NextBlockSize);
+            DebugPrint("  End = ");
+            DebugPrint(S->End);
+            DebugPrint("\n");
 
-          DebugPrint("Prev");
-          DebugPrint(S.Prev);
+            DebugPrint("  NextBlockSize = ");
+            DebugPrint(S->NextBlockSize);
+            DebugPrint("\n");
 
+            DebugPrint("  Prev = ");
+            DebugPrint(S->Prev);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/bonsai_stdlib/headers/vector.h
-      function void DebugPrint(v2i S)
+      function void DebugPrint(v2i* S)
       {
-        
-          DebugPrint("x");
-          DebugPrint(S.x);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("y");
-          DebugPrint(S.y);
+          
+            DebugPrint("  x = ");
+            DebugPrint(S->x);
+            DebugPrint("\n");
 
+            DebugPrint("  y = ");
+            DebugPrint(S->y);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/bonsai_stdlib/headers/vector.h
-      function void DebugPrint(v2 S)
+      function void DebugPrint(v2* S)
       {
-        
-          DebugPrint("x");
-          DebugPrint(S.x);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("y");
-          DebugPrint(S.y);
+          
+            DebugPrint("  x = ");
+            DebugPrint(S->x);
+            DebugPrint("\n");
 
+            DebugPrint("  y = ");
+            DebugPrint(S->y);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/bonsai_stdlib/headers/heap_allocator.h
-      function void DebugPrint(heap_allocation_block S)
+      function void DebugPrint(heap_allocation_block* S)
       {
-        
-          DebugPrint("Type");
-          DebugPrint(S.Type);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Size");
-          DebugPrint(S.Size);
+          
+            DebugPrint("  Type = ");
+            DebugPrint(S->Type);
+            DebugPrint("\n");
 
-          DebugPrint("PrevAllocationSize");
-          DebugPrint(S.PrevAllocationSize);
+            DebugPrint("  Size = ");
+            DebugPrint(S->Size);
+            DebugPrint("\n");
 
+            DebugPrint("  PrevAllocationSize = ");
+            DebugPrint(S->PrevAllocationSize);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/bonsai_stdlib/headers/heap_allocator.h
-      function void DebugPrint(heap_allocator S)
+      function void DebugPrint(heap_allocator* S)
       {
-        
-          DebugPrint("Heap");
-          DebugPrint(S.Heap);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Size");
-          DebugPrint(S.Size);
+          
+            DebugPrint("  Heap = ");
+            DebugPrint(S->Heap);
+            DebugPrint("\n");
 
+            DebugPrint("  Size = ");
+            DebugPrint(S->Size);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/bonsai_stdlib/headers/counted_string.h
-      function void DebugPrint(char_cursor S)
+      function void DebugPrint(char_cursor* S)
       {
-        
-          DebugPrint("Start");
-          DebugPrint(S.Start);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("End");
-          DebugPrint(S.End);
+          
+            DebugPrint("  Start = ");
+            DebugPrint(S->Start);
+            DebugPrint("\n");
 
-          DebugPrint("At");
-          DebugPrint(S.At);
+            DebugPrint("  End = ");
+            DebugPrint(S->End);
+            DebugPrint("\n");
 
-          DebugPrint("Memory");
-          DebugPrint(S.Memory);
+            DebugPrint("  At = ");
+            DebugPrint(S->At);
+            DebugPrint("\n");
 
+            DebugPrint("  Memory = ");
+            DebugPrint(S->Memory);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/bonsai_stdlib/headers/line.h
-      function void DebugPrint(linei S)
+      function void DebugPrint(linei* S)
       {
-        
-          DebugPrint("MinP");
-          DebugPrint(S.MinP);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("MaxP");
-          DebugPrint(S.MaxP);
+          
+            DebugPrint("  MinP = ");
+            DebugPrint(S->MinP);
+            DebugPrint("\n");
 
+            DebugPrint("  MaxP = ");
+            DebugPrint(S->MaxP);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/bonsai_stdlib/headers/line.h
-      function void DebugPrint(line S)
+      function void DebugPrint(line* S)
       {
-        
-          DebugPrint("MinP");
-          DebugPrint(S.MinP);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("MaxP");
-          DebugPrint(S.MaxP);
+          
+            DebugPrint("  MinP = ");
+            DebugPrint(S->MinP);
+            DebugPrint("\n");
 
+            DebugPrint("  MaxP = ");
+            DebugPrint(S->MaxP);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/unix_platform.h
-      function void DebugPrint(XVisualInfo S)
+      function void DebugPrint(XVisualInfo* S)
       {
-        
-          DebugPrint("visual");
-          DebugPrint(S.visual);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("visualid");
-          DebugPrint(S.visualid);
+          
+            DebugPrint("  visual = ");
+            DebugPrint(S->visual);
+            DebugPrint("\n");
 
-          DebugPrint("screen");
-          DebugPrint(S.screen);
+            DebugPrint("  visualid = ");
+            DebugPrint(S->visualid);
+            DebugPrint("\n");
 
-          DebugPrint("depth");
-          DebugPrint(S.depth);
+            DebugPrint("  screen = ");
+            DebugPrint(S->screen);
+            DebugPrint("\n");
 
-          DebugPrint("c_class");
-          DebugPrint(S.c_class);
+            DebugPrint("  depth = ");
+            DebugPrint(S->depth);
+            DebugPrint("\n");
 
-          DebugPrint("red_mask");
-          DebugPrint(S.red_mask);
+            DebugPrint("  c_class = ");
+            DebugPrint(S->c_class);
+            DebugPrint("\n");
 
-          DebugPrint("green_mask");
-          DebugPrint(S.green_mask);
+            DebugPrint("  red_mask = ");
+            DebugPrint(S->red_mask);
+            DebugPrint("\n");
 
-          DebugPrint("blue_mask");
-          DebugPrint(S.blue_mask);
+            DebugPrint("  green_mask = ");
+            DebugPrint(S->green_mask);
+            DebugPrint("\n");
 
-          DebugPrint("colormap_size");
-          DebugPrint(S.colormap_size);
+            DebugPrint("  blue_mask = ");
+            DebugPrint(S->blue_mask);
+            DebugPrint("\n");
 
-          DebugPrint("bits_per_rgb");
-          DebugPrint(S.bits_per_rgb);
+            DebugPrint("  colormap_size = ");
+            DebugPrint(S->colormap_size);
+            DebugPrint("\n");
 
+            DebugPrint("  bits_per_rgb = ");
+            DebugPrint(S->bits_per_rgb);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/unix_platform.h
-      function void DebugPrint(os S)
+      function void DebugPrint(os* S)
       {
-        
-          DebugPrint("Window");
-          DebugPrint(S.Window);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Display");
-          DebugPrint(S.Display);
+          
+            DebugPrint("  Window = ");
+            DebugPrint(S->Window);
+            DebugPrint("\n");
 
-          DebugPrint("GlContext");
-          DebugPrint(S.GlContext);
+            DebugPrint("  Display = ");
+            DebugPrint(S->Display);
+            DebugPrint("\n");
 
-          DebugPrint("ContinueRunning");
-          DebugPrint(S.ContinueRunning);
+            DebugPrint("  GlContext = ");
+            DebugPrint(S->GlContext);
+            DebugPrint("\n");
 
+            DebugPrint("  ContinueRunning = ");
+            DebugPrint(S->ContinueRunning);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/unix_platform.h
-      function void DebugPrint(native_file S)
+      function void DebugPrint(native_file* S)
       {
-        
-          DebugPrint("Handle");
-          DebugPrint(S.Handle);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Path");
-          DebugPrint(S.Path);
+          
+            DebugPrint("  Handle = ");
+            DebugPrint(S->Handle);
+            DebugPrint("\n");
 
-      }
+            DebugPrint("  Path = ");
+            DebugPrint(S->Path);
+            DebugPrint("\n");
 
-      // Source File : src/metaprogramming/preprocessor.cpp
-      function void DebugPrint(for_enum_constraints S)
-      {
-        
-          DebugPrint("TypeName");
-          DebugPrint(S.TypeName);
-
-          DebugPrint("ValueName");
-          DebugPrint(S.ValueName);
-
-      }
-
-      // Source File : src/metaprogramming/preprocessor.cpp
-      function void DebugPrint(body_text_constraints S)
-      {
-        
-          DebugPrint("MemberContains");
-          DebugPrint(S.MemberContains);
-
-          DebugPrint("TypeTag");
-          DebugPrint(S.TypeTag);
-
-          DebugPrint("TypeName");
-          DebugPrint(S.TypeName);
-
-          DebugPrint("ValueName");
-          DebugPrint(S.ValueName);
-
-      }
-
-      // Source File : src/metaprogramming/preprocessor.cpp
-      function void DebugPrint(replacement_pattern S)
-      {
-        
-          DebugPrint("Match");
-          DebugPrint(S.Match);
-
-          DebugPrint("Replace");
-          DebugPrint(S.Replace);
-
+        }
       }
 
       // Source File : src/engine/cpp/world_chunk.cpp
-      function void DebugPrint(plane_computation S)
+      function void DebugPrint(plane_computation* S)
       {
-        
-          DebugPrint("Plane");
-          DebugPrint(S.Plane);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Complete");
-          DebugPrint(S.Complete);
+          
+            DebugPrint("  Plane = ");
+            DebugPrint(S->Plane);
+            DebugPrint("\n");
 
+            DebugPrint("  Complete = ");
+            DebugPrint(S->Complete);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/bonsai_stdlib/cpp/bitmap.cpp
-      function void DebugPrint(bitmap_image_header S)
+      function void DebugPrint(bitmap_image_header* S)
       {
-        
-          DebugPrint("SizeOfImageHeader");
-          DebugPrint(S.SizeOfImageHeader);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("WidthInPixels");
-          DebugPrint(S.WidthInPixels);
+          
+            DebugPrint("  SizeOfImageHeader = ");
+            DebugPrint(S->SizeOfImageHeader);
+            DebugPrint("\n");
 
-          DebugPrint("HeightInPixels");
-          DebugPrint(S.HeightInPixels);
+            DebugPrint("  WidthInPixels = ");
+            DebugPrint(S->WidthInPixels);
+            DebugPrint("\n");
 
-          DebugPrint("ColorPlanes");
-          DebugPrint(S.ColorPlanes);
+            DebugPrint("  HeightInPixels = ");
+            DebugPrint(S->HeightInPixels);
+            DebugPrint("\n");
 
-          DebugPrint("BPP");
-          DebugPrint(S.BPP);
+            DebugPrint("  ColorPlanes = ");
+            DebugPrint(S->ColorPlanes);
+            DebugPrint("\n");
 
-          DebugPrint("CompressionType");
-          DebugPrint(S.CompressionType);
+            DebugPrint("  BPP = ");
+            DebugPrint(S->BPP);
+            DebugPrint("\n");
 
-          DebugPrint("SizeInBytes");
-          DebugPrint(S.SizeInBytes);
+            DebugPrint("  CompressionType = ");
+            DebugPrint(S->CompressionType);
+            DebugPrint("\n");
 
-          DebugPrint("xPixelsPerMeter");
-          DebugPrint(S.xPixelsPerMeter);
+            DebugPrint("  SizeInBytes = ");
+            DebugPrint(S->SizeInBytes);
+            DebugPrint("\n");
 
-          DebugPrint("yPixelsPerMeter");
-          DebugPrint(S.yPixelsPerMeter);
+            DebugPrint("  xPixelsPerMeter = ");
+            DebugPrint(S->xPixelsPerMeter);
+            DebugPrint("\n");
 
-          DebugPrint("ColorMapsUsed");
-          DebugPrint(S.ColorMapsUsed);
+            DebugPrint("  yPixelsPerMeter = ");
+            DebugPrint(S->yPixelsPerMeter);
+            DebugPrint("\n");
 
-          DebugPrint("NumSignificantColors");
-          DebugPrint(S.NumSignificantColors);
+            DebugPrint("  ColorMapsUsed = ");
+            DebugPrint(S->ColorMapsUsed);
+            DebugPrint("\n");
 
-          DebugPrint("RedMask");
-          DebugPrint(S.RedMask);
+            DebugPrint("  NumSignificantColors = ");
+            DebugPrint(S->NumSignificantColors);
+            DebugPrint("\n");
 
-          DebugPrint("GreenMask");
-          DebugPrint(S.GreenMask);
+            DebugPrint("  RedMask = ");
+            DebugPrint(S->RedMask);
+            DebugPrint("\n");
 
-          DebugPrint("BlueMask");
-          DebugPrint(S.BlueMask);
+            DebugPrint("  GreenMask = ");
+            DebugPrint(S->GreenMask);
+            DebugPrint("\n");
 
-          DebugPrint("AlphaMask");
-          DebugPrint(S.AlphaMask);
+            DebugPrint("  BlueMask = ");
+            DebugPrint(S->BlueMask);
+            DebugPrint("\n");
 
+            DebugPrint("  AlphaMask = ");
+            DebugPrint(S->AlphaMask);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/bonsai_stdlib/cpp/bitmap.cpp
-      function void DebugPrint(bitmap_header S)
+      function void DebugPrint(bitmap_header* S)
       {
-        
-          DebugPrint("Type");
-          DebugPrint(S.Type);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("FileSizeInBytes");
-          DebugPrint(S.FileSizeInBytes);
+          
+            DebugPrint("  Type = ");
+            DebugPrint(S->Type);
+            DebugPrint("\n");
 
-          DebugPrint("Ignored");
-          DebugPrint(S.Ignored);
+            DebugPrint("  FileSizeInBytes = ");
+            DebugPrint(S->FileSizeInBytes);
+            DebugPrint("\n");
 
-          DebugPrint("OffsetToPixelData");
-          DebugPrint(S.OffsetToPixelData);
+            DebugPrint("  Ignored = ");
+            DebugPrint(S->Ignored);
+            DebugPrint("\n");
 
-          DebugPrint("Image");
-          DebugPrint(S.Image);
+            DebugPrint("  OffsetToPixelData = ");
+            DebugPrint(S->OffsetToPixelData);
+            DebugPrint("\n");
 
+            DebugPrint("  Image = ");
+            DebugPrint(S->Image);
+            DebugPrint("\n");
+
+        }
       }
 
       // Source File : src/bonsai_stdlib/cpp/bitmap.cpp
-      function void DebugPrint(bitmap S)
+      function void DebugPrint(bitmap* S)
       {
-        
-          DebugPrint("Dim");
-          DebugPrint(S.Dim);
+        if (S)
+        {
+          DebugPrint("struct StructName\n");
 
-          DebugPrint("Pixels");
-          DebugPrint(S.Pixels);
+          
+            DebugPrint("  Dim = ");
+            DebugPrint(S->Dim);
+            DebugPrint("\n");
 
+            DebugPrint("  Pixels = ");
+            DebugPrint(S->Pixels);
+            DebugPrint("\n");
+
+        }
       }
 

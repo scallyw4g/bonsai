@@ -1,5 +1,3 @@
-#include <bonsai_types.h>
-
 enum d_union_flags
 {
   d_union_flag_none,
@@ -250,6 +248,30 @@ struct c_decl_iterator
 {
   c_decl_stream_chunk* At;
 };
+
+struct for_enum_constraints
+{
+  // Replacement Patterns
+  counted_string TypeName;
+  counted_string ValueName;
+};
+
+struct body_text_constraints
+{
+  counted_string MemberContains;
+
+  // Replacement Patterns
+  counted_string TypeTag;
+  counted_string TypeName;
+  counted_string ValueName;
+};
+
+struct replacement_pattern
+{
+  counted_string Match;
+  counted_string Replace;
+};
+
 
 inline void
 PrintToken(c_token Token)

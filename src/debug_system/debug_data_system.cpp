@@ -466,6 +466,7 @@ ComputeMinMaxAvgDt()
   return Dt;
 }
 
+#if 0
 inline void
 DoDebugFrameRecord(debug_recording_state *State, hotkeys *Hotkeys)
 {
@@ -541,6 +542,7 @@ DoDebugFrameRecord(debug_recording_state *State, hotkeys *Hotkeys)
 
   return;
 }
+#endif
 
 inline memory_arena *
 ThreadsafeDebugMemoryAllocator()
