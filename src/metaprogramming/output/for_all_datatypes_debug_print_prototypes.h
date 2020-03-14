@@ -365,6 +365,12 @@
         function void DebugPrint(xml_tag* S, u32 Depth = 0);
         function void DebugPrint(xml_tag S, u32 Depth = 0);
 
+        function void DebugPrint(xml_hashtable* S, u32 Depth = 0);
+        function void DebugPrint(xml_hashtable S, u32 Depth = 0);
+
+        function void DebugPrint(xml_token_stream* S, u32 Depth = 0);
+        function void DebugPrint(xml_token_stream S, u32 Depth = 0);
+
         function void DebugPrint(xml_tag_stream* S, u32 Depth = 0);
         function void DebugPrint(xml_tag_stream S, u32 Depth = 0);
 
@@ -518,6 +524,9 @@
         function void DebugPrint(input* S, u32 Depth = 0);
         function void DebugPrint(input S, u32 Depth = 0);
 
+        function void DebugPrint(hotkeys* S, u32 Depth = 0);
+        function void DebugPrint(hotkeys S, u32 Depth = 0);
+
         function void DebugPrint(work_queue* S, u32 Depth = 0);
         function void DebugPrint(work_queue S, u32 Depth = 0);
 
@@ -553,6 +562,9 @@
 
         function void DebugPrint(heap_allocator* S, u32 Depth = 0);
         function void DebugPrint(heap_allocator S, u32 Depth = 0);
+
+        function void DebugPrint(mutex* S, u32 Depth = 0);
+        function void DebugPrint(mutex S, u32 Depth = 0);
 
         function void DebugPrint(mutex_op_record* S, u32 Depth = 0);
         function void DebugPrint(mutex_op_record S, u32 Depth = 0);

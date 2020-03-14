@@ -103,6 +103,12 @@ DebugPrint(const char* E, u32 Depth = 0)
 }
 
 function void
+DebugPrint(native_mutex E, u32 Depth = 0)
+{
+  printf("(mutex) : (%u) ? %u", *(u32*)&E, Depth);
+}
+
+function void
 DebugPrint(semaphore E, u32 Depth = 0)
 {
   printf("(semaphore) : (%u) ? %u", *(u32*)&E, Depth);
@@ -123,13 +129,10 @@ meta(
 meta(
   named_list(buggy_datatypes)
   {
-    hotkeys xml_hashtable xml_token_stream
-
     thread_startup_params
-    mutex network_connection
+    network_connection
     debug_state
     perlin_noise
-
   }
 )
 

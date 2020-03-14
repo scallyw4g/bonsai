@@ -5320,6 +5320,94 @@
 
 
       
+        function void DebugPrint(xml_hashtable S, u32 Depth)
+        {
+          DebugPrint("xml_hashtable\n", Depth);
+          
+            DebugPrint("Size = ", Depth);
+            DebugPrint(S.Size, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Table = ", Depth);
+            DebugPrint(S.Table, Depth+1);
+            DebugPrint("\n");
+
+        }
+
+
+      
+        function void DebugPrint(xml_hashtable* S, u32 Depth)
+        {
+          if (S)
+          {
+            DebugPrint("xml_hashtable\n", Depth);
+            
+              DebugPrint("Size = ", Depth);
+              DebugPrint(S->Size, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Table = ", Depth);
+              DebugPrint(S->Table, Depth+1);
+              DebugPrint("\n");
+
+          }
+        }
+
+
+
+      
+        function void DebugPrint(xml_token_stream S, u32 Depth)
+        {
+          DebugPrint("xml_token_stream\n", Depth);
+          
+            DebugPrint("Start = ", Depth);
+            DebugPrint(S.Start, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("At = ", Depth);
+            DebugPrint(S.At, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("End = ", Depth);
+            DebugPrint(S.End, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Hashes = ", Depth);
+            DebugPrint(S.Hashes, Depth+1);
+            DebugPrint("\n");
+
+        }
+
+
+      
+        function void DebugPrint(xml_token_stream* S, u32 Depth)
+        {
+          if (S)
+          {
+            DebugPrint("xml_token_stream\n", Depth);
+            
+              DebugPrint("Start = ", Depth);
+              DebugPrint(S->Start, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("At = ", Depth);
+              DebugPrint(S->At, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("End = ", Depth);
+              DebugPrint(S->End, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Hashes = ", Depth);
+              DebugPrint(S->Hashes, Depth+1);
+              DebugPrint("\n");
+
+          }
+        }
+
+
+
+      
         function void DebugPrint(xml_tag_stream S, u32 Depth)
         {
           DebugPrint("xml_tag_stream\n", Depth);
@@ -8220,6 +8308,154 @@
 
 
       
+        function void DebugPrint(hotkeys S, u32 Depth)
+        {
+          DebugPrint("hotkeys\n", Depth);
+          
+            DebugPrint("Debug_RedrawEveryPush = ", Depth);
+            DebugPrint(S.Debug_RedrawEveryPush, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Debug_ToggleLoopedGamePlayback = ", Depth);
+            DebugPrint(S.Debug_ToggleLoopedGamePlayback, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Debug_ToggleTriggeredRuntimeBreak = ", Depth);
+            DebugPrint(S.Debug_ToggleTriggeredRuntimeBreak, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Debug_Pause = ", Depth);
+            DebugPrint(S.Debug_Pause, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Debug_ToggleProfile = ", Depth);
+            DebugPrint(S.Debug_ToggleProfile, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Debug_ToggleMenu = ", Depth);
+            DebugPrint(S.Debug_ToggleMenu, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Debug_TriangulateIncrement = ", Depth);
+            DebugPrint(S.Debug_TriangulateIncrement, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Debug_TriangulateDecrement = ", Depth);
+            DebugPrint(S.Debug_TriangulateDecrement, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Debug_MousePick = ", Depth);
+            DebugPrint(S.Debug_MousePick, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Left = ", Depth);
+            DebugPrint(S.Left, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Right = ", Depth);
+            DebugPrint(S.Right, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Forward = ", Depth);
+            DebugPrint(S.Forward, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Backward = ", Depth);
+            DebugPrint(S.Backward, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Player_Fire = ", Depth);
+            DebugPrint(S.Player_Fire, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Player_Proton = ", Depth);
+            DebugPrint(S.Player_Proton, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Player_Spawn = ", Depth);
+            DebugPrint(S.Player_Spawn, Depth+1);
+            DebugPrint("\n");
+
+        }
+
+
+      
+        function void DebugPrint(hotkeys* S, u32 Depth)
+        {
+          if (S)
+          {
+            DebugPrint("hotkeys\n", Depth);
+            
+              DebugPrint("Debug_RedrawEveryPush = ", Depth);
+              DebugPrint(S->Debug_RedrawEveryPush, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Debug_ToggleLoopedGamePlayback = ", Depth);
+              DebugPrint(S->Debug_ToggleLoopedGamePlayback, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Debug_ToggleTriggeredRuntimeBreak = ", Depth);
+              DebugPrint(S->Debug_ToggleTriggeredRuntimeBreak, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Debug_Pause = ", Depth);
+              DebugPrint(S->Debug_Pause, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Debug_ToggleProfile = ", Depth);
+              DebugPrint(S->Debug_ToggleProfile, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Debug_ToggleMenu = ", Depth);
+              DebugPrint(S->Debug_ToggleMenu, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Debug_TriangulateIncrement = ", Depth);
+              DebugPrint(S->Debug_TriangulateIncrement, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Debug_TriangulateDecrement = ", Depth);
+              DebugPrint(S->Debug_TriangulateDecrement, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Debug_MousePick = ", Depth);
+              DebugPrint(S->Debug_MousePick, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Left = ", Depth);
+              DebugPrint(S->Left, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Right = ", Depth);
+              DebugPrint(S->Right, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Forward = ", Depth);
+              DebugPrint(S->Forward, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Backward = ", Depth);
+              DebugPrint(S->Backward, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Player_Fire = ", Depth);
+              DebugPrint(S->Player_Fire, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Player_Proton = ", Depth);
+              DebugPrint(S->Player_Proton, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Player_Spawn = ", Depth);
+              DebugPrint(S->Player_Spawn, Depth+1);
+              DebugPrint("\n");
+
+          }
+        }
+
+
+
+      
         function void DebugPrint(work_queue S, u32 Depth)
         {
           DebugPrint("work_queue\n", Depth);
@@ -8812,6 +9048,42 @@
 
               DebugPrint("Size = ", Depth);
               DebugPrint(S->Size, Depth+1);
+              DebugPrint("\n");
+
+          }
+        }
+
+
+
+      
+        function void DebugPrint(mutex S, u32 Depth)
+        {
+          DebugPrint("mutex\n", Depth);
+          
+            DebugPrint("M = ", Depth);
+            DebugPrint(S.M, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("DebugRecord = ", Depth);
+            DebugPrint(S.DebugRecord, Depth+1);
+            DebugPrint("\n");
+
+        }
+
+
+      
+        function void DebugPrint(mutex* S, u32 Depth)
+        {
+          if (S)
+          {
+            DebugPrint("mutex\n", Depth);
+            
+              DebugPrint("M = ", Depth);
+              DebugPrint(S->M, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("DebugRecord = ", Depth);
+              DebugPrint(S->DebugRecord, Depth+1);
               DebugPrint("\n");
 
           }
