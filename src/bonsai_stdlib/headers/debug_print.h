@@ -114,8 +114,6 @@ DebugPrint(semaphore E, u32 Depth = 0)
   printf("(semaphore) : (%u) ? %u", *(u32*)&E, Depth);
 }
 
-meta( named_list(unprintable_datatypes) { counted_string })
-
 meta(
   named_list(external_datatypes)
   {
@@ -125,16 +123,12 @@ meta(
   }
 )
 
+// Note(Jesse): This is, for the purposes of DebugPrint at least, a primitive
+// type and needs to be implemented by hand
+meta( named_list(unprintable_datatypes) { counted_string })
+
 // TODO(Jesse id: 185, tags: bug, high_priority): these should be printable!
-meta(
-  named_list(buggy_datatypes)
-  {
-    thread_startup_params
-    network_connection
-    debug_state
-    perlin_noise
-  }
-)
+meta( named_list(buggy_datatypes) { thread_startup_params network_connection debug_state perlin_noise })
 
 meta(
   for_all_datatypes(

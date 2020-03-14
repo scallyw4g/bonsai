@@ -4,6 +4,29 @@ enum d_union_flags
   d_union_flag_enum_only
 };
 
+_meta(
+  function(generate_string_table(enum))
+  {
+    __(enum_type)
+    {
+      function counted_string
+      ToString(enum_type Type)
+      {
+        counted_string Result = {};
+        switch (Type)
+        {
+          __(enum_name, enum_value)
+          {
+            case enum_name: { Result = CS("enum_name"); } break;
+          }
+        }
+
+        return Result;
+      }
+    }
+  }
+)
+
 enum metaprogramming_directive
 {
   noop                       = 0x0000,
