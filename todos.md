@@ -1,11 +1,11 @@
 # Jesse
   ## immediate
-    - #83 d_union-ify this
-    - #155 This should eat the comment if
-    - #156 This should actually concat all comments such that
-    - #157 Should support multi-line comments as well
     - #159 Rename to Members
+    - #83 d_union-ify this
     - #184 Reinstate memory protection!  Need to turn it off
+    - #157 Should support multi-line comments as well
+    - #156 This should actually concat all comments such that
+    - #155 This should eat the comment if
 
   ## untagged
     - #154 This is pretty shitty because whenever we copy one of these
@@ -15,6 +15,7 @@
     - #158 Change to a string_builder
     - #182 This should respect Args.Outpath passed in!
     - #183 This should respect Args.OutPath passed in!
+    - #185 these should be printable!
 
   ## format_counted_string
     - #91 Jettison this .. Can it be metaprogrammed?
@@ -46,6 +47,7 @@
 
   ## cleanup
     - #77 Axe this!
+    - #159 Rename to Members
     - #88 Perlin.h depends on this .. rewrite it.
     - #89 Perlin.h depends on this .. rewrite it.
     - #90 Redistribute this
@@ -58,11 +60,10 @@
     - #107 Can we compute this with MouseP to avoid a frame of input delay?
     - #108 Do we have to pass the style to both of these functions, and is that a good idea?
     - #109 Reset this in here?
+    - #158 Change to a string_builder
     - #113 Remove these?
     - #144 This actually has nothing to do with the platform
     - #146 Make this return a counted string and everything that depends on
-    - #158 Change to a string_builder
-    - #159 Rename to Members
 
   ## rng
     - #82 257 seemed to produce slightly
@@ -75,10 +76,10 @@
     - #99 Generate this?  Need a compiler feature to generate stuff from primitive types.
     - #100 Do we actually want this in here?
     - #111 Proper expression parsing.  ie: enum_value_name = (1 << 4) or enum_value_name = SOME_MACRO(thing, ding)
-    - #121 Need a way of dynamically allocating more of these on demand
-    - #160 Generate this!
     - #180 Can we use Allocate() here instead?
     - #181 Can we use Allocate() here instead?
+    - #121 Need a way of dynamically allocating more of these on demand
+    - #160 Generate this!
 
   ## robustness
     - #78 How should we actually set this?
@@ -120,10 +121,10 @@
     - #80 This could be factored out of here if xml_tag::Properties
 
   ## back_burner
+    - #161 Reinstate this! */
     - #80 This could be factored out of here if xml_tag::Properties
     - #111 Proper expression parsing.  ie: enum_value_name = (1 << 4) or enum_value_name = SOME_MACRO(thing, ding)
     - #117 Transient arena for this instead of stack allocation ?
-    - #161 Reinstate this! */
 
   ## string_hash
     - #81 Theres' a null terminated string-hash
@@ -135,10 +136,10 @@
 
   ## opengl
     - #84 This only gets used when computing the shadow map, so I'm not even sure if it works ATM
+    - #119 Not present on ES2 .. should we use them?
     - #135 Query max gpu textures?
     - #138 32F is only necessary for reprojection of Position for
     - #150 Should this be done elsewhere?
-    - #119 Not present on ES2 .. should we use them?
 
   ## completeness
     - #84 This only gets used when computing the shadow map, so I'm not even sure if it works ATM
@@ -191,12 +192,6 @@
   ## potential_bug
     - #108 Do we have to pass the style to both of these functions, and is that a good idea?
     - #123 Should these 0s be set to s32_MIN??
-
-  ## ui
-    - #110 Should we do something special when interacting with this thing instead of Ignored-ing it?
-
-  ## semantic
-    - #110 Should we do something special when interacting with this thing instead of Ignored-ing it?
 
   ## bootstrap_debug_system
     - #112 This is copy-pasted from the callgraph tests .. should we be
@@ -290,4 +285,13 @@
 
   ## debug_recording
     - #161 Reinstate this! */
+
+  ## ui
+    - #110 Should we do something special when interacting with this thing instead of Ignored-ing it?
+
+  ## semantic
+    - #110 Should we do something special when interacting with this thing instead of Ignored-ing it?
+
+  ## bug
+    - #185 these should be printable!
 

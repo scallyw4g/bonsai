@@ -2255,6 +2255,22 @@ StreamContains(person_stream* People, counted_string Name)
   return Result;
 }
 
+function tagged_counted_string_stream*
+StreamContains(tagged_counted_string_stream_stream* Stream, counted_string Tag)
+{
+  tagged_counted_string_stream* Result = {};
+  ITERATE_OVER(tagged_counted_string_stream, Stream)
+  {
+    tagged_counted_string_stream* Current = GET_ELEMENT(Iter);
+    if (StringsMatch(Current->Tag, Tag))
+    {
+      Result = Current;
+      break;
+    }
+  }
+  return Result;
+}
+
 function todo*
 StreamContains(todo_stream* Todos, counted_string TodoId)
 {
@@ -2516,6 +2532,17 @@ DoStructReplacementPatterns(string_builder* OutputBuilder, c_parse_result* BodyT
   }
 }
 
+function void
+ConcatStreams(counted_string_stream* S1, counted_string_stream* S2, memory_arena* Memory)
+{
+  ITERATE_OVER(counted_string, S2)
+  {
+    counted_string* Element = GET_ELEMENT(Iter);
+    Push(S1, *Element, Memory);
+  }
+  return;
+}
+
 function b32
 IsMetaprogrammingOutput(counted_string Filename, counted_string OutputDirectory)
 {
@@ -2565,7 +2592,7 @@ main(s32 ArgCount, const char** ArgStrings)
 
     person_stream People = ParseAllTodosFromFile(CSz("todos.md"), Memory);
 
-    tagged_counted_string_stream_stream NamedLists = {};
+    tagged_counted_string_stream_stream NameLists = {};
 
     for (u32 ParserIndex = 0;
         ParserIndex < Count(&ParsedFiles);
@@ -2686,14 +2713,11 @@ main(s32 ArgCount, const char** ArgStrings)
               {
                 case named_list:
                 {
-                  RequireToken(Parser, CTokenType_OpenParen);
-
                   tagged_counted_string_stream NameList = {
                     .Tag = RequireToken(Parser, CTokenType_Identifier).Value
                   };
 
                   RequireToken(Parser, CTokenType_CloseParen);
-                  RequireToken(Parser, CTokenType_Comma);
 
                   RequireToken(Parser, CTokenType_OpenBrace);
                   while (PeekToken(Parser).Type == CTokenType_Identifier)
@@ -2705,9 +2729,7 @@ main(s32 ArgCount, const char** ArgStrings)
 
                   RequireToken(Parser, CTokenType_CloseBrace);
 
-                  /* DebugPrint(NameList); */
-
-                  Push(&NamedLists, NameList, Memory);
+                  Push(&NameLists, NameList, Memory);
 
                 } break;
 
@@ -2779,11 +2801,28 @@ main(s32 ArgCount, const char** ArgStrings)
                     RequireToken(Parser, CTokenType_OpenParen);
                     while (PeekToken(Parser).Type == CTokenType_Identifier)
                     {
-                      counted_string Exclude = RequireToken(Parser, CTokenType_Identifier).Value;
-                      Push(&Excludes, Exclude, Memory);
+                      counted_string Exclude    = RequireToken(Parser, CTokenType_Identifier).Value;
+
+                      struct_def* ExcludeStruct = GetStructByType(&Datatypes.Structs, Exclude);
+                      tagged_counted_string_stream* ExcludeList = StreamContains(&NameLists, Exclude);
+
+                      if (ExcludeStruct)
+                      {
+                        Push(&Excludes, Exclude, Memory);
+                      }
+                      else if (ExcludeList)
+                      {
+                        ConcatStreams(&Excludes, &ExcludeList->Stream, Memory);
+                      }
+                      else
+                      {
+                        Warn("Type (%.*s) could not be resolved to a struct or named_list, ignoring it.", (u32)Exclude.Count, Exclude.Start);
+                      }
+
                       OptionalToken(Parser, CTokenType_Comma);
                     }
                   }
+
                   RequireToken(Parser, CTokenType_CloseParen);
                   RequireToken(Parser, CTokenType_Comma);
 
@@ -2892,6 +2931,7 @@ main(s32 ArgCount, const char** ArgStrings)
       continue;
     }
 
+    /* DebugPrint(NameLists); */
 
     random_series Rng = {.Seed = 123125};
     native_file TempFile = GetTempFile(&Rng, Memory);

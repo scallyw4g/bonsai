@@ -99,38 +99,34 @@ DebugPrint(semaphore E, u32 Depth = 0)
   printf("(semaphore) : (%u) ? %u", *(u32*)&E, Depth);
 }
 
-_meta(
-  named_list(exclude_datatypes)
+meta( named_list(unprintable_datatypes) { counted_string })
+
+meta(
+  named_list(external_datatypes)
   {
-    hotkeys xml_hashtable xml_token_stream
-
-    thread_startup_params
-    mutex address network_connection
-    debug_state
-    perlin_noise
-
-    counted_string
     thing1 thing2 thing3 thing4
     test_struct_8 test_struct_16 test_struct_32 test_struct_64 test_struct_128 test_struct_1k
     head_table ttf_vert ttf_contour simple_glyph font_table ttf offset_subtable
   }
 )
 
+// TODO(Jesse id: 185, tags: bug, high_priority): these should be printable!
+meta(
+  named_list(buggy_datatypes)
+  {
+    hotkeys xml_hashtable xml_token_stream
+
+    thread_startup_params
+    mutex network_connection
+    debug_state
+    perlin_noise
+
+  }
+)
+
 meta(
   for_all_datatypes(
-    exclude(
-      hotkeys xml_hashtable xml_token_stream
-
-      thread_startup_params
-      mutex address network_connection
-      debug_state
-      perlin_noise
-
-      counted_string
-      thing1 thing2 thing3 thing4
-      test_struct_8 test_struct_16 test_struct_32 test_struct_64 test_struct_128 test_struct_1k
-      head_table ttf_vert ttf_contour simple_glyph font_table ttf offset_subtable
-    ),
+    exclude(unprintable_datatypes buggy_datatypes external_datatypes),
     {
       __(StructName)
       {  function void DebugPrint(StructName* S, u32 Depth = 0);
@@ -142,19 +138,7 @@ meta(
 
 meta(
   for_all_datatypes(
-    exclude(
-      hotkeys xml_hashtable xml_token_stream
-
-      thread_startup_params
-      mutex address network_connection
-      debug_state
-      perlin_noise
-
-      counted_string
-      thing1 thing2 thing3 thing4
-      test_struct_8 test_struct_16 test_struct_32 test_struct_64 test_struct_128 test_struct_1k
-      head_table ttf_vert ttf_contour simple_glyph font_table ttf offset_subtable
-    ),
+    exclude(unprintable_datatypes buggy_datatypes external_datatypes),
     {
       __(StructName)
       {
