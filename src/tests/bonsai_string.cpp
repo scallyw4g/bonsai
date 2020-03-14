@@ -184,7 +184,23 @@ TestStreamCursor()
 }
 
 void
-TestContains()
+TestContainsForCountedString()
+{
+  TestThat( Contains(CSz("abc"), CSz("abc")) );
+  TestThat( Contains(CSz("abcd"), CSz("abc")) );
+  TestThat( Contains(CSz("dabc"), CSz("abc")) );
+  TestThat( Contains(CSz("dabcd"), CSz("abc")) );
+
+  TestThat(!Contains(CSz("bc"), CSz("abc")) );
+  TestThat(!Contains(CSz("bacd"), CSz("abc")) );
+  TestThat(!Contains(CSz("dacb"), CSz("abc")) );
+  TestThat(!Contains(CSz("adbcd"), CSz("abc")) );
+
+  return;
+}
+
+void
+TestContainsForConstCharStar()
 {
   TestThat( Contains("abc", "abc") );
   TestThat( Contains("abcd", "abc") );
@@ -395,7 +411,8 @@ main()
 
   TestStreamCursor();
 
-  TestContains();
+  TestContainsForConstCharStar();
+  TestContainsForCountedString();
 
   TestReadUntilTerminatorList();
 

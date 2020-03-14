@@ -200,7 +200,7 @@ Contains(counted_string S1, counted_string S2)
   {
     u32 Diff = (u32)(S1.Count - S2.Count);
     for (u32 S1Index = 0;
-        S1Index < Diff;
+        S1Index <= Diff;
         ++S1Index)
     {
       counted_string Temp1 = { .Start = S1.Start+S1Index, .Count = S2.Count };
