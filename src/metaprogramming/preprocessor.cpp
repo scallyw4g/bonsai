@@ -1693,11 +1693,13 @@ ParseStructBody(c_parse_result* Parser, counted_string StructName, memory_arena*
     if (NextToken.Type == CTokenType_Hash)
     {
       EatUntil(Parser, CTokenType_Newline);
-      continue;
+    }
+    else
+    {
+      c_decl Declaration = ParseDeclaration(Parser, Result.Name, Memory);
+      Push(&Result.Fields, Declaration, Memory);
     }
 
-    c_decl Declaration = ParseDeclaration(Parser, Result.Name, Memory);
-    Push(&Result.Fields, Declaration, Memory);
     NextToken = PeekToken(Parser);
   }
 

@@ -7,6 +7,15 @@ DebugPrint(voxel_position E, u32 Depth = 0)
 }
 
 function void
+DebugPrint(Quaternion E, u32 Depth = 0)
+{
+  printf("%*f", Depth, E.E[0]);
+  printf("%*f", Depth, E.E[1]);
+  printf("%*f", Depth, E.E[2]);
+  printf("%*f", Depth, E.E[3]);
+}
+
+function void
 DebugPrint(v4 E, u32 Depth = 0)
 {
   printf("%*f", Depth, E.x);

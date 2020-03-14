@@ -455,6 +455,33 @@
         function void DebugPrint(particle_system* S, u32 Depth = 0);
         function void DebugPrint(particle_system S, u32 Depth = 0);
 
+        function void DebugPrint(entity* S, u32 Depth = 0);
+        function void DebugPrint(entity S, u32 Depth = 0);
+
+        function void DebugPrint(frame_event* S, u32 Depth = 0);
+        function void DebugPrint(frame_event S, u32 Depth = 0);
+
+        function void DebugPrint(event_queue* S, u32 Depth = 0);
+        function void DebugPrint(event_queue S, u32 Depth = 0);
+
+        function void DebugPrint(entity_list* S, u32 Depth = 0);
+        function void DebugPrint(entity_list S, u32 Depth = 0);
+
+        function void DebugPrint(point_buffer* S, u32 Depth = 0);
+        function void DebugPrint(point_buffer S, u32 Depth = 0);
+
+        function void DebugPrint(world_chunk* S, u32 Depth = 0);
+        function void DebugPrint(world_chunk S, u32 Depth = 0);
+
+        function void DebugPrint(collision_event* S, u32 Depth = 0);
+        function void DebugPrint(collision_event S, u32 Depth = 0);
+
+        function void DebugPrint(free_world_chunk* S, u32 Depth = 0);
+        function void DebugPrint(free_world_chunk S, u32 Depth = 0);
+
+        function void DebugPrint(world* S, u32 Depth = 0);
+        function void DebugPrint(world S, u32 Depth = 0);
+
         function void DebugPrint(thread* S, u32 Depth = 0);
         function void DebugPrint(thread S, u32 Depth = 0);
 
@@ -512,6 +539,9 @@
         function void DebugPrint(memory_arena* S, u32 Depth = 0);
         function void DebugPrint(memory_arena S, u32 Depth = 0);
 
+        function void DebugPrint(push_metadata* S, u32 Depth = 0);
+        function void DebugPrint(push_metadata S, u32 Depth = 0);
+
         function void DebugPrint(v2i* S, u32 Depth = 0);
         function void DebugPrint(v2i S, u32 Depth = 0);
 
@@ -523,6 +553,12 @@
 
         function void DebugPrint(heap_allocator* S, u32 Depth = 0);
         function void DebugPrint(heap_allocator S, u32 Depth = 0);
+
+        function void DebugPrint(mutex_op_record* S, u32 Depth = 0);
+        function void DebugPrint(mutex_op_record S, u32 Depth = 0);
+
+        function void DebugPrint(mutex_op_array* S, u32 Depth = 0);
+        function void DebugPrint(mutex_op_array S, u32 Depth = 0);
 
         function void DebugPrint(tagged_counted_string_stream* S, u32 Depth = 0);
         function void DebugPrint(tagged_counted_string_stream S, u32 Depth = 0);

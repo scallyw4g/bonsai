@@ -6868,6 +6868,10 @@
             DebugPrint(S.Colors, Depth+1);
             DebugPrint("\n");
 
+            DebugPrint("Particles = ", Depth);
+            DebugPrint(S.Particles, Depth+1);
+            DebugPrint("\n");
+
         }
 
 
@@ -6920,6 +6924,598 @@
 
               DebugPrint("Colors = ", Depth);
               DebugPrint(S->Colors, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Particles = ", Depth);
+              DebugPrint(S->Particles, Depth+1);
+              DebugPrint("\n");
+
+          }
+        }
+
+
+
+      
+        function void DebugPrint(entity S, u32 Depth)
+        {
+          DebugPrint("entity\n", Depth);
+          
+            DebugPrint("Model = ", Depth);
+            DebugPrint(S.Model, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("CollisionVolumeRadius = ", Depth);
+            DebugPrint(S.CollisionVolumeRadius, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Emitter = ", Depth);
+            DebugPrint(S.Emitter, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Physics = ", Depth);
+            DebugPrint(S.Physics, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("P = ", Depth);
+            DebugPrint(S.P, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Rotation = ", Depth);
+            DebugPrint(S.Rotation, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("State = ", Depth);
+            DebugPrint(S.State, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Type = ", Depth);
+            DebugPrint(S.Type, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Scale = ", Depth);
+            DebugPrint(S.Scale, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("RateOfFire = ", Depth);
+            DebugPrint(S.RateOfFire, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("FireCooldown = ", Depth);
+            DebugPrint(S.FireCooldown, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Health = ", Depth);
+            DebugPrint(S.Health, Depth+1);
+            DebugPrint("\n");
+
+        }
+
+
+      
+        function void DebugPrint(entity* S, u32 Depth)
+        {
+          if (S)
+          {
+            DebugPrint("entity\n", Depth);
+            
+              DebugPrint("Model = ", Depth);
+              DebugPrint(S->Model, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("CollisionVolumeRadius = ", Depth);
+              DebugPrint(S->CollisionVolumeRadius, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Emitter = ", Depth);
+              DebugPrint(S->Emitter, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Physics = ", Depth);
+              DebugPrint(S->Physics, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("P = ", Depth);
+              DebugPrint(S->P, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Rotation = ", Depth);
+              DebugPrint(S->Rotation, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("State = ", Depth);
+              DebugPrint(S->State, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Type = ", Depth);
+              DebugPrint(S->Type, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Scale = ", Depth);
+              DebugPrint(S->Scale, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("RateOfFire = ", Depth);
+              DebugPrint(S->RateOfFire, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("FireCooldown = ", Depth);
+              DebugPrint(S->FireCooldown, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Health = ", Depth);
+              DebugPrint(S->Health, Depth+1);
+              DebugPrint("\n");
+
+          }
+        }
+
+
+
+      
+        function void DebugPrint(frame_event S, u32 Depth)
+        {
+          DebugPrint("frame_event\n", Depth);
+          
+            DebugPrint("Type = ", Depth);
+            DebugPrint(S.Type, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Entity = ", Depth);
+            DebugPrint(S.Entity, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Next = ", Depth);
+            DebugPrint(S.Next, Depth+1);
+            DebugPrint("\n");
+
+        }
+
+
+      
+        function void DebugPrint(frame_event* S, u32 Depth)
+        {
+          if (S)
+          {
+            DebugPrint("frame_event\n", Depth);
+            
+              DebugPrint("Type = ", Depth);
+              DebugPrint(S->Type, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Entity = ", Depth);
+              DebugPrint(S->Entity, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Next = ", Depth);
+              DebugPrint(S->Next, Depth+1);
+              DebugPrint("\n");
+
+          }
+        }
+
+
+
+      
+        function void DebugPrint(event_queue S, u32 Depth)
+        {
+          DebugPrint("event_queue\n", Depth);
+          
+            DebugPrint("CurrentFrameIndex = ", Depth);
+            DebugPrint(S.CurrentFrameIndex, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Queue = ", Depth);
+            DebugPrint(S.Queue, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("FirstFreeEvent = ", Depth);
+            DebugPrint(S.FirstFreeEvent, Depth+1);
+            DebugPrint("\n");
+
+        }
+
+
+      
+        function void DebugPrint(event_queue* S, u32 Depth)
+        {
+          if (S)
+          {
+            DebugPrint("event_queue\n", Depth);
+            
+              DebugPrint("CurrentFrameIndex = ", Depth);
+              DebugPrint(S->CurrentFrameIndex, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Queue = ", Depth);
+              DebugPrint(S->Queue, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("FirstFreeEvent = ", Depth);
+              DebugPrint(S->FirstFreeEvent, Depth+1);
+              DebugPrint("\n");
+
+          }
+        }
+
+
+
+      
+        function void DebugPrint(entity_list S, u32 Depth)
+        {
+          DebugPrint("entity_list\n", Depth);
+          
+            DebugPrint("This = ", Depth);
+            DebugPrint(S.This, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Next = ", Depth);
+            DebugPrint(S.Next, Depth+1);
+            DebugPrint("\n");
+
+        }
+
+
+      
+        function void DebugPrint(entity_list* S, u32 Depth)
+        {
+          if (S)
+          {
+            DebugPrint("entity_list\n", Depth);
+            
+              DebugPrint("This = ", Depth);
+              DebugPrint(S->This, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Next = ", Depth);
+              DebugPrint(S->Next, Depth+1);
+              DebugPrint("\n");
+
+          }
+        }
+
+
+
+      
+        function void DebugPrint(point_buffer S, u32 Depth)
+        {
+          DebugPrint("point_buffer\n", Depth);
+          
+            DebugPrint("Count = ", Depth);
+            DebugPrint(S.Count, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Points = ", Depth);
+            DebugPrint(S.Points, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Min = ", Depth);
+            DebugPrint(S.Min, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Max = ", Depth);
+            DebugPrint(S.Max, Depth+1);
+            DebugPrint("\n");
+
+        }
+
+
+      
+        function void DebugPrint(point_buffer* S, u32 Depth)
+        {
+          if (S)
+          {
+            DebugPrint("point_buffer\n", Depth);
+            
+              DebugPrint("Count = ", Depth);
+              DebugPrint(S->Count, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Points = ", Depth);
+              DebugPrint(S->Points, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Min = ", Depth);
+              DebugPrint(S->Min, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Max = ", Depth);
+              DebugPrint(S->Max, Depth+1);
+              DebugPrint("\n");
+
+          }
+        }
+
+
+
+      
+        function void DebugPrint(world_chunk S, u32 Depth)
+        {
+          DebugPrint("world_chunk\n", Depth);
+          
+            DebugPrint("Data = ", Depth);
+            DebugPrint(S.Data, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Mesh = ", Depth);
+            DebugPrint(S.Mesh, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("LodMesh = ", Depth);
+            DebugPrint(S.LodMesh, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("WorldP = ", Depth);
+            DebugPrint(S.WorldP, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("FilledCount = ", Depth);
+            DebugPrint(S.FilledCount, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Picked = ", Depth);
+            DebugPrint(S.Picked, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("LodMesh_Complete = ", Depth);
+            DebugPrint(S.LodMesh_Complete, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("DrawBoundingVoxels = ", Depth);
+            DebugPrint(S.DrawBoundingVoxels, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("PointsToLeaveRemaining = ", Depth);
+            DebugPrint(S.PointsToLeaveRemaining, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("TriCount = ", Depth);
+            DebugPrint(S.TriCount, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("EdgeBoundaryVoxelCount = ", Depth);
+            DebugPrint(S.EdgeBoundaryVoxelCount, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("DimX = ", Depth);
+            DebugPrint(S.DimX, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("DimY = ", Depth);
+            DebugPrint(S.DimY, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("DimZ = ", Depth);
+            DebugPrint(S.DimZ, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Pad = ", Depth);
+            DebugPrint(S.Pad, Depth+1);
+            DebugPrint("\n");
+
+        }
+
+
+      
+        function void DebugPrint(world_chunk* S, u32 Depth)
+        {
+          if (S)
+          {
+            DebugPrint("world_chunk\n", Depth);
+            
+              DebugPrint("Data = ", Depth);
+              DebugPrint(S->Data, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Mesh = ", Depth);
+              DebugPrint(S->Mesh, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("LodMesh = ", Depth);
+              DebugPrint(S->LodMesh, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("WorldP = ", Depth);
+              DebugPrint(S->WorldP, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("FilledCount = ", Depth);
+              DebugPrint(S->FilledCount, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Picked = ", Depth);
+              DebugPrint(S->Picked, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("LodMesh_Complete = ", Depth);
+              DebugPrint(S->LodMesh_Complete, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("DrawBoundingVoxels = ", Depth);
+              DebugPrint(S->DrawBoundingVoxels, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("PointsToLeaveRemaining = ", Depth);
+              DebugPrint(S->PointsToLeaveRemaining, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("TriCount = ", Depth);
+              DebugPrint(S->TriCount, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("EdgeBoundaryVoxelCount = ", Depth);
+              DebugPrint(S->EdgeBoundaryVoxelCount, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("DimX = ", Depth);
+              DebugPrint(S->DimX, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("DimY = ", Depth);
+              DebugPrint(S->DimY, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("DimZ = ", Depth);
+              DebugPrint(S->DimZ, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Pad = ", Depth);
+              DebugPrint(S->Pad, Depth+1);
+              DebugPrint("\n");
+
+          }
+        }
+
+
+
+      
+        function void DebugPrint(collision_event S, u32 Depth)
+        {
+          DebugPrint("collision_event\n", Depth);
+          
+            DebugPrint("Chunk = ", Depth);
+            DebugPrint(S.Chunk, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("CP = ", Depth);
+            DebugPrint(S.CP, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("didCollide = ", Depth);
+            DebugPrint(S.didCollide, Depth+1);
+            DebugPrint("\n");
+
+        }
+
+
+      
+        function void DebugPrint(collision_event* S, u32 Depth)
+        {
+          if (S)
+          {
+            DebugPrint("collision_event\n", Depth);
+            
+              DebugPrint("Chunk = ", Depth);
+              DebugPrint(S->Chunk, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("CP = ", Depth);
+              DebugPrint(S->CP, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("didCollide = ", Depth);
+              DebugPrint(S->didCollide, Depth+1);
+              DebugPrint("\n");
+
+          }
+        }
+
+
+
+      
+        function void DebugPrint(free_world_chunk S, u32 Depth)
+        {
+          DebugPrint("free_world_chunk\n", Depth);
+          
+            DebugPrint("chunk_data = ", Depth);
+            DebugPrint(S.chunk_data, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Next = ", Depth);
+            DebugPrint(S.Next, Depth+1);
+            DebugPrint("\n");
+
+        }
+
+
+      
+        function void DebugPrint(free_world_chunk* S, u32 Depth)
+        {
+          if (S)
+          {
+            DebugPrint("free_world_chunk\n", Depth);
+            
+              DebugPrint("chunk_data = ", Depth);
+              DebugPrint(S->chunk_data, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Next = ", Depth);
+              DebugPrint(S->Next, Depth+1);
+              DebugPrint("\n");
+
+          }
+        }
+
+
+
+      
+        function void DebugPrint(world S, u32 Depth)
+        {
+          DebugPrint("world\n", Depth);
+          
+            DebugPrint("ChunkHash = ", Depth);
+            DebugPrint(S.ChunkHash, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("FreeChunks = ", Depth);
+            DebugPrint(S.FreeChunks, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("FreeChunkCount = ", Depth);
+            DebugPrint(S.FreeChunkCount, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("VisibleRegion = ", Depth);
+            DebugPrint(S.VisibleRegion, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("ChunkDim = ", Depth);
+            DebugPrint(S.ChunkDim, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Center = ", Depth);
+            DebugPrint(S.Center, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Memory = ", Depth);
+            DebugPrint(S.Memory, Depth+1);
+            DebugPrint("\n");
+
+        }
+
+
+      
+        function void DebugPrint(world* S, u32 Depth)
+        {
+          if (S)
+          {
+            DebugPrint("world\n", Depth);
+            
+              DebugPrint("ChunkHash = ", Depth);
+              DebugPrint(S->ChunkHash, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("FreeChunks = ", Depth);
+              DebugPrint(S->FreeChunks, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("FreeChunkCount = ", Depth);
+              DebugPrint(S->FreeChunkCount, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("VisibleRegion = ", Depth);
+              DebugPrint(S->VisibleRegion, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("ChunkDim = ", Depth);
+              DebugPrint(S->ChunkDim, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Center = ", Depth);
+              DebugPrint(S->Center, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Memory = ", Depth);
+              DebugPrint(S->Memory, Depth+1);
               DebugPrint("\n");
 
           }
@@ -7960,6 +8556,10 @@
             DebugPrint(S.Prev, Depth+1);
             DebugPrint("\n");
 
+            DebugPrint("Pushes = ", Depth);
+            DebugPrint(S.Pushes, Depth+1);
+            DebugPrint("\n");
+
         }
 
 
@@ -7988,6 +8588,78 @@
 
               DebugPrint("Prev = ", Depth);
               DebugPrint(S->Prev, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Pushes = ", Depth);
+              DebugPrint(S->Pushes, Depth+1);
+              DebugPrint("\n");
+
+          }
+        }
+
+
+
+      
+        function void DebugPrint(push_metadata S, u32 Depth)
+        {
+          DebugPrint("push_metadata\n", Depth);
+          
+            DebugPrint("Name = ", Depth);
+            DebugPrint(S.Name, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("ArenaHash = ", Depth);
+            DebugPrint(S.ArenaHash, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("HeadArenaHash = ", Depth);
+            DebugPrint(S.HeadArenaHash, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("StructSize = ", Depth);
+            DebugPrint(S.StructSize, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("StructCount = ", Depth);
+            DebugPrint(S.StructCount, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("PushCount = ", Depth);
+            DebugPrint(S.PushCount, Depth+1);
+            DebugPrint("\n");
+
+        }
+
+
+      
+        function void DebugPrint(push_metadata* S, u32 Depth)
+        {
+          if (S)
+          {
+            DebugPrint("push_metadata\n", Depth);
+            
+              DebugPrint("Name = ", Depth);
+              DebugPrint(S->Name, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("ArenaHash = ", Depth);
+              DebugPrint(S->ArenaHash, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("HeadArenaHash = ", Depth);
+              DebugPrint(S->HeadArenaHash, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("StructSize = ", Depth);
+              DebugPrint(S->StructSize, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("StructCount = ", Depth);
+              DebugPrint(S->StructCount, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("PushCount = ", Depth);
+              DebugPrint(S->PushCount, Depth+1);
               DebugPrint("\n");
 
           }
@@ -8140,6 +8812,86 @@
 
               DebugPrint("Size = ", Depth);
               DebugPrint(S->Size, Depth+1);
+              DebugPrint("\n");
+
+          }
+        }
+
+
+
+      
+        function void DebugPrint(mutex_op_record S, u32 Depth)
+        {
+          DebugPrint("mutex_op_record\n", Depth);
+          
+            DebugPrint("Mutex = ", Depth);
+            DebugPrint(S.Mutex, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Cycle = ", Depth);
+            DebugPrint(S.Cycle, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Op = ", Depth);
+            DebugPrint(S.Op, Depth+1);
+            DebugPrint("\n");
+
+        }
+
+
+      
+        function void DebugPrint(mutex_op_record* S, u32 Depth)
+        {
+          if (S)
+          {
+            DebugPrint("mutex_op_record\n", Depth);
+            
+              DebugPrint("Mutex = ", Depth);
+              DebugPrint(S->Mutex, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Cycle = ", Depth);
+              DebugPrint(S->Cycle, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Op = ", Depth);
+              DebugPrint(S->Op, Depth+1);
+              DebugPrint("\n");
+
+          }
+        }
+
+
+
+      
+        function void DebugPrint(mutex_op_array S, u32 Depth)
+        {
+          DebugPrint("mutex_op_array\n", Depth);
+          
+            DebugPrint("NextRecord = ", Depth);
+            DebugPrint(S.NextRecord, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Records = ", Depth);
+            DebugPrint(S.Records, Depth+1);
+            DebugPrint("\n");
+
+        }
+
+
+      
+        function void DebugPrint(mutex_op_array* S, u32 Depth)
+        {
+          if (S)
+          {
+            DebugPrint("mutex_op_array\n", Depth);
+            
+              DebugPrint("NextRecord = ", Depth);
+              DebugPrint(S->NextRecord, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Records = ", Depth);
+              DebugPrint(S->Records, Depth+1);
               DebugPrint("\n");
 
           }
