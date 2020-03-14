@@ -5,6 +5,7 @@
     - #156 This should actually concat all comments such that
     - #157 Should support multi-line comments as well
     - #159 Rename to Members
+    - #184 Reinstate memory protection!  Need to turn it off
 
   ## untagged
     - #154 This is pretty shitty because whenever we copy one of these
@@ -12,6 +13,8 @@
   ## high_priority
     - #101 Profile and check collision rate of this!
     - #158 Change to a string_builder
+    - #182 This should respect Args.Outpath passed in!
+    - #183 This should respect Args.OutPath passed in!
 
   ## format_counted_string
     - #91 Jettison this .. Can it be metaprogrammed?
@@ -55,7 +58,7 @@
     - #107 Can we compute this with MouseP to avoid a frame of input delay?
     - #108 Do we have to pass the style to both of these functions, and is that a good idea?
     - #109 Reset this in here?
-    - #113 Remove this?
+    - #113 Remove these?
     - #144 This actually has nothing to do with the platform
     - #146 Make this return a counted string and everything that depends on
     - #158 Change to a string_builder
@@ -196,10 +199,10 @@
     - #110 Should we do something special when interacting with this thing instead of Ignored-ing it?
 
   ## bootstrap_debug_system
-    - #112 This is copy-pasted from teh callgraph tests .. should we be
+    - #112 This is copy-pasted from the callgraph tests .. should we be
 
   ## copy_paste
-    - #112 This is copy-pasted from teh callgraph tests .. should we be
+    - #112 This is copy-pasted from the callgraph tests .. should we be
 
   ## tests
     - #115 Does this work all the time on x64?

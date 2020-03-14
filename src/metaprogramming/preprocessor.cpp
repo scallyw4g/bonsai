@@ -875,7 +875,7 @@ function arguments
 ParseArgs(const char** ArgStrings, s32 ArgCount, memory_arena* Memory)
 {
   arguments Result = {
-    .OutPath = CS("src/metaprogramming/output"),
+    .Outpath = CS("src/metaprogramming/output"),
     .Files = AllocateBuffer<counted_string_cursor, counted_string>((u32)ArgCount, Memory),
   };
 
@@ -894,7 +894,7 @@ ParseArgs(const char** ArgStrings, s32 ArgCount, memory_arena* Memory)
     {
       if (++ArgIndex < ArgCount)
       {
-        Result.OutPath = CS(ArgStrings[ArgIndex]);
+        Result.Outpath = CS(ArgStrings[ArgIndex]);
       }
       else
       {
@@ -2121,6 +2121,7 @@ DoWorkToOutputThisStuff(c_parse_result* Parser, counted_string OutputForThisPars
     return;
   }
 
+  // TODO(Jesse id: 182, tags: high_priority) This should respect Args.Outpath passed in!
   if (PeekTokenRaw(Parser).Type == CTokenType_Newline &&
       PeekTokenRaw(Parser, 1).Type == CTokenType_Hash &&
       PeekTokenRaw(Parser, 2) == CToken(CS("include")))
@@ -2152,6 +2153,7 @@ DoWorkToOutputThisStuff(c_parse_result* Parser, counted_string OutputForThisPars
   }
   else
   {
+    // TODO(Jesse id: 183, tags: high_priority) This should respect Args.OutPath passed in!
     counted_string IncludePath = Concat(CS("src/metaprogramming/output/"), NewFilename, Memory);
     Output(OutputForThisParser, IncludePath, Memory);
 
@@ -2170,15 +2172,12 @@ DoWorkToOutputThisStuff(c_parse_result* Parser, counted_string OutputForThisPars
   }
 }
 
-// TODO(Jesse, id: 112, tags: bootstrap_debug_system, copy_paste): This is copy-pasted from teh callgraph tests .. should we be
-// able to call this from anywhere?  It's also in the platform layer
-// @bootstrap-debug-system
-
+// TODO(Jesse, id: 113, tags: cleanup): Remove these?
 debug_global platform Plat = {};
-
-// TODO(Jesse, id: 113, tags: cleanup): Remove this?
 debug_global os Os = {};
 
+// TODO(Jesse, id: 112, tags: bootstrap_debug_system, copy_paste): This is copy-pasted from the callgraph tests .. should we be
+// able to call this from anywhere?  It's also in the platform layer
 function b32
 BootstrapDebugSystem(b32 OpenDebugWindow)
 {
@@ -2517,6 +2516,13 @@ DoStructReplacementPatterns(string_builder* OutputBuilder, c_parse_result* BodyT
   }
 }
 
+function b32
+IsMetaprogrammingOutput(counted_string Filename, counted_string OutputDirectory)
+{
+  b32 Result = Contains(Filename, OutputDirectory);
+  return Result;
+}
+
 #include <bonsai_stdlib/headers/debug_print.h>
 
 #ifndef EXCLUDE_PREPROCESSOR_MAIN
@@ -2559,12 +2565,20 @@ main(s32 ArgCount, const char** ArgStrings)
 
     person_stream People = ParseAllTodosFromFile(CSz("todos.md"), Memory);
 
+    tagged_counted_string_stream_stream NamedLists = {};
+
     for (u32 ParserIndex = 0;
         ParserIndex < Count(&ParsedFiles);
         ++ParserIndex)
     {
       c_parse_result* Parser = ParsedFiles.Start+ParserIndex;
       Assert(Parser->Valid);
+
+      if (IsMetaprogrammingOutput(Parser->Filename, Args.Outpath))
+      {
+        Info("Skipping %.*s", (u32)Parser->Filename.Count, Parser->Filename.Start);
+        continue;
+      }
 
       Rewind(&Parser->OutputTokens);
       Rewind(&Parser->Tokens);
@@ -2670,6 +2684,33 @@ main(s32 ArgCount, const char** ArgStrings)
 
               switch (Directive)
               {
+                case named_list:
+                {
+                  RequireToken(Parser, CTokenType_OpenParen);
+
+                  tagged_counted_string_stream NameList = {
+                    .Tag = RequireToken(Parser, CTokenType_Identifier).Value
+                  };
+
+                  RequireToken(Parser, CTokenType_CloseParen);
+                  RequireToken(Parser, CTokenType_Comma);
+
+                  RequireToken(Parser, CTokenType_OpenBrace);
+                  while (PeekToken(Parser).Type == CTokenType_Identifier)
+                  {
+                    counted_string Name = RequireToken(Parser, CTokenType_Identifier).Value;
+                    Push(&NameList.Stream, Name, Memory);
+                    OptionalToken(Parser, CTokenType_Comma);
+                  }
+
+                  RequireToken(Parser, CTokenType_CloseBrace);
+
+                  /* DebugPrint(NameList); */
+
+                  Push(&NamedLists, NameList, Memory);
+
+                } break;
+
                 case generate_stream:
                 {
                   counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;

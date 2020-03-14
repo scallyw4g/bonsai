@@ -16,6 +16,7 @@ ToString(metaprogramming_directive Type)
     case enum_only: { Result = CS("enum_only"); } break;
     case member_is_or_contains_type: { Result = CS("member_is_or_contains_type"); } break;
     case for_all_datatypes: { Result = CS("for_all_datatypes"); } break;
+    case named_list: { Result = CS("named_list"); } break;
   }
   return Result;
 }

@@ -99,6 +99,23 @@ DebugPrint(semaphore E, u32 Depth = 0)
   printf("(semaphore) : (%u) ? %u", *(u32*)&E, Depth);
 }
 
+_meta(
+  named_list(exclude_datatypes)
+  {
+    hotkeys xml_hashtable xml_token_stream
+
+    thread_startup_params
+    mutex address network_connection
+    debug_state
+    perlin_noise
+
+    counted_string
+    thing1 thing2 thing3 thing4
+    test_struct_8 test_struct_16 test_struct_32 test_struct_64 test_struct_128 test_struct_1k
+    head_table ttf_vert ttf_contour simple_glyph font_table ttf offset_subtable
+  }
+)
+
 meta(
   for_all_datatypes(
     exclude(
@@ -116,10 +133,8 @@ meta(
     ),
     {
       __(StructName)
-      {
-        function void DebugPrint(StructName* S, u32 Depth = 0);
-        function void DebugPrint(StructName S, u32 Depth = 0);
-      }
+      {  function void DebugPrint(StructName* S, u32 Depth = 0);
+        function void DebugPrint(StructName S, u32 Depth = 0); }
     }
   )
 )

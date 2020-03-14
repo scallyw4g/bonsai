@@ -21,6 +21,7 @@ enum metaprogramming_directive
   member_is_or_contains_type = 0x0100,
 
   for_all_datatypes          = 0x0200,
+  named_list                 = 0x0400,
 };
 meta(generate_string_table(metaprogramming_directive))
 #include <metaprogramming/output/generate_string_table_metaprogramming_directive.h>
@@ -232,7 +233,7 @@ meta(generate_stream(person))
 
 struct arguments
 {
-  counted_string OutPath;
+  counted_string Outpath;
   counted_string_cursor Files;
 
   b32 DoDebugWindow;

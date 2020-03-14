@@ -2712,8 +2712,8 @@
         {
           DebugPrint("arguments\n", Depth);
           
-            DebugPrint("OutPath = ", Depth);
-            DebugPrint(S.OutPath, Depth+1);
+            DebugPrint("Outpath = ", Depth);
+            DebugPrint(S.Outpath, Depth+1);
             DebugPrint("\n");
 
             DebugPrint("Files = ", Depth);
@@ -2734,8 +2734,8 @@
           {
             DebugPrint("arguments\n", Depth);
             
-              DebugPrint("OutPath = ", Depth);
-              DebugPrint(S->OutPath, Depth+1);
+              DebugPrint("Outpath = ", Depth);
+              DebugPrint(S->Outpath, Depth+1);
               DebugPrint("\n");
 
               DebugPrint("Files = ", Depth);
@@ -2932,6 +2932,114 @@
 
               DebugPrint("Replace = ", Depth);
               DebugPrint(S->Replace, Depth+1);
+              DebugPrint("\n");
+
+          }
+        }
+
+
+
+      
+        function void DebugPrint(tagged_counted_string_stream_stream_chunk S, u32 Depth)
+        {
+          DebugPrint("tagged_counted_string_stream_stream_chunk\n", Depth);
+          
+            DebugPrint("Element = ", Depth);
+            DebugPrint(S.Element, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Next = ", Depth);
+            DebugPrint(S.Next, Depth+1);
+            DebugPrint("\n");
+
+        }
+
+
+      
+        function void DebugPrint(tagged_counted_string_stream_stream_chunk* S, u32 Depth)
+        {
+          if (S)
+          {
+            DebugPrint("tagged_counted_string_stream_stream_chunk\n", Depth);
+            
+              DebugPrint("Element = ", Depth);
+              DebugPrint(S->Element, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Next = ", Depth);
+              DebugPrint(S->Next, Depth+1);
+              DebugPrint("\n");
+
+          }
+        }
+
+
+
+      
+        function void DebugPrint(tagged_counted_string_stream_stream S, u32 Depth)
+        {
+          DebugPrint("tagged_counted_string_stream_stream\n", Depth);
+          
+            DebugPrint("FirstChunk = ", Depth);
+            DebugPrint(S.FirstChunk, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("LastChunk = ", Depth);
+            DebugPrint(S.LastChunk, Depth+1);
+            DebugPrint("\n");
+
+        }
+
+
+      
+        function void DebugPrint(tagged_counted_string_stream_stream* S, u32 Depth)
+        {
+          if (S)
+          {
+            DebugPrint("tagged_counted_string_stream_stream\n", Depth);
+            
+              DebugPrint("FirstChunk = ", Depth);
+              DebugPrint(S->FirstChunk, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("LastChunk = ", Depth);
+              DebugPrint(S->LastChunk, Depth+1);
+              DebugPrint("\n");
+
+          }
+        }
+
+
+
+      
+        function void DebugPrint(tagged_counted_string_stream_iterator S, u32 Depth)
+        {
+          DebugPrint("tagged_counted_string_stream_iterator\n", Depth);
+          
+            DebugPrint("Stream = ", Depth);
+            DebugPrint(S.Stream, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("At = ", Depth);
+            DebugPrint(S.At, Depth+1);
+            DebugPrint("\n");
+
+        }
+
+
+      
+        function void DebugPrint(tagged_counted_string_stream_iterator* S, u32 Depth)
+        {
+          if (S)
+          {
+            DebugPrint("tagged_counted_string_stream_iterator\n", Depth);
+            
+              DebugPrint("Stream = ", Depth);
+              DebugPrint(S->Stream, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("At = ", Depth);
+              DebugPrint(S->At, Depth+1);
               DebugPrint("\n");
 
           }
@@ -8032,6 +8140,42 @@
 
               DebugPrint("Size = ", Depth);
               DebugPrint(S->Size, Depth+1);
+              DebugPrint("\n");
+
+          }
+        }
+
+
+
+      
+        function void DebugPrint(tagged_counted_string_stream S, u32 Depth)
+        {
+          DebugPrint("tagged_counted_string_stream\n", Depth);
+          
+            DebugPrint("Tag = ", Depth);
+            DebugPrint(S.Tag, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Stream = ", Depth);
+            DebugPrint(S.Stream, Depth+1);
+            DebugPrint("\n");
+
+        }
+
+
+      
+        function void DebugPrint(tagged_counted_string_stream* S, u32 Depth)
+        {
+          if (S)
+          {
+            DebugPrint("tagged_counted_string_stream\n", Depth);
+            
+              DebugPrint("Tag = ", Depth);
+              DebugPrint(S->Tag, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Stream = ", Depth);
+              DebugPrint(S->Stream, Depth+1);
               DebugPrint("\n");
 
           }

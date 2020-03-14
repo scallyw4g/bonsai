@@ -4,6 +4,14 @@ meta(generate_stream(counted_string))
 meta(generate_cursor(counted_string))
 #include <metaprogramming/output/generate_cursor_counted_string.h>
 
+struct tagged_counted_string_stream
+{
+  counted_string Tag;
+  counted_string_stream Stream;
+};
+meta(generate_stream(tagged_counted_string_stream))
+#include <metaprogramming/output/generate_stream_tagged_counted_string_stream.h>
+
 // TODO(Jesse, id: 99, tags: compiler_feature, metaprogramming): Generate this?  Need a compiler feature to generate stuff from primitive types.
 struct char_cursor
 {
@@ -180,6 +188,28 @@ inline b32
 StringsMatch(counted_string S1, counted_string S2)
 {
   b32 Result = StringsMatch(&S1, &S2);
+  return Result;
+}
+
+inline b32
+Contains(counted_string S1, counted_string S2)
+{
+  b32 Result = False;
+
+  if (S1.Count >= S2.Count)
+  {
+    u32 Diff = (u32)(S1.Count - S2.Count);
+    for (u32 S1Index = 0;
+        S1Index < Diff;
+        ++S1Index)
+    {
+      counted_string Temp1 = { .Start = S1.Start+S1Index, .Count = S2.Count };
+      Assert(Temp1.Start+Temp1.Count <= S1.Start+S1.Count);
+      Result = StringsMatch(&Temp1, &S2);
+      if (Result) { return Result; }
+    }
+  }
+
   return Result;
 }
 

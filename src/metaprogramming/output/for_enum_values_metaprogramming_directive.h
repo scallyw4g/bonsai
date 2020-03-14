@@ -21,3 +21,5 @@
 
         Result |= StringsMatch(ToString(for_all_datatypes), Identifier);
 
+        Result |= StringsMatch(ToString(named_list), Identifier);
+
