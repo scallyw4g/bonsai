@@ -1,5 +1,5 @@
 
-        Result |= StringsMatch(ToString(noop), Identifier);
+        Result |= StringsMatch(ToString(meta_directive_noop), Identifier);
 
         Result |= StringsMatch(ToString(generate_stream), Identifier);
 

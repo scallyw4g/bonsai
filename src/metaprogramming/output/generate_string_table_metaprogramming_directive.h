@@ -5,7 +5,7 @@ ToString(metaprogramming_directive Type)
   counted_string Result = {};
   switch (Type)
   {
-    case noop: { Result = CS("noop"); } break;
+    case meta_directive_noop: { Result = CS("meta_directive_noop"); } break;
     case generate_stream: { Result = CS("generate_stream"); } break;
     case generate_cursor: { Result = CS("generate_cursor"); } break;
     case generate_string_table: { Result = CS("generate_string_table"); } break;

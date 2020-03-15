@@ -3,7 +3,7 @@ function metaprogramming_directive
 MetaprogrammingDirective(counted_string S)
 {
   metaprogramming_directive Result = {};
-  if (StringsMatch(CS("noop"), S)) { Result = noop; }
+  if (StringsMatch(CS("meta_directive_noop"), S)) { Result = meta_directive_noop; }
   if (StringsMatch(CS("generate_stream"), S)) { Result = generate_stream; }
   if (StringsMatch(CS("generate_cursor"), S)) { Result = generate_cursor; }
   if (StringsMatch(CS("generate_string_table"), S)) { Result = generate_string_table; }

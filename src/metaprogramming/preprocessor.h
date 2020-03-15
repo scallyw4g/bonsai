@@ -1,3 +1,26 @@
+// TODO(Jesse id: 186, tags: metaprogramming, ast_needed, cleanup): This should be able to use the string 'enum' instead of 'arg_type_enum'
+meta(
+  def_func test_func(arg_type_enum)
+  {
+    __(enum_type)
+    {
+      function counted_string
+      ToString(enum_type Type)
+      {
+        counted_string Result = {};
+        switch (Type)
+        {
+          __(enum_name, enum_value)
+          {
+            case enum_name: { Result = CS("enum_name"); } break;
+          }
+        }
+        return Result;
+      }
+    }
+  }
+)
+
 enum d_union_flags
 {
   d_union_flag_none,
@@ -6,7 +29,7 @@ enum d_union_flags
 
 enum metaprogramming_directive
 {
-  noop                       = 0x0000,
+  meta_directive_noop        = 0x0000,
 
   generate_stream            = 0x0001,
   generate_cursor            = 0x0002,
@@ -24,8 +47,8 @@ enum metaprogramming_directive
   named_list                 = 0x0400,
   def_func                   = 0x0800,
 };
-meta(generate_string_table(metaprogramming_directive))
-#include <metaprogramming/output/generate_string_table_metaprogramming_directive.h>
+meta(test_func(metaprogramming_directive))
+#include <metaprogramming/output/test_func_metaprogramming_directive.h>
 
 meta(generate_value_table(metaprogramming_directive))
 #include <metaprogramming/output/generate_value_table_metaprogramming_directive.h>
@@ -228,34 +251,6 @@ struct meta_func
 };
 meta(generate_stream(meta_func))
 #include <metaprogramming/output/generate_stream_meta_func.h>
-
-
-// TODO(Jesse id: 186, tags: metaprogramming, ast_needed, cleanup): This should be able to use the string 'enum' instead of 'arg_type_enum'
-meta(
-  def_func generate_string_table(arg_type_enum)
-  {
-    __(enum_type)
-    {
-      function counted_string
-      ToString(enum_type Type)
-      {
-        counted_string Result = {};
-        switch (Type)
-        {
-          __(enum_name, enum_value)
-          {
-            case enum_name: { Result = CS("enum_name"); } break;
-          }
-        }
-        return Result;
-      }
-    }
-  }
-)
-
-
-
-
 
 
 struct todo

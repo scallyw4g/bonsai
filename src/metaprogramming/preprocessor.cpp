@@ -2223,6 +2223,23 @@ BootstrapDebugSystem(b32 OpenDebugWindow)
   return True;
 }
 
+function meta_func*
+StreamContains(meta_func_stream* Stream, counted_string Name)
+{
+  meta_func* Result = {};
+  ITERATE_OVER(meta_func, Stream)
+  {
+    meta_func* Current = GET_ELEMENT(Iter);
+    if (StringsMatch(Current->Name, Name))
+    {
+      Result = Current;
+      break;
+    }
+  }
+
+  return Result;
+}
+
 function counted_string*
 StreamContains(counted_string_stream* Stream, counted_string Name)
 {
@@ -2420,6 +2437,19 @@ ParseAllTodosFromFile(counted_string Filename, memory_arena* Memory)
 }
 
 function counted_string
+GenerateOutfileNameFor(meta_func* Func, counted_string DatatypeName, memory_arena* Memory)
+{
+  string_builder OutfileBuilder = {};
+  Append(&OutfileBuilder, Func->Name);
+  Append(&OutfileBuilder, CS("_"));
+  Append(&OutfileBuilder, DatatypeName);
+  Append(&OutfileBuilder, CS(".h"));
+  counted_string Result = Finalize(&OutfileBuilder, Memory);
+
+  return Result;
+}
+
+function counted_string
 GenerateOutfileNameFor(metaprogramming_directive Directive, counted_string DatatypeName, memory_arena* Memory)
 {
   string_builder OutfileBuilder = {};
@@ -2473,6 +2503,57 @@ DoMemberRelacementPatterns(string_builder* Builder, memory_arena* Memory, c_pars
     else
     {
       Append(Builder, MemberBodyToken.Value);
+    }
+  }
+}
+
+function void
+DoEnumReplacementPatterns(string_builder* OutputBuilder, c_parse_result* BodyText, replacement_pattern NamePattern, enum_def* Enum, memory_arena* Memory)
+{
+  Rewind(&BodyText->Tokens);
+  while (Remaining(&BodyText->Tokens))
+  {
+    c_token BodyToken = PopTokenRaw(BodyText);
+
+    if (BodyToken.Type == CTokenType_String)
+    {
+      c_parse_result StringParse = TokenizeString(BodyToken.Value, BodyText->Filename, Memory, True);
+      DoEnumReplacementPatterns(OutputBuilder, &StringParse, NamePattern, Enum, Memory);
+    }
+    else if (StringsMatch(BodyToken.Value, NamePattern.Match))
+    {
+      Append(OutputBuilder, NamePattern.Replace);
+    }
+    else if (StringsMatch(BodyToken.Value, CSz("__")) &&
+             OptionalToken(BodyText, CTokenType_OpenParen))
+    {
+      counted_string TypePattern = RequireToken(BodyText, CTokenType_Identifier).Value;
+      RequireToken(BodyText, CTokenType_Comma);
+      counted_string NameMatch = RequireToken(BodyText, CTokenType_Identifier).Value;
+      RequireToken(BodyText, CTokenType_CloseParen);
+
+      replacement_pattern TypeReplacementPattern = {
+        .Match = TypePattern,
+      };
+
+      replacement_pattern NameReplacementPattern = {
+        .Match = NameMatch,
+      };
+
+      c_parse_result MemberBodyText_ = GetBodyTextForNextScope(BodyText);
+      c_parse_result* MemberBodyText = &MemberBodyText_;
+
+      ITERATE_OVER(enum_field, &Enum->Fields)
+      {
+        enum_field* Member = GET_ELEMENT(Iter);
+        TypeReplacementPattern.Replace = Member->Name;
+        NameReplacementPattern.Replace = Member->Value;;
+        DoMemberRelacementPatterns(OutputBuilder, Memory, MemberBodyText, &TypeReplacementPattern, &NameReplacementPattern);
+      }
+    }
+    else
+    {
+      Append(OutputBuilder, BodyToken.Value);
     }
   }
 }
@@ -2532,6 +2613,78 @@ DoStructReplacementPatterns(string_builder* OutputBuilder, c_parse_result* BodyT
       Append(OutputBuilder, BodyToken.Value);
     }
   }
+}
+
+function counted_string
+Evaluate(meta_func* Func, enum_def* Datatype, memory_arena* Memory)
+{
+  Rewind(&Func->Body.Tokens);
+
+  string_builder OutputBuilder = {};
+  while (Remaining(&Func->Body.Tokens))
+  {
+    c_token BodyToken = PopTokenRaw(&Func->Body);
+
+    if (StringsMatch(BodyToken.Value, CSz("__")))
+    {
+      RequireToken(&Func->Body, CTokenType_OpenParen);
+      counted_string StructNameReplacementPattern = RequireToken(&Func->Body, CTokenType_Identifier).Value;
+      RequireToken(&Func->Body, CTokenType_CloseParen);
+
+      c_parse_result StructScope_ = GetBodyTextForNextScope(&Func->Body);
+      c_parse_result* StructScope = &StructScope_;
+
+      replacement_pattern StructPattern = {
+        .Match = StructNameReplacementPattern,
+        .Replace = Datatype->Name,
+      };
+
+      DoEnumReplacementPatterns(&OutputBuilder, StructScope, StructPattern, Datatype, Memory);
+    }
+    else
+    {
+      Append(&OutputBuilder, BodyToken.Value);
+    }
+  }
+
+  counted_string Result = Finalize(&OutputBuilder, Memory);
+  return Result;
+}
+
+function counted_string
+Evaluate(meta_func* Func, struct_def* Struct, memory_arena* Memory)
+{
+  Rewind(&Func->Body.Tokens);
+
+  string_builder OutputBuilder = {};
+  while (Remaining(&Func->Body.Tokens))
+  {
+    c_token BodyToken = PopTokenRaw(&Func->Body);
+
+    if (StringsMatch(BodyToken.Value, CSz("__")))
+    {
+      RequireToken(&Func->Body, CTokenType_OpenParen);
+      counted_string StructNameReplacementPattern = RequireToken(&Func->Body, CTokenType_Identifier).Value;
+      RequireToken(&Func->Body, CTokenType_CloseParen);
+
+      c_parse_result StructScope_ = GetBodyTextForNextScope(&Func->Body);
+      c_parse_result* StructScope = &StructScope_;
+
+      replacement_pattern StructPattern = {
+        .Match = StructNameReplacementPattern,
+        .Replace = Struct->Name,
+      };
+
+      DoStructReplacementPatterns(&OutputBuilder, StructScope, StructPattern, Struct, Memory);
+    }
+    else
+    {
+      Append(&OutputBuilder, BodyToken.Value);
+    }
+  }
+
+  counted_string Result = Finalize(&OutputBuilder, Memory);
+  return Result;
 }
 
 function void
@@ -2710,8 +2863,69 @@ main(s32 ArgCount, const char** ArgStrings)
             if (StringsMatch( IdentifierToken.Value, CS("meta") ))
             {
               RequireToken(Parser, CTokenType_OpenParen);
-              metaprogramming_directive Directive = GetMetaprogrammingDirective(Parser);
 
+              counted_string DirectiveString = RequireToken(Parser, CTokenType_Identifier).Value;
+              metaprogramming_directive Directive = MetaprogrammingDirective(DirectiveString);
+
+              if (Directive == meta_directive_noop)
+              {
+                meta_func* Func = StreamContains(&FunctionDefs, DirectiveString);
+
+                if (Func)
+                {
+                  Info("Calling function : %.*s", (u32)Func->Name.Count, Func->Name.Start);
+                  RequireToken(Parser, CTokenType_OpenParen);
+                  counted_string ArgValue = RequireToken(Parser, CTokenType_Identifier).Value;
+
+                  counted_string Code = {};
+                  switch (Func->ArgType)
+                  {
+                    case arg_type_enum:
+                    {
+                      enum_def* Enum = GetEnumByType(&Datatypes.Enums, ArgValue);
+                      if (Enum)
+                      {
+                        Code = Evaluate(Func, Enum, Memory);
+                      }
+                      else
+                      {
+                        Error("Couldn't resolve %.*s to a concrete type.", (u32)ArgValue.Count, ArgValue.Start);
+                      }
+                    } break;
+
+                    case arg_type_struct:
+                    {
+                      struct_def* Struct = GetStructByType(&Datatypes.Structs, ArgValue);
+                      if (Struct)
+                      {
+                        Code = Evaluate(Func, Struct, Memory);
+                      }
+                      else
+                      {
+                        Error("Couldn't resolve %.*s to a concrete type.", (u32)ArgValue.Count, ArgValue.Start);
+                      }
+                    } break;
+
+                    InvalidDefaultCase;
+                  }
+
+                  if (Code.Count)
+                  {
+                    counted_string OutfileName = GenerateOutfileNameFor( Func, ArgValue, Memory);
+                    DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
+                  }
+                  else
+                  {
+                    Warn("Unable to generate code for meta_func %.*s", (u32)Func->Name.Count, Func->Name.Start);
+                  }
+              }
+              else
+              {
+                Error("Couldn't resolve %.*s to a metaprogramming directive or function name", (u32)DirectiveString.Count, DirectiveString.Start);
+              }
+            }
+            else
+            {
               switch (Directive)
               {
                 case def_func:
@@ -2721,235 +2935,236 @@ main(s32 ArgCount, const char** ArgStrings)
                   meta_func_arg_type ArgType = MetaFuncArgType( RequireToken(Parser, CTokenType_Identifier).Value );
                   RequireToken(Parser, CTokenType_CloseParen);
 
-                  if (ArgType == arg_type_noop)
-                  {
-                    /* OutputParsingError(); */
-                  }
+                    if (ArgType == arg_type_noop)
+                    {
+                      /* OutputParsingError(); */
+                    }
 
-                  c_parse_result Body = GetBodyTextForNextScope(Parser);
+                    c_parse_result Body = GetBodyTextForNextScope(Parser);
 
-                  meta_func Func = {
-                    .Name = FuncName,
-                    .ArgType = ArgType,
-                    .Body = Body
-                  };
+                    meta_func Func = {
+                      .Name = FuncName,
+                      .ArgType = ArgType,
+                      .Body = Body
+                    };
 
-                  Push(&FunctionDefs, Func, Memory);
+                    Push(&FunctionDefs, Func, Memory);
 
-                } break;
+                  } break;
 
-                case named_list:
-                {
-                  RequireToken(Parser, CTokenType_OpenParen);
-
-                  tagged_counted_string_stream NameList = {
-                    .Tag = RequireToken(Parser, CTokenType_Identifier).Value
-                  };
-
-                  RequireToken(Parser, CTokenType_CloseParen);
-
-                  RequireToken(Parser, CTokenType_OpenBrace);
-                  while (PeekToken(Parser).Type == CTokenType_Identifier)
-                  {
-                    counted_string Name = RequireToken(Parser, CTokenType_Identifier).Value;
-                    Push(&NameList.Stream, Name, Memory);
-                    OptionalToken(Parser, CTokenType_Comma);
-                  }
-
-                  RequireToken(Parser, CTokenType_CloseBrace);
-
-                  Push(&NameLists, NameList, Memory);
-
-                } break;
-
-                case generate_stream:
-                {
-                  RequireToken(Parser, CTokenType_OpenParen);
-
-                  counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
-                  counted_string Code = GenerateStreamFor(DatatypeName, Memory);
-                  counted_string OutfileName = GenerateOutfileNameFor(Directive, DatatypeName, Memory);
-                  DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
-                } break;
-
-                case generate_cursor:
-                {
-                  RequireToken(Parser, CTokenType_OpenParen);
-
-                  counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
-                  counted_string Code = GenerateCursorFor(DatatypeName, Memory);
-                  counted_string OutfileName = GenerateOutfileNameFor(Directive, DatatypeName, Memory);
-                  DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
-                } break;
-
-                case generate_string_table:
-                {
-                  RequireToken(Parser, CTokenType_OpenParen);
-
-                  counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
-                  enum_def* Enum = GetEnumByType(&Datatypes.Enums, DatatypeName);
-                  counted_string Code = GenerateStringTableFor(Enum, Memory);
-                  counted_string OutfileName = GenerateOutfileNameFor(Directive, DatatypeName, Memory);
-                  DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
-                } break;
-
-                case generate_value_table:
-                {
-                  RequireToken(Parser, CTokenType_OpenParen);
-
-                  counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
-                  enum_def* Enum = GetEnumByType(&Datatypes.Enums, DatatypeName);
-                  counted_string Code = GenerateValueTableFor(Enum, Memory);
-                  counted_string OutfileName = GenerateOutfileNameFor(Directive, DatatypeName, Memory);
-                  DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
-                } break;
-
-
-                case for_enum_values:
-                {
-                  RequireToken(Parser, CTokenType_OpenParen);
-
-                  counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
-                  counted_string Code = ParseForEnumValues(Parser, DatatypeName, &Datatypes.Enums, Memory);
-                  counted_string OutfileName = GenerateOutfileNameFor(Directive, DatatypeName, Memory);
-                  DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
-                } break;
-
-                case for_members_in:
-                {
-                  RequireToken(Parser, CTokenType_OpenParen);
-
-                  counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
-                  struct_def* Target = GetStructByType(&Datatypes.Structs, DatatypeName);
-                  if (Target)
-                  {
-                    counted_string Code = ParseForMembers(Parser, Target, &Datatypes.Structs, Memory);
-                    counted_string OutfileName = GenerateOutfileNameFor(Directive, DatatypeName, Memory);
-                    DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
-                  }
-                  else
-                  {
-                    Parser->Valid = False;
-                    Error("Couldn't find matching struct %.*s", (s32)DatatypeName.Count, DatatypeName.Start);
-                  }
-                } break;
-
-                case for_all_datatypes:
-                {
-                  RequireToken(Parser, CTokenType_OpenParen);
-
-                  counted_string_stream Excludes = {};
-                  if (OptionalToken(Parser, CToken(CSz("exclude"))))
+                  case named_list:
                   {
                     RequireToken(Parser, CTokenType_OpenParen);
+
+                    tagged_counted_string_stream NameList = {
+                      .Tag = RequireToken(Parser, CTokenType_Identifier).Value
+                    };
+
+                    RequireToken(Parser, CTokenType_CloseParen);
+
+                    RequireToken(Parser, CTokenType_OpenBrace);
                     while (PeekToken(Parser).Type == CTokenType_Identifier)
                     {
-                      counted_string Exclude    = RequireToken(Parser, CTokenType_Identifier).Value;
-
-                      struct_def* ExcludeStruct = GetStructByType(&Datatypes.Structs, Exclude);
-                      tagged_counted_string_stream* ExcludeList = StreamContains(&NameLists, Exclude);
-
-                      if (ExcludeStruct)
-                      {
-                        Push(&Excludes, Exclude, Memory);
-                      }
-                      else if (ExcludeList)
-                      {
-                        ConcatStreams(&Excludes, &ExcludeList->Stream, Memory);
-                      }
-                      else
-                      {
-                        Warn("Type (%.*s) could not be resolved to a struct or named_list, ignoring it.", (u32)Exclude.Count, Exclude.Start);
-                      }
-
+                      counted_string Name = RequireToken(Parser, CTokenType_Identifier).Value;
+                      Push(&NameList.Stream, Name, Memory);
                       OptionalToken(Parser, CTokenType_Comma);
                     }
-                  }
 
-                  RequireToken(Parser, CTokenType_CloseParen);
-                  RequireToken(Parser, CTokenType_Comma);
+                    RequireToken(Parser, CTokenType_CloseBrace);
 
-                  c_parse_result TopLevelScope_ = GetBodyTextForNextScope(Parser);
-                  c_parse_result* TopLevelScope = &TopLevelScope_;
+                    Push(&NameLists, NameList, Memory);
 
-                  string_builder OutputBuilder = {};
+                  } break;
 
-                  for (struct_def_iterator Iter = Iterator(&Datatypes.Structs);
-                      IsValid(&Iter);
-                      Advance(&Iter))
+                  case generate_stream:
                   {
-                    struct_def* Struct = &Iter.At->Element;
-                    if (!StreamContains(&Excludes, Struct->Name))
+                    RequireToken(Parser, CTokenType_OpenParen);
+
+                    counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
+                    counted_string Code = GenerateStreamFor(DatatypeName, Memory);
+                    counted_string OutfileName = GenerateOutfileNameFor(Directive, DatatypeName, Memory);
+                    DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
+                  } break;
+
+                  case generate_cursor:
+                  {
+                    RequireToken(Parser, CTokenType_OpenParen);
+
+                    counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
+                    counted_string Code = GenerateCursorFor(DatatypeName, Memory);
+                    counted_string OutfileName = GenerateOutfileNameFor(Directive, DatatypeName, Memory);
+                    DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
+                  } break;
+
+                  case generate_string_table:
+                  {
+                    RequireToken(Parser, CTokenType_OpenParen);
+
+                    counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
+                    enum_def* Enum = GetEnumByType(&Datatypes.Enums, DatatypeName);
+                    counted_string Code = GenerateStringTableFor(Enum, Memory);
+                    counted_string OutfileName = GenerateOutfileNameFor(Directive, DatatypeName, Memory);
+                    DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
+                  } break;
+
+                  case generate_value_table:
+                  {
+                    RequireToken(Parser, CTokenType_OpenParen);
+
+                    counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
+                    enum_def* Enum = GetEnumByType(&Datatypes.Enums, DatatypeName);
+                    counted_string Code = GenerateValueTableFor(Enum, Memory);
+                    counted_string OutfileName = GenerateOutfileNameFor(Directive, DatatypeName, Memory);
+                    DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
+                  } break;
+
+
+                  case for_enum_values:
+                  {
+                    RequireToken(Parser, CTokenType_OpenParen);
+
+                    counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
+                    counted_string Code = ParseForEnumValues(Parser, DatatypeName, &Datatypes.Enums, Memory);
+                    counted_string OutfileName = GenerateOutfileNameFor(Directive, DatatypeName, Memory);
+                    DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
+                  } break;
+
+                  case for_members_in:
+                  {
+                    RequireToken(Parser, CTokenType_OpenParen);
+
+                    counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
+                    struct_def* Target = GetStructByType(&Datatypes.Structs, DatatypeName);
+                    if (Target)
                     {
-                      Rewind(&TopLevelScope->Tokens);
-                      while (Remaining(&TopLevelScope->Tokens))
+                      counted_string Code = ParseForMembers(Parser, Target, &Datatypes.Structs, Memory);
+                      counted_string OutfileName = GenerateOutfileNameFor(Directive, DatatypeName, Memory);
+                      DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
+                    }
+                    else
+                    {
+                      Parser->Valid = False;
+                      Error("Couldn't find matching struct %.*s", (s32)DatatypeName.Count, DatatypeName.Start);
+                    }
+                  } break;
+
+                  case for_all_datatypes:
+                  {
+                    RequireToken(Parser, CTokenType_OpenParen);
+
+                    counted_string_stream Excludes = {};
+                    if (OptionalToken(Parser, CToken(CSz("exclude"))))
+                    {
+                      RequireToken(Parser, CTokenType_OpenParen);
+                      while (PeekToken(Parser).Type == CTokenType_Identifier)
                       {
-                        c_token BodyToken = PopTokenRaw(TopLevelScope);
+                        counted_string Exclude    = RequireToken(Parser, CTokenType_Identifier).Value;
 
-                        if (StringsMatch(BodyToken.Value, CSz("__")))
+                        struct_def* ExcludeStruct = GetStructByType(&Datatypes.Structs, Exclude);
+                        tagged_counted_string_stream* ExcludeList = StreamContains(&NameLists, Exclude);
+
+                        if (ExcludeStruct)
                         {
-                          RequireToken(TopLevelScope, CTokenType_OpenParen);
-                          counted_string StructNameReplacementPattern = RequireToken(TopLevelScope, CTokenType_Identifier).Value;
-                          RequireToken(TopLevelScope, CTokenType_CloseParen);
-
-                          c_parse_result StructScope_ = GetBodyTextForNextScope(TopLevelScope);
-                          c_parse_result* StructScope = &StructScope_;
-
-                          replacement_pattern StructPattern = {
-                            .Match = StructNameReplacementPattern,
-                            .Replace = Struct->Name,
-                          };
-
-                          DoStructReplacementPatterns(&OutputBuilder, StructScope, StructPattern, Struct, Memory);
+                          Push(&Excludes, Exclude, Memory);
+                        }
+                        else if (ExcludeList)
+                        {
+                          ConcatStreams(&Excludes, &ExcludeList->Stream, Memory);
                         }
                         else
                         {
-                          Append(&OutputBuilder, BodyToken.Value);
+                          Warn("Type (%.*s) could not be resolved to a struct or named_list, ignoring it.", (u32)Exclude.Count, Exclude.Start);
                         }
 
+                        OptionalToken(Parser, CTokenType_Comma);
                       }
                     }
-                  }
 
-                  counted_string Code = Finalize(&OutputBuilder, Memory);
-                  counted_string OutfileName = GenerateOutfileNameFor(Directive, CSz("debug_print"), Memory);
-                  DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
+                    RequireToken(Parser, CTokenType_CloseParen);
+                    RequireToken(Parser, CTokenType_Comma);
 
-                } break;
+                    c_parse_result TopLevelScope_ = GetBodyTextForNextScope(Parser);
+                    c_parse_result* TopLevelScope = &TopLevelScope_;
 
-                case d_union:
-                {
-                  RequireToken(Parser, CTokenType_OpenParen);
+                    string_builder OutputBuilder = {};
 
-                  counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
-                  d_union_decl dUnion = ParseDiscriminatedUnion(Parser, &Datatypes, DatatypeName, Memory);
-                  if (Parser->Valid)
-                  {
-                    counted_string OutfileName = GenerateOutfileNameFor(Directive, DatatypeName, Memory);
-
-                    string_builder CodeBuilder = {};
-                    if (!dUnion.CustomEnumType.Count)
+                    for (struct_def_iterator Iter = Iterator(&Datatypes.Structs);
+                        IsValid(&Iter);
+                        Advance(&Iter))
                     {
-                      counted_string EnumString = GenerateEnumDef(&dUnion, Memory);
-                      Append(&CodeBuilder, EnumString);
+                      struct_def* Struct = &Iter.At->Element;
+                      if (!StreamContains(&Excludes, Struct->Name))
+                      {
+                        Rewind(&TopLevelScope->Tokens);
+                        while (Remaining(&TopLevelScope->Tokens))
+                        {
+                          c_token BodyToken = PopTokenRaw(TopLevelScope);
+
+                          if (StringsMatch(BodyToken.Value, CSz("__")))
+                          {
+                            RequireToken(TopLevelScope, CTokenType_OpenParen);
+                            counted_string StructNameReplacementPattern = RequireToken(TopLevelScope, CTokenType_Identifier).Value;
+                            RequireToken(TopLevelScope, CTokenType_CloseParen);
+
+                            c_parse_result StructScope_ = GetBodyTextForNextScope(TopLevelScope);
+                            c_parse_result* StructScope = &StructScope_;
+
+                            replacement_pattern StructPattern = {
+                              .Match = StructNameReplacementPattern,
+                              .Replace = Struct->Name,
+                            };
+
+                            DoStructReplacementPatterns(&OutputBuilder, StructScope, StructPattern, Struct, Memory);
+                          }
+                          else
+                          {
+                            Append(&OutputBuilder, BodyToken.Value);
+                          }
+
+                        }
+                      }
                     }
 
-                    {
-                      counted_string StructString = GenerateStructDef(&dUnion, Memory);
-                      Append(&CodeBuilder, StructString);
-                    }
-
-                    counted_string Code = Finalize(&CodeBuilder, Memory);
+                    counted_string Code = Finalize(&OutputBuilder, Memory);
+                    counted_string OutfileName = GenerateOutfileNameFor(Directive, CSz("debug_print"), Memory);
                     DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
 
-                  }
-                  else
-                  {
-                    Error("Parsing d_union declaration");
-                  }
-                } break;
+                  } break;
 
-                InvalidDefaultWhileParsing(Parser, CS("Invalid directive."));
+                  case d_union:
+                  {
+                    RequireToken(Parser, CTokenType_OpenParen);
+
+                    counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
+                    d_union_decl dUnion = ParseDiscriminatedUnion(Parser, &Datatypes, DatatypeName, Memory);
+                    if (Parser->Valid)
+                    {
+                      counted_string OutfileName = GenerateOutfileNameFor(Directive, DatatypeName, Memory);
+
+                      string_builder CodeBuilder = {};
+                      if (!dUnion.CustomEnumType.Count)
+                      {
+                        counted_string EnumString = GenerateEnumDef(&dUnion, Memory);
+                        Append(&CodeBuilder, EnumString);
+                      }
+
+                      {
+                        counted_string StructString = GenerateStructDef(&dUnion, Memory);
+                        Append(&CodeBuilder, StructString);
+                      }
+
+                      counted_string Code = Finalize(&CodeBuilder, Memory);
+                      DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
+
+                    }
+                    else
+                    {
+                      Error("Parsing d_union declaration");
+                    }
+                  } break;
+
+                  InvalidDefaultWhileParsing(Parser, CS("Invalid directive."));
+                }
               }
             }
           } break;
