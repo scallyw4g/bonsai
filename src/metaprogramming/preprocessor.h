@@ -1,6 +1,6 @@
 // TODO(Jesse id: 186, tags: metaprogramming, ast_needed, cleanup): This should be able to use the string 'enum' instead of 'arg_type_enum'
 meta(
-  def_func test_func(arg_type_enum)
+  def_func generate_string_table(arg_type_enum)
   {
     __(enum_type)
     {
@@ -33,7 +33,6 @@ enum metaprogramming_directive
 
   generate_stream            = 0x0001,
   generate_cursor            = 0x0002,
-  generate_string_table      = 0x0004,
   generate_value_table       = 0x0008,
 
   for_enum_values            = 0x0010,
@@ -47,7 +46,7 @@ enum metaprogramming_directive
   named_list                 = 0x0400,
   def_func                   = 0x0800,
 };
-meta(test_func(metaprogramming_directive))
+meta(generate_string_table(metaprogramming_directive))
 #include <metaprogramming/output/test_func_metaprogramming_directive.h>
 
 meta(generate_value_table(metaprogramming_directive))

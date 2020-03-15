@@ -2469,17 +2469,13 @@ DoMemberRelacementPatterns(string_builder* Builder, memory_arena* Memory, c_pars
 
   if (TypePattern)
   {
-    Assert(TypePattern->Replace.Start);
     Assert(TypePattern->Match.Start);
-    Assert(TypePattern->Replace.Count);
     Assert(TypePattern->Match.Count);
   }
 
   if (NamePattern)
   {
-    Assert(NamePattern->Replace.Start);
     Assert(NamePattern->Match.Start);
-    Assert(NamePattern->Replace.Count);
     Assert(NamePattern->Match.Count);
   }
 
@@ -2494,10 +2490,15 @@ DoMemberRelacementPatterns(string_builder* Builder, memory_arena* Memory, c_pars
     }
     else if (TypePattern && StringsMatch(MemberBodyToken.Value, TypePattern->Match))
     {
+      Assert(TypePattern->Replace.Count);
+      Assert(TypePattern->Replace.Start);
+
       Append(Builder, TypePattern->Replace);
     }
     else if (NamePattern && StringsMatch(MemberBodyToken.Value, NamePattern->Match))
     {
+      Assert(NamePattern->Replace.Start);
+      Assert(NamePattern->Replace.Count);
       Append(Builder, NamePattern->Replace);
     }
     else
@@ -2992,17 +2993,6 @@ main(s32 ArgCount, const char** ArgStrings)
 
                     counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
                     counted_string Code = GenerateCursorFor(DatatypeName, Memory);
-                    counted_string OutfileName = GenerateOutfileNameFor(Directive, DatatypeName, Memory);
-                    DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
-                  } break;
-
-                  case generate_string_table:
-                  {
-                    RequireToken(Parser, CTokenType_OpenParen);
-
-                    counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
-                    enum_def* Enum = GetEnumByType(&Datatypes.Enums, DatatypeName);
-                    counted_string Code = GenerateStringTableFor(Enum, Memory);
                     counted_string OutfileName = GenerateOutfileNameFor(Directive, DatatypeName, Memory);
                     DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
                   } break;

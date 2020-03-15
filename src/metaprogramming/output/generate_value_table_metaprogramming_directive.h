@@ -6,7 +6,6 @@ MetaprogrammingDirective(counted_string S)
   if (StringsMatch(CS("meta_directive_noop"), S)) { Result = meta_directive_noop; }
   if (StringsMatch(CS("generate_stream"), S)) { Result = generate_stream; }
   if (StringsMatch(CS("generate_cursor"), S)) { Result = generate_cursor; }
-  if (StringsMatch(CS("generate_string_table"), S)) { Result = generate_string_table; }
   if (StringsMatch(CS("generate_value_table"), S)) { Result = generate_value_table; }
   if (StringsMatch(CS("for_enum_values"), S)) { Result = for_enum_values; }
   if (StringsMatch(CS("for_members_in"), S)) { Result = for_members_in; }

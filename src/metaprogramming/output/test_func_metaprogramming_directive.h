@@ -13,8 +13,6 @@
 
             case generate_cursor: { Result = CS("generate_cursor"); } break;
 
-            case generate_string_table: { Result = CS("generate_string_table"); } break;
-
             case generate_value_table: { Result = CS("generate_value_table"); } break;
 
             case for_enum_values: { Result = CS("for_enum_values"); } break;
