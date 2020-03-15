@@ -23,3 +23,5 @@
 
         Result |= StringsMatch(ToString(named_list), Identifier);
 
+        Result |= StringsMatch(ToString(def_func), Identifier);
+

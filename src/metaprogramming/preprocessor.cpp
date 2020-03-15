@@ -2596,6 +2596,8 @@ main(s32 ArgCount, const char** ArgStrings)
 
     tagged_counted_string_stream_stream NameLists = {};
 
+    meta_func_stream FunctionDefs = {};
+
     for (u32 ParserIndex = 0;
         ParserIndex < Count(&ParsedFiles);
         ++ParserIndex)
@@ -2704,17 +2706,42 @@ main(s32 ArgCount, const char** ArgStrings)
 
           case CTokenType_Identifier:
           {
-            if (OptionalToken(Parser, CToken(CS("meta"))))
+            c_token IdentifierToken = PopToken(Parser);
+            if (StringsMatch( IdentifierToken.Value, CS("meta") ))
             {
               RequireToken(Parser, CTokenType_OpenParen);
               metaprogramming_directive Directive = GetMetaprogrammingDirective(Parser);
 
-              RequireToken(Parser, CTokenType_OpenParen);
-
               switch (Directive)
               {
+                case def_func:
+                {
+                  counted_string FuncName = RequireToken(Parser, CTokenType_Identifier).Value;
+                  RequireToken(Parser, CTokenType_OpenParen);
+                  meta_func_arg_type ArgType = MetaFuncArgType( RequireToken(Parser, CTokenType_Identifier).Value );
+                  RequireToken(Parser, CTokenType_CloseParen);
+
+                  if (ArgType == arg_type_noop)
+                  {
+                    /* OutputParsingError(); */
+                  }
+
+                  c_parse_result Body = GetBodyTextForNextScope(Parser);
+
+                  meta_func Func = {
+                    .Name = FuncName,
+                    .ArgType = ArgType,
+                    .Body = Body
+                  };
+
+                  Push(&FunctionDefs, Func, Memory);
+
+                } break;
+
                 case named_list:
                 {
+                  RequireToken(Parser, CTokenType_OpenParen);
+
                   tagged_counted_string_stream NameList = {
                     .Tag = RequireToken(Parser, CTokenType_Identifier).Value
                   };
@@ -2737,6 +2764,8 @@ main(s32 ArgCount, const char** ArgStrings)
 
                 case generate_stream:
                 {
+                  RequireToken(Parser, CTokenType_OpenParen);
+
                   counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
                   counted_string Code = GenerateStreamFor(DatatypeName, Memory);
                   counted_string OutfileName = GenerateOutfileNameFor(Directive, DatatypeName, Memory);
@@ -2745,6 +2774,8 @@ main(s32 ArgCount, const char** ArgStrings)
 
                 case generate_cursor:
                 {
+                  RequireToken(Parser, CTokenType_OpenParen);
+
                   counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
                   counted_string Code = GenerateCursorFor(DatatypeName, Memory);
                   counted_string OutfileName = GenerateOutfileNameFor(Directive, DatatypeName, Memory);
@@ -2753,6 +2784,8 @@ main(s32 ArgCount, const char** ArgStrings)
 
                 case generate_string_table:
                 {
+                  RequireToken(Parser, CTokenType_OpenParen);
+
                   counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
                   enum_def* Enum = GetEnumByType(&Datatypes.Enums, DatatypeName);
                   counted_string Code = GenerateStringTableFor(Enum, Memory);
@@ -2762,6 +2795,8 @@ main(s32 ArgCount, const char** ArgStrings)
 
                 case generate_value_table:
                 {
+                  RequireToken(Parser, CTokenType_OpenParen);
+
                   counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
                   enum_def* Enum = GetEnumByType(&Datatypes.Enums, DatatypeName);
                   counted_string Code = GenerateValueTableFor(Enum, Memory);
@@ -2772,6 +2807,8 @@ main(s32 ArgCount, const char** ArgStrings)
 
                 case for_enum_values:
                 {
+                  RequireToken(Parser, CTokenType_OpenParen);
+
                   counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
                   counted_string Code = ParseForEnumValues(Parser, DatatypeName, &Datatypes.Enums, Memory);
                   counted_string OutfileName = GenerateOutfileNameFor(Directive, DatatypeName, Memory);
@@ -2780,6 +2817,8 @@ main(s32 ArgCount, const char** ArgStrings)
 
                 case for_members_in:
                 {
+                  RequireToken(Parser, CTokenType_OpenParen);
+
                   counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
                   struct_def* Target = GetStructByType(&Datatypes.Structs, DatatypeName);
                   if (Target)
@@ -2797,6 +2836,8 @@ main(s32 ArgCount, const char** ArgStrings)
 
                 case for_all_datatypes:
                 {
+                  RequireToken(Parser, CTokenType_OpenParen);
+
                   counted_string_stream Excludes = {};
                   if (OptionalToken(Parser, CToken(CSz("exclude"))))
                   {
@@ -2878,6 +2919,8 @@ main(s32 ArgCount, const char** ArgStrings)
 
                 case d_union:
                 {
+                  RequireToken(Parser, CTokenType_OpenParen);
+
                   counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
                   d_union_decl dUnion = ParseDiscriminatedUnion(Parser, &Datatypes, DatatypeName, Memory);
                   if (Parser->Valid)
@@ -2908,10 +2951,6 @@ main(s32 ArgCount, const char** ArgStrings)
 
                 InvalidDefaultWhileParsing(Parser, CS("Invalid directive."));
               }
-            }
-            else
-            {
-              PopToken(Parser);
             }
           } break;
 
@@ -3031,4 +3070,3 @@ main(s32 ArgCount, const char** ArgStrings)
   return Result;
 }
 #endif
-

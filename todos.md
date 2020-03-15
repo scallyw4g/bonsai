@@ -1,14 +1,14 @@
 # Jesse
+  ## untagged
+    - #154 This is pretty shitty because whenever we copy one of these
+
   ## immediate
-    - #159 Rename to Members
     - #83 d_union-ify this
     - #184 Reinstate memory protection!  Need to turn it off
     - #157 Should support multi-line comments as well
     - #156 This should actually concat all comments such that
     - #155 This should eat the comment if
-
-  ## untagged
-    - #154 This is pretty shitty because whenever we copy one of these
+    - #159 Rename to Members
 
   ## high_priority
     - #101 Profile and check collision rate of this!
@@ -21,8 +21,8 @@
     - #91 Jettison this .. Can it be metaprogrammed?
 
   ## compiler_feature
-    - #42 Do we care about generating these?
     - #99 Generate this?  Need a compiler feature to generate stuff from primitive types.
+    - #42 Do we care about generating these?
 
   ## memory_consumption
     - #85 Compress to 16 bit float?
@@ -47,7 +47,6 @@
 
   ## cleanup
     - #77 Axe this!
-    - #159 Rename to Members
     - #88 Perlin.h depends on this .. rewrite it.
     - #89 Perlin.h depends on this .. rewrite it.
     - #90 Redistribute this
@@ -64,13 +63,14 @@
     - #113 Remove these?
     - #144 This actually has nothing to do with the platform
     - #146 Make this return a counted string and everything that depends on
+    - #186 This should be able to use the string 'enum' instead of 'arg_type_enum'
+    - #159 Rename to Members
 
   ## rng
     - #82 257 seemed to produce slightly
     - #95 This is LCG RNG - do we want a better one?
 
   ## metaprogramming
-    - #42 Do we care about generating these?
     - #83 d_union-ify this
     - #91 Jettison this .. Can it be metaprogrammed?
     - #99 Generate this?  Need a compiler feature to generate stuff from primitive types.
@@ -80,6 +80,8 @@
     - #181 Can we use Allocate() here instead?
     - #121 Need a way of dynamically allocating more of these on demand
     - #160 Generate this!
+    - #186 This should be able to use the string 'enum' instead of 'arg_type_enum'
+    - #42 Do we care about generating these?
 
   ## robustness
     - #78 How should we actually set this?
@@ -294,4 +296,7 @@
 
   ## bug
     - #185 these should be printable!
+
+  ## ast_needed
+    - #186 This should be able to use the string 'enum' instead of 'arg_type_enum'
 

@@ -161,6 +161,9 @@
         function void DebugPrint(c_parse_result* S, u32 Depth = 0);
         function void DebugPrint(c_parse_result S, u32 Depth = 0);
 
+        function void DebugPrint(meta_func* S, u32 Depth = 0);
+        function void DebugPrint(meta_func S, u32 Depth = 0);
+
         function void DebugPrint(todo* S, u32 Depth = 0);
         function void DebugPrint(todo S, u32 Depth = 0);
 
@@ -301,6 +304,15 @@
 
         function void DebugPrint(work_queue_entry* S, u32 Depth = 0);
         function void DebugPrint(work_queue_entry S, u32 Depth = 0);
+
+        function void DebugPrint(meta_func_stream_chunk* S, u32 Depth = 0);
+        function void DebugPrint(meta_func_stream_chunk S, u32 Depth = 0);
+
+        function void DebugPrint(meta_func_stream* S, u32 Depth = 0);
+        function void DebugPrint(meta_func_stream S, u32 Depth = 0);
+
+        function void DebugPrint(meta_func_iterator* S, u32 Depth = 0);
+        function void DebugPrint(meta_func_iterator S, u32 Depth = 0);
 
         function void DebugPrint(client_state* S, u32 Depth = 0);
         function void DebugPrint(client_state S, u32 Depth = 0);

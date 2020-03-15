@@ -4,29 +4,6 @@ enum d_union_flags
   d_union_flag_enum_only
 };
 
-_meta(
-  function(generate_string_table(enum))
-  {
-    __(enum_type)
-    {
-      function counted_string
-      ToString(enum_type Type)
-      {
-        counted_string Result = {};
-        switch (Type)
-        {
-          __(enum_name, enum_value)
-          {
-            case enum_name: { Result = CS("enum_name"); } break;
-          }
-        }
-
-        return Result;
-      }
-    }
-  }
-)
-
 enum metaprogramming_directive
 {
   noop                       = 0x0000,
@@ -45,6 +22,7 @@ enum metaprogramming_directive
 
   for_all_datatypes          = 0x0200,
   named_list                 = 0x0400,
+  def_func                   = 0x0800,
 };
 meta(generate_string_table(metaprogramming_directive))
 #include <metaprogramming/output/generate_string_table_metaprogramming_directive.h>
@@ -225,6 +203,59 @@ struct c_parse_result
 };
 meta(generate_cursor(c_parse_result))
 #include <metaprogramming/output/generate_cursor_c_parse_result.h>
+
+
+
+
+
+enum meta_func_arg_type
+{
+  arg_type_noop,
+
+  arg_type_enum,
+  arg_type_struct,
+};
+meta(generate_string_table(meta_func_arg_type))
+#include <metaprogramming/output/generate_string_table_meta_func_arg_type.h>
+meta(generate_value_table(meta_func_arg_type))
+#include <metaprogramming/output/generate_value_table_meta_func_arg_type.h>
+
+struct meta_func
+{
+  counted_string Name;
+  meta_func_arg_type ArgType;
+  c_parse_result Body;
+};
+meta(generate_stream(meta_func))
+#include <metaprogramming/output/generate_stream_meta_func.h>
+
+
+// TODO(Jesse id: 186, tags: metaprogramming, ast_needed, cleanup): This should be able to use the string 'enum' instead of 'arg_type_enum'
+meta(
+  def_func generate_string_table(arg_type_enum)
+  {
+    __(enum_type)
+    {
+      function counted_string
+      ToString(enum_type Type)
+      {
+        counted_string Result = {};
+        switch (Type)
+        {
+          __(enum_name, enum_value)
+          {
+            case enum_name: { Result = CS("enum_name"); } break;
+          }
+        }
+        return Result;
+      }
+    }
+  }
+)
+
+
+
+
 
 
 struct todo
