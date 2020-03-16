@@ -21,6 +21,30 @@ meta(
   }
 )
 
+// TODO(Jesse id: 187): Need some manipulation functions for specifying function names
+// based on the type arg
+meta(
+  def_func generate_value_table_internal(arg_type_enum)
+  {
+    _Pragma("GCC diagnostic push")
+    _Pragma("GCC diagnostic ignored \"-Wunused-parameter\"")
+    __(enum_type)
+    {
+      function enum_type
+      ToEnum(counted_string S, enum_type Ignored = (enum_type)0)
+      {
+        __(enum_name, enum_value)
+        {
+          if (StringsMatch(S, CSz("enum_name"))) { return enum_name; }
+        }
+
+        return (enum_type)0;
+      }
+    }
+    _Pragma("GCC diagnostic pop")
+  }
+)
+
 enum d_union_flags
 {
   d_union_flag_none,
@@ -49,7 +73,7 @@ enum metaprogramming_directive
 meta(generate_string_table(metaprogramming_directive))
 #include <metaprogramming/output/test_func_metaprogramming_directive.h>
 
-meta(generate_value_table(metaprogramming_directive))
+meta(generate_value_table_internal(metaprogramming_directive))
 #include <metaprogramming/output/generate_value_table_metaprogramming_directive.h>
 
 enum c_token_type

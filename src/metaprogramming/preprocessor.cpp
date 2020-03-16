@@ -2103,7 +2103,7 @@ Advance(%.*s_iterator* Iter)
 function metaprogramming_directive
 GetMetaprogrammingDirective(c_parse_result* Parser)
 {
-  metaprogramming_directive Result = MetaprogrammingDirective(RequireToken(Parser, CTokenType_Identifier).Value);
+  metaprogramming_directive Result = ToEnum(RequireToken(Parser, CTokenType_Identifier).Value);
   if (!Result)
     { OutputParsingError(Parser, Parser->Tokens.At, CS("Expected metaprogramming directive.")); }
   return Result;
@@ -2866,7 +2866,7 @@ main(s32 ArgCount, const char** ArgStrings)
               RequireToken(Parser, CTokenType_OpenParen);
 
               counted_string DirectiveString = RequireToken(Parser, CTokenType_Identifier).Value;
-              metaprogramming_directive Directive = MetaprogrammingDirective(DirectiveString);
+              metaprogramming_directive Directive = ToEnum(DirectiveString);
 
               if (Directive == meta_directive_noop)
               {

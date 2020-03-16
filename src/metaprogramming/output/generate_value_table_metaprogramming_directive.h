@@ -1,21 +1,38 @@
 
-function metaprogramming_directive
-MetaprogrammingDirective(counted_string S)
-{
-  metaprogramming_directive Result = {};
-  if (StringsMatch(CS("meta_directive_noop"), S)) { Result = meta_directive_noop; }
-  if (StringsMatch(CS("generate_stream"), S)) { Result = generate_stream; }
-  if (StringsMatch(CS("generate_cursor"), S)) { Result = generate_cursor; }
-  if (StringsMatch(CS("generate_value_table"), S)) { Result = generate_value_table; }
-  if (StringsMatch(CS("for_enum_values"), S)) { Result = for_enum_values; }
-  if (StringsMatch(CS("for_members_in"), S)) { Result = for_members_in; }
-  if (StringsMatch(CS("d_union"), S)) { Result = d_union; }
-  if (StringsMatch(CS("enum_only"), S)) { Result = enum_only; }
-  if (StringsMatch(CS("member_is_or_contains_type"), S)) { Result = member_is_or_contains_type; }
-  if (StringsMatch(CS("for_all_datatypes"), S)) { Result = for_all_datatypes; }
-  if (StringsMatch(CS("named_list"), S)) { Result = named_list; }
-  if (StringsMatch(CS("def_func"), S)) { Result = def_func; }
-  return Result;
-}
+    _Pragma("GCC diagnostic push")
+    _Pragma("GCC diagnostic ignored \"-Wunused-parameter\"")
+    
+      function metaprogramming_directive
+      ToEnum(counted_string S, metaprogramming_directive Ignored = (metaprogramming_directive)0)
+      {
+        
+          if (StringsMatch(S, CSz("meta_directive_noop"))) { return meta_directive_noop; }
 
+          if (StringsMatch(S, CSz("generate_stream"))) { return generate_stream; }
+
+          if (StringsMatch(S, CSz("generate_cursor"))) { return generate_cursor; }
+
+          if (StringsMatch(S, CSz("generate_value_table"))) { return generate_value_table; }
+
+          if (StringsMatch(S, CSz("for_enum_values"))) { return for_enum_values; }
+
+          if (StringsMatch(S, CSz("for_members_in"))) { return for_members_in; }
+
+          if (StringsMatch(S, CSz("d_union"))) { return d_union; }
+
+          if (StringsMatch(S, CSz("enum_only"))) { return enum_only; }
+
+          if (StringsMatch(S, CSz("member_is_or_contains_type"))) { return member_is_or_contains_type; }
+
+          if (StringsMatch(S, CSz("for_all_datatypes"))) { return for_all_datatypes; }
+
+          if (StringsMatch(S, CSz("named_list"))) { return named_list; }
+
+          if (StringsMatch(S, CSz("def_func"))) { return def_func; }
+
+
+        return (metaprogramming_directive)0;
+      }
+
+    _Pragma("GCC diagnostic pop")
 

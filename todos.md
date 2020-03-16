@@ -1,6 +1,7 @@
 # Jesse
   ## untagged
     - #154 This is pretty shitty because whenever we copy one of these
+    - #187 Need some manipulation functions for specifying function names
 
   ## immediate
     - #83 d_union-ify this
