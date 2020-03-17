@@ -1,66 +1,39 @@
 // TODO(Jesse id: 186, tags: metaprogramming, ast_needed, cleanup): This should be able to use the string 'enum' instead of 'arg_type_enum'
 meta(
-  def_func generate_string_table(arg_type_enum)
-  {
-    __(enum_type)
-    {
-      function counted_string
-      ToString(enum_type Type)
-      {
-        counted_string Result = {};
-        switch (Type)
-        {
-          __(enum_name, enum_value)
-          {
-            case enum_name: { Result = CS("enum_name"); } break;
-          }
-        }
-        return Result;
-      }
-    }
-  }
-)
-
-_meta(
-  def_func_2 generate_string_table(arg_type_enum E)
+  def_func generate_string_table(arg_type_enum EnumType)
   {
     function counted_string
-    ToString(E.type Type)
+    ToString(EnumType.type Type)
     {
       counted_string Result = {};
       switch (Type)
       {
-        E.map (type, value) {
-          case type: { Result = CSz("type"); } break;
+        EnumType.map_values (EnumValue)
+        {
+          case EnumValue.type: { Result = CSz("EnumValue.type"); } break;
         }
       }
       return Result;
     }
   }
 )
-
-
 // TODO(Jesse id: 187): Need some manipulation functions for specifying function names
 // based on the type arg
 meta(
-  def_func generate_value_table_internal(arg_type_enum)
+  def_func generate_value_table_internal(arg_type_enum EnumType)
   {
-    _Pragma("GCC diagnostic push")
-    _Pragma("GCC diagnostic ignored \"-Wunused-parameter\"")
-    __(enum_type)
+    function EnumType.type
+    ToEnum(counted_string S)
     {
-      function enum_type
-      ToEnum(counted_string S, enum_type Ignored = (enum_type)0)
-      {
-        __(enum_name, enum_value)
-        {
-          if (StringsMatch(S, CSz("enum_name"))) { return enum_name; }
-        }
+      EnumType.type Result = {};
 
-        return (enum_type)0;
+      EnumType.map_values (EnumValue)
+      {
+        if (StringsMatch(S, CSz("EnumValue.type"))) { return EnumValue.type; }
       }
+
+      return Result;
     }
-    _Pragma("GCC diagnostic pop")
   }
 )
 
@@ -88,13 +61,24 @@ enum metaprogramming_directive
   for_all_datatypes,
   named_list,
   def_func,
-  def_func_2,
 };
 meta(generate_string_table(metaprogramming_directive))
-#include <metaprogramming/output/test_func_metaprogramming_directive.h>
+#include <metaprogramming/output/generate_string_table_metaprogramming_directive.h>
 
 meta(generate_value_table_internal(metaprogramming_directive))
 #include <metaprogramming/output/generate_value_table_metaprogramming_directive.h>
+
+
+enum meta_arg_operator
+{
+  meta_arg_operator_noop,
+
+  type,
+  map_values,
+};
+meta( generate_value_table(meta_arg_operator) )
+#include <metaprogramming/output/generate_value_table_meta_arg_operator.h>
+
 
 enum c_token_type
 {
@@ -248,6 +232,8 @@ enum datatype_type
   type_enum_def,
 };
 
+// TODO(Jesse, id: 188, tags: cleanup) This should have the name property, instead of
+// having the struct and enum defs have seperate names
 struct datatype
 {
   datatype_type Type;

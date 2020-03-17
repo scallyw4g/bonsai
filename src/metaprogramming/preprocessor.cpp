@@ -1344,6 +1344,7 @@ ParseDeclaration(c_parse_result* Parser, counted_string StructName, memory_arena
   return Result;
 }
 
+#if 0
 function void
 DumpStruct(struct_def* Struct)
 {
@@ -1395,6 +1396,7 @@ PrintCDecl(c_decl* Decl, struct_def_stream* ProgramStructs)
   }
 
 }
+#endif
 
 function void
 TrimFirstToken(c_parse_result* Parser, c_token_type TokenType)
@@ -2534,6 +2536,59 @@ DoMemberRelacementPatterns(string_builder* Builder, memory_arena* Memory, c_pars
 }
 
 function void
+Enum_ReplaceValues(string_builder* OutputBuilder, c_parse_result* BodyText, counted_string EnumValueMatch, enum_field* EnumField, memory_arena* Memory)
+{
+  Rewind(&BodyText->Tokens);
+  while (Remaining(&BodyText->Tokens))
+  {
+    c_token BodyToken = PopTokenRaw(BodyText);
+
+    if (BodyToken.Type == CTokenType_String)
+    {
+      c_parse_result StringParse = TokenizeString(BodyToken.Value, BodyText->Filename, Memory, True);
+      Enum_ReplaceValues(OutputBuilder, &StringParse, EnumValueMatch, EnumField, Memory);
+    }
+    else if (StringsMatch(BodyToken.Value, EnumValueMatch))
+    {
+      RequireToken(BodyText, CTokenType_Dot);
+      meta_arg_operator Op = MetaArgOperator(RequireToken(BodyText, CTokenType_Identifier).Value);
+      switch (Op)
+      {
+        case meta_arg_operator_noop:
+        {
+          Error("Invalid operator encountered.");
+        } break;
+
+        case type:
+        {
+          Append(OutputBuilder, EnumField->Name);
+        } break;
+
+        InvalidDefaultCase;
+      }
+
+    }
+    else
+    {
+      Append(OutputBuilder, BodyToken.Value);
+    }
+  }
+}
+
+function void
+Enum_MapAndReplaceValues(string_builder* OutputBuilder, c_parse_result* BodyText, counted_string EnumValueMatch, enum_def* Enum, memory_arena* Memory)
+{
+  ITERATE_OVER(enum_field, &Enum->Fields)
+  {
+    enum_field* EnumField = GET_ELEMENT(Iter);
+    Enum_ReplaceValues(OutputBuilder, BodyText, EnumValueMatch, EnumField, Memory);
+    continue;
+  }
+
+  return;
+}
+
+function void
 DoEnumReplacementPatterns(string_builder* OutputBuilder, c_parse_result* BodyText, replacement_pattern NamePattern, enum_def* Enum, memory_arena* Memory)
 {
   Rewind(&BodyText->Tokens);
@@ -2639,6 +2694,64 @@ DoStructReplacementPatterns(string_builder* OutputBuilder, c_parse_result* BodyT
       Append(OutputBuilder, BodyToken.Value);
     }
   }
+}
+
+function counted_string
+Evaluate_2(meta_func* Func, datatype* Datatype, memory_arena* Memory)
+{
+  Rewind(&Func->Body.Tokens);
+
+  string_builder OutputBuilder = {};
+  while (Remaining(&Func->Body.Tokens))
+  {
+    c_token BodyToken = PopTokenRaw(&Func->Body);
+
+    if (StringsMatch(BodyToken.Value, Func->ArgName))
+    {
+      RequireToken(&Func->Body, CTokenType_Dot);
+      meta_arg_operator Operator = MetaArgOperator( RequireToken(&Func->Body, CTokenType_Identifier).Value);
+
+      switch (Operator)
+      {
+        case meta_arg_operator_noop:
+        {
+          Error("Invalid operator encountered.");
+        } break;
+
+        case type:
+        {
+          if (Datatype->Type == type_enum_def)
+          {
+            Append(&OutputBuilder, Datatype->enum_def->Name);
+          }
+          else
+          {
+            Assert(Datatype->Type == type_struct_def);
+            Append(&OutputBuilder, Datatype->struct_def->Name);
+          }
+        } break;
+
+        case map_values:
+        {
+          Assert(Datatype->Type == type_enum_def);
+
+          RequireToken(&Func->Body, CTokenType_OpenParen);
+          counted_string EnumValueMatch  = RequireToken(&Func->Body, CTokenType_Identifier).Value;
+          RequireToken(&Func->Body, CTokenType_CloseParen);
+          c_parse_result NextScope = GetBodyTextForNextScope(&Func->Body);
+          Enum_MapAndReplaceValues(&OutputBuilder, &NextScope, EnumValueMatch, Datatype->enum_def, Memory);
+        } break;
+      }
+
+    }
+    else
+    {
+      Append(&OutputBuilder, BodyToken.Value);
+    }
+  }
+
+  counted_string Result = Finalize(&OutputBuilder, Memory);
+  return Result;
 }
 
 function counted_string
@@ -2882,8 +2995,16 @@ main(s32 ArgCount, const char** ArgStrings)
                   RequireToken(Parser, CTokenType_OpenParen);
                   counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
 
+                  counted_string Code = {};
                   datatype Data = GetDatatypeByName(&Datatypes, DatatypeName);
-                  counted_string Code = Evaluate(Func, &Data, Memory);
+                  if (Func->ArgName.Count)
+                  {
+                    Code = Evaluate_2(Func, &Data, Memory);
+                  }
+                  else
+                  {
+                    Code = Evaluate(Func, &Data, Memory);
+                  }
 
                   if (Code.Count)
                   {
@@ -2894,49 +3015,25 @@ main(s32 ArgCount, const char** ArgStrings)
                   {
                     Warn("Unable to generate code for meta_func %.*s", (u32)Func->Name.Count, Func->Name.Start);
                   }
+                }
+                else
+                {
+                  Error("Couldn't resolve %.*s to a metaprogramming directive or function name", (u32)DirectiveString.Count, DirectiveString.Start);
+                }
               }
               else
               {
-                Error("Couldn't resolve %.*s to a metaprogramming directive or function name", (u32)DirectiveString.Count, DirectiveString.Start);
-              }
-            }
-            else
-            {
-              switch (Directive)
-              {
-
-                case def_func_2:
+                switch (Directive)
                 {
-                  counted_string FuncName = RequireToken(Parser, CTokenType_Identifier).Value;
-                  RequireToken(Parser, CTokenType_OpenParen);
-                  meta_func_arg_type ArgType = MetaFuncArgType( RequireToken(Parser, CTokenType_Identifier).Value );
-                  counted_string ArgName = RequireToken(Parser, CTokenType_Identifier).Value;
-                  RequireToken(Parser, CTokenType_CloseParen);
-                  c_parse_result Body = GetBodyTextForNextScope(Parser);
 
-                  if (ArgType == arg_type_noop)
+                  case def_func:
                   {
-                    /* OutputParsingError(); */
-                    Error("Function parse error");
-                  }
-
-                  meta_func Func = {
-                    .Name = FuncName,
-                    .ArgType = ArgType,
-                    .ArgName = ArgName,
-                    .Body = Body
-                  };
-
-                  Push(&FunctionDefs, Func, Memory);
-
-                } break;
-
-                case def_func:
-                {
-                  counted_string FuncName = RequireToken(Parser, CTokenType_Identifier).Value;
-                  RequireToken(Parser, CTokenType_OpenParen);
-                  meta_func_arg_type ArgType = MetaFuncArgType( RequireToken(Parser, CTokenType_Identifier).Value );
-                  RequireToken(Parser, CTokenType_CloseParen);
+                    counted_string FuncName = RequireToken(Parser, CTokenType_Identifier).Value;
+                    RequireToken(Parser, CTokenType_OpenParen);
+                    meta_func_arg_type ArgType = MetaFuncArgType( RequireToken(Parser, CTokenType_Identifier).Value );
+                    counted_string ArgName = RequireToken(Parser, CTokenType_Identifier).Value;
+                    RequireToken(Parser, CTokenType_CloseParen);
+                    c_parse_result Body = GetBodyTextForNextScope(Parser);
 
                     if (ArgType == arg_type_noop)
                     {
@@ -2944,11 +3041,10 @@ main(s32 ArgCount, const char** ArgStrings)
                       Error("Function parse error");
                     }
 
-                    c_parse_result Body = GetBodyTextForNextScope(Parser);
-
                     meta_func Func = {
                       .Name = FuncName,
                       .ArgType = ArgType,
+                      .ArgName = ArgName,
                       .Body = Body
                     };
 

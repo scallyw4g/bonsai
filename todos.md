@@ -66,6 +66,7 @@
     - #146 Make this return a counted string and everything that depends on
     - #186 This should be able to use the string 'enum' instead of 'arg_type_enum'
     - #159 Rename to Members
+    - #188 This should have the name property, instead of
 
   ## rng
     - #82 257 seemed to produce slightly
