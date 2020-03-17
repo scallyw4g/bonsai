@@ -5,8 +5,6 @@
 
         Result |= StringsMatch(ToString(generate_cursor), Identifier);
 
-        Result |= StringsMatch(ToString(generate_value_table), Identifier);
-
         Result |= StringsMatch(ToString(for_enum_values), Identifier);
 
         Result |= StringsMatch(ToString(for_members_in), Identifier);

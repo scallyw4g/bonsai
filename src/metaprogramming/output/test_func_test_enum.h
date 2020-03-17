@@ -1,6 +1,6 @@
 
     function test_enum
-    To_test_enum(counted_string S)
+    TestEnum(counted_string S)
     {
       test_enum Result = {};
 

@@ -12,8 +12,6 @@
 
           case generate_cursor: { Result = CSz("generate_cursor"); } break;
 
-          case generate_value_table: { Result = CSz("generate_value_table"); } break;
-
           case for_enum_values: { Result = CSz("for_enum_values"); } break;
 
           case for_members_in: { Result = CSz("for_members_in"); } break;

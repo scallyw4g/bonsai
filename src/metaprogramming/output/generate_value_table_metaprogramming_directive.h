@@ -1,6 +1,6 @@
 
     function metaprogramming_directive
-    ToEnum(counted_string S)
+    MetaprogrammingDirective(counted_string S)
     {
       metaprogramming_directive Result = {};
 
@@ -10,8 +10,6 @@
         if (StringsMatch(S, CSz("generate_stream"))) { return generate_stream; }
 
         if (StringsMatch(S, CSz("generate_cursor"))) { return generate_cursor; }
-
-        if (StringsMatch(S, CSz("generate_value_table"))) { return generate_value_table; }
 
         if (StringsMatch(S, CSz("for_enum_values"))) { return for_enum_values; }
 

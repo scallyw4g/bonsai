@@ -17,31 +17,12 @@ meta(
     }
   }
 )
-// TODO(Jesse id: 187): Need some manipulation functions for specifying function names
-// based on the type arg
-meta(
-  def_func generate_value_table_internal(arg_type_enum $EnumType)
-  {
-    function $EnumType.name
-    ToEnum(counted_string S)
-    {
-      $EnumType.name Result = {};
-
-      $EnumType.map_values ($EnumValue)
-      {
-        if (StringsMatch(S, CSz("$EnumValue.name"))) { return $EnumValue.name; }
-      }
-
-      return Result;
-    }
-  }
-)
 
 meta(
-  def_func test_func(arg_type_enum $EnumType)
+  def_func generate_value_table(arg_type_enum $EnumType)
   {
     function $EnumType.name
-    To_$EnumType.name(counted_string S)
+    $EnumType.name.to_capital_case(counted_string S)
     {
       $EnumType.name Result = {};
 
@@ -64,7 +45,7 @@ enum test_enum
   test_enum_value_4,
 };
 
-meta( test_func(test_enum) )
+meta( generate_value_table(test_enum) )
 #include <metaprogramming/output/test_func_test_enum.h>
 
 enum d_union_flags
@@ -79,7 +60,6 @@ enum metaprogramming_directive
 
   generate_stream,
   generate_cursor,
-  generate_value_table,
 
   for_enum_values,
   for_members_in,
@@ -96,7 +76,7 @@ enum metaprogramming_directive
 meta(generate_string_table(metaprogramming_directive))
 #include <metaprogramming/output/generate_string_table_metaprogramming_directive.h>
 
-meta(generate_value_table_internal(metaprogramming_directive))
+meta(generate_value_table(metaprogramming_directive))
 #include <metaprogramming/output/generate_value_table_metaprogramming_directive.h>
 
 

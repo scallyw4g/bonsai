@@ -198,6 +198,14 @@ PopToken(c_parse_result* Parser)
 }
 
 function b32
+OptionalTokenRaw(c_parse_result* Parser, c_token_type Type)
+{
+  b32 Result = (PeekTokenRaw(Parser).Type == Type);
+  if (Result) { PopTokenRaw(Parser); }
+  return Result;
+}
+
+function b32
 OptionalToken(c_parse_result* Parser, c_token T)
 {
   b32 Result = (PeekToken(Parser) == T);
@@ -1908,39 +1916,6 @@ TokenizeAllFiles(counted_string_cursor* Filenames, memory_arena* Memory)
 }
 
 function counted_string
-GenerateValueTableFor(enum_def* Enum, memory_arena* Memory)
-{
-  TIMED_FUNCTION();
-  counted_string FunctionName = ToCapitalCase(Enum->Name, Memory);
-  counted_string Result = FormatCountedString(Memory,
-CSz(R"INLINE_CODE(
-function %.*s
-%.*s(counted_string S)
-{
-  %.*s Result = {};
-)INLINE_CODE"),
-              Enum->Name.Count, Enum->Name.Start,
-              FunctionName.Count, FunctionName.Start,
-              Enum->Name.Count, Enum->Name.Start);
-
-  for (enum_field_iterator Iter = Iterator(&Enum->Fields);
-      IsValid(&Iter);
-      Advance(&Iter))
-  {
-    Result = Concat(Result,
-        FormatCountedString(Memory,
-            CSz("  if (StringsMatch(CS(\"%S\"), S)) { Result = %S; }\n"),
-            Iter.At->Element.Name,
-            Iter.At->Element.Name), Memory);
-  }
-
-  Result = Concat(Result, CS("  return Result;"), Memory);
-  Result = Concat(Result, CS("\n}\n\n"), Memory);
-
-  return Result;
-}
-
-function counted_string
 GenerateCursorFor(counted_string DatatypeName, memory_arena* Memory)
 {
   TIMED_FUNCTION();
@@ -2130,7 +2105,7 @@ Advance(%.*s_iterator* Iter)
 function metaprogramming_directive
 GetMetaprogrammingDirective(c_parse_result* Parser)
 {
-  metaprogramming_directive Result = ToEnum(RequireToken(Parser, CTokenType_Identifier).Value);
+  metaprogramming_directive Result = MetaprogrammingDirective(RequireToken(Parser, CTokenType_Identifier).Value);
   if (!Result)
     { OutputParsingError(Parser, Parser->Tokens.At, CS("Expected metaprogramming directive.")); }
   return Result;
@@ -2522,7 +2497,7 @@ Enum_ReplaceValues(string_builder* OutputBuilder, c_parse_result* BodyText, coun
         InvalidDefaultCase;
       }
 
-      OptionalToken(BodyText, CTokenType_Dollar);
+      OptionalTokenRaw(BodyText, CTokenType_Dollar);
     }
     else
     {
@@ -2550,7 +2525,7 @@ Enum_MapAndReplaceValues(string_builder* OutputBuilder, c_parse_result* BodyText
 } while (false)
 
 function counted_string
-Transform(meta_transform_op Transformations, counted_string Input)
+Transform(meta_transform_op Transformations, counted_string Input, memory_arena* Memory)
 {
   counted_string Result = Input;
   while ( Transformations )
@@ -2558,7 +2533,7 @@ Transform(meta_transform_op Transformations, counted_string Input)
     if ( Transformations & to_capital_case )
     {
       UnsetBitfield(meta_transform_op, Transformations, to_capital_case );
-      ToCapitalCaseInplace(&Result);
+      Result = ToCapitalCase(Result, Memory);
     }
   }
 
@@ -2607,13 +2582,13 @@ Evaluate(meta_func* Func, datatype* Datatype, memory_arena* Memory)
         {
           if (Datatype->Type == type_enum_def)
           {
-            counted_string Name = Transform(Transformations, Datatype->enum_def->Name);
+            counted_string Name = Transform(Transformations, Datatype->enum_def->Name, Memory);
             Append(&OutputBuilder, Name);
           }
           else
           {
             Assert(Datatype->Type == type_struct_def);
-            counted_string Name = Transform(Transformations, Datatype->struct_def->Name);
+            counted_string Name = Transform(Transformations, Datatype->struct_def->Name, Memory);
             Append(&OutputBuilder, Name);
           }
         } break;
@@ -2631,7 +2606,7 @@ Evaluate(meta_func* Func, datatype* Datatype, memory_arena* Memory)
         } break;
       }
 
-      OptionalToken(&Func->Body, CTokenType_Dollar);
+      OptionalTokenRaw(&Func->Body, CTokenType_Dollar);
     }
     else
     {
@@ -2764,7 +2739,7 @@ IsMetaprogrammingOutput(counted_string Filename, counted_string OutputDirectory)
   return Result;
 }
 
-#include <bonsai_stdlib/headers/debug_print.h>
+/* #include <bonsai_stdlib/headers/debug_print.h> */
 
 #ifndef EXCLUDE_PREPROCESSOR_MAIN
 #define SUCCESS_EXIT_CODE 0
@@ -2924,7 +2899,7 @@ main(s32 ArgCount, const char** ArgStrings)
               RequireToken(Parser, CTokenType_OpenParen);
 
               counted_string DirectiveString = RequireToken(Parser, CTokenType_Identifier).Value;
-              metaprogramming_directive Directive = ToEnum(DirectiveString);
+              metaprogramming_directive Directive = MetaprogrammingDirective(DirectiveString);
 
               if (Directive == meta_directive_noop)
               {
@@ -3044,18 +3019,6 @@ main(s32 ArgCount, const char** ArgStrings)
                     counted_string OutfileName = GenerateOutfileNameFor(Directive, DatatypeName, Memory);
                     DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
                   } break;
-
-                  case generate_value_table:
-                  {
-                    RequireToken(Parser, CTokenType_OpenParen);
-
-                    counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
-                    enum_def* Enum = GetEnumByType(&Datatypes.Enums, DatatypeName);
-                    counted_string Code = GenerateValueTableFor(Enum, Memory);
-                    counted_string OutfileName = GenerateOutfileNameFor(Directive, DatatypeName, Memory);
-                    DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
-                  } break;
-
 
                   case for_enum_values:
                   {
