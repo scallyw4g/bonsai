@@ -2522,6 +2522,7 @@ Enum_ReplaceValues(string_builder* OutputBuilder, c_parse_result* BodyText, coun
         InvalidDefaultCase;
       }
 
+      OptionalToken(BodyText, CTokenType_Dollar);
     }
     else
     {
@@ -2593,6 +2594,7 @@ Evaluate(meta_func* Func, datatype* Datatype, memory_arena* Memory)
         } break;
       }
 
+      OptionalToken(&Func->Body, CTokenType_Dollar);
     }
     else
     {
