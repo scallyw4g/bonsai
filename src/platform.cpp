@@ -277,18 +277,21 @@ ClearClickedFlags(input *Input)
   TIMED_FUNCTION();
 
 #if 1
+
  meta(clear_clicked(input))
 #include <metaprogramming/output/clear_clicked_input.h>
-#else
-  meta(
-    for_members_in( input,
-      (_, _, MemberName) {
-        Input->MemberName.Clicked = False;
+
+#elif 1
+meta(
+  func (input Struct)
+  {
+    (
+      Struct.map_members (Member) {
+        Input->(Member.name).Clicked = False;
       }
     )
-  )
-#include <metaprogramming/output/for_members_in_input.h>
-}
+  }
+)
 #endif
 
 function void

@@ -2784,27 +2784,50 @@ main(s32 ArgCount, const char** ArgStrings)
 
                   case func:
                   {
-                    counted_string FuncName = RequireToken(Parser, CTokenType_Identifier).Value;
-                    RequireToken(Parser, CTokenType_OpenParen);
-                    meta_func_arg_type ArgType = MetaFuncArgType( RequireToken(Parser, CTokenType_Identifier).Value );
-                    counted_string ArgName = RequireToken(Parser, CTokenType_Identifier).Value;
-                    RequireToken(Parser, CTokenType_CloseParen);
-                    c_parse_result Body = GetBodyTextForNextScope(Parser);
-
-                    if (ArgType == arg_type_noop)
+                    if (OptionalToken(Parser, CTokenType_OpenParen))
                     {
-                      /* OutputParsingError(); */
-                      Error("Function parse error");
+                      counted_string ArgType = RequireToken(Parser, CTokenType_Identifier).Value;
+                      counted_string ArgName = RequireToken(Parser, CTokenType_Identifier).Value;
+                      RequireToken(Parser, CTokenType_CloseParen);
+
+                      c_parse_result Body = GetBodyTextForNextScope(Parser);
+
+                      datatype Data = GetDatatypeByName(&Datatypes, ArgType);
+
+                      meta_func Func = {
+                        .Name = CSz("(anonymous function)"),
+                        .ArgName = ArgName,
+                        .Body = Body,
+                      };
+
+                      counted_string Code = Evaluate(&Func, &Data, Memory);
+                      Print(Code);
+
                     }
+                    else
+                    {
+                      counted_string FuncName = RequireToken(Parser, CTokenType_Identifier).Value;
+                      RequireToken(Parser, CTokenType_OpenParen);
+                      meta_func_arg_type ArgType = MetaFuncArgType( RequireToken(Parser, CTokenType_Identifier).Value );
+                      counted_string ArgName = RequireToken(Parser, CTokenType_Identifier).Value;
+                      RequireToken(Parser, CTokenType_CloseParen);
+                      c_parse_result Body = GetBodyTextForNextScope(Parser);
 
-                    meta_func Func = {
-                      .Name = FuncName,
-                      .ArgType = ArgType,
-                      .ArgName = ArgName,
-                      .Body = Body,
-                    };
+                      if (ArgType == arg_type_noop)
+                      {
+                        /* OutputParsingError(); */
+                        Error("Function parse error");
+                      }
 
-                    Push(&FunctionDefs, Func, Memory);
+                      meta_func Func = {
+                        .Name = FuncName,
+                        .ArgType = ArgType,
+                        .ArgName = ArgName,
+                        .Body = Body,
+                      };
+
+                      Push(&FunctionDefs, Func, Memory);
+                    }
 
                   } break;
 
