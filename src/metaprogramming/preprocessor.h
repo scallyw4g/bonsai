@@ -1,16 +1,16 @@
 // TODO(Jesse id: 186, tags: metaprogramming, ast_needed, cleanup): This should be able to use the string 'enum' instead of 'arg_type_enum'
 meta(
-  def_func generate_string_table(arg_type_enum EnumType)
+  def_func_2 generate_string_table(arg_type_enum $EnumType)
   {
     function counted_string
-    ToString(EnumType.type Type)
+    ToString($EnumType.type Type)
     {
       counted_string Result = {};
       switch (Type)
       {
-        EnumType.map_values (EnumValue)
+        $EnumType.map_values ($EnumValue)
         {
-          case EnumValue.type: { Result = CSz("EnumValue.type"); } break;
+          case $EnumValue.type: { Result = CSz("$EnumValue.type"); } break;
         }
       }
       return Result;
@@ -20,22 +20,52 @@ meta(
 // TODO(Jesse id: 187): Need some manipulation functions for specifying function names
 // based on the type arg
 meta(
-  def_func generate_value_table_internal(arg_type_enum EnumType)
+  def_func_2 generate_value_table_internal(arg_type_enum $EnumType)
   {
-    function EnumType.type
+    function $EnumType.type
     ToEnum(counted_string S)
     {
-      EnumType.type Result = {};
+      $EnumType.type Result = {};
 
-      EnumType.map_values (EnumValue)
+      $EnumType.map_values ($EnumValue)
       {
-        if (StringsMatch(S, CSz("EnumValue.type"))) { return EnumValue.type; }
+        if (StringsMatch(S, CSz("$EnumValue.type"))) { return $EnumValue.type; }
       }
 
       return Result;
     }
   }
 )
+
+meta(
+  def_func_2 test_func(arg_type_enum $EnumType)
+  {
+    function $EnumType.type
+    To_$EnumType.type(counted_string S)
+    {
+      $EnumType.type Result = {};
+
+      $EnumType.map_values ($EnumValue)
+      {
+        if (StringsMatch(S, CSz("$EnumValue.type"))) { return $EnumValue.type; }
+      }
+
+      return Result;
+    }
+  }
+)
+
+enum test_enum
+{
+  test_enum_value_0,
+  test_enum_value_1,
+  test_enum_value_2,
+  test_enum_value_3,
+  test_enum_value_4,
+};
+
+meta( test_func(test_enum) )
+#include <metaprogramming/output/test_func_test_enum.h>
 
 enum d_union_flags
 {
@@ -61,6 +91,7 @@ enum metaprogramming_directive
   for_all_datatypes,
   named_list,
   def_func,
+  def_func_2,
 };
 meta(generate_string_table(metaprogramming_directive))
 #include <metaprogramming/output/generate_string_table_metaprogramming_directive.h>
@@ -104,6 +135,7 @@ enum c_token_type
   CTokenType_Colon         = ':',
   CTokenType_Hash          = '#',
   CTokenType_At            = '@',
+  CTokenType_Dollar        = '$',
   CTokenType_Space         = ' ',
   CTokenType_Star          = '*',
   CTokenType_Ampersand     = '&',
@@ -301,6 +333,8 @@ meta(generate_value_table(meta_func_arg_type))
 
 struct meta_func
 {
+  metaprogramming_directive Type;
+
   counted_string Name;
   meta_func_arg_type ArgType;
   counted_string ArgName;
@@ -458,6 +492,7 @@ GetToken(ansi_stream* Stream, u32 Lookahead = 0)
       case CTokenType_Colon:
       case CTokenType_Hash:
       case CTokenType_At:
+      case CTokenType_Dollar:
       case CTokenType_Space:
       case CTokenType_Star:
       case CTokenType_Ampersand:

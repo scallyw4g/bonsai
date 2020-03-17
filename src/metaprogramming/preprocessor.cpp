@@ -2490,6 +2490,179 @@ GenerateOutfileNameFor(metaprogramming_directive Directive, counted_string Datat
 }
 
 function void
+Enum_ReplaceValues(string_builder* OutputBuilder, c_parse_result* BodyText, counted_string EnumValueMatch, enum_field* EnumField, memory_arena* Memory)
+{
+  Rewind(&BodyText->Tokens);
+  while (Remaining(&BodyText->Tokens))
+  {
+    c_token BodyToken = PopTokenRaw(BodyText);
+
+    if (BodyToken.Type == CTokenType_String)
+    {
+      c_parse_result StringParse = TokenizeString(BodyToken.Value, BodyText->Filename, Memory, True);
+      Enum_ReplaceValues(OutputBuilder, &StringParse, EnumValueMatch, EnumField, Memory);
+    }
+    else if (BodyToken.Type == CTokenType_Dollar)
+    {
+      RequireToken(BodyText, CToken(EnumValueMatch));
+      RequireToken(BodyText, CTokenType_Dot);
+      meta_arg_operator Op = MetaArgOperator(RequireToken(BodyText, CTokenType_Identifier).Value);
+      switch (Op)
+      {
+        case meta_arg_operator_noop:
+        {
+          Error("Invalid operator encountered.");
+        } break;
+
+        case type:
+        {
+          Append(OutputBuilder, EnumField->Name);
+        } break;
+
+        InvalidDefaultCase;
+      }
+
+    }
+    else
+    {
+      Append(OutputBuilder, BodyToken.Value);
+    }
+  }
+}
+
+function void
+Enum_MapAndReplaceValues(string_builder* OutputBuilder, c_parse_result* BodyText, counted_string EnumValueMatch, enum_def* Enum, memory_arena* Memory)
+{
+  ITERATE_OVER(enum_field, &Enum->Fields)
+  {
+    enum_field* EnumField = GET_ELEMENT(Iter);
+    Enum_ReplaceValues(OutputBuilder, BodyText, EnumValueMatch, EnumField, Memory);
+    continue;
+  }
+
+  return;
+}
+
+function counted_string
+Evaluate_2(meta_func* Func, datatype* Datatype, memory_arena* Memory)
+{
+  Rewind(&Func->Body.Tokens);
+
+  string_builder OutputBuilder = {};
+  while (Remaining(&Func->Body.Tokens))
+  {
+    c_token BodyToken = PopTokenRaw(&Func->Body);
+
+    if (BodyToken.Type == CTokenType_Dollar)
+    {
+      RequireToken(&Func->Body, CToken(Func->ArgName));
+
+      RequireToken(&Func->Body, CTokenType_Dot);
+      meta_arg_operator Operator = MetaArgOperator( RequireToken(&Func->Body, CTokenType_Identifier).Value);
+
+      switch (Operator)
+      {
+        case meta_arg_operator_noop:
+        {
+          Error("Invalid operator encountered.");
+        } break;
+
+        case type:
+        {
+          if (Datatype->Type == type_enum_def)
+          {
+            Append(&OutputBuilder, Datatype->enum_def->Name);
+          }
+          else
+          {
+            Assert(Datatype->Type == type_struct_def);
+            Append(&OutputBuilder, Datatype->struct_def->Name);
+          }
+        } break;
+
+        case map_values:
+        {
+          Assert(Datatype->Type == type_enum_def);
+
+          RequireToken(&Func->Body, CTokenType_OpenParen);
+          RequireToken(&Func->Body, CTokenType_Dollar);
+          counted_string EnumValueMatch  = RequireToken(&Func->Body, CTokenType_Identifier).Value;
+          RequireToken(&Func->Body, CTokenType_CloseParen);
+          c_parse_result NextScope = GetBodyTextForNextScope(&Func->Body);
+          Enum_MapAndReplaceValues(&OutputBuilder, &NextScope, EnumValueMatch, Datatype->enum_def, Memory);
+        } break;
+      }
+
+    }
+    else
+    {
+      Append(&OutputBuilder, BodyToken.Value);
+    }
+  }
+
+  counted_string Result = Finalize(&OutputBuilder, Memory);
+  return Result;
+}
+
+function counted_string
+Evaluate(meta_func* Func, datatype* Datatype, memory_arena* Memory)
+{
+  Rewind(&Func->Body.Tokens);
+
+  string_builder OutputBuilder = {};
+  while (Remaining(&Func->Body.Tokens))
+  {
+    c_token BodyToken = PopTokenRaw(&Func->Body);
+
+    if (StringsMatch(BodyToken.Value, Func->ArgName))
+    {
+      RequireToken(&Func->Body, CTokenType_Dot);
+      meta_arg_operator Operator = MetaArgOperator( RequireToken(&Func->Body, CTokenType_Identifier).Value);
+
+      switch (Operator)
+      {
+        case meta_arg_operator_noop:
+        {
+          Error("Invalid operator encountered.");
+        } break;
+
+        case type:
+        {
+          if (Datatype->Type == type_enum_def)
+          {
+            Append(&OutputBuilder, Datatype->enum_def->Name);
+          }
+          else
+          {
+            Assert(Datatype->Type == type_struct_def);
+            Append(&OutputBuilder, Datatype->struct_def->Name);
+          }
+        } break;
+
+        case map_values:
+        {
+          Assert(Datatype->Type == type_enum_def);
+
+          RequireToken(&Func->Body, CTokenType_OpenParen);
+          counted_string EnumValueMatch  = RequireToken(&Func->Body, CTokenType_Identifier).Value;
+          RequireToken(&Func->Body, CTokenType_CloseParen);
+          c_parse_result NextScope = GetBodyTextForNextScope(&Func->Body);
+          Enum_MapAndReplaceValues(&OutputBuilder, &NextScope, EnumValueMatch, Datatype->enum_def, Memory);
+        } break;
+      }
+
+    }
+    else
+    {
+      Append(&OutputBuilder, BodyToken.Value);
+    }
+  }
+
+  counted_string Result = Finalize(&OutputBuilder, Memory);
+  return Result;
+}
+
+function void
 DoMemberRelacementPatterns(string_builder* Builder, memory_arena* Memory, c_parse_result* BodyText, replacement_pattern* TypePattern = 0, replacement_pattern* NamePattern = 0)
 {
   Rewind(&BodyText->Tokens);
@@ -2531,110 +2704,6 @@ DoMemberRelacementPatterns(string_builder* Builder, memory_arena* Memory, c_pars
     else
     {
       Append(Builder, MemberBodyToken.Value);
-    }
-  }
-}
-
-function void
-Enum_ReplaceValues(string_builder* OutputBuilder, c_parse_result* BodyText, counted_string EnumValueMatch, enum_field* EnumField, memory_arena* Memory)
-{
-  Rewind(&BodyText->Tokens);
-  while (Remaining(&BodyText->Tokens))
-  {
-    c_token BodyToken = PopTokenRaw(BodyText);
-
-    if (BodyToken.Type == CTokenType_String)
-    {
-      c_parse_result StringParse = TokenizeString(BodyToken.Value, BodyText->Filename, Memory, True);
-      Enum_ReplaceValues(OutputBuilder, &StringParse, EnumValueMatch, EnumField, Memory);
-    }
-    else if (StringsMatch(BodyToken.Value, EnumValueMatch))
-    {
-      RequireToken(BodyText, CTokenType_Dot);
-      meta_arg_operator Op = MetaArgOperator(RequireToken(BodyText, CTokenType_Identifier).Value);
-      switch (Op)
-      {
-        case meta_arg_operator_noop:
-        {
-          Error("Invalid operator encountered.");
-        } break;
-
-        case type:
-        {
-          Append(OutputBuilder, EnumField->Name);
-        } break;
-
-        InvalidDefaultCase;
-      }
-
-    }
-    else
-    {
-      Append(OutputBuilder, BodyToken.Value);
-    }
-  }
-}
-
-function void
-Enum_MapAndReplaceValues(string_builder* OutputBuilder, c_parse_result* BodyText, counted_string EnumValueMatch, enum_def* Enum, memory_arena* Memory)
-{
-  ITERATE_OVER(enum_field, &Enum->Fields)
-  {
-    enum_field* EnumField = GET_ELEMENT(Iter);
-    Enum_ReplaceValues(OutputBuilder, BodyText, EnumValueMatch, EnumField, Memory);
-    continue;
-  }
-
-  return;
-}
-
-function void
-DoEnumReplacementPatterns(string_builder* OutputBuilder, c_parse_result* BodyText, replacement_pattern NamePattern, enum_def* Enum, memory_arena* Memory)
-{
-  Rewind(&BodyText->Tokens);
-  while (Remaining(&BodyText->Tokens))
-  {
-    c_token BodyToken = PopTokenRaw(BodyText);
-
-    if (BodyToken.Type == CTokenType_String)
-    {
-      c_parse_result StringParse = TokenizeString(BodyToken.Value, BodyText->Filename, Memory, True);
-      DoEnumReplacementPatterns(OutputBuilder, &StringParse, NamePattern, Enum, Memory);
-    }
-    else if (StringsMatch(BodyToken.Value, NamePattern.Match))
-    {
-      Append(OutputBuilder, NamePattern.Replace);
-    }
-    else if (StringsMatch(BodyToken.Value, CSz("__")) &&
-             OptionalToken(BodyText, CTokenType_OpenParen))
-    {
-      counted_string TypePattern = RequireToken(BodyText, CTokenType_Identifier).Value;
-      RequireToken(BodyText, CTokenType_Comma);
-      counted_string NameMatch = RequireToken(BodyText, CTokenType_Identifier).Value;
-      RequireToken(BodyText, CTokenType_CloseParen);
-
-      replacement_pattern TypeReplacementPattern = {
-        .Match = TypePattern,
-      };
-
-      replacement_pattern NameReplacementPattern = {
-        .Match = NameMatch,
-      };
-
-      c_parse_result MemberBodyText_ = GetBodyTextForNextScope(BodyText);
-      c_parse_result* MemberBodyText = &MemberBodyText_;
-
-      ITERATE_OVER(enum_field, &Enum->Fields)
-      {
-        enum_field* Member = GET_ELEMENT(Iter);
-        TypeReplacementPattern.Replace = Member->Name;
-        NameReplacementPattern.Replace = Member->Value;;
-        DoMemberRelacementPatterns(OutputBuilder, Memory, MemberBodyText, &TypeReplacementPattern, &NameReplacementPattern);
-      }
-    }
-    else
-    {
-      Append(OutputBuilder, BodyToken.Value);
     }
   }
 }
@@ -2694,115 +2763,6 @@ DoStructReplacementPatterns(string_builder* OutputBuilder, c_parse_result* BodyT
       Append(OutputBuilder, BodyToken.Value);
     }
   }
-}
-
-function counted_string
-Evaluate_2(meta_func* Func, datatype* Datatype, memory_arena* Memory)
-{
-  Rewind(&Func->Body.Tokens);
-
-  string_builder OutputBuilder = {};
-  while (Remaining(&Func->Body.Tokens))
-  {
-    c_token BodyToken = PopTokenRaw(&Func->Body);
-
-    if (StringsMatch(BodyToken.Value, Func->ArgName))
-    {
-      RequireToken(&Func->Body, CTokenType_Dot);
-      meta_arg_operator Operator = MetaArgOperator( RequireToken(&Func->Body, CTokenType_Identifier).Value);
-
-      switch (Operator)
-      {
-        case meta_arg_operator_noop:
-        {
-          Error("Invalid operator encountered.");
-        } break;
-
-        case type:
-        {
-          if (Datatype->Type == type_enum_def)
-          {
-            Append(&OutputBuilder, Datatype->enum_def->Name);
-          }
-          else
-          {
-            Assert(Datatype->Type == type_struct_def);
-            Append(&OutputBuilder, Datatype->struct_def->Name);
-          }
-        } break;
-
-        case map_values:
-        {
-          Assert(Datatype->Type == type_enum_def);
-
-          RequireToken(&Func->Body, CTokenType_OpenParen);
-          counted_string EnumValueMatch  = RequireToken(&Func->Body, CTokenType_Identifier).Value;
-          RequireToken(&Func->Body, CTokenType_CloseParen);
-          c_parse_result NextScope = GetBodyTextForNextScope(&Func->Body);
-          Enum_MapAndReplaceValues(&OutputBuilder, &NextScope, EnumValueMatch, Datatype->enum_def, Memory);
-        } break;
-      }
-
-    }
-    else
-    {
-      Append(&OutputBuilder, BodyToken.Value);
-    }
-  }
-
-  counted_string Result = Finalize(&OutputBuilder, Memory);
-  return Result;
-}
-
-function counted_string
-Evaluate(meta_func* Func, datatype* Datatype, memory_arena* Memory)
-{
-  Rewind(&Func->Body.Tokens);
-
-  string_builder OutputBuilder = {};
-  while (Remaining(&Func->Body.Tokens))
-  {
-    c_token BodyToken = PopTokenRaw(&Func->Body);
-
-    if (StringsMatch(BodyToken.Value, CSz("__")))
-    {
-      RequireToken(&Func->Body, CTokenType_OpenParen);
-      counted_string StructNameReplacementPattern = RequireToken(&Func->Body, CTokenType_Identifier).Value;
-      RequireToken(&Func->Body, CTokenType_CloseParen);
-
-      c_parse_result StructScope_ = GetBodyTextForNextScope(&Func->Body);
-      c_parse_result* StructScope = &StructScope_;
-
-      if (Datatype->Type == type_enum_def)
-      {
-
-        replacement_pattern StructPattern = {
-          .Match = StructNameReplacementPattern,
-          .Replace = Datatype->enum_def->Name,
-        };
-        DoEnumReplacementPatterns(&OutputBuilder, StructScope, StructPattern, Datatype->enum_def, Memory);
-      }
-      else if (Datatype->Type == type_struct_def)
-      {
-        replacement_pattern StructPattern = {
-          .Match = StructNameReplacementPattern,
-          .Replace = Datatype->struct_def->Name,
-        };
-        DoStructReplacementPatterns(&OutputBuilder, StructScope, StructPattern, Datatype->struct_def, Memory);
-      }
-      else
-      {
-        InvalidCodePath();
-      }
-    }
-    else
-    {
-      Append(&OutputBuilder, BodyToken.Value);
-    }
-  }
-
-  counted_string Result = Finalize(&OutputBuilder, Memory);
-  return Result;
 }
 
 function void
@@ -2995,15 +2955,16 @@ main(s32 ArgCount, const char** ArgStrings)
                   RequireToken(Parser, CTokenType_OpenParen);
                   counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
 
-                  counted_string Code = {};
                   datatype Data = GetDatatypeByName(&Datatypes, DatatypeName);
-                  if (Func->ArgName.Count)
+                  counted_string Code = {};
+                  if (Func->Type == def_func)
                   {
-                    Code = Evaluate_2(Func, &Data, Memory);
+                    Code = Evaluate(Func, &Data, Memory);
                   }
                   else
                   {
-                    Code = Evaluate(Func, &Data, Memory);
+                    Assert(Func->Type == def_func_2);
+                    Code = Evaluate_2(Func, &Data, Memory);
                   }
 
                   if (Code.Count)
@@ -3026,6 +2987,34 @@ main(s32 ArgCount, const char** ArgStrings)
                 switch (Directive)
                 {
 
+                  case def_func_2:
+                  {
+                    counted_string FuncName = RequireToken(Parser, CTokenType_Identifier).Value;
+                    RequireToken(Parser, CTokenType_OpenParen);
+                    meta_func_arg_type ArgType = MetaFuncArgType( RequireToken(Parser, CTokenType_Identifier).Value );
+                    RequireToken(Parser, CTokenType_Dollar);
+                    counted_string ArgName = RequireToken(Parser, CTokenType_Identifier).Value;
+                    RequireToken(Parser, CTokenType_CloseParen);
+                    c_parse_result Body = GetBodyTextForNextScope(Parser);
+
+                    if (ArgType == arg_type_noop)
+                    {
+                      /* OutputParsingError(); */
+                      Error("Function parse error");
+                    }
+
+                    meta_func Func = {
+                      .Name = FuncName,
+                      .ArgType = ArgType,
+                      .ArgName = ArgName,
+                      .Body = Body,
+                      .Type = def_func_2,
+                    };
+
+                    Push(&FunctionDefs, Func, Memory);
+
+                  } break;
+
                   case def_func:
                   {
                     counted_string FuncName = RequireToken(Parser, CTokenType_Identifier).Value;
@@ -3045,7 +3034,8 @@ main(s32 ArgCount, const char** ArgStrings)
                       .Name = FuncName,
                       .ArgType = ArgType,
                       .ArgName = ArgName,
-                      .Body = Body
+                      .Body = Body,
+                      .Type = def_func,
                     };
 
                     Push(&FunctionDefs, Func, Memory);

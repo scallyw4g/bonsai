@@ -44,6 +44,8 @@
 
           case CTokenType_At: { Result = CSz("CTokenType_At"); } break;
 
+          case CTokenType_Dollar: { Result = CSz("CTokenType_Dollar"); } break;
+
           case CTokenType_Space: { Result = CSz("CTokenType_Space"); } break;
 
           case CTokenType_Star: { Result = CSz("CTokenType_Star"); } break;
