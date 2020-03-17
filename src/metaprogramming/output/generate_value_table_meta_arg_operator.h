@@ -11,6 +11,8 @@
 
           if (StringsMatch(S, CSz("map_values"))) { return map_values; }
 
+          if (StringsMatch(S, CSz("map_members"))) { return map_members; }
+
 
       return Result;
     }

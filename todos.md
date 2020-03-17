@@ -1,6 +1,7 @@
 # Jesse
   ## untagged
     - #154 This is pretty shitty because whenever we copy one of these
+    - #189 Parse out function names?
 
   ## immediate
     - #83 d_union-ify this

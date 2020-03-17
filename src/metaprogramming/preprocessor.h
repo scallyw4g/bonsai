@@ -169,6 +169,7 @@ enum meta_arg_operator
 
   name,
   map_values,
+  map_members,
 };
 meta( generate_value_table(meta_arg_operator) )
 #include <metaprogramming/output/generate_value_table_meta_arg_operator.h>
@@ -483,7 +484,6 @@ struct replacement_pattern
   counted_string Replace;
 };
 
-
 inline void
 PrintToken(c_token Token)
 {
@@ -641,4 +641,3 @@ Push(c_decl_stream* Stream, c_decl Element, memory_arena* Memory)
 
   return;
 }
-

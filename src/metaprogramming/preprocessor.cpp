@@ -2319,8 +2319,96 @@ Enum_MapAndReplaceValues(string_builder* OutputBuilder, c_parse_result* BodyText
 {
   ITERATE_OVER(enum_field, &Enum->Fields)
   {
-    enum_field* EnumField = GET_ELEMENT(Iter);
-    Enum_ReplaceValues(OutputBuilder, BodyText, EnumValueMatch, EnumField, Memory);
+    enum_field* Member = GET_ELEMENT(Iter);
+    Enum_ReplaceValues(OutputBuilder, BodyText, EnumValueMatch, Member, Memory);
+    continue;
+  }
+
+  return;
+}
+
+function counted_string
+GetNameForCDecl(c_decl* Decl)
+{
+  counted_string Result = {};
+
+  switch (Decl->Type)
+  {
+    case type_c_decl_noop:
+    {
+      Result = CSz("(unnamed)");
+    } break;
+
+    case type_c_decl_function:
+    {
+      // TODO(Jesse id: 189): Parse out function names?
+      Result = CSz("(unnamed function)");
+    } break;
+
+    case type_c_decl_variable:
+    {
+      Result = Decl->c_decl_variable.Name;
+    } break;
+
+    case type_c_decl_union:
+    {
+      Result = CSz("(unnamed union)");
+    } break;
+  }
+
+  return Result;
+}
+
+function void
+Struct_ReplaceValues(string_builder* OutputBuilder, c_parse_result* BodyText, counted_string StructValueMatch, c_decl* Member, memory_arena* Memory)
+{
+  Rewind(&BodyText->Tokens);
+  while (Remaining(&BodyText->Tokens))
+  {
+    c_token BodyToken = PopTokenRaw(BodyText);
+
+    if (BodyToken.Type == CTokenType_String)
+    {
+      c_parse_result StringParse = TokenizeString(BodyToken.Value, BodyText->Filename, Memory, True);
+      Struct_ReplaceValues(OutputBuilder, &StringParse, StructValueMatch, Member, Memory);
+    }
+    else if (BodyToken.Type == CTokenType_OpenParen &&
+            OptionalToken(BodyText, CToken(StructValueMatch)))
+    {
+      RequireToken(BodyText, CTokenType_Dot);
+      meta_arg_operator Op = MetaArgOperator(RequireToken(BodyText, CTokenType_Identifier).Value);
+      switch (Op)
+      {
+        case meta_arg_operator_noop:
+        {
+          Error("Invalid operator encountered.");
+        } break;
+
+        case name:
+        {
+          counted_string Name = GetNameForCDecl(Member);
+          Append(OutputBuilder, Name);
+        } break;
+
+        InvalidDefaultCase;
+      }
+
+      RequireToken(BodyText, CTokenType_CloseParen);
+    }
+    else
+    {
+      Append(OutputBuilder, BodyToken.Value);
+    }
+  }
+}
+
+function void
+Struct_MapAndReplaceValues(string_builder* OutputBuilder, c_parse_result* BodyText, counted_string Match, struct_def* Struct, memory_arena* Memory)
+{
+  ITERATE_OVER(c_decl, &Struct->Fields)
+  {
+    c_decl* Member = GET_ELEMENT(Iter);
+    Struct_ReplaceValues(OutputBuilder, BodyText, Match, Member, Memory);
     continue;
   }
 
@@ -2401,15 +2489,24 @@ Evaluate(meta_func* Func, datatype* Datatype, memory_arena* Memory)
           }
         } break;
 
+        case map_members:
         case map_values:
         {
-          Assert(Datatype->Type == type_enum_def);
-
           RequireToken(&Func->Body, CTokenType_OpenParen);
           counted_string EnumValueMatch  = RequireToken(&Func->Body, CTokenType_Identifier).Value;
           RequireToken(&Func->Body, CTokenType_CloseParen);
           c_parse_result NextScope = GetBodyTextForNextScope(&Func->Body);
-          Enum_MapAndReplaceValues(&OutputBuilder, &NextScope, EnumValueMatch, Datatype->enum_def, Memory);
+
+          if (Datatype->Type == type_enum_def)
+          {
+            Enum_MapAndReplaceValues(&OutputBuilder, &NextScope, EnumValueMatch, Datatype->enum_def, Memory);
+          }
+          else
+          {
+            Assert(Datatype->Type == type_struct_def);
+            Struct_MapAndReplaceValues(&OutputBuilder, &NextScope, EnumValueMatch, Datatype->struct_def, Memory);
+          }
+
         } break;
       }
 

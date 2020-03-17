@@ -259,11 +259,27 @@ SearchForProjectRoot(void)
   return Result;
 }
 
+meta(
+  func clear_clicked(arg_type_struct Struct)
+  {
+    (
+      Struct.map_members (Member)
+      {
+        Input->(Member.name).Clicked = False;
+      }
+    )
+  }
+)
+
 function void
 ClearClickedFlags(input *Input)
 {
   TIMED_FUNCTION();
 
+#if 1
+ meta(clear_clicked(input))
+#include <metaprogramming/output/clear_clicked_input.h>
+#else
   meta(
     for_members_in( input,
       (_, _, MemberName) {
@@ -273,6 +289,7 @@ ClearClickedFlags(input *Input)
   )
 #include <metaprogramming/output/for_members_in_input.h>
 }
+#endif
 
 function void
 BindHotkeysToInput(hotkeys *Hotkeys, input *Input)
