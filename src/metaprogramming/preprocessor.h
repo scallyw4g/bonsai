@@ -3,14 +3,14 @@ meta(
   def_func generate_string_table(arg_type_enum $EnumType)
   {
     function counted_string
-    ToString($EnumType.type Type)
+    ToString($EnumType.name Type)
     {
       counted_string Result = {};
       switch (Type)
       {
         $EnumType.map_values ($EnumValue)
         {
-          case $EnumValue.type: { Result = CSz("$EnumValue.type"); } break;
+          case $EnumValue.name: { Result = CSz("$EnumValue.name"); } break;
         }
       }
       return Result;
@@ -22,14 +22,14 @@ meta(
 meta(
   def_func generate_value_table_internal(arg_type_enum $EnumType)
   {
-    function $EnumType.type
+    function $EnumType.name
     ToEnum(counted_string S)
     {
-      $EnumType.type Result = {};
+      $EnumType.name Result = {};
 
       $EnumType.map_values ($EnumValue)
       {
-        if (StringsMatch(S, CSz("$EnumValue.type"))) { return $EnumValue.type; }
+        if (StringsMatch(S, CSz("$EnumValue.name"))) { return $EnumValue.name; }
       }
 
       return Result;
@@ -40,14 +40,14 @@ meta(
 meta(
   def_func test_func(arg_type_enum $EnumType)
   {
-    function $EnumType.type
-    To_$EnumType.type(counted_string S)
+    function $EnumType.name
+    To_$EnumType.name(counted_string S)
     {
-      $EnumType.type Result = {};
+      $EnumType.name Result = {};
 
       $EnumType.map_values ($EnumValue)
       {
-        if (StringsMatch(S, CSz("$EnumValue.type"))) { return $EnumValue.type; }
+        if (StringsMatch(S, CSz("$EnumValue.name"))) { return $EnumValue.name; }
       }
 
       return Result;
@@ -104,7 +104,7 @@ enum meta_arg_operator
 {
   meta_arg_operator_noop,
 
-  type,
+  name,
   map_values,
 };
 meta( generate_value_table(meta_arg_operator) )

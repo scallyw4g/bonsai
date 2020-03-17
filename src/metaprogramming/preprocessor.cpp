@@ -2514,7 +2514,7 @@ Enum_ReplaceValues(string_builder* OutputBuilder, c_parse_result* BodyText, coun
           Error("Invalid operator encountered.");
         } break;
 
-        case type:
+        case name:
         {
           Append(OutputBuilder, EnumField->Name);
         } break;
@@ -2568,7 +2568,7 @@ Evaluate(meta_func* Func, datatype* Datatype, memory_arena* Memory)
           Error("Invalid operator encountered.");
         } break;
 
-        case type:
+        case name:
         {
           if (Datatype->Type == type_enum_def)
           {
