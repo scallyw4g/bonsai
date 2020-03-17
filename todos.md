@@ -77,11 +77,11 @@
     - #99 Generate this?  Need a compiler feature to generate stuff from primitive types.
     - #100 Do we actually want this in here?
     - #111 Proper expression parsing.  ie: enum_value_name = (1 << 4) or enum_value_name = SOME_MACRO(thing, ding)
-    - #180 Can we use Allocate() here instead?
     - #121 Need a way of dynamically allocating more of these on demand
     - #160 Generate this!
     - #186 This should be able to use the string 'enum' instead of 'arg_type_enum'
     - #42 Do we care about generating these?
+    - #180 Can we use Allocate() here instead?
 
   ## robustness
     - #78 How should we actually set this?

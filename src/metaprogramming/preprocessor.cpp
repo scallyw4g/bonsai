@@ -1539,34 +1539,6 @@ ParseForEnumValues(c_parse_result* Parser, counted_string TypeName, enum_def_str
 }
 
 function counted_string
-DoTokenSubstitutionForVariable(c_parse_result* BodyText, body_text_constraints* Constraints, c_decl Element, memory_arena* Memory)
-{
-  TIMED_FUNCTION();
-  string_builder Builder = {};
-
-  Rewind(&BodyText->Tokens);
-  while (Remaining(&BodyText->Tokens))
-  {
-    c_token T = PopTokenRaw(BodyText);
-    if (StringsMatch(T.Value, Constraints->TypeName))
-    {
-      Append(&Builder, FormatCountedString(Memory, CSz("%S"), Element.c_decl_variable.Type));
-    }
-    else if (StringsMatch(T.Value, Constraints->ValueName))
-    {
-      Append(&Builder, FormatCountedString(Memory, CSz("%S"), Element.c_decl_variable.Name));
-    }
-    else
-    {
-      Append(&Builder, T.Value);
-    }
-  }
-
-  counted_string Result = Finalize(&Builder, Memory);
-  return Result;
-}
-
-function counted_string
 DoTokenSubstitution(c_parse_result* BodyText, body_text_constraints* Constraints, c_decl Element, memory_arena* Memory)
 {
   TIMED_FUNCTION();
@@ -1899,7 +1871,7 @@ TokenizeAllFiles(counted_string_cursor* Filenames, memory_arena* Memory)
 }
 
 function counted_string
-GenerateCursorFor(counted_string DatatypeName, memory_arena* Memory)
+GenerateCursorFor_DEPRECATED(counted_string DatatypeName, memory_arena* Memory)
 {
   TIMED_FUNCTION();
 
@@ -1944,42 +1916,6 @@ function %.*s_cursor
 
 
   counted_string Result = Concat(DatatypeDef, ConstructorDef, Memory);
-  return Result;
-}
-
-function counted_string
-GenerateStringTableFor(enum_def* Enum, memory_arena* Memory)
-{
-  TIMED_FUNCTION();
-  counted_string Result = FormatCountedString(Memory,
-CSz(R"INLINE_CODE(
-function counted_string
-ToString(%.*s Type)
-{
-  counted_string Result = {};
-  switch (Type)
-  {
-)INLINE_CODE"), Enum->Name.Count, Enum->Name.Start);
-
-  for (enum_field_iterator Iter = Iterator(&Enum->Fields);
-      IsValid(&Iter);
-      Advance(&Iter))
-  {
-    Result = Concat(Result,
-        FormatCountedString(Memory, CSz("    case %S: { Result = CS(\"%S\"); } break;\n"), Iter.At->Element.Name, Iter.At->Element.Name), Memory);
-  }
-
-  Result = Concat(Result, CS("  }\n  return Result;\n}\n\n"), Memory);
-
-  return Result;
-}
-
-function metaprogramming_directive
-GetMetaprogrammingDirective(c_parse_result* Parser)
-{
-  metaprogramming_directive Result = MetaprogrammingDirective(RequireToken(Parser, CTokenType_Identifier).Value);
-  if (!Result)
-    { OutputParsingError(Parser, Parser->Tokens.At, CS("Expected metaprogramming directive.")); }
   return Result;
 }
 
@@ -2877,7 +2813,7 @@ main(s32 ArgCount, const char** ArgStrings)
                     RequireToken(Parser, CTokenType_OpenParen);
 
                     counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
-                    counted_string Code = GenerateCursorFor(DatatypeName, Memory);
+                    counted_string Code = GenerateCursorFor_DEPRECATED(DatatypeName, Memory);
                     counted_string OutfileName = GenerateOutfileNameFor(Directive, DatatypeName, Memory);
                     DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
                   } break;
