@@ -1,9 +1,7 @@
 
         Result |= StringsMatch(ToString(meta_directive_noop), Identifier);
 
-        Result |= StringsMatch(ToString(generate_stream), Identifier);
-
-        Result |= StringsMatch(ToString(generate_cursor), Identifier);
+        Result |= StringsMatch(ToString(generate_cursor_deprecated), Identifier);
 
         Result |= StringsMatch(ToString(for_enum_values), Identifier);
 

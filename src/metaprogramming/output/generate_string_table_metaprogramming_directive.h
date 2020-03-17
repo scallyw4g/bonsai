@@ -8,11 +8,7 @@
         
           case meta_directive_noop: { Result = CSz("meta_directive_noop"); } break;
 
-          case generate_stream: { Result = CSz("generate_stream"); } break;
-
-          case generate_cursor: { Result = CSz("generate_cursor"); } break;
-
-          case for_enum_values: { Result = CSz("for_enum_values"); } break;
+          case generate_cursor_deprecated: { Result = CSz("generate_cursor_deprecated"); } break;
 
           case for_members_in: { Result = CSz("for_members_in"); } break;
 

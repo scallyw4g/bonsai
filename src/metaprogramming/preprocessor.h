@@ -1,3 +1,29 @@
+meta(
+  def_func generate_cursor(arg_type_struct $StructType)
+  {
+
+    struct $StructType.name$_cursor
+    {
+      $StructType.name* Start;
+      $StructType.name* End;
+      $StructType.name* At;
+    };
+
+    function $StructType.name$_cursor
+    $StructType.name.to_capital_case$Cursor(umm ElementCount, memory_arena* Memory)
+    {
+      $StructType.name$* Start = ($StructType.name$*)PushStruct(Memory, sizeof($StructType.name), 1, 1);
+      $StructType.name$_cursor Result = {
+        .Start = Start,
+        .End = Start+ElementCount,
+        .At = Start,
+      };
+      return Result;
+    };
+
+  }
+)
+
 // TODO(Jesse id: 186, tags: metaprogramming, ast_needed, cleanup): This should be able to use the string 'enum' instead of 'arg_type_enum'
 meta(
   def_func generate_string_table(arg_type_enum $EnumType)
@@ -36,17 +62,86 @@ meta(
   }
 )
 
-enum test_enum
+struct test_meta_struct
 {
-  test_enum_value_0,
-  test_enum_value_1,
-  test_enum_value_2,
-  test_enum_value_3,
-  test_enum_value_4,
+  u32 Thing;
+  counted_string OtherThing;
 };
 
-meta( generate_value_table(test_enum) )
-#include <metaprogramming/output/test_func_test_enum.h>
+meta(
+  def_func generate_stream(arg_type_struct $StructType)
+  {
+    struct $StructType.name$_stream_chunk
+    {
+      $StructType.name Element;
+      $StructType.name$_stream_chunk* Next;
+    };
+
+    struct $StructType.name$_stream
+    {
+      $StructType.name$_stream_chunk* FirstChunk;
+      $StructType.name$_stream_chunk* LastChunk;
+    };
+
+    function void
+    Push($StructType.name$_stream* Stream, $StructType.name$ Element, memory_arena* Memory)
+    {
+      $StructType.name$_stream_chunk* NextChunk = ($StructType.name$_stream_chunk*)PushStruct(Memory, sizeof($StructType.name$_stream_chunk), 1, 1);
+      NextChunk->Element = Element;
+
+      if (!Stream->FirstChunk)
+      {
+        Assert(!Stream->LastChunk);
+        Stream->FirstChunk = NextChunk;
+        Stream->LastChunk = NextChunk;
+      }
+      else
+      {
+        Stream->LastChunk->Next = NextChunk;
+        Stream->LastChunk = NextChunk;
+      }
+
+      Assert(NextChunk->Next == 0);
+      Assert(Stream->LastChunk->Next == 0);
+
+      return;
+    }
+
+    struct $StructType.name$_iterator
+    {
+      $StructType.name$_stream* Stream;
+      $StructType.name$_stream_chunk* At;
+    };
+
+    function $StructType.name$_iterator
+    Iterator($StructType.name$_stream* Stream)
+    {
+      $StructType.name$_iterator Iterator = {
+        .Stream = Stream,
+        .At = Stream->FirstChunk
+      };
+      return Iterator;
+    }
+
+    function b32
+    IsValid($StructType.name$_iterator* Iter)
+    {
+      b32 Result = Iter->At != 0;
+      return Result;
+    }
+
+    function void
+    Advance($StructType.name$_iterator* Iter)
+    {
+      Iter->At = Iter->At->Next;
+    }
+
+  }
+)
+
+meta(generate_stream(test_meta_struct))
+#include <metaprogramming/output/generate_stream_wip_test_meta_struct.h>
+
 
 enum d_union_flags
 {
@@ -58,10 +153,8 @@ enum metaprogramming_directive
 {
   meta_directive_noop,
 
-  generate_stream,
-  generate_cursor,
+  generate_cursor_deprecated,
 
-  for_enum_values,
   for_members_in,
   d_union,
 

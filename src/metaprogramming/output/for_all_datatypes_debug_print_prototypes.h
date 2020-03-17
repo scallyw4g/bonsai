@@ -128,6 +128,9 @@
         function void DebugPrint(debug_text_render_group* S, u32 Depth = 0);
         function void DebugPrint(debug_text_render_group S, u32 Depth = 0);
 
+        function void DebugPrint(test_meta_struct* S, u32 Depth = 0);
+        function void DebugPrint(test_meta_struct S, u32 Depth = 0);
+
         function void DebugPrint(c_decl_variable* S, u32 Depth = 0);
         function void DebugPrint(c_decl_variable S, u32 Depth = 0);
 
@@ -274,6 +277,15 @@
 
         function void DebugPrint(c_decl_cursor* S, u32 Depth = 0);
         function void DebugPrint(c_decl_cursor S, u32 Depth = 0);
+
+        function void DebugPrint(test_meta_struct_stream_chunk* S, u32 Depth = 0);
+        function void DebugPrint(test_meta_struct_stream_chunk S, u32 Depth = 0);
+
+        function void DebugPrint(test_meta_struct_stream* S, u32 Depth = 0);
+        function void DebugPrint(test_meta_struct_stream S, u32 Depth = 0);
+
+        function void DebugPrint(test_meta_struct_iterator* S, u32 Depth = 0);
+        function void DebugPrint(test_meta_struct_iterator S, u32 Depth = 0);
 
         function void DebugPrint(struct_def_cursor* S, u32 Depth = 0);
         function void DebugPrint(struct_def_cursor S, u32 Depth = 0);

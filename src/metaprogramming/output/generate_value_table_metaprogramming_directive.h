@@ -7,11 +7,7 @@
       
         if (StringsMatch(S, CSz("meta_directive_noop"))) { return meta_directive_noop; }
 
-        if (StringsMatch(S, CSz("generate_stream"))) { return generate_stream; }
-
-        if (StringsMatch(S, CSz("generate_cursor"))) { return generate_cursor; }
-
-        if (StringsMatch(S, CSz("for_enum_values"))) { return for_enum_values; }
+        if (StringsMatch(S, CSz("generate_cursor_deprecated"))) { return generate_cursor_deprecated; }
 
         if (StringsMatch(S, CSz("for_members_in"))) { return for_members_in; }
 

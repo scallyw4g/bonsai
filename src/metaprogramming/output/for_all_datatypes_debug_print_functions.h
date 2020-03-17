@@ -2148,6 +2148,42 @@
 
 
       
+        function void DebugPrint(test_meta_struct S, u32 Depth)
+        {
+          DebugPrint("test_meta_struct\n", Depth);
+          
+            DebugPrint("Thing = ", Depth);
+            DebugPrint(S.Thing, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("OtherThing = ", Depth);
+            DebugPrint(S.OtherThing, Depth+1);
+            DebugPrint("\n");
+
+        }
+
+
+      
+        function void DebugPrint(test_meta_struct* S, u32 Depth)
+        {
+          if (S)
+          {
+            DebugPrint("test_meta_struct\n", Depth);
+            
+              DebugPrint("Thing = ", Depth);
+              DebugPrint(S->Thing, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("OtherThing = ", Depth);
+              DebugPrint(S->OtherThing, Depth+1);
+              DebugPrint("\n");
+
+          }
+        }
+
+
+
+      
         function void DebugPrint(c_decl_variable S, u32 Depth)
         {
           DebugPrint("c_decl_variable\n", Depth);
@@ -4012,6 +4048,114 @@
 
               DebugPrint("End = ", Depth);
               DebugPrint(S->End, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("At = ", Depth);
+              DebugPrint(S->At, Depth+1);
+              DebugPrint("\n");
+
+          }
+        }
+
+
+
+      
+        function void DebugPrint(test_meta_struct_stream_chunk S, u32 Depth)
+        {
+          DebugPrint("test_meta_struct_stream_chunk\n", Depth);
+          
+            DebugPrint("Element = ", Depth);
+            DebugPrint(S.Element, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Next = ", Depth);
+            DebugPrint(S.Next, Depth+1);
+            DebugPrint("\n");
+
+        }
+
+
+      
+        function void DebugPrint(test_meta_struct_stream_chunk* S, u32 Depth)
+        {
+          if (S)
+          {
+            DebugPrint("test_meta_struct_stream_chunk\n", Depth);
+            
+              DebugPrint("Element = ", Depth);
+              DebugPrint(S->Element, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Next = ", Depth);
+              DebugPrint(S->Next, Depth+1);
+              DebugPrint("\n");
+
+          }
+        }
+
+
+
+      
+        function void DebugPrint(test_meta_struct_stream S, u32 Depth)
+        {
+          DebugPrint("test_meta_struct_stream\n", Depth);
+          
+            DebugPrint("FirstChunk = ", Depth);
+            DebugPrint(S.FirstChunk, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("LastChunk = ", Depth);
+            DebugPrint(S.LastChunk, Depth+1);
+            DebugPrint("\n");
+
+        }
+
+
+      
+        function void DebugPrint(test_meta_struct_stream* S, u32 Depth)
+        {
+          if (S)
+          {
+            DebugPrint("test_meta_struct_stream\n", Depth);
+            
+              DebugPrint("FirstChunk = ", Depth);
+              DebugPrint(S->FirstChunk, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("LastChunk = ", Depth);
+              DebugPrint(S->LastChunk, Depth+1);
+              DebugPrint("\n");
+
+          }
+        }
+
+
+
+      
+        function void DebugPrint(test_meta_struct_iterator S, u32 Depth)
+        {
+          DebugPrint("test_meta_struct_iterator\n", Depth);
+          
+            DebugPrint("Stream = ", Depth);
+            DebugPrint(S.Stream, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("At = ", Depth);
+            DebugPrint(S.At, Depth+1);
+            DebugPrint("\n");
+
+        }
+
+
+      
+        function void DebugPrint(test_meta_struct_iterator* S, u32 Depth)
+        {
+          if (S)
+          {
+            DebugPrint("test_meta_struct_iterator\n", Depth);
+            
+              DebugPrint("Stream = ", Depth);
+              DebugPrint(S->Stream, Depth+1);
               DebugPrint("\n");
 
               DebugPrint("At = ", Depth);

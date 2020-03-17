@@ -221,23 +221,6 @@ OptionalToken(c_parse_result* Parser, c_token_type Type)
   return Result;
 }
 
-function b32
-IsMetaprogrammingDirective(counted_string Identifier)
-{
-  b32 Result = False;
-
-  meta(
-    for_enum_values( metaprogramming_directive,
-      (EnumName, EnumValue) {
-        Result |= StringsMatch(ToString(EnumName), Identifier);
-      }
-    )
-  )
-#include <metaprogramming/output/for_enum_values_metaprogramming_directive.h>
-
-  return Result;
-}
-
 function counted_string
 PopIdentifier(ansi_stream* SourceFileStream)
 {
@@ -1991,117 +1974,6 @@ ToString(%.*s Type)
   return Result;
 }
 
-function counted_string
-GenerateStreamFor(counted_string StructName, memory_arena* Memory)
-{
-  TIMED_FUNCTION();
-
-  counted_string StreamCode = FormatCountedString(Memory,
-CSz(R"INLINE_CODE(
-struct %.*s_stream_chunk
-{
-  %.*s Element;
-  %.*s_stream_chunk* Next;
-};
-
-struct %.*s_stream
-{
-  %.*s_stream_chunk* FirstChunk;
-  %.*s_stream_chunk* LastChunk;
-};
-
-)INLINE_CODE"), StructName.Count, StructName.Start,
-   StructName.Count, StructName.Start,
-   StructName.Count, StructName.Start,
-   StructName.Count, StructName.Start,
-   StructName.Count, StructName.Start,
-   StructName.Count, StructName.Start,
-   StructName.Count, StructName.Start);
-
-  counted_string PushCode = FormatCountedString(Memory,
-  // TODO(Jesse, id: 181, tags: metaprogramming): Can we use Allocate() here instead?
-CSz(R"INLINE_CODE(
-function void
-Push(%.*s_stream* Stream, %.*s Element, memory_arena* Memory)
-{
-  %.*s_stream_chunk* NextChunk = (%.*s_stream_chunk*)PushStruct(Memory, sizeof(%.*s_stream_chunk), 1, 1);
-  NextChunk->Element = Element;
-
-  if (!Stream->FirstChunk)
-  {
-    Assert(!Stream->LastChunk);
-    Stream->FirstChunk = NextChunk;
-    Stream->LastChunk = NextChunk;
-  }
-  else
-  {
-    Stream->LastChunk->Next = NextChunk;
-    Stream->LastChunk = NextChunk;
-  }
-
-  Assert(NextChunk->Next == 0);
-  Assert(Stream->LastChunk->Next == 0);
-
-  return;
-}
-
-)INLINE_CODE"),
-      StructName.Count, StructName.Start,
-      StructName.Count, StructName.Start,
-      StructName.Count, StructName.Start,
-      StructName.Count, StructName.Start,
-      StructName.Count, StructName.Start);
-
-  counted_string IteratorCode = FormatCountedString(Memory,
-CSz(R"INLINE_CODE(
-struct %.*s_iterator
-{
-  %.*s_stream* Stream;
-  %.*s_stream_chunk* At;
-};
-
-function %.*s_iterator
-Iterator(%.*s_stream* Stream)
-{
-  %.*s_iterator Iterator = {
-    .Stream = Stream,
-    .At = Stream->FirstChunk
-  };
-  return Iterator;
-}
-
-function b32
-IsValid(%.*s_iterator* Iter)
-{
-  b32 Result = Iter->At != 0;
-  return Result;
-}
-
-function void
-Advance(%.*s_iterator* Iter)
-{
-  Iter->At = Iter->At->Next;
-}
-
-)INLINE_CODE"),
-      StructName.Count, StructName.Start,
-      StructName.Count, StructName.Start,
-      StructName.Count, StructName.Start,
-      StructName.Count, StructName.Start,
-      StructName.Count, StructName.Start,
-      StructName.Count, StructName.Start,
-      StructName.Count, StructName.Start,
-      StructName.Count, StructName.Start);
-
-  string_builder Builder = {};
-  Append(&Builder, StreamCode);
-  Append(&Builder, PushCode);
-  Append(&Builder, IteratorCode);
-  counted_string Result = Finalize(&Builder, Memory);
-
-  return Result;
-}
-
 function metaprogramming_directive
 GetMetaprogrammingDirective(c_parse_result* Parser)
 {
@@ -3000,32 +2872,12 @@ main(s32 ArgCount, const char** ArgStrings)
 
                   } break;
 
-                  case generate_stream:
-                  {
-                    RequireToken(Parser, CTokenType_OpenParen);
-
-                    counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
-                    counted_string Code = GenerateStreamFor(DatatypeName, Memory);
-                    counted_string OutfileName = GenerateOutfileNameFor(Directive, DatatypeName, Memory);
-                    DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
-                  } break;
-
-                  case generate_cursor:
+                  case generate_cursor_deprecated:
                   {
                     RequireToken(Parser, CTokenType_OpenParen);
 
                     counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
                     counted_string Code = GenerateCursorFor(DatatypeName, Memory);
-                    counted_string OutfileName = GenerateOutfileNameFor(Directive, DatatypeName, Memory);
-                    DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
-                  } break;
-
-                  case for_enum_values:
-                  {
-                    RequireToken(Parser, CTokenType_OpenParen);
-
-                    counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
-                    counted_string Code = ParseForEnumValues(Parser, DatatypeName, &Datatypes.Enums, Memory);
                     counted_string OutfileName = GenerateOutfileNameFor(Directive, DatatypeName, Memory);
                     DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
                   } break;
