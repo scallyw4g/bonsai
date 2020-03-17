@@ -2285,9 +2285,9 @@ Enum_ReplaceValues(string_builder* OutputBuilder, c_parse_result* BodyText, coun
       c_parse_result StringParse = TokenizeString(BodyToken.Value, BodyText->Filename, Memory, True);
       Enum_ReplaceValues(OutputBuilder, &StringParse, EnumValueMatch, EnumField, Memory);
     }
-    else if (BodyToken.Type == CTokenType_Dollar)
+    else if (BodyToken.Type == CTokenType_OpenParen &&
+            OptionalToken(BodyText, CToken(EnumValueMatch)))
     {
-      RequireToken(BodyText, CToken(EnumValueMatch));
       RequireToken(BodyText, CTokenType_Dot);
       meta_arg_operator Op = MetaArgOperator(RequireToken(BodyText, CTokenType_Identifier).Value);
       switch (Op)
@@ -2305,7 +2305,7 @@ Enum_ReplaceValues(string_builder* OutputBuilder, c_parse_result* BodyText, coun
         InvalidDefaultCase;
       }
 
-      OptionalTokenRaw(BodyText, CTokenType_Dollar);
+      RequireToken(BodyText, CTokenType_CloseParen);
     }
     else
     {
@@ -2358,9 +2358,9 @@ Evaluate(meta_func* Func, datatype* Datatype, memory_arena* Memory)
   {
     c_token BodyToken = PopTokenRaw(&Func->Body);
 
-    if (BodyToken.Type == CTokenType_Dollar)
+    if ( BodyToken.Type == CTokenType_OpenParen &&
+         OptionalToken(&Func->Body, CToken(Func->ArgName)) )
     {
-      RequireToken(&Func->Body, CToken(Func->ArgName));
       RequireToken(&Func->Body, CTokenType_Dot);
       meta_arg_operator Operator = MetaArgOperator( RequireToken(&Func->Body, CTokenType_Identifier).Value);
 
@@ -2406,7 +2406,6 @@ Evaluate(meta_func* Func, datatype* Datatype, memory_arena* Memory)
           Assert(Datatype->Type == type_enum_def);
 
           RequireToken(&Func->Body, CTokenType_OpenParen);
-          RequireToken(&Func->Body, CTokenType_Dollar);
           counted_string EnumValueMatch  = RequireToken(&Func->Body, CTokenType_Identifier).Value;
           RequireToken(&Func->Body, CTokenType_CloseParen);
           c_parse_result NextScope = GetBodyTextForNextScope(&Func->Body);
@@ -2414,7 +2413,7 @@ Evaluate(meta_func* Func, datatype* Datatype, memory_arena* Memory)
         } break;
       }
 
-      OptionalTokenRaw(&Func->Body, CTokenType_Dollar);
+      RequireToken(&Func->Body, CTokenType_CloseParen);
     }
     else
     {
@@ -2747,7 +2746,6 @@ main(s32 ArgCount, const char** ArgStrings)
                     counted_string FuncName = RequireToken(Parser, CTokenType_Identifier).Value;
                     RequireToken(Parser, CTokenType_OpenParen);
                     meta_func_arg_type ArgType = MetaFuncArgType( RequireToken(Parser, CTokenType_Identifier).Value );
-                    RequireToken(Parser, CTokenType_Dollar);
                     counted_string ArgName = RequireToken(Parser, CTokenType_Identifier).Value;
                     RequireToken(Parser, CTokenType_CloseParen);
                     c_parse_result Body = GetBodyTextForNextScope(Parser);

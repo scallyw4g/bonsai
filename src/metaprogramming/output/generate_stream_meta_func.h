@@ -14,7 +14,7 @@
     function void
     Push(meta_func_stream* Stream, meta_func Element, memory_arena* Memory)
     {
-      meta_func_stream_chunk* NextChunk = (meta_func_stream_chunk*)PushStruct(Memory, sizeof(meta_func_stream_chunk), 1, 1);
+      meta_func_stream_chunk* NextChunk = (meta_func_stream_chunk*)PushStruct(Memory, sizeof( meta_func_stream_chunk ), 1, 1);
       NextChunk->Element = Element;
 
       if (!Stream->FirstChunk)

@@ -14,7 +14,7 @@
     function void
     Push(counted_string_stream* Stream, counted_string Element, memory_arena* Memory)
     {
-      counted_string_stream_chunk* NextChunk = (counted_string_stream_chunk*)PushStruct(Memory, sizeof(counted_string_stream_chunk), 1, 1);
+      counted_string_stream_chunk* NextChunk = (counted_string_stream_chunk*)PushStruct(Memory, sizeof( counted_string_stream_chunk ), 1, 1);
       NextChunk->Element = Element;
 
       if (!Stream->FirstChunk)

@@ -14,7 +14,7 @@
     function void
     Push(enum_def_stream* Stream, enum_def Element, memory_arena* Memory)
     {
-      enum_def_stream_chunk* NextChunk = (enum_def_stream_chunk*)PushStruct(Memory, sizeof(enum_def_stream_chunk), 1, 1);
+      enum_def_stream_chunk* NextChunk = (enum_def_stream_chunk*)PushStruct(Memory, sizeof( enum_def_stream_chunk ), 1, 1);
       NextChunk->Element = Element;
 
       if (!Stream->FirstChunk)

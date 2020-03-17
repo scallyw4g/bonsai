@@ -14,7 +14,7 @@
     function void
     Push(todo_stream* Stream, todo Element, memory_arena* Memory)
     {
-      todo_stream_chunk* NextChunk = (todo_stream_chunk*)PushStruct(Memory, sizeof(todo_stream_chunk), 1, 1);
+      todo_stream_chunk* NextChunk = (todo_stream_chunk*)PushStruct(Memory, sizeof( todo_stream_chunk ), 1, 1);
       NextChunk->Element = Element;
 
       if (!Stream->FirstChunk)

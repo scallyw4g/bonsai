@@ -1,18 +1,18 @@
 meta(
-  func generate_cursor(arg_type_struct $StructType)
+  func generate_cursor(arg_type_struct StructType)
   {
-    struct $StructType.name$_cursor
+    struct (StructType.name)_cursor
     {
-      $StructType.name* Start;
-      $StructType.name* End;
-      $StructType.name* At;
+      (StructType.name)* Start;
+      (StructType.name)* End;
+      (StructType.name)* At;
     };
 
-    function $StructType.name$_cursor
-    $StructType.name.to_capital_case$Cursor(umm ElementCount, memory_arena* Memory)
+    function (StructType.name)_cursor
+    (StructType.name.to_capital_case)Cursor(umm ElementCount, memory_arena* Memory)
     {
-      $StructType.name$* Start = ($StructType.name$*)PushStruct(Memory, sizeof($StructType.name), 1, 1);
-      $StructType.name$_cursor Result = {
+      (StructType.name)* Start = ((StructType.name)*)PushStruct(Memory, sizeof( (StructType.name) ), 1, 1);
+      (StructType.name)_cursor Result = {
         .Start = Start,
         .End = Start+ElementCount,
         .At = Start,
@@ -22,38 +22,41 @@ meta(
   }
 )
 
-// TODO(Jesse id: 186, tags: metaprogramming, ast_needed, cleanup): This should be able to use the string 'enum' instead of 'arg_type_enum'
 meta(
-  func generate_string_table(arg_type_enum $EnumType)
+  func generate_string_table(arg_type_enum EnumType)
   {
     function counted_string
-    ToString($EnumType.name Type)
+    ToString( (EnumType.name) Type)
     {
       counted_string Result = {};
       switch (Type)
       {
-        $EnumType.map_values ($EnumValue)
+        (
+          EnumType.map_values (EnumValue)
+          {
+            case (EnumValue.name): { Result = CSz("(EnumValue.name)"); } break;
+          }
+        )
+      }
+      return Result;
+    }
+  }
+)
+
+meta(
+  func generate_value_table(arg_type_enum EnumType)
+  {
+    function (EnumType.name)
+    (EnumType.name.to_capital_case)(counted_string S)
+    {
+      (EnumType.name) Result = {};
+
+      (
+        EnumType.map_values(EnumValue)
         {
-          case $EnumValue.name: { Result = CSz("$EnumValue.name"); } break;
+          if (StringsMatch(S, CSz("(EnumValue.name)"))) { return (EnumValue.name); }
         }
-      }
-      return Result;
-    }
-  }
-)
-
-meta(
-  func generate_value_table(arg_type_enum $EnumType)
-  {
-    function $EnumType.name
-    $EnumType.name.to_capital_case(counted_string S)
-    {
-      $EnumType.name Result = {};
-
-      $EnumType.map_values ($EnumValue)
-      {
-        if (StringsMatch(S, CSz("$EnumValue.name"))) { return $EnumValue.name; }
-      }
+      )
 
       return Result;
     }
@@ -61,24 +64,24 @@ meta(
 )
 
 meta(
-  func generate_stream(arg_type_struct $StructType)
+  func generate_stream(arg_type_struct StructType)
   {
-    struct $StructType.name$_stream_chunk
+    struct (StructType.name)_stream_chunk
     {
-      $StructType.name Element;
-      $StructType.name$_stream_chunk* Next;
+      (StructType.name) Element;
+      (StructType.name)_stream_chunk* Next;
     };
 
-    struct $StructType.name$_stream
+    struct (StructType.name)_stream
     {
-      $StructType.name$_stream_chunk* FirstChunk;
-      $StructType.name$_stream_chunk* LastChunk;
+      (StructType.name)_stream_chunk* FirstChunk;
+      (StructType.name)_stream_chunk* LastChunk;
     };
 
     function void
-    Push($StructType.name$_stream* Stream, $StructType.name$ Element, memory_arena* Memory)
+    Push((StructType.name)_stream* Stream, (StructType.name) Element, memory_arena* Memory)
     {
-      $StructType.name$_stream_chunk* NextChunk = ($StructType.name$_stream_chunk*)PushStruct(Memory, sizeof($StructType.name$_stream_chunk), 1, 1);
+      (StructType.name)_stream_chunk* NextChunk = ((StructType.name)_stream_chunk*)PushStruct(Memory, sizeof( (StructType.name)_stream_chunk ), 1, 1);
       NextChunk->Element = Element;
 
       if (!Stream->FirstChunk)
@@ -99,16 +102,16 @@ meta(
       return;
     }
 
-    struct $StructType.name$_iterator
+    struct (StructType.name)_iterator
     {
-      $StructType.name$_stream* Stream;
-      $StructType.name$_stream_chunk* At;
+      (StructType.name)_stream* Stream;
+      (StructType.name)_stream_chunk* At;
     };
 
-    function $StructType.name$_iterator
-    Iterator($StructType.name$_stream* Stream)
+    function (StructType.name)_iterator
+    Iterator((StructType.name)_stream* Stream)
     {
-      $StructType.name$_iterator Iterator = {
+      (StructType.name)_iterator Iterator = {
         .Stream = Stream,
         .At = Stream->FirstChunk
       };
@@ -116,14 +119,14 @@ meta(
     }
 
     function b32
-    IsValid($StructType.name$_iterator* Iter)
+    IsValid((StructType.name)_iterator* Iter)
     {
       b32 Result = Iter->At != 0;
       return Result;
     }
 
     function void
-    Advance($StructType.name$_iterator* Iter)
+    Advance((StructType.name)_iterator* Iter)
     {
       Iter->At = Iter->At->Next;
     }

@@ -14,7 +14,7 @@
     function void
     Push(d_union_member_stream* Stream, d_union_member Element, memory_arena* Memory)
     {
-      d_union_member_stream_chunk* NextChunk = (d_union_member_stream_chunk*)PushStruct(Memory, sizeof(d_union_member_stream_chunk), 1, 1);
+      d_union_member_stream_chunk* NextChunk = (d_union_member_stream_chunk*)PushStruct(Memory, sizeof( d_union_member_stream_chunk ), 1, 1);
       NextChunk->Element = Element;
 
       if (!Stream->FirstChunk)

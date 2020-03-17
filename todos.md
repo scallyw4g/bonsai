@@ -63,7 +63,6 @@
     - #113 Remove these?
     - #144 This actually has nothing to do with the platform
     - #146 Make this return a counted string and everything that depends on
-    - #186 This should be able to use the string 'enum' instead of 'arg_type_enum'
     - #159 Rename to Members
     - #188 This should have the name property, instead of
 
@@ -79,7 +78,6 @@
     - #111 Proper expression parsing.  ie: enum_value_name = (1 << 4) or enum_value_name = SOME_MACRO(thing, ding)
     - #121 Need a way of dynamically allocating more of these on demand
     - #160 Generate this!
-    - #186 This should be able to use the string 'enum' instead of 'arg_type_enum'
     - #42 Do we care about generating these?
     - #180 Can we use Allocate() here instead?
 
@@ -296,7 +294,4 @@
 
   ## bug
     - #185 these should be printable!
-
-  ## ast_needed
-    - #186 This should be able to use the string 'enum' instead of 'arg_type_enum'
 
