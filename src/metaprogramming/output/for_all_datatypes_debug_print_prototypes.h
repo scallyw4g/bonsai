@@ -152,6 +152,9 @@
         function void DebugPrint(enum_def* S, u32 Depth = 0);
         function void DebugPrint(enum_def S, u32 Depth = 0);
 
+        function void DebugPrint(datatype* S, u32 Depth = 0);
+        function void DebugPrint(datatype S, u32 Depth = 0);
+
         function void DebugPrint(c_token* S, u32 Depth = 0);
         function void DebugPrint(c_token S, u32 Depth = 0);
 

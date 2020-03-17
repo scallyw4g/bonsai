@@ -31,6 +31,8 @@
 
             case def_func: { Result = CS("def_func"); } break;
 
+            case def_func_2: { Result = CS("def_func_2"); } break;
+
         }
         return Result;
       }

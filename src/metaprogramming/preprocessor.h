@@ -21,6 +21,25 @@ meta(
   }
 )
 
+_meta(
+  def_func_2 generate_string_table(arg_type_enum E)
+  {
+    function counted_string
+    ToString(E.type Type)
+    {
+      counted_string Result = {};
+      switch (Type)
+      {
+        E.map (type, value) {
+          case type: { Result = CSz("type"); } break;
+        }
+      }
+      return Result;
+    }
+  }
+)
+
+
 // TODO(Jesse id: 187): Need some manipulation functions for specifying function names
 // based on the type arg
 meta(
@@ -53,22 +72,23 @@ enum d_union_flags
 
 enum metaprogramming_directive
 {
-  meta_directive_noop        = 0x0000,
+  meta_directive_noop,
 
-  generate_stream            = 0x0001,
-  generate_cursor            = 0x0002,
-  generate_value_table       = 0x0008,
+  generate_stream,
+  generate_cursor,
+  generate_value_table,
 
-  for_enum_values            = 0x0010,
-  for_members_in             = 0x0020,
-  d_union                    = 0x0040,
+  for_enum_values,
+  for_members_in,
+  d_union,
 
-  enum_only                  = 0x0080,
-  member_is_or_contains_type = 0x0100,
+  enum_only,
+  member_is_or_contains_type,
 
-  for_all_datatypes          = 0x0200,
-  named_list                 = 0x0400,
-  def_func                   = 0x0800,
+  for_all_datatypes,
+  named_list,
+  def_func,
+  def_func_2,
 };
 meta(generate_string_table(metaprogramming_directive))
 #include <metaprogramming/output/test_func_metaprogramming_directive.h>
@@ -217,6 +237,33 @@ meta(generate_stream(enum_def))
 meta(generate_cursor(enum_def))
 #include <metaprogramming/output/generate_cursor_enum_def.h>
 
+
+
+
+enum datatype_type
+{
+  type_datatype_noop,
+
+  type_struct_def,
+  type_enum_def,
+};
+
+struct datatype
+{
+  datatype_type Type;
+
+  union
+  {
+    struct_def* struct_def;
+    enum_def* enum_def;
+  };
+};
+
+
+
+
+
+
 struct c_token
 {
   c_token_type Type;
@@ -270,6 +317,7 @@ struct meta_func
 {
   counted_string Name;
   meta_func_arg_type ArgType;
+  counted_string ArgName;
   c_parse_result Body;
 };
 meta(generate_stream(meta_func))

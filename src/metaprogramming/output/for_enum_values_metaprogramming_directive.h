@@ -23,3 +23,5 @@
 
         Result |= StringsMatch(ToString(def_func), Identifier);
 
+        Result |= StringsMatch(ToString(def_func_2), Identifier);
+

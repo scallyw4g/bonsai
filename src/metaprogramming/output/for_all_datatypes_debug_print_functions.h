@@ -2444,6 +2444,34 @@
 
 
       
+        function void DebugPrint(datatype S, u32 Depth)
+        {
+          DebugPrint("datatype\n", Depth);
+          
+            DebugPrint("Type = ", Depth);
+            DebugPrint(S.Type, Depth+1);
+            DebugPrint("\n");
+
+        }
+
+
+      
+        function void DebugPrint(datatype* S, u32 Depth)
+        {
+          if (S)
+          {
+            DebugPrint("datatype\n", Depth);
+            
+              DebugPrint("Type = ", Depth);
+              DebugPrint(S->Type, Depth+1);
+              DebugPrint("\n");
+
+          }
+        }
+
+
+
+      
         function void DebugPrint(c_token S, u32 Depth)
         {
           DebugPrint("c_token\n", Depth);
@@ -2604,6 +2632,10 @@
             DebugPrint(S.ArgType, Depth+1);
             DebugPrint("\n");
 
+            DebugPrint("ArgName = ", Depth);
+            DebugPrint(S.ArgName, Depth+1);
+            DebugPrint("\n");
+
             DebugPrint("Body = ", Depth);
             DebugPrint(S.Body, Depth+1);
             DebugPrint("\n");
@@ -2624,6 +2656,10 @@
 
               DebugPrint("ArgType = ", Depth);
               DebugPrint(S->ArgType, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("ArgName = ", Depth);
+              DebugPrint(S->ArgName, Depth+1);
               DebugPrint("\n");
 
               DebugPrint("Body = ", Depth);

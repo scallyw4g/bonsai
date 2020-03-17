@@ -30,6 +30,8 @@
 
           if (StringsMatch(S, CSz("def_func"))) { return def_func; }
 
+          if (StringsMatch(S, CSz("def_func_2"))) { return def_func_2; }
+
 
         return (metaprogramming_directive)0;
       }
