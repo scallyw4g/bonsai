@@ -110,6 +110,15 @@ enum meta_arg_operator
 meta( generate_value_table(meta_arg_operator) )
 #include <metaprogramming/output/generate_value_table_meta_arg_operator.h>
 
+enum meta_transform_op
+{
+  meta_transform_op_noop,
+
+  to_capital_case = (1 << 0),
+};
+meta(generate_value_table(meta_transform_op))
+#include <metaprogramming/output/generate_value_table_meta_transform_op.h>
+
 
 enum c_token_type
 {

@@ -2544,6 +2544,27 @@ Enum_MapAndReplaceValues(string_builder* OutputBuilder, c_parse_result* BodyText
   return;
 }
 
+#define UnsetBitfield(type, Dest, Value) do { \
+  Assert( (Dest) & (Value) ); \
+  (Dest) = (type)((Dest) & ~(Value)); \
+} while (false)
+
+function counted_string
+Transform(meta_transform_op Transformations, counted_string Input)
+{
+  counted_string Result = Input;
+  while ( Transformations )
+  {
+    if ( Transformations & to_capital_case )
+    {
+      UnsetBitfield(meta_transform_op, Transformations, to_capital_case );
+      ToCapitalCaseInplace(&Result);
+    }
+  }
+
+  return Result;
+}
+
 function counted_string
 Evaluate(meta_func* Func, datatype* Datatype, memory_arena* Memory)
 {
@@ -2557,9 +2578,23 @@ Evaluate(meta_func* Func, datatype* Datatype, memory_arena* Memory)
     if (BodyToken.Type == CTokenType_Dollar)
     {
       RequireToken(&Func->Body, CToken(Func->ArgName));
-
       RequireToken(&Func->Body, CTokenType_Dot);
       meta_arg_operator Operator = MetaArgOperator( RequireToken(&Func->Body, CTokenType_Identifier).Value);
+
+      meta_transform_op Transformations = meta_transform_op_noop;
+
+      while (OptionalToken(&Func->Body, CTokenType_Dot))
+      {
+        meta_transform_op NextOp = MetaTransformOp(RequireToken(&Func->Body, CTokenType_Identifier).Value);
+        if (NextOp != meta_transform_op_noop)
+        {
+          Transformations = (meta_transform_op)(Transformations | NextOp);
+        }
+        else
+        {
+          Error("Parsing transform ops.");
+        }
+      }
 
       switch (Operator)
       {
@@ -2572,12 +2607,14 @@ Evaluate(meta_func* Func, datatype* Datatype, memory_arena* Memory)
         {
           if (Datatype->Type == type_enum_def)
           {
-            Append(&OutputBuilder, Datatype->enum_def->Name);
+            counted_string Name = Transform(Transformations, Datatype->enum_def->Name);
+            Append(&OutputBuilder, Name);
           }
           else
           {
             Assert(Datatype->Type == type_struct_def);
-            Append(&OutputBuilder, Datatype->struct_def->Name);
+            counted_string Name = Transform(Transformations, Datatype->struct_def->Name);
+            Append(&OutputBuilder, Name);
           }
         } break;
 

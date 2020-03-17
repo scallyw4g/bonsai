@@ -58,6 +58,33 @@ GetNullTerminated(counted_string Str, memory_arena* Memory = TranArena)
   return Result;
 }
 
+function void
+ToCapitalCaseInplace(counted_string* Source)
+{
+  b32 NextCharToUpper = True;
+  for (u32 CharIndex = 0;
+      CharIndex < Source->Count;
+      )
+  {
+    char* At = (char*)Source->Start + CharIndex;
+
+    if (*At == '_')
+    {
+      NextCharToUpper = True;
+      ++CharIndex;
+      continue;
+    }
+
+    if (NextCharToUpper)
+    {
+      *At = ToUpper(*At);
+      NextCharToUpper = False;
+    }
+
+    ++CharIndex;
+  }
+}
+
 function counted_string
 ToCapitalCase(counted_string Source, memory_arena* Memory)
 {
