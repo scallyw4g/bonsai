@@ -1,5 +1,5 @@
 meta(
-  def_func generate_cursor(arg_type_struct $StructType)
+  func generate_cursor(arg_type_struct $StructType)
   {
     struct $StructType.name$_cursor
     {
@@ -24,7 +24,7 @@ meta(
 
 // TODO(Jesse id: 186, tags: metaprogramming, ast_needed, cleanup): This should be able to use the string 'enum' instead of 'arg_type_enum'
 meta(
-  def_func generate_string_table(arg_type_enum $EnumType)
+  func generate_string_table(arg_type_enum $EnumType)
   {
     function counted_string
     ToString($EnumType.name Type)
@@ -43,7 +43,7 @@ meta(
 )
 
 meta(
-  def_func generate_value_table(arg_type_enum $EnumType)
+  func generate_value_table(arg_type_enum $EnumType)
   {
     function $EnumType.name
     $EnumType.name.to_capital_case(counted_string S)
@@ -61,7 +61,7 @@ meta(
 )
 
 meta(
-  def_func generate_stream(arg_type_struct $StructType)
+  func generate_stream(arg_type_struct $StructType)
   {
     struct $StructType.name$_stream_chunk
     {
@@ -151,8 +151,7 @@ enum metaprogramming_directive
 
   for_all_datatypes,
   named_list,
-  def_func,
-  def_func_2,
+  func,
 };
 meta(generate_string_table(metaprogramming_directive))
 #include <metaprogramming/output/generate_string_table_metaprogramming_directive.h>
@@ -403,8 +402,6 @@ meta(generate_value_table(meta_func_arg_type))
 
 struct meta_func
 {
-  metaprogramming_directive Type;
-
   counted_string Name;
   meta_func_arg_type ArgType;
   counted_string ArgName;

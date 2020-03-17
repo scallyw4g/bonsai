@@ -2624,10 +2624,6 @@
         {
           DebugPrint("meta_func\n", Depth);
           
-            DebugPrint("Type = ", Depth);
-            DebugPrint(S.Type, Depth+1);
-            DebugPrint("\n");
-
             DebugPrint("Name = ", Depth);
             DebugPrint(S.Name, Depth+1);
             DebugPrint("\n");
@@ -2654,10 +2650,6 @@
           {
             DebugPrint("meta_func\n", Depth);
             
-              DebugPrint("Type = ", Depth);
-              DebugPrint(S->Type, Depth+1);
-              DebugPrint("\n");
-
               DebugPrint("Name = ", Depth);
               DebugPrint(S->Name, Depth+1);
               DebugPrint("\n");

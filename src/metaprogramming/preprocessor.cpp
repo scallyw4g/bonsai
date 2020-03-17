@@ -2720,16 +2720,7 @@ main(s32 ArgCount, const char** ArgStrings)
                   counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
 
                   datatype Data = GetDatatypeByName(&Datatypes, DatatypeName);
-                  counted_string Code = {};
-                  if (Func->Type == def_func)
-                  {
-                    Code = Evaluate(Func, &Data, Memory);
-                  }
-                  else
-                  {
-                    Assert(Func->Type == def_func_2);
-                    /* Code = Evaluate_2(Func, &Data, Memory); */
-                  }
+                  counted_string Code = Evaluate(Func, &Data, Memory);
 
                   if (Code.Count)
                   {
@@ -2751,12 +2742,7 @@ main(s32 ArgCount, const char** ArgStrings)
                 switch (Directive)
                 {
 
-                  case def_func_2:
-                  {
-                    NotImplemented;
-                  } break;
-
-                  case def_func:
+                  case func:
                   {
                     counted_string FuncName = RequireToken(Parser, CTokenType_Identifier).Value;
                     RequireToken(Parser, CTokenType_OpenParen);
@@ -2777,7 +2763,6 @@ main(s32 ArgCount, const char** ArgStrings)
                       .ArgType = ArgType,
                       .ArgName = ArgName,
                       .Body = Body,
-                      .Type = Directive
                     };
 
                     Push(&FunctionDefs, Func, Memory);

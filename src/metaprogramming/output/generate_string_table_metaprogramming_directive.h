@@ -22,9 +22,7 @@
 
           case named_list: { Result = CSz("named_list"); } break;
 
-          case def_func: { Result = CSz("def_func"); } break;
-
-          case def_func_2: { Result = CSz("def_func_2"); } break;
+          case func: { Result = CSz("func"); } break;
 
       }
       return Result;

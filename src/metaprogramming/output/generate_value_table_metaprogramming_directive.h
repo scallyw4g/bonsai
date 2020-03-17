@@ -21,9 +21,7 @@
 
         if (StringsMatch(S, CSz("named_list"))) { return named_list; }
 
-        if (StringsMatch(S, CSz("def_func"))) { return def_func; }
-
-        if (StringsMatch(S, CSz("def_func_2"))) { return def_func_2; }
+        if (StringsMatch(S, CSz("func"))) { return func; }
 
 
       return Result;
