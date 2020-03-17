@@ -1,5 +1,4 @@
 
-
     struct c_parse_result_cursor
     {
       c_parse_result* Start;
@@ -18,5 +17,4 @@
       };
       return Result;
     };
-
 

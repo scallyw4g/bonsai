@@ -1,5 +1,4 @@
 
-
     struct c_decl_cursor
     {
       c_decl* Start;
@@ -18,5 +17,4 @@
       };
       return Result;
     };
-
 

@@ -1,5 +1,4 @@
 
-
     struct struct_def_cursor
     {
       struct_def* Start;
@@ -18,5 +17,4 @@
       };
       return Result;
     };
-
 

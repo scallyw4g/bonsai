@@ -1,7 +1,6 @@
 meta(
   def_func generate_cursor(arg_type_struct $StructType)
   {
-
     struct $StructType.name$_cursor
     {
       $StructType.name* Start;
@@ -20,7 +19,6 @@ meta(
       };
       return Result;
     };
-
   }
 )
 
@@ -61,12 +59,6 @@ meta(
     }
   }
 )
-
-struct test_meta_struct
-{
-  u32 Thing;
-  counted_string OtherThing;
-};
 
 meta(
   def_func generate_stream(arg_type_struct $StructType)
@@ -138,10 +130,6 @@ meta(
 
   }
 )
-
-meta(generate_stream(test_meta_struct))
-#include <metaprogramming/output/generate_stream_wip_test_meta_struct.h>
-
 
 enum d_union_flags
 {

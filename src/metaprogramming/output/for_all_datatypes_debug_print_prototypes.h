@@ -128,9 +128,6 @@
         function void DebugPrint(debug_text_render_group* S, u32 Depth = 0);
         function void DebugPrint(debug_text_render_group S, u32 Depth = 0);
 
-        function void DebugPrint(test_meta_struct* S, u32 Depth = 0);
-        function void DebugPrint(test_meta_struct S, u32 Depth = 0);
-
         function void DebugPrint(c_decl_variable* S, u32 Depth = 0);
         function void DebugPrint(c_decl_variable S, u32 Depth = 0);
 

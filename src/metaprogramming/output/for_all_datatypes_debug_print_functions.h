@@ -2148,42 +2148,6 @@
 
 
       
-        function void DebugPrint(test_meta_struct S, u32 Depth)
-        {
-          DebugPrint("test_meta_struct\n", Depth);
-          
-            DebugPrint("Thing = ", Depth);
-            DebugPrint(S.Thing, Depth+1);
-            DebugPrint("\n");
-
-            DebugPrint("OtherThing = ", Depth);
-            DebugPrint(S.OtherThing, Depth+1);
-            DebugPrint("\n");
-
-        }
-
-
-      
-        function void DebugPrint(test_meta_struct* S, u32 Depth)
-        {
-          if (S)
-          {
-            DebugPrint("test_meta_struct\n", Depth);
-            
-              DebugPrint("Thing = ", Depth);
-              DebugPrint(S->Thing, Depth+1);
-              DebugPrint("\n");
-
-              DebugPrint("OtherThing = ", Depth);
-              DebugPrint(S->OtherThing, Depth+1);
-              DebugPrint("\n");
-
-          }
-        }
-
-
-
-      
         function void DebugPrint(c_decl_variable S, u32 Depth)
         {
           DebugPrint("c_decl_variable\n", Depth);

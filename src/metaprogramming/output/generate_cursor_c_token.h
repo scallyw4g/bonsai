@@ -1,5 +1,4 @@
 
-
     struct c_token_cursor
     {
       c_token* Start;
@@ -18,5 +17,4 @@
       };
       return Result;
     };
-
 

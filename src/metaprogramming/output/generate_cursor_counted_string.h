@@ -1,5 +1,4 @@
 
-
     struct counted_string_cursor
     {
       counted_string* Start;
@@ -18,5 +17,4 @@
       };
       return Result;
     };
-
 

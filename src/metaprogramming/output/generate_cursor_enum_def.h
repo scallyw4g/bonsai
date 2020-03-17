@@ -1,5 +1,4 @@
 
-
     struct enum_def_cursor
     {
       enum_def* Start;
@@ -18,5 +17,4 @@
       };
       return Result;
     };
-
 
