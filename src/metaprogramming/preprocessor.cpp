@@ -2544,7 +2544,7 @@ Enum_MapAndReplaceValues(string_builder* OutputBuilder, c_parse_result* BodyText
 }
 
 function counted_string
-Evaluate_2(meta_func* Func, datatype* Datatype, memory_arena* Memory)
+Evaluate(meta_func* Func, datatype* Datatype, memory_arena* Memory)
 {
   Rewind(&Func->Body.Tokens);
 
@@ -2586,64 +2586,6 @@ Evaluate_2(meta_func* Func, datatype* Datatype, memory_arena* Memory)
 
           RequireToken(&Func->Body, CTokenType_OpenParen);
           RequireToken(&Func->Body, CTokenType_Dollar);
-          counted_string EnumValueMatch  = RequireToken(&Func->Body, CTokenType_Identifier).Value;
-          RequireToken(&Func->Body, CTokenType_CloseParen);
-          c_parse_result NextScope = GetBodyTextForNextScope(&Func->Body);
-          Enum_MapAndReplaceValues(&OutputBuilder, &NextScope, EnumValueMatch, Datatype->enum_def, Memory);
-        } break;
-      }
-
-    }
-    else
-    {
-      Append(&OutputBuilder, BodyToken.Value);
-    }
-  }
-
-  counted_string Result = Finalize(&OutputBuilder, Memory);
-  return Result;
-}
-
-function counted_string
-Evaluate(meta_func* Func, datatype* Datatype, memory_arena* Memory)
-{
-  Rewind(&Func->Body.Tokens);
-
-  string_builder OutputBuilder = {};
-  while (Remaining(&Func->Body.Tokens))
-  {
-    c_token BodyToken = PopTokenRaw(&Func->Body);
-
-    if (StringsMatch(BodyToken.Value, Func->ArgName))
-    {
-      RequireToken(&Func->Body, CTokenType_Dot);
-      meta_arg_operator Operator = MetaArgOperator( RequireToken(&Func->Body, CTokenType_Identifier).Value);
-
-      switch (Operator)
-      {
-        case meta_arg_operator_noop:
-        {
-          Error("Invalid operator encountered.");
-        } break;
-
-        case type:
-        {
-          if (Datatype->Type == type_enum_def)
-          {
-            Append(&OutputBuilder, Datatype->enum_def->Name);
-          }
-          else
-          {
-            Assert(Datatype->Type == type_struct_def);
-            Append(&OutputBuilder, Datatype->struct_def->Name);
-          }
-        } break;
-
-        case map_values:
-        {
-          Assert(Datatype->Type == type_enum_def);
-
-          RequireToken(&Func->Body, CTokenType_OpenParen);
           counted_string EnumValueMatch  = RequireToken(&Func->Body, CTokenType_Identifier).Value;
           RequireToken(&Func->Body, CTokenType_CloseParen);
           c_parse_result NextScope = GetBodyTextForNextScope(&Func->Body);
@@ -2964,7 +2906,7 @@ main(s32 ArgCount, const char** ArgStrings)
                   else
                   {
                     Assert(Func->Type == def_func_2);
-                    Code = Evaluate_2(Func, &Data, Memory);
+                    /* Code = Evaluate_2(Func, &Data, Memory); */
                   }
 
                   if (Code.Count)
@@ -2989,6 +2931,11 @@ main(s32 ArgCount, const char** ArgStrings)
 
                   case def_func_2:
                   {
+                    NotImplemented;
+                  } break;
+
+                  case def_func:
+                  {
                     counted_string FuncName = RequireToken(Parser, CTokenType_Identifier).Value;
                     RequireToken(Parser, CTokenType_OpenParen);
                     meta_func_arg_type ArgType = MetaFuncArgType( RequireToken(Parser, CTokenType_Identifier).Value );
@@ -3008,34 +2955,7 @@ main(s32 ArgCount, const char** ArgStrings)
                       .ArgType = ArgType,
                       .ArgName = ArgName,
                       .Body = Body,
-                      .Type = def_func_2,
-                    };
-
-                    Push(&FunctionDefs, Func, Memory);
-
-                  } break;
-
-                  case def_func:
-                  {
-                    counted_string FuncName = RequireToken(Parser, CTokenType_Identifier).Value;
-                    RequireToken(Parser, CTokenType_OpenParen);
-                    meta_func_arg_type ArgType = MetaFuncArgType( RequireToken(Parser, CTokenType_Identifier).Value );
-                    counted_string ArgName = RequireToken(Parser, CTokenType_Identifier).Value;
-                    RequireToken(Parser, CTokenType_CloseParen);
-                    c_parse_result Body = GetBodyTextForNextScope(Parser);
-
-                    if (ArgType == arg_type_noop)
-                    {
-                      /* OutputParsingError(); */
-                      Error("Function parse error");
-                    }
-
-                    meta_func Func = {
-                      .Name = FuncName,
-                      .ArgType = ArgType,
-                      .ArgName = ArgName,
-                      .Body = Body,
-                      .Type = def_func,
+                      .Type = Directive
                     };
 
                     Push(&FunctionDefs, Func, Memory);

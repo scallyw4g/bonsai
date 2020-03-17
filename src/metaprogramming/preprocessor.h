@@ -1,6 +1,6 @@
 // TODO(Jesse id: 186, tags: metaprogramming, ast_needed, cleanup): This should be able to use the string 'enum' instead of 'arg_type_enum'
 meta(
-  def_func_2 generate_string_table(arg_type_enum $EnumType)
+  def_func generate_string_table(arg_type_enum $EnumType)
   {
     function counted_string
     ToString($EnumType.type Type)
@@ -20,7 +20,7 @@ meta(
 // TODO(Jesse id: 187): Need some manipulation functions for specifying function names
 // based on the type arg
 meta(
-  def_func_2 generate_value_table_internal(arg_type_enum $EnumType)
+  def_func generate_value_table_internal(arg_type_enum $EnumType)
   {
     function $EnumType.type
     ToEnum(counted_string S)
@@ -38,7 +38,7 @@ meta(
 )
 
 meta(
-  def_func_2 test_func(arg_type_enum $EnumType)
+  def_func test_func(arg_type_enum $EnumType)
   {
     function $EnumType.type
     To_$EnumType.type(counted_string S)
