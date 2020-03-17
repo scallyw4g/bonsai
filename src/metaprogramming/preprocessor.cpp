@@ -2273,7 +2273,7 @@ GenerateOutfileNameFor(metaprogramming_directive Directive, counted_string Datat
 }
 
 function void
-Enum_ReplaceValues(string_builder* OutputBuilder, c_parse_result* BodyText, counted_string EnumValueMatch, enum_field* EnumField, memory_arena* Memory)
+ReplaceValues(string_builder* OutputBuilder, c_parse_result* BodyText, counted_string EnumValueMatch, counted_string EnumFieldName, memory_arena* Memory)
 {
   Rewind(&BodyText->Tokens);
   while (Remaining(&BodyText->Tokens))
@@ -2283,7 +2283,7 @@ Enum_ReplaceValues(string_builder* OutputBuilder, c_parse_result* BodyText, coun
     if (BodyToken.Type == CTokenType_String)
     {
       c_parse_result StringParse = TokenizeString(BodyToken.Value, BodyText->Filename, Memory, True);
-      Enum_ReplaceValues(OutputBuilder, &StringParse, EnumValueMatch, EnumField, Memory);
+      ReplaceValues(OutputBuilder, &StringParse, EnumValueMatch, EnumFieldName, Memory);
     }
     else if (BodyToken.Type == CTokenType_OpenParen &&
             OptionalToken(BodyText, CToken(EnumValueMatch)))
@@ -2299,7 +2299,7 @@ Enum_ReplaceValues(string_builder* OutputBuilder, c_parse_result* BodyText, coun
 
         case name:
         {
-          Append(OutputBuilder, EnumField->Name);
+          Append(OutputBuilder, EnumFieldName);
         } break;
 
         InvalidDefaultCase;
@@ -2312,19 +2312,6 @@ Enum_ReplaceValues(string_builder* OutputBuilder, c_parse_result* BodyText, coun
       Append(OutputBuilder, BodyToken.Value);
     }
   }
-}
-
-function void
-Enum_MapAndReplaceValues(string_builder* OutputBuilder, c_parse_result* BodyText, counted_string EnumValueMatch, enum_def* Enum, memory_arena* Memory)
-{
-  ITERATE_OVER(enum_field, &Enum->Fields)
-  {
-    enum_field* Member = GET_ELEMENT(Iter);
-    Enum_ReplaceValues(OutputBuilder, BodyText, EnumValueMatch, Member, Memory);
-    continue;
-  }
-
-  return;
 }
 
 function counted_string
@@ -2357,62 +2344,6 @@ GetNameForCDecl(c_decl* Decl)
   }
 
   return Result;
-}
-
-function void
-Struct_ReplaceValues(string_builder* OutputBuilder, c_parse_result* BodyText, counted_string StructValueMatch, c_decl* Member, memory_arena* Memory)
-{
-  Rewind(&BodyText->Tokens);
-  while (Remaining(&BodyText->Tokens))
-  {
-    c_token BodyToken = PopTokenRaw(BodyText);
-
-    if (BodyToken.Type == CTokenType_String)
-    {
-      c_parse_result StringParse = TokenizeString(BodyToken.Value, BodyText->Filename, Memory, True);
-      Struct_ReplaceValues(OutputBuilder, &StringParse, StructValueMatch, Member, Memory);
-    }
-    else if (BodyToken.Type == CTokenType_OpenParen &&
-            OptionalToken(BodyText, CToken(StructValueMatch)))
-    {
-      RequireToken(BodyText, CTokenType_Dot);
-      meta_arg_operator Op = MetaArgOperator(RequireToken(BodyText, CTokenType_Identifier).Value);
-      switch (Op)
-      {
-        case meta_arg_operator_noop:
-        {
-          Error("Invalid operator encountered.");
-        } break;
-
-        case name:
-        {
-          counted_string Name = GetNameForCDecl(Member);
-          Append(OutputBuilder, Name);
-        } break;
-
-        InvalidDefaultCase;
-      }
-
-      RequireToken(BodyText, CTokenType_CloseParen);
-    }
-    else
-    {
-      Append(OutputBuilder, BodyToken.Value);
-    }
-  }
-}
-
-function void
-Struct_MapAndReplaceValues(string_builder* OutputBuilder, c_parse_result* BodyText, counted_string Match, struct_def* Struct, memory_arena* Memory)
-{
-  ITERATE_OVER(c_decl, &Struct->Fields)
-  {
-    c_decl* Member = GET_ELEMENT(Iter);
-    Struct_ReplaceValues(OutputBuilder, BodyText, Match, Member, Memory);
-    continue;
-  }
-
-  return;
 }
 
 #define UnsetBitfield(type, Dest, Value) do { \
@@ -2499,12 +2430,25 @@ Evaluate(meta_func* Func, datatype* Datatype, memory_arena* Memory)
 
           if (Datatype->Type == type_enum_def)
           {
-            Enum_MapAndReplaceValues(&OutputBuilder, &NextScope, EnumValueMatch, Datatype->enum_def, Memory);
+            ITERATE_OVER(enum_field, &Datatype->enum_def->Fields)
+            {
+              enum_field* Member = GET_ELEMENT(Iter);
+              ReplaceValues(&OutputBuilder, &NextScope, EnumValueMatch, Member->Name, Memory);
+              continue;
+            }
+
           }
           else
           {
             Assert(Datatype->Type == type_struct_def);
-            Struct_MapAndReplaceValues(&OutputBuilder, &NextScope, EnumValueMatch, Datatype->struct_def, Memory);
+            ITERATE_OVER(c_decl, &Datatype->struct_def->Fields)
+            {
+              c_decl* Member = GET_ELEMENT(Iter);
+              counted_string MemberName = GetNameForCDecl(Member);
+              ReplaceValues(&OutputBuilder, &NextScope, EnumValueMatch, MemberName, Memory);
+              continue;
+            }
+
           }
 
         } break;
