@@ -50,28 +50,40 @@ OpenFile(counted_string FilePath, const char* Permissions = DefaultPermissions)
 }
 
 function counted_string
-GetRandomFilename(random_series* Entropy, memory_arena* Memory)
+GetRandomString(u32 Length, random_series* Entropy, memory_arena* Memory)
 {
-  u32 FilenameLength = 32;
-
   counted_string Filename = {
-    .Start = Allocate(char, Memory, FilenameLength),
-    .Count = FilenameLength
+    .Start = Allocate(char, Memory, Length),
+    .Count = Length
   };
 
   for (u32 CharIndex = 0;
-      CharIndex < FilenameLength;
+      CharIndex < Length;
       ++CharIndex)
   {
-    ((char*)Filename.Start)[CharIndex] = (s8)RandomBetween(97, Entropy, 122);
+    s8 Try = (s8)RandomBetween(48, Entropy, 122);
+    while (!IsAlphaNumeric(Try))
+    {
+      Try = (s8)RandomBetween(48, Entropy, 122);
+    }
+    ((char*)Filename.Start)[CharIndex] = Try;
   }
 
   return Filename;
 }
+
+function counted_string
+GetRandomString(u32 Length, umm EntropySeed, memory_arena* Memory)
+{
+  random_series Entropy = { .Seed = EntropySeed };
+  counted_string Result = GetRandomString(Length, &Entropy, Memory);
+  return Result;
+}
+
 function counted_string
 GetTmpFilename(random_series* Entropy, memory_arena* Memory)
 {
-  counted_string Filename = GetRandomFilename(Entropy, Memory);
+  counted_string Filename = GetRandomString(32, Entropy, Memory);
   Filename = Concat(CS("tmp/"), Filename, Memory);
   return Filename;
 }

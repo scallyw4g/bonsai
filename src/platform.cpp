@@ -276,12 +276,6 @@ ClearClickedFlags(input *Input)
 {
   TIMED_FUNCTION();
 
-#if 1
-
- meta(clear_clicked(input))
-#include <metaprogramming/output/clear_clicked_input.h>
-
-#elif 1
 meta(
   func (input Struct)
   {
@@ -292,7 +286,10 @@ meta(
     )
   }
 )
-#endif
+#include <metaprogramming/output/anonymous_function_input_im2PkEa9.h>
+
+  return;
+}
 
 function void
 BindHotkeysToInput(hotkeys *Hotkeys, input *Input)

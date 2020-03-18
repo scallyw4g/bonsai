@@ -320,9 +320,37 @@ ToUpper(char C)
 }
 
 function b32
+IsUpper(char C)
+{
+  b32 Result = (C >= 'A' && C <= 'Z');
+  return Result;
+}
+
+function b32
+IsLower(char C)
+{
+  b32 Result = (C >= 'a' && C <= 'z');
+  return Result;
+}
+
+function b32
+IsAlpha(char C)
+{
+  b32 Result = IsUpper(C) || IsLower(C);
+  return Result;
+}
+
+function b32
 IsNumeric(char C)
 {
   b32 Result = (C >= '0' && C <= '9');
+  return Result;
+}
+
+function b32
+IsAlphaNumeric(char C)
+{
+  b32 Result = IsAlpha(C) || IsNumeric(C);
   return Result;
 }
 

@@ -1924,9 +1924,6 @@ DoWorkToOutputThisStuff(c_parse_result* Parser, counted_string OutputForThisPars
 {
   TIMED_FUNCTION();
 
-  RequireToken(Parser, CTokenType_CloseParen);
-  RequireToken(Parser, CTokenType_CloseParen);
-
   if (!Parser->Valid)
   {
     Error("Bad parser state");
@@ -2247,26 +2244,18 @@ ParseAllTodosFromFile(counted_string Filename, memory_arena* Memory)
 }
 
 function counted_string
-GenerateOutfileNameFor(meta_func* Func, counted_string DatatypeName, memory_arena* Memory)
+GenerateOutfileNameFor(counted_string Name, counted_string DatatypeName, memory_arena* Memory, counted_string Modifier = {})
 {
   string_builder OutfileBuilder = {};
-  Append(&OutfileBuilder, Func->Name);
-  Append(&OutfileBuilder, CS("_"));
+  Append(&OutfileBuilder, Name);
+  Append(&OutfileBuilder, CSz("_"));
   Append(&OutfileBuilder, DatatypeName);
-  Append(&OutfileBuilder, CS(".h"));
-  counted_string Result = Finalize(&OutfileBuilder, Memory);
-
-  return Result;
-}
-
-function counted_string
-GenerateOutfileNameFor(metaprogramming_directive Directive, counted_string DatatypeName, memory_arena* Memory)
-{
-  string_builder OutfileBuilder = {};
-  Append(&OutfileBuilder, ToString(Directive));
-  Append(&OutfileBuilder, CS("_"));
-  Append(&OutfileBuilder, DatatypeName);
-  Append(&OutfileBuilder, CS(".h"));
+  if (Modifier.Count)
+  {
+    Append(&OutfileBuilder, CSz("_"));
+    Append(&OutfileBuilder, Modifier);
+  }
+  Append(&OutfileBuilder, CSz(".h"));
   counted_string Result = Finalize(&OutfileBuilder, Memory);
 
   return Result;
@@ -2764,7 +2753,9 @@ main(s32 ArgCount, const char** ArgStrings)
 
                   if (Code.Count)
                   {
-                    counted_string OutfileName = GenerateOutfileNameFor( Func, DatatypeName, Memory);
+                    counted_string OutfileName = GenerateOutfileNameFor(Func->Name, DatatypeName, Memory);
+                    RequireToken(Parser, CTokenType_CloseParen);
+                    RequireToken(Parser, CTokenType_CloseParen);
                     DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
                   }
                   else
@@ -2795,14 +2786,22 @@ main(s32 ArgCount, const char** ArgStrings)
                       datatype Data = GetDatatypeByName(&Datatypes, ArgType);
 
                       meta_func Func = {
-                        .Name = CSz("(anonymous function)"),
+                        .Name = CSz("anonymous_function"),
                         .ArgName = ArgName,
                         .Body = Body,
                       };
-
                       counted_string Code = Evaluate(&Func, &Data, Memory);
-                      Print(Code);
 
+                      RequireToken(Parser, CTokenType_CloseParen);
+                      if (Code.Count)
+                      {
+                        counted_string OutfileName = GenerateOutfileNameFor(Func.Name, ArgType, Memory, GetRandomString(8, Hash(&Code), Memory));
+                        DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
+                      }
+                      else
+                      {
+                        Warn("Unable to generate code for meta_func %.*s", (u32)Func.Name.Count, Func.Name.Start);
+                      }
                     }
                     else
                     {
@@ -2861,7 +2860,9 @@ main(s32 ArgCount, const char** ArgStrings)
 
                     counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
                     counted_string Code = GenerateCursorFor_DEPRECATED(DatatypeName, Memory);
-                    counted_string OutfileName = GenerateOutfileNameFor(Directive, DatatypeName, Memory);
+                    counted_string OutfileName = GenerateOutfileNameFor(ToString(Directive), DatatypeName, Memory);
+                    RequireToken(Parser, CTokenType_CloseParen);
+                    RequireToken(Parser, CTokenType_CloseParen);
                     DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
                   } break;
 
@@ -2874,7 +2875,9 @@ main(s32 ArgCount, const char** ArgStrings)
                     if (Target)
                     {
                       counted_string Code = ParseForMembers(Parser, Target, &Datatypes.Structs, Memory);
-                      counted_string OutfileName = GenerateOutfileNameFor(Directive, DatatypeName, Memory);
+                      counted_string OutfileName = GenerateOutfileNameFor(ToString(Directive), DatatypeName, Memory);
+                      RequireToken(Parser, CTokenType_CloseParen);
+                      RequireToken(Parser, CTokenType_CloseParen);
                       DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
                     }
                     else
@@ -2962,7 +2965,9 @@ main(s32 ArgCount, const char** ArgStrings)
                     }
 
                     counted_string Code = Finalize(&OutputBuilder, Memory);
-                    counted_string OutfileName = GenerateOutfileNameFor(Directive, CSz("debug_print"), Memory);
+                    counted_string OutfileName = GenerateOutfileNameFor(ToString(Directive), CSz("debug_print"), Memory);
+                    RequireToken(Parser, CTokenType_CloseParen);
+                    RequireToken(Parser, CTokenType_CloseParen);
                     DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
 
                   } break;
@@ -2975,7 +2980,7 @@ main(s32 ArgCount, const char** ArgStrings)
                     d_union_decl dUnion = ParseDiscriminatedUnion(Parser, &Datatypes, DatatypeName, Memory);
                     if (Parser->Valid)
                     {
-                      counted_string OutfileName = GenerateOutfileNameFor(Directive, DatatypeName, Memory);
+                      counted_string OutfileName = GenerateOutfileNameFor(ToString(Directive), DatatypeName, Memory);
 
                       string_builder CodeBuilder = {};
                       if (!dUnion.CustomEnumType.Count)
@@ -2990,6 +2995,8 @@ main(s32 ArgCount, const char** ArgStrings)
                       }
 
                       counted_string Code = Finalize(&CodeBuilder, Memory);
+                      RequireToken(Parser, CTokenType_CloseParen);
+                      RequireToken(Parser, CTokenType_CloseParen);
                       DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
 
                     }
