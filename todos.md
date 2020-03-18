@@ -14,7 +14,6 @@
 
   ## high_priority
     - #101 Profile and check collision rate of this!
-    - #158 Change to a string_builder
     - #182 This should respect Args.Outpath passed in!
     - #183 This should respect Args.OutPath passed in!
     - #185 these should be printable!
@@ -61,7 +60,6 @@
     - #107 Can we compute this with MouseP to avoid a frame of input delay?
     - #108 Do we have to pass the style to both of these functions, and is that a good idea?
     - #109 Reset this in here?
-    - #158 Change to a string_builder
     - #113 Remove these?
     - #144 This actually has nothing to do with the platform
     - #146 Make this return a counted string and everything that depends on

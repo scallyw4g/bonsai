@@ -9,8 +9,6 @@
 
           if (StringsMatch(S, CSz("generate_cursor_deprecated"))) { return generate_cursor_deprecated; }
 
-          if (StringsMatch(S, CSz("for_members_in"))) { return for_members_in; }
-
           if (StringsMatch(S, CSz("d_union"))) { return d_union; }
 
           if (StringsMatch(S, CSz("enum_only"))) { return enum_only; }

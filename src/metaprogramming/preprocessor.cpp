@@ -1480,194 +1480,6 @@ GetBodyTextForNextScope(c_parse_result* Parser)
   return BodyText;
 }
 
-function counted_string
-ParseForEnumValues(c_parse_result* Parser, counted_string TypeName, enum_def_stream* ProgramEnums, memory_arena* Memory)
-{
-  TIMED_FUNCTION();
-  counted_string Result = {};
-
-  for_enum_constraints Constraints = {};
-
-  enum_def* Target = GetEnumByType(ProgramEnums, TypeName);
-
-  if (Target)
-  {
-    RequireToken(Parser, CTokenType_Comma);
-
-    if (OptionalToken(Parser, CToken(CTokenType_OpenParen)))
-    {
-      Constraints.TypeName = RequireToken(Parser, CTokenType_Identifier).Value;
-
-      RequireToken(Parser, CTokenType_Comma);
-      Constraints.ValueName = RequireToken(Parser, CTokenType_Identifier).Value;
-
-      RequireToken(Parser, CTokenType_CloseParen);
-    }
-
-    Assert(Constraints.TypeName.Count);
-    Assert(Constraints.ValueName.Count);
-
-    c_parse_result BodyText = GetBodyTextForNextScope(Parser);
-
-    for (enum_field_iterator Iter = Iterator(&Target->Fields);
-        IsValid(&Iter);
-        Advance(&Iter))
-    {
-      enum_field Enum = Iter.At->Element;
-      Rewind(&BodyText.Tokens);
-      while (Remaining(&BodyText.Tokens))
-      {
-        c_token T = PopTokenRaw(&BodyText);
-        if (StringsMatch(T.Value, Constraints.TypeName))
-        {
-          Result = Concat(Result, FormatCountedString(Memory, CSz("%S"), Enum.Name), Memory);
-        }
-        else if (StringsMatch(T.Value, Constraints.ValueName))
-        {
-          Result = Concat(Result, FormatCountedString(Memory, CSz("%S"), Enum.Value), Memory);
-        }
-        else
-        {
-          Result = Concat(Result, T.Value, Memory);
-        }
-      }
-    }
-
-  }
-
-  return Result;
-}
-
-function counted_string
-DoTokenSubstitution(c_parse_result* BodyText, body_text_constraints* Constraints, c_decl Element, memory_arena* Memory)
-{
-  TIMED_FUNCTION();
-  string_builder Builder = {};
-
-  Rewind(&BodyText->Tokens);
-  while (Remaining(&BodyText->Tokens))
-  {
-    c_token T = PopTokenRaw(BodyText);
-    if (StringsMatch(T.Value, Constraints->TypeTag))
-    {
-      Append(&Builder, FormatCountedString(Memory, CSz("type_%.*s"), Element.c_decl_variable.Type));
-    }
-    else if (StringsMatch(T.Value, Constraints->TypeName))
-    {
-      Append(&Builder, FormatCountedString(Memory, CSz("%.*s"), Element.c_decl_variable.Type));
-    }
-    else if (StringsMatch(T.Value, Constraints->ValueName))
-    {
-      Append(&Builder, FormatCountedString(Memory, CSz("%.*s"), Element.c_decl_variable.Name));
-    }
-    else
-    {
-      Append(&Builder, T.Value);
-    }
-  }
-
-  counted_string Result = Finalize(&Builder, Memory);
-  return Result;
-}
-
-function body_text_constraints
-ParseBodyTextConstraints(c_parse_result* Parser)
-{
-  body_text_constraints Constraints = {};
-
-  if (OptionalToken(Parser, CToken(ToString(member_is_or_contains_type))))
-  {
-    Constraints.MemberContains = RequireToken(Parser, CTokenType_Identifier).Value;
-    RequireToken(Parser, CToken(CTokenType_Comma));
-  }
-
-  RequireToken(Parser, CTokenType_OpenParen);
-  Constraints.TypeTag = RequireToken(Parser, CTokenType_Identifier).Value;
-
-  RequireToken(Parser, CTokenType_Comma);
-  Constraints.TypeName = RequireToken(Parser, CTokenType_Identifier).Value;
-
-  RequireToken(Parser, CTokenType_Comma);
-  Constraints.ValueName = RequireToken(Parser, CTokenType_Identifier).Value;
-
-  RequireToken(Parser, CTokenType_CloseParen);
-
-  Assert(Constraints.TypeTag.Count);
-  Assert(Constraints.TypeName.Count);
-  Assert(Constraints.ValueName.Count);
-
-  return Constraints;
-}
-
-function counted_string
-ParseForMembers(c_parse_result* Parser, struct_def* Target, struct_def_stream* ProgramStructs, memory_arena* Memory)
-{
-  TIMED_FUNCTION();
-
-  // TODO(Jesse id: 158, tags: cleanup, high_priority) Change to a string_builder
-  counted_string Result = {};
-
-  RequireToken(Parser, CTokenType_Comma);
-
-  body_text_constraints Constraints = ParseBodyTextConstraints(Parser);
-
-  c_parse_result BodyText = GetBodyTextForNextScope(Parser);
-
-  c_decl_stream_chunk* AtChunk = Target->Fields.FirstChunk;
-  while (AtChunk)
-  {
-    switch (AtChunk->Element.Type)
-    {
-      case type_c_decl_variable:
-      {
-        if (Constraints.MemberContains.Count &&
-            !StringsMatch(AtChunk->Element.c_decl_variable.Type, Constraints.MemberContains) )
-        {
-          break;
-        }
-
-        Result = Concat(Result, DoTokenSubstitution(&BodyText, &Constraints, AtChunk->Element, Memory), Memory);
-      } break;
-
-      case type_c_decl_union:
-      {
-        for (c_decl_iterator Iter = Iterator(&AtChunk->Element.c_decl_union.Body.Fields);
-            IsValid(&Iter);
-            Advance(&Iter))
-        {
-          if (Iter.At->Element.Type == type_c_decl_variable)
-          {
-            struct_def* Struct = GetStructByType(ProgramStructs, Iter.At->Element.c_decl_variable.Type);
-            if (Struct)
-            {
-              if (HasMemberOfType(Struct, Constraints.MemberContains))
-              {
-                Result = Concat(Result, DoTokenSubstitution(&BodyText, &Constraints, Iter.At->Element, Memory), Memory);
-              }
-            }
-            else
-            {
-              Error("Couldn't find struct type %*.s", (u32)Iter.At->Element.c_decl_variable.Name.Count, Iter.At->Element.c_decl_variable.Name.Start);
-            }
-
-          }
-          else
-          {
-            Error("Nested structs/unions and function pointers unsupported.");
-          }
-        }
-      } break;
-
-      InvalidDefaultCase;
-    }
-
-    AtChunk = AtChunk->Next;
-  }
-
-
-  return Result;
-}
-
 function struct_def
 ParseStructBody(c_parse_result* Parser, counted_string StructName, memory_arena* Memory)
 {
@@ -1737,7 +1549,7 @@ ParseEnum(c_parse_result* Parser, memory_arena* Memory)
 }
 
 function void
-ParseDatatypesFor(c_parse_result* Parser, program_datatypes* Datatypes, memory_arena* Memory)
+ParseDatatypes(c_parse_result* Parser, program_datatypes* Datatypes, memory_arena* Memory)
 {
   while (Parser->Valid && Remaining(&Parser->Tokens))
   {
@@ -1818,7 +1630,7 @@ ParseAllDatatypes(c_parse_result_cursor Files_in, memory_arena* Memory)
       ++ParserIndex)
   {
     c_parse_result* Parser = Files->Start+ParserIndex;
-    ParseDatatypesFor(Parser, &Result, Memory);
+    ParseDatatypes(Parser, &Result, Memory);
 
     Rewind(&Parser->Tokens);
   }
@@ -2962,27 +2774,6 @@ main(s32 ArgCount, const char** ArgStrings)
                     RequireToken(Parser, CTokenType_CloseParen);
                     RequireToken(Parser, CTokenType_CloseParen);
                     DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
-                  } break;
-
-                  case for_members_in:
-                  {
-                    RequireToken(Parser, CTokenType_OpenParen);
-
-                    counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
-                    struct_def* Target = GetStructByType(&Datatypes.Structs, DatatypeName);
-                    if (Target)
-                    {
-                      counted_string Code = ParseForMembers(Parser, Target, &Datatypes.Structs, Memory);
-                      counted_string OutfileName = GenerateOutfileNameFor(ToString(Directive), DatatypeName, Memory);
-                      RequireToken(Parser, CTokenType_CloseParen);
-                      RequireToken(Parser, CTokenType_CloseParen);
-                      DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
-                    }
-                    else
-                    {
-                      Parser->Valid = False;
-                      Error("Couldn't find matching struct %.*s", (s32)DatatypeName.Count, DatatypeName.Start);
-                    }
                   } break;
 
                   case for_all_datatypes:

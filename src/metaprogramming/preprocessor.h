@@ -146,7 +146,6 @@ enum metaprogramming_directive
 
   generate_cursor_deprecated,
 
-  for_members_in,
   d_union,
 
   enum_only,

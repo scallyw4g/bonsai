@@ -10,8 +10,6 @@
 
             case generate_cursor_deprecated: { Result = CSz("generate_cursor_deprecated"); } break;
 
-            case for_members_in: { Result = CSz("for_members_in"); } break;
-
             case d_union: { Result = CSz("d_union"); } break;
 
             case enum_only: { Result = CSz("enum_only"); } break;
