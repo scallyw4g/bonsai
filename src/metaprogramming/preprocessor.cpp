@@ -3,6 +3,9 @@
 
 #include <bonsai_types.h>
 
+#define InvalidDefaultWhileParsing(Parser, ErrorMessage) \
+    default: { OutputParsingError(Parser, Parser->Tokens.At, ErrorMessage); Assert(False); } break;
+
 function b32
 IsWhitespace(c_token_type Type)
 {
@@ -1107,47 +1110,6 @@ EatUnionDef(c_parse_result* Parser)
   return;
 }
 
-function void
-DumpCDeclStreamToConsole(c_decl_stream* Stream)
-{
-  for (c_decl_iterator Iter = Iterator(Stream);
-      IsValid(&Iter);
-      Advance(&Iter))
-  {
-    switch(Iter.At->Element.Type)
-    {
-      case type_c_decl_function:
-      {
-        switch(Iter.At->Element.c_decl_function.Type)
-        {
-          case type_c_decl_function_normal:
-          {
-            Log("  Function\n");
-          } break;
-          case type_c_decl_function_constructor:
-          {
-            Log("  Constructor\n");
-          } break;
-          case type_c_decl_function_destructor:
-          {
-            Log("  Destructor\n");
-          } break;
-          InvalidDefaultCase;
-        }
-      } break;
-
-      case type_c_decl_variable:
-      {
-        counted_string Type = Iter.At->Element.c_decl_variable.Type;
-        counted_string Name = Iter.At->Element.c_decl_variable.Name;
-        Log("  %.*s %.*s\n", Type.Count, Type.Start, Name.Count, Name.Start);
-      } break;
-
-      InvalidDefaultCase;
-    }
-  }
-}
-
 function struct_def
 StructDef(counted_string Name, counted_string Sourcefile)
 {
@@ -1183,9 +1145,6 @@ EatFunctionDecl(c_parse_result* Parser)
   return;
 }
 
-#define InvalidDefaultWhileParsing(Parser, ErrorMessage) \
-    default: { OutputParsingError(Parser, Parser->Tokens.At, ErrorMessage); Assert(False); } break;
-
 function b32
 IsCxxDefinitionKeyword(counted_string Value)
 {
@@ -1195,7 +1154,8 @@ IsCxxDefinitionKeyword(counted_string Value)
   return Result;
 }
 
-function struct_def ParseStructBody(c_parse_result* Parser, counted_string StructName, memory_arena* Memory);
+function struct_def
+ParseStructBody(c_parse_result* Parser, counted_string StructName, memory_arena* Memory);
 
 function c_decl
 ParseDeclaration(c_parse_result* Parser, counted_string StructName, memory_arena* Memory)
@@ -1336,6 +1296,47 @@ ParseDeclaration(c_parse_result* Parser, counted_string StructName, memory_arena
 }
 
 #if 0
+function void
+DumpCDeclStreamToConsole(c_decl_stream* Stream)
+{
+  for (c_decl_iterator Iter = Iterator(Stream);
+      IsValid(&Iter);
+      Advance(&Iter))
+  {
+    switch(Iter.At->Element.Type)
+    {
+      case type_c_decl_function:
+      {
+        switch(Iter.At->Element.c_decl_function.Type)
+        {
+          case type_c_decl_function_normal:
+          {
+            Log("  Function\n");
+          } break;
+          case type_c_decl_function_constructor:
+          {
+            Log("  Constructor\n");
+          } break;
+          case type_c_decl_function_destructor:
+          {
+            Log("  Destructor\n");
+          } break;
+          InvalidDefaultCase;
+        }
+      } break;
+
+      case type_c_decl_variable:
+      {
+        counted_string Type = Iter.At->Element.c_decl_variable.Type;
+        counted_string Name = Iter.At->Element.c_decl_variable.Name;
+        Log("  %.*s %.*s\n", Type.Count, Type.Start, Name.Count, Name.Start);
+      } break;
+
+      InvalidDefaultCase;
+    }
+  }
+}
+
 function void
 DumpStruct(struct_def* Struct)
 {
@@ -2161,11 +2162,6 @@ GetNameForCDecl(c_decl* Decl)
   return Result;
 }
 
-#define UnsetBitfield(type, Dest, Value) do { \
-  Assert( (Dest) & (Value) ); \
-  (Dest) = (type)((Dest) & ~(Value)); \
-} while (false)
-
 function counted_string
 Transform(meta_transform_op Transformations, counted_string Input, memory_arena* Memory)
 {
@@ -2181,7 +2177,6 @@ Transform(meta_transform_op Transformations, counted_string Input, memory_arena*
 
   return Result;
 }
-
 
 function counted_string
 Execute(meta_func* Func, counted_string ArgType, program_datatypes* Datatypes, meta_func_stream* FunctionDefs, memory_arena* Memory);
@@ -2335,7 +2330,7 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgName, c
                         {
                           counted_string Name = UnionMember->c_decl_variable.Type;
                           counted_string ParentStructName = Datatype->struct_def->Name;
-                          Error("Couldn't find struct type '%.*s' in union parent '%.*s'.", (u32)Name.Count, Name.Start, (u32)ParentStructName.Count, ParentStructName.Start);
+                          Warn("Couldn't find struct type '%.*s' in union parent '%.*s'.", (u32)Name.Count, Name.Start, (u32)ParentStructName.Count, ParentStructName.Start);
                         }
 
                       }
@@ -2427,109 +2422,6 @@ Execute(meta_func* Func, counted_string ArgType, program_datatypes* Datatypes, m
 {
   counted_string Result = Execute(Func->Name, Func->Body, Func->ArgName, ArgType, Datatypes, FunctionDefs, Memory);
   return Result;
-}
-
-function void
-DoMemberRelacementPatterns(string_builder* Builder, memory_arena* Memory, c_parse_result* BodyText, replacement_pattern* TypePattern = 0, replacement_pattern* NamePattern = 0)
-{
-  Rewind(&BodyText->Tokens);
-
-  if (TypePattern)
-  {
-    Assert(TypePattern->Match.Start);
-    Assert(TypePattern->Match.Count);
-  }
-
-  if (NamePattern)
-  {
-    Assert(NamePattern->Match.Start);
-    Assert(NamePattern->Match.Count);
-  }
-
-  while (Remaining(&BodyText->Tokens))
-  {
-    c_token MemberBodyToken = PopTokenRaw(BodyText);
-
-    if (MemberBodyToken.Type == CTokenType_String)
-    {
-      c_parse_result StringParse = TokenizeString(MemberBodyToken.Value, BodyText->Filename, Memory, True);
-      DoMemberRelacementPatterns(Builder, Memory, &StringParse, TypePattern, NamePattern);
-    }
-    else if (TypePattern && StringsMatch(MemberBodyToken.Value, TypePattern->Match))
-    {
-      Assert(TypePattern->Replace.Count);
-      Assert(TypePattern->Replace.Start);
-
-      Append(Builder, TypePattern->Replace);
-    }
-    else if (NamePattern && StringsMatch(MemberBodyToken.Value, NamePattern->Match))
-    {
-      Assert(NamePattern->Replace.Start);
-      Assert(NamePattern->Replace.Count);
-      Append(Builder, NamePattern->Replace);
-    }
-    else
-    {
-      Append(Builder, MemberBodyToken.Value);
-    }
-  }
-}
-
-function void
-DoStructReplacementPatterns(string_builder* OutputBuilder, c_parse_result* BodyText, replacement_pattern StructNamePattern, struct_def* Struct, memory_arena* Memory)
-{
-  Rewind(&BodyText->Tokens);
-  while (Remaining(&BodyText->Tokens))
-  {
-    c_token BodyToken = PopTokenRaw(BodyText);
-
-    if (BodyToken.Type == CTokenType_String)
-    {
-      c_parse_result StringParse = TokenizeString(BodyToken.Value, BodyText->Filename, Memory, True);
-      DoStructReplacementPatterns(OutputBuilder, &StringParse, StructNamePattern, Struct, Memory);
-    }
-    else if (StringsMatch(BodyToken.Value, StructNamePattern.Match))
-    {
-      Append(OutputBuilder, StructNamePattern.Replace);
-    }
-    else if (StringsMatch(BodyToken.Value, CSz("__")) &&
-             OptionalToken(BodyText, CTokenType_OpenParen))
-    {
-      counted_string TypePattern = RequireToken(BodyText, CTokenType_Identifier).Value;
-      RequireToken(BodyText, CTokenType_Comma);
-      counted_string NamePattern = RequireToken(BodyText, CTokenType_Identifier).Value;
-      RequireToken(BodyText, CTokenType_CloseParen);
-
-      replacement_pattern TypeReplacementPattern = {
-        .Match = TypePattern,
-      };
-
-      replacement_pattern NameReplacementPattern = {
-        .Match = NamePattern,
-      };
-
-      c_parse_result MemberBodyText_ = GetBodyTextForNextScope(BodyText);
-      c_parse_result* MemberBodyText = &MemberBodyText_;
-
-      ITERATE_OVER_AS(c_decl, &Struct->Fields)
-      {
-        c_decl* Member = GET_ELEMENT(c_declIter);
-        if (Member->Type == type_c_decl_variable)
-        {
-          counted_string MemberType = Member->c_decl_variable.Type;
-          counted_string MemberName = Member->c_decl_variable.Name;
-
-          TypeReplacementPattern.Replace = MemberType;
-          NameReplacementPattern.Replace = MemberName;
-          DoMemberRelacementPatterns(OutputBuilder, Memory, MemberBodyText, &TypeReplacementPattern, &NameReplacementPattern);
-        }
-      }
-    }
-    else
-    {
-      Append(OutputBuilder, BodyToken.Value);
-    }
-  }
 }
 
 function void

@@ -97,9 +97,6 @@ DebugFrameEnd(platform *Plat, server_state* ServerState)
     ui_style Style =  UiStyleFromLightestColor(V3(1));
     PushTableStart(UiGroup);
 
-#define ToggleBitfieldValue(Dest, Value) \
-      (Dest) = (Dest) & (Value) ?  ((u32)(Dest) & ~(u32)(Value)) : ((u32)(Dest) | (u32)(Value));
-
     if (Button(UiGroup, CS("PickedChunks"), (umm)"PickedChunks", &Style, Padding))
     {
       ToggleBitfieldValue(DebugState->UIType, DebugUIType_PickedChunks);

@@ -13,6 +13,13 @@
 
 #define GET_ELEMENT(I) (&(I).At->Element)
 
+#define UnsetBitfield(type, Dest, Value) do { \
+  Assert( (Dest) & (Value) ); \
+  (Dest) = (type)((Dest) & ~(Value)); \
+} while (false)
+
+#define ToggleBitfieldValue(Dest, Value) \
+      (Dest) = (Dest) & (Value) ?  ((u32)(Dest) & ~(u32)(Value)) : ((u32)(Dest) | (u32)(Value));
 
 #include <stdint.h>
 #include <cmath>
