@@ -1,8 +1,6 @@
 
-meta(generate_stream(counted_string))
-#include <metaprogramming/output/generate_stream_counted_string.h>
-meta(generate_cursor(counted_string))
-#include <metaprogramming/output/generate_cursor_counted_string.h>
+meta(stream_and_cursor(counted_string))
+#include <metaprogramming/output/stream_and_cursor_counted_string.h>
 
 struct tagged_counted_string_stream
 {

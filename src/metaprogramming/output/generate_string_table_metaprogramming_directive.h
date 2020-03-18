@@ -10,11 +10,9 @@
 
             case generate_cursor_deprecated: { Result = CSz("generate_cursor_deprecated"); } break;
 
-            case d_union: { Result = CSz("d_union"); } break;
-
             case enum_only: { Result = CSz("enum_only"); } break;
 
-            case member_is_or_contains_type: { Result = CSz("member_is_or_contains_type"); } break;
+            case d_union: { Result = CSz("d_union"); } break;
 
             case for_all_datatypes: { Result = CSz("for_all_datatypes"); } break;
 

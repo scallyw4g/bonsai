@@ -3468,6 +3468,158 @@
 
 
       
+        function void DebugPrint(counted_string_cursor S, u32 Depth)
+        {
+          DebugPrint("counted_string_cursor\n", Depth);
+          
+            DebugPrint("Start = ", Depth);
+            DebugPrint(S.Start, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("End = ", Depth);
+            DebugPrint(S.End, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("At = ", Depth);
+            DebugPrint(S.At, Depth+1);
+            DebugPrint("\n");
+
+        }
+
+
+      
+        function void DebugPrint(counted_string_cursor* S, u32 Depth)
+        {
+          if (S)
+          {
+            DebugPrint("counted_string_cursor\n", Depth);
+            
+              DebugPrint("Start = ", Depth);
+              DebugPrint(S->Start, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("End = ", Depth);
+              DebugPrint(S->End, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("At = ", Depth);
+              DebugPrint(S->At, Depth+1);
+              DebugPrint("\n");
+
+          }
+        }
+
+
+
+      
+        function void DebugPrint(counted_string_stream_chunk S, u32 Depth)
+        {
+          DebugPrint("counted_string_stream_chunk\n", Depth);
+          
+            DebugPrint("Element = ", Depth);
+            DebugPrint(S.Element, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Next = ", Depth);
+            DebugPrint(S.Next, Depth+1);
+            DebugPrint("\n");
+
+        }
+
+
+      
+        function void DebugPrint(counted_string_stream_chunk* S, u32 Depth)
+        {
+          if (S)
+          {
+            DebugPrint("counted_string_stream_chunk\n", Depth);
+            
+              DebugPrint("Element = ", Depth);
+              DebugPrint(S->Element, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Next = ", Depth);
+              DebugPrint(S->Next, Depth+1);
+              DebugPrint("\n");
+
+          }
+        }
+
+
+
+      
+        function void DebugPrint(counted_string_stream S, u32 Depth)
+        {
+          DebugPrint("counted_string_stream\n", Depth);
+          
+            DebugPrint("FirstChunk = ", Depth);
+            DebugPrint(S.FirstChunk, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("LastChunk = ", Depth);
+            DebugPrint(S.LastChunk, Depth+1);
+            DebugPrint("\n");
+
+        }
+
+
+      
+        function void DebugPrint(counted_string_stream* S, u32 Depth)
+        {
+          if (S)
+          {
+            DebugPrint("counted_string_stream\n", Depth);
+            
+              DebugPrint("FirstChunk = ", Depth);
+              DebugPrint(S->FirstChunk, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("LastChunk = ", Depth);
+              DebugPrint(S->LastChunk, Depth+1);
+              DebugPrint("\n");
+
+          }
+        }
+
+
+
+      
+        function void DebugPrint(counted_string_iterator S, u32 Depth)
+        {
+          DebugPrint("counted_string_iterator\n", Depth);
+          
+            DebugPrint("Stream = ", Depth);
+            DebugPrint(S.Stream, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("At = ", Depth);
+            DebugPrint(S.At, Depth+1);
+            DebugPrint("\n");
+
+        }
+
+
+      
+        function void DebugPrint(counted_string_iterator* S, u32 Depth)
+        {
+          if (S)
+          {
+            DebugPrint("counted_string_iterator\n", Depth);
+            
+              DebugPrint("Stream = ", Depth);
+              DebugPrint(S->Stream, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("At = ", Depth);
+              DebugPrint(S->At, Depth+1);
+              DebugPrint("\n");
+
+          }
+        }
+
+
+
+      
         function void DebugPrint(c_decl S, u32 Depth)
         {
           DebugPrint("c_decl\n", Depth);
@@ -3964,6 +4116,158 @@
 
 
       
+        function void DebugPrint(enum_def_cursor S, u32 Depth)
+        {
+          DebugPrint("enum_def_cursor\n", Depth);
+          
+            DebugPrint("Start = ", Depth);
+            DebugPrint(S.Start, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("End = ", Depth);
+            DebugPrint(S.End, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("At = ", Depth);
+            DebugPrint(S.At, Depth+1);
+            DebugPrint("\n");
+
+        }
+
+
+      
+        function void DebugPrint(enum_def_cursor* S, u32 Depth)
+        {
+          if (S)
+          {
+            DebugPrint("enum_def_cursor\n", Depth);
+            
+              DebugPrint("Start = ", Depth);
+              DebugPrint(S->Start, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("End = ", Depth);
+              DebugPrint(S->End, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("At = ", Depth);
+              DebugPrint(S->At, Depth+1);
+              DebugPrint("\n");
+
+          }
+        }
+
+
+
+      
+        function void DebugPrint(enum_def_stream_chunk S, u32 Depth)
+        {
+          DebugPrint("enum_def_stream_chunk\n", Depth);
+          
+            DebugPrint("Element = ", Depth);
+            DebugPrint(S.Element, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Next = ", Depth);
+            DebugPrint(S.Next, Depth+1);
+            DebugPrint("\n");
+
+        }
+
+
+      
+        function void DebugPrint(enum_def_stream_chunk* S, u32 Depth)
+        {
+          if (S)
+          {
+            DebugPrint("enum_def_stream_chunk\n", Depth);
+            
+              DebugPrint("Element = ", Depth);
+              DebugPrint(S->Element, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Next = ", Depth);
+              DebugPrint(S->Next, Depth+1);
+              DebugPrint("\n");
+
+          }
+        }
+
+
+
+      
+        function void DebugPrint(enum_def_stream S, u32 Depth)
+        {
+          DebugPrint("enum_def_stream\n", Depth);
+          
+            DebugPrint("FirstChunk = ", Depth);
+            DebugPrint(S.FirstChunk, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("LastChunk = ", Depth);
+            DebugPrint(S.LastChunk, Depth+1);
+            DebugPrint("\n");
+
+        }
+
+
+      
+        function void DebugPrint(enum_def_stream* S, u32 Depth)
+        {
+          if (S)
+          {
+            DebugPrint("enum_def_stream\n", Depth);
+            
+              DebugPrint("FirstChunk = ", Depth);
+              DebugPrint(S->FirstChunk, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("LastChunk = ", Depth);
+              DebugPrint(S->LastChunk, Depth+1);
+              DebugPrint("\n");
+
+          }
+        }
+
+
+
+      
+        function void DebugPrint(enum_def_iterator S, u32 Depth)
+        {
+          DebugPrint("enum_def_iterator\n", Depth);
+          
+            DebugPrint("Stream = ", Depth);
+            DebugPrint(S.Stream, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("At = ", Depth);
+            DebugPrint(S.At, Depth+1);
+            DebugPrint("\n");
+
+        }
+
+
+      
+        function void DebugPrint(enum_def_iterator* S, u32 Depth)
+        {
+          if (S)
+          {
+            DebugPrint("enum_def_iterator\n", Depth);
+            
+              DebugPrint("Stream = ", Depth);
+              DebugPrint(S->Stream, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("At = ", Depth);
+              DebugPrint(S->At, Depth+1);
+              DebugPrint("\n");
+
+          }
+        }
+
+
+
+      
         function void DebugPrint(c_decl_cursor S, u32 Depth)
         {
           DebugPrint("c_decl_cursor\n", Depth);
@@ -4361,6 +4665,158 @@
           if (S)
           {
             DebugPrint("counted_string_iterator\n", Depth);
+            
+              DebugPrint("Stream = ", Depth);
+              DebugPrint(S->Stream, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("At = ", Depth);
+              DebugPrint(S->At, Depth+1);
+              DebugPrint("\n");
+
+          }
+        }
+
+
+
+      
+        function void DebugPrint(struct_def_cursor S, u32 Depth)
+        {
+          DebugPrint("struct_def_cursor\n", Depth);
+          
+            DebugPrint("Start = ", Depth);
+            DebugPrint(S.Start, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("End = ", Depth);
+            DebugPrint(S.End, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("At = ", Depth);
+            DebugPrint(S.At, Depth+1);
+            DebugPrint("\n");
+
+        }
+
+
+      
+        function void DebugPrint(struct_def_cursor* S, u32 Depth)
+        {
+          if (S)
+          {
+            DebugPrint("struct_def_cursor\n", Depth);
+            
+              DebugPrint("Start = ", Depth);
+              DebugPrint(S->Start, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("End = ", Depth);
+              DebugPrint(S->End, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("At = ", Depth);
+              DebugPrint(S->At, Depth+1);
+              DebugPrint("\n");
+
+          }
+        }
+
+
+
+      
+        function void DebugPrint(struct_def_stream_chunk S, u32 Depth)
+        {
+          DebugPrint("struct_def_stream_chunk\n", Depth);
+          
+            DebugPrint("Element = ", Depth);
+            DebugPrint(S.Element, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Next = ", Depth);
+            DebugPrint(S.Next, Depth+1);
+            DebugPrint("\n");
+
+        }
+
+
+      
+        function void DebugPrint(struct_def_stream_chunk* S, u32 Depth)
+        {
+          if (S)
+          {
+            DebugPrint("struct_def_stream_chunk\n", Depth);
+            
+              DebugPrint("Element = ", Depth);
+              DebugPrint(S->Element, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("Next = ", Depth);
+              DebugPrint(S->Next, Depth+1);
+              DebugPrint("\n");
+
+          }
+        }
+
+
+
+      
+        function void DebugPrint(struct_def_stream S, u32 Depth)
+        {
+          DebugPrint("struct_def_stream\n", Depth);
+          
+            DebugPrint("FirstChunk = ", Depth);
+            DebugPrint(S.FirstChunk, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("LastChunk = ", Depth);
+            DebugPrint(S.LastChunk, Depth+1);
+            DebugPrint("\n");
+
+        }
+
+
+      
+        function void DebugPrint(struct_def_stream* S, u32 Depth)
+        {
+          if (S)
+          {
+            DebugPrint("struct_def_stream\n", Depth);
+            
+              DebugPrint("FirstChunk = ", Depth);
+              DebugPrint(S->FirstChunk, Depth+1);
+              DebugPrint("\n");
+
+              DebugPrint("LastChunk = ", Depth);
+              DebugPrint(S->LastChunk, Depth+1);
+              DebugPrint("\n");
+
+          }
+        }
+
+
+
+      
+        function void DebugPrint(struct_def_iterator S, u32 Depth)
+        {
+          DebugPrint("struct_def_iterator\n", Depth);
+          
+            DebugPrint("Stream = ", Depth);
+            DebugPrint(S.Stream, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("At = ", Depth);
+            DebugPrint(S.At, Depth+1);
+            DebugPrint("\n");
+
+        }
+
+
+      
+        function void DebugPrint(struct_def_iterator* S, u32 Depth)
+        {
+          if (S)
+          {
+            DebugPrint("struct_def_iterator\n", Depth);
             
               DebugPrint("Stream = ", Depth);
               DebugPrint(S->Stream, Depth+1);

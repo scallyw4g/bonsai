@@ -586,7 +586,7 @@ OutputParsingError(c_parse_result* Parser, c_token* ErrorToken, c_token Expected
     {
       Error("Determining where the error occured");
       Log("%s:%u:0\n", __FILE__, __LINE__);
-      Log("Error was : %.*s", ErrorString.Count, ErrorString.Start);
+      Log("Error was : %.*s\n", ErrorString.Count, ErrorString.Start);
     }
 
   }
@@ -2183,186 +2183,216 @@ Transform(meta_transform_op Transformations, counted_string Input, memory_arena*
 }
 
 function counted_string
-Execute(meta_func* Func, counted_string ArgType, program_datatypes* Datatypes, memory_arena* Memory)
+Execute(meta_func* Func, counted_string ArgType, program_datatypes* Datatypes, meta_func_stream* FunctionDefs, memory_arena* Memory)
 {
   datatype Data = GetDatatypeByName(Datatypes, ArgType);
   datatype* Datatype = &Data;
 
-  Rewind(&Func->Body.Tokens);
+  c_parse_result Scope = Func->Body;
+  Rewind(&Scope.Tokens);
 
   string_builder OutputBuilder = {};
-  while (Remaining(&Func->Body.Tokens))
+  while (Remaining(&Scope.Tokens))
   {
-    c_token BodyToken = PopTokenRaw(&Func->Body);
+    c_token BodyToken = PopTokenRaw(&Scope);
 
-    if ( BodyToken.Type == CTokenType_OpenParen &&
-         OptionalToken(&Func->Body, CToken(Func->ArgName)) )
+    if ( BodyToken.Type == CTokenType_OpenParen )
     {
-      RequireToken(&Func->Body, CTokenType_Dot);
-      meta_arg_operator Operator = MetaArgOperator( RequireToken(&Func->Body, CTokenType_Identifier).Value);
-
-      meta_transform_op Transformations = meta_transform_op_noop;
-
-      while (OptionalToken(&Func->Body, CTokenType_Dot))
+      if ( OptionalToken(&Scope, CToken(Func->ArgName)) )
       {
-        meta_transform_op NextOp = MetaTransformOp(RequireToken(&Func->Body, CTokenType_Identifier).Value);
-        if (NextOp != meta_transform_op_noop)
-        {
-          Transformations = (meta_transform_op)(Transformations | NextOp);
-        }
-        else
-        {
-          Error("Parsing transform ops.");
-        }
-      }
+        RequireToken(&Scope, CTokenType_Dot);
+        meta_arg_operator Operator = MetaArgOperator( RequireToken(&Scope, CTokenType_Identifier).Value);
 
-      switch (Operator)
-      {
-        case meta_arg_operator_noop:
-        {
-          Error("Invalid operator encountered.");
-        } break;
+        meta_transform_op Transformations = meta_transform_op_noop;
 
-        case type:
+        while (OptionalToken(&Scope, CTokenType_Dot))
         {
-          if (Datatype->Type == type_struct_def)
+          meta_transform_op NextOp = MetaTransformOp(RequireToken(&Scope, CTokenType_Identifier).Value);
+          if (NextOp != meta_transform_op_noop)
           {
-            counted_string Name = Transform(Transformations, Datatype->struct_def->Name, Memory);
-            Append(&OutputBuilder, Name);
+            Transformations = (meta_transform_op)(Transformations | NextOp);
           }
           else
           {
-            Error("Calling .type on an enum datatype is forbidden.");
+            Error("Parsing transform ops.");
           }
-        } break;
+        }
 
-        case name:
+        switch (Operator)
         {
-          if (Datatype->Type == type_enum_def)
+          case meta_arg_operator_noop:
           {
-            counted_string Name = Transform(Transformations, Datatype->enum_def->Name, Memory);
-            Append(&OutputBuilder, Name);
-          }
-          else
+            Error("Invalid operator encountered.");
+          } break;
+
+          case type:
           {
-            Assert(Datatype->Type == type_struct_def);
-            counted_string Name = Transform(Transformations, Datatype->struct_def->Name, Memory);
-            Append(&OutputBuilder, Name);
-          }
-        } break;
-
-        case map_members:
-        {
-          RequireToken(&Func->Body, CTokenType_OpenParen);
-          counted_string EnumValueMatch  = RequireToken(&Func->Body, CTokenType_Identifier).Value;
-          RequireToken(&Func->Body, CTokenType_CloseParen);
-
-          counted_string ContainingConstraint = {};
-          if ( OptionalToken(&Func->Body, CTokenType_Dot) )
-          {
-            RequireToken(&Func->Body, CToken(CSz("containing")));
-            RequireToken(&Func->Body, CTokenType_OpenParen);
-            ContainingConstraint = RequireToken(&Func->Body, CTokenType_Identifier).Value;
-            RequireToken(&Func->Body, CTokenType_CloseParen);
-          }
-
-          c_parse_result NextScope = GetBodyTextForNextScope(&Func->Body);
-
-          if (Datatype->Type == type_struct_def)
-          {
-            ITERATE_OVER(c_decl, &Datatype->struct_def->Fields)
+            if (Datatype->Type == type_struct_def)
             {
-              c_decl* Member = GET_ELEMENT(Iter);
+              counted_string Name = Transform(Transformations, Datatype->struct_def->Name, Memory);
+              Append(&OutputBuilder, Name);
+            }
+            else
+            {
+              Error("Calling .type on an enum datatype is forbidden.");
+            }
+          } break;
 
-              counted_string MemberName = GetNameForCDecl(Member);
-              counted_string MemberType = CSz("TODO(Jesse): How do we get the type?");
+          case name:
+          {
+            if (Datatype->Type == type_enum_def)
+            {
+              counted_string Name = Transform(Transformations, Datatype->enum_def->Name, Memory);
+              Append(&OutputBuilder, Name);
+            }
+            else
+            {
+              Assert(Datatype->Type == type_struct_def);
+              counted_string Name = Transform(Transformations, Datatype->struct_def->Name, Memory);
+              Append(&OutputBuilder, Name);
+            }
+          } break;
 
-              switch (Member->Type)
+          case map_members:
+          {
+            RequireToken(&Scope, CTokenType_OpenParen);
+            counted_string EnumValueMatch  = RequireToken(&Scope, CTokenType_Identifier).Value;
+            RequireToken(&Scope, CTokenType_CloseParen);
+
+            counted_string ContainingConstraint = {};
+            if ( OptionalToken(&Scope, CTokenType_Dot) )
+            {
+              RequireToken(&Scope, CToken(CSz("containing")));
+              RequireToken(&Scope, CTokenType_OpenParen);
+              ContainingConstraint = RequireToken(&Scope, CTokenType_Identifier).Value;
+              RequireToken(&Scope, CTokenType_CloseParen);
+            }
+
+            c_parse_result NextScope = GetBodyTextForNextScope(&Scope);
+
+            if (Datatype->Type == type_struct_def)
+            {
+              ITERATE_OVER(c_decl, &Datatype->struct_def->Fields)
               {
-                case type_c_decl_variable:
-                {
-                  if ( ContainingConstraint.Count &&
-                       !StringsMatch(Member->c_decl_variable.Type, ContainingConstraint) )
-                  {
-                    // Containing constraint failed
-                  }
-                  else
-                  {
-                    ReplaceValues(&OutputBuilder, &NextScope, EnumValueMatch, MemberType, MemberName, Memory);
-                  }
+                c_decl* Member = GET_ELEMENT(Iter);
 
-                } break;
+                counted_string MemberName = GetNameForCDecl(Member);
+                counted_string MemberType = CSz("TODO(Jesse): How do we get the type?");
 
-                case type_c_decl_union:
+                switch (Member->Type)
                 {
-                  for (c_decl_iterator UnionMemberIter = Iterator(&Member->c_decl_union.Body.Fields);
-                      IsValid(&UnionMemberIter);
-                      Advance(&UnionMemberIter))
+                  case type_c_decl_variable:
                   {
-                    c_decl* UnionMember = GET_ELEMENT(UnionMemberIter);
-                    if (UnionMember->Type == type_c_decl_variable)
+                    if ( ContainingConstraint.Count &&
+                         !StringsMatch(Member->c_decl_variable.Type, ContainingConstraint) )
                     {
-                      struct_def* Struct = GetStructByType(&Datatypes->Structs, UnionMember->c_decl_variable.Type);
-                      if (Struct)
-                      {
-                        if (ContainingConstraint.Count && HasMemberOfType(Struct, ContainingConstraint))
-                        {
-                          ReplaceValues(&OutputBuilder, &NextScope, EnumValueMatch, Struct->Name, Struct->Name, Memory);
-                        }
-                      }
-                      else
-                      {
-                        counted_string Name = UnionMember->c_decl_variable.Name;
-                        Error("Couldn't find struct type %*.s", (u32)Name.Count, Name.Start);
-                      }
-
+                      // Containing constraint failed
                     }
                     else
                     {
-                      Error("Nested structs/unions and function pointers unsupported.");
+                      ReplaceValues(&OutputBuilder, &NextScope, EnumValueMatch, MemberType, MemberName, Memory);
                     }
-                  }
-                } break;
 
-                InvalidDefaultCase;
+                  } break;
+
+                  case type_c_decl_union:
+                  {
+                    for (c_decl_iterator UnionMemberIter = Iterator(&Member->c_decl_union.Body.Fields);
+                        IsValid(&UnionMemberIter);
+                        Advance(&UnionMemberIter))
+                    {
+                      c_decl* UnionMember = GET_ELEMENT(UnionMemberIter);
+                      if (UnionMember->Type == type_c_decl_variable)
+                      {
+                        struct_def* Struct = GetStructByType(&Datatypes->Structs, UnionMember->c_decl_variable.Type);
+                        if (Struct)
+                        {
+                          if (ContainingConstraint.Count && HasMemberOfType(Struct, ContainingConstraint))
+                          {
+                            ReplaceValues(&OutputBuilder, &NextScope, EnumValueMatch, Struct->Name, Struct->Name, Memory);
+                          }
+                        }
+                        else
+                        {
+                          counted_string Name = UnionMember->c_decl_variable.Name;
+                          Error("Couldn't find struct type %*.s", (u32)Name.Count, Name.Start);
+                        }
+
+                      }
+                      else
+                      {
+                        Error("Nested structs/unions and function pointers unsupported.");
+                      }
+                    }
+                  } break;
+
+                  InvalidDefaultCase;
+                }
+
+                continue;
+              }
+            }
+            else
+            {
+              Error("Called map_members on a datatype that wasn't a struct - %.*s", (u32)Datatype->enum_def->Name.Count, Datatype->enum_def->Name.Start);
+            }
+
+          } break;
+
+          case map_values:
+          {
+            RequireToken(&Scope, CTokenType_OpenParen);
+            counted_string EnumValueMatch  = RequireToken(&Scope, CTokenType_Identifier).Value;
+            RequireToken(&Scope, CTokenType_CloseParen);
+            c_parse_result NextScope = GetBodyTextForNextScope(&Scope);
+
+            if (Datatype->Type == type_enum_def)
+            {
+              ITERATE_OVER(enum_field, &Datatype->enum_def->Fields)
+              {
+                enum_field* Member = GET_ELEMENT(Iter);
+                ReplaceValues(&OutputBuilder, &NextScope, EnumValueMatch, CSz(""), Member->Name, Memory);
+                continue;
               }
 
-              continue;
             }
-          }
-          else
-          {
-            Error("Called map_members on a datatype that wasn't a struct - %.*s", (u32)Datatype->enum_def->Name.Count, Datatype->enum_def->Name.Start);
-          }
-
-        } break;
-
-        case map_values:
-        {
-          RequireToken(&Func->Body, CTokenType_OpenParen);
-          counted_string EnumValueMatch  = RequireToken(&Func->Body, CTokenType_Identifier).Value;
-          RequireToken(&Func->Body, CTokenType_CloseParen);
-          c_parse_result NextScope = GetBodyTextForNextScope(&Func->Body);
-
-          if (Datatype->Type == type_enum_def)
-          {
-            ITERATE_OVER(enum_field, &Datatype->enum_def->Fields)
+            else
             {
-              enum_field* Member = GET_ELEMENT(Iter);
-              ReplaceValues(&OutputBuilder, &NextScope, EnumValueMatch, CSz(""), Member->Name, Memory);
-              continue;
+              Error("Called map_values on a datatype that wasn't an enum - %.*s", (u32)Datatype->struct_def->Name.Count, Datatype->struct_def->Name.Start);
             }
 
+          } break;
+        }
+
+        RequireToken(&Scope, CTokenType_CloseParen);
+      }
+      else
+      {
+        meta_func* NestedFunc = StreamContains( FunctionDefs, PeekToken(&Scope).Value );
+        if (NestedFunc)
+        {
+          RequireToken(&Scope, CToken(NestedFunc->Name));
+
+          RequireToken(&Scope, CTokenType_OpenParen);
+          RequireToken(&Scope, CToken(Func->ArgName));
+          RequireToken(&Scope, CTokenType_CloseParen);
+          RequireToken(&Scope, CTokenType_CloseParen);
+
+          if (!StringsMatch(NestedFunc->Name, Func->Name))
+          {
+            counted_string NestedCode = Execute(NestedFunc, ArgType, Datatypes, FunctionDefs, Memory);
+            Append(&OutputBuilder, NestedCode);
           }
           else
           {
-            Error("Called map_values on a datatype that wasn't an enum - %.*s", (u32)Datatype->struct_def->Name.Count, Datatype->struct_def->Name.Start);
+            Error("Recursive function calls not supported.");
           }
-
-        } break;
+        }
+        else
+        {
+          Append(&OutputBuilder, BodyToken.Value);
+        }
       }
-
-      RequireToken(&Func->Body, CTokenType_CloseParen);
     }
     else
     {
@@ -2667,7 +2697,7 @@ main(s32 ArgCount, const char** ArgStrings)
 
                   RequireToken(Parser, CTokenType_OpenParen);
                   counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
-                  counted_string Code = Execute(Func, DatatypeName, &Datatypes, Memory);
+                  counted_string Code = Execute(Func, DatatypeName, &Datatypes, &FunctionDefs, Memory);
 
                   RequireToken(Parser, CTokenType_CloseParen);
                   RequireToken(Parser, CTokenType_CloseParen);
@@ -2708,7 +2738,7 @@ main(s32 ArgCount, const char** ArgStrings)
                         .Body = Body,
                       };
 
-                      counted_string Code = Execute(&Func, ArgType, &Datatypes, Memory);
+                      counted_string Code = Execute(&Func, ArgType, &Datatypes, &FunctionDefs, Memory);
 
                       RequireToken(Parser, CTokenType_CloseParen);
                       if (Code.Count)

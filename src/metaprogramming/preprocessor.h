@@ -134,6 +134,23 @@ meta(
   }
 )
 
+meta(
+  func string_and_value_tables(Def)
+  {
+    ( generate_string_table(Def) )
+    ( generate_value_table(Def) )
+  }
+)
+
+meta(
+  func stream_and_cursor(Def)
+  {
+    ( generate_cursor(Def) )
+    ( generate_stream(Def) )
+  }
+)
+
+
 enum d_union_flags
 {
   d_union_flag_none,
@@ -143,23 +160,17 @@ enum d_union_flags
 enum metaprogramming_directive
 {
   meta_directive_noop,
-
   generate_cursor_deprecated,
+  enum_only,
 
   d_union,
-
-  enum_only,
-  member_is_or_contains_type,
 
   for_all_datatypes,
   named_list,
   func,
 };
-meta(generate_string_table(metaprogramming_directive))
-#include <metaprogramming/output/generate_string_table_metaprogramming_directive.h>
-
-meta(generate_value_table(metaprogramming_directive))
-#include <metaprogramming/output/generate_value_table_metaprogramming_directive.h>
+meta( string_and_value_tables(metaprogramming_directive) )
+#include <metaprogramming/output/string_and_value_tables_metaprogramming_directive.h>
 
 
 enum meta_arg_operator
@@ -269,11 +280,8 @@ struct struct_def
   counted_string DefinedInFile;
   c_decl_stream Fields; // TODO(Jesse id: 159, tags: immediate, cleanup) Rename to Members
 };
-meta(generate_stream(struct_def))
-#include <metaprogramming/output/generate_stream_struct_def.h>
-
-meta(generate_cursor(struct_def))
-#include <metaprogramming/output/generate_cursor_struct_def.h>
+meta(stream_and_cursor(struct_def))
+#include <metaprogramming/output/stream_and_cursor_struct_def.h>
 
 struct c_decl_union
 {
@@ -321,10 +329,8 @@ struct enum_def
   counted_string Name;
   enum_field_stream Fields;
 };
-meta(generate_stream(enum_def))
-#include <metaprogramming/output/generate_stream_enum_def.h>
-meta(generate_cursor(enum_def))
-#include <metaprogramming/output/generate_cursor_enum_def.h>
+meta(stream_and_cursor(enum_def))
+#include <metaprogramming/output/stream_and_cursor_enum_def.h>
 
 
 
