@@ -2628,10 +2628,6 @@
             DebugPrint(S.Name, Depth+1);
             DebugPrint("\n");
 
-            DebugPrint("ArgType = ", Depth);
-            DebugPrint(S.ArgType, Depth+1);
-            DebugPrint("\n");
-
             DebugPrint("ArgName = ", Depth);
             DebugPrint(S.ArgName, Depth+1);
             DebugPrint("\n");
@@ -2652,10 +2648,6 @@
             
               DebugPrint("Name = ", Depth);
               DebugPrint(S->Name, Depth+1);
-              DebugPrint("\n");
-
-              DebugPrint("ArgType = ", Depth);
-              DebugPrint(S->ArgType, Depth+1);
               DebugPrint("\n");
 
               DebugPrint("ArgName = ", Depth);

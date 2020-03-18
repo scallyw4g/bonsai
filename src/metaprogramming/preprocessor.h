@@ -1,18 +1,18 @@
 meta(
-  func generate_cursor(arg_type_struct StructType)
+  func generate_cursor(Type)
   {
-    struct (StructType.name)_cursor
+    struct (Type.name)_cursor
     {
-      (StructType.name)* Start;
-      (StructType.name)* End;
-      (StructType.name)* At;
+      (Type.name)* Start;
+      (Type.name)* End;
+      (Type.name)* At;
     };
 
-    function (StructType.name)_cursor
-    (StructType.name.to_capital_case)Cursor(umm ElementCount, memory_arena* Memory)
+    function (Type.name)_cursor
+    (Type.name.to_capital_case)Cursor(umm ElementCount, memory_arena* Memory)
     {
-      (StructType.name)* Start = ((StructType.name)*)PushStruct(Memory, sizeof( (StructType.name) ), 1, 1);
-      (StructType.name)_cursor Result = {
+      (Type.name)* Start = ((Type.name)*)PushStruct(Memory, sizeof( (Type.name) ), 1, 1);
+      (Type.name)_cursor Result = {
         .Start = Start,
         .End = Start+ElementCount,
         .At = Start,
@@ -23,7 +23,7 @@ meta(
 )
 
 meta(
-  func generate_string_table(arg_type_enum EnumType)
+  func generate_string_table(EnumType)
   {
     function counted_string
     ToString( (EnumType.name) Type)
@@ -44,7 +44,7 @@ meta(
 )
 
 meta(
-  func generate_value_table(arg_type_enum EnumType)
+  func generate_value_table(EnumType)
   {
     function (EnumType.name)
     (EnumType.name.to_capital_case)(counted_string S)
@@ -64,24 +64,24 @@ meta(
 )
 
 meta(
-  func generate_stream(arg_type_struct StructType)
+  func generate_stream(Type)
   {
-    struct (StructType.name)_stream_chunk
+    struct (Type.name)_stream_chunk
     {
-      (StructType.name) Element;
-      (StructType.name)_stream_chunk* Next;
+      (Type.name) Element;
+      (Type.name)_stream_chunk* Next;
     };
 
-    struct (StructType.name)_stream
+    struct (Type.name)_stream
     {
-      (StructType.name)_stream_chunk* FirstChunk;
-      (StructType.name)_stream_chunk* LastChunk;
+      (Type.name)_stream_chunk* FirstChunk;
+      (Type.name)_stream_chunk* LastChunk;
     };
 
     function void
-    Push((StructType.name)_stream* Stream, (StructType.name) Element, memory_arena* Memory)
+    Push((Type.name)_stream* Stream, (Type.name) Element, memory_arena* Memory)
     {
-      (StructType.name)_stream_chunk* NextChunk = ((StructType.name)_stream_chunk*)PushStruct(Memory, sizeof( (StructType.name)_stream_chunk ), 1, 1);
+      (Type.name)_stream_chunk* NextChunk = ((Type.name)_stream_chunk*)PushStruct(Memory, sizeof( (Type.name)_stream_chunk ), 1, 1);
       NextChunk->Element = Element;
 
       if (!Stream->FirstChunk)
@@ -102,16 +102,16 @@ meta(
       return;
     }
 
-    struct (StructType.name)_iterator
+    struct (Type.name)_iterator
     {
-      (StructType.name)_stream* Stream;
-      (StructType.name)_stream_chunk* At;
+      (Type.name)_stream* Stream;
+      (Type.name)_stream_chunk* At;
     };
 
-    function (StructType.name)_iterator
-    Iterator((StructType.name)_stream* Stream)
+    function (Type.name)_iterator
+    Iterator((Type.name)_stream* Stream)
     {
-      (StructType.name)_iterator Iterator = {
+      (Type.name)_iterator Iterator = {
         .Stream = Stream,
         .At = Stream->FirstChunk
       };
@@ -119,14 +119,14 @@ meta(
     }
 
     function b32
-    IsValid((StructType.name)_iterator* Iter)
+    IsValid((Type.name)_iterator* Iter)
     {
       b32 Result = Iter->At != 0;
       return Result;
     }
 
     function void
-    Advance((StructType.name)_iterator* Iter)
+    Advance((Type.name)_iterator* Iter)
     {
       Iter->At = Iter->At->Next;
     }
@@ -392,22 +392,9 @@ meta(generate_cursor(c_parse_result))
 
 
 
-enum meta_func_arg_type
-{
-  arg_type_noop,
-
-  arg_type_enum,
-  arg_type_struct,
-};
-meta(generate_string_table(meta_func_arg_type))
-#include <metaprogramming/output/generate_string_table_meta_func_arg_type.h>
-meta(generate_value_table(meta_func_arg_type))
-#include <metaprogramming/output/generate_value_table_meta_func_arg_type.h>
-
 struct meta_func
 {
   counted_string Name;
-  meta_func_arg_type ArgType;
   counted_string ArgName;
   c_parse_result Body;
 };

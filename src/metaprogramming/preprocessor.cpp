@@ -2455,6 +2455,14 @@ Evaluate(meta_func* Func, datatype* Datatype, memory_arena* Memory)
   return Result;
 }
 
+function counted_string
+Execute(meta_func* Func, counted_string ArgType, program_datatypes* Datatypes, memory_arena* Memory)
+{
+  datatype Data = GetDatatypeByName(Datatypes, ArgType);
+  counted_string Code = Evaluate(Func, &Data, Memory);
+  return Code;
+}
+
 function void
 DoMemberRelacementPatterns(string_builder* Builder, memory_arena* Memory, c_parse_result* BodyText, replacement_pattern* TypePattern = 0, replacement_pattern* NamePattern = 0)
 {
@@ -2745,17 +2753,17 @@ main(s32 ArgCount, const char** ArgStrings)
                 if (Func)
                 {
                   Info("Calling function : %.*s", (u32)Func->Name.Count, Func->Name.Start);
+
                   RequireToken(Parser, CTokenType_OpenParen);
                   counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
+                  counted_string Code = Execute(Func, DatatypeName, &Datatypes, Memory);
 
-                  datatype Data = GetDatatypeByName(&Datatypes, DatatypeName);
-                  counted_string Code = Evaluate(Func, &Data, Memory);
+                  RequireToken(Parser, CTokenType_CloseParen);
+                  RequireToken(Parser, CTokenType_CloseParen);
 
                   if (Code.Count)
                   {
                     counted_string OutfileName = GenerateOutfileNameFor(Func->Name, DatatypeName, Memory);
-                    RequireToken(Parser, CTokenType_CloseParen);
-                    RequireToken(Parser, CTokenType_CloseParen);
                     DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
                   }
                   else
@@ -2783,14 +2791,13 @@ main(s32 ArgCount, const char** ArgStrings)
 
                       c_parse_result Body = GetBodyTextForNextScope(Parser);
 
-                      datatype Data = GetDatatypeByName(&Datatypes, ArgType);
-
                       meta_func Func = {
                         .Name = CSz("anonymous_function"),
                         .ArgName = ArgName,
                         .Body = Body,
                       };
-                      counted_string Code = Evaluate(&Func, &Data, Memory);
+
+                      counted_string Code = Execute(&Func, ArgType, &Datatypes, Memory);
 
                       RequireToken(Parser, CTokenType_CloseParen);
                       if (Code.Count)
@@ -2807,20 +2814,12 @@ main(s32 ArgCount, const char** ArgStrings)
                     {
                       counted_string FuncName = RequireToken(Parser, CTokenType_Identifier).Value;
                       RequireToken(Parser, CTokenType_OpenParen);
-                      meta_func_arg_type ArgType = MetaFuncArgType( RequireToken(Parser, CTokenType_Identifier).Value );
                       counted_string ArgName = RequireToken(Parser, CTokenType_Identifier).Value;
                       RequireToken(Parser, CTokenType_CloseParen);
                       c_parse_result Body = GetBodyTextForNextScope(Parser);
 
-                      if (ArgType == arg_type_noop)
-                      {
-                        /* OutputParsingError(); */
-                        Error("Function parse error");
-                      }
-
                       meta_func Func = {
                         .Name = FuncName,
-                        .ArgType = ArgType,
                         .ArgName = ArgName,
                         .Body = Body,
                       };

@@ -259,18 +259,6 @@ SearchForProjectRoot(void)
   return Result;
 }
 
-meta(
-  func clear_clicked(arg_type_struct Struct)
-  {
-    (
-      Struct.map_members (Member)
-      {
-        Input->(Member.name).Clicked = False;
-      }
-    )
-  }
-)
-
 function void
 ClearClickedFlags(input *Input)
 {
