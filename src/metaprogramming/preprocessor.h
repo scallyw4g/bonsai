@@ -160,12 +160,13 @@ enum d_union_flags
 enum metaprogramming_directive
 {
   meta_directive_noop,
+
   generate_cursor_deprecated,
   enum_only,
 
   d_union,
 
-  for_all_datatypes,
+  for_datatypes,
   named_list,
   func,
 };

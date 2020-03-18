@@ -2182,13 +2182,16 @@ Transform(meta_transform_op Transformations, counted_string Input, memory_arena*
   return Result;
 }
 
+
 function counted_string
-Execute(meta_func* Func, counted_string ArgType, program_datatypes* Datatypes, meta_func_stream* FunctionDefs, memory_arena* Memory)
+Execute(meta_func* Func, counted_string ArgType, program_datatypes* Datatypes, meta_func_stream* FunctionDefs, memory_arena* Memory);
+
+function counted_string
+Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgName, counted_string ArgType, program_datatypes* Datatypes, meta_func_stream* FunctionDefs, memory_arena* Memory)
 {
   datatype Data = GetDatatypeByName(Datatypes, ArgType);
   datatype* Datatype = &Data;
 
-  c_parse_result Scope = Func->Body;
   Rewind(&Scope.Tokens);
 
   string_builder OutputBuilder = {};
@@ -2196,9 +2199,15 @@ Execute(meta_func* Func, counted_string ArgType, program_datatypes* Datatypes, m
   {
     c_token BodyToken = PopTokenRaw(&Scope);
 
-    if ( BodyToken.Type == CTokenType_OpenParen )
+    if ( BodyToken.Type == CTokenType_String )
     {
-      if ( OptionalToken(&Scope, CToken(Func->ArgName)) )
+      c_parse_result StringParse = TokenizeString(BodyToken.Value, Scope.Filename, Memory, True);
+      counted_string Code = Execute(FuncName, StringParse, ArgName, ArgType, Datatypes, FunctionDefs, Memory);
+      Append(&OutputBuilder, Code);
+    }
+    else if ( BodyToken.Type == CTokenType_OpenParen )
+    {
+      if ( OptionalToken(&Scope, CToken(ArgName)) )
       {
         RequireToken(&Scope, CTokenType_Dot);
         meta_arg_operator Operator = MetaArgOperator( RequireToken(&Scope, CTokenType_Identifier).Value);
@@ -2281,7 +2290,17 @@ Execute(meta_func* Func, counted_string ArgType, program_datatypes* Datatypes, m
 
                 switch (Member->Type)
                 {
+                  case type_c_decl_noop:
+                  {
+                    InvalidCodePath();
+                  } break;
+
+                  case type_c_decl_function:
+                  {
+                  } break;
+
                   case type_c_decl_variable:
+
                   {
                     if ( ContainingConstraint.Count &&
                          !StringsMatch(Member->c_decl_variable.Type, ContainingConstraint) )
@@ -2314,8 +2333,9 @@ Execute(meta_func* Func, counted_string ArgType, program_datatypes* Datatypes, m
                         }
                         else
                         {
-                          counted_string Name = UnionMember->c_decl_variable.Name;
-                          Error("Couldn't find struct type %*.s", (u32)Name.Count, Name.Start);
+                          counted_string Name = UnionMember->c_decl_variable.Type;
+                          counted_string ParentStructName = Datatype->struct_def->Name;
+                          Error("Couldn't find struct type '%.*s' in union parent '%.*s'.", (u32)Name.Count, Name.Start, (u32)ParentStructName.Count, ParentStructName.Start);
                         }
 
                       }
@@ -2325,8 +2345,6 @@ Execute(meta_func* Func, counted_string ArgType, program_datatypes* Datatypes, m
                       }
                     }
                   } break;
-
-                  InvalidDefaultCase;
                 }
 
                 continue;
@@ -2374,11 +2392,11 @@ Execute(meta_func* Func, counted_string ArgType, program_datatypes* Datatypes, m
           RequireToken(&Scope, CToken(NestedFunc->Name));
 
           RequireToken(&Scope, CTokenType_OpenParen);
-          RequireToken(&Scope, CToken(Func->ArgName));
+          RequireToken(&Scope, CToken(ArgName));
           RequireToken(&Scope, CTokenType_CloseParen);
           RequireToken(&Scope, CTokenType_CloseParen);
 
-          if (!StringsMatch(NestedFunc->Name, Func->Name))
+          if (!StringsMatch(NestedFunc->Name, FuncName))
           {
             counted_string NestedCode = Execute(NestedFunc, ArgType, Datatypes, FunctionDefs, Memory);
             Append(&OutputBuilder, NestedCode);
@@ -2401,6 +2419,13 @@ Execute(meta_func* Func, counted_string ArgType, program_datatypes* Datatypes, m
   }
 
   counted_string Result = Finalize(&OutputBuilder, Memory);
+  return Result;
+}
+
+function counted_string
+Execute(meta_func* Func, counted_string ArgType, program_datatypes* Datatypes, meta_func_stream* FunctionDefs, memory_arena* Memory)
+{
+  counted_string Result = Execute(Func->Name, Func->Body, Func->ArgName, ArgType, Datatypes, FunctionDefs, Memory);
   return Result;
 }
 
@@ -2526,6 +2551,54 @@ IsMetaprogrammingOutput(counted_string Filename, counted_string OutputDirectory)
 }
 
 /* #include <bonsai_stdlib/headers/debug_print.h> */
+
+function counted_string_stream
+ParseDatatypeList(c_parse_result* Parser, program_datatypes* Datatypes, tagged_counted_string_stream_stream* NameLists, memory_arena* Memory)
+{
+  counted_string_stream Result = {};
+  while (PeekToken(Parser).Type == CTokenType_Identifier)
+  {
+    counted_string DatatypeName    = RequireToken(Parser, CTokenType_Identifier).Value;
+
+    struct_def* Struct                 = GetStructByType(&Datatypes->Structs, DatatypeName);
+    enum_def* Enum                     = GetEnumByType(&Datatypes->Enums, DatatypeName);
+    tagged_counted_string_stream* List = StreamContains(NameLists, DatatypeName);
+
+    if (Struct || Enum)
+    {
+      Push(&Result, DatatypeName, Memory);
+    }
+    else if (List)
+    {
+      ConcatStreams(&Result, &List->Stream, Memory);
+    }
+    else
+    {
+      Warn("Type (%.*s) could not be resolved to a struct or named_list, ignoring it.", (u32)DatatypeName.Count, DatatypeName.Start);
+    }
+
+    OptionalToken(Parser, CTokenType_Comma);
+  }
+
+  return Result;
+}
+
+function meta_func
+ParseFunctionDef(c_parse_result* Parser, counted_string FuncName)
+{
+  RequireToken(Parser, CTokenType_OpenParen);
+  counted_string ArgName = RequireToken(Parser, CTokenType_Identifier).Value;
+  RequireToken(Parser, CTokenType_CloseParen);
+  c_parse_result Body = GetBodyTextForNextScope(Parser);
+
+  meta_func Func = {
+    .Name = FuncName,
+    .ArgName = ArgName,
+    .Body = Body,
+  };
+
+  return Func;
+}
 
 #ifndef EXCLUDE_PREPROCESSOR_MAIN
 #define SUCCESS_EXIT_CODE 0
@@ -2754,17 +2827,7 @@ main(s32 ArgCount, const char** ArgStrings)
                     else
                     {
                       counted_string FuncName = RequireToken(Parser, CTokenType_Identifier).Value;
-                      RequireToken(Parser, CTokenType_OpenParen);
-                      counted_string ArgName = RequireToken(Parser, CTokenType_Identifier).Value;
-                      RequireToken(Parser, CTokenType_CloseParen);
-                      c_parse_result Body = GetBodyTextForNextScope(Parser);
-
-                      meta_func Func = {
-                        .Name = FuncName,
-                        .ArgName = ArgName,
-                        .Body = Body,
-                      };
-
+                      meta_func Func = ParseFunctionDef(Parser, FuncName);
                       Push(&FunctionDefs, Func, Memory);
                     }
 
@@ -2806,43 +2869,28 @@ main(s32 ArgCount, const char** ArgStrings)
                     DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
                   } break;
 
-                  case for_all_datatypes:
+                  case for_datatypes:
                   {
                     RequireToken(Parser, CTokenType_OpenParen);
+                    RequireToken(Parser, CToken(CSz("all")));
+                    RequireToken(Parser, CTokenType_CloseParen);
 
                     counted_string_stream Excludes = {};
-                    if (OptionalToken(Parser, CToken(CSz("exclude"))))
+                    if (OptionalToken(Parser, CTokenType_Dot))
                     {
+                      RequireToken(Parser, CToken(CSz("exclude")));
                       RequireToken(Parser, CTokenType_OpenParen);
-                      while (PeekToken(Parser).Type == CTokenType_Identifier)
-                      {
-                        counted_string Exclude    = RequireToken(Parser, CTokenType_Identifier).Value;
-
-                        struct_def* ExcludeStruct = GetStructByType(&Datatypes.Structs, Exclude);
-                        tagged_counted_string_stream* ExcludeList = StreamContains(&NameLists, Exclude);
-
-                        if (ExcludeStruct)
-                        {
-                          Push(&Excludes, Exclude, Memory);
-                        }
-                        else if (ExcludeList)
-                        {
-                          ConcatStreams(&Excludes, &ExcludeList->Stream, Memory);
-                        }
-                        else
-                        {
-                          Warn("Type (%.*s) could not be resolved to a struct or named_list, ignoring it.", (u32)Exclude.Count, Exclude.Start);
-                        }
-
-                        OptionalToken(Parser, CTokenType_Comma);
-                      }
+                      Excludes = ParseDatatypeList(Parser, &Datatypes, &NameLists, Memory);
+                      RequireToken(Parser, CTokenType_CloseParen);
                     }
 
-                    RequireToken(Parser, CTokenType_CloseParen);
-                    RequireToken(Parser, CTokenType_Comma);
+                    RequireToken(Parser, CToken(ToString(func)));
+                    meta_func StructFunc = ParseFunctionDef(Parser, CSz("for_datatypes_struct_callback"));
 
-                    c_parse_result TopLevelScope_ = GetBodyTextForNextScope(Parser);
-                    c_parse_result* TopLevelScope = &TopLevelScope_;
+                    RequireToken(Parser, CToken(ToString(func)));
+                    meta_func EnumFunc = ParseFunctionDef(Parser, CSz("for_datatypes_enum_callback"));
+
+                    RequireToken(Parser, CTokenType_CloseParen);
 
                     string_builder OutputBuilder = {};
 
@@ -2853,40 +2901,14 @@ main(s32 ArgCount, const char** ArgStrings)
                       struct_def* Struct = &Iter.At->Element;
                       if (!StreamContains(&Excludes, Struct->Name))
                       {
-                        Rewind(&TopLevelScope->Tokens);
-                        while (Remaining(&TopLevelScope->Tokens))
-                        {
-                          c_token BodyToken = PopTokenRaw(TopLevelScope);
-
-                          if (StringsMatch(BodyToken.Value, CSz("__")))
-                          {
-                            RequireToken(TopLevelScope, CTokenType_OpenParen);
-                            counted_string StructNameReplacementPattern = RequireToken(TopLevelScope, CTokenType_Identifier).Value;
-                            RequireToken(TopLevelScope, CTokenType_CloseParen);
-
-                            c_parse_result StructScope_ = GetBodyTextForNextScope(TopLevelScope);
-                            c_parse_result* StructScope = &StructScope_;
-
-                            replacement_pattern StructPattern = {
-                              .Match = StructNameReplacementPattern,
-                              .Replace = Struct->Name,
-                            };
-
-                            DoStructReplacementPatterns(&OutputBuilder, StructScope, StructPattern, Struct, Memory);
-                          }
-                          else
-                          {
-                            Append(&OutputBuilder, BodyToken.Value);
-                          }
-
-                        }
+                        counted_string Code = Execute(&StructFunc, Struct->Name, &Datatypes, &FunctionDefs, Memory);
+                        Append(&OutputBuilder, Code);
                       }
                     }
 
                     counted_string Code = Finalize(&OutputBuilder, Memory);
                     counted_string OutfileName = GenerateOutfileNameFor(ToString(Directive), CSz("debug_print"), Memory);
-                    RequireToken(Parser, CTokenType_CloseParen);
-                    RequireToken(Parser, CTokenType_CloseParen);
+
                     DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
 
                   } break;

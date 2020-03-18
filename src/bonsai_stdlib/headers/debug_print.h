@@ -131,55 +131,60 @@ meta( named_list(unprintable_datatypes) { counted_string })
 meta( named_list(buggy_datatypes) { thread_startup_params network_connection debug_state perlin_noise })
 
 meta(
-  for_all_datatypes(
-    exclude(unprintable_datatypes buggy_datatypes external_datatypes),
+  for_datatypes(all)
+    .exclude(unprintable_datatypes buggy_datatypes external_datatypes)
+
+    func (StructDef)
     {
-      __(StructName)
-      {  function void DebugPrint(StructName* S, u32 Depth = 0);
-        function void DebugPrint(StructName S, u32 Depth = 0); }
+      function void DebugPrint( (StructDef.name)* S, u32 Depth = 0);
+      function void DebugPrint( (StructDef.name)  S, u32 Depth = 0);
     }
-  )
+
+    func (EnumDef)
+    {
+    }
 )
 #include <metaprogramming/output/for_all_datatypes_debug_print_prototypes.h>
 
 meta(
-  for_all_datatypes(
-    exclude(unprintable_datatypes buggy_datatypes external_datatypes),
+  for_datatypes(all).exclude(unprintable_datatypes buggy_datatypes external_datatypes)
+
+  func (StructDef)
+  {
+    function void DebugPrint( (StructDef.name) S, u32 Depth)
     {
-      __(StructName)
-      {
-        function void DebugPrint(StructName S, u32 Depth)
+      DebugPrint("(StructDef.name)\n", Depth);
+      (
+        StructDef.map_members (Member)
         {
-          DebugPrint("StructName\n", Depth);
-          __(MemberType, MemberName)
-          {
-            DebugPrint("MemberName = ", Depth);
-            DebugPrint(S.MemberName, Depth+1);
-            DebugPrint("\n");
-          }
+          DebugPrint("(Member.name) = ", Depth);
+          DebugPrint(S.(Member.name), Depth+1);
+          DebugPrint("\n");
         }
-      }
-
-      __(StructName)
-      {
-        function void DebugPrint(StructName* S, u32 Depth)
-        {
-          if (S)
-          {
-            DebugPrint("StructName\n", Depth);
-            __(MemberType, MemberName)
-            {
-              DebugPrint("MemberName = ", Depth);
-              DebugPrint(S->MemberName, Depth+1);
-              DebugPrint("\n");
-            }
-          }
-        }
-      }
-
+      )
     }
 
-  )
+    function void DebugPrint((StructDef.name)* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("(StructDef.name)\n", Depth);
+        (
+          StructDef.map_members (Member)
+          {
+            DebugPrint("(Member.name) = ", Depth);
+            DebugPrint(S->(Member.name), Depth+1);
+            DebugPrint("\n");
+          }
+        )
+      }
+    }
+  }
+
+  func (EnumDef)
+  {
+  }
+
 )
 #include <metaprogramming/output/for_all_datatypes_debug_print_functions.h>
 

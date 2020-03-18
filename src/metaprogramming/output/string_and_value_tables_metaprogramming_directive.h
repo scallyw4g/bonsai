@@ -15,7 +15,7 @@
 
             case d_union: { Result = CSz("d_union"); } break;
 
-            case for_all_datatypes: { Result = CSz("for_all_datatypes"); } break;
+            case for_datatypes: { Result = CSz("for_datatypes"); } break;
 
             case named_list: { Result = CSz("named_list"); } break;
 
@@ -40,7 +40,7 @@
 
           if (StringsMatch(S, CSz("d_union"))) { return d_union; }
 
-          if (StringsMatch(S, CSz("for_all_datatypes"))) { return for_all_datatypes; }
+          if (StringsMatch(S, CSz("for_datatypes"))) { return for_datatypes; }
 
           if (StringsMatch(S, CSz("named_list"))) { return named_list; }
 
