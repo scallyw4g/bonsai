@@ -10,6 +10,7 @@
     - #156 This should actually concat all comments such that
     - #155 This should eat the comment if
     - #159 Rename to Members
+    - #190 Does this make more sense named 'Type'
 
   ## high_priority
     - #101 Profile and check collision rate of this!

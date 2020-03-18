@@ -2262,8 +2262,10 @@ GenerateOutfileNameFor(counted_string Name, counted_string DatatypeName, memory_
 }
 
 function void
-ReplaceValues(string_builder* OutputBuilder, c_parse_result* BodyText, counted_string EnumValueMatch, counted_string EnumFieldName, memory_arena* Memory)
+ReplaceValues(string_builder* OutputBuilder, c_parse_result* BodyText, counted_string MemberMatch, counted_string MemberType, counted_string MemberName, memory_arena* Memory)
 {
+  Assert(MemberName.Count);
+
   Rewind(&BodyText->Tokens);
   while (Remaining(&BodyText->Tokens))
   {
@@ -2272,10 +2274,10 @@ ReplaceValues(string_builder* OutputBuilder, c_parse_result* BodyText, counted_s
     if (BodyToken.Type == CTokenType_String)
     {
       c_parse_result StringParse = TokenizeString(BodyToken.Value, BodyText->Filename, Memory, True);
-      ReplaceValues(OutputBuilder, &StringParse, EnumValueMatch, EnumFieldName, Memory);
+      ReplaceValues(OutputBuilder, &StringParse, MemberMatch, MemberType, MemberName, Memory);
     }
-    else if (BodyToken.Type == CTokenType_OpenParen &&
-            OptionalToken(BodyText, CToken(EnumValueMatch)))
+    else if ( BodyToken.Type == CTokenType_OpenParen &&
+              OptionalToken(BodyText, CToken(MemberMatch)) )
     {
       RequireToken(BodyText, CTokenType_Dot);
       meta_arg_operator Op = MetaArgOperator(RequireToken(BodyText, CTokenType_Identifier).Value);
@@ -2286,9 +2288,21 @@ ReplaceValues(string_builder* OutputBuilder, c_parse_result* BodyText, counted_s
           Error("Invalid operator encountered.");
         } break;
 
+        case type:
+        {
+          if (MemberType.Count)
+          {
+            Append(OutputBuilder, MemberType);
+          }
+          else
+          {
+            Error("Tried substituting a type for a member without one!  Did you try and call .type on an enum?");
+          }
+        } break;
+
         case name:
         {
-          Append(OutputBuilder, EnumFieldName);
+          Append(OutputBuilder, MemberName);
         } break;
 
         InvalidDefaultCase;
@@ -2357,8 +2371,11 @@ Transform(meta_transform_op Transformations, counted_string Input, memory_arena*
 }
 
 function counted_string
-Evaluate(meta_func* Func, datatype* Datatype, memory_arena* Memory)
+Execute(meta_func* Func, counted_string ArgType, program_datatypes* Datatypes, memory_arena* Memory)
 {
+  datatype Data = GetDatatypeByName(Datatypes, ArgType);
+  datatype* Datatype = &Data;
+
   Rewind(&Func->Body.Tokens);
 
   string_builder OutputBuilder = {};
@@ -2394,6 +2411,19 @@ Evaluate(meta_func* Func, datatype* Datatype, memory_arena* Memory)
           Error("Invalid operator encountered.");
         } break;
 
+        case type:
+        {
+          if (Datatype->Type == type_struct_def)
+          {
+            counted_string Name = Transform(Transformations, Datatype->struct_def->Name, Memory);
+            Append(&OutputBuilder, Name);
+          }
+          else
+          {
+            Error("Calling .type on an enum datatype is forbidden.");
+          }
+        } break;
+
         case name:
         {
           if (Datatype->Type == type_enum_def)
@@ -2410,6 +2440,91 @@ Evaluate(meta_func* Func, datatype* Datatype, memory_arena* Memory)
         } break;
 
         case map_members:
+        {
+          RequireToken(&Func->Body, CTokenType_OpenParen);
+          counted_string EnumValueMatch  = RequireToken(&Func->Body, CTokenType_Identifier).Value;
+          RequireToken(&Func->Body, CTokenType_CloseParen);
+
+          counted_string ContainingConstraint = {};
+          if ( OptionalToken(&Func->Body, CTokenType_Dot) )
+          {
+            RequireToken(&Func->Body, CToken(CSz("containing")));
+            RequireToken(&Func->Body, CTokenType_OpenParen);
+            ContainingConstraint = RequireToken(&Func->Body, CTokenType_Identifier).Value;
+            RequireToken(&Func->Body, CTokenType_CloseParen);
+          }
+
+          c_parse_result NextScope = GetBodyTextForNextScope(&Func->Body);
+
+          if (Datatype->Type == type_struct_def)
+          {
+            ITERATE_OVER(c_decl, &Datatype->struct_def->Fields)
+            {
+              c_decl* Member = GET_ELEMENT(Iter);
+
+              counted_string MemberName = GetNameForCDecl(Member);
+              counted_string MemberType = CSz("TODO(Jesse): How do we get the type?");
+
+              switch (Member->Type)
+              {
+                case type_c_decl_variable:
+                {
+                  if ( ContainingConstraint.Count &&
+                       !StringsMatch(Member->c_decl_variable.Type, ContainingConstraint) )
+                  {
+                    // Containing constraint failed
+                  }
+                  else
+                  {
+                    ReplaceValues(&OutputBuilder, &NextScope, EnumValueMatch, MemberType, MemberName, Memory);
+                  }
+
+                } break;
+
+                case type_c_decl_union:
+                {
+                  for (c_decl_iterator UnionMemberIter = Iterator(&Member->c_decl_union.Body.Fields);
+                      IsValid(&UnionMemberIter);
+                      Advance(&UnionMemberIter))
+                  {
+                    c_decl* UnionMember = GET_ELEMENT(UnionMemberIter);
+                    if (UnionMember->Type == type_c_decl_variable)
+                    {
+                      struct_def* Struct = GetStructByType(&Datatypes->Structs, UnionMember->c_decl_variable.Type);
+                      if (Struct)
+                      {
+                        if (ContainingConstraint.Count && HasMemberOfType(Struct, ContainingConstraint))
+                        {
+                          ReplaceValues(&OutputBuilder, &NextScope, EnumValueMatch, Struct->Name, Struct->Name, Memory);
+                        }
+                      }
+                      else
+                      {
+                        counted_string Name = UnionMember->c_decl_variable.Name;
+                        Error("Couldn't find struct type %*.s", (u32)Name.Count, Name.Start);
+                      }
+
+                    }
+                    else
+                    {
+                      Error("Nested structs/unions and function pointers unsupported.");
+                    }
+                  }
+                } break;
+
+                InvalidDefaultCase;
+              }
+
+              continue;
+            }
+          }
+          else
+          {
+            Error("Called map_members on a datatype that wasn't a struct - %.*s", (u32)Datatype->enum_def->Name.Count, Datatype->enum_def->Name.Start);
+          }
+
+        } break;
+
         case map_values:
         {
           RequireToken(&Func->Body, CTokenType_OpenParen);
@@ -2422,22 +2537,14 @@ Evaluate(meta_func* Func, datatype* Datatype, memory_arena* Memory)
             ITERATE_OVER(enum_field, &Datatype->enum_def->Fields)
             {
               enum_field* Member = GET_ELEMENT(Iter);
-              ReplaceValues(&OutputBuilder, &NextScope, EnumValueMatch, Member->Name, Memory);
+              ReplaceValues(&OutputBuilder, &NextScope, EnumValueMatch, CSz(""), Member->Name, Memory);
               continue;
             }
 
           }
           else
           {
-            Assert(Datatype->Type == type_struct_def);
-            ITERATE_OVER(c_decl, &Datatype->struct_def->Fields)
-            {
-              c_decl* Member = GET_ELEMENT(Iter);
-              counted_string MemberName = GetNameForCDecl(Member);
-              ReplaceValues(&OutputBuilder, &NextScope, EnumValueMatch, MemberName, Memory);
-              continue;
-            }
-
+            Error("Called map_values on a datatype that wasn't an enum - %.*s", (u32)Datatype->struct_def->Name.Count, Datatype->struct_def->Name.Start);
           }
 
         } break;
@@ -2453,14 +2560,6 @@ Evaluate(meta_func* Func, datatype* Datatype, memory_arena* Memory)
 
   counted_string Result = Finalize(&OutputBuilder, Memory);
   return Result;
-}
-
-function counted_string
-Execute(meta_func* Func, counted_string ArgType, program_datatypes* Datatypes, memory_arena* Memory)
-{
-  datatype Data = GetDatatypeByName(Datatypes, ArgType);
-  counted_string Code = Evaluate(Func, &Data, Memory);
-  return Code;
 }
 
 function void

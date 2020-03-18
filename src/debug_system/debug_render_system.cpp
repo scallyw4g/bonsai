@@ -1303,19 +1303,23 @@ FindAbsoluteDrawBoundsBetween(ui_render_command_buffer* CommandBuffer, u32 First
     ui_render_command* Command = GetCommand(CommandBuffer, CommandIndex);
     switch(Command->Type)
     {
+
       meta(
-        for_members_in( ui_render_command,
-          member_is_or_contains_type layout,
-          (MemberTypeEnumTag, MemberType, MemberValue) {
-            case MemberTypeEnumTag:
+        func (ui_render_command RenderCommandDef)
+        {
+          (
+            RenderCommandDef.map_members(Member).containing(layout)
             {
-              Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&Command->MemberValue.Layout));
-              Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&Command->MemberValue.Layout));
-            } break;
-          }
-        )
+              case type_(Member.type):
+              {
+                Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&Command->(Member.name).Layout));
+                Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&Command->(Member.name).Layout));
+              } break;
+            }
+          )
+        }
       )
-#include <metaprogramming/output/for_members_in_ui_render_command.h>
+#include <metaprogramming/output/anonymous_function_ui_render_command_RuTTrHiW.h>
 
       default: {} break;
     }

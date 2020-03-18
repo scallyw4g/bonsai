@@ -168,6 +168,7 @@ enum meta_arg_operator
   meta_arg_operator_noop,
 
   name,
+  type,
   map_values,
   map_members,
 };
@@ -265,7 +266,7 @@ struct c_decl_stream
 
 struct struct_def
 {
-  counted_string Name;
+  counted_string Name; // TODO(Jesse, id: 190, tags: immediate): Does this make more sense named 'Type'
   counted_string DefinedInFile;
   c_decl_stream Fields; // TODO(Jesse id: 159, tags: immediate, cleanup) Rename to Members
 };
