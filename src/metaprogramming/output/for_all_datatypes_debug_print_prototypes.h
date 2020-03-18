@@ -665,3 +665,79 @@
       function void DebugPrint( bitmap* S, u32 Depth = 0);
       function void DebugPrint( bitmap  S, u32 Depth = 0);
 
+      function void DebugPrint(debug_ui_type EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(debug_texture_array_slice EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(column_render_params EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(quad_render_params EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(button_end_params EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(relative_position EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(z_depth EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(clip_status EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(d_union_flags EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(metaprogramming_directive EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(meta_arg_operator EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(meta_transform_op EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(c_token_type EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(datatype_type EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(c_decl_type EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(ui_render_command_type EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(c_decl_function_type EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(work_queue_entry_type EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(socket_type EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(connection_state EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(socket_op_result EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(socket_op EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(xml_token_type EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(shader_uniform_type EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(frame_event_type EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(game_mode_type EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(chunk_flag EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(voxel_flag EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(entity_state EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(entity_type EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(collision_type EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(model_index EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(heap_allocation_type EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(mutex_op EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(Sign EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(output_mode EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(Chunk_ID EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(ttf_flag EnumValue, u32 Depth = 0);
+

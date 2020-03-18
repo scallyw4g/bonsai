@@ -2906,6 +2906,19 @@ main(s32 ArgCount, const char** ArgStrings)
                       }
                     }
 
+                    for (enum_def_iterator Iter = Iterator(&Datatypes.Enums);
+                        IsValid(&Iter);
+                        Advance(&Iter))
+                    {
+                      enum_def* Enum = &Iter.At->Element;
+                      if (!StreamContains(&Excludes, Enum->Name))
+                      {
+                        counted_string Code = Execute(&EnumFunc, Enum->Name, &Datatypes, &FunctionDefs, Memory);
+                        Append(&OutputBuilder, Code);
+                      }
+                    }
+
+
                     counted_string Code = Finalize(&OutputBuilder, Memory);
                     counted_string OutfileName = GenerateOutfileNameFor(ToString(Directive), CSz("debug_print"), Memory);
 

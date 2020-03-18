@@ -9425,3 +9425,1270 @@
       }
     }
 
+    function void DebugPrint(debug_ui_type EnumValue, u32 Depth)
+    {
+      DebugPrint("debug_ui_type\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case DebugUIType_None:
+            {
+              DebugPrint("DebugUIType_None");
+            } break;
+
+            case DebugUIType_PickedChunks:
+            {
+              DebugPrint("DebugUIType_PickedChunks");
+            } break;
+
+      }
+    }
+
+    function void DebugPrint(debug_texture_array_slice EnumValue, u32 Depth)
+    {
+      DebugPrint("debug_texture_array_slice\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case DebugTextureArraySlice_Font:
+            {
+              DebugPrint("DebugTextureArraySlice_Font");
+            } break;
+
+            case DebugTextureArraySlice_Viewport:
+            {
+              DebugPrint("DebugTextureArraySlice_Viewport");
+            } break;
+
+            case DebugTextureArraySlice_Count:
+            {
+              DebugPrint("DebugTextureArraySlice_Count");
+            } break;
+
+      }
+    }
+
+    function void DebugPrint(column_render_params EnumValue, u32 Depth)
+    {
+      DebugPrint("column_render_params\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case ColumnRenderParam_LeftAlign:
+            {
+              DebugPrint("ColumnRenderParam_LeftAlign");
+            } break;
+
+            case ColumnRenderParam_RightAlign:
+            {
+              DebugPrint("ColumnRenderParam_RightAlign");
+            } break;
+
+      }
+    }
+
+    function void DebugPrint(quad_render_params EnumValue, u32 Depth)
+    {
+      DebugPrint("quad_render_params\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case QuadRenderParam_NoAdvance:
+            {
+              DebugPrint("QuadRenderParam_NoAdvance");
+            } break;
+
+            case QuadRenderParam_AdvanceLayout:
+            {
+              DebugPrint("QuadRenderParam_AdvanceLayout");
+            } break;
+
+      }
+    }
+
+    function void DebugPrint(button_end_params EnumValue, u32 Depth)
+    {
+      DebugPrint("button_end_params\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case ButtonEndParam_NoOp:
+            {
+              DebugPrint("ButtonEndParam_NoOp");
+            } break;
+
+            case ButtonEndParam_DiscardButtonDrawBounds:
+            {
+              DebugPrint("ButtonEndParam_DiscardButtonDrawBounds");
+            } break;
+
+      }
+    }
+
+    function void DebugPrint(relative_position EnumValue, u32 Depth)
+    {
+      DebugPrint("relative_position\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case Position_None:
+            {
+              DebugPrint("Position_None");
+            } break;
+
+            case Position_LeftOf:
+            {
+              DebugPrint("Position_LeftOf");
+            } break;
+
+            case Position_RightOf:
+            {
+              DebugPrint("Position_RightOf");
+            } break;
+
+            case Position_Above:
+            {
+              DebugPrint("Position_Above");
+            } break;
+
+            case Position_Below:
+            {
+              DebugPrint("Position_Below");
+            } break;
+
+      }
+    }
+
+    function void DebugPrint(z_depth EnumValue, u32 Depth)
+    {
+      DebugPrint("z_depth\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case zDepth_Background:
+            {
+              DebugPrint("zDepth_Background");
+            } break;
+
+            case zDepth_Text:
+            {
+              DebugPrint("zDepth_Text");
+            } break;
+
+            case zDepth_TitleBar:
+            {
+              DebugPrint("zDepth_TitleBar");
+            } break;
+
+            case zDepth_Border:
+            {
+              DebugPrint("zDepth_Border");
+            } break;
+
+      }
+    }
+
+    function void DebugPrint(clip_status EnumValue, u32 Depth)
+    {
+      DebugPrint("clip_status\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case ClipStatus_NoClipping:
+            {
+              DebugPrint("ClipStatus_NoClipping");
+            } break;
+
+            case ClipStatus_PartialClipping:
+            {
+              DebugPrint("ClipStatus_PartialClipping");
+            } break;
+
+            case ClipStatus_FullyClipped:
+            {
+              DebugPrint("ClipStatus_FullyClipped");
+            } break;
+
+      }
+    }
+
+    function void DebugPrint(d_union_flags EnumValue, u32 Depth)
+    {
+      DebugPrint("d_union_flags\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case d_union_flag_none:
+            {
+              DebugPrint("d_union_flag_none");
+            } break;
+
+            case d_union_flag_enum_only:
+            {
+              DebugPrint("d_union_flag_enum_only");
+            } break;
+
+      }
+    }
+
+    function void DebugPrint(metaprogramming_directive EnumValue, u32 Depth)
+    {
+      DebugPrint("metaprogramming_directive\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case meta_directive_noop:
+            {
+              DebugPrint("meta_directive_noop");
+            } break;
+
+            case generate_cursor_deprecated:
+            {
+              DebugPrint("generate_cursor_deprecated");
+            } break;
+
+            case enum_only:
+            {
+              DebugPrint("enum_only");
+            } break;
+
+            case d_union:
+            {
+              DebugPrint("d_union");
+            } break;
+
+            case for_datatypes:
+            {
+              DebugPrint("for_datatypes");
+            } break;
+
+            case named_list:
+            {
+              DebugPrint("named_list");
+            } break;
+
+            case func:
+            {
+              DebugPrint("func");
+            } break;
+
+      }
+    }
+
+    function void DebugPrint(meta_arg_operator EnumValue, u32 Depth)
+    {
+      DebugPrint("meta_arg_operator\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case meta_arg_operator_noop:
+            {
+              DebugPrint("meta_arg_operator_noop");
+            } break;
+
+            case name:
+            {
+              DebugPrint("name");
+            } break;
+
+            case type:
+            {
+              DebugPrint("type");
+            } break;
+
+            case map_values:
+            {
+              DebugPrint("map_values");
+            } break;
+
+            case map_members:
+            {
+              DebugPrint("map_members");
+            } break;
+
+      }
+    }
+
+    function void DebugPrint(meta_transform_op EnumValue, u32 Depth)
+    {
+      DebugPrint("meta_transform_op\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case meta_transform_op_noop:
+            {
+              DebugPrint("meta_transform_op_noop");
+            } break;
+
+            case to_capital_case:
+            {
+              DebugPrint("to_capital_case");
+            } break;
+
+      }
+    }
+
+    function void DebugPrint(c_token_type EnumValue, u32 Depth)
+    {
+      DebugPrint("c_token_type\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case CTokenType_Unknown:
+            {
+              DebugPrint("CTokenType_Unknown");
+            } break;
+
+            case CTokenType_CommentSingleLine:
+            {
+              DebugPrint("CTokenType_CommentSingleLine");
+            } break;
+
+            case CTokenType_CommentMultiLineStart:
+            {
+              DebugPrint("CTokenType_CommentMultiLineStart");
+            } break;
+
+            case CTokenType_CommentMultiLineEnd:
+            {
+              DebugPrint("CTokenType_CommentMultiLineEnd");
+            } break;
+
+            case CTokenType_Identifier:
+            {
+              DebugPrint("CTokenType_Identifier");
+            } break;
+
+            case CTokenType_String:
+            {
+              DebugPrint("CTokenType_String");
+            } break;
+
+            case CTokenType_Char:
+            {
+              DebugPrint("CTokenType_Char");
+            } break;
+
+            case CTokenType_OpenBracket:
+            {
+              DebugPrint("CTokenType_OpenBracket");
+            } break;
+
+            case CTokenType_CloseBracket:
+            {
+              DebugPrint("CTokenType_CloseBracket");
+            } break;
+
+            case CTokenType_OpenBrace:
+            {
+              DebugPrint("CTokenType_OpenBrace");
+            } break;
+
+            case CTokenType_CloseBrace:
+            {
+              DebugPrint("CTokenType_CloseBrace");
+            } break;
+
+            case CTokenType_OpenParen:
+            {
+              DebugPrint("CTokenType_OpenParen");
+            } break;
+
+            case CTokenType_CloseParen:
+            {
+              DebugPrint("CTokenType_CloseParen");
+            } break;
+
+            case CTokenType_Dot:
+            {
+              DebugPrint("CTokenType_Dot");
+            } break;
+
+            case CTokenType_Comma:
+            {
+              DebugPrint("CTokenType_Comma");
+            } break;
+
+            case CTokenType_Semicolon:
+            {
+              DebugPrint("CTokenType_Semicolon");
+            } break;
+
+            case CTokenType_Colon:
+            {
+              DebugPrint("CTokenType_Colon");
+            } break;
+
+            case CTokenType_Hash:
+            {
+              DebugPrint("CTokenType_Hash");
+            } break;
+
+            case CTokenType_At:
+            {
+              DebugPrint("CTokenType_At");
+            } break;
+
+            case CTokenType_Dollar:
+            {
+              DebugPrint("CTokenType_Dollar");
+            } break;
+
+            case CTokenType_Space:
+            {
+              DebugPrint("CTokenType_Space");
+            } break;
+
+            case CTokenType_Star:
+            {
+              DebugPrint("CTokenType_Star");
+            } break;
+
+            case CTokenType_Ampersand:
+            {
+              DebugPrint("CTokenType_Ampersand");
+            } break;
+
+            case CTokenType_SingleQuote:
+            {
+              DebugPrint("CTokenType_SingleQuote");
+            } break;
+
+            case CTokenType_DoubleQuote:
+            {
+              DebugPrint("CTokenType_DoubleQuote");
+            } break;
+
+            case CTokenType_Equals:
+            {
+              DebugPrint("CTokenType_Equals");
+            } break;
+
+            case CTokenType_LT:
+            {
+              DebugPrint("CTokenType_LT");
+            } break;
+
+            case CTokenType_GT:
+            {
+              DebugPrint("CTokenType_GT");
+            } break;
+
+            case CTokenType_Plus:
+            {
+              DebugPrint("CTokenType_Plus");
+            } break;
+
+            case CTokenType_Minus:
+            {
+              DebugPrint("CTokenType_Minus");
+            } break;
+
+            case CTokenType_Percent:
+            {
+              DebugPrint("CTokenType_Percent");
+            } break;
+
+            case CTokenType_Bang:
+            {
+              DebugPrint("CTokenType_Bang");
+            } break;
+
+            case CTokenType_Hat:
+            {
+              DebugPrint("CTokenType_Hat");
+            } break;
+
+            case CTokenType_Question:
+            {
+              DebugPrint("CTokenType_Question");
+            } break;
+
+            case CTokenType_FSlash:
+            {
+              DebugPrint("CTokenType_FSlash");
+            } break;
+
+            case CTokenType_BSlash:
+            {
+              DebugPrint("CTokenType_BSlash");
+            } break;
+
+            case CTokenType_Tilde:
+            {
+              DebugPrint("CTokenType_Tilde");
+            } break;
+
+            case CTokenType_Backtick:
+            {
+              DebugPrint("CTokenType_Backtick");
+            } break;
+
+            case CTokenType_Pipe:
+            {
+              DebugPrint("CTokenType_Pipe");
+            } break;
+
+            case CTokenType_Newline:
+            {
+              DebugPrint("CTokenType_Newline");
+            } break;
+
+            case CTokenType_CarrigeReturn:
+            {
+              DebugPrint("CTokenType_CarrigeReturn");
+            } break;
+
+            case CTokenType_EOF:
+            {
+              DebugPrint("CTokenType_EOF");
+            } break;
+
+      }
+    }
+
+    function void DebugPrint(datatype_type EnumValue, u32 Depth)
+    {
+      DebugPrint("datatype_type\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case type_datatype_noop:
+            {
+              DebugPrint("type_datatype_noop");
+            } break;
+
+            case type_struct_def:
+            {
+              DebugPrint("type_struct_def");
+            } break;
+
+            case type_enum_def:
+            {
+              DebugPrint("type_enum_def");
+            } break;
+
+      }
+    }
+
+    function void DebugPrint(c_decl_type EnumValue, u32 Depth)
+    {
+      DebugPrint("c_decl_type\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case type_c_decl_noop:
+            {
+              DebugPrint("type_c_decl_noop");
+            } break;
+
+            case type_c_decl_variable:
+            {
+              DebugPrint("type_c_decl_variable");
+            } break;
+
+            case type_c_decl_function:
+            {
+              DebugPrint("type_c_decl_function");
+            } break;
+
+            case type_c_decl_union:
+            {
+              DebugPrint("type_c_decl_union");
+            } break;
+
+      }
+    }
+
+    function void DebugPrint(ui_render_command_type EnumValue, u32 Depth)
+    {
+      DebugPrint("ui_render_command_type\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case type_ui_render_command_noop:
+            {
+              DebugPrint("type_ui_render_command_noop");
+            } break;
+
+            case type_ui_render_command_window_start:
+            {
+              DebugPrint("type_ui_render_command_window_start");
+            } break;
+
+            case type_ui_render_command_window_end:
+            {
+              DebugPrint("type_ui_render_command_window_end");
+            } break;
+
+            case type_ui_render_command_button_start:
+            {
+              DebugPrint("type_ui_render_command_button_start");
+            } break;
+
+            case type_ui_render_command_button_end:
+            {
+              DebugPrint("type_ui_render_command_button_end");
+            } break;
+
+            case type_ui_render_command_table_start:
+            {
+              DebugPrint("type_ui_render_command_table_start");
+            } break;
+
+            case type_ui_render_command_column_start:
+            {
+              DebugPrint("type_ui_render_command_column_start");
+            } break;
+
+            case type_ui_render_command_column_end:
+            {
+              DebugPrint("type_ui_render_command_column_end");
+            } break;
+
+            case type_ui_render_command_text:
+            {
+              DebugPrint("type_ui_render_command_text");
+            } break;
+
+            case type_ui_render_command_text_at:
+            {
+              DebugPrint("type_ui_render_command_text_at");
+            } break;
+
+            case type_ui_render_command_textured_quad:
+            {
+              DebugPrint("type_ui_render_command_textured_quad");
+            } break;
+
+            case type_ui_render_command_untextured_quad:
+            {
+              DebugPrint("type_ui_render_command_untextured_quad");
+            } break;
+
+            case type_ui_render_command_untextured_quad_at:
+            {
+              DebugPrint("type_ui_render_command_untextured_quad_at");
+            } break;
+
+            case type_ui_render_command_border:
+            {
+              DebugPrint("type_ui_render_command_border");
+            } break;
+
+            case type_ui_render_command_new_row:
+            {
+              DebugPrint("type_ui_render_command_new_row");
+            } break;
+
+            case type_ui_render_command_table_end:
+            {
+              DebugPrint("type_ui_render_command_table_end");
+            } break;
+
+      }
+    }
+
+    function void DebugPrint(c_decl_function_type EnumValue, u32 Depth)
+    {
+      DebugPrint("c_decl_function_type\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case type_c_decl_function_noop:
+            {
+              DebugPrint("type_c_decl_function_noop");
+            } break;
+
+            case type_c_decl_function_normal:
+            {
+              DebugPrint("type_c_decl_function_normal");
+            } break;
+
+            case type_c_decl_function_operator:
+            {
+              DebugPrint("type_c_decl_function_operator");
+            } break;
+
+            case type_c_decl_function_constructor:
+            {
+              DebugPrint("type_c_decl_function_constructor");
+            } break;
+
+            case type_c_decl_function_destructor:
+            {
+              DebugPrint("type_c_decl_function_destructor");
+            } break;
+
+      }
+    }
+
+    function void DebugPrint(work_queue_entry_type EnumValue, u32 Depth)
+    {
+      DebugPrint("work_queue_entry_type\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case type_work_queue_entry_noop:
+            {
+              DebugPrint("type_work_queue_entry_noop");
+            } break;
+
+            case type_work_queue_entry_init_world_chunk:
+            {
+              DebugPrint("type_work_queue_entry_init_world_chunk");
+            } break;
+
+            case type_work_queue_entry_copy_buffer:
+            {
+              DebugPrint("type_work_queue_entry_copy_buffer");
+            } break;
+
+      }
+    }
+
+    function void DebugPrint(socket_type EnumValue, u32 Depth)
+    {
+      DebugPrint("socket_type\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case Socket_Blocking:
+            {
+              DebugPrint("Socket_Blocking");
+            } break;
+
+            case Socket_NonBlocking:
+            {
+              DebugPrint("Socket_NonBlocking");
+            } break;
+
+      }
+    }
+
+    function void DebugPrint(connection_state EnumValue, u32 Depth)
+    {
+      DebugPrint("connection_state\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case ConnectionState_Disconnected:
+            {
+              DebugPrint("ConnectionState_Disconnected");
+            } break;
+
+            case ConnectionState_AwaitingHandshake:
+            {
+              DebugPrint("ConnectionState_AwaitingHandshake");
+            } break;
+
+            case ConnectionState_Connected:
+            {
+              DebugPrint("ConnectionState_Connected");
+            } break;
+
+      }
+    }
+
+    function void DebugPrint(socket_op_result EnumValue, u32 Depth)
+    {
+      DebugPrint("socket_op_result\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case SocketOpResult_Noop:
+            {
+              DebugPrint("SocketOpResult_Noop");
+            } break;
+
+            case SocketOpResult_CompletedRW:
+            {
+              DebugPrint("SocketOpResult_CompletedRW");
+            } break;
+
+            case SocketOpResult_Fail:
+            {
+              DebugPrint("SocketOpResult_Fail");
+            } break;
+
+      }
+    }
+
+    function void DebugPrint(socket_op EnumValue, u32 Depth)
+    {
+      DebugPrint("socket_op\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case SocketOp_Null:
+            {
+              DebugPrint("SocketOp_Null");
+            } break;
+
+            case SocketOp_Read:
+            {
+              DebugPrint("SocketOp_Read");
+            } break;
+
+            case SocketOp_Write:
+            {
+              DebugPrint("SocketOp_Write");
+            } break;
+
+            case SocketOp_Count:
+            {
+              DebugPrint("SocketOp_Count");
+            } break;
+
+      }
+    }
+
+    function void DebugPrint(xml_token_type EnumValue, u32 Depth)
+    {
+      DebugPrint("xml_token_type\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case XmlTokenType_Unknown:
+            {
+              DebugPrint("XmlTokenType_Unknown");
+            } break;
+
+            case XmlTokenType_Boolean:
+            {
+              DebugPrint("XmlTokenType_Boolean");
+            } break;
+
+            case XmlTokenType_Float:
+            {
+              DebugPrint("XmlTokenType_Float");
+            } break;
+
+            case XmlTokenType_Int:
+            {
+              DebugPrint("XmlTokenType_Int");
+            } break;
+
+            case XmlTokenType_Property:
+            {
+              DebugPrint("XmlTokenType_Property");
+            } break;
+
+            case XmlTokenType_Open:
+            {
+              DebugPrint("XmlTokenType_Open");
+            } break;
+
+            case XmlTokenType_Close:
+            {
+              DebugPrint("XmlTokenType_Close");
+            } break;
+
+            case XmlTokenType_Count:
+            {
+              DebugPrint("XmlTokenType_Count");
+            } break;
+
+      }
+    }
+
+    function void DebugPrint(shader_uniform_type EnumValue, u32 Depth)
+    {
+      DebugPrint("shader_uniform_type\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case ShaderUniform_Undefined:
+            {
+              DebugPrint("ShaderUniform_Undefined");
+            } break;
+
+            case ShaderUniform_M4:
+            {
+              DebugPrint("ShaderUniform_M4");
+            } break;
+
+            case ShaderUniform_V3:
+            {
+              DebugPrint("ShaderUniform_V3");
+            } break;
+
+            case ShaderUniform_S32:
+            {
+              DebugPrint("ShaderUniform_S32");
+            } break;
+
+            case ShaderUniform_U32:
+            {
+              DebugPrint("ShaderUniform_U32");
+            } break;
+
+            case ShaderUniform_R32:
+            {
+              DebugPrint("ShaderUniform_R32");
+            } break;
+
+            case ShaderUniform_Texture:
+            {
+              DebugPrint("ShaderUniform_Texture");
+            } break;
+
+            case ShaderUniform_Light:
+            {
+              DebugPrint("ShaderUniform_Light");
+            } break;
+
+            case ShaderUniform_Camera:
+            {
+              DebugPrint("ShaderUniform_Camera");
+            } break;
+
+      }
+    }
+
+    function void DebugPrint(frame_event_type EnumValue, u32 Depth)
+    {
+      DebugPrint("frame_event_type\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case FrameEvent_Undefined:
+            {
+              DebugPrint("FrameEvent_Undefined");
+            } break;
+
+            case FrameEvent_Explosion:
+            {
+              DebugPrint("FrameEvent_Explosion");
+            } break;
+
+            case FrameEvent_GameModeLoss:
+            {
+              DebugPrint("FrameEvent_GameModeLoss");
+            } break;
+
+            case FrameEvent_GameModePlaying:
+            {
+              DebugPrint("FrameEvent_GameModePlaying");
+            } break;
+
+            case FrameEvent_GameModeWon:
+            {
+              DebugPrint("FrameEvent_GameModeWon");
+            } break;
+
+      }
+    }
+
+    function void DebugPrint(game_mode_type EnumValue, u32 Depth)
+    {
+      DebugPrint("game_mode_type\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case GameMode_Title:
+            {
+              DebugPrint("GameMode_Title");
+            } break;
+
+            case GameMode_Playing:
+            {
+              DebugPrint("GameMode_Playing");
+            } break;
+
+            case GameMode_Won:
+            {
+              DebugPrint("GameMode_Won");
+            } break;
+
+            case GameMode_Loss:
+            {
+              DebugPrint("GameMode_Loss");
+            } break;
+
+      }
+    }
+
+    function void DebugPrint(chunk_flag EnumValue, u32 Depth)
+    {
+      DebugPrint("chunk_flag\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case Chunk_Uninitialized:
+            {
+              DebugPrint("Chunk_Uninitialized");
+            } break;
+
+      }
+    }
+
+    function void DebugPrint(voxel_flag EnumValue, u32 Depth)
+    {
+      DebugPrint("voxel_flag\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case Voxel_Empty:
+            {
+              DebugPrint("Voxel_Empty");
+            } break;
+
+            case Voxel_Filled:
+            {
+              DebugPrint("Voxel_Filled");
+            } break;
+
+      }
+    }
+
+    function void DebugPrint(entity_state EnumValue, u32 Depth)
+    {
+      DebugPrint("entity_state\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case EntityState_Uninitialized:
+            {
+              DebugPrint("EntityState_Uninitialized");
+            } break;
+
+            case EntityState_Initialized:
+            {
+              DebugPrint("EntityState_Initialized");
+            } break;
+
+      }
+    }
+
+    function void DebugPrint(entity_type EnumValue, u32 Depth)
+    {
+      DebugPrint("entity_type\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case EntityType_None:
+            {
+              DebugPrint("EntityType_None");
+            } break;
+
+            case EntityType_Player:
+            {
+              DebugPrint("EntityType_Player");
+            } break;
+
+      }
+    }
+
+    function void DebugPrint(collision_type EnumValue, u32 Depth)
+    {
+      DebugPrint("collision_type\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case Collision_Player_Enemy:
+            {
+              DebugPrint("Collision_Player_Enemy");
+            } break;
+
+            case Collision_Player_EnemyProjectile:
+            {
+              DebugPrint("Collision_Player_EnemyProjectile");
+            } break;
+
+            case Collision_Player_PlayerProjectile:
+            {
+              DebugPrint("Collision_Player_PlayerProjectile");
+            } break;
+
+            case Collision_Player_Loot:
+            {
+              DebugPrint("Collision_Player_Loot");
+            } break;
+
+            case Collision_Enemy_PlayerProjectile:
+            {
+              DebugPrint("Collision_Enemy_PlayerProjectile");
+            } break;
+
+      }
+    }
+
+    function void DebugPrint(model_index EnumValue, u32 Depth)
+    {
+      DebugPrint("model_index\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case ModelIndex_None:
+            {
+              DebugPrint("ModelIndex_None");
+            } break;
+
+            case ModelIndex_Enemy:
+            {
+              DebugPrint("ModelIndex_Enemy");
+            } break;
+
+            case ModelIndex_Player:
+            {
+              DebugPrint("ModelIndex_Player");
+            } break;
+
+            case ModelIndex_Loot:
+            {
+              DebugPrint("ModelIndex_Loot");
+            } break;
+
+            case ModelIndex_Projectile:
+            {
+              DebugPrint("ModelIndex_Projectile");
+            } break;
+
+            case ModelIndex_Proton:
+            {
+              DebugPrint("ModelIndex_Proton");
+            } break;
+
+            case ModelIndex_Count:
+            {
+              DebugPrint("ModelIndex_Count");
+            } break;
+
+      }
+    }
+
+    function void DebugPrint(heap_allocation_type EnumValue, u32 Depth)
+    {
+      DebugPrint("heap_allocation_type\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case AllocationType_Free:
+            {
+              DebugPrint("AllocationType_Free");
+            } break;
+
+            case AllocationType_Reserved:
+            {
+              DebugPrint("AllocationType_Reserved");
+            } break;
+
+      }
+    }
+
+    function void DebugPrint(mutex_op EnumValue, u32 Depth)
+    {
+      DebugPrint("mutex_op\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case MutexOp_Waiting:
+            {
+              DebugPrint("MutexOp_Waiting");
+            } break;
+
+            case MutexOp_Aquired:
+            {
+              DebugPrint("MutexOp_Aquired");
+            } break;
+
+            case MutexOp_Released:
+            {
+              DebugPrint("MutexOp_Released");
+            } break;
+
+      }
+    }
+
+    function void DebugPrint(Sign EnumValue, u32 Depth)
+    {
+      DebugPrint("Sign\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case Negative:
+            {
+              DebugPrint("Negative");
+            } break;
+
+      }
+    }
+
+    function void DebugPrint(output_mode EnumValue, u32 Depth)
+    {
+      DebugPrint("output_mode\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case Output_NoOverwrite:
+            {
+              DebugPrint("Output_NoOverwrite");
+            } break;
+
+            case Output_Unsafe:
+            {
+              DebugPrint("Output_Unsafe");
+            } break;
+
+      }
+    }
+
+    function void DebugPrint(Chunk_ID EnumValue, u32 Depth)
+    {
+      DebugPrint("Chunk_ID\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case ID_NONE:
+            {
+              DebugPrint("ID_NONE");
+            } break;
+
+            case ID_VOX:
+            {
+              DebugPrint("ID_VOX");
+            } break;
+
+            case ID_MAIN:
+            {
+              DebugPrint("ID_MAIN");
+            } break;
+
+            case ID_PACK:
+            {
+              DebugPrint("ID_PACK");
+            } break;
+
+            case ID_SIZE:
+            {
+              DebugPrint("ID_SIZE");
+            } break;
+
+            case ID_XYZI:
+            {
+              DebugPrint("ID_XYZI");
+            } break;
+
+            case ID_RGBA:
+            {
+              DebugPrint("ID_RGBA");
+            } break;
+
+      }
+    }
+
+    function void DebugPrint(ttf_flag EnumValue, u32 Depth)
+    {
+      DebugPrint("ttf_flag\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case TTFFlag_OnCurve:
+            {
+              DebugPrint("TTFFlag_OnCurve");
+            } break;
+
+      }
+    }
+

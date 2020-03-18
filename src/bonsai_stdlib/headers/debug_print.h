@@ -142,6 +142,7 @@ meta(
 
     func (EnumDef)
     {
+      function void DebugPrint((EnumDef.name) EnumValue, u32 Depth = 0);
     }
 )
 #include <metaprogramming/output/for_all_datatypes_debug_print_prototypes.h>
@@ -183,6 +184,22 @@ meta(
 
   func (EnumDef)
   {
+    function void DebugPrint((EnumDef.name) EnumValue, u32 Depth)
+    {
+      DebugPrint("(EnumDef.name)\n", Depth);
+      switch (EnumValue)
+      {
+        (
+          EnumDef.map_values (ValueDef)
+          {
+            case (ValueDef.name):
+            {
+              DebugPrint("(ValueDef.name)");
+            } break;
+          }
+        )
+      }
+    }
   }
 
 )
