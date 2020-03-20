@@ -131,9 +131,6 @@
       function void DebugPrint( c_decl_variable* S, u32 Depth = 0);
       function void DebugPrint( c_decl_variable  S, u32 Depth = 0);
 
-      function void DebugPrint( c_decl_stream* S, u32 Depth = 0);
-      function void DebugPrint( c_decl_stream  S, u32 Depth = 0);
-
       function void DebugPrint( struct_def* S, u32 Depth = 0);
       function void DebugPrint( struct_def  S, u32 Depth = 0);
 
@@ -145,9 +142,6 @@
 
       function void DebugPrint( d_union_member* S, u32 Depth = 0);
       function void DebugPrint( d_union_member  S, u32 Depth = 0);
-
-      function void DebugPrint( c_decl_stream_chunk* S, u32 Depth = 0);
-      function void DebugPrint( c_decl_stream_chunk  S, u32 Depth = 0);
 
       function void DebugPrint( enum_def* S, u32 Depth = 0);
       function void DebugPrint( enum_def  S, u32 Depth = 0);
@@ -182,9 +176,6 @@
       function void DebugPrint( program_datatypes* S, u32 Depth = 0);
       function void DebugPrint( program_datatypes  S, u32 Depth = 0);
 
-      function void DebugPrint( c_decl_iterator* S, u32 Depth = 0);
-      function void DebugPrint( c_decl_iterator  S, u32 Depth = 0);
-
       function void DebugPrint( for_enum_constraints* S, u32 Depth = 0);
       function void DebugPrint( for_enum_constraints  S, u32 Depth = 0);
 
@@ -202,6 +193,9 @@
 
       function void DebugPrint( tagged_counted_string_stream_iterator* S, u32 Depth = 0);
       function void DebugPrint( tagged_counted_string_stream_iterator  S, u32 Depth = 0);
+
+      function void DebugPrint( c_decl_stream_chunk* S, u32 Depth = 0);
+      function void DebugPrint( c_decl_stream_chunk  S, u32 Depth = 0);
 
       function void DebugPrint( c_token_cursor* S, u32 Depth = 0);
       function void DebugPrint( c_token_cursor  S, u32 Depth = 0);
@@ -296,6 +290,9 @@
       function void DebugPrint( enum_def_iterator* S, u32 Depth = 0);
       function void DebugPrint( enum_def_iterator  S, u32 Depth = 0);
 
+      function void DebugPrint( c_decl_iterator* S, u32 Depth = 0);
+      function void DebugPrint( c_decl_iterator  S, u32 Depth = 0);
+
       function void DebugPrint( c_decl_cursor* S, u32 Depth = 0);
       function void DebugPrint( c_decl_cursor  S, u32 Depth = 0);
 
@@ -349,6 +346,9 @@
 
       function void DebugPrint( todo_iterator* S, u32 Depth = 0);
       function void DebugPrint( todo_iterator  S, u32 Depth = 0);
+
+      function void DebugPrint( c_decl_stream* S, u32 Depth = 0);
+      function void DebugPrint( c_decl_stream  S, u32 Depth = 0);
 
       function void DebugPrint( work_queue_entry* S, u32 Depth = 0);
       function void DebugPrint( work_queue_entry  S, u32 Depth = 0);

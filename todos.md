@@ -23,7 +23,6 @@
 
   ## compiler_feature
     - #99 Generate this?  Need a compiler feature to generate stuff from primitive types.
-    - #42 Do we care about generating these?
 
   ## memory_consumption
     - #85 Compress to 16 bit float?
@@ -78,7 +77,6 @@
     - #111 Proper expression parsing.  ie: enum_value_name = (1 << 4) or enum_value_name = SOME_MACRO(thing, ding)
     - #121 Need a way of dynamically allocating more of these on demand
     - #160 Generate this!
-    - #42 Do we care about generating these?
     - #180 Can we use Allocate() here instead?
 
   ## robustness

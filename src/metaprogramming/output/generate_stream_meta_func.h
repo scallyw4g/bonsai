@@ -1,40 +1,22 @@
 
+    
     struct meta_func_stream_chunk
     {
       meta_func Element;
       meta_func_stream_chunk* Next;
     };
 
+
+    
     struct meta_func_stream
     {
       meta_func_stream_chunk* FirstChunk;
       meta_func_stream_chunk* LastChunk;
     };
 
-    function void
-    Push(meta_func_stream* Stream, meta_func Element, memory_arena* Memory)
-    {
-      meta_func_stream_chunk* NextChunk = (meta_func_stream_chunk*)PushStruct(Memory, sizeof( meta_func_stream_chunk ), 1, 1);
-      NextChunk->Element = Element;
 
-      if (!Stream->FirstChunk)
-      {
-        Assert(!Stream->LastChunk);
-        Stream->FirstChunk = NextChunk;
-        Stream->LastChunk = NextChunk;
-      }
-      else
-      {
-        Stream->LastChunk->Next = NextChunk;
-        Stream->LastChunk = NextChunk;
-      }
 
-      Assert(NextChunk->Next == 0);
-      Assert(Stream->LastChunk->Next == 0);
-
-      return;
-    }
-
+    
     struct meta_func_iterator
     {
       meta_func_stream* Stream;
@@ -62,6 +44,33 @@
     Advance(meta_func_iterator* Iter)
     {
       Iter->At = Iter->At->Next;
+    }
+
+
+
+    
+    function void
+    Push(meta_func_stream* Stream, meta_func Element, memory_arena* Memory)
+    {
+      meta_func_stream_chunk* NextChunk = (meta_func_stream_chunk*)PushStruct(Memory, sizeof( meta_func_stream_chunk ), 1, 1);
+      NextChunk->Element = Element;
+
+      if (!Stream->FirstChunk)
+      {
+        Assert(!Stream->LastChunk);
+        Stream->FirstChunk = NextChunk;
+        Stream->LastChunk = NextChunk;
+      }
+      else
+      {
+        Stream->LastChunk->Next = NextChunk;
+        Stream->LastChunk = NextChunk;
+      }
+
+      Assert(NextChunk->Next == 0);
+      Assert(Stream->LastChunk->Next == 0);
+
+      return;
     }
 
 

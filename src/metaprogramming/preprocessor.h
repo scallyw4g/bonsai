@@ -64,20 +64,19 @@ meta(
 )
 
 meta(
-  func generate_stream(Type)
+  func generate_stream_chunk_struct(Type)
   {
     struct (Type.name)_stream_chunk
     {
       (Type.name) Element;
       (Type.name)_stream_chunk* Next;
     };
+  }
+)
 
-    struct (Type.name)_stream
-    {
-      (Type.name)_stream_chunk* FirstChunk;
-      (Type.name)_stream_chunk* LastChunk;
-    };
-
+meta(
+  func generate_stream_push(Type)
+  {
     function void
     Push((Type.name)_stream* Stream, (Type.name) Element, memory_arena* Memory)
     {
@@ -101,7 +100,24 @@ meta(
 
       return;
     }
+  }
+)
 
+meta(
+  func generate_stream_struct(Type)
+  {
+    struct (Type.name)_stream
+    {
+      (Type.name)_stream_chunk* FirstChunk;
+      (Type.name)_stream_chunk* LastChunk;
+    };
+
+  }
+)
+
+meta(
+  func generate_stream_iterator(Type)
+  {
     struct (Type.name)_iterator
     {
       (Type.name)_stream* Stream;
@@ -131,6 +147,19 @@ meta(
       Iter->At = Iter->At->Next;
     }
 
+  }
+)
+
+meta(
+  func generate_stream(Type)
+  {
+    (generate_stream_chunk_struct(Type))
+
+    (generate_stream_struct(Type))
+
+    (generate_stream_iterator(Type))
+
+    (generate_stream_push(Type))
   }
 )
 
@@ -173,7 +202,6 @@ enum metaprogramming_directive
 meta( string_and_value_tables(metaprogramming_directive) )
 #include <metaprogramming/output/string_and_value_tables_metaprogramming_directive.h>
 
-
 enum meta_arg_operator
 {
   meta_arg_operator_noop,
@@ -194,6 +222,9 @@ enum meta_transform_op
 };
 meta(generate_value_table(meta_transform_op))
 #include <metaprogramming/output/generate_value_table_meta_transform_op.h>
+
+
+
 
 
 enum c_token_type
@@ -264,16 +295,9 @@ struct c_decl_variable
   counted_string Name;
 };
 
-// TODO(Jesse, id: 42, tags: compiler_feature, metaprogramming): Do we care about generating these?
-// We'd need to add a compiler feature to support outputting the datatypes to
-// different files .. either that or tell it to not generate the datatypes,
-// just the functions and only write these by hand.
 struct c_decl_stream_chunk;
-struct c_decl_stream
-{
-  c_decl_stream_chunk* FirstChunk;
-  c_decl_stream_chunk* LastChunk;
-};
+meta( generate_stream_struct(c_decl) )
+#include <metaprogramming/output/generate_stream_struct_c_decl.h>
 
 struct struct_def
 {
@@ -298,9 +322,11 @@ meta(
   })
 )
 #include <metaprogramming/output/d_union_c_decl.h>
-
 meta(generate_cursor(c_decl))
 #include <metaprogramming/output/generate_cursor_c_decl.h>
+
+meta( generate_stream_chunk_struct(c_decl) )
+#include <metaprogramming/output/generate_stream_chunk_struct_c_decl.h>
 
 struct enum_field
 {
@@ -318,12 +344,6 @@ struct d_union_member
 };
 meta(generate_stream(d_union_member))
 #include <metaprogramming/output/generate_stream_d_union_member.h>
-
-struct c_decl_stream_chunk
-{
-  c_decl Element;
-  c_decl_stream_chunk* Next;
-};
 
 struct enum_def
 {
@@ -448,11 +468,6 @@ struct program_datatypes
 {
   struct_def_stream Structs;
   enum_def_stream Enums;
-};
-
-struct c_decl_iterator
-{
-  c_decl_stream_chunk* At;
 };
 
 struct for_enum_constraints
@@ -591,47 +606,8 @@ GetToken(ansi_stream* Stream, u32 Lookahead = 0)
   return Result;
 }
 
-function c_decl_iterator
-Iterator(c_decl_stream* Stream)
-{
-  c_decl_iterator Iterator = {
-    .At = Stream->FirstChunk
-  };
-  return Iterator;
-}
+meta(generate_stream_iterator(c_decl))
+#include <metaprogramming/output/generate_stream_iterator_c_decl.h>
 
-function b32
-IsValid(c_decl_iterator* Iter)
-{
-  b32 Result = (Iter->At != 0);
-  return Result;
-}
-
-function void
-Advance(c_decl_iterator* Iter)
-{
-  Iter->At = Iter->At->Next;
-}
-
-void
-Push(c_decl_stream* Stream, c_decl Element, memory_arena* Memory)
-{
-  c_decl_stream_chunk* NextChunk = Allocate(c_decl_stream_chunk, Memory, 1);
-  NextChunk->Element = Element;
-
-  if (!Stream->FirstChunk)
-  {
-    Stream->FirstChunk = NextChunk;
-    Stream->LastChunk = NextChunk;
-  }
-  else
-  {
-    Stream->LastChunk->Next = NextChunk;
-    Stream->LastChunk = NextChunk;
-  }
-
-  Assert(NextChunk->Next == 0);
-  Assert(Stream->LastChunk->Next == 0);
-
-  return;
-}
+meta(generate_stream_push(c_decl))
+#include <metaprogramming/output/generate_stream_push_c_decl.h>
