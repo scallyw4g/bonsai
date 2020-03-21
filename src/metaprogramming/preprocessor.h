@@ -279,53 +279,53 @@ meta(generate_string_table(c_token_type))
 #include <metaprogramming/output/generate_string_table_c_token_type.h>
 
 meta(
-  d_union(c_decl_function,
+  d_union(struct_member_function,
   {
-    c_decl_function_normal      enum_only,
-    c_decl_function_operator    enum_only,
-    c_decl_function_constructor enum_only,
-    c_decl_function_destructor  enum_only,
+    struct_member_function_normal      enum_only,
+    struct_member_function_operator    enum_only,
+    struct_member_function_constructor enum_only,
+    struct_member_function_destructor  enum_only,
   })
 )
 #include <metaprogramming/output/d_union_c_decl_function.h>
 
-struct c_decl_variable
+struct struct_member_variable
 {
   counted_string Type;
   counted_string Name;
 };
 
-struct c_decl_stream_chunk;
-meta( generate_stream_struct(c_decl) )
+struct struct_member_stream_chunk;
+meta( generate_stream_struct(struct_member) )
 #include <metaprogramming/output/generate_stream_struct_c_decl.h>
 
 struct struct_def
 {
   counted_string Name; // TODO(Jesse, id: 190, tags: immediate): Does this make more sense named 'Type'
   counted_string DefinedInFile;
-  c_decl_stream Fields; // TODO(Jesse id: 159, tags: immediate, cleanup) Rename to Members
+  struct_member_stream Fields; // TODO(Jesse id: 159, tags: immediate, cleanup) Rename to Members
 };
 meta(stream_and_cursor(struct_def))
 #include <metaprogramming/output/stream_and_cursor_struct_def.h>
 
-struct c_decl_union
+struct struct_member_union
 {
   struct_def Body;
 };
 
 meta(
-  d_union(c_decl,
+  d_union(struct_member,
   {
-    c_decl_variable,
-    c_decl_function,
-    c_decl_union,
+    struct_member_variable,
+    struct_member_function,
+    struct_member_union,
   })
 )
 #include <metaprogramming/output/d_union_c_decl.h>
-meta(generate_cursor(c_decl))
+meta(generate_cursor(struct_member))
 #include <metaprogramming/output/generate_cursor_c_decl.h>
 
-meta( generate_stream_chunk_struct(c_decl) )
+meta( generate_stream_chunk_struct(struct_member) )
 #include <metaprogramming/output/generate_stream_chunk_struct_c_decl.h>
 
 struct enum_field
@@ -395,7 +395,7 @@ struct d_union_decl
   counted_string Name;
 
   d_union_member_stream Members;
-  c_decl_stream CommonMembers;
+  struct_member_stream CommonMembers;
 
   counted_string CustomEnumType;
 };
@@ -606,8 +606,8 @@ GetToken(ansi_stream* Stream, u32 Lookahead = 0)
   return Result;
 }
 
-meta(generate_stream_iterator(c_decl))
+meta(generate_stream_iterator(struct_member))
 #include <metaprogramming/output/generate_stream_iterator_c_decl.h>
 
-meta(generate_stream_push(c_decl))
+meta(generate_stream_push(struct_member))
 #include <metaprogramming/output/generate_stream_push_c_decl.h>

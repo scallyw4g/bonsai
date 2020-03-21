@@ -690,15 +690,15 @@ GenerateStructDef(d_union_decl* dUnion, memory_arena* Memory)
   counted_string Result = FormatCountedString(Memory, CSz("struct %S\n{\n  %S Type;\n"),
       UnionName, TagType);
 
-  ITERATE_OVER(c_decl, &dUnion->CommonMembers)
+  ITERATE_OVER(struct_member, &dUnion->CommonMembers)
   {
-    c_decl* Member = GET_ELEMENT(Iter);
-    Assert(Member->Type == type_c_decl_variable);
+    struct_member* Member = GET_ELEMENT(Iter);
+    Assert(Member->Type == type_struct_member_variable);
     Result =
       Concat(Result,
         FormatCountedString(Memory, CSz("  %S %S;\n"),
-          Member->c_decl_variable.Type,
-          Member->c_decl_variable.Name),
+          Member->struct_member_variable.Type,
+          Member->struct_member_variable.Name),
       Memory);
   }
   Result = Concat(Result, CS("\n  union\n  {\n"), Memory);
@@ -861,9 +861,9 @@ ParseDiscriminatedUnion(c_parse_result* Parser, program_datatypes* Datatypes, co
     RequireToken(Parser, CTokenType_OpenBrace);
     while (!OptionalToken(Parser, CTokenType_CloseBrace))
     {
-      c_decl Decl = {
-        .Type = type_c_decl_variable,
-        .c_decl_variable = {
+      struct_member Decl = {
+        .Type = type_struct_member_variable,
+        .struct_member_variable = {
           .Type = RequireToken(Parser, CTokenType_Identifier).Value,
           .Name = RequireToken(Parser, CTokenType_Identifier).Value
         }
@@ -1161,12 +1161,12 @@ IsCxxDefinitionKeyword(counted_string Value)
 function struct_def
 ParseStructBody(c_parse_result* Parser, counted_string StructName, memory_arena* Memory);
 
-function c_decl
+function struct_member
 ParseDeclaration(c_parse_result* Parser, counted_string StructName, memory_arena* Memory)
 {
   TIMED_FUNCTION();
-  c_decl Result = {
-    .Type = type_c_decl_variable
+  struct_member Result = {
+    .Type = type_struct_member_variable
   };
 
   c_token FirstToken = PeekToken(Parser);
@@ -1179,8 +1179,8 @@ ParseDeclaration(c_parse_result* Parser, counted_string StructName, memory_arena
       counted_string Name = RequireToken(Parser, CTokenType_Identifier).Value;
       Assert(StringsMatch(StructName, Name));
       EatFunctionDecl(Parser);
-      Result.Type = type_c_decl_function;
-      Result.c_decl_function.Type = type_c_decl_function_destructor;
+      Result.Type = type_struct_member_function;
+      Result.struct_member_function.Type = type_struct_member_function_destructor;
     } break;
 
     case CTokenType_Identifier:
@@ -1201,42 +1201,42 @@ ParseDeclaration(c_parse_result* Parser, counted_string StructName, memory_arena
           {
             Assert(StringsMatch(StructName, FirstToken.Value));
             EatFunctionDecl(Parser);
-            Result.Type = type_c_decl_function;
-            Result.c_decl_function.Type = type_c_decl_function_constructor;
+            Result.Type = type_struct_member_function;
+            Result.struct_member_function.Type = type_struct_member_function_constructor;
             Done = True;
           } break;
 
           case CTokenType_Ampersand:
           {
             RequireToken(Parser, CTokenType_Ampersand);
-            Result.c_decl_variable.Type = Concat(Result.c_decl_variable.Type, CS("&"), Memory);
+            Result.struct_member_variable.Type = Concat(Result.struct_member_variable.Type, CS("&"), Memory);
           } break;
 
           case CTokenType_Star:
           {
             RequireToken(Parser, CTokenType_Star);
-            Result.c_decl_variable.Type = Concat(Result.c_decl_variable.Type, CS("*"), Memory);
+            Result.struct_member_variable.Type = Concat(Result.struct_member_variable.Type, CS("*"), Memory);
           } break;
 
           case CTokenType_Identifier:
           {
             if (StringsMatch(NextToken.Value, CS("unsigned")))
             {
-              Result.c_decl_variable.Type = Concat( Result.c_decl_variable.Type, RequireToken(Parser, CTokenType_Identifier).Value, Memory);
+              Result.struct_member_variable.Type = Concat( Result.struct_member_variable.Type, RequireToken(Parser, CTokenType_Identifier).Value, Memory);
             }
             else if (StringsMatch(NextToken.Value, CS("union")))
             {
               RequireToken(Parser, CToken(CS("union")));
 
-              Result.Type = type_c_decl_union;
-              Result.c_decl_union.Body = ParseStructBody(Parser, CS("anonymous union"), Memory);
+              Result.Type = type_struct_member_union;
+              Result.struct_member_union.Body = ParseStructBody(Parser, CS("anonymous union"), Memory);
               Done = True;
               Unnamed = True;
             }
             else if (StringsMatch(NextToken.Value, CS("operator")))
             {
-              Result.Type = type_c_decl_function;
-              Result.c_decl_function.Type = type_c_decl_function_operator;
+              Result.Type = type_struct_member_function;
+              Result.struct_member_function.Type = type_struct_member_function_operator;
               EatUntil(Parser, CTokenType_CloseBrace);
               Done = True;
               Unnamed = True;
@@ -1248,8 +1248,8 @@ ParseDeclaration(c_parse_result* Parser, counted_string StructName, memory_arena
               {
                 /* counted_string FunctionName = */ RequireToken(Parser, CTokenType_Identifier);
                 EatFunctionDecl(Parser);
-                Result.Type = type_c_decl_function;
-                Result.c_decl_function.Type = type_c_decl_function_normal;
+                Result.Type = type_struct_member_function;
+                Result.struct_member_function.Type = type_struct_member_function_normal;
               }
 
               if (DefKeywordsEncountered++ == 1)
@@ -1260,7 +1260,7 @@ ParseDeclaration(c_parse_result* Parser, counted_string StructName, memory_arena
 
             if (!Done)
             {
-              Result.c_decl_variable.Type = Concat( Result.c_decl_variable.Type, RequireToken(Parser, CTokenType_Identifier).Value, Memory);
+              Result.struct_member_variable.Type = Concat( Result.struct_member_variable.Type, RequireToken(Parser, CTokenType_Identifier).Value, Memory);
             }
           } break;
 
@@ -1275,9 +1275,9 @@ ParseDeclaration(c_parse_result* Parser, counted_string StructName, memory_arena
     InvalidDefaultWhileParsing(Parser, CS("While parsing decl type 1."));
   }
 
-  if (!Unnamed && Result.Type == type_c_decl_variable)
+  if (!Unnamed && Result.Type == type_struct_member_variable)
   {
-    Result.c_decl_variable.Name = RequireToken(Parser, CTokenType_Identifier).Value;
+    Result.struct_member_variable.Name = RequireToken(Parser, CTokenType_Identifier).Value;
     switch (PeekToken(Parser).Type)
     {
       case CTokenType_OpenParen:
@@ -1301,27 +1301,27 @@ ParseDeclaration(c_parse_result* Parser, counted_string StructName, memory_arena
 
 #if 0
 function void
-DumpCDeclStreamToConsole(c_decl_stream* Stream)
+DumpCDeclStreamToConsole(struct_member_stream* Stream)
 {
-  for (c_decl_iterator Iter = Iterator(Stream);
+  for (struct_member_iterator Iter = Iterator(Stream);
       IsValid(&Iter);
       Advance(&Iter))
   {
     switch(Iter.At->Element.Type)
     {
-      case type_c_decl_function:
+      case type_struct_member_function:
       {
-        switch(Iter.At->Element.c_decl_function.Type)
+        switch(Iter.At->Element.struct_member_function.Type)
         {
-          case type_c_decl_function_normal:
+          case type_struct_member_function_normal:
           {
             Log("  Function\n");
           } break;
-          case type_c_decl_function_constructor:
+          case type_struct_member_function_constructor:
           {
             Log("  Constructor\n");
           } break;
-          case type_c_decl_function_destructor:
+          case type_struct_member_function_destructor:
           {
             Log("  Destructor\n");
           } break;
@@ -1329,10 +1329,10 @@ DumpCDeclStreamToConsole(c_decl_stream* Stream)
         }
       } break;
 
-      case type_c_decl_variable:
+      case type_struct_member_variable:
       {
-        counted_string Type = Iter.At->Element.c_decl_variable.Type;
-        counted_string Name = Iter.At->Element.c_decl_variable.Name;
+        counted_string Type = Iter.At->Element.struct_member_variable.Type;
+        counted_string Name = Iter.At->Element.struct_member_variable.Name;
         Log("  %.*s %.*s\n", Type.Count, Type.Start, Name.Count, Name.Start);
       } break;
 
@@ -1349,28 +1349,28 @@ DumpStruct(struct_def* Struct)
 }
 
 function void
-PrintCDecl(c_decl* Decl, struct_def_stream* ProgramStructs)
+PrintCDecl(struct_member* Decl, struct_def_stream* ProgramStructs)
 {
   switch (Decl->Type)
   {
-    case type_c_decl_variable:
+    case type_struct_member_variable:
     {
       Log("%.*s %.*s",
-          Decl->c_decl_variable.Type.Count, Decl->c_decl_variable.Type.Start,
-          Decl->c_decl_variable.Name.Count, Decl->c_decl_variable.Name.Start);
+          Decl->struct_member_variable.Type.Count, Decl->struct_member_variable.Type.Start,
+          Decl->struct_member_variable.Name.Count, Decl->struct_member_variable.Name.Start);
 
       Log("\n");
     } break;
 
-    case type_c_decl_union:
+    case type_struct_member_union:
     {
-      for (c_decl_iterator Iter = Iterator(&Decl->c_decl_union.Body.Fields);
+      for (struct_member_iterator Iter = Iterator(&Decl->struct_member_union.Body.Fields);
           IsValid(&Iter);
           Advance(&Iter))
       {
-        if (Iter.At->Element.Type == type_c_decl_variable)
+        if (Iter.At->Element.Type == type_struct_member_variable)
         {
-          struct_def* Struct = GetStructByType(ProgramStructs, Iter.At->Element.c_decl_variable.Type);
+          struct_def* Struct = GetStructByType(ProgramStructs, Iter.At->Element.struct_member_variable.Type);
           if (Struct)
           {
             PrintCDecl(&Iter.At->Element, ProgramStructs);
@@ -1378,7 +1378,7 @@ PrintCDecl(c_decl* Decl, struct_def_stream* ProgramStructs)
           }
           else
           {
-            Error("Couldn't find struct type %*.s", (u32)Iter.At->Element.c_decl_variable.Name.Count, Iter.At->Element.c_decl_variable.Name.Start);
+            Error("Couldn't find struct type %*.s", (u32)Iter.At->Element.struct_member_variable.Name.Count, Iter.At->Element.struct_member_variable.Name.Start);
           }
         }
         else
@@ -1446,15 +1446,15 @@ HasMemberOfType(struct_def* Struct, counted_string MemberType)
   b32 Result = False;
   if (MemberType.Start)
   {
-    for (c_decl_iterator Iter = Iterator(&Struct->Fields);
+    for (struct_member_iterator Iter = Iterator(&Struct->Fields);
         IsValid(&Iter) && !Result;
         Advance(&Iter))
     {
       switch (Iter.At->Element.Type)
       {
-        case type_c_decl_variable:
+        case type_struct_member_variable:
         {
-          if (StringsMatch(Iter.At->Element.c_decl_variable.Type, MemberType))
+          if (StringsMatch(Iter.At->Element.struct_member_variable.Type, MemberType))
           {
             Result = True;
           }
@@ -1503,7 +1503,7 @@ ParseStructBody(c_parse_result* Parser, counted_string StructName, memory_arena*
     }
     else
     {
-      c_decl Declaration = ParseDeclaration(Parser, Result.Name, Memory);
+      struct_member Declaration = ParseDeclaration(Parser, Result.Name, Memory);
       Push(&Result.Fields, Declaration, Memory);
     }
 
@@ -2135,29 +2135,29 @@ ReplaceValues(string_builder* OutputBuilder, c_parse_result* BodyText, counted_s
 }
 
 function counted_string
-GetNameForCDecl(c_decl* Decl)
+GetNameForCDecl(struct_member* Decl)
 {
   counted_string Result = {};
 
   switch (Decl->Type)
   {
-    case type_c_decl_noop:
+    case type_struct_member_noop:
     {
       Result = CSz("(unnamed)");
     } break;
 
-    case type_c_decl_function:
+    case type_struct_member_function:
     {
       // TODO(Jesse id: 189): Parse out function names?
       Result = CSz("(unnamed function)");
     } break;
 
-    case type_c_decl_variable:
+    case type_struct_member_variable:
     {
-      Result = Decl->c_decl_variable.Name;
+      Result = Decl->struct_member_variable.Name;
     } break;
 
-    case type_c_decl_union:
+    case type_struct_member_union:
     {
       Result = CSz("(unnamed union)");
     } break;
@@ -2280,29 +2280,29 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgName, c
 
             if (Datatype->Type == type_struct_def)
             {
-              ITERATE_OVER(c_decl, &Datatype->struct_def->Fields)
+              ITERATE_OVER(struct_member, &Datatype->struct_def->Fields)
               {
-                c_decl* Member = GET_ELEMENT(Iter);
+                struct_member* Member = GET_ELEMENT(Iter);
 
                 counted_string MemberName = GetNameForCDecl(Member);
                 counted_string MemberType = CSz("TODO(Jesse): How do we get the type?");
 
                 switch (Member->Type)
                 {
-                  case type_c_decl_noop:
+                  case type_struct_member_noop:
                   {
                     InvalidCodePath();
                   } break;
 
-                  case type_c_decl_function:
+                  case type_struct_member_function:
                   {
                   } break;
 
-                  case type_c_decl_variable:
+                  case type_struct_member_variable:
 
                   {
                     if ( ContainingConstraint.Count &&
-                         !StringsMatch(Member->c_decl_variable.Type, ContainingConstraint) )
+                         !StringsMatch(Member->struct_member_variable.Type, ContainingConstraint) )
                     {
                       // Containing constraint failed
                     }
@@ -2313,16 +2313,16 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgName, c
 
                   } break;
 
-                  case type_c_decl_union:
+                  case type_struct_member_union:
                   {
-                    for (c_decl_iterator UnionMemberIter = Iterator(&Member->c_decl_union.Body.Fields);
+                    for (struct_member_iterator UnionMemberIter = Iterator(&Member->struct_member_union.Body.Fields);
                         IsValid(&UnionMemberIter);
                         Advance(&UnionMemberIter))
                     {
-                      c_decl* UnionMember = GET_ELEMENT(UnionMemberIter);
-                      if (UnionMember->Type == type_c_decl_variable)
+                      struct_member* UnionMember = GET_ELEMENT(UnionMemberIter);
+                      if (UnionMember->Type == type_struct_member_variable)
                       {
-                        struct_def* Struct = GetStructByType(&Datatypes->Structs, UnionMember->c_decl_variable.Type);
+                        struct_def* Struct = GetStructByType(&Datatypes->Structs, UnionMember->struct_member_variable.Type);
                         if (Struct)
                         {
                           if (ContainingConstraint.Count && HasMemberOfType(Struct, ContainingConstraint))
@@ -2332,7 +2332,7 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgName, c
                         }
                         else
                         {
-                          counted_string Name = UnionMember->c_decl_variable.Type;
+                          counted_string Name = UnionMember->struct_member_variable.Type;
                           counted_string ParentStructName = Datatype->struct_def->Name;
                           Warn("Couldn't find struct type '%.*s' in union parent '%.*s'.", (u32)Name.Count, Name.Start, (u32)ParentStructName.Count, ParentStructName.Start);
                         }

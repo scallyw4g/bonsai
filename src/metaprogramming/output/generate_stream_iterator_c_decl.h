@@ -1,14 +1,14 @@
 
-    struct c_decl_iterator
+    struct struct_member_iterator
     {
-      c_decl_stream* Stream;
-      c_decl_stream_chunk* At;
+      struct_member_stream* Stream;
+      struct_member_stream_chunk* At;
     };
 
-    function c_decl_iterator
-    Iterator(c_decl_stream* Stream)
+    function struct_member_iterator
+    Iterator(struct_member_stream* Stream)
     {
-      c_decl_iterator Iterator = {
+      struct_member_iterator Iterator = {
         .Stream = Stream,
         .At = Stream->FirstChunk
       };
@@ -16,14 +16,14 @@
     }
 
     function b32
-    IsValid(c_decl_iterator* Iter)
+    IsValid(struct_member_iterator* Iter)
     {
       b32 Result = Iter->At != 0;
       return Result;
     }
 
     function void
-    Advance(c_decl_iterator* Iter)
+    Advance(struct_member_iterator* Iter)
     {
       Iter->At = Iter->At->Next;
     }

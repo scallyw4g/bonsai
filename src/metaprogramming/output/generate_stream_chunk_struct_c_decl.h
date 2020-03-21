@@ -1,7 +1,7 @@
 
-    struct c_decl_stream_chunk
+    struct struct_member_stream_chunk
     {
-      c_decl Element;
-      c_decl_stream_chunk* Next;
+      struct_member Element;
+      struct_member_stream_chunk* Next;
     };
 

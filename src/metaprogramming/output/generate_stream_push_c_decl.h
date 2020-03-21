@@ -1,8 +1,8 @@
 
     function void
-    Push(c_decl_stream* Stream, c_decl Element, memory_arena* Memory)
+    Push(struct_member_stream* Stream, struct_member Element, memory_arena* Memory)
     {
-      c_decl_stream_chunk* NextChunk = (c_decl_stream_chunk*)PushStruct(Memory, sizeof( c_decl_stream_chunk ), 1, 1);
+      struct_member_stream_chunk* NextChunk = (struct_member_stream_chunk*)PushStruct(Memory, sizeof( struct_member_stream_chunk ), 1, 1);
       NextChunk->Element = Element;
 
       if (!Stream->FirstChunk)

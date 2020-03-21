@@ -1,16 +1,16 @@
 
-    struct c_decl_cursor
+    struct struct_member_cursor
     {
-      c_decl* Start;
-      c_decl* End;
-      c_decl* At;
+      struct_member* Start;
+      struct_member* End;
+      struct_member* At;
     };
 
-    function c_decl_cursor
-    CDeclCursor(umm ElementCount, memory_arena* Memory)
+    function struct_member_cursor
+    StructMemberCursor(umm ElementCount, memory_arena* Memory)
     {
-      c_decl* Start = (c_decl*)PushStruct(Memory, sizeof( c_decl ), 1, 1);
-      c_decl_cursor Result = {
+      struct_member* Start = (struct_member*)PushStruct(Memory, sizeof( struct_member ), 1, 1);
+      struct_member_cursor Result = {
         .Start = Start,
         .End = Start+ElementCount,
         .At = Start,

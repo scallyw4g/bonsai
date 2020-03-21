@@ -1,20 +1,20 @@
-enum c_decl_type
+enum struct_member_type
 {
-  type_c_decl_noop,
-  type_c_decl_variable,
-  type_c_decl_function,
-  type_c_decl_union,
+  type_struct_member_noop,
+  type_struct_member_variable,
+  type_struct_member_function,
+  type_struct_member_union,
 };
 
-struct c_decl
+struct struct_member
 {
-  c_decl_type Type;
+  struct_member_type Type;
 
   union
   {
-    c_decl_variable c_decl_variable;
-    c_decl_function c_decl_function;
-    c_decl_union c_decl_union;
+    struct_member_variable struct_member_variable;
+    struct_member_function struct_member_function;
+    struct_member_union struct_member_union;
   };
 };
 

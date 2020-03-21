@@ -1,8 +1,8 @@
 
-    struct c_decl_stream
+    struct struct_member_stream
     {
-      c_decl_stream_chunk* FirstChunk;
-      c_decl_stream_chunk* LastChunk;
+      struct_member_stream_chunk* FirstChunk;
+      struct_member_stream_chunk* LastChunk;
     };
 
 

@@ -1932,9 +1932,9 @@
       }
     }
 
-    function void DebugPrint( c_decl_variable S, u32 Depth)
+    function void DebugPrint( struct_member_variable S, u32 Depth)
     {
-      DebugPrint("c_decl_variable\n", Depth);
+      DebugPrint("struct_member_variable\n", Depth);
       
           DebugPrint("Type = ", Depth);
           DebugPrint(S.Type, Depth+1);
@@ -1946,11 +1946,11 @@
 
     }
 
-    function void DebugPrint(c_decl_variable* S, u32 Depth)
+    function void DebugPrint(struct_member_variable* S, u32 Depth)
     {
       if (S)
       {
-        DebugPrint("c_decl_variable\n", Depth);
+        DebugPrint("struct_member_variable\n", Depth);
         
             DebugPrint("Type = ", Depth);
             DebugPrint(S->Type, Depth+1);
@@ -2002,9 +2002,9 @@
       }
     }
 
-    function void DebugPrint( c_decl_union S, u32 Depth)
+    function void DebugPrint( struct_member_union S, u32 Depth)
     {
-      DebugPrint("c_decl_union\n", Depth);
+      DebugPrint("struct_member_union\n", Depth);
       
           DebugPrint("Body = ", Depth);
           DebugPrint(S.Body, Depth+1);
@@ -2012,11 +2012,11 @@
 
     }
 
-    function void DebugPrint(c_decl_union* S, u32 Depth)
+    function void DebugPrint(struct_member_union* S, u32 Depth)
     {
       if (S)
       {
-        DebugPrint("c_decl_union\n", Depth);
+        DebugPrint("struct_member_union\n", Depth);
         
             DebugPrint("Body = ", Depth);
             DebugPrint(S->Body, Depth+1);
@@ -2694,9 +2694,9 @@
       }
     }
 
-    function void DebugPrint( c_decl_stream_chunk S, u32 Depth)
+    function void DebugPrint( struct_member_stream_chunk S, u32 Depth)
     {
-      DebugPrint("c_decl_stream_chunk\n", Depth);
+      DebugPrint("struct_member_stream_chunk\n", Depth);
       
           DebugPrint("Element = ", Depth);
           DebugPrint(S.Element, Depth+1);
@@ -2708,11 +2708,11 @@
 
     }
 
-    function void DebugPrint(c_decl_stream_chunk* S, u32 Depth)
+    function void DebugPrint(struct_member_stream_chunk* S, u32 Depth)
     {
       if (S)
       {
-        DebugPrint("c_decl_stream_chunk\n", Depth);
+        DebugPrint("struct_member_stream_chunk\n", Depth);
         
             DebugPrint("Element = ", Depth);
             DebugPrint(S->Element, Depth+1);
@@ -2875,6 +2875,29 @@
 
             DebugPrint("At = ", Depth);
             DebugPrint(S->At, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
+    function void DebugPrint( struct_member S, u32 Depth)
+    {
+      DebugPrint("struct_member\n", Depth);
+      
+          DebugPrint("Type = ", Depth);
+          DebugPrint(S.Type, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(struct_member* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("struct_member\n", Depth);
+        
+            DebugPrint("Type = ", Depth);
+            DebugPrint(S->Type, Depth+1);
             DebugPrint("\n");
 
       }
@@ -3183,9 +3206,9 @@
       }
     }
 
-    function void DebugPrint( c_decl S, u32 Depth)
+    function void DebugPrint( struct_member S, u32 Depth)
     {
-      DebugPrint("c_decl\n", Depth);
+      DebugPrint("struct_member\n", Depth);
       
           DebugPrint("Type = ", Depth);
           DebugPrint(S.Type, Depth+1);
@@ -3193,11 +3216,11 @@
 
     }
 
-    function void DebugPrint(c_decl* S, u32 Depth)
+    function void DebugPrint(struct_member* S, u32 Depth)
     {
       if (S)
       {
-        DebugPrint("c_decl\n", Depth);
+        DebugPrint("struct_member\n", Depth);
         
             DebugPrint("Type = ", Depth);
             DebugPrint(S->Type, Depth+1);
@@ -3294,29 +3317,6 @@
 
             DebugPrint("At = ", Depth);
             DebugPrint(S->At, Depth+1);
-            DebugPrint("\n");
-
-      }
-    }
-
-    function void DebugPrint( shader_uniform_tmp S, u32 Depth)
-    {
-      DebugPrint("shader_uniform_tmp\n", Depth);
-      
-          DebugPrint("Type = ", Depth);
-          DebugPrint(S.Type, Depth+1);
-          DebugPrint("\n");
-
-    }
-
-    function void DebugPrint(shader_uniform_tmp* S, u32 Depth)
-    {
-      if (S)
-      {
-        DebugPrint("shader_uniform_tmp\n", Depth);
-        
-            DebugPrint("Type = ", Depth);
-            DebugPrint(S->Type, Depth+1);
             DebugPrint("\n");
 
       }
@@ -3609,9 +3609,9 @@
       }
     }
 
-    function void DebugPrint( c_decl_function S, u32 Depth)
+    function void DebugPrint( struct_member_function S, u32 Depth)
     {
-      DebugPrint("c_decl_function\n", Depth);
+      DebugPrint("struct_member_function\n", Depth);
       
           DebugPrint("Type = ", Depth);
           DebugPrint(S.Type, Depth+1);
@@ -3619,11 +3619,11 @@
 
     }
 
-    function void DebugPrint(c_decl_function* S, u32 Depth)
+    function void DebugPrint(struct_member_function* S, u32 Depth)
     {
       if (S)
       {
-        DebugPrint("c_decl_function\n", Depth);
+        DebugPrint("struct_member_function\n", Depth);
         
             DebugPrint("Type = ", Depth);
             DebugPrint(S->Type, Depth+1);
@@ -3764,9 +3764,9 @@
       }
     }
 
-    function void DebugPrint( c_decl_iterator S, u32 Depth)
+    function void DebugPrint( struct_member_iterator S, u32 Depth)
     {
-      DebugPrint("c_decl_iterator\n", Depth);
+      DebugPrint("struct_member_iterator\n", Depth);
       
           DebugPrint("Stream = ", Depth);
           DebugPrint(S.Stream, Depth+1);
@@ -3778,11 +3778,11 @@
 
     }
 
-    function void DebugPrint(c_decl_iterator* S, u32 Depth)
+    function void DebugPrint(struct_member_iterator* S, u32 Depth)
     {
       if (S)
       {
-        DebugPrint("c_decl_iterator\n", Depth);
+        DebugPrint("struct_member_iterator\n", Depth);
         
             DebugPrint("Stream = ", Depth);
             DebugPrint(S->Stream, Depth+1);
@@ -3795,9 +3795,9 @@
       }
     }
 
-    function void DebugPrint( c_decl_cursor S, u32 Depth)
+    function void DebugPrint( struct_member_cursor S, u32 Depth)
     {
-      DebugPrint("c_decl_cursor\n", Depth);
+      DebugPrint("struct_member_cursor\n", Depth);
       
           DebugPrint("Start = ", Depth);
           DebugPrint(S.Start, Depth+1);
@@ -3813,11 +3813,11 @@
 
     }
 
-    function void DebugPrint(c_decl_cursor* S, u32 Depth)
+    function void DebugPrint(struct_member_cursor* S, u32 Depth)
     {
       if (S)
       {
-        DebugPrint("c_decl_cursor\n", Depth);
+        DebugPrint("struct_member_cursor\n", Depth);
         
             DebugPrint("Start = ", Depth);
             DebugPrint(S->Start, Depth+1);
@@ -4377,9 +4377,9 @@
       }
     }
 
-    function void DebugPrint( c_decl_stream S, u32 Depth)
+    function void DebugPrint( struct_member_stream S, u32 Depth)
     {
-      DebugPrint("c_decl_stream\n", Depth);
+      DebugPrint("struct_member_stream\n", Depth);
       
           DebugPrint("FirstChunk = ", Depth);
           DebugPrint(S.FirstChunk, Depth+1);
@@ -4391,11 +4391,11 @@
 
     }
 
-    function void DebugPrint(c_decl_stream* S, u32 Depth)
+    function void DebugPrint(struct_member_stream* S, u32 Depth)
     {
       if (S)
       {
-        DebugPrint("c_decl_stream\n", Depth);
+        DebugPrint("struct_member_stream\n", Depth);
         
             DebugPrint("FirstChunk = ", Depth);
             DebugPrint(S->FirstChunk, Depth+1);
@@ -10059,15 +10059,15 @@
       }
     }
 
-    function void DebugPrint(c_decl_type EnumValue, u32 Depth)
+    function void DebugPrint(struct_member_type EnumValue, u32 Depth)
     {
-      DebugPrint("c_decl_type\n", Depth);
+      DebugPrint("struct_member_type\n", Depth);
       switch (EnumValue)
       {
         
-            case type_c_decl_noop:
+            case type_struct_member_noop:
             {
-              DebugPrint("type_c_decl_noop");
+              DebugPrint("type_struct_member_noop");
             } break;
 
             case type_c_decl_variable:
@@ -10088,55 +10088,30 @@
       }
     }
 
-    function void DebugPrint(shader_uniform_tmp_type EnumValue, u32 Depth)
+    function void DebugPrint(struct_member_type EnumValue, u32 Depth)
     {
-      DebugPrint("shader_uniform_tmp_type\n", Depth);
+      DebugPrint("struct_member_type\n", Depth);
       switch (EnumValue)
       {
         
-            case type_shader_uniform_tmp_noop:
+            case type_struct_member_noop:
             {
-              DebugPrint("type_shader_uniform_tmp_noop");
+              DebugPrint("type_struct_member_noop");
             } break;
 
-            case type_texture:
+            case type_c_decl_variable:
             {
-              DebugPrint("type_texture");
+              DebugPrint("type_c_decl_variable");
             } break;
 
-            case type_light:
+            case type_c_decl_function:
             {
-              DebugPrint("type_light");
+              DebugPrint("type_c_decl_function");
             } break;
 
-            case type_m4:
+            case type_c_decl_union:
             {
-              DebugPrint("type_m4");
-            } break;
-
-            case type_v3:
-            {
-              DebugPrint("type_v3");
-            } break;
-
-            case type_s32:
-            {
-              DebugPrint("type_s32");
-            } break;
-
-            case type_u32:
-            {
-              DebugPrint("type_u32");
-            } break;
-
-            case type_r32:
-            {
-              DebugPrint("type_r32");
-            } break;
-
-            case type_camera:
-            {
-              DebugPrint("type_camera");
+              DebugPrint("type_c_decl_union");
             } break;
 
       }
@@ -10231,35 +10206,35 @@
       }
     }
 
-    function void DebugPrint(c_decl_function_type EnumValue, u32 Depth)
+    function void DebugPrint(struct_member_function_type EnumValue, u32 Depth)
     {
-      DebugPrint("c_decl_function_type\n", Depth);
+      DebugPrint("struct_member_function_type\n", Depth);
       switch (EnumValue)
       {
         
-            case type_c_decl_function_noop:
+            case type_struct_member_function_noop:
             {
-              DebugPrint("type_c_decl_function_noop");
+              DebugPrint("type_struct_member_function_noop");
             } break;
 
-            case type_c_decl_function_normal:
+            case type_struct_member_function_normal:
             {
-              DebugPrint("type_c_decl_function_normal");
+              DebugPrint("type_struct_member_function_normal");
             } break;
 
-            case type_c_decl_function_operator:
+            case type_struct_member_function_operator:
             {
-              DebugPrint("type_c_decl_function_operator");
+              DebugPrint("type_struct_member_function_operator");
             } break;
 
-            case type_c_decl_function_constructor:
+            case type_struct_member_function_constructor:
             {
-              DebugPrint("type_c_decl_function_constructor");
+              DebugPrint("type_struct_member_function_constructor");
             } break;
 
-            case type_c_decl_function_destructor:
+            case type_struct_member_function_destructor:
             {
-              DebugPrint("type_c_decl_function_destructor");
+              DebugPrint("type_struct_member_function_destructor");
             } break;
 
       }
