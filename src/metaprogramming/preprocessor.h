@@ -279,13 +279,13 @@ meta(generate_string_table(c_token_type))
 #include <metaprogramming/output/generate_string_table_c_token_type.h>
 
 meta(
-  d_union(struct_member_function,
+  d_union struct_member_function
   {
-    struct_member_function_normal      enum_only,
-    struct_member_function_operator    enum_only,
-    struct_member_function_constructor enum_only,
-    struct_member_function_destructor  enum_only,
-  })
+    struct_member_function_normal      enum_only
+    struct_member_function_operator    enum_only
+    struct_member_function_constructor enum_only
+    struct_member_function_destructor  enum_only
+  }
 )
 #include <metaprogramming/output/d_union_c_decl_function.h>
 
@@ -314,12 +314,12 @@ struct struct_member_union
 };
 
 meta(
-  d_union(struct_member,
+  d_union struct_member
   {
-    struct_member_variable,
-    struct_member_function,
-    struct_member_union,
-  })
+    struct_member_variable
+    struct_member_function
+    struct_member_union
+  }
 )
 #include <metaprogramming/output/d_union_c_decl.h>
 meta(generate_cursor(struct_member))
@@ -528,7 +528,7 @@ CToken(counted_string Value)
 }
 
 inline c_token
-CToken(c_token_type Type, counted_string Value = CS(""))
+CToken(c_token_type Type, counted_string Value = CSz(""))
 {
   c_token Result = {
     .Type = Type,

@@ -799,7 +799,6 @@ ParseDiscriminatedUnion(c_parse_result* Parser, program_datatypes* Datatypes, co
 
   dUnion.Name = Name;
 
-  RequireToken(Parser, CTokenType_Comma);
   if (OptionalToken(Parser, CTokenType_OpenBrace))
   {
     b32 Complete = False;
@@ -820,7 +819,6 @@ ParseDiscriminatedUnion(c_parse_result* Parser, program_datatypes* Datatypes, co
           }
 
           PushMember(&dUnion, Interior, Flags, Memory);
-          RequireToken(Parser, CTokenType_Comma);
         } break;
 
         case CTokenType_CloseBrace:
@@ -832,6 +830,7 @@ ParseDiscriminatedUnion(c_parse_result* Parser, program_datatypes* Datatypes, co
         default:
         {
           Parser->Valid = False;
+          Complete = True;
         } break;
       }
     }
@@ -2824,8 +2823,6 @@ main(s32 ArgCount, const char** ArgStrings)
 
                   case d_union:
                   {
-                    RequireToken(Parser, CTokenType_OpenParen);
-
                     counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
                     d_union_decl dUnion = ParseDiscriminatedUnion(Parser, &Datatypes, DatatypeName, Memory);
                     if (Parser->Valid)
@@ -2845,7 +2842,7 @@ main(s32 ArgCount, const char** ArgStrings)
                       }
 
                       counted_string Code = Finalize(&CodeBuilder, Memory);
-                      RequireToken(Parser, CTokenType_CloseParen);
+
                       RequireToken(Parser, CTokenType_CloseParen);
                       DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
 
