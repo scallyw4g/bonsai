@@ -784,7 +784,7 @@ GetDatatypeByName(program_datatypes* Datatypes, counted_string Name)
   }
   else
   {
-    InvalidCodePath();
+    Error("Retreiving Datatype (%.*s)", (u32)Name.Count, Name.Start);
   }
 
   return Result;
@@ -1512,6 +1512,36 @@ ParseStructBody(c_parse_result* Parser, counted_string StructName, memory_arena*
   return Result;
 }
 
+function counted_string
+ParseExpression(c_parse_result* Parser)
+{
+  counted_string Result = {};
+
+  c_token NextT = PeekToken(Parser);
+  switch (NextT.Type)
+  {
+    case CTokenType_Identifier:
+    {
+    } break;
+
+    case CTokenType_OpenParen:
+    {
+    } break;
+
+    case CTokenType_Char:
+    {
+    } break;
+
+    case CTokenType_Minus:
+    {
+    } break;
+
+    InvalidDefaultCase;
+  }
+
+  return Result;
+}
+
 function enum_def
 ParseEnum(c_parse_result* Parser, memory_arena* Memory)
 {
@@ -1532,9 +1562,7 @@ ParseEnum(c_parse_result* Parser, memory_arena* Memory)
 
     if (OptionalToken(Parser, CTokenType_Equals))
     {
-      // Can be an int literal, or a char literal : (42 or '4' or '42' or even up to '4242')
-      // TODO(Jesse, id: 111, tags: back_burner, metaprogramming): Proper expression parsing.  ie: enum_value_name = (1 << 4) or enum_value_name = SOME_MACRO(thing, ding)
-      Field.Value = PopToken(Parser).Value;
+      Field.Value = PopToken(Parser).Value; // ParseExpression(Parser);
     }
 
     Push(&Enum.Fields, Field, Memory);
@@ -1736,7 +1764,10 @@ function %.*s_cursor
 }
 
 function void
-DoWorkToOutputThisStuff(c_parse_result* Parser, counted_string OutputForThisParser, counted_string NewFilename, memory_arena* Memory)
+DoMetaprogramming(c_parse_result* Parser, metaprogramming_info* MetaInfo, todo_list_info* TodoInfo, memory_arena* Memory);
+
+function void
+DoWorkToOutputThisStuff(c_parse_result* Parser, counted_string OutputForThisParser, counted_string NewFilename, metaprogramming_info* MetaInfo, todo_list_info* TodoInfo, memory_arena* Memory)
 {
   TIMED_FUNCTION();
 
@@ -1745,6 +1776,8 @@ DoWorkToOutputThisStuff(c_parse_result* Parser, counted_string OutputForThisPars
     Error("Bad parser state");
     return;
   }
+
+  counted_string OutputPath = {};
 
   // TODO(Jesse id: 182, tags: high_priority) This should respect Args.Outpath passed in!
   if (PeekTokenRaw(Parser).Type == CTokenType_Newline &&
@@ -1773,14 +1806,14 @@ DoWorkToOutputThisStuff(c_parse_result* Parser, counted_string OutputForThisPars
 
     RequireToken(Parser, CTokenType_GT);
 
-    counted_string IncludePath = Finalize(&IncludePathBuilder, Memory);
-    Output(OutputForThisParser, IncludePath, Memory);
+    OutputPath = Finalize(&IncludePathBuilder, Memory);
+    Output(OutputForThisParser, OutputPath, Memory);
   }
   else
   {
     // TODO(Jesse id: 183, tags: high_priority) This should respect Args.OutPath passed in!
-    counted_string IncludePath = Concat(CS("src/metaprogramming/output/"), NewFilename, Memory);
-    Output(OutputForThisParser, IncludePath, Memory);
+    OutputPath = Concat(CS("src/metaprogramming/output/"), NewFilename, Memory);
+    Output(OutputForThisParser, OutputPath, Memory);
 
     Push(CToken(CTokenType_Newline), &Parser->OutputTokens);
     Push(CToken(CTokenType_Hash), &Parser->OutputTokens);
@@ -1795,6 +1828,13 @@ DoWorkToOutputThisStuff(c_parse_result* Parser, counted_string OutputForThisPars
     Push(CToken(NewFilename), &Parser->OutputTokens);
     Push(CToken(CTokenType_GT), &Parser->OutputTokens);
   }
+
+
+  c_parse_result OutputParse = TokenizeString(OutputForThisParser, OutputPath, Memory);
+  ParseDatatypes(&OutputParse, &MetaInfo->Datatypes, Memory);
+  DoMetaprogramming(&OutputParse, MetaInfo, TodoInfo, Memory);
+
+  return;
 }
 
 // TODO(Jesse, id: 113, tags: cleanup): Remove these?
@@ -2194,6 +2234,11 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgName, c
   datatype Data = GetDatatypeByName(Datatypes, ArgType);
   datatype* Datatype = &Data;
 
+  if (Datatype->Type == type_datatype_noop)
+  {
+    return {};
+  }
+
   Rewind(&Scope.Tokens);
 
   string_builder OutputBuilder = {};
@@ -2528,10 +2573,8 @@ DoMetaprogramming(c_parse_result* Parser, metaprogramming_info* MetaInfo, todo_l
   program_datatypes* Datatypes = &MetaInfo->Datatypes;
   meta_func_stream* FunctionDefs = &MetaInfo->FunctionDefs;
 
-
   person_stream* People = &TodoInfo->People;
   tagged_counted_string_stream_stream* NameLists = &TodoInfo->NameLists;
-
 
   Rewind(&Parser->OutputTokens);
   Rewind(&Parser->Tokens);
@@ -2643,10 +2686,10 @@ DoMetaprogramming(c_parse_result* Parser, metaprogramming_info* MetaInfo, todo_l
 
             if (Func)
             {
-              Info("Calling function : %.*s", (u32)Func->Name.Count, Func->Name.Start);
-
               RequireToken(Parser, CTokenType_OpenParen);
               counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
+
+              Info("Calling function : %.*s(%.*s)", (u32)Func->Name.Count, Func->Name.Start, (u32)DatatypeName.Count, DatatypeName.Start);
               counted_string Code = Execute(Func, DatatypeName, MetaInfo, Memory);
 
               RequireToken(Parser, CTokenType_CloseParen);
@@ -2655,7 +2698,7 @@ DoMetaprogramming(c_parse_result* Parser, metaprogramming_info* MetaInfo, todo_l
               if (Code.Count)
               {
                 counted_string OutfileName = GenerateOutfileNameFor(Func->Name, DatatypeName, Memory);
-                DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
+                DoWorkToOutputThisStuff(Parser, Code, OutfileName, MetaInfo, TodoInfo, Memory);
               }
               else
               {
@@ -2694,7 +2737,7 @@ DoMetaprogramming(c_parse_result* Parser, metaprogramming_info* MetaInfo, todo_l
                   if (Code.Count)
                   {
                     counted_string OutfileName = GenerateOutfileNameFor(Func.Name, ArgType, Memory, GetRandomString(8, Hash(&Code), Memory));
-                    DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
+                    DoWorkToOutputThisStuff(Parser, Code, OutfileName, MetaInfo, TodoInfo, Memory);
                   }
                   else
                   {
@@ -2743,7 +2786,7 @@ DoMetaprogramming(c_parse_result* Parser, metaprogramming_info* MetaInfo, todo_l
                 counted_string OutfileName = GenerateOutfileNameFor(ToString(Directive), DatatypeName, Memory);
                 RequireToken(Parser, CTokenType_CloseParen);
                 RequireToken(Parser, CTokenType_CloseParen);
-                DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
+                DoWorkToOutputThisStuff(Parser, Code, OutfileName, MetaInfo, TodoInfo, Memory);
               } break;
 
               case for_datatypes:
@@ -2799,7 +2842,7 @@ DoMetaprogramming(c_parse_result* Parser, metaprogramming_info* MetaInfo, todo_l
                 counted_string Code = Finalize(&OutputBuilder, Memory);
                 counted_string OutfileName = GenerateOutfileNameFor(ToString(Directive), CSz("debug_print"), Memory);
 
-                DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
+                DoWorkToOutputThisStuff(Parser, Code, OutfileName, MetaInfo, TodoInfo, Memory);
 
               } break;
 
@@ -2826,7 +2869,7 @@ DoMetaprogramming(c_parse_result* Parser, metaprogramming_info* MetaInfo, todo_l
                   counted_string Code = Finalize(&CodeBuilder, Memory);
 
                   RequireToken(Parser, CTokenType_CloseParen);
-                  DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
+                  DoWorkToOutputThisStuff(Parser, Code, OutfileName, MetaInfo, TodoInfo, Memory);
 
                 }
                 else

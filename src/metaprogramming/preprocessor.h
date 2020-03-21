@@ -296,8 +296,18 @@ struct struct_member_variable
 };
 
 struct struct_member_stream_chunk;
-meta( generate_stream_struct(struct_member) )
-#include <metaprogramming/output/generate_stream_struct_c_decl.h>
+
+// TODO(Jesse id: 191, tags: metaprogramming): This can be generated, but it requires
+// lazily evaluating functions once their dependant types have been generated.
+//
+// Not sure if this is a good idea or not, but we could do it.
+_meta( generate_stream_struct(struct_member) )
+
+struct struct_member_stream
+{
+  struct_member_stream_chunk* FirstChunk;
+  struct_member_stream_chunk* LastChunk;
+};
 
 struct struct_def
 {

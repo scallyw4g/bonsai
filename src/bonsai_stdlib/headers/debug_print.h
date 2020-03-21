@@ -119,7 +119,7 @@ meta(
   {
     thing1 thing2 thing3 thing4
     test_struct_8 test_struct_16 test_struct_32 test_struct_64 test_struct_128 test_struct_1k
-    head_table ttf_vert ttf_contour simple_glyph font_table ttf offset_subtable
+    head_table ttf_vert ttf_contour simple_glyph font_table ttf offset_subtable ttf_flag
   }
 )
 

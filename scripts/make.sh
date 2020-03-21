@@ -272,11 +272,17 @@ fi
 
 function RunEntireBuild {
 
-  # git checkout "src/metaprogramming/output"
 
   # rm -Rf $META_OUT
   # mkdir $META_OUT
+  # SOURCE_FILES="$(find src -type f -name "*.h" -and -not -wholename "src/metaprogramming/defines.h" | tr '\n' ' ') $(find src -type f -name "*.cpp" | tr '\n' ' ')"
+  # echo $SOURCE_FILES
+  # exit 1
 
+  # git checkout "src/metaprogramming/output"
+
+  rm -Rf $META_OUT
+  mkdir $META_OUT
   SOURCE_FILES="$(find src -type f -name "*.h" -and -not -wholename "src/metaprogramming/defines.h" | tr '\n' ' ') $(find src -type f -name "*.cpp" | tr '\n' ' ')"
   ColorizeTitle "Preprocessing"
   bin/preprocessor $SOURCE_FILES
@@ -290,6 +296,8 @@ function RunEntireBuild {
   BuildPreprocessor
   [ ! -x bin/preprocessor ] && echo -e "$Failed Couldn't find preprocessor, exiting." && exit 1
 
+  rm -Rf $META_OUT
+  mkdir $META_OUT
   SOURCE_FILES="$(find src -type f -name "*.h" -and -not -wholename "src/metaprogramming/defines.h" | tr '\n' ' ') $(find src -type f -name "*.cpp" | tr '\n' ' ')"
   ColorizeTitle "Preprocessing"
   bin/preprocessor $SOURCE_FILES
@@ -299,9 +307,6 @@ function RunEntireBuild {
     git checkout "src/metaprogramming/output"
     exit 1
   fi
-
-  # SOURCE_FILES="$(find src -type f -name "*.h" -and -not -wholename "src/metaprogramming/defines.h" | tr '\n' ' ') $(find src -type f -name "*.cpp" | tr '\n' ' ')"
-  # echo $SOURCE_FILES
 
   # if [ "$EMCC" == "1" ]; then
   #   BuildWithEmcc

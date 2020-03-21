@@ -74,10 +74,10 @@
     - #91 Jettison this .. Can it be metaprogrammed?
     - #99 Generate this?  Need a compiler feature to generate stuff from primitive types.
     - #100 Do we actually want this in here?
-    - #111 Proper expression parsing.  ie: enum_value_name = (1 << 4) or enum_value_name = SOME_MACRO(thing, ding)
     - #121 Need a way of dynamically allocating more of these on demand
     - #160 Generate this!
     - #180 Can we use Allocate() here instead?
+    - #191 This can be generated, but it requires
 
   ## robustness
     - #78 How should we actually set this?
@@ -121,7 +121,6 @@
   ## back_burner
     - #161 Reinstate this! */
     - #80 This could be factored out of here if xml_tag::Properties
-    - #111 Proper expression parsing.  ie: enum_value_name = (1 << 4) or enum_value_name = SOME_MACRO(thing, ding)
     - #117 Transient arena for this instead of stack allocation ?
 
   ## string_hash
