@@ -777,10 +777,14 @@ GetDatatypeByName(program_datatypes* Datatypes, counted_string Name)
     Result.Type = type_struct_def;
     Result.struct_def = S;
   }
-  else
+  else if (E)
   {
     Result.Type = type_enum_def;
     Result.enum_def = E;
+  }
+  else
+  {
+    InvalidCodePath();
   }
 
   return Result;

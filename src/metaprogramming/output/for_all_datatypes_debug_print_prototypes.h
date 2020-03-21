@@ -197,6 +197,9 @@
       function void DebugPrint( c_decl_stream_chunk* S, u32 Depth = 0);
       function void DebugPrint( c_decl_stream_chunk  S, u32 Depth = 0);
 
+      function void DebugPrint( struct_member_function* S, u32 Depth = 0);
+      function void DebugPrint( struct_member_function  S, u32 Depth = 0);
+
       function void DebugPrint( c_token_cursor* S, u32 Depth = 0);
       function void DebugPrint( c_token_cursor  S, u32 Depth = 0);
 
@@ -247,6 +250,9 @@
 
       function void DebugPrint( d_union_member_iterator* S, u32 Depth = 0);
       function void DebugPrint( d_union_member_iterator  S, u32 Depth = 0);
+
+      function void DebugPrint( shader_uniform_tmp* S, u32 Depth = 0);
+      function void DebugPrint( shader_uniform_tmp  S, u32 Depth = 0);
 
       function void DebugPrint( ui_render_command* S, u32 Depth = 0);
       function void DebugPrint( ui_render_command  S, u32 Depth = 0);
@@ -693,7 +699,11 @@
 
       function void DebugPrint(datatype_type EnumValue, u32 Depth = 0);
 
+      function void DebugPrint(struct_member_function_type EnumValue, u32 Depth = 0);
+
       function void DebugPrint(c_decl_type EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(shader_uniform_tmp_type EnumValue, u32 Depth = 0);
 
       function void DebugPrint(ui_render_command_type EnumValue, u32 Depth = 0);
 

@@ -2725,6 +2725,29 @@
       }
     }
 
+    function void DebugPrint( struct_member_function S, u32 Depth)
+    {
+      DebugPrint("struct_member_function\n", Depth);
+      
+          DebugPrint("Type = ", Depth);
+          DebugPrint(S.Type, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(struct_member_function* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("struct_member_function\n", Depth);
+        
+            DebugPrint("Type = ", Depth);
+            DebugPrint(S->Type, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
     function void DebugPrint( c_token_cursor S, u32 Depth)
     {
       DebugPrint("c_token_cursor\n", Depth);
@@ -3271,6 +3294,29 @@
 
             DebugPrint("At = ", Depth);
             DebugPrint(S->At, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
+    function void DebugPrint( shader_uniform_tmp S, u32 Depth)
+    {
+      DebugPrint("shader_uniform_tmp\n", Depth);
+      
+          DebugPrint("Type = ", Depth);
+          DebugPrint(S.Type, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(shader_uniform_tmp* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("shader_uniform_tmp\n", Depth);
+        
+            DebugPrint("Type = ", Depth);
+            DebugPrint(S->Type, Depth+1);
             DebugPrint("\n");
 
       }
@@ -9979,6 +10025,40 @@
       }
     }
 
+    function void DebugPrint(struct_member_function_type EnumValue, u32 Depth)
+    {
+      DebugPrint("struct_member_function_type\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case type_struct_member_function_noop:
+            {
+              DebugPrint("type_struct_member_function_noop");
+            } break;
+
+            case type_struct_member_function_normal:
+            {
+              DebugPrint("type_struct_member_function_normal");
+            } break;
+
+            case type_struct_member_function_operator:
+            {
+              DebugPrint("type_struct_member_function_operator");
+            } break;
+
+            case type_struct_member_function_constructor:
+            {
+              DebugPrint("type_struct_member_function_constructor");
+            } break;
+
+            case type_struct_member_function_destructor:
+            {
+              DebugPrint("type_struct_member_function_destructor");
+            } break;
+
+      }
+    }
+
     function void DebugPrint(c_decl_type EnumValue, u32 Depth)
     {
       DebugPrint("c_decl_type\n", Depth);
@@ -10003,6 +10083,60 @@
             case type_c_decl_union:
             {
               DebugPrint("type_c_decl_union");
+            } break;
+
+      }
+    }
+
+    function void DebugPrint(shader_uniform_tmp_type EnumValue, u32 Depth)
+    {
+      DebugPrint("shader_uniform_tmp_type\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case type_shader_uniform_tmp_noop:
+            {
+              DebugPrint("type_shader_uniform_tmp_noop");
+            } break;
+
+            case type_texture:
+            {
+              DebugPrint("type_texture");
+            } break;
+
+            case type_light:
+            {
+              DebugPrint("type_light");
+            } break;
+
+            case type_m4:
+            {
+              DebugPrint("type_m4");
+            } break;
+
+            case type_v3:
+            {
+              DebugPrint("type_v3");
+            } break;
+
+            case type_s32:
+            {
+              DebugPrint("type_s32");
+            } break;
+
+            case type_u32:
+            {
+              DebugPrint("type_u32");
+            } break;
+
+            case type_r32:
+            {
+              DebugPrint("type_r32");
+            } break;
+
+            case type_camera:
+            {
+              DebugPrint("type_camera");
             } break;
 
       }
