@@ -1608,17 +1608,19 @@ NextTokenIsOperator(c_parse_result* Parser)
   {
     case CTokenType_GT:
     case CTokenType_LT:
+
     case CTokenType_Minus:
     case CTokenType_Plus:
-    case CTokenType_Hat:
     case CTokenType_Star:
-    case CTokenType_Ampersand:
-    case CTokenType_Percent:
+    case CTokenType_FSlash:
     case CTokenType_Bang:
+    case CTokenType_Ampersand:
+
+    case CTokenType_Hat:
+    case CTokenType_Percent:
     case CTokenType_Question:
     case CTokenType_Colon:
     case CTokenType_Tilde:
-    case CTokenType_FSlash:
     {
       Result = True;
     } break;
@@ -1629,19 +1631,73 @@ NextTokenIsOperator(c_parse_result* Parser)
   return Result;
 }
 
+struct string_from_parser
+{
+  const char* Start;
+};
+
+function string_from_parser
+StartStringFromParer(c_parse_result* Parser)
+{
+  string_from_parser Result = {
+    .Start = Parser->Tokens.At->Value.Start
+  };
+  return Result;
+};
+
+function counted_string
+FinalizeStringFromParser(string_from_parser* Builder, c_parse_result* Parser)
+{
+  umm Count = (umm)(Parser->Tokens.At->Value.Start - Builder->Start);
+  counted_string Result = { .Start = Builder->Start, .Count = Count };
+  return Result;
+}
+
 function counted_string
 ParseOperator(c_parse_result* Parser)
 {
-  counted_string Result = {};
+  string_from_parser Builder = StartStringFromParer(Parser);
+
   if (NextTokenIsOperator(Parser))
   {
-    Result = PopToken(Parser).Value;
+    c_token NextT = PopToken(Parser);
+    switch (NextT.Type)
+    {
+      case CTokenType_GT:
+      case CTokenType_LT:
+      {
+        OptionalToken(Parser, NextT.Type);
+      } break;
+
+      case CTokenType_Minus:
+      case CTokenType_Plus:
+      case CTokenType_Star:
+      case CTokenType_FSlash:
+      case CTokenType_Bang:
+      {
+        OptionalToken(Parser, CTokenType_Equals);
+      } break;
+
+
+      case CTokenType_Pipe:
+      case CTokenType_Ampersand:
+      {
+        // We can have another | or &, or an = ie. && or &=, but &&= is not valid
+        if (!OptionalToken(Parser, NextT.Type))
+        {
+          OptionalToken(Parser, CTokenType_Equals);
+        }
+      } break;
+
+      default: {} break;
+    }
   }
   else
   {
     ParseError(Parser, CSz("Expected operator"));
   }
 
+  counted_string Result = FinalizeStringFromParser(&Builder, Parser);
   return Result;
 }
 
@@ -1664,7 +1720,7 @@ ParseConstantExpression(c_parse_result* Parser, memory_arena* Memory)
 
       if (PeekToken(Parser).Type == CTokenType_OpenParen)
       {
-        // TODO(Jesse tags: metaprogramming, parsing): This is a function call or macro .. make sure it's actually constant.
+        // TODO(Jesse id: 192, tags: metaprogramming, parsing): This is a function call or macro .. make sure it's actually constant.
         Append(&Builder, ConcatTokensBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen, Memory));
       }
 

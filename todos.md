@@ -78,6 +78,7 @@
     - #160 Generate this!
     - #180 Can we use Allocate() here instead?
     - #191 This can be generated, but it requires
+    - #192 This is a function call or macro .. make sure it's actually constant.
 
   ## robustness
     - #78 How should we actually set this?
@@ -291,4 +292,7 @@
 
   ## bug
     - #185 these should be printable!
+
+  ## parsing
+    - #192 This is a function call or macro .. make sure it's actually constant.
 

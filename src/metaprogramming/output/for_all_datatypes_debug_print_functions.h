@@ -7397,6 +7397,29 @@
       }
     }
 
+    function void DebugPrint( string_from_parser S, u32 Depth)
+    {
+      DebugPrint("string_from_parser\n", Depth);
+      
+          DebugPrint("Start = ", Depth);
+          DebugPrint(S.Start, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(string_from_parser* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("string_from_parser\n", Depth);
+        
+            DebugPrint("Start = ", Depth);
+            DebugPrint(S->Start, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
     function void DebugPrint( plane_computation S, u32 Depth)
     {
       DebugPrint("plane_computation\n", Depth);
@@ -9865,6 +9888,36 @@
               DebugPrint("Chunk_Uninitialized");
             } break;
 
+            case Chunk_Initialized:
+            {
+              DebugPrint("Chunk_Initialized");
+            } break;
+
+            case Chunk_Queued:
+            {
+              DebugPrint("Chunk_Queued");
+            } break;
+
+            case Chunk_MeshComplete:
+            {
+              DebugPrint("Chunk_MeshComplete");
+            } break;
+
+            case Chunk_GpuMeshComplete:
+            {
+              DebugPrint("Chunk_GpuMeshComplete");
+            } break;
+
+            case Chunk_Garbage:
+            {
+              DebugPrint("Chunk_Garbage");
+            } break;
+
+            case Chunk_Collected:
+            {
+              DebugPrint("Chunk_Collected");
+            } break;
+
       }
     }
 
@@ -9882,6 +9935,36 @@
             case Voxel_Filled:
             {
               DebugPrint("Voxel_Filled");
+            } break;
+
+            case Voxel_LeftFace:
+            {
+              DebugPrint("Voxel_LeftFace");
+            } break;
+
+            case Voxel_RightFace:
+            {
+              DebugPrint("Voxel_RightFace");
+            } break;
+
+            case Voxel_TopFace:
+            {
+              DebugPrint("Voxel_TopFace");
+            } break;
+
+            case Voxel_BottomFace:
+            {
+              DebugPrint("Voxel_BottomFace");
+            } break;
+
+            case Voxel_FrontFace:
+            {
+              DebugPrint("Voxel_FrontFace");
+            } break;
+
+            case Voxel_BackFace:
+            {
+              DebugPrint("Voxel_BackFace");
             } break;
 
       }
@@ -9903,6 +9986,21 @@
               DebugPrint("EntityState_Initialized");
             } break;
 
+            case EntityState_Spawned:
+            {
+              DebugPrint("EntityState_Spawned");
+            } break;
+
+            case EntityState_Destroyed:
+            {
+              DebugPrint("EntityState_Destroyed");
+            } break;
+
+            case EntityState_Reserved:
+            {
+              DebugPrint("EntityState_Reserved");
+            } break;
+
       }
     }
 
@@ -9920,6 +10018,36 @@
             case EntityType_Player:
             {
               DebugPrint("EntityType_Player");
+            } break;
+
+            case EntityType_Enemy:
+            {
+              DebugPrint("EntityType_Enemy");
+            } break;
+
+            case EntityType_EnemyProjectile:
+            {
+              DebugPrint("EntityType_EnemyProjectile");
+            } break;
+
+            case EntityType_PlayerProjectile:
+            {
+              DebugPrint("EntityType_PlayerProjectile");
+            } break;
+
+            case EntityType_Loot:
+            {
+              DebugPrint("EntityType_Loot");
+            } break;
+
+            case EntityType_PlayerProton:
+            {
+              DebugPrint("EntityType_PlayerProton");
+            } break;
+
+            case EntityType_ParticleSystem:
+            {
+              DebugPrint("EntityType_ParticleSystem");
             } break;
 
       }
