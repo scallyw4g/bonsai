@@ -185,6 +185,12 @@
       function void DebugPrint( replacement_pattern* S, u32 Depth = 0);
       function void DebugPrint( replacement_pattern  S, u32 Depth = 0);
 
+      function void DebugPrint( metaprogramming_info* S, u32 Depth = 0);
+      function void DebugPrint( metaprogramming_info  S, u32 Depth = 0);
+
+      function void DebugPrint( todo_list_info* S, u32 Depth = 0);
+      function void DebugPrint( todo_list_info  S, u32 Depth = 0);
+
       function void DebugPrint( tagged_counted_string_stream_stream_chunk* S, u32 Depth = 0);
       function void DebugPrint( tagged_counted_string_stream_stream_chunk  S, u32 Depth = 0);
 

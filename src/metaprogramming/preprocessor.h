@@ -493,6 +493,19 @@ struct replacement_pattern
   counted_string Replace;
 };
 
+struct metaprogramming_info
+{
+  meta_func_stream FunctionDefs;
+  program_datatypes Datatypes;
+};
+
+struct todo_list_info
+{
+  person_stream People;
+  tagged_counted_string_stream_stream NameLists;
+};
+
+
 inline void
 PrintToken(c_token Token)
 {

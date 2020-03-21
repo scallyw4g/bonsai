@@ -2601,6 +2601,68 @@
       }
     }
 
+    function void DebugPrint( metaprogramming_info S, u32 Depth)
+    {
+      DebugPrint("metaprogramming_info\n", Depth);
+      
+          DebugPrint("FunctionDefs = ", Depth);
+          DebugPrint(S.FunctionDefs, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("Datatypes = ", Depth);
+          DebugPrint(S.Datatypes, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(metaprogramming_info* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("metaprogramming_info\n", Depth);
+        
+            DebugPrint("FunctionDefs = ", Depth);
+            DebugPrint(S->FunctionDefs, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Datatypes = ", Depth);
+            DebugPrint(S->Datatypes, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
+    function void DebugPrint( todo_list_info S, u32 Depth)
+    {
+      DebugPrint("todo_list_info\n", Depth);
+      
+          DebugPrint("People = ", Depth);
+          DebugPrint(S.People, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("NameLists = ", Depth);
+          DebugPrint(S.NameLists, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(todo_list_info* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("todo_list_info\n", Depth);
+        
+            DebugPrint("People = ", Depth);
+            DebugPrint(S->People, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("NameLists = ", Depth);
+            DebugPrint(S->NameLists, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
     function void DebugPrint( tagged_counted_string_stream_stream_chunk S, u32 Depth)
     {
       DebugPrint("tagged_counted_string_stream_stream_chunk\n", Depth);

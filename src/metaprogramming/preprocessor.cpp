@@ -2181,12 +2181,16 @@ Transform(meta_transform_op Transformations, counted_string Input, memory_arena*
   return Result;
 }
 
-function counted_string
-Execute(meta_func* Func, counted_string ArgType, program_datatypes* Datatypes, meta_func_stream* FunctionDefs, memory_arena* Memory);
 
 function counted_string
-Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgName, counted_string ArgType, program_datatypes* Datatypes, meta_func_stream* FunctionDefs, memory_arena* Memory)
+Execute(meta_func* Func, counted_string ArgType, metaprogramming_info* MetaInfo, memory_arena* Memory);
+
+function counted_string
+Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgName, counted_string ArgType, metaprogramming_info* MetaInfo, memory_arena* Memory)
 {
+  program_datatypes* Datatypes = &MetaInfo->Datatypes;
+  meta_func_stream* FunctionDefs = &MetaInfo->FunctionDefs;
+
   datatype Data = GetDatatypeByName(Datatypes, ArgType);
   datatype* Datatype = &Data;
 
@@ -2200,7 +2204,7 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgName, c
     if ( BodyToken.Type == CTokenType_String )
     {
       c_parse_result StringParse = TokenizeString(BodyToken.Value, Scope.Filename, Memory, True);
-      counted_string Code = Execute(FuncName, StringParse, ArgName, ArgType, Datatypes, FunctionDefs, Memory);
+      counted_string Code = Execute(FuncName, StringParse, ArgName, ArgType, MetaInfo, Memory);
       Append(&OutputBuilder, Code);
     }
     else if ( BodyToken.Type == CTokenType_OpenParen )
@@ -2396,7 +2400,7 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgName, c
 
           if (!StringsMatch(NestedFunc->Name, FuncName))
           {
-            counted_string NestedCode = Execute(NestedFunc, ArgType, Datatypes, FunctionDefs, Memory);
+            counted_string NestedCode = Execute(NestedFunc, ArgType, MetaInfo, Memory);
             Append(&OutputBuilder, NestedCode);
           }
           else
@@ -2421,9 +2425,9 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgName, c
 }
 
 function counted_string
-Execute(meta_func* Func, counted_string ArgType, program_datatypes* Datatypes, meta_func_stream* FunctionDefs, memory_arena* Memory)
+Execute(meta_func* Func, counted_string ArgType, metaprogramming_info* MetaInfo, memory_arena* Memory)
 {
-  counted_string Result = Execute(Func->Name, Func->Body, Func->ArgName, ArgType, Datatypes, FunctionDefs, Memory);
+  counted_string Result = Execute(Func->Name, Func->Body, Func->ArgName, ArgType, MetaInfo, Memory);
   return Result;
 }
 
@@ -2518,6 +2522,390 @@ RemoveAllMetaprogrammingOutput(c_parse_result_cursor* ParsedFiles, arguments* Ar
 #define SUCCESS_EXIT_CODE 0
 #define FAILURE_EXIT_CODE 1
 
+function void
+DoMetaprogramming(c_parse_result* Parser, metaprogramming_info* MetaInfo, todo_list_info* TodoInfo, memory_arena* Memory)
+{
+  program_datatypes* Datatypes = &MetaInfo->Datatypes;
+  meta_func_stream* FunctionDefs = &MetaInfo->FunctionDefs;
+
+
+  person_stream* People = &TodoInfo->People;
+  tagged_counted_string_stream_stream* NameLists = &TodoInfo->NameLists;
+
+
+  Rewind(&Parser->OutputTokens);
+  Rewind(&Parser->Tokens);
+  Parser->LineNumber = 1;
+
+  while (Parser->Valid && Remaining(&Parser->Tokens))
+  {
+    c_token NextToken = PeekTokenRaw(Parser);
+
+    switch( NextToken.Type )
+    {
+      // TODO(Jesse id: 157, tags: immediate) Should support multi-line comments as well
+      case CTokenType_CommentSingleLine:
+      {
+        Ensure( PopTokenRaw(Parser).Type == CTokenType_CommentSingleLine);
+        if (OptionalToken(Parser, CToken(CSz("TODO"))))
+        {
+          if (OptionalToken(Parser, CTokenType_OpenParen))
+          {
+            counted_string PersonName = RequireToken(Parser, CTokenType_Identifier).Value;
+            counted_string_stream TodoTags = {};
+            b32 GotAnyTags = False;
+
+            counted_string IdValue = {};
+            OptionalToken(Parser, CTokenType_Comma);
+
+            b32 GeneratedNewId = False;
+            if (OptionalToken(Parser, CToken(CSz("id"))))
+            {
+              RequireToken(Parser, CTokenType_Colon);
+              IdValue = RequireToken(Parser, CTokenType_Identifier).Value;
+            }
+            else
+            {
+              if (!IdValue.Count)
+              {
+                GeneratedNewId = True;
+                IdValue = CS(++LargestIdFoundInFile);
+                Push(CToken(CS(" id: ")), &Parser->OutputTokens);
+                Push(CToken(IdValue), &Parser->OutputTokens);
+              }
+
+            }
+
+            OptionalToken(Parser, CTokenType_Comma);
+
+            if (StringsMatch(PeekToken(Parser).Value, CSz("tags")))
+            {
+              if (GeneratedNewId)
+              {
+                Push(CToken(CTokenType_Comma), &Parser->OutputTokens);
+              }
+
+              RequireToken(Parser, CToken(CSz("tags")));
+              GotAnyTags = True;
+              RequireToken(Parser, CTokenType_Colon);
+              Push(&TodoTags, RequireToken(Parser, CTokenType_Identifier).Value, Memory);
+
+              while (OptionalToken(Parser, CTokenType_Comma))
+              {
+                Push(&TodoTags, RequireToken(Parser, CTokenType_Identifier).Value, Memory);
+              }
+            }
+
+            if (!GotAnyTags)
+            {
+              counted_string Tag = CSz("untagged");
+              Push(&TodoTags, Tag, Memory);
+            }
+
+            RequireToken(Parser, CTokenType_CloseParen);
+            OptionalToken(Parser, CTokenType_Colon);
+
+            // TODO(Jesse id: 156, tags: immediate) This should actually concat all comments such that
+            // multi-line todos get parsed correctly.
+            counted_string TodoValue = Trim(ConcatTokensUntilNewline(Parser, Memory));
+            person* Person = GetExistingOrCreate(People, PersonName, Memory);
+
+            ITERATE_OVER(&TodoTags)
+            {
+              counted_string* TodoTag = GET_ELEMENT(Iter);
+              tag* Tag = GetExistingOrCreate(&Person->Tags, *TodoTag, Memory);
+              UpdateTodo(&Tag->Todos, Todo(IdValue, TodoValue, True), Memory);
+            }
+
+          }
+        }
+        else
+        {
+          // TODO(Jesse id: 155, tags: immediate): This should eat the comment if
+          // it's not a todo so that commenting a preprocessor directive works
+        }
+
+      } break;
+
+      case CTokenType_Identifier:
+      {
+        c_token IdentifierToken = PopToken(Parser);
+        if (StringsMatch( IdentifierToken.Value, CS("meta") ))
+        {
+          RequireToken(Parser, CTokenType_OpenParen);
+
+          counted_string DirectiveString = RequireToken(Parser, CTokenType_Identifier).Value;
+          metaprogramming_directive Directive = MetaprogrammingDirective(DirectiveString);
+
+          if (Directive == meta_directive_noop)
+          {
+            meta_func* Func = StreamContains(FunctionDefs, DirectiveString);
+
+            if (Func)
+            {
+              Info("Calling function : %.*s", (u32)Func->Name.Count, Func->Name.Start);
+
+              RequireToken(Parser, CTokenType_OpenParen);
+              counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
+              counted_string Code = Execute(Func, DatatypeName, MetaInfo, Memory);
+
+              RequireToken(Parser, CTokenType_CloseParen);
+              RequireToken(Parser, CTokenType_CloseParen);
+
+              if (Code.Count)
+              {
+                counted_string OutfileName = GenerateOutfileNameFor(Func->Name, DatatypeName, Memory);
+                DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
+              }
+              else
+              {
+                Warn("Unable to generate code for meta_func %.*s", (u32)Func->Name.Count, Func->Name.Start);
+              }
+            }
+            else
+            {
+              Error("Couldn't resolve %.*s to a metaprogramming directive or function name", (u32)DirectiveString.Count, DirectiveString.Start);
+            }
+          }
+          else
+          {
+            switch (Directive)
+            {
+
+              case func:
+              {
+                if (OptionalToken(Parser, CTokenType_OpenParen))
+                {
+                  counted_string ArgType = RequireToken(Parser, CTokenType_Identifier).Value;
+                  counted_string ArgName = RequireToken(Parser, CTokenType_Identifier).Value;
+                  RequireToken(Parser, CTokenType_CloseParen);
+
+                  c_parse_result Body = GetBodyTextForNextScope(Parser);
+
+                  meta_func Func = {
+                    .Name = CSz("anonymous_function"),
+                    .ArgName = ArgName,
+                    .Body = Body,
+                  };
+
+                  counted_string Code = Execute(&Func, ArgType, MetaInfo, Memory);
+
+                  RequireToken(Parser, CTokenType_CloseParen);
+                  if (Code.Count)
+                  {
+                    counted_string OutfileName = GenerateOutfileNameFor(Func.Name, ArgType, Memory, GetRandomString(8, Hash(&Code), Memory));
+                    DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
+                  }
+                  else
+                  {
+                    Warn("Unable to generate code for meta_func %.*s", (u32)Func.Name.Count, Func.Name.Start);
+                  }
+                }
+                else
+                {
+                  counted_string FuncName = RequireToken(Parser, CTokenType_Identifier).Value;
+                  meta_func Func = ParseFunctionDef(Parser, FuncName);
+                  Push(FunctionDefs, Func, Memory);
+                }
+
+              } break;
+
+              case named_list:
+              {
+                RequireToken(Parser, CTokenType_OpenParen);
+
+                tagged_counted_string_stream NameList = {
+                  .Tag = RequireToken(Parser, CTokenType_Identifier).Value
+                };
+
+                RequireToken(Parser, CTokenType_CloseParen);
+
+                RequireToken(Parser, CTokenType_OpenBrace);
+                while (PeekToken(Parser).Type == CTokenType_Identifier)
+                {
+                  counted_string Name = RequireToken(Parser, CTokenType_Identifier).Value;
+                  Push(&NameList.Stream, Name, Memory);
+                  OptionalToken(Parser, CTokenType_Comma);
+                }
+
+                RequireToken(Parser, CTokenType_CloseBrace);
+
+                Push(&TodoInfo->NameLists, NameList, Memory);
+
+              } break;
+
+              case generate_cursor_deprecated:
+              {
+                RequireToken(Parser, CTokenType_OpenParen);
+
+                counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
+                counted_string Code = GenerateCursorFor_DEPRECATED(DatatypeName, Memory);
+                counted_string OutfileName = GenerateOutfileNameFor(ToString(Directive), DatatypeName, Memory);
+                RequireToken(Parser, CTokenType_CloseParen);
+                RequireToken(Parser, CTokenType_CloseParen);
+                DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
+              } break;
+
+              case for_datatypes:
+              {
+                RequireToken(Parser, CTokenType_OpenParen);
+                RequireToken(Parser, CToken(CSz("all")));
+                RequireToken(Parser, CTokenType_CloseParen);
+
+                counted_string_stream Excludes = {};
+                if (OptionalToken(Parser, CTokenType_Dot))
+                {
+                  RequireToken(Parser, CToken(CSz("exclude")));
+                  RequireToken(Parser, CTokenType_OpenParen);
+                  Excludes = ParseDatatypeList(Parser, Datatypes, NameLists, Memory);
+                  RequireToken(Parser, CTokenType_CloseParen);
+                }
+
+                RequireToken(Parser, CToken(ToString(func)));
+                meta_func StructFunc = ParseFunctionDef(Parser, CSz("for_datatypes_struct_callback"));
+
+                RequireToken(Parser, CToken(ToString(func)));
+                meta_func EnumFunc = ParseFunctionDef(Parser, CSz("for_datatypes_enum_callback"));
+
+                RequireToken(Parser, CTokenType_CloseParen);
+
+                string_builder OutputBuilder = {};
+
+                for (struct_def_iterator Iter = Iterator(&Datatypes->Structs);
+                    IsValid(&Iter);
+                    Advance(&Iter))
+                {
+                  struct_def* Struct = &Iter.At->Element;
+                  if (!StreamContains(&Excludes, Struct->Name))
+                  {
+                    counted_string Code = Execute(&StructFunc, Struct->Name, MetaInfo, Memory);
+                    Append(&OutputBuilder, Code);
+                  }
+                }
+
+                for (enum_def_iterator Iter = Iterator(&Datatypes->Enums);
+                    IsValid(&Iter);
+                    Advance(&Iter))
+                {
+                  enum_def* Enum = &Iter.At->Element;
+                  if (!StreamContains(&Excludes, Enum->Name))
+                  {
+                    counted_string Code = Execute(&EnumFunc, Enum->Name, MetaInfo,  Memory);
+                    Append(&OutputBuilder, Code);
+                  }
+                }
+
+
+                counted_string Code = Finalize(&OutputBuilder, Memory);
+                counted_string OutfileName = GenerateOutfileNameFor(ToString(Directive), CSz("debug_print"), Memory);
+
+                DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
+
+              } break;
+
+              case d_union:
+              {
+                counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
+                d_union_decl dUnion = ParseDiscriminatedUnion(Parser, Datatypes, DatatypeName, Memory);
+                if (Parser->Valid)
+                {
+                  counted_string OutfileName = GenerateOutfileNameFor(ToString(Directive), DatatypeName, Memory);
+
+                  string_builder CodeBuilder = {};
+                  if (!dUnion.CustomEnumType.Count)
+                  {
+                    counted_string EnumString = GenerateEnumDef(&dUnion, Memory);
+                    Append(&CodeBuilder, EnumString);
+                  }
+
+                  {
+                    counted_string StructString = GenerateStructDef(&dUnion, Memory);
+                    Append(&CodeBuilder, StructString);
+                  }
+
+                  counted_string Code = Finalize(&CodeBuilder, Memory);
+
+                  RequireToken(Parser, CTokenType_CloseParen);
+                  DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
+
+                }
+                else
+                {
+                  Error("Parsing d_union declaration");
+                }
+              } break;
+
+              InvalidDefaultWhileParsing(Parser, CS("Invalid directive."));
+            }
+          }
+        }
+      } break;
+
+      default:
+      {
+        PopTokenRaw(Parser);
+      } break;
+    }
+
+    continue;
+  }
+}
+
+function void
+WriteTodosToFile(person_stream* People, memory_arena* Memory)
+{
+  random_series Rng = {.Seed = 123125};
+  native_file TempFile = GetTempFile(&Rng, Memory);
+  b32 AllWritesSucceeded = TempFile.Handle ? True : False;
+  if (AllWritesSucceeded)
+  {
+    ITERATE_OVER_AS(person, People)
+    {
+      person* Person = GET_ELEMENT(personIter);
+      AllWritesSucceeded &= WriteToFile(&TempFile, CSz("# "));
+      AllWritesSucceeded &= WriteToFile(&TempFile, Person->Name);
+      AllWritesSucceeded &= WriteToFile(&TempFile, CSz("\n"));
+      ITERATE_OVER(&Person->Tags)
+      {
+        tag* Tag = GET_ELEMENT(Iter);
+
+        todo_iterator InnerIter = Iterator(&Tag->Todos);
+        if (IsValid(&InnerIter))
+        {
+          AllWritesSucceeded &= WriteToFile(&TempFile, CSz("  ## "));
+          AllWritesSucceeded &= WriteToFile(&TempFile, Tag->Tag);
+          AllWritesSucceeded &= WriteToFile(&TempFile, CSz("\n"));
+
+          for (;
+              IsValid(&InnerIter);
+              Advance(&InnerIter))
+          {
+            todo* Todo = GET_ELEMENT(InnerIter);
+            if (Todo->FoundInCodebase)
+            {
+              AllWritesSucceeded &= WriteToFile(&TempFile, CSz("    - #"));
+              AllWritesSucceeded &= WriteToFile(&TempFile, Todo->Id);
+              AllWritesSucceeded &= WriteToFile(&TempFile, CSz(" "));
+              AllWritesSucceeded &= WriteToFile(&TempFile, Todo->Value);
+              AllWritesSucceeded &= WriteToFile(&TempFile, CSz("\n"));
+            }
+          }
+
+          AllWritesSucceeded &= WriteToFile(&TempFile, CSz("\n"));
+        }
+      }
+    }
+  }
+  else
+  {
+    Error("Opening Tempfile");
+  }
+
+  Rename(TempFile, CSz("todos.md"));
+  CloseFile(&TempFile);
+
+  return;
+}
 
 s32
 main(s32 ArgCount, const char** ArgStrings)
@@ -2541,24 +2929,19 @@ main(s32 ArgCount, const char** ArgStrings)
     memory_arena Memory_ = {};
     memory_arena* Memory = &Memory_;
 
-    counted_string_stream SuccessFiles = {};
-    counted_string_stream FailFiles = {};
-
     arguments Args = ParseArgs(ArgStrings, ArgCount, Memory);
     Assert(Args.Files.Start == Args.Files.At);
     Assert(Args.DoDebugWindow == ShouldOpenDebugWindow);
 
     c_parse_result_cursor ParsedFiles = TokenizeAllFiles(&Args.Files, Memory);
-    Assert(ParsedFiles.Start == ParsedFiles.At);
 
-    program_datatypes Datatypes = ParseAllDatatypes(ParsedFiles, Memory);
-    Assert(ParsedFiles.Start == ParsedFiles.At);
+    metaprogramming_info MetaInfo = {
+      .Datatypes = ParseAllDatatypes(ParsedFiles, Memory),
+    };
 
-    person_stream People = ParseAllTodosFromFile(CSz("todos.md"), Memory);
-
-    tagged_counted_string_stream_stream NameLists = {};
-
-    meta_func_stream FunctionDefs = {};
+    todo_list_info TodoInfo = {
+      .People = ParseAllTodosFromFile(CSz("todos.md"), Memory),
+    };
 
     RemoveAllMetaprogrammingOutput(&ParsedFiles, &Args);
 
@@ -2575,321 +2958,7 @@ main(s32 ArgCount, const char** ArgStrings)
         continue;
       }
 
-      Rewind(&Parser->OutputTokens);
-      Rewind(&Parser->Tokens);
-      Parser->LineNumber = 1;
-      while (Parser->Valid && Remaining(&Parser->Tokens))
-      {
-        c_token NextToken = PeekTokenRaw(Parser);
-
-        switch( NextToken.Type )
-        {
-          // TODO(Jesse id: 157, tags: immediate) Should support multi-line comments as well
-          case CTokenType_CommentSingleLine:
-          {
-            Ensure( PopTokenRaw(Parser).Type == CTokenType_CommentSingleLine);
-            if (OptionalToken(Parser, CToken(CSz("TODO"))))
-            {
-              if (OptionalToken(Parser, CTokenType_OpenParen))
-              {
-                counted_string PersonName = RequireToken(Parser, CTokenType_Identifier).Value;
-                counted_string_stream TodoTags = {};
-                b32 GotAnyTags = False;
-
-                counted_string IdValue = {};
-                OptionalToken(Parser, CTokenType_Comma);
-
-                b32 GeneratedNewId = False;
-                if (OptionalToken(Parser, CToken(CSz("id"))))
-                {
-                  RequireToken(Parser, CTokenType_Colon);
-                  IdValue = RequireToken(Parser, CTokenType_Identifier).Value;
-                }
-                else
-                {
-                  if (!IdValue.Count)
-                  {
-                    GeneratedNewId = True;
-                    IdValue = CS(++LargestIdFoundInFile);
-                    Push(CToken(CS(" id: ")), &Parser->OutputTokens);
-                    Push(CToken(IdValue), &Parser->OutputTokens);
-                  }
-
-                }
-
-                OptionalToken(Parser, CTokenType_Comma);
-
-                if (StringsMatch(PeekToken(Parser).Value, CSz("tags")))
-                {
-                  if (GeneratedNewId)
-                  {
-                    Push(CToken(CTokenType_Comma), &Parser->OutputTokens);
-                  }
-
-                  RequireToken(Parser, CToken(CSz("tags")));
-                  GotAnyTags = True;
-                  RequireToken(Parser, CTokenType_Colon);
-                  Push(&TodoTags, RequireToken(Parser, CTokenType_Identifier).Value, Memory);
-
-                  while (OptionalToken(Parser, CTokenType_Comma))
-                  {
-                    Push(&TodoTags, RequireToken(Parser, CTokenType_Identifier).Value, Memory);
-                  }
-                }
-
-                if (!GotAnyTags)
-                {
-                  counted_string Tag = CSz("untagged");
-                  Push(&TodoTags, Tag, Memory);
-                }
-
-                RequireToken(Parser, CTokenType_CloseParen);
-                OptionalToken(Parser, CTokenType_Colon);
-
-                // TODO(Jesse id: 156, tags: immediate) This should actually concat all comments such that
-                // multi-line todos get parsed correctly.
-                counted_string TodoValue = Trim(ConcatTokensUntilNewline(Parser, Memory));
-                person* Person = GetExistingOrCreate(&People, PersonName, Memory);
-
-                ITERATE_OVER(&TodoTags)
-                {
-                  counted_string* TodoTag = GET_ELEMENT(Iter);
-                  tag* Tag = GetExistingOrCreate(&Person->Tags, *TodoTag, Memory);
-                  UpdateTodo(&Tag->Todos, Todo(IdValue, TodoValue, True), Memory);
-                }
-
-              }
-            }
-            else
-            {
-              // TODO(Jesse id: 155, tags: immediate): This should eat the comment if
-              // it's not a todo so that commenting a preprocessor directive works
-            }
-
-          } break;
-
-          case CTokenType_Identifier:
-          {
-            c_token IdentifierToken = PopToken(Parser);
-            if (StringsMatch( IdentifierToken.Value, CS("meta") ))
-            {
-              RequireToken(Parser, CTokenType_OpenParen);
-
-              counted_string DirectiveString = RequireToken(Parser, CTokenType_Identifier).Value;
-              metaprogramming_directive Directive = MetaprogrammingDirective(DirectiveString);
-
-              if (Directive == meta_directive_noop)
-              {
-                meta_func* Func = StreamContains(&FunctionDefs, DirectiveString);
-
-                if (Func)
-                {
-                  Info("Calling function : %.*s", (u32)Func->Name.Count, Func->Name.Start);
-
-                  RequireToken(Parser, CTokenType_OpenParen);
-                  counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
-                  counted_string Code = Execute(Func, DatatypeName, &Datatypes, &FunctionDefs, Memory);
-
-                  RequireToken(Parser, CTokenType_CloseParen);
-                  RequireToken(Parser, CTokenType_CloseParen);
-
-                  if (Code.Count)
-                  {
-                    counted_string OutfileName = GenerateOutfileNameFor(Func->Name, DatatypeName, Memory);
-                    DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
-                  }
-                  else
-                  {
-                    Warn("Unable to generate code for meta_func %.*s", (u32)Func->Name.Count, Func->Name.Start);
-                  }
-                }
-                else
-                {
-                  Error("Couldn't resolve %.*s to a metaprogramming directive or function name", (u32)DirectiveString.Count, DirectiveString.Start);
-                }
-              }
-              else
-              {
-                switch (Directive)
-                {
-
-                  case func:
-                  {
-                    if (OptionalToken(Parser, CTokenType_OpenParen))
-                    {
-                      counted_string ArgType = RequireToken(Parser, CTokenType_Identifier).Value;
-                      counted_string ArgName = RequireToken(Parser, CTokenType_Identifier).Value;
-                      RequireToken(Parser, CTokenType_CloseParen);
-
-                      c_parse_result Body = GetBodyTextForNextScope(Parser);
-
-                      meta_func Func = {
-                        .Name = CSz("anonymous_function"),
-                        .ArgName = ArgName,
-                        .Body = Body,
-                      };
-
-                      counted_string Code = Execute(&Func, ArgType, &Datatypes, &FunctionDefs, Memory);
-
-                      RequireToken(Parser, CTokenType_CloseParen);
-                      if (Code.Count)
-                      {
-                        counted_string OutfileName = GenerateOutfileNameFor(Func.Name, ArgType, Memory, GetRandomString(8, Hash(&Code), Memory));
-                        DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
-                      }
-                      else
-                      {
-                        Warn("Unable to generate code for meta_func %.*s", (u32)Func.Name.Count, Func.Name.Start);
-                      }
-                    }
-                    else
-                    {
-                      counted_string FuncName = RequireToken(Parser, CTokenType_Identifier).Value;
-                      meta_func Func = ParseFunctionDef(Parser, FuncName);
-                      Push(&FunctionDefs, Func, Memory);
-                    }
-
-                  } break;
-
-                  case named_list:
-                  {
-                    RequireToken(Parser, CTokenType_OpenParen);
-
-                    tagged_counted_string_stream NameList = {
-                      .Tag = RequireToken(Parser, CTokenType_Identifier).Value
-                    };
-
-                    RequireToken(Parser, CTokenType_CloseParen);
-
-                    RequireToken(Parser, CTokenType_OpenBrace);
-                    while (PeekToken(Parser).Type == CTokenType_Identifier)
-                    {
-                      counted_string Name = RequireToken(Parser, CTokenType_Identifier).Value;
-                      Push(&NameList.Stream, Name, Memory);
-                      OptionalToken(Parser, CTokenType_Comma);
-                    }
-
-                    RequireToken(Parser, CTokenType_CloseBrace);
-
-                    Push(&NameLists, NameList, Memory);
-
-                  } break;
-
-                  case generate_cursor_deprecated:
-                  {
-                    RequireToken(Parser, CTokenType_OpenParen);
-
-                    counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
-                    counted_string Code = GenerateCursorFor_DEPRECATED(DatatypeName, Memory);
-                    counted_string OutfileName = GenerateOutfileNameFor(ToString(Directive), DatatypeName, Memory);
-                    RequireToken(Parser, CTokenType_CloseParen);
-                    RequireToken(Parser, CTokenType_CloseParen);
-                    DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
-                  } break;
-
-                  case for_datatypes:
-                  {
-                    RequireToken(Parser, CTokenType_OpenParen);
-                    RequireToken(Parser, CToken(CSz("all")));
-                    RequireToken(Parser, CTokenType_CloseParen);
-
-                    counted_string_stream Excludes = {};
-                    if (OptionalToken(Parser, CTokenType_Dot))
-                    {
-                      RequireToken(Parser, CToken(CSz("exclude")));
-                      RequireToken(Parser, CTokenType_OpenParen);
-                      Excludes = ParseDatatypeList(Parser, &Datatypes, &NameLists, Memory);
-                      RequireToken(Parser, CTokenType_CloseParen);
-                    }
-
-                    RequireToken(Parser, CToken(ToString(func)));
-                    meta_func StructFunc = ParseFunctionDef(Parser, CSz("for_datatypes_struct_callback"));
-
-                    RequireToken(Parser, CToken(ToString(func)));
-                    meta_func EnumFunc = ParseFunctionDef(Parser, CSz("for_datatypes_enum_callback"));
-
-                    RequireToken(Parser, CTokenType_CloseParen);
-
-                    string_builder OutputBuilder = {};
-
-                    for (struct_def_iterator Iter = Iterator(&Datatypes.Structs);
-                        IsValid(&Iter);
-                        Advance(&Iter))
-                    {
-                      struct_def* Struct = &Iter.At->Element;
-                      if (!StreamContains(&Excludes, Struct->Name))
-                      {
-                        counted_string Code = Execute(&StructFunc, Struct->Name, &Datatypes, &FunctionDefs, Memory);
-                        Append(&OutputBuilder, Code);
-                      }
-                    }
-
-                    for (enum_def_iterator Iter = Iterator(&Datatypes.Enums);
-                        IsValid(&Iter);
-                        Advance(&Iter))
-                    {
-                      enum_def* Enum = &Iter.At->Element;
-                      if (!StreamContains(&Excludes, Enum->Name))
-                      {
-                        counted_string Code = Execute(&EnumFunc, Enum->Name, &Datatypes, &FunctionDefs, Memory);
-                        Append(&OutputBuilder, Code);
-                      }
-                    }
-
-
-                    counted_string Code = Finalize(&OutputBuilder, Memory);
-                    counted_string OutfileName = GenerateOutfileNameFor(ToString(Directive), CSz("debug_print"), Memory);
-
-                    DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
-
-                  } break;
-
-                  case d_union:
-                  {
-                    counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
-                    d_union_decl dUnion = ParseDiscriminatedUnion(Parser, &Datatypes, DatatypeName, Memory);
-                    if (Parser->Valid)
-                    {
-                      counted_string OutfileName = GenerateOutfileNameFor(ToString(Directive), DatatypeName, Memory);
-
-                      string_builder CodeBuilder = {};
-                      if (!dUnion.CustomEnumType.Count)
-                      {
-                        counted_string EnumString = GenerateEnumDef(&dUnion, Memory);
-                        Append(&CodeBuilder, EnumString);
-                      }
-
-                      {
-                        counted_string StructString = GenerateStructDef(&dUnion, Memory);
-                        Append(&CodeBuilder, StructString);
-                      }
-
-                      counted_string Code = Finalize(&CodeBuilder, Memory);
-
-                      RequireToken(Parser, CTokenType_CloseParen);
-                      DoWorkToOutputThisStuff(Parser, Code, OutfileName, Memory);
-
-                    }
-                    else
-                    {
-                      Error("Parsing d_union declaration");
-                    }
-                  } break;
-
-                  InvalidDefaultWhileParsing(Parser, CS("Invalid directive."));
-                }
-              }
-            }
-          } break;
-
-          default:
-          {
-            PopTokenRaw(Parser);
-          } break;
-        }
-
-        continue;
-      }
+      DoMetaprogramming(Parser, &MetaInfo, &TodoInfo, Memory);
 
       if (Parser->Valid)
       {
@@ -2900,68 +2969,7 @@ main(s32 ArgCount, const char** ArgStrings)
       continue;
     }
 
-    /* DebugPrint(NameLists); */
-
-    random_series Rng = {.Seed = 123125};
-    native_file TempFile = GetTempFile(&Rng, Memory);
-    b32 AllWritesSucceeded = TempFile.Handle ? True : False;
-    if (AllWritesSucceeded)
-    {
-      ITERATE_OVER_AS(person, &People)
-      {
-        person* Person = GET_ELEMENT(personIter);
-        AllWritesSucceeded &= WriteToFile(&TempFile, CSz("# "));
-        AllWritesSucceeded &= WriteToFile(&TempFile, Person->Name);
-        AllWritesSucceeded &= WriteToFile(&TempFile, CSz("\n"));
-        ITERATE_OVER(&Person->Tags)
-        {
-          tag* Tag = GET_ELEMENT(Iter);
-
-          todo_iterator InnerIter = Iterator(&Tag->Todos);
-          if (IsValid(&InnerIter))
-          {
-            AllWritesSucceeded &= WriteToFile(&TempFile, CSz("  ## "));
-            AllWritesSucceeded &= WriteToFile(&TempFile, Tag->Tag);
-            AllWritesSucceeded &= WriteToFile(&TempFile, CSz("\n"));
-
-            for (;
-                IsValid(&InnerIter);
-                Advance(&InnerIter))
-            {
-              todo* Todo = GET_ELEMENT(InnerIter);
-              if (Todo->FoundInCodebase)
-              {
-                AllWritesSucceeded &= WriteToFile(&TempFile, CSz("    - #"));
-                AllWritesSucceeded &= WriteToFile(&TempFile, Todo->Id);
-                AllWritesSucceeded &= WriteToFile(&TempFile, CSz(" "));
-                AllWritesSucceeded &= WriteToFile(&TempFile, Todo->Value);
-                AllWritesSucceeded &= WriteToFile(&TempFile, CSz("\n"));
-              }
-            }
-
-            AllWritesSucceeded &= WriteToFile(&TempFile, CSz("\n"));
-          }
-        }
-      }
-    }
-    else
-    {
-      Error("Opening Tempfile");
-    }
-
-    if (AllWritesSucceeded)
-    {
-      Rename(TempFile, CSz("todos.md"));
-      CloseFile(&TempFile);
-    }
-
-    Log("\n");
-
-    DumpStringStreamToConsole(&SuccessFiles);
-    DumpStringStreamToConsole(&FailFiles);
-
-    /* quaternion Thing = {}; */
-    /* Print(Thing); */
+    WriteTodosToFile(&TodoInfo.People, Memory);
   }
   else
   {
