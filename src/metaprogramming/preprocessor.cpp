@@ -690,7 +690,7 @@ GenerateStructDef(d_union_decl* dUnion, memory_arena* Memory)
   counted_string Result = FormatCountedString(Memory, CSz("struct %S\n{\n  %S Type;\n"),
       UnionName, TagType);
 
-  ITERATE_OVER(struct_member, &dUnion->CommonMembers)
+  ITERATE_OVER(&dUnion->CommonMembers)
   {
     struct_member* Member = GET_ELEMENT(Iter);
     Assert(Member->Type == type_struct_member_variable);
@@ -842,7 +842,7 @@ ParseDiscriminatedUnion(c_parse_result* Parser, program_datatypes* Datatypes, co
     enum_def* EnumDef = GetEnumByType(&Datatypes->Enums, dUnion.CustomEnumType);
     if (EnumDef)
     {
-      ITERATE_OVER(enum_field, &EnumDef->Fields)
+      ITERATE_OVER(&EnumDef->Fields)
       {
         enum_field* Field = GET_ELEMENT(Iter);
         counted_string MemberName = Concat(Concat(dUnion.Name, CS("_"), Memory), Field->Name, Memory);
@@ -1850,7 +1850,7 @@ function meta_func*
 StreamContains(meta_func_stream* Stream, counted_string Name)
 {
   meta_func* Result = {};
-  ITERATE_OVER(meta_func, Stream)
+  ITERATE_OVER(Stream)
   {
     meta_func* Current = GET_ELEMENT(Iter);
     if (StringsMatch(Current->Name, Name))
@@ -1867,7 +1867,7 @@ function counted_string*
 StreamContains(counted_string_stream* Stream, counted_string Name)
 {
   counted_string* Result = {};
-  ITERATE_OVER(counted_string, Stream)
+  ITERATE_OVER(Stream)
   {
     counted_string* Current = GET_ELEMENT(Iter);
     if (StringsMatch(Current, Name))
@@ -1884,7 +1884,7 @@ function person*
 StreamContains(person_stream* People, counted_string Name)
 {
   person* Result = {};
-  ITERATE_OVER(person, People)
+  ITERATE_OVER(People)
   {
     person* Current = GET_ELEMENT(Iter);
     if (StringsMatch(Current->Name, Name))
@@ -1901,7 +1901,7 @@ function tagged_counted_string_stream*
 StreamContains(tagged_counted_string_stream_stream* Stream, counted_string Tag)
 {
   tagged_counted_string_stream* Result = {};
-  ITERATE_OVER(tagged_counted_string_stream, Stream)
+  ITERATE_OVER(Stream)
   {
     tagged_counted_string_stream* Current = GET_ELEMENT(Iter);
     if (StringsMatch(Current->Tag, Tag))
@@ -1917,7 +1917,7 @@ function todo*
 StreamContains(todo_stream* Todos, counted_string TodoId)
 {
   todo* Result = {};
-  ITERATE_OVER(todo, Todos)
+  ITERATE_OVER(Todos)
   {
     todo* Current = GET_ELEMENT(Iter);
     if (StringsMatch(Current->Id, TodoId))
@@ -1933,7 +1933,7 @@ function tag*
 StreamContains(tag_stream* TodoLists, counted_string Tag)
 {
   tag* Result = {};
-  ITERATE_OVER(tag, TodoLists)
+  ITERATE_OVER(TodoLists)
   {
     tag* Current = GET_ELEMENT(Iter);
     if (StringsMatch(Current->Tag, Tag))
@@ -2279,7 +2279,7 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgName, c
 
             if (Datatype->Type == type_struct_def)
             {
-              ITERATE_OVER(struct_member, &Datatype->struct_def->Fields)
+              ITERATE_OVER(&Datatype->struct_def->Fields)
               {
                 struct_member* Member = GET_ELEMENT(Iter);
 
@@ -2364,7 +2364,7 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgName, c
 
             if (Datatype->Type == type_enum_def)
             {
-              ITERATE_OVER(enum_field, &Datatype->enum_def->Fields)
+              ITERATE_OVER(&Datatype->enum_def->Fields)
               {
                 enum_field* Member = GET_ELEMENT(Iter);
                 ReplaceValues(&OutputBuilder, &NextScope, EnumValueMatch, CSz(""), Member->Name, Memory);
@@ -2430,7 +2430,7 @@ Execute(meta_func* Func, counted_string ArgType, program_datatypes* Datatypes, m
 function void
 ConcatStreams(counted_string_stream* S1, counted_string_stream* S2, memory_arena* Memory)
 {
-  ITERATE_OVER(counted_string, S2)
+  ITERATE_OVER(S2)
   {
     counted_string* Element = GET_ELEMENT(Iter);
     Push(S1, *Element, Memory);
@@ -2628,7 +2628,7 @@ main(s32 ArgCount, const char** ArgStrings)
                 counted_string TodoValue = Trim(ConcatTokensUntilNewline(Parser, Memory));
                 person* Person = GetExistingOrCreate(&People, PersonName, Memory);
 
-                ITERATE_OVER(counted_string, &TodoTags)
+                ITERATE_OVER(&TodoTags)
                 {
                   counted_string* TodoTag = GET_ELEMENT(Iter);
                   tag* Tag = GetExistingOrCreate(&Person->Tags, *TodoTag, Memory);
@@ -2890,7 +2890,7 @@ main(s32 ArgCount, const char** ArgStrings)
         AllWritesSucceeded &= WriteToFile(&TempFile, CSz("# "));
         AllWritesSucceeded &= WriteToFile(&TempFile, Person->Name);
         AllWritesSucceeded &= WriteToFile(&TempFile, CSz("\n"));
-        ITERATE_OVER(tag, &Person->Tags)
+        ITERATE_OVER(&Person->Tags)
         {
           tag* Tag = GET_ELEMENT(Iter);
 
