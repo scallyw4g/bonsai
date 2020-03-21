@@ -9022,6 +9022,36 @@
               DebugPrint("DebugUIType_PickedChunks");
             } break;
 
+            case DebugUIType_CallGraph:
+            {
+              DebugPrint("DebugUIType_CallGraph");
+            } break;
+
+            case DebugUIType_CollatedFunctionCalls:
+            {
+              DebugPrint("DebugUIType_CollatedFunctionCalls");
+            } break;
+
+            case DebugUIType_Memory:
+            {
+              DebugPrint("DebugUIType_Memory");
+            } break;
+
+            case DebugUIType_Graphics:
+            {
+              DebugPrint("DebugUIType_Graphics");
+            } break;
+
+            case DebugUIType_Network:
+            {
+              DebugPrint("DebugUIType_Network");
+            } break;
+
+            case DebugUIType_DrawCalls:
+            {
+              DebugPrint("DebugUIType_DrawCalls");
+            } break;
+
       }
     }
 
@@ -9082,6 +9112,16 @@
             case QuadRenderParam_AdvanceLayout:
             {
               DebugPrint("QuadRenderParam_AdvanceLayout");
+            } break;
+
+            case QuadRenderParam_AdvanceClip:
+            {
+              DebugPrint("QuadRenderParam_AdvanceClip");
+            } break;
+
+            case QuadRenderParam_Default:
+            {
+              DebugPrint("QuadRenderParam_Default");
             } break;
 
       }
@@ -10015,6 +10055,16 @@
             case Negative:
             {
               DebugPrint("Negative");
+            } break;
+
+            case Zero:
+            {
+              DebugPrint("Zero");
+            } break;
+
+            case Positive:
+            {
+              DebugPrint("Positive");
             } break;
 
       }

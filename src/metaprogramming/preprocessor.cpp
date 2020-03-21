@@ -1439,6 +1439,53 @@ TrimTrailingWhitespace(c_parse_result* Parser)
   }
 }
 
+function counted_string
+ConcatTokensBetween(c_parse_result* Parser, c_token_type Open, c_token_type Close, memory_arena* Memory)
+{
+  u32 Depth = 0;
+  string_builder Builder = {};
+  RequireToken(Parser, Open);
+
+  while (Parser->Valid && Remaining(&Parser->Tokens))
+  {
+    c_token T = PopToken(Parser);
+    Append(&Builder, T.Value);
+
+    if (T.Type == Open)
+    {
+      ++Depth;
+    }
+
+    if (T.Type == Close)
+    {
+      if (Depth == 0) break;
+      --Depth;
+    }
+  }
+
+  counted_string Result = Finalize(&Builder, Memory);
+  return Result;
+}
+
+function counted_string
+ConcatTokensUntil(c_parse_result* Parser, c_token_type Close, memory_arena* Memory)
+{
+  string_builder Builder = {};
+  while (Remaining(&Parser->Tokens) && PeekTokenRaw(Parser).Type != Close)
+  {
+    Append(&Builder, PopTokenRaw(Parser).Value);
+  }
+  counted_string Result = Finalize(&Builder, Memory);
+  return Result;
+}
+
+function counted_string
+ConcatTokensUntilNewline(c_parse_result* Parser, memory_arena* Memory)
+{
+  counted_string Result = ConcatTokensUntil(Parser, CTokenType_Newline, Memory);
+  return Result;
+}
+
 function b32
 HasMemberOfType(struct_def* Struct, counted_string MemberType)
 {
@@ -1512,33 +1559,137 @@ ParseStructBody(c_parse_result* Parser, counted_string StructName, memory_arena*
   return Result;
 }
 
+function void
+ParseError(c_parse_result* Parser, counted_string ErrorMessage)
+{
+  Parser->Valid = False;
+  Error("%.*s", (u32)ErrorMessage.Count, ErrorMessage.Start);
+}
+
 function counted_string
-ParseExpression(c_parse_result* Parser)
+ParseIntegerConstant(c_parse_result* Parser)
+{
+  c_token T = PeekToken(Parser);
+
+  const char* Start = T.Value.Start;
+  u32 Count = 0;
+
+  if (T.Type == CTokenType_Minus)
+  {
+    ++Count;
+    RequireToken(Parser, CTokenType_Minus);
+  }
+
+  c_token NumberT = RequireToken(Parser, CTokenType_Identifier);
+  if (IsNumeric(NumberT.Value))
+  {
+    Count += NumberT.Value.Count;
+  }
+  else
+  {
+    ParseError(Parser, CSz("Expected integer constant expression."));
+  }
+
+  counted_string Result = {
+    .Count = Count,
+    .Start = Start,
+  };
+  return Result;
+  
+}
+
+function b32
+NextTokenIsOperator(c_parse_result* Parser)
+{
+  b32 Result = False;
+
+  c_token T = PeekToken(Parser);
+  switch (T.Type)
+  {
+    case CTokenType_GT:
+    case CTokenType_LT:
+    case CTokenType_Minus:
+    case CTokenType_Plus:
+    case CTokenType_Hat:
+    case CTokenType_Star:
+    case CTokenType_Ampersand:
+    case CTokenType_Percent:
+    case CTokenType_Bang:
+    case CTokenType_Question:
+    case CTokenType_Colon:
+    case CTokenType_Tilde:
+    case CTokenType_FSlash:
+    {
+      Result = True;
+    } break;
+
+    default: {} break;
+  }
+
+  return Result;
+}
+
+function counted_string
+ParseOperator(c_parse_result* Parser)
 {
   counted_string Result = {};
+  if (NextTokenIsOperator(Parser))
+  {
+    Result = PopToken(Parser).Value;
+  }
+  else
+  {
+    ParseError(Parser, CSz("Expected operator"));
+  }
+
+  return Result;
+}
+
+function counted_string
+ParseConstantExpression(c_parse_result* Parser, memory_arena* Memory)
+{
+  string_builder Builder = {};
 
   c_token NextT = PeekToken(Parser);
   switch (NextT.Type)
   {
-    case CTokenType_Identifier:
-    {
-    } break;
-
     case CTokenType_OpenParen:
     {
+      Append(&Builder, ConcatTokensBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen, Memory));
+    } break;
+
+    case CTokenType_Identifier:
+    {
+      Append(&Builder, RequireToken(Parser, CTokenType_Identifier).Value);
+
+      if (PeekToken(Parser).Type == CTokenType_OpenParen)
+      {
+        // TODO(Jesse tags: metaprogramming, parsing): This is a function call or macro .. make sure it's actually constant.
+        Append(&Builder, ConcatTokensBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen, Memory));
+      }
+
+      while ( NextTokenIsOperator(Parser) )
+      {
+        Append(&Builder, ParseOperator(Parser));
+        Append(&Builder, RequireToken(Parser, CTokenType_Identifier).Value);
+      }
+
     } break;
 
     case CTokenType_Char:
     {
+      Append(&Builder, RequireToken(Parser, CTokenType_Char).Value);
     } break;
 
     case CTokenType_Minus:
     {
+      Append(&Builder, ParseIntegerConstant(Parser));
     } break;
 
     InvalidDefaultCase;
   }
 
+  counted_string Result = Finalize(&Builder, Memory);
   return Result;
 }
 
@@ -1562,7 +1713,7 @@ ParseEnum(c_parse_result* Parser, memory_arena* Memory)
 
     if (OptionalToken(Parser, CTokenType_Equals))
     {
-      Field.Value = PopToken(Parser).Value; // ParseExpression(Parser);
+      Field.Value = ParseConstantExpression(Parser, Memory);
     }
 
     Push(&Enum.Fields, Field, Memory);
@@ -1982,18 +2133,6 @@ StreamContains(tag_stream* TodoLists, counted_string Tag)
       break;
     }
   }
-  return Result;
-}
-
-function counted_string
-ConcatTokensUntilNewline(c_parse_result* Parser, memory_arena* Memory)
-{
-  string_builder CommentValueBuilder = {};
-  while (PeekTokenRaw(Parser).Type != CTokenType_Newline)
-  {
-    Append(&CommentValueBuilder, PopTokenRaw(Parser).Value);
-  }
-  counted_string Result = Finalize(&CommentValueBuilder, Memory);
   return Result;
 }
 
@@ -2494,7 +2633,7 @@ IsMetaprogrammingOutput(counted_string Filename, counted_string OutputDirectory)
   return Result;
 }
 
-/* #include <bonsai_stdlib/headers/debug_print.h> */
+#include <bonsai_stdlib/headers/debug_print.h>
 
 function counted_string_stream
 ParseDatatypeList(c_parse_result* Parser, program_datatypes* Datatypes, tagged_counted_string_stream_stream* NameLists, memory_arena* Memory)

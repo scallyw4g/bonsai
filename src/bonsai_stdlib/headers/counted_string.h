@@ -375,6 +375,20 @@ Exp(u32 Base, u32 Exponent)
 }
 
 function u32
+IsNumeric(counted_string S)
+{
+  u32 Result = True;
+  for (u32 CharIndex = 0;
+      CharIndex < S.Count;
+      ++CharIndex)
+  {
+    Result &= IsNumeric(S.Start[CharIndex]);
+  }
+
+  return Result;
+}
+
+function u32
 ToU32(counted_string S)
 {
   u32 Result = 0;
