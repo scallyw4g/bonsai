@@ -25,6 +25,14 @@ Rename(native_file CurrentFile, counted_string NewFilePath)
   return Result;
 }
 
+function b32
+Remove(counted_string Filepath)
+{
+  const char* NullTerminated = GetNullTerminated(Filepath);
+  b32 Result = (remove(NullTerminated) == 0) ? True : False;
+  return Result;
+}
+
 function native_file
 OpenFile(const char* FilePath, const char* Permissions = DefaultPermissions)
 {

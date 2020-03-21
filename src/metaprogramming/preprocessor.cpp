@@ -2495,9 +2495,30 @@ ParseFunctionDef(c_parse_result* Parser, counted_string FuncName)
   return Func;
 }
 
+function void
+RemoveAllMetaprogrammingOutput(c_parse_result_cursor* ParsedFiles, arguments* Args)
+{
+
+  for (u32 ParserIndex = 0;
+      ParserIndex < Count(ParsedFiles);
+      ++ParserIndex)
+  {
+    c_parse_result* Parser = ParsedFiles->Start+ParserIndex;
+    if (IsMetaprogrammingOutput(Parser->Filename, Args->Outpath))
+    {
+      Info("Removing %.*s", (u32)Parser->Filename.Count, Parser->Filename.Start);
+      Remove(Parser->Filename);
+      continue;
+    }
+  }
+
+}
+
 #ifndef EXCLUDE_PREPROCESSOR_MAIN
 #define SUCCESS_EXIT_CODE 0
 #define FAILURE_EXIT_CODE 1
+
+
 s32
 main(s32 ArgCount, const char** ArgStrings)
 {
@@ -2538,6 +2559,8 @@ main(s32 ArgCount, const char** ArgStrings)
     tagged_counted_string_stream_stream NameLists = {};
 
     meta_func_stream FunctionDefs = {};
+
+    RemoveAllMetaprogrammingOutput(&ParsedFiles, &Args);
 
     for (u32 ParserIndex = 0;
         ParserIndex < Count(&ParsedFiles);
