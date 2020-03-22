@@ -43,7 +43,10 @@ OUTPUT_DIRECTORY="$BIN"
 
   # -fsanitize=address
 
+# Note(Jesse): Using c++17 so I can mark functions with [[nodiscard]]
+
 COMMON_COMPILER_OPTIONS="
+  -std=c++17
   -ferror-limit=2000
   -ggdb
   -Weverything
@@ -278,19 +281,19 @@ function RunEntireBuild {
   # echo $SOURCE_FILES
   # exit 1
 
-  # git checkout "src/metaprogramming/output"
+  git checkout "src/metaprogramming/output"
 
-  rm -Rf $META_OUT
-  mkdir $META_OUT
-  SOURCE_FILES="$(find src -type f -name "*.h" -and -not -wholename "src/metaprogramming/defines.h" | tr '\n' ' ') $(find src -type f -name "*.cpp" | tr '\n' ' ')"
-  ColorizeTitle "Preprocessing"
-  bin/preprocessor $SOURCE_FILES
-  if [ $? -ne 0 ]; then
-    echo ""
-    echo -e "$Failed Preprocessing failed, exiting." 
-    git checkout "src/metaprogramming/output"
-    exit 1
-  fi
+  # rm -Rf $META_OUT
+  # mkdir $META_OUT
+  # SOURCE_FILES="$(find src -type f -name "*.h" -and -not -wholename "src/metaprogramming/defines.h" | tr '\n' ' ') $(find src -type f -name "*.cpp" | tr '\n' ' ')"
+  # ColorizeTitle "Preprocessing"
+  # bin/preprocessor $SOURCE_FILES
+  # if [ $? -ne 0 ]; then
+  #   echo ""
+  #   echo -e "$Failed Preprocessing failed, exiting." 
+  #   git checkout "src/metaprogramming/output"
+  #   exit 1
+  # fi
 
   BuildPreprocessor
   [ ! -x bin/preprocessor ] && echo -e "$Failed Couldn't find preprocessor, exiting." && exit 1

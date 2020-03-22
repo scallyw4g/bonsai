@@ -2056,9 +2056,9 @@
       }
     }
 
-    function void DebugPrint( enum_field S, u32 Depth)
+    function void DebugPrint( enum_member S, u32 Depth)
     {
-      DebugPrint("enum_field\n", Depth);
+      DebugPrint("enum_member\n", Depth);
       
           DebugPrint("Name = ", Depth);
           DebugPrint(S.Name, Depth+1);
@@ -2070,11 +2070,11 @@
 
     }
 
-    function void DebugPrint(enum_field* S, u32 Depth)
+    function void DebugPrint(enum_member* S, u32 Depth)
     {
       if (S)
       {
-        DebugPrint("enum_field\n", Depth);
+        DebugPrint("enum_member\n", Depth);
         
             DebugPrint("Name = ", Depth);
             DebugPrint(S->Name, Depth+1);
@@ -7943,9 +7943,9 @@
       }
     }
 
-    function void DebugPrint( enum_field_stream_chunk S, u32 Depth)
+    function void DebugPrint( enum_member_stream_chunk S, u32 Depth)
     {
-      DebugPrint("enum_field_stream_chunk\n", Depth);
+      DebugPrint("enum_member_stream_chunk\n", Depth);
       
           DebugPrint("Element = ", Depth);
           DebugPrint(S.Element, Depth+1);
@@ -7957,11 +7957,11 @@
 
     }
 
-    function void DebugPrint(enum_field_stream_chunk* S, u32 Depth)
+    function void DebugPrint(enum_member_stream_chunk* S, u32 Depth)
     {
       if (S)
       {
-        DebugPrint("enum_field_stream_chunk\n", Depth);
+        DebugPrint("enum_member_stream_chunk\n", Depth);
         
             DebugPrint("Element = ", Depth);
             DebugPrint(S->Element, Depth+1);
@@ -7974,9 +7974,9 @@
       }
     }
 
-    function void DebugPrint( enum_field_stream S, u32 Depth)
+    function void DebugPrint( enum_member_stream S, u32 Depth)
     {
-      DebugPrint("enum_field_stream\n", Depth);
+      DebugPrint("enum_member_stream\n", Depth);
       
           DebugPrint("FirstChunk = ", Depth);
           DebugPrint(S.FirstChunk, Depth+1);
@@ -7988,11 +7988,11 @@
 
     }
 
-    function void DebugPrint(enum_field_stream* S, u32 Depth)
+    function void DebugPrint(enum_member_stream* S, u32 Depth)
     {
       if (S)
       {
-        DebugPrint("enum_field_stream\n", Depth);
+        DebugPrint("enum_member_stream\n", Depth);
         
             DebugPrint("FirstChunk = ", Depth);
             DebugPrint(S->FirstChunk, Depth+1);
@@ -8005,9 +8005,9 @@
       }
     }
 
-    function void DebugPrint( enum_field_iterator S, u32 Depth)
+    function void DebugPrint( enum_member_iterator S, u32 Depth)
     {
-      DebugPrint("enum_field_iterator\n", Depth);
+      DebugPrint("enum_member_iterator\n", Depth);
       
           DebugPrint("Stream = ", Depth);
           DebugPrint(S.Stream, Depth+1);
@@ -8019,11 +8019,11 @@
 
     }
 
-    function void DebugPrint(enum_field_iterator* S, u32 Depth)
+    function void DebugPrint(enum_member_iterator* S, u32 Depth)
     {
       if (S)
       {
-        DebugPrint("enum_field_iterator\n", Depth);
+        DebugPrint("enum_member_iterator\n", Depth);
         
             DebugPrint("Stream = ", Depth);
             DebugPrint(S->Stream, Depth+1);
@@ -9340,6 +9340,11 @@
               DebugPrint("type");
             } break;
 
+            case value:
+            {
+              DebugPrint("value");
+            } break;
+
             case map_values:
             {
               DebugPrint("map_values");
@@ -9607,9 +9612,19 @@
               DebugPrint("type_struct_def");
             } break;
 
+            case type_struct_member:
+            {
+              DebugPrint("type_struct_member");
+            } break;
+
             case type_enum_def:
             {
               DebugPrint("type_enum_def");
+            } break;
+
+            case type_enum_member:
+            {
+              DebugPrint("type_enum_member");
             } break;
 
       }

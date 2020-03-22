@@ -265,10 +265,10 @@ ClearClickedFlags(input *Input)
   TIMED_FUNCTION();
 
 meta(
-  func (input Struct)
+  func (input InputDef)
   {
     (
-      Struct.map_members (Member) {
+      InputDef.map_members (Member) {
         Input->(Member.name).Clicked = False;
       }
     )

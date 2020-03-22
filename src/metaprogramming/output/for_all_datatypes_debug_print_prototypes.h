@@ -140,8 +140,8 @@
       function void DebugPrint( struct_member_union* S, u32 Depth = 0);
       function void DebugPrint( struct_member_union  S, u32 Depth = 0);
 
-      function void DebugPrint( enum_field* S, u32 Depth = 0);
-      function void DebugPrint( enum_field  S, u32 Depth = 0);
+      function void DebugPrint( enum_member* S, u32 Depth = 0);
+      function void DebugPrint( enum_member  S, u32 Depth = 0);
 
       function void DebugPrint( d_union_member* S, u32 Depth = 0);
       function void DebugPrint( d_union_member  S, u32 Depth = 0);
@@ -527,14 +527,14 @@
       function void DebugPrint( struct_member_stream_chunk* S, u32 Depth = 0);
       function void DebugPrint( struct_member_stream_chunk  S, u32 Depth = 0);
 
-      function void DebugPrint( enum_field_stream_chunk* S, u32 Depth = 0);
-      function void DebugPrint( enum_field_stream_chunk  S, u32 Depth = 0);
+      function void DebugPrint( enum_member_stream_chunk* S, u32 Depth = 0);
+      function void DebugPrint( enum_member_stream_chunk  S, u32 Depth = 0);
 
-      function void DebugPrint( enum_field_stream* S, u32 Depth = 0);
-      function void DebugPrint( enum_field_stream  S, u32 Depth = 0);
+      function void DebugPrint( enum_member_stream* S, u32 Depth = 0);
+      function void DebugPrint( enum_member_stream  S, u32 Depth = 0);
 
-      function void DebugPrint( enum_field_iterator* S, u32 Depth = 0);
-      function void DebugPrint( enum_field_iterator  S, u32 Depth = 0);
+      function void DebugPrint( enum_member_iterator* S, u32 Depth = 0);
+      function void DebugPrint( enum_member_iterator  S, u32 Depth = 0);
 
       function void DebugPrint( d_union_member_stream_chunk* S, u32 Depth = 0);
       function void DebugPrint( d_union_member_stream_chunk  S, u32 Depth = 0);

@@ -208,6 +208,7 @@ enum meta_arg_operator
 
   name,
   type,
+  value,
   map_values,
   map_members,
 };
@@ -338,12 +339,12 @@ meta(generate_cursor(struct_member))
 meta( generate_stream_chunk_struct(struct_member) )
 #include <metaprogramming/output/generate_stream_chunk_struct_c_decl.h>
 
-struct enum_field
+struct enum_member
 {
   counted_string Name;
   counted_string Value;
 };
-meta(generate_stream(enum_field))
+meta(generate_stream(enum_member))
 #include <metaprogramming/output/generate_stream_enum_field.h>
 
 struct d_union_member
@@ -358,11 +359,10 @@ meta(generate_stream(d_union_member))
 struct enum_def
 {
   counted_string Name;
-  enum_field_stream Fields;
+  enum_member_stream Fields;
 };
 meta(stream_and_cursor(enum_def))
 #include <metaprogramming/output/stream_and_cursor_enum_def.h>
-
 
 
 
@@ -371,7 +371,10 @@ enum datatype_type
   type_datatype_noop,
 
   type_struct_def,
+  type_struct_member,
+
   type_enum_def,
+  type_enum_member,
 };
 
 // TODO(Jesse, id: 188, tags: cleanup) This should have the name property, instead of
@@ -382,10 +385,57 @@ struct datatype
 
   union
   {
-    struct_def* struct_def;
-    enum_def* enum_def;
+    struct_def*     struct_def;
+    struct_member*  struct_member;
+
+    enum_def*       enum_def;
+    enum_member*    enum_member;
   };
 };
+
+
+function datatype
+Datatype(struct_member* M)
+{
+  datatype Result = {
+    .Type = type_struct_member,
+    .struct_member = M,
+  };
+
+  return Result;
+}
+
+function datatype
+Datatype(enum_member* E)
+{
+  datatype Result = {
+    .Type = type_enum_member,
+    .enum_member = E,
+  };
+  return Result;
+}
+
+
+function datatype
+Datatype(struct_def* S)
+{
+  datatype Result = {
+    .Type = type_struct_def,
+    .struct_def = S,
+  };
+
+  return Result;
+}
+
+function datatype
+Datatype(enum_def* E)
+{
+  datatype Result = {
+    .Type = type_enum_def,
+    .enum_def = E,
+  };
+  return Result;
+}
 
 
 

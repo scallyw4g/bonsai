@@ -1,32 +1,32 @@
 
     
-    struct enum_field_stream_chunk
+    struct enum_member_stream_chunk
     {
-      enum_field Element;
-      enum_field_stream_chunk* Next;
+      enum_member Element;
+      enum_member_stream_chunk* Next;
     };
 
 
     
-    struct enum_field_stream
+    struct enum_member_stream
     {
-      enum_field_stream_chunk* FirstChunk;
-      enum_field_stream_chunk* LastChunk;
+      enum_member_stream_chunk* FirstChunk;
+      enum_member_stream_chunk* LastChunk;
     };
 
 
 
     
-    struct enum_field_iterator
+    struct enum_member_iterator
     {
-      enum_field_stream* Stream;
-      enum_field_stream_chunk* At;
+      enum_member_stream* Stream;
+      enum_member_stream_chunk* At;
     };
 
-    function enum_field_iterator
-    Iterator(enum_field_stream* Stream)
+    function enum_member_iterator
+    Iterator(enum_member_stream* Stream)
     {
-      enum_field_iterator Iterator = {
+      enum_member_iterator Iterator = {
         .Stream = Stream,
         .At = Stream->FirstChunk
       };
@@ -34,14 +34,14 @@
     }
 
     function b32
-    IsValid(enum_field_iterator* Iter)
+    IsValid(enum_member_iterator* Iter)
     {
       b32 Result = Iter->At != 0;
       return Result;
     }
 
     function void
-    Advance(enum_field_iterator* Iter)
+    Advance(enum_member_iterator* Iter)
     {
       Iter->At = Iter->At->Next;
     }
@@ -50,9 +50,9 @@
 
     
     function void
-    Push(enum_field_stream* Stream, enum_field Element, memory_arena* Memory)
+    Push(enum_member_stream* Stream, enum_member Element, memory_arena* Memory)
     {
-      enum_field_stream_chunk* NextChunk = (enum_field_stream_chunk*)PushStruct(Memory, sizeof( enum_field_stream_chunk ), 1, 1);
+      enum_member_stream_chunk* NextChunk = (enum_member_stream_chunk*)PushStruct(Memory, sizeof( enum_member_stream_chunk ), 1, 1);
       NextChunk->Element = Element;
 
       if (!Stream->FirstChunk)

@@ -290,9 +290,9 @@
   ## semantic
     - #110 Should we do something special when interacting with this thing instead of Ignored-ing it?
 
-  ## bug
-    - #185 these should be printable!
-
   ## parsing
     - #192 This is a function call or macro .. make sure it's actually constant.
+
+  ## bug
+    - #185 these should be printable!
 
