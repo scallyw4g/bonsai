@@ -505,7 +505,7 @@ TestStructParsing(memory_arena* Memory)
   c_parse_result* Parser = &Parser_;
 
   program_datatypes Datatypes = {};
-  ParseDatatypesFor(Parser, &Datatypes, Memory);
+  ParseDatatypes(Parser, &Datatypes, Memory);
 
   return;
 }

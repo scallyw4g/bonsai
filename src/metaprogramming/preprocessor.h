@@ -574,6 +574,21 @@ struct todo_list_info
 };
 
 
+
+struct string_from_parser
+{
+  const char* Start;
+};
+
+enum output_mode
+{
+  Output_NoOverwrite,
+  Output_Unsafe,
+};
+
+
+
+
 inline void
 PrintToken(c_token Token)
 {

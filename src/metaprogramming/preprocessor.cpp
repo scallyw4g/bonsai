@@ -986,12 +986,6 @@ Output(c_token_cursor Code, counted_string Filename, memory_arena* Memory)
   return Result;
 }
 
-enum output_mode
-{
-  Output_NoOverwrite,
-  Output_Unsafe,
-};
-
 function b32
 Output(counted_string Code, counted_string OutputFilename, memory_arena* Memory, output_mode Mode = Output_NoOverwrite)
 {
@@ -1630,11 +1624,6 @@ NextTokenIsOperator(c_parse_result* Parser)
   return Result;
 }
 
-struct string_from_parser
-{
-  const char* Start;
-};
-
 function string_from_parser
 StartStringFromParer(c_parse_result* Parser)
 {
@@ -1845,6 +1834,9 @@ ParseDatatypes(c_parse_result* Parser, program_datatypes* Datatypes, memory_aren
 
           default: {} break;
         }
+      }
+      else if (StringsMatch(Token.Value, CS("function")))
+      {
       }
     }
   }
@@ -2760,10 +2752,6 @@ RemoveAllMetaprogrammingOutput(c_parse_result_cursor* ParsedFiles, arguments* Ar
 
 }
 
-#ifndef EXCLUDE_PREPROCESSOR_MAIN
-#define SUCCESS_EXIT_CODE 0
-#define FAILURE_EXIT_CODE 1
-
 function void
 DoMetaprogramming(c_parse_result* Parser, metaprogramming_info* MetaInfo, todo_list_info* TodoInfo, memory_arena* Memory)
 {
@@ -3147,6 +3135,10 @@ WriteTodosToFile(person_stream* People, memory_arena* Memory)
 
   return;
 }
+
+#ifndef EXCLUDE_PREPROCESSOR_MAIN
+#define SUCCESS_EXIT_CODE 0
+#define FAILURE_EXIT_CODE 1
 
 s32
 main(s32 ArgCount, const char** ArgStrings)

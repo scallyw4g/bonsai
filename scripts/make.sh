@@ -310,11 +310,11 @@ function RunEntireBuild {
     exit 1
   fi
 
-  # if [ "$EMCC" == "1" ]; then
-  #   BuildWithEmcc
-  # else
-  #   BuildWithClang
-  # fi
+  if [ "$EMCC" == "1" ]; then
+    BuildWithEmcc
+  else
+    BuildWithClang
+  fi
 
   # ./scripts/run_tests.sh
 

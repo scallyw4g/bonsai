@@ -2725,6 +2725,29 @@
       }
     }
 
+    function void DebugPrint( string_from_parser S, u32 Depth)
+    {
+      DebugPrint("string_from_parser\n", Depth);
+      
+          DebugPrint("Start = ", Depth);
+          DebugPrint(S.Start, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(string_from_parser* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("string_from_parser\n", Depth);
+        
+            DebugPrint("Start = ", Depth);
+            DebugPrint(S->Start, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
     function void DebugPrint( client_state S, u32 Depth)
     {
       DebugPrint("client_state\n", Depth);
@@ -7428,29 +7451,6 @@
       }
     }
 
-    function void DebugPrint( string_from_parser S, u32 Depth)
-    {
-      DebugPrint("string_from_parser\n", Depth);
-      
-          DebugPrint("Start = ", Depth);
-          DebugPrint(S.Start, Depth+1);
-          DebugPrint("\n");
-
-    }
-
-    function void DebugPrint(string_from_parser* S, u32 Depth)
-    {
-      if (S)
-      {
-        DebugPrint("string_from_parser\n", Depth);
-        
-            DebugPrint("Start = ", Depth);
-            DebugPrint(S->Start, Depth+1);
-            DebugPrint("\n");
-
-      }
-    }
-
     function void DebugPrint( plane_computation S, u32 Depth)
     {
       DebugPrint("plane_computation\n", Depth);
@@ -9849,6 +9849,27 @@
       }
     }
 
+    function void DebugPrint(output_mode EnumValue, u32 Depth)
+    {
+      DebugPrint("output_mode\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case Output_NoOverwrite:
+            {
+              DebugPrint("Output_NoOverwrite");
+              DebugPrint("");
+            } break;
+
+            case Output_Unsafe:
+            {
+              DebugPrint("Output_Unsafe");
+              DebugPrint("");
+            } break;
+
+      }
+    }
+
     function void DebugPrint(socket_type EnumValue, u32 Depth)
     {
       DebugPrint("socket_type\n", Depth);
@@ -10531,27 +10552,6 @@
             {
               DebugPrint("Positive");
               DebugPrint("1");
-            } break;
-
-      }
-    }
-
-    function void DebugPrint(output_mode EnumValue, u32 Depth)
-    {
-      DebugPrint("output_mode\n", Depth);
-      switch (EnumValue)
-      {
-        
-            case Output_NoOverwrite:
-            {
-              DebugPrint("Output_NoOverwrite");
-              DebugPrint("");
-            } break;
-
-            case Output_Unsafe:
-            {
-              DebugPrint("Output_Unsafe");
-              DebugPrint("");
             } break;
 
       }

@@ -197,6 +197,9 @@
       function void DebugPrint( todo_list_info* S, u32 Depth = 0);
       function void DebugPrint( todo_list_info  S, u32 Depth = 0);
 
+      function void DebugPrint( string_from_parser* S, u32 Depth = 0);
+      function void DebugPrint( string_from_parser  S, u32 Depth = 0);
+
       function void DebugPrint( client_state* S, u32 Depth = 0);
       function void DebugPrint( client_state  S, u32 Depth = 0);
 
@@ -488,9 +491,6 @@
       function void DebugPrint( native_file* S, u32 Depth = 0);
       function void DebugPrint( native_file  S, u32 Depth = 0);
 
-      function void DebugPrint( string_from_parser* S, u32 Depth = 0);
-      function void DebugPrint( string_from_parser  S, u32 Depth = 0);
-
       function void DebugPrint( plane_computation* S, u32 Depth = 0);
       function void DebugPrint( plane_computation  S, u32 Depth = 0);
 
@@ -669,6 +669,8 @@
 
       function void DebugPrint(datatype_type EnumValue, u32 Depth = 0);
 
+      function void DebugPrint(output_mode EnumValue, u32 Depth = 0);
+
       function void DebugPrint(socket_type EnumValue, u32 Depth = 0);
 
       function void DebugPrint(connection_state EnumValue, u32 Depth = 0);
@@ -702,8 +704,6 @@
       function void DebugPrint(mutex_op EnumValue, u32 Depth = 0);
 
       function void DebugPrint(Sign EnumValue, u32 Depth = 0);
-
-      function void DebugPrint(output_mode EnumValue, u32 Depth = 0);
 
       function void DebugPrint(Chunk_ID EnumValue, u32 Depth = 0);
 
