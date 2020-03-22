@@ -195,6 +195,7 @@ meta(
             case (ValueDef.name):
             {
               DebugPrint("(ValueDef.name)");
+              DebugPrint("(ValueDef.value)");
             } break;
           }
         )

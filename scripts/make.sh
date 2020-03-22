@@ -281,7 +281,7 @@ function RunEntireBuild {
   # echo $SOURCE_FILES
   # exit 1
 
-  git checkout "src/metaprogramming/output"
+  # git checkout "src/metaprogramming/output"
 
   # rm -Rf $META_OUT
   # mkdir $META_OUT

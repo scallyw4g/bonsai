@@ -9038,41 +9038,49 @@
             case DebugUIType_None:
             {
               DebugPrint("DebugUIType_None");
+              DebugPrint("0");
             } break;
 
             case DebugUIType_PickedChunks:
             {
               DebugPrint("DebugUIType_PickedChunks");
+              DebugPrint("(1 << 0)");
             } break;
 
             case DebugUIType_CallGraph:
             {
               DebugPrint("DebugUIType_CallGraph");
+              DebugPrint("(1 << 1)");
             } break;
 
             case DebugUIType_CollatedFunctionCalls:
             {
               DebugPrint("DebugUIType_CollatedFunctionCalls");
+              DebugPrint("(1 << 2)");
             } break;
 
             case DebugUIType_Memory:
             {
               DebugPrint("DebugUIType_Memory");
+              DebugPrint("(1 << 3)");
             } break;
 
             case DebugUIType_Graphics:
             {
               DebugPrint("DebugUIType_Graphics");
+              DebugPrint("(1 << 4)");
             } break;
 
             case DebugUIType_Network:
             {
               DebugPrint("DebugUIType_Network");
+              DebugPrint("(1 << 5)");
             } break;
 
             case DebugUIType_DrawCalls:
             {
               DebugPrint("DebugUIType_DrawCalls");
+              DebugPrint("(1 << 6)");
             } break;
 
       }
@@ -9087,16 +9095,19 @@
             case DebugTextureArraySlice_Font:
             {
               DebugPrint("DebugTextureArraySlice_Font");
+              DebugPrint("");
             } break;
 
             case DebugTextureArraySlice_Viewport:
             {
               DebugPrint("DebugTextureArraySlice_Viewport");
+              DebugPrint("");
             } break;
 
             case DebugTextureArraySlice_Count:
             {
               DebugPrint("DebugTextureArraySlice_Count");
+              DebugPrint("");
             } break;
 
       }
@@ -9111,11 +9122,13 @@
             case ColumnRenderParam_LeftAlign:
             {
               DebugPrint("ColumnRenderParam_LeftAlign");
+              DebugPrint("0");
             } break;
 
             case ColumnRenderParam_RightAlign:
             {
               DebugPrint("ColumnRenderParam_RightAlign");
+              DebugPrint("(1 << 0)");
             } break;
 
       }
@@ -9130,21 +9143,25 @@
             case QuadRenderParam_NoAdvance:
             {
               DebugPrint("QuadRenderParam_NoAdvance");
+              DebugPrint("0");
             } break;
 
             case QuadRenderParam_AdvanceLayout:
             {
               DebugPrint("QuadRenderParam_AdvanceLayout");
+              DebugPrint("(1 << 0)");
             } break;
 
             case QuadRenderParam_AdvanceClip:
             {
               DebugPrint("QuadRenderParam_AdvanceClip");
+              DebugPrint("(1 << 1)");
             } break;
 
             case QuadRenderParam_Default:
             {
               DebugPrint("QuadRenderParam_Default");
+              DebugPrint("(QuadRenderParam_AdvanceLayout|QuadRenderParam_AdvanceClip)");
             } break;
 
       }
@@ -9159,11 +9176,13 @@
             case ButtonEndParam_NoOp:
             {
               DebugPrint("ButtonEndParam_NoOp");
+              DebugPrint("0");
             } break;
 
             case ButtonEndParam_DiscardButtonDrawBounds:
             {
               DebugPrint("ButtonEndParam_DiscardButtonDrawBounds");
+              DebugPrint("(1 << 0)");
             } break;
 
       }
@@ -9178,26 +9197,31 @@
             case Position_None:
             {
               DebugPrint("Position_None");
+              DebugPrint("");
             } break;
 
             case Position_LeftOf:
             {
               DebugPrint("Position_LeftOf");
+              DebugPrint("");
             } break;
 
             case Position_RightOf:
             {
               DebugPrint("Position_RightOf");
+              DebugPrint("");
             } break;
 
             case Position_Above:
             {
               DebugPrint("Position_Above");
+              DebugPrint("");
             } break;
 
             case Position_Below:
             {
               DebugPrint("Position_Below");
+              DebugPrint("");
             } break;
 
       }
@@ -9212,21 +9236,25 @@
             case zDepth_Background:
             {
               DebugPrint("zDepth_Background");
+              DebugPrint("");
             } break;
 
             case zDepth_Text:
             {
               DebugPrint("zDepth_Text");
+              DebugPrint("");
             } break;
 
             case zDepth_TitleBar:
             {
               DebugPrint("zDepth_TitleBar");
+              DebugPrint("");
             } break;
 
             case zDepth_Border:
             {
               DebugPrint("zDepth_Border");
+              DebugPrint("");
             } break;
 
       }
@@ -9241,16 +9269,19 @@
             case ClipStatus_NoClipping:
             {
               DebugPrint("ClipStatus_NoClipping");
+              DebugPrint("");
             } break;
 
             case ClipStatus_PartialClipping:
             {
               DebugPrint("ClipStatus_PartialClipping");
+              DebugPrint("");
             } break;
 
             case ClipStatus_FullyClipped:
             {
               DebugPrint("ClipStatus_FullyClipped");
+              DebugPrint("");
             } break;
 
       }
@@ -9265,11 +9296,13 @@
             case d_union_flag_none:
             {
               DebugPrint("d_union_flag_none");
+              DebugPrint("");
             } break;
 
             case d_union_flag_enum_only:
             {
               DebugPrint("d_union_flag_enum_only");
+              DebugPrint("");
             } break;
 
       }
@@ -9284,36 +9317,43 @@
             case meta_directive_noop:
             {
               DebugPrint("meta_directive_noop");
+              DebugPrint("");
             } break;
 
             case generate_cursor_deprecated:
             {
               DebugPrint("generate_cursor_deprecated");
+              DebugPrint("");
             } break;
 
             case enum_only:
             {
               DebugPrint("enum_only");
+              DebugPrint("");
             } break;
 
             case d_union:
             {
               DebugPrint("d_union");
+              DebugPrint("");
             } break;
 
             case for_datatypes:
             {
               DebugPrint("for_datatypes");
+              DebugPrint("");
             } break;
 
             case named_list:
             {
               DebugPrint("named_list");
+              DebugPrint("");
             } break;
 
             case func:
             {
               DebugPrint("func");
+              DebugPrint("");
             } break;
 
       }
@@ -9328,31 +9368,37 @@
             case meta_arg_operator_noop:
             {
               DebugPrint("meta_arg_operator_noop");
+              DebugPrint("");
             } break;
 
             case name:
             {
               DebugPrint("name");
+              DebugPrint("");
             } break;
 
             case type:
             {
               DebugPrint("type");
+              DebugPrint("");
             } break;
 
             case value:
             {
               DebugPrint("value");
+              DebugPrint("");
             } break;
 
             case map_values:
             {
               DebugPrint("map_values");
+              DebugPrint("");
             } break;
 
             case map_members:
             {
               DebugPrint("map_members");
+              DebugPrint("");
             } break;
 
       }
@@ -9367,11 +9413,13 @@
             case meta_transform_op_noop:
             {
               DebugPrint("meta_transform_op_noop");
+              DebugPrint("");
             } break;
 
             case to_capital_case:
             {
               DebugPrint("to_capital_case");
+              DebugPrint("(1 << 0)");
             } break;
 
       }
@@ -9386,211 +9434,253 @@
             case CTokenType_Unknown:
             {
               DebugPrint("CTokenType_Unknown");
+              DebugPrint("");
             } break;
 
             case CTokenType_CommentSingleLine:
             {
               DebugPrint("CTokenType_CommentSingleLine");
+              DebugPrint("");
             } break;
 
             case CTokenType_CommentMultiLineStart:
             {
               DebugPrint("CTokenType_CommentMultiLineStart");
+              DebugPrint("");
             } break;
 
             case CTokenType_CommentMultiLineEnd:
             {
               DebugPrint("CTokenType_CommentMultiLineEnd");
+              DebugPrint("");
             } break;
 
             case CTokenType_Identifier:
             {
               DebugPrint("CTokenType_Identifier");
+              DebugPrint("");
             } break;
 
             case CTokenType_String:
             {
               DebugPrint("CTokenType_String");
+              DebugPrint("");
             } break;
 
             case CTokenType_Char:
             {
               DebugPrint("CTokenType_Char");
+              DebugPrint("");
             } break;
 
             case CTokenType_OpenBracket:
             {
               DebugPrint("CTokenType_OpenBracket");
+              DebugPrint("'['");
             } break;
 
             case CTokenType_CloseBracket:
             {
               DebugPrint("CTokenType_CloseBracket");
+              DebugPrint("']'");
             } break;
 
             case CTokenType_OpenBrace:
             {
               DebugPrint("CTokenType_OpenBrace");
+              DebugPrint("'{'");
             } break;
 
             case CTokenType_CloseBrace:
             {
               DebugPrint("CTokenType_CloseBrace");
+              DebugPrint("'}'");
             } break;
 
             case CTokenType_OpenParen:
             {
               DebugPrint("CTokenType_OpenParen");
+              DebugPrint("'('");
             } break;
 
             case CTokenType_CloseParen:
             {
               DebugPrint("CTokenType_CloseParen");
+              DebugPrint("')'");
             } break;
 
             case CTokenType_Dot:
             {
               DebugPrint("CTokenType_Dot");
+              DebugPrint("'.'");
             } break;
 
             case CTokenType_Comma:
             {
               DebugPrint("CTokenType_Comma");
+              DebugPrint("','");
             } break;
 
             case CTokenType_Semicolon:
             {
               DebugPrint("CTokenType_Semicolon");
+              DebugPrint("';'");
             } break;
 
             case CTokenType_Colon:
             {
               DebugPrint("CTokenType_Colon");
+              DebugPrint("':'");
             } break;
 
             case CTokenType_Hash:
             {
               DebugPrint("CTokenType_Hash");
+              DebugPrint("'#'");
             } break;
 
             case CTokenType_At:
             {
               DebugPrint("CTokenType_At");
+              DebugPrint("'@'");
             } break;
 
             case CTokenType_Dollar:
             {
               DebugPrint("CTokenType_Dollar");
+              DebugPrint("'$'");
             } break;
 
             case CTokenType_Space:
             {
               DebugPrint("CTokenType_Space");
+              DebugPrint("' '");
             } break;
 
             case CTokenType_Star:
             {
               DebugPrint("CTokenType_Star");
+              DebugPrint("'*'");
             } break;
 
             case CTokenType_Ampersand:
             {
               DebugPrint("CTokenType_Ampersand");
+              DebugPrint("'&'");
             } break;
 
             case CTokenType_SingleQuote:
             {
               DebugPrint("CTokenType_SingleQuote");
+              DebugPrint("'\''");
             } break;
 
             case CTokenType_DoubleQuote:
             {
               DebugPrint("CTokenType_DoubleQuote");
+              DebugPrint("'\"'");
             } break;
 
             case CTokenType_Equals:
             {
               DebugPrint("CTokenType_Equals");
+              DebugPrint("'='");
             } break;
 
             case CTokenType_LT:
             {
               DebugPrint("CTokenType_LT");
+              DebugPrint("'<'");
             } break;
 
             case CTokenType_GT:
             {
               DebugPrint("CTokenType_GT");
+              DebugPrint("'>'");
             } break;
 
             case CTokenType_Plus:
             {
               DebugPrint("CTokenType_Plus");
+              DebugPrint("'+'");
             } break;
 
             case CTokenType_Minus:
             {
               DebugPrint("CTokenType_Minus");
+              DebugPrint("'-'");
             } break;
 
             case CTokenType_Percent:
             {
               DebugPrint("CTokenType_Percent");
+              DebugPrint("'%'");
             } break;
 
             case CTokenType_Bang:
             {
               DebugPrint("CTokenType_Bang");
+              DebugPrint("'!'");
             } break;
 
             case CTokenType_Hat:
             {
               DebugPrint("CTokenType_Hat");
+              DebugPrint("'^'");
             } break;
 
             case CTokenType_Question:
             {
               DebugPrint("CTokenType_Question");
+              DebugPrint("'?'");
             } break;
 
             case CTokenType_FSlash:
             {
               DebugPrint("CTokenType_FSlash");
+              DebugPrint("'/'");
             } break;
 
             case CTokenType_BSlash:
             {
               DebugPrint("CTokenType_BSlash");
+              DebugPrint("'\\'");
             } break;
 
             case CTokenType_Tilde:
             {
               DebugPrint("CTokenType_Tilde");
+              DebugPrint("'~'");
             } break;
 
             case CTokenType_Backtick:
             {
               DebugPrint("CTokenType_Backtick");
+              DebugPrint("'`'");
             } break;
 
             case CTokenType_Pipe:
             {
               DebugPrint("CTokenType_Pipe");
+              DebugPrint("'|'");
             } break;
 
             case CTokenType_Newline:
             {
               DebugPrint("CTokenType_Newline");
+              DebugPrint("'\n'");
             } break;
 
             case CTokenType_CarrigeReturn:
             {
               DebugPrint("CTokenType_CarrigeReturn");
+              DebugPrint("'\r'");
             } break;
 
             case CTokenType_EOF:
             {
               DebugPrint("CTokenType_EOF");
+              DebugPrint("EOF");
             } break;
 
       }
@@ -9605,26 +9695,31 @@
             case type_datatype_noop:
             {
               DebugPrint("type_datatype_noop");
+              DebugPrint("");
             } break;
 
             case type_struct_def:
             {
               DebugPrint("type_struct_def");
+              DebugPrint("");
             } break;
 
             case type_struct_member:
             {
               DebugPrint("type_struct_member");
+              DebugPrint("");
             } break;
 
             case type_enum_def:
             {
               DebugPrint("type_enum_def");
+              DebugPrint("");
             } break;
 
             case type_enum_member:
             {
               DebugPrint("type_enum_member");
+              DebugPrint("");
             } break;
 
       }
@@ -9639,11 +9734,13 @@
             case Socket_Blocking:
             {
               DebugPrint("Socket_Blocking");
+              DebugPrint("");
             } break;
 
             case Socket_NonBlocking:
             {
               DebugPrint("Socket_NonBlocking");
+              DebugPrint("");
             } break;
 
       }
@@ -9658,16 +9755,19 @@
             case ConnectionState_Disconnected:
             {
               DebugPrint("ConnectionState_Disconnected");
+              DebugPrint("");
             } break;
 
             case ConnectionState_AwaitingHandshake:
             {
               DebugPrint("ConnectionState_AwaitingHandshake");
+              DebugPrint("");
             } break;
 
             case ConnectionState_Connected:
             {
               DebugPrint("ConnectionState_Connected");
+              DebugPrint("");
             } break;
 
       }
@@ -9682,16 +9782,19 @@
             case SocketOpResult_Noop:
             {
               DebugPrint("SocketOpResult_Noop");
+              DebugPrint("");
             } break;
 
             case SocketOpResult_CompletedRW:
             {
               DebugPrint("SocketOpResult_CompletedRW");
+              DebugPrint("");
             } break;
 
             case SocketOpResult_Fail:
             {
               DebugPrint("SocketOpResult_Fail");
+              DebugPrint("");
             } break;
 
       }
@@ -9706,21 +9809,25 @@
             case SocketOp_Null:
             {
               DebugPrint("SocketOp_Null");
+              DebugPrint("");
             } break;
 
             case SocketOp_Read:
             {
               DebugPrint("SocketOp_Read");
+              DebugPrint("");
             } break;
 
             case SocketOp_Write:
             {
               DebugPrint("SocketOp_Write");
+              DebugPrint("");
             } break;
 
             case SocketOp_Count:
             {
               DebugPrint("SocketOp_Count");
+              DebugPrint("");
             } break;
 
       }
@@ -9735,41 +9842,49 @@
             case XmlTokenType_Unknown:
             {
               DebugPrint("XmlTokenType_Unknown");
+              DebugPrint("");
             } break;
 
             case XmlTokenType_Boolean:
             {
               DebugPrint("XmlTokenType_Boolean");
+              DebugPrint("");
             } break;
 
             case XmlTokenType_Float:
             {
               DebugPrint("XmlTokenType_Float");
+              DebugPrint("");
             } break;
 
             case XmlTokenType_Int:
             {
               DebugPrint("XmlTokenType_Int");
+              DebugPrint("");
             } break;
 
             case XmlTokenType_Property:
             {
               DebugPrint("XmlTokenType_Property");
+              DebugPrint("");
             } break;
 
             case XmlTokenType_Open:
             {
               DebugPrint("XmlTokenType_Open");
+              DebugPrint("");
             } break;
 
             case XmlTokenType_Close:
             {
               DebugPrint("XmlTokenType_Close");
+              DebugPrint("");
             } break;
 
             case XmlTokenType_Count:
             {
               DebugPrint("XmlTokenType_Count");
+              DebugPrint("");
             } break;
 
       }
@@ -9784,46 +9899,55 @@
             case ShaderUniform_Undefined:
             {
               DebugPrint("ShaderUniform_Undefined");
+              DebugPrint("");
             } break;
 
             case ShaderUniform_M4:
             {
               DebugPrint("ShaderUniform_M4");
+              DebugPrint("");
             } break;
 
             case ShaderUniform_V3:
             {
               DebugPrint("ShaderUniform_V3");
+              DebugPrint("");
             } break;
 
             case ShaderUniform_S32:
             {
               DebugPrint("ShaderUniform_S32");
+              DebugPrint("");
             } break;
 
             case ShaderUniform_U32:
             {
               DebugPrint("ShaderUniform_U32");
+              DebugPrint("");
             } break;
 
             case ShaderUniform_R32:
             {
               DebugPrint("ShaderUniform_R32");
+              DebugPrint("");
             } break;
 
             case ShaderUniform_Texture:
             {
               DebugPrint("ShaderUniform_Texture");
+              DebugPrint("");
             } break;
 
             case ShaderUniform_Light:
             {
               DebugPrint("ShaderUniform_Light");
+              DebugPrint("");
             } break;
 
             case ShaderUniform_Camera:
             {
               DebugPrint("ShaderUniform_Camera");
+              DebugPrint("");
             } break;
 
       }
@@ -9838,26 +9962,31 @@
             case FrameEvent_Undefined:
             {
               DebugPrint("FrameEvent_Undefined");
+              DebugPrint("");
             } break;
 
             case FrameEvent_Explosion:
             {
               DebugPrint("FrameEvent_Explosion");
+              DebugPrint("");
             } break;
 
             case FrameEvent_GameModeLoss:
             {
               DebugPrint("FrameEvent_GameModeLoss");
+              DebugPrint("");
             } break;
 
             case FrameEvent_GameModePlaying:
             {
               DebugPrint("FrameEvent_GameModePlaying");
+              DebugPrint("");
             } break;
 
             case FrameEvent_GameModeWon:
             {
               DebugPrint("FrameEvent_GameModeWon");
+              DebugPrint("");
             } break;
 
       }
@@ -9872,21 +10001,25 @@
             case GameMode_Title:
             {
               DebugPrint("GameMode_Title");
+              DebugPrint("");
             } break;
 
             case GameMode_Playing:
             {
               DebugPrint("GameMode_Playing");
+              DebugPrint("");
             } break;
 
             case GameMode_Won:
             {
               DebugPrint("GameMode_Won");
+              DebugPrint("");
             } break;
 
             case GameMode_Loss:
             {
               DebugPrint("GameMode_Loss");
+              DebugPrint("");
             } break;
 
       }
@@ -9901,36 +10034,43 @@
             case Chunk_Uninitialized:
             {
               DebugPrint("Chunk_Uninitialized");
+              DebugPrint("0 << 0");
             } break;
 
             case Chunk_Initialized:
             {
               DebugPrint("Chunk_Initialized");
+              DebugPrint("1 << 1");
             } break;
 
             case Chunk_Queued:
             {
               DebugPrint("Chunk_Queued");
+              DebugPrint("1 << 2");
             } break;
 
             case Chunk_MeshComplete:
             {
               DebugPrint("Chunk_MeshComplete");
+              DebugPrint("1 << 3");
             } break;
 
             case Chunk_GpuMeshComplete:
             {
               DebugPrint("Chunk_GpuMeshComplete");
+              DebugPrint("1 << 4");
             } break;
 
             case Chunk_Garbage:
             {
               DebugPrint("Chunk_Garbage");
+              DebugPrint("1 << 5");
             } break;
 
             case Chunk_Collected:
             {
               DebugPrint("Chunk_Collected");
+              DebugPrint("1 << 6");
             } break;
 
       }
@@ -9945,41 +10085,49 @@
             case Voxel_Empty:
             {
               DebugPrint("Voxel_Empty");
+              DebugPrint("0");
             } break;
 
             case Voxel_Filled:
             {
               DebugPrint("Voxel_Filled");
+              DebugPrint("1 << 0");
             } break;
 
             case Voxel_LeftFace:
             {
               DebugPrint("Voxel_LeftFace");
+              DebugPrint("1 << 1");
             } break;
 
             case Voxel_RightFace:
             {
               DebugPrint("Voxel_RightFace");
+              DebugPrint("1 << 2");
             } break;
 
             case Voxel_TopFace:
             {
               DebugPrint("Voxel_TopFace");
+              DebugPrint("1 << 3");
             } break;
 
             case Voxel_BottomFace:
             {
               DebugPrint("Voxel_BottomFace");
+              DebugPrint("1 << 4");
             } break;
 
             case Voxel_FrontFace:
             {
               DebugPrint("Voxel_FrontFace");
+              DebugPrint("1 << 5");
             } break;
 
             case Voxel_BackFace:
             {
               DebugPrint("Voxel_BackFace");
+              DebugPrint("1 << 6");
             } break;
 
       }
@@ -9994,26 +10142,31 @@
             case EntityState_Uninitialized:
             {
               DebugPrint("EntityState_Uninitialized");
+              DebugPrint("0");
             } break;
 
             case EntityState_Initialized:
             {
               DebugPrint("EntityState_Initialized");
+              DebugPrint("1 << 0");
             } break;
 
             case EntityState_Spawned:
             {
               DebugPrint("EntityState_Spawned");
+              DebugPrint("1 << 1");
             } break;
 
             case EntityState_Destroyed:
             {
               DebugPrint("EntityState_Destroyed");
+              DebugPrint("1 << 2");
             } break;
 
             case EntityState_Reserved:
             {
               DebugPrint("EntityState_Reserved");
+              DebugPrint("1 << 3");
             } break;
 
       }
@@ -10028,41 +10181,49 @@
             case EntityType_None:
             {
               DebugPrint("EntityType_None");
+              DebugPrint("0");
             } break;
 
             case EntityType_Player:
             {
               DebugPrint("EntityType_Player");
+              DebugPrint("1 << 0");
             } break;
 
             case EntityType_Enemy:
             {
               DebugPrint("EntityType_Enemy");
+              DebugPrint("1 << 1");
             } break;
 
             case EntityType_EnemyProjectile:
             {
               DebugPrint("EntityType_EnemyProjectile");
+              DebugPrint("1 << 2");
             } break;
 
             case EntityType_PlayerProjectile:
             {
               DebugPrint("EntityType_PlayerProjectile");
+              DebugPrint("1 << 3");
             } break;
 
             case EntityType_Loot:
             {
               DebugPrint("EntityType_Loot");
+              DebugPrint("1 << 4");
             } break;
 
             case EntityType_PlayerProton:
             {
               DebugPrint("EntityType_PlayerProton");
+              DebugPrint("1 << 5");
             } break;
 
             case EntityType_ParticleSystem:
             {
               DebugPrint("EntityType_ParticleSystem");
+              DebugPrint("1 << 6");
             } break;
 
       }
@@ -10077,26 +10238,49 @@
             case Collision_Player_Enemy:
             {
               DebugPrint("Collision_Player_Enemy");
+              DebugPrint("EntityType_Player | EntityType_Enemy");
             } break;
 
             case Collision_Player_EnemyProjectile:
             {
               DebugPrint("Collision_Player_EnemyProjectile");
+              DebugPrint("EntityType_Player | EntityType_EnemyProjectile");
             } break;
 
             case Collision_Player_PlayerProjectile:
             {
               DebugPrint("Collision_Player_PlayerProjectile");
+              DebugPrint("EntityType_Player | EntityType_PlayerProjectile");
             } break;
 
             case Collision_Player_Loot:
             {
               DebugPrint("Collision_Player_Loot");
+              DebugPrint("EntityType_Player | EntityType_Loot");
             } break;
 
             case Collision_Enemy_PlayerProjectile:
             {
               DebugPrint("Collision_Enemy_PlayerProjectile");
+              DebugPrint("EntityType_Enemy  | EntityType_PlayerProjectile");
+            } break;
+
+            case Collision_Enemy_PlayerProton:
+            {
+              DebugPrint("Collision_Enemy_PlayerProton");
+              DebugPrint("EntityType_Enemy  | EntityType_PlayerProton");
+            } break;
+
+            case Collision_Enemy_EnemyProjectile:
+            {
+              DebugPrint("Collision_Enemy_EnemyProjectile");
+              DebugPrint("EntityType_Enemy  | EntityType_EnemyProjectile");
+            } break;
+
+            case Collision_Enemy_Enemy:
+            {
+              DebugPrint("Collision_Enemy_Enemy");
+              DebugPrint("EntityType_Enemy");
             } break;
 
       }
@@ -10111,36 +10295,43 @@
             case ModelIndex_None:
             {
               DebugPrint("ModelIndex_None");
+              DebugPrint("");
             } break;
 
             case ModelIndex_Enemy:
             {
               DebugPrint("ModelIndex_Enemy");
+              DebugPrint("EntityType_Enemy");
             } break;
 
             case ModelIndex_Player:
             {
               DebugPrint("ModelIndex_Player");
+              DebugPrint("EntityType_Player");
             } break;
 
             case ModelIndex_Loot:
             {
               DebugPrint("ModelIndex_Loot");
+              DebugPrint("EntityType_Loot");
             } break;
 
             case ModelIndex_Projectile:
             {
               DebugPrint("ModelIndex_Projectile");
+              DebugPrint("");
             } break;
 
             case ModelIndex_Proton:
             {
               DebugPrint("ModelIndex_Proton");
+              DebugPrint("");
             } break;
 
             case ModelIndex_Count:
             {
               DebugPrint("ModelIndex_Count");
+              DebugPrint("");
             } break;
 
       }
@@ -10155,11 +10346,13 @@
             case AllocationType_Free:
             {
               DebugPrint("AllocationType_Free");
+              DebugPrint("");
             } break;
 
             case AllocationType_Reserved:
             {
               DebugPrint("AllocationType_Reserved");
+              DebugPrint("");
             } break;
 
       }
@@ -10174,16 +10367,19 @@
             case MutexOp_Waiting:
             {
               DebugPrint("MutexOp_Waiting");
+              DebugPrint("");
             } break;
 
             case MutexOp_Aquired:
             {
               DebugPrint("MutexOp_Aquired");
+              DebugPrint("");
             } break;
 
             case MutexOp_Released:
             {
               DebugPrint("MutexOp_Released");
+              DebugPrint("");
             } break;
 
       }
@@ -10198,16 +10394,19 @@
             case Negative:
             {
               DebugPrint("Negative");
+              DebugPrint("-1");
             } break;
 
             case Zero:
             {
               DebugPrint("Zero");
+              DebugPrint("0");
             } break;
 
             case Positive:
             {
               DebugPrint("Positive");
+              DebugPrint("1");
             } break;
 
       }
@@ -10222,11 +10421,13 @@
             case Output_NoOverwrite:
             {
               DebugPrint("Output_NoOverwrite");
+              DebugPrint("");
             } break;
 
             case Output_Unsafe:
             {
               DebugPrint("Output_Unsafe");
+              DebugPrint("");
             } break;
 
       }
@@ -10241,36 +10442,43 @@
             case ID_NONE:
             {
               DebugPrint("ID_NONE");
+              DebugPrint("0");
             } break;
 
             case ID_VOX:
             {
               DebugPrint("ID_VOX");
+              DebugPrint("' XOV'");
             } break;
 
             case ID_MAIN:
             {
               DebugPrint("ID_MAIN");
+              DebugPrint("'NIAM'");
             } break;
 
             case ID_PACK:
             {
               DebugPrint("ID_PACK");
+              DebugPrint("'KCAP'");
             } break;
 
             case ID_SIZE:
             {
               DebugPrint("ID_SIZE");
+              DebugPrint("'EZIS'");
             } break;
 
             case ID_XYZI:
             {
               DebugPrint("ID_XYZI");
+              DebugPrint("'IZYX'");
             } break;
 
             case ID_RGBA:
             {
               DebugPrint("ID_RGBA");
+              DebugPrint("'ABGR'");
             } break;
 
       }
@@ -10285,81 +10493,97 @@
             case type_ui_render_command_noop:
             {
               DebugPrint("type_ui_render_command_noop");
+              DebugPrint("");
             } break;
 
             case type_ui_render_command_window_start:
             {
               DebugPrint("type_ui_render_command_window_start");
+              DebugPrint("");
             } break;
 
             case type_ui_render_command_window_end:
             {
               DebugPrint("type_ui_render_command_window_end");
+              DebugPrint("");
             } break;
 
             case type_ui_render_command_button_start:
             {
               DebugPrint("type_ui_render_command_button_start");
+              DebugPrint("");
             } break;
 
             case type_ui_render_command_button_end:
             {
               DebugPrint("type_ui_render_command_button_end");
+              DebugPrint("");
             } break;
 
             case type_ui_render_command_table_start:
             {
               DebugPrint("type_ui_render_command_table_start");
+              DebugPrint("");
             } break;
 
             case type_ui_render_command_column_start:
             {
               DebugPrint("type_ui_render_command_column_start");
+              DebugPrint("");
             } break;
 
             case type_ui_render_command_column_end:
             {
               DebugPrint("type_ui_render_command_column_end");
+              DebugPrint("");
             } break;
 
             case type_ui_render_command_text:
             {
               DebugPrint("type_ui_render_command_text");
+              DebugPrint("");
             } break;
 
             case type_ui_render_command_text_at:
             {
               DebugPrint("type_ui_render_command_text_at");
+              DebugPrint("");
             } break;
 
             case type_ui_render_command_textured_quad:
             {
               DebugPrint("type_ui_render_command_textured_quad");
+              DebugPrint("");
             } break;
 
             case type_ui_render_command_untextured_quad:
             {
               DebugPrint("type_ui_render_command_untextured_quad");
+              DebugPrint("");
             } break;
 
             case type_ui_render_command_untextured_quad_at:
             {
               DebugPrint("type_ui_render_command_untextured_quad_at");
+              DebugPrint("");
             } break;
 
             case type_ui_render_command_border:
             {
               DebugPrint("type_ui_render_command_border");
+              DebugPrint("");
             } break;
 
             case type_ui_render_command_new_row:
             {
               DebugPrint("type_ui_render_command_new_row");
+              DebugPrint("");
             } break;
 
             case type_ui_render_command_table_end:
             {
               DebugPrint("type_ui_render_command_table_end");
+              DebugPrint("");
             } break;
 
       }
@@ -10374,26 +10598,31 @@
             case type_struct_member_function_noop:
             {
               DebugPrint("type_struct_member_function_noop");
+              DebugPrint("");
             } break;
 
             case type_struct_member_function_normal:
             {
               DebugPrint("type_struct_member_function_normal");
+              DebugPrint("");
             } break;
 
             case type_struct_member_function_operator:
             {
               DebugPrint("type_struct_member_function_operator");
+              DebugPrint("");
             } break;
 
             case type_struct_member_function_constructor:
             {
               DebugPrint("type_struct_member_function_constructor");
+              DebugPrint("");
             } break;
 
             case type_struct_member_function_destructor:
             {
               DebugPrint("type_struct_member_function_destructor");
+              DebugPrint("");
             } break;
 
       }
@@ -10408,21 +10637,25 @@
             case type_struct_member_noop:
             {
               DebugPrint("type_struct_member_noop");
+              DebugPrint("");
             } break;
 
             case type_struct_member_variable:
             {
               DebugPrint("type_struct_member_variable");
+              DebugPrint("");
             } break;
 
             case type_struct_member_function:
             {
               DebugPrint("type_struct_member_function");
+              DebugPrint("");
             } break;
 
             case type_struct_member_union:
             {
               DebugPrint("type_struct_member_union");
+              DebugPrint("");
             } break;
 
       }
@@ -10437,16 +10670,19 @@
             case type_work_queue_entry_noop:
             {
               DebugPrint("type_work_queue_entry_noop");
+              DebugPrint("");
             } break;
 
             case type_work_queue_entry_init_world_chunk:
             {
               DebugPrint("type_work_queue_entry_init_world_chunk");
+              DebugPrint("");
             } break;
 
             case type_work_queue_entry_copy_buffer:
             {
               DebugPrint("type_work_queue_entry_copy_buffer");
+              DebugPrint("");
             } break;
 
       }

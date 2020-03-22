@@ -82,13 +82,13 @@ global_variable const entity_type ENTITY_TYPES = (entity_type)
 
 enum collision_type
 {
-  Collision_Player_Enemy            = EntityType_Player|EntityType_Enemy,
-  Collision_Player_EnemyProjectile  = EntityType_Player|EntityType_EnemyProjectile,
-  Collision_Player_PlayerProjectile = EntityType_Player|EntityType_PlayerProjectile,
-  Collision_Player_Loot             = EntityType_Player|EntityType_Loot,
-  Collision_Enemy_PlayerProjectile  = EntityType_Enemy |EntityType_PlayerProjectile,
-  Collision_Enemy_PlayerProton      = EntityType_Enemy |EntityType_PlayerProton,
-  Collision_Enemy_EnemyProjectile   = EntityType_Enemy |EntityType_EnemyProjectile,
+  Collision_Player_Enemy            = EntityType_Player | EntityType_Enemy,
+  Collision_Player_EnemyProjectile  = EntityType_Player | EntityType_EnemyProjectile,
+  Collision_Player_PlayerProjectile = EntityType_Player | EntityType_PlayerProjectile,
+  Collision_Player_Loot             = EntityType_Player | EntityType_Loot,
+  Collision_Enemy_PlayerProjectile  = EntityType_Enemy  | EntityType_PlayerProjectile,
+  Collision_Enemy_PlayerProton      = EntityType_Enemy  | EntityType_PlayerProton,
+  Collision_Enemy_EnemyProjectile   = EntityType_Enemy  | EntityType_EnemyProjectile,
   Collision_Enemy_Enemy             = EntityType_Enemy,
 };
 

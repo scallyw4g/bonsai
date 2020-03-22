@@ -1446,7 +1446,7 @@ ConcatTokensBetween(c_parse_result* Parser, c_token_type Open, c_token_type Clos
 
   while (Parser->Valid && Remaining(&Parser->Tokens))
   {
-    c_token T = PopToken(Parser);
+    c_token T = PopTokenRaw(Parser);
     Append(&Builder, T.Value);
 
     if (T.Type == Open)
@@ -1613,6 +1613,7 @@ NextTokenIsOperator(c_parse_result* Parser)
     case CTokenType_FSlash:
     case CTokenType_Bang:
     case CTokenType_Ampersand:
+    case CTokenType_Pipe:
 
     case CTokenType_Hat:
     case CTokenType_Percent:
@@ -1700,50 +1701,50 @@ ParseOperator(c_parse_result* Parser)
 }
 
 function counted_string
-ParseConstantExpression(c_parse_result* Parser, memory_arena* Memory)
+ParseConstantExpression(c_parse_result* Parser)
 {
-  string_builder Builder = {};
+  string_from_parser Builder = StartStringFromParer(Parser);
 
   c_token NextT = PeekToken(Parser);
   switch (NextT.Type)
   {
     case CTokenType_OpenParen:
     {
-      Append(&Builder, ConcatTokensBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen, Memory));
+      EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
     } break;
 
     case CTokenType_Identifier:
     {
-      Append(&Builder, RequireToken(Parser, CTokenType_Identifier).Value);
+      RequireToken(Parser, CTokenType_Identifier);
 
       if (PeekToken(Parser).Type == CTokenType_OpenParen)
       {
         // TODO(Jesse id: 192, tags: metaprogramming, parsing): This is a function call or macro .. make sure it's actually constant.
-        Append(&Builder, ConcatTokensBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen, Memory));
+        EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
       }
 
       while ( NextTokenIsOperator(Parser) )
       {
-        Append(&Builder, ParseOperator(Parser));
-        Append(&Builder, RequireToken(Parser, CTokenType_Identifier).Value);
+        ParseOperator(Parser);
+        RequireToken(Parser, CTokenType_Identifier);
       }
 
     } break;
 
     case CTokenType_Char:
     {
-      Append(&Builder, RequireToken(Parser, CTokenType_Char).Value);
+      RequireToken(Parser, CTokenType_Char);
     } break;
 
     case CTokenType_Minus:
     {
-      Append(&Builder, ParseIntegerConstant(Parser));
+      ParseIntegerConstant(Parser);
     } break;
 
     InvalidDefaultCase;
   }
 
-  counted_string Result = Finalize(&Builder, Memory);
+  counted_string Result = Trim(FinalizeStringFromParser(&Builder, Parser));
   return Result;
 }
 
@@ -1767,7 +1768,7 @@ ParseEnum(c_parse_result* Parser, memory_arena* Memory)
 
     if (OptionalToken(Parser, CTokenType_Equals))
     {
-      Field.Value = ParseConstantExpression(Parser, Memory);
+      Field.Value = ParseConstantExpression(Parser);
     }
 
     Push(&Enum.Fields, Field, Memory);
@@ -1781,6 +1782,8 @@ ParseEnum(c_parse_result* Parser, memory_arena* Memory)
       break;
     }
   }
+
+  RequireToken(Parser, CTokenType_CloseBrace);
 
   return Enum;
 }
@@ -2375,15 +2378,21 @@ EscapeDoubleQuotes(counted_string S, memory_arena* Memory)
 }
 
 function void
-AppendAndEscapeDoubleQuotes(string_builder* Builder, counted_string S, b32 DoEscapeQuotes)
+AppendAndEscapeInteriorOfDoubleQuotedString(string_builder* Builder, counted_string S)
 {
-  if (DoEscapeQuotes)
+  if (S.Count >= 2 &&
+      S.Start[0] == '"' &&
+      S.Start[S.Count-1] == '"')
   {
+    S.Count -= 2;
+    ++S.Start;
+    Append(Builder, CSz("\""));
     Append(Builder, EscapeDoubleQuotes(S, Builder->Memory));
+    Append(Builder, CSz("\""));
   }
   else
   {
-    Append(Builder, S);
+    Append(Builder, EscapeDoubleQuotes(S, Builder->Memory));
   }
 }
 
@@ -2409,7 +2418,7 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgMatchPa
     {
       c_parse_result StringParse = TokenizeString(BodyToken.Value, Scope.Filename, Memory, True);
       counted_string Code = Execute(FuncName, StringParse, ArgMatchPattern, ArgDatatype, MetaInfo, Memory);
-      Append(&OutputBuilder, Code);
+      AppendAndEscapeInteriorOfDoubleQuotedString(&OutputBuilder, Code);
     }
     else if ( BodyToken.Type == CTokenType_OpenParen )
     {
@@ -2442,14 +2451,14 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgMatchPa
 
           case value:
           {
-            if (ArgDatatype.Type == type_enum_def)
+            if (ArgDatatype.Type == type_enum_member)
             {
-              counted_string Name = Transform(Transformations, ArgDatatype.enum_def->Name, Memory);
+              counted_string Name = Transform(Transformations, ArgDatatype.enum_member->Value, Memory);
               Append(&OutputBuilder, Name);
             }
             else
             {
-              Error("Called .value on non-enum type.");
+              Error("Called .value on non-enum_member type.");
             }
           } break;
 
@@ -2687,7 +2696,7 @@ IsMetaprogrammingOutput(counted_string Filename, counted_string OutputDirectory)
   return Result;
 }
 
-/* #include <bonsai_stdlib/headers/debug_print.h> */
+#include <bonsai_stdlib/headers/debug_print.h>
 
 function counted_string_stream
 ParseDatatypeList(c_parse_result* Parser, program_datatypes* Datatypes, tagged_counted_string_stream_stream* NameLists, memory_arena* Memory)

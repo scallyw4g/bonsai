@@ -630,6 +630,7 @@ GetToken(ansi_stream* Stream, u32 Lookahead = 0)
   if (Stream->At+Lookahead < Stream->End)
   {
     char At = *(Stream->At+Lookahead);
+    // TODO(Jesse, id: 193, tags: metaprogramming): Metaprogram this.  I've had bugs multiple times because of it.
     switch (At)
     {
       case CTokenType_OpenBracket:
@@ -663,6 +664,7 @@ GetToken(ansi_stream* Stream, u32 Lookahead = 0)
       case CTokenType_BSlash:
       case CTokenType_Tilde:
       case CTokenType_Backtick:
+      case CTokenType_Pipe:
       case CTokenType_Newline:
       case CTokenType_CarrigeReturn:
       case CTokenType_EOF:

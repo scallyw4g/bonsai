@@ -79,6 +79,7 @@
     - #180 Can we use Allocate() here instead?
     - #191 This can be generated, but it requires
     - #192 This is a function call or macro .. make sure it's actually constant.
+    - #193 Metaprogram this.  I've had bugs multiple times because of it.
 
   ## robustness
     - #78 How should we actually set this?
