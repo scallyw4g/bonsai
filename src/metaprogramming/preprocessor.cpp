@@ -693,12 +693,12 @@ GenerateStructDef(d_union_decl* dUnion, memory_arena* Memory)
   ITERATE_OVER(&dUnion->CommonMembers)
   {
     struct_member* Member = GET_ELEMENT(Iter);
-    Assert(Member->Type == type_struct_member_variable);
+    Assert(Member->Type == type_variable_decl);
     Result =
       Concat(Result,
         FormatCountedString(Memory, CSz("  %S %S;\n"),
-          Member->struct_member_variable.Type,
-          Member->struct_member_variable.Name),
+          Member->variable_decl.Type,
+          Member->variable_decl.Name),
       Memory);
   }
   Result = Concat(Result, CS("\n  union\n  {\n"), Memory);
@@ -859,8 +859,8 @@ ParseDiscriminatedUnion(c_parse_result* Parser, program_datatypes* Datatypes, co
     while (!OptionalToken(Parser, CTokenType_CloseBrace))
     {
       struct_member Decl = {
-        .Type = type_struct_member_variable,
-        .struct_member_variable = {
+        .Type = type_variable_decl,
+        .variable_decl = {
           .Type = RequireToken(Parser, CTokenType_Identifier).Value,
           .Name = RequireToken(Parser, CTokenType_Identifier).Value
         }
@@ -1163,7 +1163,7 @@ ParseDeclaration(c_parse_result* Parser, counted_string StructName, memory_arena
 {
   TIMED_FUNCTION();
   struct_member Result = {
-    .Type = type_struct_member_variable
+    .Type = type_variable_decl
   };
 
   c_token FirstToken = PeekToken(Parser);
@@ -1206,20 +1206,20 @@ ParseDeclaration(c_parse_result* Parser, counted_string StructName, memory_arena
           case CTokenType_Ampersand:
           {
             RequireToken(Parser, CTokenType_Ampersand);
-            Result.struct_member_variable.Type = Concat(Result.struct_member_variable.Type, CS("&"), Memory);
+            Result.variable_decl.Type = Concat(Result.variable_decl.Type, CS("&"), Memory);
           } break;
 
           case CTokenType_Star:
           {
             RequireToken(Parser, CTokenType_Star);
-            Result.struct_member_variable.Type = Concat(Result.struct_member_variable.Type, CS("*"), Memory);
+            Result.variable_decl.Type = Concat(Result.variable_decl.Type, CS("*"), Memory);
           } break;
 
           case CTokenType_Identifier:
           {
             if (StringsMatch(NextToken.Value, CS("unsigned")))
             {
-              Result.struct_member_variable.Type = Concat( Result.struct_member_variable.Type, RequireToken(Parser, CTokenType_Identifier).Value, Memory);
+              Result.variable_decl.Type = Concat( Result.variable_decl.Type, RequireToken(Parser, CTokenType_Identifier).Value, Memory);
             }
             else if (StringsMatch(NextToken.Value, CS("union")))
             {
@@ -1257,7 +1257,7 @@ ParseDeclaration(c_parse_result* Parser, counted_string StructName, memory_arena
 
             if (!Done)
             {
-              Result.struct_member_variable.Type = Concat( Result.struct_member_variable.Type, RequireToken(Parser, CTokenType_Identifier).Value, Memory);
+              Result.variable_decl.Type = Concat( Result.variable_decl.Type, RequireToken(Parser, CTokenType_Identifier).Value, Memory);
             }
           } break;
 
@@ -1272,9 +1272,9 @@ ParseDeclaration(c_parse_result* Parser, counted_string StructName, memory_arena
     InvalidDefaultWhileParsing(Parser, CS("While parsing decl type 1."));
   }
 
-  if (!Unnamed && Result.Type == type_struct_member_variable)
+  if (!Unnamed && Result.Type == type_variable_decl)
   {
-    Result.struct_member_variable.Name = RequireToken(Parser, CTokenType_Identifier).Value;
+    Result.variable_decl.Name = RequireToken(Parser, CTokenType_Identifier).Value;
     switch (PeekToken(Parser).Type)
     {
       case CTokenType_OpenParen:
@@ -1326,10 +1326,10 @@ DumpCDeclStreamToConsole(struct_member_stream* Stream)
         }
       } break;
 
-      case type_struct_member_variable:
+      case type_variable_decl:
       {
-        counted_string Type = Iter.At->Element.struct_member_variable.Type;
-        counted_string Name = Iter.At->Element.struct_member_variable.Name;
+        counted_string Type = Iter.At->Element.variable_decl.Type;
+        counted_string Name = Iter.At->Element.variable_decl.Name;
         Log("  %.*s %.*s\n", Type.Count, Type.Start, Name.Count, Name.Start);
       } break;
 
@@ -1350,11 +1350,11 @@ PrintCDecl(struct_member* Decl, struct_def_stream* ProgramStructs)
 {
   switch (Decl->Type)
   {
-    case type_struct_member_variable:
+    case type_variable_decl:
     {
       Log("%.*s %.*s",
-          Decl->struct_member_variable.Type.Count, Decl->struct_member_variable.Type.Start,
-          Decl->struct_member_variable.Name.Count, Decl->struct_member_variable.Name.Start);
+          Decl->variable_decl.Type.Count, Decl->variable_decl.Type.Start,
+          Decl->variable_decl.Name.Count, Decl->variable_decl.Name.Start);
 
       Log("\n");
     } break;
@@ -1365,9 +1365,9 @@ PrintCDecl(struct_member* Decl, struct_def_stream* ProgramStructs)
           IsValid(&Iter);
           Advance(&Iter))
       {
-        if (Iter.At->Element.Type == type_struct_member_variable)
+        if (Iter.At->Element.Type == type_variable_decl)
         {
-          struct_def* Struct = GetStructByType(ProgramStructs, Iter.At->Element.struct_member_variable.Type);
+          struct_def* Struct = GetStructByType(ProgramStructs, Iter.At->Element.variable_decl.Type);
           if (Struct)
           {
             PrintCDecl(&Iter.At->Element, ProgramStructs);
@@ -1375,7 +1375,7 @@ PrintCDecl(struct_member* Decl, struct_def_stream* ProgramStructs)
           }
           else
           {
-            Error("Couldn't find struct type %*.s", (u32)Iter.At->Element.struct_member_variable.Name.Count, Iter.At->Element.struct_member_variable.Name.Start);
+            Error("Couldn't find struct type %*.s", (u32)Iter.At->Element.variable_decl.Name.Count, Iter.At->Element.variable_decl.Name.Start);
           }
         }
         else
@@ -1496,9 +1496,9 @@ HasMemberOfType(struct_def* Struct, counted_string MemberType)
     {
       switch (Iter.At->Element.Type)
       {
-        case type_struct_member_variable:
+        case type_variable_decl:
         {
-          if (StringsMatch(Iter.At->Element.struct_member_variable.Type, MemberType))
+          if (StringsMatch(Iter.At->Element.variable_decl.Type, MemberType))
           {
             Result = True;
           }
@@ -1794,63 +1794,58 @@ ParseDatatypes(c_parse_result* Parser, program_datatypes* Datatypes, memory_aren
   while (Parser->Valid && Remaining(&Parser->Tokens))
   {
     c_token Token = PopToken(Parser);
-    switch (Token.Type)
+    if (Token.Type == CTokenType_Identifier)
     {
-      case CTokenType_Identifier:
+      if (StringsMatch(Token.Value, CS("union")))
       {
-        if (StringsMatch(Token.Value, CS("union")))
+        c_token UnionName = RequireToken(Parser, CTokenType_Identifier);
+        Info("unions are unsupported at the moment: %.*s", (s32)UnionName.Value.Count, UnionName.Value.Start);
+        EatUnionDef(Parser);
+      }
+      else if (StringsMatch(Token.Value, CS("typedef")))
+      {
+        // typedef struct { .... } the_struct_name;
+        if (OptionalToken(Parser, CToken(CS("struct"))))
         {
-          c_token UnionName = RequireToken(Parser, CTokenType_Identifier);
-          Info("unions are unsupported at the moment: %.*s", (s32)UnionName.Value.Count, UnionName.Value.Start);
-          EatUnionDef(Parser);
-        }
-        else if (StringsMatch(Token.Value, CS("typedef")))
-        {
-          // typedef struct { .... } the_struct_name;
-          if (OptionalToken(Parser, CToken(CS("struct"))))
+          if (PeekToken(Parser) == CToken(CTokenType_OpenBrace))
           {
-            if (PeekToken(Parser) == CToken(CTokenType_OpenBrace))
+            struct_def S = ParseStructBody(Parser, CS(""), Memory);
+
+            RequireToken(Parser, CTokenType_CloseBrace);
+            S.Name = RequireToken(Parser, CTokenType_Identifier).Value;
+            RequireToken(Parser, CTokenType_Semicolon);
+
+            Push(&Datatypes->Structs, S, Memory);
+          }
+          else
+          {
+            // C-style typedef struct THING OTHERTHING;
+            EatUntil(Parser, CTokenType_Semicolon);
+          }
+        }
+      }
+      else if (StringsMatch(Token.Value, CS("enum")))
+      {
+        enum_def Enum = ParseEnum(Parser, Memory);
+        Push(&Datatypes->Enums, Enum, Memory);
+      }
+      else if (StringsMatch(Token.Value, CS("struct")))
+      {
+        c_token T = PopToken(Parser);
+        switch (T.Type)
+        {
+          case CTokenType_Identifier:
+          {
+            if ( PeekToken(Parser) == CToken(CTokenType_OpenBrace) )
             {
-              struct_def S = ParseStructBody(Parser, CS(""), Memory);
-
-              RequireToken(Parser, CTokenType_CloseBrace);
-              S.Name = RequireToken(Parser, CTokenType_Identifier).Value;
-              RequireToken(Parser, CTokenType_Semicolon);
-
+              struct_def S = ParseStructBody(Parser, T.Value, Memory);
               Push(&Datatypes->Structs, S, Memory);
             }
-            else
-            {
-              // C-style typedef struct THING OTHERTHING;
-              EatUntil(Parser, CTokenType_Semicolon);
-            }
-          }
-        }
-        else if (StringsMatch(Token.Value, CS("enum")))
-        {
-          enum_def Enum = ParseEnum(Parser, Memory);
-          Push(&Datatypes->Enums, Enum, Memory);
-        }
-        else if (StringsMatch(Token.Value, CS("struct")))
-        {
-          c_token T = PopToken(Parser);
-          switch (T.Type)
-          {
-            case CTokenType_Identifier:
-            {
-              if ( PeekToken(Parser) == CToken(CTokenType_OpenBrace) )
-              {
-                struct_def S = ParseStructBody(Parser, T.Value, Memory);
-                Push(&Datatypes->Structs, S, Memory);
-              }
-            } break;
+          } break;
 
-            default: {} break;
-          }
+          default: {} break;
         }
-      } break;
-
-      default: {} break;
+      }
     }
   }
 
@@ -1858,7 +1853,7 @@ ParseDatatypes(c_parse_result* Parser, program_datatypes* Datatypes, memory_aren
 }
 
 function program_datatypes
-ParseAllDatatypes(c_parse_result_cursor Files_in, memory_arena* Memory)
+ParseAllDatatypeDefinitions(c_parse_result_cursor Files_in, memory_arena* Memory)
 {
   TIMED_FUNCTION();
   c_parse_result_cursor* Files = &Files_in;
@@ -2326,9 +2321,9 @@ GetNameForStructMember(struct_member* Decl)
       Result = CSz("(unnamed function)");
     } break;
 
-    case type_struct_member_variable:
+    case type_variable_decl:
     {
-      Result = Decl->struct_member_variable.Name;
+      Result = Decl->variable_decl.Name;
     } break;
 
     case type_struct_member_union:
@@ -2543,11 +2538,11 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgMatchPa
                   {
                   } break;
 
-                  case type_struct_member_variable:
+                  case type_variable_decl:
 
                   {
                     if ( ContainingConstraint.Count &&
-                         !StringsMatch(Member->struct_member_variable.Type, ContainingConstraint) )
+                         !StringsMatch(Member->variable_decl.Type, ContainingConstraint) )
                     {
                       // Containing constraint failed
                     }
@@ -2566,9 +2561,9 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgMatchPa
                         Advance(&UnionMemberIter))
                     {
                       struct_member* UnionMember = GET_ELEMENT(UnionMemberIter);
-                      if (UnionMember->Type == type_struct_member_variable)
+                      if (UnionMember->Type == type_variable_decl)
                       {
-                        struct_def* Struct = GetStructByType(&Datatypes->Structs, UnionMember->struct_member_variable.Type);
+                        struct_def* Struct = GetStructByType(&Datatypes->Structs, UnionMember->variable_decl.Type);
                         if (Struct)
                         {
                           if (ContainingConstraint.Count && HasMemberOfType(Struct, ContainingConstraint))
@@ -2579,7 +2574,7 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgMatchPa
                         }
                         else
                         {
-                          counted_string Name = UnionMember->struct_member_variable.Type;
+                          counted_string Name = UnionMember->variable_decl.Type;
                           counted_string ParentStructName = ArgDatatype.struct_def->Name;
                           Warn("Couldn't find struct type '%.*s' in union parent '%.*s'.", (u32)Name.Count, Name.Start, (u32)ParentStructName.Count, ParentStructName.Start);
                         }
@@ -2696,7 +2691,7 @@ IsMetaprogrammingOutput(counted_string Filename, counted_string OutputDirectory)
   return Result;
 }
 
-#include <bonsai_stdlib/headers/debug_print.h>
+/* #include <bonsai_stdlib/headers/debug_print.h> */
 
 function counted_string_stream
 ParseDatatypeList(c_parse_result* Parser, program_datatypes* Datatypes, tagged_counted_string_stream_stream* NameLists, memory_arena* Memory)
@@ -2893,7 +2888,7 @@ DoMetaprogramming(c_parse_result* Parser, metaprogramming_info* MetaInfo, todo_l
               RequireToken(Parser, CTokenType_CloseParen);
               RequireToken(Parser, CTokenType_CloseParen);
 
-              Info("Calling function : %.*s(%.*s)", (u32)Func->Name.Count, Func->Name.Start, (u32)DatatypeName.Count, DatatypeName.Start);
+              /* Info("Calling function : %.*s(%.*s)", (u32)Func->Name.Count, Func->Name.Start, (u32)DatatypeName.Count, DatatypeName.Start); */
               datatype Arg = GetDatatypeByName(&MetaInfo->Datatypes, DatatypeName);
               counted_string Code = Execute(Func, Arg, MetaInfo, Memory);
 
@@ -3182,7 +3177,7 @@ main(s32 ArgCount, const char** ArgStrings)
     c_parse_result_cursor ParsedFiles = TokenizeAllFiles(&Args.Files, Memory);
 
     metaprogramming_info MetaInfo = {
-      .Datatypes = ParseAllDatatypes(ParsedFiles, Memory),
+      .Datatypes = ParseAllDatatypeDefinitions(ParsedFiles, Memory),
     };
 
     todo_list_info TodoInfo = {

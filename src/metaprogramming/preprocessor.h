@@ -290,7 +290,7 @@ meta(
 )
 #include <metaprogramming/output/d_union_c_decl_function.h>
 
-struct struct_member_variable
+struct variable_decl
 {
   counted_string Type;
   counted_string Name;
@@ -327,7 +327,7 @@ struct struct_member_union
 meta(
   d_union struct_member
   {
-    struct_member_variable
+    variable_decl
     struct_member_function
     struct_member_union
   }
@@ -524,10 +524,18 @@ struct arguments
   b32 DoDebugWindow;
 };
 
+struct function_def
+{
+  counted_string Name;
+};
+meta(generate_stream(function_def))
+#include <metaprogramming/output/generate_stream_function_def.h>
+
 struct program_datatypes
 {
-  struct_def_stream Structs;
-  enum_def_stream Enums;
+  struct_def_stream   Structs;
+  enum_def_stream     Enums;
+  function_def_stream Functions;
 };
 
 struct for_enum_constraints
