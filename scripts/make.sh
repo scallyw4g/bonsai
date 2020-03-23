@@ -273,61 +273,75 @@ fi
 # SOURCE_FILES="src/metaprogramming/preprocessor.h"
 
 
+function RunPreprocessor
+{
+  rm -Rf $META_OUT
+  mkdir $META_OUT
+  SOURCE_FILES="$(find src -type f -name "*.h" -and -not -wholename "src/metaprogramming/defines.h" | tr '\n' ' ') $(find src -type f -name "*.cpp" | tr '\n' ' ')"
+  ColorizeTitle "Preprocessing"
+  bin/preprocessor $SOURCE_FILES
+  if [ $? -ne 0 ]; then
+    echo ""
+    echo -e "$Failed Preprocessing failed, exiting." 
+    git checkout "src/metaprogramming/output"
+    exit 1
+  fi
+}
+
 function RunEntireBuild {
 
-  # rm -Rf $META_OUT
-  # mkdir $META_OUT
-  # SOURCE_FILES="$(find src -type f -name "*.h" -and -not -wholename "src/metaprogramming/defines.h" | tr '\n' ' ') $(find src -type f -name "*.cpp" | tr '\n' ' ')"
-  # echo $SOURCE_FILES
-  # exit 1
-
-  # git checkout "src/metaprogramming/output"
-
-  rm -Rf $META_OUT
-  mkdir $META_OUT
-  SOURCE_FILES="$(find src -type f -name "*.h" -and -not -wholename "src/metaprogramming/defines.h" | tr '\n' ' ') $(find src -type f -name "*.cpp" | tr '\n' ' ')"
-  ColorizeTitle "Preprocessing"
-  bin/preprocessor $SOURCE_FILES
-  if [ $? -ne 0 ]; then
-    echo ""
-    echo -e "$Failed Preprocessing failed, exiting." 
-    git checkout "src/metaprogramming/output"
+  if [ $DumpSourceFilesAndQuit == 1 ]; then
+    rm -Rf $META_OUT
+    mkdir $META_OUT
+    SOURCE_FILES="$(find src -type f -name "*.h" -and -not -wholename "src/metaprogramming/defines.h" | tr '\n' ' ') $(find src -type f -name "*.cpp" | tr '\n' ' ')"
+    echo $SOURCE_FILES
     exit 1
   fi
 
-  BuildPreprocessor
-  [ ! -x bin/preprocessor ] && echo -e "$Failed Couldn't find preprocessor, exiting." && exit 1
-
-  rm -Rf $META_OUT
-  mkdir $META_OUT
-  SOURCE_FILES="$(find src -type f -name "*.h" -and -not -wholename "src/metaprogramming/defines.h" | tr '\n' ' ') $(find src -type f -name "*.cpp" | tr '\n' ' ')"
-  ColorizeTitle "Preprocessing"
-  bin/preprocessor $SOURCE_FILES
-  if [ $? -ne 0 ]; then
-    echo ""
-    echo -e "$Failed Preprocessing failed, exiting." 
+  if [ $CheckoutMetaOutput == 1 ]; then
     git checkout "src/metaprogramming/output"
-    exit 1
   fi
 
-  # if [ "$EMCC" == "1" ]; then
-  #   BuildWithEmcc
-  # else
-  #   BuildWithClang
-  # fi
+  if [ $FirstPreprocessor == 1 ]; then
+    RunPreprocessor
+  fi
 
-  # ./scripts/run_tests.sh
+  if [ $BuildPreprocessor == 1 ]; then
+    BuildPreprocessor
+    [ ! -x bin/preprocessor ] && echo -e "$Failed Couldn't find preprocessor, exiting." && exit 1
+  fi
 
-  # SOURCE_FILES="$(find src -type f -name "*.h" -and -not -wholename "src/metaprogramming/defines.h" | tr '\n' ' ') $(find src -type f -name "*.cpp" | tr '\n' ' ')"
-  # ColorizeTitle "Preprocessing"
-  # bin/preprocessor $SOURCE_FILES
-  # if [ $? -ne 0 ]; then
-  #   echo ""
-  #   echo -e "$Failed Preprocessing failed, exiting." 
-  #   git checkout "src/metaprogramming/output"
-  #   exit 1
-  # fi
+  if [ $SecondPreprocessor == 1 ]; then
+    RunPreprocessor
+  fi
+
+  if [ $BuildAllProjects == 1 ]; then
+    if [ "$EMCC" == "1" ]; then
+      BuildWithEmcc
+    else
+      BuildWithClang
+    fi
+  fi
+
+  if [ $RunTests == 1 ]; then
+    ./scripts/run_tests.sh
+  fi
+
+  if [ $FinalPreprocessor == 1 ]; then
+    RunPreprocessor
+  fi
 
 }
+
+DumpSourceFilesAndQuit=0
+
+CheckoutMetaOutput=1
+FirstPreprocessor=1
+BuildPreprocessor=1
+SecondPreprocessor=1
+
+BuildAllProjects=0
+RunTests=0
+FinalPreprocessor=0
 
 time RunEntireBuild
