@@ -524,7 +524,6 @@ struct arguments
   b32 DoDebugWindow;
 };
 
-
 struct variable
 {
   counted_string Type;
@@ -543,10 +542,18 @@ struct variable
 
   counted_string SourceText;
 };
+meta(generate_stream(variable))
+#include <metaprogramming/output/generate_stream_variable.h>
+
+struct scope
+{
+  scope* Parent;
+};
 
 struct function_def
 {
-  variable Def;
+  variable Prototype;
+  variable_stream Args;
 };
 meta(generate_stream(function_def))
 #include <metaprogramming/output/generate_stream_function_def.h>

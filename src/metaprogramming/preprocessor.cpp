@@ -6,7 +6,8 @@
 #define InvalidDefaultWhileParsing(Parser, ErrorMessage) \
     default: { OutputParsingError(Parser, Parser->Tokens.At, ErrorMessage); Assert(False); } break;
 
-#if 1
+#define DEBUG_PRINT (0)
+#if DEBUG_PRINT
 #include <bonsai_stdlib/headers/debug_print.h>
 #else
 #define DebugPrint(...)
@@ -1993,6 +1994,7 @@ ParseDatatypes(c_parse_result* Parser, program_datatypes* Datatypes, memory_aren
     c_token Token = PopToken(Parser);
     if (Token.Type == CTokenType_Identifier)
     {
+
       if (StringsMatch(Token.Value, CS("union")))
       {
         c_token UnionName = RequireToken(Parser, CTokenType_Identifier);
@@ -2051,25 +2053,22 @@ ParseDatatypes(c_parse_result* Parser, program_datatypes* Datatypes, memory_aren
       {
         OptionalToken(Parser, CToken(CSz("inline")));
 
-        variable FuncDecl = ParseVariable(Parser);
-        DebugPrint(FuncDecl);
-        Log("\n");
+        function_def Func = {};
+        Func.Prototype = ParseVariable(Parser);
 
-
-        if (StringsMatch(FuncDecl.Name, CSz("operator") ) )
+        if (StringsMatch(Func.Prototype.Name, CSz("operator") ) )
         {
           ParseOperator(Parser);
         }
 
-#if 0
-        if ( StringsMatch(Func.Name, CSz("UiStyleFromLightestColor")) )
-        {
-          RuntimeBreak();
-        }
+#if DEBUG_PRINT
+        DebugPrint(Func);
+        Log("\n");
 #endif
 
         if ( OptionalToken(Parser, CTokenType_OpenParen) )
         {
+          Push(&Datatypes->Functions, Func, Memory);
           b32 Done = False;
 
           if (PeekToken(Parser) == CToken(CTokenType_CloseParen))
@@ -2087,8 +2086,9 @@ ParseDatatypes(c_parse_result* Parser, program_datatypes* Datatypes, memory_aren
           while ( !Done && Remaining(&Parser->Tokens) )
           {
             variable Arg = ParseVariable(Parser);
+            DebugPrint(Arg);
 
-            /* DebugPrint(Arg); */
+            Push(&Func.Args, Arg, Memory);
 
             if ( PeekToken(Parser).Type == CTokenType_Equals )
             {
@@ -2112,16 +2112,16 @@ ParseDatatypes(c_parse_result* Parser, program_datatypes* Datatypes, memory_aren
 
           RequireToken(Parser, CTokenType_CloseParen);
 
+
+
         }
         else
         {
           // Pre-declaration
           RequireToken(Parser, CTokenType_Semicolon);
         }
-
-
-
       }
+
     }
   }
 

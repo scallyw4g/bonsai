@@ -2587,12 +2587,39 @@
       }
     }
 
+    function void DebugPrint( scope S, u32 Depth)
+    {
+      DebugPrint("scope\n", Depth);
+      
+          DebugPrint("Parent = ", Depth);
+          DebugPrint(S.Parent, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(scope* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("scope\n", Depth);
+        
+            DebugPrint("Parent = ", Depth);
+            DebugPrint(S->Parent, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
     function void DebugPrint( function_def S, u32 Depth)
     {
       DebugPrint("function_def\n", Depth);
       
-          DebugPrint("Def = ", Depth);
-          DebugPrint(S.Def, Depth+1);
+          DebugPrint("Prototype = ", Depth);
+          DebugPrint(S.Prototype, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("Args = ", Depth);
+          DebugPrint(S.Args, Depth+1);
           DebugPrint("\n");
 
     }
@@ -2603,8 +2630,12 @@
       {
         DebugPrint("function_def\n", Depth);
         
-            DebugPrint("Def = ", Depth);
-            DebugPrint(S->Def, Depth+1);
+            DebugPrint("Prototype = ", Depth);
+            DebugPrint(S->Prototype, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Args = ", Depth);
+            DebugPrint(S->Args, Depth+1);
             DebugPrint("\n");
 
       }
@@ -8825,6 +8856,99 @@
       if (S)
       {
         DebugPrint("person_iterator\n", Depth);
+        
+            DebugPrint("Stream = ", Depth);
+            DebugPrint(S->Stream, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("At = ", Depth);
+            DebugPrint(S->At, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
+    function void DebugPrint( variable_stream_chunk S, u32 Depth)
+    {
+      DebugPrint("variable_stream_chunk\n", Depth);
+      
+          DebugPrint("Element = ", Depth);
+          DebugPrint(S.Element, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("Next = ", Depth);
+          DebugPrint(S.Next, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(variable_stream_chunk* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("variable_stream_chunk\n", Depth);
+        
+            DebugPrint("Element = ", Depth);
+            DebugPrint(S->Element, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Next = ", Depth);
+            DebugPrint(S->Next, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
+    function void DebugPrint( variable_stream S, u32 Depth)
+    {
+      DebugPrint("variable_stream\n", Depth);
+      
+          DebugPrint("FirstChunk = ", Depth);
+          DebugPrint(S.FirstChunk, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("LastChunk = ", Depth);
+          DebugPrint(S.LastChunk, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(variable_stream* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("variable_stream\n", Depth);
+        
+            DebugPrint("FirstChunk = ", Depth);
+            DebugPrint(S->FirstChunk, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("LastChunk = ", Depth);
+            DebugPrint(S->LastChunk, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
+    function void DebugPrint( variable_iterator S, u32 Depth)
+    {
+      DebugPrint("variable_iterator\n", Depth);
+      
+          DebugPrint("Stream = ", Depth);
+          DebugPrint(S.Stream, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("At = ", Depth);
+          DebugPrint(S.At, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(variable_iterator* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("variable_iterator\n", Depth);
         
             DebugPrint("Stream = ", Depth);
             DebugPrint(S->Stream, Depth+1);
