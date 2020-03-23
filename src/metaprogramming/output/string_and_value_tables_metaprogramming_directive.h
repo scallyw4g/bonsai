@@ -21,6 +21,8 @@
 
             case func: { Result = CSz("func"); } break;
 
+            case instanced_func: { Result = CSz("instanced_func"); } break;
+
       }
       return Result;
     }
@@ -45,6 +47,8 @@
           if (StringsMatch(S, CSz("named_list"))) { return named_list; }
 
           if (StringsMatch(S, CSz("func"))) { return func; }
+
+          if (StringsMatch(S, CSz("instanced_func"))) { return instanced_func; }
 
 
       return Result;

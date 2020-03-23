@@ -700,12 +700,12 @@ GenerateStructDef(d_union_decl* dUnion, memory_arena* Memory)
   ITERATE_OVER(&dUnion->CommonMembers)
   {
     struct_member* Member = GET_ELEMENT(Iter);
-    Assert(Member->Type == type_variable_decl);
+    Assert(Member->Type == type_variable);
     Result =
       Concat(Result,
         FormatCountedString(Memory, CSz("  %S %S;\n"),
-          Member->variable_decl.Type,
-          Member->variable_decl.Name),
+          Member->variable.Type,
+          Member->variable.Name),
       Memory);
   }
   Result = Concat(Result, CS("\n  union\n  {\n"), Memory);
@@ -866,8 +866,8 @@ ParseDiscriminatedUnion(c_parse_result* Parser, program_datatypes* Datatypes, co
     while (!OptionalToken(Parser, CTokenType_CloseBrace))
     {
       struct_member Decl = {
-        .Type = type_variable_decl,
-        .variable_decl = {
+        .Type = type_variable,
+        .variable = {
           .Type = RequireToken(Parser, CTokenType_Identifier).Value,
           .Name = RequireToken(Parser, CTokenType_Identifier).Value
         }
@@ -1164,7 +1164,7 @@ ParseStructMember(c_parse_result* Parser, counted_string StructName, memory_aren
 {
   TIMED_FUNCTION();
   struct_member Result = {
-    .Type = type_variable_decl
+    .Type = type_variable
   };
 
   c_token FirstToken = PeekToken(Parser);
@@ -1207,20 +1207,20 @@ ParseStructMember(c_parse_result* Parser, counted_string StructName, memory_aren
           case CTokenType_Ampersand:
           {
             RequireToken(Parser, CTokenType_Ampersand);
-            Result.variable_decl.Type = Concat(Result.variable_decl.Type, CS("&"), Memory);
+            Result.variable.Type = Concat(Result.variable.Type, CS("&"), Memory);
           } break;
 
           case CTokenType_Star:
           {
             RequireToken(Parser, CTokenType_Star);
-            Result.variable_decl.Type = Concat(Result.variable_decl.Type, CS("*"), Memory);
+            Result.variable.Type = Concat(Result.variable.Type, CS("*"), Memory);
           } break;
 
           case CTokenType_Identifier:
           {
             if (StringsMatch(NextToken.Value, CS("unsigned")))
             {
-              Result.variable_decl.Type = Concat( Result.variable_decl.Type, RequireToken(Parser, CTokenType_Identifier).Value, Memory);
+              Result.variable.Type = Concat( Result.variable.Type, RequireToken(Parser, CTokenType_Identifier).Value, Memory);
             }
             else if (StringsMatch(NextToken.Value, CS("union")))
             {
@@ -1258,7 +1258,7 @@ ParseStructMember(c_parse_result* Parser, counted_string StructName, memory_aren
 
             if (!Done)
             {
-              Result.variable_decl.Type = Concat( Result.variable_decl.Type, RequireToken(Parser, CTokenType_Identifier).Value, Memory);
+              Result.variable.Type = Concat( Result.variable.Type, RequireToken(Parser, CTokenType_Identifier).Value, Memory);
             }
           } break;
 
@@ -1273,9 +1273,9 @@ ParseStructMember(c_parse_result* Parser, counted_string StructName, memory_aren
     InvalidDefaultWhileParsing(Parser, CS("While parsing decl type 1."));
   }
 
-  if (!Unnamed && Result.Type == type_variable_decl)
+  if (!Unnamed && Result.Type == type_variable)
   {
-    Result.variable_decl.Name = RequireToken(Parser, CTokenType_Identifier).Value;
+    Result.variable.Name = RequireToken(Parser, CTokenType_Identifier).Value;
     switch (PeekToken(Parser).Type)
     {
       case CTokenType_OpenParen:
@@ -1327,10 +1327,10 @@ DumpCDeclStreamToConsole(struct_member_stream* Stream)
         }
       } break;
 
-      case type_variable_decl:
+      case type_variable:
       {
-        counted_string Type = Iter.At->Element.variable_decl.Type;
-        counted_string Name = Iter.At->Element.variable_decl.Name;
+        counted_string Type = Iter.At->Element.variable.Type;
+        counted_string Name = Iter.At->Element.variable.Name;
         Log("  %.*s %.*s\n", Type.Count, Type.Start, Name.Count, Name.Start);
       } break;
 
@@ -1351,11 +1351,11 @@ PrintCDecl(struct_member* Decl, struct_def_stream* ProgramStructs)
 {
   switch (Decl->Type)
   {
-    case type_variable_decl:
+    case type_variable:
     {
       Log("%.*s %.*s",
-          Decl->variable_decl.Type.Count, Decl->variable_decl.Type.Start,
-          Decl->variable_decl.Name.Count, Decl->variable_decl.Name.Start);
+          Decl->variable.Type.Count, Decl->variable.Type.Start,
+          Decl->variable.Name.Count, Decl->variable.Name.Start);
 
       Log("\n");
     } break;
@@ -1366,9 +1366,9 @@ PrintCDecl(struct_member* Decl, struct_def_stream* ProgramStructs)
           IsValid(&Iter);
           Advance(&Iter))
       {
-        if (Iter.At->Element.Type == type_variable_decl)
+        if (Iter.At->Element.Type == type_variable)
         {
-          struct_def* Struct = GetStructByType(ProgramStructs, Iter.At->Element.variable_decl.Type);
+          struct_def* Struct = GetStructByType(ProgramStructs, Iter.At->Element.variable.Type);
           if (Struct)
           {
             PrintCDecl(&Iter.At->Element, ProgramStructs);
@@ -1376,7 +1376,7 @@ PrintCDecl(struct_member* Decl, struct_def_stream* ProgramStructs)
           }
           else
           {
-            Error("Couldn't find struct type %*.s", (u32)Iter.At->Element.variable_decl.Name.Count, Iter.At->Element.variable_decl.Name.Start);
+            Error("Couldn't find struct type %*.s", (u32)Iter.At->Element.variable.Name.Count, Iter.At->Element.variable.Name.Start);
           }
         }
         else
@@ -1428,6 +1428,10 @@ TrimTrailingWhitespace(c_parse_result* Parser)
     if (CurrentToken->Type == CTokenType_Space)
     {
       Parser->Tokens.End = CurrentToken;
+      if (Parser->Tokens.At > CurrentToken)
+      {
+        Parser->Tokens.At = CurrentToken;
+      }
     }
     else
     {
@@ -1497,9 +1501,9 @@ HasMemberOfType(struct_def* Struct, counted_string MemberType)
     {
       switch (Iter.At->Element.Type)
       {
-        case type_variable_decl:
+        case type_variable:
         {
-          if (StringsMatch(Iter.At->Element.variable_decl.Type, MemberType))
+          if (StringsMatch(Iter.At->Element.variable.Type, MemberType))
           {
             Result = True;
           }
@@ -1526,6 +1530,7 @@ GetBodyTextForNextScope(c_parse_result* Parser)
   TrimFirstToken(&BodyText, CTokenType_OpenBrace);
   TrimLastToken(&BodyText, CTokenType_CloseBrace);
   TrimTrailingWhitespace(&BodyText);
+  Rewind(&BodyText.Tokens);
 
   return BodyText;
 }
@@ -1986,6 +1991,89 @@ ParseVariableAssignment(c_parse_result* Parser)
   return FinalAssignmentValue;
 }
 
+function function_def
+ParseFunction(c_parse_result* Parser, memory_arena* Memory)
+{
+  function_def Func = {};
+
+  if (OptionalToken(Parser, CToken(CSz("inline"))))
+  {
+    Func.Inline = True;
+  }
+
+  Func.Prototype = ParseVariable(Parser);
+
+  if (StringsMatch(Func.Prototype.Name, CSz("operator") ) )
+  {
+    ParseOperator(Parser);
+  }
+
+#if DEBUG_PRINT
+  DebugPrint(Func);
+  Log("\n");
+#endif
+
+  if ( OptionalToken(Parser, CTokenType_OpenParen) )
+  {
+    b32 Done = False;
+
+    if (PeekToken(Parser) == CToken(CTokenType_CloseParen))
+    {
+      Done = True;
+    }
+
+    if ( PeekToken(Parser) == CToken(CSz("void")) &&
+         PeekToken(Parser, 1) == CToken(CTokenType_CloseParen) )
+    {
+      RequireToken(Parser, CToken(CSz("void")) );
+      Done = True;
+    }
+
+    while ( !Done && Remaining(&Parser->Tokens) )
+    {
+      variable Arg = ParseVariable(Parser);
+      DebugPrint(Arg);
+
+      Push(&Func.Args, Arg, Memory);
+
+      if ( PeekToken(Parser).Type == CTokenType_Equals )
+      {
+        ParseVariableAssignment(Parser);
+      }
+
+      if (!OptionalToken(Parser, CTokenType_Comma))
+      {
+        Done = True;
+      }
+
+      if (OptionalToken(Parser, CTokenType_Dot))
+      {
+        RequireToken(Parser, CTokenType_Dot);
+        RequireToken(Parser, CTokenType_Dot);
+        Func.Prototype.IsVariadic = True;
+        Done = True;
+      }
+
+      continue;
+    }
+
+    RequireToken(Parser, CTokenType_CloseParen);
+
+    if (PeekToken(Parser).Type == CTokenType_OpenBrace)
+    {
+      Func.Body = GetBodyTextForNextScope(Parser);
+    }
+
+  }
+  else
+  {
+    // Pre-declaration with a typedef'd type
+    RequireToken(Parser, CTokenType_Semicolon);
+  }
+
+  return Func;
+}
+
 function void
 ParseDatatypes(c_parse_result* Parser, program_datatypes* Datatypes, memory_arena* Memory)
 {
@@ -2051,78 +2139,11 @@ ParseDatatypes(c_parse_result* Parser, program_datatypes* Datatypes, memory_aren
       }
       else if (StringsMatch(Token.Value, CS("function")))
       {
-        OptionalToken(Parser, CToken(CSz("inline")));
+        function_def Func = ParseFunction(Parser, Memory);
 
-        function_def Func = {};
-        Func.Prototype = ParseVariable(Parser);
-
-        if (StringsMatch(Func.Prototype.Name, CSz("operator") ) )
+        if ( TotalSize(&Func.Body.Tokens) )
         {
-          ParseOperator(Parser);
-        }
-
-#if DEBUG_PRINT
-        DebugPrint(Func);
-        Log("\n");
-#endif
-
-        if ( OptionalToken(Parser, CTokenType_OpenParen) )
-        {
-          b32 Done = False;
-
-          if (PeekToken(Parser) == CToken(CTokenType_CloseParen))
-          {
-            Done = True;
-          }
-
-          if ( PeekToken(Parser) == CToken(CSz("void")) &&
-               PeekToken(Parser, 1) == CToken(CTokenType_CloseParen) )
-          {
-            RequireToken(Parser, CToken(CSz("void")) );
-            Done = True;
-          }
-
-          while ( !Done && Remaining(&Parser->Tokens) )
-          {
-            variable Arg = ParseVariable(Parser);
-            DebugPrint(Arg);
-
-            Push(&Func.Args, Arg, Memory);
-
-            if ( PeekToken(Parser).Type == CTokenType_Equals )
-            {
-              ParseVariableAssignment(Parser);
-            }
-
-            if (!OptionalToken(Parser, CTokenType_Comma))
-            {
-              Done = True;
-            }
-
-            if (OptionalToken(Parser, CTokenType_Dot))
-            {
-              RequireToken(Parser, CTokenType_Dot);
-              RequireToken(Parser, CTokenType_Dot);
-              Func.Prototype.IsVariadic = True;
-              Done = True;
-            }
-
-            continue;
-          }
-
-          RequireToken(Parser, CTokenType_CloseParen);
-
-          if (PeekToken(Parser).Type == CTokenType_OpenBrace)
-          {
-            Func.Body = GetBodyTextForNextScope(Parser);
-            Push(&Datatypes->Functions, Func, Memory);
-          }
-
-        }
-        else
-        {
-          // Pre-declaration
-          RequireToken(Parser, CTokenType_Semicolon);
+          Push(&Datatypes->Functions, Func, Memory);
         }
       }
 
@@ -2601,9 +2622,9 @@ GetNameForStructMember(struct_member* Decl)
       Result = CSz("(unnamed function)");
     } break;
 
-    case type_variable_decl:
+    case type_variable:
     {
-      Result = Decl->variable_decl.Name;
+      Result = Decl->variable.Name;
     } break;
 
     case type_struct_member_union:
@@ -2852,11 +2873,11 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgMatchPa
                   {
                   } break;
 
-                  case type_variable_decl:
+                  case type_variable:
 
                   {
                     if ( ContainingConstraint.Count &&
-                         !StringsMatch(Member->variable_decl.Type, ContainingConstraint) )
+                         !StringsMatch(Member->variable.Type, ContainingConstraint) )
                     {
                       // Containing constraint failed
                     }
@@ -2875,9 +2896,9 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgMatchPa
                         Advance(&UnionMemberIter))
                     {
                       struct_member* UnionMember = GET_ELEMENT(UnionMemberIter);
-                      if (UnionMember->Type == type_variable_decl)
+                      if (UnionMember->Type == type_variable)
                       {
-                        struct_def* Struct = GetStructByType(&Datatypes->Structs, UnionMember->variable_decl.Type);
+                        struct_def* Struct = GetStructByType(&Datatypes->Structs, UnionMember->variable.Type);
                         if (Struct)
                         {
                           if (ContainingConstraint.Count && HasMemberOfType(Struct, ContainingConstraint))
@@ -2888,7 +2909,7 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgMatchPa
                         }
                         else
                         {
-                          counted_string Name = UnionMember->variable_decl.Type;
+                          counted_string Name = UnionMember->variable.Type;
                           counted_string ParentStructName = ArgDatatype.struct_def->Name;
                           Warn("Couldn't find struct type '%.*s' in union parent '%.*s'.", (u32)Name.Count, Name.Start, (u32)ParentStructName.Count, ParentStructName.Start);
                         }
@@ -3187,6 +3208,12 @@ DoMetaprogramming(c_parse_result* Parser, metaprogramming_info* MetaInfo, todo_l
           metaprogramming_directive Directive = MetaprogrammingDirective(DirectiveString);
           switch (Directive)
           {
+            case instanced_func:
+            {
+              function_def F = ParseFunction(Parser, Memory);
+              DebugPrint(F);
+            } break;
+
             case func:
             {
               if (OptionalToken(Parser, CTokenType_OpenParen))

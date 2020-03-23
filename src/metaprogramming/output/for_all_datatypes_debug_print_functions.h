@@ -1932,37 +1932,6 @@
       }
     }
 
-    function void DebugPrint( variable_decl S, u32 Depth)
-    {
-      DebugPrint("variable_decl\n", Depth);
-      
-          DebugPrint("Type = ", Depth);
-          DebugPrint(S.Type, Depth+1);
-          DebugPrint("\n");
-
-          DebugPrint("Name = ", Depth);
-          DebugPrint(S.Name, Depth+1);
-          DebugPrint("\n");
-
-    }
-
-    function void DebugPrint(variable_decl* S, u32 Depth)
-    {
-      if (S)
-      {
-        DebugPrint("variable_decl\n", Depth);
-        
-            DebugPrint("Type = ", Depth);
-            DebugPrint(S->Type, Depth+1);
-            DebugPrint("\n");
-
-            DebugPrint("Name = ", Depth);
-            DebugPrint(S->Name, Depth+1);
-            DebugPrint("\n");
-
-      }
-    }
-
     function void DebugPrint( struct_member_stream S, u32 Depth)
     {
       DebugPrint("struct_member_stream\n", Depth);
@@ -2051,6 +2020,109 @@
         
             DebugPrint("Body = ", Depth);
             DebugPrint(S->Body, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
+    function void DebugPrint( variable S, u32 Depth)
+    {
+      DebugPrint("variable\n", Depth);
+      
+          DebugPrint("Type = ", Depth);
+          DebugPrint(S.Type, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("Name = ", Depth);
+          DebugPrint(S.Name, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("IndirectionLevel = ", Depth);
+          DebugPrint(S.IndirectionLevel, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("ReferenceLevel = ", Depth);
+          DebugPrint(S.ReferenceLevel, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("Unsigned = ", Depth);
+          DebugPrint(S.Unsigned, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("Volatile = ", Depth);
+          DebugPrint(S.Volatile, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("Const = ", Depth);
+          DebugPrint(S.Const, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("IsVariadic = ", Depth);
+          DebugPrint(S.IsVariadic, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("TemplateSource = ", Depth);
+          DebugPrint(S.TemplateSource, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("StaticBufferSize = ", Depth);
+          DebugPrint(S.StaticBufferSize, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("SourceText = ", Depth);
+          DebugPrint(S.SourceText, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(variable* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("variable\n", Depth);
+        
+            DebugPrint("Type = ", Depth);
+            DebugPrint(S->Type, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Name = ", Depth);
+            DebugPrint(S->Name, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("IndirectionLevel = ", Depth);
+            DebugPrint(S->IndirectionLevel, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("ReferenceLevel = ", Depth);
+            DebugPrint(S->ReferenceLevel, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Unsigned = ", Depth);
+            DebugPrint(S->Unsigned, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Volatile = ", Depth);
+            DebugPrint(S->Volatile, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Const = ", Depth);
+            DebugPrint(S->Const, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("IsVariadic = ", Depth);
+            DebugPrint(S->IsVariadic, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("TemplateSource = ", Depth);
+            DebugPrint(S->TemplateSource, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("StaticBufferSize = ", Depth);
+            DebugPrint(S->StaticBufferSize, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("SourceText = ", Depth);
+            DebugPrint(S->SourceText, Depth+1);
             DebugPrint("\n");
 
       }
@@ -2492,109 +2564,6 @@
       }
     }
 
-    function void DebugPrint( variable S, u32 Depth)
-    {
-      DebugPrint("variable\n", Depth);
-      
-          DebugPrint("Type = ", Depth);
-          DebugPrint(S.Type, Depth+1);
-          DebugPrint("\n");
-
-          DebugPrint("Name = ", Depth);
-          DebugPrint(S.Name, Depth+1);
-          DebugPrint("\n");
-
-          DebugPrint("IndirectionLevel = ", Depth);
-          DebugPrint(S.IndirectionLevel, Depth+1);
-          DebugPrint("\n");
-
-          DebugPrint("ReferenceLevel = ", Depth);
-          DebugPrint(S.ReferenceLevel, Depth+1);
-          DebugPrint("\n");
-
-          DebugPrint("Unsigned = ", Depth);
-          DebugPrint(S.Unsigned, Depth+1);
-          DebugPrint("\n");
-
-          DebugPrint("Volatile = ", Depth);
-          DebugPrint(S.Volatile, Depth+1);
-          DebugPrint("\n");
-
-          DebugPrint("Const = ", Depth);
-          DebugPrint(S.Const, Depth+1);
-          DebugPrint("\n");
-
-          DebugPrint("IsVariadic = ", Depth);
-          DebugPrint(S.IsVariadic, Depth+1);
-          DebugPrint("\n");
-
-          DebugPrint("TemplateSource = ", Depth);
-          DebugPrint(S.TemplateSource, Depth+1);
-          DebugPrint("\n");
-
-          DebugPrint("StaticBufferSize = ", Depth);
-          DebugPrint(S.StaticBufferSize, Depth+1);
-          DebugPrint("\n");
-
-          DebugPrint("SourceText = ", Depth);
-          DebugPrint(S.SourceText, Depth+1);
-          DebugPrint("\n");
-
-    }
-
-    function void DebugPrint(variable* S, u32 Depth)
-    {
-      if (S)
-      {
-        DebugPrint("variable\n", Depth);
-        
-            DebugPrint("Type = ", Depth);
-            DebugPrint(S->Type, Depth+1);
-            DebugPrint("\n");
-
-            DebugPrint("Name = ", Depth);
-            DebugPrint(S->Name, Depth+1);
-            DebugPrint("\n");
-
-            DebugPrint("IndirectionLevel = ", Depth);
-            DebugPrint(S->IndirectionLevel, Depth+1);
-            DebugPrint("\n");
-
-            DebugPrint("ReferenceLevel = ", Depth);
-            DebugPrint(S->ReferenceLevel, Depth+1);
-            DebugPrint("\n");
-
-            DebugPrint("Unsigned = ", Depth);
-            DebugPrint(S->Unsigned, Depth+1);
-            DebugPrint("\n");
-
-            DebugPrint("Volatile = ", Depth);
-            DebugPrint(S->Volatile, Depth+1);
-            DebugPrint("\n");
-
-            DebugPrint("Const = ", Depth);
-            DebugPrint(S->Const, Depth+1);
-            DebugPrint("\n");
-
-            DebugPrint("IsVariadic = ", Depth);
-            DebugPrint(S->IsVariadic, Depth+1);
-            DebugPrint("\n");
-
-            DebugPrint("TemplateSource = ", Depth);
-            DebugPrint(S->TemplateSource, Depth+1);
-            DebugPrint("\n");
-
-            DebugPrint("StaticBufferSize = ", Depth);
-            DebugPrint(S->StaticBufferSize, Depth+1);
-            DebugPrint("\n");
-
-            DebugPrint("SourceText = ", Depth);
-            DebugPrint(S->SourceText, Depth+1);
-            DebugPrint("\n");
-
-      }
-    }
-
     function void DebugPrint( scope S, u32 Depth)
     {
       DebugPrint("scope\n", Depth);
@@ -2638,6 +2607,10 @@
           DebugPrint(S.Args, Depth+1);
           DebugPrint("\n");
 
+          DebugPrint("Inline = ", Depth);
+          DebugPrint(S.Inline, Depth+1);
+          DebugPrint("\n");
+
           DebugPrint("Body = ", Depth);
           DebugPrint(S.Body, Depth+1);
           DebugPrint("\n");
@@ -2656,6 +2629,10 @@
 
             DebugPrint("Args = ", Depth);
             DebugPrint(S->Args, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Inline = ", Depth);
+            DebugPrint(S->Inline, Depth+1);
             DebugPrint("\n");
 
             DebugPrint("Body = ", Depth);
@@ -8031,6 +8008,99 @@
       }
     }
 
+    function void DebugPrint( variable_stream_chunk S, u32 Depth)
+    {
+      DebugPrint("variable_stream_chunk\n", Depth);
+      
+          DebugPrint("Element = ", Depth);
+          DebugPrint(S.Element, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("Next = ", Depth);
+          DebugPrint(S.Next, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(variable_stream_chunk* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("variable_stream_chunk\n", Depth);
+        
+            DebugPrint("Element = ", Depth);
+            DebugPrint(S->Element, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Next = ", Depth);
+            DebugPrint(S->Next, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
+    function void DebugPrint( variable_stream S, u32 Depth)
+    {
+      DebugPrint("variable_stream\n", Depth);
+      
+          DebugPrint("FirstChunk = ", Depth);
+          DebugPrint(S.FirstChunk, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("LastChunk = ", Depth);
+          DebugPrint(S.LastChunk, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(variable_stream* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("variable_stream\n", Depth);
+        
+            DebugPrint("FirstChunk = ", Depth);
+            DebugPrint(S->FirstChunk, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("LastChunk = ", Depth);
+            DebugPrint(S->LastChunk, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
+    function void DebugPrint( variable_iterator S, u32 Depth)
+    {
+      DebugPrint("variable_iterator\n", Depth);
+      
+          DebugPrint("Stream = ", Depth);
+          DebugPrint(S.Stream, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("At = ", Depth);
+          DebugPrint(S.At, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(variable_iterator* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("variable_iterator\n", Depth);
+        
+            DebugPrint("Stream = ", Depth);
+            DebugPrint(S->Stream, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("At = ", Depth);
+            DebugPrint(S->At, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
     function void DebugPrint( struct_member S, u32 Depth)
     {
       DebugPrint("struct_member\n", Depth);
@@ -8892,99 +8962,6 @@
       }
     }
 
-    function void DebugPrint( variable_stream_chunk S, u32 Depth)
-    {
-      DebugPrint("variable_stream_chunk\n", Depth);
-      
-          DebugPrint("Element = ", Depth);
-          DebugPrint(S.Element, Depth+1);
-          DebugPrint("\n");
-
-          DebugPrint("Next = ", Depth);
-          DebugPrint(S.Next, Depth+1);
-          DebugPrint("\n");
-
-    }
-
-    function void DebugPrint(variable_stream_chunk* S, u32 Depth)
-    {
-      if (S)
-      {
-        DebugPrint("variable_stream_chunk\n", Depth);
-        
-            DebugPrint("Element = ", Depth);
-            DebugPrint(S->Element, Depth+1);
-            DebugPrint("\n");
-
-            DebugPrint("Next = ", Depth);
-            DebugPrint(S->Next, Depth+1);
-            DebugPrint("\n");
-
-      }
-    }
-
-    function void DebugPrint( variable_stream S, u32 Depth)
-    {
-      DebugPrint("variable_stream\n", Depth);
-      
-          DebugPrint("FirstChunk = ", Depth);
-          DebugPrint(S.FirstChunk, Depth+1);
-          DebugPrint("\n");
-
-          DebugPrint("LastChunk = ", Depth);
-          DebugPrint(S.LastChunk, Depth+1);
-          DebugPrint("\n");
-
-    }
-
-    function void DebugPrint(variable_stream* S, u32 Depth)
-    {
-      if (S)
-      {
-        DebugPrint("variable_stream\n", Depth);
-        
-            DebugPrint("FirstChunk = ", Depth);
-            DebugPrint(S->FirstChunk, Depth+1);
-            DebugPrint("\n");
-
-            DebugPrint("LastChunk = ", Depth);
-            DebugPrint(S->LastChunk, Depth+1);
-            DebugPrint("\n");
-
-      }
-    }
-
-    function void DebugPrint( variable_iterator S, u32 Depth)
-    {
-      DebugPrint("variable_iterator\n", Depth);
-      
-          DebugPrint("Stream = ", Depth);
-          DebugPrint(S.Stream, Depth+1);
-          DebugPrint("\n");
-
-          DebugPrint("At = ", Depth);
-          DebugPrint(S.At, Depth+1);
-          DebugPrint("\n");
-
-    }
-
-    function void DebugPrint(variable_iterator* S, u32 Depth)
-    {
-      if (S)
-      {
-        DebugPrint("variable_iterator\n", Depth);
-        
-            DebugPrint("Stream = ", Depth);
-            DebugPrint(S->Stream, Depth+1);
-            DebugPrint("\n");
-
-            DebugPrint("At = ", Depth);
-            DebugPrint(S->At, Depth+1);
-            DebugPrint("\n");
-
-      }
-    }
-
     function void DebugPrint( function_def_stream_chunk S, u32 Depth)
     {
       DebugPrint("function_def_stream_chunk\n", Depth);
@@ -9720,6 +9697,12 @@
             case func:
             {
               DebugPrint("func");
+              DebugPrint("");
+            } break;
+
+            case instanced_func:
+            {
+              DebugPrint("instanced_func");
               DebugPrint("");
             } break;
 
@@ -11019,9 +11002,9 @@
               DebugPrint("");
             } break;
 
-            case type_variable_decl:
+            case type_variable:
             {
-              DebugPrint("type_variable_decl");
+              DebugPrint("type_variable");
               DebugPrint("");
             } break;
 

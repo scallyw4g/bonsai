@@ -224,6 +224,7 @@ enum metaprogramming_directive
   for_datatypes,
   named_list,
   func,
+  instanced_func,
 };
 meta( string_and_value_tables(metaprogramming_directive) )
 #include <metaprogramming/output/string_and_value_tables_metaprogramming_directive.h>
@@ -318,12 +319,6 @@ meta(
 )
 #include <metaprogramming/output/d_union_c_decl_function.h>
 
-struct variable_decl
-{
-  counted_string Type;
-  counted_string Name;
-};
-
 struct struct_member_stream_chunk;
 
 // TODO(Jesse id: 191, tags: metaprogramming): This can be generated, but it requires
@@ -352,10 +347,31 @@ struct struct_member_union
   struct_def Body;
 };
 
+struct variable
+{
+  counted_string Type;
+  counted_string Name;
+
+  u32 IndirectionLevel;
+  u32 ReferenceLevel;
+
+  // TODO(Jesse id: 194, tags: metaprogramming, parsing): Use bitflags
+  b32 Unsigned;
+  b32 Volatile;
+  b32 Const;
+  b32 IsVariadic;
+
+  counted_string TemplateSource;
+  counted_string StaticBufferSize;
+  counted_string SourceText;
+};
+meta(generate_stream(variable))
+#include <metaprogramming/output/generate_stream_variable.h>
+
 meta(
   d_union struct_member
   {
-    variable_decl
+    variable
     struct_member_function
     struct_member_union
   }
@@ -552,27 +568,6 @@ struct arguments
   b32 DoDebugWindow;
 };
 
-struct variable
-{
-  counted_string Type;
-  counted_string Name;
-
-  u32 IndirectionLevel;
-  u32 ReferenceLevel;
-
-  // TODO(Jesse id: 194, tags: metaprogramming, parsing): Use bitflags
-  b32 Unsigned;
-  b32 Volatile;
-  b32 Const;
-  b32 IsVariadic;
-
-  counted_string TemplateSource;
-  counted_string StaticBufferSize;
-  counted_string SourceText;
-};
-meta(generate_stream(variable))
-#include <metaprogramming/output/generate_stream_variable.h>
-
 struct scope
 {
   variable_stream VariableDeclarations;
@@ -583,6 +578,9 @@ struct function_def
 {
   variable Prototype;
   variable_stream Args;
+
+  // TODO(Jesse id: 202): Bitflags?
+  b32 Inline;
 
   c_parse_result Body;
 };

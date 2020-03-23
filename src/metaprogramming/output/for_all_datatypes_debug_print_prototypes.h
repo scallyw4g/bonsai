@@ -128,9 +128,6 @@
       function void DebugPrint( debug_text_render_group* S, u32 Depth = 0);
       function void DebugPrint( debug_text_render_group  S, u32 Depth = 0);
 
-      function void DebugPrint( variable_decl* S, u32 Depth = 0);
-      function void DebugPrint( variable_decl  S, u32 Depth = 0);
-
       function void DebugPrint( struct_member_stream* S, u32 Depth = 0);
       function void DebugPrint( struct_member_stream  S, u32 Depth = 0);
 
@@ -139,6 +136,9 @@
 
       function void DebugPrint( struct_member_union* S, u32 Depth = 0);
       function void DebugPrint( struct_member_union  S, u32 Depth = 0);
+
+      function void DebugPrint( variable* S, u32 Depth = 0);
+      function void DebugPrint( variable  S, u32 Depth = 0);
 
       function void DebugPrint( enum_member* S, u32 Depth = 0);
       function void DebugPrint( enum_member  S, u32 Depth = 0);
@@ -175,9 +175,6 @@
 
       function void DebugPrint( arguments* S, u32 Depth = 0);
       function void DebugPrint( arguments  S, u32 Depth = 0);
-
-      function void DebugPrint( variable* S, u32 Depth = 0);
-      function void DebugPrint( variable  S, u32 Depth = 0);
 
       function void DebugPrint( scope* S, u32 Depth = 0);
       function void DebugPrint( scope  S, u32 Depth = 0);
@@ -527,6 +524,15 @@
       function void DebugPrint( struct_def_iterator* S, u32 Depth = 0);
       function void DebugPrint( struct_def_iterator  S, u32 Depth = 0);
 
+      function void DebugPrint( variable_stream_chunk* S, u32 Depth = 0);
+      function void DebugPrint( variable_stream_chunk  S, u32 Depth = 0);
+
+      function void DebugPrint( variable_stream* S, u32 Depth = 0);
+      function void DebugPrint( variable_stream  S, u32 Depth = 0);
+
+      function void DebugPrint( variable_iterator* S, u32 Depth = 0);
+      function void DebugPrint( variable_iterator  S, u32 Depth = 0);
+
       function void DebugPrint( struct_member* S, u32 Depth = 0);
       function void DebugPrint( struct_member  S, u32 Depth = 0);
 
@@ -607,15 +613,6 @@
 
       function void DebugPrint( person_iterator* S, u32 Depth = 0);
       function void DebugPrint( person_iterator  S, u32 Depth = 0);
-
-      function void DebugPrint( variable_stream_chunk* S, u32 Depth = 0);
-      function void DebugPrint( variable_stream_chunk  S, u32 Depth = 0);
-
-      function void DebugPrint( variable_stream* S, u32 Depth = 0);
-      function void DebugPrint( variable_stream  S, u32 Depth = 0);
-
-      function void DebugPrint( variable_iterator* S, u32 Depth = 0);
-      function void DebugPrint( variable_iterator  S, u32 Depth = 0);
 
       function void DebugPrint( function_def_stream_chunk* S, u32 Depth = 0);
       function void DebugPrint( function_def_stream_chunk  S, u32 Depth = 0);
