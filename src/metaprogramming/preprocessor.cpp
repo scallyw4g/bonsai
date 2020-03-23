@@ -2068,7 +2068,6 @@ ParseDatatypes(c_parse_result* Parser, program_datatypes* Datatypes, memory_aren
 
         if ( OptionalToken(Parser, CTokenType_OpenParen) )
         {
-          Push(&Datatypes->Functions, Func, Memory);
           b32 Done = False;
 
           if (PeekToken(Parser) == CToken(CTokenType_CloseParen))
@@ -2104,6 +2103,7 @@ ParseDatatypes(c_parse_result* Parser, program_datatypes* Datatypes, memory_aren
             {
               RequireToken(Parser, CTokenType_Dot);
               RequireToken(Parser, CTokenType_Dot);
+              Func.Prototype.IsVariadic = True;
               Done = True;
             }
 
@@ -2112,7 +2112,11 @@ ParseDatatypes(c_parse_result* Parser, program_datatypes* Datatypes, memory_aren
 
           RequireToken(Parser, CTokenType_CloseParen);
 
-
+          if (PeekToken(Parser).Type == CTokenType_OpenBrace)
+          {
+            Func.Body = GetBodyTextForNextScope(Parser);
+            Push(&Datatypes->Functions, Func, Memory);
+          }
 
         }
         else
@@ -3361,6 +3365,13 @@ DoMetaprogramming(c_parse_result* Parser, metaprogramming_info* MetaInfo, todo_l
 
     continue;
   }
+}
+
+function void
+LookForMetaRuntimeFunctionCalls()
+{
+
+  return;
 }
 
 function void

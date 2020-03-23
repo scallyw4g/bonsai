@@ -2524,6 +2524,10 @@
           DebugPrint(S.Const, Depth+1);
           DebugPrint("\n");
 
+          DebugPrint("IsVariadic = ", Depth);
+          DebugPrint(S.IsVariadic, Depth+1);
+          DebugPrint("\n");
+
           DebugPrint("TemplateSource = ", Depth);
           DebugPrint(S.TemplateSource, Depth+1);
           DebugPrint("\n");
@@ -2572,6 +2576,10 @@
             DebugPrint(S->Const, Depth+1);
             DebugPrint("\n");
 
+            DebugPrint("IsVariadic = ", Depth);
+            DebugPrint(S->IsVariadic, Depth+1);
+            DebugPrint("\n");
+
             DebugPrint("TemplateSource = ", Depth);
             DebugPrint(S->TemplateSource, Depth+1);
             DebugPrint("\n");
@@ -2591,6 +2599,10 @@
     {
       DebugPrint("scope\n", Depth);
       
+          DebugPrint("VariableDeclarations = ", Depth);
+          DebugPrint(S.VariableDeclarations, Depth+1);
+          DebugPrint("\n");
+
           DebugPrint("Parent = ", Depth);
           DebugPrint(S.Parent, Depth+1);
           DebugPrint("\n");
@@ -2603,6 +2615,10 @@
       {
         DebugPrint("scope\n", Depth);
         
+            DebugPrint("VariableDeclarations = ", Depth);
+            DebugPrint(S->VariableDeclarations, Depth+1);
+            DebugPrint("\n");
+
             DebugPrint("Parent = ", Depth);
             DebugPrint(S->Parent, Depth+1);
             DebugPrint("\n");
@@ -2622,6 +2638,10 @@
           DebugPrint(S.Args, Depth+1);
           DebugPrint("\n");
 
+          DebugPrint("Body = ", Depth);
+          DebugPrint(S.Body, Depth+1);
+          DebugPrint("\n");
+
     }
 
     function void DebugPrint(function_def* S, u32 Depth)
@@ -2636,6 +2656,10 @@
 
             DebugPrint("Args = ", Depth);
             DebugPrint(S->Args, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Body = ", Depth);
+            DebugPrint(S->Body, Depth+1);
             DebugPrint("\n");
 
       }

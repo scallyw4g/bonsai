@@ -179,6 +179,33 @@ meta(
   }
 )
 
+meta(
+
+  instanced_func void
+  DebugPrint( $TypeDef RuntimeValue, u32 Depth)
+  {
+    DebugPrint("(TypeDef.name): ", Depth);
+    TypeDef.is_enum?
+    {
+      TypeDef.map_values (ValueDef)
+      {
+        DebugPrint("(ValueDef.name) (ValueDef.value)", Depth+1);
+      }
+    }
+
+    TypeDef.is_struct?
+    {
+      TypeDef.map_members (MemberDef)
+      {
+        DebugPrint("(MemberDef.type) (MemberDef.name): ", Depth);
+        DebugPrint(RuntimeValue.(MemberDef.name), Depth+1);
+        DebugPrint("\n");
+      }
+    }
+  }
+
+)
+
 
 enum d_union_flags
 {
@@ -536,10 +563,10 @@ struct variable
   b32 Unsigned;
   b32 Volatile;
   b32 Const;
+  b32 IsVariadic;
 
   counted_string TemplateSource;
   counted_string StaticBufferSize;
-
   counted_string SourceText;
 };
 meta(generate_stream(variable))
@@ -547,6 +574,7 @@ meta(generate_stream(variable))
 
 struct scope
 {
+  variable_stream VariableDeclarations;
   scope* Parent;
 };
 
@@ -554,6 +582,8 @@ struct function_def
 {
   variable Prototype;
   variable_stream Args;
+
+  c_parse_result Body;
 };
 meta(generate_stream(function_def))
 #include <metaprogramming/output/generate_stream_function_def.h>
