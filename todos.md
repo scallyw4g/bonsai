@@ -8,6 +8,7 @@
     - #199 Do we care about specifically parsing prefix operators?
     - #201 Do we care about specifically parsing postfix operators?
     - #202 Bitflags?
+    - #207 Emit domain-specific warning here?
 
   ## immediate
     - #83 d_union-ify this
@@ -89,6 +90,7 @@
     - #189 Parse out function names?
     - #194 Use bitflags
     - #200 Floating-point values should be parsed out in TokenizeAnsiStream()!!
+    - #205 To do this properly, we need to parse out and expand macro definitions here.
 
   ## robustness
     - #78 How should we actually set this?
@@ -152,6 +154,7 @@
   ## completeness
     - #84 This only gets used when computing the shadow map, so I'm not even sure if it works ATM
     - #140 Can we support these?
+    - #205 To do this properly, we need to parse out and expand macro definitions here.
 
   ## engine
     - #84 This only gets used when computing the shadow map, so I'm not even sure if it works ATM
@@ -308,4 +311,8 @@
 
   ## bug
     - #185 these should be printable!
+
+  ## id_205
+    - #203 See #205
+    - #204 See #205
 

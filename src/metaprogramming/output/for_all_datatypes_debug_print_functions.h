@@ -2061,6 +2061,14 @@
           DebugPrint(S.IsVariadic, Depth+1);
           DebugPrint("\n");
 
+          DebugPrint("IsMetaTemplateVar = ", Depth);
+          DebugPrint(S.IsMetaTemplateVar, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("IsStatic = ", Depth);
+          DebugPrint(S.IsStatic, Depth+1);
+          DebugPrint("\n");
+
           DebugPrint("TemplateSource = ", Depth);
           DebugPrint(S.TemplateSource, Depth+1);
           DebugPrint("\n");
@@ -2111,6 +2119,14 @@
 
             DebugPrint("IsVariadic = ", Depth);
             DebugPrint(S->IsVariadic, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("IsMetaTemplateVar = ", Depth);
+            DebugPrint(S->IsMetaTemplateVar, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("IsStatic = ", Depth);
+            DebugPrint(S->IsStatic, Depth+1);
             DebugPrint("\n");
 
             DebugPrint("TemplateSource = ", Depth);
@@ -9832,6 +9848,12 @@
             case CTokenType_Char:
             {
               DebugPrint("CTokenType_Char");
+              DebugPrint("");
+            } break;
+
+            case CTokenType_EscapedNewline:
+            {
+              DebugPrint("CTokenType_EscapedNewline");
               DebugPrint("");
             } break;
 

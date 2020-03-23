@@ -20,6 +20,8 @@
 
             case CTokenType_Char: { Result = CSz("CTokenType_Char"); } break;
 
+            case CTokenType_EscapedNewline: { Result = CSz("CTokenType_EscapedNewline"); } break;
+
             case CTokenType_OpenBracket: { Result = CSz("CTokenType_OpenBracket"); } break;
 
             case CTokenType_CloseBracket: { Result = CSz("CTokenType_CloseBracket"); } break;

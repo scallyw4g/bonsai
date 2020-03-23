@@ -181,7 +181,7 @@ meta(
 
 meta(
   instanced_func void
-  DebugPrint( $TypeDef RuntimeValue, u32 Depth)
+  DebugPrint( @TypeDef RuntimeValue, u32 Depth)
   {
     DebugPrint("(TypeDef.name): ", Depth);
     TypeDef.is_enum?
@@ -268,6 +268,7 @@ enum c_token_type
   CTokenType_Identifier,
   CTokenType_String,
   CTokenType_Char,
+  CTokenType_EscapedNewline,
 
   CTokenType_OpenBracket   = '[',
   CTokenType_CloseBracket  = ']',
@@ -360,6 +361,8 @@ struct variable
   b32 Volatile;
   b32 Const;
   b32 IsVariadic;
+  b32 IsMetaTemplateVar;
+  b32 IsStatic;
 
   counted_string TemplateSource;
   counted_string StaticBufferSize;

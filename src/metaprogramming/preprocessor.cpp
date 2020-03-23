@@ -7,10 +7,15 @@
     default: { OutputParsingError(Parser, Parser->Tokens.At, ErrorMessage); Assert(False); } break;
 
 #define DEBUG_PRINT (0)
+
 #if DEBUG_PRINT
 #include <bonsai_stdlib/headers/debug_print.h>
 #else
-#define DebugPrint(...)
+#define DebugPrint(...) \
+  _Pragma("clang diagnostic push")                        \
+  _Pragma("clang diagnostic ignored \"-Wunused-value\"") \
+  (__VA_ARGS__) \
+  _Pragma("clang diagnostic pop")
 #endif
 
 function b32
@@ -363,6 +368,17 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes = Fa
         {
           PushT.Type = CTokenType_String;
           PushT.Value = PopQuotedString(&Code, True);
+        }
+      } break;
+
+      case CTokenType_BSlash:
+      {
+        Advance(&Code);
+        if (GetToken(&Code).Type == CTokenType_Newline)
+        {
+          PushT.Type = CTokenType_EscapedNewline;
+          PushT.Value.Count = 2;
+          Advance(&Code);
         }
       } break;
 
@@ -1863,6 +1879,12 @@ ParseVariable(c_parse_result* Parser)
 
     switch (NextToken.Type)
     {
+      case CTokenType_At:
+      {
+        RequireToken(Parser, CTokenType_At);
+        Result.IsMetaTemplateVar = True;
+      } break;
+
       case CTokenType_LT:
       {
         string_from_parser TemplateBodyBuilder = StartStringFromParer(Parser);
@@ -1905,10 +1927,28 @@ ParseVariable(c_parse_result* Parser)
           // TODO(Jesse id: 198): Do we ignore this?
           RequireToken(Parser, CTokenType_Identifier);
         }
+        else if (StringsMatch(NextToken.Value, CSz("static")) )
+        {
+          // TODO(Jesse id: 207): Emit domain-specific warning here?
+          Result.IsStatic = True;
+          RequireToken(Parser, CTokenType_Identifier);
+        }
+        else if (StringsMatch(NextToken.Value, CSz("local_persist")) )
+        {
+          // TODO(Jesse id: 203, tags: id_205): See #205
+          Result.IsStatic = True;
+          RequireToken(Parser, CTokenType_Identifier);
+        }
+        else if (StringsMatch(NextToken.Value, CSz("global_variable")) )
+        {
+          // TODO(Jesse id: 204 tags: id_205): See #205
+          Result.IsStatic = True;
+          RequireToken(Parser, CTokenType_Identifier);
+        }
         else if (StringsMatch(NextToken.Value, CSz("const")) )
         {
-          RequireToken(Parser, CTokenType_Identifier);
           Result.Const = true;
+          RequireToken(Parser, CTokenType_Identifier);
         }
         else
         {
@@ -2008,11 +2048,6 @@ ParseFunction(c_parse_result* Parser, memory_arena* Memory)
     ParseOperator(Parser);
   }
 
-#if DEBUG_PRINT
-  DebugPrint(Func);
-  Log("\n");
-#endif
-
   if ( OptionalToken(Parser, CTokenType_OpenParen) )
   {
     b32 Done = False;
@@ -2032,8 +2067,6 @@ ParseFunction(c_parse_result* Parser, memory_arena* Memory)
     while ( !Done && Remaining(&Parser->Tokens) )
     {
       variable Arg = ParseVariable(Parser);
-      DebugPrint(Arg);
-
       Push(&Func.Args, Arg, Memory);
 
       if ( PeekToken(Parser).Type == CTokenType_Equals )
@@ -3026,7 +3059,6 @@ IsMetaprogrammingOutput(counted_string Filename, counted_string OutputDirectory)
   return Result;
 }
 
-
 function counted_string_stream
 ParseDatatypeList(c_parse_result* Parser, program_datatypes* Datatypes, tagged_counted_string_stream_stream* NameLists, memory_arena* Memory)
 {
@@ -3059,7 +3091,7 @@ ParseDatatypeList(c_parse_result* Parser, program_datatypes* Datatypes, tagged_c
 }
 
 function meta_func
-ParseFunctionDef(c_parse_result* Parser, counted_string FuncName)
+ParseMetaFunctionDef(c_parse_result* Parser, counted_string FuncName)
 {
   RequireToken(Parser, CTokenType_OpenParen);
   counted_string ArgName = RequireToken(Parser, CTokenType_Identifier).Value;
@@ -3247,7 +3279,7 @@ DoMetaprogramming(c_parse_result* Parser, metaprogramming_info* MetaInfo, todo_l
               else
               {
                 counted_string FuncName = RequireToken(Parser, CTokenType_Identifier).Value;
-                meta_func Func = ParseFunctionDef(Parser, FuncName);
+                meta_func Func = ParseMetaFunctionDef(Parser, FuncName);
                 Push(FunctionDefs, Func, Memory);
               }
 
@@ -3305,10 +3337,10 @@ DoMetaprogramming(c_parse_result* Parser, metaprogramming_info* MetaInfo, todo_l
               }
 
               RequireToken(Parser, CToken(ToString(func)));
-              meta_func StructFunc = ParseFunctionDef(Parser, CSz("for_datatypes_struct_callback"));
+              meta_func StructFunc = ParseMetaFunctionDef(Parser, CSz("for_datatypes_struct_callback"));
 
               RequireToken(Parser, CToken(ToString(func)));
-              meta_func EnumFunc = ParseFunctionDef(Parser, CSz("for_datatypes_enum_callback"));
+              meta_func EnumFunc = ParseMetaFunctionDef(Parser, CSz("for_datatypes_enum_callback"));
 
               RequireToken(Parser, CTokenType_CloseParen);
 
@@ -3423,13 +3455,6 @@ DoMetaprogramming(c_parse_result* Parser, metaprogramming_info* MetaInfo, todo_l
 }
 
 function void
-LookForMetaRuntimeFunctionCalls()
-{
-
-  return;
-}
-
-function void
 WriteTodosToFile(person_stream* People, memory_arena* Memory)
 {
   random_series Rng = {.Seed = 123125};
@@ -3489,6 +3514,63 @@ WriteTodosToFile(person_stream* People, memory_arena* Memory)
 #define SUCCESS_EXIT_CODE 0
 #define FAILURE_EXIT_CODE 1
 
+function void
+LookForMetaRuntimeFunctionCalls(c_parse_result_cursor Files_in, memory_arena* Memory)
+{
+  c_parse_result_cursor* Files = &Files_in;
+
+  for (u32 ParserIndex = 0;
+      ParserIndex < (u32)Count(Files);
+      ++ParserIndex)
+  {
+    c_parse_result* Parser = Files->Start+ParserIndex;
+
+    while (Remaining(&Parser->Tokens))
+    {
+      c_token T = PopToken(Parser);
+
+      switch(T.Type)
+      {
+        case CTokenType_Hash:
+        {
+          EatUntil(Parser, CTokenType_Newline);
+        } break;
+
+        case CTokenType_Identifier:
+        {
+          if ( StringsMatch(T.Value, CSz("struct")) )
+          {
+            /* EatStructDef(Parser); */
+          }
+          else if ( StringsMatch(T.Value, CSz("typedef")) )
+          {
+            /* EatTypedef(Parser); */
+          }
+          else if ( StringsMatch(T.Value, CSz("enum")) )
+          {
+            /* EatEnumDef(Parser); */
+          }
+          else if ( StringsMatch(T.Value, CSz("function")) )
+          {
+            /* EatFunctionPrototype(Parser); */
+          }
+          else
+          {
+            // TODO(Jesse id: 205, tags: metaprogramming, completeness): To do this properly, we need to parse out and expand macro definitions here.
+            /* variable V = ParseVariable(Parser); */
+          }
+        } break;
+
+        InvalidDefaultWhileParsing(Parser, CSz("Invalid token encountered while parsing."));
+      }
+
+    }
+
+    Rewind(&Parser->Tokens);
+  }
+
+  return;
+}
 
 s32
 main(s32 ArgCount, const char** ArgStrings)
