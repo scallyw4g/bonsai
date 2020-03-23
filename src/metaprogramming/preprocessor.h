@@ -180,7 +180,6 @@ meta(
 )
 
 meta(
-
   instanced_func void
   DebugPrint( $TypeDef RuntimeValue, u32 Depth)
   {
@@ -190,6 +189,7 @@ meta(
       TypeDef.map_values (ValueDef)
       {
         DebugPrint("(ValueDef.name) (ValueDef.value)", Depth+1);
+        DebugPrint(ToString(RuntimeValue), Depth+1);
       }
     }
 
@@ -203,7 +203,6 @@ meta(
       }
     }
   }
-
 )
 
 
@@ -238,6 +237,8 @@ enum meta_arg_operator
   value,
   map_values,
   map_members,
+  is_enum,
+  is_struct,
 };
 meta( generate_value_table(meta_arg_operator) )
 #include <metaprogramming/output/generate_value_table_meta_arg_operator.h>

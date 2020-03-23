@@ -9768,6 +9768,18 @@
               DebugPrint("");
             } break;
 
+            case is_enum:
+            {
+              DebugPrint("is_enum");
+              DebugPrint("");
+            } break;
+
+            case is_struct:
+            {
+              DebugPrint("is_struct");
+              DebugPrint("");
+            } break;
+
       }
     }
 

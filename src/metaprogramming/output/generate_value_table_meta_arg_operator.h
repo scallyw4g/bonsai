@@ -17,6 +17,10 @@
 
           if (StringsMatch(S, CSz("map_members"))) { return map_members; }
 
+          if (StringsMatch(S, CSz("is_enum"))) { return is_enum; }
+
+          if (StringsMatch(S, CSz("is_struct"))) { return is_struct; }
+
 
       return Result;
     }

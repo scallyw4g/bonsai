@@ -2671,6 +2671,27 @@ AppendAndEscapeInteriorOfDoubleQuotedString(string_builder* Builder, counted_str
   }
 }
 
+function meta_transform_op
+ParseTransformations(c_parse_result* Scope)
+{
+  meta_transform_op Result = {};
+
+  while (OptionalToken(Scope, CTokenType_Dot))
+  {
+    meta_transform_op NextOp = MetaTransformOp(RequireToken(Scope, CTokenType_Identifier).Value);
+    if (NextOp != meta_transform_op_noop)
+    {
+      Result = (meta_transform_op)(Result | NextOp);
+    }
+    else
+    {
+      Error("Parsing transform ops.");
+    }
+  }
+
+  return Result;
+}
+
 [[nodiscard]] function counted_string
 Execute(meta_func* Func, datatype ArgDatatype, metaprogramming_info* MetaInfo, memory_arena* Memory);
 
@@ -2702,21 +2723,6 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgMatchPa
         RequireToken(&Scope, CTokenType_Dot);
         meta_arg_operator Operator = MetaArgOperator( RequireToken(&Scope, CTokenType_Identifier).Value);
 
-        meta_transform_op Transformations = meta_transform_op_noop;
-
-        while (OptionalToken(&Scope, CTokenType_Dot))
-        {
-          meta_transform_op NextOp = MetaTransformOp(RequireToken(&Scope, CTokenType_Identifier).Value);
-          if (NextOp != meta_transform_op_noop)
-          {
-            Transformations = (meta_transform_op)(Transformations | NextOp);
-          }
-          else
-          {
-            Error("Parsing transform ops.");
-          }
-        }
-
         switch (Operator)
         {
           case meta_arg_operator_noop:
@@ -2724,10 +2730,33 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgMatchPa
             ParseError(&Scope, CSz("Invalid operator encountered."));
           } break;
 
+          case is_struct:
+          {
+            RequireToken(&Scope, CTokenType_Question);
+            c_parse_result StructScope = GetBodyTextForNextScope(&Scope);
+            if (ArgDatatype.Type == type_struct_def)
+            {
+              counted_string Code = Execute(FuncName, StructScope, ArgMatchPattern, ArgDatatype, MetaInfo, Memory);
+              Append(&OutputBuilder, Code);
+            }
+          } break;
+
+          case is_enum:
+          {
+            RequireToken(&Scope, CTokenType_Question);
+            c_parse_result EnumScope = GetBodyTextForNextScope(&Scope);
+            if (ArgDatatype.Type == type_enum_def)
+            {
+              counted_string Code = Execute(FuncName, EnumScope, ArgMatchPattern, ArgDatatype, MetaInfo, Memory);
+              Append(&OutputBuilder, Code);
+            }
+          } break;
+
           case value:
           {
             if (ArgDatatype.Type == type_enum_member)
             {
+              meta_transform_op Transformations = ParseTransformations(&Scope);
               counted_string Name = Transform(Transformations, ArgDatatype.enum_member->Value, Memory);
               Append(&OutputBuilder, Name);
             }
@@ -2741,6 +2770,7 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgMatchPa
           {
             if (ArgDatatype.Type == type_struct_def)
             {
+              meta_transform_op Transformations = ParseTransformations(&Scope);
               counted_string Name = Transform(Transformations, ArgDatatype.struct_def->Name, Memory);
               Append(&OutputBuilder, Name);
             }
@@ -2757,24 +2787,28 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgMatchPa
               case type_struct_member:
               {
                 counted_string MemberName = GetNameForStructMember(ArgDatatype.struct_member);
+                meta_transform_op Transformations = ParseTransformations(&Scope);
                 counted_string Name = Transform(Transformations, MemberName, Memory);
                 Append(&OutputBuilder, Name);
               } break;
 
               case type_enum_member:
               {
+                meta_transform_op Transformations = ParseTransformations(&Scope);
                 counted_string Name = Transform(Transformations, ArgDatatype.enum_member->Name, Memory);
                 Append(&OutputBuilder, Name);
               } break;
 
               case type_enum_def:
               {
+                meta_transform_op Transformations = ParseTransformations(&Scope);
                 counted_string Name = Transform(Transformations, ArgDatatype.enum_def->Name, Memory);
                 Append(&OutputBuilder, Name);
               } break;
 
               case type_struct_def:
               {
+                meta_transform_op Transformations = ParseTransformations(&Scope);
                 counted_string Name = Transform(Transformations, ArgDatatype.struct_def->Name, Memory);
                 Append(&OutputBuilder, Name);
               } break;
@@ -3151,208 +3185,202 @@ DoMetaprogramming(c_parse_result* Parser, metaprogramming_info* MetaInfo, todo_l
 
           counted_string DirectiveString = RequireToken(Parser, CTokenType_Identifier).Value;
           metaprogramming_directive Directive = MetaprogrammingDirective(DirectiveString);
-
-          if (Directive == meta_directive_noop)
+          switch (Directive)
           {
-            meta_func* Func = StreamContains(FunctionDefs, DirectiveString);
-
-            if (Func)
+            case func:
             {
-              RequireToken(Parser, CTokenType_OpenParen);
-              counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
-              RequireToken(Parser, CTokenType_CloseParen);
-              RequireToken(Parser, CTokenType_CloseParen);
-
-              /* Info("Calling function : %.*s(%.*s)", (u32)Func->Name.Count, Func->Name.Start, (u32)DatatypeName.Count, DatatypeName.Start); */
-              datatype Arg = GetDatatypeByName(&MetaInfo->Datatypes, DatatypeName);
-              counted_string Code = Execute(Func, Arg, MetaInfo, Memory);
-
-              if (Code.Count)
+              if (OptionalToken(Parser, CTokenType_OpenParen))
               {
-                counted_string OutfileName = GenerateOutfileNameFor(Func->Name, DatatypeName, Memory);
-                DoWorkToOutputThisStuff(Parser, Code, OutfileName, MetaInfo, TodoInfo, Memory);
+                counted_string ArgType = RequireToken(Parser, CTokenType_Identifier).Value;
+                counted_string ArgName = RequireToken(Parser, CTokenType_Identifier).Value;
+                RequireToken(Parser, CTokenType_CloseParen);
+
+                c_parse_result Body = GetBodyTextForNextScope(Parser);
+
+                meta_func Func = {
+                  .Name = CSz("anonymous_function"),
+                  .ArgName = ArgName,
+                  .Body = Body,
+                };
+
+                datatype Arg = GetDatatypeByName(&MetaInfo->Datatypes, ArgType);
+                counted_string Code = Execute(&Func, Arg, MetaInfo, Memory);
+
+                RequireToken(Parser, CTokenType_CloseParen);
+                if (Code.Count)
+                {
+                  counted_string OutfileName = GenerateOutfileNameFor(Func.Name, ArgType, Memory, GetRandomString(8, Hash(&Code), Memory));
+                  DoWorkToOutputThisStuff(Parser, Code, OutfileName, MetaInfo, TodoInfo, Memory);
+                }
+                else
+                {
+                  Warn("Unable to generate code for meta_func %.*s", (u32)Func.Name.Count, Func.Name.Start);
+                }
               }
               else
               {
-                Warn("Unable to generate code for meta_func %.*s", (u32)Func->Name.Count, Func->Name.Start);
+                counted_string FuncName = RequireToken(Parser, CTokenType_Identifier).Value;
+                meta_func Func = ParseFunctionDef(Parser, FuncName);
+                Push(FunctionDefs, Func, Memory);
+              }
+
+            } break;
+
+            case named_list:
+            {
+              RequireToken(Parser, CTokenType_OpenParen);
+
+              tagged_counted_string_stream NameList = {
+                .Tag = RequireToken(Parser, CTokenType_Identifier).Value
+              };
+
+              RequireToken(Parser, CTokenType_CloseParen);
+
+              RequireToken(Parser, CTokenType_OpenBrace);
+              while (PeekToken(Parser).Type == CTokenType_Identifier)
+              {
+                counted_string Name = RequireToken(Parser, CTokenType_Identifier).Value;
+                Push(&NameList.Stream, Name, Memory);
+                OptionalToken(Parser, CTokenType_Comma);
+              }
+
+              RequireToken(Parser, CTokenType_CloseBrace);
+
+              Push(&TodoInfo->NameLists, NameList, Memory);
+
+            } break;
+
+            case generate_cursor_deprecated:
+            {
+              RequireToken(Parser, CTokenType_OpenParen);
+
+              counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
+              counted_string Code = GenerateCursorFor_DEPRECATED(DatatypeName, Memory);
+              counted_string OutfileName = GenerateOutfileNameFor(ToString(Directive), DatatypeName, Memory);
+              RequireToken(Parser, CTokenType_CloseParen);
+              RequireToken(Parser, CTokenType_CloseParen);
+              DoWorkToOutputThisStuff(Parser, Code, OutfileName, MetaInfo, TodoInfo, Memory);
+            } break;
+
+            case for_datatypes:
+            {
+              RequireToken(Parser, CTokenType_OpenParen);
+              RequireToken(Parser, CToken(CSz("all")));
+              RequireToken(Parser, CTokenType_CloseParen);
+
+              counted_string_stream Excludes = {};
+              if (OptionalToken(Parser, CTokenType_Dot))
+              {
+                RequireToken(Parser, CToken(CSz("exclude")));
+                RequireToken(Parser, CTokenType_OpenParen);
+                Excludes = ParseDatatypeList(Parser, Datatypes, NameLists, Memory);
+                RequireToken(Parser, CTokenType_CloseParen);
+              }
+
+              RequireToken(Parser, CToken(ToString(func)));
+              meta_func StructFunc = ParseFunctionDef(Parser, CSz("for_datatypes_struct_callback"));
+
+              RequireToken(Parser, CToken(ToString(func)));
+              meta_func EnumFunc = ParseFunctionDef(Parser, CSz("for_datatypes_enum_callback"));
+
+              RequireToken(Parser, CTokenType_CloseParen);
+
+              string_builder OutputBuilder = {};
+
+              for (struct_def_iterator Iter = Iterator(&Datatypes->Structs);
+                  IsValid(&Iter);
+                  Advance(&Iter))
+              {
+                struct_def* Struct = &Iter.At->Element;
+                if (!StreamContains(&Excludes, Struct->Name))
+                {
+                  counted_string Code = Execute(&StructFunc, Datatype(Struct), MetaInfo, Memory);
+                  Append(&OutputBuilder, Code);
+                }
+              }
+
+              for (enum_def_iterator Iter = Iterator(&Datatypes->Enums);
+                  IsValid(&Iter);
+                  Advance(&Iter))
+              {
+                enum_def* Enum = &Iter.At->Element;
+                if (!StreamContains(&Excludes, Enum->Name))
+                {
+                  counted_string Code = Execute(&EnumFunc, Datatype(Enum), MetaInfo,  Memory);
+                  Append(&OutputBuilder, Code);
+                }
+              }
+
+
+              counted_string Code = Finalize(&OutputBuilder, Memory);
+              counted_string OutfileName = GenerateOutfileNameFor(ToString(Directive), CSz("debug_print"), Memory);
+
+              DoWorkToOutputThisStuff(Parser, Code, OutfileName, MetaInfo, TodoInfo, Memory);
+
+            } break;
+
+            case d_union:
+            {
+              counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
+              d_union_decl dUnion = ParseDiscriminatedUnion(Parser, Datatypes, DatatypeName, Memory);
+              if (Parser->Valid)
+              {
+                counted_string OutfileName = GenerateOutfileNameFor(ToString(Directive), DatatypeName, Memory);
+
+                string_builder CodeBuilder = {};
+                if (!dUnion.CustomEnumType.Count)
+                {
+                  counted_string EnumString = GenerateEnumDef(&dUnion, Memory);
+                  Append(&CodeBuilder, EnumString);
+                }
+
+                {
+                  counted_string StructString = GenerateStructDef(&dUnion, Memory);
+                  Append(&CodeBuilder, StructString);
+                }
+
+                counted_string Code = Finalize(&CodeBuilder, Memory);
+
+                RequireToken(Parser, CTokenType_CloseParen);
+                DoWorkToOutputThisStuff(Parser, Code, OutfileName, MetaInfo, TodoInfo, Memory);
+
+              }
+              else
+              {
+                Error("Parsing d_union declaration");
+              }
+            } break;
+
+            default:
+            {
+              meta_func* Func = StreamContains(FunctionDefs, DirectiveString);
+              if (Func)
+              {
+                RequireToken(Parser, CTokenType_OpenParen);
+                counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
+                RequireToken(Parser, CTokenType_CloseParen);
+                RequireToken(Parser, CTokenType_CloseParen);
+
+                /* Info("Calling function : %.*s(%.*s)", (u32)Func->Name.Count, Func->Name.Start, (u32)DatatypeName.Count, DatatypeName.Start); */
+                datatype Arg = GetDatatypeByName(&MetaInfo->Datatypes, DatatypeName);
+                counted_string Code = Execute(Func, Arg, MetaInfo, Memory);
+
+                if (Code.Count)
+                {
+                  counted_string OutfileName = GenerateOutfileNameFor(Func->Name, DatatypeName, Memory);
+                  DoWorkToOutputThisStuff(Parser, Code, OutfileName, MetaInfo, TodoInfo, Memory);
+                }
+                else
+                {
+                  Warn("Unable to generate code for meta_func %.*s", (u32)Func->Name.Count, Func->Name.Start);
+                }
+              }
+              else
+              {
+                Error("Couldn't resolve %.*s to a metaprogramming directive or function name", (u32)DirectiveString.Count, DirectiveString.Start);
               }
             }
-            else
-            {
-              Error("Couldn't resolve %.*s to a metaprogramming directive or function name", (u32)DirectiveString.Count, DirectiveString.Start);
-            }
-          }
-          else
-          {
-            switch (Directive)
-            {
 
-              case func:
-              {
-                if (OptionalToken(Parser, CTokenType_OpenParen))
-                {
-                  counted_string ArgType = RequireToken(Parser, CTokenType_Identifier).Value;
-                  counted_string ArgName = RequireToken(Parser, CTokenType_Identifier).Value;
-                  RequireToken(Parser, CTokenType_CloseParen);
-
-                  c_parse_result Body = GetBodyTextForNextScope(Parser);
-
-                  meta_func Func = {
-                    .Name = CSz("anonymous_function"),
-                    .ArgName = ArgName,
-                    .Body = Body,
-                  };
-
-                  datatype Arg = GetDatatypeByName(&MetaInfo->Datatypes, ArgType);
-                  counted_string Code = Execute(&Func, Arg, MetaInfo, Memory);
-
-                  RequireToken(Parser, CTokenType_CloseParen);
-                  if (Code.Count)
-                  {
-                    counted_string OutfileName = GenerateOutfileNameFor(Func.Name, ArgType, Memory, GetRandomString(8, Hash(&Code), Memory));
-                    DoWorkToOutputThisStuff(Parser, Code, OutfileName, MetaInfo, TodoInfo, Memory);
-                  }
-                  else
-                  {
-                    Warn("Unable to generate code for meta_func %.*s", (u32)Func.Name.Count, Func.Name.Start);
-                  }
-                }
-                else
-                {
-                  counted_string FuncName = RequireToken(Parser, CTokenType_Identifier).Value;
-                  meta_func Func = ParseFunctionDef(Parser, FuncName);
-                  Push(FunctionDefs, Func, Memory);
-                }
-
-              } break;
-
-              case named_list:
-              {
-                RequireToken(Parser, CTokenType_OpenParen);
-
-                tagged_counted_string_stream NameList = {
-                  .Tag = RequireToken(Parser, CTokenType_Identifier).Value
-                };
-
-                RequireToken(Parser, CTokenType_CloseParen);
-
-                RequireToken(Parser, CTokenType_OpenBrace);
-                while (PeekToken(Parser).Type == CTokenType_Identifier)
-                {
-                  counted_string Name = RequireToken(Parser, CTokenType_Identifier).Value;
-                  Push(&NameList.Stream, Name, Memory);
-                  OptionalToken(Parser, CTokenType_Comma);
-                }
-
-                RequireToken(Parser, CTokenType_CloseBrace);
-
-                Push(&TodoInfo->NameLists, NameList, Memory);
-
-              } break;
-
-              case generate_cursor_deprecated:
-              {
-                RequireToken(Parser, CTokenType_OpenParen);
-
-                counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
-                counted_string Code = GenerateCursorFor_DEPRECATED(DatatypeName, Memory);
-                counted_string OutfileName = GenerateOutfileNameFor(ToString(Directive), DatatypeName, Memory);
-                RequireToken(Parser, CTokenType_CloseParen);
-                RequireToken(Parser, CTokenType_CloseParen);
-                DoWorkToOutputThisStuff(Parser, Code, OutfileName, MetaInfo, TodoInfo, Memory);
-              } break;
-
-              case for_datatypes:
-              {
-                RequireToken(Parser, CTokenType_OpenParen);
-                RequireToken(Parser, CToken(CSz("all")));
-                RequireToken(Parser, CTokenType_CloseParen);
-
-                counted_string_stream Excludes = {};
-                if (OptionalToken(Parser, CTokenType_Dot))
-                {
-                  RequireToken(Parser, CToken(CSz("exclude")));
-                  RequireToken(Parser, CTokenType_OpenParen);
-                  Excludes = ParseDatatypeList(Parser, Datatypes, NameLists, Memory);
-                  RequireToken(Parser, CTokenType_CloseParen);
-                }
-
-                RequireToken(Parser, CToken(ToString(func)));
-                meta_func StructFunc = ParseFunctionDef(Parser, CSz("for_datatypes_struct_callback"));
-
-                RequireToken(Parser, CToken(ToString(func)));
-                meta_func EnumFunc = ParseFunctionDef(Parser, CSz("for_datatypes_enum_callback"));
-
-                RequireToken(Parser, CTokenType_CloseParen);
-
-                string_builder OutputBuilder = {};
-
-                for (struct_def_iterator Iter = Iterator(&Datatypes->Structs);
-                    IsValid(&Iter);
-                    Advance(&Iter))
-                {
-                  struct_def* Struct = &Iter.At->Element;
-                  if (!StreamContains(&Excludes, Struct->Name))
-                  {
-                    counted_string Code = Execute(&StructFunc, Datatype(Struct), MetaInfo, Memory);
-                    Append(&OutputBuilder, Code);
-                  }
-                }
-
-                for (enum_def_iterator Iter = Iterator(&Datatypes->Enums);
-                    IsValid(&Iter);
-                    Advance(&Iter))
-                {
-                  enum_def* Enum = &Iter.At->Element;
-                  if (!StreamContains(&Excludes, Enum->Name))
-                  {
-                    counted_string Code = Execute(&EnumFunc, Datatype(Enum), MetaInfo,  Memory);
-                    Append(&OutputBuilder, Code);
-                  }
-                }
-
-
-                counted_string Code = Finalize(&OutputBuilder, Memory);
-                counted_string OutfileName = GenerateOutfileNameFor(ToString(Directive), CSz("debug_print"), Memory);
-
-                DoWorkToOutputThisStuff(Parser, Code, OutfileName, MetaInfo, TodoInfo, Memory);
-
-              } break;
-
-              case d_union:
-              {
-                counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
-                d_union_decl dUnion = ParseDiscriminatedUnion(Parser, Datatypes, DatatypeName, Memory);
-                if (Parser->Valid)
-                {
-                  counted_string OutfileName = GenerateOutfileNameFor(ToString(Directive), DatatypeName, Memory);
-
-                  string_builder CodeBuilder = {};
-                  if (!dUnion.CustomEnumType.Count)
-                  {
-                    counted_string EnumString = GenerateEnumDef(&dUnion, Memory);
-                    Append(&CodeBuilder, EnumString);
-                  }
-
-                  {
-                    counted_string StructString = GenerateStructDef(&dUnion, Memory);
-                    Append(&CodeBuilder, StructString);
-                  }
-
-                  counted_string Code = Finalize(&CodeBuilder, Memory);
-
-                  RequireToken(Parser, CTokenType_CloseParen);
-                  DoWorkToOutputThisStuff(Parser, Code, OutfileName, MetaInfo, TodoInfo, Memory);
-
-                }
-                else
-                {
-                  Error("Parsing d_union declaration");
-                }
-              } break;
-
-              InvalidDefaultWhileParsing(Parser, CS("Invalid directive."));
-            }
           }
         }
       } break;
