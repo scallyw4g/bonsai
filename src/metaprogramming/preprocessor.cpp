@@ -6,6 +6,12 @@
 #define InvalidDefaultWhileParsing(Parser, ErrorMessage) \
     default: { OutputParsingError(Parser, Parser->Tokens.At, ErrorMessage); Assert(False); } break;
 
+#if 1
+#include <bonsai_stdlib/headers/debug_print.h>
+#else
+#define DebugPrint(...)
+#endif
+
 function b32
 IsWhitespace(c_token_type Type)
 {
@@ -1143,9 +1149,9 @@ EatFunctionDecl(c_parse_result* Parser)
 function b32
 IsCxxDefinitionKeyword(counted_string Value)
 {
-  b32 Result = StringsMatch(Value, CS("volatile")) ||
-               StringsMatch(Value, CS("struct")) ||
-               StringsMatch(Value, CS("const"));
+  b32 Result = StringsMatch(Value, CSz("volatile")) ||
+               StringsMatch(Value, CSz("struct")) ||
+               StringsMatch(Value, CSz("const"));
   return Result;
 }
 
@@ -1153,7 +1159,7 @@ function struct_def
 ParseStructBody(c_parse_result* Parser, counted_string StructName, memory_arena* Memory);
 
 function struct_member
-ParseDeclaration(c_parse_result* Parser, counted_string StructName, memory_arena* Memory)
+ParseStructMember(c_parse_result* Parser, counted_string StructName, memory_arena* Memory)
 {
   TIMED_FUNCTION();
   struct_member Result = {
@@ -1541,7 +1547,7 @@ ParseStructBody(c_parse_result* Parser, counted_string StructName, memory_arena*
     }
     else
     {
-      struct_member Declaration = ParseDeclaration(Parser, Result.Name, Memory);
+      struct_member Declaration = ParseStructMember(Parser, Result.Name, Memory);
       Push(&Result.Fields, Declaration, Memory);
     }
 
@@ -1591,6 +1597,48 @@ ParseIntegerConstant(c_parse_result* Parser)
 }
 
 function b32
+NextTokenIsPostfixOperator(c_parse_result* Parser)
+{
+  b32 Result = False;
+
+  c_token T = PeekToken(Parser);
+  switch (T.Type)
+  {
+    // TODO(Jesse id: 195): Should we include dot here?
+    case CTokenType_Minus:
+    case CTokenType_Plus:
+    {
+      Result = True;
+    } break;
+
+    default: {} break;
+  }
+
+  return Result;
+}
+function b32
+NextTokenIsPrefixOperator(c_parse_result* Parser)
+{
+  b32 Result = False;
+
+  c_token T = PeekToken(Parser);
+  switch (T.Type)
+  {
+    case CTokenType_Minus:
+    case CTokenType_Plus:
+    case CTokenType_Star:
+    case CTokenType_Bang:
+    case CTokenType_Ampersand:
+    {
+      Result = True;
+    } break;
+
+    default: {} break;
+  }
+
+  return Result;
+}
+function b32
 NextTokenIsOperator(c_parse_result* Parser)
 {
   b32 Result = False;
@@ -1613,7 +1661,7 @@ NextTokenIsOperator(c_parse_result* Parser)
     case CTokenType_Percent:
     case CTokenType_Question:
     case CTokenType_Colon:
-    case CTokenType_Tilde:
+    case CTokenType_Tilde: // TODO(Jesse id: 196): Does this belong here?
     {
       Result = True;
     } break;
@@ -1777,6 +1825,166 @@ ParseEnum(c_parse_result* Parser, memory_arena* Memory)
   return Enum;
 }
 
+function b32
+IsTypeQualifier(c_token T)
+{
+  b32 Result = False;
+  switch (T.Type)
+  {
+    case CTokenType_LT:
+    case CTokenType_Ampersand:
+    case CTokenType_Star:
+    { Result = True; } break;
+
+    default : {} break;
+  }
+
+  return Result;
+}
+
+function variable
+ParseVariable(c_parse_result* Parser)
+{
+  variable Result = {};
+
+  string_from_parser Builder = StartStringFromParer(Parser);
+
+  b32 FoundTypeIdentifier = False;
+  b32 Done = False;
+  while (!Done)
+  {
+    c_token NextToken = PeekToken(Parser);
+
+    switch (NextToken.Type)
+    {
+      case CTokenType_LT:
+      {
+        string_from_parser TemplateBodyBuilder = StartStringFromParer(Parser);
+        EatBetween(Parser, CTokenType_LT, CTokenType_GT);
+        Result.TemplateSource = FinalizeStringFromParser(&TemplateBodyBuilder, Parser);
+      } break;
+
+      case CTokenType_OpenBracket:
+      {
+        EatBetween(Parser, CTokenType_OpenBracket, CTokenType_CloseBracket);
+      } break;
+
+      case CTokenType_Ampersand:
+      {
+        RequireToken(Parser, CTokenType_Ampersand);
+        ++Result.ReferenceLevel;
+      } break;
+
+      case CTokenType_Star:
+      {
+        RequireToken(Parser, CTokenType_Star);
+        ++Result.IndirectionLevel;
+      } break;
+
+      case CTokenType_Identifier:
+      {
+        if (StringsMatch(NextToken.Value, CS("unsigned")))
+        {
+          // TODO(Jesse id: 197): Have some way of coalescing this to our internal types?
+          Result.Unsigned = true;
+          RequireToken(Parser, CTokenType_Identifier);
+        }
+        else if (StringsMatch(NextToken.Value, CSz("volatile")) )
+        {
+          Result.Volatile = true;
+          RequireToken(Parser, CTokenType_Identifier);
+        }
+        else if (StringsMatch(NextToken.Value, CSz("struct")) )
+        {
+          // TODO(Jesse id: 198): Do we ignore this?
+          RequireToken(Parser, CTokenType_Identifier);
+        }
+        else if (StringsMatch(NextToken.Value, CSz("const")) )
+        {
+          RequireToken(Parser, CTokenType_Identifier);
+          Result.Const = true;
+        }
+        else
+        {
+          if (IsTypeQualifier(PeekToken(Parser)))
+          {
+          }
+          else
+          {
+            if (FoundTypeIdentifier)
+            {
+              Result.Name = RequireToken(Parser, CTokenType_Identifier).Value;
+
+              if ( OptionalToken(Parser, CTokenType_OpenBracket) )
+              {
+                Result.StaticBufferSize = ParseConstantExpression(Parser);
+                RequireToken(Parser, CTokenType_CloseBracket);
+              }
+
+              Done = True;
+            }
+            else
+            {
+              Result.Type = RequireToken(Parser, CTokenType_Identifier).Value;
+              FoundTypeIdentifier = True;
+            }
+          }
+        }
+
+      } break;
+
+      InvalidDefaultWhileParsing(Parser, CSz("Malformed variable statement."));
+    }
+
+    continue;
+  }
+
+  Result.SourceText = FinalizeStringFromParser(&Builder, Parser);
+
+  return Result;
+}
+
+function counted_string
+ParseVariableAssignment(c_parse_result* Parser)
+{
+  RequireToken(Parser, CTokenType_Equals);
+
+  string_from_parser Builder = StartStringFromParer(Parser);
+
+  if ( PeekToken(Parser).Type == CTokenType_OpenBrace )
+  {
+    EatBetween(Parser, CTokenType_OpenBrace, CTokenType_CloseBrace);
+  }
+  else
+  {
+    if ( NextTokenIsPrefixOperator(Parser) )
+    {
+      ParseOperator(Parser); // TODO(Jesse id: 199): Do we care about specifically parsing prefix operators?
+    }
+
+    // TODO(Jesse, id: 200, tags: metaprogramming, parsing): Floating-point values should be parsed out in TokenizeAnsiStream()!!
+    counted_string AssignmentValue = RequireToken(Parser, CTokenType_Identifier).Value;
+    if ( IsNumeric(AssignmentValue) && OptionalToken(Parser, CTokenType_Dot) )
+    {
+      /* counted_string FractionalPart = */ RequireToken(Parser, CTokenType_Identifier);
+    }
+
+    if ( PeekToken(Parser).Type == CTokenType_OpenParen )
+    {
+      // Function call value
+      EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
+    }
+
+    if ( NextTokenIsPostfixOperator(Parser) )
+    {
+      ParseOperator(Parser); // TODO(Jesse id: 201): Do we care about specifically parsing postfix operators?
+    }
+  }
+
+  counted_string FinalAssignmentValue = FinalizeStringFromParser(&Builder, Parser);
+  return FinalAssignmentValue;
+}
+
 function void
 ParseDatatypes(c_parse_result* Parser, program_datatypes* Datatypes, memory_arena* Memory)
 {
@@ -1790,6 +1998,10 @@ ParseDatatypes(c_parse_result* Parser, program_datatypes* Datatypes, memory_aren
         c_token UnionName = RequireToken(Parser, CTokenType_Identifier);
         Info("unions are unsupported at the moment: %.*s", (s32)UnionName.Value.Count, UnionName.Value.Start);
         EatUnionDef(Parser);
+      }
+      else if ( StringsMatch(Token.Value, CSz("meta")) )
+      {
+        EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
       }
       else if (StringsMatch(Token.Value, CS("typedef")))
       {
@@ -1837,6 +2049,78 @@ ParseDatatypes(c_parse_result* Parser, program_datatypes* Datatypes, memory_aren
       }
       else if (StringsMatch(Token.Value, CS("function")))
       {
+        OptionalToken(Parser, CToken(CSz("inline")));
+
+        variable FuncDecl = ParseVariable(Parser);
+        DebugPrint(FuncDecl);
+        Log("\n");
+
+
+        if (StringsMatch(FuncDecl.Name, CSz("operator") ) )
+        {
+          ParseOperator(Parser);
+        }
+
+#if 0
+        if ( StringsMatch(Func.Name, CSz("UiStyleFromLightestColor")) )
+        {
+          RuntimeBreak();
+        }
+#endif
+
+        if ( OptionalToken(Parser, CTokenType_OpenParen) )
+        {
+          b32 Done = False;
+
+          if (PeekToken(Parser) == CToken(CTokenType_CloseParen))
+          {
+            Done = True;
+          }
+
+          if ( PeekToken(Parser) == CToken(CSz("void")) &&
+               PeekToken(Parser, 1) == CToken(CTokenType_CloseParen) )
+          {
+            RequireToken(Parser, CToken(CSz("void")) );
+            Done = True;
+          }
+
+          while ( !Done && Remaining(&Parser->Tokens) )
+          {
+            variable Arg = ParseVariable(Parser);
+
+            /* DebugPrint(Arg); */
+
+            if ( PeekToken(Parser).Type == CTokenType_Equals )
+            {
+              ParseVariableAssignment(Parser);
+            }
+
+            if (!OptionalToken(Parser, CTokenType_Comma))
+            {
+              Done = True;
+            }
+
+            if (OptionalToken(Parser, CTokenType_Dot))
+            {
+              RequireToken(Parser, CTokenType_Dot);
+              RequireToken(Parser, CTokenType_Dot);
+              Done = True;
+            }
+
+            continue;
+          }
+
+          RequireToken(Parser, CTokenType_CloseParen);
+
+        }
+        else
+        {
+          // Pre-declaration
+          RequireToken(Parser, CTokenType_Semicolon);
+        }
+
+
+
       }
     }
   }
@@ -2309,7 +2593,7 @@ GetNameForStructMember(struct_member* Decl)
   {
     case type_struct_member_function:
     {
-      // TODO(Jesse id: 189): Parse out function names?
+      // TODO(Jesse id: 189 tags: metaprogramming, parsing): Parse out function names?
       Result = CSz("(unnamed function)");
     } break;
 
@@ -2683,7 +2967,6 @@ IsMetaprogrammingOutput(counted_string Filename, counted_string OutputDirectory)
   return Result;
 }
 
-/* #include <bonsai_stdlib/headers/debug_print.h> */
 
 function counted_string_stream
 ParseDatatypeList(c_parse_result* Parser, program_datatypes* Datatypes, tagged_counted_string_stream_stream* NameLists, memory_arena* Memory)
@@ -3139,6 +3422,7 @@ WriteTodosToFile(person_stream* People, memory_arena* Memory)
 #ifndef EXCLUDE_PREPROCESSOR_MAIN
 #define SUCCESS_EXIT_CODE 0
 #define FAILURE_EXIT_CODE 1
+
 
 s32
 main(s32 ArgCount, const char** ArgStrings)

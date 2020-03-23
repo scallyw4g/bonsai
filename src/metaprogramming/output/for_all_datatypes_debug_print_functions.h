@@ -2492,12 +2492,107 @@
       }
     }
 
+    function void DebugPrint( variable S, u32 Depth)
+    {
+      DebugPrint("variable\n", Depth);
+      
+          DebugPrint("Type = ", Depth);
+          DebugPrint(S.Type, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("Name = ", Depth);
+          DebugPrint(S.Name, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("IndirectionLevel = ", Depth);
+          DebugPrint(S.IndirectionLevel, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("ReferenceLevel = ", Depth);
+          DebugPrint(S.ReferenceLevel, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("Unsigned = ", Depth);
+          DebugPrint(S.Unsigned, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("Volatile = ", Depth);
+          DebugPrint(S.Volatile, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("Const = ", Depth);
+          DebugPrint(S.Const, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("TemplateSource = ", Depth);
+          DebugPrint(S.TemplateSource, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("StaticBufferSize = ", Depth);
+          DebugPrint(S.StaticBufferSize, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("SourceText = ", Depth);
+          DebugPrint(S.SourceText, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(variable* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("variable\n", Depth);
+        
+            DebugPrint("Type = ", Depth);
+            DebugPrint(S->Type, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Name = ", Depth);
+            DebugPrint(S->Name, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("IndirectionLevel = ", Depth);
+            DebugPrint(S->IndirectionLevel, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("ReferenceLevel = ", Depth);
+            DebugPrint(S->ReferenceLevel, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Unsigned = ", Depth);
+            DebugPrint(S->Unsigned, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Volatile = ", Depth);
+            DebugPrint(S->Volatile, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Const = ", Depth);
+            DebugPrint(S->Const, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("TemplateSource = ", Depth);
+            DebugPrint(S->TemplateSource, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("StaticBufferSize = ", Depth);
+            DebugPrint(S->StaticBufferSize, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("SourceText = ", Depth);
+            DebugPrint(S->SourceText, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
     function void DebugPrint( function_def S, u32 Depth)
     {
       DebugPrint("function_def\n", Depth);
       
-          DebugPrint("Name = ", Depth);
-          DebugPrint(S.Name, Depth+1);
+          DebugPrint("Def = ", Depth);
+          DebugPrint(S.Def, Depth+1);
           DebugPrint("\n");
 
     }
@@ -2508,8 +2603,8 @@
       {
         DebugPrint("function_def\n", Depth);
         
-            DebugPrint("Name = ", Depth);
-            DebugPrint(S->Name, Depth+1);
+            DebugPrint("Def = ", Depth);
+            DebugPrint(S->Def, Depth+1);
             DebugPrint("\n");
 
       }

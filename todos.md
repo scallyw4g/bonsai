@@ -1,7 +1,12 @@
 # Jesse
   ## untagged
     - #154 This is pretty shitty because whenever we copy one of these
-    - #189 Parse out function names?
+    - #195 Should we include dot here?
+    - #196 Does this belong here?
+    - #197 Have some way of coalescing this to our internal types?
+    - #198 Do we ignore this?
+    - #199 Do we care about specifically parsing prefix operators?
+    - #201 Do we care about specifically parsing postfix operators?
 
   ## immediate
     - #83 d_union-ify this
@@ -80,6 +85,9 @@
     - #191 This can be generated, but it requires
     - #192 This is a function call or macro .. make sure it's actually constant.
     - #193 Metaprogram this.  I've had bugs multiple times because of it.
+    - #189 Parse out function names?
+    - #194 Use bitflags
+    - #200 Floating-point values should be parsed out in TokenizeAnsiStream()!!
 
   ## robustness
     - #78 How should we actually set this?
@@ -293,6 +301,9 @@
 
   ## parsing
     - #192 This is a function call or macro .. make sure it's actually constant.
+    - #189 Parse out function names?
+    - #194 Use bitflags
+    - #200 Floating-point values should be parsed out in TokenizeAnsiStream()!!
 
   ## bug
     - #185 these should be printable!

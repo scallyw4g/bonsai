@@ -2,8 +2,7 @@ struct m4
 {
   v4 E[4];
 
-  v4&
-  operator[](int index)
+  v4& operator[](int index)
   {
     v4& Result = this->E[index];
     return Result;

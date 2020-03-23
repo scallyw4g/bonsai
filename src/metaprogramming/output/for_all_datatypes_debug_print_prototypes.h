@@ -176,6 +176,9 @@
       function void DebugPrint( arguments* S, u32 Depth = 0);
       function void DebugPrint( arguments  S, u32 Depth = 0);
 
+      function void DebugPrint( variable* S, u32 Depth = 0);
+      function void DebugPrint( variable  S, u32 Depth = 0);
+
       function void DebugPrint( function_def* S, u32 Depth = 0);
       function void DebugPrint( function_def  S, u32 Depth = 0);
 

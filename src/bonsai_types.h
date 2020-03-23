@@ -1,5 +1,4 @@
 #define CACHE_LINE_SIZE (64)
-#define function static
 
 #define ITERATE_OVER_AS(prefix, value_ptr)                   \
   for (auto prefix##Iter = Iterator((value_ptr)); \

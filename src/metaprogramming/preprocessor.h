@@ -524,9 +524,29 @@ struct arguments
   b32 DoDebugWindow;
 };
 
+
+struct variable
+{
+  counted_string Type;
+  counted_string Name;
+
+  u32 IndirectionLevel;
+  u32 ReferenceLevel;
+
+  // TODO(Jesse id: 194, tags: metaprogramming, parsing): Use bitflags
+  b32 Unsigned;
+  b32 Volatile;
+  b32 Const;
+
+  counted_string TemplateSource;
+  counted_string StaticBufferSize;
+
+  counted_string SourceText;
+};
+
 struct function_def
 {
-  counted_string Name;
+  variable Def;
 };
 meta(generate_stream(function_def))
 #include <metaprogramming/output/generate_stream_function_def.h>
