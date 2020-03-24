@@ -1469,7 +1469,7 @@ PreprocessTable(ui_render_command_buffer* CommandBuffer, u32 StartingIndex)
   }
 
   return OnePastTableEnd;
-};
+}
 
 function v2
 GetNextInlineElementBasis(render_state* RenderState)

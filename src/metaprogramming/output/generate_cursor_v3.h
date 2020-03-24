@@ -16,5 +16,5 @@ V3Cursor(umm ElementCount, memory_arena* Memory)
     .At = Start,
   };
   return Result;
-};
+}
 

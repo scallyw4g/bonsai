@@ -2093,6 +2093,10 @@
           DebugPrint(S.IsExported, Depth+1);
           DebugPrint("\n");
 
+          DebugPrint("IsOperator = ", Depth);
+          DebugPrint(S.IsOperator, Depth+1);
+          DebugPrint("\n");
+
           DebugPrint("FnPointerDef = ", Depth);
           DebugPrint(S.FnPointerDef, Depth+1);
           DebugPrint("\n");
@@ -2183,6 +2187,10 @@
 
             DebugPrint("IsExported = ", Depth);
             DebugPrint(S->IsExported, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("IsOperator = ", Depth);
+            DebugPrint(S->IsOperator, Depth+1);
             DebugPrint("\n");
 
             DebugPrint("FnPointerDef = ", Depth);
@@ -2687,10 +2695,6 @@
           DebugPrint(S.Args, Depth+1);
           DebugPrint("\n");
 
-          DebugPrint("Inline = ", Depth);
-          DebugPrint(S.Inline, Depth+1);
-          DebugPrint("\n");
-
           DebugPrint("Body = ", Depth);
           DebugPrint(S.Body, Depth+1);
           DebugPrint("\n");
@@ -2709,10 +2713,6 @@
 
             DebugPrint("Args = ", Depth);
             DebugPrint(S->Args, Depth+1);
-            DebugPrint("\n");
-
-            DebugPrint("Inline = ", Depth);
-            DebugPrint(S->Inline, Depth+1);
             DebugPrint("\n");
 
             DebugPrint("Body = ", Depth);

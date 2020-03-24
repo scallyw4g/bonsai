@@ -16,5 +16,5 @@
         .At = Start,
       };
       return Result;
-    };
+    }
 

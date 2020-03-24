@@ -1190,7 +1190,7 @@ StartStringFromParser(c_parse_result* Parser)
     .Start = Parser->Tokens.At->Value.Start
   };
   return Result;
-};
+}
 
 function counted_string
 FinalizeStringFromParser(string_from_parser* Builder, c_parse_result* Parser)
@@ -2026,6 +2026,14 @@ ParseVariable(c_parse_result* Parser)
           Result.IsTemplateFunction = True;
           RequireToken(Parser, CTokenType_Identifier);
         }
+        else if (StringsMatch(NextToken.Value, CSz("operator")) )
+        {
+          Result.IsOperator = True;
+          Result.IsFunction = True;
+          RequireToken(Parser, CTokenType_Identifier);
+          ParseOperator(Parser);
+          Done = true;
+        }
         else if (StringsMatch(NextToken.Value, CSz("volatile")) )
         {
           Result.Volatile = True;
@@ -2196,79 +2204,76 @@ ParseVariableAssignment(c_parse_result* Parser)
   return FinalAssignmentValue;
 }
 
+function void
+ParseFunctionArgs(c_parse_result* Parser, memory_arena* Memory, function_def* Result)
+{
+  b32 Done = False;
+
+  if (PeekToken(Parser) == CToken(CTokenType_CloseParen))
+  {
+    Done = True;
+  }
+
+  if ( PeekToken(Parser) == CToken(CSz("void")) &&
+       PeekToken(Parser, 1) == CToken(CTokenType_CloseParen) )
+  {
+    RequireToken(Parser, CToken(CSz("void")) );
+    Done = True;
+  }
+
+  while ( !Done && Remaining(&Parser->Tokens) )
+  {
+    variable Arg = ParseVariable(Parser);
+    if (Memory)
+    {
+      Push(&Result->Args, Arg, Memory);
+    }
+
+    if ( PeekToken(Parser).Type == CTokenType_Equals )
+    {
+      ParseVariableAssignment(Parser);
+    }
+
+    if (!OptionalToken(Parser, CTokenType_Comma))
+    {
+      Done = True;
+    }
+
+    if (OptionalToken(Parser, CTokenType_Dot))
+    {
+      RequireToken(Parser, CTokenType_Dot);
+      RequireToken(Parser, CTokenType_Dot);
+      Result->Prototype.IsVariadic = True;
+      Done = True;
+    }
+
+    continue;
+  }
+
+  RequireToken(Parser, CTokenType_CloseParen);
+
+  return;
+}
+
 function function_def
 ParseFunction(c_parse_result* Parser, memory_arena* Memory = 0)
 {
   function_def Func = {};
 
-  if (OptionalToken(Parser, CToken(CSz("inline"))))
-  {
-    Func.Inline = True;
-  }
-
   Func.Prototype = ParseVariable(Parser);
-
-  if (StringsMatch(Func.Prototype.Name, CSz("operator") ) )
-  {
-    ParseOperator(Parser);
-  }
 
   if ( OptionalToken(Parser, CTokenType_OpenParen) )
   {
-    b32 Done = False;
-
-    if (PeekToken(Parser) == CToken(CTokenType_CloseParen))
-    {
-      Done = True;
-    }
-
-    if ( PeekToken(Parser) == CToken(CSz("void")) &&
-         PeekToken(Parser, 1) == CToken(CTokenType_CloseParen) )
-    {
-      RequireToken(Parser, CToken(CSz("void")) );
-      Done = True;
-    }
-
-    while ( !Done && Remaining(&Parser->Tokens) )
-    {
-      variable Arg = ParseVariable(Parser);
-      if (Memory)
-      {
-        Push(&Func.Args, Arg, Memory);
-      }
-
-      if ( PeekToken(Parser).Type == CTokenType_Equals )
-      {
-        ParseVariableAssignment(Parser);
-      }
-
-      if (!OptionalToken(Parser, CTokenType_Comma))
-      {
-        Done = True;
-      }
-
-      if (OptionalToken(Parser, CTokenType_Dot))
-      {
-        RequireToken(Parser, CTokenType_Dot);
-        RequireToken(Parser, CTokenType_Dot);
-        Func.Prototype.IsVariadic = True;
-        Done = True;
-      }
-
-      continue;
-    }
-
-    RequireToken(Parser, CTokenType_CloseParen);
+    ParseFunctionArgs(Parser, Memory, &Func);
 
     if (PeekToken(Parser).Type == CTokenType_OpenBrace)
     {
       Func.Body = GetBodyTextForNextScope(Parser);
     }
-
   }
   else
   {
-    // Pre-declaration with a typedef'd type
+    // Pre-declaration with a typedef'd type: function do_the_thing_type DoTheThing;
     RequireToken(Parser, CTokenType_Semicolon);
   }
 
@@ -2325,6 +2330,7 @@ function void
 ParseTypedef(c_parse_result* Parser, program_datatypes* Datatypes, memory_arena* Memory)
 {
   RequireToken(Parser, CToken(CSz("typedef")));
+
   if ( OptionalToken(Parser, CToken(CSz("struct"))) )
   {
     if (PeekToken(Parser).Type == CTokenType_OpenBrace)
@@ -2336,11 +2342,17 @@ ParseTypedef(c_parse_result* Parser, program_datatypes* Datatypes, memory_arena*
     }
     else
     {
+      // TODO(Jesse id: 228, tags: type_resolution, id_229): We should keep track of these!
+      // Specifically a struct alias
+      // typedef struct thing other_thing;
       EatUntil(Parser, CTokenType_Semicolon);
     }
   }
   else
   {
+    // TODO(Jesse id: 229, tags: type_resolution): see #228
+    // Generic type alias
+    // typedef thing other_thing;
     EatUntil(Parser, CTokenType_Semicolon);
   }
 }
@@ -2360,9 +2372,17 @@ ParseDatatypes(c_parse_result* Parser, program_datatypes* Datatypes, memory_aren
         EatUntil(Parser, CTokenType_Newline);
       } break;
 
-      case CTokenType_Identifier:
+      case CTokenType_Semicolon:
       {
-        if ( StringsMatch(T.Value, CSz("struct")) )
+        RequireToken(Parser, CTokenType_Semicolon);
+      } break;
+
+      case CTokenType_Identifier:
+
+      {
+        if ( StringsMatch(T.Value, CSz("struct")) ||
+             StringsMatch(T.Value, CSz("union"))  ||
+             StringsMatch(T.Value, CSz("enum")) )
         {
           ParseDatatypeDef(Parser, Datatypes, Memory);
         }
@@ -2370,27 +2390,9 @@ ParseDatatypes(c_parse_result* Parser, program_datatypes* Datatypes, memory_aren
         {
           ParseTypedef(Parser, Datatypes, Memory);
         }
-        else if ( StringsMatch(T.Value, CSz("union")) )
-        {
-          ParseDatatypeDef(Parser, Datatypes, Memory);
-        }
-        else if ( StringsMatch(T.Value, CSz("enum")) )
-        {
-          ParseDatatypeDef(Parser, Datatypes, Memory);
-        }
         else if ( StringsMatch(T.Value, CSz("using")) )
         {
           EatUntil(Parser, CTokenType_Semicolon);
-        }
-        else if ( StringsMatch(T.Value, CSz("function")) ||
-                  StringsMatch(T.Value, CSz("exported_function")) )
-        {
-          function_def Func = ParseFunction(Parser, Memory);
-          if ( TotalSize(&Func.Body.Tokens) )
-          {
-            Push(&Datatypes->Functions, Func, Memory);
-          }
-          OptionalToken(Parser, CTokenType_Semicolon); // TODO(Jesse id: 209): I feel like ParseFunction should take care of this 
         }
         else
         {
@@ -2406,29 +2408,37 @@ ParseDatatypes(c_parse_result* Parser, program_datatypes* Datatypes, memory_aren
           {
             variable V = ParseVariable(Parser);
 
-            if ( StringsMatch(V.Name, CSz("operator")) )
+            if ( PeekToken(Parser).Type == CTokenType_Equals )
             {
-              // Note(Jesse): This is an operator function def
-              ParseOperator(Parser);
-              EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
-              EatNextScope(Parser);
-            } 
-            else if ( PeekToken(Parser).Type == CTokenType_Equals )
-            {
-              // TODO(Jesse id: 224): ????
-              EatUntil(Parser, CTokenType_Semicolon);
+              EatUntil(Parser, CTokenType_Semicolon);  // TODO(Jesse id: 224): Call ParseVariableAssignement
             }
             else if ( PeekToken(Parser).Type == CTokenType_OpenParen )
             {
-              EatBetween(Parser,CTokenType_OpenParen, CTokenType_CloseParen);
-              if (!OptionalToken(Parser, CTokenType_Semicolon))
+              // TODO(Jesse id: 212): Should we check that the function was defined using the 'function' or 'exported_function' keywords and emit a warning otherwise?
+              function_def Func = { .Prototype = V, }; 
+              if ( OptionalToken(Parser, CTokenType_OpenParen) )
               {
-                // TODO(Jesse id: 212): This is a function def without a 'function' keyword qualifier .. do we emit a warning?
-                EatNextScope(Parser);
+                ParseFunctionArgs(Parser, Memory, &Func);
+                if (PeekToken(Parser).Type == CTokenType_OpenBrace)
+                {
+                  Func.Body = GetBodyTextForNextScope(Parser);
+                  Push(&Datatypes->Functions, Func, Memory);
+                }
+                else
+                {
+                  // Pre-declaration : void FunctionName(arg Arg1, arg Arg2);
+                  RequireToken(Parser, CTokenType_Semicolon);
+                }
+              }
+              else
+              {
+                // Pre-declaration with a typedef'd type: function do_the_thing_type DoTheThing;
+                RequireToken(Parser, CTokenType_Semicolon);
               }
             }
             else
             {
+              // Uninitialized declaration
               RequireToken(Parser, CTokenType_Semicolon);
             }
           }
@@ -2525,7 +2535,7 @@ function %.*s_cursor
     .At = Start,
   };
   return Result;
-};
+}
 )INLINE_CODE"),
     DatatypeName.Count, DatatypeName.Start,
     ConstructorName.Count, ConstructorName.Start,

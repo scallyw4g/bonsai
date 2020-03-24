@@ -18,7 +18,7 @@ meta(
         .At = Start,
       };
       return Result;
-    };
+    }
   }
 )
 
@@ -368,6 +368,7 @@ struct variable
   b32 ThreadLocal;
   b32 IsFunction;
   b32 IsExported;
+  b32 IsOperator;
 
   counted_string FnPointerDef;
   counted_string Namespace;
@@ -588,9 +589,6 @@ struct function_def
 {
   variable Prototype;
   variable_stream Args;
-
-  // TODO(Jesse id: 202): Bitflags?
-  b32 Inline;
 
   c_parse_result Body;
 };

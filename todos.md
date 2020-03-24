@@ -1,7 +1,6 @@
 # Jesse
   ## untagged
     - #154 This is pretty shitty because whenever we copy one of these
-    - #202 Bitflags?
     - #195 Should we include dot here?
     - #196 Does this belong here?
     - #216 Does this belong here?
@@ -12,10 +11,9 @@
     - #220 Disallow namespaces
     - #199 Do we care about specifically parsing prefix operators?
     - #201 Do we care about specifically parsing postfix operators?
-    - #209 I feel like ParseFunction should take care of this
     - #223 Should we have a more systemic way of handling semicolons?  It's actually valid to have a bunch in a row here.
-    - #224 ????
-    - #212 This is a function def without a 'function' keyword qualifier .. do we emit a warning?
+    - #224 Call ParseVariableAssignement
+    - #212 Should we check that the function was defined using the 'function' or 'exported_function' keywords and emit a warning otherwise?
 
   ## immediate
     - #190 Does this make more sense named 'Type'
@@ -33,6 +31,7 @@
     - #185 these should be printable!
     - #182 This should respect Args.Outpath passed in!
     - #183 This should respect Args.OutPath passed in!
+    - #230 ParseVariable should work with function pointer types
 
   ## format_counted_string
     - #91 Jettison this .. Can it be metaprogrammed?
@@ -104,6 +103,7 @@
     - #121 Need a way of dynamically allocating more of these on demand
     - #160 Generate this!
     - #226 Should we handle this differently?
+    - #230 ParseVariable should work with function pointer types
 
   ## robustness
     - #78 How should we actually set this?
@@ -328,6 +328,7 @@
     - #200 Floating-point values should be parsed out in TokenizeAnsiStream()!!
     - #189 Parse out function names?
     - #222 Re-add [[nodiscard]] here
+    - #230 ParseVariable should work with function pointer types
 
   ## bug
     - #185 these should be printable!
@@ -359,4 +360,11 @@
 
   ## easy
     - #225 Rewrite with string_from_parser
+
+  ## type_resolution
+    - #228 We should keep track of these!
+    - #229 see #228
+
+  ## id_229
+    - #228 We should keep track of these!
 
