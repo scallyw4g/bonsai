@@ -11,10 +11,11 @@
 #if DEBUG_PRINT
 #include <bonsai_stdlib/headers/debug_print.h>
 #else
-#define DebugPrint(...) \
+
+#define DebugPrint(...)                                   \
   _Pragma("clang diagnostic push")                        \
   _Pragma("clang diagnostic ignored \"-Wunused-value\"") \
-  (__VA_ARGS__) \
+  (__VA_ARGS__)                                           \
   _Pragma("clang diagnostic pop")
 #endif
 
@@ -59,29 +60,51 @@ Advance(c_token_cursor* Tokens, u32 Lookahead = 0)
 }
 
 function void
-Advance(c_parse_result* Parser, u32 Lookahead = 0)
+AdvanceParser(c_parse_result* Parser)
 {
-  if (Remaining(&Parser->Tokens, Lookahead))
+  if (Remaining(&Parser->Tokens))
   {
-    for (u32 LookaheadIndex = 0;
-        LookaheadIndex < Lookahead+1;
-        ++LookaheadIndex)
+    if (Parser->Tokens.At[0].Type == CTokenType_Newline)
     {
-      if (Parser->Tokens.At[LookaheadIndex].Type == CTokenType_Newline)
-      {
-        ++Parser->LineNumber;
-      }
+      ++Parser->LineNumber;
     }
 
-    Parser->Tokens.At += Lookahead+1;
+    if (Remaining(&Parser->OutputTokens))
+    {
+      Push(*Parser->Tokens.At, &Parser->OutputTokens);
+    }
+
+    ++Parser->Tokens.At;
   }
   else
   {
     Warn("Attempted to advance parser past end of stream on file : %.*s", (u32)Parser->Filename.Count, Parser->Filename.Start);
   }
-
-  return;
 }
+
+function void
+AdvanceTo(c_parse_result* Parser, c_token* T)
+{
+  if (T >= Parser->Tokens.At)
+  {
+    if (T <= Parser->Tokens.End)
+    {
+      while (Parser->Tokens.At != T)
+      {
+        AdvanceParser(Parser);
+      }
+    }
+    else
+    {
+      Warn("Called AdvanceTo with a token that was past the Parser->Tokens.End pointer on file : %.*s", (u32)Parser->Filename.Count, Parser->Filename.Start);
+    }
+  }
+  else
+  {
+    Warn("Called AdvanceTo with a token that was behind the Parser->Tokens.At pointer on file : %.*s", (u32)Parser->Filename.Count, Parser->Filename.Start);
+  }
+}
+
 
 function c_token*
 PeekTokenRawPointer(c_parse_result* Parser, u32 Lookahead = 0)
@@ -128,8 +151,8 @@ PeekTokenPointer(c_parse_result* Parser, u32 Lookahead = 0)
   u32 TokenHits = 0;
   u32 LocalLookahead = 0;
 
+  c_token* FirstNonWhitespaceToken = 0;
   c_token* Result = PeekTokenRawPointer(Parser, LocalLookahead);
-
   while (Result && Remaining(&Parser->Tokens, LocalLookahead))
   {
     Result = PeekTokenRawPointer(Parser, LocalLookahead);
@@ -150,6 +173,7 @@ PeekTokenPointer(c_parse_result* Parser, u32 Lookahead = 0)
     }
     else
     {
+      if (!FirstNonWhitespaceToken) FirstNonWhitespaceToken = Result;
       if (TokenHits++ == Lookahead)
       {
         break;
@@ -162,6 +186,15 @@ PeekTokenPointer(c_parse_result* Parser, u32 Lookahead = 0)
   if (Result && (IsWhitespace(*Result) || IsComment(*Result)))
   {
     Result = 0;
+  }
+
+  if (FirstNonWhitespaceToken)
+  {
+    AdvanceTo(Parser, FirstNonWhitespaceToken);
+  }
+  else
+  {
+    AdvanceTo(Parser, Parser->Tokens.End);
   }
 
   return Result;
@@ -180,20 +213,15 @@ function c_token
 PopTokenRaw(c_parse_result* Parser)
 {
   c_token Result = PeekTokenRaw(Parser);
-  if (Remaining(&Parser->OutputTokens))
-  {
-    Push(Result, &Parser->OutputTokens);
-  }
-
   if (Remaining(&Parser->Tokens))
   {
-    Advance(Parser);
+    AdvanceParser(Parser);
   }
 
   if (Result.Type == CTokenType_Identifier && StringsMatch(CS("break_here"), Result.Value))
   {
     RuntimeBreak();
-    if (Remaining(&Parser->Tokens)) { Advance(Parser); }
+    if (Remaining(&Parser->Tokens)) { AdvanceParser(Parser); }
     Result = PeekTokenRaw(Parser);
   }
 
@@ -228,10 +256,7 @@ EatComment(c_parse_result* Parser)
 function void
 EatWhitespaceAndComments(c_parse_result* Parser)
 {
-  c_token* T = PeekTokenPointer(Parser);
-  if (T) Parser->Tokens.At = T;
-  else Parser->Tokens.At = Parser->Tokens.End;
-  return;
+  PeekTokenPointer(Parser);
 }
 
 function void
@@ -249,25 +274,10 @@ EatWhitespace(c_parse_result* Parser)
 function c_token
 PopToken(c_parse_result* Parser)
 {
-  c_token Result = {};
-  while (Remaining(&Parser->Tokens))
+  c_token Result = PeekToken(Parser);
+  if (Remaining(&Parser->Tokens))
   {
-    Result = PopTokenRaw(Parser);
-    if ( Result.Type == CTokenType_CommentSingleLine)
-    {
-      EatUntil(Parser, CTokenType_Newline);
-    }
-    else if ( Result.Type == CTokenType_CommentMultiLineStart)
-    {
-      EatUntil(Parser, CTokenType_CommentMultiLineEnd);
-    }
-    else if ( IsWhitespace(Result.Type) )
-    {
-    }
-    else
-    {
-      break;
-    }
+    AdvanceParser(Parser);
   }
 
   return Result;

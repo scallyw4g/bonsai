@@ -275,12 +275,16 @@ fi
 
 # SOURCE_FILES="src/metaprogramming/preprocessor.h"
 
-
-function RunPreprocessor
+function SetSourceFiles
 {
   rm -Rf $META_OUT
   mkdir $META_OUT
-  SOURCE_FILES="$(find src -type f -name "*.h" -and -not -wholename "src/metaprogramming/defines.h" -and -not -path "src/tests/fixtures/*" | tr '\n' ' ') $(find src -type f -name "*.cpp" -and -not -path "src/tests/fixtures/*" | tr '\n' ' ')"
+  SOURCE_FILES="$(find src -type f -name "*.h" -and -not -wholename "src/metaprogramming/defines.h" -and -not -path "src/tests/fixtures/*" ) $(find src -type f -name "*.cpp" -and -not -path "src/tests/fixtures/*" )"
+}
+
+function RunPreprocessor
+{
+  SetSourceFiles
   ColorizeTitle "Preprocessing"
   bin/preprocessor $SOURCE_FILES
   if [ $? -ne 0 ]; then
@@ -294,10 +298,8 @@ function RunPreprocessor
 function RunEntireBuild {
 
   if [ $DumpSourceFilesAndQuit == 1 ]; then
-    rm -Rf $META_OUT
-    mkdir $META_OUT
-    SOURCE_FILES="$(find src -type f -name "*.h" -and -not -wholename "src/metaprogramming/defines.h" -and -not -path "src/tests/fixtures" | tr '\n' ' ') $(find src -type f -name "*.cpp" -and -not -path "src/tests/fixtures" | tr '\n' ' ')"
-    echo $SOURCE_FILES
+    SetSourceFiles
+    echo "$SOURCE_FILES"
     exit 1
   fi
 
@@ -336,12 +338,12 @@ function RunEntireBuild {
 
 }
 
-DumpSourceFilesAndQuit=0
 CheckoutMetaOutput=1
+DumpSourceFilesAndQuit=0
 
 FirstPreprocessor=0
 BuildPreprocessor=1
-SecondPreprocessor=1
+SecondPreprocessor=0
 
 BuildAllProjects=0
 RunTests=0

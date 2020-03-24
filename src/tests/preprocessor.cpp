@@ -524,9 +524,34 @@ TestCommentSituation(memory_arena* Memory)
   EatUntil(Parser, CTokenType_Newline);
 
   {
-    c_token T = PeekToken(Parser, 1);
+    c_token T = PeekToken(Parser);
     TestThat(T == CToken(CSz("void")));
   }
+
+  {
+    c_token T = PeekToken(Parser, 1);
+    TestThat(T.Type == CTokenType_Unknown);
+  }
+
+  {
+    c_token T = PeekToken(Parser);
+    TestThat(T == CToken(CSz("void")));
+  }
+
+
+
+
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T == CToken(CSz("void")));
+  }
+
+
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T.Type == CTokenType_Unknown);
+  }
+
 
 
   return;
