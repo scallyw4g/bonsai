@@ -1,4 +1,11 @@
+
+/*
+ * this is a test comment
+ */
+
+
 // Disable warnings about insecure CRT functions
+//
 #pragma warning(disable : 4996)
 
 #include <Windows.h>

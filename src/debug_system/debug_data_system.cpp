@@ -1,6 +1,6 @@
 #if BONSAI_INTERNAL
 
-debug_global __thread u32 ThreadLocal_ThreadIndex = 0;
+debug_global thread_local u32 ThreadLocal_ThreadIndex = 0;
 debug_global b32 DebugGlobal_RedrawEveryPush = 0;
 
 

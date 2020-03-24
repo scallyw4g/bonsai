@@ -70,6 +70,9 @@ COMMON_COMPILER_OPTIONS="
   -Wno-c99-extensions
   -Wno-reserved-id-macro
   -Wno-dollar-in-identifier-extension
+
+  -Wno-unused-value
+  -Wno-unused-variable
 "
 
 COMMON_LINKER_OPTIONS="-lpthread -lX11 -ldl -lGL"
@@ -277,7 +280,7 @@ function RunPreprocessor
 {
   rm -Rf $META_OUT
   mkdir $META_OUT
-  SOURCE_FILES="$(find src -type f -name "*.h" -and -not -wholename "src/metaprogramming/defines.h" | tr '\n' ' ') $(find src -type f -name "*.cpp" | tr '\n' ' ')"
+  SOURCE_FILES="$(find src -type f -name "*.h" -and -not -wholename "src/metaprogramming/defines.h" -and -not -path "src/tests/fixtures/*" | tr '\n' ' ') $(find src -type f -name "*.cpp" -and -not -path "src/tests/fixtures/*" | tr '\n' ' ')"
   ColorizeTitle "Preprocessing"
   bin/preprocessor $SOURCE_FILES
   if [ $? -ne 0 ]; then
@@ -293,7 +296,7 @@ function RunEntireBuild {
   if [ $DumpSourceFilesAndQuit == 1 ]; then
     rm -Rf $META_OUT
     mkdir $META_OUT
-    SOURCE_FILES="$(find src -type f -name "*.h" -and -not -wholename "src/metaprogramming/defines.h" | tr '\n' ' ') $(find src -type f -name "*.cpp" | tr '\n' ' ')"
+    SOURCE_FILES="$(find src -type f -name "*.h" -and -not -wholename "src/metaprogramming/defines.h" -and -not -path "src/tests/fixtures" | tr '\n' ' ') $(find src -type f -name "*.cpp" -and -not -path "src/tests/fixtures" | tr '\n' ' ')"
     echo $SOURCE_FILES
     exit 1
   fi
@@ -334,7 +337,7 @@ function RunEntireBuild {
 }
 
 DumpSourceFilesAndQuit=0
-CheckoutMetaOutput=0
+CheckoutMetaOutput=1
 
 FirstPreprocessor=0
 BuildPreprocessor=1

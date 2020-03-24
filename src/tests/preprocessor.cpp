@@ -510,6 +510,29 @@ TestStructParsing(memory_arena* Memory)
   return;
 }
 
+function void
+TestCommentSituation(memory_arena* Memory)
+{
+  c_parse_result Parser_ = TokenizeFile(CS(TEST_FIXTURES_PATH "/comments.cpp"), Memory);
+  c_parse_result* Parser = &Parser_;
+
+  {
+    c_token T = PeekToken(Parser);
+    TestThat(T == CToken(CSz("function")));
+  }
+
+  EatUntil(Parser, CTokenType_Newline);
+
+  {
+    c_token T = PeekToken(Parser, 1);
+    TestThat(T == CToken(CSz("void")));
+  }
+
+
+  return;
+}
+
+
 s32
 main()
 {
@@ -522,6 +545,8 @@ main()
   TestPeekAndPopTokens(Memory);
 
   TestStructParsing(Memory);
+
+  TestCommentSituation(Memory);
 
   TestSuiteEnd();
   exit(TestsFailed);

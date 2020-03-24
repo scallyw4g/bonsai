@@ -9,6 +9,13 @@
     - #201 Do we care about specifically parsing postfix operators?
     - #202 Bitflags?
     - #207 Emit domain-specific warning here?
+    - #209 I feel like ParseFunction should take care of this
+    - #212 This is a function def without a 'function' keyword qualifier .. do we emit a warning?
+    - #216 Does this belong here?
+    - #217 Disallow namespaces
+    - #220 Disallow namespaces
+    - #223 Should we have a more systemic way of handling semicolons?  It's actually valid to have a bunch in a row here.
+    - #224 ????
 
   ## immediate
     - #83 d_union-ify this
@@ -18,6 +25,8 @@
     - #155 This should eat the comment if
     - #159 Rename to Members
     - #190 Does this make more sense named 'Type'
+    - #215 Check that error token is set!
+    - #222 Re-add [[nodiscard]] here
 
   ## high_priority
     - #101 Profile and check collision rate of this!
@@ -91,6 +100,9 @@
     - #194 Use bitflags
     - #200 Floating-point values should be parsed out in TokenizeAnsiStream()!!
     - #205 To do this properly, we need to parse out and expand macro definitions here.
+    - #210 This is a function-macro call .. I think always..?
+    - #221 This is a function constructor, let's be done.
+    - #222 Re-add [[nodiscard]] here
 
   ## robustness
     - #78 How should we actually set this?
@@ -113,6 +125,7 @@
     - #139 Is this necessary to avoid some pointer aliasing bug?
     - #143 This could probably be made better by writing to a statically allocated buffer ..?
     - #146 Make this return a counted string and everything that depends on
+    - #192 This is a function call or macro .. make sure it's actually constant.
 
   ## font
     - #77 Axe this!
@@ -155,6 +168,8 @@
     - #84 This only gets used when computing the shadow map, so I'm not even sure if it works ATM
     - #140 Can we support these?
     - #205 To do this properly, we need to parse out and expand macro definitions here.
+    - #210 This is a function-macro call .. I think always..?
+    - #192 This is a function call or macro .. make sure it's actually constant.
 
   ## engine
     - #84 This only gets used when computing the shadow map, so I'm not even sure if it works ATM
@@ -308,11 +323,29 @@
     - #189 Parse out function names?
     - #194 Use bitflags
     - #200 Floating-point values should be parsed out in TokenizeAnsiStream()!!
+    - #213 There is a degenerate case here, what if the file ends without a newline?
+    - #214 There is a degenerate case here, what if the file ends with a malformed comment?
+    - #221 This is a function constructor, let's be done.
+    - #222 Re-add [[nodiscard]] here
 
   ## bug
     - #185 these should be printable!
+    - #213 There is a degenerate case here, what if the file ends without a newline?
+    - #214 There is a degenerate case here, what if the file ends with a malformed comment?
+    - #215 Check that error token is set!
 
   ## id_205
     - #203 See #205
     - #204 See #205
+    - #208 See #205
+    - #210 This is a function-macro call .. I think always..?
+    - #218 See #205
+    - #219 See #205
+
+  ## needs_tests
+    - #213 There is a degenerate case here, what if the file ends without a newline?
+    - #214 There is a degenerate case here, what if the file ends with a malformed comment?
+
+  ## hack
+    - #221 This is a function constructor, let's be done.
 

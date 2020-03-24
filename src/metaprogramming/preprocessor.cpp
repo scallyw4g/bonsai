@@ -21,9 +21,25 @@
 function b32
 IsWhitespace(c_token_type Type)
 {
-  b32 Result = Type == CTokenType_Newline       ||
-               Type == CTokenType_CarrigeReturn ||
+  b32 Result = Type == CTokenType_Newline        ||
+               Type == CTokenType_EscapedNewline ||
+               Type == CTokenType_CarrigeReturn  ||
                Type == CTokenType_Space;
+
+  return Result;
+}
+
+function b32
+IsWhitespace(c_token T)
+{
+  b32 Result = IsWhitespace(T.Type);
+  return Result;
+}
+
+function b32
+IsComment(c_token T)
+{
+  b32 Result = (T.Type == CTokenType_CommentSingleLine) || (T.Type == CTokenType_CommentMultiLineStart);
   return Result;
 }
 
@@ -109,18 +125,24 @@ OffsetOfNext(c_parse_result* Parser, u32 Offset,  c_token_type Close)
 function c_token*
 PeekTokenPointer(c_parse_result* Parser, u32 Lookahead = 0)
 {
-  c_token* Result = {};
   u32 TokenHits = 0;
   u32 LocalLookahead = 0;
-  while (Remaining(&Parser->Tokens, LocalLookahead))
+
+  c_token* Result = PeekTokenRawPointer(Parser, LocalLookahead);
+
+  while (Result && Remaining(&Parser->Tokens, LocalLookahead))
   {
     Result = PeekTokenRawPointer(Parser, LocalLookahead);
     if ( Result->Type == CTokenType_CommentSingleLine)
     {
+      // TODO(Jesse, id: 213, tags: bug, parsing, needs_tests): There is a degenerate case here, what if the file ends without a newline?
+      // While we're at it, add tests that make sure these functions return sane stuff when files end with comments!
       LocalLookahead = OffsetOfNext(Parser, LocalLookahead, CTokenType_Newline);
     }
     else if ( Result->Type == CTokenType_CommentMultiLineStart)
     {
+      // TODO(Jesse, id: 214, tags: bug, parsing, needs_tests): There is a degenerate case here, what if the file ends with a malformed comment?
+      // While we're at it, add tests that make sure these functions return sane stuff when files end with comments!
       LocalLookahead = OffsetOfNext(Parser, LocalLookahead, CTokenType_CommentMultiLineEnd);
     }
     else if (IsWhitespace(Result->Type))
@@ -135,6 +157,11 @@ PeekTokenPointer(c_parse_result* Parser, u32 Lookahead = 0)
     }
 
     ++LocalLookahead;
+  }
+
+  if (Result && (IsWhitespace(*Result) || IsComment(*Result)))
+  {
+    Result = 0;
   }
 
   return Result;
@@ -183,6 +210,40 @@ EatUntil(c_parse_result* Parser, c_token_type Close)
       break;
     }
   }
+}
+
+function void
+EatComment(c_parse_result* Parser)
+{
+  if (PeekTokenRaw(Parser).Type == CTokenType_CommentSingleLine)
+  {
+    EatUntil(Parser, CTokenType_Newline);
+  }
+  else if (PeekTokenRaw(Parser).Type == CTokenType_CommentMultiLineStart)
+  {
+    EatUntil(Parser, CTokenType_CommentMultiLineEnd);
+  }
+}
+
+function void
+EatWhitespaceAndComments(c_parse_result* Parser)
+{
+  c_token* T = PeekTokenPointer(Parser);
+  if (T) Parser->Tokens.At = T;
+  else Parser->Tokens.At = Parser->Tokens.End;
+  return;
+}
+
+function void
+EatWhitespace(c_parse_result* Parser)
+{
+  while (Remaining(&Parser->Tokens) &&
+         IsWhitespace(PeekTokenRaw(Parser).Type))
+  {
+    PopTokenRaw(Parser);
+  }
+
+  return;
 }
 
 function c_token
@@ -630,6 +691,13 @@ OutputParsingError(c_parse_result* Parser, c_token* ErrorToken, c_token Expected
 }
 
 function void
+OutputParsingError(c_parse_result* Parser, counted_string ErrorString)
+{
+  OutputParsingError(Parser, Parser->Tokens.At, CToken(CTokenType_Unknown), ErrorString);
+  return;
+}
+
+function void
 OutputParsingError(c_parse_result* Parser, c_token* ErrorToken, counted_string ErrorString)
 {
   OutputParsingError(Parser, ErrorToken, CToken(CTokenType_Unknown), ErrorString);
@@ -640,6 +708,8 @@ function c_token
 RequireToken(c_parse_result* Parser, c_token ExpectedToken)
 {
   c_token* ErrorToken = PeekTokenPointer(Parser);
+
+  // TODO(Jesse id: 215, tags: immediate, bug): Check that error token is set!
   c_token Result = *ErrorToken;
 
   if (Result.Type != ExpectedToken.Type || (ExpectedToken.Value.Count > 0 && !StringsMatch(ExpectedToken.Value, Result.Value) ))
@@ -1088,9 +1158,28 @@ DumpStringStreamToConsole(counted_string_stream* Stream)
   }
 }
 
-function void
+function string_from_parser
+StartStringFromParser(c_parse_result* Parser)
+{
+  string_from_parser Result = {
+    .Start = Parser->Tokens.At->Value.Start
+  };
+  return Result;
+};
+
+function counted_string
+FinalizeStringFromParser(string_from_parser* Builder, c_parse_result* Parser)
+{
+  umm Count = (umm)(Parser->Tokens.At->Value.Start - Builder->Start);
+  counted_string Result = { .Start = Builder->Start, .Count = Count };
+  return Result;
+}
+
+function counted_string
 EatBetween(c_parse_result* Parser, c_token_type Open, c_token_type Close)
 {
+  string_from_parser Builder = StartStringFromParser(Parser);
+
   u32 Depth = 0;
   RequireToken(Parser, Open);
 
@@ -1110,7 +1199,8 @@ EatBetween(c_parse_result* Parser, c_token_type Open, c_token_type Close)
     }
   }
 
-  return;
+  counted_string Result = FinalizeStringFromParser(&Builder, Parser);
+  return Result;
 }
 
 function void
@@ -1614,8 +1704,8 @@ ParseIntegerConstant(c_parse_result* Parser)
     .Count = Count,
     .Start = Start,
   };
+
   return Result;
-  
 }
 
 function b32
@@ -1684,6 +1774,7 @@ NextTokenIsOperator(c_parse_result* Parser)
     case CTokenType_Question:
     case CTokenType_Colon:
     case CTokenType_Tilde: // TODO(Jesse id: 196): Does this belong here?
+    case CTokenType_Equals: // TODO(Jesse id: 216): Does this belong here?
     {
       Result = True;
     } break;
@@ -1694,27 +1785,10 @@ NextTokenIsOperator(c_parse_result* Parser)
   return Result;
 }
 
-function string_from_parser
-StartStringFromParer(c_parse_result* Parser)
-{
-  string_from_parser Result = {
-    .Start = Parser->Tokens.At->Value.Start
-  };
-  return Result;
-};
-
-function counted_string
-FinalizeStringFromParser(string_from_parser* Builder, c_parse_result* Parser)
-{
-  umm Count = (umm)(Parser->Tokens.At->Value.Start - Builder->Start);
-  counted_string Result = { .Start = Builder->Start, .Count = Count };
-  return Result;
-}
-
 function counted_string
 ParseOperator(c_parse_result* Parser)
 {
-  string_from_parser Builder = StartStringFromParer(Parser);
+  string_from_parser Builder = StartStringFromParser(Parser);
 
   if (NextTokenIsOperator(Parser))
   {
@@ -1724,7 +1798,10 @@ ParseOperator(c_parse_result* Parser)
       case CTokenType_GT:
       case CTokenType_LT:
       {
-        OptionalToken(Parser, NextT.Type);
+        if(!OptionalToken(Parser, NextT.Type))
+        {
+          OptionalToken(Parser, CTokenType_Equals);
+        }
       } break;
 
       case CTokenType_Minus:
@@ -1747,6 +1824,11 @@ ParseOperator(c_parse_result* Parser)
         }
       } break;
 
+      case CTokenType_Equals:
+      {
+        RequireToken(Parser, CTokenType_Equals);
+      } break;
+
       default: {} break;
     }
   }
@@ -1762,7 +1844,7 @@ ParseOperator(c_parse_result* Parser)
 function counted_string
 ParseConstantExpression(c_parse_result* Parser)
 {
-  string_from_parser Builder = StartStringFromParer(Parser);
+  string_from_parser Builder = StartStringFromParser(Parser);
 
   c_token NextT = PeekToken(Parser);
   switch (NextT.Type)
@@ -1778,7 +1860,7 @@ ParseConstantExpression(c_parse_result* Parser)
 
       if (PeekToken(Parser).Type == CTokenType_OpenParen)
       {
-        // TODO(Jesse id: 192, tags: metaprogramming, parsing): This is a function call or macro .. make sure it's actually constant.
+        // TODO(Jesse id: 192, tags: metaprogramming, parsing, completeness, robustness): This is a function call or macro .. make sure it's actually constant.
         EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
       }
 
@@ -1800,7 +1882,7 @@ ParseConstantExpression(c_parse_result* Parser)
       ParseIntegerConstant(Parser);
     } break;
 
-    InvalidDefaultCase;
+    InvalidDefaultWhileParsing(Parser, CSz(__FUNCTION__))
   }
 
   counted_string Result = Trim(FinalizeStringFromParser(&Builder, Parser));
@@ -1869,9 +1951,8 @@ ParseVariable(c_parse_result* Parser)
 {
   variable Result = {};
 
-  string_from_parser Builder = StartStringFromParer(Parser);
+  string_from_parser Builder = StartStringFromParser(Parser);
 
-  b32 FoundTypeIdentifier = False;
   b32 Done = False;
   while (!Done)
   {
@@ -1879,6 +1960,28 @@ ParseVariable(c_parse_result* Parser)
 
     switch (NextToken.Type)
     {
+      case CTokenType_OpenParen:
+      {
+        if (Result.Type.Count)
+        {
+          Result.FnPointerDef = EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
+          Done = True;
+        }
+        else
+        {
+          OutputParsingError(Parser, CSz("Found function pointer without a return type!"));
+        }
+      } break;
+
+      case CTokenType_Colon:
+      {
+        // TODO(Jesse id: 217): Disallow namespaces
+        RequireToken(Parser, CTokenType_Colon);
+        RequireToken(Parser, CTokenType_Colon);
+        Result.Namespace = Result.Type;
+        Result.Type.Count = 0;
+      } break;
+
       case CTokenType_At:
       {
         RequireToken(Parser, CTokenType_At);
@@ -1887,7 +1990,7 @@ ParseVariable(c_parse_result* Parser)
 
       case CTokenType_LT:
       {
-        string_from_parser TemplateBodyBuilder = StartStringFromParer(Parser);
+        string_from_parser TemplateBodyBuilder = StartStringFromParser(Parser);
         EatBetween(Parser, CTokenType_LT, CTokenType_GT);
         Result.TemplateSource = FinalizeStringFromParser(&TemplateBodyBuilder, Parser);
       } break;
@@ -1914,12 +2017,22 @@ ParseVariable(c_parse_result* Parser)
         if (StringsMatch(NextToken.Value, CS("unsigned")))
         {
           // TODO(Jesse id: 197): Have some way of coalescing this to our internal types?
-          Result.Unsigned = true;
+          Result.Unsigned = True;
+          RequireToken(Parser, CTokenType_Identifier);
+        }
+        else if (StringsMatch(NextToken.Value, CSz("template")) )
+        {
+          Result.IsTemplateFunction = True;
           RequireToken(Parser, CTokenType_Identifier);
         }
         else if (StringsMatch(NextToken.Value, CSz("volatile")) )
         {
-          Result.Volatile = true;
+          Result.Volatile = True;
+          RequireToken(Parser, CTokenType_Identifier);
+        }
+        else if (StringsMatch(NextToken.Value, CSz("inline")) )
+        {
+          Result.Inline = True;
           RequireToken(Parser, CTokenType_Identifier);
         }
         else if (StringsMatch(NextToken.Value, CSz("struct")) )
@@ -1930,6 +2043,29 @@ ParseVariable(c_parse_result* Parser)
         else if (StringsMatch(NextToken.Value, CSz("static")) )
         {
           // TODO(Jesse id: 207): Emit domain-specific warning here?
+          Result.IsStatic = True;
+          RequireToken(Parser, CTokenType_Identifier);
+        }
+        else if (StringsMatch(NextToken.Value, CSz("thread_local")) )
+        {
+          Result.ThreadLocal = True;
+          RequireToken(Parser, CTokenType_Identifier);
+        }
+        else if (StringsMatch(NextToken.Value, CSz("APIENTRY")) )
+        {
+          // TODO(Jesse id: 218,  tags: id_205): See #205
+          RequireToken(Parser, CTokenType_Identifier);
+        }
+        else if (StringsMatch(NextToken.Value, CSz("function")) )
+        {
+          // TODO(Jesse id: 219,  tags: id_205): See #205
+          Result.IsFunction = True;
+          Result.IsStatic = True;
+          RequireToken(Parser, CTokenType_Identifier);
+        }
+        else if (StringsMatch(NextToken.Value, CSz("debug_global")) )
+        {
+          // TODO(Jesse id: 208, tags: id_205): See #205
           Result.IsStatic = True;
           RequireToken(Parser, CTokenType_Identifier);
         }
@@ -1957,14 +2093,28 @@ ParseVariable(c_parse_result* Parser)
           }
           else
           {
-            if (FoundTypeIdentifier)
+            if (Result.Type.Count)
             {
               Result.Name = RequireToken(Parser, CTokenType_Identifier).Value;
 
-              if ( OptionalToken(Parser, CTokenType_OpenBracket) )
+              if ( OptionalToken(Parser, CTokenType_Colon) )
               {
-                Result.StaticBufferSize = ParseConstantExpression(Parser);
-                RequireToken(Parser, CTokenType_CloseBracket);
+                // TODO(Jesse id: 220): Disallow namespaces
+                RequireToken(Parser, CTokenType_Colon);
+                Result.Namespace = Result.Name;
+                Result.Name = RequireToken(Parser, CTokenType_Identifier).Value;
+              }
+              else if ( OptionalToken(Parser, CTokenType_OpenBracket) )
+              {
+                if ( OptionalToken(Parser, CTokenType_CloseBracket) )
+                {
+                  Result.StaticBufferSize = CSz("(dynamic)");
+                }
+                else
+                {
+                  Result.StaticBufferSize = ParseConstantExpression(Parser);
+                  RequireToken(Parser, CTokenType_CloseBracket);
+                }
               }
 
               Done = True;
@@ -1972,7 +2122,13 @@ ParseVariable(c_parse_result* Parser)
             else
             {
               Result.Type = RequireToken(Parser, CTokenType_Identifier).Value;
-              FoundTypeIdentifier = True;
+
+              if (StringsMatch(Result.Type, Result.Namespace))
+              {
+                // TODO(Jesse, id: 221, tags: hack, metaprogramming, parsing): This is a function constructor, let's be done.
+                Result.IsConstructor = True;
+                Done = True;
+              }
             }
           }
         }
@@ -1982,6 +2138,7 @@ ParseVariable(c_parse_result* Parser)
       InvalidDefaultWhileParsing(Parser, CSz("Malformed variable statement."));
     }
 
+    EatWhitespaceAndComments(Parser);
     continue;
   }
 
@@ -1995,7 +2152,7 @@ ParseVariableAssignment(c_parse_result* Parser)
 {
   RequireToken(Parser, CTokenType_Equals);
 
-  string_from_parser Builder = StartStringFromParer(Parser);
+  string_from_parser Builder = StartStringFromParser(Parser);
 
   if ( PeekToken(Parser).Type == CTokenType_OpenBrace )
   {
@@ -2032,7 +2189,7 @@ ParseVariableAssignment(c_parse_result* Parser)
 }
 
 function function_def
-ParseFunction(c_parse_result* Parser, memory_arena* Memory)
+ParseFunction(c_parse_result* Parser, memory_arena* Memory = 0)
 {
   function_def Func = {};
 
@@ -2067,7 +2224,10 @@ ParseFunction(c_parse_result* Parser, memory_arena* Memory)
     while ( !Done && Remaining(&Parser->Tokens) )
     {
       variable Arg = ParseVariable(Parser);
-      Push(&Func.Args, Arg, Memory);
+      if (Memory)
+      {
+        Push(&Func.Args, Arg, Memory);
+      }
 
       if ( PeekToken(Parser).Type == CTokenType_Equals )
       {
@@ -2113,9 +2273,12 @@ ParseDatatypes(c_parse_result* Parser, program_datatypes* Datatypes, memory_aren
   while (Parser->Valid && Remaining(&Parser->Tokens))
   {
     c_token Token = PopToken(Parser);
-    if (Token.Type == CTokenType_Identifier)
+    if (Token.Type == CTokenType_Hash)
     {
-
+      EatUntil(Parser, CTokenType_Newline);
+    }
+    else if (Token.Type == CTokenType_Identifier)
+    {
       if (StringsMatch(Token.Value, CS("union")))
       {
         c_token UnionName = RequireToken(Parser, CTokenType_Identifier);
@@ -2170,7 +2333,8 @@ ParseDatatypes(c_parse_result* Parser, program_datatypes* Datatypes, memory_aren
           default: {} break;
         }
       }
-      else if (StringsMatch(Token.Value, CS("function")))
+      else if (StringsMatch(Token.Value, CSz("function")) ||
+               StringsMatch(Token.Value, CSz("exported_function")) )
       {
         function_def Func = ParseFunction(Parser, Memory);
 
@@ -2565,17 +2729,6 @@ GetExistingOrCreate(person_stream* People, counted_string PersonName, memory_are
   return Person;
 }
 
-function void
-EatWhitespace(c_parse_result* Parser)
-{
-  while (Remaining(&Parser->Tokens) && IsWhitespace(PeekTokenRaw(Parser).Type))
-  {
-    PopTokenRaw(Parser);
-  }
-
-  return;
-}
-
 static u32 LargestIdFoundInFile = 0;
 
 function todo
@@ -2746,10 +2899,11 @@ ParseTransformations(c_parse_result* Scope)
   return Result;
 }
 
-[[nodiscard]] function counted_string
+function counted_string
 Execute(meta_func* Func, datatype ArgDatatype, metaprogramming_info* MetaInfo, memory_arena* Memory);
 
-[[nodiscard]] function counted_string
+// TODO(Jesse id: 222, tags: immediate, parsing, metaprogramming) : Re-add [[nodiscard]] here
+function counted_string
 Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgMatchPattern, datatype ArgDatatype, metaprogramming_info* MetaInfo, memory_arena* Memory)
 {
   program_datatypes* Datatypes = &MetaInfo->Datatypes;
@@ -3034,7 +3188,7 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgMatchPa
   return Result;
 }
 
-[[nodiscard]] function counted_string
+function counted_string
 Execute(meta_func* Func, datatype ArgDatatype, metaprogramming_info* MetaInfo, memory_arena* Memory)
 {
   counted_string Result = Execute(Func->Name, Func->Body, Func->ArgName, ArgDatatype, MetaInfo, Memory);
@@ -3515,7 +3669,54 @@ WriteTodosToFile(person_stream* People, memory_arena* Memory)
 #define FAILURE_EXIT_CODE 1
 
 function void
-LookForMetaRuntimeFunctionCalls(c_parse_result_cursor Files_in, memory_arena* Memory)
+EatStructDef(c_parse_result* Parser)
+{
+  RequireToken(Parser, CTokenType_Identifier);
+  if ( !OptionalToken(Parser, CTokenType_Semicolon) )
+  {
+    EatNextScope(Parser);
+  }
+
+  RequireToken(Parser, CTokenType_Semicolon);
+}
+
+function void
+EatEnumOrStructDef(c_parse_result* Parser)
+{
+  RequireToken(Parser, CTokenType_Identifier);
+  if ( PeekToken(Parser).Type == CTokenType_OpenBrace )
+  {
+    EatNextScope(Parser);
+  }
+
+  RequireToken(Parser, CTokenType_Semicolon);
+}
+
+function void
+EatTypedef(c_parse_result* Parser)
+{
+  RequireToken(Parser, CToken(CSz("typedef")));
+  if ( OptionalToken(Parser, CToken(CSz("struct"))) )
+  {
+    if (PeekToken(Parser).Type == CTokenType_OpenBrace)
+    {
+      EatNextScope(Parser);
+      RequireToken(Parser, CTokenType_Identifier);
+      RequireToken(Parser, CTokenType_Semicolon);
+    }
+    else
+    {
+      EatUntil(Parser, CTokenType_Semicolon);
+    }
+  }
+  else
+  {
+    EatUntil(Parser, CTokenType_Semicolon);
+  }
+}
+
+function void
+LookForMetaRuntimeFunctionCalls(c_parse_result_cursor Files_in)
 {
   c_parse_result_cursor* Files = &Files_in;
 
@@ -3527,7 +3728,7 @@ LookForMetaRuntimeFunctionCalls(c_parse_result_cursor Files_in, memory_arena* Me
 
     while (Remaining(&Parser->Tokens))
     {
-      c_token T = PopToken(Parser);
+      c_token T = PeekToken(Parser);
 
       switch(T.Type)
       {
@@ -3540,30 +3741,83 @@ LookForMetaRuntimeFunctionCalls(c_parse_result_cursor Files_in, memory_arena* Me
         {
           if ( StringsMatch(T.Value, CSz("struct")) )
           {
-            /* EatStructDef(Parser); */
+            RequireToken(Parser, CToken(CSz("struct")));
+            EatEnumOrStructDef(Parser);
           }
           else if ( StringsMatch(T.Value, CSz("typedef")) )
           {
-            /* EatTypedef(Parser); */
+            EatTypedef(Parser);
+          }
+          else if ( StringsMatch(T.Value, CSz("union")) )
+          {
+            RequireToken(Parser, CToken(CSz("union")));
+            EatEnumOrStructDef(Parser);
           }
           else if ( StringsMatch(T.Value, CSz("enum")) )
           {
-            /* EatEnumDef(Parser); */
+            RequireToken(Parser, CToken(CSz("enum")));
+            EatEnumOrStructDef(Parser);
           }
-          else if ( StringsMatch(T.Value, CSz("function")) )
+          else if ( StringsMatch(T.Value, CSz("using")) )
           {
-            /* EatFunctionPrototype(Parser); */
+            EatUntil(Parser, CTokenType_Semicolon);
+          }
+          else if (StringsMatch(T.Value, CSz("function")) ||
+                   StringsMatch(T.Value, CSz("exported_function")) )
+          {
+            RequireToken(Parser, CTokenType_Identifier);
+            ParseFunction(Parser);
+            OptionalToken(Parser, CTokenType_Semicolon); // TODO(Jesse id: 209): I feel like ParseFunction should take care of this 
           }
           else
           {
             // TODO(Jesse id: 205, tags: metaprogramming, completeness): To do this properly, we need to parse out and expand macro definitions here.
-            /* variable V = ParseVariable(Parser); */
+            if (PeekToken(Parser, 1).Type == CTokenType_OpenParen)
+            {
+              // TODO(Jesse id: 210, tags: id_205, metaprogramming, completeness): This is a function-macro call .. I think always..?
+              RequireToken(Parser, CTokenType_Identifier);
+              EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
+              OptionalToken(Parser, CTokenType_Semicolon); // TODO(Jesse id: 223): Should we have a more systemic way of handling semicolons?  It's actually valid to have a bunch in a row here.
+            }
+            else
+            {
+              variable V = ParseVariable(Parser);
+
+              if ( StringsMatch(V.Name, CSz("operator")) )
+              {
+                // Note(Jesse): This is an operator function def
+                ParseOperator(Parser);
+                EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
+                EatNextScope(Parser);
+              } 
+              else if ( PeekToken(Parser).Type == CTokenType_Equals )
+              {
+                // TODO(Jesse id: 224): ????
+                EatUntil(Parser, CTokenType_Semicolon);
+              }
+              else if ( PeekToken(Parser).Type == CTokenType_OpenParen )
+              {
+                EatBetween(Parser,CTokenType_OpenParen, CTokenType_CloseParen);
+                if (!OptionalToken(Parser, CTokenType_Semicolon))
+                {
+                  // TODO(Jesse id: 212): This is a function def without a 'function' keyword qualifier .. do we emit a warning?
+                  EatNextScope(Parser);
+                }
+              }
+              else
+              {
+                RequireToken(Parser, CTokenType_Semicolon);
+              }
+            }
           }
+
         } break;
 
         InvalidDefaultWhileParsing(Parser, CSz("Invalid token encountered while parsing."));
       }
 
+      EatWhitespaceAndComments(Parser);
+      continue;
     }
 
     Rewind(&Parser->Tokens);
@@ -3609,6 +3863,8 @@ main(s32 ArgCount, const char** ArgStrings)
     };
 
     RemoveAllMetaprogrammingOutput(&ParsedFiles, &Args);
+
+    LookForMetaRuntimeFunctionCalls(ParsedFiles);
 
     for (u32 ParserIndex = 0;
         ParserIndex < Count(&ParsedFiles);

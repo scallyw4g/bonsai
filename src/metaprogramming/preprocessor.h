@@ -180,8 +180,7 @@ meta(
 )
 
 meta(
-  instanced_func void
-  DebugPrint( @TypeDef RuntimeValue, u32 Depth)
+  instanced_func void DebugPrint( @TypeDef RuntimeValue, u32 Depth)
   {
     DebugPrint("(TypeDef.name): ", Depth);
     TypeDef.is_enum?
@@ -363,7 +362,14 @@ struct variable
   b32 IsVariadic;
   b32 IsMetaTemplateVar;
   b32 IsStatic;
+  b32 Inline;
+  b32 IsTemplateFunction;
+  b32 IsConstructor;
+  b32 ThreadLocal;
+  b32 IsFunction;
 
+  counted_string FnPointerDef;
+  counted_string Namespace;
   counted_string TemplateSource;
   counted_string StaticBufferSize;
   counted_string SourceText;

@@ -2069,6 +2069,34 @@
           DebugPrint(S.IsStatic, Depth+1);
           DebugPrint("\n");
 
+          DebugPrint("Inline = ", Depth);
+          DebugPrint(S.Inline, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("IsTemplateFunction = ", Depth);
+          DebugPrint(S.IsTemplateFunction, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("IsConstructor = ", Depth);
+          DebugPrint(S.IsConstructor, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("ThreadLocal = ", Depth);
+          DebugPrint(S.ThreadLocal, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("IsFunction = ", Depth);
+          DebugPrint(S.IsFunction, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("FnPointerDef = ", Depth);
+          DebugPrint(S.FnPointerDef, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("Namespace = ", Depth);
+          DebugPrint(S.Namespace, Depth+1);
+          DebugPrint("\n");
+
           DebugPrint("TemplateSource = ", Depth);
           DebugPrint(S.TemplateSource, Depth+1);
           DebugPrint("\n");
@@ -2127,6 +2155,34 @@
 
             DebugPrint("IsStatic = ", Depth);
             DebugPrint(S->IsStatic, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Inline = ", Depth);
+            DebugPrint(S->Inline, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("IsTemplateFunction = ", Depth);
+            DebugPrint(S->IsTemplateFunction, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("IsConstructor = ", Depth);
+            DebugPrint(S->IsConstructor, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("ThreadLocal = ", Depth);
+            DebugPrint(S->ThreadLocal, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("IsFunction = ", Depth);
+            DebugPrint(S->IsFunction, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("FnPointerDef = ", Depth);
+            DebugPrint(S->FnPointerDef, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Namespace = ", Depth);
+            DebugPrint(S->Namespace, Depth+1);
             DebugPrint("\n");
 
             DebugPrint("TemplateSource = ", Depth);

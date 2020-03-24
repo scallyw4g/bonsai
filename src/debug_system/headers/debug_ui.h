@@ -260,6 +260,7 @@ meta(
 
 
 #define MAX_UI_RENDER_COMMAND_COUNT (1024*1024)
+
 struct ui_render_command_buffer
 {
   u32 CommandCount;

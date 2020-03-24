@@ -177,7 +177,7 @@ WakeThread( semaphore *Semaphore )
   return;
 }
 
-__inline__ u64
+inline u64
 GetCycleCount()
 {
   unsigned hi, lo;
