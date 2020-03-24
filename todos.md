@@ -1,38 +1,38 @@
 # Jesse
   ## untagged
     - #154 This is pretty shitty because whenever we copy one of these
+    - #202 Bitflags?
     - #195 Should we include dot here?
     - #196 Does this belong here?
-    - #197 Have some way of coalescing this to our internal types?
-    - #198 Do we ignore this?
-    - #199 Do we care about specifically parsing prefix operators?
-    - #201 Do we care about specifically parsing postfix operators?
-    - #202 Bitflags?
-    - #207 Emit domain-specific warning here?
-    - #209 I feel like ParseFunction should take care of this
-    - #212 This is a function def without a 'function' keyword qualifier .. do we emit a warning?
     - #216 Does this belong here?
     - #217 Disallow namespaces
+    - #197 Have some way of coalescing this to our internal types?
+    - #198 Do we ignore this?
+    - #207 Emit domain-specific warning here?
     - #220 Disallow namespaces
+    - #199 Do we care about specifically parsing prefix operators?
+    - #201 Do we care about specifically parsing postfix operators?
+    - #209 I feel like ParseFunction should take care of this
     - #223 Should we have a more systemic way of handling semicolons?  It's actually valid to have a bunch in a row here.
     - #224 ????
+    - #212 This is a function def without a 'function' keyword qualifier .. do we emit a warning?
 
   ## immediate
+    - #190 Does this make more sense named 'Type'
+    - #159 Rename to Members
     - #83 d_union-ify this
     - #184 Reinstate memory protection!  Need to turn it off
+    - #215 Check that error token is set!
+    - #222 Re-add [[nodiscard]] here
     - #157 Should support multi-line comments as well
     - #156 This should actually concat all comments such that
     - #155 This should eat the comment if
-    - #159 Rename to Members
-    - #190 Does this make more sense named 'Type'
-    - #215 Check that error token is set!
-    - #222 Re-add [[nodiscard]] here
 
   ## high_priority
     - #101 Profile and check collision rate of this!
+    - #185 these should be printable!
     - #182 This should respect Args.Outpath passed in!
     - #183 This should respect Args.OutPath passed in!
-    - #185 these should be printable!
 
   ## format_counted_string
     - #91 Jettison this .. Can it be metaprogrammed?
@@ -63,6 +63,8 @@
 
   ## cleanup
     - #77 Axe this!
+    - #159 Rename to Members
+    - #188 This should have the name property, instead of
     - #88 Perlin.h depends on this .. rewrite it.
     - #89 Perlin.h depends on this .. rewrite it.
     - #90 Redistribute this
@@ -78,31 +80,30 @@
     - #113 Remove these?
     - #144 This actually has nothing to do with the platform
     - #146 Make this return a counted string and everything that depends on
-    - #159 Rename to Members
-    - #188 This should have the name property, instead of
 
   ## rng
     - #82 257 seemed to produce slightly
     - #95 This is LCG RNG - do we want a better one?
 
   ## metaprogramming
+    - #191 This can be generated, but it requires
+    - #194 Use bitflags
+    - #193 Metaprogram this.  I've had bugs multiple times because of it.
     - #83 d_union-ify this
     - #91 Jettison this .. Can it be metaprogrammed?
     - #99 Generate this?  Need a compiler feature to generate stuff from primitive types.
     - #100 Do we actually want this in here?
-    - #121 Need a way of dynamically allocating more of these on demand
-    - #160 Generate this!
-    - #180 Can we use Allocate() here instead?
-    - #191 This can be generated, but it requires
     - #192 This is a function call or macro .. make sure it's actually constant.
-    - #193 Metaprogram this.  I've had bugs multiple times because of it.
-    - #189 Parse out function names?
-    - #194 Use bitflags
+    - #221 This is a function constructor, let's be done.
     - #200 Floating-point values should be parsed out in TokenizeAnsiStream()!!
+    - #180 Can we use Allocate() here instead?
+    - #189 Parse out function names?
+    - #222 Re-add [[nodiscard]] here
     - #205 To do this properly, we need to parse out and expand macro definitions here.
     - #210 This is a function-macro call .. I think always..?
-    - #221 This is a function constructor, let's be done.
-    - #222 Re-add [[nodiscard]] here
+    - #121 Need a way of dynamically allocating more of these on demand
+    - #160 Generate this!
+    - #226 Should we handle this differently?
 
   ## robustness
     - #78 How should we actually set this?
@@ -112,6 +113,7 @@
     - #104 Test this actually gets respected!!
     - #105 Test this actually gets respected!!
     - #109 Reset this in here?
+    - #192 This is a function call or macro .. make sure it's actually constant.
     - #115 Does this work all the time on x64?
     - #116 Prove this is unnecessary
     - #121 Need a way of dynamically allocating more of these on demand
@@ -125,7 +127,6 @@
     - #139 Is this necessary to avoid some pointer aliasing bug?
     - #143 This could probably be made better by writing to a statically allocated buffer ..?
     - #146 Make this return a counted string and everything that depends on
-    - #192 This is a function call or macro .. make sure it's actually constant.
 
   ## font
     - #77 Axe this!
@@ -150,8 +151,8 @@
     - #117 Transient arena for this instead of stack allocation ?
 
   ## string_hash
-    - #101 Profile and check collision rate of this!
     - #81 Theres' a null terminated string-hash
+    - #101 Profile and check collision rate of this!
 
   ## hashing
     - #82 257 seemed to produce slightly
@@ -166,10 +167,10 @@
 
   ## completeness
     - #84 This only gets used when computing the shadow map, so I'm not even sure if it works ATM
-    - #140 Can we support these?
+    - #192 This is a function call or macro .. make sure it's actually constant.
     - #205 To do this properly, we need to parse out and expand macro definitions here.
     - #210 This is a function-macro call .. I think always..?
-    - #192 This is a function call or macro .. make sure it's actually constant.
+    - #140 Can we support these?
 
   ## engine
     - #84 This only gets used when computing the shadow map, so I'm not even sure if it works ATM
@@ -192,9 +193,9 @@
     - #100 Do we actually want this in here?
     - #125 Are we really done?
     - #137 This _should_ be able to be glTexImage3D, but the driver is
+    - #142 Is there a better way of making that adjustment?
     - #143 This could probably be made better by writing to a statically allocated buffer ..?
     - #151 Not getting vsync on my arch laptop...
-    - #142 Is there a better way of making that adjustment?
 
   ## improvement
     - #95 This is LCG RNG - do we want a better one?
@@ -291,8 +292,8 @@
 
   ## platform
     - #144 This actually has nothing to do with the platform
-    - #150 Should this be done elsewhere?
     - #145 Make this use platform agnostic functions!
+    - #150 Should this be done elsewhere?
 
   ## platform_linux
     - #151 Not getting vsync on my arch laptop...
@@ -319,13 +320,13 @@
     - #110 Should we do something special when interacting with this thing instead of Ignored-ing it?
 
   ## parsing
-    - #192 This is a function call or macro .. make sure it's actually constant.
-    - #189 Parse out function names?
     - #194 Use bitflags
-    - #200 Floating-point values should be parsed out in TokenizeAnsiStream()!!
     - #213 There is a degenerate case here, what if the file ends without a newline?
     - #214 There is a degenerate case here, what if the file ends with a malformed comment?
+    - #192 This is a function call or macro .. make sure it's actually constant.
     - #221 This is a function constructor, let's be done.
+    - #200 Floating-point values should be parsed out in TokenizeAnsiStream()!!
+    - #189 Parse out function names?
     - #222 Re-add [[nodiscard]] here
 
   ## bug
@@ -335,12 +336,13 @@
     - #215 Check that error token is set!
 
   ## id_205
-    - #203 See #205
-    - #204 See #205
-    - #208 See #205
-    - #210 This is a function-macro call .. I think always..?
     - #218 See #205
     - #219 See #205
+    - #208 See #205
+    - #203 See #205
+    - #204 See #205
+    - #210 This is a function-macro call .. I think always..?
+    - #227 See #205
 
   ## needs_tests
     - #213 There is a degenerate case here, what if the file ends without a newline?
@@ -350,5 +352,11 @@
     - #221 This is a function constructor, let's be done.
 
   ## todos
+    - #225 Rewrite with string_from_parser
+
+  ## output
+    - #226 Should we handle this differently?
+
+  ## easy
     - #225 Rewrite with string_from_parser
 

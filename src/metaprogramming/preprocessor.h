@@ -367,6 +367,7 @@ struct variable
   b32 IsConstructor;
   b32 ThreadLocal;
   b32 IsFunction;
+  b32 IsExported;
 
   counted_string FnPointerDef;
   counted_string Namespace;

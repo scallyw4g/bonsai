@@ -2089,6 +2089,10 @@
           DebugPrint(S.IsFunction, Depth+1);
           DebugPrint("\n");
 
+          DebugPrint("IsExported = ", Depth);
+          DebugPrint(S.IsExported, Depth+1);
+          DebugPrint("\n");
+
           DebugPrint("FnPointerDef = ", Depth);
           DebugPrint(S.FnPointerDef, Depth+1);
           DebugPrint("\n");
@@ -2175,6 +2179,10 @@
 
             DebugPrint("IsFunction = ", Depth);
             DebugPrint(S->IsFunction, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("IsExported = ", Depth);
+            DebugPrint(S->IsExported, Depth+1);
             DebugPrint("\n");
 
             DebugPrint("FnPointerDef = ", Depth);
@@ -4120,6 +4128,18 @@
           DebugPrint(S.Type, Depth+1);
           DebugPrint("\n");
 
+          DebugPrint("ID = ", Depth);
+          DebugPrint(S.ID, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("Name = ", Depth);
+          DebugPrint(S.Name, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("Next = ", Depth);
+          DebugPrint(S.Next, Depth+1);
+          DebugPrint("\n");
+
     }
 
     function void DebugPrint(shader_uniform* S, u32 Depth)
@@ -4130,6 +4150,18 @@
         
             DebugPrint("Type = ", Depth);
             DebugPrint(S->Type, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("ID = ", Depth);
+            DebugPrint(S->ID, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Name = ", Depth);
+            DebugPrint(S->Name, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Next = ", Depth);
+            DebugPrint(S->Next, Depth+1);
             DebugPrint("\n");
 
       }

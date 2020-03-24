@@ -11,12 +11,16 @@
 #if DEBUG_PRINT
 #include <bonsai_stdlib/headers/debug_print.h>
 #else
+_Pragma("clang diagnostic push")
+_Pragma("clang diagnostic ignored \"-Wunused-macros\"")
 
 #define DebugPrint(...)                                   \
   _Pragma("clang diagnostic push")                        \
   _Pragma("clang diagnostic ignored \"-Wunused-value\"") \
   (__VA_ARGS__)                                           \
   _Pragma("clang diagnostic pop")
+
+_Pragma("clang diagnostic pop")
 #endif
 
 function void
@@ -1355,6 +1359,7 @@ ParseStructMember(c_parse_result* Parser, counted_string StructName, memory_aren
 
               Result.Type = type_struct_member_union;
               Result.struct_member_union.Body = ParseStructBody(Parser, CS("anonymous union"), Memory);
+              RequireToken(Parser, CTokenType_Semicolon);
               Done = True;
               Unnamed = True;
             }
@@ -1569,7 +1574,7 @@ TrimTrailingWhitespace(c_parse_result* Parser)
   }
 }
 
-// TODO(Jesse  id: 225,tags: todos): Rewrite with string_from_parser
+// TODO(Jesse  id: 225, tags: todos, easy): Rewrite with string_from_parser
 function counted_string
 ConcatTokensUntil(c_parse_result* Parser, c_token_type Close, memory_arena* Memory)
 {
@@ -1659,6 +1664,8 @@ ParseStructBody(c_parse_result* Parser, counted_string StructName, memory_arena*
 
     NextToken = PeekToken(Parser);
   }
+
+  RequireToken(Parser, CTokenType_CloseBrace);
 
   return Result;
 }
@@ -2050,6 +2057,13 @@ ParseVariable(c_parse_result* Parser)
           // TODO(Jesse id: 218,  tags: id_205): See #205
           RequireToken(Parser, CTokenType_Identifier);
         }
+        else if (StringsMatch(NextToken.Value, CSz("exported_function")) )
+        {
+          // TODO(Jesse id: 227, tags: id_205): See #205
+          Result.IsFunction = True;
+          Result.IsExported = True;
+          RequireToken(Parser, CTokenType_Identifier);
+        }
         else if (StringsMatch(NextToken.Value, CSz("function")) )
         {
           // TODO(Jesse id: 219,  tags: id_205): See #205
@@ -2262,107 +2276,175 @@ ParseFunction(c_parse_result* Parser, memory_arena* Memory = 0)
 }
 
 function void
+EatStructDef(c_parse_result* Parser)
+{
+  RequireToken(Parser, CTokenType_Identifier);
+  if ( !OptionalToken(Parser, CTokenType_Semicolon) )
+  {
+    EatNextScope(Parser);
+  }
+
+  RequireToken(Parser, CTokenType_Semicolon);
+}
+
+function void
+ParseDatatypeDef(c_parse_result* Parser, program_datatypes* Datatypes, memory_arena* Memory)
+{
+  counted_string DatatypeIdentifier = RequireToken(Parser, CTokenType_Identifier).Value;
+
+  if (StringsMatch(DatatypeIdentifier, CSz("enum")))
+  {
+    enum_def Enum = ParseEnum(Parser, Memory);
+    Push(&Datatypes->Enums, Enum, Memory);
+  }
+  else if (StringsMatch(DatatypeIdentifier, CSz("struct")))
+  {
+    counted_string StructName = RequireToken(Parser, CTokenType_Identifier).Value;
+    if ( PeekToken(Parser).Type == CTokenType_OpenBrace )
+    {
+      struct_def S = ParseStructBody(Parser, StructName, Memory);
+      Push(&Datatypes->Structs, S, Memory);
+    }
+  }
+  else if (StringsMatch(DatatypeIdentifier, CSz("union")))
+  {
+    counted_string UnionName = RequireToken(Parser, CTokenType_Identifier).Value;
+    Info("unions are unsupported at the moment: %.*s", (s32)UnionName.Count, UnionName.Start);
+    EatNextScope(Parser);
+  }
+  else
+  {
+    OutputParsingError(Parser, CSz("Tried parsing a datatypes that wasn't a struct, enum or union!"));
+  }
+
+  RequireToken(Parser, CTokenType_Semicolon);
+
+}
+
+function void
+ParseTypedef(c_parse_result* Parser, program_datatypes* Datatypes, memory_arena* Memory)
+{
+  RequireToken(Parser, CToken(CSz("typedef")));
+  if ( OptionalToken(Parser, CToken(CSz("struct"))) )
+  {
+    if (PeekToken(Parser).Type == CTokenType_OpenBrace)
+    {
+      struct_def S = ParseStructBody(Parser, CS(""), Memory);
+      S.Name = RequireToken(Parser, CTokenType_Identifier).Value;
+      RequireToken(Parser, CTokenType_Semicolon);
+      Push(&Datatypes->Structs, S, Memory);
+    }
+    else
+    {
+      EatUntil(Parser, CTokenType_Semicolon);
+    }
+  }
+  else
+  {
+    EatUntil(Parser, CTokenType_Semicolon);
+  }
+}
+
+function void
 ParseDatatypes(c_parse_result* Parser, program_datatypes* Datatypes, memory_arena* Memory)
 {
-  while (Parser->Valid && Remaining(&Parser->Tokens))
+  while (Remaining(&Parser->Tokens))
   {
-    c_token Token = PopToken(Parser);
-    if (Token.Type == CTokenType_Hash)
+    c_token T = PeekToken(Parser);
+
+    switch(T.Type)
     {
-      EatUntil(Parser, CTokenType_Newline);
-    }
-    else if (Token.Type == CTokenType_Identifier)
-    {
-      if (StringsMatch(Token.Value, CS("union")))
+      case CTokenType_Hash:
       {
-        c_token UnionName = RequireToken(Parser, CTokenType_Identifier);
-        Info("unions are unsupported at the moment: %.*s", (s32)UnionName.Value.Count, UnionName.Value.Start);
-        EatUnionDef(Parser);
-      }
-      else if ( StringsMatch(Token.Value, CSz("meta")) )
+        RequireToken(Parser, CTokenType_Hash);
+        EatUntil(Parser, CTokenType_Newline);
+      } break;
+
+      case CTokenType_Identifier:
       {
-        EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
-      }
-      else if (StringsMatch(Token.Value, CS("typedef")))
-      {
-        // typedef struct { .... } the_struct_name;
-        if (OptionalToken(Parser, CToken(CS("struct"))))
+        if ( StringsMatch(T.Value, CSz("struct")) )
         {
-          if (PeekToken(Parser) == CToken(CTokenType_OpenBrace))
+          ParseDatatypeDef(Parser, Datatypes, Memory);
+        }
+        else if ( StringsMatch(T.Value, CSz("typedef")) )
+        {
+          ParseTypedef(Parser, Datatypes, Memory);
+        }
+        else if ( StringsMatch(T.Value, CSz("union")) )
+        {
+          ParseDatatypeDef(Parser, Datatypes, Memory);
+        }
+        else if ( StringsMatch(T.Value, CSz("enum")) )
+        {
+          ParseDatatypeDef(Parser, Datatypes, Memory);
+        }
+        else if ( StringsMatch(T.Value, CSz("using")) )
+        {
+          EatUntil(Parser, CTokenType_Semicolon);
+        }
+        else if ( StringsMatch(T.Value, CSz("function")) ||
+                  StringsMatch(T.Value, CSz("exported_function")) )
+        {
+          function_def Func = ParseFunction(Parser, Memory);
+          if ( TotalSize(&Func.Body.Tokens) )
           {
-            struct_def S = ParseStructBody(Parser, CS(""), Memory);
-
-            RequireToken(Parser, CTokenType_CloseBrace);
-            S.Name = RequireToken(Parser, CTokenType_Identifier).Value;
-            RequireToken(Parser, CTokenType_Semicolon);
-
-            Push(&Datatypes->Structs, S, Memory);
+            Push(&Datatypes->Functions, Func, Memory);
+          }
+          OptionalToken(Parser, CTokenType_Semicolon); // TODO(Jesse id: 209): I feel like ParseFunction should take care of this 
+        }
+        else
+        {
+          // TODO(Jesse id: 205, tags: metaprogramming, completeness): To do this properly, we need to parse out and expand macro definitions here.
+          if (PeekToken(Parser, 1).Type == CTokenType_OpenParen)
+          {
+            // TODO(Jesse id: 210, tags: id_205, metaprogramming, completeness): This is a function-macro call .. I think always..?
+            RequireToken(Parser, CTokenType_Identifier);
+            EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
+            OptionalToken(Parser, CTokenType_Semicolon); // TODO(Jesse id: 223): Should we have a more systemic way of handling semicolons?  It's actually valid to have a bunch in a row here.
           }
           else
           {
-            // C-style typedef struct THING OTHERTHING;
-            EatUntil(Parser, CTokenType_Semicolon);
+            variable V = ParseVariable(Parser);
+
+            if ( StringsMatch(V.Name, CSz("operator")) )
+            {
+              // Note(Jesse): This is an operator function def
+              ParseOperator(Parser);
+              EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
+              EatNextScope(Parser);
+            } 
+            else if ( PeekToken(Parser).Type == CTokenType_Equals )
+            {
+              // TODO(Jesse id: 224): ????
+              EatUntil(Parser, CTokenType_Semicolon);
+            }
+            else if ( PeekToken(Parser).Type == CTokenType_OpenParen )
+            {
+              EatBetween(Parser,CTokenType_OpenParen, CTokenType_CloseParen);
+              if (!OptionalToken(Parser, CTokenType_Semicolon))
+              {
+                // TODO(Jesse id: 212): This is a function def without a 'function' keyword qualifier .. do we emit a warning?
+                EatNextScope(Parser);
+              }
+            }
+            else
+            {
+              RequireToken(Parser, CTokenType_Semicolon);
+            }
           }
         }
-      }
-      else if (StringsMatch(Token.Value, CS("enum")))
-      {
-        enum_def Enum = ParseEnum(Parser, Memory);
-        Push(&Datatypes->Enums, Enum, Memory);
-      }
-      else if (StringsMatch(Token.Value, CS("struct")))
-      {
-        c_token T = PopToken(Parser);
-        switch (T.Type)
-        {
-          case CTokenType_Identifier:
-          {
-            if ( PeekToken(Parser) == CToken(CTokenType_OpenBrace) )
-            {
-              struct_def S = ParseStructBody(Parser, T.Value, Memory);
-              Push(&Datatypes->Structs, S, Memory);
-            }
-          } break;
 
-          default: {} break;
-        }
-      }
-      else if (StringsMatch(Token.Value, CSz("function")) ||
-               StringsMatch(Token.Value, CSz("exported_function")) )
-      {
-        function_def Func = ParseFunction(Parser, Memory);
+      } break;
 
-        if ( TotalSize(&Func.Body.Tokens) )
-        {
-          Push(&Datatypes->Functions, Func, Memory);
-        }
-      }
-
+      InvalidDefaultWhileParsing(Parser, CSz("Invalid token encountered while parsing."));
     }
+
+    EatWhitespaceAndComments(Parser);
+    continue;
   }
 
+  Rewind(Parser);
   return;
-}
-
-function program_datatypes
-ParseAllDatatypeDefinitions(c_parse_result_cursor Files_in, memory_arena* Memory)
-{
-  TIMED_FUNCTION();
-  c_parse_result_cursor* Files = &Files_in;
-
-  program_datatypes Result = {};
-
-  for (u32 ParserIndex = 0;
-      ParserIndex < (u32)Count(Files);
-      ++ParserIndex)
-  {
-    c_parse_result* Parser = Files->Start+ParserIndex;
-    ParseDatatypes(Parser, &Result, Memory);
-
-    Rewind(Parser);
-  }
-
-  return Result;
 }
 
 function c_parse_result_cursor
@@ -2462,7 +2544,7 @@ function void
 DoMetaprogramming(c_parse_result* Parser, metaprogramming_info* MetaInfo, todo_list_info* TodoInfo, memory_arena* Memory);
 
 function void
-DoWorkToOutputThisStuff(c_parse_result* Parser, counted_string OutputForThisParser, counted_string NewFilename, metaprogramming_info* MetaInfo, todo_list_info* TodoInfo, memory_arena* Memory)
+DoWorkToOutputThisStuff(c_parse_result* Parser, counted_string OutputForThisParser, counted_string NewFilename, metaprogramming_info* MetaInfo, todo_list_info* TodoInfo, memory_arena* Memory, b32 IsInlineCode = False)
 {
   TIMED_FUNCTION();
 
@@ -2526,7 +2608,17 @@ DoWorkToOutputThisStuff(c_parse_result* Parser, counted_string OutputForThisPars
 
 
   c_parse_result OutputParse = TokenizeString(OutputForThisParser, OutputPath, Memory);
-  ParseDatatypes(&OutputParse, &MetaInfo->Datatypes, Memory);
+
+  if (!IsInlineCode)
+  {
+    ParseDatatypes(&OutputParse, &MetaInfo->Datatypes, Memory);
+  }
+  else
+  {
+    // TODO(Jesse, id: 226, tags: metaprogramming, output): Should we handle this differently?
+    Warn("Not parsing inlined code for %.*s", (u32)OutputPath.Count, OutputPath.Start);
+  }
+
   DoMetaprogramming(&OutputParse, MetaInfo, TodoInfo, Memory);
 
   return;
@@ -3388,7 +3480,7 @@ DoMetaprogramming(c_parse_result* Parser, metaprogramming_info* MetaInfo, todo_l
             case instanced_func:
             {
               function_def F = ParseFunction(Parser, Memory);
-              DebugPrint(F);
+              /* DebugPrint(F); */
             } break;
 
             case func:
@@ -3414,7 +3506,7 @@ DoMetaprogramming(c_parse_result* Parser, metaprogramming_info* MetaInfo, todo_l
                 if (Code.Count)
                 {
                   counted_string OutfileName = GenerateOutfileNameFor(Func.Name, ArgType, Memory, GetRandomString(8, Hash(&Code), Memory));
-                  DoWorkToOutputThisStuff(Parser, Code, OutfileName, MetaInfo, TodoInfo, Memory);
+                  DoWorkToOutputThisStuff(Parser, Code, OutfileName, MetaInfo, TodoInfo, Memory, True);
                 }
                 else
                 {
@@ -3660,54 +3752,7 @@ WriteTodosToFile(person_stream* People, memory_arena* Memory)
 #define FAILURE_EXIT_CODE 1
 
 function void
-EatStructDef(c_parse_result* Parser)
-{
-  RequireToken(Parser, CTokenType_Identifier);
-  if ( !OptionalToken(Parser, CTokenType_Semicolon) )
-  {
-    EatNextScope(Parser);
-  }
-
-  RequireToken(Parser, CTokenType_Semicolon);
-}
-
-function void
-EatEnumOrStructDef(c_parse_result* Parser)
-{
-  RequireToken(Parser, CTokenType_Identifier);
-  if ( PeekToken(Parser).Type == CTokenType_OpenBrace )
-  {
-    EatNextScope(Parser);
-  }
-
-  RequireToken(Parser, CTokenType_Semicolon);
-}
-
-function void
-EatTypedef(c_parse_result* Parser)
-{
-  RequireToken(Parser, CToken(CSz("typedef")));
-  if ( OptionalToken(Parser, CToken(CSz("struct"))) )
-  {
-    if (PeekToken(Parser).Type == CTokenType_OpenBrace)
-    {
-      EatNextScope(Parser);
-      RequireToken(Parser, CTokenType_Identifier);
-      RequireToken(Parser, CTokenType_Semicolon);
-    }
-    else
-    {
-      EatUntil(Parser, CTokenType_Semicolon);
-    }
-  }
-  else
-  {
-    EatUntil(Parser, CTokenType_Semicolon);
-  }
-}
-
-function void
-LookForMetaRuntimeFunctionCalls(c_parse_result_cursor Files_in)
+LookForMetaRuntimeFunctionCalls(c_parse_result_cursor Files_in, program_datatypes* Datatypes, memory_arena* Memory)
 {
   c_parse_result_cursor* Files = &Files_in;
 
@@ -3716,103 +3761,7 @@ LookForMetaRuntimeFunctionCalls(c_parse_result_cursor Files_in)
       ++ParserIndex)
   {
     c_parse_result* Parser = Files->Start+ParserIndex;
-
-    while (Remaining(&Parser->Tokens))
-    {
-      c_token T = PeekToken(Parser);
-
-      switch(T.Type)
-      {
-        case CTokenType_Hash:
-        {
-          RequireToken(Parser, CTokenType_Hash);
-          EatUntil(Parser, CTokenType_Newline);
-        } break;
-
-        case CTokenType_Identifier:
-        {
-          if ( StringsMatch(T.Value, CSz("struct")) )
-          {
-            RequireToken(Parser, CToken(CSz("struct")));
-            EatEnumOrStructDef(Parser);
-          }
-          else if ( StringsMatch(T.Value, CSz("typedef")) )
-          {
-            EatTypedef(Parser);
-          }
-          else if ( StringsMatch(T.Value, CSz("union")) )
-          {
-            RequireToken(Parser, CToken(CSz("union")));
-            EatEnumOrStructDef(Parser);
-          }
-          else if ( StringsMatch(T.Value, CSz("enum")) )
-          {
-            RequireToken(Parser, CToken(CSz("enum")));
-            EatEnumOrStructDef(Parser);
-          }
-          else if ( StringsMatch(T.Value, CSz("using")) )
-          {
-            EatUntil(Parser, CTokenType_Semicolon);
-          }
-          else if (StringsMatch(T.Value, CSz("function")) ||
-                   StringsMatch(T.Value, CSz("exported_function")) )
-          {
-            RequireToken(Parser, CTokenType_Identifier);
-            ParseFunction(Parser);
-            OptionalToken(Parser, CTokenType_Semicolon); // TODO(Jesse id: 209): I feel like ParseFunction should take care of this 
-          }
-          else
-          {
-            // TODO(Jesse id: 205, tags: metaprogramming, completeness): To do this properly, we need to parse out and expand macro definitions here.
-            if (PeekToken(Parser, 1).Type == CTokenType_OpenParen)
-            {
-              // TODO(Jesse id: 210, tags: id_205, metaprogramming, completeness): This is a function-macro call .. I think always..?
-              RequireToken(Parser, CTokenType_Identifier);
-              EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
-              OptionalToken(Parser, CTokenType_Semicolon); // TODO(Jesse id: 223): Should we have a more systemic way of handling semicolons?  It's actually valid to have a bunch in a row here.
-            }
-            else
-            {
-              variable V = ParseVariable(Parser);
-
-              if ( StringsMatch(V.Name, CSz("operator")) )
-              {
-                // Note(Jesse): This is an operator function def
-                ParseOperator(Parser);
-                EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
-                EatNextScope(Parser);
-              } 
-              else if ( PeekToken(Parser).Type == CTokenType_Equals )
-              {
-                // TODO(Jesse id: 224): ????
-                EatUntil(Parser, CTokenType_Semicolon);
-              }
-              else if ( PeekToken(Parser).Type == CTokenType_OpenParen )
-              {
-                EatBetween(Parser,CTokenType_OpenParen, CTokenType_CloseParen);
-                if (!OptionalToken(Parser, CTokenType_Semicolon))
-                {
-                  // TODO(Jesse id: 212): This is a function def without a 'function' keyword qualifier .. do we emit a warning?
-                  EatNextScope(Parser);
-                }
-              }
-              else
-              {
-                RequireToken(Parser, CTokenType_Semicolon);
-              }
-            }
-          }
-
-        } break;
-
-        InvalidDefaultWhileParsing(Parser, CSz("Invalid token encountered while parsing."));
-      }
-
-      EatWhitespaceAndComments(Parser);
-      continue;
-    }
-
-    Rewind(Parser);
+    ParseDatatypes(Parser, Datatypes, Memory);
   }
 
   return;
@@ -3846,9 +3795,7 @@ main(s32 ArgCount, const char** ArgStrings)
 
     c_parse_result_cursor ParsedFiles = TokenizeAllFiles(&Args.Files, Memory);
 
-    metaprogramming_info MetaInfo = {
-      .Datatypes = ParseAllDatatypeDefinitions(ParsedFiles, Memory),
-    };
+    metaprogramming_info MetaInfo = {};
 
     todo_list_info TodoInfo = {
       .People = ParseAllTodosFromFile(CSz("todos.md"), Memory),
@@ -3856,7 +3803,7 @@ main(s32 ArgCount, const char** ArgStrings)
 
     RemoveAllMetaprogrammingOutput(&ParsedFiles, &Args);
 
-    LookForMetaRuntimeFunctionCalls(ParsedFiles);
+    LookForMetaRuntimeFunctionCalls(ParsedFiles, &MetaInfo.Datatypes, Memory);
 
     for (u32 ParserIndex = 0;
         ParserIndex < Count(&ParsedFiles);

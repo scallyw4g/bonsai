@@ -299,7 +299,7 @@ function RunEntireBuild {
 
   if [ $DumpSourceFilesAndQuit == 1 ]; then
     SetSourceFiles
-    echo "$SOURCE_FILES"
+    echo $SOURCE_FILES
     exit 1
   fi
 
@@ -338,8 +338,9 @@ function RunEntireBuild {
 
 }
 
-CheckoutMetaOutput=1
 DumpSourceFilesAndQuit=0
+
+CheckoutMetaOutput=1
 
 FirstPreprocessor=0
 BuildPreprocessor=1
