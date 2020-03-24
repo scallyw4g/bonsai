@@ -1,7 +1,7 @@
 union Quaternion
 {
-  struct { float x, y, z, w; };
-  struct { v3 xyz, _ignored; };
+  struct { r32 x; r32 y; r32 z; r32 w; };
+  struct { v3 xyz; r32 _ignored; };
 
   float E[4];
 

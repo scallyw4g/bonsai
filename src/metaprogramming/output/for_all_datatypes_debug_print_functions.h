@@ -1979,6 +1979,10 @@
           DebugPrint(S.Fields, Depth+1);
           DebugPrint("\n");
 
+          DebugPrint("IsUnion = ", Depth);
+          DebugPrint(S.IsUnion, Depth+1);
+          DebugPrint("\n");
+
     }
 
     function void DebugPrint(struct_def* S, u32 Depth)
@@ -1999,12 +2003,16 @@
             DebugPrint(S->Fields, Depth+1);
             DebugPrint("\n");
 
+            DebugPrint("IsUnion = ", Depth);
+            DebugPrint(S->IsUnion, Depth+1);
+            DebugPrint("\n");
+
       }
     }
 
-    function void DebugPrint( struct_member_union S, u32 Depth)
+    function void DebugPrint( struct_member_anonymous S, u32 Depth)
     {
-      DebugPrint("struct_member_union\n", Depth);
+      DebugPrint("struct_member_anonymous\n", Depth);
       
           DebugPrint("Body = ", Depth);
           DebugPrint(S.Body, Depth+1);
@@ -2012,11 +2020,11 @@
 
     }
 
-    function void DebugPrint(struct_member_union* S, u32 Depth)
+    function void DebugPrint(struct_member_anonymous* S, u32 Depth)
     {
       if (S)
       {
-        DebugPrint("struct_member_union\n", Depth);
+        DebugPrint("struct_member_anonymous\n", Depth);
         
             DebugPrint("Body = ", Depth);
             DebugPrint(S->Body, Depth+1);
@@ -7198,6 +7206,129 @@
       }
     }
 
+    function void DebugPrint( v3i S, u32 Depth)
+    {
+      DebugPrint("v3i\n", Depth);
+      
+          DebugPrint("E = ", Depth);
+          DebugPrint(S.E, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(v3i* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("v3i\n", Depth);
+        
+            DebugPrint("E = ", Depth);
+            DebugPrint(S->E, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
+    function void DebugPrint( v3 S, u32 Depth)
+    {
+      DebugPrint("v3\n", Depth);
+      
+          DebugPrint("E = ", Depth);
+          DebugPrint(S.E, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(v3* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("v3\n", Depth);
+        
+            DebugPrint("E = ", Depth);
+            DebugPrint(S->E, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
+    function void DebugPrint( v4 S, u32 Depth)
+    {
+      DebugPrint("v4\n", Depth);
+      
+          DebugPrint("E = ", Depth);
+          DebugPrint(S.E, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(v4* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("v4\n", Depth);
+        
+            DebugPrint("E = ", Depth);
+            DebugPrint(S->E, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
+    function void DebugPrint( voxel_position S, u32 Depth)
+    {
+      DebugPrint("voxel_position\n", Depth);
+      
+          DebugPrint("E = ", Depth);
+          DebugPrint(S.E, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(voxel_position* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("voxel_position\n", Depth);
+        
+            DebugPrint("E = ", Depth);
+            DebugPrint(S->E, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
+    function void DebugPrint( f32_reg S, u32 Depth)
+    {
+      DebugPrint("f32_reg\n", Depth);
+      
+          DebugPrint("F = ", Depth);
+          DebugPrint(S.F, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("Sse = ", Depth);
+          DebugPrint(S.Sse, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(f32_reg* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("f32_reg\n", Depth);
+        
+            DebugPrint("F = ", Depth);
+            DebugPrint(S->F, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Sse = ", Depth);
+            DebugPrint(S->Sse, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
     function void DebugPrint( heap_allocation_block S, u32 Depth)
     {
       DebugPrint("heap_allocation_block\n", Depth);
@@ -7263,6 +7394,29 @@
 
             DebugPrint("Size = ", Depth);
             DebugPrint(S->Size, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
+    function void DebugPrint( Quaternion S, u32 Depth)
+    {
+      DebugPrint("Quaternion\n", Depth);
+      
+          DebugPrint("E = ", Depth);
+          DebugPrint(S.E, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(Quaternion* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("Quaternion\n", Depth);
+        
+            DebugPrint("E = ", Depth);
+            DebugPrint(S->E, Depth+1);
             DebugPrint("\n");
 
       }
@@ -11124,9 +11278,9 @@
               DebugPrint("");
             } break;
 
-            case type_struct_member_union:
+            case type_struct_member_anonymous:
             {
-              DebugPrint("type_struct_member_union");
+              DebugPrint("type_struct_member_anonymous");
               DebugPrint("");
             } break;
 

@@ -33,6 +33,7 @@ struct min_max_avg_dt
   r64 Avg;
 };
 
+struct input;
 struct debug_ui_render_group
 {
   gpu_mapped_element_buffer*  GameGeo;
@@ -44,7 +45,7 @@ struct debug_ui_render_group
   v2 *MouseP;
   v2 *MouseDP;
   v2 ScreenDim;
-  struct input *Input;
+  input *Input;
 
   window_layout *HighestWindow; // NOTE(Jesse): Highest in terms of InteractionStackIndex
 

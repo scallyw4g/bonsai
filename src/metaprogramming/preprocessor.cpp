@@ -1357,8 +1357,18 @@ ParseStructMember(c_parse_result* Parser, counted_string StructName, memory_aren
             {
               RequireToken(Parser, CToken(CS("union")));
 
-              Result.Type = type_struct_member_union;
-              Result.struct_member_union.Body = ParseStructBody(Parser, CS("anonymous union"), Memory);
+              Result.Type = type_struct_member_anonymous;
+              Result.struct_member_anonymous.Body = ParseStructBody(Parser, CS("anonymous union"), Memory);
+              RequireToken(Parser, CTokenType_Semicolon);
+              Done = True;
+              Unnamed = True;
+            }
+            else if (StringsMatch(NextToken.Value, CS("struct")))
+            {
+              RequireToken(Parser, CToken(CS("struct")));
+
+              Result.Type = type_struct_member_anonymous;
+              Result.struct_member_anonymous.Body = ParseStructBody(Parser, CS("anonymous struct"), Memory);
               RequireToken(Parser, CTokenType_Semicolon);
               Done = True;
               Unnamed = True;
@@ -1494,7 +1504,7 @@ PrintCDecl(struct_member* Decl, struct_def_stream* ProgramStructs)
 
     case type_struct_member_union:
     {
-      for (struct_member_iterator Iter = Iterator(&Decl->struct_member_union.Body.Fields);
+      for (struct_member_iterator Iter = Iterator(&Decl->struct_member_anonymous.Body.Fields);
           IsValid(&Iter);
           Advance(&Iter))
       {
@@ -2314,8 +2324,9 @@ ParseDatatypeDef(c_parse_result* Parser, program_datatypes* Datatypes, memory_ar
   else if (StringsMatch(DatatypeIdentifier, CSz("union")))
   {
     counted_string UnionName = RequireToken(Parser, CTokenType_Identifier).Value;
-    Info("unions are unsupported at the moment: %.*s", (s32)UnionName.Count, UnionName.Start);
-    EatNextScope(Parser);
+    struct_def S = ParseStructBody(Parser, UnionName, Memory);
+    S.IsUnion = True;
+    Push(&Datatypes->Structs, S, Memory);
   }
   else
   {
@@ -2909,9 +2920,9 @@ GetNameForStructMember(struct_member* Decl)
       Result = Decl->variable.Name;
     } break;
 
-    case type_struct_member_union:
+    case type_struct_member_anonymous:
     {
-      Result = CSz("(unnamed union)");
+      Result = CSz("(anonymous struct or union)");
     } break;
 
     InvalidDefaultCase;
@@ -3172,9 +3183,9 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgMatchPa
 
                   } break;
 
-                  case type_struct_member_union:
+                  case type_struct_member_anonymous:
                   {
-                    for (struct_member_iterator UnionMemberIter = Iterator(&Member->struct_member_union.Body.Fields);
+                    for (struct_member_iterator UnionMemberIter = Iterator(&Member->struct_member_anonymous.Body.Fields);
                         IsValid(&UnionMemberIter);
                         Advance(&UnionMemberIter))
                     {

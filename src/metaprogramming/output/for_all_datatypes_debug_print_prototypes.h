@@ -134,8 +134,8 @@
       function void DebugPrint( struct_def* S, u32 Depth = 0);
       function void DebugPrint( struct_def  S, u32 Depth = 0);
 
-      function void DebugPrint( struct_member_union* S, u32 Depth = 0);
-      function void DebugPrint( struct_member_union  S, u32 Depth = 0);
+      function void DebugPrint( struct_member_anonymous* S, u32 Depth = 0);
+      function void DebugPrint( struct_member_anonymous  S, u32 Depth = 0);
 
       function void DebugPrint( variable* S, u32 Depth = 0);
       function void DebugPrint( variable  S, u32 Depth = 0);
@@ -458,11 +458,29 @@
       function void DebugPrint( v2* S, u32 Depth = 0);
       function void DebugPrint( v2  S, u32 Depth = 0);
 
+      function void DebugPrint( v3i* S, u32 Depth = 0);
+      function void DebugPrint( v3i  S, u32 Depth = 0);
+
+      function void DebugPrint( v3* S, u32 Depth = 0);
+      function void DebugPrint( v3  S, u32 Depth = 0);
+
+      function void DebugPrint( v4* S, u32 Depth = 0);
+      function void DebugPrint( v4  S, u32 Depth = 0);
+
+      function void DebugPrint( voxel_position* S, u32 Depth = 0);
+      function void DebugPrint( voxel_position  S, u32 Depth = 0);
+
+      function void DebugPrint( f32_reg* S, u32 Depth = 0);
+      function void DebugPrint( f32_reg  S, u32 Depth = 0);
+
       function void DebugPrint( heap_allocation_block* S, u32 Depth = 0);
       function void DebugPrint( heap_allocation_block  S, u32 Depth = 0);
 
       function void DebugPrint( heap_allocator* S, u32 Depth = 0);
       function void DebugPrint( heap_allocator  S, u32 Depth = 0);
+
+      function void DebugPrint( Quaternion* S, u32 Depth = 0);
+      function void DebugPrint( Quaternion  S, u32 Depth = 0);
 
       function void DebugPrint( mutex* S, u32 Depth = 0);
       function void DebugPrint( mutex  S, u32 Depth = 0);

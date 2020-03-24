@@ -17,8 +17,8 @@ struct v2
 #pragma GCC diagnostic ignored "-Wpedantic"
 union v3i
 {
-  struct { s32 x, y, z; };
-  struct { s32 r, g, b; };
+  struct { s32 x; s32 y; s32 z; };
+  struct { s32 r; s32 g; s32 b; };
 
   struct {
     v2i xy;
@@ -35,8 +35,8 @@ union v3i
 
 union v3
 {
-  struct { r32 x, y, z; };
-  struct { r32 r, g, b; };
+  struct { r32 x; r32 y; r32 z; };
+  struct { r32 r; r32 g; r32 b; };
 
   struct {
     v2 xy;
@@ -55,9 +55,9 @@ union v3
 // Note: OpenGL matrices have x first
 union v4
 {
-  struct { r32 x, y, z, w; };
-  struct { r32 r, g, b, a; };
-  struct { r32 Left, Top, Right, Bottom; };
+  struct { r32 x; r32 y; r32 z; r32 w; };
+  struct { r32 r; r32 g; r32 b; r32 a; };
+  struct { r32 Left; r32 Top; r32 Right; r32 Bottom; };
 
   struct {
     v2 xy;

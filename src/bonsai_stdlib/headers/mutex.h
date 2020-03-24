@@ -7,12 +7,13 @@ enum mutex_op
   MutexOp_Released
 };
 
+struct mutex_op_record;
 struct mutex
 {
   native_mutex M;
 
 #if BONSAI_INTERNAL
-  struct mutex_op_record *DebugRecord;
+  mutex_op_record *DebugRecord;
 #endif
 };
 

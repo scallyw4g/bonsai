@@ -338,11 +338,13 @@ struct struct_def
   counted_string Name; // TODO(Jesse, id: 190, tags: immediate): Does this make more sense named 'Type'
   counted_string DefinedInFile;
   struct_member_stream Fields; // TODO(Jesse id: 159, tags: immediate, cleanup) Rename to Members
+
+  b32 IsUnion;
 };
 meta(stream_and_cursor(struct_def))
 #include <metaprogramming/output/stream_and_cursor_struct_def.h>
 
-struct struct_member_union
+struct struct_member_anonymous
 {
   struct_def Body;
 };
@@ -384,7 +386,7 @@ meta(
   {
     variable
     struct_member_function
-    struct_member_union
+    struct_member_anonymous
   }
 )
 #include <metaprogramming/output/d_union_c_decl.h>

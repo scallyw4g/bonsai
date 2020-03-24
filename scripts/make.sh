@@ -342,7 +342,7 @@ DumpSourceFilesAndQuit=0
 
 CheckoutMetaOutput=0
 
-FirstPreprocessor=0
+FirstPreprocessor=1
 BuildPreprocessor=1
 SecondPreprocessor=1
 
