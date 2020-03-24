@@ -19,6 +19,14 @@
   _Pragma("clang diagnostic pop")
 #endif
 
+function void
+Rewind(c_parse_result* Parser)
+{
+  Rewind(&Parser->OutputTokens);
+  Rewind(&Parser->Tokens);
+  Parser->LineNumber = 1;
+}
+
 function b32
 IsWhitespace(c_token_type Type)
 {
@@ -151,7 +159,6 @@ PeekTokenPointer(c_parse_result* Parser, u32 Lookahead = 0)
   u32 TokenHits = 0;
   u32 LocalLookahead = 0;
 
-  c_token* FirstNonWhitespaceToken = 0;
   c_token* Result = PeekTokenRawPointer(Parser, LocalLookahead);
   while (Result && Remaining(&Parser->Tokens, LocalLookahead))
   {
@@ -173,7 +180,6 @@ PeekTokenPointer(c_parse_result* Parser, u32 Lookahead = 0)
     }
     else
     {
-      if (!FirstNonWhitespaceToken) FirstNonWhitespaceToken = Result;
       if (TokenHits++ == Lookahead)
       {
         break;
@@ -186,15 +192,6 @@ PeekTokenPointer(c_parse_result* Parser, u32 Lookahead = 0)
   if (Result && (IsWhitespace(*Result) || IsComment(*Result)))
   {
     Result = 0;
-  }
-
-  if (FirstNonWhitespaceToken)
-  {
-    AdvanceTo(Parser, FirstNonWhitespaceToken);
-  }
-  else
-  {
-    AdvanceTo(Parser, Parser->Tokens.End);
   }
 
   return Result;
@@ -256,7 +253,9 @@ EatComment(c_parse_result* Parser)
 function void
 EatWhitespaceAndComments(c_parse_result* Parser)
 {
-  PeekTokenPointer(Parser);
+  c_token* T = PeekTokenPointer(Parser);
+  if (!T) T = Parser->Tokens.End;
+  AdvanceTo(Parser, T);
 }
 
 function void
@@ -274,10 +273,22 @@ EatWhitespace(c_parse_result* Parser)
 function c_token
 PopToken(c_parse_result* Parser)
 {
-  c_token Result = PeekToken(Parser);
-  if (Remaining(&Parser->Tokens))
+  c_token Result = {};
+
+  c_token* Peek = PeekTokenPointer(Parser);
+  if (Peek)
   {
-    AdvanceParser(Parser);
+    if (Remaining(&Parser->Tokens))
+    {
+      AdvanceTo(Parser, Peek);
+      AdvanceParser(Parser);
+    }
+
+    Result = *Peek;
+  }
+  else
+  {
+    AdvanceTo(Parser, Parser->Tokens.End);
   }
 
   return Result;
@@ -479,7 +490,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes = Fa
 
 
   TruncateToCurrentSize(&Result.Tokens);
-  Rewind(&Result.Tokens);
+  Rewind(&Result);
   Result.Valid = True;
 
 #if 0
@@ -1558,34 +1569,7 @@ TrimTrailingWhitespace(c_parse_result* Parser)
   }
 }
 
-function counted_string
-ConcatTokensBetween(c_parse_result* Parser, c_token_type Open, c_token_type Close, memory_arena* Memory)
-{
-  u32 Depth = 0;
-  string_builder Builder = {};
-  RequireToken(Parser, Open);
-
-  while (Parser->Valid && Remaining(&Parser->Tokens))
-  {
-    c_token T = PopTokenRaw(Parser);
-    Append(&Builder, T.Value);
-
-    if (T.Type == Open)
-    {
-      ++Depth;
-    }
-
-    if (T.Type == Close)
-    {
-      if (Depth == 0) break;
-      --Depth;
-    }
-  }
-
-  counted_string Result = Finalize(&Builder, Memory);
-  return Result;
-}
-
+// TODO(Jesse  id: 225,tags: todos): Rewrite with string_from_parser
 function counted_string
 ConcatTokensUntil(c_parse_result* Parser, c_token_type Close, memory_arena* Memory)
 {
@@ -2375,7 +2359,7 @@ ParseAllDatatypeDefinitions(c_parse_result_cursor Files_in, memory_arena* Memory
     c_parse_result* Parser = Files->Start+ParserIndex;
     ParseDatatypes(Parser, &Result, Memory);
 
-    Rewind(&Parser->Tokens);
+    Rewind(Parser);
   }
 
   return Result;
@@ -2408,7 +2392,7 @@ TokenizeAllFiles(counted_string_cursor* Filenames, memory_arena* Memory)
     c_parse_result Parser = TokenizeFile(CurrentFile, Memory);
     if (Parser.Valid)
     {
-      Rewind(&Parser.Tokens);
+      Rewind(&Parser);
       Push(Parser, &Result);
     }
     else
@@ -3299,10 +3283,7 @@ DoMetaprogramming(c_parse_result* Parser, metaprogramming_info* MetaInfo, todo_l
   person_stream* People = &TodoInfo->People;
   tagged_counted_string_stream_stream* NameLists = &TodoInfo->NameLists;
 
-  Rewind(&Parser->OutputTokens);
-  Rewind(&Parser->Tokens);
-  Parser->LineNumber = 1;
-
+  Rewind(Parser);
   while (Parser->Valid && Remaining(&Parser->Tokens))
   {
     c_token NextToken = PeekTokenRaw(Parser);
@@ -3744,6 +3725,7 @@ LookForMetaRuntimeFunctionCalls(c_parse_result_cursor Files_in)
       {
         case CTokenType_Hash:
         {
+          RequireToken(Parser, CTokenType_Hash);
           EatUntil(Parser, CTokenType_Newline);
         } break;
 
@@ -3830,7 +3812,7 @@ LookForMetaRuntimeFunctionCalls(c_parse_result_cursor Files_in)
       continue;
     }
 
-    Rewind(&Parser->Tokens);
+    Rewind(Parser);
   }
 
   return;

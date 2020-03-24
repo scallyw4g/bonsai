@@ -521,7 +521,11 @@ TestCommentSituation(memory_arena* Memory)
     TestThat(T == CToken(CSz("function")));
   }
 
-  EatUntil(Parser, CTokenType_Newline);
+  {
+    c_token T = PopToken(Parser);
+    TestThat(T == CToken(CSz("function")));
+  }
+
 
   {
     c_token T = PeekToken(Parser);

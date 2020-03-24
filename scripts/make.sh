@@ -343,7 +343,7 @@ DumpSourceFilesAndQuit=0
 
 FirstPreprocessor=0
 BuildPreprocessor=1
-SecondPreprocessor=0
+SecondPreprocessor=1
 
 BuildAllProjects=0
 RunTests=0

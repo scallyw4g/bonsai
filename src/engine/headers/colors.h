@@ -1,8 +1,7 @@
-// // TODO(Jesse tags: immediate): This should be able to be a multi-line commment
-// Note that the default MagicaVoxel format is AA GG BB RR, so something will
-// have to be done if we continue to load this format.  I manually rearranged
-// the columns in this lookup table to match what OpenGL expects: RR GG BB AA
-// 
+/* Note that the default MagicaVoxel format is AA GG BB RR, so something will
+ * have to be done if we continue to load this format.  I manually rearranged
+ * the columns in this lookup table to match what OpenGL expects: RR GG BB AA
+ */
 
 #define BLACK    0
 #define WHITE    1

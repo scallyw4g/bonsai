@@ -150,8 +150,8 @@
     - #117 Transient arena for this instead of stack allocation ?
 
   ## string_hash
-    - #81 Theres' a null terminated string-hash
     - #101 Profile and check collision rate of this!
+    - #81 Theres' a null terminated string-hash
 
   ## hashing
     - #82 257 seemed to produce slightly
@@ -192,9 +192,9 @@
     - #100 Do we actually want this in here?
     - #125 Are we really done?
     - #137 This _should_ be able to be glTexImage3D, but the driver is
-    - #142 Is there a better way of making that adjustment?
     - #143 This could probably be made better by writing to a statically allocated buffer ..?
     - #151 Not getting vsync on my arch laptop...
+    - #142 Is there a better way of making that adjustment?
 
   ## improvement
     - #95 This is LCG RNG - do we want a better one?
@@ -291,8 +291,8 @@
 
   ## platform
     - #144 This actually has nothing to do with the platform
-    - #145 Make this use platform agnostic functions!
     - #150 Should this be done elsewhere?
+    - #145 Make this use platform agnostic functions!
 
   ## platform_linux
     - #151 Not getting vsync on my arch laptop...
@@ -348,4 +348,7 @@
 
   ## hack
     - #221 This is a function constructor, let's be done.
+
+  ## todos
+    - #225 Rewrite with string_from_parser
 
