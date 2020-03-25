@@ -1584,10 +1584,10 @@ TrimTrailingWhitespace(c_parse_result* Parser)
   }
 }
 
-// TODO(Jesse  id: 225, tags: todos, easy): Rewrite with string_from_parser
 function counted_string
 ConcatTokensUntil(c_parse_result* Parser, c_token_type Close, memory_arena* Memory)
 {
+  // TODO(Jesse  id: 225, tags: todos, easy): Rewrite with string_from_parser
   string_builder Builder = {};
   while (Remaining(&Parser->Tokens) && PeekTokenRaw(Parser).Type != Close)
   {
@@ -1739,6 +1739,7 @@ NextTokenIsPostfixOperator(c_parse_result* Parser)
 
   return Result;
 }
+
 function b32
 NextTokenIsPrefixOperator(c_parse_result* Parser)
 {
@@ -1761,6 +1762,7 @@ NextTokenIsPrefixOperator(c_parse_result* Parser)
 
   return Result;
 }
+
 function b32
 NextTokenIsOperator(c_parse_result* Parser)
 {
@@ -2509,55 +2511,6 @@ TokenizeAllFiles(counted_string_cursor* Filenames, memory_arena* Memory)
   TruncateToCurrentSize(&Result);
   Rewind(&Result);
 
-  return Result;
-}
-
-function counted_string
-GenerateCursorFor_DEPRECATED(counted_string DatatypeName, memory_arena* Memory)
-{
-  TIMED_FUNCTION();
-
-  counted_string DatatypeDef = FormatCountedString(Memory,
-CSz(R"INLINE_CODE(
-struct %.*s_cursor
-{
-  %.*s* Start;
-  %.*s* End;
-  %.*s* At;
-};
-)INLINE_CODE"),
-    DatatypeName.Count, DatatypeName.Start,
-    DatatypeName.Count, DatatypeName.Start,
-    DatatypeName.Count, DatatypeName.Start,
-    DatatypeName.Count, DatatypeName.Start
-    );
-
-  counted_string ConstructorName = ToCapitalCase(DatatypeName, Memory);
-  counted_string ConstructorDef = FormatCountedString(Memory,
-  // TODO(Jesse, id: 180, tags: metaprogramming): Can we use Allocate() here instead?
-CSz(R"INLINE_CODE(
-function %.*s_cursor
-%.*sCursor(umm ElementCount, memory_arena* Memory)
-{
-  %.*s* Start = (%.*s*)PushStruct(Memory, sizeof(%.*s), 1, 1);
-  %.*s_cursor Result = {
-    .Start = Start,
-    .End = Start+ElementCount,
-    .At = Start,
-  };
-  return Result;
-}
-)INLINE_CODE"),
-    DatatypeName.Count, DatatypeName.Start,
-    ConstructorName.Count, ConstructorName.Start,
-    DatatypeName.Count, DatatypeName.Start,
-    DatatypeName.Count, DatatypeName.Start,
-    DatatypeName.Count, DatatypeName.Start,
-    DatatypeName.Count, DatatypeName.Start
-    );
-
-
-  counted_string Result = Concat(DatatypeDef, ConstructorDef, Memory);
   return Result;
 }
 
@@ -3565,18 +3518,6 @@ DoMetaprogramming(c_parse_result* Parser, metaprogramming_info* MetaInfo, todo_l
 
               Push(&TodoInfo->NameLists, NameList, Memory);
 
-            } break;
-
-            case generate_cursor_deprecated:
-            {
-              RequireToken(Parser, CTokenType_OpenParen);
-
-              counted_string DatatypeName = RequireToken(Parser, CTokenType_Identifier).Value;
-              counted_string Code = GenerateCursorFor_DEPRECATED(DatatypeName, Memory);
-              counted_string OutfileName = GenerateOutfileNameFor(ToString(Directive), DatatypeName, Memory);
-              RequireToken(Parser, CTokenType_CloseParen);
-              RequireToken(Parser, CTokenType_CloseParen);
-              DoWorkToOutputThisStuff(Parser, Code, OutfileName, MetaInfo, TodoInfo, Memory);
             } break;
 
             case for_datatypes:

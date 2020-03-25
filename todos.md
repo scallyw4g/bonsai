@@ -95,7 +95,6 @@
     - #192 This is a function call or macro .. make sure it's actually constant.
     - #221 This is a function constructor, let's be done.
     - #200 Floating-point values should be parsed out in TokenizeAnsiStream()!!
-    - #180 Can we use Allocate() here instead?
     - #189 Parse out function names?
     - #222 Re-add [[nodiscard]] here
     - #205 To do this properly, we need to parse out and expand macro definitions here.

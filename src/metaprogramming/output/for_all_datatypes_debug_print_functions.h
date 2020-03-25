@@ -9922,12 +9922,6 @@
               DebugPrint("");
             } break;
 
-            case generate_cursor_deprecated:
-            {
-              DebugPrint("generate_cursor_deprecated");
-              DebugPrint("");
-            } break;
-
             case enum_only:
             {
               DebugPrint("enum_only");

@@ -28,7 +28,7 @@ struct r32_stream
   r32* End;
 };
 
-meta(generate_cursor_deprecated(v3))
+meta(generate_cursor(v3))
 #include <metaprogramming/output/generate_cursor_v3.h>
 
 template <typename element_t, typename stream_t>inline void
