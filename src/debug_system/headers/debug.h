@@ -66,9 +66,9 @@ struct debug_profile_scope
 
   b32 Expanded;
 
-  debug_profile_scope *Sibling;
-  debug_profile_scope *Child;
-  debug_profile_scope *Parent;
+  debug_profile_scope* Sibling;
+  debug_profile_scope* Child;
+  debug_profile_scope* Parent;
 };
 
 struct unique_debug_profile_scope

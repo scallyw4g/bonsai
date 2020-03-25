@@ -1278,6 +1278,74 @@ EatFunctionDecl(c_parse_result* Parser)
   return;
 }
 
+function void
+TrimFirstToken(c_parse_result* Parser, c_token_type TokenType)
+{
+  Assert(Parser->Tokens.At == Parser->Tokens.Start);
+  RequireToken(Parser, TokenType);
+  Parser->Tokens.Start = Parser->Tokens.At;
+}
+
+function void
+TrimLastToken(c_parse_result* Parser, c_token_type TokenType)
+{
+  c_token* CurrentToken = Parser->Tokens.End-1;
+
+  while (CurrentToken > Parser->Tokens.Start)
+  {
+    if (CurrentToken->Type == TokenType)
+    {
+      Parser->Tokens.End = CurrentToken-1;
+      Parser->Tokens.At = Parser->Tokens.End;
+      break;
+    }
+
+    --CurrentToken;
+  }
+}
+
+function void
+TrimTrailingWhitespace(c_parse_result* Parser)
+{
+  c_token* CurrentToken = Parser->Tokens.End-1;
+
+  while (CurrentToken > Parser->Tokens.Start)
+  {
+    if (CurrentToken->Type == CTokenType_Space)
+    {
+      Parser->Tokens.End = CurrentToken;
+      if (Parser->Tokens.At > CurrentToken)
+      {
+        Parser->Tokens.At = CurrentToken;
+      }
+    }
+    else
+    {
+      break;
+    }
+
+    --CurrentToken;
+  }
+}
+
+function c_parse_result
+GetBodyTextForNextScope(c_parse_result* Parser)
+{
+  c_parse_result BodyText = *Parser;
+  BodyText.OutputTokens = {};
+
+  BodyText.Tokens.Start = BodyText.Tokens.At;
+  EatNextScope(Parser);
+  BodyText.Tokens.End = Parser->Tokens.At;
+
+  TrimFirstToken(&BodyText, CTokenType_OpenBrace);
+  TrimLastToken(&BodyText, CTokenType_CloseBrace);
+  TrimTrailingWhitespace(&BodyText);
+  Rewind(&BodyText.Tokens);
+
+  return BodyText;
+}
+
 function b32
 IsCxxDefinitionKeyword(counted_string Value)
 {
@@ -1290,13 +1358,20 @@ IsCxxDefinitionKeyword(counted_string Value)
 function struct_def
 ParseStructBody(c_parse_result* Parser, counted_string StructName, memory_arena* Memory);
 
+function variable
+ParseVariable(c_parse_result* Parser);
+
+function counted_string
+ParseVariableAssignment(c_parse_result* Parser);
+
+function void
+ParseFunctionArgs(c_parse_result* Parser, memory_arena* Memory, function_def* Result);
+
 function struct_member
 ParseStructMember(c_parse_result* Parser, counted_string StructName, memory_arena* Memory)
 {
   TIMED_FUNCTION();
-  struct_member Result = {
-    .Type = type_variable
-  };
+  struct_member Result = {};
 
   c_token FirstToken = PeekToken(Parser);
   b32 Unnamed = False;
@@ -1316,126 +1391,90 @@ ParseStructMember(c_parse_result* Parser, counted_string StructName, memory_aren
     {
       b32 Done = False;
       u32 DefKeywordsEncountered = 0;
-      while (!Done)
+      c_token NextToken = PeekToken(Parser);
+      if (StringsMatch(NextToken.Value, CS("union")))
       {
-        c_token NextToken = PeekToken(Parser);
-        switch (NextToken.Type)
+        RequireToken(Parser, CToken(CS("union")));
+        Result.Type = type_struct_member_anonymous;
+        Result.struct_member_anonymous.Body = ParseStructBody(Parser, CS("anonymous_union"), Memory);
+        RequireToken(Parser, CTokenType_Semicolon);
+        Done = True;
+        Unnamed = True;
+      }
+      else if ( StringsMatch(NextToken.Value, StructName) &&
+                PeekToken(Parser, 1).Type == CTokenType_OpenParen)
+      {
+        RequireToken(Parser, CToken(StructName));
+        EatFunctionDecl(Parser);
+        Result.Type = type_struct_member_function;
+        Result.struct_member_function.Type = type_struct_member_function_constructor;
+      }
+      else if (StringsMatch(NextToken.Value, CS("struct")))
+      {
+        RequireToken(Parser, CToken(CS("struct")));
+        Result.Type = type_struct_member_anonymous;
+        Result.struct_member_anonymous.Body = ParseStructBody(Parser, CS("anonymous_struct"), Memory);
+        RequireToken(Parser, CTokenType_Semicolon);
+        Done = True;
+        Unnamed = True;
+      }
+      else
+      {
+        variable V = ParseVariable(Parser);
+        if (V.IsFunction)
         {
-          case CTokenType_LT:
-          {
-            EatUntil(Parser, CTokenType_GT);
-          } break;
-
-          case CTokenType_OpenParen:
-          {
-            Assert(StringsMatch(StructName, FirstToken.Value));
-            EatFunctionDecl(Parser);
-            Result.Type = type_struct_member_function;
-            Result.struct_member_function.Type = type_struct_member_function_constructor;
-            Done = True;
-          } break;
-
-          case CTokenType_Ampersand:
-          {
-            RequireToken(Parser, CTokenType_Ampersand);
-            Result.variable.Type = Concat(Result.variable.Type, CS("&"), Memory);
-          } break;
-
-          case CTokenType_Star:
-          {
-            RequireToken(Parser, CTokenType_Star);
-            Result.variable.Type = Concat(Result.variable.Type, CS("*"), Memory);
-          } break;
-
-          case CTokenType_Identifier:
-          {
-            if (StringsMatch(NextToken.Value, CS("unsigned")))
-            {
-              Result.variable.Type = Concat( Result.variable.Type, RequireToken(Parser, CTokenType_Identifier).Value, Memory);
-            }
-            else if (StringsMatch(NextToken.Value, CS("union")))
-            {
-              RequireToken(Parser, CToken(CS("union")));
-
-              Result.Type = type_struct_member_anonymous;
-              Result.struct_member_anonymous.Body = ParseStructBody(Parser, CS("anonymous union"), Memory);
-              RequireToken(Parser, CTokenType_Semicolon);
-              Done = True;
-              Unnamed = True;
-            }
-            else if (StringsMatch(NextToken.Value, CS("struct")))
-            {
-              RequireToken(Parser, CToken(CS("struct")));
-
-              Result.Type = type_struct_member_anonymous;
-              Result.struct_member_anonymous.Body = ParseStructBody(Parser, CS("anonymous struct"), Memory);
-              RequireToken(Parser, CTokenType_Semicolon);
-              Done = True;
-              Unnamed = True;
-            }
-            else if (StringsMatch(NextToken.Value, CS("operator")))
-            {
-              Result.Type = type_struct_member_function;
-              Result.struct_member_function.Type = type_struct_member_function_operator;
-              EatUntil(Parser, CTokenType_CloseBrace);
-              Done = True;
-              Unnamed = True;
-            }
-
-            if (!IsCxxDefinitionKeyword(NextToken.Value))
-            {
-              if (DefKeywordsEncountered == 1 && PeekToken(Parser, 1).Type == CTokenType_OpenParen)
-              {
-                /* counted_string FunctionName = */ RequireToken(Parser, CTokenType_Identifier);
-                EatFunctionDecl(Parser);
-                Result.Type = type_struct_member_function;
-                Result.struct_member_function.Type = type_struct_member_function_normal;
-              }
-
-              if (DefKeywordsEncountered++ == 1)
-              {
-                Done = True;
-              }
-            }
-
-            if (!Done)
-            {
-              Result.variable.Type = Concat( Result.variable.Type, RequireToken(Parser, CTokenType_Identifier).Value, Memory);
-            }
-          } break;
-
-          InvalidDefaultWhileParsing(Parser, CS("While parsing decl type 0."));
+          EatFunctionDecl(Parser);
+          Result.Type = type_struct_member_function;
+          Result.struct_member_function.Type = type_struct_member_function_normal;
         }
+        else
+        {
+          if ( PeekToken(Parser).Type == CTokenType_Equals )
+          {
+            ParseVariableAssignment(Parser);
+            RequireToken(Parser, CTokenType_Semicolon);
+          }
+          else if ( PeekToken(Parser).Type == CTokenType_OpenParen )
+          {
+            // TODO(Jesse id: 212): Should we check that the function was defined using the 'function' or 'exported_function' keywords and emit a warning otherwise?
+            function_def Func = { .Prototype = V, }; 
+            if ( OptionalToken(Parser, CTokenType_OpenParen) )
+            {
+              ParseFunctionArgs(Parser, Memory, &Func);
+              if (PeekToken(Parser).Type == CTokenType_OpenBrace)
+              {
+                Func.Body = GetBodyTextForNextScope(Parser);
+                // Push(&Datatypes->Functions, Func, Memory); // TODO(Jesse id: 234): Should we do this?? Probably..
+              }
+              else
+              {
+                // Pre-declaration : void FunctionName(arg Arg1, arg Arg2);
+                RequireToken(Parser, CTokenType_Semicolon);
+              }
+            }
+            else
+            {
+              // Pre-declaration with a typedef'd type: function do_the_thing_type DoTheThing;
+              RequireToken(Parser, CTokenType_Semicolon);
+            }
+          }
+          else
+          {
+            // Uninitialized declaration
+            RequireToken(Parser, CTokenType_Semicolon);
+          }
 
-        continue;
+          Result.Type = type_variable;
+          Result.variable = V;
+        }
       }
 
     } break;
 
-    InvalidDefaultWhileParsing(Parser, CS("While parsing decl type 1."));
+    InvalidDefaultWhileParsing(Parser, CS("While parsing struct member."));
   }
 
-  if (!Unnamed && Result.Type == type_variable)
-  {
-    Result.variable.Name = RequireToken(Parser, CTokenType_Identifier).Value;
-    switch (PeekToken(Parser).Type)
-    {
-      case CTokenType_OpenParen:
-      case CTokenType_OpenBracket:
-      case CTokenType_Equals:
-      {
-        EatUntil(Parser, CTokenType_Semicolon);
-      } break;
-
-      case CTokenType_Semicolon:
-      {
-        RequireToken(Parser, CTokenType_Semicolon);
-      } break;
-
-      InvalidDefaultWhileParsing(Parser, CS("While parsing decl name."));
-    }
-  }
-
+  Assert(Result.Type != type_struct_member_noop);
   return Result;
 }
 
@@ -1534,56 +1573,6 @@ PrintCDecl(struct_member* Decl, struct_def_stream* ProgramStructs)
 }
 #endif
 
-function void
-TrimFirstToken(c_parse_result* Parser, c_token_type TokenType)
-{
-  Assert(Parser->Tokens.At == Parser->Tokens.Start);
-  RequireToken(Parser, TokenType);
-  Parser->Tokens.Start = Parser->Tokens.At;
-}
-
-function void
-TrimLastToken(c_parse_result* Parser, c_token_type TokenType)
-{
-  c_token* CurrentToken = Parser->Tokens.End-1;
-
-  while (CurrentToken > Parser->Tokens.Start)
-  {
-    if (CurrentToken->Type == TokenType)
-    {
-      Parser->Tokens.End = CurrentToken-1;
-      Parser->Tokens.At = Parser->Tokens.End;
-      break;
-    }
-
-    --CurrentToken;
-  }
-}
-
-function void
-TrimTrailingWhitespace(c_parse_result* Parser)
-{
-  c_token* CurrentToken = Parser->Tokens.End-1;
-
-  while (CurrentToken > Parser->Tokens.Start)
-  {
-    if (CurrentToken->Type == CTokenType_Space)
-    {
-      Parser->Tokens.End = CurrentToken;
-      if (Parser->Tokens.At > CurrentToken)
-      {
-        Parser->Tokens.At = CurrentToken;
-      }
-    }
-    else
-    {
-      break;
-    }
-
-    --CurrentToken;
-  }
-}
-
 function counted_string
 ConcatTokensUntil(c_parse_result* Parser, c_token_type Close, memory_arena* Memory)
 {
@@ -1630,24 +1619,6 @@ HasMemberOfType(struct_def* Struct, counted_string MemberType)
   }
 
   return Result;
-}
-
-function c_parse_result
-GetBodyTextForNextScope(c_parse_result* Parser)
-{
-  c_parse_result BodyText = *Parser;
-  BodyText.OutputTokens = {};
-
-  BodyText.Tokens.Start = BodyText.Tokens.At;
-  EatNextScope(Parser);
-  BodyText.Tokens.End = Parser->Tokens.At;
-
-  TrimFirstToken(&BodyText, CTokenType_OpenBrace);
-  TrimLastToken(&BodyText, CTokenType_CloseBrace);
-  TrimTrailingWhitespace(&BodyText);
-  Rewind(&BodyText.Tokens);
-
-  return BodyText;
 }
 
 function struct_def
@@ -1788,6 +1759,7 @@ NextTokenIsOperator(c_parse_result* Parser)
     case CTokenType_Colon:
     case CTokenType_Tilde: // TODO(Jesse id: 196): Does this belong here?
     case CTokenType_Equals: // TODO(Jesse id: 216): Does this belong here?
+    case CTokenType_OpenBracket: // TODO(Jesse id: 235): Does this belong here?
     {
       Result = True;
     } break;
@@ -1803,51 +1775,60 @@ ParseOperator(c_parse_result* Parser)
 {
   string_from_parser Builder = StartStringFromParser(Parser);
 
-  if (NextTokenIsOperator(Parser))
+  c_token T = PeekToken(Parser);
+  switch (T.Type)
   {
-    c_token NextT = PopToken(Parser);
-    switch (NextT.Type)
+    case CTokenType_GT:
+    case CTokenType_LT:
     {
-      case CTokenType_GT:
-      case CTokenType_LT:
-      {
-        if(!OptionalToken(Parser, NextT.Type))
-        {
-          OptionalToken(Parser, CTokenType_Equals);
-        }
-      } break;
-
-      case CTokenType_Minus:
-      case CTokenType_Plus:
-      case CTokenType_Star:
-      case CTokenType_FSlash:
-      case CTokenType_Bang:
+      RequireToken(Parser, T.Type);
+      if(!OptionalToken(Parser, T.Type))
       {
         OptionalToken(Parser, CTokenType_Equals);
-      } break;
+      }
+    } break;
+
+    case CTokenType_Minus:
+    case CTokenType_Plus:
+    case CTokenType_Star:
+    case CTokenType_FSlash:
+    case CTokenType_Bang:
+    {
+      RequireToken(Parser, T.Type);
+      OptionalToken(Parser, CTokenType_Equals);
+    } break;
 
 
-      case CTokenType_Pipe:
-      case CTokenType_Ampersand:
+    case CTokenType_Pipe:
+    case CTokenType_Ampersand:
+    {
+      RequireToken(Parser, T.Type);
+      // We can have another | or &, or an = ie. && or &=, but &&= is not valid
+      if (!OptionalToken(Parser, T.Type))
       {
-        // We can have another | or &, or an = ie. && or &=, but &&= is not valid
-        if (!OptionalToken(Parser, NextT.Type))
-        {
-          OptionalToken(Parser, CTokenType_Equals);
-        }
-      } break;
+        OptionalToken(Parser, CTokenType_Equals);
+      }
+    } break;
 
-      case CTokenType_Equals:
-      {
-        RequireToken(Parser, CTokenType_Equals);
-      } break;
+    case CTokenType_Equals:
+    {
+      RequireToken(Parser, T.Type);
+      RequireToken(Parser, CTokenType_Equals);
+    } break;
 
-      default: {} break;
-    }
-  }
-  else
-  {
-    ParseError(Parser, CSz("Expected operator"));
+    case CTokenType_OpenBracket:
+    {
+      RequireToken(Parser, T.Type);
+      RequireToken(Parser, CTokenType_CloseBracket);
+    } break;
+
+    case CTokenType_Hat:
+    case CTokenType_Percent:
+    {
+      RequireToken(Parser, T.Type);
+    } break;
+
+    default: { ParseError(Parser, CSz("Expected operator.")); } break;
   }
 
   counted_string Result = FinalizeStringFromParser(&Builder, Parser);
@@ -1986,6 +1967,16 @@ ParseVariable(c_parse_result* Parser)
         }
       } break;
 
+#if 0
+      case CTokenType_Tilde:
+      {
+        RequireToken(Parser, CTokenType_Tilde);
+        Result.Type = RequireToken(Parser, CTokenType_Identifier).Value; // TODO(Jesse id: 231, tags: metaprogramming, function_parsing): Does this make sense to put this into the type?
+        Result.IsFunction = True;
+        Result.IsDestructor = True;
+      } break;
+#endif
+
       case CTokenType_Colon:
       {
         // TODO(Jesse id: 217): Disallow namespaces
@@ -2043,7 +2034,7 @@ ParseVariable(c_parse_result* Parser)
           Result.IsOperator = True;
           Result.IsFunction = True;
           RequireToken(Parser, CTokenType_Identifier);
-          ParseOperator(Parser);
+          Result.Name = ParseOperator(Parser);
           Done = true;
         }
         else if (StringsMatch(NextToken.Value, CSz("volatile")) )
@@ -2149,7 +2140,7 @@ ParseVariable(c_parse_result* Parser)
             }
             else
             {
-              Result.Type = RequireToken(Parser, CTokenType_Identifier).Value;
+              Result.Type = RequireToken(Parser, CTokenType_Identifier).Value; // TODO(Jesse id: 232, tags: metaprogramming, function_parsing): Should this be the name if it's a constructor?
 
               if (StringsMatch(Result.Type, Result.Namespace))
               {
@@ -2423,7 +2414,8 @@ ParseDatatypes(c_parse_result* Parser, program_datatypes* Datatypes, memory_aren
 
             if ( PeekToken(Parser).Type == CTokenType_Equals )
             {
-              EatUntil(Parser, CTokenType_Semicolon);  // TODO(Jesse id: 224): Call ParseVariableAssignement
+              EatUntil(Parser, CTokenType_Semicolon);
+              /* ParseVariableAssignment(Parser); */
             }
             else if ( PeekToken(Parser).Type == CTokenType_OpenParen )
             {

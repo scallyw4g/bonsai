@@ -12,8 +12,9 @@
     - #199 Do we care about specifically parsing prefix operators?
     - #201 Do we care about specifically parsing postfix operators?
     - #223 Should we have a more systemic way of handling semicolons?  It's actually valid to have a bunch in a row here.
-    - #224 Call ParseVariableAssignement
     - #212 Should we check that the function was defined using the 'function' or 'exported_function' keywords and emit a warning otherwise?
+    - #234 Should we do this?? Probably..
+    - #235 Does this belong here?
 
   ## immediate
     - #190 Does this make more sense named 'Type'
@@ -103,6 +104,8 @@
     - #121 Need a way of dynamically allocating more of these on demand
     - #230 ParseVariable should work with function pointer types
     - #160 Generate this!
+    - #231 Does this make sense to put this into the type?
+    - #232 Should this be the name if it's a constructor?
 
   ## robustness
     - #78 How should we actually set this?
@@ -366,4 +369,8 @@
 
   ## id_229
     - #228 We should keep track of these!
+
+  ## function_parsing
+    - #231 Does this make sense to put this into the type?
+    - #232 Should this be the name if it's a constructor?
 
