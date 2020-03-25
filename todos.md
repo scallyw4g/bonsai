@@ -95,14 +95,14 @@
     - #192 This is a function call or macro .. make sure it's actually constant.
     - #221 This is a function constructor, let's be done.
     - #200 Floating-point values should be parsed out in TokenizeAnsiStream()!!
-    - #189 Parse out function names?
-    - #222 Re-add [[nodiscard]] here
     - #205 To do this properly, we need to parse out and expand macro definitions here.
     - #210 This is a function-macro call .. I think always..?
-    - #121 Need a way of dynamically allocating more of these on demand
-    - #160 Generate this!
     - #226 Should we handle this differently?
+    - #189 Parse out function names?
+    - #222 Re-add [[nodiscard]] here
+    - #121 Need a way of dynamically allocating more of these on demand
     - #230 ParseVariable should work with function pointer types
+    - #160 Generate this!
 
   ## robustness
     - #78 How should we actually set this?
@@ -337,12 +337,12 @@
 
   ## id_205
     - #218 See #205
+    - #227 See #205
     - #219 See #205
     - #208 See #205
     - #203 See #205
     - #204 See #205
     - #210 This is a function-macro call .. I think always..?
-    - #227 See #205
 
   ## needs_tests
     - #213 There is a degenerate case here, what if the file ends without a newline?

@@ -3451,7 +3451,7 @@ DoMetaprogramming(c_parse_result* Parser, metaprogramming_info* MetaInfo, todo_l
           metaprogramming_directive Directive = MetaprogrammingDirective(DirectiveString);
           switch (Directive)
           {
-            case instanced_func:
+            case polymorphic_func:
             {
               function_def F = ParseFunction(Parser, Memory);
               /* DebugPrint(F); */

@@ -9934,15 +9934,15 @@
               DebugPrint("");
             } break;
 
-            case for_datatypes:
-            {
-              DebugPrint("for_datatypes");
-              DebugPrint("");
-            } break;
-
             case named_list:
             {
               DebugPrint("named_list");
+              DebugPrint("");
+            } break;
+
+            case for_datatypes:
+            {
+              DebugPrint("for_datatypes");
               DebugPrint("");
             } break;
 
@@ -9952,9 +9952,9 @@
               DebugPrint("");
             } break;
 
-            case instanced_func:
+            case polymorphic_func:
             {
-              DebugPrint("instanced_func");
+              DebugPrint("polymorphic_func");
               DebugPrint("");
             } break;
 

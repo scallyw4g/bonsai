@@ -180,7 +180,7 @@ meta(
 )
 
 meta(
-  instanced_func void DebugPrint( @TypeDef RuntimeValue, u32 Depth)
+  polymorphic_func void DebugPrint( @TypeDef RuntimeValue, u32 Depth)
   {
     DebugPrint("(TypeDef.name): ", Depth);
     TypeDef.is_enum?
@@ -216,10 +216,11 @@ enum metaprogramming_directive
   meta_directive_noop,
   enum_only,
   d_union,
-  for_datatypes,
   named_list,
+  for_datatypes,
+
   func,
-  instanced_func,
+  polymorphic_func,
 };
 meta( string_and_value_tables(metaprogramming_directive) )
 #include <metaprogramming/output/string_and_value_tables_metaprogramming_directive.h>
