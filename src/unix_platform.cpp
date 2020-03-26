@@ -183,7 +183,7 @@ CreateSemaphore(void)
 }
 
 // TODO(Jesse id: 230, tags: parsing, metaprogramming, high_priority): ParseVariable should work with function pointer types
-typedef void* (*ThreadMain)(void*) thread_main_callback_type;
+typedef void* (*thread_main_callback_type)(void*);
 
 thread_id
 CreateThread( thread_main_callback_type ThreadMain, thread_startup_params *Params)

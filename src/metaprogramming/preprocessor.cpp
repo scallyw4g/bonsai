@@ -1,12 +1,13 @@
 #define PLATFORM_LIBRARY_AND_WINDOW_IMPLEMENTATIONS 1
 #define PLATFORM_GL_IMPLEMENTATIONS 1
+#define DESTRUCTOR_PARSING_TODO 0
 
 #include <bonsai_types.h>
 
 #define InvalidDefaultWhileParsing(Parser, ErrorMessage) \
     default: { OutputParsingError(Parser, Parser->Tokens.At, ErrorMessage); Assert(False); } break;
 
-#define DEBUG_PRINT (0)
+#define DEBUG_PRINT (1)
 
 #if DEBUG_PRINT
 #include <bonsai_stdlib/headers/debug_print.h>
@@ -1356,10 +1357,10 @@ IsCxxDefinitionKeyword(counted_string Value)
 }
 
 function struct_def
-ParseStructBody(c_parse_result* Parser, counted_string StructName, memory_arena* Memory);
+ParseStructBody(c_parse_result* Parser, counted_string StructName, memory_arena* Memory, program_datatypes* Datatypes);
 
 function variable
-ParseVariable(c_parse_result* Parser);
+ParseDeclaration(c_parse_result* Parser);
 
 function counted_string
 ParseVariableAssignment(c_parse_result* Parser);
@@ -1367,8 +1368,11 @@ ParseVariableAssignment(c_parse_result* Parser);
 function void
 ParseFunctionArgs(c_parse_result* Parser, memory_arena* Memory, function_def* Result);
 
+function counted_string
+ParseDeclarationValue(c_parse_result* Parser, variable* Decl, program_datatypes* Datatypes, memory_arena* Memory);
+
 function struct_member
-ParseStructMember(c_parse_result* Parser, counted_string StructName, memory_arena* Memory)
+ParseStructMember(c_parse_result* Parser, counted_string StructName, memory_arena* Memory, program_datatypes* Datatypes)
 {
   TIMED_FUNCTION();
   struct_member Result = {};
@@ -1396,7 +1400,7 @@ ParseStructMember(c_parse_result* Parser, counted_string StructName, memory_aren
       {
         RequireToken(Parser, CToken(CS("union")));
         Result.Type = type_struct_member_anonymous;
-        Result.struct_member_anonymous.Body = ParseStructBody(Parser, CS("anonymous_union"), Memory);
+        Result.struct_member_anonymous.Body = ParseStructBody(Parser, CS("anonymous_union"), Memory, Datatypes);
         RequireToken(Parser, CTokenType_Semicolon);
         Done = True;
         Unnamed = True;
@@ -1413,59 +1417,42 @@ ParseStructMember(c_parse_result* Parser, counted_string StructName, memory_aren
       {
         RequireToken(Parser, CToken(CS("struct")));
         Result.Type = type_struct_member_anonymous;
-        Result.struct_member_anonymous.Body = ParseStructBody(Parser, CS("anonymous_struct"), Memory);
+        Result.struct_member_anonymous.Body = ParseStructBody(Parser, CS("anonymous_struct"), Memory, Datatypes);
         RequireToken(Parser, CTokenType_Semicolon);
         Done = True;
         Unnamed = True;
       }
       else
       {
-        variable V = ParseVariable(Parser);
-        if (V.IsFunction)
+        variable Decl = ParseDeclaration(Parser);
+        counted_string Value = ParseDeclarationValue(Parser, &Decl, Datatypes, Memory);
+
+        if (Decl.IsFunction)
         {
-          EatFunctionDecl(Parser);
           Result.Type = type_struct_member_function;
-          Result.struct_member_function.Type = type_struct_member_function_normal;
+          if (Decl.IsOperator)
+          {
+            Result.struct_member_function.Type = type_struct_member_function_operator;
+          }
+          else if (Decl.IsConstructor)
+          {
+            Result.struct_member_function.Type = type_struct_member_function_constructor;
+          }
+#if DESTRUCTOR_PARSING_TODO
+          else if (Decl.IsDestructor)
+          {
+            Result.struct_member_function.Type = type_struct_member_function_destructor;
+          }
+#endif
+          else
+          {
+            Result.struct_member_function.Type = type_struct_member_function_normal;
+          }
         }
         else
         {
-          if ( PeekToken(Parser).Type == CTokenType_Equals )
-          {
-            ParseVariableAssignment(Parser);
-            RequireToken(Parser, CTokenType_Semicolon);
-          }
-          else if ( PeekToken(Parser).Type == CTokenType_OpenParen )
-          {
-            // TODO(Jesse id: 212): Should we check that the function was defined using the 'function' or 'exported_function' keywords and emit a warning otherwise?
-            function_def Func = { .Prototype = V, }; 
-            if ( OptionalToken(Parser, CTokenType_OpenParen) )
-            {
-              ParseFunctionArgs(Parser, Memory, &Func);
-              if (PeekToken(Parser).Type == CTokenType_OpenBrace)
-              {
-                Func.Body = GetBodyTextForNextScope(Parser);
-                // Push(&Datatypes->Functions, Func, Memory); // TODO(Jesse id: 234): Should we do this?? Probably..
-              }
-              else
-              {
-                // Pre-declaration : void FunctionName(arg Arg1, arg Arg2);
-                RequireToken(Parser, CTokenType_Semicolon);
-              }
-            }
-            else
-            {
-              // Pre-declaration with a typedef'd type: function do_the_thing_type DoTheThing;
-              RequireToken(Parser, CTokenType_Semicolon);
-            }
-          }
-          else
-          {
-            // Uninitialized declaration
-            RequireToken(Parser, CTokenType_Semicolon);
-          }
-
           Result.Type = type_variable;
-          Result.variable = V;
+          Result.variable = Decl;
         }
       }
 
@@ -1622,7 +1609,7 @@ HasMemberOfType(struct_def* Struct, counted_string MemberType)
 }
 
 function struct_def
-ParseStructBody(c_parse_result* Parser, counted_string StructName, memory_arena* Memory)
+ParseStructBody(c_parse_result* Parser, counted_string StructName, memory_arena* Memory, program_datatypes* Datatypes)
 {
   TIMED_FUNCTION();
   struct_def Result = StructDef(StructName, Parser->Filename);
@@ -1639,7 +1626,7 @@ ParseStructBody(c_parse_result* Parser, counted_string StructName, memory_arena*
     }
     else
     {
-      struct_member Declaration = ParseStructMember(Parser, Result.Name, Memory);
+      struct_member Declaration = ParseStructMember(Parser, Result.Name, Memory, Datatypes);
       Push(&Result.Fields, Declaration, Memory);
     }
 
@@ -1941,7 +1928,7 @@ IsTypeQualifier(c_token T)
 }
 
 function variable
-ParseVariable(c_parse_result* Parser)
+ParseDeclaration(c_parse_result* Parser)
 {
   variable Result = {};
 
@@ -1967,7 +1954,7 @@ ParseVariable(c_parse_result* Parser)
         }
       } break;
 
-#if 0
+#if DESTRUCTOR_PARSING_TODO
       case CTokenType_Tilde:
       {
         RequireToken(Parser, CTokenType_Tilde);
@@ -2226,7 +2213,7 @@ ParseFunctionArgs(c_parse_result* Parser, memory_arena* Memory, function_def* Re
 
   while ( !Done && Remaining(&Parser->Tokens) )
   {
-    variable Arg = ParseVariable(Parser);
+    variable Arg = ParseDeclaration(Parser);
     if (Memory)
     {
       Push(&Result->Args, Arg, Memory);
@@ -2263,7 +2250,7 @@ ParseFunction(c_parse_result* Parser, memory_arena* Memory = 0)
 {
   function_def Func = {};
 
-  Func.Prototype = ParseVariable(Parser);
+  Func.Prototype = ParseDeclaration(Parser);
 
   if ( OptionalToken(Parser, CTokenType_OpenParen) )
   {
@@ -2310,14 +2297,14 @@ ParseDatatypeDef(c_parse_result* Parser, program_datatypes* Datatypes, memory_ar
     counted_string StructName = RequireToken(Parser, CTokenType_Identifier).Value;
     if ( PeekToken(Parser).Type == CTokenType_OpenBrace )
     {
-      struct_def S = ParseStructBody(Parser, StructName, Memory);
+      struct_def S = ParseStructBody(Parser, StructName, Memory, Datatypes);
       Push(&Datatypes->Structs, S, Memory);
     }
   }
   else if (StringsMatch(DatatypeIdentifier, CSz("union")))
   {
     counted_string UnionName = RequireToken(Parser, CTokenType_Identifier).Value;
-    struct_def S = ParseStructBody(Parser, UnionName, Memory);
+    struct_def S = ParseStructBody(Parser, UnionName, Memory, Datatypes);
     S.IsUnion = True;
     Push(&Datatypes->Structs, S, Memory);
   }
@@ -2327,7 +2314,6 @@ ParseDatatypeDef(c_parse_result* Parser, program_datatypes* Datatypes, memory_ar
   }
 
   RequireToken(Parser, CTokenType_Semicolon);
-
 }
 
 function void
@@ -2339,7 +2325,7 @@ ParseTypedef(c_parse_result* Parser, program_datatypes* Datatypes, memory_arena*
   {
     if (PeekToken(Parser).Type == CTokenType_OpenBrace)
     {
-      struct_def S = ParseStructBody(Parser, CS(""), Memory);
+      struct_def S = ParseStructBody(Parser, CS(""), Memory, Datatypes);
       S.Name = RequireToken(Parser, CTokenType_Identifier).Value;
       RequireToken(Parser, CTokenType_Semicolon);
       Push(&Datatypes->Structs, S, Memory);
@@ -2359,6 +2345,54 @@ ParseTypedef(c_parse_result* Parser, program_datatypes* Datatypes, memory_arena*
     // typedef thing other_thing;
     EatUntil(Parser, CTokenType_Semicolon);
   }
+}
+
+function counted_string
+ParseDeclarationValue(c_parse_result* Parser, variable* Decl, program_datatypes* Datatypes, memory_arena* Memory)
+{
+  string_from_parser Builder = StartStringFromParser(Parser);
+
+  b32 EatSemicolon = False;
+  if ( PeekToken(Parser).Type == CTokenType_Equals )
+  {
+    EatUntil(Parser, CTokenType_Semicolon);
+    /* ParseVariableAssignment(Parser); */
+  }
+  else if ( PeekToken(Parser).Type == CTokenType_OpenParen )
+  {
+    // TODO(Jesse id: 212): Should we check that the function was defined using the 'function' or 'exported_function' keywords and emit a warning otherwise?
+    function_def Func = { .Prototype = *Decl }; 
+    if ( OptionalToken(Parser, CTokenType_OpenParen) )
+    {
+      ParseFunctionArgs(Parser, Memory, &Func);
+      if (PeekToken(Parser).Type == CTokenType_OpenBrace)
+      {
+        Func.Body = GetBodyTextForNextScope(Parser);
+        Push(&Datatypes->Functions, Func, Memory);
+      }
+      else
+      {
+        // Pre-declaration : void FunctionName(arg Arg1, arg Arg2);
+        EatSemicolon = True;
+      }
+    }
+    else
+    {
+      // Pre-declaration with a typedef'd type: function do_the_thing_type DoTheThing;
+      EatSemicolon = True;
+    }
+  }
+  else
+  {
+    // Uninitialized declaration
+    EatSemicolon = True;
+  }
+
+  counted_string Result = FinalizeStringFromParser(&Builder, Parser);
+
+  if (EatSemicolon) RequireToken(Parser, CTokenType_Semicolon);
+
+  return Result;
 }
 
 function void
@@ -2410,42 +2444,9 @@ ParseDatatypes(c_parse_result* Parser, program_datatypes* Datatypes, memory_aren
           }
           else
           {
-            variable V = ParseVariable(Parser);
+            variable Decl = ParseDeclaration(Parser);
+            counted_string Value = ParseDeclarationValue(Parser, &Decl, Datatypes, Memory);
 
-            if ( PeekToken(Parser).Type == CTokenType_Equals )
-            {
-              EatUntil(Parser, CTokenType_Semicolon);
-              /* ParseVariableAssignment(Parser); */
-            }
-            else if ( PeekToken(Parser).Type == CTokenType_OpenParen )
-            {
-              // TODO(Jesse id: 212): Should we check that the function was defined using the 'function' or 'exported_function' keywords and emit a warning otherwise?
-              function_def Func = { .Prototype = V, }; 
-              if ( OptionalToken(Parser, CTokenType_OpenParen) )
-              {
-                ParseFunctionArgs(Parser, Memory, &Func);
-                if (PeekToken(Parser).Type == CTokenType_OpenBrace)
-                {
-                  Func.Body = GetBodyTextForNextScope(Parser);
-                  Push(&Datatypes->Functions, Func, Memory);
-                }
-                else
-                {
-                  // Pre-declaration : void FunctionName(arg Arg1, arg Arg2);
-                  RequireToken(Parser, CTokenType_Semicolon);
-                }
-              }
-              else
-              {
-                // Pre-declaration with a typedef'd type: function do_the_thing_type DoTheThing;
-                RequireToken(Parser, CTokenType_Semicolon);
-              }
-            }
-            else
-            {
-              // Uninitialized declaration
-              RequireToken(Parser, CTokenType_Semicolon);
-            }
           }
         }
 
@@ -3815,6 +3816,9 @@ main(s32 ArgCount, const char** ArgStrings)
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
   }
+
+  Quaternion Q(4,5,6,8);
+  DebugPrint(Q);
 
   s32 Result = Success ? SUCCESS_EXIT_CODE : FAILURE_EXIT_CODE ;
   return Result;

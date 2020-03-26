@@ -1,46 +1,4 @@
 function void
-DebugPrint(voxel_position E, u32 Depth = 0)
-{
-  printf("%*d", Depth, E.x);
-  printf("%*d", Depth, E.y);
-  printf("%*d", Depth, E.z);
-}
-
-function void
-DebugPrint(Quaternion E, u32 Depth = 0)
-{
-  printf("%*f", Depth, E.E[0]);
-  printf("%*f", Depth, E.E[1]);
-  printf("%*f", Depth, E.E[2]);
-  printf("%*f", Depth, E.E[3]);
-}
-
-function void
-DebugPrint(v4 E, u32 Depth = 0)
-{
-  printf("%*f", Depth, E.x);
-  printf("%*f", Depth, E.y);
-  printf("%*f", Depth, E.z);
-  printf("%*f", Depth, E.w);
-}
-
-function void
-DebugPrint(v3i E, u32 Depth = 0)
-{
-  printf("%*u", Depth, E.x);
-  printf("%*u", Depth, E.y);
-  printf("%*u", Depth, E.z);
-}
-
-function void
-DebugPrint(v3 E, u32 Depth = 0)
-{
-  printf("%*f", Depth, E.x);
-  printf("%*f", Depth, E.y);
-  printf("%*f", Depth, E.z);
-}
-
-function void
 DebugPrint(r64 E, u32 Depth = 0)
 {
   printf("%*f", Depth, E);
@@ -86,6 +44,13 @@ function void
 DebugPrint(void* E, u32 Depth = 0)
 {
   printf("%*p", Depth, E);
+}
+
+function void
+DebugPrint(__m128 E, u32 Depth = 0)
+{
+  Depth += 1;
+  printf("%f %f %f %f", E[0], E[1], E[2], E[3]);
 }
 
 function void

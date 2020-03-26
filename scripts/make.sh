@@ -1,6 +1,6 @@
 #! /bin/bash
 
-# COMMON_OPTIMIZATION_OPTIONS="-O2"
+COMMON_OPTIMIZATION_OPTIONS="-O2"
 
 RED="\x1b[31m"
 BLUE="\x1b[34m"
@@ -46,6 +46,8 @@ OUTPUT_DIRECTORY="$BIN"
 # Note(Jesse): Using c++17 so I can mark functions with [[nodiscard]]
 
 COMMON_COMPILER_OPTIONS="
+  -I/usr/src/linux-headers-4.15.0-88/include/
+
   -std=c++17
   -ferror-limit=2000
   -ggdb
@@ -340,13 +342,13 @@ function RunEntireBuild {
 
 DumpSourceFilesAndQuit=0
 
-CheckoutMetaOutput=0
+CheckoutMetaOutput=1
 
-FirstPreprocessor=1
+FirstPreprocessor=0
 BuildPreprocessor=1
 SecondPreprocessor=1
 
-BuildAllProjects=0
+BuildAllProjects=1
 RunTests=0
 FinalPreprocessor=0
 
