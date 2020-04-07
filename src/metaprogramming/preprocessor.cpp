@@ -959,7 +959,7 @@ ParseDiscriminatedUnion(c_parse_result* Parser, program_datatypes* Datatypes, co
     enum_def* EnumDef = GetEnumByType(&Datatypes->Enums, dUnion.CustomEnumType);
     if (EnumDef)
     {
-      ITERATE_OVER(&EnumDef->Fields)
+      ITERATE_OVER(&EnumDef->Members)
       {
         enum_member* Field = GET_ELEMENT(Iter);
         counted_string MemberName = Concat(Concat(dUnion.Name, CS("_"), Memory), Field->Name, Memory);
@@ -1511,7 +1511,7 @@ function void
 DumpStruct(struct_def* Struct)
 {
   Log("%.*s\n", Struct->Name.Count, Struct->Name.Start);
-  DumpCDeclStreamToConsole(&Struct->Fields);
+  DumpCDeclStreamToConsole(&Struct->Members);
 }
 
 function void
@@ -1530,7 +1530,7 @@ PrintCDecl(struct_member* Decl, struct_def_stream* ProgramStructs)
 
     case type_struct_member_union:
     {
-      for (struct_member_iterator Iter = Iterator(&Decl->struct_member_anonymous.Body.Fields);
+      for (struct_member_iterator Iter = Iterator(&Decl->struct_member_anonymous.Body.Members);
           IsValid(&Iter);
           Advance(&Iter))
       {
@@ -1586,7 +1586,7 @@ HasMemberOfType(struct_def* Struct, counted_string MemberType)
   b32 Result = False;
   if (MemberType.Start)
   {
-    for (struct_member_iterator Iter = Iterator(&Struct->Fields);
+    for (struct_member_iterator Iter = Iterator(&Struct->Members);
         IsValid(&Iter) && !Result;
         Advance(&Iter))
     {
@@ -1627,7 +1627,7 @@ ParseStructBody(c_parse_result* Parser, counted_string StructName, memory_arena*
     else
     {
       struct_member Declaration = ParseStructMember(Parser, Result.Name, Memory, Datatypes);
-      Push(&Result.Fields, Declaration, Memory);
+      Push(&Result.Members, Declaration, Memory);
     }
 
     NextToken = PeekToken(Parser);
@@ -1893,7 +1893,7 @@ ParseEnum(c_parse_result* Parser, memory_arena* Memory)
       Field.Value = ParseConstantExpression(Parser);
     }
 
-    Push(&Enum.Fields, Field, Memory);
+    Push(&Enum.Members, Field, Memory);
 
     if(OptionalToken(Parser, CTokenType_Comma))
     {
@@ -3098,7 +3098,7 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgMatchPa
 
             if (ArgDatatype.Type == type_struct_def)
             {
-              ITERATE_OVER(&ArgDatatype.struct_def->Fields)
+              ITERATE_OVER(&ArgDatatype.struct_def->Members)
               {
                 struct_member* Member = GET_ELEMENT(Iter);
 
@@ -3131,7 +3131,7 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgMatchPa
 
                   case type_struct_member_anonymous:
                   {
-                    for (struct_member_iterator UnionMemberIter = Iterator(&Member->struct_member_anonymous.Body.Fields);
+                    for (struct_member_iterator UnionMemberIter = Iterator(&Member->struct_member_anonymous.Body.Members);
                         IsValid(&UnionMemberIter);
                         Advance(&UnionMemberIter))
                     {
@@ -3182,7 +3182,7 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgMatchPa
 
             if (ArgDatatype.Type == type_enum_def)
             {
-              ITERATE_OVER(&ArgDatatype.enum_def->Fields)
+              ITERATE_OVER(&ArgDatatype.enum_def->Members)
               {
                 enum_member* EnumMember = GET_ELEMENT(Iter);
                 counted_string EnumFieldOutput = Execute(FuncName, NextScope, EnumValueMatch, Datatype(EnumMember), MetaInfo, Memory);

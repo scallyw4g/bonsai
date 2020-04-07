@@ -1975,8 +1975,8 @@
           DebugPrint(S.DefinedInFile, Depth+1);
           DebugPrint("\n");
 
-          DebugPrint("Fields = ", Depth);
-          DebugPrint(S.Fields, Depth+1);
+          DebugPrint("Members = ", Depth);
+          DebugPrint(S.Members, Depth+1);
           DebugPrint("\n");
 
           DebugPrint("IsUnion = ", Depth);
@@ -1999,8 +1999,8 @@
             DebugPrint(S->DefinedInFile, Depth+1);
             DebugPrint("\n");
 
-            DebugPrint("Fields = ", Depth);
-            DebugPrint(S->Fields, Depth+1);
+            DebugPrint("Members = ", Depth);
+            DebugPrint(S->Members, Depth+1);
             DebugPrint("\n");
 
             DebugPrint("IsUnion = ", Depth);
@@ -2302,8 +2302,8 @@
           DebugPrint(S.Name, Depth+1);
           DebugPrint("\n");
 
-          DebugPrint("Fields = ", Depth);
-          DebugPrint(S.Fields, Depth+1);
+          DebugPrint("Members = ", Depth);
+          DebugPrint(S.Members, Depth+1);
           DebugPrint("\n");
 
     }
@@ -2318,8 +2318,8 @@
             DebugPrint(S->Name, Depth+1);
             DebugPrint("\n");
 
-            DebugPrint("Fields = ", Depth);
-            DebugPrint(S->Fields, Depth+1);
+            DebugPrint("Members = ", Depth);
+            DebugPrint(S->Members, Depth+1);
             DebugPrint("\n");
 
       }

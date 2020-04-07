@@ -334,7 +334,7 @@ struct struct_def
 {
   counted_string Name; // TODO(Jesse, id: 190, tags: immediate): Does this make more sense named 'Type'
   counted_string DefinedInFile;
-  struct_member_stream Fields; // TODO(Jesse id: 159, tags: immediate, cleanup) Rename to Members
+  struct_member_stream Members;
 
   b32 IsUnion;
 };
@@ -413,7 +413,7 @@ meta(generate_stream(d_union_member))
 struct enum_def
 {
   counted_string Name;
-  enum_member_stream Fields;
+  enum_member_stream Members;
 };
 meta(stream_and_cursor(enum_def))
 #include <metaprogramming/output/stream_and_cursor_enum_def.h>

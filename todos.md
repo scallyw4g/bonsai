@@ -17,7 +17,6 @@
 
   ## immediate
     - #190 Does this make more sense named 'Type'
-    - #159 Rename to Members
     - #83 d_union-ify this
     - #184 Reinstate memory protection!  Need to turn it off
     - #215 Check that error token is set!
@@ -62,7 +61,6 @@
 
   ## cleanup
     - #77 Axe this!
-    - #159 Rename to Members
     - #188 This should have the name property, instead of
     - #88 Perlin.h depends on this .. rewrite it.
     - #89 Perlin.h depends on this .. rewrite it.
