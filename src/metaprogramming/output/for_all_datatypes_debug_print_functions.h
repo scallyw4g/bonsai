@@ -1967,8 +1967,8 @@
     {
       DebugPrint("struct_def\n", Depth);
       
-          DebugPrint("Name = ", Depth);
-          DebugPrint(S.Name, Depth+1);
+          DebugPrint("Type = ", Depth);
+          DebugPrint(S.Type, Depth+1);
           DebugPrint("\n");
 
           DebugPrint("DefinedInFile = ", Depth);
@@ -1991,8 +1991,8 @@
       {
         DebugPrint("struct_def\n", Depth);
         
-            DebugPrint("Name = ", Depth);
-            DebugPrint(S->Name, Depth+1);
+            DebugPrint("Type = ", Depth);
+            DebugPrint(S->Type, Depth+1);
             DebugPrint("\n");
 
             DebugPrint("DefinedInFile = ", Depth);

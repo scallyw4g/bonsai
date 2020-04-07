@@ -332,7 +332,7 @@ struct struct_member_stream
 
 struct struct_def
 {
-  counted_string Name; // TODO(Jesse, id: 190, tags: immediate): Does this make more sense named 'Type'
+  counted_string Type;
   counted_string DefinedInFile;
   struct_member_stream Members;
 

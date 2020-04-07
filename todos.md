@@ -16,7 +16,6 @@
     - #235 Does this belong here?
 
   ## immediate
-    - #190 Does this make more sense named 'Type'
     - #83 d_union-ify this
     - #184 Reinstate memory protection!  Need to turn it off
     - #215 Check that error token is set!

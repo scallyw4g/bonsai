@@ -7,7 +7,7 @@
 #define InvalidDefaultWhileParsing(Parser, ErrorMessage) \
     default: { OutputParsingError(Parser, Parser->Tokens.At, ErrorMessage); Assert(False); } break;
 
-#define DEBUG_PRINT (1)
+#define DEBUG_PRINT (0)
 
 #if DEBUG_PRINT
 #include <bonsai_stdlib/headers/debug_print.h>
@@ -870,7 +870,7 @@ GetStructByType(struct_def_stream* ProgramStructs, counted_string StructType)
       Advance(&Iter))
   {
     struct_def* Struct = &Iter.At->Element;
-    if (StringsMatch(Struct->Name, StructType))
+    if (StringsMatch(Struct->Type, StructType))
     {
       Result = Struct;
       break;
@@ -1245,10 +1245,10 @@ EatUnionDef(c_parse_result* Parser)
 }
 
 function struct_def
-StructDef(counted_string Name, counted_string Sourcefile)
+StructDef(counted_string Type, counted_string Sourcefile)
 {
   struct_def Result = {
-    .Name = Name,
+    .Type = Type,
     .DefinedInFile = Sourcefile
   };
  
@@ -1626,7 +1626,7 @@ ParseStructBody(c_parse_result* Parser, counted_string StructName, memory_arena*
     }
     else
     {
-      struct_member Declaration = ParseStructMember(Parser, Result.Name, Memory, Datatypes);
+      struct_member Declaration = ParseStructMember(Parser, Result.Type, Memory, Datatypes);
       Push(&Result.Members, Declaration, Memory);
     }
 
@@ -2326,7 +2326,7 @@ ParseTypedef(c_parse_result* Parser, program_datatypes* Datatypes, memory_arena*
     if (PeekToken(Parser).Type == CTokenType_OpenBrace)
     {
       struct_def S = ParseStructBody(Parser, CS(""), Memory, Datatypes);
-      S.Name = RequireToken(Parser, CTokenType_Identifier).Value;
+      S.Type = RequireToken(Parser, CTokenType_Identifier).Value;
       RequireToken(Parser, CTokenType_Semicolon);
       Push(&Datatypes->Structs, S, Memory);
     }
@@ -3032,7 +3032,7 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgMatchPa
             if (ArgDatatype.Type == type_struct_def)
             {
               meta_transform_op Transformations = ParseTransformations(&Scope);
-              counted_string Name = Transform(Transformations, ArgDatatype.struct_def->Name, Memory);
+              counted_string Name = Transform(Transformations, ArgDatatype.struct_def->Type, Memory);
               Append(&OutputBuilder, Name);
             }
             else
@@ -3070,7 +3070,7 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgMatchPa
               case type_struct_def:
               {
                 meta_transform_op Transformations = ParseTransformations(&Scope);
-                counted_string Name = Transform(Transformations, ArgDatatype.struct_def->Name, Memory);
+                counted_string Name = Transform(Transformations, ArgDatatype.struct_def->Type, Memory);
                 Append(&OutputBuilder, Name);
               } break;
 
@@ -3150,7 +3150,7 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgMatchPa
                         else
                         {
                           counted_string Name = UnionMember->variable.Type;
-                          counted_string ParentStructName = ArgDatatype.struct_def->Name;
+                          counted_string ParentStructName = ArgDatatype.struct_def->Type;
                           Warn("Couldn't find struct type '%.*s' in union parent '%.*s'.", (u32)Name.Count, Name.Start, (u32)ParentStructName.Count, ParentStructName.Start);
                         }
 
@@ -3193,7 +3193,7 @@ Execute(counted_string FuncName, c_parse_result Scope, counted_string ArgMatchPa
             }
             else
             {
-              Error("Called map_values on a datatype that wasn't an enum - %.*s", (u32)ArgDatatype.struct_def->Name.Count, ArgDatatype.struct_def->Name.Start);
+              Error("Called map_values on a datatype that wasn't an enum - %.*s", (u32)ArgDatatype.struct_def->Type.Count, ArgDatatype.struct_def->Type.Start);
             }
 
           } break;
@@ -3543,7 +3543,7 @@ DoMetaprogramming(c_parse_result* Parser, metaprogramming_info* MetaInfo, todo_l
                   Advance(&Iter))
               {
                 struct_def* Struct = &Iter.At->Element;
-                if (!StreamContains(&Excludes, Struct->Name))
+                if (!StreamContains(&Excludes, Struct->Type))
                 {
                   counted_string Code = Execute(&StructFunc, Datatype(Struct), MetaInfo, Memory);
                   Append(&OutputBuilder, Code);
