@@ -1,6 +1,6 @@
 #! /bin/bash
 
-COMMON_OPTIMIZATION_OPTIONS="-O2"
+# COMMON_OPTIMIZATION_OPTIONS="-O2"
 
 RED="\x1b[31m"
 BLUE="\x1b[34m"
@@ -344,7 +344,7 @@ DumpSourceFilesAndQuit=0
 
 CheckoutMetaOutput=1
 
-FirstPreprocessor=1
+FirstPreprocessor=0
 BuildPreprocessor=1
 SecondPreprocessor=1
 

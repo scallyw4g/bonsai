@@ -18,11 +18,8 @@
   ## immediate
     - #83 d_union-ify this
     - #184 Reinstate memory protection!  Need to turn it off
-    - #215 Check that error token is set!
     - #222 Re-add [[nodiscard]] here
     - #157 Should support multi-line comments as well
-    - #156 This should actually concat all comments such that
-    - #155 This should eat the comment if
 
   ## high_priority
     - #101 Profile and check collision rate of this!
@@ -144,7 +141,7 @@
     - #80 This could be factored out of here if xml_tag::Properties
 
   ## back_burner
-    - #161 Reinstate this! */
+    - #161 Reinstate this!
     - #80 This could be factored out of here if xml_tag::Properties
     - #117 Transient arena for this instead of stack allocation ?
 
@@ -309,7 +306,7 @@
     - #160 Generate this!
 
   ## debug_recording
-    - #161 Reinstate this! */
+    - #161 Reinstate this!
 
   ## ui
     - #110 Should we do something special when interacting with this thing instead of Ignored-ing it?
@@ -332,7 +329,6 @@
     - #185 these should be printable!
     - #213 There is a degenerate case here, what if the file ends without a newline?
     - #214 There is a degenerate case here, what if the file ends with a malformed comment?
-    - #215 Check that error token is set!
 
   ## id_205
     - #218 See #205

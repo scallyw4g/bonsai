@@ -772,3 +772,21 @@ meta(generate_stream_iterator(struct_member))
 
 meta(generate_stream_push(struct_member))
 #include <metaprogramming/output/generate_stream_push_c_decl.h>
+
+function string_from_parser
+StartStringFromParser(c_parse_result* Parser)
+{
+  string_from_parser Result = {
+    .Start = Parser->Tokens.At->Value.Start
+  };
+  return Result;
+}
+
+function counted_string
+FinalizeStringFromParser(string_from_parser* Builder, c_parse_result* Parser)
+{
+  umm Count = (umm)(Parser->Tokens.At->Value.Start - Builder->Start);
+  counted_string Result = { .Start = Builder->Start, .Count = Count };
+  return Result;
+}
+

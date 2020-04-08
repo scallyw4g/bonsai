@@ -7,7 +7,7 @@
 #define InvalidDefaultWhileParsing(Parser, ErrorMessage) \
     default: { OutputParsingError(Parser, Parser->Tokens.At, ErrorMessage); Assert(False); } break;
 
-#define DEBUG_PRINT (0)
+#define DEBUG_PRINT (1)
 
 #if DEBUG_PRINT
 #include <bonsai_stdlib/headers/debug_print.h>
@@ -230,9 +230,10 @@ PopTokenRaw(c_parse_result* Parser)
   return Result;
 }
 
-function void
+function counted_string
 EatUntil(c_parse_result* Parser, c_token_type Close)
 {
+  string_from_parser Builder = StartStringFromParser(Parser);
   while (Remaining(&Parser->Tokens))
   {
     if(PopTokenRaw(Parser).Type == Close)
@@ -240,11 +241,15 @@ EatUntil(c_parse_result* Parser, c_token_type Close)
       break;
     }
   }
+  counted_string Result = FinalizeStringFromParser(&Builder, Parser);
+  return Result;
 }
 
-function void
+function counted_string
 EatComment(c_parse_result* Parser)
 {
+  string_from_parser Builder = StartStringFromParser(Parser);
+
   if (PeekTokenRaw(Parser).Type == CTokenType_CommentSingleLine)
   {
     EatUntil(Parser, CTokenType_Newline);
@@ -253,6 +258,13 @@ EatComment(c_parse_result* Parser)
   {
     EatUntil(Parser, CTokenType_CommentMultiLineEnd);
   }
+  else
+  {
+    Warn("Called EatComment on something that wasn't a comment!");
+  }
+
+  counted_string Result = FinalizeStringFromParser(&Builder, Parser);
+  return Result;
 }
 
 function void
@@ -663,6 +675,8 @@ OutputErrorHelperLine(c_parse_result* Parser, c_token* ErrorToken, c_token Expec
 function void
 OutputParsingError(c_parse_result* Parser, c_token* ErrorToken, c_token ExpectedToken, counted_string ErrorString)
 {
+  Assert(ErrorToken);
+
   u32 LinesOfContext = 4;
 
   Log("----\n");
@@ -733,14 +747,22 @@ OutputParsingError(c_parse_result* Parser, c_token* ErrorToken, counted_string E
 function c_token
 RequireToken(c_parse_result* Parser, c_token ExpectedToken)
 {
-  c_token* ErrorToken = PeekTokenPointer(Parser);
+  c_token* PeekedToken = PeekTokenPointer(Parser);
 
-  // TODO(Jesse id: 215, tags: immediate, bug): Check that error token is set!
-  c_token Result = *ErrorToken;
+  c_token Result = {};
+  if (PeekedToken) Result = *PeekedToken;
 
   if (Result.Type != ExpectedToken.Type || (ExpectedToken.Value.Count > 0 && !StringsMatch(ExpectedToken.Value, Result.Value) ))
   {
-    OutputParsingError(Parser, ErrorToken, ExpectedToken, CS("Require Token Failed"));
+    if (PeekedToken)
+    {
+      OutputParsingError(Parser, PeekedToken, ExpectedToken, CS("Require Token Failed"));
+    }
+    else
+    {
+      OutputParsingError(Parser, Parser->Tokens.End, ExpectedToken, CS("Stream ended unexpectedly"));
+    }
+
     Parser->Valid = False;
     RuntimeBreak();
   }
@@ -1182,23 +1204,6 @@ DumpStringStreamToConsole(counted_string_stream* Stream)
     counted_string Message = Iter.At->Element;
     Log("%.*s\n", Message.Count, Message.Start);
   }
-}
-
-function string_from_parser
-StartStringFromParser(c_parse_result* Parser)
-{
-  string_from_parser Result = {
-    .Start = Parser->Tokens.At->Value.Start
-  };
-  return Result;
-}
-
-function counted_string
-FinalizeStringFromParser(string_from_parser* Builder, c_parse_result* Parser)
-{
-  umm Count = (umm)(Parser->Tokens.At->Value.Start - Builder->Start);
-  counted_string Result = { .Start = Builder->Start, .Count = Count };
-  return Result;
 }
 
 function counted_string
@@ -2825,6 +2830,8 @@ ParseAllTodosFromFile(counted_string Filename, memory_arena* Memory)
 
       EatWhitespace(Parser);
     }
+
+    EatWhitespace(Parser);
   }
 
   return People;
@@ -3345,16 +3352,25 @@ DoMetaprogramming(c_parse_result* Parser, metaprogramming_info* MetaInfo, todo_l
   Rewind(Parser);
   while (Parser->Valid && Remaining(&Parser->Tokens))
   {
-    c_token NextToken = PeekTokenRaw(Parser);
+    const c_token NextToken = PeekTokenRaw(Parser);
 
     switch( NextToken.Type )
     {
       // TODO(Jesse id: 157, tags: immediate) Should support multi-line comments as well
+      /* case CTokenType_CommentMultiLineStart: */
       case CTokenType_CommentSingleLine:
       {
         Ensure( PopTokenRaw(Parser).Type == CTokenType_CommentSingleLine);
+        c_token FirstInteriorT = PeekToken(Parser, 1);
+        /* RuntimeBreak(); */
+        /* DebugPrint(FirstInteriorT); */
+
+        /* if ( StringsMatch(FirstInteriorT.Value, CSz("TODO")) ) */
         if (OptionalToken(Parser, CToken(CSz("TODO"))))
         {
+          /* PopTokenRaw(Parser); */
+          /* RequireToken(Parser, CToken(CSz("TODO"))); */
+
           if (OptionalToken(Parser, CTokenType_OpenParen))
           {
             counted_string PersonName = RequireToken(Parser, CTokenType_Identifier).Value;
@@ -3411,9 +3427,9 @@ DoMetaprogramming(c_parse_result* Parser, metaprogramming_info* MetaInfo, todo_l
             RequireToken(Parser, CTokenType_CloseParen);
             OptionalToken(Parser, CTokenType_Colon);
 
-            // TODO(Jesse id: 156, tags: immediate) This should actually concat all comments such that
-            // multi-line todos get parsed correctly.
-            counted_string TodoValue = Trim(ConcatTokensUntilNewline(Parser, Memory));
+            counted_string TodoValue = NextToken.Type == CTokenType_CommentSingleLine ?
+              Trim(EatUntil(Parser, CTokenType_Newline)) :
+              Trim(EatUntil(Parser, CTokenType_CommentMultiLineEnd));
             person* Person = GetExistingOrCreate(People, PersonName, Memory);
 
             ITERATE_OVER(&TodoTags)
@@ -3427,8 +3443,7 @@ DoMetaprogramming(c_parse_result* Parser, metaprogramming_info* MetaInfo, todo_l
         }
         else
         {
-          // TODO(Jesse id: 155, tags: immediate): This should eat the comment if
-          // it's not a todo so that commenting a preprocessor directive works
+          /* EatComment(Parser); */
         }
 
       } break;

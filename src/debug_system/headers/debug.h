@@ -283,7 +283,7 @@ typedef b32 (*meta_comparator)(push_metadata*, push_metadata*);
 
 #if 0
 
-/* // TODO(Jesse, id: 161, tags: back_burner, debug_recording): Reinstate this! */
+// TODO(Jesse, id: 161, tags: back_burner, debug_recording): Reinstate this!
 /* enum debug_recording_mode */
 /* { */
 /*   RecordingMode_Clear, */
