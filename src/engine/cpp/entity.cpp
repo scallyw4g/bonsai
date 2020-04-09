@@ -66,8 +66,9 @@ GetCollision( world *World, canonical_position TestP, v3 CollisionDim, chunk_dim
         world_chunk *chunk = GetWorldChunk( World, LoopTestP.WorldP, VisibleRegion);
 
 #if 0
-        // TODO(Jesse, id: 129, tags: theading, speed, gameplay_improvement): Can we somehow atomically pull this one off the queue
-        // and initialize it on demand?
+        /* TODO(Jesse, id: 129, tags: theading, speed, gameplay_improvement):
+         * Can we somehow atomically pull this one off the queue and initialize it on demand?
+         */
         if (chunk && NotSet(chunk->Data->flags, Chunk_Initialized) )
         {
           chunk->Data->flags = (chunk->Data->flags, Chunk_Queued);
@@ -136,8 +137,9 @@ GetCollision(entity **Entities, entity *Entity, chunk_dimension WorldChunkDim)
   return Result;
 }
 
-// TODO(Jesse, id: 130, tags: be_smarter): This offset is only used to check if entities are grounded.
-// Can we do that in a more intelligent way?
+/* TODO(Jesse, id: 130, tags: be_smarter): This offset is only used to check if
+ * entities are grounded.  Can we do that in a more intelligent way?
+ */
 collision_event
 GetCollision(world *World, entity *Entity, chunk_dimension VisibleRegion, v3 Offset = V3(0,0,0) )
 {

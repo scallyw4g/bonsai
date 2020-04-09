@@ -534,7 +534,6 @@ BufferTextAt(debug_ui_render_group *Group, v2 BasisP, counted_string Text, v2 Fo
 
 
 // TODO(Jesse, id: 104, tags: cleanup, robustness): Test this actually gets respected!!
-// @respect_invalid_render_command_index
 #define INVALID_RENDER_COMMAND_INDEX (u32_MAX)
 
 function u32
@@ -550,8 +549,7 @@ PushUiRenderCommand(debug_ui_render_group *Group, ui_render_command* Command)
   }
   else
   {
-    // TODO(Jesse, id: 105, tags: cleanup, robustness): Test this actually gets respected!!
-    // @respect_invalid_render_command_index
+    // TODO(Jesse, id: 105, tags: id_104, cleanup, robustness): Test this actually gets respected!!
     Result = INVALID_RENDER_COMMAND_INDEX;
     Error("Exhausted RenderCommandBuffer Space!");
   }

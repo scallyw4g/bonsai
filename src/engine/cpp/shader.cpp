@@ -103,12 +103,8 @@ PushShaderUniform( memory_arena *Mem, const char *Name)
   return Uniform;
 }
 
-/*
- * Unfortunately the c pre-processor makes us pass in the type and the name
- * we're going to access it with.
- *
- * TODO(Jesse, tags: metaprogramming): Metaprogram this!!
- */
+
+// TODO(Jesse, id: 237, tags: metaprogramming): Metaprogram this!!
 #define BasicTypeUniformAllocators(type, TypeName)                             \
   shader_uniform *                                                             \
   PushShaderUniform( memory_arena *Mem, const char *Name, type *Value)         \

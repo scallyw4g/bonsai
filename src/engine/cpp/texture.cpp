@@ -144,8 +144,9 @@ MakeTexture_RGBA(v2i Dim, u32* Data, memory_arena *Mem, u32 MaxTextureSlices = 1
   }
   else
   {
-    // TODO(Jesse, id: 137, tags: robustness, open_question): This _should_ be able to be glTexImage3D, but the driver is
-    // throwing an error .. why?!
+    /* TODO(Jesse, id: 137, tags: robustness, open_question): This _should_ be
+     * able to be glTexImage3D, but the driver is throwing an error .. why?!
+     */
 #if 0
     glTexImage3D(GL_TEXTURE_3D, MaxTextureSlices, InternalFormat,
         Texture->Dim.x, Texture->Dim.y, MaxTextureSlices,
@@ -210,8 +211,10 @@ MakeTexture_RGB(v2i Dim, const v3* Data, memory_arena *Mem)
 {
   texture *Texture = GenTexture(Dim, Mem);
 
-  // TODO(Jesse, id: 138, tags: opengl, memory_consumption): 32F is only necessary for reprojection of Position for
-  // calculating AO.  Consider passing this in when creating a Texture?
+  /* TODO(Jesse, id: 138, tags: opengl, memory_consumption): 32F is only
+   * necessary for reprojection of Position for calculating AO.  Consider
+   * passing this in when creating a Texture?
+   */
 
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F,
       Texture->Dim.x, Texture->Dim.y, 0,  GL_RGB, GL_FLOAT, Data);

@@ -170,14 +170,16 @@ PeekTokenPointer(c_parse_result* Parser, u32 Lookahead = 0)
     Result = PeekTokenRawPointer(Parser, LocalLookahead);
     if ( Result->Type == CTokenType_CommentSingleLine)
     {
-      // TODO(Jesse, id: 213, tags: bug, parsing, needs_tests): There is a degenerate case here, what if the file ends without a newline?
-      // While we're at it, add tests that make sure these functions return sane stuff when files end with comments!
+      /* TODO(Jesse, id: 213, tags: bug, parsing, needs_tests): There is a degenerate case here, what if the file ends without a newline?
+       * While we're at it, add tests that make sure these functions return sane stuff when files end with comments!
+       */
       LocalLookahead = OffsetOfNext(Parser, LocalLookahead, CTokenType_Newline);
     }
     else if ( Result->Type == CTokenType_CommentMultiLineStart)
     {
-      // TODO(Jesse, id: 214, tags: bug, parsing, needs_tests): There is a degenerate case here, what if the file ends with a malformed comment?
-      // While we're at it, add tests that make sure these functions return sane stuff when files end with comments!
+      /* TODO(Jesse, id: 214, tags: bug, parsing, needs_tests): There is a degenerate case here, what if the file ends with a malformed comment?
+       * While we're at it, add tests that make sure these functions return sane stuff when files end with comments!
+       */
       LocalLookahead = OffsetOfNext(Parser, LocalLookahead, CTokenType_CommentMultiLineEnd);
     }
     else if (IsWhitespace(Result->Type))
@@ -246,24 +248,36 @@ EatUntil(c_parse_result* Parser, c_token_type Close)
 }
 
 function counted_string
-EatComment(c_parse_result* Parser)
+EatComment(c_parse_result* Parser, c_token_type CommentT)
 {
   string_from_parser Builder = StartStringFromParser(Parser);
 
-  if (PeekTokenRaw(Parser).Type == CTokenType_CommentSingleLine)
+  switch (CommentT)
   {
-    EatUntil(Parser, CTokenType_Newline);
-  }
-  else if (PeekTokenRaw(Parser).Type == CTokenType_CommentMultiLineStart)
-  {
-    EatUntil(Parser, CTokenType_CommentMultiLineEnd);
-  }
-  else
-  {
-    Warn("Called EatComment on something that wasn't a comment!");
+    case CTokenType_CommentSingleLine:
+    {
+      EatUntil(Parser, CTokenType_Newline);
+    } break;
+
+    case CTokenType_CommentMultiLineStart:
+    {
+      EatUntil(Parser, CTokenType_CommentMultiLineEnd);
+    } break;
+
+    default:
+    {
+      Warn("Called EatComment on something that wasn't a comment!");
+    } break;
   }
 
   counted_string Result = FinalizeStringFromParser(&Builder, Parser);
+  return Result;
+}
+
+function counted_string
+EatComment(c_parse_result* Parser)
+{
+  counted_string Result = EatComment(Parser, PeekTokenRaw(Parser).Type);
   return Result;
 }
 
@@ -1749,8 +1763,8 @@ NextTokenIsOperator(c_parse_result* Parser)
     case CTokenType_Percent:
     case CTokenType_Question:
     case CTokenType_Colon:
-    case CTokenType_Tilde: // TODO(Jesse id: 196): Does this belong here?
-    case CTokenType_Equals: // TODO(Jesse id: 216): Does this belong here?
+    case CTokenType_Tilde:       // TODO(Jesse id: 196): Does this belong here?
+    case CTokenType_Equals:      // TODO(Jesse id: 216): Does this belong here?
     case CTokenType_OpenBracket: // TODO(Jesse id: 235): Does this belong here?
     {
       Result = True;
@@ -2337,17 +2351,21 @@ ParseTypedef(c_parse_result* Parser, program_datatypes* Datatypes, memory_arena*
     }
     else
     {
-      // TODO(Jesse id: 228, tags: type_resolution, id_229): We should keep track of these!
-      // Specifically a struct alias
       // typedef struct thing other_thing;
+
+      /* TODO(Jesse id: 228, tags: type_resolution, id_229): We should keep
+       * track of these!  Specifically, it's a struct alias
+       */
       EatUntil(Parser, CTokenType_Semicolon);
     }
   }
   else
   {
-    // TODO(Jesse id: 229, tags: type_resolution): see #228
-    // Generic type alias
     // typedef thing other_thing;
+
+    /* TODO(Jesse id: 229, tags: type_resolution): see #228
+     * Generic type alias
+     */
     EatUntil(Parser, CTokenType_Semicolon);
   }
 }
@@ -2600,8 +2618,10 @@ DoWorkToOutputThisStuff(c_parse_result* Parser, counted_string OutputForThisPars
 debug_global platform Plat = {};
 debug_global os Os = {};
 
-// TODO(Jesse, id: 112, tags: bootstrap_debug_system, copy_paste): This is copy-pasted from the callgraph tests .. should we be
-// able to call this from anywhere?  It's also in the platform layer
+/* TODO(Jesse, id: 112, tags: bootstrap_debug_system, copy_paste): This is
+ * copy-pasted from the callgraph tests .. should we be able to call this from
+ * anywhere?  It's also in the platform layer
+ */
 function b32
 BootstrapDebugSystem(b32 OpenDebugWindow)
 {
@@ -3340,6 +3360,38 @@ RemoveAllMetaprogrammingOutput(c_parse_result_cursor* ParsedFiles, arguments* Ar
 
 }
 
+function counted_string
+ParseMultiLineTodoValue(c_parse_result* Parser, memory_arena* Memory)
+{
+  string_builder Builder = {};
+
+  while (PeekTokenRaw(Parser).Type != CTokenType_CommentMultiLineEnd)
+  {
+    c_token T = PopTokenRaw(Parser);
+
+    if (T.Type == CTokenType_Newline)
+    {
+      EatWhitespace(Parser);
+      if (OptionalToken(Parser, CTokenType_Star))
+      {
+        EatWhitespace(Parser);
+      }
+      Append(&Builder, CSz(" "));
+    }
+    else
+    {
+      Append(&Builder, T.Value);
+    }
+
+    continue;
+  }
+
+  Ensure( PopTokenRaw(Parser).Type == CTokenType_CommentMultiLineEnd );
+
+  counted_string Result = Trim(Finalize(&Builder, Memory));
+  return Result;
+}
+
 function void
 DoMetaprogramming(c_parse_result* Parser, metaprogramming_info* MetaInfo, todo_list_info* TodoInfo, memory_arena* Memory)
 {
@@ -3356,20 +3408,14 @@ DoMetaprogramming(c_parse_result* Parser, metaprogramming_info* MetaInfo, todo_l
 
     switch( NextToken.Type )
     {
-      // TODO(Jesse id: 157, tags: immediate) Should support multi-line comments as well
-      /* case CTokenType_CommentMultiLineStart: */
+      case CTokenType_CommentMultiLineStart:
       case CTokenType_CommentSingleLine:
       {
-        Ensure( PopTokenRaw(Parser).Type == CTokenType_CommentSingleLine);
-        c_token FirstInteriorT = PeekToken(Parser, 1);
-        /* RuntimeBreak(); */
-        /* DebugPrint(FirstInteriorT); */
-
-        /* if ( StringsMatch(FirstInteriorT.Value, CSz("TODO")) ) */
-        if (OptionalToken(Parser, CToken(CSz("TODO"))))
+        c_token CommentStartToken = PopTokenRaw(Parser);
+        c_token FirstInteriorT = PeekToken(Parser);
+        if ( StringsMatch(FirstInteriorT.Value, CSz("TODO")) )
         {
-          /* PopTokenRaw(Parser); */
-          /* RequireToken(Parser, CToken(CSz("TODO"))); */
+          RequireToken(Parser, CToken(CSz("TODO")));
 
           if (OptionalToken(Parser, CTokenType_OpenParen))
           {
@@ -3429,7 +3475,8 @@ DoMetaprogramming(c_parse_result* Parser, metaprogramming_info* MetaInfo, todo_l
 
             counted_string TodoValue = NextToken.Type == CTokenType_CommentSingleLine ?
               Trim(EatUntil(Parser, CTokenType_Newline)) :
-              Trim(EatUntil(Parser, CTokenType_CommentMultiLineEnd));
+              ParseMultiLineTodoValue(Parser, Memory);
+
             person* Person = GetExistingOrCreate(People, PersonName, Memory);
 
             ITERATE_OVER(&TodoTags)
@@ -3443,7 +3490,7 @@ DoMetaprogramming(c_parse_result* Parser, metaprogramming_info* MetaInfo, todo_l
         }
         else
         {
-          /* EatComment(Parser); */
+          EatComment(Parser, CommentStartToken.Type);
         }
 
       } break;

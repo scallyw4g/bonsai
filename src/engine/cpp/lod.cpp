@@ -71,8 +71,10 @@ Compute0thLod(untextured_3d_geometry_buffer* Dest, world_chunk *WorldChunk, chun
     /* if (IsBoundaryVoxel(chunk, VoxelP, WorldChunkDim)) */
     /*   DEBUG_DrawPointMarker(world, V3(VoxelP) + RenderOffset, PINK, 0.25f); */
 
-    // TODO(Jesse, id: 132, tags: not_implemented, speed): Pretty sure we can do some XOR trickery or something
-    // here to avoid this branch, which could be a large perf win
+    /* TODO(Jesse, id: 132, tags: not_implemented, speed): Pretty sure we can
+     * do some XOR trickery or something here to avoid this branch, which could
+     * be a large perf win
+     */
     if ( HalfFull && NotFilledInChunk( WorldChunk->Data, VoxelP, WorldChunkDim ) )
     {
       SurfaceNormal += Normalize( VoxelP - BoundingVoxelMidpoint );

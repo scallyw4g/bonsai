@@ -318,11 +318,11 @@ meta(
 
 struct struct_member_stream_chunk;
 
-// TODO(Jesse id: 191, tags: metaprogramming): This can be generated, but it requires
-// lazily evaluating functions once their dependant types have been generated.
-//
-// Not sure if this is a good idea or not, but we could do it.
-_meta( generate_stream_struct(struct_member) )
+/* TODO(Jesse id: 191, tags: metaprogramming): This can be generated, but it requires
+ * lazily evaluating functions once their dependant types have been generated.
+ * Not sure if this is a good idea or not, but we could do it.
+ * meta( generate_stream_struct(struct_member) )
+ */
 
 struct struct_member_stream
 {
@@ -431,8 +431,9 @@ enum datatype_type
   type_enum_member,
 };
 
-// TODO(Jesse, id: 188, tags: cleanup) This should have the name property, instead of
-// having the struct and enum defs have seperate names
+/* TODO(Jesse, id: 188, tags: cleanup) This should have the name property,
+ * instead of having the struct and enum defs have seperate names
+ */
 struct datatype
 {
   datatype_type Type;
@@ -519,8 +520,9 @@ struct c_parse_result
   b32 Valid;
   c_token_cursor Tokens;
 
-  // TODO(Jesse id: 154) This is pretty shitty because whenever we copy one of these
-  // structs this field has to be manually zeroed out ..
+  /* TODO(Jesse id: 154) This is pretty shitty because whenever we copy one of
+   * these structs this field has to be manually zeroed out ..
+   */
   c_token_cursor OutputTokens;
 
   counted_string Filename;

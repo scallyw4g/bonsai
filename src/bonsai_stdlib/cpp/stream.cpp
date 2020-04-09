@@ -139,8 +139,10 @@ ReadEntireFileIntoString(counted_string SourceFile, memory_arena *Memory)
 char *
 ReadUntilTerminatorList(ansi_stream *Cursor, const char *TerminatorList, memory_arena *Arena)
 {
-  // TODO(Jesse, id: 146, tags: robustness, cleanup): Make this return a counted string and everything that depends on
-  // it _NOT_ rely on the fact it's currently null terminated
+  /* TODO(Jesse, id: 146, tags: robustness, cleanup): Make this return a
+   * counted string and everything that depends on it _NOT_ rely on the fact
+   * it's currently null terminated
+   */
 
   counted_string String = ReadUntilTerminatorList(Cursor, TerminatorList);
 

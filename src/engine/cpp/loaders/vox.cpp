@@ -217,10 +217,11 @@ LoadVoxModel(memory_arena *WorldStorage, heap_allocator *Heap, char const *filep
 
           chunk_dimension ModelDim = Max - Min;
 
-          // TODO(Jesse, id: 124, tags: robustness, vox_loader): Load models in multiple chunks instead of one
-          // monolithic one. The storage for chunks must be as large as the
-          // largest chunk we will EVER load, which should definately not be
-          // decided at compile time.
+          /* TODO(Jesse, id: 124, tags: robustness, vox_loader): Load models in
+           * multiple chunks instead of one monolithic one. The storage for
+           * chunks must be as large as the largest chunk we will EVER load,
+           * which should definately not be decided at compile time.
+           */
           Chunk = AllocateChunk(WorldStorage, ModelDim);
           Assert(Chunk);
 
