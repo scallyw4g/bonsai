@@ -17,7 +17,6 @@
 
   ## immediate
     - #83 d_union-ify this
-    - #184 Reinstate memory protection!  Need to turn it off for metaprogrammed code, specifically the stream chunk allocation
     - #222 Re-add [[nodiscard]] here
 
   ## high_priority

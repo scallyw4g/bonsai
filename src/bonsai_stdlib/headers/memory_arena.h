@@ -425,11 +425,6 @@ Memprotect(void* LastPage, umm PageSize, s32 Protection)
 function u8*
 PushSize(memory_arena *Arena, umm SizeIn, umm Alignment, b32 MemProtect)
 {
-  /* TODO(Jesse id: 184, tags: immediate) Reinstate memory protection!  Need to
-   * turn it off for metaprogrammed code, specifically the stream chunk
-   * allocation
-   */
-  MemProtect = False;
   umm ToAlignment = Alignment - (SizeIn % Alignment);
   umm AlignCorrectedSizeIn = SizeIn;
 
