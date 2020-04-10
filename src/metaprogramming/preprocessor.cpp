@@ -7,7 +7,7 @@
 #define InvalidDefaultWhileParsing(Parser, ErrorMessage) \
     default: { OutputParsingError(Parser, Parser->Tokens.At, ErrorMessage); Assert(False); } break;
 
-#define DEBUG_PRINT (1)
+#define DEBUG_PRINT (0)
 
 #if DEBUG_PRINT
 #include <bonsai_stdlib/headers/debug_print.h>
@@ -2370,6 +2370,13 @@ ParseTypedef(c_parse_result* Parser, program_datatypes* Datatypes, memory_arena*
   }
 }
 
+function scope
+ParseScope(c_parse_result *Parser, memory_arena *Memory)
+{
+  scope Result = {};
+  return Result;
+}
+
 function counted_string
 ParseDeclarationValue(c_parse_result* Parser, variable* Decl, program_datatypes* Datatypes, memory_arena* Memory)
 {
@@ -2391,6 +2398,7 @@ ParseDeclarationValue(c_parse_result* Parser, variable* Decl, program_datatypes*
       if (PeekToken(Parser).Type == CTokenType_OpenBrace)
       {
         Func.Body = GetBodyTextForNextScope(Parser);
+        Func.Ast = ParseScope(&Func.Body, Memory);
         Push(&Datatypes->Functions, Func, Memory);
       }
       else
@@ -2463,13 +2471,12 @@ ParseDatatypes(c_parse_result* Parser, program_datatypes* Datatypes, memory_aren
             // TODO(Jesse id: 210, tags: id_205, metaprogramming, completeness): This is a function-macro call .. I think always..?
             RequireToken(Parser, CTokenType_Identifier);
             EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
-            OptionalToken(Parser, CTokenType_Semicolon); // TODO(Jesse id: 223): Should we have a more systemic way of handling semicolons?  It's actually valid to have a bunch in a row here.
+            OptionalToken(Parser, CTokenType_Semicolon);
           }
           else
           {
             variable Decl = ParseDeclaration(Parser);
             counted_string Value = ParseDeclarationValue(Parser, &Decl, Datatypes, Memory);
-
           }
         }
 

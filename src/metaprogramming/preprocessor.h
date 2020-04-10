@@ -571,7 +571,6 @@ meta(generate_stream(person))
 #include <metaprogramming/output/generate_stream_person.h>
 
 
-
 struct arguments
 {
   counted_string Outpath;
@@ -592,6 +591,7 @@ struct function_def
   variable_stream Args;
 
   c_parse_result Body;
+  scope Ast;
 };
 meta(generate_stream(function_def))
 #include <metaprogramming/output/generate_stream_function_def.h>

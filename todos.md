@@ -11,7 +11,6 @@
     - #220 Disallow namespaces
     - #199 Do we care about specifically parsing prefix operators?
     - #201 Do we care about specifically parsing postfix operators?
-    - #223 Should we have a more systemic way of handling semicolons?  It's actually valid to have a bunch in a row here.
     - #212 Should we check that the function was defined using the 'function' or 'exported_function' keywords and emit a warning otherwise?
     - #235 Does this belong here?
 

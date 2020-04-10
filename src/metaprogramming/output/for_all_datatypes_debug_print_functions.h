@@ -2707,6 +2707,10 @@
           DebugPrint(S.Body, Depth+1);
           DebugPrint("\n");
 
+          DebugPrint("Ast = ", Depth);
+          DebugPrint(S.Ast, Depth+1);
+          DebugPrint("\n");
+
     }
 
     function void DebugPrint(function_def* S, u32 Depth)
@@ -2725,6 +2729,10 @@
 
             DebugPrint("Body = ", Depth);
             DebugPrint(S->Body, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Ast = ", Depth);
+            DebugPrint(S->Ast, Depth+1);
             DebugPrint("\n");
 
       }
