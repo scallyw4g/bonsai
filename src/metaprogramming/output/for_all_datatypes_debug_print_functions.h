@@ -2664,8 +2664,8 @@
     {
       DebugPrint("scope\n", Depth);
       
-          DebugPrint("VariableDeclarations = ", Depth);
-          DebugPrint(S.VariableDeclarations, Depth+1);
+          DebugPrint("Decls = ", Depth);
+          DebugPrint(S.Decls, Depth+1);
           DebugPrint("\n");
 
           DebugPrint("Parent = ", Depth);
@@ -2680,8 +2680,8 @@
       {
         DebugPrint("scope\n", Depth);
         
-            DebugPrint("VariableDeclarations = ", Depth);
-            DebugPrint(S->VariableDeclarations, Depth+1);
+            DebugPrint("Decls = ", Depth);
+            DebugPrint(S->Decls, Depth+1);
             DebugPrint("\n");
 
             DebugPrint("Parent = ", Depth);
@@ -10056,7 +10056,7 @@
             case CTokenType_Unknown:
             {
               DebugPrint("CTokenType_Unknown");
-              DebugPrint("");
+              DebugPrint("0");
             } break;
 
             case CTokenType_OpenBracket:
@@ -10368,6 +10368,78 @@
             case CTokenType_Return:
             {
               DebugPrint("CTokenType_Return");
+              DebugPrint("");
+            } break;
+
+            case CTokenType_PlusEquals:
+            {
+              DebugPrint("CTokenType_PlusEquals");
+              DebugPrint("");
+            } break;
+
+            case CTokenType_MinusEquals:
+            {
+              DebugPrint("CTokenType_MinusEquals");
+              DebugPrint("");
+            } break;
+
+            case CTokenType_TimesEquals:
+            {
+              DebugPrint("CTokenType_TimesEquals");
+              DebugPrint("");
+            } break;
+
+            case CTokenType_DivEquals:
+            {
+              DebugPrint("CTokenType_DivEquals");
+              DebugPrint("");
+            } break;
+
+            case CTokenType_ModEquals:
+            {
+              DebugPrint("CTokenType_ModEquals");
+              DebugPrint("");
+            } break;
+
+            case CTokenType_AndEquals:
+            {
+              DebugPrint("CTokenType_AndEquals");
+              DebugPrint("");
+            } break;
+
+            case CTokenType_OrEquals:
+            {
+              DebugPrint("CTokenType_OrEquals");
+              DebugPrint("");
+            } break;
+
+            case CTokenType_XorEquals:
+            {
+              DebugPrint("CTokenType_XorEquals");
+              DebugPrint("");
+            } break;
+
+            case CTokenType_Increment:
+            {
+              DebugPrint("CTokenType_Increment");
+              DebugPrint("");
+            } break;
+
+            case CTokenType_Decrement:
+            {
+              DebugPrint("CTokenType_Decrement");
+              DebugPrint("");
+            } break;
+
+            case CTokenType_LogicalAnd:
+            {
+              DebugPrint("CTokenType_LogicalAnd");
+              DebugPrint("");
+            } break;
+
+            case CTokenType_LogicalOr:
+            {
+              DebugPrint("CTokenType_LogicalOr");
               DebugPrint("");
             } break;
 

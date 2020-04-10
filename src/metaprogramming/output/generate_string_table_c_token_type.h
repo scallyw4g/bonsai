@@ -112,6 +112,30 @@
 
             case CTokenType_Return: { Result = CSz("CTokenType_Return"); } break;
 
+            case CTokenType_PlusEquals: { Result = CSz("CTokenType_PlusEquals"); } break;
+
+            case CTokenType_MinusEquals: { Result = CSz("CTokenType_MinusEquals"); } break;
+
+            case CTokenType_TimesEquals: { Result = CSz("CTokenType_TimesEquals"); } break;
+
+            case CTokenType_DivEquals: { Result = CSz("CTokenType_DivEquals"); } break;
+
+            case CTokenType_ModEquals: { Result = CSz("CTokenType_ModEquals"); } break;
+
+            case CTokenType_AndEquals: { Result = CSz("CTokenType_AndEquals"); } break;
+
+            case CTokenType_OrEquals: { Result = CSz("CTokenType_OrEquals"); } break;
+
+            case CTokenType_XorEquals: { Result = CSz("CTokenType_XorEquals"); } break;
+
+            case CTokenType_Increment: { Result = CSz("CTokenType_Increment"); } break;
+
+            case CTokenType_Decrement: { Result = CSz("CTokenType_Decrement"); } break;
+
+            case CTokenType_LogicalAnd: { Result = CSz("CTokenType_LogicalAnd"); } break;
+
+            case CTokenType_LogicalOr: { Result = CSz("CTokenType_LogicalOr"); } break;
+
       }
       return Result;
     }

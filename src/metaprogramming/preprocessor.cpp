@@ -5,7 +5,7 @@
 #include <bonsai_types.h>
 
 #define InvalidDefaultWhileParsing(Parser, ErrorMessage) \
-    default: { OutputParsingError(Parser, Parser->Tokens.At, ErrorMessage); Assert(False); } break;
+    default: { OutputParsingError(Parser, PeekTokenPointer(Parser), ErrorMessage); Assert(False); } break;
 
 #define DEBUG_PRINT (0)
 
@@ -54,6 +54,13 @@ function b32
 IsComment(c_token T)
 {
   b32 Result = (T.Type == CTokenType_CommentSingleLine) || (T.Type == CTokenType_CommentMultiLineStart);
+  return Result;
+}
+
+function umm
+Remaining(c_parse_result* Parser)
+{
+  umm Result = Remaining(&Parser->Tokens);
   return Result;
 }
 
@@ -358,7 +365,7 @@ PopIdentifier(ansi_stream* SourceFileStream)
 
   while (Remaining(SourceFileStream))
   {
-    c_token T = GetToken(SourceFileStream);
+    c_token T = PeekToken(SourceFileStream);
     if (T.Type == CTokenType_Unknown)
     {
       ++SourceFileStream->At;
@@ -405,14 +412,16 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes = Fa
   b32 ParsingMultiLineComment = False;
   while(Remaining(&Code))
   {
-    const c_token FirstT = GetToken(&Code);
+    const c_token FirstT = PeekToken(&Code);
     c_token PushT = { .Type = FirstT.Type, .Value = CS(Code.At, 1) };
 
     switch (FirstT.Type)
     {
       case CTokenType_FSlash:
       {
-        const c_token SecondT = GetToken(&Code, 1);
+        const c_token SecondT = PeekToken(&Code, 1);
+
+        Advance(&Code);
         switch (SecondT.Type)
         {
           case CTokenType_FSlash:
@@ -433,6 +442,13 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes = Fa
             Advance(&Code);
           } break;
 
+          case CTokenType_Equals:
+          {
+            PushT.Type = CTokenType_DivEquals;
+            PushT.Value = CS(Code.At, 2);
+            Advance(&Code);
+          } break;
+
           default:
           {
             Advance(&Code);
@@ -440,22 +456,117 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes = Fa
         }
       } break;
 
+      case CTokenType_Hat:
+      {
+        if (PeekToken(&Code, 1).Type == CTokenType_Equals)
+        {
+          PushT.Type = CTokenType_XorEquals;
+          PushT.Value = CS(Code.At, 2);
+          Advance(&Code);
+        }
+        Advance(&Code);
+      }break;
+
+      case CTokenType_Pipe:
+      {
+        if (PeekToken(&Code, 1).Type == CTokenType_Pipe)
+        {
+          PushT.Type = CTokenType_LogicalOr;
+          PushT.Value = CS(Code.At, 2);
+          Advance(&Code);
+        }
+        else if (PeekToken(&Code, 1).Type == CTokenType_Equals)
+        {
+          PushT.Type = CTokenType_OrEquals;
+          PushT.Value = CS(Code.At, 2);
+          Advance(&Code);
+        }
+        Advance(&Code);
+      }break;
+
+      case CTokenType_Ampersand:
+      {
+        if (PeekToken(&Code, 1).Type == CTokenType_Ampersand)
+        {
+          PushT.Type = CTokenType_LogicalAnd;
+          PushT.Value = CS(Code.At, 2);
+          Advance(&Code);
+        }
+        else if (PeekToken(&Code, 1).Type == CTokenType_Equals)
+        {
+          PushT.Type = CTokenType_AndEquals;
+          PushT.Value = CS(Code.At, 2);
+          Advance(&Code);
+        }
+        Advance(&Code);
+      }break;
+
+      case CTokenType_Percent:
+      {
+        if (PeekToken(&Code, 1).Type == CTokenType_Equals)
+        {
+          PushT.Type = CTokenType_ModEquals;
+          PushT.Value = CS(Code.At, 2);
+          Advance(&Code);
+        }
+        Advance(&Code);
+      }break;
+
+      case CTokenType_Minus:
+      {
+        if (PeekToken(&Code, 1).Type == CTokenType_Minus)
+        {
+          PushT.Type = CTokenType_Decrement;
+          PushT.Value = CS(Code.At, 2);
+          Advance(&Code);
+        }
+        else if (PeekToken(&Code, 1).Type == CTokenType_Equals)
+        {
+          PushT.Type = CTokenType_MinusEquals;
+          PushT.Value = CS(Code.At, 2);
+          Advance(&Code);
+        }
+        Advance(&Code);
+      }break;
+
+      case CTokenType_Plus:
+      {
+        if (PeekToken(&Code, 1).Type == CTokenType_Equals)
+        {
+          PushT.Type = CTokenType_PlusEquals;
+          PushT.Value = CS(Code.At, 2);
+          Advance(&Code);
+        }
+        else if (PeekToken(&Code, 1).Type == CTokenType_Plus)
+        {
+          PushT.Type = CTokenType_Increment;
+          PushT.Value = CS(Code.At, 2);
+          Advance(&Code);
+        }
+        Advance(&Code);
+      }break;
+
       case CTokenType_Star:
       {
-        if (GetToken(&Code, 1).Type == CTokenType_FSlash)
+        if (PeekToken(&Code, 1).Type == CTokenType_Equals)
         {
-            ParsingMultiLineComment = False;
-            PushT.Type = CTokenType_CommentMultiLineEnd;
-            PushT.Value = CS(Code.At, 2);
-            Advance(&Code);
-            Advance(&Code);
+          PushT.Type = CTokenType_TimesEquals;
+          PushT.Value = CS(Code.At, 2);
+          Advance(&Code);
+        }
+        else if (PeekToken(&Code, 1).Type == CTokenType_FSlash)
+        {
+          ParsingMultiLineComment = False;
+          PushT.Type = CTokenType_CommentMultiLineEnd;
+          PushT.Value = CS(Code.At, 2);
+          Advance(&Code);
         }
         else
         {
           PushT.Type = CTokenType_Star;
           PushT.Value = CS(Code.At, 1);
-          Advance(&Code);
         }
+        Advance(&Code);
       } break;
 
       case CTokenType_SingleQuote:
@@ -486,13 +597,13 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes = Fa
 
       case CTokenType_BSlash:
       {
-        Advance(&Code);
-        if (GetToken(&Code).Type == CTokenType_Newline)
+        if (PeekToken(&Code, 1).Type == CTokenType_Newline)
         {
           PushT.Type = CTokenType_EscapedNewline;
           PushT.Value.Count = 2;
           Advance(&Code);
         }
+        Advance(&Code);
       } break;
 
       case CTokenType_Newline:
@@ -604,6 +715,8 @@ TokenizeFile(counted_string Filename, memory_arena* Memory, b32 IgnoreQuotes = F
 function void
 TruncateAtNextLineEnd(c_parse_result* Parser, u32 Count)
 {
+  c_token* StartingAt = Parser->Tokens.At;
+
   while (Remaining(&Parser->Tokens))
   {
     if(PopTokenRaw(Parser).Type == CTokenType_Newline)
@@ -615,17 +728,22 @@ TruncateAtNextLineEnd(c_parse_result* Parser, u32 Count)
       --Count;
     }
   }
+
   Parser->Tokens.End = Parser->Tokens.At;
+  Parser->Tokens.At = StartingAt;
 }
 
 function void
 RewindUntil(c_parse_result* Parser, c_token_type Type)
 {
-  while (Parser->Tokens.At > Parser->Tokens.Start)
+  while (Parser->Tokens.At >= Parser->Tokens.Start)
   {
     if (Parser->Tokens.At->Type == Type)
     {
-      ++Parser->Tokens.At;
+      if (Remaining(Parser))
+      {
+        ++Parser->Tokens.At;
+      }
       break;
     }
     --Parser->Tokens.At;
@@ -635,6 +753,8 @@ RewindUntil(c_parse_result* Parser, c_token_type Type)
 function void
 TruncateAtPreviousLineStart(c_parse_result* Parser, u32 Count )
 {
+  c_token* StartingAt = Parser->Tokens.At;
+
   while (Parser->Tokens.At > Parser->Tokens.Start)
   {
     if (Parser->Tokens.At->Type == CTokenType_Newline)
@@ -650,6 +770,7 @@ TruncateAtPreviousLineStart(c_parse_result* Parser, u32 Count )
   }
 
   Parser->Tokens.Start = Parser->Tokens.At;
+  Parser->Tokens.At = StartingAt;
 }
 
 function void
@@ -1430,7 +1551,7 @@ function struct_def
 ParseStructBody(c_parse_result* Parser, counted_string StructName, memory_arena* Memory, program_datatypes* Datatypes);
 
 function variable
-ParseDeclaration(c_parse_result* Parser);
+ParseVariable(c_parse_result* Parser);
 
 function counted_string
 ParseVariableAssignment(c_parse_result* Parser);
@@ -1494,7 +1615,7 @@ ParseStructMember(c_parse_result* Parser, counted_string StructName, memory_aren
       }
       else
       {
-        variable Decl = ParseDeclaration(Parser);
+        variable Decl = ParseVariable(Parser);
         counted_string Value = ParseDeclarationValue(Parser, &Decl, Datatypes, Memory);
 
         if (Decl.IsFunction)
@@ -1998,7 +2119,7 @@ IsTypeQualifier(c_token T)
 }
 
 function variable
-ParseDeclaration(c_parse_result* Parser)
+ParseVariable(c_parse_result* Parser)
 {
   variable Result = {};
 
@@ -2033,6 +2154,14 @@ ParseDeclaration(c_parse_result* Parser)
         Result.IsDestructor = True;
       } break;
 #endif
+
+      case CTokenType_Dot:
+      {
+        RequireToken(Parser, CTokenType_Dot);
+
+        // TODO(Jesse id: 240): Do we want to store this value?
+        RequireToken(Parser, CTokenType_Identifier);
+      } break;
 
       case CTokenType_Colon:
       {
@@ -2283,7 +2412,7 @@ ParseFunctionArgs(c_parse_result* Parser, memory_arena* Memory, function_def* Re
 
   while ( !Done && Remaining(&Parser->Tokens) )
   {
-    variable Arg = ParseDeclaration(Parser);
+    variable Arg = ParseVariable(Parser);
     if (Memory)
     {
       Push(&Result->Args, Arg, Memory);
@@ -2320,7 +2449,7 @@ ParseFunction(c_parse_result* Parser, memory_arena* Memory = 0)
 {
   function_def Func = {};
 
-  Func.Prototype = ParseDeclaration(Parser);
+  Func.Prototype = ParseVariable(Parser);
 
   if ( OptionalToken(Parser, CTokenType_OpenParen) )
   {
@@ -2421,12 +2550,62 @@ ParseTypedef(c_parse_result* Parser, program_datatypes* Datatypes, memory_arena*
   }
 }
 
-/* function scope */
-/* ParseScope(c_parse_result *Parser, memory_arena *Memory) */
-/* { */
-/*   scope Result = {}; */
-/*   return Result; */
-/* } */
+function scope*
+ParseScope(c_parse_result *Parser, memory_arena *Memory, scope* Parent = 0)
+{
+  scope *Result = Allocate(scope, Memory, 1);
+  Result->Parent = Parent;
+
+  while ( Remaining(&Parser->Tokens) )
+  {
+    c_token T = PeekToken(Parser);
+
+    switch (T.Type)
+    {
+      case CTokenType_Identifier:
+      {
+        variable V = ParseVariable(Parser);
+        if (PeekToken(Parser).Type == CTokenType_Equals)
+        {
+          EatUntil(Parser, CTokenType_Semicolon);
+          /* ParseVariableAssignment(Parser); */
+        }
+        Push(&Result->Decls, V, Memory);
+      } break;
+
+      case CTokenType_OpenBrace:
+      {
+        c_parse_result Child = GetBodyTextForNextScope(Parser);
+        ParseScope(&Child, Memory, Result);
+      } break;
+
+      case CTokenType_If:
+      case CTokenType_For:
+      case CTokenType_While:
+      case CTokenType_Switch:
+      {
+        RequireToken(Parser, T.Type);
+        EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
+      } break;
+
+      case CTokenType_Return:
+      {
+        RequireToken(Parser, T.Type);
+        if (!OptionalToken(Parser, CTokenType_Semicolon))
+        {
+          EatUntil(Parser, CTokenType_Semicolon);
+        }
+      } break;
+
+      InvalidDefaultWhileParsing(Parser, CSz("Invalid token encountered while parsing a scope."));
+    }
+
+    EatWhitespaceAndComments(Parser);
+    continue;
+  }
+
+  return Result;
+}
 
 function counted_string
 ParseDeclarationValue(c_parse_result* Parser, variable* Decl, program_datatypes* Datatypes, memory_arena* Memory)
@@ -2526,7 +2705,7 @@ ParseDatatypes(c_parse_result* Parser, program_datatypes* Datatypes, memory_aren
           }
           else
           {
-            variable Decl = ParseDeclaration(Parser);
+            variable Decl = ParseVariable(Parser);
             counted_string Value = ParseDeclarationValue(Parser, &Decl, Datatypes, Memory);
           }
         }

@@ -13,10 +13,13 @@
     - #201 Do we care about specifically parsing postfix operators?
     - #212 Should we check that the function was defined using the 'function' or 'exported_function' keywords and emit a warning otherwise?
     - #235 Does this belong here?
+    - #240 Do we want to store this value?
 
   ## immediate
     - #83 d_union-ify this
     - #222 Re-add [[nodiscard]] here
+    - #238 Change name to BitwiseAnd
+    - #239 Change name to BitwiseOr
 
   ## high_priority
     - #101 Profile and check collision rate of this!
@@ -70,6 +73,8 @@
     - #113 Remove these?
     - #144 This actually has nothing to do with the platform
     - #146 Make this return a counted string and everything that depends on it _NOT_ rely on the fact it's currently null terminated
+    - #238 Change name to BitwiseAnd
+    - #239 Change name to BitwiseOr
 
   ## rng
     - #82 257 seemed to produce slightly worse results, but the source literature seemed to indicate using a constant close to the total number of discrete characters you'll encounter is advisable.  I believe this to be somewhat higher than 53, but it would be worth testing on real-world data (source files).

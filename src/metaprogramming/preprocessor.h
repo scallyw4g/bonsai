@@ -255,7 +255,7 @@ meta(generate_value_table(meta_transform_op))
 
 enum c_token_type
 {
-  CTokenType_Unknown,
+  CTokenType_Unknown = 0,
 
   CTokenType_OpenBracket   = '[',
   CTokenType_CloseBracket  = ']',
@@ -272,7 +272,7 @@ enum c_token_type
   CTokenType_Dollar        = '$',
   CTokenType_Space         = ' ',
   CTokenType_Star          = '*',
-  CTokenType_Ampersand     = '&',
+  CTokenType_Ampersand     = '&', // TODO(Jesse id: 238, tags: immediate, cleanup): Change name to BitwiseAnd
   CTokenType_SingleQuote   = '\'',
   CTokenType_DoubleQuote   = '"',
   CTokenType_Equals        = '=',
@@ -288,12 +288,12 @@ enum c_token_type
   CTokenType_BSlash        = '\\',
   CTokenType_Tilde         = '~',
   CTokenType_Backtick      = '`',
-  CTokenType_Pipe          = '|',
+  CTokenType_Pipe          = '|', // TODO(Jesse id: 239, tags: immediate, cleanup): Change name to BitwiseOr
   CTokenType_Newline       = '\n',
   CTokenType_CarrigeReturn = '\r',
   CTokenType_EOF           = EOF,
 
-  CTokenType_CommentSingleLine = 256,
+  CTokenType_CommentSingleLine = 256, // Presumably, we'll never need to parse anything that's not ascii, so start the non-ascii tokens at 256
   CTokenType_CommentMultiLineStart,
   CTokenType_CommentMultiLineEnd,
 
@@ -313,6 +313,20 @@ enum c_token_type
   CTokenType_Continue,
   CTokenType_Return,
 
+  CTokenType_PlusEquals,
+  CTokenType_MinusEquals,
+  CTokenType_TimesEquals,
+  CTokenType_DivEquals,
+  CTokenType_ModEquals,
+  CTokenType_AndEquals,
+  CTokenType_OrEquals,
+  CTokenType_XorEquals,
+
+  CTokenType_Increment,
+  CTokenType_Decrement,
+
+  CTokenType_LogicalAnd,
+  CTokenType_LogicalOr,
 };
 meta(generate_string_table(c_token_type))
 #include <metaprogramming/output/generate_string_table_c_token_type.h>
@@ -593,7 +607,7 @@ struct arguments
 
 struct scope
 {
-  variable_stream VariableDeclarations;
+  variable_stream Decls;
   scope* Parent;
 };
 
@@ -603,7 +617,7 @@ struct function_def
   variable_stream Args;
 
   c_parse_result Body;
-  scope Ast;
+  scope* Ast;
 };
 meta(generate_stream(function_def))
 #include <metaprogramming/output/generate_stream_function_def.h>
@@ -723,7 +737,7 @@ AllocateTokenBuffer(memory_arena* Memory, u32 Count)
 }
 
 c_token
-GetToken(ansi_stream* Stream, u32 Lookahead = 0)
+PeekToken(ansi_stream* Stream, u32 Lookahead = 0)
 {
   c_token Result = {};
 
