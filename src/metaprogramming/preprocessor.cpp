@@ -421,7 +421,6 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes = Fa
       {
         const c_token SecondT = PeekToken(&Code, 1);
 
-        Advance(&Code);
         switch (SecondT.Type)
         {
           case CTokenType_FSlash:
@@ -447,6 +446,7 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes = Fa
             PushT.Type = CTokenType_DivEquals;
             PushT.Value = CS(Code.At, 2);
             Advance(&Code);
+            Advance(&Code);
           } break;
 
           default:
@@ -455,6 +455,63 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes = Fa
           } break;
         }
       } break;
+
+      case CTokenType_LT:
+      {
+        if (PeekToken(&Code, 1).Type == CTokenType_Equals)
+        {
+          PushT.Type = CTokenType_LessEqual;
+          PushT.Value = CS(Code.At, 2);
+          Advance(&Code);
+        }
+        else if (PeekToken(&Code, 1).Type == CTokenType_LT)
+        {
+          PushT.Type = CTokenType_LeftShift;
+          PushT.Value = CS(Code.At, 2);
+          Advance(&Code);
+        }
+        Advance(&Code);
+      } break;
+
+      case CTokenType_GT:
+      {
+        if (PeekToken(&Code, 1).Type == CTokenType_Equals)
+        {
+          PushT.Type = CTokenType_GreaterEqual;
+          PushT.Value = CS(Code.At, 2);
+          Advance(&Code);
+        }
+        else if (PeekToken(&Code, 1).Type == CTokenType_GT)
+        {
+          PushT.Type = CTokenType_RightShift;
+          PushT.Value = CS(Code.At, 2);
+          Advance(&Code);
+        }
+        Advance(&Code);
+      } break;
+
+      case CTokenType_Equals:
+      {
+        if (PeekToken(&Code, 1).Type == CTokenType_Equals)
+        {
+          PushT.Type = CTokenType_AreEqual;
+          PushT.Value = CS(Code.At, 2);
+          Advance(&Code);
+        }
+        Advance(&Code);
+      } break;
+
+      case CTokenType_Bang:
+      {
+        if (PeekToken(&Code, 1).Type == CTokenType_Equals)
+        {
+          PushT.Type = CTokenType_NotEqual;
+          PushT.Value = CS(Code.At, 2);
+          Advance(&Code);
+        }
+        Advance(&Code);
+      } break;
+
 
       case CTokenType_Hat:
       {
@@ -1869,50 +1926,6 @@ ParseIntegerConstant(c_parse_result* Parser)
 }
 
 function b32
-NextTokenIsPostfixOperator(c_parse_result* Parser)
-{
-  b32 Result = False;
-
-  c_token T = PeekToken(Parser);
-  switch (T.Type)
-  {
-    // TODO(Jesse id: 195): Should we include dot here?
-    case CTokenType_Minus:
-    case CTokenType_Plus:
-    {
-      Result = True;
-    } break;
-
-    default: {} break;
-  }
-
-  return Result;
-}
-
-function b32
-NextTokenIsPrefixOperator(c_parse_result* Parser)
-{
-  b32 Result = False;
-
-  c_token T = PeekToken(Parser);
-  switch (T.Type)
-  {
-    case CTokenType_Minus:
-    case CTokenType_Plus:
-    case CTokenType_Star:
-    case CTokenType_Bang:
-    case CTokenType_Ampersand:
-    {
-      Result = True;
-    } break;
-
-    default: {} break;
-  }
-
-  return Result;
-}
-
-function b32
 NextTokenIsOperator(c_parse_result* Parser)
 {
   b32 Result = False;
@@ -1927,17 +1940,33 @@ NextTokenIsOperator(c_parse_result* Parser)
     case CTokenType_Plus:
     case CTokenType_Star:
     case CTokenType_FSlash:
-    case CTokenType_Bang:
     case CTokenType_Ampersand:
     case CTokenType_Pipe:
-
     case CTokenType_Hat:
     case CTokenType_Percent:
     case CTokenType_Question:
-    case CTokenType_Colon:
-    case CTokenType_Tilde:       // TODO(Jesse id: 196): Does this belong here?
-    case CTokenType_Equals:      // TODO(Jesse id: 216): Does this belong here?
+    case CTokenType_Tilde:
+    case CTokenType_Colon: // TODO(Jesse id: 241): Does this belong here?
     case CTokenType_OpenBracket: // TODO(Jesse id: 235): Does this belong here?
+
+    case CTokenType_LeftShift:
+    case CTokenType_RightShift:
+    case CTokenType_LessEqual:
+    case CTokenType_GreaterEqual:
+    case CTokenType_AreEqual:
+    case CTokenType_NotEqual:
+    case CTokenType_PlusEquals:
+    case CTokenType_MinusEquals:
+    case CTokenType_TimesEquals:
+    case CTokenType_DivEquals:
+    case CTokenType_ModEquals:
+    case CTokenType_AndEquals:
+    case CTokenType_OrEquals:
+    case CTokenType_XorEquals:
+    case CTokenType_Increment:
+    case CTokenType_Decrement:
+    case CTokenType_LogicalAnd:
+    case CTokenType_LogicalOr:
     {
       Result = True;
     } break;
@@ -1956,54 +1985,42 @@ ParseOperator(c_parse_result* Parser)
   c_token T = PeekToken(Parser);
   switch (T.Type)
   {
-    case CTokenType_GT:
-    case CTokenType_LT:
-    {
-      RequireToken(Parser, T.Type);
-      if(!OptionalToken(Parser, T.Type))
-      {
-        OptionalToken(Parser, CTokenType_Equals);
-      }
-    } break;
-
+    case CTokenType_LeftShift:
+    case CTokenType_RightShift:
+    case CTokenType_LessEqual:
+    case CTokenType_GreaterEqual:
+    case CTokenType_AreEqual:
+    case CTokenType_NotEqual:
+    case CTokenType_PlusEquals:
+    case CTokenType_MinusEquals:
+    case CTokenType_TimesEquals:
+    case CTokenType_DivEquals:
+    case CTokenType_ModEquals:
+    case CTokenType_AndEquals:
+    case CTokenType_OrEquals:
+    case CTokenType_XorEquals:
+    case CTokenType_Increment:
+    case CTokenType_Decrement:
+    case CTokenType_LogicalAnd:
+    case CTokenType_LogicalOr:
     case CTokenType_Minus:
     case CTokenType_Plus:
     case CTokenType_Star:
     case CTokenType_FSlash:
-    case CTokenType_Bang:
-    {
-      RequireToken(Parser, T.Type);
-      OptionalToken(Parser, CTokenType_Equals);
-    } break;
-
-
     case CTokenType_Pipe:
     case CTokenType_Ampersand:
+    case CTokenType_Hat:
+    case CTokenType_Percent:
+    case CTokenType_GT:
+    case CTokenType_LT:
     {
       RequireToken(Parser, T.Type);
-      // We can have another | or &, or an = ie. && or &=, but &&= is not valid
-      if (!OptionalToken(Parser, T.Type))
-      {
-        OptionalToken(Parser, CTokenType_Equals);
-      }
-    } break;
-
-    case CTokenType_Equals:
-    {
-      RequireToken(Parser, T.Type);
-      RequireToken(Parser, CTokenType_Equals);
     } break;
 
     case CTokenType_OpenBracket:
     {
       RequireToken(Parser, T.Type);
       RequireToken(Parser, CTokenType_CloseBracket);
-    } break;
-
-    case CTokenType_Hat:
-    case CTokenType_Percent:
-    {
-      RequireToken(Parser, T.Type);
     } break;
 
     default: { ParseError(Parser, CSz("Expected operator.")); } break;
@@ -2352,6 +2369,31 @@ ParseVariable(c_parse_result* Parser)
   return Result;
 }
 
+function void
+OptionalPrefixOperator(c_parse_result *Parser)
+{
+  c_token T = PeekToken(Parser);
+  if ( T.Type == CTokenType_Increment ||
+       T.Type == CTokenType_Decrement ||
+       T.Type == CTokenType_Ampersand ||
+       T.Type == CTokenType_Star
+       )
+  {
+    PopToken(Parser);
+  }
+}
+
+function void
+OptionalPostfixOperator(c_parse_result *Parser)
+{
+  c_token T = PeekToken(Parser);
+  if ( T.Type == CTokenType_Increment ||
+       T.Type == CTokenType_Decrement)
+  {
+    PopToken(Parser);
+  }
+}
+
 function counted_string
 ParseVariableAssignment(c_parse_result* Parser)
 {
@@ -2365,10 +2407,7 @@ ParseVariableAssignment(c_parse_result* Parser)
   }
   else
   {
-    if ( NextTokenIsPrefixOperator(Parser) )
-    {
-      ParseOperator(Parser); // TODO(Jesse id: 199): Do we care about specifically parsing prefix operators?
-    }
+    OptionalPrefixOperator(Parser);
 
     // TODO(Jesse, id: 200, tags: metaprogramming, parsing): Floating-point values should be parsed out in TokenizeAnsiStream()!!
     counted_string AssignmentValue = RequireToken(Parser, CTokenType_Identifier).Value;
@@ -2383,10 +2422,7 @@ ParseVariableAssignment(c_parse_result* Parser)
       EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
     }
 
-    if ( NextTokenIsPostfixOperator(Parser) )
-    {
-      ParseOperator(Parser); // TODO(Jesse id: 201): Do we care about specifically parsing postfix operators?
-    }
+    OptionalPostfixOperator(Parser);
   }
 
   counted_string FinalAssignmentValue = FinalizeStringFromParser(&Builder, Parser);

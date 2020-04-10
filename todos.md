@@ -1,19 +1,15 @@
 # Jesse
   ## untagged
     - #154 This is pretty shitty because whenever we copy one of these structs this field has to be manually zeroed out ..
-    - #195 Should we include dot here?
-    - #196 Does this belong here?
-    - #216 Does this belong here?
     - #217 Disallow namespaces
     - #197 Have some way of coalescing this to our internal types?
     - #198 Do we ignore this?
     - #207 Emit domain-specific warning here?
     - #220 Disallow namespaces
-    - #199 Do we care about specifically parsing prefix operators?
-    - #201 Do we care about specifically parsing postfix operators?
     - #212 Should we check that the function was defined using the 'function' or 'exported_function' keywords and emit a warning otherwise?
     - #235 Does this belong here?
     - #240 Do we want to store this value?
+    - #241 Does this belong here?
 
   ## immediate
     - #83 d_union-ify this

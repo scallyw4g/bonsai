@@ -313,6 +313,14 @@ enum c_token_type
   CTokenType_Continue,
   CTokenType_Return,
 
+  CTokenType_LeftShift,
+  CTokenType_RightShift,
+
+  CTokenType_LessEqual,
+  CTokenType_GreaterEqual,
+  CTokenType_AreEqual,
+  CTokenType_NotEqual,
+
   CTokenType_PlusEquals,
   CTokenType_MinusEquals,
   CTokenType_TimesEquals,

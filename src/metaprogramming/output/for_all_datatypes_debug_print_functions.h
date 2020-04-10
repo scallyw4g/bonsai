@@ -10371,6 +10371,42 @@
               DebugPrint("");
             } break;
 
+            case CTokenType_LeftShift:
+            {
+              DebugPrint("CTokenType_LeftShift");
+              DebugPrint("");
+            } break;
+
+            case CTokenType_RightShift:
+            {
+              DebugPrint("CTokenType_RightShift");
+              DebugPrint("");
+            } break;
+
+            case CTokenType_LessEqual:
+            {
+              DebugPrint("CTokenType_LessEqual");
+              DebugPrint("");
+            } break;
+
+            case CTokenType_GreaterEqual:
+            {
+              DebugPrint("CTokenType_GreaterEqual");
+              DebugPrint("");
+            } break;
+
+            case CTokenType_AreEqual:
+            {
+              DebugPrint("CTokenType_AreEqual");
+              DebugPrint("");
+            } break;
+
+            case CTokenType_NotEqual:
+            {
+              DebugPrint("CTokenType_NotEqual");
+              DebugPrint("");
+            } break;
+
             case CTokenType_PlusEquals:
             {
               DebugPrint("CTokenType_PlusEquals");

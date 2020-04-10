@@ -112,6 +112,18 @@
 
             case CTokenType_Return: { Result = CSz("CTokenType_Return"); } break;
 
+            case CTokenType_LeftShift: { Result = CSz("CTokenType_LeftShift"); } break;
+
+            case CTokenType_RightShift: { Result = CSz("CTokenType_RightShift"); } break;
+
+            case CTokenType_LessEqual: { Result = CSz("CTokenType_LessEqual"); } break;
+
+            case CTokenType_GreaterEqual: { Result = CSz("CTokenType_GreaterEqual"); } break;
+
+            case CTokenType_AreEqual: { Result = CSz("CTokenType_AreEqual"); } break;
+
+            case CTokenType_NotEqual: { Result = CSz("CTokenType_NotEqual"); } break;
+
             case CTokenType_PlusEquals: { Result = CSz("CTokenType_PlusEquals"); } break;
 
             case CTokenType_MinusEquals: { Result = CSz("CTokenType_MinusEquals"); } break;
