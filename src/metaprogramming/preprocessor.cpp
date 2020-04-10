@@ -505,6 +505,57 @@ TokenizeAnsiStream(ansi_stream Code, memory_arena* Memory, b32 IgnoreQuotes = Fa
       {
         PushT.Type = CTokenType_Identifier;
         PushT.Value = PopIdentifier(&Code);
+
+        if ( StringsMatch(PushT.Value, CSz("if")) )
+        {
+          PushT.Type = CTokenType_If;
+        }
+
+        if ( StringsMatch(PushT.Value, CSz("else")) )
+        {
+          PushT.Type = CTokenType_Else;
+        }
+
+        if ( StringsMatch(PushT.Value, CSz("break")) )
+        {
+          PushT.Type = CTokenType_Break;
+        }
+
+        if ( StringsMatch(PushT.Value, CSz("switch")) )
+        {
+          PushT.Type = CTokenType_Switch;
+        }
+
+        if ( StringsMatch(PushT.Value, CSz("case")) )
+        {
+          PushT.Type = CTokenType_Case;
+        }
+
+        if ( StringsMatch(PushT.Value, CSz("default")) )
+        {
+          PushT.Type = CTokenType_Default;
+        }
+
+        if ( StringsMatch(PushT.Value, CSz("for")) )
+        {
+          PushT.Type = CTokenType_For;
+        }
+
+        if ( StringsMatch(PushT.Value, CSz("while")) )
+        {
+          PushT.Type = CTokenType_While;
+        }
+
+        if ( StringsMatch(PushT.Value, CSz("continue")) )
+        {
+          PushT.Type = CTokenType_Continue;
+        }
+
+        if ( StringsMatch(PushT.Value, CSz("return")) )
+        {
+          PushT.Type = CTokenType_Return;
+        }
+
       } break;
 
       default:
@@ -2370,12 +2421,12 @@ ParseTypedef(c_parse_result* Parser, program_datatypes* Datatypes, memory_arena*
   }
 }
 
-function scope
-ParseScope(c_parse_result *Parser, memory_arena *Memory)
-{
-  scope Result = {};
-  return Result;
-}
+/* function scope */
+/* ParseScope(c_parse_result *Parser, memory_arena *Memory) */
+/* { */
+/*   scope Result = {}; */
+/*   return Result; */
+/* } */
 
 function counted_string
 ParseDeclarationValue(c_parse_result* Parser, variable* Decl, program_datatypes* Datatypes, memory_arena* Memory)
@@ -2398,7 +2449,7 @@ ParseDeclarationValue(c_parse_result* Parser, variable* Decl, program_datatypes*
       if (PeekToken(Parser).Type == CTokenType_OpenBrace)
       {
         Func.Body = GetBodyTextForNextScope(Parser);
-        Func.Ast = ParseScope(&Func.Body, Memory);
+        /* Func.Ast = ParseScope(&Func.Body, Memory); */
         Push(&Datatypes->Functions, Func, Memory);
       }
       else

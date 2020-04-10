@@ -10059,48 +10059,6 @@
               DebugPrint("");
             } break;
 
-            case CTokenType_CommentSingleLine:
-            {
-              DebugPrint("CTokenType_CommentSingleLine");
-              DebugPrint("");
-            } break;
-
-            case CTokenType_CommentMultiLineStart:
-            {
-              DebugPrint("CTokenType_CommentMultiLineStart");
-              DebugPrint("");
-            } break;
-
-            case CTokenType_CommentMultiLineEnd:
-            {
-              DebugPrint("CTokenType_CommentMultiLineEnd");
-              DebugPrint("");
-            } break;
-
-            case CTokenType_Identifier:
-            {
-              DebugPrint("CTokenType_Identifier");
-              DebugPrint("");
-            } break;
-
-            case CTokenType_String:
-            {
-              DebugPrint("CTokenType_String");
-              DebugPrint("");
-            } break;
-
-            case CTokenType_Char:
-            {
-              DebugPrint("CTokenType_Char");
-              DebugPrint("");
-            } break;
-
-            case CTokenType_EscapedNewline:
-            {
-              DebugPrint("CTokenType_EscapedNewline");
-              DebugPrint("");
-            } break;
-
             case CTokenType_OpenBracket:
             {
               DebugPrint("CTokenType_OpenBracket");
@@ -10309,6 +10267,108 @@
             {
               DebugPrint("CTokenType_EOF");
               DebugPrint("EOF");
+            } break;
+
+            case CTokenType_CommentSingleLine:
+            {
+              DebugPrint("CTokenType_CommentSingleLine");
+              DebugPrint("256");
+            } break;
+
+            case CTokenType_CommentMultiLineStart:
+            {
+              DebugPrint("CTokenType_CommentMultiLineStart");
+              DebugPrint("");
+            } break;
+
+            case CTokenType_CommentMultiLineEnd:
+            {
+              DebugPrint("CTokenType_CommentMultiLineEnd");
+              DebugPrint("");
+            } break;
+
+            case CTokenType_Identifier:
+            {
+              DebugPrint("CTokenType_Identifier");
+              DebugPrint("");
+            } break;
+
+            case CTokenType_String:
+            {
+              DebugPrint("CTokenType_String");
+              DebugPrint("");
+            } break;
+
+            case CTokenType_Char:
+            {
+              DebugPrint("CTokenType_Char");
+              DebugPrint("");
+            } break;
+
+            case CTokenType_EscapedNewline:
+            {
+              DebugPrint("CTokenType_EscapedNewline");
+              DebugPrint("");
+            } break;
+
+            case CTokenType_If:
+            {
+              DebugPrint("CTokenType_If");
+              DebugPrint("");
+            } break;
+
+            case CTokenType_Else:
+            {
+              DebugPrint("CTokenType_Else");
+              DebugPrint("");
+            } break;
+
+            case CTokenType_Break:
+            {
+              DebugPrint("CTokenType_Break");
+              DebugPrint("");
+            } break;
+
+            case CTokenType_Switch:
+            {
+              DebugPrint("CTokenType_Switch");
+              DebugPrint("");
+            } break;
+
+            case CTokenType_Case:
+            {
+              DebugPrint("CTokenType_Case");
+              DebugPrint("");
+            } break;
+
+            case CTokenType_Default:
+            {
+              DebugPrint("CTokenType_Default");
+              DebugPrint("");
+            } break;
+
+            case CTokenType_For:
+            {
+              DebugPrint("CTokenType_For");
+              DebugPrint("");
+            } break;
+
+            case CTokenType_While:
+            {
+              DebugPrint("CTokenType_While");
+              DebugPrint("");
+            } break;
+
+            case CTokenType_Continue:
+            {
+              DebugPrint("CTokenType_Continue");
+              DebugPrint("");
+            } break;
+
+            case CTokenType_Return:
+            {
+              DebugPrint("CTokenType_Return");
+              DebugPrint("");
             } break;
 
       }

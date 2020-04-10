@@ -257,15 +257,6 @@ enum c_token_type
 {
   CTokenType_Unknown,
 
-  CTokenType_CommentSingleLine,
-  CTokenType_CommentMultiLineStart,
-  CTokenType_CommentMultiLineEnd,
-
-  CTokenType_Identifier,
-  CTokenType_String,
-  CTokenType_Char,
-  CTokenType_EscapedNewline,
-
   CTokenType_OpenBracket   = '[',
   CTokenType_CloseBracket  = ']',
   CTokenType_OpenBrace     = '{',
@@ -301,6 +292,27 @@ enum c_token_type
   CTokenType_Newline       = '\n',
   CTokenType_CarrigeReturn = '\r',
   CTokenType_EOF           = EOF,
+
+  CTokenType_CommentSingleLine = 256,
+  CTokenType_CommentMultiLineStart,
+  CTokenType_CommentMultiLineEnd,
+
+  CTokenType_Identifier,
+  CTokenType_String,
+  CTokenType_Char,
+  CTokenType_EscapedNewline,
+
+  CTokenType_If,
+  CTokenType_Else,
+  CTokenType_Break,
+  CTokenType_Switch,
+  CTokenType_Case,
+  CTokenType_Default,
+  CTokenType_For,
+  CTokenType_While,
+  CTokenType_Continue,
+  CTokenType_Return,
+
 };
 meta(generate_string_table(c_token_type))
 #include <metaprogramming/output/generate_string_table_c_token_type.h>

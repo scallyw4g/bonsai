@@ -8,20 +8,6 @@
         
             case CTokenType_Unknown: { Result = CSz("CTokenType_Unknown"); } break;
 
-            case CTokenType_CommentSingleLine: { Result = CSz("CTokenType_CommentSingleLine"); } break;
-
-            case CTokenType_CommentMultiLineStart: { Result = CSz("CTokenType_CommentMultiLineStart"); } break;
-
-            case CTokenType_CommentMultiLineEnd: { Result = CSz("CTokenType_CommentMultiLineEnd"); } break;
-
-            case CTokenType_Identifier: { Result = CSz("CTokenType_Identifier"); } break;
-
-            case CTokenType_String: { Result = CSz("CTokenType_String"); } break;
-
-            case CTokenType_Char: { Result = CSz("CTokenType_Char"); } break;
-
-            case CTokenType_EscapedNewline: { Result = CSz("CTokenType_EscapedNewline"); } break;
-
             case CTokenType_OpenBracket: { Result = CSz("CTokenType_OpenBracket"); } break;
 
             case CTokenType_CloseBracket: { Result = CSz("CTokenType_CloseBracket"); } break;
@@ -91,6 +77,40 @@
             case CTokenType_CarrigeReturn: { Result = CSz("CTokenType_CarrigeReturn"); } break;
 
             case CTokenType_EOF: { Result = CSz("CTokenType_EOF"); } break;
+
+            case CTokenType_CommentSingleLine: { Result = CSz("CTokenType_CommentSingleLine"); } break;
+
+            case CTokenType_CommentMultiLineStart: { Result = CSz("CTokenType_CommentMultiLineStart"); } break;
+
+            case CTokenType_CommentMultiLineEnd: { Result = CSz("CTokenType_CommentMultiLineEnd"); } break;
+
+            case CTokenType_Identifier: { Result = CSz("CTokenType_Identifier"); } break;
+
+            case CTokenType_String: { Result = CSz("CTokenType_String"); } break;
+
+            case CTokenType_Char: { Result = CSz("CTokenType_Char"); } break;
+
+            case CTokenType_EscapedNewline: { Result = CSz("CTokenType_EscapedNewline"); } break;
+
+            case CTokenType_If: { Result = CSz("CTokenType_If"); } break;
+
+            case CTokenType_Else: { Result = CSz("CTokenType_Else"); } break;
+
+            case CTokenType_Break: { Result = CSz("CTokenType_Break"); } break;
+
+            case CTokenType_Switch: { Result = CSz("CTokenType_Switch"); } break;
+
+            case CTokenType_Case: { Result = CSz("CTokenType_Case"); } break;
+
+            case CTokenType_Default: { Result = CSz("CTokenType_Default"); } break;
+
+            case CTokenType_For: { Result = CSz("CTokenType_For"); } break;
+
+            case CTokenType_While: { Result = CSz("CTokenType_While"); } break;
+
+            case CTokenType_Continue: { Result = CSz("CTokenType_Continue"); } break;
+
+            case CTokenType_Return: { Result = CSz("CTokenType_Return"); } break;
 
       }
       return Result;
