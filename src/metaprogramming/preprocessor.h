@@ -352,16 +352,20 @@ meta(
 
 struct struct_member_stream_chunk;
 
-/* TODO(Jesse id: 191, tags: metaprogramming): This can be generated, but it requires
- * lazily evaluating functions once their dependant types have been generated.
- * Not sure if this is a good idea or not, but we could do it.
+/* TODO(Jesse id: 191, tags: metaprogramming): This can be generated, but it
+ * requires lazily evaluating functions once their dependant types have been
+ * generated.  Not sure if this is a good idea or not, but we could do it.
+ *
  * meta( generate_stream_struct(struct_member) )
+ *
+ * Currently the invariant of being able to remove and re-generate all meta
+ * output in a single run of the metaprogramming system is broken by this.
  */
 
 struct struct_member_stream
 {
-  struct_member_stream_chunk* FirstChunk;
-  struct_member_stream_chunk* LastChunk;
+  struct_member_stream_chunk *FirstChunk;
+  struct_member_stream_chunk *LastChunk;
 };
 
 struct struct_def

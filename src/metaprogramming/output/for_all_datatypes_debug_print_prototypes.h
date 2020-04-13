@@ -512,6 +512,15 @@
       function void DebugPrint( native_file* S, u32 Depth = 0);
       function void DebugPrint( native_file  S, u32 Depth = 0);
 
+      function void DebugPrint( ast_node_function_call* S, u32 Depth = 0);
+      function void DebugPrint( ast_node_function_call  S, u32 Depth = 0);
+
+      function void DebugPrint( ast_node_var* S, u32 Depth = 0);
+      function void DebugPrint( ast_node_var  S, u32 Depth = 0);
+
+      function void DebugPrint( ast_node_scope* S, u32 Depth = 0);
+      function void DebugPrint( ast_node_scope  S, u32 Depth = 0);
+
       function void DebugPrint( plane_computation* S, u32 Depth = 0);
       function void DebugPrint( plane_computation  S, u32 Depth = 0);
 

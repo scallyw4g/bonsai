@@ -10,6 +10,7 @@
     - #235 Does this belong here?
     - #240 Do we want to store this value?
     - #241 Does this belong here?
+    - #242 Stream of variable instances with values??
 
   ## immediate
     - #83 d_union-ify this
@@ -77,7 +78,7 @@
     - #95 This is LCG RNG - do we want a better one?
 
   ## metaprogramming
-    - #191 This can be generated, but it requires lazily evaluating functions once their dependant types have been generated. Not sure if this is a good idea or not, but we could do it. meta( generate_stream_struct(struct_member) )
+    - #191 This can be generated, but it requires lazily evaluating functions once their dependant types have been generated.  Not sure if this is a good idea or not, but we could do it. * meta( generate_stream_struct(struct_member) ) * Currently the invariant of being able to remove and re-generate all meta output in a single run of the metaprogramming system is broken by this.
     - #194 Use bitflags
     - #193 Metaprogram this.  I've had bugs multiple times because of it.
     - #83 d_union-ify this

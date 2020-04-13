@@ -1499,7 +1499,7 @@ StructDef(counted_string Type, counted_string Sourcefile)
     .Type = Type,
     .DefinedInFile = Sourcefile
   };
- 
+
   return Result;
 }
 
@@ -1608,7 +1608,7 @@ function struct_def
 ParseStructBody(c_parse_result* Parser, counted_string StructName, memory_arena* Memory, program_datatypes* Datatypes);
 
 function variable
-ParseVariable(c_parse_result* Parser);
+ParseDeclaration(c_parse_result* Parser);
 
 function counted_string
 ParseVariableAssignment(c_parse_result* Parser);
@@ -1672,7 +1672,7 @@ ParseStructMember(c_parse_result* Parser, counted_string StructName, memory_aren
       }
       else
       {
-        variable Decl = ParseVariable(Parser);
+        variable Decl = ParseDeclaration(Parser);
         counted_string Value = ParseDeclarationValue(Parser, &Decl, Datatypes, Memory);
 
         if (Decl.IsFunction)
@@ -2136,7 +2136,7 @@ IsTypeQualifier(c_token T)
 }
 
 function variable
-ParseVariable(c_parse_result* Parser)
+ParseDeclaration(c_parse_result *Parser)
 {
   variable Result = {};
 
@@ -2197,9 +2197,7 @@ ParseVariable(c_parse_result* Parser)
 
       case CTokenType_LT:
       {
-        string_from_parser TemplateBodyBuilder = StartStringFromParser(Parser);
-        EatBetween(Parser, CTokenType_LT, CTokenType_GT);
-        Result.TemplateSource = FinalizeStringFromParser(&TemplateBodyBuilder, Parser);
+        Result.TemplateSource = EatBetween(Parser, CTokenType_LT, CTokenType_GT);
       } break;
 
       case CTokenType_OpenBracket:
@@ -2448,7 +2446,7 @@ ParseFunctionArgs(c_parse_result* Parser, memory_arena* Memory, function_def* Re
 
   while ( !Done && Remaining(&Parser->Tokens) )
   {
-    variable Arg = ParseVariable(Parser);
+    variable Arg = ParseDeclaration(Parser);
     if (Memory)
     {
       Push(&Result->Args, Arg, Memory);
@@ -2485,7 +2483,7 @@ ParseFunction(c_parse_result* Parser, memory_arena* Memory = 0)
 {
   function_def Func = {};
 
-  Func.Prototype = ParseVariable(Parser);
+  Func.Prototype = ParseDeclaration(Parser);
 
   if ( OptionalToken(Parser, CTokenType_OpenParen) )
   {
@@ -2586,8 +2584,39 @@ ParseTypedef(c_parse_result* Parser, program_datatypes* Datatypes, memory_arena*
   }
 }
 
+struct ast_node;
+
+struct ast_node_function_call
+{
+  function_def *Prototype;
+  // TODO(Jesse id: 242): Stream of variable instances with values??
+};
+
+struct ast_node_var
+{
+  variable *Decl;
+  ast_node *Value;
+};
+
+struct ast_node_scope
+{
+  ast_node *Children;
+};
+
+meta(
+  d_union ast_node
+  {
+    ast_node_var_decl
+    ast_node_var
+    ast_node_assignment
+    ast_node_scope
+    ast_node_value
+  }
+)
+#include <metaprogramming/output/d_union_ast_node.h>
+
 function scope*
-ParseScope(c_parse_result *Parser, memory_arena *Memory, scope* Parent = 0)
+ParseScope(c_parse_result *Parser, memory_arena *Memory, program_datatypes* Datatypes, scope* Parent = 0)
 {
   scope *Result = Allocate(scope, Memory, 1);
   Result->Parent = Parent;
@@ -2600,19 +2629,13 @@ ParseScope(c_parse_result *Parser, memory_arena *Memory, scope* Parent = 0)
     {
       case CTokenType_Identifier:
       {
-        variable V = ParseVariable(Parser);
-        if (PeekToken(Parser).Type == CTokenType_Equals)
-        {
-          EatUntil(Parser, CTokenType_Semicolon);
-          /* ParseVariableAssignment(Parser); */
-        }
-        Push(&Result->Decls, V, Memory);
+        datatype MatchedDatatype = GetDatatypeByName(Datatypes, T.Value);
       } break;
 
       case CTokenType_OpenBrace:
       {
         c_parse_result Child = GetBodyTextForNextScope(Parser);
-        ParseScope(&Child, Memory, Result);
+        ParseScope(&Child, Memory, Datatypes, Result);
       } break;
 
       case CTokenType_If:
@@ -2657,14 +2680,14 @@ ParseDeclarationValue(c_parse_result* Parser, variable* Decl, program_datatypes*
   else if ( PeekToken(Parser).Type == CTokenType_OpenParen )
   {
     // TODO(Jesse id: 212): Should we check that the function was defined using the 'function' or 'exported_function' keywords and emit a warning otherwise?
-    function_def Func = { .Prototype = *Decl }; 
+    function_def Func = { .Prototype = *Decl };
     if ( OptionalToken(Parser, CTokenType_OpenParen) )
     {
       ParseFunctionArgs(Parser, Memory, &Func);
       if (PeekToken(Parser).Type == CTokenType_OpenBrace)
       {
         Func.Body = GetBodyTextForNextScope(Parser);
-        /* Func.Ast = ParseScope(&Func.Body, Memory); */
+        /* Func.Ast = ParseScope(&Func.Body, Memory, Datatypes); */
         Push(&Datatypes->Functions, Func, Memory);
       }
       else
@@ -2741,7 +2764,8 @@ ParseDatatypes(c_parse_result* Parser, program_datatypes* Datatypes, memory_aren
           }
           else
           {
-            variable Decl = ParseVariable(Parser);
+            // Global variable decl
+            variable Decl = ParseDeclaration(Parser);
             counted_string Value = ParseDeclarationValue(Parser, &Decl, Datatypes, Memory);
           }
         }

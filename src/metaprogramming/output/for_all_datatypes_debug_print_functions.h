@@ -7844,6 +7844,83 @@
       }
     }
 
+    function void DebugPrint( ast_node_function_call S, u32 Depth)
+    {
+      DebugPrint("ast_node_function_call\n", Depth);
+      
+          DebugPrint("Prototype = ", Depth);
+          DebugPrint(S.Prototype, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(ast_node_function_call* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("ast_node_function_call\n", Depth);
+        
+            DebugPrint("Prototype = ", Depth);
+            DebugPrint(S->Prototype, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
+    function void DebugPrint( ast_node_var S, u32 Depth)
+    {
+      DebugPrint("ast_node_var\n", Depth);
+      
+          DebugPrint("Decl = ", Depth);
+          DebugPrint(S.Decl, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("Value = ", Depth);
+          DebugPrint(S.Value, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(ast_node_var* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("ast_node_var\n", Depth);
+        
+            DebugPrint("Decl = ", Depth);
+            DebugPrint(S->Decl, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Value = ", Depth);
+            DebugPrint(S->Value, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
+    function void DebugPrint( ast_node_scope S, u32 Depth)
+    {
+      DebugPrint("ast_node_scope\n", Depth);
+      
+          DebugPrint("Children = ", Depth);
+          DebugPrint(S.Children, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(ast_node_scope* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("ast_node_scope\n", Depth);
+        
+            DebugPrint("Children = ", Depth);
+            DebugPrint(S->Children, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
     function void DebugPrint( plane_computation S, u32 Depth)
     {
       DebugPrint("plane_computation\n", Depth);
