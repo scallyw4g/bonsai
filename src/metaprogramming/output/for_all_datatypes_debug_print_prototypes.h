@@ -173,6 +173,33 @@
       function void DebugPrint( person* S, u32 Depth = 0);
       function void DebugPrint( person  S, u32 Depth = 0);
 
+      function void DebugPrint( ast_node_function_call* S, u32 Depth = 0);
+      function void DebugPrint( ast_node_function_call  S, u32 Depth = 0);
+
+      function void DebugPrint( ast_node_datatype* S, u32 Depth = 0);
+      function void DebugPrint( ast_node_datatype  S, u32 Depth = 0);
+
+      function void DebugPrint( ast_node_var* S, u32 Depth = 0);
+      function void DebugPrint( ast_node_var  S, u32 Depth = 0);
+
+      function void DebugPrint( ast_node_preprocessor_directive* S, u32 Depth = 0);
+      function void DebugPrint( ast_node_preprocessor_directive  S, u32 Depth = 0);
+
+      function void DebugPrint( ast_node_scope* S, u32 Depth = 0);
+      function void DebugPrint( ast_node_scope  S, u32 Depth = 0);
+
+      function void DebugPrint( ast_node_assignment* S, u32 Depth = 0);
+      function void DebugPrint( ast_node_assignment  S, u32 Depth = 0);
+
+      function void DebugPrint( ast_node_address_of* S, u32 Depth = 0);
+      function void DebugPrint( ast_node_address_of  S, u32 Depth = 0);
+
+      function void DebugPrint( ast_node_initializer_list* S, u32 Depth = 0);
+      function void DebugPrint( ast_node_initializer_list  S, u32 Depth = 0);
+
+      function void DebugPrint( ast_node_ignored* S, u32 Depth = 0);
+      function void DebugPrint( ast_node_ignored  S, u32 Depth = 0);
+
       function void DebugPrint( arguments* S, u32 Depth = 0);
       function void DebugPrint( arguments  S, u32 Depth = 0);
 
@@ -512,15 +539,6 @@
       function void DebugPrint( native_file* S, u32 Depth = 0);
       function void DebugPrint( native_file  S, u32 Depth = 0);
 
-      function void DebugPrint( ast_node_function_call* S, u32 Depth = 0);
-      function void DebugPrint( ast_node_function_call  S, u32 Depth = 0);
-
-      function void DebugPrint( ast_node_var* S, u32 Depth = 0);
-      function void DebugPrint( ast_node_var  S, u32 Depth = 0);
-
-      function void DebugPrint( ast_node_scope* S, u32 Depth = 0);
-      function void DebugPrint( ast_node_scope  S, u32 Depth = 0);
-
       function void DebugPrint( plane_computation* S, u32 Depth = 0);
       function void DebugPrint( plane_computation  S, u32 Depth = 0);
 
@@ -641,6 +659,9 @@
       function void DebugPrint( person_iterator* S, u32 Depth = 0);
       function void DebugPrint( person_iterator  S, u32 Depth = 0);
 
+      function void DebugPrint( ast_node* S, u32 Depth = 0);
+      function void DebugPrint( ast_node  S, u32 Depth = 0);
+
       function void DebugPrint( function_def_stream_chunk* S, u32 Depth = 0);
       function void DebugPrint( function_def_stream_chunk  S, u32 Depth = 0);
 
@@ -751,6 +772,8 @@
       function void DebugPrint(struct_member_function_type EnumValue, u32 Depth = 0);
 
       function void DebugPrint(struct_member_type EnumValue, u32 Depth = 0);
+
+      function void DebugPrint(ast_node_type EnumValue, u32 Depth = 0);
 
       function void DebugPrint(work_queue_entry_type EnumValue, u32 Depth = 0);
 

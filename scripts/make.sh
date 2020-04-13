@@ -21,6 +21,9 @@ BIN="$ROOT/bin"
 BIN_TEST="$BIN/tests"
 META_OUT="$SRC/metaprogramming/output"
 
+# PREPROCESSOR_EXECUTABLE="bin/preprocessor_dev"
+# PREPROCESSOR_EXECUTABLE="bin/preprocessor_current"
+
 function SetOutputBinaryPathBasename()
 {
   base_file="${1##*/}"
@@ -134,7 +137,7 @@ function BuildPreprocessor {
     $COMMON_LINKER_OPTIONS       \
     -D BONSAI_INTERNAL=1         \
     -I"$SRC"                     \
-    -o "$output_basename"        \
+    -o "$output_basename""_dev"  \
     $executable
 
   if [ $? -eq 0 ]; then
@@ -288,7 +291,7 @@ function RunPreprocessor
 {
   SetSourceFiles
   ColorizeTitle "Preprocessing"
-  bin/preprocessor $SOURCE_FILES
+  $PREPROCESSOR_EXECUTABLE $SOURCE_FILES
   if [ $? -ne 0 ]; then
     echo ""
     echo -e "$Failed Preprocessing failed, exiting." 
@@ -310,15 +313,17 @@ function RunEntireBuild {
   fi
 
   if [ $FirstPreprocessor == 1 ]; then
+    PREPROCESSOR_EXECUTABLE="bin/preprocessor_current"
     RunPreprocessor
   fi
 
   if [ $BuildPreprocessor == 1 ]; then
     BuildPreprocessor
-    [ ! -x bin/preprocessor ] && echo -e "$Failed Couldn't find preprocessor, exiting." && exit 1
+    [ ! -x $PREPROCESSOR_EXECUTABLE ] && echo -e "$Failed Couldn't find preprocessor, exiting." && exit 1
   fi
 
   if [ $SecondPreprocessor == 1 ]; then
+    PREPROCESSOR_EXECUTABLE="bin/preprocessor_dev"
     RunPreprocessor
   fi
 
@@ -342,9 +347,9 @@ function RunEntireBuild {
 
 DumpSourceFilesAndQuit=0
 
-CheckoutMetaOutput=1
+CheckoutMetaOutput=0
 
-FirstPreprocessor=0
+FirstPreprocessor=1
 BuildPreprocessor=1
 SecondPreprocessor=1
 

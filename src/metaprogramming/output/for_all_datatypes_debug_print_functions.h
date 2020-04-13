@@ -2621,6 +2621,237 @@
       }
     }
 
+    function void DebugPrint( ast_node_function_call S, u32 Depth)
+    {
+      DebugPrint("ast_node_function_call\n", Depth);
+      
+          DebugPrint("Prototype = ", Depth);
+          DebugPrint(S.Prototype, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(ast_node_function_call* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("ast_node_function_call\n", Depth);
+        
+            DebugPrint("Prototype = ", Depth);
+            DebugPrint(S->Prototype, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
+    function void DebugPrint( ast_node_datatype S, u32 Depth)
+    {
+      DebugPrint("ast_node_datatype\n", Depth);
+      
+          DebugPrint("Type = ", Depth);
+          DebugPrint(S.Type, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(ast_node_datatype* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("ast_node_datatype\n", Depth);
+        
+            DebugPrint("Type = ", Depth);
+            DebugPrint(S->Type, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
+    function void DebugPrint( ast_node_var S, u32 Depth)
+    {
+      DebugPrint("ast_node_var\n", Depth);
+      
+          DebugPrint("Decl = ", Depth);
+          DebugPrint(S.Decl, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("Value = ", Depth);
+          DebugPrint(S.Value, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("NextStatement = ", Depth);
+          DebugPrint(S.NextStatement, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(ast_node_var* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("ast_node_var\n", Depth);
+        
+            DebugPrint("Decl = ", Depth);
+            DebugPrint(S->Decl, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Value = ", Depth);
+            DebugPrint(S->Value, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("NextStatement = ", Depth);
+            DebugPrint(S->NextStatement, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
+    function void DebugPrint( ast_node_preprocessor_directive S, u32 Depth)
+    {
+      DebugPrint("ast_node_preprocessor_directive\n", Depth);
+      
+          DebugPrint("Children = ", Depth);
+          DebugPrint(S.Children, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(ast_node_preprocessor_directive* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("ast_node_preprocessor_directive\n", Depth);
+        
+            DebugPrint("Children = ", Depth);
+            DebugPrint(S->Children, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
+    function void DebugPrint( ast_node_scope S, u32 Depth)
+    {
+      DebugPrint("ast_node_scope\n", Depth);
+      
+          DebugPrint("Children = ", Depth);
+          DebugPrint(S.Children, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(ast_node_scope* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("ast_node_scope\n", Depth);
+        
+            DebugPrint("Children = ", Depth);
+            DebugPrint(S->Children, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
+    function void DebugPrint( ast_node_assignment S, u32 Depth)
+    {
+      DebugPrint("ast_node_assignment\n", Depth);
+      
+          DebugPrint("LHS = ", Depth);
+          DebugPrint(S.LHS, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("RHS = ", Depth);
+          DebugPrint(S.RHS, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(ast_node_assignment* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("ast_node_assignment\n", Depth);
+        
+            DebugPrint("LHS = ", Depth);
+            DebugPrint(S->LHS, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("RHS = ", Depth);
+            DebugPrint(S->RHS, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
+    function void DebugPrint( ast_node_address_of S, u32 Depth)
+    {
+      DebugPrint("ast_node_address_of\n", Depth);
+      
+          DebugPrint("Operand = ", Depth);
+          DebugPrint(S.Operand, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(ast_node_address_of* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("ast_node_address_of\n", Depth);
+        
+            DebugPrint("Operand = ", Depth);
+            DebugPrint(S->Operand, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
+    function void DebugPrint( ast_node_initializer_list S, u32 Depth)
+    {
+      DebugPrint("ast_node_initializer_list\n", Depth);
+      
+    }
+
+    function void DebugPrint(ast_node_initializer_list* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("ast_node_initializer_list\n", Depth);
+        
+      }
+    }
+
+    function void DebugPrint( ast_node_ignored S, u32 Depth)
+    {
+      DebugPrint("ast_node_ignored\n", Depth);
+      
+          DebugPrint("Token = ", Depth);
+          DebugPrint(S.Token, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("Children = ", Depth);
+          DebugPrint(S.Children, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(ast_node_ignored* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("ast_node_ignored\n", Depth);
+        
+            DebugPrint("Token = ", Depth);
+            DebugPrint(S->Token, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Children = ", Depth);
+            DebugPrint(S->Children, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
     function void DebugPrint( arguments S, u32 Depth)
     {
       DebugPrint("arguments\n", Depth);
@@ -7844,83 +8075,6 @@
       }
     }
 
-    function void DebugPrint( ast_node_function_call S, u32 Depth)
-    {
-      DebugPrint("ast_node_function_call\n", Depth);
-      
-          DebugPrint("Prototype = ", Depth);
-          DebugPrint(S.Prototype, Depth+1);
-          DebugPrint("\n");
-
-    }
-
-    function void DebugPrint(ast_node_function_call* S, u32 Depth)
-    {
-      if (S)
-      {
-        DebugPrint("ast_node_function_call\n", Depth);
-        
-            DebugPrint("Prototype = ", Depth);
-            DebugPrint(S->Prototype, Depth+1);
-            DebugPrint("\n");
-
-      }
-    }
-
-    function void DebugPrint( ast_node_var S, u32 Depth)
-    {
-      DebugPrint("ast_node_var\n", Depth);
-      
-          DebugPrint("Decl = ", Depth);
-          DebugPrint(S.Decl, Depth+1);
-          DebugPrint("\n");
-
-          DebugPrint("Value = ", Depth);
-          DebugPrint(S.Value, Depth+1);
-          DebugPrint("\n");
-
-    }
-
-    function void DebugPrint(ast_node_var* S, u32 Depth)
-    {
-      if (S)
-      {
-        DebugPrint("ast_node_var\n", Depth);
-        
-            DebugPrint("Decl = ", Depth);
-            DebugPrint(S->Decl, Depth+1);
-            DebugPrint("\n");
-
-            DebugPrint("Value = ", Depth);
-            DebugPrint(S->Value, Depth+1);
-            DebugPrint("\n");
-
-      }
-    }
-
-    function void DebugPrint( ast_node_scope S, u32 Depth)
-    {
-      DebugPrint("ast_node_scope\n", Depth);
-      
-          DebugPrint("Children = ", Depth);
-          DebugPrint(S.Children, Depth+1);
-          DebugPrint("\n");
-
-    }
-
-    function void DebugPrint(ast_node_scope* S, u32 Depth)
-    {
-      if (S)
-      {
-        DebugPrint("ast_node_scope\n", Depth);
-        
-            DebugPrint("Children = ", Depth);
-            DebugPrint(S->Children, Depth+1);
-            DebugPrint("\n");
-
-      }
-    }
-
     function void DebugPrint( plane_computation S, u32 Depth)
     {
       DebugPrint("plane_computation\n", Depth);
@@ -9305,6 +9459,37 @@
       }
     }
 
+    function void DebugPrint( ast_node S, u32 Depth)
+    {
+      DebugPrint("ast_node\n", Depth);
+      
+          DebugPrint("Type = ", Depth);
+          DebugPrint(S.Type, Depth+1);
+          DebugPrint("\n");
+
+          DebugPrint("Next = ", Depth);
+          DebugPrint(S.Next, Depth+1);
+          DebugPrint("\n");
+
+    }
+
+    function void DebugPrint(ast_node* S, u32 Depth)
+    {
+      if (S)
+      {
+        DebugPrint("ast_node\n", Depth);
+        
+            DebugPrint("Type = ", Depth);
+            DebugPrint(S->Type, Depth+1);
+            DebugPrint("\n");
+
+            DebugPrint("Next = ", Depth);
+            DebugPrint(S->Next, Depth+1);
+            DebugPrint("\n");
+
+      }
+    }
+
     function void DebugPrint( function_def_stream_chunk S, u32 Depth)
     {
       DebugPrint("function_def_stream_chunk\n", Depth);
@@ -10448,6 +10633,12 @@
               DebugPrint("");
             } break;
 
+            case CTokenType_This:
+            {
+              DebugPrint("CTokenType_This");
+              DebugPrint("");
+            } break;
+
             case CTokenType_LeftShift:
             {
               DebugPrint("CTokenType_LeftShift");
@@ -10553,6 +10744,12 @@
             case CTokenType_LogicalOr:
             {
               DebugPrint("CTokenType_LogicalOr");
+              DebugPrint("");
+            } break;
+
+            case CTokenType_Arrow:
+            {
+              DebugPrint("CTokenType_Arrow");
               DebugPrint("");
             } break;
 
@@ -11528,6 +11725,75 @@
             case type_struct_member_anonymous:
             {
               DebugPrint("type_struct_member_anonymous");
+              DebugPrint("");
+            } break;
+
+      }
+    }
+
+    function void DebugPrint(ast_node_type EnumValue, u32 Depth)
+    {
+      DebugPrint("ast_node_type\n", Depth);
+      switch (EnumValue)
+      {
+        
+            case type_ast_node_noop:
+            {
+              DebugPrint("type_ast_node_noop");
+              DebugPrint("");
+            } break;
+
+            case type_ast_node_var:
+            {
+              DebugPrint("type_ast_node_var");
+              DebugPrint("");
+            } break;
+
+            case type_ast_node_function_call:
+            {
+              DebugPrint("type_ast_node_function_call");
+              DebugPrint("");
+            } break;
+
+            case type_ast_node_scope:
+            {
+              DebugPrint("type_ast_node_scope");
+              DebugPrint("");
+            } break;
+
+            case type_ast_node_assignment:
+            {
+              DebugPrint("type_ast_node_assignment");
+              DebugPrint("");
+            } break;
+
+            case type_ast_node_address_of:
+            {
+              DebugPrint("type_ast_node_address_of");
+              DebugPrint("");
+            } break;
+
+            case type_ast_node_initializer_list:
+            {
+              DebugPrint("type_ast_node_initializer_list");
+              DebugPrint("");
+            } break;
+
+            case type_ast_node_ignored:
+            {
+              DebugPrint("type_ast_node_ignored");
+              DebugPrint("");
+            } break;
+
+            case type_ast_node_preprocessor_directive:
+            {
+              DebugPrint("type_ast_node_preprocessor_directive");
+              DebugPrint("");
+            } break;
+
+            case type_ast_node_datatype:
+            {
+              DebugPrint("type_ast_node_datatype");
               DebugPrint("");
             } break;
 

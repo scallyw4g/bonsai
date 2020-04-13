@@ -151,6 +151,19 @@ meta(
 )
 
 meta(
+  func generate_stream_getters(InputTypeDef)
+  {
+    InputTypeDef.map_members (Member) {
+      function InputTypeDef.type
+      GetBy(Member.name)( (Member.Type) Needle, (InputTypeDef.type)_stream *Haystack)
+      {
+        // TODO : Implement matching!
+      }
+    }
+  }
+)
+
+meta(
   func generate_stream(Type)
   {
     (generate_stream_chunk_struct(Type))
@@ -312,6 +325,7 @@ enum c_token_type
   CTokenType_While,
   CTokenType_Continue,
   CTokenType_Return,
+  CTokenType_This,
 
   CTokenType_LeftShift,
   CTokenType_RightShift,
@@ -335,6 +349,8 @@ enum c_token_type
 
   CTokenType_LogicalAnd,
   CTokenType_LogicalOr,
+
+  CTokenType_Arrow,
 };
 meta(generate_string_table(c_token_type))
 #include <metaprogramming/output/generate_string_table_c_token_type.h>
@@ -384,7 +400,7 @@ struct struct_member_anonymous
   struct_def Body;
 };
 
-struct variable
+struct variable // TODO(Jesse id: 245): Change to variable_def or variable_decl
 {
   counted_string Type;
   counted_string Name;
@@ -478,11 +494,11 @@ struct datatype
 
   union
   {
-    struct_def*     struct_def;
-    struct_member*  struct_member;
+    struct_def     *struct_def;
+    struct_member  *struct_member;
 
-    enum_def*       enum_def;
-    enum_member*    enum_member;
+    enum_def       *enum_def;
+    enum_member    *enum_member;
   };
 };
 
@@ -608,6 +624,89 @@ struct person
 meta(generate_stream(person))
 #include <metaprogramming/output/generate_stream_person.h>
 
+struct ast_node;
+struct function_def;
+
+struct ast_node_function_call
+{
+  function_def *Prototype;
+  // TODO(Jesse id: 242): Stream of variable instances with values??
+};
+
+struct ast_node_datatype
+{
+  datatype Type;
+};
+
+struct ast_node_var
+{
+  variable Decl; // TODO(Jesse id: 246): Not really sure if this should be a pointer or not
+  ast_node *Value;
+
+  ast_node *NextStatement;
+};
+
+struct ast_node_preprocessor_directive
+{
+  ast_node *Children;
+};
+
+struct ast_node_scope
+{
+  ast_node *Children;
+};
+
+struct ast_node_assignment
+{
+  ast_node *LHS;
+  ast_node *RHS;
+};
+
+struct ast_node_address_of
+{
+  ast_node *Operand;
+};
+
+struct ast_node_initializer_list
+{
+  // TODO(Jesse id: 251): Implement this..
+};
+
+struct ast_node_ignored
+{
+  c_token Token;
+  ast_node *Children;
+};
+
+meta(
+  d_union ast_node { ast_node_var
+                     ast_node_function_call
+                     ast_node_scope
+                     ast_node_assignment
+                     ast_node_address_of
+                     ast_node_initializer_list
+                     ast_node_ignored
+                     ast_node_preprocessor_directive
+                     ast_node_datatype
+                   },
+  {
+    umm Next // TODO(Jesse): This needs to support pointers!
+  }
+)
+#include <metaprogramming/output/d_union_ast_node.h>
+
+function ast_node*
+AllocateAstNode(ast_node_type T, ast_node **Result, memory_arena* Memory)
+{
+  Assert(Result && !*Result); // We got a valid pointer, and it hasn't been allocated yet.
+
+  *Result = AllocateProtection(ast_node, Memory, 1, False);
+  (*Result)->Type = T;
+
+  return *Result;
+}
+
+#define AllocateAndCastTo(T, NodeDest, Memory) (&AllocateAstNode(type_##T, &NodeDest, Memory)->T)
 
 struct arguments
 {
@@ -629,7 +728,7 @@ struct function_def
   variable_stream Args;
 
   c_parse_result Body;
-  scope* Ast;
+  ast_node* Ast;
 };
 meta(generate_stream(function_def))
 #include <metaprogramming/output/generate_stream_function_def.h>

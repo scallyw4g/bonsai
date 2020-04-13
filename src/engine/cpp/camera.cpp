@@ -3,6 +3,7 @@ function void
 UpdateCameraP(canonical_position NewTarget, camera *Camera, chunk_dimension WorldChunkDim)
 {
   TIMED_FUNCTION();
+  /* test multiline comment */
   if (Camera->DistanceFromTarget <= 0.1f)
   {
     Camera->DistanceFromTarget = 0.1f;
@@ -66,11 +67,15 @@ UpdateCameraP(canonical_position NewTarget, camera *Camera, chunk_dimension Worl
   Camera->Frust.Bot = Bot;
   Camera->Frust.Left = Left;
   Camera->Frust.Right = Right;
+
 #endif
 
-  // TODO(Jesse, id: 128, tags: correctness, robustness, speed): Do culling on these as well?
+  /* thing */
+
   /* plane Near; */
   /* plane Far; */
+
+  // TODO(Jesse, id: 128, tags: correctness, robustness, speed): Do culling on these as well?
 
   return;
 }
