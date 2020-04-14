@@ -125,7 +125,6 @@ AdvanceTo(c_parse_result* Parser, c_token* T)
   }
 }
 
-
 function c_token*
 PeekTokenRawPointer(c_parse_result* Parser, u32 Lookahead = 0)
 {
@@ -171,8 +170,8 @@ PeekTokenPointer(c_parse_result* Parser, u32 Lookahead = 0)
   u32 TokenHits = 0;
   u32 LocalLookahead = 0;
 
-  c_token* Result = PeekTokenRawPointer(Parser, LocalLookahead);
-  while (Result && Remaining(&Parser->Tokens, LocalLookahead))
+  c_token* Result = 0;
+  while (Remaining(&Parser->Tokens, LocalLookahead))
   {
     Result = PeekTokenRawPointer(Parser, LocalLookahead);
     if ( Result->Type == CTokenType_CommentSingleLine)

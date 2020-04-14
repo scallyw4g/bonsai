@@ -185,7 +185,7 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T == CToken(CS("return")));
+    TestThat(T.Type == CTokenType_Return);
   }
   {
     c_token T = PopToken(Parser);
@@ -282,11 +282,7 @@ TestBasicTokenizationAndParsing(memory_arena* Memory)
   }
   {
     c_token T = PopToken(Parser);
-    TestThat(T.Type == CTokenType_Minus);
-  }
-  {
-    c_token T = PopToken(Parser);
-    TestThat(T.Type == CTokenType_GT);
+    TestThat(T.Type == CTokenType_Arrow);
   }
   {
     c_token T = PopToken(Parser);
