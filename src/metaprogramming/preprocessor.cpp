@@ -2625,7 +2625,7 @@ GetByName(counted_string Name, variable_stream* Stream)
 }
 
 function ast_node*
-ParseAst(c_parse_result *Parser, memory_arena *Memory, program_datatypes *Datatypes, variable_stream *Locals);
+ParseAst(c_parse_result *Parser, memory_arena *Memory, program_datatypes *Datatypes, ast_node_variable_def_stream *Locals);
 
 function ast_node*
 ParseSymbol(c_parse_result *Parser, memory_arena *Memory)
@@ -2638,7 +2638,7 @@ ParseSymbol(c_parse_result *Parser, memory_arena *Memory)
   return Result;
 }
 function ast_node*
-ParseIgnoredNode(c_parse_result *Parser, memory_arena *Memory, program_datatypes *Datatypes, variable_stream *Locals)
+ParseIgnoredNode(c_parse_result *Parser, memory_arena *Memory, program_datatypes *Datatypes, ast_node_variable_def_stream *Locals)
 {
   ast_node *Result = {};
 
@@ -2650,7 +2650,7 @@ ParseIgnoredNode(c_parse_result *Parser, memory_arena *Memory, program_datatypes
 }
 
 function ast_node*
-ParseFunctionCall(c_parse_result *Parser, memory_arena* Memory, function_def_stream *FunctionPrototypes)
+ParseFunctionCall(c_parse_result *Parser, memory_arena* Memory, function_def_stream *FunctionPrototypes, ast_node_variable_def_stream *Locals)
 {
   ast_node *Result = {};
   ast_node_function_call *Node = AllocateAndCastTo(ast_node_function_call, &Result, Memory);
@@ -2700,7 +2700,7 @@ ParseInitializerList(c_parse_result *Parser, memory_arena *Memory)
 }
 
 function ast_node*
-ParseConstantAst(c_parse_result *Parser, memory_arena *Memory, program_datatypes *Datatypes)
+ParseConstantAst(c_parse_result *Parser, memory_arena *Memory, program_datatypes *Datatypes, ast_node_variable_def_stream *Locals)
 {
   ast_node *Result = {};
 
@@ -2718,7 +2718,7 @@ ParseConstantAst(c_parse_result *Parser, memory_arena *Memory, program_datatypes
       {
         if ( PeekToken(Parser, 1).Type == CTokenType_OpenParen )
         {
-          *Current = ParseFunctionCall(Parser, Memory, &Datatypes->Functions);
+          *Current = ParseFunctionCall(Parser, Memory, &Datatypes->Functions, Locals);
         }
         else
         {
@@ -2731,7 +2731,7 @@ ParseConstantAst(c_parse_result *Parser, memory_arena *Memory, program_datatypes
       {
         RequireToken(Parser, T.Type);
         ast_node_scope* Node = AllocateAndCastTo(ast_node_scope, Current, Memory);
-        Node->Children = ParseConstantAst(Parser, Memory, Datatypes);
+        Node->Children = ParseConstantAst(Parser, Memory, Datatypes, Locals);
       } break;
 
       case CTokenType_Hash:
@@ -2770,7 +2770,7 @@ ParseConstantAst(c_parse_result *Parser, memory_arena *Memory, program_datatypes
       {
         ast_node_ignored *Node = AllocateAndCastTo(ast_node_ignored, Current, Memory);
         Node->Token = RequireToken(Parser, T);
-        Node->Children = ParseConstantAst(Parser, Memory, Datatypes);
+        Node->Children = ParseConstantAst(Parser, Memory, Datatypes, Locals);
       } break;
 
       case CTokenType_CloseBracket:
@@ -2796,7 +2796,7 @@ ParseConstantAst(c_parse_result *Parser, memory_arena *Memory, program_datatypes
 }
 
 function ast_node*
-ParseAst(c_parse_result *Parser, memory_arena *Memory, program_datatypes *Datatypes, variable_stream *Locals)
+ParseAst(c_parse_result *Parser, memory_arena *Memory, program_datatypes *Datatypes, ast_node_variable_def_stream *Locals)
 {
   ast_node *Result = {};
 
@@ -2818,12 +2818,14 @@ ParseAst(c_parse_result *Parser, memory_arena *Memory, program_datatypes *Dataty
           ast_node_variable_def *Node = AllocateAndCastTo(ast_node_variable_def, Current, Memory);
           Node->Type = MatchedDatatype;
           Node->Decl = Decl;
+
+          Push(Locals, *Node, Memory);
         }
         else
         {
           if ( PeekToken(Parser, 1).Type == CTokenType_OpenParen )
           {
-            *Current = ParseFunctionCall(Parser, Memory, &Datatypes->Functions);
+            *Current = ParseFunctionCall(Parser, Memory, &Datatypes->Functions, Locals);
           }
           else
           {
@@ -2897,7 +2899,7 @@ ParseAst(c_parse_result *Parser, memory_arena *Memory, program_datatypes *Dataty
         RequireToken(Parser, T.Type);
 
         ast_node_ignored *Node = AllocateAndCastTo(ast_node_ignored, Current, Memory);
-        Node->Children = ParseConstantAst(Parser, Memory, Datatypes);
+        Node->Children = ParseConstantAst(Parser, Memory, Datatypes, Locals);
         Node->Token = T;
 
         RequireToken(Parser, CTokenType_Colon);
@@ -4488,7 +4490,7 @@ ParseFunctionBodiesIntoAsts(program_datatypes *Datatypes, memory_arena *Memory)
   ITERATE_OVER(&Datatypes->Functions)
   {
     function_def *Func = GET_ELEMENT(Iter);
-    variable_stream Locals = {};
+    ast_node_variable_def_stream Locals = {};
     Func->Ast = ParseAst(&Func->Body, Memory, Datatypes, &Locals);
     Assert(Func->Ast);
   }

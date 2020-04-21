@@ -647,6 +647,8 @@ struct ast_node_variable_def
   variable Decl;
   ast_node *Value;
 };
+meta(generate_stream(ast_node_variable_def))
+#include <metaprogramming/output/generate_stream_ast_node_variable_def.h>
 
 struct ast_node_preprocessor_directive
 {

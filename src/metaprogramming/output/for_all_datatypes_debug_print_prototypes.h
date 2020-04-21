@@ -665,6 +665,15 @@
       function void DebugPrint( person_iterator* S, u32 Depth = 0);
       function void DebugPrint( person_iterator  S, u32 Depth = 0);
 
+      function void DebugPrint( ast_node_variable_def_stream_chunk* S, u32 Depth = 0);
+      function void DebugPrint( ast_node_variable_def_stream_chunk  S, u32 Depth = 0);
+
+      function void DebugPrint( ast_node_variable_def_stream* S, u32 Depth = 0);
+      function void DebugPrint( ast_node_variable_def_stream  S, u32 Depth = 0);
+
+      function void DebugPrint( ast_node_variable_def_iterator* S, u32 Depth = 0);
+      function void DebugPrint( ast_node_variable_def_iterator  S, u32 Depth = 0);
+
       function void DebugPrint( ast_node* S, u32 Depth = 0);
       function void DebugPrint( ast_node  S, u32 Depth = 0);
 
