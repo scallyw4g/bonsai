@@ -638,20 +638,14 @@ struct function_def;
 struct ast_node_function_call
 {
   function_def *Prototype;
-  // TODO(Jesse id: 242): Stream of variable instances with values??
+  // TODO(Jesse id: 242): Stream of variable instances (arguemnts) with values?
 };
 
-struct ast_node_datatype
+struct ast_node_variable_def
 {
   datatype Type;
-};
-
-struct ast_node_var
-{
-  variable Decl; // TODO(Jesse id: 246): Not really sure if this should be a pointer or not
+  variable Decl;
   ast_node *Value;
-
-  ast_node *NextStatement;
 };
 
 struct ast_node_preprocessor_directive
@@ -666,7 +660,7 @@ struct ast_node_scope
 
 struct ast_node_assignment
 {
-  ast_node *LHS;
+  // ast_node *LHS;
   ast_node *RHS;
 };
 
@@ -688,7 +682,7 @@ struct ast_node_ignored
 };
 
 meta(
-  d_union ast_node { ast_node_var
+  d_union ast_node {
                      ast_node_function_call
                      ast_node_scope
                      ast_node_assignment
@@ -696,7 +690,7 @@ meta(
                      ast_node_initializer_list
                      ast_node_ignored
                      ast_node_preprocessor_directive
-                     ast_node_datatype
+                     ast_node_variable_def
                    },
   {
     umm Next // TODO(Jesse): This needs to support pointers!

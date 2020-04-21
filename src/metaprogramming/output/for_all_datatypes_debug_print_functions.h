@@ -2675,33 +2675,14 @@
       }
     }
 
-    function void DebugPrint( ast_node_datatype S, u32 Depth)
+    function void DebugPrint( ast_node_variable_def S, u32 Depth)
     {
-      DebugPrint("ast_node_datatype\n", Depth);
+      DebugPrint("ast_node_variable_def\n", Depth);
       
           DebugPrint("Type = ", Depth);
           DebugPrint(S.Type, Depth+1);
           DebugPrint("\n");
 
-    }
-
-    function void DebugPrint(ast_node_datatype* S, u32 Depth)
-    {
-      if (S)
-      {
-        DebugPrint("ast_node_datatype\n", Depth);
-        
-            DebugPrint("Type = ", Depth);
-            DebugPrint(S->Type, Depth+1);
-            DebugPrint("\n");
-
-      }
-    }
-
-    function void DebugPrint( ast_node_var S, u32 Depth)
-    {
-      DebugPrint("ast_node_var\n", Depth);
-      
           DebugPrint("Decl = ", Depth);
           DebugPrint(S.Decl, Depth+1);
           DebugPrint("\n");
@@ -2710,28 +2691,24 @@
           DebugPrint(S.Value, Depth+1);
           DebugPrint("\n");
 
-          DebugPrint("NextStatement = ", Depth);
-          DebugPrint(S.NextStatement, Depth+1);
-          DebugPrint("\n");
-
     }
 
-    function void DebugPrint(ast_node_var* S, u32 Depth)
+    function void DebugPrint(ast_node_variable_def* S, u32 Depth)
     {
       if (S)
       {
-        DebugPrint("ast_node_var\n", Depth);
+        DebugPrint("ast_node_variable_def\n", Depth);
         
+            DebugPrint("Type = ", Depth);
+            DebugPrint(S->Type, Depth+1);
+            DebugPrint("\n");
+
             DebugPrint("Decl = ", Depth);
             DebugPrint(S->Decl, Depth+1);
             DebugPrint("\n");
 
             DebugPrint("Value = ", Depth);
             DebugPrint(S->Value, Depth+1);
-            DebugPrint("\n");
-
-            DebugPrint("NextStatement = ", Depth);
-            DebugPrint(S->NextStatement, Depth+1);
             DebugPrint("\n");
 
       }
@@ -2787,10 +2764,6 @@
     {
       DebugPrint("ast_node_assignment\n", Depth);
       
-          DebugPrint("LHS = ", Depth);
-          DebugPrint(S.LHS, Depth+1);
-          DebugPrint("\n");
-
           DebugPrint("RHS = ", Depth);
           DebugPrint(S.RHS, Depth+1);
           DebugPrint("\n");
@@ -2803,10 +2776,6 @@
       {
         DebugPrint("ast_node_assignment\n", Depth);
         
-            DebugPrint("LHS = ", Depth);
-            DebugPrint(S->LHS, Depth+1);
-            DebugPrint("\n");
-
             DebugPrint("RHS = ", Depth);
             DebugPrint(S->RHS, Depth+1);
             DebugPrint("\n");
@@ -11844,12 +11813,6 @@
               DebugPrint("");
             } break;
 
-            case type_ast_node_var:
-            {
-              DebugPrint("type_ast_node_var");
-              DebugPrint("");
-            } break;
-
             case type_ast_node_function_call:
             {
               DebugPrint("type_ast_node_function_call");
@@ -11892,9 +11855,9 @@
               DebugPrint("");
             } break;
 
-            case type_ast_node_datatype:
+            case type_ast_node_variable_def:
             {
-              DebugPrint("type_ast_node_datatype");
+              DebugPrint("type_ast_node_variable_def");
               DebugPrint("");
             } break;
 

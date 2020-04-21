@@ -2360,7 +2360,7 @@ ParseDeclaration(c_parse_result *Parser)
 
       } break;
 
-      InvalidDefaultWhileParsing(Parser, CSz("Malformed variable statement."));
+      default: { Done = True; } break;
     }
 
     EatWhitespaceAndComments(Parser);
@@ -2590,6 +2590,23 @@ ParseTypedef(c_parse_result* Parser, program_datatypes* Datatypes, memory_arena*
 }
 
 
+function function_def*
+GetByPrototypeName(counted_string Name, function_def_stream* Stream)
+{
+  function_def* Result = {};
+  ITERATE_OVER(Stream)
+  {
+    function_def* Current = GET_ELEMENT(Iter);
+    if (StringsMatch(Current->Prototype.Name, Name))
+    {
+      Result = Current;
+      break;
+    }
+  }
+
+  return Result;
+}
+
 function variable*
 GetByName(counted_string Name, variable_stream* Stream)
 {
@@ -2633,14 +2650,13 @@ ParseIgnoredNode(c_parse_result *Parser, memory_arena *Memory, program_datatypes
 }
 
 function ast_node*
-ParseFunctionCall(c_parse_result *Parser, memory_arena* Memory)
+ParseFunctionCall(c_parse_result *Parser, memory_arena* Memory, function_def_stream *FunctionPrototypes)
 {
   ast_node *Result = {};
   ast_node_function_call *Node = AllocateAndCastTo(ast_node_function_call, &Result, Memory);
 
-  /* counted_string FunctionName = */ RequireToken(Parser, CTokenType_Identifier);
-
-  // TODO(Jesse id: 249): Get prototype by name for function here.
+  counted_string FunctionName = RequireToken(Parser, CTokenType_Identifier).Value;
+  Node->Prototype = GetByPrototypeName(FunctionName, FunctionPrototypes);
 
   EatBetween(Parser, CTokenType_OpenParen, CTokenType_CloseParen);
 
@@ -2702,7 +2718,7 @@ ParseConstantAst(c_parse_result *Parser, memory_arena *Memory, program_datatypes
       {
         if ( PeekToken(Parser, 1).Type == CTokenType_OpenParen )
         {
-          *Current = ParseFunctionCall(Parser, Memory);
+          *Current = ParseFunctionCall(Parser, Memory, &Datatypes->Functions);
         }
         else
         {
@@ -2798,15 +2814,16 @@ ParseAst(c_parse_result *Parser, memory_arena *Memory, program_datatypes *Dataty
         datatype MatchedDatatype = GetDatatypeByName(Datatypes, T.Value);
         if (MatchedDatatype.Type)
         {
-          RequireToken(Parser, CTokenType_Identifier);
-          ast_node_datatype *Node = AllocateAndCastTo(ast_node_datatype, Current, Memory);
+          variable Decl = ParseDeclaration(Parser);
+          ast_node_variable_def *Node = AllocateAndCastTo(ast_node_variable_def, Current, Memory);
           Node->Type = MatchedDatatype;
+          Node->Decl = Decl;
         }
         else
         {
           if ( PeekToken(Parser, 1).Type == CTokenType_OpenParen )
           {
-            *Current = ParseFunctionCall(Parser, Memory);
+            *Current = ParseFunctionCall(Parser, Memory, &Datatypes->Functions);
           }
           else
           {
@@ -2821,7 +2838,7 @@ ParseAst(c_parse_result *Parser, memory_arena *Memory, program_datatypes *Dataty
       {
         RequireToken(Parser, T.Type);
         ast_node_assignment* Node = AllocateAndCastTo(ast_node_assignment, Current, Memory);
-        Node->LHS = *Current;
+        /* Node->LHS = *Current; */
 
         if (PeekToken(Parser).Type == CTokenType_OpenBrace)
         {
@@ -4493,14 +4510,16 @@ Traverse(ast_node* InputNode)
         InvalidCodePath();
       } break;
 
-      case type_ast_node_var:
-      {
-      } break;
-
       case type_ast_node_function_call:
       {
         ast_node_function_call *Node = SafeCast(ast_node_function_call, Current);
-        DebugPrint(Node);
+#if 0
+        if (!Node->Prototype)
+        {
+          RuntimeBreak();
+          DebugPrint(Node);
+        }
+#endif
       } break;
 
       case type_ast_node_scope:
@@ -4527,7 +4546,7 @@ Traverse(ast_node* InputNode)
       {
       } break;
 
-      case type_ast_node_datatype:
+      case type_ast_node_variable_def:
       {
       } break;
     }
@@ -4570,7 +4589,6 @@ DebugDumpFunctionCalls(program_datatypes *Datatypes)
   ITERATE_OVER(&Datatypes->Functions)
   {
     function_def *Func = GET_ELEMENT(Iter);
-    variable_stream Locals = {};
     Traverse(Func->Ast);
   }
 }

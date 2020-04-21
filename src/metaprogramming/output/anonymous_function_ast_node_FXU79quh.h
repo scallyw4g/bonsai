@@ -2,15 +2,6 @@
         switch (Current->Type)
         {
           
-              case type_ast_node_var:
-              {
-                
-                   Traverse(Current->ast_node_var.Value);
-
-                   Traverse(Current->ast_node_var.NextStatement);
-
-              } break;
-
               case type_ast_node_scope:
               {
                 
@@ -21,8 +12,6 @@
               case type_ast_node_assignment:
               {
                 
-                   Traverse(Current->ast_node_assignment.LHS);
-
                    Traverse(Current->ast_node_assignment.RHS);
 
               } break;
@@ -45,6 +34,13 @@
               {
                 
                    Traverse(Current->ast_node_preprocessor_directive.Children);
+
+              } break;
+
+              case type_ast_node_variable_def:
+              {
+                
+                   Traverse(Current->ast_node_variable_def.Value);
 
               } break;
 

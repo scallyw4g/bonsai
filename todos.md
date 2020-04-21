@@ -10,12 +10,10 @@
     - #235 Does this belong here?
     - #240 Do we want to store this value?
     - #241 Does this belong here?
-    - #242 Stream of variable instances with values??
+    - #242 Stream of variable instances (arguemnts) with values?
     - #243 AST Node type for these keywords
     - #244 AST Node type for return value
     - #245 Change to variable_def or variable_decl
-    - #246 Not really sure if this should be a pointer or not
-    - #249 Get prototype by name for function here.
     - #250 Get arg types if we care?
     - #251 Implement this..
 

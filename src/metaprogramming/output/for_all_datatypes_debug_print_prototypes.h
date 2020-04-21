@@ -179,11 +179,8 @@
       function void DebugPrint( ast_node_function_call* S, u32 Depth = 0);
       function void DebugPrint( ast_node_function_call  S, u32 Depth = 0);
 
-      function void DebugPrint( ast_node_datatype* S, u32 Depth = 0);
-      function void DebugPrint( ast_node_datatype  S, u32 Depth = 0);
-
-      function void DebugPrint( ast_node_var* S, u32 Depth = 0);
-      function void DebugPrint( ast_node_var  S, u32 Depth = 0);
+      function void DebugPrint( ast_node_variable_def* S, u32 Depth = 0);
+      function void DebugPrint( ast_node_variable_def  S, u32 Depth = 0);
 
       function void DebugPrint( ast_node_preprocessor_directive* S, u32 Depth = 0);
       function void DebugPrint( ast_node_preprocessor_directive  S, u32 Depth = 0);
